@@ -1,4 +1,5 @@
 // Aseprite Render Library
+// Copyright (c) 2019 Igara Studio S.A.
 // Copyright (c) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -15,6 +16,7 @@ namespace render {
     None,
     Ordered,
     Old,
+    ErrorDiffusion,
   };
 
 } // namespace render

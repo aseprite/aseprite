@@ -20,6 +20,7 @@
 #include "doc/sprite.h"
 #include "gfx/hsv.h"
 #include "gfx/rgb.h"
+#include "render/error_diffusion.h"
 #include "render/ordered_dither.h"
 #include "render/render.h"
 #include "render/task_delegate.h"
@@ -107,10 +108,13 @@ Image* convert_pixel_format(
       case DitheringAlgorithm::Old:
         dither.reset(new OrderedDither(is_background ? -1: new_mask_color));
         break;
+      case DitheringAlgorithm::ErrorDiffusion:
+        dither.reset(new ErrorDiffusionDither(is_background ? -1: new_mask_color));
+        break;
     }
     if (dither)
       dither_rgb_image_to_indexed(
-        *dither, ditheringMatrix, image, new_image, 0, 0, rgbmap, palette, delegate);
+        *dither, ditheringMatrix, image, new_image, rgbmap, palette, delegate);
     return new_image;
   }
 

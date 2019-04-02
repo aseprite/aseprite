@@ -199,6 +199,11 @@ void DitheringSelector::regenerate()
             it.matrix(),
             "Old Dithering+" + it.name()));
       }
+      addItem(
+        new DitherItem(
+          render::DitheringAlgorithm::ErrorDiffusion,
+          render::DitheringMatrix(),
+          "Floyd-Steinberg Error Diffusion Dithering"));
       break;
     case SelectMatrix:
       addItem(new DitherItem(render::DitheringMatrix(), "No Dithering"));

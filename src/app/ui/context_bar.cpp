@@ -1736,6 +1736,9 @@ render::DitheringAlgorithmBase* ContextBar::ditheringAlgorithm()
     case render::DitheringAlgorithm::Old:
       s_dither.reset(new render::OrderedDither(-1));
       break;
+    case render::DitheringAlgorithm::ErrorDiffusion:
+      s_dither.reset(new render::ErrorDiffusionDither(-1));
+      break;
   }
 
   return s_dither.get();

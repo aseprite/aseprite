@@ -1,4 +1,5 @@
 // Aseprite Render Library
+// Copyright (c) 2019 Igara Studio S.A.
 // Copyright (c) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -12,6 +13,8 @@
 #include "doc/image_impl.h"
 #include "doc/palette.h"
 #include "doc/rgbmap.h"
+#include "gfx/point.h"
+#include "gfx/size.h"
 #include "render/dithering_matrix.h"
 #include "render/task_delegate.h"
 
@@ -20,13 +23,26 @@ namespace render {
   class DitheringAlgorithmBase {
   public:
     virtual ~DitheringAlgorithmBase() { }
+
+    virtual int dimensions() const { return 1; }
+
+    virtual void start(
+      const doc::Image* srcImage,
+      doc::Image* dstImage) { }
+
+    virtual void finish() { }
+
     virtual doc::color_t ditherRgbPixelToIndex(
       const DitheringMatrix& matrix,
       const doc::color_t color,
-      const int x,
-      const int y,
+      const int x, const int y,
       const doc::RgbMap* rgbmap,
-      const doc::Palette* palette) = 0;
+      const doc::Palette* palette) { return 0; }
+
+    virtual doc::color_t ditherRgbToIndex2D(
+      const int x, const int y,
+      const doc::RgbMap* rgbmap,
+      const doc::Palette* palette) { return 0; }
   };
 
   class OrderedDither : public DitheringAlgorithmBase {
@@ -62,7 +78,6 @@ namespace render {
     const DitheringMatrix& matrix,
     const doc::Image* srcImage,
     doc::Image* dstImage,
-    int u, int v,
     const doc::RgbMap* rgbmap,
     const doc::Palette* palette,
     TaskDelegate* delegate = nullptr);

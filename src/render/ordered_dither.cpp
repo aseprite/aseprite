@@ -1,4 +1,5 @@
 // Aseprite Render Library
+// Copyright (c) 2019 Igara Studio S.A.
 // Copyright (c) 2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -230,35 +231,62 @@ void dither_rgb_image_to_indexed(
   const DitheringMatrix& matrix,
   const doc::Image* srcImage,
   doc::Image* dstImage,
-  int u, int v,
   const doc::RgbMap* rgbmap,
   const doc::Palette* palette,
   TaskDelegate* delegate)
 {
-  const doc::LockImageBits<doc::RgbTraits> srcBits(srcImage);
-  doc::LockImageBits<doc::IndexedTraits> dstBits(dstImage);
-  auto srcIt = srcBits.begin();
-  auto dstIt = dstBits.begin();
-  int w = srcImage->width();
-  int h = srcImage->height();
+  const int w = srcImage->width();
+  const int h = srcImage->height();
 
-  for (int y=0; y<h; ++y) {
-    for (int x=0; x<w; ++x, ++srcIt, ++dstIt) {
-      ASSERT(srcIt != srcBits.end());
-      ASSERT(dstIt != dstBits.end());
-      *dstIt = algorithm.ditherRgbPixelToIndex(matrix, *srcIt, x+u, y+v, rgbmap, palette);
+  algorithm.start(srcImage, dstImage);
+
+  if (algorithm.dimensions() == 1) {
+    const doc::LockImageBits<doc::RgbTraits> srcBits(srcImage);
+    doc::LockImageBits<doc::IndexedTraits> dstBits(dstImage);
+    auto srcIt = srcBits.begin();
+    auto dstIt = dstBits.begin();
+
+    for (int y=0; y<h; ++y) {
+      for (int x=0; x<w; ++x, ++srcIt, ++dstIt) {
+        ASSERT(srcIt != srcBits.end());
+        ASSERT(dstIt != dstBits.end());
+        *dstIt = algorithm.ditherRgbPixelToIndex(matrix, *srcIt, x, y, rgbmap, palette);
+
+        if (delegate) {
+          if (!delegate->continueTask())
+            return;
+        }
+      }
 
       if (delegate) {
-        if (!delegate->continueTask())
-          return;
+        delegate->notifyTaskProgress(
+          double(y+1) / double(h));
       }
     }
+  }
+  else {
+    doc::LockImageBits<doc::IndexedTraits> dstBits(dstImage);
+    auto dstIt = dstBits.begin();
 
-    if (delegate) {
-      delegate->notifyTaskProgress(
-        double(y+1) / double(h));
+    for (int y=0; y<h; ++y) {
+      for (int x=0; x<w; ++x, ++dstIt) {
+        ASSERT(dstIt != dstBits.end());
+        *dstIt = algorithm.ditherRgbToIndex2D(x, y, rgbmap, palette);
+
+        if (delegate) {
+          if (!delegate->continueTask())
+            return;
+        }
+      }
+
+      if (delegate) {
+        delegate->notifyTaskProgress(
+          double(y+1) / double(h));
+      }
     }
   }
+
+  algorithm.finish();
 }
 
 } // namespace render

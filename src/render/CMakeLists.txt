@@ -2,6 +2,7 @@
 # Copyright (C) 2001-2017 David Capello
 
 add_library(render-lib
+  error_diffusion.cpp
   get_sprite_pixel.cpp
   gradient.cpp
   ordered_dither.cpp

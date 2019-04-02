@@ -381,6 +381,8 @@ void ChangePixelFormatCommand::onLoadParams(const Params& params)
     m_ditheringAlgorithm = render::DitheringAlgorithm::Ordered;
   else if (dithering == "old")
     m_ditheringAlgorithm = render::DitheringAlgorithm::Old;
+  else if (dithering == "error-diffusion")
+    m_ditheringAlgorithm = render::DitheringAlgorithm::ErrorDiffusion;
   else
     m_ditheringAlgorithm = render::DitheringAlgorithm::None;
 
@@ -522,6 +524,9 @@ std::string ChangePixelFormatCommand::onGetFriendlyName() const
             break;
           case render::DitheringAlgorithm::Old:
             conversion = Strings::commands_ChangePixelFormat_Indexed_OldDithering();
+            break;
+          case render::DitheringAlgorithm::ErrorDiffusion:
+            conversion = Strings::commands_ChangePixelFormat_Indexed_ErrorDifussion();
             break;
         }
         break;

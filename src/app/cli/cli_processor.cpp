@@ -368,10 +368,12 @@ void CliProcessor::process(Context* ctx)
             ditheringAlgorithm = render::DitheringAlgorithm::Ordered;
           else if (value.value() == "old")
             ditheringAlgorithm = render::DitheringAlgorithm::Old;
+          else if (value.value() == "error-diffusion")
+            ditheringAlgorithm = render::DitheringAlgorithm::ErrorDiffusion;
           else
             throw std::runtime_error("--dithering-algorithm needs a valid algorithm name\n"
                                      "Usage: --dithering-algorithm <algorithm>\n"
-                                     "Where <algorithm> can be none, ordered, or old");
+                                     "Where <algorithm> can be none, ordered, old, or error-diffusion");
         }
         // --dithering-matrix <id>
         else if (opt == &m_options.ditheringMatrix()) {
@@ -398,6 +400,9 @@ void CliProcessor::process(Context* ctx)
                 break;
               case render::DitheringAlgorithm::Old:
                 params.set("dithering", "old");
+                break;
+              case render::DitheringAlgorithm::ErrorDiffusion:
+                params.set("dithering", "error-diffusion");
                 break;
             }
 

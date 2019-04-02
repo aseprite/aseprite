@@ -1,4 +1,5 @@
 // Aseprite Render Library
+// Copyright (c) 2019 Igara Studio S.A.
 // Copyright (c) 2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -10,6 +11,7 @@
 
 #include "render/dithering_algorithm.h"
 #include "render/dithering_matrix.h"
+#include "render/error_diffusion.h"
 #include "render/ordered_dither.h"
 
 #endif
