@@ -64,15 +64,14 @@ doc::color_t ErrorDiffusionDither::ditherRgbToIndex2D(
     doc::rgba_getb(color),
     doc::rgba_geta(color)
   };
-  int u[kChannels];
   for (int i=0; i<kChannels; ++i) {
-    v[i] += m_err[i][x+1] / 16;
-    u[i] = MID(0, v[i], 255);
+    v[i] += m_err[i][x+1];
+    v[i] = MID(0, v[i], 255);
   }
 
   const doc::color_t index =
-    (rgbmap ? rgbmap->mapColor(u[0], u[1], u[2], u[3]):
-              palette->findBestfit(u[0], u[1], u[2], u[3], m_transparentIndex));
+    (rgbmap ? rgbmap->mapColor(v[0], v[1], v[2], v[3]):
+              palette->findBestfit(v[0], v[1], v[2], v[3], m_transparentIndex));
 
   doc::color_t palColor = palette->getEntry(index);
   if (m_transparentIndex == index || doc::rgba_geta(palColor) == 0) {
@@ -90,10 +89,17 @@ doc::color_t ErrorDiffusionDither::ditherRgbToIndex2D(
   // TODO using Floyd-Steinberg matrix here but it should be configurable
   for (int i=0; i<kChannels; ++i) {
     int* err = &m_err[i][x];
-    err[       +2] += quantError[i] * 7;
-    err[m_width  ] += quantError[i] * 3;
-    err[m_width+1] += quantError[i] * 5;
-    err[m_width+2] += quantError[i] * 1;
+
+    const int a = quantError[i] * 7 / 16;
+    const int b = quantError[i] * 3 / 16;
+    const int c = quantError[i] * 5 / 16;
+    // Same as d=quantError[i]*1/16 but without rounding errors
+    const int d = quantError[i] - a - b - c;
+
+    err[       +2] += a;
+    err[m_width  ] += b;
+    err[m_width+1] += c;
+    err[m_width+2] += d;
   }
 
   return index;
