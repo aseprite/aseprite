@@ -496,18 +496,25 @@ void ChangePixelFormatCommand::onExecute(Context* context)
   {
     const ContextReader reader(context);
     SpriteJob job(reader, "Color Mode Change");
-    const bool newBlend = Preferences::instance().experimental.newBlend();
+    Sprite* sprite(job.sprite());
+
+    // TODO this was moved in the main UI thread because
+    //      cmd::FlattenLayers() generates a EditorObserver::onAfterLayerChanged()
+    //      event, and that event is an UI event.
+    //      We should refactor the whole app to separate doc changes <-> UI changes,
+    //      but that is for the future:
+    //      https://github.com/aseprite/aseprite/issues/509
+    //      https://github.com/aseprite/aseprite/issues/378
+    if (flatten) {
+      const bool newBlend = Preferences::instance().experimental.newBlend();
+      SelectedLayers selLayers;
+      for (auto layer : sprite->root()->layers())
+        selLayers.insert(layer);
+      job.tx()(new cmd::FlattenLayers(sprite, selLayers, newBlend));
+    }
+
     job.startJobWithCallback(
-      [this, &job, flatten, newBlend] {
-        Sprite* sprite(job.sprite());
-
-        if (flatten) {
-          SelectedLayers selLayers;
-          for (auto layer : sprite->root()->layers())
-            selLayers.insert(layer);
-          job.tx()(new cmd::FlattenLayers(sprite, selLayers, newBlend));
-        }
-
+      [this, &job, sprite] {
         job.tx()(
           new cmd::SetPixelFormat(
             sprite, m_format,
