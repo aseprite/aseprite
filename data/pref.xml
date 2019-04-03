@@ -47,8 +47,8 @@
       <value id="ALL_LAYERS" value="1" />
     </enum>
     <enum id="PixelConnectivity">
-      <value id="EIGHT_CONNECTED" value="0" />
-      <value id="FOUR_CONNECTED" value="1" />
+      <value id="FOUR_CONNECTED" value="0" />
+      <value id="EIGHT_CONNECTED" value="1" />
     </enum>
     <enum id="EyedropperChannel">
       <value id="COLOR_ALPHA" value="0" />

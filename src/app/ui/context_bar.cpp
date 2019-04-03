@@ -394,8 +394,8 @@ protected:
     int index = 0;
 
      switch(toolPref.floodfill.pixelConnectivity()) {
-      case app::gen::PixelConnectivity::EIGHT_CONNECTED: index = 0; break;
-      case app::gen::PixelConnectivity::FOUR_CONNECTED: index = 1; break;
+      case app::gen::PixelConnectivity::FOUR_CONNECTED: index = 0; break;
+      case app::gen::PixelConnectivity::EIGHT_CONNECTED: index = 1; break;
     }
 
      buttonset.setSelectedItem(index);
@@ -419,10 +419,10 @@ protected:
       [&buttonset, &toolPref](ButtonSet::Item* item){
         switch(buttonset.selectedItem()) {
           case 0: 
-            toolPref.floodfill.pixelConnectivity(app::gen::PixelConnectivity::EIGHT_CONNECTED);
+            toolPref.floodfill.pixelConnectivity(app::gen::PixelConnectivity::FOUR_CONNECTED);
             break;
           case 1:
-            toolPref.floodfill.pixelConnectivity(app::gen::PixelConnectivity::FOUR_CONNECTED);
+            toolPref.floodfill.pixelConnectivity(app::gen::PixelConnectivity::EIGHT_CONNECTED);
             break;
         }
       });

@@ -103,7 +103,7 @@ public:
       get_pixel(srcImage, pt.x, pt.y),
       loop->getTolerance(),
       loop->getContiguous(),
-      loop->isPixelConnectivityFourConnected(),
+      loop->isPixelConnectivityEightConnected(),
       loop, (AlgoHLine)doInkHline);
   }
 
