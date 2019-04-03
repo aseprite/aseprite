@@ -196,6 +196,15 @@ public:
 
       m_ditheringSelector = new DitheringSelector(DitheringSelector::SelectBoth);
       m_ditheringSelector->setExpansive(true);
+
+      // Select default dithering method
+      {
+        int index = m_ditheringSelector->findItemIndex(
+          Preferences::instance().quantization.ditheringAlgorithm());
+        if (index >= 0)
+          m_ditheringSelector->setSelectedItemIndex(index);
+      }
+
       m_ditheringSelector->Change.connect(
         base::Bind<void>(&ColorModeWindow::onDithering, this));
       ditheringPlaceholder()->addChild(m_ditheringSelector);
@@ -237,6 +246,15 @@ public:
 
   bool flattenEnabled() const {
     return flatten()->isSelected();
+  }
+
+  // Save the dithering method used for the future
+  void saveDitheringAlgorithm() {
+    if (m_ditheringSelector) {
+      if (auto item = m_ditheringSelector->getSelectedItem()) {
+        Preferences::instance().quantization.ditheringAlgorithm(item->text());
+      }
+    }
   }
 
 private:
@@ -466,6 +484,8 @@ void ChangePixelFormatCommand::onExecute(Context* context)
     m_ditheringAlgorithm = window.ditheringAlgorithm();
     m_ditheringMatrix = window.ditheringMatrix();
     flatten = window.flattenEnabled();
+
+    window.saveDitheringAlgorithm();
   }
 #endif // ENABLE_UI
 
