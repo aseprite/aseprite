@@ -35,6 +35,7 @@
 #include "base/shared_ptr.h"
 #include "clip/clip.h"
 #include "doc/doc.h"
+#include "render/dithering.h"
 #include "render/ordered_dither.h"
 #include "render/quantization.h"
 
@@ -366,8 +367,7 @@ void paste()
         src_image.reset(
           render::convert_pixel_format(
             clipboard_image.get(), NULL, dstSpr->pixelFormat(),
-            render::DitheringAlgorithm::None,
-            render::DitheringMatrix(), 1.0,
+            render::Dithering(),
             dst_rgbmap, clipboard_palette.get(),
             false,
             0));

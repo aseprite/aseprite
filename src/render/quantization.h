@@ -12,7 +12,6 @@
 #include "doc/frame.h"
 #include "doc/pixel_format.h"
 #include "render/color_histogram.h"
-#include "render/dithering_algorithm.h"
 
 #include <vector>
 
@@ -24,7 +23,7 @@ namespace doc {
 }
 
 namespace render {
-  class DitheringMatrix;
+  class Dithering;
   class TaskDelegate;
 
   class PaletteOptimizer {
@@ -53,9 +52,7 @@ namespace render {
     const doc::Image* src,
     doc::Image* dst,         // Can be NULL to create a new image
     doc::PixelFormat pixelFormat,
-    render::DitheringAlgorithm ditheringAlgorithm,
-    const render::DitheringMatrix& ditheringMatrix,
-    const double ditheringFactor,
+    const render::Dithering& dithering,
     const doc::RgbMap* rgbmap,
     const doc::Palette* palette,
     bool is_background,

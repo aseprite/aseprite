@@ -15,10 +15,12 @@
 #include "doc/rgbmap.h"
 #include "gfx/point.h"
 #include "gfx/size.h"
-#include "render/dithering_matrix.h"
 #include "render/task_delegate.h"
 
 namespace render {
+
+  class Dithering;
+  class DitheringMatrix;
 
   class DitheringAlgorithmBase {
   public:
@@ -77,8 +79,7 @@ namespace render {
 
   void dither_rgb_image_to_indexed(
     DitheringAlgorithmBase& algorithm,
-    const DitheringMatrix& matrix,
-    const double factor,
+    const Dithering& dithering,
     const doc::Image* srcImage,
     doc::Image* dstImage,
     const doc::RgbMap* rgbmap,

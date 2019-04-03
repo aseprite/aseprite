@@ -39,7 +39,7 @@
 #include "doc/sprite.h"
 #include "gfx/packing_rects.h"
 #include "gfx/size.h"
-#include "render/dithering_algorithm.h"
+#include "render/dithering.h"
 #include "render/ordered_dither.h"
 #include "render/render.h"
 
@@ -743,8 +743,7 @@ void DocExporter::renderTexture(Context* ctx, const Samples& samples, Image* tex
       cmd::SetPixelFormat(
         sample.sprite(),
         textureImage->pixelFormat(),
-        render::DitheringAlgorithm::None,
-        render::DitheringMatrix(), 1.0,
+        render::Dithering(),
         nullptr)                // TODO add a delegate to show progress
         .execute(ctx);
     }

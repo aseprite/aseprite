@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -50,6 +50,8 @@
 #include "os/surface.h"
 #include "os/system.h"
 #include "render/dithering.h"
+#include "render/error_diffusion.h"
+#include "render/ordered_dither.h"
 #include "ui/button.h"
 #include "ui/combobox.h"
 #include "ui/int_entry.h"

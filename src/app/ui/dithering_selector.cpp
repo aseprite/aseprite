@@ -20,10 +20,11 @@
 #include "doc/image.h"
 #include "doc/image_ref.h"
 #include "doc/primitives.h"
-#include "render/gradient.h"
-#include "render/quantization.h"
 #include "os/surface.h"
 #include "os/system.h"
+#include "render/dithering.h"
+#include "render/gradient.h"
+#include "render/quantization.h"
 #include "ui/graphics.h"
 #include "ui/listitem.h"
 #include "ui/paint_event.h"
@@ -43,8 +44,7 @@ public:
              const std::string& text)
     : ListItem(text)
     , m_matrixOnly(false)
-    , m_algo(algo)
-    , m_matrix(matrix)
+    , m_dithering(algo, matrix)
     , m_preview(nullptr)
     , m_palId(0)
     , m_palMods(0)
@@ -55,16 +55,20 @@ public:
              const std::string& text)
     : ListItem(text)
     , m_matrixOnly(true)
-    , m_algo(render::DitheringAlgorithm::None)
-    , m_matrix(matrix)
+    , m_dithering(render::DitheringAlgorithm::None, matrix)
     , m_preview(nullptr)
     , m_palId(0)
     , m_palMods(0)
   {
   }
 
-  render::DitheringAlgorithm algo() const { return m_algo; }
-  render::DitheringMatrix matrix() const { return m_matrix; }
+  render::DitheringAlgorithm algo() const {
+    return m_dithering.algorithm();
+  }
+
+  render::DitheringMatrix matrix() const {
+    return m_dithering.matrix();
+  }
 
 private:
   os::Surface* preview() {
@@ -91,7 +95,8 @@ private:
       gfx::Point(w-1, 0),
       doc::rgba(0, 0, 0, 255),
       doc::rgba(255, 255, 255, 255),
-      m_matrixOnly ? m_matrix: render::DitheringMatrix());
+      (m_matrixOnly ? m_dithering.matrix():
+                      render::DitheringMatrix()));
 
     doc::ImageRef image2;
     if (m_matrixOnly) {
@@ -102,8 +107,7 @@ private:
       doc::clear_image(image2.get(), 0);
       render::convert_pixel_format(
         image1.get(), image2.get(), IMAGE_INDEXED,
-        m_algo, m_matrix, 1.0,
-        nullptr, palette, true, -1, nullptr);
+        m_dithering, nullptr, palette, true, -1, nullptr);
     }
 
     m_preview = os::instance()->createRgbaSurface(w, h);
@@ -152,8 +156,7 @@ private:
   }
 
   bool m_matrixOnly;
-  render::DitheringAlgorithm m_algo;
-  render::DitheringMatrix m_matrix;
+  render::Dithering m_dithering;
   os::Surface* m_preview;
   doc::ObjectId m_palId;
   int m_palMods;

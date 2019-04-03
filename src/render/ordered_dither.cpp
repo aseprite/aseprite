@@ -12,6 +12,8 @@
 #include "render/ordered_dither.h"
 
 #include "base/base.h"
+#include "render/dithering.h"
+#include "render/dithering_matrix.h"
 
 #include <algorithm>
 #include <limits>
@@ -228,8 +230,7 @@ doc::color_t OrderedDither2::ditherRgbPixelToIndex(
 
 void dither_rgb_image_to_indexed(
   DitheringAlgorithmBase& algorithm,
-  const DitheringMatrix& matrix,
-  const double factor,
+  const Dithering& dithering,
   const doc::Image* srcImage,
   doc::Image* dstImage,
   const doc::RgbMap* rgbmap,
@@ -239,7 +240,7 @@ void dither_rgb_image_to_indexed(
   const int w = srcImage->width();
   const int h = srcImage->height();
 
-  algorithm.start(srcImage, dstImage, factor);
+  algorithm.start(srcImage, dstImage, dithering.factor());
 
   if (algorithm.dimensions() == 1) {
     const doc::LockImageBits<doc::RgbTraits> srcBits(srcImage);
@@ -251,7 +252,8 @@ void dither_rgb_image_to_indexed(
       for (int x=0; x<w; ++x, ++srcIt, ++dstIt) {
         ASSERT(srcIt != srcBits.end());
         ASSERT(dstIt != dstBits.end());
-        *dstIt = algorithm.ditherRgbPixelToIndex(matrix, *srcIt, x, y, rgbmap, palette);
+        *dstIt = algorithm.ditherRgbPixelToIndex(
+          dithering.matrix(), *srcIt, x, y, rgbmap, palette);
 
         if (delegate) {
           if (!delegate->continueTask())

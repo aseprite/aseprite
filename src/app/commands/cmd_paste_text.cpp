@@ -25,6 +25,7 @@
 #include "base/string.h"
 #include "doc/image.h"
 #include "doc/image_ref.h"
+#include "render/dithering.h"
 #include "render/ordered_dither.h"
 #include "render/quantization.h"
 #include "ui/system.h"
@@ -184,8 +185,7 @@ void PasteTextCommand::onExecute(Context* ctx)
         image.reset(
           render::convert_pixel_format(
             image.get(), NULL, sprite->pixelFormat(),
-            render::DitheringAlgorithm::None,
-            render::DitheringMatrix(), 1.0,
+            render::Dithering(),
             rgbmap, sprite->palette(editor->frame()),
             false, 0));
       }

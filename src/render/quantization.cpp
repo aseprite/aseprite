@@ -20,6 +20,7 @@
 #include "doc/sprite.h"
 #include "gfx/hsv.h"
 #include "gfx/rgb.h"
+#include "render/dithering.h"
 #include "render/error_diffusion.h"
 #include "render/ordered_dither.h"
 #include "render/render.h"
@@ -84,9 +85,7 @@ Image* convert_pixel_format(
   const Image* image,
   Image* new_image,
   PixelFormat pixelFormat,
-  DitheringAlgorithm ditheringAlgorithm,
-  const DitheringMatrix& ditheringMatrix,
-  const double ditheringFactor,
+  const Dithering& dithering,
   const RgbMap* rgbmap,
   const Palette* palette,
   bool is_background,
@@ -100,9 +99,9 @@ Image* convert_pixel_format(
   // RGB -> Indexed with ordered dithering
   if (image->pixelFormat() == IMAGE_RGB &&
       pixelFormat == IMAGE_INDEXED &&
-      ditheringAlgorithm != DitheringAlgorithm::None) {
+      dithering.algorithm() != DitheringAlgorithm::None) {
     std::unique_ptr<DitheringAlgorithmBase> dither;
-    switch (ditheringAlgorithm) {
+    switch (dithering.algorithm()) {
       case DitheringAlgorithm::Ordered:
         dither.reset(new OrderedDither2(is_background ? -1: new_mask_color));
         break;
@@ -115,7 +114,7 @@ Image* convert_pixel_format(
     }
     if (dither)
       dither_rgb_image_to_indexed(
-        *dither, ditheringMatrix, ditheringFactor,
+        *dither, dithering,
         image, new_image, rgbmap, palette, delegate);
     return new_image;
   }
