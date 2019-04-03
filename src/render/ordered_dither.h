@@ -25,6 +25,7 @@ namespace render {
     virtual ~DitheringAlgorithmBase() { }
 
     virtual int dimensions() const { return 1; }
+    virtual bool zigZag() const { return false; }
 
     virtual void start(
       const doc::Image* srcImage,

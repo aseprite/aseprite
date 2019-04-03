@@ -96,10 +96,18 @@ doc::color_t ErrorDiffusionDither::ditherRgbToIndex2D(
     // Same as d=quantError[i]*1/16 but without rounding errors
     const int d = quantError[i] - a - b - c;
 
-    err[       +2] += a;
-    err[m_width  ] += b;
-    err[m_width+1] += c;
-    err[m_width+2] += d;
+    if (y & 1) {
+      err[0        ] += a;
+      err[m_width+2] += b;
+      err[m_width+1] += c;
+      err[m_width  ] += d;
+    }
+    else {
+      err[       +2] += a;
+      err[m_width  ] += b;
+      err[m_width+1] += c;
+      err[m_width+2] += d;
+    }
   }
 
   return index;

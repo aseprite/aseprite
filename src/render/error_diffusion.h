@@ -20,6 +20,7 @@ namespace render {
   public:
     ErrorDiffusionDither(int transparentIndex = -1);
     int dimensions() const override { return 2; }
+    bool zigZag() const override { return true; }
     void start(
       const doc::Image* srcImage,
       doc::Image* dstImage) override;

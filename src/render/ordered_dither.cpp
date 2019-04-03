@@ -265,20 +265,33 @@ void dither_rgb_image_to_indexed(
     }
   }
   else {
-    doc::LockImageBits<doc::IndexedTraits> dstBits(dstImage);
-    auto dstIt = dstBits.begin();
+    auto dstIt = doc::get_pixel_address_fast<doc::IndexedTraits>(dstImage, 0, 0);
+    const bool zigZag = algorithm.zigZag();
 
     for (int y=0; y<h; ++y) {
-      for (int x=0; x<w; ++x, ++dstIt) {
-        ASSERT(dstIt != dstBits.end());
-        *dstIt = algorithm.ditherRgbToIndex2D(x, y, rgbmap, palette);
+      if (zigZag && (y & 1)) { // Odd row: go from right-to-left
+        dstIt += w-1;
+        for (int x=w-1; x>=0; --x, --dstIt) {
+          ASSERT(dstIt == doc::get_pixel_address_fast<doc::IndexedTraits>(dstImage, x, y));
+          *dstIt = algorithm.ditherRgbToIndex2D(x, y, rgbmap, palette);
+          if (delegate) {
+            if (!delegate->continueTask())
+              return;
+          }
+        }
+        dstIt += w+1;
+      }
+      else {                    // Even row: go fromo left-to-right
+        for (int x=0; x<w; ++x, ++dstIt) {
+          ASSERT(dstIt == doc::get_pixel_address_fast<doc::IndexedTraits>(dstImage, x, y));
+          *dstIt = algorithm.ditherRgbToIndex2D(x, y, rgbmap, palette);
 
-        if (delegate) {
-          if (!delegate->continueTask())
-            return;
+          if (delegate) {
+            if (!delegate->continueTask())
+              return;
+          }
         }
       }
-
       if (delegate) {
         delegate->notifyTaskProgress(
           double(y+1) / double(h));
