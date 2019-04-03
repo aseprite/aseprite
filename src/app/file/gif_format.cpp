@@ -746,7 +746,7 @@ private:
         render::convert_pixel_format
         (oldImage, NULL, IMAGE_RGB,
          render::DitheringAlgorithm::None,
-         render::DitheringMatrix(),
+         render::DitheringMatrix(), 1.0,
          nullptr,
          m_sprite->palette(cel->frame()),
          m_opaque,
@@ -759,7 +759,7 @@ private:
       render::convert_pixel_format
       (m_currentImage.get(), NULL, IMAGE_RGB,
        render::DitheringAlgorithm::None,
-       render::DitheringMatrix(),
+       render::DitheringMatrix(), 1.0,
        nullptr,
        m_sprite->palette(m_frameNum),
        m_opaque,
@@ -769,7 +769,7 @@ private:
       render::convert_pixel_format
       (m_previousImage.get(), NULL, IMAGE_RGB,
        render::DitheringAlgorithm::None,
-       render::DitheringMatrix(),
+       render::DitheringMatrix(), 1.0,
        nullptr,
        m_sprite->palette(MAX(0, m_frameNum-1)),
        m_opaque,

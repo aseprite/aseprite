@@ -367,7 +367,7 @@ void paste()
           render::convert_pixel_format(
             clipboard_image.get(), NULL, dstSpr->pixelFormat(),
             render::DitheringAlgorithm::None,
-            render::DitheringMatrix(),
+            render::DitheringMatrix(), 1.0,
             dst_rgbmap, clipboard_palette.get(),
             false,
             0));

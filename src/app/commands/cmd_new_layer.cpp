@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019 Igara Studio S.A.
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -283,7 +283,7 @@ void NewLayerCommand::onExecute(Context* context)
               nullptr,
               sprite->pixelFormat(),
               render::DitheringAlgorithm::None,
-              render::DitheringMatrix(),
+              render::DitheringMatrix(), 1.0,
               sprite->rgbMap(dstFrame),
               pasteSpr->palette(fr),
               (pasteSpr->backgroundLayer() ? true: false),

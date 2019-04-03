@@ -55,6 +55,7 @@ namespace render {
     doc::PixelFormat pixelFormat,
     render::DitheringAlgorithm ditheringAlgorithm,
     const render::DitheringMatrix& ditheringMatrix,
+    const double ditheringFactor,
     const doc::RgbMap* rgbmap,
     const doc::Palette* palette,
     bool is_background,

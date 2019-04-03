@@ -29,7 +29,8 @@ namespace render {
 
     virtual void start(
       const doc::Image* srcImage,
-      doc::Image* dstImage) { }
+      doc::Image* dstImage,
+      const double factor) { }
 
     virtual void finish() { }
 
@@ -77,6 +78,7 @@ namespace render {
   void dither_rgb_image_to_indexed(
     DitheringAlgorithmBase& algorithm,
     const DitheringMatrix& matrix,
+    const double factor,
     const doc::Image* srcImage,
     doc::Image* dstImage,
     const doc::RgbMap* rgbmap,

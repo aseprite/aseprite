@@ -229,6 +229,7 @@ doc::color_t OrderedDither2::ditherRgbPixelToIndex(
 void dither_rgb_image_to_indexed(
   DitheringAlgorithmBase& algorithm,
   const DitheringMatrix& matrix,
+  const double factor,
   const doc::Image* srcImage,
   doc::Image* dstImage,
   const doc::RgbMap* rgbmap,
@@ -238,7 +239,7 @@ void dither_rgb_image_to_indexed(
   const int w = srcImage->width();
   const int h = srcImage->height();
 
-  algorithm.start(srcImage, dstImage);
+  algorithm.start(srcImage, dstImage, factor);
 
   if (algorithm.dimensions() == 1) {
     const doc::LockImageBits<doc::RgbTraits> srcBits(srcImage);

@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -184,7 +185,7 @@ void PasteTextCommand::onExecute(Context* ctx)
           render::convert_pixel_format(
             image.get(), NULL, sprite->pixelFormat(),
             render::DitheringAlgorithm::None,
-            render::DitheringMatrix(),
+            render::DitheringMatrix(), 1.0,
             rgbmap, sprite->palette(editor->frame()),
             false, 0));
       }

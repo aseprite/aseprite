@@ -744,7 +744,7 @@ void DocExporter::renderTexture(Context* ctx, const Samples& samples, Image* tex
         sample.sprite(),
         textureImage->pixelFormat(),
         render::DitheringAlgorithm::None,
-        render::DitheringMatrix(),
+        render::DitheringMatrix(), 1.0,
         nullptr)                // TODO add a delegate to show progress
         .execute(ctx);
     }

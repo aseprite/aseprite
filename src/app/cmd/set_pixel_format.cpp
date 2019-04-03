@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -69,6 +70,7 @@ SetPixelFormat::SetPixelFormat(Sprite* sprite,
                                const PixelFormat newFormat,
                                const render::DitheringAlgorithm ditheringAlgorithm,
                                const render::DitheringMatrix& ditheringMatrix,
+                               const double ditheringFactor,
                                render::TaskDelegate* delegate)
   : WithSprite(sprite)
   , m_oldFormat(sprite->pixelFormat())
@@ -86,6 +88,7 @@ SetPixelFormat::SetPixelFormat(Sprite* sprite,
       (old_image.get(), nullptr, newFormat,
        ditheringAlgorithm,
        ditheringMatrix,
+       ditheringFactor,
        sprite->rgbMap(cel->frame()),
        sprite->palette(cel->frame()),
        cel->layer()->isBackground(),

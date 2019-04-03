@@ -23,7 +23,8 @@ namespace render {
     bool zigZag() const override { return true; }
     void start(
       const doc::Image* srcImage,
-      doc::Image* dstImage) override;
+      doc::Image* dstImage,
+      const double factor) override;
     void finish() override;
     doc::color_t ditherRgbToIndex2D(
       const int x, const int y,
@@ -35,6 +36,7 @@ namespace render {
     int m_width, m_lastY;
     static const int kChannels = 4;
     std::vector<int> m_err[kChannels];
+    int m_factor;
   };
 
 } // namespace render

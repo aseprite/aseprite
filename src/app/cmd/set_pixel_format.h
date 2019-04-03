@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -32,6 +33,7 @@ namespace cmd {
                    const doc::PixelFormat newFormat,
                    const render::DitheringAlgorithm ditheringAlgorithm,
                    const render::DitheringMatrix& ditheringMatrix,
+                   const double ditheringFactor,
                    render::TaskDelegate* delegate);
 
   protected:

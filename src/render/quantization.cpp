@@ -86,6 +86,7 @@ Image* convert_pixel_format(
   PixelFormat pixelFormat,
   DitheringAlgorithm ditheringAlgorithm,
   const DitheringMatrix& ditheringMatrix,
+  const double ditheringFactor,
   const RgbMap* rgbmap,
   const Palette* palette,
   bool is_background,
@@ -114,7 +115,8 @@ Image* convert_pixel_format(
     }
     if (dither)
       dither_rgb_image_to_indexed(
-        *dither, ditheringMatrix, image, new_image, rgbmap, palette, delegate);
+        *dither, ditheringMatrix, ditheringFactor,
+        image, new_image, rgbmap, palette, delegate);
     return new_image;
   }
 

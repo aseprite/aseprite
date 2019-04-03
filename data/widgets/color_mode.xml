@@ -1,5 +1,6 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2017 by David Capello -->
+<!-- Copyright (C) 2019  Igara Studio S.A. -->
+<!-- Copyright (C) 2017  David Capello -->
 <gui>
 <window id="color_mode" text="@.title">
   <vbox>
@@ -8,6 +9,11 @@
     </view>
     <slider min="0" max="100" id="progress" minwidth="100" />
     <hbox id="dithering_placeholder" />
+    <hbox id="amount">
+      <label text="@.amount" />
+      <slider min="0" max="100" id="factor" minwidth="100" />
+      <label text="%" />
+    </hbox>
     <check text="@.flatten" id="flatten" />
     <separator horizontal="true" />
     <hbox>

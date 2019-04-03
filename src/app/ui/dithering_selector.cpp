@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This program is distributed under the terms of
@@ -101,7 +102,8 @@ private:
       doc::clear_image(image2.get(), 0);
       render::convert_pixel_format(
         image1.get(), image2.get(), IMAGE_INDEXED,
-        m_algo, m_matrix, nullptr, palette, true, -1, nullptr);
+        m_algo, m_matrix, 1.0,
+        nullptr, palette, true, -1, nullptr);
     }
 
     m_preview = os::instance()->createRgbaSurface(w, h);

@@ -237,6 +237,7 @@
     <section id="quantization">
       <option id="with_alpha" type="bool" default="true" />
       <option id="dithering_algorithm" type="std::string" />
+      <option id="dithering_factor" type="int" default="100" />
     </section>
     <section id="eyedropper" text="Editor">
       <option id="channel" type="EyedropperChannel" default="EyedropperChannel::COLOR_ALPHA" />

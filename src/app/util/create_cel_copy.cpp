@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -54,7 +55,7 @@ Cel* create_cel_copy(const Cel* srcCel,
       tmpImage.get(),
       IMAGE_RGB,
       render::DitheringAlgorithm::None,
-      render::DitheringMatrix(),
+      render::DitheringMatrix(), 1.0,
       srcCel->sprite()->rgbMap(srcCel->frame()),
       srcCel->sprite()->palette(srcCel->frame()),
       srcCel->layer()->isBackground(),
@@ -65,7 +66,7 @@ Cel* create_cel_copy(const Cel* srcCel,
       dstCel->image(),
       IMAGE_INDEXED,
       render::DitheringAlgorithm::None,
-      render::DitheringMatrix(),
+      render::DitheringMatrix(), 1.0,
       dstSprite->rgbMap(dstFrame),
       dstSprite->palette(dstFrame),
       srcCel->layer()->isBackground(),

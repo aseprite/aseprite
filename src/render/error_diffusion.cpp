@@ -25,13 +25,15 @@ ErrorDiffusionDither::ErrorDiffusionDither(int transparentIndex)
 
 void ErrorDiffusionDither::start(
   const doc::Image* srcImage,
-  doc::Image* dstImage)
+  doc::Image* dstImage,
+  const double factor)
 {
   m_srcImage = srcImage;
   m_width = 2+srcImage->width();
   for (int i=0; i<kChannels; ++i)
     m_err[i].resize(m_width*2, 0);
   m_lastY = -1;
+  m_factor = int(factor * 100.0);
 }
 
 void ErrorDiffusionDither::finish()
@@ -89,11 +91,11 @@ doc::color_t ErrorDiffusionDither::ditherRgbToIndex2D(
   // TODO using Floyd-Steinberg matrix here but it should be configurable
   for (int i=0; i<kChannels; ++i) {
     int* err = &m_err[i][x];
-
-    const int a = quantError[i] * 7 / 16;
-    const int b = quantError[i] * 3 / 16;
-    const int c = quantError[i] * 5 / 16;
-    const int d = quantError[i] * 1 / 16;
+    const int q = quantError[i] * m_factor / 100;
+    const int a = q * 7 / 16;
+    const int b = q * 3 / 16;
+    const int c = q * 5 / 16;
+    const int d = q * 1 / 16;
 
     if (y & 1) {
       err[0        ] += a;
