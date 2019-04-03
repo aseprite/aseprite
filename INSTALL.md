@@ -22,7 +22,10 @@
 You should be able to compile Aseprite successfully on the following
 platforms:
 
-* Windows 10 + VS2017 Community Edition + Windows 10 SDK
+* Windows NT 10.0 + Visual Studio (2017 or 2019) Community Edition + Windows 10 SDK
+
+   *(Windows NT 10.0 is a Windows 10, Windows Server 2016, or Windows Server 2019 operating system)*
+
 * macOS 10.12.6 Sierra + Xcode 9.0 + macOS 10.13 SDK + Skia
 * Linux + gcc 4.8 with some C++11 support
 
@@ -52,7 +55,10 @@ clone the repository on Windows.
 
 To compile Aseprite you will need:
 
-* The latest version of [CMake](http://www.cmake.org/) (3.4 or greater)
+* The latest version of [CMake](http://www.cmake.org/)
+
+   *(3.14 or greater is best on Windows, to make sure you have the Visual Studio 2019 generators and the highest compatibility if/when compiling on Windows Server)*
+   
 * [Ninja](https://ninja-build.org) build system
 * You will need a compiled version of the Skia library.
   Please check the details about [how to build Skia](#building-skia-dependency)
@@ -62,20 +68,43 @@ To compile Aseprite you will need:
 
 First of all, you will need:
 
-* Windows 10 (we don't support cross-compiling and don't know if this would be possible)
-* [Visual Studio Community Edition](https://www.visualstudio.com/downloads/) (VS2017)
-* The [Desktop development with C++](https://docs.microsoft.com/en-us/cpp/build/vscpp-step-0-installation?view=vs-2017#visual-studio-2017-installation) item
-  from the Visual Studio installer
-* Windows 10 SDK item from the Visual Studio installer
+* Windows NT 10.0 (Windows 10, Windows Server 2016, or Windows Server 2019)
 
-Then, you will need an extra little utility: `awk`, used to compile
-the libpng library. You can get this utility from MSYS2 distributions
-like [MozillaBuild](https://wiki.mozilla.org/MozillaBuild).
+   *(we don't support cross-compiling and don't know if this would be possible)*
+
+* [Visual Studio Community Edition](https://www.visualstudio.com/downloads/) (Visual Studio 2017 can be found further down the page, if you prefer that over 2019)
+* The [Desktop development with C++](https://docs.microsoft.com/en-us/cpp/build/vscpp-step-0-installation?view=vs-2019) item from the Visual Studio Installer
+* Windows 10 SDK (10.0.17763.0 or higher) item from the Visual Studio Installer
+
+   *(the Windows 10 SDK installation is located in the "Optional" section and is usually selected by default when installing "Desktop development with C++")*
 
 You will need to [compile Skia](#skia-on-windows) before and then
 continue in the [Compiling](#compiling) section. Remember to check the
 [Windows details](#windows-details) section to know how to call
 `cmake` correctly.
+
+**Special considerations for running CMake on Windows:**
+
+* CMake should be at least 3.14 or greater for Windows, if using the Installer (MSI file)
+
+   *(this was when the Visual Studio 2019 generators were added and is to make sure of the highest compatibility when compiling on Windows Server. Lastly, CMake has had it's Installer technology changed since 3.4 and lower, making updates from previous versions better)*
+
+* The CMake download should be from the "win64-x64" platform, not the win32-x86 one
+* If using the CMake Installer (MSI file), using the checkbox option "Add CMake to the system PATH for all users" will help greatly with speeding-up the setup process
+* Another way to get CMake on your system is to use a package manager like [Chocolatey](https://chocolatey.org/packages/cmake)
+
+**Special considerations for running Ninja on Windows:**
+
+* It is OK to copy ninja.exe into your CMake "\bin" directory, to save inputting another Windows Environment Variable
+
+   *(CMake's bin directory is installed to "C:\Program Files\CMake\bin" by default, if using the win64-x64 platform Installer (MSI file)*
+
+* Depending on the unzipping tool used, your ninja.exe may be blocked from running correctly by Windows SmartScreen. If this is the case, go to the Properties dialog of ninja.exe and click the "Unblock" checkbox at the bottom to fix this.
+* Another way to get Ninja on your system is to use a package manager like [Chocolatey](https://chocolatey.org/packages/ninja)
+
+**Special considerations for running Python on Windows:**
+
+* Python is not built-in for Windows operating systems. Regardless, Python 2.7.6 should come with Google depot tools. If you're having issues running 'python tools/git-sync-deps', when syncing Skia dependency packages, you may have forgot to add the depot_tools directory to your PATH.
 
 ## macOS dependencies
 
@@ -136,16 +165,22 @@ You must also compile [Skia](#skia-on-linux) before starting with the
 
 After you've [compiled Skia](#skia-on-windows),
 open a [developer command prompt](https://docs.microsoft.com/en-us/dotnet/framework/tools/developer-command-prompt-for-vs)
-or in the command line (`cmd.exe`) call:
+or in the command line (`cmd.exe`) call one of the following commands (depending on if you are running Visual Studio 2017 or Visual Studio 2019).
+
+For Visual Studio 2017:
 
     call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\Tools\VsDevCmd.bat" -arch=x64
+	
+For Visual Studio 2019:
+
+    call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat" -arch=x64
 
 And then
 
     cd aseprite
     mkdir build
     cd build
-    cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DLAF_OS_BACKEND=skia -DSKIA_DIR=C:\deps\skia -DSKIA_OUT_DIR=C:\deps\skia\out\Release -G Ninja ..
+    cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DLAF_OS_BACKEND=skia -DSKIA_DIR="C:\deps\skia" -DSKIA_OUT_DIR="C:\deps\skia\out\Release" -G Ninja ..
     ninja aseprite
 
 In this case, `C:\deps\skia` is the directory where Skia was compiled
@@ -233,13 +268,19 @@ Download
 and uncompress it in some place like `C:\deps\depot_tools`.
 
 [It's recommended to compile Skia with Clang](https://github.com/google/skia/blob/master/site/user/build.md#a-note-on-software-backend-performance)
-to get better performance. So you will need to [download Clang](http://releases.llvm.org/7.0.0/LLVM-7.0.0-win64.exe),
-and install it on a folder like `C:\deps\llvm` (a folder without whitespaces).
+to get better performance. So you will need to [download the "win64" build of Clang](http://releases.llvm.org/8.0.0/LLVM-8.0.0-win64.exe),
+and install it into a folder like: `C:\deps\llvm` (a folder without whitespaces is preferable, but with the latest versions of Skia and Clang it is not required anymore).
 
 Open a [developer command prompt](https://docs.microsoft.com/en-us/dotnet/framework/tools/developer-command-prompt-for-vs)
-or command line (`cmd.exe`) and call:
+or command line (`cmd.exe`) and call one of the following commands (depending on if you are running Visual Studio 2017 or Visual Studio 2019).
+
+For Visual Studio 2017:
 
     call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\Tools\VsDevCmd.bat" -arch=x64
+	
+For Visual Studio 2019:
+
+    call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat" -arch=x64
 
 Then:
 
@@ -260,17 +301,37 @@ Just ignore it.)
 a lot of packages, please wait and re-run the same command in case it
 fails.)
 
-Finally, if you've downloaded Clang, use this command:
+Next, if you've downloaded at least Clang 7.0.0 or higher, install it using the checkbox option "Add LLVM to the system PATH for all users"
+
+Otherwise, use this command to set Clang's bin directory on the PATH:
 
     set PATH=C:\deps\llvm\bin;%PATH%
+	
+Finally, after Clang is installed correctly, use one of the following commands (depending on if you are running Visual Studio 2017 or Visual Studio 2019).
+
+For Visual Studio 2017:
+
     gn gen out/Release --args="is_official_build=true skia_use_system_expat=false skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false target_cpu=""x64"" cc=""clang"" cxx=""clang++"" clang_win=""c:\deps\llvm"""
     ninja -C out/Release skia
 
-If you haven't installed Clang, and want to compile Skia with MSVC
-(anyway it's not recommended because the performance penalty is too
-big), you can use the following commands instead:
+For Visual Studio 2019:
+
+    gn gen out/Release --args="is_official_build=true skia_use_system_expat=false skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false target_cpu=""x64"" cc=""clang"" cxx=""clang++"" clang_win=""c:\deps\llvm"" win_vc=""C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC"""
+    ninja -C out/Release skia
+
+If you haven't installed Clang, and want to compile Skia with MSVC,
+you can use one of the following commands instead (depending on if you are running Visual Studio 2017 or Visual Studio 2019).
+
+   *(but to reiterate, this mothod is not recommended because the performance penalty is usually too great)*
+
+For Visual Studio 2017:
 
     gn gen out/Release --args="is_official_build=true skia_use_system_expat=false skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false target_cpu=""x64"" cc=2017"
+    ninja -C out/Release skia
+	
+For Visual Studio 2019:
+
+    gn gen out/Release --args="is_official_build=true skia_use_system_expat=false skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false target_cpu=""x64"" win_vc=""C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC"""
     ninja -C out/Release skia
 
 More information about these steps in the
