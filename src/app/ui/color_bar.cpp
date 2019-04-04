@@ -561,6 +561,8 @@ void ColorBar::onTilesetChanged(DocEvent& ev)
   m_tilesButtons.deselectItems();
   if (m_scrollableTilesView.isVisible())
     m_scrollableTilesView.updateView();
+
+  m_tilesView.deselect();
 }
 
 void ColorBar::onAppPaletteChange()
