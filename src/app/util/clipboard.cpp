@@ -256,6 +256,7 @@ void clear_mask_from_cels(Tx& tx,
     cel = doc::get<Cel>(celId);
     if (cel &&
         cel->layer()->isTransparent() &&
+        // Don't shrink tilemaps automatically
         !cel->layer()->isTilemap()) {
       tx(new cmd::TrimCel(cel));
     }
