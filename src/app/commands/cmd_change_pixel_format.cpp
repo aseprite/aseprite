@@ -174,6 +174,7 @@ public:
     , m_imageBuffer(new doc::ImageBuffer)
     , m_selectedItem(nullptr)
     , m_ditheringSelector(nullptr)
+    , m_imageJustCreated(true)
   {
     doc::PixelFormat from = m_editor->sprite()->pixelFormat();
 
@@ -311,6 +312,10 @@ private:
                     visibleBounds.w,
                     visibleBounds.h,
                     m_imageBuffer));
+    if (m_imageJustCreated) {
+      m_imageJustCreated = false;
+      m_image->clear(0);
+    }
 
     m_editor->renderEngine().setPreviewImage(
       nullptr,
@@ -319,7 +324,6 @@ private:
       visibleBounds.origin(),
       doc::BlendMode::SRC);
 
-    m_image->clear(0);
     m_editor->invalidate();
     progress()->setValue(0);
     progress()->setVisible(true);
@@ -370,6 +374,7 @@ private:
   std::unique_ptr<ConvertThread> m_bgThread;
   ConversionItem* m_selectedItem;
   DitheringSelector* m_ditheringSelector;
+  bool m_imageJustCreated;
 };
 
 } // anonymous namespace
