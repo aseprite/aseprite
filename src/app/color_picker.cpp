@@ -17,10 +17,14 @@
 #include "app/util/wrap_point.h"
 #include "doc/cel.h"
 #include "doc/image.h"
+#include "doc/layer_tilemap.h"
 #include "doc/primitives.h"
 #include "doc/sprite.h"
+#include "doc/tileset.h"
 #include "gfx/point.h"
 #include "render/get_sprite_pixel.h"
+
+#define PICKER_TRACE(...)
 
 namespace app {
 
@@ -45,14 +49,48 @@ bool get_cel_pixel(const Cel* cel,
   if (!celBounds.contains(pos))
     return false;
 
-  pos.x = (pos.x-celBounds.x)*image->width()/celBounds.w;
-  pos.y = (pos.y-celBounds.y)*image->height()/celBounds.h;
-  const gfx::Point ipos(pos);
-  if (!image->bounds().contains(ipos))
-    return false;
+  // For tilemaps
+  if (image->pixelFormat() == IMAGE_TILEMAP) {
+    ASSERT(cel->layer()->isTilemap());
 
-  output = get_pixel(image, ipos.x, ipos.y);
-  return true;
+    auto layerTilemap = static_cast<doc::LayerTilemap*>(cel->layer());
+    doc::Grid grid = layerTilemap->tileset()->grid();
+    grid.origin(grid.origin() + cel->position());
+
+    gfx::Point tilePos = grid.canvasToTile(gfx::Point(pos));
+    PICKER_TRACE("PICKER: tilePos=(%d %d)\n", tilePos.x,tilePos.y);
+    if (!image->bounds().contains(tilePos))
+      return false;
+
+    const doc::tile_index ti =
+      get_pixel(image, tilePos.x, tilePos.y);
+
+    PICKER_TRACE("PICKER: tile index=%d\n", ti);
+
+    doc::ImageRef tile = layerTilemap->tileset()->get(ti);
+    if (!tile)
+      return false;
+
+    const gfx::Point ipos =
+      gfx::Point(pos) - grid.tileToCanvas(tilePos);
+
+    PICKER_TRACE("PICKER: ipos=%d %d\n", ipos.x, ipos.y);
+
+    output = get_pixel(tile.get(), ipos.x, ipos.y);
+    PICKER_TRACE("PICKER: output=%d\n", output);
+    return true;
+  }
+  // Regular images
+  else {
+    pos.x = (pos.x-celBounds.x)*image->width()/celBounds.w;
+    pos.y = (pos.y-celBounds.y)*image->height()/celBounds.h;
+    const gfx::Point ipos(pos);
+    if (!image->bounds().contains(ipos))
+      return false;
+
+    output = get_pixel(image, ipos.x, ipos.y);
+    return true;
+  }
 }
 
 }
@@ -111,8 +149,10 @@ void ColorPicker::pickColor(const Site& site,
                            site.frame(), imageColor))
           return;
 
-        const doc::Image* image = cel->image();
-        switch (image->pixelFormat()) {
+        doc::PixelFormat pixelFormat =
+          (cel->layer()->isTilemap() ? sprite->pixelFormat():
+                                       cel->image()->pixelFormat());
+        switch (pixelFormat) {
           case IMAGE_RGB:
             m_alpha = doc::rgba_geta(imageColor);
             break;
@@ -121,7 +161,7 @@ void ColorPicker::pickColor(const Site& site,
             break;
         }
 
-        m_color = app::Color::fromImage(image->pixelFormat(), imageColor);
+        m_color = app::Color::fromImage(pixelFormat, imageColor);
         m_layer = const_cast<Layer*>(site.layer());
       }
       break;
