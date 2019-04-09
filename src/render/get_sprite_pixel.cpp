@@ -37,8 +37,8 @@ color_t get_sprite_pixel(const Sprite* sprite,
     render.renderSprite(
       image.get(), sprite, frame,
       gfx::ClipF(0, 0,
-                 proj.applyX(x),
-                 proj.applyY(y), 1, 1));
+                 proj.applyX(x), proj.applyY(y),
+                 proj.applyX(1), proj.applyY(1)));
 
     color = get_pixel(image.get(), 0, 0);
   }
