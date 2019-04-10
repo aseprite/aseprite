@@ -1242,7 +1242,8 @@ void Render::renderCel(
     if (!tileset)
       return;
 
-    gfx::Rect tilesToDraw = grid.canvasToTile(gfx::Rect(area.src, area.size));
+    gfx::Rect tilesToDraw = grid.canvasToTile(
+      m_proj.remove(gfx::Rect(area.src, area.size)));
     tilesToDraw &= cel_image->bounds();
     TRACE_RENDER_CEL("Drawing tilemap (%d %d %d %d)\n",
                      tilesToDraw.x, tilesToDraw.y, tilesToDraw.w, tilesToDraw.h);
