@@ -57,8 +57,21 @@ doc::Image* new_image_from_mask(const Site& site,
   if (merged || site.layer()->isTilemap()) {
     render::Render render;
     render.setNewBlend(newBlend);
-    render.renderSprite(dst.get(), srcSprite, site.frame(),
-                        gfx::Clip(0, 0, srcBounds));
+    if (merged)
+      render.renderSprite(dst.get(), srcSprite, site.frame(),
+                          gfx::Clip(0, 0, srcBounds));
+    else {
+      ASSERT(site.layer()->isTilemap());
+      if (auto cel = site.cel()) {
+        render.renderCel(
+          dst.get(), srcSprite,
+          cel->image(), cel->layer(),
+          srcSprite->palette(cel->frame()),
+          cel->bounds(),
+          gfx::Clip(0, 0, srcBounds),
+          255, BlendMode::NORMAL);
+      }
+    }
 
     src = dst.get();
   }
