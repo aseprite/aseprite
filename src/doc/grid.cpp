@@ -54,6 +54,12 @@ gfx::Rect Grid::tileToCanvas(const gfx::Rect& tileBounds) const
 
 gfx::Point Grid::canvasToTile(const gfx::Point& canvasPoint) const
 {
+  ASSERT(m_tileSize.w > 0);
+  ASSERT(m_tileSize.h > 0);
+  if (m_tileSize.w < 1 ||
+      m_tileSize.h < 1)
+    return canvasPoint;
+
   gfx::Point tile;
   std::div_t divx = std::div((canvasPoint.x - m_origin.x), m_tileSize.w);
   std::div_t divy = std::div((canvasPoint.y - m_origin.y), m_tileSize.h);

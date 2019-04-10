@@ -18,6 +18,7 @@
 
 namespace doc {
   class Cel;
+  class Grid;
   class Image;
   class Layer;
   class Palette;
@@ -101,6 +102,7 @@ namespace app {
     doc::Palette* palette() const;
     doc::RgbMap* rgbMap() const;
 
+    doc::Grid grid() const;
     gfx::Rect gridBounds() const;
 
     void tilesetMode(const TilesetMode& mode) { m_tilesetMode = mode; }

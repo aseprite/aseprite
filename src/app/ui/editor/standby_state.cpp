@@ -51,6 +51,7 @@
 #include "app/util/readable_time.h"
 #include "base/bind.h"
 #include "base/pi.h"
+#include "doc/grid.h"
 #include "doc/layer.h"
 #include "doc/mask.h"
 #include "doc/slice.h"
@@ -566,6 +567,7 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
     StatusBar::instance()->showColor(0, buf, color);
   }
   else {
+    Site site = editor->getSite();
     Mask* mask =
       (editor->document()->isMaskVisible() ?
        editor->document()->mask(): NULL);
@@ -586,17 +588,17 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
     if (sprite->totalFrames() > 1) {
       sprintf(
         buf+std::strlen(buf), " :frame: %d :clock: %s/%s",
-        editor->frame()+editor->docPref().timeline.firstFrame(),
-        human_readable_time(sprite->frameDuration(editor->frame())).c_str(),
+        site.frame()+editor->docPref().timeline.firstFrame(),
+        human_readable_time(sprite->frameDuration(site.frame())).c_str(),
         human_readable_time(sprite->totalAnimationDuration()).c_str());
     }
 
-    if (editor->docPref().show.grid()) {
-      auto gb = sprite->gridBounds();
-      if (!gb.isEmpty()) {
-        int col = int((std::floor(spritePos.x) - (gb.x % gb.w)) / gb.w);
-        int row = int((std::floor(spritePos.y) - (gb.y % gb.h)) / gb.h);
-        sprintf(buf+std::strlen(buf), " :grid: %d %d", col, row);
+    if ((editor->docPref().show.grid()) ||
+        (site.layer() && site.layer()->isTilemap())) {
+      doc::Grid grid = site.grid();
+      if (!grid.isEmpty()) {
+        gfx::Point pt = grid.canvasToTile(gfx::Point(spritePos));
+        sprintf(buf+std::strlen(buf), " :grid: %d %d", pt.x, pt.y);
       }
     }
 

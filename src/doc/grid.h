@@ -28,6 +28,8 @@ namespace doc {
 
     static Grid MakeRect(const gfx::Size& sz);
 
+    bool isEmpty() const { return m_tileSize.w == 0 || m_tileSize.h == 0; }
+
     gfx::Size tileSize() const { return m_tileSize; }
     gfx::Point origin() const { return m_origin; }
     gfx::Point tileCenter() const { return m_tileCenter; }

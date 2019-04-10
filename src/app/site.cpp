@@ -82,6 +82,21 @@ void Site::range(const DocRange& range)
   }
 }
 
+Grid Site::grid() const
+{
+  if (m_layer && m_layer->isTilemap()) {
+    doc::Grid grid = static_cast<LayerTilemap*>(m_layer)->tileset()->grid();
+    if (const Cel* cel = m_layer->cel(m_frame))
+      grid.origin(grid.origin() + cel->position());
+    return grid;
+  }
+
+  gfx::Rect rc = gridBounds();
+  doc::Grid grid = Grid(rc.size());
+  grid.origin(gfx::Point(rc.x % rc.w, rc.y % rc.h));
+  return grid;
+}
+
 gfx::Rect Site::gridBounds() const
 {
   if (m_layer && m_layer->isTilemap()) {
