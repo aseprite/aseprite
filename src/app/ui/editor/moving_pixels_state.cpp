@@ -469,7 +469,7 @@ bool MovingPixelsState::onUpdateStatusBar(Editor* editor)
   int h = int(transform.bounds().h);
   int gcd = base::gcd(w, h);
   StatusBar::instance()->setStatusText
-    (100, ":pos: %d %d :size: %3d %3d :selsize: %d %d [%.02f%% %.02f%%] :angle: %.1f :aspect_ratio: %2d : %2d",
+    (100, ":pos: %d %d :size: %3d %3d :selsize: %d %d [%.02f%% %.02f%%] :angle: %.1f :aspect_ratio: %d:%d",
      int(transform.bounds().x),
      int(transform.bounds().y),
      imageSize.w,
