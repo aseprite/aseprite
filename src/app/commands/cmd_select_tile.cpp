@@ -81,7 +81,7 @@ void SelectTileCommand::onExecute(Context* ctx)
     mask->copyFrom(doc->mask());
 
   {
-    gfx::Rect gridBounds = doc->sprite()->gridBounds();
+    gfx::Rect gridBounds = writer.site()->gridBounds();
     gfx::Point pos = current_editor->screenToEditor(ui::get_mouse_position());
     pos = snap_to_grid(gridBounds, pos, PreferSnapTo::BoxOrigin);
     gridBounds.setOrigin(pos);
