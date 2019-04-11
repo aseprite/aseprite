@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -67,7 +67,8 @@ AppOptions args(std::initializer_list<const char*> l) {
 TEST(Cli, None)
 {
   CliTestDelegate d;
-  CliProcessor p(&d, args({ }));
+  AppOptions a = args({ });
+  CliProcessor p(&d, a);
   p.process(nullptr);
   EXPECT_TRUE(!d.helpWasShown());
   EXPECT_TRUE(!d.versionWasShown());
@@ -76,7 +77,8 @@ TEST(Cli, None)
 TEST(Cli, Help)
 {
   CliTestDelegate d;
-  CliProcessor p(&d, args({ "--help" }));
+  AppOptions a = args({ "--help" });
+  CliProcessor p(&d, a);
   p.process(nullptr);
   EXPECT_TRUE(d.helpWasShown());
 }
@@ -84,7 +86,8 @@ TEST(Cli, Help)
 TEST(Cli, Version)
 {
   CliTestDelegate d;
-  CliProcessor p(&d, args({ "--version" }));
+  AppOptions a = args({ "--version" });
+  CliProcessor p(&d, a);
   p.process(nullptr);
   EXPECT_TRUE(d.versionWasShown());
 }
