@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2016  Carlo Caputo
 //
 // This program is distributed under the terms of
@@ -8,7 +9,6 @@
 #define APP_THUMBNAILS_H_INCLUDED
 #pragma once
 
-#include "gfx/rect.h"
 #include "gfx/size.h"
 
 namespace doc {
@@ -20,13 +20,12 @@ namespace os {
 }
 
 namespace app {
-  namespace thumb {
+namespace thumb {
 
-    os::Surface* get_cel_thumbnail(const doc::Cel* cel,
-                                    const gfx::Size& thumb_size,
-                                    gfx::Rect cel_image_on_thumb = gfx::Rect());
+  os::Surface* get_cel_thumbnail(const doc::Cel* cel,
+                                 const gfx::Size& fitInSize);
 
-  } // thumb
+} // thumb
 } // app
 
 #endif

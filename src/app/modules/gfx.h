@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -9,9 +10,11 @@
 #pragma once
 
 #include "app/color.h"
+#include "app/pref/preferences.h"
 #include "doc/color_mode.h"
 #include "gfx/color.h"
 #include "gfx/rect.h"
+#include "gfx/size.h"
 #include "ui/base.h"
 
 namespace os {
@@ -23,7 +26,15 @@ namespace ui {
 }
 
 namespace app {
-  using namespace doc;
+
+  void draw_checked_grid(ui::Graphics* g,
+                         const gfx::Rect& rc,
+                         const gfx::Size& tile);
+
+  void draw_checked_grid(ui::Graphics* g,
+                         const gfx::Rect& rc,
+                         const gfx::Size& tile,
+                         DocumentPreferences& docPref);
 
   void draw_color(ui::Graphics* g,
                   const gfx::Rect& rc,

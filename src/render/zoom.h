@@ -1,4 +1,5 @@
 // Aseprite Render Library
+// Copyright (c) 2019 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -47,6 +48,12 @@ namespace render {
 
     bool operator!=(const Zoom& other) const {
       return !operator==(other);
+    }
+
+    // Returns true if this zoom level can be handled by simpler
+    // rendering techniques.
+    bool isSimpleZoomLevel() const {
+      return (m_num == 1 || m_den == 1);
     }
 
     static Zoom fromScale(double scale);

@@ -479,7 +479,7 @@ template<class DstTraits, class SrcTraits>
 CompositeImageFunc get_fastest_composition_path(const Projection& proj,
                                                 const bool finegrain)
 {
-  if (finegrain) {
+  if (finegrain || !proj.zoom().isSimpleZoomLevel()) {
     return composite_image_general<DstTraits, SrcTraits>;
   }
   else if (proj.applyX(1) == 1 && proj.applyY(1) == 1) {
@@ -490,9 +490,7 @@ CompositeImageFunc get_fastest_composition_path(const Projection& proj,
   }
   // Slower composite function for special cases with odd zoom and non-square pixel ratio
   else if (((proj.removeX(1) > 1) && (proj.removeX(1) & 1)) ||
-           ((proj.removeY(1) > 1) && (proj.removeY(1) & 1)) ||
-           (proj.applyX(1.0) - proj.applyX(1) > 0.01) ||
-           (proj.applyY(1.0) - proj.applyY(1) > 0.01)) {
+           ((proj.removeY(1) > 1) && (proj.removeY(1) & 1))) {
     return composite_image_general<DstTraits, SrcTraits>;
   }
   else {
@@ -1173,6 +1171,37 @@ void Render::renderLayer(
         m_extraBlendMode);
     }
   }
+}
+
+void Render::renderCel(
+  Image* dst_image,
+  const Sprite* sprite,
+  const Image* cel_image,
+  const Layer* cel_layer,
+  const Palette* pal,
+  const gfx::RectF& celBounds,
+  const gfx::Clip& area,
+  const int opacity,
+  const BlendMode blendMode)
+{
+  m_sprite = sprite;
+
+  CompositeImageFunc compositeImage =
+    getImageComposition(
+      dst_image->pixelFormat(),
+      sprite->pixelFormat(), nullptr);
+  if (!compositeImage)
+    return;
+
+  renderCel(
+    dst_image,
+    cel_image,
+    pal,
+    celBounds,
+    area,
+    compositeImage,
+    opacity,
+    blendMode);
 }
 
 void Render::renderCel(

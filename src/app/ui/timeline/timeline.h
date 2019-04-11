@@ -407,8 +407,7 @@ namespace app {
 
     // Data used for thumbnails.
     bool m_thumbnailsOverlayVisible;
-    gfx::Rect m_thumbnailsOverlayInner;
-    gfx::Rect m_thumbnailsOverlayOuter;
+    gfx::Rect m_thumbnailsOverlayBounds;
     Hit m_thumbnailsOverlayHit;
     gfx::Point m_thumbnailsOverlayDirection;
     obs::connection m_thumbnailsPrefConn;

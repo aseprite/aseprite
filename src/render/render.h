@@ -131,6 +131,17 @@ namespace render {
       const int opacity,
       const BlendMode blendMode);
 
+    void renderCel(
+      Image* dst_image,
+      const Sprite* sprite,
+      const Image* cel_image,
+      const Layer* cel_layer,
+      const Palette* pal,
+      const gfx::RectF& celBounds,
+      const gfx::Clip& area,
+      const int opacity,
+      const BlendMode blendMode);
+
   private:
     void renderSpriteLayers(
       Image* dstImage,

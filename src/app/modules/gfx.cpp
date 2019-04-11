@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -41,17 +41,16 @@ namespace {
 gfx::Color gridColor1 = gfx::rgba(128, 128, 128);
 gfx::Color gridColor2 = gfx::rgba(192, 192, 192);
 
-} // anonymous namespace
-
-static void rectgrid(ui::Graphics* g, const gfx::Rect& rc, const gfx::Size& tile)
+void draw_checked_grid(ui::Graphics* g,
+                       const gfx::Rect& rc,
+                       const gfx::Size& tile,
+                       const gfx::Color c1,
+                       const gfx::Color c2)
 {
   if (tile.w < 1 || tile.h < 1)
     return;
 
   int x, y, u, v;
-
-  const gfx::Color c1 = gridColor1;
-  const gfx::Color c2 = gridColor2;
 
   u = 0;
   v = 0;
@@ -74,6 +73,26 @@ static void rectgrid(ui::Graphics* g, const gfx::Rect& rc, const gfx::Size& tile
   }
 }
 
+} // anonymous namespace
+
+void draw_checked_grid(ui::Graphics* g,
+                       const gfx::Rect& rc,
+                       const gfx::Size& tile)
+{
+  draw_checked_grid(g, rc, tile,
+                    gridColor1, gridColor2);
+}
+
+void draw_checked_grid(ui::Graphics* g,
+                       const gfx::Rect& rc,
+                       const gfx::Size& tile,
+                       DocumentPreferences& docPref)
+{
+  draw_checked_grid(g, rc, tile,
+                    color_utils::color_for_ui(docPref.bg.color1()),
+                    color_utils::color_for_ui(docPref.bg.color2()));
+}
+
 void draw_color(ui::Graphics* g,
                 const Rect& rc,
                 const app::Color& _color,
@@ -90,9 +109,9 @@ void draw_color(ui::Graphics* g,
 
   if (alpha < 255) {
     if (rc.w == rc.h)
-      rectgrid(g, rc, gfx::Size(rc.w/2, rc.h/2));
+      draw_checked_grid(g, rc, gfx::Size(rc.w/2, rc.h/2));
     else
-      rectgrid(g, rc, gfx::Size(rc.w/4, rc.h/2));
+      draw_checked_grid(g, rc, gfx::Size(rc.w/4, rc.h/2));
   }
 
   if (alpha > 0) {
