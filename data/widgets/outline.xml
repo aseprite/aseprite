@@ -12,6 +12,8 @@
       <vbox>
 	<radio id="circle" text="@.circle" group="1" />
 	<radio id="square" text="@.square" group="1" />
+	<radio id="horizontal" text="@.horizontal" group="1" />
+	<radio id="vertical" text="@.vertical" group="1" />
       </vbox>
       <vbox>
 	<radio id="outside" text="@.outside" group="2" />

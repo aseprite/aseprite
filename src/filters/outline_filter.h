@@ -17,7 +17,7 @@ namespace filters {
   class OutlineFilter : public Filter {
   public:
     enum class Place { Outside, Inside };
-    enum class Shape { Circle, Square };
+    enum class Shape { Circle, Square, Horizontal, Vertical, NShapes };
 
     OutlineFilter();
 

@@ -25,8 +25,11 @@ using namespace doc;
 
 namespace {
 
-  static const int kCircleMatrix = 0272;
-  static const int kSquareMatrix = 0777;
+  static const int kMatrices[int(OutlineFilter::Shape::NShapes)] =
+    { 0272,                     // Circle
+      0777,                     // Square
+      0070,                     // Horizontal
+      0202 };                   // Vertical
 
   struct GetPixelsDelegate {
     color_t bgColor;
@@ -37,8 +40,7 @@ namespace {
 
     void init(color_t bgColor, OutlineFilter::Shape shape) {
       this->bgColor = bgColor;
-      this->matrix = (shape == OutlineFilter::Shape::Circle ? kCircleMatrix:
-                                                              kSquareMatrix);
+      this->matrix = kMatrices[int(shape)];
     }
 
     void reset() {

@@ -79,6 +79,8 @@ public:
     m_panel.inside()->setSelected(m_filter.place() == OutlineFilter::Place::Inside);
     m_panel.circle()->setSelected(m_filter.shape() == OutlineFilter::Shape::Circle);
     m_panel.square()->setSelected(m_filter.shape() == OutlineFilter::Shape::Square);
+    m_panel.horizontal()->setSelected(m_filter.shape() == OutlineFilter::Shape::Horizontal);
+    m_panel.vertical()->setSelected(m_filter.shape() == OutlineFilter::Shape::Vertical);
 
     m_panel.color()->Change.connect(&OutlineWindow::onColorChange, this);
     m_panel.bgColor()->Change.connect(&OutlineWindow::onBgColorChange, this);
@@ -86,6 +88,8 @@ public:
     m_panel.inside()->Click.connect([this](ui::Event&){ onPlaceChange(OutlineFilter::Place::Inside); });
     m_panel.circle()->Click.connect([this](ui::Event&){ onShapeChange(OutlineFilter::Shape::Circle); });
     m_panel.square()->Click.connect([this](ui::Event&){ onShapeChange(OutlineFilter::Shape::Square); });
+    m_panel.horizontal()->Click.connect([this](ui::Event&){ onShapeChange(OutlineFilter::Shape::Horizontal); });
+    m_panel.vertical()->Click.connect([this](ui::Event&){ onShapeChange(OutlineFilter::Shape::Vertical); });
   }
 
 private:
