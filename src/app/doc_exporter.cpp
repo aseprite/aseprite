@@ -374,14 +374,14 @@ public:
     else
       pr.pack(gfx::Size(width, height));
 
-    auto it = samples.begin();
-    for (auto& rc : pr) {
-      if (it->isDuplicated())
+    auto it = pr.begin();
+    for (auto& sample : samples) {
+      if (sample.isDuplicated() ||
+          sample.isEmpty())
         continue;
 
-      ASSERT(it != samples.end());
-      it->setInTextureBounds(rc);
-      ++it;
+      ASSERT(it != pr.end());
+      sample.setInTextureBounds(*(it++));
     }
   }
 };
@@ -835,7 +835,9 @@ void DocExporter::createDataFile(const Samples& samples, std::ostream& os, Image
      << "  \"version\": \"" << VERSION << "\",\n";
 
   if (!m_textureFilename.empty())
-    os << "  \"image\": \"" << escape_for_json(m_textureFilename).c_str() << "\",\n";
+    os << "  \"image\": \""
+       << escape_for_json(base::get_file_name(m_textureFilename)).c_str()
+       << "\",\n";
 
   os << "  \"format\": \"" << (textureImage->pixelFormat() == IMAGE_RGB ? "RGBA8888": "I8") << "\",\n"
      << "  \"size\": { "
