@@ -120,9 +120,17 @@ std::string AniControls::getTooltipFor(int index) const
     tooltip = cmd->friendlyName();
 
     KeyPtr key = KeyboardShortcuts::instance()->command(cmd->id().c_str());
+    if (!key || key->accels().empty())
+      key = KeyboardShortcuts::instance()->command(cmd->id().c_str(),
+                                                   Params(),
+                                                   KeyContext::Normal);
     if (key && !key->accels().empty()) {
       tooltip += "\n\nShortcut: ";
       tooltip += key->accels().front().toString();
+    }
+
+    if (index == ACTION_PLAY) {
+      tooltip += "\n\nRight-click: Show playback options";
     }
   }
 
