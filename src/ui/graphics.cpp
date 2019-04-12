@@ -253,6 +253,20 @@ void Graphics::drawColoredRgbaSurface(os::Surface* surface, gfx::Color color,
     gfx::Clip(m_dx+dstx, m_dy+dsty, srcx, srcy, w, h));
 }
 
+void Graphics::drawSurfaceNine(os::Surface* surface,
+                               const gfx::Rect& src,
+                               const gfx::Rect& center,
+                               const gfx::Rect& dst,
+                               const ui::Paint* paint)
+{
+  gfx::Rect displacedDst(m_dx+dst.x, m_dy+dst.y, dst.w, dst.h);
+  dirty(displacedDst);
+
+  os::SurfaceLock lockSrc(surface);
+  os::SurfaceLock lockDst(m_surface);
+  m_surface->drawSurfaceNine(surface, src, center, displacedDst, paint);
+}
+
 void Graphics::blit(os::Surface* srcSurface, int srcx, int srcy, int dstx, int dsty, int w, int h)
 {
   dirty(gfx::Rect(m_dx+dstx, m_dy+dsty, w, h));

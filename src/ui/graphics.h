@@ -1,4 +1,5 @@
 // Aseprite UI Library
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -15,6 +16,7 @@
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
+#include "os/paint.h"
 
 #include <string>
 
@@ -29,6 +31,7 @@ namespace os {
 }
 
 namespace ui {
+  using os::Paint;
 
   // Class to render a widget in the screen.
   class Graphics {
@@ -83,6 +86,11 @@ namespace ui {
                          const gfx::Rect& dstRect);
     void drawColoredRgbaSurface(os::Surface* surface, gfx::Color color, int x, int y);
     void drawColoredRgbaSurface(os::Surface* surface, gfx::Color color, int srcx, int srcy, int dstx, int dsty, int w, int h);
+    void drawSurfaceNine(os::Surface* surface,
+                         const gfx::Rect& src,
+                         const gfx::Rect& center,
+                         const gfx::Rect& dst,
+                         const Paint* paint = nullptr);
 
     void blit(os::Surface* src, int srcx, int srcy, int dstx, int dsty, int w, int h);
 
