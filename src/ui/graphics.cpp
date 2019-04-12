@@ -481,10 +481,11 @@ gfx::Size Graphics::doUIStringAlgorithm(const std::string& str, gfx::Color fg, g
       newBeg = end+1;
     }
 
-    ASSERT(beg < end);
-
     // Get the entire line to be painted
-    line = str.substr(beg, end-beg);
+    if (end != std::string::npos)
+      line = str.substr(beg, end-beg);
+    else
+      line.clear();
 
     gfx::Size lineSize(
       m_font->textLength(line.c_str()),
