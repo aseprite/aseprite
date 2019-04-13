@@ -178,8 +178,15 @@ do
   -- required size.
   app.activeTool = 'pencil'
   app.useTool{ color=red, cel=bgCel1, points={ Point(0, 0) }}
-  app.useTool{ color=red, cel=bgCel2, points={ Point(1, 0) }}
-  app.useTool{ color=yellow, cel=fgCel1, points={ Point(1, 1) }}
+  app.useTool{ color=red, layer=bgCel2.layer, frame=bgCel2.frame, points={ Point(1, 0) }}
+
+  -- After using the tool in bgCel2, the activeFrame is the frame
+  -- number 2.
+  assert(bgCel2.frame == app.activeFrame)
+  assert(bgCel2.frame == fgCel2.frame)
+
+  app.activeFrame = fgCel1.frame
+  app.useTool{ color=yellow, layer=fgCel1.layer, points={ Point(1, 1) }}
   app.useTool{ color=yellow, cel=fgCel2, points={ Point(2, 1) }}
 
   assert(bgCel1.bounds == Rectangle(0, 0, 1, 1))

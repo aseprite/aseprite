@@ -1,3 +1,4 @@
+-- Copyright (C) 2019  Igara Studio S.A.
 -- Copyright (C) 2018  David Capello
 --
 -- This file is released under the terms of the MIT license.
@@ -26,17 +27,22 @@ do -- NewLayer/RemoveLayer
   assert(#s.layers == 1)
   local lay = s.layers[1]
   app.command.NewLayer{top=true}
+  local lay2 = app.activeLayer
   assert(#s.layers == 2)
   assert(s.layers[2].isImage)
 
   app.command.NewLayer{top=true, group=true}
+  local lay3 = app.activeLayer
   assert(#s.layers == 3)
   assert(s.layers[3].isGroup)
 
+  assert(app.activeLayer == lay3)
   app.command.RemoveLayer()
+  assert(app.activeLayer == lay2)
   assert(#s.layers == 2)
 
   app.command.RemoveLayer()
+  assert(app.activeLayer == lay)
   assert(#s.layers == 1)
 end
 
