@@ -440,7 +440,7 @@ int App_get_apiVersion(lua_State* L)
 
 int App_set_activeSprite(lua_State* L)
 {
-  auto sprite = get_docobj<Sprite>(L, 1);
+  auto sprite = get_docobj<Sprite>(L, 2);
   app::Context* ctx = App::instance()->context();
   doc::Document* doc = sprite->document();
   ctx->setActiveDocument(static_cast<Doc*>(doc));
