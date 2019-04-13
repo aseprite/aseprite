@@ -53,23 +53,32 @@ namespace {
 
 int Sprite_new(lua_State* L)
 {
-  doc::ImageSpec spec(doc::ColorMode::RGB, 1, 1, 0);
-  if (auto spec2 = may_get_obj<doc::ImageSpec>(L, 1)) {
-    spec = *spec2;
+  std::unique_ptr<Doc> doc;
+
+  // Duplicate a sprie
+  if (auto otherSpr = may_get_docobj<doc::Sprite>(L, 1)) {
+    Doc* otherDoc = static_cast<Doc*>(otherSpr->document());
+    doc.reset(otherDoc->duplicate(DuplicateExactCopy));
   }
   else {
-    const int w = lua_tointeger(L, 1);
-    const int h = lua_tointeger(L, 2);
-    const int colorMode = (lua_isnone(L, 3) ? IMAGE_RGB: lua_tointeger(L, 3));
-    spec.setWidth(w);
-    spec.setHeight(h);
-    spec.setColorMode((doc::ColorMode)colorMode);
-    spec.setColorSpace(get_working_rgb_space_from_preferences());
-  }
+    doc::ImageSpec spec(doc::ColorMode::RGB, 1, 1, 0);
+    if (auto spec2 = may_get_obj<doc::ImageSpec>(L, 1)) {
+      spec = *spec2;
+    }
+    else {
+      const int w = lua_tointeger(L, 1);
+      const int h = lua_tointeger(L, 2);
+      const int colorMode = (lua_isnone(L, 3) ? IMAGE_RGB: lua_tointeger(L, 3));
+      spec.setWidth(w);
+      spec.setHeight(h);
+      spec.setColorMode((doc::ColorMode)colorMode);
+      spec.setColorSpace(get_working_rgb_space_from_preferences());
+    }
 
-  std::unique_ptr<Sprite> sprite(Sprite::createBasicSprite(spec, 256));
-  std::unique_ptr<Doc> doc(new Doc(sprite.get()));
-  sprite.release();
+    std::unique_ptr<Sprite> sprite(Sprite::createBasicSprite(spec, 256));
+    doc.reset(new Doc(sprite.get()));
+    sprite.release();
+  }
 
   app::Context* ctx = App::instance()->context();
   doc->setContext(ctx);
