@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -11,6 +11,7 @@
 
 #include "app/context.h"
 
+#include "app/active_site_handler.h"
 #include "app/app.h"
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
@@ -61,6 +62,16 @@ Doc* Context::activeDocument() const
 void Context::setActiveDocument(Doc* document)
 {
   onSetActiveDocument(document);
+}
+
+void Context::setActiveLayer(doc::Layer* layer)
+{
+  onSetActiveLayer(layer);
+}
+
+void Context::setActiveFrame(const doc::frame_t frame)
+{
+  onSetActiveFrame(frame);
 }
 
 bool Context::hasModifiedDocuments() const
@@ -150,28 +161,45 @@ void Context::executeCommand(Command* command, const Params& params)
 void Context::onAddDocument(Doc* doc)
 {
   m_lastSelectedDoc = doc;
+
+  if (m_activeSiteHandler)
+    m_activeSiteHandler->addDoc(doc);
 }
 
 void Context::onRemoveDocument(Doc* doc)
 {
   if (doc == m_lastSelectedDoc)
     m_lastSelectedDoc = nullptr;
+
+  if (m_activeSiteHandler)
+    m_activeSiteHandler->removeDoc(doc);
 }
 
 void Context::onGetActiveSite(Site* site) const
 {
   // Default/dummy site (maybe for batch/command line mode)
-  if (Doc* doc = m_lastSelectedDoc) {
-    site->document(doc);
-    site->sprite(doc->sprite());
-    site->layer(doc->sprite()->root()->firstLayer());
-    site->frame(0);
-  }
+  if (Doc* doc = m_lastSelectedDoc)
+    activeSiteHandler()->getActiveSiteForDoc(doc, site);
 }
 
 void Context::onSetActiveDocument(Doc* doc)
 {
   m_lastSelectedDoc = doc;
+}
+
+void Context::onSetActiveLayer(doc::Layer* layer)
+{
+  Doc* newDoc = (layer ? static_cast<Doc*>(layer->sprite()->document()): nullptr);
+  if (newDoc != m_lastSelectedDoc)
+    setActiveDocument(newDoc);
+  if (newDoc)
+    activeSiteHandler()->setActiveLayerInDoc(newDoc, layer);
+}
+
+void Context::onSetActiveFrame(const doc::frame_t frame)
+{
+  if (m_lastSelectedDoc)
+    activeSiteHandler()->setActiveFrameInDoc(m_lastSelectedDoc, frame);
 }
 
 void Context::setTransaction(Transaction* transaction)
@@ -184,6 +212,13 @@ void Context::setTransaction(Transaction* transaction)
     ASSERT(m_transaction);
     m_transaction = nullptr;
   }
+}
+
+ActiveSiteHandler* Context::activeSiteHandler() const
+{
+  if (!m_activeSiteHandler)
+    m_activeSiteHandler.reset(new ActiveSiteHandler);
+  return m_activeSiteHandler.get();
 }
 
 } // namespace app

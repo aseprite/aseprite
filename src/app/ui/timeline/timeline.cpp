@@ -1726,7 +1726,8 @@ void Timeline::onAddLayer(DocEvent& ev)
   invalidate();
 }
 
-void Timeline::onAfterRemoveLayer(DocEvent& ev)
+// TODO similar to ActiveSiteHandler::onBeforeRemoveLayer()
+void Timeline::onBeforeRemoveLayer(DocEvent& ev)
 {
   Sprite* sprite = ev.sprite();
   Layer* layer = ev.layer();
@@ -1763,6 +1764,7 @@ void Timeline::onAddFrame(DocEvent& ev)
   invalidate();
 }
 
+// TODO similar to ActiveSiteHandler::onRemoveFrame()
 void Timeline::onRemoveFrame(DocEvent& ev)
 {
   // Adjust current frame of all editors that are in a frame more

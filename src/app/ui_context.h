@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -46,6 +47,8 @@ namespace app {
     void onRemoveDocument(Doc* doc) override;
     void onGetActiveSite(Site* site) const override;
     void onSetActiveDocument(Doc* doc) override;
+    void onSetActiveLayer(doc::Layer* layer) override;
+    void onSetActiveFrame(const doc::frame_t frame) override;
 
   private:
     DocView* m_lastSelectedView;

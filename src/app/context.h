@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -16,12 +16,19 @@
 #include "app/docs_observer.h"
 #include "base/disable_copying.h"
 #include "base/exception.h"
+#include "doc/frame.h"
 #include "obs/observable.h"
 #include "obs/signal.h"
 
+#include <memory>
 #include <vector>
 
+namespace doc {
+  class Layer;
+}
+
 namespace app {
+  class ActiveSiteHandler;
   class Command;
   class Doc;
   class DocView;
@@ -75,6 +82,8 @@ namespace app {
     Site activeSite() const;
     Doc* activeDocument() const;
     void setActiveDocument(Doc* document);
+    void setActiveLayer(doc::Layer* layer);
+    void setActiveFrame(doc::frame_t frame);
     bool hasModifiedDocuments() const;
     void notifyActiveSiteChanged();
 
@@ -99,14 +108,19 @@ namespace app {
 
     virtual void onGetActiveSite(Site* site) const;
     virtual void onSetActiveDocument(Doc* doc);
+    virtual void onSetActiveLayer(doc::Layer* layer);
+    virtual void onSetActiveFrame(const doc::frame_t frame);
 
     Doc* lastSelectedDoc() { return m_lastSelectedDoc; }
 
   private:
+    ActiveSiteHandler* activeSiteHandler() const;
+
     Docs m_docs;
     ContextFlags m_flags;       // Last updated flags.
     Doc* m_lastSelectedDoc;
     Transaction* m_transaction;
+    mutable std::unique_ptr<ActiveSiteHandler> m_activeSiteHandler;
 
     DISABLE_COPYING(Context);
   };

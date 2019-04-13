@@ -407,6 +407,7 @@ if(ENABLE_UI)
 endif()
 
 add_library(app-lib
+  active_site_handler.cpp
   app.cpp
   check_update.cpp
   cli/app_options.cpp

@@ -449,54 +449,26 @@ int App_set_activeSprite(lua_State* L)
 
 int App_set_activeLayer(lua_State* L)
 {
-#ifdef ENABLE_UI
   auto layer = get_docobj<Layer>(L, 2);
   app::Context* ctx = App::instance()->context();
-  if (auto uiCtx = dynamic_cast<UIContext*>(ctx)) {
-    DocView* docView = uiCtx->activeView();
-    if (docView) {
-      Editor* editor = docView->editor();
-      if (editor)
-        editor->setLayer(static_cast<LayerImage*>(layer));
-    }
-  }
-#endif
+  ctx->setActiveLayer(layer);
   return 0;
 }
 
 int App_set_activeFrame(lua_State* L)
 {
-#ifdef ENABLE_UI
   const doc::frame_t frame = get_frame_number_from_arg(L, 2);
   app::Context* ctx = App::instance()->context();
-  if (auto uiCtx = dynamic_cast<UIContext*>(ctx)) {
-    DocView* docView = uiCtx->activeView();
-    if (docView) {
-      Editor* editor = docView->editor();
-      if (editor)
-        editor->setFrame(frame);
-    }
-  }
-#endif
+  ctx->setActiveFrame(frame);
   return 0;
 }
 
 int App_set_activeCel(lua_State* L)
 {
-#ifdef ENABLE_UI
   const auto cel = get_docobj<Cel>(L, 2);
   app::Context* ctx = App::instance()->context();
-  if (auto uiCtx = dynamic_cast<UIContext*>(ctx)) {
-    DocView* docView = uiCtx->activeView();
-    if (docView) {
-      Editor* editor = docView->editor();
-      if (editor) {
-        editor->setLayer(static_cast<LayerImage*>(cel->layer()));
-        editor->setFrame(cel->frame());
-      }
-    }
-  }
-#endif
+  ctx->setActiveLayer(cel->layer());
+  ctx->setActiveFrame(cel->frame());
   return 0;
 }
 
@@ -505,19 +477,10 @@ int App_set_activeImage(lua_State* L)
   const auto cel = get_image_cel_from_arg(L, 2);
   if (!cel)
     return 0;
-#ifdef ENABLE_UI
+
   app::Context* ctx = App::instance()->context();
-  if (auto uiCtx = dynamic_cast<UIContext*>(ctx)) {
-    DocView* docView = uiCtx->activeView();
-    if (docView) {
-      Editor* editor = docView->editor();
-      if (editor) {
-        editor->setLayer(static_cast<LayerImage*>(cel->layer()));
-        editor->setFrame(cel->frame());
-      }
-    }
-  }
-#endif
+  ctx->setActiveLayer(cel->layer());
+  ctx->setActiveFrame(cel->frame());
   return 0;
 }
 
