@@ -102,6 +102,7 @@
       <key command="GotoLastFrame" shortcut="End" />
       <key command="GotoFrame" shortcut="Alt+G" />
       <key command="PlayAnimation" shortcut="Enter" />
+      <key command="PlayAnimation" shortcut="Enter Pad" />
       <key command="PlayPreviewAnimation" shortcut="Shift+Enter" />
       <!-- Cels -->
       <key command="ClearCel" />
