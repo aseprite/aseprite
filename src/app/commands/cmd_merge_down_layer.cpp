@@ -137,11 +137,13 @@ void MergeDownLayerCommand::onExecute(Context* context)
           opacity,
           src_layer->blendMode());
 
-        tx(new cmd::SetCelPosition(dst_cel,
-            bounds.x, bounds.y));
-
+        // First unlink the dst_cel
         if (dst_cel->links())
           tx(new cmd::UnlinkCel(dst_cel));
+
+        // Then modify the dst_cel
+        tx(new cmd::SetCelPosition(dst_cel,
+            bounds.x, bounds.y));
 
         tx(new cmd::ReplaceImage(sprite,
             dst_cel->imageRef(), new_image));
