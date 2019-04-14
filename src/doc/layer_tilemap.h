@@ -25,6 +25,8 @@ namespace doc {
     Tileset* tileset() const { return m_tileset; }
     tileset_index tilesetIndex() const { return m_tilesetIndex; }
 
+    void setTilesetIndex(tileset_index tsi);
+
   private:
     Tileset* m_tileset;
     tileset_index m_tilesetIndex;

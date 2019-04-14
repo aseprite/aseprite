@@ -28,4 +28,10 @@ LayerTilemap::~LayerTilemap()
 {
 }
 
+void LayerTilemap::setTilesetIndex(tileset_index tsi)
+{
+  m_tilesetIndex = tsi;
+  m_tileset = sprite()->tilesets()->get(tsi);
+}
+
 } // namespace doc

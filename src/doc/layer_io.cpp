@@ -46,7 +46,8 @@ void write_layer(std::ostream& os, const Layer* layer)
 
   switch (layer->type()) {
 
-    case ObjectType::LayerImage: {
+    case ObjectType::LayerImage:
+    case ObjectType::LayerTilemap: {
       const LayerImage* imgLayer = static_cast<const LayerImage*>(layer);
       CelConstIterator it, begin = imgLayer->getCelBegin();
       CelConstIterator end = imgLayer->getCelEnd();
@@ -86,6 +87,12 @@ void write_layer(std::ostream& os, const Layer* layer)
         const Cel* cel = *it;
         write_cel(os, cel);
       }
+
+      // Save tilemap data
+      if (layer->type() == ObjectType::LayerTilemap) {
+        // Tileset index
+        write32(os, static_cast<const LayerTilemap*>(layer)->tilesetIndex());
+      }
       break;
     }
 
@@ -95,12 +102,6 @@ void write_layer(std::ostream& os, const Layer* layer)
 
       for (const Layer* child : static_cast<const LayerGroup*>(layer)->layers())
         write_layer(os, child);
-      break;
-    }
-
-    case ObjectType::LayerTilemap: {
-      // Tileset index
-      write32(os, static_cast<const LayerTilemap*>(layer)->tilesetIndex());
       break;
     }
 
@@ -119,8 +120,15 @@ Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects)
 
   switch (static_cast<ObjectType>(layer_type)) {
 
-    case ObjectType::LayerImage: {
-      LayerImage* imgLayer = new LayerImage(subObjects->sprite());
+    case ObjectType::LayerImage:
+    case ObjectType::LayerTilemap: {
+      LayerImage* imgLayer;
+      if ((static_cast<ObjectType>(layer_type)) == ObjectType::LayerTilemap) {
+        imgLayer = new LayerTilemap(subObjects->sprite(), 0);
+      }
+      else {
+        imgLayer = new LayerImage(subObjects->sprite());
+      }
 
       // Create layer
       layer.reset(imgLayer);
@@ -152,6 +160,12 @@ Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects)
         // Add the cel in the layer
         imgLayer->addCel(cel);
       }
+
+      // Create the layer tilemap
+      if (imgLayer->isTilemap()) {
+        doc::tileset_index tsi = read32(is); // Tileset index
+        static_cast<LayerTilemap*>(imgLayer)->setTilesetIndex(tsi);
+      }
       break;
     }
 
@@ -168,13 +182,6 @@ Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects)
         else
           break;
       }
-      break;
-    }
-
-    case ObjectType::LayerTilemap: {
-      // Create the layer tilemap
-      doc::tileset_index tsi = read32(is); // Tileset index
-      layer.reset(new LayerTilemap(subObjects->sprite(), tsi));
       break;
     }
 
