@@ -445,13 +445,22 @@ void Sprite::setDurationForAllFrames(int msecs)
 }
 
 //////////////////////////////////////////////////////////////////////
-// Shared Images and CelData (for linked Cels)
+// Shared Images and CelData (for linked cels and tilesets)
 
 ImageRef Sprite::getImageRef(ObjectId imageId)
 {
   for (Cel* cel : cels()) {
     if (cel->image()->id() == imageId)
       return cel->imageRef();
+  }
+  if (hasTilesets()) {
+    for (Tileset* tileset : *tilesets()) {
+      for (tile_index i=0; i<tileset->size(); ++i) {
+        ImageRef image = tileset->get(i);
+        if (image && image->id() == imageId)
+          return image;
+      }
+    }
   }
   return ImageRef(nullptr);
 }
@@ -473,6 +482,16 @@ void Sprite::replaceImage(ObjectId curImageId, const ImageRef& newImage)
   for (Cel* cel : cels()) {
     if (cel->image()->id() == curImageId)
       cel->data()->setImage(newImage, cel->layer());
+  }
+
+  if (hasTilesets()) {
+    for (Tileset* tileset : *tilesets()) {
+      for (tile_index i=0; i<tileset->size(); ++i) {
+        ImageRef image = tileset->get(i);
+        if (image && image->id() == curImageId)
+          tileset->set(i, newImage);
+      }
+    }
   }
 }
 

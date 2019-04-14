@@ -17,6 +17,7 @@
 #include "doc/image_ref.h"
 #include "doc/sprite.h"
 #include "doc/subobjects_io.h"
+#include "doc/tilesets.h"
 
 namespace app {
 namespace cmd {
@@ -73,6 +74,16 @@ void ReplaceImage::replaceImage(ObjectId oldId, const ImageRef& newImage)
   for (Cel* cel : spr->uniqueCels()) {
     if (cel->image()->id() == oldId)
       cel->data()->incrementVersion();
+  }
+
+  if (spr->hasTilesets()) {
+    for (Tileset* tileset : *spr->tilesets()) {
+      for (tile_index i=0; i<tileset->size(); ++i) {
+        ImageRef image = tileset->get(i);
+        if (image && image->id() == oldId)
+          tileset->incrementVersion();
+      }
+    }
   }
 
   spr->replaceImage(oldId, newImage);

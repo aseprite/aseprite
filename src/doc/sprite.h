@@ -192,6 +192,7 @@ namespace doc {
     ////////////////////////////////////////
     // Tilesets
 
+    bool hasTilesets() const { return m_tilesets != nullptr; }
     Tilesets* tilesets() const;
 
   private:

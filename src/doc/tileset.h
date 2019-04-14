@@ -50,7 +50,8 @@ namespace doc {
         return ImageRef(nullptr);
     }
 
-    void set(const tile_index index, ImageRef& image) {
+    void set(const tile_index index,
+             const ImageRef& image) {
       m_tiles[index] = image;
     }
 
