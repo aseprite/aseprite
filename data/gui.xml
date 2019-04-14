@@ -425,6 +425,9 @@
       <key command="NewSpriteFromSelection" shortcut="Ctrl+Alt+N" mac="Cmd+Alt+N" />
 
       <!-- Commands not associated to menu items and without shortcuts by default -->
+      <key command="NewLayer">
+        <param name="tilemap" value="true" />
+      </key>
       <key command="PixelPerfectMode" />
       <key command="ContiguousFill" />
       <key command="SetInkType"><param name="type" value="simple" /></key>
@@ -810,6 +813,7 @@
           </item>
           <item command="NewLayer" text="@.layer_new_tilemap_layer">
             <param name="tilemap" value="true" />
+            <param name="ask" value="true" />
           </item>
         </menu>
         <item command="RemoveLayer" text="@.layer_delete_layer" />

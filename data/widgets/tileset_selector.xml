@@ -1,0 +1,17 @@
+<!-- Aseprite -->
+<!-- Copyright (C) 2019  Igara Studio S.A. -->
+<gui>
+<vbox id="tileset_selector">
+  <combobox id="tilesets">
+    <listitem text="@.new_tileset" value="-1" />
+  </combobox>
+
+  <hbox id="grid_options">
+    <label text="@.grid_width" />
+    <expr id="grid_width" text="" />
+
+    <label text="@.grid_height" />
+    <expr id="grid_height" text="" />
+  </hbox>
+</vbox>
+</gui>

@@ -27,6 +27,7 @@
 #include "app/tx.h"
 #include "app/ui/main_window.h"
 #include "app/ui/status_bar.h"
+#include "app/ui/tileset_selector.h"
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
 #include "app/util/new_image_from_mask.h"
@@ -145,10 +146,10 @@ private:
 
 void NewLayerCommand::onExecute(Context* context)
 {
-  ContextWriter writer(context);
+  ContextReader reader(context);
   Site site = context->activeSite();
-  Doc* document(writer.document());
-  Sprite* sprite(writer.sprite());
+  Doc* document(reader.document());
+  Sprite* sprite(reader.sprite());
   std::string name;
 
   Doc* pasteDoc = nullptr;
@@ -186,21 +187,40 @@ void NewLayerCommand::onExecute(Context* context)
       return;
   }
 
+  // Information about the tileset to be used  used for new tilemaps
+  TilesetSelector::Info tilesetInfo;
+  tilesetInfo.newTileset = true;
+  tilesetInfo.grid = context->activeSite().grid();
+
 #ifdef ENABLE_UI
   // If params specify to ask the user about the name...
   if (params().ask() && context->isUIAvailable()) {
     // We open the window to ask the name
     app::gen::NewLayer window;
+    TilesetSelector* tilesetSelector = nullptr;
     window.name()->setText(name.c_str());
     window.name()->setMinSize(gfx::Size(128, 0));
+
+    // Tileset selector for new tilemaps
+    const bool isTilemap = (m_type == Type::TilemapLayer);
+    window.tilesetLabel()->setVisible(isTilemap);
+    window.tilesetOptions()->setVisible(isTilemap);
+    if (isTilemap) {
+      tilesetSelector = new TilesetSelector(sprite, tilesetInfo);
+      window.tilesetOptions()->addChild(tilesetSelector);
+    }
+
     window.openWindowInForeground();
     if (window.closer() != window.ok())
       return;
 
     name = window.name()->text();
+    if (tilesetSelector)
+      tilesetInfo = tilesetSelector->getInfo();
   }
 #endif
 
+  ContextWriter writer(reader);
   LayerGroup* parent = sprite->root();
   Layer* activeLayer = writer.layer();
   SelectedLayers selLayers = site.selectedLayers();
@@ -240,13 +260,17 @@ void NewLayerCommand::onExecute(Context* context)
         afterBackground = true;
         break;
       case Type::TilemapLayer: {
-        // TODO show a dialog to configure the grid
-        auto grid = doc::Grid::MakeRect(gfx::Size(16, 16));
-        auto tileset = new Tileset(sprite, grid, 0);
-        auto addTileset = new cmd::AddTileset(sprite, tileset);
-        tx(addTileset);
+        tileset_index tsi;
+        if (tilesetInfo.newTileset) {
+          auto tileset = new Tileset(sprite, tilesetInfo.grid, 0);
+          auto addTileset = new cmd::AddTileset(sprite, tileset);
+          tx(addTileset);
 
-        auto tsi = addTileset->tilesetIndex();
+          tsi = addTileset->tilesetIndex();
+        }
+        else {
+          tsi = tilesetInfo.tsi;
+        }
 
         layer = new LayerTilemap(sprite, tsi);
         layer->setName(name);
@@ -434,6 +458,8 @@ std::string NewLayerCommand::onGetFriendlyName() const
     text = fmt::format(Strings::commands_NewLayer_ViaCopy(), text);
   if (params().viaCut())
     text = fmt::format(Strings::commands_NewLayer_ViaCut(), text);
+  if (params().ask())
+    text = fmt::format(Strings::commands_NewLayer_WithDialog(), text);
   return text;
 }
 
