@@ -196,7 +196,8 @@ void ToolLoopManager::doLoopStep(bool lastStep)
     // freehand algorithm needs this trace policy to redraw only the
     // last dirty area, which can vary in one pixel from the previous
     // tool loop cycle).
-    m_toolLoop->invalidateDstImage(m_dirtyArea);
+    m_toolLoop->invalidateDstImage();
+    m_toolLoop->validateDstImage(gfx::Region(m_toolLoop->getDstImage()->bounds()));
   }
 
   m_toolLoop->validateDstImage(m_dirtyArea);
@@ -204,8 +205,18 @@ void ToolLoopManager::doLoopStep(bool lastStep)
   // Join or fill user points
   if (!m_toolLoop->getFilled() || (!lastStep && !m_toolLoop->getPreviewFilled()))
     m_toolLoop->getIntertwine()->joinStroke(m_toolLoop, main_stroke);
-  else
+  else {
+    // Filled + Freehand Controller = Contour Tool
+    if (m_toolLoop->getController()->isFreehand()) {
+      // With this we avoid over-drawing the edge of the contour,
+      // appreciated when we use the Contour Tool combined with Image
+      // Brush with alpha content.
+      m_toolLoop->invalidateDstImage();
+      m_toolLoop->validateDstImage(gfx::Region(m_toolLoop->getDstImage()->bounds()));
+    }
+
     m_toolLoop->getIntertwine()->fillStroke(m_toolLoop, main_stroke);
+  }
 
   if (m_toolLoop->getTracePolicy() == TracePolicy::Overlap) {
     // Copy destination to source (yes, destination to source). In
