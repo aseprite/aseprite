@@ -196,6 +196,12 @@ bool AsepriteDecoder::decode()
             break;
           }
 
+          case ASE_FILE_CHUNK_TILESET: {
+            delegate()->error(
+              "Warning: The given file contains a tileset.\nThis version of Aseprite doesn't support tilemap layers.\n");
+            break;
+          }
+
           default:
             delegate()->error(
               fmt::format("Warning: Unsupported chunk type {0} (skipping)", chunk_type));

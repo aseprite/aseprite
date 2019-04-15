@@ -1,5 +1,5 @@
 // Aseprite Document IO Library
-// Copyright (c) 2018 Igara Studio S.A.
+// Copyright (c) 2018-2019 Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -27,6 +27,7 @@
 #define ASE_FILE_CHUNK_USER_DATA            0x2020
 #define ASE_FILE_CHUNK_SLICES               0x2021 // Deprecated chunk (used on dev versions only between v1.2-beta7 and v1.2-beta8)
 #define ASE_FILE_CHUNK_SLICE                0x2022
+#define ASE_FILE_CHUNK_TILESET              0x2023
 
 #define ASE_FILE_LAYER_IMAGE                0
 #define ASE_FILE_LAYER_GROUP                1
