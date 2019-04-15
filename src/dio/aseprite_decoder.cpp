@@ -87,7 +87,7 @@ bool AsepriteDecoder::decode()
         sprite->setFrameDuration(frame, frame_header.duration);
 
       // Read chunks
-      for (int c=0; c<frame_header.chunks; c++) {
+      for (uint32_t c=0; c<frame_header.chunks; c++) {
         // Start chunk position
         size_t chunk_pos = f()->tell();
         delegate()->progress((float)chunk_pos / (float)header.size);
