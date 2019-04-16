@@ -33,8 +33,10 @@
 	</hbox>
       </vbox>
       <vbox>
-	<radio id="outside" text="@.outside" group="2" />
-	<radio id="inside" text="@.inside" group="2" />
+	<buttonset id="place" columns="1">
+	  <item text="@.outside" />
+	  <item text="@.inside" />
+	</buttonset>
       </vbox>
     </hbox>
   </vbox>

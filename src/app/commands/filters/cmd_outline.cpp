@@ -80,18 +80,22 @@ public:
 
     m_panel.color()->setColor(m_filter.color());
     m_panel.bgColor()->setColor(m_filter.bgColor());
-    m_panel.outside()->setSelected(m_filter.place() == OutlineFilter::Place::Outside);
-    m_panel.inside()->setSelected(m_filter.place() == OutlineFilter::Place::Inside);
+    m_panel.place()->setSelectedItem((int)m_filter.place());
     updateButtonsFromMatrix();
 
     m_panel.color()->Change.connect(&OutlineWindow::onColorChange, this);
     m_panel.bgColor()->Change.connect(&OutlineWindow::onBgColorChange, this);
-    m_panel.outside()->Click.connect([this](ui::Event&){ onPlaceChange(OutlineFilter::Place::Outside); });
-    m_panel.inside()->Click.connect([this](ui::Event&){ onPlaceChange(OutlineFilter::Place::Inside); });
-    m_panel.outlineType()->ItemChange.connect([this](ButtonSet::Item*){ onMatrixTypeChange(); });
+    m_panel.outlineType()->ItemChange.connect(
+      [this](ButtonSet::Item*){
+        onMatrixTypeChange();
+      });
     m_panel.outlineMatrix()->ItemChange.connect(
       [this](ButtonSet::Item* item){
         onMatrixPixelChange(m_panel.outlineMatrix()->getItemIndex(item));
+      });
+    m_panel.place()->ItemChange.connect(
+      [this](ButtonSet::Item*){
+        onPlaceChange((OutlineFilter::Place)m_panel.place()->selectedItem());
       });
   }
 
