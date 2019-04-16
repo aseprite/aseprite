@@ -185,10 +185,18 @@ void ToolLoopManager::doLoopStep(bool lastStep)
 
   m_toolLoop->getInk()->prepareForStrokes(m_toolLoop, strokes);
 
-  // Invalidate destination image area.
-  if (m_toolLoop->getTracePolicy() == TracePolicy::Last) {
-    // Copy source to destination (reset the previous trace). Useful
-    // for tools like Line and Ellipse (we keep the last trace only).
+  // True when we have to fill
+  const bool fillStrokes =
+    (m_toolLoop->getFilled() &&
+     (lastStep || m_toolLoop->getPreviewFilled()));
+
+  // Invalidate the whole destination image area.
+  if (m_toolLoop->getTracePolicy() == TracePolicy::Last ||
+      fillStrokes) {
+    // Copy source to destination (reset all the previous
+    // traces). Useful for tools like Line and Ellipse (we keep the
+    // last trace only) or to draw the final result in contour tool
+    // (the final result is filled).
     m_toolLoop->invalidateDstImage();
   }
   else if (m_toolLoop->getTracePolicy() == TracePolicy::AccumulateUpdateLast) {
@@ -210,20 +218,10 @@ void ToolLoopManager::doLoopStep(bool lastStep)
   m_toolLoop->validateDstImage(m_dirtyArea);
 
   // Join or fill user points
-  if (!m_toolLoop->getFilled() || (!lastStep && !m_toolLoop->getPreviewFilled()))
-    m_toolLoop->getIntertwine()->joinStroke(m_toolLoop, main_stroke);
-  else {
-    // Filled + Freehand Controller = Contour Tool
-    if (m_toolLoop->getController()->isFreehand()) {
-      // With this we avoid over-drawing the edge of the contour,
-      // appreciated when we use the Contour Tool combined with Image
-      // Brush with alpha content.
-      m_toolLoop->invalidateDstImage();
-      m_toolLoop->validateDstImage(gfx::Region(m_toolLoop->getDstImage()->bounds()));
-    }
-
+  if (fillStrokes)
     m_toolLoop->getIntertwine()->fillStroke(m_toolLoop, main_stroke);
-  }
+  else
+    m_toolLoop->getIntertwine()->joinStroke(m_toolLoop, main_stroke);
 
   if (m_toolLoop->getTracePolicy() == TracePolicy::Overlap) {
     // Copy destination to source (yes, destination to source). In
