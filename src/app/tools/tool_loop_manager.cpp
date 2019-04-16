@@ -71,6 +71,17 @@ void ToolLoopManager::notifyToolLoopModifiersChange()
 
 void ToolLoopManager::pressButton(const Pointer& pointer)
 {
+
+  // A little patch to memorize initial Trace Policy in the
+  // current function execution.
+  // When the initial trace policy is "Last" and then
+  // changes to different trace policy at the end of
+  // this function, the user confirms a line draw while he
+  // is holding the SHIFT key.
+  bool tracePolicyWasLast = false;
+  if (m_toolLoop->getTracePolicy() == TracePolicy::Last)
+    tracePolicyWasLast = true;
+
   m_lastPointer = pointer;
 
   if (isCanceled())
@@ -96,7 +107,18 @@ void ToolLoopManager::pressButton(const Pointer& pointer)
   m_toolLoop->getController()->getStatusBarText(m_toolLoop, m_stroke, statusText);
   m_toolLoop->updateStatusBar(statusText.c_str());
 
-  doLoopStep(false);
+  // We evaluate if the trace policy has changed compared with
+  // the initial trace policy.
+  if (!(m_toolLoop->getTracePolicy() == TracePolicy::Last) &&
+        tracePolicyWasLast) {
+    // Do nothing. We do not need execute an additional doLoopStep
+    // (which it want to accumulate more points in m_pts in function
+    // joinStroke() from intertwiners.h)
+    // This avoid double print of a line while the user holds down
+    // the SHIFT key.
+  }
+  else
+    doLoopStep(false);
 }
 
 bool ToolLoopManager::releaseButton(const Pointer& pointer)
