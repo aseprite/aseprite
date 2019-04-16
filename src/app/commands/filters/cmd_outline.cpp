@@ -192,7 +192,7 @@ void OutlineCommand::onExecute(Context* context)
   OutlineFilterWrapper filter(site.layer());
   filter.place((OutlineFilter::Place)get_config_int(ConfigSection, "Place", int(OutlineFilter::Place::Outside)));
   filter.matrix((OutlineFilter::Matrix)get_config_int(ConfigSection, "Matrix", int(OutlineFilter::kCircleMatrix)));
-  filter.color(get_config_color(ConfigSection, "Color", ColorBar::instance()->getFgColor()));
+  filter.color(ColorBar::instance()->getFgColor());
   filter.tiledMode(docPref.tiled.mode());
   filter.bgColor(app::Color::fromMask());
   if (site.layer() && site.layer()->isBackground() && site.image()) {
@@ -215,7 +215,6 @@ void OutlineCommand::onExecute(Context* context)
   if (window.doModal()) {
     set_config_int(ConfigSection, "Place", int(filter.place()));
     set_config_int(ConfigSection, "Matrix", int(filter.matrix()));
-    set_config_color(ConfigSection, "Color", filter.color());
   }
 }
 
