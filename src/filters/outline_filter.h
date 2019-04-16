@@ -23,7 +23,7 @@ namespace filters {
 
     void place(const Place place) { m_place = place; }
     void shape(const Shape shape) { m_shape = shape; }
-    void tiledMode(const TiledMode tiledMode) { m_tiledMode = m_tiledMode; }
+    void tiledMode(const TiledMode tiledMode) { m_tiledMode = tiledMode; }
     void color(const doc::color_t color) { m_color = color; }
     void bgColor(const doc::color_t color) { m_bgColor = color; }
 
