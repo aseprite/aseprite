@@ -196,8 +196,15 @@ void ToolLoopManager::doLoopStep(bool lastStep)
     // freehand algorithm needs this trace policy to redraw only the
     // last dirty area, which can vary in one pixel from the previous
     // tool loop cycle).
-    m_toolLoop->invalidateDstImage();
-    m_toolLoop->validateDstImage(gfx::Region(m_toolLoop->getDstImage()->bounds()));
+    if (m_toolLoop->getBrush()->type() != kImageBrushType) {
+      m_toolLoop->invalidateDstImage(m_dirtyArea);
+    }
+    // For custom brush we revalidate the whole destination area so
+    // the whole trace is redrawn from scratch.
+    else {
+      m_toolLoop->invalidateDstImage();
+      m_toolLoop->validateDstImage(gfx::Region(m_toolLoop->getDstImage()->bounds()));
+    }
   }
 
   m_toolLoop->validateDstImage(m_dirtyArea);
