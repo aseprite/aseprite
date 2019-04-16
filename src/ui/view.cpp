@@ -340,7 +340,8 @@ void View::onSetViewScroll(const gfx::Point& pt)
   {
     auto display = manager->getDisplay();
     if (display)
-      display->flip(gfx::Rect(0, 0, display_w(), display_h()));
+      display->invalidateRegion(
+        gfx::Region(gfx::Rect(0, 0, display_w(), display_h())));
     base::this_thread::sleep_for(0.002);
     {
       os::Surface* surface = display->getSurface();
@@ -349,7 +350,8 @@ void View::onSetViewScroll(const gfx::Point& pt)
         surface->fillRect(gfx::rgba(255, 0, 0), rc);
     }
     if (display)
-      display->flip(gfx::Rect(0, 0, display_w(), display_h()));
+      display->invalidateRegion(
+        gfx::Region(gfx::Rect(0, 0, display_w(), display_h())));
     base::this_thread::sleep_for(0.002);
   }
 #endif

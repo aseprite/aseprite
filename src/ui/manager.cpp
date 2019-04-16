@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -264,15 +264,13 @@ void Manager::flipDisplay()
   // Draw overlays.
   overlays->drawOverlays();
 
-  // Flip dirty region.
-  {
-    m_dirtyRegion.createIntersection(
-      m_dirtyRegion,
-      gfx::Region(gfx::Rect(0, 0, ui::display_w(), ui::display_h())));
+  // Invalidate the dirty region in the laf::os::Display (the real OS window).
+  m_dirtyRegion.createIntersection(
+    m_dirtyRegion,
+    gfx::Region(gfx::Rect(0, 0, ui::display_w(), ui::display_h())));
 
-    for (const auto& rc : m_dirtyRegion)
-      m_display->flip(rc);
-
+  if (!m_dirtyRegion.isEmpty()) {
+    m_display->invalidateRegion(m_dirtyRegion);
     m_dirtyRegion.clear();
   }
 }
@@ -1496,8 +1494,11 @@ bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
         surface->fillRect(gfx::rgba(0, 0, 255), paintMsg->rect());
       }
 
-      if (m_display)
-        m_display->flip(gfx::Rect(0, 0, display_w(), display_h()));
+      if (m_display) {
+        m_display->invalidateRegion(
+          gfx::Region(gfx::Rect(0, 0, display_w(), display_h())));
+        // TODO m_display->update() ??
+      }
 
       base::this_thread::sleep_for(0.002);
 #endif
