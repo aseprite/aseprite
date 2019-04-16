@@ -17,18 +17,23 @@ namespace filters {
   class OutlineFilter : public Filter {
   public:
     enum class Place { Outside, Inside };
-    enum class Shape { Circle, Square, Horizontal, Vertical, NShapes };
+
+    typedef int Matrix;
+    static const Matrix kCircleMatrix = 0252;
+    static const Matrix kSquareMatrix = 0757;
+    static const Matrix kHorizontalMatrix = 0050;
+    static const Matrix kVerticalMatrix = 0202;
 
     OutlineFilter();
 
     void place(const Place place) { m_place = place; }
-    void shape(const Shape shape) { m_shape = shape; }
+    void matrix(const Matrix matrix) { m_matrix = matrix; }
     void tiledMode(const TiledMode tiledMode) { m_tiledMode = tiledMode; }
     void color(const doc::color_t color) { m_color = color; }
     void bgColor(const doc::color_t color) { m_bgColor = color; }
 
     Place place() const { return m_place; }
-    Shape shape() const { return m_shape; }
+    Matrix matrix() const { return m_matrix; }
     TiledMode tiledMode() const { return m_tiledMode; }
     doc::color_t color() const { return m_color; }
     doc::color_t bgColor() const { return m_bgColor; }
@@ -41,7 +46,7 @@ namespace filters {
 
   private:
     Place m_place;
-    Shape m_shape;
+    Matrix m_matrix;
     TiledMode m_tiledMode;
     doc::color_t m_color;
     doc::color_t m_bgColor;

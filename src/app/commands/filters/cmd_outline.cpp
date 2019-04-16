@@ -19,6 +19,7 @@
 #include "app/pref/preferences.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/color_button.h"
+#include "app/ui/skin/skin_theme.h"
 #include "base/bind.h"
 #include "doc/image.h"
 #include "doc/mask.h"
@@ -33,6 +34,10 @@
 #include "outline.xml.h"
 
 namespace app {
+
+using namespace app::skin;
+
+enum { CIRCLE, SQUARE, HORZ, VERT };
 
 static const char* ConfigSection = "Outline";
 
@@ -77,22 +82,43 @@ public:
     m_panel.bgColor()->setColor(m_filter.bgColor());
     m_panel.outside()->setSelected(m_filter.place() == OutlineFilter::Place::Outside);
     m_panel.inside()->setSelected(m_filter.place() == OutlineFilter::Place::Inside);
-    m_panel.circle()->setSelected(m_filter.shape() == OutlineFilter::Shape::Circle);
-    m_panel.square()->setSelected(m_filter.shape() == OutlineFilter::Shape::Square);
-    m_panel.horizontal()->setSelected(m_filter.shape() == OutlineFilter::Shape::Horizontal);
-    m_panel.vertical()->setSelected(m_filter.shape() == OutlineFilter::Shape::Vertical);
+    updateButtonsFromMatrix();
 
     m_panel.color()->Change.connect(&OutlineWindow::onColorChange, this);
     m_panel.bgColor()->Change.connect(&OutlineWindow::onBgColorChange, this);
     m_panel.outside()->Click.connect([this](ui::Event&){ onPlaceChange(OutlineFilter::Place::Outside); });
     m_panel.inside()->Click.connect([this](ui::Event&){ onPlaceChange(OutlineFilter::Place::Inside); });
-    m_panel.circle()->Click.connect([this](ui::Event&){ onShapeChange(OutlineFilter::Shape::Circle); });
-    m_panel.square()->Click.connect([this](ui::Event&){ onShapeChange(OutlineFilter::Shape::Square); });
-    m_panel.horizontal()->Click.connect([this](ui::Event&){ onShapeChange(OutlineFilter::Shape::Horizontal); });
-    m_panel.vertical()->Click.connect([this](ui::Event&){ onShapeChange(OutlineFilter::Shape::Vertical); });
+    m_panel.outlineType()->ItemChange.connect([this](ButtonSet::Item*){ onMatrixTypeChange(); });
+    m_panel.outlineMatrix()->ItemChange.connect(
+      [this](ButtonSet::Item* item){
+        onMatrixPixelChange(m_panel.outlineMatrix()->getItemIndex(item));
+      });
   }
 
 private:
+  void updateButtonsFromMatrix() {
+    const OutlineFilter::Matrix matrix = m_filter.matrix();
+
+    int commonMatrix = -1;
+    switch (matrix) {
+      case OutlineFilter::kCircleMatrix:     commonMatrix = CIRCLE; break;
+      case OutlineFilter::kSquareMatrix:     commonMatrix = SQUARE; break;
+      case OutlineFilter::kHorizontalMatrix: commonMatrix = HORZ; break;
+      case OutlineFilter::kVerticalMatrix:   commonMatrix = VERT; break;
+    }
+    m_panel.outlineType()->setSelectedItem(commonMatrix, false);
+
+    auto theme = static_cast<SkinTheme*>(this->theme());
+    auto emptyIcon = theme->parts.outlineEmptyPixel();
+    auto pixelIcon = theme->parts.outlineFullPixel();
+
+    for (int i=0; i<9; ++i) {
+      m_panel.outlineMatrix()
+        ->getItem(i)->setIcon(
+          (matrix & (1 << (8-i))) ? pixelIcon: emptyIcon);
+    }
+  }
+
   void onColorChange(const app::Color& color) {
     m_filter.color(color);
     restartPreview();
@@ -108,8 +134,24 @@ private:
     restartPreview();
   }
 
-  void onShapeChange(OutlineFilter::Shape shape) {
-    m_filter.shape(shape);
+  void onMatrixTypeChange() {
+    OutlineFilter::Matrix matrix = 0;
+    switch (m_panel.outlineType()->selectedItem()) {
+      case CIRCLE: matrix = OutlineFilter::kCircleMatrix; break;
+      case SQUARE: matrix = OutlineFilter::kSquareMatrix; break;
+      case HORZ: matrix = OutlineFilter::kHorizontalMatrix; break;
+      case VERT: matrix = OutlineFilter::kVerticalMatrix; break;
+    }
+    m_filter.matrix(matrix);
+    updateButtonsFromMatrix();
+    restartPreview();
+  }
+
+  void onMatrixPixelChange(const int index) {
+    OutlineFilter::Matrix matrix = m_filter.matrix();
+    matrix ^= (1 << (8-index));
+    m_filter.matrix(matrix);
+    updateButtonsFromMatrix();
     restartPreview();
   }
 
@@ -149,7 +191,7 @@ void OutlineCommand::onExecute(Context* context)
 
   OutlineFilterWrapper filter(site.layer());
   filter.place((OutlineFilter::Place)get_config_int(ConfigSection, "Place", int(OutlineFilter::Place::Outside)));
-  filter.shape((OutlineFilter::Shape)get_config_int(ConfigSection, "Shape", int(OutlineFilter::Shape::Circle)));
+  filter.matrix((OutlineFilter::Matrix)get_config_int(ConfigSection, "Matrix", int(OutlineFilter::kCircleMatrix)));
   filter.color(get_config_color(ConfigSection, "Color", ColorBar::instance()->getFgColor()));
   filter.tiledMode(docPref.tiled.mode());
   filter.bgColor(app::Color::fromMask());
@@ -172,7 +214,7 @@ void OutlineCommand::onExecute(Context* context)
   OutlineWindow window(filter, filterMgr);
   if (window.doModal()) {
     set_config_int(ConfigSection, "Place", int(filter.place()));
-    set_config_int(ConfigSection, "Shape", int(filter.shape()));
+    set_config_int(ConfigSection, "Matrix", int(filter.matrix()));
     set_config_color(ConfigSection, "Color", filter.color());
   }
 }

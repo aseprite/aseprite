@@ -25,12 +25,6 @@ using namespace doc;
 
 namespace {
 
-  static const int kMatrices[int(OutlineFilter::Shape::NShapes)] =
-    { 0272,                     // Circle
-      0777,                     // Square
-      0070,                     // Horizontal
-      0202 };                   // Vertical
-
   struct GetPixelsDelegate {
     color_t bgColor;
     int transparent;    // Transparent pixels
@@ -38,9 +32,9 @@ namespace {
     int matrix;
     int bit;
 
-    void init(color_t bgColor, OutlineFilter::Shape shape) {
+    void init(color_t bgColor, OutlineFilter::Matrix matrix) {
       this->bgColor = bgColor;
-      this->matrix = kMatrices[int(shape)];
+      this->matrix = matrix;
     }
 
     void reset() {
@@ -88,7 +82,7 @@ namespace {
 
 OutlineFilter::OutlineFilter()
   : m_place(Place::Outside)
-  , m_shape(Shape::Circle)
+  , m_matrix(kCircleMatrix)
   , m_tiledMode(TiledMode::NONE)
   , m_color(0)
   , m_bgColor(0)
@@ -114,7 +108,7 @@ void OutlineFilter::applyToRgba(FilterManager* filterMgr)
   bool isTransparent;
 
   GetPixelsDelegateRgba delegate;
-  delegate.init(m_bgColor, m_shape);
+  delegate.init(m_bgColor, m_matrix);
 
   for (; x<x2; ++x, ++src_address, ++dst_address) {
     if (filterMgr->skipPixel())
@@ -155,7 +149,7 @@ void OutlineFilter::applyToGrayscale(FilterManager* filterMgr)
   bool isTransparent;
 
   GetPixelsDelegateGrayscale delegate;
-  delegate.init(m_bgColor, m_shape);
+  delegate.init(m_bgColor, m_matrix);
 
   for (; x<x2; ++x, ++src_address, ++dst_address) {
     if (filterMgr->skipPixel())
@@ -196,7 +190,7 @@ void OutlineFilter::applyToIndexed(FilterManager* filterMgr)
   bool isTransparent;
 
   GetPixelsDelegateIndexed delegate(pal);
-  delegate.init(m_bgColor, m_shape);
+  delegate.init(m_bgColor, m_matrix);
 
   for (; x<x2; ++x, ++src_address, ++dst_address) {
     if (filterMgr->skipPixel())

@@ -10,10 +10,27 @@
     </grid>
     <hbox>
       <vbox>
-	<radio id="circle" text="@.circle" group="1" />
-	<radio id="square" text="@.square" group="1" />
-	<radio id="horizontal" text="@.horizontal" group="1" />
-	<radio id="vertical" text="@.vertical" group="1" />
+	<hbox>
+	  <buttonset id="outline_type" columns="2">
+            <item icon="outline_circle" tooltip="@.circle" tooltip_dir="right" />
+            <item icon="outline_square" tooltip="@.square" tooltip_dir="left" />
+            <item icon="outline_horizontal" tooltip="@.horizontal" tooltip_dir="right" />
+            <item icon="outline_vertical" tooltip="@.vertical" tooltip_dir="left" />
+	  </buttonset>
+	</hbox>
+	<hbox>
+	  <buttonset id="outline_matrix" columns="3">
+            <item icon="outline_empty_pixel" />
+            <item icon="outline_empty_pixel" />
+            <item icon="outline_empty_pixel" />
+            <item icon="outline_empty_pixel" />
+            <item icon="outline_empty_pixel" />
+            <item icon="outline_empty_pixel" />
+            <item icon="outline_empty_pixel" />
+            <item icon="outline_empty_pixel" />
+            <item icon="outline_empty_pixel" />
+	  </buttonset>
+	</hbox>
       </vbox>
       <vbox>
 	<radio id="outside" text="@.outside" group="2" />

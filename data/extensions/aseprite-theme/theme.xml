@@ -412,6 +412,12 @@
         <part id="folder_icon_small" x="144" y="272" w="10" h="8" />
         <part id="folder_icon_big" x="176" y="272" w="32" h="32" />
         <part id="folder_icon_medium" x="160" y="272" w="16" h="16" />
+        <part id="outline_circle" x="144" y="224" w="13" h="15" />
+        <part id="outline_square" x="160" y="224" w="13" h="15" />
+        <part id="outline_horizontal" x="176" y="224" w="13" h="15" />
+        <part id="outline_vertical" x="192" y="224" w="13" h="15" />
+        <part id="outline_empty_pixel" x="208" y="224" w="5" h="5" />
+        <part id="outline_full_pixel" x="214" y="224" w="5" h="5" />
     </parts>
     <styles>
         <style id="box" />
