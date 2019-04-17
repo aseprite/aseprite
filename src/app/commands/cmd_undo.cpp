@@ -70,7 +70,9 @@ void UndoCommand::onExecute(Context* context)
 #ifdef ENABLE_UI
   Sprite* sprite = document->sprite();
   SpritePosition spritePosition;
-  const bool gotoModified = Preferences::instance().undo.gotoModified();
+  const bool gotoModified =
+    (Preferences::instance().undo.gotoModified() &&
+     context->isUIAvailable() && current_editor);
   if (gotoModified) {
     SpritePosition currentPosition(writer.site()->layer(),
                                    writer.site()->frame());

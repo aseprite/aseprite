@@ -14,6 +14,7 @@
 #include "app/cmd/assign_color_profile.h"
 #include "app/cmd/clear_cel.h"
 #include "app/cmd/convert_color_profile.h"
+#include "app/cmd/flatten_layers.h"
 #include "app/cmd/remove_frame_tag.h"
 #include "app/cmd/remove_layer.h"
 #include "app/cmd/remove_slice.h"
@@ -27,6 +28,7 @@
 #include "app/doc.h"
 #include "app/doc_access.h"
 #include "app/doc_api.h"
+#include "app/doc_range.h"
 #include "app/file/palette_file.h"
 #include "app/script/docobj.h"
 #include "app/script/engine.h"
@@ -257,6 +259,20 @@ int Sprite_convertColorSpace(lua_State* L)
        sprite, std::make_shared<gfx::ColorSpace>(*cs)));
   tx.commit();
   return 1;
+}
+
+int Sprite_flatten(lua_State* L)
+{
+  auto sprite = get_docobj<Sprite>(L, 1);
+
+  DocRange range;
+  for (auto layer : sprite->root()->layers())
+    range.selectLayer(layer);
+
+  Tx tx;
+  tx(new cmd::FlattenLayers(sprite, range.selectedLayers(), true));
+  tx.commit();
+  return 0;
 }
 
 int Sprite_newLayer(lua_State* L)
@@ -678,6 +694,7 @@ const luaL_Reg Sprite_methods[] = {
   { "setPalette", Sprite_setPalette },
   { "assignColorSpace", Sprite_assignColorSpace },
   { "convertColorSpace", Sprite_convertColorSpace },
+  { "flatten", Sprite_flatten },
   // Layers
   { "newLayer", Sprite_newLayer },
   { "newGroup", Sprite_newGroup },
