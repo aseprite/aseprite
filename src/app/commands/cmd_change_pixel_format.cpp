@@ -326,7 +326,7 @@ private:
 
     m_editor->invalidate();
     progress()->setValue(0);
-    progress()->setVisible(true);
+    progress()->setVisible(false);
     layout();
 
     m_bgThread.reset(
@@ -361,8 +361,16 @@ private:
       progress()->setVisible(false);
       layout();
     }
-    else
-      progress()->setValue(100 * m_bgThread->progress());
+    else {
+      int v = 100 * m_bgThread->progress();
+      if (v > 0) {
+        progress()->setValue(v);
+        if (!progress()->isVisible()) {
+          progress()->setVisible(true);
+          layout();
+        }
+      }
+    }
 
     m_editor->invalidate();
   }

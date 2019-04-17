@@ -7,7 +7,6 @@
     <view id="color_mode_view" expansive="true">
       <listbox id="color_mode" />
     </view>
-    <slider min="0" max="100" id="progress" minwidth="100" />
     <hbox id="dithering_placeholder" />
     <hbox id="amount">
       <label text="@.amount" />
@@ -17,6 +16,7 @@
     <check text="@.flatten" id="flatten" />
     <separator horizontal="true" />
     <hbox>
+      <slider min="0" max="100" id="progress" minwidth="100" />
       <boxfiller />
       <hbox homogeneous="true">
         <button text="@general.ok" closewindow="true" id="ok" magnet="true" minwidth="60" />
