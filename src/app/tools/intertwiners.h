@@ -66,8 +66,14 @@ class IntertwineAsLines : public Intertwine {
       stroke->addPoint(newPoint);
     }
   }
-
+  Stroke lastPointPrinted;
   Stroke m_pts;
+
+  void saveLastPointAndDoPointshape(ToolLoop* loop, const Stroke& stroke) {
+    lastPointPrinted = stroke;
+    doPointshapePoint(stroke[0].x, stroke[0].y, loop);
+  }
+
 public:
   bool snapByAngle() override { return true; }
 
@@ -77,11 +83,23 @@ public:
       return;
 
     if (stroke.size() == 1) {
-      doPointshapePoint(stroke[0].x, stroke[0].y, loop);
+      saveLastPointAndDoPointshape(loop, stroke);
+      return;
     }
     else if (stroke.size() >= 2) {
-      if (stroke.size() == 2 && stroke[0] == stroke[1])
-        return;
+      if (stroke.size() == 2 && stroke[0] == stroke[1]) {
+        if (lastPointPrinted.empty()) {
+          saveLastPointAndDoPointshape(loop, stroke);
+          return;
+        }
+        else {
+          if (lastPointPrinted[0] != stroke[0] ||
+              loop->getTracePolicy() == TracePolicy::Last) {
+            saveLastPointAndDoPointshape(loop, stroke);
+            return;
+          }
+        }
+      }
       else {
         for (int c=0; c+1<stroke.size(); ++c) {
           algo_line_continuous(
@@ -93,8 +111,13 @@ public:
             (AlgoPixel)&IntertwineAsLines::Line);
         }
 
-        for (int c=1; c<m_pts.size(); ++c)
+        for (int c=0; c<m_pts.size(); ++c) {
+          if (c == 0 && loop->getController()->isFreehand())
+            continue;
           doPointshapePoint(m_pts[c].x, m_pts[c].y, loop);
+        }
+        ASSERT(!lastPointPrinted.empty());
+        lastPointPrinted[0] = m_pts[m_pts.size()-1];
       }
       m_pts.reset();
     }
