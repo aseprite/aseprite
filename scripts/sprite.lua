@@ -62,3 +62,15 @@ do
   assert(a.palettes[1]:getColor(1) == Color(0, 255, 0))
   assert(a.palettes[1]:getColor(2) == Color(0, 0, 255))
 end
+
+-- Flatten
+
+do
+  local a = Sprite(32, 32)
+  a:newLayer()
+  a:newLayer()
+  assert(#a.layers == 3)
+
+  a:flatten()
+  assert(#a.layers == 1)
+end
