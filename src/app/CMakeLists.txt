@@ -238,7 +238,6 @@ if(ENABLE_UI)
     commands/cmd_mask_all.cpp
     commands/cmd_mask_by_color.cpp
     commands/cmd_mask_content.cpp
-    commands/cmd_merge_down_layer.cpp
     commands/cmd_modify_selection.cpp
     commands/cmd_move_cel.cpp
     commands/cmd_move_mask.cpp
@@ -505,6 +504,7 @@ add_library(app-lib
   commands/cmd_flatten_layers.cpp
   commands/cmd_layer_from_background.cpp
   commands/cmd_load_palette.cpp
+  commands/cmd_merge_down_layer.cpp
   commands/cmd_new_frame.cpp
   commands/cmd_new_layer.cpp
   commands/cmd_open_file.cpp
