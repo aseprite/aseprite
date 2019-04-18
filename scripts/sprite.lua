@@ -1,3 +1,4 @@
+-- Copyright (C) 2019  Igara Studio S.A.
 -- Copyright (C) 2018  David Capello
 --
 -- This file is released under the terms of the MIT license.
@@ -28,10 +29,22 @@ do
   assert(a.width == 8)
   assert(a.height == 10)
 
-  local b = Sprite(4, 4, ColorMode.INDEXED)
+  -- Test other Sprite() constructors
+  local b = Sprite(4, 8, ColorMode.INDEXED)
   assert(b.width == 4)
-  assert(b.height == 4)
+  assert(b.height == 8)
   assert(b.colorMode == ColorMode.INDEXED)
+
+  local c = Sprite{ colorMode=ColorMode.INDEXED, width=10, height=20 }
+  assert(c.width == 10)
+  assert(c.height == 20)
+  assert(c.colorMode == ColorMode.INDEXED)
+
+  local d = Sprite{ fromFile="sprites/abcd.aseprite" }
+  assert(#d.layers == 4)
+  assert(d.width == 32)
+  assert(d.height == 32)
+  assert(d.colorMode == ColorMode.INDEXED)
 end
 
 -- Transparent color
@@ -63,7 +76,7 @@ do
   assert(a.palettes[1]:getColor(2) == Color(0, 0, 255))
 end
 
--- Flatten
+-- Duplicate & Flatten
 
 do
   local a = Sprite(32, 32)
@@ -71,6 +84,8 @@ do
   a:newLayer()
   assert(#a.layers == 3)
 
-  a:flatten()
+  local b = Sprite(a)           -- Clone a
+  a:flatten()                   -- Flatten a
   assert(#a.layers == 1)
+  assert(#b.layers == 3)
 end
