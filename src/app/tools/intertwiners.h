@@ -123,7 +123,12 @@ public:
     }
 
     // Closed shape (polygon outline)
-    if (loop->getFilled()) {
+    // Note: Contour tool was getting into the condition with no need, so
+    // we add the && !isFreehand to detect this circunstance.
+    // When this is missing, we have problems previewing the stroke of
+    // contour tool, with brush type = kImageBrush with alpha content and
+    // with not Pixel Perfect pencil mode.
+    if (loop->getFilled() && !loop->getController()->isFreehand()) {
       doPointshapeLine(stroke[0].x, stroke[0].y,
                        stroke[stroke.size()-1].x,
                        stroke[stroke.size()-1].y, loop);
