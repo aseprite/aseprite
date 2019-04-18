@@ -114,6 +114,7 @@ namespace app {
   void push_cels(lua_State* L, doc::Sprite* sprite);
   void push_color_space(lua_State* L, const gfx::ColorSpace& cs);
   void push_doc_range(lua_State* L, Site& site, const DocRange& docRange);
+  void push_image(lua_State* L, doc::Image* image);
   void push_images(lua_State* L, const doc::ObjectIds& images);
   void push_layers(lua_State* L, const doc::ObjectIds& layers);
   void push_sprite_cel(lua_State* L, doc::Cel* cel);
@@ -127,8 +128,8 @@ namespace app {
   void push_sprite_slices(lua_State* L, doc::Sprite* sprite);
   void push_sprite_tags(lua_State* L, doc::Sprite* sprite);
   void push_sprites(lua_State* L);
-  void push_userdata(lua_State* L, doc::WithUserData* userData);
   void push_tool(lua_State* L, tools::Tool* tool);
+  void push_userdata(lua_State* L, doc::WithUserData* userData);
 
   gfx::Point convert_args_into_point(lua_State* L, int index);
   gfx::Rect convert_args_into_rect(lua_State* L, int index);
@@ -142,6 +143,12 @@ namespace app {
   doc::frame_t get_frame_number_from_arg(lua_State* L, int index);
   const doc::Mask* get_mask_from_arg(lua_State* L, int index);
   tools::Tool* get_tool_from_arg(lua_State* L, int index);
+
+  // Used by App.open(), Sprite{ fromFile }, and Image{ fromFile }
+  enum class LoadSpriteFromFileParam { FullAniAsSprite,
+                                       OneFrameAsImage };
+  int load_sprite_from_file(lua_State* L, const char* filename,
+                            const LoadSpriteFromFileParam param);
 
 } // namespace script
 } // namespace app

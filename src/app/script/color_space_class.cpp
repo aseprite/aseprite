@@ -26,8 +26,8 @@ int ColorSpace_new(lua_State* L)
     return 1;
   }
   else if (lua_istable(L, 1)) {
-    // Load ICC profile when ColorSpace{ filename="..." } is specified
-    if (lua_getfield(L, 1, "filename") != LUA_TNIL) {
+    // Load ICC profile when ColorSpace{ fromFile="..." } is specified
+    if (lua_getfield(L, 1, "fromFile") != LUA_TNIL) {
       const char* fn = lua_tostring(L, -1);
       if (fn) {
         auto buf = base::read_file_content(fn);

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -11,10 +11,13 @@
 
 #include "app/cmd/set_palette.h"
 #include "app/color.h"
+#include "app/file/palette_file.h"
 #include "app/script/docobj.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
+#include "app/script/security.h"
 #include "app/tx.h"
+#include "base/fs.h"
 #include "doc/palette.h"
 #include "doc/sprite.h"
 
@@ -63,6 +66,28 @@ int Palette_new(lua_State* L)
 {
   if (auto pal2 = may_get_obj<PaletteObj>(L, 1)) {
     push_new<PaletteObj>(L, nullptr, new Palette(*pal2->palette(L)));
+  }
+  else if (lua_istable(L, 1)) {
+    // Palette{ fromFile }
+    int type = lua_getfield(L, 1, "fromFile");
+    if (type != LUA_TNIL) {
+      if (const char* fromFile = lua_tostring(L, -1)) {
+        std::string absFn = base::get_absolute_path(fromFile);
+        lua_pop(L, 1);
+
+        if (!ask_access(L, absFn.c_str(), FileAccessMode::Read, true))
+          return luaL_error(L, "script doesn't have access to open file %s",
+                            absFn.c_str());
+
+        Palette* pal = load_palette(absFn.c_str());
+        if (pal)
+          push_new<PaletteObj>(L, nullptr, pal);
+        else
+          lua_pushnil(L);
+        return 1;
+      }
+    }
+    lua_pop(L, 1);
   }
   else {
     int ncolors = lua_tointeger(L, 1);
@@ -165,6 +190,21 @@ int Palette_get_frame(lua_State* L)
   return 1;
 }
 
+int Palette_saveAs(lua_State* L)
+{
+  auto obj = get_obj<PaletteObj>(L, 1);
+  auto pal = obj->palette(L);
+  const char* fn = luaL_checkstring(L, 2);
+  if (fn) {
+    std::string absFn = base::get_absolute_path(fn);
+    if (!ask_access(L, absFn.c_str(), FileAccessMode::Write, true))
+      return luaL_error(L, "script doesn't have access to write file %s",
+                        absFn.c_str());
+    save_palette(absFn.c_str(), pal, pal->size());
+  }
+  return 0;
+}
+
 int Palette_get_frameNumber(lua_State* L)
 {
   auto obj = get_obj<PaletteObj>(L, 1);
@@ -179,6 +219,7 @@ const luaL_Reg Palette_methods[] = {
   { "resize", Palette_resize },
   { "getColor", Palette_getColor },
   { "setColor", Palette_setColor },
+  { "saveAs", Palette_saveAs },
   { nullptr, nullptr }
 };
 

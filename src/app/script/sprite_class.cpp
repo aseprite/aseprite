@@ -57,7 +57,7 @@ int Sprite_new(lua_State* L)
 {
   std::unique_ptr<Doc> doc;
 
-  // Duplicate a sprie
+  // Duplicate a sprite
   if (auto otherSpr = may_get_docobj<doc::Sprite>(L, 1)) {
     Doc* otherDoc = static_cast<Doc*>(otherSpr->document());
     doc.reset(otherDoc->duplicate(DuplicateExactCopy));
@@ -68,14 +68,50 @@ int Sprite_new(lua_State* L)
       spec = *spec2;
     }
     else {
-      const int w = lua_tointeger(L, 1);
-      const int h = lua_tointeger(L, 2);
-      const int colorMode = (lua_isnone(L, 3) ? IMAGE_RGB: lua_tointeger(L, 3));
-      spec.setWidth(w);
-      spec.setHeight(h);
-      spec.setColorMode((doc::ColorMode)colorMode);
+      if (lua_istable(L, 1)) {
+        // Sprite{ fromFile }
+        int type = lua_getfield(L, 1, "fromFile");
+        if (type != LUA_TNIL) {
+          if (const char* fromFile = lua_tostring(L, -1)) {
+            std::string fn = fromFile;
+            lua_pop(L, 1);
+            return load_sprite_from_file(
+              L, fn.c_str(),
+              LoadSpriteFromFileParam::FullAniAsSprite);
+          }
+        }
+        lua_pop(L, 1);
+
+        // In case that there is no "fromFile" field
+        if (type == LUA_TNIL) {
+          // Sprite{ width, height, colorMode }
+          lua_getfield(L, 1, "width");
+          lua_getfield(L, 1, "height");
+          spec.setWidth(lua_tointeger(L, -2));
+          spec.setHeight(lua_tointeger(L, -1));
+          lua_pop(L, 2);
+
+          type = lua_getfield(L, 1, "colorMode");
+          if (type != LUA_TNIL)
+            spec.setColorMode((doc::ColorMode)lua_tointeger(L, -1));
+          lua_pop(L, 1);
+        }
+      }
+      else {
+        const int w = lua_tointeger(L, 1);
+        const int h = lua_tointeger(L, 2);
+        const int colorMode = (lua_isnone(L, 3) ? IMAGE_RGB: lua_tointeger(L, 3));
+        spec.setWidth(w);
+        spec.setHeight(h);
+        spec.setColorMode((doc::ColorMode)colorMode);
+      }
       spec.setColorSpace(get_working_rgb_space_from_preferences());
     }
+
+    if (spec.width() < 1)
+      return luaL_error(L, "invalid width value = %d in Sprite()", spec.width());
+    if (spec.height() < 1)
+      return luaL_error(L, "invalid height value = %d in Sprite()", spec.height());
 
     std::unique_ptr<Sprite> sprite(Sprite::createBasicSprite(spec, 256));
     doc.reset(new Doc(sprite.get()));

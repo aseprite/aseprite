@@ -14,6 +14,7 @@
 #include "app/commands/params.h"
 #include "app/context.h"
 #include "app/doc.h"
+#include "app/doc_access.h"
 #include "app/i18n/strings.h"
 #include "app/loop_tag.h"
 #include "app/pref/preferences.h"
@@ -36,6 +37,8 @@
 #include "base/fs.h"
 #include "doc/frame_tag.h"
 #include "doc/layer.h"
+#include "doc/primitives.h"
+#include "render/render.h"
 #include "ui/alert.h"
 
 #include <iostream>
@@ -43,14 +46,13 @@
 namespace app {
 namespace script {
 
-namespace {
-
-int App_open(lua_State* L)
+int load_sprite_from_file(lua_State* L, const char* filename,
+                          const LoadSpriteFromFileParam param)
 {
-  std::string absFn = base::get_absolute_path(luaL_checkstring(L, 1));
-    if (!ask_access(L, absFn.c_str(), FileAccessMode::Read, true))
-      return luaL_error(L, "script doesn't have access to open file %s",
-                        absFn.c_str());
+  std::string absFn = base::get_absolute_path(filename);
+  if (!ask_access(L, absFn.c_str(), FileAccessMode::Read, true))
+    return luaL_error(L, "script doesn't have access to open file %s",
+                      absFn.c_str());
 
   app::Context* ctx = App::instance()->context();
   Doc* oldDoc = ctx->activeDocument();
@@ -59,14 +61,52 @@ int App_open(lua_State* L)
     Commands::instance()->byId(CommandId::OpenFile());
   Params params;
   params.set("filename", absFn.c_str());
+  if (param == LoadSpriteFromFileParam::OneFrameAsImage)
+    params.set("oneframe", "true");
   ctx->executeCommand(openCommand, params);
 
   Doc* newDoc = ctx->activeDocument();
-  if (newDoc != oldDoc)
-    push_docobj(L, newDoc->sprite());
+  if (newDoc != oldDoc) {
+    if (param == LoadSpriteFromFileParam::OneFrameAsImage) {
+      doc::Sprite* sprite = newDoc->sprite();
+
+      // Render the first frame of the sprite
+      // TODO add "frame" parameter to render different frames
+      std::unique_ptr<doc::Image> image(doc::Image::create(sprite->spec()));
+      doc::clear_image(image.get(), sprite->transparentColor());
+      render::Render().renderSprite(image.get(), sprite, 0);
+
+      // Restore the old document and active and destroy the recently
+      // loaded sprite.
+      ctx->setActiveDocument(oldDoc);
+
+      try {
+        DocDestroyer destroyer(ctx, newDoc, 500);
+        destroyer.destroyDocument();
+      }
+      catch (const LockedDocException& ex) {
+        // Almost impossible?
+        luaL_error(L, "cannot lock document to close it\n%s", ex.what());
+      }
+
+      push_image(L, image.release());
+      return 1;
+    }
+    else {
+      push_docobj(L, newDoc->sprite());
+    }
+  }
   else
     lua_pushnil(L);
   return 1;
+}
+
+namespace {
+
+int App_open(lua_State* L)
+{
+  return load_sprite_from_file(
+    L, luaL_checkstring(L, 1), LoadSpriteFromFileParam::FullAniAsSprite);
 }
 
 int App_exit(lua_State* L)

@@ -11,11 +11,15 @@
 
 #include "app/cmd/copy_rect.h"
 #include "app/cmd/copy_region.h"
+#include "app/doc.h"
+#include "app/file/file.h"
 #include "app/script/docobj.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
+#include "app/script/security.h"
 #include "app/tx.h"
 #include "app/util/autocrop.h"
+#include "base/fs.h"
 #include "doc/algorithm/shrink_bounds.h"
 #include "doc/cel.h"
 #include "doc/image.h"
@@ -72,8 +76,37 @@ int Image_new(lua_State* L)
   if (auto spec2 = may_get_obj<doc::ImageSpec>(L, 1)) {
     spec = *spec2;
   }
-  else if (auto otherImg = may_get_obj<ImageObj>(L, 1)) {
+  else if (may_get_obj<ImageObj>(L, 1)) {
     return Image_clone(L);
+  }
+  else if (lua_istable(L, 1)) {
+    // Image{ fromFile }
+    int type = lua_getfield(L, 1, "fromFile");
+    if (type != LUA_TNIL) {
+      if (const char* fromFile = lua_tostring(L, -1)) {
+        std::string fn = fromFile;
+        lua_pop(L, 1);
+        return load_sprite_from_file(
+          L, fn.c_str(),
+          LoadSpriteFromFileParam::OneFrameAsImage);
+      }
+    }
+    lua_pop(L, 1);
+
+    // In case that there is no "fromFile" field
+    if (type == LUA_TNIL) {
+      // Image{ width, height, colorMode }
+      lua_getfield(L, 1, "width");
+      lua_getfield(L, 1, "height");
+      spec.setWidth(lua_tointeger(L, -2));
+      spec.setHeight(lua_tointeger(L, -1));
+      lua_pop(L, 2);
+
+      type = lua_getfield(L, 1, "colorMode");
+      if (type != LUA_TNIL)
+        spec.setColorMode((doc::ColorMode)lua_tointeger(L, -1));
+      lua_pop(L, 1);
+    }
   }
   else {
     const int w = lua_tointeger(L, 1);
@@ -263,6 +296,37 @@ int Image_isPlain(lua_State* L)
   return 1;
 }
 
+int Image_saveAs(lua_State* L)
+{
+  auto obj = get_obj<ImageObj>(L, 1);
+  auto img = obj->image(L);
+  const char* fn = luaL_checkstring(L, 2);
+  bool result = false;
+  if (fn) {
+    std::string absFn = base::get_absolute_path(fn);
+    if (!ask_access(L, absFn.c_str(), FileAccessMode::Write, true))
+      return luaL_error(L, "script doesn't have access to write file %s",
+                        absFn.c_str());
+
+    std::unique_ptr<Sprite> sprite(Sprite::createBasicSprite(img->spec(), 256));
+
+    std::vector<Image*> oneImage;
+    sprite->getImages(oneImage);
+    ASSERT(oneImage.size() == 1);
+    if (!oneImage.empty())
+      copy_image(oneImage.front(), img);
+
+    std::unique_ptr<Doc> doc(new Doc(sprite.get()));
+    sprite.release();
+    doc->setFilename(absFn);
+
+    app::Context* ctx = App::instance()->context();
+    result = (save_document(ctx, doc.get()) >= 0);
+  }
+  lua_pushboolean(L, result);
+  return 1;
+}
+
 int Image_get_width(lua_State* L)
 {
   const auto obj = get_obj<ImageObj>(L, 1);
@@ -309,6 +373,7 @@ const luaL_Reg Image_methods[] = {
   { "isEqual", Image_isEqual },
   { "isEmpty", Image_isEmpty },
   { "isPlain", Image_isPlain },
+  { "saveAs", Image_saveAs },
   { "__gc", Image_gc },
   { nullptr, nullptr }
 };
@@ -338,6 +403,11 @@ void register_image_class(lua_State* L)
 void push_cel_image(lua_State* L, doc::Cel* cel)
 {
   push_new<ImageObj>(L, cel);
+}
+
+void push_image(lua_State* L, doc::Image* image)
+{
+  push_new<ImageObj>(L, image);
 }
 
 doc::Image* may_get_image_from_arg(lua_State* L, int index)
