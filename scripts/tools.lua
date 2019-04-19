@@ -3,6 +3,8 @@
 -- This file is released under the terms of the MIT license.
 -- Read LICENSE.txt for more information.
 
+dofile('./test_utils.lua')
+
 ----------------------------------------------------------------------
 -- activeTool
 ----------------------------------------------------------------------
@@ -14,6 +16,11 @@ app.activeTool = 'line'
 assert(app.activeTool.id == 'line')
 app.activeTool = pencil
 assert(app.activeTool.id == 'pencil')
+
+-- default brush is a circle of 1x1 when there is no UI
+assert(app.activeBrush.type == BrushType.CIRCLE)
+assert(app.activeBrush.size == 1)
+assert(app.activeBrush.angle == 0)
 
 ----------------------------------------------------------------------
 -- create sprite for testing
@@ -69,7 +76,6 @@ do
   assert(cel.image.height == 4)
   for v=0,3 do
     for u=0,3 do
-      print(u, v, cel.image:getPixel(u, v), expected[1+v*4+u])
       assert(cel.image:getPixel(u, v) == expected[1+v*4+u])
     end
   end
@@ -94,7 +100,6 @@ do
   assert(cel.image.height == 4)
   for v=0,3 do
     for u=0,3 do
-      print(u, v, cel.image:getPixel(u, v), expected[1+v*4+u])
       assert(cel.image:getPixel(u, v) == expected[1+v*4+u])
     end
   end
@@ -121,7 +126,6 @@ do
   assert(cel.image.height == 4)
   for v=0,3 do
     for u=0,3 do
-      print(u, v, cel.image:getPixel(u, v), expected[1+v*4+u])
       assert(cel.image:getPixel(u, v) == expected[1+v*4+u])
     end
   end
@@ -149,7 +153,6 @@ do
   assert(cel.image.height == 4)
   for v=0,3 do
     for u=0,3 do
-      print(u, v, cel.image:getPixel(u, v), expected[1+v*4+u])
       assert(cel.image:getPixel(u, v) == expected[1+v*4+u])
     end
   end
@@ -198,4 +201,68 @@ do
   assert(bgCel2.image:getPixel(0, 0) == red.rgbaPixel)
   assert(fgCel1.image:getPixel(0, 0) == yellow.rgbaPixel)
   assert(fgCel2.image:getPixel(0, 0) == yellow.rgbaPixel)
+end
+
+----------------------------------------------------------------------
+-- draw with brushes
+----------------------------------------------------------------------
+
+do
+  local expectedImages = {
+    { 0, 0, 0, 0,
+      0, 0, 0, 0,
+      0, 0, 0, 0,
+      0, 0, 0, 0 },
+    { 0, 0, 0, 0,
+      0, 1, 0, 0,
+      0, 0, 0, 0,
+      0, 0, 0, 0 },
+    { 0, 0, 0, 0,
+      0, 2, 2, 0,
+      0, 2, 2, 0,
+      0, 0, 0, 0 },
+    { 3, 3, 3, 0,
+      3, 3, 3, 3,
+      3, 3, 3, 3,
+      0, 3, 3, 3 }
+  }
+
+  local s = Sprite(4, 4, ColorMode.INDEXED)
+  assert(s == app.activeSprite)
+  assert(s.cels[1] == app.activeCel)
+
+  function expect_cel_is_image(imageIndex)
+    local a = Image(s.spec)
+    a:drawSprite(s, 1, Point(0, 0))
+    local b = expectedImages[imageIndex]
+    expect_img(a, b)
+  end
+
+  expect_cel_is_image(1)
+  app.useTool{ tool='pencil', color=1, points={ Point(1, 1) } }
+  assert(#s.cels == 1)
+  expect_cel_is_image(2)
+  app.undo()
+
+  expect_cel_is_image(1)
+  app.useTool{ tool='pencil',
+               brush=Brush{ size=2, type=BrushType.SQUARE },
+               color=2, points={ Point(2, 2) } }
+  expect_cel_is_image(3)
+  app.undo()
+
+  expect_cel_is_image(1)
+  app.useTool{ tool='pencil',
+               brush=Brush{ size=2, type=BrushType.SQUARE, center=Point(0, 0) },
+               color=2, points={ Point(1, 1) } }
+  expect_cel_is_image(3)
+  app.undo()
+
+  expect_cel_is_image(1)
+  app.useTool{ tool='line',
+               brush={ size=3, type=BrushType.SQUARE },
+               color=3, points={ Point(1, 1), Point(2, 2) } }
+  expect_cel_is_image(4)
+  app.undo()
+
 end
