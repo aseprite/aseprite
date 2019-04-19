@@ -1,4 +1,5 @@
 # Aseprite
+# Copyright (C) 2019  Igara Studio S.A.
 # Copyright (C) 2001-2018  David Capello
 
 ######################################################################
@@ -17,7 +18,11 @@ if(MSVC)
   endif()
 
   add_definitions(-D_SCL_SECURE_NO_WARNINGS)
-endif(MSVC)
+  add_definitions(-wd4267) # disable warnings about signed/unsigned comparison
+else()
+  # disable warnings about signed/unsigned comparison
+  add_definitions(-Wno-sign-compare)
+endif()
 
 if(ENABLE_NEWS)
   add_definitions(-DENABLE_NEWS)
