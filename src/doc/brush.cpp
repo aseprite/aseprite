@@ -1,5 +1,6 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2016 David Capello
+// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -29,7 +30,7 @@ Brush::Brush()
   m_type = kCircleBrushType;
   m_size = 1;
   m_angle = 0;
-  m_pattern = BrushPattern::DEFAULT;
+  m_pattern = BrushPattern::DEFAULT_FOR_UI;
   m_gen = 0;
 
   regenerate();
@@ -40,7 +41,7 @@ Brush::Brush(BrushType type, int size, int angle)
   m_type = type;
   m_size = size;
   m_angle = angle;
-  m_pattern = BrushPattern::DEFAULT;
+  m_pattern = BrushPattern::DEFAULT_FOR_UI;
   m_gen = 0;
 
   regenerate();
@@ -277,6 +278,14 @@ void Brush::setImageColor(ImageColor imageColor, color_t color)
         (m_bgColor ? true: false), (m_bgColor ? *m_bgColor: 0));
       break;
   }
+}
+
+void Brush::setCenter(const gfx::Point& center)
+{
+  m_center = center;
+  m_bounds = gfx::Rect(-m_center,
+                       gfx::Size(m_image->width(),
+                                 m_image->height()));
 }
 
 // Cleans the brush's data (image and region).

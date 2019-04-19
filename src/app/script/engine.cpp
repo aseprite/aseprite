@@ -136,6 +136,7 @@ void register_app_object(lua_State* L);
 void register_app_pixel_color_object(lua_State* L);
 void register_app_command_object(lua_State* L);
 
+void register_brush_class(lua_State* L);
 void register_cel_class(lua_State* L);
 void register_cels_class(lua_State* L);
 void register_color_class(lua_State* L);
@@ -298,7 +299,25 @@ Engine::Engine()
   setfield_integer(L, "JSON_ARRAY", DocExporter::JsonArrayDataFormat);
   lua_pop(L, 1);
 
+  lua_newtable(L);
+  lua_pushvalue(L, -1);
+  lua_setglobal(L, "BrushType");
+  setfield_integer(L, "CIRCLE", doc::kCircleBrushType);
+  setfield_integer(L, "SQUARE", doc::kSquareBrushType);
+  setfield_integer(L, "LINE", doc::kLineBrushType);
+  setfield_integer(L, "IMAGE", doc::kImageBrushType);
+  lua_pop(L, 1);
+
+  lua_newtable(L);
+  lua_pushvalue(L, -1);
+  lua_setglobal(L, "BrushPattern");
+  setfield_integer(L, "ORIGIN", doc::BrushPattern::ALIGNED_TO_SRC);
+  setfield_integer(L, "TARGET", doc::BrushPattern::ALIGNED_TO_DST);
+  setfield_integer(L, "NONE", doc::BrushPattern::PAINT_BRUSH);
+  lua_pop(L, 1);
+
   // Register classes/prototypes
+  register_brush_class(L);
   register_cel_class(L);
   register_cels_class(L);
   register_color_class(L);

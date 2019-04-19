@@ -42,7 +42,6 @@
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
 #include "app/util/expand_cel_canvas.h"
-#include "doc/brush.h"
 #include "doc/cel.h"
 #include "doc/image.h"
 #include "doc/layer.h"
@@ -689,7 +688,8 @@ tools::ToolLoop* create_tool_loop_for_script(
   const Site& site,
   tools::Tool* tool,
   tools::Ink* ink,
-  const app::Color& color)
+  const app::Color& color,
+  const doc::BrushRef& brush)
 {
   ASSERT(tool);
   ASSERT(ink);
@@ -699,13 +699,6 @@ tools::ToolLoop* create_tool_loop_for_script(
   try {
     const tools::ToolLoop::Button toolLoopButton = tools::ToolLoop::Left;
     tools::Controller* controller = tool->getController(toolLoopButton);
-    BrushRef brush(nullptr);
-#ifdef ENABLE_UI
-    if (App::instance()->contextBar())
-      brush = App::instance()->contextBar()->activeBrush(tool, ink);
-#endif
-    if (!brush)
-      brush = BrushRef(new Brush(BrushType::kCircleBrushType, 1, 0));
 
     return new ToolLoopImpl(
       nullptr, site, context,

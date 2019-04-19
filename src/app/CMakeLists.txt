@@ -150,6 +150,7 @@ if(ENABLE_SCRIPTING)
     commands/cmd_run_script.cpp
     script/app_command_object.cpp
     script/app_object.cpp
+    script/brush_class.cpp
     script/cel_class.cpp
     script/cels_class.cpp
     script/color_class.cpp

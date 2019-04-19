@@ -1,5 +1,6 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2001-2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -11,10 +12,13 @@
 namespace doc {
 
   enum class BrushPattern {
-    DEFAULT = 0,
     ALIGNED_TO_SRC = 0,
     ALIGNED_TO_DST = 1,
     PAINT_BRUSH = 2,
+
+    DEFAULT = ALIGNED_TO_SRC,           // Default for preferences
+    DEFAULT_FOR_UI = ALIGNED_TO_SRC,
+    DEFAULT_FOR_SCRIPTS = PAINT_BRUSH,
   };
 
 } // namespace doc

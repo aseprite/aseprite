@@ -15,6 +15,7 @@
 
 #include "app/color.h"
 #include "app/commands/params.h"
+#include "doc/brush.h"
 #include "doc/frame.h"
 #include "doc/object_ids.h"
 #include "gfx/fwd.h"
@@ -108,6 +109,7 @@ namespace app {
   };
 
   int push_image_iterator_function(lua_State* L, const doc::Image* image, int extraArgIndex);
+  void push_brush(lua_State* L, const doc::BrushRef& brush);
   void push_cel_image(lua_State* L, doc::Cel* cel);
   void push_cels(lua_State* L, const doc::ObjectIds& cels);
   void push_cels(lua_State* L, doc::Layer* layer);
@@ -143,6 +145,7 @@ namespace app {
   doc::frame_t get_frame_number_from_arg(lua_State* L, int index);
   const doc::Mask* get_mask_from_arg(lua_State* L, int index);
   tools::Tool* get_tool_from_arg(lua_State* L, int index);
+  doc::BrushRef get_brush_from_arg(lua_State* L, int index);
 
   // Used by App.open(), Sprite{ fromFile }, and Image{ fromFile }
   enum class LoadSpriteFromFileParam { FullAniAsSprite,

@@ -10,6 +10,7 @@
 #pragma once
 
 #include "app/tools/pointer.h"
+#include "doc/brush.h"
 #include "doc/image_ref.h"
 #include "gfx/fwd.h"
 
@@ -40,7 +41,8 @@ namespace app {
     const Site& site,
     tools::Tool* tool,
     tools::Ink* ink,
-    const app::Color& color);
+    const app::Color& color,
+    const doc::BrushRef& brush);
 
   tools::ToolLoop* create_tool_loop_preview(
     Editor* editor,

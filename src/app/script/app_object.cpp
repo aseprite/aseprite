@@ -29,6 +29,7 @@
 #include "app/tools/tool_loop.h"
 #include "app/tools/tool_loop_manager.h"
 #include "app/tx.h"
+#include "app/ui/context_bar.h"
 #include "app/ui/doc_view.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/tool_loop_impl.h"
@@ -287,11 +288,25 @@ int App_useTool(lua_State* L)
     color = convert_args_into_color(L, -1);
   lua_pop(L, 1);
 
+  // Default brush is the active brush in the context bar
+  BrushRef brush(nullptr);
+#ifdef ENABLE_UI
+  if (App::instance()->isGui() &&
+      App::instance()->contextBar())
+    brush = App::instance()->contextBar()->activeBrush(tool, ink);
+#endif
+  type = lua_getfield(L, 1, "brush");
+  if (type != LUA_TNIL)
+    brush = get_brush_from_arg(L, -1);
+  lua_pop(L, 1);
+  if (!brush)
+    brush.reset(new Brush(BrushType::kCircleBrushType, 1, 0));
+
   // Do the tool loop
   type = lua_getfield(L, 1, "points");
   if (type == LUA_TTABLE) {
     std::unique_ptr<tools::ToolLoop> loop(
-      create_tool_loop_for_script(ctx, site, tool, ink, color));
+      create_tool_loop_for_script(ctx, site, tool, ink, color, brush));
     if (!loop)
       return luaL_error(L, "cannot draw in the active site");
 
@@ -478,6 +493,27 @@ int App_get_apiVersion(lua_State* L)
   return 1;
 }
 
+int App_get_activeTool(lua_State* L)
+{
+  tools::Tool* tool = App::instance()->activeToolManager()->activeTool();
+  push_tool(L, tool);
+  return 1;
+}
+
+int App_get_activeBrush(lua_State* L)
+{
+#if ENABLE_UI
+  App* app = App::instance();
+  if (app->isGui()) {
+    doc::BrushRef brush = app->contextBar()->activeBrush();
+    push_brush(L, brush);
+    return 1;
+  }
+#endif
+  push_brush(L, doc::BrushRef(new doc::Brush()));
+  return 1;
+}
+
 int App_set_activeSprite(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 2);
@@ -524,17 +560,22 @@ int App_set_activeImage(lua_State* L)
   return 0;
 }
 
-int App_get_activeTool(lua_State* L)
-{
-  tools::Tool* tool = App::instance()->activeToolManager()->activeTool();
-  push_tool(L, tool);
-  return 1;
-}
-
 int App_set_activeTool(lua_State* L)
 {
   if (auto tool = get_tool_from_arg(L, 2))
     App::instance()->activeToolManager()->setSelectedTool(tool);
+  return 0;
+}
+
+int App_set_activeBrush(lua_State* L)
+{
+#if ENABLE_UI
+  if (auto brush = get_brush_from_arg(L, 2)) {
+    App* app = App::instance();
+    if (app->isGui())
+      app->contextBar()->setActiveBrush(brush);
+  }
+#endif
   return 0;
 }
 
@@ -558,6 +599,7 @@ const Property App_properties[] = {
   { "activeImage", App_get_activeImage, App_set_activeImage },
   { "activeTag", App_get_activeTag, nullptr },
   { "activeTool", App_get_activeTool, App_set_activeTool },
+  { "activeBrush", App_get_activeBrush, App_set_activeBrush },
   { "sprites", App_get_sprites, nullptr },
   { "fgColor", App_get_fgColor, App_set_fgColor },
   { "bgColor", App_get_bgColor, App_set_bgColor },

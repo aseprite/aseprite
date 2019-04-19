@@ -1,5 +1,6 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2018 David Capello
+// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -57,6 +58,7 @@ namespace doc {
     void setPatternOrigin(const gfx::Point& patternOrigin) {
       m_patternOrigin = patternOrigin;
     }
+    void setCenter(const gfx::Point& center);
 
   private:
     void clean();
