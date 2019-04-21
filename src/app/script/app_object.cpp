@@ -36,6 +36,7 @@
 #include "app/ui/timeline/timeline.h"
 #include "app/ui_context.h"
 #include "base/fs.h"
+#include "base/version.h"
 #include "doc/frame_tag.h"
 #include "doc/layer.h"
 #include "doc/primitives.h"
@@ -483,7 +484,7 @@ int App_get_isUIAvailable(lua_State* L)
 
 int App_get_version(lua_State* L)
 {
-  lua_pushstring(L, VERSION);
+  push_version(L, base::Version(VERSION));
   return 1;
 }
 

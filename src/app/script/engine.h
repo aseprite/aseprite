@@ -26,6 +26,10 @@
 
 struct lua_State;
 
+namespace base {
+  class Version;
+}
+
 namespace gfx {
   class ColorSpace;
 }
@@ -132,6 +136,7 @@ namespace app {
   void push_sprites(lua_State* L);
   void push_tool(lua_State* L, tools::Tool* tool);
   void push_userdata(lua_State* L, doc::WithUserData* userData);
+  void push_version(lua_State* L, const base::Version& ver);
 
   gfx::Point convert_args_into_point(lua_State* L, int index);
   gfx::Rect convert_args_into_rect(lua_State* L, int index);

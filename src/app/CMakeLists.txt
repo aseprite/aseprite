@@ -183,6 +183,7 @@ if(ENABLE_SCRIPTING)
     script/tag_class.cpp
     script/tags_class.cpp
     script/tool_class.cpp
+    script/version_class.cpp
     shell.cpp
     ${scripting_files_ui})
 endif()
