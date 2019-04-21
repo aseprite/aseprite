@@ -21,6 +21,8 @@ assert(Version("1.0.1") > Version("1.0.1-beta"))
 assert(Version("1.0.1") > Version("1.0.1-dev"))
 assert(Version("1.0.1-beta") > Version("1.0.1-alpha"))
 assert(Version("1.0.1-beta50") < Version("1.0.1-beta100"))
+assert(Version("1.0.1-beta50") <= Version("1.0.1-beta100"))
+assert(Version("1.0.1-beta100") <= Version("1.0.1-beta100"))
 
 local v = Version()
 assert(v.major == 0)
