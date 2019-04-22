@@ -372,7 +372,7 @@ void ExpandCelCanvas::copyValidDestToSourceCanvas(const gfx::Region& rgn)
       gfx::Clip(rc.x, rc.y, rc.x, rc.y, rc.w, rc.h));
 
   // We cannot compare src vs dst in this case (e.g. on tools like
-  // spray and jumble that updated the source image form the modified
+  // spray and jumble that updated the source image from the modified
   // destination).
   m_canCompareSrcVsDst = false;
 }
