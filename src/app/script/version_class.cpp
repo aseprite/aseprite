@@ -74,38 +74,38 @@ int Version_tostring(lua_State* L)
 int Version_get_major(lua_State* L)
 {
   const auto ver = get_obj<base::Version>(L, 1);
-  const auto& digits = ver->digits();
-  lua_pushinteger(L, digits.size() > 0 ? digits[0]: 0);
+  const auto& numbers = ver->numbers();
+  lua_pushinteger(L, numbers.size() > 0 ? numbers[0]: 0);
   return 1;
 }
 
 int Version_get_minor(lua_State* L)
 {
   const auto ver = get_obj<base::Version>(L, 1);
-  const auto& digits = ver->digits();
-  lua_pushinteger(L, digits.size() > 1 ? digits[1]: 0);
+  const auto& numbers = ver->numbers();
+  lua_pushinteger(L, numbers.size() > 1 ? numbers[1]: 0);
   return 1;
 }
 
 int Version_get_patch(lua_State* L)
 {
   const auto ver = get_obj<base::Version>(L, 1);
-  const auto& digits = ver->digits();
-  lua_pushinteger(L, digits.size() > 2 ? digits[2]: 0);
+  const auto& numbers = ver->numbers();
+  lua_pushinteger(L, numbers.size() > 2 ? numbers[2]: 0);
   return 1;
 }
 
-int Version_get_prerelease(lua_State* L)
+int Version_get_prereleaseLabel(lua_State* L)
 {
   const auto ver = get_obj<base::Version>(L, 1);
-  lua_pushstring(L, ver->prerelease().c_str());
+  lua_pushstring(L, ver->prereleaseLabel().c_str());
   return 1;
 }
 
-int Version_get_prereleaseDigit(lua_State* L)
+int Version_get_prereleaseNumber(lua_State* L)
 {
   const auto ver = get_obj<base::Version>(L, 1);
-  lua_pushinteger(L, ver->prereleaseDigit());
+  lua_pushinteger(L, ver->prereleaseNumber());
   return 1;
 }
 
@@ -122,8 +122,8 @@ const Property Version_properties[] = {
   { "major", Version_get_major, nullptr },
   { "minor", Version_get_minor, nullptr },
   { "patch", Version_get_patch, nullptr },
-  { "prerelease", Version_get_prerelease, nullptr },
-  { "prereleaseDigit", Version_get_prereleaseDigit, nullptr },
+  { "prereleaseLabel", Version_get_prereleaseLabel, nullptr },
+  { "prereleaseNumber", Version_get_prereleaseNumber, nullptr },
   { nullptr, nullptr, nullptr }
 };
 
