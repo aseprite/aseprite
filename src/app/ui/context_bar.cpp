@@ -271,10 +271,17 @@ private:
 
 class ContextBar::BrushPatternField : public ComboBox {
 public:
-  BrushPatternField() : m_lock(false) {
+  BrushPatternField() {
+    // We use "m_lock" variable to avoid setting the pattern
+    // brush when we call ComboBox::addItem() (because the first
+    // addItem() generates an onChange() event).
+    m_lock = true;
     addItem("Pattern aligned to source");
     addItem("Pattern aligned to destination");
     addItem("Paint brush");
+    m_lock = false;
+
+    setSelectedItemIndex((int)Preferences::instance().brush.pattern());
   }
 
   void setBrushPattern(BrushPattern type) {
