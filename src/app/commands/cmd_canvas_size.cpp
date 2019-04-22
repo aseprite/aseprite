@@ -17,9 +17,11 @@
 #include "app/tx.h"
 #include "app/ui/button_set.h"
 #include "app/ui/color_bar.h"
+#include "app/ui/doc_view.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/select_box_state.h"
 #include "app/ui/skin/skin_theme.h"
+#include "app/ui_context.h"
 #include "base/bind.h"
 #include "doc/image.h"
 #include "doc/mask.h"
@@ -312,7 +314,15 @@ void CanvasSizeCommand::onExecute(Context* context)
     std::unique_ptr<CanvasSizeWindow> window(new CanvasSizeWindow());
 
     window->remapWindow();
-    window->centerWindow();
+
+    // Find best position for the window on the editor
+    if (DocView* docView = static_cast<UIContext*>(context)->activeView()) {
+      window->positionWindow(
+        docView->bounds().x2() - window->bounds().w,
+        docView->bounds().y);
+    }
+    else
+      window->centerWindow();
 
     load_window_pos(window.get(), "CanvasSize");
     window->setVisible(true);

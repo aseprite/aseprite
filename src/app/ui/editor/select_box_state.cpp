@@ -79,16 +79,16 @@ gfx::Rect SelectBoxState::getBoxBounds() const
 
 void SelectBoxState::setBoxBounds(const gfx::Rect& box)
 {
+  m_rulers[H1] = Ruler(HORIZONTAL | TOP, box.y);
+  m_rulers[H2] = Ruler(HORIZONTAL | BOTTOM, box.y+box.h);
+  m_rulers[V1] = Ruler(VERTICAL | LEFT, box.x);
+  m_rulers[V2] = Ruler(VERTICAL | RIGHT, box.x+box.w);
   if (hasFlag(Flags::PaddingRulers)) {
-    int w = m_rulers[PV].position() - m_rulers[V2].position();
-    int h = m_rulers[PH].position() - m_rulers[H2].position();
-    m_rulers[PH] = Ruler(Ruler::Horizontal, m_rulers[H2].position() + h);
-    m_rulers[PV] = Ruler(Ruler::Vertical, m_rulers[V2].position() + w);
+    const gfx::Size padding(
+      m_rulers[PV].position() - m_rulers[V2].position(),
+      m_rulers[PH].position() - m_rulers[H2].position());
+    setPaddingBounds(padding);
   }
-  m_rulers[H1] = Ruler(Ruler::Horizontal, box.y);
-  m_rulers[H2] = Ruler(Ruler::Horizontal, box.y+box.h);
-  m_rulers[V1] = Ruler(Ruler::Vertical, box.x);
-  m_rulers[V2] = Ruler(Ruler::Vertical, box.x+box.w);
 }
 
 // Get and Set Padding for Import Sprite Sheet box state
@@ -107,8 +107,8 @@ gfx::Size SelectBoxState::getPaddingBounds() const
 void SelectBoxState::setPaddingBounds(const gfx::Size& padding)
 {
   ASSERT(hasFlag(Flags::PaddingRulers));
-  m_rulers[PH] = Ruler(Ruler::Horizontal, m_rulers[H2].position() + padding.h);
-  m_rulers[PV] = Ruler(Ruler::Vertical, m_rulers[V2].position() + padding.w);
+  m_rulers[PH] = Ruler(HORIZONTAL | BOTTOM, m_rulers[H2].position() + padding.h);
+  m_rulers[PV] = Ruler(VERTICAL | RIGHT, m_rulers[V2].position() + padding.w);
 }
 
 void SelectBoxState::onEnterState(Editor* editor)
@@ -187,11 +187,10 @@ bool SelectBoxState::onMouseMove(Editor* editor, MouseMessage* msg)
     for (int i : m_movingRulers) {
       Ruler& ruler = m_rulers[i];
       const Ruler& start = m_startRulers[i];
-      int oppositeRuler = i^1;// 0 and 1 are opposites, and 2 and 3
-      Ruler& oppRuler = m_rulers[oppositeRuler];
+      Ruler& oppRuler = oppositeRuler(i);
 
-      switch (ruler.orientation()) {
-        case Ruler::Horizontal:
+      switch (ruler.align() & (HORIZONTAL | VERTICAL)) {
+        case HORIZONTAL:
           if (hasFlag(Flags::PaddingRulers) && (i == H2)) {
             int pad = m_rulers[PH].position() - m_rulers[H2].position();
             m_rulers[PH].setPosition(start.position() + delta.y + pad);
@@ -201,7 +200,7 @@ bool SelectBoxState::onMouseMove(Editor* editor, MouseMessage* msg)
             oppRuler.setPosition(editor->sprite()->height()
                                  - start.position() - delta.y);
           break;
-        case Ruler::Vertical:
+        case VERTICAL:
           if (hasFlag(Flags::PaddingRulers) && (i == V2)) {
             int pad = m_rulers[PV].position() - m_rulers[V2].position();
             m_rulers[PV].setPosition(start.position() + delta.x + pad);
@@ -462,7 +461,7 @@ void SelectBoxState::postRenderDecorator(EditorPostRender* render)
         render->fillRect(dark, gfx::Rect(rc.x2(), rc.y, vp.x2()-rc.x2(), rc.h));
     }
   }
-  
+
   // Draw the grid rulers when padding is posible (i.e. Flag::PaddingRulers=true)
   if (hasFlag(Flags::PaddingRulers)) {
     if (hasFlag(Flags::HGrid) && hasFlag(Flags::VGrid)) {
@@ -527,15 +526,15 @@ void SelectBoxState::postRenderDecorator(EditorPostRender* render)
   // Draw the rulers enclosing the box
   if (hasFlag(Flags::Rulers)) {
     for (const Ruler& ruler : m_rulers) {
-      switch (ruler.orientation()) {
+      switch (ruler.align() & (HORIZONTAL | VERTICAL)) {
 
-        case Ruler::Horizontal: {
+        case HORIZONTAL: {
           const int y = ruler.position()+mainOffset.y;
           render->drawLine(rulerColor, vp.x, y, vp.x+vp.w-1, y);
           break;
         }
 
-        case Ruler::Vertical: {
+        case VERTICAL: {
           const int x = ruler.position()+mainOffset.x;
           render->drawLine(rulerColor, x, vp.y, x, vp.y+vp.h-1);
           break;
@@ -560,6 +559,12 @@ void SelectBoxState::updateContextBar()
   contextBar->updateForSelectingBox(m_delegate->onGetContextBarHelp());
 }
 
+Ruler& SelectBoxState::oppositeRuler(const int rulerIndex)
+{
+  // 0 and 1 are opposites, and 2 and 3
+  return m_rulers[rulerIndex ^ 1];
+}
+
 int SelectBoxState::hitTestRulers(Editor* editor,
                                   const gfx::Point& mousePos,
                                   const bool updateMovingRulers)
@@ -568,15 +573,22 @@ int SelectBoxState::hitTestRulers(Editor* editor,
   ASSERT(H2 == 1);
   ASSERT(V1 == 2);
   ASSERT(V2 == 3);
-  int aligns[] = { TOP, BOTTOM, LEFT, RIGHT, BOTTOM, RIGHT };
   int align = 0;
 
   if (updateMovingRulers)
     m_movingRulers.clear();
 
   for (int i=0; i<int(m_rulers.size()); ++i) {
-    if (hitTestRuler(editor, m_rulers[i], mousePos)) {
-      align |= aligns[i];
+    const Ruler& ruler = m_rulers[i];
+    const Ruler& oppRuler = oppositeRuler(i);
+
+    if (hitTestRuler(editor, ruler, oppRuler, mousePos)) {
+      if (!hasFlag(Flags::PaddingRulers) &&
+          (((ruler.align() & (LEFT | TOP)) && ruler.position() > oppRuler.position()) ||
+           ((ruler.align() & (RIGHT | BOTTOM)) && ruler.position() <= oppRuler.position())))
+        align |= oppRuler.align();
+      else
+        align |= ruler.align();
       if (updateMovingRulers)
         m_movingRulers.push_back(i);
     }
@@ -599,25 +611,52 @@ int SelectBoxState::hitTestRulers(Editor* editor,
   return align;
 }
 
-bool SelectBoxState::hitTestRuler(Editor* editor, const Ruler& ruler,
-                                  const gfx::Point& mousePos)
+int SelectBoxState::hitTestRuler(Editor* editor,
+                                 const Ruler& ruler,
+                                 const Ruler& oppRuler,
+                                 const gfx::Point& mousePos)
 {
   gfx::Point pt = editor->mainTilePosition();
   pt = editor->editorToScreen(
     pt + gfx::Point(ruler.position(), ruler.position()));
 
-  switch (ruler.orientation()) {
+  switch (ruler.align() & (HORIZONTAL | VERTICAL)) {
 
-    case Ruler::Horizontal:
-      return (mousePos.y >= pt.y-2*guiscale() &&
-              mousePos.y <= pt.y+2*guiscale());
+    case HORIZONTAL:
+      if (!hasFlag(Flags::PaddingRulers)) {
+        if (ruler.position() <= oppRuler.position()) {
+          if (mousePos.y <= pt.y+2*guiscale())
+            return ruler.align();
+        }
+        else if (ruler.position() > oppRuler.position()) {
+          if (mousePos.y >= pt.y-2*guiscale())
+            return ruler.align();
+        }
+      }
+      if (mousePos.y >= pt.y-2*guiscale() &&
+          mousePos.y <= pt.y+2*guiscale()) {
+        return ruler.align();
+      }
+      break;
 
-    case Ruler::Vertical:
-      return (mousePos.x >= pt.x-2*guiscale() &&
-              mousePos.x <= pt.x+2*guiscale());
+    case VERTICAL:
+      if (!hasFlag(Flags::PaddingRulers)) {
+        if (ruler.position() <= oppRuler.position()) {
+          if (mousePos.x <= pt.x+2*guiscale())
+            return ruler.align();
+        }
+        else if (ruler.position() > oppRuler.position()) {
+          if (mousePos.x >= pt.x-2*guiscale())
+            return ruler.align();
+        }
+      }
+      if (mousePos.x >= pt.x-2*guiscale() &&
+          mousePos.x <= pt.x+2*guiscale())
+        return ruler.align();
+      break;
   }
 
-  return false;
+  return 0;
 }
 
 bool SelectBoxState::hasFlag(Flags flag) const
@@ -627,7 +666,7 @@ bool SelectBoxState::hasFlag(Flags flag) const
 
 CursorType SelectBoxState::cursorFromAlign(const int align) const
 {
-  switch (align) {
+  switch (align & (LEFT | TOP | RIGHT | BOTTOM)) {
     case LEFT: return kSizeWCursor;
     case RIGHT: return kSizeECursor;
     case TOP: return kSizeNCursor;

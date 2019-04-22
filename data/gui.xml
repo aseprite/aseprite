@@ -62,6 +62,7 @@
       <key command="KeyboardShortcuts" shortcut="Ctrl+Alt+Shift+K" mac="Cmd+Alt+Shift+K" />
       <!-- Sprite -->
       <key command="SpriteProperties" shortcut="Ctrl+P" mac="Cmd+P" />
+      <key command="CanvasSize" shortcut="C" />
       <!-- Layer -->
       <key command="LayerProperties" shortcut="Shift+P" />
       <key command="LayerVisibility" shortcut="Shift+X" />
@@ -502,7 +503,7 @@
       <key tool="eyedropper" shortcut="I" />
       <key tool="hand" shortcut="H" />
       <key tool="move" shortcut="V" />
-      <key tool="slice" shortcut="C" />
+      <key tool="slice" shortcut="Ctrl+Alt+C" mac="Cmd+Alt+C" />
       <key tool="zoom" shortcut="Z" />
 
       <key tool="paint_bucket" shortcut="G" />

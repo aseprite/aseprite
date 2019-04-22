@@ -107,16 +107,20 @@ namespace app {
     typedef std::vector<Ruler> Rulers;
 
     void updateContextBar();
+    Ruler& oppositeRuler(const int rulerIndex);
 
     // This returns a ui align value (e.g. LEFT for the ruler)
     int hitTestRulers(Editor* editor,
                       const gfx::Point& mousePos,
                       const bool updateMovingRulers);
 
-    // Returns true if the position screen position (x, y) is touching
-    // the given ruler.
-    bool hitTestRuler(Editor* editor, const Ruler& ruler,
-                      const gfx::Point& mousePos);
+    // Returns 0 if the mouse position on screen (mousePos) is not
+    // touching any ruler, or in other case returns the alignment of
+    // the ruler being touch (useful to show a proper mouse cursor).
+    int hitTestRuler(Editor* editor,
+                     const Ruler& ruler,
+                     const Ruler& oppRuler,
+                     const gfx::Point& mousePos);
 
     ui::CursorType cursorFromAlign(const int align) const;
 
