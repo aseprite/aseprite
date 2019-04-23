@@ -332,6 +332,9 @@
       <option id="files_with_profile" type="ColorProfileBehavior" default="ColorProfileBehavior::EMBEDDED" />
       <option id="missing_profile" type="ColorProfileBehavior" default="ColorProfileBehavior::ASSIGN" />
     </section>
+    <section id="canvas_size">
+      <option id="trim_outside" type="bool" default="false" />
+    </section>
   </global>
 
   <tool>

@@ -1,5 +1,6 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2001-2018 by David Capello -->
+<!-- Copyright (C) 2019  Igara Studio S.A. -->
+<!-- Copyright (C) 2001-2018  David Capello -->
 <gui>
  <window id="canvas_size" text="@.title">
   <vbox>
@@ -39,6 +40,10 @@
       <label text="@.bottom" />
       <expr text="0" id="bottom" suffix="px" tooltip="@.bottom_tooltip" />
     </grid>
+
+    <separator horizontal="true" />
+
+    <check id="trim" text="@.trim" tooltip="@.trim_tooltip" />
 
     <separator horizontal="true" />
     <hbox>

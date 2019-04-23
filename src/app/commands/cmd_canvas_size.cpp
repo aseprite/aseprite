@@ -10,6 +10,7 @@
 #endif
 
 #include "app/commands/command.h"
+#include "app/commands/new_params.h"
 #include "app/context_access.h"
 #include "app/doc_api.h"
 #include "app/modules/editors.h"
@@ -40,6 +41,16 @@ using namespace app::skin;
 #pragma warning(disable:4355)
 #endif
 
+struct CanvasSizeParams : public NewParams {
+  Param<int> left { this, 0, "left" };
+  Param<int> right { this, 0, "right" };
+  Param<int> top { this, 0, "top" };
+  Param<int> bottom { this, 0, "bottom" };
+  Param<bool> trimOutside { this, false, "trimOutside" };
+};
+
+#ifdef ENABLE_UI
+
 // Window used to show canvas parameters.
 class CanvasSizeWindow : public app::gen::CanvasSize
                        , public SelectBoxDelegate
@@ -47,7 +58,7 @@ class CanvasSizeWindow : public app::gen::CanvasSize
 public:
   enum class Dir { NW, N, NE, W, C, E, SW, S, SE };
 
-  CanvasSizeWindow()
+  CanvasSizeWindow(const CanvasSizeParams& params)
     : m_editor(current_editor)
     , m_rect(0, 0, current_editor->sprite()->width(), current_editor->sprite()->height())
     , m_selectBoxState(
@@ -74,6 +85,7 @@ public:
     m_editor->setState(m_selectBoxState);
 
     dir()->setSelectedItem((int)Dir::C);
+    trim()->setSelected(params.trimOutside());
     updateIcons();
   }
 
@@ -89,6 +101,7 @@ public:
   int getRight()  { return right()->textInt(); }
   int getTop()    { return top()->textInt(); }
   int getBottom() { return bottom()->textInt(); }
+  bool getTrimOutside() { return trim()->isSelected(); }
 
 protected:
 
@@ -270,31 +283,20 @@ private:
   EditorStatePtr m_selectBoxState;
 };
 
-class CanvasSizeCommand : public Command {
+#endif // ENABLE_UI
+
+class CanvasSizeCommand : public CommandWithNewParams<CanvasSizeParams> {
 public:
   CanvasSizeCommand();
 
 protected:
-  void onLoadParams(const Params& params) override;
   bool onEnabled(Context* context) override;
   void onExecute(Context* context) override;
-
-private:
-  int m_left, m_right, m_top, m_bottom;
 };
 
 CanvasSizeCommand::CanvasSizeCommand()
-  : Command(CommandId::CanvasSize(), CmdRecordableFlag)
+  : CommandWithNewParams(CommandId::CanvasSize(), CmdRecordableFlag)
 {
-  m_left = m_right = m_top = m_bottom = 0;
-}
-
-void CanvasSizeCommand::onLoadParams(const Params& params)
-{
-  m_left = params.get_as<int>("left");
-  m_right = params.get_as<int>("right");
-  m_top = params.get_as<int>("top");
-  m_bottom = params.get_as<int>("bottom");
 }
 
 bool CanvasSizeCommand::onEnabled(Context* context)
@@ -307,11 +309,16 @@ void CanvasSizeCommand::onExecute(Context* context)
 {
   const ContextReader reader(context);
   const Sprite* sprite(reader.sprite());
+  auto& params = this->params();
 
 #ifdef ENABLE_UI
   if (context->isUIAvailable()) {
+    if (!params.trimOutside.isSet()) {
+      params.trimOutside(Preferences::instance().canvasSize.trimOutside());
+    }
+
     // load the window widget
-    std::unique_ptr<CanvasSizeWindow> window(new CanvasSizeWindow());
+    std::unique_ptr<CanvasSizeWindow> window(new CanvasSizeWindow(params));
 
     window->remapWindow();
 
@@ -332,19 +339,22 @@ void CanvasSizeCommand::onExecute(Context* context)
     if (!window->pressedOk())
       return;
 
-    m_left   = window->getLeft();
-    m_right  = window->getRight();
-    m_top    = window->getTop();
-    m_bottom = window->getBottom();
+    params.left(window->getLeft());
+    params.right(window->getRight());
+    params.top(window->getTop());
+    params.bottom(window->getBottom());
+    params.trimOutside(window->getTrimOutside());
+
+    Preferences::instance().canvasSize.trimOutside(params.trimOutside());
   }
 #endif
 
   // Resize canvas
 
-  int x1 = -m_left;
-  int y1 = -m_top;
-  int x2 = sprite->width() + m_right;
-  int y2 = sprite->height() + m_bottom;
+  int x1 = -params.left();
+  int y1 = -params.top();
+  int x2 = sprite->width() + params.right();
+  int y2 = sprite->height() + params.bottom();
 
   if (x2 <= x1) x2 = x1+1;
   if (y2 <= y1) y2 = y1+1;
@@ -359,7 +369,8 @@ void CanvasSizeCommand::onExecute(Context* context)
     api.cropSprite(sprite,
                    gfx::Rect(x1, y1,
                              MID(1, x2-x1, DOC_SPRITE_MAX_WIDTH),
-                             MID(1, y2-y1, DOC_SPRITE_MAX_HEIGHT)));
+                             MID(1, y2-y1, DOC_SPRITE_MAX_HEIGHT)),
+                   params.trimOutside());
     tx.commit();
 
 #ifdef ENABLE_UI

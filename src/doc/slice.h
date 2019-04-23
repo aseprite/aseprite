@@ -1,5 +1,6 @@
 // Aseprite Document Library
-// Copyright (c) 2017 David Capello
+// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -47,9 +48,8 @@ namespace doc {
   };
 
   class Slice : public WithUserData {
-    typedef Keyframes<SliceKey> List;
-
   public:
+    typedef Keyframes<SliceKey> List;
     typedef List::iterator iterator;
     typedef List::const_iterator const_iterator;
 
