@@ -123,6 +123,7 @@ namespace app {
   void push_image(lua_State* L, doc::Image* image);
   void push_images(lua_State* L, const doc::ObjectIds& images);
   void push_layers(lua_State* L, const doc::ObjectIds& layers);
+  void push_palette(lua_State* L, doc::Palette* palette);
   void push_sprite_cel(lua_State* L, doc::Cel* cel);
   void push_sprite_frame(lua_State* L, doc::Sprite* sprite, doc::frame_t frame);
   void push_sprite_frames(lua_State* L, doc::Sprite* sprite);

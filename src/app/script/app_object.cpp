@@ -17,6 +17,7 @@
 #include "app/doc_access.h"
 #include "app/i18n/strings.h"
 #include "app/loop_tag.h"
+#include "app/modules/palettes.h"
 #include "app/pref/preferences.h"
 #include "app/script/api_version.h"
 #include "app/script/docobj.h"
@@ -515,6 +516,16 @@ int App_get_activeBrush(lua_State* L)
   return 1;
 }
 
+int App_get_defaultPalette(lua_State* L)
+{
+  const Palette* pal = get_default_palette();
+  if (pal)
+    push_palette(L, new Palette(*pal));
+  else
+    lua_pushnil(L);
+  return 1;
+}
+
 int App_set_activeSprite(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 2);
@@ -580,6 +591,13 @@ int App_set_activeBrush(lua_State* L)
   return 0;
 }
 
+int App_set_defaultPalette(lua_State* L)
+{
+  if (const doc::Palette* pal = get_palette_from_arg(L, 2))
+    set_default_palette(pal);
+  return 0;
+}
+
 const luaL_Reg App_methods[] = {
   { "open",        App_open },
   { "exit",        App_exit },
@@ -609,6 +627,7 @@ const Property App_properties[] = {
   { "site", App_get_site, nullptr },
   { "range", App_get_range, nullptr },
   { "isUIAvailable", App_get_isUIAvailable, nullptr },
+  { "defaultPalette", App_get_defaultPalette, App_set_defaultPalette },
   { nullptr, nullptr, nullptr }
 };
 

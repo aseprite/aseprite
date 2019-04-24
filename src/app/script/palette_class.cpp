@@ -12,6 +12,7 @@
 #include "app/cmd/set_palette.h"
 #include "app/color.h"
 #include "app/file/palette_file.h"
+#include "app/res/palettes_loader_delegate.h"
 #include "app/script/docobj.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
@@ -88,6 +89,39 @@ int Palette_new(lua_State* L)
       }
     }
     lua_pop(L, 1);
+
+    // Palette{ fromResource }
+    type = lua_getfield(L, 1, "fromResource");
+    if (type != LUA_TNIL) {
+      if (const char* _id = lua_tostring(L, -1)) {
+        std::string id = _id;
+        lua_pop(L, 1);
+
+        // TODO Improve this, maybe using an existent set of palettes
+        // TODO Centralize the resources management/loading process on-demand (#2059)
+        std::map<std::string, std::string> idAndPaths;
+        PalettesLoaderDelegate().getResourcesPaths(idAndPaths);
+
+        if (!idAndPaths[id].empty()) {
+          std::string absFn = base::get_absolute_path(idAndPaths[id]);
+
+          if (!ask_access(L, absFn.c_str(), FileAccessMode::Read, true))
+            return luaL_error(L, "script doesn't have access to open file %s",
+                              absFn.c_str());
+
+          Palette* pal = load_palette(absFn.c_str());
+          if (pal)
+            push_new<PaletteObj>(L, nullptr, pal);
+          else
+            lua_pushnil(L);
+          return 1;
+        }
+        else {
+          return luaL_error(L, "palette resource with ID %s not found", _id);
+        }
+      }
+    }
+    lua_pop(L, 1);
   }
   else {
     int ncolors = lua_tointeger(L, 1);
@@ -110,6 +144,14 @@ int Palette_len(lua_State* L)
   auto obj = get_obj<PaletteObj>(L, 1);
   auto pal = obj->palette(L);
   lua_pushinteger(L, pal->size());
+  return 1;
+}
+
+int Palette_eq(lua_State* L)
+{
+  const auto a = get_obj<PaletteObj>(L, 1);
+  const auto b = get_obj<PaletteObj>(L, 2);
+  lua_pushboolean(L, *a->palette(L) == *b->palette(L));
   return 1;
 }
 
@@ -216,6 +258,7 @@ int Palette_get_frameNumber(lua_State* L)
 const luaL_Reg Palette_methods[] = {
   { "__gc", Palette_gc },
   { "__len", Palette_len },
+  { "__eq", Palette_eq },
   { "resize", Palette_resize },
   { "getColor", Palette_getColor },
   { "setColor", Palette_setColor },
@@ -246,6 +289,11 @@ void push_sprite_palette(lua_State* L, doc::Sprite* sprite, doc::Palette* palett
 {
   ASSERT(sprite);
   push_new<PaletteObj>(L, sprite, palette);
+}
+
+void push_palette(lua_State* L, doc::Palette* palette)
+{
+  push_new<PaletteObj>(L, nullptr, palette);
 }
 
 doc::Palette* get_palette_from_arg(lua_State* L, int index)
