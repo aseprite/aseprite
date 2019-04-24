@@ -49,3 +49,33 @@ do
     assert(p:getColor(i) == q:getColor(i))
   end
 end
+
+-- Default palette and resources
+do
+  local db16 = Palette{ fromResource="DB16" }
+  local db32 = Palette{ fromResource="DB32" }
+
+  assert(#db16 == 16)
+  assert(#db32 == 32)
+  assert(db32:getColor(0) == Color(0, 0, 0))
+  assert(db32:getColor(31) == Color(138, 111, 48))
+
+  assert(app.defaultPalette == db32)
+
+  app.defaultPalette = db16
+  assert(app.defaultPalette == db16)
+
+  -- Default sprite palette is completely black
+  -- TODO should we use the app.defaultPalette as the default palette?
+  local spr = Sprite(32, 32, ColorMode.INDEXED)
+  local sprPal = spr.palettes[1];
+  assert(#sprPal == 256)
+  assert(sprPal ~= db16)
+  assert(sprPal ~= db32)
+  for i=0,255 do
+    assert(sprPal:getColor(i) == Color(0, 0,0))
+  end
+
+  spr:setPalette(db32)
+  assert(sprPal == db32)
+end
