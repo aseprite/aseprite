@@ -142,6 +142,7 @@ namespace app {
     void onGeneralUpdate(DocEvent& ev) override;
     void onAddLayer(DocEvent& ev) override;
     void onBeforeRemoveLayer(DocEvent& ev) override;
+    void onAfterRemoveLayer(DocEvent& ev) override;
     void onAddFrame(DocEvent& ev) override;
     void onRemoveFrame(DocEvent& ev) override;
     void onSelectionBoundariesChanged(DocEvent& ev) override;

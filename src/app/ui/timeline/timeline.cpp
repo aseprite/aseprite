@@ -1748,7 +1748,12 @@ void Timeline::onBeforeRemoveLayer(DocEvent& ev)
 
     setLayer(layer_select);
   }
+}
 
+// We have to regenerate the layer rows (m_rows) after the layer is
+// removed from the sprite.
+void Timeline::onAfterRemoveLayer(DocEvent& ev)
+{
   regenerateRows();
   showCurrentCel();
   clearClipboardRange();
