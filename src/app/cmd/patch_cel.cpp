@@ -35,10 +35,11 @@ void PatchCel::onExecute()
 {
   Cel* cel = this->cel();
 
-  executeAndAdd(
-    new CropCel(cel,
-                cel->bounds() |
-                gfx::Rect(m_region.bounds()).offset(m_pos)));
+  const gfx::Rect newBounds =
+    cel->bounds() | gfx::Rect(m_region.bounds()).offset(m_pos);
+  if (cel->bounds() != newBounds) {
+    executeAndAdd(new CropCel(cel, newBounds));
+  }
 
   executeAndAdd(
     new CopyRegion(cel->image(),
@@ -46,8 +47,7 @@ void PatchCel::onExecute()
                    m_region,
                    m_pos - cel->position()));
 
-  executeAndAdd(
-    new TrimCel(cel));
+  executeAndAdd(new TrimCel(cel));
 
   m_patch = nullptr;
 }

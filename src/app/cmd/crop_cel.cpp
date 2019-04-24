@@ -27,6 +27,8 @@ CropCel::CropCel(Cel* cel, const gfx::Rect& newBounds)
 {
   m_oldBounds.offset(-m_newOrigin);
   m_newBounds.offset(-m_oldOrigin);
+
+  ASSERT(m_newBounds != m_oldBounds);
 }
 
 void CropCel::onExecute()

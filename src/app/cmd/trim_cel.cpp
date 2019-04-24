@@ -28,7 +28,9 @@ TrimCel::TrimCel(Cel* cel)
   if (algorithm::shrink_bounds(cel->image(), newBounds,
                                cel->image()->maskColor())) {
     newBounds.offset(cel->position());
-    add(new cmd::CropCel(cel, newBounds));
+    if (cel->bounds() != newBounds) {
+      add(new cmd::CropCel(cel, newBounds));
+    }
   }
   else {
     // Delete the given "cel" and all its links.
