@@ -337,7 +337,6 @@ public:
 #endif
   }
 
-
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -534,6 +533,8 @@ public:
 #ifdef ENABLE_UI
     if (redraw)
       update_screen_for_document(m_document);
+#else
+    (void)redraw;               // To avoid warning about unused variable
 #endif
   }
 
@@ -699,6 +700,12 @@ tools::ToolLoop* create_tool_loop_for_script(
   try {
     const tools::ToolLoop::Button toolLoopButton = tools::ToolLoop::Left;
     tools::Controller* controller = tool->getController(toolLoopButton);
+
+    // If we don't have the UI available, we reset the tools
+    // preferences, so scripts that are executed in batch mode have a
+    // reproducible behavior.
+    if (!context->isUIAvailable())
+      Preferences::instance().resetToolPreferences(tool);
 
     return new ToolLoopImpl(
       nullptr, site, context,

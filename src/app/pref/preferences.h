@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -63,6 +63,11 @@ namespace app {
 
     ToolPreferences& tool(tools::Tool* tool);
     DocumentPreferences& document(const Doc* doc);
+
+    // Used to reset the tool preferences in scripting mode when the
+    // UI is not available (so scripts have a common default
+    // preferences and a reproducible behavior for automation).
+    void resetToolPreferences(tools::Tool* tool);
 
     // Remove one document explicitly (this can be used if the
     // document used in Preferences::document() function wasn't member

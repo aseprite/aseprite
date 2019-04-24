@@ -1,5 +1,6 @@
 // Aseprite Config Library
-// Copyright (c) 2014-2017 David Capello
+// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2014-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -81,6 +82,10 @@ public:
 
   void deleteValue(const char* section, const char* name) {
     m_ini.Delete(section, name, true);
+  }
+
+  void deleteSection(const char* section) {
+    m_ini.Delete(section, nullptr, true);
   }
 
   void load(const std::string& filename) {
@@ -179,6 +184,11 @@ void CfgFile::setDoubleValue(const char* section, const char* name, double value
 void CfgFile::deleteValue(const char* section, const char* name)
 {
   m_impl->deleteValue(section, name);
+}
+
+void CfgFile::deleteSection(const char* section)
+{
+  m_impl->deleteSection(section);
 }
 
 void CfgFile::load(const std::string& filename)

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -57,7 +57,9 @@ Preferences::Preferences()
 
 Preferences::~Preferences()
 {
-  save();
+  // Don't save preferences, this must be done by the client of the
+  // Preferences instance (the App class).
+  //save();
 
   for (auto& pair : m_tools)
     delete pair.second;
@@ -146,6 +148,16 @@ DocumentPreferences& Preferences::document(const Doc* doc)
 
     return *docPref;
   }
+}
+
+void Preferences::resetToolPreferences(tools::Tool* tool)
+{
+  auto it = m_tools.find(tool->getId());
+  if (it != m_tools.end())
+    m_tools.erase(it);
+
+  std::string section = std::string("tool.") + tool->getId();
+  del_config_section(section.c_str());
 }
 
 void Preferences::removeDocument(Doc* doc)

@@ -450,6 +450,14 @@ App::~App()
 
     delete m_legacy;
     delete m_modules;
+
+    // Save preferences only if we are running in GUI mode.  when we
+    // run in batch mode we might want to reset some preferences so
+    // the scripts have a reproducible behavior. Those reset
+    // preferences must not be saved.
+    if (isGui())
+      m_coreModules->m_preferences.save();
+
     delete m_coreModules;
 
 #ifdef ENABLE_UI
@@ -639,18 +647,14 @@ void app_rebuild_documents_tabs()
 
 PixelFormat app_get_current_pixel_format()
 {
-#ifdef ENABLE_UI
-  Context* context = UIContext::instance();
-  ASSERT(context != NULL);
+  Context* ctx = App::instance()->context();
+  ASSERT(ctx);
 
-  Doc* document = context->activeDocument();
-  if (document != NULL)
-    return document->sprite()->pixelFormat();
+  Doc* doc = ctx->activeDocument();
+  if (doc)
+    return doc->sprite()->pixelFormat();
   else
     return IMAGE_RGB;
-#else // ENABLE_UI
-  return IMAGE_RGB;
-#endif
 }
 
 void app_default_statusbar_message()

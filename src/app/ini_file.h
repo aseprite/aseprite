@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -58,6 +58,7 @@ namespace app {
   void set_config_color(const char* section, const char* name, const app::Color& value);
 
   void del_config_value(const char* section, const char* name);
+  void del_config_section(const char* section);
 
   base::paths enum_config_keys(const char* section);
 
