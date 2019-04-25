@@ -158,6 +158,12 @@ void Preferences::resetToolPreferences(tools::Tool* tool)
 
   std::string section = std::string("tool.") + tool->getId();
   del_config_section(section.c_str());
+
+  // TODO improve this, if we add new sections in pref.xml we have to
+  //      update this manually :(
+  del_config_section((section + ".brush").c_str());
+  del_config_section((section + ".spray").c_str());
+  del_config_section((section + ".floodfill").c_str());
 }
 
 void Preferences::removeDocument(Doc* doc)

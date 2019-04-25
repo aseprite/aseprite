@@ -135,6 +135,7 @@ int unsupported(lua_State* L)
 void register_app_object(lua_State* L);
 void register_app_pixel_color_object(lua_State* L);
 void register_app_command_object(lua_State* L);
+void register_app_preferences_object(lua_State* L);
 
 void register_brush_class(lua_State* L);
 void register_cel_class(lua_State* L);
@@ -231,6 +232,7 @@ Engine::Engine()
   register_app_object(L);
   register_app_pixel_color_object(L);
   register_app_command_object(L);
+  register_app_preferences_object(L);
 
   // Register constants
   lua_newtable(L);

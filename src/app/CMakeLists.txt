@@ -170,6 +170,7 @@ if(ENABLE_SCRIPTING)
     script/palettes_class.cpp
     script/pixel_color_object.cpp
     script/point_class.cpp
+    script/preferences_object.cpp
     script/range_class.cpp
     script/rectangle_class.cpp
     script/security.cpp
@@ -183,6 +184,7 @@ if(ENABLE_SCRIPTING)
     script/tag_class.cpp
     script/tags_class.cpp
     script/tool_class.cpp
+    script/values.cpp
     script/version_class.cpp
     shell.cpp
     ${scripting_files_ui})
