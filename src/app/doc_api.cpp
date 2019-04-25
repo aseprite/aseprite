@@ -277,8 +277,8 @@ bool DocApi::cropCel(LayerImage* layer,
       // Try to shrink the image ignoring transparent borders
       gfx::Rect frameBounds;
       if (doc::algorithm::shrink_bounds(newImage.get(),
-                                        newImage->maskColor(), nullptr,
-                                        frameBounds)) {
+                                        newImage->maskColor(),
+                                        layer, frameBounds)) {
         // In this case the new cel image can be even smaller
         if (frameBounds != newImage->bounds()) {
           newImage = ImageRef(
