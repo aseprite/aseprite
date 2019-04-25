@@ -277,9 +277,13 @@ int App_useTool(lua_State* L)
   tools::Tool* tool = App::instance()->activeToolManager()->activeTool();
   tools::Ink* ink = tool->getInk(0);
   type = lua_getfield(L, 1, "tool");
-  if (auto toolArg = get_tool_from_arg(L, -1)) {
-    tool = toolArg;
-    ink = tool->getInk(0);
+  if (type != LUA_TNIL) {
+    if (auto toolArg = get_tool_from_arg(L, -1)) {
+      tool = toolArg;
+      ink = tool->getInk(0);
+    }
+    else
+      return luaL_error(L, "invalid tool specified in app.useTool() function");
   }
   lua_pop(L, 1);
 
