@@ -139,6 +139,14 @@ int Image_gc(lua_State* L)
   return 0;
 }
 
+int Image_eq(lua_State* L)
+{
+  const auto a = get_obj<ImageObj>(L, 1);
+  const auto b = get_obj<ImageObj>(L, 2);
+  lua_pushboolean(L, a->imageId == b->imageId);
+  return 1;
+}
+
 int Image_clear(lua_State* L)
 {
   auto obj = get_obj<ImageObj>(L, 1);
@@ -375,6 +383,7 @@ const luaL_Reg Image_methods[] = {
   { "isPlain", Image_isPlain },
   { "saveAs", Image_saveAs },
   { "__gc", Image_gc },
+  { "__eq", Image_eq },
   { nullptr, nullptr }
 };
 
