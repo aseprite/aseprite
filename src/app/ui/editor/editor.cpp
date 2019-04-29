@@ -52,6 +52,7 @@
 #include "app/ui_context.h"
 #include "base/bind.h"
 #include "base/chrono.h"
+#include "base/clamp.h"
 #include "base/convert_to.h"
 #include "doc/conversion_to_surface.h"
 #include "doc/doc.h"
@@ -2187,6 +2188,12 @@ void Editor::setZoomAndCenterInMouse(const Zoom& zoom,
       screenPos = mousePos;
       break;
   }
+
+  // Limit zooming screen position to the visible sprite bounds
+  gfx::Rect visibleBounds = editorToScreen(getVisibleSpriteBounds());
+  screenPos.x = base::clamp(screenPos.x, visibleBounds.x, visibleBounds.x2()-1);
+  screenPos.y = base::clamp(screenPos.y, visibleBounds.y, visibleBounds.y2()-1);
+
   spritePos = screenToEditor(screenPos);
 
   if (zoomBehavior == ZoomBehavior::MOUSE) {
