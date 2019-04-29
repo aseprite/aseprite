@@ -5,6 +5,9 @@
 
 dofile('./test_utils.lua')
 
+local rgba = app.pixelColor.rgba
+local gray = app.pixelColor.graya
+
 ----------------------------------------------------------------------
 -- activeTool
 ----------------------------------------------------------------------
@@ -207,27 +210,29 @@ end
 -- draw with brushes
 ----------------------------------------------------------------------
 
-do
+function drawing_with_simple_brushes(colorMode, a, b, c)
+  print("drawing_with_simple_brushes", colorMode)
+
   local expectedImages = {
     { 0, 0, 0, 0,
       0, 0, 0, 0,
       0, 0, 0, 0,
       0, 0, 0, 0 },
     { 0, 0, 0, 0,
-      0, 1, 0, 0,
+      0, a, 0, 0,
       0, 0, 0, 0,
       0, 0, 0, 0 },
     { 0, 0, 0, 0,
-      0, 2, 2, 0,
-      0, 2, 2, 0,
+      0, b, b, 0,
+      0, b, b, 0,
       0, 0, 0, 0 },
-    { 3, 3, 3, 0,
-      3, 3, 3, 3,
-      3, 3, 3, 3,
-      0, 3, 3, 3 }
+    { c, c, c, 0,
+      c, c, c, c,
+      c, c, c, c,
+      0, c, c, c }
   }
 
-  local s = Sprite(4, 4, ColorMode.INDEXED)
+  local s = Sprite(4, 4, colorMode)
   assert(s == app.activeSprite)
   assert(s.cels[1] == app.activeCel)
 
@@ -239,7 +244,7 @@ do
   end
 
   expect_cel_is_image(1)
-  app.useTool{ tool='pencil', color=1, points={ Point(1, 1) } }
+  app.useTool{ tool='pencil', color=a, points={ Point(1, 1) } }
   assert(#s.cels == 1)
   expect_cel_is_image(2)
   app.undo()
@@ -247,22 +252,137 @@ do
   expect_cel_is_image(1)
   app.useTool{ tool='pencil',
                brush=Brush{ size=2, type=BrushType.SQUARE },
-               color=2, points={ Point(2, 2) } }
+               color=b, points={ Point(1, 1) } }
   expect_cel_is_image(3)
   app.undo()
 
   expect_cel_is_image(1)
   app.useTool{ tool='pencil',
-               brush=Brush{ size=2, type=BrushType.SQUARE, center=Point(0, 0) },
-               color=2, points={ Point(1, 1) } }
+               brush=Brush{ size=2, type=BrushType.SQUARE, center=Point(1, 1) },
+               color=b, points={ Point(2, 2) } }
   expect_cel_is_image(3)
   app.undo()
 
   expect_cel_is_image(1)
   app.useTool{ tool='line',
                brush={ size=3, type=BrushType.SQUARE },
-               color=3, points={ Point(1, 1), Point(2, 2) } }
+               color=c, points={ Point(1, 1), Point(2, 2) } }
   expect_cel_is_image(4)
   app.undo()
 
+end
+
+do
+  drawing_with_simple_brushes(ColorMode.RGB, red.rgbaPixel, blue.rgbaPixel, yellow.rgbaPixel)
+  drawing_with_simple_brushes(ColorMode.GRAY, gray(255), gray(128), gray(32))
+  drawing_with_simple_brushes(ColorMode.INDEXED, 1, 2, 3)
+end
+
+----------------------------------------------------------------------
+-- draw with special image brushes + patterns
+----------------------------------------------------------------------
+
+function drawing_with_image_brushes(imageColorMode, colorInImage,
+                                    brushColorMode, colorInBrush, palette)
+  print("drawing_with_image_brushes", imageColorMode, brushColorMode)
+  local s = Sprite(4, 4, imageColorMode)
+  local c = colorInImage
+  cel = s.cels[1]
+
+  if palette then
+    s:setPalette(palette)
+  end
+
+  -- Brush image with BrushPattern.ORIGIN
+  local bi = Image(2, 2, brushColorMode)
+  bi:clear(0)
+  bi:putPixel(0, 0, colorInBrush)
+  bi:putPixel(1, 1, colorInBrush)
+  local b = Brush { image=bi,
+                    center=Point(0, 0),
+                    pattern=BrushPattern.ORIGIN,
+                    patternOrigin=Point(0, 0) }
+
+  expect_img(app.activeImage,
+             { 0, 0, 0, 0,
+               0, 0, 0, 0,
+               0, 0, 0, 0,
+               0, 0, 0, 0 })
+
+  app.useTool{ tool=pencil, brush=b, points={ Point(0, 0) } }
+  assert(cel.bounds == Rectangle(0, 0, 2, 2))
+  expect_img(app.activeImage,
+             { c, 0,
+               0, c })
+  app.undo()
+
+  app.useTool{ tool=pencil, brush=b, points={ Point(0, 0), Point(1, 1) } }
+  assert(cel.bounds == Rectangle(0, 0, 3, 3))
+  expect_img(app.activeImage,
+             { c, 0, 0,
+               0, c, 0,
+               0, 0, c })
+  app.undo()
+
+  app.useTool{ tool=pencil, brush=b, points={ Point(0, 1) } }
+  assert(cel.bounds == Rectangle(0, 1, 2, 2))
+  expect_img(app.activeImage,
+             { 0, c,
+               c, 0 })
+  app.undo()
+
+  app.useTool{ tool=pencil, brush=b, points={ Point(0, 0), Point(2, 0),
+                                              Point(0, 0), Point(0, 1) } }
+  assert(cel.bounds == Rectangle(0, 0, 4, 3))
+  expect_img(app.activeImage,
+             { c, 0, c, 0,
+               0, c, 0, c,
+               c, 0, 0, 0 })
+  app.undo()
+
+  app.useTool{ tool='paint_bucket', brush=b, points={ Point(0, 0) } }
+  assert(cel.bounds == Rectangle(0, 0, 4, 4))
+  expect_img(app.activeImage,
+             { c, 0, c, 0,
+               0, c, 0, c,
+               c, 0, c, 0,
+               0, c, 0, c })
+  app.undo()
+
+  app.useTool{ tool=pencil, brush=b, points={ Point(1, 0) } }
+  assert(app.activeImage ~= nil)
+  assert(cel.bounds == Rectangle(1, 0, 2, 2))
+  expect_img(app.activeImage,
+             { 0, c,
+               c, 0 })
+  app.undo()
+
+  app.useTool{ tool=pencil, brush=b, points={ Point(1, 0),
+                                              Point(1, 0)} }
+  assert(app.activeImage ~= nil)
+  assert(cel.bounds == Rectangle(1, 0, 2, 2))
+  expect_img(app.activeImage,
+             { 0, c,
+               c, 0 })
+  app.undo()
+
+  -- Change brush pattern to BrushPattern.TARGET
+
+  b = Brush { image=bi,
+              center=Point(0, 0),
+              pattern=BrushPattern.TARGET,
+              patternOrigin=Point(0, 0) }
+
+  app.useTool{ tool=pencil, brush=b, points={ Point(1, 0) } }
+  assert(cel.bounds == Rectangle(1, 0, 2, 2))
+  expect_img(app.activeImage,
+             { c, 0,
+               0, c })
+  app.undo()
+
+end
+
+do
+  drawing_with_image_brushes(ColorMode.RGB, rgba(255, 0, 0),
+                             ColorMode.RGB, rgba(255, 0, 0))
 end

@@ -21,6 +21,15 @@ function expect_img(image, expectedPixels)
       local value = image:getPixel(x, y)
       local expected = expectedPixels[1+y*w+x]
       if value ~= expected then
+        print('Image(' .. tostring(w) .. 'x' .. tostring(h) .. ') = {')
+        for v=0,h-1 do
+          lineStr = '  '
+          for u=0,w-1 do
+            lineStr = lineStr .. image:getPixel(u, v) .. ','
+          end
+          print(lineStr)
+        end
+        print('}')
         print('In pixel (' .. x .. ', ' .. y .. '):')
         expect_eq(value, expected)
       end
