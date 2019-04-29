@@ -77,6 +77,16 @@ void ToolLoopManager::pressButton(const Pointer& pointer)
 {
   TOOL_TRACE("ToolLoopManager::pressButton", pointer.point());
 
+  // A little patch to memorize initial Trace Policy in the
+  // current function execution.
+  // When the initial trace policy is "Last" and then
+  // changes to different trace policy at the end of
+  // this function, the user confirms a line draw while he
+  // is holding the SHIFT key.
+  bool tracePolicyWasLast = false;
+  if (m_toolLoop->getTracePolicy() == TracePolicy::Last)
+    tracePolicyWasLast = true;
+
   m_lastPointer = pointer;
 
   if (isCanceled())
@@ -102,7 +112,18 @@ void ToolLoopManager::pressButton(const Pointer& pointer)
   m_toolLoop->getController()->getStatusBarText(m_toolLoop, m_stroke, statusText);
   m_toolLoop->updateStatusBar(statusText.c_str());
 
-  doLoopStep(false);
+  // We evaluate if the trace policy has changed compared with
+  // the initial trace policy.
+  if (!(m_toolLoop->getTracePolicy() == TracePolicy::Last) &&
+        tracePolicyWasLast) {
+    // Do nothing. We do not need execute an additional doLoopStep
+    // (which it want to accumulate more points in m_pts in function
+    // joinStroke() from intertwiners.h)
+    // This avoid double print of a line while the user holds down
+    // the SHIFT key.
+  }
+  else
+    doLoopStep(false);
 }
 
 bool ToolLoopManager::releaseButton(const Pointer& pointer)
@@ -195,10 +216,18 @@ void ToolLoopManager::doLoopStep(bool lastStep)
 
   m_toolLoop->getInk()->prepareForStrokes(m_toolLoop, strokes);
 
-  // Invalidate destination image area.
-  if (m_toolLoop->getTracePolicy() == TracePolicy::Last) {
-    // Copy source to destination (reset the previous trace). Useful
-    // for tools like Line and Ellipse (we keep the last trace only).
+  // True when we have to fill
+  const bool fillStrokes =
+    (m_toolLoop->getFilled() &&
+     (lastStep || m_toolLoop->getPreviewFilled()));
+
+  // Invalidate the whole destination image area.
+  if (m_toolLoop->getTracePolicy() == TracePolicy::Last ||
+      fillStrokes) {
+    // Copy source to destination (reset all the previous
+    // traces). Useful for tools like Line and Ellipse (we keep the
+    // last trace only) or to draw the final result in contour tool
+    // (the final result is filled).
     m_toolLoop->invalidateDstImage();
   }
   else if (m_toolLoop->getTracePolicy() == TracePolicy::AccumulateUpdateLast) {
@@ -206,16 +235,24 @@ void ToolLoopManager::doLoopStep(bool lastStep)
     // freehand algorithm needs this trace policy to redraw only the
     // last dirty area, which can vary in one pixel from the previous
     // tool loop cycle).
-    m_toolLoop->invalidateDstImage(m_dirtyArea);
+    if (m_toolLoop->getBrush()->type() != kImageBrushType) {
+      m_toolLoop->invalidateDstImage(m_dirtyArea);
+    }
+    // For custom brush we revalidate the whole destination area so
+    // the whole trace is redrawn from scratch.
+    else {
+      m_toolLoop->invalidateDstImage();
+      m_toolLoop->validateDstImage(gfx::Region(m_toolLoop->getDstImage()->bounds()));
+    }
   }
 
   m_toolLoop->validateDstImage(m_dirtyArea);
 
   // Join or fill user points
-  if (!m_toolLoop->getFilled() || (!lastStep && !m_toolLoop->getPreviewFilled()))
-    m_toolLoop->getIntertwine()->joinStroke(m_toolLoop, main_stroke);
-  else
+  if (fillStrokes)
     m_toolLoop->getIntertwine()->fillStroke(m_toolLoop, main_stroke);
+  else
+    m_toolLoop->getIntertwine()->joinStroke(m_toolLoop, main_stroke);
 
   if (m_toolLoop->getTracePolicy() == TracePolicy::Overlap) {
     // Copy destination to source (yes, destination to source). In
