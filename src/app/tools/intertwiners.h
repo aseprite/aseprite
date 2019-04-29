@@ -112,11 +112,16 @@ public:
             (AlgoPixel)&addPointsWithoutDuplicatingLastOne);
         }
 
-        for (int c=0; c<m_pts.size(); ++c) {
-          if (c == 0 && loop->getController()->isFreehand())
-            continue;
+        // Don't draw the first point in freehand tools (this is to
+        // avoid painting above the last pixel of a freehand stroke,
+        // when we use Shift+click in the Pencil tool to continue the
+        // old stroke).
+        // TODO useful only in the case when brush size = 1px
+        const int start = (loop->getController()->isFreehand() ? 1: 0);
+
+        for (int c=start; c<m_pts.size(); ++c)
           doPointshapePoint(m_pts[c].x, m_pts[c].y, loop);
-        }
+
         ASSERT(!m_lastPointPrinted.empty());
         m_lastPointPrinted[0] = m_pts[m_pts.size()-1];
       }
