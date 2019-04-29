@@ -66,19 +66,18 @@ class IntertwineAsLines : public Intertwine {
       stroke->addPoint(newPoint);
     }
   }
-  Stroke lastPointPrinted;
+  Stroke m_lastPointPrinted;
   Stroke m_pts;
 
   void saveLastPointAndDoPointshape(ToolLoop* loop, const Stroke& stroke) {
-    lastPointPrinted = stroke;
+    m_lastPointPrinted = stroke;
     doPointshapePoint(stroke[0].x, stroke[0].y, loop);
   }
 
 public:
   bool snapByAngle() override { return true; }
 
-  void joinStroke(ToolLoop* loop, const Stroke& stroke) override
-  {
+  void joinStroke(ToolLoop* loop, const Stroke& stroke) override {
     if (stroke.size() == 0)
       return;
 
@@ -88,12 +87,12 @@ public:
     }
     else if (stroke.size() >= 2) {
       if (stroke.size() == 2 && stroke[0] == stroke[1]) {
-        if (lastPointPrinted.empty()) {
+        if (m_lastPointPrinted.empty()) {
           saveLastPointAndDoPointshape(loop, stroke);
           return;
         }
         else {
-          if (lastPointPrinted[0] != stroke[0] ||
+          if (m_lastPointPrinted[0] != stroke[0] ||
               loop->getTracePolicy() == TracePolicy::Last) {
             saveLastPointAndDoPointshape(loop, stroke);
             return;
@@ -116,8 +115,8 @@ public:
             continue;
           doPointshapePoint(m_pts[c].x, m_pts[c].y, loop);
         }
-        ASSERT(!lastPointPrinted.empty());
-        lastPointPrinted[0] = m_pts[m_pts.size()-1];
+        ASSERT(!m_lastPointPrinted.empty());
+        m_lastPointPrinted[0] = m_pts[m_pts.size()-1];
       }
       m_pts.reset();
     }
@@ -135,8 +134,7 @@ public:
     }
   }
 
-  void fillStroke(ToolLoop* loop, const Stroke& stroke) override
-  {
+  void fillStroke(ToolLoop* loop, const Stroke& stroke) override {
     if (stroke.size() < 3) {
       joinStroke(loop, stroke);
       return;
@@ -157,8 +155,7 @@ public:
 class IntertwineAsRectangles : public Intertwine {
 public:
 
-  void joinStroke(ToolLoop* loop, const Stroke& stroke) override
-  {
+  void joinStroke(ToolLoop* loop, const Stroke& stroke) override {
     if (stroke.size() == 0)
       return;
 
@@ -367,8 +364,7 @@ public:
 class IntertwineAsBezier : public Intertwine {
 public:
 
-  void joinStroke(ToolLoop* loop, const Stroke& stroke) override
-  {
+  void joinStroke(ToolLoop* loop, const Stroke& stroke) override {
     if (stroke.size() == 0)
       return;
 
@@ -397,8 +393,7 @@ public:
     }
   }
 
-  void fillStroke(ToolLoop* loop, const Stroke& stroke) override
-  {
+  void fillStroke(ToolLoop* loop, const Stroke& stroke) override {
     joinStroke(loop, stroke);
   }
 };
@@ -416,7 +411,7 @@ class IntertwineAsPixelPerfect : public Intertwine {
   // was executed inmediatelly after a "Last" trace policy (i.e. after the
   // user confirms a line draw while he is holding down the SHIFT key), so
   // we have to ignore printing the first pixel of the line.
-  bool retainedTracePolicyLast = false;
+  bool m_retainedTracePolicyLast = false;
   Stroke m_pts;
 
 public:
@@ -426,7 +421,7 @@ public:
 
   void prepareIntertwine() override {
     m_pts.reset();
-    retainedTracePolicyLast = false;
+    m_retainedTracePolicyLast = false;
   }
 
   void joinStroke(ToolLoop* loop, const Stroke& stroke) override {
@@ -436,7 +431,7 @@ public:
     // first stage on LineFreehand will draw a "star" like pattern
     // with lines from the first point to the last point.
     if (loop->getTracePolicy() == TracePolicy::Last) {
-      retainedTracePolicyLast = true;
+      m_retainedTracePolicyLast = true;
       m_pts.reset();
     }
 
@@ -475,7 +470,7 @@ public:
       // a joinStroke pass with a retained "Last" trace policy
       // (i.e. the user confirms draw a line while he is holding
       // the SHIFT key))
-      if (c == 0 && retainedTracePolicyLast)
+      if (c == 0 && m_retainedTracePolicyLast)
         continue;
       doPointshapePoint(m_pts[c].x, m_pts[c].y, loop);
     }
