@@ -23,9 +23,13 @@
 #include "doc/image.h"
 #include "doc/primitives.h"
 #include "doc/sprite.h"
+#include "gfx/point_io.h"
+#include "gfx/rect_io.h"
 #include "gfx/region.h"
 
 #include <climits>
+
+#define TOOL_TRACE(...) // TRACEARGS
 
 namespace app {
 namespace tools {
@@ -71,6 +75,8 @@ void ToolLoopManager::notifyToolLoopModifiersChange()
 
 void ToolLoopManager::pressButton(const Pointer& pointer)
 {
+  TOOL_TRACE("ToolLoopManager::pressButton", pointer.point());
+
   m_lastPointer = pointer;
 
   if (isCanceled())
@@ -101,6 +107,8 @@ void ToolLoopManager::pressButton(const Pointer& pointer)
 
 bool ToolLoopManager::releaseButton(const Pointer& pointer)
 {
+  TOOL_TRACE("ToolLoopManager::releaseButton", pointer.point());
+
   m_lastPointer = pointer;
 
   if (isCanceled())
@@ -125,6 +133,8 @@ bool ToolLoopManager::releaseButton(const Pointer& pointer)
 
 void ToolLoopManager::movement(const Pointer& pointer)
 {
+  TOOL_TRACE("ToolLoopManager::movement", pointer.point());
+
   m_lastPointer = pointer;
 
   if (isCanceled())
@@ -215,6 +225,8 @@ void ToolLoopManager::doLoopStep(bool lastStep)
 
   if (!m_dirtyArea.isEmpty())
     m_toolLoop->updateDirtyArea(m_dirtyArea);
+
+  TOOL_TRACE("ToolLoopManager::doLoopStep dirtyArea", m_dirtyArea.bounds());
 }
 
 // Applies the grid settings to the specified sprite point.

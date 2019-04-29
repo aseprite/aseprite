@@ -26,6 +26,9 @@
 #include "doc/layer.h"
 #include "doc/primitives.h"
 #include "doc/sprite.h"
+#include "gfx/rect_io.h"
+
+#define EXP_TRACE(...) // TRACEARGS
 
 namespace {
 
@@ -141,6 +144,10 @@ ExpandCelCanvas::~ExpandCelCanvas()
 
 void ExpandCelCanvas::commit()
 {
+  EXP_TRACE("ExpandCelCanvas::commit",
+            "validSrcRegion", m_validSrcRegion.bounds(),
+            "validDstRegion", m_validDstRegion.bounds());
+
   ASSERT(!m_closed);
   ASSERT(!m_committed);
 
@@ -203,6 +210,8 @@ void ExpandCelCanvas::commit()
 
       regionToPatch = &reduced;
     }
+
+    EXP_TRACE(" - regionToPatch", regionToPatch->bounds());
 
     // Check that the region to copy or patch is not empty before we
     // create the new cmd
@@ -277,6 +286,8 @@ Image* ExpandCelCanvas::getDestCanvas()
 
 void ExpandCelCanvas::validateSourceCanvas(const gfx::Region& rgn)
 {
+  EXP_TRACE("ExpandCelCanvas::validateSourceCanvas", rgn.bounds());
+
   getSourceCanvas();
 
   gfx::Region rgnToValidate(rgn);
@@ -309,6 +320,8 @@ void ExpandCelCanvas::validateSourceCanvas(const gfx::Region& rgn)
 
 void ExpandCelCanvas::validateDestCanvas(const gfx::Region& rgn)
 {
+  EXP_TRACE("ExpandCelCanvas::validateDestCanvas", rgn.bounds());
+
   Image* src;
   int src_x, src_y;
   if ((m_flags & NeedsSource) == NeedsSource) {
@@ -355,11 +368,14 @@ void ExpandCelCanvas::validateDestCanvas(const gfx::Region& rgn)
 
 void ExpandCelCanvas::invalidateDestCanvas()
 {
+  EXP_TRACE("ExpandCelCanvas::invalidateDestCanvas");
   m_validDstRegion.clear();
 }
 
 void ExpandCelCanvas::invalidateDestCanvas(const gfx::Region& rgn)
 {
+  EXP_TRACE("ExpandCelCanvas::invalidateDestCanvas", rgn.bounds());
+
   gfx::Region rgnToInvalidate(rgn);
   rgnToInvalidate.offset(-m_bounds.origin());
   m_validDstRegion.createSubtraction(m_validDstRegion, rgnToInvalidate);
@@ -367,6 +383,8 @@ void ExpandCelCanvas::invalidateDestCanvas(const gfx::Region& rgn)
 
 void ExpandCelCanvas::copyValidDestToSourceCanvas(const gfx::Region& rgn)
 {
+  EXP_TRACE("ExpandCelCanvas::copyValidDestToSourceCanvas", rgn.bounds());
+
   gfx::Region rgn2(rgn);
   rgn2.offset(-m_bounds.origin());
   rgn2.createIntersection(rgn2, m_validSrcRegion);

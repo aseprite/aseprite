@@ -12,6 +12,7 @@
 #include "app/script/luacpp.h"
 #include "doc/brush.h"
 #include "doc/image.h"
+#include "doc/mask.h"
 
 #include <algorithm>
 
@@ -70,8 +71,12 @@ BrushRef Brush_new(lua_State* L, int index)
     lua_pop(L, 1);
 
     brush.reset(new Brush(type, size, angle));
-    if (image)
-      brush->setImage(image, nullptr);
+    if (image) {
+      // TODO add a way to add a bitmap mask
+      doc::Mask mask;
+      mask.replace(image->bounds());
+      brush->setImage(image, mask.bitmap());
+    }
 
     if (lua_getfield(L, index, "center") != LUA_TNIL) {
       gfx::Point center = convert_args_into_point(L, -1);
