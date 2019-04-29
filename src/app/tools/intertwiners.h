@@ -10,6 +10,15 @@
 namespace app {
 namespace tools {
 
+static void addPointsWithoutDuplicatingLastOne(int x, int y, Stroke* stroke)
+{
+  const gfx::Point newPoint(x, y);
+  if (stroke->empty() ||
+      stroke->lastPoint() != newPoint) {
+    stroke->addPoint(newPoint);
+  }
+}
+
 class IntertwineNone : public Intertwine {
 public:
 
@@ -59,13 +68,6 @@ public:
 };
 
 class IntertwineAsLines : public Intertwine {
-  static void Line(int x, int y, Stroke* stroke) {
-    gfx::Point newPoint(x, y);
-    if (stroke->empty() ||
-        stroke->lastPoint() != newPoint) {
-      stroke->addPoint(newPoint);
-    }
-  }
   Stroke m_lastPointPrinted;
   Stroke m_pts;
 
@@ -107,7 +109,7 @@ public:
             stroke[c+1].x,
             stroke[c+1].y,
             (void*)&m_pts,
-            (AlgoPixel)&IntertwineAsLines::Line);
+            (AlgoPixel)&addPointsWithoutDuplicatingLastOne);
         }
 
         for (int c=0; c<m_pts.size(); ++c) {
@@ -399,14 +401,6 @@ public:
 };
 
 class IntertwineAsPixelPerfect : public Intertwine {
-  static void pixelPerfectLine(int x, int y, Stroke* stroke) {
-    gfx::Point newPoint(x, y);
-    if (stroke->empty() ||
-        stroke->lastPoint() != newPoint) {
-      stroke->addPoint(newPoint);
-    }
-  }
-
   // It was introduced to know if joinStroke function
   // was executed inmediatelly after a "Last" trace policy (i.e. after the
   // user confirms a line draw while he is holding down the SHIFT key), so
@@ -451,7 +445,7 @@ public:
           stroke[c+1].x,
           stroke[c+1].y,
           (void*)&m_pts,
-          (AlgoPixel)&IntertwineAsPixelPerfect::pixelPerfectLine);
+          (AlgoPixel)&addPointsWithoutDuplicatingLastOne);
       }
     }
 
