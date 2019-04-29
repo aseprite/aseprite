@@ -639,7 +639,8 @@ bool StandbyState::checkStartDrawingStraightLine(Editor* editor,
                                                  const ui::MouseMessage* msg)
 {
   // Start line preview with shift key
-  if (editor->startStraightLineWithFreehandTool(msg)) {
+  if (canCheckStartDrawingStraightLine() &&
+      editor->startStraightLineWithFreehandTool(msg)) {
     tools::Pointer::Button pointerButton =
       (msg ? button_from_msg(msg): tools::Pointer::Left);
 

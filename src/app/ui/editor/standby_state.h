@@ -48,12 +48,13 @@ namespace app {
     virtual Transformation getTransformation(Editor* editor);
 
     void startSelectionTransformation(Editor* editor, const gfx::Point& move, double angle);
-    
+
     void startFlipTransformation(Editor* editor, doc::algorithm::FlipType flipType);
-    
+
   protected:
     void callEyedropper(Editor* editor, const ui::MouseMessage* msg);
     bool checkStartDrawingStraightLine(Editor* editor, const ui::MouseMessage* msg);
+    virtual bool canCheckStartDrawingStraightLine() { return true; }
 
     class Decorator : public EditorDecorator {
     public:

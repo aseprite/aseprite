@@ -104,6 +104,9 @@ namespace app {
     virtual void postRenderDecorator(EditorPostRender* render) override;
     virtual void getInvalidDecoratoredRegion(Editor* editor, gfx::Region& region) override;
 
+    // Disable Shift+click to draw straight lines with the Pencil tool
+    virtual bool canCheckStartDrawingStraightLine() { return false; }
+
   private:
     typedef std::vector<Ruler> Rulers;
 
