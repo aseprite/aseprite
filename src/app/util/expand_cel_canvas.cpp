@@ -204,21 +204,25 @@ void ExpandCelCanvas::commit()
       regionToPatch = &reduced;
     }
 
-    if (m_layer->isBackground()) {
-      m_transaction.execute(
-        new cmd::CopyRegion(
-          m_cel->image(),
-          m_dstImage.get(),
-          *regionToPatch,
-          m_bounds.origin()));
-    }
-    else {
-      m_transaction.execute(
-        new cmd::PatchCel(
-          m_cel,
-          m_dstImage.get(),
-          *regionToPatch,
-          m_bounds.origin()));
+    // Check that the region to copy or patch is not empty before we
+    // create the new cmd
+    if (!regionToPatch->isEmpty()) {
+      if (m_layer->isBackground()) {
+        m_transaction.execute(
+          new cmd::CopyRegion(
+            m_cel->image(),
+            m_dstImage.get(),
+            *regionToPatch,
+            m_bounds.origin()));
+      }
+      else {
+        m_transaction.execute(
+          new cmd::PatchCel(
+            m_cel,
+            m_dstImage.get(),
+            *regionToPatch,
+            m_bounds.origin()));
+      }
     }
   }
   else {

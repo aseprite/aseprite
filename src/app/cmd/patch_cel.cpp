@@ -29,6 +29,7 @@ PatchCel::PatchCel(doc::Cel* dstCel,
   , m_region(patchedRegion)
   , m_pos(patchPos)
 {
+  ASSERT(!patchedRegion.isEmpty());
 }
 
 void PatchCel::onExecute()

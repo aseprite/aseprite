@@ -24,6 +24,8 @@ CopyRegion::CopyRegion(Image* dst, const Image* src,
   : WithImage(dst)
   , m_alreadyCopied(alreadyCopied)
 {
+  ASSERT(!region.isEmpty());
+
   // Create region to save/swap later
   for (const auto& rc : region) {
     gfx::Clip clip(
