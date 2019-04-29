@@ -17,6 +17,7 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/main_window.h"
 #include "app/ui/skin/skin_theme.h"
+#include "app/ui_context.h"
 #include "doc/image.h"
 #include "doc/sprite.h"
 #include "gfx/rect.h"
@@ -265,6 +266,24 @@ bool SelectBoxState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPo
   }
 
   return StandbyState::onSetCursor(editor, mouseScreenPos);
+}
+
+bool SelectBoxState::onKeyDown(Editor* editor, ui::KeyMessage* msg)
+{
+  if (editor != UIContext::instance()->activeEditor())
+    return false;
+
+  // Cancel
+  if (msg->scancode() == kKeyEsc) {
+    if (hasFlag(Flags::QuickBox)) {
+      if (m_delegate)
+        m_delegate->onQuickboxCancel(editor);
+      return true;
+    }
+  }
+
+  // Use StandbyState implementation
+  return StandbyState::onKeyDown(editor, msg);
 }
 
 bool SelectBoxState::acceptQuickTool(tools::Tool* tool)
