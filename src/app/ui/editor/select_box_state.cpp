@@ -191,25 +191,27 @@ bool SelectBoxState::onMouseMove(Editor* editor, MouseMessage* msg)
       Ruler& oppRuler = oppositeRuler(i);
 
       switch (ruler.align() & (HORIZONTAL | VERTICAL)) {
+
         case HORIZONTAL:
           if (hasFlag(Flags::PaddingRulers) && (i == H2)) {
             int pad = m_rulers[PH].position() - m_rulers[H2].position();
             m_rulers[PH].setPosition(start.position() + delta.y + pad);
           }
+
           ruler.setPosition(start.position() + delta.y);
           if (msg->modifiers() == os::kKeyShiftModifier)
-            oppRuler.setPosition(editor->sprite()->height()
-                                 - start.position() - delta.y);
+            oppRuler.setPosition(m_startRulers[i ^ 1].position() - delta.y);
           break;
+
         case VERTICAL:
           if (hasFlag(Flags::PaddingRulers) && (i == V2)) {
             int pad = m_rulers[PV].position() - m_rulers[V2].position();
             m_rulers[PV].setPosition(start.position() + delta.x + pad);
           }
+
           ruler.setPosition(start.position() + delta.x);
           if (msg->modifiers() == os::kKeyShiftModifier)
-            oppRuler.setPosition(editor->sprite()->width()
-                                 - start.position() - delta.x);
+            oppRuler.setPosition(m_startRulers[i ^ 1].position() - delta.x);
           break;
       }
     }
