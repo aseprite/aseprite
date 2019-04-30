@@ -127,9 +127,6 @@ namespace app {
       virtual Mask* getMask() = 0;
       virtual void setMask(Mask* newMask) = 0;
 
-      // Adds a new slice (only for slice ink)
-      virtual void addSlice(doc::Slice* newSlice) = 0;
-
       // Gets mask X,Y origin coordinates
       virtual gfx::Point getMaskOrigin() = 0;
 
@@ -236,6 +233,9 @@ namespace app {
       virtual render::DitheringMatrix getDitheringMatrix() = 0;
       virtual render::DitheringAlgorithmBase* getDitheringAlgorithm() = 0;
       virtual render::GradientType getGradientType() = 0;
+
+      // Called when the user release the mouse on SliceInk
+      virtual void onSliceRect(const gfx::Rect& bounds) = 0;
     };
 
   } // namespace tools

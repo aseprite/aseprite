@@ -343,6 +343,9 @@ public:
 #endif
   }
 
+
+  void onSliceRect(const gfx::Rect& bounds) override { }
+
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -568,16 +571,6 @@ public:
   void setMask(Mask* newMask) override {
     m_transaction.execute(new cmd::SetMask(m_document, newMask));
   }
-  void addSlice(Slice* newSlice) override {
-    auto color = Preferences::instance().slices.defaultColor();
-    newSlice->userData().setColor(
-      doc::rgba(color.getRed(),
-                color.getGreen(),
-                color.getBlue(),
-                color.getAlpha()));
-
-    m_transaction.execute(new cmd::AddSlice(m_sprite, newSlice));
-  }
   gfx::Point getMaskOrigin() override { return m_maskOrigin; }
   bool getFilled() override { return m_filled; }
   bool getPreviewFilled() override { return m_previewFilled; }
@@ -586,6 +579,23 @@ public:
 
   void cancel() override { m_canceled = true; }
   bool isCanceled() override { return m_canceled; }
+
+  void onSliceRect(const gfx::Rect& bounds) override {
+    if (getMouseButton() == ToolLoop::Left) {
+      Slice* slice = new Slice;
+      SliceKey key(bounds);
+      slice->insert(getFrame(), key);
+
+      auto color = Preferences::instance().slices.defaultColor();
+      slice->userData().setColor(
+        doc::rgba(color.getRed(),
+                  color.getGreen(),
+                  color.getBlue(),
+                  color.getAlpha()));
+
+      m_transaction.execute(new cmd::AddSlice(m_sprite, slice));
+    }
+  }
 
 };
 
@@ -776,7 +786,6 @@ public:
   bool useMask() override { return false; }
   Mask* getMask() override { return nullptr; }
   void setMask(Mask* newMask) override { }
-  void addSlice(Slice* newSlice) override { }
   gfx::Point getMaskOrigin() override { return gfx::Point(0, 0); }
   bool getFilled() override { return false; }
   bool getPreviewFilled() override { return false; }

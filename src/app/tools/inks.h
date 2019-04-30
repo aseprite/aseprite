@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -14,7 +14,6 @@
 #include "app/doc_undo.h"
 #include "app/tools/pick_ink.h"
 #include "doc/mask.h"
-#include "doc/slice.h"
 #include "gfx/region.h"
 
 namespace app {
@@ -243,11 +242,8 @@ public:
     if (state) {
       m_maxBounds = gfx::Rect(0, 0, 0, 0);
     }
-    else if (loop->getMouseButton() == ToolLoop::Left) {
-      Slice* slice = new Slice;
-      SliceKey key(m_maxBounds);
-      slice->insert(loop->getFrame(), key);
-      loop->addSlice(slice);
+    else {
+      loop->onSliceRect(m_maxBounds);
     }
   }
 };
