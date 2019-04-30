@@ -18,6 +18,7 @@
 #include "base/string.h"
 #include "dio/detect_format.h"
 #include "doc/cel.h"
+#include "doc/file/act_file.h"
 #include "doc/file/col_file.h"
 #include "doc/file/gpl_file.h"
 #include "doc/file/hex_file.h"
@@ -33,7 +34,7 @@ namespace app {
 
 using namespace doc;
 
-static const char* palExts[] = { "col", "gpl", "hex", "pal" };
+static const char* palExts[] = { "act", "col", "gpl", "hex", "pal" };
 
 base::paths get_readable_palette_extensions()
 {
@@ -57,6 +58,10 @@ Palette* load_palette(const char* filename)
   Palette* pal = nullptr;
 
   switch (dioFormat) {
+
+    case dio::FileFormat::ACT_PALETTE:
+      pal = doc::file::load_act_file(filename);
+      break;
 
     case dio::FileFormat::COL_PALETTE:
       pal = doc::file::load_col_file(filename);
@@ -116,6 +121,10 @@ bool save_palette(const char* filename, const Palette* pal, int columns)
   bool success = false;
 
   switch (dioFormat) {
+
+    case dio::FileFormat::ACT_PALETTE:
+      success = doc::file::save_act_file(pal, filename);
+      break;
 
     case dio::FileFormat::COL_PALETTE:
       success = doc::file::save_col_file(pal, filename);

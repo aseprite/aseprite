@@ -31,6 +31,7 @@ add_library(doc-lib
   compressed_image.cpp
   conversion_to_surface.cpp
   document.cpp
+  file/act_file.cpp
   file/col_file.cpp
   file/gpl_file.cpp
   file/hex_file.cpp
