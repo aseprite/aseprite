@@ -11,6 +11,7 @@
 #include "config.h"
 #endif
 
+#include "base/clamp.h"
 #include "gfx/size.h"
 #include "ui/intern.h"
 #include "ui/manager.h"
@@ -31,6 +32,7 @@
 #include "os/surface.h"
 #endif
 
+#include <algorithm>
 #include <queue>
 
 #define HBAR_SIZE (m_scrollbar_h.getBarWidth())
@@ -97,7 +99,7 @@ void View::showScrollBars()
   updateView();
 }
 
-Size View::getScrollableSize()
+Size View::getScrollableSize() const
 {
   return Size(m_scrollbar_h.size(),
               m_scrollbar_v.size());
@@ -247,11 +249,7 @@ void View::onSetViewScroll(const gfx::Point& pt)
     return;
 
   Point oldScroll = viewScroll();
-  Size maxsize = getScrollableSize();
-  Size visible = visibleSize();
-  Point newScroll(MID(0, pt.x, MAX(0, maxsize.w - visible.w)),
-                  MID(0, pt.y, MAX(0, maxsize.h - visible.h)));
-
+  Point newScroll = limitScrollPosToViewport(pt);
   if (newScroll == oldScroll)
     return;
 
@@ -372,6 +370,14 @@ void View::onScrollRegion(ScrollRegionEvent& ev)
 void View::onScrollChange()
 {
   // Do nothing
+}
+
+gfx::Point View::limitScrollPosToViewport(const gfx::Point& pt) const
+{
+  const Size maxSize = getScrollableSize();
+  const Size visible = visibleSize();
+  return Point(base::clamp(pt.x, 0, std::max(0, maxSize.w - visible.w)),
+               base::clamp(pt.y, 0, std::max(0, maxSize.h - visible.h)));
 }
 
 } // namespace ui

@@ -42,7 +42,7 @@ namespace ui {
 
     // Returns the maximum viewable size requested by the attached
     // widget in the viewport.
-    gfx::Size getScrollableSize();
+    gfx::Size getScrollableSize() const;
     void setScrollableSize(const gfx::Size& sz,
                            const bool setScrollPos = true);
 
@@ -71,6 +71,8 @@ namespace ui {
     virtual void onScrollChange();
 
   private:
+    gfx::Point limitScrollPosToViewport(const gfx::Point& pt) const;
+
     bool m_hasBars;
     Viewport m_viewport;
     ScrollBar m_scrollbar_h;
