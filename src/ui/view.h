@@ -71,6 +71,7 @@ namespace ui {
     virtual void onScrollChange();
 
   private:
+    void updateAttachedWidgetBounds(const gfx::Point& scrollPos);
     gfx::Point limitScrollPosToViewport(const gfx::Point& pt) const;
 
     bool m_hasBars;

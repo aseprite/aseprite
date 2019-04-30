@@ -1570,6 +1570,9 @@ double Widget::onGetTextDouble() const
 
 void Widget::offsetWidgets(int dx, int dy)
 {
+  if (dx == 0 && dy == 0)
+    return;
+
   m_updateRegion.offset(dx, dy);
   m_bounds.offset(dx, dy);
 

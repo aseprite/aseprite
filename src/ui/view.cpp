@@ -129,8 +129,8 @@ void View::setScrollableSize(const gfx::Size& sz,
 
   // Setup viewport
   if (setScrollPos) {
-    invalidate();
     setViewScroll(viewScroll()); // Setup the same scroll-point
+    invalidate();
   }
 }
 
@@ -169,13 +169,24 @@ void View::updateView(const bool restoreScrollPos)
     setScrollableSize(m_viewport.calculateNeededSize(), false);
 
   m_viewport.setBounds(m_viewport.bounds());
-  invalidate();
-  if (restoreScrollPos) {
+  if (restoreScrollPos  ||
+      // Force restoring the old scroll position if we are out of
+      // bounds in the viewport limits.
+      scroll != limitScrollPosToViewport(scroll)) {
     if (vw)
       setViewScroll(scroll);
     else
       setViewScroll(Point(0, 0));
   }
+  ASSERT(viewScroll() == limitScrollPosToViewport(viewScroll()));
+
+  if (Widget* child = attachedWidget()) {
+    updateAttachedWidgetBounds(viewScroll());
+    ASSERT(child->bounds().w >= viewportBounds().w);
+    ASSERT(child->bounds().h >= viewportBounds().h);
+  }
+
+  invalidate();
 }
 
 Viewport* View::viewport()
@@ -253,10 +264,6 @@ void View::onSetViewScroll(const gfx::Point& pt)
   if (newScroll == oldScroll)
     return;
 
-  // This is the movement for the scrolled region (which is inverse to
-  // the scroll position delta/movement).
-  Point delta = oldScroll - newScroll;
-
   // Visible viewport region that is not overlapped by windows
   Region drawableRegion;
   m_viewport.getDrawableRegion(
@@ -297,19 +304,8 @@ void View::onSetViewScroll(const gfx::Point& pt)
     onScrollRegion(ev);
   }
 
-  // Move viewport children
-  cpos.offset(-newScroll);
-  for (auto child : m_viewport.children()) {
-    Size reqSize = child->sizeHint();
-    cpos.w = MAX(reqSize.w, cpos.w);
-    cpos.h = MAX(reqSize.h, cpos.h);
-    if (cpos.w != child->bounds().w ||
-        cpos.h != child->bounds().h)
-      child->setBounds(cpos);
-    else
-      child->offsetWidgets(cpos.x - child->bounds().x,
-                           cpos.y - child->bounds().y);
-  }
+  // Move attached widget
+  updateAttachedWidgetBounds(newScroll);
 
   // Change scroll bar positions
   m_scrollbar_h.setPos(newScroll.x);
@@ -319,7 +315,10 @@ void View::onSetViewScroll(const gfx::Point& pt)
   Region invalidRegion(cpos);
   invalidRegion &= drawableRegion;
 
-  // Move the valid screen region.
+  // Move the valid screen region. "delta" is the movement for the
+  // scrolled region (which is inverse to the scroll position
+  // delta/movement).
+  const Point delta = oldScroll - newScroll;
   {
     // The movable region includes the given "validRegion"
     // intersecting itself when it's in the new position, so we don't
@@ -370,6 +369,23 @@ void View::onScrollRegion(ScrollRegionEvent& ev)
 void View::onScrollChange()
 {
   // Do nothing
+}
+
+void View::updateAttachedWidgetBounds(const gfx::Point& scrollPos)
+{
+  Rect cpos = m_viewport.childrenBounds();
+  cpos.offset(-scrollPos);
+  for (auto child : m_viewport.children()) {
+    Size reqSize = child->sizeHint();
+    cpos.w = MAX(reqSize.w, cpos.w);
+    cpos.h = MAX(reqSize.h, cpos.h);
+    if (cpos.w != child->bounds().w ||
+        cpos.h != child->bounds().h)
+      child->setBounds(cpos);
+    else
+      child->offsetWidgets(cpos.x - child->bounds().x,
+                           cpos.y - child->bounds().y);
+  }
 }
 
 gfx::Point View::limitScrollPosToViewport(const gfx::Point& pt) const
