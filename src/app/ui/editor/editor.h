@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -24,6 +24,7 @@
 #include "doc/algorithm/flip_type.h"
 #include "doc/frame.h"
 #include "doc/image_buffer.h"
+#include "doc/selected_objects.h"
 #include "filters/tiled_mode.h"
 #include "gfx/fwd.h"
 #include "obs/connection.h"
@@ -35,6 +36,8 @@
 #include "ui/pointer_type.h"
 #include "ui/timer.h"
 #include "ui/widget.h"
+
+#include <set>
 
 namespace doc {
   class Layer;
@@ -275,6 +278,17 @@ namespace app {
     // freehand tool is pressed.
     bool startStraightLineWithFreehandTool(const ui::MouseMessage* msg);
 
+    // Functions to handle the set of selected slices.
+    bool isSliceSelected(const doc::Slice* slice) const;
+    void clearSlicesSelection();
+    void selectSlice(const doc::Slice* slice);
+    bool selectSliceBox(const gfx::Rect& box);
+    bool hasSelectedSlices() const { return !m_selectedSlices.empty(); }
+
+    // Called by DocView's InputChainElement::onCancel() impl when Esc
+    // key is pressed to cancel the active selection.
+    void cancelSelections();
+
     static void registerCommands();
 
   protected:
@@ -297,6 +311,7 @@ namespace app {
     void onRemoveCel(DocEvent& ev) override;
     void onAddFrameTag(DocEvent& ev) override;
     void onRemoveFrameTag(DocEvent& ev) override;
+    void onRemoveSlice(DocEvent& ev) override;
 
     // ActiveToolObserver impl
     void onActiveToolChange(tools::Tool* tool) override;
@@ -421,6 +436,9 @@ namespace app {
 #if ENABLE_DEVMODE
     gfx::Rect m_perfInfoBounds;
 #endif
+
+    // For slices
+    doc::SelectedObjects m_selectedSlices;
 
     // The render engine must be shared between all editors so when a
     // DrawingState is being used in one editor, other editors for the

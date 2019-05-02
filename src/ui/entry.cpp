@@ -186,8 +186,10 @@ std::string Entry::selectedText() const
 
 void Entry::setSuffix(const std::string& suffix)
 {
-  m_suffix = suffix;
-  invalidate();
+  if (m_suffix != suffix) {
+    m_suffix = suffix;
+    invalidate();
+  }
 }
 
 void Entry::setTranslateDeadKeys(bool state)

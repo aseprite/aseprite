@@ -380,6 +380,8 @@ void Editor::getSite(Site* site) const
   site->sprite(m_sprite);
   site->layer(m_layer);
   site->frame(m_frame);
+  if (!m_selectedSlices.empty())
+    site->selectedSlices(m_selectedSlices);
 }
 
 Site Editor::getSite() const
@@ -1003,6 +1005,7 @@ void Editor::drawSlices(ui::Graphics* g)
   if (!isVisible() || !m_document)
     return;
 
+  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
   gfx::Point mainOffset(mainTilePosition());
 
   for (auto slice : m_sprite->slices()) {
@@ -1053,7 +1056,15 @@ void Editor::drawSlices(ui::Graphics* g)
       g->drawRect(in_color, in);
     }
 
-    g->drawRect(color, out);
+    if (isSliceSelected(slice) &&
+        getCurrentEditorInk()->isSlice()) {
+      PaintWidgetPartInfo info;
+      theme->paintWidgetPart(
+        g, theme->styles.colorbarSelection(), out, info);
+    }
+    else {
+      g->drawRect(color, out);
+    }
   }
 }
 
@@ -1610,6 +1621,42 @@ bool Editor::startStraightLineWithFreehandTool(const ui::MouseMessage* msg)
      document()->lastDrawingPoint() != Doc::NoLastDrawingPoint());
 }
 
+bool Editor::isSliceSelected(const doc::Slice* slice) const
+{
+  ASSERT(slice);
+  return m_selectedSlices.contains(slice->id());
+}
+
+void Editor::clearSlicesSelection()
+{
+  m_selectedSlices.clear();
+  invalidate();
+}
+
+void Editor::selectSlice(const doc::Slice* slice)
+{
+  ASSERT(slice);
+  m_selectedSlices.insert(slice->id());
+  invalidate();
+}
+
+bool Editor::selectSliceBox(const gfx::Rect& box)
+{
+  m_selectedSlices.clear();
+  for (auto slice : m_sprite->slices()) {
+    auto key = slice->getByFrame(m_frame);
+    if (key && key->bounds().intersects(box))
+      m_selectedSlices.insert(slice->id());
+  }
+  invalidate();
+  return !m_selectedSlices.empty();
+}
+
+void Editor::cancelSelections()
+{
+  m_selectedSlices.clear();
+}
+
 //////////////////////////////////////////////////////////////////////
 // Message handler for the editor
 
@@ -2038,6 +2085,15 @@ void Editor::onRemoveFrameTag(DocEvent& ev)
   m_tagFocusBand = -1;
   if (m_state)
     m_state->onRemoveFrameTag(this, ev.frameTag());
+}
+
+void Editor::onRemoveSlice(DocEvent& ev)
+{
+  ASSERT(ev.slice());
+  if (ev.slice() &&
+      m_selectedSlices.contains(ev.slice()->id())) {
+    m_selectedSlices.erase(ev.slice()->id());
+  }
 }
 
 void Editor::setCursor(const gfx::Point& mouseScreenPos)

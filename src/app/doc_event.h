@@ -1,5 +1,6 @@
 // Aseprite
-// Copyright (c) 2001-2018  David Capello
+// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -17,6 +18,7 @@ namespace doc {
   class Image;
   class Layer;
   class LayerImage;
+  class Slice;
   class Sprite;
 }
 
@@ -35,6 +37,8 @@ namespace app {
       , m_image(NULL)
       , m_imageIndex(-1)
       , m_frame(0)
+      , m_frameTag(nullptr)
+      , m_slice(nullptr)
       , m_targetLayer(NULL)
       , m_targetFrame(0) {
     }
@@ -48,6 +52,7 @@ namespace app {
     int imageIndex() const { return m_imageIndex; }
     frame_t frame() const { return m_frame; }
     FrameTag* frameTag() const { return m_frameTag; }
+    Slice* slice() const { return m_slice; }
     const gfx::Region& region() const { return m_region; }
 
     void sprite(Sprite* sprite) { m_sprite = sprite; }
@@ -57,6 +62,7 @@ namespace app {
     void imageIndex(int imageIndex) { m_imageIndex = imageIndex; }
     void frame(frame_t frame) { m_frame = frame; }
     void frameTag(FrameTag* frameTag) { m_frameTag = frameTag; }
+    void slice(Slice* slice) { m_slice = slice; }
     void region(const gfx::Region& rgn) { m_region = rgn; }
 
     // Destination of the operation.
@@ -75,6 +81,7 @@ namespace app {
     int m_imageIndex;
     frame_t m_frame;
     FrameTag* m_frameTag;
+    Slice* m_slice;
     gfx::Region m_region;
 
     // For copy/move commands, the m_layer/m_frame are source of the

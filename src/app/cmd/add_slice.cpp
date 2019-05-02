@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This program is distributed under the terms of
@@ -10,6 +11,8 @@
 
 #include "app/cmd/add_slice.h"
 
+#include "app/doc.h"
+#include "app/doc_event.h"
 #include "doc/slice.h"
 #include "doc/slice_io.h"
 #include "doc/sprite.h"
@@ -42,9 +45,7 @@ void AddSlice::onUndo()
   write_slice(m_stream, slice);
   m_size = size_t(m_stream.tellp());
 
-  sprite->slices().remove(slice);
-  sprite->incrementVersion();
-  delete slice;
+  removeSlice(sprite, slice);
 }
 
 void AddSlice::onRedo()
@@ -52,12 +53,36 @@ void AddSlice::onRedo()
   Sprite* sprite = this->sprite();
   Slice* slice = read_slice(m_stream);
 
-  sprite->slices().add(slice);
-  sprite->incrementVersion();
+  addSlice(sprite, slice);
 
   m_stream.str(std::string());
   m_stream.clear();
   m_size = 0;
+}
+
+void AddSlice::addSlice(Sprite* sprite, Slice* slice)
+{
+  sprite->slices().add(slice);
+  sprite->incrementVersion();
+
+  Doc* doc = static_cast<Doc*>(sprite->document());
+  DocEvent ev(doc);
+  ev.sprite(sprite);
+  ev.slice(slice);
+  doc->notify_observers<DocEvent&>(&DocObserver::onAddSlice, ev);
+}
+
+void AddSlice::removeSlice(Sprite* sprite, Slice* slice)
+{
+  Doc* doc = static_cast<Doc*>(sprite->document());
+  DocEvent ev(doc);
+  ev.sprite(sprite);
+  ev.slice(slice);
+  doc->notify_observers<DocEvent&>(&DocObserver::onRemoveSlice, ev);
+
+  sprite->slices().remove(slice);
+  sprite->incrementVersion();
+  delete slice;
 }
 
 } // namespace cmd

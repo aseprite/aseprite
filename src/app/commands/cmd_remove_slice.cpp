@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -14,9 +15,10 @@
 #include "app/commands/command.h"
 #include "app/context_access.h"
 #include "app/modules/gui.h"
-#include "app/ui/status_bar.h"
 #include "app/tx.h"
+#include "app/ui/status_bar.h"
 #include "base/convert_to.h"
+#include "doc/selected_objects.h"
 #include "doc/slice.h"
 #include "doc/sprite.h"
 #include "ui/alert.h"
@@ -66,40 +68,63 @@ void RemoveSliceCommand::onExecute(Context* context)
   const ContextReader reader(context);
   const Sprite* sprite = reader.sprite();
   frame_t frame = reader.frame();
-  const Slice* foundSlice = nullptr;
+  SelectedObjects slicesToDelete;
 
-  if (!m_sliceName.empty())
-    foundSlice = sprite->slices().getByName(m_sliceName);
-  else if (m_sliceId != NullId)
-    foundSlice = sprite->slices().getById(m_sliceId);
+  std::string sliceName;
+  {
+    Slice* slice = nullptr;
+    if (!m_sliceName.empty())
+      slice = sprite->slices().getByName(m_sliceName);
+    else if (m_sliceId != NullId)
+      slice = sprite->slices().getById(m_sliceId);
 
-  if (!foundSlice)
+    if (slice)
+      slicesToDelete.insert(slice->id());
+    else
+      slicesToDelete = reader.site()->selectedSlices();
+  }
+
+  // Nothing to delete
+  if (slicesToDelete.empty())
     return;
 
-  std::string sliceName = foundSlice->name();
+  if (slicesToDelete.size() == 1) {
+    Slice* slice = slicesToDelete.frontAs<Slice>();
+    ASSERT(slice);
+    if (slice)
+    sliceName = slice->name();
+  }
 
   {
     ContextWriter writer(reader, 500);
     Doc* document(writer.document());
     Sprite* sprite(writer.sprite());
     Tx tx(writer.context(), "Remove Slice");
-    Slice* slice = const_cast<Slice*>(foundSlice);
 
-    if (slice->size() > 1) {
-      tx(new cmd::SetSliceKey(slice, frame, SliceKey()));
+    for (auto slice : slicesToDelete.iterateAs<Slice>()) {
+      ASSERT(slice);
+      if (!slice)
+        continue;
+
+      if (slice->size() > 1) {
+        tx(new cmd::SetSliceKey(slice, frame, SliceKey()));
+      }
+      else {
+        tx(new cmd::RemoveSlice(sprite, slice));
+      }
     }
-    else {
-      tx(new cmd::RemoveSlice(sprite, slice));
-    }
+
     tx.commit();
     document->notifyGeneralUpdate();
   }
 
   StatusBar::instance()->invalidate();
   if (!sliceName.empty())
-    StatusBar::instance()->showTip(1000, "Slice '%s' removed", sliceName.c_str());
+    StatusBar::instance()->showTip(
+      1000, "Slice '%s' removed", sliceName.c_str());
   else
-    StatusBar::instance()->showTip(1000, "Slice removed");
+    StatusBar::instance()->showTip(
+      1000, "%d slice(s) removed", slicesToDelete.size());
 }
 
 Command* CommandFactory::createRemoveSliceCommand()

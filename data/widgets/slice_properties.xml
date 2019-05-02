@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2017-2018 by David Capello -->
+<!-- Copyright (C) 2019  Igara Studio S.A. -->
+<!-- Copyright (C) 2017-2018  David Capello -->
 <gui>
 <window id="slice_properties" text="@.title">
   <grid columns="2">
@@ -30,16 +31,16 @@
 
     <check text="@.center" id="center" />
     <hbox homogeneous="true">
-      <expr id="center_x" text="0" />
-      <expr id="center_y" text="0" />
-      <expr id="center_w" text="0" />
-      <expr id="center_h" text="0" />
+      <expr id="center_x" />
+      <expr id="center_y" />
+      <expr id="center_w" />
+      <expr id="center_h" />
     </hbox>
 
     <check text="@.pivot" id="pivot" />
     <hbox>
-      <expr id="pivot_x" text="0" />
-      <expr id="pivot_y" text="0" />
+      <expr id="pivot_x" />
+      <expr id="pivot_y" />
     </hbox>
 
     <separator horizontal="true" cell_hspan="2" />

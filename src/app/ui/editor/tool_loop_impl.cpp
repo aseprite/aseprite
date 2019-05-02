@@ -582,19 +582,30 @@ public:
 
   void onSliceRect(const gfx::Rect& bounds) override {
     if (getMouseButton() == ToolLoop::Left) {
-      Slice* slice = new Slice;
-      SliceKey key(bounds);
-      slice->insert(getFrame(), key);
+      // Try to select slices, but if it returns false, it means that
+      // there are no slices in the box to be selected, so we show a
+      // popup menu to create a new one.
+      if (!m_editor->selectSliceBox(bounds) &&
+          (bounds.w > 1 || bounds.h > 1)) {
+        Slice* slice = new Slice;
+        SliceKey key(bounds);
+        slice->insert(getFrame(), key);
 
-      auto color = Preferences::instance().slices.defaultColor();
-      slice->userData().setColor(
-        doc::rgba(color.getRed(),
-                  color.getGreen(),
-                  color.getBlue(),
-                  color.getAlpha()));
+        auto color = Preferences::instance().slices.defaultColor();
+        slice->userData().setColor(
+          doc::rgba(color.getRed(),
+                    color.getGreen(),
+                    color.getBlue(),
+                    color.getAlpha()));
 
-      m_transaction.execute(new cmd::AddSlice(m_sprite, slice));
+        m_transaction.execute(new cmd::AddSlice(m_sprite, slice));
+        return;
+      }
     }
+
+    // Cancel the operation (do not create a new transaction for this
+    // no-op, e.g. just change the set of selected slices).
+    m_canceled = true;
   }
 
 };

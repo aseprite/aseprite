@@ -239,14 +239,28 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
       case EditorHit::SliceBounds:
       case EditorHit::SliceCenter:
         if (msg->left()) {
-          MovingSliceState* newState = new MovingSliceState(editor, msg, hit);
+          // If we click outside all slices, we clear the selection of slices.
+          if (!hit.slice() || !site.selectedSlices().contains(hit.slice()->id())) {
+            editor->clearSlicesSelection();
+
+            site = Site();
+            editor->getSite(&site);
+          }
+
+          MovingSliceState* newState = new MovingSliceState(
+            editor, msg, hit, site.selectedSlices());
           editor->setState(EditorStatePtr(newState));
         }
         else {
           Menu* popupMenu = AppMenus::instance()->getSlicePopupMenu();
           if (popupMenu) {
             Params params;
-            params.set("id", base::convert_to<std::string>(hit.slice()->id()).c_str());
+            // When the editor doesn't have a set of selected slices,
+            // we set the specific clicked slice for the commands (in
+            // other case, those commands will get the selected set of
+            // slices from Site::selectedSlices() field).
+            if (!editor->hasSelectedSlices())
+              params.set("id", base::convert_to<std::string>(hit.slice()->id()).c_str());
             AppMenuItem::setContextParams(params);
             popupMenu->showPopup(msg->position());
             AppMenuItem::setContextParams(Params());

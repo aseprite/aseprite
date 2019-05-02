@@ -1,6 +1,6 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
-// Copyright (c) 2001-2018 David Capello
+// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -30,6 +30,7 @@ namespace app {
     virtual void onAddLayer(DocEvent& ev) { }
     virtual void onAddFrame(DocEvent& ev) { }
     virtual void onAddCel(DocEvent& ev) { }
+    virtual void onAddSlice(DocEvent& ev) { }
     virtual void onAddFrameTag(DocEvent& ev) { }
 
     virtual void onBeforeRemoveLayer(DocEvent& ev) { }
@@ -40,6 +41,7 @@ namespace app {
     virtual void onRemoveFrame(DocEvent& ev) { }
     virtual void onRemoveFrameTag(DocEvent& ev) { }
     virtual void onRemoveCel(DocEvent& ev) { }
+    virtual void onRemoveSlice(DocEvent& ev) { }
 
     virtual void onSpriteSizeChanged(DocEvent& ev) { }
     virtual void onSpriteTransparentColorChanged(DocEvent& ev) { }

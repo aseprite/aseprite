@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This program is distributed under the terms of
@@ -33,6 +34,9 @@ namespace cmd {
     }
 
   private:
+    void addSlice(Sprite* sprite, Slice* slice);
+    void removeSlice(Sprite* sprite, Slice* slice);
+
     size_t m_size;
     std::stringstream m_stream;
   };

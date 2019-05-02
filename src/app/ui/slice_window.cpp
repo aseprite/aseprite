@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This program is distributed under the terms of
@@ -21,45 +22,80 @@
 namespace app {
 
 SliceWindow::SliceWindow(const doc::Sprite* sprite,
-                         const doc::Slice* slice,
-                         const doc::frame_t frameNum)
-  : m_userData(slice->userData())
+                         const doc::SelectedObjects& slices,
+                         const doc::frame_t frame)
+  : m_mods(kNone)
 {
-  name()->setText(slice->name());
+  ASSERT(!slices.empty());
 
-  const doc::SliceKey* key = slice->getByFrame(frameNum);
-  ASSERT(key);
-  if (!key)
-    return;
-
+  Slice* slice = slices.frontAs<Slice>();
+  m_userData = slice->userData();
   userData()->Click.connect(base::Bind<void>(&SliceWindow::onPopupUserData, this));
 
-  boundsX()->setTextf("%d", key->bounds().x);
-  boundsY()->setTextf("%d", key->bounds().y);
-  boundsW()->setTextf("%d", key->bounds().w);
-  boundsH()->setTextf("%d", key->bounds().h);
+  if (slices.size() == 1) {
+    // If we are going to edit just one slice, we indicate like all
+    // fields were modified, so then the slice properties transaction
+    // is created comparing the window fields with the slice fields
+    // (and not with which field was modified).
+    m_mods = kAll;
 
-  center()->Click.connect(base::Bind<void>(&SliceWindow::onCenterChange, this));
-  pivot()->Click.connect(base::Bind<void>(&SliceWindow::onPivotChange, this));
+    name()->setText(slice->name());
 
-  if (key->hasCenter()) {
-    center()->setSelected(true);
-    centerX()->setTextf("%d", key->center().x);
-    centerY()->setTextf("%d", key->center().y);
-    centerW()->setTextf("%d", key->center().w);
-    centerH()->setTextf("%d", key->center().h);
+    const doc::SliceKey* key = slice->getByFrame(frame);
+    ASSERT(key);
+    if (!key)
+      return;
+
+    boundsX()->setTextf("%d", key->bounds().x);
+    boundsY()->setTextf("%d", key->bounds().y);
+    boundsW()->setTextf("%d", key->bounds().w);
+    boundsH()->setTextf("%d", key->bounds().h);
+
+    center()->Click.connect(base::Bind<void>(&SliceWindow::onCenterChange, this));
+    pivot()->Click.connect(base::Bind<void>(&SliceWindow::onPivotChange, this));
+
+    if (key->hasCenter()) {
+      center()->setSelected(true);
+      centerX()->setTextf("%d", key->center().x);
+      centerY()->setTextf("%d", key->center().y);
+      centerW()->setTextf("%d", key->center().w);
+      centerH()->setTextf("%d", key->center().h);
+    }
+    else {
+      onCenterChange();
+    }
+
+    if (key->hasPivot()) {
+      pivot()->setSelected(true);
+      pivotX()->setTextf("%d", key->pivot().x);
+      pivotY()->setTextf("%d", key->pivot().y);
+    }
+    else {
+      onPivotChange();
+    }
   }
+  // Edit multiple slices
   else {
-    onCenterChange();
-  }
+    ui::Entry* entries[] = {
+      name(),
+      boundsX(), boundsY(), boundsW(), boundsH(),
+      centerX(), centerY(), centerW(), centerH(),
+      pivotX(), pivotY() };
+    const Mods entryMods[] = {
+      kName,
+      kBoundsX, kBoundsY, kBoundsW, kBoundsH,
+      kCenterX, kCenterY, kCenterW, kCenterH,
+      kPivotX, kPivotY };
 
-  if (key->hasPivot()) {
-    pivot()->setSelected(true);
-    pivotX()->setTextf("%d", key->pivot().x);
-    pivotY()->setTextf("%d", key->pivot().y);
-  }
-  else {
-    onPivotChange();
+    for (int i=0; i<sizeof(entries)/sizeof(entries[0]); ++i) {
+      auto entry = entries[i];
+      Mods mod = entryMods[i];
+      entry->setSuffix("*");
+      entry->Change.connect(
+        [this, entry, mod]{
+          onModifyField(entry, mod);
+        });
+    }
   }
 }
 
@@ -140,7 +176,16 @@ void SliceWindow::onPivotChange()
 
 void SliceWindow::onPopupUserData()
 {
-  show_user_data_popup(userData()->bounds(), m_userData);
+  if (show_user_data_popup(userData()->bounds(), m_userData))
+    m_mods = Mods(int(m_mods) | int(kUserData));
+}
+
+void SliceWindow::onModifyField(ui::Entry* entry,
+                                const Mods mods)
+{
+  if (entry)
+    entry->setSuffix(std::string());
+  m_mods = Mods(int(m_mods) | int(mods));
 }
 
 } // namespace app

@@ -1,5 +1,6 @@
 // Aseprite
-// Copyright (c) 2001-2018 David Capello
+// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -11,6 +12,7 @@
 #include "doc/frame.h"
 #include "doc/selected_frames.h"
 #include "doc/selected_layers.h"
+#include "doc/selected_objects.h"
 
 namespace doc {
   class Cel;
@@ -84,6 +86,12 @@ namespace app {
       m_selectedFrames = selectedFrames;
     }
 
+    const doc::SelectedObjects& selectedSlices() const { return m_selectedSlices; }
+    doc::SelectedObjects& selectedSlices() { return m_selectedSlices; }
+    void selectedSlices(const doc::SelectedObjects& set) {
+      m_selectedSlices = set;
+    }
+
     doc::Palette* palette();
     doc::Image* image(int* x = nullptr, int* y = nullptr, int* opacity = nullptr) const;
     doc::Palette* palette() const;
@@ -96,6 +104,7 @@ namespace app {
     doc::frame_t m_frame;
     doc::SelectedLayers m_selectedLayers;
     doc::SelectedFrames m_selectedFrames;
+    doc::SelectedObjects m_selectedSlices;
   };
 
 } // namespace app
