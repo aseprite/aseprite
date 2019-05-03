@@ -456,7 +456,7 @@ double algo_spline_get_y(double x0, double y0, double x1, double y1,
   x = x0;
   y = y0;
 
-  out_x = old_x = x0;
+  old_x = x0;
   out_y = old_y = y0;
 
   x += .5;
@@ -532,8 +532,6 @@ double algo_spline_get_tan(double x0, double y0, double x1, double y1,
   dy = ydt3_term - ydt2_term + dt * 3 * (y1 - y0);
   x = x0;
   y = y0;
-
-  out_x = x0;
 
   old_x = x0;
   old_dx = dx;
