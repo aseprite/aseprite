@@ -1,0 +1,4 @@
+---
+Checks: 'clang-analyzer-*'
+WarningsAsErrors: ''
+...
