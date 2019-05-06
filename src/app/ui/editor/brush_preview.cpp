@@ -398,6 +398,9 @@ void BrushPreview::generateBoundaries()
   m_brushBoundaries.reset(
     new MaskBoundaries(mask ? mask: brushImage));
 
+  m_brushBoundaries->offset(-brush->center().x,
+                            -brush->center().y);
+
   if (deleteMask)
     delete mask;
 }
@@ -505,9 +508,6 @@ void BrushPreview::traceBrushBoundaries(ui::Graphics* g,
                                         gfx::Color color,
                                         PixelDelegate pixelDelegate)
 {
-  pos.x -= m_brushWidth/2;
-  pos.y -= m_brushHeight/2;
-
   for (const auto& seg : *m_brushBoundaries) {
     gfx::Rect bounds = seg.bounds();
     bounds.offset(pos);
