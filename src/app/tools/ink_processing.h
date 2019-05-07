@@ -27,12 +27,6 @@ namespace tools {
 using namespace gfx;
 using namespace filters;
 
-namespace {
-
-//////////////////////////////////////////////////////////////////////
-// Ink Processing
-//////////////////////////////////////////////////////////////////////
-
 class BaseInkProcessing {
 public:
   virtual ~BaseInkProcessing() { }
@@ -40,6 +34,14 @@ public:
   virtual void prepareForStrokes(ToolLoop* loop, Strokes& strokes) { }
   virtual void prepareForPointShape(ToolLoop* loop, bool firstPoint, int x, int y) { }
 };
+
+typedef std::unique_ptr<BaseInkProcessing> InkProcessingPtr;
+
+namespace {
+
+//////////////////////////////////////////////////////////////////////
+// Ink Processing
+//////////////////////////////////////////////////////////////////////
 
 template<typename Derived>
 class InkProcessing : public BaseInkProcessing {
@@ -1279,8 +1281,6 @@ void BrushInkProcessing<IndexedTraits>::processPixel(int x, int y) {
 }
 
 //////////////////////////////////////////////////////////////////////
-
-typedef std::unique_ptr<BaseInkProcessing> InkProcessingPtr;
 
 template<template<typename> class T>
 BaseInkProcessing* get_ink_proc(ToolLoop* loop)
