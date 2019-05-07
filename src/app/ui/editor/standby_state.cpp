@@ -409,6 +409,17 @@ bool StandbyState::onDoubleClick(Editor* editor, MouseMessage* msg)
     UIContext::instance()->executeCommand(selectTileCmd, params);
     return true;
   }
+  // Show slice properties when we double-click it
+  else if (ink->isSlice()) {
+    EditorHit hit = editor->calcHit(msg->position());
+    if (hit.slice()) {
+      Command* cmd = Commands::instance()->byId(CommandId::SliceProperties());
+      Params params;
+      params.set("id", base::convert_to<std::string>(hit.slice()->id()).c_str());
+      UIContext::instance()->executeCommand(cmd, params);
+      return true;
+    }
+  }
 
   return false;
 }
