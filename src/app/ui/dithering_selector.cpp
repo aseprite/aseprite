@@ -181,7 +181,7 @@ DitheringSelector::DitheringSelector(Type type)
 
 void DitheringSelector::regenerate()
 {
-  removeAllItems();
+  deleteAllItems();
 
   Extensions& extensions = App::instance()->extensions();
   auto ditheringMatrices = extensions.ditheringMatrices();

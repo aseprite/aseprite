@@ -18,9 +18,13 @@
 #include "app/commands/commands.h"
 #include "app/commands/quick_command.h"
 #include "app/doc.h"
+#include "app/doc_event.h"
 #include "app/ini_file.h"
+#include "app/match_words.h"
+#include "app/modules/editors.h"
 #include "app/pref/preferences.h"
 #include "app/shade.h"
+#include "app/site.h"
 #include "app/tools/active_tool.h"
 #include "app/tools/controller.h"
 #include "app/tools/ink.h"
@@ -34,18 +38,22 @@
 #include "app/ui/color_button.h"
 #include "app/ui/color_shades.h"
 #include "app/ui/dithering_selector.h"
+#include "app/ui/editor/editor.h"
 #include "app/ui/icon_button.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/selection_mode_field.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
+#include "base/fs.h"
 #include "base/scoped_value.h"
 #include "doc/brush.h"
 #include "doc/conversion_to_surface.h"
 #include "doc/image.h"
 #include "doc/palette.h"
 #include "doc/remap.h"
+#include "doc/selected_objects.h"
+#include "doc/slice.h"
 #include "obs/connection.h"
 #include "os/surface.h"
 #include "os/system.h"
@@ -56,6 +64,7 @@
 #include "ui/combobox.h"
 #include "ui/int_entry.h"
 #include "ui/label.h"
+#include "ui/listbox.h"
 #include "ui/listitem.h"
 #include "ui/menu.h"
 #include "ui/message.h"
@@ -65,6 +74,8 @@
 #include "ui/system.h"
 #include "ui/theme.h"
 #include "ui/tooltips.h"
+
+#include <algorithm>
 
 namespace app {
 
@@ -1139,8 +1150,247 @@ private:
   }
 };
 
+class ContextBar::SliceFields : public HBox {
+  class Item : public ListItem {
+  public:
+    Item(const doc::Slice* slice)
+      : ListItem(slice->name())
+      , m_slice(slice) { }
+    const doc::Slice* slice() const { return m_slice; }
+  private:
+    const doc::Slice* m_slice;
+  };
+
+  class Combo : public ComboBox {
+    SliceFields* m_sliceFields;
+  public:
+    Combo(SliceFields* sliceFields)
+      : m_sliceFields(sliceFields) {
+    }
+  protected:
+    void onChange() override {
+      ComboBox::onChange();
+      m_sliceFields->onSelectSliceFromComboBox();
+    }
+    void onEntryChange() override {
+      ComboBox::onEntryChange();
+      m_sliceFields->onComboBoxEntryChange();
+    }
+    void onBeforeOpenListBox() override {
+      ComboBox::onBeforeOpenListBox();
+      m_sliceFields->fillSlices();
+    }
+    void onEnterOnEditableEntry() override {
+      ComboBox::onEnterOnEditableEntry();
+
+      const Slice* slice = nullptr;
+      if (auto item = dynamic_cast<Item*>(getSelectedItem())) {
+        if (item->slice()->name() == getValue()) {
+          slice = item->slice();
+        }
+      }
+      if (!slice && current_editor)
+        slice = current_editor->sprite()->slices().getByName(getValue());
+      if (slice)
+        m_sliceFields->scrollToSlice(slice);
+
+      closeListBox();
+    }
+  };
+
+public:
+
+  SliceFields()
+    : m_doc(nullptr)
+    , m_sel(2)
+    , m_combobox(this)
+    , m_action(2)
+  {
+    SkinTheme* theme = SkinTheme::instance();
+
+    m_sel.addItem("All");
+    m_sel.addItem("None");
+    m_sel.ItemChange.connect(
+      [this](ButtonSet::Item* item){
+        onSelAction(m_sel.selectedItem());
+      });
+
+    m_combobox.setEditable(true);
+    m_combobox.setExpansive(true);
+    m_combobox.setMinSize(gfx::Size(256*guiscale(), 0));
+
+    m_action.addItem(theme->parts.iconUserData())->setMono(true);
+    m_action.addItem(theme->parts.iconClose())->setMono(true);
+    m_action.ItemChange.connect(
+      [this](ButtonSet::Item* item){
+        onAction(m_action.selectedItem());
+      });
+
+    addChild(&m_sel);
+    addChild(&m_combobox);
+    addChild(&m_action);
+
+    m_combobox.setVisible(false);
+    m_action.setVisible(false);
+  }
+
+  void setupTooltips(TooltipManager* tooltipManager) {
+    tooltipManager->addTooltipFor(m_sel.at(0), "Select All Slices", BOTTOM);
+    tooltipManager->addTooltipFor(m_sel.at(1), "Deselect Slices", BOTTOM);
+    tooltipManager->addTooltipFor(m_action.at(0), "Slice Properties", BOTTOM);
+    tooltipManager->addTooltipFor(m_action.at(1), "Delete Slice", BOTTOM);
+  }
+
+  void setDoc(Doc* doc) {
+    m_doc = doc;
+  }
+
+  void addSlice(const doc::Slice* slice) {
+    m_changeFromEntry = true;
+    m_combobox.setValue(slice->name());
+    updateLayout();
+    m_changeFromEntry = false;
+  }
+
+  void removeSlice(const doc::Slice* slice) {
+    m_combobox.setValue(std::string());
+    updateLayout();
+  }
+
+  void updateSlice(const doc::Slice* slice) {
+    m_combobox.setValue(slice->name());
+    updateLayout();
+  }
+
+  void selectSlices(const doc::Sprite* sprite,
+                    const doc::SelectedObjects& slices) {
+    if (!slices.empty()) {
+      auto selected = slices.frontAs<doc::Slice>();
+      m_combobox.setValue(selected->name());
+    }
+    else {
+      m_combobox.setValue(std::string());
+    }
+    updateLayout();
+  }
+
+  void closeComboBox() {
+    m_combobox.closeListBox();
+  }
+
+private:
+  void onVisible(bool visible) override {
+    HBox::onVisible(visible);
+    m_combobox.closeListBox();
+  }
+
+  void fillSlices() {
+    m_combobox.deleteAllItems();
+    if (m_doc && m_doc->sprite()) {
+      MatchWords match(m_filter);
+
+      std::vector<doc::Slice*> slices;
+      for (auto slice : m_doc->sprite()->slices()) {
+        if (match(slice->name()))
+          slices.push_back(slice);
+      }
+      std::sort(slices.begin(), slices.end(),
+                [](const doc::Slice* a, const doc::Slice* b){
+                  return (base::compare_filenames(a->name(), b->name()) < 0);
+                });
+
+      for (auto slice : slices) {
+        Item* item = new Item(slice);
+        m_combobox.addItem(item);
+      }
+    }
+  }
+
+  void scrollToSlice(const Slice* slice) {
+    if (current_editor && slice) {
+      if (const SliceKey* key = slice->getByFrame(current_editor->frame())) {
+        current_editor->centerInSpritePoint(key->bounds().center());
+      }
+    }
+  }
+
+  void updateLayout() {
+    const bool visible = (m_doc && !m_doc->sprite()->slices().empty());
+    m_combobox.setVisible(visible);
+    m_action.setVisible(visible);
+
+    parent()->layout();
+  }
+
+  void onSelAction(const int item) {
+    m_sel.deselectItems();
+    switch (item) {
+      case 0:
+        if (current_editor)
+          current_editor->selectAllSlices();
+        break;
+      case 1:
+        if (current_editor)
+          current_editor->clearSlicesSelection();
+        break;
+    }
+  }
+
+  void onSelectSliceFromComboBox() {
+    if (m_changeFromEntry)
+      return;
+
+    m_filter.clear();
+
+    if (auto item = dynamic_cast<Item*>(m_combobox.getSelectedItem())) {
+      if (current_editor) {
+        const doc::Slice* slice = item->slice();
+        current_editor->clearSlicesSelection();
+        current_editor->selectSlice(slice);
+      }
+    }
+  }
+
+  void onComboBoxEntryChange() {
+    m_changeFromEntry = true;
+    m_combobox.closeListBox();
+
+    m_filter = m_combobox.getValue();
+
+    m_combobox.openListBox();
+    m_changeFromEntry = false;
+  }
+
+  void onAction(const int item) {
+    m_action.deselectItems();
+
+    Command* cmd = nullptr;
+    Params params;
+
+    switch (item) {
+      case 0:
+        cmd = Commands::instance()->byId(CommandId::SliceProperties());
+        break;
+      case 1:
+        cmd = Commands::instance()->byId(CommandId::RemoveSlice());
+        break;
+    }
+
+    if (cmd)
+      UIContext::instance()->executeCommand(cmd, params);
+
+    updateLayout();
+  }
+
+  Doc* m_doc;
+  ButtonSet m_sel;
+  Combo m_combobox;
+  ButtonSet m_action;
+  bool m_changeFromEntry;
+  std::string m_filter;
+};
+
 ContextBar::ContextBar(TooltipManager* tooltipManager)
-  : Box(HORIZONTAL)
 {
   addChild(m_selectionOptionsBox = new HBox());
   m_selectionOptionsBox->addChild(m_dropPixels = new DropPixelsField());
@@ -1174,10 +1424,6 @@ ContextBar::ContextBar(TooltipManager* tooltipManager)
 
   addChild(m_autoSelectLayer = new AutoSelectLayerField());
 
-  // addChild(new InkChannelTargetField());
-  // addChild(new InkShadeField());
-  // addChild(new InkSelectionField());
-
   addChild(m_sprayBox = new HBox());
   m_sprayBox->addChild(m_sprayLabel = new Label("Spray:"));
   m_sprayBox->addChild(m_sprayWidth = new SprayWidthField());
@@ -1191,9 +1437,12 @@ ContextBar::ContextBar(TooltipManager* tooltipManager)
   addChild(m_symmetry = new SymmetryField());
   m_symmetry->setVisible(Preferences::instance().symmetryMode.enabled());
 
+  addChild(m_sliceFields = new SliceFields);
+
   setupTooltips(tooltipManager);
 
   App::instance()->activeToolManager()->add_observer(this);
+  UIContext::instance()->add_observer(this);
 
   auto& pref = Preferences::instance();
   pref.symmetryMode.enabled.AfterChange.connect(
@@ -1216,6 +1465,7 @@ ContextBar::ContextBar(TooltipManager* tooltipManager)
 
 ContextBar::~ContextBar()
 {
+  UIContext::instance()->remove_observer(this);
   App::instance()->activeToolManager()->remove_observer(this);
 }
 
@@ -1263,6 +1513,40 @@ void ContextBar::onToolSetContiguous()
     m_contiguous->setSelected(
       Preferences::instance().tool(tool).contiguous());
   }
+}
+
+void ContextBar::onActiveSiteChange(const Site& site)
+{
+  DocObserverWidget<ui::HBox>::onActiveSiteChange(site);
+  if (site.sprite())
+    m_sliceFields->selectSlices(site.sprite(),
+                                site.selectedSlices());
+  else
+    m_sliceFields->closeComboBox();
+}
+
+void ContextBar::onDocChange(Doc* doc)
+{
+  DocObserverWidget<ui::HBox>::onDocChange(doc);
+  m_sliceFields->setDoc(doc);
+}
+
+void ContextBar::onAddSlice(DocEvent& ev)
+{
+  if (ev.slice())
+    m_sliceFields->addSlice(ev.slice());
+}
+
+void ContextBar::onRemoveSlice(DocEvent& ev)
+{
+  if (ev.slice())
+    m_sliceFields->removeSlice(ev.slice());
+}
+
+void ContextBar::onSliceNameChange(DocEvent& ev)
+{
+  if (ev.slice())
+    m_sliceFields->updateSlice(ev.slice());
 }
 
 void ContextBar::onBrushSizeChange()
@@ -1438,6 +1722,11 @@ void ContextBar::updateForTool(tools::Tool* tool)
     (tool->getInk(0)->isCelMovement() ||
      tool->getInk(1)->isCelMovement());
 
+  // True if the current tool is slice tool.
+  const bool isSlice = tool &&
+    (tool->getInk(0)->isSlice() ||
+     tool->getInk(1)->isSlice());
+
   // True if the current tool is floodfill
   const bool isFloodfill = tool &&
     (tool->getPointShape(0)->isFloodFill() ||
@@ -1501,6 +1790,8 @@ void ContextBar::updateForTool(tools::Tool* tool)
     Preferences::instance().symmetryMode.enabled() &&
     (isPaint || isEffect || hasSelectOptions));
   m_symmetry->updateWithCurrentDocument();
+
+  m_sliceFields->setVisible(isSlice);
 
   // Update ink shades with the current selected palette entries
   if (updateShade)
@@ -1815,6 +2106,7 @@ void ContextBar::setupTooltips(TooltipManager* tooltipManager)
   m_gradientType->setupTooltips(tooltipManager);
   m_dropPixels->setupTooltips(tooltipManager);
   m_symmetry->setupTooltips(tooltipManager);
+  m_sliceFields->setupTooltips(tooltipManager);
 }
 
 void ContextBar::registerCommands()

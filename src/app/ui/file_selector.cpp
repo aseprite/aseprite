@@ -127,7 +127,7 @@ protected:
     if (m_fileList->multipleSelection())
       m_fileList->deselectedFileItems();
 
-    removeAllItems();
+    deleteAllItems();
 
     // String to be autocompleted
     std::string left_part = getEntryWidget()->text();
@@ -413,7 +413,7 @@ bool FileSelector::show(
   updateNavigationButtons();
 
   // fill file-type combo-box
-  fileType()->removeAllItems();
+  fileType()->deleteAllItems();
 
   // Get the default extension from the given initial file name
   if (m_defExtension.empty())
@@ -662,7 +662,7 @@ void FileSelector::updateLocation()
   }
 
   // Clear all the items from the combo-box
-  location()->removeAllItems();
+  location()->deleteAllItems();
 
   // Add item by item (from root to the specific current folder)
   int level = 0;

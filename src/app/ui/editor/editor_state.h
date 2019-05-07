@@ -123,7 +123,7 @@ namespace app {
     virtual bool acceptQuickTool(tools::Tool* tool) { return true; }
 
     // Custom ink in this state.
-    virtual tools::Ink* getStateInk() { return nullptr; }
+    virtual tools::Ink* getStateInk() const { return nullptr; }
 
     // Called when a tag is deleted.
     virtual void onRemoveFrameTag(Editor* editor, doc::FrameTag* tag) { }

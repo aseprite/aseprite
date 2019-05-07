@@ -11,9 +11,8 @@
 
 #include "app/color.h"
 #include "app/context_observer.h"
-#include "app/doc_observer.h"
-#include "app/docs_observer.h"
 #include "app/tools/active_tool_observer.h"
+#include "app/ui/doc_observer_widget.h"
 #include "base/time.h"
 #include "ui/base.h"
 #include "ui/box.h"
@@ -43,10 +42,7 @@ namespace app {
     class Tool;
   }
 
-  class StatusBar : public ui::HBox
-                  , public ContextObserver
-                  , public DocsObserver
-                  , public DocObserver
+  class StatusBar : public DocObserverWidget<ui::HBox>
                   , public tools::ActiveToolObserver {
     static StatusBar* m_instance;
   public:
@@ -79,9 +75,6 @@ namespace app {
     // ContextObserver impl
     void onActiveSiteChange(const Site& site) override;
 
-    // DocObservers impl
-    void onRemoveDocument(Doc* doc) override;
-
     // DocObserver impl
     void onPixelFormatChanged(DocEvent& ev) override;
 
@@ -108,7 +101,6 @@ namespace app {
     ui::Entry* m_currentFrame;        // Current frame and go to frame entry
     ui::Button* m_newFrame;           // Button to create a new frame
     ZoomEntry* m_zoomEntry;
-    Doc* m_doc;                // Document used to show the cel slider
 
     // Tip window
     class CustomizedTipWindow;

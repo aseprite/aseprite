@@ -242,6 +242,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
           // If we click outside all slices, we clear the selection of slices.
           if (!hit.slice() || !site.selectedSlices().contains(hit.slice()->id())) {
             editor->clearSlicesSelection();
+            editor->selectSlice(hit.slice());
 
             site = Site();
             editor->getSite(&site);

@@ -898,7 +898,7 @@ private:
   }
 
   void refillLanguages() {
-    language()->removeAllItems();
+    language()->deleteAllItems();
     loadLanguages();
   }
 

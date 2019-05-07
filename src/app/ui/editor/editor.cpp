@@ -380,8 +380,10 @@ void Editor::getSite(Site* site) const
   site->sprite(m_sprite);
   site->layer(m_layer);
   site->frame(m_frame);
-  if (!m_selectedSlices.empty())
+  if (!m_selectedSlices.empty() &&
+      getCurrentEditorInk()->isSlice()) {
     site->selectedSlices(m_selectedSlices);
+  }
 }
 
 Site Editor::getSite() const
@@ -1308,12 +1310,12 @@ gfx::Point Editor::autoScroll(MouseMessage* msg, AutoScroll dir)
   return mousePos;
 }
 
-tools::Tool* Editor::getCurrentEditorTool()
+tools::Tool* Editor::getCurrentEditorTool() const
 {
   return App::instance()->activeTool();
 }
 
-tools::Ink* Editor::getCurrentEditorInk()
+tools::Ink* Editor::getCurrentEditorInk() const
 {
   tools::Ink* ink = m_state->getStateInk();
   if (ink)
@@ -1629,8 +1631,13 @@ bool Editor::isSliceSelected(const doc::Slice* slice) const
 
 void Editor::clearSlicesSelection()
 {
-  m_selectedSlices.clear();
-  invalidate();
+  if (!m_selectedSlices.empty()) {
+    m_selectedSlices.clear();
+    invalidate();
+
+    if (isActive())
+      UIContext::instance()->notifyActiveSiteChanged();
+  }
 }
 
 void Editor::selectSlice(const doc::Slice* slice)
@@ -1638,6 +1645,9 @@ void Editor::selectSlice(const doc::Slice* slice)
   ASSERT(slice);
   m_selectedSlices.insert(slice->id());
   invalidate();
+
+  if (isActive())
+    UIContext::instance()->notifyActiveSiteChanged();
 }
 
 bool Editor::selectSliceBox(const gfx::Rect& box)
@@ -1649,12 +1659,26 @@ bool Editor::selectSliceBox(const gfx::Rect& box)
       m_selectedSlices.insert(slice->id());
   }
   invalidate();
+
+  if (isActive())
+    UIContext::instance()->notifyActiveSiteChanged();
+
   return !m_selectedSlices.empty();
+}
+
+void Editor::selectAllSlices()
+{
+  for (auto slice : m_sprite->slices())
+    m_selectedSlices.insert(slice->id());
+  invalidate();
+
+  if (isActive())
+    UIContext::instance()->notifyActiveSiteChanged();
 }
 
 void Editor::cancelSelections()
 {
-  m_selectedSlices.clear();
+  clearSlicesSelection();
 }
 
 //////////////////////////////////////////////////////////////////////

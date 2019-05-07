@@ -98,7 +98,7 @@ namespace app {
     virtual bool onKeyDown(Editor* editor, ui::KeyMessage* msg) override;
     virtual bool acceptQuickTool(tools::Tool* tool) override;
     virtual bool requireBrushPreview() override;
-    virtual tools::Ink* getStateInk() override;
+    virtual tools::Ink* getStateInk() const override;
 
     // EditorDecorator overrides
     virtual void postRenderDecorator(EditorPostRender* render) override;

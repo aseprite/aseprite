@@ -25,11 +25,13 @@ namespace cmd {
   protected:
     void onExecute() override;
     void onUndo() override;
+    void onFireNotifications() override;
     size_t onMemSize() const override {
-      return sizeof(*this);
+      return sizeof(*this)
+        + m_oldName.size()
+        + m_newName.size();
     }
 
-  private:
     std::string m_oldName;
     std::string m_newName;
   };

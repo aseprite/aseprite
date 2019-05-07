@@ -303,7 +303,7 @@ bool SelectBoxState::requireBrushPreview()
   return false;
 }
 
-tools::Ink* SelectBoxState::getStateInk()
+tools::Ink* SelectBoxState::getStateInk() const
 {
   if (hasFlag(Flags::QuickBox))
     return App::instance()->toolBox()->getInkById(

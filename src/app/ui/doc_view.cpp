@@ -559,6 +559,16 @@ bool DocView::onPaste(Context* ctx)
 
 bool DocView::onClear(Context* ctx)
 {
+  // First we check if there is a selected slice, so we'll delete
+  // those slices.
+  Site site = ctx->activeSite();
+  if (!site.selectedSlices().empty()) {
+    Command* removeSlices = Commands::instance()->byId(CommandId::RemoveSlice());
+    ctx->executeCommand(removeSlices);
+    return true;
+  }
+
+  // In other case we delete the mask or the cel.
   ContextWriter writer(ctx);
   Doc* document = writer.document();
   bool visibleMask = document->isMaskVisible();

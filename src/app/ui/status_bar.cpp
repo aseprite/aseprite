@@ -542,7 +542,6 @@ StatusBar::StatusBar(TooltipManager* tooltipManager)
   : m_timeout(0)
   , m_indicators(new Indicators)
   , m_docControls(new HBox)
-  , m_doc(nullptr)
   , m_tipwindow(nullptr)
   , m_snapToGridWindow(nullptr)
 {
@@ -586,8 +585,6 @@ StatusBar::StatusBar(TooltipManager* tooltipManager)
   tooltipManager->addTooltipFor(m_zoomEntry, "Zoom Level", BOTTOM);
   tooltipManager->addTooltipFor(m_newFrame, "New Frame", BOTTOM);
 
-  UIContext::instance()->add_observer(this);
-  UIContext::instance()->documents().add_observer(this);
   App::instance()->activeToolManager()->add_observer(this);
 
   initTheme();
@@ -596,8 +593,6 @@ StatusBar::StatusBar(TooltipManager* tooltipManager)
 StatusBar::~StatusBar()
 {
   App::instance()->activeToolManager()->remove_observer(this);
-  UIContext::instance()->documents().remove_observer(this);
-  UIContext::instance()->remove_observer(this);
 
   delete m_tipwindow;           // widget
   delete m_snapToGridWindow;
@@ -719,9 +714,10 @@ void StatusBar::showTool(int msecs, tools::Tool* tool)
 void StatusBar::showSnapToGridWarning(bool state)
 {
   if (state) {
-    // m_doc can be null if "snap to grid" command is pressed without
-    // an opened document. (E.g. to change the default setting)
-    if (!m_doc)
+    // this->doc() can be nullptr if "snap to grid" command is pressed
+    // without an opened document. (E.g. to change the default
+    // setting)
+    if (!doc())
       return;
 
     if (!m_snapToGridWindow)
@@ -733,7 +729,7 @@ void StatusBar::showSnapToGridWarning(bool state)
       updateSnapToGridWindowPosition();
     }
 
-    m_snapToGridWindow->setDocument(m_doc);
+    m_snapToGridWindow->setDocument(doc());
   }
   else {
     if (m_snapToGridWindow)
@@ -768,7 +764,7 @@ void StatusBar::onInitTheme(ui::InitThemeEvent& ev)
 void StatusBar::onResize(ResizeEvent& ev)
 {
   Rect rc = ev.bounds();
-  m_docControls->setVisible(m_doc && rc.w > 300*ui::guiscale());
+  m_docControls->setVisible(doc() && rc.w > 300*ui::guiscale());
 
   HBox::onResize(ev);
 
@@ -779,21 +775,10 @@ void StatusBar::onResize(ResizeEvent& ev)
 
 void StatusBar::onActiveSiteChange(const Site& site)
 {
-  if (m_doc && site.document() != m_doc) {
-    m_doc->remove_observer(this);
-    m_doc = nullptr;
-  }
+  DocObserverWidget<ui::HBox>::onActiveSiteChange(site);
 
-  if (site.document() && site.sprite()) {
-    if (!m_doc) {
-      m_doc = const_cast<Doc*>(site.document());
-      m_doc->add_observer(this);
-    }
-    else {
-      ASSERT(m_doc == site.document());
-    }
-
-    auto& docPref = Preferences::instance().document(m_doc);
+  if (doc()) {
+    auto& docPref = Preferences::instance().document(doc());
 
     m_docControls->setVisible(true);
     showSnapToGridWarning(docPref.grid.snap());
@@ -803,20 +788,10 @@ void StatusBar::onActiveSiteChange(const Site& site)
       "%d", site.frame()+docPref.timeline.firstFrame());
   }
   else {
-    ASSERT(m_doc == nullptr);
     m_docControls->setVisible(false);
     showSnapToGridWarning(false);
   }
   layout();
-}
-
-void StatusBar::onRemoveDocument(Doc* doc)
-{
-  if (m_doc &&
-      m_doc == doc) {
-    m_doc->remove_observer(this);
-    m_doc = nullptr;
-  }
 }
 
 void StatusBar::onPixelFormatChanged(DocEvent& ev)

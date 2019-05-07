@@ -182,7 +182,7 @@ private:
 
   private:
     void fill(bool all) {
-      removeAllItems();
+      deleteAllItems();
 
       MatchWords match(getEntryWidget()->text());
 

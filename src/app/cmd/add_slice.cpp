@@ -34,8 +34,7 @@ void AddSlice::onExecute()
   Sprite* sprite = this->sprite();
   Slice* slice = this->slice();
 
-  sprite->slices().add(slice);
-  sprite->incrementVersion();
+  addSlice(sprite, slice);
 }
 
 void AddSlice::onUndo()

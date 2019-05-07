@@ -1,4 +1,5 @@
 // Aseprite UI Library
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -57,13 +58,13 @@ namespace ui {
     void removeItem(Widget* item);
 
     // Removes and deletes the given item.
-    void removeItem(int itemIndex);
+    void deleteItem(int itemIndex);
 
-    void removeAllItems();
+    void deleteAllItems();
 
     int getItemCount() const;
 
-    Widget* getItem(int itemIndex);
+    Widget* getItem(const int itemIndex) const;
     const std::string& getItemText(int itemIndex) const;
     void setItemText(int itemIndex, const std::string& text);
     int findItemIndex(const std::string& text) const;
@@ -96,9 +97,21 @@ namespace ui {
     void onResize(ResizeEvent& ev) override;
     void onSizeHint(SizeHintEvent& ev) override;
     void onInitTheme(InitThemeEvent& ev) override;
+
+    // When the selected item is changed.
     virtual void onChange();
+
+    // When the text of an editable ComboBox is changed.
+    virtual void onEntryChange();
+
+    // Before we open the list box, we can fill the combobox with the
+    // items to show. TODO replace all this with a MVC-like combobox
+    // model so we request items only when it's required.
+    virtual void onBeforeOpenListBox();
+
     virtual void onOpenListBox();
     virtual void onCloseListBox();
+    virtual void onEnterOnEditableEntry();
 
   private:
     void onButtonClick(Event& ev);

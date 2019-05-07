@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -48,6 +48,7 @@ public:
 protected:
   bool onProcessMessage(Message* msg) override;
   void onPaint(PaintEvent& ev) override;
+  void onChange() override;
 
 private:
   ComboBox* m_comboBox;
@@ -112,7 +113,7 @@ ComboBox::ComboBox()
 ComboBox::~ComboBox()
 {
   removeMessageFilters();
-  removeAllItems();
+  deleteAllItems();
 }
 
 void ComboBox::setEditable(bool state)
@@ -186,7 +187,7 @@ void ComboBox::removeItem(Widget* item)
   // Do not delete the given "item"
 }
 
-void ComboBox::removeItem(int itemIndex)
+void ComboBox::deleteItem(int itemIndex)
 {
   ASSERT(itemIndex >= 0 && (std::size_t)itemIndex < m_items.size());
 
@@ -196,7 +197,7 @@ void ComboBox::removeItem(int itemIndex)
   delete item;
 }
 
-void ComboBox::removeAllItems()
+void ComboBox::deleteAllItems()
 {
   for (Widget* item : m_items)
     delete item;                // widget
@@ -210,7 +211,7 @@ int ComboBox::getItemCount() const
   return m_items.size();
 }
 
-Widget* ComboBox::getItem(int itemIndex)
+Widget* ComboBox::getItem(const int itemIndex) const
 {
   if (itemIndex >= 0 && (std::size_t)itemIndex < m_items.size()) {
     return m_items[itemIndex];
@@ -268,7 +269,7 @@ int ComboBox::findItemIndexByValue(const std::string& value) const
 
 Widget* ComboBox::getSelectedItem() const
 {
-  return (!m_items.empty() ? m_items[m_selected]: NULL);
+  return getItem(m_selected);
 }
 
 void ComboBox::setSelectedItem(Widget* item)
@@ -467,6 +468,10 @@ bool ComboBoxEntry::onProcessMessage(Message* msg)
               return true;
             }
           }
+          else if (scancode == kKeyEnter ||
+                   scancode == kKeyEnterPad) {
+            m_comboBox->onEnterOnEditableEntry();
+          }
         }
       }
       break;
@@ -538,6 +543,15 @@ void ComboBoxEntry::onPaint(PaintEvent& ev)
   theme()->paintComboBoxEntry(ev);
 }
 
+void ComboBoxEntry::onChange()
+{
+  Entry::onChange();
+  if (m_comboBox &&
+      m_comboBox->isEditable()) {
+    m_comboBox->onEntryChange();
+  }
+}
+
 bool ComboBoxListBox::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
@@ -590,6 +604,8 @@ void ComboBox::openListBox()
 {
   if (!isEnabled() || m_window)
     return;
+
+  onBeforeOpenListBox();
 
   m_window = new Window(Window::WithoutTitleBar);
   View* view = new View();
@@ -678,6 +694,16 @@ void ComboBox::onChange()
   Change();
 }
 
+void ComboBox::onEntryChange()
+{
+  // Do nothing
+}
+
+void ComboBox::onBeforeOpenListBox()
+{
+  // Do nothing
+}
+
 void ComboBox::onOpenListBox()
 {
   OpenListBox();
@@ -686,6 +712,11 @@ void ComboBox::onOpenListBox()
 void ComboBox::onCloseListBox()
 {
   CloseListBox();
+}
+
+void ComboBox::onEnterOnEditableEntry()
+{
+  // Do nothing
 }
 
 void ComboBox::filterMessages()

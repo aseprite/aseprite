@@ -201,8 +201,8 @@ namespace app {
     // Control scroll when cursor goes out of the editor viewport.
     gfx::Point autoScroll(ui::MouseMessage* msg, AutoScroll dir);
 
-    tools::Tool* getCurrentEditorTool();
-    tools::Ink* getCurrentEditorInk();
+    tools::Tool* getCurrentEditorTool() const;
+    tools::Ink* getCurrentEditorInk() const;
 
     tools::ToolLoopModifiers getToolLoopModifiers() const { return m_toolLoopModifiers; }
     bool isAutoSelectLayer();
@@ -283,6 +283,7 @@ namespace app {
     void clearSlicesSelection();
     void selectSlice(const doc::Slice* slice);
     bool selectSliceBox(const gfx::Rect& box);
+    void selectAllSlices();
     bool hasSelectedSlices() const { return !m_selectedSlices.empty(); }
 
     // Called by DocView's InputChainElement::onCancel() impl when Esc
