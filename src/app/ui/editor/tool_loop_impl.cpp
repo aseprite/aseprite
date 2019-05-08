@@ -581,7 +581,8 @@ public:
   bool isCanceled() override { return m_canceled; }
 
   void onSliceRect(const gfx::Rect& bounds) override {
-    if (getMouseButton() == ToolLoop::Left) {
+#ifdef ENABLE_UI // TODO add support for slice tool from batch scripts without UI?
+    if (m_editor && getMouseButton() == ToolLoop::Left) {
       // Try to select slices, but if it returns false, it means that
       // there are no slices in the box to be selected, so we show a
       // popup menu to create a new one.
@@ -602,6 +603,7 @@ public:
         return;
       }
     }
+#endif
 
     // Cancel the operation (do not create a new transaction for this
     // no-op, e.g. just change the set of selected slices).
