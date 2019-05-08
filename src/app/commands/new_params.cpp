@@ -11,10 +11,13 @@
 #include "app/commands/new_params.h"
 
 #include "app/doc_exporter.h"
-#include "app/script/luacpp.h"
 #include "app/sprite_sheet_type.h"
 #include "base/convert_to.h"
 #include "base/string.h"
+
+#ifdef ENABLE_SCRIPTING
+#include "app/script/luacpp.h"
+#endif
 
 namespace app {
 
@@ -106,19 +109,6 @@ void Param<app::DocExporter::DataFormat>::fromLua(lua_State* L, int index)
     setValue((app::DocExporter::DataFormat)lua_tointeger(L, index));
 }
 
-void CommandWithNewParamsBase::onLoadParams(const Params& params)
-{
-  if (m_skipLoadParams) {
-    m_skipLoadParams = false;
-    return;
-  }
-  onResetValues();
-  for (const auto& pair : params) {
-    if (ParamBase* p = onGetParam(pair.first))
-      p->fromString(pair.second);
-  }
-}
-
 void CommandWithNewParamsBase::loadParamsFromLuaTable(lua_State* L, int index)
 {
   onResetValues();
@@ -136,5 +126,20 @@ void CommandWithNewParamsBase::loadParamsFromLuaTable(lua_State* L, int index)
 }
 
 #endif
+
+void CommandWithNewParamsBase::onLoadParams(const Params& params)
+{
+#ifdef ENABLE_SCRIPTING
+  if (m_skipLoadParams) {
+    m_skipLoadParams = false;
+    return;
+  }
+#endif
+  onResetValues();
+  for (const auto& pair : params) {
+    if (ParamBase* p = onGetParam(pair.first))
+      p->fromString(pair.second);
+  }
+}
 
 } // namespace app
