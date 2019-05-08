@@ -151,7 +151,11 @@ public:
     // polygon and the contour when we use a custom brush and we use
     // the alpha compositing ink with opacity < 255 or the custom
     // brush has semi-transparent pixels.
-    //joinStroke(loop, stroke);
+    if (loop->getBrush()->type() != BrushType::kImageBrushType) {
+      // TODO if we fix the doc::algorithm::polygon to draw the exact
+      // scanlines, we can finally remove this joinStroke()
+      joinStroke(loop, stroke);
+    }
 
     // Fill content
     doc::algorithm::polygon(stroke.size(), (const int*)&stroke[0], loop, (AlgoHLine)doPointshapeHline);
@@ -485,7 +489,11 @@ public:
     // polygon and the contour when we use a custom brush and we use
     // the alpha compositing ink with opacity < 255 or the custom
     // brush has semi-transparent pixels.
-    //joinStroke(loop, stroke);
+    if (loop->getBrush()->type() != BrushType::kImageBrushType) {
+      // TODO if we fix the doc::algorithm::polygon to draw the exact
+      // scanlines, we can finally remove this joinStroke()
+      joinStroke(loop, stroke);
+    }
 
     // Fill content
     doc::algorithm::polygon(stroke.size(), (const int*)&stroke[0], loop, (AlgoHLine)doPointshapeHline);
