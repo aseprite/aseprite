@@ -112,6 +112,11 @@
       <value id="ASSIGN" value="3" />
       <value id="ASK" value="4" />
     </enum>
+    <enum id="WindowColorProfile">
+      <value id="MONITOR" value="0" />
+      <value id="SRGB" value="1" />
+      <value id="SPECIFIC" value="2" />
+    </enum>
   </types>
 
   <global>
@@ -335,6 +340,8 @@
       <option id="working_rgb_space" type="std::string" default="&quot;sRGB&quot;" />
       <option id="files_with_profile" type="ColorProfileBehavior" default="ColorProfileBehavior::EMBEDDED" />
       <option id="missing_profile" type="ColorProfileBehavior" default="ColorProfileBehavior::ASSIGN" />
+      <option id="window_profile" type="WindowColorProfile" default="WindowColorProfile::MONITOR" />
+      <option id="window_profile_name" type="std::string" />
     </section>
     <section id="canvas_size">
       <option id="trim_outside" type="bool" default="false" />

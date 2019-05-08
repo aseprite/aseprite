@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -35,6 +35,7 @@ namespace app {
   int init_module_gui();
   void exit_module_gui();
 
+  void update_displays_color_profile_from_preferences();
   void update_screen_for_document(const Doc* document);
 
   void load_window_pos(ui::Widget* window, const char* section,

@@ -126,6 +126,16 @@
           <check text="@.color_management" id="color_management" pref="color.manage" />
 
 	  <grid columns="2">
+            <label text="@.window_cs" id="window_cs_label" />
+            <combobox id="window_cs">
+              <listitem text="@.use_monitor_cs" />
+              <listitem text="@.use_srgb_cs" />
+              <listitem text="@.use_specific_cs" />
+            </combobox>
+
+            <boxfiller />
+            <separator horizontal="true" />
+
             <label text="@.working_rgb_cs" id="working_rgb_cs_label" />
             <combobox id="working_rgb_cs" />
 
