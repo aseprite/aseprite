@@ -17,7 +17,7 @@ do
   local c = Brush(4)
   assert(c.type == BrushType.CIRCLE)
   assert(c.size == 4)
-  assert(c.center == Point{ x=2, y=2 })
+  assert(c.center == Point{ x=1, y=1 })
 end
 
 do
