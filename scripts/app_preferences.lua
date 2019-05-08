@@ -3,13 +3,6 @@
 -- This file is released under the terms of the MIT license.
 -- Read LICENSE.txt for more information.
 
--- Global preferences
-do
-  assert(app.preferences.general.language == "en")
-  assert(app.preferences.general.screen_scale == 2)
-  assert(app.preferences.general.ui_scale == 1)
-end
-
 -- Preferences for tools
 do
   local t = app.preferences.tool('pencil')
