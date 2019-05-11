@@ -72,7 +72,7 @@
                    text="@.auto_save_recovery_data"
                    tooltip="@.auto_save_recovery_data_tooltip" />
             <combobox id="data_recovery_period">
-              <listitem text="@.10_seconds" value="0.33" />
+              <listitem text="@.10_seconds" value="0.1667" />
               <listitem text="@.30_seconds" value="0.5" />
               <listitem text="@.1_minute" value="1" />
               <listitem text="@.2_minutes" value="2" />
