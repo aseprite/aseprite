@@ -22,10 +22,16 @@ void HorizontalSymmetry::generateStrokes(const Stroke& mainStroke, Strokes& stro
                                          ToolLoop* loop)
 {
   int adjust;
-  if (loop->getPointShape()->isFloodFill())
+  if (loop->getPointShape()->isFloodFill()) {
     adjust = 1;
-  else
-    adjust = (loop->getBrush()->bounds().w % 2);
+  }
+  else {
+    // TODO This adjustment is not valid for brush centers that are
+    //      not in the default Brush::center(), we'll fix this later
+    //      (we should flip the brush center+image+bitmap or just do
+    //      the symmetry of all pixels)
+    adjust = ((loop->getBrush()->bounds().w % 2) == 0 ? 2: 1);
+  }
 
   strokes.push_back(mainStroke);
 
@@ -42,7 +48,7 @@ void VerticalSymmetry::generateStrokes(const Stroke& mainStroke, Strokes& stroke
   if (loop->getPointShape()->isFloodFill())
     adjust = 1;
   else
-    adjust = (loop->getBrush()->bounds().h % 2);
+    adjust = ((loop->getBrush()->bounds().h % 2) == 0 ? 2: 1);
 
   strokes.push_back(mainStroke);
 
