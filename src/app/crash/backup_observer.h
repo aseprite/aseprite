@@ -43,7 +43,7 @@ namespace crash {
     Context* m_ctx;
     std::vector<Doc*> m_documents;
     bool m_done;
-    int m_period;
+    double m_period;
     base::thread m_thread;
   };
 
