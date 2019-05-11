@@ -201,8 +201,18 @@ void ToolLoopManager::doLoopStep(bool lastStep)
   // released) we are only showing a preview of the tool, so we can
   // limit the dirty area to the visible viewport bounds. In this way
   // the area using in validateoDstImage() can be a lot smaller.
-  if (m_toolLoop->getTracePolicy() == TracePolicy::Last && !lastStep)
+  if (m_toolLoop->getTracePolicy() == TracePolicy::Last &&
+      !lastStep &&
+      // We cannot limit the dirty area for LineFreehandController (or
+      // in any case that the trace policy is handled by the
+      // controller) just in case the user is using the Pencil tool
+      // and used Shift+Click to draw a line and the origin point of
+      // the line is not in the viewport area (e.g. for a very long
+      // line, or with a lot of zoom in the end so the origin is not
+      // viewable, etc.).
+      !m_toolLoop->getController()->handleTracePolicy()) {
     m_toolLoop->limitDirtyAreaToViewport(m_dirtyArea);
+  }
 
   // Validate source image area.
   if (m_toolLoop->getInk()->needsSpecialSourceArea()) {
