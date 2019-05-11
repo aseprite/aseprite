@@ -362,7 +362,7 @@ private:
       layout();
     }
     else {
-      int v = 100 * m_bgThread->progress();
+      int v = int(100 * m_bgThread->progress());
       if (v > 0) {
         progress()->setValue(v);
         if (!progress()->isVisible()) {
