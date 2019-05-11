@@ -386,3 +386,108 @@ do
   drawing_with_image_brushes(ColorMode.RGB, rgba(255, 0, 0),
                              ColorMode.RGB, rgba(255, 0, 0))
 end
+
+----------------------------------------------------------------------
+-- draw with symmetry
+----------------------------------------------------------------------
+
+function drawing_with_symmetry(imageColorMode, colorInImage,
+			       brushColorMode, colorInBrush, palette)
+  print("drawing_with_symmetry", imageColorMode, brushColorMode)
+  local s = Sprite(8, 3, imageColorMode)
+  local c = colorInImage
+  cel = s.cels[1]
+
+  if palette then
+    s:setPalette(palette)
+  end
+
+  -- Enable symmetry
+  local pref = app.preferences
+  local docPref = pref.document(s)
+  pref.symmetry_mode.enabled = true
+  docPref.symmetry.mode   = 1 -- TODO use SymmetryMode.HORIZONTAL when it's available
+  docPref.symmetry.x_axis = 4
+
+  expect_img(app.activeImage,
+             { 0, 0, 0, 0, 0, 0, 0, 0,
+	       0, 0, 0, 0, 0, 0, 0, 0,
+	       0, 0, 0, 0, 0, 0, 0, 0 })
+  expect_eq(cel.bounds, Rectangle(0, 0, 8, 3))
+
+  local b = Brush { size=1 }
+  app.fgColor = c
+  app.useTool{ tool=pencil, brush=b, points={ Point(0, 0) } }
+  expect_img(app.activeImage,
+             { c, 0, 0, 0, 0, 0, 0, c })
+  expect_eq(cel.bounds, Rectangle(0, 0, 8, 1))
+  app.undo()
+
+  app.useTool{ tool=pencil, brush=b, points={ Point(2, 0) } }
+  expect_img(app.activeImage,
+             { c, 0, 0, c })
+  expect_eq(cel.bounds, Rectangle(2, 0, 4, 1))
+  app.undo()
+
+  -- Brush size 2x2
+  b = Brush { size=2 }
+  app.useTool{ tool=pencil, brush=b, points={ Point(1, 0) } }
+  expect_eq(cel.bounds, Rectangle(1, 0, 6, 2))
+  expect_img(app.activeImage,
+             { c, c, 0, 0, c, c,
+               c, c, 0, 0, c, c })
+  app.undo()
+
+  -- Brush size 3x3
+  b = Brush { size=3 }
+  app.useTool{ tool=pencil, brush=b, points={ Point(1, 1) } }
+  expect_eq(cel.bounds, Rectangle(0, 0, 8, 3))
+  expect_img(app.activeImage,
+             { 0, c, 0, 0, 0, 0, c, 0,
+	       c, c, c, 0, 0, c, c, c,
+               0, c, 0, 0, 0, 0, c, 0 })
+  app.undo()
+
+  -- Brush size 3x3
+  b = Brush { size=3, center=Point(1, 1) }
+  app.useTool{ tool=pencil, brush=b, points={ Point(2, 1) } }
+  expect_eq(cel.bounds, Rectangle(1, 0, 6, 3))
+  expect_img(app.activeImage,
+             { 0, c, 0, 0, c, 0,
+	       c, c, c, c, c, c,
+               0, c, 0, 0, c, 0 })
+  app.undo()
+
+  -- Brush size 4x4
+  b = Brush { size=4 }
+  app.useTool{ tool=pencil, brush=b, points={ Point(1, 0) } }
+  expect_eq(cel.bounds, Rectangle(0, 0, 8, 3))
+  expect_img(app.activeImage,
+             { c, c, c, c, c, c, c, c,
+	       c, c, c, c, c, c, c, c,
+               0, c, c, 0, 0, c, c, 0 })
+  app.undo()
+
+  -- Odd symmetry
+  docPref.symmetry.x_axis = 4.5
+
+  b = Brush { size=1 }
+  app.useTool{ tool=pencil, brush=b, points={ Point(4, 0) } }
+  expect_img(app.activeImage,
+             { c })
+  expect_eq(cel.bounds, Rectangle(4, 0, 1, 1))
+  app.undo()
+
+  b = Brush { size=1 }
+  app.useTool{ tool=pencil, brush=b, points={ Point(3, 0) } }
+  expect_img(app.activeImage,
+             { c, 0, c })
+  expect_eq(cel.bounds, Rectangle(3, 0, 3, 1))
+  app.undo()
+
+end
+
+do
+  drawing_with_symmetry(ColorMode.RGB, rgba(255, 0, 0),
+			ColorMode.RGB, rgba(255, 0, 0))
+end
