@@ -78,7 +78,7 @@ Manager* Manager::m_defaultManager = NULL;
 gfx::Region Manager::m_dirtyRegion;
 
 #ifdef DEBUG_UI_THREADS
-static base::thread::native_handle_type manager_thread = 0;
+static base::thread::native_id_type manager_thread = 0;
 #endif
 
 static WidgetsList mouse_widgets_list; // List of widgets to send mouse events
@@ -168,7 +168,7 @@ Manager::Manager()
 {
 #ifdef DEBUG_UI_THREADS
   ASSERT(!manager_thread);
-  manager_thread = base::this_thread::native_handle();
+  manager_thread = base::this_thread::native_id();
 #endif
 
   if (!m_defaultManager) {
@@ -195,7 +195,7 @@ Manager::Manager()
 Manager::~Manager()
 {
 #ifdef DEBUG_UI_THREADS
-  ASSERT(manager_thread == base::this_thread::native_handle());
+  ASSERT(manager_thread == base::this_thread::native_id());
 #endif
 
   // There are some messages in queue? Dispatch everything.
@@ -277,6 +277,10 @@ void Manager::flipDisplay()
 
 bool Manager::generateMessages()
 {
+#ifdef DEBUG_UI_THREADS
+  ASSERT(manager_thread == base::this_thread::native_id());
+#endif
+
   // First check: there are windows to manage?
   if (children().empty())
     return false;
@@ -337,6 +341,10 @@ static MouseButtons mouse_buttons_from_os_to_ui(const os::Event& sheEvent)
 
 void Manager::generateMessagesFromOSEvents()
 {
+#ifdef DEBUG_UI_THREADS
+  ASSERT(manager_thread == base::this_thread::native_id());
+#endif
+
   os::Event lastMouseMoveEvent;
 
   // Events from "she" layer.
@@ -701,6 +709,7 @@ void Manager::dispatchMessages()
 
 void Manager::addToGarbage(Widget* widget)
 {
+  ASSERT(widget);
   m_garbage.push_back(widget);
 }
 
@@ -909,7 +918,7 @@ void Manager::freeCapture()
 void Manager::freeWidget(Widget* widget)
 {
 #ifdef DEBUG_UI_THREADS
-  ASSERT(manager_thread == base::this_thread::native_handle());
+  ASSERT(manager_thread == base::this_thread::native_id());
 #endif
 
   if (widget->hasFocus() || (widget == focus_widget))
@@ -940,7 +949,7 @@ void Manager::freeWidget(Widget* widget)
 void Manager::removeMessagesFor(Widget* widget)
 {
 #ifdef DEBUG_UI_THREADS
-  ASSERT(manager_thread == base::this_thread::native_handle());
+  ASSERT(manager_thread == base::this_thread::native_id());
 #endif
 
   for (Message* msg : msg_queue)
@@ -953,7 +962,7 @@ void Manager::removeMessagesFor(Widget* widget)
 void Manager::removeMessagesFor(Widget* widget, MessageType type)
 {
 #ifdef DEBUG_UI_THREADS
-  ASSERT(manager_thread == base::this_thread::native_handle());
+  ASSERT(manager_thread == base::this_thread::native_id());
 #endif
 
   for (Message* msg : msg_queue)
@@ -968,7 +977,7 @@ void Manager::removeMessagesFor(Widget* widget, MessageType type)
 void Manager::removeMessagesForTimer(Timer* timer)
 {
 #ifdef DEBUG_UI_THREADS
-  ASSERT(manager_thread == base::this_thread::native_handle());
+  ASSERT(manager_thread == base::this_thread::native_id());
 #endif
 
   for (auto it=msg_queue.begin(); it != msg_queue.end(); ) {
@@ -986,7 +995,7 @@ void Manager::removeMessagesForTimer(Timer* timer)
 void Manager::addMessageFilter(int message, Widget* widget)
 {
 #ifdef DEBUG_UI_THREADS
-  ASSERT(manager_thread == base::this_thread::native_handle());
+  ASSERT(manager_thread == base::this_thread::native_id());
 #endif
 
   LockFilters lock;
@@ -1000,7 +1009,7 @@ void Manager::addMessageFilter(int message, Widget* widget)
 void Manager::removeMessageFilter(int message, Widget* widget)
 {
 #ifdef DEBUG_UI_THREADS
-  ASSERT(manager_thread == base::this_thread::native_handle());
+  ASSERT(manager_thread == base::this_thread::native_id());
 #endif
 
   LockFilters lock;
@@ -1018,7 +1027,7 @@ void Manager::removeMessageFilter(int message, Widget* widget)
 void Manager::removeMessageFilterFor(Widget* widget)
 {
 #ifdef DEBUG_UI_THREADS
-  ASSERT(manager_thread == base::this_thread::native_handle());
+  ASSERT(manager_thread == base::this_thread::native_id());
 #endif
 
   LockFilters lock;
@@ -1341,6 +1350,10 @@ void Manager::onSizeHint(SizeHintEvent& ev)
 
 int Manager::pumpQueue()
 {
+#ifdef DEBUG_UI_THREADS
+  ASSERT(manager_thread == base::this_thread::native_id());
+#endif
+
 #ifdef LIMIT_DISPATCH_TIME
   base::tick_t t = base::current_tick();
 #endif
@@ -1355,6 +1368,7 @@ int Manager::pumpQueue()
     // The message to process
     auto it = msg_queue.begin();
     Message* msg = *it;
+    ASSERT(msg);
 
     // Move the message from msg_queue to used_msg_queue
     msg_queue.erase(it);
@@ -1410,7 +1424,7 @@ int Manager::pumpQueue()
 bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
 {
 #ifdef DEBUG_UI_THREADS
-  ASSERT(manager_thread == base::this_thread::native_handle());
+  ASSERT(manager_thread == base::this_thread::native_id());
 #endif
 
   if (!widget)

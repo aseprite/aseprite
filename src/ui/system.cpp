@@ -32,7 +32,7 @@ namespace ui {
 
 // This is used to check if calls to UI layer are made from the non-UI
 // thread. (Which might be catastrofic.)
-base::thread::native_handle_type main_gui_thread;
+base::thread::native_id_type main_gui_thread;
 
 // Current mouse cursor type.
 
@@ -188,7 +188,7 @@ UISystem::UISystem()
   ASSERT(!g_instance);
   g_instance = this;
 
-  main_gui_thread = base::this_thread::native_handle();
+  main_gui_thread = base::this_thread::native_id();
   mouse_cursor_type = kOutsideDisplay;
   support_native_custom_cursor =
     ((os::instance() &&
@@ -362,7 +362,7 @@ void execute_from_ui_thread(std::function<void()>&& f)
 
 bool is_ui_thread()
 {
-  return (main_gui_thread == base::this_thread::native_handle());
+  return (main_gui_thread == base::this_thread::native_id());
 }
 
 #ifdef _DEBUG
