@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -29,6 +29,7 @@ gfx::Rect Intertwine::getStrokeBounds(ToolLoop* loop, const Stroke& stroke)
   return stroke.bounds();
 }
 
+// static
 void Intertwine::doPointshapePoint(int x, int y, ToolLoop* loop)
 {
   Symmetry* symmetry = loop->getSymmetry();
@@ -52,24 +53,33 @@ void Intertwine::doPointshapePoint(int x, int y, ToolLoop* loop)
   }
 }
 
+// static
 void Intertwine::doPointshapeHline(int x1, int y, int x2, ToolLoop* loop)
 {
   algo_line_perfect(x1, y, x2, y, loop, (AlgoPixel)doPointshapePoint);
 }
 
+// static
 void Intertwine::doPointshapeLine(int x1, int y1, int x2, int y2, ToolLoop* loop)
+{
+  doc::AlgoLineWithAlgoPixel algo = getLineAlgo(loop);
+  algo(x1, y1, x2, y2, (void*)loop, (AlgoPixel)doPointshapePoint);
+}
+
+// static
+doc::AlgoLineWithAlgoPixel Intertwine::getLineAlgo(ToolLoop* loop)
 {
   if (// When "Snap Angle" in being used or...
       (int(loop->getModifiers()) & int(ToolLoopModifiers::kSquareAspect)) ||
       // "Snap to Grid" is enabled
       (loop->getController()->canSnapToGrid() && loop->getSnapToGrid())) {
     // We prefer the perfect pixel lines that matches grid tiles
-    algo_line_perfect(x1, y1, x2, y2, loop, (AlgoPixel)doPointshapePoint);
+    return algo_line_perfect;
   }
   else {
     // In other case we use the regular algorithm that is useful to
     // draw continuous lines/strokes.
-    algo_line_continuous(x1, y1, x2, y2, loop, (AlgoPixel)doPointshapePoint);
+    return algo_line_continuous;
   }
 }
 

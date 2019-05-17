@@ -102,8 +102,9 @@ public:
         }
       }
       else {
+        doc::AlgoLineWithAlgoPixel lineAlgo = getLineAlgo(loop);
         for (int c=0; c+1<stroke.size(); ++c) {
-          algo_line_continuous(
+          lineAlgo(
             stroke[c].x,
             stroke[c].y,
             stroke[c+1].x,

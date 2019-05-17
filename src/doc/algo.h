@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -18,6 +18,7 @@ namespace doc {
 
   typedef void (*AlgoPixel)(int x, int y, void *data);
   typedef void (*AlgoLine)(int x1, int y1, int x2, int y2, void *data);
+  typedef void (*AlgoLineWithAlgoPixel)(int x1, int y1, int x2, int y2, void *data, AlgoPixel proc);
 
   // Useful to create lines with more predictable behavior and perfect
   // pixel block of lines where we'll have a number of lines/rows that
