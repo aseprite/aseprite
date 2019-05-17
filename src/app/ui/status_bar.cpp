@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -786,6 +786,10 @@ void StatusBar::onActiveSiteChange(const Site& site)
     // Current frame
     m_currentFrame->setTextf(
       "%d", site.frame()+docPref.timeline.firstFrame());
+
+    // Zoom level
+    if (current_editor)
+      updateFromEditor(current_editor);
   }
   else {
     m_docControls->setVisible(false);
