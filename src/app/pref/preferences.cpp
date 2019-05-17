@@ -228,7 +228,7 @@ void Preferences::serializeDocPref(const Doc* doc, app::DocumentPreferences* doc
   }
 
   if (doc) {
-    if (flush_config)
+    if (save && flush_config)
       flush_config_file();
 
     pop_config_state();
