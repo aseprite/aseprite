@@ -22,9 +22,9 @@
 You should be able to compile Aseprite successfully on the following
 platforms:
 
-* Windows 10 + VS2017 Community Edition + Windows 10 SDK
-* macOS 10.12.6 Sierra + Xcode 9.0 + macOS 10.13 SDK + Skia
-* Linux + gcc 4.8 with some C++11 support
+* Windows 10 + [Visual Studio Community 2019 + Windows 10.0.17763.0 SDK](https://imgur.com/4Pq2Cbv)
+* macOS 10.14.4 Mojave + Xcode 10.2.1 + macOS 10.14 SDK
+* Linux + gcc 4.8 or clang 7.0
 
 # Get the source code
 
@@ -52,7 +52,7 @@ clone the repository on Windows.
 
 To compile Aseprite you will need:
 
-* The latest version of [CMake](http://www.cmake.org/) (3.4 or greater)
+* The latest version of [CMake](https://cmake.org) (3.14 or greater)
 * [Ninja](https://ninja-build.org) build system
 * You will need a compiled version of the Skia library.
   Please check the details about [how to build Skia](#building-skia-dependency)
@@ -62,15 +62,10 @@ To compile Aseprite you will need:
 
 First of all, you will need:
 
-* Windows 10 (we don't support cross-compiling and don't know if this would be possible)
-* [Visual Studio Community Edition](https://www.visualstudio.com/downloads/) (VS2017)
-* The [Desktop development with C++](https://docs.microsoft.com/en-us/cpp/build/vscpp-step-0-installation?view=vs-2017#visual-studio-2017-installation) item
+* Windows 10 (**we don't support cross-compiling and don't know if this would be possible**)
+* [Visual Studio Community 2019](https://visualstudio.microsoft.com/downloads/)
+* The [Desktop development with C++ item + Windows 10.0.17763.0 SDK](https://imgur.com/4Pq2Cbv)
   from the Visual Studio installer
-* Windows 10 SDK item from the Visual Studio installer
-
-Then, you will need an extra little utility: `awk`, used to compile
-the libpng library. You can get this utility from MSYS2 distributions
-like [MozillaBuild](https://wiki.mozilla.org/MozillaBuild).
 
 You will need to [compile Skia](#skia-on-windows) before and then
 continue in the [Compiling](#compiling) section. Remember to check the
@@ -79,8 +74,8 @@ continue in the [Compiling](#compiling) section. Remember to check the
 
 ## macOS dependencies
 
-On macOS you will need macOS 10.12 SDK and Xcode 8.0 (older versions
-might work).
+On macOS you will need macOS 10.14 SDK and Xcode 10.2.1 (older
+versions might work).
 
 You must also compile [Skia](#skia-on-macos) before starting with the
 [compilation](#compiling).
@@ -138,7 +133,7 @@ After you've [compiled Skia](#skia-on-windows),
 open a [developer command prompt](https://docs.microsoft.com/en-us/dotnet/framework/tools/developer-command-prompt-for-vs)
 or in the command line (`cmd.exe`) call:
 
-    call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\Tools\VsDevCmd.bat" -arch=x64
+    call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat" -arch=x64
 
 And then
 
@@ -233,13 +228,13 @@ Download
 and uncompress it in some place like `C:\deps\depot_tools`.
 
 [It's recommended to compile Skia with Clang](https://github.com/google/skia/blob/master/site/user/build.md#a-note-on-software-backend-performance)
-to get better performance. So you will need to [download Clang](http://releases.llvm.org/7.0.0/LLVM-7.0.0-win64.exe),
+to get better performance. So you will need to [download Clang](http://releases.llvm.org/8.0.0/LLVM-8.0.0-win64.exe),
 and install it on a folder like `C:\deps\llvm` (a folder without whitespaces).
 
 Open a [developer command prompt](https://docs.microsoft.com/en-us/dotnet/framework/tools/developer-command-prompt-for-vs)
 or command line (`cmd.exe`) and call:
 
-    call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\Tools\VsDevCmd.bat" -arch=x64
+    call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat" -arch=x64
 
 Then:
 
@@ -254,6 +249,7 @@ Just ignore it.)
     cd C:\deps
     git clone -b aseprite-m71 https://github.com/aseprite/skia.git
     cd skia
+    set GIT_EXECUTABLE=git.bat
     python tools/git-sync-deps
 
 (The `tools/git-sync-deps` will take some minutes because it downloads
@@ -263,14 +259,14 @@ fails.)
 Finally, if you've downloaded Clang, use this command:
 
     set PATH=C:\deps\llvm\bin;%PATH%
-    gn gen out/Release --args="is_official_build=true skia_use_system_expat=false skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false target_cpu=""x64"" cc=""clang"" cxx=""clang++"" clang_win=""c:\deps\llvm"""
+    gn gen out/Release --args="is_official_build=true skia_use_system_expat=false skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false target_cpu=""x64"" cc=""clang"" cxx=""clang++"" clang_win=""c:\deps\llvm"" win_vc=""C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC"""
     ninja -C out/Release skia
 
 If you haven't installed Clang, and want to compile Skia with MSVC
 (anyway it's not recommended because the performance penalty is too
 big), you can use the following commands instead:
 
-    gn gen out/Release --args="is_official_build=true skia_use_system_expat=false skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false target_cpu=""x64"" cc=2017"
+    gn gen out/Release --args="is_official_build=true skia_use_system_expat=false skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false target_cpu=""x64"" win_vc=""C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC"""
     ninja -C out/Release skia
 
 More information about these steps in the
