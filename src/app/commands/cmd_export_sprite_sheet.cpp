@@ -66,11 +66,23 @@ namespace {
   };
 
   // Calculate best size for the given sprite
-  // TODO this function was programmed in ten minutes, please optimize it
-  Fit best_fit(Sprite* sprite, int nframes, int borderPadding, int shapePadding, int innerPadding) {
-    int framew = sprite->width()+2*innerPadding;
-    int frameh = sprite->height()+2*innerPadding;
-    Fit result(framew*nframes, frameh, nframes, 1, std::numeric_limits<int>::max());
+  Fit best_fit(Sprite* sprite,
+               int nframes,
+               int borderPadding,
+               int shapePadding,
+               int innerPadding,
+               SpriteSheetType type) {
+
+    int framew = sprite->width()+2*innerPadding + shapePadding;
+    int frameh = sprite->height()+2*innerPadding + shapePadding;
+    // If the sprite sheet type is Columns, we have to swap
+    // "sprite width <-> sprite height" values at the begining, and then
+    // at the end of this function, we have to swap columns<->rows
+    // and swap resultant width<->heigth.
+    // We do that because best_fit function calculate columns and rows
+    // number according a Rows sprite sheet type basis.
+    if (type == SpriteSheetType::Columns)
+      std::swap(framew, frameh);
     int w, h;
 
     for (w=2; w < framew; w*=2)
@@ -78,43 +90,35 @@ namespace {
     for (h=2; h < frameh; h*=2)
       ;
 
+    Fit result;
     int z = 0;
     bool fully_contained = false;
     while (!fully_contained) {  // TODO at this moment we're not
                                 // getting the best fit for less
                                 // freearea, just the first one.
-      gfx::Rect rgnSize(w-2*borderPadding, h-2*borderPadding);
-      gfx::Region rgn(rgnSize);
-      int contained_frames = 0;
+      int columns = base::clamp((w - 2*borderPadding + shapePadding) / framew, 1, nframes);
+      int rows = nframes / columns + (nframes % columns? 1 : 0);
+      int freeWidth = w - 2*borderPadding + shapePadding - columns * framew;
+      int freeHeight = h - 2*borderPadding + shapePadding - rows * frameh;
 
-      for (int v=0; v+frameh <= rgnSize.h && !fully_contained; v+=frameh+shapePadding) {
-        for (int u=0; u+framew <= rgnSize.w; u+=framew+shapePadding) {
-          gfx::Rect framerc = gfx::Rect(u, v, framew, frameh);
-          rgn.createSubtraction(rgn, gfx::Region(framerc));
+      if (nframes <= rows * columns && freeWidth >= 0 && freeHeight >= 0) {
+        fully_contained = true;
+        int freearea = (w - 2*borderPadding + shapePadding) * (h - 2*borderPadding + shapePadding) -
+                       (framew + 2*innerPadding + shapePadding) *
+                       (frameh + 2*innerPadding + shapePadding) * nframes;
 
-          ++contained_frames;
-          if (nframes == contained_frames) {
-            fully_contained = true;
-            break;
-          }
-        }
-      }
-
-      if (fully_contained) {
-        // TODO convert this to a template function gfx::area()
-        int freearea = 0;
-        for (const gfx::Rect& rgnRect : rgn)
-          freearea += rgnRect.w * rgnRect.h;
-
-        Fit fit(w, h, (w / framew), (h / frameh), freearea);
-        if (fit.freearea < result.freearea)
-          result = fit;
+        Fit fit(w, h, columns, rows, freearea);
+        result = fit;
       }
 
       if ((++z) & 1) w *= 2;
       else h *= 2;
     }
-
+    // Last values exchange in case of Columns sprite sheet type
+    if (type == SpriteSheetType::Columns) {
+      std::swap(result.columns, result.rows);
+      std::swap(result.width, result.height);
+    }
     return result;
   }
 
@@ -124,14 +128,13 @@ namespace {
                            int shapePadding,
                            int innerPadding) {
     if (columns == 0) {
-      rows = MID(1, rows, nframes);
+      rows = base::clamp(rows, 1, nframes);
       columns = ((nframes/rows) + ((nframes%rows) > 0 ? 1: 0));
     }
     else {
-      columns = MID(1, columns, nframes);
+      columns = base::clamp(columns, 1, nframes);
       rows = ((nframes/columns) + ((nframes%columns) > 0 ? 1: 0));
     }
-
     return Fit(
       2*borderPadding + (sprite->width()+2*innerPadding)*columns + (columns-1)*shapePadding,
       2*borderPadding + (sprite->height()+2*innerPadding)*rows + (rows-1)*shapePadding,
@@ -255,16 +258,6 @@ public:
       columns()->setTextf("%d", params.columns());
       rows()->setTextf("%d", params.rows());
       onColumnsChange();
-
-      if (params.width() > 0 || params.height() > 0) {
-        if (params.width() > 0)
-          fitWidth()->getEntryWidget()->setTextf("%d", params.width());
-
-        if (params.height() > 0)
-          fitHeight()->getEntryWidget()->setTextf("%d", params.height());
-
-        onSizeChange();
-      }
     }
 
     m_filename = params.textureFilename();
@@ -379,7 +372,7 @@ public:
   int borderPaddingValue() const {
     if (paddingEnabled()->isSelected()) {
       int value = borderPadding()->textInt();
-      return MID(0, value, 100);
+      return base::clamp(value, 0, 100);
     }
     else
       return 0;
@@ -388,7 +381,7 @@ public:
   int shapePaddingValue() const {
     if (paddingEnabled()->isSelected()) {
       int value = shapePadding()->textInt();
-      return MID(0, value, 100);
+      return base::clamp(value, 0, 100);
     }
     else
       return 0;
@@ -397,7 +390,7 @@ public:
   int innerPaddingValue() const {
     if (paddingEnabled()->isSelected()) {
       int value = innerPadding()->textInt();
-      return MID(0, value, 100);
+      return base::clamp(value, 0, 100);
     }
     else
       return 0;
@@ -468,6 +461,26 @@ private:
         break;
     }
 
+    // We have to detect if bestFit is selected, because the exchange
+    // "rows to columns" and "columns to rows" in this mode needs to recalculate
+    // these numbers.
+    // . NON best_fit method: only we have to show the hiden column or row value.
+    // . best_fit method: we have to recalculate the columns and rows.
+    if (matrixState && bestFitValue()) {
+      SelectedFrames selFrames;
+      calculate_selected_frames(m_site, tagValue(), selFrames);
+      frame_t nframes = selFrames.size();
+
+      Fit fit = best_fit(m_site.sprite(),
+                         nframes,
+                         borderPaddingValue(),
+                         shapePaddingValue(),
+                         innerPaddingValue() + extrudeValue(),
+                         spriteSheetTypeValue());
+      rows()->setTextf("%d", fit.rows);
+      columns()->setTextf("%d", fit.columns);
+    }
+
     columnsLabel()->setVisible(colsState);
     columns()->setVisible(colsState);
 
@@ -501,8 +514,33 @@ private:
   }
 
   void onSizeChange() {
-    columns()->setTextf("%d", fitWidthValue() / m_sprite->width());
-    rows()->setTextf("%d", fitHeightValue() / m_sprite->height());
+    SelectedFrames selFrames;
+    calculate_selected_frames(m_site, tagValue(), selFrames);
+    frame_t nframes = selFrames.size();
+    int borderPadding = 0;
+    int innerPadding = 0;
+    int shapePadding = 0;
+    if (paddingEnabled()->isEnabled()) {
+      borderPadding = borderPaddingValue();
+      innerPadding = innerPaddingValue() + extrudeValue();
+      shapePadding = shapePaddingValue();
+    }
+    int framew = m_sprite->width() + 2*innerPadding + shapePadding;
+    int frameh = m_sprite->height() + 2*innerPadding + shapePadding;
+    int w = fitWidthValue() - 2*borderPadding + shapePadding;
+    int h = fitHeightValue() - 2*borderPadding + shapePadding;
+    int r;// rows
+    int c;// columns
+    if (spriteSheetTypeValue() == SpriteSheetType::Columns) {
+      r = base::clamp(h / frameh, 1, nframes);
+      c = nframes / r + (nframes % r? 1 : 0);
+    }
+    else {
+      c = base::clamp(w / framew, 1, nframes);
+      r = nframes / c + (nframes % c? 1 : 0);
+    }
+    columns()->setTextf("%d", c);
+    rows()->setTextf("%d", r);
     bestFit()->setSelected(false);
   }
 
@@ -611,7 +649,8 @@ private:
     if (bestFit()->isSelected()) {
       fit = best_fit(m_sprite, nframes,
                      borderPaddingValue(), shapePaddingValue(),
-                     innerPaddingValue() + extrudePadding());
+                     innerPaddingValue() + extrudePadding(),
+                     spriteSheetTypeValue());
     }
     else {
       fit = calculate_sheet_size(
@@ -810,7 +849,8 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
 
   if (bestFit) {
     Fit fit = best_fit(sprite, nframes, borderPadding, shapePadding,
-                       innerPadding + extrudePadding);
+                       innerPadding + extrudePadding,
+                       type);
     columns = fit.columns;
     rows = fit.rows;
     width = fit.width;
@@ -822,7 +862,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
 
   switch (type) {
     case app::SpriteSheetType::Horizontal:
-      columns = sprite->totalFrames();
+      columns = nframes;
       rows = 1;
       break;
     case app::SpriteSheetType::Vertical:
