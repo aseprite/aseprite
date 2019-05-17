@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -21,6 +22,9 @@ gfx::Point snap_to_grid(const gfx::Rect& grid,
                         const gfx::Point& point,
                         const PreferSnapTo prefer)
 {
+  if (grid.isEmpty())
+    return point;
+
   gfx::Point newPoint;
   div_t d, dx, dy;
 
