@@ -372,8 +372,8 @@ void Brush::regenerate()
 
 void Brush::resetBounds()
 {
-  m_center = gfx::Point(std::max(0, (m_image->width()-1)/2),
-                        std::max(0, (m_image->height()-1)/2));
+  m_center = gfx::Point(std::max(0, m_image->width()/2),
+                        std::max(0, m_image->height()/2));
   m_bounds = gfx::Rect(-m_center,
                        gfx::Size(m_image->width(),
                                  m_image->height()));

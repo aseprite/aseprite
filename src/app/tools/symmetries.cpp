@@ -21,40 +21,54 @@ namespace tools {
 void HorizontalSymmetry::generateStrokes(const Stroke& mainStroke, Strokes& strokes,
                                          ToolLoop* loop)
 {
-  int adjust;
+  int brushSize, brushCenter;
   if (loop->getPointShape()->isFloodFill()) {
-    adjust = 1;
+    brushSize = 1;
+    brushCenter = 0;
   }
   else {
-    // TODO This adjustment is not valid for brush centers that are
-    //      not in the default Brush::center(), we'll fix this later
-    //      (we should flip the brush center+image+bitmap or just do
-    //      the symmetry of all pixels)
-    adjust = ((loop->getBrush()->bounds().w % 2) == 0 ? 2: 1);
+    // TODO we should flip the brush center+image+bitmap or just do
+    //      the symmetry of all pixels
+    auto brush = loop->getBrush();
+    brushSize = brush->bounds().w;
+    brushCenter = brush->center().x;
   }
 
   strokes.push_back(mainStroke);
 
   Stroke stroke2;
-  for (const auto& pt : mainStroke)
-    stroke2.addPoint(gfx::Point(m_x - (pt.x - m_x + adjust), pt.y));
+  for (const auto& pt : mainStroke) {
+    stroke2.addPoint(
+      gfx::Point(
+        m_x - ((pt.x-brushCenter) - m_x + 1) - (brushSize - brushCenter - 1),
+        pt.y));
+  }
   strokes.push_back(stroke2);
 }
 
 void VerticalSymmetry::generateStrokes(const Stroke& mainStroke, Strokes& strokes,
                                        ToolLoop* loop)
 {
-  int adjust;
-  if (loop->getPointShape()->isFloodFill())
-    adjust = 1;
-  else
-    adjust = ((loop->getBrush()->bounds().h % 2) == 0 ? 2: 1);
+  int brushSize, brushCenter;
+  if (loop->getPointShape()->isFloodFill()) {
+    brushSize = 1;
+    brushCenter = 0;
+  }
+  else {
+    auto brush = loop->getBrush();
+    brushSize = brush->bounds().h;
+    brushCenter = brush->center().y;
+  }
 
   strokes.push_back(mainStroke);
 
   Stroke stroke2;
-  for (const auto& pt : mainStroke)
-    stroke2.addPoint(gfx::Point(pt.x, m_y - (pt.y - m_y + adjust)));
+  for (const auto& pt : mainStroke) {
+    stroke2.addPoint(
+      gfx::Point(
+        pt.x,
+        m_y - ((pt.y-brushCenter) - m_y + 1) - (brushSize - brushCenter - 1)));
+  }
   strokes.push_back(stroke2);
 }
 
