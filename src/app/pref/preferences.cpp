@@ -78,6 +78,7 @@ void Preferences::load()
 
 void Preferences::save()
 {
+  ui::assert_ui_thread();
   app::gen::GlobalPref::save();
 
   for (auto& pair : m_tools)
