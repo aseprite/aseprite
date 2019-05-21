@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -75,8 +76,7 @@ HomeView::~HomeView()
 {
 #ifdef ENABLE_DATA_RECOVERY
   if (m_dataRecoveryView) {
-    if (m_dataRecoveryView->parent())
-      App::instance()->workspace()->removeView(m_dataRecoveryView);
+    ASSERT(!m_dataRecoveryView->parent());
     delete m_dataRecoveryView;
   }
 #endif
@@ -104,6 +104,14 @@ bool HomeView::onCloseView(Workspace* workspace, bool quitting)
 {
   workspace->removeView(this);
   return true;
+}
+
+void HomeView::onAfterRemoveView(Workspace* workspace)
+{
+  if (m_dataRecoveryView &&
+      m_dataRecoveryView->parent()) {
+    workspace->removeView(m_dataRecoveryView);
+  }
 }
 
 void HomeView::onTabPopup(Workspace* workspace)

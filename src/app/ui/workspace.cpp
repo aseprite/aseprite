@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -72,12 +72,15 @@ void Workspace::addView(WorkspaceView* view, int pos)
 
 void Workspace::removeView(WorkspaceView* view)
 {
+  ASSERT(view);
   base::remove_from_container(m_views, view);
 
   WorkspacePanel* panel = getViewPanel(view);
   ASSERT(panel);
   if (panel)
     panel->removeView(view);
+
+  view->onAfterRemoveView(this);
 }
 
 bool Workspace::closeView(WorkspaceView* view, bool quitting)

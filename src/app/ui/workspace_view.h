@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -37,6 +38,8 @@ namespace app {
     // Returns true if the view was closed successfully or false if
     // the user cancels the operation.
     virtual bool onCloseView(Workspace* workspace, bool quitting) = 0;
+
+    virtual void onAfterRemoveView(Workspace* workspace) { }
 
     virtual void onTabPopup(Workspace* workspace) = 0;
 
