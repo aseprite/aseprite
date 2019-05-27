@@ -591,8 +591,12 @@
       <menu text="@.file">
         <item command="NewFile" text="@.file_new" />
         <item command="OpenFile" text="@.file_open" />
-        <item id="recent_list" text="@.file_open_recent" />
-	<item command="ReopenClosedFile" text="@.file_reopen_closed" />
+        <menu text="@.file_open_recent">
+	  <item command="ReopenClosedFile" text="@.file_reopen_closed" />
+          <separator id="recent_files_placeholder" />
+          <separator />
+	  <item command="ClearRecentFiles" text="@.file_clear_recent_files" />
+	</menu>
         <separator />
         <item command="SaveFile" text="@.file_save" />
         <item command="SaveFileAs" text="@.file_save_as" />

@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -407,6 +407,15 @@ Manager* Widget::manager() const
   }
 
   return Manager::getDefault();
+}
+
+int Widget::getChildIndex(Widget* child)
+{
+  auto it = std::find(m_children.begin(), m_children.end(), child);
+  if (it != m_children.end())
+    return it - m_children.begin();
+  else
+    return -1;
 }
 
 Widget* Widget::nextSibling()

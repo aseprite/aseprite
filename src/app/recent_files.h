@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -23,10 +23,10 @@ namespace app {
            kRecentFolders,
            kCollections };
   public:
-    const base::paths& pinnedFiles() { return m_paths[kPinnedFiles]; }
-    const base::paths& recentFiles() { return m_paths[kRecentFiles]; }
-    const base::paths& pinnedFolders() { return m_paths[kPinnedFolders]; }
-    const base::paths& recentFolders() { return m_paths[kRecentFolders]; }
+    const base::paths& pinnedFiles() const { return m_paths[kPinnedFiles]; }
+    const base::paths& recentFiles() const { return m_paths[kRecentFiles]; }
+    const base::paths& pinnedFolders() const { return m_paths[kPinnedFolders]; }
+    const base::paths& recentFolders() const { return m_paths[kRecentFolders]; }
 
     RecentFiles(const int limit);
     ~RecentFiles();

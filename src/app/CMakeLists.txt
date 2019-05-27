@@ -204,6 +204,7 @@ if(ENABLE_UI)
     commands/cmd_change_color.cpp
     commands/cmd_clear.cpp
     commands/cmd_clear_cel.cpp
+    commands/cmd_clear_recent_files.cpp
     commands/cmd_close_file.cpp
     commands/cmd_color_quantization.cpp
     commands/cmd_contiguous_fill.cpp

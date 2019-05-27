@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -49,7 +50,6 @@ namespace app {
     bool rebuildRecentList();
 
     Menu* getRootMenu() { return m_rootMenu.get(); }
-    MenuItem* getRecentListMenuitem() { return m_recentListMenuitem; }
     Menu* getTabPopupMenu() { return m_tabPopupMenu.get(); }
     Menu* getDocumentTabPopupMenu() { return m_documentTabPopupMenu.get(); }
     Menu* getLayerPopupMenu() { return m_layerPopupMenu.get(); }
@@ -84,7 +84,7 @@ namespace app {
 #endif
 
     std::unique_ptr<Menu> m_rootMenu;
-    MenuItem* m_recentListMenuitem;
+    Widget* m_recentFilesPlaceholder;
     MenuItem* m_helpMenuitem;
     std::unique_ptr<Menu> m_tabPopupMenu;
     std::unique_ptr<Menu> m_documentTabPopupMenu;

@@ -41,6 +41,9 @@ namespace app {
     KeyPtr key() { return m_key; }
     void setKey(const KeyPtr& key);
 
+    void setIsRecentFileItem(bool state) { m_isRecentFileItem = state; }
+    bool isRecentFileItem() const { return m_isRecentFileItem; }
+
     Command* getCommand() { return m_command; }
     const Params& getParams() const { return m_params; }
 
@@ -60,6 +63,7 @@ namespace app {
     KeyPtr m_key;
     Command* m_command;
     Params m_params;
+    bool m_isRecentFileItem;
     Native* m_native;
 
     static Params s_contextParams;

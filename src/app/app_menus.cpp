@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -301,7 +302,7 @@ AppMenus* AppMenus::instance()
 }
 
 AppMenus::AppMenus()
-  : m_recentListMenuitem(nullptr)
+  : m_recentFilesPlaceholder(nullptr)
   , m_osMenu(nullptr)
 {
   m_recentFilesConn =
@@ -453,61 +454,62 @@ void AppMenus::initTheme()
 
 bool AppMenus::rebuildRecentList()
 {
-  AppMenuItem* list_menuitem = dynamic_cast<AppMenuItem*>(m_recentListMenuitem);
-  MenuItem* menuitem;
+  if (!m_recentFilesPlaceholder)
+    return true;
 
-  // Update the recent file list menu item
-  if (list_menuitem) {
-    if (list_menuitem->hasSubmenuOpened())
-      return false;
+  Menu* menu = dynamic_cast<Menu*>(m_recentFilesPlaceholder->parent());
+  if (!menu)
+    return false;
 
-    Command* cmd_open_file =
-      Commands::instance()->byId(CommandId::OpenFile());
+  AppMenuItem* owner = dynamic_cast<AppMenuItem*>(menu->getOwnerMenuItem());
+  if (!owner || owner->hasSubmenuOpened())
+    return false;
 
-    Menu* submenu = list_menuitem->getSubmenu();
-    if (submenu) {
-      list_menuitem->setSubmenu(NULL);
-      submenu->deferDelete();
+  int insertIndex = menu->getChildIndex(m_recentFilesPlaceholder)+1;
+
+  // Remove active items
+  while (auto appItem = dynamic_cast<AppMenuItem*>(menu->at(insertIndex))) {
+    menu->removeChild(appItem);
+    appItem->deferDelete();
+  }
+
+  Command* openFile = Commands::instance()->byId(CommandId::OpenFile());
+
+  auto recent = App::instance()->recentFiles();
+  base::paths files;
+  files.insert(files.end(),
+               recent->pinnedFiles().begin(),
+               recent->pinnedFiles().end());
+  files.insert(files.end(),
+               recent->recentFiles().begin(),
+               recent->recentFiles().end());
+  if (!files.empty()) {
+    Params params;
+    for (const auto& fn : files) {
+      params.set("filename", fn.c_str());
+
+      auto menuitem = new AppMenuItem(base::get_file_name(fn).c_str(),
+                                      openFile, params);
+      menuitem->setIsRecentFileItem(true);
+      menu->insertChild(insertIndex++, menuitem);
     }
+  }
+  else {
+    auto menuitem = new AppMenuItem(
+      Strings::main_menu_file_no_recent_file(), nullptr);
+    menuitem->setIsRecentFileItem(true);
+    menuitem->setEnabled(false);
+    menu->insertChild(insertIndex++, menuitem);
+  }
 
-    // Build the menu of recent files
-    submenu = new Menu();
-    list_menuitem->setSubmenu(submenu);
-
-    auto recent = App::instance()->recentFiles();
-    base::paths files;
-    files.insert(files.end(),
-                 recent->pinnedFiles().begin(),
-                 recent->pinnedFiles().end());
-    files.insert(files.end(),
-                 recent->recentFiles().begin(),
-                 recent->recentFiles().end());
-    if (!files.empty()) {
-      Params params;
-      for (const auto& fn : files) {
-        params.set("filename", fn.c_str());
-        menuitem = new AppMenuItem(
-          base::get_file_name(fn).c_str(),
-          cmd_open_file,
-          params);
-        submenu->addChild(menuitem);
-      }
-    }
-    else {
-      menuitem = new AppMenuItem("Nothing", NULL, Params());
-      menuitem->setEnabled(false);
-      submenu->addChild(menuitem);
-    }
-
-    // Sync native menus
-    if (list_menuitem->native() &&
-        list_menuitem->native()->menuItem) {
-      os::Menus* menus = os::instance()->menus();
-      os::Menu* osMenu = (menus ? menus->createMenu(): nullptr);
-      if (osMenu) {
-        createNativeSubmenus(osMenu, submenu);
-        list_menuitem->native()->menuItem->setSubmenu(osMenu);
-      }
+  // Sync native menus
+  if (owner->native() &&
+      owner->native()->menuItem) {
+    os::Menus* menus = os::instance()->menus();
+    os::Menu* osMenu = (menus ? menus->createMenu(): nullptr);
+    if (osMenu) {
+      createNativeSubmenus(osMenu, menu);
+      owner->native()->menuItem->setSubmenu(osMenu);
     }
   }
 
@@ -563,7 +565,14 @@ Widget* AppMenus::convertXmlelemToMenuitem(TiXmlElement* elem)
   // is it a <separator>?
   if (strcmp(elem->Value(), "separator") == 0) {
     auto item = new MenuSeparator;
-    if (id) item->setId(id);
+    if (id) {
+      item->setId(id);
+
+      // Recent list menu
+      if (std::strcmp(id, "recent_files_placeholder") == 0) {
+        m_recentFilesPlaceholder = item;
+      }
+    }
     return item;
   }
 
@@ -598,11 +607,7 @@ Widget* AppMenus::convertXmlelemToMenuitem(TiXmlElement* elem)
 
   // Has it a ID?
   if (id) {
-    // Recent list menu
-    if (std::strcmp(id, "recent_list") == 0) {
-      m_recentListMenuitem = menuitem;
-    }
-    else if (std::strcmp(id, "help_menu") == 0) {
+    if (std::strcmp(id, "help_menu") == 0) {
       m_helpMenuitem = menuitem;
     }
   }

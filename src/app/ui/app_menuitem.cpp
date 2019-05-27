@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -35,18 +36,24 @@ using namespace ui;
 Params AppMenuItem::s_contextParams;
 
 AppMenuItem::AppMenuItem(const std::string& text,
-                         Command* command, const Params& params)
+                         Command* command,
+                         const Params& params)
  : MenuItem(text)
  , m_key(nullptr)
  , m_command(command)
  , m_params(params)
+ , m_isRecentFileItem(false)
  , m_native(nullptr)
 {
 }
 
 AppMenuItem::~AppMenuItem()
 {
-  delete m_native;
+  if (m_native) {
+    if (m_native->menuItem)
+      m_native->menuItem->dispose();
+    delete m_native;
+  }
 }
 
 void AppMenuItem::setKey(const KeyPtr& key)
@@ -59,8 +66,11 @@ void AppMenuItem::setNative(const Native& native)
 {
   if (!m_native)
     m_native = new Native(native);
-  else
+  else {
+    if (m_native->menuItem)
+      m_native->menuItem->dispose();
     *m_native = native;
+  }
 }
 
 void AppMenuItem::syncNativeMenuItemKeyShortcut()

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -780,7 +780,7 @@ private:
   void fillMenusList(ListBox* listbox, Menu* menu, int level) {
     for (auto child : menu->children()) {
       if (AppMenuItem* menuItem = dynamic_cast<AppMenuItem*>(child)) {
-        if (menuItem == AppMenus::instance()->getRecentListMenuitem())
+        if (menuItem->isRecentFileItem())
           continue;
 
         KeyItem* keyItem = new KeyItem(
@@ -917,7 +917,7 @@ void KeyboardShortcutsCommand::fillMenusKeys(app::KeyboardShortcuts& keys,
 {
   for (auto child : menu->children()) {
     if (AppMenuItem* menuItem = dynamic_cast<AppMenuItem*>(child)) {
-      if (menuItem == AppMenus::instance()->getRecentListMenuitem())
+      if (menuItem->isRecentFileItem())
         continue;
 
       if (menuItem->getCommand()) {
