@@ -11,6 +11,7 @@
       <!-- File -->
       <key command="NewFile" shortcut="Ctrl+N" mac="Cmd+N" />
       <key command="OpenFile" shortcut="Ctrl+O" mac="Cmd+O" />
+      <key command="ReopenClosedFile" shortcut="Ctrl+Shift+T" mac="Cmd+Shift+T" />
       <key command="SaveFile" shortcut="Ctrl+S" mac="Cmd+S" />
       <key command="SaveFileAs" shortcut="Ctrl+Shift+S" mac="Cmd+Shift+S" />
       <key command="SaveFileCopyAs" shortcut="Ctrl+Alt+Shift+S" mac="Cmd+Alt+Shift+S" />
@@ -591,6 +592,7 @@
         <item command="NewFile" text="@.file_new" />
         <item command="OpenFile" text="@.file_open" />
         <item id="recent_list" text="@.file_open_recent" />
+	<item command="ReopenClosedFile" text="@.file_reopen_closed" />
         <separator />
         <item command="SaveFile" text="@.file_save" />
         <item command="SaveFileAs" text="@.file_save_as" />

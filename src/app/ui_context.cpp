@@ -28,6 +28,8 @@
 #include "base/mutex.h"
 #include "doc/sprite.h"
 
+#include <algorithm>
+
 namespace app {
 
 UIContext* UIContext::m_instance = nullptr;
@@ -223,6 +225,17 @@ Editor* UIContext::activeEditor()
     return NULL;
 }
 
+void UIContext::reopenClosedDoc(Doc* doc)
+{
+  auto it = std::find(m_closedDocs.begin(), m_closedDocs.end(), doc);
+  ASSERT(it != m_closedDocs.end());
+  if (it != m_closedDocs.end())
+    m_closedDocs.erase(it);
+
+  // Put the document in the context again.
+  doc->setContext(this);
+}
+
 void UIContext::onAddDocument(Doc* doc)
 {
   app::Context::onAddDocument(doc);
@@ -293,6 +306,13 @@ void UIContext::onGetActiveSite(Site* site) const
   else if (!isUIAvailable()) {
     return app::Context::onGetActiveSite(site);
   }
+}
+
+void UIContext::onCloseDocument(Doc* doc)
+{
+  ASSERT(doc != nullptr);
+  ASSERT(doc->context() == nullptr);
+  m_closedDocs.insert(m_closedDocs.begin(), doc);
 }
 
 } // namespace app

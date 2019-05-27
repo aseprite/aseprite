@@ -45,6 +45,11 @@ void Context::sendDocumentToTop(Doc* document)
   documents().move(document, 0);
 }
 
+void Context::closeDocument(Doc* doc)
+{
+  onCloseDocument(doc);
+}
+
 Site Context::activeSite() const
 {
   Site site;
@@ -219,6 +224,13 @@ ActiveSiteHandler* Context::activeSiteHandler() const
   if (!m_activeSiteHandler)
     m_activeSiteHandler.reset(new ActiveSiteHandler);
   return m_activeSiteHandler.get();
+}
+
+void Context::onCloseDocument(Doc* doc)
+{
+  ASSERT(doc != nullptr);
+  ASSERT(doc->context() == nullptr);
+  delete doc;
 }
 
 } // namespace app

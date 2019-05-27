@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -181,13 +182,25 @@ namespace app {
     }
 
     void destroyDocument() {
-      ASSERT(m_doc != NULL);
+      ASSERT(m_doc != nullptr);
 
       m_doc->close();
       Doc* doc = m_doc;
       unlock();
 
       delete doc;
+      m_doc = nullptr;
+    }
+
+    void closeDocument() {
+      ASSERT(m_doc != nullptr);
+
+      Context* ctx = (Context*)m_doc->context();
+      m_doc->close();
+      Doc* doc = m_doc;
+      unlock();
+
+      ctx->closeDocument(doc);
       m_doc = nullptr;
     }
 

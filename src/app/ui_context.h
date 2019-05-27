@@ -12,6 +12,8 @@
 #include "app/context.h"
 #include "app/docs_observer.h"
 
+#include <vector>
+
 namespace app {
   class DocView;
   class Editor;
@@ -42,6 +44,10 @@ namespace app {
     // new one if it's necessary.
     Editor* getEditorFor(Doc* document);
 
+    // Returns the list of closed docs in this session.
+    const std::vector<Doc*>& closedDocs() const { return m_closedDocs; }
+    void reopenClosedDoc(Doc* doc);
+
   protected:
     void onAddDocument(Doc* doc) override;
     void onRemoveDocument(Doc* doc) override;
@@ -49,9 +55,12 @@ namespace app {
     void onSetActiveDocument(Doc* doc) override;
     void onSetActiveLayer(doc::Layer* layer) override;
     void onSetActiveFrame(const doc::frame_t frame) override;
+    void onCloseDocument(Doc* doc) override;
 
   private:
     DocView* m_lastSelectedView;
+    std::vector<Doc*> m_closedDocs;
+
     static UIContext* m_instance;
   };
 

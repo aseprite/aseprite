@@ -77,7 +77,8 @@ namespace app {
     bool checkFlags(uint32_t flags) const { return m_flags.check(flags); }
     void updateFlags() { m_flags.update(this); }
 
-    void sendDocumentToTop(Doc* document);
+    void sendDocumentToTop(Doc* doc);
+    void closeDocument(Doc* doc);
 
     Site activeSite() const;
     Doc* activeDocument() const;
@@ -110,6 +111,7 @@ namespace app {
     virtual void onSetActiveDocument(Doc* doc);
     virtual void onSetActiveLayer(doc::Layer* layer);
     virtual void onSetActiveFrame(const doc::frame_t frame);
+    virtual void onCloseDocument(Doc* doc);
 
     Doc* lastSelectedDoc() { return m_lastSelectedDoc; }
 

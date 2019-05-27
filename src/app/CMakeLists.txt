@@ -264,6 +264,7 @@ if(ENABLE_UI)
     commands/cmd_remove_frame.cpp
     commands/cmd_remove_frame_tag.cpp
     commands/cmd_remove_slice.cpp
+    commands/cmd_reopen_closed_file.cpp
     commands/cmd_repeat_last_export.cpp
     commands/cmd_reselect_mask.cpp
     commands/cmd_reverse_frames.cpp

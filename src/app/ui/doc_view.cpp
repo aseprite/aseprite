@@ -330,7 +330,9 @@ bool DocView::onCloseView(Workspace* workspace, bool quitting)
       ->setStatusText(0, "Sprite '%s' closed.",
                       m_document->name().c_str());
 
-    destroyer.destroyDocument();
+    // Just close the document (so we can reopen it with
+    // ReopenClosedFile command).
+    destroyer.closeDocument();
 
     // At this point the view is already destroyed
     return true;
