@@ -130,8 +130,13 @@ void DataRecoveryView::clearList()
 void DataRecoveryView::fillList()
 {
   clearList();
-  fillListWith(true);
-  fillListWith(false);
+
+  if (m_dataRecovery->isSearching())
+    m_listBox.addChild(new ListItem(Strings::recover_files_loading()));
+  else {
+    fillListWith(true);
+    fillListWith(false);
+  }
 }
 
 void DataRecoveryView::fillListWith(const bool crashes)
@@ -296,12 +301,11 @@ void DataRecoveryView::onDelete()
 
 void DataRecoveryView::onRefresh()
 {
-  clearList();
-  onChangeSelection();
-  m_listBox.addChild(new ListItem("Loading..."));
-  layout();
-
   m_dataRecovery->launchSearch();
+
+  fillList();
+  onChangeSelection();
+  layout();
 }
 
 void DataRecoveryView::onChangeSelection()

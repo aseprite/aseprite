@@ -33,6 +33,8 @@ namespace crash {
     // Launches the thread to search for sessions.
     void launchSearch();
 
+    bool isSearching() const { return m_searching; }
+
     // Returns true if there is at least one sessions with sprites to
     // recover (i.e. a crashed session were changes weren't saved)
     bool hasRecoverySessions() const;
