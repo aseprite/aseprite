@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -13,6 +14,7 @@
 #include "app/console.h"
 #include "app/context.h"
 #include "app/crash/read_document.h"
+#include "app/crash/recovery_config.h"
 #include "app/crash/write_document.h"
 #include "app/doc.h"
 #include "app/doc_access.h"
@@ -25,10 +27,15 @@
 #include "base/process.h"
 #include "base/split_string.h"
 #include "base/string.h"
+#include "base/time.h"
 #include "doc/cancel_io.h"
 
 namespace app {
 namespace crash {
+
+static const char* kPidFilename = "pid";   // Process ID running the session (or non-existent if the PID was closed correctly)
+static const char* kVerFilename = "ver";   // File that indicates the Aseprite version used in the session
+static const char* kOpenFilename = "open"; // File that indicates if the document is/was open in the session (or non-existent if the document was closed correctly)
 
 Session::Backup::Backup(const std::string& dir)
   : m_dir(dir)
@@ -48,9 +55,11 @@ Session::Backup::Backup(const std::string& dir)
   m_desc = &buf[0];
 }
 
-Session::Session(const std::string& path)
+Session::Session(RecoveryConfig* config,
+                 const std::string& path)
   : m_pid(0)
   , m_path(path)
+  , m_config(config)
 {
 }
 
@@ -108,7 +117,31 @@ const Session::Backups& Session::backups()
 bool Session::isRunning()
 {
   loadPid();
-  return base::is_process_running(m_pid);
+  if (m_pid)
+    return base::is_process_running(m_pid);
+  else
+    return false;
+}
+
+bool Session::isCrashedSession()
+{
+  loadPid();
+  return (m_pid != 0);
+}
+
+bool Session::isOldSession()
+{
+  if (!m_config->keepEditedSpriteData)
+    return true;
+
+  std::string verfile = verFilename();
+  if (!base::is_file(verfile))
+    return true;
+
+  int lifespan = m_config->keepEditedSpriteDataLifespan;
+  base::Time sessionTime = base::get_modification_time(verfile);
+
+  return (sessionTime.addDays(lifespan) < base::current_time());
 }
 
 bool Session::isEmpty()
@@ -131,9 +164,32 @@ void Session::create(base::pid pid)
   verf << VERSION;
 }
 
+void Session::close()
+{
+  try {
+    // Just remove the PID file to indicate that this session was
+    // correctly closed
+    if (base::is_file(pidFilename()))
+      base::delete_file(pidFilename());
+
+    // If we don't have to keep the sprite data, just remove it from
+    // the disk.
+    if (!m_config->keepEditedSpriteData)
+      removeFromDisk();
+  }
+  catch (const std::exception&) {
+    // TODO Log this error
+  }
+}
+
 void Session::removeFromDisk()
 {
   try {
+    // Remove all backups from disk
+    Backups baks = backups();
+    for (Backup* bak : baks)
+      deleteBackup(bak);
+
     if (base::is_file(pidFilename()))
       base::delete_file(pidFilename());
 
@@ -173,8 +229,19 @@ bool Session::saveDocumentChanges(Doc* doc)
     base::convert_to<std::string>(doc->id()));
   TRACE("RECO: Saving document '%s'...\n", dir.c_str());
 
+  // Create directory for document
   if (!base::is_directory(dir))
     base::make_directory(dir);
+
+  // Create "open" file to indicate that the document is open in this session
+  {
+    std::string openfile = base::join_path(dir, kOpenFilename);
+    if (!base::is_file(openfile)) {
+      std::ofstream of(FSTREAM_PATH(openfile));
+      if (of)
+        of << "open";
+    }
+  }
 
   // Save document information
   return write_document(dir, doc, &reader);
@@ -185,11 +252,7 @@ void Session::removeDocument(Doc* doc)
   try {
     delete_document_internals(doc);
 
-    // Delete document backup directory
-    std::string dir = base::join_path(m_path,
-      base::convert_to<std::string>(doc->id()));
-    if (base::is_directory(dir))
-      deleteDirectory(dir);
+    markDocumentAsCorrectlyClosed(doc);
   }
   catch (const std::exception&) {
     // TODO Log this error
@@ -245,7 +308,8 @@ void Session::restoreRawImages(Backup* backup, RawImagesAs as)
   try {
     Doc* doc = read_document_with_raw_images(backup->dir(), as);
     if (doc) {
-      fixFilename(doc);
+      if (isCrashedSession())
+        fixFilename(doc);
       UIContext::instance()->documents().add(doc);
     }
   }
@@ -285,12 +349,28 @@ void Session::loadPid()
 
 std::string Session::pidFilename() const
 {
-  return base::join_path(m_path, "pid");
+  return base::join_path(m_path, kPidFilename);
 }
 
 std::string Session::verFilename() const
 {
-  return base::join_path(m_path, "ver");
+  return base::join_path(m_path, kVerFilename);
+}
+
+void Session::markDocumentAsCorrectlyClosed(app::Doc* doc)
+{
+  std::string dir = base::join_path(
+    m_path, base::convert_to<std::string>(doc->id()));
+
+  ASSERT(!dir.empty());
+  if (dir.empty() || !base::is_directory(dir))
+    return;
+
+  std::string openFn = base::join_path(dir, kOpenFilename);
+  if (base::is_file(openFn)) {
+    TRACE("RECO: Document was closed correctly, deleting file '%s'\n", openFn.c_str());
+    base::delete_file(openFn);
+  }
 }
 
 void Session::deleteDirectory(const std::string& dir)

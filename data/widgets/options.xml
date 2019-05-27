@@ -67,7 +67,7 @@
                  text="@.color_bar_entries_separator"
                  tooltip="@.color_bar_entries_separator"
                  pref="color_bar.entries_separator" />
-          <hbox>
+          <grid columns="2">
             <check id="enable_data_recovery"
                    text="@.auto_save_recovery_data"
                    tooltip="@.auto_save_recovery_data_tooltip" />
@@ -81,7 +81,18 @@
               <listitem text="@.15_minutes" value="15" />
               <listitem text="@.30_minutes" value="30" />
             </combobox>
-          </hbox>
+            <check id="keep_edited_sprite_data"
+                   text="@.keep_edited_sprite_data"
+                   tooltip="@.keep_edited_sprite_data_tooltip" />
+            <combobox id="keep_edited_sprite_data_lifespan">
+              <listitem text="@.1_day" value="1" />
+              <listitem text="@.2_days" value="2" />
+              <listitem text="@.3_days" value="3" />
+              <listitem text="@.1_week" value="7" />
+              <listitem text="@.2_weeks" value="14" />
+              <listitem text="@.1_month" value="30" />
+            </combobox>
+          </grid>
           <separator horizontal="true" />
           <link id="locate_file" text="@.locate_file" />
           <link id="locate_crash_folder" text="@.locate_crash_folder" />

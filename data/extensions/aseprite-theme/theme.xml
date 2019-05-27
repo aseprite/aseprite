@@ -638,7 +638,6 @@
             <background color="check_hot_face" state="selected" />
             <icon part="pal_options" />
         </style>
-        <style id="recover_sprites_button" extends="button" border="0" padding="8" />
         <style id="new_frame_button" extends="mini_button" />
         <style id="color_button" extends="mini_button" border="5" font="mini" />
         <style id="splitter">
@@ -656,6 +655,10 @@
         <style id="separator_in_view" extends="horizontal_separator">
             <background color="background" />
             <background-border part="separator_horz" align="middle" />
+        </style>
+        <style id="separator_in_view_reverse">
+            <background color="workspace" />
+            <text color="background" x="4" align="left middle" />
         </style>
         <style id="vertical_separator" border-left="4" border-top="2" border-right="1" border-bottom="2">
             <background-border part="separator_vert" align="center" />

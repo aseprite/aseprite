@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -28,6 +29,10 @@ namespace app {
   public:
     DataRecoveryView(crash::DataRecovery* dataRecovery);
 
+    // Called after the "Refresh" button is pressed (onRefresh) and
+    // the crash::DataRecovery::SessionsListIsReady signal is received.
+    void refreshListNotification();
+
     // TabView implementation
     std::string getTabText() override;
     TabIcon getTabIcon() override;
@@ -38,24 +43,29 @@ namespace app {
     bool onCloseView(Workspace* workspace, bool quitting) override;
     void onTabPopup(Workspace* workspace) override;
 
-    // Triggered when the list is empty (because the user deleted all
-    // sessions).
+    // Triggered when the list is of crashed sessions is empty (or
+    // because the user deleted all sessions that crashed).
     obs::signal<void()> Empty;
 
   private:
+    void clearList();
     void fillList();
+    void fillListWith(const bool crashes);
 
     void onOpen();
     void onOpenRaw(crash::RawImagesAs as);
     void onOpenMenu();
     void onDelete();
+    void onRefresh();
     void onChangeSelection();
+    bool thereAreCrashSessions() const;
 
     crash::DataRecovery* m_dataRecovery;
     ui::View m_view;
     ui::ListBox m_listBox;
     DropDownButton m_openButton;
     ui::Button m_deleteButton;
+    ui::Button m_refreshButton;
   };
 
 } // namespace app

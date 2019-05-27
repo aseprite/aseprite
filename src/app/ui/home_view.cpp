@@ -15,6 +15,7 @@
 #include "app/app_menus.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
+#include "app/crash/data_recovery.h"
 #include "app/i18n/strings.h"
 #include "app/ui/data_recovery_view.h"
 #include "app/ui/main_window.h"
@@ -47,7 +48,7 @@ HomeView::HomeView()
 #ifdef ENABLE_NEWS
   , m_news(new NewsListBox)
 #endif
-  , m_dataRecovery(nullptr)
+  , m_dataRecovery(App::instance()->dataRecovery())
   , m_dataRecoveryView(nullptr)
 {
   newFile()->Click.connect(base::Bind(&HomeView::onNewFile, this));
@@ -61,7 +62,6 @@ HomeView::HomeView()
 #endif
 
   checkUpdate()->setVisible(false);
-  recoverSpritesPlaceholder()->setVisible(false);
 
   InitTheme.connect(
     [this]{
@@ -82,11 +82,18 @@ HomeView::~HomeView()
 #endif
 }
 
-void HomeView::showDataRecovery(crash::DataRecovery* dataRecovery)
+void HomeView::dataRecoverySessionsAreReady()
 {
 #ifdef ENABLE_DATA_RECOVERY
-  m_dataRecovery = dataRecovery;
-  recoverSpritesPlaceholder()->setVisible(true);
+  if (App::instance()->dataRecovery()->hasRecoverySessions()) {
+    // We highlight the "Recover Files" options because we came from a crash
+    SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+    recoverSprites()->setStyle(theme->styles.workspaceUpdateLink());
+    layout();
+  }
+  if (m_dataRecoveryView) {
+    m_dataRecoveryView->refreshListNotification();
+  }
 #endif
 }
 
@@ -195,11 +202,13 @@ void HomeView::onRecoverSprites()
   if (!m_dataRecoveryView) {
     m_dataRecoveryView = new DataRecoveryView(m_dataRecovery);
 
-    // Hide the "Recover Lost Sprites" button when the
-    // DataRecoveryView is empty.
+    // Restore the "Recover Files" link style when the
+    // DataRecoveryView is empty (so there is no more warning icon on
+    // it).
     m_dataRecoveryView->Empty.connect(
       [this]{
-        recoverSpritesPlaceholder()->setVisible(false);
+        SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+        recoverSprites()->setStyle(theme->styles.workspaceLink());
         layout();
       });
   }

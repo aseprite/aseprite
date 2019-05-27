@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -14,6 +14,7 @@
 #include "app/app.h"
 #include "app/app_menus.h"
 #include "app/commands/commands.h"
+#include "app/crash/data_recovery.h"
 #include "app/i18n/strings.h"
 #include "app/ini_file.h"
 #include "app/modules/editors.h"
@@ -327,9 +328,9 @@ void MainWindow::popTimeline()
     setTimelineVisibility(true);
 }
 
-void MainWindow::showDataRecovery(crash::DataRecovery* dataRecovery)
+void MainWindow::dataRecoverySessionsAreReady()
 {
-  getHomeView()->showDataRecovery(dataRecovery);
+  getHomeView()->dataRecoverySessionsAreReady();
 }
 
 bool MainWindow::onProcessMessage(ui::Message* msg)

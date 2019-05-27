@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -24,6 +25,7 @@
 #include "ui/alert.h"
 #include "ui/button.h"
 #include "ui/entry.h"
+#include "ui/label.h"
 #include "ui/listitem.h"
 #include "ui/message.h"
 #include "ui/resize_event.h"
@@ -69,8 +71,9 @@ private:
 
 DataRecoveryView::DataRecoveryView(crash::DataRecovery* dataRecovery)
   : m_dataRecovery(dataRecovery)
-  , m_openButton("Recover Sprite")
-  , m_deleteButton("Delete")
+  , m_openButton(Strings::recover_files_recover_sprite().c_str())
+  , m_deleteButton(Strings::recover_files_delete())
+  , m_refreshButton(Strings::recover_files_refresh())
 {
   m_listBox.setMultiselect(true);
   m_view.setExpansive(true);
@@ -79,6 +82,7 @@ DataRecoveryView::DataRecoveryView(crash::DataRecovery* dataRecovery)
   HBox* hbox = new HBox;
   hbox->addChild(&m_openButton);
   hbox->addChild(&m_deleteButton);
+  hbox->addChild(&m_refreshButton);
   addChild(hbox);
   addChild(&m_view);
 
@@ -103,23 +107,66 @@ DataRecoveryView::DataRecoveryView(crash::DataRecovery* dataRecovery)
   m_openButton.Click.connect(base::Bind(&DataRecoveryView::onOpen, this));
   m_openButton.DropDownClick.connect(base::Bind<void>(&DataRecoveryView::onOpenMenu, this));
   m_deleteButton.Click.connect(base::Bind(&DataRecoveryView::onDelete, this));
+  m_refreshButton.Click.connect(base::Bind(&DataRecoveryView::onRefresh, this));
   m_listBox.Change.connect(base::Bind(&DataRecoveryView::onChangeSelection, this));
   m_listBox.DoubleClickItem.connect(base::Bind(&DataRecoveryView::onOpen, this));
 }
 
-void DataRecoveryView::fillList()
+void DataRecoveryView::refreshListNotification()
+{
+  fillList();
+  layout();
+}
+
+void DataRecoveryView::clearList()
 {
   WidgetsList children = m_listBox.children();
   for (auto child : children) {
     m_listBox.removeChild(child);
     child->deferDelete();
   }
+}
+
+void DataRecoveryView::fillList()
+{
+  clearList();
+  fillListWith(true);
+  fillListWith(false);
+}
+
+void DataRecoveryView::fillListWith(const bool crashes)
+{
+  bool first = true;
 
   for (auto& session : m_dataRecovery->sessions()) {
-    if (session->isEmpty())
+    if ((session->isEmpty()) ||
+        (crashes && !session->isCrashedSession()) ||
+        (!crashes && session->isCrashedSession()))
       continue;
 
-    auto sep = new SeparatorInView(session->name(), HORIZONTAL);
+    if (first) {
+      first = false;
+
+      // Separator for "crash sessions" vs "old sessions"
+      auto sep = new Separator(
+        (crashes ? Strings::recover_files_crash_sessions():
+                   Strings::recover_files_old_sessions()), HORIZONTAL);
+      sep->InitTheme.connect(
+        [sep]{
+          sep->setStyle(skin::SkinTheme::instance()->styles.separatorInViewReverse());
+          sep->setBorder(sep->border() + gfx::Border(0, 8, 0, 8)*guiscale());
+        });
+      sep->initTheme();
+      m_listBox.addChild(sep);
+    }
+
+    std::string title = session->name();
+    if (session->version() != VERSION)
+      title =
+        fmt::format(Strings::recover_files_incompatible(),
+                    title, session->version());
+
+    auto sep = new SeparatorInView(title, HORIZONTAL);
     sep->InitTheme.connect(
       [sep]{
         sep->setBorder(sep->border() + gfx::Border(0, 8, 0, 8)*guiscale());
@@ -133,13 +180,14 @@ void DataRecoveryView::fillList()
     }
   }
 
-  if (m_listBox.getItemsCount() == 0)
+  // If there are no crash items, we call Empty() signal
+  if (crashes && first)
     Empty();
 }
 
 std::string DataRecoveryView::getTabText()
 {
-  return "Data Recovery";
+  return Strings::recover_files_title();
 }
 
 TabIcon DataRecoveryView::getTabIcon()
@@ -197,8 +245,8 @@ void DataRecoveryView::onOpenMenu()
   gfx::Rect bounds = m_openButton.bounds();
 
   Menu menu;
-  MenuItem rawFrames("Raw Images as Frames");
-  MenuItem rawLayers("Raw Images as Layers");
+  MenuItem rawFrames(Strings::recover_files_raw_images_as_frames());
+  MenuItem rawLayers(Strings::recover_files_raw_images_as_layers());
   menu.addChild(&rawFrames);
   menu.addChild(&rawLayers);
 
@@ -210,7 +258,7 @@ void DataRecoveryView::onOpenMenu()
 
 void DataRecoveryView::onDelete()
 {
-  std::vector<Item*> items;
+  std::vector<Item*> items; // Items to delete.
 
   for (auto widget : m_listBox.children()) {
     if (!widget->isSelected())
@@ -238,8 +286,22 @@ void DataRecoveryView::onDelete()
   }
   onChangeSelection();
 
+  // Check if there is no more crash sessions
+  if (!thereAreCrashSessions())
+    Empty();
+
   m_listBox.layout();
   m_view.updateView();
+}
+
+void DataRecoveryView::onRefresh()
+{
+  clearList();
+  onChangeSelection();
+  m_listBox.addChild(new ListItem("Loading..."));
+  layout();
+
+  m_dataRecovery->launchSearch();
 }
 
 void DataRecoveryView::onChangeSelection()
@@ -256,10 +318,27 @@ void DataRecoveryView::onChangeSelection()
 
   m_deleteButton.setEnabled(count > 0);
   m_openButton.setEnabled(count > 0);
-  if (count < 2)
-    m_openButton.mainButton()->setText("Recover Sprite");
-  else
-    m_openButton.mainButton()->setTextf("Recover %d Sprites", count);
+  if (count < 2) {
+    m_openButton.mainButton()->setText(
+      fmt::format(Strings::recover_files_recover_sprite(), count));
+  }
+  else {
+    m_openButton.mainButton()->setText(
+      fmt::format(Strings::recover_files_recover_n_sprites(), count));
+  }
+}
+
+bool DataRecoveryView::thereAreCrashSessions() const
+{
+  for (auto widget : m_listBox.children()) {
+    if (auto item = dynamic_cast<const Item*>(widget)) {
+      if (item &&
+          item->session() &&
+          item->session()->isCrashedSession())
+        return true;
+    }
+  }
+  return false;
 }
 
 } // namespace app

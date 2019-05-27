@@ -242,12 +242,19 @@ public:
     if (m_pref.general.dataRecovery())
       enableDataRecovery()->setSelected(true);
 
+    if (m_pref.general.keepEditedSpriteData())
+      keepEditedSpriteData()->setSelected(true);
+
     if (m_pref.general.showFullPath())
       showFullPath()->setSelected(true);
 
     dataRecoveryPeriod()->setSelectedItemIndex(
       dataRecoveryPeriod()->findItemIndexByValue(
         base::convert_to<std::string>(m_pref.general.dataRecoveryPeriod())));
+
+    keepEditedSpriteDataLifespan()->setSelectedItemIndex(
+      keepEditedSpriteDataLifespan()->findItemIndexByValue(
+        base::convert_to<std::string>(m_pref.general.keepEditedSpriteDataLifespan())));
 
     if (m_pref.editor.zoomFromCenterWithWheel())
       zoomFromCenterWithWheel()->setSelected(true);
@@ -477,6 +484,15 @@ public:
       m_pref.general.dataRecoveryPeriod(newPeriod);
 
       warnings += "<<- " + Strings::alerts_restart_by_preferences_save_recovery_data_period();
+    }
+
+    int newLifespan = base::convert_to<int>(keepEditedSpriteDataLifespan()->getValue());
+    if (keepEditedSpriteData()->isSelected() != m_pref.general.keepEditedSpriteData() ||
+        newLifespan != m_pref.general.dataRecoveryPeriod()) {
+      m_pref.general.keepEditedSpriteData(keepEditedSpriteData()->isSelected());
+      m_pref.general.keepEditedSpriteDataLifespan(newLifespan);
+
+      warnings += "<<- " + Strings::alerts_restart_by_preferences_keep_edited_sprite_data_lifespan();
     }
 
     m_pref.editor.zoomFromCenterWithWheel(zoomFromCenterWithWheel()->isSelected());

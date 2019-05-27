@@ -42,7 +42,9 @@ namespace app {
     HomeView();
     ~HomeView();
 
-    void showDataRecovery(crash::DataRecovery* dataRecovery);
+    // When crash::DataRecovery finish to search for sessions, this
+    // function is called.
+    void dataRecoverySessionsAreReady();
 
     // TabView implementation
     std::string getTabText() override;

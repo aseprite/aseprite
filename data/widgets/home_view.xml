@@ -1,18 +1,16 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2001-2017 by David Capello -->
+<!-- Copyright (C) 2019  Igara Studio S.A. -->
+<!-- Copyright (C) 2001-2017  David Capello -->
 <gui>
   <vbox noborders="true" id="home_view" border="4" childspacing="2" expansive="true">
-    <hbox noborders="true" id="recover_sprites_placeholder">
-      <boxfiller />
-      <button id="recover_sprites" text="@.recover" style="recover_sprites_button" />
-      <boxfiller />
-    </hbox>
 
     <hbox noborders="true" id="header_placeholder">
       <link id="aseprite_face" style="aseprite_face" />
       <vbox border="4" childspacing="4">
         <link id="new_file" text="@.new_file" style="workspace_link" />
         <link id="open_file" text="@.open_file" style="workspace_link" />
+        <link id="recover_sprites" text="@.recover_files" style="workspace_link"
+	      tooltip="@.recover_files_tooltip" />
       </vbox>
       <boxfiller />
       <vbox border="4">

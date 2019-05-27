@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -12,54 +13,34 @@
 
 #include "app/crash/backup_observer.h"
 #include "app/crash/session.h"
+#include "app/pref/preferences.h"
 #include "app/resource_finder.h"
 #include "base/fs.h"
 #include "base/time.h"
+#include "ui/system.h"
 
 #include <algorithm>
 
 namespace app {
 namespace crash {
 
+// Flag used to avoid calling SessionsListIsReady() signal after
+// DataRecovery() instance is deleted.
+static bool g_stillAliveFlag = false;
+
 DataRecovery::DataRecovery(Context* ctx)
   : m_inProgress(nullptr)
   , m_backup(nullptr)
+  , m_searching(false)
 {
+  auto& pref = Preferences::instance();
+  m_config.dataRecoveryPeriod = pref.general.dataRecoveryPeriod();
+  m_config.keepEditedSpriteData = pref.general.keepEditedSpriteData();
+  m_config.keepEditedSpriteDataLifespan = pref.general.keepEditedSpriteDataLifespan();
+
   ResourceFinder rf;
   rf.includeUserDir(base::join_path("sessions", ".").c_str());
-  std::string sessionsDir = rf.getFirstOrCreateDefault();
-
-  // Existent sessions
-  TRACE("RECO: Listing sessions from '%s'\n", sessionsDir.c_str());
-  for (auto& itemname : base::list_files(sessionsDir)) {
-    std::string itempath = base::join_path(sessionsDir, itemname);
-    if (base::is_directory(itempath)) {
-      TRACE("RECO: Session '%s' ", itempath.c_str());
-
-      SessionPtr session(new Session(itempath));
-      if (!session->isRunning()) {
-        if (session->version() != VERSION) {
-          TRACE("cannot be loaded (incompatible version)\n");
-        }
-        else if (!session->isEmpty()) {
-          TRACE("to be loaded\n");
-          m_sessions.push_back(session);
-        }
-        else {
-          TRACE("to be deleted\n");
-          session->removeFromDisk();
-        }
-      }
-      else
-        TRACE("is running\n");
-    }
-  }
-
-  // Sort sessions from the most recent one to the oldest one
-  std::sort(m_sessions.begin(), m_sessions.end(),
-            [](const SessionPtr& a, const SessionPtr& b) {
-              return a->name() > b->name();
-            });
+  m_sessionsDir = rf.getFirstOrCreateDefault();
 
   // Create a new session
   base::pid pid = base::get_current_process_id();
@@ -73,7 +54,7 @@ DataRecovery::DataRecovery(Context* ctx)
       time.year, time.month, time.day,
       time.hour, time.minute, time.second, pid);
 
-    newSessionDir = base::join_path(sessionsDir, buf);
+    newSessionDir = base::join_path(m_sessionsDir, buf);
 
     if (!base::is_directory(newSessionDir))
       base::make_directory(newSessionDir);
@@ -83,22 +64,119 @@ DataRecovery::DataRecovery(Context* ctx)
     }
   } while (newSessionDir.empty());
 
-  m_inProgress.reset(new Session(newSessionDir));
+  m_inProgress.reset(new Session(&m_config, newSessionDir));
   m_inProgress->create(pid);
   TRACE("RECO: Session in progress '%s'\n", newSessionDir.c_str());
 
-  m_backup = new BackupObserver(m_inProgress.get(), ctx);
+  m_backup = new BackupObserver(&m_config, m_inProgress.get(), ctx);
+
+  g_stillAliveFlag = true;
 }
 
 DataRecovery::~DataRecovery()
 {
+  g_stillAliveFlag = false;
+  m_thread.join();
+
   m_backup->stop();
   delete m_backup;
 
+  // We just close the session on progress.  The session is not
+  // deleted just in case that the user want to recover some files
+  // from this session in the future.
   if (m_inProgress)
-    m_inProgress->removeFromDisk();
+    m_inProgress->close();
 
   m_inProgress.reset();
+}
+
+void DataRecovery::launchSearch()
+{
+  if (m_searching)
+    return;
+
+  // Search current sessions in a background thread
+  if (m_thread.joinable())
+    m_thread.join();
+
+  ASSERT(!m_searching);
+  m_searching = true;
+
+  m_thread = std::thread(
+    [this]{
+      searchForSessions();
+      m_searching = false;
+    });
+}
+
+bool DataRecovery::hasRecoverySessions() const
+{
+  std::unique_lock<std::mutex> lock(m_sessionsMutex);
+
+  for (const auto& session : m_sessions)
+    if (session->isCrashedSession())
+      return true;
+  return false;
+}
+
+DataRecovery::Sessions DataRecovery::sessions()
+{
+  Sessions copy;
+  {
+    std::unique_lock<std::mutex> lock(m_sessionsMutex);
+    copy = m_sessions;
+  }
+  return copy;
+}
+
+void DataRecovery::searchForSessions()
+{
+  Sessions sessions;
+
+  // Existent sessions
+  TRACE("RECO: Listing sessions from '%s'\n", m_sessionsDir.c_str());
+  for (auto& itemname : base::list_files(m_sessionsDir)) {
+    std::string itempath = base::join_path(m_sessionsDir, itemname);
+    if (base::is_directory(itempath)) {
+      TRACE("RECO: Session '%s'\n", itempath.c_str());
+
+      SessionPtr session(new Session(&m_config, itempath));
+      if (!session->isRunning()) {
+        if ((session->isEmpty()) ||
+            (!session->isCrashedSession() && session->isOldSession())) {
+          TRACE("RECO: - to be deleted (%s)\n",
+                session->isEmpty() ? "is empty":
+                (session->isOldSession() ? "is old":
+                                           "unknown reason"));
+          session->removeFromDisk();
+        }
+        else {
+          TRACE("RECO:  - to be loaded\n");
+          sessions.push_back(session);
+        }
+      }
+      else
+        TRACE("is running\n");
+    }
+  }
+
+  // Sort sessions from the most recent one to the oldest one
+  std::sort(sessions.begin(), sessions.end(),
+            [](const SessionPtr& a, const SessionPtr& b) {
+              return a->name() > b->name();
+            });
+
+  // Assign m_sessions=sessions
+  {
+    std::unique_lock<std::mutex> lock(m_sessionsMutex);
+    std::swap(m_sessions, sessions);
+  }
+
+  ui::execute_from_ui_thread(
+    [this]{
+      if (g_stillAliveFlag)
+        SessionsListIsReady();
+    });
 }
 
 } // namespace crash

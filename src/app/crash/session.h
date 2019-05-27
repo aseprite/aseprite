@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -21,6 +22,7 @@
 namespace app {
 class Doc;
 namespace crash {
+  struct RecoveryConfig;
 
   // A class to record/restore session information.
   class Session {
@@ -36,7 +38,8 @@ namespace crash {
     };
     typedef std::vector<Backup*> Backups;
 
-    Session(const std::string& path);
+    Session(RecoveryConfig* config,
+            const std::string& path);
     ~Session();
 
     std::string name() const;
@@ -44,9 +47,12 @@ namespace crash {
     const Backups& backups();
 
     bool isRunning();
+    bool isCrashedSession();
+    bool isOldSession();
     bool isEmpty();
 
     void create(base::pid pid);
+    void close();
     void removeFromDisk();
 
     bool saveDocumentChanges(Doc* doc);
@@ -63,6 +69,7 @@ namespace crash {
     void loadPid();
     std::string pidFilename() const;
     std::string verFilename() const;
+    void markDocumentAsCorrectlyClosed(Doc* doc);
     void deleteDirectory(const std::string& dir);
     void fixFilename(Doc* doc);
 
@@ -70,6 +77,7 @@ namespace crash {
     std::string m_path;
     std::string m_version;
     Backups m_backups;
+    RecoveryConfig* m_config;
 
     DISABLE_COPYING(Session);
   };

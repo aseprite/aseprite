@@ -21,13 +21,16 @@ namespace app {
 class Context;
 class Doc;
 namespace crash {
+  struct RecoveryConfig;
   class Session;
 
   class BackupObserver : public ContextObserver
                        , public DocsObserver
                        , public DocObserver {
   public:
-    BackupObserver(Session* session, Context* ctx);
+    BackupObserver(RecoveryConfig* config,
+                   Session* session,
+                   Context* ctx);
     ~BackupObserver();
 
     void stop();
@@ -38,12 +41,12 @@ namespace crash {
   private:
     void backgroundThread();
 
+    RecoveryConfig* m_config;
     Session* m_session;
     base::mutex m_mutex;
     Context* m_ctx;
     std::vector<Doc*> m_documents;
     bool m_done;
-    double m_period;
     base::thread m_thread;
   };
 

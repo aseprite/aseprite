@@ -20,6 +20,7 @@
 
 #include "app/app.h"
 #include "app/context.h"
+#include "app/crash/recovery_config.h"
 #include "app/crash/session.h"
 #include "app/doc.h"
 #include "app/doc_access.h"
@@ -56,11 +57,13 @@ public:
 
 }
 
-BackupObserver::BackupObserver(Session* session, Context* ctx)
-  : m_session(session)
+BackupObserver::BackupObserver(RecoveryConfig* config,
+                               Session* session,
+                               Context* ctx)
+  : m_config(config)
+  , m_session(session)
   , m_ctx(ctx)
   , m_done(false)
-  , m_period(Preferences::instance().general.dataRecoveryPeriod())
   , m_thread(base::Bind<void>(&BackupObserver::backgroundThread, this))
 {
   m_ctx->add_observer(this);
@@ -86,19 +89,20 @@ void BackupObserver::onAddDocument(Doc* document)
   m_documents.push_back(document);
 }
 
-void BackupObserver::onRemoveDocument(Doc* document)
+void BackupObserver::onRemoveDocument(Doc* doc)
 {
-  TRACE("RECO: Remove document %p\n", document);
+  TRACE("RECO: Remove document %p\n", doc);
   {
     base::scoped_lock hold(m_mutex);
-    base::remove_from_container(m_documents, document);
+    base::remove_from_container(m_documents, doc);
   }
-  m_session->removeDocument(document);
+  // TODO save backup data of the closed document in a background thread
+  m_session->removeDocument(doc);
 }
 
 void BackupObserver::backgroundThread()
 {
-  int normalPeriod = int(60.0*m_period);
+  int normalPeriod = int(60.0*m_config->dataRecoveryPeriod);
   int lockedPeriod = 5;
 #ifdef TEST_BACKUPS_WITH_A_SHORT_PERIOD
   normalPeriod = 5;

@@ -137,7 +137,9 @@ public:
   InputChain m_inputChain;
   clipboard::ClipboardManager m_clipboardManager;
 #endif
-  // This is a raw pointer because we want to delete this explicitly.
+  // This is a raw pointer because we want to delete it explicitly.
+  // (e.g. if an exception occurs, the ~Modules() doesn't have to
+  // delete m_recovery)
   app::crash::DataRecovery* m_recovery;
 
   Modules(const bool createLogInDesktop,
@@ -151,22 +153,40 @@ public:
     , m_recovery(nullptr) {
   }
 
-  app::crash::DataRecovery* recovery() {
-    return m_recovery;
+  ~Modules() {
+    ASSERT(m_recovery == nullptr);
   }
 
-  bool hasRecoverySessions() const {
-    return m_recovery && !m_recovery->sessions().empty();
+  app::crash::DataRecovery* recovery() {
+    return m_recovery;
   }
 
   void createDataRecovery() {
 #ifdef ENABLE_DATA_RECOVERY
     m_recovery = new app::crash::DataRecovery(&m_context);
+    m_recovery->SessionsListIsReady.connect(
+      [] {
+        ui::assert_ui_thread();
+        auto app = App::instance();
+        if (app && app->mainWindow()) {
+          // Notify that the list of sessions is ready.
+          app->mainWindow()->dataRecoverySessionsAreReady();
+        }
+      });
+#endif
+  }
+
+  void searchDataRecoverySessions() {
+#ifdef ENABLE_DATA_RECOVERY
+    ASSERT(m_recovery);
+    if (m_recovery)
+      m_recovery->launchSearch();
 #endif
   }
 
   void deleteDataRecovery() {
 #ifdef ENABLE_DATA_RECOVERY
+    ASSERT(m_recovery);
     delete m_recovery;
     m_recovery = nullptr;
 #endif
@@ -269,13 +289,13 @@ void App::initialize(const AppOptions& options)
     if (m_mod)
       m_mod->modMainWindow(m_mainWindow.get());
 
+    // Data recovery is enabled only in GUI mode
+    if (preferences().general.dataRecovery())
+      m_modules->searchDataRecoverySessions();
+
     // Default status of the main window.
     app_rebuild_documents_tabs();
     app_default_statusbar_message();
-
-    // Recover data
-    if (m_modules->hasRecoverySessions())
-      m_mainWindow->showDataRecovery(m_modules->recovery());
 
     m_mainWindow->openWindow();
 
@@ -409,12 +429,12 @@ void App::run()
   if (isGui()) {
     // Destroy the window.
     m_mainWindow.reset(NULL);
+
+    // Delete backups (this is a normal shutdown, we are not handling
+    // exceptions, and we are not in a destructor).
+    m_modules->deleteDataRecovery();
   }
 #endif
-
-  // Delete backups (this is a normal shutdown, we are not handling
-  // exceptions, and we are not in a destructor).
-  m_modules->deleteDataRecovery();
 }
 
 // Finishes the Aseprite application.
