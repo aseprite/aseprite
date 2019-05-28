@@ -488,7 +488,7 @@ public:
 
     int newLifespan = base::convert_to<int>(keepEditedSpriteDataLifespan()->getValue());
     if (keepEditedSpriteData()->isSelected() != m_pref.general.keepEditedSpriteData() ||
-        newLifespan != m_pref.general.dataRecoveryPeriod()) {
+        newLifespan != m_pref.general.keepEditedSpriteDataLifespan()) {
       m_pref.general.keepEditedSpriteData(keepEditedSpriteData()->isSelected());
       m_pref.general.keepEditedSpriteDataLifespan(newLifespan);
 
