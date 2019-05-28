@@ -327,9 +327,9 @@ void Manager::generateSetCursorMessage(const gfx::Point& mousePos,
     set_mouse_cursor(kArrowCursor);
 }
 
-static MouseButtons mouse_buttons_from_os_to_ui(const os::Event& sheEvent)
+static MouseButtons mouse_buttons_from_os_to_ui(const os::Event& osEvent)
 {
-  switch (sheEvent.button()) {
+  switch (osEvent.button()) {
     case os::Event::LeftButton:   return kButtonLeft; break;
     case os::Event::RightButton:  return kButtonRight; break;
     case os::Event::MiddleButton: return kButtonMiddle; break;
@@ -347,8 +347,8 @@ void Manager::generateMessagesFromOSEvents()
 
   os::Event lastMouseMoveEvent;
 
-  // Events from "she" layer.
-  os::Event sheEvent;
+  // Events from laf-os
+  os::Event osEvent;
   for (;;) {
     // TODO Add timers to laf::os library so we can wait for then in
     //      the OS message loop.
@@ -370,11 +370,11 @@ void Manager::generateMessagesFromOSEvents()
     }
 #endif
 
-    m_eventQueue->getEvent(sheEvent, canWait);
-    if (sheEvent.type() == os::Event::None)
+    m_eventQueue->getEvent(osEvent, canWait);
+    if (osEvent.type() == os::Event::None)
       break;
 
-    switch (sheEvent.type()) {
+    switch (osEvent.type()) {
 
       case os::Event::CloseDisplay: {
         Message* msg = new Message(kCloseDisplayMessage);
@@ -393,7 +393,7 @@ void Manager::generateMessagesFromOSEvents()
       }
 
       case os::Event::DropFiles: {
-        Message* msg = new DropFilesMessage(sheEvent.files());
+        Message* msg = new DropFilesMessage(osEvent.files());
         msg->setRecipient(this);
         enqueueMessage(msg);
         break;
@@ -402,15 +402,15 @@ void Manager::generateMessagesFromOSEvents()
       case os::Event::KeyDown:
       case os::Event::KeyUp: {
         Message* msg = new KeyMessage(
-          (sheEvent.type() == os::Event::KeyDown ?
+          (osEvent.type() == os::Event::KeyDown ?
              kKeyDownMessage:
              kKeyUpMessage),
-          sheEvent.scancode(),
-          sheEvent.modifiers(),
-          sheEvent.unicodeChar(),
-          sheEvent.repeat());
+          osEvent.scancode(),
+          osEvent.modifiers(),
+          osEvent.unicodeChar(),
+          osEvent.repeat());
 
-        if (sheEvent.isDeadKey())
+        if (osEvent.isDeadKey())
           static_cast<KeyMessage*>(msg)->setDeadKey(true);
 
         broadcastKeyMsg(msg);
@@ -419,9 +419,9 @@ void Manager::generateMessagesFromOSEvents()
       }
 
       case os::Event::MouseEnter: {
-        _internal_set_mouse_position(sheEvent.position());
+        _internal_set_mouse_position(osEvent.position());
         set_mouse_cursor(kArrowCursor);
-        lastMouseMoveEvent = sheEvent;
+        lastMouseMoveEvent = osEvent;
         break;
       }
 
@@ -438,67 +438,73 @@ void Manager::generateMessagesFromOSEvents()
       }
 
       case os::Event::MouseMove: {
-        _internal_set_mouse_position(sheEvent.position());
+        _internal_set_mouse_position(osEvent.position());
         handleMouseMove(
-          sheEvent.position(),
+          osEvent.position(),
           m_mouseButtons,
-          sheEvent.modifiers(),
-          sheEvent.pointerType());
-        lastMouseMoveEvent = sheEvent;
+          osEvent.modifiers(),
+          osEvent.pointerType());
+        lastMouseMoveEvent = osEvent;
         break;
       }
 
       case os::Event::MouseDown: {
-        MouseButtons pressedButton = mouse_buttons_from_os_to_ui(sheEvent);
+        MouseButtons pressedButton = mouse_buttons_from_os_to_ui(osEvent);
         m_mouseButtons = (MouseButtons)((int)m_mouseButtons | (int)pressedButton);
         _internal_set_mouse_buttons(m_mouseButtons);
 
         handleMouseDown(
-          sheEvent.position(),
+          osEvent.position(),
           pressedButton,
-          sheEvent.modifiers(),
-          sheEvent.pointerType());
+          osEvent.modifiers(),
+          osEvent.pointerType());
         break;
       }
 
       case os::Event::MouseUp: {
-        MouseButtons releasedButton = mouse_buttons_from_os_to_ui(sheEvent);
+        MouseButtons releasedButton = mouse_buttons_from_os_to_ui(osEvent);
         m_mouseButtons = (MouseButtons)((int)m_mouseButtons & ~(int)releasedButton);
         _internal_set_mouse_buttons(m_mouseButtons);
 
         handleMouseUp(
-          sheEvent.position(),
+          osEvent.position(),
           releasedButton,
-          sheEvent.modifiers(),
-          sheEvent.pointerType());
+          osEvent.modifiers(),
+          osEvent.pointerType());
         break;
       }
 
       case os::Event::MouseDoubleClick: {
-        MouseButtons clickedButton = mouse_buttons_from_os_to_ui(sheEvent);
+        MouseButtons clickedButton = mouse_buttons_from_os_to_ui(osEvent);
         handleMouseDoubleClick(
-          sheEvent.position(),
+          osEvent.position(),
           clickedButton,
-          sheEvent.modifiers(),
-          sheEvent.pointerType());
+          osEvent.modifiers(),
+          osEvent.pointerType());
         break;
       }
 
       case os::Event::MouseWheel: {
-        handleMouseWheel(sheEvent.position(), m_mouseButtons,
-                         sheEvent.modifiers(),
-                         sheEvent.pointerType(),
-                         sheEvent.wheelDelta(),
-                         sheEvent.preciseWheel());
+        handleMouseWheel(osEvent.position(), m_mouseButtons,
+                         osEvent.modifiers(),
+                         osEvent.pointerType(),
+                         osEvent.wheelDelta(),
+                         osEvent.preciseWheel());
         break;
       }
 
       case os::Event::TouchMagnify: {
-        _internal_set_mouse_position(sheEvent.position());
+        _internal_set_mouse_position(osEvent.position());
 
-        handleTouchMagnify(sheEvent.position(),
-                           sheEvent.modifiers(),
-                           sheEvent.magnification());
+        handleTouchMagnify(osEvent.position(),
+                           osEvent.modifiers(),
+                           osEvent.magnification());
+        break;
+      }
+
+      case os::Event::Callback: {
+        // Call from the UI thread
+        osEvent.execCallback();
         break;
       }
 
@@ -507,10 +513,10 @@ void Manager::generateMessagesFromOSEvents()
 
   // Generate just one kSetCursorMessage for the last mouse position
   if (lastMouseMoveEvent.type() != os::Event::None) {
-    sheEvent = lastMouseMoveEvent;
-    generateSetCursorMessage(sheEvent.position(),
-                             sheEvent.modifiers(),
-                             sheEvent.pointerType());
+    osEvent = lastMouseMoveEvent;
+    generateSetCursorMessage(osEvent.position(),
+                             osEvent.modifiers(),
+                             osEvent.pointerType());
   }
 }
 
@@ -1433,8 +1439,6 @@ bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
 #ifdef REPORT_EVENTS
   {
     static const char* msg_name[] = {
-      "kFunctionMessage",
-
       "kOpenMessage",
       "kCloseMessage",
       "kCloseDisplayMessage",
@@ -1459,7 +1463,7 @@ bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
       "kMouseWheelMessage",
       "kTouchMagnifyMessage",
     };
-    static_assert(kFunctionMessage == 0 &&
+    static_assert(kOpenMessage == 0 &&
                   kTouchMagnifyMessage == sizeof(msg_name)/sizeof(const char*)-1,
                   "MessageType enum has changed");
     const char* string =

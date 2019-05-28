@@ -1382,10 +1382,6 @@ bool Widget::onProcessMessage(Message* msg)
 
   switch (msg->type()) {
 
-    case kFunctionMessage:
-      static_cast<FunctionMessage*>(msg)->call();
-      break;
-
     case kOpenMessage:
     case kCloseMessage:
     case kWinMoveMessage:
