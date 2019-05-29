@@ -14,10 +14,15 @@ do
   assert(b.pattern == BrushPattern.NONE)
   assert(b.patternOrigin == Point{ x=0, y=0 })
 
-  local c = Brush(4)
+  local c = Brush(3)
   assert(c.type == BrushType.CIRCLE)
-  assert(c.size == 4)
+  assert(c.size == 3)
   assert(c.center == Point{ x=1, y=1 })
+
+  local d = Brush(4)
+  assert(d.type == BrushType.CIRCLE)
+  assert(d.size == 4)
+  assert(d.center == Point{ x=2, y=2 })
 end
 
 do
