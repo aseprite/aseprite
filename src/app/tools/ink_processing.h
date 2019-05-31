@@ -378,12 +378,8 @@ public:
       m_area.r /= m_area.count;
       m_area.g /= m_area.count;
       m_area.b /= m_area.count;
-      m_area.a /= 9;
-
-      *m_dstAddress =
-        rgba_blender_normal(*m_srcAddress,
-                            rgba(m_area.r, m_area.g, m_area.b, m_area.a),
-                            m_opacity);
+      m_area.a = (m_area.a/9) * m_opacity / 255;
+      *m_dstAddress = rgba(m_area.r, m_area.g, m_area.b, m_area.a);
     }
     else {
       *m_dstAddress = *m_srcAddress;
@@ -396,8 +392,7 @@ private:
 
     void reset() { count = r = g = b = a = 0; }
 
-    void operator()(RgbTraits::pixel_t color)
-    {
+    void operator()(RgbTraits::pixel_t color) {
       if (rgba_geta(color) != 0) {
         r += rgba_getr(color);
         g += rgba_getg(color);
@@ -429,12 +424,8 @@ public:
 
     if (m_area.count > 0) {
       m_area.v /= m_area.count;
-      m_area.a /= 9;
-
-      *m_dstAddress =
-        graya_blender_normal(*m_srcAddress,
-                             graya(m_area.v, m_area.a),
-                             m_opacity);
+      m_area.a = (m_area.a/9) * m_opacity / 255;
+      *m_dstAddress = graya(m_area.v, m_area.a);
     }
     else {
       *m_dstAddress = *m_srcAddress;
@@ -484,15 +475,9 @@ public:
       m_area.r /= m_area.count;
       m_area.g /= m_area.count;
       m_area.b /= m_area.count;
-      m_area.a /= 9;
-
-      color_t c =
-        rgba_blender_normal(m_palette->getEntry(*m_srcAddress),
-                            rgba(m_area.r, m_area.g, m_area.b, m_area.a),
-                            m_opacity);
-
+      m_area.a = (m_area.a/9) * m_opacity / 255;
       *m_dstAddress = m_rgbmap->mapColor(
-        rgba_getr(c), rgba_getg(c), rgba_getb(c), rgba_geta(c));
+        m_area.r, m_area.g, m_area.b, m_area.a);
     }
     else {
       *m_dstAddress = *m_srcAddress;
