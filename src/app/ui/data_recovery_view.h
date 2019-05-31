@@ -51,6 +51,7 @@ namespace app {
     void clearList();
     void fillList();
     void fillListWith(const bool crashes);
+    void disableRefresh();
 
     void onOpen();
     void onOpenRaw(crash::RawImagesAs as);
@@ -58,6 +59,7 @@ namespace app {
     void onDelete();
     void onRefresh();
     void onChangeSelection();
+    void onCheckIfWeCanEnableRefreshButton();
     bool thereAreCrashSessions() const;
 
     crash::DataRecovery* m_dataRecovery;
@@ -66,6 +68,7 @@ namespace app {
     DropDownButton m_openButton;
     ui::Button m_deleteButton;
     ui::Button m_refreshButton;
+    ui::Timer m_waitToEnableRefreshTimer;
   };
 
 } // namespace app

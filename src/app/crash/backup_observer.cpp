@@ -5,7 +5,7 @@
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
-// Uncomment if you want to test the backup process each 5 secondsh
+// Uncomment if you want to test the backup process each 5 seconds.
 //#define TEST_BACKUPS_WITH_A_SHORT_PERIOD
 
 // Uncomment if you want to check that backups are correctly saved
@@ -137,7 +137,7 @@ void BackupObserver::backgroundThread()
             else {
               DocReader reader(doc, 500);
               std::unique_ptr<Doc> copy(
-                m_session->restoreBackupDocById(doc->id()));
+                m_session->restoreBackupDocById(doc->id(), nullptr));
               DocDiff diff = compare_docs(doc, copy.get());
               if (diff.anything) {
                 TRACE("RECO: Differences (%s/%s/%s/%s/%s/%s/%s)\n",

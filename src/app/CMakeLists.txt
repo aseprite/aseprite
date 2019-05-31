@@ -391,6 +391,7 @@ if(ENABLE_UI)
     ui/slider2.cpp
     ui/status_bar.cpp
     ui/tabs.cpp
+    ui/task_widget.cpp
     ui/timeline/ani_controls.cpp
     ui/timeline/timeline.cpp
     ui/toolbar.cpp
@@ -568,6 +569,7 @@ add_library(app-lib
   site.cpp
   snap_to_grid.cpp
   sprite_job.cpp
+  task.cpp
   thumbnail_generator.cpp
   thumbnails.cpp
   tools/active_tool.cpp

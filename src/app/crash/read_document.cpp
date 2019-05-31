@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -52,12 +52,14 @@ namespace {
 
 class Reader : public SubObjectsIO {
 public:
-  Reader(const std::string& dir)
+  Reader(const std::string& dir,
+         base::task_token* t)
     : m_sprite(nullptr)
     , m_dir(dir)
     , m_docId(0)
     , m_docVersions(nullptr)
-    , m_loadInfo(nullptr) {
+    , m_loadInfo(nullptr)
+    , m_taskToken(t) {
     for (const auto& fn : base::list_files(dir)) {
       auto i = fn.find('-');
       if (i == std::string::npos)
@@ -220,7 +222,7 @@ private:
       m_loadInfo->width = w;
       m_loadInfo->height = h;
       m_loadInfo->frames = nframes;
-      return (Sprite*)1;
+      return (Sprite*)1;        // TODO improve this
     }
 
     std::unique_ptr<Sprite> spr(new Sprite(ImageSpec(mode, w, h), 256));
@@ -244,7 +246,10 @@ private:
       std::map<ObjectId, LayerGroup*> layersMap;
       layersMap[0] = spr->root(); // parentId = 0 is the root level
 
-      for (int i = 0; i < nlayers; ++i) {
+      for (int i=0; i<nlayers; ++i) {
+        if (canceled())
+          return nullptr;
+
         ObjectId layId = read32(s);
         ObjectId parentId = read32(s);
 
@@ -267,10 +272,39 @@ private:
       Console().printf("Invalid number of layers #%d\n", nlayers);
     }
 
+    // Read all cels
+    for (size_t i=0; i<m_celsToLoad.size(); ++i) {
+      if (canceled())
+        return nullptr;
+
+      const auto& pair = m_celsToLoad[i];
+      LayerImage* lay = doc::get<LayerImage>(pair.first);
+      if (!lay)
+        continue;
+
+      ObjectId celId = pair.second;
+
+      Cel* cel = loadObject<Cel*>("cel", celId, &Reader::readCel);
+      if (cel) {
+        // Expand sprite size
+        if (cel->frame() > m_sprite->lastFrame())
+          m_sprite->setTotalFrames(cel->frame()+1);
+
+        lay->addCel(cel);
+      }
+
+      if (m_taskToken) {
+        m_taskToken->set_progress(float(i) / float(m_celsToLoad.size()));
+      }
+    }
+
     // Read palettes
     int npalettes = read32(s);
     if (npalettes >= 1 && npalettes < 0xfffff) {
       for (int i = 0; i < npalettes; ++i) {
+        if (canceled())
+          return nullptr;
+
         ObjectId palId = read32(s);
         Palette* pal = loadObject<Palette*>("pal", palId, &Reader::readPalette);
         if (pal)
@@ -282,6 +316,9 @@ private:
     int nfrtags = read32(s);
     if (nfrtags >= 1 && nfrtags < 0xfffff) {
       for (int i = 0; i < nfrtags; ++i) {
+        if (canceled())
+          return nullptr;
+
         ObjectId tagId = read32(s);
         FrameTag* tag = loadObject<FrameTag*>("frtag", tagId, &Reader::readFrameTag);
         if (tag)
@@ -293,6 +330,9 @@ private:
     int nslices = read32(s);
     if (nslices >= 1 && nslices < 0xffffff) {
       for (int i = 0; i < nslices; ++i) {
+        if (canceled())
+          return nullptr;
+
         ObjectId sliceId = read32(s);
         Slice* slice = loadObject<Slice*>("slice", sliceId, &Reader::readSlice);
         if (slice)
@@ -345,15 +385,12 @@ private:
       // Cels
       int ncels = read32(s);
       for (int i=0; i<ncels; ++i) {
-        ObjectId celId = read32(s);
-        Cel* cel = loadObject<Cel*>("cel", celId, &Reader::readCel);
-        if (cel) {
-          // Expand sprite size
-          if (cel->frame() > m_sprite->lastFrame())
-            m_sprite->setTotalFrames(cel->frame()+1);
+        if (canceled())
+          return nullptr;
 
-          lay->addCel(cel);
-        }
+        // Add a new cel to load in the future after we load all layers
+        ObjectId celId = read32(s);
+        m_celsToLoad.push_back(std::make_pair(lay->id(), celId));
       }
       return lay.release();
     }
@@ -417,14 +454,23 @@ private:
     }
   }
 
+  bool canceled() const {
+    if (m_taskToken)
+      return m_taskToken->canceled();
+    else
+      return false;
+  }
+
   Sprite* m_sprite;    // Used to pass the sprite in LayerImage() ctor
   std::string m_dir;
   ObjectVersion m_docId;
   ObjVersionsMap m_objVersions;
   ObjVersions* m_docVersions;
   DocumentInfo* m_loadInfo;
+  std::vector<std::pair<ObjectId, ObjectId> > m_celsToLoad;
   std::map<ObjectId, ImageRef> m_images;
   std::map<ObjectId, CelDataRef> m_celdatas;
+  base::task_token* m_taskToken;
 };
 
 } // anonymous namespace
@@ -434,18 +480,20 @@ private:
 
 bool read_document_info(const std::string& dir, DocumentInfo& info)
 {
-  return Reader(dir).loadDocumentInfo(info);
+  return Reader(dir, nullptr).loadDocumentInfo(info);
 }
 
-Doc* read_document(const std::string& dir)
+Doc* read_document(const std::string& dir,
+                   base::task_token* t)
 {
-  return Reader(dir).loadDocument();
+  return Reader(dir, t).loadDocument();
 }
 
 Doc* read_document_with_raw_images(const std::string& dir,
-                                   RawImagesAs as)
+                                   RawImagesAs as,
+                                   base::task_token* t)
 {
-  Reader reader(dir);
+  Reader reader(dir, t);
 
   DocumentInfo info;
   if (!reader.loadDocumentInfo(info)) {
@@ -462,8 +510,13 @@ Doc* read_document_with_raw_images(const std::string& dir,
   auto lay = new LayerImage(spr);
   spr->root()->addLayer(lay);
 
+  int i = 0;
   frame_t frame = 0;
-  for (const auto& fn : base::list_files(dir)) {
+  auto fns = base::list_files(dir);
+  for (const auto& fn : fns) {
+    if (t)
+      t->set_progress((i++) / fns.size());
+
     if (fn.compare(0, 3, "img") != 0)
       continue;
 

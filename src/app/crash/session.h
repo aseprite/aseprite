@@ -13,6 +13,7 @@
 #include "base/disable_copying.h"
 #include "base/process.h"
 #include "base/shared_ptr.h"
+#include "base/task.h"
 #include "doc/object_id.h"
 
 #include <fstream>
@@ -58,14 +59,17 @@ namespace crash {
     bool saveDocumentChanges(Doc* doc);
     void removeDocument(Doc* doc);
 
-    void restoreBackup(Backup* backup);
-    void restoreBackupById(const doc::ObjectId id);
-    Doc* restoreBackupDocById(const doc::ObjectId id);
-    void restoreRawImages(Backup* backup, RawImagesAs as);
+    Doc* restoreBackupDoc(Backup* backup,
+                          base::task_token* t);
+    Doc* restoreBackupById(const doc::ObjectId id, base::task_token* t);
+    Doc* restoreBackupDocById(const doc::ObjectId id, base::task_token* t);
+    Doc* restoreBackupRawImages(Backup* backup,
+                                const RawImagesAs as, base::task_token* t);
     void deleteBackup(Backup* backup);
 
   private:
-    Doc* restoreBackupDoc(const std::string& backupDir);
+    Doc* restoreBackupDoc(const std::string& backupDir,
+                          base::task_token* t);
     void loadPid();
     std::string pidFilename() const;
     std::string verFilename() const;

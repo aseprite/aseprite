@@ -27,6 +27,7 @@
 #include "base/process.h"
 #include "base/split_string.h"
 #include "base/string.h"
+#include "base/thread.h"
 #include "base/time.h"
 #include "doc/cancel_io.h"
 
@@ -254,16 +255,17 @@ void Session::removeDocument(Doc* doc)
 
     markDocumentAsCorrectlyClosed(doc);
   }
-  catch (const std::exception&) {
-    // TODO Log this error
+  catch (const std::exception& ex) {
+    LOG(FATAL) << "Exception deleting document " << ex.what() << "\n";
   }
 }
 
-Doc* Session::restoreBackupDoc(const std::string& backupDir)
+Doc* Session::restoreBackupDoc(const std::string& backupDir,
+                               base::task_token* t)
 {
   Console console;
   try {
-    Doc* doc = read_document(backupDir);
+    Doc* doc = read_document(backupDir, t);
     if (doc) {
       fixFilename(doc);
       return doc;
@@ -275,47 +277,49 @@ Doc* Session::restoreBackupDoc(const std::string& backupDir)
   return nullptr;
 }
 
-void Session::restoreBackup(Backup* backup)
+Doc* Session::restoreBackupDoc(Backup* backup,
+                               base::task_token* t)
 {
-  Doc* doc = restoreBackupDoc(backup->dir());
-  if (doc)
-    UIContext::instance()->documents().add(doc);
+  return restoreBackupDoc(backup->dir(), t);
 }
 
-void Session::restoreBackupById(const ObjectId id)
+Doc* Session::restoreBackupById(const doc::ObjectId id,
+                                base::task_token* t)
 {
   std::string docDir = base::join_path(m_path, base::convert_to<std::string>(int(id)));
-  if (!base::is_directory(docDir))
-    return;
-
-  Doc* doc = restoreBackupDoc(docDir);
-  if (doc)
-    UIContext::instance()->documents().add(doc);
+  if (base::is_directory(docDir))
+    return restoreBackupDoc(docDir, t);
+  else
+    return nullptr;
 }
 
-Doc* Session::restoreBackupDocById(const doc::ObjectId id)
+Doc* Session::restoreBackupDocById(const doc::ObjectId id,
+                                   base::task_token* t)
 {
   std::string docDir = base::join_path(m_path, base::convert_to<std::string>(int(id)));
   if (!base::is_directory(docDir))
     return nullptr;
 
-  return restoreBackupDoc(docDir);
+  return restoreBackupDoc(docDir, t);
 }
 
-void Session::restoreRawImages(Backup* backup, RawImagesAs as)
+Doc* Session::restoreBackupRawImages(Backup* backup,
+                                     const RawImagesAs as,
+                                     base::task_token* t)
 {
   Console console;
   try {
-    Doc* doc = read_document_with_raw_images(backup->dir(), as);
+    Doc* doc = read_document_with_raw_images(backup->dir(), as, t);
     if (doc) {
       if (isCrashedSession())
         fixFilename(doc);
-      UIContext::instance()->documents().add(doc);
     }
+    return doc;
   }
   catch (const std::exception& ex) {
     Console::showException(ex);
   }
+  return nullptr;
 }
 
 void Session::deleteBackup(Backup* backup)

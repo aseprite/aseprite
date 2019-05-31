@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2018 Igara Studio S.A.
+// Copyright (c) 2018-2019 Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -10,6 +10,7 @@
 #pragma once
 
 #include "app/crash/raw_images_as.h"
+#include "base/task.h"
 #include "doc/color_mode.h"
 #include "doc/frame.h"
 
@@ -34,10 +35,13 @@ namespace crash {
     }
   };
 
-  bool read_document_info(const std::string& dir, DocumentInfo& info);
-  Doc* read_document(const std::string& dir);
+  bool read_document_info(const std::string& dir,
+                          DocumentInfo& info);
+  Doc* read_document(const std::string& dir,
+                     base::task_token* t);
   Doc* read_document_with_raw_images(const std::string& dir,
-                                     RawImagesAs as);
+                                     RawImagesAs as,
+                                     base::task_token* t);
 
 } // namespace crash
 } // namespace app

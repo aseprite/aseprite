@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -52,6 +52,7 @@ Tabs::Tabs(TabsDelegate* delegate)
   , m_clickedCloseButton(false)
   , m_selected(nullptr)
   , m_delegate(delegate)
+  , m_addedTab(nullptr)
   , m_removedTab(nullptr)
   , m_isDragging(false)
   , m_dragCopy(false)
@@ -68,6 +69,7 @@ Tabs::Tabs(TabsDelegate* delegate)
 
 Tabs::~Tabs()
 {
+  m_addedTab.reset();
   m_removedTab.reset();
 
   // Stop animation
@@ -99,6 +101,8 @@ void Tabs::addTab(TabView* tabView, bool from_drop, int pos)
 
   tab->oldWidth = tab->width;
   tab->modified = (m_delegate ? m_delegate->isTabModified(this, tabView): false);
+
+  m_addedTab = tab;
 }
 
 void Tabs::removeTab(TabView* tabView, bool with_animation)
@@ -497,7 +501,7 @@ void Tabs::onPaint(PaintEvent& ev)
         (tab->view != m_dragTab->view) ||
         (m_dragCopy)) {
       int dy = 0;
-      if (animation() == ANI_ADDING_TAB && tab == m_selected) {
+      if (animation() == ANI_ADDING_TAB && tab == m_addedTab) {
         double t = animationTime();
         dy = int(box.h - box.h * t);
       }
@@ -791,6 +795,8 @@ void Tabs::onAnimationFrame()
 
 void Tabs::onAnimationStop(int animation)
 {
+  m_addedTab.reset();
+
   if (m_list.empty()) {
     Widget* root = window();
     if (root)
@@ -956,6 +962,8 @@ void Tabs::destroyFloatingTab()
 
     tab->oldX = tab->x;
     tab->oldWidth = 0;
+
+    m_addedTab = tab;
   }
 }
 

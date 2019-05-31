@@ -607,10 +607,12 @@ bool CustomizedGuiManager::onProcessDevModeKeyDown(KeyMessage* msg)
       App::instance()->dataRecovery()->activeSession() &&
       current_editor &&
       current_editor->document()) {
-    App::instance()
+    Doc* doc = App::instance()
       ->dataRecovery()
       ->activeSession()
-      ->restoreBackupById(current_editor->document()->id());
+      ->restoreBackupById(current_editor->document()->id(), nullptr);
+    if (doc)
+      UIContext::instance()->documents().add(doc);
     return true;
   }
 #endif  // ENABLE_DATA_RECOVERY

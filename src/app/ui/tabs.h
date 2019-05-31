@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -234,6 +235,7 @@ namespace app {
     TabsDelegate* m_delegate;
 
     // Variables for animation purposes
+    TabPtr m_addedTab;
     TabPtr m_removedTab;
 
     ////////////////////////////////////////

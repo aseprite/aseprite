@@ -11,15 +11,21 @@
 
 #include "app/ui/data_recovery_view.h"
 
+#include "app/app.h"
 #include "app/app_menus.h"
 #include "app/crash/data_recovery.h"
 #include "app/crash/session.h"
 #include "app/i18n/strings.h"
 #include "app/modules/gui.h"
+#include "app/task.h"
+#include "app/ui/data_recovery_view.h"
 #include "app/ui/drop_down_button.h"
 #include "app/ui/separator_in_view.h"
 #include "app/ui/skin/skin_theme.h"
+#include "app/ui/task_widget.h"
 #include "app/ui/workspace.h"
+#include "app/ui/workspace.h"
+#include "app/ui_context.h"
 #include "base/bind.h"
 #include "fmt/format.h"
 #include "ui/alert.h"
@@ -49,11 +55,72 @@ public:
     : ListItem(backup->description())
     , m_session(session)
     , m_backup(backup)
+    , m_task(nullptr)
   {
   }
 
   crash::Session* session() const { return m_session; }
   crash::Session::Backup* backup() const { return m_backup; }
+
+  bool isTaskRunning() const { return m_task != nullptr; }
+
+  void restoreBackup() {
+    if (m_task)
+      return;
+    m_task = new TaskWidget(
+      [this](base::task_token& t) {
+        // Warning: This is executed from a worker thread
+        Doc* doc = m_session->restoreBackupDoc(m_backup, &t);
+        ui::execute_from_ui_thread(
+          [this, doc]{
+            onOpenDoc(doc);
+            onDeleteTaskWidget();
+          });
+      });
+    addChild(m_task);
+    parent()->layout();
+  }
+
+  void restoreRawImages(crash::RawImagesAs as) {
+    if (m_task)
+      return;
+    m_task = new TaskWidget(
+      [this, as](base::task_token& t){
+        // Warning: This is executed from a worker thread
+        Doc* doc = m_session->restoreBackupRawImages(m_backup, as, &t);
+        ui::execute_from_ui_thread(
+          [this, doc]{
+            onOpenDoc(doc);
+            onDeleteTaskWidget();
+          });
+      });
+    addChild(m_task);
+    updateView();
+  }
+
+  void deleteBackup() {
+    if (m_task)
+      return;
+
+    m_task = new TaskWidget(
+      TaskWidget::kCannotCancel,
+      [this](base::task_token& t){
+        // Warning: This is executed from a worker thread
+        m_session->deleteBackup(m_backup);
+        ui::execute_from_ui_thread(
+          [this]{
+            onDeleteTaskWidget();
+
+            // We cannot use this->deferDelete() here because it looks
+            // like the m_task field can be still in use.
+            setVisible(false);
+
+            updateView();
+          });
+      });
+    addChild(m_task);
+    updateView();
+  }
 
 private:
   void onSizeHint(SizeHintEvent& ev) override {
@@ -63,8 +130,67 @@ private:
     ev.setSizeHint(sz);
   }
 
+  void onResize(ResizeEvent& ev) override {
+    setBoundsQuietly(ev.bounds());
+
+    if (m_task) {
+      gfx::Size sz = m_task->sizeHint();
+      gfx::Rect cpos = childrenBounds();
+
+      int x2;
+      if (auto view = View::getView(this->parent()))
+        x2 = view->viewportBounds().x2();
+      else
+        x2 = cpos.x2();
+
+      cpos.x = x2 - sz.w;
+      cpos.w = sz.w;
+      m_task->setBounds(cpos);
+    }
+  }
+
+  void onOpenDoc(Doc* doc) {
+    if (!doc)
+      return;
+
+    Workspace* workspace = App::instance()->workspace();
+    WorkspaceView* restoreView = workspace->activeView();
+
+    // If we have this specific item selected, and the active view in
+    // the workspace is the DataRecoveryView, we can open the
+    // recovered document. In other case, opening the recovered
+    // document is confusing (because the user already selected other
+    // item, or other tab from the workspace).
+    if (dynamic_cast<DataRecoveryView*>(restoreView) &&
+        isSelected()) {
+      restoreView = nullptr;
+    }
+
+    UIContext::instance()->documents().add(doc);
+
+    if (restoreView)
+      workspace->setActiveView(restoreView);
+  }
+
+  void onDeleteTaskWidget() {
+    if (m_task) {
+      removeChild(m_task);
+      m_task->deferDelete();
+      m_task = nullptr;
+      layout();
+    }
+  }
+
+  void updateView() {
+    if (auto view = View::getView(this->parent()))
+      view->updateView();
+    else
+      parent()->layout();
+  }
+
   crash::Session* m_session;
   crash::Session::Backup* m_backup;
+  TaskWidget* m_task;
 };
 
 } // anonymous namespace
@@ -74,6 +200,7 @@ DataRecoveryView::DataRecoveryView(crash::DataRecovery* dataRecovery)
   , m_openButton(Strings::recover_files_recover_sprite().c_str())
   , m_deleteButton(Strings::recover_files_delete())
   , m_refreshButton(Strings::recover_files_refresh())
+  , m_waitToEnableRefreshTimer(100)
 {
   m_listBox.setMultiselect(true);
   m_view.setExpansive(true);
@@ -110,6 +237,7 @@ DataRecoveryView::DataRecoveryView(crash::DataRecovery* dataRecovery)
   m_refreshButton.Click.connect(base::Bind(&DataRecoveryView::onRefresh, this));
   m_listBox.Change.connect(base::Bind(&DataRecoveryView::onChangeSelection, this));
   m_listBox.DoubleClickItem.connect(base::Bind(&DataRecoveryView::onOpen, this));
+  m_waitToEnableRefreshTimer.Tick.connect(base::Bind(&DataRecoveryView::onCheckIfWeCanEnableRefreshButton, this));
 }
 
 void DataRecoveryView::refreshListNotification()
@@ -190,6 +318,12 @@ void DataRecoveryView::fillListWith(const bool crashes)
     Empty();
 }
 
+void DataRecoveryView::disableRefresh()
+{
+  m_refreshButton.setEnabled(false);
+  m_waitToEnableRefreshTimer.start();
+}
+
 std::string DataRecoveryView::getTabText()
 {
   return Strings::recover_files_title();
@@ -221,26 +355,32 @@ void DataRecoveryView::onTabPopup(Workspace* workspace)
 
 void DataRecoveryView::onOpen()
 {
+  disableRefresh();
+
   for (auto widget : m_listBox.children()) {
-    if (!widget->isSelected())
+    if (!widget->isVisible() ||
+        !widget->isSelected())
       continue;
 
     if (auto item = dynamic_cast<Item*>(widget)) {
       if (item->backup())
-        item->session()->restoreBackup(item->backup());
+        item->restoreBackup();
     }
   }
 }
 
 void DataRecoveryView::onOpenRaw(crash::RawImagesAs as)
 {
+  disableRefresh();
+
   for (auto widget : m_listBox.children()) {
-    if (!widget->isSelected())
+    if (!widget->isVisible() ||
+        !widget->isSelected())
       continue;
 
     if (auto item = dynamic_cast<Item*>(widget)) {
       if (item->backup())
-        item->session()->restoreRawImages(item->backup(), as);
+        item->restoreRawImages(as);
     }
   }
 }
@@ -263,14 +403,17 @@ void DataRecoveryView::onOpenMenu()
 
 void DataRecoveryView::onDelete()
 {
-  std::vector<Item*> items; // Items to delete.
+  disableRefresh();
 
+  std::vector<Item*> items; // Items to delete.
   for (auto widget : m_listBox.children()) {
-    if (!widget->isSelected())
+    if (!widget->isVisible() ||
+        !widget->isSelected())
       continue;
 
     if (auto item = dynamic_cast<Item*>(widget)) {
-      if (item->backup())
+      if (item->backup() &&
+          !item->isTaskRunning())
         items.push_back(item);
     }
   }
@@ -284,19 +427,8 @@ void DataRecoveryView::onDelete()
                     int(items.size()))) != 1)
     return;                     // Cancel
 
-  for (auto item : items) {
-    item->session()->deleteBackup(item->backup());
-    m_listBox.removeChild(item);
-    delete item;
-  }
-  onChangeSelection();
-
-  // Check if there is no more crash sessions
-  if (!thereAreCrashSessions())
-    Empty();
-
-  m_listBox.layout();
-  m_view.updateView();
+  for (auto item : items)
+    item->deleteBackup();
 }
 
 void DataRecoveryView::onRefresh()
@@ -312,7 +444,8 @@ void DataRecoveryView::onChangeSelection()
 {
   int count = 0;
   for (auto widget : m_listBox.children()) {
-    if (!widget->isSelected())
+    if (!widget->isVisible() ||
+        !widget->isSelected())
       continue;
 
     if (dynamic_cast<Item*>(widget)) {
@@ -332,11 +465,34 @@ void DataRecoveryView::onChangeSelection()
   }
 }
 
+void DataRecoveryView::onCheckIfWeCanEnableRefreshButton()
+{
+  for (auto widget : m_listBox.children()) {
+    if (auto item = dynamic_cast<Item*>(widget)) {
+      if (item->isTaskRunning())
+        return;
+    }
+  }
+
+  m_refreshButton.setEnabled(true);
+  m_waitToEnableRefreshTimer.stop();
+
+  onChangeSelection();
+
+  // Check if there is no more crash sessions
+  if (!thereAreCrashSessions())
+    Empty();
+
+  m_listBox.layout();
+  m_view.updateView();
+}
+
 bool DataRecoveryView::thereAreCrashSessions() const
 {
   for (auto widget : m_listBox.children()) {
     if (auto item = dynamic_cast<const Item*>(widget)) {
       if (item &&
+          item->isVisible() &&
           item->session() &&
           item->session()->isCrashedSession())
         return true;
