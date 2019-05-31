@@ -139,9 +139,9 @@ public:
     // contour tool, with brush type = kImageBrush with alpha content and
     // with not Pixel Perfect pencil mode.
     if (loop->getFilled() && !loop->getController()->isFreehand()) {
-      doPointshapeLine(stroke[0].x, stroke[0].y,
-                       stroke[stroke.size()-1].x,
-                       stroke[stroke.size()-1].y, loop);
+      doPointshapeLine(stroke[stroke.size()-1].x,
+                       stroke[stroke.size()-1].y,
+                       stroke[0].x, stroke[0].y, loop);
     }
   }
 
