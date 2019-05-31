@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -51,6 +52,9 @@ namespace app {
 
       // Displaces all X,Y coordinates the given delta.
       void offset(const gfx::Point& delta);
+
+      // Erase the point "index".
+      void erase(int index);
 
       // Returns the bounds of the stroke (minimum/maximum position).
       gfx::Rect bounds() const;

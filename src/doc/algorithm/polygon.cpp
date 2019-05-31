@@ -1,15 +1,15 @@
 // Aseprite Document Library
+// Copyright (c) 2019 Igara Studio S.A.
 // Copyright (c) 2001-2014 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
-//
-// TODO rewrite this algorithm from scratch
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
+#include "doc/algo.h"
 #include "doc/algorithm/polygon.h"
 
 #include "gfx/point.h"
@@ -18,126 +18,192 @@
 
 namespace doc {
 
-using namespace gfx;
+static void addPointsWithoutDuplicatingLastOne(int x, int y, std::vector<gfx::Point>* pts)
+{
+  const gfx::Point newPoint(x, y);
+  if (pts->empty() ||
+      *(pts->end()-1) != newPoint) {
+    pts->push_back(newPoint);
+  }
+}
 
-// polygon() is an adaptation from Matthieu Haller code of GD library
-
-// THANKS to Kirsten Schulz for the polygon fixes!
-
-/* The intersection finding technique of this code could be improved  */
-/* by remembering the previous intertersection, and by using the slope. */
-/* That could help to adjust intersections  to produce a nice */
-/* interior_extrema. */
+// createUnion() joins a single scan point "x" (a pixel in other words)
+// to the input vector "pairs".
+// Each pair of elements from "pairs" vector is a representation
+// of a scan segment.
+// An added scan point "x" to the "pairs" vector is represented
+// by two consecutive values of "x".
+// Note: "pairs" must be sorted prior execution of this function.
+static void createUnion(std::vector<int>& pairs,
+                        const int x,
+                        int& ints)
+{
+  bool unionDone = false;
+  for (int i=0; i < ints - (ints%2); i+=2) {
+    // Case:
+    //       pairs[i]      pairs[i+1]
+    //           O --------- O
+    //   -x-
+    if (x < pairs[i]) {
+      pairs.insert(pairs.begin()+i, x);
+      pairs.insert(pairs.begin()+i, x);
+      ints+=2;
+      unionDone = true;
+      break;
+    }
+    // Case:
+    //           pairs[i]      pairs[i+1]
+    //               O --------- O
+    //            -x-
+    else if (x == pairs[i] - 1) {
+      pairs[i] = x;
+      unionDone = true;
+      break;
+    }
+    // Case:
+    //     pairs[i]      pairs[i+1]
+    //        O --------- O
+    //                     -x-
+    else if (x == pairs[i+1] + 1) {
+      unionDone = true;
+      if (i + 2 <= ints - 2) {
+        if (pairs[i+2] == x) {
+          // Simplification:
+          pairs.erase(pairs.begin() + (i+1));
+          pairs.erase(pairs.begin() + (i+1));
+          ints-=2;
+          break;
+        }
+      }
+      pairs[i+1] = x;
+      break;
+    }
+    // Case:
+    //     pairs[i]      pairs[i+1]
+    //        O --------- O
+    //             -x-
+    else if (x >= pairs[i] && x <= pairs[i+1]) {
+      unionDone = true;
+      break;
+    }
+  }
+  // Case:
+  //    pairs[i]      pairs[i+1]
+  //        O --------- O
+  //                          -x-
+  if (x > pairs[ints-1] && !unionDone) {
+    if (pairs.size() == ints) {
+      pairs.push_back(x);
+      pairs.push_back(x);
+    }
+    else {
+      pairs.insert(pairs.begin() + ints, x);
+      pairs.insert(pairs.begin() + ints, x);
+    }
+    ints+=2;
+  }
+}
 
 void algorithm::polygon(int vertices, const int* points, void* data, AlgoHLine proc)
 {
-  int n = vertices;
-  if (!n)
+  if (!vertices)
     return;
 
-  int i;
-  int j;
-  int index;
+  // We load locally the points to "verts" and remove the duplicate points
+  // to manage easily the input vector, by the way, we find
+  // "ymin" and "ymax" to use them later like vertical scan limits
+  // on the scan line loop.
+  int ymin = *(points+1);
+  int ymax = *(points+1);
+  std::vector<gfx::Point> verts(1);
+  verts[0].x = *points;
+  verts[0].y = *(points+1);
+  int verticesAux = vertices;
+  for (int i=2; i < vertices*2; i+=2) {
+    int last = verts.size() - 1;
+    if (verts[last].x == *(points+i) && verts[last].y == *(points + (i+1))) {
+      verticesAux--;
+      continue;
+    }
+    verts.push_back(gfx::Point(*(points + i), *(points + (i+1))));
+    ASSERT(last + 1 == verts.size() - 1);
+    if (verts[last+1].y < ymin)
+      ymin = verts[last+1].y;
+    if (verts[last+1].y > ymax)
+      ymax = verts[last+1].y;
+  }
+  vertices = verticesAux;
+
+  std::vector<gfx::Point> pts;
+  for (int c=0; c < verts.size(); ++c) {
+    if (c == verts.size() - 1) {
+      algo_line_continuous(verts[verts.size()-1].x,
+                           verts[verts.size()-1].y,
+                           verts[0].x,
+                           verts[0].y,
+                           (void*)&pts,
+                           (AlgoPixel)&addPointsWithoutDuplicatingLastOne);
+      pts.pop_back();
+    }
+    else {
+      algo_line_continuous(verts[c].x,
+                           verts[c].y,
+                           verts[c+1].x,
+                           verts[c+1].y,
+                           (void*)&pts,
+                           (AlgoPixel)&addPointsWithoutDuplicatingLastOne);
+    }
+  }
+
+  // Scan Line Loop:
   int y;
-  int miny, maxy;
   int x1, y1;
   int x2, y2;
   int ind1, ind2;
   int ints;
-
-  std::vector<int> polyInts(n);
-  std::vector<Point> p(n);
-  for (i = 0; (i < n); i++) {
-    p[i].x = points[i*2];
-    p[i].y = points[i*2+1];
-  }
-
-  miny = p[0].y;
-  maxy = p[0].y;
-  for (i = 1; (i < n); i++) {
-    if (p[i].y < miny) miny = p[i].y;
-    if (p[i].y > maxy) maxy = p[i].y;
-  }
-
-  /* 2.0.16: Optimization by Ilia Chipitsine -- don't waste time offscreen */
-  /* 2.0.26: clipping rectangle is even better */
-// if (miny < im->cy1) {
-//   miny = im->cy1;
-// }
-// if (maxy > im->cy2) {
-//   maxy = im->cy2;
-// }
-
-  /* Fix in 1.3: count a vertex only once */
-  for (y = miny; (y <= maxy); y++) {
-    /*1.4           int interLast = 0; */
-    /*              int dirLast = 0; */
-    /*              int interFirst = 1; */
-    /* 2.0.26+      int yshift = 0; */
-
+  std::vector<int> polyInts(pts.size());
+  for (y = ymin; y <= ymax; y++) {
     ints = 0;
-    for (i = 0; (i < n); i++) {
+    for (int i=0; i < pts.size(); i++) {
       if (!i) {
-        ind1 = n - 1;
+        ind1 = pts.size() - 1;
         ind2 = 0;
       }
       else {
         ind1 = i - 1;
         ind2 = i;
       }
-      y1 = p[ind1].y;
-      y2 = p[ind2].y;
+      y1 = pts[ind1].y;
+      y2 = pts[ind2].y;
       if (y1 < y2) {
-        x1 = p[ind1].x;
-        x2 = p[ind2].x;
+        x1 = pts[ind1].x;
+        x2 = pts[ind2].x;
       }
       else if (y1 > y2) {
-        y2 = p[ind1].y;
-        y1 = p[ind2].y;
-        x2 = p[ind1].x;
-        x1 = p[ind2].x;
+        y2 = pts[ind1].y;
+        y1 = pts[ind2].y;
+        x2 = pts[ind1].x;
+        x1 = pts[ind2].x;
       }
-      else {
+      else
         continue;
-      }
 
-      /* Do the following math as float intermediately, and round to ensure
-       * that Polygon and FilledPolygon for the same set of points have the
-       * same footprint. */
+      if ((y >= y1 && y < y2) ||
+          (y == ymax && y > y1 && y <= y2)) {
+        polyInts[ints] = (int) ((float)((y - y1)*(x2 - x1)) / (float)(y2 - y1) + 0.5f + (float)x1);
+        ints++;
+      }
+    }
 
-      if ((y >= y1) && (y < y2)) {
-        polyInts[ints++] = (int) ((float) ((y - y1) * (x2 - x1)) /
-                                  (float) (y2 - y1) + 0.5 + x1);
-      }
-      else if ((y == maxy) && (y > y1) && (y <= y2)) {
-        polyInts[ints++] = (int) ((float) ((y - y1) * (x2 - x1)) /
-                                  (float) (y2 - y1) + 0.5 + x1);
-      }
+    std::sort(polyInts.begin(), polyInts.begin() + ints);
+
+    for (int i=0; i < pts.size(); i++) {
+      if (pts[i].y == y)
+        createUnion(polyInts, pts[i].x, ints);
     }
-    /*
-       2.0.26: polygons pretty much always have less than 100 points,
-       and most of the time they have considerably less. For such trivial
-       cases, insertion sort is a good choice. Also a good choice for
-       future implementations that may wish to indirect through a table.
-    */
-    for (i = 1; (i < ints); i++) {
-      index = polyInts[i];
-      j = i;
-      while ((j > 0) && (polyInts[j - 1] > index)) {
-        polyInts[j] = polyInts[j - 1];
-        j--;
-      }
-      polyInts[j] = index;
-    }
-    for (i = 0; (i < (ints)); i += 2) {
-#if 0
-      int minx = polyInts[i];
-      int maxx = polyInts[i + 1];
-#endif
-      /* 2.0.29: back to gdImageLine to prevent segfaults when
-         performing a pattern fill */
-      proc(polyInts[i], y, polyInts[i + 1], data);
-    }
+
+    for (int i=0; i < ints; i+=2)
+      proc(polyInts[i], y, polyInts[i+1], data);
   }
 }
 

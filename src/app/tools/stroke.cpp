@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -32,6 +33,13 @@ void Stroke::offset(const gfx::Point& delta)
 {
   for (auto& p : m_points)
     p += delta;
+}
+
+void Stroke::erase(int index)
+{
+  ASSERT(0 <= index && index < m_points.size());
+  if (0 <= index && index < m_points.size())
+    m_points.erase(m_points.begin()+index);
 }
 
 gfx::Rect Stroke::bounds() const

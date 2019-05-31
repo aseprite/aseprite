@@ -150,17 +150,6 @@ public:
       joinStroke(loop, stroke);
       return;
     }
-
-    // Don't draw the contour to avoid double drawing the filled
-    // polygon and the contour when we use a custom brush and we use
-    // the alpha compositing ink with opacity < 255 or the custom
-    // brush has semi-transparent pixels.
-    if (loop->getBrush()->type() != BrushType::kImageBrushType) {
-      // TODO if we fix the doc::algorithm::polygon to draw the exact
-      // scanlines, we can finally remove this joinStroke()
-      joinStroke(loop, stroke);
-    }
-
     // Fill content
     doc::algorithm::polygon(stroke.size(), (const int*)&stroke[0], loop, (AlgoHLine)doPointshapeHline);
   }
@@ -470,7 +459,7 @@ public:
         && (m_pts[c+1].x == m_pts[c].x || m_pts[c+1].y == m_pts[c].y)
         && m_pts[c-1].x != m_pts[c+1].x
         && m_pts[c-1].y != m_pts[c+1].y) {
-        ++c;
+        m_pts.erase(c);
       }
 
       // We must ignore to print the first point of the line after
@@ -488,19 +477,8 @@ public:
       joinStroke(loop, stroke);
       return;
     }
-
-    // Don't draw the contour to avoid double drawing the filled
-    // polygon and the contour when we use a custom brush and we use
-    // the alpha compositing ink with opacity < 255 or the custom
-    // brush has semi-transparent pixels.
-    if (loop->getBrush()->type() != BrushType::kImageBrushType) {
-      // TODO if we fix the doc::algorithm::polygon to draw the exact
-      // scanlines, we can finally remove this joinStroke()
-      joinStroke(loop, stroke);
-    }
-
     // Fill content
-    doc::algorithm::polygon(stroke.size(), (const int*)&stroke[0], loop, (AlgoHLine)doPointshapeHline);
+    doc::algorithm::polygon(m_pts.size(), (const int*)&m_pts[0], loop, (AlgoHLine)doPointshapeHline);
   }
 };
 
