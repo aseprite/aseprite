@@ -14,6 +14,7 @@
 
 #include "gfx/point.h"
 
+#include <algorithm>
 #include <vector>
 
 namespace doc {
