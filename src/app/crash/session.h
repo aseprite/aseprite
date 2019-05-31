@@ -32,10 +32,11 @@ namespace crash {
     public:
       Backup(const std::string& dir);
       const std::string& dir() const { return m_dir; }
-      const std::string& description() const { return m_desc; }
+      std::string description(const bool withFullPath) const;
     private:
       std::string m_dir;
       std::string m_desc;
+      std::string m_fn;
     };
     typedef std::vector<Backup*> Backups;
 

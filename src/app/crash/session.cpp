@@ -30,6 +30,7 @@
 #include "base/thread.h"
 #include "base/time.h"
 #include "doc/cancel_io.h"
+#include "fmt/format.h"
 
 namespace app {
 namespace crash {
@@ -44,16 +45,23 @@ Session::Backup::Backup(const std::string& dir)
   DocumentInfo info;
   read_document_info(dir, info);
 
-  std::vector<char> buf(1024);
-  sprintf(&buf[0], "%s Sprite %dx%d, %d %s: %s",
-    info.mode == ColorMode::RGB ? "RGB":
-    info.mode == ColorMode::GRAYSCALE ? "Grayscale":
-    info.mode == ColorMode::INDEXED ? "Indexed":
-    info.mode == ColorMode::BITMAP ? "Bitmap": "Unknown",
-    info.width, info.height, info.frames,
-    info.frames == 1 ? "frame": "frames",
-    info.filename.c_str());
-  m_desc = &buf[0];
+  m_fn = info.filename;
+  m_desc =
+    fmt::format("{} Sprite {}x{}, {} {}",
+                info.mode == ColorMode::RGB ? "RGB":
+                info.mode == ColorMode::GRAYSCALE ? "Grayscale":
+                info.mode == ColorMode::INDEXED ? "Indexed":
+                info.mode == ColorMode::BITMAP ? "Bitmap": "Unknown",
+                info.width, info.height, info.frames,
+                info.frames == 1 ? "frame": "frames");
+}
+
+std::string Session::Backup::description(const bool withFullPath) const
+{
+  return fmt::format("{}: {}",
+                     m_desc,
+                     withFullPath ? m_fn:
+                                    base::get_file_name(m_fn));
 }
 
 Session::Session(RecoveryConfig* config,

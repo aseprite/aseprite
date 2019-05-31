@@ -28,6 +28,7 @@ namespace app {
                          , public WorkspaceView {
   public:
     DataRecoveryView(crash::DataRecovery* dataRecovery);
+    ~DataRecoveryView();
 
     // Called after the "Refresh" button is pressed (onRefresh) and
     // the crash::DataRecovery::SessionsListIsReady signal is received.
@@ -60,6 +61,7 @@ namespace app {
     void onRefresh();
     void onChangeSelection();
     void onCheckIfWeCanEnableRefreshButton();
+    void onShowFullPathPrefChange();
     bool thereAreCrashSessions() const;
 
     crash::DataRecovery* m_dataRecovery;
@@ -69,6 +71,10 @@ namespace app {
     ui::Button m_deleteButton;
     ui::Button m_refreshButton;
     ui::Timer m_waitToEnableRefreshTimer;
+
+    // Connection to to showFullPath.AfterChange signal to update the
+    // items text when the setting is changed.
+    obs::connection m_conn;
   };
 
 } // namespace app

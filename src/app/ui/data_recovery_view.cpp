@@ -17,6 +17,7 @@
 #include "app/crash/session.h"
 #include "app/i18n/strings.h"
 #include "app/modules/gui.h"
+#include "app/pref/preferences.h"
 #include "app/task.h"
 #include "app/ui/data_recovery_view.h"
 #include "app/ui/drop_down_button.h"
@@ -52,11 +53,10 @@ namespace {
 class Item : public ListItem {
 public:
   Item(crash::Session* session, crash::Session::Backup* backup)
-    : ListItem(backup->description())
-    , m_session(session)
+    : m_session(session)
     , m_backup(backup)
-    , m_task(nullptr)
-  {
+    , m_task(nullptr) {
+    updateText();
   }
 
   crash::Session* session() const { return m_session; }
@@ -120,6 +120,13 @@ public:
       });
     addChild(m_task);
     updateView();
+  }
+
+  void updateText() {
+    if (!m_task)
+      setText(
+        m_backup->description(
+          Preferences::instance().general.showFullPath()));
   }
 
 private:
@@ -238,6 +245,15 @@ DataRecoveryView::DataRecoveryView(crash::DataRecovery* dataRecovery)
   m_listBox.Change.connect(base::Bind(&DataRecoveryView::onChangeSelection, this));
   m_listBox.DoubleClickItem.connect(base::Bind(&DataRecoveryView::onOpen, this));
   m_waitToEnableRefreshTimer.Tick.connect(base::Bind(&DataRecoveryView::onCheckIfWeCanEnableRefreshButton, this));
+
+  m_conn = Preferences::instance()
+    .general.showFullPath.AfterChange.connect(
+      [this](const bool&){ onShowFullPathPrefChange(); });
+}
+
+DataRecoveryView::~DataRecoveryView()
+{
+  m_conn.disconnect();
 }
 
 void DataRecoveryView::refreshListNotification()
@@ -485,6 +501,16 @@ void DataRecoveryView::onCheckIfWeCanEnableRefreshButton()
 
   m_listBox.layout();
   m_view.updateView();
+}
+
+void DataRecoveryView::onShowFullPathPrefChange()
+{
+  for (auto widget : m_listBox.children()) {
+    if (auto item = dynamic_cast<Item*>(widget)) {
+      if (!item->isTaskRunning())
+        item->updateText();
+    }
+  }
 }
 
 bool DataRecoveryView::thereAreCrashSessions() const
