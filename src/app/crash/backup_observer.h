@@ -12,9 +12,9 @@
 #include "app/context_observer.h"
 #include "app/doc_observer.h"
 #include "app/docs_observer.h"
-#include "base/mutex.h"
-#include "base/thread.h"
 
+#include <mutex>
+#include <thread>
 #include <vector>
 
 namespace app {
@@ -40,14 +40,21 @@ namespace crash {
 
   private:
     void backgroundThread();
+    bool saveDocData(Doc* doc);
 
     RecoveryConfig* m_config;
     Session* m_session;
-    base::mutex m_mutex;
     Context* m_ctx;
     std::vector<Doc*> m_documents;
+    std::vector<Doc*> m_closedDocs;
     bool m_done;
-    base::thread m_thread;
+
+    std::mutex m_mutex;
+    std::thread m_thread;
+
+    // Used to wakeup the backgroundThread() when we have to stop the
+    // thread that saves backups (i.e. when we are closing the application).
+    std::condition_variable m_wakeup;
   };
 
 } // namespace crash

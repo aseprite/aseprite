@@ -29,7 +29,6 @@
 #include "base/bind.h"
 #include "base/chrono.h"
 #include "base/remove_from_container.h"
-#include "base/scoped_lock.h"
 #include "ui/system.h"
 
 namespace app {
@@ -80,12 +79,14 @@ BackupObserver::~BackupObserver()
 void BackupObserver::stop()
 {
   m_done = true;
+  m_wakeup.notify_one();
 }
 
 void BackupObserver::onAddDocument(Doc* document)
 {
   TRACE("RECO: Observe document %p\n", document);
-  base::scoped_lock hold(m_mutex);
+
+  std::unique_lock<std::mutex> lock(m_mutex);
   m_documents.push_back(document);
 }
 
@@ -93,15 +94,19 @@ void BackupObserver::onRemoveDocument(Doc* doc)
 {
   TRACE("RECO: Remove document %p\n", doc);
   {
-    base::scoped_lock hold(m_mutex);
+    std::unique_lock<std::mutex> lock(m_mutex);
     base::remove_from_container(m_documents, doc);
   }
-  // TODO save backup data of the closed document in a background thread
-  m_session->removeDocument(doc);
+  if (m_config->keepEditedSpriteData)
+    m_closedDocs.push_back(doc);
+  else
+    m_session->removeDocument(doc);
 }
 
 void BackupObserver::backgroundThread()
 {
+  std::unique_lock<std::mutex> lock(m_mutex);
+
   int normalPeriod = int(60.0*m_config->dataRecoveryPeriod);
   int lockedPeriod = 5;
 #ifdef TEST_BACKUPS_WITH_A_SHORT_PERIOD
@@ -109,74 +114,88 @@ void BackupObserver::backgroundThread()
   lockedPeriod = 5;
 #endif
 
-  int waitUntil = normalPeriod;
-  int seconds = 0;
+  int waitFor = normalPeriod;
 
   while (!m_done) {
-    seconds++;
-    if (seconds >= waitUntil) {
-      TRACE("RECO: Start backup process for %d documents\n", m_documents.size());
+    m_wakeup.wait_for(lock, std::chrono::seconds(waitFor));
 
-      SwitchBackupIcon icon;
-      base::scoped_lock hold(m_mutex);
-      base::Chrono chrono;
-      bool somethingLocked = false;
+    TRACE("RECO: Start backup process for %d documents\n", m_documents.size());
 
-      for (Doc* doc : m_documents) {
-        try {
-          if (doc->needsBackup()) {
-            if (doc->inhibitBackup()) {
-              TRACE("RECO: Document '%d' backup is temporarily inhibited\n", doc->id());
-              somethingLocked = true;
-            }
-            else if (!m_session->saveDocumentChanges(doc)) {
-              TRACE("RECO: Document '%d' backup was canceled by UI\n", doc->id());
-              somethingLocked = true;
-            }
-#ifdef TEST_BACKUP_INTEGRITY
-            else {
-              DocReader reader(doc, 500);
-              std::unique_ptr<Doc> copy(
-                m_session->restoreBackupDocById(doc->id(), nullptr));
-              DocDiff diff = compare_docs(doc, copy.get());
-              if (diff.anything) {
-                TRACE("RECO: Differences (%s/%s/%s/%s/%s/%s/%s)\n",
-                      diff.canvas ? "canvas": "",
-                      diff.totalFrames ? "totalFrames": "",
-                      diff.frameDuration ? "frameDuration": "",
-                      diff.frameTags ? "frameTags": "",
-                      diff.palettes ? "palettes": "",
-                      diff.layers ? "layers": "",
-                      diff.cels ? "cels": "",
-                      diff.images ? "images": "",
-                      diff.colorProfiles ? "colorProfiles": "");
+    SwitchBackupIcon icon;
+    base::Chrono chrono;
+    bool somethingLocked = false;
 
-                Doc* copyDoc = copy.release();
-                ui::execute_from_ui_thread(
-                  [this, copyDoc] {
-                    m_ctx->documents().add(copyDoc);
-                  });
-              }
-              else {
-                TRACE("RECO: No differences\n");
-              }
-            }
-#endif
-          }
-        }
-        catch (const std::exception&) {
-          TRACE("RECO: Document '%d' is locked\n", doc->id());
+    for (Doc* doc : m_documents) {
+      if (!saveDocData(doc))
+        somethingLocked = true;
+    }
+
+    if (!m_closedDocs.empty()) {
+      for (auto it=m_closedDocs.begin(); it != m_closedDocs.end(); ) {
+        Doc* doc = *it;
+        if (saveDocData(doc))
+          it = m_closedDocs.erase(it);
+        else {
           somethingLocked = true;
+          ++it;
         }
       }
-
-      seconds = 0;
-      waitUntil = (somethingLocked ? lockedPeriod: normalPeriod);
-
-      TRACE("RECO: Backup process done (%.16g)\n", chrono.elapsed());
     }
-    base::this_thread::sleep_for(1.0);
+
+    waitFor = (somethingLocked ? lockedPeriod: normalPeriod);
+
+    TRACE("RECO: Backup process done (%.16g)\n", chrono.elapsed());
   }
+}
+
+// Executed from the backgroundThread() (non-UI thread)
+bool BackupObserver::saveDocData(Doc* doc)
+{
+  try {
+    if (!doc->needsBackup())
+      return true;
+
+    if (doc->inhibitBackup()) {
+      TRACE("RECO: Document '%d' backup is temporarily inhibited\n", doc->id());
+    }
+    else if (!m_session->saveDocumentChanges(doc)) {
+      TRACE("RECO: Document '%d' backup was canceled by UI\n", doc->id());
+    }
+#ifdef TEST_BACKUP_INTEGRITY
+    else {
+      DocReader reader(doc, 500);
+      std::unique_ptr<Doc> copy(
+        m_session->restoreBackupDocById(doc->id(), nullptr));
+      DocDiff diff = compare_docs(doc, copy.get());
+      if (diff.anything) {
+        TRACE("RECO: Differences (%s/%s/%s/%s/%s/%s/%s)\n",
+              diff.canvas ? "canvas": "",
+              diff.totalFrames ? "totalFrames": "",
+              diff.frameDuration ? "frameDuration": "",
+              diff.frameTags ? "frameTags": "",
+              diff.palettes ? "palettes": "",
+              diff.layers ? "layers": "",
+              diff.cels ? "cels": "",
+              diff.images ? "images": "",
+              diff.colorProfiles ? "colorProfiles": "");
+
+        Doc* copyDoc = copy.release();
+        ui::execute_from_ui_thread(
+          [this, copyDoc] {
+            m_ctx->documents().add(copyDoc);
+          });
+      }
+      else {
+        TRACE("RECO: No differences\n");
+      }
+      return true;
+    }
+#endif
+  }
+  catch (const std::exception&) {
+    TRACE("RECO: Document '%d' is locked\n", doc->id());
+  }
+  return false;
 }
 
 } // namespace crash

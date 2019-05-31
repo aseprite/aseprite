@@ -20,6 +20,8 @@
 #include "ui/system.h"
 
 #include <algorithm>
+#include <chrono>
+#include <thread>
 
 namespace app {
 namespace crash {
@@ -59,7 +61,7 @@ DataRecovery::DataRecovery(Context* ctx)
     if (!base::is_directory(newSessionDir))
       base::make_directory(newSessionDir);
     else {
-      base::this_thread::sleep_for(1);
+      std::this_thread::sleep_for(std::chrono::seconds(1));
       newSessionDir.clear();
     }
   } while (newSessionDir.empty());
