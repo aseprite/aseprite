@@ -120,7 +120,7 @@ void BrushPreview::show(const gfx::Point& screenPos)
   // Get the current tool
   tools::Ink* ink = m_editor->getCurrentEditorInk();
 
-  bool isFloodfill = m_editor->getCurrentEditorTool()->getPointShape(0)->isFloodFill();
+  const bool isFloodfill = m_editor->getCurrentEditorTool()->getPointShape(0)->isFloodFill();
 
   // Setup the cursor type depending on several factors (current tool,
   // foreground color, layer transparency, brush size, etc.).
@@ -372,7 +372,7 @@ void BrushPreview::generateBoundaries()
       m_brushGen == brush->gen())
     return;
 
-  bool isOnePixel =
+  const bool isOnePixel =
     (m_editor->getCurrentEditorTool()->getPointShape(0)->isPixel() ||
      m_editor->getCurrentEditorTool()->getPointShape(0)->isFloodFill());
   Image* brushImage = brush->image();
@@ -398,8 +398,9 @@ void BrushPreview::generateBoundaries()
   m_brushBoundaries.reset(
     new MaskBoundaries(mask ? mask: brushImage));
 
-  m_brushBoundaries->offset(-brush->center().x,
-                            -brush->center().y);
+  if (!isOnePixel)
+    m_brushBoundaries->offset(-brush->center().x,
+                              -brush->center().y);
 
   if (deleteMask)
     delete mask;
