@@ -209,6 +209,7 @@ if(ENABLE_TESTS)
   find_tests(app/file app-lib)
   find_tests(app app-lib)
   find_tests(. app-lib)
+  find_tests(doc/algorithm doc-lib)
 endif()
 
 if(ENABLE_BENCHMARKS)
