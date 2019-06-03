@@ -13,6 +13,7 @@
 #include "app/doc_observer.h"
 #include "app/docs_observer.h"
 
+#include <condition_variable>
 #include <mutex>
 #include <thread>
 #include <vector>
