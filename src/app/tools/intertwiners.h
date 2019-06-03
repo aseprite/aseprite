@@ -68,80 +68,60 @@ public:
 };
 
 class IntertwineAsLines : public Intertwine {
-  Stroke m_lastPointPrinted;
   Stroke m_pts;
-
-  void saveLastPointAndDoPointshape(ToolLoop* loop, const Stroke& stroke) {
-    m_lastPointPrinted = stroke;
-    doPointshapePoint(stroke[0].x, stroke[0].y, loop);
-  }
 
 public:
   bool snapByAngle() override { return true; }
 
+  void prepareIntertwine() override {
+    m_pts.reset();
+  }
+
   void joinStroke(ToolLoop* loop, const Stroke& stroke) override {
+    if (loop->getTracePolicy() == TracePolicy::Last)
+      m_pts.reset();
+
     if (stroke.size() == 0)
       return;
-
-    if (stroke.size() == 1) {
-      saveLastPointAndDoPointshape(loop, stroke);
+    else if (stroke.size() == 1) {
+      if (m_pts.empty())
+        m_pts = stroke;
+      doPointshapePoint(stroke[0].x, stroke[0].y, loop);
       return;
     }
-    else if (stroke.size() >= 2) {
-      if (stroke.size() == 2 && stroke[0] == stroke[1]) {
-        if (m_lastPointPrinted.empty()) {
-          saveLastPointAndDoPointshape(loop, stroke);
-          return;
-        }
-        else {
-          if (m_lastPointPrinted[0] != stroke[0] ||
-              loop->getTracePolicy() == TracePolicy::Last) {
-            saveLastPointAndDoPointshape(loop, stroke);
-            return;
-          }
-        }
+    else {
+      doc::AlgoLineWithAlgoPixel lineAlgo = getLineAlgo(loop);
+      for (int c=0; c+1<stroke.size(); ++c) {
+        lineAlgo(stroke[c].x, stroke[c].y,
+                 stroke[c+1].x, stroke[c+1].y,
+                 (void*)&m_pts,
+                 (AlgoPixel)&addPointsWithoutDuplicatingLastOne);
       }
-      else {
-        doc::AlgoLineWithAlgoPixel lineAlgo = getLineAlgo(loop);
-        for (int c=0; c+1<stroke.size(); ++c) {
-          lineAlgo(
-            stroke[c].x,
-            stroke[c].y,
-            stroke[c+1].x,
-            stroke[c+1].y,
-            (void*)&m_pts,
-            (AlgoPixel)&addPointsWithoutDuplicatingLastOne);
-        }
 
-        // Don't draw the first point in freehand tools (this is to
-        // avoid painting above the last pixel of a freehand stroke,
-        // when we use Shift+click in the Pencil tool to continue the
-        // old stroke). When filled is true we are talking about the
-        // contour tool, so we do all the points.
-        // TODO useful only in the case when brush size = 1px
-        const int start =
-          (loop->getController()->isFreehand() &&
-           !loop->getFilled() ? 1: 0);
+      // Don't draw the first point in freehand tools (this is to
+      // avoid painting above the last pixel of a freehand stroke,
+      // when we use Shift+click in the Pencil tool to continue the
+      // old stroke). When filled is true we are talking about the
+      // contour tool, so we do all the points.
+      // TODO useful only in the case when brush size = 1px
+      const int start =
+        (loop->getController()->isFreehand() &&
+         !loop->getFilled() ? 1: 0);
 
-        for (int c=start; c<m_pts.size(); ++c)
-          doPointshapePoint(m_pts[c].x, m_pts[c].y, loop);
+      for (int c=start; c<m_pts.size(); ++c)
+        doPointshapePoint(m_pts[c].x, m_pts[c].y, loop);
 
-        ASSERT(!m_lastPointPrinted.empty());
-        m_lastPointPrinted[0] = m_pts[m_pts.size()-1];
+      // Closed shape (polygon outline)
+      // Note: Contour tool was getting into the condition with no need, so
+      // we add the && !isFreehand to detect this circunstance.
+      // When this is missing, we have problems previewing the stroke of
+      // contour tool, with brush type = kImageBrush with alpha content and
+      // with not Pixel Perfect pencil mode.
+      if (loop->getFilled() && !loop->getController()->isFreehand()) {
+        doPointshapeLine(stroke[stroke.size()-1].x,
+                         stroke[stroke.size()-1].y,
+                         stroke[0].x, stroke[0].y, loop);
       }
-      m_pts.reset();
-    }
-
-    // Closed shape (polygon outline)
-    // Note: Contour tool was getting into the condition with no need, so
-    // we add the && !isFreehand to detect this circunstance.
-    // When this is missing, we have problems previewing the stroke of
-    // contour tool, with brush type = kImageBrush with alpha content and
-    // with not Pixel Perfect pencil mode.
-    if (loop->getFilled() && !loop->getController()->isFreehand()) {
-      doPointshapeLine(stroke[stroke.size()-1].x,
-                       stroke[stroke.size()-1].y,
-                       stroke[0].x, stroke[0].y, loop);
     }
   }
 
