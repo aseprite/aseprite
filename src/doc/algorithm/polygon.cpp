@@ -40,24 +40,32 @@ static void createUnion(std::vector<int>& pairs,
                         int& ints)
 {
   bool unionDone = false;
+  ASSERT(ints >= 0);
+  if (ints == 0) {
+    pairs.push_back(x);
+    pairs.push_back(x);
+    ints+=2;
+    return;
+  }
+
   for (int i=0; i < ints - (ints%2); i+=2) {
-    // Case:
-    //       pairs[i]      pairs[i+1]
-    //           O --------- O
-    //   -x-
-    if (x < pairs[i]) {
-      pairs.insert(pairs.begin()+i, x);
-      pairs.insert(pairs.begin()+i, x);
-      ints+=2;
-      unionDone = true;
-      break;
-    }
     // Case:
     //           pairs[i]      pairs[i+1]
     //               O --------- O
     //            -x-
-    else if (x == pairs[i] - 1) {
+    if (x == pairs[i] - 1) {
       pairs[i] = x;
+      unionDone = true;
+      break;
+    }
+    // Case:
+    //       pairs[i]      pairs[i+1]
+    //           O --------- O
+    //   -x-
+    else if (x < pairs[i] - 1) {
+      pairs.insert(pairs.begin()+i, x);
+      pairs.insert(pairs.begin()+i, x);
+      ints+=2;
       unionDone = true;
       break;
     }
