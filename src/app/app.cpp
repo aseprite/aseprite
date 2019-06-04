@@ -405,11 +405,24 @@ void App::run()
   }
 #endif  // ENABLE_SCRIPTING
 
-  // Destroy all documents in the UIContext.
-  const Docs& docs = m_modules->m_context.documents();
-  while (!docs.empty()) {
-    Doc* doc = docs.back();
+#ifdef ENABLE_UI
+  if (isGui()) {
+    // Destroy the window.
+    m_mainWindow.reset(NULL);
 
+    // Delete backups (this is a normal shutdown, we are not handling
+    // exceptions, and we are not in a destructor).
+    m_modules->deleteDataRecovery();
+  }
+#endif
+
+  // Destroy all documents from the UIContext.
+  std::vector<Doc*> docs;
+  for (Doc* doc : m_modules->m_context.closedDocs())
+    docs.push_back(doc);
+  for (Doc* doc : m_modules->m_context.documents())
+    docs.push_back(doc);
+  for (Doc* doc : docs) {
     // First we close the document. In this way we receive recent
     // notifications related to the document as a app::Doc. If
     // we delete the document directly, we destroy the app::Doc
@@ -424,17 +437,6 @@ void App::run()
     doc->close();
     delete doc;
   }
-
-#ifdef ENABLE_UI
-  if (isGui()) {
-    // Destroy the window.
-    m_mainWindow.reset(NULL);
-
-    // Delete backups (this is a normal shutdown, we are not handling
-    // exceptions, and we are not in a destructor).
-    m_modules->deleteDataRecovery();
-  }
-#endif
 }
 
 // Finishes the Aseprite application.
