@@ -407,8 +407,11 @@ void App::run()
 
 #ifdef ENABLE_UI
   if (isGui()) {
+    // Select no document
+    m_modules->m_context.setActiveView(nullptr);
+
     // Destroy the window.
-    m_mainWindow.reset(NULL);
+    m_mainWindow.reset(nullptr);
 
     // Delete backups (this is a normal shutdown, we are not handling
     // exceptions, and we are not in a destructor).
