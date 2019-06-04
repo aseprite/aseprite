@@ -88,7 +88,7 @@ namespace app {
     bool hasModifiedDocuments() const;
     void notifyActiveSiteChanged();
 
-    void executeCommand(const char* commandName);
+    void executeCommandFromMenuOrShortcut(Command* command, const Params& params = Params());
     virtual void executeCommand(Command* command, const Params& params = Params());
 
     virtual DocView* getFirstDocView(Doc* document) const {

@@ -137,13 +137,13 @@ void HomeView::onWorkspaceViewSelected()
 void HomeView::onNewFile()
 {
   Command* command = Commands::instance()->byId(CommandId::NewFile());
-  UIContext::instance()->executeCommand(command);
+  UIContext::instance()->executeCommandFromMenuOrShortcut(command);
 }
 
 void HomeView::onOpenFile()
 {
   Command* command = Commands::instance()->byId(CommandId::OpenFile());
-  UIContext::instance()->executeCommand(command);
+  UIContext::instance()->executeCommandFromMenuOrShortcut(command);
 }
 
 void HomeView::onResize(ui::ResizeEvent& ev)

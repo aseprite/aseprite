@@ -515,7 +515,7 @@ public:
           Command* cmd = Commands::instance()->byId(CommandId::GotoFrame());
           Params params;
           params.set("frame", text().c_str());
-          UIContext::instance()->executeCommand(cmd, params);
+          UIContext::instance()->executeCommandFromMenuOrShortcut(cmd, params);
 
           // Select the text again
           selectAllText();
@@ -813,7 +813,7 @@ void StatusBar::onPixelFormatChanged(DocEvent& ev)
 void StatusBar::newFrame()
 {
   Command* cmd = Commands::instance()->byId(CommandId::NewFrame());
-  UIContext::instance()->executeCommand(cmd);
+  UIContext::instance()->executeCommandFromMenuOrShortcut(cmd);
 }
 
 void StatusBar::onChangeZoom(const render::Zoom& zoom)

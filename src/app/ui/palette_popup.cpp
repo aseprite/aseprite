@@ -111,7 +111,7 @@ void PalettePopup::onLoadPal()
   SetPaletteCommand* cmd = static_cast<SetPaletteCommand*>(
     Commands::instance()->byId(CommandId::SetPalette()));
   cmd->setPalette(palette);
-  UIContext::instance()->executeCommand(cmd);
+  UIContext::instance()->executeCommandFromMenuOrShortcut(cmd);
 
   m_paletteListBox.requestFocus();
 }

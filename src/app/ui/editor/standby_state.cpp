@@ -406,7 +406,7 @@ bool StandbyState::onDoubleClick(Editor* editor, MouseMessage* msg)
     else if (int(editor->getToolLoopModifiers()) & int(tools::ToolLoopModifiers::kIntersectSelection))
       params.set("mode", "intersect");
 
-    UIContext::instance()->executeCommand(selectTileCmd, params);
+    UIContext::instance()->executeCommandFromMenuOrShortcut(selectTileCmd, params);
     return true;
   }
   // Show slice properties when we double-click it
@@ -416,7 +416,7 @@ bool StandbyState::onDoubleClick(Editor* editor, MouseMessage* msg)
       Command* cmd = Commands::instance()->byId(CommandId::SliceProperties());
       Params params;
       params.set("id", base::convert_to<std::string>(hit.slice()->id()).c_str());
-      UIContext::instance()->executeCommand(cmd, params);
+      UIContext::instance()->executeCommandFromMenuOrShortcut(cmd, params);
       return true;
     }
   }

@@ -83,7 +83,7 @@ void AniControls::onClickButton()
 
   Command* cmd = Commands::instance()->byId(getCommandId(item));
   if (cmd) {
-    UIContext::instance()->executeCommand(cmd);
+    UIContext::instance()->executeCommandFromMenuOrShortcut(cmd);
     updateUsingEditor(current_editor);
   }
 }

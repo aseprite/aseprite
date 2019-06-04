@@ -141,7 +141,7 @@ void AppMenuItem::onClick()
 
     UIContext* context = UIContext::instance();
     if (m_command->isEnabled(context)) {
-      context->executeCommand(m_command, params);
+      context->executeCommandFromMenuOrShortcut(m_command, params);
     }
   }
 }

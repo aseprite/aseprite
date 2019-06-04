@@ -436,7 +436,7 @@ bool MovingPixelsState::onKeyDown(Editor* editor, KeyMessage* msg)
     // The escape key drop pixels and deselect the mask.
     if (msg->scancode() == kKeyEsc) { // TODO make this key customizable
       Command* cmd = Commands::instance()->byId(CommandId::DeselectMask());
-      UIContext::instance()->executeCommand(cmd);
+      UIContext::instance()->executeCommandFromMenuOrShortcut(cmd);
     }
 
     return true;

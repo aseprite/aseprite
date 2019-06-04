@@ -730,7 +730,7 @@ void AppMenus::createNativeMenus()
     about.execute = [native]{
       if (can_call_global_shortcut(&native)) {
         Command* cmd = Commands::instance()->byId(CommandId::About());
-        UIContext::instance()->executeCommand(cmd);
+        UIContext::instance()->executeCommandFromMenuOrShortcut(cmd);
       }
     };
     about.validate = [native](os::MenuItem* item){
@@ -743,7 +743,7 @@ void AppMenus::createNativeMenus()
     preferences.execute = [native]{
       if (can_call_global_shortcut(&native)) {
         Command* cmd = Commands::instance()->byId(CommandId::Options());
-        UIContext::instance()->executeCommand(cmd);
+        UIContext::instance()->executeCommandFromMenuOrShortcut(cmd);
       }
     };
     preferences.validate = [native](os::MenuItem* item){

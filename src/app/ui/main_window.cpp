@@ -452,7 +452,7 @@ void MainWindow::onTabsContainerDoubleClicked(Tabs* tabs)
   Doc* oldDoc = UIContext::instance()->activeDocument();
 
   Command* command = Commands::instance()->byId(CommandId::NewFile());
-  UIContext::instance()->executeCommand(command);
+  UIContext::instance()->executeCommandFromMenuOrShortcut(command);
 
   Doc* newDoc = UIContext::instance()->activeDocument();
   if (newDoc != oldDoc) {

@@ -502,7 +502,7 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
               if (getForegroundWindow() == App::instance()->mainWindow()) {
                 // OK, so we can execute the command represented
                 // by the pressed-key in the message...
-                UIContext::instance()->executeCommand(
+                UIContext::instance()->executeCommandFromMenuOrShortcut(
                   command, key->params());
                 return true;
               }
