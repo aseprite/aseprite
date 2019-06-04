@@ -542,6 +542,7 @@ add_library(app-lib
   file/file_data.cpp
   file/file_format.cpp
   file/file_formats_manager.cpp
+  file/file_op_config.cpp
   file/palette_file.cpp
   file/split_filename.cpp
   file_system.cpp

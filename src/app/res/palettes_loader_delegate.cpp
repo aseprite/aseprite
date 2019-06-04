@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -20,8 +21,16 @@
 #include "base/fs.h"
 #include "base/scoped_value.h"
 #include "doc/palette.h"
+#include "ui/system.h"
 
 namespace app {
+
+PalettesLoaderDelegate::PalettesLoaderDelegate()
+{
+  // Necessary to load preferences in the UI-thread which will be used
+  // in a FileOp executed in a background thread.
+  m_config.fillFromPreferences();
+}
 
 void PalettesLoaderDelegate::getResourcesPaths(std::map<std::string, std::string>& idAndPath) const
 {
@@ -55,7 +64,7 @@ void PalettesLoaderDelegate::getResourcesPaths(std::map<std::string, std::string
 Resource* PalettesLoaderDelegate::loadResource(const std::string& id,
                                                const std::string& path)
 {
-  doc::Palette* palette = load_palette(path.c_str());
+  doc::Palette* palette = load_palette(path.c_str(), &m_config);
   if (palette)
     return new PaletteResource(id, path, palette);
   else

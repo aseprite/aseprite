@@ -41,6 +41,7 @@
 #include "render/render.h"
 #include "ui/alert.h"
 #include "ui/listitem.h"
+#include "ui/system.h"
 
 #include "ask_for_color_profile.xml.h"
 #include "open_sequence.xml.h"
@@ -177,10 +178,13 @@ FileOpROI::FileOpROI(const Doc* doc,
 }
 
 // static
-FileOp* FileOp::createLoadDocumentOperation(Context* context, const std::string& filename, int flags)
+FileOp* FileOp::createLoadDocumentOperation(Context* context,
+                                            const std::string& filename,
+                                            const int flags,
+                                            const FileOpConfig* config)
 {
   std::unique_ptr<FileOp> fop(
-    new FileOp(FileOpLoad, context));
+    new FileOp(FileOpLoad, context, config));
   if (!fop)
     return nullptr;
 
@@ -329,7 +333,7 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
                                             const bool ignoreEmptyFrames)
 {
   std::unique_ptr<FileOp> fop(
-    new FileOp(FileOpSave, const_cast<Context*>(context)));
+    new FileOp(FileOpSave, const_cast<Context*>(context), nullptr));
 
   // Document to save
   fop->m_document = const_cast<Doc*>(roi.document());
@@ -711,7 +715,7 @@ void FileOp::operate(IFileOpProgress* progress)
       try {
         load_aseprite_data_file(m_dataFilename,
                                 m_document,
-                                m_defaultSliceColor);
+                                m_config.defaultSliceColor);
       }
       catch (const std::exception& ex) {
         setError("Error loading data file: %s\n", ex.what());
@@ -739,7 +743,7 @@ void FileOp::operate(IFileOpProgress* progress)
 
       // For each frame in the sprite.
       render::Render render;
-      render.setNewBlend(m_newBlend);
+      render.setNewBlend(m_config.newBlend);
 
       frame_t outputFrame = 0;
       for (frame_t frame : m_roi.selectedFrames()) {
@@ -903,7 +907,7 @@ void FileOp::postLoad()
       base::SharedPtr<Palette> palette(
         render::create_palette_from_sprite(
           sprite, frame_t(0), sprite->lastFrame(), true,
-          nullptr, nullptr, Preferences::instance().experimental.newBlend()));
+          nullptr, nullptr, m_config.newBlend));
 
       sprite->resetPalettes();
       sprite->setPalette(palette.get(), false);
@@ -915,10 +919,10 @@ void FileOp::postLoad()
   app::gen::ColorProfileBehavior behavior =
     app::gen::ColorProfileBehavior::DISABLE;
 
-  if (m_preserveColorProfile) {
+  if (m_config.preserveColorProfile) {
     // Embedded color profile
     if (this->hasEmbeddedColorProfile()) {
-      behavior = Preferences::instance().color.filesWithProfile();
+      behavior = m_config.filesWithProfile;
       if (behavior == app::gen::ColorProfileBehavior::ASK) {
 #ifdef ENABLE_UI
         if (m_context && m_context->isUIAvailable()) {
@@ -944,7 +948,7 @@ void FileOp::postLoad()
     }
     // Missing color space
     else {
-      behavior = Preferences::instance().color.missingProfile();
+      behavior = m_config.missingProfile;
       if (behavior == app::gen::ColorProfileBehavior::ASK) {
 #ifdef ENABLE_UI
         if (m_context && m_context->isUIAvailable()) {
@@ -982,7 +986,7 @@ void FileOp::postLoad()
 
     case app::gen::ColorProfileBehavior::CONVERT: {
       // Convert to the working color profile
-      auto gfxCS = get_working_rgb_space_from_preferences();
+      auto gfxCS = m_config.workingCS;
       if (!gfxCS->nearlyEqual(*spriteCS))
         cmd::convert_color_profile(sprite, gfxCS);
       break;
@@ -990,7 +994,7 @@ void FileOp::postLoad()
 
     case app::gen::ColorProfileBehavior::ASSIGN: {
       // Convert to the working color profile
-      auto gfxCS = get_working_rgb_space_from_preferences();
+      auto gfxCS = m_config.workingCS;
       sprite->setColorSpace(gfxCS);
       m_document->notifyColorSpaceChanged();
       break;
@@ -1178,7 +1182,9 @@ bool FileOp::isStop() const
   return stop;
 }
 
-FileOp::FileOp(FileOpType type, Context* context)
+FileOp::FileOp(FileOpType type,
+               Context* context,
+               const FileOpConfig* config)
   : m_type(type)
   , m_format(nullptr)
   , m_context(context)
@@ -1190,11 +1196,17 @@ FileOp::FileOp(FileOpType type, Context* context)
   , m_oneframe(false)
   , m_createPaletteFromRgba(false)
   , m_ignoreEmpty(false)
-  , m_preserveColorProfile(Preferences::instance().color.manage())
   , m_embeddedColorProfile(false)
-  , m_newBlend(Preferences::instance().experimental.newBlend())
-  , m_defaultSliceColor(Preferences::instance().slices.defaultColor())
 {
+  if (config)
+    m_config = *config;
+  else if (ui::is_ui_thread())
+    m_config.fillFromPreferences();
+  else {
+    LOG(VERBOSE, "FILE: Using a file operation with default configuration\n");
+    ASSERT(false);
+  }
+
   m_seq.palette = nullptr;
   m_seq.image.reset();
   m_seq.progress_offset = 0.0f;

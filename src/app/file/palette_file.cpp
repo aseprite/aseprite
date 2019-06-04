@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -52,7 +52,8 @@ base::paths get_writable_palette_extensions()
   return paths;
 }
 
-Palette* load_palette(const char* filename)
+Palette* load_palette(const char* filename,
+                      const FileOpConfig* config)
 {
   dio::FileFormat dioFormat = dio::detect_format(filename);
   Palette* pal = nullptr;
@@ -89,7 +90,8 @@ Palette* load_palette(const char* filename)
           nullptr, filename,
           FILE_LOAD_CREATE_PALETTE |
           FILE_LOAD_SEQUENCE_NONE |
-          FILE_LOAD_ONE_FRAME));
+          FILE_LOAD_ONE_FRAME,
+          config));
 
       if (fop && !fop->hasError()) {
         fop->operate(nullptr);

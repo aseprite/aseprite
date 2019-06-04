@@ -10,6 +10,8 @@
 #pragma once
 
 #include "app/color.h"
+#include "app/file/file_op_config.h"
+#include "app/pref/preferences.h"
 #include "base/mutex.h"
 #include "base/paths.h"
 #include "base/shared_ptr.h"
@@ -102,7 +104,8 @@ namespace app {
   public:
     static FileOp* createLoadDocumentOperation(Context* context,
                                                const std::string& filename,
-                                               int flags);
+                                               const int flags,
+                                               const FileOpConfig* config = nullptr);
 
     static FileOp* createSaveDocumentOperation(const Context* context,
                                                const FileOpROI& roi,
@@ -114,7 +117,7 @@ namespace app {
 
     bool isSequence() const { return !m_seq.filename_list.empty(); }
     bool isOneFrame() const { return m_oneframe; }
-    bool preserveColorProfile() const { return m_preserveColorProfile; }
+    bool preserveColorProfile() const { return m_config.preserveColorProfile; }
 
     const std::string& filename() const { return m_filename; }
     const base::paths& filenames() const { return m_seq.filename_list; }
@@ -175,11 +178,13 @@ namespace app {
     void setEmbeddedColorProfile() { m_embeddedColorProfile = true; }
     bool hasEmbeddedColorProfile() const { return m_embeddedColorProfile; }
 
-    bool newBlend() const { return m_newBlend; }
+    bool newBlend() const { return m_config.newBlend; }
 
   private:
     FileOp();                   // Undefined
-    FileOp(FileOpType type, Context* context);
+    FileOp(FileOpType type,
+           Context* context,
+           const FileOpConfig* config);
 
     FileOpType m_type;          // Operation type: 0=load, 1=save.
     FileFormat* m_format;
@@ -204,18 +209,10 @@ namespace app {
     bool m_createPaletteFromRgba;
     bool m_ignoreEmpty;
 
-    // Return if we've to save/embed the color space of the document
-    // in the file.
-    bool m_preserveColorProfile;
-
     // True if the file contained a color profile when it was loaded.
     bool m_embeddedColorProfile;
 
-    // True if we should render each frame to save it with the new
-    // blend mode.
-    bool m_newBlend;
-
-    app::Color m_defaultSliceColor;
+    FileOpConfig m_config;
 
     base::SharedPtr<FormatOptions> m_formatOptions;
 
