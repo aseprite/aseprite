@@ -1204,7 +1204,6 @@ FileOp::FileOp(FileOpType type,
     m_config.fillFromPreferences();
   else {
     LOG(VERBOSE, "FILE: Using a file operation with default configuration\n");
-    ASSERT(false);
   }
 
   m_seq.palette = nullptr;
