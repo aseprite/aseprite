@@ -378,8 +378,11 @@ public:
       m_area.r /= m_area.count;
       m_area.g /= m_area.count;
       m_area.b /= m_area.count;
-      m_area.a = (m_area.a/9) * m_opacity / 255;
-      *m_dstAddress = rgba(m_area.r, m_area.g, m_area.b, m_area.a);
+      m_area.a /= 9;
+      *m_dstAddress =
+        rgba_blender_merge(*m_srcAddress,
+                           rgba(m_area.r, m_area.g, m_area.b, m_area.a),
+                           m_opacity);
     }
     else {
       *m_dstAddress = *m_srcAddress;
@@ -424,8 +427,11 @@ public:
 
     if (m_area.count > 0) {
       m_area.v /= m_area.count;
-      m_area.a = (m_area.a/9) * m_opacity / 255;
-      *m_dstAddress = graya(m_area.v, m_area.a);
+      m_area.a /= 9;
+      *m_dstAddress =
+        graya_blender_merge(*m_srcAddress,
+                            graya(m_area.v, m_area.a),
+                            m_opacity);
     }
     else {
       *m_dstAddress = *m_srcAddress;
@@ -475,9 +481,15 @@ public:
       m_area.r /= m_area.count;
       m_area.g /= m_area.count;
       m_area.b /= m_area.count;
-      m_area.a = (m_area.a/9) * m_opacity / 255;
+      m_area.a /= 9;
+
+      const color_t c =
+        rgba_blender_merge(m_palette->getEntry(*m_srcAddress),
+                           rgba(m_area.r, m_area.g, m_area.b, m_area.a),
+                           m_opacity);
+
       *m_dstAddress = m_rgbmap->mapColor(
-        m_area.r, m_area.g, m_area.b, m_area.a);
+        rgba_getr(c), rgba_getg(c), rgba_getb(c), rgba_geta(c));
     }
     else {
       *m_dstAddress = *m_srcAddress;
