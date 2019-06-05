@@ -21,6 +21,7 @@
 #include "app/ui/main_window.h"
 #include "app/ui/recent_listbox.h"
 #include "app/ui/skin/skin_theme.h"
+#include "app/ui/status_bar.h"
 #include "app/ui/workspace.h"
 #include "app/ui/workspace_tabs.h"
 #include "app/ui_context.h"
@@ -132,6 +133,7 @@ void HomeView::onTabPopup(Workspace* workspace)
 
 void HomeView::onWorkspaceViewSelected()
 {
+  StatusBar::instance()->showDefaultText();
 }
 
 void HomeView::onNewFile()

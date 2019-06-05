@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -150,6 +150,9 @@ void WorkspacePanel::setActiveView(WorkspaceView* view)
     m_tabs->selectTab(dynamic_cast<TabView*>(view));
 
   adjustActiveViewBounds();
+
+  if (m_activeView)
+    m_activeView->onWorkspaceViewSelected();
 }
 
 void WorkspacePanel::onPaint(PaintEvent& ev)

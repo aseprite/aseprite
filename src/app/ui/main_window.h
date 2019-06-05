@@ -58,6 +58,7 @@ namespace app {
 
     MainMenuBar* getMenuBar() { return m_menuBar; }
     ContextBar* getContextBar() { return m_contextBar; }
+    StatusBar* statusBar() { return m_statusBar; }
     WorkspaceTabs* getTabsBar() { return m_tabsBar; }
     Timeline* getTimeline() { return m_timeline; }
     Workspace* getWorkspace() { return m_workspace; }

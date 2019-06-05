@@ -36,10 +36,12 @@
 #include "app/ui_context.h"
 #include "app/util/range_utils.h"
 #include "base/bind.h"
+#include "base/fs.h"
 #include "base/string.h"
 #include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
+#include "fmt/format.h"
 #include "gfx/size.h"
 #include "os/font.h"
 #include "os/surface.h"
@@ -609,24 +611,41 @@ void StatusBar::clearText()
   setStatusText(1, "");
 }
 
+// TODO Workspace views should have a method to set the default status
+//      bar text, because here the StatusBar is depending on too many
+//      details of the main window/docs/etc.
 void StatusBar::showDefaultText()
 {
-  showDefaultText(current_editor ? current_editor->document(): nullptr);
+  if (current_editor) {
+    showDefaultText(current_editor->document());
+  }
+  else if (App::instance()->mainWindow()->isHomeSelected()) {
+    setStatusText(0, "-- %s %s by David & Gaspar Capello -- Igara Studio --",
+                  PACKAGE, VERSION);
+  }
+  else {
+    clearText();
+  }
 }
 
 void StatusBar::showDefaultText(Doc* doc)
 {
   clearText();
-  if (doc){
-    std::string buf = base::string_printf("%s  :size: %d %d",
-                                          doc->name().c_str(),
-                                          doc->width(),
-                                          doc->height());
+  if (doc) {
+    std::string buf =
+      fmt::format("{}  :size: {} {}",
+                  doc->name(), doc->width(), doc->height());
     if (doc->getTransformation().bounds().w != 0) {
-      buf += base::string_printf(" :selsize: %d %d",
-                                 int(doc->getTransformation().bounds().w),
-                                 int(doc->getTransformation().bounds().h));
+      buf += fmt::format(" :selsize: {} {}",
+                         int(doc->getTransformation().bounds().w),
+                         int(doc->getTransformation().bounds().h));
     }
+    if (Preferences::instance().general.showFullPath()) {
+      std::string path = base::get_file_path(doc->filename());
+      if (!path.empty())
+        buf += fmt::format("  ({})", path);
+    }
+
     setStatusText(1, buf.c_str());
   }
 }

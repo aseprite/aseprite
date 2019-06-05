@@ -352,6 +352,7 @@ TabIcon DataRecoveryView::getTabIcon()
 
 void DataRecoveryView::onWorkspaceViewSelected()
 {
+  // Do nothing
 }
 
 bool DataRecoveryView::onCloseView(Workspace* workspace, bool quitting)

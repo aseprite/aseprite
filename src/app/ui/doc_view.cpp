@@ -240,7 +240,7 @@ WorkspaceView* DocView::cloneWorkspaceView()
 
 void DocView::onWorkspaceViewSelected()
 {
-  // Do nothing
+  StatusBar::instance()->showDefaultText(m_document);
 }
 
 void DocView::onClonedFrom(WorkspaceView* from)

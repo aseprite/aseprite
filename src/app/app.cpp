@@ -295,8 +295,9 @@ void App::initialize(const AppOptions& options)
 
     // Default status of the main window.
     app_rebuild_documents_tabs();
-    app_default_statusbar_message();
+    m_mainWindow->statusBar()->showDefaultText();
 
+    // Show the main window (this is not modal, the code continues)
     m_mainWindow->openWindow();
 
     // Redraw the whole screen.
@@ -680,14 +681,6 @@ PixelFormat app_get_current_pixel_format()
     return doc->sprite()->pixelFormat();
   else
     return IMAGE_RGB;
-}
-
-void app_default_statusbar_message()
-{
-#ifdef ENABLE_UI
-  StatusBar::instance()
-    ->setStatusText(250, "%s %s | %s", PACKAGE, VERSION, COPYRIGHT);
-#endif
 }
 
 int app_get_color_to_clear_layer(Layer* layer)

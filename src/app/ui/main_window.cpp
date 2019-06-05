@@ -477,21 +477,15 @@ void MainWindow::onMouseOverTab(Tabs* tabs, TabView* tabView)
 {
   // Note: tabView can be NULL
   if (DocView* docView = dynamic_cast<DocView*>(tabView)) {
-    Doc* document = docView->document();
-
-    std::string name;
-    if (Preferences::instance().general.showFullPath())
-      name = document->filename();
-    else
-      name = base::get_file_name(document->filename());
-
-    m_statusBar->showDefaultText(document);
+    m_statusBar->showDefaultText(docView->document());
   }
-  else
+  else {
     m_statusBar->showDefaultText();
+  }
 }
 
-void MainWindow::onMouseLeaveTab() {
+void MainWindow::onMouseLeaveTab()
+{
   m_statusBar->showDefaultText();
 }
 
