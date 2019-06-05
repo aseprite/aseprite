@@ -411,9 +411,6 @@ void App::run()
     // Select no document
     m_modules->m_context.setActiveView(nullptr);
 
-    // Destroy the window.
-    m_mainWindow.reset(nullptr);
-
     // Delete backups (this is a normal shutdown, we are not handling
     // exceptions, and we are not in a destructor).
     m_modules->deleteDataRecovery();
@@ -441,6 +438,13 @@ void App::run()
     doc->close();
     delete doc;
   }
+
+#ifdef ENABLE_UI
+  if (isGui()) {
+    // Destroy the window.
+    m_mainWindow.reset(nullptr);
+  }
+#endif
 }
 
 // Finishes the Aseprite application.
