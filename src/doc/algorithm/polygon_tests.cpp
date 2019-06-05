@@ -29,6 +29,9 @@ void captureHscanSegment (int x1, int y, int x2, void* scanDataResults) {
   results->scanLines.push_back(scanSegment(x1, y, x2));
 }
 
+// polygon() function TESTS:
+// =========================
+
 TEST(Polygon, HorizontalLine1Test)
 {
   //  P0-----P1
@@ -436,6 +439,332 @@ TEST(Polygon, Polygon2Test)
     EXPECT_EQ(results.scanLines[12].y, 7);
   }
 }
+
+// createUnion() function TESTS:
+// =============================
+// Function Tests to ensure correct results when:
+// testA1 : pairs.size() == 0 / ints == 0
+// testA2 : pairs.size() == 0 / ints > 0 (with ints even number)
+// testA3 : pairs.size() == 0 / ints == 1
+// testA4 : pairs.size() == 1 / ints > 0 (with ints even number)
+//
+// Pre-condition fulfilled: pairs.size() >= 2 (even elements number)
+// testB1 : ints > pairs.size()
+// testB2 : ints == 0
+// testB3 : ints == 1
+// testB4 : ints < 0
+//
+// Pre-condition fulfilled: pairs.size() >= 2 / ints >= 2 (with ints even number)
+// testC1 : x == pairs[i]
+// testC2 : x == pairs[i+1]
+// testC3 : x == pairs[i]-1
+// testC4 : x == pairs[i+1]+1
+// testC5 : x < pairs[i]-1
+// testC6 : x > pairs[i+1]+1
+// testC7 : pairs[i] < x < pairs[i+1]
+// testC8 : x == pairs[i+1]+1 && x == pairs[i+2]+1
+// testC9 :  special case
+// testC10 : special case
+
+TEST(createUnion, testA1)
+{
+  // testA1 : pairs.size() == 0 / ints == 0
+  int ints = 0;
+  int x = 2;
+  std::vector<int> pairs;
+  EXPECT_EQ(doc::algorithm::createUnion(pairs, x, ints), true);
+  EXPECT_EQ(pairs[0], 2);
+  EXPECT_EQ(pairs[1], 2);
+  EXPECT_EQ(ints, 2);
+}
+
+TEST(createUnion, testA2)
+{
+  // testA2 : pairs.size() == 0 / ints > 0 (with ints even number)
+  int ints = 2;
+  int x = 5;
+  std::vector<int> pairs;
+  EXPECT_EQ(doc::algorithm::createUnion(pairs, x, ints), false);
+}
+
+TEST(createUnion, testA3)
+{
+  // testA3 : pairs.size() == 0 / ints == 1
+  int ints = 1;
+  int x = 5;
+  std::vector<int> pairs;
+  EXPECT_EQ(doc::algorithm::createUnion(pairs, x, ints), false);
+}
+
+TEST(createUnion, testA4)
+{
+  // testA4 : pairs.size() == 1 / ints > 0 (with ints even number)
+  int ints = 2;
+  int x = 5;
+  std::vector<int> pairs;
+  pairs.push_back(0);
+  EXPECT_EQ(doc::algorithm::createUnion(pairs, x, ints), false);
+}
+
+// Next tests have the following condition fulfilled:
+//   pairs.size() >= 2 (even elements number)
+// testB1 : ints > pairs.size()
+// testB2 : ints == 0
+// testB3 : ints == 1
+// testB4 : ints < 0
+TEST(createUnion, testB1)
+{
+  // testB1 : ints > pairs.size()
+  // pairs.size() >= 2 (even elements number)
+  int ints = 3;
+  int x = 5;
+  std::vector<int> pairs;
+  pairs.push_back(0);
+  pairs.push_back(0);
+  EXPECT_EQ(doc::algorithm::createUnion(pairs, x, ints), false);
+}
+
+TEST(createUnion, testB2)
+{
+  // testB2 : ints == 0
+  // pairs.size() >= 2 (even elements number)
+  int ints = 0;
+  int x = 5;
+  std::vector<int> pairs;
+  pairs.push_back(0);
+  pairs.push_back(0);
+  EXPECT_EQ(doc::algorithm::createUnion(pairs, x, ints), true);
+  EXPECT_EQ(pairs[0], 5);
+  EXPECT_EQ(pairs[1], 5);
+  EXPECT_EQ(ints, 2);
+}
+
+TEST(createUnion, testB3)
+{
+  // testB3 : ints == 1
+  // pairs.size() >= 2 (even elements number)
+  int ints = 1;
+  int x = 5;
+  std::vector<int> pairs;
+  pairs.push_back(0);
+  pairs.push_back(0);
+  EXPECT_EQ(doc::algorithm::createUnion(pairs, x, ints), false);
+}
+
+TEST(createUnion, testB4)
+{
+  // testB4 : ints < 0
+  int ints = -1;
+  int x = 5;
+  std::vector<int> pairs;
+  pairs.push_back(0);
+  pairs.push_back(0);
+  EXPECT_EQ(doc::algorithm::createUnion(pairs, x, ints), false);
+}
+
+// Next tests have the following condition fulfilled:
+//   pairs.size() >= 2 / ints >= 2 (with ints even number)
+// testC1 : x == pairs[i]
+// testC2 : x == pairs[i+1]
+// testC3 : x == pairs[i]-1
+// testC4 : x == pairs[i+1]+1
+// testC5 : x < pairs[i]-1
+// testC6 : x > pairs[i+1]+1
+// testC7 : pairs[i] < x < pairs[i+1]
+// testC9 :  special case
+// testC10 : special case
+
+TEST(createUnion, testC1)
+{
+  // testC1 : x == pairs[i]
+  // pairs.size() >= 2 / ints >= 2 (with ints even number)
+  int ints = 4;
+  int x = 0;
+  std::vector<int> pairs;
+  pairs.push_back(0);
+  pairs.push_back(1);
+  pairs.push_back(4);
+  pairs.push_back(5);
+  EXPECT_EQ(doc::algorithm::createUnion(pairs, x, ints), true);
+  EXPECT_EQ(pairs[0], 0);
+  EXPECT_EQ(pairs[1], 1);
+  EXPECT_EQ(pairs[2], 4);
+  EXPECT_EQ(pairs[3], 5);
+  EXPECT_EQ(ints, 4);
+}
+
+TEST(createUnion, testC2)
+{
+  // testC2 : x == pairs[i+1]
+  // pairs.size() >= 2 / ints >= 2 (with ints even number)
+  int ints = 4;
+  int x = 1;
+  std::vector<int> pairs;
+  pairs.push_back(0);
+  pairs.push_back(1);
+  pairs.push_back(4);
+  pairs.push_back(5);
+  EXPECT_EQ(doc::algorithm::createUnion(pairs, x, ints), true);
+  EXPECT_EQ(pairs[0], 0);
+  EXPECT_EQ(pairs[1], 1);
+  EXPECT_EQ(pairs[2], 4);
+  EXPECT_EQ(pairs[3], 5);
+  EXPECT_EQ(ints, 4);
+}
+
+TEST(createUnion, testC3)
+{
+  // testC3 : x == pairs[i]-1
+  // pairs.size() >= 2 / ints >= 2 (with ints even number)
+  int ints = 4;
+  int x = -1;
+  std::vector<int> pairs;
+  pairs.push_back(0);
+  pairs.push_back(1);
+  pairs.push_back(4);
+  pairs.push_back(5);
+  EXPECT_EQ(doc::algorithm::createUnion(pairs, x, ints), true);
+  EXPECT_EQ(pairs[0], -1);
+  EXPECT_EQ(pairs[1], 1);
+  EXPECT_EQ(pairs[2], 4);
+  EXPECT_EQ(pairs[3], 5);
+  EXPECT_EQ(ints, 4);
+}
+
+TEST(createUnion, testC4)
+{
+  // testC4 : x == pairs[i+1]+1
+  // pairs.size() >= 2 / ints >= 2 (with ints even number)
+  int ints = 4;
+  int x = 2;
+  std::vector<int> pairs;
+  pairs.push_back(0);
+  pairs.push_back(1);
+  pairs.push_back(4);
+  pairs.push_back(5);
+  EXPECT_EQ(doc::algorithm::createUnion(pairs, x, ints), true);
+  EXPECT_EQ(pairs[0], 0);
+  EXPECT_EQ(pairs[1], 2);
+  EXPECT_EQ(pairs[2], 4);
+  EXPECT_EQ(pairs[3], 5);
+  EXPECT_EQ(ints, 4);
+}
+
+TEST(createUnion, testC5)
+{
+  // testC5 : x < pairs[i]-1
+  // pairs.size() >= 2 / ints >= 2 (with ints even number)
+  int ints = 4;
+  int x = -2;
+  std::vector<int> pairs;
+  pairs.push_back(0);
+  pairs.push_back(1);
+  pairs.push_back(4);
+  pairs.push_back(5);
+  EXPECT_EQ(doc::algorithm::createUnion(pairs, x, ints), true);
+  EXPECT_EQ(pairs[0], -2);
+  EXPECT_EQ(pairs[1], -2);
+  EXPECT_EQ(pairs[2], 0);
+  EXPECT_EQ(pairs[3], 1);
+  EXPECT_EQ(pairs[4], 4);
+  EXPECT_EQ(pairs[5], 5);
+  EXPECT_EQ(ints, 6);
+}
+
+TEST(createUnion, testC6)
+{
+  // testC6 : x > pairs[i+1]+1
+  // pairs.size() >= 2 / ints >= 2 (with ints even number)
+  int ints = 4;
+  int x = 7;
+  std::vector<int> pairs;
+  pairs.push_back(0);
+  pairs.push_back(1);
+  pairs.push_back(4);
+  pairs.push_back(5);
+  EXPECT_EQ(doc::algorithm::createUnion(pairs, x, ints), true);
+  EXPECT_EQ(pairs[0], 0);
+  EXPECT_EQ(pairs[1], 1);
+  EXPECT_EQ(pairs[2], 4);
+  EXPECT_EQ(pairs[3], 5);
+  EXPECT_EQ(pairs[4], 7);
+  EXPECT_EQ(pairs[5], 7);
+  EXPECT_EQ(ints, 6);
+}
+
+TEST(createUnion, testC7)
+{
+  // testC7 : pairs[i] < x < pairs[i+1]
+  // pairs.size() >= 2 / ints >= 2 (with ints even number)
+  int ints = 2;
+  int x = 3;
+  std::vector<int> pairs;
+  pairs.push_back(0);
+  pairs.push_back(5);
+  EXPECT_EQ(doc::algorithm::createUnion(pairs, x, ints), true);
+  EXPECT_EQ(pairs[0], 0);
+  EXPECT_EQ(pairs[1], 5);
+  EXPECT_EQ(ints, 2);
+}
+
+TEST(createUnion, testC8)
+{
+  // testC8 : x == pairs[i+1]+1 && x == pairs[i+2]+1
+  // pairs.size() >= 2 / ints >= 2 (with ints even number)
+  int ints = 4;
+  int x = 3;
+  std::vector<int> pairs;
+  pairs.push_back(0);
+  pairs.push_back(2);
+  pairs.push_back(3);
+  pairs.push_back(4);
+  
+  EXPECT_EQ(doc::algorithm::createUnion(pairs, x, ints), true);
+  EXPECT_EQ(pairs[0], 0);
+  EXPECT_EQ(pairs[1], 4);
+  EXPECT_EQ(ints, 2);
+}
+
+TEST(createUnion, testC9)
+{
+  // testC9 : special case
+  // pairs.size() >= 2 / ints >= 2 (with ints even number)
+  int ints = 6;
+  int x = 1;
+  std::vector<int> pairs;
+  pairs.push_back(0);
+  pairs.push_back(0);
+  pairs.push_back(1);
+  pairs.push_back(1);
+  pairs.push_back(2);
+  pairs.push_back(4);
+  EXPECT_EQ(doc::algorithm::createUnion(pairs, x, ints), true);
+  EXPECT_EQ(pairs[0], 0);
+  EXPECT_EQ(pairs[1], 4);
+  EXPECT_EQ(ints, 2);
+}
+
+TEST(createUnion, testC10)
+{
+  // testC10 : special case
+  // pairs.size() >= 2 / ints >= 2 (with ints even number)
+  int ints = 4;
+  int x = 3;
+  std::vector<int> pairs;
+  pairs.push_back(0);
+  pairs.push_back(3);
+  pairs.push_back(4);
+  pairs.push_back(7);
+  pairs.push_back(0);
+  pairs.push_back(0);
+  pairs.push_back(0);
+  pairs.push_back(0);
+  EXPECT_EQ(doc::algorithm::createUnion(pairs, x, ints), true);
+  EXPECT_EQ(pairs[0], 0);
+  EXPECT_EQ(pairs[1], 7);
+  EXPECT_EQ(ints, 2);
+}
+
 
 int main(int argc, char** argv)
 {

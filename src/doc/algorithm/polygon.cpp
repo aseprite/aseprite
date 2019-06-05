@@ -30,87 +30,78 @@ static void addPointsWithoutDuplicatingLastOne(int x, int y, std::vector<gfx::Po
 
 // createUnion() joins a single scan point "x" (a pixel in other words)
 // to the input vector "pairs".
-// Each pair of elements from "pairs" vector is a representation
-// of a scan segment.
+// Each pair "pairs[i], pairs[i+1]" is a representation
+// of a horizontal scan segment "i".
 // An added scan point "x" to the "pairs" vector is represented
-// by two consecutive values of "x".
+// by two consecutive values of "x" if it is an insolated point.
+// If "x" is between or next to a scan segment, this function creates an
+// union, making a fusion between "x" <-> "pairs[i], pairs[i+1]".
+// Additionally, after the union step, this function handles
+// overlapped situations respect to the nexts scan segments "i+2",
+// "i+4", etc.
 // Note: "pairs" must be sorted prior execution of this function.
-static void createUnion(std::vector<int>& pairs,
-                        const int x,
-                        int& ints)
+bool algorithm::createUnion(std::vector<int>& pairs,
+                            const int x,
+                            int& ints)
 {
-  bool unionDone = false;
-  ASSERT(ints >= 0);
   if (ints == 0) {
-    pairs.push_back(x);
-    pairs.push_back(x);
-    ints+=2;
-    return;
+    pairs.insert(pairs.begin(), 2, x);
+    ints = 2;
+    return true;
   }
+  else if (pairs.size() < ints || ints == 1) {
+    // Error
+    return false;
+  }
+  else if (ints%2 == 1)
+    ints--;
 
-  for (int i=0; i < ints - (ints%2); i+=2) {
-    // Case:
-    //           pairs[i]      pairs[i+1]
+  for (int i=0; i < ints; i+=2) {
+    // Case:     pairs[i]      pairs[i+1]
     //               O --------- O
     //            -x-
     if (x == pairs[i] - 1) {
       pairs[i] = x;
-      unionDone = true;
-      break;
+      return true;
     }
-    // Case:
-    //       pairs[i]      pairs[i+1]
+    // Case:  pairs[i]      pairs[i+1]
     //           O --------- O
     //   -x-
     else if (x < pairs[i] - 1) {
-      pairs.insert(pairs.begin()+i, x);
-      pairs.insert(pairs.begin()+i, x);
-      ints+=2;
-      unionDone = true;
-      break;
+      pairs.insert(pairs.begin() + i, 2, x);
+      ints += 2;
+      return true;
     }
-    // Case:
-    //     pairs[i]      pairs[i+1]
-    //        O --------- O
-    //                     -x-
-    else if (x == pairs[i+1] + 1) {
-      unionDone = true;
-      if (i + 2 <= ints - 2) {
-        if (pairs[i+2] == x) {
-          // Simplification:
-          pairs.erase(pairs.begin() + (i+1));
-          pairs.erase(pairs.begin() + (i+1));
-          ints-=2;
-          break;
-        }
-      }
+    // Case:   pairs[i]      pairs[i+1]
+    //            O --------- O
+    //                         -x-
+    // or                    -x-
+    else if (x == pairs[i+1] + 1 || x == pairs[i+1]) {
       pairs[i+1] = x;
-      break;
+      while (ints > i+2 && pairs[i+2] <= x+1) {
+        pairs.erase(pairs.begin() + (i+1));
+        pairs.erase(pairs.begin() + (i+1));
+        ints -= 2;
+        if (i+2 >= pairs.size())
+          break;
+      }
+      return true;
     }
-    // Case:
-    //     pairs[i]      pairs[i+1]
-    //        O --------- O
-    //             -x-
-    else if (x >= pairs[i] && x <= pairs[i+1]) {
-      unionDone = true;
-      break;
-    }
+    // Case:   pairs[i]      pairs[i+1]
+    //            O --------- O
+    //                 -x-
+    else if (x >= pairs[i] && x < pairs[i+1])
+      return true;
   }
-  // Case:
-  //    pairs[i]      pairs[i+1]
-  //        O --------- O
-  //                          -x-
-  if (x > pairs[ints-1] && !unionDone) {
-    if (pairs.size() == ints) {
-      pairs.push_back(x);
-      pairs.push_back(x);
-    }
-    else {
-      pairs.insert(pairs.begin() + ints, x);
-      pairs.insert(pairs.begin() + ints, x);
-    }
-    ints+=2;
+  // Case:    pairs[i]      pairs[i+1]
+  //             O --------- O
+  //                             -x-
+  if (x > pairs[ints-1]) {
+    pairs.insert(pairs.begin() + ints, 2, x);
+    ints += 2;
+    return true;
   }
+  return false;
 }
 
 void algorithm::polygon(int vertices, const int* points, void* data, AlgoHLine proc)
