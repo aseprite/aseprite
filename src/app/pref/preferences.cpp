@@ -15,6 +15,7 @@
 #include "app/resource_finder.h"
 #include "app/tools/ink.h"
 #include "app/tools/tool.h"
+#include "base/fs.h"
 #include "doc/sprite.h"
 #include "os/system.h"
 #include "ui/system.h"
@@ -43,14 +44,18 @@ Preferences::Preferences()
   ASSERT(!singleton);
   singleton = this;
 
+  // The first time we execute the program, the configuration file
+  // doesn't exist.
+  const bool firstTime = (!base::is_file(main_config_filename()));
+
   load();
 
   // Hide the menu bar depending on:
-  // 1. the native menu bar is available
-  // 2. this is the first run of the program
-  if (os::instance() &&
-      os::instance()->menus() &&
-      updater.uuid().empty()) {
+  // 1. this is the first run of the program
+  // 2. the native menu bar is available
+  if (firstTime &&
+      os::instance() &&
+      os::instance()->menus()) {
     general.showMenuBar(false);
   }
 }
