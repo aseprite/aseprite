@@ -68,6 +68,11 @@ public:
 };
 
 class IntertwineAsLines : public Intertwine {
+  // It was introduced to know if joinStroke function
+  // was executed inmediatelly after a "Last" trace policy (i.e. after the
+  // user confirms a line draw while he is holding down the SHIFT key), so
+  // we have to ignore printing the first pixel of the line.
+  bool m_retainedTracePolicyLast = false;
   Stroke m_pts;
 
 public:
@@ -75,11 +80,19 @@ public:
 
   void prepareIntertwine() override {
     m_pts.reset();
+    m_retainedTracePolicyLast = false;
   }
 
   void joinStroke(ToolLoop* loop, const Stroke& stroke) override {
-    if (loop->getTracePolicy() == TracePolicy::Last)
+    // Required for LineFreehand controller in the first stage, when
+    // we are drawing the line and the trace policy is "Last". Each
+    // new joinStroke() is like a fresh start.  Without this fix, the
+    // first stage on LineFreehand will draw a "star" like pattern
+    // with lines from the first point to the last point.
+    if (loop->getTracePolicy() == TracePolicy::Last) {
+      m_retainedTracePolicyLast = true;
       m_pts.reset();
+    }
 
     if (stroke.size() == 0)
       return;
@@ -106,7 +119,8 @@ public:
       // TODO useful only in the case when brush size = 1px
       const int start =
         (loop->getController()->isFreehand() &&
-         !loop->getFilled() ? 1: 0);
+         !loop->getFilled() &&
+         m_retainedTracePolicyLast ? 1: 0);
 
       for (int c=start; c<m_pts.size(); ++c)
         doPointshapePoint(m_pts[c].x, m_pts[c].y, loop);
