@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -16,6 +17,7 @@
   #include <windows.h>
 
   extern "C" BOOL IsWow64();
+  extern "C" const char* WineVersion();
 
 #elif __APPLE__ // Mac OS X
 
@@ -76,6 +78,9 @@ std::string getUserAgent()
 
   if (IsWow64())
     userAgent << "; WOW64";
+
+  if (const char* wineVer = WineVersion())
+    userAgent << "; Wine " << wineVer;
 
 #elif __APPLE__
 
