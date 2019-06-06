@@ -31,7 +31,7 @@ assert(app.activeBrush.angle == 0)
 
 local spr = Sprite(4, 4)
 local cel = spr.cels[1]
-assert(cel.bounds == Rectangle(0, 0, 4, 4))
+expect_eq(cel.bounds, Rectangle(0, 0, 4, 4))
 
 ----------------------------------------------------------------------
 -- pencil and eraser
@@ -42,12 +42,12 @@ app.useTool{
   color=Color{ r=0, g=0, b=0 },
   points={ Point(2, 2),
            Point(3, 2) }}
-assert(cel.bounds == Rectangle(2, 2, 2, 1))
+expect_eq(cel.bounds, Rectangle(2, 2, 2, 1))
 
 app.useTool{
   tool='eraser',
   points={ Point(2, 2) }}
-assert(cel.bounds == Rectangle(3, 2, 1, 1))
+expect_eq(cel.bounds, Rectangle(3, 2, 1, 1))
 
 app.useTool{
   tool='eraser',
@@ -68,7 +68,7 @@ app.useTool{
   color=red,
   points={ Point(0, 0), Point(3, 3) }}
 local cel = spr.cels[1]
-assert(cel.bounds == Rectangle(0, 0, 4, 4))
+expect_eq(cel.bounds, Rectangle(0, 0, 4, 4))
 do
   local r = red.rgbaPixel
   local expected = { r, 0, 0, 0,
@@ -175,10 +175,10 @@ do
   local fgCel1 = spr2:newCel(bgLay, 1, Image(spr2.spec))
   local bgCel2 = spr2:newCel(fgLay, 2, Image(spr2.spec))
   local fgCel2 = spr2:newCel(bgLay, 2, Image(spr2.spec))
-  assert(fgCel1.bounds == Rectangle(0, 0, 4, 4))
-  assert(bgCel1.bounds == Rectangle(0, 0, 4, 4))
-  assert(fgCel2.bounds == Rectangle(0, 0, 4, 4))
-  assert(bgCel2.bounds == Rectangle(0, 0, 4, 4))
+  expect_eq(fgCel1.bounds, Rectangle(0, 0, 4, 4))
+  expect_eq(bgCel1.bounds, Rectangle(0, 0, 4, 4))
+  expect_eq(fgCel2.bounds, Rectangle(0, 0, 4, 4))
+  expect_eq(bgCel2.bounds, Rectangle(0, 0, 4, 4))
 
   -- After each useTool(), the cels will be shrunken to the minimum
   -- required size.
@@ -195,10 +195,10 @@ do
   app.useTool{ color=yellow, layer=fgCel1.layer, points={ Point(1, 1) }}
   app.useTool{ color=yellow, cel=fgCel2, points={ Point(2, 1) }}
 
-  assert(bgCel1.bounds == Rectangle(0, 0, 1, 1))
-  assert(bgCel2.bounds == Rectangle(1, 0, 1, 1))
-  assert(fgCel1.bounds == Rectangle(1, 1, 1, 1))
-  assert(fgCel2.bounds == Rectangle(2, 1, 1, 1))
+  expect_eq(bgCel1.bounds, Rectangle(0, 0, 1, 1))
+  expect_eq(bgCel2.bounds, Rectangle(1, 0, 1, 1))
+  expect_eq(fgCel1.bounds, Rectangle(1, 1, 1, 1))
+  expect_eq(fgCel2.bounds, Rectangle(2, 1, 1, 1))
 
   assert(bgCel1.image:getPixel(0, 0) == red.rgbaPixel)
   assert(bgCel2.image:getPixel(0, 0) == red.rgbaPixel)
@@ -310,14 +310,14 @@ function drawing_with_image_brushes(imageColorMode, colorInImage,
                0, 0, 0, 0 })
 
   app.useTool{ tool=pencil, brush=b, points={ Point(0, 0) } }
-  assert(cel.bounds == Rectangle(0, 0, 2, 2))
+  expect_eq(cel.bounds, Rectangle(0, 0, 2, 2))
   expect_img(app.activeImage,
              { c, 0,
                0, c })
   app.undo()
 
   app.useTool{ tool=pencil, brush=b, points={ Point(0, 0), Point(1, 1) } }
-  assert(cel.bounds == Rectangle(0, 0, 3, 3))
+  expect_eq(cel.bounds, Rectangle(0, 0, 3, 3))
   expect_img(app.activeImage,
              { c, 0, 0,
                0, c, 0,
@@ -325,7 +325,7 @@ function drawing_with_image_brushes(imageColorMode, colorInImage,
   app.undo()
 
   app.useTool{ tool=pencil, brush=b, points={ Point(0, 1) } }
-  assert(cel.bounds == Rectangle(0, 1, 2, 2))
+  expect_eq(cel.bounds, Rectangle(0, 1, 2, 2))
   expect_img(app.activeImage,
              { 0, c,
                c, 0 })
@@ -333,7 +333,7 @@ function drawing_with_image_brushes(imageColorMode, colorInImage,
 
   app.useTool{ tool=pencil, brush=b, points={ Point(0, 0), Point(2, 0),
                                               Point(0, 0), Point(0, 1) } }
-  assert(cel.bounds == Rectangle(0, 0, 4, 3))
+  expect_eq(cel.bounds, Rectangle(0, 0, 4, 3))
   expect_img(app.activeImage,
              { c, 0, c, 0,
                0, c, 0, c,
@@ -341,7 +341,7 @@ function drawing_with_image_brushes(imageColorMode, colorInImage,
   app.undo()
 
   app.useTool{ tool='paint_bucket', brush=b, points={ Point(0, 0) } }
-  assert(cel.bounds == Rectangle(0, 0, 4, 4))
+  expect_eq(cel.bounds, Rectangle(0, 0, 4, 4))
   expect_img(app.activeImage,
              { c, 0, c, 0,
                0, c, 0, c,
@@ -351,7 +351,7 @@ function drawing_with_image_brushes(imageColorMode, colorInImage,
 
   app.useTool{ tool=pencil, brush=b, points={ Point(1, 0) } }
   assert(app.activeImage ~= nil)
-  assert(cel.bounds == Rectangle(1, 0, 2, 2))
+  expect_eq(cel.bounds, Rectangle(1, 0, 2, 2))
   expect_img(app.activeImage,
              { 0, c,
                c, 0 })
@@ -360,7 +360,7 @@ function drawing_with_image_brushes(imageColorMode, colorInImage,
   app.useTool{ tool=pencil, brush=b, points={ Point(1, 0),
                                               Point(1, 0)} }
   assert(app.activeImage ~= nil)
-  assert(cel.bounds == Rectangle(1, 0, 2, 2))
+  expect_eq(cel.bounds, Rectangle(1, 0, 2, 2))
   expect_img(app.activeImage,
              { 0, c,
                c, 0 })
@@ -374,7 +374,7 @@ function drawing_with_image_brushes(imageColorMode, colorInImage,
               patternOrigin=Point(0, 0) }
 
   app.useTool{ tool=pencil, brush=b, points={ Point(1, 0) } }
-  assert(cel.bounds == Rectangle(1, 0, 2, 2))
+  expect_eq(cel.bounds, Rectangle(1, 0, 2, 2))
   expect_img(app.activeImage,
              { c, 0,
                0, c })
