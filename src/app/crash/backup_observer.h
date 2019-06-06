@@ -51,11 +51,12 @@ namespace crash {
     bool m_done;
 
     std::mutex m_mutex;
-    std::thread m_thread;
 
     // Used to wakeup the backgroundThread() when we have to stop the
     // thread that saves backups (i.e. when we are closing the application).
     std::condition_variable m_wakeup;
+
+    std::thread m_thread;
   };
 
 } // namespace crash
