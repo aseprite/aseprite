@@ -15,7 +15,7 @@
 #include <algorithm>
 #include <limits>
 
-#define CLOSEDOC_TRACE(...)
+#define CLOSEDOC_TRACE(...) // TRACEARGS
 
 namespace app {
 
