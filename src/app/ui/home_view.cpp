@@ -54,7 +54,10 @@ HomeView::HomeView()
 {
   newFile()->Click.connect(base::Bind(&HomeView::onNewFile, this));
   openFile()->Click.connect(base::Bind(&HomeView::onOpenFile, this));
-  recoverSprites()->Click.connect(base::Bind(&HomeView::onRecoverSprites, this));
+  if (m_dataRecovery)
+    recoverSprites()->Click.connect(base::Bind(&HomeView::onRecoverSprites, this));
+  else
+    recoverSprites()->setVisible(false);
 
   filesView()->attachToView(m_files);
   foldersView()->attachToView(m_folders);
@@ -201,6 +204,11 @@ void HomeView::onNewUpdate(const std::string& url, const std::string& version)
 void HomeView::onRecoverSprites()
 {
 #ifdef ENABLE_DATA_RECOVERY
+  ASSERT(m_dataRecovery); // "Recover Files" button is hidden when
+                          // data recovery is disabled (m_dataRecovery == nullptr)
+  if (!m_dataRecovery)
+    return;
+
   if (!m_dataRecoveryView) {
     m_dataRecoveryView = new DataRecoveryView(m_dataRecovery);
 
