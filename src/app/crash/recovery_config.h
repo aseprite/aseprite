@@ -15,8 +15,7 @@ namespace crash {
   // avoid accessing to Preferences from a non-UI thread.
   struct RecoveryConfig {
     double dataRecoveryPeriod;
-    bool keepEditedSpriteData;
-    int keepEditedSpriteDataLifespan;
+    int keepEditedSpriteDataFor;
   };
 
 } // namespace crash

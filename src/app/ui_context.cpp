@@ -9,6 +9,8 @@
 #include "config.h"
 #endif
 
+#include "app/ui_context.h"
+
 #include "app/app.h"
 #include "app/doc.h"
 #include "app/modules/editors.h"
@@ -24,7 +26,6 @@
 #include "app/ui/timeline/timeline.h"
 #include "app/ui/workspace.h"
 #include "app/ui/workspace_tabs.h"
-#include "app/ui_context.h"
 #include "base/mutex.h"
 #include "doc/sprite.h"
 
@@ -225,15 +226,22 @@ Editor* UIContext::activeEditor()
     return NULL;
 }
 
-void UIContext::reopenClosedDoc(Doc* doc)
+bool UIContext::hasClosedDocs()
 {
-  auto it = std::find(m_closedDocs.begin(), m_closedDocs.end(), doc);
-  ASSERT(it != m_closedDocs.end());
-  if (it != m_closedDocs.end())
-    m_closedDocs.erase(it);
+  return m_closedDocs.hasClosedDocs();
+}
 
-  // Put the document in the context again.
-  doc->setContext(this);
+void UIContext::reopenLastClosedDoc()
+{
+  if (Doc* doc = m_closedDocs.reopenLastClosedDoc()) {
+    // Put the document in the context again.
+    doc->setContext(this);
+  }
+}
+
+std::vector<Doc*> UIContext::getAndRemoveAllClosedDocs()
+{
+  return m_closedDocs.getAndRemoveAllClosedDocs();
 }
 
 void UIContext::onAddDocument(Doc* doc)
@@ -312,7 +320,8 @@ void UIContext::onCloseDocument(Doc* doc)
 {
   ASSERT(doc != nullptr);
   ASSERT(doc->context() == nullptr);
-  m_closedDocs.insert(m_closedDocs.begin(), doc);
+
+  m_closedDocs.addClosedDoc(doc);
 }
 
 } // namespace app

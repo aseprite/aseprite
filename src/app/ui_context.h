@@ -9,6 +9,7 @@
 #define APP_UI_CONTEXT_H_INCLUDED
 #pragma once
 
+#include "app/closed_docs.h"
 #include "app/context.h"
 #include "app/docs_observer.h"
 
@@ -44,9 +45,9 @@ namespace app {
     // new one if it's necessary.
     Editor* getEditorFor(Doc* document);
 
-    // Returns the list of closed docs in this session.
-    const std::vector<Doc*>& closedDocs() const { return m_closedDocs; }
-    void reopenClosedDoc(Doc* doc);
+    bool hasClosedDocs();
+    void reopenLastClosedDoc();
+    std::vector<Doc*> getAndRemoveAllClosedDocs();
 
   protected:
     void onAddDocument(Doc* doc) override;
@@ -59,7 +60,7 @@ namespace app {
 
   private:
     DocView* m_lastSelectedView;
-    std::vector<Doc*> m_closedDocs;
+    ClosedDocs m_closedDocs;
 
     static UIContext* m_instance;
   };

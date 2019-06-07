@@ -420,7 +420,7 @@ void App::run()
   // Destroy all documents from the UIContext.
   std::vector<Doc*> docs;
 #ifdef ENABLE_UI
-  for (Doc* doc : m_modules->m_context.closedDocs())
+  for (Doc* doc : m_modules->m_context.getAndRemoveAllClosedDocs())
     docs.push_back(doc);
 #endif
   for (Doc* doc : m_modules->m_context.documents())

@@ -37,8 +37,10 @@ DataRecovery::DataRecovery(Context* ctx)
 {
   auto& pref = Preferences::instance();
   m_config.dataRecoveryPeriod = pref.general.dataRecoveryPeriod();
-  m_config.keepEditedSpriteData = pref.general.keepEditedSpriteData();
-  m_config.keepEditedSpriteDataLifespan = pref.general.keepEditedSpriteDataLifespan();
+  if (pref.general.keepEditedSpriteData())
+    m_config.keepEditedSpriteDataFor = pref.general.keepEditedSpriteDataFor();
+  else
+    m_config.keepEditedSpriteDataFor = 0;
 
   ResourceFinder rf;
   rf.includeUserDir(base::join_path("sessions", ".").c_str());

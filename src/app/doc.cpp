@@ -75,8 +75,15 @@ void Doc::setContext(Context* ctx)
   removeFromContext();
 
   m_ctx = ctx;
-  if (ctx)
+  if (ctx) {
+    // Remove the flag that indicates that this doc is fully backed
+    // up, because now we are inside a context, so the user can change
+    // it again and the backup will be outdated.
+    if (m_flags & kFullyBackedUp)
+      m_flags ^= kFullyBackedUp;
+
     ctx->documents().add(this);
+  }
 
   onContextChanged();
 }
@@ -225,6 +232,16 @@ void Doc::setInhibitBackup(const bool inhibitBackup)
     m_flags |= kInhibitBackup;
   else
     m_flags &= ~kInhibitBackup;
+}
+
+void Doc::markAsBackedUp()
+{
+  m_flags |= kFullyBackedUp;
+}
+
+bool Doc::isFullyBackedUp() const
+{
+  return (m_flags & kFullyBackedUp ? true: false);
 }
 
 //////////////////////////////////////////////////////////////////////

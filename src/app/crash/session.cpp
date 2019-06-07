@@ -140,17 +140,17 @@ bool Session::isCrashedSession()
 
 bool Session::isOldSession()
 {
-  if (!m_config->keepEditedSpriteData)
+  if (m_config->keepEditedSpriteDataFor <= 0)
     return true;
 
   std::string verfile = verFilename();
   if (!base::is_file(verfile))
     return true;
 
-  int lifespan = m_config->keepEditedSpriteDataLifespan;
+  int lifespanDays = m_config->keepEditedSpriteDataFor;
   base::Time sessionTime = base::get_modification_time(verfile);
 
-  return (sessionTime.addDays(lifespan) < base::current_time());
+  return (sessionTime.addDays(lifespanDays) < base::current_time());
 }
 
 bool Session::isEmpty()
@@ -183,7 +183,7 @@ void Session::close()
 
     // If we don't have to keep the sprite data, just remove it from
     // the disk.
-    if (!m_config->keepEditedSpriteData)
+    if (m_config->keepEditedSpriteDataFor == 0)
       removeFromDisk();
   }
   catch (const std::exception&) {

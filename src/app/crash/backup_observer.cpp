@@ -97,7 +97,7 @@ void BackupObserver::onRemoveDocument(Doc* doc)
     std::unique_lock<std::mutex> lock(m_mutex);
     base::remove_from_container(m_documents, doc);
   }
-  if (m_config->keepEditedSpriteData)
+  if (m_config->keepEditedSpriteDataFor > 0)
     m_closedDocs.push_back(doc);
   else
     m_session->removeDocument(doc);
@@ -119,7 +119,8 @@ void BackupObserver::backgroundThread()
   while (!m_done) {
     m_wakeup.wait_for(lock, std::chrono::seconds(waitFor));
 
-    TRACE("RECO: Start backup process for %d documents\n", m_documents.size());
+    TRACE("RECO: Start backup process for %d documents\n",
+          m_documents.size() + m_closedDocs.size());
 
     SwitchBackupIcon icon;
     base::Chrono chrono;
@@ -133,8 +134,15 @@ void BackupObserver::backgroundThread()
     if (!m_closedDocs.empty()) {
       for (auto it=m_closedDocs.begin(); it != m_closedDocs.end(); ) {
         Doc* doc = *it;
-        if (saveDocData(doc))
+
+        TRACE("RECO: Save backup data for %p...\n", doc);
+
+        if (saveDocData(doc)) {
+          TRACE("RECO: Doc %p is fully backed up\n", doc);
+
           it = m_closedDocs.erase(it);
+          doc->markAsBackedUp();
+        }
         else {
           somethingLocked = true;
           ++it;
@@ -161,8 +169,8 @@ bool BackupObserver::saveDocData(Doc* doc)
     else if (!m_session->saveDocumentChanges(doc)) {
       TRACE("RECO: Document '%d' backup was canceled by UI\n", doc->id());
     }
-#ifdef TEST_BACKUP_INTEGRITY
     else {
+#ifdef TEST_BACKUP_INTEGRITY
       DocReader reader(doc, 500);
       std::unique_ptr<Doc> copy(
         m_session->restoreBackupDocById(doc->id(), nullptr));
@@ -188,9 +196,9 @@ bool BackupObserver::saveDocData(Doc* doc)
       else {
         TRACE("RECO: No differences\n");
       }
+#endif
       return true;
     }
-#endif
   }
   catch (const std::exception&) {
     TRACE("RECO: Document '%d' is locked\n", doc->id());

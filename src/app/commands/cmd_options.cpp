@@ -245,6 +245,9 @@ public:
     if (m_pref.general.keepEditedSpriteData())
       keepEditedSpriteData()->setSelected(true);
 
+    if (m_pref.general.keepClosedSpriteOnMemory())
+      keepClosedSpriteOnMemory()->setSelected(true);
+
     if (m_pref.general.showFullPath())
       showFullPath()->setSelected(true);
 
@@ -252,9 +255,13 @@ public:
       dataRecoveryPeriod()->findItemIndexByValue(
         base::convert_to<std::string>(m_pref.general.dataRecoveryPeriod())));
 
-    keepEditedSpriteDataLifespan()->setSelectedItemIndex(
-      keepEditedSpriteDataLifespan()->findItemIndexByValue(
-        base::convert_to<std::string>(m_pref.general.keepEditedSpriteDataLifespan())));
+    keepEditedSpriteDataFor()->setSelectedItemIndex(
+      keepEditedSpriteDataFor()->findItemIndexByValue(
+        base::convert_to<std::string>(m_pref.general.keepEditedSpriteDataFor())));
+
+    keepClosedSpriteOnMemoryFor()->setSelectedItemIndex(
+      keepClosedSpriteOnMemoryFor()->findItemIndexByValue(
+        base::convert_to<std::string>(m_pref.general.keepClosedSpriteOnMemoryFor())));
 
     if (m_pref.editor.zoomFromCenterWithWheel())
       zoomFromCenterWithWheel()->setSelected(true);
@@ -486,13 +493,22 @@ public:
       warnings += "<<- " + Strings::alerts_restart_by_preferences_save_recovery_data_period();
     }
 
-    int newLifespan = base::convert_to<int>(keepEditedSpriteDataLifespan()->getValue());
+    int newLifespan = base::convert_to<int>(keepEditedSpriteDataFor()->getValue());
     if (keepEditedSpriteData()->isSelected() != m_pref.general.keepEditedSpriteData() ||
-        newLifespan != m_pref.general.keepEditedSpriteDataLifespan()) {
+        newLifespan != m_pref.general.keepEditedSpriteDataFor()) {
       m_pref.general.keepEditedSpriteData(keepEditedSpriteData()->isSelected());
-      m_pref.general.keepEditedSpriteDataLifespan(newLifespan);
+      m_pref.general.keepEditedSpriteDataFor(newLifespan);
 
       warnings += "<<- " + Strings::alerts_restart_by_preferences_keep_edited_sprite_data_lifespan();
+    }
+
+    newLifespan = base::convert_to<int>(keepClosedSpriteOnMemoryFor()->getValue());
+    if (keepClosedSpriteOnMemory()->isSelected() != m_pref.general.keepClosedSpriteOnMemory() ||
+        newLifespan != m_pref.general.keepClosedSpriteOnMemoryFor()) {
+      m_pref.general.keepClosedSpriteOnMemory(keepClosedSpriteOnMemory()->isSelected());
+      m_pref.general.keepClosedSpriteOnMemoryFor(newLifespan);
+
+      warnings += "<<- " + Strings::alerts_restart_by_preferences_keep_closed_sprite_on_memory_for();
     }
 
     m_pref.editor.zoomFromCenterWithWheel(zoomFromCenterWithWheel()->isSelected());

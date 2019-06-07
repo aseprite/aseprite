@@ -195,6 +195,7 @@ if(ENABLE_UI)
   set(ui_app_files
     app_brushes.cpp
     app_menus.cpp
+    closed_docs.cpp
     commands/cmd_about.cpp
     commands/cmd_add_color.cpp
     commands/cmd_advanced_mode.cpp

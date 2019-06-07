@@ -67,32 +67,7 @@
                  text="@.color_bar_entries_separator"
                  tooltip="@.color_bar_entries_separator"
                  pref="color_bar.entries_separator" />
-          <grid columns="2">
-            <check id="enable_data_recovery"
-                   text="@.auto_save_recovery_data"
-                   tooltip="@.auto_save_recovery_data_tooltip" />
-            <combobox id="data_recovery_period">
-              <listitem text="@.10_seconds" value="0.1667" />
-              <listitem text="@.30_seconds" value="0.5" />
-              <listitem text="@.1_minute" value="1" />
-              <listitem text="@.2_minutes" value="2" />
-              <listitem text="@.5_minutes" value="5" />
-              <listitem text="@.10_minutes" value="10" />
-              <listitem text="@.15_minutes" value="15" />
-              <listitem text="@.30_minutes" value="30" />
-            </combobox>
-            <check id="keep_edited_sprite_data"
-                   text="@.keep_edited_sprite_data"
-                   tooltip="@.keep_edited_sprite_data_tooltip" />
-            <combobox id="keep_edited_sprite_data_lifespan">
-              <listitem text="@.1_day" value="1" />
-              <listitem text="@.2_days" value="2" />
-              <listitem text="@.3_days" value="3" />
-              <listitem text="@.1_week" value="7" />
-              <listitem text="@.2_weeks" value="14" />
-              <listitem text="@.1_month" value="30" />
-            </combobox>
-          </grid>
+
           <separator horizontal="true" />
           <link id="locate_file" text="@.locate_file" />
           <link id="locate_crash_folder" text="@.locate_crash_folder" />
@@ -101,7 +76,6 @@
         <!-- Files -->
         <vbox id="section_files">
           <separator text="@.section_files" horizontal="true" />
-
           <label text="@.default_extension_for" />
           <grid columns="2">
             <label text="@.save_default_extension" />
@@ -129,6 +103,51 @@
                    text="@.show_full_path"
                    tooltip="@.show_full_path_tooltip" />
           </grid>
+
+          <separator text="@.recover_files" horizontal="true" />
+          <grid columns="2">
+            <check id="enable_data_recovery"
+                   text="@.auto_save_recovery_data"
+                   tooltip="@.auto_save_recovery_data_tooltip" />
+            <combobox id="data_recovery_period">
+              <listitem text="@.10_seconds" value="0.1667" />
+              <listitem text="@.30_seconds" value="0.5" />
+              <listitem text="@.1_minute" value="1" />
+              <listitem text="@.2_minutes" value="2" />
+              <listitem text="@.5_minutes" value="5" />
+              <listitem text="@.10_minutes" value="10" />
+              <listitem text="@.15_minutes" value="15" />
+              <listitem text="@.30_minutes" value="30" />
+            </combobox>
+            <check id="keep_edited_sprite_data"
+                   text="@.keep_edited_sprite_data"
+                   tooltip="@.keep_edited_sprite_data_tooltip" />
+            <combobox id="keep_edited_sprite_data_for">
+              <listitem text="@.1_day" value="1" />
+              <listitem text="@.2_days" value="2" />
+              <listitem text="@.3_days" value="3" />
+              <listitem text="@.1_week" value="7" />
+              <listitem text="@.2_weeks" value="14" />
+              <listitem text="@.1_month" value="30" />
+            </combobox>
+            <check id="keep_closed_sprite_on_memory"
+                   text="@.keep_closed_sprite_on_memory"
+                   tooltip="@.keep_closed_sprite_on_memory_tooltip" />
+            <combobox id="keep_closed_sprite_on_memory_for">
+              <listitem text="@.10_seconds" value="0.1667" />
+              <listitem text="@.30_seconds" value="0.5" />
+              <listitem text="@.1_minute" value="1" />
+              <listitem text="@.2_minutes" value="2" />
+              <listitem text="@.5_minutes" value="5" />
+              <listitem text="@.10_minutes" value="10" />
+              <listitem text="@.15_minutes" value="15" />
+              <listitem text="@.30_minutes" value="30" />
+              <listitem text="@.1_hour" value="60" />
+              <listitem text="@.4_hours" value="240" />
+              <listitem text="@.8_hours" value="480" />
+            </combobox>
+          </grid>
+
         </vbox>
 
         <!-- Color -->

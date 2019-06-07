@@ -63,6 +63,7 @@ namespace app {
       kAssociatedToFile = 1, // This sprite is associated to a file in the file-system
       kMaskVisible      = 2, // The mask wasn't hidden by the user
       kInhibitBackup    = 4, // Inhibit the backup process
+      kFullyBackedUp    = 8, // Full backup was done
     };
   public:
     Doc(Sprite* sprite);
@@ -121,6 +122,9 @@ namespace app {
     // exported with other size)
     bool inhibitBackup() const;
     void setInhibitBackup(const bool inhibitBackup);
+
+    void markAsBackedUp();
+    bool isFullyBackedUp() const;
 
     //////////////////////////////////////////////////////////////////////
     // Loaded options from file

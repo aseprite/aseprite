@@ -34,19 +34,15 @@ ReopenClosedFileCommand::ReopenClosedFileCommand()
 bool ReopenClosedFileCommand::onEnabled(Context* ctx)
 {
   if (auto uiCtx = dynamic_cast<UIContext*>(ctx)) {
-    const auto& docs = uiCtx->closedDocs();
-    return (!docs.empty());
+    return uiCtx->hasClosedDocs();
   }
   return false;
 }
 
 void ReopenClosedFileCommand::onExecute(Context* ctx)
 {
-  if (auto uiCtx = dynamic_cast<UIContext*>(ctx)) {
-    const auto& docs = uiCtx->closedDocs();
-    if (!docs.empty())
-      uiCtx->reopenClosedDoc(docs.front());
-  }
+  if (auto uiCtx = dynamic_cast<UIContext*>(ctx))
+    uiCtx->reopenLastClosedDoc();
 }
 
 Command* CommandFactory::createReopenClosedFileCommand()
