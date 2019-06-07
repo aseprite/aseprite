@@ -23,6 +23,8 @@
 #include <chrono>
 #include <thread>
 
+#define RECO_TRACE(...) // TRACE
+
 namespace app {
 namespace crash {
 
@@ -70,7 +72,7 @@ DataRecovery::DataRecovery(Context* ctx)
 
   m_inProgress.reset(new Session(&m_config, newSessionDir));
   m_inProgress->create(pid);
-  TRACE("RECO: Session in progress '%s'\n", newSessionDir.c_str());
+  RECO_TRACE("RECO: Session in progress '%s'\n", newSessionDir.c_str());
 
   m_backup = new BackupObserver(&m_config, m_inProgress.get(), ctx);
 
@@ -138,29 +140,29 @@ void DataRecovery::searchForSessions()
   Sessions sessions;
 
   // Existent sessions
-  TRACE("RECO: Listing sessions from '%s'\n", m_sessionsDir.c_str());
+  RECO_TRACE("RECO: Listing sessions from '%s'\n", m_sessionsDir.c_str());
   for (auto& itemname : base::list_files(m_sessionsDir)) {
     std::string itempath = base::join_path(m_sessionsDir, itemname);
     if (base::is_directory(itempath)) {
-      TRACE("RECO: Session '%s'\n", itempath.c_str());
+      RECO_TRACE("RECO: Session '%s'\n", itempath.c_str());
 
       SessionPtr session(new Session(&m_config, itempath));
       if (!session->isRunning()) {
         if ((session->isEmpty()) ||
             (!session->isCrashedSession() && session->isOldSession())) {
-          TRACE("RECO: - to be deleted (%s)\n",
-                session->isEmpty() ? "is empty":
-                (session->isOldSession() ? "is old":
-                                           "unknown reason"));
+          RECO_TRACE("RECO: - to be deleted (%s)\n",
+                     session->isEmpty() ? "is empty":
+                     (session->isOldSession() ? "is old":
+                                                "unknown reason"));
           session->removeFromDisk();
         }
         else {
-          TRACE("RECO:  - to be loaded\n");
+          RECO_TRACE("RECO:  - to be loaded\n");
           sessions.push_back(session);
         }
       }
       else
-        TRACE("is running\n");
+        RECO_TRACE("is running\n");
     }
   }
 
