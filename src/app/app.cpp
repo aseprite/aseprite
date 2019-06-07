@@ -186,9 +186,10 @@ public:
 
   void deleteDataRecovery() {
 #ifdef ENABLE_DATA_RECOVERY
-    ASSERT(m_recovery);
-    delete m_recovery;
-    m_recovery = nullptr;
+    if (m_recovery) {
+      delete m_recovery;
+      m_recovery = nullptr;
+    }
 #endif
   }
 
