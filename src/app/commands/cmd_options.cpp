@@ -241,9 +241,21 @@ public:
 
     if (m_pref.general.dataRecovery())
       enableDataRecovery()->setSelected(true);
+    enableDataRecovery()->Click.connect(
+      [this](Event&){
+        const bool state = enableDataRecovery()->isSelected();
+        keepEditedSpriteData()->setEnabled(state);
+        keepEditedSpriteData()->setSelected(state);
+        keepEditedSpriteDataFor()->setEnabled(state);
+      });
 
-    if (m_pref.general.keepEditedSpriteData())
+    if (m_pref.general.dataRecovery() &&
+        m_pref.general.keepEditedSpriteData())
       keepEditedSpriteData()->setSelected(true);
+    else if (!m_pref.general.dataRecovery()) {
+      keepEditedSpriteData()->setEnabled(false);
+      keepEditedSpriteDataFor()->setEnabled(false);
+    }
 
     if (m_pref.general.keepClosedSpriteOnMemory())
       keepClosedSpriteOnMemory()->setSelected(true);
