@@ -113,9 +113,12 @@ void NewBrushCommand::onQuickboxEnd(Editor* editor, const gfx::Rect& rect, ui::M
     try {
       ContextWriter writer(UIContext::instance(), 250);
       if (writer.cel()) {
-        Tx tx(writer.context(), "Clear");
-        tx(new cmd::ClearRect(writer.cel(), rect));
-        tx.commit();
+        gfx::Rect canvasRect = (rect & writer.cel()->bounds());
+        if (!canvasRect.isEmpty()) {
+          Tx tx(writer.context(), "Clear");
+          tx(new cmd::ClearRect(writer.cel(), canvasRect));
+          tx.commit();
+        }
       }
     }
     catch (const std::exception& ex) {
