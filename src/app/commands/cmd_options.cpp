@@ -502,11 +502,11 @@ public:
       warnings += "<<- " + Strings::alerts_restart_by_preferences_keep_edited_sprite_data_lifespan();
     }
 
-    newLifespan = base::convert_to<int>(keepClosedSpriteOnMemoryFor()->getValue());
+    double newKeepClosed = base::convert_to<double>(keepClosedSpriteOnMemoryFor()->getValue());
     if (keepClosedSpriteOnMemory()->isSelected() != m_pref.general.keepClosedSpriteOnMemory() ||
-        newLifespan != m_pref.general.keepClosedSpriteOnMemoryFor()) {
+        newKeepClosed != m_pref.general.keepClosedSpriteOnMemoryFor()) {
       m_pref.general.keepClosedSpriteOnMemory(keepClosedSpriteOnMemory()->isSelected());
-      m_pref.general.keepClosedSpriteOnMemoryFor(newLifespan);
+      m_pref.general.keepClosedSpriteOnMemoryFor(newKeepClosed);
 
       warnings += "<<- " + Strings::alerts_restart_by_preferences_keep_closed_sprite_on_memory_for();
     }
