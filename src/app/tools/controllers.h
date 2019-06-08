@@ -75,6 +75,10 @@ public:
       output.addPoint(input[0]);
     }
     else if (input.size() >= 2) {
+      // The freehand controller returns only the last two points to
+      // interwine because we accumulate (TracePolicy::Accumulate) the
+      // previously painted points (i.e. don't want to redraw all the
+      // stroke from the very beginning)
       output.addPoint(input[input.size()-2]);
       output.addPoint(input[input.size()-1]);
     }

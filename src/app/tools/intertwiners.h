@@ -73,14 +73,20 @@ class IntertwineAsLines : public Intertwine {
   // user confirms a line draw while he is holding down the SHIFT key), so
   // we have to ignore printing the first pixel of the line.
   bool m_retainedTracePolicyLast = false;
-  Stroke m_pts;
+
+  // In freehand-like tools, on each mouse movement we draw only the
+  // line between the last two mouse points in the stroke (the
+  // complete stroke is not re-painted again), so we want to indicate
+  // if this is the first stroke of all (the only one that needs the
+  // first pixel of the line algorithm)
+  bool m_firstStroke = true;
 
 public:
   bool snapByAngle() override { return true; }
 
   void prepareIntertwine() override {
-    m_pts.reset();
     m_retainedTracePolicyLast = false;
+    m_firstStroke = true;
   }
 
   void joinStroke(ToolLoop* loop, const Stroke& stroke) override {
@@ -89,41 +95,35 @@ public:
     // new joinStroke() is like a fresh start.  Without this fix, the
     // first stage on LineFreehand will draw a "star" like pattern
     // with lines from the first point to the last point.
-    if (loop->getTracePolicy() == TracePolicy::Last) {
+    if (loop->getTracePolicy() == TracePolicy::Last)
       m_retainedTracePolicyLast = true;
-      m_pts.reset();
-    }
 
     if (stroke.size() == 0)
       return;
     else if (stroke.size() == 1) {
-      if (m_pts.empty())
-        m_pts = stroke;
       doPointshapePoint(stroke[0].x, stroke[0].y, loop);
-      return;
     }
     else {
+      Stroke pts;
       doc::AlgoLineWithAlgoPixel lineAlgo = getLineAlgo(loop);
       for (int c=0; c+1<stroke.size(); ++c) {
         lineAlgo(stroke[c].x, stroke[c].y,
                  stroke[c+1].x, stroke[c+1].y,
-                 (void*)&m_pts,
+                 (void*)&pts,
                  (AlgoPixel)&addPointsWithoutDuplicatingLastOne);
       }
 
       // Don't draw the first point in freehand tools (this is to
       // avoid painting above the last pixel of a freehand stroke,
       // when we use Shift+click in the Pencil tool to continue the
-      // old stroke). When filled is true we are talking about the
-      // contour tool, so we do all the points.
+      // old stroke).
       // TODO useful only in the case when brush size = 1px
       const int start =
         (loop->getController()->isFreehand() &&
-         !loop->getFilled() &&
-         m_retainedTracePolicyLast ? 1: 0);
+         (m_retainedTracePolicyLast || !m_firstStroke) ? 1: 0);
 
-      for (int c=start; c<m_pts.size(); ++c)
-        doPointshapePoint(m_pts[c].x, m_pts[c].y, loop);
+      for (int c=start; c<pts.size(); ++c)
+        doPointshapePoint(pts[c].x, pts[c].y, loop);
 
       // Closed shape (polygon outline)
       // Note: Contour tool was getting into the condition with no need, so
@@ -137,6 +137,7 @@ public:
                          stroke[0].x, stroke[0].y, loop);
       }
     }
+    m_firstStroke = false;
   }
 
   void fillStroke(ToolLoop* loop, const Stroke& stroke) override {

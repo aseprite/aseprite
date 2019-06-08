@@ -255,10 +255,6 @@ void ToolLoopManager::doLoopStep(bool lastStep)
       m_toolLoop->validateDstImage(gfx::Region(m_toolLoop->getDstImage()->bounds()));
     }
   }
-  else if (m_toolLoop->getBrush()->type() == kImageBrushType) {
-    m_toolLoop->invalidateDstImage();
-    m_toolLoop->validateDstImage(gfx::Region(m_toolLoop->getDstImage()->bounds()));
-  }
 
   m_toolLoop->validateDstImage(m_dirtyArea);
 
