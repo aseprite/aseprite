@@ -668,9 +668,6 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
     }
 
     if (tmp->nativeHandle()) {
-      if (newEngine)
-        tmp->clear(); // TODO why we need this?
-
       convert_image_to_surface(rendered.get(), m_sprite->palette(m_frame),
                                tmp, 0, 0, 0, 0, rc2.w, rc2.h);
 
