@@ -258,6 +258,9 @@ DataRecoveryView::~DataRecoveryView()
 
 void DataRecoveryView::refreshListNotification()
 {
+  if (someItemIsBusy())
+    return;
+
   fillList();
   layout();
 }
@@ -338,6 +341,19 @@ void DataRecoveryView::disableRefresh()
 {
   m_refreshButton.setEnabled(false);
   m_waitToEnableRefreshTimer.start();
+}
+
+bool DataRecoveryView::someItemIsBusy()
+{
+  // Just in case check that we are not already running some task (so
+  // we cannot refresh the list)
+  for (auto widget : m_listBox.children()) {
+    if (auto item = dynamic_cast<Item*>(widget)) {
+      if (item->isTaskRunning())
+        return true;
+    }
+  }
+  return false;
 }
 
 std::string DataRecoveryView::getTabText()
@@ -450,6 +466,9 @@ void DataRecoveryView::onDelete()
 
 void DataRecoveryView::onRefresh()
 {
+  if (someItemIsBusy())
+    return;
+
   m_dataRecovery->launchSearch();
 
   fillList();
@@ -484,12 +503,8 @@ void DataRecoveryView::onChangeSelection()
 
 void DataRecoveryView::onCheckIfWeCanEnableRefreshButton()
 {
-  for (auto widget : m_listBox.children()) {
-    if (auto item = dynamic_cast<Item*>(widget)) {
-      if (item->isTaskRunning())
-        return;
-    }
-  }
+  if (someItemIsBusy())
+    return;
 
   m_refreshButton.setEnabled(true);
   m_waitToEnableRefreshTimer.stop();

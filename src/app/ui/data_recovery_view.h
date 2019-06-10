@@ -53,6 +53,7 @@ namespace app {
     void fillList();
     void fillListWith(const bool crashes);
     void disableRefresh();
+    bool someItemIsBusy();
 
     void onOpen();
     void onOpenRaw(crash::RawImagesAs as);
