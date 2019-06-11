@@ -668,6 +668,20 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
     }
 
     if (tmp->nativeHandle()) {
+      if (newEngine) {
+        // Without doing something on the "tmp" surface before (like
+        // just drawing a pixel), we get a strange behavior where
+        // pixels are not updated correctly on the editor (e.g. when
+        // zoom < 100%). I didn't have enough time to investigate this
+        // issue yet, but this is a partial fix/hack.
+        //
+        // TODO review why do we need to do this, it looks like some
+        //      internal state of a SkCanvas or SkBitmap thing is
+        //      updated after this, because convert_image_to_surface()
+        //      will overwrite these pixels anyway.
+        tmp->drawRect(gfx::rgba(0, 0, 0, 255), gfx::Rect(0, 0, 1, 1));
+      }
+
       convert_image_to_surface(rendered.get(), m_sprite->palette(m_frame),
                                tmp, 0, 0, 0, 0, rc2.w, rc2.h);
 
