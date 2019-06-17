@@ -281,8 +281,8 @@ several minutes to finish:
 
     mkdir $HOME/deps
     cd $HOME/deps
-    git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
-    git clone -b aseprite-m71 https://github.com/aseprite/skia.git
+    git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git --depth 1
+    git clone -b aseprite-m71 https://github.com/aseprite/skia.git --depth 1
     export PATH="${PWD}/depot_tools:${PATH}"
     cd skia
     python tools/git-sync-deps
@@ -306,8 +306,8 @@ several minutes to finish:
 
     mkdir $HOME/deps
     cd $HOME/deps
-    git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
-    git clone -b aseprite-m71 https://github.com/aseprite/skia.git
+    git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git --depth 1
+    git clone -b aseprite-m71 https://github.com/aseprite/skia.git --depth 1
     export PATH="${PWD}/depot_tools:${PATH}"
     cd skia
     python tools/git-sync-deps
