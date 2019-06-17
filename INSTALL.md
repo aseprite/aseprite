@@ -321,3 +321,12 @@ described in the [Linux details](#linux-details) section.
 
 More information about these steps in the
 [official Skia documentation](https://skia.org/user/build).
+
+## For Python3 Users
+
+while building Skia, you need to run script with Python 2.
+```
+ln -s $(which python2) $HOME/deps/depot_tools/python
+```
+run this command before `export PATH="${PWD}/depot_tools:${PATH}"` line to change your python interpreter.
+if not works, open new `bash` and do `export PATH="${PWD}/depot_tools:${PATH}"`, and check with `which python` to whether it applied.
