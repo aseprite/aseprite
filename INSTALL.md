@@ -285,7 +285,7 @@ several minutes to finish:
     git clone -b aseprite-m71 https://github.com/aseprite/skia.git --depth 1
     export PATH="${PWD}/depot_tools:${PATH}"
     cd skia
-    python tools/git-sync-deps || python2 tools/git-sync-deps
+    python tools/git-sync-deps
     gn gen out/Release --args="is_official_build=true skia_use_system_expat=false skia_use_system_icu=false skia_use_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false extra_cflags_cc=[\"-frtti\"]"
     ninja -C out/Release skia
 
@@ -310,7 +310,7 @@ several minutes to finish:
     git clone -b aseprite-m71 https://github.com/aseprite/skia.git --depth 1
     export PATH="${PWD}/depot_tools:${PATH}"
     cd skia
-    python tools/git-sync-deps || python2 tools/git-sync-deps
+    python tools/git-sync-deps
     gn gen out/Release --args="is_debug=false is_official_build=true skia_use_system_expat=false skia_use_system_icu=false skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false"
     ninja -C out/Release skia
 
