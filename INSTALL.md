@@ -247,7 +247,7 @@ Then:
 Just ignore it.)
 
     cd C:\deps
-    git clone -b aseprite-m71 https://github.com/aseprite/skia.git
+    git clone -b aseprite-m71 https://github.com/aseprite/skia.git --depth 1
     cd skia
     set GIT_EXECUTABLE=git.bat
     python tools/git-sync-deps
