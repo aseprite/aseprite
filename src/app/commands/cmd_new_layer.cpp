@@ -121,8 +121,8 @@ void NewLayerCommand::onExecute(Context* context)
   Scoped destroyPasteDoc(
     [&pasteDoc, context]{
       if (pasteDoc) {
-        context->documents().remove(pasteDoc);
-        delete pasteDoc;
+        DocDestroyer destroyer(context, pasteDoc, 100);
+        destroyer.destroyDocument();
       }
     });
 

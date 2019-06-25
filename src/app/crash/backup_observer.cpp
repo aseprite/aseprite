@@ -97,7 +97,8 @@ void BackupObserver::onRemoveDocument(Doc* doc)
     std::unique_lock<std::mutex> lock(m_mutex);
     base::remove_from_container(m_documents, doc);
   }
-  if (m_config->keepEditedSpriteDataFor > 0)
+  if (m_config->keepEditedSpriteDataFor > 0 &&
+      doc->needsBackup())
     m_closedDocs.push_back(doc);
   else
     m_session->removeDocument(doc);
