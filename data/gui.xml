@@ -39,6 +39,9 @@
       <key command="CopyMerged" shortcut="Ctrl+Shift+C" mac="Cmd+Shift+C" />
       <key command="Paste" shortcut="Ctrl+V" mac="Cmd+V" />
       <key command="Paste" shortcut="Shift+Ins" />
+      <key command="NewLayer" shortcut="Ctrl+Shift+V" mac="Cmd+Shift+V">
+        <param name="fromClipboard" value="true" />
+      </key>
       <key command="Clear" shortcut="Del" />
       <key command="Clear" shortcut="Backspace" />
       <key command="Fill" shortcut="F" />
@@ -623,6 +626,15 @@
         <item command="Copy" text="@.edit_copy" />
         <item command="CopyMerged" text="@.edit_copy_merged" />
         <item command="Paste" text="@.edit_paste" />
+        <menu text="@.edit_paste_special">
+          <item command="NewLayer" text="@.edit_paste_special_new_layer">
+            <param name="fromClipboard" value="true" />
+          </item>
+          <item command="NewLayer" text="@.edit_paste_special_new_ref_layer">
+            <param name="reference" value="true" />
+            <param name="fromClipboard" value="true" />
+          </item>
+        </menu>
         <item command="Clear" text="@.edit_clear" />
         <separator />
         <item command="Fill" text="@.edit_fill" />
@@ -772,7 +784,7 @@
         <separator />
         <item command="NewLayer" text="@.layer_add_reference_layer">
           <param name="reference" value="true" />
-          <param name="from-file" value="true" />
+          <param name="fromFile" value="true" />
         </item>
       </menu>
       <menu text="@.frame">

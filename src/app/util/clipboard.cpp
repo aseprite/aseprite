@@ -12,6 +12,7 @@
 #include "app/app.h"
 #include "app/cmd/clear_mask.h"
 #include "app/cmd/deselect_mask.h"
+#include "app/cmd/set_mask.h"
 #include "app/cmd/trim_cel.h"
 #include "app/console.h"
 #include "app/context_access.h"
@@ -324,14 +325,16 @@ void copy_palette(const Palette* palette, const doc::PalettePicks& picks)
   clipboard_picks = picks;
 }
 
-void paste()
+void paste(Context* ctx, const bool interactive)
 {
-  Editor* editor = current_editor;
-  if (editor == NULL)
+  Site site = ctx->activeSite();
+  Doc* dstDoc = site.document();
+  if (!dstDoc)
     return;
 
-  Doc* dstDoc = editor->document();
-  Sprite* dstSpr = dstDoc->sprite();
+  Sprite* dstSpr = site.sprite();
+  if (!dstSpr)
+    return;
 
   switch (get_current_format()) {
 
@@ -350,7 +353,7 @@ void paste()
       if (!clipboard_image)
         return;
 
-      Palette* dst_palette = dstSpr->palette(editor->frame());
+      Palette* dst_palette = dstSpr->palette(site.frame());
 
       // Source image (clipboard or a converted copy to the destination 'imgtype')
       ImageRef src_image;
@@ -362,7 +365,7 @@ void paste()
         src_image = clipboard_image;
       }
       else {
-        RgbMap* dst_rgbmap = dstSpr->rgbMap(editor->frame());
+        RgbMap* dst_rgbmap = dstSpr->rgbMap(site.frame());
 
         src_image.reset(
           render::convert_pixel_format(
@@ -373,9 +376,42 @@ void paste()
             0));
       }
 
-      // Change to MovingPixelsState
-      editor->pasteImage(src_image.get(),
-                         clipboard_mask.get());
+      if (current_editor && interactive) {
+        // Change to MovingPixelsState
+        current_editor->pasteImage(src_image.get(),
+                                   clipboard_mask.get());
+      }
+      else {
+        // Non-interactive version (just copy the image to the cel)
+        Layer* dstLayer = site.layer();
+        ASSERT(dstLayer);
+        if (!dstLayer || !dstLayer->isImage())
+          return;
+
+        Tx tx(ctx, "Paste Image");
+        DocApi api = dstDoc->getApi(tx);
+        Cel* dstCel = api.addCel(
+          static_cast<LayerImage*>(dstLayer), site.frame(),
+          ImageRef(Image::createCopy(src_image.get())));
+
+        // Adjust bounds
+        if (dstCel) {
+          if (clipboard_mask) {
+            if (dstLayer->isReference()) {
+              dstCel->setBounds(dstSpr->bounds());
+
+              Mask emptyMask;
+              tx(new cmd::SetMask(dstDoc, &emptyMask));
+            }
+            else {
+              dstCel->setBounds(clipboard_mask->bounds());
+              tx(new cmd::SetMask(dstDoc, clipboard_mask.get()));
+            }
+          }
+        }
+
+        tx.commit();
+      }
       break;
     }
 
@@ -387,8 +423,12 @@ void paste()
       switch (srcRange.type()) {
 
         case DocRange::kCels: {
-          Layer* dstLayer = editor->layer();
-          frame_t dstFrameFirst = editor->frame();
+          Layer* dstLayer = site.layer();
+          ASSERT(dstLayer);
+          if (!dstLayer)
+            return;
+
+          frame_t dstFrameFirst = site.frame();
 
           DocRange dstRange;
           dstRange.startRange(dstLayer, dstFrameFirst, DocRange::kCels);
@@ -405,11 +445,12 @@ void paste()
             // This is the app::copy_range (not clipboard::copy_range()).
             if (srcRange.layers() == dstRange.layers())
               app::copy_range(srcDoc, srcRange, dstRange, kDocRangeBefore);
-            editor->invalidate();
+            if (current_editor)
+              current_editor->invalidate(); // TODO check if this is necessary
             return;
           }
 
-          Tx tx(UIContext::instance(), "Paste Cels");
+          Tx tx(ctx, "Paste Cels");
           DocApi api = dstDoc->getApi(tx);
 
           // Add extra frames if needed
@@ -484,12 +525,13 @@ void paste()
           }
 
           tx.commit();
-          editor->invalidate();
+          if (current_editor)
+            current_editor->invalidate(); // TODO check if this is necessary
           break;
         }
 
         case DocRange::kFrames: {
-          frame_t dstFrame = editor->frame();
+          frame_t dstFrame = site.frame();
 
           // We use a DocRange operation to copy frames inside
           // the same sprite.
@@ -501,7 +543,7 @@ void paste()
             break;
           }
 
-          Tx tx(UIContext::instance(), "Paste Frames");
+          Tx tx(ctx, "Paste Frames");
           DocApi api = dstDoc->getApi(tx);
 
           auto srcLayers = srcSpr->allBrowsableLayers();
@@ -536,7 +578,8 @@ void paste()
           }
 
           tx.commit();
-          editor->invalidate();
+          if (current_editor)
+            current_editor->invalidate(); // TODO check if this is necessary
           break;
         }
 
@@ -544,7 +587,7 @@ void paste()
           if (srcDoc->colorMode() != dstDoc->colorMode())
             throw std::runtime_error("You cannot copy layers of document with different color modes");
 
-          Tx tx(UIContext::instance(), "Paste Layers");
+          Tx tx(ctx, "Paste Layers");
           DocApi api = dstDoc->getApi(tx);
 
           // Remove children if their parent is selected so we only
@@ -587,7 +630,8 @@ void paste()
           }
 
           tx.commit();
-          editor->invalidate();
+          if (current_editor)
+            current_editor->invalidate(); // TODO check if this is necessary
           break;
         }
       }

@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -22,6 +23,7 @@ namespace doc {
 
 namespace app {
   class Doc;
+  class Context;
   class ContextReader;
   class ContextWriter;
   class DocRange;
@@ -61,7 +63,7 @@ namespace app {
     void copy_range(const ContextReader& context, const DocRange& range);
     void copy_image(const Image* image, const Mask* mask, const Palette* palette);
     void copy_palette(const Palette* palette, const PalettePicks& picks);
-    void paste();
+    void paste(Context* ctx, const bool interactive);
 
     // Returns true and fills the specified "size"" with the image's
     // size in the clipboard, or return false in case that the clipboard

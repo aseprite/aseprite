@@ -4017,7 +4017,7 @@ bool Timeline::onCopy(Context* ctx)
 bool Timeline::onPaste(Context* ctx)
 {
   if (clipboard::get_current_format() == clipboard::ClipboardDocRange) {
-    clipboard::paste();
+    clipboard::paste(ctx, true);
     return true;
   }
   else

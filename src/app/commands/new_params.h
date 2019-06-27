@@ -136,9 +136,8 @@ namespace app {
     CommandWithNewParams(Args&&...args)
       : CommandWithNewParamsBase(std::forward<Args>(args)...) { }
 
-    T& params() {
-      return m_params;
-    }
+    T& params() { return m_params; }
+    const T& params() const { return m_params; }
 
   private:
     void onResetValues() override {

@@ -552,7 +552,7 @@ bool DocView::onCopy(Context* ctx)
 bool DocView::onPaste(Context* ctx)
 {
   if (clipboard::get_current_format() == clipboard::ClipboardImage) {
-    clipboard::paste();
+    clipboard::paste(ctx, true);
     return true;
   }
   else
