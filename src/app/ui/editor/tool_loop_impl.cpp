@@ -33,7 +33,7 @@
 #include "app/tools/tool.h"
 #include "app/tools/tool_box.h"
 #include "app/tools/tool_loop.h"
-#include "app/transaction.h"
+#include "app/tx.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/context_bar.h"
 #include "app/ui/editor/editor.h"
@@ -361,7 +361,7 @@ class ToolLoopImpl : public ToolLoopBase {
   Mask* m_mask;
   gfx::Point m_maskOrigin;
   bool m_canceled;
-  Transaction m_transaction;
+  Tx m_tx;
   ExpandCelCanvas* m_expandCelCanvas;
   Image* m_floodfillSrcImage;
   bool m_saveLastPoint;
@@ -383,14 +383,14 @@ public:
                    button, fgColor, bgColor)
     , m_context(context)
     , m_canceled(false)
-    , m_transaction(m_context,
-                    m_tool->getText().c_str(),
-                    ((getInk()->isSelection() ||
-                      getInk()->isEyedropper() ||
-                      getInk()->isScrollMovement() ||
-                      getInk()->isSlice() ||
-                      getInk()->isZoom()) ? DoesntModifyDocument:
-                                            ModifyDocument))
+    , m_tx(m_context,
+           m_tool->getText().c_str(),
+           ((getInk()->isSelection() ||
+             getInk()->isEyedropper() ||
+             getInk()->isScrollMovement() ||
+             getInk()->isSlice() ||
+             getInk()->isZoom()) ? DoesntModifyDocument:
+                                   ModifyDocument))
     , m_expandCelCanvas(nullptr)
     , m_floodfillSrcImage(nullptr)
     , m_saveLastPoint(saveLastPoint)
@@ -428,7 +428,7 @@ public:
     m_expandCelCanvas = new ExpandCelCanvas(
       site, site.layer(),
       m_docPref.tiled.mode(),
-      m_transaction,
+      m_tx,
       ExpandCelCanvas::Flags(
         ExpandCelCanvas::NeedsSource |
         // If the tool is freehand-like, we can use the modified
@@ -468,7 +468,7 @@ public:
         (!m_document->isMaskVisible() ||
          (int(getModifiers()) & int(tools::ToolLoopModifiers::kReplaceSelection)))) {
       Mask emptyMask;
-      m_transaction.execute(new cmd::SetMask(m_document, &emptyMask));
+      m_tx(new cmd::SetMask(m_document, &emptyMask));
     }
 
     m_celOrigin = m_expandCelCanvas->getCel()->position();
@@ -491,10 +491,9 @@ public:
     if (!m_canceled) {
       // Freehand changes the last point
       if (m_saveLastPoint) {
-        m_transaction.execute(
-          new cmd::SetLastPoint(
-            m_document,
-            getController()->getLastPoint()));
+        m_tx(new cmd::SetLastPoint(
+               m_document,
+               getController()->getLastPoint()));
       }
 
       // Paint ink
@@ -521,7 +520,7 @@ public:
         redraw = true;
       }
 
-      m_transaction.commit();
+      m_tx.commit();
     }
     else {
       redraw = true;
@@ -569,7 +568,7 @@ public:
   bool useMask() override { return m_useMask; }
   Mask* getMask() override { return m_mask; }
   void setMask(Mask* newMask) override {
-    m_transaction.execute(new cmd::SetMask(m_document, newMask));
+    m_tx(new cmd::SetMask(m_document, newMask));
   }
   gfx::Point getMaskOrigin() override { return m_maskOrigin; }
   bool getFilled() override { return m_filled; }
@@ -599,7 +598,7 @@ public:
                     color.getBlue(),
                     color.getAlpha()));
 
-        m_transaction.execute(new cmd::AddSlice(m_sprite, slice));
+        m_tx(new cmd::AddSlice(m_sprite, slice));
         return;
       }
     }
