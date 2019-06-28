@@ -627,6 +627,9 @@
         <item command="CopyMerged" text="@.edit_copy_merged" />
         <item command="Paste" text="@.edit_paste" />
         <menu text="@.edit_paste_special">
+          <item command="NewFile" text="@.edit_paste_special_new_sprite">
+            <param name="fromClipboard" value="true" />
+          </item>
           <item command="NewLayer" text="@.edit_paste_special_new_layer">
             <param name="fromClipboard" value="true" />
           </item>

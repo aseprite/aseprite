@@ -65,6 +65,8 @@ namespace app {
     void copy_palette(const Palette* palette, const PalettePicks& picks);
     void paste(Context* ctx, const bool interactive);
 
+    ImageRef get_image(Palette* palette);
+
     // Returns true and fills the specified "size"" with the image's
     // size in the clipboard, or return false in case that the clipboard
     // doesn't contain an image at all.

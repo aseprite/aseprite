@@ -340,18 +340,10 @@ void paste(Context* ctx, const bool interactive)
 
     case clipboard::ClipboardImage: {
       // Get the image from the native clipboard.
-      if (use_native_clipboard()) {
-        Image* native_image = nullptr;
-        Mask* native_mask = nullptr;
-        Palette* native_palette = nullptr;
-        get_native_clipboard_bitmap(&native_image, &native_mask, &native_palette);
-        if (native_image)
-          set_clipboard_image(native_image, native_mask, native_palette,
-                              false, false);
-      }
-
-      if (!clipboard_image)
+      if (!get_image(nullptr))
         return;
+
+      ASSERT(clipboard_image);
 
       Palette* dst_palette = dstSpr->palette(site.frame());
 
@@ -639,6 +631,23 @@ void paste(Context* ctx, const bool interactive)
     }
 
   }
+}
+
+ImageRef get_image(Palette* palette)
+{
+  // Get the image from the native clipboard.
+  if (use_native_clipboard()) {
+    Image* native_image = nullptr;
+    Mask* native_mask = nullptr;
+    Palette* native_palette = nullptr;
+    get_native_clipboard_bitmap(&native_image, &native_mask, &native_palette);
+    if (native_image)
+      set_clipboard_image(native_image, native_mask, native_palette,
+                          false, false);
+  }
+  if (clipboard_palette && palette)
+    clipboard_palette->copyColorsTo(palette);
+  return clipboard_image;
 }
 
 bool get_image_size(gfx::Size& size)

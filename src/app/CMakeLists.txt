@@ -248,7 +248,6 @@ if(ENABLE_UI)
     commands/cmd_move_cel.cpp
     commands/cmd_move_mask.cpp
     commands/cmd_new_brush.cpp
-    commands/cmd_new_file.cpp
     commands/cmd_new_frame_tag.cpp
     commands/cmd_new_sprite_from_selection.cpp
     commands/cmd_onionskin.cpp
@@ -513,6 +512,7 @@ add_library(app-lib
   commands/cmd_layer_from_background.cpp
   commands/cmd_load_palette.cpp
   commands/cmd_merge_down_layer.cpp
+  commands/cmd_new_file.cpp
   commands/cmd_new_frame.cpp
   commands/cmd_new_layer.cpp
   commands/cmd_open_file.cpp
