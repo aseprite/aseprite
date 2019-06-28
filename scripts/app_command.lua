@@ -22,6 +22,18 @@ do -- Undo/Redo commands (like app.undo/redo())
   assert(s.height == 40)
 end
 
+do -- NewSprite
+  local s1 = app.activeSprite
+  app.command.NewFile{ }
+  assert(s1 == app.activeSprite)
+  app.command.NewFile{ width=256, height=128, colorMode=ColorMode.INDEXED }
+  local s2 = app.activeSprite
+  assert(s1 ~= s2)
+  assert(s2.width == 256)
+  assert(s2.height == 128)
+  assert(s2.colorMode == ColorMode.INDEXED)
+end
+
 do -- NewLayer/RemoveLayer
   local s = Sprite(32, 32)
   assert(#s.layers == 1)
