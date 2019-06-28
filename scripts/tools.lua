@@ -523,3 +523,32 @@ do
   drawing_with_symmetry(ColorMode.RGB, rgba(255, 0, 0),
 			ColorMode.RGB, rgba(255, 0, 0))
 end
+
+----------------------------------------------------------------------
+-- useTool in a transaction
+----------------------------------------------------------------------
+
+do
+  local s = Sprite(2, 2)
+  local r = red.rgbaPixel
+  local y = yellow.rgbaPixel
+  app.fgColor = r
+
+  local cel = s.cels[1]
+  expect_img(cel.image, { 0, 0,
+                          0, 0 })
+  app.transaction(
+    function()
+      app.useTool{ tool=pencil,
+                   color=r, brush=Brush{ size=1 },
+                   points={ Point(0, 0) } }
+      app.useTool{ tool=pencil,
+                   color=y, brush=Brush{ size=1 },
+                   points={ Point(1, 1) } }
+    end)
+  expect_img(cel.image, { r, 0,
+                          0, y })
+  app.undo() -- Undo the whole transaction (two useTool grouped in one transaction)
+  expect_img(cel.image, { 0, 0,
+                          0, 0 })
+end
