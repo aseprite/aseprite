@@ -104,8 +104,11 @@ bool NewLayerCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
                              ContextFlags::HasActiveSprite)
-    && (!params().fromClipboard() ||
-        (clipboard::get_current_format() == clipboard::ClipboardImage));
+    && (!params().fromClipboard()
+#ifdef ENABLE_UI
+        || (clipboard::get_current_format() == clipboard::ClipboardImage)
+#endif
+        );
 }
 
 namespace {
@@ -327,10 +330,12 @@ void NewLayerCommand::onExecute(Context* context)
         }
       }
     }
+#ifdef ENABLE_UI
     // Paste new layer from clipboard
     else if (params().fromClipboard() && layer->isImage()) {
       clipboard::paste(context, false);
     }
+#endif // ENABLE_UI
 
     tx.commit();
   }
