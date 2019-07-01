@@ -2095,7 +2095,9 @@ void Timeline::drawLayer(ui::Graphics* g, int layerIdx)
   doc::color_t layerColor = layer->userData().color();
   gfx::Rect textBounds = bounds;
   if (m_rows[layerIdx].level() > 0) {
-    int w = m_rows[layerIdx].level()*frameBoxWidth();
+    const int frameBoxWithWithoutZoom =
+      skinTheme()->dimensions.timelineBaseSize();
+    const int w = m_rows[layerIdx].level()*frameBoxWithWithoutZoom;
     textBounds.x += w;
     textBounds.w -= w;
   }
