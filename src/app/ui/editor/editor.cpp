@@ -691,7 +691,6 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
       else {
         g->blit(tmp, 0, 0, dest.x, dest.y, dest.w, dest.h);
       }
-      m_brushPreview.invalidateRegion(gfx::Region(dest));
     }
   }
 
