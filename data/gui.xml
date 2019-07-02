@@ -782,9 +782,6 @@
             <param name="group" value="true" />
           </item>
           <separator />
-          <item command="NewLayer" text="@.layer_new_layer_from_clipboard">
-            <param name="fromClipboard" value="true" />
-          </item>
           <item command="NewLayer" text="@.layer_new_layer_via_copy">
             <param name="viaCopy" value="true" />
           </item>
@@ -795,10 +792,6 @@
           <item command="NewLayer" text="@.layer_new_reference_layer_from_file">
             <param name="reference" value="true" />
             <param name="fromFile" value="true" />
-          </item>
-          <item command="NewLayer" text="@.layer_new_reference_layer_from_clipboard">
-            <param name="reference" value="true" />
-            <param name="fromClipboard" value="true" />
           </item>
         </menu>
         <item command="RemoveLayer" text="@.layer_delete_layer" />
