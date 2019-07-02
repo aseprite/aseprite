@@ -39,9 +39,6 @@
       <key command="CopyMerged" shortcut="Ctrl+Shift+C" mac="Cmd+Shift+C" />
       <key command="Paste" shortcut="Ctrl+V" mac="Cmd+V" />
       <key command="Paste" shortcut="Shift+Ins" />
-      <key command="NewLayer" shortcut="Ctrl+Shift+V" mac="Cmd+Shift+V">
-        <param name="fromClipboard" value="true" />
-      </key>
       <key command="Clear" shortcut="Del" />
       <key command="Clear" shortcut="Backspace" />
       <key command="Fill" shortcut="F" />
@@ -77,6 +74,15 @@
       </key>
       <key command="NewLayer" shortcut="Alt+Shift+N">
         <param name="group" value="true" />
+      </key>
+      <key command="NewLayer" shortcut="Ctrl+Shift+V" mac="Cmd+Shift+V">
+        <param name="fromClipboard" value="true" />
+      </key>
+      <key command="NewLayer" shortcut="Ctrl+J" mac="Cmd+J">
+        <param name="viaCopy" value="true" />
+      </key>
+      <key command="NewLayer" shortcut="Ctrl+Shift+J" mac="Cmd+Shift+J">
+        <param name="viaCut" value="true" />
       </key>
       <key command="GotoPreviousLayer" shortcut="Down" context="Normal" />
       <key command="GotoNextLayer" shortcut="Up" context="Normal" />
@@ -770,10 +776,31 @@
         <item command="LayerLock" text="@.layer_lock_layers" />
         <item command="OpenGroup" text="@.layer_open_group" />
         <separator />
-        <item command="NewLayer" text="@.layer_new_layer" />
-        <item command="NewLayer" text="@.layer_new_group">
-          <param name="group" value="true" />
-        </item>
+        <menu text="@.layer_new">
+          <item command="NewLayer" text="@.layer_new_layer" />
+          <item command="NewLayer" text="@.layer_new_group">
+            <param name="group" value="true" />
+          </item>
+          <separator />
+          <item command="NewLayer" text="@.layer_new_layer_from_clipboard">
+            <param name="fromClipboard" value="true" />
+          </item>
+          <item command="NewLayer" text="@.layer_new_layer_via_copy">
+            <param name="viaCopy" value="true" />
+          </item>
+          <item command="NewLayer" text="@.layer_new_layer_via_cut">
+            <param name="viaCut" value="true" />
+          </item>
+          <separator />
+          <item command="NewLayer" text="@.layer_new_reference_layer_from_file">
+            <param name="reference" value="true" />
+            <param name="fromFile" value="true" />
+          </item>
+          <item command="NewLayer" text="@.layer_new_reference_layer_from_clipboard">
+            <param name="reference" value="true" />
+            <param name="fromClipboard" value="true" />
+          </item>
+        </menu>
         <item command="RemoveLayer" text="@.layer_delete_layer" />
         <item command="BackgroundFromLayer" text="@.layer_background_from_layer" />
         <item command="LayerFromBackground" text="@.layer_layer_from_background" />
@@ -783,11 +810,6 @@
         <item command="FlattenLayers" text="@.layer_flatten" />
         <item command="FlattenLayers" text="@.layer_flatten_visible">
           <param name="visibleOnly" value="true" />
-        </item>
-        <separator />
-        <item command="NewLayer" text="@.layer_add_reference_layer">
-          <param name="reference" value="true" />
-          <param name="fromFile" value="true" />
         </item>
       </menu>
       <menu text="@.frame">

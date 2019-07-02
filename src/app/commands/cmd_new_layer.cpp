@@ -10,7 +10,9 @@
 #endif
 
 #include "app/app.h"
+#include "app/cmd/clear_mask.h"
 #include "app/cmd/move_layer.h"
+#include "app/cmd/trim_cel.h"
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
 #include "app/commands/new_params.h"
@@ -26,6 +28,7 @@
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
+#include "app/util/new_image_from_mask.h"
 #include "doc/layer.h"
 #include "doc/primitives.h"
 #include "doc/sprite.h"
@@ -52,6 +55,8 @@ struct NewLayerParams : public NewParams {
   Param<bool> ask { this, false, "ask" };
   Param<bool> fromFile { this, false, { "fromFile", "from-file" } };
   Param<bool> fromClipboard { this, false, "fromClipboard" };
+  Param<bool> viaCut { this, false, "viaCut" };
+  Param<bool> viaCopy { this, false, "viaCopy" };
   Param<bool> top { this, false, "top" };
   Param<bool> before { this, false, "before" };
 };
@@ -70,6 +75,7 @@ protected:
   std::string onGetFriendlyName() const override;
 
 private:
+  void adjustRefCelBounds(Cel* cel, gfx::RectF bounds);
   std::string getUniqueLayerName(const Sprite* sprite) const;
   int getMaxLayerNum(const Layer* layer) const;
   std::string layerPrefix() const;
@@ -102,13 +108,22 @@ void NewLayerCommand::onLoadParams(const Params& commandParams)
 
 bool NewLayerCommand::onEnabled(Context* context)
 {
-  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                             ContextFlags::HasActiveSprite)
-    && (!params().fromClipboard()
+  if (!context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+                           ContextFlags::HasActiveSprite))
+    return false;
+
 #ifdef ENABLE_UI
-        || (clipboard::get_current_format() == clipboard::ClipboardImage)
+  if (params().fromClipboard() &&
+      clipboard::get_current_format() != clipboard::ClipboardImage)
+    return false;
 #endif
-        );
+
+  if ((params().viaCut() ||
+       params().viaCopy()) &&
+      !context->checkFlags(ContextFlags::HasVisibleMask))
+    return false;
+
+  return true;
 }
 
 namespace {
@@ -124,6 +139,7 @@ private:
 void NewLayerCommand::onExecute(Context* context)
 {
   ContextWriter writer(context);
+  Site site = context->activeSite();
   Doc* document(writer.document());
   Sprite* sprite(writer.sprite());
   std::string name;
@@ -180,7 +196,7 @@ void NewLayerCommand::onExecute(Context* context)
 
   LayerGroup* parent = sprite->root();
   Layer* activeLayer = writer.layer();
-  SelectedLayers selLayers = writer.site()->selectedLayers();
+  SelectedLayers selLayers = site.selectedLayers();
   if (activeLayer) {
     if (activeLayer->isGroup() &&
         activeLayer->isExpanded() &&
@@ -243,7 +259,7 @@ void NewLayerCommand::onExecute(Context* context)
     }
 
     // Put all selected layers inside the group
-    if (m_type == Type::Group && writer.site()->inTimeline()) {
+    if (m_type == Type::Group && site.inTimeline()) {
       LayerGroup* commonParent = nullptr;
       layer_t sameParents = 0;
       for (Layer* l : selLayers) {
@@ -314,14 +330,8 @@ void NewLayerCommand::onExecute(Context* context)
 
         if (cel) {
           if (layer->isReference()) {
-            gfx::RectF bounds(0, 0, pasteSpr->width(), pasteSpr->height());
-            double scale = MIN(double(sprite->width()) / bounds.w,
-                               double(sprite->height()) / bounds.h);
-            bounds.w *= scale;
-            bounds.h *= scale;
-            bounds.x = sprite->width()/2 - bounds.w/2;
-            bounds.y = sprite->height()/2 - bounds.h/2;
-            cel->setBoundsF(bounds);
+            adjustRefCelBounds(
+              cel, gfx::RectF(0, 0, pasteSpr->width(), pasteSpr->height()));
           }
           else {
             cel->setPosition(sprite->width()/2 - pasteSpr->width()/2,
@@ -334,8 +344,43 @@ void NewLayerCommand::onExecute(Context* context)
     // Paste new layer from clipboard
     else if (params().fromClipboard() && layer->isImage()) {
       clipboard::paste(context, false);
+
+      if (layer->isReference()) {
+        if (Cel* cel = layer->cel(site.frame())) {
+          adjustRefCelBounds(
+            cel, cel->boundsF());
+        }
+      }
     }
 #endif // ENABLE_UI
+    // Paste new layer from selection
+    else if ((params().viaCut() || params().viaCopy())
+             && layer->isImage()
+             && document->isMaskVisible()) {
+      const doc::Mask* mask = document->mask();
+      ASSERT(mask);
+      ImageRef image(new_image_from_mask(site, mask, true));
+      if (image) {
+        Cel* cel = api.addCel(static_cast<LayerImage*>(layer),
+                              site.frame(), image);
+        if (cel) {
+          gfx::Point pos = mask->bounds().origin();
+          cel->setPosition(pos.x, pos.y);
+        }
+
+        if (params().viaCut() &&
+            site.cel() && site.layer()) {
+          tx(new cmd::ClearMask(site.cel()));
+
+          if (site.layer()->isTransparent()) {
+            // If the cel wasn't deleted by cmd::ClearMask, we trim it.
+            cel = site.layer()->cel(site.frame());
+            if (cel)
+              tx(new cmd::TrimCel(cel));
+          }
+        }
+      }
+    }
 
     tx.commit();
   }
@@ -364,7 +409,23 @@ std::string NewLayerCommand::onGetFriendlyName() const
     text = fmt::format(Strings::commands_NewLayer(), layerPrefix());
   if (params().fromClipboard())
     text = fmt::format(Strings::commands_NewLayer_FromClipboard(), text);
+  if (params().viaCopy())
+    text = fmt::format(Strings::commands_NewLayer_ViaCopy(), text);
+  if (params().viaCut())
+    text = fmt::format(Strings::commands_NewLayer_ViaCut(), text);
   return text;
+}
+
+void NewLayerCommand::adjustRefCelBounds(Cel* cel, gfx::RectF bounds)
+{
+  Sprite* sprite = cel->sprite();
+  double scale = MIN(double(sprite->width()) / bounds.w,
+                     double(sprite->height()) / bounds.h);
+  bounds.w *= scale;
+  bounds.h *= scale;
+  bounds.x = sprite->width()/2 - bounds.w/2;
+  bounds.y = sprite->height()/2 - bounds.h/2;
+  cel->setBoundsF(bounds);
 }
 
 std::string NewLayerCommand::getUniqueLayerName(const Sprite* sprite) const
