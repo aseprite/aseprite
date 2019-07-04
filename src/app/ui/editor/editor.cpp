@@ -329,11 +329,19 @@ void Editor::getInvalidDecoratoredRegion(gfx::Region& region)
 
 void Editor::setLayer(const Layer* layer)
 {
-  bool changed = (m_layer != layer);
+  const bool changed = (m_layer != layer);
+  const bool gridVisible = (changed && m_docPref.show.grid());
+
+  doc::Grid oldGrid, newGrid;
+  if (gridVisible)
+    oldGrid = getSite().grid();
 
   m_observers.notifyBeforeLayerChanged(this);
   m_layer = const_cast<Layer*>(layer);
   m_observers.notifyAfterLayerChanged(this);
+
+  if (gridVisible)
+    newGrid = getSite().grid();
 
   if (m_document && changed) {
     if (// If the onion skinning depends on the active layer
@@ -343,7 +351,11 @@ void Editor::setLayer(const Layer* layer)
         // If there is a different opacity for nonactive-layers
         Preferences::instance().experimental.nonactiveLayersOpacity() < 255 ||
         // If the automatic cel guides are visible...
-        m_showGuidesThisCel) {
+        m_showGuidesThisCel ||
+        // If grid settings changed
+        (gridVisible &&
+         (oldGrid.tileSize() != newGrid.tileSize() ||
+          oldGrid.origin() != newGrid.origin()))) {
       // We've to redraw the whole editor
       invalidate();
     }
