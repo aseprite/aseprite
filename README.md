@@ -105,3 +105,5 @@ This program is distributed under three different licenses:
 
 You can get more information about Aseprite license in the
 [FAQ](http://www.aseprite.org/faq/#licensing-&-commercial).
+   Shago7932/Máster
+Code of conduct
