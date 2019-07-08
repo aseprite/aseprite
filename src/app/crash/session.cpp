@@ -390,7 +390,8 @@ void Session::deleteDirectory(const std::string& dir)
   ASSERT(!dir.empty());
   if (dir.empty())
     return;
-
+       Shago7932/Máster 
+    Code of conduct
   for (auto& item : base::list_files(dir)) {
     std::string objfn = base::join_path(dir, item);
     if (base::is_file(objfn)) {
