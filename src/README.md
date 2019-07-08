@@ -1,5 +1,6 @@
 # Aseprite Source Code
-
+ Shago7932/Máster
+  Code of conduct
 If you are here is because you want to learn about Aseprite source
 code. We'll try to write in these `README.md` files a summary of each
 module/library.
