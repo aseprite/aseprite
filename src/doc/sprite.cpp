@@ -18,6 +18,7 @@
 #include "doc/cels_range.h"
 #include "doc/image_impl.h"
 #include "doc/layer.h"
+#include "doc/layer_tilemap.h"
 #include "doc/palette.h"
 #include "doc/primitives.h"
 #include "doc/remap.h"
@@ -203,9 +204,9 @@ void Sprite::setTransparentColor(color_t color)
   m_spec.setMaskColor(color);
 
   // Change the mask color of all images.
-  std::vector<Image*> images;
+  std::vector<ImageRef> images;
   getImages(images);
-  for (Image* image : images)
+  for (ImageRef& image : images)
     image->setMaskColor(color);
 }
 
@@ -213,9 +214,9 @@ int Sprite::getMemSize() const
 {
   int size = 0;
 
-  std::vector<Image*> images;
+  std::vector<ImageRef> images;
   getImages(images);
-  for (Image* image : images)
+  for (const ImageRef& image : images)
     size += image->getRowStrideSize() * image->height();
 
   return size;
@@ -496,24 +497,32 @@ void Sprite::replaceImage(ObjectId curImageId, const ImageRef& newImage)
 }
 
 // TODO replace it with a images iterator
-void Sprite::getImages(std::vector<Image*>& images) const
+void Sprite::getImages(std::vector<ImageRef>& images) const
 {
   for (const auto& cel : uniqueCels())
-    images.push_back(cel->image());
+    if (cel->image()->pixelFormat() != IMAGE_TILEMAP)
+      images.push_back(cel->imageRef());
+
+  if (hasTilesets()) {
+    for (Tileset* tileset : *tilesets()) {
+      for (tile_index i=0; i<tileset->size(); ++i) {
+        ImageRef image = tileset->get(i);
+        if (image)
+          images.push_back(image);
+      }
+    }
+  }
 }
 
-void Sprite::remapImages(frame_t frameFrom, frame_t frameTo, const Remap& remap)
+void Sprite::remapImages(const Remap& remap)
 {
   ASSERT(pixelFormat() == IMAGE_INDEXED);
   //ASSERT(remap.size() == 256);
 
-  for (const Cel* cel : uniqueCels()) {
-    // Remap this Cel because is inside the specified range
-    if (cel->frame() >= frameFrom &&
-        cel->frame() <= frameTo) {
-      remap_image(cel->image(), remap);
-    }
-  }
+  std::vector<ImageRef> images;
+  getImages(images);
+  for (ImageRef& image : images)
+    remap_image(image.get(), remap);
 }
 
 //////////////////////////////////////////////////////////////////////

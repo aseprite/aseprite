@@ -360,11 +360,11 @@ int Image_saveAs(lua_State* L)
 
   std::unique_ptr<Sprite> sprite(Sprite::MakeStdSprite(img->spec(), 256));
 
-  std::vector<Image*> oneImage;
+  std::vector<ImageRef> oneImage;
   sprite->getImages(oneImage);
   ASSERT(oneImage.size() == 1);
   if (!oneImage.empty())
-    copy_image(oneImage.front(), img);
+    copy_image(oneImage.front().get(), img);
 
   if (pal)
     sprite->setPalette(pal, false);

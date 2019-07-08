@@ -167,8 +167,11 @@ namespace doc {
     // Images
 
     void replaceImage(ObjectId curImageId, const ImageRef& newImage);
-    void getImages(std::vector<Image*>& images) const;
-    void remapImages(frame_t frameFrom, frame_t frameTo, const Remap& remap);
+
+    // Returns all sprite images (cel + tiles) that aren't tilemaps
+    void getImages(std::vector<ImageRef>& images) const;
+
+    void remapImages(const Remap& remap);
     void pickCels(const double x,
                   const double y,
                   const frame_t frame,

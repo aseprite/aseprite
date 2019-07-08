@@ -31,7 +31,7 @@ void RemapColors::onExecute()
 {
   Sprite* spr = sprite();
   if (spr->pixelFormat() == IMAGE_INDEXED) {
-    spr->remapImages(0, spr->lastFrame(), m_remap);
+    spr->remapImages(m_remap);
     incrementVersions(spr);
   }
 }
@@ -40,7 +40,7 @@ void RemapColors::onUndo()
 {
   Sprite* spr = this->sprite();
   if (spr->pixelFormat() == IMAGE_INDEXED) {
-    spr->remapImages(0, spr->lastFrame(), m_remap.invert());
+    spr->remapImages(m_remap.invert());
     incrementVersions(spr);
   }
 }

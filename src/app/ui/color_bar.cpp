@@ -686,11 +686,14 @@ void ColorBar::onRemapButtonClick()
       Tx tx(writer.context(), "Remap Colors", ModifyDocument);
       bool remapPixels = true;
 
+      std::vector<ImageRef> images;
+      sprite->getImages(images);
+
       if (remap.isFor8bit()) {
         PalettePicks usedEntries(256);
 
-        for (const Cel* cel : sprite->uniqueCels()) {
-          for (const auto& i : LockImageBits<IndexedTraits>(cel->image()))
+        for (ImageRef& image : images) {
+          for (const auto& i : LockImageBits<IndexedTraits>(image.get()))
             usedEntries[i] = true;
         }
 
@@ -702,13 +705,11 @@ void ColorBar::onRemapButtonClick()
 
       // Special remap saving original images in undo history
       if (remapPixels) {
-        for (Cel* cel : sprite->uniqueCels()) {
-          ImageRef celImage = cel->imageRef();
-          ImageRef newImage(Image::createCopy(celImage.get()));
+        for (ImageRef& image : images) {
+          ImageRef newImage(Image::createCopy(image.get()));
           doc::remap_image(newImage.get(), remap);
 
-          tx(new cmd::ReplaceImage(
-               sprite, celImage, newImage));
+          tx(new cmd::ReplaceImage(sprite, image, newImage));
         }
       }
 
