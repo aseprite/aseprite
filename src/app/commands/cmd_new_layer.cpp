@@ -181,7 +181,7 @@ void NewLayerCommand::onExecute(Context* context)
 
 #ifdef ENABLE_UI
   // If params specify to ask the user about the name...
-  if (params().ask()) {
+  if (params().ask() && context->isUIAvailable()) {
     // We open the window to ask the name
     app::gen::NewLayer window;
     window.name()->setText(name.c_str());
