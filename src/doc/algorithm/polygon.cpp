@@ -143,7 +143,13 @@ void algorithm::polygon(int vertices, const int* points, void* data, AlgoHLine p
                            verts[0].y,
                            (void*)&pts,
                            (AlgoPixel)&addPointsWithoutDuplicatingLastOne);
-      pts.pop_back();
+      // Consideration when we want to draw a simple pixel with contour tool
+      // dragging the cursor inside of a pixel (in this case pts contains
+      // just one element, which want to preserve).
+      if (pts.size() > 1)
+        // We remove the last point which is a duplicate point of
+        // the "pts" first element.
+        pts.pop_back();
     }
     else {
       algo_line_continuous(verts[c].x,

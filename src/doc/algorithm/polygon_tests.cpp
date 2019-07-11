@@ -32,6 +32,56 @@ void captureHscanSegment (int x1, int y, int x2, void* scanDataResults) {
 // polygon() function TESTS:
 // =========================
 
+TEST(Polygon, SinglePoint1)
+{
+  //  P0
+  int points[2] = { 2 , 3
+  };
+  int n = 1;
+  ScanLineResult results;
+  doc::algorithm::polygon(n, &points[0], &results, captureHscanSegment);
+  EXPECT_EQ(results.scanLines.size(), 1);
+  if (results.scanLines.size() == 1) {
+    EXPECT_EQ(results.scanLines[0].x1, 2);
+    EXPECT_EQ(results.scanLines[0].x2, 2);
+    EXPECT_EQ(results.scanLines[0].y, 3);
+  }
+}
+
+TEST(Polygon, SinglePoint2)
+{
+  //  P0=P1
+  int points[4] = { 2 , 3 ,
+    2 , 3
+  };
+  int n = 2;
+  ScanLineResult results;
+  doc::algorithm::polygon(n, &points[0], &results, captureHscanSegment);
+  EXPECT_EQ(results.scanLines.size(), 1);
+  if (results.scanLines.size() == 1) {
+    EXPECT_EQ(results.scanLines[0].x1, 2);
+    EXPECT_EQ(results.scanLines[0].x2, 2);
+    EXPECT_EQ(results.scanLines[0].y, 3);
+  }
+}
+
+TEST(Polygon, SinglePoint3)
+{
+  //  P0=P1=P2
+  int points[6] = { 2 , 3 ,
+    2 , 3 , 2 , 3
+  };
+  int n = 3;
+  ScanLineResult results;
+  doc::algorithm::polygon(n, &points[0], &results, captureHscanSegment);
+  EXPECT_EQ(results.scanLines.size(), 1);
+  if (results.scanLines.size() == 1) {
+    EXPECT_EQ(results.scanLines[0].x1, 2);
+    EXPECT_EQ(results.scanLines[0].x2, 2);
+    EXPECT_EQ(results.scanLines[0].y, 3);
+  }
+}
+
 TEST(Polygon, HorizontalLine1Test)
 {
   //  P0-----P1
