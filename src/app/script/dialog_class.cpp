@@ -694,7 +694,10 @@ int Dialog_set_bounds(lua_State* L)
 {
   auto dlg = get_obj<Dialog>(L, 1);
   const auto rc = get_obj<gfx::Rect>(L, 2);
-  dlg->window.setBounds(*rc);
+  if (*rc != dlg->window.bounds()) {
+    dlg->window.setBounds(*rc);
+    dlg->window.invalidate();
+  }
   return 0;
 }
 
