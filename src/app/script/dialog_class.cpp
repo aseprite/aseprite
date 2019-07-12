@@ -179,6 +179,17 @@ int Dialog_show(lua_State* L)
     if (type == LUA_TBOOLEAN)
       wait = lua_toboolean(L, -1);
     lua_pop(L, 1);
+
+    type = lua_getfield(L, 2, "bounds");
+    if (type != LUA_TNONE &&
+        type != LUA_TNIL) {
+      const auto rc = convert_args_into_rect(L, -1);
+      if (!rc.isEmpty()) {
+        dlg->window.remapWindow();
+        dlg->window.setBounds(rc);
+      }
+    }
+    lua_pop(L, 1);
   }
 
   if (wait)
