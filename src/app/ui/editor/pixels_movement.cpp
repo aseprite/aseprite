@@ -61,7 +61,7 @@ PixelsMovement::PixelsMovement(
   , m_document(site.document())
   , m_sprite(site.sprite())
   , m_layer(site.layer())
-  , m_transaction(context, operationName)
+  , m_tx(context, operationName)
   , m_setMaskCmd(nullptr)
   , m_isDragging(false)
   , m_adjustPivot(false)
@@ -197,7 +197,7 @@ void PixelsMovement::trim()
   // (Ctrl+V) and cut (Ctrl+X) the floating pixels.
   if (writer.cel() &&
       writer.cel()->layer()->isTransparent())
-    m_transaction.execute(new cmd::TrimCel(writer.cel()));
+    m_tx(new cmd::TrimCel(writer.cel()));
 }
 
 void PixelsMovement::cutMask()
@@ -205,7 +205,7 @@ void PixelsMovement::cutMask()
   {
     ContextWriter writer(m_reader, 1000);
     if (writer.cel()) {
-      m_transaction.execute(new cmd::ClearMask(writer.cel()));
+      m_tx(new cmd::ClearMask(writer.cel()));
 
       // Do not trim here so we don't lost the information about all
       // linked cels related to "writer.cel()"
@@ -515,7 +515,7 @@ void PixelsMovement::stampImage()
       // portion of sprite.
       ExpandCelCanvas expand(
         m_site, m_site.layer(),
-        TiledMode::NONE, m_transaction,
+        TiledMode::NONE, m_tx,
         ExpandCelCanvas::None);
 
       // We cannot use cel->bounds() because cel->image() is nullptr
@@ -589,7 +589,7 @@ void PixelsMovement::dropImage()
   stampImage();
 
   // This is the end of the whole undo transaction.
-  m_transaction.commit();
+  m_tx.commit();
 
   // Destroy the extra cel (this cel will be used by the drawing
   // cursor surely).
@@ -604,10 +604,10 @@ void PixelsMovement::discardImage(const CommitChangesOption commit,
 
   // Deselect the mask (here we don't stamp the image)
   if (keepMask == DontKeepMask)
-    m_transaction.execute(new cmd::DeselectMask(m_document));
+    m_tx(new cmd::DeselectMask(m_document));
 
   if (commit == CommitChanges)
-    m_transaction.commit();
+    m_tx.commit();
 
   // Destroy the extra cel and regenerate the mask boundaries (we've
   // just deselect the mask).
@@ -811,7 +811,7 @@ void PixelsMovement::updateDocumentMask()
 {
   if (!m_setMaskCmd) {
     m_setMaskCmd = new cmd::SetMask(m_document, m_currentMask);
-    m_transaction.execute(m_setMaskCmd);
+    m_tx(m_setMaskCmd);
   }
   else
     m_setMaskCmd->setNewMask(m_currentMask);

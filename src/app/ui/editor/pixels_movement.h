@@ -12,7 +12,7 @@
 #include "app/context_access.h"
 #include "app/extra_cel.h"
 #include "app/site.h"
-#include "app/transaction.h"
+#include "app/tx.h"
 #include "app/ui/editor/handle_type.h"
 #include "base/shared_ptr.h"
 #include "doc/algorithm/flip_type.h"
@@ -105,7 +105,7 @@ namespace app {
     // Rotates the image and the mask the given angle. It's used to
     // simulate RotateCommand when we're inside MovingPixelsState.
     void rotate(double angle);
-    
+
     void shift(int dx, int dy);
 
     const Transformation& getTransformation() const { return m_currentData; }
@@ -127,7 +127,7 @@ namespace app {
     Doc* m_document;
     Sprite* m_sprite;
     Layer* m_layer;
-    Transaction m_transaction;
+    Tx m_tx;
     cmd::SetMask* m_setMaskCmd;
     bool m_isDragging;
     bool m_adjustPivot;
