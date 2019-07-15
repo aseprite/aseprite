@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -17,6 +18,8 @@
 #include "app/commands/commands.h"
 #include "app/commands/filters/filter_manager_impl.h"
 #include "app/commands/filters/filter_window.h"
+#include "app/commands/filters/filter_worker.h"
+#include "app/commands/new_params.h"
 #include "app/context.h"
 #include "app/find_widget.h"
 #include "app/ini_file.h"
@@ -36,6 +39,14 @@
 namespace app {
 
 static const char* ConfigSection = "ReplaceColor";
+
+struct ReplaceColorParams : public NewParams {
+  Param<bool> ui { this, true, "ui" };
+  Param<filters::Target> target { this, 0, "target" };
+  Param<app::Color> from { this, app::Color(), "from" };
+  Param<app::Color> to { this, app::Color(), "to" };
+  Param<int> tolerance { this, 0, "tolerance" };
+};
 
 // Wrapper for ReplaceColorFilter to handle colors in an easy way
 class ReplaceColorFilterWrapper : public ReplaceColorFilter {
@@ -127,7 +138,7 @@ private:
   ui::Slider* m_toleranceSlider;
 };
 
-class ReplaceColorCommand : public Command {
+class ReplaceColorCommand : public CommandWithNewParams<ReplaceColorParams> {
 public:
   ReplaceColorCommand();
 
@@ -137,7 +148,7 @@ protected:
 };
 
 ReplaceColorCommand::ReplaceColorCommand()
-  : Command(CommandId::ReplaceColor(), CmdRecordableFlag)
+  : CommandWithNewParams<ReplaceColorParams>(CommandId::ReplaceColor(), CmdRecordableFlag)
 {
 }
 
@@ -149,13 +160,10 @@ bool ReplaceColorCommand::onEnabled(Context* context)
 
 void ReplaceColorCommand::onExecute(Context* context)
 {
+  const bool ui = (params().ui() && context->isUIAvailable());
   Site site = context->activeSite();
 
   ReplaceColorFilterWrapper filter(site.layer());
-  filter.setFrom(get_config_color(ConfigSection, "Color1", ColorBar::instance()->getFgColor()));
-  filter.setTo(get_config_color(ConfigSection, "Color2", ColorBar::instance()->getBgColor()));
-  filter.setTolerance(get_config_int(ConfigSection, "Tolerance", 0));
-
   FilterManagerImpl filterMgr(context, &filter);
   filterMgr.setTarget(
     site.sprite()->pixelFormat() == IMAGE_INDEXED ?
@@ -166,11 +174,32 @@ void ReplaceColorCommand::onExecute(Context* context)
     TARGET_GRAY_CHANNEL |
     TARGET_ALPHA_CHANNEL);
 
-  ReplaceColorWindow window(filter, filterMgr);
-  if (window.doModal()) {
-    set_config_color(ConfigSection, "From", filter.getFrom());
-    set_config_color(ConfigSection, "To", filter.getTo());
-    set_config_int(ConfigSection, "Tolerance", filter.getTolerance());
+  if (ui) {
+    filter.setFrom(get_config_color(ConfigSection, "Color1", ColorBar::instance()->getFgColor()));
+    filter.setTo(get_config_color(ConfigSection, "Color2", ColorBar::instance()->getBgColor()));
+    filter.setTolerance(get_config_int(ConfigSection, "Tolerance", 0));
+  }
+  else {
+    filter.setFrom(ColorBar::instance()->getFgColor());
+    filter.setTo(ColorBar::instance()->getBgColor());
+    filter.setTolerance(params().tolerance());
+  }
+
+  if (params().from.isSet()) filter.setFrom(params().from());
+  if (params().to.isSet())  filter.setTo(params().to());
+  if (params().tolerance.isSet()) filter.setTolerance(params().tolerance());
+  if (params().target.isSet()) filterMgr.setTarget(params().target());
+
+  if (ui) {
+    ReplaceColorWindow window(filter, filterMgr);
+    if (window.doModal()) {
+      set_config_color(ConfigSection, "From", filter.getFrom());
+      set_config_color(ConfigSection, "To", filter.getTo());
+      set_config_int(ConfigSection, "Tolerance", filter.getTolerance());
+    }
+  }
+  else {
+    start_filter_worker(&filterMgr);
   }
 }
 

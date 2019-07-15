@@ -10,6 +10,7 @@
 
 #include "app/commands/new_params.h"
 
+#include "app/color.h"
 #include "app/doc_exporter.h"
 #include "app/sprite_sheet_type.h"
 #include "base/convert_to.h"
@@ -17,6 +18,7 @@
 #include "doc/color_mode.h"
 
 #ifdef ENABLE_SCRIPTING
+#include "app/script/engine.h"
 #include "app/script/luacpp.h"
 #endif
 
@@ -83,6 +85,12 @@ void Param<doc::ColorMode>::fromString(const std::string& value)
     setValue(doc::ColorMode::RGB);
 }
 
+template<>
+void Param<app::Color>::fromString(const std::string& value)
+{
+  setValue(app::Color::fromString(value));
+}
+
 #ifdef ENABLE_SCRIPTING
 
 template<>
@@ -131,6 +139,12 @@ void Param<doc::ColorMode>::fromLua(lua_State* L, int index)
     fromString(lua_tostring(L, index));
   else
     setValue((doc::ColorMode)lua_tointeger(L, index));
+}
+
+template<>
+void Param<app::Color>::fromLua(lua_State* L, int index)
+{
+  setValue(script::convert_args_into_color(L, index));
 }
 
 void CommandWithNewParamsBase::loadParamsFromLuaTable(lua_State* L, int index)

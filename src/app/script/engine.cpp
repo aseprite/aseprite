@@ -25,6 +25,7 @@
 #include "doc/anidir.h"
 #include "doc/blend_mode.h"
 #include "doc/color_mode.h"
+#include "filters/target.h"
 
 #include <fstream>
 #include <sstream>
@@ -317,6 +318,17 @@ Engine::Engine()
   setfield_integer(L, "ORIGIN", doc::BrushPattern::ALIGNED_TO_SRC);
   setfield_integer(L, "TARGET", doc::BrushPattern::ALIGNED_TO_DST);
   setfield_integer(L, "NONE", doc::BrushPattern::PAINT_BRUSH);
+  lua_pop(L, 1);
+
+  lua_newtable(L);
+  lua_pushvalue(L, -1);
+  lua_setglobal(L, "FilterTarget");
+  setfield_integer(L, "RED",   TARGET_RED_CHANNEL);
+  setfield_integer(L, "GREEN", TARGET_GREEN_CHANNEL);
+  setfield_integer(L, "BLUE",  TARGET_BLUE_CHANNEL);
+  setfield_integer(L, "ALPHA", TARGET_ALPHA_CHANNEL);
+  setfield_integer(L, "GRAY",  TARGET_GRAY_CHANNEL);
+  setfield_integer(L, "INDEX", TARGET_INDEX_CHANNEL);
   lua_pop(L, 1);
 
   // Register classes/prototypes
