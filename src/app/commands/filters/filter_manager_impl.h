@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -10,6 +11,7 @@
 
 #include "app/commands/filters/cels_target.h"
 #include "app/site.h"
+#include "app/tx.h"
 #include "base/exception.h"
 #include "doc/image_impl.h"
 #include "doc/image_ref.h"
@@ -38,7 +40,6 @@ namespace app {
   class Context;
   class Doc;
   class Editor;
-  class Transaction;
 
   using namespace filters;
 
@@ -149,7 +150,7 @@ namespace app {
     Target m_target;              // Filtered targets
     CelsTarget m_celsTarget;
     std::unique_ptr<doc::Palette> m_oldPalette;
-    std::unique_ptr<Transaction> m_transaction;
+    std::unique_ptr<Tx> m_tx;
 
     // Hooks
     float m_progressBase;

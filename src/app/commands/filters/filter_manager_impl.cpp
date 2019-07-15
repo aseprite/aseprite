@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -214,7 +215,7 @@ void FilterManagerImpl::apply()
     if (algorithm::shrink_bounds2(m_src.get(), m_dst.get(),
                                   m_bounds, output)) {
       if (m_cel->layer()->isBackground()) {
-        m_transaction->execute(
+        (*m_tx)(
           new cmd::CopyRegion(
             m_cel->image(),
             m_dst.get(),
@@ -223,7 +224,7 @@ void FilterManagerImpl::apply()
       }
       else {
         // Patch "m_cel"
-        m_transaction->execute(
+        (*m_tx)(
           new cmd::PatchCel(
             m_cel, m_dst.get(),
             gfx::Region(output),
@@ -278,7 +279,7 @@ void FilterManagerImpl::applyToTarget()
   // Initialize writting operation
   ContextReader reader(m_context);
   ContextWriter writer(reader);
-  m_transaction.reset(new Transaction(writer.context(), m_filter->getName(), ModifyDocument));
+  m_tx.reset(new Tx(writer.context(), m_filter->getName(), ModifyDocument));
 
   m_progressBase = 0.0f;
   m_progressWidth = (cels.size() > 0 ? 1.0f / cels.size(): 1.0f);
@@ -289,7 +290,7 @@ void FilterManagerImpl::applyToTarget()
   if (paletteChange) {
     Palette newPalette = *getNewPalette();
     restoreSpritePalette();
-    m_transaction->execute(
+    (*m_tx)(
       new cmd::SetPalette(m_site.sprite(),
                           m_site.frame(), &newPalette));
   }
@@ -320,15 +321,15 @@ void FilterManagerImpl::applyToTarget()
 
 bool FilterManagerImpl::isTransaction() const
 {
-  return m_transaction != nullptr;
+  return m_tx != nullptr;
 }
 
 // This must be executed in the main UI thread.
 // Check Transaction::commit() comments.
 void FilterManagerImpl::commitTransaction()
 {
-  ASSERT(m_transaction);
-  m_transaction->commit();
+  ASSERT(m_tx);
+  m_tx->commit();
 }
 
 void FilterManagerImpl::flush()
