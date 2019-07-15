@@ -21,6 +21,24 @@ matrix:
           packages:
             - libpixman-1-dev libfreetype6-dev libharfbuzz-dev libx11-dev libxcursor-dev ninja-build
       env:
+        - ENABLE_SCRIPTING=OFF
+        - XVFB=xvfb-run
+    - os: linux
+      addons:
+        apt:
+          packages:
+            - libpixman-1-dev libfreetype6-dev libharfbuzz-dev libx11-dev libxcursor-dev ninja-build
+      env:
+        - ENABLE_SCRIPTING=OFF
+        - ENABLE_UI=OFF
+        - SKIP_TESTS_REPO=ON
+        - XVFB=xvfb-run
+    - os: linux
+      addons:
+        apt:
+          packages:
+            - libpixman-1-dev libfreetype6-dev libharfbuzz-dev libx11-dev libxcursor-dev ninja-build
+      env:
         - ENABLE_UI=ON
         - XVFB=xvfb-run
     - os: linux
@@ -47,10 +65,12 @@ script:
   - ninja
   - |
     if $XVFB ctest --output-on-failure ; then
-      export ASEPRITE=$PWD/bin/aseprite
-      git clone --recursive https://github.com/aseprite/tests.git
-      cd tests
-      $XVFB bash run-tests.sh
+      if [ "$SKIP_TESTS_REPO" == "" ] ; then
+        export ASEPRITE=$PWD/bin/aseprite
+        git clone --recursive https://github.com/aseprite/tests.git
+        cd tests
+        $XVFB bash run-tests.sh
+      fi
     else
       exit 1
     fi
