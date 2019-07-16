@@ -4,6 +4,8 @@
 -- This file is released under the terms of the MIT license.
 -- Read LICENSE.txt for more information.
 
+dofile('./test_utils.lua')
+
 do -- Undo/Redo commands (like app.undo/redo())
   local s = Sprite(32, 32)
   assert(s.width == 32)
@@ -132,4 +134,35 @@ do -- CanvasSize
   assert(s.bounds == Rectangle(0, 0, 34, 32))
   app.command.CanvasSize{ top=2, right=4, bottom=8 }
   assert(s.bounds == Rectangle(0, 0, 38, 42))
+end
+
+do -- ReplaceColor
+  local s = Sprite(4, 4)
+  local cel = app.activeCel
+  local red = Color(255, 0, 0)
+  local yellow = Color(255, 255, 0)
+  local blue = Color(0, 0, 255)
+  local r = red.rgbaPixel
+  local y = yellow.rgbaPixel
+  local b = blue.rgbaPixel
+
+  expect_eq(cel.bounds, Rectangle(0, 0, 4, 4))
+  expect_img(cel.image,
+             { 0, 0, 0, 0,
+               0, 0, 0, 0,
+               0, 0, 0, 0,
+               0, 0, 0, 0 })
+
+  app.useTool{ brush=Brush(1), color=red, points={Point(1,1)} }
+  app.useTool{ brush=Brush(1), color=yellow, points={Point(2,2)} }
+  expect_eq(cel.bounds, Rectangle(1, 1, 2, 2))
+  expect_img(cel.image,
+             { r, 0,
+               0, y })
+
+  app.command.ReplaceColor{ ui=false, from=red, to=blue }
+  expect_eq(cel.bounds, Rectangle(1, 1, 2, 2))
+  expect_img(cel.image,
+             { b, 0,
+               0, y })
 end
