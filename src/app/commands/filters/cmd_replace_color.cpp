@@ -24,6 +24,7 @@
 #include "app/find_widget.h"
 #include "app/ini_file.h"
 #include "app/load_widget.h"
+#include "app/pref/preferences.h"
 #include "app/site.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/color_button.h"
@@ -38,7 +39,9 @@
 
 namespace app {
 
+#ifdef ENABLE_UI
 static const char* ConfigSection = "ReplaceColor";
+#endif
 
 struct ReplaceColorParams : public NewParams {
   Param<bool> ui { this, true, "ui" };
@@ -72,6 +75,8 @@ private:
   app::Color m_from;
   app::Color m_to;
 };
+
+#ifdef ENABLE_UI
 
 class ReplaceColorWindow : public FilterWindow {
 public:
@@ -138,6 +143,8 @@ private:
   ui::Slider* m_toleranceSlider;
 };
 
+#endif  // ENABLE_UI
+
 class ReplaceColorCommand : public CommandWithNewParams<ReplaceColorParams> {
 public:
   ReplaceColorCommand();
@@ -160,7 +167,9 @@ bool ReplaceColorCommand::onEnabled(Context* context)
 
 void ReplaceColorCommand::onExecute(Context* context)
 {
+#ifdef ENABLE_UI
   const bool ui = (params().ui() && context->isUIAvailable());
+#endif
   Site site = context->activeSite();
 
   ReplaceColorFilterWrapper filter(site.layer());
@@ -174,14 +183,17 @@ void ReplaceColorCommand::onExecute(Context* context)
     TARGET_GRAY_CHANNEL |
     TARGET_ALPHA_CHANNEL);
 
+#ifdef ENABLE_UI
   if (ui) {
-    filter.setFrom(get_config_color(ConfigSection, "Color1", ColorBar::instance()->getFgColor()));
-    filter.setTo(get_config_color(ConfigSection, "Color2", ColorBar::instance()->getBgColor()));
+    filter.setFrom(get_config_color(ConfigSection, "Color1", Preferences::instance().colorBar.fgColor()));
+    filter.setTo(get_config_color(ConfigSection, "Color2", Preferences::instance().colorBar.bgColor()));
     filter.setTolerance(get_config_int(ConfigSection, "Tolerance", 0));
   }
-  else {
-    filter.setFrom(ColorBar::instance()->getFgColor());
-    filter.setTo(ColorBar::instance()->getBgColor());
+  else
+#endif // ENABLE_UI
+  {
+    filter.setFrom(Preferences::instance().colorBar.fgColor());
+    filter.setTo(Preferences::instance().colorBar.bgColor());
     filter.setTolerance(params().tolerance());
   }
 
@@ -190,6 +202,7 @@ void ReplaceColorCommand::onExecute(Context* context)
   if (params().tolerance.isSet()) filter.setTolerance(params().tolerance());
   if (params().target.isSet()) filterMgr.setTarget(params().target());
 
+#ifdef ENABLE_UI
   if (ui) {
     ReplaceColorWindow window(filter, filterMgr);
     if (window.doModal()) {
@@ -198,7 +211,9 @@ void ReplaceColorCommand::onExecute(Context* context)
       set_config_int(ConfigSection, "Tolerance", filter.getTolerance());
     }
   }
-  else {
+  else
+#endif // ENABLE_UI
+  {
     start_filter_worker(&filterMgr);
   }
 }

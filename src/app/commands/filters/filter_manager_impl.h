@@ -83,7 +83,9 @@ namespace app {
     void setCelsTarget(CelsTarget celsTarget);
 
     void begin();
+#ifdef ENABLE_UI
     void beginForPreview();
+#endif
     void end();
     bool applyStep();
     void applyToTarget();
@@ -97,10 +99,11 @@ namespace app {
     doc::Image* destinationImage() const { return m_dst.get(); }
     gfx::Point position() const { return gfx::Point(0, 0); }
 
+#ifdef ENABLE_UI
     // Updates the current editor to show the progress of the preview.
     void flush();
-
     void disablePreview();
+#endif
 
     // FilterManager implementation
     const void* getSourceAddress() override;
@@ -131,7 +134,10 @@ namespace app {
     // modifies the palette).
     bool paletteHasChanged();
     void restoreSpritePalette();
+
+#ifdef ENABLE_UI
     void redrawColorPalette();
+#endif
 
     Context* m_context;
     Site m_site;
@@ -140,7 +146,9 @@ namespace app {
     doc::ImageRef m_src;
     doc::ImageRef m_dst;
     int m_row;
+#ifdef ENABLE_UI
     int m_nextRowToFlush;
+#endif
     gfx::Rect m_bounds;
     doc::Mask* m_mask;
     std::unique_ptr<doc::Mask> m_previewMask;

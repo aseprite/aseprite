@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -25,13 +26,54 @@
 
 #include <cstdlib>
 #include <cstring>
+#include <functional>
+#include <thread>
 
 namespace app {
 
 using namespace base;
 using namespace ui;
 
-static const int kMonitoringPeriod = 100;
+#ifdef ENABLE_UI
+
+namespace {
+
+const int kMonitoringPeriod = 100;
+
+class FilterWorkerAlert {
+public:
+  FilterWorkerAlert(std::function<void()>&& onTick)
+    : m_timer(kMonitoringPeriod)
+    , m_window(ui::Alert::create(Strings::alerts_applying_filter())) {
+    m_window->addProgress();
+
+    m_timer.Tick.connect(std::move(onTick));
+    m_timer.start();
+  }
+
+  void openAndWait() {
+    m_window->openWindowInForeground();
+
+    // Stop the monitoring timer.
+    m_timer.stop();
+  }
+
+  void close() {
+    m_window->closeWindow(nullptr);
+  }
+
+  void setProgress(double progress) {
+    m_window->setProgress(progress);
+  }
+
+private:
+  ui::Timer m_timer; // Monitoring timer to update the progress-bar
+  AlertPtr m_window; // Alert for the user to cancel the filter-progress if he wants.
+};
+
+} // anonymous namespace
+
+#endif  // ENABLE_UI
 
 // Applies filters in two threads: a background worker thread to
 // modify the sprite, and the main thread to monitoring the progress
@@ -50,12 +92,9 @@ public:
 
 private:
   void applyFilterInBackground();
+#ifdef ENABLE_UI
   void onMonitoringTick();
-
-  static void thread_proxy(void* data) {
-    FilterWorker* filterWorker = (FilterWorker*)data;
-    filterWorker->applyFilterInBackground();
-  }
+#endif
 
   FilterManagerImpl* m_filterMgr; // Effect to be applied.
   base::mutex m_mutex;          // Mutex to access to 'pos', 'done' and 'cancelled' fields in different threads.
@@ -63,14 +102,14 @@ private:
   bool m_done;                  // Was the effect completely applied?
   bool m_cancelled;             // Was the effect cancelled by the user?
   bool m_abort;                 // An exception was thrown
-  ui::Timer m_timer;            // Monitoring timer to update the progress-bar
-  AlertPtr m_alertWindow;       // Alert for the user to cancel the filter-progress if he wants.
   std::string m_error;
+#ifdef ENABLE_UI
+  std::unique_ptr<FilterWorkerAlert> m_alert;
+#endif
 };
 
 FilterWorker::FilterWorker(FilterManagerImpl* filterMgr)
   : m_filterMgr(filterMgr)
-  , m_timer(kMonitoringPeriod)
 {
   m_filterMgr->setProgressDelegate(this);
 
@@ -79,29 +118,36 @@ FilterWorker::FilterWorker(FilterManagerImpl* filterMgr)
   m_cancelled = false;
   m_abort = false;
 
-  m_alertWindow = ui::Alert::create(Strings::alerts_applying_filter());
-  m_alertWindow->addProgress();
-
-  m_timer.Tick.connect(&FilterWorker::onMonitoringTick, this);
-  m_timer.start();
+#ifdef ENABLE_UI
+  if (Manager::getDefault())
+    m_alert.reset(new FilterWorkerAlert([this]{ onMonitoringTick(); }));
+#endif
 }
 
 FilterWorker::~FilterWorker()
 {
-  if (m_alertWindow)
-    m_alertWindow->closeWindow(NULL);
+#ifdef ENABLE_UI
+  if (m_alert)
+    m_alert->close();
+#endif
 }
 
 void FilterWorker::run()
 {
-  // Launch the thread to apply the effect in background
-  base::thread thread(&FilterWorker::thread_proxy, this);
-
+#ifdef ENABLE_UI
+  std::thread thread;
   // Open the alert window in foreground (this is modal, locks the main thread)
-  m_alertWindow->openWindowInForeground();
-
-  // Stop the monitoring timer.
-  m_timer.stop();
+  if (m_alert) {
+    // Launch the thread to apply the effect in background
+    thread = std::thread([this]{ applyFilterInBackground(); });
+    m_alert->openAndWait();
+  }
+  else
+#endif // ENABLE_UI
+  {
+    // Without UI? Apply filter from the main thread
+    applyFilterInBackground();
+  }
 
   {
     scoped_lock lock(m_mutex);
@@ -111,8 +157,10 @@ void FilterWorker::run()
       m_cancelled = true;
   }
 
+#ifdef ENABLE_UI
   // Wait the `effect_bg' thread
-  thread.join();
+  if (thread.joinable())
+    thread.join();
 
   if (!m_error.empty()) {
     Console console;
@@ -122,6 +170,7 @@ void FilterWorker::run()
     StatusBar::instance()
       ->showTip(2500, "No unlocked layers to apply filter");
   }
+#endif // ENABLE_UI
 }
 
 // Called by FilterManagerImpl to informate the progress of the filter.
@@ -168,18 +217,23 @@ void FilterWorker::applyFilterInBackground()
   }
 }
 
+#ifdef ENABLE_UI
+
 // Called by the GUI monitor (a timer in the gui module that is called
 // every 100 milliseconds).
 void FilterWorker::onMonitoringTick()
 {
   scoped_lock lock(m_mutex);
 
-  if (m_alertWindow)
-    m_alertWindow->setProgress(m_pos);
+  if (m_alert) {
+    m_alert->setProgress(m_pos);
 
-  if (m_done || m_abort)
-    m_alertWindow->closeWindow(NULL);
+    if (m_done || m_abort)
+      m_alert->close();
+  }
 }
+
+#endif
 
 // Applies the filter in a background thread meanwhile a progress bar
 // is shown to the user.

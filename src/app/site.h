@@ -9,9 +9,8 @@
 #define APP_SITE_H_INCLUDED
 #pragma once
 
+#include "app/doc_range.h"
 #include "doc/frame.h"
-#include "doc/selected_frames.h"
-#include "doc/selected_layers.h"
 #include "doc/selected_objects.h"
 
 namespace doc {
@@ -67,24 +66,17 @@ namespace app {
     doc::Sprite* sprite() { return m_sprite; }
     doc::Layer* layer() { return m_layer; }
     doc::Cel* cel();
+    const DocRange& range() const { return m_range; }
 
     void focus(Focus focus) { m_focus = focus; }
     void document(Doc* document) { m_document = document; }
     void sprite(doc::Sprite* sprite) { m_sprite = sprite; }
     void layer(doc::Layer* layer) { m_layer = layer; }
     void frame(doc::frame_t frame) { m_frame = frame; }
+    void range(const DocRange& range);
 
-    const doc::SelectedLayers& selectedLayers() const { return m_selectedLayers; }
-    doc::SelectedLayers& selectedLayers() { return m_selectedLayers; }
-    void selectedLayers(const doc::SelectedLayers& selectedLayers) {
-      m_selectedLayers = selectedLayers;
-    }
-
-    const doc::SelectedFrames& selectedFrames() const { return m_selectedFrames; }
-    doc::SelectedFrames& selectedFrames() { return m_selectedFrames; }
-    void selectedFrames(const doc::SelectedFrames& selectedFrames) {
-      m_selectedFrames = selectedFrames;
-    }
+    const doc::SelectedLayers& selectedLayers() const { return m_range.selectedLayers(); }
+    const doc::SelectedFrames& selectedFrames() const { return m_range.selectedFrames(); }
 
     const doc::SelectedObjects& selectedSlices() const { return m_selectedSlices; }
     doc::SelectedObjects& selectedSlices() { return m_selectedSlices; }
@@ -102,8 +94,7 @@ namespace app {
     doc::Sprite* m_sprite;
     doc::Layer* m_layer;
     doc::frame_t m_frame;
-    doc::SelectedLayers m_selectedLayers;
-    doc::SelectedFrames m_selectedFrames;
+    DocRange m_range;
     doc::SelectedObjects m_selectedSlices;
   };
 

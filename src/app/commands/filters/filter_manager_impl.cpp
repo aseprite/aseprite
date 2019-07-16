@@ -123,6 +123,8 @@ void FilterManagerImpl::begin()
   updateBounds(m_mask);
 }
 
+#ifdef ENABLE_UI
+
 void FilterManagerImpl::beginForPreview()
 {
   Doc* document = m_site.document();
@@ -160,6 +162,8 @@ void FilterManagerImpl::beginForPreview()
     return;
   }
 }
+
+#endif // ENABLE_UI
 
 void FilterManagerImpl::end()
 {
@@ -244,7 +248,7 @@ void FilterManagerImpl::applyToTarget()
   switch (m_celsTarget) {
 
     case CelsTarget::Selected: {
-      auto range = App::instance()->timeline()->range();
+      auto range = m_site.range();
       if (range.enabled()) {
         for (Cel* cel : get_unlocked_unique_cels(m_site.sprite(), range)) {
           if (!cel->layer()->isReference())
@@ -332,6 +336,8 @@ void FilterManagerImpl::commitTransaction()
   m_tx->commit();
 }
 
+#ifdef ENABLE_UI
+
 void FilterManagerImpl::flush()
 {
   int h = m_row - m_nextRowToFlush;
@@ -382,6 +388,8 @@ void FilterManagerImpl::disablePreview()
   }
 }
 
+#endif  // ENABLE_UI
+
 const void* FilterManagerImpl::getSourceAddress()
 {
   return m_src->getPixelAddress(m_bounds.x, m_bounds.y+m_row);
@@ -429,9 +437,11 @@ Palette* FilterManagerImpl::getNewPalette()
 doc::PalettePicks FilterManagerImpl::getPalettePicks()
 {
   doc::PalettePicks picks;
+#ifdef ENABLE_UI                // TODO add palette entries in Site and use activeSite here
   ColorBar::instance()
     ->getPaletteView()
     ->getSelectedEntries(picks);
+#endif
   return picks;
 }
 
@@ -495,11 +505,15 @@ void FilterManagerImpl::restoreSpritePalette()
     m_site.sprite()->setPalette(m_oldPalette.get(), false);
 }
 
+#ifdef ENABLE_UI
+
 void FilterManagerImpl::redrawColorPalette()
 {
   set_current_palette(getNewPalette(), false);
   ColorBar::instance()->invalidate();
 }
+
+#endif // ENABLE_UI
 
 bool FilterManagerImpl::isMaskActive() const
 {

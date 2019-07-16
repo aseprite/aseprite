@@ -300,14 +300,11 @@ if(ENABLE_UI)
     commands/filters/cmd_hue_saturation.cpp
     commands/filters/cmd_invert_color.cpp
     commands/filters/cmd_outline.cpp
-    commands/filters/cmd_replace_color.cpp
     commands/filters/color_curve_editor.cpp
     commands/filters/convolution_matrix_stock.cpp
-    commands/filters/filter_manager_impl.cpp
     commands/filters/filter_preview.cpp
     commands/filters/filter_target_buttons.cpp
     commands/filters/filter_window.cpp
-    commands/filters/filter_worker.cpp
     file_selector.cpp
     modules/editors.cpp
     modules/gfx.cpp
@@ -523,6 +520,9 @@ add_library(app-lib
   commands/cmd_undo.cpp
   commands/command.cpp
   commands/commands.cpp
+  commands/filters/cmd_replace_color.cpp
+  commands/filters/filter_manager_impl.cpp
+  commands/filters/filter_worker.cpp
   commands/move_thing.cpp
   commands/new_params.cpp
   commands/quick_command.cpp

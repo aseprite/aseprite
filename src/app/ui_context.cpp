@@ -291,13 +291,7 @@ void UIContext::onGetActiveSite(Site* site) const
       Timeline* timeline = App::instance()->timeline();
       if (timeline &&
           timeline->range().enabled()) {
-        switch (timeline->range().type()) {
-          case DocRange::kCels:   site->focus(Site::InCels); break;
-          case DocRange::kFrames: site->focus(Site::InFrames); break;
-          case DocRange::kLayers: site->focus(Site::InLayers); break;
-        }
-        site->selectedLayers(timeline->selectedLayers());
-        site->selectedFrames(timeline->selectedFrames());
+        site->range(timeline->range());
       }
       else {
         ColorBar* colorBar = ColorBar::instance();

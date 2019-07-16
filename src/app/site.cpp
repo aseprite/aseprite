@@ -1,5 +1,6 @@
 // Aseprite
-// Copyright (c) 2001-2018 David Capello
+// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -59,6 +60,16 @@ Image* Site::image(int* x, int* y, int* opacity) const
 Palette* Site::palette() const
 {
   return (m_sprite ? m_sprite->palette(m_frame): nullptr);
+}
+
+void Site::range(const DocRange& range)
+{
+  m_range = range;
+  switch (range.type()) {
+    case DocRange::kCels:   m_focus = Site::InCels; break;
+    case DocRange::kFrames: m_focus = Site::InFrames; break;
+    case DocRange::kLayers: m_focus = Site::InLayers; break;
+  }
 }
 
 } // namespace app
