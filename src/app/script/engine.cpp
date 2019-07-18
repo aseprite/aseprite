@@ -322,13 +322,16 @@ Engine::Engine()
 
   lua_newtable(L);
   lua_pushvalue(L, -1);
-  lua_setglobal(L, "FilterTarget");
+  lua_setglobal(L, "FilterChannels");
   setfield_integer(L, "RED",   TARGET_RED_CHANNEL);
   setfield_integer(L, "GREEN", TARGET_GREEN_CHANNEL);
   setfield_integer(L, "BLUE",  TARGET_BLUE_CHANNEL);
   setfield_integer(L, "ALPHA", TARGET_ALPHA_CHANNEL);
   setfield_integer(L, "GRAY",  TARGET_GRAY_CHANNEL);
   setfield_integer(L, "INDEX", TARGET_INDEX_CHANNEL);
+  setfield_integer(L, "RGB",   TARGET_RED_CHANNEL | TARGET_GREEN_CHANNEL | TARGET_BLUE_CHANNEL);
+  setfield_integer(L, "RGBA",   TARGET_RED_CHANNEL | TARGET_GREEN_CHANNEL | TARGET_BLUE_CHANNEL | TARGET_ALPHA_CHANNEL);
+  setfield_integer(L, "GRAYA",   TARGET_GRAY_CHANNEL | TARGET_ALPHA_CHANNEL);
   lua_pop(L, 1);
 
   // Register classes/prototypes

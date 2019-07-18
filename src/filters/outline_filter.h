@@ -17,12 +17,13 @@ namespace filters {
   class OutlineFilter : public Filter {
   public:
     enum class Place { Outside, Inside };
-
-    typedef int Matrix;
-    static const Matrix kCircleMatrix = 0252;
-    static const Matrix kSquareMatrix = 0757;
-    static const Matrix kHorizontalMatrix = 0050;
-    static const Matrix kVerticalMatrix = 0202;
+    enum class Matrix : int {
+      None = 0,
+      Circle = 0252,
+      Square = 0757,
+      Horizontal = 0050,
+      Vertical = 0202
+    };
 
     OutlineFilter();
 

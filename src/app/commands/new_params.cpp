@@ -16,6 +16,9 @@
 #include "base/convert_to.h"
 #include "base/string.h"
 #include "doc/color_mode.h"
+#include "filters/hue_saturation_filter.h"
+#include "filters/outline_filter.h"
+#include "filters/tiled_mode.h"
 
 #ifdef ENABLE_SCRIPTING
 #include "app/script/engine.h"
@@ -23,6 +26,10 @@
 #endif
 
 namespace app {
+
+//////////////////////////////////////////////////////////////////////
+// Convert values from strings (e.g. useful for values from gui.xml)
+//////////////////////////////////////////////////////////////////////
 
 template<>
 void Param<bool>::fromString(const std::string& value)
@@ -34,6 +41,12 @@ template<>
 void Param<int>::fromString(const std::string& value)
 {
   setValue(base::convert_to<int>(value));
+}
+
+template<>
+void Param<double>::fromString(const std::string& value)
+{
+  setValue(base::convert_to<double>(value));
 }
 
 template<>
@@ -91,6 +104,56 @@ void Param<app::Color>::fromString(const std::string& value)
   setValue(app::Color::fromString(value));
 }
 
+template<>
+void Param<filters::TiledMode>::fromString(const std::string& value)
+{
+  if (base::utf8_icmp(value, "both") == 0)
+    setValue(filters::TiledMode::BOTH);
+  else if (base::utf8_icmp(value, "x") == 0)
+    setValue(filters::TiledMode::X_AXIS);
+  else if (base::utf8_icmp(value, "y") == 0)
+    setValue(filters::TiledMode::Y_AXIS);
+  else
+    setValue(filters::TiledMode::NONE);
+}
+
+template<>
+void Param<filters::OutlineFilter::Place>::fromString(const std::string& value)
+{
+  if (base::utf8_icmp(value, "inside") == 0)
+    setValue(filters::OutlineFilter::Place::Inside);
+  else
+    setValue(filters::OutlineFilter::Place::Outside);
+}
+
+template<>
+void Param<filters::OutlineFilter::Matrix>::fromString(const std::string& value)
+{
+  if (base::utf8_icmp(value, "circle") == 0)
+    setValue(filters::OutlineFilter::Matrix::Circle);
+  else if (base::utf8_icmp(value, "square") == 0)
+    setValue(filters::OutlineFilter::Matrix::Square);
+  else if (base::utf8_icmp(value, "horizontal") == 0)
+    setValue(filters::OutlineFilter::Matrix::Horizontal);
+  else if (base::utf8_icmp(value, "vertical") == 0)
+    setValue(filters::OutlineFilter::Matrix::Vertical);
+  else
+    setValue((filters::OutlineFilter::Matrix)0);
+}
+
+template<>
+void Param<filters::HueSaturationFilter::Mode>::fromString(const std::string& value)
+{
+  if (base::utf8_icmp(value, "hsv") == 0)
+    setValue(filters::HueSaturationFilter::Mode::HSV);
+  else
+    setValue(filters::HueSaturationFilter::Mode::HSL);
+}
+
+//////////////////////////////////////////////////////////////////////
+// Convert values from Lua
+//////////////////////////////////////////////////////////////////////
+
 #ifdef ENABLE_SCRIPTING
 
 template<>
@@ -103,6 +166,12 @@ template<>
 void Param<int>::fromLua(lua_State* L, int index)
 {
   setValue(lua_tointeger(L, index));
+}
+
+template<>
+void Param<double>::fromLua(lua_State* L, int index)
+{
+  setValue(lua_tonumber(L, index));
 }
 
 template<>
@@ -147,6 +216,42 @@ void Param<app::Color>::fromLua(lua_State* L, int index)
   setValue(script::convert_args_into_color(L, index));
 }
 
+template<>
+void Param<filters::TiledMode>::fromLua(lua_State* L, int index)
+{
+  if (lua_type(L, index) == LUA_TSTRING)
+    fromString(lua_tostring(L, index));
+  else
+    setValue((filters::TiledMode)lua_tointeger(L, index));
+}
+
+template<>
+void Param<filters::OutlineFilter::Place>::fromLua(lua_State* L, int index)
+{
+  if (lua_type(L, index) == LUA_TSTRING)
+    fromString(lua_tostring(L, index));
+  else
+    setValue((filters::OutlineFilter::Place)lua_tointeger(L, index));
+}
+
+template<>
+void Param<filters::OutlineFilter::Matrix>::fromLua(lua_State* L, int index)
+{
+  if (lua_type(L, index) == LUA_TSTRING)
+    fromString(lua_tostring(L, index));
+  else
+    setValue((filters::OutlineFilter::Matrix)lua_tointeger(L, index));
+}
+
+template<>
+void Param<filters::HueSaturationFilter::Mode>::fromLua(lua_State* L, int index)
+{
+  if (lua_type(L, index) == LUA_TSTRING)
+    fromString(lua_tostring(L, index));
+  else
+    setValue((filters::HueSaturationFilter::Mode)lua_tointeger(L, index));
+}
+
 void CommandWithNewParamsBase::loadParamsFromLuaTable(lua_State* L, int index)
 {
   onResetValues();
@@ -163,7 +268,7 @@ void CommandWithNewParamsBase::loadParamsFromLuaTable(lua_State* L, int index)
   m_skipLoadParams = true;
 }
 
-#endif
+#endif  // ENABLE_SCRIPTING
 
 void CommandWithNewParamsBase::onLoadParams(const Params& params)
 {
@@ -172,7 +277,7 @@ void CommandWithNewParamsBase::onLoadParams(const Params& params)
     m_skipLoadParams = false;
     return;
   }
-#endif
+#endif  // ENABLE_SCRIPTING
   onResetValues();
   for (const auto& pair : params) {
     if (ParamBase* p = onGetParam(pair.first))

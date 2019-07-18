@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This program is distributed under the terms of
@@ -21,6 +22,8 @@ namespace filters {
   public:
     BrightnessContrastFilter();
 
+    double brightness() const { return m_brightness; }
+    double contrast() const { return m_contrast; }
     void setBrightness(double brightness);
     void setContrast(double contrast);
 

@@ -438,9 +438,11 @@ doc::PalettePicks FilterManagerImpl::getPalettePicks()
 {
   doc::PalettePicks picks;
 #ifdef ENABLE_UI                // TODO add palette entries in Site and use activeSite here
-  ColorBar::instance()
-    ->getPaletteView()
-    ->getSelectedEntries(picks);
+  if (auto colorBar = ColorBar::instance()) {
+    colorBar
+      ->getPaletteView()
+      ->getSelectedEntries(picks);
+  }
 #endif
   return picks;
 }

@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -12,13 +13,15 @@
 #include "app/commands/command.h"
 #include "app/commands/filters/filter_manager_impl.h"
 #include "app/commands/filters/filter_window.h"
+#include "app/commands/filters/filter_worker.h"
+#include "app/commands/new_params.h"
 #include "app/context.h"
 #include "app/doc.h"
 #include "app/find_widget.h"
 #include "app/ini_file.h"
 #include "app/load_widget.h"
 #include "app/pref/preferences.h"
-#include "base/bind.h"
+#include "base/clamp.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
 #include "filters/median_filter.h"
@@ -35,6 +38,16 @@
 namespace app {
 
 using namespace filters;
+
+struct DespeckleParams : public NewParams {
+  Param<bool> ui { this, true, "ui" };
+  Param<filters::Target> channels { this, 0, "channels" };
+  Param<int> width { this, 3, "width" };
+  Param<int> height { this, 3, "height" };
+  Param<filters::TiledMode> tiledMode { this, filters::TiledMode::NONE, "tiledMode" };
+};
+
+#ifdef ENABLE_UI
 
 static const char* ConfigSection = "Despeckle";
 
@@ -65,8 +78,8 @@ private:
                       m_heightEntry->textInt());
 
     // Avoid negative numbers
-    newSize.w = MID(1, newSize.w, 100);
-    newSize.h = MID(1, newSize.h, 100);
+    newSize.w = base::clamp(newSize.w, 1, 100);
+    newSize.h = base::clamp(newSize.h, 1, 100);
 
     m_filter.setSize(newSize.w, newSize.h);
     restartPreview();
@@ -82,11 +95,9 @@ private:
   ExprEntry* m_heightEntry;
 };
 
-//////////////////////////////////////////////////////////////////////
-// Despeckle command
+#endif  // ENABLE_UI
 
-class DespeckleCommand : public Command
-{
+class DespeckleCommand : public CommandWithNewParams<DespeckleParams> {
 public:
   DespeckleCommand();
 
@@ -96,7 +107,7 @@ protected:
 };
 
 DespeckleCommand::DespeckleCommand()
-  : Command(CommandId::Despeckle(), CmdRecordableFlag)
+  : CommandWithNewParams<DespeckleParams>(CommandId::Despeckle(), CmdRecordableFlag)
 {
 }
 
@@ -108,13 +119,12 @@ bool DespeckleCommand::onEnabled(Context* context)
 
 void DespeckleCommand::onExecute(Context* context)
 {
-  DocumentPreferences& docPref = Preferences::instance()
-    .document(context->activeDocument());
+#ifdef ENABLE_UI
+  const bool ui = (params().ui() && context->isUIAvailable());
+#endif
 
   MedianFilter filter;
-  filter.setTiledMode((filters::TiledMode)docPref.tiled.mode());
-  filter.setSize(get_config_int(ConfigSection, "Width", 3),
-                 get_config_int(ConfigSection, "Height", 3));
+  filter.setSize(3, 3);         // Default size
 
   FilterManagerImpl filterMgr(context, &filter);
   filterMgr.setTarget(TARGET_RED_CHANNEL |
@@ -122,10 +132,33 @@ void DespeckleCommand::onExecute(Context* context)
                       TARGET_BLUE_CHANNEL |
                       TARGET_GRAY_CHANNEL);
 
-  DespeckleWindow window(filter, filterMgr);
-  if (window.doModal()) {
-    set_config_int(ConfigSection, "Width", filter.getWidth());
-    set_config_int(ConfigSection, "Height", filter.getHeight());
+#ifdef ENABLE_UI
+  if (ui) {
+    DocumentPreferences& docPref = Preferences::instance()
+      .document(context->activeDocument());
+    filter.setTiledMode((filters::TiledMode)docPref.tiled.mode());
+    filter.setSize(get_config_int(ConfigSection, "Width", 3),
+                   get_config_int(ConfigSection, "Height", 3));
+  }
+#endif
+
+  if (params().width.isSet()) filter.setSize(params().width(), filter.getHeight());
+  if (params().height.isSet()) filter.setSize(filter.getWidth(), params().height());
+  if (params().channels.isSet()) filterMgr.setTarget(params().channels());
+  if (params().tiledMode.isSet()) filter.setTiledMode(params().tiledMode());
+
+#ifdef ENABLE_UI
+  if (ui) {
+    DespeckleWindow window(filter, filterMgr);
+    if (window.doModal()) {
+      set_config_int(ConfigSection, "Width", filter.getWidth());
+      set_config_int(ConfigSection, "Height", filter.getHeight());
+    }
+  }
+  else
+#endif // ENABLE_UI
+  {
+    start_filter_worker(&filterMgr);
   }
 }
 

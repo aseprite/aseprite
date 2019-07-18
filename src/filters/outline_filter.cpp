@@ -32,9 +32,10 @@ namespace {
     int matrix;
     int bit;
 
-    void init(color_t bgColor, OutlineFilter::Matrix matrix) {
+    void init(const color_t bgColor,
+              const OutlineFilter::Matrix matrix) {
       this->bgColor = bgColor;
-      this->matrix = matrix;
+      this->matrix = (int)matrix;
     }
 
     void reset() {
@@ -82,7 +83,7 @@ namespace {
 
 OutlineFilter::OutlineFilter()
   : m_place(Place::Outside)
-  , m_matrix(kCircleMatrix)
+  , m_matrix(Matrix::Circle)
   , m_tiledMode(TiledMode::NONE)
   , m_color(0)
   , m_bgColor(0)

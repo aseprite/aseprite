@@ -13,6 +13,8 @@
 #include "app/commands/command.h"
 #include "app/commands/filters/filter_manager_impl.h"
 #include "app/commands/filters/filter_window.h"
+#include "app/commands/filters/filter_worker.h"
+#include "app/commands/new_params.h"
 #include "app/context.h"
 #include "app/ini_file.h"
 #include "app/modules/gui.h"
@@ -39,7 +41,15 @@ using namespace app::skin;
 
 enum { CIRCLE, SQUARE, HORZ, VERT };
 
-static const char* ConfigSection = "Outline";
+struct OutlineParams : public NewParams {
+  Param<bool> ui { this, true, "ui" };
+  Param<filters::Target> channels { this, 0, "channels" };
+  Param<filters::OutlineFilter::Place> place { this, OutlineFilter::Place::Outside, "place" };
+  Param<filters::OutlineFilter::Matrix> matrix { this, OutlineFilter::Matrix::Circle, "matrix" };
+  Param<app::Color> color { this, app::Color(), "color" };
+  Param<app::Color> bgColor { this, app::Color(), "bgColor" };
+  Param<filters::TiledMode> tiledMode { this, filters::TiledMode::NONE, "tiledMode" };
+};
 
 // Wrapper for ReplaceColorFilter to handle colors in an easy way
 class OutlineFilterWrapper : public OutlineFilter {
@@ -66,6 +76,10 @@ private:
   app::Color m_color;
   app::Color m_bgColor;
 };
+
+#ifdef ENABLE_UI
+
+static const char* ConfigSection = "Outline";
 
 class OutlineWindow : public FilterWindow {
 public:
@@ -105,10 +119,10 @@ private:
 
     int commonMatrix = -1;
     switch (matrix) {
-      case OutlineFilter::kCircleMatrix:     commonMatrix = CIRCLE; break;
-      case OutlineFilter::kSquareMatrix:     commonMatrix = SQUARE; break;
-      case OutlineFilter::kHorizontalMatrix: commonMatrix = HORZ; break;
-      case OutlineFilter::kVerticalMatrix:   commonMatrix = VERT; break;
+      case OutlineFilter::Matrix::Circle:     commonMatrix = CIRCLE; break;
+      case OutlineFilter::Matrix::Square:     commonMatrix = SQUARE; break;
+      case OutlineFilter::Matrix::Horizontal: commonMatrix = HORZ; break;
+      case OutlineFilter::Matrix::Vertical:   commonMatrix = VERT; break;
     }
     m_panel.outlineType()->setSelectedItem(commonMatrix, false);
 
@@ -119,7 +133,7 @@ private:
     for (int i=0; i<9; ++i) {
       m_panel.outlineMatrix()
         ->getItem(i)->setIcon(
-          (matrix & (1 << (8-i))) ? pixelIcon: emptyIcon);
+          (((int)matrix) & (1 << (8-i))) ? pixelIcon: emptyIcon);
     }
   }
 
@@ -139,12 +153,12 @@ private:
   }
 
   void onMatrixTypeChange() {
-    OutlineFilter::Matrix matrix = 0;
+    OutlineFilter::Matrix matrix = OutlineFilter::Matrix::None;
     switch (m_panel.outlineType()->selectedItem()) {
-      case CIRCLE: matrix = OutlineFilter::kCircleMatrix; break;
-      case SQUARE: matrix = OutlineFilter::kSquareMatrix; break;
-      case HORZ: matrix = OutlineFilter::kHorizontalMatrix; break;
-      case VERT: matrix = OutlineFilter::kVerticalMatrix; break;
+      case CIRCLE: matrix = OutlineFilter::Matrix::Circle; break;
+      case SQUARE: matrix = OutlineFilter::Matrix::Square; break;
+      case HORZ: matrix = OutlineFilter::Matrix::Horizontal; break;
+      case VERT: matrix = OutlineFilter::Matrix::Vertical; break;
     }
     m_filter.matrix(matrix);
     updateButtonsFromMatrix();
@@ -152,9 +166,9 @@ private:
   }
 
   void onMatrixPixelChange(const int index) {
-    OutlineFilter::Matrix matrix = m_filter.matrix();
+    int matrix = (int)m_filter.matrix();
     matrix ^= (1 << (8-index));
-    m_filter.matrix(matrix);
+    m_filter.matrix((OutlineFilter::Matrix)matrix);
     updateButtonsFromMatrix();
     restartPreview();
   }
@@ -167,7 +181,9 @@ private:
   gen::Outline m_panel;
 };
 
-class OutlineCommand : public Command {
+#endif  // ENABLE_UI
+
+class OutlineCommand : public CommandWithNewParams<OutlineParams> {
 public:
   OutlineCommand();
 
@@ -177,7 +193,7 @@ protected:
 };
 
 OutlineCommand::OutlineCommand()
-  : Command(CommandId::Outline(), CmdRecordableFlag)
+  : CommandWithNewParams<OutlineParams>(CommandId::Outline(), CmdRecordableFlag)
 {
 }
 
@@ -189,21 +205,39 @@ bool OutlineCommand::onEnabled(Context* context)
 
 void OutlineCommand::onExecute(Context* context)
 {
+#ifdef ENABLE_UI
+  const bool ui = (params().ui() && context->isUIAvailable());
+#endif
+
   Site site = context->activeSite();
-  DocumentPreferences& docPref = Preferences::instance()
-    .document(site.document());
 
   OutlineFilterWrapper filter(site.layer());
-  filter.place((OutlineFilter::Place)get_config_int(ConfigSection, "Place", int(OutlineFilter::Place::Outside)));
-  filter.matrix((OutlineFilter::Matrix)get_config_int(ConfigSection, "Matrix", int(OutlineFilter::kCircleMatrix)));
-  filter.color(ColorBar::instance()->getFgColor());
-  filter.tiledMode(docPref.tiled.mode());
-  filter.bgColor(app::Color::fromMask());
   if (site.layer() && site.layer()->isBackground() && site.image()) {
     // TODO configure default pixel (same as Autocrop/Trim refpixel)
     filter.bgColor(app::Color::fromImage(site.image()->pixelFormat(),
                                          site.image()->getPixel(0, 0)));
   }
+  else {
+    filter.bgColor(app::Color::fromMask());
+  }
+
+#ifdef ENABLE_UI
+  if (ui) {
+    filter.place((OutlineFilter::Place)get_config_int(ConfigSection, "Place", int(OutlineFilter::Place::Outside)));
+    filter.matrix((OutlineFilter::Matrix)get_config_int(ConfigSection, "Matrix", int(OutlineFilter::Matrix::Circle)));
+    filter.color(ColorBar::instance()->getFgColor());
+
+    DocumentPreferences& docPref = Preferences::instance()
+      .document(site.document());
+    filter.tiledMode(docPref.tiled.mode());
+  }
+#endif // ENABLE_UI
+
+  if (params().place.isSet()) filter.place(params().place());
+  if (params().matrix.isSet()) filter.matrix(params().matrix());
+  if (params().color.isSet()) filter.color(params().color());
+  if (params().bgColor.isSet()) filter.bgColor(params().bgColor());
+  if (params().tiledMode.isSet()) filter.tiledMode(params().tiledMode());
 
   FilterManagerImpl filterMgr(context, &filter);
   filterMgr.setTarget(
@@ -215,10 +249,20 @@ void OutlineCommand::onExecute(Context* context)
     TARGET_GRAY_CHANNEL |
     TARGET_ALPHA_CHANNEL);
 
-  OutlineWindow window(filter, filterMgr);
-  if (window.doModal()) {
-    set_config_int(ConfigSection, "Place", int(filter.place()));
-    set_config_int(ConfigSection, "Matrix", int(filter.matrix()));
+  if (params().channels.isSet()) filterMgr.setTarget(params().channels());
+
+#ifdef ENABLE_UI
+  if (ui) {
+    OutlineWindow window(filter, filterMgr);
+    if (window.doModal()) {
+      set_config_int(ConfigSection, "Place", int(filter.place()));
+      set_config_int(ConfigSection, "Matrix", int(filter.matrix()));
+    }
+  }
+  else
+#endif // ENABLE_UI
+  {
+    start_filter_worker(&filterMgr);
   }
 }
 

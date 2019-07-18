@@ -39,13 +39,9 @@
 
 namespace app {
 
-#ifdef ENABLE_UI
-static const char* ConfigSection = "ReplaceColor";
-#endif
-
 struct ReplaceColorParams : public NewParams {
   Param<bool> ui { this, true, "ui" };
-  Param<filters::Target> target { this, 0, "target" };
+  Param<filters::Target> channels { this, 0, "channels" };
   Param<app::Color> from { this, app::Color(), "from" };
   Param<app::Color> to { this, app::Color(), "to" };
   Param<int> tolerance { this, 0, "tolerance" };
@@ -77,6 +73,8 @@ private:
 };
 
 #ifdef ENABLE_UI
+
+static const char* ConfigSection = "ReplaceColor";
 
 class ReplaceColorWindow : public FilterWindow {
 public:
@@ -200,7 +198,7 @@ void ReplaceColorCommand::onExecute(Context* context)
   if (params().from.isSet()) filter.setFrom(params().from());
   if (params().to.isSet())  filter.setTo(params().to());
   if (params().tolerance.isSet()) filter.setTolerance(params().tolerance());
-  if (params().target.isSet()) filterMgr.setTarget(params().target());
+  if (params().channels.isSet()) filterMgr.setTarget(params().channels());
 
 #ifdef ENABLE_UI
   if (ui) {

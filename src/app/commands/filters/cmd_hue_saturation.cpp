@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -12,6 +13,8 @@
 #include "app/commands/command.h"
 #include "app/commands/filters/filter_manager_impl.h"
 #include "app/commands/filters/filter_window.h"
+#include "app/commands/filters/filter_worker.h"
+#include "app/commands/new_params.h"
 #include "app/context.h"
 #include "app/ini_file.h"
 #include "app/modules/gui.h"
@@ -31,6 +34,18 @@
 #include "ui/window.h"
 
 namespace app {
+
+struct HueSaturationParams : public NewParams {
+  Param<bool> ui { this, true, "ui" };
+  Param<filters::Target> channels { this, 0, "channels" };
+  Param<filters::HueSaturationFilter::Mode> mode { this, filters::HueSaturationFilter::Mode::HSL, "mode" };
+  Param<double> hue { this, 0.0, "hue" };
+  Param<double> saturation { this, 0.0, "saturation" };
+  Param<double> lightness { this, 0.0, { "lightness", "value" } };
+  Param<double> alpha { this, 0.0, "alpha" };
+};
+
+#ifdef ENABLE_UI
 
 static const char* ConfigSection = "HueSaturation";
 
@@ -117,7 +132,9 @@ private:
   ColorSliders m_sliders;
 };
 
-class HueSaturationCommand : public Command {
+#endif  // ENABLE_UI
+
+class HueSaturationCommand : public CommandWithNewParams<HueSaturationParams> {
 public:
   HueSaturationCommand();
 
@@ -127,7 +144,7 @@ protected:
 };
 
 HueSaturationCommand::HueSaturationCommand()
-  : Command(CommandId::HueSaturation(), CmdRecordableFlag)
+  : CommandWithNewParams<HueSaturationParams>(CommandId::HueSaturation(), CmdRecordableFlag)
 {
 }
 
@@ -139,16 +156,37 @@ bool HueSaturationCommand::onEnabled(Context* context)
 
 void HueSaturationCommand::onExecute(Context* context)
 {
+#ifdef ENABLE_UI
+  const bool ui = (params().ui() && context->isUIAvailable());
+#endif
+
   HueSaturationFilter filter;
   FilterManagerImpl filterMgr(context, &filter);
-  filterMgr.setTarget(TARGET_RED_CHANNEL |
-                      TARGET_GREEN_CHANNEL |
-                      TARGET_BLUE_CHANNEL |
-                      TARGET_GRAY_CHANNEL |
-                      TARGET_ALPHA_CHANNEL);
+  if (params().mode.isSet()) filter.setMode(params().mode());
+  if (params().hue.isSet()) filter.setHue(params().hue());
+  if (params().saturation.isSet()) filter.setSaturation(params().saturation() / 100.0);
+  if (params().lightness.isSet()) filter.setLightness(params().lightness() / 100.0);
+  if (params().alpha.isSet()) filter.setAlpha(params().alpha() / 100.0);
 
-  HueSaturationWindow window(filter, filterMgr);
-  window.doModal();
+  filters::Target channels =
+    TARGET_RED_CHANNEL |
+    TARGET_GREEN_CHANNEL |
+    TARGET_BLUE_CHANNEL |
+    TARGET_GRAY_CHANNEL |
+    TARGET_ALPHA_CHANNEL;
+  if (params().channels.isSet()) channels = params().channels();
+  filterMgr.setTarget(channels);
+
+#ifdef ENABLE_UI
+  if (ui) {
+    HueSaturationWindow window(filter, filterMgr);
+    window.doModal();
+  }
+  else
+#endif // ENABLE_UI
+  {
+    start_filter_worker(&filterMgr);
+  }
 }
 
 Command* CommandFactory::createHueSaturationCommand()
