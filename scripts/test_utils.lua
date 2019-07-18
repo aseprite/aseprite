@@ -31,7 +31,34 @@ function expect_img(image, expectedPixels)
         end
         print('}')
         print('In pixel (' .. x .. ', ' .. y .. '):')
-        expect_eq(value, expected)
+
+	local a = value
+	local b = expected
+	print(debug.traceback())
+	print('Expected A == B but:')
+	if image.colorMode == ColorMode.RGB then
+	  print(string.format(' - Value A = rgba(%d,%d,%d,%d)',
+			      app.pixelColor.rgbaR(a),
+			      app.pixelColor.rgbaG(a),
+			      app.pixelColor.rgbaB(a),
+			      app.pixelColor.rgbaA(a)))
+	  print(string.format(' - Value B = rgba(%d,%d,%d,%d)',
+			      app.pixelColor.rgbaR(b),
+			      app.pixelColor.rgbaG(b),
+			      app.pixelColor.rgbaB(b),
+			      app.pixelColor.rgbaA(b)))
+	elseif image.ColorMode == ColorMode.GRAY then
+	  print(string.format(' - Value A = gray(%d,%d)',
+			      app.pixelColor.grayG(a),
+			      app.pixelColor.grayA(a)))
+	  print(string.format(' - Value B = gray(%d,%d)',
+			      app.pixelColor.grayV(b),
+			      app.pixelColor.grayA(b)))
+	else
+	  print(' - Value A = ' .. tostring(a))
+	  print(' - Value B = ' .. tostring(b))
+	end
+	assert(a == b)
       end
     end
   end

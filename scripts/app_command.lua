@@ -160,9 +160,237 @@ do -- ReplaceColor
              { r, 0,
                0, y })
 
-  app.command.ReplaceColor{ ui=false, from=red, to=blue }
+  app.command.ReplaceColor{ from=red, to=blue }
   expect_eq(cel.bounds, Rectangle(1, 1, 2, 2))
   expect_img(cel.image,
              { b, 0,
                0, y })
+end
+
+do -- Invert
+  local s = Sprite(2, 2)
+  local cel = app.activeCel
+  local aa = Color(255, 128, 128).rgbaPixel
+  local na = Color(0, 127, 127).rgbaPixel
+  local bb = Color(128, 128, 255).rgbaPixel
+  local nb = Color(127, 127, 0).rgbaPixel
+  local i = cel.image
+
+  i:drawPixel(0, 0, aa)
+  i:drawPixel(1, 0, bb)
+  i:drawPixel(0, 1, bb)
+  i:drawPixel(1, 1, aa)
+  expect_img(cel.image,
+             { aa, bb,
+               bb, aa })
+
+  app.command.InvertColor()
+  expect_img(cel.image,
+             { na, nb,
+               nb, na })
+
+  local Na = Color(0, 127, 128).rgbaPixel
+  local Ng = Color(127, 127, 255).rgbaPixel
+  app.command.InvertColor{ channels=FilterChannels.BLUE }
+  expect_img(cel.image,
+             { Na, Ng,
+               Ng, Na })
+end
+
+do -- Outline
+  local s = Sprite(4, 4)
+  local cel = app.activeCel
+  local red = Color(255, 0, 0)
+  local yellow = Color(255, 255, 0)
+  local blue = Color(0, 0, 255)
+  local r = red.rgbaPixel
+  local y = yellow.rgbaPixel
+  local b = blue.rgbaPixel
+
+  expect_eq(cel.bounds, Rectangle(0, 0, 4, 4))
+  expect_img(cel.image,
+             { 0, 0, 0, 0,
+               0, 0, 0, 0,
+               0, 0, 0, 0,
+               0, 0, 0, 0 })
+
+  app.useTool{ brush=Brush(1), color=red, points={Point(1,1)} }
+  app.useTool{ brush=Brush(1), color=yellow, points={Point(2,2)} }
+  expect_eq(cel.bounds, Rectangle(1, 1, 2, 2))
+  expect_img(cel.image,
+             { r, 0,
+               0, y })
+
+  app.command.Outline{ color=blue }
+  expect_eq(cel.bounds, Rectangle(0, 0, 4, 4))
+  expect_img(cel.image,
+             { 0, b, 0, 0,
+               b, r, b, 0,
+               0, b, y, b,
+               0, 0, b, 0 })
+
+  -- Test "bgColor", "matrix", "place" params
+
+  app.useTool{ tool='filled_rectangle', brush=Brush(1), color=blue, points={Point(0,0), Point(3,3)} }
+  app.useTool{ tool='filled_rectangle', brush=Brush(1), color=yellow, points={Point(1,1), Point(2,2)} }
+  expect_eq(cel.bounds, Rectangle(0, 0, 4, 4))
+  expect_img(cel.image,
+             { b, b, b, b,
+               b, y, y, b,
+               b, y, y, b,
+               b, b, b, b })
+
+  app.command.Outline{ color=red, bgColor=blue, matrix='circle' }
+  expect_eq(cel.bounds, Rectangle(0, 0, 4, 4))
+  expect_img(cel.image,
+             { b, r, r, b,
+               r, y, y, r,
+               r, y, y, r,
+               b, r, r, b })
+  app.undo()
+
+  app.command.Outline{ color=red, bgColor=blue, matrix='square' }
+  expect_eq(cel.bounds, Rectangle(0, 0, 4, 4))
+  expect_img(cel.image,
+             { r, r, r, r,
+               r, y, y, r,
+               r, y, y, r,
+               r, r, r, r })
+  app.undo()
+
+  app.command.Outline{ color=red, bgColor=blue, place='inside' }
+  expect_eq(cel.bounds, Rectangle(0, 0, 4, 4))
+  expect_img(cel.image,
+             { b, b, b, b,
+               b, r, r, b,
+               b, r, r, b,
+               b, b, b, b })
+
+end
+
+do -- BrightnessContrast
+  local rgba = app.pixelColor.rgba
+  local rgbaR = app.pixelColor.rgbaR
+  local rgbaG = app.pixelColor.rgbaG
+  local rgbaB = app.pixelColor.rgbaB
+  local s = Sprite(2, 2)
+  local cel = app.activeCel
+  local c = { rgba(255, 128, 64), rgba(250, 225, 110),
+              rgba( 30,  60,  0), rgba(200, 100,  50), }
+  local i = cel.image
+
+  i:drawPixel(0, 0, c[1])
+  i:drawPixel(1, 0, c[2])
+  i:drawPixel(0, 1, c[3])
+  i:drawPixel(1, 1, c[4])
+  expect_img(i,
+             { c[1], c[2],
+               c[3], c[4] })
+
+  app.command.BrightnessContrast() -- Do nothing by default
+  expect_img(i,
+             { c[1], c[2],
+               c[3], c[4] })
+
+  local d = {}
+  for k,v in ipairs(c) do
+    d[k] = rgba(math.min(255, rgbaR(v)*1.5),
+                math.min(255, rgbaG(v)*1.5),
+                math.min(255, rgbaB(v)*1.5), 255)
+  end
+  app.command.BrightnessContrast{ brightness=50 } -- Do nothing by default
+  expect_img(i,
+             { d[1], d[2],
+               d[3], d[4] })
+end
+
+do -- Despeckle
+  local s = Sprite(5, 5)
+  local white = Color(255, 255, 255)
+  local red = Color(255, 0, 0)
+
+  app.bgColor = white
+  app.command.BackgroundFromLayer()
+
+  local cel = app.activeCel
+  local i = cel.image
+  local b = white.rgbaPixel
+  local c = red.rgbaPixel
+  expect_img(i,
+             { b,b,b,b,b,
+               b,b,b,b,b,
+               b,b,b,b,b,
+               b,b,b,b,b,
+               b,b,b,b,b })
+
+  app.useTool{ tool='filled_rectangle', brush=Brush(1), color=red,
+               points={Point(1,1),Point(3,3)} }
+  expect_img(i,
+             { b,b,b,b,b,
+               b,c,c,c,b,
+               b,c,c,c,b,
+               b,c,c,c,b,
+               b,b,b,b,b })
+
+  app.command.Despeckle()
+  expect_img(i,
+             { b,b,b,b,b,
+               b,b,c,b,b,
+               b,c,c,c,b,
+               b,b,c,b,b,
+               b,b,b,b,b })
+
+  app.command.Despeckle()
+  expect_img(i,
+             { b,b,b,b,b,
+               b,b,b,b,b,
+               b,b,c,b,b,
+               b,b,b,b,b,
+               b,b,b,b,b })
+end
+
+do -- HueSaturation
+  local s = Sprite(1, 1)
+  local cel = app.activeCel
+  local i = cel.image
+  local b = Color(255, 0, 0).rgbaPixel
+
+  i:drawPixel(0, 0, b)
+  expect_img(i, { b })
+
+  app.command.HueSaturation{ hue=360 } -- Do nothing (change hue to a full 360 circle)
+  expect_img(i, { b })
+
+  app.command.HueSaturation{ hue=60 }
+  b = Color(255, 255, 0).rgbaPixel
+  expect_img(i, { b })
+
+  app.command.HueSaturation{ hue=60 }
+  b = Color(0, 255, 0).rgbaPixel
+  expect_img(i, { b })
+
+  app.command.HueSaturation{ saturation=-50 }
+  b = Color(64, 191, 64).rgbaPixel
+  expect_img(i, { b })
+
+  app.undo()
+  app.command.HueSaturation{ saturation=-100 }
+  b = Color(128, 128, 128).rgbaPixel
+  expect_img(i, { b })
+
+  app.undo()
+  app.command.HueSaturation{ saturation=-50, mode='hsv' }
+  b = Color(128, 255, 128).rgbaPixel
+  expect_img(i, { b })
+
+  app.undo()
+  app.command.HueSaturation{ value=75 }
+  b = Color(191, 255, 191).rgbaPixel
+  expect_img(i, { b })
+
+  app.undo()
+  app.command.HueSaturation{ alpha=-50 }
+  b = Color(0, 255, 0, 127).rgbaPixel
+  expect_img(i, { b })
+
 end
