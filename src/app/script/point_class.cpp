@@ -25,13 +25,24 @@ gfx::Point Point_new(lua_State* L, int index)
   if (auto pt2 = may_get_obj<gfx::Point>(L, index)) {
     pt = *pt2;
   }
-  // Convert { x, y } into a Point
+  // Convert {x=int,y=int} or {int,int} into a Point
   else if (lua_istable(L, index)) {
-    lua_getfield(L, index, "x");
-    lua_getfield(L, index, "y");
-    pt.x = lua_tointeger(L, -2);
-    pt.y = lua_tointeger(L, -1);
-    lua_pop(L, 2);
+    const int type = lua_getfield(L, index, "x");
+    if (type != LUA_TNONE &&
+        type != LUA_TNIL) {
+      lua_getfield(L, index, "y");
+      pt.x = lua_tointeger(L, -2);
+      pt.y = lua_tointeger(L, -1);
+      lua_pop(L, 2);
+    }
+    else {
+      lua_pop(L, 1);
+      lua_geti(L, index, 1);
+      lua_geti(L, index, 2);
+      pt.x = lua_tointeger(L, -2);
+      pt.y = lua_tointeger(L, -1);
+      lua_pop(L, 2);
+    }
   }
   else {
     pt.x = lua_tointeger(L, index);

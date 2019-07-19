@@ -28,15 +28,30 @@ gfx::Rect Rectangle_new(lua_State* L, int index)
   }
   // Convert { x, y, width, height } into a Rectangle
   else if (lua_istable(L, index)) {
-    lua_getfield(L, index, "x");
-    lua_getfield(L, index, "y");
-    lua_getfield(L, index, "width");
-    lua_getfield(L, index, "height");
-    rc.x = lua_tointeger(L, -4);
-    rc.y = lua_tointeger(L, -3);
-    rc.w = lua_tointeger(L, -2);
-    rc.h = lua_tointeger(L, -1);
-    lua_pop(L, 4);
+    const int type = lua_getfield(L, index, "x");
+    if (type != LUA_TNONE &&
+        type != LUA_TNIL) {
+      lua_getfield(L, index, "y");
+      lua_getfield(L, index, "width");
+      lua_getfield(L, index, "height");
+      rc.x = lua_tointeger(L, -4);
+      rc.y = lua_tointeger(L, -3);
+      rc.w = lua_tointeger(L, -2);
+      rc.h = lua_tointeger(L, -1);
+      lua_pop(L, 4);
+    }
+    else {
+      lua_pop(L, 1);
+      lua_geti(L, index, 1);
+      lua_geti(L, index, 2);
+      lua_geti(L, index, 3);
+      lua_geti(L, index, 4);
+      rc.x = lua_tointeger(L, -4);
+      rc.y = lua_tointeger(L, -3);
+      rc.w = lua_tointeger(L, -2);
+      rc.h = lua_tointeger(L, -1);
+      lua_pop(L, 4);
+    }
   }
   else {
     rc.x = lua_tointeger(L, index);

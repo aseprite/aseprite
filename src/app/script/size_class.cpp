@@ -25,13 +25,24 @@ gfx::Size Size_new(lua_State* L, int index)
   if (auto sz2 = may_get_obj<gfx::Size>(L, index)) {
     sz = *sz2;
   }
-  // Convert { width, height } into a Size
+  // Convert {x=int,y=int} or {int,int} into a Size
   else if (lua_istable(L, index)) {
-    lua_getfield(L, index, "width");
-    lua_getfield(L, index, "height");
-    sz.w = lua_tointeger(L, -2);
-    sz.h = lua_tointeger(L, -1);
-    lua_pop(L, 2);
+    const int type = lua_getfield(L, index, "width");
+    if (type != LUA_TNONE &&
+        type != LUA_TNIL) {
+      lua_getfield(L, index, "height");
+      sz.w = lua_tointeger(L, -2);
+      sz.h = lua_tointeger(L, -1);
+      lua_pop(L, 2);
+    }
+    else {
+      lua_pop(L, 1);
+      lua_geti(L, index, 1);
+      lua_geti(L, index, 2);
+      sz.w = lua_tointeger(L, -2);
+      sz.h = lua_tointeger(L, -1);
+      lua_pop(L, 2);
+    }
   }
   else {
     sz.w = lua_tointeger(L, index);
