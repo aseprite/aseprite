@@ -1,3 +1,4 @@
+-- Copyright (C) 2019  Igara Studio S.A.
 -- Copyright (C) 2018  David Capello
 --
 -- This file is released under the terms of the MIT license.
@@ -38,6 +39,12 @@ assert(rc.x == 2)
 assert(rc.y == 3)
 assert(rc.width == 4)
 assert(rc.height == 5)
+
+rc = Rectangle{6, 7, 8, 9}
+assert(rc.x == 6)
+assert(rc.y == 7)
+assert(rc.width == 8)
+assert(rc.height == 9)
 
 -- Rectangle:contains
 

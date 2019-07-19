@@ -1,3 +1,4 @@
+-- Copyright (C) 2019  Igara Studio S.A.
 -- Copyright (C) 2018  David Capello
 --
 -- This file is released under the terms of the MIT license.
@@ -24,3 +25,7 @@ assert(pt.y == 6)
 pt = Point{x=10, y=20}
 assert(pt.x == 10)
 assert(pt.y == 20)
+
+pt = Point{45, 25}
+assert(pt.x == 45)
+assert(pt.y == 25)

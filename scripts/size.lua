@@ -1,3 +1,4 @@
+-- Copyright (C) 2019  Igara Studio S.A.
 -- Copyright (C) 2018  David Capello
 --
 -- This file is released under the terms of the MIT license.
@@ -24,3 +25,7 @@ assert(sz.height == 8)
 sz = Size{width=10, height=20}
 assert(sz.width == 10)
 assert(sz.height == 20)
+
+sz = Size{45, 25}
+assert(sz.width == 45)
+assert(sz.height == 25)
