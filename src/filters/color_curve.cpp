@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -19,6 +20,12 @@ ColorCurve::ColorCurve(Type type)
 {
 }
 
+void ColorCurve::addDefaultPoints()
+{
+  addPoint(gfx::Point(0, 0));
+  addPoint(gfx::Point(255, 255));
+}
+
 void ColorCurve::addPoint(const gfx::Point& point)
 {
   for (iterator it = begin(), end = this->end(); it != end; ++it) {
@@ -27,7 +34,6 @@ void ColorCurve::addPoint(const gfx::Point& point)
       return;
     }
   }
-
   m_points.push_back(point);
 }
 

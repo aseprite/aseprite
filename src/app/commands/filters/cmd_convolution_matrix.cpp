@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -14,6 +15,8 @@
 #include "app/commands/filters/convolution_matrix_stock.h"
 #include "app/commands/filters/filter_manager_impl.h"
 #include "app/commands/filters/filter_window.h"
+#include "app/commands/filters/filter_worker.h"
+#include "app/commands/new_params.h"
 #include "app/context.h"
 #include "app/doc.h"
 #include "app/find_widget.h"
@@ -35,11 +38,21 @@
 #include "ui/window.h"
 
 #include <cstring>
+#include <memory>
 
 namespace app {
 
 using namespace filters;
 using namespace ui;
+
+struct ConvolutionMatrixParams : public NewParams {
+  Param<bool> ui { this, true, "ui" };
+  Param<filters::Target> channels { this, 0, "channels" };
+  Param<filters::TiledMode> tiledMode { this, filters::TiledMode::NONE, "tiledMode" };
+  Param<std::string> fromResource { this, std::string(), "fromResource" };
+};
+
+#ifdef ENABLE_UI
 
 static const char* ConfigSection = "ConvolutionMatrix";
 
@@ -87,7 +100,7 @@ private:
 
     for (ConvolutionMatrixStock::iterator it = m_stock.begin(), end = m_stock.end();
          it != end; ++it) {
-      base::SharedPtr<ConvolutionMatrix> matrix = *it;
+      std::shared_ptr<ConvolutionMatrix> matrix = *it;
       ListItem* listitem = new ListItem(matrix->getName());
       m_stockListBox->addChild(listitem);
     }
@@ -119,7 +132,7 @@ private:
   void onMatrixChange()
   {
     Widget* selected = m_stockListBox->getSelectedChild();
-    base::SharedPtr<ConvolutionMatrix> matrix = m_stock.getByName(selected->text().c_str());
+    std::shared_ptr<ConvolutionMatrix> matrix = m_stock.getByName(selected->text().c_str());
     Target newTarget = matrix->getDefaultTarget();
 
     m_filter.setMatrix(matrix);
@@ -137,7 +150,9 @@ private:
   Button* m_reloadButton;
 };
 
-class ConvolutionMatrixCommand : public Command {
+#endif  // ENABLE_UI
+
+class ConvolutionMatrixCommand : public CommandWithNewParams<ConvolutionMatrixParams> {
 public:
   ConvolutionMatrixCommand();
 
@@ -147,7 +162,7 @@ protected:
 };
 
 ConvolutionMatrixCommand::ConvolutionMatrixCommand()
-  : Command(CommandId::ConvolutionMatrix(), CmdRecordableFlag)
+  : CommandWithNewParams<ConvolutionMatrixParams>(CommandId::ConvolutionMatrix(), CmdRecordableFlag)
 {
 }
 
@@ -159,28 +174,43 @@ bool ConvolutionMatrixCommand::onEnabled(Context* context)
 
 void ConvolutionMatrixCommand::onExecute(Context* context)
 {
-  // Load stock
-  ConvolutionMatrixStock m_stock;
+#ifdef ENABLE_UI
+  const bool ui = (params().ui() && context->isUIAvailable());
+#endif
 
-  // Get last used (selected) matrix
-  base::SharedPtr<ConvolutionMatrix> matrix =
-    m_stock.getByName(get_config_string(ConfigSection, "Selected", ""));
+  static ConvolutionMatrixStock stock; // Load stock
+  ConvolutionMatrixFilter filter; // Create the filter and setup initial settings
 
-  // Create the filter and setup initial settings
-  DocumentPreferences& docPref = Preferences::instance()
-    .document(context->activeDocument());
+  std::shared_ptr<ConvolutionMatrix> matrix;
+#ifdef ENABLE_UI
+  if (ui) {
+    // Get last used (selected) matrix
+    matrix = stock.getByName(get_config_string(ConfigSection, "Selected", ""));
 
-  ConvolutionMatrixFilter filter;
-  filter.setTiledMode(docPref.tiled.mode());
-  if (matrix)
-    filter.setMatrix(matrix);
+    DocumentPreferences& docPref = Preferences::instance()
+      .document(context->activeDocument());
+    filter.setTiledMode(docPref.tiled.mode());
+  }
+#endif // ENABLE_UI
+
+  if (params().tiledMode.isSet()) filter.setTiledMode(params().tiledMode());
+  if (params().fromResource.isSet()) matrix = stock.getByName(params().fromResource().c_str());
+  if (matrix) filter.setMatrix(matrix);
 
   FilterManagerImpl filterMgr(context, &filter);
 
-  ConvolutionMatrixWindow window(filter, filterMgr, m_stock);
-  if (window.doModal()) {
-    if (filter.getMatrix())
-      set_config_string(ConfigSection, "Selected", filter.getMatrix()->getName());
+#ifdef ENABLE_UI
+  if (ui) {
+    ConvolutionMatrixWindow window(filter, filterMgr, stock);
+    if (window.doModal()) {
+      if (filter.getMatrix())
+        set_config_string(ConfigSection, "Selected", filter.getMatrix()->getName());
+    }
+  }
+  else
+#endif // ENABLE_UI
+  {
+    start_filter_worker(&filterMgr);
   }
 }
 

@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -26,19 +27,20 @@ namespace filters {
 using namespace doc;
 
 ColorCurveFilter::ColorCurveFilter()
-  : m_curve(NULL)
-  , m_cmap(256)
+  : m_cmap(256)
 {
 }
 
-void ColorCurveFilter::setCurve(ColorCurve* curve)
+void ColorCurveFilter::setCurve(const ColorCurve& curve)
 {
-  ASSERT(curve != NULL);
-
   m_curve = curve;
+  generateMap();
+}
 
+void ColorCurveFilter::generateMap()
+{
   // Generate the color convertion map
-  m_curve->getValues(0, 255, m_cmap);
+  m_curve.getValues(0, 255, m_cmap);
   for (int c=0; c<256; c++)
     m_cmap[c] = MID(0, m_cmap[c], 255);
 }

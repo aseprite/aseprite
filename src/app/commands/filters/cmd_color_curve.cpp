@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -13,12 +14,10 @@
 #include "app/commands/filters/color_curve_editor.h"
 #include "app/commands/filters/filter_manager_impl.h"
 #include "app/commands/filters/filter_window.h"
+#include "app/commands/filters/filter_worker.h"
+#include "app/commands/new_params.h"
 #include "app/context.h"
 #include "app/ini_file.h"
-#include "app/modules/gui.h"
-#include "app/ui/color_button.h"
-#include "base/bind.h"
-#include "doc/mask.h"
 #include "doc/sprite.h"
 #include "filters/color_curve.h"
 #include "filters/color_curve_filter.h"
@@ -28,7 +27,13 @@ namespace app {
 
 using namespace filters;
 
-static std::unique_ptr<ColorCurve> the_curve;
+struct ColorCurveParams : public NewParams {
+  Param<bool> ui { this, true, "ui" };
+  Param<filters::Target> channels { this, 0, "channels" };
+  Param<filters::ColorCurve> curve { this, filters::ColorCurve(), "curve" };
+};
+
+#ifdef ENABLE_UI
 
 class ColorCurveWindow : public FilterWindow {
 public:
@@ -37,8 +42,7 @@ public:
                    WithChannelsSelector,
                    WithoutTiledCheckBox)
     , m_filter(filter)
-    , m_editor(filter.getCurve(), gfx::Rect(0, 0, 256, 256))
-  {
+    , m_editor(filter.getCurve(), gfx::Rect(0, 0, 256, 256)) {
     m_view.attachToView(&m_editor);
     m_view.setExpansive(true);
     m_view.setMinSize(gfx::Size(128, 64));
@@ -50,8 +54,7 @@ public:
 
 protected:
 
-  void onCurveChange()
-  {
+  void onCurveChange() {
     // The color curve in the filter is the same refereced by the
     // editor. But anyway, we have to re-set the same curve in the
     // filter to regenerate the map used internally by the filter
@@ -67,7 +70,9 @@ private:
   ColorCurveEditor m_editor;
 };
 
-class ColorCurveCommand : public Command {
+#endif  // ENABLE_UI
+
+class ColorCurveCommand : public CommandWithNewParams<ColorCurveParams> {
 public:
   ColorCurveCommand();
 
@@ -77,7 +82,7 @@ protected:
 };
 
 ColorCurveCommand::ColorCurveCommand()
-  : Command(CommandId::ColorCurve(), CmdRecordableFlag)
+  : CommandWithNewParams<ColorCurveParams>(CommandId::ColorCurve(), CmdRecordableFlag)
 {
 }
 
@@ -89,28 +94,50 @@ bool ColorCurveCommand::onEnabled(Context* context)
 
 void ColorCurveCommand::onExecute(Context* context)
 {
-  // Default curve
-  if (!the_curve) {
-    // TODO load the curve?
-
-    the_curve.reset(new ColorCurve(ColorCurve::Linear));
-    the_curve->addPoint(gfx::Point(0, 0));
-    the_curve->addPoint(gfx::Point(255, 255));
-  }
-
+  const bool ui = (params().ui() && context->isUIAvailable());
   ColorCurveFilter filter;
-  filter.setCurve(the_curve.get());
+
+#ifdef ENABLE_UI
+  // Default curve
+  if (ui) {
+    static std::unique_ptr<ColorCurve> the_curve;
+    if (!the_curve) {
+      // TODO load the curve?
+      the_curve.reset(new ColorCurve(ColorCurve::Linear));
+      the_curve->addDefaultPoints();
+    }
+    filter.setCurve(*the_curve.get());
+  }
+#endif
 
   FilterManagerImpl filterMgr(context, &filter);
-  filterMgr.setTarget(TARGET_RED_CHANNEL |
-                      TARGET_GREEN_CHANNEL |
-                      TARGET_BLUE_CHANNEL |
-                      TARGET_GRAY_CHANNEL |
-                      TARGET_ALPHA_CHANNEL);
 
-  ColorCurveWindow window(filter, filterMgr);
-  if (window.doModal()) {
-    // TODO save the curve?
+  filters::Target channels =
+    TARGET_RED_CHANNEL |
+    TARGET_GREEN_CHANNEL |
+    TARGET_BLUE_CHANNEL |
+    TARGET_GRAY_CHANNEL;
+  if (params().channels.isSet()) channels = params().channels();
+  filterMgr.setTarget(channels);
+
+  if (params().curve.isSet()) filter.setCurve(params().curve());
+  else if (!ui) {
+    ColorCurve curve;
+    curve.addDefaultPoints();
+    filter.setCurve(curve);
+  }
+
+#ifdef ENABLE_UI
+  if (ui) {
+    ColorCurveWindow window(filter, filterMgr);
+    if (window.doModal()) {
+      // TODO save the curve?
+    }
+  }
+  else
+#endif // ENABLE_UI
+  {
+    start_filter_worker(&filterMgr);
   }
 }
 

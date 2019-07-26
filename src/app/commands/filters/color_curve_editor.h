@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -8,22 +9,19 @@
 #define APP_COMMANDS_FILTERS_COLOR_CURVE_EDITOR_H_INCLUDED
 #pragma once
 
+#include "filters/color_curve.h"
 #include "gfx/point.h"
 #include "obs/signal.h"
 #include "ui/widget.h"
-
-namespace filters {
-  class ColorCurve;
-}
 
 namespace app {
   using namespace filters;
 
   class ColorCurveEditor : public ui::Widget {
   public:
-    ColorCurveEditor(ColorCurve* curve, const gfx::Rect& viewBounds);
+    ColorCurveEditor(const ColorCurve& curve, const gfx::Rect& viewBounds);
 
-    ColorCurve* getCurve() const { return m_curve; }
+    const ColorCurve& getCurve() const { return m_curve; }
 
     obs::signal<void()> CurveEditorChange;
 
@@ -39,9 +37,9 @@ namespace app {
     gfx::Point screenToView(const gfx::Point& screenPt);
     gfx::Point clientToView(const gfx::Point& clientPt);
     void addPoint(const gfx::Point& viewPoint);
-    void removePoint(gfx::Point* viewPoint);
+    void removePoint(const gfx::Point& viewPoint);
 
-    ColorCurve* m_curve;
+    ColorCurve m_curve;
     int m_status;
     gfx::Rect m_viewBounds;
     gfx::Point* m_hotPoint;

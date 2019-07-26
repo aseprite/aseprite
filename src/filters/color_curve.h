@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -26,7 +27,9 @@ namespace filters {
     typedef Points::iterator iterator;
     typedef Points::const_iterator const_iterator;
 
-    ColorCurve(Type type);
+    ColorCurve(Type type = Linear);
+
+    void addDefaultPoints();
 
     iterator begin() { return m_points.begin(); }
     iterator end() { return m_points.end(); }

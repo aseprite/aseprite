@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -10,7 +11,7 @@
 
 #include <vector>
 
-#include "base/shared_ptr.h"
+#include <memory>
 
 namespace filters {
   class ConvolutionMatrix;
@@ -22,8 +23,8 @@ namespace app {
   // A container of all convolution matrices in the convmatr.def file.
   class ConvolutionMatrixStock {
   public:
-    typedef std::vector<base::SharedPtr<ConvolutionMatrix> >::iterator iterator;
-    typedef std::vector<base::SharedPtr<ConvolutionMatrix> >::const_iterator const_iterator;
+    typedef std::vector<std::shared_ptr<ConvolutionMatrix> >::iterator iterator;
+    typedef std::vector<std::shared_ptr<ConvolutionMatrix> >::const_iterator const_iterator;
 
     ConvolutionMatrixStock();
     virtual ~ConvolutionMatrixStock();
@@ -33,13 +34,13 @@ namespace app {
     const_iterator begin() const { return m_matrices.begin(); }
     const_iterator end() const { return m_matrices.end(); }
 
-    base::SharedPtr<ConvolutionMatrix> getByName(const char* name);
+    std::shared_ptr<ConvolutionMatrix> getByName(const char* name);
 
     void reloadStock();
     void cleanStock();
 
   private:
-    std::vector<base::SharedPtr<ConvolutionMatrix> > m_matrices;
+    std::vector<std::shared_ptr<ConvolutionMatrix> > m_matrices;
   };
 
 } // namespace app

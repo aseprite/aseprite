@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -11,18 +12,16 @@
 #include <vector>
 
 #include "filters/filter.h"
+#include "filters/color_curve.h"
 
 namespace filters {
 
-  class ColorCurve;
-
-  class ColorCurveFilter : public Filter
-  {
+  class ColorCurveFilter : public Filter {
   public:
     ColorCurveFilter();
 
-    void setCurve(ColorCurve* curve);
-    ColorCurve* getCurve() const { return m_curve; }
+    void setCurve(const ColorCurve& curve);
+    const ColorCurve& getCurve() const { return m_curve; }
 
     // Filter implementation
     const char* getName();
@@ -31,7 +30,9 @@ namespace filters {
     void applyToIndexed(FilterManager* filterMgr);
 
   private:
-    ColorCurve* m_curve;
+    void generateMap();
+
+    ColorCurve m_curve;
     std::vector<int> m_cmap;
   };
 

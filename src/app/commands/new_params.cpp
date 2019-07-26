@@ -14,8 +14,10 @@
 #include "app/doc_exporter.h"
 #include "app/sprite_sheet_type.h"
 #include "base/convert_to.h"
+#include "base/split_string.h"
 #include "base/string.h"
 #include "doc/color_mode.h"
+#include "filters/color_curve.h"
 #include "filters/hue_saturation_filter.h"
 #include "filters/outline_filter.h"
 #include "filters/tiled_mode.h"
@@ -150,6 +152,21 @@ void Param<filters::HueSaturationFilter::Mode>::fromString(const std::string& va
     setValue(filters::HueSaturationFilter::Mode::HSL);
 }
 
+template<>
+void Param<filters::ColorCurve>::fromString(const std::string& value)
+{
+  filters::ColorCurve curve;
+  std::vector<std::string> parts;
+  base::split_string(value, parts, ",");
+  for (int i=0; i+1<int(parts.size()); i+=2) {
+    curve.addPoint(
+      gfx::Point(
+        base::convert_to<int>(parts[i]),
+        base::convert_to<int>(parts[i+1])));
+  }
+  setValue(curve);
+}
+
 //////////////////////////////////////////////////////////////////////
 // Convert values from Lua
 //////////////////////////////////////////////////////////////////////
@@ -250,6 +267,23 @@ void Param<filters::HueSaturationFilter::Mode>::fromLua(lua_State* L, int index)
     fromString(lua_tostring(L, index));
   else
     setValue((filters::HueSaturationFilter::Mode)lua_tointeger(L, index));
+}
+
+template<>
+void Param<filters::ColorCurve>::fromLua(lua_State* L, int index)
+{
+  if (lua_type(L, index) == LUA_TSTRING)
+    fromString(lua_tostring(L, index));
+  else if (lua_type(L, index) == LUA_TTABLE) {
+    filters::ColorCurve curve;
+    lua_pushnil(L);
+    while (lua_next(L, -2) != 0) {
+      gfx::Point pt = script::convert_args_into_point(L, -1);
+      curve.addPoint(pt);
+      lua_pop(L, 1);
+    }
+    setValue(curve);
+  }
 }
 
 void CommandWithNewParamsBase::loadParamsFromLuaTable(lua_State* L, int index)

@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -30,13 +31,13 @@ ConvolutionMatrixStock::~ConvolutionMatrixStock()
   cleanStock();
 }
 
-base::SharedPtr<ConvolutionMatrix> ConvolutionMatrixStock::getByName(const char* name)
+std::shared_ptr<ConvolutionMatrix> ConvolutionMatrixStock::getByName(const char* name)
 {
   for (const_iterator it = begin(), end = this->end(); it != end; ++it) {
     if (std::strcmp((*it)->getName(), name) == 0)
       return *it;
   }
-  return base::SharedPtr<ConvolutionMatrix>(0);
+  return std::shared_ptr<ConvolutionMatrix>(0);
 }
 
 void ConvolutionMatrixStock::reloadStock()
@@ -56,7 +57,7 @@ void ConvolutionMatrixStock::reloadStock()
                           "convmatr.def", NULL };
   char *s, buf[256], leavings[4096];
   int i, x, y, w, h, div, bias;
-  base::SharedPtr<ConvolutionMatrix> matrix;
+  std::shared_ptr<ConvolutionMatrix> matrix;
   std::string name;
 
   cleanStock();

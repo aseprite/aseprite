@@ -37,11 +37,18 @@ gfx::Point Point_new(lua_State* L, int index)
     }
     else {
       lua_pop(L, 1);
+
+      // TODO Investigate this further: why we cannot use two
+      // lua_geti() calls and then lua_pop(L, 2) when we are iterating
+      // points in a table defined like {{0,0},{32,32}}
+
       lua_geti(L, index, 1);
+      pt.x = lua_tointeger(L, -1);
+      lua_pop(L, 1);
+
       lua_geti(L, index, 2);
-      pt.x = lua_tointeger(L, -2);
       pt.y = lua_tointeger(L, -1);
-      lua_pop(L, 2);
+      lua_pop(L, 1);
     }
   }
   else {
