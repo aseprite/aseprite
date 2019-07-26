@@ -16,6 +16,7 @@
 #include "base/convert_to.h"
 #include "base/split_string.h"
 #include "base/string.h"
+#include "doc/algorithm/resize_image.h"
 #include "doc/color_mode.h"
 #include "filters/color_curve.h"
 #include "filters/hue_saturation_filter.h"
@@ -55,6 +56,17 @@ template<>
 void Param<std::string>::fromString(const std::string& value)
 {
   setValue(value);
+}
+
+template<>
+void Param<doc::algorithm::ResizeMethod>::fromString(const std::string& value)
+{
+  if (base::utf8_icmp(value, "bilinear") == 0)
+    setValue(doc::algorithm::RESIZE_METHOD_BILINEAR);
+  else if (base::utf8_icmp(value, "rotsprite") == 0)
+    setValue(doc::algorithm::RESIZE_METHOD_ROTSPRITE);
+  else
+    setValue(doc::algorithm::ResizeMethod::RESIZE_METHOD_NEAREST_NEIGHBOR);
 }
 
 template<>
@@ -198,6 +210,15 @@ void Param<std::string>::fromLua(lua_State* L, int index)
     setValue(s);
   else
     setValue(std::string());
+}
+
+template<>
+void Param<doc::algorithm::ResizeMethod>::fromLua(lua_State* L, int index)
+{
+  if (lua_type(L, index) == LUA_TSTRING)
+    fromString(lua_tostring(L, index));
+  else
+    setValue((doc::algorithm::ResizeMethod)lua_tointeger(L, index));
 }
 
 template<>

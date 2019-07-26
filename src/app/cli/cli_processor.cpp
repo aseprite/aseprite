@@ -13,7 +13,6 @@
 
 #include "app/cli/app_options.h"
 #include "app/cli/cli_delegate.h"
-#include "app/commands/cmd_sprite_size.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/console.h"
@@ -350,14 +349,14 @@ void CliProcessor::process(Context* ctx)
         }
         // --scale <factor>
         else if (opt == &m_options.scale()) {
-          Command* command = Commands::instance()->byId(CommandId::SpriteSize());
-          double scale = strtod(value.value().c_str(), NULL);
-          static_cast<SpriteSizeCommand*>(command)->setScale(scale, scale);
+          Params params;
+          params.set("scale", value.value().c_str());
 
           // Scale all sprites
           for (auto doc : ctx->documents()) {
             ctx->setActiveDocument(doc);
-            ctx->executeCommand(command);
+            ctx->executeCommand(Commands::instance()->byId(CommandId::SpriteSize()),
+                                params);
           }
         }
         // --dithering-algorithm <algorithm>
@@ -442,9 +441,10 @@ void CliProcessor::process(Context* ctx)
             scaleHeight = (doc->height() > maxHeight ? maxHeight / doc->height() : 1.0);
             if (scaleWidth < 1.0 || scaleHeight < 1.0) {
               scale = MIN(scaleWidth, scaleHeight);
-              Command* command = Commands::instance()->byId(CommandId::SpriteSize());
-              static_cast<SpriteSizeCommand*>(command)->setScale(scale, scale);
-              ctx->executeCommand(command);
+              Params params;
+              params.set("scale", base::convert_to<std::string>(scale).c_str());
+              ctx->executeCommand(Commands::instance()->byId(CommandId::SpriteSize()),
+                                  params);
             }
           }
         }
