@@ -73,7 +73,7 @@ namespace app {
         params->addParam(id, this);
     }
 
-    bool isSet() {
+    bool isSet() const {
       return m_isSet;
     }
 

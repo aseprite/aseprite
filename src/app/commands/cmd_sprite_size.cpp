@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -10,8 +11,8 @@
 
 #include "app/cmd/set_cel_bounds.h"
 #include "app/cmd/set_slice_key.h"
-#include "app/commands/cmd_sprite_size.h"
 #include "app/commands/command.h"
+#include "app/commands/new_params.h"
 #include "app/commands/params.h"
 #include "app/doc_api.h"
 #include "app/ini_file.h"
@@ -19,6 +20,7 @@
 #include "app/modules/palettes.h"
 #include "app/sprite_job.h"
 #include "base/bind.h"
+#include "base/convert_to.h"
 #include "doc/algorithm/resize_image.h"
 #include "doc/cel.h"
 #include "doc/cels_range.h"
@@ -38,6 +40,17 @@ namespace app {
 
 using namespace ui;
 using doc::algorithm::ResizeMethod;
+
+struct SpriteSizeParams : public NewParams {
+  Param<bool> ui { this, true, { "ui", "use-ui" } };
+  Param<int> width { this, 0, "width" };
+  Param<int> height { this, 0, "height" };
+  Param<bool> lockRatio { this, false, "lockRatio" };
+  Param<double> scale { this, 1.0, "scale" };
+  Param<double> scaleX { this, 1.0, "scaleX" };
+  Param<double> scaleY { this, 1.0, "scaleY" };
+  Param<ResizeMethod> method { this, ResizeMethod::RESIZE_METHOD_NEAREST_NEIGHBOR, { "method", "resize-method" } };
+};
 
 class SpriteSizeJob : public SpriteJob {
   int m_new_width;
@@ -180,17 +193,21 @@ protected:
 
 };
 
+#ifdef ENABLE_UI
+
 class SpriteSizeWindow : public app::gen::SpriteSize {
 public:
-  SpriteSizeWindow(Context* ctx, int new_width, int new_height) : m_ctx(ctx) {
+  SpriteSizeWindow(Context* ctx, const SpriteSizeParams& params) : m_ctx(ctx) {
     lockRatio()->Click.connect(base::Bind<void>(&SpriteSizeWindow::onLockRatioClick, this));
     widthPx()->Change.connect(base::Bind<void>(&SpriteSizeWindow::onWidthPxChange, this));
     heightPx()->Change.connect(base::Bind<void>(&SpriteSizeWindow::onHeightPxChange, this));
     widthPerc()->Change.connect(base::Bind<void>(&SpriteSizeWindow::onWidthPercChange, this));
     heightPerc()->Change.connect(base::Bind<void>(&SpriteSizeWindow::onHeightPercChange, this));
 
-    widthPx()->setTextf("%d", new_width);
-    heightPx()->setTextf("%d", new_height);
+    widthPx()->setTextf("%d", params.width());
+    heightPx()->setTextf("%d", params.height());
+    widthPerc()->setTextf(PERC_FORMAT, params.scaleX() * 100.0);
+    heightPerc()->setTextf(PERC_FORMAT, params.scaleY() * 100.0);
 
     static_assert(doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR == 0 &&
                   doc::algorithm::RESIZE_METHOD_BILINEAR == 1 &&
@@ -199,9 +216,15 @@ public:
     method()->addItem("Nearest-neighbor");
     method()->addItem("Bilinear");
     method()->addItem("RotSprite");
-    method()->setSelectedItemIndex(
-      get_config_int("SpriteSize", "Method",
-                     doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR));
+    int resize_method;
+    if (params.method.isSet())
+      resize_method = (int)params.method();
+    else
+      resize_method = get_config_int("SpriteSize", "Method",
+                                     doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR);
+    method()->setSelectedItemIndex(resize_method);
+    const bool lock = (params.lockRatio.isSet())? params.lockRatio() : get_config_bool("SpriteSize", "LockRatio", false);
+    lockRatio()->setSelected(lock);
   }
 
 private:
@@ -267,48 +290,20 @@ private:
 
   Context* m_ctx;
 };
+#endif // ENABLE_UI
+
+class SpriteSizeCommand : public CommandWithNewParams<SpriteSizeParams> {
+public:
+  SpriteSizeCommand();
+
+protected:
+  bool onEnabled(Context* context) override;
+  void onExecute(Context* context) override;
+};
 
 SpriteSizeCommand::SpriteSizeCommand()
-  : Command(CommandId::SpriteSize(), CmdRecordableFlag)
+  : CommandWithNewParams<SpriteSizeParams>(CommandId::SpriteSize(), CmdRecordableFlag)
 {
-  m_useUI = true;
-  m_width = 0;
-  m_height = 0;
-  m_scaleX = 1.0;
-  m_scaleY = 1.0;
-  m_resizeMethod = doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR;
-}
-
-void SpriteSizeCommand::onLoadParams(const Params& params)
-{
-  std::string useUI = params.get("use-ui");
-  m_useUI = (useUI.empty() || (useUI == "true"));
-
-  std::string width = params.get("width");
-  if (!width.empty()) {
-    m_width = std::strtol(width.c_str(), NULL, 10);
-  }
-  else
-    m_width = 0;
-
-  std::string height = params.get("height");
-  if (!height.empty()) {
-    m_height = std::strtol(height.c_str(), NULL, 10);
-  }
-  else
-    m_height = 0;
-
-  std::string resize_method = params.get("resize-method");
-  if (!resize_method.empty()) {
-    if (resize_method == "bilinear")
-      m_resizeMethod = doc::algorithm::RESIZE_METHOD_BILINEAR;
-    else if (resize_method == "rotsprite")
-      m_resizeMethod = doc::algorithm::RESIZE_METHOD_ROTSPRITE;
-    else
-      m_resizeMethod = doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR;
-  }
-  else
-    m_resizeMethod = doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR;
 }
 
 bool SpriteSizeCommand::onEnabled(Context* context)
@@ -319,15 +314,73 @@ bool SpriteSizeCommand::onEnabled(Context* context)
 
 void SpriteSizeCommand::onExecute(Context* context)
 {
+#ifdef ENABLE_UI
+  const bool ui = (params().ui() && context->isUIAvailable());
+#endif
   const ContextReader reader(context);
   const Sprite* sprite(reader.sprite());
-  int new_width = (m_width ? m_width: int(sprite->width()*m_scaleX));
-  int new_height = (m_height ? m_height: int(sprite->height()*m_scaleY));
-  ResizeMethod resize_method = m_resizeMethod;
+  auto& params = this->params();
+
+  double ratio = sprite->width() / double(sprite->height());
+  if (params.scale.isSet()) {
+    params.width(int(sprite->width() * params.scale()));
+    params.height(int(sprite->height() * params.scale()));
+    params.scaleX(params.scale());
+    params.scaleY(params.scale());
+  }
+  else if (params.lockRatio()) {
+    if (params.width.isSet()) {
+      params.height(int(params.width() / ratio));
+      params.scaleX(params.width() / double(sprite->width()));
+      params.scaleY(params.scaleX());
+    }
+    else if (params.height.isSet()) {
+      params.width(int(params.height() * ratio));
+      params.scaleY(params.height() / double(sprite->height()));
+      params.scaleX(params.scaleY());
+    }
+    else if (params.scaleX.isSet()) {
+      params.width(int(params.scaleX() * sprite->width()));
+      params.height(int(params.scaleX() * sprite->height()));
+      params.scaleY(params.scaleX());
+    }
+    else if (params.scaleY.isSet()) {
+      params.width(int(params.scaleY() * sprite->width()));
+      params.height(int(params.scaleY() * sprite->height()));
+      params.scaleX(params.scaleY());
+    }
+    else {
+      params.width(sprite->width());
+      params.height(sprite->height());
+    }
+  }
+  else {
+    if (params.width.isSet()) {
+      params.scaleX(params.width() / double(sprite->width()));
+    }
+    else if (params.scaleX.isSet()) {
+      params.width(int(params.scaleX() * sprite->width()));
+    }
+    else {
+      params.width(sprite->width());
+    }
+    if (params.height.isSet()) {
+      params.scaleY(params.height() / double(sprite->height()));
+    }
+    else if (params.scaleY.isSet()) {
+      params.height(int(params.scaleY() * sprite->height()));
+    }
+    else {
+      params.height(sprite->height());
+    }
+  }
+  int new_width = params.width();
+  int new_height = params.height();
+  ResizeMethod resize_method = params.method();
 
 #ifdef ENABLE_UI
-  if (m_useUI && context->isUIAvailable()) {
-    SpriteSizeWindow window(context, new_width, new_height);
+  if (ui) {
+    SpriteSizeWindow window(context, params);
     window.remapWindow();
     window.centerWindow();
 
@@ -344,6 +397,7 @@ void SpriteSizeCommand::onExecute(Context* context)
     resize_method = (ResizeMethod)window.method()->getSelectedItemIndex();
 
     set_config_int("SpriteSize", "Method", resize_method);
+    set_config_bool("SpriteSize", "LockRatio", window.lockRatio()->isSelected());
   }
 #endif // ENABLE_UI
 
