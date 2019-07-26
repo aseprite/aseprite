@@ -10,6 +10,7 @@
 #pragma once
 
 #include "app/commands/filters/cels_target.h"
+#include "app/context_access.h"
 #include "app/site.h"
 #include "app/tx.h"
 #include "base/exception.h"
@@ -139,8 +140,8 @@ namespace app {
     void redrawColorPalette();
 #endif
 
-    Context* m_context;
-    Site m_site;
+    ContextReader m_reader;
+    Site& m_site;
     Filter* m_filter;
     doc::Cel* m_cel;
     doc::ImageRef m_src;

@@ -50,8 +50,8 @@ using namespace std;
 using namespace ui;
 
 FilterManagerImpl::FilterManagerImpl(Context* context, Filter* filter)
-  : m_context(context)
-  , m_site(context->activeSite())
+  : m_reader(context)
+  , m_site(*const_cast<Site*>(m_reader.site()))
   , m_filter(filter)
   , m_cel(nullptr)
   , m_src(nullptr)
@@ -281,8 +281,7 @@ void FilterManagerImpl::applyToTarget()
   }
 
   // Initialize writting operation
-  ContextReader reader(m_context);
-  ContextWriter writer(reader);
+  ContextWriter writer(m_reader);
   m_tx.reset(new Tx(writer.context(), m_filter->getName(), ModifyDocument));
 
   m_progressBase = 0.0f;
