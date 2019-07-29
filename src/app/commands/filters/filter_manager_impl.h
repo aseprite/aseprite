@@ -90,6 +90,8 @@ namespace app {
     void end();
     bool applyStep();
     void applyToTarget();
+
+    void initTransaction();
     bool isTransaction() const;
     void commitTransaction();
 
@@ -141,6 +143,7 @@ namespace app {
 #endif
 
     ContextReader m_reader;
+    std::unique_ptr<ContextWriter> m_writer;
     Site& m_site;
     Filter* m_filter;
     doc::Cel* m_cel;

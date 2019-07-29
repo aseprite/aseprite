@@ -135,6 +135,9 @@ FilterWorker::~FilterWorker()
 
 void FilterWorker::run()
 {
+  // Initialize writting transaction
+  m_filterMgr->initTransaction();
+
 #ifdef ENABLE_UI
   std::thread thread;
   // Open the alert window in foreground (this is modal, locks the main thread)

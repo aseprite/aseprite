@@ -280,10 +280,6 @@ void FilterManagerImpl::applyToTarget()
     return;
   }
 
-  // Initialize writting operation
-  ContextWriter writer(m_reader);
-  m_tx.reset(new Tx(writer.context(), m_filter->getName(), ModifyDocument));
-
   m_progressBase = 0.0f;
   m_progressWidth = (cels.size() > 0 ? 1.0f / cels.size(): 1.0f);
 
@@ -322,9 +318,18 @@ void FilterManagerImpl::applyToTarget()
   m_oldPalette.reset(nullptr);
 }
 
+void FilterManagerImpl::initTransaction()
+{
+  ASSERT(!m_tx);
+  m_writer.reset(new ContextWriter(m_reader));
+  m_tx.reset(new Tx(m_writer->context(),
+                    m_filter->getName(),
+                    ModifyDocument));
+}
+
 bool FilterManagerImpl::isTransaction() const
 {
-  return m_tx != nullptr;
+  return (m_tx != nullptr);
 }
 
 // This must be executed in the main UI thread.
@@ -333,6 +338,7 @@ void FilterManagerImpl::commitTransaction()
 {
   ASSERT(m_tx);
   m_tx->commit();
+  m_writer.reset();
 }
 
 #ifdef ENABLE_UI

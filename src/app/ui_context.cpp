@@ -28,6 +28,7 @@
 #include "app/ui/workspace_tabs.h"
 #include "base/mutex.h"
 #include "doc/sprite.h"
+#include "ui/system.h"
 
 #include <algorithm>
 
@@ -282,6 +283,12 @@ void UIContext::onRemoveDocument(Doc* doc)
 
 void UIContext::onGetActiveSite(Site* site) const
 {
+  // We can use the activeView only from the UI thread.
+#ifdef _DEBUG
+  if (isUIAvailable())
+    ui::assert_ui_thread();
+#endif
+
   DocView* view = activeView();
   if (view) {
     view->getSite(site);
