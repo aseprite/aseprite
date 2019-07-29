@@ -10,6 +10,7 @@
 #pragma once
 
 #include "app/tileset_mode.h"
+#include "doc/color.h"
 #include "doc/frame.h"
 #include "doc/image_ref.h"
 #include "gfx/point.h"
@@ -29,6 +30,11 @@ namespace app {
 
   typedef std::function<doc::ImageRef(const doc::ImageRef& origTile,
                                       const gfx::Rect& tileBoundsInCanvas)> GetTileImageFunc;
+
+  // Creates a new image of the given cel
+  doc::ImageRef crop_cel_image(
+    const doc::Cel* cel,
+    const doc::color_t bgcolor);
 
   // The "cmds" is used in case that new tiles must be added in the
   // dstLayer tilesets.

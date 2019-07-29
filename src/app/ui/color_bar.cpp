@@ -558,6 +558,11 @@ void ColorBar::onGeneralUpdate(DocEvent& ev)
 
 void ColorBar::onTilesetChanged(DocEvent& ev)
 {
+  // This can happen when a filter is applied to each tile in a
+  // background thread.
+  if (!ui::is_ui_thread())
+    return;
+
   m_tilesButtons.deselectItems();
   if (m_scrollableTilesView.isVisible())
     m_scrollableTilesView.updateView();

@@ -76,6 +76,36 @@ static void mask_image(Image* image, Image* bitmap)
   }
 }
 
+doc::ImageRef crop_cel_image(
+  const doc::Cel* cel,
+  const color_t bgcolor)
+{
+  doc::Sprite* sprite = cel->sprite();
+
+  if (cel->layer()->isTilemap()) {
+    doc::ImageRef dstImage(doc::Image::create(sprite->spec()));
+
+    render::Render().renderCel(
+      dstImage.get(),
+      sprite,
+      cel->image(),
+      cel->layer(),
+      sprite->palette(cel->frame()),
+      dstImage->bounds(),
+      gfx::Clip(0, 0, dstImage->bounds()),
+      255, BlendMode::NORMAL);
+
+    return dstImage;
+  }
+  else {
+    return doc::ImageRef(
+      doc::crop_image(
+        cel->image(),
+        gfx::Rect(sprite->bounds()).offset(-cel->position()),
+        bgcolor));
+  }
+}
+
 Cel* create_cel_copy(CmdSequence* cmds,
                      const Cel* srcCel,
                      const Sprite* dstSprite,
@@ -522,7 +552,7 @@ void clear_mask_from_cel(CmdSequence* cmds,
       gfx::Region(doc->mask()->bounds()),
       tilesetMode,
       [bgcolor, mask](const doc::ImageRef& origTile,
-                const gfx::Rect& tileBoundsInCanvas) -> doc::ImageRef {
+                      const gfx::Rect& tileBoundsInCanvas) -> doc::ImageRef {
         doc::ImageRef modified(doc::Image::createCopy(origTile.get()));
         doc::algorithm::fill_selection(
           modified.get(),
