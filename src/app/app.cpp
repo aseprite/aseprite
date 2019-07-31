@@ -368,7 +368,7 @@ void App::run()
       os::instance()->activateApp();
 #endif
 
-#if ENABLE_DEVMODE
+#if defined(_DEBUG) || defined(ENABLE_DEVMODE)
     // On OS X, when we compile Aseprite on devmode, we're using it
     // outside an app bundle, so we must active the app explicitly.
     os::instance()->activateApp();
