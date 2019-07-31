@@ -24,7 +24,8 @@ namespace app {
     virtual bool onKeyDown(Editor* editor, ui::KeyMessage* msg) override;
     virtual bool onKeyUp(Editor* editor, ui::KeyMessage* msg) override;
     virtual bool onUpdateStatusBar(Editor* editor) override;
-
+    virtual LeaveAction onLeaveState(Editor* editor, EditorState* newState) override { return DiscardState; }
+  
   private:
     gfx::Point m_oldPos;
   };
