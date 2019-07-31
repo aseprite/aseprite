@@ -25,6 +25,14 @@ namespace app {
     virtual bool onKeyUp(Editor* editor, ui::KeyMessage* msg) override;
     virtual bool onUpdateStatusBar(Editor* editor) override;
 
+    virtual LeaveAction onLeaveState(Editor* editor, EditorState* newState) override {
+      // Just discard this state if we want to enter to another state
+      // e.g. if we want to enter to MovingPixelsState when the user
+      // press Ctrl+V when we are scrolling, we have to just discard
+      // this state (stop the scrolling action).
+      return DiscardState;
+    }
+
   private:
     gfx::Point m_oldPos;
   };
