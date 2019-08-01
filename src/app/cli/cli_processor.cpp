@@ -102,6 +102,16 @@ void filter_layers(const LayerList& layers,
         (!cof.includeLayers.empty() && !filter_layer(layer, layer_path, cof.includeLayers, true)))
       continue;
 
+    if (!cof.includeLayers.empty() && !layer->isVisibleHierarchy()) {
+      bool isIncluded = false;
+      for (const auto& filter : cof.includeLayers) {
+        if (filter == layer->name()) {
+          isIncluded = true;
+        }
+      }
+      if (!isIncluded) continue;
+    }
+
     if (!cof.excludeLayers.empty() &&
         !filter_layer(layer, layer_path, cof.excludeLayers, false))
       continue;
