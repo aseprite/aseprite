@@ -545,7 +545,7 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
 
   // Configure output format?
   if (fop->m_format->support(FILE_SUPPORT_GET_FORMAT_OPTIONS)) {
-    auto opts = fop->m_format->getFormatOptions(fop.get());
+    auto opts = fop->m_format->askUserForFormatOptions(fop.get());
 
     // Does the user cancelled the operation?
     if (!opts)
@@ -1002,12 +1002,7 @@ void FileOp::postLoad()
   m_document->markAsSaved();
 }
 
-std::shared_ptr<FormatOptions> FileOp::formatOptions() const
-{
-  return m_formatOptions;
-}
-
-void FileOp::setFormatOptions(const std::shared_ptr<FormatOptions>& opts)
+void FileOp::setLoadedFormatOptions(const FormatOptionsPtr& opts)
 {
   ASSERT(!m_formatOptions);
   m_formatOptions = opts;

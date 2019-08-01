@@ -64,7 +64,7 @@ class SvgFormat : public FileFormat {
 #ifdef ENABLE_SAVE
   bool onSave(FileOp* fop) override;
 #endif
-  std::shared_ptr<FormatOptions> onGetFormatOptions(FileOp* fop) override;
+  FormatOptionsPtr onAskUserForFormatOptions(FileOp* fop) override;
 };
 
 FileFormat* CreateSvgFormat()
@@ -164,36 +164,30 @@ bool SvgFormat::onSave(FileOp* fop)
 #endif
 
 // Shows the SVG configuration dialog.
-std::shared_ptr<FormatOptions> SvgFormat::onGetFormatOptions(FileOp* fop)
+FormatOptionsPtr SvgFormat::onAskUserForFormatOptions(FileOp* fop)
 {
-  std::shared_ptr<SvgOptions> svg_options;
-  if (fop->document()->getFormatOptions())
-    svg_options = std::static_pointer_cast<SvgOptions>(fop->document()->getFormatOptions());
-
-  if (!svg_options)
-    svg_options = std::make_shared<SvgOptions>();
-
+  auto opts = fop->formatOptionsOfDocument<SvgOptions>();
 #ifdef ENABLE_UI
   if (fop->context() && fop->context()->isUIAvailable()) {
     try {
       auto& pref = Preferences::instance();
 
       if (pref.isSet(pref.svg.pixelScale))
-        svg_options->pixelScale = pref.svg.pixelScale();
+        opts->pixelScale = pref.svg.pixelScale();
 
      if (pref.svg.showAlert()) {
         app::gen::SvgOptions win;
-        win.pxsc()->setTextf("%d", svg_options->pixelScale);
+        win.pxsc()->setTextf("%d", opts->pixelScale);
         win.openWindowInForeground();
 
         if (win.closer() == win.ok()) {
           pref.svg.pixelScale((int)win.pxsc()->textInt());
           pref.svg.showAlert(!win.dontShow()->isSelected());
 
-          svg_options->pixelScale = pref.svg.pixelScale();
+          opts->pixelScale = pref.svg.pixelScale();
         }
         else {
-          svg_options.reset();
+          opts.reset();
         }
       }
     }
@@ -203,7 +197,7 @@ std::shared_ptr<FormatOptions> SvgFormat::onGetFormatOptions(FileOp* fop)
     }
   }
 #endif
-  return svg_options;
+  return opts;
 }
 
 } // namespace app

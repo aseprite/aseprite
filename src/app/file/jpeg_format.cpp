@@ -75,7 +75,7 @@ class JpegFormat : public FileFormat {
                       const gfx::ColorSpace* colorSpace);
 #endif
 
-  std::shared_ptr<FormatOptions> onGetFormatOptions(FileOp* fop) override;
+  FormatOptionsPtr onAskUserForFormatOptions(FileOp* fop) override;
 };
 
 FileFormat* CreateJpegFormat()
@@ -521,36 +521,30 @@ void JpegFormat::saveColorSpace(FileOp* fop, jpeg_compress_struct* cinfo,
 #endif  // ENABLE_SAVE
 
 // Shows the JPEG configuration dialog.
-std::shared_ptr<FormatOptions> JpegFormat::onGetFormatOptions(FileOp* fop)
+FormatOptionsPtr JpegFormat::onAskUserForFormatOptions(FileOp* fop)
 {
-  std::shared_ptr<JpegOptions> jpeg_options;
-  if (fop->document()->getFormatOptions())
-    jpeg_options = std::static_pointer_cast<JpegOptions>(fop->document()->getFormatOptions());
-
-  if (!jpeg_options)
-    jpeg_options = std::make_shared<JpegOptions>();
-
+  auto opts = fop->formatOptionsOfDocument<JpegOptions>();
 #ifdef ENABLE_UI
   if (fop->context() && fop->context()->isUIAvailable()) {
     try {
       auto& pref = Preferences::instance();
 
       if (pref.isSet(pref.jpeg.quality))
-        jpeg_options->quality = pref.jpeg.quality();
+        opts->quality = pref.jpeg.quality();
 
       if (pref.jpeg.showAlert()) {
         app::gen::JpegOptions win;
-        win.quality()->setValue(int(jpeg_options->quality * 10.0f));
+        win.quality()->setValue(int(opts->quality * 10.0f));
         win.openWindowInForeground();
 
         if (win.closer() == win.ok()) {
           pref.jpeg.quality(float(win.quality()->getValue()) / 10.0f);
           pref.jpeg.showAlert(!win.dontShow()->isSelected());
 
-          jpeg_options->quality = pref.jpeg.quality();
+          opts->quality = pref.jpeg.quality();
         }
         else {
-          jpeg_options.reset();
+          opts.reset();
         }
       }
     }
@@ -560,8 +554,7 @@ std::shared_ptr<FormatOptions> JpegFormat::onGetFormatOptions(FileOp* fop)
     }
   }
 #endif // ENABLE_UI
-
-  return jpeg_options;
+  return opts;
 }
 
 } // namespace app

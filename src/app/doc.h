@@ -129,8 +129,8 @@ namespace app {
     //////////////////////////////////////////////////////////////////////
     // Loaded options from file
 
-    void setFormatOptions(const std::shared_ptr<FormatOptions>& format_options);
-    std::shared_ptr<FormatOptions> getFormatOptions() const { return m_format_options; }
+    void setFormatOptions(const FormatOptionsPtr& format_options);
+    FormatOptionsPtr formatOptions() const { return m_format_options; }
 
     //////////////////////////////////////////////////////////////////////
     // Boundaries
@@ -210,7 +210,7 @@ namespace app {
     std::unique_ptr<doc::MaskBoundaries> m_maskBoundaries;
 
     // Data to save the file in the same format that it was loaded
-    std::shared_ptr<FormatOptions> m_format_options;
+    FormatOptionsPtr m_format_options;
 
     // Extra cel used to draw extra stuff (e.g. editor's pen preview, pixels in movement, etc.)
     ExtraCelRef m_extraCel;

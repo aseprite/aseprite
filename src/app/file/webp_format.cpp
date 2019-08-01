@@ -69,7 +69,7 @@ class WebPFormat : public FileFormat {
 #ifdef ENABLE_SAVE
   bool onSave(FileOp* fop) override;
 #endif
-  std::shared_ptr<FormatOptions> onGetFormatOptions(FileOp* fop) override;
+  FormatOptionsPtr onAskUserForFormatOptions(FileOp* fop) override;
 };
 
 FileFormat* CreateWebPFormat()
@@ -147,7 +147,7 @@ bool WebPFormat::onLoad(FileOp* fop)
         case 2: type = WebPOptions::Lossless; break;
       }
       opts->setType(type);
-      fop->setFormatOptions(opts);
+      fop->setLoadedFormatOptions(opts);
     }
   }
   else {
@@ -268,7 +268,7 @@ bool WebPFormat::onSave(FileOp* fop)
     return false;
   }
 
-  auto opts = std::static_pointer_cast<WebPOptions>(fop->formatOptions());
+  auto opts = fop->formatOptionsForSaving<WebPOptions>();
   WebPConfig config;
   WebPConfigInit(&config);
 
@@ -367,15 +367,9 @@ bool WebPFormat::onSave(FileOp* fop)
 #endif  // ENABLE_SAVE
 
 // Shows the WebP configuration dialog.
-std::shared_ptr<FormatOptions> WebPFormat::onGetFormatOptions(FileOp* fop)
+FormatOptionsPtr WebPFormat::onAskUserForFormatOptions(FileOp* fop)
 {
-  std::shared_ptr<WebPOptions> opts;
-  if (fop->document()->getFormatOptions())
-    opts = std::static_pointer_cast<WebPOptions>(fop->document()->getFormatOptions());
-
-  if (!opts)
-    opts = std::make_shared<WebPOptions>();
-
+  auto opts = fop->formatOptionsOfDocument<WebPOptions>();
 #ifdef ENABLE_UI
   if (fop->context() && fop->context()->isUIAvailable()) {
     try {
@@ -462,7 +456,6 @@ std::shared_ptr<FormatOptions> WebPFormat::onGetFormatOptions(FileOp* fop)
     }
   }
 #endif // ENABLE_UI
-
   return opts;
 }
 

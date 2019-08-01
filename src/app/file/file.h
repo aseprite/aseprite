@@ -10,7 +10,9 @@
 #pragma once
 
 #include "app/color.h"
+#include "app/doc.h"
 #include "app/file/file_op_config.h"
+#include "app/file/format_options.h"
 #include "app/pref/preferences.h"
 #include "base/mutex.h"
 #include "base/paths.h"
@@ -49,9 +51,7 @@ namespace doc {
 namespace app {
 
   class Context;
-  class Doc;
   class FileFormat;
-  class FormatOptions;
 
   using namespace doc;
 
@@ -143,8 +143,39 @@ namespace app {
     void postLoad();
 
     // Special options specific to the file format.
-    std::shared_ptr<FormatOptions> formatOptions() const;
-    void setFormatOptions(const std::shared_ptr<FormatOptions>& opts);
+    FormatOptionsPtr formatOptions() const {
+      return m_formatOptions;
+    }
+
+    // Options to save the document. This function doesn't return
+    // nullptr.
+    template<typename T>
+    std::shared_ptr<T> formatOptionsForSaving() const {
+      auto opts = std::dynamic_pointer_cast<T>(m_formatOptions);
+      if (!opts)
+        opts = std::make_shared<T>();
+      ASSERT(opts);
+      return opts;
+    }
+
+    // Options from the document when it was loaded. This function
+    // doesn't return nullptr.
+    template<typename T>
+    std::shared_ptr<T> formatOptionsOfDocument() const {
+      // We use the dynamic cast because the document format options
+      // could be an instance of another class than T.
+      auto opts = std::dynamic_pointer_cast<T>(m_document->formatOptions());
+      if (!opts) {
+        // If the document doesn't have format options (or the type
+        // doesn't matches T), we create default format options for
+        // this file.
+        opts = std::make_shared<T>();
+      }
+      ASSERT(opts);
+      return opts;
+    }
+
+    void setLoadedFormatOptions(const FormatOptionsPtr& opts);
 
     // Helpers for file decoder/encoder (FileFormat) with
     // FILE_SUPPORT_SEQUENCES flag.
@@ -214,7 +245,8 @@ namespace app {
 
     FileOpConfig m_config;
 
-    std::shared_ptr<FormatOptions> m_formatOptions;
+    // Options
+    FormatOptionsPtr m_formatOptions;
 
     // Data for sequences.
     struct {

@@ -96,7 +96,7 @@ class GifFormat : public FileFormat {
 #ifdef ENABLE_SAVE
   bool onSave(FileOp* fop) override;
 #endif
-  std::shared_ptr<FormatOptions> onGetFormatOptions(FileOp* fop) override;
+  FormatOptionsPtr onAskUserForFormatOptions(FileOp* fop) override;
 };
 
 FileFormat* CreateGifFormat()
@@ -1412,29 +1412,23 @@ bool GifFormat::onSave(FileOp* fop)
 
 #endif  // ENABLE_SAVE
 
-std::shared_ptr<FormatOptions> GifFormat::onGetFormatOptions(FileOp* fop)
+FormatOptionsPtr GifFormat::onAskUserForFormatOptions(FileOp* fop)
 {
-  std::shared_ptr<GifOptions> gif_options;
-  if (fop->document()->getFormatOptions())
-    gif_options = std::static_pointer_cast<GifOptions>(fop->document()->getFormatOptions());
-
-  if (!gif_options)
-    gif_options = std::make_shared<GifOptions>();
-
+  auto opts = fop->formatOptionsOfDocument<GifOptions>();
 #ifdef ENABLE_UI
   if (fop->context() && fop->context()->isUIAvailable()) {
     try {
       auto& pref = Preferences::instance();
 
       if (pref.isSet(pref.gif.interlaced))
-        gif_options->setInterlaced(pref.gif.interlaced());
+        opts->setInterlaced(pref.gif.interlaced());
       if (pref.isSet(pref.gif.loop))
-        gif_options->setLoop(pref.gif.loop());
+        opts->setLoop(pref.gif.loop());
 
       if (pref.gif.showAlert()) {
         app::gen::GifOptions win;
-        win.interlaced()->setSelected(gif_options->interlaced());
-        win.loop()->setSelected(gif_options->loop());
+        win.interlaced()->setSelected(opts->interlaced());
+        win.loop()->setSelected(opts->loop());
 
         win.openWindowInForeground();
 
@@ -1443,11 +1437,11 @@ std::shared_ptr<FormatOptions> GifFormat::onGetFormatOptions(FileOp* fop)
           pref.gif.loop(win.loop()->isSelected());
           pref.gif.showAlert(!win.dontShow()->isSelected());
 
-          gif_options->setInterlaced(pref.gif.interlaced());
-          gif_options->setLoop(pref.gif.loop());
+          opts->setInterlaced(pref.gif.interlaced());
+          opts->setLoop(pref.gif.loop());
         }
         else {
-          gif_options.reset();
+          opts.reset();
         }
       }
     }
@@ -1457,8 +1451,7 @@ std::shared_ptr<FormatOptions> GifFormat::onGetFormatOptions(FileOp* fop)
     }
   }
 #endif // ENABLE_UI
-
-  return gif_options;
+  return opts;
 }
 
 } // namespace app

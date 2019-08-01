@@ -9,6 +9,7 @@
 #define APP_FILE_FILE_FORMAT_H_INCLUDED
 #pragma once
 
+#include "app/file/format_options.h"
 #include "base/paths.h"
 #include "dio/file_format.h"
 
@@ -65,8 +66,8 @@ namespace app {
 
     // Returns extra options for this format. It can return != NULL
     // only if flags() returns FILE_SUPPORT_GET_FORMAT_OPTIONS.
-    std::shared_ptr<FormatOptions> getFormatOptions(FileOp* fop) {
-      return onGetFormatOptions(fop);
+    FormatOptionsPtr askUserForFormatOptions(FileOp* fop) {
+      return onAskUserForFormatOptions(fop);
     }
 
     // Returns true if this file format supports the given flag.
@@ -87,8 +88,8 @@ namespace app {
 #endif
     virtual void onDestroyData(FileOp* fop) { }
 
-    virtual std::shared_ptr<FormatOptions> onGetFormatOptions(FileOp* fop) {
-      return std::shared_ptr<FormatOptions>(nullptr);
+    virtual FormatOptionsPtr onAskUserForFormatOptions(FileOp* fop) {
+      return FormatOptionsPtr(nullptr);
     }
 
   };

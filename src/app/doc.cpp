@@ -247,7 +247,7 @@ bool Doc::isFullyBackedUp() const
 //////////////////////////////////////////////////////////////////////
 // Loaded options from file
 
-void Doc::setFormatOptions(const std::shared_ptr<FormatOptions>& format_options)
+void Doc::setFormatOptions(const FormatOptionsPtr& format_options)
 {
   m_format_options = format_options;
 }

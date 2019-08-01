@@ -713,7 +713,7 @@ bool BmpFormat::onLoad(FileOp *fop)
     bmp_options->green_mask = gmask;
     bmp_options->blue_mask = bmask;
 
-    fop->setFormatOptions(bmp_options);
+    fop->setLoadedFormatOptions(bmp_options);
   }
 
   return true;
