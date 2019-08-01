@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -370,7 +370,7 @@ void ColorSliders::addSlider(const Channel channel,
 
   item.relSlider->setSizeHint(gfx::Size(128, 0));
   item.absSlider->setSizeHint(gfx::Size(128, 0));
-  item.absSlider->setProperty(SkinSliderPropertyPtr(new SkinSliderProperty(new ColorSliderBgPainter(channel))));
+  item.absSlider->setProperty(std::make_shared<SkinSliderProperty>(new ColorSliderBgPainter(channel)));
   item.absSlider->setDoubleBuffered(true);
   get_skin_property(item.entry)->setLook(MiniLook);
 
@@ -498,7 +498,8 @@ void ColorSliders::updateSlidersBgColor()
 
 void ColorSliders::updateSliderBgColor(Slider* slider, const app::Color& color)
 {
-  SkinSliderPropertyPtr sliderProperty(slider->getProperty(SkinSliderProperty::Name));
+  auto sliderProperty = std::static_pointer_cast<SkinSliderProperty>(
+    slider->getProperty(SkinSliderProperty::Name));
 
   static_cast<ColorSliderBgPainter*>(sliderProperty->getBgPainter())->setColor(color);
 

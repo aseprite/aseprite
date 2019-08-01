@@ -1,5 +1,6 @@
 // Aseprite
-// Copyright (C) 2001-2015, 2017  David Capello
+// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -8,8 +9,9 @@
 #define APP_UI_SKIN_SKIN_PROPERTY_H_INCLUDED
 #pragma once
 
-#include "base/shared_ptr.h"
 #include "ui/property.h"
+
+#include <memory>
 
 namespace ui {
   class Widget;
@@ -43,7 +45,7 @@ namespace app {
       bool m_miniFont;
     };
 
-    typedef base::SharedPtr<SkinProperty> SkinPropertyPtr;
+    typedef std::shared_ptr<SkinProperty> SkinPropertyPtr;
 
     SkinPropertyPtr get_skin_property(ui::Widget* widget);
 

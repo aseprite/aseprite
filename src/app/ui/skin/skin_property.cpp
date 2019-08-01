@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -30,14 +31,12 @@ SkinProperty::~SkinProperty()
 
 SkinPropertyPtr get_skin_property(ui::Widget* widget)
 {
-  SkinPropertyPtr skinProp;
-
-  skinProp = widget->getProperty(SkinProperty::Name);
+  auto skinProp =
+    std::static_pointer_cast<SkinProperty>(widget->getProperty(SkinProperty::Name));
   if (!skinProp) {
-    skinProp.reset(new SkinProperty);
+    skinProp = std::make_shared<SkinProperty>();
     widget->setProperty(skinProp);
   }
-
   return skinProp;
 }
 

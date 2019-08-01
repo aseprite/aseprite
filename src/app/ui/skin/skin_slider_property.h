@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -9,8 +10,9 @@
 #pragma once
 
 #include "app/ui/skin/skin_property.h"
-#include "base/shared_ptr.h"
 #include "gfx/rect.h"
+
+#include <memory>
 
 namespace ui {
   class Slider;
@@ -40,8 +42,6 @@ namespace app {
     private:
       ISliderBgPainter* m_painter;
     };
-
-    typedef base::SharedPtr<SkinSliderProperty> SkinSliderPropertyPtr;
 
   } // namespace skin
 } // namespace app

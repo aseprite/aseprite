@@ -96,7 +96,7 @@ class GifFormat : public FileFormat {
 #ifdef ENABLE_SAVE
   bool onSave(FileOp* fop) override;
 #endif
-  base::SharedPtr<FormatOptions> onGetFormatOptions(FileOp* fop) override;
+  std::shared_ptr<FormatOptions> onGetFormatOptions(FileOp* fop) override;
 };
 
 FileFormat* CreateGifFormat()
@@ -926,7 +926,7 @@ public:
     else
       m_clearColor = rgba(0, 0, 0, 0);
 
-    const base::SharedPtr<GifOptions> gifOptions = fop->formatOptions();
+    const auto gifOptions = std::static_pointer_cast<GifOptions>(fop->formatOptions());
 
     LOG("GIF: Saving with options: interlaced=%d loop=%d\n",
         gifOptions->interlaced(), gifOptions->loop());
@@ -1412,14 +1412,14 @@ bool GifFormat::onSave(FileOp* fop)
 
 #endif  // ENABLE_SAVE
 
-base::SharedPtr<FormatOptions> GifFormat::onGetFormatOptions(FileOp* fop)
+std::shared_ptr<FormatOptions> GifFormat::onGetFormatOptions(FileOp* fop)
 {
-  base::SharedPtr<GifOptions> gif_options;
+  std::shared_ptr<GifOptions> gif_options;
   if (fop->document()->getFormatOptions())
-    gif_options = base::SharedPtr<GifOptions>(fop->document()->getFormatOptions());
+    gif_options = std::static_pointer_cast<GifOptions>(fop->document()->getFormatOptions());
 
   if (!gif_options)
-    gif_options.reset(new GifOptions);
+    gif_options = std::make_shared<GifOptions>();
 
 #ifdef ENABLE_UI
   if (fop->context() && fop->context()->isUIAvailable()) {
@@ -1447,13 +1447,13 @@ base::SharedPtr<FormatOptions> GifFormat::onGetFormatOptions(FileOp* fop)
           gif_options->setLoop(pref.gif.loop());
         }
         else {
-          gif_options.reset(nullptr);
+          gif_options.reset();
         }
       }
     }
     catch (std::exception& e) {
       Console::showException(e);
-      return base::SharedPtr<GifOptions>(nullptr);
+      return std::shared_ptr<GifOptions>(nullptr);
     }
   }
 #endif // ENABLE_UI

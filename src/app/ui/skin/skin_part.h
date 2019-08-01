@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -8,10 +9,10 @@
 #define APP_UI_SKIN_SKIN_PART_H_INCLUDED
 #pragma once
 
-#include "base/shared_ptr.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
 
+#include <memory>
 #include <vector>
 
 namespace os {
@@ -59,7 +60,7 @@ namespace app {
       gfx::Rect m_slicesBounds;
     };
 
-    typedef base::SharedPtr<SkinPart> SkinPartPtr;
+    typedef std::shared_ptr<SkinPart> SkinPartPtr;
 
   } // namespace skin
 } // namespace app

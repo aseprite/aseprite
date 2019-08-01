@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -9,15 +10,15 @@
 #pragma once
 
 #include "base/exception.h"
-#include "base/shared_ptr.h"
 
 #include "tinyxml.h"
 
+#include <memory>
 #include <string>
 
 namespace app {
 
-  typedef base::SharedPtr<TiXmlDocument> XmlDocumentRef;
+  typedef std::shared_ptr<TiXmlDocument> XmlDocumentRef;
 
   XmlDocumentRef open_xml(const std::string& filename);
   void save_xml(XmlDocumentRef doc, const std::string& filename);

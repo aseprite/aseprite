@@ -39,7 +39,6 @@
 #include "base/clamp.h"
 #include "base/fs.h"
 #include "base/memory.h"
-#include "base/shared_ptr.h"
 #include "base/string.h"
 #include "doc/sprite.h"
 #include "os/display.h"
@@ -337,7 +336,7 @@ void save_window_pos(Widget* window, const char *section)
 // TODO Replace this with new theme styles
 Widget* setup_mini_font(Widget* widget)
 {
-  SkinPropertyPtr skinProp = get_skin_property(widget);
+  auto skinProp = get_skin_property(widget);
   skinProp->setMiniFont();
   return widget;
 }
@@ -345,7 +344,7 @@ Widget* setup_mini_font(Widget* widget)
 // TODO Replace this with new theme styles
 Widget* setup_mini_look(Widget* widget)
 {
-  SkinPropertyPtr skinProp = get_skin_property(widget);
+  auto skinProp = get_skin_property(widget);
   skinProp->setLook(MiniLook);
   return widget;
 }

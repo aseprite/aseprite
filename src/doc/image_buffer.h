@@ -1,5 +1,6 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2016 David Capello
+// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -9,10 +10,10 @@
 #pragma once
 
 #include "base/ints.h"
-#include "base/shared_ptr.h"
 
-#include <vector>
 #include <cstddef>
+#include <memory>
+#include <vector>
 
 namespace doc {
 
@@ -33,7 +34,7 @@ namespace doc {
     std::vector<uint8_t> m_buffer;
   };
 
-  typedef base::SharedPtr<ImageBuffer> ImageBufferPtr;
+  typedef std::shared_ptr<ImageBuffer> ImageBufferPtr;
 
 } // namespace doc
 

@@ -46,6 +46,7 @@
 #include "keyboard_shortcuts.xml.h"
 
 #include <map>
+#include <memory>
 
 #define KEYBOARD_FILENAME_EXTENSION "aseprite-keys"
 
@@ -464,9 +465,9 @@ private:
   AppMenuItem* m_menuitem;
   int m_level;
   ui::Accelerators m_newAccels;
-  base::SharedPtr<ui::Button> m_changeButton;
-  base::SharedPtr<ui::Button> m_deleteButton;
-  base::SharedPtr<ui::Button> m_addButton;
+  std::shared_ptr<ui::Button> m_changeButton;
+  std::shared_ptr<ui::Button> m_deleteButton;
+  std::shared_ptr<ui::Button> m_addButton;
   obs::scoped_connection m_changeConn;
   obs::scoped_connection m_deleteConn;
   obs::scoped_connection m_addConn;

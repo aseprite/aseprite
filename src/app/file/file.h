@@ -14,13 +14,13 @@
 #include "app/pref/preferences.h"
 #include "base/mutex.h"
 #include "base/paths.h"
-#include "base/shared_ptr.h"
 #include "doc/frame.h"
 #include "doc/image_ref.h"
 #include "doc/pixel_format.h"
 #include "doc/selected_frames.h"
 
 #include <cstdio>
+#include <memory>
 #include <string>
 
 // Flags for FileOp::createLoadDocumentOperation()
@@ -143,8 +143,8 @@ namespace app {
     void postLoad();
 
     // Special options specific to the file format.
-    base::SharedPtr<FormatOptions> formatOptions() const;
-    void setFormatOptions(const base::SharedPtr<FormatOptions>& opts);
+    std::shared_ptr<FormatOptions> formatOptions() const;
+    void setFormatOptions(const std::shared_ptr<FormatOptions>& opts);
 
     // Helpers for file decoder/encoder (FileFormat) with
     // FILE_SUPPORT_SEQUENCES flag.
@@ -214,7 +214,7 @@ namespace app {
 
     FileOpConfig m_config;
 
-    base::SharedPtr<FormatOptions> m_formatOptions;
+    std::shared_ptr<FormatOptions> m_formatOptions;
 
     // Data for sequences.
     struct {

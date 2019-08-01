@@ -10,11 +10,11 @@
 #pragma once
 
 #include "app/ui/animated_widget.h"
-#include "base/shared_ptr.h"
 #include "ui/mouse_buttons.h"
 #include "ui/timer.h"
 #include "ui/widget.h"
 
+#include <memory>
 #include <vector>
 
 namespace ui {
@@ -136,7 +136,7 @@ namespace app {
       }
     };
 
-    typedef base::SharedPtr<Tab> TabPtr;
+    typedef std::shared_ptr<Tab> TabPtr;
 
     typedef std::vector<TabPtr> TabsList;
     typedef TabsList::iterator TabsListIterator;

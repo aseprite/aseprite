@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -75,7 +75,7 @@ class JpegFormat : public FileFormat {
                       const gfx::ColorSpace* colorSpace);
 #endif
 
-  base::SharedPtr<FormatOptions> onGetFormatOptions(FileOp* fop) override;
+  std::shared_ptr<FormatOptions> onGetFormatOptions(FileOp* fop) override;
 };
 
 FileFormat* CreateJpegFormat()
@@ -355,8 +355,9 @@ bool JpegFormat::onSave(FileOp* fop)
   const Image* image = fop->sequenceImage();
   JSAMPARRAY buffer;
   JDIMENSION buffer_height;
-  const base::SharedPtr<JpegOptions> jpeg_options = fop->formatOptions();
+  const auto jpeg_options = std::static_pointer_cast<JpegOptions>(fop->formatOptions());
   const int qualityValue = (int)MID(0, 100.0f * jpeg_options->quality, 100);
+
   int c;
 
   LOG("JPEG: Saving with options: quality=%d\n", qualityValue);
@@ -520,14 +521,14 @@ void JpegFormat::saveColorSpace(FileOp* fop, jpeg_compress_struct* cinfo,
 #endif  // ENABLE_SAVE
 
 // Shows the JPEG configuration dialog.
-base::SharedPtr<FormatOptions> JpegFormat::onGetFormatOptions(FileOp* fop)
+std::shared_ptr<FormatOptions> JpegFormat::onGetFormatOptions(FileOp* fop)
 {
-  base::SharedPtr<JpegOptions> jpeg_options;
+  std::shared_ptr<JpegOptions> jpeg_options;
   if (fop->document()->getFormatOptions())
-    jpeg_options = base::SharedPtr<JpegOptions>(fop->document()->getFormatOptions());
+    jpeg_options = std::static_pointer_cast<JpegOptions>(fop->document()->getFormatOptions());
 
   if (!jpeg_options)
-    jpeg_options.reset(new JpegOptions);
+    jpeg_options = std::make_shared<JpegOptions>();
 
 #ifdef ENABLE_UI
   if (fop->context() && fop->context()->isUIAvailable()) {
@@ -549,13 +550,13 @@ base::SharedPtr<FormatOptions> JpegFormat::onGetFormatOptions(FileOp* fop)
           jpeg_options->quality = pref.jpeg.quality();
         }
         else {
-          jpeg_options.reset(nullptr);
+          jpeg_options.reset();
         }
       }
     }
     catch (std::exception& e) {
       Console::showException(e);
-      return base::SharedPtr<JpegOptions>(0);
+      return std::shared_ptr<JpegOptions>(0);
     }
   }
 #endif // ENABLE_UI

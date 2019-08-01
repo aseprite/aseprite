@@ -1,4 +1,5 @@
 // Aseprite UI Library
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -8,9 +9,9 @@
 #define UI_ALERT_H_INCLUDED
 #pragma once
 
-#include "base/shared_ptr.h"
 #include "ui/window.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -21,7 +22,7 @@ namespace ui {
   class Slider;
 
   class Alert;
-  typedef base::SharedPtr<Alert> AlertPtr;
+  typedef std::shared_ptr<Alert> AlertPtr;
 
   class Alert : public Window {
   public:

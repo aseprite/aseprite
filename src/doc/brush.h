@@ -82,7 +82,7 @@ namespace doc {
     std::unique_ptr<color_t> m_bgColor;   // Background color (nullptr if it wasn't specified)
   };
 
-  typedef base::SharedPtr<Brush> BrushRef;
+  typedef std::shared_ptr<Brush> BrushRef;
 
 } // namespace doc
 

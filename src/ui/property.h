@@ -1,5 +1,6 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013, 2015  David Capello
+// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2001-2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -9,8 +10,8 @@
 #pragma once
 
 #include "base/disable_copying.h"
-#include "base/shared_ptr.h"
 
+#include <memory>
 #include <string>
 
 namespace ui {
@@ -28,7 +29,7 @@ namespace ui {
     DISABLE_COPYING(Property);
   };
 
-  typedef base::SharedPtr<Property> PropertyPtr;
+  typedef std::shared_ptr<Property> PropertyPtr;
 
 } // namespace ui
 

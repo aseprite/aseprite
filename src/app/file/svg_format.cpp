@@ -34,7 +34,7 @@ class SvgFormat : public FileFormat {
     SvgOptions() : pixelScale(1) { }
     int pixelScale;
   };
-  
+
   const char* onGetName() const override {
     return "svg";
   }
@@ -64,7 +64,7 @@ class SvgFormat : public FileFormat {
 #ifdef ENABLE_SAVE
   bool onSave(FileOp* fop) override;
 #endif
-  base::SharedPtr<FormatOptions> onGetFormatOptions(FileOp* fop) override;
+  std::shared_ptr<FormatOptions> onGetFormatOptions(FileOp* fop) override;
 };
 
 FileFormat* CreateSvgFormat()
@@ -80,7 +80,7 @@ bool SvgFormat::onSave(FileOp* fop)
 {
   const Image* image = fop->sequenceImage();
   int x, y, c, r, g, b, a, alpha;
-  const base::SharedPtr<SvgOptions> svg_options = fop->formatOptions();
+  const auto svg_options = std::static_pointer_cast<SvgOptions>(fop->formatOptions());
   const int pixelScaleValue = MID(0, svg_options->pixelScale, 10000);
   FileHandle handle(open_file_with_exception_sync_on_close(fop->filename(), "wb"));
   FILE* f = handle.get();
@@ -164,42 +164,42 @@ bool SvgFormat::onSave(FileOp* fop)
 #endif
 
 // Shows the SVG configuration dialog.
-base::SharedPtr<FormatOptions> SvgFormat::onGetFormatOptions(FileOp* fop)
+std::shared_ptr<FormatOptions> SvgFormat::onGetFormatOptions(FileOp* fop)
 {
-  base::SharedPtr<SvgOptions> svg_options;
+  std::shared_ptr<SvgOptions> svg_options;
   if (fop->document()->getFormatOptions())
-    svg_options = base::SharedPtr<SvgOptions>(fop->document()->getFormatOptions());
-  
+    svg_options = std::static_pointer_cast<SvgOptions>(fop->document()->getFormatOptions());
+
   if (!svg_options)
-    svg_options.reset(new SvgOptions);
-  
+    svg_options = std::make_shared<SvgOptions>();
+
 #ifdef ENABLE_UI
   if (fop->context() && fop->context()->isUIAvailable()) {
     try {
       auto& pref = Preferences::instance();
-      
+
       if (pref.isSet(pref.svg.pixelScale))
         svg_options->pixelScale = pref.svg.pixelScale();
-      
+
      if (pref.svg.showAlert()) {
         app::gen::SvgOptions win;
         win.pxsc()->setTextf("%d", svg_options->pixelScale);
         win.openWindowInForeground();
-      
+
         if (win.closer() == win.ok()) {
           pref.svg.pixelScale((int)win.pxsc()->textInt());
           pref.svg.showAlert(!win.dontShow()->isSelected());
-          
+
           svg_options->pixelScale = pref.svg.pixelScale();
         }
         else {
-          svg_options.reset(nullptr);
+          svg_options.reset();
         }
       }
     }
     catch (std::exception& e) {
       Console::showException(e);
-      return base::SharedPtr<SvgOptions>(nullptr);
+      return std::shared_ptr<SvgOptions>(nullptr);
     }
   }
 #endif

@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -9,7 +10,6 @@
 #pragma once
 
 #include "base/paths.h"
-#include "base/shared_ptr.h"
 #include "dio/file_format.h"
 
 #include <vector>
@@ -65,7 +65,7 @@ namespace app {
 
     // Returns extra options for this format. It can return != NULL
     // only if flags() returns FILE_SUPPORT_GET_FORMAT_OPTIONS.
-    base::SharedPtr<FormatOptions> getFormatOptions(FileOp* fop) {
+    std::shared_ptr<FormatOptions> getFormatOptions(FileOp* fop) {
       return onGetFormatOptions(fop);
     }
 
@@ -87,8 +87,8 @@ namespace app {
 #endif
     virtual void onDestroyData(FileOp* fop) { }
 
-    virtual base::SharedPtr<FormatOptions> onGetFormatOptions(FileOp* fop) {
-      return base::SharedPtr<FormatOptions>(0);
+    virtual std::shared_ptr<FormatOptions> onGetFormatOptions(FileOp* fop) {
+      return std::shared_ptr<FormatOptions>(nullptr);
     }
 
   };

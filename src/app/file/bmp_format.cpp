@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -703,7 +704,7 @@ bool BmpFormat::onLoad(FileOp *fop)
 
   // Setup the file-data.
   if (!fop->formatOptions()) {
-    base::SharedPtr<BmpOptions> bmp_options(new BmpOptions());
+    auto bmp_options = std::make_shared<BmpOptions>();
 
     bmp_options->format = format;
     bmp_options->compression = infoheader.biCompression;

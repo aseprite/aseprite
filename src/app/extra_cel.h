@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -50,7 +51,7 @@ namespace app {
     DISABLE_COPYING(ExtraCel);
   };
 
-  typedef base::SharedPtr<ExtraCel> ExtraCelRef;
+  typedef std::shared_ptr<ExtraCel> ExtraCelRef;
 
 } // namespace app
 

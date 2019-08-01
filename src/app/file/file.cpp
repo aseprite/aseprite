@@ -32,7 +32,6 @@
 #include "base/fs.h"
 #include "base/mutex.h"
 #include "base/scoped_lock.h"
-#include "base/shared_ptr.h"
 #include "base/string.h"
 #include "dio/detect_format.h"
 #include "doc/doc.h"
@@ -546,8 +545,7 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
 
   // Configure output format?
   if (fop->m_format->support(FILE_SUPPORT_GET_FORMAT_OPTIONS)) {
-    base::SharedPtr<FormatOptions> opts =
-      fop->m_format->getFormatOptions(fop.get());
+    auto opts = fop->m_format->getFormatOptions(fop.get());
 
     // Does the user cancelled the operation?
     if (!opts)
@@ -904,7 +902,7 @@ void FileOp::postLoad()
         sprite->pixelFormat() == IMAGE_RGB &&
         sprite->getPalettes().size() <= 1 &&
         sprite->palette(frame_t(0))->isBlack()) {
-      base::SharedPtr<Palette> palette(
+      std::shared_ptr<Palette> palette(
         render::create_palette_from_sprite(
           sprite, frame_t(0), sprite->lastFrame(), true,
           nullptr, nullptr, m_config.newBlend));
@@ -1004,12 +1002,12 @@ void FileOp::postLoad()
   m_document->markAsSaved();
 }
 
-base::SharedPtr<FormatOptions> FileOp::formatOptions() const
+std::shared_ptr<FormatOptions> FileOp::formatOptions() const
 {
   return m_formatOptions;
 }
 
-void FileOp::setFormatOptions(const base::SharedPtr<FormatOptions>& opts)
+void FileOp::setFormatOptions(const std::shared_ptr<FormatOptions>& opts)
 {
   ASSERT(!m_formatOptions);
   m_formatOptions = opts;

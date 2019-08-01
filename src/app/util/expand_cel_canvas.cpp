@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -41,8 +42,8 @@ static doc::ImageBufferPtr dst_buffer;
 
 static void destroy_buffers()
 {
-  src_buffer.reset(NULL);
-  dst_buffer.reset(NULL);
+  src_buffer.reset();
+  dst_buffer.reset();
 }
 
 static void create_buffers()

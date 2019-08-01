@@ -24,7 +24,6 @@
 #include "base/fs.h"
 #include "base/fstream_path.h"
 #include "base/replace_string.h"
-#include "base/shared_ptr.h"
 #include "base/string.h"
 #include "doc/algorithm/shrink_bounds.h"
 #include "doc/cel.h"
@@ -48,6 +47,7 @@
 #include <iomanip>
 #include <iostream>
 #include <list>
+#include <memory>
 
 using namespace doc;
 
@@ -111,7 +111,7 @@ private:
   gfx::Rect m_inTextureBounds;
 };
 
-typedef base::SharedPtr<SampleBounds> SampleBoundsPtr;
+typedef std::shared_ptr<SampleBounds> SampleBoundsPtr;
 
 DocExporter::Item::Item(Doc* doc,
                              doc::FrameTag* frameTag,

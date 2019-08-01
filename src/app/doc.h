@@ -16,7 +16,6 @@
 #include "base/disable_copying.h"
 #include "base/mutex.h"
 #include "base/rw_lock.h"
-#include "base/shared_ptr.h"
 #include "doc/blend_mode.h"
 #include "doc/color.h"
 #include "doc/document.h"
@@ -26,6 +25,7 @@
 #include "obs/observable.h"
 #include "os/color_space.h"
 
+#include <memory>
 #include <string>
 
 namespace doc {
@@ -129,8 +129,8 @@ namespace app {
     //////////////////////////////////////////////////////////////////////
     // Loaded options from file
 
-    void setFormatOptions(const base::SharedPtr<FormatOptions>& format_options);
-    base::SharedPtr<FormatOptions> getFormatOptions() const { return m_format_options; }
+    void setFormatOptions(const std::shared_ptr<FormatOptions>& format_options);
+    std::shared_ptr<FormatOptions> getFormatOptions() const { return m_format_options; }
 
     //////////////////////////////////////////////////////////////////////
     // Boundaries
@@ -210,7 +210,7 @@ namespace app {
     std::unique_ptr<doc::MaskBoundaries> m_maskBoundaries;
 
     // Data to save the file in the same format that it was loaded
-    base::SharedPtr<FormatOptions> m_format_options;
+    std::shared_ptr<FormatOptions> m_format_options;
 
     // Extra cel used to draw extra stuff (e.g. editor's pen preview, pixels in movement, etc.)
     ExtraCelRef m_extraCel;

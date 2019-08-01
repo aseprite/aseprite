@@ -713,7 +713,7 @@ void MovingPixelsState::removeAsEditorObserver()
 
 void MovingPixelsState::removePixelsMovement()
 {
-  m_pixelsMovement.reset(nullptr);
+  m_pixelsMovement.reset();
   m_ctxConn.disconnect();
   m_opaqueConn.disconnect();
   m_transparentConn.disconnect();

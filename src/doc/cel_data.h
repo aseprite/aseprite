@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -8,11 +9,12 @@
 #define DOC_CEL_DATA_H_INCLUDED
 #pragma once
 
-#include "base/shared_ptr.h"
 #include "doc/image_ref.h"
 #include "doc/object.h"
 #include "doc/with_user_data.h"
 #include "gfx/rect.h"
+
+#include <memory>
 
 namespace doc {
 
@@ -68,7 +70,7 @@ namespace doc {
     mutable gfx::RectF* m_boundsF;
   };
 
-  typedef base::SharedPtr<CelData> CelDataRef;
+  typedef std::shared_ptr<CelData> CelDataRef;
 
 } // namespace doc
 

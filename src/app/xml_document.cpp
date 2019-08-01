@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -26,7 +27,7 @@ XmlDocumentRef open_xml(const std::string& filename)
     throw Exception("Error loading file: " + filename);
 
   // Try to load the XML file
-  XmlDocumentRef doc(new TiXmlDocument());
+  auto doc = std::make_shared<TiXmlDocument>();
   doc->SetValue(filename.c_str());
   if (!doc->LoadFile(file.get()))
     throw XmlException(doc.get());

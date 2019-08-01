@@ -1,5 +1,6 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2001-2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -8,12 +9,13 @@
 #define DOC_IMAGE_REF_H_INCLUDED
 #pragma once
 
-#include "base/shared_ptr.h"
 #include "doc/image.h"
+
+#include <memory>
 
 namespace doc {
 
-  typedef base::SharedPtr<Image> ImageRef;
+  typedef std::shared_ptr<Image> ImageRef;
 
 } // namespace doc
 
