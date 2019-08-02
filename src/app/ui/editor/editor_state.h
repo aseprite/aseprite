@@ -12,6 +12,8 @@
 #include "base/disable_copying.h"
 #include "gfx/point.h"
 
+#include <memory>
+
 namespace gfx {
   class Region;
 }
