@@ -394,3 +394,56 @@ do -- HueSaturation
   expect_img(i, { b })
 
 end
+
+do -- ColorCurve
+  local rgba = app.pixelColor.rgba
+  local s = Sprite(2, 1)
+  local cel = app.activeCel
+  local i = cel.image
+
+  i:drawPixel(0, 0, rgba(255, 128, 0))
+  i:drawPixel(1, 0, rgba(64, 0, 32))
+  expect_img(i, { rgba(255, 128, 0), rgba(64, 0, 32) })
+
+  app.command.ColorCurve() -- Do nothing
+  expect_img(i, { rgba(255, 128, 0), rgba(64, 0, 32) })
+
+  app.command.ColorCurve{ curve={{0,0},{255,128}} }
+  expect_img(i, { rgba(128, 64, 0), rgba(32, 0, 16) })
+
+  app.command.ColorCurve{ channels=FilterChannels.ALPHA, curve={{0,0},{255,128}} }
+  expect_img(i, { rgba(128, 64, 0, 128), rgba(32, 0, 16, 128) })
+
+  app.command.ColorCurve{ channels=FilterChannels.RGBA, curve={{0,255},{255,255}} }
+  expect_img(i, { rgba(255, 255, 255), rgba(255, 255, 255) })
+
+  app.command.ColorCurve{ channels=FilterChannels.GREEN, curve={{0,0},{255,0}} }
+  expect_img(i, { rgba(255, 0, 255), rgba(255, 0, 255) })
+
+  app.command.ColorCurve{ channels=FilterChannels.BLUE, curve="0,128,255,128" }
+  expect_img(i, { rgba(255, 0, 128), rgba(255, 0, 128) })
+end
+
+do -- ConvolutionMatrix
+  local rgba = app.pixelColor.rgba
+  local s = Sprite(3, 3)
+  local cel = app.activeCel
+  local i = cel.image
+  local b = rgba(0, 0, 0)
+  local w = rgba(255, 255, 255)
+
+  app.bgColor = Color(255, 255, 255)
+  app.command.BackgroundFromLayer()
+  i:drawPixel(1, 1, b)
+  expect_img(i, { w, w, w,
+                  w, b, w,
+                  w, w, w })
+
+  local u = rgba(239, 239, 239)
+  local v = rgba(223, 223, 223)
+  local w = rgba(191, 191, 191)
+  app.command.ConvolutionMatrix{ fromResource="blur-3x3" }
+  expect_img(i, { u, v, u,
+                  v, w, v,
+                  u, v, u })
+end
