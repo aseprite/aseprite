@@ -17,12 +17,14 @@
 #include "gfx/region.h"
 
 #include <functional>
+#include <vector>
 
 namespace doc {
   class Cel;
   class Layer;
   class LayerTilemap;
   class Sprite;
+  class Tileset;
 }
 
 namespace app {
@@ -67,6 +69,13 @@ namespace app {
     CmdSequence* cmds,
     doc::Cel* cel,
     const TilesetMode tilesetMode);
+
+  // unusedTiles is a set of possibles tiles to check if they are
+  // really unused by all tilemaps.
+  void remove_unused_tiles_from_tileset(
+    CmdSequence* cmds,
+    doc::Tileset* tileset,
+    std::vector<bool>& unusedTiles);
 
 } // namespace app
 

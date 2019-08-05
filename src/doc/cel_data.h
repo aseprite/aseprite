@@ -33,6 +33,17 @@ namespace doc {
     Image* image() const { return const_cast<Image*>(m_image.get()); };
     ImageRef imageRef() const { return m_image; }
 
+    // Returns a rectangle with the bounds of the image (width/height
+    // of the image) in the position of the cel (useful to compare
+    // active tilemap bounds when we have to change the tilemap cel
+    // bounds).
+    gfx::Rect imageBounds() const {
+      return gfx::Rect(m_bounds.x,
+                       m_bounds.y,
+                       m_image->width(),
+                       m_image->height());
+    }
+
     void setImage(const ImageRef& image, Layer* layer);
     void setPosition(const gfx::Point& pos);
     void setOpacity(int opacity) { m_opacity = opacity; }

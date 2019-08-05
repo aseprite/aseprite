@@ -349,9 +349,9 @@ Engine::Engine()
   lua_newtable(L);
   lua_pushvalue(L, -1);
   lua_setglobal(L, "TilesetMode");
-  setfield_integer(L, "LOCKED", TilesetMode::Locked);
-  setfield_integer(L, "MODIFY_EXISTENT", TilesetMode::ModifyExistent);
-  setfield_integer(L, "GENERATE_ALL_TILES", TilesetMode::GenerateAllTiles);
+  setfield_integer(L, "MANUAL", TilesetMode::Manual);
+  setfield_integer(L, "SEMI", TilesetMode::Semi);
+  setfield_integer(L, "AUTO", TilesetMode::Auto);
   lua_pop(L, 1);
 
   // Register classes/prototypes

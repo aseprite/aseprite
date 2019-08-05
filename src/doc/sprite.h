@@ -43,6 +43,7 @@ namespace doc {
   class Remap;
   class RgbMap;
   class SelectedFrames;
+  class Tileset;
   class Tilesets;
 
   typedef std::vector<Palette*> PalettesList;
@@ -172,6 +173,8 @@ namespace doc {
     void getImages(std::vector<ImageRef>& images) const;
 
     void remapImages(const Remap& remap);
+    void remapTilemaps(const Tileset* tileset,
+                       const Remap& remap);
     void pickCels(const double x,
                   const double y,
                   const frame_t frame,

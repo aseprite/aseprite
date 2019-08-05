@@ -447,6 +447,7 @@ add_library(app-lib
   cmd/move_layer.cpp
   cmd/patch_cel.cpp
   cmd/remap_colors.cpp
+  cmd/remap_tiles.cpp
   cmd/remove_cel.cpp
   cmd/remove_frame.cpp
   cmd/remove_layer.cpp

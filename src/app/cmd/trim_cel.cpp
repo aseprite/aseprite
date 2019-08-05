@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2016  David Capello
 //
 // This program is distributed under the terms of
@@ -29,7 +30,7 @@ TrimCel::TrimCel(Cel* cel)
                                cel->image()->maskColor(),
                                cel->layer(), newBounds)) {
     newBounds.offset(cel->position());
-    if (cel->bounds() != newBounds) {
+    if (cel->imageBounds() != newBounds) {
       add(new cmd::CropCel(cel, newBounds));
     }
   }

@@ -43,21 +43,27 @@ namespace doc {
     tile_index size() const { return tile_index(m_tiles.size()); }
     void resize(const tile_index ntiles);
 
-    ImageRef get(const tile_index index) const {
-      if (index < size())
-        return m_tiles[index];
+    ImageRef get(const tile_index ti) const {
+      if (ti < size())
+        return m_tiles[ti];
       else
         return ImageRef(nullptr);
     }
 
-    void set(const tile_index index,
+    void set(const tile_index ti,
              const ImageRef& image) {
-      m_tiles[index] = image;
+      m_tiles[ti] = image;
     }
 
     tile_index add(const ImageRef& image) {
       m_tiles.push_back(image);
       return tile_t(m_tiles.size()-1);
+    }
+
+    void insert(const tile_index ti,
+                const ImageRef& image) {
+      ASSERT(ti <= size());
+      m_tiles.insert(m_tiles.begin()+ti, image);
     }
 
     void erase(const tile_index ti) {

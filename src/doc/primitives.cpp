@@ -413,17 +413,24 @@ bool is_same_image(const Image* i1, const Image* i2)
 
 void remap_image(Image* image, const Remap& remap)
 {
-  ASSERT(image->pixelFormat() == IMAGE_INDEXED);
-  if (image->pixelFormat() != IMAGE_INDEXED)
-    return;
+  ASSERT(image->pixelFormat() == IMAGE_INDEXED ||
+         image->pixelFormat() == IMAGE_TILEMAP);
 
-  LockImageBits<IndexedTraits> bits(image);
-  LockImageBits<IndexedTraits>::iterator
-    it = bits.begin(),
-    end = bits.end();
-
-  for (; it != end; ++it)
-    *it = remap[*it];
+  switch (image->pixelFormat()) {
+    case IMAGE_INDEXED:
+      transform_image<IndexedTraits>(
+        image, [&remap](color_t c) -> color_t {
+                 return remap[c];
+               });
+      break;
+    case IMAGE_TILEMAP:
+      transform_image<TilemapTraits>(
+        image, [&remap](color_t c) -> color_t {
+                 ASSERT(remap[c] != Remap::kNoMap);
+                 return remap[c];
+               });
+      break;
+  }
 }
 
 // TODO test this hash routine and find a better alternative

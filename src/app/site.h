@@ -52,7 +52,7 @@ namespace app {
       , m_sprite(nullptr)
       , m_layer(nullptr)
       , m_frame(0)
-      , m_tilesetMode(TilesetMode::Locked) { }
+      , m_tilesetMode(TilesetMode::Manual) { }
 
     const Focus focus() const { return m_focus; }
     bool inEditor() const { return m_focus == InEditor; }

@@ -20,6 +20,7 @@ namespace doc {
   const uint32_t tile_i_shift = 0;  // Tile index
   const uint32_t tile_f_shift = 28; // Flags (flip, rotation)
 
+  const uint32_t tile_i_notile = 0xffffffff;
   const uint32_t tile_i_mask  = 0x1fffffff;
   const uint32_t tile_f_mask  = 0xe0000000; // 3 flags
   const uint32_t tile_f_flipx = 0x20000000;

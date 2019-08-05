@@ -1,5 +1,6 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2017 David Capello
+// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -18,6 +19,8 @@ namespace doc {
 
   class Remap {
   public:
+    static const int kNoMap = -1;
+
     Remap(int entries = 1) : m_map(entries, 0) { }
 
     int size() const {
@@ -27,7 +30,10 @@ namespace doc {
     // Maps input "fromIndex" value, to "toIndex" output.
     void map(int fromIndex, int toIndex) {
       ASSERT(fromIndex >= 0 && fromIndex < size());
-      ASSERT(toIndex >= 0 && toIndex < size());
+      // toIndex = kNoMap means (there is no remap for this value, useful
+      // to ignore this entry when we invert the map)
+      ASSERT(toIndex == kNoMap ||
+             toIndex >= 0 && toIndex < size());
 
       m_map[fromIndex] = toIndex;
     }
@@ -56,6 +62,10 @@ namespace doc {
     // are really easy to undone: You can store the inverted remap as
     // undo data, without saving all images' pixels.
     bool isInvertible(const PalettePicks& usedEntries) const;
+
+    // Returns true if the remap does nothing (each map entry is
+    // matched to itself).
+    bool isIdentity() const;
 
   private:
     std::vector<int> m_map;

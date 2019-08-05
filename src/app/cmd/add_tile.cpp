@@ -25,7 +25,7 @@ AddTile::AddTile(doc::Tileset* tileset,
   : WithTileset(tileset)
   , WithImage(image.get())
   , m_size(0)
-  , m_tileIndex(-1)
+  , m_tileIndex(doc::tile_i_notile)
   , m_imageRef(image)
 {
 }
@@ -82,7 +82,10 @@ void AddTile::onRedo()
 
 void AddTile::addTile(doc::Tileset* tileset, const doc::ImageRef& image)
 {
-  m_tileIndex = tileset->add(image);
+  if (m_tileIndex == doc::tile_i_notile)
+    m_tileIndex = tileset->add(image);
+  else
+    tileset->insert(m_tileIndex, image);
 
   tileset->sprite()->incrementVersion();
   tileset->incrementVersion();

@@ -15,6 +15,8 @@
 #include "app/cmd/clear_cel.h"
 #include "app/cmd/clear_mask.h"
 #include "app/cmd/copy_region.h"
+#include "app/cmd/remap_tiles.h"
+#include "app/cmd/remove_tile.h"
 #include "app/cmd/replace_image.h"
 #include "app/cmd/set_cel_position.h"
 #include "app/cmd_sequence.h"
@@ -40,6 +42,7 @@
 #include "render/quantization.h"
 #include "render/render.h"
 
+#include <algorithm>
 #include <cmath>
 #include <memory>
 
@@ -403,7 +406,8 @@ void modify_tilemap_cel_region(
             newTilemapBounds.x, newTilemapBounds.y, newTilemapBounds.w, newTilemapBounds.h);
 
   // Autogenerate tiles
-  if (tilesetMode == TilesetMode::GenerateAllTiles) {
+  if (tilesetMode == TilesetMode::Auto ||
+      tilesetMode == TilesetMode::Semi) {
     doc::TilesetHashTable hashImages; // TODO the hashImages should be inside the Tileset
     {
       // Add existent tiles in the hash table
@@ -434,6 +438,8 @@ void modify_tilemap_cel_region(
     regionToPatch -= gfx::Region(grid.tileToCanvas(oldTilemapBounds));
     regionToPatch |= region;
 
+    std::vector<bool> modifiedTileIndexes(tileset->size(), false);
+
     for (const gfx::Point& tilePt : grid.tilesInCanvasRegion(regionToPatch)) {
       const int u = tilePt.x-newTilemapBounds.x;
       const int v = tilePt.y-newTilemapBounds.y;
@@ -445,6 +451,9 @@ void modify_tilemap_cel_region(
       const doc::tile_index ti = doc::tile_geti(t);
       const doc::ImageRef existenTileImage = tileset->get(ti);
 
+      if (tilesetMode == TilesetMode::Semi)
+        modifiedTileIndexes[ti] = true;
+
       const gfx::Rect tileInCanvasRc(grid.tileToCanvas(tilePt), tileSize);
       ImageRef tileImage(getTileImage(existenTileImage, tileInCanvasRc));
       if (grid.hasMask())
@@ -455,6 +464,9 @@ void modify_tilemap_cel_region(
       auto it = hashImages.find(tileImage);
       if (it != hashImages.end()) {
         tileIndex = it->second; // TODO
+
+        if (tilesetMode == TilesetMode::Semi)
+          modifiedTileIndexes[tileIndex] = false;
       }
       else {
         auto addTile = new cmd::AddTile(tileset, tileImage);
@@ -464,14 +476,14 @@ void modify_tilemap_cel_region(
         hashImages[tileImage] = tileIndex;
       }
 
+      OPS_TRACE(" - tile %d -> %d\n", ti, tileIndex);
+
       const doc::tile_t tile = doc::tile(tileIndex, 0);
       if (t != tile) {
         newTilemap->putPixel(u, v, tile);
         tilePtsRgn |= gfx::Region(gfx::Rect(u, v, 1, 1));
       }
     }
-
-    doc->notifyTilesetChanged(tileset);
 
     if (newTilemap->width() != cel->image()->width() ||
         newTilemap->height() != cel->image()->height()) {
@@ -491,9 +503,17 @@ void modify_tilemap_cel_region(
           tilePtsRgn,
           gfx::Point(0, 0)));
     }
+
+    // Remove unused tiles
+    if (tilesetMode == TilesetMode::Semi) {
+      // TODO reuse tiles that will be removed in the algorithm above
+      remove_unused_tiles_from_tileset(cmds, tileset, modifiedTileIndexes);
+    }
+
+    doc->notifyTilesetChanged(tileset);
   }
   // Modify active set of tiles manually / don't auto-generate new tiles
-  else if (tilesetMode == TilesetMode::ModifyExistent) {
+  else if (tilesetMode == TilesetMode::Manual) {
     for (const gfx::Point& tilePt : grid.tilesInCanvasRegion(region)) {
       // Ignore modifications outside the tilemap
       if (!cel->image()->bounds().contains(tilePt.x, tilePt.y))
@@ -564,6 +584,61 @@ void clear_mask_from_cel(CmdSequence* cmds,
   }
   else {
     cmds->executeAndAdd(new cmd::ClearMask(cel));
+  }
+}
+
+void remove_unused_tiles_from_tileset(
+  CmdSequence* cmds,
+  doc::Tileset* tileset,
+  std::vector<bool>& unusedTiles)
+{
+  OPS_TRACE("remove_unused_tiles_from_tileset\n");
+
+  int n = tileset->size();
+
+  for (Cel* cel : tileset->sprite()->cels()) {
+    if (!cel->layer()->isTilemap() ||
+        static_cast<LayerTilemap*>(cel->layer())->tileset() != tileset)
+      continue;
+
+    Image* tilemapImage = cel->image();
+    for_each_pixel<TilemapTraits>(
+      tilemapImage,
+      [&unusedTiles, &n](const doc::tile_t t) {
+        const doc::tile_index ti = doc::tile_geti(t);
+        n = std::max<int>(n, ti+1);
+        if (ti >= 0 &&
+            ti < int(unusedTiles.size()) &&
+            unusedTiles[ti]) {
+          unusedTiles[ti] = false;
+        }
+      });
+  }
+
+  doc::Remap remap(n);
+  doc::tile_index ti, tj;
+  ti = tj = 0;
+  for (; ti<remap.size(); ++ti) {
+    OPS_TRACE(" - ti=%d tj=%d unusedTiles[%d]=%d\n",
+              ti, tj, ti, (ti < unusedTiles.size() && unusedTiles[ti] ? 1: 0));
+    if (ti < unusedTiles.size() &&
+        unusedTiles[ti]) {
+      cmds->executeAndAdd(new cmd::RemoveTile(tileset, tj));
+      // Map to nothing, so the map can be invertible
+      remap.map(ti, doc::Remap::kNoMap);
+    }
+    else {
+      remap.map(ti, tj++);
+    }
+  }
+
+  if (!remap.isIdentity()) {
+#ifdef _DEBUG
+    for (ti=0; ti<remap.size(); ++ti) {
+      OPS_TRACE(" - remap tile[%d] -> %d\n", ti, remap[ti]);
+    }
+#endif
+    cmds->executeAndAdd(new cmd::RemapTiles(tileset, remap));
   }
 }
 

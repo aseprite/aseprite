@@ -766,8 +766,12 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
 
   const int size = m_adapter->size();
   for (int i=0; i<size; ++i) {
-    if (!m_selectedEntries[i])
+    // TODO why does this fail?
+    //ASSERT(i >= 0 && i < m_selectedEntries.size());
+    if (i >= 0 && i < m_selectedEntries.size() &&
+        !m_selectedEntries[i]) {
       continue;
+    }
 
     const int k = (dragging ? m_hot.color+j: i);
 

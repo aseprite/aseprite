@@ -1,6 +1,6 @@
 // Aseprite Document Library
-// Copyright (c)      2020 Igara Studio S.A.
-// Copyright (c) 2001-2016 David Capello
+// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -135,8 +135,12 @@ void Remap::merge(const Remap& other)
 Remap Remap::invert() const
 {
   Remap inv(size());
-  for (int i=0; i<size(); ++i)
-    inv.map(operator[](i), i);
+  for (int i=0; i<size(); ++i) {
+    int j = m_map[i];
+    if (j == kNoMap)
+      continue;
+    inv.map(j, i);
+  }
   return inv;
 }
 
@@ -160,10 +164,22 @@ bool Remap::isInvertible(const PalettePicks& usedEntries) const
       continue;
 
     int j = m_map[i];
+    if (j == kNoMap)
+      continue;
+
     if (picks[j])
       return false;
 
     picks[j] = true;
+  }
+  return true;
+}
+
+bool Remap::isIdentity() const
+{
+  for (int i=0; i<size(); ++i) {
+    if (m_map[i] != i)
+      return false;
   }
   return true;
 }

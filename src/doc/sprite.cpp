@@ -525,6 +525,17 @@ void Sprite::remapImages(const Remap& remap)
     remap_image(image.get(), remap);
 }
 
+void Sprite::remapTilemaps(const Tileset* tileset,
+                           const Remap& remap)
+{
+  for (Cel* cel : uniqueCels()) {
+    if (cel->layer()->isTilemap() &&
+        static_cast<LayerTilemap*>(cel->layer())->tileset() == tileset) {
+      remap_image(cel->image(), remap);
+    }
+  }
+}
+
 //////////////////////////////////////////////////////////////////////
 // Drawing
 

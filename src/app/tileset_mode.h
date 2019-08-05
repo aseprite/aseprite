@@ -13,10 +13,9 @@ namespace app {
   // These modes are available edition modes for the tileset when an
   // tilemap is edited.
   enum class TilesetMode {
-    Locked,           // Cannot edit the tileset (don't modify or add new tiles)
-    ModifyExistent,   // Modify existent tiles (don't create new ones)
-    //GenerateNewTiles, // Auto-generate new tiles, edit existent ones
-    GenerateAllTiles, // Auto-generate new and modified tiles
+    Manual,   // Modify existent tiles (don't create new ones)
+    Semi,     // Auto-generate new tiles if needed, edit existent ones
+    Auto,     // Auto-generate new and modified tiles
   };
 
 } // namespace app

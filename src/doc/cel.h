@@ -39,6 +39,8 @@ namespace doc {
     const gfx::RectF& boundsF() const { return m_data->boundsF(); }
     int opacity() const { return m_data->opacity(); }
 
+    gfx::Rect imageBounds() const { return m_data->imageBounds(); }
+
     LayerImage* layer() const { return m_layer; }
     Image* image() const { return m_data->image(); }
     ImageRef imageRef() const { return m_data->imageRef(); }

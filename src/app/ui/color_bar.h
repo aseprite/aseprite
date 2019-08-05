@@ -83,10 +83,8 @@ namespace app {
     bool inTilesMode() const;
     void setTilesMode(bool state);
 
-    bool inAutoTilesMode() const;
-    void setAutoTilesMode(bool state);
-
     TilesetMode tilesetMode() const;
+    void setTilesetMode(const TilesetMode mode);
 
     ColorButton* fgColorButton() { return &m_fgColor; }
     ColorButton* bgColorButton() { return &m_bgColor; }
@@ -120,6 +118,7 @@ namespace app {
     void onAfterExecuteCommand(CommandExecutionEvent& ev);
     void onPaletteButtonClick();
     void onTilesButtonClick();
+    void onTilesetModeButtonClick();
     void onRemapButtonClick();
     void onPaletteIndexChange(PaletteIndexChangeEvent& ev);
     void onFgColorChangeFromPreferences();
@@ -170,7 +169,9 @@ namespace app {
     class WarningIcon;
 
     ButtonSet m_buttons;
-    ButtonSet m_tilesButtons;
+    ui::HBox m_tilesHBox;
+    ButtonSet m_tilesButton;
+    ButtonSet m_tilesetModeButtons;
     std::unique_ptr<PalettePopup> m_palettePopup;
     ui::Splitter m_splitter;
     ui::VBox m_palettePlaceholder;
@@ -217,7 +218,7 @@ namespace app {
 
     // True if we should be putting/setting tiles.
     bool m_tilesMode;
-    bool m_autoTilesMode;
+    TilesetMode m_tilesetMode;
 
     // Timer to redraw editors after a palette change.
     ui::Timer m_redrawTimer;
