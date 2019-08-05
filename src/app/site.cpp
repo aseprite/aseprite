@@ -100,12 +100,11 @@ Grid Site::grid() const
 gfx::Rect Site::gridBounds() const
 {
   if (m_layer && m_layer->isTilemap()) {
-    const Cel* cel = (m_layer ? m_layer->cel(m_frame): nullptr);
-    if (cel) {
-      const Grid& grid = static_cast<LayerTilemap*>(m_layer)->tileset()->grid();
-      return gfx::Rect(grid.tileOffset() + cel->bounds().origin(),
-                       grid.tileSize());
-    }
+    const Grid& grid = static_cast<LayerTilemap*>(m_layer)->tileset()->grid();
+    gfx::Point offset = grid.tileOffset();
+    if (const Cel* cel = m_layer->cel(m_frame))
+      offset += cel->bounds().origin();
+    return gfx::Rect(offset, grid.tileSize());
   }
 
   gfx::Rect bounds;
