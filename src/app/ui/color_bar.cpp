@@ -213,6 +213,15 @@ ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
   m_tilesHBox.addChild(&m_tilesButton);
   m_tilesHBox.addChild(&m_tilesetModeButtons);
 
+  // Hide the tiles controls by default. Without this, when the first
+  // onActiveSiteChange() event is received, and the we ask for the
+  // m_tilesHBox visibility, it might say that it's hidden because the
+  // color bar is hidden (because it's not yet in the screen, it's the
+  // first time it will be displayed). So we have to add this to make
+  // the tiles controls invisible in the first appearance of the color
+  // bar.
+  m_tilesHBox.setVisible(false);
+
   addChild(&m_buttons);
   addChild(&m_tilesHBox);
   addChild(&m_splitter);
