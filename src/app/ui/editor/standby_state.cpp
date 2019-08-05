@@ -599,6 +599,16 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
       if (!grid.isEmpty()) {
         gfx::Point pt = grid.canvasToTile(gfx::Point(spritePos));
         sprintf(buf+std::strlen(buf), " :grid: %d %d", pt.x, pt.y);
+
+        // Show the tile index of this specific tile
+        if (site.layer() &&
+            site.layer()->isTilemap() &&
+            site.image()) {
+          if (site.image()->bounds().contains(pt)) {
+            sprintf(buf+std::strlen(buf), " [%d]",
+                    site.image()->getPixel(pt.x, pt.y));
+          }
+        }
       }
     }
 
