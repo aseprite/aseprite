@@ -2279,8 +2279,11 @@ void Editor::setZoomAndCenterInMouse(const Zoom& zoom,
       break;
   }
 
-  // Limit zooming screen position to the visible sprite bounds
-  gfx::Rect visibleBounds = editorToScreen(getVisibleSpriteBounds());
+  // Limit zooming screen position to the visible sprite bounds (we
+  // use canvasSize() because if the tiled mode is enabled, we need
+  // extra space for the zoom)
+  gfx::Rect visibleBounds = editorToScreen(
+    getViewportBounds().createIntersection(gfx::Rect(gfx::Point(0, 0), canvasSize())));
   screenPos.x = base::clamp(screenPos.x, visibleBounds.x, visibleBounds.x2()-1);
   screenPos.y = base::clamp(screenPos.y, visibleBounds.y, visibleBounds.y2()-1);
 
