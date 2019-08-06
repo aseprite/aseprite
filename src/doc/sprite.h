@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2018 Igara Studio S.A.
+// Copyright (c) 2018-2019 Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -59,8 +59,10 @@ namespace doc {
     Sprite(const ImageSpec& spec, int ncolors = 256);
     virtual ~Sprite();
 
-    static Sprite* createBasicSprite(const ImageSpec& spec,
-                                     const int ncolors = 256);
+    // Creates a new sprite with one transparent layer and one cel
+    // with an image of the size of the sprite.
+    static Sprite* MakeStdSprite(const ImageSpec& spec,
+                                 const int ncolors = 256);
 
     ////////////////////////////////////////
     // Main properties

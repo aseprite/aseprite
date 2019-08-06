@@ -154,7 +154,7 @@ bool save_palette(const char* filename, const Palette* pal, int columns)
 
       Context tmpContext;
       Doc* doc = tmpContext.documents().add(
-        new Doc(Sprite::createBasicSprite(
+        new Doc(Sprite::MakeStdSprite(
                   ImageSpec((pal->size() <= 256 ? doc::ColorMode::INDEXED:
                                                   doc::ColorMode::RGB),
                             w, h), pal->size())));

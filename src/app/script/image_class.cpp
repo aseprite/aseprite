@@ -316,7 +316,7 @@ int Image_saveAs(lua_State* L)
       return luaL_error(L, "script doesn't have access to write file %s",
                         absFn.c_str());
 
-    std::unique_ptr<Sprite> sprite(Sprite::createBasicSprite(img->spec(), 256));
+    std::unique_ptr<Sprite> sprite(Sprite::MakeStdSprite(img->spec(), 256));
 
     std::vector<Image*> oneImage;
     sprite->getImages(oneImage);

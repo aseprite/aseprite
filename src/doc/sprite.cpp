@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2018 Igara Studio S.A.
+// Copyright (c) 2018-2019 Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -89,8 +89,8 @@ Sprite::~Sprite()
 }
 
 // static
-Sprite* Sprite::createBasicSprite(const ImageSpec& spec,
-                                  const int ncolors)
+Sprite* Sprite::MakeStdSprite(const ImageSpec& spec,
+                              const int ncolors)
 {
   // Create the sprite.
   std::unique_ptr<Sprite> sprite(new Sprite(spec, ncolors));

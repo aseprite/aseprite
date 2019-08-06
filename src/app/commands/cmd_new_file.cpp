@@ -226,7 +226,7 @@ void NewFileCommand::onExecute(Context* ctx)
 
   // Create the new sprite
   std::unique_ptr<Sprite> sprite(
-    Sprite::createBasicSprite(
+    Sprite::MakeStdSprite(
       ImageSpec(colorMode, width, height, 0,
                 get_working_rgb_space_from_preferences()), ncolors));
 

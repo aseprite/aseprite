@@ -113,7 +113,7 @@ int Sprite_new(lua_State* L)
     if (spec.height() < 1)
       return luaL_error(L, "invalid height value = %d in Sprite()", spec.height());
 
-    std::unique_ptr<Sprite> sprite(Sprite::createBasicSprite(spec, 256));
+    std::unique_ptr<Sprite> sprite(Sprite::MakeStdSprite(spec, 256));
     doc.reset(new Doc(sprite.get()));
     sprite.release();
   }

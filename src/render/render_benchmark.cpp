@@ -27,7 +27,7 @@ static void Bm_Render(benchmark::State& state)
   const int w = state.range(0);
   const int h = state.range(1);
 
-  Sprite* spr = Sprite::createBasicSprite(ImageSpec(ColorMode::RGB, w, h));
+  Sprite* spr = Sprite::MakeStdSprite(ImageSpec(ColorMode::RGB, w, h));
   LayerImage* lay1 = static_cast<LayerImage*>(spr->root()->firstLayer());
   LayerImage* lay2 = new LayerImage(spr);
   LayerImage* lay3 = new LayerImage(spr);

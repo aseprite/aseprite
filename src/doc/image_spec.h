@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2018 Igara Studio S.A.
+// Copyright (c) 2018-2019 Igara Studio S.A.
 // Copyright (c) 2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -20,10 +20,10 @@ namespace doc {
 
   class ImageSpec {
   public:
-    ImageSpec(ColorMode colorMode,
-              int width,
-              int height,
-              int maskColor = 0,
+    ImageSpec(const ColorMode colorMode,
+              const int width,
+              const int height,
+              const color_t maskColor = 0,
               const gfx::ColorSpacePtr& colorSpace = gfx::ColorSpace::MakeNone())
       : m_colorMode(colorMode),
         m_width(width),

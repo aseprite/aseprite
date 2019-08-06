@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (c) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -50,7 +50,7 @@ Doc* Docs::add(Doc* doc)
 Doc* Docs::add(int width, int height, doc::ColorMode colorMode, int ncolors)
 {
   std::unique_ptr<Doc> doc(
-    new Doc(Sprite::createBasicSprite(ImageSpec(colorMode, width, height), ncolors)));
+    new Doc(Sprite::MakeStdSprite(ImageSpec(colorMode, width, height), ncolors)));
   doc->setFilename("Sprite");
   doc->setContext(m_ctx); // Change the document context to add the doc in this collection
 

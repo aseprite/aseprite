@@ -714,9 +714,10 @@ Doc* DocExporter::createEmptyTexture(const Samples& samples) const
   gfx::Size textureSize = calculateSheetSize(samples);
 
   std::unique_ptr<Sprite> sprite(
-    Sprite::createBasicSprite(
+    Sprite::MakeStdSprite(
+      // TODO calculate a proper transparent color for the sprite sheet
       ImageSpec(colorMode, textureSize.w, textureSize.h, 0,
-                colorSpace ? colorSpace: gfx::ColorSpace::MakeNone()),
+                (colorSpace ? colorSpace: gfx::ColorSpace::MakeNone())),
       maxColors));
 
   if (palette != NULL)
