@@ -38,6 +38,7 @@
 #include "app/transaction.h"
 #include "app/tx.h"
 #include "app/ui/doc_view.h"
+#include "base/convert_to.h"
 #include "base/fs.h"
 #include "doc/frame_tag.h"
 #include "doc/layer.h"
@@ -143,10 +144,18 @@ int Sprite_resize(lua_State* L)
   size.w = std::max(1, size.w);
   size.h = std::max(1, size.h);
 
-  Doc* doc = static_cast<Doc*>(sprite->document());
-  Tx tx;
-  DocApi(doc, tx).setSpriteSize(doc->sprite(), size.w, size.h);
-  tx.commit();
+  Command* resizeCommand =
+    Commands::instance()->byId(CommandId::SpriteSize());
+
+  // TODO use SpriteSizeParams directly instead of converting back and
+  //      forth between strings.
+  Params params;
+  params.set("ui", "false");
+  params.set("width", base::convert_to<std::string>(size.w).c_str());
+  params.set("height", base::convert_to<std::string>(size.h).c_str());
+
+  app::Context* appCtx = App::instance()->context();
+  appCtx->executeCommand(resizeCommand, params);
   return 0;
 }
 
