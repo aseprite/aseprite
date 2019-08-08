@@ -123,13 +123,13 @@
     <section id="general">
       <option id="language" type="std::string" default="&quot;en&quot;" />
       <option id="screen_scale" type="int" default="0" />
-      <option id="ui_scale" type="int" default="1" migrate="experimental.ui_scale" />
+      <option id="ui_scale" type="int" default="1" />
       <option id="gpu_acceleration" type="bool" default="false" />
       <option id="show_home" type="bool" default="true" />
       <option id="visible_timeline" type="bool" default="false" />
-      <option id="autoshow_timeline" type="bool" default="true" migrate="Options.AutoShowTimeline" />
+      <option id="autoshow_timeline" type="bool" default="true" />
       <option id="rewind_on_stop" type="bool" default="false" />
-      <option id="expand_menubar_on_mouseover" type="bool" default="false" migrate="Options.ExpandMenuBarOnMouseover" />
+      <option id="expand_menubar_on_mouseover" type="bool" default="false" />
       <option id="data_recovery" type="bool" default="true" />
       <option id="data_recovery_period" type="double" default="2.0" />
       <option id="keep_edited_sprite_data" type="bool" default="true" />
@@ -149,33 +149,33 @@
       <option id="show_tooltip" type="bool" default="true" />
     </section>
     <section id="editor" text="Editor">
-      <option id="zoom_with_wheel" type="bool" default="true" migrate="Options.ZoomWithMouseWheel" />
+      <option id="zoom_with_wheel" type="bool" default="true" />
       <option id="zoom_with_slide" type="bool" default="false" />
       <option id="zoom_from_center_with_wheel" type="bool" default="false" />
       <option id="zoom_from_center_with_keys" type="bool" default="false" />
-      <option id="show_scrollbars" type="bool" default="true" migrate="Options.ShowScrollbars" />
+      <option id="show_scrollbars" type="bool" default="true" />
       <option id="auto_scroll" type="bool" default="true" />
-      <option id="right_click_mode" type="RightClickMode" default="RightClickMode::PAINT_BGCOLOR" migrate="Options.RightClickMode" />
-      <option id="auto_select_layer" type="bool" default="false" migrate="Options.AutoSelectLayer" />
+      <option id="right_click_mode" type="RightClickMode" default="RightClickMode::PAINT_BGCOLOR" />
+      <option id="auto_select_layer" type="bool" default="false" />
       <option id="straight_line_preview" type="bool" default="true" />
       <option id="play_once" type="bool" default="false" />
       <option id="play_all" type="bool" default="false" />
     </section>
     <section id="cursor">
-      <option id="use_native_cursor" type="bool" default="false" migrate="experimental.use_native_cursor" />
+      <option id="use_native_cursor" type="bool" default="false" />
       <option id="cursor_scale" type="int" default="1" />
-      <option id="cursor_color" type="app::Color" default="app::Color::fromMask()" migrate="editor.cursor_color" />
+      <option id="cursor_color" type="app::Color" default="app::Color::fromMask()" />
       <option id="painting_cursor_type" type="PaintingCursorType" default="PaintingCursorType::CROSSHAIR_ON_SPRITE" />
-      <option id="brush_preview" type="BrushPreview" default="BrushPreview::FULL" migrate="editor.brush_preview" />
+      <option id="brush_preview" type="BrushPreview" default="BrushPreview::FULL" />
     </section>
     <section id="preview" text="Preview">
       <option id="play_once" type="bool" default="false" />
       <option id="play_all" type="bool" default="false" />
     </section>
     <section id="theme" text="Theme">
-      <option id="selected" type="std::string" default="&quot;default&quot;" migrate="Skin.Selected" />
-      <option id="font" type="std::string" migrate="Options.UserFont" />
-      <option id="mini_font" type="std::string" migrate="Options.UserMiniFont" />
+      <option id="selected" type="std::string" default="&quot;default&quot;" />
+      <option id="font" type="std::string" />
+      <option id="mini_font" type="std::string" />
     </section>
     <section id="experimental" text="Experimental">
       <option id="new_render_engine" type="bool" default="true" />
@@ -184,7 +184,7 @@
       <option id="use_native_file_dialog" type="bool" default="false" />
       <option id="one_finger_as_mouse_movement" type="bool" default="true" />
       <option id="load_wintab_driver" type="bool" default="true" />
-      <option id="flash_layer" type="bool" default="false" migrate="Options.FlashLayer" />
+      <option id="flash_layer" type="bool" default="false" />
       <option id="nonactive_layers_opacity" type="int" default="255" />
     </section>
     <section id="news">
@@ -205,12 +205,12 @@
       <option id="entries_separator" type="bool" default="true" />
     </section>
     <section id="updater">
-      <option id="inits" type="int" default="0" migrate="Updater.Inits" />
-      <option id="exits" type="int" default="0" migrate="Updater.Exits" />
-      <option id="is_developer" type="bool" default="false" migrate="Updater.IsDeveloper" />
-      <option id="wait_days" type="double" default="0.0" migrate="Updater.WaitDays" />
-      <option id="last_check" type="int" default="0" migrate="Updater.LastCheck" />
-      <option id="uuid" type="std::string" migrate="Updater.Uuid" />
+      <option id="inits" type="int" default="0" />
+      <option id="exits" type="int" default="0" />
+      <option id="is_developer" type="bool" default="false" />
+      <option id="wait_days" type="double" default="0.0" />
+      <option id="last_check" type="int" default="0" />
+      <option id="uuid" type="std::string" />
       <option id="current_version" type="std::string" />
       <option id="new_version" type="std::string" />
       <option id="new_url" type="std::string" />
@@ -270,7 +270,7 @@
       <option id="pixel_ratio" type="std::string" />
     </section>
     <section id="file_selector">
-      <option id="current_folder" type="std::string" default="&quot;&lt;empty&gt;&quot;" migrate="FileSelect.CurrentDirectory" />
+      <option id="current_folder" type="std::string" default="&quot;&lt;empty&gt;&quot;" />
       <option id="zoom" type="double" default="1.0" />
     </section>
     <section id="text_tool">
@@ -292,7 +292,7 @@
       <option id="default_color" type="app::Color" default="app::Color::fromRgb(0, 0, 255)" />
     </section>
     <section id="advanced_mode">
-      <option id="show_alert" type="bool" default="true" migrate="AdvancedMode.Warning" />
+      <option id="show_alert" type="bool" default="true" />
     </section>
     <section id="save_file">
       <option id="show_file_format_doesnt_support_alert" type="bool" default="true" />
@@ -310,12 +310,12 @@
     </section>
     <section id="gif">
       <option id="show_alert" type="bool" default="true" />
-      <option id="interlaced" type="bool" default="false" migrate="GIF.Interlaced" />
-      <option id="loop" type="bool" default="true" migrate="GIF.Loop" />
+      <option id="interlaced" type="bool" default="false" />
+      <option id="loop" type="bool" default="true" />
     </section>
     <section id="jpeg">
       <option id="show_alert" type="bool" default="true" />
-      <option id="quality" type="double" default="1.0" migrate="JPEG.Quality" />
+      <option id="quality" type="double" default="1.0" />
     </section>
     <section id="svg">
       <option id="show_alert" type="bool" default="true" />
@@ -325,10 +325,10 @@
       <option id="show_alert" type="bool" default="true" />
       <option id="loop" type="bool" default="true" />
       <option id="type" type="int" default="0" />
-      <option id="quality" type="int" default="100" migrate="WEBP.Quality" />
-      <option id="compression" type="int" default="6" migrate="WEBP.Compression" />
-      <option id="image_hint" type="int" default="0" migrate="WEBP.ImageHint" />
-      <option id="image_preset" type="int" default="0" migrate="WEBP.ImagePreset" />
+      <option id="quality" type="int" default="100" />
+      <option id="compression" type="int" default="6" />
+      <option id="image_hint" type="int" default="0" />
+      <option id="image_preset" type="int" default="0" />
     </section>
     <section id="hue_saturation">
       <option id="mode" type="HueSaturationMode" default="HueSaturationMode::HSL" />
@@ -383,7 +383,7 @@
       <option id="layer" type="doc::layer_t" default="doc::layer_t(0)" />
     </section>
     <section id="tiled">
-      <option id="mode" type="filters::TiledMode" default="filters::TiledMode::NONE" migrate="Tools.Tiled" />
+      <option id="mode" type="filters::TiledMode" default="filters::TiledMode::NONE" />
     </section>
     <section id="symmetry">
       <option id="mode" type="SymmetryMode" default="SymmetryMode::NONE" />
@@ -391,23 +391,23 @@
       <option id="y_axis" type="double" default="0" />
     </section>
     <section id="grid">
-      <option id="snap" type="bool" default="false" migrate="Grid.SnapTo" />
-      <option id="bounds" type="gfx::Rect" default="gfx::Rect(0, 0, 16, 16)" migrate="Grid.Bounds" />
-      <option id="color" type="app::Color" default="app::Color::fromRgb(0, 0, 255)" migrate="Grid.Color" />
-      <option id="opacity" type="int" default="160" migrate="Grid.Opacity" />
-      <option id="auto_opacity" type="bool" default="true" migrate="Grid.AutoOpacity" />
+      <option id="snap" type="bool" default="false" />
+      <option id="bounds" type="gfx::Rect" default="gfx::Rect(0, 0, 16, 16)" />
+      <option id="color" type="app::Color" default="app::Color::fromRgb(0, 0, 255)" />
+      <option id="opacity" type="int" default="160" />
+      <option id="auto_opacity" type="bool" default="true" />
     </section>
     <section id="pixel_grid">
-      <option id="color" type="app::Color" default="app::Color::fromRgb(200, 200, 200)" migrate="PixelGrid.Color" />
-      <option id="opacity" type="int" default="160" migrate="PixelGrid.Opacity" />
-      <option id="auto_opacity" type="bool" default="true" migrate="PixelGrid.AutoOpacity" />
+      <option id="color" type="app::Color" default="app::Color::fromRgb(200, 200, 200)" />
+      <option id="opacity" type="int" default="160" />
+      <option id="auto_opacity" type="bool" default="true" />
     </section>
     <section id="bg">
-      <option id="type" type="BgType" default="BgType::CHECKED_16x16" migrate="Option.CheckedBgType" />
+      <option id="type" type="BgType" default="BgType::CHECKED_16x16" />
       <option id="size" type="gfx::Size" default="gfx::Size(16, 16)" />
-      <option id="zoom" type="bool" default="true" migrate="Option.CheckedBgZoom" />
-      <option id="color1" type="app::Color" default="app::Color::fromRgb(128, 128, 128)" migrate="Option.CheckedBgColor1" />
-      <option id="color2" type="app::Color" default="app::Color::fromRgb(192, 192, 192)" migrate="Option.CheckedBgColor2" />
+      <option id="zoom" type="bool" default="true" />
+      <option id="color1" type="app::Color" default="app::Color::fromRgb(128, 128, 128)" />
+      <option id="color2" type="app::Color" default="app::Color::fromRgb(192, 192, 192)" />
     </section>
     <section id="timeline">
       <option id="first_frame" type="int" default="1" />
@@ -419,12 +419,12 @@
       <option id="overlay_size" type="int" default="5" />
     </section>
     <section id="onionskin">
-      <option id="active" type="bool" default="false" migrate="Onionskin.Enabled" />
-      <option id="prev_frames" type="int" default="1" migrate="Onionskin.PrevFrames" />
-      <option id="next_frames" type="int" default="1" migrate="Onionskin.NextFrames" />
-      <option id="opacity_base" type="int" default="68" migrate="Onionskin.OpacityBase" />
-      <option id="opacity_step" type="int" default="28" migrate="Onionskin.OpacityStep" />
-      <option id="type" type="OnionskinType" default="OnionskinType::MERGE" migrate="Onionskin.Type" />
+      <option id="active" type="bool" default="false" />
+      <option id="prev_frames" type="int" default="1" />
+      <option id="next_frames" type="int" default="1" />
+      <option id="opacity_base" type="int" default="68" />
+      <option id="opacity_step" type="int" default="28" />
+      <option id="type" type="OnionskinType" default="OnionskinType::MERGE" />
       <option id="loop_tag" type="bool" default="true" />
       <option id="current_layer" type="bool" default="false" />
       <option id="position" type="render::OnionskinPosition" default="render::OnionskinPosition::BEHIND" />
@@ -477,8 +477,8 @@
     <section id="show">
       <option id="layer_edges" type="bool" default="false" />
       <option id="selection_edges" type="bool" default="true" />
-      <option id="grid" type="bool" default="false" migrate="grid.visible" />
-      <option id="pixel_grid" type="bool" default="false" migrate="pixel_grid.visible" />
+      <option id="grid" type="bool" default="false" />
+      <option id="pixel_grid" type="bool" default="false" />
       <option id="brush_preview" type="bool" default="true" />
       <option id="slices" type="bool" default="true" />
       <option id="auto_guides" type="bool" default="true" />
