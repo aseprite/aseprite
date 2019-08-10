@@ -466,18 +466,9 @@ int App_get_site(lua_State* L)
 
 int App_get_range(lua_State* L)
 {
-#ifdef ENABLE_UI
   app::Context* ctx = App::instance()->context();
   Site site = ctx->activeSite();
-  if (site.sprite() && App::instance()->timeline()) {
-    push_doc_range(L, site, App::instance()->timeline()->range());
-  }
-  else {
-    lua_pushnil(L);
-  }
-#else
-  lua_pushnil(L);
-#endif
+  push_doc_range(L, site);
   return 1;
 }
 

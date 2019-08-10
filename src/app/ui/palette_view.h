@@ -70,6 +70,7 @@ namespace app {
     bool getSelectedRange(int& index1, int& index2) const;
     void getSelectedEntries(doc::PalettePicks& entries) const;
     int getSelectedEntriesCount() const;
+    void setSelectedEntries(const doc::PalettePicks& entries);
 
     // IColorSource
     app::Color getColorByPosition(const gfx::Point& pos) override;

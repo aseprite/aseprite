@@ -78,8 +78,6 @@ namespace app {
 
     void setProgressDelegate(IProgressDelegate* progressDelegate);
 
-    doc::PixelFormat pixelFormat() const;
-
     void setTarget(Target target);
     void setCelsTarget(CelsTarget celsTarget);
 
@@ -109,6 +107,7 @@ namespace app {
 #endif
 
     // FilterManager implementation
+    doc::PixelFormat pixelFormat() const override;
     const void* getSourceAddress() override;
     void* getDestinationAddress() override;
     int getWidth() override { return m_bounds.w; }
@@ -137,6 +136,7 @@ namespace app {
     // modifies the palette).
     bool paletteHasChanged();
     void restoreSpritePalette();
+    void applyToPaletteIfNeeded();
 
 #ifdef ENABLE_UI
     void redrawColorPalette();

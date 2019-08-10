@@ -11,6 +11,7 @@
 #include "app/doc_observer.h"
 #include "doc/frame.h"
 #include "doc/object_id.h"
+#include "doc/palette_picks.h"
 
 #include <map>
 
@@ -37,6 +38,7 @@ namespace app {
     void getActiveSiteForDoc(Doc* doc, Site* site);
     void setActiveLayerInDoc(Doc* doc, doc::Layer* layer);
     void setActiveFrameInDoc(Doc* doc, doc::frame_t frame);
+    void setSelectedColorsInDoc(Doc* doc, const doc::PalettePicks& picks);
 
   private:
     // DocObserver impl
@@ -49,6 +51,7 @@ namespace app {
     struct Data {
       doc::ObjectId layer;
       doc::frame_t frame;
+      doc::PalettePicks selectedColors;
     };
 
     Data& getData(Doc* doc);

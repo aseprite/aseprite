@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -32,6 +33,7 @@ namespace app {
       ActiveLayerIsVisible        = 1 << 11,
       ActiveLayerIsEditable       = 1 << 12,
       ActiveLayerIsReference      = 1 << 13,
+      HasSelectedColors           = 1 << 14,
     };
 
     ContextFlags();

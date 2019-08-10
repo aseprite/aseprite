@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -109,6 +110,9 @@ void ContextFlags::updateFlagsFromSite(const Site& site)
         m_flags |= HasActiveImage;
     }
   }
+
+  if (site.selectedColors().picks() > 0)
+    m_flags |= HasSelectedColors;
 }
 
 } // namespace app

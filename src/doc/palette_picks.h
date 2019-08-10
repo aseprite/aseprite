@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2019 Igara Studio S.A.
 // Copyright (c) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -7,6 +8,8 @@
 #ifndef DOC_PALETTE_PICKS_H_INCLUDED
 #define DOC_PALETTE_PICKS_H_INCLUDED
 #pragma once
+
+#include "doc/color.h"
 
 #include <algorithm>
 #include <vector>
@@ -66,6 +69,15 @@ namespace doc {
         if (m_items[i])
           return i;
       return -1;
+    }
+
+    std::vector<color_t> toVectorOfIndexes() const {
+      std::vector<color_t> result(picks());
+      for (color_t i=0, j=0; i<size(); ++i) {
+        if (m_items[i])
+          result[j++] = i;
+      }
+      return result;
     }
 
   private:

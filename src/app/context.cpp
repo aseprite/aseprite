@@ -81,6 +81,11 @@ void Context::setActiveFrame(const doc::frame_t frame)
   onSetActiveFrame(frame);
 }
 
+void Context::setSelectedColors(const doc::PalettePicks& picks)
+{
+  onSetSelectedColors(picks);
+}
+
 bool Context::hasModifiedDocuments() const
 {
   for (auto doc : documents())
@@ -215,6 +220,12 @@ void Context::onSetActiveFrame(const doc::frame_t frame)
 {
   if (m_lastSelectedDoc)
     activeSiteHandler()->setActiveFrameInDoc(m_lastSelectedDoc, frame);
+}
+
+void Context::onSetSelectedColors(const doc::PalettePicks& picks)
+{
+  if (m_lastSelectedDoc)
+    activeSiteHandler()->setSelectedColorsInDoc(m_lastSelectedDoc, picks);
 }
 
 void Context::setTransaction(Transaction* transaction)

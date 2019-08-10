@@ -11,6 +11,7 @@
 
 #include "app/doc_range.h"
 #include "doc/frame.h"
+#include "doc/palette_picks.h"
 #include "doc/selected_objects.h"
 
 namespace doc {
@@ -78,6 +79,13 @@ namespace app {
     const doc::SelectedLayers& selectedLayers() const { return m_range.selectedLayers(); }
     const doc::SelectedFrames& selectedFrames() const { return m_range.selectedFrames(); }
 
+    // Selected colors selected in the ColorBar
+    const doc::PalettePicks& selectedColors() const { return m_selectedColors; }
+    doc::PalettePicks& selectedColors() { return m_selectedColors; }
+    void selectedColors(const doc::PalettePicks& colors) {
+      m_selectedColors = colors;
+    }
+
     const doc::SelectedObjects& selectedSlices() const { return m_selectedSlices; }
     doc::SelectedObjects& selectedSlices() { return m_selectedSlices; }
     void selectedSlices(const doc::SelectedObjects& set) {
@@ -95,6 +103,7 @@ namespace app {
     doc::Layer* m_layer;
     doc::frame_t m_frame;
     DocRange m_range;
+    doc::PalettePicks m_selectedColors;
     doc::SelectedObjects m_selectedSlices;
   };
 

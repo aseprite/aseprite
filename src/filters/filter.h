@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -7,6 +8,10 @@
 #ifndef FILTERS_FILTER_H_INCLUDED
 #define FILTERS_FILTER_H_INCLUDED
 #pragma once
+
+namespace doc {
+  class PalettePicks;
+}
 
 namespace filters {
 
@@ -37,6 +42,22 @@ namespace filters {
     // each pixel.
     virtual void applyToIndexed(FilterManager* filterMgr) = 0;
 
+    // Applies the filter to the color palette.
+    virtual void applyToPalette(FilterManager* filterMgr) { }
+  };
+
+  // Filter that support applying it only to palette colors.
+  class FilterWithPalette : public Filter {
+  public:
+    FilterWithPalette();
+    void applyToPalette(FilterManager* filterMgr) override;
+
+  protected:
+    virtual void onApplyToPalette(FilterManager* filterMgr,
+                                  const doc::PalettePicks& picks) = 0;
+
+    // Use the palette to replace colors in RGB images
+    bool m_usePaletteOnRGB;
   };
 
 } // namespace filters

@@ -56,6 +56,7 @@ namespace app {
     void onSetActiveDocument(Doc* doc) override;
     void onSetActiveLayer(doc::Layer* layer) override;
     void onSetActiveFrame(const doc::frame_t frame) override;
+    void onSetSelectedColors(const doc::PalettePicks& picks) override;
     void onCloseDocument(Doc* doc) override;
 
   private:

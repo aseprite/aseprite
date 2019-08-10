@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -8,6 +8,8 @@
 #include "config.h"
 #endif
 
+#include "app/app.h"
+#include "app/context.h"
 #include "app/doc_range.h"
 #include "app/script/docobj.h"
 #include "app/script/engine.h"
@@ -34,8 +36,11 @@ struct RangeObj { // This is like DocRange but referencing objects with IDs
   std::set<ObjectId> layers;
   std::vector<frame_t> frames;
   std::set<ObjectId> cels;
+  std::vector<color_t> colors;
 
-  RangeObj(Site& site, const DocRange& docRange) {
+  RangeObj(Site& site) {
+    const DocRange& docRange = site.range();
+
     spriteId = site.sprite()->id();
     type = docRange.type();
 
@@ -59,6 +64,9 @@ struct RangeObj { // This is like DocRange but referencing objects with IDs
       if (site.layer()) layers.insert(site.layer()->id());
       if (site.cel()) cels.insert(site.cel()->id());
     }
+
+    if (site.selectedColors().picks() > 0)
+      colors = site.selectedColors().toVectorOfIndexes();
   }
   RangeObj(const RangeObj&) = delete;
   RangeObj& operator=(const RangeObj&) = delete;
@@ -73,6 +81,9 @@ struct RangeObj { // This is like DocRange but referencing objects with IDs
   }
   bool contains(const Cel* cel) const {
     return cels.find(cel->id()) != cels.end();
+  }
+  bool containsColor(const color_t color) const {
+    return (std::find(colors.begin(), colors.end(), color) != colors.end());
   }
 };
 
@@ -111,6 +122,14 @@ int Range_contains(lua_State* L)
     result = obj->contains(frame);
   }
   lua_pushboolean(L, result);
+  return 1;
+}
+
+int Range_containsColor(lua_State* L)
+{
+  auto obj = get_obj<RangeObj>(L, 1);
+  color_t color = lua_tointeger(L, 2);
+  lua_pushboolean(L, obj->containsColor(color));
   return 1;
 }
 
@@ -181,9 +200,40 @@ int Range_get_editableImages(lua_State* L)
   return 1;
 }
 
+int Range_get_colors(lua_State* L)
+{
+  auto obj = get_obj<RangeObj>(L, 1);
+  lua_newtable(L);
+  int j = 1;
+  for (color_t i : obj->colors) {
+    lua_pushinteger(L, i);
+    lua_rawseti(L, -2, j++);
+  }
+  return 1;
+}
+
+int Range_set_colors(lua_State* L)
+{
+  app::Context* ctx = App::instance()->context();
+  doc::PalettePicks picks;
+  if (lua_istable(L, 2)) {
+    lua_pushnil(L);
+    while (lua_next(L, 2) != 0) {
+      int i = lua_tointeger(L, -1);
+      if (i >= picks.size())
+        picks.resize(i+1);
+      picks[i] = true;
+      lua_pop(L, 1);
+    }
+  }
+  ctx->setSelectedColors(picks);
+  return 0;
+}
+
 const luaL_Reg Range_methods[] = {
   { "__gc", Range_gc },
   { "contains", Range_contains },
+  { "containsColor", Range_containsColor },
   { nullptr, nullptr }
 };
 
@@ -196,6 +246,7 @@ const Property Range_properties[] = {
   { "cels", Range_get_cels, nullptr },
   { "images", Range_get_images, nullptr },
   { "editableImages", Range_get_editableImages, nullptr },
+  { "colors", Range_get_colors, Range_set_colors },
   { nullptr, nullptr, nullptr }
 };
 
@@ -210,9 +261,9 @@ void register_range_class(lua_State* L)
   REG_CLASS_PROPERTIES(L, Range);
 }
 
-void push_doc_range(lua_State* L, Site& site, const DocRange& docRange)
+void push_doc_range(lua_State* L, Site& site)
 {
-  push_new<RangeObj>(L, site, docRange);
+  push_new<RangeObj>(L, site);
 }
 
 } // namespace script

@@ -25,6 +25,7 @@
 
 namespace doc {
   class Layer;
+  class PalettePicks;
 }
 
 namespace app {
@@ -85,6 +86,7 @@ namespace app {
     void setActiveDocument(Doc* document);
     void setActiveLayer(doc::Layer* layer);
     void setActiveFrame(doc::frame_t frame);
+    void setSelectedColors(const doc::PalettePicks& picks);
     bool hasModifiedDocuments() const;
     void notifyActiveSiteChanged();
 
@@ -111,6 +113,7 @@ namespace app {
     virtual void onSetActiveDocument(Doc* doc);
     virtual void onSetActiveLayer(doc::Layer* layer);
     virtual void onSetActiveFrame(const doc::frame_t frame);
+    virtual void onSetSelectedColors(const doc::PalettePicks& picks);
     virtual void onCloseDocument(Doc* doc);
 
     Doc* lastSelectedDoc() { return m_lastSelectedDoc; }

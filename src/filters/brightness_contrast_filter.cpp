@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This program is distributed under the terms of
@@ -52,15 +53,8 @@ void BrightnessContrastFilter::setContrast(double contrast)
 void BrightnessContrastFilter::applyToRgba(FilterManager* filterMgr)
 {
   FilterIndexedData* fid = filterMgr->getIndexedData();
-
-  if (filterMgr->isFirstRow()) {
-    m_picks = fid->getPalettePicks();
-    m_usePalette = (m_picks.picks() > 0);
-    if (m_usePalette)
-      applyToPalette(filterMgr);
-  }
-
   const Palette* pal = fid->getPalette();
+  Palette* newPal = (m_usePaletteOnRGB ? fid->getNewPalette(): nullptr);
   const uint32_t* src_address = (uint32_t*)filterMgr->getSourceAddress();
   uint32_t* dst_address = (uint32_t*)filterMgr->getDestinationAddress();
   const int w = filterMgr->getWidth();
@@ -75,14 +69,14 @@ void BrightnessContrastFilter::applyToRgba(FilterManager* filterMgr)
 
     color_t c = *(src_address++);
 
-    if (m_usePalette) {
+    if (newPal) {
       int i =
         pal->findExactMatch(rgba_getr(c),
                             rgba_getg(c),
                             rgba_getb(c),
                             rgba_geta(c), -1);
       if (i >= 0)
-        c = fid->getNewPalette()->getEntry(i);
+        c = newPal->getEntry(i);
     }
     else {
       applyFilterToRgb(target, c);
@@ -120,18 +114,11 @@ void BrightnessContrastFilter::applyToIndexed(FilterManager* filterMgr)
 {
   FilterIndexedData* fid = filterMgr->getIndexedData();
 
-  // Apply filter to color palette if there is no selection
-  if (!filterMgr->isMaskActive()) {
-    if (!filterMgr->isFirstRow())
-      return;
-
-    m_picks = fid->getPalettePicks();
-    if (m_picks.picks() == 0)
-      m_picks.all();
-
-    applyToPalette(filterMgr);
+  // Apply filter to pixels if there is selection (in other case, the
+  // change is global, so we have already applied the filter to the
+  // palette).
+  if (!filterMgr->isMaskActive())
     return;
-  }
 
   // Apply filter to color region
   const Target target = filterMgr->getTarget();
@@ -157,7 +144,8 @@ void BrightnessContrastFilter::applyToIndexed(FilterManager* filterMgr)
   }
 }
 
-void BrightnessContrastFilter::applyToPalette(FilterManager* filterMgr)
+void BrightnessContrastFilter::onApplyToPalette(FilterManager* filterMgr,
+                                                const PalettePicks& picks)
 {
   const Target target = filterMgr->getTarget();
   FilterIndexedData* fid = filterMgr->getIndexedData();
@@ -165,7 +153,7 @@ void BrightnessContrastFilter::applyToPalette(FilterManager* filterMgr)
   Palette* newPal = fid->getNewPalette();
 
   int i = 0;
-  for (bool state : m_picks) {
+  for (bool state : picks) {
     if (!state) {
       ++i;
       continue;

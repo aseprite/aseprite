@@ -523,6 +523,7 @@ add_library(app-lib
   commands/filters/convolution_matrix_stock.cpp
   commands/filters/filter_manager_impl.cpp
   commands/filters/filter_worker.cpp
+  commands/move_colors_command.cpp
   commands/move_thing.cpp
   commands/new_params.cpp
   commands/quick_command.cpp
@@ -596,6 +597,7 @@ add_library(app-lib
   util/layer_boundaries.cpp
   util/msk_file.cpp
   util/new_image_from_mask.cpp
+  util/pal_ops.cpp
   util/pic_file.cpp
   util/pixel_ratio.cpp
   util/range_utils.cpp

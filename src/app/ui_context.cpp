@@ -166,6 +166,16 @@ void UIContext::onSetActiveFrame(const doc::frame_t frame)
     Context::onSetActiveFrame(frame);
 }
 
+void UIContext::onSetSelectedColors(const doc::PalettePicks& picks)
+{
+  if (DocView* docView = activeView()) {
+    if (ColorBar* colorBar = ColorBar::instance())
+      colorBar->getPaletteView()->setSelectedEntries(picks);
+  }
+  else if (!isUIAvailable())
+    Context::onSetSelectedColors(picks);
+}
+
 DocView* UIContext::getFirstDocView(Doc* document) const
 {
   Workspace* workspace = App::instance()->workspace();
@@ -294,7 +304,7 @@ void UIContext::onGetActiveSite(Site* site) const
     view->getSite(site);
 
     if (site->sprite()) {
-      // Selected layers
+      // Selected range in the timeline
       Timeline* timeline = App::instance()->timeline();
       if (timeline &&
           timeline->range().enabled()) {
@@ -305,6 +315,10 @@ void UIContext::onGetActiveSite(Site* site) const
         if (colorBar &&
             colorBar->getPaletteView()->getSelectedEntriesCount() > 0) {
           site->focus(Site::InColorBar);
+
+          doc::PalettePicks picks;
+          colorBar->getPaletteView()->getSelectedEntries(picks);
+          site->selectedColors(picks);
         }
         else {
           site->focus(Site::InEditor);

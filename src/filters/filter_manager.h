@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -8,6 +9,7 @@
 #define FILTERS_FILTER_MANAGER_H_INCLUDED
 #pragma once
 
+#include "doc/pixel_format.h"
 #include "filters/target.h"
 
 namespace doc {
@@ -26,6 +28,8 @@ namespace filters {
   class FilterManager {
   public:
     virtual ~FilterManager() { }
+
+    virtual doc::PixelFormat pixelFormat() const = 0;
 
     // Gets the address of the first pixel which has the original color
     // to apply the filter.

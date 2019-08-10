@@ -51,7 +51,6 @@ namespace tools {
 
 namespace app {
 
-  class DocRange;
   class Site;
 
   namespace script {
@@ -119,7 +118,7 @@ namespace app {
   void push_cels(lua_State* L, doc::Layer* layer);
   void push_cels(lua_State* L, doc::Sprite* sprite);
   void push_color_space(lua_State* L, const gfx::ColorSpace& cs);
-  void push_doc_range(lua_State* L, Site& site, const DocRange& docRange);
+  void push_doc_range(lua_State* L, Site& site);
   void push_image(lua_State* L, doc::Image* image);
   void push_images(lua_State* L, const doc::ObjectIds& images);
   void push_layers(lua_State* L, const doc::ObjectIds& layers);

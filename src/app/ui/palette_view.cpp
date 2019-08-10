@@ -22,6 +22,7 @@
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
 #include "app/util/clipboard.h"
+#include "app/util/pal_ops.h"
 #include "base/bind.h"
 #include "base/convert_to.h"
 #include "doc/image.h"
@@ -187,6 +188,18 @@ void PaletteView::getSelectedEntries(PalettePicks& entries) const
 int PaletteView::getSelectedEntriesCount() const
 {
   return m_selectedEntries.picks();
+}
+
+void PaletteView::setSelectedEntries(const doc::PalettePicks& entries)
+{
+  ASSERT(currentPalette());
+  if (!currentPalette())
+    return;
+
+  m_selectedEntries = entries;
+  m_selectedEntries.resize(currentPalette()->size());
+  m_currentEntry = m_selectedEntries.firstPick();
+  invalidate();
 }
 
 app::Color PaletteView::getColorByPosition(const gfx::Point& pos)
@@ -777,58 +790,14 @@ PaletteView::Hit PaletteView::hitTest(const gfx::Point& pos)
 void PaletteView::dropColors(int beforeIndex)
 {
   Palette palette(*currentPalette());
-  if (beforeIndex >= palette.size()) {
-    palette.resize(beforeIndex);
-    m_selectedEntries.resize(palette.size());
-  }
-
   Palette newPalette(palette);
-  Remap remap(palette.size());
-
-  // Copy colors
-  if (m_copy) {
-    int picks = m_selectedEntries.picks();
-    ASSERT(picks >= 1);
-
-    remap = create_remap_to_expand_palette(palette.size()+picks,
-                                           picks,
-                                           beforeIndex);
-
-    newPalette.resize(palette.size()+picks);
-    for (int i=0; i<palette.size(); ++i)
-      newPalette.setEntry(remap[i], palette.getEntry(i));
-
-    for (int i=0, j=0; i<palette.size(); ++i) {
-      if (m_selectedEntries[i])
-        newPalette.setEntry(beforeIndex + (j++), palette.getEntry(i));
-    }
-
-    for (int i=0, j=0; i<palette.size(); ++i) {
-      if (m_selectedEntries[i]) {
-        if (m_currentEntry == i) {
-          m_currentEntry = beforeIndex + j;
-          break;
-        }
-        ++j;
-      }
-    }
-
-    for (int i=0; i<palette.size(); ++i)
-      m_selectedEntries[i] = (i >= beforeIndex && i < beforeIndex + picks);
-  }
-  // Move colors
-  else {
-    remap = create_remap_to_move_picks(m_selectedEntries, beforeIndex);
-
-    auto oldSelectedCopies = m_selectedEntries;
-    for (int i=0; i<palette.size(); ++i) {
-      newPalette.setEntry(remap[i], palette.getEntry(i));
-      m_selectedEntries[remap[i]] = oldSelectedCopies[i];
-    }
-
-    m_currentEntry = remap[m_currentEntry];
-  }
-
+  move_or_copy_palette_colors(
+    palette,
+    newPalette,
+    m_selectedEntries,
+    m_currentEntry,
+    beforeIndex,
+    m_copy);
   setNewPalette(&palette, &newPalette,
                 PaletteViewModification::DRAGANDDROP);
 }

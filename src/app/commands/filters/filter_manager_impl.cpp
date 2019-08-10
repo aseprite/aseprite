@@ -189,6 +189,10 @@ bool FilterManagerImpl::applyStep()
     m_maskIterator = m_maskBits.begin();
   }
 
+  if (m_row == 0) {
+    applyToPaletteIfNeeded();
+  }
+
   switch (m_site.sprite()->pixelFormat()) {
     case IMAGE_RGB:       m_filter->applyToRgba(this); break;
     case IMAGE_GRAYSCALE: m_filter->applyToGrayscale(this); break;
@@ -240,6 +244,8 @@ void FilterManagerImpl::apply()
 
 void FilterManagerImpl::applyToTarget()
 {
+  applyToPaletteIfNeeded();
+
   const bool paletteChange = paletteHasChanged();
   bool cancelled = false;
 
@@ -441,15 +447,7 @@ Palette* FilterManagerImpl::getNewPalette()
 
 doc::PalettePicks FilterManagerImpl::getPalettePicks()
 {
-  doc::PalettePicks picks;
-#ifdef ENABLE_UI                // TODO add palette entries in Site and use activeSite here
-  if (auto colorBar = ColorBar::instance()) {
-    colorBar
-      ->getPaletteView()
-      ->getSelectedEntries(picks);
-  }
-#endif
-  return picks;
+  return m_site.selectedColors();
 }
 
 void FilterManagerImpl::init(Cel* cel)
@@ -510,6 +508,11 @@ void FilterManagerImpl::restoreSpritePalette()
   // Restore the original palette to save the undoable "cmd"
   if (m_oldPalette)
     m_site.sprite()->setPalette(m_oldPalette.get(), false);
+}
+
+void FilterManagerImpl::applyToPaletteIfNeeded()
+{
+  m_filter->applyToPalette(this);
 }
 
 #ifdef ENABLE_UI
