@@ -447,3 +447,38 @@ do -- ConvolutionMatrix
                   v, w, v,
                   u, v, u })
 end
+
+-- MoveColors and CopyColors
+do
+  local s = Sprite(32, 32, ColorMode.INDEXED)
+  local p = Palette(4)
+  p:setColor(0, Color(0, 0, 0))
+  p:setColor(1, Color(255, 0, 0))
+  p:setColor(2, Color(0, 255, 0))
+  p:setColor(3, Color(0, 0, 255))
+  s:setPalette(p)
+  assert(#app.range.colors == 0)
+  app.range.colors = { 0, 2 }
+  assert(#app.range.colors == 2)
+  assert(app.range.colors[1] == 0)
+  assert(app.range.colors[2] == 2)
+  app.command.MoveColors{ before=0 }
+  p = s.palettes[1]
+  p:setColor(0, Color(0, 0, 0))
+  p:setColor(1, Color(0, 255, 0))
+  p:setColor(2, Color(255, 0, 0))
+  p:setColor(3, Color(0, 0, 255))
+
+  app.range.colors = { 0, 1 }
+  assert(#app.range.colors == 2)
+  assert(app.range.colors[1] == 0)
+  assert(app.range.colors[2] == 1)
+  app.command.CopyColors{ before=4 }
+  p = s.palettes[1]
+  p:setColor(0, Color(0, 0, 0))
+  p:setColor(1, Color(0, 255, 0))
+  p:setColor(2, Color(255, 0, 0))
+  p:setColor(3, Color(0, 0, 255))
+  p:setColor(4, Color(0, 0, 0))
+  p:setColor(5, Color(0, 255, 0))
+end
