@@ -207,7 +207,6 @@ if(ENABLE_UI)
     commands/cmd_clear_cel.cpp
     commands/cmd_clear_recent_files.cpp
     commands/cmd_close_file.cpp
-    commands/cmd_color_quantization.cpp
     commands/cmd_contiguous_fill.cpp
     commands/cmd_copy.cpp
     commands/cmd_copy_cel.cpp
@@ -494,6 +493,7 @@ add_library(app-lib
   commands/cmd_canvas_size.cpp
   commands/cmd_cel_opacity.cpp
   commands/cmd_change_pixel_format.cpp
+  commands/cmd_color_quantization.cpp
   commands/cmd_crop.cpp
   commands/cmd_export_sprite_sheet.cpp
   commands/cmd_flatten_layers.cpp
