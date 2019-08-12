@@ -2107,9 +2107,16 @@ void Timeline::drawLayer(ui::Graphics* g, int layerIdx)
            (hotlayer && m_hot.part == PART_ROW_TEXT),
            (clklayer && m_clk.part == PART_ROW_TEXT));
 
+  drawPart(g, textBounds,
+           &layer->name(),
+           styles.timelineLayer(),
+           is_active,
+           (hotlayer && m_hot.part == PART_ROW_TEXT),
+           (clklayer && m_clk.part == PART_ROW_TEXT));
+
   if (doc::rgba_geta(layerColor) > 0) {
     // Fill with an user-defined custom color.
-    auto b2 = bounds;
+    auto b2 = textBounds;
     b2.shrink(1*guiscale()).inflate(1*guiscale());
     g->fillRect(gfx::rgba(doc::rgba_getr(layerColor),
                           doc::rgba_getg(layerColor),
@@ -2120,14 +2127,6 @@ void Timeline::drawLayer(ui::Graphics* g, int layerIdx)
     drawPart(g, textBounds,
              &layer->name(),
              styles.timelineLayerTextOnly(),
-             is_active,
-             (hotlayer && m_hot.part == PART_ROW_TEXT),
-             (clklayer && m_clk.part == PART_ROW_TEXT));
-  }
-  else {
-    drawPart(g, textBounds,
-             &layer->name(),
-             styles.timelineLayer(),
              is_active,
              (hotlayer && m_hot.part == PART_ROW_TEXT),
              (clklayer && m_clk.part == PART_ROW_TEXT));
