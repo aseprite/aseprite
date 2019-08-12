@@ -1,6 +1,6 @@
 // Aseprite Rener Library
-// Copyright (C) 2019 Igara Studio S.A.
-// Copyright (c) 2001-2015, 2017 David Capello
+// Copyright (c) 2019  Igara Studio S.A.
+// Copyright (c) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -34,6 +34,7 @@ namespace render {
 
   private:
     render::ColorHistogram<5, 6, 5, 5> m_histogram;
+    bool m_withAlpha = false;
   };
 
   // Creates a new palette suitable to quantize the given RGB sprite to Indexed color.

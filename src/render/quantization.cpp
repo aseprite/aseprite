@@ -1,6 +1,6 @@
 // Aseprite Render Library
-// Copyright (C) 2019 Igara Studio S.A.
-// Copyright (c) 2001-2018 David Capello
+// Copyright (c) 2019  Igara Studio S.A.
+// Copyright (c) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -350,6 +350,9 @@ void PaletteOptimizer::feedWithImage(Image* image, bool withAlpha)
 {
   uint32_t color;
 
+  if (withAlpha)
+    m_withAlpha = true;
+
   ASSERT(image);
   switch (image->pixelFormat()) {
 
@@ -431,7 +434,7 @@ void PaletteOptimizer::calculate(Palette* palette, int maskIndex)
     palette->applyRemap(remap);
 
     if (maskIndex < palette->size())
-      palette->setEntry(maskIndex, rgba(0, 0, 0, 255));
+      palette->setEntry(maskIndex, rgba(0, 0, 0, (m_withAlpha ? 0: 255)));
   }
   else
     palette->resize(MAX(1, usedColors));
