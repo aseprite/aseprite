@@ -29,3 +29,7 @@ assert(pt.y == 20)
 pt = Point{45, 25}
 assert(pt.x == 45)
 assert(pt.y == 25)
+
+pt = -pt
+assert(pt.x == -45)
+assert(pt.y == -25)
