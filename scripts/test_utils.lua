@@ -16,6 +16,10 @@ end
 function expect_img(image, expectedPixels)
   local w = image.width
   local h = image.height
+  if w*h ~= #expectedPixels then
+    print(debug.traceback())
+    assert(w*h == #expectedPixels)
+  end
   for y=0,h-1 do
     for x=0,w-1 do
       local value = image:getPixel(x, y)
@@ -60,6 +64,19 @@ function expect_img(image, expectedPixels)
 	end
 	assert(a == b)
       end
+    end
+  end
+end
+
+function array_to_pixels(array, image)
+  local w = image.width
+  local h = image.height
+  assert(w*h == #array)
+  local i = 1
+  for y=0,h-1 do
+    for x=0,w-1 do
+      image:drawPixel(x, y, array[i])
+      i = i+1
     end
   end
 end
