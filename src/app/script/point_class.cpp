@@ -86,6 +86,13 @@ int Point_tostring(lua_State* L)
   return 1;
 }
 
+int Point_unm(lua_State* L)
+{
+  const auto pt = get_obj<gfx::Point>(L, 1);
+  push_obj(L, -(*pt));
+  return 1;
+}
+
 int Point_get_x(lua_State* L)
 {
   const auto pt = get_obj<gfx::Point>(L, 1);
@@ -118,6 +125,7 @@ const luaL_Reg Point_methods[] = {
   { "__gc", Point_gc },
   { "__eq", Point_eq },
   { "__tostring", Point_tostring },
+  { "__unm", Point_unm },
   { nullptr, nullptr }
 };
 
