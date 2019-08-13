@@ -16,14 +16,18 @@ do
   a:crop()
   assert(a.width == 4)
   assert(a.height == 5)
+  assert(a.cels[1].image.width == 32)
+  assert(a.cels[1].image.height == 64)
   a:resize(6, 8)
   assert(a.width == 6)
   assert(a.height == 8)
+  assert(a.cels[1].image.width == 32 * 6 / 4) -- Check that the image was resized (not only the canvas)
+  assert(a.cels[1].image.height == 64 * 8 / 5)
   a:crop{x=-1, y=-1, width=20, height=30}
   assert(a.width == 20)
   assert(a.height == 30)
 
-  -- Resize sprite setting width/height
+  -- Resize sprite setting width/height (just changing canvas size)
   a.width = 8
   a.height = 10
   assert(a.width == 8)
