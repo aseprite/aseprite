@@ -19,6 +19,7 @@ namespace doc {
   class Image;
   class Layer;
   class Palette;
+  class RgbMap;
   class Sprite;
 } // namespace doc
 
@@ -95,6 +96,7 @@ namespace app {
     doc::Palette* palette();
     doc::Image* image(int* x = nullptr, int* y = nullptr, int* opacity = nullptr) const;
     doc::Palette* palette() const;
+    doc::RgbMap* rgbMap() const;
 
   private:
     Focus m_focus;

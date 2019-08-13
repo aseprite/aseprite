@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -22,6 +22,14 @@ extern "C" {
 
 namespace app {
 namespace script {
+
+#if LUA_TNONE != -1
+  #error Invalid LUA_TNONE value
+#endif
+#if LUA_TNIL != 0
+  #error Invalid LUA_TNIL value
+#endif
+#define VALID_LUATYPE(type) ((type) > 0)
 
 // Some of these auxiliary methods are based on code from the Skia
 // library (SkLua.cpp file) by Google Inc.

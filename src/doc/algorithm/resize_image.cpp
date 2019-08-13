@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2019  Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -41,7 +42,12 @@ void resize_image_nearest(const Image* src, Image* dst)
   }
 }
 
-void resize_image(const Image* src, Image* dst, ResizeMethod method, const Palette* pal, const RgbMap* rgbmap, color_t maskColor)
+void resize_image(const Image* src,
+                  Image* dst,
+                  const ResizeMethod method,
+                  const Palette* pal,
+                  const RgbMap* rgbmap,
+                  const color_t maskColor)
 {
   switch (method) {
 
@@ -65,6 +71,17 @@ void resize_image(const Image* src, Image* dst, ResizeMethod method, const Palet
       int u_floor, u_floor2;
       int v_floor, v_floor2;
       int x, y;
+
+      // We cannot do interpolations between RGB values on indexed
+      // images without a palette/rgbmap.
+      if (dst->pixelFormat() == IMAGE_INDEXED &&
+          (!pal || !rgbmap)) {
+        resize_image(
+          src, dst,
+          RESIZE_METHOD_NEAREST_NEIGHBOR,
+          pal, rgbmap, maskColor);
+        return;
+      }
 
       u = v = 0.0;
       du = (src->width()-1) * 1.0 / (dst->width()-1);

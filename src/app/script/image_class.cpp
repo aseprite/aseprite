@@ -11,14 +11,18 @@
 
 #include "app/cmd/copy_rect.h"
 #include "app/cmd/copy_region.h"
+#include "app/commands/new_params.h" // Used for enum <-> Lua conversions
+#include "app/context.h"
 #include "app/doc.h"
 #include "app/file/file.h"
 #include "app/script/docobj.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
 #include "app/script/security.h"
+#include "app/site.h"
 #include "app/tx.h"
 #include "app/util/autocrop.h"
+#include "app/util/resize_image.h"
 #include "base/fs.h"
 #include "doc/algorithm/shrink_bounds.h"
 #include "doc/cel.h"
@@ -27,6 +31,9 @@
 #include "doc/primitives.h"
 #include "doc/sprite.h"
 #include "render/render.h"
+
+#include <algorithm>
+#include <memory>
 
 namespace app {
 namespace script {
@@ -335,6 +342,97 @@ int Image_saveAs(lua_State* L)
   return 1;
 }
 
+int Image_resize(lua_State* L)
+{
+  auto obj = get_obj<ImageObj>(L, 1);
+  doc::Image* img = obj->image(L);
+  Cel* cel = obj->cel(L);
+  ASSERT(img);
+  gfx::Size newSize = img->size();
+  auto method = doc::algorithm::ResizeMethod::RESIZE_METHOD_NEAREST_NEIGHBOR;
+  gfx::Point pivot(0, 0);
+
+  if (lua_istable(L, 2)) {
+    // Image:resize{ (size | width, height),
+    //               method [, pivot] }
+
+    int type = lua_getfield(L, 2, "size");
+    if (VALID_LUATYPE(type)) {
+      newSize = convert_args_into_size(L, -1);
+      lua_pop(L, 1);
+    }
+    else {
+      lua_pop(L, 1);
+
+      type = lua_getfield(L, 2, "width");
+      if (VALID_LUATYPE(type))
+        newSize.w = lua_tointeger(L, -1);
+      lua_pop(L, 1);
+
+      type = lua_getfield(L, 2, "height");
+      if (VALID_LUATYPE(type))
+        newSize.h = lua_tointeger(L, -1);
+      lua_pop(L, 1);
+    }
+
+    type = lua_getfield(L, 2, "method");
+    if (VALID_LUATYPE(type))  {
+      // TODO improve these lua <-> enum conversions, a lot of useless
+      //      work is done to create this dummy NewParams, etc.
+      NewParams dummyParams;
+      Param<doc::algorithm::ResizeMethod> param(&dummyParams, method, "method");
+      param.fromLua(L, -1);
+      method = param();
+    }
+    lua_pop(L, 1);
+
+    type = lua_getfield(L, 2, "pivot");
+    if (VALID_LUATYPE(type))
+      pivot = convert_args_into_point(L, -1);
+    lua_pop(L, 1);
+  }
+  else {
+    newSize.w = lua_tointeger(L, 2);
+    newSize.h = lua_tointeger(L, 3);
+  }
+
+  newSize.w = std::max(1, newSize.w);
+  newSize.h = std::max(1, newSize.h);
+
+  const gfx::SizeF scale(
+    double(newSize.w) / double(img->width()),
+    double(newSize.h) / double(img->height()));
+
+  // If the destination image is not related to a sprite, we just draw
+  // the source image without undo information.
+  if (cel) {
+    Tx tx;
+    resize_cel_image(tx, cel, scale, method,
+                     gfx::PointF(pivot));
+    tx.commit();
+    obj->imageId = cel->image()->id();
+  }
+  else {
+    Context* ctx = App::instance()->context();
+    ASSERT(ctx);
+    Site site = ctx->activeSite();
+    const doc::Palette* pal = site.palette();
+    const doc::RgbMap* rgbmap = site.rgbMap();
+
+    std::unique_ptr<doc::Image> newImg(
+      resize_image(img, scale, method,
+                   pal, rgbmap));
+    // Delete old image, and we put the same ID of the old image into
+    // the new image so this userdata references the resized image.
+    delete img;
+    newImg->setId(obj->imageId);
+    // Release the image from the smart pointer because now it's owned
+    // by the ImageObj userdata.
+    newImg.release();
+  }
+  return 0;
+}
+
 int Image_get_width(lua_State* L)
 {
   const auto obj = get_obj<ImageObj>(L, 1);
@@ -382,6 +480,7 @@ const luaL_Reg Image_methods[] = {
   { "isEmpty", Image_isEmpty },
   { "isPlain", Image_isPlain },
   { "saveAs", Image_saveAs },
+  { "resize", Image_resize },
   { "__gc", Image_gc },
   { "__eq", Image_eq },
   { nullptr, nullptr }

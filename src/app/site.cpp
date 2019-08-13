@@ -25,6 +25,11 @@ Palette* Site::palette()
   return (m_sprite ? m_sprite->palette(m_frame): nullptr);
 }
 
+RgbMap* Site::rgbMap() const
+{
+  return (m_sprite ? m_sprite->rgbMap(m_frame): nullptr);
+}
+
 const Cel* Site::cel() const
 {
   if (m_layer)

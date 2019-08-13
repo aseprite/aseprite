@@ -19,6 +19,7 @@
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/sprite_job.h"
+#include "app/util/resize_image.h"
 #include "base/bind.h"
 #include "base/convert_to.h"
 #include "doc/algorithm/resize_image.h"
@@ -93,38 +94,19 @@ protected:
       ++cels_count;
     }
 
+    const gfx::SizeF scale(
+      double(m_new_width) / double(sprite()->width()),
+      double(m_new_height) / double(sprite()->height()));
+
     // For each cel...
     int progress = 0;
     for (Cel* cel : sprite()->uniqueCels()) {
-      // Get cel's image
-      Image* image = cel->image();
-      if (image && !cel->link()) {
-        // Resize the cel bounds only if it's from a reference layer
-        if (cel->layer()->isReference()) {
-          gfx::RectF newBounds = scale_rect<double>(cel->boundsF());
-          tx()(new cmd::SetCelBoundsF(cel, newBounds));
-        }
-        else {
-          // Change its location
-          api.setCelPosition(sprite(), cel, scale_x(cel->x()), scale_y(cel->y()));
-
-          // Resize the image
-          int w = scale_x(image->width());
-          int h = scale_y(image->height());
-          ImageRef new_image(Image::create(image->pixelFormat(), MAX(1, w), MAX(1, h)));
-          new_image->setMaskColor(image->maskColor());
-
-          doc::algorithm::fixup_image_transparent_colors(image);
-          doc::algorithm::resize_image(
-            image, new_image.get(),
-            m_resize_method,
-            sprite()->palette(cel->frame()),
-            sprite()->rgbMap(cel->frame()),
-            (cel->layer()->isBackground() ? -1: sprite()->transparentColor()));
-
-          api.replaceImage(sprite(), cel->imageRef(), new_image);
-        }
-      }
+      resize_cel_image(
+        tx(), cel, scale,
+        m_resize_method,
+        cel->layer()->isReference() ?
+          -cel->boundsF().origin():
+          gfx::PointF(-cel->bounds().origin()));
 
       jobProgress((float)progress / cels_count);
       ++progress;
