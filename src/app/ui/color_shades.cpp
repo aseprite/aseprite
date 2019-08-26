@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -49,28 +50,27 @@ void ColorShades::reverseShadeColors()
 
 doc::Remap* ColorShades::createShadeRemap(bool left)
 {
-  std::unique_ptr<doc::Remap> remap;
-  Shade colors = getShade();
-
   // We need two or more colors to create a shading remap. In
   // other case, the ShadingInkProcessing will use the full
   // color palette.
-  if (colors.size() > 1) {
-    remap.reset(new doc::Remap(get_current_palette()->size()));
+  Shade colors = getShade();
+  if (colors.size() <= 1)
+    return nullptr;
 
-    for (int i=0; i<remap->size(); ++i)
-      remap->map(i, i);
+  std::unique_ptr<doc::Remap> remap(
+    new doc::Remap(get_current_palette()->size()));
 
-    if (left) {
-      for (int i=1; i<int(colors.size()); ++i)
-        remap->map(colors[i].getIndex(), colors[i-1].getIndex());
-    }
-    else {
-      for (int i=0; i<int(colors.size())-1; ++i)
-        remap->map(colors[i].getIndex(), colors[i+1].getIndex());
-    }
+  for (int i=0; i<remap->size(); ++i)
+    remap->map(i, i);
+
+  if (left) {
+    for (int i=1; i<int(colors.size()); ++i)
+      remap->map(colors[i].getIndex(), colors[i-1].getIndex());
   }
-
+  else {
+    for (int i=0; i<int(colors.size())-1; ++i)
+      remap->map(colors[i].getIndex(), colors[i+1].getIndex());
+  }
   return remap.release();
 }
 

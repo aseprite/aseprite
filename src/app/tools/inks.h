@@ -128,15 +128,22 @@ public:
 };
 
 
-class ShadingInk : public BaseInk {
+class ShadingInk : public PaintInk {
 public:
+  ShadingInk() : PaintInk(PaintInk::Simple) { }
+
   Ink* clone() override { return new ShadingInk(*this); }
 
   bool isPaint() const override { return true; }
   bool isShading() const override { return true; }
 
   void prepareInk(ToolLoop* loop) override {
-    setProc(get_ink_proc<ShadingInkProcessing>(loop));
+    if (loop->getShadingRemap()) {
+      setProc(get_ink_proc<ShadingInkProcessing>(loop));
+    }
+    else {
+      PaintInk::prepareInk(loop);
+    }
   }
 
 };
