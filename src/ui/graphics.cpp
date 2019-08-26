@@ -433,7 +433,10 @@ gfx::Size Graphics::doUIStringAlgorithm(const std::string& str, gfx::Color fg, g
     // Without word-wrap
     if ((align & (WORDWRAP | CHARWRAP)) == 0) {
       end = str.find('\n', beg);
-      newBeg = end+1;
+      if (end != std::string::npos)
+        newBeg = end+1;
+      else
+        newBeg = std::string::npos;
     }
     // With char-wrap
     else if ((align & CHARWRAP) == CHARWRAP) {
@@ -485,7 +488,7 @@ gfx::Size Graphics::doUIStringAlgorithm(const std::string& str, gfx::Color fg, g
     if (end != std::string::npos)
       line = str.substr(beg, end-beg);
     else
-      line.clear();
+      line = str.substr(beg);
 
     gfx::Size lineSize(
       m_font->textLength(line.c_str()),
