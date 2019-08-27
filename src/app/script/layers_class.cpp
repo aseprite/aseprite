@@ -28,7 +28,11 @@ struct LayersObj {
   ObjectIds layers;
 
   LayersObj(Sprite* sprite) {
-    for (const Layer* layer : sprite->allLayers())
+    for (const Layer* layer : sprite->root()->layers())
+      layers.push_back(layer->id());
+  }
+  LayersObj(LayerGroup* group) {
+    for (const Layer* layer : group->layers())
       layers.push_back(layer->id());
   }
   LayersObj(const ObjectIds& layers)
@@ -98,6 +102,11 @@ void register_layers_class(lua_State* L)
 void push_sprite_layers(lua_State* L, Sprite* sprite)
 {
   push_new<LayersObj>(L, sprite);
+}
+
+void push_group_layers(lua_State* L, LayerGroup* group)
+{
+  push_new<LayersObj>(L, group);
 }
 
 void push_layers(lua_State* L, const ObjectIds& layers)

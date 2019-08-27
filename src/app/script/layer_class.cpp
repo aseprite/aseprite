@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -12,6 +12,8 @@
 #include "app/cmd/set_layer_blend_mode.h"
 #include "app/cmd/set_layer_name.h"
 #include "app/cmd/set_layer_opacity.h"
+#include "app/doc.h"
+#include "app/doc_api.h"
 #include "app/script/docobj.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
@@ -60,6 +62,29 @@ int Layer_get_parent(lua_State* L)
     push_docobj<Sprite>(L, layer->sprite());
   else
     push_docobj<Layer>(L, layer->parent());
+  return 1;
+}
+
+int Layer_get_layers(lua_State* L)
+{
+  auto layer = get_docobj<Layer>(L, 1);
+  if (layer->isGroup())
+    push_group_layers(L, static_cast<LayerGroup*>(layer));
+  else
+    lua_pushnil(L);
+  return 1;
+}
+
+int Layer_get_stackIndex(lua_State* L)
+{
+  auto layer = get_docobj<Layer>(L, 1);
+  const auto& layers = layer->parent()->layers();
+  auto it = std::find(layers.begin(), layers.end(), layer);
+  ASSERT(it != layers.end());
+  if (it != layers.end())
+    lua_pushinteger(L, it - layers.begin() + 1);
+  else
+    lua_pushnil(L);
   return 1;
 }
 
@@ -219,6 +244,27 @@ int Layer_set_blendMode(lua_State* L)
   return 0;
 }
 
+int Layer_set_stackIndex(lua_State* L)
+{
+  auto layer = get_docobj<Layer>(L, 1);
+  int stackIndex = lua_tointeger(L, 2);
+  auto parent = layer->parent();
+
+  Layer* beforeThis = nullptr;
+  if (stackIndex < 1) {
+    beforeThis = parent->firstLayer();
+  }
+  else if (stackIndex <= int(parent->layers().size())) {
+    beforeThis = parent->layers()[stackIndex-1];
+  }
+
+  Doc* doc = static_cast<Doc*>(layer->sprite()->document());
+  Tx tx;
+  DocApi(doc, tx).restackLayerBefore(layer, parent, beforeThis);
+  tx.commit();
+  return 0;
+}
+
 int Layer_set_isEditable(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
@@ -254,6 +300,37 @@ int Layer_set_isExpanded(lua_State* L)
   return 0;
 }
 
+int Layer_set_parent(lua_State* L)
+{
+  auto layer = get_docobj<Layer>(L, 1);
+  LayerGroup* parent = nullptr;
+  if (auto sprite = may_get_docobj<Sprite>(L, 2)) {
+    parent = sprite->root();
+  }
+  else if (auto parentLayer = may_get_docobj<Layer>(L, 2)) {
+    if (parentLayer->isGroup())
+      parent = static_cast<LayerGroup*>(parentLayer);
+  }
+
+  if (parent == layer)
+    return luaL_error(L, "the parent of a layer cannot be the layer itself");
+
+  // TODO Why? should we be able to do this? It would require some hard work:
+  // 1. convert color modes
+  // 2. multiple transactions for both modified sprites?
+  if (parent->sprite() != layer->sprite())
+    return luaL_error(L, "you cannot move layers between sprites");
+
+  if (parent) {
+    Doc* doc = static_cast<Doc*>(layer->sprite()->document());
+    Tx tx;
+    DocApi(doc, tx).restackLayerAfter(
+      layer, parent, parent->lastLayer());
+    tx.commit();
+  }
+  return 0;
+}
+
 const luaL_Reg Layer_methods[] = {
   { "__eq", Layer_eq },
   { "cel", Layer_cel },
@@ -262,7 +339,9 @@ const luaL_Reg Layer_methods[] = {
 
 const Property Layer_properties[] = {
   { "sprite", Layer_get_sprite, nullptr },
-  { "parent", Layer_get_parent, nullptr },
+  { "parent", Layer_get_parent, Layer_set_parent },
+  { "layers", Layer_get_layers, nullptr },
+  { "stackIndex", Layer_get_stackIndex, Layer_set_stackIndex },
   { "previous", Layer_get_previous, nullptr },
   { "next", Layer_get_next, nullptr },
   { "name", Layer_get_name, Layer_set_name },
