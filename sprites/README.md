@@ -1,4 +1,12 @@
 # Files
 
 * `abcd.aseprite`: Indexed, 32x32, four layers ("a", "b", "c", "d")
-* `1empty3.aseprite`: RGB, 32x32, two layers ("fg", "bg"), 2nd frame completelly empty, two tags ("a", "b")
+* `1empty3.aseprite`: RGB, 32x32, two layers ("fg", "bg"), 2nd frame
+  completelly empty, two tags ("a", "b")
+* `groups2.aseprite`: Indexed, 8x8, two groups ("items", "player"),
+  two layers per group ("items/gun", "items/sword", "player/head",
+  "player/body"), with one layer hidden ("items/gun").
+* `groups3abc.aseprite`: RGB, 9x11, three groups ("a", "b", "c"), with
+  three layers each one (called "a", "b", "c" too). There is a
+  combination of visibilities ("b/b", "c", "c/a", and "c/b" are
+  hidden).
