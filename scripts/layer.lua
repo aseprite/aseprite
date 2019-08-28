@@ -1,11 +1,12 @@
--- Copyright (C) 2018  David Capello
+-- Copyright (C) 2019  Igara Studio S.A.
 --
 -- This file is released under the terms of the MIT license.
 -- Read LICENSE.txt for more information.
 
 do
-  local a = Sprite(32, 64)
-  local l = a.layers[1]
+  local s = Sprite(32, 64)
+  local l = s.layers[1]
+  assert(l.parent == s)
   assert(l.opacity == 255)
   assert(l.blendMode == BlendMode.NORMAL)
 
