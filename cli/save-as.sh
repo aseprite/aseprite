@@ -1,5 +1,5 @@
 #! /bin/bash
-# Copyright (C) 2018 Igara Studio S.A.
+# Copyright (C) 2018-2019 Igara Studio S.A.
 
 function list_files() {
     oldwd=$(pwd)
@@ -173,3 +173,79 @@ if [[ ! -f "issue591 (a).png" ||
     exit 1
 fi
 cd $oldwd
+
+# --save-as group without showing hidden children
+# https://github.com/aseprite/aseprite/issues/2084#issuecomment-525835889
+
+d=$t/save-as-groups-and-hidden
+mkdir $d
+$ASEPRITE -b sprites/groups2.aseprite -layer '*' -save-as "$d/g2-all.png" || exit 1
+$ASEPRITE -b sprites/groups2.aseprite -layer '*' -ignore-layer items -save-as "$d/g2-all-without-items.png" || exit 1
+$ASEPRITE -b sprites/groups2.aseprite -layer '*' -ignore-layer gun -save-as "$d/g2-all-without-gun1.png" || exit 1
+$ASEPRITE -b sprites/groups2.aseprite -layer '*' -ignore-layer sword -save-as "$d/g2-all-without-sword1.png" || exit 1
+$ASEPRITE -b sprites/groups2.aseprite -layer '*' -ignore-layer items/gun -save-as "$d/g2-all-without-gun2.png" || exit 1
+$ASEPRITE -b sprites/groups2.aseprite -layer '*' -ignore-layer items/sword -save-as "$d/g2-all-without-sword2.png" || exit 1
+$ASEPRITE -b sprites/groups2.aseprite -layer '*' -ignore-layer player -save-as "$d/g2-all-without-player.png" || exit 1
+$ASEPRITE -b sprites/groups2.aseprite -layer player -save-as "$d/g2-player.png" || exit 1
+$ASEPRITE -b sprites/groups2.aseprite -layer items -save-as "$d/g2-items.png" || exit 1
+$ASEPRITE -b sprites/groups2.aseprite -layer 'items/*' -save-as "$d/g2-items-all.png" || exit 1
+$ASEPRITE -b sprites/groups2.aseprite -layer sword -save-as "$d/g2-sword.png" || exit 1
+$ASEPRITE -b sprites/groups2.aseprite -layer gun -save-as "$d/g2-gun.png" || exit 1
+
+$ASEPRITE -b sprites/groups3abc.aseprite -layer a -save-as "$d/g3-a.png" || exit 1
+$ASEPRITE -b sprites/groups3abc.aseprite -layer b -save-as "$d/g3-b.png" || exit 1
+$ASEPRITE -b sprites/groups3abc.aseprite -layer c -save-as "$d/g3-c.png" || exit 1
+$ASEPRITE -b sprites/groups3abc.aseprite -layer 'a/*' -save-as "$d/g3-a-all.png" || exit 1
+$ASEPRITE -b sprites/groups3abc.aseprite -layer 'b/*' -save-as "$d/g3-b-all.png" || exit 1
+$ASEPRITE -b sprites/groups3abc.aseprite -layer 'c/*' -save-as "$d/g3-c-all.png" || exit 1
+$ASEPRITE -b sprites/groups3abc.aseprite -layer a/a -save-as "$d/g3-aa.png" || exit 1
+$ASEPRITE -b sprites/groups3abc.aseprite -layer b/a -save-as "$d/g3-ba.png" || exit 1
+$ASEPRITE -b sprites/groups3abc.aseprite -layer c/a -save-as "$d/g3-ca.png" || exit 1
+$ASEPRITE -b sprites/groups3abc.aseprite -layer a/b -save-as "$d/g3-ab.png" || exit 1
+$ASEPRITE -b sprites/groups3abc.aseprite -layer b/b -save-as "$d/g3-bb.png" || exit 1
+$ASEPRITE -b sprites/groups3abc.aseprite -layer c/b -save-as "$d/g3-cb.png" || exit 1
+$ASEPRITE -b sprites/groups3abc.aseprite -layer a/c -save-as "$d/g3-ac.png" || exit 1
+$ASEPRITE -b sprites/groups3abc.aseprite -layer b/c -save-as "$d/g3-bc.png" || exit 1
+$ASEPRITE -b sprites/groups3abc.aseprite -layer c/c -save-as "$d/g3-cc.png" || exit 1
+
+cat >$d/compare.lua <<EOF
+dofile('scripts/test_utils.lua')
+
+local g2 = app.open("sprites/groups2.aseprite")
+local g3 = app.open("sprites/groups3abc.aseprite")
+
+function img(name)
+  local i = Image{ fromFile="$d/" .. name .. ".png" }
+  if not i then error('file ' .. name .. '.png does not exist') end
+  return i
+end
+
+expect_rendered_layers(img("g2-all"), g2, { "items/gun", "items/sword", "player/head", "player/body" })
+expect_rendered_layers(img("g2-all-without-items"), g2, { "player/head", "player/body" })
+expect_rendered_layers(img("g2-all-without-gun1"), g2, { "items/sword", "player/head", "player/body" })
+expect_rendered_layers(img("g2-all-without-gun2"), g2, { "items/sword", "player/head", "player/body" })
+expect_rendered_layers(img("g2-all-without-sword1"), g2, { "items/gun", "player/head", "player/body" })
+expect_rendered_layers(img("g2-all-without-sword2"), g2, { "items/gun", "player/head", "player/body" })
+expect_rendered_layers(img("g2-player"), g2, { "player/head", "player/body" })
+expect_rendered_layers(img("g2-items"), g2, { "items/sword" })
+expect_rendered_layers(img("g2-items-all"), g2, { "items/gun", "items/sword" })
+expect_rendered_layers(img("g2-sword"), g2, { "items/sword" })
+expect_rendered_layers(img("g2-gun"), g2, { "items/gun" })
+
+expect_rendered_layers(img("g3-a"), g3, { "a/a", "a/b", "a/c" })
+expect_rendered_layers(img("g3-b"), g3, { "b/a", "b/c" })
+expect_rendered_layers(img("g3-c"), g3, { "c/c" })
+expect_rendered_layers(img("g3-a-all"), g3, { "a/a", "a/b", "a/c" })
+expect_rendered_layers(img("g3-b-all"), g3, { "b/a", "b/b", "b/c" })
+expect_rendered_layers(img("g3-c-all"), g3, { "c/a", "c/b", "c/c" })
+expect_rendered_layers(img("g3-aa"), g3, { "a/a" })
+expect_rendered_layers(img("g3-ab"), g3, { "a/b" })
+expect_rendered_layers(img("g3-ac"), g3, { "a/c" })
+expect_rendered_layers(img("g3-ba"), g3, { "b/a" })
+expect_rendered_layers(img("g3-bb"), g3, { "b/b" })
+expect_rendered_layers(img("g3-bc"), g3, { "b/c" })
+expect_rendered_layers(img("g3-ca"), g3, { "c/a" })
+expect_rendered_layers(img("g3-cb"), g3, { "c/b" })
+expect_rendered_layers(img("g3-cc"), g3, { "c/c" })
+EOF
+$ASEPRITE -b -script "$d/compare.lua" || exit 1

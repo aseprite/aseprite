@@ -80,3 +80,38 @@ function array_to_pixels(array, image)
     end
   end
 end
+
+-- Returns true if the given array (layers) of layers
+function expect_rendered_layers(expectedImage, sprite, layerNames, frame)
+  function contains_layer(name)
+    for _,n in ipairs(layerNames) do
+      if name == n then return true end
+    end
+    return false
+  end
+
+  if frame == nil then frame = 1 end
+  local render = Image(sprite.spec)
+  function render_layers(prefix, layers)
+    for _,layer in ipairs(layers) do
+      if layer.isGroup then
+	render_layers(layer.name.."/", layer.layers)
+      end
+      if contains_layer(prefix..layer.name) then
+	local cel = layer:cel(frame)
+	if cel then
+	  render:drawImage(cel.image, cel.position)
+	end
+      end
+    end
+  end
+
+  render_layers("", sprite.layers)
+  if not expectedImage:isEqual(render) then
+    print("Rendering:")
+    for _,n in ipairs(layerNames) do
+      print("  - " .. n)
+    end
+    error("render doesn't match to the expected image")
+  end
+end
