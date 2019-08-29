@@ -17,6 +17,7 @@
 #include "app/doc_exporter.h"
 #include "app/file/file.h"
 #include "base/fs.h"
+#include "doc/layer.h"
 #include "doc/sprite.h"
 
 #include <iostream>
@@ -111,6 +112,8 @@ void PreviewCliDelegate::saveFile(Context* ctx, const CliOpenFile& cof)
             << cof.document->sprite()->height() << "\n";
 
   showLayersFilter(cof);
+  std::cout << "  - Visible Layer:\n";
+  showLayerVisibility(cof.document->sprite()->root(), "    ");
 
   if (cof.hasFrameTag()) {
     std::cout << "  - Frame tag: '" << cof.frameTag << "'\n";
@@ -238,6 +241,19 @@ void PreviewCliDelegate::showLayersFilter(const CliOpenFile& cof)
     for (const auto& filter : cof.excludeLayers)
       std::cout << ' ' << filter;
     std::cout << "\n";
+  }
+}
+
+void PreviewCliDelegate::showLayerVisibility(const doc::LayerGroup* group,
+                                             const std::string& indent)
+{
+  for (auto layer : group->layers()) {
+    if (!layer->isVisible())
+      continue;
+    std::cout << indent << "- " << layer->name() << "\n";
+    if (layer->isGroup())
+      showLayerVisibility(static_cast<const LayerGroup*>(layer),
+                          indent + "  ");
   }
 }
 

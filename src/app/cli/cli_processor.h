@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -10,10 +11,15 @@
 
 #include "app/cli/cli_delegate.h"
 #include "app/cli/cli_open_file.h"
+#include "doc/selected_layers.h"
 
 #include <memory>
 #include <string>
 #include <vector>
+
+namespace doc {
+  class Sprite;
+}
 
 namespace app {
 
@@ -27,9 +33,26 @@ namespace app {
                  const AppOptions& options);
     void process(Context* ctx);
 
+    // Public so it can be tested
+    static void FilterLayers(const doc::Sprite* sprite,
+                             // By value because these vectors will be modified inside
+                             std::vector<std::string> includes,
+                             std::vector<std::string> excludes,
+                             doc::SelectedLayers& filteredLayers);
+
   private:
     bool openFile(Context* ctx, CliOpenFile& cof);
     void saveFile(Context* ctx, const CliOpenFile& cof);
+
+    void filterLayers(const doc::Sprite* sprite,
+                      const CliOpenFile& cof,
+                      doc::SelectedLayers& filteredLayers) {
+      CliProcessor::FilterLayers(
+        sprite,
+        cof.includeLayers,
+        cof.excludeLayers,
+        filteredLayers);
+    }
 
     CliDelegate* m_delegate;
     const AppOptions& m_options;

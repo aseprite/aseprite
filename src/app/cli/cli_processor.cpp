@@ -34,6 +34,9 @@
 #include "doc/slice.h"
 #include "render/dithering_algorithm.h"
 
+#include <queue>
+#include <vector>
+
 namespace app {
 
 namespace {
@@ -65,6 +68,8 @@ bool match_path(const std::string& filter,
       return false;
   }
 
+  const bool wildcard = (!a.empty() && a[a.size()-1] == "*");
+
   // Exclude group itself when all children are excluded. This special
   // case is only for exclusion because if we leave the group
   // selected, the propagation of the selection will include all
@@ -72,45 +77,96 @@ bool match_path(const std::string& filter,
   if (exclude &&
       a.size() > 1 &&
       a.size() == b.size()+1 &&
-      a[a.size()-1] == "*")
+      wildcard) {
     return true;
+  }
 
-  return (a.size() <= b.size());
+  if (exclude || wildcard)
+    return (a.size() <= b.size());
+  else {
+    // Include filters need exact match when there is no wildcard
+    return (a.size() == b.size());
+  }
 }
 
-bool filter_layer(const Layer* layer,
-                  const std::string& layer_path,
+bool filter_layer(const std::string& layer_path,
                   const std::vector<std::string>& filters,
                   const bool result)
 {
   for (const auto& filter : filters) {
-    if (layer->name() == filter ||
-        match_path(filter, layer_path, !result))
+    if (match_path(filter, layer_path, !result))
       return result;
   }
   return !result;
 }
 
-void filter_layers(const LayerList& layers,
-                   const CliOpenFile& cof,
-                   SelectedLayers& filteredLayers)
+// If there is one layer with the given name "filter", we can convert
+// the filter to a full path to the layer (e.g. to match child layers
+// of a group).
+std::string convert_filter_to_layer_path_if_possible(
+  const Sprite* sprite,
+  const std::string& filter)
 {
-  for (Layer* layer : layers) {
+  std::string fullName;
+  std::queue<Layer*> layers;
+  layers.push(sprite->root());
+
+  while (!layers.empty()) {
+    const Layer* layer = layers.front();
+    layers.pop();
+
+    if (layer != sprite->root() &&
+        layer->name() == filter) {
+      if (fullName.empty()) {
+        fullName = get_layer_path(layer);
+      }
+      else {
+        // Two or more layers with the same name (use "filter" as a
+        // general filter, not a specific layer name)
+        return filter;
+      }
+    }
+    if (layer->isGroup()) {
+      for (auto child : static_cast<const LayerGroup*>(layer)->layers())
+        layers.push(child);
+    }
+  }
+
+  if (!fullName.empty())
+    return fullName;
+  else
+    return filter;
+}
+
+} // anonymous namespace
+
+// static
+void CliProcessor::FilterLayers(const Sprite* sprite,
+                                std::vector<std::string> includes,
+                                std::vector<std::string> excludes,
+                                SelectedLayers& filteredLayers)
+{
+  // Convert filters to full paths for the sprite layers if there are
+  // just one layer with the given name.
+  for (auto& include : includes)
+    include = convert_filter_to_layer_path_if_possible(sprite, include);
+  for (auto& exclude : excludes)
+    exclude = convert_filter_to_layer_path_if_possible(sprite, exclude);
+
+  for (Layer* layer : sprite->allLayers()) {
     auto layer_path = get_layer_path(layer);
 
-    if ((cof.includeLayers.empty() && !layer->isVisibleHierarchy()) ||
-        (!cof.includeLayers.empty() && !filter_layer(layer, layer_path, cof.includeLayers, true)))
+    if ((includes.empty() && !layer->isVisibleHierarchy()) ||
+        (!includes.empty() && !filter_layer(layer_path, includes, true)))
       continue;
 
-    if (!cof.excludeLayers.empty() &&
-        !filter_layer(layer, layer_path, cof.excludeLayers, false))
+    if (!excludes.empty() &&
+        !filter_layer(layer_path, excludes, false))
       continue;
 
     filteredLayers.insert(layer);
   }
 }
-
-} // anonymous namespace
 
 CliProcessor::CliProcessor(CliDelegate* delegate,
                            const AppOptions& options)
@@ -568,7 +624,7 @@ bool CliProcessor::openFile(Context* ctx, CliOpenFile& cof)
 
       if (cof.hasLayersFilter()) {
         SelectedLayers filteredLayers;
-        filter_layers(doc->sprite()->allLayers(), cof, filteredLayers);
+        filterLayers(doc->sprite(), cof, filteredLayers);
 
         if (cof.splitLayers) {
           for (Layer* layer : filteredLayers.toAllLayersList()) {
@@ -638,7 +694,6 @@ void CliProcessor::saveFile(Context* ctx, const CliOpenFile& cof)
   }
 
   SelectedLayers filteredLayers;
-  LayerList allLayers = doc->sprite()->allLayers();
   LayerList layers;
   // --save-as with --split-layers or --split-tags
   if (cof.splitLayers) {
@@ -648,7 +703,7 @@ void CliProcessor::saveFile(Context* ctx, const CliOpenFile& cof)
   else {
     // Filter layers
     if (cof.hasLayersFilter())
-      filter_layers(allLayers, cof, filteredLayers);
+      filterLayers(doc->sprite(), cof, filteredLayers);
 
     // All visible layers
     layers.push_back(nullptr);

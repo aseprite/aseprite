@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -10,6 +10,12 @@
 #pragma once
 
 #include "app/cli/cli_delegate.h"
+
+#include <string>
+
+namespace doc {
+  class LayerGroup;
+}
 
 namespace app {
 
@@ -34,6 +40,8 @@ namespace app {
 
   private:
     void showLayersFilter(const CliOpenFile& cof);
+    void showLayerVisibility(const doc::LayerGroup* group,
+                             const std::string& indent);
   };
 
 } // namespace app
