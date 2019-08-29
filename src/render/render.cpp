@@ -432,6 +432,8 @@ void composite_image_general(
     int(std::ceil(area.dstBounds().h)));
   gfx::RectF srcBounds = area.srcBounds();
 
+  dstBounds &= dst->bounds();
+
   int dstY = dstBounds.y;
   double srcXStart = srcBounds.x / sx;
   double srcXDelta = 1.0 / sx;
@@ -446,6 +448,7 @@ void composite_image_general(
       break;
 
     ASSERT(srcY >= 0 && srcY < src->height());
+    ASSERT(dstY >= 0 && dstY < dst->height());
 
     auto dstPtr = get_pixel_address_fast<DstTraits>(dst, dstBounds.x, dstY);
     auto srcPtr = get_pixel_address_fast<SrcTraits>(src, int(srcX), srcY);
