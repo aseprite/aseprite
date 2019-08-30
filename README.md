@@ -43,7 +43,6 @@ You can ask for help in:
   [Twitter](https://twitter.com/aseprite/),
   [Facebook](https://facebook.com/aseprite/),
   [YouTube](https://www.youtube.com/user/aseprite),
-  [Google+](https://plus.google.com/+AsepriteOrg/posts),
   [IRC](http://webchat.freenode.net/?channels=aseprite),
   [DeviantArt](https://aseprite.deviantart.com/).
 
