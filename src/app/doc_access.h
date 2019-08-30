@@ -184,6 +184,12 @@ namespace app {
     void destroyDocument() {
       ASSERT(m_doc != nullptr);
 
+      // Don't create a backup for destroyed documents (e.g. documents
+      // are destroyed when they are used internally by Aseprite or by
+      // a script and then closed with Sprite:close())
+      if (m_doc->needsBackup())
+        m_doc->setInhibitBackup(true);
+
       m_doc->close();
       Doc* doc = m_doc;
       unlock();
