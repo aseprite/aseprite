@@ -523,21 +523,24 @@ void CliProcessor::process(Context* ctx)
 #endif
         // --list-layers
         else if (opt == &m_options.listLayers()) {
-          cof.listLayers = true;
           if (m_exporter)
             m_exporter->setListLayers(true);
+          else
+            cof.listLayers = true;
         }
         // --list-tags
         else if (opt == &m_options.listTags()) {
-          cof.listTags = true;
           if (m_exporter)
             m_exporter->setListFrameTags(true);
+          else
+            cof.listTags = true;
         }
         // --list-slices
         else if (opt == &m_options.listSlices()) {
-          cof.listSlices = true;
           if (m_exporter)
             m_exporter->setListSlices(true);
+          else
+            cof.listSlices = true;
         }
         // --oneframe
         else if (opt == &m_options.oneFrame()) {
