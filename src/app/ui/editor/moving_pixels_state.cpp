@@ -129,21 +129,25 @@ void MovingPixelsState::translate(const gfx::Point& delta)
   m_pixelsMovement->catchImageAgain(gfx::Point(0, 0), MovePixelsHandle);
   m_pixelsMovement->moveImage(delta, PixelsMovement::NormalMovement);
   m_pixelsMovement->dropImageTemporarily();
+  m_editor->updateStatusBar();
 }
 
 void MovingPixelsState::rotate(double angle)
 {
   m_pixelsMovement->rotate(angle);
+  m_editor->updateStatusBar();
 }
 
 void MovingPixelsState::flip(doc::algorithm::FlipType flipType)
 {
   m_pixelsMovement->flipImage(flipType);
+  m_editor->updateStatusBar();
 }
 
 void MovingPixelsState::shift(int dx, int dy)
 {
   m_pixelsMovement->shift(dx, dy);
+  m_editor->updateStatusBar();
 }
 
 void MovingPixelsState::onEnterState(Editor* editor)
@@ -576,7 +580,7 @@ void MovingPixelsState::onBeforeCommandExecution(CommandExecutionEvent& ev)
   // avoid dropping the floating region of pixels.
   else if (command->id() == CommandId::Flip()) {
     if (FlipCommand* flipCommand = dynamic_cast<FlipCommand*>(command)) {
-      m_pixelsMovement->flipImage(flipCommand->getFlipType());
+      this->flip(flipCommand->getFlipType());
 
       ev.cancel();
       return;
@@ -586,7 +590,7 @@ void MovingPixelsState::onBeforeCommandExecution(CommandExecutionEvent& ev)
   else if (command->id() == CommandId::Rotate()) {
     if (RotateCommand* rotate = dynamic_cast<RotateCommand*>(command)) {
       if (rotate->flipMask()) {
-        m_pixelsMovement->rotate(rotate->angle());
+        this->rotate(rotate->angle());
 
         ev.cancel();
         return;
