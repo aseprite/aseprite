@@ -164,7 +164,9 @@ void PixelsMovement::flipImage(doc::algorithm::FlipType flipType)
 void PixelsMovement::rotate(double angle)
 {
   ContextWriter writer(m_reader, 1000);
-  m_currentData.angle(m_currentData.angle() + PI * -angle / 180.0);
+  m_currentData.angle(
+    base::fmod_radians(
+      m_currentData.angle() + PI * -angle / 180.0));
 
   m_document->setTransformation(m_currentData);
 
@@ -399,9 +401,7 @@ void PixelsMovement::moveImage(const gfx::Point& pos, MoveModifier moveModifier)
           - atan2((double)(-m_catchPos.y + abs_initial_pivot.y),
                   (double)(+m_catchPos.x - abs_initial_pivot.x));
 
-        // Put the angle in -180 to 180 range.
-        while (newAngle < -PI) newAngle += 2*PI;
-        while (newAngle > PI) newAngle -= 2*PI;
+        newAngle = base::fmod_radians(newAngle);
 
         // Is the "angle snap" is activated, we've to snap the angle
         // to common (pixel art) angles.
