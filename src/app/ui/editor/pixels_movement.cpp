@@ -736,11 +736,13 @@ void PixelsMovement::drawParallelogram(
 {
   tools::RotationAlgorithm rotAlgo = Preferences::instance().selection.rotationAlgorithm();
 
-  // If the angle and the scale weren't modified, we should use the
-  // fast rotation algorithm, as it's pixel-perfect match with the
-  // original selection when just a translation is applied.
-  if (m_currentData.angle() == 0.0 &&
-      gfx::Rect(m_currentData.bounds()).size() == src->size()) {
+  // When the scale isn't modified and we have no rotation or a
+  // right/straight-angle, we should use the fast rotation algorithm,
+  // as it's pixel-perfect match with the original selection when just
+  // a translation is applied.
+  double angle = 180.0*m_currentData.angle()/PI;
+  if (std::fabs(std::fmod(std::fabs(angle), 90.0)) < 0.01 ||
+      std::fabs(std::fmod(std::fabs(angle), 90.0)-90.0) < 0.01) {
     rotAlgo = tools::RotationAlgorithm::FAST;
   }
 
