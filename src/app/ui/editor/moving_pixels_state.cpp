@@ -597,6 +597,22 @@ void MovingPixelsState::onBeforeCommandExecution(CommandExecutionEvent& ev)
       }
     }
   }
+  // We can use previous/next frames while transforming the selection
+  // to switch between frames
+  else if (command->id() == CommandId::GotoPreviousFrame() ||
+           command->id() == CommandId::GotoPreviousFrameWithSameTag()) {
+    if (m_pixelsMovement->gotoFrame(-1)) {
+      ev.cancel();
+      return;
+    }
+  }
+  else if (command->id() == CommandId::GotoNextFrame() ||
+           command->id() == CommandId::GotoNextFrameWithSameTag()) {
+    if (m_pixelsMovement->gotoFrame(+1)) {
+      ev.cancel();
+      return;
+    }
+  }
 
   if (m_pixelsMovement)
     dropPixels();
@@ -614,8 +630,10 @@ void MovingPixelsState::onBeforeFrameChanged(Editor* editor)
   if (!isActiveDocument())
     return;
 
-  if (m_pixelsMovement)
+  if (m_pixelsMovement &&
+      !m_pixelsMovement->canHandleFrameChange()) {
     dropPixels();
+  }
 }
 
 void MovingPixelsState::onBeforeLayerChanged(Editor* editor)

@@ -130,6 +130,8 @@ namespace app {
     void lockRange();
     void unlockRange();
 
+    void clearAndInvalidateRange();
+
   protected:
     bool onProcessMessage(ui::Message* msg) override;
     void onInitTheme(ui::InitThemeEvent& ev) override;
@@ -145,7 +147,6 @@ namespace app {
     void onAfterRemoveLayer(DocEvent& ev) override;
     void onAddFrame(DocEvent& ev) override;
     void onRemoveFrame(DocEvent& ev) override;
-    void onSelectionBoundariesChanged(DocEvent& ev) override;
     void onLayerNameChange(DocEvent& ev) override;
     void onAddFrameTag(DocEvent& ev) override;
     void onRemoveFrameTag(DocEvent& ev) override;
@@ -312,7 +313,6 @@ namespace app {
                                  const Cel* cel);
     void updateDropRange(const gfx::Point& pt);
     void clearClipboardRange();
-    void clearAndInvalidateRange();
 
     // The layer of the bottom (e.g. Background layer)
     layer_t firstLayer() const { return 0; }

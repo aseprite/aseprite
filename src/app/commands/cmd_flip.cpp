@@ -76,6 +76,19 @@ void FlipCommand::onExecute(Context* context)
 
   CelList cels;
   if (m_flipMask) {
+    // If we want to flip the visible mask we can go to
+    // MovingPixelsState (even when the range is enabled, because now
+    // PixelsMovement support ranges).
+    if (site.document()->isMaskVisible()) {
+      // Select marquee tool
+      if (tools::Tool* tool = App::instance()->toolBox()
+          ->getToolById(tools::WellKnownTools::RectangularMarquee)) {
+        ToolBar::instance()->selectTool(tool);
+        current_editor->startFlipTransformation(m_flipType);
+        return;
+      }
+    }
+
     auto range = timeline->range();
     if (range.enabled()) {
       cels = get_unlocked_unique_cels(site.sprite(), range);
@@ -83,17 +96,6 @@ void FlipCommand::onExecute(Context* context)
     else if (site.cel() &&
               site.layer() &&
               site.layer()->isEditable()) {
-      // If we want to flip the visible mask for the current cel,
-      // we can go to MovingPixelsState.
-      if (site.document()->isMaskVisible()) {
-        // Select marquee tool
-        if (tools::Tool* tool = App::instance()->toolBox()
-            ->getToolById(tools::WellKnownTools::RectangularMarquee)) {
-          ToolBar::instance()->selectTool(tool);
-          current_editor->startFlipTransformation(m_flipType);
-          return;
-        }
-      }
       cels.push_back(site.cel());
     }
 

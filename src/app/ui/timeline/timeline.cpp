@@ -1793,12 +1793,6 @@ void Timeline::onRemoveFrame(DocEvent& ev)
   invalidate();
 }
 
-void Timeline::onSelectionBoundariesChanged(DocEvent& ev)
-{
-  if (m_rangeLocks == 0)
-    clearAndInvalidateRange();
-}
-
 void Timeline::onLayerNameChange(DocEvent& ev)
 {
   invalidate();
@@ -1830,7 +1824,7 @@ void Timeline::onAfterFrameChanged(Editor* editor)
 
   setFrame(editor->frame(), false);
 
-  if (!hasCapture())
+  if (!hasCapture() && !editor->keepTimelineRange())
     clearAndInvalidateRange();
 
   showCurrentCel();
@@ -4027,7 +4021,12 @@ bool Timeline::onPaste(Context* ctx)
 
 bool Timeline::onClear(Context* ctx)
 {
-  if (!m_document || !m_sprite || !m_range.enabled())
+  if (!m_document ||
+      !m_sprite ||
+      !m_range.enabled() ||
+      // If the mask is visible the delete command will be handled by
+      // the Editor
+      m_document->isMaskVisible())
     return false;
 
   Command* cmd = nullptr;

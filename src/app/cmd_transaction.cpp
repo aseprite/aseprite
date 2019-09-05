@@ -31,6 +31,21 @@ CmdTransaction::CmdTransaction(const std::string& label,
 {
 }
 
+CmdTransaction* CmdTransaction::moveToEmptyCopy()
+{
+  CmdTransaction* copy = new CmdTransaction(m_label,
+                                            m_changeSavedState,
+                                            m_savedCounter);
+  copy->m_spritePositionBefore = m_spritePositionBefore;
+  copy->m_spritePositionAfter = m_spritePositionAfter;
+  if (m_ranges) {
+    copy->m_ranges.reset(new Ranges);
+    copy->m_ranges->m_before = std::move(m_ranges->m_before);
+    copy->m_ranges->m_after = std::move(m_ranges->m_after);
+  }
+  return copy;
+}
+
 void CmdTransaction::setNewDocRange(const DocRange& range)
 {
 #ifdef ENABLE_UI

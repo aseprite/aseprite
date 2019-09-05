@@ -25,6 +25,11 @@ namespace app {
     CmdTransaction(const std::string& label,
       bool changeSavedState, int* savedCounter);
 
+    // Moves the CmdTransaction internals to a new copy in case that
+    // we want to rollback this CmdTransaction and start again with
+    // the new CmdTransaction.
+    CmdTransaction* moveToEmptyCopy();
+
     void setNewDocRange(const DocRange& range);
     void updateSpritePositionAfter();
 

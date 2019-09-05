@@ -33,6 +33,10 @@ namespace app {
     MovingPixelsState(Editor* editor, ui::MouseMessage* msg, PixelsMovementPtr pixelsMovement, HandleType handle);
     virtual ~MovingPixelsState();
 
+    bool canHandleFrameChange() const {
+      return m_pixelsMovement->canHandleFrameChange();
+    }
+
     void translate(const gfx::Point& delta);
     void rotate(double angle);
     void flip(doc::algorithm::FlipType flipType);

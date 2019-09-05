@@ -67,6 +67,10 @@ namespace app {
     // updates the Undo History window UI.
     void commit();
 
+    // Discard everything that was added so far. We can start
+    // executing new Cmds again.
+    void rollbackAndStartAgain();
+
     void execute(Cmd* cmd);
 
   private:
@@ -74,7 +78,7 @@ namespace app {
     enum class Changes { kNone = 0,
                          kSelection = 1 };
 
-    void rollback();
+    void rollback(CmdTransaction* newCmds);
 
     // DocObserver impl
     void onSelectionChanged(DocEvent& ev) override;

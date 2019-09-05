@@ -48,6 +48,7 @@
 #include "app/ui/main_window.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
+#include "app/ui/timeline/timeline.h"
 #include "app/ui/toolbar.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
@@ -383,6 +384,13 @@ void Editor::getSite(Site* site) const
   if (!m_selectedSlices.empty() &&
       getCurrentEditorInk()->isSlice()) {
     site->selectedSlices(m_selectedSlices);
+  }
+
+  // TODO we should not access timeline directly here
+  Timeline* timeline = App::instance()->timeline();
+  if (timeline &&
+      timeline->range().enabled()) {
+    site->range(timeline->range());
   }
 }
 
@@ -2180,6 +2188,15 @@ bool Editor::canStartMovingSelectionPixels()
      // We can move the selection when the Copy selection key (Ctrl) is pressed.
      (m_customizationDelegate &&
       int(m_customizationDelegate->getPressedKeyAction(KeyContext::TranslatingSelection) & KeyAction::CopySelection)));
+}
+
+bool Editor::keepTimelineRange()
+{
+  if (MovingPixelsState* movingPixels = dynamic_cast<MovingPixelsState*>(m_state.get())) {
+    if (movingPixels->canHandleFrameChange())
+      return true;
+  }
+  return false;
 }
 
 EditorHit Editor::calcHit(const gfx::Point& mouseScreenPos)

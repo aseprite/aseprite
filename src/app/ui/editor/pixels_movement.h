@@ -12,9 +12,12 @@
 #include "app/context_access.h"
 #include "app/extra_cel.h"
 #include "app/site.h"
+#include "app/transformation.h"
 #include "app/tx.h"
 #include "app/ui/editor/handle_type.h"
 #include "doc/algorithm/flip_type.h"
+#include "doc/frame.h"
+#include "doc/image_ref.h"
 #include "gfx/size.h"
 #include "obs/connection.h"
 
@@ -64,9 +67,9 @@ namespace app {
                    const Image* moveThis,
                    const Mask* mask,
                    const char* operationName);
-    ~PixelsMovement();
 
     HandleType handle() const { return m_handle; }
+    bool canHandleFrameChange() const { return m_canHandleFrameChange; }
 
     void trim();
     void cutMask();
@@ -109,42 +112,89 @@ namespace app {
 
     void shift(int dx, int dy);
 
+    // Navigate frames
+    bool gotoFrame(const doc::frame_t deltaFrame);
+
     const Transformation& getTransformation() const { return m_currentData; }
 
   private:
+    void stampImage(bool finalStamp);
+    void stampExtraCelImage();
     void onPivotChange();
     void onRotationAlgorithmChange();
-    void redrawExtraImage();
+    void redrawExtraImage(Transformation* transformation = nullptr);
     void redrawCurrentMask();
-    void drawImage(doc::Image* dst, const gfx::Point& pos, bool renderOriginalLayer);
+    void drawImage(
+      const Transformation& transformation,
+      doc::Image* dst, const gfx::Point& pos,
+      const bool renderOriginalLayer);
     void drawMask(doc::Mask* dst, bool shrink);
-    void drawParallelogram(doc::Image* dst, const doc::Image* src, const doc::Mask* mask,
+    void drawParallelogram(
+      const Transformation& transformation,
+      doc::Image* dst, const doc::Image* src, const doc::Mask* mask,
       const Transformation::Corners& corners,
       const gfx::Point& leftTop);
     void updateDocumentMask();
 
+    void flipOriginalImage(const doc::algorithm::FlipType flipType);
+    void shiftOriginalImage(const int dx, const int dy,
+                            const double angle);
+    CelList getEditableCels();
+    void reproduceAllTransformationsWithInnerCmds();
+#if _DEBUG
+    void dumpInnerCmds();
+#endif
+
     const ContextReader m_reader;
     Site m_site;
     Doc* m_document;
-    Sprite* m_sprite;
-    Layer* m_layer;
     Tx m_tx;
-    cmd::SetMask* m_setMaskCmd;
     bool m_isDragging;
     bool m_adjustPivot;
     HandleType m_handle;
-    Image* m_originalImage;
+    doc::ImageRef m_originalImage;
     gfx::Point m_catchPos;
     Transformation m_initialData;
     Transformation m_currentData;
-    Mask* m_initialMask;
-    Mask* m_currentMask;
+    std::unique_ptr<Mask> m_initialMask, m_initialMask0;
+    std::unique_ptr<Mask> m_currentMask;
     bool m_opaque;
     color_t m_maskColor;
     obs::scoped_connection m_pivotVisConn;
     obs::scoped_connection m_pivotPosConn;
     obs::scoped_connection m_rotAlgoConn;
     ExtraCelRef m_extraCel;
+    bool m_canHandleFrameChange;
+
+    // Commands used in the interaction with the transformed pixels.
+    // This is used to re-create the whole interaction on each
+    // modified cel when we are modifying multiples cels at the same
+    // time, or also to re-create it when we switch to another frame.
+    struct InnerCmd {
+      enum Type { None, Clear, Flip, Shift, Stamp } type;
+      union {
+        struct {
+          doc::algorithm::FlipType type;
+        } flip;
+        struct {
+          int dx, dy;
+          double angle;
+        } shift;
+        struct {
+          Transformation* transformation;
+        } stamp;
+      } data;
+      InnerCmd() : type(None) { }
+      InnerCmd(InnerCmd&&);
+      ~InnerCmd();
+      InnerCmd(const InnerCmd&) = delete;
+      InnerCmd& operator=(const InnerCmd&) = delete;
+      static InnerCmd MakeClear();
+      static InnerCmd MakeFlip(const doc::algorithm::FlipType flipType);
+      static InnerCmd MakeShift(const int dx, const int dy, const double angle);
+      static InnerCmd MakeStamp(const Transformation& t);
+    };
+    std::vector<InnerCmd> m_innerCmds;
   };
 
   inline PixelsMovement::MoveModifier& operator|=(PixelsMovement::MoveModifier& a,

@@ -19,8 +19,8 @@
 #include "app/commands/commands.h"
 #include "app/console.h"
 #include "app/context_access.h"
-#include "app/doc_event.h"
 #include "app/doc_access.h"
+#include "app/doc_event.h"
 #include "app/i18n/strings.h"
 #include "app/modules/editors.h"
 #include "app/modules/palettes.h"
@@ -36,6 +36,7 @@
 #include "app/ui/workspace.h"
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
+#include "app/util/range_utils.h"
 #include "base/fs.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
@@ -572,24 +573,29 @@ bool DocView::onClear(Context* ctx)
 
   // In other case we delete the mask or the cel.
   ContextWriter writer(ctx);
-  Doc* document = writer.document();
+  Doc* document = site.document();
   bool visibleMask = document->isMaskVisible();
 
-  if (!writer.cel())
+  CelList cels;
+  if (site.range().enabled()) {
+    cels = get_unlocked_unique_cels(site.sprite(), site.range());
+  }
+  else if (site.cel()) {
+    cels.push_back(site.cel());
+  }
+
+  if (cels.empty())            // No cels to modify
     return false;
 
   {
     Tx tx(writer.context(), "Clear");
-    tx(new cmd::ClearMask(writer.cel()));
+    const bool deselectMask =
+      (visibleMask &&
+       !Preferences::instance().selection.keepSelectionAfterClear());
 
-    // If the cel wasn't deleted by cmd::ClearMask, we trim it.
-    if (writer.cel() &&
-        writer.cel()->layer()->isTransparent())
-      tx(new cmd::TrimCel(writer.cel()));
-
-    if (visibleMask &&
-        !Preferences::instance().selection.keepSelectionAfterClear())
-      tx(new cmd::DeselectMask(document));
+    clipboard::clear_mask_from_cels(
+      tx, document, cels,
+      deselectMask);
 
     tx.commit();
   }

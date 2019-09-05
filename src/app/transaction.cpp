@@ -58,7 +58,7 @@ Transaction::~Transaction()
   try {
     // If it isn't committed, we have to rollback all changes.
     if (m_cmds)
-      rollback();
+      rollback(nullptr);
   }
   catch (...) {
     // Just avoid throwing an exception in the dtor (just in case
@@ -96,7 +96,14 @@ void Transaction::commit()
     m_doc->generateMaskBoundaries();
 }
 
-void Transaction::rollback()
+void Transaction::rollbackAndStartAgain()
+{
+  auto newCmds = m_cmds->moveToEmptyCopy();
+  rollback(newCmds);
+  newCmds->execute(m_ctx);
+}
+
+void Transaction::rollback(CmdTransaction* newCmds)
 {
   ASSERT(m_cmds);
   TX_TRACE("TX: Rollback <%s>\n", m_cmds->label().c_str());
@@ -104,7 +111,7 @@ void Transaction::rollback()
   m_cmds->undo();
 
   delete m_cmds;
-  m_cmds = nullptr;
+  m_cmds = newCmds;
 }
 
 void Transaction::execute(Cmd* cmd)

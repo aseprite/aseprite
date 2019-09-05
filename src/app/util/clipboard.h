@@ -9,6 +9,7 @@
 #define APP_UTIL_CLIPBOARD_H_INCLUDED
 #pragma once
 
+#include "doc/cel_list.h"
 #include "gfx/point.h"
 #include "gfx/size.h"
 #include "ui/base.h"
@@ -22,11 +23,12 @@ namespace doc {
 }
 
 namespace app {
-  class Doc;
   class Context;
   class ContextReader;
   class ContextWriter;
+  class Doc;
   class DocRange;
+  class Tx;
 
   namespace clipboard {
     using namespace doc;
@@ -55,6 +57,11 @@ namespace app {
 
     ClipboardFormat get_current_format();
     void get_document_range_info(Doc** document, DocRange* range);
+
+    void clear_mask_from_cels(Tx& tx,
+                              Doc* doc,
+                              const doc::CelList& cels,
+                              const bool deselectMask);
 
     void clear_content();
     void cut(ContextWriter& context);

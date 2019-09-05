@@ -218,6 +218,13 @@ namespace app {
     // way to move the selection.
     bool canStartMovingSelectionPixels();
 
+    // Returns true if the range selected in the timeline should be
+    // kept. E.g. When we are moving/transforming pixels on multiple
+    // cels, the MovingPixelsState can handle previous/next frame
+    // commands, so it's nice to keep the timeline range intact while
+    // we are in the MovingPixelsState.
+    bool keepTimelineRange();
+
     // Returns the element that will be modified if the mouse is used
     // in the given position.
     EditorHit calcHit(const gfx::Point& mouseScreenPos);

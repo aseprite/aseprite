@@ -203,24 +203,25 @@ void RotateCommand::onExecute(Context* context)
 
     // Flip the mask or current cel
     if (m_flipMask) {
+      // If we want to rotate the visible mask, we can go to
+      // MovingPixelsState (even when the range is enabled, because
+      // now PixelsMovement support ranges).
+      if (site.document()->isMaskVisible()) {
+        // Select marquee tool
+        if (tools::Tool* tool = App::instance()->toolBox()
+            ->getToolById(tools::WellKnownTools::RectangularMarquee)) {
+          ToolBar::instance()->selectTool(tool);
+          current_editor->startSelectionTransformation(gfx::Point(0, 0), m_angle);
+          return;
+        }
+      }
+
       auto range = App::instance()->timeline()->range();
       if (range.enabled())
         cels = get_unlocked_unique_cels(site.sprite(), range);
       else if (site.cel() &&
                site.layer() &&
                site.layer()->isEditable()) {
-        // If we want to rotate the visible mask for the current cel,
-        // we can go to MovingPixelsState.
-        if (site.document()->isMaskVisible()) {
-          // Select marquee tool
-          if (tools::Tool* tool = App::instance()->toolBox()
-              ->getToolById(tools::WellKnownTools::RectangularMarquee)) {
-            ToolBar::instance()->selectTool(tool);
-            current_editor->startSelectionTransformation(gfx::Point(0, 0), m_angle);
-            return;
-          }
-        }
-
         cels.push_back(site.cel());
       }
 
