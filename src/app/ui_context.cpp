@@ -168,7 +168,7 @@ void UIContext::onSetActiveFrame(const doc::frame_t frame)
 
 void UIContext::onSetSelectedColors(const doc::PalettePicks& picks)
 {
-  if (DocView* docView = activeView()) {
+  if (activeView()) {
     if (ColorBar* colorBar = ColorBar::instance())
       colorBar->getPaletteView()->setSelectedEntries(picks);
   }
