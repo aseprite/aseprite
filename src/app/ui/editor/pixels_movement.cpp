@@ -124,7 +124,6 @@ PixelsMovement::PixelsMovement(
   , m_site(site)
   , m_document(site.document())
   , m_tx(context, operationName)
-  // , m_setMaskCmd(nullptr)
   , m_isDragging(false)
   , m_adjustPivot(false)
   , m_handle(NoHandle)
@@ -1022,9 +1021,6 @@ bool PixelsMovement::gotoFrame(const doc::frame_t deltaFrame)
       // reproduce all transformation again so the new frame is the
       // preview for the transformation.
       m_tx.rollbackAndStartAgain();
-
-      // Re-create the cmd::SetMask()
-      //m_setMaskCmd = nullptr;
 
       {
         m_canHandleFrameChange = true;
