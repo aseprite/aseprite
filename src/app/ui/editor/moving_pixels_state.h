@@ -16,6 +16,7 @@
 #include "app/ui/editor/standby_state.h"
 #include "app/ui/status_bar.h"
 #include "obs/connection.h"
+#include "ui/timer.h"
 
 namespace doc {
   class Image;
@@ -68,6 +69,7 @@ namespace app {
 
   private:
     void onTransparentColorChange();
+    void onRenderTimer();
 
     // ContextObserver
     void onBeforeCommandExecution(CommandExecutionEvent& ev);
@@ -89,6 +91,8 @@ namespace app {
     // True if the image was discarded (e.g. when a "Cut" command was
     // used to remove the dragged image).
     bool m_discarded;
+
+    ui::Timer m_renderTimer;
 
     obs::connection m_ctxConn;
     obs::connection m_opaqueConn;

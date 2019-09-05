@@ -135,6 +135,7 @@ namespace app {
     //////////////////////////////////////////////////////////////////////
     // Boundaries
 
+    void destroyMaskBoundaries();
     void generateMaskBoundaries(const Mask* mask = nullptr);
 
     const MaskBoundaries* getMaskBoundaries() const {

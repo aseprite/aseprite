@@ -71,6 +71,8 @@ namespace app {
     HandleType handle() const { return m_handle; }
     bool canHandleFrameChange() const { return m_canHandleFrameChange; }
 
+    void setFastMode(const bool fastMode);
+
     void trim();
     void cutMask();
     void copyMask();
@@ -135,6 +137,7 @@ namespace app {
       const Transformation::Corners& corners,
       const gfx::Point& leftTop);
     void updateDocumentMask();
+    void hideDocumentMask();
 
     void flipOriginalImage(const doc::algorithm::FlipType flipType);
     void shiftOriginalImage(const int dx, const int dy,
@@ -165,6 +168,11 @@ namespace app {
     obs::scoped_connection m_rotAlgoConn;
     ExtraCelRef m_extraCel;
     bool m_canHandleFrameChange;
+
+    // Fast mode is used to give a faster feedback to the user
+    // avoiding RotSprite on each mouse movement.
+    bool m_fastMode;
+    bool m_needsRotSpriteRedraw;
 
     // Commands used in the interaction with the transformed pixels.
     // This is used to re-create the whole interaction on each

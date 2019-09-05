@@ -58,6 +58,7 @@ MovingPixelsState::MovingPixelsState(Editor* editor, MouseMessage* msg, PixelsMo
   , m_editor(editor)
   , m_observingEditor(false)
   , m_discarded(false)
+  , m_renderTimer(50)
 {
   // MovingPixelsState needs a selection tool to avoid problems
   // sharing the extra cel between the drawing cursor preview and the
@@ -79,6 +80,8 @@ MovingPixelsState::MovingPixelsState(Editor* editor, MouseMessage* msg, PixelsMo
       editor->layer()->isBackground());
   }
   onTransparentColorChange();
+
+  m_renderTimer.Tick.connect([this]{ onRenderTimer(); });
 
   // Hook BeforeCommandExecution signal so we know if the user wants
   // to execute other command, so we can drop pixels.
@@ -114,6 +117,7 @@ MovingPixelsState::~MovingPixelsState()
 
   removePixelsMovement();
   removeAsEditorObserver();
+  m_renderTimer.stop();
 
   m_editor->manager()->removeMessageFilter(kKeyDownMessage, m_editor);
   m_editor->manager()->removeMessageFilter(kKeyUpMessage, m_editor);
@@ -163,6 +167,8 @@ EditorState::LeaveAction MovingPixelsState::onLeaveState(Editor* editor, EditorS
 
   ASSERT(m_pixelsMovement);
   ASSERT(editor == m_editor);
+
+  onRenderTimer();
 
   // If we are changing to another state, we've to drop the image.
   if (m_pixelsMovement->isDragging())
@@ -341,6 +347,9 @@ bool MovingPixelsState::onMouseMove(Editor* editor, MouseMessage* msg)
 
   // If there is a button pressed
   if (m_pixelsMovement->isDragging()) {
+    m_renderTimer.start();
+    m_pixelsMovement->setFastMode(true);
+
     // Auto-scroll
     gfx::Point mousePos = editor->autoScroll(msg, AutoScroll::MouseDir);
 
@@ -655,6 +664,12 @@ void MovingPixelsState::onTransparentColorChange()
     opaque ?
       app::Color::fromMask():
       Preferences::instance().selection.transparentColor());
+}
+
+void MovingPixelsState::onRenderTimer()
+{
+  m_pixelsMovement->setFastMode(false);
+  m_renderTimer.stop();
 }
 
 void MovingPixelsState::onDropPixels(ContextBarObserver::DropAction action)

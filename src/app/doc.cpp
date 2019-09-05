@@ -255,6 +255,12 @@ void Doc::setFormatOptions(const FormatOptionsPtr& format_options)
 //////////////////////////////////////////////////////////////////////
 // Boundaries
 
+void Doc::destroyMaskBoundaries()
+{
+  m_maskBoundaries.reset();
+  notifySelectionBoundariesChanged();
+}
+
 void Doc::generateMaskBoundaries(const Mask* mask)
 {
   m_maskBoundaries.reset();

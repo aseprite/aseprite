@@ -131,6 +131,8 @@ PixelsMovement::PixelsMovement(
   , m_opaque(false)
   , m_maskColor(m_site.sprite()->transparentColor())
   , m_canHandleFrameChange(false)
+  , m_fastMode(false)
+  , m_needsRotSpriteRedraw(false)
 {
   Transformation transform(mask->bounds());
   set_pivot_from_preferences(transform);
@@ -167,6 +169,17 @@ PixelsMovement::PixelsMovement(
     m_tx(new cmd::SetMask(m_document, m_currentMask.get()));
     m_document->generateMaskBoundaries(m_currentMask.get());
     update_screen_for_document(m_document);
+  }
+}
+
+void PixelsMovement::setFastMode(const bool fastMode)
+{
+  bool redraw = (m_fastMode && !fastMode);
+  m_fastMode = fastMode;
+  if (m_needsRotSpriteRedraw && redraw) {
+    redrawExtraImage();
+    update_screen_for_document(m_document);
+    m_needsRotSpriteRedraw = false;
   }
 }
 
@@ -265,14 +278,7 @@ void PixelsMovement::cutMask()
 
 void PixelsMovement::copyMask()
 {
-  // Hide the mask (do not deselect it, it will be moved them using
-  // m_transaction.setMaskPosition)
-  Mask emptyMask;
-  {
-    ContextWriter writer(m_reader, 1000);
-    m_document->generateMaskBoundaries(&emptyMask);
-    update_screen_for_document(m_document);
-  }
+  hideDocumentMask();
 }
 
 void PixelsMovement::catchImage(const gfx::Point& pos, HandleType handle)
@@ -292,14 +298,7 @@ void PixelsMovement::catchImageAgain(const gfx::Point& pos, HandleType handle)
   m_catchPos = pos;
   m_handle = handle;
 
-  // Hide the mask (do not deselect it, it will be moved them using
-  // m_transaction.setMaskPosition)
-  Mask emptyMask;
-  {
-    ContextWriter writer(m_reader, 1000);
-    m_document->generateMaskBoundaries(&emptyMask);
-    update_screen_for_document(m_document);
-  }
+  hideDocumentMask();
 }
 
 void PixelsMovement::moveImage(const gfx::Point& pos, MoveModifier moveModifier)
@@ -862,6 +861,12 @@ void PixelsMovement::drawParallelogram(
     rotAlgo = tools::RotationAlgorithm::FAST;
   }
 
+  // Don't use RotSprite if we are in "fast mode"
+  if (rotAlgo == tools::RotationAlgorithm::ROTSPRITE && m_fastMode) {
+    m_needsRotSpriteRedraw = true;
+    rotAlgo = tools::RotationAlgorithm::FAST;
+  }
+
 retry:;      // In case that we don't have enough memory for RotSprite
              // we can try with the fast algorithm anyway.
 
@@ -929,6 +934,12 @@ void PixelsMovement::updateDocumentMask()
 {
   m_document->setMask(m_currentMask.get());
   m_document->generateMaskBoundaries(m_currentMask.get());
+}
+
+void PixelsMovement::hideDocumentMask()
+{
+  m_document->destroyMaskBoundaries();
+  update_screen_for_document(m_document);
 }
 
 void PixelsMovement::flipOriginalImage(const doc::algorithm::FlipType flipType)
