@@ -1439,7 +1439,7 @@ Rect Editor::getViewportBounds()
 Rect Editor::getVisibleSpriteBounds()
 {
   if (m_sprite)
-    return getViewportBounds().createIntersection(m_sprite->bounds());
+    return getViewportBounds().createIntersection(gfx::Rect(canvasSize()));
 
   // This cannot happen, the sprite must be != nullptr. In old
   // Aseprite versions we were using one Editor to show multiple
