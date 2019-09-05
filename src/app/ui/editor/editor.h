@@ -192,6 +192,7 @@ namespace app {
     gfx::Point mainTilePosition() const;
     void expandRegionByTiledMode(gfx::Region& rgn,
                                  const bool withProj) const;
+    void collapseRegionByTiledMode(gfx::Region& rgn) const;
 
     // Changes the scroll to see the given point as the center of the editor.
     void centerInSpritePoint(const gfx::Point& spritePos);

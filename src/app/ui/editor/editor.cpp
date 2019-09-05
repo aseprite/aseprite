@@ -2692,6 +2692,26 @@ void Editor::expandRegionByTiledMode(gfx::Region& rgn,
   }
 }
 
+void Editor::collapseRegionByTiledMode(gfx::Region& rgn) const
+{
+  auto canvasSize = this->canvasSize();
+  rgn &= gfx::Region(gfx::Rect(canvasSize));
+
+  const int sprW = m_sprite->width();
+  const int sprH = m_sprite->height();
+
+  gfx::Region newRgn;
+  for (int v=0; v<canvasSize.h; v+=sprH) {
+    for (int u=0; u<canvasSize.w; u+=sprW) {
+      gfx::Region tmp(gfx::Rect(u, v, sprW, sprH));
+      tmp &= rgn;
+      tmp.offset(-u, -v);
+      newRgn |= tmp;
+    }
+  }
+  rgn = newRgn;
+}
+
 bool Editor::isMovingPixels() const
 {
   return (dynamic_cast<MovingPixelsState*>(m_state.get()) != nullptr);

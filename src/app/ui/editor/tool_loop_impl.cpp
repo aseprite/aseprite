@@ -279,8 +279,11 @@ public:
     for (auto e : UIContext::instance()->getAllEditorsIncludingPreview(m_document)) {
       gfx::Region viewportRegion;
       e->getDrawableRegion(viewportRegion, Widget::kCutTopWindows);
-      for (auto rc : viewportRegion)
-        allVisibleRgn |= gfx::Region(e->screenToEditor(rc).inflate(1, 1));
+      for (auto rc : viewportRegion) {
+        gfx::Region subrgn(e->screenToEditor(rc).inflate(1, 1));
+        e->collapseRegionByTiledMode(subrgn);
+        allVisibleRgn |= subrgn;
+      }
     }
 
     rgn &= allVisibleRgn;
