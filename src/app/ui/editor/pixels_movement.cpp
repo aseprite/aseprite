@@ -251,8 +251,12 @@ void PixelsMovement::trim()
       }
       m_tx(new cmd::ClearMask(cel));
     }
-    if (cel->layer()->isTransparent())
+    // Current cel (m_site.cel()) can be nullptr when we paste in an
+    // empty cel (Ctrl+V) and cut (Ctrl+X) the floating pixels.
+    if (cel &&
+        cel->layer()->isTransparent()) {
       m_tx(new cmd::TrimCel(cel));
+    }
   }
 
   if (restoreMask)
