@@ -747,6 +747,7 @@ bool Timeline::onProcessMessage(Message* msg)
               clearAndInvalidateRange();
             m_range.startRange(m_layer, m_clk.frame, Range::kFrames);
             m_startRange = m_range;
+            invalidateRange();
 
             setFrame(m_clk.frame, true);
           }
@@ -772,6 +773,7 @@ bool Timeline::onProcessMessage(Message* msg)
             m_range.startRange(m_rows[m_clk.layer].layer(),
                                m_frame, Range::kLayers);
             m_startRange = m_range;
+            invalidateRange();
 
             // Did the user select another layer?
             if (old_layer != m_clk.layer) {
@@ -911,6 +913,7 @@ bool Timeline::onProcessMessage(Message* msg)
               m_range.startRange(m_rows[m_clk.layer].layer(),
                                  m_clk.frame, Range::kCels);
               m_startRange = m_range;
+              invalidateRange();
             }
 
             // Select the new clicked-part.
