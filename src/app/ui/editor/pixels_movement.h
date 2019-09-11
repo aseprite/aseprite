@@ -120,6 +120,7 @@ namespace app {
     const Transformation& getTransformation() const { return m_currentData; }
 
   private:
+    bool editMultipleCels() const;
     void stampImage(bool finalStamp);
     void stampExtraCelImage();
     void onPivotChange();

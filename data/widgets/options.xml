@@ -224,6 +224,9 @@
 		 pref="selection.doubleclick_select_tile" />
           <check text="@.force_rotsprite" id="force_rotsprite"
 		 pref="selection.force_rotsprite"/>
+          <check text="@.multicel_when_layers_or_frames" id="multicel_when_layers_or_frames"
+		 tooltip="@.multicel_when_layers_or_frames_tooltip"
+		 pref="selection.multicel_when_layers_or_frames"/>
         </vbox>
 
         <!-- Timeline -->

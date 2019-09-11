@@ -172,6 +172,14 @@ PixelsMovement::PixelsMovement(
   }
 }
 
+bool PixelsMovement::editMultipleCels() const
+{
+  return
+    (m_site.range().enabled() &&
+     (Preferences::instance().selection.multicelWhenLayersOrFrames() ||
+      m_site.range().type() == DocRange::kCels));
+}
+
 void PixelsMovement::setFastMode(const bool fastMode)
 {
   bool redraw = (m_fastMode && !fastMode);
@@ -977,7 +985,7 @@ CelList PixelsMovement::getEditableCels()
 {
   CelList cels;
 
-  if (m_site.range().enabled()) {
+  if (editMultipleCels()) {
     cels = get_unlocked_unique_cels(
       m_site.sprite(), m_site.range());
   }
@@ -1004,7 +1012,7 @@ CelList PixelsMovement::getEditableCels()
 
 bool PixelsMovement::gotoFrame(const doc::frame_t deltaFrame)
 {
-  if (m_site.range().enabled()) {
+  if (editMultipleCels()) {
     Layer* layer = m_site.layer();
     ASSERT(layer);
 
