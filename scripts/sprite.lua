@@ -93,3 +93,23 @@ do
   assert(#a.layers == 1)
   assert(#b.layers == 3)
 end
+
+-- Resize non-active sprite
+do
+  local a = Sprite(32, 32)
+  local b = Sprite(64, 64)
+  app.activeSprite = a
+  a:resize(10, 10)
+  b:resize(20, 20)
+  assert(a.width == 10)
+  assert(a.height == 10)
+  assert(b.width == 20)
+  assert(b.height == 20)
+  app.undo()
+  assert(a.width == 32)
+  assert(a.height == 32)
+  app.activeSprite = b
+  app.undo()
+  assert(b.width == 64)
+  assert(b.height == 64)
+end
