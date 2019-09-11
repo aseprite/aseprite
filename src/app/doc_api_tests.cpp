@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -10,7 +11,7 @@
 #include "app/doc.h"
 #include "app/doc_api.h"
 #include "app/test_context.h"
-#include "app/transaction.h"
+#include "app/tx.h"
 #include "doc/cel.h"
 #include "doc/image.h"
 #include "doc/primitives.h"
@@ -51,9 +52,9 @@ TEST_F(BasicDocApiTest, RestackLayerBefore)
 {
   EXPECT_EQ(layer1, root->firstLayer());
   {
-    Transaction transaction(&ctx, "");
+    Tx tx(&ctx, "");
     // Do nothing
-    doc->getApi(transaction).restackLayerBefore(layer1, layer1->parent(), layer1);
+    doc->getApi(tx).restackLayerBefore(layer1, layer1->parent(), layer1);
     EXPECT_EQ(layer1, root->firstLayer());
     EXPECT_EQ(layer2, root->firstLayer()->getNext());
     EXPECT_EQ(layer3, root->firstLayer()->getNext()->getNext());
@@ -62,8 +63,8 @@ TEST_F(BasicDocApiTest, RestackLayerBefore)
 
   EXPECT_EQ(layer1, root->firstLayer());
   {
-    Transaction transaction(&ctx, "");
-    doc->getApi(transaction).restackLayerBefore(layer1, layer3->parent(), layer3);
+    Tx tx(&ctx, "");
+    doc->getApi(tx).restackLayerBefore(layer1, layer3->parent(), layer3);
     EXPECT_EQ(layer2, root->firstLayer());
     EXPECT_EQ(layer1, root->firstLayer()->getNext());
     EXPECT_EQ(layer3, root->firstLayer()->getNext()->getNext());
@@ -72,8 +73,8 @@ TEST_F(BasicDocApiTest, RestackLayerBefore)
 
   EXPECT_EQ(layer1, root->firstLayer());
   {
-    Transaction transaction(&ctx, "");
-    doc->getApi(transaction).restackLayerBefore(layer1, layer1->parent(), nullptr);
+    Tx tx(&ctx, "");
+    doc->getApi(tx).restackLayerBefore(layer1, layer1->parent(), nullptr);
     EXPECT_EQ(layer2, root->firstLayer());
     EXPECT_EQ(layer3, root->firstLayer()->getNext());
     EXPECT_EQ(layer1, root->firstLayer()->getNext()->getNext());
@@ -85,9 +86,9 @@ TEST_F(BasicDocApiTest, RestackLayerAfter)
 {
   EXPECT_EQ(layer1, root->firstLayer());
   {
-    Transaction transaction(&ctx, "");
+    Tx tx(&ctx, "");
     // Do nothing
-    doc->getApi(transaction).restackLayerAfter(layer1, layer1->parent(), layer1);
+    doc->getApi(tx).restackLayerAfter(layer1, layer1->parent(), layer1);
     EXPECT_EQ(layer1, root->firstLayer());
     EXPECT_EQ(layer2, root->firstLayer()->getNext());
     EXPECT_EQ(layer3, root->firstLayer()->getNext()->getNext());
@@ -96,8 +97,8 @@ TEST_F(BasicDocApiTest, RestackLayerAfter)
 
   EXPECT_EQ(layer1, root->firstLayer());
   {
-    Transaction transaction(&ctx, "");
-    doc->getApi(transaction).restackLayerAfter(layer1, layer3->parent(), layer3);
+    Tx tx(&ctx, "");
+    doc->getApi(tx).restackLayerAfter(layer1, layer3->parent(), layer3);
     EXPECT_EQ(layer2, root->firstLayer());
     EXPECT_EQ(layer3, root->firstLayer()->getNext());
     EXPECT_EQ(layer1, root->firstLayer()->getNext()->getNext());
@@ -106,8 +107,8 @@ TEST_F(BasicDocApiTest, RestackLayerAfter)
 
   EXPECT_EQ(layer1, root->firstLayer());
   {
-    Transaction transaction(&ctx, "");
-    doc->getApi(transaction).restackLayerAfter(layer3, layer3->parent(), nullptr);
+    Tx tx(&ctx, "");
+    doc->getApi(tx).restackLayerAfter(layer3, layer3->parent(), nullptr);
     EXPECT_EQ(layer3, root->firstLayer());
     EXPECT_EQ(layer1, root->firstLayer()->getNext());
     EXPECT_EQ(layer2, root->firstLayer()->getNext()->getNext());
@@ -131,11 +132,11 @@ TEST_F(BasicDocApiTest, MoveCel)
   // Create a copy for later comparison.
   std::unique_ptr<Image> expectedImage(Image::createCopy(image1));
 
-  Transaction transaction(&ctx, "");
-  doc->getApi(transaction).moveCel(
+  Tx tx(&ctx, "");
+  doc->getApi(tx).moveCel(
     layer1, frame_t(0),
     layer2, frame_t(1));
-  transaction.commit();
+  tx.commit();
 
   EXPECT_EQ(NULL, layer1->cel(frame_t(0)));
 
