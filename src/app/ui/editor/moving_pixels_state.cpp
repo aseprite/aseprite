@@ -161,6 +161,16 @@ void MovingPixelsState::onEnterState(Editor* editor)
   update_screen_for_document(editor->document());
 }
 
+void MovingPixelsState::onEditorGotFocus(Editor* editor)
+{
+  ContextBar* contextBar = App::instance()->contextBar();
+  // Make the DropPixelsField widget visible again in the ContextBar
+  // when we are back to an editor in MovingPixelsState. Without this
+  // we would see the SelectionModeField instead which doesn't make
+  // sense on MovingPixelsState).
+  contextBar->updateForMovingPixels();
+}
+
 EditorState::LeaveAction MovingPixelsState::onLeaveState(Editor* editor, EditorState* newState)
 {
   TRACE("MOVPIXS: onLeaveState\n");

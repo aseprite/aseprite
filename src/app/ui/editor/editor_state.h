@@ -78,6 +78,9 @@ namespace app {
     // other drawing tool).
     virtual void onActiveToolChange(Editor* editor, tools::Tool* tool) { }
 
+    // Called when the editor gets the focus.
+    virtual void onEditorGotFocus(Editor* editor) { }
+
     // Called when the user presses a mouse button over the editor.
     virtual bool onMouseDown(Editor* editor, ui::MouseMessage* msg) { return false; }
 

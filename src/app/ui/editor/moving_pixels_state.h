@@ -45,6 +45,7 @@ namespace app {
 
     // EditorState
     virtual void onEnterState(Editor* editor) override;
+    virtual void onEditorGotFocus(Editor* editor) override;
     virtual LeaveAction onLeaveState(Editor* editor, EditorState* newState) override;
     virtual void onActiveToolChange(Editor* editor, tools::Tool* tool) override;
     virtual bool onMouseDown(Editor* editor, ui::MouseMessage* msg) override;

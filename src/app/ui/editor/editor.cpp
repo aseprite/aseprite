@@ -1727,6 +1727,13 @@ bool Editor::onProcessMessage(Message* msg)
       }
       break;
 
+    case kFocusEnterMessage: {
+      ASSERT(m_state);
+      if (m_state)
+        m_state->onEditorGotFocus(this);
+      break;
+    }
+
     case kMouseEnterMessage:
       m_brushPreview.hide();
       updateToolLoopModifiersIndicators();
