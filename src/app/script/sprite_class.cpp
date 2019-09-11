@@ -155,7 +155,10 @@ int Sprite_resize(lua_State* L)
   params.set("height", base::convert_to<std::string>(size.h).c_str());
 
   app::Context* appCtx = App::instance()->context();
+  auto oldDoc = appCtx->activeDocument();
+  appCtx->setActiveDocument(static_cast<Doc*>(sprite->document()));
   appCtx->executeCommand(resizeCommand, params);
+  appCtx->setActiveDocument(oldDoc);
   return 0;
 }
 
