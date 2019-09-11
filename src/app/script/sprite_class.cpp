@@ -500,7 +500,11 @@ int Sprite_newTag(lua_State* L)
   auto from = get_frame_number_from_arg(L, 2);
   auto to = get_frame_number_from_arg(L, 3);
   auto tag = new doc::FrameTag(from, to);
-  sprite->frameTags().add(tag);
+
+  Tx tx;
+  tx(new cmd::AddFrameTag(sprite, tag));
+  tx.commit();
+
   push_docobj(L, tag);
   return 1;
 }
