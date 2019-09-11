@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -2199,7 +2199,7 @@ bool Editor::canStartMovingSelectionPixels()
 
 bool Editor::keepTimelineRange()
 {
-  if (MovingPixelsState* movingPixels = dynamic_cast<MovingPixelsState*>(m_state.get())) {
+  if (auto movingPixels = dynamic_cast<MovingPixelsState*>(m_state.get())) {
     if (movingPixels->canHandleFrameChange())
       return true;
   }
@@ -2435,7 +2435,7 @@ void Editor::pasteImage(const Image* image, const Mask* mask)
 
 void Editor::startSelectionTransformation(const gfx::Point& move, double angle)
 {
-  if (MovingPixelsState* movingPixels = dynamic_cast<MovingPixelsState*>(m_state.get())) {
+  if (auto movingPixels = dynamic_cast<MovingPixelsState*>(m_state.get())) {
     movingPixels->translate(move);
     if (std::fabs(angle) > 1e-5)
       movingPixels->rotate(angle);
@@ -2447,9 +2447,9 @@ void Editor::startSelectionTransformation(const gfx::Point& move, double angle)
 
 void Editor::startFlipTransformation(doc::algorithm::FlipType flipType)
 {
-  if (MovingPixelsState* movingPixels = dynamic_cast<MovingPixelsState*>(m_state.get()))
+  if (auto movingPixels = dynamic_cast<MovingPixelsState*>(m_state.get()))
     movingPixels->flip(flipType);
-  else if (StandbyState* standby = dynamic_cast<StandbyState*>(m_state.get()))
+  else if (auto standby = dynamic_cast<StandbyState*>(m_state.get()))
     standby->startFlipTransformation(this, flipType);
 }
 
