@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -17,6 +18,7 @@
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
+#include "app/ui_context.h"
 #include "doc/mask.h"
 #include "ui/message.h"
 
@@ -25,14 +27,22 @@ namespace app {
 using namespace ui;
 
 MovingSelectionState::MovingSelectionState(Editor* editor, MouseMessage* msg)
-  : m_cursorStart(editor->screenToEditor(msg->position()))
+  : m_editor(editor)
+  , m_cursorStart(editor->screenToEditor(msg->position()))
   , m_selOrigin(editor->document()->mask()->bounds().origin())
 {
   editor->captureMouse();
+
+  // Hook BeforeCommandExecution signal so we know if the user wants
+  // to execute other command, so we can unfreeze the document mask.
+  m_ctxConn = UIContext::instance()->BeforeCommandExecution.connect(
+    &MovingSelectionState::onBeforeCommandExecution, this);
 }
 
-MovingSelectionState::~MovingSelectionState()
+void MovingSelectionState::onBeforeCommandExecution(CommandExecutionEvent& ev)
 {
+  m_editor->backToPreviousState();
+  m_editor->releaseMouse();
 }
 
 void MovingSelectionState::onEnterState(Editor* editor)
@@ -46,6 +56,8 @@ EditorState::LeaveAction MovingSelectionState::onLeaveState(Editor* editor, Edit
   Doc* doc = editor->document();
   Mask* mask = doc->mask();
   gfx::Point newOrigin = mask->bounds().origin();
+
+  ASSERT(mask->isFrozen());
 
   // Restore the mask to the original state so we can transform it
   // with the a undoable transaction.
@@ -86,15 +98,21 @@ bool MovingSelectionState::onMouseMove(Editor* editor, MouseMessage* msg)
   const gfx::Point newMaskOrigin = m_selOrigin + m_delta;
   const gfx::Point oldMaskOrigin = editor->document()->mask()->bounds().origin();
 
+  ASSERT(editor->document()->mask()->isFrozen());
+
   if (oldMaskOrigin != newMaskOrigin) {
     editor->document()->mask()->setOrigin(newMaskOrigin.x,
                                           newMaskOrigin.y);
 
-    MaskBoundaries* boundaries =
-      const_cast<MaskBoundaries*>(editor->document()->getMaskBoundaries());
-    const gfx::Point boundariesDelta = newMaskOrigin - oldMaskOrigin;
-    boundaries->offset(boundariesDelta.x,
-                       boundariesDelta.y);
+    if (MaskBoundaries* boundaries =
+          const_cast<MaskBoundaries*>(editor->document()->getMaskBoundaries())) {
+      const gfx::Point boundariesDelta = newMaskOrigin - oldMaskOrigin;
+      boundaries->offset(boundariesDelta.x,
+                         boundariesDelta.y);
+    }
+    else {
+      ASSERT(false);
+    }
 
     editor->invalidate();
   }

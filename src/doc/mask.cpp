@@ -1,5 +1,6 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2018 David Capello
+// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -113,6 +114,8 @@ bool Mask::isRectangular() const
 
 void Mask::copyFrom(const Mask* sourceMask)
 {
+  ASSERT(m_freeze_count == 0);
+
   clear();
   setName(sourceMask->name().c_str());
 
@@ -120,8 +123,10 @@ void Mask::copyFrom(const Mask* sourceMask)
     // Add all the area of "mask"
     add(sourceMask->bounds());
 
-    // And copy the "mask" bitmap
-    copy_image(m_bitmap.get(), sourceMask->m_bitmap.get());
+    // And copy the "mask" bitmap (m_bitmap can be nullptr if this is
+    // frozen, so add() doesn't created the bitmap)
+    if (m_bitmap)
+      copy_image(m_bitmap.get(), sourceMask->m_bitmap.get());
   }
 }
 
@@ -193,11 +198,15 @@ void Mask::add(const gfx::Rect& bounds)
   if (m_freeze_count == 0)
     reserve(bounds);
 
+  // m_bitmap can be nullptr if we have m_freeze_count > 0
+  if (!m_bitmap)
+    return;
+
   fill_rect(m_bitmap.get(),
-    bounds.x-m_bounds.x,
-    bounds.y-m_bounds.y,
-    bounds.x-m_bounds.x+bounds.w-1,
-    bounds.y-m_bounds.y+bounds.h-1, 1);
+            bounds.x-m_bounds.x,
+            bounds.y-m_bounds.y,
+            bounds.x-m_bounds.x+bounds.w-1,
+            bounds.y-m_bounds.y+bounds.h-1, 1);
 }
 
 void Mask::subtract(const gfx::Rect& bounds)

@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This program is distributed under the terms of
@@ -8,13 +9,14 @@
 #define APP_UI_EDITOR_MOVING_SELECTION_STATE_H_INCLUDED
 #pragma once
 
+#include "app/context.h"
 #include "app/ui/editor/standby_state.h"
+#include "obs/connection.h"
 
 namespace app {
   class MovingSelectionState : public StandbyState {
   public:
     MovingSelectionState(Editor* editor, ui::MouseMessage* msg);
-    virtual ~MovingSelectionState();
 
     // EditorState
     virtual void onEnterState(Editor* editor) override;
@@ -27,9 +29,14 @@ namespace app {
     virtual bool requireBrushPreview() override { return false; }
 
   private:
+    // ContextObserver
+    void onBeforeCommandExecution(CommandExecutionEvent& ev);
+
+    Editor* m_editor;
     gfx::Point m_cursorStart;
     gfx::Point m_selOrigin;
     gfx::Point m_delta;
+    obs::scoped_connection m_ctxConn;
   };
 
 } // namespace app
