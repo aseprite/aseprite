@@ -141,10 +141,24 @@ public:
   }
 
   void fillStroke(ToolLoop* loop, const Stroke& stroke) override {
+#if 0
+    // We prefer to use doc::algorithm::polygon() directly instead of
+    // joinStroke() for the simplest cases (i.e. stroke.size() < 3 is
+    // one point, or a line with two points), because if we use
+    // joinStroke(), we'll get some undesirable behaviors of the
+    // Shift+click considerations. E.g. not drawing the first pixel
+    // (or nothing at all) because it can been seen as the
+    // continuation of the previous last point. An specific example is
+    // when stroke[0] == stroke[1], joinStroke() assumes that it has
+    // to draw a stroke with 2 pixels, but when the stroke is
+    // converted to "pts", "pts" has just one point, then if the first
+    // one has to be discarded no pixel is drawn.
     if (stroke.size() < 3) {
       joinStroke(loop, stroke);
       return;
     }
+#endif
+
     // Fill content
     doc::algorithm::polygon(stroke.size(), (const int*)&stroke[0], loop, (AlgoHLine)doPointshapeHline);
   }
