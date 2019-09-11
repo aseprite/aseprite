@@ -48,6 +48,7 @@ Doc::Doc(Sprite* sprite)
   : m_ctx(nullptr)
   , m_flags(kMaskVisible)
   , m_undo(new DocUndo)
+  , m_transaction(nullptr)
   // Information about the file format used to load/save this document
   , m_format_options(nullptr)
   // Mask
@@ -86,6 +87,18 @@ void Doc::setContext(Context* ctx)
   }
 
   onContextChanged();
+}
+
+void Doc::setTransaction(Transaction* transaction)
+{
+  if (transaction) {
+    ASSERT(!m_transaction);
+    m_transaction = transaction;
+  }
+  else {
+    ASSERT(m_transaction);
+    m_transaction = nullptr;
+  }
 }
 
 DocApi Doc::getApi(Transaction& transaction)

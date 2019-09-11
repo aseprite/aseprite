@@ -11,7 +11,10 @@
 
 #include "app/app.h"
 #include "app/context.h"
+#include "app/doc.h"
 #include "app/transaction.h"
+
+#include <stdexcept>
 
 namespace app {
 
@@ -19,14 +22,20 @@ namespace app {
   // transaction in the context.
   class Tx {
   public:
-    Tx(Context* ctx, const std::string& label = "Transaction", Modification mod = ModifyDocument)
-      : m_ctx(ctx) {
-      m_transaction = m_ctx->transaction();
+    Tx(Context* ctx,
+       const std::string& label = "Transaction",
+       Modification mod = ModifyDocument)
+    {
+      m_doc = ctx->activeDocument();
+      if (!m_doc)
+        throw std::runtime_error("No active document to execute a transaction");
+
+      m_transaction = m_doc->transaction();
       if (m_transaction)
         m_owner = false;
       else {
-        m_transaction = new Transaction(m_ctx, label, mod);
-        m_ctx->setTransaction(m_transaction);
+        m_transaction = new Transaction(ctx, m_doc, label, mod);
+        m_doc->setTransaction(m_transaction);
         m_owner = true;
       }
     }
@@ -38,7 +47,7 @@ namespace app {
 
     ~Tx() {
       if (m_owner) {
-        m_ctx->setTransaction(nullptr);
+        m_doc->setTransaction(nullptr);
         delete m_transaction;
       }
     }
@@ -46,6 +55,10 @@ namespace app {
     void commit() {
       if (m_owner)
         m_transaction->commit();
+    }
+
+    void setNewDocRange(const DocRange& range) {
+      m_transaction->setNewDocRange(range);
     }
 
     void rollbackAndStartAgain() {
@@ -61,7 +74,7 @@ namespace app {
     }
 
   private:
-    Context* m_ctx;
+    Doc* m_doc;
     Transaction* m_transaction;
     bool m_owner;               // Owner of the transaction
   };

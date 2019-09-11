@@ -24,9 +24,13 @@ namespace app {
 
 using namespace doc;
 
-Transaction::Transaction(Context* ctx, const std::string& label, Modification modification)
+Transaction::Transaction(
+  Context* ctx,
+  Doc* doc,
+  const std::string& label,
+  Modification modification)
   : m_ctx(ctx)
-  , m_doc(nullptr)
+  , m_doc(doc)
   , m_undo(nullptr)
   , m_cmds(nullptr)
   , m_changes(Changes::kNone)
@@ -35,10 +39,6 @@ Transaction::Transaction(Context* ctx, const std::string& label, Modification mo
            label.c_str(),
            modification == ModifyDocument ? "modifies document":
                                             "doesn't modify document");
-
-  m_doc = m_ctx->activeDocument();
-  if (!m_doc)
-    throw std::runtime_error("No active document to execute a transaction");
 
   m_doc->add_observer(this);
   m_undo = m_doc->undoHistory();

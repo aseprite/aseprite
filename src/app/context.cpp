@@ -30,7 +30,6 @@ namespace app {
 Context::Context()
   : m_docs(this)
   , m_lastSelectedDoc(nullptr)
-  , m_transaction(nullptr)
 {
   m_docs.add_observer(this);
 }
@@ -226,18 +225,6 @@ void Context::onSetSelectedColors(const doc::PalettePicks& picks)
 {
   if (m_lastSelectedDoc)
     activeSiteHandler()->setSelectedColorsInDoc(m_lastSelectedDoc, picks);
-}
-
-void Context::setTransaction(Transaction* transaction)
-{
-  if (transaction) {
-    ASSERT(!m_transaction);
-    m_transaction = transaction;
-  }
-  else {
-    ASSERT(m_transaction);
-    m_transaction = nullptr;
-  }
 }
 
 ActiveSiteHandler* Context::activeSiteHandler() const

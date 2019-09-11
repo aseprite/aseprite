@@ -33,7 +33,6 @@ namespace app {
   class Command;
   class Doc;
   class DocView;
-  class Transaction;
 
   class CommandPreconditionException : public base::Exception {
   public:
@@ -97,10 +96,6 @@ namespace app {
       return nullptr;
     }
 
-    // Sets active/running transaction.
-    void setTransaction(Transaction* transaction);
-    Transaction* transaction() { return m_transaction; }
-
     obs::signal<void (CommandExecutionEvent&)> BeforeCommandExecution;
     obs::signal<void (CommandExecutionEvent&)> AfterCommandExecution;
 
@@ -124,7 +119,6 @@ namespace app {
     Docs m_docs;
     ContextFlags m_flags;       // Last updated flags.
     Doc* m_lastSelectedDoc;
-    Transaction* m_transaction;
     mutable std::unique_ptr<ActiveSiteHandler> m_activeSiteHandler;
 
     DISABLE_COPYING(Context);

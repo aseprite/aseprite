@@ -46,7 +46,11 @@ namespace app {
     // Starts a undoable sequence of operations in a transaction that
     // can be committed or rollbacked.  All the operations will be
     // grouped in the sprite's undo as an atomic operation.
-    Transaction(Context* ctx, const std::string& label, Modification mod = ModifyDocument);
+    Transaction(
+      Context* ctx,
+      Doc* doc,
+      const std::string& label,
+      Modification mod = ModifyDocument);
     virtual ~Transaction();
 
     // Can be used to change the new document range resulting from

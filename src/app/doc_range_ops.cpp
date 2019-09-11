@@ -19,6 +19,7 @@
 #include "app/doc_api.h"
 #include "app/doc_range.h"
 #include "app/transaction.h"
+#include "app/tx.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
 
@@ -331,8 +332,8 @@ static DocRange drop_range_op(
     const app::Context* context = static_cast<app::Context*>(doc->context());
     const ContextReader reader(context);
     ContextWriter writer(reader, 500);
-    Transaction transaction(writer.context(), undoLabel, ModifyDocument);
-    DocApi api = doc->getApi(transaction);
+    Tx tx(writer.context(), undoLabel, ModifyDocument);
+    DocApi api = doc->getApi(tx);
 
     // TODO Try to add the range with just one call to DocApi
     // methods, to avoid generating a lot of cmd::SetCelFrame (see
@@ -455,9 +456,9 @@ static DocRange drop_range_op(
     }
 
     if (resultRange.type() != DocRange::kNone)
-      transaction.setNewDocRange(resultRange);
+      tx.setNewDocRange(resultRange);
 
-    transaction.commit();
+    tx.commit();
   }
 
   return resultRange;
@@ -488,8 +489,8 @@ void reverse_frames(Doc* doc, const DocRange& range)
   const app::Context* context = static_cast<app::Context*>(doc->context());
   const ContextReader reader(context);
   ContextWriter writer(reader, 500);
-  Transaction transaction(writer.context(), "Reverse Frames");
-  DocApi api = doc->getApi(transaction);
+  Tx tx(writer.context(), "Reverse Frames");
+  DocApi api = doc->getApi(tx);
   Sprite* sprite = doc->sprite();
   LayerList layers;
   frame_t frameBegin, frameEnd;
@@ -544,8 +545,8 @@ void reverse_frames(Doc* doc, const DocRange& range)
     }
   }
 
-  transaction.setNewDocRange(range);
-  transaction.commit();
+  tx.setNewDocRange(range);
+  tx.commit();
 }
 
 } // namespace app

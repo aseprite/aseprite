@@ -72,6 +72,10 @@ namespace app {
     Context* context() const { return m_ctx; }
     void setContext(Context* ctx);
 
+    // Sets active/running transaction.
+    void setTransaction(Transaction* transaction);
+    Transaction* transaction() { return m_transaction; }
+
     // Returns a high-level API: observable and undoable methods.
     DocApi getApi(Transaction& transaction);
 
@@ -206,6 +210,10 @@ namespace app {
 
     // Undo and redo information about the document.
     std::unique_ptr<DocUndo> m_undo;
+
+    // Current transaction for this document (when this is commit(), a
+    // new undo command is added to m_undo).
+    Transaction* m_transaction;
 
     // Selected mask region boundaries
     std::unique_ptr<doc::MaskBoundaries> m_maskBoundaries;
