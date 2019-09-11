@@ -92,8 +92,10 @@ void Transaction::commit()
   m_cmds = nullptr;
 
   // Process changes
-  if (int(m_changes) & int(Changes::kSelection))
+  if (int(m_changes) & int(Changes::kSelection)) {
+    m_doc->resetTransformation();
     m_doc->generateMaskBoundaries();
+  }
 }
 
 void Transaction::rollbackAndStartAgain()

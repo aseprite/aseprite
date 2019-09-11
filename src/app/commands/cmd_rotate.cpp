@@ -155,10 +155,6 @@ protected:
 
       // Copy new mask
       api.copyToCurrentMask(new_mask.get());
-
-      // Regenerate mask
-      document()->resetTransformation();
-      document()->generateMaskBoundaries();
     }
 
     // change the sprite's size

@@ -124,8 +124,6 @@ void select_layer_boundaries(Layer* layer,
     tx(new cmd::SetMask(doc, &newMask));
     tx.commit();
 
-    doc->resetTransformation();
-    doc->generateMaskBoundaries();
     update_screen_for_document(doc);
   }
   catch (base::Exception& e) {
