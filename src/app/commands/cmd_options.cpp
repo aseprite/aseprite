@@ -1210,7 +1210,9 @@ private:
   void onExtensionChange() {
     ExtensionItem* item = dynamic_cast<ExtensionItem*>(extensionsList()->getSelectedChild());
     if (item && item->isInstalled()) {
-      disableExtension()->setText(item->isEnabled() ? "&Disable": "&Enable");
+      disableExtension()->setText(item->isEnabled() ?
+                                  Strings::options_disable_extension():
+                                  Strings::options_enable_extension());
       disableExtension()->processMnemonicFromText();
       disableExtension()->setEnabled(item->isEnabled() ? item->canBeDisabled(): true);
       uninstallExtension()->setEnabled(item->canBeUninstalled());
@@ -1227,7 +1229,7 @@ private:
     base::paths exts = { "aseprite-extension", "zip" };
     base::paths filename;
     if (!app::show_file_selector(
-          "Add Extension", "", exts,
+          Strings::options_add_extension_title(), "", exts,
           FileSelectorType::Open, filename))
       return;
 
