@@ -189,6 +189,8 @@ const luaL_Reg Rectangle_methods[] = {
   { "__gc", Rectangle_gc },
   { "__eq", Rectangle_eq },
   { "__tostring", Rectangle_tostring },
+  { "__band", Rectangle_intersect },
+  { "__bor", Rectangle_union },
   { "contains", Rectangle_contains },
   { "intersects", Rectangle_intersects },
   { "union", Rectangle_union },
