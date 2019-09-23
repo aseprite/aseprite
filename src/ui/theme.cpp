@@ -48,6 +48,10 @@ void for_each_layer(const int flags,
                     const Style* style,
                     std::function<void(const Style::Layer&)> callback)
 {
+  ASSERT(style);
+  if (!style)
+    return;
+
   const Style::Layer* bestLayer = nullptr;
 
   for (const auto& layer : style->layers()) {
@@ -298,6 +302,10 @@ void Theme::paintLayer(Graphics* g,
                        gfx::Rect& rc,
                        gfx::Color& bgColor)
 {
+  ASSERT(style);
+  if (!style)
+    return;
+
   switch (layer.type()) {
 
     case Style::Layer::Type::kBackground:
@@ -493,6 +501,10 @@ void Theme::measureLayer(const Widget* widget,
                          gfx::Size& textHint, int& textAlign,
                          gfx::Size& iconHint, int& iconAlign)
 {
+  ASSERT(style);
+  if (!style)
+    return;
+
   switch (layer.type()) {
 
     case Style::Layer::Type::kBackground:
@@ -602,6 +614,8 @@ void Theme::calcWidgetMetrics(const Widget* widget,
 {
   ASSERT(widget);
   ASSERT(style);
+  if (!style)
+    return;
 
   borderHint = gfx::Border(0, 0, 0, 0);
   gfx::Border paddingHint(0, 0, 0, 0);
