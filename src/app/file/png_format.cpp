@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -55,10 +55,10 @@ class PngFormat : public FileFormat {
   }
 
   bool onLoad(FileOp* fop) override;
-  gfx::ColorSpacePtr loadColorSpace(png_structp png_ptr, png_infop info_ptr);
+  gfx::ColorSpacePtr loadColorSpace(png_structp png, png_infop info);
 #ifdef ENABLE_SAVE
   bool onSave(FileOp* fop) override;
-  void saveColorSpace(png_structp png_ptr, png_infop info_ptr, const gfx::ColorSpace* colorSpace);
+  void saveColorSpace(png_structp png, png_infop info, const gfx::ColorSpace* colorSpace);
 #endif
 };
 
@@ -67,9 +67,9 @@ FileFormat* CreatePngFormat()
   return new PngFormat;
 }
 
-static void report_png_error(png_structp png_ptr, png_const_charp error)
+static void report_png_error(png_structp png, png_const_charp error)
 {
-  ((FileOp*)png_get_error_ptr(png_ptr))->setError("libpng: %s\n", error);
+  ((FileOp*)png_get_error_ptr(png))->setError("libpng: %s\n", error);
 }
 
 // TODO this should be information in FileOp parameter of onSave()
@@ -85,8 +85,30 @@ PngEncoderOneAlphaPixel::~PngEncoderOneAlphaPixel()
   fix_one_alpha_pixel = false;
 }
 
+namespace {
+
+class DestroyReadPng {
+  png_structp png;
+  png_infop info;
+public:
+  DestroyReadPng(png_structp png, png_infop info) : png(png), info(info) { }
+  ~DestroyReadPng() {
+    png_destroy_read_struct(&png, info ? &info: nullptr, nullptr);
+  }
+};
+
+class DestroyWritePng {
+  png_structp png;
+  png_infop info;
+public:
+  DestroyWritePng(png_structp png, png_infop info) : png(png), info(info) { }
+  ~DestroyWritePng() {
+    png_destroy_write_struct(&png, info ? &info: nullptr);
+  }
+};
+
 // As in png_fixed_point_to_float() in skia/src/codec/SkPngCodec.cpp
-static float png_fixtof(png_fixed_point x)
+float png_fixtof(png_fixed_point x)
 {
   // We multiply by the same factor that libpng used to convert
   // fixed point -> double.  Since we want floats, we choose to
@@ -95,16 +117,17 @@ static float png_fixtof(png_fixed_point x)
   return ((float)x) * 0.00001f;
 }
 
-static png_fixed_point png_ftofix(float x)
+png_fixed_point png_ftofix(float x)
 {
   return x * 100000.0f;
 }
+
+} // anonymous namespace
 
 bool PngFormat::onLoad(FileOp* fop)
 {
   png_uint_32 width, height, y;
   unsigned int sig_read = 0;
-  png_structp png_ptr;
   int bit_depth, color_type, interlace_type;
   int num_palette;
   png_colorp palette;
@@ -120,9 +143,10 @@ bool PngFormat::onLoad(FileOp* fop)
    * the compiler header file version, so that we know if the application
    * was compiled with a compatible version of the library
    */
-  png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, (png_voidp)fop,
-                                   report_png_error, report_png_error);
-  if (png_ptr == NULL) {
+  png_structp png =
+    png_create_read_struct(PNG_LIBPNG_VER_STRING, (png_voidp)fop,
+                           report_png_error, report_png_error);
+  if (png == nullptr) {
     fop->setError("png_create_read_struct\n");
     return false;
   }
@@ -130,37 +154,36 @@ bool PngFormat::onLoad(FileOp* fop)
   // Do don't check if the sRGB color profile is valid, it gives
   // problems with sRGB IEC61966-2.1 color profile from Photoshop.
   // See this thread: https://community.aseprite.org/t/2656
-  png_set_option(png_ptr, PNG_SKIP_sRGB_CHECK_PROFILE, PNG_OPTION_ON);
+  png_set_option(png, PNG_SKIP_sRGB_CHECK_PROFILE, PNG_OPTION_ON);
 
   /* Allocate/initialize the memory for image information. */
-  png_infop info_ptr = png_create_info_struct(png_ptr);
-  if (info_ptr == NULL) {
+  png_infop info = png_create_info_struct(png);
+  DestroyReadPng destroyer(png, info);
+  if (info == nullptr) {
     fop->setError("png_create_info_struct\n");
-    png_destroy_read_struct(&png_ptr, NULL, NULL);
     return false;
   }
 
   /* Set error handling if you are using the setjmp/longjmp method (this is
    * the normal method of doing things with libpng).
    */
-  if (setjmp(png_jmpbuf(png_ptr))) {
+  if (setjmp(png_jmpbuf(png))) {
     fop->setError("Error reading PNG file\n");
-    png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
     return false;
   }
 
   /* Set up the input control if you are using standard C streams */
-  png_init_io(png_ptr, fp);
+  png_init_io(png, fp);
 
   /* If we have already read some of the signature */
-  png_set_sig_bytes(png_ptr, sig_read);
+  png_set_sig_bytes(png, sig_read);
 
   /* The call to png_read_info() gives us all of the information from the
    * PNG file before the first IDAT (image data chunk).
    */
-  png_read_info(png_ptr, info_ptr);
+  png_read_info(png, info);
 
-  png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type,
+  png_get_IHDR(png, info, &width, &height, &bit_depth, &color_type,
                &interlace_type, NULL, NULL);
 
 
@@ -171,30 +194,30 @@ bool PngFormat::onLoad(FileOp* fop)
    */
 
   /* tell libpng to strip 16 bit/color files down to 8 bits/color */
-  png_set_strip_16(png_ptr);
+  png_set_strip_16(png);
 
   /* Extract multiple pixels with bit depths of 1, 2, and 4 from a single
    * byte into separate bytes (useful for paletted and grayscale images).
    */
-  png_set_packing(png_ptr);
+  png_set_packing(png);
 
   /* Expand grayscale images to the full 8 bits from 1, 2, or 4 bits/pixel */
   if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8)
-    png_set_expand_gray_1_2_4_to_8(png_ptr);
+    png_set_expand_gray_1_2_4_to_8(png);
 
   /* Turn on interlace handling.  REQUIRED if you are not using
    * png_read_image().  To see how to handle interlacing passes,
    * see the png_read_row() method below:
    */
-  int number_passes = png_set_interlace_handling(png_ptr);
+  int number_passes = png_set_interlace_handling(png);
 
   /* Optional call to gamma correct and add the background to the palette
    * and update info structure.
    */
-  png_read_update_info(png_ptr, info_ptr);
+  png_read_update_info(png, info);
 
   /* create the output image */
-  switch (png_get_color_type(png_ptr, info_ptr)) {
+  switch (png_get_color_type(png, info)) {
 
     case PNG_COLOR_TYPE_RGB_ALPHA:
       fop->sequenceSetHasAlpha(true);
@@ -214,16 +237,14 @@ bool PngFormat::onLoad(FileOp* fop)
 
     default:
       fop->setError("Color type not supported\n)");
-      png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
       return false;
   }
 
-  int imageWidth = png_get_image_width(png_ptr, info_ptr);
-  int imageHeight = png_get_image_height(png_ptr, info_ptr);
+  int imageWidth = png_get_image_width(png, info);
+  int imageHeight = png_get_image_height(png, info);
   Image* image = fop->sequenceImage(pixelFormat, imageWidth, imageHeight);
   if (!image) {
     fop->setError("file_sequence_image %dx%d\n", imageWidth, imageHeight);
-    png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
     return false;
   }
 
@@ -231,8 +252,8 @@ bool PngFormat::onLoad(FileOp* fop)
   png_color_16p png_trans_color = NULL;
 
   // Read the palette
-  if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_PALETTE &&
-      png_get_PLTE(png_ptr, info_ptr, &palette, &num_palette)) {
+  if (png_get_color_type(png, info) == PNG_COLOR_TYPE_PALETTE &&
+      png_get_PLTE(png, info, &palette, &num_palette)) {
     fop->sequenceSetNColors(num_palette);
 
     for (int c=0; c<num_palette; ++c) {
@@ -247,7 +268,7 @@ bool PngFormat::onLoad(FileOp* fop)
     int num_trans = 0;
     int mask_entry = -1;
 
-    png_get_tRNS(png_ptr, info_ptr, &trans, &num_trans, nullptr);
+    png_get_tRNS(png, info, &trans, &num_trans, nullptr);
 
     for (int i = 0; i < num_trans; ++i) {
       fop->sequenceSetAlpha(i, trans[i]);
@@ -265,17 +286,17 @@ bool PngFormat::onLoad(FileOp* fop)
       fop->document()->sprite()->setTransparentColor(mask_entry);
   }
   else {
-    png_get_tRNS(png_ptr, info_ptr, nullptr, nullptr, &png_trans_color);
+    png_get_tRNS(png, info, nullptr, nullptr, &png_trans_color);
   }
 
-  // Allocate the memory to hold the image using the fields of info_ptr.
-  rows_pointer = (png_bytepp)png_malloc(png_ptr, sizeof(png_bytep) * height);
+  // Allocate the memory to hold the image using the fields of info.
+  rows_pointer = (png_bytepp)png_malloc(png, sizeof(png_bytep) * height);
   for (y = 0; y < height; y++)
-    rows_pointer[y] = (png_bytep)png_malloc(png_ptr, png_get_rowbytes(png_ptr, info_ptr));
+    rows_pointer[y] = (png_bytep)png_malloc(png, png_get_rowbytes(png, info));
 
   for (int pass=0; pass<number_passes; ++pass) {
     for (y = 0; y < height; y++) {
-      png_read_rows(png_ptr, rows_pointer+y, nullptr, 1);
+      png_read_rows(png, rows_pointer+y, nullptr, 1);
 
       fop->setProgress(
         (double)((double)pass + (double)(y+1) / (double)(height))
@@ -289,7 +310,7 @@ bool PngFormat::onLoad(FileOp* fop)
   // Convert rows_pointer into the doc::Image
   for (y = 0; y < height; y++) {
     // RGB_ALPHA
-    if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_RGB_ALPHA) {
+    if (png_get_color_type(png, info) == PNG_COLOR_TYPE_RGB_ALPHA) {
       uint8_t* src_address = rows_pointer[y];
       uint32_t* dst_address = (uint32_t*)image->getPixelAddress(0, y);
       unsigned int x, r, g, b, a;
@@ -303,7 +324,7 @@ bool PngFormat::onLoad(FileOp* fop)
       }
     }
     // RGB
-    else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_RGB) {
+    else if (png_get_color_type(png, info) == PNG_COLOR_TYPE_RGB) {
       uint8_t* src_address = rows_pointer[y];
       uint32_t* dst_address = (uint32_t*)image->getPixelAddress(0, y);
       unsigned int x, r, g, b, a;
@@ -329,7 +350,7 @@ bool PngFormat::onLoad(FileOp* fop)
       }
     }
     // GRAY_ALPHA
-    else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_GRAY_ALPHA) {
+    else if (png_get_color_type(png, info) == PNG_COLOR_TYPE_GRAY_ALPHA) {
       uint8_t* src_address = rows_pointer[y];
       uint16_t* dst_address = (uint16_t*)image->getPixelAddress(0, y);
       unsigned int x, k, a;
@@ -341,7 +362,7 @@ bool PngFormat::onLoad(FileOp* fop)
       }
     }
     // GRAY
-    else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_GRAY) {
+    else if (png_get_color_type(png, info) == PNG_COLOR_TYPE_GRAY) {
       uint8_t* src_address = rows_pointer[y];
       uint16_t* dst_address = (uint16_t*)image->getPixelAddress(0, y);
       unsigned int x, k, a;
@@ -363,7 +384,7 @@ bool PngFormat::onLoad(FileOp* fop)
       }
     }
     // PALETTE
-    else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_PALETTE) {
+    else if (png_get_color_type(png, info) == PNG_COLOR_TYPE_PALETTE) {
       uint8_t* src_address = rows_pointer[y];
       uint8_t* dst_address = (uint8_t*)image->getPixelAddress(0, y);
       unsigned int x;
@@ -371,12 +392,12 @@ bool PngFormat::onLoad(FileOp* fop)
       for (x=0; x<width; x++)
         *(dst_address++) = *(src_address++);
     }
-    png_free(png_ptr, rows_pointer[y]);
+    png_free(png, rows_pointer[y]);
   }
-  png_free(png_ptr, rows_pointer);
+  png_free(png, rows_pointer);
 
   // Setup the color space.
-  auto colorSpace = PngFormat::loadColorSpace(png_ptr, info_ptr);
+  auto colorSpace = PngFormat::loadColorSpace(png, info);
   if (colorSpace)
     fop->setEmbeddedColorProfile();
   else { // sRGB is the default PNG color space.
@@ -388,8 +409,6 @@ bool PngFormat::onLoad(FileOp* fop)
     fop->document()->notifyColorSpaceChanged();
   }
 
-  // Clean up after the read, and free any memory allocated
-  png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
   return true;
 }
 
@@ -467,8 +486,7 @@ gfx::ColorSpacePtr PngFormat::loadColorSpace(png_structp png_ptr, png_infop info
 
 bool PngFormat::onSave(FileOp* fop)
 {
-  png_structp png_ptr;
-  png_infop info_ptr;
+  png_infop info;
   png_colorp palette = nullptr;
   png_bytep row_pointer;
   int color_type = 0;
@@ -476,27 +494,24 @@ bool PngFormat::onSave(FileOp* fop)
   FileHandle handle(open_file_with_exception_sync_on_close(fop->filename(), "wb"));
   FILE* fp = handle.get();
 
-  png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, (png_voidp)fop,
-                                    report_png_error, report_png_error);
-  if (png_ptr == NULL) {
+  png_structp png =
+    png_create_write_struct(PNG_LIBPNG_VER_STRING, (png_voidp)fop,
+                            report_png_error, report_png_error);
+  if (png == nullptr)
     return false;
-  }
 
   // Remove sRGB profile checks
-  png_set_option(png_ptr, PNG_SKIP_sRGB_CHECK_PROFILE, PNG_OPTION_ON);
+  png_set_option(png, PNG_SKIP_sRGB_CHECK_PROFILE, PNG_OPTION_ON);
 
-  info_ptr = png_create_info_struct(png_ptr);
-  if (info_ptr == NULL) {
-    png_destroy_write_struct(&png_ptr, NULL);
+  info = png_create_info_struct(png);
+  DestroyWritePng destroyer(png, info);
+  if (info == nullptr)
     return false;
-  }
 
-  if (setjmp(png_jmpbuf(png_ptr))) {
-    png_destroy_write_struct(&png_ptr, &info_ptr);
+  if (setjmp(png_jmpbuf(png)))
     return false;
-  }
 
-  png_init_io(png_ptr, fp);
+  png_init_io(png, fp);
 
   const Image* image = fop->sequenceImage();
   switch (image->pixelFormat()) {
@@ -525,12 +540,12 @@ bool PngFormat::onSave(FileOp* fop)
   const png_uint_32 width = image->width();
   const png_uint_32 height = image->height();
 
-  png_set_IHDR(png_ptr, info_ptr, width, height, 8, color_type,
+  png_set_IHDR(png, info, width, height, 8, color_type,
                PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 
   if (fop->preserveColorProfile() &&
       fop->document()->sprite()->colorSpace())
-    saveColorSpace(png_ptr, info_ptr, fop->document()->sprite()->colorSpace().get());
+    saveColorSpace(png, info, fop->document()->sprite()->colorSpace().get());
 
   if (color_type == PNG_COLOR_TYPE_PALETTE) {
     int c, r, g, b;
@@ -542,7 +557,7 @@ bool PngFormat::onSave(FileOp* fop)
 #endif
 
     // Save the color palette.
-    palette = (png_colorp)png_malloc(png_ptr, pal_size * sizeof(png_color));
+    palette = (png_colorp)png_malloc(png, pal_size * sizeof(png_color));
     for (c = 0; c < pal_size; c++) {
       fop->sequenceGetColor(c, &r, &g, &b);
       palette[c].red   = r;
@@ -550,7 +565,7 @@ bool PngFormat::onSave(FileOp* fop)
       palette[c].blue  = b;
     }
 
-    png_set_PLTE(png_ptr, info_ptr, palette, pal_size);
+    png_set_PLTE(png, info, palette, pal_size);
 
     // If the sprite does not have a (visible) background layer, we
     // put alpha=0 to the transparent color.
@@ -562,7 +577,7 @@ bool PngFormat::onSave(FileOp* fop)
 
     bool all_opaque = true;
     int num_trans = pal_size;
-    png_bytep trans = (png_bytep)png_malloc(png_ptr, num_trans);
+    png_bytep trans = (png_bytep)png_malloc(png, num_trans);
 
     for (c=0; c<num_trans; ++c) {
       int alpha = 255;
@@ -573,20 +588,20 @@ bool PngFormat::onSave(FileOp* fop)
     }
 
     if (!all_opaque || mask_entry >= 0)
-      png_set_tRNS(png_ptr, info_ptr, trans, num_trans, nullptr);
+      png_set_tRNS(png, info, trans, num_trans, nullptr);
 
-    png_free(png_ptr, trans);
+    png_free(png, trans);
   }
 
-  png_write_info(png_ptr, info_ptr);
-  png_set_packing(png_ptr);
+  png_write_info(png, info);
+  png_set_packing(png);
 
-  row_pointer = (png_bytep)png_malloc(png_ptr, png_get_rowbytes(png_ptr, info_ptr));
+  row_pointer = (png_bytep)png_malloc(png, png_get_rowbytes(png, info));
 
   for (png_uint_32 y=0; y<height; ++y) {
     uint8_t* dst_address = row_pointer;
 
-    if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_RGB_ALPHA) {
+    if (png_get_color_type(png, info) == PNG_COLOR_TYPE_RGB_ALPHA) {
       unsigned int x, c, a;
       bool opaque = true;
 
@@ -637,7 +652,7 @@ bool PngFormat::onSave(FileOp* fop)
         }
       }
     }
-    else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_RGB) {
+    else if (png_get_color_type(png, info) == PNG_COLOR_TYPE_RGB) {
       uint32_t* src_address = (uint32_t*)image->getPixelAddress(0, y);
       unsigned int x, c;
 
@@ -648,7 +663,7 @@ bool PngFormat::onSave(FileOp* fop)
         *(dst_address++) = rgba_getb(c);
       }
     }
-    else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_GRAY_ALPHA) {
+    else if (png_get_color_type(png, info) == PNG_COLOR_TYPE_GRAY_ALPHA) {
       uint16_t* src_address = (uint16_t*)image->getPixelAddress(0, y);
       unsigned int x, c, a;
       bool opaque = true;
@@ -668,7 +683,7 @@ bool PngFormat::onSave(FileOp* fop)
         *(dst_address++) = a;
       }
     }
-    else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_GRAY) {
+    else if (png_get_color_type(png, info) == PNG_COLOR_TYPE_GRAY) {
       uint16_t* src_address = (uint16_t*)image->getPixelAddress(0, y);
       unsigned int x, c;
 
@@ -677,7 +692,7 @@ bool PngFormat::onSave(FileOp* fop)
         *(dst_address++) = graya_getv(c);
       }
     }
-    else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_PALETTE) {
+    else if (png_get_color_type(png, info) == PNG_COLOR_TYPE_PALETTE) {
       uint8_t* src_address = (uint8_t*)image->getPixelAddress(0, y);
       unsigned int x;
 
@@ -685,20 +700,19 @@ bool PngFormat::onSave(FileOp* fop)
         *(dst_address++) = *(src_address++);
     }
 
-    png_write_rows(png_ptr, &row_pointer, 1);
+    png_write_rows(png, &row_pointer, 1);
 
     fop->setProgress((double)(y+1) / (double)(height));
   }
 
-  png_free(png_ptr, row_pointer);
-  png_write_end(png_ptr, info_ptr);
+  png_free(png, row_pointer);
+  png_write_end(png, info);
 
   if (image->pixelFormat() == IMAGE_INDEXED) {
-    png_free(png_ptr, palette);
+    png_free(png, palette);
     palette = nullptr;
   }
 
-  png_destroy_write_struct(&png_ptr, &info_ptr);
   return true;
 }
 
