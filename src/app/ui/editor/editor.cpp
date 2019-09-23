@@ -134,7 +134,7 @@ private:
 EditorRender* Editor::m_renderEngine = nullptr;
 
 Editor::Editor(Doc* document, EditorFlags flags)
-  : Widget(editor_type())
+  : Widget(Editor::Type())
   , m_state(new StandbyState())
   , m_decorator(NULL)
   , m_document(document)
@@ -237,7 +237,8 @@ bool Editor::isActive() const
   return (current_editor == this);
 }
 
-WidgetType editor_type()
+// static
+WidgetType Editor::Type()
 {
   static WidgetType type = kGenericWidget;
   if (type == kGenericWidget)

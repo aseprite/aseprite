@@ -100,6 +100,8 @@ namespace app {
       MOUSE,                    // Zoom from cursor
     };
 
+    static ui::WidgetType Type();
+
     Editor(Doc* document, EditorFlags flags = kDefaultEditorFlags);
     ~Editor();
 
@@ -455,8 +457,6 @@ namespace app {
     // (search for Render::setPreviewImage()).
     static EditorRender* m_renderEngine;
   };
-
-  ui::WidgetType editor_type();
 
 } // namespace app
 

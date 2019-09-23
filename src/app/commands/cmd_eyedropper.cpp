@@ -185,7 +185,7 @@ void EyedropperCommand::onExecute(Context* context)
 {
   gfx::Point mousePos = ui::get_mouse_position();
   Widget* widget = ui::Manager::getDefault()->pick(mousePos);
-  if (!widget || widget->type() != editor_type())
+  if (!widget || widget->type() != Editor::Type())
     return;
 
   Editor* editor = static_cast<Editor*>(widget);
