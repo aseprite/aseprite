@@ -15,6 +15,7 @@
 #include "app/file/file_format.h"
 #include "app/file/format_options.h"
 #include "app/file/png_format.h"
+#include "app/file/png_options.h"
 #include "base/file_handle.h"
 #include "doc/doc.h"
 #include "gfx/color_space.h"
@@ -23,6 +24,8 @@
 #include <stdlib.h>
 
 #include "png.h"
+
+#define PNG_TRACE(...) // TRACE
 
 namespace app {
 
@@ -122,6 +125,32 @@ png_fixed_point png_ftofix(float x)
   return x * 100000.0f;
 }
 
+int png_user_chunk(png_structp png, png_unknown_chunkp unknown)
+{
+  auto data = (std::shared_ptr<PngOptions>*)png_get_user_chunk_ptr(png);
+  std::shared_ptr<PngOptions>& opts = *data;
+
+  PNG_TRACE("PNG: Read unknown chunk '%c%c%c%c'\n",
+            unknown->name[0],
+            unknown->name[1],
+            unknown->name[2],
+            unknown->name[3]);
+
+  PngOptions::Chunk chunk;
+  chunk.location = unknown->location;
+  for (int i=0; i<4; ++i)
+    chunk.name.push_back(unknown->name[i]);
+  if (unknown->size > 0) {
+    chunk.data.resize(unknown->size);
+    std::copy(unknown->data,
+              unknown->data+unknown->size,
+              chunk.data.begin());
+  }
+  opts->addChunk(std::move(chunk));
+
+  return 1;
+}
+
 } // anonymous namespace
 
 bool PngFormat::onLoad(FileOp* fop)
@@ -155,6 +184,10 @@ bool PngFormat::onLoad(FileOp* fop)
   // problems with sRGB IEC61966-2.1 color profile from Photoshop.
   // See this thread: https://community.aseprite.org/t/2656
   png_set_option(png, PNG_SKIP_sRGB_CHECK_PROFILE, PNG_OPTION_ON);
+
+  // Set a function to read user data chunks
+  auto opts = std::make_shared<PngOptions>();
+  png_set_read_user_chunk_fn(png, &opts, png_user_chunk);
 
   /* Allocate/initialize the memory for image information. */
   png_infop info = png_create_info_struct(png);
@@ -409,6 +442,10 @@ bool PngFormat::onLoad(FileOp* fop)
     fop->document()->notifyColorSpaceChanged();
   }
 
+  ASSERT(opts != nullptr);
+  if (!opts->isEmpty())
+    fop->setLoadedFormatOptions(opts);
+
   return true;
 }
 
@@ -542,6 +579,32 @@ bool PngFormat::onSave(FileOp* fop)
 
   png_set_IHDR(png, info, width, height, 8, color_type,
                PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+
+  // User chunks
+  auto opts = fop->formatOptionsOfDocument<PngOptions>();
+  if (opts && !opts->isEmpty()) {
+    int num_unknowns = opts->size();
+    ASSERT(num_unknowns > 0);
+    std::vector<png_unknown_chunk> unknowns(num_unknowns);
+    int i = 0;
+    for (const auto& chunk : opts->chunks()) {
+      png_unknown_chunk& unknown = unknowns[i];
+      for (int i=0; i<5; ++i) {
+        unknown.name[i] =
+          (i < int(chunk.name.size()) ? chunk.name[i]: 0);
+      }
+      PNG_TRACE("PNG: Write unknown chunk '%c%c%c%c'\n",
+                unknown.name[0],
+                unknown.name[1],
+                unknown.name[2],
+                unknown.name[3]);
+      unknown.data = (png_byte*)&chunk.data[0];
+      unknown.size = chunk.data.size();
+      unknown.location = chunk.location;
+      ++i;
+    }
+    png_set_unknown_chunks(png, info, &unknowns[0], num_unknowns);
+  }
 
   if (fop->preserveColorProfile() &&
       fop->document()->sprite()->colorSpace())
