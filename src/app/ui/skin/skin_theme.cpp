@@ -148,7 +148,7 @@ static FontData* load_font(std::map<std::string, FontData*>& fonts,
     font->setAntialias(antialias);
 
     if (!fontFilename.empty())
-      LOG(VERBOSE) << "THEME: Font file '" << fontFilename << "' not found\n";
+      LOG(VERBOSE) << "THEME: Font file '" << fontFilename << "' found\n";
   }
   else {
     throw base::Exception("Invalid type=\"%s\" in '%s' for <font name=\"%s\" ...>\n",
