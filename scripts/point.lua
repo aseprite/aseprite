@@ -33,3 +33,43 @@ assert(pt.y == 25)
 pt = -pt
 assert(pt.x == -45)
 assert(pt.y == -25)
+
+-- add/sub/mul/div/mod/pow/idiv
+
+pt = Point(1, 2) + 4
+pt2 = 4 + Point(1, 2)
+assert(pt.x == 5)
+assert(pt.y == 6)
+assert(pt == pt2)
+
+pt = Point(1, 2) + Point(3, 4)
+assert(pt.x == 4)
+assert(pt.y == 6)
+
+pt = Point(3, 4) - 1
+assert(pt.x == 2)
+assert(pt.y == 3)
+
+pt = Point(1, 5) - Point(3, 2)
+assert(pt.x == -2)
+assert(pt.y == 3)
+
+pt = Point(6, 10) * 2
+assert(pt.x == 12)
+assert(pt.y == 20)
+
+pt = Point(6, 10) / 2
+assert(pt.x == 3)
+assert(pt.y == 5)
+
+pt = Point(10, 5) % 2
+assert(pt.x == 0)
+assert(pt.y == 1)
+
+pt = Point(2, 5) ^ 2
+assert(pt.x == 4)
+assert(pt.y == 25)
+
+pt = Point(31, 10) // 3
+assert(pt.x == 10)
+assert(pt.y == 3)

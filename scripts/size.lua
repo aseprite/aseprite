@@ -29,3 +29,47 @@ assert(sz.height == 20)
 sz = Size{45, 25}
 assert(sz.width == 45)
 assert(sz.height == 25)
+
+sz = -sz
+assert(sz.width == -45)
+assert(sz.height == -25)
+
+-- add/sub/mul/div/mod/pow/idiv
+
+sz = Size(1, 2) + 4
+sz2 = 4 + Size(1, 2)
+assert(sz.width == 5)
+assert(sz.height == 6)
+assert(sz == sz2)
+
+sz = Size(1, 2) + Size(3, 4)
+assert(sz.width == 4)
+assert(sz.height == 6)
+
+sz = Size(3, 4) - 1
+assert(sz.width == 2)
+assert(sz.height == 3)
+
+sz = Size(8, 5) - Size(3, 2)
+assert(sz.width == 5)
+assert(sz.height == 3)
+
+sz = Size(6, 10) * 2
+assert(sz.width == 12)
+assert(sz.height == 20)
+
+sz = Size(6, 10) / 2
+assert(sz.width == 3)
+assert(sz.height == 5)
+
+sz = Size(10, 5) % 2
+assert(sz.width == 0)
+assert(sz.height == 1)
+
+sz = Size(2, 5) ^ 2
+assert(sz.width == 4)
+assert(sz.height == 25)
+
+sz = Size(31, 10) // 3
+assert(sz.width == 10)
+assert(sz.height == 3)

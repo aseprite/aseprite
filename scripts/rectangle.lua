@@ -63,7 +63,10 @@ b = Rectangle{x=3, y=4, width=4, height=5}
 c = Rectangle{x=3, y=4, width=3, height=4}
 assert(c == a:intersect(b))
 assert(c == b:intersect(a))
+assert((a & b) == c)
 
 -- Rectangle:union
 
-assert(Rectangle{x=2, y=3, width=5, height=6} == a:union(b))
+c = Rectangle{x=2, y=3, width=5, height=6}
+assert(c == a:union(b))
+assert(c == (a | b))
