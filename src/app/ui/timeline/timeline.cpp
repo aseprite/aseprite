@@ -1535,9 +1535,10 @@ void Timeline::onPaint(ui::PaintEvent& ev)
     goto paintNoDoc;
 
   try {
-    // Lock the sprite to read/render it. We wait 1/4 secs in case
-    // the background thread is making a backup.
-    const DocReader docReader(m_document, 250);
+    // Lock the sprite to read/render it. Here we don't wait if the
+    // document is locked (e.g. a filter is being applied to the
+    // sprite) to avoid locking the UI.
+    const DocReader docReader(m_document, 0);
 
     if (m_redrawMarchingAntsOnly) {
       drawClipboardRange(g);
@@ -1676,6 +1677,8 @@ void Timeline::onPaint(ui::PaintEvent& ev)
 #endif
   }
   catch (const LockedDocException&) {
+    // The sprite is locked, so we defer the rendering of the sprite
+    // for later.
     noDoc = true;
     defer_invalid_rect(g->getClipBounds().offset(bounds().origin()));
   }
