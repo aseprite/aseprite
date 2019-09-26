@@ -82,7 +82,17 @@ public:
     }
 
     if (loop->getBrush()->type() == doc::kImageBrushType)
-      setProc(get_ink_proc<BrushInkProcessing>(loop));
+      switch (m_type) {
+        case Simple:
+          setProc(get_ink_proc<BrushSimpleInkProcessing>(loop));
+          break;
+        case LockAlpha:
+          setProc(get_ink_proc<BrushLockAlphaInkProcessing>(loop));
+          break;
+        default:
+          setProc(get_ink_proc<BrushSimpleInkProcessing>(loop));
+          break;
+      }
     else {
       switch (m_type) {
         case Simple: {

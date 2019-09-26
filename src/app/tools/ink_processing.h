@@ -1083,13 +1083,13 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////
-// Brush Ink
+// Brush Ink - Base
 //////////////////////////////////////////////////////////////////////
 
 template<typename ImageTraits>
-class BrushInkProcessing : public DoubleInkProcessing<BrushInkProcessing<ImageTraits>, ImageTraits> {
+class BrushInkProcessingBase : public DoubleInkProcessing<BrushInkProcessingBase<ImageTraits>, ImageTraits> {
 public:
-  BrushInkProcessing(ToolLoop* loop) {
+  BrushInkProcessingBase(ToolLoop* loop) {
     m_fgColor = loop->getPrimaryColor();
     m_bgColor = loop->getSecondaryColor();
     m_palette = get_current_palette();
@@ -1112,9 +1112,18 @@ public:
     }
   }
 
-  void processPixel(int x, int y) {
+  bool preProcessPixel(int x, int y, color_t* result) {
     // Do nothing
   }
+
+  // TODO Remove this virtual function in some way. At the moment we
+  //      need it because InkProcessing expects that its Derived
+  //      template parameter has a processPixel() member function.
+  virtual void processPixel(int x, int y) {
+    // Do nothing
+  }
+
+  color_t getTransparentColor() { return m_transparentColor; }
 
 private:
   void alignPixelPoint(int& x, int& y) {
@@ -1132,7 +1141,6 @@ private:
   const Image* m_brushMask;
   int m_opacity;
   int m_u, m_v, m_width, m_height;
-
   // When we have a image brush from an INDEXED sprite, we need to know
   // which is the background color in order to translate to transparent color
   // in a RGBA sprite.
@@ -1140,10 +1148,10 @@ private:
 };
 
 template<>
-void BrushInkProcessing<RgbTraits>::processPixel(int x, int y) {
+bool BrushInkProcessingBase<RgbTraits>::preProcessPixel(int x, int y, color_t* result) {
   alignPixelPoint(x, y);
   if (m_brushMask && !get_pixel_fast<BitmapTraits>(m_brushMask, x, y))
-    return;
+    return false;
 
   color_t c;
   switch (m_brushImage->pixelFormat()) {
@@ -1185,16 +1193,17 @@ void BrushInkProcessing<RgbTraits>::processPixel(int x, int y) {
     }
     default:
       ASSERT(false);
-      return;
+      return false;
   }
-  *m_dstAddress = c;
+  *result = c;
+  return true;
 }
 
 template<>
-void BrushInkProcessing<GrayscaleTraits>::processPixel(int x, int y) {
+bool BrushInkProcessingBase<GrayscaleTraits>::preProcessPixel(int x, int y, color_t* result) {
   alignPixelPoint(x, y);
   if (m_brushMask && !get_pixel_fast<BitmapTraits>(m_brushMask, x, y))
-    return;
+    return false;
 
   color_t c;
   switch (m_brushImage->pixelFormat()) {
@@ -1233,16 +1242,17 @@ void BrushInkProcessing<GrayscaleTraits>::processPixel(int x, int y) {
     }
     default:
       ASSERT(false);
-      return;
+      return false;
   }
-  *m_dstAddress = c;
+  *result = c;
+  return true;
 }
 
 template<>
-void BrushInkProcessing<IndexedTraits>::processPixel(int x, int y) {
+bool BrushInkProcessingBase<IndexedTraits>::preProcessPixel(int x, int y, color_t* result) {
   alignPixelPoint(x, y);
   if (m_brushMask && !get_pixel_fast<BitmapTraits>(m_brushMask, x, y))
-    return;
+    return false;
 
   color_t c;
   switch (m_brushImage->pixelFormat()) {
@@ -1271,10 +1281,86 @@ void BrushInkProcessing<IndexedTraits>::processPixel(int x, int y) {
     }
     default:
       ASSERT(false);
-      return;
+      return false;
   }
-  if (c != m_transparentColor)
+  if (c != m_transparentColor) {
+    *result = c;
+    return true;
+  }
+  return false;
+}
+
+//////////////////////////////////////////////////////////////////////
+// Brush Ink - Simple ink type
+//////////////////////////////////////////////////////////////////////
+
+template<typename ImageTraits>
+class BrushSimpleInkProcessing : public BrushInkProcessingBase<ImageTraits> {
+public:
+  BrushSimpleInkProcessing(ToolLoop* loop) : BrushInkProcessingBase<ImageTraits>(loop) {
+  }
+
+  void processPixel(int x, int y) override {
+    // Do nothing
+  }
+};
+
+template<>
+void BrushSimpleInkProcessing<RgbTraits>::processPixel(int x, int y) {
+  color_t c;
+  if (preProcessPixel(x, y, &c))
     *m_dstAddress = c;
+}
+
+template<>
+void BrushSimpleInkProcessing<IndexedTraits>::processPixel(int x, int y) {
+  color_t c;
+  if (preProcessPixel(x, y, &c))
+    *m_dstAddress = c;
+}
+
+template<>
+void BrushSimpleInkProcessing<GrayscaleTraits>::processPixel(int x, int y) {
+  color_t c;
+  if (preProcessPixel(x, y, &c))
+    *m_dstAddress = c;
+}
+
+//////////////////////////////////////////////////////////////////////
+// Brush Ink - Lock Alpha ink type
+//////////////////////////////////////////////////////////////////////
+
+template<typename ImageTraits>
+class BrushLockAlphaInkProcessing : public BrushInkProcessingBase<ImageTraits> {
+public:
+  BrushLockAlphaInkProcessing(ToolLoop* loop) : BrushInkProcessingBase<ImageTraits>(loop) {
+  }
+
+  void processPixel(int x, int y) override {
+    //Do nothing
+  }
+};
+
+template<>
+void BrushLockAlphaInkProcessing<RgbTraits>::processPixel(int x, int y) {
+  color_t c;
+  if (preProcessPixel(x, y, &c))
+    *m_dstAddress = rgba(rgba_getr(c), rgba_getg(c), rgba_getb(c), rgba_geta(*m_srcAddress));
+}
+
+template<>
+void BrushLockAlphaInkProcessing<IndexedTraits>::processPixel(int x, int y) {
+  color_t c;
+  if (preProcessPixel(x, y, &c))
+    if (*m_srcAddress != getTransparentColor())
+      *m_dstAddress = c;
+}
+
+template<>
+void BrushLockAlphaInkProcessing<GrayscaleTraits>::processPixel(int x, int y) {
+  color_t c;
+  if (preProcessPixel(x, y, &c))
+    *m_dstAddress = graya(graya_getv(c), graya_geta(*m_srcAddress));
 }
 
 //////////////////////////////////////////////////////////////////////
