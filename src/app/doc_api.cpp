@@ -337,19 +337,33 @@ void DocApi::addEmptyFramesTo(Sprite* sprite, frame_t newFrame)
 }
 
 void DocApi::copyFrame(Sprite* sprite,
-                            const frame_t fromFrame,
-                            const frame_t newFrame,
-                            const DropFramePlace dropFramePlace,
-                            const TagsHandling tagsHandling)
+                       frame_t fromFrame,
+                       const frame_t newFrame0,
+                       const DropFramePlace dropFramePlace,
+                       const TagsHandling tagsHandling)
 {
   ASSERT(sprite);
+
+  frame_t newFrame =
+    (dropFramePlace == kDropBeforeFrame ? newFrame0:
+                                          newFrame0+1);
+
   m_transaction.execute(
     new cmd::CopyFrame(
-      sprite, fromFrame,
-      (dropFramePlace == kDropBeforeFrame ? newFrame:
-                                            newFrame+1)));
+      sprite, fromFrame, newFrame));
 
-  adjustFrameTags(sprite, newFrame, +1,
+  if (fromFrame >= newFrame)
+    ++fromFrame;
+
+  for (Layer* layer : sprite->allLayers()) {
+    if (layer->isImage()) {
+      copyCel(
+        static_cast<LayerImage*>(layer), fromFrame,
+        static_cast<LayerImage*>(layer), newFrame);
+    }
+  }
+
+  adjustFrameTags(sprite, newFrame0, +1,
                   dropFramePlace,
                   tagsHandling);
 }
@@ -553,26 +567,41 @@ void DocApi::moveCel(
 
 void DocApi::copyCel(
   LayerImage* srcLayer, frame_t srcFrame,
-  LayerImage* dstLayer, frame_t dstFrame)
-{
-  copyCel(
-    srcLayer, srcFrame,
-    dstLayer, dstFrame, dstLayer->isContinuous());
-}
-
-void DocApi::copyCel(
-  LayerImage* srcLayer, frame_t srcFrame,
-  LayerImage* dstLayer, frame_t dstFrame, bool continuous)
+  LayerImage* dstLayer, frame_t dstFrame,
+  const bool* forceContinuous)
 {
   ASSERT(srcLayer != dstLayer || srcFrame != dstFrame);
 
   if (srcLayer == dstLayer && srcFrame == dstFrame)
     return;                     // Nothing to be done
 
+  Cel* srcCel = srcLayer->cel(srcFrame);
+  if (srcCel) {
+    auto it = m_linkedCels.find(srcCel->data());
+    if (it != m_linkedCels.end()) {
+      Cel* dstRelated = it->second;
+      if (dstRelated && dstRelated->layer() == dstLayer) {
+        // Create a link
+        m_transaction.execute(
+          new cmd::CopyCel(
+            dstRelated->layer(), dstRelated->frame(),
+            dstLayer, dstFrame, true));
+        return;
+      }
+    }
+  }
+
   m_transaction.execute(
     new cmd::CopyCel(
       srcLayer, srcFrame,
-      dstLayer, dstFrame, continuous));
+      dstLayer, dstFrame,
+      (forceContinuous ? *forceContinuous:
+                         dstLayer->isContinuous())));
+
+  if (srcCel && srcCel->links()) {
+    if (Cel* dstCel = dstLayer->cel(dstFrame))
+      m_linkedCels[srcCel->data()] = dstCel;
+  }
 }
 
 void DocApi::swapCel(

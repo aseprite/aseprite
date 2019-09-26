@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -37,16 +38,7 @@ void CopyFrame::onExecute()
   executeAndAdd(new cmd::AddFrame(sprite, m_newFrame));
   executeAndAdd(new cmd::SetFrameDuration(sprite, m_newFrame, msecs));
 
-  if (fromFrame >= m_newFrame)
-    ++fromFrame;
-
-  for (Layer* layer : sprite->allLayers()) {
-    if (layer->isImage())  {
-      executeAndAdd(new cmd::CopyCel(
-          static_cast<LayerImage*>(layer), fromFrame,
-          static_cast<LayerImage*>(layer), m_newFrame, layer->isContinuous()));
-    }
-  }
+  // Do not copy cels (cmd::CopyCel must be called from outside)
 }
 
 } // namespace cmd

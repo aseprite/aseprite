@@ -496,50 +496,17 @@ void paste(Context* ctx, const bool interactive)
                 !dstLayer->isImage())
               continue;
 
-            // Maps a linked Cel in the original sprite with its
-            // corresponding copy in the new sprite. In this way
-            // we can.
-            std::map<Cel*, Cel*> relatedCels;
-
             frame_t dstFrame = dstFrameFirst;
             for (frame_t srcFrame : srcRange.selectedFrames()) {
               Cel* srcCel = srcLayer->cel(srcFrame);
-              Cel* srcLink = nullptr;
 
               if (srcCel && srcCel->image()) {
-                bool createCopy = true;
-
-                if (dstLayer->isContinuous() &&
-                    srcCel->links()) {
-                  srcLink = srcCel->link();
-                  if (!srcLink)
-                    srcLink = srcCel;
-
-                  if (srcLink) {
-                    Cel* dstRelated = relatedCels[srcLink];
-                    if (dstRelated) {
-                      createCopy = false;
-
-                      // Create a link from dstRelated
-                      api.copyCel(
-                        static_cast<LayerImage*>(dstLayer), dstRelated->frame(),
-                        static_cast<LayerImage*>(dstLayer), dstFrame);
-                    }
-                  }
-                }
-
-                if (createCopy) {
-                  api.copyCel(
-                    static_cast<LayerImage*>(srcLayer), srcFrame,
-                    static_cast<LayerImage*>(dstLayer), dstFrame);
-
-                  if (srcLink)
-                    relatedCels[srcLink] = dstLayer->cel(dstFrame);
-                }
+                api.copyCel(
+                  static_cast<LayerImage*>(srcLayer), srcFrame,
+                  static_cast<LayerImage*>(dstLayer), dstFrame);
               }
               else {
-                Cel* dstCel = dstLayer->cel(dstFrame);
-                if (dstCel)
+                if (Cel* dstCel = dstLayer->cel(dstFrame))
                   api.clearCel(dstCel);
               }
 

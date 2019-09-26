@@ -92,13 +92,13 @@
         <param name="content" value="empty" />
       </key>
       <key command="NewFrame" shortcut="Alt+M">
-        <param name="content" value="cel" />
+        <param name="content" value="cellinked" />
       </key>
       <key command="NewFrame" shortcut="Alt+D">
-        <param name="content" value="celblock" />
+        <param name="content" value="celcopies" />
       </key>
       <key command="NewFrame" shortcut="Alt+Shift+D">
-        <param name="content" value="cel" />
+        <param name="content" value="cellinked" />
       </key>
       <key command="RemoveFrame" shortcut="Alt+C" />
       <key command="FrameProperties" shortcut="P">
@@ -496,6 +496,9 @@
       <key command="AutocropSprite">
         <param name="byGrid" value="true" />
       </key>
+      <key command="NewFrame">
+	<param name="content" value="cel" />
+      </key>
     </commands>
 
     <!-- Keyboard shortcuts to select tools -->
@@ -816,10 +819,10 @@
           <param name="content" value="empty" />
         </item>
         <item command="NewFrame" text="@.frame_duplicate_cels">
-          <param name="content" value="celblock" />
+          <param name="content" value="celcopies" />
         </item>
         <item command="NewFrame" text="@.frame_duplicate_linked_cels">
-          <param name="content" value="cel" />
+          <param name="content" value="cellinked" />
         </item>
         <item command="RemoveFrame" text="@.frame_delete_frame" />
         <separator />
@@ -1005,10 +1008,10 @@
       <item command="LinkCels" text="@.link_cels" />
       <separator />
       <item command="NewFrame" text="@main_menu.frame_duplicate_cels">
-        <param name="content" value="celblock" />
+        <param name="content" value="celcopies" />
       </item>
       <item command="NewFrame" text="@main_menu.frame_duplicate_linked_cels">
-        <param name="content" value="cel" />
+        <param name="content" value="cellinked" />
       </item>
     </menu>
 

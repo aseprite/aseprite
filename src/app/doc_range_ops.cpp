@@ -54,7 +54,6 @@ static void move_or_copy_cels(
         LayerImage* srcLayer = static_cast<LayerImage*>(srcLayers[i]);
 
         if (i < dstLayers.size() && dstLayers[i]->isImage()) {
-          LayerImage* srcLayer = static_cast<LayerImage*>(srcLayers[i]);
           LayerImage* dstLayer = static_cast<LayerImage*>(dstLayers[i]);
 
 #ifdef TRACE_RANGE_OPS
@@ -68,6 +67,8 @@ static void move_or_copy_cels(
             case Copy: api.copyCel(srcLayer, *srcFrame, dstLayer, *dstFrame); break;
           }
         }
+        // All cels moved from a image layer and dropped in other kind
+        // of layer (e.g. a group) will be discarded/deleted.
         else if (op == Move) {
           api.clearCel(srcLayer, *srcFrame);
         }

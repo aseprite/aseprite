@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -42,7 +42,8 @@ public:
     DUPLICATE_FRAME,
     NEW_EMPTY_FRAME,
     DUPLICATE_CELS,
-    DUPLICATE_CELS_BLOCK,
+    DUPLICATE_CELS_COPIES,
+    DUPLICATE_CELS_LINKED,
    };
 
   NewFrameCommand();
@@ -74,8 +75,11 @@ void NewFrameCommand::onLoadParams(const Params& params)
     m_content = Content::NEW_EMPTY_FRAME;
   else if (content == "cel")
     m_content = Content::DUPLICATE_CELS;
-  else if (content == "celblock")
-    m_content = Content::DUPLICATE_CELS_BLOCK;
+  else if (content == "celblock" ||
+           content == "celcopies")
+    m_content = Content::DUPLICATE_CELS_COPIES;
+  else if (content == "cellinked")
+    m_content = Content::DUPLICATE_CELS_LINKED;
 }
 
 bool NewFrameCommand::onEnabled(Context* context)
@@ -104,13 +108,12 @@ void NewFrameCommand::onExecute(Context* context)
         break;
 
       case Content::DUPLICATE_CELS:
-      case Content::DUPLICATE_CELS_BLOCK: {
+      case Content::DUPLICATE_CELS_LINKED:
+      case Content::DUPLICATE_CELS_COPIES: {
         const Site* site = writer.site();
         if (site->inTimeline() &&
             !site->selectedLayers().empty() &&
             !site->selectedFrames().empty()) {
-          std::map<CelData*, Cel*> relatedCels;
-
 #if ENABLE_UI
           auto timeline = App::instance()->timeline();
           timeline->prepareToMoveRange();
@@ -129,36 +132,19 @@ void NewFrameCommand::onExecute(Context* context)
             (site->selectedFrames().lastFrame() -
              site->selectedFrames().firstFrame() + 1);
 
+          std::unique_ptr<bool> continuous = nullptr;
+          switch (m_content) {
+            case Content::DUPLICATE_CELS_COPIES: continuous.reset(new bool(false)); break;
+            case Content::DUPLICATE_CELS_LINKED: continuous.reset(new bool(true)); break;
+          }
+
           for (Layer* layer : selLayers) {
             if (layer->isImage()) {
               for (frame_t srcFrame : site->selectedFrames().reversed()) {
                 frame_t dstFrame = srcFrame+frameRange;
-                bool continuous;
-                CelData* srcCelData = nullptr;
-
-                if (m_content == Content::DUPLICATE_CELS_BLOCK) {
-                  continuous = false;
-
-                  Cel* srcCel = static_cast<LayerImage*>(layer)->cel(srcFrame);
-                  if (srcCel) {
-                    srcCelData = srcCel->data();
-
-                    auto it = relatedCels.find(srcCelData);
-                    if (it != relatedCels.end()) {
-                      srcFrame = it->second->frame();
-                      continuous = true;
-                    }
-                  }
-                }
-                else
-                  continuous = layer->isContinuous();
-
                 api.copyCel(
                   static_cast<LayerImage*>(layer), srcFrame,
-                  static_cast<LayerImage*>(layer), dstFrame, continuous);
-
-                if (srcCelData && !relatedCels[srcCelData])
-                  relatedCels[srcCelData] = layer->cel(dstFrame);
+                  static_cast<LayerImage*>(layer), dstFrame, continuous.get());
               }
             }
           }
@@ -168,10 +154,10 @@ void NewFrameCommand::onExecute(Context* context)
           timeline->moveRange(range);
 #endif
         }
-        else {
+        else if (auto layer = static_cast<LayerImage*>(writer.layer())) {
           api.copyCel(
-            static_cast<LayerImage*>(writer.layer()), writer.frame(),
-            static_cast<LayerImage*>(writer.layer()), writer.frame()+1);
+            layer, writer.frame(),
+            layer, writer.frame()+1);
 
 #ifdef ENABLE_UI                // TODO the active frame should be part of the Site
           // TODO should we use DocObserver?
@@ -216,8 +202,11 @@ std::string NewFrameCommand::onGetFriendlyName() const
     case Content::DUPLICATE_CELS:
       text = Strings::commands_NewFrame_DuplicateCels();
       break;
-    case Content::DUPLICATE_CELS_BLOCK:
-      text = Strings::commands_NewFrame_DuplicateCelsBlock();
+    case Content::DUPLICATE_CELS_COPIES:
+      text = Strings::commands_NewFrame_DuplicateCelsCopies();
+      break;
+    case Content::DUPLICATE_CELS_LINKED:
+      text = Strings::commands_NewFrame_DuplicateCelsLinked();
       break;
   }
 
