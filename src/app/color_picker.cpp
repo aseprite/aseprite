@@ -26,6 +26,8 @@ namespace app {
 
 namespace {
 
+const int kOpacityThreshold = 1;
+
 bool get_cel_pixel(const Cel* cel,
                    const double x,
                    const double y,
@@ -93,7 +95,7 @@ void ColorPicker::pickColor(const Site& site,
                                  Preferences::instance().experimental.newBlend()));
 
       doc::CelList cels;
-      sprite->pickCels(pos.x, pos.y, site.frame(), 128,
+      sprite->pickCels(pos.x, pos.y, site.frame(), kOpacityThreshold,
                        sprite->allVisibleLayers(), cels);
       if (!cels.empty())
         m_layer = cels.front()->layer();
@@ -127,7 +129,7 @@ void ColorPicker::pickColor(const Site& site,
 
     case FromFirstReferenceLayer: {
       doc::CelList cels;
-      sprite->pickCels(pos.x, pos.y, site.frame(), 128,
+      sprite->pickCels(pos.x, pos.y, site.frame(), kOpacityThreshold,
                        sprite->allVisibleReferenceLayers(), cels);
 
       for (const Cel* cel : cels) {
