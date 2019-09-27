@@ -520,10 +520,13 @@ int Entry::getCaretFromMouse(MouseMessage* mousemsg)
   int i = MIN(m_scroll, lastPos);
   for (; i<lastPos; ++i) {
     int segmentWidth = 0;
-    for (int j=m_scroll; j<i; ++j)
+    int indexBox = 0;
+    for (int j=m_scroll; j<i; ++j) {
       segmentWidth += m_boxes[j].width;
+      indexBox = j+1;
+    }
 
-    int x = bounds().x + border().left() + segmentWidth;
+    int x = bounds().x + border().left() + segmentWidth + m_boxes[indexBox].width / 2;
 
     if (mouseX > bounds().x2() - border().right()) {
       if (x >= bounds().x2() - border().right()) {
@@ -531,14 +534,8 @@ int Entry::getCaretFromMouse(MouseMessage* mousemsg)
         break;
       }
     }
-    else {
-      if (x > mouseX) {
-        // Previous char is the selected one
-        if (i > m_scroll)
-          --i;
-        break;
-      }
-    }
+    else if (x > mouseX)
+      break;
   }
 
   return MID(0, i, lastPos);
