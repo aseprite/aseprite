@@ -71,6 +71,42 @@
 
 namespace app {
 
+DocApi::HandleLinkedCels::HandleLinkedCels(
+  DocApi& api,
+  doc::LayerImage* srcLayer, const doc::frame_t srcFrame,
+  doc::LayerImage* dstLayer, const doc::frame_t dstFrame)
+  : m_api(api)
+  , m_srcDataId(doc::NullId)
+  , m_dstLayer(dstLayer)
+  , m_dstFrame(dstFrame)
+  , m_created(false)
+{
+  if (Cel* srcCel = srcLayer->cel(srcFrame)) {
+    auto it = m_api.m_linkedCels.find(srcCel->data()->id());
+    if (it != m_api.m_linkedCels.end()) {
+      Cel* dstRelated = it->second;
+      if (dstRelated && dstRelated->layer() == dstLayer) {
+        // Create a link
+        m_api.m_transaction.execute(
+          new cmd::CopyCel(
+            dstRelated->layer(), dstRelated->frame(),
+            dstLayer, dstFrame, true));
+        m_created = true;
+        return;
+      }
+    }
+    m_srcDataId = srcCel->data()->id();
+  }
+}
+
+DocApi::HandleLinkedCels::~HandleLinkedCels()
+{
+  if (m_srcDataId != doc::NullId) {
+    if (Cel* dstCel = m_dstLayer->cel(m_dstFrame))
+      m_api.m_linkedCels[m_srcDataId] = dstCel;
+  }
+}
+
 DocApi::DocApi(Doc* document, Transaction& transaction)
   : m_document(document)
   , m_transaction(transaction)
@@ -560,9 +596,19 @@ void DocApi::moveCel(
   LayerImage* dstLayer, frame_t dstFrame)
 {
   ASSERT(srcLayer != dstLayer || srcFrame != dstFrame);
+  if (srcLayer == dstLayer && srcFrame == dstFrame)
+    return;                     // Nothing to be done
+
+  HandleLinkedCels handleLinkedCels(
+    *this, srcLayer, srcFrame, dstLayer, dstFrame);
+  if (handleLinkedCels.linkWasCreated()) {
+    if (Cel* srcCel = srcLayer->cel(srcFrame))
+      clearCel(srcCel);
+    return;
+  }
+
   m_transaction.execute(new cmd::MoveCel(
       srcLayer, srcFrame,
-      dstLayer, dstFrame, dstLayer->isContinuous()));
 }
 
 void DocApi::copyCel(
@@ -571,25 +617,13 @@ void DocApi::copyCel(
   const bool* forceContinuous)
 {
   ASSERT(srcLayer != dstLayer || srcFrame != dstFrame);
-
   if (srcLayer == dstLayer && srcFrame == dstFrame)
     return;                     // Nothing to be done
 
-  Cel* srcCel = srcLayer->cel(srcFrame);
-  if (srcCel) {
-    auto it = m_linkedCels.find(srcCel->data());
-    if (it != m_linkedCels.end()) {
-      Cel* dstRelated = it->second;
-      if (dstRelated && dstRelated->layer() == dstLayer) {
-        // Create a link
-        m_transaction.execute(
-          new cmd::CopyCel(
-            dstRelated->layer(), dstRelated->frame(),
-            dstLayer, dstFrame, true));
-        return;
-      }
-    }
-  }
+  HandleLinkedCels handleLinkedCels(
+    *this, srcLayer, srcFrame, dstLayer, dstFrame);
+  if (handleLinkedCels.linkWasCreated())
+    return;
 
   m_transaction.execute(
     new cmd::CopyCel(
@@ -597,11 +631,6 @@ void DocApi::copyCel(
       dstLayer, dstFrame,
       (forceContinuous ? *forceContinuous:
                          dstLayer->isContinuous())));
-
-  if (srcCel && srcCel->links()) {
-    if (Cel* dstCel = dstLayer->cel(dstFrame))
-      m_linkedCels[srcCel->data()] = dstCel;
-  }
 }
 
 void DocApi::swapCel(

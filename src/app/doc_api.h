@@ -132,12 +132,32 @@ namespace app {
                          const DropFramePlace dropFramePlace,
                          const TagsHandling tagsHandling);
 
+    class HandleLinkedCels {
+    public:
+      HandleLinkedCels(
+        DocApi& api,
+        doc::LayerImage* srcLayer, const doc::frame_t srcFrame,
+        doc::LayerImage* dstLayer, const doc::frame_t dstFrame);
+      ~HandleLinkedCels();
+      bool linkWasCreated() { return m_created; }
+    private:
+      DocApi& m_api;
+      doc::ObjectId m_srcDataId;
+      doc::Layer* m_dstLayer;
+      doc::frame_t m_dstFrame;
+      bool m_created;
+    };
+
+    bool copyFromLinkedCels(Cel** srcCel,
+                            doc::ObjectId& srcDataId);
+
     Doc* m_document;
     Transaction& m_transaction;
 
     // Map used in copyCel() to re-create the original set of linked
     // cels from the src layers when we copy a block of cels.
-    std::map<CelData*, Cel*> m_linkedCels;
+    // map: ObjectId of CelData -> Cel*
+    std::map<doc::ObjectId, doc::Cel*> m_linkedCels;
   };
 
 } // namespace app
