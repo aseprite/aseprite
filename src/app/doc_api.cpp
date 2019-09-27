@@ -609,6 +609,7 @@ void DocApi::moveCel(
 
   m_transaction.execute(new cmd::MoveCel(
       srcLayer, srcFrame,
+      dstLayer, dstFrame, dstLayer->isContinuous()));
 }
 
 void DocApi::copyCel(
