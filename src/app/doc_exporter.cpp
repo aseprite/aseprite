@@ -680,6 +680,7 @@ Doc* DocExporter::createEmptyTexture(const Samples& samples) const
   Palette* palette = nullptr;
   int maxColors = 256;
   gfx::ColorSpacePtr colorSpace;
+  color_t transparentColor = 0;
 
   for (const auto& sample : samples) {
     if (sample.isDuplicated() ||
@@ -702,12 +703,15 @@ Doc* DocExporter::createEmptyTexture(const Samples& samples) const
       else if (sample.sprite()->getPalettes().size() > 1) {
         colorMode = ColorMode::RGB;
       }
-      else if (palette != NULL
-        && palette->countDiff(sample.sprite()->palette(frame_t(0)), NULL, NULL) > 0) {
+      else if (palette &&
+               palette->countDiff(sample.sprite()->palette(frame_t(0)),
+                                  nullptr, nullptr) > 0) {
         colorMode = ColorMode::RGB;
       }
-      else
+      else if (!palette) {
         palette = sample.sprite()->palette(frame_t(0));
+        transparentColor = sample.sprite()->transparentColor();
+      }
     }
   }
 
@@ -720,8 +724,9 @@ Doc* DocExporter::createEmptyTexture(const Samples& samples) const
                 (colorSpace ? colorSpace: gfx::ColorSpace::MakeNone())),
       maxColors));
 
-  if (palette != NULL)
+  if (palette)
     sprite->setPalette(palette, false);
+  sprite->setTransparentColor(transparentColor);
 
   std::unique_ptr<Doc> document(new Doc(sprite.get()));
   sprite.release();
