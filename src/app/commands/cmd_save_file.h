@@ -39,11 +39,11 @@ namespace app {
 
     std::string m_filename;
     std::string m_filenameFormat;
-    std::string m_frameTag;
+    std::string m_tag;
     std::string m_aniDir;
     std::string m_slice;
     doc::SelectedFrames m_selFrames;
-    bool m_adjustFramesByFrameTag;
+    bool m_adjustFramesByTag;
     bool m_useUI;
     bool m_ignoreEmpty;
   };

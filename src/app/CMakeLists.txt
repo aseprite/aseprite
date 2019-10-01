@@ -347,7 +347,6 @@ if(ENABLE_UI)
     ui/file_selector.cpp
     ui/filename_field.cpp
     ui/font_popup.cpp
-    ui/frame_tag_window.cpp
     ui/hex_color_entry.cpp
     ui/home_view.cpp
     ui/icon_button.cpp
@@ -377,6 +376,7 @@ if(ENABLE_UI)
     ui/slider2.cpp
     ui/status_bar.cpp
     ui/tabs.cpp
+    ui/tag_window.cpp
     ui/task_widget.cpp
     ui/timeline/ani_controls.cpp
     ui/timeline/timeline.cpp
@@ -411,10 +411,10 @@ add_library(app-lib
   cmd.cpp
   cmd/add_cel.cpp
   cmd/add_frame.cpp
-  cmd/add_frame_tag.cpp
   cmd/add_layer.cpp
   cmd/add_palette.cpp
   cmd/add_slice.cpp
+  cmd/add_tag.cpp
   cmd/assign_color_profile.cpp
   cmd/background_from_layer.cpp
   cmd/clear_cel.cpp
@@ -440,10 +440,10 @@ add_library(app-lib
   cmd/remap_colors.cpp
   cmd/remove_cel.cpp
   cmd/remove_frame.cpp
-  cmd/remove_frame_tag.cpp
   cmd/remove_layer.cpp
   cmd/remove_palette.cpp
   cmd/remove_slice.cpp
+  cmd/remove_tag.cpp
   cmd/replace_image.cpp
   cmd/reselect_mask.cpp
   cmd/set_cel_bounds.cpp
@@ -452,10 +452,6 @@ add_library(app-lib
   cmd/set_cel_opacity.cpp
   cmd/set_cel_position.cpp
   cmd/set_frame_duration.cpp
-  cmd/set_frame_tag_anidir.cpp
-  cmd/set_frame_tag_color.cpp
-  cmd/set_frame_tag_name.cpp
-  cmd/set_frame_tag_range.cpp
   cmd/set_last_point.cpp
   cmd/set_layer_blend_mode.cpp
   cmd/set_layer_flags.cpp
@@ -469,6 +465,10 @@ add_library(app-lib
   cmd/set_slice_key.cpp
   cmd/set_slice_name.cpp
   cmd/set_sprite_size.cpp
+  cmd/set_tag_anidir.cpp
+  cmd/set_tag_color.cpp
+  cmd/set_tag_name.cpp
+  cmd/set_tag_range.cpp
   cmd/set_total_frames.cpp
   cmd/set_transparent_color.cpp
   cmd/set_user_data.cpp
@@ -477,11 +477,11 @@ add_library(app-lib
   cmd/unlink_cel.cpp
   cmd/with_cel.cpp
   cmd/with_document.cpp
-  cmd/with_frame_tag.cpp
   cmd/with_image.cpp
   cmd/with_layer.cpp
   cmd/with_slice.cpp
   cmd/with_sprite.cpp
+  cmd/with_tag.cpp
   cmd_sequence.cpp
   cmd_transaction.cpp
   color.cpp

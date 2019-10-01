@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -9,14 +10,14 @@
 #endif
 
 #include "app/app.h"
-#include "app/cmd/add_frame_tag.h"
+#include "app/cmd/add_tag.h"
 #include "app/commands/command.h"
 #include "app/context.h"
 #include "app/context_access.h"
 #include "app/tx.h"
-#include "app/ui/frame_tag_window.h"
+#include "app/ui/tag_window.h"
 #include "app/ui/timeline/timeline.h"
-#include "doc/frame_tag.h"
+#include "doc/tag.h"
 
 #include <stdexcept>
 
@@ -59,22 +60,22 @@ void NewFrameTagCommand::onExecute(Context* context)
     to = range.selectedFrames().lastFrame();
   }
 
-  std::unique_ptr<FrameTag> frameTag(new FrameTag(from, to));
-  FrameTagWindow window(sprite, frameTag.get());
+  std::unique_ptr<Tag> tag(new Tag(from, to));
+  TagWindow window(sprite, tag.get());
   if (!window.show())
     return;
 
   window.rangeValue(from, to);
-  frameTag->setFrameRange(from, to);
-  frameTag->setName(window.nameValue());
-  frameTag->setColor(window.colorValue());
-  frameTag->setAniDir(window.aniDirValue());
+  tag->setFrameRange(from, to);
+  tag->setName(window.nameValue());
+  tag->setColor(window.colorValue());
+  tag->setAniDir(window.aniDirValue());
 
   {
     ContextWriter writer(reader);
-    Tx tx(writer.context(), "New Frames Tag");
-    tx(new cmd::AddFrameTag(writer.sprite(), frameTag.get()));
-    frameTag.release();
+    Tx tx(writer.context(), friendlyName());
+    tx(new cmd::AddTag(writer.sprite(), tag.get()));
+    tag.release();
     tx.commit();
   }
 

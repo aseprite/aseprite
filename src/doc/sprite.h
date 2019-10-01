@@ -1,6 +1,6 @@
 // Aseprite Document Library
-// Copyright (c) 2018-2019 Igara Studio S.A.
-// Copyright (c) 2001-2018 David Capello
+// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -14,7 +14,6 @@
 #include "doc/cel_list.h"
 #include "doc/color.h"
 #include "doc/frame.h"
-#include "doc/frame_tags.h"
 #include "doc/image_ref.h"
 #include "doc/image_spec.h"
 #include "doc/layer_list.h"
@@ -22,6 +21,7 @@
 #include "doc/pixel_format.h"
 #include "doc/pixel_ratio.h"
 #include "doc/slices.h"
+#include "doc/tags.h"
 #include "gfx/rect.h"
 
 #include <vector>
@@ -142,8 +142,8 @@ namespace doc {
     void setFrameRangeDuration(frame_t from, frame_t to, int msecs);
     void setDurationForAllFrames(int msecs);
 
-    const FrameTags& frameTags() const { return m_frameTags; }
-    FrameTags& frameTags() { return m_frameTags; }
+    const Tags& tags() const { return m_tags; }
+    Tags& tags() { return m_tags; }
 
     const Slices& slices() const { return m_slices; }
     Slices& slices() { return m_slices; }
@@ -192,7 +192,7 @@ namespace doc {
     // Current rgb map
     mutable RgbMap* m_rgbMap;
 
-    FrameTags m_frameTags;
+    Tags m_tags;
     Slices m_slices;
 
     // Disable default constructor and copying

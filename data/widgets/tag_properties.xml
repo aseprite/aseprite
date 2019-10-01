@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2015-2018 by David Capello -->
+<!-- Copyright (C) 2019  Igara Studio S.A. -->
+<!-- Copyright (C) 2015-2018  David Capello -->
 <gui>
-<window id="frame_tag_properties" text="@.title">
+<window id="tag_properties" text="@.title">
   <grid columns="2">
     <label text="@.name" />
     <entry maxsize="256" id="name" magnet="true" />

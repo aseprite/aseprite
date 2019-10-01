@@ -1,6 +1,6 @@
 // Aseprite Document Library
-// Copyright (c) 2018-2019 Igara Studio S.A.
-// Copyright (c) 2001-2018 David Capello
+// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -16,13 +16,13 @@
 #include "base/remove_from_container.h"
 #include "doc/cel.h"
 #include "doc/cels_range.h"
-#include "doc/frame_tag.h"
 #include "doc/image_impl.h"
 #include "doc/layer.h"
 #include "doc/palette.h"
 #include "doc/primitives.h"
 #include "doc/remap.h"
 #include "doc/rgbmap.h"
+#include "doc/tag.h"
 
 #include <algorithm>
 #include <cstring>
@@ -44,7 +44,7 @@ Sprite::Sprite(const ImageSpec& spec,
   , m_frlens(1, 100)            // First frame with 100 msecs of duration
   , m_root(new LayerGroup(this))
   , m_rgbMap(nullptr)           // Initial RGB map
-  , m_frameTags(this)
+  , m_tags(this)
   , m_slices(this)
 {
   // Generate palette

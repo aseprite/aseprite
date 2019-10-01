@@ -25,7 +25,6 @@
 
 namespace doc {
   class Cel;
-  class FrameTag;
   class Image;
   class Layer;
   class Palette;

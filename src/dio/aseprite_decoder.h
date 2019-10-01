@@ -11,10 +11,10 @@
 
 #include "dio/decoder.h"
 #include "doc/frame.h"
-#include "doc/frame_tags.h"
 #include "doc/layer_list.h"
 #include "doc/pixel_format.h"
 #include "doc/slices.h"
+#include "doc/tags.h"
 
 #include <string>
 
@@ -55,7 +55,7 @@ private:
   void readCelExtraChunk(doc::Cel* cel);
   void readColorProfile(doc::Sprite* sprite);
   doc::Mask* readMaskChunk();
-  void readTagsChunk(doc::FrameTags* frameTags);
+  void readTagsChunk(doc::Tags* tags);
   void readSlicesChunk(doc::Slices& slices);
   doc::Slice* readSliceChunk(doc::Slices& slices);
   void readUserDataChunk(doc::UserData* userData);

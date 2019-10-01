@@ -26,20 +26,20 @@
 #include "app/cmd/move_layer.h"
 #include "app/cmd/remove_cel.h"
 #include "app/cmd/remove_frame.h"
-#include "app/cmd/remove_frame_tag.h"
 #include "app/cmd/remove_layer.h"
+#include "app/cmd/remove_tag.h"
 #include "app/cmd/replace_image.h"
 #include "app/cmd/set_cel_bounds.h"
 #include "app/cmd/set_cel_frame.h"
 #include "app/cmd/set_cel_opacity.h"
 #include "app/cmd/set_cel_position.h"
 #include "app/cmd/set_frame_duration.h"
-#include "app/cmd/set_frame_tag_range.h"
 #include "app/cmd/set_mask.h"
 #include "app/cmd/set_mask_position.h"
 #include "app/cmd/set_palette.h"
 #include "app/cmd/set_slice_key.h"
 #include "app/cmd/set_sprite_size.h"
+#include "app/cmd/set_tag_range.h"
 #include "app/cmd/set_total_frames.h"
 #include "app/cmd/set_transparent_color.h"
 #include "app/color_target.h"
@@ -52,11 +52,11 @@
 #include "doc/algorithm/flip_image.h"
 #include "doc/algorithm/shrink_bounds.h"
 #include "doc/cel.h"
-#include "doc/frame_tag.h"
-#include "doc/frame_tags.h"
 #include "doc/mask.h"
 #include "doc/palette.h"
 #include "doc/slice.h"
+#include "doc/tag.h"
+#include "doc/tags.h"
 #include "render/render.h"
 
 #include <algorithm>
@@ -361,9 +361,9 @@ void DocApi::addFrame(Sprite* sprite, frame_t newFrame)
 void DocApi::addEmptyFrame(Sprite* sprite, frame_t newFrame)
 {
   m_transaction.execute(new cmd::AddFrame(sprite, newFrame));
-  adjustFrameTags(sprite, newFrame, +1,
-                  kDropBeforeFrame,
-                  kDefaultTagsAdjustment);
+  adjustTags(sprite, newFrame, +1,
+             kDropBeforeFrame,
+             kDefaultTagsAdjustment);
 }
 
 void DocApi::addEmptyFramesTo(Sprite* sprite, frame_t newFrame)
@@ -399,18 +399,18 @@ void DocApi::copyFrame(Sprite* sprite,
     }
   }
 
-  adjustFrameTags(sprite, newFrame0, +1,
-                  dropFramePlace,
-                  tagsHandling);
+  adjustTags(sprite, newFrame0, +1,
+             dropFramePlace,
+             tagsHandling);
 }
 
 void DocApi::removeFrame(Sprite* sprite, frame_t frame)
 {
   ASSERT(frame >= 0);
   m_transaction.execute(new cmd::RemoveFrame(sprite, frame));
-  adjustFrameTags(sprite, frame, -1,
-                  kDropBeforeFrame,
-                  kDefaultTagsAdjustment);
+  adjustTags(sprite, frame, -1,
+             kDropBeforeFrame,
+             kDefaultTagsAdjustment);
 }
 
 void DocApi::setTotalFrames(Sprite* sprite, frame_t frames)
@@ -446,7 +446,7 @@ void DocApi::moveFrame(Sprite* sprite,
   if (frame       >= 0 && frame       <= sprite->lastFrame()   &&
       beforeFrame >= 0 && beforeFrame <= sprite->lastFrame()+1 &&
       ((frame != beforeFrame) ||
-       (!sprite->frameTags().empty() &&
+       (!sprite->tags().empty() &&
         tagsHandling != kDontAdjustTags))) {
     // Change the frame-lengths.
     int frlen_aux = sprite->frameDuration(frame);
@@ -465,10 +465,10 @@ void DocApi::moveFrame(Sprite* sprite,
     }
 
     if (tagsHandling != kDontAdjustTags) {
-      adjustFrameTags(sprite, frame, -1, dropFramePlace, tagsHandling);
+      adjustTags(sprite, frame, -1, dropFramePlace, tagsHandling);
       if (targetFrame >= frame)
         --targetFrame;
-      adjustFrameTags(sprite, targetFrame, +1, dropFramePlace, tagsHandling);
+      adjustTags(sprite, targetFrame, +1, dropFramePlace, tagsHandling);
     }
 
     // Change cel positions.
@@ -806,14 +806,14 @@ void DocApi::setPalette(Sprite* sprite, frame_t frame, const Palette* newPalette
   }
 }
 
-void DocApi::adjustFrameTags(Sprite* sprite,
-                                  const frame_t frame,
-                                  const frame_t delta,
-                                  const DropFramePlace dropFramePlace,
-                                  const TagsHandling tagsHandling)
+void DocApi::adjustTags(Sprite* sprite,
+                        const frame_t frame,
+                        const frame_t delta,
+                        const DropFramePlace dropFramePlace,
+                        const TagsHandling tagsHandling)
 {
   TRACE_DOCAPI(
-    "\n  adjustFrameTags %s frame %d delta=%d tags=%s:\n",
+    "\n  adjustTags %s frame %d delta=%d tags=%s:\n",
     (dropFramePlace == kDropBeforeFrame ? "before": "after"),
     frame, delta,
     (tagsHandling == kDefaultTagsAdjustment ? "default":
@@ -823,9 +823,9 @@ void DocApi::adjustFrameTags(Sprite* sprite,
 
   // As FrameTag::setFrameRange() changes m_frameTags, we need to use
   // a copy of this collection
-  std::vector<FrameTag*> tags(sprite->frameTags().begin(), sprite->frameTags().end());
+  std::vector<Tag*> tags(sprite->tags().begin(), sprite->tags().end());
 
-  for (FrameTag* tag : tags) {
+  for (Tag* tag : tags) {
     frame_t from = tag->fromFrame();
     frame_t to = tag->toFrame();
 
@@ -866,9 +866,9 @@ void DocApi::adjustFrameTags(Sprite* sprite,
     if (from != tag->fromFrame() ||
         to != tag->toFrame()) {
       if (from > to)
-        m_transaction.execute(new cmd::RemoveFrameTag(sprite, tag));
+        m_transaction.execute(new cmd::RemoveTag(sprite, tag));
       else
-        m_transaction.execute(new cmd::SetFrameTagRange(tag, from, to));
+        m_transaction.execute(new cmd::SetTagRange(tag, from, to));
     }
   }
 }

@@ -15,9 +15,9 @@
 #include "app/cmd/clear_cel.h"
 #include "app/cmd/convert_color_profile.h"
 #include "app/cmd/flatten_layers.h"
-#include "app/cmd/remove_frame_tag.h"
 #include "app/cmd/remove_layer.h"
 #include "app/cmd/remove_slice.h"
+#include "app/cmd/remove_tag.h"
 #include "app/cmd/set_mask.h"
 #include "app/cmd/set_sprite_size.h"
 #include "app/cmd/set_transparent_color.h"
@@ -40,12 +40,12 @@
 #include "app/ui/doc_view.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
-#include "doc/frame_tag.h"
 #include "doc/layer.h"
 #include "doc/mask.h"
 #include "doc/palette.h"
 #include "doc/slice.h"
 #include "doc/sprite.h"
+#include "doc/tag.h"
 
 #include <algorithm>
 
@@ -502,10 +502,10 @@ int Sprite_newTag(lua_State* L)
   auto sprite = get_docobj<Sprite>(L, 1);
   auto from = get_frame_number_from_arg(L, 2);
   auto to = get_frame_number_from_arg(L, 3);
-  auto tag = new doc::FrameTag(from, to);
+  auto tag = new doc::Tag(from, to);
 
   Tx tx;
-  tx(new cmd::AddFrameTag(sprite, tag));
+  tx(new cmd::AddTag(sprite, tag));
   tx.commit();
 
   push_docobj(L, tag);
@@ -515,15 +515,15 @@ int Sprite_newTag(lua_State* L)
 int Sprite_deleteTag(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
-  auto tag = may_get_docobj<FrameTag>(L, 2);
+  auto tag = may_get_docobj<Tag>(L, 2);
   if (!tag && lua_isstring(L, 2)) {
     const char* tagName = lua_tostring(L, 2);
     if (tagName)
-      tag = sprite->frameTags().getByName(tagName);
+      tag = sprite->tags().getByName(tagName);
   }
   if (tag) {
     Tx tx;
-    tx(new cmd::RemoveFrameTag(sprite, tag));
+    tx(new cmd::RemoveTag(sprite, tag));
     tx.commit();
     return 0;
   }

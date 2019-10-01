@@ -1,29 +1,30 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
-#ifndef APP_UI_FRAME_TAG_WINDOW_H_INCLUDED
-#define APP_UI_FRAME_TAG_WINDOW_H_INCLUDED
+#ifndef APP_UI_TAG_WINDOW_H_INCLUDED
+#define APP_UI_TAG_WINDOW_H_INCLUDED
 #pragma once
 
 #include "app/ui/color_button.h"
 #include "doc/anidir.h"
 #include "doc/frame.h"
 
-#include "frame_tag_properties.xml.h"
+#include "tag_properties.xml.h"
 
 namespace doc {
-  class FrameTag;
   class Sprite;
+  class Tag;
 }
 
 namespace app {
 
-  class FrameTagWindow : protected app::gen::FrameTagProperties {
+  class TagWindow : protected app::gen::TagProperties {
   public:
-    FrameTagWindow(const doc::Sprite* sprite, const doc::FrameTag* frameTag);
+    TagWindow(const doc::Sprite* sprite, const doc::Tag* tag);
 
     bool show();
 

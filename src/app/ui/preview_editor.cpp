@@ -35,7 +35,7 @@
 #include "ui/message.h"
 #include "ui/system.h"
 
-#include "doc/frame_tag.h"
+#include "doc/tag.h"
 
 namespace app {
 
@@ -397,15 +397,15 @@ void PreviewEditorWindow::updateUsingEditor(Editor* editor)
   }
   else {
     if (miniEditor->isPlaying()) {
-      doc::FrameTag* tag = editor
+      doc::Tag* tag = editor
         ->getCustomizationDelegate()
-        ->getFrameTagProvider()
-        ->getFrameTagByFrame(editor->frame(), true);
+        ->getTagProvider()
+        ->getTagByFrame(editor->frame(), true);
 
-      doc::FrameTag* playingTag = editor
+      doc::Tag* playingTag = editor
         ->getCustomizationDelegate()
-        ->getFrameTagProvider()
-        ->getFrameTagByFrame(m_refFrame, true);
+        ->getTagProvider()
+        ->getTagByFrame(m_refFrame, true);
 
       if (tag == playingTag)
         return;

@@ -120,7 +120,7 @@ static void ase_file_write_color_profile(FILE* f,
 #if 0
 static void ase_file_write_mask_chunk(FILE* f, dio::AsepriteFrameHeader* frame_header, Mask* mask);
 #endif
-static void ase_file_write_tags_chunk(FILE* f, dio::AsepriteFrameHeader* frame_header, const FrameTags* frameTags,
+static void ase_file_write_tags_chunk(FILE* f, dio::AsepriteFrameHeader* frame_header, const Tags* tags,
                                       const frame_t fromFrame, const frame_t toFrame);
 static void ase_file_write_slice_chunks(FILE* f, dio::AsepriteFrameHeader* frame_header, const Slices& slices,
                                         const frame_t fromFrame, const frame_t toFrame);
@@ -172,7 +172,7 @@ class AseFormat : public FileFormat {
       FILE_SUPPORT_LAYERS |
       FILE_SUPPORT_FRAMES |
       FILE_SUPPORT_PALETTES |
-      FILE_SUPPORT_FRAME_TAGS |
+      FILE_SUPPORT_TAGS |
       FILE_SUPPORT_BIG_PALETTES |
       FILE_SUPPORT_PALETTE_WITH_ALPHA;
   }
@@ -304,8 +304,8 @@ bool AseFormat::onSave(FileOp* fop)
         ase_file_write_layers(f, &frame_header, child, 0);
 
       // Writer frame tags
-      if (sprite->frameTags().size() > 0)
-        ase_file_write_tags_chunk(f, &frame_header, &sprite->frameTags(),
+      if (sprite->tags().size() > 0)
+        ase_file_write_tags_chunk(f, &frame_header, &sprite->tags(),
                                   fop->roi().fromFrame(),
                                   fop->roi().toFrame());
 
@@ -921,25 +921,28 @@ static void ase_file_write_mask_chunk(FILE* f, dio::AsepriteFrameHeader* frame_h
 }
 #endif
 
-static void ase_file_write_tags_chunk(FILE* f, dio::AsepriteFrameHeader* frame_header, const FrameTags* frameTags,
-                                      const frame_t fromFrame, const frame_t toFrame)
+static void ase_file_write_tags_chunk(FILE* f,
+                                      dio::AsepriteFrameHeader* frame_header,
+                                      const Tags* tags,
+                                      const frame_t fromFrame,
+                                      const frame_t toFrame)
 {
   ChunkWriter chunk(f, frame_header, ASE_FILE_CHUNK_TAGS);
 
-  int tags = 0;
-  for (const FrameTag* tag : *frameTags) {
+  int ntags = 0;
+  for (const Tag* tag : *tags) {
     // Skip tags that are outside of the given ROI
     if (tag->fromFrame() > toFrame ||
         tag->toFrame() < fromFrame)
       continue;
-    ++tags;
+    ++ntags;
   }
 
-  fputw(tags, f);
+  fputw(ntags, f);
   fputl(0, f);  // 8 reserved bytes
   fputl(0, f);
 
-  for (const FrameTag* tag : *frameTags) {
+  for (const Tag* tag : *tags) {
     if (tag->fromFrame() > toFrame ||
         tag->toFrame() < fromFrame)
       continue;

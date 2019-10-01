@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -12,12 +13,12 @@
 
 #include "app/doc.h"
 #include "doc/cel.h"
-#include "doc/frame_tag.h"
 #include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/palette.h"
 #include "doc/primitives.h"
 #include "doc/sprite.h"
+#include "doc/tag.h"
 
 namespace app {
 
@@ -50,21 +51,21 @@ DocDiff compare_docs(const Doc* a,
   }
 
   // Tags
-  if (a->sprite()->frameTags().size() != b->sprite()->frameTags().size()) {
-    diff.anything = diff.frameTags = true;
+  if (a->sprite()->tags().size() != b->sprite()->tags().size()) {
+    diff.anything = diff.tags = true;
   }
   else {
-    auto aIt = a->sprite()->frameTags().begin(), aEnd = a->sprite()->frameTags().end();
-    auto bIt = b->sprite()->frameTags().begin(), bEnd = b->sprite()->frameTags().end();
+    auto aIt = a->sprite()->tags().begin(), aEnd = a->sprite()->tags().end();
+    auto bIt = b->sprite()->tags().begin(), bEnd = b->sprite()->tags().end();
     for (; aIt != aEnd && bIt != bEnd; ++aIt, ++bIt) {
-      const FrameTag* aTag = *aIt;
-      const FrameTag* bTag = *bIt;
+      const Tag* aTag = *aIt;
+      const Tag* bTag = *bIt;
       if (aTag->fromFrame() != bTag->fromFrame() ||
           aTag->toFrame()   != bTag->toFrame()   ||
           aTag->name()      != bTag->name()      ||
           aTag->color()     != bTag->color()     ||
           aTag->aniDir()    != bTag->aniDir()) {
-        diff.anything = diff.frameTags = true;
+        diff.anything = diff.tags = true;
       }
     }
   }

@@ -36,13 +36,13 @@ namespace gfx {
 
 namespace doc {
   class Cel;
-  class FrameTag;
   class Image;
   class Layer;
   class LayerGroup;
   class Mask;
   class Palette;
   class Sprite;
+  class Tag;
   class WithUserData;
 }
 

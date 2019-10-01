@@ -343,7 +343,7 @@ void AppMenus::reload()
   m_framePopupMenu.reset(loadMenuById(handle, "frame_popup_menu"));
   m_celPopupMenu.reset(loadMenuById(handle, "cel_popup_menu"));
   m_celMovementPopupMenu.reset(loadMenuById(handle, "cel_movement_popup_menu"));
-  m_frameTagPopupMenu.reset(loadMenuById(handle, "frame_tag_popup_menu"));
+  m_tagPopupMenu.reset(loadMenuById(handle, "tag_popup_menu"));
   m_slicePopupMenu.reset(loadMenuById(handle, "slice_popup_menu"));
   m_palettePopupMenu.reset(loadMenuById(handle, "palette_popup_menu"));
   m_inkPopupMenu.reset(loadMenuById(handle, "ink_popup_menu"));
@@ -706,7 +706,7 @@ void AppMenus::updateMenusList()
   m_menus.push_back(m_framePopupMenu.get());
   m_menus.push_back(m_celPopupMenu.get());
   m_menus.push_back(m_celMovementPopupMenu.get());
-  m_menus.push_back(m_frameTagPopupMenu.get());
+  m_menus.push_back(m_tagPopupMenu.get());
   m_menus.push_back(m_slicePopupMenu.get());
   m_menus.push_back(m_palettePopupMenu.get());
   m_menus.push_back(m_inkPopupMenu.get());

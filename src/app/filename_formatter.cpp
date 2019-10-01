@@ -129,7 +129,7 @@ std::string get_default_filename_format(
   const bool withPath,
   const bool hasFrames,
   const bool hasLayer,
-  const bool hasFrameTag)
+  const bool hasTag)
 {
   std::string format;
 
@@ -141,7 +141,7 @@ std::string get_default_filename_format(
   if (hasLayer)
     format += " ({layer})";
 
-  if (hasFrameTag)
+  if (hasTag)
     format += " #{tag}";
 
   if (hasFrames && is_static_image_format(filename) &&
@@ -149,7 +149,7 @@ std::string get_default_filename_format(
       filename.find("{tagframe") == std::string::npos) {
     const bool autoFrameFromLastDigit =
       (!hasLayer &&
-       !hasFrameTag);
+       !hasTag);
 
     // Check if we already have a frame number at the end of the
     // filename (e.g. output01.png)
@@ -161,7 +161,7 @@ std::string get_default_filename_format(
       std::vector<char> buf(32);
       std::sprintf(&buf[0], "{frame%0*d}", frameWidth, frameBase);
 
-      if (hasLayer || hasFrameTag)
+      if (hasLayer || hasTag)
         format += " ";
       format += &buf[0];
 
@@ -174,7 +174,7 @@ std::string get_default_filename_format(
       // Do nothing
     }
     else {
-      if (hasLayer || hasFrameTag)
+      if (hasLayer || hasTag)
         format += " {frame}";
       else
         format += "{frame1}";
@@ -189,14 +189,14 @@ std::string get_default_filename_format_for_sheet(
   const std::string& filename,
   const bool hasFrames,
   const bool hasLayer,
-  const bool hasFrameTag)
+  const bool hasTag)
 {
   std::string format = "{title}";
 
   if (hasLayer)
     format += " ({layer})";
 
-  if (hasFrameTag)
+  if (hasTag)
     format += " #{tag}";
 
   if (hasFrames) {

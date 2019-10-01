@@ -104,7 +104,7 @@ public:
     return KeyboardShortcuts::instance()->getCurrentActionModifiers(context);
   }
 
-  FrameTagProvider* getFrameTagProvider() override {
+  TagProvider* getTagProvider() override {
     return App::instance()->mainWindow()->getTimeline();
   }
 
@@ -187,7 +187,7 @@ public:
     return KeyAction::None;
   }
 
-  FrameTagProvider* getFrameTagProvider() override {
+  TagProvider* getTagProvider() override {
     return App::instance()->mainWindow()->getTimeline();
   }
 };

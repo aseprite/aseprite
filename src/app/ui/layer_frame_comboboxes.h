@@ -14,11 +14,11 @@
 #include <string>
 
 namespace doc {
-  class FrameTag;
   class Layer;
   class SelectedFrames;
   class SelectedLayers;
   class Sprite;
+  class Tag;
 }
 
 namespace ui {
@@ -45,10 +45,10 @@ namespace app {
 
   class FrameListItem : public ui::ListItem {
   public:
-    FrameListItem(doc::FrameTag* tag);
-    doc::FrameTag* tag() const { return m_tag; }
+    FrameListItem(doc::Tag* tag);
+    doc::Tag* tag() const { return m_tag; }
   private:
-    doc::FrameTag* m_tag;
+    doc::Tag* m_tag;
   };
 
   void fill_layers_combobox(const doc::Sprite* sprite, ui::ComboBox* layers, const std::string& defLayer);
@@ -59,9 +59,9 @@ namespace app {
                                 const std::string& layersValue,
                                 RestoreVisibleLayers& layersVisibility);
 
-  doc::FrameTag* calculate_selected_frames(const Site& site,
-                                           const std::string& framesValue,
-                                           doc::SelectedFrames& selFrames);
+  doc::Tag* calculate_selected_frames(const Site& site,
+                                      const std::string& framesValue,
+                                      doc::SelectedFrames& selFrames);
 
 } // namespace app
 

@@ -126,11 +126,11 @@ namespace app {
                  const bool trimOutside);
     void setCelFramePosition(Cel* cel, frame_t frame);
     void moveFrameLayer(Layer* layer, frame_t frame, frame_t beforeFrame);
-    void adjustFrameTags(Sprite* sprite,
-                         const frame_t frame,
-                         const frame_t delta,
-                         const DropFramePlace dropFramePlace,
-                         const TagsHandling tagsHandling);
+    void adjustTags(Sprite* sprite,
+                    const frame_t frame,
+                    const frame_t delta,
+                    const DropFramePlace dropFramePlace,
+                    const TagsHandling tagsHandling);
 
     class HandleLinkedCels {
     public:

@@ -115,8 +115,8 @@ void PreviewCliDelegate::saveFile(Context* ctx, const CliOpenFile& cof)
   std::cout << "  - Visible Layer:\n";
   showLayerVisibility(cof.document->sprite()->root(), "    ");
 
-  if (cof.hasFrameTag()) {
-    std::cout << "  - Frame tag: '" << cof.frameTag << "'\n";
+  if (cof.hasTag()) {
+    std::cout << "  - Tag: '" << cof.tag << "'\n";
   }
 
   if (cof.hasSlice()) {

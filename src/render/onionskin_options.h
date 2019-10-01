@@ -1,5 +1,6 @@
 // Aseprite Render Library
-// Copyright (c) 2018 David Capello
+// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -12,8 +13,8 @@
 #include "render/onionskin_type.h"
 
 namespace doc {
-  class FrameTag;
   class Layer;
+  class Tag;
 }
 
 namespace render {
@@ -37,7 +38,7 @@ namespace render {
     int nextFrames() const { return m_nextFrames; }
     int opacityBase() const { return m_opacityBase; }
     int opacityStep() const { return m_opacityStep; }
-    doc::FrameTag* loopTag() const { return m_loopTag; }
+    doc::Tag* loopTag() const { return m_loopTag; }
     doc::Layer* layer() const { return m_layer; }
 
     void type(OnionskinType type) { m_type = type; }
@@ -46,7 +47,7 @@ namespace render {
     void nextFrames(int nextFrames) { m_nextFrames = nextFrames; }
     void opacityBase(int base) { m_opacityBase = base; }
     void opacityStep(int step) { m_opacityStep = step; }
-    void loopTag(doc::FrameTag* loopTag) { m_loopTag = loopTag; }
+    void loopTag(doc::Tag* loopTag) { m_loopTag = loopTag; }
     void layer(doc::Layer* layer) { m_layer = layer; }
 
   private:
@@ -56,7 +57,7 @@ namespace render {
     int m_nextFrames;
     int m_opacityBase;
     int m_opacityStep;
-    doc::FrameTag* m_loopTag;
+    doc::Tag* m_loopTag;
     doc::Layer* m_layer;
   };
 

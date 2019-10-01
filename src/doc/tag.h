@@ -1,11 +1,12 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2016 David Capello
+// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
-#ifndef DOC_FRAME_TAG_H_INCLUDED
-#define DOC_FRAME_TAG_H_INCLUDED
+#ifndef DOC_TAG_H_INCLUDED
+#define DOC_TAG_H_INCLUDED
 #pragma once
 
 #include "base/disable_copying.h"
@@ -17,15 +18,15 @@
 #include <string>
 
 namespace doc {
-  class FrameTags;
+  class Tags;
 
-  class FrameTag : public Object {
+  class Tag : public Object {
   public:
-    FrameTag(frame_t from, frame_t to);
-    FrameTag(const FrameTag& other);
-    ~FrameTag();
+    Tag(frame_t from, frame_t to);
+    Tag(const Tag& other);
+    ~Tag();
 
-    FrameTags* owner() const { return m_owner; }
+    Tags* owner() const { return m_owner; }
     frame_t fromFrame() const { return m_from; }
     frame_t toFrame() const { return m_to; }
     frame_t frames() const { return m_to - m_from + 1; }
@@ -38,17 +39,17 @@ namespace doc {
     void setColor(color_t color);
     void setAniDir(AniDir aniDir);
 
-    void setOwner(FrameTags* owner);
+    void setOwner(Tags* owner);
 
   public:
-    FrameTags* m_owner;
+    Tags* m_owner;
     frame_t m_from, m_to;
     color_t m_color;
     std::string m_name;
     AniDir m_aniDir;
 
     // Disable operator=
-    FrameTag& operator=(FrameTag&);
+    Tag& operator=(Tag&);
   };
 
 } // namespace doc

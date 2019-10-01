@@ -26,12 +26,12 @@
 #include "base/convert_to.h"
 #include "base/fs.h"
 #include "base/split_string.h"
-#include "doc/frame_tag.h"
-#include "doc/frame_tags.h"
 #include "doc/layer.h"
 #include "doc/selected_frames.h"
 #include "doc/selected_layers.h"
 #include "doc/slice.h"
+#include "doc/tag.h"
+#include "doc/tags.h"
 #include "render/dithering_algorithm.h"
 
 #include <queue>
@@ -283,9 +283,9 @@ void CliProcessor::process(Context* ctx)
         else if (opt == &m_options.allLayers()) {
           cof.allLayers = true;
         }
-        // --frame-tag <tag-name>
-        else if (opt == &m_options.frameTag()) {
-          cof.frameTag = value.value();
+        // --tag <tag-name>
+        else if (opt == &m_options.tag()) {
+          cof.tag = value.value();
         }
         // --frame-range from,to
         else if (opt == &m_options.frameRange()) {
@@ -531,7 +531,7 @@ void CliProcessor::process(Context* ctx)
         // --list-tags
         else if (opt == &m_options.listTags()) {
           if (m_exporter)
-            m_exporter->setListFrameTags(true);
+            m_exporter->setListTags(true);
           else
             cof.listTags = true;
         }
@@ -606,18 +606,18 @@ bool CliProcessor::openFile(Context* ctx, CliOpenFile& cof)
 
     // Add document to exporter
     if (m_exporter) {
-      FrameTag* frameTag = nullptr;
+      Tag* tag = nullptr;
       SelectedFrames selFrames;
 
-      if (cof.hasFrameTag()) {
-        frameTag = doc->sprite()->frameTags().getByName(cof.frameTag);
+      if (cof.hasTag()) {
+        tag = doc->sprite()->tags().getByName(cof.tag);
       }
       if (cof.hasFrameRange()) {
         // --frame-range with --frame-tag
-        if (frameTag) {
+        if (tag) {
           selFrames.insert(
-            frameTag->fromFrame()+MID(0, cof.fromFrame, frameTag->frames()-1),
-            frameTag->fromFrame()+MID(0, cof.toFrame, frameTag->frames()-1));
+            tag->fromFrame()+MID(0, cof.fromFrame, tag->frames()-1),
+            tag->fromFrame()+MID(0, cof.toFrame, tag->frames()-1));
         }
         // --frame-range without --frame-tag
         else {
@@ -634,12 +634,12 @@ bool CliProcessor::openFile(Context* ctx, CliOpenFile& cof)
             SelectedLayers oneLayer;
             oneLayer.insert(layer);
 
-            m_exporter->addDocument(doc, frameTag, &oneLayer,
+            m_exporter->addDocument(doc, tag, &oneLayer,
                                     (!selFrames.empty() ? &selFrames: nullptr));
           }
         }
         else {
-          m_exporter->addDocument(doc, frameTag, &filteredLayers,
+          m_exporter->addDocument(doc, tag, &filteredLayers,
                                   (!selFrames.empty() ? &selFrames: nullptr));
         }
       }
@@ -648,12 +648,12 @@ bool CliProcessor::openFile(Context* ctx, CliOpenFile& cof)
           SelectedLayers oneLayer;
           oneLayer.insert(layer);
 
-          m_exporter->addDocument(doc, frameTag, &oneLayer,
+          m_exporter->addDocument(doc, tag, &oneLayer,
                                   (!selFrames.empty() ? &selFrames: nullptr));
         }
       }
       else {
-        m_exporter->addDocument(doc, frameTag, nullptr,
+        m_exporter->addDocument(doc, tag, nullptr,
                                 (!selFrames.empty() ? &selFrames: nullptr));
       }
     }
@@ -712,26 +712,26 @@ void CliProcessor::saveFile(Context* ctx, const CliOpenFile& cof)
     layers.push_back(nullptr);
   }
 
-  std::vector<doc::FrameTag*> frameTags;
-  if (cof.hasFrameTag()) {
-    frameTags.push_back(
-      doc->sprite()->frameTags().getByName(cof.frameTag));
+  std::vector<doc::Tag*> tags;
+  if (cof.hasTag()) {
+    tags.push_back(
+      doc->sprite()->tags().getByName(cof.tag));
   }
   else {
-    doc::FrameTags& origFrameTags = cof.document->sprite()->frameTags();
-    if (cof.splitTags && !origFrameTags.empty()) {
-      for (doc::FrameTag* frameTag : origFrameTags) {
+    doc::Tags& origTags = cof.document->sprite()->tags();
+    if (cof.splitTags && !origTags.empty()) {
+      for (doc::Tag* tag : origTags) {
         // In case the tag is outside the given --frame-range
         if (cof.hasFrameRange()) {
-          if (frameTag->toFrame() < cof.fromFrame ||
-              frameTag->fromFrame() > cof.toFrame)
+          if (tag->toFrame() < cof.fromFrame ||
+              tag->fromFrame() > cof.toFrame)
             continue;
         }
-        frameTags.push_back(frameTag);
+        tags.push_back(tag);
       }
     }
     else
-      frameTags.push_back(nullptr);
+      tags.push_back(nullptr);
   }
 
   std::vector<doc::Slice*> slices;
@@ -753,7 +753,7 @@ void CliProcessor::saveFile(Context* ctx, const CliOpenFile& cof)
   bool groupInFormat = is_group_in_filename_format(fn);
 
   for (doc::Slice* slice : slices) {
-    for (doc::FrameTag* frameTag : frameTags) {
+    for (doc::Tag* tag : tags) {
       // For each layer, hide other ones and save the sprite.
       for (doc::Layer* layer : layers) {
         RestoreVisibleLayers layersVisibility;
@@ -804,11 +804,11 @@ void CliProcessor::saveFile(Context* ctx, const CliOpenFile& cof)
 
           itemCof.includeLayers.push_back(layer->name());
         }
-        if (frameTag) {
+        if (tag) {
           fnInfo
-            .innerTagName(frameTag->name())
-            .outerTagName(frameTag->name());
-          itemCof.frameTag = frameTag->name();
+            .innerTagName(tag->name())
+            .outerTagName(tag->name());
+          itemCof.tag = tag->name();
         }
         if (slice) {
           fnInfo.sliceName(slice->name());

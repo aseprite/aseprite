@@ -5,23 +5,18 @@
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
-#ifndef DOC_HANDLE_ANIDIR_H_INCLUDED
-#define DOC_HANDLE_ANIDIR_H_INCLUDED
+#ifndef DOC_TAG_IO_H_INCLUDED
+#define DOC_TAG_IO_H_INCLUDED
 #pragma once
 
-#include "doc/frame.h"
+#include <iosfwd>
 
 namespace doc {
 
-  class Sprite;
   class Tag;
 
-  frame_t calculate_next_frame(
-    const Sprite* sprite,
-    frame_t frame,
-    frame_t frameDelta,
-    const Tag* tag,
-    bool& pingPongForward);
+  void write_tag(std::ostream& os, const Tag* tag);
+  Tag* read_tag(std::istream& is, bool setId = true);
 
 } // namespace doc
 

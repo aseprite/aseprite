@@ -56,7 +56,7 @@ namespace app {
     Menu* getFramePopupMenu() { return m_framePopupMenu.get(); }
     Menu* getCelPopupMenu() { return m_celPopupMenu.get(); }
     Menu* getCelMovementPopupMenu() { return m_celMovementPopupMenu.get(); }
-    Menu* getFrameTagPopupMenu() { return m_frameTagPopupMenu.get(); }
+    Menu* getTagPopupMenu() { return m_tagPopupMenu.get(); }
     Menu* getSlicePopupMenu() { return m_slicePopupMenu.get(); }
     Menu* getPalettePopupMenu() { return m_palettePopupMenu.get(); }
     Menu* getInkPopupMenu() { return m_inkPopupMenu.get(); }
@@ -92,7 +92,7 @@ namespace app {
     std::unique_ptr<Menu> m_framePopupMenu;
     std::unique_ptr<Menu> m_celPopupMenu;
     std::unique_ptr<Menu> m_celMovementPopupMenu;
-    std::unique_ptr<Menu> m_frameTagPopupMenu;
+    std::unique_ptr<Menu> m_tagPopupMenu;
     std::unique_ptr<Menu> m_slicePopupMenu;
     std::unique_ptr<Menu> m_palettePopupMenu;
     std::unique_ptr<Menu> m_inkPopupMenu;

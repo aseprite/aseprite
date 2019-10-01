@@ -1285,10 +1285,10 @@ TEST(DocRangeOps2, DropInsideBugs) {
 }
 
 TEST_F(DocRangeOps, MoveRangeWithTags) {
-  FrameTag* a = new FrameTag(0, 2);
-  FrameTag* b = new FrameTag(3, 5);
-  sprite->frameTags().add(a);
-  sprite->frameTags().add(b);
+  auto a = new Tag(0, 2);
+  auto b = new Tag(3, 5);
+  sprite->tags().add(a);
+  sprite->tags().add(b);
 
   EXPECT_EQ(0, a->fromFrame());
   EXPECT_EQ(2, a->toFrame());
@@ -1467,10 +1467,10 @@ TEST_F(DocRangeOps, MoveRangeWithTags) {
 }
 
 TEST_F(DocRangeOps, CopyRangeWithTags) {
-  FrameTag* a = new FrameTag(0, 2);
-  FrameTag* b = new FrameTag(3, 5);
-  sprite->frameTags().add(a);
-  sprite->frameTags().add(b);
+  auto a = new Tag(0, 2);
+  auto b = new Tag(3, 5);
+  sprite->tags().add(a);
+  sprite->tags().add(b);
 
   EXPECT_EQ(0, a->fromFrame());
   EXPECT_EQ(2, a->toFrame());

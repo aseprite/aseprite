@@ -16,7 +16,7 @@ namespace tools {
 
 namespace app {
   class Editor;
-  class FrameTagProvider;
+  class TagProvider;
 
   class EditorCustomizationDelegate {
   public:
@@ -32,7 +32,7 @@ namespace app {
     virtual KeyAction getPressedKeyAction(KeyContext context) = 0;
 
     // Returns the provider of active frame tag (it's the timeline).
-    virtual FrameTagProvider* getFrameTagProvider() = 0;
+    virtual TagProvider* getTagProvider() = 0;
   };
 
 } // namespace app

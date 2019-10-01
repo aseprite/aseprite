@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -24,8 +24,6 @@
 #include "doc/cel_io.h"
 #include "doc/cels_range.h"
 #include "doc/frame.h"
-#include "doc/frame_tag.h"
-#include "doc/frame_tag_io.h"
 #include "doc/image_io.h"
 #include "doc/layer.h"
 #include "doc/palette.h"
@@ -34,6 +32,8 @@
 #include "doc/slice_io.h"
 #include "doc/sprite.h"
 #include "doc/string_io.h"
+#include "doc/tag.h"
+#include "doc/tag_io.h"
 #include "fixmath/fixmath.h"
 
 #include <fstream>
@@ -71,7 +71,7 @@ public:
       if (!saveObject("pal", pal, &Writer::writePalette))
         return false;
 
-    for (FrameTag* frtag : spr->frameTags())
+    for (Tag* frtag : spr->tags())
       if (!saveObject("frtag", frtag, &Writer::writeFrameTag))
         return false;
 
@@ -158,8 +158,8 @@ private:
       write32(s, pal->id());
 
     // IDs of all frame tags
-    write32(s, spr->frameTags().size());
-    for (FrameTag* frtag : spr->frameTags())
+    write32(s, spr->tags().size());
+    for (Tag* frtag : spr->tags())
       write32(s, frtag->id());
 
     // IDs of all slices
@@ -248,8 +248,8 @@ private:
     return true;
   }
 
-  bool writeFrameTag(std::ofstream& s, FrameTag* frameTag) {
-    write_frame_tag(s, frameTag);
+  bool writeFrameTag(std::ofstream& s, Tag* frameTag) {
+    write_tag(s, frameTag);
     return true;
   }
 

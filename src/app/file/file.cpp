@@ -138,18 +138,18 @@ bool is_static_image_format(const std::string& filename)
 FileOpROI::FileOpROI()
   : m_document(nullptr)
   , m_slice(nullptr)
-  , m_frameTag(nullptr)
+  , m_tag(nullptr)
 {
 }
 
 FileOpROI::FileOpROI(const Doc* doc,
                      const std::string& sliceName,
-                     const std::string& frameTagName,
+                     const std::string& tagName,
                      const doc::SelectedFrames& selFrames,
-                     const bool adjustByFrameTag)
+                     const bool adjustByTag)
   : m_document(doc)
   , m_slice(nullptr)
-  , m_frameTag(nullptr)
+  , m_tag(nullptr)
   , m_selFrames(selFrames)
 {
   if (doc) {
@@ -157,18 +157,18 @@ FileOpROI::FileOpROI(const Doc* doc,
       m_slice = doc->sprite()->slices().getByName(sliceName);
 
     // Don't allow exporting frame tags with empty names
-    if (!frameTagName.empty())
-      m_frameTag = doc->sprite()->frameTags().getByName(frameTagName);
+    if (!tagName.empty())
+      m_tag = doc->sprite()->tags().getByName(tagName);
 
-    if (m_frameTag) {
+    if (m_tag) {
       if (m_selFrames.empty())
-        m_selFrames.insert(m_frameTag->fromFrame(), m_frameTag->toFrame());
-      else if (adjustByFrameTag)
-        m_selFrames.displace(m_frameTag->fromFrame());
+        m_selFrames.insert(m_tag->fromFrame(), m_tag->toFrame());
+      else if (adjustByTag)
+        m_selFrames.displace(m_tag->fromFrame());
 
       m_selFrames =
-        m_selFrames.filter(MAX(0, m_frameTag->fromFrame()),
-                           MIN(m_frameTag->toFrame(), doc->sprite()->lastFrame()));
+        m_selFrames.filter(MAX(0, m_tag->fromFrame()),
+                           MIN(m_tag->toFrame(), doc->sprite()->lastFrame()));
     }
     // All frames if selected frames is empty
     else if (m_selFrames.empty())
@@ -424,9 +424,9 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
   }
 
   // Check frames support
-  if (!fop->m_document->sprite()->frameTags().empty()) {
-    if (!fop->m_format->support(FILE_SUPPORT_FRAME_TAGS)) {
-      warnings += "<<- " + Strings::alerts_file_format_frame_tags();
+  if (!fop->m_document->sprite()->tags().empty()) {
+    if (!fop->m_format->support(FILE_SUPPORT_TAGS)) {
+      warnings += "<<- " + Strings::alerts_file_format_tags();
     }
   }
 
@@ -507,8 +507,8 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
     frame_t outputFrame = 0;
 
     for (frame_t frame : fop->m_roi.selectedFrames()) {
-      FrameTag* innerTag = (fop->m_roi.frameTag() ? fop->m_roi.frameTag(): spr->frameTags().innerTag(frame));
-      FrameTag* outerTag = (fop->m_roi.frameTag() ? fop->m_roi.frameTag(): spr->frameTags().outerTag(frame));
+      Tag* innerTag = (fop->m_roi.tag() ? fop->m_roi.tag(): spr->tags().innerTag(frame));
+      Tag* outerTag = (fop->m_roi.tag() ? fop->m_roi.tag(): spr->tags().outerTag(frame));
       FilenameInfo fnInfo;
       fnInfo
         .filename(fn)

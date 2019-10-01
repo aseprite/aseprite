@@ -1024,7 +1024,7 @@
       </item>
     </menu>
 
-    <menu id="frame_tag_popup_menu">
+    <menu id="tag_popup_menu">
       <item command="FrameTagProperties" text="@main_menu.frame_tags_tag_properties" />
       <item command="RemoveFrameTag" text="@main_menu.frame_tags_delete_tag" />
     </menu>

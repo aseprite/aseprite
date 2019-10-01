@@ -31,8 +31,8 @@
 #include "base/convert_to.h"
 #include "base/fs.h"
 #include "base/string.h"
-#include "doc/frame_tag.h"
 #include "doc/layer.h"
+#include "doc/tag.h"
 #include "fmt/format.h"
 
 #include "export_sprite_sheet.xml.h"
@@ -427,7 +427,7 @@ public:
     return layers()->getValue();
   }
 
-  std::string frameTagValue() const {
+  std::string tagValue() const {
     return frames()->getValue();
   }
 
@@ -435,7 +435,7 @@ public:
     return listLayers()->isSelected();
   }
 
-  bool listFrameTagsValue() const {
+  bool listTagsValue() const {
     return listTags()->isSelected();
   }
 
@@ -602,7 +602,7 @@ private:
   void updateSizeFields() {
     SelectedFrames selFrames;
     calculate_selected_frames(m_site,
-                              frameTagValue(),
+                              tagValue(),
                               selFrames);
 
     frame_t nframes = selFrames.size();
@@ -737,9 +737,9 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     docPref.spriteSheet.extrude         (params.extrude         (window.extrudeValue()));
     docPref.spriteSheet.openGenerated   (params.openGenerated   (window.openGeneratedValue()));
     docPref.spriteSheet.layer           (params.layer           (window.layerValue()));
-    docPref.spriteSheet.frameTag        (params.tag             (window.frameTagValue()));
+    docPref.spriteSheet.frameTag        (params.tag             (window.tagValue()));
     docPref.spriteSheet.listLayers      (params.listLayers      (window.listLayersValue()));
-    docPref.spriteSheet.listFrameTags   (params.listTags        (window.listFrameTagsValue()));
+    docPref.spriteSheet.listFrameTags   (params.listTags        (window.listTagsValue()));
     docPref.spriteSheet.listSlices      (params.listSlices      (window.listSlicesValue()));
 
     // Default preferences for future sprites
@@ -787,8 +787,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
 #endif
 
   SelectedFrames selFrames;
-  FrameTag* frameTag =
-    calculate_selected_frames(site, tagName, selFrames);
+  Tag* tag = calculate_selected_frames(site, tagName, selFrames);
 
   frame_t nframes = selFrames.size();
   ASSERT(nframes > 0);
@@ -861,9 +860,9 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   exporter.setTrimByGrid(trimByGrid);
   exporter.setExtrude(extrude);
   if (listLayers) exporter.setListLayers(true);
-  if (listTags) exporter.setListFrameTags(true);
+  if (listTags) exporter.setListTags(true);
   if (listSlices) exporter.setListSlices(true);
-  exporter.addDocument(document, frameTag,
+  exporter.addDocument(document, tag,
                        (!selLayers.empty() ? &selLayers: nullptr),
                        (!selFrames.empty() ? &selFrames: nullptr));
 

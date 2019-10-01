@@ -66,7 +66,7 @@ public:
   const Option& layer() const { return m_layer; }
   const Option& allLayers() const { return m_allLayers; }
   const Option& ignoreLayer() const { return m_ignoreLayer; }
-  const Option& frameTag() const { return m_frameTag; }
+  const Option& tag() const { return m_tag; }
   const Option& frameRange() const { return m_frameRange; }
   const Option& ignoreEmpty() const { return m_ignoreEmpty; }
   const Option& borderPadding() const { return m_borderPadding; }
@@ -126,7 +126,7 @@ private:
   Option& m_layer;
   Option& m_allLayers;
   Option& m_ignoreLayer;
-  Option& m_frameTag;
+  Option& m_tag;
   Option& m_frameRange;
   Option& m_ignoreEmpty;
   Option& m_borderPadding;

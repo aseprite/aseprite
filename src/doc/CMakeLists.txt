@@ -36,9 +36,6 @@ add_library(doc-lib
   file/gpl_file.cpp
   file/hex_file.cpp
   file/pal_file.cpp
-  frame_tag.cpp
-  frame_tag_io.cpp
-  frame_tags.cpp
   handle_anidir.cpp
   image.cpp
   image_impl.cpp
@@ -66,6 +63,9 @@ add_library(doc-lib
   sprites.cpp
   string_io.cpp
   subobjects_io.cpp
+  tag.cpp
+  tag_io.cpp
+  tags.cpp
   user_data_io.cpp)
 
 # TODO Remove 'os' as dependency and move conversion_to_surface.cpp/h files

@@ -320,8 +320,8 @@ namespace app {
     void onSpritePixelRatioChanged(DocEvent& ev) override;
     void onBeforeRemoveLayer(DocEvent& ev) override;
     void onRemoveCel(DocEvent& ev) override;
-    void onAddFrameTag(DocEvent& ev) override;
-    void onRemoveFrameTag(DocEvent& ev) override;
+    void onAddTag(DocEvent& ev) override;
+    void onRemoveTag(DocEvent& ev) override;
     void onRemoveSlice(DocEvent& ev) override;
 
     // ActiveToolObserver impl

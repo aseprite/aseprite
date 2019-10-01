@@ -173,7 +173,7 @@ bool AsepriteDecoder::decode()
             break;
 
           case ASE_FILE_CHUNK_TAGS:
-            readTagsChunk(&sprite->frameTags());
+            readTagsChunk(&sprite->tags());
             break;
 
           case ASE_FILE_CHUNK_SLICES: {
@@ -809,14 +809,14 @@ doc::Mask* AsepriteDecoder::readMaskChunk()
   return mask;
 }
 
-void AsepriteDecoder::readTagsChunk(doc::FrameTags* frameTags)
+void AsepriteDecoder::readTagsChunk(doc::Tags* tags)
 {
-  size_t tags = read16();
+  size_t ntags = read16();
 
   read32();                     // 8 reserved bytes
   read32();
 
-  for (size_t c=0; c<tags; ++c) {
+  for (size_t c=0; c<ntags; ++c) {
     doc::frame_t from = read16();
     doc::frame_t to = read16();
     int aniDir = read8();
@@ -836,11 +836,11 @@ void AsepriteDecoder::readTagsChunk(doc::FrameTags* frameTags)
 
     std::string name = readString();
 
-    doc::FrameTag* tag = new doc::FrameTag(from, to);
+    auto tag = new doc::Tag(from, to);
     tag->setColor(doc::rgba(r, g, b, 255));
     tag->setName(name);
     tag->setAniDir((doc::AniDir)aniDir);
-    frameTags->add(tag);
+    tags->add(tag);
   }
 }
 

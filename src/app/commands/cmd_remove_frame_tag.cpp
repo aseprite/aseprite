@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -9,7 +10,7 @@
 #endif
 
 #include "app/app.h"
-#include "app/cmd/remove_frame_tag.h"
+#include "app/cmd/remove_tag.h"
 #include "app/commands/command.h"
 #include "app/commands/params.h"
 #include "app/context.h"
@@ -18,7 +19,7 @@
 #include "app/tx.h"
 #include "app/ui/timeline/timeline.h"
 #include "base/convert_to.h"
-#include "doc/frame_tag.h"
+#include "doc/tag.h"
 
 namespace app {
 
@@ -64,20 +65,20 @@ void RemoveFrameTagCommand::onExecute(Context* context)
   ContextWriter writer(context);
   Sprite* sprite(writer.sprite());
   frame_t frame = writer.frame();
-  FrameTag* foundTag = nullptr;
+  Tag* foundTag = nullptr;
 
   if (!m_tagName.empty())
-    foundTag = sprite->frameTags().getByName(m_tagName);
+    foundTag = sprite->tags().getByName(m_tagName);
   else if (m_tagId != NullId)
-    foundTag = sprite->frameTags().getById(m_tagId);
+    foundTag = sprite->tags().getById(m_tagId);
   else
-    foundTag = sprite->frameTags().innerTag(frame);
+    foundTag = sprite->tags().innerTag(frame);
 
   if (!foundTag)
     return;
 
-  Tx tx(writer.context(), "Remove Frame Tag");
-  tx(new cmd::RemoveFrameTag(sprite, foundTag));
+  Tx tx(writer.context(), friendlyName());
+  tx(new cmd::RemoveTag(sprite, foundTag));
   tx.commit();
 
   App::instance()->timeline()->invalidate();

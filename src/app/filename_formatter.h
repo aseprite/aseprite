@@ -100,13 +100,13 @@ namespace app {
     const bool withPath,
     const bool hasFrames,
     const bool hasLayer,
-    const bool hasFrameTag);
+    const bool hasTag);
 
   std::string get_default_filename_format_for_sheet(
     const std::string& filename,
     const bool hasFrames,
     const bool hasLayer,
-    const bool hasFrameTag);
+    const bool hasTag);
 
 } // namespace app
 

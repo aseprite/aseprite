@@ -15,7 +15,7 @@
 #include "ui/timer.h"
 
 namespace doc {
-  class FrameTag;
+  class Tag;
 }
 
 namespace app {
@@ -35,7 +35,7 @@ namespace app {
     bool onKeyDown(Editor* editor, ui::KeyMessage* msg) override;
     bool onKeyUp(Editor* editor, ui::KeyMessage* msg) override;
     bool onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos) override;
-    void onRemoveFrameTag(Editor* editor, doc::FrameTag* tag) override;
+    void onRemoveTag(Editor* editor, doc::Tag* tag) override;
 
   private:
     void onPlaybackTick();
@@ -58,7 +58,7 @@ namespace app {
 
     bool m_pingPongForward;
     doc::frame_t m_refFrame;
-    doc::FrameTag* m_tag;
+    doc::Tag* m_tag;
 
     obs::scoped_connection m_ctxConn;
   };

@@ -13,9 +13,9 @@
 
 #include "app/doc.h"
 #include "app/file/file.h"
-#include "doc/frame_tag.h"
-#include "doc/frame_tags.h"
 #include "doc/sprite.h"
+#include "doc/tag.h"
+#include "doc/tags.h"
 
 namespace app {
 
@@ -48,7 +48,7 @@ FileOpROI CliOpenFile::roi() const
 
   return FileOpROI(document,
                    slice,
-                   frameTag,
+                   tag,
                    selFrames,
                    true);
 }

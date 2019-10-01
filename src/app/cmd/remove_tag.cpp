@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -8,23 +9,31 @@
 #include "config.h"
 #endif
 
-#include "app/cmd/with_frame_tag.h"
-
-#include "doc/frame_tag.h"
+#include "app/cmd/remove_tag.h"
 
 namespace app {
 namespace cmd {
 
 using namespace doc;
 
-WithFrameTag::WithFrameTag(FrameTag* frameTag)
-  : m_frameTagId(frameTag->id())
+RemoveTag::RemoveTag(Sprite* sprite, Tag* tag)
+  : AddTag(sprite, tag)
 {
 }
 
-FrameTag* WithFrameTag::frameTag()
+void RemoveTag::onExecute()
 {
-  return get<FrameTag>(m_frameTagId);
+  AddTag::onUndo();
+}
+
+void RemoveTag::onUndo()
+{
+  AddTag::onRedo();
+}
+
+void RemoveTag::onRedo()
+{
+  AddTag::onUndo();
 }
 
 } // namespace cmd

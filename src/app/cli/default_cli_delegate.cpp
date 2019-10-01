@@ -21,11 +21,11 @@
 #include "app/file/palette_file.h"
 #include "app/ui_context.h"
 #include "base/convert_to.h"
-#include "doc/frame_tag.h"
 #include "doc/layer.h"
 #include "doc/palette.h"
 #include "doc/slice.h"
 #include "doc/sprite.h"
+#include "doc/tag.h"
 
 #ifdef ENABLE_SCRIPTING
   #include "app/app.h"
@@ -65,7 +65,7 @@ void DefaultCliDelegate::afterOpenFile(const CliOpenFile& cof)
   }
 
   if (cof.listTags) {
-    for (doc::FrameTag* tag : cof.document->sprite()->frameTags())
+    for (doc::Tag* tag : cof.document->sprite()->tags())
       std::cout << tag->name() << "\n";
   }
 
@@ -82,8 +82,8 @@ void DefaultCliDelegate::saveFile(Context* ctx, const CliOpenFile& cof)
   params.set("filename", cof.filename.c_str());
   params.set("filename-format", cof.filenameFormat.c_str());
 
-  if (cof.hasFrameTag()) {
-    params.set("frame-tag", cof.frameTag.c_str());
+  if (cof.hasTag()) {
+    params.set("frame-tag", cof.tag.c_str());
   }
   if (cof.hasFrameRange()) {
     params.set("from-frame", base::convert_to<std::string>(cof.fromFrame).c_str());

@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -8,47 +9,47 @@
 #include "config.h"
 #endif
 
-#include "app/cmd/add_frame_tag.h"
+#include "app/cmd/add_tag.h"
 
 #include "app/doc.h"
 #include "app/doc_event.h"
-#include "doc/frame_tag.h"
-#include "doc/frame_tag_io.h"
 #include "doc/sprite.h"
+#include "doc/tag.h"
+#include "doc/tag_io.h"
 
 namespace app {
 namespace cmd {
 
 using namespace doc;
 
-AddFrameTag::AddFrameTag(Sprite* sprite, FrameTag* frameTag)
+AddTag::AddTag(Sprite* sprite, Tag* tag)
   : WithSprite(sprite)
-  , WithFrameTag(frameTag)
+  , WithTag(tag)
   , m_size(0)
 {
 }
 
-void AddFrameTag::onExecute()
+void AddTag::onExecute()
 {
   Sprite* sprite = this->sprite();
-  FrameTag* frameTag = this->frameTag();
+  Tag* tag = this->tag();
 
-  sprite->frameTags().add(frameTag);
+  sprite->tags().add(tag);
   sprite->incrementVersion();
 
   // Notify observers about the new frame.
   Doc* doc = static_cast<Doc*>(sprite->document());
   DocEvent ev(doc);
   ev.sprite(sprite);
-  ev.frameTag(frameTag);
-  doc->notify_observers<DocEvent&>(&DocObserver::onAddFrameTag, ev);
+  ev.tag(tag);
+  doc->notify_observers<DocEvent&>(&DocObserver::onAddTag, ev);
 }
 
-void AddFrameTag::onUndo()
+void AddTag::onUndo()
 {
   Sprite* sprite = this->sprite();
-  FrameTag* frameTag = this->frameTag();
-  write_frame_tag(m_stream, frameTag);
+  Tag* tag = this->tag();
+  write_tag(m_stream, tag);
   m_size = size_t(m_stream.tellp());
 
   // Notify observers about the new frame.
@@ -56,21 +57,21 @@ void AddFrameTag::onUndo()
     Doc* doc = static_cast<Doc*>(sprite->document());
     DocEvent ev(doc);
     ev.sprite(sprite);
-    ev.frameTag(frameTag);
-    doc->notify_observers<DocEvent&>(&DocObserver::onRemoveFrameTag, ev);
+    ev.tag(tag);
+    doc->notify_observers<DocEvent&>(&DocObserver::onRemoveTag, ev);
   }
 
-  sprite->frameTags().remove(frameTag);
+  sprite->tags().remove(tag);
   sprite->incrementVersion();
-  delete frameTag;
+  delete tag;
 }
 
-void AddFrameTag::onRedo()
+void AddTag::onRedo()
 {
   Sprite* sprite = this->sprite();
-  FrameTag* frameTag = read_frame_tag(m_stream);
+  Tag* tag = read_tag(m_stream);
 
-  sprite->frameTags().add(frameTag);
+  sprite->tags().add(tag);
   sprite->incrementVersion();
 
   m_stream.str(std::string());
@@ -81,8 +82,8 @@ void AddFrameTag::onRedo()
   Doc* doc = static_cast<Doc*>(sprite->document());
   DocEvent ev(doc);
   ev.sprite(sprite);
-  ev.frameTag(frameTag);
-  doc->notify_observers<DocEvent&>(&DocObserver::onAddFrameTag, ev);
+  ev.tag(tag);
+  doc->notify_observers<DocEvent&>(&DocObserver::onAddTag, ev);
 }
 
 } // namespace cmd

@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -22,10 +23,10 @@
 #include <vector>
 
 namespace doc {
-  class FrameTag;
   class Image;
-  class SelectedLayers;
   class SelectedFrames;
+  class SelectedLayers;
+  class Tag;
 }
 
 namespace app {
@@ -57,7 +58,7 @@ namespace app {
     bool trimByGrid() const { return m_trimByGrid; }
     bool extrude() const { return m_extrude; }
     const std::string& filenameFormat() const { return m_filenameFormat; }
-    bool listFrameTags() const { return m_listFrameTags; }
+    bool listTags() const { return m_listTags; }
     bool listLayers() const { return m_listLayers; }
 
     void setDataFormat(DataFormat format) { m_dataFormat = format; }
@@ -74,12 +75,12 @@ namespace app {
     void setTrimByGrid(bool trimByGrid) { m_trimByGrid = trimByGrid; }
     void setExtrude(bool extrude) { m_extrude = extrude; }
     void setFilenameFormat(const std::string& format) { m_filenameFormat = format; }
-    void setListFrameTags(bool value) { m_listFrameTags = value; }
+    void setListTags(bool value) { m_listTags = value; }
     void setListLayers(bool value) { m_listLayers = value; }
     void setListSlices(bool value) { m_listSlices = value; }
 
     void addDocument(Doc* document,
-                     doc::FrameTag* tag,
+                     doc::Tag* tag,
                      doc::SelectedLayers* selLayers,
                      doc::SelectedFrames* selFrames) {
       m_documents.push_back(Item(document, tag, selLayers, selFrames));
@@ -106,12 +107,12 @@ namespace app {
     class Item {
     public:
       Doc* doc;
-      doc::FrameTag* frameTag;
+      doc::Tag* tag;
       doc::SelectedLayers* selLayers;
       doc::SelectedFrames* selFrames;
 
       Item(Doc* doc,
-           doc::FrameTag* frameTag,
+           doc::Tag* tag,
            doc::SelectedLayers* selLayers,
            doc::SelectedFrames* selFrames);
       Item(Item&& other);
@@ -142,7 +143,7 @@ namespace app {
     Items m_documents;
     std::string m_filenameFormat;
     doc::ImageBufferPtr m_sampleRenderBuf;
-    bool m_listFrameTags;
+    bool m_listTags;
     bool m_listLayers;
     bool m_listSlices;
 

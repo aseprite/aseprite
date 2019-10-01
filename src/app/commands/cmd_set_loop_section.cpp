@@ -9,9 +9,9 @@
 #endif
 
 #include "app/app.h"
-#include "app/cmd/add_frame_tag.h"
-#include "app/cmd/remove_frame_tag.h"
-#include "app/cmd/set_frame_tag_range.h"
+#include "app/cmd/add_tag.h"
+#include "app/cmd/remove_tag.h"
+#include "app/cmd/set_tag_range.h"
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
@@ -19,7 +19,7 @@
 #include "app/loop_tag.h"
 #include "app/tx.h"
 #include "app/ui/timeline/timeline.h"
-#include "doc/frame_tag.h"
+#include "doc/tag.h"
 
 namespace app {
 
@@ -101,21 +101,21 @@ void SetLoopSectionCommand::onExecute(Context* ctx)
 
   }
 
-  doc::FrameTag* loopTag = get_loop_tag(sprite);
+  doc::Tag* loopTag = get_loop_tag(sprite);
   if (on) {
     if (!loopTag) {
       loopTag = create_loop_tag(begin, end);
 
       ContextWriter writer(ctx);
       Tx tx(writer.context(), "Add Loop");
-      tx(new cmd::AddFrameTag(sprite, loopTag));
+      tx(new cmd::AddTag(sprite, loopTag));
       tx.commit();
     }
     else if (loopTag->fromFrame() != begin ||
              loopTag->toFrame() != end) {
       ContextWriter writer(ctx);
       Tx tx(writer.context(), "Set Loop Range");
-      tx(new cmd::SetFrameTagRange(loopTag, begin, end));
+      tx(new cmd::SetTagRange(loopTag, begin, end));
       tx.commit();
     }
     else {
@@ -127,7 +127,7 @@ void SetLoopSectionCommand::onExecute(Context* ctx)
     if (loopTag) {
       ContextWriter writer(ctx);
       Tx tx(writer.context(), "Remove Loop");
-      tx(new cmd::RemoveFrameTag(sprite, loopTag));
+      tx(new cmd::RemoveTag(sprite, loopTag));
       tx.commit();
     }
   }

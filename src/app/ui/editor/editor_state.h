@@ -25,7 +25,7 @@ namespace ui {
 }
 
 namespace doc {
-  class FrameTag;
+  class Tag;
 }
 
 namespace app {
@@ -130,7 +130,7 @@ namespace app {
     virtual tools::Ink* getStateInk() const { return nullptr; }
 
     // Called when a tag is deleted.
-    virtual void onRemoveFrameTag(Editor* editor, doc::FrameTag* tag) { }
+    virtual void onRemoveTag(Editor* editor, doc::Tag* tag) { }
 
   private:
     DISABLE_COPYING(EditorState);

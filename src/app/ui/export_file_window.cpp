@@ -21,8 +21,8 @@
 #include "base/convert_to.h"
 #include "base/fs.h"
 #include "base/string.h"
-#include "doc/frame_tag.h"
 #include "doc/selected_frames.h"
+#include "doc/tag.h"
 #include "fmt/format.h"
 #include "ui/alert.h"
 
@@ -170,10 +170,10 @@ void ExportFileWindow::updateAniDir()
       framesValue != kAllFrames &&
       framesValue != kSelectedFrames) {
     SelectedFrames selFrames;
-    FrameTag* frameTag = calculate_selected_frames(
+    Tag* tag = calculate_selected_frames(
       UIContext::instance()->activeSite(), framesValue, selFrames);
-    if (frameTag)
-      anidir()->setSelectedItemIndex(int(frameTag->aniDir()));
+    if (tag)
+      anidir()->setSelectedItemIndex(int(tag->aniDir()));
   }
   else
     anidir()->setSelectedItemIndex(int(doc::AniDir::FORWARD));

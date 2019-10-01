@@ -26,12 +26,12 @@
 #include "app/util/create_cel_copy.h"
 #include "base/memory.h"
 #include "doc/cel.h"
-#include "doc/frame_tag.h"
 #include "doc/layer.h"
 #include "doc/mask.h"
 #include "doc/mask_boundaries.h"
 #include "doc/palette.h"
 #include "doc/sprite.h"
+#include "doc/tag.h"
 #include "os/display.h"
 #include "os/system.h"
 #include "ui/system.h"
@@ -460,8 +460,8 @@ Doc* Doc::duplicate(DuplicateType type) const
     spriteCopy->setFrameDuration(i, sourceSprite->frameDuration(i));
 
   // Copy frame tags
-  for (const FrameTag* tag : sourceSprite->frameTags())
-    spriteCopy->frameTags().add(new FrameTag(*tag));
+  for (const Tag* tag : sourceSprite->tags())
+    spriteCopy->tags().add(new Tag(*tag));
 
   // Copy color palettes
   {

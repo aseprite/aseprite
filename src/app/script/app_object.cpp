@@ -39,9 +39,9 @@
 #include "base/fs.h"
 #include "base/replace_string.h"
 #include "base/version.h"
-#include "doc/frame_tag.h"
 #include "doc/layer.h"
 #include "doc/primitives.h"
+#include "doc/tag.h"
 #include "render/render.h"
 #include "ui/alert.h"
 
@@ -403,14 +403,14 @@ int App_get_activeImage(lua_State* L)
 
 int App_get_activeTag(lua_State* L)
 {
-  FrameTag* tag = nullptr;
+  Tag* tag = nullptr;
 
   app::Context* ctx = App::instance()->context();
   Site site = ctx->activeSite();
   if (site.sprite()) {
 #ifdef ENABLE_UI
     if (App::instance()->timeline()) {
-      tag = App::instance()->timeline()->getFrameTagByFrame(site.frame(), false);
+      tag = App::instance()->timeline()->getTagByFrame(site.frame(), false);
     }
     else
 #endif

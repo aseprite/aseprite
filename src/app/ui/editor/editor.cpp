@@ -631,9 +631,9 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
         opts.opacityStep(m_docPref.onionskin.opacityStep());
         opts.layer(m_docPref.onionskin.currentLayer() ? m_layer: nullptr);
 
-        FrameTag* tag = nullptr;
+        Tag* tag = nullptr;
         if (m_docPref.onionskin.loopTag())
-          tag = m_sprite->frameTags().innerTag(m_frame);
+          tag = m_sprite->tags().innerTag(m_frame);
         opts.loopTag(tag);
 
         m_renderEngine->setOnionskin(opts);
@@ -2127,16 +2127,16 @@ void Editor::onRemoveCel(DocEvent& ev)
   m_showGuidesThisCel = nullptr;
 }
 
-void Editor::onAddFrameTag(DocEvent& ev)
+void Editor::onAddTag(DocEvent& ev)
 {
   m_tagFocusBand = -1;
 }
 
-void Editor::onRemoveFrameTag(DocEvent& ev)
+void Editor::onRemoveTag(DocEvent& ev)
 {
   m_tagFocusBand = -1;
   if (m_state)
-    m_state->onRemoveFrameTag(this, ev.frameTag());
+    m_state->onRemoveTag(this, ev.tag());
 }
 
 void Editor::onRemoveSlice(DocEvent& ev)

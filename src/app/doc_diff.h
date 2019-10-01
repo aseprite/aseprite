@@ -16,7 +16,7 @@ namespace app {
     bool canvas : 1;
     bool totalFrames : 1;
     bool frameDuration : 1;
-    bool frameTags : 1;
+    bool tags : 1;
     bool palettes : 1;
     bool layers : 1;
     bool cels : 1;
@@ -28,7 +28,7 @@ namespace app {
       canvas(false),
       totalFrames(false),
       frameDuration(false),
-      frameTags(false),
+      tags(false),
       palettes(false),
       layers(false),
       cels(false),

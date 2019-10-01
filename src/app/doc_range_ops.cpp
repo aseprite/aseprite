@@ -264,7 +264,7 @@ static DocRange drop_range_op(
              (place == kDocRangeBefore && to.firstFrame() == from.lastFrame()+1) ||
              (place == kDocRangeAfter && to.lastFrame() == from.firstFrame()-1)) &&
             // If there are tags, this might not be a no-op
-            (sprite->frameTags().empty() ||
+            (sprite->tags().empty() ||
              tagsHandling == kDontAdjustTags)) {
           return from;
         }

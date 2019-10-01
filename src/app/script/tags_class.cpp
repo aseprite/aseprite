@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -12,8 +12,8 @@
 #include "app/script/docobj.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
-#include "doc/frame_tag.h"
 #include "doc/sprite.h"
+#include "doc/tag.h"
 
 namespace app {
 namespace script {
@@ -42,14 +42,14 @@ int Tags_gc(lua_State* L)
 int Tags_len(lua_State* L)
 {
   auto obj = get_obj<TagsObj>(L, 1);
-  lua_pushinteger(L, obj->sprite(L)->frameTags().size());
+  lua_pushinteger(L, obj->sprite(L)->tags().size());
   return 1;
 }
 
 int Tags_index(lua_State* L)
 {
   auto obj = get_obj<TagsObj>(L, 1);
-  auto& tags = obj->sprite(L)->frameTags();
+  auto& tags = obj->sprite(L)->tags();
   const int i = lua_tonumber(L, 2);
   if (i >= 1 && i <= int(tags.size()))
     push_docobj(L, *(tags.begin()+i-1));

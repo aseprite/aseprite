@@ -27,7 +27,6 @@
 #include "base/string.h"
 #include "doc/algorithm/shrink_bounds.h"
 #include "doc/cel.h"
-#include "doc/frame_tag.h"
 #include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/palette.h"
@@ -36,6 +35,7 @@
 #include "doc/selected_layers.h"
 #include "doc/slice.h"
 #include "doc/sprite.h"
+#include "doc/tag.h"
 #include "gfx/packing_rects.h"
 #include "gfx/size.h"
 #include "render/dithering.h"
@@ -114,11 +114,11 @@ private:
 typedef std::shared_ptr<SampleBounds> SampleBoundsPtr;
 
 DocExporter::Item::Item(Doc* doc,
-                             doc::FrameTag* frameTag,
-                             doc::SelectedLayers* selLayers,
-                             doc::SelectedFrames* selFrames)
+                        doc::Tag* tag,
+                        doc::SelectedLayers* selLayers,
+                        doc::SelectedFrames* selFrames)
   : doc(doc)
-  , frameTag(frameTag)
+  , tag(tag)
   , selLayers(selLayers ? new doc::SelectedLayers(*selLayers): nullptr)
   , selFrames(selFrames ? new doc::SelectedFrames(*selFrames): nullptr)
 {
@@ -126,7 +126,7 @@ DocExporter::Item::Item(Doc* doc,
 
 DocExporter::Item::Item(Item&& other)
   : doc(other.doc)
-  , frameTag(other.frameTag)
+  , tag(other.tag)
   , selLayers(other.selLayers)
   , selFrames(other.selFrames)
 {
@@ -144,8 +144,8 @@ int DocExporter::Item::frames() const
 {
   if (selFrames)
     return selFrames->size();
-  else if (frameTag) {
-    int result = frameTag->toFrame() - frameTag->fromFrame() + 1;
+  else if (tag) {
+    int result = tag->toFrame() - tag->fromFrame() + 1;
     return MID(1, result, doc->sprite()->totalFrames());
   }
   else
@@ -158,9 +158,9 @@ doc::SelectedFrames DocExporter::Item::getSelectedFrames() const
     return *selFrames;
 
   doc::SelectedFrames frames;
-  if (frameTag) {
-    frames.insert(MID(0, frameTag->fromFrame(), doc->sprite()->lastFrame()),
-                  MID(0, frameTag->toFrame(), doc->sprite()->lastFrame()));
+  if (tag) {
+    frames.insert(MID(0, tag->fromFrame(), doc->sprite()->lastFrame()),
+                  MID(0, tag->toFrame(), doc->sprite()->lastFrame()));
   }
   else {
     frames.insert(0, doc->sprite()->lastFrame());
@@ -398,7 +398,7 @@ DocExporter::DocExporter()
  , m_trimCels(false)
  , m_trimByGrid(false)
  , m_extrude(false)
- , m_listFrameTags(false)
+ , m_listTags(false)
  , m_listLayers(false)
  , m_listSlices(false)
 {
@@ -487,7 +487,7 @@ void DocExporter::captureSamples(Samples& samples)
     Sprite* sprite = doc->sprite();
     Layer* layer = (item.selLayers && item.selLayers->size() == 1 ?
                     *item.selLayers->begin(): nullptr);
-    FrameTag* frameTag = item.frameTag;
+    Tag* tag = item.tag;
     int frames = item.frames();
 
     std::string format = m_filenameFormat;
@@ -496,13 +496,13 @@ void DocExporter::captureSamples(Samples& samples)
         doc->filename(),
         (frames > 1),                   // Has frames
         (layer != nullptr),             // Has layer
-        (frameTag != nullptr));         // Has frame tag
+        (tag != nullptr));              // Has tag
     }
 
     frame_t outputFrame = 0;
     for (frame_t frame : item.getSelectedFrames()) {
-      FrameTag* innerTag = (frameTag ? frameTag: sprite->frameTags().innerTag(frame));
-      FrameTag* outerTag = sprite->frameTags().outerTag(frame);
+      Tag* innerTag = (tag ? tag: sprite->tags().innerTag(frame));
+      Tag* outerTag = sprite->tags().outerTag(frame);
       FilenameInfo fnInfo;
       fnInfo
         .filename(doc->filename())
@@ -543,7 +543,7 @@ void DocExporter::captureSamples(Samples& samples)
         }
         // "done" variable can be false here, e.g. when we export a
         // frame tag and the first linked cel is outside the tag range.
-        ASSERT(done || (!done && frameTag));
+        ASSERT(done || (!done && tag));
       }
 
       if (!done && (m_ignoreEmptyCels || m_trimCels)) {
@@ -586,7 +586,7 @@ void DocExporter::captureSamples(Samples& samples)
           // Should we ignore this empty frame? (i.e. don't include
           // the frame in the sprite sheet)
           if (m_ignoreEmptyCels) {
-            for (FrameTag* tag : sprite->frameTags()) {
+            for (Tag* tag : sprite->tags()) {
               auto& delta = m_tagDelta[tag->id()];
 
               if (frame < tag->fromFrame()) --delta.first;
@@ -852,16 +852,16 @@ void DocExporter::createDataFile(const Samples& samples, std::ostream& os, Image
      << "  \"scale\": \"1\"";
 
   // meta.frameTags
-  if (m_listFrameTags) {
+  if (m_listTags) {
     os << ",\n"
-       << "  \"frameTags\": [";
+       << "  \"frameTags\": ["; // TODO rename this someday in the future
 
     bool firstTag = true;
     for (auto& item : m_documents) {
       Doc* doc = item.doc;
       Sprite* sprite = doc->sprite();
 
-      for (FrameTag* tag : sprite->frameTags()) {
+      for (Tag* tag : sprite->tags()) {
         if (firstTag)
           firstTag = false;
         else

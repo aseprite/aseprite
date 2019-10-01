@@ -1,5 +1,6 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2016 David Capello
+// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -8,15 +9,15 @@
 #include "config.h"
 #endif
 
-#include "doc/frame_tag.h"
+#include "doc/tag.h"
 
 #include "base/debug.h"
-#include "doc/frame_tags.h"
+#include "doc/tags.h"
 
 namespace doc {
 
-FrameTag::FrameTag(frame_t from, frame_t to)
-  : Object(ObjectType::FrameTag)
+Tag::Tag(frame_t from, frame_t to)
+  : Object(ObjectType::Tag)
   , m_owner(nullptr)
   , m_from(from)
   , m_to(to)
@@ -26,8 +27,8 @@ FrameTag::FrameTag(frame_t from, frame_t to)
 {
 }
 
-FrameTag::FrameTag(const FrameTag& other)
-  : Object(ObjectType::FrameTag)
+Tag::Tag(const Tag& other)
+  : Object(ObjectType::Tag)
   , m_owner(nullptr)
   , m_from(other.m_from)
   , m_to(other.m_to)
@@ -37,19 +38,19 @@ FrameTag::FrameTag(const FrameTag& other)
 {
 }
 
-FrameTag::~FrameTag()
+Tag::~Tag()
 {
   ASSERT(!m_owner);
 }
 
-void FrameTag::setOwner(FrameTags* owner)
+void Tag::setOwner(Tags* owner)
 {
   m_owner = owner;
 }
 
-void FrameTag::setFrameRange(frame_t from, frame_t to)
+void Tag::setFrameRange(frame_t from, frame_t to)
 {
-  FrameTags* owner = m_owner;
+  Tags* owner = m_owner;
   if (owner)
     owner->remove(this);
 
@@ -60,17 +61,17 @@ void FrameTag::setFrameRange(frame_t from, frame_t to)
     owner->add(this); // Re-add the tag, so it's added in the correct place
 }
 
-void FrameTag::setName(const std::string& name)
+void Tag::setName(const std::string& name)
 {
   m_name = name;
 }
 
-void FrameTag::setColor(color_t color)
+void Tag::setColor(color_t color)
 {
   m_color = color;
 }
 
-void FrameTag::setAniDir(AniDir aniDir)
+void Tag::setAniDir(AniDir aniDir)
 {
   ASSERT(m_aniDir == AniDir::FORWARD ||
          m_aniDir == AniDir::REVERSE ||

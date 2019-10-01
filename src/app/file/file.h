@@ -35,7 +35,7 @@
 #define FILE_LOAD_CREATE_PALETTE        0x00000040
 
 namespace doc {
-  class FrameTag;
+  class Tag;
 }
 
 namespace doc {
@@ -72,13 +72,13 @@ namespace app {
     FileOpROI();
     FileOpROI(const Doc* doc,
               const std::string& sliceName,
-              const std::string& frameTagName,
+              const std::string& tagName,
               const doc::SelectedFrames& selFrames,
-              const bool adjustByFrameTag);
+              const bool adjustByTag);
 
     const Doc* document() const { return m_document; }
     doc::Slice* slice() const { return m_slice; }
-    doc::FrameTag* frameTag() const { return m_frameTag; }
+    doc::Tag* tag() const { return m_tag; }
     doc::frame_t fromFrame() const { return m_selFrames.firstFrame(); }
     doc::frame_t toFrame() const { return m_selFrames.lastFrame(); }
     const doc::SelectedFrames& selectedFrames() const { return m_selFrames; }
@@ -90,7 +90,7 @@ namespace app {
   private:
     const Doc* m_document;
     doc::Slice* m_slice;
-    doc::FrameTag* m_frameTag;
+    doc::Tag* m_tag;
     doc::SelectedFrames m_selFrames;
   };
 

@@ -24,7 +24,7 @@ namespace app {
     Doc* document;
     std::string filename;
     std::string filenameFormat;
-    std::string frameTag;
+    std::string tag;
     std::string slice;
     std::vector<std::string> includeLayers;
     std::vector<std::string> excludeLayers;
@@ -44,8 +44,8 @@ namespace app {
 
     CliOpenFile();
 
-    bool hasFrameTag() const {
-      return (!frameTag.empty());
+    bool hasTag() const {
+      return (!tag.empty());
     }
 
     bool hasSlice() const {

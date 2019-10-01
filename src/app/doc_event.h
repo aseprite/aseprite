@@ -14,80 +14,78 @@
 
 namespace doc {
   class Cel;
-  class FrameTag;
   class Image;
   class Layer;
   class LayerImage;
   class Slice;
   class Sprite;
+  class Tag;
 }
 
 namespace app {
   class Doc;
 
-  using namespace doc;
-
   class DocEvent {
   public:
-    DocEvent(Doc* document)
-      : m_document(document)
-      , m_sprite(NULL)
-      , m_layer(NULL)
-      , m_cel(NULL)
-      , m_image(NULL)
+    DocEvent(Doc* doc)
+      : m_doc(doc)
+      , m_sprite(nullptr)
+      , m_layer(nullptr)
+      , m_cel(nullptr)
+      , m_image(nullptr)
       , m_imageIndex(-1)
       , m_frame(0)
-      , m_frameTag(nullptr)
+      , m_tag(nullptr)
       , m_slice(nullptr)
-      , m_targetLayer(NULL)
+      , m_targetLayer(nullptr)
       , m_targetFrame(0) {
     }
 
     // Source of the event.
-    Doc* document() const { return m_document; }
-    Sprite* sprite() const { return m_sprite; }
-    Layer* layer() const { return m_layer; }
-    Cel* cel() const { return m_cel; }
-    Image* image() const { return m_image; }
+    Doc* document() const { return m_doc; }
+    doc::Sprite* sprite() const { return m_sprite; }
+    doc::Layer* layer() const { return m_layer; }
+    doc::Cel* cel() const { return m_cel; }
+    doc::Image* image() const { return m_image; }
     int imageIndex() const { return m_imageIndex; }
-    frame_t frame() const { return m_frame; }
-    FrameTag* frameTag() const { return m_frameTag; }
-    Slice* slice() const { return m_slice; }
+    doc::frame_t frame() const { return m_frame; }
+    doc::Tag* tag() const { return m_tag; }
+    doc::Slice* slice() const { return m_slice; }
     const gfx::Region& region() const { return m_region; }
 
-    void sprite(Sprite* sprite) { m_sprite = sprite; }
-    void layer(Layer* layer) { m_layer = layer; }
-    void cel(Cel* cel) { m_cel = cel; }
-    void image(Image* image) { m_image = image; }
+    void sprite(doc::Sprite* sprite) { m_sprite = sprite; }
+    void layer(doc::Layer* layer) { m_layer = layer; }
+    void cel(doc::Cel* cel) { m_cel = cel; }
+    void image(doc::Image* image) { m_image = image; }
     void imageIndex(int imageIndex) { m_imageIndex = imageIndex; }
-    void frame(frame_t frame) { m_frame = frame; }
-    void frameTag(FrameTag* frameTag) { m_frameTag = frameTag; }
-    void slice(Slice* slice) { m_slice = slice; }
+    void frame(doc::frame_t frame) { m_frame = frame; }
+    void tag(doc::Tag* tag) { m_tag = tag; }
+    void slice(doc::Slice* slice) { m_slice = slice; }
     void region(const gfx::Region& rgn) { m_region = rgn; }
 
     // Destination of the operation.
-    Layer* targetLayer() const { return m_targetLayer; }
-    frame_t targetFrame() const { return m_targetFrame; }
+    doc::Layer* targetLayer() const { return m_targetLayer; }
+    doc::frame_t targetFrame() const { return m_targetFrame; }
 
-    void targetLayer(Layer* layer) { m_targetLayer = layer; }
-    void targetFrame(frame_t frame) { m_targetFrame = frame; }
+    void targetLayer(doc::Layer* layer) { m_targetLayer = layer; }
+    void targetFrame(doc::frame_t frame) { m_targetFrame = frame; }
 
   private:
-    Doc* m_document;
-    Sprite* m_sprite;
-    Layer* m_layer;
-    Cel* m_cel;
-    Image* m_image;
+    Doc* m_doc;
+    doc::Sprite* m_sprite;
+    doc::Layer* m_layer;
+    doc::Cel* m_cel;
+    doc::Image* m_image;
     int m_imageIndex;
-    frame_t m_frame;
-    FrameTag* m_frameTag;
-    Slice* m_slice;
+    doc::frame_t m_frame;
+    doc::Tag* m_tag;
+    doc::Slice* m_slice;
     gfx::Region m_region;
 
     // For copy/move commands, the m_layer/m_frame are source of the
     // operation, and these are the destination of the operation.
-    Layer* m_targetLayer;
-    frame_t m_targetFrame;
+    doc::Layer* m_targetLayer;
+    doc::frame_t m_targetFrame;
   };
 
 } // namespace app

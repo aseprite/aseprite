@@ -1,5 +1,6 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2018 David Capello
+// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -8,11 +9,11 @@
 #include "config.h"
 #endif
 
-#include "doc/frame_tag_io.h"
+#include "doc/tag_io.h"
 
 #include "base/serialization.h"
-#include "doc/frame_tag.h"
 #include "doc/string_io.h"
+#include "doc/tag.h"
 
 #include <iostream>
 #include <memory>
@@ -22,7 +23,7 @@ namespace doc {
 using namespace base::serialization;
 using namespace base::serialization::little_endian;
 
-void write_frame_tag(std::ostream& os, const FrameTag* tag)
+void write_tag(std::ostream& os, const Tag* tag)
 {
   std::string name = tag->name();
 
@@ -34,7 +35,7 @@ void write_frame_tag(std::ostream& os, const FrameTag* tag)
   write_string(os, tag->name());
 }
 
-FrameTag* read_frame_tag(std::istream& is, bool setId)
+Tag* read_tag(std::istream& is, bool setId)
 {
   ObjectId id = read32(is);
   frame_t from = read32(is);
@@ -43,7 +44,7 @@ FrameTag* read_frame_tag(std::istream& is, bool setId)
   AniDir aniDir = (AniDir)read8(is);
   std::string name = read_string(is);
 
-  std::unique_ptr<FrameTag> tag(new FrameTag(from, to));
+  std::unique_ptr<Tag> tag(new Tag(from, to));
   tag->setColor(color);
   tag->setAniDir(aniDir);
   tag->setName(name);

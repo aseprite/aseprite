@@ -38,8 +38,8 @@
 #include "base/fs.h"
 #include "base/scoped_value.h"
 #include "base/thread.h"
-#include "doc/frame_tag.h"
 #include "doc/sprite.h"
+#include "doc/tag.h"
 #include "fmt/format.h"
 #include "ui/ui.h"
 #include "undo/undo_state.h"
@@ -97,7 +97,7 @@ void SaveFileBaseCommand::onLoadParams(const Params& params)
 {
   m_filename = params.get("filename");
   m_filenameFormat = params.get("filename-format");
-  m_frameTag = params.get("frame-tag");
+  m_tag = params.get("frame-tag");
   m_aniDir = params.get("ani-dir");
   m_slice = params.get("slice");
 
@@ -106,11 +106,11 @@ void SaveFileBaseCommand::onLoadParams(const Params& params)
     doc::frame_t fromFrame = params.get_as<doc::frame_t>("from-frame");
     doc::frame_t toFrame = params.get_as<doc::frame_t>("to-frame");
     m_selFrames.insert(fromFrame, toFrame);
-    m_adjustFramesByFrameTag = true;
+    m_adjustFramesByTag = true;
   }
   else {
     m_selFrames.clear();
-    m_adjustFramesByFrameTag = false;
+    m_adjustFramesByTag = false;
   }
 
   std::string useUI = params.get("useUI");
@@ -218,8 +218,8 @@ void SaveFileBaseCommand::saveDocumentInBackground(
     }
   }
 
-  FileOpROI roi(document, m_slice, m_frameTag,
-                m_selFrames, m_adjustFramesByFrameTag);
+  FileOpROI roi(document, m_slice, m_tag,
+                m_selFrames, m_adjustFramesByTag);
 
   std::unique_ptr<FileOp> fop(
     FileOp::createSaveDocumentOperation(
@@ -446,12 +446,12 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
 
       // Selected frames to export
       SelectedFrames selFrames;
-      FrameTag* frameTag = calculate_selected_frames(
+      Tag* tag = calculate_selected_frames(
         site, frames, selFrames);
-      if (frameTag)
-        m_frameTag = frameTag->name();
+      if (tag)
+        m_tag = tag->name();
       m_selFrames = selFrames;
-      m_adjustFramesByFrameTag = false;
+      m_adjustFramesByTag = false;
     }
 
     base::ScopedValue<std::string> restoreAniDir(

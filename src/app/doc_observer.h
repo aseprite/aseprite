@@ -31,7 +31,7 @@ namespace app {
     virtual void onAddFrame(DocEvent& ev) { }
     virtual void onAddCel(DocEvent& ev) { }
     virtual void onAddSlice(DocEvent& ev) { }
-    virtual void onAddFrameTag(DocEvent& ev) { }
+    virtual void onAddTag(DocEvent& ev) { }
 
     virtual void onBeforeRemoveLayer(DocEvent& ev) { }
     virtual void onAfterRemoveLayer(DocEvent& ev) { }
@@ -39,7 +39,7 @@ namespace app {
     // Called when a frame is removed. It's called after the frame was
     // removed, and the sprite's total number of frames is modified.
     virtual void onRemoveFrame(DocEvent& ev) { }
-    virtual void onRemoveFrameTag(DocEvent& ev) { }
+    virtual void onRemoveTag(DocEvent& ev) { }
     virtual void onRemoveCel(DocEvent& ev) { }
     virtual void onRemoveSlice(DocEvent& ev) { }
 
