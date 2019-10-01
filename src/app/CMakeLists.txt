@@ -197,7 +197,6 @@ if(ENABLE_UI)
     app_menus.cpp
     closed_docs.cpp
     commands/cmd_about.cpp
-    commands/cmd_add_color.cpp
     commands/cmd_advanced_mode.cpp
     commands/cmd_cancel.cpp
     commands/cmd_cel_properties.cpp
@@ -489,6 +488,7 @@ add_library(app-lib
   color_picker.cpp
   color_spaces.cpp
   color_utils.cpp
+  commands/cmd_add_color.cpp
   commands/cmd_background_from_layer.cpp
   commands/cmd_canvas_size.cpp
   commands/cmd_cel_opacity.cpp

@@ -5,6 +5,7 @@
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
+FOR_EACH_COMMAND(AddColor)
 FOR_EACH_COMMAND(AutocropSprite)
 FOR_EACH_COMMAND(BackgroundFromLayer)
 FOR_EACH_COMMAND(BrightnessContrast)
@@ -42,7 +43,6 @@ FOR_EACH_COMMAND(Undo)
 
 #ifdef ENABLE_UI
 FOR_EACH_COMMAND(About)
-FOR_EACH_COMMAND(AddColor)
 FOR_EACH_COMMAND(AdvancedMode)
 FOR_EACH_COMMAND(Cancel)
 FOR_EACH_COMMAND(CelProperties)

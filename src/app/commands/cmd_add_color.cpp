@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -11,57 +12,62 @@
 #include "app/app.h"
 #include "app/cmd/set_palette.h"
 #include "app/commands/command.h"
-#include "app/commands/params.h"
+#include "app/commands/new_params.h"
 #include "app/console.h"
 #include "app/context.h"
 #include "app/context_access.h"
 #include "app/i18n/strings.h"
+#include "app/pref/preferences.h"
 #include "app/tx.h"
-#include "app/ui/color_bar.h"
-#include "app/ui/context_bar.h"
-#include "app/ui/editor/editor.h"
 #include "doc/palette.h"
 #include "fmt/format.h"
 
+#ifdef ENABLE_SCRIPTING
+#include "app/script/luacpp.h"
+#endif
+
 namespace app {
 
-class AddColorCommand : public Command {
+enum class AddColorSource { Fg, Bg, Color };
+
+template<>
+void Param<AddColorSource>::fromString(const std::string& value)
+{
+  if (value == "fg" ||
+      value == "foreground")
+    setValue(AddColorSource::Fg);
+  else if (value == "bg" ||
+           value == "background")
+    setValue(AddColorSource::Bg);
+  else
+    setValue(AddColorSource::Color);
+}
+
+#ifdef ENABLE_SCRIPTING
+template<>
+void Param<AddColorSource>::fromLua(lua_State* L, int index)
+{
+  fromString(lua_tostring(L, index));
+}
+#endif // ENABLE_SCRIPTING
+
+struct AddColorParams : public NewParams {
+  Param<AddColorSource> source { this, AddColorSource::Color, "source" };
+  Param<app::Color> color { this, app::Color::fromMask(), "color" };
+};
+
+class AddColorCommand : public CommandWithNewParams<AddColorParams> {
 public:
-  enum class Source { Fg, Bg, Color };
-
   AddColorCommand();
-
 protected:
-  bool onNeedsParams() const override { return true; }
-  void onLoadParams(const Params& params) override;
   bool onEnabled(Context* ctx) override;
   void onExecute(Context* ctx) override;
   std::string onGetFriendlyName() const override;
-
-  Source m_source;
-  app::Color m_color;
 };
 
 AddColorCommand::AddColorCommand()
-  : Command(CommandId::AddColor(), CmdUIOnlyFlag)
-  , m_source(Source::Fg)
+  : CommandWithNewParams<AddColorParams>(CommandId::AddColor(), CmdUIOnlyFlag)
 {
-}
-
-void AddColorCommand::onLoadParams(const Params& params)
-{
-  std::string source = params.get("source");
-  if (source == "fg")
-    m_source = Source::Fg;
-  else if (source == "bg")
-    m_source = Source::Bg;
-  else
-    m_source = Source::Color;
-
-  if (m_source == Source::Color)
-    m_color = app::Color::fromString(params.get("color"));
-  else
-    m_color = app::Color::fromMask();
 }
 
 bool AddColorCommand::onEnabled(Context* ctx)
@@ -73,15 +79,15 @@ void AddColorCommand::onExecute(Context* ctx)
 {
   app::Color appColor;
 
-  switch (m_source) {
-    case Source::Fg:
-      appColor = ColorBar::instance()->getFgColor();
+  switch (params().source()) {
+    case AddColorSource::Fg:
+      appColor = Preferences::instance().colorBar.fgColor();
       break;
-    case Source::Bg:
-      appColor = ColorBar::instance()->getBgColor();
+    case AddColorSource::Bg:
+      appColor = Preferences::instance().colorBar.bgColor();
       break;
-    case Source::Color:
-      appColor = m_color;
+    case AddColorSource::Color:
+      appColor = params().color();
       break;
   }
 
@@ -137,10 +143,10 @@ void AddColorCommand::onExecute(Context* ctx)
 std::string AddColorCommand::onGetFriendlyName() const
 {
   std::string source;
-  switch (m_source) {
-    case Source::Fg: source = Strings::commands_AddColor_Foreground(); break;
-    case Source::Bg: source = Strings::commands_AddColor_Background(); break;
-    case Source::Color: source = Strings::commands_AddColor_Specific(); break;
+  switch (params().source()) {
+    case AddColorSource::Fg: source = Strings::commands_AddColor_Foreground(); break;
+    case AddColorSource::Bg: source = Strings::commands_AddColor_Background(); break;
+    case AddColorSource::Color: source = Strings::commands_AddColor_Specific(); break;
   }
   return fmt::format(getBaseFriendlyName(), source);
 }
