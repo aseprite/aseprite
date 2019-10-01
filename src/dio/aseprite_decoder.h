@@ -55,7 +55,7 @@ private:
   void readCelExtraChunk(doc::Cel* cel);
   void readColorProfile(doc::Sprite* sprite);
   doc::Mask* readMaskChunk();
-  void readFrameTagsChunk(doc::FrameTags* frameTags);
+  void readTagsChunk(doc::FrameTags* frameTags);
   void readSlicesChunk(doc::Slices& slices);
   doc::Slice* readSliceChunk(doc::Slices& slices);
   void readUserDataChunk(doc::UserData* userData);

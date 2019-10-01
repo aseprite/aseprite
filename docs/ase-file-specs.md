@@ -247,7 +247,7 @@ Color profile for RGB or grayscale values.
 
 Never used.
 
-### Frame Tags Chunk (0x2018)
+### Tags Chunk (0x2018)
 
     WORD        Number of tags
     BYTE[8]     For future (set to zero)

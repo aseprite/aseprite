@@ -120,8 +120,8 @@ static void ase_file_write_color_profile(FILE* f,
 #if 0
 static void ase_file_write_mask_chunk(FILE* f, dio::AsepriteFrameHeader* frame_header, Mask* mask);
 #endif
-static void ase_file_write_frame_tags_chunk(FILE* f, dio::AsepriteFrameHeader* frame_header, const FrameTags* frameTags,
-                                            const frame_t fromFrame, const frame_t toFrame);
+static void ase_file_write_tags_chunk(FILE* f, dio::AsepriteFrameHeader* frame_header, const FrameTags* frameTags,
+                                      const frame_t fromFrame, const frame_t toFrame);
 static void ase_file_write_slice_chunks(FILE* f, dio::AsepriteFrameHeader* frame_header, const Slices& slices,
                                         const frame_t fromFrame, const frame_t toFrame);
 static void ase_file_write_slice_chunk(FILE* f, dio::AsepriteFrameHeader* frame_header, Slice* slice,
@@ -305,9 +305,9 @@ bool AseFormat::onSave(FileOp* fop)
 
       // Writer frame tags
       if (sprite->frameTags().size() > 0)
-        ase_file_write_frame_tags_chunk(f, &frame_header, &sprite->frameTags(),
-                                        fop->roi().fromFrame(),
-                                        fop->roi().toFrame());
+        ase_file_write_tags_chunk(f, &frame_header, &sprite->frameTags(),
+                                  fop->roi().fromFrame(),
+                                  fop->roi().toFrame());
 
       // Writer slice chunks
       ase_file_write_slice_chunks(f, &frame_header,
@@ -921,10 +921,10 @@ static void ase_file_write_mask_chunk(FILE* f, dio::AsepriteFrameHeader* frame_h
 }
 #endif
 
-static void ase_file_write_frame_tags_chunk(FILE* f, dio::AsepriteFrameHeader* frame_header, const FrameTags* frameTags,
-                                            const frame_t fromFrame, const frame_t toFrame)
+static void ase_file_write_tags_chunk(FILE* f, dio::AsepriteFrameHeader* frame_header, const FrameTags* frameTags,
+                                      const frame_t fromFrame, const frame_t toFrame)
 {
-  ChunkWriter chunk(f, frame_header, ASE_FILE_CHUNK_FRAME_TAGS);
+  ChunkWriter chunk(f, frame_header, ASE_FILE_CHUNK_TAGS);
 
   int tags = 0;
   for (const FrameTag* tag : *frameTags) {

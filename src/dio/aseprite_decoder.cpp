@@ -172,8 +172,8 @@ bool AsepriteDecoder::decode()
             // Ignore
             break;
 
-          case ASE_FILE_CHUNK_FRAME_TAGS:
-            readFrameTagsChunk(&sprite->frameTags());
+          case ASE_FILE_CHUNK_TAGS:
+            readTagsChunk(&sprite->frameTags());
             break;
 
           case ASE_FILE_CHUNK_SLICES: {
@@ -809,7 +809,7 @@ doc::Mask* AsepriteDecoder::readMaskChunk()
   return mask;
 }
 
-void AsepriteDecoder::readFrameTagsChunk(doc::FrameTags* frameTags)
+void AsepriteDecoder::readTagsChunk(doc::FrameTags* frameTags)
 {
   size_t tags = read16();
 
