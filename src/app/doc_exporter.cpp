@@ -37,6 +37,7 @@
 #include "doc/sprite.h"
 #include "doc/tag.h"
 #include "gfx/packing_rects.h"
+#include "gfx/rect_io.h"
 #include "gfx/size.h"
 #include "render/dithering.h"
 #include "render/ordered_dither.h"
@@ -48,6 +49,8 @@
 #include <iostream>
 #include <list>
 #include <memory>
+
+#define DX_TRACE(...) // TRACEARGS
 
 using namespace doc;
 
@@ -482,6 +485,8 @@ gfx::Size DocExporter::calculateSheetSize()
 
 void DocExporter::captureSamples(Samples& samples)
 {
+  DX_TRACE("DX: Capture samples");
+
   for (auto& item : m_documents) {
     Doc* doc = item.doc;
     Sprite* sprite = doc->sprite();
@@ -489,6 +494,11 @@ void DocExporter::captureSamples(Samples& samples)
                     *item.selLayers->begin(): nullptr);
     Tag* tag = item.tag;
     int frames = item.frames();
+
+    DX_TRACE("DX: - Item:", doc->filename(),
+             "Frames:", frames,
+             "Layer:", layer ? layer->name(): "-",
+             "Tag:", tag ? tag->name(): "-");
 
     std::string format = m_filenameFormat;
     if (format.empty()) {
@@ -548,7 +558,7 @@ void DocExporter::captureSamples(Samples& samples)
 
       if (!done && (m_ignoreEmptyCels || m_trimCels)) {
         // Ignore empty cels
-        if (layer && layer->isImage() && !cel)
+        if (layer && layer->isImage() && !cel && m_ignoreEmptyCels)
           continue;
 
         std::unique_ptr<Image> sampleRender(
@@ -595,9 +605,11 @@ void DocExporter::captureSamples(Samples& samples)
             continue;
           }
 
-          // Create an empty entry for this completely trimmed frame
-          // anyway to get its duration in the list of frames.
-          sample.setTrimmedBounds(frameBounds = gfx::Rect(0, 0, 0, 0));
+          // Create an entry with Size(1, 1) for this completely
+          // trimmed frame anyway so we conserve the frame information
+          // (position and duration of the frame in the JSON data, and
+          // the relative position of the frame in frame tags).
+          sample.setTrimmedBounds(frameBounds = gfx::Rect(0, 0, 1, 1));
         }
 
         if (m_trimCels) {
@@ -619,6 +631,12 @@ void DocExporter::captureSamples(Samples& samples)
       }
 
       samples.addSample(sample);
+
+      DX_TRACE("DX:   - Sample:",
+               sample.document()->filename(),
+               "Layer:", sample.layer() ? sample.layer()->name(): "-",
+               "TrimmedBounds:", sample.trimmedBounds(),
+               "InTextureBounds:", sample.inTextureBounds());
     }
   }
 }
