@@ -633,9 +633,6 @@ void ColorBar::setPalette(const doc::Palette* newPalette, const std::string& act
   catch (base::Exception& e) {
     Console::showException(e);
   }
-
-  set_current_palette(newPalette, false);
-  manager()->invalidate();
 }
 
 void ColorBar::setTransparentIndex(int index)

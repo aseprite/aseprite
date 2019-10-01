@@ -16,14 +16,12 @@
 #include "app/context.h"
 #include "app/context_access.h"
 #include "app/i18n/strings.h"
-#include "app/modules/palettes.h"
 #include "app/tx.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/context_bar.h"
 #include "app/ui/editor/editor.h"
 #include "doc/palette.h"
 #include "fmt/format.h"
-#include "ui/manager.h"
 
 namespace app {
 
@@ -87,8 +85,13 @@ void AddColorCommand::onExecute(Context* ctx)
       break;
   }
 
+  Palette* pal = ctx->activeSite().palette();
+  ASSERT(pal);
+  if (!pal)
+    return;
+
   try {
-    Palette* newPalette = get_current_palette(); // System current pal
+    std::unique_ptr<Palette> newPalette(new Palette(*pal));
     color_t color = doc::rgba(
       appColor.getRed(),
       appColor.getGreen(),
@@ -122,12 +125,9 @@ void AddColorCommand::onExecute(Context* ctx)
       frame_t frame = writer.frame();
 
       Tx tx(writer.context(), friendlyName(), ModifyDocument);
-      tx(new cmd::SetPalette(sprite, frame, newPalette));
+      tx(new cmd::SetPalette(sprite, frame, newPalette.get()));
       tx.commit();
     }
-
-    set_current_palette(newPalette, true);
-    ui::Manager::getDefault()->invalidate();
   }
   catch (base::Exception& e) {
     Console::showException(e);

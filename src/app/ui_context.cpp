@@ -125,9 +125,10 @@ void UIContext::setActiveView(DocView* docView)
   m_lastSelectedView = docView;
 
   // TODO all the calls to functions like updateUsingEditor(),
-  // setPixelFormat(), app_refresh_screen(), updateDisplayTitleBar()
-  // Can be replaced with a ContextObserver listening to the
-  // onActiveSiteChange() event.
+  // setPixelFormat(), app_refresh_screen(), updateDisplayTitleBar(),
+  // etc. could be replaced with the Transaction class, which is a
+  // DocObserver and handles updates on the screen processing the
+  // observed changes.
   notifyActiveSiteChanged();
 }
 

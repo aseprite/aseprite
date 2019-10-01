@@ -24,8 +24,8 @@ namespace app {
     virtual void onGeneralUpdate(DocEvent& ev) { }
 
     virtual void onColorSpaceChanged(DocEvent& ev) { }
-
     virtual void onPixelFormatChanged(DocEvent& ev) { }
+    virtual void onPaletteChanged(DocEvent& ev) { }
 
     virtual void onAddLayer(DocEvent& ev) { }
     virtual void onAddFrame(DocEvent& ev) { }

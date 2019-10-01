@@ -95,6 +95,7 @@ namespace app {
 
     void notifyGeneralUpdate();
     void notifyColorSpaceChanged();
+    void notifyPaletteChanged();
     void notifySpritePixelsModified(Sprite* sprite, const gfx::Region& region, frame_t frame);
     void notifyExposeSpritePixels(Sprite* sprite, const gfx::Region& region);
     void notifyLayerMergedDown(Layer* srcLayer, Layer* targetLayer);

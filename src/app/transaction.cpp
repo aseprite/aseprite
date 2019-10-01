@@ -15,7 +15,9 @@
 #include "app/context_access.h"
 #include "app/doc.h"
 #include "app/doc_undo.h"
+#include "app/modules/palettes.h"
 #include "doc/sprite.h"
+#include "ui/manager.h"
 #include "ui/system.h"
 
 #define TX_TRACE(...)
@@ -88,6 +90,8 @@ void Transaction::commit()
   TX_TRACE("TX: Commit <%s>\n", m_cmds->label().c_str());
 
   m_cmds->updateSpritePositionAfter();
+  const SpritePosition sprPos = m_cmds->spritePositionAfterExecute();
+
   m_undo->add(m_cmds);
   m_cmds = nullptr;
 
@@ -96,6 +100,23 @@ void Transaction::commit()
     m_doc->resetTransformation();
     m_doc->generateMaskBoundaries();
   }
+
+#ifdef ENABLE_UI
+  if (int(m_changes) & int(Changes::kColorChange)) {
+    ASSERT(m_doc);
+    ASSERT(m_doc->sprite());
+
+    Palette* pal = m_doc->sprite()->palette(sprPos.frame());
+    ASSERT(pal);
+    if (pal)
+      set_current_palette(pal, false);
+    else
+      set_current_palette(nullptr, false);
+
+    if (m_ctx->isUIAvailable())
+      ui::Manager::getDefault()->invalidate();
+  }
+#endif
 }
 
 void Transaction::rollbackAndStartAgain()
@@ -139,6 +160,16 @@ void Transaction::execute(Cmd* cmd)
 void Transaction::onSelectionChanged(DocEvent& ev)
 {
   m_changes = Changes(int(m_changes) | int(Changes::kSelection));
+}
+
+void Transaction::onColorSpaceChanged(DocEvent& ev)
+{
+  m_changes = Changes(int(m_changes) | int(Changes::kColorChange));
+}
+
+void Transaction::onPaletteChanged(DocEvent& ev)
+{
+  m_changes = Changes(int(m_changes) | int(Changes::kColorChange));
 }
 
 } // namespace app

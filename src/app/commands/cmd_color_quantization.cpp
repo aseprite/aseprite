@@ -16,7 +16,6 @@
 #include "app/context.h"
 #include "app/context_access.h"
 #include "app/job.h"
-#include "app/modules/palettes.h"
 #include "app/pref/preferences.h"
 #include "app/sprite_job.h"
 #include "app/transaction.h"
@@ -25,7 +24,6 @@
 #include "doc/palette.h"
 #include "doc/sprite.h"
 #include "render/quantization.h"
-#include "ui/manager.h"
 
 #include "palette_from_sprite.xml.h"
 
@@ -156,7 +154,7 @@ void ColorQuantizationCommand::onExecute(Context* ctx)
 
     std::unique_ptr<Palette> newPalette(
       new Palette(createPal ? tmpPalette:
-                              *get_current_palette()));
+                              *site.palette()));
 
     if (createPal) {
       entries = PalettePicks(newPalette->size());
@@ -172,13 +170,6 @@ void ColorQuantizationCommand::onExecute(Context* ctx)
 
     if (*curPalette != *newPalette)
       job.tx()(new cmd::SetPalette(sprite, frame, newPalette.get()));
-
-#ifdef ENABLE_UI
-    if (ui) {
-      set_current_palette(newPalette.get(), false);
-      ui::Manager::getDefault()->invalidate();
-    }
-#endif // ENABLE_UI
   }
   catch (const base::Exception& e) {
     Console::showException(e);

@@ -147,7 +147,6 @@ namespace app {
 #endif
   };
 
-  void app_update_current_palette();
   void app_refresh_screen();
   void app_rebuild_documents_tabs();
   PixelFormat app_get_current_pixel_format();

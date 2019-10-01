@@ -31,6 +31,11 @@ namespace app {
   // whole operation if something fails (e.g. an exceptions is thrown)
   // in the middle of the procedure.
   //
+  // This class is a DocObserver because it listen and accumulates the
+  // changes in the Doc (m_changes), and when the transaction ends, it
+  // processes those changes as UI updates (so widgets are
+  // invalidated/updated correctly to show the new Doc state).
+  //
   // You have to wrap every call to an transaction with a
   // ContextWriter. The preferred usage is as follows:
   //
@@ -79,13 +84,21 @@ namespace app {
 
   private:
     // List of changes during the execution of this transaction
-    enum class Changes { kNone = 0,
-                         kSelection = 1 };
+    enum class Changes {
+      kNone = 0,
+      // The selection has changed so we have to re-generate the
+      // boundary segments.
+      kSelection = 1,
+      // The color palette or color space has changed.
+      kColorChange = 2
+    };
 
     void rollback(CmdTransaction* newCmds);
 
     // DocObserver impl
     void onSelectionChanged(DocEvent& ev) override;
+    void onColorSpaceChanged(DocEvent& ev) override;
+    void onPaletteChanged(DocEvent& ev) override;
 
     Context* m_ctx;
     Doc* m_doc;

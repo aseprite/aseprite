@@ -639,26 +639,18 @@ InputChain& App::inputChain()
 }
 #endif
 
-void app_update_current_palette()
-{
-#ifdef ENABLE_UI
-  Context* context = UIContext::instance();
-  ASSERT(context != NULL);
-
-  Site site = context->activeSite();
-
-  if (Palette* pal = site.palette())
-    set_current_palette(pal, false);
-  else
-    set_current_palette(nullptr, false);
-#endif // ENABLE_UI
-}
-
 // Updates palette and redraw the screen.
 void app_refresh_screen()
 {
 #ifdef ENABLE_UI
-  app_update_current_palette();
+  Context* ctx = UIContext::instance();
+  ASSERT(ctx != NULL);
+
+  Site site = ctx->activeSite();
+  if (Palette* pal = site.palette())
+    set_current_palette(pal, false);
+  else
+    set_current_palette(nullptr, false);
 
   // Invalidate the whole screen.
   ui::Manager::getDefault()->invalidate();
