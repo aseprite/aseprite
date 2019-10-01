@@ -110,6 +110,12 @@ void NewFrameCommand::onExecute(Context* context)
       case Content::DUPLICATE_CELS:
       case Content::DUPLICATE_CELS_LINKED:
       case Content::DUPLICATE_CELS_COPIES: {
+        std::unique_ptr<bool> continuous = nullptr;
+        switch (m_content) {
+          case Content::DUPLICATE_CELS_COPIES: continuous.reset(new bool(false)); break;
+          case Content::DUPLICATE_CELS_LINKED: continuous.reset(new bool(true)); break;
+        }
+
         const Site* site = writer.site();
         if (site->inTimeline() &&
             !site->selectedLayers().empty() &&
@@ -132,12 +138,6 @@ void NewFrameCommand::onExecute(Context* context)
             (site->selectedFrames().lastFrame() -
              site->selectedFrames().firstFrame() + 1);
 
-          std::unique_ptr<bool> continuous = nullptr;
-          switch (m_content) {
-            case Content::DUPLICATE_CELS_COPIES: continuous.reset(new bool(false)); break;
-            case Content::DUPLICATE_CELS_LINKED: continuous.reset(new bool(true)); break;
-          }
-
           for (Layer* layer : selLayers) {
             if (layer->isImage()) {
               for (frame_t srcFrame : site->selectedFrames().reversed()) {
@@ -157,15 +157,9 @@ void NewFrameCommand::onExecute(Context* context)
         else if (auto layer = static_cast<LayerImage*>(writer.layer())) {
           api.copyCel(
             layer, writer.frame(),
-            layer, writer.frame()+1);
+            layer, writer.frame()+1, continuous.get());
 
-#ifdef ENABLE_UI                // TODO the active frame should be part of the Site
-          // TODO should we use DocObserver?
-          if (UIContext::instance() == context) {
-            if (DocView* view = UIContext::instance()->activeView())
-              view->editor()->setFrame(writer.frame()+1);
-          }
-#endif
+          context->setActiveFrame(writer.frame()+1);
         }
         break;
       }
