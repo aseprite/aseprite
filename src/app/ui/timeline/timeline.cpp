@@ -55,7 +55,6 @@
 #include "os/font.h"
 #include "os/surface.h"
 #include "os/system.h"
-#include "ui/scroll_helper.h"
 #include "ui/ui.h"
 
 #include <cstdio>
