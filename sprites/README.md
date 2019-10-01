@@ -12,3 +12,6 @@
   hidden).
 * `bg-index-3.aseprite`: Indexed, 4x4, two layers ("fg" and "bg")
   with a special transparent index color (= palette index 3).
+* `tags3.aseprite`: 3 tags ("forward", "reverse", "pingpong") and 3
+  layers ("a", "b", "c"), 4x4, several linked cels + layer "c" with
+  empty cels.

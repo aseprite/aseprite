@@ -20,7 +20,7 @@ cat >$d/compare.lua <<EOF
 local json = dofile('third_party/json/json.lua')
 local data = json.decode(io.open('$d/stdout.json'):read('a'))
 local frames = { data.frames['1empty3 0.aseprite'],
-       	         data.frames['1empty3 1.aseprite'],
+                 data.frames['1empty3 1.aseprite'],
                  data.frames['1empty3 2.aseprite'] }
 assert(frames[1].frame.x == 0)
 assert(frames[2].frame.x == 32)
@@ -133,3 +133,37 @@ local sheet = Sprite{ fromFile='$d/sheet.aseprite' }
 assert(sheet.transparentColor == 3)
 EOF
 $ASEPRITE -b -script "$d/compare.lua" || exit 1
+
+# Don't discard empty frames if -ignore-empty is not used (even if -trim is used)
+# https://github.com/aseprite/aseprite/issues/2116
+# -layer -trim -ignore-empty -list-tags -sheet -data
+
+d=$t/sheet-trim-without-ignore-empty
+$ASEPRITE -help
+$ASEPRITE -b \
+	  -list-tags \
+	  -layer "c" \
+	  "sprites/tags3.aseprite" \
+	  -trim \
+	  -sheet-pack \
+	  -sheet "$d/sheet1.png" \
+	  -format json-array \
+	  -data "$d/sheet1.json" || exit 1
+$ASEPRITE -b \
+	  -list-tags \
+	  -layer "c" \
+	  "sprites/tags3.aseprite" \
+	  -trim -ignore-empty \
+	  -sheet-pack \
+	  -sheet "$d/sheet2.png" \
+	  -format json-array \
+	  -data "$d/sheet2.json" || exit 1
+
+cat >$d/check.lua <<EOF
+local json = dofile('third_party/json/json.lua')
+local sheet1 = json.decode(io.open('$d/sheet1.json'):read('a'))
+local sheet2 = json.decode(io.open('$d/sheet2.json'):read('a'))
+assert(#sheet1.frames == 12)
+assert(#sheet2.frames == 4)
+EOF
+$ASEPRITE -b -script "$d/check.lua" || exit 1
