@@ -482,3 +482,28 @@ do
   p:setColor(4, Color(0, 0, 0))
   p:setColor(5, Color(0, 255, 0))
 end
+
+-- AddColor
+do
+  local s = Sprite(32, 32)
+  local p = s.palettes[1]
+
+  function testAddColor(color)
+    assert(p:getColor(#p-1) ~= color)
+    app.command.AddColor{ color=color }
+    assert(p:getColor(#p-1) == color)
+  end
+  testAddColor(Color(255, 0, 0))
+  testAddColor(Color(0, 255, 0))
+  testAddColor(Color(0, 0, 255))
+
+  local color = Color(128, 0, 0)
+  app.preferences.color_bar.fg_color = color
+  app.command.AddColor{ source="fg" }
+  assert(p:getColor(#p-1) == color)
+
+  local color = Color(0, 0, 128)
+  app.preferences.color_bar.bg_color = color
+  app.command.AddColor{ source="bg" }
+  assert(p:getColor(#p-1) == color)
+end
