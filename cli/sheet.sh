@@ -119,3 +119,17 @@ end
 assert(expected:isEqual(sheet.cels[1].image))
 EOF
 $ASEPRITE -b -script "$d/compare.lua" || exit 1
+
+# Test that the transparent color persists in the output sheet
+
+d=$t/sheet-custom-transparent-index
+if ! $ASEPRITE -b sprites/bg-index-3.aseprite -sheet "$d/sheet.aseprite" -data "$d/sheet.json" ; then
+    exit 1
+fi
+cat >$d/compare.lua <<EOF
+local original = Sprite{ fromFile='sprites/bg-index-3.aseprite' }
+assert(original.transparentColor == 3)
+local sheet = Sprite{ fromFile='$d/sheet.aseprite' }
+assert(sheet.transparentColor == 3)
+EOF
+$ASEPRITE -b -script "$d/compare.lua" || exit 1

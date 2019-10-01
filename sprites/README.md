@@ -10,3 +10,5 @@
   three layers each one (called "a", "b", "c" too). There is a
   combination of visibilities ("b/b", "c", "c/a", and "c/b" are
   hidden).
+* `bg-index-3.aseprite`: Indexed, 4x4, two layers ("fg" and "bg")
+  with a special transparent index color (= palette index 3).
