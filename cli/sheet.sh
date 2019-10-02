@@ -139,7 +139,6 @@ $ASEPRITE -b -script "$d/compare.lua" || exit 1
 # -layer -trim -ignore-empty -list-tags -sheet -data
 
 d=$t/sheet-trim-without-ignore-empty
-$ASEPRITE -help
 $ASEPRITE -b \
 	  -list-tags \
 	  -layer "c" \
