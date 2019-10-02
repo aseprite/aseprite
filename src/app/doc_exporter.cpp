@@ -20,6 +20,7 @@
 #include "app/pref/preferences.h"
 #include "app/restore_visible_layers.h"
 #include "app/snap_to_grid.h"
+#include "doc/images_map.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
 #include "base/fstream_path.h"
@@ -28,6 +29,7 @@
 #include "doc/algorithm/shrink_bounds.h"
 #include "doc/cel.h"
 #include "doc/image.h"
+#include "doc/images_map.h"
 #include "doc/layer.h"
 #include "doc/palette.h"
 #include "doc/primitives.h"
@@ -47,8 +49,8 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
-#include <list>
 #include <memory>
+#include <vector>
 
 #define DX_TRACE(...) // TRACEARGS
 
@@ -182,8 +184,9 @@ public:
     m_filename(filename),
     m_innerPadding(innerPadding),
     m_extrude(extrude),
-    m_bounds(new SampleBounds(sprite)),
-    m_isDuplicated(false) {
+    m_isLinked(false),
+    m_isDuplicated(false),
+    m_bounds(new SampleBounds(sprite)) {
   }
 
   Doc* document() const { return m_document; }
@@ -216,13 +219,76 @@ public:
   void setTrimmedBounds(const gfx::Rect& bounds) { m_bounds->setTrimmedBounds(bounds); }
   void setInTextureBounds(const gfx::Rect& bounds) { m_bounds->setInTextureBounds(bounds); }
 
+  bool isLinked() const { return m_isLinked; }
   bool isDuplicated() const { return m_isDuplicated; }
-  bool isEmpty() const { return m_bounds->trimmedBounds().isEmpty(); }
+  bool isEmpty() const {
+    // TODO trimmed bounds cannot be empty now (samples that are
+    // completely trimmed out are included as a sample of size 1x1)
+    ASSERT(!m_bounds->trimmedBounds().isEmpty());
+    return m_bounds->trimmedBounds().isEmpty();
+  }
   SampleBoundsPtr sharedBounds() const { return m_bounds; }
 
+  void setLinked() { m_isLinked = true; }
+  void setDuplicated() { m_isDuplicated = true; }
+
   void setSharedBounds(const SampleBoundsPtr& bounds) {
-    m_isDuplicated = true;
     m_bounds = bounds;
+  }
+
+  ImageRef createRender(ImageBufferPtr& imageBuf) {
+    ASSERT(m_sprite);
+
+    ImageRef render(
+      Image::create(m_sprite->pixelFormat(),
+                    m_sprite->width(),
+                    m_sprite->height(),
+                    imageBuf));
+    render->setMaskColor(m_sprite->transparentColor());
+    clear_image(render.get(), m_sprite->transparentColor());
+    renderSample(render.get(), 0, 0, false);
+    return render;
+  }
+
+  void renderSample(doc::Image* dst, int x, int y, bool extrude) const {
+    RestoreVisibleLayers layersVisibility;
+    if (m_selLayers)
+      layersVisibility.showSelectedLayers(m_sprite,
+                                          *m_selLayers);
+
+    render::Render render;
+    render.setNewBlend(Preferences::instance().experimental.newBlend());
+
+    if (extrude) {
+      const gfx::Rect& trim = trimmedBounds();
+
+      // Displaced position onto the destination texture
+      int dx[] = { 0, 1, trim.w+1 };
+      int dy[] = { 0, 1, trim.h+1 };
+
+      // Starting point of the area to be copied from the original image
+      // taking into account the size of the trimmed sprite
+      int srcx[] = { trim.x, trim.x, trim.x2()-1 };
+      int srcy[] = { trim.y, trim.y, trim.y2()-1 };
+
+      // Size of the area to be copied from original image, starting at
+      // the point (srcx[i], srxy[j])
+      int szx[] = { 1, trim.w, 1 };
+      int szy[] = { 1, trim.h, 1 };
+
+      // Render a 9-patch image extruding the sample one pixel on each
+      // side.
+      for (int j=0; j<3; ++j) {
+        for (int i=0; i<3; ++i) {
+          gfx::Clip clip(x+dx[i], y+dy[j], gfx::RectT<int>(srcx[i], srcy[j], szx[i], szy[j]));
+          render.renderSprite(dst, m_sprite, m_frame, clip);
+        }
+      }
+    }
+    else {
+      gfx::Clip clip(x, y, trimmedBounds());
+      render.renderSprite(dst, m_sprite, m_frame, clip);
+    }
   }
 
 private:
@@ -233,13 +299,14 @@ private:
   std::string m_filename;
   int m_innerPadding;
   bool m_extrude;
-  SampleBoundsPtr m_bounds;
+  bool m_isLinked;
   bool m_isDuplicated;
+  SampleBoundsPtr m_bounds;
 };
 
 class DocExporter::Samples {
 public:
-  typedef std::list<Sample> List;
+  typedef std::vector<Sample> List;
   typedef List::iterator iterator;
   typedef List::const_iterator const_iterator;
 
@@ -247,6 +314,10 @@ public:
 
   void addSample(const Sample& sample) {
     m_samples.push_back(sample);
+  }
+
+  const Sample& operator[](const size_t i) const {
+    return m_samples[i];
   }
 
   iterator begin() { return m_samples.begin(); }
@@ -264,8 +335,7 @@ public:
   virtual void layoutSamples(Samples& samples, int borderPadding, int shapePadding, int& width, int& height) = 0;
 };
 
-class DocExporter::SimpleLayoutSamples :
-    public DocExporter::LayoutSamples {
+class DocExporter::SimpleLayoutSamples : public DocExporter::LayoutSamples {
 public:
   SimpleLayoutSamples(SpriteSheetType type)
     : m_type(type) {
@@ -279,7 +349,7 @@ public:
     gfx::Size rowSize(0, 0);
 
     for (auto& sample : samples) {
-      if (sample.isDuplicated())
+      if (sample.isLinked())
         continue;
 
       if (sample.isEmpty()) {
@@ -355,18 +425,37 @@ private:
   SpriteSheetType m_type;
 };
 
-class DocExporter::BestFitLayoutSamples :
-    public DocExporter::LayoutSamples {
+class DocExporter::BestFitLayoutSamples : public DocExporter::LayoutSamples {
+  ImageBufferPtr m_imageBuf;
 public:
+  BestFitLayoutSamples(ImageBufferPtr& buf)
+    : m_imageBuf(buf) {
+  }
   void layoutSamples(Samples& samples, int borderPadding, int shapePadding, int& width, int& height) override {
     gfx::PackingRects pr(borderPadding, shapePadding);
+    doc::ImagesMap duplicates;
 
+    uint32_t i = 0;
     for (auto& sample : samples) {
-      if (sample.isDuplicated() ||
-          sample.isEmpty())
+      if (sample.isLinked() ||
+          sample.isEmpty()) {
+        ++i;
         continue;
+      }
 
-      pr.add(sample.requiredSize());
+      ImageRef sampleRender(sample.createRender(m_imageBuf));
+      auto it = duplicates.find(sampleRender);
+      if (it != duplicates.end()) {
+        const uint32_t j = it->second;
+
+        sample.setDuplicated();
+        sample.setSharedBounds(samples[j].sharedBounds());
+      }
+      else {
+        duplicates[sampleRender] = i;
+        pr.add(sample.requiredSize());
+      }
+      ++i;
     }
 
     if (width == 0 || height == 0) {
@@ -379,7 +468,8 @@ public:
 
     auto it = pr.begin();
     for (auto& sample : samples) {
-      if (sample.isDuplicated() ||
+      if (sample.isLinked() ||
+          sample.isDuplicated() ||
           sample.isEmpty())
         continue;
 
@@ -544,8 +634,9 @@ void DocExporter::captureSamples(Samples& samples)
           if (other.sprite() == sprite &&
               other.layer() == layer &&
               other.frame() == link->frame()) {
-            ASSERT(!other.isDuplicated());
+            ASSERT(!other.isLinked());
 
+            sample.setLinked();
             sample.setSharedBounds(other.sharedBounds());
             done = true;
             break;
@@ -561,15 +652,7 @@ void DocExporter::captureSamples(Samples& samples)
         if (layer && layer->isImage() && !cel && m_ignoreEmptyCels)
           continue;
 
-        std::unique_ptr<Image> sampleRender(
-          Image::create(sprite->pixelFormat(),
-            sprite->width(),
-            sprite->height(),
-            m_sampleRenderBuf));
-
-        sampleRender->setMaskColor(sprite->transparentColor());
-        clear_image(sampleRender.get(), sprite->transparentColor());
-        renderSample(sample, sampleRender.get(), 0, 0, false);
+        ImageRef sampleRender(sample.createRender(m_sampleRenderBuf));
 
         gfx::Rect frameBounds;
         doc::color_t refColor = 0;
@@ -645,7 +728,7 @@ void DocExporter::layoutSamples(Samples& samples)
 {
   switch (m_sheetType) {
     case SpriteSheetType::Packed: {
-      BestFitLayoutSamples layout;
+      BestFitLayoutSamples layout(m_sampleRenderBuf);
       layout.layoutSamples(
         samples, m_borderPadding, m_shapePadding,
         m_textureWidth, m_textureHeight);
@@ -666,7 +749,8 @@ gfx::Size DocExporter::calculateSheetSize(const Samples& samples) const
   gfx::Rect fullTextureBounds(0, 0, m_textureWidth, m_textureHeight);
 
   for (const auto& sample : samples) {
-    if (sample.isDuplicated() ||
+    if (sample.isLinked() ||
+        sample.isDuplicated() ||
         sample.isEmpty())
       continue;
 
@@ -701,7 +785,8 @@ Doc* DocExporter::createEmptyTexture(const Samples& samples) const
   color_t transparentColor = 0;
 
   for (const auto& sample : samples) {
-    if (sample.isDuplicated() ||
+    if (sample.isLinked() ||
+        sample.isDuplicated() ||
         sample.isEmpty())
       continue;
 
@@ -757,7 +842,8 @@ void DocExporter::renderTexture(Context* ctx, const Samples& samples, Image* tex
   textureImage->clear(0);
 
   for (const auto& sample : samples) {
-    if (sample.isDuplicated() ||
+    if (sample.isLinked() ||
+        sample.isDuplicated() ||
         sample.isEmpty())
       continue;
 
@@ -772,7 +858,8 @@ void DocExporter::renderTexture(Context* ctx, const Samples& samples, Image* tex
         .execute(ctx);
     }
 
-    renderSample(sample, textureImage,
+    sample.renderSample(
+      textureImage,
       sample.inTextureBounds().x+m_innerPadding,
       sample.inTextureBounds().y+m_innerPadding,
       m_extrude);
@@ -1032,48 +1119,6 @@ void DocExporter::createDataFile(const Samples& samples, std::ostream& os, Image
 
   os << "\n }\n"
      << "}\n";
-}
-
-void DocExporter::renderSample(const Sample& sample, doc::Image* dst, int x, int y, bool extrude) const
-{
-  RestoreVisibleLayers layersVisibility;
-  if (sample.selectedLayers())
-    layersVisibility.showSelectedLayers(sample.sprite(),
-                                        *sample.selectedLayers());
-
-  render::Render render;
-  render.setNewBlend(Preferences::instance().experimental.newBlend());
-
-  if (extrude) {
-    const gfx::Rect& trim = sample.trimmedBounds();
-
-    // Displaced position onto the destination texture
-    int dx[] = {0, 1, trim.w+1};
-    int dy[] = {0, 1, trim.h+1};
-
-    // Starting point of the area to be copied from the original image
-    // taking into account the size of the trimmed sprite
-    int srcx[] = {trim.x, trim.x, trim.x2()-1};
-    int srcy[] = {trim.y, trim.y, trim.y2()-1};
-
-    // Size of the area to be copied from original image, starting at
-    // the point (srcx[i], srxy[j])
-    int szx[] = {1, trim.w, 1};
-    int szy[] = {1, trim.h, 1};
-
-    // Render a 9-patch image extruding the sample one pixel on each
-    // side.
-    for(int j=0; j<3; ++j) {
-      for(int i=0; i<3; ++i) {
-        gfx::Clip clip(x+dx[i], y+dy[j], gfx::RectT<int>(srcx[i], srcy[j], szx[i], szy[j]));
-        render.renderSprite(dst, sample.sprite(), sample.frame(), clip);
-      }
-    }
-  }
-  else {
-    gfx::Clip clip(x, y, sample.trimmedBounds());
-    render.renderSprite(dst, sample.sprite(), sample.frame(), clip);
-  }
 }
 
 } // namespace app

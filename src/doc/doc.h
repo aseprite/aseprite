@@ -21,6 +21,7 @@
 #include "doc/image.h"
 #include "doc/image_impl.h"
 #include "doc/image_ref.h"
+#include "doc/images_map.h"
 #include "doc/layer.h"
 #include "doc/mask.h"
 #include "doc/object.h"

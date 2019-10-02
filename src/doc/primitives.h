@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2018 Igara Studio S.A.
+// Copyright (c) 2018-2019 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -9,6 +9,7 @@
 #define DOC_PRIMITIVES_H_INCLUDED
 #pragma once
 
+#include "base/ints.h"
 #include "doc/color.h"
 #include "doc/image_buffer.h"
 #include "gfx/fwd.h"
@@ -47,6 +48,9 @@ namespace doc {
   bool is_same_image(const Image* i1, const Image* i2);
 
   void remap_image(Image* image, const Remap& remap);
+
+  uint32_t calculate_image_hash(const Image* image,
+                                const gfx::Rect& bounds);
 
 } // namespace doc
 

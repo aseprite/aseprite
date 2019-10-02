@@ -102,7 +102,6 @@ namespace app {
     Doc* createEmptyTexture(const Samples& samples) const;
     void renderTexture(Context* ctx, const Samples& samples, doc::Image* textureImage) const;
     void createDataFile(const Samples& samples, std::ostream& os, doc::Image* textureImage);
-    void renderSample(const Sample& sample, doc::Image* dst, int x, int y, bool extrude) const;
 
     class Item {
     public:
