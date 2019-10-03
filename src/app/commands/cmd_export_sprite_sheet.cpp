@@ -194,6 +194,7 @@ struct ExportSpriteSheetParams : public NewParams {
   Param<bool> openGenerated { this, false, "openGenerated" };
   Param<std::string> layer { this, std::string(), "layer" };
   Param<std::string> tag { this, std::string(), "tag" };
+  Param<bool> splitLayers { this, false, "splitLayers" };
   Param<bool> listLayers { this, true, "listLayers" };
   Param<bool> listTags { this, true, "listTags" };
   Param<bool> listSlices { this, true, "listSlices" };
@@ -221,16 +222,17 @@ void update_doc_exporter_from_params(const Site& site,
   const bool trimByGrid = params.trimByGrid();
   const bool extrude = params.extrude();
   const int extrudePadding = (extrude ? 1: 0);
+  const bool splitLayers = params.splitLayers();
   const bool listLayers = params.listLayers();
   const bool listTags = params.listTags();
   const bool listSlices = params.listSlices();
 
   SelectedFrames selFrames;
   Tag* tag = calculate_selected_frames(site, tagName, selFrames);
-
   frame_t nframes = selFrames.size();
   ASSERT(nframes > 0);
 
+  Doc* doc = const_cast<Doc*>(site.document());
   const Sprite* sprite = site.sprite();
 
   // If the user choose to render selected layers only, we can
@@ -249,8 +251,48 @@ void update_doc_exporter_from_params(const Site& site,
     }
   }
 
+  int nlayers = 0;
+  if (splitLayers) {
+    if (!selLayers.empty()) {
+      for (auto layer : selLayers.toAllLayersList()) {
+        if (layer->isGroup())
+          continue;
+
+        SelectedLayers oneLayer;
+        oneLayer.insert(layer);
+
+        exporter.addDocument(doc, tag, &oneLayer,
+                             (!selFrames.empty() ? &selFrames: nullptr));
+        ++nlayers;
+      }
+    }
+    else {
+      for (auto layer : sprite->allVisibleLayers()) {
+        if (layer->isGroup())
+          continue;
+
+        SelectedLayers oneLayer;
+        oneLayer.insert(layer);
+
+        exporter.addDocument(doc, tag, &oneLayer,
+                             (!selFrames.empty() ? &selFrames: nullptr));
+        ++nlayers;
+      }
+    }
+  }
+  else {
+    exporter.addDocument(doc, tag,
+                         (!selLayers.empty() ? &selLayers: nullptr),
+                         (!selFrames.empty() ? &selFrames: nullptr));
+    ++nlayers;
+  }
+  nlayers = std::max(1, nlayers);
+
   if (bestFit) {
-    Fit fit = best_fit(sprite, nframes, borderPadding, shapePadding,
+    Fit fit = best_fit(sprite,
+                       nframes * nlayers,
+                       borderPadding,
+                       shapePadding,
                        innerPadding + extrudePadding,
                        type);
     columns = fit.columns;
@@ -303,9 +345,6 @@ void update_doc_exporter_from_params(const Site& site,
   if (listLayers) exporter.setListLayers(true);
   if (listTags) exporter.setListTags(true);
   if (listSlices) exporter.setListSlices(true);
-  exporter.addDocument(const_cast<Doc*>(site.document()), tag,
-                       (!selLayers.empty() ? &selLayers: nullptr),
-                       (!selFrames.empty() ? &selFrames: nullptr));
 }
 
 #if ENABLE_UI
@@ -377,6 +416,7 @@ public:
     m_dataFilename = params.dataFilename();
     dataEnabled()->setSelected(!m_dataFilename.empty());
     dataFormat()->setSelectedItemIndex(int(params.dataFormat()));
+    splitLayers()->setSelected(params.splitLayers());
     listLayers()->setSelected(params.listLayers());
     listTags()->setSelected(params.listTags());
     listSlices()->setSelected(params.listSlices());
@@ -416,6 +456,8 @@ public:
     dataFilename()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::onDataFilename, this));
     trimEnabled()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::onTrimEnabledChange, this));
     paddingEnabled()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::onPaddingEnabledChange, this));
+    layers()->Change.connect(base::Bind<void>(&ExportSpriteSheetWindow::onLayersChange, this));
+    splitLayers()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::onLayersChange, this));
     frames()->Change.connect(base::Bind<void>(&ExportSpriteSheetWindow::onFramesChange, this));
     openGenerated()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::onOpenGeneratedChange, this));
 
@@ -447,6 +489,7 @@ public:
     params.openGenerated   (openGeneratedValue());
     params.layer           (layerValue());
     params.tag             (tagValue());
+    params.splitLayers     (splitLayersValue());
     params.listLayers      (listLayersValue());
     params.listTags        (listTagsValue());
     params.listSlices      (listSlicesValue());
@@ -560,6 +603,10 @@ private:
     return frames()->getValue();
   }
 
+  bool splitLayersValue() const {
+    return splitLayers()->isSelected();
+  }
+
   bool listLayersValue() const {
     return listLayers()->isSelected();
   }
@@ -595,25 +642,8 @@ private:
         break;
     }
 
-    // We have to detect if bestFit is selected, because the exchange
-    // "rows to columns" and "columns to rows" in this mode needs to recalculate
-    // these numbers.
-    // . NON best_fit method: only we have to show the hiden column or row value.
-    // . best_fit method: we have to recalculate the columns and rows.
-    if (matrixState && bestFitValue()) {
-      SelectedFrames selFrames;
-      calculate_selected_frames(m_site, tagValue(), selFrames);
-      frame_t nframes = selFrames.size();
-
-      Fit fit = best_fit(m_site.sprite(),
-                         nframes,
-                         borderPaddingValue(),
-                         shapePaddingValue(),
-                         innerPaddingValue() + extrudeValue(),
-                         spriteSheetTypeValue());
-      rows()->setTextf("%d", fit.rows);
-      columns()->setTextf("%d", fit.columns);
-    }
+    // Recalculate cols/rows/fitWidth/Height fields
+    updateSizeFields();
 
     columnsLabel()->setVisible(colsState);
     columns()->setVisible(colsState);
@@ -650,31 +680,28 @@ private:
   void onSizeChange() {
     SelectedFrames selFrames;
     calculate_selected_frames(m_site, tagValue(), selFrames);
-    frame_t nframes = selFrames.size();
-    int borderPadding = 0;
-    int innerPadding = 0;
-    int shapePadding = 0;
-    if (paddingEnabled()->isEnabled()) {
-      borderPadding = borderPaddingValue();
-      innerPadding = innerPaddingValue() + extrudeValue();
-      shapePadding = shapePaddingValue();
-    }
-    int framew = m_sprite->width() + 2*innerPadding + shapePadding;
-    int frameh = m_sprite->height() + 2*innerPadding + shapePadding;
-    int w = fitWidthValue() - 2*borderPadding + shapePadding;
-    int h = fitHeightValue() - 2*borderPadding + shapePadding;
-    int r;// rows
-    int c;// columns
+    const frame_t nframes = selFrames.size();
+    const int nlayers = calculateNLayers();
+    const int borderPadding = borderPaddingValue();
+    const int innerPadding = innerPaddingValue() + extrudeValue();
+    const int shapePadding = shapePaddingValue();
+    const int framew = m_sprite->width() + 2*innerPadding + shapePadding;
+    const int frameh = m_sprite->height() + 2*innerPadding + shapePadding;
+    const int w = fitWidthValue() - 2*borderPadding + shapePadding;
+    const int h = fitHeightValue() - 2*borderPadding + shapePadding;
+    const int nsamples = nframes * nlayers;
+    int rows;
+    int cols;
     if (spriteSheetTypeValue() == SpriteSheetType::Columns) {
-      r = base::clamp(h / frameh, 1, nframes);
-      c = nframes / r + (nframes % r? 1 : 0);
+      rows = base::clamp(h / frameh, 1, nsamples);
+      cols = (nsamples / rows) + (nsamples % rows ? 1 : 0);
     }
     else {
-      c = base::clamp(w / framew, 1, nframes);
-      r = nframes / c + (nframes % c? 1 : 0);
+      cols = base::clamp(w / framew, 1, nsamples);
+      rows = (nsamples / cols) + (nsamples % cols ? 1 : 0);
     }
-    columns()->setTextf("%d", c);
-    rows()->setTextf("%d", r);
+    this->columns()->setTextf("%d", cols);
+    this->rows()->setTextf("%d", rows);
     bestFit()->setSelected(false);
   }
 
@@ -730,9 +757,9 @@ private:
   }
 
   void onTrimEnabledChange() {
-      trimContainer()->setVisible(trimEnabled()->isSelected());
-      resize();
-      updateSizeFields();
+    trimContainer()->setVisible(trimEnabled()->isSelected());
+    resize();
+    updateSizeFields();
   }
 
   void onPaddingEnabledChange() {
@@ -746,6 +773,10 @@ private:
   }
 
   void onExtrudeChange() {
+    updateSizeFields();
+  }
+
+  void onLayersChange() {
     updateSizeFields();
   }
 
@@ -777,18 +808,20 @@ private:
                               tagValue(),
                               selFrames);
 
-    frame_t nframes = selFrames.size();
+    const frame_t nframes = selFrames.size();
+    const int nlayers = calculateNLayers();
 
     Fit fit;
     if (bestFit()->isSelected()) {
-      fit = best_fit(m_sprite, nframes,
+      fit = best_fit(m_sprite,
+                     nframes * nlayers,
                      borderPaddingValue(), shapePaddingValue(),
                      innerPaddingValue() + extrudePadding(),
                      spriteSheetTypeValue());
     }
     else {
       fit = calculate_sheet_size(
-        m_sprite, nframes,
+        m_sprite, nframes * nlayers,
         columnsValue(),
         rowsValue(),
         borderPaddingValue(),
@@ -806,6 +839,48 @@ private:
     bool state = dataEnabled()->isSelected();
     dataFilename()->setVisible(state);
     dataMeta()->setVisible(state);
+  }
+
+  int calculateNLayers() {
+    const std::string layerName = layerValue();
+    RestoreVisibleLayers layersVisibility;
+    calculate_visible_layers(m_site, layerName, layersVisibility);
+
+    // TODO similar to the code in update_doc_exporter_from_params()
+    int nlayers = 0;
+    if (splitLayersValue()) {
+      SelectedLayers selLayers;
+      if (layerName != kSelectedLayers) {
+        for (const Layer* layer : m_sprite->allLayers()) {
+          if (layer->name() == layerName) {
+            selLayers.insert(const_cast<Layer*>(layer));
+            break;
+          }
+        }
+      }
+
+      if (!selLayers.empty()) {
+        for (auto layer : selLayers.toAllLayersList()) {
+          if (layer->isGroup())
+            continue;
+
+          ++nlayers;
+        }
+      }
+      else {
+        for (auto layer : m_sprite->allVisibleLayers()) {
+          if (layer->isGroup())
+            continue;
+
+          ++nlayers;
+        }
+      }
+    }
+    else {
+      ++nlayers;
+    }
+
+    return std::max(1, nlayers);
   }
 
   Site& m_site;
@@ -880,6 +955,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     if (!params.openGenerated.isSet())    params.openGenerated(   docPref.spriteSheet.openGenerated());
     if (!params.layer.isSet())            params.layer(           docPref.spriteSheet.layer());
     if (!params.tag.isSet())              params.tag(             docPref.spriteSheet.frameTag());
+    if (!params.splitLayers.isSet())      params.splitLayers(     docPref.spriteSheet.splitLayers());
     if (!params.listLayers.isSet())       params.listLayers(      docPref.spriteSheet.listLayers());
     if (!params.listTags.isSet())         params.listTags(        docPref.spriteSheet.listFrameTags());
     if (!params.listSlices.isSet())       params.listSlices(      docPref.spriteSheet.listSlices());
@@ -912,6 +988,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     docPref.spriteSheet.openGenerated   (params.openGenerated());
     docPref.spriteSheet.layer           (params.layer());
     docPref.spriteSheet.frameTag        (params.tag());
+    docPref.spriteSheet.splitLayers     (params.splitLayers());
     docPref.spriteSheet.listLayers      (params.listLayers());
     docPref.spriteSheet.listFrameTags   (params.listTags());
     docPref.spriteSheet.listSlices      (params.listSlices());

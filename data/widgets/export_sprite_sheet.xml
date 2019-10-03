@@ -43,7 +43,8 @@
     <check cell_hspan="3" id="best_fit" text="@.best_fit" />
 
     <label text="@.layers" />
-    <combobox id="layers" text="" cell_hspan="3" />
+    <combobox id="layers" text="" cell_hspan="2" />
+    <check id="split_layers" text="@.split_layers" tooltip="@.split_layers_tooltip" />
 
     <label text="@.frames" />
     <combobox id="frames" text="" cell_hspan="3" />
