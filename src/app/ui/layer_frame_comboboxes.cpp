@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -109,18 +110,18 @@ void fill_anidir_combobox(ui::ComboBox* anidir, doc::AniDir defAnidir)
   anidir->setSelectedItemIndex(int(defAnidir));
 }
 
-void calculate_visible_layers(Site& site,
+void calculate_visible_layers(const Site& site,
                               const std::string& layersValue,
                               RestoreVisibleLayers& layersVisibility)
 {
   if (layersValue == kSelectedLayers) {
     if (!site.selectedLayers().empty()) {
       layersVisibility.showSelectedLayers(
-        site.sprite(),
+        const_cast<Sprite*>(site.sprite()),
         site.selectedLayers());
     }
     else {
-      layersVisibility.showLayer(site.layer());
+      layersVisibility.showLayer(const_cast<Layer*>(site.layer()));
     }
   }
   else if (layersValue != kAllFrames) {

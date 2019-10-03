@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -55,7 +56,7 @@ namespace app {
   void fill_frames_combobox(const doc::Sprite* sprite, ui::ComboBox* frames, const std::string& defFrame);
   void fill_anidir_combobox(ui::ComboBox* anidir, doc::AniDir defAnidir);
 
-  void calculate_visible_layers(Site& site,
+  void calculate_visible_layers(const Site& site,
                                 const std::string& layersValue,
                                 RestoreVisibleLayers& layersVisibility);
 

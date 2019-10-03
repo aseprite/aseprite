@@ -66,12 +66,12 @@ namespace {
   };
 
   // Calculate best size for the given sprite
-  Fit best_fit(Sprite* sprite,
-               int nframes,
-               int borderPadding,
-               int shapePadding,
-               int innerPadding,
-               SpriteSheetType type) {
+  Fit best_fit(const Sprite* sprite,
+               const int nframes,
+               const int borderPadding,
+               const int shapePadding,
+               const int innerPadding,
+               const SpriteSheetType type) {
 
     int framew = sprite->width()+2*innerPadding + shapePadding;
     int frameh = sprite->height()+2*innerPadding + shapePadding;
@@ -122,11 +122,13 @@ namespace {
     return result;
   }
 
-  Fit calculate_sheet_size(Sprite* sprite, int nframes,
-                           int columns, int rows,
-                           int borderPadding,
-                           int shapePadding,
-                           int innerPadding) {
+  Fit calculate_sheet_size(const Sprite* sprite,
+                           const int nframes,
+                           int columns,
+                           int rows,
+                           const int borderPadding,
+                           const int shapePadding,
+                           const int innerPadding) {
     if (columns == 0) {
       rows = base::clamp(rows, 1, nframes);
       columns = ((nframes/rows) + ((nframes%rows) > 0 ? 1: 0));
@@ -142,8 +144,8 @@ namespace {
   }
 
 #ifdef ENABLE_UI
-  bool ask_overwrite(bool askFilename, std::string filename,
-                     bool askDataname, std::string dataname) {
+  bool ask_overwrite(const bool askFilename, const std::string& filename,
+                     const bool askDataname, const std::string& dataname) {
     if ((askFilename &&
          !filename.empty() &&
          base::is_file(filename)) ||
@@ -158,19 +160,18 @@ namespace {
       if (base::is_file(dataname))
         text << "<<" << base::get_file_name(dataname).c_str();
 
-      int ret = OptionalAlert::show(
-        Preferences::instance().spriteSheet.showOverwriteFilesAlert,
-        1, // Yes is the default option when the alert dialog is disabled
-        fmt::format(Strings::alerts_overwrite_files_on_export_sprite_sheet(),
-                    text.str()));
+      const int ret =
+        OptionalAlert::show(
+          Preferences::instance().spriteSheet.showOverwriteFilesAlert,
+          1, // Yes is the default option when the alert dialog is disabled
+          fmt::format(Strings::alerts_overwrite_files_on_export_sprite_sheet(),
+                      text.str()));
       if (ret != 1)
         return false;
     }
     return true;
   }
 #endif // ENABLE_UI
-
-}
 
 struct ExportSpriteSheetParams : public NewParams {
   Param<bool> ui { this, true, "ui" };
@@ -197,6 +198,115 @@ struct ExportSpriteSheetParams : public NewParams {
   Param<bool> listTags { this, true, "listTags" };
   Param<bool> listSlices { this, true, "listSlices" };
 };
+
+void update_doc_exporter_from_params(const Site& site,
+                                     const ExportSpriteSheetParams& params,
+                                     DocExporter& exporter)
+{
+  const app::SpriteSheetType type = params.type();
+  int columns = params.columns();
+  int rows = params.rows();
+  int width = params.width();
+  int height = params.height();
+  const bool bestFit = params.bestFit();
+  const std::string filename = params.textureFilename();
+  const std::string dataFilename = params.dataFilename();
+  const DocExporter::DataFormat dataFormat = params.dataFormat();
+  const std::string layerName = params.layer();
+  const std::string tagName = params.tag();
+  const int borderPadding = base::clamp(params.borderPadding(), 0, 100);
+  const int shapePadding = base::clamp(params.shapePadding(), 0, 100);
+  const int innerPadding = base::clamp(params.innerPadding(), 0, 100);
+  const bool trimCels = params.trim();
+  const bool trimByGrid = params.trimByGrid();
+  const bool extrude = params.extrude();
+  const int extrudePadding = (extrude ? 1: 0);
+  const bool listLayers = params.listLayers();
+  const bool listTags = params.listTags();
+  const bool listSlices = params.listSlices();
+
+  SelectedFrames selFrames;
+  Tag* tag = calculate_selected_frames(site, tagName, selFrames);
+
+  frame_t nframes = selFrames.size();
+  ASSERT(nframes > 0);
+
+  const Sprite* sprite = site.sprite();
+
+  // If the user choose to render selected layers only, we can
+  // temporaly make them visible and hide the other ones.
+  RestoreVisibleLayers layersVisibility;
+  calculate_visible_layers(site, layerName, layersVisibility);
+
+  SelectedLayers selLayers;
+  if (layerName != kSelectedLayers) {
+    // TODO add a getLayerByName
+    for (const Layer* layer : sprite->allLayers()) {
+      if (layer->name() == layerName) {
+        selLayers.insert(const_cast<Layer*>(layer));
+        break;
+      }
+    }
+  }
+
+  if (bestFit) {
+    Fit fit = best_fit(sprite, nframes, borderPadding, shapePadding,
+                       innerPadding + extrudePadding,
+                       type);
+    columns = fit.columns;
+    rows = fit.rows;
+    width = fit.width;
+    height = fit.height;
+  }
+
+  int sheet_w = 0;
+  int sheet_h = 0;
+
+  switch (type) {
+    case app::SpriteSheetType::Horizontal:
+      columns = nframes;
+      rows = 1;
+      break;
+    case app::SpriteSheetType::Vertical:
+      columns = 1;
+      rows = nframes;
+      break;
+    case app::SpriteSheetType::Rows:
+    case app::SpriteSheetType::Columns:
+      if (width > 0) sheet_w = width;
+      if (height > 0) sheet_h = height;
+      break;
+  }
+
+  Fit fit = calculate_sheet_size(
+    sprite, nframes,
+    columns, rows,
+    borderPadding, shapePadding, innerPadding + extrudePadding);
+  if (sheet_w == 0) sheet_w = fit.width;
+  if (sheet_h == 0) sheet_h = fit.height;
+
+  if (!filename.empty())
+    exporter.setTextureFilename(filename);
+  if (!dataFilename.empty()) {
+    exporter.setDataFilename(dataFilename);
+    exporter.setDataFormat(dataFormat);
+  }
+  exporter.setTextureWidth(sheet_w);
+  exporter.setTextureHeight(sheet_h);
+  exporter.setSpriteSheetType(type);
+  exporter.setBorderPadding(borderPadding);
+  exporter.setShapePadding(shapePadding);
+  exporter.setInnerPadding(innerPadding);
+  exporter.setTrimCels(trimCels);
+  exporter.setTrimByGrid(trimByGrid);
+  exporter.setExtrude(extrude);
+  if (listLayers) exporter.setListLayers(true);
+  if (listTags) exporter.setListTags(true);
+  if (listSlices) exporter.setListSlices(true);
+  exporter.addDocument(const_cast<Doc*>(site.document()), tag,
+                       (!selLayers.empty() ? &selLayers: nullptr),
+                       (!selFrames.empty() ? &selFrames: nullptr));
+}
 
 #if ENABLE_UI
 
@@ -318,6 +428,32 @@ public:
     return closer() == exportButton();
   }
 
+  void updateParams(ExportSpriteSheetParams& params) {
+    params.type            (spriteSheetTypeValue());
+    params.columns         (columnsValue());
+    params.rows            (rowsValue());
+    params.width           (fitWidthValue());
+    params.height          (fitHeightValue());
+    params.bestFit         (bestFitValue());
+    params.textureFilename (filenameValue());
+    params.dataFilename    (dataFilenameValue());
+    params.dataFormat      (dataFormatValue());
+    params.borderPadding   (borderPaddingValue());
+    params.shapePadding    (shapePaddingValue());
+    params.innerPadding    (innerPaddingValue());
+    params.trim            (trimValue());
+    params.trimByGrid      (trimByGridValue());
+    params.extrude         (extrudeValue());
+    params.openGenerated   (openGeneratedValue());
+    params.layer           (layerValue());
+    params.tag             (tagValue());
+    params.listLayers      (listLayersValue());
+    params.listTags        (listTagsValue());
+    params.listSlices      (listSlicesValue());
+  }
+
+private:
+
   app::SpriteSheetType spriteSheetTypeValue() const {
     return (app::SpriteSheetType)(sheetType()->getSelectedItemIndex()+1);
   }
@@ -435,8 +571,6 @@ public:
   bool listSlicesValue() const {
     return listSlices()->isSelected();
   }
-
-private:
 
   void onExport() {
     if (!ask_overwrite(m_filenameAskOverwrite, filenameValue(),
@@ -684,10 +818,11 @@ private:
 
 #endif // ENABLE_UI
 
+} // anonymous namespace
+
 class ExportSpriteSheetCommand : public CommandWithNewParams<ExportSpriteSheetParams> {
 public:
   ExportSpriteSheetCommand();
-
 protected:
   bool onEnabled(Context* context) override;
   void onExecute(Context* context) override;
@@ -707,7 +842,6 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
 {
   Site site = context->activeSite();
   Doc* document = site.document();
-  Sprite* sprite = site.sprite();
   auto& params = this->params();
 
 #ifdef ENABLE_UI
@@ -758,28 +892,29 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     if (!window.ok())
       return;
 
+    window.updateParams(params);
     docPref.spriteSheet.defined(true);
-    docPref.spriteSheet.type            (params.type            (window.spriteSheetTypeValue()));
-    docPref.spriteSheet.columns         (params.columns         (window.columnsValue()));
-    docPref.spriteSheet.rows            (params.rows            (window.rowsValue()));
-    docPref.spriteSheet.width           (params.width           (window.fitWidthValue()));
-    docPref.spriteSheet.height          (params.height          (window.fitHeightValue()));
-    docPref.spriteSheet.bestFit         (params.bestFit         (window.bestFitValue()));
-    docPref.spriteSheet.textureFilename (params.textureFilename (window.filenameValue()));
-    docPref.spriteSheet.dataFilename    (params.dataFilename    (window.dataFilenameValue()));
-    docPref.spriteSheet.dataFormat      (params.dataFormat      (window.dataFormatValue()));
-    docPref.spriteSheet.borderPadding   (params.borderPadding   (window.borderPaddingValue()));
-    docPref.spriteSheet.shapePadding    (params.shapePadding    (window.shapePaddingValue()));
-    docPref.spriteSheet.innerPadding    (params.innerPadding    (window.innerPaddingValue()));
-    docPref.spriteSheet.trim            (params.trim            (window.trimValue()));
-    docPref.spriteSheet.trimByGrid      (params.trimByGrid      (window.trimByGridValue()));
-    docPref.spriteSheet.extrude         (params.extrude         (window.extrudeValue()));
-    docPref.spriteSheet.openGenerated   (params.openGenerated   (window.openGeneratedValue()));
-    docPref.spriteSheet.layer           (params.layer           (window.layerValue()));
-    docPref.spriteSheet.frameTag        (params.tag             (window.tagValue()));
-    docPref.spriteSheet.listLayers      (params.listLayers      (window.listLayersValue()));
-    docPref.spriteSheet.listFrameTags   (params.listTags        (window.listTagsValue()));
-    docPref.spriteSheet.listSlices      (params.listSlices      (window.listSlicesValue()));
+    docPref.spriteSheet.type            (params.type());
+    docPref.spriteSheet.columns         (params.columns());
+    docPref.spriteSheet.rows            (params.rows());
+    docPref.spriteSheet.width           (params.width());
+    docPref.spriteSheet.height          (params.height());
+    docPref.spriteSheet.bestFit         (params.bestFit());
+    docPref.spriteSheet.textureFilename (params.textureFilename());
+    docPref.spriteSheet.dataFilename    (params.dataFilename());
+    docPref.spriteSheet.dataFormat      (params.dataFormat());
+    docPref.spriteSheet.borderPadding   (params.borderPadding());
+    docPref.spriteSheet.shapePadding    (params.shapePadding());
+    docPref.spriteSheet.innerPadding    (params.innerPadding());
+    docPref.spriteSheet.trim            (params.trim());
+    docPref.spriteSheet.trimByGrid      (params.trimByGrid());
+    docPref.spriteSheet.extrude         (params.extrude());
+    docPref.spriteSheet.openGenerated   (params.openGenerated());
+    docPref.spriteSheet.layer           (params.layer());
+    docPref.spriteSheet.frameTag        (params.tag());
+    docPref.spriteSheet.listLayers      (params.listLayers());
+    docPref.spriteSheet.listFrameTags   (params.listTags());
+    docPref.spriteSheet.listSlices      (params.listSlices());
 
     // Default preferences for future sprites
     DocumentPreferences& defPref(Preferences::instance().document(nullptr));
@@ -793,118 +928,16 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
 
     askOverwrite = false; // Already asked in the ExportSpriteSheetWindow
   }
-#endif // ENABLE_UI
 
-  const app::SpriteSheetType type = params.type();
-  int columns = params.columns();
-  int rows = params.rows();
-  int width = params.width();
-  int height = params.height();
-  const bool bestFit = params.bestFit();
-  const std::string filename = params.textureFilename();
-  const std::string dataFilename = params.dataFilename();
-  const DocExporter::DataFormat dataFormat = params.dataFormat();
-  const std::string layerName = params.layer();
-  const std::string tagName = params.tag();
-  const int borderPadding = base::clamp(params.borderPadding(), 0, 100);
-  const int shapePadding = base::clamp(params.shapePadding(), 0, 100);
-  const int innerPadding = base::clamp(params.innerPadding(), 0, 100);
-  const bool trimCels = params.trim();
-  const bool trimByGrid = params.trimByGrid();
-  const bool extrude = params.extrude();
-  const int extrudePadding = (extrude ? 1: 0);
-  const bool listLayers = params.listLayers();
-  const bool listTags = params.listTags();
-  const bool listSlices = params.listSlices();
-
-#ifdef ENABLE_UI
   if (context->isUIAvailable() && askOverwrite) {
-    if (!ask_overwrite(true, filename,
-                       true, dataFilename))
+    if (!ask_overwrite(true, params.textureFilename(),
+                       true, params.dataFilename()))
       return;                   // Do not overwrite
   }
 #endif
 
-  SelectedFrames selFrames;
-  Tag* tag = calculate_selected_frames(site, tagName, selFrames);
-
-  frame_t nframes = selFrames.size();
-  ASSERT(nframes > 0);
-
-  // If the user choose to render selected layers only, we can
-  // temporaly make them visible and hide the other ones.
-  RestoreVisibleLayers layersVisibility;
-  calculate_visible_layers(site, layerName, layersVisibility);
-
-  SelectedLayers selLayers;
-  if (layerName != kSelectedLayers) {
-    // TODO add a getLayerByName
-    for (Layer* layer : sprite->allLayers()) {
-      if (layer->name() == layerName) {
-        selLayers.insert(layer);
-        break;
-      }
-    }
-  }
-
-  if (bestFit) {
-    Fit fit = best_fit(sprite, nframes, borderPadding, shapePadding,
-                       innerPadding + extrudePadding,
-                       type);
-    columns = fit.columns;
-    rows = fit.rows;
-    width = fit.width;
-    height = fit.height;
-  }
-
-  int sheet_w = 0;
-  int sheet_h = 0;
-
-  switch (type) {
-    case app::SpriteSheetType::Horizontal:
-      columns = nframes;
-      rows = 1;
-      break;
-    case app::SpriteSheetType::Vertical:
-      columns = 1;
-      rows = nframes;
-      break;
-    case app::SpriteSheetType::Rows:
-    case app::SpriteSheetType::Columns:
-      if (width > 0) sheet_w = width;
-      if (height > 0) sheet_h = height;
-      break;
-  }
-
-  Fit fit = calculate_sheet_size(
-    sprite, nframes,
-    columns, rows,
-    borderPadding, shapePadding, innerPadding + extrudePadding);
-  if (sheet_w == 0) sheet_w = fit.width;
-  if (sheet_h == 0) sheet_h = fit.height;
-
   DocExporter exporter;
-  if (!filename.empty())
-    exporter.setTextureFilename(filename);
-  if (!dataFilename.empty()) {
-    exporter.setDataFilename(dataFilename);
-    exporter.setDataFormat(dataFormat);
-  }
-  exporter.setTextureWidth(sheet_w);
-  exporter.setTextureHeight(sheet_h);
-  exporter.setSpriteSheetType(type);
-  exporter.setBorderPadding(borderPadding);
-  exporter.setShapePadding(shapePadding);
-  exporter.setInnerPadding(innerPadding);
-  exporter.setTrimCels(trimCels);
-  exporter.setTrimByGrid(trimByGrid);
-  exporter.setExtrude(extrude);
-  if (listLayers) exporter.setListLayers(true);
-  if (listTags) exporter.setListTags(true);
-  if (listSlices) exporter.setListSlices(true);
-  exporter.addDocument(document, tag,
-                       (!selLayers.empty() ? &selLayers: nullptr),
-                       (!selFrames.empty() ? &selFrames: nullptr));
+  update_doc_exporter_from_params(site, params, exporter);
 
   std::unique_ptr<Doc> newDocument(exporter.exportSheet(context));
   if (!newDocument)
@@ -929,7 +962,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   if (params.openGenerated()) {
     // Setup a filename for the new document in case that user didn't
     // save the file/specified one output filename.
-    if (filename.empty()) {
+    if (params.textureFilename().empty()) {
       std::string fn = document->filename();
       std::string ext = base::get_file_extension(fn);
       if (!ext.empty())
@@ -939,7 +972,6 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
         base::join_path(base::get_file_path(fn),
                         base::get_file_title(fn) + "-Sheet") + ext);
     }
-
     newDocument->setContext(context);
     newDocument.release();
   }
