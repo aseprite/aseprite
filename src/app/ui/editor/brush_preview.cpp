@@ -183,7 +183,8 @@ void BrushPreview::show(const gfx::Point& screenPos)
 
   // For cursor type 'bounds' we have to generate cursor boundaries
   if (m_type & BRUSH_BOUNDARIES) {
-    showPreview = false;
+    if (brush->type() != kImageBrushType)
+      showPreview = false;
     generateBoundaries();
   }
 
