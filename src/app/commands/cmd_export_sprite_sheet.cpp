@@ -306,12 +306,12 @@ void update_doc_exporter_from_params(const Site& site,
 
   switch (type) {
     case app::SpriteSheetType::Horizontal:
-      columns = nframes;
+      columns = nframes * nlayers;
       rows = 1;
       break;
     case app::SpriteSheetType::Vertical:
       columns = 1;
-      rows = nframes;
+      rows = nframes * nlayers;
       break;
     case app::SpriteSheetType::Rows:
     case app::SpriteSheetType::Columns:
@@ -320,12 +320,14 @@ void update_doc_exporter_from_params(const Site& site,
       break;
   }
 
-  Fit fit = calculate_sheet_size(
-    sprite, nframes,
-    columns, rows,
-    borderPadding, shapePadding, innerPadding + extrudePadding);
-  if (sheet_w == 0) sheet_w = fit.width;
-  if (sheet_h == 0) sheet_h = fit.height;
+  if (type != app::SpriteSheetType::Packed) {
+    Fit fit = calculate_sheet_size(
+      sprite, nframes * nlayers,
+      columns, rows,
+      borderPadding, shapePadding, innerPadding + extrudePadding);
+    if (sheet_w == 0) sheet_w = fit.width;
+    if (sheet_h == 0) sheet_h = fit.height;
+  }
 
   if (!filename.empty())
     exporter.setTextureFilename(filename);
@@ -362,13 +364,15 @@ public:
       (int)app::SpriteSheetType::Horizontal == 1 &&
       (int)app::SpriteSheetType::Vertical == 2 &&
       (int)app::SpriteSheetType::Rows == 3 &&
-      (int)app::SpriteSheetType::Columns == 4,
+      (int)app::SpriteSheetType::Columns == 4 &&
+      (int)app::SpriteSheetType::Packed == 5,
       "SpriteSheetType enum changed");
 
     sheetType()->addItem("Horizontal Strip");
     sheetType()->addItem("Vertical Strip");
     sheetType()->addItem("By Rows");
     sheetType()->addItem("By Columns");
+    sheetType()->addItem("Packed");
     if (params.type() != app::SpriteSheetType::None)
       sheetType()->setSelectedItemIndex((int)params.type()-1);
 
@@ -524,7 +528,9 @@ private:
   }
 
   bool bestFitValue() const {
-    return bestFit()->isSelected();
+    return (bestFit()->isSelected() &&
+            (spriteSheetTypeValue() == SpriteSheetType::Rows ||
+             spriteSheetTypeValue() == SpriteSheetType::Columns));
   }
 
   std::string filenameValue() const {
@@ -812,7 +818,7 @@ private:
     const int nlayers = calculateNLayers();
 
     Fit fit;
-    if (bestFit()->isSelected()) {
+    if (bestFitValue()) {
       fit = best_fit(m_sprite,
                      nframes * nlayers,
                      borderPaddingValue(), shapePaddingValue(),
