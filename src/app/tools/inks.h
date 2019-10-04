@@ -284,32 +284,35 @@ public:
 
   void prepareInk(ToolLoop* loop) override {
     switch (m_type) {
-
       case Eraser: {
-        // TODO app_get_color_to_clear_layer should receive the context as parameter
-        color_t clearColor = app_get_color_to_clear_layer(loop->getLayer());
-        loop->setPrimaryColor(clearColor);
-        loop->setSecondaryColor(clearColor);
-
-        if (loop->getOpacity() == 255) {
-          setProc(get_ink_proc<CopyInkProcessing>(loop));
+        if (loop->getBrush()->type() == doc::kImageBrushType) {
+          setProc(get_ink_proc<BrushEraserInkProcessing>(loop));
         }
         else {
-          // For opaque layers
-          if (loop->getLayer()->isBackground()) {
-            setProc(get_ink_proc<TransparentInkProcessing>(loop));
-          }
-          // For transparent layers
-          else {
-            if (loop->sprite()->pixelFormat() == IMAGE_INDEXED)
-              loop->setPrimaryColor(loop->sprite()->transparentColor());
+          // TODO app_get_color_to_clear_layer should receive the context as parameter
+          color_t clearColor = app_get_color_to_clear_layer(loop->getLayer());
+          loop->setPrimaryColor(clearColor);
+          loop->setSecondaryColor(clearColor);
 
-            setProc(get_ink_proc<MergeInkProcessing>(loop));
+          if (loop->getOpacity() == 255) {
+            setProc(get_ink_proc<CopyInkProcessing>(loop));
+          }
+          else {
+            // For opaque layers
+            if (loop->getLayer()->isBackground()) {
+              setProc(get_ink_proc<TransparentInkProcessing>(loop));
+            }
+            // For transparent layers
+            else {
+              if (loop->sprite()->pixelFormat() == IMAGE_INDEXED)
+                loop->setPrimaryColor(loop->sprite()->transparentColor());
+
+              setProc(get_ink_proc<MergeInkProcessing>(loop));
+            }
           }
         }
         break;
       }
-
       case ReplaceFgWithBg:
         loop->setPrimaryColor(loop->getFgColor());
         loop->setSecondaryColor(loop->getBgColor());
