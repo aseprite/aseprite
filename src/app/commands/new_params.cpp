@@ -87,15 +87,15 @@ void Param<app::SpriteSheetType>::fromString(const std::string& value)
 }
 
 template<>
-void Param<app::DocExporter::DataFormat>::fromString(const std::string& value)
+void Param<app::SpriteSheetDataFormat>::fromString(const std::string& value)
 {
   // JsonArray, json-array, json_array, etc.
   if (base::utf8_icmp(value, "JsonArray") == 0 ||
       base::utf8_icmp(value, "json-array") == 0 ||
       base::utf8_icmp(value, "json_array") == 0)
-    setValue(app::DocExporter::JsonArrayDataFormat);
+    setValue(app::SpriteSheetDataFormat::JsonArray);
   else
-    setValue(app::DocExporter::JsonHashDataFormat);
+    setValue(app::SpriteSheetDataFormat::JsonHash);
 }
 
 template<>
@@ -231,12 +231,12 @@ void Param<app::SpriteSheetType>::fromLua(lua_State* L, int index)
 }
 
 template<>
-void Param<app::DocExporter::DataFormat>::fromLua(lua_State* L, int index)
+void Param<app::SpriteSheetDataFormat>::fromLua(lua_State* L, int index)
 {
   if (lua_type(L, index) == LUA_TSTRING)
     fromString(lua_tostring(L, index));
   else
-    setValue((app::DocExporter::DataFormat)lua_tointeger(L, index));
+    setValue((app::SpriteSheetDataFormat)lua_tointeger(L, index));
 }
 
 template<>

@@ -142,7 +142,7 @@ gfx::Rect get_value_from_lua(lua_State* L, int index) {
 
 FOR_ENUM(app::CelsTarget)
 FOR_ENUM(app::ColorBar::ColorSelector)
-FOR_ENUM(app::DocExporter::DataFormat)
+FOR_ENUM(app::SpriteSheetDataFormat)
 FOR_ENUM(app::SpriteSheetType)
 FOR_ENUM(app::gen::BgType)
 FOR_ENUM(app::gen::BrushPreview)

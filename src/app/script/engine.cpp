@@ -299,8 +299,8 @@ Engine::Engine()
   lua_newtable(L);
   lua_pushvalue(L, -1);
   lua_setglobal(L, "SpriteSheetDataFormat");
-  setfield_integer(L, "JSON_HASH", DocExporter::JsonHashDataFormat);
-  setfield_integer(L, "JSON_ARRAY", DocExporter::JsonArrayDataFormat);
+  setfield_integer(L, "JSON_HASH", SpriteSheetDataFormat::JsonHash);
+  setfield_integer(L, "JSON_ARRAY", SpriteSheetDataFormat::JsonArray);
   lua_pop(L, 1);
 
   lua_newtable(L);

@@ -11,6 +11,7 @@
 
 #include "app/cli/cli_delegate.h"
 #include "app/cli/cli_open_file.h"
+#include "app/doc_exporter.h"
 #include "doc/selected_layers.h"
 
 #include <memory>

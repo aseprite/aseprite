@@ -480,7 +480,7 @@ public:
 };
 
 DocExporter::DocExporter()
- : m_dataFormat(DefaultDataFormat)
+ : m_dataFormat(SpriteSheetDataFormat::Default)
  , m_textureWidth(0)
  , m_textureHeight(0)
  , m_sheetType(SpriteSheetType::None)
@@ -885,13 +885,13 @@ void DocExporter::createDataFile(const Samples& samples, std::ostream& os, Image
 
   // TODO we should use some string templates system here
   switch (m_dataFormat) {
-    case JsonHashDataFormat:
+    case SpriteSheetDataFormat::JsonHash:
       frames_begin = "{";
       frames_end = "}";
       filename_as_key = true;
       filename_as_attr = false;
       break;
-    case JsonArrayDataFormat:
+    case SpriteSheetDataFormat::JsonArray:
       frames_begin = "[";
       frames_end = "]";
       filename_as_key = false;

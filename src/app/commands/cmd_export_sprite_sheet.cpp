@@ -184,7 +184,7 @@ struct ExportSpriteSheetParams : public NewParams {
   Param<bool> bestFit { this, false, "bestFit" };
   Param<std::string> textureFilename { this, std::string(), "textureFilename" };
   Param<std::string> dataFilename { this, std::string(), "dataFilename" };
-  Param<DocExporter::DataFormat> dataFormat { this, DocExporter::DefaultDataFormat, "dataFormat" };
+  Param<SpriteSheetDataFormat> dataFormat { this, SpriteSheetDataFormat::Default, "dataFormat" };
   Param<int> borderPadding { this, 0, "borderPadding" };
   Param<int> shapePadding { this, 0, "shapePadding" };
   Param<int> innerPadding { this, 0, "innerPadding" };
@@ -212,7 +212,7 @@ void update_doc_exporter_from_params(const Site& site,
   const bool bestFit = params.bestFit();
   const std::string filename = params.textureFilename();
   const std::string dataFilename = params.dataFilename();
-  const DocExporter::DataFormat dataFormat = params.dataFormat();
+  const SpriteSheetDataFormat dataFormat = params.dataFormat();
   const std::string layerName = params.layer();
   const std::string tagName = params.tag();
   const int borderPadding = base::clamp(params.borderPadding(), 0, 100);
@@ -547,11 +547,11 @@ private:
       return std::string();
   }
 
-  DocExporter::DataFormat dataFormatValue() const {
+  SpriteSheetDataFormat dataFormatValue() const {
     if (dataEnabled()->isSelected())
-      return DocExporter::DataFormat(dataFormat()->getSelectedItemIndex());
+      return SpriteSheetDataFormat(dataFormat()->getSelectedItemIndex());
     else
-      return DocExporter::DefaultDataFormat;
+      return SpriteSheetDataFormat::Default;
   }
 
   int borderPaddingValue() const {

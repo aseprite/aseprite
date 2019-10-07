@@ -200,8 +200,8 @@ void PreviewCliDelegate::exportFiles(Context* ctx, DocExporter& exporter)
   if (!exporter.dataFilename().empty()) {
     std::string format = "Unknown";
     switch (exporter.dataFormat()) {
-      case DocExporter::JsonHashDataFormat: format = "JSON Hash"; break;
-      case DocExporter::JsonArrayDataFormat: format = "JSON Array"; break;
+      case SpriteSheetDataFormat::JsonHash: format = "JSON Hash"; break;
+      case SpriteSheetDataFormat::JsonArray: format = "JSON Array"; break;
     }
     std::cout << "  - Save data file: '" << exporter.dataFilename() << "'\n"
               << "  - Data format: " << format << "\n";

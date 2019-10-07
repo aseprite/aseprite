@@ -9,6 +9,7 @@
 #define APP_DOC_EXPORTER_H_INCLUDED
 #pragma once
 
+#include "app/sprite_sheet_data_format.h"
 #include "app/sprite_sheet_type.h"
 #include "base/disable_copying.h"
 #include "doc/frame.h"
@@ -36,15 +37,9 @@ namespace app {
 
   class DocExporter {
   public:
-    enum DataFormat {
-      JsonHashDataFormat,
-      JsonArrayDataFormat,
-      DefaultDataFormat = JsonHashDataFormat
-    };
-
     DocExporter();
 
-    DataFormat dataFormat() const { return m_dataFormat; }
+    SpriteSheetDataFormat dataFormat() const { return m_dataFormat; }
     const std::string& dataFilename() { return m_dataFilename; }
     const std::string& textureFilename() { return m_textureFilename; }
     int textureWidth() const { return m_textureWidth; }
@@ -61,7 +56,7 @@ namespace app {
     bool listTags() const { return m_listTags; }
     bool listLayers() const { return m_listLayers; }
 
-    void setDataFormat(DataFormat format) { m_dataFormat = format; }
+    void setDataFormat(SpriteSheetDataFormat format) { m_dataFormat = format; }
     void setDataFilename(const std::string& filename) { m_dataFilename = filename; }
     void setTextureFilename(const std::string& filename) { m_textureFilename = filename; }
     void setTextureWidth(int width) { m_textureWidth = width; }
@@ -126,7 +121,7 @@ namespace app {
     };
     typedef std::vector<Item> Items;
 
-    DataFormat m_dataFormat;
+    SpriteSheetDataFormat m_dataFormat;
     std::string m_dataFilename;
     std::string m_textureFilename;
     int m_textureWidth;

@@ -213,12 +213,12 @@ void CliProcessor::process(Context* ctx)
         // --format <format>
         else if (opt == &m_options.format()) {
           if (m_exporter) {
-            DocExporter::DataFormat format = DocExporter::DefaultDataFormat;
+            SpriteSheetDataFormat format = SpriteSheetDataFormat::Default;
 
             if (value.value() == "json-hash")
-              format = DocExporter::JsonHashDataFormat;
+              format = SpriteSheetDataFormat::JsonHash;
             else if (value.value() == "json-array")
-              format = DocExporter::JsonArrayDataFormat;
+              format = SpriteSheetDataFormat::JsonArray;
 
             m_exporter->setDataFormat(format);
           }
