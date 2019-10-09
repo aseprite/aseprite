@@ -89,6 +89,9 @@ public:
         case LockAlpha:
           setProc(get_ink_proc<BrushLockAlphaInkProcessing>(loop));
           break;
+        case Copy:
+          setProc(get_ink_proc<BrushCopyInkProcessing>(loop));
+          break;
         default:
           setProc(get_ink_proc<BrushSimpleInkProcessing>(loop));
           break;
