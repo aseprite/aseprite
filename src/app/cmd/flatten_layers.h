@@ -28,7 +28,7 @@ namespace cmd {
     void onExecute() override;
 
   private:
-    ObjectIds m_layerIds;
+    doc::ObjectIds m_layerIds;
     bool m_newBlendMethod;
   };
 

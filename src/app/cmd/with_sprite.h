@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -16,15 +17,14 @@ namespace doc {
 
 namespace app {
 namespace cmd {
-  using namespace doc;
 
   class WithSprite {
   public:
-    WithSprite(Sprite* sprite);
-    Sprite* sprite();
+    WithSprite(doc::Sprite* sprite);
+    doc::Sprite* sprite();
 
   private:
-    ObjectId m_spriteId;
+    doc::ObjectId m_spriteId;
   };
 
 } // namespace cmd
