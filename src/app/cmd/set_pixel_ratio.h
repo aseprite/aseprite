@@ -34,8 +34,6 @@ namespace cmd {
     }
 
   private:
-    void setRatio(PixelRatio ratio);
-
     PixelRatio m_oldRatio;
     PixelRatio m_newRatio;
   };
