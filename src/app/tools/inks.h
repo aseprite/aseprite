@@ -149,7 +149,12 @@ public:
 
   void prepareInk(ToolLoop* loop) override {
     if (loop->getShadingRemap()) {
-      setProc(get_ink_proc<ShadingInkProcessing>(loop));
+      if (loop->getBrush()->type() == doc::kImageBrushType) {
+        setProc(get_ink_proc<BrushShadingInkProcessing>(loop));
+      }
+      else {
+        setProc(get_ink_proc<ShadingInkProcessing>(loop));
+      }
     }
     else {
       PaintInk::prepareInk(loop);
