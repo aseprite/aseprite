@@ -18,6 +18,7 @@
 #include "app/cmd/remove_layer.h"
 #include "app/cmd/remove_slice.h"
 #include "app/cmd/remove_tag.h"
+#include "app/cmd/set_grid_bounds.h"
 #include "app/cmd/set_mask.h"
 #include "app/cmd/set_sprite_size.h"
 #include "app/cmd/set_transparent_color.h"
@@ -735,6 +736,23 @@ int Sprite_get_bounds(lua_State* L)
   return 1;
 }
 
+int Sprite_get_gridBounds(lua_State* L)
+{
+  const auto sprite = get_docobj<Sprite>(L, 1);
+  push_obj<gfx::Rect>(L, sprite->gridBounds());
+  return 1;
+}
+
+int Sprite_set_gridBounds(lua_State* L)
+{
+  auto sprite = get_docobj<Sprite>(L, 1);
+  const gfx::Rect bounds = convert_args_into_rect(L, 2);
+  Tx tx;
+  tx(new cmd::SetGridBounds(sprite, bounds));
+  tx.commit();
+  return 0;
+}
+
 const luaL_Reg Sprite_methods[] = {
   { "__eq", Sprite_eq },
   { "resize", Sprite_resize },
@@ -784,6 +802,7 @@ const Property Sprite_properties[] = {
   { "backgroundLayer", Sprite_get_backgroundLayer, nullptr },
   { "transparentColor", Sprite_get_transparentColor, Sprite_set_transparentColor },
   { "bounds", Sprite_get_bounds, nullptr },
+  { "gridBounds", Sprite_get_gridBounds, Sprite_set_gridBounds },
   { nullptr, nullptr, nullptr }
 };
 

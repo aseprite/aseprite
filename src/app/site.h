@@ -13,6 +13,7 @@
 #include "doc/frame.h"
 #include "doc/palette_picks.h"
 #include "doc/selected_objects.h"
+#include "gfx/fwd.h"
 
 namespace doc {
   class Cel;
@@ -97,6 +98,8 @@ namespace app {
     doc::Image* image(int* x = nullptr, int* y = nullptr, int* opacity = nullptr) const;
     doc::Palette* palette() const;
     doc::RgbMap* rgbMap() const;
+
+    gfx::Rect gridBounds() const;
 
   private:
     Focus m_focus;

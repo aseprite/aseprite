@@ -46,6 +46,7 @@ namespace app {
     virtual void onSpriteSizeChanged(DocEvent& ev) { }
     virtual void onSpriteTransparentColorChanged(DocEvent& ev) { }
     virtual void onSpritePixelRatioChanged(DocEvent& ev) { }
+    virtual void onSpriteGridBoundsChanged(DocEvent& ev) { }
 
     virtual void onLayerNameChange(DocEvent& ev) { }
     virtual void onLayerOpacityChange(DocEvent& ev) { }

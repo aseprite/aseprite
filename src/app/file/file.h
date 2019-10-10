@@ -209,6 +209,9 @@ namespace app {
     void setEmbeddedColorProfile() { m_embeddedColorProfile = true; }
     bool hasEmbeddedColorProfile() const { return m_embeddedColorProfile; }
 
+    void setEmbeddedGridBounds() { m_embeddedGridBounds = true; }
+    bool hasEmbeddedGridBounds() const { return m_embeddedGridBounds; }
+
     bool newBlend() const { return m_config.newBlend; }
 
   private:
@@ -242,6 +245,9 @@ namespace app {
 
     // True if the file contained a color profile when it was loaded.
     bool m_embeddedColorProfile;
+
+    // True if the file contained a the grid bounds inside.
+    bool m_embeddedGridBounds;
 
     FileOpConfig m_config;
 

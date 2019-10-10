@@ -11,10 +11,12 @@
 
 #include "app/site.h"
 
+#include "app/pref/preferences.h"
 #include "base/base.h"
 #include "doc/cel.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
+#include "ui/system.h"
 
 namespace app {
 
@@ -75,6 +77,22 @@ void Site::range(const DocRange& range)
     case DocRange::kFrames: m_focus = Site::InFrames; break;
     case DocRange::kLayers: m_focus = Site::InLayers; break;
   }
+}
+
+gfx::Rect Site::gridBounds() const
+{
+  gfx::Rect bounds;
+  if (m_sprite) {
+    bounds = m_sprite->gridBounds();
+    if (!bounds.isEmpty())
+      return bounds;
+  }
+  if (ui::is_ui_thread()) {
+    bounds = Preferences::instance().document(m_document).grid.bounds();
+    if (!bounds.isEmpty())
+      return bounds;
+  }
+  return doc::Sprite::DefaultGridBounds();
 }
 
 } // namespace app

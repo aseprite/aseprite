@@ -345,6 +345,11 @@ private:
     if (colorSpace)
       spr->setColorSpace(colorSpace);
 
+    // Read grid bounds
+    gfx::Rect gridBounds = readGridBounds(s);
+    if (!gridBounds.isEmpty())
+      spr->setGridBounds(gridBounds);
+
     return spr.release();
   }
 
@@ -362,6 +367,15 @@ private:
       type, flags, gamma, std::move(buf));
     colorSpace->setName(name);
     return colorSpace;
+  }
+
+  gfx::Rect readGridBounds(std::ifstream& s) {
+    gfx::Rect grid;
+    grid.x = (int16_t)read16(s);
+    grid.y = (int16_t)read16(s);
+    grid.w = read16(s);
+    grid.h = read16(s);
+    return grid;
   }
 
   // TODO could we use doc::read_layer() here?

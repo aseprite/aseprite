@@ -596,7 +596,7 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
     }
 
     if (editor->docPref().show.grid()) {
-      auto gb = editor->docPref().grid.bounds();
+      auto gb = sprite->gridBounds();
       if (!gb.isEmpty()) {
         int col = int((std::floor(spritePos.x) - (gb.x % gb.w)) / gb.w);
         int row = int((std::floor(spritePos.y) - (gb.y % gb.h)) / gb.h);

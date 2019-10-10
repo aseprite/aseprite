@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This program is distributed under the terms of
@@ -12,7 +13,6 @@
 
 #include "app/commands/params.h"
 #include "app/i18n/strings.h"
-#include "app/pref/preferences.h"
 #include "app/ui/doc_view.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui_context.h"
@@ -78,10 +78,9 @@ gfx::Point MoveThing::getDelta(Context* context) const
   if (!view)
     return delta;
 
-  DocumentPreferences& docPref = Preferences::instance().document(view->document());
   Editor* editor = view->editor();
   gfx::Rect vp = view->viewWidget()->viewportBounds();
-  gfx::Rect gridBounds = docPref.grid.bounds();
+  gfx::Rect gridBounds = view->document()->sprite()->gridBounds();
   int pixels = 0;
 
   switch (units) {

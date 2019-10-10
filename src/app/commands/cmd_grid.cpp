@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -9,6 +10,7 @@
 #endif
 
 #include "app/app.h"
+#include "app/cmd/set_grid_bounds.h"
 #include "app/commands/command.h"
 #include "app/context.h"
 #include "app/context_access.h"
@@ -17,6 +19,7 @@
 #include "app/load_widget.h"
 #include "app/modules/editors.h"
 #include "app/pref/preferences.h"
+#include "app/tx.h"
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
 #include "doc/document.h"
@@ -24,6 +27,8 @@
 #include "ui/window.h"
 
 #include "grid_settings.xml.h"
+
+#include <algorithm>
 
 namespace app {
 
@@ -38,12 +43,12 @@ public:
 
 protected:
   bool onChecked(Context* ctx) override {
-    DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
+    auto& docPref = Preferences::instance().document(ctx->activeDocument());
     return docPref.grid.snap();
   }
 
   void onExecute(Context* ctx) override {
-    DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
+    auto& docPref = Preferences::instance().document(ctx->activeDocument());
     bool newValue = !docPref.grid.snap();
     docPref.grid.snap(newValue);
 
@@ -59,21 +64,23 @@ public:
 
 protected:
   bool onEnabled(Context* ctx) override {
-    return (ctx->activeDocument() &&
-            ctx->activeDocument()->isMaskVisible());
+    return ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+                           ContextFlags::HasVisibleMask);
   }
 
   void onExecute(Context* ctx) override {
-    const ContextReader reader(ctx);
-    const Doc* document = reader.document();
-    const Mask* mask(document->mask());
-    DocumentPreferences& docPref =
-      Preferences::instance().document(ctx->activeDocument());
+    ContextWriter writer(ctx, 500);
+    Doc* doc = writer.document();
+    const Mask* mask = doc->mask();
+    gfx::Rect newGrid = mask->bounds();
 
-    docPref.grid.bounds(mask->bounds());
+    Tx tx(writer.context(), friendlyName(), ModifyDocument);
+    tx(new cmd::SetGridBounds(writer.sprite(), newGrid));
+    tx.commit();
 
-    // Make grid visible
-    if (!docPref.show.grid())
+    auto& docPref = Preferences::instance().document(doc);
+    docPref.grid.bounds(newGrid);
+    if (!docPref.show.grid())   // Make grid visible
       docPref.show.grid(true);
   }
 };
@@ -101,8 +108,8 @@ void GridSettingsCommand::onExecute(Context* context)
 {
   gen::GridSettings window;
 
-  DocumentPreferences& docPref = Preferences::instance().document(context->activeDocument());
-  Rect bounds = docPref.grid.bounds();
+  Site site = context->activeSite();
+  Rect bounds = site.gridBounds();
 
   window.gridX()->setTextf("%d", bounds.x);
   window.gridY()->setTextf("%d", bounds.y);
@@ -115,13 +122,17 @@ void GridSettingsCommand::onExecute(Context* context)
     bounds.y = window.gridY()->textInt();
     bounds.w = window.gridW()->textInt();
     bounds.h = window.gridH()->textInt();
-    bounds.w = MAX(bounds.w, 1);
-    bounds.h = MAX(bounds.h, 1);
+    bounds.w = std::max(bounds.w, 1);
+    bounds.h = std::max(bounds.h, 1);
 
+    ContextWriter writer(context, 500);
+    Tx tx(context, friendlyName(), ModifyDocument);
+    tx(new cmd::SetGridBounds(site.sprite(), bounds));
+    tx.commit();
+
+    auto& docPref = Preferences::instance().document(site.document());
     docPref.grid.bounds(bounds);
-
-    // Make grid visible
-    if (!docPref.show.grid())
+    if (!docPref.show.grid()) // Make grid visible
       docPref.show.grid(true);
   }
 }

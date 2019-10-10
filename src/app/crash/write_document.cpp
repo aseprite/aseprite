@@ -170,6 +170,17 @@ private:
     // Color Space
     writeColorSpace(s, spr->colorSpace());
 
+    // Grid bounds
+    writeGridBounds(s, spr->gridBounds());
+
+    return true;
+  }
+
+  bool writeGridBounds(std::ofstream& s, const gfx::Rect& grid) {
+    write16(s, (int16_t)grid.x);
+    write16(s, (int16_t)grid.y);
+    write16(s, grid.w);
+    write16(s, grid.h);
     return true;
   }
 

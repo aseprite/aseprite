@@ -80,6 +80,7 @@ protected:
   int m_opacity;
   int m_tolerance;
   bool m_contiguous;
+  gfx::Rect m_gridBounds;
   gfx::Point m_celOrigin;
   gfx::Point m_speed;
   tools::ToolLoop::Button m_button;
@@ -118,6 +119,7 @@ public:
     , m_opacity(m_toolPref.opacity())
     , m_tolerance(m_toolPref.tolerance())
     , m_contiguous(m_toolPref.contiguous())
+    , m_gridBounds(site.gridBounds())
     , m_button(button)
     , m_ink(ink->clone())
     , m_controller(controller)
@@ -252,7 +254,7 @@ public:
             == app::gen::PixelConnectivity::EIGHT_CONNECTED);
   }
 
-  gfx::Rect getGridBounds() override { return m_docPref.grid.bounds(); }
+  gfx::Rect getGridBounds() override { return m_gridBounds; }
   gfx::Point getCelOrigin() override { return m_celOrigin; }
   void setSpeed(const gfx::Point& speed) override { m_speed = speed; }
   gfx::Point getSpeed() override { return m_speed; }

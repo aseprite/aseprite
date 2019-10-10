@@ -58,6 +58,10 @@ bool AsepriteDecoder::decode()
   // Set pixel ratio
   sprite->setPixelRatio(doc::PixelRatio(header.pixel_width, header.pixel_height));
 
+  // Set grid bounds
+  sprite->setGridBounds(gfx::Rect(header.grid_x, header.grid_y,
+                                  header.grid_width, header.grid_height));
+
   // Prepare variables for layer chunks
   doc::Layer* last_layer = sprite->root();
   doc::WithUserData* last_object_with_user_data = nullptr;
@@ -252,6 +256,10 @@ bool AsepriteDecoder::readHeader(AsepriteHeader* header)
   header->ncolors    = read16();
   header->pixel_width = read8();
   header->pixel_height = read8();
+  header->grid_x       = (int16_t)read16();
+  header->grid_y       = (int16_t)read16();
+  header->grid_width   = read16();
+  header->grid_height  = read16();
 
   if (header->ncolors == 0)     // 0 means 256 (old .ase files)
     header->ncolors = 256;
@@ -588,8 +596,8 @@ doc::Cel* AsepriteDecoder::readCelChunk(doc::Sprite* sprite,
 {
   // Read chunk data
   doc::layer_t layer_index = read16();
-  int x = ((short)read16());
-  int y = ((short)read16());
+  int x = ((int16_t)read16());
+  int y = ((int16_t)read16());
   int opacity = read8();
   int cel_type = read16();
   readPadding(7);

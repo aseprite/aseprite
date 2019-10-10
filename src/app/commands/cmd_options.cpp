@@ -10,9 +10,11 @@
 #endif
 
 #include "app/app.h"
+#include "app/cmd/set_grid_bounds.h"
 #include "app/commands/command.h"
 #include "app/console.h"
 #include "app/context.h"
+#include "app/context_access.h"
 #include "app/extensions.h"
 #include "app/file/file.h"
 #include "app/file_selector.h"
@@ -23,6 +25,7 @@
 #include "app/pref/preferences.h"
 #include "app/recent_files.h"
 #include "app/resource_finder.h"
+#include "app/tx.h"
 #include "app/ui/color_button.h"
 #include "app/ui/pref_widget.h"
 #include "app/ui/separator_in_view.h"
@@ -163,7 +166,8 @@ class OptionsWindow : public app::gen::Options {
 
 public:
   OptionsWindow(Context* context, int& curSection)
-    : m_pref(Preferences::instance())
+    : m_context(context)
+    , m_pref(Preferences::instance())
     , m_globPref(m_pref.document(nullptr))
     , m_docPref(m_pref.document(context->activeDocument()))
     , m_curPref(&m_docPref)
@@ -585,6 +589,14 @@ public:
       }
     }
     update_displays_color_profile_from_preferences();
+
+    // Change sprite grid bounds
+    if (m_context && m_context->activeDocument()) {
+      ContextWriter writer(m_context, 500);
+      Tx tx(m_context, Strings::commands_GridSettings(), ModifyDocument);
+      tx(new cmd::SetGridBounds(writer.sprite(), gridBounds()));
+      tx.commit();
+    }
 
     m_curPref->show.grid(gridVisible()->isSelected());
     m_curPref->grid.bounds(gridBounds());
@@ -1390,6 +1402,7 @@ private:
     return paths;
   }
 
+  Context* m_context;
   Preferences& m_pref;
   DocumentPreferences& m_globPref;
   DocumentPreferences& m_docPref;

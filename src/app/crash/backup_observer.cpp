@@ -183,16 +183,17 @@ bool BackupObserver::saveDocData(Doc* doc)
         m_session->restoreBackupDocById(doc->id(), nullptr));
       DocDiff diff = compare_docs(doc, copy.get());
       if (diff.anything) {
-        TRACE("RECO: Differences (%s/%s/%s/%s/%s/%s/%s)\n",
-              diff.canvas ? "canvas": "",
-              diff.totalFrames ? "totalFrames": "",
-              diff.frameDuration ? "frameDuration": "",
-              diff.frameTags ? "frameTags": "",
-              diff.palettes ? "palettes": "",
-              diff.layers ? "layers": "",
-              diff.cels ? "cels": "",
-              diff.images ? "images": "",
-              diff.colorProfiles ? "colorProfiles": "");
+        TRACEARGS("RECO: Differences:",
+                  diff.canvas ? "canvas": "",
+                  diff.totalFrames ? "totalFrames": "",
+                  diff.frameDuration ? "frameDuration": "",
+                  diff.tags ? "tags": "",
+                  diff.palettes ? "palettes": "",
+                  diff.layers ? "layers": "",
+                  diff.cels ? "cels": "",
+                  diff.images ? "images": "",
+                  diff.colorProfiles ? "colorProfiles": "",
+                  diff.gridBounds ? "gridBounds": "");
 
         Doc* copyDoc = copy.release();
         ui::execute_from_ui_thread(

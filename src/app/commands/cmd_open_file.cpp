@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -20,6 +21,7 @@
 #include "app/job.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
+#include "app/pref/preferences.h"
 #include "app/recent_files.h"
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
@@ -191,12 +193,27 @@ void OpenFileCommand::onExecute(Context* context)
       if (fop->hasError() && !fop->isStop())
         console.printf(fop->error().c_str());
 
-      Doc* document = fop->document();
-      if (document) {
-        if (context->isUIAvailable())
+      Doc* doc = fop->document();
+      if (doc) {
+        if (context->isUIAvailable()) {
           App::instance()->recentFiles()->addRecentFile(fop->filename().c_str());
+          auto& docPref = Preferences::instance().document(doc);
 
-        document->setContext(context);
+          if (fop->hasEmbeddedGridBounds() &&
+              !doc->sprite()->gridBounds().isEmpty()) {
+            // If the sprite contains the grid bounds inside, we put
+            // those grid bounds into the settings (e.g. useful to
+            // interact with old versions of Aseprite saving the grid
+            // bounds in the aseprite.ini file)
+            docPref.grid.bounds(doc->sprite()->gridBounds());
+          }
+          else {
+            // Get grid bounds from preferences
+            doc->sprite()->setGridBounds(docPref.grid.bounds());
+          }
+        }
+
+        doc->setContext(context);
       }
       else if (!fop->isStop())
         unrecent = true;

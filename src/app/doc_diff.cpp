@@ -144,6 +144,11 @@ DocDiff compare_docs(const Doc* a,
     diff.anything = diff.colorProfiles = true;
   }
 
+  // Compare grid bounds
+  if (a->sprite()->gridBounds() != b->sprite()->gridBounds()) {
+    diff.anything = diff.gridBounds = true;
+  }
+
   return diff;
 }
 

@@ -25,6 +25,7 @@
 #include "doc/color_mode.h"
 #include "doc/frame.h"
 #include "doc/layer_list.h"
+#include "doc/sprite.h"
 #include "filters/tiled_mode.h"
 #include "gfx/rect.h"
 #include "render/onionskin_position.h"

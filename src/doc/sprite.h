@@ -98,6 +98,10 @@ namespace doc {
     color_t transparentColor() const { return m_spec.maskColor(); }
     void setTransparentColor(color_t color);
 
+    static gfx::Rect DefaultGridBounds();
+    const gfx::Rect& gridBounds() const { return m_gridBounds; }
+    void setGridBounds(const gfx::Rect& rc) { m_gridBounds = rc; }
+
     virtual int getMemSize() const override;
 
     ////////////////////////////////////////
@@ -188,6 +192,7 @@ namespace doc {
     std::vector<int> m_frlens;             // duration per frame
     PalettesList m_palettes;               // list of palettes
     LayerGroup* m_root;                    // main group of layers
+    gfx::Rect m_gridBounds;                // grid settings
 
     // Current rgb map
     mutable RgbMap* m_rgbMap;

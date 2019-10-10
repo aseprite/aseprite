@@ -728,7 +728,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
 
       // Draw the grid
       if (m_docPref.show.grid()) {
-        gfx::Rect gridrc = m_docPref.grid.bounds();
+        gfx::Rect gridrc = m_sprite->gridBounds();
         if (m_proj.applyX(gridrc.w) > 2 &&
             m_proj.applyY(gridrc.h) > 2) {
           int alpha = m_docPref.grid.opacity();
@@ -740,9 +740,10 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
             alpha = MID(0, alpha, 255);
           }
 
-          if (alpha > 8)
-            drawGrid(g, enclosingRect, m_docPref.grid.bounds(),
+          if (alpha > 8) {
+            drawGrid(g, enclosingRect, gridrc,
                      m_docPref.grid.color(), alpha);
+          }
         }
       }
     }

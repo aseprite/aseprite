@@ -34,6 +34,9 @@ namespace doc {
 //////////////////////////////////////////////////////////////////////
 // Constructors/Destructor
 
+// static
+gfx::Rect Sprite::DefaultGridBounds() { return gfx::Rect(0, 0, 16, 16); }
+
 Sprite::Sprite(const ImageSpec& spec,
                int ncolors)
   : Object(ObjectType::Sprite)
@@ -43,6 +46,7 @@ Sprite::Sprite(const ImageSpec& spec,
   , m_frames(1)
   , m_frlens(1, 100)            // First frame with 100 msecs of duration
   , m_root(new LayerGroup(this))
+  , m_gridBounds(Sprite::DefaultGridBounds())
   , m_rgbMap(nullptr)           // Initial RGB map
   , m_tags(this)
   , m_slices(this)

@@ -16,7 +16,6 @@
 #include "app/i18n/strings.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
-#include "app/pref/preferences.h"
 #include "app/snap_to_grid.h"
 #include "app/tx.h"
 #include "app/ui/editor/editor.h"
@@ -75,7 +74,6 @@ void SelectTileCommand::onExecute(Context* ctx)
   // Lock sprite
   ContextWriter writer(ctx);
   Doc* doc(writer.document());
-  auto& docPref = Preferences::instance().document(doc);
 
   std::unique_ptr<Mask> mask(new Mask());
 
@@ -83,7 +81,7 @@ void SelectTileCommand::onExecute(Context* ctx)
     mask->copyFrom(doc->mask());
 
   {
-    gfx::Rect gridBounds = docPref.grid.bounds();
+    gfx::Rect gridBounds = doc->sprite()->gridBounds();
     gfx::Point pos = current_editor->screenToEditor(ui::get_mouse_position());
     pos = snap_to_grid(gridBounds, pos, PreferSnapTo::BoxOrigin);
     gridBounds.setOrigin(pos);

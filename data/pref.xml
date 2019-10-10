@@ -394,7 +394,7 @@
     </section>
     <section id="grid">
       <option id="snap" type="bool" default="false" />
-      <option id="bounds" type="gfx::Rect" default="gfx::Rect(0, 0, 16, 16)" />
+      <option id="bounds" type="gfx::Rect" default="doc::Sprite::DefaultGridBounds()" />
       <option id="color" type="app::Color" default="app::Color::fromRgb(0, 0, 255)" />
       <option id="opacity" type="int" default="160" />
       <option id="auto_opacity" type="bool" default="true" />

@@ -343,8 +343,7 @@ void PixelsMovement::moveImage(const gfx::Point& pos, MoveModifier moveModifier)
 
       if ((moveModifier & SnapToGridMovement) == SnapToGridMovement) {
         // Snap the x1,y1 point to the grid.
-        gfx::Rect gridBounds = App::instance()
-          ->preferences().document(m_document).grid.bounds();
+        gfx::Rect gridBounds = m_document->sprite()->gridBounds();
         gfx::PointF gridOffset(
           snap_to_grid(
             gridBounds,

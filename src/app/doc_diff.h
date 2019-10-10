@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -22,6 +23,7 @@ namespace app {
     bool cels : 1;
     bool images : 1;
     bool colorProfiles : 1;
+    bool gridBounds : 1;
 
     DocDiff() :
       anything(false),
@@ -33,7 +35,8 @@ namespace app {
       layers(false),
       cels(false),
       images(false),
-      colorProfiles(false) {
+      colorProfiles(false),
+      gridBounds(false) {
     }
   };
 

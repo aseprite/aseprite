@@ -1190,6 +1190,7 @@ FileOp::FileOp(FileOpType type,
   , m_createPaletteFromRgba(false)
   , m_ignoreEmpty(false)
   , m_embeddedColorProfile(false)
+  , m_embeddedGridBounds(false)
 {
   if (config)
     m_config = *config;

@@ -266,7 +266,7 @@ private:
 
       gfx::Rect defBounds = m_docPref->importSpriteSheet.bounds();
       if (defBounds.isEmpty())
-        defBounds = m_docPref->grid.bounds();
+        defBounds = m_document->sprite()->gridBounds();
       onChangeRectangle(defBounds);
 
       gfx::Size defPaddingBounds = m_docPref->importSpriteSheet.paddingBounds();

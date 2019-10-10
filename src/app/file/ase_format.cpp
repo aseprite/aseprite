@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -208,6 +208,12 @@ bool AseFormat::onLoad(FileOp* fop)
     fop->setEmbeddedColorProfile();
   }
 
+  // Sprite grid bounds will be set to empty (instead of
+  // doc::Sprite::DefaultGridBounds()) if the file doesn't contain an
+  // embedded grid bounds.
+  if (!sprite->gridBounds().isEmpty())
+    fop->setEmbeddedGridBounds();
+
   return true;
 }
 
@@ -371,6 +377,10 @@ static void ase_file_prepare_header(FILE* f, dio::AsepriteHeader* header, const 
   header->ncolors = sprite->palette(firstFrame)->size();
   header->pixel_width = sprite->pixelRatio().w;
   header->pixel_height = sprite->pixelRatio().h;
+  header->grid_x       = sprite->gridBounds().x;
+  header->grid_y       = sprite->gridBounds().y;
+  header->grid_width   = sprite->gridBounds().w;
+  header->grid_height  = sprite->gridBounds().h;
 }
 
 static void ase_file_write_header(FILE* f, dio::AsepriteHeader* header)
@@ -394,6 +404,10 @@ static void ase_file_write_header(FILE* f, dio::AsepriteHeader* header)
   fputw(header->ncolors, f);
   fputc(header->pixel_width, f);
   fputc(header->pixel_height, f);
+  fputw(header->grid_x, f);
+  fputw(header->grid_y, f);
+  fputw(header->grid_width, f);
+  fputw(header->grid_height, f);
 
   fseek(f, header->pos+128, SEEK_SET);
 }

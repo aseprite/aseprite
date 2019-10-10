@@ -334,13 +334,13 @@ void DocApi::trimSprite(Sprite* sprite, const bool byGrid)
     // TODO merge this code with the code in DocExporter::captureSamples()
     if (byGrid) {
       Doc* doc = m_document;
-      auto& docPref = Preferences::instance().document(doc);
+      const gfx::Rect& gridBounds = doc->sprite()->gridBounds();
       gfx::Point posTopLeft =
-              snap_to_grid(docPref.grid.bounds(),
+              snap_to_grid(gridBounds,
                            bounds.origin(),
                            PreferSnapTo::FloorGrid);
       gfx::Point posBottomRight =
-              snap_to_grid(docPref.grid.bounds(),
+              snap_to_grid(gridBounds,
                            bounds.point2(),
                            PreferSnapTo::CeilGrid);
       bounds = gfx::Rect(posTopLeft, posBottomRight);
