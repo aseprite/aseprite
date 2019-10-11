@@ -54,6 +54,12 @@ namespace app {
     void trimSprite(Sprite* sprite, const bool byGrid);
 
     // Frames API
+    bool analizeFrameSpritePixels(Image* image,
+                                  const Sprite* sprite,
+                                  color_t& refColor,
+                                  bool& firstBorderIsSolidColor,
+                                  bool& secondBorderIsSolidColor,
+                                  bool topBottomLookUp);
     void addFrame(Sprite* sprite, frame_t newFrame);
     void addEmptyFrame(Sprite* sprite, frame_t newFrame);
     void addEmptyFramesTo(Sprite* sprite, frame_t newFrame);
