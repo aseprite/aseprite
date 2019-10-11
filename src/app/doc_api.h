@@ -117,6 +117,12 @@ namespace app {
     void setPalette(Sprite* sprite, frame_t frame, const Palette* newPalette);
 
   private:
+    bool analizeFrameSpritePixels(Image* image,
+                                  const Sprite* sprite,
+                                  color_t& refColor,
+                                  bool& firstBorderIsSolidColor,
+                                  bool& secondBorderIsSolidColor,
+                                  bool topBottomLookUp);
     void cropImageLayer(LayerImage* layer,
                         const gfx::Rect& bounds,
                         const bool trimOutside);
