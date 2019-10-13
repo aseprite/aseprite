@@ -13,7 +13,7 @@ features are:
 * Sprites are composed by [**layers** &amp; **frames**](http://www.aseprite.org/docs/timeline/) (as separated concepts).
 * Supported [color modes](http://www.aseprite.org/docs/color/): **RGBA**, **Indexed** (palettes up to 256
   colors), and Grayscale.
-* Load/save sequence of **PNG** files and **GIF** animations (and
+* Load/save a sequence of **PNG** files and **GIF** animations (and
   FLC, FLI, JPG, BMP, PCX, TGA).
 * Export/import animations to/from **Sprite Sheets**.
 * **Tiled** drawing mode, useful to draw **patterns** and textures.
