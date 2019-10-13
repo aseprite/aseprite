@@ -64,12 +64,12 @@ Aseprite includes color palettes created by:
 
 * [Richard "DawnBringer" Fhager](http://pixeljoint.com/p/23821.htm), [16 colors](http://pixeljoint.com/forum/forum_posts.asp?TID=12795),  [32 colors](http://pixeljoint.com/forum/forum_posts.asp?TID=16247).
 * [Arne Niklas Jansson](http://androidarts.com/), [16 colors](http://androidarts.com/palette/16pal.htm), [32 colors](http://wayofthepixel.net/index.php?topic=15824.msg144494).
-* [ENDESGA Studios](https://twitter.com/ENDESGA), [EDG16 and EDG32](https://forums.tigsource.com/index.php?topic=46126.msg1279124#msg1279124), and [other palettes](https://twitter.com/ENDESGA/status/865812366931353600)
+* [ENDESGA Studios](https://twitter.com/ENDESGA), [EDG16 and EDG32](https://forums.tigsource.com/index.php?topic=46126.msg1279124#msg1279124), and [other palettes](https://twitter.com/ENDESGA/status/865812366931353600).
 * [Hyohnoo Games](https://twitter.com/Hyohnoo), [mail24](https://twitter.com/Hyohnoo/status/797472587974639616) palette.
 * [Davit Masia](https://twitter.com/DavitMasia), [matriax8c](https://twitter.com/DavitMasia/status/834862452164612096) palette.
 * [Javier Guerrero](https://twitter.com/Xavier_Gd), [nyx8](https://twitter.com/Xavier_Gd/status/868519467864686594) palette.
 * [Adigun A. Polack](https://twitter.com/adigunpolack), [AAP-64](http://pixeljoint.com/pixelart/119466.htm), [AAP-Splendor128](http://pixeljoint.com/pixelart/120714.htm), [SimpleJPC-16](http://pixeljoint.com/pixelart/119844.htm), and [AAP-Micro12](http://pixeljoint.com/pixelart/121151.htm) palette.
-* [PineTreePizza](https://twitter.com/PineTreePizza), [Rosy-42](https://twitter.com/PineTreePizza/status/1006536191955623938) palette
+* [PineTreePizza](https://twitter.com/PineTreePizza), [Rosy-42](https://twitter.com/PineTreePizza/status/1006536191955623938) palette.
 
 It tries to replicate some pixel-art algorithms:
 
