@@ -65,9 +65,8 @@ bool SetInkTypeCommand::onChecked(Context* context)
 
 void SetInkTypeCommand::onExecute(Context* context)
 {
-  App::instance()
-    ->contextBar()
-    ->setInkType(m_type);
+  if (App::instance()->contextBar() != nullptr)
+    App::instance()->contextBar()->setInkType(m_type);
 }
 
 std::string SetInkTypeCommand::onGetFriendlyName() const
