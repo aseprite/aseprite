@@ -21,6 +21,8 @@ namespace app {
 
     void run(base::task::func_t&& func);
 
+    // Returns true when the task is completed (whether it was
+    // canceled or not)
     bool completed() const {
       return m_task.completed();
     }

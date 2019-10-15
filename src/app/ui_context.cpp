@@ -238,6 +238,14 @@ Editor* UIContext::activeEditor()
     return NULL;
 }
 
+Editor* UIContext::getEditorFor(Doc* document)
+{
+  if (auto view = getFirstDocView(document))
+    return view->editor();
+  else
+    return nullptr;
+}
+
 bool UIContext::hasClosedDocs()
 {
   return m_closedDocs.hasClosedDocs();

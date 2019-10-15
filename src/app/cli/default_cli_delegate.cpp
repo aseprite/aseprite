@@ -121,7 +121,9 @@ void DefaultCliDelegate::exportFiles(Context* ctx, DocExporter& exporter)
 {
   LOG("APP: Exporting sheet...\n");
 
-  std::unique_ptr<Doc> spriteSheet(exporter.exportSheet(ctx));
+  base::task_token token;
+  std::unique_ptr<Doc> spriteSheet(
+    exporter.exportSheet(ctx, token));
 
   // Sprite sheet isn't used, we just delete it.
 

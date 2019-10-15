@@ -305,6 +305,11 @@ void CliProcessor::process(Context* ctx)
           if (m_exporter)
             m_exporter->setIgnoreEmptyCels(true);
         }
+        // --merge-duplicates
+        else if (opt == &m_options.mergeDuplicates()) {
+          if (m_exporter)
+            m_exporter->setMergeDuplicates(true);
+        }
         // --border-padding
         else if (opt == &m_options.borderPadding()) {
           if (m_exporter)
@@ -625,37 +630,16 @@ bool CliProcessor::openFile(Context* ctx, CliOpenFile& cof)
         }
       }
 
-      if (cof.hasLayersFilter()) {
-        SelectedLayers filteredLayers;
+      SelectedLayers filteredLayers;
+      if (cof.hasLayersFilter())
         filterLayers(doc->sprite(), cof, filteredLayers);
 
-        if (cof.splitLayers) {
-          for (Layer* layer : filteredLayers.toAllLayersList()) {
-            SelectedLayers oneLayer;
-            oneLayer.insert(layer);
-
-            m_exporter->addDocument(doc, tag, &oneLayer,
-                                    (!selFrames.empty() ? &selFrames: nullptr));
-          }
-        }
-        else {
-          m_exporter->addDocument(doc, tag, &filteredLayers,
-                                  (!selFrames.empty() ? &selFrames: nullptr));
-        }
-      }
-      else if (cof.splitLayers) {
-        for (auto layer : doc->sprite()->allVisibleLayers()) {
-          SelectedLayers oneLayer;
-          oneLayer.insert(layer);
-
-          m_exporter->addDocument(doc, tag, &oneLayer,
-                                  (!selFrames.empty() ? &selFrames: nullptr));
-        }
-      }
-      else {
-        m_exporter->addDocument(doc, tag, nullptr,
-                                (!selFrames.empty() ? &selFrames: nullptr));
-      }
+      m_exporter->addDocumentSamples(
+        doc, tag,
+        cof.splitLayers,
+        cof.splitTags,
+        (cof.hasLayersFilter() ? &filteredLayers: nullptr),
+        (!selFrames.empty() ? &selFrames: nullptr));
     }
   }
 

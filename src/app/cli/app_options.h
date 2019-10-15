@@ -69,6 +69,7 @@ public:
   const Option& tag() const { return m_tag; }
   const Option& frameRange() const { return m_frameRange; }
   const Option& ignoreEmpty() const { return m_ignoreEmpty; }
+  const Option& mergeDuplicates() const { return m_mergeDuplicates; }
   const Option& borderPadding() const { return m_borderPadding; }
   const Option& shapePadding() const { return m_shapePadding; }
   const Option& innerPadding() const { return m_innerPadding; }
@@ -129,6 +130,7 @@ private:
   Option& m_tag;
   Option& m_frameRange;
   Option& m_ignoreEmpty;
+  Option& m_mergeDuplicates;
   Option& m_borderPadding;
   Option& m_shapePadding;
   Option& m_innerPadding;

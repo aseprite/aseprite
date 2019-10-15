@@ -1,4 +1,5 @@
 // Aseprite UI Library
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -10,6 +11,7 @@
 
 #include "ui/listbox.h"
 
+#include "base/clamp.h"
 #include "base/fs.h"
 #include "ui/listitem.h"
 #include "ui/message.h"
@@ -115,8 +117,8 @@ void ListBox::selectChild(Widget* item, Message* msg)
       ASSERT(i >= 0 && i < int(m_states.size()));
       newState = (i >= 0 && i < int(m_states.size()) ? m_states[i]: false);
 
-      if (i >= MIN(itemIndex, m_firstSelectedIndex) &&
-          i <= MAX(itemIndex, m_firstSelectedIndex)) {
+      if (i >= std::min(itemIndex, m_firstSelectedIndex) &&
+          i <= std::max(itemIndex, m_firstSelectedIndex)) {
         newState = !newState;
       }
     }
@@ -219,13 +221,17 @@ bool ListBox::onProcessMessage(Message* msg)
           gfx::Rect vp = view->viewportBounds();
 
           if (mousePos.y < vp.y) {
-            int num = MAX(1, (vp.y - mousePos.y) / 8);
-            selectIndex(MID(0, m_lastSelectedIndex-num, getItemsCount()-1), msg);
+            const int num = std::max(1, (vp.y - mousePos.y) / 8);
+            const int select =
+              advanceIndexThroughVisibleItems(m_lastSelectedIndex, -num, false);
+            selectIndex(select, msg);
             pick_item = false;
           }
           else if (mousePos.y >= vp.y + vp.h) {
-            int num = MAX(1, (mousePos.y - (vp.y+vp.h-1)) / 8);
-            selectIndex(MID(0, m_lastSelectedIndex+num, getItemsCount()-1), msg);
+            const int num = std::max(1, (mousePos.y - (vp.y+vp.h-1)) / 8);
+            const int select =
+              advanceIndexThroughVisibleItems(m_lastSelectedIndex, +num, false);
+            selectIndex(select, msg);
             pick_item = false;
           }
         }
@@ -272,7 +278,7 @@ bool ListBox::onProcessMessage(Message* msg)
     case kKeyDownMessage:
       if (hasFocus() && !children().empty()) {
         int select = getSelectedIndex();
-        int bottom = MAX(0, children().size()-1);
+        int bottom = std::max(0, int(children().size()-1));
         View* view = View::getView(this);
         KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
         KeyScancode scancode = keymsg->scancode();
@@ -338,7 +344,7 @@ bool ListBox::onProcessMessage(Message* msg)
             return Widget::onProcessMessage(msg);
         }
 
-        selectIndex(MID(0, select, bottom), msg);
+        selectIndex(base::clamp(select, 0, bottom), msg);
         return true;
       }
       break;
@@ -384,7 +390,7 @@ void ListBox::onSizeHint(SizeHintEvent& ev)
 
     Size reqSize = child->sizeHint();
 
-    w = MAX(w, reqSize.w);
+    w = std::max(w, reqSize.w);
     h += reqSize.h;
     ++visibles;
   }
@@ -410,11 +416,11 @@ void ListBox::onDoubleClickItem()
 int ListBox::advanceIndexThroughVisibleItems(
   int startIndex, int delta, const bool loop)
 {
-  const int bottom = MAX(0, children().size()-1);
+  const int bottom = std::max(0, int(children().size()-1));
   const int sgn = SGN(delta);
   int index = startIndex;
 
-  startIndex = MID(0, startIndex, bottom);
+  startIndex = base::clamp(startIndex, 0, bottom);
   int lastVisibleIndex = startIndex;
 
   bool cycle = false;

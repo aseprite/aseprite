@@ -94,14 +94,15 @@ Sprite::~Sprite()
 
 // static
 Sprite* Sprite::MakeStdSprite(const ImageSpec& spec,
-                              const int ncolors)
+                              const int ncolors,
+                              const ImageBufferPtr& imageBuf)
 {
   // Create the sprite.
   std::unique_ptr<Sprite> sprite(new Sprite(spec, ncolors));
   sprite->setTotalFrames(frame_t(1));
 
   // Create the main image.
-  ImageRef image(Image::create(spec));
+  ImageRef image(Image::create(spec, imageBuf));
   clear_image(image.get(), 0);
 
   // Create the first transparent layer.

@@ -3,51 +3,61 @@
 <!-- Copyright (C) 2001-2018  David Capello -->
 <gui>
   <window id="export_sprite_sheet" text="@.title">
-  <grid columns="4">
+  <grid columns="4" expansive="true">
+    <separator horizontal="true" text="@.format" cell_hspan="4" />
+
     <label text="@.sheet_type" />
-    <combobox id="sheet_type" cell_hspan="3" />
+    <combobox id="sheet_type" expansive="true" cell_hspan="2" cell_align="horizontal"
+	      tooltip="@.sheet_type_tooltip" />
+    <check id="show_constraints" text="@.constraints"
+	   tooltip="@.constraints_tooltip" />
 
-    <label id="columns_label" text="@.columns" />
-    <expr id="columns" text="" />
-    <boxfiller cell_hspan="2" />
-
-    <label id="rows_label" text="@.rows" />
-    <expr id="rows" text="" />
-    <boxfiller cell_hspan="2" />
-
-    <hbox />
-    <vbox>
-      <check id="padding_enabled" text="@.padding" />
-      <check id="trim_enabled" text="@.trim" />
-      <hbox id="trim_container">
-        <boxfiller />
-        <check id="grid_trim_enabled" text="@.trim_by_grid" />
-      </hbox>
-      <check id="extrude_enabled" text="@.extrude" />
-    </vbox>
-    <grid columns="2" id="padding_container" cell_hspan="2">
-      <label text="@.border" />
-      <expr id="border_padding" text="0" />
-      <label text="@.shape" />
-      <expr id="shape_padding" text="0" />
-      <label text="@.inner" />
-      <expr id="inner_padding" text="0" />
-    </grid>
-
-    <label id="fit_width_label" text="@.width" />
-    <combobox id="fit_width" text="" maxsize="5" editable="true" />
-    <label id="fit_height_label" text="@.height" />
-    <combobox id="fit_height" text="" maxsize="5" editable="true" />
-
-    <hbox id="best_fit_filler" />
-    <check cell_hspan="3" id="best_fit" text="@.best_fit" />
+    <label id="constraints_label" text="@.constraints" />
+    <hbox id="constraints_placeholder" cell_hspan="3">
+      <combobox id="constraint_type" />
+      <expr id="width_constraint" />
+      <expr id="height_constraint" />
+    </hbox>
 
     <label text="@.layers" />
     <combobox id="layers" text="" cell_hspan="2" />
     <check id="split_layers" text="@.split_layers" tooltip="@.split_layers_tooltip" />
 
     <label text="@.frames" />
-    <combobox id="frames" text="" cell_hspan="3" />
+    <combobox id="frames" text="" cell_hspan="2" />
+    <check id="split_tags" text="@.split_tags" tooltip="@.split_tags_tooltip" />
+
+    <hbox />
+    <hbox cell_hspan="3">
+      <vbox>
+	<check id="trim_sprite_enabled" text="@.trim_sprite" tooltip="@.trim_sprite_tooltip" />
+	<check id="trim_enabled" text="@.trim" tooltip="@.trim_tooltip" />
+	<vbox id="trim_container" cell_hspan="2">
+	  <check id="grid_trim_enabled"
+		 text="@.trim_by_grid"
+		 tooltip="@.trim_by_grid_tooltip" />
+	</vbox>
+      </vbox>
+      <separator vertical="true" />
+      <vbox>
+	<check id="padding_enabled" text="@.padding" tooltip="@.padding_tooltip" />
+	<check id="extrude_enabled"
+	       text="@.extrude"
+	       tooltip="@.extrude_tooltip" />
+      </vbox>
+      <vbox>
+	<grid columns="2" id="padding_container">
+          <label text="@.border" />
+          <expr id="border_padding" text="0" tooltip="@.border_tooltip" />
+          <label text="@.shape" />
+          <expr id="shape_padding" text="0" tooltip="@.shape_tooltip" />
+          <label text="@.inner" />
+          <expr id="inner_padding" text="0" tooltip="@.inner_tooltip" />
+	</grid>
+      </vbox>
+    </hbox>
+
+    <separator horizontal="true" text="@.output" cell_hspan="4" cell_align="horizontal" />
 
     <check id="image_enabled" text="@.output_file" />
     <button id="image_filename" cell_hspan="3" />
@@ -56,7 +66,7 @@
     <button id="data_filename" cell_hspan="3" />
 
     <hbox />
-    <hbox id="data_meta" cell_hspan="3">
+    <hbox id="data_meta" cell_hspan="3" cell_align="horizontal">
       <combobox id="data_format">
         <listitem text="@.json_data_hash" value="0" />
         <listitem text="@.json_data_array" value="1" />
@@ -67,9 +77,21 @@
       <check id="list_slices" text="@.meta_slices" />
     </hbox>
 
-    <check id="open_generated" text="@.open_sprite_sheet" cell_hspan="4" />
+    <hbox />
+    <hbox id="data_filename_format_placeholder" cell_hspan="3" cell_align="horizontal">
+      <label text="@.data_filename_format" />
+      <entry id="data_filename_format" maxsize="1024" maxwidth="256" expansive="true"
+             tooltip="@.data_filename_format_tooltip" />
+      <link text="(?)" url="https://www.aseprite.org/docs/cli/#filename-format" />
+    </hbox>
+
+    <separator horizontal="true" cell_hspan="4" />
 
     <hbox cell_hspan="4">
+      <hbox>
+	<check id="open_generated" text="@.open_sprite_sheet" cell_hspan="3" />
+        <check id="preview" text="@.preview" cell_hspan="1" />
+      </hbox>
       <boxfiller />
       <hbox homogeneous="true">
         <button text="@.export" minwidth="60" id="export_button" magnet="true" />

@@ -309,6 +309,7 @@
     <section id="sprite_sheet">
       <option id="show_overwrite_files_alert" type="bool" default="true" />
       <option id="default_extension" type="std::string" default="&quot;png&quot;" />
+      <option id="preview" type="bool" default="true" />
     </section>
     <section id="gif">
       <option id="show_alert" type="bool" default="true" />
@@ -447,13 +448,14 @@
       <option id="rows" type="int" default="0" />
       <option id="width" type="int" default="0" />
       <option id="height" type="int" default="0" />
-      <option id="best_fit" type="bool" default="false" />
       <option id="texture_filename" type="std::string" />
       <option id="data_filename" type="std::string" />
       <option id="data_format" type="SpriteSheetDataFormat" default="SpriteSheetDataFormat::Default" />
+      <option id="filename_format" type="std::string" />
       <option id="border_padding" type="int" default="0" />
       <option id="shape_padding" type="int" default="0" />
       <option id="inner_padding" type="int" default="0" />
+      <option id="trim_sprite" type="bool" default="false" />
       <option id="trim" type="bool" default="false" />
       <option id="trim_by_grid" type="bool" default="false" />
       <option id="extrude" type="bool" default="false" />
@@ -461,6 +463,7 @@
       <option id="layer" type="std::string" />
       <option id="frame_tag" type="std::string" />
       <option id="split_layers" type="bool" default="false" />
+      <option id="split_tags" type="bool" default="false" />
       <option id="list_layers" type="bool" default="true" />
       <option id="list_frame_tags" type="bool" default="true" />
       <option id="list_slices" type="bool" default="true" />

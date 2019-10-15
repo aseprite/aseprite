@@ -620,7 +620,8 @@ void ComboBox::openListBox()
     size.w = m_button->bounds().x2() - entryBounds.x - view->border().width();
     size.h = viewport->border().height();
     for (Widget* item : m_items)
-      size.h += item->sizeHint().h;
+      if (!item->hasFlags(HIDDEN))
+        size.h += item->sizeHint().h;
 
     int max = MAX(entryBounds.y, ui::display_h() - entryBounds.y2()) - 8*guiscale();
     size.h = MID(textHeight(), size.h, max);

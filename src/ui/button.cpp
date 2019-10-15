@@ -1,4 +1,5 @@
 // Aseprite UI Library
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -137,12 +138,23 @@ bool ButtonBase::onProcessMessage(Message* msg)
     }
 
     case kKeyUpMessage:
-      if (isEnabled()) {
-        if (m_behaviorType == kButtonWidget) {
-          if (isSelected()) {
-            generateButtonSelectSignal();
+      if (isEnabled() && hasFocus()) {
+        switch (m_behaviorType) {
+
+          case kButtonWidget:
+            if (isSelected()) {
+              generateButtonSelectSignal();
+              return true;
+            }
+            break;
+
+          case kCheckWidget: {
+            // Fire onClick() event
+            Event ev(this);
+            onClick(ev);
             return true;
           }
+
         }
       }
       break;

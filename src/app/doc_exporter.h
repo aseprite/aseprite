@@ -12,6 +12,7 @@
 #include "app/sprite_sheet_data_format.h"
 #include "app/sprite_sheet_type.h"
 #include "base/disable_copying.h"
+#include "base/task.h"
 #include "doc/frame.h"
 #include "doc/image_buffer.h"
 #include "doc/object_id.h"
@@ -27,6 +28,7 @@ namespace doc {
   class Image;
   class SelectedFrames;
   class SelectedLayers;
+  class Sprite;
   class Tag;
 }
 
@@ -39,33 +41,41 @@ namespace app {
   public:
     DocExporter();
 
+    void reset();
+    void setDocImageBuffer(const doc::ImageBufferPtr& docBuf);
+
     SpriteSheetDataFormat dataFormat() const { return m_dataFormat; }
     const std::string& dataFilename() { return m_dataFilename; }
     const std::string& textureFilename() { return m_textureFilename; }
-    int textureWidth() const { return m_textureWidth; }
-    int textureHeight() const { return m_textureHeight; }
+    // int textureWidth() const { return m_textureWidth; }
+    // int textureHeight() const { return m_textureHeight; }
     SpriteSheetType spriteSheetType() { return m_sheetType; }
-    bool ignoreEmptyCels() { return m_ignoreEmptyCels; }
-    int borderPadding() const { return m_borderPadding; }
-    int shapePadding() const { return m_shapePadding; }
-    int innerPadding() const { return m_innerPadding; }
-    bool trimCels() const { return m_trimCels; }
-    bool trimByGrid() const { return m_trimByGrid; }
-    bool extrude() const { return m_extrude; }
+    // bool ignoreEmptyCels() { return m_ignoreEmptyCels; }
+    // int borderPadding() const { return m_borderPadding; }
+    // int shapePadding() const { return m_shapePadding; }
+    // int innerPadding() const { return m_innerPadding; }
+    // bool trimSprite() const { return m_trimSprite; }
+    // bool trimCels() const { return m_trimCels; }
+    // bool trimByGrid() const { return m_trimByGrid; }
+    // bool extrude() const { return m_extrude; }
     const std::string& filenameFormat() const { return m_filenameFormat; }
-    bool listTags() const { return m_listTags; }
-    bool listLayers() const { return m_listLayers; }
+    // bool listTags() const { return m_listTags; }
+    // bool listLayers() const { return m_listLayers; }
 
     void setDataFormat(SpriteSheetDataFormat format) { m_dataFormat = format; }
     void setDataFilename(const std::string& filename) { m_dataFilename = filename; }
     void setTextureFilename(const std::string& filename) { m_textureFilename = filename; }
     void setTextureWidth(int width) { m_textureWidth = width; }
     void setTextureHeight(int height) { m_textureHeight = height; }
+    void setTextureColumns(int columns) { m_textureColumns = columns; }
+    void setTextureRows(int rows) { m_textureRows = rows; }
     void setSpriteSheetType(SpriteSheetType type) { m_sheetType = type; }
     void setIgnoreEmptyCels(bool ignore) { m_ignoreEmptyCels = ignore; }
+    void setMergeDuplicates(bool merge) { m_mergeDuplicates = merge; }
     void setBorderPadding(int padding) { m_borderPadding = padding; }
     void setShapePadding(int padding) { m_shapePadding = padding; }
     void setInnerPadding(int padding) { m_innerPadding = padding; }
+    void setTrimSprite(bool trim) { m_trimSprite = trim; }
     void setTrimCels(bool trim) { m_trimCels = trim; }
     void setTrimByGrid(bool trimByGrid) { m_trimByGrid = trimByGrid; }
     void setExtrude(bool extrude) { m_extrude = extrude; }
@@ -74,14 +84,21 @@ namespace app {
     void setListLayers(bool value) { m_listLayers = value; }
     void setListSlices(bool value) { m_listSlices = value; }
 
-    void addDocument(Doc* document,
-                     doc::Tag* tag,
-                     doc::SelectedLayers* selLayers,
-                     doc::SelectedFrames* selFrames) {
-      m_documents.push_back(Item(document, tag, selLayers, selFrames));
-    }
+    void addDocument(
+      Doc* doc,
+      const doc::Tag* tag,
+      const doc::SelectedLayers* selLayers,
+      const doc::SelectedFrames* selFrames);
 
-    Doc* exportSheet(Context* ctx);
+    int addDocumentSamples(
+      Doc* doc,
+      const doc::Tag* tag,
+      const bool splitLayers,
+      const bool splitTags,
+      const doc::SelectedLayers* selLayers,
+      const doc::SelectedFrames* selFrames);
+
+    Doc* exportSheet(Context* ctx, base::task_token& token);
     gfx::Size calculateSheetSize();
 
   private:
@@ -91,24 +108,33 @@ namespace app {
     class SimpleLayoutSamples;
     class BestFitLayoutSamples;
 
-    void captureSamples(Samples& samples);
-    void layoutSamples(Samples& samples);
-    gfx::Size calculateSheetSize(const Samples& samples) const;
-    Doc* createEmptyTexture(const Samples& samples) const;
-    void renderTexture(Context* ctx, const Samples& samples, doc::Image* textureImage) const;
-    void createDataFile(const Samples& samples, std::ostream& os, doc::Image* textureImage);
+    bool mergeDuplicates() const { return m_mergeDuplicates; }
+    void captureSamples(Samples& samples,
+                        base::task_token& token);
+    void layoutSamples(Samples& samples,
+                       base::task_token& token);
+    gfx::Size calculateSheetSize(const Samples& samples,
+                                 base::task_token& token) const;
+    Doc* createEmptyTexture(const Samples& samples,
+                            base::task_token& token) const;
+    void renderTexture(Context* ctx,
+                       const Samples& samples,
+                       doc::Image* textureImage,
+                       base::task_token& token) const;
+    void trimTexture(const Samples& samples, doc::Sprite* texture) const;
+    void createDataFile(const Samples& samples, std::ostream& os, doc::Sprite* texture);
 
     class Item {
     public:
       Doc* doc;
-      doc::Tag* tag;
+      const doc::Tag* tag;
       doc::SelectedLayers* selLayers;
       doc::SelectedFrames* selFrames;
 
       Item(Doc* doc,
-           doc::Tag* tag,
-           doc::SelectedLayers* selLayers,
-           doc::SelectedFrames* selFrames);
+           const doc::Tag* tag,
+           const doc::SelectedLayers* selLayers,
+           const doc::SelectedFrames* selFrames);
       Item(Item&& other);
       ~Item();
 
@@ -121,30 +147,37 @@ namespace app {
     };
     typedef std::vector<Item> Items;
 
+    SpriteSheetType m_sheetType;
     SpriteSheetDataFormat m_dataFormat;
     std::string m_dataFilename;
     std::string m_textureFilename;
+    std::string m_filenameFormat;
     int m_textureWidth;
     int m_textureHeight;
-    SpriteSheetType m_sheetType;
-    bool m_ignoreEmptyCels;
+    int m_textureColumns;
+    int m_textureRows;
     int m_borderPadding;
     int m_shapePadding;
     int m_innerPadding;
+    bool m_ignoreEmptyCels;
+    bool m_mergeDuplicates;
+    bool m_trimSprite;
     bool m_trimCels;
     bool m_trimByGrid;
     bool m_extrude;
-    Items m_documents;
-    std::string m_filenameFormat;
-    doc::ImageBufferPtr m_sampleRenderBuf;
     bool m_listTags;
     bool m_listLayers;
     bool m_listSlices;
+    Items m_documents;
 
     // Displacement for each tag from/to frames in case we export
     // them. It's used in case we trim frames outside tags and they
     // will not be exported at all in the final result.
     std::map<doc::ObjectId, std::pair<int, int> > m_tagDelta;
+
+    // Buffers used
+    doc::ImageBufferPtr m_docBuf;
+    doc::ImageBufferPtr m_sampleBuf;
 
     DISABLE_COPYING(DocExporter);
   };

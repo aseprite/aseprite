@@ -14,6 +14,7 @@
 #include "doc/cel_list.h"
 #include "doc/color.h"
 #include "doc/frame.h"
+#include "doc/image_buffer.h"
 #include "doc/image_ref.h"
 #include "doc/image_spec.h"
 #include "doc/layer_list.h"
@@ -62,7 +63,8 @@ namespace doc {
     // Creates a new sprite with one transparent layer and one cel
     // with an image of the size of the sprite.
     static Sprite* MakeStdSprite(const ImageSpec& spec,
-                                 const int ncolors = 256);
+                                 const int ncolors = 256,
+                                 const ImageBufferPtr& imageBuf = ImageBufferPtr());
 
     ////////////////////////////////////////
     // Main properties
