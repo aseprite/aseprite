@@ -61,10 +61,12 @@ void FlattenLayers::onExecute()
       backgroundIsSel = true;
   }
 
+  LayerList list = layers.toLayerList();
+  if (list.empty())
+    return;                     // Do nothing
+
   // Create a temporary image.
-  ImageRef image(Image::create(sprite->pixelFormat(),
-      sprite->width(),
-      sprite->height()));
+  ImageRef image(Image::create(sprite->spec()));
 
   LayerImage* flatLayer;  // The layer onto which everything will be flattened.
   color_t     bgcolor;    // The background color to use for flatLayer.
@@ -82,7 +84,6 @@ void FlattenLayers::onExecute()
     executeAndAdd(new cmd::SetLayerName(flatLayer, "Flattened"));
     bgcolor = sprite->transparentColor();
 
-    LayerList list = layers.toLayerList();
     if (list.front())
       executeAndAdd(new cmd::MoveLayer(flatLayer,
                                        list.front()->parent(),
