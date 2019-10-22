@@ -49,6 +49,7 @@
 #include "app/doc_undo.h"
 #include "app/pref/preferences.h"
 #include "app/transaction.h"
+#include "app/util/autocrop.h"
 #include "doc/algorithm/flip_image.h"
 #include "doc/algorithm/shrink_bounds.h"
 #include "doc/cel.h"
@@ -316,68 +317,20 @@ void DocApi::trimSprite(Sprite* sprite, const bool byGrid)
 {
   gfx::Rect bounds;
 
-  std::unique_ptr<Image> image_wrap(Image::create(sprite->pixelFormat(),
-                                                  sprite->width(),
-                                                  sprite->height()));
+  std::unique_ptr<Image> image_wrap(Image::create(sprite->spec()));
   Image* image = image_wrap.get();
+
   render::Render render;
 
   for (frame_t frame(0); frame<sprite->totalFrames(); ++frame) {
     render.renderSprite(image, sprite, frame);
     gfx::Rect frameBounds;
+    doc::color_t refColor;
 
-    // Before this fix, we did use the top-left corner pixel by default as "refColor" in
-    // doc::algorithm::shrink_bounds(image, frameBounds, refColor).
-    // Now, we are looking for one color whole border (i.e: solid color border)
-    // searching on the sprite square contour.
-    //
-    // If the algorithm finds a transparentColor pixel on border frame,
-    // automatically "refColor" turns to transparentColor and it goes directly to
-    // shrink_bounds function.
-    // If the borders don't contain transparentColor, the algorithm keeps checking:
-    // It search for a solid color border (top border first), then it checks
-    // the opposite border (bottom border), then:
-    // 1- If the opposite border color is equal to the first border,
-    //    this color will be the "refColor".
-    // 2- If the color of the opposite border is solid, BUT different to the first
-    //    border we have to trigger a dialog, delegating the choise to the user.
-    // 3- If opposite border contains differents colors, we choose the first border color as
-    //    "refColor".
-    // 4- It repeat analisys to sprite left and right columns pixels.
-    // If no border has solid color, trimSprite do nothing.
-
-    bool skipTrim = false;
-    bool analizeMoreBorders = true;
-    color_t refColor = get_pixel(image, 0, 0);
-    bool firstBorderIsSolidColor = true;
-    bool secondBorderIsSolidColor = true;
-    const color_t probableRefColor1 = refColor;
-    const color_t probableRefColor2 = get_pixel(image, sprite->width() - 1, sprite->height() - 1);
-
-    if (analizeFrameSpritePixels(image, sprite, refColor,
-                                 firstBorderIsSolidColor,
-                                 secondBorderIsSolidColor, true)) {
-      // Here, we know that analizeFrameSpritePixels did not find transparent pixels on top and bottom borders.
-      if (!firstBorderIsSolidColor && secondBorderIsSolidColor)
-        refColor = probableRefColor2;
-      else if (firstBorderIsSolidColor && secondBorderIsSolidColor && probableRefColor1 != probableRefColor2) {
-        // Both border are solids colors but different, so we have to trigger the dialog
-        skipTrim = true;
-        analizeMoreBorders = false;
-      }
-      if (analizeMoreBorders && analizeFrameSpritePixels(image, sprite, refColor,
-                                                         firstBorderIsSolidColor,
-                                                         secondBorderIsSolidColor, false)) {
-        if (!firstBorderIsSolidColor && secondBorderIsSolidColor)
-          refColor = probableRefColor2;
-        else if (firstBorderIsSolidColor && secondBorderIsSolidColor && probableRefColor1 != probableRefColor2)
-          // Both border are solids colors but different, so we have to trigger the dialog
-          skipTrim = true;
-      }
-    }
-
-    if (!skipTrim && doc::algorithm::shrink_bounds(image, frameBounds, refColor))
+    if (get_best_refcolor_for_trimming(image, refColor) &&
+        doc::algorithm::shrink_bounds(image, frameBounds, refColor)) {
       bounds = bounds.createUnion(frameBounds);
+    }
 
     // TODO merge this code with the code in DocExporter::captureSamples()
     if (byGrid) {
@@ -397,61 +350,6 @@ void DocApi::trimSprite(Sprite* sprite, const bool byGrid)
 
   if (!bounds.isEmpty())
     cropSprite(sprite, bounds);
-}
-
-bool DocApi::analizeFrameSpritePixels(Image* image,
-                                      const Sprite* sprite,
-                                      color_t& refColor,
-                                      bool& firstBorderIsSolidColor,
-                                      bool& secondBorderIsSolidColor,
-                                      bool topBottomLookUp) {
-  firstBorderIsSolidColor = true;
-  secondBorderIsSolidColor = true;
-  int spriteW = sprite->width();
-  int spriteH = sprite->height();
-  const color_t probableRefColor1 = get_pixel(image, 0, 0);
-  const color_t probableRefColor2 = get_pixel(image, spriteW - 1, spriteH - 1);
-  if (!topBottomLookUp) {
-    int aux = spriteW;
-    spriteW = spriteH;
-    spriteH = aux;
-  }
-  color_t currentPixel = 0;
-  color_t transparentColor = sprite->transparentColor();
-
-  if (probableRefColor1 == transparentColor || probableRefColor2 == transparentColor) {
-    refColor = transparentColor;
-    return false;
-  }
-
-  for (int i=0; i < spriteW; i++) {
-    if (topBottomLookUp)
-      currentPixel = get_pixel(image, i, 0);
-    else
-      currentPixel = get_pixel(image, 0, i);
-    if (currentPixel != probableRefColor1) {
-      firstBorderIsSolidColor = false;
-      if (currentPixel == transparentColor) {
-        refColor = transparentColor;
-        return false;
-      }
-    }
-  }
-
-  for (int i=0; i < spriteW; i++) {
-    if (topBottomLookUp)
-      currentPixel = get_pixel(image, i, spriteH - 1);
-    else
-      currentPixel = get_pixel(image, spriteH - 1, i);
-    if (currentPixel != probableRefColor2) {
-      secondBorderIsSolidColor = false;
-      if (currentPixel == transparentColor) {
-        refColor = transparentColor;
-        return false;
-      }
-    }
-  }
-  return true;
 }
 
 void DocApi::addFrame(Sprite* sprite, frame_t newFrame)

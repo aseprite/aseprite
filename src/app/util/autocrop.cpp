@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -13,9 +14,75 @@
 #include "doc/sprite.h"
 #include "app/util/autocrop.h"
 
+#include <algorithm>
+
 namespace app {
 
 using namespace doc;
+
+namespace {
+
+// We call a "solid border" when a specific color is repeated in every
+// pixel of the image edge.  This will return isBorder1Solid=true if
+// the top (when topBottomLookUp=true) or left edge (when
+// topBottomLookUp=false) is a "solid border". In the case of
+// isBorder2Solid is for the bottom (or right) edge.
+bool analize_if_image_has_solid_borders(const Image* image,
+                                        color_t& refColor,
+                                        bool& isBorder1Solid,
+                                        bool& isBorder2Solid,
+                                        bool topBottomLookUp)
+{
+  isBorder1Solid = true;
+  isBorder2Solid = true;
+
+  int w = image->width();
+  int h = image->height();
+  const color_t probableRefColor1 = get_pixel(image, 0, 0);
+  const color_t probableRefColor2 = get_pixel(image, w-1, h-1);
+  color_t currentPixel;
+  color_t transparentColor = image->maskColor();
+
+  if (probableRefColor1 == transparentColor ||
+      probableRefColor2 == transparentColor) {
+    refColor = transparentColor;
+    return false;
+  }
+
+  if (!topBottomLookUp)
+    std::swap(w, h);
+
+  for (int i=0; i<w; ++i) {
+    if (topBottomLookUp)
+      currentPixel = get_pixel(image, i, 0);
+    else
+      currentPixel = get_pixel(image, 0, i);
+    if (currentPixel != probableRefColor1) {
+      isBorder1Solid = false;
+      if (currentPixel == transparentColor) {
+        refColor = transparentColor;
+        return false;
+      }
+    }
+  }
+
+  for (int i=0; i<w; ++i) {
+    if (topBottomLookUp)
+      currentPixel = get_pixel(image, i, h-1);
+    else
+      currentPixel = get_pixel(image, h-1, i);
+    if (currentPixel != probableRefColor2) {
+      isBorder2Solid = false;
+      if (currentPixel == transparentColor) {
+        refColor = transparentColor;
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+} // anonymous namespace
 
 bool get_shrink_rect(int *x1, int *y1, int *x2, int *y2,
                      Image *image, color_t refpixel)
@@ -105,6 +172,86 @@ bool get_shrink_rect2(int *x1, int *y1, int *x2, int *y2,
     return true;
 
 #undef SHRINK_SIDE
+}
+
+// A simple method to trim an image we have used in the past is
+// selecting the top-left corner pixel as the "refColor" in
+// shrink_bounds() algorithm (whatever that color is, transparent
+// or non-transparent).
+//
+// Now we have changed it to other heuristic: we look if there are
+// borders in the sprite with a solid color ("solid border"),
+// i.e. a color repeating in every pixel of that specific side
+// (left, top, right, or bottom).
+//
+// If we find a transparent pixel at the edges of the sprite, we
+// automatically set "refColor" as the transparent color and it
+// goes directly to shrink_bounds() function. Because this mean
+// that we are in a transparent layer and the transparent color is
+// the one that must be trimmed.
+//
+// The other case is when borders don't contain the transparent
+// color, we search for a "solid border" (top border first), then
+// it checks the opposite border (bottom border), then:
+//
+// 1) If the opposite border is equal to the first border,
+//    the color of both borders will be the "refColor".
+// 2) If the color of the opposite border is solid, BUT different to
+//    the first border we will need the user intervention to select a
+//    valid refColor (in this case the function returns false, which
+//    means that we cannot automatically trim the image).
+// 3) If opposite border contains differents colors, we choose the
+//    first border color as "refColor".
+// 4) It repeats the analysis with the left and right edges.
+//
+// If no border has solid color, trimSprite() does nothing.
+bool get_best_refcolor_for_trimming(
+  doc::Image* image,
+  color_t& refColor)
+{
+  const color_t probableRefColor1 = get_pixel(image, 0, 0);
+  const color_t probableRefColor2 = get_pixel(image, image->width()-1, image->height()-1);
+  bool isBorder1Solid = true;
+  bool isBorder2Solid = true;
+
+  refColor = probableRefColor1;
+
+  if (analize_if_image_has_solid_borders(
+        image, refColor,
+        isBorder1Solid,
+        isBorder2Solid,
+        true)) {                // Analize top vs. bottom borders
+    // Here, we know that analize_if_image_has_solid_borders() did not
+    // find transparent pixels on top and bottom borders.
+    if (!isBorder1Solid &&
+        isBorder2Solid) {
+      refColor = probableRefColor2;
+    }
+    else if (isBorder1Solid &&
+             isBorder2Solid &&
+             probableRefColor1 != probableRefColor2) {
+      // Both border are solid but with different colors, so the
+      // decision should be asked to the user.
+      return false;
+    }
+
+    if (analize_if_image_has_solid_borders(
+          image, refColor,
+          isBorder1Solid,
+          isBorder2Solid,
+          false)) {                // Analize left vs. right borders
+      if (!isBorder1Solid &&
+          isBorder2Solid)
+        refColor = probableRefColor2;
+      else if (isBorder1Solid &&
+               isBorder2Solid &&
+               probableRefColor1 != probableRefColor2)
+        // Both border are solid but with different colors, so the
+        // decision should be asked to the user.
+        return false;
+    }
+  }
+  return true;
 }
 
 } // namespace app
