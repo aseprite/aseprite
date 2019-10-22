@@ -565,7 +565,12 @@ void WidgetLoader::fillWidgetWithXmlElementAttributes(const TiXmlElement* elem, 
       else if (strcmp(tooltip_dir, "right") == 0) dir = RIGHT;
     }
 
-    m_tooltipManager->addTooltipFor(widget, m_xmlTranslator(elem, "tooltip"), dir);
+    Widget* widgetWithTooltip;
+    if (widget->type() == ui::kComboBoxWidget)
+      widgetWithTooltip = static_cast<ComboBox*>(widget)->getEntryWidget();
+    else
+      widgetWithTooltip = widget;
+    m_tooltipManager->addTooltipFor(widgetWithTooltip, m_xmlTranslator(elem, "tooltip"), dir);
   }
 
   if (selected)
