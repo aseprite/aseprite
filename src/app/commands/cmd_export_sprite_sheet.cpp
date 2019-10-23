@@ -926,18 +926,18 @@ private:
       auto spriteSheetLay = static_cast<LayerImage*>(m_spriteSheet->sprite()->root()->firstLayer());
       auto newDocLay = static_cast<LayerImage*>(newDocument->sprite()->root()->firstLayer());
       auto oldCel = m_spriteSheet->sprite()->firstLayer()->cel(0);
-      auto newCel = newDocument->sprite()->firstLayer()->cel(0);;
+      auto newCel = newDocument->sprite()->firstLayer()->cel(0);
 
-      // Swap cels
       spriteSheetLay->removeCel(oldCel);
+      delete oldCel;
+
       newDocLay->removeCel(newCel);
       spriteSheetLay->addCel(newCel);
-      newDocLay->addCel(oldCel); // This old cel will be deleted when
-                                 // newDocument is deleted
 
       // Update sprite sheet size
-      m_spriteSheet->sprite()->setSize(newDocument->sprite()->width(),
-                                       newDocument->sprite()->height());
+      m_spriteSheet->sprite()->setSize(
+        newDocument->sprite()->width(),
+        newDocument->sprite()->height());
 
       m_spriteSheet->notifyGeneralUpdate();
 
