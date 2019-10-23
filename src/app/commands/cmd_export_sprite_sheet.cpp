@@ -283,7 +283,7 @@ public:
     , m_dataFilenameAskOverwrite(true)
     , m_editor(nullptr)
     , m_genTimer(100, nullptr)
-    , m_executeFromUI(0)
+    , m_executionID(0)
     , m_filenameFormat(params.filenameFormat())
   {
     static_assert(
@@ -405,7 +405,6 @@ public:
   }
 
   ~ExportSpriteSheetWindow() {
-    ASSERT(m_executeFromUI == 0);
     cancelGenTask();
     if (m_spriteSheet) {
       DocDestroyer destroyer(UIContext::instance(), m_spriteSheet.release(), 100);
@@ -850,6 +849,8 @@ private:
       return;
     }
 
+    ASSERT(m_genTask == nullptr);
+
     ExportSpriteSheetParams params;
     updateParams(params);
 
@@ -865,7 +866,21 @@ private:
 
   void generateSpriteSheetOnBackground(const ExportSpriteSheetParams& params,
                                        base::task_token& token) {
+    // Sometimes (more often on Linux) the back buffer is still being
+    // used by the new document after
+    // generateSpriteSheetOnBackground() and before
+    // openGeneratedSpriteSheet(). In this case the use counter is 3
+    // which means that 2 or more openGeneratedSpriteSheet() are
+    // queued in the laf-os events queue. In this case we just create
+    // a new back buffer and the old one will be discarded by
+    // openGeneratedSpriteSheet() when m_executionID != executionID.
+    if (m_backBuffer.use_count() > 2) {
+      auto ptr = std::make_shared<doc::ImageBuffer>();
+      m_backBuffer.swap(ptr);
+    }
     m_exporter.setDocImageBuffer(m_backBuffer);
+
+    ASSERT(m_backBuffer.use_count() == 2);
 
     auto context = UIContext::instance();
     Doc* newDocument =
@@ -881,19 +896,23 @@ private:
       return;
     }
 
-    ++m_executeFromUI;
+    ++m_executionID;
+    int executionID = m_executionID;
+
     ui::execute_from_ui_thread(
-      [this, newDocument]{
-        openGeneratedSpriteSheet(newDocument);
+      [this, newDocument, executionID]{
+        openGeneratedSpriteSheet(newDocument, executionID);
       });
   }
 
-  void openGeneratedSpriteSheet(Doc* newDocument) {
-    --m_executeFromUI;
-
+  void openGeneratedSpriteSheet(Doc* newDocument, int executionID) {
     auto context = UIContext::instance();
 
-    if (!isVisible()) {
+    if (!isVisible() ||
+        // Other openGeneratedSpriteSheet() is queued and we are the
+        // old one. IN this case the newDocument contains a back
+        // buffer (ImageBufferPtr) that will be discarded.
+        m_executionID != executionID) {
       DocDestroyer destroyer(context, newDocument, 100);
       destroyer.destroyDocument();
       return;
@@ -908,12 +927,12 @@ private:
     // iteration we'll use the "m_backBuffer" to re-generate the
     // sprite sheet (while the document being displayed in the Editor
     // will use the m_frontBuffer).
-    std::swap(m_frontBuffer, m_backBuffer);
+    m_frontBuffer.swap(m_backBuffer);
 
     if (!m_spriteSheet) {
       m_spriteSheet.reset(newDocument);
-      m_spriteSheet->setContext(context);
       m_spriteSheet->setInhibitBackup(true);
+      m_spriteSheet->setContext(context);
 
       m_editor = context->getEditorFor(m_spriteSheet.get());
       if (m_editor) {
@@ -925,8 +944,8 @@ private:
       // Replace old cel with the new one
       auto spriteSheetLay = static_cast<LayerImage*>(m_spriteSheet->sprite()->root()->firstLayer());
       auto newDocLay = static_cast<LayerImage*>(newDocument->sprite()->root()->firstLayer());
-      auto oldCel = m_spriteSheet->sprite()->firstLayer()->cel(0);
-      auto newCel = newDocument->sprite()->firstLayer()->cel(0);
+      Cel* oldCel = m_spriteSheet->sprite()->firstLayer()->cel(0);
+      Cel* newCel = newDocument->sprite()->firstLayer()->cel(0);
 
       spriteSheetLay->removeCel(oldCel);
       delete oldCel;
@@ -978,7 +997,7 @@ private:
   Editor* m_editor;
   std::unique_ptr<Task> m_genTask;
   ui::Timer m_genTimer;
-  int m_executeFromUI;
+  int m_executionID;
   std::string m_filenameFormat;
   std::string m_filenameFormatDefault;
 };
