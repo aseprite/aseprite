@@ -47,20 +47,8 @@ namespace app {
     SpriteSheetDataFormat dataFormat() const { return m_dataFormat; }
     const std::string& dataFilename() { return m_dataFilename; }
     const std::string& textureFilename() { return m_textureFilename; }
-    // int textureWidth() const { return m_textureWidth; }
-    // int textureHeight() const { return m_textureHeight; }
     SpriteSheetType spriteSheetType() { return m_sheetType; }
-    // bool ignoreEmptyCels() { return m_ignoreEmptyCels; }
-    // int borderPadding() const { return m_borderPadding; }
-    // int shapePadding() const { return m_shapePadding; }
-    // int innerPadding() const { return m_innerPadding; }
-    // bool trimSprite() const { return m_trimSprite; }
-    // bool trimCels() const { return m_trimCels; }
-    // bool trimByGrid() const { return m_trimByGrid; }
-    // bool extrude() const { return m_extrude; }
     const std::string& filenameFormat() const { return m_filenameFormat; }
-    // bool listTags() const { return m_listTags; }
-    // bool listLayers() const { return m_listLayers; }
 
     void setDataFormat(SpriteSheetDataFormat format) { m_dataFormat = format; }
     void setDataFilename(const std::string& filename) { m_dataFilename = filename; }
