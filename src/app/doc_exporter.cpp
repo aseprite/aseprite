@@ -631,8 +631,10 @@ Doc* DocExporter::exportSheet(Context* ctx, base::task_token& token)
   Samples samples;
   captureSamples(samples, token);
   if (samples.empty()) {
-    Console console;
-    console.printf("No documents to export");
+    if (!ctx->isUIAvailable()) {
+      Console console;
+      console.printf("No documents to export");
+    }
     return nullptr;
   }
   if (token.canceled())
