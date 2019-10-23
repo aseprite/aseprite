@@ -74,6 +74,7 @@ public:
   const Option& shapePadding() const { return m_shapePadding; }
   const Option& innerPadding() const { return m_innerPadding; }
   const Option& trim() const { return m_trim; }
+  const Option& trimSprite() const { return m_trimSprite; }
   const Option& trimByGrid() const { return m_trimByGrid; }
   const Option& crop() const { return m_crop; }
   const Option& slice() const { return m_slice; }
@@ -135,6 +136,7 @@ private:
   Option& m_shapePadding;
   Option& m_innerPadding;
   Option& m_trim;
+  Option& m_trimSprite;
   Option& m_trimByGrid;
   Option& m_crop;
   Option& m_slice;

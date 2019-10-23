@@ -331,6 +331,12 @@ void CliProcessor::process(Context* ctx)
           if (m_exporter)
             m_exporter->setTrimCels(true);
         }
+        // --trim-sprite
+        else if (opt == &m_options.trimSprite()) {
+          cof.trim = true;
+          if (m_exporter)
+            m_exporter->setTrimSprite(true);
+        }
         // --trim-by-grid
         else if (opt == &m_options.trimByGrid()) {
           cof.trim = cof.trimByGrid = true;

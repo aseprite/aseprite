@@ -10,9 +10,11 @@
 #pragma once
 
 #include "doc/color.h"
+#include "gfx/rect.h"
 
 namespace doc {
   class Image;
+  class Sprite;
 }
 
 namespace app {
@@ -28,6 +30,10 @@ namespace app {
   bool get_best_refcolor_for_trimming(
     doc::Image* image,
     doc::color_t& refColor);
+
+  gfx::Rect get_trimmed_bounds(
+    const doc::Sprite* sprite,
+    const bool byGrid);
 
 } // namespace app
 

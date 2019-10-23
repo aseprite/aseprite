@@ -10,7 +10,6 @@
 #endif
 
 #include "app/doc_api.h"
-#include "app/snap_to_grid.h"
 
 #include "app/cmd/add_cel.h"
 #include "app/cmd/add_frame.h"
@@ -48,6 +47,7 @@
 #include "app/doc.h"
 #include "app/doc_undo.h"
 #include "app/pref/preferences.h"
+#include "app/snap_to_grid.h"
 #include "app/transaction.h"
 #include "app/util/autocrop.h"
 #include "doc/algorithm/flip_image.h"
@@ -315,39 +315,7 @@ bool DocApi::cropCel(LayerImage* layer,
 
 void DocApi::trimSprite(Sprite* sprite, const bool byGrid)
 {
-  gfx::Rect bounds;
-
-  std::unique_ptr<Image> image_wrap(Image::create(sprite->spec()));
-  Image* image = image_wrap.get();
-
-  render::Render render;
-
-  for (frame_t frame(0); frame<sprite->totalFrames(); ++frame) {
-    render.renderSprite(image, sprite, frame);
-    gfx::Rect frameBounds;
-    doc::color_t refColor;
-
-    if (get_best_refcolor_for_trimming(image, refColor) &&
-        doc::algorithm::shrink_bounds(image, frameBounds, refColor)) {
-      bounds = bounds.createUnion(frameBounds);
-    }
-
-    // TODO merge this code with the code in DocExporter::captureSamples()
-    if (byGrid) {
-      Doc* doc = m_document;
-      const gfx::Rect& gridBounds = doc->sprite()->gridBounds();
-      gfx::Point posTopLeft =
-              snap_to_grid(gridBounds,
-                           bounds.origin(),
-                           PreferSnapTo::FloorGrid);
-      gfx::Point posBottomRight =
-              snap_to_grid(gridBounds,
-                           bounds.point2(),
-                           PreferSnapTo::CeilGrid);
-      bounds = gfx::Rect(posTopLeft, posBottomRight);
-    }
-  }
-
+  gfx::Rect bounds = get_trimmed_bounds(sprite, byGrid);
   if (!bounds.isEmpty())
     cropSprite(sprite, bounds);
 }

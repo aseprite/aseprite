@@ -19,7 +19,7 @@
 #include "app/filename_formatter.h"
 #include "app/restore_visible_layers.h"
 #include "app/snap_to_grid.h"
-#include "doc/images_map.h"
+#include "app/util/autocrop.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
 #include "base/fstream_path.h"
@@ -28,6 +28,7 @@
 #include "doc/algorithm/shrink_bounds.h"
 #include "doc/cel.h"
 #include "doc/image.h"
+#include "doc/images_map.h"
 #include "doc/images_map.h"
 #include "doc/layer.h"
 #include "doc/palette.h"
@@ -829,6 +830,10 @@ void DocExporter::captureSamples(Samples& samples,
         (tag != nullptr));              // Has tag
     }
 
+    gfx::Rect spriteBounds = sprite->bounds();
+    if (m_trimSprite)
+      spriteBounds = get_trimmed_bounds(sprite, m_trimByGrid);
+
     frame_t outputFrame = 0;
     for (frame_t frame : item.getSelectedFrames()) {
       if (token.canceled())
@@ -911,7 +916,7 @@ void DocExporter::captureSamples(Samples& samples,
         else if (m_ignoreEmptyCels)
           refColor = sprite->transparentColor();
 
-        if (!algorithm::shrink_bounds(sampleRender.get(), frameBounds, refColor)) {
+        if (!algorithm::shrink_bounds(sampleRender.get(), spriteBounds, frameBounds, refColor)) {
           // If shrink_bounds() returns false, it's because the whole
           // image is transparent (equal to the mask color).
 
@@ -950,7 +955,11 @@ void DocExporter::captureSamples(Samples& samples,
           }
           sample.setTrimmedBounds(frameBounds);
         }
+        else if (m_trimSprite)
+          sample.setTrimmedBounds(spriteBounds);
       }
+      else if (m_trimSprite)
+        sample.setTrimmedBounds(spriteBounds);
 
       samples.addSample(sample);
 

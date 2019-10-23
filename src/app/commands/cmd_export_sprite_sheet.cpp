@@ -317,9 +317,6 @@ public:
     fill_frames_combobox(
       m_sprite, frames(), params.tag());
 
-    // TODO enable this when DocExporter support a global trim per sprite
-    trimSpriteEnabled()->setVisible(false);
-
     openGenerated()->setSelected(params.openGenerated());
     trimSpriteEnabled()->setSelected(params.trimSprite());
     trimEnabled()->setSelected(params.trim());
@@ -1121,6 +1118,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     docPref.spriteSheet.borderPadding   (params.borderPadding());
     docPref.spriteSheet.shapePadding    (params.shapePadding());
     docPref.spriteSheet.innerPadding    (params.innerPadding());
+    docPref.spriteSheet.trimSprite      (params.trimSprite());
     docPref.spriteSheet.trim            (params.trim());
     docPref.spriteSheet.trimByGrid      (params.trimByGrid());
     docPref.spriteSheet.extrude         (params.extrude());
