@@ -10,10 +10,9 @@
 
 #include "doc/object_id.h"
 #include "doc/object_type.h"
+#include "doc/object_version.h"
 
 namespace doc {
-
-  typedef uint32_t ObjectVersion;
 
   class Object {
   public:

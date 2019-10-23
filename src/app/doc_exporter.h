@@ -16,7 +16,9 @@
 #include "doc/frame.h"
 #include "doc/image_buffer.h"
 #include "doc/object_id.h"
+#include "doc/object_version.h"
 #include "gfx/fwd.h"
+#include "gfx/rect.h"
 
 #include <iosfwd>
 #include <map>
@@ -166,6 +168,15 @@ namespace app {
     // Buffers used
     doc::ImageBufferPtr m_docBuf;
     doc::ImageBufferPtr m_sampleBuf;
+
+    // Trimmed bounds of a specific sprite (to avoid recalculating
+    // this)
+    struct Cache {
+      doc::ObjectId spriteId;
+      doc::ObjectVersion spriteVer;
+      gfx::Rect trimmedBounds;
+      bool trimmedByGrid;
+    } m_cache;
 
     DISABLE_COPYING(DocExporter);
   };

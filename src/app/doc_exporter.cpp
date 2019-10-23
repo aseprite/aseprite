@@ -561,6 +561,7 @@ DocExporter::DocExporter()
   : m_docBuf(std::make_shared<doc::ImageBuffer>())
   , m_sampleBuf(std::make_shared<doc::ImageBuffer>())
 {
+  m_cache.spriteId = doc::NullId;
   reset();
 }
 
@@ -833,8 +834,23 @@ void DocExporter::captureSamples(Samples& samples,
     }
 
     gfx::Rect spriteBounds = sprite->bounds();
-    if (m_trimSprite)
-      spriteBounds = get_trimmed_bounds(sprite, m_trimByGrid);
+    if (m_trimSprite) {
+      if (m_cache.spriteId == sprite->id() &&
+          m_cache.spriteVer == sprite->version() &&
+          m_cache.trimmedByGrid == m_trimByGrid) {
+        spriteBounds = m_cache.trimmedBounds;
+      }
+      else {
+        spriteBounds = get_trimmed_bounds(sprite, m_trimByGrid);
+
+        // Cache trimmed bounds so we don't have to recalculate them
+        // in the next iteration/preview.
+        m_cache.spriteId = sprite->id();
+        m_cache.spriteVer = sprite->version();
+        m_cache.trimmedByGrid = m_trimByGrid;
+        m_cache.trimmedBounds = spriteBounds;
+      }
+    }
 
     frame_t outputFrame = 0;
     for (frame_t frame : item.getSelectedFrames()) {
