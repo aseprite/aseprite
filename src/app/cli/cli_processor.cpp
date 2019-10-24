@@ -568,9 +568,9 @@ void CliProcessor::process(Context* ctx)
     }
 
     if (m_exporter) {
-      // Horizontal sprite sheet as the default type
+      // Rows sprite sheet as the default type
       if (sheetType == SpriteSheetType::None)
-        sheetType = SpriteSheetType::Horizontal;
+        sheetType = SpriteSheetType::Rows;
       m_exporter->setSpriteSheetType(sheetType);
 
       m_delegate->exportFiles(ctx, *m_exporter.get());
