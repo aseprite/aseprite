@@ -232,6 +232,9 @@ void App::initialize(const AppOptions& options)
   }
 #endif
 
+  os::instance()->setAppMode(m_isGui ? os::AppMode::GUI:
+                                       os::AppMode::CLI);
+
   if (m_isGui)
     m_uiSystem.reset(new ui::UISystem);
 
