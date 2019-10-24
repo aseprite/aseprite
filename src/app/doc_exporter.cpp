@@ -50,6 +50,7 @@
 #include <iomanip>
 #include <iostream>
 #include <memory>
+#include <set>
 #include <vector>
 
 #define DX_TRACE(...) // TRACEARGS
@@ -1336,10 +1337,20 @@ void DocExporter::createDataFile(const Samples& samples,
     os << ",\n"
        << "  \"frameTags\": ["; // TODO rename this someday in the future
 
+    std::set<doc::ObjectId> includedSprites;
+
     bool firstTag = true;
     for (auto& item : m_documents) {
       Doc* doc = item.doc;
       Sprite* sprite = doc->sprite();
+
+      // Avoid including tags two or more times in the list (e.g. when
+      // -split-layers is specified, several calls of addDocument()
+      // are used for each layer, so we have to avoid iterating the
+      // same sprite several times)
+      if (includedSprites.find(sprite->id()) != includedSprites.end())
+        continue;
+      includedSprites.insert(sprite->id());
 
       for (Tag* tag : sprite->tags()) {
         if (firstTag)
@@ -1433,10 +1444,20 @@ void DocExporter::createDataFile(const Samples& samples,
     os << ",\n"
        << "  \"slices\": [";
 
+    std::set<doc::ObjectId> includedSprites;
+
     bool firstSlice = true;
     for (auto& item : m_documents) {
       Doc* doc = item.doc;
       Sprite* sprite = doc->sprite();
+
+      // Avoid including slices two or more times in the list
+      // (e.g. when -split-layers is specified, several calls of
+      // addDocument() are used for each layer, so we have to avoid
+      // iterating the same sprite several times)
+      if (includedSprites.find(sprite->id()) != includedSprites.end())
+        continue;
+      includedSprites.insert(sprite->id());
 
       // TODO add possibility to export some slices
 
