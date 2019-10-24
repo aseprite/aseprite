@@ -222,8 +222,17 @@ public:
     return m_bounds->trimmed();
   }
 
-  void setTrimmedBounds(const gfx::Rect& bounds) { m_bounds->setTrimmedBounds(bounds); }
-  void setInTextureBounds(const gfx::Rect& bounds) { m_bounds->setInTextureBounds(bounds); }
+  void setTrimmedBounds(const gfx::Rect& bounds) {
+    // TODO we cannot assign an empty rectangle (samples that are
+    // completely trimmed out should be included as a sample of size 1x1)
+    ASSERT(!bounds.isEmpty());
+    m_bounds->setTrimmedBounds(bounds);
+  }
+
+  void setInTextureBounds(const gfx::Rect& bounds) {
+    ASSERT(!bounds.isEmpty());
+    m_bounds->setInTextureBounds(bounds);
+  }
 
   bool isLinked() const { return m_isLinked; }
   bool isDuplicated() const { return m_isDuplicated; }
@@ -870,6 +879,8 @@ void DocExporter::captureSamples(Samples& samples,
       }
       else {
         spriteBounds = get_trimmed_bounds(sprite, m_trimByGrid);
+        if (spriteBounds.isEmpty())
+          spriteBounds = gfx::Rect(0, 0, 1, 1);
 
         // Cache trimmed bounds so we don't have to recalculate them
         // in the next iteration/preview.
