@@ -258,10 +258,14 @@ void CliProcessor::process(Context* ctx)
         // --split-layers
         else if (opt == &m_options.splitLayers()) {
           cof.splitLayers = true;
+          if (m_exporter)
+            m_exporter->setSplitLayers(true);
         }
         // --split-tags
         else if (opt == &m_options.splitTags()) {
           cof.splitTags = true;
+          if (m_exporter)
+            m_exporter->setSplitTags(true);
         }
         // --split-slice
         else if (opt == &m_options.splitSlices()) {

@@ -353,10 +353,13 @@ public:
 class DocExporter::SimpleLayoutSamples : public DocExporter::LayoutSamples {
 public:
   SimpleLayoutSamples(SpriteSheetType type,
-                      int maxCols, int maxRows)
+                      int maxCols, int maxRows,
+                      bool splitLayers, bool splitTags)
     : m_type(type)
     , m_maxCols(maxCols)
-    , m_maxRows(maxRows) {
+    , m_maxRows(maxRows)
+    , m_splitLayers(splitLayers)
+    , m_splitTags(splitTags) {
   }
 
   void layoutSamples(Samples& samples,
@@ -410,10 +413,10 @@ public:
 
       if (breakBands && oldSprite) {
         const bool nextBand =
-          (oldSprite != sprite ||
-           oldLayer != layer ||
-           oldTag != tag ||
-           itemInBand == itemsPerBand);
+          ((oldSprite != sprite) ||
+           (m_splitLayers && oldLayer != layer) ||
+           (m_splitTags && oldTag != tag) ||
+           (itemInBand == itemsPerBand));
 
         if (m_type == SpriteSheetType::Columns) {
           // If the user didn't specify a height for the texture, we
@@ -490,6 +493,8 @@ private:
   SpriteSheetType m_type;
   int m_maxCols;
   int m_maxRows;
+  bool m_splitLayers;
+  bool m_splitTags;
 };
 
 class DocExporter::BestFitLayoutSamples : public DocExporter::LayoutSamples {
@@ -585,6 +590,8 @@ void DocExporter::reset()
   m_trimCels = false;
   m_trimByGrid = false;
   m_extrude = false;
+  m_splitLayers = false;
+  m_splitTags = false;
   m_listTags = false;
   m_listLayers = false;
   m_listSlices = false;
@@ -874,8 +881,7 @@ void DocExporter::captureSamples(Samples& samples,
       std::string filename = filename_formatter(format, fnInfo);
 
       Sample sample(
-        doc, sprite, item.selLayers, frame,
-        (innerTag && is_tag_in_filename_format(format) ? innerTag: nullptr),
+        doc, sprite, item.selLayers, frame, innerTag,
         filename, m_innerPadding, m_extrude);
       Cel* cel = nullptr;
       Cel* link = nullptr;
@@ -1006,7 +1012,9 @@ void DocExporter::layoutSamples(Samples& samples,
     }
     default: {
       SimpleLayoutSamples layout(
-        m_sheetType, m_textureColumns, m_textureRows);
+        m_sheetType,
+        m_textureColumns, m_textureRows,
+        m_splitLayers, m_splitTags);
       layout.layoutSamples(
         samples, m_borderPadding, m_shapePadding,
         width, height, token);

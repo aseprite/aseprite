@@ -70,6 +70,8 @@ namespace app {
     void setTrimByGrid(bool trimByGrid) { m_trimByGrid = trimByGrid; }
     void setExtrude(bool extrude) { m_extrude = extrude; }
     void setFilenameFormat(const std::string& format) { m_filenameFormat = format; }
+    void setSplitLayers(bool splitLayers) { m_splitLayers = splitLayers; }
+    void setSplitTags(bool splitTags) { m_splitTags = splitTags; }
     void setListTags(bool value) { m_listTags = value; }
     void setListLayers(bool value) { m_listLayers = value; }
     void setListSlices(bool value) { m_listSlices = value; }
@@ -155,6 +157,8 @@ namespace app {
     bool m_trimCels;
     bool m_trimByGrid;
     bool m_extrude;
+    bool m_splitLayers;
+    bool m_splitTags;
     bool m_listTags;
     bool m_listLayers;
     bool m_listSlices;

@@ -238,6 +238,8 @@ void update_doc_exporter_from_params(DocExporter& exporter,
   exporter.setTrimCels(trimCels);
   exporter.setTrimByGrid(trimByGrid);
   exporter.setExtrude(extrude);
+  exporter.setSplitLayers(splitLayers);
+  exporter.setSplitTags(splitTags);
   exporter.setIgnoreEmptyCels(ignoreEmpty);
   exporter.setMergeDuplicates(mergeDuplicates);
   if (listLayers) exporter.setListLayers(true);
