@@ -71,6 +71,8 @@ struct ExportSpriteSheetParams : public NewParams {
   Param<bool> trim { this, false, "trim" };
   Param<bool> trimByGrid { this, false, "trimByGrid" };
   Param<bool> extrude { this, false, "extrude" };
+  Param<bool> ignoreEmpty { this, false, "ignoreEmpty" };
+  Param<bool> mergeDuplicates { this, false, "mergeDuplicates" };
   Param<bool> openGenerated { this, false, "openGenerated" };
   Param<std::string> layer { this, std::string(), "layer" };
   Param<std::string> tag { this, std::string(), "tag" };
@@ -177,6 +179,8 @@ void update_doc_exporter_from_params(DocExporter& exporter,
   const bool trimCels = params.trim();
   const bool trimByGrid = params.trimByGrid();
   const bool extrude = params.extrude();
+  const bool ignoreEmpty = params.ignoreEmpty();
+  const bool mergeDuplicates = params.mergeDuplicates();
   const bool splitLayers = params.splitLayers();
   const bool splitTags = params.splitTags();
   const bool listLayers = params.listLayers();
@@ -234,6 +238,8 @@ void update_doc_exporter_from_params(DocExporter& exporter,
   exporter.setTrimCels(trimCels);
   exporter.setTrimByGrid(trimByGrid);
   exporter.setExtrude(extrude);
+  exporter.setIgnoreEmptyCels(ignoreEmpty);
+  exporter.setMergeDuplicates(mergeDuplicates);
   if (listLayers) exporter.setListLayers(true);
   if (listTags) exporter.setListTags(true);
   if (listSlices) exporter.setListSlices(true);
@@ -326,6 +332,8 @@ public:
                                     trimEnabled()->isSelected()) &&
                                    params.trimByGrid());
     extrudeEnabled()->setSelected(params.extrude());
+    mergeDups()->setSelected(params.mergeDuplicates());
+    ignoreEmpty()->setSelected(params.ignoreEmpty());
 
     borderPadding()->setTextf("%d", params.borderPadding());
     shapePadding()->setTextf("%d", params.shapePadding());
@@ -379,6 +387,8 @@ public:
     shapePadding()->Change.connect(base::Bind<void>(&ExportSpriteSheetWindow::generatePreview, this));
     innerPadding()->Change.connect(base::Bind<void>(&ExportSpriteSheetWindow::generatePreview, this));
     extrudeEnabled()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::generatePreview, this));
+    mergeDups()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::generatePreview, this));
+    ignoreEmpty()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::generatePreview, this));
     imageEnabled()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::onImageEnabledChange, this));
     imageFilename()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::onImageFilename, this));
     dataEnabled()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::onDataEnabledChange, this));
@@ -433,6 +443,8 @@ public:
     params.trim            (trimValue());
     params.trimByGrid      (trimByGridValue());
     params.extrude         (extrudeValue());
+    params.mergeDuplicates (mergeDupsValue());
+    params.ignoreEmpty     (ignoreEmptyValue());
     params.openGenerated   (openGeneratedValue());
     params.layer           (layerValue());
     params.tag             (tagValue());
@@ -575,6 +587,14 @@ private:
 
   bool extrudePadding() const {
     return (extrudeValue() ? 1: 0);
+  }
+
+  bool mergeDupsValue() const {
+    return mergeDups()->isSelected();
+  }
+
+  bool ignoreEmptyValue() const {
+    return ignoreEmpty()->isSelected();
   }
 
   bool openGeneratedValue() const {
@@ -1103,6 +1123,8 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     if (!params.trim.isSet())             params.trim(            docPref.spriteSheet.trim());
     if (!params.trimByGrid.isSet())       params.trimByGrid(      docPref.spriteSheet.trimByGrid());
     if (!params.extrude.isSet())          params.extrude(         docPref.spriteSheet.extrude());
+    if (!params.mergeDuplicates.isSet())  params.mergeDuplicates( docPref.spriteSheet.mergeDuplicates());
+    if (!params.ignoreEmpty.isSet())      params.ignoreEmpty(     docPref.spriteSheet.ignoreEmpty());
     if (!params.openGenerated.isSet())    params.openGenerated(   docPref.spriteSheet.openGenerated());
     if (!params.layer.isSet())            params.layer(           docPref.spriteSheet.layer());
     if (!params.tag.isSet())              params.tag(             docPref.spriteSheet.frameTag());
@@ -1141,6 +1163,8 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     docPref.spriteSheet.trim            (params.trim());
     docPref.spriteSheet.trimByGrid      (params.trimByGrid());
     docPref.spriteSheet.extrude         (params.extrude());
+    docPref.spriteSheet.mergeDuplicates (params.mergeDuplicates());
+    docPref.spriteSheet.ignoreEmpty     (params.ignoreEmpty());
     docPref.spriteSheet.openGenerated   (params.openGenerated());
     docPref.spriteSheet.layer           (params.layer());
     docPref.spriteSheet.frameTag        (params.tag());

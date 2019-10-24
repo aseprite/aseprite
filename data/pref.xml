@@ -459,6 +459,8 @@
       <option id="trim" type="bool" default="false" />
       <option id="trim_by_grid" type="bool" default="false" />
       <option id="extrude" type="bool" default="false" />
+      <option id="merge_duplicates" type="bool" default="false" />
+      <option id="ignore_empty" type="bool" default="false" />
       <option id="open_generated" type="bool" default="false" />
       <option id="layer" type="std::string" />
       <option id="frame_tag" type="std::string" />

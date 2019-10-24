@@ -55,6 +55,11 @@
           <expr id="inner_padding" text="0" tooltip="@.inner_tooltip" />
 	</grid>
       </vbox>
+      <separator id="padding_separator" vertical="true" />
+      <vbox>
+	<check id="merge_dups" text="@.merge_dups" tooltip="@.merge_dups_tooltip" />
+	<check id="ignore_empty" text="@.ignore_empty" tooltip="@.ignore_empty_tooltip" />
+      </vbox>
     </hbox>
 
     <separator horizontal="true" text="@.output" cell_hspan="4" cell_align="horizontal" />
