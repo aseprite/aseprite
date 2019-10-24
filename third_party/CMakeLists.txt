@@ -105,6 +105,7 @@ endif()
 add_subdirectory(json11)
 
 # libarchive
+set(ENABLE_WERROR OFF CACHE BOOL "Treat warnings as errors - default is ON for Debug, OFF otherwise.")
 set(ENABLE_TEST OFF CACHE BOOL "Enable unit and regression tests")
 set(ENABLE_COVERAGE OFF CACHE BOOL "Enable code coverage (GCC only, automatically sets ENABLE_TEST to ON)")
 set(ENABLE_LZMA OFF CACHE BOOL "Enable the use of the system LZMA library if found")
