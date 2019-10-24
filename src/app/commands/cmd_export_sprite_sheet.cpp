@@ -308,8 +308,14 @@ public:
     sheetType()->addItem(Strings::export_sprite_sheet_type_rows());
     sheetType()->addItem(Strings::export_sprite_sheet_type_cols());
     sheetType()->addItem(Strings::export_sprite_sheet_type_pack());
-    if (params.type() != app::SpriteSheetType::None)
-      sheetType()->setSelectedItemIndex((int)params.type()-1);
+    {
+      int i;
+      if (params.type() != app::SpriteSheetType::None)
+        i = (int)params.type()-1;
+      else
+        i = ((int)app::SpriteSheetType::Rows)-1;
+      sheetType()->setSelectedItemIndex(i);
+    }
 
     constraintType()->addItem(Strings::export_sprite_sheet_constraint_fixed_none());
     constraintType()->addItem(Strings::export_sprite_sheet_constraint_fixed_cols());
