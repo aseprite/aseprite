@@ -100,7 +100,6 @@ namespace app {
     class SimpleLayoutSamples;
     class BestFitLayoutSamples;
 
-    bool mergeDuplicates() const { return m_mergeDuplicates; }
     void captureSamples(Samples& samples,
                         base::task_token& token);
     void layoutSamples(Samples& samples,

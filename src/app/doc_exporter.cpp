@@ -354,12 +354,14 @@ class DocExporter::SimpleLayoutSamples : public DocExporter::LayoutSamples {
 public:
   SimpleLayoutSamples(SpriteSheetType type,
                       int maxCols, int maxRows,
-                      bool splitLayers, bool splitTags)
+                      bool splitLayers, bool splitTags,
+                      bool mergeDups)
     : m_type(type)
     , m_maxCols(maxCols)
     , m_maxRows(maxRows)
     , m_splitLayers(splitLayers)
-    , m_splitTags(splitTags) {
+    , m_splitTags(splitTags)
+    , m_mergeDups(mergeDups) {
   }
 
   void layoutSamples(Samples& samples,
@@ -377,6 +379,7 @@ public:
     const Layer* oldLayer = nullptr;
     const Tag* oldTag = nullptr;
 
+    doc::ImagesMap duplicates;
     gfx::Point framePt(borderPadding, borderPadding);
     gfx::Size rowSize(0, 0);
 
@@ -404,6 +407,23 @@ public:
         sample.setInTextureBounds(gfx::Rect(0, 0, 0, 0));
         ++i;
         continue;
+      }
+
+      if (m_mergeDups) {
+        doc::ImageBufferPtr sampleBuf = std::make_shared<doc::ImageBuffer>();
+        doc::ImageRef sampleRender(sample.createRender(sampleBuf));
+        auto it = duplicates.find(sampleRender);
+        if (it != duplicates.end()) {
+          const uint32_t j = it->second;
+
+          sample.setDuplicated();
+          sample.setSharedBounds(samples[j].sharedBounds());
+          ++i;
+          continue;
+        }
+        else {
+          duplicates[sampleRender] = i;
+        }
       }
 
       const Sprite* sprite = sample.sprite();
@@ -495,6 +515,7 @@ private:
   int m_maxRows;
   bool m_splitLayers;
   bool m_splitTags;
+  bool m_mergeDups;
 };
 
 class DocExporter::BestFitLayoutSamples : public DocExporter::LayoutSamples {
@@ -894,7 +915,7 @@ void DocExporter::captureSamples(Samples& samples,
       }
 
       // Re-use linked samples
-      if (link && mergeDuplicates()) {
+      if (link && m_mergeDuplicates) {
         for (const Sample& other : samples) {
           if (token.canceled())
             return;
@@ -1014,7 +1035,8 @@ void DocExporter::layoutSamples(Samples& samples,
       SimpleLayoutSamples layout(
         m_sheetType,
         m_textureColumns, m_textureRows,
-        m_splitLayers, m_splitTags);
+        m_splitLayers, m_splitTags,
+        m_mergeDuplicates);
       layout.layoutSamples(
         samples, m_borderPadding, m_shapePadding,
         width, height, token);
