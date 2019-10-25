@@ -870,9 +870,12 @@ private:
 
     if (!preview()->isSelected()) {
       if (m_spriteSheet) {
-        DocDestroyer destroyer(UIContext::instance(), m_spriteSheet.release(), 100);
+        auto ctx = UIContext::instance();
+        DocDestroyer destroyer(ctx, m_spriteSheet.release(), 100);
         destroyer.destroyDocument();
         m_editor = nullptr;
+
+        ctx->setActiveDocument(m_site.document());
       }
       return;
     }
