@@ -85,6 +85,13 @@ struct ExportSpriteSheetParams : public NewParams {
 
 #ifdef ENABLE_UI
 
+enum Section {
+  kSectionSprite,
+  kSectionBorders,
+  kSectionLayout,
+  kSectionOutput,
+};
+
 enum ConstraintType {
   kConstraintType_None,
   kConstraintType_Cols,
@@ -294,6 +301,8 @@ public:
     , m_executionID(0)
     , m_filenameFormat(params.filenameFormat())
   {
+    sectionTabs()->ItemChange.connect(base::Bind<void>(&ExportSpriteSheetWindow::onChangeSection, this));
+
     static_assert(
       (int)app::SpriteSheetType::None == 0 &&
       (int)app::SpriteSheetType::Horizontal == 1 &&
@@ -346,11 +355,6 @@ public:
     borderPadding()->setTextf("%d", params.borderPadding());
     shapePadding()->setTextf("%d", params.shapePadding());
     innerPadding()->setTextf("%d", params.innerPadding());
-    paddingEnabled()->setSelected(
-      params.borderPadding() ||
-      params.shapePadding() ||
-      params.innerPadding());
-    paddingContainer()->setVisible(paddingEnabled()->isSelected());
 
     m_filename = params.textureFilename();
     imageEnabled()->setSelected(!m_filename.empty());
@@ -387,7 +391,6 @@ public:
 
     exportButton()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::onExport, this));
     sheetType()->Change.connect(&ExportSpriteSheetWindow::onSheetTypeChange, this);
-    showConstraints()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::onSheetTypeChange, this));
     constraintType()->Change.connect(&ExportSpriteSheetWindow::onConstraintTypeChange, this);
     widthConstraint()->Change.connect(&ExportSpriteSheetWindow::generatePreview, this);
     heightConstraint()->Change.connect(&ExportSpriteSheetWindow::generatePreview, this);
@@ -404,7 +407,6 @@ public:
     trimSpriteEnabled()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::onTrimEnabledChange, this));
     trimEnabled()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::onTrimEnabledChange, this));
     gridTrimEnabled()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::generatePreview, this));
-    paddingEnabled()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::onPaddingEnabledChange, this));
     layers()->Change.connect(base::Bind<void>(&ExportSpriteSheetWindow::generatePreview, this));
     splitLayers()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::onSplitLayersOrFrames, this));
     splitTags()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::onSplitLayersOrFrames, this));
@@ -414,6 +416,7 @@ public:
     preview()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::generatePreview, this));
     m_genTimer.Tick.connect(base::Bind<void>(&ExportSpriteSheetWindow::onGenTimerTick, this));
 
+    onChangeSection();
     onSheetTypeChange();
     onFileNamesChange();
     updateExportButton();
@@ -473,13 +476,24 @@ private:
       targets.push_back(View::getView(m_editor));
   }
 
+  void onChangeSection() {
+    Widget* section = nullptr;
+    switch (sectionTabs()->selectedItem()) {
+      case kSectionSprite:  section = sectionSprite();  break;
+      case kSectionBorders: section = sectionBorders(); break;
+      case kSectionLayout:  section = sectionLayout();  break;
+      case kSectionOutput:  section = sectionOutput();  break;
+    }
+    panel()->showChild(section);
+    resize();
+  }
+
   app::SpriteSheetType spriteSheetTypeValue() const {
     return (app::SpriteSheetType)(sheetType()->getSelectedItemIndex()+1);
   }
 
   int columnsValue() const {
-    if (showConstraints()->isSelected() &&
-        spriteSheetTypeValue() == app::SpriteSheetType::Rows &&
+    if (spriteSheetTypeValue() == app::SpriteSheetType::Rows &&
         constraintType()->getSelectedItemIndex() == (int)kConstraintType_Cols) {
       return widthConstraint()->textInt();
     }
@@ -488,8 +502,7 @@ private:
   }
 
   int rowsValue() const {
-    if (showConstraints()->isSelected() &&
-        spriteSheetTypeValue() == app::SpriteSheetType::Columns &&
+    if (spriteSheetTypeValue() == app::SpriteSheetType::Columns &&
         constraintType()->getSelectedItemIndex() == (int)kConstraintType_Rows) {
       return heightConstraint()->textInt();
     }
@@ -498,8 +511,7 @@ private:
   }
 
   int widthValue() const {
-    if (showConstraints()->isSelected() &&
-        (spriteSheetTypeValue() == app::SpriteSheetType::Rows ||
+    if ((spriteSheetTypeValue() == app::SpriteSheetType::Rows ||
          spriteSheetTypeValue() == app::SpriteSheetType::Packed) &&
         (constraintType()->getSelectedItemIndex() == (int)kConstraintType_Width ||
          constraintType()->getSelectedItemIndex() == (int)kConstraintType_Size)) {
@@ -510,8 +522,7 @@ private:
   }
 
   int heightValue() const {
-    if (showConstraints()->isSelected() &&
-        (spriteSheetTypeValue() == app::SpriteSheetType::Columns ||
+    if ((spriteSheetTypeValue() == app::SpriteSheetType::Columns ||
          spriteSheetTypeValue() == app::SpriteSheetType::Packed) &&
         (constraintType()->getSelectedItemIndex() == (int)kConstraintType_Height ||
          constraintType()->getSelectedItemIndex() == (int)kConstraintType_Size)) {
@@ -551,30 +562,18 @@ private:
   }
 
   int borderPaddingValue() const {
-    if (paddingEnabled()->isSelected()) {
-      int value = borderPadding()->textInt();
-      return base::clamp(value, 0, 100);
-    }
-    else
-      return 0;
+    int value = borderPadding()->textInt();
+    return base::clamp(value, 0, 100);
   }
 
   int shapePaddingValue() const {
-    if (paddingEnabled()->isSelected()) {
-      int value = shapePadding()->textInt();
-      return base::clamp(value, 0, 100);
-    }
-    else
-      return 0;
+    int value = shapePadding()->textInt();
+    return base::clamp(value, 0, 100);
   }
 
   int innerPaddingValue() const {
-    if (paddingEnabled()->isSelected()) {
-      int value = innerPadding()->textInt();
-      return base::clamp(value, 0, 100);
-    }
-    else
-      return 0;
+    int value = innerPadding()->textInt();
+    return base::clamp(value, 0, 100);
   }
 
   bool trimSpriteValue() const {
@@ -646,57 +645,49 @@ private:
   }
 
   void onSheetTypeChange() {
-    for (int i=0; i<constraintType()->getItemCount(); ++i)
+    for (int i=1; i<constraintType()->getItemCount(); ++i)
       constraintType()->getItem(i)->setVisible(false);
+
+    mergeDups()->setEnabled(true);
 
     const ConstraintType selectConstraint =
       (ConstraintType)constraintType()->getSelectedItemIndex();
-    bool constraints = true;
     switch (spriteSheetTypeValue()) {
       case app::SpriteSheetType::Horizontal:
       case app::SpriteSheetType::Vertical:
-        constraints = false;
         constraintType()->setSelectedItemIndex(kConstraintType_None);
         break;
       case app::SpriteSheetType::Rows:
         constraintType()->getItem(kConstraintType_Cols)->setVisible(true);
         constraintType()->getItem(kConstraintType_Width)->setVisible(true);
-        if (selectConstraint != kConstraintType_Cols &&
+        if (selectConstraint != kConstraintType_None &&
+            selectConstraint != kConstraintType_Cols &&
             selectConstraint != kConstraintType_Width)
-          constraintType()->setSelectedItemIndex((int)kConstraintType_Cols);
+          constraintType()->setSelectedItemIndex(kConstraintType_None);
         break;
       case app::SpriteSheetType::Columns:
         constraintType()->getItem(kConstraintType_Rows)->setVisible(true);
         constraintType()->getItem(kConstraintType_Height)->setVisible(true);
-        if (selectConstraint != kConstraintType_Rows &&
+        if (selectConstraint != kConstraintType_None &&
+            selectConstraint != kConstraintType_Rows &&
             selectConstraint != kConstraintType_Height)
-          constraintType()->setSelectedItemIndex((int)kConstraintType_Rows);
+          constraintType()->setSelectedItemIndex(kConstraintType_None);
         break;
       case app::SpriteSheetType::Packed:
         constraintType()->getItem(kConstraintType_Width)->setVisible(true);
         constraintType()->getItem(kConstraintType_Height)->setVisible(true);
         constraintType()->getItem(kConstraintType_Size)->setVisible(true);
-        if (selectConstraint != kConstraintType_Width &&
+        if (selectConstraint != kConstraintType_None &&
+            selectConstraint != kConstraintType_Width &&
             selectConstraint != kConstraintType_Height &&
             selectConstraint != kConstraintType_Size) {
-          constraintType()->setSelectedItemIndex((int)kConstraintType_Size);
+          constraintType()->setSelectedItemIndex(kConstraintType_None);
         }
+        mergeDups()->setSelected(true);
+        mergeDups()->setEnabled(false);
         break;
     }
-
-    showConstraints()->setVisible(constraints);
-    constraints = (constraints &&
-                   showConstraints()->isSelected());
-
-    constraintsLabel()->setVisible(constraints);
-    constraintsPlaceholder()->setVisible(constraints);
-
-    if (constraints)
-      onConstraintTypeChange();
-    else {
-      resize();
-      generatePreview();
-    }
+    onConstraintTypeChange();
   }
 
   void onConstraintTypeChange() {
@@ -789,12 +780,6 @@ private:
     trimContainer()->setVisible(
       trimSpriteEnabled()->isSelected() ||
       trimEnabled()->isSelected());
-    resize();
-    generatePreview();
-  }
-
-  void onPaddingEnabledChange() {
-    paddingContainer()->setVisible(paddingEnabled()->isSelected());
     resize();
     generatePreview();
   }
