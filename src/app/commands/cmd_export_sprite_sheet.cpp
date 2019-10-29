@@ -1124,34 +1124,36 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
                        (params.ui.isSet() || !params.type.isSet()));
 
   // Copy document preferences to undefined params
-  if (docPref.spriteSheet.defined(true) &&
-      !params.type.isSet()) {
-    params.type(docPref.spriteSheet.type());
-    if (!params.columns.isSet())          params.columns(         docPref.spriteSheet.columns());
-    if (!params.rows.isSet())             params.rows(            docPref.spriteSheet.rows());
-    if (!params.width.isSet())            params.width(           docPref.spriteSheet.width());
-    if (!params.height.isSet())           params.height(          docPref.spriteSheet.height());
-    if (!params.textureFilename.isSet())  params.textureFilename( docPref.spriteSheet.textureFilename());
-    if (!params.dataFilename.isSet())     params.dataFilename(    docPref.spriteSheet.dataFilename());
-    if (!params.dataFormat.isSet())       params.dataFormat(      docPref.spriteSheet.dataFormat());
-    if (!params.filenameFormat.isSet())   params.filenameFormat(  docPref.spriteSheet.filenameFormat());
-    if (!params.borderPadding.isSet())    params.borderPadding(   docPref.spriteSheet.borderPadding());
-    if (!params.shapePadding.isSet())     params.shapePadding(    docPref.spriteSheet.shapePadding());
-    if (!params.innerPadding.isSet())     params.innerPadding(    docPref.spriteSheet.innerPadding());
-    if (!params.trimSprite.isSet())       params.trimSprite(      docPref.spriteSheet.trimSprite());
-    if (!params.trim.isSet())             params.trim(            docPref.spriteSheet.trim());
-    if (!params.trimByGrid.isSet())       params.trimByGrid(      docPref.spriteSheet.trimByGrid());
-    if (!params.extrude.isSet())          params.extrude(         docPref.spriteSheet.extrude());
-    if (!params.mergeDuplicates.isSet())  params.mergeDuplicates( docPref.spriteSheet.mergeDuplicates());
-    if (!params.ignoreEmpty.isSet())      params.ignoreEmpty(     docPref.spriteSheet.ignoreEmpty());
-    if (!params.openGenerated.isSet())    params.openGenerated(   docPref.spriteSheet.openGenerated());
-    if (!params.layer.isSet())            params.layer(           docPref.spriteSheet.layer());
-    if (!params.tag.isSet())              params.tag(             docPref.spriteSheet.frameTag());
-    if (!params.splitLayers.isSet())      params.splitLayers(     docPref.spriteSheet.splitLayers());
-    if (!params.splitTags.isSet())        params.splitTags(       docPref.spriteSheet.splitTags());
-    if (!params.listLayers.isSet())       params.listLayers(      docPref.spriteSheet.listLayers());
-    if (!params.listTags.isSet())         params.listTags(        docPref.spriteSheet.listFrameTags());
-    if (!params.listSlices.isSet())       params.listSlices(      docPref.spriteSheet.listSlices());
+  {
+    auto& defPref = (docPref.spriteSheet.defined() ? docPref: Preferences::instance().document(nullptr));
+    if (!params.type.isSet()) {
+      params.type(defPref.spriteSheet.type());
+      if (!params.columns.isSet())          params.columns(         defPref.spriteSheet.columns());
+      if (!params.rows.isSet())             params.rows(            defPref.spriteSheet.rows());
+      if (!params.width.isSet())            params.width(           defPref.spriteSheet.width());
+      if (!params.height.isSet())           params.height(          defPref.spriteSheet.height());
+      if (!params.textureFilename.isSet())  params.textureFilename( defPref.spriteSheet.textureFilename());
+      if (!params.dataFilename.isSet())     params.dataFilename(    defPref.spriteSheet.dataFilename());
+      if (!params.dataFormat.isSet())       params.dataFormat(      defPref.spriteSheet.dataFormat());
+      if (!params.filenameFormat.isSet())   params.filenameFormat(  defPref.spriteSheet.filenameFormat());
+      if (!params.borderPadding.isSet())    params.borderPadding(   defPref.spriteSheet.borderPadding());
+      if (!params.shapePadding.isSet())     params.shapePadding(    defPref.spriteSheet.shapePadding());
+      if (!params.innerPadding.isSet())     params.innerPadding(    defPref.spriteSheet.innerPadding());
+      if (!params.trimSprite.isSet())       params.trimSprite(      defPref.spriteSheet.trimSprite());
+      if (!params.trim.isSet())             params.trim(            defPref.spriteSheet.trim());
+      if (!params.trimByGrid.isSet())       params.trimByGrid(      defPref.spriteSheet.trimByGrid());
+      if (!params.extrude.isSet())          params.extrude(         defPref.spriteSheet.extrude());
+      if (!params.mergeDuplicates.isSet())  params.mergeDuplicates( defPref.spriteSheet.mergeDuplicates());
+      if (!params.ignoreEmpty.isSet())      params.ignoreEmpty(     defPref.spriteSheet.ignoreEmpty());
+      if (!params.openGenerated.isSet())    params.openGenerated(   defPref.spriteSheet.openGenerated());
+      if (!params.layer.isSet())            params.layer(           defPref.spriteSheet.layer());
+      if (!params.tag.isSet())              params.tag(             defPref.spriteSheet.frameTag());
+      if (!params.splitLayers.isSet())      params.splitLayers(     defPref.spriteSheet.splitLayers());
+      if (!params.splitTags.isSet())        params.splitTags(       defPref.spriteSheet.splitTags());
+      if (!params.listLayers.isSet())       params.listLayers(      defPref.spriteSheet.listLayers());
+      if (!params.listTags.isSet())         params.listTags(        defPref.spriteSheet.listFrameTags());
+      if (!params.listSlices.isSet())       params.listSlices(      defPref.spriteSheet.listSlices());
+    }
   }
 
   bool askOverwrite = params.askOverwrite();
