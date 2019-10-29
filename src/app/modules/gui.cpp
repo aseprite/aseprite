@@ -368,13 +368,12 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
 
-    case kCloseDisplayMessage:
-      {
-        // Execute the "Exit" command.
-        Command* command = Commands::instance()->byId(CommandId::Exit());
-        UIContext::instance()->executeCommand(command);
-      }
+    case kCloseDisplayMessage: {
+      // Execute the "Exit" command.
+      Command* command = Commands::instance()->byId(CommandId::Exit());
+      UIContext::instance()->executeCommandFromMenuOrShortcut(command);
       break;
+    }
 
     case kDropFilesMessage:
       // Files are processed only when the main window is the current
@@ -410,7 +409,7 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
               Command* cmd = Commands::instance()->byId(CommandId::Options());
               Params params;
               params.set("installExtension", fn.c_str());
-              ctx->executeCommand(cmd, params);
+              ctx->executeCommandFromMenuOrShortcut(cmd, params);
             }
             // Other extensions will be handled as an image/sprite
             else {
@@ -418,7 +417,7 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
               Params params;
               params.set("filename", fn.c_str());
               params.set("repeat_checkbox", "true");
-              ctx->executeCommand(&cmd, params);
+              ctx->executeCommandFromMenuOrShortcut(&cmd, params);
 
               // Remove all used file names from the "dropped files"
               for (const auto& usedFn : cmd.usedFiles()) {
