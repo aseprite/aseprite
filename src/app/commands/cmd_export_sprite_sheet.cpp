@@ -332,7 +332,27 @@ public:
     constraintType()->addItem(Strings::export_sprite_sheet_constraint_fixed_width());
     constraintType()->addItem(Strings::export_sprite_sheet_constraint_fixed_height());
     constraintType()->addItem(Strings::export_sprite_sheet_constraint_fixed_size());
-    constraintType()->setSelectedItemIndex(constraint_type_from_params(params));
+
+    auto constraint = constraint_type_from_params(params);
+    constraintType()->setSelectedItemIndex(constraint);
+    switch (constraint) {
+      case kConstraintType_Cols:
+        widthConstraint()->setTextf("%d", params.columns());
+        break;
+      case kConstraintType_Rows:
+        heightConstraint()->setTextf("%d", params.rows());
+        break;
+      case kConstraintType_Width:
+        widthConstraint()->setTextf("%d", params.width());
+        break;
+      case kConstraintType_Height:
+        heightConstraint()->setTextf("%d", params.height());
+        break;
+      case kConstraintType_Size:
+        widthConstraint()->setTextf("%d", params.width());
+        heightConstraint()->setTextf("%d", params.height());
+        break;
+    }
 
     fill_layers_combobox(
       m_sprite, layers(), params.layer());
