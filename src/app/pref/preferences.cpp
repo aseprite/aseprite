@@ -131,10 +131,15 @@ DocumentPreferences& Preferences::document(const Doc* doc)
     return *it->second;
   }
   else {
-    DocumentPreferences* docPref;
-    if (doc) {
-      docPref = new DocumentPreferences("");
+    // Create a new DocumentPreferences for the given "doc" pointer
+    DocumentPreferences* docPref = new DocumentPreferences("");
+    m_docs[doc] = docPref;
 
+    // If there is not a .ini file with the "doc" preferences to be
+    // loaded, we will setup the default preferences for this file.
+    // (This must be done just one time, when the .ini file with the
+    // specific settings for "doc" doesn't exist.)
+    if (doc && !base::is_file(docConfigFileName(doc))) {
       // The default preferences for this document are the current
       // defaults for (document=nullptr).
       DocumentPreferences& defPref = this->document(nullptr);
@@ -144,12 +149,7 @@ DocumentPreferences& Preferences::document(const Doc* doc)
       docPref->symmetry.xAxis.setDefaultValue(doc->sprite()->width()/2);
       docPref->symmetry.yAxis.setDefaultValue(doc->sprite()->height()/2);
     }
-    else
-      docPref = new DocumentPreferences("");
 
-    m_docs[doc] = docPref;
-
-    // Load document preferences
     serializeDocPref(doc, docPref, false);
 
     return *docPref;
