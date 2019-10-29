@@ -1107,7 +1107,7 @@ protected:
 class ContextBar::SymmetryField : public ButtonSet {
 public:
   SymmetryField() : ButtonSet(2) {
-    setMultipleSelection(true);
+    setMultiMode(MultiMode::Set);
     SkinTheme* theme = SkinTheme::instance();
     addItem(theme->parts.horizontalSymmetry());
     addItem(theme->parts.verticalSymmetry());

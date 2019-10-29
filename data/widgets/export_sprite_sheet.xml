@@ -9,19 +9,46 @@
 
     <hbox>
       <separator horizontal="true" expansive="true" />
-      <buttonset id="section_tabs" columns="4">
-        <item id="sectin_sprite_tab" text="@.sprite" tooltip="@.sprite_tooltip" tooltip_dir="bottom" selected="true" />
-        <item id="sectin_borders_tab" text="@.borders" tooltip="@.borders_tooltip" tooltip_dir="bottom" />
-        <item id="sectin_layout_tab" text="@.layout" tooltip="@.layout_tooltip" tooltip_dir="bottom" />
-        <item id="sectin_output_tab" text="@.output" tooltip="@.output_tooltip" tooltip_dir="bottom" />
+      <buttonset id="section_tabs" columns="4" oneormore="true">
+        <item id="section_layout_tab" text="@.layout" tooltip="@.layout_tooltip" tooltip_dir="bottom" />
+        <item id="section_sprite_tab" text="@.sprite" tooltip="@.sprite_tooltip" tooltip_dir="bottom" selected="true" />
+        <item id="section_borders_tab" text="@.borders" tooltip="@.borders_tooltip" tooltip_dir="bottom" />
+        <item id="section_output_tab" text="@.output" tooltip="@.output_tooltip" tooltip_dir="bottom" />
       </buttonset>
       <separator horizontal="true" expansive="true" />
+      <button id="expand_sections" icon="window_center_icon"
+              tooltip="@.expand_all_sections_tooltip" tooltip_dir="bottom" />
     </hbox>
 
     <panel id="panel" expansive="true">
 
+    <!-- Layout -->
+
+    <grid id="section_layout" columns="4" expansive="true">
+      <label text="@.sheet_type" />
+      <combobox id="sheet_type" expansive="true" cell_hspan="3" cell_align="horizontal"
+                tooltip="@.sheet_type_tooltip" tooltip_dir="bottom" />
+
+      <label text="@.constraints" />
+      <hbox cell_hspan="3">
+        <combobox id="constraint_type" tooltip="@.constraints_tooltip" />
+        <expr id="width_constraint" />
+        <expr id="height_constraint" />
+      </hbox>
+
+      <hbox />
+      <hbox cell_hspan="3">
+        <check id="merge_dups" text="@.merge_dups" tooltip="@.merge_dups_tooltip" />
+        <check id="ignore_empty" text="@.ignore_empty" tooltip="@.ignore_empty_tooltip" />
+      </hbox>
+    </grid>
+
     <!-- Sprite -->
 
+    <hbox id="section_sprite_separator">
+      <separator horizontal="true" text="@.sprite" expansive="true" />
+      <button id="close_sprite_section" icon="window_close_icon" />
+    </hbox>
     <grid id="section_sprite" columns="4" expansive="true">
       <label text="@.layers" />
       <combobox id="layers" text="" cell_hspan="2" cell_align="horizontal" />
@@ -34,6 +61,10 @@
 
     <!-- Borders -->
 
+    <hbox id="section_borders_separator">
+      <separator horizontal="true" text="@.borders" expansive="true" />
+      <button id="close_borders_section" icon="window_close_icon" />
+    </hbox>
     <grid id="section_borders" columns="4" expansive="true">
 
       <hbox />
@@ -68,29 +99,12 @@
 
     </grid>
 
-    <!-- Layout -->
-
-    <grid id="section_layout" columns="4" expansive="true">
-      <label text="@.sheet_type" />
-      <combobox id="sheet_type" expansive="true" cell_hspan="3" cell_align="horizontal"
-                tooltip="@.sheet_type_tooltip" tooltip_dir="bottom" />
-
-      <label text="@.constraints" />
-      <hbox cell_hspan="3">
-        <combobox id="constraint_type" tooltip="@.constraints_tooltip" />
-        <expr id="width_constraint" />
-        <expr id="height_constraint" />
-      </hbox>
-
-      <hbox />
-      <hbox cell_hspan="3">
-        <check id="merge_dups" text="@.merge_dups" tooltip="@.merge_dups_tooltip" />
-        <check id="ignore_empty" text="@.ignore_empty" tooltip="@.ignore_empty_tooltip" />
-      </hbox>
-    </grid>
-
     <!-- Output -->
 
+    <hbox id="section_output_separator">
+      <separator horizontal="true" text="@.output" expansive="true" />
+      <button id="close_output_section" icon="window_close_icon" />
+    </hbox>
     <grid id="section_output" columns="4" expansive="true">
       <check id="image_enabled" text="@.output_file" />
       <button id="image_filename" cell_hspan="3" cell_align="horizontal" />
@@ -122,7 +136,6 @@
     </panel>
 
     <separator horizontal="true" cell_hspan="4" />
-
     <hbox cell_hspan="4">
       <boxfiller />
       <hbox>

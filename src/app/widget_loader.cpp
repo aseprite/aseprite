@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -451,9 +452,10 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
       widget = new ButtonSet(strtol(columns, NULL, 10));
 
     if (ButtonSet* buttonset = dynamic_cast<ButtonSet*>(widget)) {
-      bool multiple = bool_attr_is_true(elem, "multiple");
-      if (multiple)
-        buttonset->setMultipleSelection(multiple);
+      if (bool multiple = bool_attr_is_true(elem, "multiple"))
+        buttonset->setMultiMode(ButtonSet::MultiMode::Set);
+      if (bool oneormore = bool_attr_is_true(elem, "oneormore"))
+        buttonset->setMultiMode(ButtonSet::MultiMode::OneOrMore);
     }
   }
   else if (elem_name == "item") {

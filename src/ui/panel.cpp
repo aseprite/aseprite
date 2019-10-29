@@ -1,5 +1,6 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013, 2015  David Capello
+// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2001-2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -13,15 +14,18 @@
 #include "ui/resize_event.h"
 #include "ui/size_hint_event.h"
 
+#include <algorithm>
+
 namespace ui {
 
 Panel::Panel()
-  : Widget(kPanelWidget)
+  : m_multiple(false)
 {
 }
 
 void Panel::showChild(Widget* widget)
 {
+  m_multiple = false;
   for (auto child : children()) {
     if (!child->isDecorative())
       child->setVisible(child == widget);
@@ -29,8 +33,23 @@ void Panel::showChild(Widget* widget)
   layout();
 }
 
+void Panel::showAllChildren()
+{
+  m_multiple = true;
+  for (auto child : children()) {
+    if (!child->isDecorative())
+      child->setVisible(true);
+  }
+  layout();
+}
+
 void Panel::onResize(ResizeEvent& ev)
 {
+  if (m_multiple) {
+    VBox::onResize(ev);
+    return;
+  }
+
   // Copy the new position rectangle
   setBoundsQuietly(ev.bounds());
 
@@ -44,6 +63,11 @@ void Panel::onResize(ResizeEvent& ev)
 
 void Panel::onSizeHint(SizeHintEvent& ev)
 {
+  if (m_multiple) {
+    VBox::onSizeHint(ev);
+    return;
+  }
+
   gfx::Size maxSize(0, 0);
   gfx::Size reqSize;
 
@@ -51,13 +75,13 @@ void Panel::onSizeHint(SizeHintEvent& ev)
     if (!child->isDecorative()) {
       reqSize = child->sizeHint();
 
-      maxSize.w = MAX(maxSize.w, reqSize.w);
-      maxSize.h = MAX(maxSize.h, reqSize.h);
+      maxSize.w = std::max(maxSize.w, reqSize.w);
+      maxSize.h = std::max(maxSize.h, reqSize.h);
     }
   }
 
   if (hasText())
-    maxSize.w = MAX(maxSize.w, textWidth());
+    maxSize.w = std::max(maxSize.w, textWidth());
 
   ev.setSizeHint(
     maxSize.w + border().width(),

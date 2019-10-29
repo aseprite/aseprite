@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -38,6 +39,12 @@ namespace app {
       gfx::Color m_hotColor;
     };
 
+    enum class MultiMode {
+      One,       // Only one button can be selected (like radio buttons)
+      Set,       // Each button is a checkbox
+      OneOrMore, // One click selects one button, ctrl+click multiple selections
+    };
+
     ButtonSet(int columns);
 
     Item* addItem(const std::string& text, int hspan = 1, int vspan = 1);
@@ -47,6 +54,7 @@ namespace app {
     int getItemIndex(const Item* item) const;
 
     int selectedItem() const;
+    int countSelectedItems() const;
     Item* findSelectedItem() const;
     void setSelectedItem(int index, bool focusItem = true);
     void setSelectedItem(Item* item, bool focusItem = true);
@@ -54,7 +62,7 @@ namespace app {
 
     void setOfferCapture(bool state);
     void setTriggerOnMouseUp(bool state);
-    void setMultipleSelection(bool state);
+    void setMultiMode(MultiMode mode);
 
     obs::signal<void(Item*)> ItemChange;
     obs::signal<void(Item*)> RightClick;
@@ -67,7 +75,7 @@ namespace app {
   private:
     bool m_offerCapture;
     bool m_triggerOnMouseUp;
-    bool m_multipleSelection;
+    MultiMode m_multiMode;
   };
 
 } // namespace app

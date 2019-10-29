@@ -21,6 +21,7 @@
 #include "app/i18n/strings.h"
 #include "app/job.h"
 #include "app/modules/editors.h"
+#include "app/modules/gui.h"
 #include "app/pref/preferences.h"
 #include "app/restore_visible_layers.h"
 #include "app/task.h"
@@ -39,6 +40,7 @@
 #include "doc/layer.h"
 #include "doc/tag.h"
 #include "fmt/format.h"
+#include "ui/message.h"
 #include "ui/system.h"
 
 #include "export_sprite_sheet.xml.h"
@@ -86,9 +88,9 @@ struct ExportSpriteSheetParams : public NewParams {
 #ifdef ENABLE_UI
 
 enum Section {
+  kSectionLayout,
   kSectionSprite,
   kSectionBorders,
-  kSectionLayout,
   kSectionOutput,
 };
 
@@ -288,7 +290,8 @@ class ExportSpriteSheetWindow : public app::gen::ExportSpriteSheet {
 public:
   ExportSpriteSheetWindow(DocExporter& exporter,
                           Site& site,
-                          ExportSpriteSheetParams& params)
+                          ExportSpriteSheetParams& params,
+                          Preferences& pref)
     : m_exporter(exporter)
     , m_frontBuffer(std::make_shared<doc::ImageBuffer>())
     , m_backBuffer(std::make_shared<doc::ImageBuffer>())
@@ -302,6 +305,10 @@ public:
     , m_filenameFormat(params.filenameFormat())
   {
     sectionTabs()->ItemChange.connect(base::Bind<void>(&ExportSpriteSheetWindow::onChangeSection, this));
+    expandSections()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::onExpandSections, this));
+    closeSpriteSection()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::onCloseSection, this, kSectionSprite));
+    closeBordersSection()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::onCloseSection, this, kSectionBorders));
+    closeOutputSection()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::onCloseSection, this, kSectionOutput));
 
     static_assert(
       (int)app::SpriteSheetType::None == 0 &&
@@ -397,7 +404,7 @@ public:
 
     if (m_filename.empty() ||
         m_filename == kSpecifiedFilename) {
-      std::string defExt = Preferences::instance().spriteSheet.defaultExtension();
+      std::string defExt = pref.spriteSheet.defaultExtension();
 
       if (base::utf8_icmp(base::get_file_extension(site.document()->filename()), defExt) == 0)
         m_filename = base + "-sheet." + defExt;
@@ -436,13 +443,30 @@ public:
     preview()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::generatePreview, this));
     m_genTimer.Tick.connect(base::Bind<void>(&ExportSpriteSheetWindow::onGenTimerTick, this));
 
+    // Select tabs
+    {
+      const std::string s = pref.spriteSheet.sections();
+      const bool layout = (s.find("layout") != std::string::npos);
+      const bool sprite = (s.find("sprite") != std::string::npos);
+      const bool borders = (s.find("borders") != std::string::npos);
+      const bool output = (s.find("output") != std::string::npos);
+      sectionTabs()->getItem(kSectionLayout)->setSelected(layout || (!sprite & !borders && !output));
+      sectionTabs()->getItem(kSectionSprite)->setSelected(sprite);
+      sectionTabs()->getItem(kSectionBorders)->setSelected(borders);
+      sectionTabs()->getItem(kSectionOutput)->setSelected(output);
+    }
+
     onChangeSection();
     onSheetTypeChange();
     onFileNamesChange();
     updateExportButton();
 
-    preview()->setSelected(Preferences::instance().spriteSheet.preview());
+    preview()->setSelected(pref.spriteSheet.preview());
     generatePreview();
+
+    remapWindow();
+    centerWindow();
+    load_window_pos(this, "ExportSpriteSheet");
   }
 
   ~ExportSpriteSheetWindow() {
@@ -454,6 +478,19 @@ public:
       DocDestroyer destroyer(ctx, m_spriteSheet.release(), 100);
       destroyer.destroyDocument();
     }
+  }
+
+  std::string selectedSectionsString() const {
+    const bool layout = sectionTabs()->getItem(kSectionLayout)->isSelected();
+    const bool sprite = sectionTabs()->getItem(kSectionSprite)->isSelected();
+    const bool borders = sectionTabs()->getItem(kSectionBorders)->isSelected();
+    const bool output = sectionTabs()->getItem(kSectionOutput)->isSelected();
+    return
+      fmt::format("{} {} {} {}",
+                  (layout ? "layout": ""),
+                  (sprite ? "sprite": ""),
+                  (borders ? "borders": ""),
+                  (output ? "output": ""));
   }
 
   bool ok() const {
@@ -491,6 +528,15 @@ public:
 
 private:
 
+  bool onProcessMessage(ui::Message* msg) override {
+    switch (msg->type()) {
+      case kCloseMessage:
+        save_window_pos(this, "ExportSpriteSheet");
+        break;
+    }
+    return Window::onProcessMessage(msg);
+  }
+
   void onBroadcastMouseMessage(WidgetsList& targets) override {
     Window::onBroadcastMouseMessage(targets);
 
@@ -500,15 +546,36 @@ private:
   }
 
   void onChangeSection() {
-    Widget* section = nullptr;
-    switch (sectionTabs()->selectedItem()) {
-      case kSectionSprite:  section = sectionSprite();  break;
-      case kSectionBorders: section = sectionBorders(); break;
-      case kSectionLayout:  section = sectionLayout();  break;
-      case kSectionOutput:  section = sectionOutput();  break;
-    }
-    panel()->showChild(section);
+    panel()->showAllChildren();
+
+    const bool layout = sectionTabs()->getItem(kSectionLayout)->isSelected();
+    const bool sprite = sectionTabs()->getItem(kSectionSprite)->isSelected();
+    const bool borders = sectionTabs()->getItem(kSectionBorders)->isSelected();
+    const bool output = sectionTabs()->getItem(kSectionOutput)->isSelected();
+
+    sectionLayout()->setVisible(layout);
+    sectionSpriteSeparator()->setVisible(sprite && layout);
+    sectionSprite()->setVisible(sprite);
+    sectionBordersSeparator()->setVisible(borders && (layout || sprite));
+    sectionBorders()->setVisible(borders);
+    sectionOutputSeparator()->setVisible(output && (layout || sprite || borders));
+    sectionOutput()->setVisible(output);
+
     resize();
+  }
+
+  void onExpandSections() {
+    sectionTabs()->getItem(kSectionLayout)->setSelected(true);
+    sectionTabs()->getItem(kSectionSprite)->setSelected(true);
+    sectionTabs()->getItem(kSectionBorders)->setSelected(true);
+    sectionTabs()->getItem(kSectionOutput)->setSelected(true);
+    onChangeSection();
+  }
+
+  void onCloseSection(const Section section) {
+    if (sectionTabs()->countSelectedItems() > 1)
+      sectionTabs()->getItem(section)->setSelected(false);
+    onChangeSection();
   }
 
   app::SpriteSheetType spriteSheetTypeValue() const {
@@ -1158,13 +1225,18 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
 
   bool askOverwrite = params.askOverwrite();
   if (showUI) {
-    ExportSpriteSheetWindow window(exporter, site, params);
+    auto& pref = Preferences::instance();
+
+    ExportSpriteSheetWindow window(exporter, site, params, pref);
     window.openWindowInForeground();
+
+    // Save global sprite sheet generation settings anyway (even if
+    // the user cancel the dialog, the global settings are stored).
+    pref.spriteSheet.preview(window.preview()->isSelected());
+    pref.spriteSheet.sections(window.selectedSectionsString());
+
     if (!window.ok())
       return;
-
-    // Preview sprite sheet generation
-    Preferences::instance().spriteSheet.preview(window.preview()->isSelected());
 
     window.updateParams(params);
     docPref.spriteSheet.defined(true);

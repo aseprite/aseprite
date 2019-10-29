@@ -71,7 +71,6 @@ namespace app {
     class CustomButtonSet : public ButtonSet {
     public:
       CustomButtonSet();
-      int countSelectedItems();
     private:
       void onSelectItem(Item* item, bool focusItem, ui::Message* msg) override;
     };

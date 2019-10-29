@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -41,7 +42,7 @@ FilterTargetButtons::FilterTargetButtons(int imgtype, bool withChannels)
   , m_index(nullptr)
   , m_cels(nullptr)
 {
-  setMultipleSelection(true);
+  setMultiMode(MultiMode::Set);
   addChild(&m_tooltips);
 
   if (withChannels) {

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -299,7 +299,7 @@ ButtonSet::ButtonSet(int columns)
   : Grid(columns, false)
   , m_offerCapture(true)
   , m_triggerOnMouseUp(false)
-  , m_multipleSelection(false)
+  , m_multiMode(MultiMode::One)
 {
   InitTheme.connect(
     [this]{
@@ -357,6 +357,15 @@ int ButtonSet::selectedItem() const
   return -1;
 }
 
+int ButtonSet::countSelectedItems() const
+{
+  int count = 0;
+  for (auto child : children())
+    if (child->isSelected())
+      ++count;
+  return count;
+}
+
 void ButtonSet::setSelectedItem(int index, bool focusItem)
 {
   if (index >= 0 && index < (int)children().size())
@@ -372,16 +381,38 @@ void ButtonSet::setSelectedItem(Item* item, bool focusItem)
 
 void ButtonSet::onSelectItem(Item* item, bool focusItem, ui::Message* msg)
 {
-  if (!m_multipleSelection) {
-    if (item && item->isSelected())
+  const int count = countSelectedItems();
+
+  if ((m_multiMode == MultiMode::One) ||
+      (m_multiMode == MultiMode::OneOrMore &&
+       msg &&
+       !msg->shiftPressed() &&
+       !msg->altPressed() &&
+       !msg->ctrlPressed() &&
+       !msg->cmdPressed())) {
+    if (item && item->isSelected() &&
+        ((m_multiMode == MultiMode::One) ||
+         (m_multiMode == MultiMode::OneOrMore && count == 1)))
       return;
 
-    Item* sel = findSelectedItem();
-    if (sel)
-      sel->setSelected(false);
+    if (m_multiMode == MultiMode::One) {
+      if (auto sel = findSelectedItem())
+        sel->setSelected(false);
+    }
+    else if (m_multiMode == MultiMode::OneOrMore) {
+      for (auto child : children())
+        child->setSelected(false);
+    }
   }
 
   if (item) {
+    if (m_multiMode == MultiMode::OneOrMore) {
+      // Item already selected
+      if (count == 1 && item == findSelectedItem())
+        return;
+    }
+
+    // Toggle item
     item->setSelected(!item->isSelected());
     if (focusItem)
       item->requestFocus();
@@ -405,9 +436,9 @@ void ButtonSet::setTriggerOnMouseUp(bool state)
   m_triggerOnMouseUp = state;
 }
 
-void ButtonSet::setMultipleSelection(bool state)
+void ButtonSet::setMultiMode(MultiMode mode)
 {
-  m_multipleSelection = state;
+  m_multiMode = mode;
 }
 
 void ButtonSet::onItemChange(Item* item)

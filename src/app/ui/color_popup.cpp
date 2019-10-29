@@ -125,15 +125,6 @@ ColorPopup::CustomButtonSet::CustomButtonSet()
 {
 }
 
-int ColorPopup::CustomButtonSet::countSelectedItems()
-{
-  int count = 0;
-  for (int i=0; i<COLOR_MODES; ++i)
-    if (getItem(i)->isSelected())
-      ++count;
-  return count;
-}
-
 void ColorPopup::CustomButtonSet::onSelectItem(Item* item, bool focusItem, ui::Message* msg)
 {
   int count = countSelectedItems();

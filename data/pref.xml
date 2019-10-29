@@ -310,6 +310,7 @@
       <option id="show_overwrite_files_alert" type="bool" default="true" />
       <option id="default_extension" type="std::string" default="&quot;png&quot;" />
       <option id="preview" type="bool" default="true" />
+      <option id="sections" type="std::string" />
     </section>
     <section id="gif">
       <option id="show_alert" type="bool" default="true" />
