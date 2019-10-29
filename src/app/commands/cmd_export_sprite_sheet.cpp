@@ -448,7 +448,10 @@ public:
   ~ExportSpriteSheetWindow() {
     cancelGenTask();
     if (m_spriteSheet) {
-      DocDestroyer destroyer(UIContext::instance(), m_spriteSheet.release(), 100);
+      auto ctx = UIContext::instance();
+      ctx->setActiveDocument(m_site.document());
+
+      DocDestroyer destroyer(ctx, m_spriteSheet.release(), 100);
       destroyer.destroyDocument();
     }
   }
@@ -876,11 +879,11 @@ private:
     if (!preview()->isSelected()) {
       if (m_spriteSheet) {
         auto ctx = UIContext::instance();
+        ctx->setActiveDocument(m_site.document());
+
         DocDestroyer destroyer(ctx, m_spriteSheet.release(), 100);
         destroyer.destroyDocument();
         m_editor = nullptr;
-
-        ctx->setActiveDocument(m_site.document());
       }
       return;
     }
@@ -1219,6 +1222,8 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     job.waitJob();
 
     newDocument = job.releaseDoc();
+    if (!newDocument)
+      return;
 
     StatusBar* statusbar = StatusBar::instance();
     if (statusbar)
@@ -1242,11 +1247,13 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
       return;
   }
 
+  ASSERT(newDocument);
+
   if (params.openGenerated()) {
     newDocument->setContext(context);
     newDocument.release();
   }
-  else if (newDocument) {
+  else {
     DocDestroyer destroyer(context, newDocument.release(), 100);
     destroyer.destroyDocument();
   }
