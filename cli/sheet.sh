@@ -166,3 +166,42 @@ assert(#sheet1.frames == 12)
 assert(#sheet2.frames == 4)
 EOF
 $ASEPRITE -b -script "$d/check.lua" || exit 1
+
+# -sheet -sheet-columns vs -sheet-rows
+
+d=$t/sheet-columns-and-rows
+$ASEPRITE -b -split-layers sprites/1empty3.aseprite \
+	  -filename-format "{layer}{frame}" \
+	  -sheet "$d/sheet1.png" \
+	  -sheet-type rows \
+	  -sheet-columns 3 \
+	  -data "$d/sheet1.json" || exit $?
+$ASEPRITE -b -split-layers sprites/1empty3.aseprite \
+	  -filename-format "{layer}{frame}" \
+	  -sheet "$d/sheet2.png" \
+	  -sheet-type columns \
+	  -sheet-rows 3 \
+	  -data "$d/sheet2.json" || exit $?
+$ASEPRITE -b \
+	  -script-param file1=$d/sheet1.json \
+	  -script-param file2=$d/sheet2.json \
+	  -script scripts/compare_sprite_sheets.lua || exit $?
+
+# -sheet -trim vs -trim-sprite
+
+d=$t/sheet-columns-and-rows
+$ASEPRITE -b -split-layers sprites/1empty3.aseprite \
+	  -trim \
+	  -filename-format "{layer}{frame}" \
+	  -sheet "$d/sheet1.png" \
+	  -data "$d/sheet1.json" || exit $?
+
+$ASEPRITE -b -split-layers sprites/1empty3.aseprite \
+	  -trim-sprite \
+	  -filename-format "{layer}{frame}" \
+	  -sheet "$d/sheet2.png" \
+	  -data "$d/sheet2.json" || exit $?
+$ASEPRITE -b \
+	  -script-param file1=$d/sheet1.json \
+	  -script-param file2=$d/sheet2.json \
+	  -script scripts/compare_sprite_sheets.lua || exit $?
