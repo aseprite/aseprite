@@ -113,3 +113,15 @@ do
   assert(b.width == 64)
   assert(b.height == 64)
 end
+
+-- Grid bounds
+do
+  local s = Sprite(32, 32)
+  assert(s.gridBounds == Rectangle{0, 0, 16, 16})
+  s.gridBounds = Rectangle{2, 3, 8, 4}
+  assert(s.gridBounds == Rectangle{2, 3, 8, 4})
+  s:saveAs("_test_sprite_gridbounds.png")
+
+  local s2 = Sprite{ fromFile="_test_sprite_gridbounds.png" }
+  assert(s.gridBounds == Rectangle{2, 3, 8, 4})
+end
