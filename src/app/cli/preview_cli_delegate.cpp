@@ -214,8 +214,8 @@ void PreviewCliDelegate::exportFiles(Context* ctx, DocExporter& exporter)
 }
 
 #ifdef ENABLE_SCRIPTING
-void PreviewCliDelegate::execScript(const std::string& filename,
-                                    const Params& params)
+int PreviewCliDelegate::execScript(const std::string& filename,
+                                   const Params& params)
 {
   std::cout << "- Run script: '" << filename << "'\n";
   if (!params.empty()) {
@@ -224,6 +224,7 @@ void PreviewCliDelegate::execScript(const std::string& filename,
       std::cout << "    " << kv.first << "=\"" << kv.second << "\",\n";
     std::cout << "  }\n";
   }
+  return 0;
 }
 #endif // ENABLE_SCRIPTING
 

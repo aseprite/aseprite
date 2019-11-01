@@ -89,12 +89,17 @@ namespace app {
       onConsolePrint(text);
     }
 
+    int returnCode() const {
+      return m_returnCode;
+    }
+
   private:
     void onConsolePrint(const char* text);
 
     lua_State* L;
     EngineDelegate* m_delegate;
     bool m_printLastResult;
+    int m_returnCode;
   };
 
   class ScopedEngineDelegate {

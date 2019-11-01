@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -131,11 +131,13 @@ void DefaultCliDelegate::exportFiles(Context* ctx, DocExporter& exporter)
 }
 
 #ifdef ENABLE_SCRIPTING
-void DefaultCliDelegate::execScript(const std::string& filename,
-                                    const Params& params)
+int DefaultCliDelegate::execScript(const std::string& filename,
+                                   const Params& params)
 {
-  if (!App::instance()->scriptEngine()->evalFile(filename, params))
-    throw std::runtime_error("Error executing script");
+  auto engine = App::instance()->scriptEngine();
+  if (!engine->evalFile(filename, params))
+    throw base::Exception("Error executing script %s", filename.c_str());
+  return engine->returnCode();
 }
 #endif // ENABLE_SCRIPTING
 

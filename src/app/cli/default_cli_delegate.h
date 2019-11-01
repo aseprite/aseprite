@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -22,8 +22,8 @@ namespace app {
     void loadPalette(Context* ctx, const CliOpenFile& cof, const std::string& filename) override;
     void exportFiles(Context* ctx, DocExporter& exporter) override;
 #ifdef ENABLE_SCRIPTING
-    void execScript(const std::string& filename,
-                    const Params& params) override;
+    int execScript(const std::string& filename,
+                   const Params& params) override;
 #endif
   };
 

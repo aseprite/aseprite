@@ -215,7 +215,7 @@ App::App(AppMod* mod)
   m_instance = this;
 }
 
-void App::initialize(const AppOptions& options)
+int App::initialize(const AppOptions& options)
 {
 #ifdef ENABLE_UI
   m_isGui = options.startUI() && !options.previewCLI();
@@ -319,10 +319,13 @@ void App::initialize(const AppOptions& options)
       delegate.reset(new DefaultCliDelegate);
 
     CliProcessor cli(delegate.get(), options);
-    cli.process(&m_modules->m_context);
+    int code = cli.process(&m_modules->m_context);
+    if (code != 0)
+      return code;
   }
 
   os::instance()->finishLaunching();
+  return 0;
 }
 
 void App::run()

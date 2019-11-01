@@ -35,8 +35,10 @@ public:
   void saveFile(Context* ctx, const CliOpenFile& cof) override { }
   void exportFiles(Context* ctx, DocExporter& exporter) override { }
 #ifdef ENABLE_SCRIPTING
-  void execScript(const std::string& filename,
-                  const Params& params) override { }
+  int execScript(const std::string& filename,
+                 const Params& params) override {
+    return 0;
+  }
 #endif
 
   bool helpWasShown() const { return m_helpWasShown; }

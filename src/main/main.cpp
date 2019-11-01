@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -71,12 +72,14 @@ int app_main(int argc, char* argv[])
 
     // Change the name of the memory dump file
     {
-      std::string filename = app::memory_dump_filename();
+      const std::string filename = app::memory_dump_filename();
       if (!filename.empty())
         memoryDump.setFileName(filename);
     }
 
-    app.initialize(options);
+    const int code = app.initialize(options);
+    if (code != 0)
+      return code;
 
     if (options.startShell())
       systemConsole.prepareShell();

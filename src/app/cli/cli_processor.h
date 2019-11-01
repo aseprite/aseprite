@@ -32,7 +32,7 @@ namespace app {
   public:
     CliProcessor(CliDelegate* delegate,
                  const AppOptions& options);
-    void process(Context* ctx);
+    int process(Context* ctx);
 
     // Public so it can be tested
     static void FilterLayers(const doc::Sprite* sprite,

@@ -178,7 +178,7 @@ CliProcessor::CliProcessor(CliDelegate* delegate,
     m_exporter.reset(new DocExporter);
 }
 
-void CliProcessor::process(Context* ctx)
+int CliProcessor::process(Context* ctx)
 {
   // --help
   if (m_options.showHelp()) {
@@ -529,7 +529,9 @@ void CliProcessor::process(Context* ctx)
         // --script <filename>
         else if (opt == &m_options.script()) {
           std::string filename = value.value();
-          m_delegate->execScript(filename, scriptParams);
+          int code = m_delegate->execScript(filename, scriptParams);
+          if (code != 0)
+            return code;
         }
         // --script-param <name=value>
         else if (opt == &m_options.scriptParam()) {
@@ -598,6 +600,7 @@ void CliProcessor::process(Context* ctx)
   else {
     m_delegate->batchMode();
   }
+  return 0;
 }
 
 bool CliProcessor::openFile(Context* ctx, CliOpenFile& cof)

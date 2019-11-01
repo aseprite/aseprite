@@ -34,8 +34,8 @@ namespace app {
                      const std::string& filename) override;
     void exportFiles(Context* ctx, DocExporter& exporter) override;
 #ifdef ENABLE_SCRIPTING
-    void execScript(const std::string& filename,
-                    const Params& params) override;
+    int execScript(const std::string& filename,
+                   const Params& params) override;
 #endif // ENABLE_SCRIPTING
 
   private:

@@ -391,8 +391,15 @@ bool Engine::evalCode(const std::string& code,
       if (s)
         onConsolePrint(s);
       ok = false;
+      m_returnCode = -1;
     }
     else {
+      // Return code
+      if (lua_isinteger(L, -1))
+        m_returnCode = lua_tointeger(L, -1);
+      else
+        m_returnCode = 0;
+
       // Code was executed correctly
       if (m_printLastResult) {
         if (!lua_isnone(L, -1)) {
@@ -407,6 +414,7 @@ bool Engine::evalCode(const std::string& code,
   catch (const std::exception& ex) {
     onConsolePrint(ex.what());
     ok = false;
+    m_returnCode = -1;
   }
 
   // Collect script garbage.
@@ -420,6 +428,9 @@ bool Engine::evalFile(const std::string& filename,
   std::stringstream buf;
   {
     std::ifstream s(FSTREAM_PATH(filename));
+    // Returns false if we cannot open the file
+    if (!s)
+      return false;
     buf << s.rdbuf();
   }
   std::string absFilename = base::get_absolute_path(filename);

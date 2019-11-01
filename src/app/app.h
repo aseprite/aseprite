@@ -84,7 +84,7 @@ namespace app {
     // Runs the Aseprite application. In GUI mode it's the top-level
     // window, in console/scripting it just runs the specified
     // scripts.
-    void initialize(const AppOptions& options);
+    int initialize(const AppOptions& options);
     void run();
 
     AppMod* mod() const { return m_mod; }
