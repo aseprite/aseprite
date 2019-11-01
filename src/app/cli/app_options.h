@@ -56,10 +56,12 @@ public:
   const Option& data() const { return m_data; }
   const Option& format() const { return m_format; }
   const Option& sheet() const { return m_sheet; }
-  const Option& sheetWidth() const { return m_sheetWidth; }
-  const Option& sheetHeight() const { return m_sheetHeight; }
   const Option& sheetType() const { return m_sheetType; }
   const Option& sheetPack() const { return m_sheetPack; }
+  const Option& sheetWidth() const { return m_sheetWidth; }
+  const Option& sheetHeight() const { return m_sheetHeight; }
+  const Option& sheetColumns() const { return m_sheetColumns; }
+  const Option& sheetRows() const { return m_sheetRows; }
   const Option& splitLayers() const { return m_splitLayers; }
   const Option& splitTags() const { return m_splitTags; }
   const Option& splitSlices() const { return m_splitSlices; }
@@ -118,10 +120,12 @@ private:
   Option& m_data;
   Option& m_format;
   Option& m_sheet;
-  Option& m_sheetWidth;
-  Option& m_sheetHeight;
   Option& m_sheetType;
   Option& m_sheetPack;
+  Option& m_sheetWidth;
+  Option& m_sheetHeight;
+  Option& m_sheetColumns;
+  Option& m_sheetRows;
   Option& m_splitLayers;
   Option& m_splitTags;
   Option& m_splitSlices;

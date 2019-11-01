@@ -231,12 +231,22 @@ void CliProcessor::process(Context* ctx)
         // --sheet-width <width>
         else if (opt == &m_options.sheetWidth()) {
           if (m_exporter)
-            m_exporter->setTextureWidth(strtol(value.value().c_str(), NULL, 0));
+            m_exporter->setTextureWidth(strtol(value.value().c_str(), nullptr, 0));
         }
         // --sheet-height <height>
         else if (opt == &m_options.sheetHeight()) {
           if (m_exporter)
-            m_exporter->setTextureHeight(strtol(value.value().c_str(), NULL, 0));
+            m_exporter->setTextureHeight(strtol(value.value().c_str(), nullptr, 0));
+        }
+        // --sheet-columns <columns>
+        else if (opt == &m_options.sheetColumns()) {
+          if (m_exporter)
+            m_exporter->setTextureColumns(strtol(value.value().c_str(), nullptr, 0));
+        }
+        // --sheet-rows <rows>
+        else if (opt == &m_options.sheetRows()) {
+          if (m_exporter)
+            m_exporter->setTextureRows(strtol(value.value().c_str(), nullptr, 0));
         }
         // --sheet-type <sheet-type>
         else if (opt == &m_options.sheetType()) {
