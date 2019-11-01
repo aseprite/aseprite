@@ -205,3 +205,41 @@ $ASEPRITE -b \
 	  -script-param file1=$d/sheet1.json \
 	  -script-param file2=$d/sheet2.json \
 	  -script scripts/compare_sprite_sheets.lua || exit $?
+
+# Test all sprite sheet types
+# -sheet horizontal/vertical/rows/columns/packed
+d=$t/sheet-all-types
+for type in horizontal vertical rows columns packed ; do
+    $ASEPRITE -b "sprites/tags3.aseprite" \
+	      -sheet-type $type -sheet "$d/$type.png" \
+	      -format json-array -data "$d/$type.json" || exit $?
+
+    $ASEPRITE -b -split-layers "sprites/tags3.aseprite" \
+	      -sheet-type $type -sheet "$d/$type-layers.png" \
+	      -format json-array -data "$d/$type-layers.json" || exit $?
+
+    $ASEPRITE -b -split-layers -merge-duplicates "sprites/tags3.aseprite" \
+	      -sheet-type $type -sheet "$d/$type-layers-merge-duplicates.png" \
+	      -format json-array -data "$d/$type-layers-merge-duplicates.json" || exit $?
+
+    $ASEPRITE -b -split-tags "sprites/tags3.aseprite" \
+	      -sheet-type $type -sheet "$d/$type-tags.png" \
+	      -format json-array -data "$d/$type-tags.json" || exit $?
+
+    $ASEPRITE -b -split-tags -trim "sprites/tags3.aseprite" \
+	      -sheet-type $type -sheet "$d/$type-tags-trim.png" \
+	      -format json-array -data "$d/$type-tags-trim.json" || exit $?
+
+    $ASEPRITE -b -split-layers -split-tags "sprites/tags3.aseprite" \
+	      -sheet-type $type -sheet "$d/$type-layer-tags.png" \
+	      -format json-array -data "$d/$type-layer-tags.json" || exit $?
+done
+
+for type in horizontal vertical rows columns ; do
+    for subtype in "" "-layers" "-layers-merge-duplicates" "-tags" "-tags-trim" "-layer-tags" ; do
+	$ASEPRITE -b \
+		  -script-param file1=$d/packed$subtype.json \
+		  -script-param file2=$d/$type$subtype.json \
+		  -script scripts/compare_sprite_sheets.lua || exit $?
+    done
+done
