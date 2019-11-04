@@ -95,7 +95,7 @@ doc::ImageRef crop_cel_image(
       cel->layer(),
       sprite->palette(cel->frame()),
       dstImage->bounds(),
-      gfx::Clip(0, 0, dstImage->bounds()),
+      gfx::Clip(cel->position(), dstImage->bounds()),
       255, BlendMode::NORMAL);
 
     return dstImage;
