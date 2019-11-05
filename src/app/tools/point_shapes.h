@@ -96,6 +96,8 @@ public:
                                          srcImage->height()),
                                gfx::Point(x, y), true);
 
+    ASSERT(srcImage->pixelFormat() != IMAGE_TILEMAP);
+
     doc::algorithm::floodfill(
       srcImage,
       (loop->useMask() ? loop->getMask(): nullptr),

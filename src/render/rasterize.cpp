@@ -25,6 +25,8 @@ void rasterize(
   const int y,
   const bool clear)
 {
+  ASSERT(dst);
+  ASSERT(dst->pixelFormat() != IMAGE_TILEMAP);
   ASSERT(cel);
 
   const doc::Sprite* sprite = cel->sprite();
