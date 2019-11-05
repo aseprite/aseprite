@@ -1,4 +1,5 @@
 # Aseprite Render Library
-*Copyright (C) 2001-2017 David Capello*
 
 > Distributed under [MIT license](LICENSE.txt)
+
+Functions to render a [`doc::Sprite`](../doc/sprite.h).

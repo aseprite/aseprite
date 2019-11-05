@@ -53,6 +53,7 @@
 #include "doc/sprite.h"
 #include "fmt/format.h"
 #include "render/dithering.h"
+#include "render/rasterize.h"
 #include "render/render.h"
 #include "ui/ui.h"
 
@@ -430,26 +431,8 @@ public:
       }
       else {
         Cel* cel = m_layer->cel(m_frame);
-        if (cel && (cel->x() != 0 || cel->y() != 0)) {
-          m_floodfillSrcImage = Image::create(m_sprite->spec());
-          m_floodfillSrcImage->clear(m_sprite->transparentColor());
-          if (cel->image()->pixelFormat() == IMAGE_TILEMAP) {
-            render::Render render;
-            render.setNewBlend(Preferences::instance().experimental.newBlend());
-            render.renderCel(
-              m_floodfillSrcImage,
-              m_sprite,
-              cel->image(),
-              m_layer,
-              m_sprite->palette(m_frame),
-              gfx::RectF(cel->bounds()),
-              gfx::Clip(m_sprite->bounds()),
-              255, BlendMode::NORMAL);
-          }
-          else {
-            copy_image(m_floodfillSrcImage, cel->image(), cel->x(), cel->y());
-          }
-        }
+        if (cel && (cel->x() != 0 || cel->y() != 0))
+          m_floodfillSrcImage = render::rasterize_with_sprite_bounds(cel);
       }
     }
 

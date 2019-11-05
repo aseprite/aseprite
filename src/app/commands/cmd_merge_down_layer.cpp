@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -26,7 +26,7 @@
 #include "doc/layer.h"
 #include "doc/primitives.h"
 #include "doc/sprite.h"
-#include "render/render.h"
+#include "render/rasterize.h"
 #include "ui/ui.h"
 
 namespace app {
@@ -103,7 +103,8 @@ void MergeDownLayerCommand::onExecute(Context* context)
         // Copy this cel to the destination layer...
 
         // Creating a copy of the image
-        dst_image.reset(Image::createCopy(src_image));
+        dst_image.reset(
+          render::rasterize_with_cel_bounds(src_cel));
 
         // Creating a copy of the cell
         dst_cel = new Cel(frpos, dst_image);
@@ -133,14 +134,10 @@ void MergeDownLayerCommand::onExecute(Context* context)
             bounds.y-dst_cel->y(),
             bounds.w, bounds.h, bgcolor));
 
-        // Merge src_image in new_image
-        render::composite_image(
-          new_image.get(), src_image,
-          sprite->palette(src_cel->frame()),
-          src_cel->x()-bounds.x,
-          src_cel->y()-bounds.y,
-          opacity,
-          src_layer->blendMode());
+        // Draw src_cel on new_image
+        render::rasterize(
+          new_image.get(), src_cel,
+          -bounds.x, -bounds.y, false);
 
         // First unlink the dst_cel
         if (dst_cel->links())
