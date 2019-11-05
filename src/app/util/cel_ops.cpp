@@ -465,8 +465,10 @@ void modify_tilemap_cel_region(
       if (it != hashImages.end()) {
         tileIndex = it->second; // TODO
 
-        if (tilesetMode == TilesetMode::Semi)
-          modifiedTileIndexes[tileIndex] = false;
+        if (tilesetMode == TilesetMode::Semi) {
+          if (tileIndex >= 0 && tileIndex < modifiedTileIndexes.size())
+            modifiedTileIndexes[tileIndex] = false;
+        }
       }
       else {
         auto addTile = new cmd::AddTile(tileset, tileImage);
