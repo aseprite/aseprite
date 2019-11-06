@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -25,6 +26,7 @@
 #include "doc/layer.h"
 #include "doc/primitives.h"
 #include "doc/sprite.h"
+#include "render/rasterize.h"
 #include "render/render.h"
 
 namespace app {
@@ -90,9 +92,17 @@ void MoveCel::onExecute()
         !srcCel || !srcImage)
       return;
 
+    ASSERT(!dstLayer->isTilemap());  // TODO support background tilemaps
+
     if (createLink) {
       executeAndAdd(new cmd::SetCelData(dstCel, srcCel->dataRef()));
       executeAndAdd(new cmd::UnlinkCel(srcCel));
+    }
+    // Rasterize tilemap into the regular image background layer
+    else if (srcLayer->isTilemap()) {
+      ImageRef tmp(Image::createCopy(dstImage.get()));
+      render::rasterize(tmp.get(), srcCel, 0, 0, false);
+      executeAndAdd(new cmd::CopyRect(dstImage.get(), tmp.get(), gfx::Clip(tmp->bounds())));
     }
     else {
       BlendMode blend = (srcLayer->isBackground() ?

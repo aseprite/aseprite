@@ -33,7 +33,8 @@ namespace app {
       ActiveLayerIsVisible        = 1 << 11,
       ActiveLayerIsEditable       = 1 << 12,
       ActiveLayerIsReference      = 1 << 13,
-      HasSelectedColors           = 1 << 14,
+      ActiveLayerIsTilemap        = 1 << 14,
+      HasSelectedColors           = 1 << 15,
     };
 
     ContextFlags();
