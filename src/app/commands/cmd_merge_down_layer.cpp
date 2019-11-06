@@ -57,11 +57,15 @@ bool MergeDownLayerCommand::onEnabled(Context* context)
     return false;
 
   const Layer* src_layer = reader.layer();
-  if (!src_layer || !src_layer->isImage())
+  if (!src_layer ||
+      !src_layer->isImage() ||
+      src_layer->isTilemap()) // TODO Add support to merge tilemaps (and groups!)
     return false;
 
   const Layer* dst_layer = src_layer->getPrevious();
-  if (!dst_layer || !dst_layer->isImage())
+  if (!dst_layer ||
+      !dst_layer->isImage() ||
+      dst_layer->isTilemap()) // TODO Add support to merge tilemaps
     return false;
 
   return true;
@@ -72,9 +76,10 @@ void MergeDownLayerCommand::onExecute(Context* context)
   ContextWriter writer(context);
   Doc* document(writer.document());
   Sprite* sprite(writer.sprite());
-  Tx tx(writer.context(), "Merge Down Layer", ModifyDocument);
   LayerImage* src_layer = static_cast<LayerImage*>(writer.layer());
   Layer* dst_layer = src_layer->getPrevious();
+
+  Tx tx(writer.context(), friendlyName(), ModifyDocument);
 
   for (frame_t frpos = 0; frpos<sprite->totalFrames(); ++frpos) {
     // Get frames
