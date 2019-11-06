@@ -102,6 +102,7 @@ protected:
 
 public:
   ToolLoopBase(Editor* editor, Site site,
+               const gfx::Rect& gridBounds,
                tools::Tool* tool, tools::Ink* ink,
                tools::Controller* controller,
                const BrushRef& brush,
@@ -124,7 +125,7 @@ public:
     , m_contiguous(m_toolPref.contiguous())
     , m_snapToGrid(m_docPref.grid.snap())
     , m_isSelectingTiles(false)
-    , m_gridBounds(site.gridBounds())
+    , m_gridBounds(gridBounds)
     , m_button(button)
     , m_ink(ink->clone())
     , m_controller(controller)
@@ -385,6 +386,7 @@ class ToolLoopImpl : public ToolLoopBase {
 public:
   ToolLoopImpl(Editor* editor,
                Site site,
+               const gfx::Rect& gridBounds,
                Context* context,
                tools::Tool* tool,
                tools::Ink* ink,
@@ -394,7 +396,7 @@ public:
                const app::Color& fgColor,
                const app::Color& bgColor,
                const bool saveLastPoint)
-    : ToolLoopBase(editor, site,
+    : ToolLoopBase(editor, site, gridBounds,
                    tool, ink, controller, brush,
                    button, fgColor, bgColor)
     , m_context(context)
@@ -643,6 +645,12 @@ tools::ToolLoop* create_tool_loop(
 
   Site site = editor->getSite();
 
+  // Get grid bounds from the original site (as we call
+  // site.layer(nullptr) in certain cases, we need to know if the
+  // active layer is a tilemap, and in that case the grid bounds can
+  // be different than the sprite grid bounds).
+  gfx::Rect gridBounds = site.gridBounds();
+
   // For selection tools, we can use any layer (even without layers at
   // all), so we specify a nullptr here as the active layer. This is
   // used as a special case by the render::Render class to show the
@@ -715,7 +723,7 @@ tools::ToolLoop* create_tool_loop(
 
     ASSERT(context->activeDocument() == editor->document());
     auto toolLoop = new ToolLoopImpl(
-      editor, site, context,
+      editor, site, gridBounds, context,
       tool, ink, controller,
       App::instance()->contextBar()->activeBrush(tool, ink),
       toolLoopButton, fg, bg,
@@ -758,7 +766,7 @@ tools::ToolLoop* create_tool_loop_for_script(
       Preferences::instance().resetToolPreferences(tool);
 
     return new ToolLoopImpl(
-      nullptr, site, context,
+      nullptr, site, site.gridBounds(), context,
       tool, ink, controller, brush,
       toolLoopButton, color, color, false);
   }
@@ -786,6 +794,7 @@ public:
     Image* image,
     const gfx::Point& celOrigin)
     : ToolLoopBase(editor, editor->getSite(),
+                   editor->getSite().gridBounds(),
                    tool, ink, tool->getController(tools::ToolLoop::Left),
                    App::instance()->contextBar()->activeBrush(tool, ink),
                    tools::ToolLoop::Left, fgColor, bgColor)
