@@ -24,7 +24,7 @@
 #include "gfx/point.h"
 #include "render/get_sprite_pixel.h"
 
-#define PICKER_TRACE(...)
+#define PICKER_TRACE(...) // TRACE
 
 namespace app {
 

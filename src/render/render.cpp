@@ -25,7 +25,7 @@
 
 #include <cmath>
 
-#define TRACE_RENDER_CEL(...)
+#define TRACE_RENDER_CEL(...) // TRACE
 
 namespace render {
 
@@ -1242,9 +1242,21 @@ void Render::renderCel(
     if (!tileset)
       return;
 
+    if (area.size.w < 1 ||
+        area.size.h < 1)
+      return;
+
     gfx::Rect tilesToDraw = grid.canvasToTile(
       m_proj.remove(gfx::Rect(area.src, area.size)));
+
+    // As area.size is not empty at this point, we have to draw at
+    // least one tile (and the clipping will be performed for the
+    // tile pixels later).
+    if (tilesToDraw.w < 1) tilesToDraw.w = 1;
+    if (tilesToDraw.h < 1) tilesToDraw.h = 1;
+
     tilesToDraw &= cel_image->bounds();
+
     TRACE_RENDER_CEL("Drawing tilemap (%d %d %d %d)\n",
                      tilesToDraw.x, tilesToDraw.y, tilesToDraw.w, tilesToDraw.h);
 
