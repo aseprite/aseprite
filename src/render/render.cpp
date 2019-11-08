@@ -528,11 +528,11 @@ Render::Render()
   : m_flags(0)
   , m_nonactiveLayersOpacity(255)
   , m_sprite(nullptr)
-  , m_currentLayer(NULL)
+  , m_currentLayer(nullptr)
   , m_currentFrame(0)
   , m_extraType(ExtraType::NONE)
-  , m_extraCel(NULL)
-  , m_extraImage(NULL)
+  , m_extraCel(nullptr)
+  , m_extraImage(nullptr)
   , m_newBlendMethod(true)
   , m_bgType(BgType::TRANSPARENT)
   , m_bgCheckedSize(16, 16)
@@ -634,7 +634,7 @@ void Render::removePreviewImage()
 void Render::removeExtraImage()
 {
   m_extraType = ExtraType::NONE;
-  m_extraCel = NULL;
+  m_extraCel = nullptr;
 }
 
 void Render::setOnionskin(const OnionskinOptions& options)
@@ -1101,7 +1101,7 @@ void Render::renderLayer(
 
         if (celImage) {
           const LayerImage* imgLayer = static_cast<const LayerImage*>(layer);
-          const BlendMode layerBlendMode =
+          BlendMode layerBlendMode =
             (blendMode == BlendMode::UNSPECIFIED ?
              imgLayer->blendMode():
              blendMode);
@@ -1119,26 +1119,39 @@ void Render::renderLayer(
           if (!isSelected && m_nonactiveLayersOpacity != 255)
             opacity = MUL_UN8(opacity, m_nonactiveLayersOpacity, t);
 
-          // Draw parts outside the "m_extraCel" area
-          if (drawExtra && m_extraType == ExtraType::PATCH) {
-            gfx::Region originalAreas(area.srcBounds());
-            originalAreas.createSubtraction(
-              originalAreas, gfx::Region(extraArea));
+          // Generally this is just one pass, but if we are using
+          // OVER_COMPOSITE extra cel, this will be two passes.
+          for (int pass=0; pass<2; ++pass) {
+            // Draw parts outside the "m_extraCel" area
+            if (drawExtra && m_extraType == ExtraType::PATCH) {
+              gfx::Region originalAreas(area.srcBounds());
+              originalAreas.createSubtraction(
+                originalAreas, gfx::Region(extraArea));
 
-            for (auto rc : originalAreas) {
-              renderCel(
-                image, celImage, layer, pal, celBounds,
-                gfx::Clip(area.dst.x+rc.x-area.src.x,
-                          area.dst.y+rc.y-area.src.y, rc),
-                compositeImage, opacity, layerBlendMode);
+              for (auto rc : originalAreas) {
+                renderCel(
+                  image, celImage, layer, pal, celBounds,
+                  gfx::Clip(area.dst.x+rc.x-area.src.x,
+                            area.dst.y+rc.y-area.src.y, rc),
+                  compositeImage, opacity, layerBlendMode);
+              }
             }
-          }
-          // Draw the whole cel
-          else {
-            renderCel(
-              image, celImage, layer, pal,
-              celBounds, area, compositeImage,
-              opacity, layerBlendMode);
+            // Draw the whole cel
+            else {
+              renderCel(
+                image, celImage, layer, pal,
+                celBounds, area, compositeImage,
+                opacity, layerBlendMode);
+            }
+
+            if (m_extraType == ExtraType::OVER_COMPOSITE &&
+                layer == m_currentLayer &&
+                pass == 0) {
+              // Go for second pass with the extra blend mode...
+              layerBlendMode = m_extraBlendMode;
+            }
+            else
+              break;
           }
         }
       }

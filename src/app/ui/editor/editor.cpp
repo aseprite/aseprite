@@ -63,6 +63,7 @@
 #include "os/display.h"
 #include "os/surface.h"
 #include "os/system.h"
+#include "render/rasterize.h"
 #include "ui/ui.h"
 
 #include <algorithm>
@@ -1304,15 +1305,9 @@ void Editor::flashCurrentLayer()
     m_renderEngine->removePreviewImage();
 
     ExtraCelRef extraCel(new ExtraCel);
-    extraCel->create(m_sprite, src_cel->bounds(), m_frame, 255);
-    extraCel->setType(render::ExtraType::COMPOSITE);
+    extraCel->setType(render::ExtraType::OVER_COMPOSITE);
     extraCel->setBlendMode(BlendMode::NEG_BW);
 
-    Image* flash_image = extraCel->image();
-    clear_image(flash_image, flash_image->maskColor());
-    copy_image(flash_image, src_cel->image(), 0, 0);
-
-    ExtraCelRef oldExtraCel = m_document->extraCel();
     m_document->setExtraCel(extraCel);
     m_flashing = Flashing::WithFlashExtraCel;
 
