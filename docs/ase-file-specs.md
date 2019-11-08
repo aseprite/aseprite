@@ -26,8 +26,9 @@ ASE files use Intel (little-endian) byte order.
   - **RGBA**: `BYTE[4]`, each pixel have 4 bytes in this order Red, Green, Blue, Alpha.
   - **Grayscale**: `BYTE[2]`, each pixel have 2 bytes in the order Value, Alpha.
   - **Indexed**: `BYTE`, each pixel uses 1 byte (the index).
-* `TILE`: **Tilemaps**: Each tile can be a 8-bit, 16-bit, or 32-bit
-  value and there are masks related to the meaning of each bit.
+* `TILE`: **Tilemaps**: Each tile can be a 8-bit (`BYTE`), 16-bit
+  (`WORD`), or 32-bit (`DWORD`) value and there are masks related to
+  the meaning of each bit.
 
 ## Introduction
 
@@ -176,7 +177,7 @@ Ignore this chunk if you find the new palette chunk (0x2019)
                   Note: valid only if file header flags field has bit 1 set
     BYTE[3]     For future (set to zero)
     STRING      Layer name
-    + If layer type = 3
+    + If layer type = 2
       DWORD     Tileset index
 
 ### Cel Chunk (0x2005)
@@ -207,7 +208,7 @@ This chunk determine where to put a cel in the specified layer/frame.
     + For cel type = 3 (Compressed Tilemap)
       WORD      Width in pixels
       WORD      Height in pixels
-      WORD      Bits per pixel/tile reference (8, 16, or 32)
+      WORD      Bits per tile (8, 16, or 32)
       DWORD     Bitmask for tile ID (e.g. 0x1fffffff for 32-bit tiles)
       DWORD     Bitmask for X flip
       DWORD     Bitmask for Y flip
@@ -344,19 +345,18 @@ belongs to that cel, etc.
     DWORD       Tileset flags
                   1 - Include link to external file
                   2 - Include tiles inside this file
-    WORD        Tiles width
-    WORD        Tiles height
-    BYTE[36]    Reserved
+    DWORD       Number of tiles
+    WORD        Tile Width
+    WORD        Tile Height
+    BYTE[16]    Reserved
     STRING      Name of the tileset
     + If flag 1 is set
-      STRING    Name of the external file (path relative to this file, in the best case)
+      STRING    Name of the external file
       DWORD     Tileset ID in the external file
     + If flag 2 is set
-      DWORD     Number of tiles to read
-      + For each tile
-        DWORD   Tile flags (0)
-        DWORD   Compressed data length
-        PIXEL[] Read tile image (tile width x height compressed pixels, see NOTE.3)
+      DWORD     Compressed data length
+      PIXEL[]   Compressed Tileset image (see NOTE.3):
+                  (Tile Width) x (Tile Height x Number of Tiles)
 
 ### Notes
 

@@ -80,6 +80,58 @@ private:
   doc::Sprite* m_sprite;
 };
 
+class ScanlinesGen {
+public:
+  virtual ~ScanlinesGen() { }
+  virtual gfx::Size getImageSize() = 0;
+  virtual int getScanlineSize() = 0;
+  virtual const uint8_t* getScanlineAddress(int y) = 0;
+};
+
+class ImageScanlines : public ScanlinesGen {
+  const Image* m_image;
+public:
+  ImageScanlines(const Image* image) : m_image(image) { }
+  gfx::Size getImageSize() override {
+    return gfx::Size(m_image->width(),
+                     m_image->height());
+  }
+  int getScanlineSize() override {
+    return doc::calculate_rowstride_bytes(
+      m_image->pixelFormat(),
+      m_image->width());
+  }
+  const uint8_t* getScanlineAddress(int y) override {
+    return m_image->getPixelAddress(0, y);
+  }
+};
+
+class TilesetScanlines : public ScanlinesGen {
+  const Tileset* m_tileset;
+public:
+  TilesetScanlines(const Tileset* tileset) : m_tileset(tileset) { }
+  gfx::Size getImageSize() override {
+    return gfx::Size(m_tileset->grid().tileSize().w,
+                     m_tileset->grid().tileSize().h * m_tileset->size());
+  }
+  int getScanlineSize() override {
+    return doc::calculate_rowstride_bytes(
+      m_tileset->sprite()->pixelFormat(),
+      m_tileset->grid().tileSize().w);
+  }
+  const uint8_t* getScanlineAddress(int y) override {
+    const int h = m_tileset->grid().tileSize().h;
+    const tile_index ti = (y / h);
+    ASSERT(ti >= 0 && ti < m_tileset->size());
+    ImageRef image = m_tileset->get(ti);
+    ASSERT(image);
+    if (image)
+      return image->getPixelAddress(0, y % h);
+    else
+      return nullptr;
+  }
+};
+
 } // anonymous namespace
 
 static void ase_file_prepare_header(FILE* f, dio::AsepriteHeader* header, const Sprite* sprite,
@@ -717,7 +769,7 @@ static void write_raw_image(FILE* f, const Image* image)
 //////////////////////////////////////////////////////////////////////
 
 template<typename ImageTraits>
-static void write_compressed_image_templ(FILE* f, const Image* image)
+static void write_compressed_image_templ(FILE* f, ScanlinesGen* gen)
 {
   PixelIO<ImageTraits> pixel_io;
   z_stream zstream;
@@ -730,18 +782,19 @@ static void write_compressed_image_templ(FILE* f, const Image* image)
   if (err != Z_OK)
     throw base::Exception("ZLib error %d in deflateInit().", err);
 
-  std::vector<uint8_t> scanline(ImageTraits::getRowStrideBytes(image->width()));
+  std::vector<uint8_t> scanline(gen->getScanlineSize());
   std::vector<uint8_t> compressed(4096);
 
-  for (y=0; y<image->height(); y++) {
+  const gfx::Size imgSize = gen->getImageSize();
+  for (y=0; y<imgSize.h; ++y) {
     typename ImageTraits::address_t address =
-      (typename ImageTraits::address_t)image->getPixelAddress(0, y);
+      (typename ImageTraits::address_t)gen->getScanlineAddress(y);
 
-    pixel_io.write_scanline(address, image->width(), &scanline[0]);
+    pixel_io.write_scanline(address, imgSize.w, &scanline[0]);
 
     zstream.next_in = (Bytef*)&scanline[0];
     zstream.avail_in = scanline.size();
-    int flush = (y == image->height()-1 ? Z_FINISH: Z_NO_FLUSH);
+    int flush = (y == imgSize.h-1 ? Z_FINISH: Z_NO_FLUSH);
 
     do {
       zstream.next_out = (Bytef*)&compressed[0];
@@ -766,23 +819,23 @@ static void write_compressed_image_templ(FILE* f, const Image* image)
     throw base::Exception("ZLib error %d in deflateEnd().", err);
 }
 
-static void write_compressed_image(FILE* f, const Image* image)
+static void write_compressed_image(FILE* f, ScanlinesGen* gen, PixelFormat pixelFormat)
 {
-  switch (image->pixelFormat()) {
+  switch (pixelFormat) {
     case IMAGE_RGB:
-      write_compressed_image_templ<RgbTraits>(f, image);
+      write_compressed_image_templ<RgbTraits>(f, gen);
       break;
 
     case IMAGE_GRAYSCALE:
-      write_compressed_image_templ<GrayscaleTraits>(f, image);
+      write_compressed_image_templ<GrayscaleTraits>(f, gen);
       break;
 
     case IMAGE_INDEXED:
-      write_compressed_image_templ<IndexedTraits>(f, image);
+      write_compressed_image_templ<IndexedTraits>(f, gen);
       break;
 
     case IMAGE_TILEMAP:
-      write_compressed_image_templ<TilemapTraits>(f, image);
+      write_compressed_image_templ<TilemapTraits>(f, gen);
       break;
   }
 }
@@ -873,7 +926,9 @@ static void ase_file_write_cel_chunk(FILE* f, dio::AsepriteFrameHeader* frame_he
         // Width and height
         fputw(image->width(), f);
         fputw(image->height(), f);
-        write_compressed_image(f, image);
+
+        ImageScanlines scan(image);
+        write_compressed_image(f, &scan, image->pixelFormat());
       }
       else {
         // Width and height
@@ -897,7 +952,8 @@ static void ase_file_write_cel_chunk(FILE* f, dio::AsepriteFrameHeader* frame_he
       fputl(tile_f_90cw, f);
       ase_file_write_padding(f, 10);
 
-      write_compressed_image(f, image);
+      ImageScanlines scan(image);
+      write_compressed_image(f, &scan, IMAGE_TILEMAP);
     }
   }
 }
@@ -1163,26 +1219,22 @@ static void ase_file_write_tileset_chunk(FILE* f,
 
   fputl(si, f);             // Tileset ID
   fputl(2, f);              // Tileset Flags (2=include tiles inside file)
+  fputl(tileset->size(), f);
   fputw(tileset->grid().tileSize().w, f);
   fputw(tileset->grid().tileSize().h, f);
-  ase_file_write_padding(f, 20);
+  ase_file_write_padding(f, 16);
   ase_file_write_string(f, tileset->name()); // tileset name
 
   // Flag 2 = tileset
-  fputl(tileset->size(), f);
-  for (tile_index i=0; i<tileset->size(); ++i) {
-    fputl(0, f);                // Flags (zero)
-    size_t beg = ftell(f);
-    fputl(0, f);
+  size_t beg = ftell(f);
+  fputl(0, f);                  // Field for compressed data length (completed later)
+  TilesetScanlines gen(tileset);
+  write_compressed_image(f, &gen, tileset->sprite()->pixelFormat());
 
-    ImageRef tileImg = tileset->get(i);
-    write_compressed_image(f, tileImg.get());
-
-    size_t end = ftell(f);
-    fseek(f, beg, SEEK_SET);
-    fputl(end-beg-4, f);          // Save the compressed data length
-    fseek(f, end, SEEK_SET);
-  }
+  size_t end = ftell(f);
+  fseek(f, beg, SEEK_SET);
+  fputl(end-beg-4, f);          // Save the compressed data length
+  fseek(f, end, SEEK_SET);
 }
 
 static bool ase_has_groups(LayerGroup* group)

@@ -441,6 +441,10 @@ doc::Layer* AsepriteDecoder::readLayerChunk(AsepriteHeader* header,
 
     case ASE_FILE_LAYER_TILEMAP: {
       doc::tileset_index tsi = read32();
+      if (!sprite->tilesets()->get(tsi)) {
+        delegate()->error(fmt::format("Error: tileset {0} not found", tsi));
+        return nullptr;
+      }
       layer = new doc::LayerTilemap(sprite, tsi);
       break;
     }
@@ -974,36 +978,43 @@ void AsepriteDecoder::readTilesetChunk(doc::Sprite* sprite,
 {
   const doc::tileset_index id = read32();
   const uint32_t flags = read32();
+  const doc::tile_index ntiles = read32();
   const int w = read16();
   const int h = read16();
-  readPadding(20);
+  readPadding(16);
   const std::string name = readString();
 
-  // TODO add support to load the external filename
+  // Errors
+  if (ntiles < 1 || w < 1 || h < 1) {
+    delegate()->error(
+      fmt::format("Error: Invalid tileset (number of tiles={0}, tile size={1}x{2})",
+                  ntiles, w, h));
+    return;
+  }
+
   if (flags & 1) {
-    // Ignore fields
-    readString();               // external filename
-    read32();                   // tileset ID in the external file
+    const std::string fn = readString();            // external filename
+    const doc::tileset_index externalId = read32(); // tileset ID in the external file
+
+    // TODO add support to load the external filename
   }
 
   if (flags & 2) {
-    const doc::tile_index ntiles = read32();
-
     doc::Grid grid(gfx::Size(w, h));
     auto tileset = new doc::Tileset(sprite, grid, ntiles);
     tileset->setName(name);
 
+    const size_t dataSize = read32(); // Size of compressed data
+    const size_t dataBeg = f()->tell();
+    const size_t dataEnd = dataBeg+dataSize;
+
+    doc::ImageRef alltiles(doc::Image::create(sprite->pixelFormat(), w, h*ntiles));
+    read_compressed_image(f(), delegate(), alltiles.get(), header, dataEnd);
+    f()->seek(dataEnd);
+
     for (doc::tile_index i=0; i<ntiles; ++i) {
-      read32();                 // Flags (ignore)
-      const size_t dataSize = read32(); // Size of compressed data
-      const size_t dataBeg = f()->tell();
-      const size_t dataEnd = dataBeg+dataSize;
-
-      doc::ImageRef tile(doc::Image::create(sprite->pixelFormat(), w, h));
-      read_compressed_image(f(), delegate(), tile.get(), header, dataEnd);
+      doc::ImageRef tile(doc::crop_image(alltiles.get(), 0, i*h, w, h, alltiles->maskColor()));
       tileset->set(i, tile);
-
-      f()->seek(dataEnd);
     }
 
     sprite->tilesets()->set(id, tileset);
