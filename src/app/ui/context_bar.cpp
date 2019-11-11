@@ -19,6 +19,7 @@
 #include "app/commands/quick_command.h"
 #include "app/doc.h"
 #include "app/doc_event.h"
+#include "app/i18n/strings.h"
 #include "app/ini_file.h"
 #include "app/match_words.h"
 #include "app/modules/editors.h"
@@ -1106,16 +1107,18 @@ protected:
 
 class ContextBar::SymmetryField : public ButtonSet {
 public:
-  SymmetryField() : ButtonSet(2) {
+  SymmetryField() : ButtonSet(3) {
     setMultiMode(MultiMode::Set);
     SkinTheme* theme = SkinTheme::instance();
     addItem(theme->parts.horizontalSymmetry());
     addItem(theme->parts.verticalSymmetry());
+    addItem("...");
   }
 
   void setupTooltips(TooltipManager* tooltipManager) {
-    tooltipManager->addTooltipFor(at(0), "Horizontal Symmetry", BOTTOM);
-    tooltipManager->addTooltipFor(at(1), "Vertical Symmetry", BOTTOM);
+    tooltipManager->addTooltipFor(at(0), Strings::symmetry_toggle_horizontal(), BOTTOM);
+    tooltipManager->addTooltipFor(at(1), Strings::symmetry_toggle_vertical(), BOTTOM);
+    tooltipManager->addTooltipFor(at(2), Strings::symmetry_show_options(), BOTTOM);
   }
 
   void updateWithCurrentDocument() {
@@ -1143,10 +1146,32 @@ private:
     int mode = 0;
     if (at(0)->isSelected()) mode |= int(app::gen::SymmetryMode::HORIZONTAL);
     if (at(1)->isSelected()) mode |= int(app::gen::SymmetryMode::VERTICAL);
-    docPref.symmetry.mode(app::gen::SymmetryMode(mode));
+    if (app::gen::SymmetryMode(mode) != docPref.symmetry.mode()) {
+      docPref.symmetry.mode(app::gen::SymmetryMode(mode));
+      // Redraw symmetry rules
+      doc->notifyGeneralUpdate();
+    }
+    else if (at(2)->isSelected()) {
+      auto item = at(2);
 
-    // Redraw symmetry rules
-    doc->notifyGeneralUpdate();
+      gfx::Rect bounds = item->bounds();
+      item->setSelected(false);
+
+      Menu menu;
+      MenuItem
+        reset(Strings::symmetry_reset_position());
+      menu.addChild(&reset);
+
+      reset.Click.connect(
+        [doc, &docPref]{
+          docPref.symmetry.xAxis(doc->sprite()->width()/2.0);
+          docPref.symmetry.yAxis(doc->sprite()->height()/2.0);
+          // Redraw symmetry rules
+          doc->notifyGeneralUpdate();
+        });
+
+      menu.showPopup(gfx::Point(bounds.x, bounds.y+bounds.h));
+    }
   }
 };
 
