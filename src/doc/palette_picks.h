@@ -73,7 +73,7 @@ namespace doc {
 
     std::vector<color_t> toVectorOfIndexes() const {
       std::vector<color_t> result(picks());
-      for (color_t i=0, j=0; i<size(); ++i) {
+      for (color_t i=0, j=0; i<(color_t)size(); ++i) {
         if (m_items[i])
           result[j++] = i;
       }
