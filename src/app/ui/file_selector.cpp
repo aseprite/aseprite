@@ -52,6 +52,8 @@ namespace app {
 using namespace app::skin;
 using namespace ui;
 
+namespace {
+
 template<class Container>
 class NullableIterator {
 public:
@@ -59,29 +61,31 @@ public:
 
   NullableIterator() : m_isNull(true) { }
 
-  void reset() { m_isNull = true; }
+  bool is_null() const { return m_isNull; }
+  bool is_valid() const { return !m_isNull; }
 
-  bool isNull() const { return m_isNull; }
-  bool isValid() const { return !m_isNull; }
-
-  iterator getIterator() {
+  iterator get() {
     ASSERT(!m_isNull);
     return m_iterator;
   }
 
-  void setIterator(const iterator& it) {
+  void reset() {
+    m_isNull = true;
+  }
+
+  void set(const iterator& it) {
     m_isNull = false;
     m_iterator = it;
   }
 
 private:
   bool m_isNull;
-  typename Container::iterator m_iterator;
+  iterator m_iterator;
 };
 
 // Variables used only to maintain the history of navigation.
-static FileItemList* navigation_history = NULL; // Set of FileItems navigated
-static NullableIterator<FileItemList> navigation_position; // Current position in the navigation history
+FileItemList navigation_history; // Set of FileItems navigated
+NullableIterator<FileItemList> navigation_position; // Current position in the navigation history
 
 // This map acts like a temporal customization by the user when he/she
 // wants to open files.  The key (first) is the real "allExtensions"
@@ -89,9 +93,9 @@ static NullableIterator<FileItemList> navigation_position; // Current position i
 // extension is concatenated with each other in one string separated
 // by ','.  The value (second) is the selected/preferred extension by
 // the user. It's used only in FileSelector::Open type of dialogs.
-static std::map<std::string, base::paths> preferred_open_extensions;
+std::map<std::string, base::paths> preferred_open_extensions;
 
-static std::string merge_paths(const base::paths& paths)
+std::string merge_paths(const base::paths& paths)
 {
   std::string k;
   for (const auto& p : paths) {
@@ -102,11 +106,7 @@ static std::string merge_paths(const base::paths& paths)
   return k;
 }
 
-// Slot for App::Exit signal
-static void on_exit_delete_navigation_history()
-{
-  delete navigation_history;
-}
+} // anonymous namespace
 
 class FileSelector::CustomFileNameEntry : public ComboBox {
 public:
@@ -346,14 +346,9 @@ bool FileSelector::show(
 
   fs->refresh();
 
-  if (!navigation_history) {
-    navigation_history = new FileItemList();
-    App::instance()->Exit.connect(&on_exit_delete_navigation_history);
-  }
-
   // we have to find where the user should begin to browse files (start_folder)
   std::string start_folder_path;
-  IFileItem* start_folder = NULL;
+  IFileItem* start_folder = nullptr;
 
   // If initialPath doesn't contain a path.
   if (base::get_file_path(initialPath).empty()) {
@@ -715,16 +710,18 @@ void FileSelector::updateNavigationButtons()
 {
   // Update the state of the go back button: if the navigation-history
   // has two elements and the navigation-position isn't the first one.
-  goBackButton()->setEnabled(navigation_history->size() > 1 &&
-                             (navigation_position.isNull() ||
-                              navigation_position.getIterator() != navigation_history->begin()));
+  goBackButton()->setEnabled(
+    navigation_history.size() > 1 &&
+    (navigation_position.is_null() ||
+     navigation_position.get() != navigation_history.begin()));
 
   // Update the state of the go forward button: if the
   // navigation-history has two elements and the navigation-position
   // isn't the last one.
-  goForwardButton()->setEnabled(navigation_history->size() > 1 &&
-                                (navigation_position.isNull() ||
-                                 navigation_position.getIterator() != navigation_history->end()-1));
+  goForwardButton()->setEnabled(
+    navigation_history.size() > 1 &&
+    (navigation_position.is_null() ||
+     navigation_position.get() != navigation_history.end()-1));
 
   // Update the state of the go up button: if the current-folder isn't
   // the root-item.
@@ -734,36 +731,37 @@ void FileSelector::updateNavigationButtons()
 
 void FileSelector::addInNavigationHistory(IFileItem* folder)
 {
-  ASSERT(folder != NULL);
+  ASSERT(folder);
   ASSERT(folder->isFolder());
 
   // Remove the history from the current position
-  if (navigation_position.isValid()) {
-    navigation_history->erase(navigation_position.getIterator()+1, navigation_history->end());
+  if (navigation_position.is_valid()) {
+    navigation_history.erase(navigation_position.get()+1,
+                              navigation_history.end());
     navigation_position.reset();
   }
 
   // If the history is empty or if the last item isn't the folder that
   // we are visiting...
-  if (navigation_history->empty() ||
-      navigation_history->back() != folder) {
+  if (navigation_history.empty() ||
+      navigation_history.back() != folder) {
     // We can add the location in the history
-    navigation_history->push_back(folder);
-    navigation_position.setIterator(navigation_history->end()-1);
+    navigation_history.push_back(folder);
+    navigation_position.set(navigation_history.end()-1);
   }
 }
 
 void FileSelector::onGoBack()
 {
-  if (navigation_history->size() > 1) {
-    if (navigation_position.isNull())
-      navigation_position.setIterator(navigation_history->end()-1);
+  if (navigation_history.size() > 1) {
+    if (navigation_position.is_null())
+      navigation_position.set(navigation_history.end()-1);
 
-    if (navigation_position.getIterator() != navigation_history->begin()) {
-      navigation_position.setIterator(navigation_position.getIterator()-1);
+    if (navigation_position.get() != navigation_history.begin()) {
+      navigation_position.set(navigation_position.get()-1);
 
       m_navigationLocked = true;
-      m_fileList->setCurrentFolder(*navigation_position.getIterator());
+      m_fileList->setCurrentFolder(*navigation_position.get());
       m_navigationLocked = false;
     }
   }
@@ -771,15 +769,15 @@ void FileSelector::onGoBack()
 
 void FileSelector::onGoForward()
 {
-  if (navigation_history->size() > 1) {
-    if (navigation_position.isNull())
-      navigation_position.setIterator(navigation_history->begin());
+  if (navigation_history.size() > 1) {
+    if (navigation_position.is_null())
+      navigation_position.set(navigation_history.begin());
 
-    if (navigation_position.getIterator() != navigation_history->end()-1) {
-      navigation_position.setIterator(navigation_position.getIterator()+1);
+    if (navigation_position.get() != navigation_history.end()-1) {
+      navigation_position.set(navigation_position.get()+1);
 
       m_navigationLocked = true;
-      m_fileList->setCurrentFolder(*navigation_position.getIterator());
+      m_fileList->setCurrentFolder(*navigation_position.get());
       m_navigationLocked = false;
     }
   }
@@ -836,14 +834,14 @@ void FileSelector::onLocationCloseListBox()
   // When the user change the location we have to set the
   // current-folder in the 'fileview' widget
   CustomFileNameItem* comboFileItem = dynamic_cast<CustomFileNameItem*>(location()->getSelectedItem());
-  IFileItem* fileItem = (comboFileItem != NULL ? comboFileItem->getFileItem(): NULL);
+  IFileItem* fileItem = (comboFileItem ? comboFileItem->getFileItem(): nullptr);
 
   // Maybe the user selected a recent file path
-  if (fileItem == NULL) {
+  if (fileItem == nullptr) {
     CustomFolderNameItem* comboFolderItem =
       dynamic_cast<CustomFolderNameItem*>(location()->getSelectedItem());
 
-    if (comboFolderItem != NULL) {
+    if (comboFolderItem) {
       std::string path = comboFolderItem->text();
       fileItem = FileSystemModule::instance()->getFileItemFromPath(path);
     }
