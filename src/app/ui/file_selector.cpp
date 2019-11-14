@@ -720,8 +720,8 @@ void FileSelector::updateNavigationButtons()
   // isn't the last one.
   goForwardButton()->setEnabled(
     navigation_history.size() > 1 &&
-    (navigation_position.is_null() ||
-     navigation_position.get() != navigation_history.end()-1));
+    navigation_position.is_valid() &&
+    navigation_position.get() != navigation_history.end()-1);
 
   // Update the state of the go up button: if the current-folder isn't
   // the root-item.
