@@ -165,7 +165,7 @@ ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
   , m_lastButtons(kButtonLeft)
   , m_editMode(false)
   , m_tilesMode(false)
-  , m_tilesetMode(TilesetMode::Semi)
+  , m_tilesetMode(TilesetMode::Auto)
   , m_redrawTimer(250, this)
   , m_redrawAll(false)
   , m_implantChange(false)
@@ -182,12 +182,12 @@ ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
   m_tilesButton.addItem(theme->parts.tiles());
 
   static_assert(0 == int(TilesetMode::Manual) &&
-                1 == int(TilesetMode::Semi) &&
-                2 == int(TilesetMode::Auto), "Tileset mode buttons doesn't match TilesetMode enum values");
+                1 == int(TilesetMode::Auto) &&
+                2 == int(TilesetMode::Stack), "Tileset mode buttons doesn't match TilesetMode enum values");
 
   m_tilesetModeButtons.addItem(theme->parts.tilesManual());
-  m_tilesetModeButtons.addItem(theme->parts.tilesSemi());
   m_tilesetModeButtons.addItem(theme->parts.tilesAuto());
+  m_tilesetModeButtons.addItem(theme->parts.tilesStack());
   setTilesetMode(m_tilesetMode);
 
   m_paletteView.setColumns(8);
@@ -1420,11 +1420,11 @@ void ColorBar::setupTooltips(TooltipManager* tooltipManager)
   tooltipManager->addTooltipFor(
     m_tilesButton.getItem(0), "Show/Hide Tileset", BOTTOM);
   tooltipManager->addTooltipFor(
-    m_tilesetModeButtons.getItem((int)TilesetMode::Manual), "Manual-mode: Modify existent tiles,\ndon't create new tiles automatically", BOTTOM);
+    m_tilesetModeButtons.getItem((int)TilesetMode::Manual), "Manual: Modify existent tiles,\ndon't create new tiles automatically", BOTTOM);
   tooltipManager->addTooltipFor(
-    m_tilesetModeButtons.getItem((int)TilesetMode::Semi), "Semi-mode: Modify and reuse existent tiles,\ncreate/delete tiles if needed/possible", BOTTOM);
+    m_tilesetModeButtons.getItem((int)TilesetMode::Auto), "Auto: Modify and reuse existent tiles,\ncreate/delete tiles if needed/possible", BOTTOM);
   tooltipManager->addTooltipFor(
-    m_tilesetModeButtons.getItem((int)TilesetMode::Auto), "Auto-mode: Don't modify existent tiles,\ngenerate new tiles automatically only", BOTTOM);
+    m_tilesetModeButtons.getItem((int)TilesetMode::Stack), "Stack: Don't modify existent tiles,\ngenerate and stack new tiles automatically", BOTTOM);
 }
 
 // static

@@ -407,7 +407,7 @@ void modify_tilemap_cel_region(
 
   // Autogenerate tiles
   if (tilesetMode == TilesetMode::Auto ||
-      tilesetMode == TilesetMode::Semi) {
+      tilesetMode == TilesetMode::Stack) {
     doc::TilesetHashTable hashImages; // TODO the hashImages should be inside the Tileset
     {
       // Add existent tiles in the hash table
@@ -451,7 +451,7 @@ void modify_tilemap_cel_region(
       const doc::tile_index ti = doc::tile_geti(t);
       const doc::ImageRef existenTileImage = tileset->get(ti);
 
-      if (tilesetMode == TilesetMode::Semi)
+      if (tilesetMode == TilesetMode::Auto)
         modifiedTileIndexes[ti] = true;
 
       const gfx::Rect tileInCanvasRc(grid.tileToCanvas(tilePt), tileSize);
@@ -465,7 +465,7 @@ void modify_tilemap_cel_region(
       if (it != hashImages.end()) {
         tileIndex = it->second; // TODO
 
-        if (tilesetMode == TilesetMode::Semi) {
+        if (tilesetMode == TilesetMode::Auto) {
           if (tileIndex >= 0 && tileIndex < modifiedTileIndexes.size())
             modifiedTileIndexes[tileIndex] = false;
         }
@@ -507,7 +507,7 @@ void modify_tilemap_cel_region(
     }
 
     // Remove unused tiles
-    if (tilesetMode == TilesetMode::Semi) {
+    if (tilesetMode == TilesetMode::Auto) {
       // TODO reuse tiles that will be removed in the algorithm above
       remove_unused_tiles_from_tileset(cmds, tileset, modifiedTileIndexes);
     }

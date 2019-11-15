@@ -350,8 +350,8 @@ Engine::Engine()
   lua_pushvalue(L, -1);
   lua_setglobal(L, "TilesetMode");
   setfield_integer(L, "MANUAL", TilesetMode::Manual);
-  setfield_integer(L, "SEMI", TilesetMode::Semi);
   setfield_integer(L, "AUTO", TilesetMode::Auto);
+  setfield_integer(L, "STACK", TilesetMode::Stack);
   lua_pop(L, 1);
 
   // Register classes/prototypes

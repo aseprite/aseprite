@@ -14,8 +14,8 @@ namespace app {
   // tilemap is edited.
   enum class TilesetMode {
     Manual,   // Modify existent tiles (don't create new ones)
-    Semi,     // Auto-generate new tiles if needed, edit existent ones
-    Auto,     // Auto-generate new and modified tiles
+    Auto,     // Add/remove tiles automatically when needed
+    Stack,    // Stack modified tiles as new ones
   };
 
 } // namespace app
