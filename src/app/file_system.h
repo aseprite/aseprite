@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -10,6 +11,7 @@
 
 #include "base/mutex.h"
 #include "base/paths.h"
+#include "obs/signal.h"
 
 #include <string>
 #include <vector>
@@ -46,6 +48,8 @@ namespace app {
     void lock() { m_mutex.lock(); }
     void unlock() { m_mutex.unlock(); }
 
+    obs::signal<void(IFileItem*)> ItemRemoved;
+
   private:
     base::mutex m_mutex;
   };
@@ -70,9 +74,13 @@ namespace app {
     virtual bool isBrowsable() const = 0;
     virtual bool isHidden() const = 0;
 
-    virtual std::string keyName() const = 0;
-    virtual std::string fileName() const = 0;
-    virtual std::string displayName() const = 0;
+    // Returns false if this item doesn't exist anymore (e.g. a file
+    // or folder that was deleted from other process).
+    virtual bool isExistent() const = 0;
+
+    virtual const std::string& keyName() const = 0;
+    virtual const std::string& fileName() const = 0;
+    virtual const std::string& displayName() const = 0;
 
     virtual IFileItem* parent() const = 0;
     virtual const FileItemList& children() = 0;

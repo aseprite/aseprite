@@ -25,6 +25,7 @@
 #include "app/ui/skin/skin_theme.h"
 #include "app/widget_loader.h"
 #include "base/bind.h"
+#include "base/clamp.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
 #include "base/paths.h"
@@ -47,6 +48,8 @@
 #  define MAX_PATH 4096         // TODO this is needed for Linux, is it correct?
 #endif
 
+#define FILESEL_TRACE(...)      // TRACE
+
 namespace app {
 
 using namespace app::skin;
@@ -63,6 +66,9 @@ public:
 
   bool is_null() const { return m_isNull; }
   bool is_valid() const { return !m_isNull; }
+  bool exists() const {
+    return (is_valid() && (*m_iterator)->isExistent());
+  }
 
   iterator get() {
     ASSERT(!m_isNull);
@@ -94,6 +100,46 @@ NullableIterator<FileItemList> navigation_position; // Current position in the n
 // by ','.  The value (second) is the selected/preferred extension by
 // the user. It's used only in FileSelector::Open type of dialogs.
 std::map<std::string, base::paths> preferred_open_extensions;
+
+void adjust_navigation_history(IFileItem* item)
+{
+  auto it = navigation_history.begin();
+  const bool valid = navigation_position.is_valid();
+  int pos = (valid ? int(navigation_position.get() - it): 0);
+
+  FILESEL_TRACE("FILESEL: Removed item '%s' detected (%p)\n",
+                item->fileName().c_str(), item);
+  if (valid) {
+    FILESEL_TRACE("FILESEL: Old navigation pos [%d] = %s\n",
+                  pos, (*navigation_position.get())->fileName().c_str());
+  }
+
+  while (true) {
+    it = std::find(it, navigation_history.end(), item);
+    if (it == navigation_history.end())
+      break;
+
+    FILESEL_TRACE("FILESEL: Erase navigation pos [%d] = %s\n", pos,
+                  (*it)->fileName().c_str());
+
+    if (pos >= it-navigation_history.begin())
+      --pos;
+
+    it = navigation_history.erase(it);
+  }
+
+  if (valid && !navigation_history.empty()) {
+    pos = base::clamp(pos, 0, (int)navigation_history.size()-1);
+    navigation_position.set(navigation_history.begin() + pos);
+
+    FILESEL_TRACE("FILESEL: New navigation pos [%d] = %s\n",
+                  pos, (*navigation_position.get())->fileName().c_str());
+  }
+  else {
+    navigation_position.reset();
+    FILESEL_TRACE("FILESEL: Without new navigation pos\n");
+  }
+}
 
 std::string merge_paths(const base::paths& paths)
 {
@@ -344,6 +390,11 @@ bool FileSelector::show(
   FileSystemModule* fs = FileSystemModule::instance();
   LockFS lock(fs);
 
+  // Connection used to remove items from the navigation history that
+  // are not found in the file system anymore.
+  obs::scoped_connection conn =
+    fs->ItemRemoved.connect(&adjust_navigation_history);
+
   fs->refresh();
 
   // we have to find where the user should begin to browse files (start_folder)
@@ -369,7 +420,7 @@ bool FileSelector::show(
   if (!start_folder)
     start_folder = fs->getFileItemFromPath(start_folder_path);
 
-  TRACE("FILESEL: Start folder '%s' (%p)\n", start_folder_path.c_str(), start_folder);
+  FILESEL_TRACE("FILESEL: Start folder '%s' (%p)\n", start_folder_path.c_str(), start_folder);
 
   setMinSize(gfx::Size(ui::display_w()*9/10, ui::display_h()*9/10));
   remapWindow();
@@ -754,15 +805,25 @@ void FileSelector::addInNavigationHistory(IFileItem* folder)
 void FileSelector::onGoBack()
 {
   if (navigation_history.size() > 1) {
+    // The default navigation position is at the end of the history
     if (navigation_position.is_null())
       navigation_position.set(navigation_history.end()-1);
 
     if (navigation_position.get() != navigation_history.begin()) {
-      navigation_position.set(navigation_position.get()-1);
+      // Go back to the first existent element
+      do {
+        navigation_position.set(navigation_position.get()-1);
+      } while (!navigation_position.exists() &&
+               navigation_position.get() != navigation_history.begin());
 
-      m_navigationLocked = true;
-      m_fileList->setCurrentFolder(*navigation_position.get());
-      m_navigationLocked = false;
+      if (navigation_position.exists()) {
+        m_navigationLocked = true;
+        m_fileList->setCurrentFolder(*navigation_position.get());
+        m_navigationLocked = false;
+      }
+      else {
+        navigation_position.reset();
+      }
     }
   }
 }
@@ -770,15 +831,28 @@ void FileSelector::onGoBack()
 void FileSelector::onGoForward()
 {
   if (navigation_history.size() > 1) {
-    if (navigation_position.is_null())
-      navigation_position.set(navigation_history.begin());
+    // This should not happen, because the forward button should be
+    // disabled when the navigation position is null.
+    if (navigation_position.is_null()) {
+      ASSERT(false);
+      navigation_position.set(navigation_history.end()-1);
+    }
 
     if (navigation_position.get() != navigation_history.end()-1) {
-      navigation_position.set(navigation_position.get()+1);
+      // Go forward to the first existent element
+      do {
+        navigation_position.set(navigation_position.get()+1);
+      } while (!navigation_position.exists() &&
+               navigation_position.get() != navigation_history.end()-1);
 
-      m_navigationLocked = true;
-      m_fileList->setCurrentFolder(*navigation_position.get());
-      m_navigationLocked = false;
+      if (navigation_position.exists()) {
+        m_navigationLocked = true;
+        m_fileList->setCurrentFolder(*navigation_position.get());
+        m_navigationLocked = false;
+      }
+      else {
+        navigation_position.reset();
+      }
     }
   }
 }
