@@ -81,7 +81,6 @@
 namespace app {
 
 enum class PalButton {
-  EDIT,
   SORT,
   PRESETS,
   OPTIONS,
@@ -140,6 +139,7 @@ ColorBar* ColorBar::m_instance = NULL;
 
 ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
   : Box(align)
+  , m_editPal(1)
   , m_buttons(int(PalButton::MAX))
   , m_tilesButton(1)
   , m_tilesetModeButtons(3)
@@ -175,12 +175,15 @@ ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
 
   SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
 
-  m_buttons.addItem(theme->parts.timelineOpenPadlockActive());
+  m_editPal.addItem(theme->parts.timelineOpenPadlockActive());
   m_buttons.addItem(theme->parts.palSort());
   m_buttons.addItem(theme->parts.palPresets());
   m_buttons.addItem(theme->parts.palOptions());
-
   m_tilesButton.addItem(theme->parts.tiles());
+
+  static_assert(0 == int(TilesetMode::Manual) &&
+                1 == int(TilesetMode::Semi) &&
+                2 == int(TilesetMode::Auto), "Tileset mode buttons doesn't match TilesetMode enum values");
 
   m_tilesetModeButtons.addItem(theme->parts.tilesManual());
   m_tilesetModeButtons.addItem(theme->parts.tilesSemi());
@@ -213,6 +216,12 @@ ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
   m_tilesHBox.addChild(&m_tilesButton);
   m_tilesHBox.addChild(&m_tilesetModeButtons);
 
+  m_palHBox.addChild(&m_editPal);
+  m_palHBox.addChild(&m_buttons);
+
+  m_buttons.setExpansive(true);
+  m_tilesetModeButtons.setExpansive(true);
+
   // Hide the tiles controls by default. Without this, when the first
   // onActiveSiteChange() event is received, and the we ask for the
   // m_tilesHBox visibility, it might say that it's hidden because the
@@ -222,7 +231,7 @@ ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
   // bar.
   m_tilesHBox.setVisible(false);
 
-  addChild(&m_buttons);
+  addChild(&m_palHBox);
   addChild(&m_tilesHBox);
   addChild(&m_splitter);
 
@@ -247,6 +256,7 @@ ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
   m_fgWarningIcon->Click.connect(base::Bind<void>(&ColorBar::onFixWarningClick, this, &m_fgColor, m_fgWarningIcon));
   m_bgWarningIcon->Click.connect(base::Bind<void>(&ColorBar::onFixWarningClick, this, &m_bgColor, m_bgWarningIcon));
   m_redrawTimer.Tick.connect(base::Bind<void>(&ColorBar::onTimerTick, this));
+  m_editPal.ItemChange.connect(base::Bind<void>(&ColorBar::onSwitchPalEditMode, this));
   m_buttons.ItemChange.connect(base::Bind<void>(&ColorBar::onPaletteButtonClick, this));
   m_tilesButton.ItemChange.connect(base::Bind<void>(&ColorBar::onTilesButtonClick, this));
   m_tilesetModeButtons.ItemChange.connect(base::Bind<void>(&ColorBar::onTilesetModeButtonClick, this));
@@ -268,13 +278,19 @@ ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
       m_fgColor.setSizeHint(0, m_fgColor.sizeHint().h);
       m_bgColor.setSizeHint(0, m_bgColor.sizeHint().h);
 
-      for (auto w : { &m_buttons, &m_tilesButton, &m_tilesetModeButtons }) {
+      for (auto w : { &m_editPal, &m_buttons,
+                      &m_tilesButton, &m_tilesetModeButtons }) {
         w->setMinSize(gfx::Size(0, theme->dimensions.colorBarButtonsHeight()));
         w->setMaxSize(gfx::Size(std::numeric_limits<int>::max(),
-                                std::numeric_limits<int>::max())); // TODO add resetMaxSize
-        w->setMaxSize(gfx::Size(m_buttons.sizeHint().w,
-                                theme->dimensions.colorBarButtonsHeight()));
+                                theme->dimensions.colorBarButtonsHeight())); // TODO add resetMaxSize
       }
+
+      m_buttons.setMaxSize(
+        gfx::Size(m_buttons.sizeHint().w,
+                  theme->dimensions.colorBarButtonsHeight()));
+      m_tilesetModeButtons.setMaxSize(
+        gfx::Size(m_tilesetModeButtons.sizeHint().w,
+                  theme->dimensions.colorBarButtonsHeight()));
 
       // Change color-bar background color (not ColorBar::setBgColor)
       this->Widget::setBgColor(theme->colors.tabActiveFace());
@@ -452,7 +468,7 @@ bool ColorBar::inEditMode() const
 void ColorBar::setEditMode(bool state)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
-  ButtonSet::Item* item = m_buttons.getItem((int)PalButton::EDIT);
+  ButtonSet::Item* item = m_editPal.getItem(0);
 
   m_editMode = state;
   item->setIcon(state ? theme->parts.timelineOpenPadlockActive():
@@ -553,8 +569,8 @@ void ColorBar::onActiveSiteChange(const Site& site)
   }
   if (!isTilemap) {
     m_lastTilesetId = doc::NullId;
-    if (inTilesMode())
-      setTilesMode(m_tilesMode);
+    if (m_tilesMode)
+      setTilesMode(false);
   }
 }
 
@@ -617,6 +633,12 @@ void ColorBar::onAfterExecuteCommand(CommandExecutionEvent& ev)
   }
 }
 
+void ColorBar::onSwitchPalEditMode()
+{
+  m_editPal.deselectItems();
+  setEditMode(!inEditMode());
+}
+
 // Switches the palette-editor
 void ColorBar::onPaletteButtonClick()
 {
@@ -624,10 +646,6 @@ void ColorBar::onPaletteButtonClick()
   m_buttons.deselectItems();
 
   switch (static_cast<PalButton>(item)) {
-
-    case PalButton::EDIT:
-      setEditMode(!inEditMode());
-      break;
 
     case PalButton::SORT:
       showPaletteSortOptions();
@@ -1391,7 +1409,7 @@ void ColorBar::updateCurrentSpritePalette(const char* operationName)
 void ColorBar::setupTooltips(TooltipManager* tooltipManager)
 {
   tooltipManager->addTooltipFor(
-    m_buttons.getItem((int)PalButton::EDIT),
+    m_editPal.getItem(0),
     key_tooltip("Edit Color", CommandId::PaletteEditor()), BOTTOM);
 
   tooltipManager->addTooltipFor(m_buttons.getItem((int)PalButton::SORT), "Sort & Gradients", BOTTOM);

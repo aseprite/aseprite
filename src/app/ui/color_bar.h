@@ -116,9 +116,11 @@ namespace app {
     void onFocusPaletteView(ui::Message* msg);
     void onBeforeExecuteCommand(CommandExecutionEvent& ev);
     void onAfterExecuteCommand(CommandExecutionEvent& ev);
+    void onSwitchPalEditMode();
     void onPaletteButtonClick();
     void onTilesButtonClick();
     void onTilesetModeButtonClick();
+    void onTilesetOptionsClick();
     void onRemapButtonClick();
     void onPaletteIndexChange(PaletteIndexChangeEvent& ev);
     void onFgColorChangeFromPreferences();
@@ -168,8 +170,10 @@ namespace app {
 
     class WarningIcon;
 
+    ButtonSet m_editPal;
     ButtonSet m_buttons;
     ui::HBox m_tilesHBox;
+    ui::HBox m_palHBox;
     ButtonSet m_tilesButton;
     ButtonSet m_tilesetModeButtons;
     std::unique_ptr<PalettePopup> m_palettePopup;
