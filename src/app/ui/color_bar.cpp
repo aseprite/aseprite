@@ -261,11 +261,6 @@ ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
   m_tilesButton.ItemChange.connect(base::Bind<void>(&ColorBar::onTilesButtonClick, this));
   m_tilesetModeButtons.ItemChange.connect(base::Bind<void>(&ColorBar::onTilesetModeButtonClick, this));
 
-  tooltipManager->addTooltipFor(&m_fgColor, "Foreground color", LEFT);
-  tooltipManager->addTooltipFor(&m_bgColor, "Background color", LEFT);
-  tooltipManager->addTooltipFor(m_fgWarningIcon, "Add foreground color to the palette", LEFT);
-  tooltipManager->addTooltipFor(m_bgWarningIcon, "Add background color to the palette", LEFT);
-
   InitTheme.connect(
     [this, fgBox, bgBox]{
       SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
@@ -1408,23 +1403,33 @@ void ColorBar::updateCurrentSpritePalette(const char* operationName)
 
 void ColorBar::setupTooltips(TooltipManager* tooltipManager)
 {
+  tooltipManager->addTooltipFor(&m_fgColor, Strings::color_bar_fg(), LEFT);
+  tooltipManager->addTooltipFor(&m_bgColor, Strings::color_bar_bg(), LEFT);
+  tooltipManager->addTooltipFor(m_fgWarningIcon, Strings::color_bar_fg_warning(), LEFT);
+  tooltipManager->addTooltipFor(m_bgWarningIcon, Strings::color_bar_bg_warning(), LEFT);
+
   tooltipManager->addTooltipFor(
     m_editPal.getItem(0),
-    key_tooltip("Edit Color", CommandId::PaletteEditor()), BOTTOM);
+    key_tooltip(Strings::color_bar_edit_color().c_str(), CommandId::PaletteEditor()),
+    BOTTOM);
 
-  tooltipManager->addTooltipFor(m_buttons.getItem((int)PalButton::SORT), "Sort & Gradients", BOTTOM);
-  tooltipManager->addTooltipFor(m_buttons.getItem((int)PalButton::PRESETS), "Presets", BOTTOM);
-  tooltipManager->addTooltipFor(m_buttons.getItem((int)PalButton::OPTIONS), "Options", BOTTOM);
-  tooltipManager->addTooltipFor(&m_remapButton, "Matches old indexes with new indexes", BOTTOM);
+  tooltipManager->addTooltipFor(m_buttons.getItem((int)PalButton::SORT), Strings::color_bar_sort_and_gradients(), BOTTOM);
+  tooltipManager->addTooltipFor(m_buttons.getItem((int)PalButton::PRESETS), Strings::color_bar_presets(), BOTTOM);
+  tooltipManager->addTooltipFor(m_buttons.getItem((int)PalButton::OPTIONS), Strings::color_bar_options(), BOTTOM);
+  tooltipManager->addTooltipFor(&m_remapButton, Strings::color_bar_remap_palette_tooltip(), BOTTOM);
 
   tooltipManager->addTooltipFor(
-    m_tilesButton.getItem(0), "Show/Hide Tileset", BOTTOM);
+    m_tilesButton.getItem(0),
+    Strings::color_bar_switch_tileset(), BOTTOM);
   tooltipManager->addTooltipFor(
-    m_tilesetModeButtons.getItem((int)TilesetMode::Manual), "Manual: Modify existent tiles,\ndon't create new tiles automatically", BOTTOM);
+    m_tilesetModeButtons.getItem((int)TilesetMode::Manual),
+    Strings::color_bar_tileset_mode_manual(), BOTTOM);
   tooltipManager->addTooltipFor(
-    m_tilesetModeButtons.getItem((int)TilesetMode::Auto), "Auto: Modify and reuse existent tiles,\ncreate/delete tiles if needed/possible", BOTTOM);
+    m_tilesetModeButtons.getItem((int)TilesetMode::Auto),
+    Strings::color_bar_tileset_mode_auto(), BOTTOM);
   tooltipManager->addTooltipFor(
-    m_tilesetModeButtons.getItem((int)TilesetMode::Stack), "Stack: Don't modify existent tiles,\ngenerate and stack new tiles automatically", BOTTOM);
+    m_tilesetModeButtons.getItem((int)TilesetMode::Stack),
+    Strings::color_bar_tileset_mode_stack(), BOTTOM);
 }
 
 // static
