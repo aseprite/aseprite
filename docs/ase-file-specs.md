@@ -244,10 +244,22 @@ Color profile for RGB or grayscale values.
                 this fixed gamma, because sRGB uses different gamma sections
                 (linear and non-linear). If sRGB is specified with a fixed
                 gamma = 1.0, it means that this is Linear sRGB.
-    BYTE[8]     Reserved (set to zero]
+    BYTE[8]     Reserved (set to zero)
     + If type = ICC:
       DWORD     ICC profile data length
       BYTE[]    ICC profile data. More info: http://www.color.org/ICC1V42.pdf
+
+### External Files Chunk (0x2008)
+
+A list of external files linked with this file. It might be used to
+reference external palettes or tilesets.
+
+    DWORD       Number of entries
+    BYTE[8]     Reserved (set to zero)
+    + For each entry
+      DWORD     Entry ID (this ID is referenced by tilesets or palettes)
+      BYTE[8]   Reserved (set to zero)
+      STRING    External file name
 
 ### Mask Chunk (0x2016) DEPRECATED
 
@@ -351,7 +363,8 @@ belongs to that cel, etc.
     BYTE[16]    Reserved
     STRING      Name of the tileset
     + If flag 1 is set
-      STRING    Name of the external file
+      DWORD     ID of the external file. This ID is one entry
+                of the the External Files Chunk.
       DWORD     Tileset ID in the external file
     + If flag 2 is set
       DWORD     Compressed data length

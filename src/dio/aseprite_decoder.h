@@ -32,6 +32,7 @@ namespace dio {
 
 struct AsepriteHeader;
 struct AsepriteFrameHeader;
+struct AsepriteExternalFiles;
 
 class AsepriteDecoder : public Decoder {
 public:
@@ -54,13 +55,15 @@ private:
                          const size_t chunk_end);
   void readCelExtraChunk(doc::Cel* cel);
   void readColorProfile(doc::Sprite* sprite);
+  void readExternalFiles(AsepriteExternalFiles& extFiles);
   doc::Mask* readMaskChunk();
   void readTagsChunk(doc::Tags* tags);
   void readSlicesChunk(doc::Slices& slices);
   doc::Slice* readSliceChunk(doc::Slices& slices);
   void readUserDataChunk(doc::UserData* userData);
   void readTilesetChunk(doc::Sprite* sprite,
-                        const AsepriteHeader* header);
+                        const AsepriteHeader* header,
+                        const AsepriteExternalFiles& extFiles);
 };
 
 } // namespace dio

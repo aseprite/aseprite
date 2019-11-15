@@ -71,11 +71,21 @@ namespace doc {
       m_tiles.erase(m_tiles.begin()+ti);
     }
 
+    // Linked with an external file
+    void setExternal(const std::string& filename,
+                     const tileset_index& tsi);
+    const std::string& externalFilename() const { return m_external.filename; }
+    tileset_index externalTileset() const { return m_external.tileset; }
+
   private:
     Sprite* m_sprite;
     Grid m_grid;
     Tiles m_tiles;
     std::string m_name;
+    struct External {
+      std::string filename;
+      tileset_index tileset;
+    } m_external;
   };
 
 } // namespace doc

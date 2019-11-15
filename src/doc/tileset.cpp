@@ -42,4 +42,11 @@ void Tileset::resize(const tile_index ntiles)
   m_tiles.resize(ntiles);
 }
 
+void Tileset::setExternal(const std::string& filename,
+                          const tileset_index& tsi)
+{
+  m_external.filename = filename;
+  m_external.tileset = tsi;
+}
+
 } // namespace doc

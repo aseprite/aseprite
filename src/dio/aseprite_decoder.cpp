@@ -68,6 +68,7 @@ bool AsepriteDecoder::decode()
   doc::Cel* last_cel = nullptr;
   int current_level = -1;
   doc::LayerList allLayers;
+  AsepriteExternalFiles extFiles;
 
   // Just one frame?
   doc::frame_t nframes = sprite->totalFrames();
@@ -163,6 +164,10 @@ bool AsepriteDecoder::decode()
             break;
           }
 
+          case ASE_FILE_CHUNK_EXTERNAL_FILE:
+            readExternalFiles(extFiles);
+            break;
+
           case ASE_FILE_CHUNK_MASK: {
             doc::Mask* mask = readMaskChunk();
             if (mask)
@@ -201,7 +206,7 @@ bool AsepriteDecoder::decode()
           }
 
           case ASE_FILE_CHUNK_TILESET: {
-            readTilesetChunk(sprite.get(), &header);
+            readTilesetChunk(sprite.get(), &header, extFiles);
             break;
           }
 
@@ -837,6 +842,19 @@ void AsepriteDecoder::readColorProfile(doc::Sprite* sprite)
   sprite->setColorSpace(cs);
 }
 
+void AsepriteDecoder::readExternalFiles(AsepriteExternalFiles& extFiles)
+{
+  uint32_t n = read32();
+  readPadding(8);
+  for (uint32_t i=0; i<n; ++i) {
+    uint32_t id = read32();
+    readPadding(8);
+    std::string fn = readString();
+    extFiles.to_fn[id] = fn;
+    extFiles.to_id[fn] = id;
+  }
+}
+
 doc::Mask* AsepriteDecoder::readMaskChunk()
 {
   int c, u, v, byte;
@@ -974,7 +992,8 @@ doc::Slice* AsepriteDecoder::readSliceChunk(doc::Slices& slices)
 }
 
 void AsepriteDecoder::readTilesetChunk(doc::Sprite* sprite,
-                                       const AsepriteHeader* header)
+                                       const AsepriteHeader* header,
+                                       const AsepriteExternalFiles& extFiles)
 {
   const doc::tileset_index id = read32();
   const uint32_t flags = read32();
@@ -992,18 +1011,27 @@ void AsepriteDecoder::readTilesetChunk(doc::Sprite* sprite,
     return;
   }
 
-  if (flags & 1) {
-    const std::string fn = readString();            // external filename
-    const doc::tileset_index externalId = read32(); // tileset ID in the external file
+  doc::Grid grid(gfx::Size(w, h));
+  auto tileset = new doc::Tileset(sprite, grid, ntiles);
+  tileset->setName(name);
 
-    // TODO add support to load the external filename
+  if (flags & ASE_TILESET_FLAG_EXTERNAL_FILE) {
+    const uint32_t extFileId = read32(); // filename ID in the external files chunk
+    const doc::tileset_index extTilesetId = read32(); // tileset ID in the external file
+
+    auto it = extFiles.to_fn.find(extFileId);
+    if (it != extFiles.to_fn.end()) {
+      auto fn = it->second;
+      tileset->setExternal(fn, extTilesetId);
+    }
+    else {
+      delegate()->error(
+        fmt::format("Error: Invalid external file reference (id={0} not found)",
+                    extFileId));
+    }
   }
 
-  if (flags & 2) {
-    doc::Grid grid(gfx::Size(w, h));
-    auto tileset = new doc::Tileset(sprite, grid, ntiles);
-    tileset->setName(name);
-
+  if (flags & ASE_TILESET_FLAG_EMBEDDED) {
     const size_t dataSize = read32(); // Size of compressed data
     const size_t dataBeg = f()->tell();
     const size_t dataEnd = dataBeg+dataSize;

@@ -179,11 +179,17 @@ static void ase_file_write_slice_chunks(FILE* f, dio::AsepriteFrameHeader* frame
 static void ase_file_write_slice_chunk(FILE* f, dio::AsepriteFrameHeader* frame_header, Slice* slice,
                                        const frame_t fromFrame, const frame_t toFrame);
 static void ase_file_write_user_data_chunk(FILE* f, dio::AsepriteFrameHeader* frame_header, const UserData* userData);
-static void ase_file_write_tileset_chunks(FILE* f,
+static void ase_file_write_external_files_chunk(FILE* f,
+                                                dio::AsepriteFrameHeader* frame_header,
+                                                dio::AsepriteExternalFiles& ext_files,
+                                               const Sprite* sprite);
+static void ase_file_write_tileset_chunks(FILE* f, FileOp* fop,
                                           dio::AsepriteFrameHeader* frame_header,
+                                          const dio::AsepriteExternalFiles& ext_files,
                                           const Tilesets* tilesets);
-static void ase_file_write_tileset_chunk(FILE* f,
+static void ase_file_write_tileset_chunk(FILE* f, FileOp* fop,
                                          dio::AsepriteFrameHeader* frame_header,
+                                         const dio::AsepriteExternalFiles& ext_files,
                                          const Tileset* tileset,
                                          const tileset_index si);
 static bool ase_has_groups(LayerGroup* group);
@@ -333,6 +339,7 @@ bool AseFormat::onSave(FileOp* fop)
 
   // Write frames
   int outputFrame = 0;
+  dio::AsepriteExternalFiles ext_files;
   for (frame_t frame : fop->roi().selectedFrames()) {
     // Prepare the frame header
     dio::AsepriteFrameHeader frame_header;
@@ -341,9 +348,14 @@ bool AseFormat::onSave(FileOp* fop)
     // Frame duration
     frame_header.duration = sprite->frameDuration(frame);
 
-    // Save color profile in first frame
-    if (outputFrame == 0 && fop->preserveColorProfile())
-      ase_file_write_color_profile(f, &frame_header, sprite);
+    if (outputFrame == 0) {
+      // Check if we need the "external files" chunk
+      ase_file_write_external_files_chunk(f, &frame_header, ext_files, sprite);
+
+      // Save color profile in first frame
+      if (fop->preserveColorProfile())
+        ase_file_write_color_profile(f, &frame_header, sprite);
+    }
 
     // is the first frame or did the palette change?
     Palette* pal = sprite->palette(frame);
@@ -365,7 +377,8 @@ bool AseFormat::onSave(FileOp* fop)
     // Write extra chunks in the first frame
     if (frame == fop->roi().fromFrame()) {
       // Write tilesets
-      ase_file_write_tileset_chunks(f, &frame_header, sprite->tilesets());
+      ase_file_write_tileset_chunks(f, fop, &frame_header, ext_files,
+                                    sprite->tilesets());
 
       // Write layer chunks
       for (Layer* child : sprite->root()->layers())
@@ -1199,42 +1212,99 @@ static void ase_file_write_slice_chunk(FILE* f, dio::AsepriteFrameHeader* frame_
   }
 }
 
-static void ase_file_write_tileset_chunks(FILE* f,
+static void ase_file_write_external_files_chunk(
+  FILE* f,
+  dio::AsepriteFrameHeader* frame_header,
+  dio::AsepriteExternalFiles& ext_files,
+  const Sprite* sprite)
+{
+  for (const Tileset* tileset : *sprite->tilesets()) {
+    if (!tileset->externalFilename().empty()) {
+      auto id = ++ext_files.lastid;
+      auto fn = tileset->externalFilename();
+      ext_files.to_fn[id] = fn;
+      ext_files.to_id[fn] = id;
+    }
+  }
+
+  // No external files to write
+  if (ext_files.lastid == 0)
+    return;
+
+  fputl(ext_files.to_fn.size(), f);        // Number of entries
+  ase_file_write_padding(f, 8);
+  for (auto item : ext_files.to_fn) {
+    fputl(item.first, f);                  // ID
+    ase_file_write_padding(f, 8);
+    ase_file_write_string(f, item.second); // Filename
+  }
+}
+
+static void ase_file_write_tileset_chunks(FILE* f, FileOp* fop,
                                           dio::AsepriteFrameHeader* frame_header,
+                                          const dio::AsepriteExternalFiles& ext_files,
                                           const Tilesets* tilesets)
 {
   tileset_index si = 0;
   for (const Tileset* tileset : *tilesets) {
-    ase_file_write_tileset_chunk(f, frame_header, tileset, si);
+    ase_file_write_tileset_chunk(f, fop, frame_header, ext_files,
+                                 tileset, si);
     ++si;
   }
 }
 
-static void ase_file_write_tileset_chunk(FILE* f,
+static void ase_file_write_tileset_chunk(FILE* f, FileOp* fop,
                                          dio::AsepriteFrameHeader* frame_header,
+                                         const dio::AsepriteExternalFiles& ext_files,
                                          const Tileset* tileset,
                                          const tileset_index si)
 {
   ChunkWriter chunk(f, frame_header, ASE_FILE_CHUNK_TILESET);
+  int flags = 0;
+  if (!tileset->externalFilename().empty())
+    flags |= ASE_TILESET_FLAG_EXTERNAL_FILE;
+  else
+    flags |= ASE_TILESET_FLAG_EMBEDDED;
 
   fputl(si, f);             // Tileset ID
-  fputl(2, f);              // Tileset Flags (2=include tiles inside file)
+  fputl(flags, f);      // Tileset Flags (2=include tiles inside file)
   fputl(tileset->size(), f);
   fputw(tileset->grid().tileSize().w, f);
   fputw(tileset->grid().tileSize().h, f);
   ase_file_write_padding(f, 16);
   ase_file_write_string(f, tileset->name()); // tileset name
 
-  // Flag 2 = tileset
-  size_t beg = ftell(f);
-  fputl(0, f);                  // Field for compressed data length (completed later)
-  TilesetScanlines gen(tileset);
-  write_compressed_image(f, &gen, tileset->sprite()->pixelFormat());
+  // Flag 1 = external tileset
+  if (flags & ASE_TILESET_FLAG_EXTERNAL_FILE) {
+    auto it = ext_files.to_id.find(tileset->externalFilename());
+    if (it != ext_files.to_id.end()) {
+      auto file_id = it->second;
+      fputl(file_id, f);
+      fputl(tileset->externalTileset(), f);
+    }
+    else {
+      ASSERT(false); // Impossible state (corrupted memory or we
+                     // forgot to add the tileset external file to
+                     // "ext_files")
 
-  size_t end = ftell(f);
-  fseek(f, beg, SEEK_SET);
-  fputl(end-beg-4, f);          // Save the compressed data length
-  fseek(f, end, SEEK_SET);
+      fputl(0, f);
+      fputl(0, f);
+      fop->setError("Error writing tileset external reference.\n");
+    }
+  }
+
+  // Flag 2 = tileset
+  if (flags & ASE_TILESET_FLAG_EMBEDDED) {
+    size_t beg = ftell(f);
+    fputl(0, f);                  // Field for compressed data length (completed later)
+    TilesetScanlines gen(tileset);
+    write_compressed_image(f, &gen, tileset->sprite()->pixelFormat());
+
+    size_t end = ftell(f);
+    fseek(f, beg, SEEK_SET);
+    fputl(end-beg-4, f);          // Save the compressed data length
+    fseek(f, end, SEEK_SET);
+  }
 }
 
 static bool ase_has_groups(LayerGroup* group)
