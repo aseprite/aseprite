@@ -32,8 +32,8 @@ namespace doc {
       ASSERT(fromIndex >= 0 && fromIndex < size());
       // toIndex = kNoMap means (there is no remap for this value, useful
       // to ignore this entry when we invert the map)
-      ASSERT(toIndex == kNoMap ||
-             toIndex >= 0 && toIndex < size());
+      ASSERT((toIndex == kNoMap) ||
+             (toIndex >= 0 && toIndex < size()));
 
       m_map[fromIndex] = toIndex;
     }
