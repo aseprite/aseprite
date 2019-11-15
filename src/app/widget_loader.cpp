@@ -452,9 +452,9 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
       widget = new ButtonSet(strtol(columns, NULL, 10));
 
     if (ButtonSet* buttonset = dynamic_cast<ButtonSet*>(widget)) {
-      if (bool multiple = bool_attr_is_true(elem, "multiple"))
+      if (bool_attr_is_true(elem, "multiple"))
         buttonset->setMultiMode(ButtonSet::MultiMode::Set);
-      if (bool oneormore = bool_attr_is_true(elem, "oneormore"))
+      if (bool_attr_is_true(elem, "oneormore"))
         buttonset->setMultiMode(ButtonSet::MultiMode::OneOrMore);
     }
   }
