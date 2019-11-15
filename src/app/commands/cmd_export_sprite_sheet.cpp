@@ -198,8 +198,11 @@ void update_doc_exporter_from_params(DocExporter& exporter,
 
   SelectedFrames selFrames;
   Tag* tag = calculate_selected_frames(site, tagName, selFrames);
+
+#ifdef _DEBUG
   frame_t nframes = selFrames.size();
   ASSERT(nframes > 0);
+#endif
 
   Doc* doc = const_cast<Doc*>(site.document());
   const Sprite* sprite = site.sprite();
