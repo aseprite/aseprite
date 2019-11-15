@@ -266,8 +266,7 @@ void View::onSetViewScroll(const gfx::Point& pt)
 
   // Visible viewport region that is not overlapped by windows
   Region drawableRegion;
-  m_viewport.getDrawableRegion(
-    drawableRegion, DrawableRegionFlags(kCutTopWindows | kUseChildArea));
+  m_viewport.getDrawableRegion(drawableRegion, kCutTopWindowsAndUseChildArea);
 
   // Start the region to scroll equal to the drawable viewport region.
   Rect cpos = m_viewport.childrenBounds();

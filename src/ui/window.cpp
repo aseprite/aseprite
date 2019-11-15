@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -590,8 +590,6 @@ void Window::limitSize(int* w, int* h)
 
 void Window::moveWindow(const gfx::Rect& rect, bool use_blit)
 {
-#define FLAGS (DrawableRegionFlags)(kCutTopWindows | kUseChildArea)
-
   Manager* manager = this->manager();
 
   // Discard enqueued kWinMoveMessage for this window because we are
@@ -614,7 +612,7 @@ void Window::moveWindow(const gfx::Rect& rect, bool use_blit)
 
   // Get the region & the drawable region of the window
   Region oldDrawableRegion;
-  getDrawableRegion(oldDrawableRegion, FLAGS);
+  getDrawableRegion(oldDrawableRegion, kCutTopWindowsAndUseChildArea);
 
   // If the size of the window changes...
   if (old_pos.w != rect.w || old_pos.h != rect.h) {
@@ -630,7 +628,7 @@ void Window::moveWindow(const gfx::Rect& rect, bool use_blit)
   // Get the new drawable region of the window (it's new because we
   // moved the window to "rect")
   Region newDrawableRegion;
-  getDrawableRegion(newDrawableRegion, FLAGS);
+  getDrawableRegion(newDrawableRegion, kCutTopWindowsAndUseChildArea);
 
   // First of all, we have to find the manager region to invalidate,
   // it's the old window drawable region without the new window

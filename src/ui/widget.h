@@ -267,6 +267,7 @@ namespace ui {
     enum DrawableRegionFlags {
       kCutTopWindows = 1, // Cut areas where are windows on top.
       kUseChildArea = 2,  // Use areas where are children.
+      kCutTopWindowsAndUseChildArea = kCutTopWindows | kUseChildArea,
     };
 
     void getRegion(gfx::Region& region);

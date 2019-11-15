@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -434,7 +434,7 @@ void BrushPopup::onBrushChanges()
 {
   if (isVisible()) {
     gfx::Region rgn;
-    getDrawableRegion(rgn, DrawableRegionFlags(kCutTopWindows | kUseChildArea));
+    getDrawableRegion(rgn, kCutTopWindowsAndUseChildArea);
 
     regenerate(bounds());
     invalidate();
