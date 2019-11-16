@@ -1420,7 +1420,8 @@ void ColorBar::setupTooltips(TooltipManager* tooltipManager)
 
   tooltipManager->addTooltipFor(
     m_tilesButton.getItem(0),
-    Strings::color_bar_switch_tileset(), BOTTOM);
+    key_tooltip(Strings::color_bar_switch_tileset().c_str(), CommandId::ToggleTilesMode()),
+    BOTTOM);
   tooltipManager->addTooltipFor(
     m_tilesetModeButtons.getItem((int)TilesetMode::Manual),
     Strings::color_bar_tileset_mode_manual(), BOTTOM);
