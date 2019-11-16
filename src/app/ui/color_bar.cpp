@@ -5,7 +5,7 @@
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
-#define COLOR_BAR_TRACE(...)
+#define COLOR_BAR_TRACE(...)    // TRACE
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -16,6 +16,8 @@
 #include "app/app.h"
 #include "app/app_menus.h"
 #include "app/cmd/remap_colors.h"
+#include "app/cmd/remap_tilemaps.h"
+#include "app/cmd/remap_tileset.h"
 #include "app/cmd/remove_tile.h"
 #include "app/cmd/replace_image.h"
 #include "app/cmd/set_palette.h"
@@ -50,6 +52,7 @@
 #include "app/ui/timeline/timeline.h"
 #include "app/ui_context.h"
 #include "app/ui_context.h"
+#include "app/util/cel_ops.h"
 #include "app/util/clipboard.h"
 #include "base/bind.h"
 #include "base/scoped_value.h"
@@ -64,6 +67,7 @@
 #include "doc/rgbmap.h"
 #include "doc/sort_palette.h"
 #include "doc/sprite.h"
+#include "doc/tileset_hash_table.h"
 #include "os/surface.h"
 #include "ui/alert.h"
 #include "ui/graphics.h"
@@ -146,7 +150,8 @@ ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
   , m_splitter(Splitter::ByPercentage, VERTICAL)
   , m_paletteView(true, PaletteView::FgBgColors, this, 16)
   , m_tilesView(true, PaletteView::FgBgTiles, this, 16)
-  , m_remapButton("Remap")
+  , m_remapPalButton(Strings::color_bar_remap_palette())
+  , m_remapTilesButton(Strings::color_bar_remap_tiles())
   , m_selector(ColorSelector::NONE)
   , m_tintShadeTone(nullptr)
   , m_spectrum(nullptr)
@@ -199,11 +204,13 @@ ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
   m_scrollableTilesView.setExpansive(true);
 
   m_scrollableTilesView.setVisible(false);
-  m_remapButton.setVisible(false);
+  m_remapPalButton.setVisible(false);
+  m_remapTilesButton.setVisible(false);
 
   m_palettePlaceholder.addChild(&m_scrollablePalView);
   m_palettePlaceholder.addChild(&m_scrollableTilesView);
-  m_palettePlaceholder.addChild(&m_remapButton);
+  m_palettePlaceholder.addChild(&m_remapPalButton);
+  m_palettePlaceholder.addChild(&m_remapTilesButton);
   m_splitter.setId("palette_spectrum_splitter");
   m_splitter.setPosition(80);
   m_splitter.setExpansive(true);
@@ -249,7 +256,8 @@ ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
   m_fgColor.setExpansive(true);
   m_bgColor.setExpansive(true);
 
-  m_remapButton.Click.connect(base::Bind<void>(&ColorBar::onRemapButtonClick, this));
+  m_remapPalButton.Click.connect(base::Bind<void>(&ColorBar::onRemapPalButtonClick, this));
+  m_remapTilesButton.Click.connect(base::Bind<void>(&ColorBar::onRemapTilesButtonClick, this));
   m_fgColor.Change.connect(&ColorBar::onFgColorButtonChange, this);
   m_fgColor.BeforeChange.connect(&ColorBar::onFgColorButtonBeforeChange, this);
   m_bgColor.Change.connect(&ColorBar::onBgColorButtonChange, this);
@@ -328,7 +336,8 @@ ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
   m_fgConn = Preferences::instance().colorBar.fgColor.AfterChange.connect(base::Bind<void>(&ColorBar::onFgColorChangeFromPreferences, this));
   m_bgConn = Preferences::instance().colorBar.bgColor.AfterChange.connect(base::Bind<void>(&ColorBar::onBgColorChangeFromPreferences, this));
   m_sepConn = Preferences::instance().colorBar.entriesSeparator.AfterChange.connect(base::Bind<void>(&ColorBar::invalidate, this));
-  m_paletteView.FocusOrClick.connect(&ColorBar::onFocusPaletteView, this);
+  m_paletteView.FocusOrClick.connect(&ColorBar::onFocusPaletteOrTilesView, this);
+  m_tilesView.FocusOrClick.connect(&ColorBar::onFocusPaletteOrTilesView, this);
   m_appPalChangeConn = App::instance()->PaletteChange.connect(&ColorBar::onAppPaletteChange, this);
   KeyboardShortcuts::instance()->UserChange.connect(
     base::Bind<void>(&ColorBar::setupTooltips, this, tooltipManager));
@@ -542,7 +551,8 @@ void ColorBar::onActiveSiteChange(const Site& site)
     if (m_lastDocument)
       m_lastDocument->add_observer(this);
 
-    hideRemap();
+    hideRemapPal();
+    hideRemapTiles();
   }
 
   bool isTilemap = false;
@@ -599,7 +609,7 @@ void ColorBar::onAppPaletteChange()
   updateWarningIcon(m_bgColor.getColor(), m_bgWarningIcon);
 }
 
-void ColorBar::onFocusPaletteView(ui::Message* msg)
+void ColorBar::onFocusPaletteOrTilesView(ui::Message* msg)
 {
   App::instance()->inputChain().prioritize(this, msg);
 }
@@ -608,8 +618,9 @@ void ColorBar::onBeforeExecuteCommand(CommandExecutionEvent& ev)
 {
   if (ev.command()->id() == CommandId::SetPalette() ||
       ev.command()->id() == CommandId::LoadPalette() ||
-      ev.command()->id() == CommandId::ColorQuantization())
-    showRemap();
+      ev.command()->id() == CommandId::ColorQuantization()) {
+    showRemapPal();
+  }
 }
 
 void ColorBar::onAfterExecuteCommand(CommandExecutionEvent& ev)
@@ -619,12 +630,19 @@ void ColorBar::onAfterExecuteCommand(CommandExecutionEvent& ev)
     invalidate();
 
   // If the sprite isn't Indexed anymore (e.g. because we've just
-  // undone a "RGB -> Indexed" conversion), we hide the "Remap"
-  // button.
+  // undone a "RGB -> Indexed" conversion), we hide the "Remap
+  // Palette" button.
   Site site = UIContext::instance()->activeSite();
   if (site.sprite() &&
       site.sprite()->pixelFormat() != IMAGE_INDEXED) {
-    hideRemap();
+    hideRemapPal();
+  }
+
+  // If the layer isn't a tilemap anymore, we hide the "Remap Tiles"
+  // button.
+  if (site.layer() &&
+      !site.layer()->isTilemap()) {
+    hideRemapTiles();
   }
 }
 
@@ -670,7 +688,7 @@ void ColorBar::onTilesetModeButtonClick()
   setTilesetMode(static_cast<TilesetMode>(item));
 }
 
-void ColorBar::onRemapButtonClick()
+void ColorBar::onRemapPalButtonClick()
 {
   ASSERT(m_oldPalette);
 
@@ -741,7 +759,59 @@ void ColorBar::onRemapButtonClick()
       tx.commit();
     }
     update_screen_for_document(writer.document());
-    hideRemap();
+    hideRemapPal();
+  }
+  catch (base::Exception& e) {
+    Console::showException(e);
+  }
+}
+
+void ColorBar::onRemapTilesButtonClick()
+{
+  COLOR_BAR_TRACE("remapTiles\n");
+  try {
+    ContextWriter writer(UIContext::instance(), 500);
+    Sprite* sprite = writer.sprite();
+    if (!sprite)
+      return;
+
+    auto tileset = m_tilesView.tileset();
+
+    doc::TilesetHashTable hash;
+    {
+      doc::tile_index i = 0;
+      for (const auto& image : *tileset) {
+        ASSERT(image);
+        hash[image] = i++;
+      }
+    }
+
+    // Remap all tiles in the same order as in newTileset
+    Remap remap(tileset->size());
+    for (tile_index ti=0; ti<remap.size(); ++ti) {
+      auto img = m_oldTileset->get(ti);
+      if (img && hash.find(img) != hash.end()) {
+        auto destTi = hash[img];
+        COLOR_BAR_TRACE(" - Remap tile %d -> %d\n", ti, destTi);
+        remap.map(ti, destTi);
+      }
+      else {
+        remap.map(ti, ti);
+      }
+    }
+    // Nothing to remap
+    if (remap.isIdentity()) {
+      COLOR_BAR_TRACE(" - Nothing to remap\n");
+      return;
+    }
+
+    Tx tx(writer.context(), Strings::color_bar_remap_tiles(), ModifyDocument);
+    tx(new cmd::RemapTilemaps(tileset, remap));
+    tx.commit();
+
+    hideRemapTiles();
+    // TODO this should be automatic in last ~Tx() destruction
+    manager()->invalidate();
   }
   catch (base::Exception& e) {
     Console::showException(e);
@@ -751,10 +821,6 @@ void ColorBar::onRemapButtonClick()
 void ColorBar::onPaletteViewIndexChange(int index, ui::MouseButtons buttons)
 {
   COLOR_BAR_TRACE("ColorBar::onPaletteViewIndexChange(%d)\n", index);
-
-  // TODO select tiles to stamp
-  if (inTilesMode())
-    return;
 
   base::ScopedValue<bool> lock(m_fromPalView, true, m_fromPalView);
 
@@ -784,10 +850,10 @@ void ColorBar::onPaletteViewModification(const Palette* newPalette,
 
 void ColorBar::setPalette(const doc::Palette* newPalette, const std::string& actionText)
 {
-  showRemap();
+  showRemapPal();
 
   try {
-    ContextWriter writer(UIContext::instance());
+    ContextWriter writer(UIContext::instance(), 500);
     Sprite* sprite = writer.sprite();
     frame_t frame = writer.frame();
     if (sprite &&
@@ -884,7 +950,7 @@ app::Color ColorBar::onPaletteViewGetBackgroundIndex()
   return getBgColor();
 }
 
-void ColorBar::onPaletteViewClearTiles(const doc::PalettePicks& picks)
+void ColorBar::onTilesViewClearTiles(const doc::PalettePicks& picks)
 {
   try {
     ContextWriter writer(UIContext::instance(), 500);
@@ -894,14 +960,90 @@ void ColorBar::onPaletteViewClearTiles(const doc::PalettePicks& picks)
       auto tileset = m_tilesView.tileset();
 
       Tx tx(writer.context(), "Clear Tiles", ModifyDocument);
-      for (auto ti : picks)
-        tx(new cmd::RemoveTile(tileset, ti));
+      for (doc::tile_index ti=0; ti<picks.size(); ++ti) {
+        if (picks[ti])
+          tx(new cmd::RemoveTile(tileset, ti));
+      }
       tx.commit();
+
+      update_screen_for_document(writer.document());
     }
   }
   catch (base::Exception& e) {
     Console::showException(e);
   }
+}
+
+void ColorBar::onTilesViewResize(const int newSize)
+{
+  auto tileset = m_tilesView.tileset();
+  if (!tileset || tileset->size() == newSize)
+    return;
+
+  try {
+    ContextWriter writer(UIContext::instance(), 500);
+    Sprite* sprite = writer.sprite();
+    ASSERT(writer.layer()->isTilemap());
+    if (sprite) {
+      auto tileset = m_tilesView.tileset();
+
+      Tx tx(writer.context(), Strings::color_bar_resize_tiles(), ModifyDocument);
+      if (tileset->size() < newSize) {
+        for (doc::tile_index ti=tileset->size(); ti<newSize; ++ti) {
+          ImageRef img = tileset->makeEmptyTile();
+          tx(new cmd::AddTile(tileset, img));
+        }
+      }
+      else {
+        for (doc::tile_index ti=tileset->size()-1;
+             ti!=(doc::tile_index)newSize-1; --ti) {
+          tx(new cmd::RemoveTile(tileset, ti));
+        }
+      }
+
+      tx.commit();
+
+      // TODO this should be automatic (when tileset is changed after a transaction)
+      m_scrollableTilesView.updateView();
+      update_screen_for_document(writer.document());
+    }
+  }
+  catch (base::Exception& e) {
+    Console::showException(e);
+  }
+}
+
+void ColorBar::onTilesViewDragAndDrop(doc::Tileset* tileset,
+                                      doc::PalettePicks& picks,
+                                      int& currentEntry,
+                                      const int beforeIndex,
+                                      const bool isCopy)
+{
+  COLOR_BAR_TRACE("ColorBar::onTilesViewDragAndDrop() -> beforeIndex=%d\n",
+                  beforeIndex);
+
+  showRemapTiles();
+
+  try {
+    ContextWriter writer(UIContext::instance(), 500);
+    Tx tx(writer.context(), Strings::color_bar_drag_and_drop_tiles(), ModifyDocument);
+    if (isCopy)
+      copy_tiles_in_tileset(tx, tileset, picks, currentEntry, beforeIndex);
+    else
+      move_tiles_in_tileset(tx, tileset, picks, currentEntry, beforeIndex);
+    tx.commit();
+
+    m_scrollableTilesView.updateView();
+    update_screen_for_document(writer.document());
+  }
+  catch (base::Exception& e) {
+    Console::showException(e);
+  }
+}
+
+void ColorBar::onTilesViewIndexChange(int index, ui::MouseButtons buttons)
+{
+  // TODO show tools to stamp/draw/pick tiles
 }
 
 void ColorBar::onFgColorChangeFromPreferences()
@@ -1132,26 +1274,51 @@ void ColorBar::setAscending(bool ascending)
   m_ascending = ascending;
 }
 
-void ColorBar::showRemap()
+void ColorBar::showRemapPal()
 {
   Site site = UIContext::instance()->activeSite();
   if (site.sprite() &&
       site.sprite()->pixelFormat() == IMAGE_INDEXED) {
     if (!m_oldPalette) {
       m_oldPalette.reset(new Palette(*get_current_palette()));
-      m_remapButton.setVisible(true);
+      m_remapPalButton.setVisible(true);
       layout();
     }
   }
 }
 
-void ColorBar::hideRemap()
+void ColorBar::showRemapTiles()
+{
+  Site site = UIContext::instance()->activeSite();
+  if (site.layer() &&
+      site.layer()->isTilemap()) {
+    if (!m_oldTileset) {
+      m_oldTileset.reset(
+        Tileset::MakeCopyCopyingImages(
+          static_cast<LayerTilemap*>(site.layer())->tileset()));
+      m_remapTilesButton.setVisible(true);
+      layout();
+    }
+  }
+}
+
+void ColorBar::hideRemapPal()
 {
   if (!m_oldPalette)
     return;
 
   m_oldPalette.reset();
-  m_remapButton.setVisible(false);
+  m_remapPalButton.setVisible(false);
+  layout();
+}
+
+void ColorBar::hideRemapTiles()
+{
+  if (!m_oldTileset)
+    return;
+
+  m_oldTileset.reset();
+  m_remapTilesButton.setVisible(false);
   layout();
 }
 
@@ -1162,34 +1329,46 @@ void ColorBar::onNewInputPriority(InputChainElement* element,
       msg && (msg->ctrlPressed() || msg->shiftPressed()))
     return;
 
-  if (element != this)
-    m_paletteView.deselect();
+  if (element != this) {
+    if (m_tilesMode)
+      m_tilesView.deselect();
+    else
+      m_paletteView.deselect();
+  }
 }
 
 bool ColorBar::onCanCut(Context* ctx)
 {
-  return (m_paletteView.getSelectedEntriesCount() > 0);
+  if (m_tilesMode)
+    return (m_tilesView.getSelectedEntriesCount() > 0);
+  else
+    return (m_paletteView.getSelectedEntriesCount() > 0);
 }
 
 bool ColorBar::onCanCopy(Context* ctx)
 {
-  return (m_paletteView.getSelectedEntriesCount() > 0);
+  return onCanCut(ctx);
 }
 
 bool ColorBar::onCanPaste(Context* ctx)
 {
-  return (clipboard::get_current_format() == clipboard::ClipboardPaletteEntries);
+  if (m_tilesMode)
+    return (clipboard::get_current_format() == clipboard::ClipboardTiles);
+  else
+    return (clipboard::get_current_format() == clipboard::ClipboardPaletteEntries);
 }
 
 bool ColorBar::onCanClear(Context* ctx)
 {
-  return (m_paletteView.getSelectedEntriesCount() > 0);
+  return onCanCut(ctx);
 }
 
 bool ColorBar::onCut(Context* ctx)
 {
-  if (m_tilesMode)
+  if (m_tilesMode) {
     m_tilesView.cutToClipboard();
+    showRemapTiles();
+  }
   else
     m_paletteView.cutToClipboard();
   return true;
@@ -1206,8 +1385,10 @@ bool ColorBar::onCopy(Context* ctx)
 
 bool ColorBar::onPaste(Context* ctx)
 {
-  if (m_tilesMode)
+  if (m_tilesMode) {
     m_tilesView.pasteFromClipboard();
+    showRemapTiles();
+  }
   else
     m_paletteView.pasteFromClipboard();
   return true;
@@ -1215,8 +1396,10 @@ bool ColorBar::onPaste(Context* ctx)
 
 bool ColorBar::onClear(Context* ctx)
 {
-  if (m_tilesMode)
+  if (m_tilesMode) {
     m_tilesView.clearSelection();
+    showRemapTiles();
+  }
   else
     m_paletteView.clearSelection();
   return true;
@@ -1416,7 +1599,8 @@ void ColorBar::setupTooltips(TooltipManager* tooltipManager)
   tooltipManager->addTooltipFor(m_buttons.getItem((int)PalButton::SORT), Strings::color_bar_sort_and_gradients(), BOTTOM);
   tooltipManager->addTooltipFor(m_buttons.getItem((int)PalButton::PRESETS), Strings::color_bar_presets(), BOTTOM);
   tooltipManager->addTooltipFor(m_buttons.getItem((int)PalButton::OPTIONS), Strings::color_bar_options(), BOTTOM);
-  tooltipManager->addTooltipFor(&m_remapButton, Strings::color_bar_remap_palette_tooltip(), BOTTOM);
+  tooltipManager->addTooltipFor(&m_remapPalButton, Strings::color_bar_remap_palette_tooltip(), BOTTOM);
+  tooltipManager->addTooltipFor(&m_remapTilesButton, Strings::color_bar_remap_tiles_tooltip(), BOTTOM);
 
   tooltipManager->addTooltipFor(
     m_tilesButton.getItem(0),

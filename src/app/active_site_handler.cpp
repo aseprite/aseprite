@@ -65,6 +65,7 @@ void ActiveSiteHandler::getActiveSiteForDoc(Doc* doc, Site* site)
   site->layer(doc::get<doc::Layer>(data.layer));
   site->frame(data.frame);
   site->selectedColors(data.selectedColors);
+  site->selectedTiles(data.selectedTiles);
 }
 
 void ActiveSiteHandler::setActiveLayerInDoc(Doc* doc, doc::Layer* layer)
@@ -83,6 +84,12 @@ void ActiveSiteHandler::setSelectedColorsInDoc(Doc* doc, const doc::PalettePicks
 {
   Data& data = getData(doc);
   data.selectedColors = picks;
+}
+
+void ActiveSiteHandler::setSelectedTilesInDoc(Doc* doc, const doc::PalettePicks& picks)
+{
+  Data& data = getData(doc);
+  data.selectedTiles = picks;
 }
 
 void ActiveSiteHandler::onAddLayer(DocEvent& ev)

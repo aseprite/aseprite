@@ -5,6 +5,8 @@
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
+#define PAL_TRACE(...) // TRACEARGS
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -52,6 +54,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <cstring>
+#include <set>
 
 namespace app {
 
@@ -67,6 +70,15 @@ public:
   virtual void activeSiteChange(const Site& site, doc::PalettePicks& picks) = 0;
   virtual void clearSelection(PaletteView* paletteView,
                               doc::PalettePicks& picks) = 0;
+  virtual void selectIndex(PaletteView* paletteView,
+                           int index, ui::MouseButtons buttons) = 0;
+  virtual void resizePalette(PaletteView* paletteView,
+                             int newSize) = 0;
+  virtual void dropColors(PaletteView* paletteView,
+                          doc::PalettePicks& picks,
+                          int& currentEntry,
+                          const int beforeIndex,
+                          const bool isCopy) = 0;
   virtual void showEntryInStatusBar(StatusBar* statusBar, int index) = 0;
   virtual void showDragInfoInStatusBar(StatusBar* statusBar, bool copy, int destIndex, int newSize) = 0;
   virtual void showResizeInfoInStatusBar(StatusBar* statusBar, int newSize) = 0;
@@ -103,7 +115,39 @@ public:
         newPalette.setEntry(remap[i], palette.getEntry(i));
     }
 
-    paletteView->setNewPalette(&palette, &newPalette, PaletteViewModification::CLEAR);
+    paletteView->setNewPalette(&palette, &newPalette,
+                               PaletteViewModification::CLEAR);
+  }
+  void selectIndex(PaletteView* paletteView,
+                   int index, ui::MouseButtons buttons) override {
+    // Emit signal
+    if (paletteView->delegate())
+      paletteView->delegate()->onPaletteViewIndexChange(index, buttons);
+  }
+  void resizePalette(PaletteView* paletteView,
+                     int newSize) override {
+    Palette newPalette(*paletteView->currentPalette());
+    newPalette.resize(newSize);
+    paletteView->setNewPalette(paletteView->currentPalette(),
+                               &newPalette,
+                               PaletteViewModification::RESIZE);
+  }
+  void dropColors(PaletteView* paletteView,
+                  doc::PalettePicks& picks,
+                  int& currentEntry,
+                  const int beforeIndex,
+                  const bool isCopy) override {
+    Palette palette(*paletteView->currentPalette());
+    Palette newPalette(palette);
+    move_or_copy_palette_colors(
+      palette,
+      newPalette,
+      picks,
+      currentEntry,
+      beforeIndex,
+      isCopy);
+    paletteView->setNewPalette(&palette, &newPalette,
+                               PaletteViewModification::DRAGANDDROP);
   }
   void showEntryInStatusBar(StatusBar* statusBar, int index) override {
     statusBar->showColor(
@@ -175,7 +219,32 @@ public:
   }
   void clearSelection(PaletteView* paletteView,
                       doc::PalettePicks& picks) override {
-    paletteView->delegate()->onPaletteViewClearTiles(picks);
+    paletteView->delegate()->onTilesViewClearTiles(picks);
+  }
+  void selectIndex(PaletteView* paletteView,
+                   int index, ui::MouseButtons buttons) override {
+    // Emit signal
+    if (paletteView->delegate())
+      paletteView->delegate()->onTilesViewIndexChange(index, buttons);
+  }
+  void resizePalette(PaletteView* paletteView,
+                     int newSize) override {
+    paletteView->delegate()->onTilesViewResize(newSize);
+  }
+  void dropColors(PaletteView* paletteView,
+                  doc::PalettePicks& picks,
+                  int& currentEntry,
+                  const int beforeIndex,
+                  const bool isCopy) override {
+    PAL_TRACE("dropColors");
+
+    doc::Tileset* tileset = this->tileset();
+    ASSERT(tileset);
+    if (!tileset)
+      return;
+
+    paletteView->delegate()->onTilesViewDragAndDrop(
+      tileset, picks, currentEntry, beforeIndex, isCopy);
   }
   void showEntryInStatusBar(StatusBar* statusBar, int index) override {
     statusBar->setStatusText(
@@ -554,9 +623,7 @@ bool PaletteView::onProcessMessage(Message* msg)
             }
           }
 
-          // Emit signal
-          if (m_delegate)
-            m_delegate->onPaletteViewIndexChange(idx, buttons);
+          m_adapter->selectIndex(this, idx, buttons);
         }
       }
 
@@ -590,11 +657,8 @@ bool PaletteView::onProcessMessage(Message* msg)
           case State::RESIZING_PALETTE:
             if (m_hot.part == Hit::COLOR ||
                 m_hot.part == Hit::POSSIBLE_COLOR) {
-              int newPalSize = MAX(1, m_hot.color);
-              Palette newPalette(*currentPalette());
-              newPalette.resize(newPalSize);
-              setNewPalette(currentPalette(), &newPalette,
-                            PaletteViewModification::RESIZE);
+              int newSize = std::max(1, m_hot.color);
+              m_adapter->resizePalette(this, newSize);
             }
             break;
         }
@@ -988,17 +1052,11 @@ PaletteView::Hit PaletteView::hitTest(const gfx::Point& pos)
 
 void PaletteView::dropColors(int beforeIndex)
 {
-  Palette palette(*currentPalette());
-  Palette newPalette(palette);
-  move_or_copy_palette_colors(
-    palette,
-    newPalette,
-    m_selectedEntries,
-    m_currentEntry,
-    beforeIndex,
-    m_copy);
-  setNewPalette(&palette, &newPalette,
-                PaletteViewModification::DRAGANDDROP);
+  m_adapter->dropColors(this,
+                        m_selectedEntries,
+                        m_currentEntry,
+                        beforeIndex,
+                        m_copy);
 }
 
 void PaletteView::getEntryBoundsAndClip(int i, const PalettePicks& entries,

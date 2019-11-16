@@ -35,6 +35,7 @@ namespace app {
       ActiveLayerIsReference      = 1 << 13,
       ActiveLayerIsTilemap        = 1 << 14,
       HasSelectedColors           = 1 << 15,
+      HasSelectedTiles            = 1 << 16,
     };
 
     ContextFlags();

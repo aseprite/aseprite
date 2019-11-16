@@ -4,8 +4,8 @@
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
-#ifndef APP_CMD_REMAP_TILES_H_INCLUDED
-#define APP_CMD_REMAP_TILES_H_INCLUDED
+#ifndef APP_CMD_REMAP_TILESET_H_INCLUDED
+#define APP_CMD_REMAP_TILESET_H_INCLUDED
 #pragma once
 
 #include "app/cmd.h"
@@ -16,11 +16,11 @@ namespace app {
 namespace cmd {
   using namespace doc;
 
-  class RemapTiles : public Cmd
-                   , public WithTileset {
+  class RemapTileset : public Cmd
+                     , public WithTileset {
   public:
-    RemapTiles(Tileset* tileset,
-               const Remap& remap);
+    RemapTileset(Tileset* tileset,
+                 const Remap& remap);
 
   protected:
     void onExecute() override;
@@ -30,7 +30,7 @@ namespace cmd {
     }
 
   private:
-    void incrementVersions(Tileset* tileset);
+    void applyRemap(Tileset* tileset, const Remap& remap);
 
     Remap m_remap;
   };

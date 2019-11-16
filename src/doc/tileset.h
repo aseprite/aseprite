@@ -18,16 +18,21 @@
 
 namespace doc {
 
+  class Remap;
   class Sprite;
 
   class Tileset : public Object {
   public:
     typedef std::vector<ImageRef> Tiles;
     typedef Tiles::iterator iterator;
+    typedef Tiles::const_iterator const_iterator;
 
     Tileset(Sprite* sprite,
             const Grid& grid,
             const tileset_index ntiles);
+
+    static Tileset* MakeCopyWithSameImages(const Tileset* tileset);
+    static Tileset* MakeCopyCopyingImages(const Tileset* tileset);
 
     Sprite* sprite() const { return m_sprite; }
     const Grid& grid() const { return m_grid; }
@@ -40,8 +45,11 @@ namespace doc {
 
     iterator begin() { return m_tiles.begin(); }
     iterator end() { return m_tiles.end(); }
+    const_iterator begin() const { return m_tiles.begin(); }
+    const_iterator end() const { return m_tiles.end(); }
     tile_index size() const { return tile_index(m_tiles.size()); }
     void resize(const tile_index ntiles);
+    void remap(const Remap& remap);
 
     ImageRef get(const tile_index ti) const {
       if (ti < size())
@@ -76,6 +84,20 @@ namespace doc {
                      const tileset_index& tsi);
     const std::string& externalFilename() const { return m_external.filename; }
     tileset_index externalTileset() const { return m_external.tileset; }
+
+    bool operator==(const Tileset& other) const {
+      // TODO compare the all grid members
+      return (m_grid.tileSize() == other.m_grid.tileSize() &&
+              m_tiles == other.m_tiles &&
+              m_name == other.m_name);
+    }
+
+    bool operator!=(const Tileset& other) const {
+      return !operator==(other);
+    }
+
+    // Returns a new empty tile with the tileset specs.
+    ImageRef makeEmptyTile();
 
   private:
     Sprite* m_sprite;

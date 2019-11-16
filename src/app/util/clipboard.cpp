@@ -99,6 +99,7 @@ namespace clipboard {
 using namespace doc;
 
 static std::shared_ptr<Palette> clipboard_palette;
+static std::shared_ptr<Tileset> clipboard_tiles;
 static PalettePicks clipboard_picks;
 static ImageRef clipboard_image;
 static std::shared_ptr<Mask> clipboard_mask;
@@ -226,6 +227,8 @@ ClipboardFormat get_current_format()
     return ClipboardDocRange;
   else if (clipboard_palette && clipboard_picks.picks())
     return ClipboardPaletteEntries;
+  else if (clipboard_tiles && clipboard_picks.picks())
+    return ClipboardTiles;
   else
     return ClipboardNone;
 }

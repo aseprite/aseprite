@@ -91,6 +91,13 @@ namespace app {
       m_selectedColors = colors;
     }
 
+    // Selected tiles selected in the ColorBar
+    const doc::PalettePicks& selectedTiles() const { return m_selectedTiles; }
+    doc::PalettePicks& selectedTiles() { return m_selectedTiles; }
+    void selectedTiles(const doc::PalettePicks& tiles) {
+      m_selectedTiles = tiles;
+    }
+
     const doc::SelectedObjects& selectedSlices() const { return m_selectedSlices; }
     doc::SelectedObjects& selectedSlices() { return m_selectedSlices; }
     void selectedSlices(const doc::SelectedObjects& set) {
@@ -116,6 +123,7 @@ namespace app {
     doc::frame_t m_frame;
     DocRange m_range;
     doc::PalettePicks m_selectedColors;
+    doc::PalettePicks m_selectedTiles;
     doc::SelectedObjects m_selectedSlices;
     TilesetMode m_tilesetMode;
   };

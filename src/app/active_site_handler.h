@@ -39,6 +39,7 @@ namespace app {
     void setActiveLayerInDoc(Doc* doc, doc::Layer* layer);
     void setActiveFrameInDoc(Doc* doc, doc::frame_t frame);
     void setSelectedColorsInDoc(Doc* doc, const doc::PalettePicks& picks);
+    void setSelectedTilesInDoc(Doc* doc, const doc::PalettePicks& picks);
 
   private:
     // DocObserver impl
@@ -52,6 +53,7 @@ namespace app {
       doc::ObjectId layer;
       doc::frame_t frame;
       doc::PalettePicks selectedColors;
+      doc::PalettePicks selectedTiles;
     };
 
     Data& getData(Doc* doc);

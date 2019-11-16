@@ -15,7 +15,8 @@
 #include "app/cmd/clear_cel.h"
 #include "app/cmd/clear_mask.h"
 #include "app/cmd/copy_region.h"
-#include "app/cmd/remap_tiles.h"
+#include "app/cmd/remap_tilemaps.h"
+#include "app/cmd/remap_tileset.h"
 #include "app/cmd/remove_tile.h"
 #include "app/cmd/replace_image.h"
 #include "app/cmd/set_cel_position.h"
@@ -46,7 +47,7 @@
 #include <cmath>
 #include <memory>
 
-#define OPS_TRACE(...)
+#define OPS_TRACE(...)          // TRACE
 
 namespace app {
 
@@ -640,8 +641,46 @@ void remove_unused_tiles_from_tileset(
       OPS_TRACE(" - remap tile[%d] -> %d\n", ti, remap[ti]);
     }
 #endif
-    cmds->executeAndAdd(new cmd::RemapTiles(tileset, remap));
+    cmds->executeAndAdd(new cmd::RemapTilemaps(tileset, remap));
   }
+}
+
+void move_tiles_in_tileset(
+  CmdSequence* cmds,
+  doc::Tileset* tileset,
+  doc::PalettePicks& picks,
+  int& currentEntry,
+  int beforeIndex)
+{
+  OPS_TRACE("move_tiles_in_tileset\n");
+
+  int n = beforeIndex - tileset->size();
+  if (n > 0) {
+    picks.resize(picks.size()+n);
+    while (n-- > 0)
+      cmds->executeAndAdd(new cmd::AddTile(tileset, tileset->makeEmptyTile()));
+  }
+
+  Remap remap = create_remap_to_move_picks(picks, beforeIndex);
+  cmds->executeAndAdd(new cmd::RemapTileset(tileset, remap));
+
+  // New selection
+  auto oldPicks = picks;
+  for (int i=0; i<picks.size(); ++i)
+    picks[remap[i]] = oldPicks[i];
+  currentEntry = remap[currentEntry];
+}
+
+void copy_tiles_in_tileset(
+  CmdSequence* cmds,
+  doc::Tileset* tileset,
+  doc::PalettePicks& picks,
+  int& currentEntry,
+  int beforeIndex)
+{
+  OPS_TRACE("copy_tiles_in_tileset\n");
+
+  // TODO copy tiles
 }
 
 } // namespace app

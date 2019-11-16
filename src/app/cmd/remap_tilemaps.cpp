@@ -8,7 +8,7 @@
 #include "config.h"
 #endif
 
-#include "app/cmd/remap_tiles.h"
+#include "app/cmd/remap_tilemaps.h"
 
 #include "doc/cel.h"
 #include "doc/cels_range.h"
@@ -24,14 +24,14 @@ namespace cmd {
 
 using namespace doc;
 
-RemapTiles::RemapTiles(Tileset* tileset,
-                       const Remap& remap)
+RemapTilemaps::RemapTilemaps(Tileset* tileset,
+                             const Remap& remap)
   : WithTileset(tileset)
   , m_remap(remap)
 {
 }
 
-void RemapTiles::onExecute()
+void RemapTilemaps::onExecute()
 {
   Tileset* tileset = this->tileset();
   Sprite* spr = tileset->sprite();
@@ -39,7 +39,7 @@ void RemapTiles::onExecute()
   incrementVersions(tileset);
 }
 
-void RemapTiles::onUndo()
+void RemapTilemaps::onUndo()
 {
   Tileset* tileset = this->tileset();
   Sprite* spr = tileset->sprite();
@@ -47,7 +47,7 @@ void RemapTiles::onUndo()
   incrementVersions(tileset);
 }
 
-void RemapTiles::incrementVersions(Tileset* tileset)
+void RemapTilemaps::incrementVersions(Tileset* tileset)
 {
   Sprite* spr = tileset->sprite();
   for (const Cel* cel : spr->uniqueCels()) {

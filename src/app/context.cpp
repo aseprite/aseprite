@@ -99,6 +99,11 @@ void Context::setSelectedColors(const doc::PalettePicks& picks)
   onSetSelectedColors(picks);
 }
 
+void Context::setSelectedTiles(const doc::PalettePicks& picks)
+{
+  onSetSelectedTiles(picks);
+}
+
 bool Context::hasModifiedDocuments() const
 {
   for (auto doc : documents())
@@ -239,6 +244,12 @@ void Context::onSetSelectedColors(const doc::PalettePicks& picks)
 {
   if (m_lastSelectedDoc)
     activeSiteHandler()->setSelectedColorsInDoc(m_lastSelectedDoc, picks);
+}
+
+void Context::onSetSelectedTiles(const doc::PalettePicks& picks)
+{
+  if (m_lastSelectedDoc)
+    activeSiteHandler()->setSelectedTilesInDoc(m_lastSelectedDoc, picks);
 }
 
 ActiveSiteHandler* Context::activeSiteHandler() const

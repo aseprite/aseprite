@@ -47,17 +47,26 @@ namespace app {
       const doc::Palette* fromPal, const doc::PalettePicks& from, const doc::PalettePicks& to) { }
     virtual app::Color onPaletteViewGetForegroundIndex() { return app::Color::fromMask(); }
     virtual app::Color onPaletteViewGetBackgroundIndex() { return app::Color::fromMask(); }
-    virtual void onPaletteViewClearTiles(const doc::PalettePicks& tiles) { }
+    virtual void onTilesViewClearTiles(const doc::PalettePicks& tiles) { }
+    virtual void onTilesViewResize(const int newSize) { }
+    virtual void onTilesViewDragAndDrop(doc::Tileset* tileset,
+                                        doc::PalettePicks& picks,
+                                        int& currentEntry,
+                                        const int beforeIndex,
+                                        const bool isCopy) { }
+    virtual void onTilesViewIndexChange(int index, ui::MouseButtons buttons) { }
   };
 
   class AbstractPaletteViewAdapter;
   class PaletteViewAdapter;
+  class TilesetViewAdapter;
 
   class PaletteView : public ui::Widget
                     , public MarchingAnts
                     , public IColorSource
                     , public ContextObserver {
     friend class PaletteViewAdapter;
+    friend class TilesetViewAdapter;
   public:
     enum PaletteViewStyle {
       SelectOneColor,

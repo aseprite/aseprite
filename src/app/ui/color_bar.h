@@ -21,6 +21,7 @@
 #include "doc/object_id.h"
 #include "doc/pixel_format.h"
 #include "doc/sort_palette.h"
+#include "doc/tileset.h"
 #include "obs/connection.h"
 #include "obs/signal.h"
 #include "ui/box.h"
@@ -113,7 +114,7 @@ namespace app {
 
   protected:
     void onAppPaletteChange();
-    void onFocusPaletteView(ui::Message* msg);
+    void onFocusPaletteOrTilesView(ui::Message* msg);
     void onBeforeExecuteCommand(CommandExecutionEvent& ev);
     void onAfterExecuteCommand(CommandExecutionEvent& ev);
     void onSwitchPalEditMode();
@@ -121,7 +122,8 @@ namespace app {
     void onTilesButtonClick();
     void onTilesetModeButtonClick();
     void onTilesetOptionsClick();
-    void onRemapButtonClick();
+    void onRemapPalButtonClick();
+    void onRemapTilesButtonClick();
     void onPaletteIndexChange(PaletteIndexChangeEvent& ev);
     void onFgColorChangeFromPreferences();
     void onBgColorChangeFromPreferences();
@@ -144,11 +146,20 @@ namespace app {
     void onPaletteViewPasteColors(const Palette* fromPal, const doc::PalettePicks& from, const doc::PalettePicks& to) override;
     app::Color onPaletteViewGetForegroundIndex() override;
     app::Color onPaletteViewGetBackgroundIndex() override;
-    void onPaletteViewClearTiles(const doc::PalettePicks& picks) override;
+    void onTilesViewClearTiles(const doc::PalettePicks& picks) override;
+    void onTilesViewResize(const int newSize) override;
+    void onTilesViewDragAndDrop(doc::Tileset* tileset,
+                                doc::PalettePicks& picks,
+                                int& currentEntry,
+                                const int beforeIndex,
+                                const bool isCopy) override;
+    void onTilesViewIndexChange(int index, ui::MouseButtons buttons) override;
 
   private:
-    void showRemap();
-    void hideRemap();
+    void showRemapPal();
+    void showRemapTiles();
+    void hideRemapPal();
+    void hideRemapTiles();
     void setPalette(const doc::Palette* newPalette, const std::string& actionText);
     void setTransparentIndex(int index);
     void updateWarningIcon(const app::Color& color, ui::Button* warningIcon);
@@ -184,7 +195,8 @@ namespace app {
     ScrollableView m_scrollableTilesView;
     PaletteView m_paletteView;
     PaletteView m_tilesView;
-    ui::Button m_remapButton;
+    ui::Button m_remapPalButton;
+    ui::Button m_remapTilesButton;
     ColorSelector m_selector;
     ColorTintShadeTone* m_tintShadeTone;
     ColorSpectrum* m_spectrum;
@@ -206,6 +218,7 @@ namespace app {
     bool m_fromBgButton;
 
     std::unique_ptr<doc::Palette> m_oldPalette;
+    std::unique_ptr<doc::Tileset> m_oldTileset;
     Doc* m_lastDocument;
     doc::ObjectId m_lastTilesetId;
     bool m_ascending;

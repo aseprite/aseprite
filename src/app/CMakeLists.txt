@@ -447,7 +447,8 @@ add_library(app-lib
   cmd/move_layer.cpp
   cmd/patch_cel.cpp
   cmd/remap_colors.cpp
-  cmd/remap_tiles.cpp
+  cmd/remap_tilemaps.cpp
+  cmd/remap_tileset.cpp
   cmd/remove_cel.cpp
   cmd/remove_frame.cpp
   cmd/remove_layer.cpp
@@ -539,6 +540,7 @@ add_library(app-lib
   commands/filters/filter_worker.cpp
   commands/move_colors_command.cpp
   commands/move_thing.cpp
+  commands/move_tiles_command.cpp
   commands/new_params.cpp
   commands/quick_command.cpp
   console.cpp

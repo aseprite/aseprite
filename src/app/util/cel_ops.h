@@ -23,6 +23,7 @@ namespace doc {
   class Cel;
   class Layer;
   class LayerTilemap;
+  class PalettePicks;
   class Sprite;
   class Tileset;
 }
@@ -76,6 +77,20 @@ namespace app {
     CmdSequence* cmds,
     doc::Tileset* tileset,
     std::vector<bool>& unusedTiles);
+
+  void move_tiles_in_tileset(
+    CmdSequence* cmds,
+    doc::Tileset* tileset,
+    doc::PalettePicks& picks,
+    int& currentEntry,
+    int beforeIndex);
+
+  void copy_tiles_in_tileset(
+    CmdSequence* cmds,
+    doc::Tileset* tileset,
+    doc::PalettePicks& picks,
+    int& currentEntry,
+    int beforeIndex);
 
 } // namespace app
 
