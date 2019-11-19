@@ -767,7 +767,9 @@ int DocExporter::addDocumentSamples(
         const Tag* tag = doc->sprite()->tags().innerTag(frame);
         if (oldTag != tag) {
           oldTag = tag;
-          tags.push_back(tag);
+          // Do not include untagged frames
+          if (tag)
+            tags.push_back(tag);
         }
       }
     }
