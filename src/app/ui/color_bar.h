@@ -181,10 +181,10 @@ namespace app {
 
     class WarningIcon;
 
+    ui::HBox m_palHBox;
+    ui::HBox m_tilesHBox;
     ButtonSet m_editPal;
     ButtonSet m_buttons;
-    ui::HBox m_tilesHBox;
-    ui::HBox m_palHBox;
     ButtonSet m_tilesButton;
     ButtonSet m_tilesetModeButtons;
     std::unique_ptr<PalettePopup> m_palettePopup;
