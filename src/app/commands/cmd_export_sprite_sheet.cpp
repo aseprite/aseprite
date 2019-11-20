@@ -229,11 +229,13 @@ void update_doc_exporter_from_params(DocExporter& exporter,
     !selLayers.empty() ? &selLayers: nullptr,
     !selFrames.empty() ? &selFrames: nullptr);
 
-  if (!filename.empty())
-    exporter.setTextureFilename(filename);
-  if (!dataFilename.empty() && saveData) {
-    exporter.setDataFilename(dataFilename);
-    exporter.setDataFormat(dataFormat);
+  if (saveData) {
+    if (!filename.empty())
+      exporter.setTextureFilename(filename);
+    if (!dataFilename.empty()) {
+      exporter.setDataFilename(dataFilename);
+      exporter.setDataFormat(dataFormat);
+    }
   }
   if (!filenameFormat.empty())
     exporter.setFilenameFormat(filenameFormat);
