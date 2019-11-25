@@ -4,8 +4,8 @@
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
-#ifndef FILTERS_INVERT_COLOR_FILTER_H_INCLUDED
-#define FILTERS_INVERT_COLOR_FILTER_H_INCLUDED
+#ifndef FILTERS_OUTLINE_FILTER_H_INCLUDED
+#define FILTERS_OUTLINE_FILTER_H_INCLUDED
 #pragma once
 
 #include "doc/color.h"
