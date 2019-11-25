@@ -168,7 +168,7 @@ private:
 template<>
 void LockAlphaInkProcessing<RgbTraits>::processPixel(int x, int y) {
   color_t result = rgba_blender_normal(*m_srcAddress, m_color, m_opacity);
-  *m_dstAddress = rgba(
+  *m_dstAddress = doc::rgba(
     rgba_getr(result),
     rgba_getg(result),
     rgba_getb(result),
@@ -382,7 +382,7 @@ public:
       m_area.a /= 9;
       *m_dstAddress =
         rgba_blender_merge(*m_srcAddress,
-                           rgba(m_area.r, m_area.g, m_area.b, m_area.a),
+                           doc::rgba(m_area.r, m_area.g, m_area.b, m_area.a),
                            m_opacity);
     }
     else {
@@ -486,7 +486,7 @@ public:
 
       const color_t c =
         rgba_blender_merge(m_palette->getEntry(*m_srcAddress),
-                           rgba(m_area.r, m_area.g, m_area.b, m_area.a),
+                           doc::rgba(m_area.r, m_area.g, m_area.b, m_area.a),
                            m_opacity);
 
       *m_dstAddress = m_rgbmap->mapColor(
@@ -1199,7 +1199,7 @@ bool BrushInkProcessingBase<RgbTraits>::preProcessPixel(int x, int y, color_t* r
     }
     case IMAGE_GRAYSCALE: {
       c = get_pixel_fast<GrayscaleTraits>(m_brushImage, x, y);
-      c = rgba(graya_getv(c), graya_getv(c), graya_getv(c), graya_geta(c));
+      c = doc::rgba(graya_getv(c), graya_getv(c), graya_getv(c), graya_geta(c));
       c = rgba_blender_normal(*m_dstAddress, c, m_opacity);
       break;
     }
@@ -1363,7 +1363,7 @@ template<>
 void BrushLockAlphaInkProcessing<RgbTraits>::processPixel(int x, int y) {
   color_t c;
   if (preProcessPixel(x, y, &c))
-    *m_dstAddress = rgba(rgba_getr(c), rgba_getg(c), rgba_getb(c), rgba_geta(*m_srcAddress));
+    *m_dstAddress = doc::rgba(rgba_getr(c), rgba_getg(c), rgba_getb(c), rgba_geta(*m_srcAddress));
 }
 
 template<>
@@ -1407,10 +1407,10 @@ void BrushEraserInkProcessing<RgbTraits>::processPixel(int x, int y) {
     case IMAGE_RGB: {
       c = get_pixel_fast<RgbTraits>(m_brushImage, x, y);
       int t;
-      c = rgba(rgba_getr(*m_srcAddress),
-               rgba_getg(*m_srcAddress),
-               rgba_getb(*m_srcAddress),
-               MUL_UN8(rgba_geta(*m_dstAddress), 255 - rgba_geta(c), t));
+      c = doc::rgba(rgba_getr(*m_srcAddress),
+                    rgba_getg(*m_srcAddress),
+                    rgba_getb(*m_srcAddress),
+                    MUL_UN8(rgba_geta(*m_dstAddress), 255 - rgba_geta(c), t));
       break;
     }
     case IMAGE_INDEXED: {
@@ -1426,19 +1426,19 @@ void BrushEraserInkProcessing<RgbTraits>::processPixel(int x, int y) {
         // Indexed Sprite.
         c = m_palette->getEntry(c);
       int t;
-      c = rgba(rgba_getr(*m_srcAddress),
-               rgba_getg(*m_srcAddress),
-               rgba_getb(*m_srcAddress),
-               MUL_UN8(rgba_geta(*m_dstAddress), 255 - rgba_geta(c), t));
+      c = doc::rgba(rgba_getr(*m_srcAddress),
+                    rgba_getg(*m_srcAddress),
+                    rgba_getb(*m_srcAddress),
+                    MUL_UN8(rgba_geta(*m_dstAddress), 255 - rgba_geta(c), t));
       break;
     }
     case IMAGE_GRAYSCALE: {
       c = get_pixel_fast<GrayscaleTraits>(m_brushImage, x, y);
       int t;
-      c = rgba(rgba_getr(*m_srcAddress),
-               rgba_getg(*m_srcAddress),
-               rgba_getb(*m_srcAddress),
-               MUL_UN8(rgba_geta(*m_dstAddress), 255 - graya_geta(c), t));
+      c = doc::rgba(rgba_getr(*m_srcAddress),
+                    rgba_getg(*m_srcAddress),
+                    rgba_getb(*m_srcAddress),
+                    MUL_UN8(rgba_geta(*m_dstAddress), 255 - graya_geta(c), t));
       break;
     }
     case IMAGE_BITMAP: {
@@ -1802,7 +1802,7 @@ void BrushCopyInkProcessing<RgbTraits>::processPixel(int x, int y) {
       c = get_pixel_fast<GrayscaleTraits>(m_brushImage, x, y);
       if (graya_geta(c) == 0)
         return;
-      c = rgba(graya_getv(c), graya_getv(c), graya_getv(c), graya_geta(c));
+      c = doc::rgba(graya_getv(c), graya_getv(c), graya_getv(c), graya_geta(c));
       break;
     }
     case IMAGE_BITMAP: {
