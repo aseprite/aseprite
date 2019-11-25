@@ -17,8 +17,6 @@
 
 namespace app {
 
-typedef base::ProgramOptions::Option Option;
-
 AppOptions::AppOptions(int argc, const char* argv[])
   : m_exeName(base::get_file_name(argv[0]))
   , m_startUI(true)
