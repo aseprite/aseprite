@@ -10,6 +10,7 @@
 #pragma once
 
 #include "dio/file_interface.h"
+#include "doc/image_traits.h"
 
 #include <cstring>
 
