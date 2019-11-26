@@ -52,7 +52,7 @@ private:
   bool m_batchMode;
 };
 
-AppOptions args(std::initializer_list<const char*> l) {
+std::unique_ptr<AppOptions> args(std::initializer_list<const char*> l) {
   int argc = l.size()+1;
   const char** argv = new const char*[argc];
   argv[0] = "aseprite.exe";
@@ -61,7 +61,7 @@ AppOptions args(std::initializer_list<const char*> l) {
     argv[i] = *it;
     TRACE("argv[%d] = %s\n", i, argv[i]);
   }
-  AppOptions opts(argc, argv);
+  std::unique_ptr<AppOptions> opts(new AppOptions(argc, argv));
   delete[] argv;
   return opts;
 }
@@ -69,8 +69,8 @@ AppOptions args(std::initializer_list<const char*> l) {
 TEST(Cli, None)
 {
   CliTestDelegate d;
-  AppOptions a = args({ });
-  CliProcessor p(&d, a);
+  auto a = args({ });
+  CliProcessor p(&d, *a);
   p.process(nullptr);
   EXPECT_TRUE(!d.helpWasShown());
   EXPECT_TRUE(!d.versionWasShown());
@@ -79,8 +79,8 @@ TEST(Cli, None)
 TEST(Cli, Help)
 {
   CliTestDelegate d;
-  AppOptions a = args({ "--help" });
-  CliProcessor p(&d, a);
+  auto a = args({ "--help" });
+  CliProcessor p(&d, *a);
   p.process(nullptr);
   EXPECT_TRUE(d.helpWasShown());
 }
@@ -88,8 +88,8 @@ TEST(Cli, Help)
 TEST(Cli, Version)
 {
   CliTestDelegate d;
-  AppOptions a = args({ "--version" });
-  CliProcessor p(&d, a);
+  auto a = args({ "--version" });
+  CliProcessor p(&d, *a);
   p.process(nullptr);
   EXPECT_TRUE(d.versionWasShown());
 }

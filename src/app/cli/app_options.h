@@ -96,6 +96,8 @@ public:
 #endif
 
 private:
+  AppOptions(const AppOptions& that);
+
   std::string m_exeName;
   base::ProgramOptions m_po;
   bool m_startUI;
