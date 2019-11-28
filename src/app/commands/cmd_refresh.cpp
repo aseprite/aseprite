@@ -15,7 +15,7 @@
 #include "ui/system.h"
 #include "ui/theme.h"
 
-#if defined _WIN32 && defined _DEBUG
+#if defined _WIN32 && defined ENABLE_DEVMODE
   #include <windows.h>
 
   #include <psapi.h>
