@@ -19,6 +19,7 @@
 #include "app/script/luacpp.h"
 #include "app/script/userdata.h"
 #include "app/tx.h"
+#include "base/clamp.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
 
@@ -247,16 +248,32 @@ int Layer_set_blendMode(lua_State* L)
 int Layer_set_stackIndex(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
-  int stackIndex = lua_tointeger(L, 2);
+  const auto& layers = layer->parent()->layers();
+  int newStackIndex = lua_tointeger(L, 2);
+  int stackIndex = 1;
   auto parent = layer->parent();
 
+  // First we need to know this layer stackIndex because we'll use
+  auto it = std::find(layers.begin(), layers.end(), layer);
+  ASSERT(it != layers.end());
+  if (it != layers.end())
+    stackIndex = it - layers.begin() + 1;
+
   Layer* beforeThis = nullptr;
-  if (stackIndex < 1) {
-    beforeThis = parent->firstLayer();
+  if (newStackIndex > stackIndex) {
+    ++newStackIndex;
   }
-  else if (stackIndex <= int(parent->layers().size())) {
-    beforeThis = parent->layers()[stackIndex-1];
+
+  if (newStackIndex-1 < int(parent->layers().size())) {
+    beforeThis = parent->layers()[base::clamp(newStackIndex-1, 0, (int)parent->layers().size())];
   }
+  else {
+    beforeThis = nullptr;
+  }
+
+  // Do nothing
+  if (beforeThis == layer)
+    return 0;
 
   Doc* doc = static_cast<Doc*>(layer->sprite()->document());
   Tx tx;
