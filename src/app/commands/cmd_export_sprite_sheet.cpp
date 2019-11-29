@@ -166,10 +166,13 @@ ConstraintType constraint_type_from_params(const ExportSpriteSheetParams& params
 
 #endif // ENABLE_UI
 
-void update_doc_exporter_from_params(DocExporter& exporter,
-                                     const Site& site,
-                                     const ExportSpriteSheetParams& params,
-                                     const bool saveData)
+Doc* generate_sprite_sheet_from_params(
+  DocExporter& exporter,
+  Context* ctx,
+  const Site& site,
+  const ExportSpriteSheetParams& params,
+  const bool saveData,
+  base::task_token& token)
 {
   const app::SpriteSheetType type = params.type();
   const int columns = params.columns();
@@ -260,6 +263,11 @@ void update_doc_exporter_from_params(DocExporter& exporter,
   if (listLayers) exporter.setListLayers(true);
   if (listTags) exporter.setListTags(true);
   if (listSlices) exporter.setListSlices(true);
+
+  // We have to call exportSheet() while RestoreVisibleLayers is still
+  // alive. In this way we can export selected layers correctly if
+  // that option (kSelectedLayers) is selected.
+  return exporter.exportSheet(ctx, token);
 }
 
 std::unique_ptr<Doc> generate_sprite_sheet(
@@ -270,22 +278,22 @@ std::unique_ptr<Doc> generate_sprite_sheet(
   bool saveData,
   base::task_token& token)
 {
-  update_doc_exporter_from_params(exporter, site, params, saveData);
   std::unique_ptr<Doc> newDocument(
-    exporter.exportSheet(ctx, token));
-  if (newDocument) {
-    // Setup a filename for the new document in case that user didn't
-    // save the file/specified one output filename.
-    if (params.textureFilename().empty()) {
-      std::string fn = site.document()->filename();
-      std::string ext = base::get_file_extension(fn);
-      if (!ext.empty())
-        ext.insert(0, 1, '.');
+    generate_sprite_sheet_from_params(exporter, ctx, site, params, saveData, token));
+  if (!newDocument)
+    return nullptr;
 
-      newDocument->setFilename(
-        base::join_path(base::get_file_path(fn),
-                        base::get_file_title(fn) + "-Sheet") + ext);
-    }
+  // Setup a filename for the new document in case that user didn't
+  // save the file/specified one output filename.
+  if (params.textureFilename().empty()) {
+    std::string fn = site.document()->filename();
+    std::string ext = base::get_file_extension(fn);
+    if (!ext.empty())
+      ext.insert(0, 1, '.');
+
+    newDocument->setFilename(
+      base::join_path(base::get_file_path(fn),
+                      base::get_file_title(fn) + "-Sheet") + ext);
   }
   return newDocument;
 }
