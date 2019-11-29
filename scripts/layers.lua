@@ -102,7 +102,53 @@ do
   assert(d.stackIndex == 1)
   assert(c.stackIndex == 2)
 
-  d.stackIndex = 3
+  d.stackIndex = 2
   assert(c.stackIndex == 1)
   assert(d.stackIndex == 2)
+
+  c.stackIndex = 2
+  assert(d.stackIndex == 1)
+  assert(c.stackIndex == 2)
+end
+
+-- Test possible bugs with stackIndex
+do
+  local s = Sprite(4, 4)
+  local a = s.layers[1]    a.name = "a"
+  local b = s:newLayer()   b.name = "b"
+  local c = s:newLayer()   c.name = "c"
+  local d = s:newLayer()   d.name = "d"
+  assert(d.stackIndex == 4)
+  assert(s.layers[4].name == "d")
+
+  d.stackIndex = d.stackIndex+1
+  assert(d.stackIndex == 4)
+  assert(s.layers[4].name == "d")
+
+  -- Go down in the stack
+  d.stackIndex = d.stackIndex-1
+  assert(s.layers[3].name == "d")
+
+  d.stackIndex = d.stackIndex-1
+  assert(s.layers[2].name == "d")
+
+  -- Without change
+  d.stackIndex = d.stackIndex
+  assert(s.layers[2].name == "d")
+
+  -- Go up
+  d.stackIndex = d.stackIndex+1
+  assert(d.stackIndex == 3)
+  assert(s.layers[3].name == "d")
+
+  d.stackIndex = d.stackIndex+1
+  assert(d.stackIndex == 4)
+  assert(s.layers[4].name == "d")
+
+  -- Go specific stack indexes
+  for i=1,4 do
+    d.stackIndex = i
+    assert(d.stackIndex == i)
+    assert(s.layers[i].name == "d")
+  end
 end
