@@ -215,8 +215,9 @@ DataRecoveryView::DataRecoveryView(crash::DataRecovery* dataRecovery)
 
   HBox* hbox = new HBox;
   hbox->addChild(&m_openButton);
-  hbox->addChild(&m_deleteButton);
   hbox->addChild(&m_refreshButton);
+  hbox->addChild(new BoxFiller);
+  hbox->addChild(&m_deleteButton);
   addChild(hbox);
   addChild(&m_view);
 
