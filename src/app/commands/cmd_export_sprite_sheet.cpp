@@ -23,6 +23,7 @@
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
+#include "app/recent_files.h"
 #include "app/restore_visible_layers.h"
 #include "app/task.h"
 #include "app/ui/editor/editor.h"
@@ -1307,6 +1308,10 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     StatusBar* statusbar = StatusBar::instance();
     if (statusbar)
       statusbar->showTip(1000, "Sprite Sheet Generated");
+
+    // Save the exported sprite sheet as a recent file
+    if (newDocument->isAssociatedToFile())
+      App::instance()->recentFiles()->addRecentFile(newDocument->filename());
 
     // Copy background and grid preferences
     DocumentPreferences& newDocPref(
