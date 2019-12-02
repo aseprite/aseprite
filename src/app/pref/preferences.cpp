@@ -50,6 +50,16 @@ Preferences::Preferences()
 
   load();
 
+  // Create a connection with the default document preferences grid
+  // bounds to sync the default grid bounds for new sprites in the
+  // "doc" layer.
+  auto& defPref = document(nullptr);
+  defPref.grid.bounds.AfterChange.connect(
+    [](const gfx::Rect& newValue){
+      doc::Sprite::SetDefaultGridBounds(newValue);
+    });
+  doc::Sprite::SetDefaultGridBounds(defPref.grid.bounds());
+
   // Hide the menu bar depending on:
   // 1. this is the first run of the program
   // 2. the native menu bar is available
@@ -135,21 +145,21 @@ DocumentPreferences& Preferences::document(const Doc* doc)
     DocumentPreferences* docPref = new DocumentPreferences("");
     m_docs[doc] = docPref;
 
-    // If there is not a .ini file with the "doc" preferences to be
-    // loaded, we will setup the default preferences for this file.
-    // (This must be done just one time, when the .ini file with the
-    // specific settings for "doc" doesn't exist.)
-    if (doc && !base::is_file(docConfigFileName(doc))) {
+    // Setup the preferences of this document with the default ones
+    // (these preferences will be overwritten in the next statement
+    // loading the preferences from the .ini file of this doc)
+    if (doc) {
       // The default preferences for this document are the current
       // defaults for (document=nullptr).
       DocumentPreferences& defPref = this->document(nullptr);
       *docPref = defPref;
 
       // Default values for symmetry
-      docPref->symmetry.xAxis.setDefaultValue(doc->sprite()->width()/2);
-      docPref->symmetry.yAxis.setDefaultValue(doc->sprite()->height()/2);
+      docPref->symmetry.xAxis.setValueAndDefault(doc->sprite()->width()/2);
+      docPref->symmetry.yAxis.setValueAndDefault(doc->sprite()->height()/2);
     }
 
+    // Load specific settings of this document
     serializeDocPref(doc, docPref, false);
 
     return *docPref;

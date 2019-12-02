@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -152,7 +153,11 @@ void ResourceFinder::includeUserDir(const char* filename)
 {
 #ifdef _WIN32
 
-  if (App::instance()->isPortable()) {
+  // $ASEPRITE_USER_FOLDER/filename
+  if (const wchar_t* env = _wgetenv(L"ASEPRITE_USER_FOLDER")) {
+    addPath(base::join_path(base::to_utf8(env), filename));
+  }
+  else if (App::instance()->isPortable()) {
     // $BINDIR/filename
     includeBinDir(filename);
   }
@@ -161,20 +166,30 @@ void ResourceFinder::includeUserDir(const char* filename)
     includeHomeDir(filename);
   }
 
-#elif __APPLE__
+#else  // Unix-like
 
-  // $HOME/Library/Application Support/Aseprite/filename
-  addPath(
-    base::join_path(
-      base::join_path(base::get_lib_app_support_path(), PACKAGE),
-      filename).c_str());
+  // $ASEPRITE_USER_FOLDER/filename
+  if (const char* env = std::getenv("ASEPRITE_USER_FOLDER")) {
+    addPath(base::join_path(env, filename));
+  }
+  else {
+  #ifdef __APPLE__
 
-#else
+    // $HOME/Library/Application Support/Aseprite/filename
+    addPath(
+      base::join_path(
+        base::join_path(base::get_lib_app_support_path(), PACKAGE),
+        filename).c_str());
 
-  // $HOME/.config/aseprite/filename
-  includeHomeDir((std::string(".config/aseprite/") + filename).c_str());
+  #else  // !__APPLE__
 
-#endif
+    // $HOME/.config/aseprite/filename
+    includeHomeDir((std::string(".config/aseprite/") + filename).c_str());
+
+  #endif
+  }
+
+#endif  // end Unix-like
 }
 
 void ResourceFinder::includeDesktopDir(const char* filename)

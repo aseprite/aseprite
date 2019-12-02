@@ -34,8 +34,19 @@ namespace doc {
 //////////////////////////////////////////////////////////////////////
 // Constructors/Destructor
 
+static gfx::Rect g_defaultGridBounds(0, 0, 16, 16);
+
 // static
-gfx::Rect Sprite::DefaultGridBounds() { return gfx::Rect(0, 0, 16, 16); }
+gfx::Rect Sprite::DefaultGridBounds()
+{
+  return g_defaultGridBounds;
+}
+
+// static
+void Sprite::SetDefaultGridBounds(const gfx::Rect& defGridBounds)
+{
+  g_defaultGridBounds = defGridBounds;
+}
 
 Sprite::Sprite(const ImageSpec& spec,
                int ncolors)

@@ -86,8 +86,13 @@ namespace app {
 
     // Changes the default value and the current one.
     void setValueAndDefault(const T& value) {
+      bool wasDirty = isDirty();
+
       setDefaultValue(value);
       setValue(value);
+
+      if (!wasDirty)
+        cleanDirtyFlag();
     }
 
     const T& defaultValue() const { return m_default; }

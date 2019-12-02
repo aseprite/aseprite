@@ -101,6 +101,8 @@ namespace doc {
     void setTransparentColor(color_t color);
 
     static gfx::Rect DefaultGridBounds();
+    static void SetDefaultGridBounds(const gfx::Rect& defGridBounds);
+
     const gfx::Rect& gridBounds() const { return m_gridBounds; }
     void setGridBounds(const gfx::Rect& rc) { m_gridBounds = rc; }
 

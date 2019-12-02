@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -42,6 +43,10 @@ namespace app {
 
     // Tries to add the given filename in these locations:
     // For Windows:
+    // - If ASEPRITE_USER_FOLDER environment variable is defined, it
+    //   should point the folder where the "user dir" is (it's useful
+    //   for testing purposes to test with an empty preferences
+    //   folder)
     // - If the app is running in portable mode, the filename
     //   will be in the same location as the .exe file.
     // - If the app is installed, the filename will be inside
