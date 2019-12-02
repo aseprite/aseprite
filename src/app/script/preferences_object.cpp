@@ -89,10 +89,10 @@ int ToolPref_function(lua_State* L)
 
 int DocPref_function(lua_State* L)
 {
-  auto sprite = get_docobj<Sprite>(L, 1);
+  auto sprite = may_get_docobj<Sprite>(L, 1);
   DocumentPreferences& docPref =
     Preferences::instance().document(
-      static_cast<const Doc*>(sprite->document()));
+      sprite ? static_cast<const Doc*>(sprite->document()): nullptr);
   push_ptr(L, (Section*)&docPref);
   return 1;
 }
