@@ -34,6 +34,7 @@ fi
 
 t=$(mktemp -d)
 echo Temp dir: $t
+export ASEPRITE_USER_FOLDER=$t
 
 if [[ "$filter" == "" ]] || [[ "console" =~ $filter ]]; then
     echo ----------------------------------------------------------------------
