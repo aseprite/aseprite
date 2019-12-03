@@ -30,6 +30,8 @@ static void print_pref_class_def(TiXmlElement* elem, const std::string& classNam
 
   if (elem->Attribute("canforce"))
     std::cout << indent << "  void forceSection();\n";
+  if (elem->Attribute("canclear"))
+    std::cout << indent << "  void clearSection();\n";
 
   std::cout
     << indent << "  void load();\n"
@@ -126,7 +128,30 @@ static void print_pref_class_impl(TiXmlElement* elem, const std::string& prefix,
       }
       child = child->NextSiblingElement();
     }
+    std::cout
+      << "}\n";
+  }
 
+  // Section::clearSection()
+  if (elem->Attribute("canclear")) {
+    std::cout
+      << "\n"
+      << "void " << prefix << className << "::clearSection()\n"
+      << "{\n";
+
+    child = (elem->FirstChild() ? elem->FirstChild()->ToElement(): nullptr);
+    while (child) {
+      if (child->Value()) {
+        std::string name = child->Value();
+        const char* childId = child->Attribute("id");
+
+        if (name == "option") {
+          std::string memberName = convert_xmlid_to_cppid(childId, false);
+          std::cout << "  " << memberName << ".clearValue();\n";
+        }
+      }
+      child = child->NextSiblingElement();
+    }
     std::cout
       << "}\n";
   }

@@ -17,19 +17,23 @@ namespace app {
 
   template<typename T>
   void load_option(Option<T>& opt) {
-    opt(get_config_value(opt.section(), opt.id(), opt.defaultValue()));
+    if (get_config_string(opt.section(), opt.id(), nullptr))
+      opt(get_config_value(opt.section(), opt.id(), opt.defaultValue()));
+    else
+      opt.setValueAndDefault(opt.defaultValue());
   }
 
   template<typename T>
   void load_option_with_migration(Option<T>& opt, const char* oldSection, const char* oldName) {
-    if (get_config_string(oldSection, oldName, NULL)) {
+    if (get_config_string(oldSection, oldName, nullptr)) {
       opt(get_config_value(oldSection, oldName, opt.defaultValue()));
       del_config_value(oldSection, oldName);
 
       opt.forceDirtyFlag();
     }
-    else
-      opt(get_config_value(opt.section(), opt.id(), opt.defaultValue()));
+    else {
+      load_option<T>(opt);
+    }
   }
 
   // Save

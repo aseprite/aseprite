@@ -105,8 +105,10 @@ namespace app {
     void cleanDirtyFlag() { m_dirty = false; }
 
     void setValue(const T& newValue) {
-      if (m_value == newValue)
+      if (m_value == newValue) {
+        m_dirty = true;
         return;
+      }
 
       BeforeChange(newValue);
       if (m_section)
@@ -118,6 +120,11 @@ namespace app {
       AfterChange(newValue);
       if (m_section)
         m_section->AfterChange();
+    }
+
+    void clearValue() {
+      m_value = m_default;
+      m_dirty = false;
     }
 
 #ifdef ENABLE_SCRIPTING

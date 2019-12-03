@@ -433,7 +433,7 @@
       <option id="current_layer" type="bool" default="false" />
       <option id="position" type="render::OnionskinPosition" default="render::OnionskinPosition::BEHIND" />
     </section>
-    <section id="save_copy">
+    <section id="save_copy" canclear="true">
       <option id="filename" type="std::string" />
       <option id="resize_scale" type="double" default="1" />
       <option id="layer" type="std::string" />

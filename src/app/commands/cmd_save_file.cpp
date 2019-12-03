@@ -189,13 +189,7 @@ std::string SaveFileBaseCommand::saveAsDialog(
     //   https://github.com/aseprite/aseprite/issues/1964
     //
     auto& docPref = Preferences::instance().document(document);
-    docPref.saveCopy.filename(docPref.saveCopy.filename.defaultValue());
-    docPref.saveCopy.aniDir(docPref.saveCopy.aniDir.defaultValue());
-    docPref.saveCopy.applyPixelRatio(docPref.saveCopy.applyPixelRatio.defaultValue());
-    docPref.saveCopy.frameTag(docPref.saveCopy.frameTag.defaultValue());
-    docPref.saveCopy.layer(docPref.saveCopy.layer.defaultValue());
-    docPref.saveCopy.forTwitter(docPref.saveCopy.forTwitter.defaultValue());
-    docPref.saveCopy.resizeScale(docPref.saveCopy.resizeScale.defaultValue());
+    docPref.saveCopy.clearSection();
   }
 
   return filename;
