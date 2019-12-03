@@ -654,6 +654,11 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
       rendered.get(), m_sprite, m_frame, gfx::Clip(0, 0, rc2));
 
     m_renderEngine->removeExtraImage();
+
+    // If the checked background is visible in this sprite, we save
+    // all settings of the background for this document.
+    if (!m_sprite->isOpaque())
+      m_docPref.bg.forceSection();
   }
   catch (const std::exception& e) {
     Console::showException(e);
@@ -724,7 +729,11 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
 
         drawGrid(g, enclosingRect, Rect(0, 0, 1, 1),
                  m_docPref.pixelGrid.color(), alpha);
+
+        // Save all pixel grid settings that are unset
+        m_docPref.pixelGrid.forceSection();
       }
+      m_docPref.show.pixelGrid.forceDirtyFlag();
 
       // Draw the grid
       if (m_docPref.show.grid()) {
@@ -745,7 +754,11 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
                      m_docPref.grid.color(), alpha);
           }
         }
+
+        // Save all grid settings that are unset
+        m_docPref.grid.forceSection();
       }
+      m_docPref.show.grid.forceDirtyFlag();
     }
   }
 }

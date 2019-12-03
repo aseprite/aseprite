@@ -394,19 +394,19 @@
       <option id="x_axis" type="double" default="0" />
       <option id="y_axis" type="double" default="0" />
     </section>
-    <section id="grid">
+    <section id="grid" canforce="true">
       <option id="snap" type="bool" default="false" />
       <option id="bounds" type="gfx::Rect" default="doc::Sprite::DefaultGridBounds()" />
       <option id="color" type="app::Color" default="app::Color::fromRgb(0, 0, 255)" />
       <option id="opacity" type="int" default="160" />
       <option id="auto_opacity" type="bool" default="true" />
     </section>
-    <section id="pixel_grid">
+    <section id="pixel_grid" canforce="true">
       <option id="color" type="app::Color" default="app::Color::fromRgb(200, 200, 200)" />
       <option id="opacity" type="int" default="160" />
       <option id="auto_opacity" type="bool" default="true" />
     </section>
-    <section id="bg">
+    <section id="bg" canforce="true">
       <option id="type" type="BgType" default="BgType::CHECKED_16x16" />
       <option id="size" type="gfx::Size" default="gfx::Size(16, 16)" />
       <option id="zoom" type="bool" default="true" />

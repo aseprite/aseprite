@@ -1,5 +1,6 @@
 // Aseprite Code Generator
-// Copyright (c) 2014-2018 David Capello
+// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2014-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -26,6 +27,9 @@ static void print_pref_class_def(TiXmlElement* elem, const std::string& classNam
     << indent << "class " << className << " : public Section {\n"
     << indent << "public:\n"
     << indent << "  " << className << "(const std::string& name);\n";
+
+  if (elem->Attribute("canforce"))
+    std::cout << indent << "  void forceSection();\n";
 
   std::cout
     << indent << "  void load();\n"
@@ -101,6 +105,31 @@ static void print_pref_class_impl(TiXmlElement* elem, const std::string& prefix,
   std::cout
     << "{\n"
     << "}\n";
+
+  // Section::forceSection()
+  if (elem->Attribute("canforce")) {
+    std::cout
+      << "\n"
+      << "void " << prefix << className << "::forceSection()\n"
+      << "{\n";
+
+    child = (elem->FirstChild() ? elem->FirstChild()->ToElement(): nullptr);
+    while (child) {
+      if (child->Value()) {
+        std::string name = child->Value();
+        const char* childId = child->Attribute("id");
+
+        if (name == "option") {
+          std::string memberName = convert_xmlid_to_cppid(childId, false);
+          std::cout << "  " << memberName << ".forceDirtyFlag();\n";
+        }
+      }
+      child = child->NextSiblingElement();
+    }
+
+    std::cout
+      << "}\n";
+  }
 
   // Section::load()
 
