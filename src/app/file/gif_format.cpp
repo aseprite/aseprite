@@ -24,6 +24,7 @@
 #include "base/file_handle.h"
 #include "base/fs.h"
 #include "doc/doc.h"
+#include "gfx/clip.h"
 #include "render/dithering.h"
 #include "render/ordered_dither.h"
 #include "render/quantization.h"
@@ -328,8 +329,15 @@ private:
       m_gifFile->Image.Width,
       m_gifFile->Image.Height);
 
+#if 0 // Generally GIF files should contain frame bounds inside the
+      // canvas bounds (in other case the GIF will contain pixels that
+      // are not visible). In case that some app creates an invalid
+      // GIF files with bounds outside the canvas, we should support
+      // to load the GIF file anyway (which is what is done by other
+      // apps).
     if (!m_spriteBounds.contains(frameBounds))
       throw Exception("Image %d is out of sprite bounds.\n", (int)m_frameNum);
+#endif
 
     // Create sprite if this is the first frame
     if (!m_sprite)
@@ -340,8 +348,11 @@ private:
       m_sprite->addFrame(m_frameNum);
 
     // Create a temporary image loading the frame pixels from the GIF file
-    std::unique_ptr<Image> frameImage(
-      readFrameIndexedImage(frameBounds));
+    std::unique_ptr<Image> frameImage;
+    // We don't know if a GIF file could contain empty bounds (width
+    // or height=0), but we check this just in case.
+    if (!frameBounds.isEmpty())
+      frameImage.reset(readFrameIndexedImage(frameBounds));
 
     GIF_TRACE("GIF: Frame[%d] transparent index = %d\n", (int)m_frameNum, m_localTransparentIndex);
 
@@ -353,7 +364,8 @@ private:
     }
 
     // Merge this frame colors with the current palette
-    updatePalette(frameImage.get());
+    if (frameImage)
+      updatePalette(frameImage.get());
 
     // Convert the sprite to RGB if we have more than 256 colors
     if ((m_sprite->pixelFormat() == IMAGE_INDEXED) &&
@@ -365,11 +377,13 @@ private:
     }
 
     // Composite frame with previous frame
-    if (m_sprite->pixelFormat() == IMAGE_INDEXED) {
-      compositeIndexedImageToIndexed(frameBounds, frameImage.get());
-    }
-    else {
-      compositeIndexedImageToRgb(frameBounds, frameImage.get());
+    if (frameImage) {
+      if (m_sprite->pixelFormat() == IMAGE_INDEXED) {
+        compositeIndexedImageToIndexed(frameBounds, frameImage.get());
+      }
+      else {
+        compositeIndexedImageToRgb(frameBounds, frameImage.get());
+      }
     }
 
     // Create cel
@@ -610,61 +624,68 @@ private:
 
   void compositeIndexedImageToIndexed(const gfx::Rect& frameBounds,
                                       const Image* frameImage) {
-    const LockImageBits<IndexedTraits> srcBits(
-      frameImage, gfx::Rect(0, 0, frameBounds.w, frameBounds.h));
-    LockImageBits<IndexedTraits> dstBits(
-      m_currentImage.get(), frameBounds);
+    gfx::Clip clip(frameBounds.x, frameBounds.y, 0, 0,
+                   frameBounds.w, frameBounds.h);
+    if (!clip.clip(m_currentImage->width(),
+                   m_currentImage->height(),
+                   frameImage->width(),
+                   frameImage->height()))
+      return;
 
-    auto srcIt = srcBits.begin();
-    auto dstIt = dstBits.begin();
+    const LockImageBits<IndexedTraits> srcBits(frameImage, clip.srcBounds());
+    LockImageBits<IndexedTraits> dstBits(m_currentImage.get(), clip.dstBounds());
+
+    auto srcIt = srcBits.begin(), srcEnd = srcBits.end();
+    auto dstIt = dstBits.begin(), dstEnd = dstBits.end();
 
     // Compose the frame image with the previous frame
-    for (int y=0; y<frameBounds.h; ++y) {
-      for (int x=0; x<frameBounds.w; ++x, ++srcIt, ++dstIt) {
-        ASSERT(srcIt != srcBits.end());
-        ASSERT(dstIt != dstBits.end());
+    for (; srcIt != srcEnd && dstIt != dstEnd; ++srcIt, ++dstIt) {
+      color_t i = *srcIt;
+      if (int(i) == m_localTransparentIndex)
+        continue;
 
-        color_t i = *srcIt;
-        if (int(i) == m_localTransparentIndex)
-          continue;
-
-        i = m_remap[i];
-
-        *dstIt = i;
-      }
+      i = m_remap[i];
+      *dstIt = i;
     }
+
+    ASSERT(srcIt == srcEnd);
+    ASSERT(dstIt == dstEnd);
   }
 
   void compositeIndexedImageToRgb(const gfx::Rect& frameBounds,
                                   const Image* frameImage) {
-    const LockImageBits<IndexedTraits> srcBits(
-      frameImage, gfx::Rect(0, 0, frameBounds.w, frameBounds.h));
-    LockImageBits<RgbTraits> dstBits(
-      m_currentImage.get(), frameBounds);
+    gfx::Clip clip(frameBounds.x, frameBounds.y, 0, 0,
+                   frameBounds.w, frameBounds.h);
+    if (!clip.clip(m_currentImage->width(),
+                   m_currentImage->height(),
+                   frameImage->width(),
+                   frameImage->height()))
+      return;
 
-    auto srcIt = srcBits.begin();
-    auto dstIt = dstBits.begin();
+    const LockImageBits<IndexedTraits> srcBits(frameImage, clip.srcBounds());
+    LockImageBits<RgbTraits> dstBits(m_currentImage.get(), clip.dstBounds());
+
+    auto srcIt = srcBits.begin(), srcEnd = srcBits.end();
+    auto dstIt = dstBits.begin(), dstEnd = dstBits.end();
 
     ColorMapObject* colormap = getFrameColormap();
 
     // Compose the frame image with the previous frame
-    for (int y=0; y<frameBounds.h; ++y) {
-      for (int x=0; x<frameBounds.w; ++x, ++srcIt, ++dstIt) {
-        ASSERT(srcIt != srcBits.end());
-        ASSERT(dstIt != dstBits.end());
+    for (; srcIt != srcEnd && dstIt != dstEnd; ++srcIt, ++dstIt) {
+      color_t i = *srcIt;
+      if (int(i) == m_localTransparentIndex)
+        continue;
 
-        color_t i = *srcIt;
-        if (int(i) == m_localTransparentIndex)
-          continue;
+      i = rgba(
+        colormap->Colors[i].Red,
+        colormap->Colors[i].Green,
+        colormap->Colors[i].Blue, 255);
 
-        i = rgba(
-          colormap->Colors[i].Red,
-          colormap->Colors[i].Green,
-          colormap->Colors[i].Blue, 255);
-
-        *dstIt = i;
-      }
+      *dstIt = i;
     }
+
+    ASSERT(srcIt == srcEnd);
+    ASSERT(dstIt == dstEnd);
   }
 
   void createCel() {
