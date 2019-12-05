@@ -497,7 +497,18 @@
         <param name="byGrid" value="true" />
       </key>
       <key command="NewFrame">
-	<param name="content" value="cel" />
+        <param name="content" value="cel" />
+      </key>
+      <key command="Screenshot" />
+      <key command="Screenshot">
+        <param name="srgb" value="false" />
+      </key>
+      <key command="Screenshot">
+        <param name="save" value="true" />
+      </key>
+      <key command="Screenshot">
+        <param name="save" value="true" />
+        <param name="srgb" value="false" />
       </key>
     </commands>
 
