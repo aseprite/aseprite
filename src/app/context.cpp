@@ -17,6 +17,7 @@
 #include "app/commands/commands.h"
 #include "app/console.h"
 #include "app/doc.h"
+#include "app/pref/preferences.h"
 #include "app/site.h"
 #include "base/scoped_value.h"
 #include "doc/layer.h"
@@ -32,10 +33,12 @@ Context::Context()
   , m_lastSelectedDoc(nullptr)
 {
   m_docs.add_observer(this);
+  m_docs.add_observer(&Preferences::instance());
 }
 
 Context::~Context()
 {
+  m_docs.remove_observer(&Preferences::instance());
   m_docs.remove_observer(this);
 }
 

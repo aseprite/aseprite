@@ -76,6 +76,7 @@ namespace app {
     void removeDocument(Doc* doc);
 
   protected:
+    // DocsObserver impl
     void onRemoveDocument(Doc* doc) override;
 
   private:

@@ -14,7 +14,6 @@
 #include "app/app.h"
 #include "app/doc.h"
 #include "app/modules/editors.h"
-#include "app/pref/preferences.h"
 #include "app/site.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/doc_view.h"
@@ -39,8 +38,6 @@ UIContext* UIContext::m_instance = nullptr;
 UIContext::UIContext()
   : m_lastSelectedView(nullptr)
 {
-  documents().add_observer(&Preferences::instance());
-
   ASSERT(m_instance == NULL);
   m_instance = this;
 }
@@ -49,8 +46,6 @@ UIContext::~UIContext()
 {
   ASSERT(m_instance == this);
   m_instance = NULL;
-
-  documents().remove_observer(&Preferences::instance());
 
   // The context must be empty at this point. (It's to check if the UI
   // is working correctly, i.e. closing all files when the user can
