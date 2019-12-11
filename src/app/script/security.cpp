@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -31,6 +32,7 @@
 namespace app {
 namespace script {
 
+#ifdef ENABLE_UI
 namespace {
 
 // Map from .lua file name -> sha1
@@ -65,6 +67,7 @@ std::string get_script_filename(lua_State* L)
 }
 
 } // anonymous namespace
+#endif // ENABLE_UI
 
 int secure_io_open(lua_State* L)
 {

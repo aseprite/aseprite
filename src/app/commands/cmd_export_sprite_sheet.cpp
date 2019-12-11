@@ -1185,7 +1185,6 @@ bool ExportSpriteSheetCommand::onEnabled(Context* context)
 void ExportSpriteSheetCommand::onExecute(Context* context)
 {
   Site site = context->activeSite();
-  Doc* document = site.document();
   auto& params = this->params();
   DocExporter exporter;
 
@@ -1197,6 +1196,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   // and when the Preferences::m_docs collection is iterated to save
   // all DocumentPreferences, it accesses an invalid Doc* pointer (an
   // already removed/deleted document).
+  Doc* document = site.document();
   DocumentPreferences& docPref(Preferences::instance().document(document));
 
   // Show UI if the user specified it explicitly (params.ui=true) or
