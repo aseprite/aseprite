@@ -33,6 +33,7 @@ namespace app {
   class Command;
   class Doc;
   class DocView;
+  class Preferences;
 
   class CommandPreconditionException : public base::Exception {
   public:
@@ -68,6 +69,8 @@ namespace app {
 
     const Docs& documents() const { return m_docs; }
     Docs& documents() { return m_docs; }
+
+    Preferences& preferences() const;
 
     virtual bool isUIAvailable() const     { return false; }
     virtual bool isRecordingMacro() const  { return false; }
@@ -116,10 +119,11 @@ namespace app {
   private:
     ActiveSiteHandler* activeSiteHandler() const;
 
-    Docs m_docs;
+    mutable Docs m_docs;
     ContextFlags m_flags;       // Last updated flags.
     Doc* m_lastSelectedDoc;
     mutable std::unique_ptr<ActiveSiteHandler> m_activeSiteHandler;
+    mutable std::unique_ptr<Preferences> m_preferences;
 
     DISABLE_COPYING(Context);
   };

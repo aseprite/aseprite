@@ -44,9 +44,13 @@ Preferences::Preferences()
   ASSERT(!singleton);
   singleton = this;
 
+  // Main configuration file
+  const std::string fn = main_config_filename();
+  ASSERT(!fn.empty());
+
   // The first time we execute the program, the configuration file
   // doesn't exist.
-  const bool firstTime = (!base::is_file(main_config_filename()));
+  const bool firstTime = (!base::is_file(fn));
 
   load();
 

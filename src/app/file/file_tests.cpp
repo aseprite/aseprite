@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -12,8 +12,6 @@
 #include "app/doc.h"
 #include "app/file/file.h"
 #include "app/file/file_formats_manager.h"
-#include "app/ini_file.h"
-#include "app/pref/preferences.h"
 #include "doc/doc.h"
 
 #include <cstdio>
@@ -24,11 +22,6 @@ using namespace app;
 
 TEST(File, SeveralSizes)
 {
-  // Now we need a preferences instance to load/save files (for color
-  // profiles management).
-  push_config_state();
-  Preferences preferences;
-
   // Register all possible image formats.
   std::vector<char> fn(256);
   app::Context ctx;

@@ -37,15 +37,16 @@ UIContext* UIContext::m_instance = nullptr;
 
 UIContext::UIContext()
   : m_lastSelectedView(nullptr)
+  , m_closedDocs(preferences())
 {
-  ASSERT(m_instance == NULL);
+  ASSERT(m_instance == nullptr);
   m_instance = this;
 }
 
 UIContext::~UIContext()
 {
   ASSERT(m_instance == this);
-  m_instance = NULL;
+  m_instance = nullptr;
 
   // The context must be empty at this point. (It's to check if the UI
   // is working correctly, i.e. closing all files when the user can

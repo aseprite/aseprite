@@ -24,10 +24,10 @@ namespace app {
 // spaces must be done.
 static bool g_manage = false;
 
-void initialize_color_spaces()
+void initialize_color_spaces(Preferences& pref)
 {
-  g_manage = Preferences::instance().color.manage();
-  Preferences::instance().color.manage.AfterChange.connect(
+  g_manage = pref.color.manage();
+  pref.color.manage.AfterChange.connect(
     [](bool manage){
       g_manage = manage;
     });

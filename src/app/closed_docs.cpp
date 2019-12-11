@@ -19,12 +19,11 @@
 
 namespace app {
 
-ClosedDocs::ClosedDocs()
+ClosedDocs::ClosedDocs(const Preferences& pref)
   : m_done(false)
 {
   CLOSEDOC_TRACE("CLOSEDOC: Init");
 
-  const auto& pref = Preferences::instance();
   if (pref.general.dataRecovery())
     m_dataRecoveryPeriodMSecs = int(1000.0*60.0*pref.general.dataRecoveryPeriod());
   else

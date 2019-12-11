@@ -31,15 +31,26 @@ namespace app {
 Context::Context()
   : m_docs(this)
   , m_lastSelectedDoc(nullptr)
+  , m_preferences(nullptr)
 {
   m_docs.add_observer(this);
-  m_docs.add_observer(&Preferences::instance());
 }
 
 Context::~Context()
 {
-  m_docs.remove_observer(&Preferences::instance());
+  if (m_preferences)
+    m_docs.remove_observer(m_preferences.get());
+
   m_docs.remove_observer(this);
+}
+
+Preferences& Context::preferences() const
+{
+  if (!m_preferences) {
+    m_preferences.reset(new Preferences);
+    m_docs.add_observer(m_preferences.get());
+  }
+  return *m_preferences;
 }
 
 void Context::sendDocumentToTop(Doc* document)

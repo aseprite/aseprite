@@ -18,6 +18,7 @@
 namespace app {
 
   class Doc;
+  class Preferences;
 
   // Handle the list of closed docs:
   // * When a document is closed, we keep it for some time so the user
@@ -29,7 +30,7 @@ namespace app {
   //   the document was restore, we remove it from the m_docs.
   class ClosedDocs {
   public:
-    ClosedDocs();
+    ClosedDocs(const Preferences& pref);
     ~ClosedDocs();
 
     bool hasClosedDocs();

@@ -103,8 +103,14 @@ private:
 
 class App::CoreModules {
 public:
+#ifdef ENABLE_UI
+  typedef app::UIContext ContextT;
+#else
+  typedef app::Context ContextT;
+#endif
+
   ConfigModule m_configModule;
-  Preferences m_preferences;
+  ContextT m_context;
 };
 
 class App::LoadLanguage {
@@ -117,12 +123,6 @@ public:
 
 class App::Modules {
 public:
-#ifdef ENABLE_UI
-  typedef app::UIContext ContextT;
-#else
-  typedef app::Context ContextT;
-#endif
-
   LoggerModule m_loggerModule;
   FileSystemModule m_file_system_module;
   Extensions m_extensions;
@@ -131,7 +131,6 @@ public:
   tools::ToolBox m_toolbox;
   tools::ActiveToolManager m_activeToolManager;
   Commands m_commands;
-  ContextT m_context;
 #ifdef ENABLE_UI
   RecentFiles m_recent_files;
   InputChain m_inputChain;
@@ -161,9 +160,9 @@ public:
     return m_recovery;
   }
 
-  void createDataRecovery() {
+  void createDataRecovery(Context* ctx) {
 #ifdef ENABLE_DATA_RECOVERY
-    m_recovery = new app::crash::DataRecovery(&m_context);
+    m_recovery = new app::crash::DataRecovery(ctx);
     m_recovery->SessionsListIsReady.connect(
       [] {
         ui::assert_ui_thread();
@@ -252,7 +251,7 @@ int App::initialize(const AppOptions& options)
       break;
   }
 
-  initialize_color_spaces();
+  initialize_color_spaces(preferences());
 
   // Load modules
   m_modules = new Modules(createLogInDesktop, preferences());
@@ -263,7 +262,7 @@ int App::initialize(const AppOptions& options)
 
   // Data recovery is enabled only in GUI mode
   if (isGui() && preferences().general.dataRecovery())
-    m_modules->createDataRecovery();
+    m_modules->createDataRecovery(context());
 
   if (isPortable())
     LOG("APP: Running in portable mode\n");
@@ -319,7 +318,7 @@ int App::initialize(const AppOptions& options)
       delegate.reset(new DefaultCliDelegate);
 
     CliProcessor cli(delegate.get(), options);
-    int code = cli.process(&m_modules->m_context);
+    int code = cli.process(context());
     if (code != 0)
       return code;
   }
@@ -337,7 +336,7 @@ void App::run()
     // How to interpret one finger on Windows tablets.
     ui::Manager::getDefault()->getDisplay()
       ->setInterpretOneFingerGestureAsMouseMovement(
-        Preferences::instance().experimental.oneFingerAsMouseMovement());
+        preferences().experimental.oneFingerAsMouseMovement());
 #endif
 
 #if !defined(_WIN32) && !defined(__APPLE__)
@@ -417,7 +416,7 @@ void App::run()
 #ifdef ENABLE_UI
   if (isGui()) {
     // Select no document
-    m_modules->m_context.setActiveView(nullptr);
+    static_cast<UIContext*>(context())->setActiveView(nullptr);
 
     // Delete backups (this is a normal shutdown, we are not handling
     // exceptions, and we are not in a destructor).
@@ -428,10 +427,10 @@ void App::run()
   // Destroy all documents from the UIContext.
   std::vector<Doc*> docs;
 #ifdef ENABLE_UI
-  for (Doc* doc : m_modules->m_context.getAndRemoveAllClosedDocs())
+  for (Doc* doc : static_cast<UIContext*>(context())->getAndRemoveAllClosedDocs())
     docs.push_back(doc);
 #endif
-  for (Doc* doc : m_modules->m_context.documents())
+  for (Doc* doc : context()->documents())
     docs.push_back(doc);
   for (Doc* doc : docs) {
     // First we close the document. In this way we receive recent
@@ -496,7 +495,7 @@ App::~App()
     // the scripts have a reproducible behavior. Those reset
     // preferences must not be saved.
     if (isGui())
-      m_coreModules->m_preferences.save();
+      preferences().save();
 
     delete m_coreModules;
 
@@ -523,7 +522,7 @@ App::~App()
 
 Context* App::context()
 {
-  return &m_modules->m_context;
+  return &m_coreModules->m_context;
 }
 
 bool App::isPortable()
@@ -591,7 +590,7 @@ Timeline* App::timeline() const
 
 Preferences& App::preferences() const
 {
-  return m_coreModules->m_preferences;
+  return m_coreModules->m_context.preferences();
 }
 
 Extensions& App::extensions() const

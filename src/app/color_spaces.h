@@ -19,8 +19,9 @@ namespace doc {
 }
 
 namespace app {
+  class Preferences;
 
-  void initialize_color_spaces();
+  void initialize_color_spaces(Preferences& pref);
 
   os::ColorSpacePtr get_screen_color_space();
 
