@@ -39,7 +39,7 @@ do
   -- Set default preferences
   local defPref = app.preferences.document(nil)
   defPref.grid.bounds = Rectangle(0, 0, 10, 10)
-  defPref.grid.color = Color(255, 255, 0) -- White
+  defPref.grid.color = Color(255, 255, 0) -- Yellow
   assert(defPref.grid.bounds == Rectangle(0, 0, 10, 10))
   assert(defPref.grid.color == Color(255, 255, 0))
 
@@ -56,7 +56,7 @@ do
   do -- File with specific preferences
     local doc = Sprite(32, 32)
     local docPref = app.preferences.document(doc)
-    docPref.grid.color = Color(0, 128, 0)
+    docPref.grid.color = Color(0, 128, 0) -- Green
     assert(docPref.grid.bounds == Rectangle(0, 0, 10, 10))
     assert(docPref.grid.color == Color(0, 128, 0))
     doc:saveAs('_test_pref2.png')
