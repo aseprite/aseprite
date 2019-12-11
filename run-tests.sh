@@ -33,6 +33,12 @@ if [[ "$filter" != "" ]]; then
 fi
 
 t=$(mktemp -d)
+if [[ "$(uname)" =~ "MINGW32" ]] || [[ "$(uname)" =~ "MSYS_NT-10.0" ]] ; then
+    PWDARG=-W
+    t=$(cd "$t" && pwd $PWDARG)
+else
+    PWDARG=
+fi
 echo Temp dir: $t
 export ASEPRITE_USER_FOLDER=$t
 

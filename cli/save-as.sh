@@ -2,7 +2,7 @@
 # Copyright (C) 2018-2019 Igara Studio S.A.
 
 function list_files() {
-    oldwd=$(pwd)
+    oldwd=$(pwd $PWDARG)
     cd $1 && ls -1 *.*
     cd $oldwd
 }
@@ -162,7 +162,7 @@ $ASEPRITE -b -script "$d/compare.lua" || exit 1
 
 d=$t/save-as-without-path
 mkdir $d
-oldwd=$(pwd)
+oldwd=$(pwd $PWDARG)
 cd $d
 $ASEPRITE -b -split-layers $oldwd/sprites/abcd.aseprite -save-as issue591.png || exit 1
 if [[ ! -f "issue591 (a).png" ||
