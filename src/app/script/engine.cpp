@@ -135,6 +135,7 @@ int unsupported(lua_State* L)
 
 void register_app_object(lua_State* L);
 void register_app_pixel_color_object(lua_State* L);
+void register_app_fs_object(lua_State* L);
 void register_app_command_object(lua_State* L);
 void register_app_preferences_object(lua_State* L);
 
@@ -232,6 +233,7 @@ Engine::Engine()
   // Register global app object
   register_app_object(L);
   register_app_pixel_color_object(L);
+  register_app_fs_object(L);
   register_app_command_object(L);
   register_app_preferences_object(L);
 
