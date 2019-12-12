@@ -33,6 +33,8 @@
 #include <map>
 #include <string>
 
+#define TRACE_DIALOG(...) // TRACEARGS
+
 namespace app {
 namespace script {
 
@@ -64,10 +66,6 @@ struct Dialog {
   int showRef = LUA_REFNIL;
   lua_State* L = nullptr;
 
-  // A reference to a table with pointers to functions for events
-  // (e.g. onclick callbacks).
-  int callbacksTableRef = LUA_REFNIL;
-
   Dialog()
     : window(ui::Window::WithTitleBar, "Script"),
       grid(2, false) {
@@ -75,6 +73,9 @@ struct Dialog {
     window.Close.connect([this](ui::CloseEvent&){ unrefShow(); });
   }
 
+  // When we show the dialog, we reference it from the registry to
+  // keep the dialog alive in case that the user declared it as a
+  // "local" variable but called Dialog:show{wait=false}
   void refShow(lua_State* L) {
     if (showRef == LUA_REFNIL) {
       this->L = L;
@@ -83,6 +84,11 @@ struct Dialog {
     }
   }
 
+  // When the dialog is closed, we unreference it from the registry so
+  // now the dialog can be GC'd if there are no other references to it
+  // (all references to the dialog itself from callbacks are stored in
+  // the same dialog uservalue, so when the dialog+callbacks are not
+  // used anymore they are GC'd as a group)
   void unrefShow() {
     if (showRef != LUA_REFNIL) {
       luaL_unref(this->L, LUA_REGISTRYINDEX, showRef);
@@ -90,6 +96,7 @@ struct Dialog {
       L = nullptr;
     }
   }
+
 };
 
 template<typename Signal,
@@ -100,21 +107,31 @@ void Dialog_connect_signal(lua_State* L,
 {
   auto dlg = get_obj<Dialog>(L, 1);
 
-  // Add a reference to the onclick function
-  const int ref = dlg->callbacksTableRef;
-  lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
+  // Here we get the uservalue of the dlg (the table with
+  // functions/callbacks) and store a copy of the given function in
+  // the stack (index=-1) in that table.
+  lua_getuservalue(L, 1);
   lua_len(L, -1);
   const int n = 1+lua_tointegerx(L, -1, nullptr);
-  lua_pop(L, 1);
-  lua_pushvalue(L, -2);     // Copy the function in onclick
-  lua_seti(L, -2, n);       // Put the copy of the function in the callbacksTableRef
+  lua_pop(L, 1);           // Pop the length of the table
+  lua_pushvalue(L, -2);    // Copy the function in stack
+  lua_rawseti(L, -2, n);   // Put the copy of the function in the uservalue
+  lua_pop(L, 1);           // Pop the uservalue
 
   signal.connect(
     base::Bind<void>([=]() {
       callback();
+
+      // In case that the dialog is hidden, we cannot access to the
+      // global LUA_REGISTRYINDEX to get its reference.
+      if (dlg->showRef == LUA_REFNIL)
+        return;
+
       try {
-        lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
-        lua_geti(L, -1, n);
+        // Get the function "n" from the uservalue table of the dialog
+        lua_rawgeti(L, LUA_REGISTRYINDEX, dlg->showRef);
+        lua_getuservalue(L, -1);
+        lua_rawgeti(L, -1, n);
 
         if (lua_isfunction(L, -1)) {
           if (lua_pcall(L, 0, 0, 0)) {
@@ -124,9 +141,11 @@ void Dialog_connect_signal(lua_State* L,
                 ->consolePrint(s);
           }
         }
-        else
-          lua_pop(L, 1);
-        lua_pop(L, 1);        // Pop table from the registry
+        else {
+          ASSERT(false);
+          lua_pop(L, 1); // Pop the value which should have been a function
+        }
+        lua_pop(L, 2);   // Pop uservalue & userdata
       }
       catch (const std::exception& ex) {
         // This is used to catch unhandled exception or for
@@ -145,25 +164,23 @@ int Dialog_new(lua_State* L)
   if (lua_isstring(L, 1))
     dlg->window.setText(lua_tostring(L, 1));
 
+  // The uservalue of the dialog userdata will contain a table that
+  // stores all the callbacks to handle events. As these callbacks can
+  // reference the dialog itself, it's important to store callbacks in
+  // this table that depends on the dialog lifetime itself
+  // (i.e. uservalue) and in the global registry, because in that case
+  // we could create a cyclic reference that would be not GC'd.
   lua_newtable(L);
-#if 0 // Make values in callbacksTableRef table weak. (Weak references
-      // are lost for onclick= events with local functions when we use
-      // showInBackground() and we left the script scope)
-  {
-    lua_newtable(L);
-    lua_pushstring(L, "v");
-    lua_setfield(L, -2, "__mode");
-    lua_setmetatable(L, -2);
-  }
-#endif
-  dlg->callbacksTableRef = luaL_ref(L, LUA_REGISTRYINDEX);
+  lua_setuservalue(L, -2);
+
+  TRACE_DIALOG("Dialog_new", dlg);
   return 1;
 }
 
 int Dialog_gc(lua_State* L)
 {
   auto dlg = get_obj<Dialog>(L, 1);
-  luaL_unref(L, LUA_REGISTRYINDEX, dlg->callbacksTableRef);
+  TRACE_DIALOG("Dialog_gc", dlg);
   dlg->~Dialog();
   return 0;
 }
