@@ -73,8 +73,13 @@ int print(lua_State* L)
     lua_pop(L, 1);  // pop result
   }
   if (!output.empty()) {
-    App::instance()->scriptEngine()
-      ->consolePrint(output.c_str());
+    auto app = App::instance();
+    if (app && app->scriptEngine())
+      app->scriptEngine()->consolePrint(output.c_str());
+    else {
+      std::printf("%s\n", output.c_str());
+      std::fflush(stdout);
+    }
   }
   return 0;
 }
@@ -444,6 +449,9 @@ bool Engine::evalFile(const std::string& filename,
 
 void Engine::onConsolePrint(const char* text)
 {
+  if (!text)
+    return;
+
   if (m_delegate)
     m_delegate->onConsolePrint(text);
   else {
