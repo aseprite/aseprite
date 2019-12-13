@@ -70,6 +70,9 @@ struct Dialog {
     : window(ui::Window::WithTitleBar, "Script"),
       grid(2, false) {
     window.addChild(&grid);
+  }
+
+  void unrefShowOnClose() {
     window.Close.connect([this](ui::CloseEvent&){ unrefShow(); });
   }
 
@@ -102,15 +105,16 @@ struct Dialog {
 template<typename Signal,
          typename Callback>
 void Dialog_connect_signal(lua_State* L,
+                           int dlgIdx,
                            Signal& signal,
                            Callback callback)
 {
-  auto dlg = get_obj<Dialog>(L, 1);
+  auto dlg = get_obj<Dialog>(L, dlgIdx);
 
   // Here we get the uservalue of the dlg (the table with
   // functions/callbacks) and store a copy of the given function in
   // the stack (index=-1) in that table.
-  lua_getuservalue(L, 1);
+  lua_getuservalue(L, dlgIdx);
   lua_len(L, -1);
   const int n = 1+lua_tointegerx(L, -1, nullptr);
   lua_pop(L, 1);           // Pop the length of the table
@@ -161,8 +165,6 @@ void Dialog_connect_signal(lua_State* L,
 int Dialog_new(lua_State* L)
 {
   auto dlg = push_new<Dialog>(L);
-  if (lua_isstring(L, 1))
-    dlg->window.setText(lua_tostring(L, 1));
 
   // The uservalue of the dialog userdata will contain a table that
   // stores all the callbacks to handle events. As these callbacks can
@@ -172,6 +174,31 @@ int Dialog_new(lua_State* L)
   // we could create a cyclic reference that would be not GC'd.
   lua_newtable(L);
   lua_setuservalue(L, -2);
+
+  if (lua_isstring(L, 1)) {
+    dlg->window.setText(lua_tostring(L, 1));
+  }
+  else if (lua_istable(L, 1)) {
+    int type = lua_getfield(L, 1, "title");
+    if (type != LUA_TNIL)
+      dlg->window.setText(lua_tostring(L, -1));
+    lua_pop(L, 1);
+
+    type = lua_getfield(L, 1, "onclose");
+    if (type == LUA_TFUNCTION) {
+      Dialog_connect_signal(
+        L, -2, dlg->window.Close,
+        [](){
+          // Do nothing
+        });
+    }
+    lua_pop(L, 1);
+  }
+
+  // The showRef must be the last reference to the dialog to be
+  // unreferenced after the window is closed (that's why this is the
+  // last connection to ui::Window::Close)
+  dlg->unrefShowOnClose();
 
   TRACE_DIALOG("Dialog_new", dlg);
   return 1;
@@ -361,10 +388,11 @@ int Dialog_button_base(lua_State* L, T** outputWidget = nullptr)
     type = lua_getfield(L, 2, "onclick");
     if (type == LUA_TFUNCTION) {
       auto dlg = get_obj<Dialog>(L, 1);
-      Dialog_connect_signal(L, widget->Click,
-                            [dlg, widget]{
-                              dlg->lastButton = widget;
-                            });
+      Dialog_connect_signal(
+        L, 1, widget->Click,
+        [dlg, widget](){
+          dlg->lastButton = widget;
+        });
       closeWindowByDefault = false;
     }
     lua_pop(L, 1);
@@ -574,7 +602,11 @@ int Dialog_file(lua_State* L)
   if (lua_istable(L, 2)) {
     int type = lua_getfield(L, 2, "onchange");
     if (type == LUA_TFUNCTION) {
-      Dialog_connect_signal(L, widget->Change, []{ });
+      Dialog_connect_signal(
+        L, 1, widget->Change,
+        [](){
+          // Do nothing
+        });
     }
     lua_pop(L, 1);
   }
