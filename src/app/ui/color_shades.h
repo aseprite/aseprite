@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -28,14 +29,15 @@ namespace app {
 
     ColorShades(const Shade& colors, ClickType click);
 
+    ClickType clickType() const { return m_click; }
+
+    void setMinColors(int minColors);
     void reverseShadeColors();
     doc::Remap* createShadeRemap(bool left);
     int size() const;
 
     Shade getShade() const;
     void setShade(const Shade& shade);
-
-    void updateShadeFromColorBarPicks();
 
     int getHotEntry() const { return m_hotIndex; }
 
@@ -46,18 +48,17 @@ namespace app {
     bool onProcessMessage(ui::Message* msg) override;
     void onSizeHint(ui::SizeHintEvent& ev) override;
     void onPaint(ui::PaintEvent& ev) override;
-    void onChangeColorBarSelection();
     bool isHotEntryVisible() const {
       return m_click != ClickWholeShade;
     }
 
     ClickType m_click;
     Shade m_shade;
+    int m_minColors;
     int m_hotIndex;
     int m_dragIndex;
     bool m_dropBefore;
     int m_boxSize;
-    obs::scoped_connection m_conn;
   };
 
 } // namespace app

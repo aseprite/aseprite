@@ -16,6 +16,7 @@
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
 #include "app/ui/color_button.h"
+#include "app/ui/color_shades.h"
 #include "app/ui/expr_entry.h"
 #include "app/ui/filename_field.h"
 #include "base/bind.h"
@@ -124,8 +125,6 @@ void Dialog_connect_signal(lua_State* L,
 
   signal.connect(
     base::Bind<void>([=]() {
-      callback();
-
       // In case that the dialog is hidden, we cannot access to the
       // global LUA_REGISTRYINDEX to get its reference.
       if (dlg->showRef == LUA_REFNIL)
@@ -137,8 +136,15 @@ void Dialog_connect_signal(lua_State* L,
         lua_getuservalue(L, -1);
         lua_rawgeti(L, -1, n);
 
-        if (lua_isfunction(L, -1)) {
-          if (lua_pcall(L, 0, 0, 0)) {
+        // Use the callback with a special table in the Lua stack to
+        // send it as parameter to the Lua function in the
+        // lua_pcall() (that table is like an "event data" parameter
+        // for the function).
+        lua_newtable(L);
+        callback(L);
+
+        if (lua_isfunction(L, -2)) {
+          if (lua_pcall(L, 1, 0, 0)) {
             if (const char* s = lua_tostring(L, -1))
               App::instance()
                 ->scriptEngine()
@@ -146,7 +152,6 @@ void Dialog_connect_signal(lua_State* L,
           }
         }
         else {
-          ASSERT(false);
           lua_pop(L, 1); // Pop the value which should have been a function
         }
         lua_pop(L, 2);   // Pop uservalue & userdata
@@ -188,7 +193,7 @@ int Dialog_new(lua_State* L)
     if (type == LUA_TFUNCTION) {
       Dialog_connect_signal(
         L, -2, dlg->window.Close,
-        [](){
+        [](lua_State* L){
           // Do nothing
         });
     }
@@ -390,7 +395,7 @@ int Dialog_button_base(lua_State* L, T** outputWidget = nullptr)
       auto dlg = get_obj<Dialog>(L, 1);
       Dialog_connect_signal(
         L, 1, widget->Click,
-        [dlg, widget](){
+        [dlg, widget](lua_State* L){
           dlg->lastButton = widget;
         });
       closeWindowByDefault = false;
@@ -553,6 +558,58 @@ int Dialog_color(lua_State* L)
   return Dialog_add_widget(L, widget);
 }
 
+int Dialog_shades(lua_State* L)
+{
+  Shade colors;
+  // 'pick' is the default mode anyway
+  ColorShades::ClickType mode = ColorShades::ClickEntries;
+
+  if (lua_istable(L, 2)) {
+    int type = lua_getfield(L, 2, "mode");
+    if (type == LUA_TSTRING) {
+      if (const char* modeStr = lua_tostring(L, -1)) {
+        if (base::utf8_icmp(modeStr, "pick") == 0)
+          mode = ColorShades::ClickEntries;
+        else if (base::utf8_icmp(modeStr, "sort") == 0)
+          mode = ColorShades::DragAndDropEntries;
+      }
+    }
+    lua_pop(L, 1);
+
+    type = lua_getfield(L, 2, "colors");
+    if (type == LUA_TTABLE) {
+      lua_pushnil(L);
+      while (lua_next(L, -2) != 0) {
+        app::Color color = convert_args_into_color(L, -1);
+        colors.push_back(color);
+        lua_pop(L, 1);
+      }
+    }
+    lua_pop(L, 1);
+  }
+
+  auto widget = new ColorShades(colors, mode);
+
+  if (lua_istable(L, 2)) {
+    int type = lua_getfield(L, 2, "onclick");
+    if (type == LUA_TFUNCTION) {
+      Dialog_connect_signal(
+        L, 1, widget->Click,
+        [widget](lua_State* L){
+          const int i = widget->getHotEntry();
+          const Shade shade = widget->getShade();
+          if (i >= 0 && i < int(shade.size())) {
+            push_obj<app::Color>(L, shade[i]);
+            lua_setfield(L, -2, "color");
+          }
+        });
+    }
+    lua_pop(L, 1);
+  }
+
+  return Dialog_add_widget(L, widget);
+}
+
 int Dialog_file(lua_State* L)
 {
   std::string title = "Open File";
@@ -604,7 +661,7 @@ int Dialog_file(lua_State* L)
     if (type == LUA_TFUNCTION) {
       Dialog_connect_signal(
         L, 1, widget->Change,
-        [](){
+        [](lua_State* L){
           // Do nothing
         });
     }
@@ -667,12 +724,44 @@ int Dialog_get_data(lua_State* L)
         }
         break;
       default:
-        if (auto colorButton = dynamic_cast<const ColorButton*>(widget))
+        if (auto colorButton = dynamic_cast<const ColorButton*>(widget)) {
           push_obj<app::Color>(L, colorButton->getColor());
-        else if (auto filenameField = dynamic_cast<const FilenameField*>(widget))
+        }
+        else if (auto colorShade = dynamic_cast<const ColorShades*>(widget)) {
+          switch (colorShade->clickType()) {
+
+            case ColorShades::ClickEntries: {
+              Shade shade = colorShade->getShade();
+              int i = colorShade->getHotEntry();
+              if (i >= 0 && i < int(shade.size()))
+                push_obj<app::Color>(L, shade[i]);
+              else
+                lua_pushnil(L);
+              break;
+            }
+
+            case ColorShades::DragAndDropEntries: {
+              lua_newtable(L);
+              Shade shade = colorShade->getShade();
+              for (int i=0; i<int(shade.size()); ++i) {
+                push_obj<app::Color>(L, shade[i]);
+                lua_rawseti(L, -2, i+1);
+              }
+              break;
+            }
+
+            default:
+              lua_pushnil(L);
+              break;
+
+          }
+        }
+        else if (auto filenameField = dynamic_cast<const FilenameField*>(widget)) {
           lua_pushstring(L, filenameField->filename().c_str());
-        else
+        }
+        else {
           lua_pushnil(L);
+        }
         break;
     }
     lua_setfield(L, -2, kv.first.c_str());
@@ -726,8 +815,33 @@ int Dialog_set_data(lua_State* L)
         }
         break;
       default:
-        if (auto colorButton = dynamic_cast<ColorButton*>(widget))
+        if (auto colorButton = dynamic_cast<ColorButton*>(widget)) {
           colorButton->setColor(convert_args_into_color(L, -1));
+        }
+        else if (auto colorShade = dynamic_cast<ColorShades*>(widget)) {
+          switch (colorShade->clickType()) {
+
+            case ColorShades::ClickEntries: {
+              // TODO change hot entry?
+              break;
+            }
+
+            case ColorShades::DragAndDropEntries: {
+              Shade shade;
+              if (lua_istable(L, -1)) {
+                lua_pushnil(L);
+                while (lua_next(L, -2) != 0) {
+                  app::Color color = convert_args_into_color(L, -1);
+                  shade.push_back(color);
+                  lua_pop(L, 1);
+                }
+              }
+              colorShade->setShade(shade);
+              break;
+            }
+
+          }
+        }
         else if (auto filenameField = dynamic_cast<FilenameField*>(widget)) {
           if (auto p = lua_tostring(L, -1))
             filenameField->setFilename(p);
@@ -775,6 +889,7 @@ const luaL_Reg Dialog_methods[] = {
   { "slider", Dialog_slider },
   { "combobox", Dialog_combobox },
   { "color", Dialog_color },
+  { "shades", Dialog_shades },
   { "file", Dialog_file },
   { nullptr, nullptr }
 };

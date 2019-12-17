@@ -107,10 +107,10 @@ MainWindow::MainWindow()
   m_menuBar->setMenu(AppMenus::instance()->getRootMenu());
 
   m_notifications = new Notifications();
-  m_contextBar = new ContextBar(m_tooltipManager);
   m_statusBar = new StatusBar(m_tooltipManager);
   m_colorBar = new ColorBar(colorBarPlaceholder()->align(),
                             m_tooltipManager);
+  m_contextBar = new ContextBar(m_tooltipManager, m_colorBar);
   m_toolBar = new ToolBar();
   m_tabsBar = new WorkspaceTabs(this);
   m_workspace = new Workspace();

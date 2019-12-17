@@ -509,14 +509,18 @@ protected:
 };
 
 class ContextBar::InkShadesField : public HBox {
-
 public:
-  InkShadesField()
+  InkShadesField(ColorBar* colorBar)
     : m_button(SkinTheme::instance()->parts.iconArrowDown())
     , m_shade(Shade(), ColorShades::DragAndDropEntries)
     , m_loaded(false) {
     addChild(&m_button);
     addChild(&m_shade);
+
+    m_shade.setText("Select colors in the palette");
+    m_shade.setMinColors(2);
+    m_conn = colorBar->ChangeSelection.connect(
+      base::Bind<void>(&InkShadesField::onChangeColorBarSelection, this));
 
     m_button.setFocusStop(false);
     m_button.Click.connect(base::Bind<void>(&InkShadesField::onShowMenu, this));
@@ -545,7 +549,14 @@ public:
   }
 
   void updateShadeFromColorBarPicks() {
-    m_shade.updateShadeFromColorBarPicks();
+    auto colorBar = ColorBar::instance();
+    if (!colorBar)
+      return;
+
+    doc::PalettePicks picks;
+    colorBar->getPaletteView()->getSelectedEntries(picks);
+    if (picks.picks() >= 2)
+      onChangeColorBarSelection();
   }
 
 private:
@@ -654,10 +665,33 @@ private:
     }
   }
 
+  void onChangeColorBarSelection() {
+    if (!m_shade.isVisible())
+      return;
+
+    doc::PalettePicks picks;
+    ColorBar::instance()->getPaletteView()->getSelectedEntries(picks);
+
+    Shade newShade = m_shade.getShade();
+    newShade.resize(picks.picks());
+
+    int i = 0, j = 0;
+    for (bool pick : picks) {
+      if (pick)
+        newShade[j++] = app::Color::fromIndex(i);
+      ++i;
+    }
+
+    m_shade.setShade(newShade);
+
+    layout();
+  }
+
   IconButton m_button;
   ColorShades m_shade;
   std::vector<Shade> m_shades;
   bool m_loaded;
+  obs::scoped_connection m_conn;
 };
 
 class ContextBar::InkOpacityField : public IntEntry {
@@ -1415,7 +1449,8 @@ private:
   std::string m_filter;
 };
 
-ContextBar::ContextBar(TooltipManager* tooltipManager)
+ContextBar::ContextBar(TooltipManager* tooltipManager,
+                       ColorBar* colorBar)
 {
   addChild(m_selectionOptionsBox = new HBox());
   m_selectionOptionsBox->addChild(m_dropPixels = new DropPixelsField());
@@ -1443,7 +1478,7 @@ ContextBar::ContextBar(TooltipManager* tooltipManager)
   addChild(m_inkType = new InkTypeField(this));
   addChild(m_inkOpacityLabel = new Label("Opacity:"));
   addChild(m_inkOpacity = new InkOpacityField());
-  addChild(m_inkShades = new InkShadesField());
+  addChild(m_inkShades = new InkShadesField(colorBar));
 
   addChild(m_eyedropperField = new EyedropperField());
 

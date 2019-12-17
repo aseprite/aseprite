@@ -49,6 +49,7 @@ namespace app {
   }
 
   class BrushSlot;
+  class ColorBar;
   class DitheringSelector;
   class GradientTypeSelector;
 
@@ -56,7 +57,8 @@ namespace app {
                    , public obs::observable<ContextBarObserver>
                    , public tools::ActiveToolObserver {
   public:
-    ContextBar(ui::TooltipManager* tooltipManager);
+    ContextBar(ui::TooltipManager* tooltipManager,
+               ColorBar* colorBar);
     ~ContextBar();
 
     void updateForActiveTool();

@@ -114,9 +114,9 @@ namespace app {
 
     ui::TooltipManager* m_tooltipManager;
     MainMenuBar* m_menuBar;
-    ContextBar* m_contextBar;
     StatusBar* m_statusBar;
     ColorBar* m_colorBar;
+    ContextBar* m_contextBar;
     ui::Widget* m_toolBar;
     WorkspaceTabs* m_tabsBar;
     Mode m_mode;
