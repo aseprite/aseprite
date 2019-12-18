@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -18,6 +18,7 @@
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/doc.h"
+#include "app/tools/active_tool.h"
 #include "app/tools/ink.h"
 #include "app/tools/tool.h"
 #include "app/tools/tool_box.h"
@@ -792,10 +793,20 @@ void KeyboardShortcuts::disableAccel(const ui::Accelerator& accel,
 KeyContext KeyboardShortcuts::getCurrentKeyContext()
 {
   Doc* doc = UIContext::instance()->activeDocument();
-
   if (doc &&
       doc->isMaskVisible() &&
-      App::instance()->activeTool()->getInk(0)->isSelection())
+      // The active key context will be the selectedTool() (in the
+      // toolbox) instead of the activeTool() (which depends on the
+      // quick tool shortcuts).
+      //
+      // E.g. If we have the rectangular marquee tool selected
+      // (selectedTool()) are going to press keys like alt+left or
+      // alt+right to move the selection edge in the selection
+      // context, the alt key switches the activeTool() to the
+      // eyedropper, but we want to use alt+left and alt+right in the
+      // original context (the selection tool).
+      App::instance()->activeToolManager()
+        ->selectedTool()->getInk(0)->isSelection())
     return KeyContext::SelectionTool;
   else
     return KeyContext::Normal;
