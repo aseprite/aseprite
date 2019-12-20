@@ -670,7 +670,10 @@ void Manager::handleWindowZOrder()
       win_manager->insertChild(0, window);
     else {
       int pos = (int)win_manager->children().size();
-      UI_FOREACH_WIDGET_BACKWARD(win_manager->children(), it) {
+
+      for (auto it=win_manager->children().rbegin(),
+             end=win_manager->children().rend();
+           it != end; ++it) {
         if (static_cast<Window*>(*it)->isOnTop())
           break;
 

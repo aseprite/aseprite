@@ -61,10 +61,15 @@ bool Splitter::onProcessMessage(Message* msg)
 
         bar = click_bar = 0;
 
-        UI_FOREACH_WIDGET_WITH_END(children(), it, end) {
-          if (it+1 != end) {
+        for (auto it=children().begin(),
+               end=children().end();
+               it != end; ) {
+          auto next = it;
+          ++next;
+
+          if (next != end) {
             c1 = *it;
-            c2 = *(it+1);
+            c2 = *next;
 
             ++bar;
 
@@ -85,6 +90,8 @@ bool Splitter::onProcessMessage(Message* msg)
                 (mousePos.y >= y1) && (mousePos.y < y2))
               click_bar = bar;
           }
+
+          it = next;
         }
 
         if (!click_bar)
@@ -142,8 +149,13 @@ bool Splitter::onProcessMessage(Message* msg)
         int x1, y1, x2, y2;
         bool change_cursor = false;
 
-        UI_FOREACH_WIDGET_WITH_END(children(), it, end) {
-          if (it+1 != end) {
+        for (auto it=children().begin(),
+               end=children().end();
+               it != end; ) {
+          auto next = it;
+          ++next;
+
+          if (next != end) {
             c1 = *it;
             c2 = *(it+1);
 
@@ -166,6 +178,8 @@ bool Splitter::onProcessMessage(Message* msg)
               break;
             }
           }
+
+          it = next;
         }
 
         if (change_cursor) {
