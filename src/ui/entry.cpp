@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -12,6 +12,7 @@
 #include "ui/entry.h"
 
 #include "base/bind.h"
+#include "base/clamp.h"
 #include "base/string.h"
 #include "os/draw_text.h"
 #include "os/font.h"
@@ -112,8 +113,8 @@ void Entry::setCaretPos(int pos)
 {
   gfx::Size caretSize = theme()->getEntryCaretSize(this);
   int textlen = lastCaretPos();
-  m_caret = MID(0, pos, textlen);
-  m_scroll = MID(0, m_scroll, textlen);
+  m_caret = base::clamp(pos, 0, textlen);
+  m_scroll = base::clamp(m_scroll, 0, textlen);
 
   // Backward scroll
   if (m_caret < m_scroll)
@@ -206,8 +207,8 @@ void Entry::getEntryThemeInfo(int* scroll, int* caret, int* state,
 
   if ((m_select >= 0) &&
       (m_caret != m_select)) {
-    *selbeg = MIN(m_caret, m_select);
-    *selend = MAX(m_caret, m_select)-1;
+    *selbeg = std::min(m_caret, m_select);
+    *selend = std::max(m_caret, m_select)-1;
   }
   else {
     *selbeg = -1;
@@ -462,7 +463,7 @@ gfx::Size Entry::sizeHintWithText(Entry* entry,
 void Entry::onSizeHint(SizeHintEvent& ev)
 {
   int trailing = font()->textLength(getSuffix());
-  trailing = MAX(trailing, 2*theme()->getEntryCaretSize(this).w);
+  trailing = std::max(trailing, 2*theme()->getEntryCaretSize(this).w);
 
   int w =
     font()->textLength("w") * std::min(m_maxsize, 6) +
@@ -513,11 +514,11 @@ int Entry::getCaretFromMouse(MouseMessage* mousemsg)
   int mouseX = mousemsg->position().x;
   if (mouseX < bounds().x+border().left()) {
     // Scroll to the left
-    return MAX(0, m_scroll-1);
+    return std::max(0, m_scroll-1);
   }
 
   int lastPos = lastCaretPos();
-  int i = MIN(m_scroll, lastPos);
+  int i = std::min(m_scroll, lastPos);
   for (; i<lastPos; ++i) {
     int segmentWidth = 0;
     int indexBox = 0;
@@ -538,7 +539,7 @@ int Entry::getCaretFromMouse(MouseMessage* mousemsg)
       break;
   }
 
-  return MID(0, i, lastPos);
+  return base::clamp(i, 0, lastPos);
 }
 
 void Entry::executeCmd(EntryCmd cmd, int unicodeChar, bool shift_pressed)
@@ -810,8 +811,8 @@ void Entry::backwardWord()
 
 bool Entry::isPosInSelection(int pos)
 {
-  return (pos >= MIN(m_caret, m_select) &&
-          pos <= MAX(m_caret, m_select));
+  return (pos >= std::min(m_caret, m_select) &&
+          pos <= std::max(m_caret, m_select));
 }
 
 void Entry::showEditPopupMenu(const gfx::Point& pt)

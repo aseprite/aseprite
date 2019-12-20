@@ -1,4 +1,5 @@
 // Aseprite UI Library
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -10,6 +11,7 @@
 
 #include "ui/int_entry.h"
 
+#include "base/clamp.h"
 #include "base/scoped_value.h"
 #include "gfx/rect.h"
 #include "gfx/region.h"
@@ -23,6 +25,7 @@
 #include "ui/system.h"
 #include "ui/theme.h"
 
+#include <algorithm>
 #include <cmath>
 
 namespace ui {
@@ -51,12 +54,12 @@ IntEntry::~IntEntry()
 int IntEntry::getValue() const
 {
   int value = m_slider.convertTextToValue(text());
-  return MID(m_min, value, m_max);
+  return base::clamp(value, m_min, m_max);
 }
 
 void IntEntry::setValue(int value)
 {
-  value = MID(m_min, value, m_max);
+  value = base::clamp(value, m_min, m_max);
 
   setText(m_slider.convertValueToText(value));
 
@@ -72,7 +75,7 @@ bool IntEntry::onProcessMessage(Message* msg)
 
     // Reset value if it's out of bounds when focus is lost
     case kFocusLeaveMessage:
-      setValue(MID(m_min, getValue(), m_max));
+      setValue(base::clamp(getValue(), m_min, m_max));
       deselectText();
       break;
 
@@ -107,7 +110,7 @@ bool IntEntry::onProcessMessage(Message* msg)
         int newValue = oldValue
           + static_cast<MouseMessage*>(msg)->wheelDelta().x
           - static_cast<MouseMessage*>(msg)->wheelDelta().y;
-        newValue = MID(m_min, newValue, m_max);
+        newValue = base::clamp(newValue, m_min, m_max);
         if (newValue != oldValue) {
           setValue(newValue);
           selectAllText();
@@ -144,12 +147,12 @@ void IntEntry::onInitTheme(InitThemeEvent& ev)
 void IntEntry::onSizeHint(SizeHintEvent& ev)
 {
   int trailing = font()->textLength(getSuffix());
-  trailing = MAX(trailing, 2*theme()->getEntryCaretSize(this).w);
+  trailing = std::max(trailing, 2*theme()->getEntryCaretSize(this).w);
 
   int min_w = font()->textLength(m_slider.convertValueToText(m_min));
   int max_w = font()->textLength(m_slider.convertValueToText(m_max)) + trailing;
 
-  int w = MAX(min_w, max_w);
+  int w = std::max(min_w, max_w);
   int h = textHeight();
 
   w += border().width();

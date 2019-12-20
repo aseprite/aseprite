@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -18,6 +18,7 @@
 #include "ui/theme.h"
 #include "ui/widget.h"
 
+#include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -252,7 +253,7 @@ void Grid::calculateSize()
   if (m_same_width_columns) {
     int max_w = 0;
     for (int col=0; col<(int)m_colstrip.size(); ++col)
-      max_w = MAX(max_w, m_colstrip[col].size);
+      max_w = std::max(max_w, m_colstrip[col].size);
 
     for (int col=0; col<(int)m_colstrip.size(); ++col)
       m_colstrip[col].size = max_w;
@@ -346,8 +347,8 @@ void Grid::expandStrip(std::vector<Strip>& colstrip,
             // Calculate the maximum (expand_count) in cell's columns.
             int max_expand_count = 0;
             for (i=col; i<col+cell_span; ++i)
-              max_expand_count = MAX(max_expand_count,
-                                     colstrip[i].expand_count);
+              max_expand_count = std::max(max_expand_count,
+                                          colstrip[i].expand_count);
 
             int expand = 0;     // How many columns have the maximum value of "expand_count"
             int last_expand = 0; // This variable is used to add the remainder space to the last column
@@ -399,8 +400,8 @@ void Grid::distributeStripSize(std::vector<Strip>& colstrip,
 
   int max_expand_count = 0;
   for (i=0; i<(int)colstrip.size(); ++i)
-    max_expand_count = MAX(max_expand_count,
-                           colstrip[i].expand_count);
+    max_expand_count = std::max(max_expand_count,
+                                colstrip[i].expand_count);
 
   int total_req = 0;
   int wantmore_count = 0;
@@ -471,7 +472,7 @@ bool Grid::putWidgetInCell(Widget* child, int hspan, int vspan, int align)
 
         parentcell = cell;
         colbeg = col;
-        colend = MIN(col+hspan, (int)m_colstrip.size());
+        colend = std::min(col+hspan, (int)m_colstrip.size());
         rowend = row+vspan;
 
         expandRows(row+vspan);

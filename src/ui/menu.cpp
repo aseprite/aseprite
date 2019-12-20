@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -11,11 +11,13 @@
 
 #include "ui/menu.h"
 
+#include "base/clamp.h"
 #include "gfx/size.h"
 #include "os/font.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
 
+#include <algorithm>
 #include <cctype>
 #include <memory>
 
@@ -269,8 +271,8 @@ void Menu::showPopup(const gfx::Point& pos)
 
   // Menubox position
   window->positionWindow(
-    MID(0, pos.x, ui::display_w() - window->bounds().w),
-    MID(0, pos.y, ui::display_h() - window->bounds().h));
+    base::clamp(pos.x, 0, ui::display_w() - window->bounds().w),
+    base::clamp(pos.y, 0, ui::display_h() - window->bounds().h));
 
   // Set the focus to the new menubox
   Manager* manager = Manager::getDefault();
@@ -349,10 +351,10 @@ void Menu::onSizeHint(SizeHintEvent& ev)
     if (parent() &&
         parent()->type() == kMenuBarWidget) {
       size.w += reqSize.w + ((it+1 != end) ? childSpacing(): 0);
-      size.h = MAX(size.h, reqSize.h);
+      size.h = std::max(size.h, reqSize.h);
     }
     else {
-      size.w = MAX(size.w, reqSize.w);
+      size.w = std::max(size.w, reqSize.w);
       size.h += reqSize.h + ((it+1 != end) ? childSpacing(): 0);
     }
   }
@@ -746,8 +748,8 @@ bool MenuItem::onProcessMessage(Message* msg)
         Rect pos = window->bounds();
 
         if (inBar()) {
-          pos.x = MID(0, bounds().x, ui::display_w()-pos.w);
-          pos.y = MAX(0, bounds().y2());
+          pos.x = base::clamp(bounds().x, 0, ui::display_w()-pos.w);
+          pos.y = std::max(0, bounds().y2());
         }
         else {
           int x_left = old_pos.x - pos.w;
@@ -755,9 +757,9 @@ bool MenuItem::onProcessMessage(Message* msg)
           int x, y = bounds().y-3*guiscale();
           Rect r1(0, 0, pos.w, pos.h), r2(0, 0, pos.w, pos.h);
 
-          r1.x = x_left = MID(0, x_left, ui::display_w()-pos.w);
-          r2.x = x_right = MID(0, x_right, ui::display_w()-pos.w);
-          r1.y = r2.y = y = MID(0, y, ui::display_h()-pos.h);
+          r1.x = x_left = base::clamp(x_left, 0, ui::display_w()-pos.w);
+          r2.x = x_right = base::clamp(x_right, 0, ui::display_w()-pos.w);
+          r1.y = r2.y = y = base::clamp(y, 0, ui::display_h()-pos.h);
 
           // Calculate both intersections
           gfx::Rect s1 = r1.createIntersection(old_pos);

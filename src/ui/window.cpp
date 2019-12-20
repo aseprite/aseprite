@@ -25,6 +25,8 @@
 #include "ui/system.h"
 #include "ui/theme.h"
 
+#include <algorithm>
+
 namespace ui {
 
 using namespace gfx;
@@ -508,13 +510,13 @@ void Window::onSizeHint(SizeHintEvent& ev)
       if (!child->isDecorative()) {
         reqSize = child->sizeHint();
 
-        maxSize.w = MAX(maxSize.w, reqSize.w);
-        maxSize.h = MAX(maxSize.h, reqSize.h);
+        maxSize.w = std::max(maxSize.w, reqSize.w);
+        maxSize.h = std::max(maxSize.h, reqSize.h);
       }
     }
 
     if (m_titleLabel)
-      maxSize.w = MAX(maxSize.w, m_titleLabel->sizeHint().w);
+      maxSize.w = std::max(maxSize.w, m_titleLabel->sizeHint().w);
 
     ev.setSizeHint(maxSize.w + border().width(),
                    maxSize.h + border().height());
@@ -584,8 +586,8 @@ void Window::windowSetPosition(const gfx::Rect& rect)
 
 void Window::limitSize(int* w, int* h)
 {
-  *w = MAX(*w, border().width());
-  *h = MAX(*h, border().height());
+  *w = std::max(*w, border().width());
+  *h = std::max(*h, border().height());
 }
 
 void Window::moveWindow(const gfx::Rect& rect, bool use_blit)

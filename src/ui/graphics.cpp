@@ -26,6 +26,7 @@
 #include "ui/scale.h"
 #include "ui/theme.h"
 
+#include <algorithm>
 #include <cctype>
 
 namespace ui {
@@ -493,7 +494,7 @@ gfx::Size Graphics::doUIStringAlgorithm(const std::string& str, gfx::Color fg, g
     gfx::Size lineSize(
       m_font->textLength(line.c_str()),
       m_font->height()+lineSeparation);
-    calculatedSize.w = MAX(calculatedSize.w, lineSize.w);
+    calculatedSize.w = std::max(calculatedSize.w, lineSize.w);
 
     // Render the text
     if (draw) {

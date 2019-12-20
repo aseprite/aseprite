@@ -18,6 +18,7 @@
 
 #include "ui/manager.h"
 
+#include "base/clamp.h"
 #include "base/concurrent_queue.h"
 #include "base/scoped_value.h"
 #include "base/time.h"
@@ -1302,8 +1303,8 @@ void Manager::onInitTheme(InitThemeEvent& ev)
         gfx::Rect bounds = window->bounds();
         bounds *= newUIScale;
         bounds /= oldUIScale;
-        bounds.x = MID(0, bounds.x, m_display->width() - bounds.w);
-        bounds.y = MID(0, bounds.y, m_display->height() - bounds.h);
+        bounds.x = base::clamp(bounds.x, 0, m_display->width() - bounds.w);
+        bounds.y = base::clamp(bounds.y, 0, m_display->height() - bounds.h);
         window->setBounds(bounds);
       }
     }
@@ -1390,7 +1391,7 @@ int Manager::pumpQueue()
 
     // Send this message to filters
     {
-      Filters& msg_filter = msg_filters[MIN(msg->type(), kFirstRegisteredMessage)];
+      Filters& msg_filter = msg_filters[std::min(msg->type(), kFirstRegisteredMessage)];
       if (!msg_filter.empty()) {
         LockFilters lock;
         for (Filter* filter : msg_filter) {

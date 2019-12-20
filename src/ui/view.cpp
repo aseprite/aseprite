@@ -376,8 +376,8 @@ void View::updateAttachedWidgetBounds(const gfx::Point& scrollPos)
   cpos.offset(-scrollPos);
   for (auto child : m_viewport.children()) {
     Size reqSize = child->sizeHint();
-    cpos.w = MAX(reqSize.w, cpos.w);
-    cpos.h = MAX(reqSize.h, cpos.h);
+    cpos.w = std::max(reqSize.w, cpos.w);
+    cpos.h = std::max(reqSize.h, cpos.h);
     if (cpos.w != child->bounds().w ||
         cpos.h != child->bounds().h)
       child->setBounds(cpos);

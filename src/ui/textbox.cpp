@@ -1,4 +1,5 @@
 // Aseprite UI Library
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -17,6 +18,8 @@
 #include "ui/system.h"
 #include "ui/theme.h"
 #include "ui/view.h"
+
+#include <algorithm>
 
 namespace ui {
 
@@ -169,7 +172,7 @@ void TextBox::onSizeHint(SizeHintEvent& ev)
       width = bounds().w;
     }
 
-    w = MAX(min, width);
+    w = std::max(min, width);
     Theme::drawTextBox(nullptr, this, &w, &h, gfx::ColorNone, gfx::ColorNone);
 
     w = min;

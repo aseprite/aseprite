@@ -1,4 +1,5 @@
 // Aseprite UI Library
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -10,6 +11,7 @@
 
 #include "ui/slider.h"
 
+#include "base/clamp.h"
 #include "os/font.h"
 #include "ui/manager.h"
 #include "ui/message.h"
@@ -18,6 +20,7 @@
 #include "ui/theme.h"
 #include "ui/widget.h"
 
+#include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 
@@ -31,7 +34,7 @@ Slider::Slider(int min, int max, int value, SliderDelegate* delegate)
   : Widget(kSliderWidget)
   , m_min(min)
   , m_max(max)
-  , m_value(MID(min, value, max))
+  , m_value(base::clamp(value, min, max))
   , m_readOnly(false)
   , m_delegate(delegate)
 {
@@ -43,7 +46,7 @@ void Slider::setRange(int min, int max)
 {
   m_min = min;
   m_max = max;
-  m_value = MID(min, m_value, max);
+  m_value = base::clamp(m_value, min, max);
 
   invalidate();
 }
@@ -52,7 +55,7 @@ void Slider::setValue(int value)
 {
   int old_value = m_value;
 
-  m_value = MID(m_min, value, m_max);
+  m_value = base::clamp(value, m_min, m_max);
 
   if (m_value != old_value)
     invalidate();
@@ -129,13 +132,13 @@ bool Slider::onProcessMessage(Message* msg)
         }
         // With right click
         else {
-          accuracy = MID(1, rc.w / range, rc.w);
+          accuracy = base::clamp(rc.w / range, 1, rc.w);
 
           value = slider_press_value +
             (mousePos.x - slider_press_x) / accuracy;
         }
 
-        value = MID(m_min, value, m_max);
+        value = base::clamp(value, m_min, m_max);
         if (m_value != value) {
           setValue(value);
           onChange();
@@ -177,7 +180,7 @@ bool Slider::onProcessMessage(Message* msg)
             goto not_used;
         }
 
-        value = MID(m_min, value, m_max);
+        value = base::clamp(value, m_min, m_max);
         if (m_value != value) {
           setValue(value);
           onChange();
@@ -193,7 +196,7 @@ bool Slider::onProcessMessage(Message* msg)
           + static_cast<MouseMessage*>(msg)->wheelDelta().x
           - static_cast<MouseMessage*>(msg)->wheelDelta().y;
 
-        value = MID(m_min, value, m_max);
+        value = base::clamp(value, m_min, m_max);
 
         if (m_value != value) {
           this->setValue(value);
@@ -217,7 +220,7 @@ void Slider::onSizeHint(SizeHintEvent& ev)
   int min_w = font()->textLength(convertValueToText(m_min));
   int max_w = font()->textLength(convertValueToText(m_max));
 
-  int w = MAX(min_w, max_w);
+  int w = std::max(min_w, max_w);
   int h = textHeight();
 
   w += border().width();

@@ -1,4 +1,5 @@
 // Aseprite UI Library
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -35,6 +36,7 @@
 #include "ui/alert.h"
 
 #include "base/bind.h"
+#include "base/clamp.h"
 #include "base/string.h"
 #include "ui/box.h"
 #include "ui/button.h"
@@ -142,7 +144,7 @@ CheckBox* Alert::addCheckBox(const std::string& text)
 void Alert::setProgress(double progress)
 {
   ASSERT(m_progress);
-  m_progress->setValue(int(MID(0.0, progress * 100.0, 100.0)));
+  m_progress->setValue(int(base::clamp(progress * 100.0, 0.0, 100.0)));
 }
 
 // static

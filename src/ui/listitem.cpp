@@ -1,4 +1,5 @@
 // Aseprite UI Library
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -15,6 +16,8 @@
 #include "ui/resize_event.h"
 #include "ui/theme.h"
 #include "ui/view.h"
+
+#include <algorithm>
 
 namespace ui {
 
@@ -65,8 +68,8 @@ void ListItem::onSizeHint(SizeHintEvent& ev)
   for (auto child : children()) {
     Size reqSize = child->sizeHint();
 
-    maxSize.w = MAX(maxSize.w, reqSize.w);
-    maxSize.h = MAX(maxSize.h, reqSize.h);
+    maxSize.w = std::max(maxSize.w, reqSize.w);
+    maxSize.h = std::max(maxSize.h, reqSize.h);
   }
 
   w = maxSize.w + border().width();

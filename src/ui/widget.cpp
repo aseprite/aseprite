@@ -13,6 +13,7 @@
 
 #include "ui/widget.h"
 
+#include "base/clamp.h"
 #include "base/memory.h"
 #include "base/string.h"
 #include "os/display.h"
@@ -35,6 +36,7 @@
 #include "ui/view.h"
 #include "ui/window.h"
 
+#include <algorithm>
 #include <cctype>
 #include <cstdarg>
 #include <cstdio>
@@ -863,19 +865,19 @@ void Widget::getTextIconInfo(
   // Box size
   if (icon_align & CENTER) {   // With the icon in the center
     if (icon_align & MIDDLE) { // With the icon inside the text
-      box_w = MAX(icon_w, text_w);
-      box_h = MAX(icon_h, text_h);
+      box_w = std::max(icon_w, text_w);
+      box_h = std::max(icon_h, text_h);
     }
     // With the icon in the top or bottom
     else {
-      box_w = MAX(icon_w, text_w);
+      box_w = std::max(icon_w, text_w);
       box_h = icon_h + (hasText() ? childSpacing(): 0) + text_h;
     }
   }
   // With the icon in left or right that doesn't care by now
   else {
     box_w = icon_w + (hasText() ? childSpacing(): 0) + text_w;
-    box_h = MAX(icon_h, text_h);
+    box_h = std::max(icon_h, text_h);
   }
 
   // Box position
@@ -1217,8 +1219,8 @@ Size Widget::sizeHint()
     onSizeHint(ev);
 
     Size sz(ev.sizeHint());
-    sz.w = MID(m_minSize.w, sz.w, m_maxSize.w);
-    sz.h = MID(m_minSize.h, sz.h, m_maxSize.h);
+    sz.w = base::clamp(sz.w, m_minSize.w, m_maxSize.w);
+    sz.h = base::clamp(sz.h, m_minSize.h, m_maxSize.h);
     return sz;
   }
 }
@@ -1246,8 +1248,8 @@ Size Widget::sizeHint(const Size& fitIn)
     onSizeHint(ev);
 
     Size sz(ev.sizeHint());
-    sz.w = MID(m_minSize.w, sz.w, m_maxSize.w);
-    sz.h = MID(m_minSize.h, sz.h, m_maxSize.h);
+    sz.w = base::clamp(sz.w, m_minSize.w, m_maxSize.w);
+    sz.h = base::clamp(sz.h, m_minSize.h, m_maxSize.h);
     return sz;
   }
 }

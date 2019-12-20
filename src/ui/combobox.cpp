@@ -11,6 +11,7 @@
 
 #include "ui/combobox.h"
 
+#include "base/clamp.h"
 #include "gfx/size.h"
 #include "os/font.h"
 #include "ui/button.h"
@@ -26,6 +27,8 @@
 #include "ui/theme.h"
 #include "ui/view.h"
 #include "ui/window.h"
+
+#include <algorithm>
 
 namespace ui {
 
@@ -432,7 +435,7 @@ void ComboBox::onSizeHint(SizeHintEvent& ev)
 
   Size buttonSize = m_button->sizeHint();
   reqSize.w += buttonSize.w;
-  reqSize.h = MAX(reqSize.h, buttonSize.h);
+  reqSize.h = std::max(reqSize.h, buttonSize.h);
 
   ev.setSizeHint(reqSize);
 }
@@ -623,8 +626,8 @@ void ComboBox::openListBox()
       if (!item->hasFlags(HIDDEN))
         size.h += item->sizeHint().h;
 
-    int max = MAX(entryBounds.y, ui::display_h() - entryBounds.y2()) - 8*guiscale();
-    size.h = MID(textHeight(), size.h, max);
+    int max = std::max(entryBounds.y, ui::display_h() - entryBounds.y2()) - 8*guiscale();
+    size.h = base::clamp(size.h, textHeight(), max);
     viewport->setMinSize(size);
   }
 

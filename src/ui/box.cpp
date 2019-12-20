@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2019  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -9,12 +9,15 @@
 #include "config.h"
 #endif
 
+#include "base/clamp.h"
 #include "gfx/size.h"
 #include "ui/box.h"
 #include "ui/message.h"
-#include "ui/size_hint_event.h"
 #include "ui/resize_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/theme.h"
+
+#include <algorithm>
 
 namespace ui {
 
@@ -30,12 +33,12 @@ Box::Box(int align)
 
 void Box::onSizeHint(SizeHintEvent& ev)
 {
-#define ADD_CHILD_SIZE(w, h) {                      \
-    if (align() & HOMOGENEOUS)                      \
-      prefSize.w = MAX(prefSize.w, childSize.w);    \
-    else                                            \
-      prefSize.w += childSize.w;                    \
-    prefSize.h = MAX(prefSize.h, childSize.h);      \
+#define ADD_CHILD_SIZE(w, h) {                                 \
+    if (align() & HOMOGENEOUS)                                 \
+      prefSize.w = std::max(prefSize.w, childSize.w);          \
+    else                                                       \
+      prefSize.w += childSize.w;                               \
+    prefSize.h = std::max(prefSize.h, childSize.h);            \
   }
 
 #define FINAL_ADJUSTMENT(w) {                            \
@@ -114,8 +117,8 @@ void Box::onResize(ResizeEvent& ev)
       }                                                                 \
                                                                         \
       Rect childPos = defChildPos;                                      \
-      childPos.w = size = MID(child->minSize().w, size, child->maxSize().w); \
-      childPos.h = MID(child->minSize().h, childPos.h, child->maxSize().h); \
+      childPos.w = size = base::clamp(size, child->minSize().w, child->maxSize().w); \
+      childPos.h = base::clamp(childPos.h, child->minSize().h, child->maxSize().h); \
       child->setBounds(childPos);                                       \
                                                                         \
       defChildPos.x += size + childSpacing();                           \

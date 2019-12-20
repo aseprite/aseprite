@@ -577,12 +577,12 @@ void Theme::calcSlices(const Widget* widget,
           !layer.slicesBounds().isEmpty()) {
         gfx::Rect sprite = layer.spriteBounds();
         gfx::Rect slices = layer.slicesBounds();
-        topLeft.w = MAX(topLeft.w, slices.x);
-        topLeft.h = MAX(topLeft.h, slices.y);
-        center.w = MAX(center.w, slices.w);
-        center.h = MAX(center.h, slices.h);
-        bottomRight.w = MAX(bottomRight.w, sprite.w - slices.x2());
-        bottomRight.h = MAX(bottomRight.h, sprite.h - slices.y2());
+        topLeft.w = std::max(topLeft.w, slices.x);
+        topLeft.h = std::max(topLeft.h, slices.y);
+        center.w = std::max(center.w, slices.w);
+        center.h = std::max(center.h, slices.h);
+        bottomRight.w = std::max(bottomRight.w, sprite.w - slices.x2());
+        bottomRight.h = std::max(bottomRight.h, sprite.h - slices.y2());
       }
     });
 }
@@ -769,7 +769,7 @@ void Theme::drawTextBox(Graphics* g, Widget* widget,
       // Make good use of the complete text-box
       if (view) {
         gfx::Size maxSize = view->getScrollableSize();
-        width = MAX(vp.w, maxSize.w);
+        width = std::max(vp.w, maxSize.w);
       }
       else {
         width = vp.w;
@@ -846,7 +846,7 @@ void Theme::drawTextBox(Graphics* g, Widget* widget,
     }
 
     if (w)
-      *w = MAX(*w, len);
+      *w = std::max(*w, len);
 
     y += textheight;
 

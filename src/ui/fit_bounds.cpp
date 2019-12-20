@@ -1,4 +1,5 @@
 // Aseprite UI Library
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -8,6 +9,7 @@
 #include "config.h"
 #endif
 
+#include "base/clamp.h"
 #include "gfx/rect.h"
 #include "ui/base.h"
 #include "ui/system.h"
@@ -56,8 +58,8 @@ int fit_bounds(int arrowAlign, const gfx::Rect& target, gfx::Rect& bounds)
         break;
     }
 
-    bounds.x = MID(0, bounds.x, ui::display_w()-bounds.w);
-    bounds.y = MID(0, bounds.y, ui::display_h()-bounds.h);
+    bounds.x = base::clamp(bounds.x, 0, ui::display_w()-bounds.w);
+    bounds.y = base::clamp(bounds.y, 0, ui::display_h()-bounds.h);
 
     if (target.intersects(bounds)) {
       switch (trycount) {
