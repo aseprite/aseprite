@@ -8,8 +8,8 @@
 #define APP_UI_WORKSPACE_PANEL_H_INCLUDED
 #pragma once
 
-#include "app/ui/animated_widget.h"
 #include "app/ui/workspace_views.h"
+#include "ui/animated_widget.h"
 #include "ui/widget.h"
 
 #include <map>
@@ -26,7 +26,7 @@ namespace app {
   };
 
   class WorkspacePanel : public ui::Widget
-                       , public AnimatedWidget {
+                       , public ui::AnimatedWidget {
     enum Ani : int {
       ANI_NONE,
       ANI_DROPAREA,

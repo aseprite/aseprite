@@ -10,10 +10,10 @@
 #pragma once
 
 #include "app/file_system.h"
-#include "app/ui/animated_widget.h"
 #include "base/paths.h"
 #include "base/time.h"
 #include "obs/signal.h"
+#include "ui/animated_widget.h"
 #include "ui/timer.h"
 #include "ui/widget.h"
 
@@ -28,7 +28,7 @@ namespace os {
 namespace app {
 
   class FileList : public ui::Widget
-                 , private AnimatedWidget {
+                 , private ui::AnimatedWidget {
   public:
     FileList();
     virtual ~FileList();

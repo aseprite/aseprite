@@ -1,11 +1,12 @@
-// Aseprite
+// Aseprite UI Library
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
-#ifndef APP_UI_ANIMATED_WIDGET_H_INCLUDED
-#define APP_UI_ANIMATED_WIDGET_H_INCLUDED
+#ifndef UI_ANIMATED_WIDGET_H_INCLUDED
+#define UI_ANIMATED_WIDGET_H_INCLUDED
 #pragma once
 
 #include "obs/connection.h"
@@ -13,14 +14,13 @@
 
 #include <cmath>
 
-namespace app {
+namespace ui {
 
   class AnimatedWidget {
   public:
     AnimatedWidget()
       : m_timer(1000/60)
-      , m_animation(0)
-    {
+      , m_animation(0) {
       m_scopedConn = m_timer.Tick.connect(&AnimatedWidget::onTick, this);
     }
 
@@ -90,6 +90,6 @@ namespace app {
     obs::scoped_connection m_scopedConn;
   };
 
-} // namespace app
+} // namespace ui
 
 #endif

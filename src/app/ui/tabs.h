@@ -9,7 +9,7 @@
 #define APP_UI_TABS_H_INCLUDED
 #pragma once
 
-#include "app/ui/animated_widget.h"
+#include "ui/animated_widget.h"
 #include "ui/mouse_buttons.h"
 #include "ui/timer.h"
 #include "ui/widget.h"
@@ -111,7 +111,7 @@ namespace app {
 
   // Tabs control. Used to show opened documents.
   class Tabs : public ui::Widget
-             , public AnimatedWidget {
+             , public ui::AnimatedWidget {
     struct Tab {
       TabView* view;
       std::string text;
