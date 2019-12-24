@@ -275,7 +275,7 @@ void NewFileCommand::onExecute(Context* ctx)
       if (clipboardPalette.isBlack()) {
         render::create_palette_from_sprite(
           sprite.get(), 0, sprite->lastFrame(), true,
-          &clipboardPalette, nullptr, true);
+          &clipboardPalette, nullptr, true, MapAlgorithm::RGBA);
       }
       sprite->setPalette(&clipboardPalette, false);
     }

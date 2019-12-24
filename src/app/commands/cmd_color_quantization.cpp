@@ -15,12 +15,14 @@
 #include "app/console.h"
 #include "app/context.h"
 #include "app/context_access.h"
+#include "app/i18n/strings.h"
 #include "app/job.h"
 #include "app/pref/preferences.h"
 #include "app/sprite_job.h"
 #include "app/transaction.h"
 #include "app/ui/color_bar.h"
 #include "app/ui_context.h"
+#include "base/bind.h"
 #include "doc/palette.h"
 #include "doc/sprite.h"
 #include "render/quantization.h"
@@ -31,11 +33,70 @@
 
 namespace app {
 
+#if ENABLE_UI
+class PaletteFromSpriteWindow : public app::gen::PaletteFromSprite {
+public:
+  PaletteFromSpriteWindow(Site& site,
+                          PalettePicks& entries,
+                          Preferences& pref)
+    : m_specificNumber(true)
+    , m_colorLimit(256)
+    , m_replacePalette(false)
+    , m_replaceCurrentRange(false)
+    , m_withAlpha(pref.quantization.withAlpha())
+    , m_mapAlgorithm(pref.quantization.mappingAlgorithm())
+
+  {
+    colorMappingAlgorithm()->Change.connect(base::Bind<void>(&PaletteFromSpriteWindow::onChangeMapAlgorithm, this));
+    colorMappingAlgorithm()->setSelectedItemIndex((int)m_mapAlgorithm);
+
+    if (site.document()->sprite()->pixelFormat() == PixelFormat::IMAGE_RGB) {
+      if (m_mapAlgorithm == MapAlgorithm::OCTREE) {
+        alphaChannel()->setSelected(false);
+        alphaChannel()->setEnabled(false);
+      }
+      else {
+        alphaChannel()->setEnabled(true);
+        alphaChannel()->setSelected(m_withAlpha);
+      }
+    }
+    else {
+      colorMappingAlgorithm()->setSelectedItemIndex((int)MapAlgorithm::RGBA);
+      colorMappingAlgorithm()->setEnabled(false);
+    }
+
+  }
+
+  ~PaletteFromSpriteWindow() {}
+
+  void onChangeMapAlgorithm() {
+    MapAlgorithm selectedAlgo = (MapAlgorithm)colorMappingAlgorithm()->getSelectedItemIndex();
+    if (selectedAlgo == MapAlgorithm::OCTREE) {
+      m_mapAlgorithm = MapAlgorithm::OCTREE;
+      alphaChannel()->setSelected(false);
+      alphaChannel()->setEnabled(false);
+    }
+    else {
+      m_mapAlgorithm = MapAlgorithm::RGBA;
+      alphaChannel()->setEnabled(true);
+    }
+  }
+
+  bool m_specificNumber;
+  int m_colorLimit = 256;
+  bool m_replacePalette;
+  bool m_replaceCurrentRange;
+  bool m_withAlpha;
+  MapAlgorithm m_mapAlgorithm;
+};
+#endif
+
 struct ColorQuantizationParams : public NewParams {
   Param<bool> ui { this, true, "ui" };
   Param<bool> withAlpha { this, true, "withAlpha" };
   Param<int> maxColors { this, 256, "maxColors" };
   Param<bool> useRange { this, false, "useRange" };
+  Param<MapAlgorithm> mappingAlgorithm { this, MapAlgorithm::RGBA, "mappingAlgorithm" };
 };
 
 class ColorQuantizationCommand : public CommandWithNewParams<ColorQuantizationParams> {
@@ -67,6 +128,7 @@ void ColorQuantizationCommand::onExecute(Context* ctx)
 
   bool withAlpha = params().withAlpha();
   int maxColors = params().maxColors();
+  MapAlgorithm mappingAlgorithm = params().mappingAlgorithm();
   bool createPal;
 
   Site site = ctx->activeSite();
@@ -74,16 +136,13 @@ void ColorQuantizationCommand::onExecute(Context* ctx)
 
 #ifdef ENABLE_UI
   if (ui) {
-    app::gen::PaletteFromSprite window;
+    auto& pref = Preferences::instance();
+    PaletteFromSpriteWindow window(site, entries, pref);
     {
       ContextReader reader(ctx);
       const Palette* curPalette = site.sprite()->palette(site.frame());
 
-      if (!params().withAlpha.isSet())
-        withAlpha = App::instance()->preferences().quantization.withAlpha();
-
       window.newPalette()->setSelected(true);
-      window.alphaChannel()->setSelected(withAlpha);
       window.ncolors()->setTextf("%d", maxColors);
 
       if (entries.picks() > 1) {
@@ -102,12 +161,16 @@ void ColorQuantizationCommand::onExecute(Context* ctx)
     }
 
     window.openWindowInForeground();
+
+    pref.quantization.withAlpha(window.alphaChannel()->isSelected());
+    mappingAlgorithm = MapAlgorithm(window.colorMappingAlgorithm()->getSelectedItemIndex());
+    pref.quantization.mappingAlgorithm(mappingAlgorithm);
+    pref.quantization.save();
+
     if (window.closer() != window.ok())
       return;
 
     maxColors = window.ncolors()->textInt();
-    withAlpha = window.alphaChannel()->isSelected();
-    App::instance()->preferences().quantization.withAlpha(withAlpha);
 
     if (window.newPalette()->isSelected()) {
       createPal = true;
@@ -141,12 +204,13 @@ void ColorQuantizationCommand::onExecute(Context* ctx)
     SpriteJob job(reader, "Color Quantization");
     const bool newBlend = Preferences::instance().experimental.newBlend();
     job.startJobWithCallback(
-      [sprite, withAlpha, &tmpPalette, &job, newBlend]{
+      [sprite, withAlpha, &tmpPalette, &job, newBlend, mappingAlgorithm]{
         render::create_palette_from_sprite(
           sprite, 0, sprite->lastFrame(),
           withAlpha, &tmpPalette,
           &job,
-          newBlend);     // SpriteJob is a render::TaskDelegate
+          newBlend,
+          mappingAlgorithm);     // SpriteJob is a render::TaskDelegate
       });
     job.waitJob();
     if (job.isCanceled())

@@ -13,6 +13,7 @@
 
 #include "doc/image_impl.h"
 #include "doc/layer.h"
+//#include "doc/map_algorithm.h"
 #include "doc/palette.h"
 #include "doc/primitives.h"
 #include "doc/remap.h"
@@ -44,9 +45,9 @@ Palette* create_palette_from_sprite(
   const bool withAlpha,
   Palette* palette,
   TaskDelegate* delegate,
-  const bool newBlend)
+  const bool newBlend,
+  MapAlgorithm mappingAlgorithm)
 {
-  bool octreeEnabled = true;
 
   OctreeMap* map = new OctreeMap();
   PaletteOptimizer optimizer;
@@ -63,7 +64,7 @@ Palette* create_palette_from_sprite(
   render.setNewBlend(newBlend);
   for (frame_t frame=fromFrame; frame<=toFrame; ++frame) {
     render.renderSprite(flat_image.get(), sprite, frame);
-    if (octreeEnabled)
+    if (mappingAlgorithm == MapAlgorithm::OCTREE)
       map->feedWithImage(flat_image.get(), withAlpha);
     else
       optimizer.feedWithImage(flat_image.get(), withAlpha);
@@ -76,7 +77,7 @@ Palette* create_palette_from_sprite(
     }
   }
 
-  if (octreeEnabled) {
+  if (mappingAlgorithm == MapAlgorithm::OCTREE) {
     if (!(map->makePalette(palette, palette->size()))) {
       // We can use an 8bits deep octree map
       map = new OctreeMap();

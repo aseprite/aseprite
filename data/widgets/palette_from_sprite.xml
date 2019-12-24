@@ -1,5 +1,6 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2015-2018 by David Capello -->
+<!-- Copyright (C)      2019 by Igara Studio S.A. -->
+<!-- Copyright (C) 2015-2018 by David Capello     -->
 <gui>
 <window id="palette_from_sprite" text="@.title">
   <grid columns="2">
@@ -8,6 +9,12 @@
     <radio id="current_palette" text="@.replace_palette" group="1" cell_hspan="2" />
     <radio id="current_range" text="@.replace_range" group="1" cell_hspan="2" />
     <check id="alpha_channel" text="@.alpha_channel" cell_hspan="2" />
+    <label text="" cell_hspan="2"/>
+    <label text="@.color_mapping_algorithm" cell_hspan="2"/>
+    <combobox id="color_mapping_algorithm" cell_hspan="2" expansive="true">
+      <listitem text="RGB 5bits + A 3bits" value="doc::MapAlgorithm::RGBA" />
+      <listitem text="Octree (no alpha)" value="doc::MapAlgorithm::OCTREE" />
+    </combobox>
 
     <separator horizontal="true" cell_hspan="2" />
 

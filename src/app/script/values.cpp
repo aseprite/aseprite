@@ -168,6 +168,7 @@ FOR_ENUM(app::tools::RotationAlgorithm)
 FOR_ENUM(doc::AniDir)
 FOR_ENUM(doc::BrushPattern)
 FOR_ENUM(doc::ColorMode)
+FOR_ENUM(doc::MapAlgorithm)
 FOR_ENUM(filters::TiledMode)
 FOR_ENUM(render::OnionskinPosition)
 

@@ -18,6 +18,7 @@
 #include "base/string.h"
 #include "doc/algorithm/resize_image.h"
 #include "doc/color_mode.h"
+#include "doc/map_algorithm.h"
 #include "filters/color_curve.h"
 #include "filters/hue_saturation_filter.h"
 #include "filters/outline_filter.h"
@@ -179,6 +180,15 @@ void Param<filters::ColorCurve>::fromString(const std::string& value)
   setValue(curve);
 }
 
+template<>
+void Param<doc::MapAlgorithm>::fromString(const std::string& value)
+{
+  if (base::utf8_icmp(value, "octree") == 0)
+    setValue(doc::MapAlgorithm::OCTREE);
+  else
+    setValue(doc::MapAlgorithm::RGBA);
+}
+
 //////////////////////////////////////////////////////////////////////
 // Convert values from Lua
 //////////////////////////////////////////////////////////////////////
@@ -305,6 +315,15 @@ void Param<filters::ColorCurve>::fromLua(lua_State* L, int index)
     }
     setValue(curve);
   }
+}
+
+template<>
+void Param<doc::MapAlgorithm>::fromLua(lua_State* L, int index)
+{
+  if (lua_type(L, index) == LUA_TSTRING)
+    fromString(lua_tostring(L, index));
+  else
+    setValue((doc::MapAlgorithm)lua_tointeger(L, index));
 }
 
 void CommandWithNewParamsBase::loadParamsFromLuaTable(lua_State* L, int index)
