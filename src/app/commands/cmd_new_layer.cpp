@@ -312,6 +312,7 @@ void NewLayerCommand::onExecute(Context* context)
               sprite->pixelFormat(),
               render::Dithering(),
               sprite->rgbMap(dstFrame),
+              nullptr,
               pasteSpr->palette(fr),
               (pasteSpr->backgroundLayer() ? true: false),
               sprite->transparentColor()));

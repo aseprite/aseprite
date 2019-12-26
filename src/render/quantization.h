@@ -10,6 +10,7 @@
 #pragma once
 
 #include "doc/frame.h"
+#include "doc/octree_map.h"
 #include "doc/pixel_format.h"
 #include "render/color_histogram.h"
 
@@ -55,6 +56,7 @@ namespace render {
     doc::PixelFormat pixelFormat,
     const render::Dithering& dithering,
     const doc::RgbMap* rgbmap,
+    const OctreeMap* octreeMap,
     const doc::Palette* palette,
     bool is_background,
     doc::color_t new_mask_color,

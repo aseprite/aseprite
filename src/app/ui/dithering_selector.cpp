@@ -107,7 +107,7 @@ private:
       doc::clear_image(image2.get(), 0);
       render::convert_pixel_format(
         image1.get(), image2.get(), IMAGE_INDEXED,
-        m_dithering, nullptr, palette, true, -1, nullptr);
+        m_dithering, nullptr, nullptr, palette, true, -1, nullptr);
     }
 
     m_preview = os::instance()->createRgbaSurface(w, h);

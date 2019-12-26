@@ -19,6 +19,7 @@
 #include "doc/image_spec.h"
 #include "doc/layer_list.h"
 #include "doc/object.h"
+#include "doc/octree_map.h"
 #include "doc/pixel_format.h"
 #include "doc/pixel_ratio.h"
 #include "doc/slices.h"
@@ -82,6 +83,7 @@ namespace doc {
     int width() const { return m_spec.width(); }
     int height() const { return m_spec.height(); }
     const gfx::ColorSpacePtr& colorSpace() const { return m_spec.colorSpace(); }
+    OctreeMap* octreeMap() const { return m_octreeMap; }
 
     void setPixelFormat(PixelFormat format);
     void setPixelRatio(const PixelRatio& pixelRatio);
@@ -133,7 +135,8 @@ namespace doc {
 
     RgbMap* rgbMap(frame_t frame) const;
     RgbMap* rgbMap(frame_t frame, RgbMapFor forLayer) const;
-
+    OctreeMap* octreeInit(frame_t frame) const;
+    OctreeMap* octreeInit(frame_t frame, RgbMapFor forLayer) const;
     ////////////////////////////////////////
     // Frames
 
@@ -200,6 +203,7 @@ namespace doc {
 
     // Current rgb map
     mutable RgbMap* m_rgbMap;
+    mutable OctreeMap* m_octreeMap;
 
     Tags m_tags;
     Slices m_slices;

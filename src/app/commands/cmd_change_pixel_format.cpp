@@ -139,6 +139,7 @@ private:
       pixelFormat,
       dithering,
       sprite->rgbMap(frame),
+      nullptr,
       sprite->palette(frame),
       (sprite->backgroundLayer() != nullptr),
       0,

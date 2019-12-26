@@ -385,12 +385,11 @@ void paste(Context* ctx, const bool interactive)
       }
       else {
         RgbMap* dst_rgbmap = dstSpr->rgbMap(site.frame());
-
         src_image.reset(
           render::convert_pixel_format(
             clipboard_image.get(), NULL, dstSpr->pixelFormat(),
             render::Dithering(),
-            dst_rgbmap, clipboard_palette.get(),
+            dst_rgbmap, nullptr, clipboard_palette.get(),
             false,
             0));
       }

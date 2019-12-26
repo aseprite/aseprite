@@ -46,6 +46,9 @@ Palette* create_palette_from_sprite(
   TaskDelegate* delegate,
   const bool newBlend)
 {
+  bool octreeEnabled = true;
+
+  OctreeMap* map = new OctreeMap();
   PaletteOptimizer optimizer;
 
   if (!palette)
@@ -60,8 +63,10 @@ Palette* create_palette_from_sprite(
   render.setNewBlend(newBlend);
   for (frame_t frame=fromFrame; frame<=toFrame; ++frame) {
     render.renderSprite(flat_image.get(), sprite, frame);
-    optimizer.feedWithImage(flat_image.get(), withAlpha);
-
+    if (octreeEnabled)
+      map->feedWithImage(flat_image.get(), withAlpha);
+    else
+      optimizer.feedWithImage(flat_image.get(), withAlpha);
     if (delegate) {
       if (!delegate->continueTask())
         return nullptr;
@@ -71,13 +76,32 @@ Palette* create_palette_from_sprite(
     }
   }
 
-  // Generate an optimized palette
-  optimizer.calculate(
-    palette,
-    // Transparent color is needed if we have transparent layers
-    (sprite->backgroundLayer() &&
-     sprite->allLayersCount() == 1 ? -1: sprite->transparentColor()));
+  if (octreeEnabled) {
+    if (!(map->makePalette(palette, palette->size()))) {
+      // We can use an 8bits deep octree map
+      map = new OctreeMap();
+      for (frame_t frame=fromFrame; frame<=toFrame; ++frame) {
+        render.renderSprite(flat_image.get(), sprite, frame);
+        map->feedWithImage(flat_image.get(), withAlpha , 8);
+        if (delegate) {
+          if (!delegate->continueTask())
+            return nullptr;
 
+          delegate->notifyTaskProgress(
+            double(frame-fromFrame+1) / double(toFrame-fromFrame+1));
+        }
+      }
+      map->makePalette(palette, palette->size(), 8);
+    }
+  }
+  else {
+    // Generate an optimized palette
+    optimizer.calculate(
+      palette,
+      // Transparent color is needed if we have transparent layers
+      (sprite->backgroundLayer() &&
+       sprite->allLayersCount() == 1 ? -1: sprite->transparentColor()));
+  }
   return palette;
 }
 
@@ -87,6 +111,7 @@ Image* convert_pixel_format(
   PixelFormat pixelFormat,
   const Dithering& dithering,
   const RgbMap* rgbmap,
+  const OctreeMap* octreeMap,
   const Palette* palette,
   bool is_background,
   color_t new_mask_color,
@@ -164,7 +189,6 @@ Image* convert_pixel_format(
 #ifdef _DEBUG
           LockImageBits<IndexedTraits>::iterator dst_end = dstBits.end();
 #endif
-
           for (; src_it != src_end; ++src_it, ++dst_it) {
             ASSERT(dst_it != dst_end);
             c = *src_it;
@@ -176,8 +200,11 @@ Image* convert_pixel_format(
 
             if (a == 0)
               *dst_it = new_mask_color;
-            else if (rgbmap)
-              *dst_it = rgbmap->mapColor(r, g, b, a);
+            if (octreeMap)
+                *dst_it = octreeMap->mapColor(r, g, b, a, new_mask_color);
+            else if (rgbmap) {
+                *dst_it = rgbmap->mapColor(r, g, b, a);
+            }
             else
               *dst_it = palette->findBestfit(r, g, b, a, new_mask_color);
           }

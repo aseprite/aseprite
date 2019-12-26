@@ -59,6 +59,7 @@ Sprite::Sprite(const ImageSpec& spec,
   , m_root(new LayerGroup(this))
   , m_gridBounds(Sprite::DefaultGridBounds())
   , m_rgbMap(nullptr)           // Initial RGB map
+  , m_octreeMap(nullptr)        // Initial Octree map
   , m_tags(this)
   , m_slices(this)
 {
@@ -99,8 +100,9 @@ Sprite::~Sprite()
       delete *it;               // palette
   }
 
-  // Destroy RGB map
+  // Destroy RGB map and Octree map
   delete m_rgbMap;
+  delete m_octreeMap;
 }
 
 // static
@@ -367,6 +369,25 @@ RgbMap* Sprite::rgbMap(frame_t frame, RgbMapFor forLayer) const
 
   return m_rgbMap;
 }
+
+OctreeMap* Sprite::octreeInit(frame_t frame) const
+{
+  return octreeInit(frame, backgroundLayer() ? RgbMapFor::OpaqueLayer:
+                                           RgbMapFor::TransparentLayer);
+}
+
+OctreeMap* Sprite::octreeInit(frame_t frame, RgbMapFor forLayer) const
+{
+  int maskIndex = (forLayer == RgbMapFor::OpaqueLayer ?
+                   -1: transparentColor());
+
+  if (m_octreeMap == NULL || m_octreeMap->getModifications() != palette(frame)->getModifications())
+    m_octreeMap = new OctreeMap();
+  m_octreeMap->regenerate(palette(frame), maskIndex);
+
+  return m_octreeMap;
+}
+
 
 //////////////////////////////////////////////////////////////////////
 // Frames

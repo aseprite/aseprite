@@ -186,7 +186,7 @@ void PasteTextCommand::onExecute(Context* ctx)
           render::convert_pixel_format(
             image.get(), NULL, sprite->pixelFormat(),
             render::Dithering(),
-            rgbmap, sprite->palette(editor->frame()),
+            rgbmap, nullptr, sprite->palette(editor->frame()),
             false, 0));
       }
 
