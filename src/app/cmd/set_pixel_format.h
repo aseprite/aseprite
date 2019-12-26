@@ -12,6 +12,7 @@
 #include "app/cmd/with_sprite.h"
 #include "app/cmd_sequence.h"
 #include "doc/pixel_format.h"
+#include "doc/map_algorithm.h"
 
 namespace doc {
   class Sprite;
@@ -31,6 +32,7 @@ namespace cmd {
     SetPixelFormat(doc::Sprite* sprite,
                    const doc::PixelFormat newFormat,
                    const render::Dithering& dithering,
+                   const doc::MapAlgorithm mappingAlgorithm,
                    render::TaskDelegate* delegate);
 
   protected:

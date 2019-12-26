@@ -69,6 +69,7 @@ private:
 SetPixelFormat::SetPixelFormat(Sprite* sprite,
                                const PixelFormat newFormat,
                                const render::Dithering& dithering,
+                               const MapAlgorithm mappingAlgorithm,
                                render::TaskDelegate* delegate)
   : WithSprite(sprite)
   , m_oldFormat(sprite->pixelFormat())
@@ -86,7 +87,7 @@ SetPixelFormat::SetPixelFormat(Sprite* sprite,
       (old_image.get(), nullptr, newFormat,
        dithering,
        sprite->rgbMap(cel->frame()),
-       sprite->octreeInit(cel->frame()),
+       (mappingAlgorithm == MapAlgorithm::OCTREE)? sprite->octreeInit(cel->frame()) : nullptr,
        sprite->palette(cel->frame()),
        cel->layer()->isBackground(),
        old_image->maskColor(),
