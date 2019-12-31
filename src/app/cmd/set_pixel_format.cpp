@@ -86,7 +86,7 @@ SetPixelFormat::SetPixelFormat(Sprite* sprite,
       render::convert_pixel_format
       (old_image.get(), nullptr, newFormat,
        dithering,
-       sprite->rgbMap(cel->frame()),
+       (mappingAlgorithm == MapAlgorithm::RGB5A3)? sprite->rgbMap(cel->frame()) : nullptr,
        (mappingAlgorithm == MapAlgorithm::OCTREE)? sprite->octreeInit(cel->frame()) : nullptr,
        sprite->palette(cel->frame()),
        cel->layer()->isBackground(),

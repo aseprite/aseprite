@@ -13,7 +13,6 @@
 
 #include "doc/image_impl.h"
 #include "doc/layer.h"
-//#include "doc/map_algorithm.h"
 #include "doc/palette.h"
 #include "doc/primitives.h"
 #include "doc/remap.h"
@@ -201,11 +200,10 @@ Image* convert_pixel_format(
 
             if (a == 0)
               *dst_it = new_mask_color;
-            if (octreeMap)
-                *dst_it = octreeMap->mapColor(r, g, b, a, new_mask_color);
-            else if (rgbmap) {
-                *dst_it = rgbmap->mapColor(r, g, b, a);
-            }
+            else if (octreeMap)
+              *dst_it = octreeMap->mapColor(r, g, b, a, new_mask_color);
+            else if (rgbmap)
+              *dst_it = rgbmap->mapColor(r, g, b, a);
             else
               *dst_it = palette->findBestfit(r, g, b, a, new_mask_color);
           }

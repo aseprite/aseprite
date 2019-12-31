@@ -44,11 +44,11 @@ public:
     , m_replacePalette(false)
     , m_replaceCurrentRange(false)
     , m_withAlpha(pref.quantization.withAlpha())
-    , m_mapAlgorithm(pref.quantization.mappingAlgorithm())
+    , m_mapAlgorithm(pref.quantization.algorithm())
 
   {
-    colorMappingAlgorithm()->Change.connect(base::Bind<void>(&PaletteFromSpriteWindow::onChangeMapAlgorithm, this));
-    colorMappingAlgorithm()->setSelectedItemIndex((int)m_mapAlgorithm);
+    algorithm()->Change.connect(base::Bind<void>(&PaletteFromSpriteWindow::onChangeMapAlgorithm, this));
+    algorithm()->setSelectedItemIndex((int)m_mapAlgorithm);
 
     if (site.document()->sprite()->pixelFormat() == PixelFormat::IMAGE_RGB) {
       if (m_mapAlgorithm == MapAlgorithm::OCTREE) {
@@ -61,23 +61,21 @@ public:
       }
     }
     else {
-      colorMappingAlgorithm()->setSelectedItemIndex((int)MapAlgorithm::RGBA);
-      colorMappingAlgorithm()->setEnabled(false);
+      algorithm()->setSelectedItemIndex((int)MapAlgorithm::RGB5A3);
+      algorithm()->setEnabled(false);
     }
 
   }
 
-  ~PaletteFromSpriteWindow() {}
-
   void onChangeMapAlgorithm() {
-    MapAlgorithm selectedAlgo = (MapAlgorithm)colorMappingAlgorithm()->getSelectedItemIndex();
+    MapAlgorithm selectedAlgo = (MapAlgorithm)algorithm()->getSelectedItemIndex();
     if (selectedAlgo == MapAlgorithm::OCTREE) {
       m_mapAlgorithm = MapAlgorithm::OCTREE;
       alphaChannel()->setSelected(false);
       alphaChannel()->setEnabled(false);
     }
     else {
-      m_mapAlgorithm = MapAlgorithm::RGBA;
+      m_mapAlgorithm = MapAlgorithm::RGB5A3;
       alphaChannel()->setEnabled(true);
     }
   }
@@ -96,7 +94,7 @@ struct ColorQuantizationParams : public NewParams {
   Param<bool> withAlpha { this, true, "withAlpha" };
   Param<int> maxColors { this, 256, "maxColors" };
   Param<bool> useRange { this, false, "useRange" };
-  Param<MapAlgorithm> mappingAlgorithm { this, MapAlgorithm::RGBA, "mappingAlgorithm" };
+  Param<MapAlgorithm> algorithm { this, MapAlgorithm::DEFAULT, "algorithm" };
 };
 
 class ColorQuantizationCommand : public CommandWithNewParams<ColorQuantizationParams> {
@@ -128,7 +126,7 @@ void ColorQuantizationCommand::onExecute(Context* ctx)
 
   bool withAlpha = params().withAlpha();
   int maxColors = params().maxColors();
-  MapAlgorithm mappingAlgorithm = params().mappingAlgorithm();
+  MapAlgorithm algorithm = params().algorithm();
   bool createPal;
 
   Site site = ctx->activeSite();
@@ -163,8 +161,8 @@ void ColorQuantizationCommand::onExecute(Context* ctx)
     window.openWindowInForeground();
 
     pref.quantization.withAlpha(window.alphaChannel()->isSelected());
-    mappingAlgorithm = MapAlgorithm(window.colorMappingAlgorithm()->getSelectedItemIndex());
-    pref.quantization.mappingAlgorithm(mappingAlgorithm);
+    algorithm = MapAlgorithm(window.algorithm()->getSelectedItemIndex());
+    pref.quantization.algorithm(algorithm);
     pref.quantization.save();
 
     if (window.closer() != window.ok())
@@ -204,13 +202,13 @@ void ColorQuantizationCommand::onExecute(Context* ctx)
     SpriteJob job(reader, "Color Quantization");
     const bool newBlend = Preferences::instance().experimental.newBlend();
     job.startJobWithCallback(
-      [sprite, withAlpha, &tmpPalette, &job, newBlend, mappingAlgorithm]{
+      [sprite, withAlpha, &tmpPalette, &job, newBlend, algorithm]{
         render::create_palette_from_sprite(
           sprite, 0, sprite->lastFrame(),
           withAlpha, &tmpPalette,
           &job,
           newBlend,
-          mappingAlgorithm);     // SpriteJob is a render::TaskDelegate
+          algorithm);     // SpriteJob is a render::TaskDelegate
       });
     job.waitJob();
     if (job.isCanceled())

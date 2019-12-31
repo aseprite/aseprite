@@ -403,7 +403,7 @@ private:
   bool m_useUI;
   doc::PixelFormat m_format;
   render::Dithering m_dithering;
-  MapAlgorithm m_mappingAlgorithm;
+  MapAlgorithm m_algorithm;
 };
 
 ChangePixelFormatCommand::ChangePixelFormatCommand()
@@ -412,7 +412,7 @@ ChangePixelFormatCommand::ChangePixelFormatCommand()
   m_useUI = true;
   m_format = IMAGE_RGB;
   m_dithering = render::Dithering();
-  m_mappingAlgorithm = MapAlgorithm::RGBA;
+  m_algorithm = MapAlgorithm::DEFAULT;
 }
 
 void ChangePixelFormatCommand::onLoadParams(const Params& params)
@@ -458,11 +458,13 @@ void ChangePixelFormatCommand::onLoadParams(const Params& params)
     m_dithering.matrix(render::BayerMatrix(8));
   }
 
-  std::string mapAlgo = params.get("map_algorithm");
+  std::string mapAlgo = params.get("algorithm");
   if (mapAlgo == "octree")
-    m_mappingAlgorithm = MapAlgorithm::OCTREE;
+    m_algorithm = MapAlgorithm::OCTREE;
+  else if (mapAlgo == "rgb5a3")
+    m_algorithm = MapAlgorithm::RGB5A3;
   else
-    m_mappingAlgorithm = MapAlgorithm::RGBA;
+    m_algorithm = MapAlgorithm::DEFAULT;
 }
 
 bool ChangePixelFormatCommand::onEnabled(Context* context)
@@ -559,7 +561,7 @@ void ChangePixelFormatCommand::onExecute(Context* context)
           new cmd::SetPixelFormat(
             sprite, m_format,
             m_dithering,
-            m_mappingAlgorithm,
+            m_algorithm,
             &job));             // SpriteJob is a render::TaskDelegate
       });
     job.waitJob();

@@ -37,8 +37,6 @@ private:
       m_pixelCount(pixelCount)
     {}
 
-    ~LeafColor() {}
-
     void add(color_t c)
     {
       m_r += rgba_getr(c);
@@ -73,11 +71,11 @@ private:
 
     int pixelCount() { return m_pixelCount; }
 
-    private:
-      double m_r;
-      double m_g;
-      double m_b;
-      int m_pixelCount;
+private:
+    double m_r;
+    double m_g;
+    double m_b;
+    int m_pixelCount;
   };
 
 public:
@@ -87,10 +85,6 @@ public:
     m_children.reset(nullptr);
     m_parent = nullptr;
   };
-
-  ~OctreeNode()
-  {
-  }
 
   static int getOctet(color_t c, int level)
   {
@@ -110,10 +104,8 @@ public:
   }
 
   OctreeNode* parent() const { return m_parent; }
-  bool isLeaf() { return m_leafColor.pixelCount() > 0; }
   std::array<OctreeNode, 8>* children() const { return m_children.get(); }
   LeafColor getLeafColor() const { return m_leafColor; }
-  void paletteIndex(int index) { m_paletteIndex = index; }
 
   void addColor(color_t c, int level, OctreeNode* parent,
                 int paletteIndex = 0, int levelDeep = 7);
@@ -133,6 +125,9 @@ public:
                    int octreeDeep = 7);
 
 private:
+  bool isLeaf() { return m_leafColor.pixelCount() > 0; }
+  void paletteIndex(int index) { m_paletteIndex = index; }
+
   LeafColor m_leafColor;
   int m_paletteIndex;
   std::unique_ptr<std::array<OctreeNode, 8>> m_children;
@@ -149,20 +144,13 @@ public:
     m_modifications(-1)
   {}
 
-  ~OctreeMap()
-  {}
-
   void addColor(color_t color, int levelDeep = 7)
   {
     m_root->addColor(color, 0, m_root.get(), 0, levelDeep);
   }
 
-  OctreeNode* root() const { return m_root.get(); };
-
   // makePalette return true if a 7 level octreeDeep is OK, and false if we can add ONE level deep.
   bool makePalette(Palette* palette, int colorCount, int leveleep = 7);
-
-  void fillOrphansNodes(Palette* palette);
 
   void feedWithImage(Image* image, bool withAlpha, int levelDeep = 7);
 
@@ -173,6 +161,9 @@ public:
   int getModifications() const { return m_modifications; };
 
 private:
+  OctreeNode* root() const { return m_root.get(); };
+  void fillOrphansNodes(Palette* palette);
+
   std::unique_ptr<OctreeNode> m_root;
   std::unique_ptr<std::vector<OctreeNode*>> m_leavesVector;
   int m_modifications;

@@ -11,8 +11,9 @@
 namespace doc {
 
   enum class MapAlgorithm {
-    RGBA,
-    OCTREE
+    RGB5A3,
+    OCTREE,
+    DEFAULT = RGB5A3
   };
 
 } // namespace doc

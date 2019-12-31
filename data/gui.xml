@@ -737,11 +737,11 @@
           </item>
           <menu text="@.sprite_color_mode_indexed">
             <item command="ChangePixelFormat" text="@.sprite_color_mode_indexed_rgba">
-              <param name="map_algorithm" value="rgba" />
+              <param name="algorithm" value="rgb5a3" />
               <param name="format" value="indexed" />
             </item>
             <item command="ChangePixelFormat" text="@.sprite_color_mode_indexed_octree">
-              <param name="map_algorithm" value="octree" />
+              <param name="algorithm" value="octree" />
               <param name="format" value="indexed" />
             </item>
           </menu>

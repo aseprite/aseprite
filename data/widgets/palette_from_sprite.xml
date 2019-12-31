@@ -10,10 +10,10 @@
     <radio id="current_range" text="@.replace_range" group="1" cell_hspan="2" />
     <check id="alpha_channel" text="@.alpha_channel" cell_hspan="2" />
     <label text="" cell_hspan="2"/>
-    <label text="@.color_mapping_algorithm" cell_hspan="2"/>
-    <combobox id="color_mapping_algorithm" cell_hspan="2" expansive="true">
-      <listitem text="RGB 5bits + A 3bits" value="doc::MapAlgorithm::RGBA" />
-      <listitem text="Octree (no alpha)" value="doc::MapAlgorithm::OCTREE" />
+    <label text="@.algorithm" cell_hspan="2"/>
+    <combobox id="algorithm" cell_hspan="2" expansive="true">
+      <listitem text="RGB 5bits + Alpha 3bits" />
+      <listitem text="RGB Octree without Alpha" />
     </combobox>
 
     <separator horizontal="true" cell_hspan="2" />

@@ -185,8 +185,10 @@ void Param<doc::MapAlgorithm>::fromString(const std::string& value)
 {
   if (base::utf8_icmp(value, "octree") == 0)
     setValue(doc::MapAlgorithm::OCTREE);
+  else if (base::utf8_icmp(value, "rgb5a3") == 0)
+    setValue(doc::MapAlgorithm::RGB5A3);
   else
-    setValue(doc::MapAlgorithm::RGBA);
+    setValue(doc::MapAlgorithm::RGB5A3);
 }
 
 //////////////////////////////////////////////////////////////////////
