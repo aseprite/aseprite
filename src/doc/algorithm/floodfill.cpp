@@ -393,7 +393,6 @@ void floodfill(const Image* image,
 
     // For each line on the screen
     for (int c=0; c<flood_count; c++) {
-
       p = FLOOD_LINE(c);
 
       // Check below the segment?
@@ -446,28 +445,35 @@ void floodfill(const Image* image,
               check_flood_line(image, mask, p->y-1, p->lpos+1, p->rpos, bounds,
                                src_color, tolerance, data, proc)) {
             done = false;
+            p = FLOOD_LINE(c);
           }
+
           if (p->lpos-1 >= 0 &&
               check_flood_line(image, mask, p->y-1, p->lpos-1, p->rpos, bounds,
                                src_color, tolerance, data, proc)) {
             done = false;
+            p = FLOOD_LINE(c);
           }
 
           if (p->rpos+1 < bounds.x2() &&
               check_flood_line(image, mask, p->y-1, p->lpos, p->rpos+1, bounds,
                                src_color, tolerance, data, proc)) {
             done = false;
+            p = FLOOD_LINE(c);
           }
+
           if (p->rpos-1 >= 0 &&
               check_flood_line(image, mask, p->y-1, p->lpos, p->rpos-1, bounds,
                                src_color, tolerance, data, proc)) {
             done = false;
+            p = FLOOD_LINE(c);
           }
         }
 
         if (check_flood_line(image, mask, p->y-1, p->lpos, p->rpos, bounds,
                              src_color, tolerance, data, proc)) {
           done = false;
+
           // Special case shortcut for going backwards
           if ((c > bounds.y) && (c < bounds.y2()))
             c -= 2;
