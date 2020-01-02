@@ -12,41 +12,65 @@
 #include "base/debug.h"
 #include "render/zoom.h"
 
-namespace render {
+namespace render
+{
 
 static int scales[][2] = {
-  { 1, 64 },
-  { 1, 48 },
-  { 1, 32 },
-  { 1, 24 },
-  { 1, 16 },
-  { 1, 12 },
-  { 1, 8 },
-  { 1, 6 },
-  { 1, 5 },
-  { 1, 4 },
-  { 1, 3 },
-  { 1, 2 },
-  { 1, 1 }, // 100%
-  { 2, 1 },
-  { 3, 1 },
-  { 4, 1 },
-  { 5, 1 },
-  { 6, 1 },
-  { 8, 1 },
-  { 12, 1 },
-  { 16, 1 },
-  { 24, 1 },
-  { 32, 1 },
-  { 48, 1 },
-  { 64, 1 },
+    {1, 64},
+    {2, 112},
+    {1, 48},
+    {2, 80},
+    {1, 32},
+    {2, 56},
+    {1, 24},
+    {2, 40},
+    {1, 16},
+    {2, 28},
+    {1, 12},
+    {2, 20},
+    {1, 8},
+    {2, 14},
+    {1, 6},
+    {2, 11},
+    {1, 5},
+    {2, 9},
+    {1, 4},
+    {2, 7},
+    {1, 3},
+    {2, 5},
+    {1, 2},
+    {2, 3},
+    {1, 1}, // 100%
+    {3, 2},
+    {2, 1},
+    {5, 2},
+    {3, 1},
+    {7, 2},
+    {4, 1},
+    {9, 2},
+    {5, 1},
+    {11, 2},
+    {6, 1},
+    {14, 2},
+    {8, 1},
+    {20, 2},
+    {12, 1},
+    {28, 2},
+    {16, 1},
+    {40, 2},
+    {24, 1},
+    {56, 2},
+    {32, 1},
+    {80, 2},
+    {48, 1},
+    {112, 2},
+    {64, 1},
 };
 
 static int scales_size = sizeof(scales) / sizeof(scales[0]);
 
 Zoom::Zoom(int num, int den)
-  : m_num(num)
-  , m_den(den)
+    : m_num(num), m_den(den)
 {
   ASSERT(m_num > 0);
   ASSERT(m_den > 0);
@@ -56,7 +80,8 @@ Zoom::Zoom(int num, int den)
 bool Zoom::in()
 {
   int i = linearScale();
-  if (i < scales_size-1) {
+  if (i < scales_size - 1)
+  {
     ++i;
     m_num = scales[i][0];
     m_den = scales[i][1];
@@ -70,7 +95,8 @@ bool Zoom::in()
 bool Zoom::out()
 {
   int i = linearScale();
-  if (i > 0) {
+  if (i > 0)
+  {
     --i;
     m_num = scales[i][0];
     m_den = scales[i][1];
@@ -83,10 +109,12 @@ bool Zoom::out()
 
 int Zoom::linearScale() const
 {
-  for (int i=0; i<scales_size; ++i) {
+  for (int i = 0; i < scales_size; ++i)
+  {
     // Exact match
     if (scales[i][0] == m_num &&
-        scales[i][1] == m_den) {
+        scales[i][1] == m_den)
+    {
       return i;
     }
   }
@@ -104,26 +132,27 @@ Zoom Zoom::fromScale(double scale)
 // static
 Zoom Zoom::fromLinearScale(int i)
 {
-  i = MID(0, i, scales_size-1);
+  i = MID(0, i, scales_size - 1);
   return Zoom(scales[i][0], scales[i][1]);
 }
 
 // static
 int Zoom::findClosestLinearScale(double scale)
 {
-  for (int i=1; i<scales_size-1; ++i) {
-    double min = double(scales[i-1][0]) / double(scales[i-1][1]);
-    double mid = double(scales[i  ][0]) / double(scales[i  ][1]);
-    double max = double(scales[i+1][0]) / double(scales[i+1][1]);
+  for (int i = 1; i < scales_size - 1; ++i)
+  {
+    double min = double(scales[i - 1][0]) / double(scales[i - 1][1]);
+    double mid = double(scales[i][0]) / double(scales[i][1]);
+    double max = double(scales[i + 1][0]) / double(scales[i + 1][1]);
 
-    if (scale >= (min+mid)/2.0 &&
-        scale <= (mid+max)/2.0)
+    if (scale >= (min + mid) / 2.0 &&
+        scale <= (mid + max) / 2.0)
       return i;
   }
   if (scale < 1.0)
     return 0;
   else
-    return scales_size-1;
+    return scales_size - 1;
 }
 
 int Zoom::linearValues()

@@ -10,25 +10,32 @@
 
 #include "app/ui/editor/editor_state.h"
 
-namespace render {
-  class Zoom;
+namespace render
+{
+class Zoom;
 }
 
-namespace tools {
-  class Tool;
+namespace tools
+{
+class Tool;
 }
 
-namespace app {
+namespace app
+{
+using namespace ui;
+class StateWithWheelBehavior : public EditorState
+{
+public:
+  virtual bool onMouseWheel(Editor *editor, ui::MouseMessage *msg) override;
+  virtual bool onTouchMagnify(Editor *editor, ui::TouchMessage *msg) override;
 
-  class StateWithWheelBehavior : public EditorState {
-  public:
-    virtual bool onMouseWheel(Editor* editor, ui::MouseMessage* msg) override;
-    virtual bool onTouchMagnify(Editor* editor, ui::TouchMessage* msg) override;
-  private:
-    void setZoom(Editor* editor, const render::Zoom& zoom, const gfx::Point& mousePos);
-    tools::Tool* getActiveTool();
-    void disableQuickTool();
-  };
+private:
+  double leftdz;
+  int GetIntDz(MouseMessage *msg, double scale);
+  void setZoom(Editor *editor, const render::Zoom &zoom, const gfx::Point &mousePos);
+  tools::Tool *getActiveTool();
+  void disableQuickTool();
+};
 
 } // namespace app
 
