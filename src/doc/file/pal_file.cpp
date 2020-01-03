@@ -21,10 +21,12 @@
 #include <sstream>
 #include <string>
 
-namespace doc {
-namespace file {
+namespace doc
+{
+namespace file
+{
 
-Palette* load_pal_file(const char *filename)
+Palette *load_pal_file(const char *filename)
 {
   std::ifstream f(FSTREAM_PATH(filename));
   if (f.bad())
@@ -42,16 +44,18 @@ Palette* load_pal_file(const char *filename)
   if (!std::getline(f, line))
     return nullptr;
   base::trim_string(line, line);
-  if (line != "0100")
+  if (line != "0100" && line != "0200")
     return nullptr;
 
+  bool isXVer = line == "0200";
   // Ignore number of colors (we'll read line by line anyway)
   if (!std::getline(f, line))
     return nullptr;
 
   std::unique_ptr<Palette> pal(new Palette(frame_t(0), 0));
 
-  while (std::getline(f, line)) {
+  while (std::getline(f, line))
+  {
     // Trim line
     base::trim_string(line, line);
 
@@ -61,27 +65,38 @@ Palette* load_pal_file(const char *filename)
 
     int r, g, b;
     std::istringstream lineIn(line);
-    lineIn >> r >> g >> b;
-    pal->addEntry(rgba(r, g, b, 255));
+    if (isXVer)
+    {
+      int a;
+      lineIn >> r >> g >> b >> a;
+      pal->addEntry(rgba(r, g, b, a));
+    }
+    else
+    {
+      lineIn >> r >> g >> b;
+      pal->addEntry(rgba(r, g, b, 255));
+    }
   }
-
   return pal.release();
 }
 
 bool save_pal_file(const Palette *pal, const char *filename)
 {
   std::ofstream f(FSTREAM_PATH(filename));
-  if (f.bad()) return false;
+  if (f.bad())
+    return false;
 
   f << "JASC-PAL\n"
-    << "0100\n"
+    << "0200\n"
     << pal->size() << "\n";
 
-  for (int i=0; i<pal->size(); ++i) {
+  for (int i = 0; i < pal->size(); ++i)
+  {
     uint32_t col = pal->getEntry(i);
     f << ((int)rgba_getr(col)) << " "
       << ((int)rgba_getg(col)) << " "
-      << ((int)rgba_getb(col)) << "\n";
+      << ((int)rgba_getb(col)) << " "
+      << ((int)rgba_geta(col)) << "\n";
   }
 
   return true;
