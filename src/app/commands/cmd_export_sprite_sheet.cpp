@@ -1002,22 +1002,27 @@ private:
 
     ASSERT(m_backBuffer.use_count() == 2);
 
-    auto context = UIContext::instance();
+    // Create a non-UI context to avoid showing UI dialogs for
+    // GifOptions or JpegOptions from the background thread.
+    Context tmpCtx;
+
     Doc* newDocument =
       generate_sprite_sheet(
-        m_exporter, context, m_site, params, false, token)
+        m_exporter, &tmpCtx, m_site, params, false, token)
       .release();
     if (!newDocument)
       return;
 
     if (token.canceled()) {
-      DocDestroyer destroyer(context, newDocument, 100);
+      DocDestroyer destroyer(&tmpCtx, newDocument, 100);
       destroyer.destroyDocument();
       return;
     }
 
     ++m_executionID;
     int executionID = m_executionID;
+
+    tmpCtx.documents().remove(newDocument);
 
     ui::execute_from_ui_thread(
       [this, newDocument, executionID]{
@@ -1126,12 +1131,10 @@ class ExportSpriteSheetJob : public Job {
 public:
   ExportSpriteSheetJob(
     DocExporter& exporter,
-    Context* context,
     const Site& site,
     const ExportSpriteSheetParams& params)
     : Job(Strings::export_sprite_sheet_generating().c_str())
     , m_exporter(exporter)
-    , m_context(context)
     , m_site(site)
     , m_params(params) { }
 
@@ -1139,8 +1142,15 @@ public:
 
 private:
   void onJob() override {
+    // Create a non-UI context to avoid showing UI dialogs for
+    // GifOptions or JpegOptions from the background thread.
+    Context tmpCtx;
+
     m_doc = generate_sprite_sheet(
-      m_exporter, m_context, m_site, m_params, true, m_token);
+      m_exporter, &tmpCtx, m_site, m_params, true, m_token);
+
+    if (m_doc)
+      tmpCtx.documents().remove(m_doc.get());
   }
 
   void onMonitoringTick() override {
@@ -1154,7 +1164,6 @@ private:
 
   DocExporter& m_exporter;
   base::task_token m_token;
-  Context* m_context;
   const Site& m_site;
   const ExportSpriteSheetParams& m_params;
   std::unique_ptr<Doc> m_doc;
@@ -1305,7 +1314,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   std::unique_ptr<Doc> newDocument;
 #ifdef ENABLE_UI
   if (context->isUIAvailable()) {
-    ExportSpriteSheetJob job(exporter, context, site, params);
+    ExportSpriteSheetJob job(exporter, site, params);
     job.startJob();
     job.waitJob();
 
