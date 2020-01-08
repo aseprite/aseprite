@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -164,7 +164,7 @@ int Image_clear(lua_State* L)
   else if (lua_isinteger(L, 2))
     color = lua_tointeger(L, 2);
   else
-    color = convert_args_into_pixel_color(L, 2);
+    color = convert_args_into_pixel_color(L, 2, img->pixelFormat());
   doc::clear_image(img, color);
   return 0;
 }
@@ -172,14 +172,15 @@ int Image_clear(lua_State* L)
 int Image_drawPixel(lua_State* L)
 {
   auto obj = get_obj<ImageObj>(L, 1);
+  auto img = obj->image(L);
   const int x = lua_tointeger(L, 2);
   const int y = lua_tointeger(L, 3);
   doc::color_t color;
   if (lua_isinteger(L, 4))
     color = lua_tointeger(L, 4);
   else
-    color = convert_args_into_pixel_color(L, 4);
-  doc::put_pixel(obj->image(L), x, y, color);
+    color = convert_args_into_pixel_color(L, 4, img->pixelFormat());
+  doc::put_pixel(img, x, y, color);
   return 0;
 }
 
@@ -304,7 +305,7 @@ int Image_isPlain(lua_State* L)
   else if (lua_isinteger(L, 2))
     color = lua_tointeger(L, 2);
   else
-    color = convert_args_into_pixel_color(L, 2);
+    color = convert_args_into_pixel_color(L, 2, img->pixelFormat());
 
   bool res = doc::is_plain_image(img, color);
   lua_pushboolean(L, res);

@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -83,6 +84,28 @@ gfx::Color color_utils::color_for_ui(const app::Color& color)
 }
 
 doc::color_t color_utils::color_for_image(const app::Color& color, PixelFormat format)
+{
+  if (color.getType() == app::Color::MaskType)
+    return 0;
+
+  doc::color_t c = -1;
+
+  switch (format) {
+    case IMAGE_RGB:
+      c = doc::rgba(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+      break;
+    case IMAGE_GRAYSCALE:
+      c = doc::graya(color.getGray(), color.getAlpha());
+      break;
+    case IMAGE_INDEXED:
+      c = color.getIndex();
+      break;
+  }
+
+  return c;
+}
+
+doc::color_t color_utils::color_for_image_without_alpha(const app::Color& color, PixelFormat format)
 {
   if (color.getType() == app::Color::MaskType)
     return 0;

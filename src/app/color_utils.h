@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -26,6 +27,7 @@ namespace app {
 
     gfx::Color color_for_ui(const app::Color& color);
     doc::color_t color_for_image(const app::Color& color, doc::PixelFormat format);
+    doc::color_t color_for_image_without_alpha(const app::Color& color, doc::PixelFormat format);
     doc::color_t color_for_layer(const app::Color& color, doc::Layer* layer);
     doc::color_t color_for_target_mask(const app::Color& color, const ColorTarget& colorTarget);
     doc::color_t color_for_target(const app::Color& color, const ColorTarget& colorTarget);

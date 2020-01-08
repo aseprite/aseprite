@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -127,8 +127,10 @@ int Brush_gc(lua_State* L)
 int Brush_setFgColor(lua_State* L)
 {
   auto obj = get_obj<BrushObj>(L, 1);
-  if (obj->brush) {
-    const doc::color_t color = convert_args_into_pixel_color(L, 2);
+  if (obj->brush &&
+      obj->brush->image()) {
+    const doc::color_t color = convert_args_into_pixel_color(
+      L, 2, obj->brush->image()->pixelFormat());
     obj->brush->setImageColor(Brush::ImageColor::MainColor, color);
   }
   return 0;
@@ -137,9 +139,12 @@ int Brush_setFgColor(lua_State* L)
 int Brush_setBgColor(lua_State* L)
 {
   auto obj = get_obj<BrushObj>(L, 1);
-  if (obj->brush) {
-    const doc::color_t color = convert_args_into_pixel_color(L, 2);
-    obj->brush->setImageColor(Brush::ImageColor::BackgroundColor, color);
+  if (obj->brush &&
+      obj->brush->image()) {
+    const doc::color_t color = convert_args_into_pixel_color(
+      L, 2, obj->brush->image()->pixelFormat());
+    obj->brush->setImageColor(
+      Brush::ImageColor::BackgroundColor, color);
   }
   return 0;
 }

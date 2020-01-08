@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -481,10 +481,11 @@ app::Color convert_args_into_color(lua_State* L, int index)
   return Color_new(L, index);
 }
 
-doc::color_t convert_args_into_pixel_color(lua_State* L, int index)
+doc::color_t convert_args_into_pixel_color(lua_State* L, int index,
+                                           const doc::PixelFormat pixelFormat)
 {
   app::Color color = convert_args_into_color(L, index);
-  return color_utils::color_for_image(color, doc::IMAGE_RGB);
+  return color_utils::color_for_image(color, pixelFormat);
 }
 
 } // namespace script

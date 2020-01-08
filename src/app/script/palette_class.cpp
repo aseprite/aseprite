@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -201,7 +201,8 @@ int Palette_setColor(lua_State* L)
   if (i < 0 || i >= int(pal->size()))
     return luaL_error(L, "index out of bounds %d", i);
 
-  doc::color_t docColor = convert_args_into_pixel_color(L, 3);
+  doc::color_t docColor = convert_args_into_pixel_color(
+    L, 3, doc::IMAGE_RGB);
 
   if (auto sprite = obj->sprite(L)) {
     // Nothing to do

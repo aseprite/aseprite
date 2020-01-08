@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -255,7 +256,7 @@ std::string Color::toHumanReadableString(PixelFormat pixelFormat, HumanReadableS
 
           if (pixelFormat == IMAGE_INDEXED)
             result << " Index "
-                   << color_utils::color_for_image(*this, pixelFormat);
+                   << color_utils::color_for_image(*this, IMAGE_INDEXED);
         }
         break;
 
@@ -270,7 +271,7 @@ std::string Color::toHumanReadableString(PixelFormat pixelFormat, HumanReadableS
                  << MID(0, int(m_value.hsv.v*100.0), 100) << "%";
 
           if (pixelFormat == IMAGE_INDEXED)
-            result << " Index " << color_utils::color_for_image(*this, pixelFormat);
+            result << " Index " << color_utils::color_for_image(*this, IMAGE_INDEXED);
 
           result << " (RGB "
                  << getRed() << " "
@@ -290,7 +291,7 @@ std::string Color::toHumanReadableString(PixelFormat pixelFormat, HumanReadableS
                  << MID(0, int(m_value.hsl.l*100.0), 100) << "%";
 
           if (pixelFormat == IMAGE_INDEXED)
-            result << " Index " << color_utils::color_for_image(*this, pixelFormat);
+            result << " Index " << color_utils::color_for_image(*this, IMAGE_INDEXED);
 
           result << " (RGB "
                  << getRed() << " "

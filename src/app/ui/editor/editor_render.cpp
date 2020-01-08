@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -88,8 +88,8 @@ void EditorRender::setupBackground(Doc* doc, doc::PixelFormat pixelFormat)
 
   m_render->setBgType(bgType);
   m_render->setBgZoom(docPref.bg.zoom());
-  m_render->setBgColor1(color_utils::color_for_image(docPref.bg.color1(), pixelFormat));
-  m_render->setBgColor2(color_utils::color_for_image(docPref.bg.color2(), pixelFormat));
+  m_render->setBgColor1(color_utils::color_for_image_without_alpha(docPref.bg.color1(), pixelFormat));
+  m_render->setBgColor2(color_utils::color_for_image_without_alpha(docPref.bg.color2(), pixelFormat));
   m_render->setBgCheckedSize(tile);
 }
 

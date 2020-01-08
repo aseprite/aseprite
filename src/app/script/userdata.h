@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -67,7 +67,7 @@ int UserData_set_text(lua_State* L) {
 template<typename T>
 int UserData_set_color(lua_State* L) {
   auto obj = get_docobj<T>(L, 1);
-  doc::color_t docColor = convert_args_into_pixel_color(L, 2);
+  doc::color_t docColor = convert_args_into_pixel_color(L, 2, doc::IMAGE_RGB);
   auto wud = get_WithUserData<T>(obj);
   UserData ud = wud->userData();
   ud.setColor(docColor);
