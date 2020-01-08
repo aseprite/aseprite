@@ -25,7 +25,7 @@
     </grid>
     <separator horizontal="true" />
     <hbox>
-      <label text="Copyright (C) 2001-2019" />
+      <label text="Copyright (C) 2001-2020" />
       <link text="Igara Studio S.A." url="https://www.igarastudio.com/" />
     </hbox>
     <link text="https://www.aseprite.org/" url="https://www.aseprite.org/" />

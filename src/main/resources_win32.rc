@@ -23,7 +23,7 @@ BEGIN
             VALUE "FileDescription", "Aseprite - Animated sprites editor & pixel art tool"
             VALUE "FileVersion", "1,3,0,0"
             VALUE "InternalName", "aseprite"
-            VALUE "LegalCopyright", "Copyright (C) 2001-2019 Igara Studio S.A."
+            VALUE "LegalCopyright", "Copyright (C) 2001-2020 Igara Studio S.A."
             VALUE "OriginalFilename", "aseprite.exe"
             VALUE "ProductName", "ASEPRITE"
             VALUE "ProductVersion", "1,3,0,0"
