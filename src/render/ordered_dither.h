@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (c) 2019 Igara Studio S.A.
+// Copyright (c) 2019-2020 Igara Studio S.A.
 // Copyright (c) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -11,6 +11,7 @@
 
 #include "doc/color.h"
 #include "doc/image_impl.h"
+#include "doc/octree_map.h"
 #include "doc/palette.h"
 #include "doc/rgbmap.h"
 #include "gfx/point.h"
@@ -41,11 +42,13 @@ namespace render {
       const doc::color_t color,
       const int x, const int y,
       const doc::RgbMap* rgbmap,
+      const doc::OctreeMap* octreeMap,
       const doc::Palette* palette) { return 0; }
 
     virtual doc::color_t ditherRgbToIndex2D(
       const int x, const int y,
       const doc::RgbMap* rgbmap,
+      const doc::OctreeMap* octreeMap,
       const doc::Palette* palette) { return 0; }
   };
 
@@ -58,6 +61,7 @@ namespace render {
       const int x,
       const int y,
       const doc::RgbMap* rgbmap,
+      const doc::OctreeMap* octreeMap,
       const doc::Palette* palette) override;
   private:
     int m_transparentIndex;
@@ -72,6 +76,7 @@ namespace render {
       const int x,
       const int y,
       const doc::RgbMap* rgbmap,
+      const doc::OctreeMap* octreeMap,
       const doc::Palette* palette) override;
   private:
     int m_transparentIndex;
@@ -83,6 +88,7 @@ namespace render {
     const doc::Image* srcImage,
     doc::Image* dstImage,
     const doc::RgbMap* rgbmap,
+    const doc::OctreeMap* octreeMap,
     const doc::Palette* palette,
     TaskDelegate* delegate = nullptr);
 

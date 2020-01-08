@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (c) 2019  Igara Studio S.A.
+// Copyright (c) 2019-2020  Igara Studio S.A.
 // Copyright (c) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -140,7 +140,7 @@ Image* convert_pixel_format(
     if (dither)
       dither_rgb_image_to_indexed(
         *dither, dithering,
-        image, new_image, rgbmap, palette, delegate);
+        image, new_image, rgbmap, octreeMap, palette, delegate);
     return new_image;
   }
 

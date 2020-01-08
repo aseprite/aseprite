@@ -1,6 +1,6 @@
 // Aseprite Render Library
-// Copyright (c) 2019 Igara Studio S.A
-// Copyright (c) 2017 David Capello
+// Copyright (c) 2019-2020 Igara Studio S.A
+// Copyright (c)      2017 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -43,6 +43,7 @@ void ErrorDiffusionDither::finish()
 doc::color_t ErrorDiffusionDither::ditherRgbToIndex2D(
   const int x, const int y,
   const doc::RgbMap* rgbmap,
+  const doc::OctreeMap* octreeMap,
   const doc::Palette* palette)
 {
   if (y != m_lastY) {
@@ -71,9 +72,13 @@ doc::color_t ErrorDiffusionDither::ditherRgbToIndex2D(
     v[i] = MID(0, v[i], 255);
   }
 
-  const doc::color_t index =
-    (rgbmap ? rgbmap->mapColor(v[0], v[1], v[2], v[3]):
-              palette->findBestfit(v[0], v[1], v[2], v[3], m_transparentIndex));
+  doc::color_t index;
+  if (octreeMap)
+    index = octreeMap->mapColor(v[0], v[1], v[2], v[3], m_transparentIndex);
+  else if (rgbmap)
+    index = rgbmap->mapColor(v[0], v[1], v[2], v[3]);
+  else
+    index = palette->findBestfit(v[0], v[1], v[2], v[3], m_transparentIndex);
 
   doc::color_t palColor = palette->getEntry(index);
   if (m_transparentIndex == index || doc::rgba_geta(palColor) == 0) {

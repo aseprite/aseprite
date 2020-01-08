@@ -1,6 +1,6 @@
 // Aseprite Render Library
-// Copyright (c) 2019 Igara Studio S.A.
-// Copyright (c) 2017 David Capello
+// Copyright (c) 2019-2020  Igara Studio S.A.
+// Copyright (c)      2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -11,6 +11,7 @@
 
 #include "render/ordered_dither.h"
 
+#include "doc/octree_map.h"
 #include "base/base.h"
 #include "render/dithering.h"
 #include "render/dithering_matrix.h"
@@ -52,6 +53,7 @@ doc::color_t OrderedDither::ditherRgbPixelToIndex(
   const int x,
   const int y,
   const doc::RgbMap* rgbmap,
+  const doc::OctreeMap* octreeMap,
   const doc::Palette* palette)
 {
   // Alpha=0, output transparent color
@@ -65,9 +67,13 @@ doc::color_t OrderedDither::ditherRgbPixelToIndex(
   int g = doc::rgba_getg(color);
   int b = doc::rgba_getb(color);
   int a = doc::rgba_geta(color);
-  doc::color_t nearest1idx =
-    (rgbmap ? rgbmap->mapColor(r, g, b, a):
-              palette->findBestfit(r, g, b, a, m_transparentIndex));
+  doc::color_t nearest1idx;
+  if (octreeMap)
+    nearest1idx = octreeMap->mapColor(r, g, b, a, m_transparentIndex);
+  else if (rgbmap)
+    nearest1idx = rgbmap->mapColor(r, g, b, a);
+  else
+    nearest1idx = palette->findBestfit(r, g, b, a, m_transparentIndex);
 
   doc::color_t nearest1rgb = palette->getEntry(nearest1idx);
   int r1 = doc::rgba_getr(nearest1rgb);
@@ -87,9 +93,13 @@ doc::color_t OrderedDither::ditherRgbPixelToIndex(
   g2 = MID(0, g2, 255);
   b2 = MID(0, b2, 255);
   a2 = MID(0, a2, 255);
-  doc::color_t nearest2idx =
-    (rgbmap ? rgbmap->mapColor(r2, g2, b2, a2):
-              palette->findBestfit(r2, g2, b2, a2, m_transparentIndex));
+  doc::color_t nearest2idx;
+  if (octreeMap)
+    nearest2idx = octreeMap->mapColor(r2, g2, b2, a2, m_transparentIndex);
+  else if (rgbmap)
+    nearest2idx = rgbmap->mapColor(r2, g2, b2, a2);
+  else
+    nearest2idx = palette->findBestfit(r2, g2, b2, a2, m_transparentIndex);
 
   // If both possible RGB colors use the same index, we cannot
   // make any dither with these two colors.
@@ -141,6 +151,7 @@ doc::color_t OrderedDither2::ditherRgbPixelToIndex(
   const int x,
   const int y,
   const doc::RgbMap* rgbmap,
+  const doc::OctreeMap* octreeMap,
   const doc::Palette* palette)
 {
   // Alpha=0, output transparent color
@@ -156,9 +167,13 @@ doc::color_t OrderedDither2::ditherRgbPixelToIndex(
   const int a = doc::rgba_geta(color);
 
   // Find the best palette entry for the given color.
-  const int index =
-    (rgbmap ? rgbmap->mapColor(r, g, b, a):
-              palette->findBestfit(r, g, b, a, m_transparentIndex));
+  int index;
+  if (octreeMap)
+    index = octreeMap->mapColor(r, g, b, a, m_transparentIndex);
+  else if (rgbmap)
+    index = rgbmap->mapColor(r, g, b, a);
+  else
+    index = palette->findBestfit(r, g, b, a, m_transparentIndex);
 
   const doc::color_t color0 = palette->getEntry(index);
   const int r0 = doc::rgba_getr(color0);
@@ -234,6 +249,7 @@ void dither_rgb_image_to_indexed(
   const doc::Image* srcImage,
   doc::Image* dstImage,
   const doc::RgbMap* rgbmap,
+  const doc::OctreeMap* octreeMap,
   const doc::Palette* palette,
   TaskDelegate* delegate)
 {
@@ -253,7 +269,7 @@ void dither_rgb_image_to_indexed(
         ASSERT(srcIt != srcBits.end());
         ASSERT(dstIt != dstBits.end());
         *dstIt = algorithm.ditherRgbPixelToIndex(
-          dithering.matrix(), *srcIt, x, y, rgbmap, palette);
+          dithering.matrix(), *srcIt, x, y, rgbmap, octreeMap, palette);
 
         if (delegate) {
           if (!delegate->continueTask())
@@ -276,7 +292,7 @@ void dither_rgb_image_to_indexed(
         dstIt += w-1;
         for (int x=w-1; x>=0; --x, --dstIt) {
           ASSERT(dstIt == doc::get_pixel_address_fast<doc::IndexedTraits>(dstImage, x, y));
-          *dstIt = algorithm.ditherRgbToIndex2D(x, y, rgbmap, palette);
+          *dstIt = algorithm.ditherRgbToIndex2D(x, y, rgbmap, octreeMap, palette);
           if (delegate) {
             if (!delegate->continueTask())
               return;
@@ -287,7 +303,7 @@ void dither_rgb_image_to_indexed(
       else {                    // Even row: go fromo left-to-right
         for (int x=0; x<w; ++x, ++dstIt) {
           ASSERT(dstIt == doc::get_pixel_address_fast<doc::IndexedTraits>(dstImage, x, y));
-          *dstIt = algorithm.ditherRgbToIndex2D(x, y, rgbmap, palette);
+          *dstIt = algorithm.ditherRgbToIndex2D(x, y, rgbmap, octreeMap, palette);
 
           if (delegate) {
             if (!delegate->continueTask())

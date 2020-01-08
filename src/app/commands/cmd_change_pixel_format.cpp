@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -26,6 +26,7 @@
 #include "app/ui/dithering_selector.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_render.h"
+#include "app/ui/map_algorithm_selector.h"
 #include "app/ui/skin/skin_theme.h"
 #include "base/bind.h"
 #include "base/thread.h"
@@ -80,6 +81,7 @@ public:
                 const doc::PixelFormat pixelFormat,
                 const render::Dithering& dithering,
                 const gfx::Point& pos,
+                const MapAlgorithm mapAlgorithm,
                 const bool newBlend)
     : m_image(dstImage)
     , m_pos(pos)
@@ -91,10 +93,12 @@ public:
        sprite, frame,
        pixelFormat,
        dithering,
+       mapAlgorithm,
        newBlend]() { // Copy the matrix
         run(sprite, frame,
             pixelFormat,
             dithering,
+            mapAlgorithm,
             newBlend);
       })
   {
@@ -118,6 +122,7 @@ private:
            const doc::frame_t frame,
            const doc::PixelFormat pixelFormat,
            const render::Dithering& dithering,
+           const MapAlgorithm mapAlgorithm,
            const bool newBlend) {
     doc::ImageRef tmp(
       Image::create(sprite->pixelFormat(),
@@ -139,7 +144,7 @@ private:
       pixelFormat,
       dithering,
       sprite->rgbMap(frame),
-      nullptr,
+      (mapAlgorithm == MapAlgorithm::OCTREE)? sprite->octreeInit(frame) : nullptr,
       sprite->palette(frame),
       (sprite->backgroundLayer() != nullptr),
       0,
@@ -175,6 +180,7 @@ public:
     , m_imageBuffer(new doc::ImageBuffer)
     , m_selectedItem(nullptr)
     , m_ditheringSelector(nullptr)
+    , m_mapAlgorithmSelector(nullptr)
     , m_imageJustCreated(true)
   {
     doc::PixelFormat from = m_editor->sprite()->pixelFormat();
@@ -194,6 +200,8 @@ public:
 
       m_ditheringSelector = new DitheringSelector(DitheringSelector::SelectBoth);
       m_ditheringSelector->setExpansive(true);
+      m_mapAlgorithmSelector = new MapAlgorithmSelector();
+      m_mapAlgorithmSelector->setExpansive(true);
 
       // Select default dithering method
       {
@@ -201,6 +209,24 @@ public:
           Preferences::instance().quantization.ditheringAlgorithm());
         if (index >= 0)
           m_ditheringSelector->setSelectedItemIndex(index);
+      }
+
+      // Select default mapping algorithm
+      m_mapAlgorithmSelector->Change.connect(
+        base::Bind<void>(&ColorModeWindow::onMapAlgorithm, this));
+      mapAlgorithmPlaceholder()->addChild(m_mapAlgorithmSelector);
+
+      m_mapAlgorithmSelector->addItem("RGB 5bits + Alpha 3bits - Map Algorithm");
+      m_mapAlgorithmSelector->addItem("RGB Octree without Alpha - Map Algorihtm");
+
+      MapAlgorithm prefAlgorithm = Preferences::instance().quantization.algorithm();
+      if (prefAlgorithm == MapAlgorithm::RGB5A3 || prefAlgorithm == MapAlgorithm::OCTREE) {
+        m_mapAlgorithmSelector->algorithm(prefAlgorithm);
+        m_mapAlgorithmSelector->setSelectedItemIndex((int)prefAlgorithm);
+      }
+      else {
+        m_mapAlgorithmSelector->algorithm(MapAlgorithm::RGB5A3);
+        m_mapAlgorithmSelector->setSelectedItemIndex((int)MapAlgorithm::RGB5A3);
       }
 
       m_ditheringSelector->Change.connect(
@@ -240,6 +266,10 @@ public:
     return m_selectedItem->pixelFormat();
   }
 
+  MapAlgorithm algorithm() const {
+    return m_mapAlgorithmSelector->algorithm();
+  }
+
   render::Dithering dithering() const {
     render::Dithering d;
     if (m_ditheringSelector) {
@@ -270,6 +300,13 @@ public:
     }
   }
 
+  // Save the  used for the future
+  void saveMapAlgorithmOption() {
+    if (m_mapAlgorithmSelector)
+      Preferences::instance().quantization.algorithm(m_mapAlgorithmSelector->algorithm());
+      Preferences::instance().quantization.save();
+  }
+
 private:
 
   void stop() {
@@ -283,6 +320,19 @@ private:
     }
   }
 
+  void onMapAlgorithm() {
+    stop();
+    if (m_mapAlgorithmSelector) {
+      if (m_mapAlgorithmSelector->getSelectedItemIndex() == (int)m_mapAlgorithmSelector->algorithm())
+        // Avoid restarting the conversion process for the same option
+        return;
+      m_mapAlgorithmSelector->algorithm((MapAlgorithm)m_mapAlgorithmSelector->getSelectedItemIndex());
+      ConversionItem* item =
+        static_cast<ConversionItem*>(colorMode()->getSelectedChild());
+      regeneratePreview(item);
+    }
+  }
+
   void onChangeColorMode() {
     ConversionItem* item =
       static_cast<ConversionItem*>(colorMode()->getSelectedChild());
@@ -290,57 +340,68 @@ private:
       return;
     m_selectedItem = item;
 
+    regeneratePreview(item);
+  }
+
+  void regeneratePreview(ConversionItem* item) {
     stop();
+    if (item) {
+      gfx::Rect visibleBounds = m_editor->getVisibleSpriteBounds();
+      if (visibleBounds.isEmpty())
+        return;
 
-    gfx::Rect visibleBounds = m_editor->getVisibleSpriteBounds();
-    if (visibleBounds.isEmpty())
-      return;
+      doc::PixelFormat dstPixelFormat = item->pixelFormat();
 
-    doc::PixelFormat dstPixelFormat = item->pixelFormat();
-
-    if (m_ditheringSelector) {
       const bool toIndexed = (dstPixelFormat == doc::IMAGE_INDEXED);
-      m_ditheringSelector->setVisible(toIndexed);
 
-      const bool errorDiff =
-        (m_ditheringSelector->ditheringAlgorithm() ==
-         render::DitheringAlgorithm::ErrorDiffusion);
-      amount()->setVisible(toIndexed && errorDiff);
-    }
+      if (m_mapAlgorithmSelector)
+        m_mapAlgorithmSelector->setVisible(toIndexed);
 
-    m_image.reset(
-      Image::create(dstPixelFormat,
-                    visibleBounds.w,
-                    visibleBounds.h,
-                    m_imageBuffer));
-    if (m_imageJustCreated) {
-      m_imageJustCreated = false;
-      m_image->clear(0);
-    }
+      if (m_ditheringSelector) {
+        m_ditheringSelector->setVisible(toIndexed);
 
-    m_editor->renderEngine().setPreviewImage(
-      nullptr,
-      m_editor->frame(),
-      m_image.get(),
-      visibleBounds.origin(),
-      doc::BlendMode::SRC);
 
-    m_editor->invalidate();
-    progress()->setValue(0);
-    progress()->setVisible(false);
-    layout();
+        const bool errorDiff =
+          (m_ditheringSelector->ditheringAlgorithm() ==
+           render::DitheringAlgorithm::ErrorDiffusion);
+        amount()->setVisible(toIndexed && errorDiff);
+      }
 
-    m_bgThread.reset(
-      new ConvertThread(
-        m_image,
-        m_editor->sprite(),
+      m_image.reset(
+        Image::create(dstPixelFormat,
+                      visibleBounds.w,
+                      visibleBounds.h,
+                      m_imageBuffer));
+      if (m_imageJustCreated) {
+        m_imageJustCreated = false;
+        m_image->clear(0);
+      }
+
+      m_editor->renderEngine().setPreviewImage(
+        nullptr,
         m_editor->frame(),
-        dstPixelFormat,
-        dithering(),
+        m_image.get(),
         visibleBounds.origin(),
-        Preferences::instance().experimental.newBlend()));
+        doc::BlendMode::SRC);
 
-    m_timer.start();
+      m_editor->invalidate();
+      progress()->setValue(0);
+      progress()->setVisible(false);
+      layout();
+
+      m_bgThread.reset(
+        new ConvertThread(
+          m_image,
+          m_editor->sprite(),
+          m_editor->frame(),
+          dstPixelFormat,
+          dithering(),
+          visibleBounds.origin(),
+          m_mapAlgorithmSelector->algorithm(),
+          Preferences::instance().experimental.newBlend()));
+
+      m_timer.start();
+    }
   }
 
   void onDithering() {
@@ -383,6 +444,7 @@ private:
   std::unique_ptr<ConvertThread> m_bgThread;
   ConversionItem* m_selectedItem;
   DitheringSelector* m_ditheringSelector;
+  MapAlgorithmSelector* m_mapAlgorithmSelector;
   bool m_imageJustCreated;
 };
 
@@ -525,8 +587,10 @@ void ChangePixelFormatCommand::onExecute(Context* context)
 
     m_format = window.pixelFormat();
     m_dithering = window.dithering();
+    m_algorithm = window.algorithm();
     flatten = window.flattenEnabled();
 
+    window.saveMapAlgorithmOption();
     window.saveDitheringOptions();
   }
 #endif // ENABLE_UI
