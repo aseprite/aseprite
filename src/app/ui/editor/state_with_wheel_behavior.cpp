@@ -175,7 +175,7 @@ bool StateWithWheelBehavior::onMouseWheel(Editor *editor, MouseMessage *msg)
   case WheelAction::Zoom:
   {
     render::Zoom zoom = editor->zoom();
-    zoom = render::Zoom::fromLinearScale(zoom.linearScale() - GetIntDz(msg, 1.25));
+    zoom = render::Zoom::fromLinearScale(zoom.linearScale() - GetIntDz(msg, 1.0));
     setZoom(editor, zoom, msg->position());
     break;
   }
@@ -336,6 +336,7 @@ bool StateWithWheelBehavior::onMouseWheel(Editor *editor, MouseMessage *msg)
       if (command)
       {
         int opacity = static_cast<doc::LayerImage *>(site.layer())->opacity();
+        dz /= -20.0;
         opacity = MID(0, opacity + dz * 255 / 10, 255);
 
         Params params;
