@@ -315,30 +315,62 @@ int Image_isPlain(lua_State* L)
 int Image_saveAs(lua_State* L)
 {
   auto obj = get_obj<ImageObj>(L, 1);
-  auto img = obj->image(L);
-  const char* fn = luaL_checkstring(L, 2);
+  Image* img = obj->image(L);
+  Cel* cel = obj->cel(L);
+  Palette* pal = (cel ? cel->sprite()->palette(cel->frame()): nullptr);
+  std::string fn;
   bool result = false;
-  if (fn) {
-    std::string absFn = base::get_absolute_path(fn);
-    if (!ask_access(L, absFn.c_str(), FileAccessMode::Write, true))
-      return luaL_error(L, "script doesn't have access to write file %s",
-                        absFn.c_str());
 
-    std::unique_ptr<Sprite> sprite(Sprite::MakeStdSprite(img->spec(), 256));
+  if (lua_istable(L, 2)) {
+    // Image:saveAs{ filename }
+    int type = lua_getfield(L, 2, "filename");
+    if (type != LUA_TNIL) {
+      if (const char* fn0 = lua_tostring(L, -1))
+        fn = fn0;
+    }
+    lua_pop(L, 1);
 
-    std::vector<Image*> oneImage;
-    sprite->getImages(oneImage);
-    ASSERT(oneImage.size() == 1);
-    if (!oneImage.empty())
-      copy_image(oneImage.front(), img);
-
-    std::unique_ptr<Doc> doc(new Doc(sprite.get()));
-    sprite.release();
-    doc->setFilename(absFn);
-
-    app::Context* ctx = App::instance()->context();
-    result = (save_document(ctx, doc.get()) >= 0);
+    // Image:saveAs{ palette }
+    lua_getfield(L, 2, "palette");
+    if (type != LUA_TNIL) {
+      if (auto pal0 = get_palette_from_arg(L, -1))
+        pal = pal0;
+    }
+    lua_pop(L, 1);
   }
+  else {
+    // Image:saveAs(filename)
+    const char* fn0 = luaL_checkstring(L, 2);
+    if (fn0)
+      fn = fn0;
+  }
+
+  if (fn.empty())
+    return luaL_error(L, "missing filename in Image:saveAs()");
+
+  std::string absFn = base::get_absolute_path(fn);
+  if (!ask_access(L, absFn.c_str(), FileAccessMode::Write, true))
+    return luaL_error(L, "script doesn't have access to write file %s",
+                      absFn.c_str());
+
+  std::unique_ptr<Sprite> sprite(Sprite::MakeStdSprite(img->spec(), 256));
+
+  std::vector<Image*> oneImage;
+  sprite->getImages(oneImage);
+  ASSERT(oneImage.size() == 1);
+  if (!oneImage.empty())
+    copy_image(oneImage.front(), img);
+
+  if (pal)
+    sprite->setPalette(pal, false);
+
+  std::unique_ptr<Doc> doc(new Doc(sprite.get()));
+  sprite.release();
+  doc->setFilename(absFn);
+
+  app::Context* ctx = App::instance()->context();
+  result = (save_document(ctx, doc.get()) >= 0);
+
   lua_pushboolean(L, result);
   return 1;
 }
