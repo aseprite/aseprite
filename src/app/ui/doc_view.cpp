@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -371,7 +371,7 @@ bool DocView::onProcessMessage(Message* msg)
 void DocView::onGeneralUpdate(DocEvent& ev)
 {
   if (m_editor->isVisible())
-    m_editor->updateEditor();
+    m_editor->updateEditor(true);
 }
 
 void DocView::onSpritePixelsModified(DocEvent& ev)

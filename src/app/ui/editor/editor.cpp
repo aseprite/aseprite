@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -483,7 +483,7 @@ void Editor::setScrollAndZoomToFitScreen()
     }
   }
 
-  updateEditor();
+  updateEditor(false);
   setEditorScroll(
     gfx::Point(
       m_padding.x - vp.w/2 + m_proj.applyX(canvas.w)/2,
@@ -503,9 +503,9 @@ void Editor::setEditorZoom(const render::Zoom& zoom)
     Editor::ZoomBehavior::CENTER);
 }
 
-void Editor::updateEditor()
+void Editor::updateEditor(const bool restoreScrollPos)
 {
-  View::getView(this)->updateView(false);
+  View::getView(this)->updateView(restoreScrollPos);
 }
 
 void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& spriteRectToDraw, int dx, int dy)
@@ -1477,7 +1477,7 @@ void Editor::centerInSpritePoint(const gfx::Point& spritePos)
     m_padding.x - (vp.w/2) + m_proj.applyX(1)/2 + m_proj.applyX(spritePos.x),
     m_padding.y - (vp.h/2) + m_proj.applyY(1)/2 + m_proj.applyY(spritePos.y));
 
-  updateEditor();
+  updateEditor(false);
   setEditorScroll(scroll);
   invalidate();
 }
@@ -2360,7 +2360,7 @@ void Editor::setZoomAndCenterInMouse(const Zoom& zoom,
   setZoom(zoom);
 
   if ((m_proj.zoom() != zoom) || (screenPos != view->viewScroll())) {
-    updateEditor();
+    updateEditor(false);
     setEditorScroll(scrollPos);
   }
 }

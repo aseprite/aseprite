@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -151,6 +151,9 @@ void View::setViewScroll(const Point& pt)
   onSetViewScroll(pt);
 }
 
+// If restoreScrollPos=false it means that the caller of
+// updateView(false) will then update the view scroll position
+// manually.
 void View::updateView(const bool restoreScrollPos)
 {
   Widget* vw = UI_FIRST_WIDGET(m_viewport.children());
@@ -169,16 +172,12 @@ void View::updateView(const bool restoreScrollPos)
     setScrollableSize(m_viewport.calculateNeededSize(), false);
 
   m_viewport.setBounds(m_viewport.bounds());
-  if (restoreScrollPos  ||
-      // Force restoring the old scroll position if we are out of
-      // bounds in the viewport limits.
-      scroll != limitScrollPosToViewport(scroll)) {
+  if (restoreScrollPos) {
     if (vw)
       setViewScroll(scroll);
     else
       setViewScroll(Point(0, 0));
   }
-  ASSERT(viewScroll() == limitScrollPosToViewport(viewScroll()));
 
   if (Widget* child = attachedWidget()) {
     updateAttachedWidgetBounds(viewScroll());

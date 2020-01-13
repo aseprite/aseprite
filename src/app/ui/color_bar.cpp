@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -1080,8 +1080,8 @@ void ColorBar::onTimerTick()
   // Redraw just the current editor
   else {
     m_redrawAll = true;
-    if (current_editor != NULL)
-      current_editor->updateEditor();
+    if (current_editor)
+      current_editor->updateEditor(true);
   }
 }
 

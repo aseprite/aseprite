@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -160,7 +160,7 @@ namespace app {
     void setEditorZoom(const render::Zoom& zoom);
 
     // Updates the Editor's view.
-    void updateEditor();
+    void updateEditor(const bool restoreScrollPos);
 
     // Draws the sprite taking care of the whole clipping region.
     void drawSpriteClipped(const gfx::Region& updateRegion);
