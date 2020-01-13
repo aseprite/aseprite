@@ -14,6 +14,8 @@ assert('first.png' == fs.fileName('first.png'))
 assert('second.png' == fs.fileName('path/second.png'))
 assert('third.png' == fs.fileName('C:\\path\\third.png'))
 
+assert('png' == fs.fileExtension('path/file.png'))
+
 assert('first' == fs.fileTitle('first.png'))
 assert('second' == fs.fileTitle('path/second.png'))
 assert('third' == fs.fileTitle('C:\\path\\third.png'))
