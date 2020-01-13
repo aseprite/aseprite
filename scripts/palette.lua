@@ -29,6 +29,12 @@ do
   assert(p:getColor(1) == Color(250, 4, 30))
   assert(p:getColor(2) == Color(240, 3, 20))
   assert(p:getColor(3) == Color(210, 2, 10))
+
+  -- Check alpha
+  local c = Color{red=100, green=50, blue=10, alpha=128}
+  p:setColor(3, c)
+  assert(p:getColor(3) == c)
+  assert(p:getColor(3).alpha == 128)
 end
 
 -- Load/save
