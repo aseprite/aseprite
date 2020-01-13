@@ -1,4 +1,4 @@
--- Copyright (C) 2019  Igara Studio S.A.
+-- Copyright (C) 2019-2020  Igara Studio S.A.
 -- Copyright (C) 2018  David Capello
 --
 -- This file is released under the terms of the MIT license.
@@ -92,6 +92,47 @@ do
     for x=0,a.width-1 do
       assert(a:getPixel(x, y) == b:getPixel(x, y))
     end
+  end
+end
+
+-- Save indexed image and load and check that the palette is the same
+do
+  local spr = Sprite{ fromFile="sprites/abcd.aseprite" }
+  local img = Image{ fromFile="sprites/abcd.aseprite" }
+  spr.cels[1].image:saveAs("_test_palette_a.png")
+  img:saveAs("_test_palette_b.png") -- This file will contain a black palette
+  img:saveAs{ filename="_test_palette_c.png", palette=spr.palettes[1] }
+
+  local a = Sprite{ fromFile="_test_palette_a.png" }
+  local b = Sprite{ fromFile="_test_palette_b.png" }
+  local c = Sprite{ fromFile="_test_palette_c.png" }
+
+  assert(a.width == 5)
+  assert(a.height == 7)
+  assert(b.width == 32)
+  assert(b.height == 32)
+  assert(c.width == 32)
+  assert(c.height == 32)
+  local bimg = b.cels[1].image
+  local cimg = c.cels[1].image
+  for y=0,31 do
+    for x=0,31 do
+      assert(bimg:getPixel(x, y) == cimg:getPixel(x, y))
+    end
+  end
+
+  local apal = a.palettes[1]
+  local bpal = b.palettes[1]
+  local cpal = c.palettes[1]
+  -- Same palette in a and c
+  assert(#apal == #cpal)
+  for i=0,#apal-1 do
+    assert(apal:getColor(i) == cpal:getColor(i))
+  end
+  -- b should contain a complete black palette
+  assert(bpal:getColor(0) == Color(0, 0, 0, 0))
+  for i=1,#bpal-1 do
+    assert(bpal:getColor(i) == Color(0, 0, 0, 255))
   end
 end
 
