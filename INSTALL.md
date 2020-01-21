@@ -88,7 +88,7 @@ You will need the following dependencies on Ubuntu/Debian:
 
 On Fedora:
 
-    sudo yum install -y gcc-c++ cmake ninja-build libX11-devel libXcursor-devel mesa-libGL-devel fontconfig-devel
+    sudo dnf install -y gcc-c++ cmake ninja-build libX11-devel libXcursor-devel mesa-libGL-devel fontconfig-devel libtiff-devel harfbuzz-icu lz4-devel nettle-devel
 
 You must also compile [Skia](#skia-on-linux) before starting with the
 [compilation](#compiling).
@@ -192,6 +192,9 @@ First you have to [compile Skia](#skia-on-linux), then you should run
       -DLAF_OS_BACKEND=skia \
       -DSKIA_DIR=$HOME/deps/skia \
       -DSKIA_OUT_DIR=$HOME/deps/skia/out/Release \
+      -DCMAKE_CXX_COMPILER=`which g++` \
+      -DCMAKE_C_COMPILER=`which gcc` \
+      -DCMAKE_ASM_COMPILER=`which gcc`
       -G Ninja \
       ..
     ninja aseprite
