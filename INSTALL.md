@@ -228,7 +228,7 @@ Download
 and uncompress it in some place like `C:\deps\depot_tools`.
 
 [It's recommended to compile Skia with Clang](https://github.com/google/skia/blob/master/site/user/build.md#a-note-on-software-backend-performance)
-to get better performance. So you will need to [download Clang](http://releases.llvm.org/8.0.0/LLVM-8.0.0-win64.exe),
+to get better performance. So you will need to [download Clang](https://github.com/llvm/llvm-project/releases/download/llvmorg-8.0.1/LLVM-8.0.1-win64.exe),
 and install it on a folder like `C:\deps\llvm` (a folder without whitespaces).
 
 Open a [developer command prompt](https://docs.microsoft.com/en-us/dotnet/framework/tools/developer-command-prompt-for-vs)
