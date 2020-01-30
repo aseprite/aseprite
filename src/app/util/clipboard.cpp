@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -396,8 +396,9 @@ void paste(Context* ctx, const bool interactive)
       }
 
       if (current_editor && interactive) {
-        // TODO we don't support pasting in multiple cels at the moment,
-        //      so we clear the range here.
+        // TODO we don't support pasting in multiple cels at the
+        //      moment, so we clear the range here (same as in
+        //      PasteTextCommand::onExecute())
         App::instance()->timeline()->clearAndInvalidateRange();
 
         // Change to MovingPixelsState
