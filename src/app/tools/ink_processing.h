@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -1141,8 +1141,6 @@ public:
     // Do nothing
   }
 
-  color_t getTransparentColor() { return m_transparentColor; }
-
 protected:
   void alignPixelPoint(int& x, int& y) {
     x = (x - m_u) % m_width;
@@ -1368,10 +1366,11 @@ void BrushLockAlphaInkProcessing<RgbTraits>::processPixel(int x, int y) {
 
 template<>
 void BrushLockAlphaInkProcessing<IndexedTraits>::processPixel(int x, int y) {
-  color_t c;
-  if (preProcessPixel(x, y, &c))
-    if (*m_srcAddress != getTransparentColor())
+  if (*m_srcAddress != m_transparentColor) {
+    color_t c;
+    if (preProcessPixel(x, y, &c))
       *m_dstAddress = c;
+  }
 }
 
 template<>
