@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -229,7 +229,9 @@ int App_alert(lua_State* L)
 int App_refresh(lua_State* L)
 {
 #ifdef ENABLE_UI
-  app_refresh_screen();
+  app::Context* ctx = App::instance()->context();
+  if (ctx && ctx->isUIAvailable())
+    app_refresh_screen();
 #endif
   return 0;
 }
