@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -51,7 +51,12 @@ UIContext::~UIContext()
   // The context must be empty at this point. (It's to check if the UI
   // is working correctly, i.e. closing all files when the user can
   // take any action about it.)
-  ASSERT(documents().empty());
+  //
+  // Note: This assert is commented because it's really common to hit
+  // it when the program crashes by any other reason, and we would
+  // like to see that other reason instead of this assert.
+
+  //ASSERT(documents().empty());
 }
 
 bool UIContext::isUIAvailable() const
