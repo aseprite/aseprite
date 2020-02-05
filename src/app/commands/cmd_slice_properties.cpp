@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -90,7 +90,7 @@ void SlicePropertiesCommand::onExecute(Context* context)
 
   {
     const SliceWindow::Mods mods = window.modifiedFields();
-    ContextWriter writer(reader, 500);
+    ContextWriter writer(reader);
     Tx tx(writer.context(), "Slice Properties");
 
     for (Slice* slice : slices.iterateAs<Slice>()) {

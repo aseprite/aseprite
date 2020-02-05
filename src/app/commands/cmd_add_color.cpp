@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -116,7 +116,7 @@ void AddColorCommand::onExecute(Context* ctx)
     if (index >= 0)
       return;
 
-    ContextWriter writer(ctx, 500);
+    ContextWriter writer(ctx);
     Doc* document(writer.document());
     Sprite* sprite = writer.sprite();
     if (!document || !sprite) {

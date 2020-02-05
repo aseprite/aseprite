@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -69,7 +69,7 @@ protected:
   }
 
   void onExecute(Context* ctx) override {
-    ContextWriter writer(ctx, 500);
+    ContextWriter writer(ctx);
     Doc* doc = writer.document();
     const Mask* mask = doc->mask();
     gfx::Rect newGrid = mask->bounds();
@@ -125,7 +125,7 @@ void GridSettingsCommand::onExecute(Context* context)
     bounds.w = std::max(bounds.w, 1);
     bounds.h = std::max(bounds.h, 1);
 
-    ContextWriter writer(context, 500);
+    ContextWriter writer(context);
     Tx tx(context, friendlyName(), ModifyDocument);
     tx(new cmd::SetGridBounds(site.sprite(), bounds));
     tx.commit();

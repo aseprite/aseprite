@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -96,7 +97,7 @@ void select_layer_boundaries(Layer* layer,
   }
 
   try {
-    ContextWriter writer(UIContext::instance(), 500);
+    ContextWriter writer(UIContext::instance());
     Doc* doc = writer.document();
     ASSERT(doc == layer->sprite()->document());
 

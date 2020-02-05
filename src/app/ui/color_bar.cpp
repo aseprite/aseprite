@@ -515,7 +515,7 @@ void ColorBar::onRemapButtonClick()
   // Create remap from m_oldPalette to the current palette
   Remap remap(1);
   try {
-    ContextWriter writer(UIContext::instance(), 500);
+    ContextWriter writer(UIContext::instance());
     Sprite* sprite = writer.sprite();
     ASSERT(sprite);
     if (!sprite)
@@ -536,7 +536,7 @@ void ColorBar::onRemapButtonClick()
   }
 
   try {
-    ContextWriter writer(UIContext::instance(), 500);
+    ContextWriter writer(UIContext::instance());
     Sprite* sprite = writer.sprite();
     if (sprite) {
       ASSERT(sprite->pixelFormat() == IMAGE_INDEXED);
@@ -620,7 +620,7 @@ void ColorBar::setPalette(const doc::Palette* newPalette, const std::string& act
   showRemap();
 
   try {
-    ContextWriter writer(UIContext::instance(), 500);
+    ContextWriter writer(UIContext::instance());
     Sprite* sprite = writer.sprite();
     frame_t frame = writer.frame();
     if (sprite &&
@@ -638,7 +638,7 @@ void ColorBar::setPalette(const doc::Palette* newPalette, const std::string& act
 void ColorBar::setTransparentIndex(int index)
 {
   try {
-    ContextWriter writer(UIContext::instance(), 500);
+    ContextWriter writer(UIContext::instance());
     Sprite* sprite = writer.sprite();
     if (sprite &&
         sprite->pixelFormat() == IMAGE_INDEXED &&
@@ -1068,7 +1068,7 @@ void ColorBar::onTimerTick()
 
     // Redraw all editors
     try {
-      ContextWriter writer(UIContext::instance(), 500);
+      ContextWriter writer(UIContext::instance());
       Doc* document(writer.document());
       if (document != NULL)
         document->notifyGeneralUpdate();
@@ -1150,7 +1150,7 @@ void ColorBar::updateCurrentSpritePalette(const char* operationName)
   if (UIContext::instance()->activeDocument() &&
       UIContext::instance()->activeDocument()->sprite()) {
     try {
-      ContextWriter writer(UIContext::instance(), 500);
+      ContextWriter writer(UIContext::instance());
       Doc* document(writer.document());
       Sprite* sprite(writer.sprite());
       Palette* newPalette = get_current_palette(); // System current pal

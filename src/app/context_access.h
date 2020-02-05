@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -78,11 +79,11 @@ namespace app {
   // active document.
   class ContextWriter : public ContextAccess<DocWriter> {
   public:
-    ContextWriter(const Context* context, int timeout = 0)
+    ContextWriter(const Context* context, int timeout = 500)
       : ContextAccess<DocWriter>(context, timeout) {
     }
 
-    ContextWriter(const ContextReader& reader, int timeout = 0)
+    ContextWriter(const ContextReader& reader, int timeout = 500)
       : ContextAccess<DocWriter>(reader.context(), reader.document(), timeout) {
     }
   };

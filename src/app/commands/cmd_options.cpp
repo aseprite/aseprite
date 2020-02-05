@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -592,7 +592,7 @@ public:
 
     // Change sprite grid bounds
     if (m_context && m_context->activeDocument()) {
-      ContextWriter writer(m_context, 500);
+      ContextWriter writer(m_context);
       Tx tx(m_context, Strings::commands_GridSettings(), ModifyDocument);
       tx(new cmd::SetGridBounds(writer.sprite(), gridBounds()));
       tx.commit();

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -332,7 +332,7 @@ static DocRange drop_range_op(
   {
     const app::Context* context = static_cast<app::Context*>(doc->context());
     const ContextReader reader(context);
-    ContextWriter writer(reader, 500);
+    ContextWriter writer(reader);
     Tx tx(writer.context(), undoLabel, ModifyDocument);
     DocApi api = doc->getApi(tx);
 
@@ -489,7 +489,7 @@ void reverse_frames(Doc* doc, const DocRange& range)
 {
   const app::Context* context = static_cast<app::Context*>(doc->context());
   const ContextReader reader(context);
-  ContextWriter writer(reader, 500);
+  ContextWriter writer(reader);
   Tx tx(writer.context(), "Reverse Frames");
   DocApi api = doc->getApi(tx);
   Sprite* sprite = doc->sprite();

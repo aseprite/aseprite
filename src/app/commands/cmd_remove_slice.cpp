@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -96,7 +96,7 @@ void RemoveSliceCommand::onExecute(Context* context)
   }
 
   {
-    ContextWriter writer(reader, 500);
+    ContextWriter writer(reader);
     Doc* document(writer.document());
     Sprite* sprite(writer.sprite());
     Tx tx(writer.context(), "Remove Slice");

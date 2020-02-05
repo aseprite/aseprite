@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -505,7 +505,7 @@ public:
       if (getInk()->isPaint()) {
         try {
           ContextReader reader(m_context, 500);
-          ContextWriter writer(reader, 500);
+          ContextWriter writer(reader);
           m_expandCelCanvas->commit();
         }
         catch (const LockedDocException& ex) {
@@ -535,7 +535,7 @@ public:
     if (m_canceled || !getInk()->isPaint()) {
       try {
         ContextReader reader(m_context, 500);
-        ContextWriter writer(reader, 500);
+        ContextWriter writer(reader);
         m_expandCelCanvas->rollback();
       }
       catch (const LockedDocException& ex) {

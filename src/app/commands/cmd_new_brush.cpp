@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019 Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -111,7 +111,7 @@ void NewBrushCommand::onQuickboxEnd(Editor* editor, const gfx::Rect& rect, ui::M
   // If the right-button was used, we clear the selected area.
   if (buttons & ui::kButtonRight) {
     try {
-      ContextWriter writer(UIContext::instance(), 250);
+      ContextWriter writer(UIContext::instance());
       if (writer.cel()) {
         gfx::Rect canvasRect = (rect & writer.cel()->bounds());
         if (!canvasRect.isEmpty()) {
