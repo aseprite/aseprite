@@ -25,17 +25,17 @@
 
 #include <cmath>
 
-namespace app {
+namespace app
+{
 
 using namespace ui;
 
 ZoomingState::ZoomingState()
-  : m_startZoom(1, 1)
-  , m_moved(false)
+    : m_startZoom(1, 1), m_moved(false)
 {
 }
 
-bool ZoomingState::onMouseDown(Editor* editor, MouseMessage* msg)
+bool ZoomingState::onMouseDown(Editor *editor, MouseMessage *msg)
 {
   m_startPos = msg->position();
   m_startZoom = editor->zoom();
@@ -44,9 +44,10 @@ bool ZoomingState::onMouseDown(Editor* editor, MouseMessage* msg)
   return true;
 }
 
-bool ZoomingState::onMouseUp(Editor* editor, MouseMessage* msg)
+bool ZoomingState::onMouseUp(Editor *editor, MouseMessage *msg)
 {
-  if (!m_moved) {
+  if (!m_moved)
+  {
     render::Zoom zoom = editor->zoom();
 
     if (msg->left())
@@ -55,7 +56,7 @@ bool ZoomingState::onMouseUp(Editor* editor, MouseMessage* msg)
       zoom.out();
 
     editor->setZoomAndCenterInMouse(
-      zoom, msg->position(), Editor::ZoomBehavior::MOUSE);
+        zoom, msg->position(), Editor::ZoomBehavior::MOUSE);
   }
 
   editor->backToPreviousState();
@@ -63,41 +64,42 @@ bool ZoomingState::onMouseUp(Editor* editor, MouseMessage* msg)
   return true;
 }
 
-bool ZoomingState::onMouseMove(Editor* editor, MouseMessage* msg)
+bool ZoomingState::onMouseMove(Editor *editor, MouseMessage *msg)
 {
   gfx::Point pt = (msg->position() - m_startPos);
   int threshold = 8 * guiscale() * editor->manager()->getDisplay()->scale();
 
-  if (m_moved || std::sqrt(pt.x*pt.x + pt.y*pt.y) > threshold) {
+  if (m_moved || std::sqrt(pt.x * pt.x + pt.y * pt.y) > threshold)
+  {
     m_moved = true;
 
     int newScale = m_startZoom.linearScale() + pt.x / threshold;
     render::Zoom newZoom = render::Zoom::fromLinearScale(newScale);
 
     editor->setZoomAndCenterInMouse(
-      newZoom, m_startPos, Editor::ZoomBehavior::MOUSE);
+        newZoom, m_startPos, Editor::ZoomBehavior::MOUSE);
   }
   return true;
 }
 
-bool ZoomingState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
+bool ZoomingState::onSetCursor(Editor *editor, const gfx::Point &mouseScreenPos)
 {
   editor->showMouseCursor(
-    kCustomCursor, skin::SkinTheme::instance()->cursors.magnifier());
+      kCustomCursor, skin::SkinTheme::instance()->cursors.magnifier());
   return true;
 }
 
-bool ZoomingState::onKeyDown(Editor* editor, KeyMessage* msg)
+bool ZoomingState::onKeyDown(Editor *editor, KeyMessage *msg)
 {
   return false;
 }
 
-bool ZoomingState::onKeyUp(Editor* editor, KeyMessage* msg)
+bool ZoomingState::onKeyUp(Editor *editor, KeyMessage *msg)
 {
   return false;
 }
 
-bool ZoomingState::onUpdateStatusBar(Editor* editor)
+bool ZoomingState::onUpdateStatusBar(Editor *editor)
 {
   return false;
 }
