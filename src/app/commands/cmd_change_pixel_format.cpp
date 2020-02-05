@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -458,8 +458,12 @@ void ChangePixelFormatCommand::onLoadParams(const Params& params)
 
 bool ChangePixelFormatCommand::onEnabled(Context* context)
 {
-  ContextWriter writer(context);
-  Sprite* sprite(writer.sprite());
+  if (!context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+                           ContextFlags::HasActiveSprite))
+    return false;
+
+  const ContextReader reader(context);
+  const Sprite* sprite(reader.sprite());
 
   if (!sprite)
     return false;

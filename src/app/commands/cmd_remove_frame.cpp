@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -35,8 +36,12 @@ RemoveFrameCommand::RemoveFrameCommand()
 
 bool RemoveFrameCommand::onEnabled(Context* context)
 {
-  ContextWriter writer(context);
-  Sprite* sprite(writer.sprite());
+  if (!context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+                           ContextFlags::HasActiveSprite))
+    return false;
+
+  const ContextReader reader(context);
+  const Sprite* sprite(reader.sprite());
   return
     sprite &&
     sprite->totalFrames() > 1;

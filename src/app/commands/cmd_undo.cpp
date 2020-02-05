@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -53,12 +54,12 @@ UndoCommand::UndoCommand(Type type)
 
 bool UndoCommand::onEnabled(Context* context)
 {
-  ContextWriter writer(context);
-  Doc* document(writer.document());
+  const ContextReader reader(context);
+  const Doc* doc(reader.document());
   return
-    document != NULL &&
-    ((m_type == Undo ? document->undoHistory()->canUndo():
-                       document->undoHistory()->canRedo()));
+    doc &&
+    ((m_type == Undo ? doc->undoHistory()->canUndo():
+                       doc->undoHistory()->canRedo()));
 }
 
 void UndoCommand::onExecute(Context* context)
