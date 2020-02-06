@@ -250,8 +250,8 @@ public:
 
     ImageRef render(
       Image::create(m_sprite->pixelFormat(),
-                    m_sprite->width(),
-                    m_sprite->height(),
+                    m_trimmedBounds.w,
+                    m_trimmedBounds.h,
                     imageBuf));
     render->setMaskColor(m_sprite->transparentColor());
     clear_image(render.get(), m_sprite->transparentColor());
@@ -272,7 +272,7 @@ public:
     //render.setNewBlend(Preferences::instance().experimental.newBlend());
 
     if (extrude) {
-      const gfx::Rect& trim = trimmedBounds();
+      const gfx::Rect& trim = m_trimmedBounds;
 
       // Displaced position onto the destination texture
       int dx[] = { 0, 1, trim.w+1 };
@@ -298,7 +298,7 @@ public:
       }
     }
     else {
-      gfx::Clip clip(x, y, trimmedBounds());
+      gfx::Clip clip(x, y, m_trimmedBounds);
       render.renderSprite(dst, m_sprite, m_frame, clip);
     }
   }
