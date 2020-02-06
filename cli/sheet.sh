@@ -1,5 +1,5 @@
 #! /bin/bash
-# Copyright (C) 2019 Igara Studio S.A.
+# Copyright (C) 2019-2020 Igara Studio S.A.
 
 # $1 = first sprite sheet json file
 # $2 = second sprite sheet json file
@@ -242,4 +242,33 @@ for type in horizontal vertical rows columns ; do
 		  -script-param file2=$d/$type$subtype.json \
 		  -script scripts/compare_sprite_sheets.lua || exit $?
     done
+done
+
+# "Trim Cels" (-trim) with -merge-duplicates didn't generate the
+# correct "spriteSourceSize" for each frame.
+# https://igarastudio.zendesk.com/agent/tickets/407
+d=$t/ticket-407
+for layer in a b ; do
+    $ASEPRITE -b -layer "$layer" "sprites/point4frames.aseprite" \
+	      -trim \
+	      -data "$d/data1-$layer.json" \
+	      -format json-array -sheet "$d/sheet1-$layer.png" || exit 1
+    $ASEPRITE -b -layer "$layer" "sprites/point4frames.aseprite" \
+	      -trim -merge-duplicates \
+	      -data "$d/data2-$layer.json" \
+	      -format json-array -sheet "$d/sheet2-$layer.png" || exit 1
+    cat >$d/compare.lua <<EOF
+local json = dofile('third_party/json/json.lua')
+local data1 = json.decode(io.open('$d/data1-$layer.json'):read('a'))
+local data2 = json.decode(io.open('$d/data2-$layer.json'):read('a'))
+for i = 1,4 do
+    local a = data1.frames[i].spriteSourceSize
+    local b = data2.frames[i].spriteSourceSize
+    assert(a.x == b.x)
+    assert(a.y == b.y)
+    assert(a.w == b.w)
+    assert(a.h == b.h)
+end
+EOF
+    $ASEPRITE -b -script "$d/compare.lua" || exit 1
 done

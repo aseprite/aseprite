@@ -15,3 +15,7 @@
 * `tags3.aseprite`: 3 tags ("forward", "reverse", "pingpong") and 3
   layers ("a", "b", "c"), 4x4, several linked cels + layer "c" with
   empty cels.
+* `point4frames.aseprite`: Indexed, 4 frames, 2 layers, same cel
+  content but different positions, can be used to test
+  `-merge-duplicates` to check if all cels go to the same sprite sheet
+  position.
