@@ -944,6 +944,7 @@ void DocExporter::captureSamples(Samples& samples,
         ASSERT(done || (!done && tag));
       }
 
+      bool alreadyTrimmed = false;
       if (!done && (m_ignoreEmptyCels || m_trimCels)) {
         // Ignore empty cels
         if (layer && layer->isImage() && !cel && m_ignoreEmptyCels)
@@ -1007,11 +1008,10 @@ void DocExporter::captureSamples(Samples& samples,
             frameBounds = gfx::Rect(posTopLeft, posBottomRight);
           }
           sample.setTrimmedBounds(frameBounds);
+          alreadyTrimmed = true;
         }
-        else if (m_trimSprite)
-          sample.setTrimmedBounds(spriteBounds);
       }
-      else if (m_trimSprite)
+      if (!alreadyTrimmed && m_trimSprite)
         sample.setTrimmedBounds(spriteBounds);
 
       samples.addSample(sample);
