@@ -19,3 +19,7 @@
   content but different positions, can be used to test
   `-merge-duplicates` to check if all cels go to the same sprite sheet
   position.
+* `point2frames.aseprite`: Indexed, 2 frames, 1 layer, same cel
+  content as in `point4frames.aseprite`. Useful to test if
+  `"sourceSize"` is different when two cels from different sprites are
+  merged in the same texture atlas.

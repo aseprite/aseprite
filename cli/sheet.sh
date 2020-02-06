@@ -261,7 +261,8 @@ for layer in a b ; do
 local json = dofile('third_party/json/json.lua')
 local data1 = json.decode(io.open('$d/data1-$layer.json'):read('a'))
 local data2 = json.decode(io.open('$d/data2-$layer.json'):read('a'))
-for i = 1,4 do
+assert(#data1.frames == #data2.frames)
+for i = 1,#data1.frames do
     local a = data1.frames[i].spriteSourceSize
     local b = data2.frames[i].spriteSourceSize
     assert(a.x == b.x)
@@ -272,3 +273,31 @@ end
 EOF
     $ASEPRITE -b -script "$d/compare.lua" || exit 1
 done
+
+# Same problem as in ticket 407 but with "sourceSize" field and
+# different sprites in the same texture atlas.
+d=$t/ticket-407-w-atlas
+$ASEPRITE -b \
+	  -layer a "sprites/point4frames.aseprite" \
+	  "sprites/point2frames.aseprite" \
+	  -data "$d/data1.json" \
+	  -format json-array -sheet "$d/sheet1.png" || exit 1
+$ASEPRITE -b \
+	  -layer a "sprites/point4frames.aseprite" \
+	  "sprites/point2frames.aseprite" \
+	  -trim \
+	  -data "$d/data2.json" \
+	  -format json-array -sheet-pack -sheet "$d/sheet2.png" || exit 1
+cat >$d/compare.lua <<EOF
+local json = dofile('third_party/json/json.lua')
+local data1 = json.decode(io.open('$d/data1.json'):read('a'))
+local data2 = json.decode(io.open('$d/data2.json'):read('a'))
+assert(#data1.frames == #data2.frames)
+for i = 1,#data1.frames do
+    local a = data1.frames[i].sourceSize
+    local b = data2.frames[i].sourceSize
+    assert(a.w == b.w)
+    assert(a.h == b.h)
+end
+EOF
+$ASEPRITE -b -script "$d/compare.lua" || exit 1
