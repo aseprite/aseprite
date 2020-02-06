@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -93,27 +93,16 @@ class SampleBounds {
 public:
   SampleBounds(Sprite* sprite) :
     m_originalSize(sprite->width(), sprite->height()),
-    m_trimmedBounds(0, 0, sprite->width(), sprite->height()),
     m_inTextureBounds(0, 0, sprite->width(), sprite->height()) {
   }
 
-  bool trimmed() const {
-    return m_trimmedBounds.x > 0
-      || m_trimmedBounds.y > 0
-      || m_trimmedBounds.w != m_originalSize.w
-      || m_trimmedBounds.h != m_originalSize.h;
-  }
-
   const gfx::Size& originalSize() const { return m_originalSize; }
-  const gfx::Rect& trimmedBounds() const { return m_trimmedBounds; }
   const gfx::Rect& inTextureBounds() const { return m_inTextureBounds; }
 
-  void setTrimmedBounds(const gfx::Rect& bounds) { m_trimmedBounds = bounds; }
   void setInTextureBounds(const gfx::Rect& bounds) { m_inTextureBounds = bounds; }
 
 private:
   gfx::Size m_originalSize;
-  gfx::Rect m_trimmedBounds;
   gfx::Rect m_inTextureBounds;
 };
 
@@ -192,7 +181,8 @@ public:
     m_extrude(extrude),
     m_isLinked(false),
     m_isDuplicated(false),
-    m_bounds(new SampleBounds(sprite)) {
+    m_bounds(new SampleBounds(sprite)),
+    m_trimmedBounds(0, 0, sprite->width(), sprite->height()) {
   }
 
   Doc* document() const { return m_document; }
@@ -206,28 +196,31 @@ public:
   frame_t frame() const { return m_frame; }
   std::string filename() const { return m_filename; }
   const gfx::Size& originalSize() const { return m_bounds->originalSize(); }
-  const gfx::Rect& trimmedBounds() const { return m_bounds->trimmedBounds(); }
+  const gfx::Rect& trimmedBounds() const { return m_trimmedBounds; }
   const gfx::Rect& inTextureBounds() const { return m_bounds->inTextureBounds(); }
 
   gfx::Size requiredSize() const {
     // if extrude option is enabled, an extra pixel is needed for each side
     // left+right borders and top+bottom borders
     int extraExtrudePixels = m_extrude ? 2 : 0;
-    gfx::Size size = m_bounds->trimmedBounds().size();
+    gfx::Size size = m_trimmedBounds.size();
     size.w += 2*m_innerPadding + extraExtrudePixels;
     size.h += 2*m_innerPadding + extraExtrudePixels;
     return size;
   }
 
   bool trimmed() const {
-    return m_bounds->trimmed();
+    return (m_trimmedBounds.x > 0 ||
+            m_trimmedBounds.y > 0 ||
+            m_trimmedBounds.w != m_bounds->originalSize().w ||
+            m_trimmedBounds.h != m_bounds->originalSize().h);
   }
 
   void setTrimmedBounds(const gfx::Rect& bounds) {
     // TODO we cannot assign an empty rectangle (samples that are
     // completely trimmed out should be included as a sample of size 1x1)
     ASSERT(!bounds.isEmpty());
-    m_bounds->setTrimmedBounds(bounds);
+    m_trimmedBounds = bounds;
   }
 
   void setInTextureBounds(const gfx::Rect& bounds) {
@@ -240,8 +233,8 @@ public:
   bool isEmpty() const {
     // TODO trimmed bounds cannot be empty now (samples that are
     // completely trimmed out are included as a sample of size 1x1)
-    ASSERT(!m_bounds->trimmedBounds().isEmpty());
-    return m_bounds->trimmedBounds().isEmpty();
+    ASSERT(!m_trimmedBounds.isEmpty());
+    return m_trimmedBounds.isEmpty();
   }
   SampleBoundsPtr sharedBounds() const { return m_bounds; }
 
@@ -322,6 +315,7 @@ private:
   bool m_isLinked;
   bool m_isDuplicated;
   SampleBoundsPtr m_bounds;
+  gfx::Rect m_trimmedBounds;
 };
 
 class DocExporter::Samples {
