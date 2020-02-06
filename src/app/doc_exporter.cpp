@@ -89,24 +89,7 @@ std::ostream& operator<<(std::ostream& os, const doc::UserData& data)
 
 namespace app {
 
-class SampleBounds {
-public:
-  SampleBounds(Sprite* sprite) :
-    m_originalSize(sprite->width(), sprite->height()),
-    m_inTextureBounds(0, 0, sprite->width(), sprite->height()) {
-  }
-
-  const gfx::Size& originalSize() const { return m_originalSize; }
-  const gfx::Rect& inTextureBounds() const { return m_inTextureBounds; }
-
-  void setInTextureBounds(const gfx::Rect& bounds) { m_inTextureBounds = bounds; }
-
-private:
-  gfx::Size m_originalSize;
-  gfx::Rect m_inTextureBounds;
-};
-
-typedef std::shared_ptr<SampleBounds> SampleBoundsPtr;
+typedef std::shared_ptr<gfx::Rect> SharedRectPtr;
 
 DocExporter::Item::Item(Doc* doc,
                         const doc::Tag* tag,
@@ -181,8 +164,9 @@ public:
     m_extrude(extrude),
     m_isLinked(false),
     m_isDuplicated(false),
-    m_bounds(new SampleBounds(sprite)),
-    m_trimmedBounds(0, 0, sprite->width(), sprite->height()) {
+    m_originalSize(sprite->width(), sprite->height()),
+    m_trimmedBounds(0, 0, sprite->width(), sprite->height()),
+    m_inTextureBounds(std::make_shared<gfx::Rect>(0, 0, sprite->width(), sprite->height())) {
   }
 
   Doc* document() const { return m_document; }
@@ -195,9 +179,10 @@ public:
   SelectedLayers* selectedLayers() const { return m_selLayers; }
   frame_t frame() const { return m_frame; }
   std::string filename() const { return m_filename; }
-  const gfx::Size& originalSize() const { return m_bounds->originalSize(); }
+  const gfx::Size& originalSize() const { return m_originalSize; }
   const gfx::Rect& trimmedBounds() const { return m_trimmedBounds; }
-  const gfx::Rect& inTextureBounds() const { return m_bounds->inTextureBounds(); }
+  const gfx::Rect& inTextureBounds() const { return *m_inTextureBounds; }
+  const SharedRectPtr& sharedBounds() const { return m_inTextureBounds; }
 
   gfx::Size requiredSize() const {
     // if extrude option is enabled, an extra pixel is needed for each side
@@ -212,8 +197,8 @@ public:
   bool trimmed() const {
     return (m_trimmedBounds.x > 0 ||
             m_trimmedBounds.y > 0 ||
-            m_trimmedBounds.w != m_bounds->originalSize().w ||
-            m_trimmedBounds.h != m_bounds->originalSize().h);
+            m_trimmedBounds.w != m_originalSize.w ||
+            m_trimmedBounds.h != m_originalSize.h);
   }
 
   void setTrimmedBounds(const gfx::Rect& bounds) {
@@ -225,7 +210,11 @@ public:
 
   void setInTextureBounds(const gfx::Rect& bounds) {
     ASSERT(!bounds.isEmpty());
-    m_bounds->setInTextureBounds(bounds);
+    *m_inTextureBounds = bounds;
+  }
+
+  void setSharedBounds(const SharedRectPtr& bounds) {
+    m_inTextureBounds = bounds;
   }
 
   bool isLinked() const { return m_isLinked; }
@@ -236,14 +225,9 @@ public:
     ASSERT(!m_trimmedBounds.isEmpty());
     return m_trimmedBounds.isEmpty();
   }
-  SampleBoundsPtr sharedBounds() const { return m_bounds; }
 
   void setLinked() { m_isLinked = true; }
   void setDuplicated() { m_isDuplicated = true; }
-
-  void setSharedBounds(const SampleBoundsPtr& bounds) {
-    m_bounds = bounds;
-  }
 
   ImageRef createRender(ImageBufferPtr& imageBuf) {
     ASSERT(m_sprite);
@@ -314,8 +298,9 @@ private:
   bool m_extrude;
   bool m_isLinked;
   bool m_isDuplicated;
-  SampleBoundsPtr m_bounds;
+  gfx::Size m_originalSize;
   gfx::Rect m_trimmedBounds;
+  SharedRectPtr m_inTextureBounds;
 };
 
 class DocExporter::Samples {
