@@ -130,9 +130,12 @@ protected:
         gfx::Rect(
           scale_x(document()->mask()->bounds().x-1),
           scale_y(document()->mask()->bounds().y-1), MAX(1, w), MAX(1, h)));
+
+      // Always use the nearest-neighbor method to resize the bitmap
+      // mask.
       algorithm::resize_image(
         old_bitmap.get(), new_mask->bitmap(),
-        m_resize_method,
+        doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR,
         sprite()->palette(0), // Ignored
         sprite()->rgbMap(0),  // Ignored
         -1);                  // Ignored
