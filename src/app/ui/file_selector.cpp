@@ -613,38 +613,33 @@ again:
     }
     // else file-name specified in the entry is really a file to open...
 
-    // check if the filename doesn't contain slashes or other ilegal characters...
-    bool has_invalid_char = (fn.find('/') != std::string::npos);
 #ifdef _WIN32
-    has_invalid_char =
-      has_invalid_char ||
-      (fn.find('\\') != std::string::npos ||
-       fn.find(':') != std::string::npos ||
-       fn.find('*') != std::string::npos ||
-       fn.find('?') != std::string::npos ||
-       fn.find('\"') != std::string::npos ||
-       fn.find('<') != std::string::npos ||
-       fn.find('>') != std::string::npos ||
-       fn.find('|') != std::string::npos);
-#endif
-    if (has_invalid_char) {
-      const char* invalid_chars =
-        "/"
-#ifdef _WIN32
-        " \\ : * ? \" < > |"
-#endif
-        ;
+    // check if the filename doesn't contain ilegal characters...
+    // Only if it does not exist
+    // Only on Windows, Linux disallows only `/`, and we can consider that just an embedded path if present
+    if (!enter_folder) {
+      bool has_invalid_char =
+         fn.find(':') != std::string::npos ||
+         fn.find('*') != std::string::npos ||
+         fn.find('?') != std::string::npos ||
+         fn.find('\"') != std::string::npos ||
+         fn.find('<') != std::string::npos ||
+         fn.find('>') != std::string::npos ||
+         fn.find('|') != std::string::npos);
+      if (has_invalid_char) {
+        const char *invalid_chars = "/ \\ : * ? \" < > |";
 
-      ui::Alert::show(
-        fmt::format(
-          Strings::alerts_invalid_chars_in_filename(),
-          invalid_chars));
+        ui::Alert::show(
+            fmt::format(
+                Strings::alerts_invalid_chars_in_filename(),
+                invalid_chars));
 
-      // show the window again
-      setVisible(true);
-      goto again;
+        // show the window again
+        setVisible(true);
+        goto again;
+      }
     }
-
+#endif
     // does it not have extension? ...we should add the extension
     // selected in the filetype combo-box
     if (!buf.empty() && base::get_file_extension(buf).empty()) {
