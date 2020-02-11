@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c)      2020 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -13,7 +14,6 @@
 #include "base/base.h"
 #include "doc/palette.h"
 #include "doc/palette_picks.h"
-#include "doc/rgbmap.h"
 
 namespace doc {
 
@@ -93,9 +93,6 @@ Remap create_remap_to_change_palette(
       remap.map(maskIndex, maskIndex);
     }
   }
-
-  RgbMap rgbmap;
-  rgbmap.regenerate(newPalette, maskIndex);
 
   for (int i=0; i<oldPalette->size(); ++i) {
     if (i == oldMaskIndex)
