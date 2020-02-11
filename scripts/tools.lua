@@ -1,4 +1,4 @@
--- Copyright (C) 2019  Igara Studio S.A.
+-- Copyright (C) 2019-2020  Igara Studio S.A.
 --
 -- This file is released under the terms of the MIT license.
 -- Read LICENSE.txt for more information.
@@ -552,3 +552,70 @@ do
   expect_img(cel.image, { 0, 0,
                           0, 0 })
 end
+
+----------------------------------------------------------------------
+-- draw with tiled mode + image brush
+-- test for: https://community.aseprite.org/t/tile-mode-glitch/1183
+----------------------------------------------------------------------
+
+function drawing_with_tiled_mode_and_image_brush()
+  print("drawing_with_tiled_mode_and_image_brush")
+  local spr = Sprite(8, 3, ColorMode.INDEXED)
+  local cel = spr.cels[1]
+
+  -- enable tiled mode
+  local pref = app.preferences
+  local docPref = pref.document(spr)
+  docPref.tiled.mode = 3 -- both
+
+  expect_img(cel.image,
+             { 0, 0, 0, 0, 0, 0, 0, 0,
+               0, 0, 0, 0, 0, 0, 0, 0,
+               0, 0, 0, 0, 0, 0, 0, 0 })
+
+  -- Create brush
+  local brushImg = Image(5, 2, ColorMode.INDEXED)
+  array_to_pixels({ 1, 2, 3, 2, 1,
+                    0, 1, 2, 1, 0 }, brushImg)
+  local bru = Brush { image=brushImg }
+
+  -- Without overflow
+  app.useTool{ tool=pencil, brush=bru, points={ Point(2, 1) } }
+  expect_img(cel.image,
+             { 1, 2, 3, 2, 1,
+               0, 1, 2, 1, 0 })
+  app.undo()
+
+  -- Overflow at the left-side
+  app.useTool{ tool=pencil, brush=bru, points={ Point(1, 1) } }
+  expect_img(cel.image,
+             { 2, 3, 2, 1, 0, 0, 0, 1,
+               1, 2, 1, 0, 0, 0, 0, 0 })
+  app.undo()
+
+  -- Overflow at the right-side
+  app.useTool{ tool=pencil, brush=bru, points={ Point(9, 1) } }
+  expect_img(cel.image,
+             { 2, 3, 2, 1, 0, 0, 0, 1,
+               1, 2, 1, 0, 0, 0, 0, 0 })
+  app.undo()
+
+  -- Overflow at the top
+  app.useTool{ tool=pencil, brush=bru, points={ Point(0, 0) } }
+  expect_img(cel.image,
+             { 2, 1, 0, 0, 0, 0, 0, 1,
+               0, 0, 0, 0, 0, 0, 0, 0,
+               3, 2, 1, 0, 0, 0, 1, 2 })
+  app.undo()
+
+  -- Overflow at the bottom
+  app.useTool{ tool=pencil, brush=bru, points={ Point(1, 3) } }
+  expect_img(cel.image,
+             { 1, 2, 1, 0, 0, 0, 0, 0,
+               0, 0, 0, 0, 0, 0, 0, 0,
+               2, 3, 2, 1, 0, 0, 0, 1 })
+  app.undo()
+
+  docPref.tiled.mode = 0 -- none (disable tiled mode)
+end
+drawing_with_tiled_mode_and_image_brush()

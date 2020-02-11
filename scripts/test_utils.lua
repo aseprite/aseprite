@@ -1,4 +1,4 @@
--- Copyright (C) 2019  Igara Studio S.A.
+-- Copyright (C) 2019-2020  Igara Studio S.A.
 --
 -- This file is released under the terms of the MIT license.
 -- Read LICENSE.txt for more information.
@@ -13,11 +13,26 @@ function expect_eq(a, b)
   end
 end
 
+local function dump_img(image)
+  local w = image.width
+  local h = image.height
+  print('Image(' .. tostring(w) .. 'x' .. tostring(h) .. ') = {')
+  for v=0,h-1 do
+    local lineStr = '  '
+    for u=0,w-1 do
+      lineStr = lineStr .. image:getPixel(u, v) .. ','
+    end
+    print(lineStr)
+  end
+  print('}')
+end
+
 function expect_img(image, expectedPixels)
   local w = image.width
   local h = image.height
   if w*h ~= #expectedPixels then
     print(debug.traceback())
+    dump_img(image)
     assert(w*h == #expectedPixels)
   end
   for y=0,h-1 do
@@ -25,15 +40,7 @@ function expect_img(image, expectedPixels)
       local value = image:getPixel(x, y)
       local expected = expectedPixels[1+y*w+x]
       if value ~= expected then
-        print('Image(' .. tostring(w) .. 'x' .. tostring(h) .. ') = {')
-        for v=0,h-1 do
-          lineStr = '  '
-          for u=0,w-1 do
-            lineStr = lineStr .. image:getPixel(u, v) .. ','
-          end
-          print(lineStr)
-        end
-        print('}')
+	dump_img(image)
         print('In pixel (' .. x .. ', ' .. y .. '):')
 
 	local a = value
@@ -51,7 +58,7 @@ function expect_img(image, expectedPixels)
 			      app.pixelColor.rgbaG(b),
 			      app.pixelColor.rgbaB(b),
 			      app.pixelColor.rgbaA(b)))
-	elseif image.ColorMode == ColorMode.GRAY then
+	elseif image.colorMode == ColorMode.GRAY then
 	  print(string.format(' - Value A = gray(%d,%d)',
 			      app.pixelColor.grayG(a),
 			      app.pixelColor.grayA(a)))
