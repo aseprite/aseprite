@@ -498,7 +498,7 @@ void modify_tilemap_cel_region(
       cmds->executeAndAdd(
         new cmd::ReplaceImage(cel->sprite(), cel->imageRef(), newTilemap));
     }
-    else {
+    else if (!tilePtsRgn.isEmpty()) {
       cmds->executeAndAdd(
         new cmd::CopyRegion(
           cel->image(),
