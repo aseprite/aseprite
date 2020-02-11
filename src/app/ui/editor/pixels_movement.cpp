@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -346,7 +346,7 @@ void PixelsMovement::moveImage(const gfx::Point& pos, MoveModifier moveModifier)
 
       if ((moveModifier & SnapToGridMovement) == SnapToGridMovement) {
         // Snap the x1,y1 point to the grid.
-        gfx::Rect gridBounds = m_document->sprite()->gridBounds();
+        gfx::Rect gridBounds = m_site.gridBounds();
         gfx::PointF gridOffset(
           snap_to_grid(
             gridBounds,
