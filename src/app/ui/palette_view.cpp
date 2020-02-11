@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -451,12 +451,8 @@ int PaletteView::getSelectedEntriesCount() const
 
 void PaletteView::setSelectedEntries(const doc::PalettePicks& entries)
 {
-  ASSERT(currentPalette());
-  if (!currentPalette())
-    return;
-
   m_selectedEntries = entries;
-  m_selectedEntries.resize(currentPalette()->size());
+  m_selectedEntries.resize(m_adapter->size());
   m_currentEntry = m_selectedEntries.firstPick();
   invalidate();
 }
@@ -659,6 +655,7 @@ bool PaletteView::onProcessMessage(Message* msg)
                 m_hot.part == Hit::POSSIBLE_COLOR) {
               int newSize = std::max(1, m_hot.color);
               m_adapter->resizePalette(this, newSize);
+              m_selectedEntries.resize(newSize);
             }
             break;
         }
