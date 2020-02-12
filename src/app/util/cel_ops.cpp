@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -35,7 +35,6 @@
 #include "doc/primitives.h"
 #include "doc/sprite.h"
 #include "doc/tileset.h"
-#include "doc/tileset_hash_table.h"
 #include "doc/tilesets.h"
 #include "gfx/region.h"
 #include "render/dithering.h"
@@ -304,14 +303,6 @@ void draw_image_into_new_tilemap_cel(
   doc::Grid grid = tileset->grid();
   grid.origin(grid.origin() + originOffset);
 
-  doc::TilesetHashTable hashImages; // TODO the hashImages should be inside the Tileset
-  {
-    // Add existent tiles in the hash table
-    int i = 0;
-    for (auto& image : *tileset)
-      hashImages[image] = i++;
-  }
-
   gfx::Size tileSize = grid.tileSize();
   const gfx::Rect tilemapBounds = grid.canvasToTile(canvasBounds);
 
@@ -337,23 +328,18 @@ void draw_image_into_new_tilemap_cel(
     if (grid.hasMask())
       mask_image(tileImage.get(), grid.mask().get());
 
-    doc::tile_index tileIndex = 0;
-
-    auto it = hashImages.find(tileImage);
-    if (it != hashImages.end()) {
-      tileIndex = it->second; // TODO
-    }
-    else {
+    doc::tile_index tileIndex =
+      tileset->findTileIndex(tileImage);
+    if (tileIndex == tile_i_notile) {
       auto addTile = new cmd::AddTile(tileset, tileImage);
       cmds->executeAndAdd(addTile);
 
       tileIndex = addTile->tileIndex();
-      hashImages[tileImage] = tileIndex;
     }
 
     newTilemap->putPixel(
       tilePt.x-tilemapBounds.x,
-      tilePt.y-tilemapBounds.y, doc::tile(tileIndex, 0));
+      tilePt.y-tilemapBounds.y, tileIndex);
   }
 
   static_cast<Doc*>(dstLayer->sprite()->document())
@@ -409,14 +395,6 @@ void modify_tilemap_cel_region(
   // Autogenerate tiles
   if (tilesetMode == TilesetMode::Auto ||
       tilesetMode == TilesetMode::Stack) {
-    doc::TilesetHashTable hashImages; // TODO the hashImages should be inside the Tileset
-    {
-      // Add existent tiles in the hash table
-      int i = 0;
-      for (auto& image : *tileset)
-        hashImages[image] = i++;
-    }
-
     // TODO create a smaller image
     doc::ImageRef newTilemap(
       doc::Image::create(IMAGE_TILEMAP,
@@ -460,12 +438,9 @@ void modify_tilemap_cel_region(
       if (grid.hasMask())
         mask_image(tileImage.get(), grid.mask().get());
 
-      tile_index tileIndex = 0;
-
-      auto it = hashImages.find(tileImage);
-      if (it != hashImages.end()) {
-        tileIndex = it->second; // TODO
-
+      tile_index tileIndex =
+        tileset->findTileIndex(tileImage);
+      if (tileIndex != tile_i_notile) {
         if (tilesetMode == TilesetMode::Auto) {
           if (tileIndex >= 0 && tileIndex < modifiedTileIndexes.size())
             modifiedTileIndexes[tileIndex] = false;
@@ -476,7 +451,6 @@ void modify_tilemap_cel_region(
         cmds->executeAndAdd(addTile);
 
         tileIndex = addTile->tileIndex();
-        hashImages[tileImage] = tileIndex;
       }
 
       OPS_TRACE(" - tile %d -> %d\n", ti, tileIndex);

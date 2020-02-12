@@ -67,7 +67,7 @@
 #include "doc/rgbmap.h"
 #include "doc/sort_palette.h"
 #include "doc/sprite.h"
-#include "doc/tileset_hash_table.h"
+#include "doc/tileset.h"
 #include "os/surface.h"
 #include "ui/alert.h"
 #include "ui/graphics.h"
@@ -777,21 +777,12 @@ void ColorBar::onRemapTilesButtonClick()
 
     auto tileset = m_tilesView.tileset();
 
-    doc::TilesetHashTable hash;
-    {
-      doc::tile_index i = 0;
-      for (const auto& image : *tileset) {
-        ASSERT(image);
-        hash[image] = i++;
-      }
-    }
-
     // Remap all tiles in the same order as in newTileset
     Remap remap(tileset->size());
     for (tile_index ti=0; ti<remap.size(); ++ti) {
       auto img = m_oldTileset->get(ti);
-      if (img && hash.find(img) != hash.end()) {
-        auto destTi = hash[img];
+      tile_index destTi = tileset->findTileIndex(img);
+      if (img && destTi != doc::tile_i_notile) {
         COLOR_BAR_TRACE(" - Remap tile %d -> %d\n", ti, destTi);
         remap.map(ti, destTi);
       }

@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019  Igara Studio S.A.
+// Copyright (c) 2019-2020  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -12,6 +12,7 @@
 #include "doc/image_ref.h"
 #include "doc/object.h"
 #include "doc/tile.h"
+#include "doc/tileset_hash_table.h"
 
 #include <string>
 #include <vector>
@@ -57,27 +58,13 @@ namespace doc {
       else
         return ImageRef(nullptr);
     }
-
     void set(const tile_index ti,
-             const ImageRef& image) {
-      m_tiles[ti] = image;
-    }
+             const ImageRef& image);
 
-    tile_index add(const ImageRef& image) {
-      m_tiles.push_back(image);
-      return tile_t(m_tiles.size()-1);
-    }
-
+    tile_index add(const ImageRef& image);
     void insert(const tile_index ti,
-                const ImageRef& image) {
-      ASSERT(ti <= size());
-      m_tiles.insert(m_tiles.begin()+ti, image);
-    }
-
-    void erase(const tile_index ti) {
-      ASSERT(ti >= 0 && ti < size());
-      m_tiles.erase(m_tiles.begin()+ti);
-    }
+                const ImageRef& image);
+    void erase(const tile_index ti);
 
     // Linked with an external file
     void setExternal(const std::string& filename,
@@ -99,10 +86,18 @@ namespace doc {
     // Returns a new empty tile with the tileset specs.
     ImageRef makeEmptyTile();
 
+    // If there is a tile in the set that matches the pixels of the
+    // given "tileImage", this function returns the index of that
+    // tile. Returns tile_i_notile if the image is not in the tileset.
+    tile_index findTileIndex(const ImageRef& tileImage);
+
   private:
+    void removeFromHash(const tile_index ti);
+
     Sprite* m_sprite;
     Grid m_grid;
     Tiles m_tiles;
+    TilesetHashTable m_hash;
     std::string m_name;
     struct External {
       std::string filename;
