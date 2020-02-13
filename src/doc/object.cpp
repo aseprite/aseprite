@@ -1,6 +1,6 @@
 // Aseprite Document Library
-// Copyright (C) 2019  Igara Studio S.A.
-// Copyright (c) 2001-2016 David Capello
+// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -76,7 +76,21 @@ void Object::setId(ObjectId id)
   m_id = id;
 
   if (m_id) {
+#ifdef _DEBUG
+    if (objects.find(m_id) != objects.end()) {
+      Object* obj = objects.find(m_id)->second;
+      if (obj) {
+        TRACEARGS("ASSERT FAILED: Object with id", m_id,
+                  "of kind", int(obj->type()),
+                  "version", obj->version(), "should not exist");
+      }
+      else {
+        TRACEARGS("ASSERT FAILED: Object with id", m_id,
+                  "registered as nullptr should not exist");
+      }
+    }
     ASSERT(objects.find(m_id) == objects.end());
+#endif
     objects.insert(std::make_pair(m_id, this));
   }
 }
