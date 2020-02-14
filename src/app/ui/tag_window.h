@@ -12,6 +12,7 @@
 #include "app/ui/color_button.h"
 #include "doc/anidir.h"
 #include "doc/frame.h"
+#include "doc/user_data.h"
 
 #include "tag_properties.xml.h"
 
@@ -32,10 +33,13 @@ namespace app {
     void rangeValue(doc::frame_t& from, doc::frame_t& to);
     doc::color_t colorValue();
     doc::AniDir aniDirValue();
+    const doc::UserData& userDataValue() { return m_userData; }
 
   private:
     const doc::Sprite* m_sprite;
     int m_base;
+    void onPopupUserData();
+    doc::UserData m_userData;
   };
 
 }

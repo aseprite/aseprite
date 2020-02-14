@@ -15,6 +15,7 @@
 #include "app/script/docobj.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
+#include "app/script/userdata.h"
 #include "app/tx.h"
 #include "doc/sprite.h"
 #include "doc/tag.h"
@@ -139,6 +140,8 @@ const Property Tag_properties[] = {
   { "frames", Tag_get_frames, nullptr },
   { "name", Tag_get_name, Tag_set_name },
   { "aniDir", Tag_get_aniDir, Tag_set_aniDir },
+  { "color", UserData_get_color<Tag>, UserData_set_color<Tag> },
+  { "data", UserData_get_text<Tag>, UserData_set_text<Tag> },
   { nullptr, nullptr, nullptr }
 };
 

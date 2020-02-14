@@ -14,6 +14,7 @@
 #include "base/serialization.h"
 #include "doc/string_io.h"
 #include "doc/tag.h"
+#include "doc/user_data_io.h"
 
 #include <iostream>
 #include <memory>
@@ -33,6 +34,7 @@ void write_tag(std::ostream& os, const Tag* tag)
   write32(os, tag->color());
   write8(os, (int)tag->aniDir());
   write_string(os, tag->name());
+  write_user_data(os, tag->userData());
 }
 
 Tag* read_tag(std::istream& is, bool setId)
@@ -43,6 +45,7 @@ Tag* read_tag(std::istream& is, bool setId)
   color_t color = read32(is);
   AniDir aniDir = (AniDir)read8(is);
   std::string name = read_string(is);
+  UserData userData = read_user_data(is);
 
   std::unique_ptr<Tag> tag(new Tag(from, to));
   tag->setColor(color);

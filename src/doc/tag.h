@@ -14,13 +14,14 @@
 #include "doc/color.h"
 #include "doc/frame.h"
 #include "doc/object.h"
+#include "doc/with_user_data.h"
 
 #include <string>
 
 namespace doc {
   class Tags;
 
-  class Tag : public Object {
+  class Tag : public WithUserData {
   public:
     Tag(frame_t from, frame_t to);
     Tag(const Tag& other);

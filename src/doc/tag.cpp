@@ -17,7 +17,7 @@
 namespace doc {
 
 Tag::Tag(frame_t from, frame_t to)
-  : Object(ObjectType::Tag)
+  : WithUserData(ObjectType::Tag)
   , m_owner(nullptr)
   , m_from(from)
   , m_to(to)
@@ -28,7 +28,7 @@ Tag::Tag(frame_t from, frame_t to)
 }
 
 Tag::Tag(const Tag& other)
-  : Object(ObjectType::Tag)
+  : WithUserData(ObjectType::Tag)
   , m_owner(nullptr)
   , m_from(other.m_from)
   , m_to(other.m_to)

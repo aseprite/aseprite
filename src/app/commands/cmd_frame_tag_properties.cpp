@@ -13,6 +13,7 @@
 #include "app/cmd/set_tag_color.h"
 #include "app/cmd/set_tag_name.h"
 #include "app/cmd/set_tag_range.h"
+#include "app/cmd/set_user_data.h"
 #include "app/color.h"
 #include "app/commands/command.h"
 #include "app/commands/params.h"
@@ -23,6 +24,7 @@
 #include "base/convert_to.h"
 #include "doc/anidir.h"
 #include "doc/sprite.h"
+#include "doc/user_data.h"
 #include "doc/tag.h"
 
 namespace app {
@@ -83,6 +85,7 @@ void FrameTagPropertiesCommand::onExecute(Context* context)
     return;
 
   TagWindow window(sprite, foundTag);
+
   if (!window.show())
     return;
 
@@ -108,6 +111,11 @@ void FrameTagPropertiesCommand::onExecute(Context* context)
   doc::AniDir anidir = window.aniDirValue();
   if (tag->aniDir() != anidir)
     tx(new cmd::SetTagAniDir(tag, anidir));
+
+  // Change user data
+  doc::UserData userData = window.userDataValue();
+  if (tag->userData() != userData)
+    tx(new cmd::SetUserData(tag, userData));
 
   tx.commit();
 }

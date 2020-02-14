@@ -2474,8 +2474,13 @@ void Timeline::drawTags(ui::Graphics* g)
       if (m_tagFocusBand < 0 || pass == 1) {
         bounds = tagBounds;
 
+        gfx::Color tagColor = doc::rgba_geta(tag->userData().color());
+
         if (m_clk.part == PART_TAG && m_clk.tag == tag->id()) {
           bg = color_utils::blackandwhite_neg(bg);
+        }
+        else if ( tagColor > 0 ){
+          bg = tagColor;
         }
         else if (m_hot.part == PART_TAG && m_hot.tag == tag->id()) {
           int r, g, b;

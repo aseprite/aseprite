@@ -12,8 +12,10 @@
 #include "app/ui/tag_window.h"
 
 #include "app/doc.h"
+#include "app/ui/user_data_popup.h"
 #include "app/pref/preferences.h"
 #include "app/ui/layer_frame_comboboxes.h"
+#include "base/bind.h"
 #include "doc/sprite.h"
 #include "doc/tag.h"
 
@@ -33,6 +35,7 @@ TagWindow::TagWindow(const doc::Sprite* sprite, const doc::Tag* tag)
       doc::rgba_getb(tag->color())));
 
   fill_anidir_combobox(anidir(), tag->aniDir());
+  userData()->Click.connect(base::Bind<void>(&TagWindow::onPopupUserData, this));
 }
 
 bool TagWindow::show()
@@ -67,5 +70,12 @@ doc::AniDir TagWindow::aniDirValue()
 {
   return (doc::AniDir)anidir()->getSelectedItemIndex();
 }
+
+void TagWindow::onPopupUserData()
+{
+  show_user_data_popup(userData()->bounds(), m_userData);
+}
+
+
 
 } // namespace app
