@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -159,6 +159,10 @@ bool DrawingState::onMouseUp(Editor* editor, MouseMessage* msg)
   if (!m_toolLoop->getInk()->isSelection() ||
       m_toolLoop->getController()->isOnePoint() ||
       m_mouseMoveReceived ||
+      // In case of double-click (to select tiles) we don't want to
+      // deselect if the mouse is not moved. In this case the tile
+      // will be selected anyway even if the mouse is not moved.
+      m_type == DrawingType::SelectTiles ||
       (editor->getToolLoopModifiers() != tools::ToolLoopModifiers::kReplaceSelection &&
        editor->getToolLoopModifiers() != tools::ToolLoopModifiers::kIntersectSelection)) {
     m_lastPointer = pointer_from_msg(editor, msg);

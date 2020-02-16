@@ -62,6 +62,14 @@ gfx::Point snap_to_grid(const gfx::Rect& grid,
       d = std::div(newPoint.y, grid.h);
       newPoint.y = d.rem ? dy.rem + (d.quot+1)*grid.h: newPoint.y;
       break;
+
+    case PreferSnapTo::BoxEnd:
+      d = std::div(newPoint.x, grid.w);
+      newPoint.x = dx.rem + (d.quot+1)*grid.w;
+
+      d = std::div(newPoint.y, grid.h);
+      newPoint.y = dy.rem + (d.quot+1)*grid.h;
+      break;
   }
 
   return newPoint;

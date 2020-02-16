@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -395,18 +395,10 @@ bool StandbyState::onDoubleClick(Editor* editor, MouseMessage* msg)
   // Select a tile with double-click
   if (ink->isSelection() &&
       Preferences::instance().selection.doubleclickSelectTile()) {
-    Command* selectTileCmd =
-      Commands::instance()->byId(CommandId::SelectTile());
-
-    Params params;
-    if (int(editor->getToolLoopModifiers()) & int(tools::ToolLoopModifiers::kAddSelection))
-      params.set("mode", "add");
-    else if (int(editor->getToolLoopModifiers()) & int(tools::ToolLoopModifiers::kSubtractSelection))
-      params.set("mode", "subtract");
-    else if (int(editor->getToolLoopModifiers()) & int(tools::ToolLoopModifiers::kIntersectSelection))
-      params.set("mode", "intersect");
-
-    UIContext::instance()->executeCommandFromMenuOrShortcut(selectTileCmd, params);
+    // Start a tool-loop selecting tiles.
+    startDrawingState(editor,
+                      DrawingType::SelectTiles,
+                      pointer_from_msg(editor, msg));
     return true;
   }
   // Show slice properties when we double-click it
@@ -631,9 +623,10 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
   return true;
 }
 
-DrawingState* StandbyState::startDrawingState(Editor* editor,
-                                              const DrawingType drawingType,
-                                              const tools::Pointer& pointer)
+DrawingState* StandbyState::startDrawingState(
+  Editor* editor,
+  const DrawingType drawingType,
+  const tools::Pointer& pointer)
 {
   // We need to clear and redraw the brush boundaries after the
   // first mouse pressed/point shape if drawn. This is to avoid
@@ -645,7 +638,8 @@ DrawingState* StandbyState::startDrawingState(Editor* editor,
     editor,
     UIContext::instance(),
     pointer.button(),
-    (drawingType == DrawingType::LineFreehand));
+    (drawingType == DrawingType::LineFreehand),
+    (drawingType == DrawingType::SelectTiles));
   if (!toolLoop)
     return nullptr;
 

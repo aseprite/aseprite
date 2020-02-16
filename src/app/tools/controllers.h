@@ -1,10 +1,11 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
+#include "app/snap_to_grid.h"
 #include "base/gcd.h"
 #include "base/pi.h"
 
@@ -19,7 +20,7 @@ using namespace gfx;
 // using the space bar.
 class MoveOriginCapability : public Controller {
 public:
-  void pressButton(Stroke& stroke, const Point& point) override {
+  void pressButton(ToolLoop* loop, Stroke& stroke, const Point& point) override {
     m_last = point;
   }
 
@@ -56,7 +57,7 @@ public:
 
   gfx::Point getLastPoint() const override { return m_last; }
 
-  void pressButton(Stroke& stroke, const Point& point) override {
+  void pressButton(ToolLoop* loop, Stroke& stroke, const Point& point) override {
     m_last = point;
     stroke.addPoint(point);
   }
@@ -108,14 +109,17 @@ class TwoPointsController : public MoveOriginCapability {
 public:
   bool isTwoPoints() override { return true; }
 
-  void pressButton(Stroke& stroke, const Point& point) override {
-    MoveOriginCapability::pressButton(stroke, point);
+  void pressButton(ToolLoop* loop, Stroke& stroke, const Point& point) override {
+    MoveOriginCapability::pressButton(loop, stroke, point);
 
     m_first = m_center = point;
     m_angle = 0.0;
 
     stroke.addPoint(point);
     stroke.addPoint(point);
+
+    if (loop->isSelectingTiles())
+      snapPointsToGridTiles(loop, stroke);
   }
 
   bool releaseButton(Stroke& stroke, const Point& point) override {
@@ -212,15 +216,20 @@ public:
         loop->getSnapToGrid()) {
       auto bounds = loop->getBrush()->bounds();
 
-      if (stroke[0].x < stroke[1].x)
-        stroke[1].x -= bounds.w;
-      else if (stroke[0].x > stroke[1].x)
-        stroke[0].x -= bounds.w;
+      if (loop->isSelectingTiles()) {
+        snapPointsToGridTiles(loop, stroke);
+      }
+      else {
+        if (stroke[0].x < stroke[1].x)
+          stroke[1].x -= bounds.w;
+        else if (stroke[0].x > stroke[1].x)
+          stroke[0].x -= bounds.w;
 
-      if (stroke[0].y < stroke[1].y)
-        stroke[1].y -= bounds.h;
-      else if (stroke[0].y > stroke[1].y)
-        stroke[0].y -= bounds.h;
+        if (stroke[0].y < stroke[1].y)
+          stroke[1].y -= bounds.h;
+        else if (stroke[0].y > stroke[1].y)
+          stroke[0].y -= bounds.h;
+      }
     }
   }
 
@@ -272,6 +281,20 @@ public:
   }
 
 private:
+  void snapPointsToGridTiles(ToolLoop* loop, Stroke& stroke) {
+    auto grid = loop->getGridBounds();
+
+    Rect a(snap_to_grid(grid, stroke[0], PreferSnapTo::BoxOrigin),
+           snap_to_grid(grid, stroke[0], PreferSnapTo::BoxEnd));
+    Rect b(snap_to_grid(grid, stroke[1], PreferSnapTo::BoxOrigin),
+           snap_to_grid(grid, stroke[1], PreferSnapTo::BoxEnd));
+
+    a |= b;
+
+    stroke[0] = a.origin();
+    stroke[1] = a.point2() - gfx::Point(1, 1);
+  }
+
   bool hasAngle() const {
     return (ABS(m_angle) > 0.001);
   }
@@ -290,8 +313,8 @@ private:
 class PointByPointController : public MoveOriginCapability {
 public:
 
-  void pressButton(Stroke& stroke, const Point& point) override {
-    MoveOriginCapability::pressButton(stroke, point);
+  void pressButton(ToolLoop* loop, Stroke& stroke, const Point& point) override {
+    MoveOriginCapability::pressButton(loop, stroke, point);
 
     stroke.addPoint(point);
     stroke.addPoint(point);
@@ -347,7 +370,7 @@ public:
   bool canSnapToGrid() override { return false; }
   bool isOnePoint() override { return true; }
 
-  void pressButton(Stroke& stroke, const Point& point) override {
+  void pressButton(ToolLoop* loop, Stroke& stroke, const Point& point) override {
     if (stroke.size() == 0)
       stroke.addPoint(point);
   }
@@ -382,8 +405,8 @@ public:
 class FourPointsController : public MoveOriginCapability {
 public:
 
-  void pressButton(Stroke& stroke, const Point& point) override {
-    MoveOriginCapability::pressButton(stroke, point);
+  void pressButton(ToolLoop* loop, Stroke& stroke, const Point& point) override {
+    MoveOriginCapability::pressButton(loop, stroke, point);
 
     if (stroke.size() == 0) {
       stroke.reset(4, point);
@@ -454,7 +477,7 @@ public:
     m_controller = nullptr;
   }
 
-  void pressButton(Stroke& stroke, const Point& point) override {
+  void pressButton(ToolLoop* loop, Stroke& stroke, const Point& point) override {
     m_last = point;
 
     if (m_controller == nullptr)
@@ -464,7 +487,7 @@ public:
       return;                   // Don't send first pressButton() click to the freehand controller
     }
 
-    m_controller->pressButton(stroke, point);
+    m_controller->pressButton(loop, stroke, point);
   }
 
   bool releaseButton(Stroke& stroke, const Point& point) override {

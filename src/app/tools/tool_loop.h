@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -177,6 +177,7 @@ namespace app {
 
       virtual bool getGridVisible() = 0;
       virtual bool getSnapToGrid() = 0;
+      virtual bool isSelectingTiles() = 0;
       virtual bool getStopAtGrid() = 0; // For floodfill-like tools
       virtual gfx::Rect getGridBounds() = 0;
       virtual bool isPixelConnectivityEightConnected() = 0;

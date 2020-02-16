@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -106,7 +106,7 @@ void ToolLoopManager::pressButton(const Pointer& pointer)
   m_oldPoint = spritePoint;
   snapToGrid(spritePoint);
 
-  m_toolLoop->getController()->pressButton(m_stroke, spritePoint);
+  m_toolLoop->getController()->pressButton(m_toolLoop, m_stroke, spritePoint);
 
   std::string statusText;
   m_toolLoop->getController()->getStatusBarText(m_toolLoop, m_stroke, statusText);
@@ -280,7 +280,8 @@ void ToolLoopManager::doLoopStep(bool lastStep)
 void ToolLoopManager::snapToGrid(Point& point)
 {
   if (!m_toolLoop->getController()->canSnapToGrid() ||
-      !m_toolLoop->getSnapToGrid())
+      !m_toolLoop->getSnapToGrid() ||
+      m_toolLoop->isSelectingTiles())
     return;
 
   point = snap_to_grid(m_toolLoop->getGridBounds(), point,

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -34,7 +34,8 @@ namespace app {
     Editor* editor,
     Context* context,
     const tools::Pointer::Button button,
-    const bool convertLineToFreehand);
+    const bool convertLineToFreehand,
+    const bool selectTiles);
 
   tools::ToolLoop* create_tool_loop_for_script(
     Context* context,

@@ -80,6 +80,8 @@ protected:
   int m_opacity;
   int m_tolerance;
   bool m_contiguous;
+  bool m_snapToGrid;
+  bool m_isSelectingTiles;
   gfx::Rect m_gridBounds;
   gfx::Point m_celOrigin;
   gfx::Point m_speed;
@@ -119,6 +121,8 @@ public:
     , m_opacity(m_toolPref.opacity())
     , m_tolerance(m_toolPref.tolerance())
     , m_contiguous(m_toolPref.contiguous())
+    , m_snapToGrid(m_docPref.grid.snap())
+    , m_isSelectingTiles(false)
     , m_gridBounds(site.gridBounds())
     , m_button(button)
     , m_ink(ink->clone())
@@ -201,6 +205,11 @@ public:
     m_brush->setPatternOrigin(m_oldPatternOrigin);
   }
 
+  void forceSnapToTiles() {
+    m_snapToGrid = true;
+    m_isSelectingTiles = true;
+  }
+
   // IToolLoop interface
   tools::Tool* getTool() override { return m_tool; }
   Brush* getBrush() override { return m_brush.get(); }
@@ -236,7 +245,8 @@ public:
   }
   filters::TiledMode getTiledMode() override { return m_docPref.tiled.mode(); }
   bool getGridVisible() override { return m_docPref.show.grid(); }
-  bool getSnapToGrid() override { return m_docPref.grid.snap(); }
+  bool getSnapToGrid() override { return m_snapToGrid; }
+  bool isSelectingTiles() override { return m_isSelectingTiles; }
   bool getStopAtGrid() override {
     switch (m_toolPref.floodfill.stopAtGrid()) {
       case app::gen::StopAtGrid::NEVER:
@@ -622,12 +632,18 @@ tools::ToolLoop* create_tool_loop(
   Editor* editor,
   Context* context,
   const tools::Pointer::Button button,
-  const bool convertLineToFreehand)
+  const bool convertLineToFreehand,
+  const bool selectTiles)
 {
   tools::Tool* tool = editor->getCurrentEditorTool();
   tools::Ink* ink = editor->getCurrentEditorInk();
   if (!tool || !ink)
     return nullptr;
+
+  if (selectTiles) {
+    tool = App::instance()->toolBox()->getToolById(tools::WellKnownTools::RectangularMarquee);
+    ink = tool->getInk(button == tools::Pointer::Left ? 0: 1);
+  }
 
   Site site = editor->getSite();
 
@@ -702,12 +718,17 @@ tools::ToolLoop* create_tool_loop(
         convertLineToFreehand));
 
     ASSERT(context->activeDocument() == editor->document());
-    return new ToolLoopImpl(
+    auto toolLoop = new ToolLoopImpl(
       editor, site, context,
       tool, ink, controller,
       App::instance()->contextBar()->activeBrush(tool, ink),
       toolLoopButton, fg, bg,
       saveLastPoint);
+
+    if (selectTiles)
+      toolLoop->forceSnapToTiles();
+
+    return toolLoop;
   }
   catch (const std::exception& ex) {
     Console::showException(ex);

@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -36,7 +37,7 @@ namespace app {
       // pressed. The controller could be sure that this method is called
       // at least one time. The point is a position relative to sprite
       // bounds.
-      virtual void pressButton(Stroke& stroke, const gfx::Point& point) = 0;
+      virtual void pressButton(ToolLoop* loop, Stroke& stroke, const gfx::Point& point) = 0;
 
       // Called each time a mouse button is released.
       virtual bool releaseButton(Stroke& stroke, const gfx::Point& point) = 0;
