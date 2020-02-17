@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -156,6 +156,7 @@ FOR_EACH_COMMAND(Stroke)
 FOR_EACH_COMMAND(SwitchColors)
 FOR_EACH_COMMAND(SymmetryMode)
 FOR_EACH_COMMAND(TiledMode)
+FOR_EACH_COMMAND(TilesetMode)
 FOR_EACH_COMMAND(Timeline)
 FOR_EACH_COMMAND(TogglePreview)
 FOR_EACH_COMMAND(ToggleTilesMode)
