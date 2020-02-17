@@ -91,8 +91,17 @@ namespace doc {
     // tile. Returns tile_i_notile if the image is not in the tileset.
     tile_index findTileIndex(const ImageRef& tileImage);
 
+    // Must be called when a tile image was modified externally, so
+    // the hash elements are re-calculated for that specific tile.
+    void notifyTileContentChange(const tile_index ti);
+
+#ifdef _DEBUG
+    void assertValidHashTable();
+#endif
+
   private:
-    void removeFromHash(const tile_index ti);
+    void removeFromHash(const tile_index ti,
+                        const bool adjustIndexes);
 
     Sprite* m_sprite;
     Grid m_grid;

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -10,6 +10,7 @@
 
 #include "app/cmd/add_tile.h"
 
+#include "app/doc.h"
 #include "doc/image_io.h"
 #include "doc/sprite.h"
 #include "doc/tileset.h"
@@ -78,6 +79,15 @@ void AddTile::onRedo()
   m_stream.str(std::string());
   m_stream.clear();
   m_size = 0;
+}
+
+void AddTile::onFireNotifications()
+{
+  doc::Tileset* tileset = this->tileset();
+
+  // Notify that the tileset's changed
+  static_cast<Doc*>(tileset->sprite()->document())
+    ->notifyTilesetChanged(tileset);
 }
 
 void AddTile::addTile(doc::Tileset* tileset, const doc::ImageRef& image)

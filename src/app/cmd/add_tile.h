@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -36,6 +36,7 @@ namespace cmd {
     void onExecute() override;
     void onUndo() override;
     void onRedo() override;
+    void onFireNotifications() override;
     size_t onMemSize() const override {
       return sizeof(*this) + m_size;
     }

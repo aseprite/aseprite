@@ -45,6 +45,7 @@
 #include <algorithm>
 #include <cmath>
 #include <memory>
+#include <vector>
 
 #define OPS_TRACE(...)          // TRACE
 
@@ -52,8 +53,10 @@ namespace app {
 
 using namespace doc;
 
+namespace {
+
 template<typename ImageTraits>
-static void mask_image_templ(Image* image, const Image* bitmap)
+void mask_image_templ(Image* image, const Image* bitmap)
 {
   LockImageBits<ImageTraits> bits1(image);
   const LockImageBits<BitmapTraits> bits2(bitmap);
@@ -69,7 +72,7 @@ static void mask_image_templ(Image* image, const Image* bitmap)
   ASSERT(it2 == end2);
 }
 
-static void mask_image(Image* image, Image* bitmap)
+void mask_image(Image* image, Image* bitmap)
 {
   ASSERT(image->bounds() == bitmap->bounds());
   switch (image->pixelFormat()) {
@@ -78,6 +81,44 @@ static void mask_image(Image* image, Image* bitmap)
     case IMAGE_INDEXED:   return mask_image_templ<IndexedTraits>(image, bitmap);
   }
 }
+
+template<typename ImageTraits>
+void create_region_with_differences_templ(const Image* a,
+                                          const Image* b,
+                                          const gfx::Rect& bounds,
+                                          gfx::Region& output)
+{
+  for (int y=bounds.y; y<bounds.y2(); ++y) {
+    for (int x=bounds.x; x<bounds.x2(); ++x) {
+      if (get_pixel_fast<ImageTraits>(a, x, y) !=
+          get_pixel_fast<ImageTraits>(b, x, y)) {
+        output.createUnion(output, gfx::Region(gfx::Rect(x, y, 1, 1)));
+      }
+    }
+  }
+}
+
+void create_region_with_differences(const Image* a,
+                                    const Image* b,
+                                    const gfx::Rect& bounds,
+                                    gfx::Region& output)
+{
+  ASSERT(a->pixelFormat() == b->pixelFormat());
+  switch (a->pixelFormat()) {
+    case IMAGE_RGB: create_region_with_differences_templ<RgbTraits>(a, b, bounds, output); break;
+    case IMAGE_GRAYSCALE: create_region_with_differences_templ<GrayscaleTraits>(a, b, bounds, output); break;
+    case IMAGE_INDEXED: create_region_with_differences_templ<IndexedTraits>(a, b, bounds, output); break;
+  }
+}
+
+struct Mod {
+  tile_index tileIndex;
+  ImageRef tileOrigImage;
+  ImageRef tileImage;
+  gfx::Region tileRgn;
+};
+
+} // anonymous namespace
 
 doc::ImageRef crop_cel_image(
   const doc::Cel* cel,
@@ -392,6 +433,8 @@ void modify_tilemap_cel_region(
             region.bounds().x, region.bounds().y, region.bounds().w, region.bounds().h,
             newTilemapBounds.x, newTilemapBounds.y, newTilemapBounds.w, newTilemapBounds.h);
 
+  std::vector<bool> modifiedTileIndexes(tileset->size(), false);
+
   // Autogenerate tiles
   if (tilesetMode == TilesetMode::Auto ||
       tilesetMode == TilesetMode::Stack) {
@@ -416,8 +459,6 @@ void modify_tilemap_cel_region(
     gfx::Region regionToPatch(grid.tileToCanvas(newTilemapBounds));
     regionToPatch -= gfx::Region(grid.tileToCanvas(oldTilemapBounds));
     regionToPatch |= region;
-
-    std::vector<bool> modifiedTileIndexes(tileset->size(), false);
 
     for (const gfx::Point& tilePt : grid.tilesInCanvasRegion(regionToPatch)) {
       const int u = tilePt.x-newTilemapBounds.x;
@@ -491,6 +532,8 @@ void modify_tilemap_cel_region(
   }
   // Modify active set of tiles manually / don't auto-generate new tiles
   else if (tilesetMode == TilesetMode::Manual) {
+    std::vector<Mod> mods;
+
     for (const gfx::Point& tilePt : grid.tilesInCanvasRegion(region)) {
       // Ignore modifications outside the tilemap
       if (!cel->image()->bounds().contains(tilePt.x, tilePt.y))
@@ -511,16 +554,46 @@ void modify_tilemap_cel_region(
 
       ImageRef tileOrigImage = tileset->get(ti);
 
+      gfx::Region diffRgn;
+      create_region_with_differences(tileOrigImage.get(),
+                                     tileImage.get(),
+                                     tileRgn.bounds(),
+                                     diffRgn);
+
+      // Keep only the modified region for this specific modification
+      tileRgn &= diffRgn;
+
+      if (!tileRgn.isEmpty()) {
+        Mod mod;
+        mod.tileIndex = ti;
+        mod.tileOrigImage = tileOrigImage;
+        mod.tileImage = tileImage;
+        mod.tileRgn = tileRgn;
+        mods.push_back(mod);
+
+        modifiedTileIndexes[ti] = true;
+      }
+    }
+
+    // Apply all modifications to tiles
+    for (auto& mod : mods) {
       cmds->executeAndAdd(
-        new cmd::CopyRegion(
-          tileOrigImage.get(),
-          tileImage.get(),
-          tileRgn,
-          gfx::Point(0, 0)));
+        new cmd::CopyTileRegion(
+          mod.tileOrigImage.get(),
+          mod.tileImage.get(),
+          mod.tileRgn,
+          gfx::Point(0, 0),
+          false,
+          mod.tileIndex,
+          tileset));
     }
 
     doc->notifyTilesetChanged(tileset);
   }
+
+#ifdef _DEBUG
+  tileset->assertValidHashTable();
+#endif
 }
 
 void clear_mask_from_cel(CmdSequence* cmds,

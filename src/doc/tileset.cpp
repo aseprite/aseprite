@@ -105,7 +105,7 @@ void Tileset::remap(const Remap& remap)
 void Tileset::set(const tile_index ti,
                   const ImageRef& image)
 {
-  removeFromHash(ti);
+  removeFromHash(ti, false);
 
   m_tiles[ti] = image;
   m_hash[image] = ti;
@@ -138,7 +138,8 @@ void Tileset::insert(const tile_index ti,
 void Tileset::erase(const tile_index ti)
 {
   ASSERT(ti >= 0 && ti < size());
-  removeFromHash(ti);
+  removeFromHash(ti, true);
+
   m_tiles.erase(m_tiles.begin()+ti);
 }
 
@@ -165,17 +166,97 @@ tile_index Tileset::findTileIndex(const ImageRef& tileImage)
     return tile_i_notile;
 }
 
-void Tileset::removeFromHash(const tile_index ti)
+void Tileset::notifyTileContentChange(const tile_index ti)
 {
-  for (auto it=m_hash.begin(); it!=m_hash.end(); ) {
-    if (it->second == ti)
+#if 0 // TODO Try to do less work
+
+  ASSERT(ti >= 0 && ti < size());
+
+  // If two or more tiles are exactly the same, they will have the
+  // same hash, so the m_hash table can be smaller than the m_tiles
+  // array.
+  if (m_hash.size() < m_tiles.size()) {
+    // Count how many hash elements are poiting to this tile index
+    int tilesWithSameHash = 0;
+    for (auto item : m_hash)
+      if (item.second == ti)
+        ++tilesWithSameHash;
+
+    // In this case we re-generate the whole hash table because one or
+    // more tiles tile are using the hash of the modified tile.
+    if (tilesWithSameHash >= 2) {
+      tile_index ti = 0;
+      m_hash.clear();
+      for (auto tile : m_tiles)
+        m_hash[tile] = ti++;
+      return;
+    }
+  }
+
+  // In other case we can do a fast-path, just removing and
+  // re-adding the tile to the hash table.
+  removeFromHash(ti, false);
+  m_hash[m_tiles[ti]] = ti;
+
+#else // Regenerate the whole hash map (at the moment this is the
+      // only way to make it work correctly)
+
+  (void)ti;                     // unused
+
+  tile_index tj = 0;
+  m_hash.clear();
+  for (auto tile : m_tiles)
+    m_hash[tile] = tj++;
+
+#endif
+}
+
+void Tileset::removeFromHash(const tile_index ti,
+                             const bool adjustIndexes)
+{
+  auto end = m_hash.end();
+  for (auto it=m_hash.begin(); it!=end; ) {
+    if (it->second == ti) {
       it = m_hash.erase(it);
+      end = m_hash.end();
+    }
     else {
-      if (it->second > ti)
+      if (adjustIndexes && it->second > ti)
         --it->second;
       ++it;
     }
   }
 }
+
+#ifdef _DEBUG
+void Tileset::assertValidHashTable()
+{
+  // If two or more tiles are exactly the same, they will have the
+  // same hash, so the m_hash table can be smaller than the m_tiles
+  // array.
+  if (m_hash.size() < m_tiles.size()) {
+    for (tile_index ti=0; ti<tile_index(m_tiles.size()); ++ti) {
+      auto it = m_hash.find(m_tiles[ti]);
+      ASSERT(it != m_hash.end());
+
+      // If the hash doesn't match, it is because other tile is equal
+      // to this one.
+      if (it->second != ti) {
+        ASSERT(is_same_image(it->first.get(), m_tiles[it->second].get()));
+      }
+    }
+  }
+  else if (m_hash.size() == m_tiles.size()) {
+    for (tile_index ti=0; ti<tile_index(m_tiles.size()); ++ti) {
+      auto it = m_hash.find(m_tiles[ti]);
+      ASSERT(it != m_hash.end());
+      ASSERT(it->second == ti);
+    }
+  }
+  else {
+    ASSERT(false && "The hash table cannot contain more tiles than the tileset");
+  }
+}
+#endif
 
 } // namespace doc

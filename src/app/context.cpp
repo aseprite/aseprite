@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -22,6 +22,12 @@
 #include "base/scoped_value.h"
 #include "doc/layer.h"
 #include "ui/system.h"
+
+#ifdef _DEBUG
+#include "doc/layer_tilemap.h"
+#include "doc/tileset.h"
+#include "doc/tilesets.h"
+#endif
 
 #include <algorithm>
 #include <stdexcept>
@@ -171,6 +177,20 @@ void Context::executeCommand(Command* command, const Params& params)
     // TODO move this code to another place (e.g. a Workplace/Tabs widget)
     if (isUIAvailable())
       app_rebuild_documents_tabs();
+
+#ifdef _DEBUG // Special checks for debugging purposes
+    {
+      Site site = activeSite();
+      // Check that all tileset hash tables are valid
+      if (site.sprite() &&
+          site.sprite()->hasTilesets()) {
+        for (Tileset* tileset : *site.sprite()->tilesets()) {
+          if (tileset)
+            tileset->assertValidHashTable();
+        }
+      }
+    }
+#endif
   }
   catch (base::Exception& e) {
     LOG(ERROR, "CTXT: Exception caught executing %s command\n%s\n",
