@@ -100,6 +100,8 @@ void Tileset::remap(const Remap& remap)
       m_tiles[remap[ti]] = tmp[ti];
     }
   }
+
+  rehash();
 }
 
 void Tileset::set(const tile_index ti,
@@ -202,11 +204,7 @@ void Tileset::notifyTileContentChange(const tile_index ti)
       // only way to make it work correctly)
 
   (void)ti;                     // unused
-
-  tile_index tj = 0;
-  m_hash.clear();
-  for (auto tile : m_tiles)
-    m_hash[tile] = tj++;
+  rehash();
 
 #endif
 }
@@ -258,5 +256,13 @@ void Tileset::assertValidHashTable()
   }
 }
 #endif
+
+void Tileset::rehash()
+{
+  tile_index tj = 0;
+  m_hash.clear();
+  for (auto tile : m_tiles)
+    m_hash[tile] = tj++;
+}
 
 } // namespace doc

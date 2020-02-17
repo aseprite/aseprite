@@ -102,6 +102,7 @@ namespace doc {
   private:
     void removeFromHash(const tile_index ti,
                         const bool adjustIndexes);
+    void rehash();
 
     Sprite* m_sprite;
     Grid m_grid;
