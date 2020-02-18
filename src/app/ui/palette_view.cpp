@@ -243,8 +243,19 @@ public:
     if (!tileset)
       return;
 
+    // Important: we create a copy because if we make the tileset
+    // bigger dropping tiles outside the tileset range, the tileset
+    // will be made bigger (see cmd::AddTile() inside
+    // move_tiles_in_tileset() function), a
+    // Doc::notifyTilesetChanged() will be generated, a
+    // ColorBar::onTilesetChanged() called, and finally we'll receive a
+    // PaletteView::deselect() that will clear the whole picks.
+    auto newPicks = picks;
     paletteView->delegate()->onTilesViewDragAndDrop(
-      tileset, picks, currentEntry, beforeIndex, isCopy);
+      tileset, newPicks, currentEntry, beforeIndex, isCopy);
+
+    // Copy the new picks
+    picks = newPicks;
   }
   void showEntryInStatusBar(StatusBar* statusBar, int index) override {
     statusBar->setStatusText(

@@ -781,7 +781,8 @@ void ColorBar::onRemapTilesButtonClick()
     Remap remap(tileset->size());
     for (tile_index ti=0; ti<remap.size(); ++ti) {
       auto img = m_oldTileset->get(ti);
-      tile_index destTi = tileset->findTileIndex(img);
+      tile_index destTi = (img ? tileset->findTileIndex(img):
+                                 doc::tile_i_notile);
       if (img && destTi != doc::tile_i_notile) {
         COLOR_BAR_TRACE(" - Remap tile %d -> %d\n", ti, destTi);
         remap.map(ti, destTi);

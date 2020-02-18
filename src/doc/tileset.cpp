@@ -140,9 +140,11 @@ void Tileset::insert(const tile_index ti,
 void Tileset::erase(const tile_index ti)
 {
   ASSERT(ti >= 0 && ti < size());
-  removeFromHash(ti, true);
+  // TODO check why this doesn't work
+  //removeFromHash(ti, true);
 
   m_tiles.erase(m_tiles.begin()+ti);
+  rehash();
 }
 
 ImageRef Tileset::makeEmptyTile()
@@ -161,6 +163,10 @@ void Tileset::setExternal(const std::string& filename,
 
 tile_index Tileset::findTileIndex(const ImageRef& tileImage)
 {
+  ASSERT(tileImage);
+  if (!tileImage)
+    return tile_i_notile;
+
   auto it = m_hash.find(tileImage);
   if (it != m_hash.end())
     return it->second;
