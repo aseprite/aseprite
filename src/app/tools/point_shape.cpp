@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C)      2020  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -13,7 +14,9 @@
 #include "app/tools/ink.h"
 #include "app/tools/tool_loop.h"
 #include "app/util/wrap_value.h"
+#include "doc/brush.h"
 #include "doc/image.h"
+#include "doc/sprite.h"
 
 namespace app {
 namespace tools {
@@ -53,13 +56,20 @@ void PointShape::doInkHline(int x1, int y, int x2, ToolLoop* loop)
     if (w >= size)
       loop->getInk()->inkHline(0, y, size-1, loop);
     else {
-      x = x1;
-      x = wrap_value(x, size);
-
-      if (x+w-1 <= size-1)
+      x = wrap_value(x1, loop->sprite()->width());
+      if (x+w <= loop->sprite()->width()) {
+        // Here we asure that tile limit line does not bisect the current
+        // scanline, i.e. the scanline is enterely contained inside the tile.
+        loop->getInk()->prepareUForPointShapeWholeScanline(loop, x1);
         loop->getInk()->inkHline(x, y, x+w-1, loop);
+      }
       else {
+        // Here the tile limit line bisect the current scanline.
+        // So we need to execute TWO times the inkHline function, each one with a different m_u.
+        loop->getInk()->prepareUForPointShapeSlicedScanline(loop, true, x1);// true = left slice
         loop->getInk()->inkHline(x, y, size-1, loop);
+
+        loop->getInk()->prepareUForPointShapeSlicedScanline(loop, false, x1);// false = right slice
         loop->getInk()->inkHline(0, y, w-(size-x)-1, loop);
       }
     }

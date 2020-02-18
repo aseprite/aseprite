@@ -34,6 +34,9 @@ public:
   virtual void processScanline(int x1, int y, int x2, ToolLoop* loop) = 0;
   virtual void prepareForStrokes(ToolLoop* loop, Strokes& strokes) { }
   virtual void prepareForPointShape(ToolLoop* loop, bool firstPoint, int x, int y) { }
+  virtual void prepareVForPointShape(ToolLoop* loop, int y) { }
+  virtual void prepareUForPointShapeWholeScanline(ToolLoop* loop, int x1) { }
+  virtual void prepareUForPointShapeSlicedScanline(ToolLoop* loop, bool leftSlice, int x1) { }
 };
 
 typedef std::unique_ptr<BaseInkProcessing> InkProcessingPtr;
@@ -1124,8 +1127,51 @@ public:
   void prepareForPointShape(ToolLoop* loop, bool firstPoint, int x, int y) override {
     if ((m_brush->pattern() == BrushPattern::ALIGNED_TO_DST && firstPoint) ||
         (m_brush->pattern() == BrushPattern::PAINT_BRUSH)) {
-      m_u = (m_brush->patternOrigin().x - loop->getCelOrigin().x) % m_width;
+      m_u = ((m_brush->patternOrigin().x % loop->sprite()->width()) - loop->getCelOrigin().x) % m_width;
+      m_v = ((m_brush->patternOrigin().y % loop->sprite()->height()) - loop->getCelOrigin().y) % m_height;
+    }
+  }
+
+  void prepareVForPointShape(ToolLoop* loop, int y) override {
+
+    if (m_brush->pattern() == doc::BrushPattern::ALIGNED_TO_SRC) {
       m_v = (m_brush->patternOrigin().y - loop->getCelOrigin().y) % m_height;
+      if (m_v < 0) m_v += m_height;
+    }
+    else {
+      int spriteH = loop->sprite()->height();
+      if (y/spriteH > 0)
+        // 'y' is outside of the center tile.
+        m_v = (m_brush->patternOrigin().y + m_height - (y/spriteH) * spriteH) % m_height;
+      else
+        // 'y' is inside of the center tile.
+        m_v = ((m_brush->patternOrigin().y % spriteH) - loop->getCelOrigin().y) % m_height;
+    }
+  }
+
+  void prepareUForPointShapeWholeScanline(ToolLoop* loop, int x1) override {
+    if (m_brush->pattern() == doc::BrushPattern::ALIGNED_TO_SRC) {
+      m_u = (m_brush->patternOrigin().x - loop->getCelOrigin().x) % m_width;
+      if (m_u < 0) m_u += m_height;
+    }
+    else {
+      m_u = ((m_brush->patternOrigin().x % loop->sprite()->width()) - loop->getCelOrigin().x ) % m_width;
+      if (x1/loop->sprite()->width() > 0)
+        m_u = (m_brush->patternOrigin().x + m_width - (x1/loop->sprite()->width()) * loop->sprite()->width()) % m_width;
+    }
+  }
+
+  void prepareUForPointShapeSlicedScanline(ToolLoop* loop, bool leftSlice, int x1) override {
+    if (loop->getBrush()->pattern() == doc::BrushPattern::ALIGNED_TO_SRC) {
+      m_u = (m_brush->patternOrigin().x - loop->getCelOrigin().x) % m_width;
+      if (m_u < 0) m_u += m_height;
+      return;
+    }
+    else {
+      if (leftSlice)
+        m_u = ((m_brush->patternOrigin().x % loop->sprite()->width()) - loop->getCelOrigin().x ) % m_width;
+      else
+        m_u = (m_brush->patternOrigin().x + m_width - (x1/loop->sprite()->width() + 1) * loop->sprite()->width()) % m_width;
     }
   }
 
