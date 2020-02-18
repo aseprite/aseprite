@@ -110,7 +110,8 @@ void Tileset::set(const tile_index ti,
   removeFromHash(ti, false);
 
   m_tiles[ti] = image;
-  m_hash[image] = ti;
+  if (!m_hash.empty())
+    m_hash[image] = ti;
 }
 
 tile_index Tileset::add(const ImageRef& image)
@@ -118,7 +119,8 @@ tile_index Tileset::add(const ImageRef& image)
   m_tiles.push_back(image);
 
   const tile_index newIndex = tile_index(m_tiles.size()-1);
-  m_hash[image] = newIndex;
+  if (!m_hash.empty())
+    m_hash[image] = newIndex;
   return newIndex;
 }
 
@@ -128,13 +130,15 @@ void Tileset::insert(const tile_index ti,
   ASSERT(ti <= size());
   m_tiles.insert(m_tiles.begin()+ti, image);
 
-  // Fix all indexes in the hash that are greater than "ti"
-  for (auto& it : m_hash)
-    if (it.second >= ti)
-      ++it.second;
+  if (!m_hash.empty()) {
+    // Fix all indexes in the hash that are greater than "ti"
+    for (auto& it : m_hash)
+      if (it.second >= ti)
+        ++it.second;
 
-  // And now we can add the new image with the "ti" index
-  m_hash[image] = ti;
+    // And now we can add the new image with the "ti" index
+    m_hash[image] = ti;
+  }
 }
 
 void Tileset::erase(const tile_index ti)
@@ -167,8 +171,11 @@ tile_index Tileset::findTileIndex(const ImageRef& tileImage)
   if (!tileImage)
     return tile_i_notile;
 
-  auto it = m_hash.find(tileImage);
-  if (it != m_hash.end())
+  auto& h = hashTable(); // Don't use m_hash directly in case that
+                         // we've to regenerate the hash table.
+
+  auto it = h.find(tileImage);
+  if (it != h.end())
     return it->second;
   else
     return tile_i_notile;
@@ -193,10 +200,7 @@ void Tileset::notifyTileContentChange(const tile_index ti)
     // In this case we re-generate the whole hash table because one or
     // more tiles tile are using the hash of the modified tile.
     if (tilesWithSameHash >= 2) {
-      tile_index ti = 0;
-      m_hash.clear();
-      for (auto tile : m_tiles)
-        m_hash[tile] = ti++;
+      rehash();
       return;
     }
   }
@@ -235,6 +239,11 @@ void Tileset::removeFromHash(const tile_index ti,
 #ifdef _DEBUG
 void Tileset::assertValidHashTable()
 {
+  // And empty hash table means that we've to re-generate it when it's
+  // needed (when findTileIndex() is used).
+  if (m_hash.empty())
+    return;
+
   // If two or more tiles are exactly the same, they will have the
   // same hash, so the m_hash table can be smaller than the m_tiles
   // array.
@@ -265,10 +274,20 @@ void Tileset::assertValidHashTable()
 
 void Tileset::rehash()
 {
-  tile_index tj = 0;
+  // Clear the hash table, we'll lazy-rehash it when
+  // hashTable()/findTileIndex() is used.
   m_hash.clear();
-  for (auto tile : m_tiles)
-    m_hash[tile] = tj++;
+}
+
+TilesetHashTable& Tileset::hashTable()
+{
+  if (m_hash.empty()) {
+    // Re-hash/create the whole hash table from scratch
+    tile_index ti = 0;
+    for (auto tile : m_tiles)
+      m_hash[tile] = ti++;
+  }
+  return m_hash;
 }
 
 } // namespace doc

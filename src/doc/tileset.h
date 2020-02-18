@@ -103,6 +103,7 @@ namespace doc {
     void removeFromHash(const tile_index ti,
                         const bool adjustIndexes);
     void rehash();
+    TilesetHashTable& hashTable();
 
     Sprite* m_sprite;
     Grid m_grid;
