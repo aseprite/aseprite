@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -61,8 +61,8 @@ void AddTileset::onUndo()
 
 void AddTileset::onRedo()
 {
-  SubObjectsFromSprite io(sprite());
-  doc::Tileset* tileset = read_tileset(m_stream, &io);
+  auto sprite = this->sprite();
+  doc::Tileset* tileset = read_tileset(m_stream, sprite);
 
   addTileset(tileset);
 

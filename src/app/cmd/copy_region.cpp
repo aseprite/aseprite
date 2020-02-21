@@ -92,6 +92,7 @@ void CopyTileRegion::rehash()
     auto tileset = get<Tileset>(m_tilesetId);
     ASSERT(tileset);
     if (tileset) {
+      tileset->incrementVersion();
       tileset->notifyTileContentChange(m_tileIndex);
 
       // Notify thath the tileset changed

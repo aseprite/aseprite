@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -11,7 +11,9 @@
 #include "doc/tileset_io.h"
 
 #include "base/serialization.h"
+#include "doc/cancel_io.h"
 #include "doc/grid_io.h"
+#include "doc/image_io.h"
 #include "doc/subobjects_io.h"
 #include "doc/tileset.h"
 
@@ -28,21 +30,34 @@ bool write_tileset(std::ostream& os,
 {
   write32(os, tileset->id());
   write32(os, tileset->size());
-  return write_grid(os, tileset->grid());
+  write_grid(os, tileset->grid());
 
-  // TODO save images
+  for (tile_index ti=0; ti<tileset->size(); ++ti) {
+    if (cancel && cancel->isCanceled())
+      return false;
+
+    write_image(os, tileset->get(ti).get(), cancel);
+  }
+
+  return true;
 }
 
 Tileset* read_tileset(std::istream& is,
-                      SubObjectsFromSprite* subObjects,
+                      Sprite* sprite,
                       bool setId)
 {
   ObjectId id = read32(is);
   tileset_index ntiles = read32(is);
   Grid grid = read_grid(is, setId);
-  auto tileset = new Tileset(subObjects->sprite(), grid, ntiles);
+  auto tileset = new Tileset(sprite, grid, ntiles);
   if (setId)
     tileset->setId(id);
+
+  for (tileset_index ti=0; ti<ntiles; ++ti) {
+    ImageRef image(read_image(is, setId));
+    tileset->set(ti, image);
+  }
+
   return tileset;
 }
 

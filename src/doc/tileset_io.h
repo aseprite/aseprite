@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -13,7 +13,7 @@
 namespace doc {
 
   class CancelIO;
-  class SubObjectsFromSprite;
+  class Sprite;
   class Tileset;
 
   bool write_tileset(std::ostream& os,
@@ -21,7 +21,7 @@ namespace doc {
                      CancelIO* cancel = nullptr);
 
   Tileset* read_tileset(std::istream& is,
-                        SubObjectsFromSprite* subObjects,
+                        Sprite* sprite,
                         bool setId = true);
 
 } // namespace doc
