@@ -14,7 +14,12 @@ if(MSVC)
   # As Skia is compiled with /GL flag (whole program optimization),
   # the linker prefer a /LTCG parameter to improve link times.
   if(LAF_OS_BACKEND STREQUAL "skia")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /LTCG")
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+      set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fuse-ld=lld -flto=thin")
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fuse-ld=lld -flto=thin")
+    else()
+      set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /LTCG")
+    endif()
   endif()
 
   add_definitions(-D_SCL_SECURE_NO_WARNINGS)
