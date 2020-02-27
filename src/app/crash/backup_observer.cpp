@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -97,15 +97,20 @@ void BackupObserver::onRemoveDocument(Doc* doc)
     std::unique_lock<std::mutex> lock(m_mutex);
     base::remove_from_container(m_documents, doc);
   }
-  if (m_config->keepEditedSpriteDataFor > 0 &&
-      doc->needsBackup() &&
+  if (doc->needsBackup() &&
       // If the backup is disabled, we don't need it (e.g. when the
       // document is destroyed from a script with Sprite:close(), the
       // backup is disabled)
       !doc->inhibitBackup()) {
+    // If m_config->keepEditedSpriteDataFor == 0 we add the document
+    // in m_closedDocs list anyway so we call markAsBackedUp(), and
+    // then it's deleted from ClosedDocs::backgroundThread()
+
+    TRACE("RECO: Adding to CLOSEDOC %p\n", doc);
     m_closedDocs.push_back(doc);
   }
   else {
+    TRACE("RECO: Removing doc %p from session\n", doc);
     m_session->removeDocument(doc);
   }
 }

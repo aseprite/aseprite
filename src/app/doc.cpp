@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -39,6 +39,8 @@
 #include <limits>
 #include <map>
 
+#define DOC_TRACE(...) // TRACEARGS
+
 namespace app {
 
 using namespace base;
@@ -61,10 +63,12 @@ Doc::Doc(Sprite* sprite)
     sprites().add(sprite);
 
   updateOSColorSpace(false);
+  DOC_TRACE("DOC: New", this);
 }
 
 Doc::~Doc()
 {
+  DOC_TRACE("DOC: Deleting", this);
   removeFromContext();
 }
 
