@@ -98,6 +98,9 @@ void BackupObserver::onRemoveDocument(Doc* doc)
     base::remove_from_container(m_documents, doc);
   }
   if (doc->needsBackup() &&
+      // If the document is already fully backed up, we don't need to
+      // add it to the background thread to create its backup
+      !doc->isFullyBackedUp() &&
       // If the backup is disabled, we don't need it (e.g. when the
       // document is destroyed from a script with Sprite:close(), the
       // backup is disabled)

@@ -81,6 +81,8 @@ void Doc::setContext(Context* ctx)
 
   m_ctx = ctx;
   if (ctx) {
+    DOC_TRACE("DOC: Removing as fully backed up", this);
+
     // Remove the flag that indicates that this doc is fully backed
     // up, because now we are inside a context, so the user can change
     // it again and the backup will be outdated.
@@ -260,6 +262,8 @@ void Doc::setInhibitBackup(const bool inhibitBackup)
 
 void Doc::markAsBackedUp()
 {
+  DOC_TRACE("DOC: Mark as fully backed up", this);
+
   m_flags |= kFullyBackedUp;
 }
 
