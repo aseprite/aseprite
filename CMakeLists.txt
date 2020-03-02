@@ -24,6 +24,9 @@ if(NOT CMAKE_BUILD_TYPE)
       FORCE)
 endif()
 
+set(CMAKE_USER_MAKE_RULES_OVERRIDE ${CMAKE_CURRENT_SOURCE_DIR}/laf/cmake/c_flag_overrides.cmake)
+set(CMAKE_USER_MAKE_RULES_OVERRIDE_CXX ${CMAKE_CURRENT_SOURCE_DIR}/laf/cmake/cxx_flag_overrides.cmake)
+
 # Aseprite project
 project(aseprite C CXX)
 
