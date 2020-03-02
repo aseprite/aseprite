@@ -693,7 +693,9 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
         //      internal state of a SkCanvas or SkBitmap thing is
         //      updated after this, because convert_image_to_surface()
         //      will overwrite these pixels anyway.
-        tmp->drawRect(gfx::rgba(0, 0, 0, 255), gfx::Rect(0, 0, 1, 1));
+        os::Paint paint;
+        paint.color(gfx::rgba(0, 0, 0, 255));
+        tmp->drawRect(gfx::Rect(0, 0, 1, 1), paint);
       }
 
       convert_image_to_surface(rendered.get(), m_sprite->palette(m_frame),

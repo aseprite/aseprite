@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -113,7 +113,10 @@ public:
 
       auto oldCanvas = m_canvas;
       m_canvas = os::instance()->createSurface(w, h, activeCS);
-      m_canvas->fillRect(bgColor, gfx::Rect(0, 0, w, h));
+      os::Paint paint;
+      paint.color(bgColor);
+      paint.style(os::Paint::Fill);
+      m_canvas->drawRect(gfx::Rect(0, 0, w, h), paint);
       if (oldCanvas) {
         m_canvas->drawSurface(oldCanvas, 0, 0);
         oldCanvas->dispose();

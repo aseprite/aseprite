@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -100,12 +101,14 @@ void ColorTintShadeTone::onPaintSurfaceInBgThread(
   }
 
   if (m_paintFlags & BottomBarFlag) {
+    os::Paint paint;
     for (int x=0; x<bottom.w && !stop; ++x) {
-      gfx::Color color = color_utils::color_for_ui(
-        app::Color::fromHsv(
-          (360.0 * x / bottom.w), 1.0, 1.0));
+      paint.color(
+        color_utils::color_for_ui(
+          app::Color::fromHsv(
+            (360.0 * x / bottom.w), 1.0, 1.0)));
 
-      s->drawVLine(color, bottom.x+x, bottom.y, bottom.h);
+      s->drawRect(gfx::Rect(bottom.x+x, bottom.y, 1, bottom.h), paint);
     }
     if (stop)
       return;

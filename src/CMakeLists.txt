@@ -1,5 +1,5 @@
 # Aseprite
-# Copyright (C) 2019  Igara Studio S.A.
+# Copyright (C) 2019-2020  Igara Studio S.A.
 # Copyright (C) 2001-2018  David Capello
 
 ######################################################################
@@ -182,6 +182,7 @@ if(ENABLE_ASEPRITE_EXE)
   if(WIN32 AND ENABLE_UI)
     set_target_properties(aseprite PROPERTIES WIN32_EXECUTABLE true)
   endif()
+  set_target_properties(aseprite PROPERTIES LINK_FLAGS "${LAF_BACKEND_LINK_FLAGS}")
   target_link_libraries(aseprite app-lib)
   add_dependencies(aseprite copy_data)
 

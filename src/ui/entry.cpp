@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -845,7 +845,9 @@ public:
 
   void preProcessChar(const int index,
                       const int codepoint,
-                      gfx::Color& fg, gfx::Color& bg) override {
+                      gfx::Color& fg,
+                      gfx::Color& bg,
+                      const gfx::Rect& charBounds) override {
     if (!m_boxes.empty())
       m_boxes.back().to = index;
 

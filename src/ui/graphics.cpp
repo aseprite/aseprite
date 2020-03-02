@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -117,7 +117,9 @@ void Graphics::drawHLine(gfx::Color color, int x, int y, int w)
   dirty(gfx::Rect(m_dx+x, m_dy+y, w, 1));
 
   os::SurfaceLock lock(m_surface);
-  m_surface->drawHLine(color, m_dx+x, m_dy+y, w);
+  os::Paint paint;
+  paint.color(color);
+  m_surface->drawRect(gfx::Rect(m_dx+x, m_dy+y, w, 1), paint);
 }
 
 void Graphics::drawVLine(gfx::Color color, int x, int y, int h)
@@ -125,7 +127,9 @@ void Graphics::drawVLine(gfx::Color color, int x, int y, int h)
   dirty(gfx::Rect(m_dx+x, m_dy+y, 1, h));
 
   os::SurfaceLock lock(m_surface);
-  m_surface->drawVLine(color, m_dx+x, m_dy+y, h);
+  os::Paint paint;
+  paint.color(color);
+  m_surface->drawRect(gfx::Rect(m_dx+x, m_dy+y, 1, h), paint);
 }
 
 void Graphics::drawLine(gfx::Color color, const gfx::Point& _a, const gfx::Point& _b)
@@ -135,7 +139,9 @@ void Graphics::drawLine(gfx::Color color, const gfx::Point& _a, const gfx::Point
   dirty(gfx::Rect(a, b));
 
   os::SurfaceLock lock(m_surface);
-  m_surface->drawLine(color, a, b);
+  os::Paint paint;
+  paint.color(color);
+  m_surface->drawLine(a, b, paint);
 }
 
 void Graphics::drawRect(gfx::Color color, const gfx::Rect& rcOrig)
@@ -145,7 +151,10 @@ void Graphics::drawRect(gfx::Color color, const gfx::Rect& rcOrig)
   dirty(rc);
 
   os::SurfaceLock lock(m_surface);
-  m_surface->drawRect(color, rc);
+  os::Paint paint;
+  paint.color(color);
+  paint.style(os::Paint::Stroke);
+  m_surface->drawRect(rc, paint);
 }
 
 void Graphics::fillRect(gfx::Color color, const gfx::Rect& rcOrig)
@@ -155,7 +164,10 @@ void Graphics::fillRect(gfx::Color color, const gfx::Rect& rcOrig)
   dirty(rc);
 
   os::SurfaceLock lock(m_surface);
-  m_surface->fillRect(color, rc);
+  os::Paint paint;
+  paint.color(color);
+  paint.style(os::Paint::Fill);
+  m_surface->drawRect(rc, paint);
 }
 
 void Graphics::fillRegion(gfx::Color color, const gfx::Region& rgn)
@@ -321,7 +333,8 @@ public:
   void preProcessChar(const int index,
                       const int codepoint,
                       gfx::Color& fg,
-                      gfx::Color& bg) override {
+                      gfx::Color& bg,
+                      const gfx::Rect& charBounds) override {
     if (m_surface) {
       if (m_mnemonic &&
           // TODO use ICU library to lower unicode chars
@@ -344,11 +357,16 @@ public:
     if (!gfx::is_transparent(m_underscoreColor)) {
       // TODO underscore height = guiscale() should be configurable from ui::Theme
       int dy = 0;
-      if (m_font->type() == os::FontType::kTrueType) // TODO use other method to locate the underline
+      if (m_font->type() == os::FontType::FreeType) // TODO use other method to locate the underline
         dy += guiscale();
       gfx::Rect underscoreBounds(charBounds.x, charBounds.y+charBounds.h+dy,
                                  charBounds.w, guiscale());
-      m_surface->fillRect(m_underscoreColor, underscoreBounds);
+
+      os::Paint paint;
+      paint.color(m_underscoreColor);
+      paint.style(os::Paint::Fill);
+      m_surface->drawRect(underscoreBounds, paint);
+
       m_bounds |= underscoreBounds;
     }
   }
