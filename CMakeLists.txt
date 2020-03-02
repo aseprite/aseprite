@@ -1,4 +1,5 @@
 # Aseprite
+# Copyright (C) 2018-2020  Igara Studio S.A.
 # Copyright (C) 2001-2018  David Capello
 
 cmake_minimum_required(VERSION 3.4)
@@ -22,13 +23,6 @@ if(NOT CMAKE_BUILD_TYPE)
         None Debug Release RelWithDebInfo Profile."
       FORCE)
 endif()
-
-# Restrict configuration types to the selected build type.
-# Note: This needs to be done before the project command
-set(CMAKE_CONFIGURATION_TYPES "${CMAKE_BUILD_TYPE}" CACHE INTERNAL "internal")
-
-set(CMAKE_USER_MAKE_RULES_OVERRIDE ${CMAKE_CURRENT_SOURCE_DIR}/cmake/c_flag_overrides.cmake)
-set(CMAKE_USER_MAKE_RULES_OVERRIDE_CXX ${CMAKE_CURRENT_SOURCE_DIR}/cmake/cxx_flag_overrides.cmake)
 
 # Aseprite project
 project(aseprite C CXX)
