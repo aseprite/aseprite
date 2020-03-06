@@ -56,6 +56,8 @@
 #include "render/render.h"
 #include "ui/ui.h"
 
+#include <algorithm>
+
 namespace app {
 
 using namespace ui;
@@ -603,6 +605,8 @@ public:
       if (!m_editor->selectSliceBox(bounds) &&
           (bounds.w > 1 || bounds.h > 1)) {
         Slice* slice = new Slice;
+        slice->setName(getUniqueSliceName());
+
         SliceKey key(bounds);
         slice->insert(getFrame(), key);
 
@@ -623,6 +627,21 @@ public:
     // no-op, e.g. just change the set of selected slices).
     m_canceled = true;
   }
+
+private:
+
+#ifdef ENABLE_UI
+  std::string getUniqueSliceName() const {
+    std::string prefix = "Slice";
+    int max = 0;
+
+    for (Slice* slice : m_sprite->slices())
+      if (std::strncmp(slice->name().c_str(), prefix.c_str(), prefix.size()) == 0)
+        max = std::max(max, (int)std::strtol(slice->name().c_str()+prefix.size(), nullptr, 10));
+
+    return fmt::format("{} {}", prefix, max+1);
+  }
+#endif
 
 };
 
