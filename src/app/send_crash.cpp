@@ -58,7 +58,7 @@ void SendCrash::search()
   if (!m_dumpFilename.empty() &&
       base::is_file(m_dumpFilename)) {
     auto app = App::instance();
-    app->memoryDumpFilename(fn);
+    app->memoryDumpFilename(m_dumpFilename);
     app->showNotification(this);
   }
 
