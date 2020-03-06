@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -9,6 +10,7 @@
 #pragma once
 
 #include "app/notification_delegate.h"
+#include "app/task.h"
 
 #include <string>
 
@@ -16,6 +18,10 @@ namespace app {
 
   class SendCrash : public INotificationDelegate {
   public:
+    static std::string DefaultMemoryDumpFilename();
+
+    ~SendCrash();
+
     void search();
 
     virtual std::string notificationText() override;
@@ -25,6 +31,7 @@ namespace app {
     void onClickFilename();
     void onClickDevFilename();
 
+    Task m_task;
     std::string m_dumpFilename;
   };
 

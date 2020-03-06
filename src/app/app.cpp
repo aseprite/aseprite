@@ -606,7 +606,8 @@ crash::DataRecovery* App::dataRecovery() const
 #ifdef ENABLE_UI
 void App::showNotification(INotificationDelegate* del)
 {
-  m_mainWindow->showNotification(del);
+  if (m_mainWindow)
+    m_mainWindow->showNotification(del);
 }
 
 void App::showBackupNotification(bool state)
@@ -707,20 +708,6 @@ int app_get_color_to_clear_layer(Layer* layer)
     color = app::Color::fromMask();
 
   return color_utils::color_for_layer(color, layer);
-}
-
-std::string memory_dump_filename()
-{
-#ifdef _WIN32
-  static const char* kDefaultCrashName = PACKAGE "-crash-" VERSION ".dmp";
-
-  app::ResourceFinder rf;
-  rf.includeUserDir(kDefaultCrashName);
-  return rf.getFirstOrCreateDefault();
-
-#else
-  return "";
-#endif
 }
 
 } // namespace app
