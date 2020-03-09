@@ -16,7 +16,11 @@
 
 namespace app {
 
-  class SendCrash : public INotificationDelegate {
+  class SendCrash
+#ifdef ENABLE_UI
+    : public INotificationDelegate
+#endif
+  {
   public:
     static std::string DefaultMemoryDumpFilename();
 
@@ -24,13 +28,17 @@ namespace app {
 
     void search();
 
+#ifdef ENABLE_UI
+  public:                       // INotificationDelegate impl
     virtual std::string notificationText() override;
     virtual void notificationClick() override;
 
   private:
     void onClickFilename();
     void onClickDevFilename();
+#endif // ENABLE_UI
 
+  private:
     Task m_task;
     std::string m_dumpFilename;
   };

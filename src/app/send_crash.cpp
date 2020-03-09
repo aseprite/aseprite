@@ -59,7 +59,9 @@ void SendCrash::search()
       base::is_file(m_dumpFilename)) {
     auto app = App::instance();
     app->memoryDumpFilename(m_dumpFilename);
+#ifdef ENABLE_UI
     app->showNotification(this);
+#endif
   }
 
 #elif defined(__APPLE__)
@@ -93,7 +95,9 @@ void SendCrash::search()
                 m_dumpFilename = fn;
                 if (auto app = App::instance()) {
                   app->memoryDumpFilename(fn);
+#ifdef ENABLE_UI
                   app->showNotification(this);
+#endif
                 }
               });
           }
@@ -103,6 +107,8 @@ void SendCrash::search()
 
 #endif
 }
+
+#ifdef ENABLE_UI
 
 std::string SendCrash::notificationText()
 {
@@ -162,5 +168,7 @@ void SendCrash::onClickDevFilename()
 {
   base::launcher::open_file(m_dumpFilename);
 }
+
+#endif // ENABLE_UI
 
 } // namespace app
