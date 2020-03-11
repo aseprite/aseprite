@@ -628,7 +628,7 @@ again:
          fn.find('>') != std::string::npos ||
          fn.find('|') != std::string::npos);
       if (has_invalid_char) {
-        const char* invalid_chars = "/ \\ : * ? \" < > |";
+        const char* invalid_chars = ": * ? \" < > |";
 
         ui::Alert::show(
             fmt::format(
