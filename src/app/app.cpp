@@ -67,6 +67,7 @@
 #include "render/render.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
+#include "ver/info.h"
 
 #include <iostream>
 #include <memory>
@@ -514,7 +515,7 @@ App::~App()
     // no re-throw
   }
   catch (...) {
-    os::error_message("Error closing " PACKAGE ".\n(uncaught exception)");
+    os::error_message("Error closing the program.\n(uncaught exception)");
 
     // no re-throw
   }
@@ -626,7 +627,7 @@ void App::showBackupNotification(bool state)
 
 void App::updateDisplayTitleBar()
 {
-  std::string defaultTitle = PACKAGE " v" VERSION;
+  std::string defaultTitle = fmt::format("{} v{}", get_app_name(), get_app_version());
   std::string title;
 
   DocView* docView = UIContext::instance()->activeView();

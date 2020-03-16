@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -19,6 +19,8 @@
 #include "base/fs.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
+#include "fmt/format.h"
+#include "ver/info.h"
 
 #include <iostream>
 #include <memory>
@@ -27,12 +29,12 @@ namespace app {
 
 void PreviewCliDelegate::showHelp(const AppOptions& options)
 {
-  std::cout << "- Show " PACKAGE " CLI usage\n";
+  std::cout << fmt::format("- Show {} CLI usage\n", get_app_name());
 }
 
 void PreviewCliDelegate::showVersion()
 {
-  std::cout << "- Show " PACKAGE " version\n";
+  std::cout << fmt::format("- Show {} version\n", get_app_name());
 }
 
 void PreviewCliDelegate::uiMode()

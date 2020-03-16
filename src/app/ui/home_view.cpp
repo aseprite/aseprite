@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -33,6 +33,7 @@
 #include "ui/system.h"
 #include "ui/textbox.h"
 #include "ui/view.h"
+#include "ver/info.h"
 
 #ifdef ENABLE_NEWS
 #include "app/ui/news_listbox.h"
@@ -177,7 +178,7 @@ void HomeView::onCheckingUpdates()
 void HomeView::onUpToDate()
 {
   checkUpdate()->setText(
-    fmt::format(Strings::home_view_is_up_to_date(), PACKAGE));
+    fmt::format(Strings::home_view_is_up_to_date(), get_app_name()));
   checkUpdate()->setVisible(true);
 
   layout();
@@ -186,7 +187,8 @@ void HomeView::onUpToDate()
 void HomeView::onNewUpdate(const std::string& url, const std::string& version)
 {
   checkUpdate()->setText(
-    fmt::format(Strings::home_view_new_version_available(), PACKAGE, version));
+    fmt::format(Strings::home_view_new_version_available(),
+                get_app_name(), version));
   checkUpdate()->setUrl(url);
   checkUpdate()->setVisible(true);
   checkUpdate()->InitTheme.connect(

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -40,6 +40,7 @@
 #include "ui/size_hint_event.h"
 #include "ui/system.h"
 #include "ui/view.h"
+#include "ver/info.h"
 
 #include <algorithm>
 
@@ -314,7 +315,7 @@ void DataRecoveryView::fillListWith(const bool crashes)
     }
 
     std::string title = session->name();
-    if (session->version() != VERSION)
+    if (session->version() != get_app_version())
       title =
         fmt::format(Strings::recover_files_incompatible(),
                     title, session->version());

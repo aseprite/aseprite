@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -302,10 +302,11 @@ Widget* Menu::findItemById(const char* id)
     return result;
   for (auto child : children()) {
     if (child->type() == kMenuItemWidget) {
-      result = static_cast<MenuItem*>(child)
-        ->getSubmenu()->findItemById(id);
-      if (result)
-        return result;
+      if (Menu* submenu = static_cast<MenuItem*>(child)->getSubmenu()) {
+        result = submenu->findItemById(id);
+        if (result)
+          return result;
+      }
     }
   }
   return nullptr;

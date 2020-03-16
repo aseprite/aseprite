@@ -44,6 +44,7 @@
 #include "doc/tag.h"
 #include "render/render.h"
 #include "ui/alert.h"
+#include "ver/info.h"
 
 #include <iostream>
 
@@ -483,7 +484,7 @@ int App_get_isUIAvailable(lua_State* L)
 
 int App_get_version(lua_State* L)
 {
-  std::string ver = VERSION;
+  std::string ver = get_app_version();
   base::replace_string(ver, "-x64", ""); // Remove "-x64" suffix
   push_version(L, base::Version(ver));
   return 1;

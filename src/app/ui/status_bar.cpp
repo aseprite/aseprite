@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -46,6 +46,7 @@
 #include "os/font.h"
 #include "os/surface.h"
 #include "ui/ui.h"
+#include "ver/info.h"
 
 #include <algorithm>
 #include <cstdarg>
@@ -621,7 +622,7 @@ void StatusBar::showDefaultText()
   }
   else if (App::instance()->mainWindow()->isHomeSelected()) {
     setStatusText(0, "-- %s %s by David & Gaspar Capello -- Igara Studio --",
-                  PACKAGE, VERSION);
+                  get_app_name(), get_app_version());
   }
   else {
     clearText();

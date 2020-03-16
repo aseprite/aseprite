@@ -38,13 +38,6 @@ if(WIN32)
 endif()
 
 ######################################################################
-# Custom Aseprite website (for testing server-side)
-
-if(NOT "${CUSTOM_WEBSITE_URL}" STREQUAL "")
-  add_definitions(-DCUSTOM_WEBSITE_URL="${CUSTOM_WEBSITE_URL}")
-endif()
-
-######################################################################
 # With static libcurl
 
 if(REQUIRE_CURL AND NOT USE_SHARED_CURL AND CURL_STATICLIB)
@@ -106,6 +99,7 @@ add_subdirectory(flic)
 add_subdirectory(render)
 add_subdirectory(dio)
 add_subdirectory(ui)
+add_subdirectory(ver)
 
 if(REQUIRE_CURL)
   add_subdirectory(net)

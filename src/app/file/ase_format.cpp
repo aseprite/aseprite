@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -27,6 +27,7 @@
 #include "fixmath/fixmath.h"
 #include "fmt/format.h"
 #include "ui/alert.h"
+#include "ver/info.h"
 #include "zlib.h"
 
 #include <cstdio>
@@ -223,7 +224,7 @@ bool AseFormat::onPostLoad(FileOp* fop)
 
   // Forward Compatibility: In 1.1 we convert a file with layer groups
   // (saved with 1.2) as top level layers
-  std::string ver = VERSION;
+  std::string ver = get_app_version();
   bool flat = (ver[0] == '1' &&
                ver[1] == '.' &&
                ver[2] == '1');
@@ -240,7 +241,7 @@ bool AseFormat::onPostLoad(FileOp* fop)
             "<<Note: Layers inside groups will be converted to top level layers."
             "||&Yes||&No",
             base::get_file_name(fop->filename()),
-            PACKAGE, ver)) != 1) {
+            get_app_name(), ver)) != 1) {
       return false;
     }
     ase_ungroup_all(group);

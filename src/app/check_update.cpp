@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -19,6 +20,7 @@
 #include "base/launcher.h"
 #include "base/replace_string.h"
 #include "base/version.h"
+#include "ver/info.h"
 
 #include <ctime>
 #include <sstream>
@@ -202,7 +204,7 @@ void CheckUpdateThreadLauncher::checkForUpdates()
 
 void CheckUpdateThreadLauncher::showUI()
 {
-  std::string localVersionStr = VERSION;
+  std::string localVersionStr = get_app_version();
   base::replace_string(localVersionStr, "-x64", "");
   bool newVer = false;
 

@@ -19,8 +19,10 @@
 #include "base/bind.h"
 #include "base/fs.h"
 #include "base/launcher.h"
+#include "fmt/format.h"
 #include "ui/alert.h"
 #include "ui/system.h"
+#include "ver/info.h"
 
 #include "send_crash.xml.h"
 
@@ -30,9 +32,11 @@ namespace app {
 std::string SendCrash::DefaultMemoryDumpFilename()
 {
 #ifdef _WIN32
-  const char* kDefaultCrashName = PACKAGE "-crash-" VERSION ".dmp";
+  std::string kDefaultCrashName = fmt::format("{}-crash-{}.dmp",
+                                              get_app_name(),
+                                              get_app_version());
   ResourceFinder rf;
-  rf.includeUserDir(kDefaultCrashName);
+  rf.includeUserDir(kDefaultCrashName.c_str());
   return rf.getFirstOrCreateDefault();
 #else
   return std::string();
@@ -76,13 +80,13 @@ void SendCrash::search()
       std::string dir = rf.defaultFilename();
       if (base::is_directory(dir)) {
         std::vector<std::string> candidates;
-        int n = std::strlen(PACKAGE);
+        int n = std::strlen(get_app_name());
         for (const auto& fn : base::list_files(dir)) {
           // Cancel everything
           if (m_task.canceled())
             return;
 
-          if (base::utf8_icmp(PACKAGE, fn, n) == 0) {
+          if (base::utf8_icmp(get_app_name(), fn, n) == 0) {
             candidates.push_back(fn);
           }
         }
@@ -125,13 +129,13 @@ void SendCrash::notificationClick()
   app::gen::SendCrash dlg;
 
 #if _WIN32
-  // Only on Windows, if the current version is a "development"
-  // version (i.e. the VERSION macro contains the "dev" word), the
-  // .dmp file is useless for us. This is because we need the .exe +
-  // .pdb + source code used in the compilation process to make some
-  // sense of the .dmp file.
+  // Only on Windows, if the current version is a development version
+  // (i.e. the get_app_version() contains "-dev"), the .dmp
+  // file is useless for us. This is because we need the .exe + .pdb +
+  // source code used in the compilation process to make some sense of
+  // the .dmp file.
 
-  bool isDev = (std::string(VERSION).find("dev") != std::string::npos);
+  bool isDev = (std::string(get_app_version()).find("-dev") != std::string::npos);
   if (isDev) {
     dlg.official()->setVisible(false);
     dlg.devFilename()->setText(m_dumpFilename);
@@ -139,8 +143,8 @@ void SendCrash::notificationClick()
   }
   else
 #endif  // On other platforms the crash file might be useful even in
-        // the -dev version (e.g. on macOS it's a text file with stack
-        // traces).
+        // the "-dev" version (e.g. on macOS it's a text file with
+        // stack traces).
   {
     dlg.dev()->setVisible(false);
     dlg.filename()->setText(m_dumpFilename);

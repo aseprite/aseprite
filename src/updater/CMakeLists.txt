@@ -1,4 +1,5 @@
 # ASEPRITE
+# Copyright (C) 2020  Igara Studio S.A.
 # Copyright (C) 2001-2017  David Capello
 
 set(UPDATER_LIB_SOURCES
@@ -16,4 +17,5 @@ add_library(updater-lib ${UPDATER_LIB_SOURCES})
 target_link_libraries(updater-lib
   net-lib
   cfg-lib
+  ver-lib
   ${TINYXML_LIBRARY})

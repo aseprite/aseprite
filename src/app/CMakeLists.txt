@@ -615,6 +615,10 @@ add_library(app-lib
   ${scripting_files}
   ${generated_files})
 
+if(TARGET generated_version)
+  add_dependencies(app-lib generated_version)
+endif()
+
 target_link_libraries(app-lib
   laf-base
   cfg-lib
@@ -629,6 +633,7 @@ target_link_libraries(app-lib
   laf-ft
   laf-os
   ui-lib
+  ver-lib
   undo
   ${CMARK_LIBRARIES}
   ${TINYXML_LIBRARY}

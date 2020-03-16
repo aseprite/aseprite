@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -13,6 +14,8 @@
 #include "app/modules/gui.h"
 #include "app/ui/main_window.h"
 #include "base/bind.h"
+#include "fmt/format.h"
+#include "ver/info.h"
 
 #include "about.xml.h"
 
@@ -36,7 +39,7 @@ AboutCommand::AboutCommand()
 void AboutCommand::onExecute(Context* context)
 {
   gen::About window;
-  window.title()->setText(PACKAGE " v" VERSION);
+  window.title()->setText(fmt::format("{} v{}", get_app_name(), get_app_version()));
   window.licenses()->Click.connect(
     [&window]{
       window.closeWindow(nullptr);

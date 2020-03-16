@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -14,6 +14,7 @@
 #include "app/app.h"
 #include "base/fs.h"
 #include "base/string.h"
+#include "ver/info.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -178,7 +179,7 @@ void ResourceFinder::includeUserDir(const char* filename)
     // $HOME/Library/Application Support/Aseprite/filename
     addPath(
       base::join_path(
-        base::join_path(base::get_lib_app_support_path(), PACKAGE),
+        base::join_path(base::get_lib_app_support_path(), get_app_name()),
         filename).c_str());
 
   #else  // !__APPLE__
