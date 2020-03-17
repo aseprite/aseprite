@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -51,7 +52,7 @@ FontData::~FontData()
 
 os::Font* FontData::getFont(int size)
 {
-  if (m_type == os::FontType::kSpriteSheet)
+  if (m_type == os::FontType::SpriteSheet)
     size = 1;                   // Same size always
 
   // Use cache
@@ -63,10 +64,10 @@ os::Font* FontData::getFont(int size)
   os::Font* font = nullptr;
 
   switch (m_type) {
-    case os::FontType::kSpriteSheet:
+    case os::FontType::SpriteSheet:
       font = os::instance()->loadSpriteSheetFont(m_filename.c_str(), size);
       break;
-    case os::FontType::kTrueType: {
+    case os::FontType::FreeType: {
       font = os::instance()->loadTrueTypeFont(m_filename.c_str(), size);
       if (font)
         font->setAntialias(m_antialias);

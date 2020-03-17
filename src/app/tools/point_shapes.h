@@ -1,11 +1,13 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
 #include "app/util/wrap_point.h"
+
+#include "app/tools/ink.h"
 
 namespace app {
 namespace tools {
@@ -67,13 +69,24 @@ public:
       }
     }
 
+    if (int(loop->getTiledMode()) & int(TiledMode::X_AXIS)) {
+      int wrappedPatternOriginX = wrap_value(m_brush->patternOrigin().x, loop->sprite()->width()) % m_brush->bounds().w;
+      m_brush->setPatternOrigin(gfx::Point(wrappedPatternOriginX, m_brush->patternOrigin().y));
+      x = wrap_value(x, loop->sprite()->width());
+    }
+    if (int(loop->getTiledMode()) & int(TiledMode::Y_AXIS)) {
+      int wrappedPatternOriginY = wrap_value(m_brush->patternOrigin().y, loop->sprite()->height()) % m_brush->bounds().h;
+      m_brush->setPatternOrigin(gfx::Point(m_brush->patternOrigin().x, wrappedPatternOriginY));
+      y = wrap_value(y, loop->sprite()->height());
+    }
+
     loop->getInk()->prepareForPointShape(loop, m_firstPoint, x, y);
 
     for (auto scanline : *m_compressedImage) {
       int u = x+scanline.x;
+      loop->getInk()->prepareVForPointShape(loop, y+scanline.y);
       doInkHline(u, y+scanline.y, u+scanline.w-1, loop);
     }
-
     m_firstPoint = false;
   }
 

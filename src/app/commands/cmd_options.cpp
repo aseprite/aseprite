@@ -421,11 +421,10 @@ public:
 
     // Links
     locateFile()->Click.connect(base::Bind<void>(&OptionsWindow::onLocateConfigFile, this));
-#if _WIN32
-    locateCrashFolder()->Click.connect(base::Bind<void>(&OptionsWindow::onLocateCrashFolder, this));
-#else
-    locateCrashFolder()->setVisible(false);
-#endif
+    if (!App::instance()->memoryDumpFilename().empty())
+      locateCrashFolder()->Click.connect(base::Bind<void>(&OptionsWindow::onLocateCrashFolder, this));
+    else
+      locateCrashFolder()->setVisible(false);
 
     // Undo preferences
     limitUndo()->Click.connect(base::Bind<void>(&OptionsWindow::onLimitUndoCheck, this));
@@ -1017,7 +1016,8 @@ private:
   }
 
   void onLocateCrashFolder() {
-    app::launcher::open_folder(base::get_file_path(app::memory_dump_filename()));
+    app::launcher::open_folder(
+      base::get_file_path(App::instance()->memoryDumpFilename()));
   }
 
   void onLocateConfigFile() {

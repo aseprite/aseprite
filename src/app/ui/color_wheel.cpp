@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -275,12 +276,13 @@ void ColorWheel::onPaintSurfaceInBgThread(os::Surface* s,
   if (m_paintFlags & BottomBarFlag) {
     double hue = m_color.getHsvHue();
     double sat = m_color.getHsvSaturation();
-
+    os::Paint paint;
     for (int x=0; x<bottom.w && !stop; ++x) {
-      gfx::Color color = color_utils::color_for_ui(
-        app::Color::fromHsv(hue, sat, double(x) / double(bottom.w)));
+      paint.color(
+        color_utils::color_for_ui(
+          app::Color::fromHsv(hue, sat, double(x) / double(bottom.w))));
 
-      s->drawVLine(color, bottom.x+x, bottom.y, bottom.h);
+      s->drawRect(gfx::Rect(bottom.x+x, bottom.y, 1, bottom.h), paint);
     }
     if (stop)
       return;

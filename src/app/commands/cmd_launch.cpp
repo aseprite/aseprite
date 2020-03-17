@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -12,6 +13,7 @@
 #include "app/commands/params.h"
 #include "app/launcher.h"
 #include "base/fs.h"
+#include "ver/info.h"
 
 namespace app {
 
@@ -42,7 +44,7 @@ void LaunchCommand::onLoadParams(const Params& params)
   m_path = params.get("path");
 
   if (m_type == Url && !m_path.empty() && m_path[0] == '/') {
-    m_path = WEBSITE + m_path.substr(1);
+    m_path = std::string(get_app_url()) + m_path.substr(1);
   }
 }
 

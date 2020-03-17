@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -39,6 +39,8 @@
 #include <limits>
 #include <map>
 
+#define DOC_TRACE(...) // TRACEARGS
+
 namespace app {
 
 using namespace base;
@@ -61,10 +63,12 @@ Doc::Doc(Sprite* sprite)
     sprites().add(sprite);
 
   updateOSColorSpace(false);
+  DOC_TRACE("DOC: New", this);
 }
 
 Doc::~Doc()
 {
+  DOC_TRACE("DOC: Deleting", this);
   removeFromContext();
 }
 
@@ -77,6 +81,8 @@ void Doc::setContext(Context* ctx)
 
   m_ctx = ctx;
   if (ctx) {
+    DOC_TRACE("DOC: Removing as fully backed up", this);
+
     // Remove the flag that indicates that this doc is fully backed
     // up, because now we are inside a context, so the user can change
     // it again and the backup will be outdated.
@@ -263,6 +269,8 @@ void Doc::setInhibitBackup(const bool inhibitBackup)
 
 void Doc::markAsBackedUp()
 {
+  DOC_TRACE("DOC: Mark as fully backed up", this);
+
   m_flags |= kFullyBackedUp;
 }
 

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -67,6 +67,7 @@
 #include "render/render.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
+#include "ver/info.h"
 
 #include <iostream>
 #include <memory>
@@ -514,7 +515,7 @@ App::~App()
     // no re-throw
   }
   catch (...) {
-    os::error_message("Error closing " PACKAGE ".\n(uncaught exception)");
+    os::error_message("Error closing the program.\n(uncaught exception)");
 
     // no re-throw
   }
@@ -606,7 +607,8 @@ crash::DataRecovery* App::dataRecovery() const
 #ifdef ENABLE_UI
 void App::showNotification(INotificationDelegate* del)
 {
-  m_mainWindow->showNotification(del);
+  if (m_mainWindow)
+    m_mainWindow->showNotification(del);
 }
 
 void App::showBackupNotification(bool state)
@@ -625,7 +627,7 @@ void App::showBackupNotification(bool state)
 
 void App::updateDisplayTitleBar()
 {
-  std::string defaultTitle = PACKAGE " v" VERSION;
+  std::string defaultTitle = fmt::format("{} v{}", get_app_name(), get_app_version());
   std::string title;
 
   DocView* docView = UIContext::instance()->activeView();
@@ -636,7 +638,7 @@ void App::updateDisplayTitleBar()
   }
 
   title += defaultTitle;
-  os::instance()->defaultDisplay()->setTitleBar(title);
+  os::instance()->defaultDisplay()->setTitle(title);
 }
 
 InputChain& App::inputChain()
@@ -707,20 +709,6 @@ int app_get_color_to_clear_layer(Layer* layer)
     color = app::Color::fromMask();
 
   return color_utils::color_for_layer(color, layer);
-}
-
-std::string memory_dump_filename()
-{
-#ifdef _WIN32
-  static const char* kDefaultCrashName = PACKAGE "-crash-" VERSION ".dmp";
-
-  app::ResourceFinder rf;
-  rf.includeUserDir(kDefaultCrashName);
-  return rf.getFirstOrCreateDefault();
-
-#else
-  return "";
-#endif
 }
 
 } // namespace app

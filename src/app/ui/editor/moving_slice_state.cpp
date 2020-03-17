@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -92,6 +92,36 @@ bool MovingSliceState::onMouseMove(Editor* editor, MouseMessage* msg)
       rc.x += delta.x;
       rc.y += delta.y;
     }
+    // Move/resize 9-slices center
+    else if (m_hit.type() == EditorHit::SliceCenter) {
+      if (m_hit.border() & LEFT) {
+        rc.x += delta.x;
+        rc.w -= delta.x;
+        if (rc.w < 1) {
+          rc.x += rc.w-1;
+          rc.w = 1;
+        }
+      }
+      if (m_hit.border() & TOP) {
+        rc.y += delta.y;
+        rc.h -= delta.y;
+        if (rc.h < 1) {
+          rc.y += rc.h-1;
+          rc.h = 1;
+        }
+      }
+      if (m_hit.border() & RIGHT) {
+        rc.w += delta.x;
+        if (rc.w < 1)
+          rc.w = 1;
+      }
+      if (m_hit.border() & BOTTOM) {
+        rc.h += delta.y;
+        if (rc.h < 1)
+          rc.h = 1;
+      }
+    }
+    // Move/resize bounds
     else {
       if (m_hit.border() & LEFT) {
         rc.x += delta.x * (totalBounds.x2() - rc.x) / totalBounds.w;

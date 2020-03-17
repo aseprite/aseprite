@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -31,6 +31,7 @@
 #include "base/time.h"
 #include "doc/cancel_io.h"
 #include "fmt/format.h"
+#include "ver/info.h"
 
 namespace app {
 namespace crash {
@@ -170,7 +171,7 @@ void Session::create(base::pid pid)
   std::ofstream verf(FSTREAM_PATH(verFilename()));
 
   pidf << m_pid;
-  verf << VERSION;
+  verf << get_app_version();
 }
 
 void Session::close()

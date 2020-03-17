@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -18,11 +19,13 @@
 #include "app/app_menus.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/workspace.h"
+#include "fmt/format.h"
 #include "ui/entry.h"
 #include "ui/message.h"
 #include "ui/system.h"
 #include "ui/textbox.h"
 #include "ui/view.h"
+#include "ver/info.h"
 
 namespace app {
 
@@ -64,7 +67,8 @@ protected:
 
 DevConsoleView::DevConsoleView()
   : Box(VERTICAL)
-  , m_textBox("Welcome to " PACKAGE " v" VERSION " Console\n(Experimental)", LEFT)
+  , m_textBox(fmt::format("Welcome to {} v{} Console\n(Experimental)",
+                          get_app_name(), get_app_version()), LEFT)
   , m_label(">")
   , m_entry(new CommmandEntry)
   , m_engine(App::instance()->scriptEngine())

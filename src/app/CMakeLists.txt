@@ -1,5 +1,5 @@
 # Aseprite
-# Copyright (C) 2018-2019  Igara Studio S.A.
+# Copyright (C) 2018-2020  Igara Studio S.A.
 # Copyright (C) 2001-2018  David Capello
 
 # Generate a ui::Widget for each widget in a XML file
@@ -305,7 +305,6 @@ if(ENABLE_UI)
     modules/editors.cpp
     modules/gfx.cpp
     modules/gui.cpp
-    send_crash.cpp
     ui/app_menuitem.cpp
     ui/backup_indicator.cpp
     ui/browser_view.cpp
@@ -585,6 +584,7 @@ add_library(app-lib
   res/resources_loader.cpp
   resource_finder.cpp
   restore_visible_layers.cpp
+  send_crash.cpp
   shade.cpp
   site.cpp
   snap_to_grid.cpp
@@ -629,6 +629,10 @@ add_library(app-lib
   ${scripting_files}
   ${generated_files})
 
+if(TARGET generated_version)
+  add_dependencies(app-lib generated_version)
+endif()
+
 target_link_libraries(app-lib
   laf-base
   cfg-lib
@@ -643,6 +647,7 @@ target_link_libraries(app-lib
   laf-ft
   laf-os
   ui-lib
+  ver-lib
   undo
   ${CMARK_LIBRARIES}
   ${TINYXML_LIBRARY}

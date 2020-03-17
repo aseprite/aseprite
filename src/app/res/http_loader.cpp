@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -18,6 +19,7 @@
 #include "base/string.h"
 #include "net/http_request.h"
 #include "net/http_response.h"
+#include "ver/info.h"
 
 #include <fstream>
 
@@ -49,7 +51,7 @@ void HttpLoader::threadHttpRequest()
 
     LOG("HTTP: Sending http request to %s\n", m_url.c_str());
 
-    std::string dir = base::join_path(base::get_temp_path(), PACKAGE);
+    std::string dir = base::join_path(base::get_temp_path(), get_app_name());
     base::make_all_directories(dir);
 
     std::string fn = m_url;

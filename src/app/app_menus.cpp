@@ -29,9 +29,11 @@
 #include "base/bind.h"
 #include "base/fs.h"
 #include "base/string.h"
+#include "fmt/format.h"
 #include "os/menus.h"
 #include "os/system.h"
 #include "ui/ui.h"
+#include "ver/info.h"
 
 #include "tinyxml.h"
 
@@ -337,12 +339,6 @@ void AppMenus::reload()
 
   m_rootMenu.reset(loadMenuById(handle, "main_menu"));
 
-#if _DEBUG
-  // Add a warning element because the user is not using the last well-known gui.xml file.
-  if (GuiXml::instance()->version() != VERSION)
-    m_rootMenu->insertChild(0, createInvalidVersionMenuitem());
-#endif
-
   LOG("MENU: Main menu loaded.\n");
 
   m_tabPopupMenu.reset(loadMenuById(handle, "tab_popup_menu"));
@@ -633,20 +629,6 @@ Widget* AppMenus::convertXmlelemToMenuitem(TiXmlElement* elem)
   return menuitem;
 }
 
-Widget* AppMenus::createInvalidVersionMenuitem()
-{
-  AppMenuItem* menuitem = new AppMenuItem("WARNING!");
-  Menu* subMenu = new Menu();
-  subMenu->addChild(new AppMenuItem(PACKAGE " is using a customized gui.xml (maybe from your HOME directory)."));
-  subMenu->addChild(new AppMenuItem("You should update your customized gui.xml file to the new version to get"));
-  subMenu->addChild(new AppMenuItem("the latest commands available."));
-  subMenu->addChild(new MenuSeparator);
-  subMenu->addChild(new AppMenuItem("You can bypass this validation adding the correct version"));
-  subMenu->addChild(new AppMenuItem("number in <gui version=\"" VERSION "\"> element."));
-  menuitem->setSubmenu(subMenu);
-  return menuitem;
-}
-
 void AppMenus::applyShortcutToMenuitemsWithCommand(Command* command,
                                                    const Params& params,
                                                    const KeyPtr& key)
@@ -732,7 +714,7 @@ void AppMenus::createNativeMenus()
 
 #ifdef __APPLE__ // Create default macOS app menus (App ... Window)
   {
-    os::MenuItemInfo about("About " PACKAGE);
+    os::MenuItemInfo about(fmt::format("About {}", get_app_name()));
     auto native = get_native_shortcut_for_command(CommandId::About());
     about.shortcut = native.shortcut;
     about.execute = [native]{
@@ -758,10 +740,10 @@ void AppMenus::createNativeMenus()
       item->setEnabled(can_call_global_shortcut(&native));
     };
 
-    os::MenuItemInfo hide("Hide " PACKAGE, os::MenuItemInfo::Hide);
+    os::MenuItemInfo hide(fmt::format("Hide {}", get_app_name()), os::MenuItemInfo::Hide);
     hide.shortcut = os::Shortcut('h', os::kKeyCmdModifier);
 
-    os::MenuItemInfo quit("Quit " PACKAGE, os::MenuItemInfo::Quit);
+    os::MenuItemInfo quit(fmt::format("Quit {}", get_app_name()), os::MenuItemInfo::Quit);
     quit.shortcut = os::Shortcut('q', os::kKeyCmdModifier);
 
     os::Menu* appMenu = menus->createMenu();

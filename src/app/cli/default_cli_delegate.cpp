@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -26,6 +26,7 @@
 #include "doc/slice.h"
 #include "doc/sprite.h"
 #include "doc/tag.h"
+#include "ver/info.h"
 
 #ifdef ENABLE_SCRIPTING
   #include "app/app.h"
@@ -40,18 +41,20 @@ namespace app {
 void DefaultCliDelegate::showHelp(const AppOptions& options)
 {
   std::cout
-    << PACKAGE << " v" << VERSION << " | A pixel art program\n" << COPYRIGHT
+    << get_app_name() << " v" << get_app_version()
+    << " | A pixel art program\n"
+    << get_app_copyright()
     << "\n\nUsage:\n"
     << "  " << options.exeName() << " [OPTIONS] [FILES]...\n\n"
     << "Options:\n"
     << options.programOptions()
-    << "\nFind more information in " << PACKAGE
-    << " web site: " << WEBSITE << "\n\n";
+    << "\nFind more information in " << get_app_name()
+    << " web site: " << get_app_url() << "\n\n";
 }
 
 void DefaultCliDelegate::showVersion()
 {
-  std::cout << PACKAGE << ' ' << VERSION << '\n';
+  std::cout << get_app_name() << ' ' << get_app_version() << '\n';
 }
 
 void DefaultCliDelegate::afterOpenFile(const CliOpenFile& cof)

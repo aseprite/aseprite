@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -32,6 +32,21 @@ public:
   void prepareForPointShape(ToolLoop* loop, bool firstPoint, int x, int y) override {
     ASSERT(m_proc);
     m_proc->prepareForPointShape(loop, firstPoint, x, y);
+  }
+
+  void prepareVForPointShape(ToolLoop* loop, int y) override {
+    ASSERT(m_proc);
+    m_proc->prepareVForPointShape(loop, y);
+  }
+
+  void prepareUForPointShapeWholeScanline(ToolLoop* loop, int x1) override {
+    ASSERT(m_proc);
+    m_proc->prepareUForPointShapeWholeScanline(loop, x1);
+  }
+
+  void prepareUForPointShapeSlicedScanline(ToolLoop* loop, bool leftSlice, int x1) override {
+    ASSERT(m_proc);
+    m_proc->prepareUForPointShapeSlicedScanline(loop, leftSlice, x1);
   }
 
 protected:

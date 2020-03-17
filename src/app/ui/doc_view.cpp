@@ -394,13 +394,17 @@ void DocView::onAddLayer(DocEvent& ev)
   }
 }
 
+// TODO why note move this code to Editor::onBeforeRemoveLayer?
 void DocView::onBeforeRemoveLayer(DocEvent& ev)
 {
   Sprite* sprite = ev.sprite();
   Layer* layer = ev.layer();
 
-  // If the layer that was removed is the selected one
-  if (layer == m_editor->layer()) {
+  // If the layer that was removed is the selected one in the editor,
+  // or is an ancestor of the selected one.
+  if ((m_editor->layer() == layer) ||
+      (m_editor->layer() &&
+       m_editor->layer()->hasAncestor(layer))) {
     LayerGroup* parent = layer->parent();
     Layer* layer_select = NULL;
 

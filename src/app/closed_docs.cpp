@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -22,8 +22,6 @@ namespace app {
 ClosedDocs::ClosedDocs(const Preferences& pref)
   : m_done(false)
 {
-  CLOSEDOC_TRACE("CLOSEDOC: Init");
-
   if (pref.general.dataRecovery())
     m_dataRecoveryPeriodMSecs = int(1000.0*60.0*pref.general.dataRecoveryPeriod());
   else
@@ -33,6 +31,10 @@ ClosedDocs::ClosedDocs(const Preferences& pref)
     m_keepClosedDocAliveForMSecs = int(1000.0*60.0*pref.general.keepClosedSpriteOnMemoryFor());
   else
     m_keepClosedDocAliveForMSecs = 0;
+
+  CLOSEDOC_TRACE("CLOSEDOC: Init",
+                 "dataRecoveryPeriod", m_dataRecoveryPeriodMSecs,
+                 "keepClosedDocs", m_keepClosedDocAliveForMSecs);
 }
 
 ClosedDocs::~ClosedDocs()
@@ -123,15 +125,20 @@ void ClosedDocs::backgroundThread()
 
     for (auto it=m_docs.begin(); it != m_docs.end(); ) {
       const ClosedDoc& closedDoc = *it;
+      auto doc = closedDoc.doc;
 
       base::tick_t diff = now - closedDoc.timestamp;
       if (diff >= m_keepClosedDocAliveForMSecs) {
-        if (m_dataRecoveryPeriodMSecs == 0 ||
-            closedDoc.doc->isFullyBackedUp()) {
+        if (// If we backup process is disabled
+            m_dataRecoveryPeriodMSecs == 0 ||
+            // Or this document doesn't need a backup (e.g. an unmodified document)
+            !doc->needsBackup() ||
+            // Or the document already has the backup done
+            doc->isFullyBackedUp()) {
           // Finally delete the document (this is the place where we
           // delete all documents created/loaded by the user)
-          CLOSEDOC_TRACE("CLOSEDOC: [BG] Delete doc", closedDoc.doc);
-          delete closedDoc.doc;
+          CLOSEDOC_TRACE("CLOSEDOC: [BG] Delete doc", doc);
+          delete doc;
           it = m_docs.erase(it);
         }
         else {

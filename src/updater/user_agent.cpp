@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -8,6 +8,9 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+
+#include "updater/user_agent.h"
+#include "ver/info.h"
 
 #include <string>
 #include <sstream>
@@ -39,18 +42,7 @@ std::string getUserAgent()
   std::stringstream userAgent;
 
   // App name and version
-
-#ifndef PACKAGE
-#define PACKAGE ""
-#pragma message("warning: Define PACKAGE macro")
-#endif
-
-#ifndef VERSION
-#define VERSION ""
-#pragma message("warning: Define VERSION macro")
-#endif
-
-  userAgent << PACKAGE << "/" << VERSION << " (";
+  userAgent << get_app_name() << "/" << get_app_version() << " (";
 
 #if _WIN32
 

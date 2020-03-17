@@ -44,6 +44,7 @@
 #include "render/dithering.h"
 #include "render/ordered_dither.h"
 #include "render/render.h"
+#include "ver/info.h"
 
 #include <cstdio>
 #include <fstream>
@@ -1303,8 +1304,8 @@ void DocExporter::createDataFile(const Samples& samples,
   // "meta" property
   os << ",\n"
      << " \"meta\": {\n"
-     << "  \"app\": \"" << WEBSITE << "\",\n"
-     << "  \"version\": \"" << VERSION << "\",\n";
+     << "  \"app\": \"" << get_app_url() << "\",\n"
+     << "  \"version\": \"" << get_app_version() << "\",\n";
 
   if (!m_textureFilename.empty())
     os << "  \"image\": \""
