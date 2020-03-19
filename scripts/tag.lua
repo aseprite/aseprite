@@ -1,3 +1,4 @@
+-- Copyright (C) 2020  Igara Studio S.A.
 -- Copyright (C) 2018  David Capello
 --
 -- This file is released under the terms of the MIT license.
@@ -30,4 +31,8 @@ do
   assert(a.aniDir == AniDir.PING_PONG)
   a.aniDir = AniDir.FORWARD
   assert(a.aniDir == AniDir.FORWARD)
+
+  assert(a.color == Color(0, 0, 0))
+  a.color = Color(255, 0, 0)
+  assert(a.color == Color(255, 0, 0))
 end
