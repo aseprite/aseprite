@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -363,8 +363,12 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
         return result;
       });
 
+    win.remapWindow();
+    load_window_pos(&win, "ExportFile");
   again:;
-    if (!win.show())
+    const bool result = win.show();
+    save_window_pos(&win, "ExportFile");
+    if (!result)
       return;
 
     outputFilename = win.outputFilenameValue();
