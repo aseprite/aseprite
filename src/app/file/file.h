@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -187,6 +187,7 @@ namespace app {
     void sequenceGetAlpha(int index, int* a) const;
     Image* sequenceImage(PixelFormat pixelFormat, int w, int h);
     const Image* sequenceImage() const { return m_seq.image.get(); }
+    const Palette* sequenceGetPalette() const { return m_seq.palette; }
     bool sequenceGetHasAlpha() const {
       return m_seq.has_alpha;
     }

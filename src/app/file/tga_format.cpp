@@ -58,32 +58,32 @@ FileFormat* CreateTgaFormat()
 
 namespace {
 
+enum TgaImageType {
+  NoImage = 0,
+  UncompressedIndexed = 1,
+  UncompressedRgb = 2,
+  UncompressedGray = 3,
+  RleIndexed = 9,
+  RleRgb = 10,
+  RleGray = 11,
+};
+
+struct TgaHeader {
+  uint8_t  idLength;
+  uint8_t  palType;
+  uint8_t  imageType;
+  uint16_t palOrigin;
+  uint16_t palLength;
+  uint8_t  palDepth;
+  uint16_t xOrigin;
+  uint16_t yOrigin;
+  uint16_t width;
+  uint16_t height;
+  uint8_t  bitsPerPixel;
+  uint8_t  imageDescriptor;
+};
+
 class TgaDecoder {
-  struct Header {
-    uint8_t  idLength;
-    uint8_t  palType;
-    uint8_t  imageType;
-    uint16_t palOrigin;
-    uint16_t palLength;
-    uint8_t  palDepth;
-    uint16_t xOrigin;
-    uint16_t yOrigin;
-    uint16_t width;
-    uint16_t height;
-    uint8_t  bitsPerPixel;
-    uint8_t  imageDescriptor;
-  };
-
-  enum ImageType {
-    NoImage = 0,
-    UncompressedIndexed = 1,
-    UncompressedRgb = 2,
-    UncompressedGray = 3,
-    RleIndexed = 9,
-    RleRgb = 10,
-    RleGray = 11,
-  };
-
 public:
   TgaDecoder(FILE* f)
     : m_f(f)
@@ -463,7 +463,7 @@ private:
     const uint16_t v = fgetw(m_f);
     uint8_t alpha = 255;
     if (m_hasAlpha) {
-      if ((v & 0x8000) == 0)
+      if ((v & 0x8000) == 0)    // Transparent bit
         alpha = 0;
       ++m_alphaHistogram[alpha];
     }
@@ -474,18 +474,15 @@ private:
   }
 
   FILE* m_f;
-  Header m_header;
+  TgaHeader m_header;
   bool m_hasAlpha = false;
   Palette m_palette;
   ImageDataIterator m_iterator;
   std::vector<uint32_t> m_alphaHistogram;
 };
 
-}
+} // anonymous namespace
 
-// Loads a 256 color or 24 bit uncompressed TGA file, returning a bitmap
-// structure and storing the palette data in the specified palette (this
-// should be an array of at least 256 RGB structures).
 bool TgaFormat::onLoad(FileOp* fop)
 {
   FileHandle handle(open_file_with_exception(fop->filename(), "rb"));
@@ -551,86 +548,288 @@ bool TgaFormat::onLoad(FileOp* fop)
 }
 
 #ifdef ENABLE_SAVE
-// Writes a bitmap into a TGA file, using the specified palette (this
-// should be an array of at least 256 RGB structures).
+
+namespace {
+
+class TgaEncoder {
+public:
+  TgaEncoder(FILE* f)
+    : m_f(f) {
+  }
+
+  void prepareHeader(const Image* image,
+                     const Palette* palette,
+                     const bool isOpaque,
+                     const bool compressed) {
+    m_header.idLength = 0;
+    m_header.palType = 0;
+    m_header.imageType = NoImage;
+    m_header.palOrigin = 0;
+    m_header.palLength = 0;
+    m_header.palDepth = 0;
+    m_header.xOrigin = 0;
+    m_header.yOrigin = 0;
+    m_header.width = image->width();
+    m_header.height = image->height();
+    // TODO make these options configurable
+    m_header.bitsPerPixel = 0;
+    m_header.imageDescriptor = 0x20; // Top-to-bottom
+
+    switch (image->colorMode()) {
+      case ColorMode::RGB:
+        m_header.imageType = (compressed ? RleRgb: UncompressedRgb);
+        m_header.bitsPerPixel = (isOpaque ? 24: 32);
+        m_header.imageDescriptor |= (isOpaque ? 0: 8);
+        break;
+      case ColorMode::GRAYSCALE:
+        // TODO if the grayscale is not opaque, we should use RGB,
+        //      this could be done automatically in FileOp in a
+        //      generic way for all formats when FILE_SUPPORT_RGBA is
+        //      available and FILE_SUPPORT_GRAYA isn't.
+        m_header.imageType = (compressed ? RleGray: UncompressedGray);
+        m_header.bitsPerPixel = 8;
+        break;
+      case ColorMode::INDEXED:
+        ASSERT(palette);
+
+        m_header.imageType = (compressed ? RleIndexed: UncompressedIndexed);
+        m_header.bitsPerPixel = 8;
+        m_header.palType = 1;
+        m_header.palLength = palette->size();
+        if (palette->hasAlpha())
+          m_header.palDepth = 32;
+        else
+          m_header.palDepth = 24;
+        break;
+    }
+  }
+
+  bool needsPalette() const {
+    return (m_header.palType == 1);
+  }
+
+  void writeHeader() {
+    fputc(m_header.idLength, m_f);
+    fputc(m_header.palType, m_f);
+    fputc(m_header.imageType, m_f);
+    fputw(m_header.palOrigin, m_f);
+    fputw(m_header.palLength, m_f);
+    fputc(m_header.palDepth, m_f);
+    fputw(m_header.xOrigin, m_f);
+    fputw(m_header.yOrigin, m_f);
+    fputw(m_header.width, m_f);
+    fputw(m_header.height, m_f);
+    fputc(m_header.bitsPerPixel, m_f);
+    fputc(m_header.imageDescriptor, m_f);
+  }
+
+  void writeFooter() {
+    const char* tga2_footer = "\0\0\0\0\0\0\0\0TRUEVISION-XFILE.\0";
+    fwrite(tga2_footer, 1, 26, m_f);
+  }
+
+  void writePalette(const Palette* palette) {
+    ASSERT(palette->size() == m_header.palLength);
+
+    for (int i=0; i<palette->size(); ++i) {
+      color_t c = palette->getEntry(i);
+      fputc(rgba_getb(c), m_f);
+      fputc(rgba_getg(c), m_f);
+      fputc(rgba_getr(c), m_f);
+      if (m_header.palDepth == 32)
+        fputc(rgba_geta(c), m_f);
+    }
+  }
+
+  void writeImageData(FileOp* fop, const Image* image) {
+    switch (m_header.imageType) {
+
+      case UncompressedIndexed: {
+        for (int y=0; y<image->height(); ++y) {
+          for (int x=0; x<image->width(); ++x) {
+            color_t c = get_pixel_fast<IndexedTraits>(image, x, y);
+            fputc(c, m_f);
+          }
+          fop->setProgress(float(y) / float(image->height()));
+        }
+        break;
+      }
+
+      case UncompressedRgb: {
+        for (int y=0; y<image->height(); ++y) {
+          for (int x=0; x<image->width(); ++x) {
+            color_t c = get_pixel_fast<RgbTraits>(image, x, y);
+            fputc(rgba_getb(c), m_f);
+            fputc(rgba_getg(c), m_f);
+            fputc(rgba_getr(c), m_f);
+            fputc(rgba_geta(c), m_f);
+          }
+          fop->setProgress(float(y) / float(image->height()));
+        }
+        break;
+      }
+
+      case UncompressedGray: {
+        for (int y=0; y<image->height(); ++y) {
+          for (int x=0; x<image->width(); ++x) {
+            color_t c = get_pixel_fast<GrayscaleTraits>(image, x, y);
+            fputc(graya_getv(c), m_f);
+          }
+          fop->setProgress(float(y) / float(image->height()));
+        }
+        break;
+      }
+
+      case RleIndexed: {
+        for (int y=0; y<image->height(); ++y) {
+          writeRleScanline<IndexedTraits>(image, y, &TgaEncoder::fput8);
+          fop->setProgress(float(y) / float(image->height()));
+        }
+        break;
+      }
+
+      case RleRgb: {
+        ASSERT(m_header.bitsPerPixel == 16 ||
+               m_header.bitsPerPixel == 24 ||
+               m_header.bitsPerPixel == 32);
+
+        auto fput = (m_header.bitsPerPixel == 32 ? &TgaEncoder::fput32:
+                     m_header.bitsPerPixel == 24 ? &TgaEncoder::fput24:
+                                                   &TgaEncoder::fput16);
+
+        for (int y=0; y<image->height(); ++y) {
+          writeRleScanline<RgbTraits>(image, y, fput);
+          fop->setProgress(float(y) / float(image->height()));
+        }
+        break;
+      }
+
+      case RleGray: {
+        for (int y=0; y<image->height(); ++y) {
+          writeRleScanline<GrayscaleTraits>(image, y, &TgaEncoder::fput8);
+          fop->setProgress(float(y) / float(image->height()));
+        }
+        break;
+      }
+
+    }
+  }
+
+private:
+  template<typename ImageTraits>
+  void writeRleScanline(const Image* image, int y,
+                        void (TgaEncoder::*writePixel)(color_t)) {
+    int x = 0;
+    while (x < image->width()) {
+      int count, offset;
+      countRepeatedPixels<ImageTraits>(image, x, y, offset, count);
+
+      // Save a sequence of pixels with different colors
+      while (offset > 0) {
+        const int n = std::min(offset, 128);
+
+        fputc(n - 1, m_f);
+        for (int i=0; i<n; ++i) {
+          const color_t c = get_pixel_fast<ImageTraits>(image, x++, y);
+          (this->*writePixel)(c);
+        }
+        offset -= n;
+      }
+
+      // Save a sequence of pixels with the same color
+      while (count*ImageTraits::bytes_per_pixel > 1+ImageTraits::bytes_per_pixel) {
+        const int n = std::min(count, 128);
+        const color_t c = get_pixel_fast<ImageTraits>(image, x, y);
+
+#if _DEBUG
+        for (int i=0; i<n; ++i) {
+          ASSERT(get_pixel_fast<ImageTraits>(image, x+i, y) == c);
+        }
+#endif
+        fputc(0x80 | (n - 1), m_f);
+        (this->*writePixel)(c);
+        count -= n;
+        x += n;
+      }
+    }
+    ASSERT(x == image->width());
+  }
+
+  template<typename ImageTraits>
+  void countRepeatedPixels(const Image* image, int x0, int y,
+                           int& offset, int& count) {
+    for (int x=x0; x<image->width(); ) {
+      color_t p = get_pixel_fast<ImageTraits>(image, x, y);
+
+      int u = x+1;
+      for (; u<image->width(); ++u) {
+        color_t q = get_pixel_fast<ImageTraits>(image, u, y);
+        if (p != q)
+          break;
+      }
+
+      if ((u - x)*ImageTraits::bytes_per_pixel > 1+ImageTraits::bytes_per_pixel) {
+        offset = x - x0;
+        count = u - x;
+        return;
+      }
+
+      x = u;
+    }
+
+    offset = image->width() - x0;
+    count = 0;
+  }
+
+  void fput8(color_t c) {
+    fputc(c, m_f);
+  }
+
+  void fput16(color_t c) {
+    uint16_t v = 0;
+    fputw(v, m_f);
+  }
+
+  void fput24(color_t c) {
+    fputc(rgba_getb(c), m_f);
+    fputc(rgba_getg(c), m_f);
+    fputc(rgba_getr(c), m_f);
+  }
+
+  void fput32(color_t c) {
+    fputc(rgba_getb(c), m_f);
+    fputc(rgba_getg(c), m_f);
+    fputc(rgba_getr(c), m_f);
+    fputc(rgba_geta(c), m_f);
+  }
+
+  FILE* m_f;
+  TgaHeader m_header;
+};
+
+} // anonymous namespace
+
 bool TgaFormat::onSave(FileOp* fop)
 {
   const Image* image = fop->sequenceImage();
-  unsigned char image_palette[256][3];
-  int x, y, c, r, g, b;
-  int depth = (image->pixelFormat() == IMAGE_RGB) ? 32 : 8;
-  bool need_pal = (image->pixelFormat() == IMAGE_INDEXED)? true: false;
+  const Palette* palette = fop->sequenceGetPalette();
 
   FileHandle handle(open_file_with_exception_sync_on_close(fop->filename(), "wb"));
   FILE* f = handle.get();
 
-  fputc(0, f);                          // id length (no id saved)
-  fputc((need_pal) ? 1 : 0, f);         // palette type
-  // image type
-  fputc((image->pixelFormat() == IMAGE_RGB      ) ? 2 :
-        (image->pixelFormat() == IMAGE_GRAYSCALE) ? 3 :
-        (image->pixelFormat() == IMAGE_INDEXED  ) ? 1 : 0, f);
-  fputw(0, f);                         // first colour
-  fputw((need_pal) ? 256 : 0, f);      // number of colours
-  fputc((need_pal) ? 24 : 0, f);       // palette entry size
-  fputw(0, f);                         // left
-  fputw(0, f);                         // top
-  fputw(image->width(), f);            // width
-  fputw(image->height(), f);           // height
-  fputc(depth, f);                     // bits per pixel
+  TgaEncoder encoder(f);
 
-  // descriptor (bottom to top, 8-bit alpha)
-  fputc(
-    (image->pixelFormat() == IMAGE_RGB &&
-     !fop->document()->sprite()->isOpaque() ? 8: 0), f);
+  encoder.prepareHeader(image,
+                        palette,
+                        fop->document()->sprite()->isOpaque(),
+                        true);  // Always compressed?
+  encoder.writeHeader();
 
-  if (need_pal) {
-    for (y=0; y<256; y++) {
-      fop->sequenceGetColor(y, &r, &g, &b);
-      image_palette[y][2] = r;
-      image_palette[y][1] = g;
-      image_palette[y][0] = b;
-    }
-    fwrite(image_palette, 1, 768, f);
-  }
+  if (encoder.needsPalette())
+    encoder.writePalette(palette);
 
-  switch (image->pixelFormat()) {
-
-    case IMAGE_RGB:
-      for (y=image->height()-1; y>=0; y--) {
-        for (x=0; x<image->width(); x++) {
-          c = get_pixel(image, x, y);
-          fputc(rgba_getb(c), f);
-          fputc(rgba_getg(c), f);
-          fputc(rgba_getr(c), f);
-          fputc(rgba_geta(c), f);
-        }
-
-        fop->setProgress((float)(image->height()-y) / (float)(image->height()));
-      }
-      break;
-
-    case IMAGE_GRAYSCALE:
-      for (y=image->height()-1; y>=0; y--) {
-        for (x=0; x<image->width(); x++)
-          fputc(graya_getv(get_pixel(image, x, y)), f);
-
-        fop->setProgress((float)(image->height()-y) / (float)(image->height()));
-      }
-      break;
-
-    case IMAGE_INDEXED:
-      for (y=image->height()-1; y>=0; y--) {
-        for (x=0; x<image->width(); x++)
-          fputc(get_pixel(image, x, y), f);
-
-        fop->setProgress((float)(image->height()-y) / (float)(image->height()));
-      }
-      break;
-  }
-
-  const char* tga2_footer = "\0\0\0\0\0\0\0\0TRUEVISION-XFILE.\0";
-  fwrite(tga2_footer, 1, 26, f);
+  encoder.writeImageData(fop, image);
+  encoder.writeFooter();
 
   if (ferror(f)) {
     fop->setError("Error writing file.\n");
@@ -640,6 +839,7 @@ bool TgaFormat::onSave(FileOp* fop)
     return true;
   }
 }
-#endif
+
+#endif  // ENABLE_SAVE
 
 } // namespace app
