@@ -9,13 +9,20 @@
 #include "config.h"
 #endif
 
+#include "app/console.h"
+#include "app/context.h"
 #include "app/doc.h"
 #include "app/file/file.h"
 #include "app/file/file_format.h"
-#include "app/file/format_options.h"
+#include "app/file/tga_options.h"
 #include "base/cfile.h"
+#include "base/convert_to.h"
 #include "base/file_handle.h"
 #include "doc/doc.h"
+#include "ui/combobox.h"
+#include "ui/listitem.h"
+
+#include "tga_options.xml.h"
 
 namespace app {
 
@@ -42,13 +49,16 @@ class TgaFormat : public FileFormat {
       FILE_SUPPORT_RGBA |
       FILE_SUPPORT_GRAY |
       FILE_SUPPORT_INDEXED |
-      FILE_SUPPORT_SEQUENCES;
+      FILE_SUPPORT_SEQUENCES |
+      FILE_SUPPORT_GET_FORMAT_OPTIONS;
   }
 
   bool onLoad(FileOp* fop) override;
 #ifdef ENABLE_SAVE
   bool onSave(FileOp* fop) override;
 #endif
+
+  FormatOptionsPtr onAskUserForFormatOptions(FileOp* fop) override;
 };
 
 FileFormat* CreateTgaFormat()
@@ -102,6 +112,12 @@ public:
 
   bool isGray() const {
     return (m_header.imageType == UncompressedGray ||
+            m_header.imageType == RleGray);
+  }
+
+  bool isCompressed() const {
+    return (m_header.imageType == RleIndexed ||
+            m_header.imageType == RleRgb ||
             m_header.imageType == RleGray);
   }
 
@@ -538,6 +554,12 @@ bool TgaFormat::onLoad(FileOp* fop)
 
   decoder.postProcessImageData(image);
 
+  // Set default options for this TGA
+  auto opts = std::make_shared<TgaOptions>();
+  opts->bitsPerPixel(decoder.bitsPerPixel());
+  opts->compress(decoder.isCompressed());
+  fop->setLoadedFormatOptions(opts);
+
   if (ferror(f)) {
     fop->setError("Error reading file.\n");
     return false;
@@ -560,7 +582,8 @@ public:
   void prepareHeader(const Image* image,
                      const Palette* palette,
                      const bool isOpaque,
-                     const bool compressed) {
+                     const bool compressed,
+                     int bitsPerPixel) {
     m_header.idLength = 0;
     m_header.palType = 0;
     m_header.imageType = NoImage;
@@ -571,15 +594,22 @@ public:
     m_header.yOrigin = 0;
     m_header.width = image->width();
     m_header.height = image->height();
-    // TODO make these options configurable
     m_header.bitsPerPixel = 0;
+    // TODO make this option configurable
     m_header.imageDescriptor = 0x20; // Top-to-bottom
 
     switch (image->colorMode()) {
       case ColorMode::RGB:
         m_header.imageType = (compressed ? RleRgb: UncompressedRgb);
-        m_header.bitsPerPixel = (isOpaque ? 24: 32);
-        m_header.imageDescriptor |= (isOpaque ? 0: 8);
+        m_header.bitsPerPixel = (bitsPerPixel > 8 ?
+                                 bitsPerPixel:
+                                 (isOpaque ? 24: 32));
+        if (!isOpaque) {
+          switch (m_header.bitsPerPixel) {
+            case 16: m_header.imageDescriptor |= 1; break;
+            case 32: m_header.imageDescriptor |= 8; break;
+          }
+        }
         break;
       case ColorMode::GRAYSCALE:
         // TODO if the grayscale is not opaque, we should use RGB,
@@ -642,13 +672,19 @@ public:
   }
 
   void writeImageData(FileOp* fop, const Image* image) {
+    auto fput = (m_header.bitsPerPixel == 32 ? &TgaEncoder::fput32:
+                 m_header.bitsPerPixel == 24 ? &TgaEncoder::fput24:
+                 m_header.bitsPerPixel == 16 ? &TgaEncoder::fput16:
+                 m_header.bitsPerPixel == 15 ? &TgaEncoder::fput16:
+                                               &TgaEncoder::fput8);
+
     switch (m_header.imageType) {
 
       case UncompressedIndexed: {
         for (int y=0; y<image->height(); ++y) {
           for (int x=0; x<image->width(); ++x) {
             color_t c = get_pixel_fast<IndexedTraits>(image, x, y);
-            fputc(c, m_f);
+            fput8(c);
           }
           fop->setProgress(float(y) / float(image->height()));
         }
@@ -659,10 +695,7 @@ public:
         for (int y=0; y<image->height(); ++y) {
           for (int x=0; x<image->width(); ++x) {
             color_t c = get_pixel_fast<RgbTraits>(image, x, y);
-            fputc(rgba_getb(c), m_f);
-            fputc(rgba_getg(c), m_f);
-            fputc(rgba_getr(c), m_f);
-            fputc(rgba_geta(c), m_f);
+            (this->*fput)(c);
           }
           fop->setProgress(float(y) / float(image->height()));
         }
@@ -673,7 +706,7 @@ public:
         for (int y=0; y<image->height(); ++y) {
           for (int x=0; x<image->width(); ++x) {
             color_t c = get_pixel_fast<GrayscaleTraits>(image, x, y);
-            fputc(graya_getv(c), m_f);
+            fput8(graya_getv(c));
           }
           fop->setProgress(float(y) / float(image->height()));
         }
@@ -682,20 +715,17 @@ public:
 
       case RleIndexed: {
         for (int y=0; y<image->height(); ++y) {
-          writeRleScanline<IndexedTraits>(image, y, &TgaEncoder::fput8);
+          writeRleScanline<IndexedTraits>(image, y, fput);
           fop->setProgress(float(y) / float(image->height()));
         }
         break;
       }
 
       case RleRgb: {
-        ASSERT(m_header.bitsPerPixel == 16 ||
+        ASSERT(m_header.bitsPerPixel == 15 ||
+               m_header.bitsPerPixel == 16 ||
                m_header.bitsPerPixel == 24 ||
                m_header.bitsPerPixel == 32);
-
-        auto fput = (m_header.bitsPerPixel == 32 ? &TgaEncoder::fput32:
-                     m_header.bitsPerPixel == 24 ? &TgaEncoder::fput24:
-                                                   &TgaEncoder::fput16);
 
         for (int y=0; y<image->height(); ++y) {
           writeRleScanline<RgbTraits>(image, y, fput);
@@ -706,7 +736,7 @@ public:
 
       case RleGray: {
         for (int y=0; y<image->height(); ++y) {
-          writeRleScanline<GrayscaleTraits>(image, y, &TgaEncoder::fput8);
+          writeRleScanline<GrayscaleTraits>(image, y, fput);
           fop->setProgress(float(y) / float(image->height()));
         }
         break;
@@ -786,7 +816,15 @@ private:
   }
 
   void fput16(color_t c) {
-    uint16_t v = 0;
+    int r = rgba_getr(c);
+    int g = rgba_getg(c);
+    int b = rgba_getb(c);
+    int a = rgba_geta(c);
+    uint16_t v =
+      ((r>>3) << 10) |
+      ((g>>3) << 5) |
+      ((b>>3)) |
+      (m_header.bitsPerPixel == 16 && a >= 128 ? 0x8000: 0); // TODO configurable threshold
     fputw(v, m_f);
   }
 
@@ -817,12 +855,17 @@ bool TgaFormat::onSave(FileOp* fop)
   FileHandle handle(open_file_with_exception_sync_on_close(fop->filename(), "wb"));
   FILE* f = handle.get();
 
+  const auto tgaOptions = std::static_pointer_cast<TgaOptions>(fop->formatOptions());
   TgaEncoder encoder(f);
 
-  encoder.prepareHeader(image,
-                        palette,
-                        fop->document()->sprite()->isOpaque(),
-                        true);  // Always compressed?
+  encoder.prepareHeader(
+    image, palette,
+    // Is alpha channel required?
+    fop->document()->sprite()->isOpaque(),
+    // Compressed by default
+    (tgaOptions ? tgaOptions->compress(): true),
+    // Bits per pixel (0 means "calculate what is best")
+    (tgaOptions ? tgaOptions->bitsPerPixel(): 0));
   encoder.writeHeader();
 
   if (encoder.needsPalette())
@@ -841,5 +884,77 @@ bool TgaFormat::onSave(FileOp* fop)
 }
 
 #endif  // ENABLE_SAVE
+
+FormatOptionsPtr TgaFormat::onAskUserForFormatOptions(FileOp* fop)
+{
+  const bool origOpts = fop->hasFormatOptionsOfDocument();
+  auto opts = fop->formatOptionsOfDocument<TgaOptions>();
+#ifdef ENABLE_UI
+  if (fop->context() && fop->context()->isUIAvailable()) {
+    try {
+      auto& pref = Preferences::instance();
+
+      // If the TGA options are not original from a TGA file, we can
+      // use the default options from the preferences.
+      if (!origOpts) {
+        if (pref.isSet(pref.tga.bitsPerPixel))
+          opts->bitsPerPixel(pref.tga.bitsPerPixel());
+        if (pref.isSet(pref.tga.compress))
+          opts->compress(pref.tga.compress());
+      }
+
+      if (pref.tga.showAlert()) {
+        const bool isOpaque = fop->document()->sprite()->isOpaque();
+        const std::string defBitsPerPixel = (isOpaque ? "24": "32");
+        app::gen::TgaOptions win;
+
+        if (fop->document()->colorMode() == doc::ColorMode::RGB) {
+          // TODO implement a better way to create ListItems with values
+          auto newItem = [](const char* s) -> ui::ListItem* {
+                           auto item = new ui::ListItem(s);
+                           item->setValue(s);
+                           return item;
+                         };
+
+          win.bitsPerPixel()->addItem(newItem("16"));
+          win.bitsPerPixel()->addItem(newItem("24"));
+          win.bitsPerPixel()->addItem(newItem("32"));
+
+          std::string v = defBitsPerPixel;
+          if (opts->bitsPerPixel() > 0)
+            v = base::convert_to<std::string>(opts->bitsPerPixel());
+          win.bitsPerPixel()->setValue(v);
+        }
+        else {
+          win.bitsPerPixelLabel()->setVisible(false);
+          win.bitsPerPixel()->setVisible(false);
+        }
+        win.compress()->setSelected(opts->compress());
+
+        win.openWindowInForeground();
+
+        if (win.closer() == win.ok()) {
+          int bpp = base::convert_to<int>(win.bitsPerPixel()->getValue());
+
+          pref.tga.bitsPerPixel(bpp);
+          pref.tga.compress(win.compress()->isSelected());
+          pref.tga.showAlert(!win.dontShow()->isSelected());
+
+          opts->bitsPerPixel(pref.tga.bitsPerPixel());
+          opts->compress(pref.tga.compress());
+        }
+        else {
+          opts.reset();
+        }
+      }
+    }
+    catch (std::exception& e) {
+      Console::showException(e);
+      return std::shared_ptr<TgaOptions>(nullptr);
+    }
+  }
+#endif // ENABLE_UI
+  return opts;
+}
 
 } // namespace app

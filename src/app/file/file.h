@@ -158,6 +158,10 @@ namespace app {
       return opts;
     }
 
+    bool hasFormatOptionsOfDocument() const {
+      return (m_document->formatOptions() != nullptr);
+    }
+
     // Options from the document when it was loaded. This function
     // doesn't return nullptr.
     template<typename T>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2018-2019  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-2020  Igara Studio S.A. -->
 <!-- Copyright (C) 2014-2018  David Capello -->
 <preferences>
 
@@ -324,6 +324,11 @@
     <section id="svg">
       <option id="show_alert" type="bool" default="true" />
       <option id="pixel_scale" type="int" default="1" />
+    </section>
+    <section id="tga">
+      <option id="show_alert" type="bool" default="true" />
+      <option id="bits_per_pixel" type="int" default="0" />
+      <option id="compress" type="bool" default="true" />
     </section>
     <section id="webp">
       <option id="show_alert" type="bool" default="true" />

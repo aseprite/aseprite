@@ -894,12 +894,13 @@ private:
     exportAnimationInSequenceAlert()->resetWithDefaultValue();
     overwriteFilesOnExportAlert()->resetWithDefaultValue();
     overwriteFilesOnExportSpriteSheetAlert()->resetWithDefaultValue();
-    gifOptionsAlert()->resetWithDefaultValue();
-    jpegOptionsAlert()->resetWithDefaultValue();
-    svgOptionsAlert()->resetWithDefaultValue();
     advancedModeAlert()->resetWithDefaultValue();
     invalidFgBgColorAlert()->resetWithDefaultValue();
     runScriptAlert()->resetWithDefaultValue();
+    gifOptionsAlert()->resetWithDefaultValue();
+    jpegOptionsAlert()->resetWithDefaultValue();
+    svgOptionsAlert()->resetWithDefaultValue();
+    tgaOptionsAlert()->resetWithDefaultValue();
   }
 
   void onChangeBgScope() {
