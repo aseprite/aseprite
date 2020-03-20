@@ -2479,6 +2479,12 @@ void Editor::notifyScrollChanged()
   ASSERT(m_state);
   if (m_state)
     m_state->onScrollChange(this);
+
+  // Update status bar and mouse cursor
+  if (hasMouse()) {
+    updateStatusBar();
+    setCursor(ui::get_mouse_position());
+  }
 }
 
 void Editor::notifyZoomChanged()
