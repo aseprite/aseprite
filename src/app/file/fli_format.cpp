@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -76,8 +76,13 @@ bool FliFormat::onLoad(FileOp* fop)
   }
 
   // Size by frame
-  int w = header.width;
-  int h = header.height;
+  const int w = header.width;
+  const int h = header.height;
+  ASSERT(w > 0 && h > 0); // The decoder cannot return invalid widht/height values
+  if (w > 10000 || h > 10000) {
+    fop->setError("Image size too big: %dx%d not suported\n", w, h);
+    return false;
+  }
 
   // Create a temporal bitmap
   ImageRef bmp(Image::create(IMAGE_INDEXED, w, h));
