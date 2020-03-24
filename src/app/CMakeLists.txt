@@ -628,6 +628,7 @@ target_link_libraries(app-lib
   filters-lib
   fixmath-lib
   flic-lib
+  tga-lib
   laf-gfx
   render-lib
   laf-ft

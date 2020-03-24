@@ -63,3 +63,6 @@
 [submodule "third_party/lua"]
 	path = third_party/lua
 	url = https://github.com/aseprite/lua
+[submodule "src/tga"]
+	path = src/tga
+	url = https://github.com/aseprite/tga.git

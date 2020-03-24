@@ -19,6 +19,8 @@
 #include "base/convert_to.h"
 #include "base/file_handle.h"
 #include "doc/doc.h"
+#include "doc/image_bits.h"
+#include "tga/tga.h"
 #include "ui/combobox.h"
 #include "ui/listitem.h"
 
@@ -68,434 +70,53 @@ FileFormat* CreateTgaFormat()
 
 namespace {
 
-enum TgaImageType {
-  NoImage = 0,
-  UncompressedIndexed = 1,
-  UncompressedRgb = 2,
-  UncompressedGray = 3,
-  RleIndexed = 9,
-  RleRgb = 10,
-  RleGray = 11,
-};
-
-struct TgaHeader {
-  uint8_t  idLength;
-  uint8_t  palType;
-  uint8_t  imageType;
-  uint16_t palOrigin;
-  uint16_t palLength;
-  uint8_t  palDepth;
-  uint16_t xOrigin;
-  uint16_t yOrigin;
-  uint16_t width;
-  uint16_t height;
-  uint8_t  bitsPerPixel;
-  uint8_t  imageDescriptor;
-};
-
-class TgaDecoder {
+class TgaDecoderDelegate : public tga::DecoderDelegate {
 public:
-  TgaDecoder(FILE* f)
-    : m_f(f)
-    , m_palette(0, 0)
-    , m_alphaHistogram(256) {
-    readHeader();
-    if (m_header.palType == 1)
-      readPaletteData();
+  TgaDecoderDelegate(FileOp* fop) : m_fop(fop) { }
+  bool notifyProgress(double progress) override {
+    m_fop->setProgress(progress);
+    return !m_fop->isStop();
   }
-
-  int imageType() const { return m_header.imageType; }
-  int bitsPerPixel() const { return m_header.bitsPerPixel; }
-  bool hasPalette() const { return (m_header.palLength > 0); }
-  const Palette& palette() const { return m_palette; }
-  bool hasAlpha() const { return m_hasAlpha; }
-
-  bool isGray() const {
-    return (m_header.imageType == UncompressedGray ||
-            m_header.imageType == RleGray);
-  }
-
-  bool isCompressed() const {
-    return (m_header.imageType == RleIndexed ||
-            m_header.imageType == RleRgb ||
-            m_header.imageType == RleGray);
-  }
-
-  bool validPalType() const {
-    return
-      // Indexed with palette
-      ((m_header.imageType == UncompressedIndexed || m_header.imageType == RleIndexed) &&
-       m_header.bitsPerPixel == 8 &&
-       m_header.palType == 1) ||
-       // Grayscale without palette
-      ((m_header.imageType == UncompressedGray || m_header.imageType == RleGray) &&
-       m_header.bitsPerPixel == 8 &&
-       m_header.palType == 0) ||
-      // Non-indexed without palette
-      (m_header.bitsPerPixel > 8 &&
-       m_header.palType == 0);
-  }
-
-  bool getImageSpec(ImageSpec& spec) const {
-    switch (m_header.imageType) {
-
-      case UncompressedIndexed:
-      case RleIndexed:
-        if (m_header.bitsPerPixel != 8)
-          return false;
-        spec = ImageSpec(ColorMode::INDEXED,
-                         m_header.width,
-                         m_header.height);
-        return true;
-
-      case UncompressedRgb:
-      case RleRgb:
-        if (m_header.bitsPerPixel != 15 &&
-            m_header.bitsPerPixel != 16 &&
-            m_header.bitsPerPixel != 24 &&
-            m_header.bitsPerPixel != 32)
-          return false;
-        spec = ImageSpec(ColorMode::RGB,
-                         m_header.width,
-                         m_header.height);
-        return true;
-
-      case UncompressedGray:
-      case RleGray:
-        if (m_header.bitsPerPixel != 8)
-          return false;
-        spec = ImageSpec(ColorMode::GRAYSCALE,
-                         m_header.width,
-                         m_header.height);
-        return true;
-    }
-    return false;
-  }
-
-  bool readImageData(FileOp* fop, Image* image) {
-    // Bit 4 means right-to-left, else left-to-right
-    // Bit 5 means top-to-bottom, else bottom-to-top
-    m_iterator = ImageDataIterator(
-      image,
-      (m_header.imageDescriptor & 0x10) ? false: true,
-      (m_header.imageDescriptor & 0x20) ? true: false,
-      m_header.width,
-      m_header.height);
-
-    for (int y=0; y<m_header.height; ++y) {
-      switch (m_header.imageType) {
-
-        case UncompressedIndexed:
-          ASSERT(m_header.bitsPerPixel == 8);
-          if (readUncompressedData<uint8_t>(&TgaDecoder::fget8_as_index))
-            return true;
-          break;
-
-        case UncompressedRgb:
-          switch (m_header.bitsPerPixel) {
-            case 15:
-            case 16:
-              if (readUncompressedData<uint32_t>(&TgaDecoder::fget16_as_rgba))
-                return true;
-              break;
-            case 24:
-              if (readUncompressedData<uint32_t>(&TgaDecoder::fget24_as_rgba))
-                return true;
-              break;
-            case 32:
-              if (readUncompressedData<uint32_t>(&TgaDecoder::fget32_as_rgba))
-                return true;
-              break;
-            default:
-              ASSERT(false);
-              break;
-          }
-          break;
-
-        case UncompressedGray:
-          ASSERT(m_header.bitsPerPixel == 8);
-          if (readUncompressedData<uint16_t>(&TgaDecoder::fget8_as_gray))
-            return true;
-          break;
-
-        case RleIndexed:
-          ASSERT(m_header.bitsPerPixel == 8);
-          if (readRleData<uint8_t>(&TgaDecoder::fget8_as_gray))
-            return true;
-          break;
-
-        case RleRgb:
-          switch (m_header.bitsPerPixel) {
-            case 15:
-            case 16:
-              if (readRleData<uint32_t>(&TgaDecoder::fget16_as_rgba))
-                return true;
-              break;
-            case 24:
-              if (readRleData<uint32_t>(&TgaDecoder::fget24_as_rgba))
-                return true;
-              break;
-            case 32:
-              if (readRleData<uint32_t>(&TgaDecoder::fget32_as_rgba))
-                return true;
-              break;
-            default:
-              ASSERT(false);
-              break;
-          }
-          break;
-
-        case RleGray:
-          ASSERT(m_header.bitsPerPixel == 8);
-          if (readRleData<uint16_t>(&TgaDecoder::fget8_as_gray))
-            return true;
-          break;
-      }
-      fop->setProgress(float(y) / float(m_header.height));
-      if (fop->isStop())
-        break;
-    }
-
-    return true;
-  }
-
-  // Fix alpha channel for images with invalid alpha channel values
-  void postProcessImageData(Image* image) {
-    if (image->colorMode() != ColorMode::RGB ||
-        !m_hasAlpha)
-      return;
-
-    int count = 0;
-    for (int i=0; i<256; ++i)
-      if (m_alphaHistogram[i] > 0)
-        ++count;
-
-    // If all pixels are transparent (alpha=0), make all pixels opaque
-    // (alpha=255).
-    if (count == 1 && m_alphaHistogram[0] > 0) {
-      LockImageBits<RgbTraits> bits(image);
-      auto it = bits.begin(), end = bits.end();
-      for (; it != end; ++it) {
-        color_t c = *it;
-        *it = rgba(rgba_getr(c),
-                   rgba_getg(c),
-                   rgba_getb(c), 255);
-      }
-    }
-  }
-
 private:
-  class ImageDataIterator {
-  public:
-    ImageDataIterator() { }
-
-    ImageDataIterator(Image* image,
-                      bool leftToRight,
-                      bool topToBottom,
-                      int w, int h) {
-      m_image = image;
-      m_w = w;
-      m_h = h;
-      m_x = (leftToRight ? 0: w-1);
-      m_y = (topToBottom ? 0: h-1);
-      m_dx = (leftToRight ? +1: -1);
-      m_dy = (topToBottom ? +1: -1);
-      calcPtr();
-    }
-
-    template<typename T>
-    bool next(const T value) {
-      *((T*)m_ptr) = value;
-
-      m_x += m_dx;
-      m_ptr += m_dx*sizeof(T);
-
-      if ((m_dx < 0 && m_x < 0) ||
-          (m_dx > 0 && m_x == m_w)) {
-        m_x = (m_dx > 0 ? 0: m_w-1);
-        m_y += m_dy;
-        if ((m_dy < 0 && m_y < 0) ||
-            (m_dy > 0 && m_y == m_h)) {
-          return true;
-        }
-        calcPtr();
-      }
-      return false;
-    }
-
-  private:
-    void calcPtr() {
-      m_ptr = m_image->getPixelAddress(m_x, m_y);
-    }
-
-    Image* m_image;
-    int m_x, m_y;
-    int m_w, m_h;
-    int m_dx, m_dy;
-    uint8_t* m_ptr;
-  };
-
-  void readHeader() {
-    m_header.idLength = fgetc(m_f);
-    m_header.palType = fgetc(m_f);
-    m_header.imageType = fgetc(m_f);
-    m_header.palOrigin = fgetw(m_f);
-    m_header.palLength  = fgetw(m_f);
-    m_header.palDepth = fgetc(m_f);
-    m_header.xOrigin = fgetw(m_f);
-    m_header.yOrigin = fgetw(m_f);
-    m_header.width = fgetw(m_f);
-    m_header.height = fgetw(m_f);
-    m_header.bitsPerPixel = fgetc(m_f);
-    m_header.imageDescriptor = fgetc(m_f);
-
-    char imageId[256];
-    if (m_header.idLength > 0)
-      fread(imageId, 1, m_header.idLength, m_f);
-
-#if 0
-    // In the best case the "alphaBits" should be valid, but there are
-    // invalid TGA files out there which don't indicate the
-    // "alphaBits" correctly, so they could be 0 and use the alpha
-    // channel anyway on each pixel.
-    int alphaBits = (m_header.imageDescriptor & 15);
-    TRACEARGS("TGA: bitsPerPixel", (int)m_header.bitsPerPixel,
-              "alphaBits", alphaBits);
-    m_hasAlpha =
-      (m_header.bitsPerPixel == 32 && alphaBits == 8) ||
-      (m_header.bitsPerPixel == 16 && alphaBits == 1);
-#else
-    // So to detect if a 32bpp or 16bpp TGA image has alpha, we'll use
-    // the "m_alphaHistogram" to check if there are different alpha
-    // values. If there is only one alpha value (all 0 or all 255),
-    // we create an opaque image anyway.
-    m_hasAlpha =
-      (m_header.bitsPerPixel == 32) ||
-      (m_header.bitsPerPixel == 16);
-#endif
-  }
-
-  void readPaletteData() {
-    m_palette.resize(m_header.palLength);
-
-    for (int i=0; i<m_header.palLength; ++i) {
-      switch (m_header.palDepth) {
-
-        case 15:
-        case 16: {
-          const int c = fgetw(m_f);
-          m_palette.setEntry(
-            i,
-            doc::rgba(scale_5bits_to_8bits((c >> 10) & 0x1F),
-                      scale_5bits_to_8bits((c >> 5) & 0x1F),
-                      scale_5bits_to_8bits(c & 0x1F), 255));
-          break;
-        }
-
-        case 24:
-        case 32: {
-          const int b = fgetc(m_f);
-          const int g = fgetc(m_f);
-          const int r = fgetc(m_f);
-          int a;
-          if (m_header.palDepth == 32)
-            a = fgetc(m_f);
-          else
-            a = 255;
-          m_palette.setEntry(i, doc::rgba(r, g, b, a));
-          break;
-        }
-      }
-    }
-  }
-
-  template<typename T>
-  bool readUncompressedData(color_t (TgaDecoder::*readPixel)()) {
-    for (int x=0; x<m_header.width; ++x) {
-      if (m_iterator.next<T>((this->*readPixel)()))
-        return true;
-    }
-    return false;
-  }
-
-  // In the best case (TGA 2.0 spec) this should read just one
-  // scanline, but in old TGA versions (1.0) it was possible to save
-  // several scanlines with the same RLE data.
-  //
-  // Returns true when are are done.
-  template<typename T>
-  bool readRleData(color_t (TgaDecoder::*readPixel)()) {
-    for (int x=0; x<m_header.width && !feof(m_f); ) {
-      int c = fgetc(m_f);
-      if (c & 0x80) {
-        c = (c & 0x7f) + 1;
-        x += c;
-        const T pixel = (this->*readPixel)();
-        while (c-- > 0)
-          if (m_iterator.next<T>(pixel))
-            return true;
-      }
-      else {
-        ++c;
-        x += c;
-        while (c-- > 0) {
-          if (m_iterator.next<T>((this->*readPixel)()))
-            return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  color_t fget8_as_index() {
-    return fgetc(m_f);
-  }
-
-  color_t fget8_as_gray() {
-    return doc::graya(fgetc(m_f), 255);
-  }
-
-  color_t fget32_as_rgba() {
-    int b = fgetc(m_f);
-    int g = fgetc(m_f);
-    int r = fgetc(m_f);
-    uint8_t a = fgetc(m_f);
-    if (!m_hasAlpha)
-      a = 255;
-    else {
-      ++m_alphaHistogram[a];
-    }
-    return doc::rgba(r, g, b, a);
-  }
-
-  color_t fget24_as_rgba() {
-    const int b = fgetc(m_f);
-    const int g = fgetc(m_f);
-    const int r = fgetc(m_f);
-    return doc::rgba(r, g, b, 255);
-  }
-
-  color_t fget16_as_rgba() {
-    const uint16_t v = fgetw(m_f);
-    uint8_t alpha = 255;
-    if (m_hasAlpha) {
-      if ((v & 0x8000) == 0)    // Transparent bit
-        alpha = 0;
-      ++m_alphaHistogram[alpha];
-    }
-    return doc::rgba(scale_5bits_to_8bits((v >> 10) & 0x1F),
-                     scale_5bits_to_8bits((v >> 5) & 0x1F),
-                     scale_5bits_to_8bits(v & 0x1F),
-                     alpha);
-  }
-
-  FILE* m_f;
-  TgaHeader m_header;
-  bool m_hasAlpha = false;
-  Palette m_palette;
-  ImageDataIterator m_iterator;
-  std::vector<uint32_t> m_alphaHistogram;
+  FileOp* m_fop;
 };
+
+bool get_image_spec(const tga::Header& header, ImageSpec& spec)
+{
+  switch (header.imageType) {
+
+    case tga::UncompressedIndexed:
+    case tga::RleIndexed:
+      if (header.bitsPerPixel != 8)
+        return false;
+      spec = ImageSpec(ColorMode::INDEXED,
+                       header.width,
+                       header.height);
+      return true;
+
+    case tga::UncompressedRgb:
+    case tga::RleRgb:
+      if (header.bitsPerPixel != 15 &&
+          header.bitsPerPixel != 16 &&
+          header.bitsPerPixel != 24 &&
+          header.bitsPerPixel != 32)
+        return false;
+      spec = ImageSpec(ColorMode::RGB,
+                       header.width,
+                       header.height);
+      return true;
+
+    case tga::UncompressedGray:
+    case tga::RleGray:
+      if (header.bitsPerPixel != 8)
+        return false;
+      spec = ImageSpec(ColorMode::GRAYSCALE,
+                       header.width,
+                       header.height);
+      return true;
+  }
+  return false;
+}
 
 } // anonymous namespace
 
@@ -503,37 +124,38 @@ bool TgaFormat::onLoad(FileOp* fop)
 {
   FileHandle handle(open_file_with_exception(fop->filename(), "rb"));
   FILE* f = handle.get();
+  tga::StdioFileInterface finterface(f);
+  tga::Decoder decoder(&finterface);
 
-  TgaDecoder decoder(f);
-
-  ImageSpec spec(ColorMode::RGB, 1, 1);
-  if (!decoder.getImageSpec(spec)) {
-    fop->setError("Unsupported color depth in TGA file: %d bpp, image type=%d.\n",
-                  decoder.bitsPerPixel(),
-                  decoder.imageType());
+  tga::Header header;
+  if (!decoder.readHeader(header)) {
+    fop->setError("Invalid TGA header\n");
     return false;
   }
 
-  if (!decoder.validPalType()) {
-    fop->setError("Invalid palette type in TGA file.\n");
+  ImageSpec spec(ColorMode::RGB, 1, 1);
+  if (!get_image_spec(header, spec)) {
+    fop->setError("Unsupported color depth in TGA file: %d bpp, image type=%d.\n",
+                  header.bitsPerPixel,
+                  header.imageType);
     return false;
   }
 
   // Palette from TGA file
-  if (decoder.hasPalette()) {
-    const Palette& pal = decoder.palette();
+  if (header.hasColormap()) {
+    const tga::Colormap& pal = header.colormap;
     for (int i=0; i<pal.size(); ++i) {
-      color_t c = pal.getEntry(i);
+      tga::color_t c = pal[i];
       fop->sequenceSetColor(i,
-                            doc::rgba_getr(c),
-                            doc::rgba_getg(c),
-                            doc::rgba_getb(c));
-      if (doc::rgba_geta(c) < 255)
-        fop->sequenceSetAlpha(i, doc::rgba_geta(c));
+                            tga::getr(c),
+                            tga::getg(c),
+                            tga::getb(c));
+      if (tga::geta(c) < 255)
+        fop->sequenceSetAlpha(i, tga::geta(c));
     }
   }
   // Generate grayscale palette
-  else if (decoder.isGray()) {
+  else if (header.isGray()) {
     for (int i=0; i<256; ++i)
       fop->sequenceSetColor(i, i, i, i);
   }
@@ -547,17 +169,32 @@ bool TgaFormat::onLoad(FileOp* fop)
   if (!image)
     return false;
 
-  if (!decoder.readImageData(fop, image)) {
+  tga::Image tgaImage;
+  tgaImage.pixels = image->getPixelAddress(0, 0);
+  tgaImage.rowstride = image->getRowStrideSize();
+  tgaImage.bytesPerPixel = image->getRowStrideSize(1);
+
+  // Read image
+  TgaDecoderDelegate delegate(fop);
+  if (!decoder.readImage(header, tgaImage, &delegate)) {
     fop->setError("Error loading image data from TGA file.\n");
     return false;
   }
 
-  decoder.postProcessImageData(image);
+  if (header.isGray()) {
+    doc::LockImageBits<GrayscaleTraits> bits(image);
+    for (auto it=bits.begin(), end=bits.end(); it != end; ++it) {
+      *it = doc::graya(*it, 255);
+    }
+  }
+
+  if (decoder.hasAlpha())
+    fop->sequenceSetHasAlpha(true);
 
   // Set default options for this TGA
   auto opts = std::make_shared<TgaOptions>();
-  opts->bitsPerPixel(decoder.bitsPerPixel());
-  opts->compress(decoder.isCompressed());
+  opts->bitsPerPixel(header.bitsPerPixel);
+  opts->compress(header.isRle());
   fop->setLoadedFormatOptions(opts);
 
   if (ferror(f)) {
@@ -585,11 +222,11 @@ public:
                      const bool compressed,
                      int bitsPerPixel) {
     m_header.idLength = 0;
-    m_header.palType = 0;
-    m_header.imageType = NoImage;
-    m_header.palOrigin = 0;
-    m_header.palLength = 0;
-    m_header.palDepth = 0;
+    m_header.colormapType = 0;
+    m_header.imageType = tga::NoImage;
+    m_header.colormapOrigin = 0;
+    m_header.colormapLength = 0;
+    m_header.colormapDepth = 0;
     m_header.xOrigin = 0;
     m_header.yOrigin = 0;
     m_header.width = image->width();
@@ -600,7 +237,7 @@ public:
 
     switch (image->colorMode()) {
       case ColorMode::RGB:
-        m_header.imageType = (compressed ? RleRgb: UncompressedRgb);
+        m_header.imageType = (compressed ? tga::RleRgb: tga::UncompressedRgb);
         m_header.bitsPerPixel = (bitsPerPixel > 8 ?
                                  bitsPerPixel:
                                  (isOpaque ? 24: 32));
@@ -616,35 +253,35 @@ public:
         //      this could be done automatically in FileOp in a
         //      generic way for all formats when FILE_SUPPORT_RGBA is
         //      available and FILE_SUPPORT_GRAYA isn't.
-        m_header.imageType = (compressed ? RleGray: UncompressedGray);
+        m_header.imageType = (compressed ? tga::RleGray: tga::UncompressedGray);
         m_header.bitsPerPixel = 8;
         break;
       case ColorMode::INDEXED:
         ASSERT(palette);
 
-        m_header.imageType = (compressed ? RleIndexed: UncompressedIndexed);
+        m_header.imageType = (compressed ? tga::RleIndexed: tga::UncompressedIndexed);
         m_header.bitsPerPixel = 8;
-        m_header.palType = 1;
-        m_header.palLength = palette->size();
+        m_header.colormapType = 1;
+        m_header.colormapLength = palette->size();
         if (palette->hasAlpha())
-          m_header.palDepth = 32;
+          m_header.colormapDepth = 32;
         else
-          m_header.palDepth = 24;
+          m_header.colormapDepth = 24;
         break;
     }
   }
 
   bool needsPalette() const {
-    return (m_header.palType == 1);
+    return (m_header.colormapType == 1);
   }
 
   void writeHeader() {
     fputc(m_header.idLength, m_f);
-    fputc(m_header.palType, m_f);
+    fputc(m_header.colormapType, m_f);
     fputc(m_header.imageType, m_f);
-    fputw(m_header.palOrigin, m_f);
-    fputw(m_header.palLength, m_f);
-    fputc(m_header.palDepth, m_f);
+    fputw(m_header.colormapOrigin, m_f);
+    fputw(m_header.colormapLength, m_f);
+    fputc(m_header.colormapDepth, m_f);
     fputw(m_header.xOrigin, m_f);
     fputw(m_header.yOrigin, m_f);
     fputw(m_header.width, m_f);
@@ -659,14 +296,14 @@ public:
   }
 
   void writePalette(const Palette* palette) {
-    ASSERT(palette->size() == m_header.palLength);
+    ASSERT(palette->size() == m_header.colormapLength);
 
     for (int i=0; i<palette->size(); ++i) {
       color_t c = palette->getEntry(i);
       fputc(rgba_getb(c), m_f);
       fputc(rgba_getg(c), m_f);
       fputc(rgba_getr(c), m_f);
-      if (m_header.palDepth == 32)
+      if (m_header.colormapDepth == 32)
         fputc(rgba_geta(c), m_f);
     }
   }
@@ -680,7 +317,7 @@ public:
 
     switch (m_header.imageType) {
 
-      case UncompressedIndexed: {
+      case tga::UncompressedIndexed: {
         for (int y=0; y<image->height(); ++y) {
           for (int x=0; x<image->width(); ++x) {
             color_t c = get_pixel_fast<IndexedTraits>(image, x, y);
@@ -691,7 +328,7 @@ public:
         break;
       }
 
-      case UncompressedRgb: {
+      case tga::UncompressedRgb: {
         for (int y=0; y<image->height(); ++y) {
           for (int x=0; x<image->width(); ++x) {
             color_t c = get_pixel_fast<RgbTraits>(image, x, y);
@@ -702,7 +339,7 @@ public:
         break;
       }
 
-      case UncompressedGray: {
+      case tga::UncompressedGray: {
         for (int y=0; y<image->height(); ++y) {
           for (int x=0; x<image->width(); ++x) {
             color_t c = get_pixel_fast<GrayscaleTraits>(image, x, y);
@@ -713,7 +350,7 @@ public:
         break;
       }
 
-      case RleIndexed: {
+      case tga::RleIndexed: {
         for (int y=0; y<image->height(); ++y) {
           writeRleScanline<IndexedTraits>(image, y, fput);
           fop->setProgress(float(y) / float(image->height()));
@@ -721,7 +358,7 @@ public:
         break;
       }
 
-      case RleRgb: {
+      case tga::RleRgb: {
         ASSERT(m_header.bitsPerPixel == 15 ||
                m_header.bitsPerPixel == 16 ||
                m_header.bitsPerPixel == 24 ||
@@ -734,7 +371,7 @@ public:
         break;
       }
 
-      case RleGray: {
+      case tga::RleGray: {
         for (int y=0; y<image->height(); ++y) {
           writeRleScanline<GrayscaleTraits>(image, y, fput);
           fop->setProgress(float(y) / float(image->height()));
@@ -842,7 +479,7 @@ private:
   }
 
   FILE* m_f;
-  TgaHeader m_header;
+  tga::Header m_header;
 };
 
 } // anonymous namespace
