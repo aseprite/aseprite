@@ -31,6 +31,7 @@ enum class FileFormat {
   SVG_IMAGE,
   TARGA_IMAGE,
   WEBP_ANIMATION,
+  CSS_STYLE,
 };
 
 } // namespace dio
