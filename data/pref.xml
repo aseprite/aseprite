@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2018-2019  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-2020  Igara Studio S.A. -->
 <!-- Copyright (C) 2014-2018  David Capello -->
 <preferences>
 
@@ -316,6 +316,7 @@
       <option id="show_alert" type="bool" default="true" />
       <option id="interlaced" type="bool" default="false" />
       <option id="loop" type="bool" default="true" />
+      <option id="preserve_palette_order" type="bool" default="true" />
     </section>
     <section id="jpeg">
       <option id="show_alert" type="bool" default="true" />
