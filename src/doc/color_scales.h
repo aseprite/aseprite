@@ -24,7 +24,7 @@ namespace doc {
   }
 
   inline int scale_6bits_to_8bits(const int v) {
-    assert(v >= 0 && v < 64);
+    ASSERT(v >= 0 && v < 64);
     return (v << 2) | (v >> 4);
   }
 
