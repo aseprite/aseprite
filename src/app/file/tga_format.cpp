@@ -181,6 +181,11 @@ bool TgaFormat::onLoad(FileOp* fop)
     return false;
   }
 
+  // Fix alpha values for RGB images
+  decoder.postProcessImage(header, tgaImage);
+
+  // Post process gray image pixels (because we use grayscale images
+  // with alpha).
   if (header.isGray()) {
     doc::LockImageBits<GrayscaleTraits> bits(image);
     for (auto it=bits.begin(), end=bits.end(); it != end; ++it) {
