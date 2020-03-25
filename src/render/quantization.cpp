@@ -44,7 +44,8 @@ Palette* create_palette_from_sprite(
   const bool withAlpha,
   Palette* palette,
   TaskDelegate* delegate,
-  const bool newBlend)
+  const bool newBlend,
+  const bool calculateWithTransparent)
 {
   PaletteOptimizer optimizer;
 
@@ -75,8 +76,9 @@ Palette* create_palette_from_sprite(
   optimizer.calculate(
     palette,
     // Transparent color is needed if we have transparent layers
-    (sprite->backgroundLayer() &&
-     sprite->allLayersCount() == 1 ? -1: sprite->transparentColor()));
+    ((sprite->backgroundLayer() &&
+      sprite->allLayersCount() == 1) ||
+      !calculateWithTransparent)? -1: sprite->transparentColor());
 
   return palette;
 }

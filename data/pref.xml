@@ -320,6 +320,7 @@
       <option id="show_alert" type="bool" default="true" />
       <option id="interlaced" type="bool" default="false" />
       <option id="loop" type="bool" default="true" />
+      <option id="preserve_palette_order" type="bool" default="true" />
     </section>
     <section id="jpeg">
       <option id="show_alert" type="bool" default="true" />
