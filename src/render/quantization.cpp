@@ -348,7 +348,15 @@ Image* convert_pixel_format(
 // Creation of optimized palette for RGB images
 // by David Capello
 
-void PaletteOptimizer::feedWithImage(Image* image, bool withAlpha)
+void PaletteOptimizer::feedWithImage(const Image* image,
+                                     const bool withAlpha)
+{
+  feedWithImage(image, image->bounds(), withAlpha);
+}
+
+void PaletteOptimizer::feedWithImage(const Image* image,
+                                     const gfx::Rect& bounds,
+                                     const bool withAlpha)
 {
   uint32_t color;
 
@@ -360,8 +368,8 @@ void PaletteOptimizer::feedWithImage(Image* image, bool withAlpha)
 
     case IMAGE_RGB:
       {
-        const LockImageBits<RgbTraits> bits(image);
-        LockImageBits<RgbTraits>::const_iterator it = bits.begin(), end = bits.end();
+        const LockImageBits<RgbTraits> bits(image, bounds);
+        auto it = bits.begin(), end = bits.end();
 
         for (; it != end; ++it) {
           color = *it;
@@ -377,8 +385,8 @@ void PaletteOptimizer::feedWithImage(Image* image, bool withAlpha)
 
     case IMAGE_GRAYSCALE:
       {
-        const LockImageBits<RgbTraits> bits(image);
-        LockImageBits<RgbTraits>::const_iterator it = bits.begin(), end = bits.end();
+        const LockImageBits<GrayscaleTraits> bits(image, bounds);
+        auto it = bits.begin(), end = bits.end();
 
         for (; it != end; ++it) {
           color = *it;

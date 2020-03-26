@@ -889,6 +889,34 @@ bool GifFormat::onLoad(FileOp* fop)
 
 #ifdef ENABLE_SAVE
 
+// Our stragegy to encode GIF files depends of the sprite color mode:
+//
+// 1) If the sprite is indexed, we have two paths:
+//    * For opaque an opaque sprite we can save it as it is (with the
+//      same indexes/pixels and same color palette). This brings us
+//      the best possible to compress the GIF file (using the best
+//      disposal method to update only the differences between each
+//      frame).
+//    * For transparent sprites we offer to the user the option to
+//      preserve the original palette or not
+//      (m_preservePaletteOrders). If the palette must be preserve,
+//      some level of compression will be sacrificed.
+//
+// 2) For RGB sprites the palette is created on each frame depending
+//    on the updated rectangle between frames, i.e. each to new frame
+//    incorporates a minimal rectangular region with changes from the
+//    previous frame, we can calculate the palette required for this
+//    rectangle and use it as a local colormap for the frame (if each
+//    frame uses previous color in the palette there is no need to
+//    introduce a new palette).
+//
+// Note: In the following algorithm you will find the "pixel clearing"
+// term, this happens when we need to clear an opaque color with the
+// gif transparent bg color. This is the worst possible case, because
+// on transparent gif files, the only way to get the transparent color
+// (bg color) is using the RESTORE_BGCOLOR disposal method (so we lost
+// the chance to use DO_NOT_DISPOSE in these cases).
+//
 class GifEncoder {
 public:
   typedef int gifframe_t;
@@ -902,8 +930,7 @@ public:
     , m_hasBackground(m_sprite->isOpaque())
     , m_bitsPerPixel(1)
     , m_globalColormap(nullptr)
-    , m_globalColormapPalette(*(m_sprite->palette(0)))
-    , m_quantizeColormaps(false) {
+    , m_globalColormapPalette(*m_sprite->palette(0)) {
 
     const auto gifOptions = std::static_pointer_cast<GifOptions>(fop->formatOptions());
 
@@ -914,17 +941,23 @@ public:
     m_loop = (gifOptions->loop() ? 0: -1);
 
     if (m_sprite->pixelFormat() == PixelFormat::IMAGE_INDEXED) {
+      // For indexed and opaque sprite, we can preserve the exact
+      // palette order without lossing compression rate.
       if (m_hasBackground) {
         m_preservePaletteOrder = true;
       }
-      // Only for transparent-indexed images we can select if we
+      // Only for transparent indexed images the user can choose to
       // preserve or not the palette order.
       else {
         m_preservePaletteOrder = gifOptions->preservePaletteOrder();
       }
     }
-    else
+    // For RGB images we don't preserve the palette order (palettes
+    // will be generated as they are needed to optimize the file
+    // size).
+    else {
       m_preservePaletteOrder = false;
+    }
 
     m_lastFrameBounds = m_spriteBounds;
     m_lastDisposal = DisposalMethod::NONE;
@@ -943,18 +976,19 @@ public:
         m_sprite->getPalettes().size() == 1) {
       // If some layer has opacity < 255 or a different blend mode, we
       // need to create color palettes.
+      bool quantizeColormaps = false;
       for (const Layer* layer : m_sprite->allVisibleLayers()) {
         if (layer->isVisible() && layer->isImage()) {
           const LayerImage* imageLayer = static_cast<const LayerImage*>(layer);
           if (imageLayer->opacity() < 255 ||
               imageLayer->blendMode() != BlendMode::NORMAL) {
-            m_quantizeColormaps = true;
+            quantizeColormaps = true;
             break;
           }
         }
       }
 
-      if (!m_quantizeColormaps) {
+      if (!quantizeColormaps) {
         m_globalColormap = createColorMap(&m_globalColormapPalette);
         m_bgIndex = m_sprite->transparentColor();
       }
@@ -963,45 +997,75 @@ public:
     }
     else {
       m_bgIndex = 0;
-      m_quantizeColormaps = true;
     }
 
+    // This is the transparent index to use as "local transparent"
+    // index for each gif frame. In case that we use a global colormap
+    // (and we don't need to preserve the original palette), we can
+    // try to find a place for a global transparent index.
     m_transparentIndex = (m_hasBackground ? -1: m_bgIndex);
-
-    // INDEXED image without Background case: we need to know if 0 color is loaded in the palette:
-    // Color 0 will be used in the gif file composition when disposal method is DO_NOT_DISPOSE.
-    // You may think, "Why we do that? In INDEXED we never surpass 256 colors, and we
-    // simply replacing the entire frame with RESTORE_BGCOLOR is enought".
-    // Answer: because we want a tiny file size, replacing the entire frame, every frame
-    // can result in large file sizes. So, we will include the transparent color in
-    // the final palette, in our case, always the color zero (0).
     if (m_globalColormap) {
-      Palette newPalette(*m_sprite->palette(0));
+      // The variable m_globalColormap is != nullptr only on indexed images
+      ASSERT(m_sprite->pixelFormat() == IMAGE_INDEXED);
+
+      const Palette* pal = m_sprite->palette(0);
       bool maskColorFounded = false;
-      for (int i=0; i<newPalette.size(); i++) {
-        if (newPalette.getEntry(i) == 0) {
+      for (int i=0; i<pal->size(); i++) {
+        if (doc::rgba_geta(pal->getEntry(i)) == 0) {
           maskColorFounded = true;
           m_transparentIndex = i;
           break;
         }
       }
-      if (!maskColorFounded && !m_preservePaletteOrder && !m_hasBackground) {
-        Palette(0, 255).copyColorsTo(&newPalette);
-        render::create_palette_from_sprite(m_sprite,
-                                           0,
-                                           totalFrames()-1,
-                                           false,
-                                           &newPalette,
-                                           nullptr,
-                                           m_fop->newBlend(),
-                                           false);
+
+#if 0
+      // If the palette contains room for one extra color for the
+      // mask, we can use that index.
+      if (!maskColorFounded && pal->size() < 256) {
+        maskColorFounded = true;
+
+        Palette newPalette(*pal);
         newPalette.addEntry(0);
-        newPalette.copyColorsTo(&m_globalColormapPalette);
-        m_transparentIndex = m_globalColormapPalette.size() - 1;
+        ASSERT(newPalette.size() <= 256);
+
+        m_transparentIndex = newPalette.size() - 1;
+        m_globalColormapPalette = newPalette;
+        m_globalColormap = createColorMap(&m_globalColormapPalette);
+      }
+      else
+#endif
+      if (// If all colors are opaque/used in the sprite
+        !maskColorFounded &&
+        // We aren't obligated to preserve the original palette
+        !m_preservePaletteOrder &&
+        // And the sprite is transparent
+        !m_hasBackground) {
+        // We create a new palette with 255 colors + one extra entry
+        // for the transparent color
+        Palette newPalette(0, 255);
+        render::create_palette_from_sprite(
+          m_sprite,
+          0,
+          totalFrames()-1,
+          false,
+          &newPalette,
+          nullptr,
+          m_fop->newBlend(),
+          false); // Do not add the transparent color yet
+
+        // We will use the last palette entry (e.g. index=255) as the
+        // transparent index
+        newPalette.addEntry(0);
+        ASSERT(newPalette.size() <= 256);
+
+        m_transparentIndex = newPalette.size() - 1;
+        m_globalColormapPalette = newPalette;
         m_globalColormap = createColorMap(&m_globalColormapPalette);
       }
     }
 
+    // Create the 3 temporary images (previous/current/next) to
+    // compare pixels between them.
     for (int i=0; i<3; ++i)
       m_images[i].reset(Image::create(IMAGE_RGB,
                                       m_spriteBounds.w,
@@ -1049,15 +1113,15 @@ public:
       if (gifFrame+1 < nframes)
         renderFrame(*frame_it, m_nextImage);
 
-      gfx::Rect frameBounds(0, 0, m_spriteBounds.w, m_spriteBounds.h);
+      gfx::Rect frameBounds = m_spriteBounds;
       DisposalMethod disposal = DisposalMethod::DO_NOT_DISPOSE;
 
-      // Creation of the deltaImage (difference image result respect to
-      // current VS previous frame image).
-      // At the same time we must scan the next image,
-      // to check if some pixel turns to transparent (0),
-      // if the case, we need to force disposal method of the current image to RESTORE_BG.
-      // Further, at the same time, we must check if we can go without color zero (0).
+      // Creation of the deltaImage (difference image result respect
+      // to current VS previous frame image).  At the same time we
+      // must scan the next image, to check if some pixel turns to
+      // transparent (0), if the case, we need to force disposal
+      // method of the current image to RESTORE_BG.  Further, at the
+      // same time, we must check if we can go without color zero (0).
 
       calculateDeltaImageFrameBoundsDisposal(gifFrame, frameBounds, disposal);
 
@@ -1077,17 +1141,17 @@ private:
                                               DisposalMethod& disposal) {
     if (gifFrame == 0) {
       m_deltaImage.reset(Image::createCopy(m_currentImage));
-      frameBounds = gfx::Rect(0, 0, m_spriteBounds.w, m_spriteBounds.h);
+      frameBounds = m_spriteBounds;
+
       // The first frame (frame 0) is good to force to disposal = DO_NOT_DISPOSE,
-      // but when the next frame (frame 1) has a pixel clearing,
+      // but when the next frame (frame 1) has a "pixel clearing",
       // we must change disposal to RESTORE_BGCOLOR.
 
-      // Pixel clearing detection:
+      // "Pixel clearing" detection:
       if (!m_hasBackground) {
         const LockImageBits<RgbTraits> bits2(m_currentImage);
         const LockImageBits<RgbTraits> bits3(m_nextImage);
         typename LockImageBits<RgbTraits>::const_iterator it2, it3, end2, end3;
-        int i = 0;
         for (it2 = bits2.begin(), end2 = bits2.end(),
              it3 = bits3.begin(), end3 = bits3.end();
               it2 != end2 && it3 != end3; ++it2, ++it3) {
@@ -1095,7 +1159,6 @@ private:
             disposal = DisposalMethod::RESTORE_BGCOLOR;
             break;
           }
-          i++;
         }
       }
     }
@@ -1143,18 +1206,14 @@ private:
         // we enlarge the frameBounds where the color differences take place
         if (*it1 != *it2 || *it3 == 0) {
           *deltaIt = *it2;
-          if (x<x1)
-            x1 = x;
-          if (x>x2)
-            x2 = x;
-          if (y<y1)
-            y1 = y;
-          if (y>y2)
-            y2 = y;
+          if (x < x1) x1 = x;
+          if (x > x2) x2 = x;
+          if (y < y1) y1 = y;
+          if (y > y2) y2 = y;
         }
 
         // We need to change disposal mode DO_NOT_DISPOSE to RESTORE_BGCOLOR only
-        // if we found a pixel clearing in the next Image. RESTORE_BGCOLOR is
+        // if we found a "pixel clearing" in the next Image. RESTORE_BGCOLOR is
         // our way to clear pixels.
         if (*it2 != 0 && *it3 == 0) {
           disposal = DisposalMethod::RESTORE_BGCOLOR;
@@ -1186,7 +1245,7 @@ private:
       frameBounds = gfx::Rect(0, 0, 1, 1);
 
     m_lastDisposal = disposal;
-  };
+  }
 
   doc::frame_t totalFrames() const {
     return m_fop->roi().frames();
@@ -1286,27 +1345,15 @@ private:
                   const gfx::Rect& frameBounds,
                   const DisposalMethod disposal,
                   const bool fixDuration) {
-
-    std::unique_ptr<RgbMap> rgbmapRef;
-    Palette framePalette(*m_sprite->palette(0));
-    RgbMap* rgbmap(m_sprite->rgbMap(0));
-
-    if (m_globalColormap) {
-      m_globalColormapPalette.copyColorsTo(&framePalette);
-      rgbmapRef.reset(new RgbMap);
-      rgbmapRef.get()->regenerate(&framePalette, m_transparentIndex);
-    }
+    Palette framePalette;
+    if (m_globalColormap)
+      framePalette = m_globalColormapPalette;
     else
-      m_sprite->palette(frame)->copyColorsTo(&framePalette);
+      framePalette = calculatePalette(frameBounds, disposal);
 
+    RgbMap rgbmap;
+    rgbmap.regenerate(&framePalette, m_transparentIndex);
 
-    if (m_quantizeColormaps) {
-      calculatePalette(frameBounds, disposal).copyColorsTo(&framePalette);
-      rgbmapRef.reset(new RgbMap);
-      rgbmapRef.get()->regenerate(&framePalette, m_transparentIndex);
-    }
-
-    rgbmap = rgbmapRef.get();
     ImageRef frameImage(Image::create(IMAGE_INDEXED,
                                       frameBounds.w,
                                       frameBounds.h,
@@ -1340,10 +1387,9 @@ private:
               255,
               m_transparentIndex);
             if (i < 0)
-              i = rgbmap->mapColor(rgba_getr(color),
-                                   rgba_getg(color),
-                                   rgba_getb(color),
-                                   255);
+              i = rgbmap.mapColor(rgba_getr(color),
+                                  rgba_getg(color),
+                                  rgba_getb(color), 255);
           }
           else {
             if (m_transparentIndex >= 0)
@@ -1441,13 +1487,15 @@ private:
       GifFreeMapObject(colormap);
   }
 
-  Palette calculatePalette(const gfx::Rect& frameBounds, DisposalMethod disposal) {
+  Palette calculatePalette(const gfx::Rect& frameBounds,
+                           const DisposalMethod disposal) {
     // First, we must check the palette color count in m_deltaImage (our best shot
     // to find the smaller palette color count)
-    Palette pal(createOptimizedPalette(m_deltaImage.get(), m_deltaImage->bounds(), 257));
+    Palette pal(createOptimizedPalette(m_deltaImage.get(), m_deltaImage->bounds(), 256));
     if (pal.size() == 256) {
-      // Here, the palette has 256 colors, there is no place to include the 0 color ( remember,
-      // createOptimizedPalette do not create entry for it).
+      // Here the palette has 256 colors, there is no place to include
+      // the 0 color (createOptimizedPalette() doesn't create an entry
+      // for it).
       //
       // We have two paths:
       // 1- Giving a try to palette generation on m_currentImage in frameBouns limits.
@@ -1457,14 +1505,17 @@ private:
 
       // 1- Giving a try to palette generation on m_currentImage in frameBouns limits.
       // if disposal == RESTORE_BGCOLOR m_deltaImage already is a cropped copy of m_currentImage.
-      Palette auxPalette(pal);
+      Palette auxPalette;
       if (disposal == DisposalMethod::DO_NOT_DISPOSE)
-        createOptimizedPalette(m_currentImage, frameBounds, 257).copyColorsTo(&auxPalette);
+        auxPalette = createOptimizedPalette(m_currentImage, frameBounds, 257);
+      else
+        auxPalette = pal;
 
       if (auxPalette.size() <= 256) {
-        // We are fine with color count in m_currentImage contained in frameBouns (we got 256 or less colors):
+        // We are fine with color count in m_currentImage contained in
+        // frameBounds (we got 256 or less colors):
         m_transparentIndex = -1;
-        auxPalette.copyColorsTo(&pal);
+        pal = auxPalette;
         if (disposal == DisposalMethod::DO_NOT_DISPOSE)
           m_deltaImage.reset(crop_image(m_currentImage, frameBounds, 0));
       }
@@ -1492,15 +1543,16 @@ private:
         //  |_______________________________|
         //
 
-        int thicknessTop = m_deltaImage->bounds().h / 4;
-        int thicknessLeft = m_deltaImage->bounds().w / 4;
+        const gfx::Size deltaSize = m_deltaImage->size();
+        int thicknessTop = deltaSize.h / 4;
+        int thicknessLeft = deltaSize.w / 4;
         int lastThicknessTop = thicknessTop;
         int lastThicknessLeft = thicknessLeft;
         while (true) {
 
           render::PaletteOptimizer optimizer;
-          gfx::Rect auxRect(0, 0, m_deltaImage->bounds().w, thicknessTop);
-          optimizer.feedWithImage(Image::createCopy(crop_image(m_deltaImage.get(), auxRect, m_transparentIndex)), false);
+          gfx::Rect auxRect(0, 0, deltaSize.w, thicknessTop);
+          optimizer.feedWithImage(m_deltaImage.get(), auxRect, false);
           //      ----------------
           //     |________________|
           //     |   |        |   |
@@ -1508,8 +1560,8 @@ private:
           //     |   |________|   |
           //     |________________|
 
-          auxRect = gfx::Rect(0, m_deltaImage->bounds().h - thicknessTop, m_deltaImage->bounds().w, thicknessTop);
-          optimizer.feedWithImage(Image::createCopy(crop_image(m_deltaImage.get(), auxRect, m_transparentIndex)), false);
+          auxRect = gfx::Rect(0, deltaSize.h - thicknessTop, deltaSize.w, thicknessTop);
+          optimizer.feedWithImage(m_deltaImage.get(), auxRect, false);
           //      ----------------
           //     |    ________    |
           //     |   |        |   |
@@ -1517,8 +1569,8 @@ private:
           //     |___|________|___|
           //     |________________|
 
-          auxRect = gfx::Rect(0, thicknessTop, thicknessLeft, m_deltaImage->bounds().h - 2 * thicknessTop);
-          optimizer.feedWithImage(Image::createCopy(crop_image(m_deltaImage.get(), auxRect, m_transparentIndex)), false);
+          auxRect = gfx::Rect(0, thicknessTop, thicknessLeft, deltaSize.h - 2 * thicknessTop);
+          optimizer.feedWithImage(m_deltaImage.get(), auxRect, false);
           //      ----------------
           //     |____________    |
           //     |   |        |   |
@@ -1526,8 +1578,8 @@ private:
           //     |___|________|   |
           //     |________________|
 
-          auxRect = gfx::Rect(m_deltaImage->bounds().w - thicknessLeft, thicknessTop, thicknessLeft, m_deltaImage->bounds().h - 2 * thicknessTop);
-          optimizer.feedWithImage(Image::createCopy(crop_image(m_deltaImage.get(), auxRect, m_transparentIndex)), false);
+          auxRect = gfx::Rect(deltaSize.w - thicknessLeft, thicknessTop, thicknessLeft, deltaSize.h - 2 * thicknessTop);
+          optimizer.feedWithImage(m_deltaImage.get(), auxRect, false);
           //      ----------------
           //     |   _____________|
           //     |   |        |   |
@@ -1537,14 +1589,14 @@ private:
 
           if (optimizer.isHighPrecision()) {
             if (optimizer.highPrecisionSize() >= 220) { // 220 colors is an arbitrary number
-                lastThicknessTop = thicknessTop;
-                lastThicknessLeft = thicknessLeft;
+              lastThicknessTop = thicknessTop;
+              lastThicknessLeft = thicknessLeft;
               // Put the high precision colors to the palette:
               optimizer.calculate(&pal, 0);
               break;
             }
-            else if (m_deltaImage->bounds().h - thicknessTop * 2 <= m_deltaImage->bounds().h / 4 ||
-                     m_deltaImage->bounds().w - thicknessLeft * 2 <= m_deltaImage->bounds().w / 4) {
+            else if (deltaSize.h - thicknessTop * 2 <= deltaSize.h / 4 ||
+                     deltaSize.w - thicknessLeft * 2 <= deltaSize.w / 4) {
               // Put the high precision colors to the palette:
               optimizer.calculate(&pal, 0);
               break;
@@ -1553,8 +1605,8 @@ private:
             thicknessLeft += thicknessLeft / 2;
           }
           else {
-            if (thicknessTop <= m_deltaImage->bounds().h / 16 ||
-                thicknessLeft <= m_deltaImage->bounds().w / 16) {
+            if (thicknessTop <= deltaSize.h / 16 ||
+                thicknessLeft <= deltaSize.w / 16) {
               // TODO: we need to catch this LAST posibility.
               // Put the high precision colors to the palette:
               optimizer.calculate(&pal, 0);
@@ -1569,19 +1621,20 @@ private:
         }
         gfx::Rect centerRect(lastThicknessLeft,
                              lastThicknessTop,
-                             m_deltaImage->bounds().w - 1 - lastThicknessLeft,
-                             m_deltaImage->bounds().h - 1 - lastThicknessTop);
+                             deltaSize.w - 1 - lastThicknessLeft,
+                             deltaSize.h - 1 - lastThicknessTop);
         // Find the center colors (aproximation colors)
-        Palette centerPalette(createOptimizedPalette(m_deltaImage.get(), centerRect, 255 - pal.size()));
-        // Adding the center colors to pal
+        Palette centerPalette(
+          createOptimizedPalette(m_deltaImage.get(),
+                                 centerRect, 255 - pal.size()));
+        // Adding the center colors to pal + transparent color
         for (int i=0; i < centerPalette.size(); i++)
           pal.addEntry(centerPalette.getEntry(i));
-        // Add the transparent color:
         pal.addEntry(0);
         m_transparentIndex = pal.size() - 1;
       }
     }
-    // We are fine, we got 255 or less:
+    // We are fine, we got 255 or less, there is room for the transparent color
     else if (pal.size() <= 255) {
       pal.addEntry(0);
       m_transparentIndex = pal.size() - 1;
@@ -1589,10 +1642,12 @@ private:
     return pal;
   }
 
-  Palette createOptimizedPalette(Image* image, gfx::Rect bounds, int ncolors = 256) {
+  static Palette createOptimizedPalette(const Image* image,
+                                        const gfx::Rect& bounds,
+                                        const int ncolors) {
     render::PaletteOptimizer optimizer;
 
-    // Feed the palette optimizer with pixels inside frameBounds
+    // Feed the palette optimizer with pixels inside the given bounds
     for (const auto& color : LockImageBits<RgbTraits>(image, bounds)) {
       if (rgba_geta(color) >= 128) // Note: the mask color won't be part of the final palette
         optimizer.feedWithRgbaColor(
@@ -1651,9 +1706,10 @@ private:
   int m_bgIndex;
   int m_transparentIndex;
   int m_bitsPerPixel;
+  // Global palette to use on all frames, or nullptr in case that we
+  // have to quantize the palette on each frame.
   ColorMapObject* m_globalColormap;
   Palette m_globalColormapPalette;
-  bool m_quantizeColormaps;
   bool m_interlaced;
   int m_loop;
   bool m_preservePaletteOrder;

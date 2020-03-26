@@ -1,5 +1,6 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2017 David Capello
+// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -20,6 +21,11 @@
 namespace doc {
 
 using namespace gfx;
+
+Palette::Palette()
+  : Palette(0, 256)
+{
+}
 
 Palette::Palette(frame_t frame, int ncolors)
   : Object(ObjectType::Palette)
@@ -55,6 +61,18 @@ Palette::Palette(const Palette& palette, const Remap& remap)
 
 Palette::~Palette()
 {
+}
+
+Palette& Palette::operator=(const Palette& that)
+{
+  m_frame = that.m_frame;
+  m_colors = that.m_colors;
+  m_names = that.m_names;
+  m_filename = that.m_filename;
+  m_comment = that.m_comment;
+
+  ++m_modifications;
+  return *this;
 }
 
 Palette* Palette::createGrayscale()

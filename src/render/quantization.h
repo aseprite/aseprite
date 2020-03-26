@@ -28,7 +28,11 @@ namespace render {
 
   class PaletteOptimizer {
   public:
-    void feedWithImage(doc::Image* image, bool withAlpha);
+    void feedWithImage(const doc::Image* image,
+                       const bool withAlpha);
+    void feedWithImage(const doc::Image* image,
+                       const gfx::Rect& bounds,
+                       const bool withAlpha);
     void feedWithRgbaColor(doc::color_t color);
     void calculate(doc::Palette* palette, int maskIndex);
     bool isHighPrecision() { return m_histogram.isHighPrecision(); }
