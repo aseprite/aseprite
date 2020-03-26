@@ -7,8 +7,10 @@
 assert(string.sub(tostring(app.version), 1, 1) == "1")
 assert(string.sub(tostring(app.version), 2, 2) == ".")
 assert(app.version.major == 1)
-assert(app.version.minor >= 2)
-assert(app.version > Version("1.2.10-beta4"))
+
+-- We cannot test the specific app.version from the master branch
+-- because it's "1.x-dev" (which is converted to "1.0-dev" as Version object)
+--assert(app.version > Version("1.2.10-beta4"))
 
 assert(Version("1") == Version("1"))
 assert(Version("1.1") > Version("1"))
