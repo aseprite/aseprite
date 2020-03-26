@@ -22,6 +22,11 @@ namespace doc {
 
 using namespace gfx;
 
+Palette::Palette()
+  : Palette(0, 256)
+{
+}
+
 Palette::Palette(frame_t frame, int ncolors)
   : Object(ObjectType::Palette)
 {
@@ -56,6 +61,18 @@ Palette::Palette(const Palette& palette, const Remap& remap)
 
 Palette::~Palette()
 {
+}
+
+Palette& Palette::operator=(const Palette& that)
+{
+  m_frame = that.m_frame;
+  m_colors = that.m_colors;
+  m_names = that.m_names;
+  m_filename = that.m_filename;
+  m_comment = that.m_comment;
+
+  ++m_modifications;
+  return *this;
 }
 
 Palette* Palette::createGrayscale()
