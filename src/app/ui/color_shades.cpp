@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -28,8 +28,8 @@
 #include "ui/paint_event.h"
 #include "ui/size_hint_event.h"
 #include "ui/system.h"
+#include <algorithm>
 
-#include <limits>
 
 namespace app {
 
@@ -147,11 +147,14 @@ bool ColorShades::onProcessMessage(ui::Message* msg)
       if (m_hotIndex >= 0 &&
           m_hotIndex < int(m_shade.size())) {
         switch (m_click) {
-          case ClickEntries:
-            Click();
+          case ClickEntries: {
+            ClickEvent ev(static_cast<ui::MouseMessage*>(msg)->button());
+            Click(ev);
+
             m_hotIndex = -1;
             invalidate();
             break;
+          }
           case DragAndDropEntries:
             m_dragIndex = m_hotIndex;
             m_dropBefore = false;
@@ -164,7 +167,10 @@ bool ColorShades::onProcessMessage(ui::Message* msg)
     case ui::kMouseUpMessage: {
       if (m_click == ClickWholeShade) {
         setSelected(true);
-        Click();
+
+        ClickEvent ev(static_cast<ui::MouseMessage*>(msg)->button());
+        Click(ev);
+
         closeWindow();
       }
 

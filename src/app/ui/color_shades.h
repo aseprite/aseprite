@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -11,6 +11,7 @@
 
 #include "app/shade.h"
 #include "obs/signal.h"
+#include "ui/mouse_button.h"
 #include "ui/widget.h"
 
 namespace doc {
@@ -41,7 +42,15 @@ namespace app {
 
     int getHotEntry() const { return m_hotIndex; }
 
-    obs::signal<void()> Click;
+    class ClickEvent {
+    public:
+      ClickEvent(ui::MouseButton button) : m_button(button) { }
+      ui::MouseButton button() const { return m_button; }
+    private:
+      ui::MouseButton m_button;
+    };
+
+    obs::signal<void(ClickEvent&)> Click;
 
   private:
     void onInitTheme(ui::InitThemeEvent& ev) override;

@@ -408,7 +408,7 @@ void ColorPopup::onColorHexEntryChange(const app::Color& color)
     m_disableHexUpdate = false;
 }
 
-void ColorPopup::onSelectOldColor()
+void ColorPopup::onSelectOldColor(ColorShades::ClickEvent&)
 {
   Shade shade = m_oldAndNew.getShade();
   int hot = m_oldAndNew.getHotEntry();

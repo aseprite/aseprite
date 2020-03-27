@@ -53,7 +53,7 @@ namespace app {
     void onMakeFixed() override;
     void onColorSlidersChange(ColorSlidersChangeEvent& ev);
     void onColorHexEntryChange(const app::Color& color);
-    void onSelectOldColor();
+    void onSelectOldColor(ColorShades::ClickEvent& ev);
     void onSimpleColorClick();
     void onColorTypeClick();
     void onPaletteChange();

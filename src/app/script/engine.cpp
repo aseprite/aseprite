@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -26,6 +26,7 @@
 #include "doc/blend_mode.h"
 #include "doc/color_mode.h"
 #include "filters/target.h"
+#include "ui/mouse_button.h"
 
 #include <fstream>
 #include <sstream>
@@ -339,6 +340,17 @@ Engine::Engine()
   setfield_integer(L, "RGB",   TARGET_RED_CHANNEL | TARGET_GREEN_CHANNEL | TARGET_BLUE_CHANNEL);
   setfield_integer(L, "RGBA",   TARGET_RED_CHANNEL | TARGET_GREEN_CHANNEL | TARGET_BLUE_CHANNEL | TARGET_ALPHA_CHANNEL);
   setfield_integer(L, "GRAYA",   TARGET_GRAY_CHANNEL | TARGET_ALPHA_CHANNEL);
+  lua_pop(L, 1);
+
+  lua_newtable(L);
+  lua_pushvalue(L, -1);
+  lua_setglobal(L, "MouseButton");
+  setfield_integer(L, "NONE",   (int)ui::kButtonNone);
+  setfield_integer(L, "LEFT",   (int)ui::kButtonLeft);
+  setfield_integer(L, "RIGHT",  (int)ui::kButtonRight);
+  setfield_integer(L, "MIDDLE", (int)ui::kButtonMiddle);
+  setfield_integer(L, "X1",     (int)ui::kButtonX1);
+  setfield_integer(L, "X2",     (int)ui::kButtonX2);
   lua_pop(L, 1);
 
   // Register classes/prototypes

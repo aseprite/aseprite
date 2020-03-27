@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -103,11 +103,11 @@ struct Dialog {
 
 };
 
-template<typename Signal,
+template<typename...Args,
          typename Callback>
 void Dialog_connect_signal(lua_State* L,
                            int dlgIdx,
-                           Signal& signal,
+                           obs::signal<void(Args...)>& signal,
                            Callback callback)
 {
   auto dlg = get_obj<Dialog>(L, dlgIdx);
@@ -124,7 +124,7 @@ void Dialog_connect_signal(lua_State* L,
   lua_pop(L, 1);           // Pop the uservalue
 
   signal.connect(
-    base::Bind<void>([=]() {
+    [=](Args...args) {
       // In case that the dialog is hidden, we cannot access to the
       // global LUA_REGISTRYINDEX to get its reference.
       if (dlg->showRef == LUA_REFNIL)
@@ -141,7 +141,7 @@ void Dialog_connect_signal(lua_State* L,
         // lua_pcall() (that table is like an "event data" parameter
         // for the function).
         lua_newtable(L);
-        callback(L);
+        callback(L, std::forward<Args>(args)...);
 
         if (lua_isfunction(L, -2)) {
           if (lua_pcall(L, 1, 0, 0)) {
@@ -164,7 +164,7 @@ void Dialog_connect_signal(lua_State* L,
           ->scriptEngine()
           ->consolePrint(ex.what());
       }
-    }));
+    });
 }
 
 int Dialog_new(lua_State* L)
@@ -193,7 +193,7 @@ int Dialog_new(lua_State* L)
     if (type == LUA_TFUNCTION) {
       Dialog_connect_signal(
         L, -2, dlg->window.Close,
-        [](lua_State* L){
+        [](lua_State*, CloseEvent&){
           // Do nothing
         });
     }
@@ -395,7 +395,7 @@ int Dialog_button_base(lua_State* L, T** outputWidget = nullptr)
       auto dlg = get_obj<Dialog>(L, 1);
       Dialog_connect_signal(
         L, 1, widget->Click,
-        [dlg, widget](lua_State* L){
+        [dlg, widget](lua_State* L, Event&){
           dlg->lastButton = widget;
         });
       closeWindowByDefault = false;
@@ -595,7 +595,10 @@ int Dialog_shades(lua_State* L)
     if (type == LUA_TFUNCTION) {
       Dialog_connect_signal(
         L, 1, widget->Click,
-        [widget](lua_State* L){
+        [widget](lua_State* L, ColorShades::ClickEvent& ev){
+          lua_pushinteger(L, (int)ev.button());
+          lua_setfield(L, -2, "button");
+
           const int i = widget->getHotEntry();
           const Shade shade = widget->getShade();
           if (i >= 0 && i < int(shade.size())) {
