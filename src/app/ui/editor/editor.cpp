@@ -418,6 +418,14 @@ void Editor::setZoom(const render::Zoom& zoom)
 
 void Editor::setDefaultScroll()
 {
+  if (Preferences::instance().editor.autoFit())
+    setScrollAndZoomToFitScreen();
+  else
+    setScrollToCenter();
+}
+
+void Editor::setScrollToCenter()
+{
   View* view = View::getView(this);
   Rect vp = view->viewportBounds();
   gfx::Size canvas = canvasSize();

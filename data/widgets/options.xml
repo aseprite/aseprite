@@ -203,6 +203,8 @@
           <check text="@.zoom_from_center_with_keys" id="zoom_from_center_with_keys" />
           <check text="@.show_scrollbars" id="show_scrollbars" tooltip="@.show_scrollbars_tooltip" />
           <check text="@.auto_scroll" id="auto_scroll" />
+          <check text="@.auto_fit" id="auto_fit"
+                 pref="editor.auto_fit" />
           <check text="@.straight_line_preview" id="straight_line_preview" tooltip="@.straight_line_preview_tooltip" />
           <check text="@.discard_brush" id="discard_brush" />
           <hbox>

@@ -160,6 +160,10 @@
       <option id="straight_line_preview" type="bool" default="true" />
       <option id="play_once" type="bool" default="false" />
       <option id="play_all" type="bool" default="false" />
+      <!-- TODO this would be nice to be "true" but we have to fix
+           some performance issue rendering huge sprites with small
+           zoom levels -->
+      <option id="auto_fit" type="bool" default="false" />
     </section>
     <section id="cursor">
       <option id="use_native_cursor" type="bool" default="false" />
