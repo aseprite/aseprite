@@ -145,7 +145,7 @@ ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
   , m_fromBgButton(false)
   , m_lastDocument(nullptr)
   , m_ascending(true)
-  , m_lastButtons(kButtonLeft)
+  , m_lastButton(kButtonLeft)
   , m_editMode(false)
   , m_redrawTimer(250, this)
   , m_redrawAll(false)
@@ -585,7 +585,7 @@ void ColorBar::onRemapButtonClick()
   }
 }
 
-void ColorBar::onPaletteViewIndexChange(int index, ui::MouseButtons buttons)
+void ColorBar::onPaletteViewIndexChange(int index, ui::MouseButton button)
 {
   COLOR_BAR_TRACE("ColorBar::onPaletteViewIndexChange(%d)\n", index);
 
@@ -593,11 +593,11 @@ void ColorBar::onPaletteViewIndexChange(int index, ui::MouseButtons buttons)
 
   app::Color color = app::Color::fromIndex(index);
 
-  if ((buttons & kButtonRight) == kButtonRight)
+  if (button == kButtonRight)
     setBgColor(color);
-  else if ((buttons & kButtonLeft) == kButtonLeft)
+  else if (button == kButtonLeft)
     setFgColor(color);
-  else if ((buttons & kButtonMiddle) == kButtonMiddle)
+  else if (button == kButtonMiddle)
     setTransparentIndex(index);
 
   ChangeSelection();
@@ -837,17 +837,17 @@ void ColorBar::onColorButtonChange(const app::Color& color)
     m_wheel->selectColor(color);
 }
 
-void ColorBar::onPickSpectrum(const app::Color& color, ui::MouseButtons buttons)
+void ColorBar::onPickSpectrum(const app::Color& color, ui::MouseButton button)
 {
-  if (buttons == kButtonNone)
-    buttons = m_lastButtons;
+  if (button == kButtonNone)
+    button = m_lastButton;
 
-  if ((buttons & kButtonRight) == kButtonRight)
+  if (button == kButtonRight)
     setBgColor(color);
-  else if ((buttons & kButtonLeft) == kButtonLeft)
+  else if (button == kButtonLeft)
     setFgColor(color);
 
-  m_lastButtons = buttons;
+  m_lastButton = button;
 }
 
 void ColorBar::onReverseColors()

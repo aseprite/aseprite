@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2018  Igara Studio S.A.
+// Copyright (c) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -14,7 +14,7 @@
 #include "obs/connection.h"
 #include "obs/signal.h"
 #include "os/surface.h"
-#include "ui/mouse_buttons.h"
+#include "ui/mouse_button.h"
 #include "ui/timer.h"
 #include "ui/widget.h"
 
@@ -42,7 +42,7 @@ namespace app {
     app::Color getColorByPosition(const gfx::Point& pos) override;
 
     // Signals
-    obs::signal<void(const app::Color&, ui::MouseButtons)> ColorChange;
+    obs::signal<void(const app::Color&, ui::MouseButton)> ColorChange;
 
   protected:
     // paintFlags for onPaintSurfaceInBgThread and return value of

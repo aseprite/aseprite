@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -10,7 +10,6 @@
 #pragma once
 
 #include "ui/animated_widget.h"
-#include "ui/mouse_buttons.h"
 #include "ui/timer.h"
 #include "ui/widget.h"
 

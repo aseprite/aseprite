@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -58,7 +59,7 @@ namespace app {
     void onPaletteChange();
 
     // PaletteViewDelegate impl
-    void onPaletteViewIndexChange(int index, ui::MouseButtons buttons) override;
+    void onPaletteViewIndexChange(int index, ui::MouseButton button) override;
 
   private:
     void selectColorType(app::Color::Type type);

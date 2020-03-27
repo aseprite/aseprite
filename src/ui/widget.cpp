@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -1319,7 +1319,7 @@ bool Widget::offerCapture(ui::MouseMessage* mouseMsg, int widget_type)
       MouseMessage* mouseMsg2 = new MouseMessage(
         kMouseDownMessage,
         mouseMsg->pointerType(),
-        mouseMsg->buttons(),
+        mouseMsg->button(),
         mouseMsg->modifiers(),
         mouseMsg->position());
       mouseMsg2->setRecipient(pick);
@@ -1406,7 +1406,7 @@ bool Widget::onProcessMessage(Message* msg)
       MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
       MouseMessage mouseMsg2(kMouseDownMessage,
                              mouseMsg->pointerType(),
-                             mouseMsg->buttons(),
+                             mouseMsg->button(),
                              mouseMsg->modifiers(),
                              mouseMsg->position(),
                              mouseMsg->wheelDelta());

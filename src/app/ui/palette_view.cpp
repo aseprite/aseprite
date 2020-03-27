@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -24,6 +24,7 @@
 #include "app/util/clipboard.h"
 #include "app/util/pal_ops.h"
 #include "base/bind.h"
+#include "base/clamp.h"
 #include "base/convert_to.h"
 #include "doc/image.h"
 #include "doc/palette.h"
@@ -342,14 +343,14 @@ bool PaletteView::onProcessMessage(Message* msg)
       if (m_state == State::SELECTING_COLOR &&
           m_hot.part == Hit::COLOR) {
         int idx = m_hot.color;
-        idx = MID(0, idx, currentPalette()->size()-1);
+        idx = base::clamp(idx, 0, currentPalette()->size()-1);
 
-        MouseButtons buttons = mouseMsg->buttons();
+        const MouseButton button = mouseMsg->button();
 
         if (hasCapture() && ((idx != m_currentEntry) ||
                              (msg->type() == kMouseDownMessage) ||
-                             ((buttons & kButtonMiddle) == kButtonMiddle))) {
-          if ((buttons & kButtonMiddle) == 0) {
+                             (button == kButtonMiddle))) {
+          if (button != kButtonMiddle) {
             if (!msg->ctrlPressed() && !msg->shiftPressed())
               deselect();
 
@@ -363,7 +364,7 @@ bool PaletteView::onProcessMessage(Message* msg)
 
           // Emit signal
           if (m_delegate)
-            m_delegate->onPaletteViewIndexChange(idx, buttons);
+            m_delegate->onPaletteViewIndexChange(idx, button);
         }
       }
 

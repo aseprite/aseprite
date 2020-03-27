@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -40,7 +40,7 @@
 #include "ui/message.h"
 #include "ui/message_loop.h"
 #include "ui/message_type.h"
-#include "ui/mouse_buttons.h"
+#include "ui/mouse_button.h"
 #include "ui/overlay.h"
 #include "ui/overlay_manager.h"
 #include "ui/paint_event.h"

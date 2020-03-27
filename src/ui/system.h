@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -12,7 +12,6 @@
 #include "gfx/fwd.h"
 #include "ui/base.h"
 #include "ui/cursor_type.h"
-#include "ui/mouse_buttons.h"
 
 #include <functional>
 #include <string>
@@ -65,8 +64,6 @@ namespace ui {
   void _internal_set_mouse_display(os::Display* display);
   void _internal_no_mouse_position();
   void _internal_set_mouse_position(const gfx::Point& newPos);
-  void _internal_set_mouse_buttons(MouseButtons buttons);
-  MouseButtons _internal_get_mouse_buttons();
 
   const gfx::Point& get_mouse_position();
   void set_mouse_position(const gfx::Point& newPos);

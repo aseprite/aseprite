@@ -318,7 +318,7 @@ bool ColorSelector::onProcessMessage(ui::Message* msg)
 
         StatusBar::instance()->showColor(0, "", color);
         if (hasCapture())
-          ColorChange(color, mouseMsg->buttons());
+          ColorChange(color, mouseMsg->button());
       }
       break;
     }

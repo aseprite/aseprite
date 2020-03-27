@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -511,7 +511,7 @@ bool ComboBoxEntry::onProcessMessage(Message* msg)
 
           MouseMessage mouseMsg2(kMouseDownMessage,
                                  mouseMsg->pointerType(),
-                                 mouseMsg->buttons(),
+                                 mouseMsg->button(),
                                  mouseMsg->modifiers(),
                                  mouseMsg->position());
           pick->sendMessage(&mouseMsg2);
