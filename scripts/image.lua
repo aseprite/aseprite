@@ -191,3 +191,23 @@ do
   img2:resize(3, 2)
   expect_img(img2, cols)
 end
+
+-- Test v1.2.17 crashes
+do
+  local defSpec = ImageSpec{ width=1, height=1, colorMode=ColorMode.RGB }
+
+  local img = Image() -- we create a 1x1 RGB image
+  assert(img ~= nil)
+  assert(img.spec == defSpec)
+
+  img = Image(nil)
+  assert(img ~= nil)
+  assert(img.spec == defSpec)
+
+  local spr = Sprite(32, 32, ColorMode.INDEXED)
+  spr.cels[1].image:putPixel(15, 15, 129)
+  img = Image(spr)    -- we create a sprite render of the first frame
+  assert(img ~= nil)
+  assert(img.spec == spr.spec)
+  assert(img:getPixel(15, 15) == 129)
+end
