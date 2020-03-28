@@ -75,16 +75,39 @@ struct ImageObj {
   }
 };
 
+void render_sprite(Image* dst,
+                   const Sprite* sprite,
+                   const frame_t frame,
+                   const int x, const int y)
+{
+  render::Render render;
+  render.setNewBlend(true);
+  render.renderSprite(
+    dst, sprite, frame,
+    gfx::Clip(x, y,
+              0, 0,
+              sprite->width(),
+              sprite->height()));
+}
+
 int Image_clone(lua_State* L);
 
 int Image_new(lua_State* L)
 {
+  doc::Image* image = nullptr;
   doc::ImageSpec spec(doc::ColorMode::RGB, 1, 1, 0);
   if (auto spec2 = may_get_obj<doc::ImageSpec>(L, 1)) {
     spec = *spec2;
   }
   else if (may_get_obj<ImageObj>(L, 1)) {
     return Image_clone(L);
+  }
+  else if (auto spr = may_get_docobj<doc::Sprite>(L, 1)) {
+    image = doc::Image::create(spr->spec());
+    if (!image)
+      return 0;
+
+    render_sprite(image, spr, 0, 0, 0);
   }
   else if (lua_istable(L, 1)) {
     // Image{ fromFile }
@@ -124,14 +147,16 @@ int Image_new(lua_State* L)
     spec.setHeight(h);
     spec.setColorMode((doc::ColorMode)colorMode);
   }
-  if (spec.width() < 1) spec.setWidth(1);
-  if (spec.height() < 1) spec.setHeight(1);
-  doc::Image* image = doc::Image::create(spec);
   if (!image) {
-    // Invalid spec (e.g. width=0, height=0, etc.)
-    return 0;
+    if (spec.width() < 1) spec.setWidth(1);
+    if (spec.height() < 1) spec.setHeight(1);
+    image = doc::Image::create(spec);
+    if (!image) {
+      // Invalid spec (e.g. width=0, height=0, etc.)
+      return 0;
+    }
+    doc::clear_image(image, spec.maskColor());
   }
-  doc::clear_image(image, spec.maskColor());
   push_new<ImageObj>(L, image);
   return 1;
 }
@@ -231,27 +256,13 @@ int Image_drawSprite(lua_State* L)
   // If the destination image is not related to a sprite, we just draw
   // the source image without undo information.
   if (obj->cel(L) == nullptr) {
-    render::Render render;
-    render.setNewBlend(true);
-    render.renderSprite(
-      dst, sprite, frame,
-      gfx::Clip(pos.x, pos.y,
-                0, 0,
-                sprite->width(),
-                sprite->height()));
+    render_sprite(dst, sprite, frame, pos.x, pos.y);
   }
   else {
     Tx tx;
 
     ImageRef tmp(Image::createCopy(dst));
-    render::Render render;
-    render.setNewBlend(true);
-    render.renderSprite(
-      tmp.get(), sprite, frame,
-      gfx::Clip(pos.x, pos.y,
-                0, 0,
-                sprite->width(),
-                sprite->height()));
+    render_sprite(tmp.get(), sprite, frame, pos.x, pos.y);
 
     int x1, y1, x2, y2;
     if (get_shrink_rect2(&x1, &y1, &x2, &y2, dst, tmp.get())) {
