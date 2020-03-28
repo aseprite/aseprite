@@ -124,7 +124,13 @@ int Image_new(lua_State* L)
     spec.setHeight(h);
     spec.setColorMode((doc::ColorMode)colorMode);
   }
+  if (spec.width() < 1) spec.setWidth(1);
+  if (spec.height() < 1) spec.setHeight(1);
   doc::Image* image = doc::Image::create(spec);
+  if (!image) {
+    // Invalid spec (e.g. width=0, height=0, etc.)
+    return 0;
+  }
   doc::clear_image(image, spec.maskColor());
   push_new<ImageObj>(L, image);
   return 1;
