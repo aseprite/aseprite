@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -55,7 +55,6 @@ namespace app {
     Preferences();
     ~Preferences();
 
-    void load();
     void save();
 
     // Returns true if the given option was set by the user or false
@@ -80,6 +79,7 @@ namespace app {
     void onRemoveDocument(Doc* doc) override;
 
   private:
+    void load();
     std::string docConfigFileName(const Doc* doc);
 
     void serializeDocPref(const Doc* doc, app::DocumentPreferences* docPref, bool save);
