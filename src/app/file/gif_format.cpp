@@ -1548,6 +1548,7 @@ private:
         int thicknessLeft = deltaSize.w / 4;
         int lastThicknessTop = thicknessTop;
         int lastThicknessLeft = thicknessLeft;
+        pal.resize(255);
         while (true) {
 
           render::PaletteOptimizer optimizer;
@@ -1560,7 +1561,7 @@ private:
           //     |   |________|   |
           //     |________________|
 
-          auxRect = gfx::Rect(0, deltaSize.h - thicknessTop, deltaSize.w, thicknessTop);
+          auxRect = gfx::Rect(0, deltaSize.h - thicknessTop - 1, deltaSize.w, thicknessTop);
           optimizer.feedWithImage(m_deltaImage.get(), auxRect, false);
           //      ----------------
           //     |    ________    |
@@ -1578,7 +1579,7 @@ private:
           //     |___|________|   |
           //     |________________|
 
-          auxRect = gfx::Rect(deltaSize.w - thicknessLeft, thicknessTop, thicknessLeft, deltaSize.h - 2 * thicknessTop);
+          auxRect = gfx::Rect(deltaSize.w - thicknessLeft - 1, thicknessTop, thicknessLeft, deltaSize.h - 2 * thicknessTop);
           optimizer.feedWithImage(m_deltaImage.get(), auxRect, false);
           //      ----------------
           //     |   _____________|
@@ -1592,15 +1593,17 @@ private:
               lastThicknessTop = thicknessTop;
               lastThicknessLeft = thicknessLeft;
               // Put the high precision colors to the palette:
-              optimizer.calculate(&pal, 0);
+              optimizer.calculate(&pal, -1);
               break;
             }
             else if (deltaSize.h - thicknessTop * 2 <= deltaSize.h / 4 ||
                      deltaSize.w - thicknessLeft * 2 <= deltaSize.w / 4) {
               // Put the high precision colors to the palette:
-              optimizer.calculate(&pal, 0);
+              optimizer.calculate(&pal, -1);
               break;
             }
+            if (thicknessTop * 3 >= deltaSize.h || thicknessLeft * 3 >= deltaSize.w)
+              break;
             thicknessTop += thicknessTop / 2;
             thicknessLeft += thicknessLeft / 2;
           }
@@ -1609,7 +1612,7 @@ private:
                 thicknessLeft <= deltaSize.w / 16) {
               // TODO: we need to catch this LAST posibility.
               // Put the high precision colors to the palette:
-              optimizer.calculate(&pal, 0);
+              optimizer.calculate(&pal, -1);
               break;
             }
             thicknessTop -= thicknessTop / 2;
@@ -1621,15 +1624,19 @@ private:
         }
         gfx::Rect centerRect(lastThicknessLeft,
                              lastThicknessTop,
-                             deltaSize.w - 1 - lastThicknessLeft,
-                             deltaSize.h - 1 - lastThicknessTop);
+                             deltaSize.w - 2 * lastThicknessLeft,
+                             deltaSize.h - 2 * lastThicknessTop);
         // Find the center colors (aproximation colors)
-        Palette centerPalette(
-          createOptimizedPalette(m_deltaImage.get(),
-                                 centerRect, 255 - pal.size()));
-        // Adding the center colors to pal + transparent color
-        for (int i=0; i < centerPalette.size(); i++)
-          pal.addEntry(centerPalette.getEntry(i));
+        if (pal.size() < 255) {
+          Palette centerPalette(0, 255 - pal.size());
+          centerPalette = createOptimizedPalette(m_deltaImage.get(),
+                                                 centerRect, 255 - pal.size());
+
+          // Adding the center colors to pal + transparent color
+          for (int i=0; i < centerPalette.size(); i++)
+            pal.addEntry(centerPalette.getEntry(i));
+        }
+        ASSERT(pal.size() <= 255);
         pal.addEntry(0);
         m_transparentIndex = pal.size() - 1;
       }
