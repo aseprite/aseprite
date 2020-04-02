@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -29,6 +30,9 @@ namespace app {
 
     Command* byId(const char* id);
     Commands* add(Command* command);
+
+    // Remove the command but doesn't delete it
+    void remove(Command* command);
 
     void getAllIds(std::vector<std::string>& ids);
 

@@ -170,6 +170,7 @@ if(ENABLE_SCRIPTING)
     script/palette_class.cpp
     script/palettes_class.cpp
     script/pixel_color_object.cpp
+    script/plugin_class.cpp
     script/point_class.cpp
     script/preferences_object.cpp
     script/range_class.cpp

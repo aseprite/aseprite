@@ -161,6 +161,7 @@ void register_layer_class(lua_State* L);
 void register_layers_class(lua_State* L);
 void register_palette_class(lua_State* L);
 void register_palettes_class(lua_State* L);
+void register_plugin_class(lua_State* L);
 void register_point_class(lua_State* L);
 void register_range_class(lua_State* L);
 void register_rect_class(lua_State* L);
@@ -370,6 +371,7 @@ Engine::Engine()
   register_layers_class(L);
   register_palette_class(L);
   register_palettes_class(L);
+  register_plugin_class(L);
   register_point_class(L);
   register_range_class(L);
   register_rect_class(L);

@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -10,15 +11,25 @@
 
 #include "app/extensions.h"
 
+#include "app/app.h"
+#include "app/commands/command.h"
+#include "app/commands/commands.h"
+#include "app/console.h"
 #include "app/ini_file.h"
 #include "app/load_matrix.h"
 #include "app/pref/preferences.h"
 #include "app/resource_finder.h"
 #include "base/exception.h"
+#include "base/file_content.h"
 #include "base/file_handle.h"
 #include "base/fs.h"
 #include "base/fstream_path.h"
 #include "render/dithering_matrix.h"
+
+#ifdef ENABLE_SCRIPTING
+  #include "app/script/engine.h"
+  #include "app/script/luacpp.h"
+#endif
 
 #include "archive.h"
 #include "archive_entry.h"
@@ -35,6 +46,7 @@ namespace {
 
 const char* kPackageJson = "package.json";
 const char* kInfoJson = "__info.json";
+const char* kPrefLua = "__pref.lua";
 const char* kAsepriteDefaultThemeExtensionName = "aseprite-theme";
 
 class ReadArchive {
@@ -181,6 +193,9 @@ void write_json_file(const std::string& path, const json11::Json& json)
 
 } // anonymous namespace
 
+//////////////////////////////////////////////////////////////////////
+// Extension
+
 const render::DitheringMatrix& Extension::DitheringMatrixInfo::matrix() const
 {
   if (!m_matrix) {
@@ -219,6 +234,22 @@ Extension::~Extension()
     it.second.destroyMatrix();
 }
 
+void Extension::executeInitActions()
+{
+#ifdef ENABLE_SCRIPTING
+  if (isEnabled() && hasScripts())
+    initScripts();
+#endif
+}
+
+void Extension::executeExitActions()
+{
+#ifdef ENABLE_SCRIPTING
+  if (isEnabled() && hasScripts())
+    exitScripts();
+#endif // ENABLE_SCRIPTING
+}
+
 void Extension::addLanguage(const std::string& id, const std::string& path)
 {
   m_languages[id] = path;
@@ -241,6 +272,31 @@ void Extension::addDitheringMatrix(const std::string& id,
   DitheringMatrixInfo info(path, name);
   m_ditheringMatrices[id] = info;
 }
+
+#ifdef ENABLE_SCRIPTING
+
+void Extension::addCommand(const std::string& id)
+{
+  PluginItem item;
+  item.type = PluginItem::Command;
+  item.id = id;
+  m_plugin.items.push_back(item);
+}
+
+void Extension::removeCommand(const std::string& id)
+{
+  for (auto it=m_plugin.items.begin(); it != m_plugin.items.end(); ) {
+    if (it->type == PluginItem::Command &&
+        it->id == id) {
+      it = m_plugin.items.erase(it);
+    }
+    else {
+      ++it;
+    }
+  }
+}
+
+#endif
 
 bool Extension::canBeDisabled() const
 {
@@ -267,6 +323,15 @@ void Extension::enable(const bool state)
   flush_config_file();
 
   m_isEnabled = state;
+
+#ifdef ENABLE_SCRIPTING
+  if (m_isEnabled) {
+    initScripts();
+  }
+  else {
+    exitScripts();
+  }
+#endif // ENABLE_SCRIPTING
 }
 
 void Extension::uninstall()
@@ -312,6 +377,13 @@ void Extension::uninstallFiles(const std::string& path)
     else if (base::is_directory(fn)) {
       installedDirs.push_back(fn);
     }
+  }
+
+  // Delete __pref.lua file
+  {
+    std::string fn = base::join_path(path, kPrefLua);
+    if (base::is_file(fn))
+      base::delete_file(fn);
   }
 
   std::sort(installedDirs.begin(),
@@ -368,6 +440,230 @@ bool Extension::isDefaultTheme() const
 {
   return (name() == kAsepriteDefaultThemeExtensionName);
 }
+
+#ifdef ENABLE_SCRIPTING
+
+// TODO move this to app/script/tableutils.h
+static void serialize_table(lua_State* L, int idx, std::string& result)
+{
+  bool first = true;
+
+  result.push_back('{');
+
+  idx = lua_absindex(L, idx);
+  lua_pushnil(L);
+  while (lua_next(L, idx) != 0) {
+    if (first) {
+      first = false;
+    }
+    else {
+      result.push_back(',');
+    }
+
+    // Save key
+    if (lua_type(L, -2) == LUA_TSTRING) {
+      if (const char* k = lua_tostring(L, -2)) {
+        result += k;
+        result.push_back('=');
+      }
+    }
+
+    // Save value
+    switch (lua_type(L, -1)) {
+      case LUA_TNIL:
+      default:
+        result += "nil";
+        break;
+      case LUA_TBOOLEAN:
+        if (lua_toboolean(L, -1))
+          result += "true";
+        else
+          result += "false";
+        break;
+      case LUA_TNUMBER:
+        result += lua_tostring(L, -1);
+        break;
+      case LUA_TSTRING:
+        result.push_back('\"');
+        if (const char* p = lua_tostring(L, -1)) {
+          for (; *p; ++p) {
+            switch (*p) {
+              case '\"':
+                result.push_back('\\');
+                result.push_back('\"');
+                break;
+              case '\\':
+                result.push_back('\\');
+                result.push_back('\\');
+                break;
+              case '\t':
+                result.push_back('\\');
+                result.push_back('t');
+                break;
+              case '\r':
+                result.push_back('\\');
+                result.push_back('n');
+                break;
+              case '\n':
+                result.push_back('\\');
+                result.push_back('n');
+                break;
+              default:
+                result.push_back(*p);
+                break;
+            }
+          }
+        }
+        result.push_back('\"');
+        break;
+      case LUA_TTABLE:
+        serialize_table(L, -1, result);
+        break;
+    }
+    lua_pop(L, 1);
+  }
+
+  result.push_back('}');
+}
+
+Extension::ScriptItem::ScriptItem(const std::string& fn)
+  : fn(fn)
+  , exitFunctionRef(LUA_REFNIL)
+{
+}
+
+void Extension::initScripts()
+{
+  script::Engine* engine = App::instance()->scriptEngine();
+  lua_State* L = engine->luaState();
+
+  // Put a new "plugin" object for init()/exit() functions
+  script::push_plugin(L, this);
+  m_plugin.pluginRef = luaL_ref(L, LUA_REGISTRYINDEX);
+
+  // Read plugin.preferences value
+  {
+    std::string fn = base::join_path(m_path, kPrefLua);
+    if (base::is_file(fn)) {
+      lua_rawgeti(L, LUA_REGISTRYINDEX, m_plugin.pluginRef);
+      if (luaL_loadfile(L, fn.c_str()) == LUA_OK) {
+        if (lua_pcall(L, 0, 1, 0) == LUA_OK) {
+          lua_setfield(L, -2, "preferences");
+        }
+        else {
+          const char* s = lua_tostring(L, -1);
+          if (s) {
+            Console().printf("%s\n", s);
+          }
+        }
+        lua_pop(L, 1);
+      }
+      else {
+        lua_pop(L, 1);
+      }
+    }
+  }
+
+  for (auto& script : m_plugin.scripts) {
+    // Reset global init()/exit() functions
+    engine->evalCode("init=nil exit=nil");
+
+    // Eval the code of the script (it should define an init() and an exit() function)
+    engine->evalFile(script.fn);
+
+    if (lua_getglobal(L, "exit") == LUA_TFUNCTION) {
+      // Save a reference to the exit() function of this script
+      script.exitFunctionRef = luaL_ref(L, LUA_REGISTRYINDEX);
+    }
+    else {
+      lua_pop(L, 1);
+    }
+
+    // Call the init() function of thi sscript with a Plugin object as first parameter
+    if (lua_getglobal(L, "init") == LUA_TFUNCTION) {
+      // Call init(plugin)
+      lua_rawgeti(L, LUA_REGISTRYINDEX, m_plugin.pluginRef);
+      lua_pcall(L, 1, 1, 0);
+      lua_pop(L, 1);
+    }
+    else {
+      lua_pop(L, 1);
+    }
+  }
+}
+
+void Extension::exitScripts()
+{
+  script::Engine* engine = App::instance()->scriptEngine();
+  lua_State* L = engine->luaState();
+
+  // Call the exit() function of each script
+  for (auto& script : m_plugin.scripts) {
+    if (script.exitFunctionRef != LUA_REFNIL) {
+      // Get the exit() function, the "plugin" object, and call exit(plugin)
+      lua_rawgeti(L, LUA_REGISTRYINDEX, script.exitFunctionRef);
+      lua_rawgeti(L, LUA_REGISTRYINDEX, m_plugin.pluginRef);
+      lua_pcall(L, 1, 0, 0);
+
+      luaL_unref(L, LUA_REGISTRYINDEX, script.exitFunctionRef);
+      script.exitFunctionRef = LUA_REFNIL;
+    }
+  }
+
+  // Save the plugin preferences object
+  if (m_plugin.pluginRef != LUA_REFNIL) {
+    lua_rawgeti(L, LUA_REGISTRYINDEX, m_plugin.pluginRef);
+    lua_getfield(L, -1, "preferences");
+
+    lua_pushnil(L); // Push a nil key, to ask for the first element of the table
+    bool hasPreferences = (lua_next(L, -2) != 0);
+    if (hasPreferences)
+      lua_pop(L, 2);        // Remove the value and the key
+
+    if (hasPreferences) {
+      std::string result = "return ";
+      serialize_table(L, -1, result);
+      base::write_file_content(
+        base::join_path(m_path, kPrefLua),
+        (const uint8_t*)result.c_str(), result.size());
+    }
+    lua_pop(L, 2);          // Pop preferences table and plugin
+
+    luaL_unref(L, LUA_REGISTRYINDEX, m_plugin.pluginRef);
+    m_plugin.pluginRef = LUA_REFNIL;
+  }
+
+  // Remove plugin items automatically
+  for (const auto& item : m_plugin.items) {
+    switch (item.type) {
+      case PluginItem::Command: {
+        auto cmds = Commands::instance();
+        auto cmd = cmds->byId(item.id.c_str());
+        ASSERT(cmd);
+
+        if (cmd) {
+          cmds->remove(cmd);
+
+          // This will call ~PluginCommand() and unref the command
+          // onclick callback.
+          delete cmd;
+        }
+        break;
+      }
+    }
+  }
+  m_plugin.items.clear();
+}
+
+void Extension::addScript(const std::string& fn)
+{
+  m_plugin.scripts.push_back(ScriptItem(fn));
+}
+
+#endif // ENABLE_SCRIPTING
+
+//////////////////////////////////////////////////////////////////////
+// Extensions
 
 Extensions::Extensions()
 {
@@ -427,6 +723,22 @@ Extensions::~Extensions()
 {
   for (auto ext : m_extensions)
     delete ext;
+}
+
+void Extensions::executeInitActions()
+{
+  for (auto& ext : m_extensions)
+    ext->executeInitActions();
+
+  ScriptsChange(nullptr);
+}
+
+void Extensions::executeExitActions()
+{
+  for (auto& ext : m_extensions)
+    ext->executeExitActions();
+
+  ScriptsChange(nullptr);
 }
 
 std::string Extensions::languagePath(const std::string& langId)
@@ -739,6 +1051,37 @@ Extension* Extensions::loadExtension(const std::string& path,
         extension->addDitheringMatrix(matId, matPath, matName);
       }
     }
+
+#ifdef ENABLE_SCRIPTING
+    // Scripts
+    auto scripts = contributes["scripts"];
+    if (scripts.is_array()) {
+      for (const auto& script : scripts.array_items()) {
+        std::string scriptPath = script["path"].string_value();
+        if (scriptPath.empty())
+          continue;
+
+        // The path must be always relative to the extension
+        scriptPath = base::join_path(path, scriptPath);
+
+        LOG("EXT: New script '%s'\n", scriptPath.c_str());
+
+        extension->addScript(scriptPath);
+      }
+    }
+    // Simple version of packages.json with {... "scripts": "file.lua" ...}
+    else if (scripts.is_string() &&
+             !scripts.string_value().empty()) {
+      std::string scriptPath = scripts.string_value();
+
+      // The path must be always relative to the extension
+      scriptPath = base::join_path(path, scriptPath);
+
+      LOG("EXT: New script '%s'\n", scriptPath.c_str());
+
+      extension->addScript(scriptPath);
+    }
+#endif // ENABLE_SCRIPTING
   }
 
   if (extension)
@@ -752,6 +1095,7 @@ void Extensions::generateExtensionSignals(Extension* extension)
   if (extension->hasThemes()) ThemesChange(extension);
   if (extension->hasPalettes()) PalettesChange(extension);
   if (extension->hasDitheringMatrices()) DitheringMatricesChange(extension);
+  if (extension->hasScripts()) ScriptsChange(extension);
 }
 
 } // namespace app

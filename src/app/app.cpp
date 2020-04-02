@@ -309,6 +309,12 @@ int App::initialize(const AppOptions& options)
   }
 #endif  // ENABLE_UI
 
+#ifdef ENABLE_SCRIPTING
+  // Call the init() function from all plugins
+  LOG("APP: Initializing scripts...\n");
+  extensions().executeInitActions();
+#endif
+
   // Process options
   LOG("APP: Processing options...\n");
   {
@@ -395,7 +401,7 @@ void App::run()
     // we've to print errors).
     Console console;
 #ifdef ENABLE_SCRIPTING
-    // Use the app::Console() for script erros
+    // Use the app::Console() for script errors
     ConsoleEngineDelegate delegate;
     script::ScopedEngineDelegate setEngineDelegate(m_engine.get(), &delegate);
 #endif
@@ -413,6 +419,13 @@ void App::run()
     shell.run(*m_engine);
   }
 #endif  // ENABLE_SCRIPTING
+
+  // ----------------------------------------------------------------------
+
+#ifdef ENABLE_SCRIPTING
+  // Call the exit() function from all plugins
+  extensions().executeExitActions();
+#endif
 
 #ifdef ENABLE_UI
   if (isGui()) {
