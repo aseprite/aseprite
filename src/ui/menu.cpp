@@ -99,6 +99,56 @@ static MenuItem* check_for_letter(Menu* menu, const KeyMessage* keymsg);
 static MenuItem* find_nextitem(Menu* menu, MenuItem* menuitem);
 static MenuItem* find_previtem(Menu* menu, MenuItem* menuitem);
 
+static void add_scrollbars_if_needed(Window* window)
+{
+  const gfx::Rect rc0 = window->bounds();
+  gfx::Rect rc = rc0;
+
+  if (rc.x < 0) {
+    rc.w += rc.x;
+    rc.x = 0;
+  }
+  if (rc.x2() > ui::display_w()) {
+    rc.w = ui::display_w() - rc.x;
+  }
+
+  bool vscrollbarsAdded = false;
+  if (rc.y < 0) {
+    rc.h += rc.y;
+    rc.y = 0;
+    vscrollbarsAdded = true;
+  }
+  if (rc.y2() > ui::display_h()) {
+    rc.h = ui::display_h() - rc.y;
+    vscrollbarsAdded = true;
+  }
+
+  if (rc == rc0)
+    return;
+
+  Widget* menubox = window->firstChild();
+  View* view = new View;
+  view->InitTheme.connect([view]{ view->noBorderNoChildSpacing(); });
+  view->initTheme();
+
+  if (vscrollbarsAdded) {
+    rc.w += 2*view->verticalBar()->getBarWidth();
+    if (rc.x2() > ui::display_w()) {
+      rc.x = ui::display_w() - rc.w;
+      if (rc.x < 0) {
+        rc.x = 0;
+        rc.w = ui::display_w();
+      }
+    }
+  }
+
+  window->setBounds(rc);
+
+  window->removeChild(menubox);
+  view->attachToView(menubox);
+  window->addChild(view);
+}
+
 //////////////////////////////////////////////////////////////////////
 // Menu
 
@@ -274,6 +324,8 @@ void Menu::showPopup(const gfx::Point& pos)
     base::clamp(pos.x, 0, ui::display_w() - window->bounds().w),
     base::clamp(pos.y, 0, ui::display_h() - window->bounds().h));
 
+  add_scrollbars_if_needed(window.get());
+
   // Set the focus to the new menubox
   Manager* manager = Manager::getDefault();
   manager->setFocus(menubox);
@@ -292,7 +344,6 @@ void Menu::showPopup(const gfx::Point& pos)
   // Fetch the "menu" so it isn't destroyed
   menubox->setMenu(nullptr);
   menubox->stopFilteringMouseDown();
-
 }
 
 Widget* Menu::findItemById(const char* id)
@@ -663,6 +714,22 @@ bool MenuBox::onProcessMessage(Message* msg)
       }
       break;
 
+    case kMouseWheelMessage: {
+      View* view = View::getView(this);
+      if (view) {
+        auto mouseMsg = static_cast<MouseMessage*>(msg);
+        gfx::Point scroll = view->viewScroll();
+
+        if (mouseMsg->preciseWheel())
+          scroll += mouseMsg->wheelDelta();
+        else
+          scroll += mouseMsg->wheelDelta() * textHeight()*3;
+
+        view->setViewScroll(scroll);
+      }
+      break;
+    }
+
     default:
       if (msg->type() == kClosePopupMessage) {
         window()->closeWindow(nullptr);
@@ -750,7 +817,7 @@ bool MenuItem::onProcessMessage(Message* msg)
         menubox->setMenu(m_submenu);
 
         // New window and new menu-box
-        Window* window = new MenuBoxWindow(menubox);
+        auto window = new MenuBoxWindow(menubox);
 
         // Menubox position
         Rect pos = window->bounds();
@@ -787,6 +854,7 @@ bool MenuItem::onProcessMessage(Message* msg)
         }
 
         window->positionWindow(pos.x, pos.y);
+        add_scrollbars_if_needed(window);
 
         // Set the focus to the new menubox
         menubox->setFocusMagnet(true);
@@ -824,7 +892,6 @@ bool MenuItem::onProcessMessage(Message* msg)
       else if (msg->type() == kCloseMenuItemMessage) {
         bool last_of_close_chain = static_cast<CloseMenuItemMessage*>(msg)->last_of_close_chain();
         MenuBaseData* base = get_base(this);
-        Window* window;
 
         ASSERT(base != NULL);
         ASSERT(base->is_processing);
@@ -834,7 +901,7 @@ bool MenuItem::onProcessMessage(Message* msg)
 
         ASSERT(menubox != NULL);
 
-        window = (Window*)menubox->parent();
+        Window* window = menubox->window();
         ASSERT(window && window->type() == kWindowWidget);
 
         // Fetch the "menu" to avoid destroy it with 'delete'.
@@ -953,6 +1020,14 @@ static MenuBox* get_base_menubox(Widget* widget)
         widget = menu->getOwnerMenuItem();
       }
     }
+    // This is useful for menuboxes inside a viewport (so we can scroll a viewport clicking scrollbars)
+    else if (widget->type() == kViewScrollbarWidget &&
+             widget->parent() &&
+             widget->parent()->type() == kViewWidget &&
+             static_cast<View*>(widget->parent())->attachedWidget() &&
+             static_cast<View*>(widget->parent())->attachedWidget()->type() == kMenuBoxWidget) {
+      widget = static_cast<View*>(widget->parent())->attachedWidget();
+    }
     else {
       widget = widget->parent();
     }
@@ -1003,6 +1078,23 @@ void Menu::highlightItem(MenuItem* menuitem, bool click, bool open_submenu, bool
     if (!menuitem->isHighlighted()) {
       menuitem->setHighlighted(true);
       menuitem->invalidate();
+
+      // Scroll
+      View* view = View::getView(menuitem->parent()->parent());
+      if (view) {
+        gfx::Rect itemBounds = menuitem->bounds();
+        itemBounds.y -= menuitem->parent()->origin().y;
+
+        gfx::Point scroll = view->viewScroll();
+        gfx::Size visSize = view->visibleSize();
+
+        if (itemBounds.y < scroll.y)
+          scroll.y = itemBounds.y;
+        else if (itemBounds.y2() > scroll.y+visSize.h)
+          scroll.y = itemBounds.y2()-visSize.h;
+
+        view->setViewScroll(scroll);
+      }
     }
 
     // Highlight parents
