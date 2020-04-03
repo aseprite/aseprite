@@ -9,10 +9,13 @@
 #endif
 
 #include "app/app.h"
+#include "app/app_menus.h"
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
+#include "app/console.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
+#include "app/ui/app_menuitem.h"
 
 namespace app {
 namespace script {
@@ -56,7 +59,14 @@ protected:
     lua_State* L = engine->luaState();
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, m_onclickRef);
-    lua_pcall(L, 0, 0, 0);
+    if (lua_pcall(L, 0, 1, 0)) {
+      if (const char* s = lua_tostring(L, -1)) {
+        Console().printf("Error: %s", s);
+      }
+    }
+    else {
+      lua_pop(L, 1);
+    }
   }
 
   std::string m_title;
@@ -83,7 +93,7 @@ int Plugin_newCommand(lua_State* L)
 {
   auto plugin = get_obj<Plugin>(L, 1);
   if (lua_istable(L, 2)) {
-    std::string id, title;
+    std::string id, title, group;
 
     lua_getfield(L, 2, "id");
     if (const char* s = lua_tostring(L, -1)) {
@@ -100,6 +110,12 @@ int Plugin_newCommand(lua_State* L)
     }
     lua_pop(L, 1);
 
+    lua_getfield(L, 2, "group");
+    if (const char* s = lua_tostring(L, -1)) {
+      group = s;
+    }
+    lua_pop(L, 1);
+
     int type = lua_getfield(L, 2, "onclick");
     if (type == LUA_TFUNCTION) {
       int onclickRef = luaL_ref(L, LUA_REGISTRYINDEX);
@@ -108,8 +124,18 @@ int Plugin_newCommand(lua_State* L)
       // overwriting a previous registered command)
       deleteCommandIfExistent(plugin->ext, id);
 
-      Commands::instance()->add(new PluginCommand(id, title, onclickRef));
+      auto cmd = new PluginCommand(id, title, onclickRef);
+      Commands::instance()->add(cmd);
       plugin->ext->addCommand(id);
+
+      // Add a new menu option if the "group" is defined
+      if (!group.empty()) {
+        if (auto appMenus = AppMenus::instance()) {
+          std::unique_ptr<MenuItem> menuItem(new AppMenuItem(title, cmd));
+          appMenus->addMenuItemIntoGroup(
+            group, title, std::move(menuItem));
+        }
+      }
     }
     else {
       lua_pop(L, 1);

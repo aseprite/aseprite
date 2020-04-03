@@ -12,6 +12,7 @@
 #include "app/extensions.h"
 
 #include "app/app.h"
+#include "app/app_menus.h"
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
 #include "app/console.h"
@@ -642,6 +643,9 @@ void Extension::exitScripts()
         ASSERT(cmd);
 
         if (cmd) {
+          // TODO use a signal
+          AppMenus::instance()->removeMenuItemWithCommand(cmd);
+
           cmds->remove(cmd);
 
           // This will call ~PluginCommand() and unref the command

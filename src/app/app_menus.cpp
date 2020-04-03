@@ -325,6 +325,18 @@ void AppMenus::reload()
   const char* path = GuiXml::instance()->filename();
 
   ////////////////////////////////////////
+  // Remove all menu items added from scripts so we can re-add them
+  // later in the new menus.
+
+  for (auto& it : m_groups) {
+    GroupInfo& group = it.second;
+    group.end = nullptr;
+    for (auto& item : group.items) {
+      item->parent()->removeChild(item);
+    }
+  }
+
+  ////////////////////////////////////////
   // Load menus
 
   LOG("MENU: Loading menus from %s\n", path);
@@ -364,6 +376,27 @@ void AppMenus::reload()
       delete m_rootMenu->findItemById("scripts_menu_separator");
     }
 #endif
+  }
+
+  ////////////////////////////////////////
+  // Re-add menu items from scripts
+
+  for (auto& it : m_groups) {
+    GroupInfo& group = it.second;
+    if (group.end) {
+      auto menu = group.end->parent();
+      int insertIndex = menu->getChildIndex(group.end);
+      for (auto& item : group.items) {
+        menu->insertChild(++insertIndex, item);
+        group.end = item;
+      }
+    }
+    // Delete items that don't have a group now
+    else {
+      for (auto& item : group.items)
+        delete item;
+      group.items.clear();
+    }
   }
 
   ////////////////////////////////////////
@@ -512,6 +545,45 @@ bool AppMenus::rebuildRecentList()
   return true;
 }
 
+void AppMenus::addMenuItemIntoGroup(const std::string& groupId,
+                                    const std::string& title,
+                                    std::unique_ptr<MenuItem>&& menuItem)
+{
+  auto it = m_groups.find(groupId);
+  if (it == m_groups.end())
+    return;
+
+  GroupInfo& group = it->second;
+  Widget* menu = group.end->parent();
+  ASSERT(menu);
+  int insertIndex = menu->getChildIndex(group.end);
+  menu->insertChild(insertIndex+1, menuItem.get());
+
+  group.end = menuItem.get();
+  group.items.push_back(menuItem.get());
+
+  menuItem.release();
+}
+
+void AppMenus::removeMenuItemWithCommand(Command* cmd)
+{
+  for (auto& it : m_groups) {
+    GroupInfo& group = it.second;
+    group.end = nullptr;
+    for (auto it=group.items.begin(); it != group.items.end(); ) {
+      auto& item = *it;
+      auto appMenuItem = dynamic_cast<AppMenuItem*>(item);
+      if (appMenuItem &&
+          appMenuItem->getCommand() == cmd) {
+        delete appMenuItem;
+        it = group.items.erase(it);
+      }
+      else
+        ++it;
+    }
+  }
+}
+
 Menu* AppMenus::loadMenuById(TiXmlHandle& handle, const char* id)
 {
   ASSERT(id != NULL);
@@ -557,6 +629,7 @@ Menu* AppMenus::convertXmlelemToMenu(TiXmlElement* elem)
 Widget* AppMenus::convertXmlelemToMenuitem(TiXmlElement* elem)
 {
   const char* id = elem->Attribute("id");
+  const char* group = elem->Attribute("group");
 
   // is it a <separator>?
   if (strcmp(elem->Value(), "separator") == 0) {
@@ -569,6 +642,7 @@ Widget* AppMenus::convertXmlelemToMenuitem(TiXmlElement* elem)
         m_recentFilesPlaceholder = item;
       }
     }
+    if (group) m_groups[group].end = item;
     return item;
   }
 
@@ -600,6 +674,7 @@ Widget* AppMenus::convertXmlelemToMenuitem(TiXmlElement* elem)
 
   if (id) menuitem->setId(id);
   menuitem->processMnemonicFromText();
+  if (group) m_groups[group].end = menuitem;
 
   // Has it a ID?
   if (id) {
