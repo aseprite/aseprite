@@ -210,7 +210,8 @@ public:
         }
       }
     }
-    else if (has_alpha_char(text) &&
+    else if (text[0] != '!' &&
+             has_alpha_char(text) &&
              !is_email(text)) {
       std::cerr << elem->GetDocument()->Value() << ":"
                 << elem->Row() << ":"
