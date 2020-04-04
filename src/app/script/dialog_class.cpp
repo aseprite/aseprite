@@ -288,7 +288,7 @@ int Dialog_add_widget(lua_State* L, Widget* widget)
 
     // Focus magnet
     type = lua_getfield(L, 2, "focus");
-    if (type != LUA_TNONE && lua_toboolean(L, -1))
+    if (type != LUA_TNIL && lua_toboolean(L, -1))
       widget->setFocusMagnet(true);
     lua_pop(L, 1);
   }
@@ -386,7 +386,7 @@ int Dialog_button_base(lua_State* L, T** outputWidget = nullptr)
 
   if (lua_istable(L, 2)) {
     int type = lua_getfield(L, 2, "selected");
-    if (type != LUA_TNONE)
+    if (type != LUA_TNIL)
       widget->setSelected(lua_toboolean(L, -1));
     lua_pop(L, 1);
 
@@ -473,8 +473,7 @@ int Dialog_number(lua_State* L)
     lua_pop(L, 1);
 
     type = lua_getfield(L, 2, "decimals");
-    if (type != LUA_TNONE &&
-        type != LUA_TNIL) {
+    if (type != LUA_TNIL) {
       widget->setDecimals(lua_tointegerx(L, -1, nullptr));
     }
     lua_pop(L, 1);
@@ -491,19 +490,19 @@ int Dialog_slider(lua_State* L)
 
   if (lua_istable(L, 2)) {
     int type = lua_getfield(L, 2, "min");
-    if (type != LUA_TNONE) {
+    if (type != LUA_TNIL) {
       min = lua_tointegerx(L, -1, nullptr);
     }
     lua_pop(L, 1);
 
     type = lua_getfield(L, 2, "max");
-    if (type != LUA_TNONE) {
+    if (type != LUA_TNIL) {
       max = lua_tointegerx(L, -1, nullptr);
     }
     lua_pop(L, 1);
 
     type = lua_getfield(L, 2, "value");
-    if (type != LUA_TNONE) {
+    if (type != LUA_TNIL) {
       value = lua_tointegerx(L, -1, nullptr);
     }
     lua_pop(L, 1);
