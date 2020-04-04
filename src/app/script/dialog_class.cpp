@@ -27,6 +27,7 @@
 #include "ui/entry.h"
 #include "ui/grid.h"
 #include "ui/label.h"
+#include "ui/manager.h"
 #include "ui/separator.h"
 #include "ui/slider.h"
 #include "ui/window.h"
@@ -51,6 +52,7 @@ struct Dialog {
   ui::Grid grid;
   ui::HBox* hbox = nullptr;
   std::map<std::string, ui::Widget*> dataWidgets;
+  std::map<std::string, ui::Widget*> labelWidgets;
   int currentRadioGroup = 0;
 
   // Used to create a new row when a different kind of widget is added
@@ -99,6 +101,20 @@ struct Dialog {
       showRef = LUA_REFNIL;
       L = nullptr;
     }
+  }
+
+  Widget* findDataWidgetById(const char* id) {
+    auto it = dataWidgets.find(id);
+    if (it != dataWidgets.end())
+      return it->second;
+    else
+      return nullptr;
+  }
+
+  void setLabelVisibilty(const char* id, bool visible) {
+    auto it = labelWidgets.find(id);
+    if (it != labelWidgets.end())
+      it->second->setVisible(visible);
   }
 
 };
@@ -261,6 +277,7 @@ int Dialog_add_widget(lua_State* L, Widget* widget)
 {
   auto dlg = get_obj<Dialog>(L, 1);
   const char* label = nullptr;
+  std::string id;
 
   // This is to separate different kind of widgets without label in
   // different rows.
@@ -273,8 +290,9 @@ int Dialog_add_widget(lua_State* L, Widget* widget)
     // Widget ID (used to fill the Dialog_get_data table then)
     int type = lua_getfield(L, 2, "id");
     if (type == LUA_TSTRING) {
-      if (auto id = lua_tostring(L, -1)) {
-        widget->setId(id);
+      if (auto s = lua_tostring(L, -1)) {
+        id = s;
+        widget->setId(s);
         dlg->dataWidgets[id] = widget;
       }
     }
@@ -294,8 +312,12 @@ int Dialog_add_widget(lua_State* L, Widget* widget)
   }
 
   if (label || !dlg->hbox) {
-    if (label)
-      dlg->grid.addChildInCell(new ui::Label(label), 1, 1, ui::LEFT | ui::TOP);
+    if (label) {
+      auto labelWidget = new ui::Label(label);
+      dlg->grid.addChildInCell(labelWidget, 1, 1, ui::LEFT | ui::TOP);
+      if (!id.empty())
+        dlg->labelWidgets[id] = labelWidget;
+    }
     else
       dlg->grid.addChildInCell(new ui::HBox, 1, 1, ui::LEFT | ui::TOP);
 
@@ -685,6 +707,69 @@ int Dialog_file(lua_State* L)
   return Dialog_add_widget(L, widget);
 }
 
+int Dialog_modify(lua_State* L)
+{
+  auto dlg = get_obj<Dialog>(L, 1);
+  if (lua_istable(L, 2)) {
+    const char* id = nullptr;
+    bool relayout = false;
+
+    int type = lua_getfield(L, 2, "id");
+    if (type != LUA_TNIL)
+      id = lua_tostring(L, -1);
+    lua_pop(L, 1);
+
+    if (!id)
+      return luaL_error(L, "Missing 'id' field in Dialog:modify{ id=... }");
+
+    // Here we could use dlg->window.findChild(id) but why not use the
+    // map directly (it should be faster than iterating over all
+    // children).
+    Widget* widget = dlg->findDataWidgetById(id);
+    if (!widget)
+      return luaL_error(L, "Given id=\"%s\" in Dialog:modify{} not found in dialog", id);
+
+    type = lua_getfield(L, 2, "enabled");
+    if (type != LUA_TNIL)
+      widget->setEnabled(lua_toboolean(L, -1));
+    lua_pop(L, 1);
+
+    type = lua_getfield(L, 2, "selected");
+    if (type != LUA_TNIL)
+      widget->setSelected(lua_toboolean(L, -1));
+    lua_pop(L, 1);
+
+    type = lua_getfield(L, 2, "visible");
+    if (type != LUA_TNIL) {
+      bool state = lua_toboolean(L, -1);
+      widget->setVisible(state);
+      dlg->setLabelVisibilty(id, state);
+      relayout = true;
+    }
+    lua_pop(L, 1);
+
+    type = lua_getfield(L, 2, "text");
+    if (const char* s = lua_tostring(L, -1)) {
+      widget->setText(s);
+      relayout = true;
+    }
+    lua_pop(L, 1);
+
+    if (relayout) {
+      dlg->window.layout();
+
+      gfx::Rect origBounds = dlg->window.bounds();
+      gfx::Rect bounds = origBounds;
+      bounds.h = dlg->window.sizeHint().h;
+      dlg->window.setBounds(bounds);
+
+      dlg->window.manager()->invalidateRect(origBounds);
+    }
+  }
+  lua_pushvalue(L, 1);
+  return 1;
+}
+
 int Dialog_get_data(lua_State* L)
 {
   auto dlg = get_obj<Dialog>(L, 1);
@@ -894,6 +979,7 @@ const luaL_Reg Dialog_methods[] = {
   { "color", Dialog_color },
   { "shades", Dialog_shades },
   { "file", Dialog_file },
+  { "modify", Dialog_modify },
   { nullptr, nullptr }
 };
 
