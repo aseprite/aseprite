@@ -35,7 +35,8 @@ void MainMenuBar::reload()
   AppMenus::instance()->reload();
 
   setMenu(AppMenus::instance()->getRootMenu());
-  parent()->layout();
+  if (auto p = parent())
+    p->layout();
 }
 
 } // namespace app
