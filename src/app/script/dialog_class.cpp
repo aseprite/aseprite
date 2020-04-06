@@ -300,7 +300,7 @@ int Dialog_add_widget(lua_State* L, Widget* widget)
 
     // Label
     type = lua_getfield(L, 2, "label");
-    if (type == LUA_TSTRING)
+    if (type != LUA_TNIL)
       label = lua_tostring(L, -1);
     lua_pop(L, 1);
 
@@ -374,7 +374,7 @@ int Dialog_label(lua_State* L)
   std::string text;
   if (lua_istable(L, 2)) {
     int type = lua_getfield(L, 2, "text");
-    if (type == LUA_TSTRING) {
+    if (type != LUA_TNIL) {
       if (auto p = lua_tostring(L, -1))
         text = p;
     }
@@ -391,7 +391,7 @@ int Dialog_button_base(lua_State* L, T** outputWidget = nullptr)
   std::string text;
   if (lua_istable(L, 2)) {
     int type = lua_getfield(L, 2, "text");
-    if (type == LUA_TSTRING) {
+    if (type != LUA_TNIL) {
       if (auto p = lua_tostring(L, -1))
         text = p;
     }
