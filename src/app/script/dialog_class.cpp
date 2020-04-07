@@ -583,6 +583,19 @@ int Dialog_color(lua_State* L)
   auto widget = new ColorButton(color,
                                 app_get_current_pixel_format(),
                                 ColorButtonOptions());
+
+  if (lua_istable(L, 2)) {
+    int type = lua_getfield(L, 2, "onchange");
+    if (type == LUA_TFUNCTION) {
+      Dialog_connect_signal(
+        L, 1, widget->Change,
+        [](lua_State* L, const app::Color& color){
+          push_obj<app::Color>(L, color);
+          lua_setfield(L, -2, "color");
+        });
+    }
+  }
+
   return Dialog_add_widget(L, widget);
 }
 
