@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019 Igara Studio S.A.
+// Copyright (c) 2019-2020 Igara Studio S.A.
 // Copyright (c) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -396,8 +396,14 @@ static void set_lum(double& r, double& g, double& b, double l)
   clip_color(r, g, b);
 }
 
+// TODO replace this with a better impl (and test this, not sure if it's correct)
 static void set_sat(double& r, double& g, double& b, double s)
 {
+#undef MID
+#define MID(x,y,z)   ((x) > (y) ? ((y) > (z) ? (y) : ((x) > (z) ?    \
+                       (z) : (x))) : ((y) > (z) ? ((z) > (x) ? (z) : \
+                       (x)): (y)))
+
   double& min = MIN(r, MIN(g, b));
   double& mid = MID(r, g, b);
   double& max = MAX(r, MAX(g, b));

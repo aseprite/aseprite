@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -14,6 +14,7 @@
 #include "app/console.h"
 #include "app/crash/internals.h"
 #include "app/doc.h"
+#include "base/clamp.h"
 #include "base/convert_to.h"
 #include "base/exception.h"
 #include "base/fs.h"
@@ -516,8 +517,8 @@ Doc* read_document_with_raw_images(const std::string& dir,
     info.height = 256;
     info.filename = "Unknown";
   }
-  info.width = MID(1, info.width, 99999);
-  info.height = MID(1, info.height, 99999);
+  info.width = base::clamp(info.width, 1, 99999);
+  info.height = base::clamp(info.height, 1, 99999);
   Sprite* spr = new Sprite(ImageSpec(info.mode, info.width, info.height), 256);
 
   // Load each image as a new frame

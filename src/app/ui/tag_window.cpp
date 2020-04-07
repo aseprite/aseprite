@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -14,6 +14,7 @@
 #include "app/doc.h"
 #include "app/pref/preferences.h"
 #include "app/ui/layer_frame_comboboxes.h"
+#include "base/clamp.h"
 #include "doc/sprite.h"
 #include "doc/tag.h"
 
@@ -53,8 +54,8 @@ void TagWindow::rangeValue(doc::frame_t& from, doc::frame_t& to)
 
   from = this->from()->textInt()-m_base;
   to   = this->to()->textInt()-m_base;
-  from = MID(first, from, last);
-  to   = MID(from, to, last);
+  from = base::clamp(from, first, last);
+  to   = base::clamp(to, from, last);
 }
 
 doc::color_t TagWindow::colorValue()

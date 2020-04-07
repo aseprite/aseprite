@@ -284,7 +284,7 @@ Timeline::~Timeline()
 
 void Timeline::setZoom(const double zoom)
 {
-  m_zoom = MID(1.0, zoom, 10.0);
+  m_zoom = base::clamp(zoom, 1.0, 10.0);
   m_thumbnailsOverlayDirection = gfx::Point(int(frameBoxWidth()*1.0), int(frameBoxWidth()*0.5));
   m_thumbnailsOverlayVisible = false;
 }
@@ -944,7 +944,7 @@ bool Timeline::onProcessMessage(Message* msg)
               if (selectedLayersBounds(selectedLayers(),
                                        &layerFirst, &layerLast)) {
                 layer_t layerIdx = m_clk.layer;
-                layerIdx = MID(layerFirst, layerIdx, layerLast);
+                layerIdx = base::clamp(layerIdx, layerFirst, layerLast);
                 m_clk.layer = layerIdx;
               }
             }
@@ -1885,20 +1885,21 @@ void Timeline::setCursor(ui::Message* msg, const Hit& hit)
   }
 }
 
-void Timeline::getDrawableLayers(layer_t* firstLayer, layer_t* lastLayer)
+void Timeline::getDrawableLayers(layer_t* firstDrawableLayer,
+                                 layer_t* lastDrawableLayer)
 {
-  layer_t i = this->lastLayer()
+  layer_t i = lastLayer()
             - ((viewScroll().y + getCelsBounds().h) / layerBoxHeight());
-  i = MID(this->firstLayer(), i, this->lastLayer());
+  i = base::clamp(i, firstLayer(), lastLayer());
 
-  layer_t j = this->lastLayer() - viewScroll().y / layerBoxHeight();;
+  layer_t j = lastLayer() - viewScroll().y / layerBoxHeight();;
   if (!m_rows.empty())
-    j = MID(this->firstLayer(), j, this->lastLayer());
+    j = base::clamp(j, firstLayer(), lastLayer());
   else
     j = -1;
 
-  *firstLayer = i;
-  *lastLayer = j;
+  *firstDrawableLayer = i;
+  *lastDrawableLayer = j;
 }
 
 void Timeline::getDrawableFrames(frame_t* firstFrame, frame_t* lastFrame)
@@ -2476,9 +2477,9 @@ void Timeline::drawTags(ui::Graphics* g)
           r = gfx::getr(bg)+32;
           g = gfx::getg(bg)+32;
           b = gfx::getb(bg)+32;
-          r = MID(0, r, 255);
-          g = MID(0, g, 255);
-          b = MID(0, b, 255);
+          r = base::clamp(r, 0, 255);
+          g = base::clamp(g, 0, 255);
+          b = base::clamp(b, 0, 255);
           bg = gfx::rgba(r, g, b, gfx::geta(bg));
         }
         g->fillRect(bg, bounds);
@@ -3049,11 +3050,11 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
       hit.veryBottom = true;
 
     if (hasCapture()) {
-      hit.layer = MID(firstLayer(), hit.layer, lastLayer());
+      hit.layer = base::clamp(hit.layer, firstLayer(), lastLayer());
       if (isMovingCel())
-        hit.frame = MAX(firstFrame(), hit.frame);
+        hit.frame = std::max(firstFrame(), hit.frame);
       else
-        hit.frame = MID(firstFrame(), hit.frame, lastFrame());
+        hit.frame = base::clamp(hit.frame, firstFrame(), lastFrame());
     }
     else {
       if (hit.layer > lastLayer()) hit.layer = -1;
@@ -3227,8 +3228,8 @@ Timeline::Hit Timeline::hitTestCel(const gfx::Point& mousePos)
                        - m_separator_w
                        + scroll.x) / frameBoxWidth());
 
-  hit.layer = MID(firstLayer(), hit.layer, lastLayer());
-  hit.frame = MAX(firstFrame(), hit.frame);
+  hit.layer = base::clamp(hit.layer, firstLayer(), lastLayer());
+  hit.frame = std::max(firstFrame(), hit.frame);
 
   return hit;
 }
@@ -3736,8 +3737,8 @@ void Timeline::setViewScroll(const gfx::Point& pt)
   const gfx::Point oldScroll = viewScroll();
   const gfx::Point maxPos = getMaxScrollablePos();
   gfx::Point newScroll = pt;
-  newScroll.x = MID(0, newScroll.x, maxPos.x);
-  newScroll.y = MID(0, newScroll.y, maxPos.y);
+  newScroll.x = base::clamp(newScroll.x, 0, maxPos.x);
+  newScroll.y = base::clamp(newScroll.y, 0, maxPos.y);
 
   if (newScroll.y != oldScroll.y) {
     gfx::Rect rc;

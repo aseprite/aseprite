@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (c) 2019 Igara Studio S.A.
+// Copyright (c) 2019-2020  Igara Studio S.A.
 // Copyright (c) 2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -11,7 +11,7 @@
 
 #include "render/ordered_dither.h"
 
-#include "base/base.h"
+#include "base/clamp.h"
 #include "render/dithering.h"
 #include "render/dithering_matrix.h"
 
@@ -83,10 +83,10 @@ doc::color_t OrderedDither::ditherRgbPixelToIndex(
   int g2 = g - (g1-g);
   int b2 = b - (b1-b);
   int a2 = a - (a1-a);
-  r2 = MID(0, r2, 255);
-  g2 = MID(0, g2, 255);
-  b2 = MID(0, b2, 255);
-  a2 = MID(0, a2, 255);
+  r2 = base::clamp(r2, 0, 255);
+  g2 = base::clamp(g2, 0, 255);
+  b2 = base::clamp(b2, 0, 255);
+  a2 = base::clamp(a2, 0, 255);
   doc::color_t nearest2idx =
     (rgbmap ? rgbmap->mapColor(r2, g2, b2, a2):
               palette->findBestfit(r2, g2, b2, a2, m_transparentIndex));
@@ -201,7 +201,7 @@ doc::color_t OrderedDither2::ditherRgbPixelToIndex(
     if (mix) {
       if (div)
         mix /= div;
-      mix = MID(0, mix, maxMixValue);
+      mix = base::clamp(mix, 0, maxMixValue);
     }
 
     const int rM = r0 + (r1-r0) * mix / maxMixValue;

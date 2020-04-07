@@ -22,6 +22,7 @@
 #include "app/ui/timeline/timeline.h"
 #include "app/util/freetype_utils.h"
 #include "base/bind.h"
+#include "base/clamp.h"
 #include "base/fs.h"
 #include "base/string.h"
 #include "doc/image.h"
@@ -80,7 +81,7 @@ public:
 
   int sizeValue() const {
     int size = fontSize()->textInt();
-    size = MID(1, size, 5000);
+    size = base::clamp(size, 1, 5000);
     return size;
   }
 
@@ -165,7 +166,7 @@ void PasteTextCommand::onExecute(Context* ctx)
   bool antialias = window.antialias()->isSelected();
   std::string faceName = window.faceValue();
   int size = window.sizeValue();
-  size = MID(1, size, 999);
+  size = base::clamp(size, 1, 999);
   pref.textTool.fontFace(faceName);
   pref.textTool.fontSize(size);
   pref.textTool.antialias(antialias);

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -24,6 +24,7 @@
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
+#include "base/clamp.h"
 #include "doc/image.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
@@ -368,8 +369,8 @@ void CanvasSizeCommand::onExecute(Context* context)
 
     api.cropSprite(sprite,
                    gfx::Rect(x1, y1,
-                             MID(1, x2-x1, DOC_SPRITE_MAX_WIDTH),
-                             MID(1, y2-y1, DOC_SPRITE_MAX_HEIGHT)),
+                             base::clamp(x2-x1, 1, DOC_SPRITE_MAX_WIDTH),
+                             base::clamp(y2-y1, 1, DOC_SPRITE_MAX_HEIGHT)),
                    params.trimOutside());
     tx.commit();
 

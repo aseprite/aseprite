@@ -19,6 +19,7 @@
 #include "app/modules/gfx.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
+#include "base/clamp.h"
 #include "base/concurrent_queue.h"
 #include "base/scoped_value.h"
 #include "base/thread.h"
@@ -282,7 +283,7 @@ app::Color ColorSelector::getAlphaBarColor(const int u, const int umax)
 {
   int alpha = (255 * u / umax);
   app::Color color = m_color;
-  color.setAlpha(MID(0, alpha, 255));
+  color.setAlpha(base::clamp(alpha, 0, 255));
   return color;
 }
 

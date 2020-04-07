@@ -14,6 +14,7 @@
 #include "app/file/file.h"
 #include "app/file/file_format.h"
 #include "app/file/file_formats_manager.h"
+#include "base/clamp.h"
 #include "base/fs.h"
 #include "base/string.h"
 #include "dio/detect_format.h"
@@ -149,7 +150,7 @@ bool save_palette(const char* filename, const Palette* pal, int columns)
       if (!ff || !ff->support(FILE_SUPPORT_SAVE))
         break;
 
-      int w = (columns > 0 ? MID(0, columns, pal->size()): pal->size());
+      int w = (columns > 0 ? base::clamp(columns, 0, pal->size()): pal->size());
       int h = (pal->size() / w) + (pal->size() % w > 0 ? 1: 0);
 
       Context tmpContext;

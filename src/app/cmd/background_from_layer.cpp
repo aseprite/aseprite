@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -17,6 +18,7 @@
 #include "app/cmd/set_cel_opacity.h"
 #include "app/cmd/set_cel_position.h"
 #include "app/doc.h"
+#include "base/clamp.h"
 #include "doc/cel.h"
 #include "doc/image.h"
 #include "doc/layer.h"
@@ -62,7 +64,7 @@ void BackgroundFromLayer::onExecute()
       bg_image.get(), cel_image,
       sprite->palette(cel->frame()),
       cel->x(), cel->y(),
-      MID(0, cel->opacity(), 255),
+      base::clamp(cel->opacity(), 0, 255),
       static_cast<LayerImage*>(layer)->blendMode());
 
     // now we have to copy the new image (bg_image) to the cel...

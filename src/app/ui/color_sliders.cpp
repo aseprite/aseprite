@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -185,7 +185,7 @@ namespace {
                 else
                   ++value;
 
-                setTextf("%d", MID(minValue(), value, maxValue()));
+                setTextf("%d", base::clamp(value, minValue(), maxValue()));
                 selectAllText();
 
                 onChange();
@@ -459,7 +459,7 @@ void ColorSliders::onEntryChange(const Channel i)
   Slider* slider = (m_mode == Mode::Absolute ?
                     m_items[i].absSlider:
                     m_items[i].relSlider);
-  value = MID(slider->getMinValue(), value, slider->getMaxValue());
+  value = base::clamp(value, slider->getMinValue(), slider->getMaxValue());
   slider->setValue(value);
 
   onControlChange(i);

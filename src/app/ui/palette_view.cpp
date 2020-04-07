@@ -221,7 +221,7 @@ int PaletteView::getBoxSize() const
 
 void PaletteView::setBoxSize(double boxsize)
 {
-  m_boxsize = MID(4.0, boxsize, 32.0);
+  m_boxsize = base::clamp(boxsize, 4.0, 32.0);
 
   if (m_delegate)
     m_delegate->onPaletteViewChangeSize(int(m_boxsize));
@@ -784,7 +784,8 @@ PaletteView::Hit PaletteView::hitTest(const gfx::Point& pos)
   int colsLimit = m_columns;
   if (m_state == State::DRAGGING_OUTLINE)
     --colsLimit;
-  int i = MID(0, (pos.x-vp.x)/box.w, colsLimit) + MAX(0, pos.y/box.h)*m_columns;
+  int i = base::clamp((pos.x-vp.x)/box.w, 0, colsLimit)
+    + std::max(0, pos.y/box.h)*m_columns;
   return Hit(Hit::POSSIBLE_COLOR, i);
 }
 

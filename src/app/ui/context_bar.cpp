@@ -46,6 +46,7 @@
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
+#include "base/clamp.h"
 #include "base/fs.h"
 #include "base/scoped_value.h"
 #include "doc/brush.h"
@@ -643,7 +644,7 @@ private:
 
     char buf[32];
     int n = get_config_int("shades", "count", 0);
-    n = MID(0, n, 256);
+    n = base::clamp(n, 0, 256);
     for (int i=0; i<n; ++i) {
       sprintf(buf, "shade%d", i);
       Shade shade = shade_from_string(get_config_string("shades", buf, ""));

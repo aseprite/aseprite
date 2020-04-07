@@ -8,6 +8,7 @@
 #include "app/modules/palettes.h"
 #include "app/util/wrap_point.h"
 #include "app/util/wrap_value.h"
+#include "base/clamp.h"
 #include "doc/blend_funcs.h"
 #include "doc/blend_internals.h"
 #include "doc/image_impl.h"
@@ -651,8 +652,8 @@ private:
                               m_srcImageHeight),
                     pt, false);
 
-    pt.x = MID(0, pt.x, m_srcImageWidth-1);
-    pt.y = MID(0, pt.y, m_srcImageHeight-1);
+    pt.x = base::clamp(pt.x, 0, m_srcImageWidth-1);
+    pt.y = base::clamp(pt.y, 0, m_srcImageHeight-1);
 
     m_color = get_pixel(m_srcImage, pt.x, pt.y);
   }

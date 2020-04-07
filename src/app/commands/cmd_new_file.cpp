@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -129,7 +129,7 @@ void NewFileCommand::onExecute(Context* ctx)
     int w = pref.newFile.width();
     int h = pref.newFile.height();
     int bg = pref.newFile.backgroundColor();
-    bg = MID(0, bg, 2);
+    bg = base::clamp(bg, 0, 2);
 
     // If the clipboard contains an image, we can show the size of the
     // clipboard as default image size.

@@ -97,9 +97,9 @@ app::Color ColorWheel::getMainAreaColor(const int _u, const int umax,
     int b = 255 - di;
     if (d < m_wheelRadius+2*guiscale()) {
       return app::Color::fromRgb(
-        MID(0, r, 255),
-        MID(0, g, 255),
-        MID(128, b, 255));
+        base::clamp(r, 0, 255),
+        base::clamp(g, 0, 255),
+        base::clamp(b, 128, 255));
     }
     else {
       return app::Color::fromRgb(128, 128, 255);
@@ -190,7 +190,7 @@ void ColorWheel::onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc)
       double angle = std::atan2(m_color.getGreen()-128,
                                 m_color.getRed()-128);
       double dist = (255-m_color.getBlue()) / 128.0;
-      dist = MID(0.0, dist, 1.0);
+      dist = base::clamp(dist, 0.0, 1.0);
 
       gfx::Point pos =
         m_wheelBounds.center() +
@@ -334,18 +334,18 @@ void ColorWheel::setHarmony(Harmony harmony)
 
 int ColorWheel::getHarmonies() const
 {
-  int i = MID(0, (int)m_harmony, (int)Harmony::LAST);
+  int i = base::clamp((int)m_harmony, 0, (int)Harmony::LAST);
   return harmonies[i].n;
 }
 
 app::Color ColorWheel::getColorInHarmony(int j) const
 {
-  int i = MID(0, (int)m_harmony, (int)Harmony::LAST);
-  j = MID(0, j, harmonies[i].n-1);
+  int i = base::clamp((int)m_harmony, 0, (int)Harmony::LAST);
+  j = base::clamp(j, 0, harmonies[i].n-1);
   double hue = convertHueAngle(int(m_color.getHsvHue()), -1) + harmonies[i].hues[j];
   double sat = m_color.getHsvSaturation() * harmonies[i].sats[j] / 100.0;
   return app::Color::fromHsv(std::fmod(hue, 360),
-                             MID(0.0, sat, 1.0),
+                             base::clamp(sat, 0.0, 1.0),
                              m_color.getHsvValue());
 }
 

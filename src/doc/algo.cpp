@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (c) 2018-2020 Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -11,7 +11,7 @@
 
 #include "doc/algo.h"
 
-#include "base/base.h"
+#include "base/clamp.h"
 #include "base/debug.h"
 
 #include <algorithm>
@@ -249,7 +249,7 @@ static void draw_rotated_ellipse_rect(int x0, int y0, int x1, int y1, double zd,
   if (w != 0.0)
     w = (w-zd) / (w+w); // squared weight of P1
 
-  w = MID(0.0, w, 1.0);
+  w = base::clamp(w, 0.0, 1.0);
 
   xd = std::floor(w*xd + 0.5);
   yd = std::floor(w*yd + 0.5);
@@ -285,7 +285,7 @@ void fill_rotated_ellipse(int cx, int cy, int a, int b, double angle, void* data
     Rows(int y0, int nrows)
       : y0(y0), row(nrows, std::make_pair(1, -1)) { }
     void update(int x, int y) {
-      int i = MID(0, y-y0, row.size()-1);
+      int i = base::clamp(y-y0, 0, int(row.size()-1));
       auto& r = row[i];
       if (r.first > r.second) {
         r.first = r.second = x;

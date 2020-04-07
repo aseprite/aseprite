@@ -90,8 +90,8 @@ void ColorTintShadeTone::onPaintSurfaceInBgThread(
         gfx::Color color = color_utils::color_for_ui(
           app::Color::fromHsv(
             hue,
-            MID(0.0, sat, 1.0),
-            MID(0.0, val, 1.0)));
+            base::clamp(sat, 0.0, 1.0),
+            base::clamp(val, 0.0, 1.0)));
 
         s->putPixel(color, main.x+x, main.y+y);
       }

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -358,7 +358,7 @@ bool FileList::onProcessMessage(Message* msg)
         }
 
         if (bottom > 0)
-          selectIndex(MID(0, select, bottom-1));
+          selectIndex(base::clamp(select, 0, bottom-1));
 
         return true;
       }

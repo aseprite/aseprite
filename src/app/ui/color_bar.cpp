@@ -27,8 +27,8 @@
 #include "app/commands/quick_command.h"
 #include "app/console.h"
 #include "app/context_access.h"
-#include "app/doc_undo.h"
 #include "app/doc_api.h"
+#include "app/doc_undo.h"
 #include "app/i18n/strings.h"
 #include "app/ini_file.h"
 #include "app/modules/editors.h"
@@ -51,6 +51,7 @@
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
 #include "base/bind.h"
+#include "base/clamp.h"
 #include "base/scoped_value.h"
 #include "doc/cel.h"
 #include "doc/cels_range.h"
@@ -1216,7 +1217,7 @@ void ColorBar::fixColorIndex(ColorButton& colorButton)
 
   if (color.getType() == Color::IndexType) {
     int oldIndex = color.getIndex();
-    int newIndex = MID(0, oldIndex, get_current_palette()->size()-1);
+    int newIndex = base::clamp(oldIndex, 0, get_current_palette()->size()-1);
     if (oldIndex != newIndex) {
       color = Color::fromIndex(newIndex);
       colorButton.setColor(color);
