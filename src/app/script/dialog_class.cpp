@@ -117,6 +117,12 @@ struct Dialog {
       it->second->setVisible(visible);
   }
 
+  void setLabelText(const char* id, const char* text) {
+    auto it = labelWidgets.find(id);
+    if (it != labelWidgets.end())
+      it->second->setText(text);
+  }
+
 };
 
 template<typename...Args,
@@ -754,6 +760,22 @@ int Dialog_modify(lua_State* L)
       relayout = true;
     }
     lua_pop(L, 1);
+
+    type = lua_getfield(L, 2, "label");
+    if (const char* s = lua_tostring(L, -1)) {
+      dlg->setLabelText(id, s);
+      relayout = true;
+    }
+    lua_pop(L, 1);
+
+    type = lua_getfield(L, 2, "focus");
+    if (type != LUA_TNIL && lua_toboolean(L, -1)) {
+      widget->requestFocus();
+      relayout = true;
+    }
+    lua_pop(L, 1);
+
+    // TODO slider value? combobox option(s)? color? colors (shade)?)
 
     if (relayout) {
       dlg->window.layout();
