@@ -364,7 +364,7 @@ bool ColorSelector::onProcessMessage(ui::Message* msg)
               newHue,
               m_color.getHsvSaturation(),
               m_color.getHsvValue(),
-              m_color.getAlpha());
+              getCurrentAlphaForNewColor());
 
           ColorChange(newColor, kButtonNone);
         }
@@ -488,6 +488,14 @@ void ColorSelector::paintColorIndicator(ui::Graphics* g,
     white ? gfx::rgba(255, 255, 255): gfx::rgba(0, 0, 0),
     pos.x-icon->width()/2,
     pos.y-icon->height()/2);
+}
+
+int ColorSelector::getCurrentAlphaForNewColor() const
+{
+  if (m_color.getType() != Color::MaskType)
+    return m_color.getAlpha();
+  else
+    return 255;
 }
 
 gfx::Rect ColorSelector::bottomBarBounds() const

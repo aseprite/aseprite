@@ -13,6 +13,7 @@
 
 #include "app/color_utils.h"
 #include "app/ui/skin/skin_theme.h"
+#include "base/clamp.h"
 #include "ui/graphics.h"
 
 namespace app {
@@ -32,19 +33,19 @@ app::Color ColorTintShadeTone::getMainAreaColor(const int u, const int umax,
   double val = (1.0 - double(v) / double(vmax));
   return app::Color::fromHsv(
     m_color.getHsvHue(),
-    MID(0.0, sat, 1.0),
-    MID(0.0, val, 1.0),
-    m_color.getAlpha());
+    base::clamp(sat, 0.0, 1.0),
+    base::clamp(val, 0.0, 1.0),
+    getCurrentAlphaForNewColor());
 }
 
 app::Color ColorTintShadeTone::getBottomBarColor(const int u, const int umax)
 {
   double hue = (360.0 * u / umax);
   return app::Color::fromHsv(
-    MID(0.0, hue, 360.0),
+    base::clamp(hue, 0.0, 360.0),
     m_color.getHsvSaturation(),
     m_color.getHsvValue(),
-    m_color.getAlpha());
+    getCurrentAlphaForNewColor());
 }
 
 void ColorTintShadeTone::onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc)

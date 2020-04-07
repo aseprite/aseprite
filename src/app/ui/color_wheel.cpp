@@ -16,6 +16,7 @@
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
 #include "base/bind.h"
+#include "base/clamp.h"
 #include "base/pi.h"
 #include "filters/color_curve.h"
 #include "os/surface.h"
@@ -132,10 +133,10 @@ app::Color ColorWheel::getMainAreaColor(const int _u, const int umax,
     }
 
     return app::Color::fromHsv(
-      MID(0, hue, 360),
-      MID(0, sat / 100.0, 1.0),
-      m_color.getHsvValue(),
-      m_color.getAlpha());
+      base::clamp(hue, 0, 360),
+      base::clamp(sat / 100.0, 0.0, 1.0),
+      (m_color.getType() != Color::MaskType ? m_color.getHsvValue(): 1.0),
+      getCurrentAlphaForNewColor());
   }
 
   // Pick harmonies
@@ -170,8 +171,8 @@ app::Color ColorWheel::getBottomBarColor(const int u, const int umax)
   return app::Color::fromHsv(
     m_color.getHsvHue(),
     m_color.getHsvSaturation(),
-    MID(0.0, val, 1.0),
-    m_color.getAlpha());
+    base::clamp(val, 0.0, 1.0),
+    getCurrentAlphaForNewColor());
 }
 
 void ColorWheel::onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc)
