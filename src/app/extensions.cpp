@@ -643,8 +643,10 @@ void Extension::exitScripts()
         ASSERT(cmd);
 
         if (cmd) {
+#ifdef ENABLE_UI
           // TODO use a signal
           AppMenus::instance()->removeMenuItemWithCommand(cmd);
+#endif // ENABLE_UI
 
           cmds->remove(cmd);
 

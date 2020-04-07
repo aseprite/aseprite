@@ -128,14 +128,17 @@ int Plugin_newCommand(lua_State* L)
       Commands::instance()->add(cmd);
       plugin->ext->addCommand(id);
 
+#ifdef ENABLE_UI
       // Add a new menu option if the "group" is defined
-      if (!group.empty()) {
+      if (!group.empty() &&
+          App::instance()->isGui()) { // On CLI menus do not make sense
         if (auto appMenus = AppMenus::instance()) {
           std::unique_ptr<MenuItem> menuItem(new AppMenuItem(title, cmd));
           appMenus->addMenuItemIntoGroup(
             group, title, std::move(menuItem));
         }
       }
+#endif // ENABLE_UI
     }
     else {
       lua_pop(L, 1);
