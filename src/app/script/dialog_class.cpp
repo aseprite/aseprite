@@ -725,8 +725,21 @@ int Dialog_modify(lua_State* L)
       id = lua_tostring(L, -1);
     lua_pop(L, 1);
 
-    if (!id)
-      return luaL_error(L, "Missing 'id' field in Dialog:modify{ id=... }");
+    // Modify window itself when no ID is specified
+    if (id == nullptr) {
+      // "title" or "text" is the same for dialogs
+      type = lua_getfield(L, 2, "title");
+      if (type == LUA_TNIL) {
+        lua_pop(L, 1);
+        type = lua_getfield(L, 2, "text");
+      }
+      if (const char* s = lua_tostring(L, -1)) {
+        dlg->window.setText(s);
+        relayout = true;
+      }
+      lua_pop(L, 1);
+      return 0;
+    }
 
     // Here we could use dlg->window.findChild(id) but why not use the
     // map directly (it should be faster than iterating over all
