@@ -111,7 +111,7 @@ struct Dialog {
       return nullptr;
   }
 
-  void setLabelVisibilty(const char* id, bool visible) {
+  void setLabelVisibility(const char* id, bool visible) {
     auto it = labelWidgets.find(id);
     if (it != labelWidgets.end())
       it->second->setVisible(visible);
@@ -743,7 +743,7 @@ int Dialog_modify(lua_State* L)
     if (type != LUA_TNIL) {
       bool state = lua_toboolean(L, -1);
       widget->setVisible(state);
-      dlg->setLabelVisibilty(id, state);
+      dlg->setLabelVisibility(id, state);
       relayout = true;
     }
     lua_pop(L, 1);
