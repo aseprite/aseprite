@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -47,6 +48,12 @@ namespace app {
     }
     bool contains(const Layer* layer,
                   const frame_t frame) const;
+
+    // If the range includes the given layer, it will be erased from
+    // the selection and other candidates might be selected (e.g. a
+    // sibling, parent, etc.) using the
+    // candidate_if_layer_is_deleted() function.
+    void eraseAndAdjust(const Layer* layer);
 
     void clearRange();
     void startRange(Layer* fromLayer, frame_t fromFrame, Type type);

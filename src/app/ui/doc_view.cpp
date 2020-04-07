@@ -394,33 +394,6 @@ void DocView::onAddLayer(DocEvent& ev)
   }
 }
 
-// TODO why note move this code to Editor::onBeforeRemoveLayer?
-void DocView::onBeforeRemoveLayer(DocEvent& ev)
-{
-  Sprite* sprite = ev.sprite();
-  Layer* layer = ev.layer();
-
-  // If the layer that was removed is the selected one in the editor,
-  // or is an ancestor of the selected one.
-  if ((m_editor->layer() == layer) ||
-      (m_editor->layer() &&
-       m_editor->layer()->hasAncestor(layer))) {
-    LayerGroup* parent = layer->parent();
-    Layer* layer_select = NULL;
-
-    // Select previous layer, or next layer, or the parent (if it is
-    // not the main layer of sprite set).
-    if (layer->getPrevious())
-      layer_select = layer->getPrevious();
-    else if (layer->getNext())
-      layer_select = layer->getNext();
-    else if (parent != sprite->root())
-      layer_select = parent;
-
-    m_editor->setLayer(layer_select);
-  }
-}
-
 void DocView::onAddFrame(DocEvent& ev)
 {
   if (current_editor == m_editor)

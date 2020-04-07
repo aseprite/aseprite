@@ -599,6 +599,7 @@ add_library(app-lib
   util/filetoks.cpp
   util/freetype_utils.cpp
   util/layer_boundaries.cpp
+  util/layer_utils.cpp
   util/msk_file.cpp
   util/new_image_from_mask.cpp
   util/pal_ops.cpp

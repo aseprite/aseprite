@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -42,6 +42,7 @@
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
 #include "app/util/layer_boundaries.h"
+#include "app/util/layer_utils.h"
 #include "app/util/readable_time.h"
 #include "base/bind.h"
 #include "base/clamp.h"
@@ -1730,28 +1731,21 @@ void Timeline::onAddLayer(DocEvent& ev)
   invalidate();
 }
 
-// TODO similar to ActiveSiteHandler::onBeforeRemoveLayer()
+// TODO similar to ActiveSiteHandler::onBeforeRemoveLayer() and Editor::onBeforeRemoveLayer()
 void Timeline::onBeforeRemoveLayer(DocEvent& ev)
 {
-  Sprite* sprite = ev.sprite();
-  Layer* layer = ev.layer();
+  Layer* layerToSelect = candidate_if_layer_is_deleted(m_layer, ev.layer());
+  if (m_layer != layerToSelect)
+    setLayer(layerToSelect);
 
-  // If the layer that was removed is the selected one
-  if (layer == getLayer()) {
-    LayerGroup* parent = layer->parent();
-    Layer* layer_select = NULL;
+  // Remove layer from ranges
+  m_range.eraseAndAdjust(ev.layer());
+  m_startRange.eraseAndAdjust(ev.layer());
+  m_dropRange.eraseAndAdjust(ev.layer());
 
-    // Select previous layer, or next layer, or the parent (if it is
-    // not the main layer of sprite set).
-    if (layer->getPrevious())
-      layer_select = layer->getPrevious();
-    else if (layer->getNext())
-      layer_select = layer->getNext();
-    else if (parent != sprite->root())
-      layer_select = parent;
-
-    setLayer(layer_select);
-  }
+  ASSERT(!m_range.contains(ev.layer()));
+  ASSERT(!m_startRange.contains(ev.layer()));
+  ASSERT(!m_dropRange.contains(ev.layer()));
 }
 
 // We have to regenerate the layer rows (m_rows) after the layer is

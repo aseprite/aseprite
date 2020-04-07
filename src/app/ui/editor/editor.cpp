@@ -51,6 +51,7 @@
 #include "app/ui/timeline/timeline.h"
 #include "app/ui/toolbar.h"
 #include "app/ui_context.h"
+#include "app/util/layer_utils.h"
 #include "base/bind.h"
 #include "base/chrono.h"
 #include "base/clamp.h"
@@ -2141,9 +2142,16 @@ void Editor::onSpritePixelRatioChanged(DocEvent& ev)
   invalidate();
 }
 
+// TODO similar to ActiveSiteHandler::onBeforeRemoveLayer() and Timeline::onBeforeRemoveLayer()
 void Editor::onBeforeRemoveLayer(DocEvent& ev)
 {
   m_showGuidesThisCel = nullptr;
+
+  // If the layer that was removed is the selected one in the editor,
+  // or is an ancestor of the selected one.
+  Layer* layerToSelect = candidate_if_layer_is_deleted(layer(), ev.layer());
+  if (layer() != layerToSelect)
+    setLayer(layerToSelect);
 }
 
 void Editor::onRemoveCel(DocEvent& ev)

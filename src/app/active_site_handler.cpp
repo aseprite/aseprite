@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -12,6 +12,7 @@
 #include "app/doc.h"
 #include "app/doc_event.h"
 #include "app/site.h"
+#include "app/util/layer_utils.h"
 #include "doc/layer.h"
 
 namespace app {
@@ -97,30 +98,20 @@ void ActiveSiteHandler::onAddFrame(DocEvent& ev)
   data.frame = ev.frame();
 }
 
-// TODO similar to Timeline::onBeforeRemoveLayer()
+// TODO similar to Timeline::onBeforeRemoveLayer() and Editor::onBeforeRemoveLayer()
 void ActiveSiteHandler::onBeforeRemoveLayer(DocEvent& ev)
 {
   Data& data = getData(ev.document());
+  doc::Layer* selectedLayer = (data.layer != doc::NullId ?
+                               doc::get<doc::Layer>(data.layer):
+                               nullptr);
+  if (!selectedLayer)
+    return;
 
-  Layer* layer = ev.layer();
-
-  // If the layer that was removed is the selected one
-  ASSERT(layer);
-  if (layer && data.layer == layer->id()) {
-    LayerGroup* parent = layer->parent();
-    Layer* layer_select = nullptr;
-
-    // Select previous layer, or next layer, or the parent (if it is
-    // not the main layer of sprite set).
-    if (layer->getPrevious()) {
-      layer_select = layer->getPrevious();
-    }
-    else if (layer->getNext())
-      layer_select = layer->getNext();
-    else if (parent != layer->sprite()->root())
-      layer_select = parent;
-
-    data.layer = (layer_select ? layer_select->id(): 0);
+  doc::Layer* layerToSelect = candidate_if_layer_is_deleted(selectedLayer, ev.layer());
+  if (selectedLayer != layerToSelect) {
+    data.layer = (layerToSelect ? layerToSelect->id():
+                                  doc::NullId);
   }
 }
 
