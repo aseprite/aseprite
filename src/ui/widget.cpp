@@ -454,7 +454,7 @@ Widget* Widget::previousSibling()
   if (it == begin || it == end)
     return nullptr;
 
-  return *(++it);
+  return *(--it);
 }
 
 Widget* Widget::pick(const gfx::Point& pt,
