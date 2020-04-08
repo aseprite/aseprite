@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -55,7 +55,7 @@ void ScrollBar::setSize(int size)
 
 void ScrollBar::getScrollBarThemeInfo(int* pos, int* len)
 {
-  getScrollBarInfo(pos, len, NULL, NULL);
+  getScrollBarInfo(pos, len, nullptr, nullptr);
 }
 
 bool ScrollBar::onProcessMessage(Message* msg)

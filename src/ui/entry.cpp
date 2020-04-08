@@ -547,7 +547,7 @@ void Entry::executeCmd(EntryCmd cmd, int unicodeChar, bool shift_pressed)
   std::string text = this->text();
   int selbeg, selend;
 
-  getEntryThemeInfo(NULL, NULL, NULL, &selbeg, &selend);
+  getEntryThemeInfo(nullptr, nullptr, nullptr, &selbeg, &selend);
 
   switch (cmd) {
 

@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -86,7 +86,7 @@ int Slider::convertTextToValue(const std::string& text) const
   if (m_delegate)
     return m_delegate->onGetValueFromText(text);
   else {
-    return std::strtol(text.c_str(), NULL, 10);
+    return std::strtol(text.c_str(), nullptr, 10);
   }
 }
 

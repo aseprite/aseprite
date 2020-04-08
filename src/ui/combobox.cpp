@@ -220,7 +220,7 @@ Widget* ComboBox::getItem(const int itemIndex) const
     return m_items[itemIndex];
   }
   else
-    return NULL;
+    return nullptr;
 }
 
 const std::string& ComboBox::getItemText(int itemIndex) const
@@ -506,7 +506,8 @@ bool ComboBoxEntry::onProcessMessage(Message* msg)
         Widget* pick = manager()->pick(mouseMsg->position());
         Widget* listbox = m_comboBox->m_listbox;
 
-        if (pick != NULL && (pick == listbox || pick->hasAncestor(listbox))) {
+        if (pick != nullptr &&
+            (pick == listbox || pick->hasAncestor(listbox))) {
           releaseMouse();
 
           MouseMessage mouseMsg2(kMouseDownMessage,

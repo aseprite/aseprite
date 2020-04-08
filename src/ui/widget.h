@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -24,7 +24,7 @@
 
 #include <string>
 
-#define ASSERT_VALID_WIDGET(widget) ASSERT((widget) != NULL)
+#define ASSERT_VALID_WIDGET(widget) ASSERT((widget) != nullptr)
 
 namespace os {
   class Font;
@@ -171,12 +171,12 @@ namespace ui {
     Widget* at(int index) { return m_children[index]; }
     int getChildIndex(Widget* child);
 
-    // Returns the first/last child or NULL if it doesn't exist.
+    // Returns the first/last child or nullptr if it doesn't exist.
     Widget* firstChild() {
-      return (!m_children.empty() ? m_children.front(): NULL);
+      return (!m_children.empty() ? m_children.front(): nullptr);
     }
     Widget* lastChild() {
-      return (!m_children.empty() ? m_children.back(): NULL);
+      return (!m_children.empty() ? m_children.back(): nullptr);
     }
 
     // Returns the next or previous siblings.
@@ -205,7 +205,7 @@ namespace ui {
         if (T* specificChild = dynamic_cast<T*>(child))
           return specificChild;
       }
-      return NULL;
+      return nullptr;
     }
 
     void addChild(Widget* child);
@@ -282,8 +282,8 @@ namespace ui {
 
     void getTextIconInfo(
       gfx::Rect* box,
-      gfx::Rect* text = NULL,
-      gfx::Rect* icon = NULL,
+      gfx::Rect* text = nullptr,
+      gfx::Rect* icon = nullptr,
       int icon_align = 0, int icon_w = 0, int icon_h = 0);
 
     // ===============================================================

@@ -1,4 +1,5 @@
 // Aseprite UI Library
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -146,14 +147,14 @@ bool PopupWindow::onProcessMessage(Message* msg)
           case ClickBehavior::CloseOnClickInOtherWindow: {
             Widget* picked = pick(mousePos);
             if (!picked || picked->window() != this) {
-              closeWindow(NULL);
+              closeWindow(nullptr);
             }
             break;
           }
 
           case ClickBehavior::CloseOnClickOutsideHotRegion:
             if (!m_hotRegion.contains(mousePos)) {
-              closeWindow(NULL);
+              closeWindow(nullptr);
             }
             break;
         }
@@ -163,13 +164,13 @@ bool PopupWindow::onProcessMessage(Message* msg)
     case kMouseMoveMessage:
       if (m_fixed &&
           !m_hotRegion.isEmpty() &&
-          manager()->getCapture() == NULL) {
+          manager()->getCapture() == nullptr) {
         gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
 
         // If the mouse is outside the hot-region we have to close the
         // window.
         if (!m_hotRegion.contains(mousePos))
-          closeWindow(NULL);
+          closeWindow(nullptr);
       }
       break;
 

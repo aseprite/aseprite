@@ -425,17 +425,17 @@ Widget* Widget::nextSibling()
   assert_ui_thread();
 
   if (!m_parent)
-    return NULL;
+    return nullptr;
 
   WidgetsList::iterator begin = m_parent->m_children.begin();
   WidgetsList::iterator end = m_parent->m_children.end();
   WidgetsList::iterator it = std::find(begin, end, this);
 
   if (it == end)
-    return NULL;
+    return nullptr;
 
   if (++it == end)
-    return NULL;
+    return nullptr;
 
   return *it;
 }
@@ -445,14 +445,14 @@ Widget* Widget::previousSibling()
   assert_ui_thread();
 
   if (!m_parent)
-    return NULL;
+    return nullptr;
 
   WidgetsList::iterator begin = m_parent->m_children.begin();
   WidgetsList::iterator end = m_parent->m_children.end();
   WidgetsList::iterator it = std::find(begin, end, this);
 
   if (it == begin || it == end)
-    return NULL;
+    return nullptr;
 
   return *(++it);
 }
@@ -542,7 +542,7 @@ void Widget::removeChild(WidgetsList::iterator& it)
   if (manager)
     manager->freeWidget(child);
 
-  child->m_parent = NULL;
+  child->m_parent = nullptr;
 }
 
 void Widget::removeChild(Widget* child)
@@ -1380,7 +1380,7 @@ bool Widget::isMnemonicPressed(const KeyMessage* keyMsg) const
 
 bool Widget::onProcessMessage(Message* msg)
 {
-  ASSERT(msg != NULL);
+  ASSERT(msg != nullptr);
 
   switch (msg->type()) {
 

@@ -75,7 +75,7 @@ struct Filter {
 typedef std::list<Message*> Messages;
 typedef std::list<Filter*> Filters;
 
-Manager* Manager::m_defaultManager = NULL;
+Manager* Manager::m_defaultManager = nullptr;
 gfx::Region Manager::m_dirtyRegion;
 
 #ifdef DEBUG_UI_THREADS
@@ -162,9 +162,9 @@ bool Manager::widgetAssociatedToManager(Widget* widget)
 
 Manager::Manager()
   : Widget(kManagerWidget)
-  , m_display(NULL)
-  , m_eventQueue(NULL)
-  , m_lockedWindow(NULL)
+  , m_display(nullptr)
+  , m_eventQueue(nullptr)
+  , m_lockedWindow(nullptr)
   , m_mouseButton(kButtonNone)
 {
 #ifdef DEBUG_UI_THREADS
@@ -178,9 +178,9 @@ Manager::Manager()
     mouse_widgets_list.clear();
 
     // Reset variables
-    focus_widget = NULL;
-    mouse_widget = NULL;
-    capture_widget = NULL;
+    focus_widget = nullptr;
+    mouse_widget = nullptr;
+    capture_widget = nullptr;
   }
 
   setBounds(gfx::Rect(0, 0, ui::display_w(), ui::display_h()));
@@ -428,7 +428,7 @@ void Manager::generateMessagesFromOSEvents()
 
       case os::Event::MouseLeave: {
         set_mouse_cursor(kOutsideDisplay);
-        setMouse(NULL);
+        setMouse(nullptr);
 
         _internal_no_mouse_position();
 
@@ -639,7 +639,7 @@ void Manager::handleWindowZOrder()
 
   // The clicked window
   Window* window = mouse_widget->window();
-  Manager* win_manager = (window ? window->manager(): NULL);
+  Manager* win_manager = (window ? window->manager(): nullptr);
 
   if ((window) &&
     // We cannot change Z-order of desktop windows
@@ -650,7 +650,7 @@ void Manager::handleWindowZOrder()
     (!window->isForeground()) &&
     // If the window is not already the top window of the manager.
     (window != win_manager->getTopWindow())) {
-    base::ScopedValue<Widget*> scoped(m_lockedWindow, window, NULL);
+    base::ScopedValue<Widget*> scoped(m_lockedWindow, window, nullptr);
 
     // Put it in the top of the list
     win_manager->removeChild(window);
@@ -837,7 +837,7 @@ void Manager::setMouse(Widget* widget)
     mouse_widget = widget;
     if (widget) {
       auto msg = newMouseMessage(
-        kMouseEnterMessage, NULL,
+        kMouseEnterMessage, nullptr,
         get_mouse_position(),
         PointerType::Unknown,
         m_mouseButton,
@@ -896,19 +896,19 @@ void Manager::focusFirstChild(Widget* widget)
 
 void Manager::freeFocus()
 {
-  setFocus(NULL);
+  setFocus(nullptr);
 }
 
 void Manager::freeMouse()
 {
-  setMouse(NULL);
+  setMouse(nullptr);
 }
 
 void Manager::freeCapture()
 {
   if (capture_widget) {
     capture_widget->disableFlags(HAS_CAPTURE);
-    capture_widget = NULL;
+    capture_widget = nullptr;
 
     m_display->releaseMouse();
   }
@@ -1305,7 +1305,7 @@ void Manager::onInitTheme(InitThemeEvent& ev)
 
 LayoutIO* Manager::onGetLayoutIO()
 {
-  return NULL;
+  return nullptr;
 }
 
 void Manager::onNewDisplayConfiguration()
@@ -1375,7 +1375,7 @@ int Manager::pumpQueue()
 
     // Call Timer::tick() if this is a tick message.
     if (msg->type() == kTimerMessage) {
-      ASSERT(static_cast<TimerMessage*>(msg)->timer() != NULL);
+      ASSERT(static_cast<TimerMessage*>(msg)->timer() != nullptr);
       static_cast<TimerMessage*>(msg)->timer()->tick();
     }
 
@@ -1670,7 +1670,7 @@ Widget* Manager::findMagneticWidget(Widget* widget)
   if (widget->isFocusMagnet())
     return widget;
   else
-    return NULL;
+    return nullptr;
 }
 
 // static
@@ -1733,11 +1733,11 @@ void Manager::broadcastKeyMsg(Message* msg)
 
 bool Manager::processFocusMovementMessage(Message* msg)
 {
-  int (*cmp)(Widget*, int, int) = NULL;
-  Widget* focus = NULL;
+  int (*cmp)(Widget*, int, int) = nullptr;
+  Widget* focus = nullptr;
   Widget* it;
   bool ret = false;
-  Window* window = NULL;
+  Window* window = nullptr;
   int c, count;
 
   // Who have the focus
@@ -1877,7 +1877,7 @@ static Widget* next_widget(Widget* widget)
       widget = widget->parent();
   }
 
-  return NULL;
+  return nullptr;
 }
 
 static int cmp_left(Widget* widget, int x, int y)

@@ -72,9 +72,9 @@ static void update_mouse_overlay(const Cursor* cursor)
   }
   else if (mouse_cursor_overlay) {
     OverlayManager::instance()->removeOverlay(mouse_cursor_overlay);
-    mouse_cursor_overlay->setSurface(NULL);
+    mouse_cursor_overlay->setSurface(nullptr);
     delete mouse_cursor_overlay;
-    mouse_cursor_overlay = NULL;
+    mouse_cursor_overlay = nullptr;
   }
 }
 
@@ -261,7 +261,7 @@ bool get_clipboard_text(std::string& text)
 
 void update_cursor_overlay()
 {
-  if (mouse_cursor_overlay != NULL && mouse_scares == 0) {
+  if (mouse_cursor_overlay != nullptr && mouse_scares == 0) {
     gfx::Point newPos =
       get_mouse_position() - mouse_cursor->getFocus();
 

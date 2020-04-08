@@ -204,9 +204,9 @@ void IntEntry::closePopup()
   if (m_popupWindow) {
     removeSlider();
 
-    m_popupWindow->closeWindow(NULL);
+    m_popupWindow->closeWindow(nullptr);
     delete m_popupWindow;
-    m_popupWindow = NULL;
+    m_popupWindow = nullptr;
   }
 }
 

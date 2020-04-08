@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -348,7 +348,7 @@ bool Window::onProcessMessage(Message* msg)
   switch (msg->type()) {
 
     case kOpenMessage:
-      m_closer = NULL;
+      m_closer = nullptr;
       break;
 
     case kCloseMessage:
@@ -364,7 +364,7 @@ bool Window::onProcessMessage(Message* msg)
 
       if (m_hitTest != HitTestNowhere &&
           m_hitTest != HitTestClient) {
-        if (clickedWindowPos == NULL)
+        if (clickedWindowPos == nullptr)
           clickedWindowPos = new gfx::Rect(bounds());
         else
           *clickedWindowPos = bounds();
@@ -381,9 +381,9 @@ bool Window::onProcessMessage(Message* msg)
         releaseMouse();
         set_mouse_cursor(kArrowCursor);
 
-        if (clickedWindowPos != NULL) {
+        if (clickedWindowPos != nullptr) {
           delete clickedWindowPos;
-          clickedWindowPos = NULL;
+          clickedWindowPos = nullptr;
         }
 
         m_hitTest = HitTestNowhere;

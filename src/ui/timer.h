@@ -1,4 +1,5 @@
 // Aseprite UI Library
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -18,7 +19,7 @@ namespace ui {
 
   class Timer {
   public:
-    Timer(int interval, Widget* owner = NULL);
+    Timer(int interval, Widget* owner = nullptr);
     virtual ~Timer();
 
     int interval() const { return m_interval; }
