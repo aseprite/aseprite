@@ -396,7 +396,7 @@ bool StandbyState::onDoubleClick(Editor* editor, MouseMessage* msg)
   if (ink->isSelection() &&
       Preferences::instance().selection.doubleclickSelectTile()) {
     // Drop pixels if we are in moving pixels state
-    if (MovingPixelsState* movingPixels = dynamic_cast<MovingPixelsState*>(editor->getState().get()))
+    if (dynamic_cast<MovingPixelsState*>(editor->getState().get()))
       editor->backToPreviousState();
 
     // Start a tool-loop selecting tiles.
