@@ -38,8 +38,12 @@
 #include "tinyxml.h"
 
 #include <cctype>
-#include <cstdio>
 #include <cstring>
+#include <string>
+#include <algorithm>
+#include <cstdlib>
+
+#define MENUS_TRACE(...) // TRACEARGS
 
 namespace app {
 
@@ -60,6 +64,8 @@ const int kUnicodeLeft     = 0xF702; // NSLeftArrowFunctionKey
 const int kUnicodeRight    = 0xF703; // NSRightArrowFunctionKey
 const int kUnicodeUp       = 0xF700; // NSUpArrowFunctionKey
 const int kUnicodeDown     = 0xF701; // NSDownArrowFunctionKey
+
+const char* kFileRecentListGroup = "file_recent_list";
 
 void destroy_instance(AppMenus* instance)
 {
@@ -320,20 +326,22 @@ AppMenus::~AppMenus()
 
 void AppMenus::reload()
 {
+  MENUS_TRACE("MENUS: AppMenus::reload()");
+
   XmlDocumentRef doc(GuiXml::instance()->doc());
   TiXmlHandle handle(doc.get());
   const char* path = GuiXml::instance()->filename();
 
   ////////////////////////////////////////
-  // Remove all menu items added from scripts so we can re-add them
-  // later in the new menus.
+  // Remove all menu items added to groups from recent files and
+  // scripts so we can re-add them later in the new menus.
 
   for (auto& it : m_groups) {
     GroupInfo& group = it.second;
-    group.end = nullptr;
-    for (auto& item : group.items) {
+    MENUS_TRACE("MENUS: - groups", it.first, "with", group.items.size(), "item(s)");
+    group.end = nullptr;        // This value will be restored later
+    for (auto& item : group.items)
       item->parent()->removeChild(item);
-    }
   }
 
   ////////////////////////////////////////
@@ -379,11 +387,13 @@ void AppMenus::reload()
   }
 
   ////////////////////////////////////////
-  // Re-add menu items from scripts
+  // Re-add menu items in groups (recent files & scripts)
 
   for (auto& it : m_groups) {
     GroupInfo& group = it.second;
     if (group.end) {
+      MENUS_TRACE("MENUS: - re-adding group ", it.first, "with", group.items.size(), "item(s)");
+
       auto menu = group.end->parent();
       int insertIndex = menu->getChildIndex(group.end);
       for (auto& item : group.items) {
@@ -393,8 +403,9 @@ void AppMenus::reload()
     }
     // Delete items that don't have a group now
     else {
+      MENUS_TRACE("MENUS: - deleting group ", it.first, "with", group.items.size(), "item(s)");
       for (auto& item : group.items)
-        delete item;
+        item->deferDelete();
       group.items.clear();
     }
   }
@@ -483,6 +494,8 @@ void AppMenus::initTheme()
 
 bool AppMenus::rebuildRecentList()
 {
+  MENUS_TRACE("MENUS: AppMenus::rebuildRecentList m_recentFilesPlaceholder=", m_recentFilesPlaceholder);
+
   if (!m_recentFilesPlaceholder)
     return true;
 
@@ -494,13 +507,10 @@ bool AppMenus::rebuildRecentList()
   if (!owner || owner->hasSubmenuOpened())
     return false;
 
-  int insertIndex = menu->getChildIndex(m_recentFilesPlaceholder)+1;
-
   // Remove active items
-  while (auto appItem = dynamic_cast<AppMenuItem*>(menu->at(insertIndex))) {
-    menu->removeChild(appItem);
-    appItem->deferDelete();
-  }
+  for (auto item : m_recentMenuItems)
+    removeMenuItemFromGroup(item);
+  m_recentMenuItems.clear();
 
   Command* openFile = Commands::instance()->byId(CommandId::OpenFile());
 
@@ -517,18 +527,24 @@ bool AppMenus::rebuildRecentList()
     for (const auto& fn : files) {
       params.set("filename", fn.c_str());
 
-      auto menuitem = new AppMenuItem(base::get_file_name(fn).c_str(),
-                                      openFile, params);
+      std::unique_ptr<AppMenuItem> menuitem(
+        new AppMenuItem(base::get_file_name(fn).c_str(),
+                        openFile, params));
       menuitem->setIsRecentFileItem(true);
-      menu->insertChild(insertIndex++, menuitem);
+
+      m_recentMenuItems.push_back(menuitem.get());
+      addMenuItemIntoGroup(kFileRecentListGroup, std::move(menuitem));
     }
   }
   else {
-    auto menuitem = new AppMenuItem(
-      Strings::main_menu_file_no_recent_file(), nullptr);
+      std::unique_ptr<AppMenuItem> menuitem(
+        new AppMenuItem(
+          Strings::main_menu_file_no_recent_file(), nullptr));
     menuitem->setIsRecentFileItem(true);
     menuitem->setEnabled(false);
-    menu->insertChild(insertIndex++, menuitem);
+
+    m_recentMenuItems.push_back(menuitem.get());
+    addMenuItemIntoGroup(kFileRecentListGroup, std::move(menuitem));
   }
 
   // Sync native menus
@@ -546,14 +562,9 @@ bool AppMenus::rebuildRecentList()
 }
 
 void AppMenus::addMenuItemIntoGroup(const std::string& groupId,
-                                    const std::string& title,
                                     std::unique_ptr<MenuItem>&& menuItem)
 {
-  auto it = m_groups.find(groupId);
-  if (it == m_groups.end())
-    return;
-
-  GroupInfo& group = it->second;
+  GroupInfo& group = m_groups[groupId];
   Widget* menu = group.end->parent();
   ASSERT(menu);
   int insertIndex = menu->getChildIndex(group.end);
@@ -565,23 +576,44 @@ void AppMenus::addMenuItemIntoGroup(const std::string& groupId,
   menuItem.release();
 }
 
-void AppMenus::removeMenuItemWithCommand(Command* cmd)
+template<typename Pred>
+void AppMenus::removeMenuItemFromGroup(Pred pred)
 {
   for (auto& it : m_groups) {
     GroupInfo& group = it.second;
-    group.end = nullptr;
     for (auto it=group.items.begin(); it != group.items.end(); ) {
       auto& item = *it;
-      auto appMenuItem = dynamic_cast<AppMenuItem*>(item);
-      if (appMenuItem &&
-          appMenuItem->getCommand() == cmd) {
-        delete appMenuItem;
+      if (pred(item)) {
+        if (item == group.end)
+          group.end = group.end->previousSibling();
+
+        item->parent()->removeChild(item);
+        item->deferDelete();
+
         it = group.items.erase(it);
       }
-      else
+      else {
         ++it;
+      }
     }
   }
+}
+
+void AppMenus::removeMenuItemFromGroup(Command* cmd)
+{
+  removeMenuItemFromGroup(
+    [cmd](Widget* item){
+      auto appMenuItem = dynamic_cast<AppMenuItem*>(item);
+      return (appMenuItem && appMenuItem->getCommand() == cmd);
+    });
+}
+
+void AppMenus::removeMenuItemFromGroup(Widget* menuItem)
+{
+  removeMenuItemFromGroup(
+    [menuItem](Widget* item){
+      return (item == menuItem);
+    });
 }
 
 Menu* AppMenus::loadMenuById(TiXmlHandle& handle, const char* id)
@@ -642,7 +674,8 @@ Widget* AppMenus::convertXmlelemToMenuitem(TiXmlElement* elem)
         m_recentFilesPlaceholder = item;
       }
     }
-    if (group) m_groups[group].end = item;
+    if (group)
+      m_groups[group].end = item;
     return item;
   }
 
@@ -674,7 +707,8 @@ Widget* AppMenus::convertXmlelemToMenuitem(TiXmlElement* elem)
 
   if (id) menuitem->setId(id);
   menuitem->processMnemonicFromText();
-  if (group) m_groups[group].end = menuitem;
+  if (group)
+    m_groups[group].end = menuitem;
 
   // Has it a ID?
   if (id) {

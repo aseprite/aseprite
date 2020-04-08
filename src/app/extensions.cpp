@@ -645,7 +645,7 @@ void Extension::exitScripts()
         if (cmd) {
 #ifdef ENABLE_UI
           // TODO use a signal
-          AppMenus::instance()->removeMenuItemWithCommand(cmd);
+          AppMenus::instance()->removeMenuItemFromGroup(cmd);
 #endif // ENABLE_UI
 
           cmds->remove(cmd);

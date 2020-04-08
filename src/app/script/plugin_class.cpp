@@ -134,8 +134,7 @@ int Plugin_newCommand(lua_State* L)
           App::instance()->isGui()) { // On CLI menus do not make sense
         if (auto appMenus = AppMenus::instance()) {
           std::unique_ptr<MenuItem> menuItem(new AppMenuItem(title, cmd));
-          appMenus->addMenuItemIntoGroup(
-            group, title, std::move(menuItem));
+          appMenus->addMenuItemIntoGroup(group, std::move(menuItem));
         }
       }
 #endif // ENABLE_UI
