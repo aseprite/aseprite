@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2020 Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -10,13 +11,13 @@
 
 #include "doc/image_io.h"
 
-#include "base/base.h"
 #include "base/exception.h"
 #include "base/serialization.h"
 #include "doc/cancel_io.h"
 #include "doc/image.h"
 #include "zlib.h"
 
+#include <algorithm>
 #include <iostream>
 #include <memory>
 
@@ -145,7 +146,7 @@ Image* read_image(std::istream& is, bool setId)
     uint8_t* address_end = image->getPixelAddress(0, 0) + uncompressed_size;
 
     while (remain > 0) {
-      int len = MIN(remain, (int)compressed.size());
+      int len = std::min(remain, int(compressed.size()));
       if (is.read((char*)&compressed[0], len).fail()) {
         ASSERT(false);
         throw base::Exception("Error reading stream to restore image");

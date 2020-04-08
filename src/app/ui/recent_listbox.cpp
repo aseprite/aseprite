@@ -82,7 +82,7 @@ protected:
     setTextQuiet(m_path);
     gfx::Size sz2 = theme->calcSizeHint(this, styleDetail);
 
-    ev.setSizeHint(gfx::Size(sz1.w+sz2.w, MAX(sz1.h, sz2.h)));
+    ev.setSizeHint(gfx::Size(sz1.w+sz2.w, std::max(sz1.h, sz2.h)));
   }
 
   bool onProcessMessage(Message* msg) override {

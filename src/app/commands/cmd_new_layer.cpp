@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -41,8 +41,10 @@
 
 #include "new_layer.xml.h"
 
-#include <cstdio>
+#include <algorithm>
 #include <cstring>
+#include <string>
+#include <cstdlib>
 
 namespace app {
 
@@ -419,8 +421,8 @@ std::string NewLayerCommand::onGetFriendlyName() const
 void NewLayerCommand::adjustRefCelBounds(Cel* cel, gfx::RectF bounds)
 {
   Sprite* sprite = cel->sprite();
-  double scale = MIN(double(sprite->width()) / bounds.w,
-                     double(sprite->height()) / bounds.h);
+  double scale = std::min(double(sprite->width()) / bounds.w,
+                          double(sprite->height()) / bounds.h);
   bounds.w *= scale;
   bounds.h *= scale;
   bounds.x = sprite->width()/2 - bounds.w/2;
@@ -447,7 +449,7 @@ int NewLayerCommand::getMaxLayerNum(const Layer* layer) const
   if (layer->isGroup()) {
     for (const Layer* child : static_cast<const LayerGroup*>(layer)->layers()) {
       int tmp = getMaxLayerNum(child);
-      max = MAX(tmp, max);
+      max = std::max(tmp, max);
     }
   }
 

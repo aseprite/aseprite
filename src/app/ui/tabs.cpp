@@ -154,7 +154,7 @@ void Tabs::updateTabs()
   double tabWidth = defTabWidth;
   if (tabWidth * m_list.size() > availWidth) {
     tabWidth = availWidth / double(m_list.size());
-    tabWidth = MAX(4*ui::guiscale(), tabWidth);
+    tabWidth = std::max(double(4*ui::guiscale()), tabWidth);
   }
   double x = 0.0;
   int i = 0;

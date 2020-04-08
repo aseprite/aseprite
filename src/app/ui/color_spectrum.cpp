@@ -23,6 +23,8 @@
 #include "ui/size_hint_event.h"
 #include "ui/system.h"
 
+#include <algorithm>
+
 namespace app {
 
 using namespace app::skin;
@@ -88,8 +90,8 @@ void ColorSpectrum::onPaintSurfaceInBgThread(
 {
   if (m_paintFlags & MainAreaFlag) {
     double sat = m_color.getHslSaturation();
-    int umax = MAX(1, main.w-1);
-    int vmax = MAX(1, main.h-1);
+    int umax = std::max(1, main.w-1);
+    int vmax = std::max(1, main.h-1);
 
     for (int y=0; y<main.h && !stop; ++y) {
       for (int x=0; x<main.w && !stop; ++x) {

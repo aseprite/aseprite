@@ -15,6 +15,8 @@
 #include "doc/palette.h"
 #include "doc/palette_picks.h"
 
+#include <algorithm>
+
 namespace doc {
 
 Remap create_remap_to_move_picks(const PalettePicks& picks, int beforeIndex)
@@ -71,7 +73,7 @@ Remap create_remap_to_change_palette(
   const int oldMaskIndex,
   const bool remapMaskIndex)
 {
-  Remap remap(MAX(oldPalette->size(), newPalette->size()));
+  Remap remap(std::max(oldPalette->size(), newPalette->size()));
   int maskIndex = oldMaskIndex;
 
   if (maskIndex >= 0) {

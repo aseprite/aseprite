@@ -291,8 +291,8 @@ void fill_rotated_ellipse(int cx, int cy, int a, int b, double angle, void* data
         r.first = r.second = x;
       }
       else {
-        r.first = MIN(r.first, x);
-        r.second = MAX(r.second, x);
+        r.first = std::min(r.first, x);
+        r.second = std::max(r.second, x);
       }
     }
   };

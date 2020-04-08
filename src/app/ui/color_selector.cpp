@@ -33,6 +33,7 @@
 #include "ui/size_hint_event.h"
 #include "ui/system.h"
 
+#include <algorithm>
 #include <cmath>
 #include <condition_variable>
 #include <thread>
@@ -261,7 +262,7 @@ app::Color ColorSelector::getColorByPosition(const gfx::Point& pos)
     return app::Color::fromMask();
 
   const int u = pos.x - rc.x;
-  const int umax = MAX(1, rc.w-1);
+  const int umax = std::max(1, rc.w-1);
 
   const gfx::Rect bottomBarBounds = this->bottomBarBounds();
   if (( hasCapture() && m_capturedInBottom) ||
@@ -274,7 +275,7 @@ app::Color ColorSelector::getColorByPosition(const gfx::Point& pos)
     return getAlphaBarColor(u, umax);
 
   const int v = pos.y - rc.y;
-  const int vmax = MAX(1, rc.h-bottomBarBounds.h-alphaBarBounds.h-1);
+  const int vmax = std::max(1, rc.h-bottomBarBounds.h-alphaBarBounds.h-1);
   return getMainAreaColor(u, umax,
                           v, vmax);
 }

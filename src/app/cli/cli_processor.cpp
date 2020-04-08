@@ -35,6 +35,7 @@
 #include "doc/tags.h"
 #include "render/dithering_algorithm.h"
 
+#include <algorithm>
 #include <queue>
 #include <vector>
 
@@ -518,7 +519,7 @@ int CliProcessor::process(Context* ctx)
             scaleWidth = (doc->width() > maxWidth ? maxWidth / doc->width() : 1.0);
             scaleHeight = (doc->height() > maxHeight ? maxHeight / doc->height() : 1.0);
             if (scaleWidth < 1.0 || scaleHeight < 1.0) {
-              scale = MIN(scaleWidth, scaleHeight);
+              scale = std::min(scaleWidth, scaleHeight);
               Params params;
               params.set("scale", base::convert_to<std::string>(scale).c_str());
               ctx->executeCommand(Commands::instance()->byId(CommandId::SpriteSize()),

@@ -394,7 +394,7 @@ void Sprite::removeFrame(frame_t frame)
 
 void Sprite::setTotalFrames(frame_t frames)
 {
-  frames = MAX(frame_t(1), frames);
+  frames = std::max(frame_t(1), frames);
   m_frlens.resize(frames);
 
   if (frames > m_frames) {

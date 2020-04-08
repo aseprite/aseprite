@@ -29,6 +29,8 @@
 #include "gfx/rect_io.h"
 #include "ui/ui.h"
 
+#include <algorithm>
+
 namespace app {
 
 using namespace app::skin;
@@ -306,9 +308,9 @@ void ColorButton::openPopup(const bool forcePinned)
                           m_window->sizeHint());
     winBounds.x = base::clamp(bounds().x, 0, ui::display_w()-winBounds.w);
     if (bounds().y2() <= ui::display_h()-winBounds.h)
-      winBounds.y = MAX(0, bounds().y2());
+      winBounds.y = std::max(0, bounds().y2());
     else
-      winBounds.y = MAX(0, bounds().y-winBounds.h);
+      winBounds.y = std::max(0, bounds().y-winBounds.h);
   }
   else if (forcePinned) {
     winBounds = m_hiddenPopupBounds;

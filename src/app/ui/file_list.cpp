@@ -343,7 +343,7 @@ bool FileList::onProcessMessage(Message* msg)
               FileItemList::iterator
                 link = m_list.begin() + ((select >= 0) ? select: 0);
 
-              for (i=MAX(select, 0); i<bottom; ++i, ++link) {
+              for (i=std::max(select, 0); i<bottom; ++i, ++link) {
                 IFileItem* fi = *link;
                 if (base::utf8_icmp(fi->displayName(), m_isearch, chrs) == 0) {
                   select = i;

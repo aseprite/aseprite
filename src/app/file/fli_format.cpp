@@ -20,6 +20,7 @@
 #include "flic/flic.h"
 #include "render/render.h"
 
+#include <algorithm>
 #include <cstdio>
 
 namespace app {
@@ -239,7 +240,7 @@ bool FliFormat::onSave(FileOp* fop)
 
     frame_t frame = *frame_it;
     const Palette* pal = sprite->palette(frame);
-    int size = MIN(256, pal->size());
+    int size = std::min(256, pal->size());
 
     for (int c=0; c<size; c++) {
       color_t color = pal->getEntry(c);
@@ -255,7 +256,7 @@ bool FliFormat::onSave(FileOp* fop)
     // time that it has in the sprite
     if (f < nframes) {
       int times = sprite->frameDuration(frame) / header.speed;
-      times = MAX(1, times);
+      times = std::max(1, times);
       for (int c=0; c<times; c++)
         encoder.writeFrame(fliFrame);
     }

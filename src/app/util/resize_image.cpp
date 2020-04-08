@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2019  Igara Studio S.A.
+// Copyright (c) 2019-2020  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -20,6 +20,7 @@
 #include "doc/layer.h"
 #include "doc/sprite.h"
 
+#include <algorithm>
 #include <memory>
 
 namespace app {
@@ -80,7 +81,7 @@ void resize_cel_image(
       const int h = std::max(1, int(scale.h*image->height()));
       doc::ImageRef newImage(
         doc::Image::create(
-          image->pixelFormat(), MAX(1, w), MAX(1, h)));
+          image->pixelFormat(), std::max(1, w), std::max(1, h)));
       newImage->setMaskColor(image->maskColor());
 
       doc::algorithm::fixup_image_transparent_colors(image);

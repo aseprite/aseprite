@@ -16,6 +16,8 @@
 #include "base/clamp.h"
 #include "ui/graphics.h"
 
+#include <algorithm>
+
 namespace app {
 
 using namespace app::skin;
@@ -78,8 +80,8 @@ void ColorTintShadeTone::onPaintSurfaceInBgThread(
   bool& stop)
 {
   double hue = m_color.getHsvHue();
-  int umax = MAX(1, main.w-1);
-  int vmax = MAX(1, main.h-1);
+  int umax = std::max(1, main.w-1);
+  int vmax = std::max(1, main.h-1);
 
   if (m_paintFlags & MainAreaFlag) {
     for (int y=0; y<main.h && !stop; ++y) {

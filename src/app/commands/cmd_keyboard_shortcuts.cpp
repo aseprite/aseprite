@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -45,6 +45,7 @@
 
 #include "keyboard_shortcuts.xml.h"
 
+#include <algorithm>
 #include <map>
 #include <memory>
 
@@ -260,7 +261,7 @@ private:
         m_headerItem->contextXPos() +
         Graphics::measureUITextLength(
           convertKeyContextToUserFriendlyString(m_key->keycontext()), font());
-      size.w = MAX(size.w, w);
+      size.w = std::max(size.w, w);
     }
 
     if (m_key && !m_key->accels().empty()) {

@@ -43,6 +43,7 @@
 
 #include "tinyxml.h"
 
+#include <algorithm>
 #include <cstring>
 
 #define BGCOLOR                 (getWidgetBgColor(widget))
@@ -1078,7 +1079,7 @@ void SkinTheme::drawEntryText(ui::Graphics* g, ui::Entry* widget)
   const std::string& textString = widget->text();
   base::utf8_const_iterator utf8_it((textString.begin()));
   int textlen = base::utf8_length(textString);
-  scroll = MIN(scroll, textlen);
+  scroll = std::min(scroll, textlen);
   if (scroll)
     utf8_it += scroll;
 

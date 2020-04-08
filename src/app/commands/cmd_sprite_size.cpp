@@ -36,6 +36,8 @@
 
 #include "sprite_size.xml.h"
 
+#include <algorithm>
+
 #define PERC_FORMAT     "%.4g"
 
 namespace app {
@@ -130,7 +132,9 @@ protected:
       new_mask->replace(
         gfx::Rect(
           scale_x(document()->mask()->bounds().x-1),
-          scale_y(document()->mask()->bounds().y-1), MAX(1, w), MAX(1, h)));
+          scale_y(document()->mask()->bounds().y-1),
+          std::max(1, w),
+          std::max(1, h)));
 
       // Always use the nearest-neighbor method to resize the bitmap
       // mask.

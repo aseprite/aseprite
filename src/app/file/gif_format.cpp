@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -33,6 +33,8 @@
 
 #include "gif_options.xml.h"
 
+#include <algorithm>
+
 #include <gif_lib.h>
 
 #ifdef _WIN32
@@ -52,7 +54,7 @@
 #define GIF_TRACE(...)
 
 // GifBitSize can return 9 (it's a bug in giflib)
-#define GifBitSizeLimited(v) (MIN(GifBitSize(v), 8))
+#define GifBitSizeLimited(v) (std::min(GifBitSize(v), 8))
 
 namespace app {
 
@@ -539,7 +541,7 @@ private:
       palette.reset(new Palette(*m_sprite->palette(m_frameNum-1)));
       palette->setFrame(m_frameNum);
     }
-    resetRemap(MAX(ncolors, palette->size()));
+    resetRemap(std::max(ncolors, palette->size()));
 
     // Number of colors in the colormap that are part of the current
     // sprite palette.
@@ -588,7 +590,7 @@ private:
 
     Palette oldPalette(*palette);
     palette->resize(base + missing + (needsExtraBgColor ? 1: 0));
-    resetRemap(MAX(ncolors, palette->size()));
+    resetRemap(std::max(ncolors, palette->size()));
 
     for (int i=0; i<ncolors; ++i) {
       if (!usedEntries[i])
@@ -792,7 +794,7 @@ private:
       (m_previousImage.get(), NULL, IMAGE_RGB,
        render::Dithering(),
        nullptr,
-       m_sprite->palette(MAX(0, m_frameNum-1)),
+       m_sprite->palette(std::max(0, m_frameNum-1)),
        m_opaque,
        m_bgIndex));
 
@@ -906,7 +908,7 @@ public:
     if (m_sprite->pixelFormat() == IMAGE_INDEXED) {
       for (Palette* palette : m_sprite->getPalettes()) {
         int bpp = GifBitSizeLimited(palette->size());
-        m_bitsPerPixel = MAX(m_bitsPerPixel, bpp);
+        m_bitsPerPixel = std::max(m_bitsPerPixel, bpp);
       }
     }
     else {
@@ -1092,9 +1094,9 @@ private:
     // 1/4 of its duration for some strange reason in the Twitter
     // conversion from GIF to video.
     if (fixDuration)
-      frameDelay = MAX(2, frameDelay/4);
+      frameDelay = std::max(2, frameDelay/4);
     if (fix_last_frame_duration)
-      frameDelay = MAX(2, frameDelay);
+      frameDelay = std::max(2, frameDelay);
 
     extension_bytes[0] = (((int(disposalMethod) & 7) << 2) |
                           (transparentIndex >= 0 ? 1: 0));

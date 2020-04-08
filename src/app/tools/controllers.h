@@ -9,6 +9,7 @@
 #include "base/gcd.h"
 #include "base/pi.h"
 
+#include <algorithm>
 #include <cmath>
 
 namespace app {
@@ -154,8 +155,8 @@ public:
     if ((int(loop->getModifiers()) & int(ToolLoopModifiers::kSquareAspect))) {
       int dx = stroke[1].x - m_first.x;
       int dy = stroke[1].y - m_first.y;
-      int minsize = MIN(ABS(dx), ABS(dy));
-      int maxsize = MAX(ABS(dx), ABS(dy));
+      int minsize = std::min(ABS(dx), ABS(dy));
+      int maxsize = std::max(ABS(dx), ABS(dy));
 
       // Lines
       if (loop->getIntertwine()->snapByAngle()) {

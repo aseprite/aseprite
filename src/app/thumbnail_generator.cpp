@@ -30,6 +30,7 @@
 #include "render/projection.h"
 #include "render/render.h"
 
+#include <algorithm>
 #include <memory>
 #include <thread>
 
@@ -119,9 +120,9 @@ private:
         const int h = sprite->height()*sprite->pixelRatio().h;
 
         // Calculate the thumbnail size
-        int thumb_w = MAX_THUMBNAIL_SIZE * w / MAX(w, h);
-        int thumb_h = MAX_THUMBNAIL_SIZE * h / MAX(w, h);
-        if (MAX(thumb_w, thumb_h) > MAX(w, h)) {
+        int thumb_w = MAX_THUMBNAIL_SIZE * w / std::max(w, h);
+        int thumb_h = MAX_THUMBNAIL_SIZE * h / std::max(w, h);
+        if (std::max(thumb_w, thumb_h) > std::max(w, h)) {
           thumb_w = w;
           thumb_h = h;
         }

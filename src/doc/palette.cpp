@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2020  Igara Studio S.A.
 // Copyright (c) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -111,8 +112,8 @@ void Palette::copyColorsTo(Palette* dst) const
 int Palette::countDiff(const Palette* other, int* from, int* to) const
 {
   int c, diff = 0;
-  int min = MIN(this->m_colors.size(), other->m_colors.size());
-  int max = MAX(this->m_colors.size(), other->m_colors.size());
+  int min = std::min(this->m_colors.size(), other->m_colors.size());
+  int max = std::max(this->m_colors.size(), other->m_colors.size());
 
   if (from) *from = -1;
   if (to) *to = -1;
@@ -244,7 +245,7 @@ int Palette::findBestfit(int r, int g, int b, int a, int mask_index) const
 
   int bestfit = 0;
   int lowest = std::numeric_limits<int>::max();
-  int size = MIN(256, m_colors.size());
+  int size = std::min(256, int(m_colors.size()));
 
   for (int i=0; i<size; ++i) {
     color_t rgb = m_colors[i];

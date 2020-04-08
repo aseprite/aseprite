@@ -168,8 +168,8 @@ FileOpROI::FileOpROI(const Doc* doc,
         m_selFrames.displace(m_tag->fromFrame());
 
       m_selFrames =
-        m_selFrames.filter(MAX(0, m_tag->fromFrame()),
-                           MIN(m_tag->toFrame(), doc->sprite()->lastFrame()));
+        m_selFrames.filter(std::max(0, m_tag->fromFrame()),
+                           std::min(m_tag->toFrame(), doc->sprite()->lastFrame()));
     }
     // All frames if selected frames is empty
     else if (m_selFrames.empty())

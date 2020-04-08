@@ -29,6 +29,7 @@
 #include "ui/slider.h"
 #include "ui/theme.h"
 
+#include <algorithm>
 #include <limits>
 
 namespace app {
@@ -62,7 +63,7 @@ namespace {
       auto convertColor = convert_from_current_to_screen_color_space();
 
       gfx::Color color = gfx::ColorNone;
-      int w = MAX(rc.w-1, 1);
+      int w = std::max(rc.w-1, 1);
 
       for (int x=0; x <= w; ++x) {
         switch (m_channel) {

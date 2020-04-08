@@ -57,6 +57,7 @@
 #include "os/system.h"
 #include "ui/ui.h"
 
+#include <algorithm>
 #include <cstdio>
 #include <vector>
 
@@ -998,7 +999,7 @@ bool Timeline::onProcessMessage(Message* msg)
             gfx::Rect onionRc = getOnionskinFramesBounds();
 
             int newValue = m_origFrames + (m_clk.frame - hit.frame);
-            docPref().onionskin.prevFrames(MAX(0, newValue));
+            docPref().onionskin.prevFrames(std::max(0, newValue));
 
             onionRc |= getOnionskinFramesBounds();
             invalidateRect(onionRc.offset(origin()));
@@ -1009,7 +1010,7 @@ bool Timeline::onProcessMessage(Message* msg)
             gfx::Rect onionRc = getOnionskinFramesBounds();
 
             int newValue = m_origFrames - (m_clk.frame - hit.frame);
-            docPref().onionskin.nextFrames(MAX(0, newValue));
+            docPref().onionskin.nextFrames(std::max(0, newValue));
 
             onionRc |= getOnionskinFramesBounds();
             invalidateRect(onionRc.offset(origin()));
@@ -1055,7 +1056,7 @@ bool Timeline::onProcessMessage(Message* msg)
         // we shouldn't change the hot (so the separator can be
         // tracked to the mouse's released).
         if (m_clk.part == PART_SEPARATOR) {
-          m_separator_x = MAX(0, mousePos.x);
+          m_separator_x = std::max(0, mousePos.x);
           layout();
           return true;
         }
@@ -1520,7 +1521,7 @@ void Timeline::onResize(ui::ResizeEvent& ev)
     gfx::Rect(
       rc.x,
       rc.y+(visibleTagBands()-1)*oneTagHeight(),
-      MIN(sz.w, m_separator_x),
+      std::min(sz.w, m_separator_x),
       oneTagHeight()));
 
   updateScrollBars();
@@ -2707,7 +2708,7 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
     case PART_HEADER_FRAME:
       return gfx::Rect(
         bounds.x + m_separator_x + m_separator_w - 1
-        + frameBoxWidth()*MAX(firstFrame(), hit.frame) - viewScroll().x,
+        + frameBoxWidth()*std::max(firstFrame(), hit.frame) - viewScroll().x,
         bounds.y + y, frameBoxWidth(), headerBoxHeight());
 
     case PART_ROW:
@@ -2806,7 +2807,7 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
       return gfx::Rect(
         bounds.x + m_separator_x + m_separator_w - 1,
         bounds.y
-        + (m_tagFocusBand < 0 ? oneTagHeight() * MAX(0, hit.band): 0),
+        + (m_tagFocusBand < 0 ? oneTagHeight() * std::max(0, hit.band): 0),
         bounds.w - m_separator_x - m_separator_w + 1,
         oneTagHeight());
 
@@ -2827,7 +2828,7 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
       return gfx::Rect(
         bounds.x + bounds.w - sz.w - 2*ui::guiscale(),
         bounds.y
-        + (m_tagFocusBand < 0 ? oneTagHeight() * MAX(0, hit.band): 0)
+        + (m_tagFocusBand < 0 ? oneTagHeight() * std::max(0, hit.band): 0)
         + oneTagHeight()/2 - sz.h/2,
         sz.w, sz.h);
     }
@@ -2986,7 +2987,7 @@ void Timeline::regenerateTagBands()
   const int oldVisibleBands = visibleTagBands();
   m_tagBands = 0;
   for (int i : tagsPerFrame)
-    m_tagBands = MAX(m_tagBands, i);
+    m_tagBands = std::max(m_tagBands, i);
 
   if (m_tagFocusBand >= m_tagBands)
     m_tagFocusBand = -1;
@@ -3540,8 +3541,8 @@ gfx::Point Timeline::getMaxScrollablePos() const
     gfx::Size size = getScrollableSize();
     int max_scroll_x = size.w - getCelsBounds().w + 1*guiscale();
     int max_scroll_y = size.h - getCelsBounds().h + 1*guiscale();
-    max_scroll_x = MAX(0, max_scroll_x);
-    max_scroll_y = MAX(0, max_scroll_y);
+    max_scroll_x = std::max(0, max_scroll_x);
+    max_scroll_y = std::max(0, max_scroll_y);
     return gfx::Point(max_scroll_x, max_scroll_y);
   }
   else
@@ -3927,9 +3928,9 @@ double Timeline::zoom() const
 int Timeline::calcTagVisibleToFrame(Tag* tag) const
 {
   return
-    MAX(tag->toFrame(),
-        tag->fromFrame() +
-        font()->textLength(tag->name())/frameBoxWidth());
+    std::max(tag->toFrame(),
+             tag->fromFrame() +
+             font()->textLength(tag->name())/frameBoxWidth());
 }
 
 int Timeline::topHeight() const

@@ -238,7 +238,7 @@ void PaletteView::clearSelection()
 
   Palette palette(*currentPalette());
   Palette newPalette(palette);
-  newPalette.resize(MAX(1, newPalette.size() - m_selectedEntries.picks()));
+  newPalette.resize(std::max(1, newPalette.size() - m_selectedEntries.picks()));
 
   Remap remap = create_remap_to_move_picks(m_selectedEntries, palette.size());
   for (int i=0; i<palette.size(); ++i) {
@@ -398,7 +398,7 @@ bool PaletteView::onProcessMessage(Message* msg)
           case State::RESIZING_PALETTE:
             if (m_hot.part == Hit::COLOR ||
                 m_hot.part == Hit::POSSIBLE_COLOR) {
-              int newPalSize = MAX(1, m_hot.color);
+              int newPalSize = std::max(1, m_hot.color);
               Palette newPalette(*currentPalette());
               newPalette.resize(newPalSize);
               setNewPalette(currentPalette(), &newPalette,
@@ -645,7 +645,7 @@ void PaletteView::onResize(ui::ResizeEvent& ev)
          +this->childSpacing())
         / (boxSizePx()
            +this->childSpacing());
-      setColumns(MAX(1, columns));
+      setColumns(std::max(1, columns));
     }
     m_isUpdatingColumns = false;
   }
@@ -915,7 +915,7 @@ void PaletteView::setStatusBar()
            m_hot.part == Hit::OUTLINE ||
            m_hot.part == Hit::POSSIBLE_COLOR) &&
           (m_hot.color < currentPalette()->size())) {
-        int i = MAX(0, m_hot.color);
+        int i = std::max(0, m_hot.color);
 
         statusBar->showColor(
           0, "", app::Color::fromIndex(i));
@@ -928,11 +928,11 @@ void PaletteView::setStatusBar()
     case State::DRAGGING_OUTLINE:
       if (m_hot.part == Hit::COLOR) {
         const int picks = m_selectedEntries.picks();
-        const int destIndex = MAX(0, m_hot.color);
+        const int destIndex = std::max(0, m_hot.color);
         const int palSize = currentPalette()->size();
         const int newPalSize =
-          (m_copy ? MAX(palSize + picks, destIndex + picks):
-                    MAX(palSize,         destIndex + picks));
+          (m_copy ? std::max(palSize + picks, destIndex + picks):
+                    std::max(palSize,         destIndex + picks));
 
         statusBar->setStatusText(
           0, "%s to %d - New Palette Size %d",
@@ -948,7 +948,7 @@ void PaletteView::setStatusBar()
       if (m_hot.part == Hit::COLOR ||
           m_hot.part == Hit::POSSIBLE_COLOR ||
           m_hot.part == Hit::RESIZE_HANDLE) {
-        int newPalSize = MAX(1, m_hot.color);
+        int newPalSize = std::max(1, m_hot.color);
         statusBar->setStatusText(
           0, "New Palette Size %d",
           newPalSize);

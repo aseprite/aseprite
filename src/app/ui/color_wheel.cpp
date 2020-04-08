@@ -143,7 +143,7 @@ app::Color ColorWheel::getMainAreaColor(const int _u, const int umax,
   if (m_color.getAlpha() > 0) {
     const gfx::Point pos(_u, _v);
     int n = getHarmonies();
-    int boxsize = MIN(umax/10, vmax/10);
+    int boxsize = std::min(umax/10, vmax/10);
 
     for (int i=0; i<n; ++i) {
       app::Color color = getColorInHarmony(i);
@@ -179,7 +179,7 @@ void ColorWheel::onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc)
 {
   bool oldHarmonyPicked = m_harmonyPicked;
 
-  int r = MIN(rc.w/2, rc.h/2);
+  int r = std::min(rc.w/2, rc.h/2);
   m_wheelRadius = r;
   m_wheelBounds = gfx::Rect(rc.x+rc.w/2-r,
                             rc.y+rc.h/2-r,
@@ -200,7 +200,7 @@ void ColorWheel::onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc)
     }
     else {
       int n = getHarmonies();
-      int boxsize = MIN(rc.w/10, rc.h/10);
+      int boxsize = std::min(rc.w/10, rc.h/10);
 
       for (int i=0; i<n; ++i) {
         app::Color color = getColorInHarmony(i);
@@ -248,8 +248,8 @@ void ColorWheel::onPaintSurfaceInBgThread(os::Surface* s,
                                           bool& stop)
 {
   if (m_paintFlags & MainAreaFlag) {
-    int umax = MAX(1, main.w-1);
-    int vmax = MAX(1, main.h-1);
+    int umax = std::max(1, main.w-1);
+    int vmax = std::max(1, main.h-1);
 
     for (int y=0; y<main.h && !stop; ++y) {
       for (int x=0; x<main.w && !stop; ++x) {

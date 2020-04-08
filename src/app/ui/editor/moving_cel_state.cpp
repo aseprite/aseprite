@@ -30,6 +30,7 @@
 #include "doc/sprite.h"
 #include "ui/message.h"
 
+#include <algorithm>
 #include <cmath>
 
 namespace app {
@@ -234,7 +235,7 @@ bool MovingCelState::onMouseMove(Editor* editor, MouseMessage* msg)
 
       if (int(editor->getCustomizationDelegate()
               ->getPressedKeyAction(KeyContext::ScalingSelection) & KeyAction::MaintainAspectRatio)) {
-        m_celScale.w = m_celScale.h = MAX(m_celScale.w, m_celScale.h);
+        m_celScale.w = m_celScale.h = std::max(m_celScale.w, m_celScale.h);
       }
 
       m_scaled = true;

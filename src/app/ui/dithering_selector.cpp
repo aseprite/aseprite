@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This program is distributed under the terms of
@@ -29,6 +29,8 @@
 #include "ui/listitem.h"
 #include "ui/paint_event.h"
 #include "ui/size_hint_event.h"
+
+#include <algorithm>
 
 namespace app {
 
@@ -122,7 +124,7 @@ private:
   void onSizeHint(SizeHintEvent& ev) override {
     gfx::Size sz = textSize();
 
-    sz.w = MAX(sz.w, preview()->width()) + 4*guiscale();
+    sz.w = std::max(sz.w, preview()->width()) + 4*guiscale();
     sz.h += 6*guiscale() + preview()->height();
 
     ev.setSizeHint(sz);
