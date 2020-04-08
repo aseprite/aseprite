@@ -26,6 +26,7 @@
 #include "app/ui_context.h"
 #include "base/clamp.h"
 #include "base/string.h"
+#include "doc/brush.h"
 #include "doc/layer.h"
 #include "doc/palette.h"
 #include "ui/message.h"
@@ -189,9 +190,15 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
       ToolPreferences::Brush& brush =
         Preferences::instance().tool(tool).brush;
 
-      brush.size(base::clamp(int(brush.size()+dz),
-                             doc::Brush::kMinBrushSize,
-                             doc::Brush::kMaxBrushSize));
+      brush.size(
+        base::clamp(
+          int(brush.size()+dz),
+          // If we use the "static const int" member directly here,
+          // we'll get a linker error (when compiling without
+          // optimizations) because we should need to define the
+          // address of these constants in "doc/brush.cpp"
+          int(doc::Brush::kMinBrushSize),
+          int(doc::Brush::kMaxBrushSize)));
       break;
     }
 
