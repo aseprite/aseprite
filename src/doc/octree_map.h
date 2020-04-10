@@ -12,8 +12,9 @@
 #include "doc/palette.h"
 #include "doc/rgbmap.h"
 
-#include <vector>
 #include <array>
+#include <memory>
+#include <vector>
 
 namespace doc {
 
@@ -112,7 +113,7 @@ public:
 
   void fillMostSignificantNodes(int level);
 
-  int mapColor(int r, int g, int b, int level);
+  int mapColor(int r, int g, int b, int level) const;
 
   void collectLeafNodes(std::vector<OctreeNode*>* leavesVector, int& paletteIndex);
 
@@ -139,7 +140,7 @@ public:
 
   void addColor(color_t color, int levelDeep = 7)
   {
-    m_root->addColor(color, 0, m_root.get(), 0, levelDeep);
+    m_root.addColor(color, 0, &m_root, 0, levelDeep);
   }
 
   // makePalette return true if a 7 level octreeDeep is OK, and false if we can add ONE level deep.
@@ -154,11 +155,10 @@ public:
   int getModifications() const { return m_modifications; };
 
 private:
-  OctreeNode* root() const { return m_root.get(); };
   void fillOrphansNodes(Palette* palette);
 
-  std::unique_ptr<OctreeNode> m_root;
-  std::unique_ptr<std::vector<OctreeNode*>> m_leavesVector;
+  OctreeNode m_root;
+  std::vector<OctreeNode*> m_leavesVector;
   const Palette* m_palette;
   int m_modifications;
   int m_maskIndex;

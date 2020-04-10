@@ -81,7 +81,7 @@ void OctreeNode::fillMostSignificantNodes(int level)
   }
 }
 
-int OctreeNode::mapColor(int r, int g, int b, int level)
+int OctreeNode::mapColor(int r, int g, int b, int level) const
 {
   int indexLevel = (  (b >> (7 - level)) & 1) * 4
                    + ((g >> (7 - level)) & 1) * 2
@@ -126,28 +126,25 @@ int OctreeNode::removeLeaves(std::vector<OctreeNode*>& auxParentVector,
 }
 
 OctreeMap::OctreeMap()
-  : m_root(new OctreeNode)
-  , m_leavesVector(new std::vector<OctreeNode*>())
-  , m_palette(nullptr)
+  : m_palette(nullptr)
   , m_modifications(0)
 {
 }
 
 bool OctreeMap::makePalette(Palette* palette, int colorCount, int levelDeep)
 {
-
-  if (root()->children()) {
+  if (m_root.children()) {
     // We create paletteIndex to get a "global like" variable, in collectLeafNodes
     // function, the purpose is having a incremental variable in the stack memory
     // sharend between all recursive calls of collectLeafNodes.
     int paletteIndex = 0;
-    root()->collectLeafNodes(m_leavesVector.get(), paletteIndex);
+    m_root.collectLeafNodes(&m_leavesVector, paletteIndex);
   }
 
   // If we can improve the octree accuracy, makePalette returns false, then
   // outside from this function we must re-construct the octreeMap all again with
   // deep level equal to 8.
-  if (levelDeep == 7 && m_leavesVector->size() < colorCount)
+  if (levelDeep == 7 && m_leavesVector.size() < colorCount)
     return false;
 
 
@@ -155,14 +152,14 @@ bool OctreeMap::makePalette(Palette* palette, int colorCount, int levelDeep)
   bool keepReducingMap = true;
 
   for (int level = levelDeep; level > -1; level--) {
-    for (int i=m_leavesVector->size()-1; i>=0; i--) {
-      if (m_leavesVector->size() + auxLeavesVector.size() <= colorCount) {
+    for (int i=m_leavesVector.size()-1; i>=0; i--) {
+      if (m_leavesVector.size() + auxLeavesVector.size() <= colorCount) {
         for (int j=0; j < auxLeavesVector.size(); j++)
-          m_leavesVector->push_back(auxLeavesVector[auxLeavesVector.size() - 1 - j]);
+          m_leavesVector.push_back(auxLeavesVector[auxLeavesVector.size() - 1 - j]);
         keepReducingMap = false;
         break;
       }
-      else if (m_leavesVector->size() == 0) {
+      else if (m_leavesVector.size() == 0) {
         // When colorCount is < 8, auxLeavesVector->size() could reach the 8 size,
         // if this is true and we don't stop the regular removeLeaves algorithm,
         // the 8 remains colors will collapse in one.
@@ -191,7 +188,7 @@ bool OctreeMap::makePalette(Palette* palette, int colorCount, int levelDeep)
           for(;;) {
             if (sortedVector.size() <= colorCount) {
               for (int k=0; k<sortedVector.size(); k++)
-                m_leavesVector->push_back(sortedVector[k]);
+                m_leavesVector.push_back(sortedVector[k]);
               break;
             }
             sortedVector[sortedVector.size()-2]->getLeafColor()
@@ -206,19 +203,19 @@ bool OctreeMap::makePalette(Palette* palette, int colorCount, int levelDeep)
           break;
       }
 
-      m_leavesVector->back()->parent()->removeLeaves(auxLeavesVector, *m_leavesVector);
+      m_leavesVector.back()->parent()->removeLeaves(auxLeavesVector, m_leavesVector);
     }
     if (keepReducingMap) {
       // Copy collapsed leaves to m_leavesVector
       int auxLeavesVectorSize = auxLeavesVector.size();
       for (int i=0; i<auxLeavesVectorSize; i++)
-        m_leavesVector->push_back(auxLeavesVector[auxLeavesVector.size() - 1 - i]);
+        m_leavesVector.push_back(auxLeavesVector[auxLeavesVector.size() - 1 - i]);
       auxLeavesVector.clear();
     }
     else
       break;
   }
-  int leafCount = m_leavesVector->size();
+  int leafCount = m_leavesVector.size();
   int aux = 0;
   if (m_maskColor == 0x00FFFFFF)
     palette->resize(leafCount);
@@ -229,14 +226,14 @@ bool OctreeMap::makePalette(Palette* palette, int colorCount, int levelDeep)
   }
 
   for (int i=0; i<leafCount; i++)
-    palette->setEntry(i+aux, (*m_leavesVector)[i]->getLeafColor().normalizeColor().LeafColorToColor());
+    palette->setEntry(i+aux, m_leavesVector[i]->getLeafColor().normalizeColor().LeafColorToColor());
 
   return true;
 }
 
 void OctreeMap::fillOrphansNodes(Palette* palette)
 {
-  m_root->fillOrphansNodes(palette, 0, 0);
+  m_root.fillOrphansNodes(palette, 0, 0);
 }
 
 void OctreeMap::feedWithImage(Image* image, color_t maskColor, int levelDeep)
@@ -260,10 +257,10 @@ int OctreeMap::mapColor(color_t rgba) const
 {
   if (rgba_geta(rgba) == 0 && m_maskColor >= 0)
     return m_maskColor;
-  else if (m_root->children())
-    return m_root->mapColor(rgba_getr(rgba),
-                            rgba_getg(rgba),
-                            rgba_geta(rgba), 0);
+  else if (m_root.children())
+    return m_root.mapColor(rgba_getr(rgba),
+                           rgba_getg(rgba),
+                           rgba_geta(rgba), 0);
   else
     return 0;
 }
@@ -280,11 +277,12 @@ void OctreeMap::regenerateMap(const Palette* palette, const int maskIndex)
       m_maskIndex == maskIndex)
     return;
 
-  m_root.reset(new OctreeNode());
-  m_leavesVector.reset(new std::vector<OctreeNode*>());
+  m_root = OctreeNode();
+  m_leavesVector.clear();
   for (int i=0; i<palette->size(); i++)
-    m_root->addColor(palette->entry(i), 0, m_root.get(), i, 8);
-  m_root->fillOrphansNodes(palette, 0, 0);
+    m_root.addColor(palette->entry(i), 0, &m_root, i, 8);
+  m_root.fillOrphansNodes(palette, 0, 0);
+
   m_palette = palette;
   m_modifications = palette->getModifications();
   m_maskIndex = maskIndex;
