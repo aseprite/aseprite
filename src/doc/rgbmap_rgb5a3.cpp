@@ -9,7 +9,7 @@
 #include "config.h"
 #endif
 
-#include "doc/rgbmap.h"
+#include "doc/rgbmap_rgb5a3.h"
 
 #include "doc/color_scales.h"
 #include "doc/palette.h"
@@ -22,7 +22,7 @@ namespace doc {
 #define ASIZE   8
 #define MAPSIZE (RSIZE*GSIZE*BSIZE*ASIZE)
 
-RgbMap::RgbMap()
+RgbMapRGB5A3::RgbMapRGB5A3()
   : m_map(MAPSIZE)
   , m_palette(NULL)
   , m_modifications(0)
@@ -30,13 +30,13 @@ RgbMap::RgbMap()
 {
 }
 
-bool RgbMap::match(const Palette* palette) const
+bool RgbMapRGB5A3::match(const Palette* palette) const
 {
   return (m_palette == palette &&
     m_modifications == palette->getModifications());
 }
 
-void RgbMap::regenerate(const Palette* palette, int mask_index)
+void RgbMapRGB5A3::regenerate(const Palette* palette, int mask_index)
 {
   m_palette = palette;
   m_modifications = palette->getModifications();
@@ -47,7 +47,7 @@ void RgbMap::regenerate(const Palette* palette, int mask_index)
     entry |= INVALID;
 }
 
-int RgbMap::generateEntry(int i, int r, int g, int b, int a) const
+int RgbMapRGB5A3::generateEntry(int i, int r, int g, int b, int a) const
 {
   return m_map[i] =
     m_palette->findBestfit(

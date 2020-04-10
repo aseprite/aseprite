@@ -1,4 +1,5 @@
 # Aseprite Document Library
+# Copyright (C) 2020 Igara Studio S.A.
 # Copyright (C) 2001-2018 David Capello
 
 if(WIN32)
@@ -52,7 +53,7 @@ add_library(doc-lib
   palette_io.cpp
   primitives.cpp
   remap.cpp
-  rgbmap.cpp
+  rgbmap_rgb5a3.cpp
   selected_frames.cpp
   selected_layers.cpp
   slice.cpp

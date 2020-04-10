@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -42,6 +42,7 @@ namespace doc {
   class Palette;
   class Remap;
   class RgbMap;
+  class RgbMapRGB5A3;
   class SelectedFrames;
 
   typedef std::vector<Palette*> PalettesList;
@@ -199,7 +200,7 @@ namespace doc {
     gfx::Rect m_gridBounds;                // grid settings
 
     // Current rgb map
-    mutable RgbMap* m_rgbMap;
+    mutable RgbMapRGB5A3* m_rgbMap;
 
     Tags m_tags;
     Slices m_slices;

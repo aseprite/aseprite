@@ -177,7 +177,7 @@ Image* convert_pixel_format(
             if (a == 0)
               *dst_it = new_mask_color;
             else if (rgbmap)
-              *dst_it = rgbmap->mapColor(r, g, b, a);
+              *dst_it = rgbmap->mapColor(c);
             else
               *dst_it = palette->findBestfit(r, g, b, a, new_mask_color);
           }

@@ -21,7 +21,7 @@
 #include "doc/palette.h"
 #include "doc/primitives.h"
 #include "doc/remap.h"
-#include "doc/rgbmap.h"
+#include "doc/rgbmap_rgb5a3.h"
 #include "doc/tag.h"
 
 #include <algorithm>
@@ -357,7 +357,7 @@ RgbMap* Sprite::rgbMap(frame_t frame, RgbMapFor forLayer) const
                    -1: transparentColor());
 
   if (m_rgbMap == NULL) {
-    m_rgbMap = new RgbMap();
+    m_rgbMap = new RgbMapRGB5A3;
     m_rgbMap->regenerate(palette(frame), maskIndex);
   }
   else if (!m_rgbMap->match(palette(frame)) ||
