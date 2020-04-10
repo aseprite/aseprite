@@ -1551,12 +1551,8 @@ private:
         const gfx::Size deltaSize = m_deltaImage->size();
         int thicknessTop = deltaSize.h / 4;
         int thicknessLeft = deltaSize.w / 4;
-        int lastThicknessTop = 0;
-        int lastThicknessLeft = 0;
-        bool inLastLoopThicknessWasDecreased = false;
-        pal.resize(0);
-        int whileMonitor = 0;
-        while (whileMonitor < 2 && thicknessTop > 0 && thicknessLeft > 0) {
+        int repeatCounter = 0;
+        while (repeatCounter < 10 && thicknessTop > 0 && thicknessLeft > 0) {
 
           //      ----------------
           //     |________________|
@@ -1595,57 +1591,31 @@ private:
           auxRect = gfx::Rect(deltaSize.w - thicknessLeft - 1, thicknessTop, thicknessLeft, deltaSize.h - 2 * thicknessTop);
           optimizer.feedWithImage(m_deltaImage.get(), auxRect, false);
 
-          if (optimizer.isHighPrecision()) {
-            int maxBorderColorCount = (deltaSize.h * 3 / 16 < thicknessTop || deltaSize.w * 3 / 16 < thicknessLeft)? 220 : 110;
-            int minBorderColorCount = (maxBorderColorCount == 220)? 120 : 60;
-
-            if (optimizer.highPrecisionSize() < maxBorderColorCount &&  // 220 colors is an arbitrary number
-                optimizer.highPrecisionSize() >= minBorderColorCount) { // 120 colors is an arbitrary number
-              lastThicknessTop = thicknessTop;
-              lastThicknessLeft = thicknessLeft;
-              pal.resize(255);
-              optimizer.calculate(&pal, -1);
-              break;
-            }
-            if (deltaSize.h / 3 <= thicknessTop ||
-                deltaSize.w / 3 <= thicknessLeft ||
-                inLastLoopThicknessWasDecreased) {
-              render::PaletteOptimizer optimizer;
-              optimizer.feedWithImage(m_deltaImage.get(), false);
-              pal.resize(255);
-              optimizer.calculate(&pal, -1);
-              break;
-            }
-            thicknessTop += thicknessTop / 2;
-            thicknessLeft += thicknessLeft / 2;
+          int maxBorderColorCount = 220;
+          if (optimizer.isHighPrecision() && (optimizer.highPrecisionSize() < maxBorderColorCount)) {
+            pal.resize(optimizer.highPrecisionSize());
+            optimizer.calculate(&pal, -1);
+            break;
+          }
+          else if (thicknessTop <= 1 || thicknessLeft <= 1) {
+            pal.resize(0);
+            thicknessTop = 0;
+            thicknessLeft = 0;
+            break;
           }
           else {
-            if (thicknessTop <= deltaSize.h / 8 ||
-                thicknessLeft <= deltaSize.w / 8 ||
-                thicknessTop <= 1 ||
-                thicknessLeft <= 1) {
-              // Here is not posible to find an adecuate palette for deltaImage, the algorithm give ups
-              // theen it will feed the optimizer with the whole deltaImage
-              render::PaletteOptimizer optimizer;
-              optimizer.feedWithImage(m_deltaImage.get(), false);
-              pal.resize(255);
-              optimizer.calculate(&pal, -1);
-              break;
-            }
             thicknessTop -= thicknessTop / 2;
             thicknessLeft -= thicknessLeft / 2;
-            inLastLoopThicknessWasDecreased = true;
           }
-          whileMonitor++;
-          lastThicknessTop = thicknessTop;
-          lastThicknessLeft = thicknessLeft;
+
+          repeatCounter++;
         }
         // Quantize the colors contained into center rectangle and add these in `pal`:
         if (pal.size() < 255) {
-          gfx::Rect centerRect(lastThicknessLeft,
-                               lastThicknessTop,
-                               deltaSize.w - 2 * lastThicknessLeft,
-                               deltaSize.h - 2 * lastThicknessTop);
+          gfx::Rect centerRect(thicknessLeft,
+                               thicknessTop,
+                               deltaSize.w - 2 * thicknessLeft,
+                               deltaSize.h - 2 * thicknessTop);
           Palette centerPalette(0, 255 - pal.size());
           centerPalette = createOptimizedPalette(m_deltaImage.get(),
                                                  centerRect, 255 - pal.size());
