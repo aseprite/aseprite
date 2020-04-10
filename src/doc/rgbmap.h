@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2020 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -19,7 +20,7 @@ namespace doc {
   class Palette;
 
   // It acts like a cache for Palette:findBestfit() calls.
-  class RgbMap : public Object {
+  class RgbMap {
     // Bit activated on m_map entries that aren't yet calculated.
     const int INVALID = 256;
 

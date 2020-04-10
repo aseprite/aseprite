@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2020 Igara Studio S.A.
 // Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -22,8 +23,7 @@ namespace doc {
 #define MAPSIZE (RSIZE*GSIZE*BSIZE*ASIZE)
 
 RgbMap::RgbMap()
-  : Object(ObjectType::RgbMap)
-  , m_map(MAPSIZE)
+  : m_map(MAPSIZE)
   , m_palette(NULL)
   , m_modifications(0)
   , m_maskIndex(0)
