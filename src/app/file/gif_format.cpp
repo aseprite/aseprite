@@ -1553,11 +1553,8 @@ private:
         const gfx::Size deltaSize = m_deltaImage->size();
         int thicknessTop = deltaSize.h / 4;
         int thicknessLeft = deltaSize.w / 4;
-        int lastThicknessTop = thicknessTop;
-        int lastThicknessLeft = thicknessLeft;
-        bool inLastLoopThicknessWasDecreased = false;
-        pal.resize(255);
-        while (true) {
+        int repeatCounter = 0;
+        while (repeatCounter < 10 && thicknessTop > 0 && thicknessLeft > 0) {
 
           //      ----------------
           //     |________________|
@@ -1596,44 +1593,31 @@ private:
           auxRect = gfx::Rect(deltaSize.w - thicknessLeft - 1, thicknessTop, thicknessLeft, deltaSize.h - 2 * thicknessTop);
           optimizer.feedWithImage(m_deltaImage.get(), auxRect, false);
 
-          if (optimizer.isHighPrecision()) {
-            if (optimizer.highPrecisionSize() >= 220) { // 220 colors is an arbitrary number
-              lastThicknessTop = thicknessTop;
-              lastThicknessLeft = thicknessLeft;
-              optimizer.calculate(&pal, -1);
-              break;
-            }
-            if (deltaSize.h - thicknessTop * 2 <= deltaSize.h / 4 ||
-                deltaSize.w - thicknessLeft * 2 <= deltaSize.w / 4 ||
-                thicknessTop * 3 >= deltaSize.h ||
-                thicknessLeft * 3 >= deltaSize.w ||
-                inLastLoopThicknessWasDecreased) {
-              optimizer.calculate(&pal, -1);
-              break;
-            }
-            thicknessTop += thicknessTop / 2;
-            thicknessLeft += thicknessLeft / 2;
+          int maxBorderColorCount = 220;
+          if (optimizer.isHighPrecision() && (optimizer.highPrecisionSize() < maxBorderColorCount)) {
+            pal.resize(optimizer.highPrecisionSize());
+            optimizer.calculate(&pal, -1);
+            break;
+          }
+          else if (thicknessTop <= 1 || thicknessLeft <= 1) {
+            pal.resize(0);
+            thicknessTop = 0;
+            thicknessLeft = 0;
+            break;
           }
           else {
-            if (thicknessTop <= deltaSize.h / 16 ||
-                thicknessLeft <= deltaSize.w / 16) {
-              optimizer.calculate(&pal, -1);
-              break;
-            }
             thicknessTop -= thicknessTop / 2;
             thicknessLeft -= thicknessLeft / 2;
-            inLastLoopThicknessWasDecreased = true;
           }
 
-          lastThicknessTop = thicknessTop;
-          lastThicknessLeft = thicknessLeft;
+          repeatCounter++;
         }
         // Quantize the colors contained into center rectangle and add these in `pal`:
         if (pal.size() < 255) {
-          gfx::Rect centerRect(lastThicknessLeft,
-                               lastThicknessTop,
-                               deltaSize.w - 2 * lastThicknessLeft,
-                               deltaSize.h - 2 * lastThicknessTop);
+          gfx::Rect centerRect(thicknessLeft,
+                               thicknessTop,
+                               deltaSize.w - 2 * thicknessLeft,
+                               deltaSize.h - 2 * thicknessTop);
           Palette centerPalette(0, 255 - pal.size());
           centerPalette = createOptimizedPalette(m_deltaImage.get(),
                                                  centerRect, 255 - pal.size());
