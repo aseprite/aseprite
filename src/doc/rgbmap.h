@@ -13,10 +13,14 @@
 
 namespace doc {
 
+  class Palette;
+
   // Matches a RGBA value with an index in a color palette (doc::Palette).
   class RgbMap {
   public:
     virtual ~RgbMap() { }
+
+    virtual void regenerateMap(const Palette* palette, const int maskIndex) = 0;
 
     // Should return the best index in a palette that matches the given RGBA values.
     virtual int mapColor(const color_t rgba) const = 0;

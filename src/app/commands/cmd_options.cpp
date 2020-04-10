@@ -28,6 +28,7 @@
 #include "app/tx.h"
 #include "app/ui/color_button.h"
 #include "app/ui/pref_widget.h"
+#include "app/ui/rgbmap_algorithm_selector.h"
 #include "app/ui/separator_in_view.h"
 #include "app/ui/skin/skin_theme.h"
 #include "base/bind.h"
@@ -337,6 +338,10 @@ public:
 
     nonactiveLayersOpacity()->setValue(m_pref.experimental.nonactiveLayersOpacity());
 
+    rgbmapAlgorithmPlaceholder()->addChild(&m_rgbmapAlgorithmSelector);
+    m_rgbmapAlgorithmSelector.setExpansive(true);
+    m_rgbmapAlgorithmSelector.algorithm(m_pref.experimental.rgbmapAlgorithm());
+
     if (m_pref.editor.showScrollbars())
       showScrollbars()->setSelected(true);
 
@@ -632,6 +637,7 @@ public:
     m_pref.experimental.useNativeFileDialog(nativeFileDialog()->isSelected());
     m_pref.experimental.flashLayer(flashLayer()->isSelected());
     m_pref.experimental.nonactiveLayersOpacity(nonactiveLayersOpacity()->getValue());
+    m_pref.experimental.rgbmapAlgorithm(m_rgbmapAlgorithmSelector.algorithm());
 
 #ifdef _WIN32
     manager()->getDisplay()
@@ -1417,6 +1423,7 @@ private:
   int m_restoreUIScaling;
   std::vector<os::ColorSpacePtr> m_colorSpaces;
   std::string m_templateTextForDisplayCS;
+  RgbMapAlgorithmSelector m_rgbmapAlgorithmSelector;
 };
 
 class OptionsCommand : public Command {

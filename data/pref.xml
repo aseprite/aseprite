@@ -190,6 +190,7 @@
       <option id="load_wintab_driver" type="bool" default="true" />
       <option id="flash_layer" type="bool" default="false" />
       <option id="nonactive_layers_opacity" type="int" default="255" />
+      <option id="rgbmap_algorithm" type="doc::RgbMapAlgorithm" default="doc::RgbMapAlgorithm::DEFAULT" />
     </section>
     <section id="news">
       <option id="cache_file" type="std::string" />

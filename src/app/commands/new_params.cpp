@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -18,6 +18,7 @@
 #include "base/string.h"
 #include "doc/algorithm/resize_image.h"
 #include "doc/color_mode.h"
+#include "doc/rgbmap_algorithm.h"
 #include "filters/color_curve.h"
 #include "filters/hue_saturation_filter.h"
 #include "filters/outline_filter.h"
@@ -179,6 +180,17 @@ void Param<filters::ColorCurve>::fromString(const std::string& value)
   setValue(curve);
 }
 
+template<>
+void Param<doc::RgbMapAlgorithm>::fromString(const std::string& value)
+{
+  if (base::utf8_icmp(value, "octree") == 0)
+    setValue(doc::RgbMapAlgorithm::OCTREE);
+  else if (base::utf8_icmp(value, "rgb5a3") == 0)
+    setValue(doc::RgbMapAlgorithm::RGB5A3);
+  else
+    setValue(doc::RgbMapAlgorithm::DEFAULT);
+}
+
 //////////////////////////////////////////////////////////////////////
 // Convert values from Lua
 //////////////////////////////////////////////////////////////////////
@@ -305,6 +317,15 @@ void Param<filters::ColorCurve>::fromLua(lua_State* L, int index)
     }
     setValue(curve);
   }
+}
+
+template<>
+void Param<doc::RgbMapAlgorithm>::fromLua(lua_State* L, int index)
+{
+  if (lua_type(L, index) == LUA_TSTRING)
+    fromString(lua_tostring(L, index));
+  else
+    setValue((doc::RgbMapAlgorithm)lua_tointeger(L, index));
 }
 
 void CommandWithNewParamsBase::loadParamsFromLuaTable(lua_State* L, int index)

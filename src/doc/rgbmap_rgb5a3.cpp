@@ -24,23 +24,23 @@ namespace doc {
 
 RgbMapRGB5A3::RgbMapRGB5A3()
   : m_map(MAPSIZE)
-  , m_palette(NULL)
+  , m_palette(nullptr)
   , m_modifications(0)
   , m_maskIndex(0)
 {
 }
 
-bool RgbMapRGB5A3::match(const Palette* palette) const
+void RgbMapRGB5A3::regenerateMap(const Palette* palette, int maskIndex)
 {
-  return (m_palette == palette &&
-    m_modifications == palette->getModifications());
-}
+  // Skip useless regenerations
+  if (m_palette == palette &&
+      m_modifications == palette->getModifications() &&
+      m_maskIndex == maskIndex)
+    return;
 
-void RgbMapRGB5A3::regenerate(const Palette* palette, int mask_index)
-{
   m_palette = palette;
   m_modifications = palette->getModifications();
-  m_maskIndex = mask_index;
+  m_maskIndex = maskIndex;
 
   // Mark all entries as invalid (need to be regenerated)
   for (uint16_t& entry : m_map)

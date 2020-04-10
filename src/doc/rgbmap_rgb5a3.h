@@ -28,10 +28,8 @@ namespace doc {
   public:
     RgbMapRGB5A3();
 
-    bool match(const Palette* palette) const;
-    void regenerate(const Palette* palette, int mask_index);
-
     // RgbMap impl
+    void regenerateMap(const Palette* palette, int maskIndex) override;
     int mapColor(const color_t rgba) const override {
       const int r = rgba_getr(rgba);
       const int g = rgba_getg(rgba);

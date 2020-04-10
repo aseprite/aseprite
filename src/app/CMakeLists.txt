@@ -366,6 +366,7 @@ if(ENABLE_UI)
     ui/preview_editor.cpp
     ui/recent_listbox.cpp
     ui/resources_listbox.cpp
+    ui/rgbmap_algorithm_selector.cpp
     ui/search_entry.cpp
     ui/select_accelerator.cpp
     ui/selection_mode_field.cpp

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -168,6 +168,7 @@ FOR_ENUM(app::tools::RotationAlgorithm)
 FOR_ENUM(doc::AniDir)
 FOR_ENUM(doc::BrushPattern)
 FOR_ENUM(doc::ColorMode)
+FOR_ENUM(doc::RgbMapAlgorithm)
 FOR_ENUM(filters::TiledMode)
 FOR_ENUM(render::OnionskinPosition)
 

@@ -21,10 +21,12 @@
 #include "doc/object.h"
 #include "doc/pixel_format.h"
 #include "doc/pixel_ratio.h"
+#include "doc/rgbmap_algorithm.h"
 #include "doc/slices.h"
 #include "doc/tags.h"
 #include "gfx/rect.h"
 
+#include <memory>
 #include <vector>
 
 #define DOC_SPRITE_MAX_WIDTH  65535
@@ -101,8 +103,11 @@ namespace doc {
     color_t transparentColor() const { return m_spec.maskColor(); }
     void setTransparentColor(color_t color);
 
+    // Defaults
     static gfx::Rect DefaultGridBounds();
     static void SetDefaultGridBounds(const gfx::Rect& defGridBounds);
+    static RgbMapAlgorithm DefaultRgbMapAlgorithm();
+    static void SetDefaultRgbMapAlgorithm(const RgbMapAlgorithm mapAlgo);
 
     const gfx::Rect& gridBounds() const { return m_gridBounds; }
     void setGridBounds(const gfx::Rect& rc) { m_gridBounds = rc; }
@@ -200,7 +205,8 @@ namespace doc {
     gfx::Rect m_gridBounds;                // grid settings
 
     // Current rgb map
-    mutable RgbMapRGB5A3* m_rgbMap;
+    mutable RgbMapAlgorithm m_rgbMapAlgorithm;
+    mutable std::unique_ptr<RgbMap> m_rgbMap;
 
     Tags m_tags;
     Slices m_slices;

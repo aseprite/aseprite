@@ -1181,7 +1181,7 @@ private:
       framePalette = framePaletteRef.get();
 
       rgbmapRef.reset(new RgbMapRGB5A3);
-      rgbmapRef->regenerate(framePalette, m_transparentIndex);
+      rgbmapRef->regenerateMap(framePalette, m_transparentIndex);
       rgbmap = rgbmapRef.get();
     }
 
