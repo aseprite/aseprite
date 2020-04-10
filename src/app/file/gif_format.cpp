@@ -1551,11 +1551,12 @@ private:
         const gfx::Size deltaSize = m_deltaImage->size();
         int thicknessTop = deltaSize.h / 4;
         int thicknessLeft = deltaSize.w / 4;
-        int lastThicknessTop = thicknessTop;
-        int lastThicknessLeft = thicknessLeft;
+        int lastThicknessTop = 0;
+        int lastThicknessLeft = 0;
         bool inLastLoopThicknessWasDecreased = false;
-        pal.resize(255);
-        while (true) {
+        pal.resize(0);
+        int whileMonitor = 0;
+        while (whileMonitor < 2 && thicknessTop > 0 && thicknessLeft > 0) {
 
           //      ----------------
           //     |________________|
@@ -1595,17 +1596,23 @@ private:
           optimizer.feedWithImage(m_deltaImage.get(), auxRect, false);
 
           if (optimizer.isHighPrecision()) {
-            if (optimizer.highPrecisionSize() >= 220) { // 220 colors is an arbitrary number
+            int maxBorderColorCount = (deltaSize.h * 3 / 16 < thicknessTop || deltaSize.w * 3 / 16 < thicknessLeft)? 220 : 110;
+            int minBorderColorCount = (maxBorderColorCount == 220)? 120 : 60;
+
+            if (optimizer.highPrecisionSize() < maxBorderColorCount &&  // 220 colors is an arbitrary number
+                optimizer.highPrecisionSize() >= minBorderColorCount) { // 120 colors is an arbitrary number
               lastThicknessTop = thicknessTop;
               lastThicknessLeft = thicknessLeft;
+              pal.resize(255);
               optimizer.calculate(&pal, -1);
               break;
             }
-            if (deltaSize.h - thicknessTop * 2 <= deltaSize.h / 4 ||
-                deltaSize.w - thicknessLeft * 2 <= deltaSize.w / 4 ||
-                thicknessTop * 3 >= deltaSize.h ||
-                thicknessLeft * 3 >= deltaSize.w ||
+            if (deltaSize.h / 3 <= thicknessTop ||
+                deltaSize.w / 3 <= thicknessLeft ||
                 inLastLoopThicknessWasDecreased) {
+              render::PaletteOptimizer optimizer;
+              optimizer.feedWithImage(m_deltaImage.get(), false);
+              pal.resize(255);
               optimizer.calculate(&pal, -1);
               break;
             }
@@ -1613,8 +1620,15 @@ private:
             thicknessLeft += thicknessLeft / 2;
           }
           else {
-            if (thicknessTop <= deltaSize.h / 16 ||
-                thicknessLeft <= deltaSize.w / 16) {
+            if (thicknessTop <= deltaSize.h / 8 ||
+                thicknessLeft <= deltaSize.w / 8 ||
+                thicknessTop <= 1 ||
+                thicknessLeft <= 1) {
+              // Here is not posible to find an adecuate palette for deltaImage, the algorithm give ups
+              // theen it will feed the optimizer with the whole deltaImage
+              render::PaletteOptimizer optimizer;
+              optimizer.feedWithImage(m_deltaImage.get(), false);
+              pal.resize(255);
               optimizer.calculate(&pal, -1);
               break;
             }
@@ -1622,7 +1636,7 @@ private:
             thicknessLeft -= thicknessLeft / 2;
             inLastLoopThicknessWasDecreased = true;
           }
-
+          whileMonitor++;
           lastThicknessTop = thicknessTop;
           lastThicknessLeft = thicknessLeft;
         }
