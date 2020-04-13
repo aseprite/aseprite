@@ -260,7 +260,7 @@ int OctreeMap::mapColor(color_t rgba) const
   else if (m_root.children())
     return m_root.mapColor(rgba_getr(rgba),
                            rgba_getg(rgba),
-                           rgba_geta(rgba), 0);
+                           rgba_getb(rgba), 0);
   else
     return 0;
 }
