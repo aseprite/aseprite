@@ -13,10 +13,10 @@
 
 #include "doc/image_impl.h"
 #include "doc/layer.h"
+#include "doc/octree_map.h"
 #include "doc/palette.h"
 #include "doc/primitives.h"
 #include "doc/remap.h"
-#include "doc/rgbmap.h"
 #include "doc/sprite.h"
 #include "gfx/hsv.h"
 #include "gfx/rgb.h"
@@ -44,9 +44,14 @@ Palette* create_palette_from_sprite(
   const bool withAlpha,
   Palette* palette,
   TaskDelegate* delegate,
-  const bool newBlend)
+  const bool newBlend,
+  const RgbMapAlgorithm mappingAlgorithm)
 {
   PaletteOptimizer optimizer;
+  OctreeMap octreemap;
+  const color_t maskColor = (sprite->backgroundLayer()
+                             && sprite->allLayersCount() == 1) ? 0x00FFFFFF:
+                                                                 sprite->transparentColor();
 
   if (!palette)
     palette = new Palette(fromFrame, 256);
@@ -60,7 +65,15 @@ Palette* create_palette_from_sprite(
   render.setNewBlend(newBlend);
   for (frame_t frame=fromFrame; frame<=toFrame; ++frame) {
     render.renderSprite(flat_image.get(), sprite, frame);
-    optimizer.feedWithImage(flat_image.get(), withAlpha);
+
+    switch (mappingAlgorithm) {
+      case RgbMapAlgorithm::RGB5A3:
+        optimizer.feedWithImage(flat_image.get(), withAlpha);
+        break;
+      case RgbMapAlgorithm::OCTREE:
+        octreemap.feedWithImage(flat_image.get(), maskColor);
+        break;
+    }
 
     if (delegate) {
       if (!delegate->continueTask())
@@ -71,12 +84,35 @@ Palette* create_palette_from_sprite(
     }
   }
 
-  // Generate an optimized palette
-  optimizer.calculate(
-    palette,
-    // Transparent color is needed if we have transparent layers
-    (sprite->backgroundLayer() &&
-     sprite->allLayersCount() == 1 ? -1: sprite->transparentColor()));
+  switch (mappingAlgorithm) {
+    case RgbMapAlgorithm::RGB5A3:
+      // Generate an optimized palette
+      optimizer.calculate(
+        palette,
+        // Transparent color is needed if we have transparent layers
+        (sprite->backgroundLayer() &&
+         sprite->allLayersCount() == 1 ? -1: sprite->transparentColor()));
+      break;
+    case RgbMapAlgorithm::OCTREE:
+      if (!octreemap.makePalette(palette, palette->size())) {
+        // We can use an 8-bit deep octree map, instead of 7-bit of the
+        // first attempt.
+        octreemap = OctreeMap();
+        for (frame_t frame=fromFrame; frame<=toFrame; ++frame) {
+          render.renderSprite(flat_image.get(), sprite, frame);
+          octreemap.feedWithImage(flat_image.get(), maskColor , 8);
+          if (delegate) {
+            if (!delegate->continueTask())
+              return nullptr;
+
+            delegate->notifyTaskProgress(
+              double(frame-fromFrame+1) / double(toFrame-fromFrame+1));
+          }
+        }
+        octreemap.makePalette(palette, palette->size(), 8);
+      }
+      break;
+  }
 
   return palette;
 }

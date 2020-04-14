@@ -140,13 +140,15 @@ void ColorQuantizationCommand::onExecute(Context* ctx)
 
     SpriteJob job(reader, "Color Quantization");
     const bool newBlend = Preferences::instance().experimental.newBlend();
+    const RgbMapAlgorithm algorithm = Preferences::instance().experimental.rgbmapAlgorithm();
     job.startJobWithCallback(
-      [sprite, withAlpha, &tmpPalette, &job, newBlend]{
+      [sprite, withAlpha, &tmpPalette, &job, newBlend, algorithm]{
         render::create_palette_from_sprite(
           sprite, 0, sprite->lastFrame(),
           withAlpha, &tmpPalette,
-          &job,
-          newBlend);     // SpriteJob is a render::TaskDelegate
+          &job,                 // SpriteJob is a render::TaskDelegate
+          newBlend,
+          algorithm);
       });
     job.waitJob();
     if (job.isCanceled())

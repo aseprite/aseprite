@@ -109,7 +109,9 @@ public:
   void addColor(color_t c, int level, OctreeNode* parent,
                 int paletteIndex = 0, int levelDeep = 7);
 
-  void fillOrphansNodes(const Palette* palette, color_t upstreamBranchColor, int level);
+  void fillOrphansNodes(const Palette* palette,
+                        const color_t upstreamBranchColor,
+                        const int level);
 
   void fillMostSignificantNodes(int level);
 
@@ -143,10 +145,15 @@ public:
     m_root.addColor(color, 0, &m_root, 0, levelDeep);
   }
 
-  // makePalette return true if a 7 level octreeDeep is OK, and false if we can add ONE level deep.
-  bool makePalette(Palette* palette, int colorCount, int leveleep = 7);
+  // makePalette returns true if a 7 level octreeDeep is OK, and false
+  // if we can add ONE level deep.
+  bool makePalette(Palette* palette,
+                   const int colorCount,
+                   const int levelDeep = 7);
 
-  void feedWithImage(Image* image, color_t maskColor, int levelDeep = 7);
+  void feedWithImage(const Image* image,
+                     const color_t maskColor,
+                     const int levelDeep = 7);
 
   // RgbMap impl
   void regenerateMap(const Palette* palette, const int maskIndex) override;
@@ -155,7 +162,7 @@ public:
   int getModifications() const { return m_modifications; };
 
 private:
-  void fillOrphansNodes(Palette* palette);
+  void fillOrphansNodes(const Palette* palette);
 
   OctreeNode m_root;
   std::vector<OctreeNode*> m_leavesVector;

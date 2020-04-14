@@ -34,7 +34,8 @@ void OctreeNode::addColor(color_t c, int level, OctreeNode* parent,
 }
 
 void OctreeNode::fillOrphansNodes(const Palette* palette,
-                                  color_t upstreamBranchColor, int level)
+                                  const color_t upstreamBranchColor,
+                                  const int level)
 {
   for (int i=0; i<8; i++) {
     if ((*m_children)[i].m_children)
@@ -131,7 +132,9 @@ OctreeMap::OctreeMap()
 {
 }
 
-bool OctreeMap::makePalette(Palette* palette, int colorCount, int levelDeep)
+bool OctreeMap::makePalette(Palette* palette,
+                            const int colorCount,
+                            const int levelDeep)
 {
   if (m_root.children()) {
     // We create paletteIndex to get a "global like" variable, in collectLeafNodes
@@ -231,18 +234,20 @@ bool OctreeMap::makePalette(Palette* palette, int colorCount, int levelDeep)
   return true;
 }
 
-void OctreeMap::fillOrphansNodes(Palette* palette)
+void OctreeMap::fillOrphansNodes(const Palette* palette)
 {
   m_root.fillOrphansNodes(palette, 0, 0);
 }
 
-void OctreeMap::feedWithImage(Image* image, color_t maskColor, int levelDeep)
+void OctreeMap::feedWithImage(const Image* image,
+                              const color_t maskColor,
+                              const int levelDeep)
 {
   ASSERT(image);
   ASSERT(image->pixelFormat() == IMAGE_RGB);
   uint32_t color;
   const LockImageBits<RgbTraits> bits(image);
-  LockImageBits<RgbTraits>::const_iterator it = bits.begin(), end = bits.end();
+  auto it = bits.begin(), end = bits.end();
 
   for (; it != end; ++it) {
     color = *it;
