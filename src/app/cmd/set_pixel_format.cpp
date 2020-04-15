@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -69,6 +69,7 @@ private:
 SetPixelFormat::SetPixelFormat(Sprite* sprite,
                                const PixelFormat newFormat,
                                const render::Dithering& dithering,
+                               const doc::RgbMapAlgorithm mapAlgorithm,
                                render::TaskDelegate* delegate)
   : WithSprite(sprite)
   , m_oldFormat(sprite->pixelFormat())
@@ -78,6 +79,7 @@ SetPixelFormat::SetPixelFormat(Sprite* sprite,
     return;
 
   SuperDelegate superDel(sprite->uniqueCels().size(), delegate);
+  const auto rgbMapFor = sprite->rgbMapForSprite();
 
   for (Cel* cel : sprite->uniqueCels()) {
     ImageRef old_image = cel->imageRef();
@@ -85,7 +87,7 @@ SetPixelFormat::SetPixelFormat(Sprite* sprite,
       render::convert_pixel_format
       (old_image.get(), nullptr, newFormat,
        dithering,
-       sprite->rgbMap(cel->frame()),
+       sprite->rgbMap(cel->frame(), rgbMapFor, mapAlgorithm),
        sprite->palette(cel->frame()),
        cel->layer()->isBackground(),
        old_image->maskColor(),

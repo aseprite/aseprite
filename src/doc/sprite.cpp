@@ -355,19 +355,34 @@ void Sprite::deletePalette(frame_t frame)
   }
 }
 
-RgbMap* Sprite::rgbMap(frame_t frame) const
+Sprite::RgbMapFor Sprite::rgbMapForSprite() const
 {
-  return rgbMap(frame, backgroundLayer() ? RgbMapFor::OpaqueLayer:
-                                           RgbMapFor::TransparentLayer);
+  return backgroundLayer() ? RgbMapFor::OpaqueLayer:
+                             RgbMapFor::TransparentLayer;
 }
 
-RgbMap* Sprite::rgbMap(frame_t frame, RgbMapFor forLayer) const
+RgbMap* Sprite::rgbMap(const frame_t frame) const
+{
+  return rgbMap(frame, rgbMapForSprite());
+}
+
+RgbMap* Sprite::rgbMap(const frame_t frame,
+                       const RgbMapFor forLayer) const
+{
+  return rgbMap(frame,
+                forLayer,
+                g_rgbMapAlgorithm);
+}
+
+RgbMap* Sprite::rgbMap(const frame_t frame,
+                       const RgbMapFor forLayer,
+                       const RgbMapAlgorithm mapAlgo) const
 {
   int maskIndex = (forLayer == RgbMapFor::OpaqueLayer ?
                    -1: transparentColor());
 
-  if (!m_rgbMap || m_rgbMapAlgorithm != g_rgbMapAlgorithm) {
-    m_rgbMapAlgorithm = g_rgbMapAlgorithm;
+  if (!m_rgbMap || m_rgbMapAlgorithm != mapAlgo) {
+    m_rgbMapAlgorithm = mapAlgo;
     switch (m_rgbMapAlgorithm) {
       case RgbMapAlgorithm::RGB5A3: m_rgbMap.reset(new RgbMapRGB5A3); break;
       case RgbMapAlgorithm::OCTREE: m_rgbMap.reset(new OctreeMap); break;

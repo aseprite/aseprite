@@ -137,8 +137,13 @@ namespace doc {
 
     void deletePalette(frame_t frame);
 
-    RgbMap* rgbMap(frame_t frame) const;
-    RgbMap* rgbMap(frame_t frame, RgbMapFor forLayer) const;
+    RgbMapFor rgbMapForSprite() const;
+    RgbMap* rgbMap(const frame_t frame) const;
+    RgbMap* rgbMap(const frame_t frame,
+                   const RgbMapFor forLayer) const;
+    RgbMap* rgbMap(const frame_t frame,
+                   const RgbMapFor forLayer,
+                   const RgbMapAlgorithm mapAlgo) const;
 
     ////////////////////////////////////////
     // Frames
