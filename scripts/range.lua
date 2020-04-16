@@ -1,4 +1,4 @@
--- Copyright (C) 2019  Igara Studio S.A.
+-- Copyright (C) 2019-2020  Igara Studio S.A.
 --
 -- This file is released under the terms of the MIT license.
 -- Read LICENSE.txt for more information.
@@ -29,6 +29,7 @@ do
   assert(r.frames[1] == s.frames[1])
 end
 
+-- Test app.range.colors
 do
   assert(#app.range.colors == 0)
   app.range.colors = { 2 }
@@ -52,4 +53,59 @@ do
   assert(app.range:containsColor(5))
   assert(app.range:containsColor(8))
   assert(app.range:containsColor(10))
+end
+
+-- Test setters
+do
+  local spr = Sprite(32, 32)
+  local lay1 = spr.layers[1]
+  local r = app.range
+  assert(r.type == RangeType.EMPTY)
+  assert(#r.layers == 1)
+  assert(#r.frames == 1)
+  assert(r.layers[1] == lay1)
+  assert(r.frames[1].frameNumber == 1)
+
+  local lay2 = spr:newLayer()
+  r = app.range
+  assert(r.type == RangeType.EMPTY)
+  assert(#r.layers == 1)
+  assert(#r.frames == 1)
+  assert(r.layers[1] == lay2)
+  assert(r.frames[1].frameNumber == 1)
+
+  r.layers = { lay1, lay2 }
+  assert(r.type == RangeType.LAYERS)
+  assert(#r.layers == 2)
+  assert(#r.frames == 1)
+  assert(r.layers[1] == lay1)
+  assert(r.layers[2] == lay2)
+  assert(r.frames[1].frameNumber == 1)
+
+  spr:newFrame()
+  spr:newFrame()
+  r.frames = { 1, 3 }
+  assert(r.type == RangeType.FRAMES)
+  assert(#r.layers == 2)
+  assert(#r.frames == 2)
+  assert(r.layers[1] == lay1)
+  assert(r.layers[2] == lay2)
+  assert(r.frames[1].frameNumber == 1)
+  assert(r.frames[2].frameNumber == 3)
+
+  r.layers = { lay2 }
+  assert(r.type == RangeType.LAYERS)
+  assert(#r.layers == 1)
+  assert(#r.frames == 2)
+  assert(r.layers[1] == lay2)
+  assert(r.frames[1].frameNumber == 1)
+  assert(r.frames[2].frameNumber == 3)
+
+  -- Clear range
+  r:clear()
+  assert(r.type == RangeType.EMPTY)
+  assert(#r.layers == 1)
+  assert(#r.frames == 1)
+  assert(r.layers[1] == app.activeLayer)
+  assert(r.frames[1] == app.activeFrame)
 end
