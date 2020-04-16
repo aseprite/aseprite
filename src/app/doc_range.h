@@ -32,6 +32,8 @@ namespace app {
 
     DocRange();
     DocRange(Cel* cel);
+    DocRange(const DocRange&) = default;
+    DocRange& operator=(const DocRange&) = default;
 
     Type type() const { return m_type; }
     bool enabled() const { return m_type != kNone; }
@@ -39,6 +41,10 @@ namespace app {
     frame_t frames() const { return int(m_selectedFrames.size()); }
     const SelectedLayers& selectedLayers() const  { return m_selectedLayers; }
     const SelectedFrames& selectedFrames() const  { return m_selectedFrames; }
+
+    void setType(const Type type);
+    void setSelectedLayers(const SelectedLayers& layers);
+    void setSelectedFrames(const SelectedFrames& frames);
 
     void displace(layer_t layerDelta, frame_t frameDelta);
 

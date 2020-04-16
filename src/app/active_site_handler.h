@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -9,6 +9,7 @@
 #pragma once
 
 #include "app/doc_observer.h"
+#include "app/doc_range.h"
 #include "doc/frame.h"
 #include "doc/object_id.h"
 #include "doc/palette_picks.h"
@@ -38,6 +39,7 @@ namespace app {
     void getActiveSiteForDoc(Doc* doc, Site* site);
     void setActiveLayerInDoc(Doc* doc, doc::Layer* layer);
     void setActiveFrameInDoc(Doc* doc, doc::frame_t frame);
+    void setRangeInDoc(Doc* doc, const DocRange& range);
     void setSelectedColorsInDoc(Doc* doc, const doc::PalettePicks& picks);
 
   private:
@@ -51,6 +53,7 @@ namespace app {
     struct Data {
       doc::ObjectId layer;
       doc::frame_t frame;
+      DocRange range;
       doc::PalettePicks selectedColors;
     };
 

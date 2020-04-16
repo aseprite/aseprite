@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -92,6 +92,11 @@ void Context::setActiveLayer(doc::Layer* layer)
 void Context::setActiveFrame(const doc::frame_t frame)
 {
   onSetActiveFrame(frame);
+}
+
+void Context::setRange(const DocRange& range)
+{
+  onSetRange(range);
 }
 
 void Context::setSelectedColors(const doc::PalettePicks& picks)
@@ -233,6 +238,12 @@ void Context::onSetActiveFrame(const doc::frame_t frame)
 {
   if (m_lastSelectedDoc)
     activeSiteHandler()->setActiveFrameInDoc(m_lastSelectedDoc, frame);
+}
+
+void Context::onSetRange(const DocRange& range)
+{
+  if (m_lastSelectedDoc)
+    activeSiteHandler()->setRangeInDoc(m_lastSelectedDoc, range);
 }
 
 void Context::onSetSelectedColors(const doc::PalettePicks& picks)

@@ -168,6 +168,19 @@ void UIContext::onSetActiveFrame(const doc::frame_t frame)
     Context::onSetActiveFrame(frame);
 }
 
+void UIContext::onSetRange(const DocRange& range)
+{
+  Timeline* timeline =
+    (App::instance()->mainWindow() ?
+     App::instance()->mainWindow()->getTimeline(): nullptr);
+  if (timeline) {
+    timeline->setRange(range);
+  }
+  else if (!isUIAvailable()) {
+    Context::onSetRange(range);
+  }
+}
+
 void UIContext::onSetSelectedColors(const doc::PalettePicks& picks)
 {
   if (activeView()) {

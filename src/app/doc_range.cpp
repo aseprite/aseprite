@@ -258,4 +258,42 @@ void DocRange::selectFrameRange(frame_t fromFrame, frame_t toFrame)
   m_selectedFrames.insert(fromFrame, toFrame);
 }
 
+void DocRange::setType(const Type type)
+{
+  if (type != kNone) {
+    m_type = type;
+    m_flags |= type;
+  }
+  else  {
+    m_type = kNone;
+    m_flags = kNone;
+  }
+}
+
+void DocRange::setSelectedLayers(const SelectedLayers& layers)
+{
+  if (layers.empty()) {
+    m_type = kNone;
+    m_selectedLayers.clear();
+    return;
+  }
+
+  m_type = kLayers;
+  m_flags |= kLayers;
+  m_selectedLayers = layers;
+}
+
+void DocRange::setSelectedFrames(const SelectedFrames& frames)
+{
+  if (frames.empty()) {
+    m_type = kNone;
+    m_selectedFrames.clear();
+    return;
+  }
+
+  m_type = kFrames;
+  m_flags |= kFrames;
+  m_selectedFrames = frames;
+}
+
 } // namespace app
