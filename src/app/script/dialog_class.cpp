@@ -51,6 +51,7 @@ struct Dialog {
   ui::VBox vbox;
   ui::Grid grid;
   ui::HBox* hbox = nullptr;
+  bool autoNewRow = false;
   std::map<std::string, ui::Widget*> dataWidgets;
   std::map<std::string, ui::Widget*> labelWidgets;
   int currentRadioGroup = 0;
@@ -287,7 +288,8 @@ int Dialog_add_widget(lua_State* L, Widget* widget)
 
   // This is to separate different kind of widgets without label in
   // different rows.
-  if (dlg->lastWidgetType != widget->type()) {
+  if (dlg->lastWidgetType != widget->type() ||
+      dlg->autoNewRow) {
     dlg->lastWidgetType = widget->type();
     dlg->hbox = nullptr;
   }
@@ -345,6 +347,20 @@ int Dialog_newrow(lua_State* L)
 {
   auto dlg = get_obj<Dialog>(L, 1);
   dlg->hbox = nullptr;
+
+  dlg->autoNewRow = false;
+  if (lua_istable(L, 2)) {
+    // Dialog:newrow{ always }
+    const int type = lua_getfield(L, 2, "always");
+    if (type != LUA_TNONE) {
+      if (type == LUA_TNIL ||
+          lua_toboolean(L, -1)) {
+        dlg->autoNewRow = true;
+      }
+      lua_pop(L, 1);
+    }
+  }
+
   lua_pushvalue(L, 1);
   return 1;
 }
