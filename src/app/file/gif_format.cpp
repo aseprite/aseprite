@@ -356,7 +356,9 @@ private:
     if (!frameBounds.isEmpty())
       frameImage.reset(readFrameIndexedImage(frameBounds));
 
-    GIF_TRACE("GIF: Frame[%d] transparent index = %d\n", (int)m_frameNum, m_localTransparentIndex);
+    GIF_TRACE("GIF: Frame[%d] transparentIndex=%d localMap=%d\n",
+              (int)m_frameNum, m_localTransparentIndex,
+              m_gifFile->Image.ColorMap ? m_gifFile->Image.ColorMap->ColorCount: 0);
 
     if (m_frameNum == 0) {
       if (m_localTransparentIndex >= 0)
