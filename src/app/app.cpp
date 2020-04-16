@@ -217,6 +217,8 @@ App::App(AppMod* mod)
 
 int App::initialize(const AppOptions& options)
 {
+  os::System* system = os::instance();
+
 #ifdef ENABLE_UI
   m_isGui = options.startUI() && !options.previewCLI();
 #else
@@ -228,12 +230,13 @@ int App::initialize(const AppOptions& options)
 #ifdef _WIN32
   if (options.disableWintab() ||
       !preferences().experimental.loadWintabDriver()) {
-    os::instance()->useWintabAPI(false);
+    system->useWintabAPI(false);
   }
 #endif
 
-  os::instance()->setAppMode(m_isGui ? os::AppMode::GUI:
-                                       os::AppMode::CLI);
+  system->setAppName(get_app_name());
+  system->setAppMode(m_isGui ? os::AppMode::GUI:
+                               os::AppMode::CLI);
 
   if (m_isGui)
     m_uiSystem.reset(new ui::UISystem);
@@ -330,7 +333,7 @@ int App::initialize(const AppOptions& options)
       return code;
   }
 
-  os::instance()->finishLaunching();
+  system->finishLaunching();
   return 0;
 }
 
