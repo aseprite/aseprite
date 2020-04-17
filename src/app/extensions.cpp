@@ -858,7 +858,15 @@ ExtensionInfo Extensions::getCompressedExtensionInfo(const std::string& zipFn)
   ReadArchive in(zipFn);
   archive_entry* entry;
   while ((entry = in.readEntry()) != nullptr) {
-    const std::string entryFn = archive_entry_pathname(entry);
+    const char* entryFnPtr = archive_entry_pathname(entry);
+
+    // This can happen, e.g. if the file contains "!" + unicode chars
+    // (maybe a bug in archive library?)
+    // TODO try to find the real cause of this on libarchive
+    if (!entryFnPtr)
+      continue;
+
+    const std::string entryFn = entryFnPtr;
     if (base::get_file_name(entryFn) != kPackageJson)
       continue;
 
@@ -895,8 +903,12 @@ Extension* Extensions::installCompressedExtension(const std::string& zipFn,
 
     archive_entry* entry;
     while ((entry = in.readEntry()) != nullptr) {
+      const char* entryFnPtr = archive_entry_pathname(entry);
+      if (!entryFnPtr)
+        continue;
+
       // Fix the entry filename to write the file in the disk
-      std::string fn = archive_entry_pathname(entry);
+      std::string fn = entryFnPtr;
 
       LOG("EXT: Original filename in zip <%s>...\n", fn.c_str());
 
