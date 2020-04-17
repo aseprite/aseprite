@@ -21,7 +21,6 @@
 #include "doc/object_ids.h"
 #include "doc/sprite.h"
 
-#include <algorithm>
 #include <set>
 #include <vector>
 
@@ -156,8 +155,12 @@ int Range_clear(lua_State* L)
   // Set an empty range
   DocRange range;
   ctx->setRange(range);
-  obj->updateFromSite(ctx->activeSite());
 
+  // Set empty palette picks
+  doc::PalettePicks picks;
+  ctx->setSelectedColors(picks);
+
+  obj->updateFromSite(ctx->activeSite());
   return 0;
 }
 
