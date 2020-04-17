@@ -108,4 +108,11 @@ do
   assert(#r.frames == 1)
   assert(r.layers[1] == app.activeLayer)
   assert(r.frames[1] == app.activeFrame)
+
+  -- Check that Range:clear() reset the selected colors
+  r.colors = { 2 }
+  assert(#r.colors == 1)
+  assert(r.colors[1] == 2)
+  r:clear()
+  assert(#r.colors == 0)
 end
