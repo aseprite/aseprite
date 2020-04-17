@@ -837,7 +837,7 @@ void FileOp::operate(IFileOpProgress* progress)
     setError(
       fmt::format("Save operation is not supported in trial version.\n"
                   "Go to {} and get the full-version.",
-                  get_app_download_url()));
+                  get_app_download_url()).c_str());
 #endif
   }
 
