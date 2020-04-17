@@ -1,10 +1,15 @@
--- Copyright (C) 2019  Igara Studio S.A.
+-- Copyright (C) 2019-2020  Igara Studio S.A.
 -- Copyright (C) 2018  David Capello
 --
 -- This file is released under the terms of the MIT license.
 -- Read LICENSE.txt for more information.
 
 dofile('./test_utils.lua')
+
+local rgba = app.pixelColor.rgba
+local rgbaR = app.pixelColor.rgbaR
+local rgbaG = app.pixelColor.rgbaG
+local rgbaB = app.pixelColor.rgbaB
 
 do -- Undo/Redo commands (like app.undo/redo())
   local s = Sprite(32, 32)
@@ -269,10 +274,6 @@ do -- Outline
 end
 
 do -- BrightnessContrast
-  local rgba = app.pixelColor.rgba
-  local rgbaR = app.pixelColor.rgbaR
-  local rgbaG = app.pixelColor.rgbaG
-  local rgbaB = app.pixelColor.rgbaB
   local s = Sprite(2, 2)
   local cel = app.activeCel
   local c = { rgba(255, 128, 64), rgba(250, 225, 110),
@@ -396,7 +397,6 @@ do -- HueSaturation
 end
 
 do -- ColorCurve
-  local rgba = app.pixelColor.rgba
   local s = Sprite(2, 1)
   local cel = app.activeCel
   local i = cel.image
@@ -425,7 +425,6 @@ do -- ColorCurve
 end
 
 do -- ConvolutionMatrix
-  local rgba = app.pixelColor.rgba
   local s = Sprite(3, 3)
   local cel = app.activeCel
   local i = cel.image
@@ -506,4 +505,41 @@ do
   app.preferences.color_bar.bg_color = color
   app.command.AddColor{ source="bg" }
   assert(p:getColor(#p-1) == color)
+end
+
+-- Flip
+do
+  local s = Sprite(4, 2, ColorMode.INDEXED)
+  local i = s.cels[1].image
+  array_to_pixels({ 0, 1, 2, 3,
+                    4, 5, 6, 7 }, i)
+  app.command.Flip{ orientation="horizontal" }
+  expect_img(i, { 3, 2, 1, 0,
+                  7, 6, 5, 4 })
+
+  app.command.Flip{ orientation="vertical" }
+  expect_img(i, { 7, 6, 5, 4,
+                  3, 2, 1, 0 })
+
+  s.selection:select{ 1, 0, 2, 2 }
+  app.command.Flip{ orientation="horizontal", target="mask" }
+  expect_img(i, { 7, 5, 6, 4,
+                  3, 1, 2, 0 })
+
+  s:newFrame()
+
+  assert(app.activeCel.frameNumber == 2)
+  local j = app.activeImage
+  app.command.Flip{ orientation="vertical", target="mask" }
+  expect_img(i, { 7, 5, 6, 4,
+                  3, 1, 2, 0 })
+  expect_img(j, { 7, 1, 2, 4,
+                  3, 5, 6, 0 })
+
+  app.range.frames = { 1, 2 }
+  app.command.Flip{ orientation="horizontal", target="mask" }
+  expect_img(i, { 7, 6, 5, 4,
+                  3, 2, 1, 0 })
+  expect_img(j, { 7, 2, 1, 4,
+                  3, 6, 5, 0 })
 end
