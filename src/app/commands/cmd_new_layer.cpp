@@ -23,12 +23,14 @@
 #include "app/i18n/strings.h"
 #include "app/load_widget.h"
 #include "app/modules/gui.h"
+#include "app/restore_visible_layers.h"
 #include "app/tx.h"
 #include "app/ui/main_window.h"
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
 #include "app/util/new_image_from_mask.h"
+#include "app/util/range_utils.h"
 #include "doc/layer.h"
 #include "doc/primitives.h"
 #include "doc/sprite.h"
@@ -357,28 +359,54 @@ void NewLayerCommand::onExecute(Context* context)
 #endif // ENABLE_UI
     // Paste new layer from selection
     else if ((params().viaCut() || params().viaCopy())
-             && layer->isImage()
              && document->isMaskVisible()) {
       const doc::Mask* mask = document->mask();
       ASSERT(mask);
-      ImageRef image(new_image_from_mask(site, mask, true));
-      if (image) {
-        Cel* cel = api.addCel(static_cast<LayerImage*>(layer),
-                              site.frame(), image);
-        if (cel) {
+
+      RestoreVisibleLayers restore;
+      SelectedLayers layers;
+      SelectedFrames frames;
+      bool merged;
+      if (site.range().enabled()) {
+        merged = true;
+        layers = site.range().selectedLayers();
+        frames = site.range().selectedFrames();
+        restore.showSelectedLayers(site.sprite(), layers);
+      }
+      else {
+        merged = false;
+        layers.insert(site.layer());
+        frames.insert(site.frame());
+      }
+
+      for (frame_t frame : frames) {
+        ImageRef newImage(new_image_from_mask(site, mask, true, merged));
+        if (!newImage)
+          continue;
+
+        Cel* newCel = api.addCel(static_cast<LayerImage*>(layer),
+                                 frame, newImage);
+        if (newCel) {
           gfx::Point pos = mask->bounds().origin();
-          cel->setPosition(pos.x, pos.y);
+          newCel->setPosition(pos.x, pos.y);
         }
 
-        if (params().viaCut() &&
-            site.cel() && site.layer()) {
-          tx(new cmd::ClearMask(site.cel()));
+        for (Layer* layer : layers) {
+          if (!layer->isImage() ||
+              !layer->isEditable()) // Locked layers will not be modified
+            continue;
 
-          if (site.layer()->isTransparent()) {
-            // If the cel wasn't deleted by cmd::ClearMask, we trim it.
-            cel = site.layer()->cel(site.frame());
-            if (cel)
-              tx(new cmd::TrimCel(cel));
+          Cel* origCel = layer->cel(site.frame());
+          if (origCel &&
+              params().viaCut()) {
+            tx(new cmd::ClearMask(origCel));
+
+            if (layer->isTransparent()) {
+              // If the cel wasn't deleted by cmd::ClearMask, we trim it.
+              origCel = layer->cel(frame);
+              if (origCel)
+                tx(new cmd::TrimCel(origCel));
+            }
           }
         }
       }
