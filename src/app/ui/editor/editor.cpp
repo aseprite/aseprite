@@ -1613,7 +1613,7 @@ void Editor::updateToolLoopModifiersIndicators()
       // For move tool
       action = m_customizationDelegate->getPressedKeyAction(KeyContext::MoveTool);
       if (int(action & KeyAction::AutoSelectLayer))
-        newAutoSelectLayer = true;
+        newAutoSelectLayer = Preferences::instance().editor.autoSelectLayerQuick();
       else
         newAutoSelectLayer = Preferences::instance().editor.autoSelectLayer();
     }

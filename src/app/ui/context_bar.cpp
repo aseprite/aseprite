@@ -1134,7 +1134,14 @@ protected:
   void onClick(Event& ev) override {
     CheckBox::onClick(ev);
 
-    Preferences::instance().editor.autoSelectLayer(isSelected());
+    auto atm = App::instance()->activeToolManager();
+    if (atm->quickTool() &&
+        atm->quickTool()->getInk(0)->isCelMovement()) {
+      Preferences::instance().editor.autoSelectLayerQuick(isSelected());
+    }
+    else {
+      Preferences::instance().editor.autoSelectLayer(isSelected());
+    }
 
     releaseFocus();
   }
