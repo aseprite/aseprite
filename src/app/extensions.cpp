@@ -226,6 +226,9 @@ Extension::Extension(const std::string& path,
   , m_isInstalled(true)
   , m_isBuiltinExtension(isBuiltinExtension)
 {
+#ifdef ENABLE_SCRIPTING
+  m_plugin.pluginRef = LUA_REFNIL;
+#endif
 }
 
 Extension::~Extension()
@@ -326,11 +329,13 @@ void Extension::enable(const bool state)
   m_isEnabled = state;
 
 #ifdef ENABLE_SCRIPTING
-  if (m_isEnabled) {
-    initScripts();
-  }
-  else {
-    exitScripts();
+  if (hasScripts()) {
+    if (m_isEnabled) {
+      initScripts();
+    }
+    else {
+      exitScripts();
+    }
   }
 #endif // ENABLE_SCRIPTING
 }
