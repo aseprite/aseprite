@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2020 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -9,6 +10,8 @@
 #pragma once
 
 #include "base/ints.h"
+
+#include <algorithm>
 
 namespace doc {
 
@@ -85,6 +88,37 @@ namespace doc {
 
   inline uint16_t gray(uint8_t v) {
     return graya(v, 255);
+  }
+
+  //////////////////////////////////////////////////////////////////////
+  // Conversions
+
+  typedef color_t (*rgba_to_graya_func)(const color_t c);
+
+  inline color_t rgba_to_graya_using_hsv(const color_t c) {
+    const uint8_t M = std::max(rgba_getr(c),
+                               std::max(rgba_getg(c),
+                                        rgba_getb(c)));
+    return graya(M,
+                 rgba_geta(c));
+  }
+
+  inline color_t rgba_to_graya_using_hsl(const color_t c) {
+    const int m = std::min(rgba_getr(c),
+                           std::min(rgba_getg(c),
+                                    rgba_getb(c)));
+    const int M = std::max(rgba_getr(c),
+                           std::max(rgba_getg(c),
+                                    rgba_getb(c)));
+    return graya((M + m) / 2,
+                 rgba_geta(c));
+  }
+
+  inline color_t rgba_to_graya_using_luma(const color_t c) {
+    return graya(rgb_luma(rgba_getr(c),
+                          rgba_getg(c),
+                          rgba_getb(c)),
+                 rgba_geta(c));
   }
 
 } // namespace doc

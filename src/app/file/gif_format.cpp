@@ -770,12 +770,13 @@ private:
       Image* oldImage = cel->image();
       ImageRef newImage(
         render::convert_pixel_format
-        (oldImage, NULL, IMAGE_RGB,
+        (oldImage, nullptr, IMAGE_RGB,
          render::Dithering(),
          nullptr,
          m_sprite->palette(cel->frame()),
          m_opaque,
-         m_bgIndex));
+         m_bgIndex,
+         nullptr));
 
       m_sprite->replaceImage(oldImage->id(), newImage);
     }

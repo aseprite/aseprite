@@ -117,6 +117,12 @@
       <value id="SRGB" value="1" />
       <value id="SPECIFIC" value="2" />
     </enum>
+    <enum id="ToGrayAlgorithm">
+      <value id="DEFAULT" value="0" />
+      <value id="LUMA" value="0" />
+      <value id="HSV" value="1" />
+      <value id="HSL" value="2" />
+    </enum>
   </types>
 
   <global>
@@ -258,6 +264,7 @@
       <option id="with_alpha" type="bool" default="true" />
       <option id="dithering_algorithm" type="std::string" />
       <option id="dithering_factor" type="int" default="100" />
+      <option id="to_gray" type="ToGrayAlgorithm" default="ToGrayAlgorithm::DEFAULT" />
     </section>
     <section id="eyedropper" text="Editor">
       <option id="channel" type="EyedropperChannel" default="EyedropperChannel::COLOR_ALPHA" />

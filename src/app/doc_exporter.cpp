@@ -1179,7 +1179,8 @@ void DocExporter::renderTexture(Context* ctx,
         sample.sprite(),
         textureImage->pixelFormat(),
         render::Dithering(),
-        nullptr)                // TODO add a delegate to show progress
+        nullptr, // toGray is not needed because the texture is Indexed or RGB
+        nullptr) // TODO add a delegate to show progress
         .execute(ctx);
     }
 

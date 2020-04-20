@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -11,6 +11,7 @@
 
 #include "app/cmd/with_sprite.h"
 #include "app/cmd_sequence.h"
+#include "doc/color.h"
 #include "doc/pixel_format.h"
 
 namespace doc {
@@ -31,6 +32,7 @@ namespace cmd {
     SetPixelFormat(doc::Sprite* sprite,
                    const doc::PixelFormat newFormat,
                    const render::Dithering& dithering,
+                   doc::rgba_to_graya_func toGray,
                    render::TaskDelegate* delegate);
 
   protected:
