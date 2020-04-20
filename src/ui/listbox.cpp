@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -25,6 +25,10 @@
 #include <algorithm>
 
 namespace ui {
+
+static inline bool sort_by_text(Widget* a, Widget* b) {
+  return (base::compare_filenames(a->text(), b->text()) < 0);
+}
 
 using namespace gfx;
 
@@ -185,14 +189,15 @@ void ListBox::centerScroll()
   }
 }
 
-inline bool sort_by_text(Widget* a, Widget* b) {
-  return (base::compare_filenames(a->text(), b->text()) < 0);
-}
-
 void ListBox::sortItems()
 {
+  sortItems(&sort_by_text);
+}
+
+void ListBox::sortItems(bool (*cmp)(Widget* a, Widget* b))
+{
   WidgetsList widgets = children();
-  std::sort(widgets.begin(), widgets.end(), &sort_by_text);
+  std::sort(widgets.begin(), widgets.end(), cmp);
 
   // Remove all children and add then again.
   removeAllChildren();

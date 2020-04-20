@@ -37,6 +37,17 @@ namespace app {
   class Extension {
     friend class Extensions;
   public:
+    enum class Category {
+      None,
+      Languages,
+      Themes,
+      Scripts,
+      Palettes,
+      DitheringMatrices,
+      Multiple,
+      Max
+    };
+
     class DitheringMatrixInfo {
     public:
       DitheringMatrixInfo() : m_matrix(nullptr) { }
@@ -69,6 +80,7 @@ namespace app {
     const std::string& name() const { return m_name; }
     const std::string& version() const { return m_version; }
     const std::string& displayName() const { return m_displayName; }
+    const Category category() const { return m_category; }
 
     const ExtensionItems& languages() const { return m_languages; }
     const ExtensionItems& themes() const { return m_themes; }
@@ -105,6 +117,7 @@ namespace app {
     void uninstallFiles(const std::string& path);
     bool isCurrentTheme() const;
     bool isDefaultTheme() const;
+    void updateCategory(const Category newCategory);
 #ifdef ENABLE_SCRIPTING
     void initScripts();
     void exitScripts();
@@ -137,6 +150,7 @@ namespace app {
     std::string m_name;
     std::string m_version;
     std::string m_displayName;
+    Category m_category;
     bool m_isEnabled;
     bool m_isInstalled;
     bool m_isBuiltinExtension;

@@ -222,6 +222,7 @@ Extension::Extension(const std::string& path,
   , m_name(name)
   , m_version(version)
   , m_displayName(displayName)
+  , m_category(Category::None)
   , m_isEnabled(isEnabled)
   , m_isInstalled(true)
   , m_isBuiltinExtension(isBuiltinExtension)
@@ -257,16 +258,19 @@ void Extension::executeExitActions()
 void Extension::addLanguage(const std::string& id, const std::string& path)
 {
   m_languages[id] = path;
+  updateCategory(Category::Languages);
 }
 
 void Extension::addTheme(const std::string& id, const std::string& path)
 {
   m_themes[id] = path;
+  updateCategory(Category::Themes);
 }
 
 void Extension::addPalette(const std::string& id, const std::string& path)
 {
   m_palettes[id] = path;
+  updateCategory(Category::Palettes);
 }
 
 void Extension::addDitheringMatrix(const std::string& id,
@@ -275,6 +279,7 @@ void Extension::addDitheringMatrix(const std::string& id,
 {
   DitheringMatrixInfo info(path, name);
   m_ditheringMatrices[id] = info;
+  updateCategory(Category::DitheringMatrices);
 }
 
 #ifdef ENABLE_SCRIPTING
@@ -445,6 +450,14 @@ bool Extension::isCurrentTheme() const
 bool Extension::isDefaultTheme() const
 {
   return (name() == kAsepriteDefaultThemeExtensionName);
+}
+
+void Extension::updateCategory(const Category newCategory)
+{
+  if (m_category == Category::None)
+    m_category = newCategory;
+  else if (m_category != newCategory)
+    m_category = Category::Multiple;
 }
 
 #ifdef ENABLE_SCRIPTING
@@ -669,6 +682,7 @@ void Extension::exitScripts()
 void Extension::addScript(const std::string& fn)
 {
   m_plugin.scripts.push_back(ScriptItem(fn));
+  updateCategory(Category::Scripts);
 }
 
 #endif // ENABLE_SCRIPTING
