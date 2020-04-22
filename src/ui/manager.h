@@ -121,8 +121,9 @@ namespace ui {
                                   PointerType pointerType);
     void generateMessagesFromOSEvents();
     void handleMouseMove(const gfx::Point& mousePos,
-                         KeyModifiers modifiers,
-                         PointerType pointerType);
+                         const KeyModifiers modifiers,
+                         const PointerType pointerType,
+                         const float pressure);
     void handleMouseDown(const gfx::Point& mousePos,
                          MouseButton mouseButton,
                          KeyModifiers modifiers,
@@ -158,7 +159,8 @@ namespace ui {
       MouseButton button,
       KeyModifiers modifiers,
       const gfx::Point& wheelDelta = gfx::Point(0, 0),
-      bool preciseWheel = false);
+      bool preciseWheel = false,
+      float pressure = 0.0f);
     void broadcastKeyMsg(Message* msg);
 
     static Manager* m_defaultManager;

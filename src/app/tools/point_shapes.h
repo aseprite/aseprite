@@ -37,21 +37,26 @@ public:
 };
 
 class BrushPointShape : public PointShape {
-  Brush* m_brush;
+  Brush* m_lastBrush;
   std::shared_ptr<CompressedImage> m_compressedImage;
   bool m_firstPoint;
 
 public:
 
   void preparePointShape(ToolLoop* loop) override {
-    m_brush = loop->getBrush();
-    m_compressedImage.reset(new CompressedImage(m_brush->image(),
-                                                m_brush->maskBitmap(),
-                                                false));
     m_firstPoint = true;
+    m_lastBrush = nullptr;
   }
 
   void transformPoint(ToolLoop* loop, int x, int y) override {
+    Brush* m_brush = loop->getBrush();
+    if (m_lastBrush != m_brush) {
+      m_lastBrush = m_brush;
+      m_compressedImage.reset(new CompressedImage(m_brush->image(),
+                                                  m_brush->maskBitmap(),
+                                                  false));
+    }
+
     x += m_brush->bounds().x;
     y += m_brush->bounds().y;
 
@@ -91,7 +96,7 @@ public:
   }
 
   void getModifiedArea(ToolLoop* loop, int x, int y, Rect& area) override {
-    area = m_brush->bounds();
+    area = loop->getBrush()->bounds();
     area.x += x;
     area.y += y;
   }

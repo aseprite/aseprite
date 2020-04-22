@@ -328,7 +328,12 @@ int App_useTool(lua_State* L)
     while (lua_next(L, -2) != 0) {
       gfx::Point pt = convert_args_into_point(L, -1);
 
-      tools::Pointer pointer(pt, tools::Pointer::Button::Left);
+      tools::Pointer pointer(
+        pt,
+        // TODO configurable params
+        tools::Pointer::Button::Left,
+        tools::Pointer::Type::Unknown,
+        0.0f);
       if (first) {
         first = false;
         manager.prepareLoop(pointer);

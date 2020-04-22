@@ -72,11 +72,11 @@ versions might work).
 
 You will need the following dependencies on Ubuntu/Debian:
 
-    sudo apt-get install -y g++ cmake ninja-build libx11-dev libxcursor-dev libgl1-mesa-dev libfontconfig1-dev
+    sudo apt-get install -y g++ cmake ninja-build libx11-dev libxcursor-dev libxi-dev libgl1-mesa-dev libfontconfig1-dev
 
 On Fedora:
 
-    sudo dnf install -y gcc-c++ cmake ninja-build libX11-devel libXcursor-devel mesa-libGL-devel fontconfig-devel
+    sudo dnf install -y gcc-c++ cmake ninja-build libX11-devel libXcursor-devel libXi-devel mesa-libGL-devel fontconfig-devel
 
 # Compiling
 

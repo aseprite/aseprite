@@ -443,7 +443,8 @@ void Manager::generateMessagesFromOSEvents()
         handleMouseMove(
           osEvent.position(),
           osEvent.modifiers(),
-          osEvent.pointerType());
+          osEvent.pointerType(),
+          osEvent.pressure());
         lastMouseMoveEvent = osEvent;
         break;
       }
@@ -513,8 +514,9 @@ void Manager::generateMessagesFromOSEvents()
 }
 
 void Manager::handleMouseMove(const gfx::Point& mousePos,
-                              KeyModifiers modifiers,
-                              PointerType pointerType)
+                              const KeyModifiers modifiers,
+                              const PointerType pointerType,
+                              const float pressure)
 {
   // Get the list of widgets to send mouse messages.
   mouse_widgets_list.clear();
@@ -549,7 +551,10 @@ void Manager::handleMouseMove(const gfx::Point& mousePos,
       mousePos,
       pointerType,
       m_mouseButton,
-      modifiers));
+      modifiers,
+      gfx::Point(0, 0),
+      false,
+      pressure));
 }
 
 void Manager::handleMouseDown(const gfx::Point& mousePos,
@@ -1682,7 +1687,8 @@ Message* Manager::newMouseMessage(
   MouseButton button,
   KeyModifiers modifiers,
   const gfx::Point& wheelDelta,
-  bool preciseWheel)
+  bool preciseWheel,
+  float pressure)
 {
 #ifdef __APPLE__
   // Convert Ctrl+left click -> right-click
@@ -1699,7 +1705,7 @@ Message* Manager::newMouseMessage(
 
   Message* msg = new MouseMessage(
     type, pointerType, button, modifiers, mousePos,
-    wheelDelta, preciseWheel);
+    wheelDelta, preciseWheel, pressure);
 
   if (widget)
     msg->setRecipient(widget);

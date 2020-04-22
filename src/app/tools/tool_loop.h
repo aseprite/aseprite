@@ -9,8 +9,10 @@
 #define APP_TOOLS_TOOL_LOOP_H_INCLUDED
 #pragma once
 
+#include "app/tools/dynamics.h"
 #include "app/tools/tool_loop_modifiers.h"
 #include "app/tools/trace_policy.h"
+#include "doc/brush.h"
 #include "doc/color.h"
 #include "doc/frame.h"
 #include "filters/tiled_mode.h"
@@ -23,7 +25,6 @@ namespace gfx {
 }
 
 namespace doc {
-  class Brush;
   class Image;
   class Layer;
   class Mask;
@@ -72,6 +73,7 @@ namespace app {
 
       // Returns the brush which will be used with the tool
       virtual Brush* getBrush() = 0;
+      virtual void setBrush(const BrushRef& newBrush) = 0;
 
       // Returns the document to which belongs the sprite.
       virtual Doc* getDocument() = 0;
@@ -234,6 +236,9 @@ namespace app {
       virtual render::DitheringMatrix getDitheringMatrix() = 0;
       virtual render::DitheringAlgorithmBase* getDitheringAlgorithm() = 0;
       virtual render::GradientType getGradientType() = 0;
+
+      // For freehand algorithms with dynamics
+      virtual tools::DynamicsOptions getDynamics() = 0;
 
       // Called when the user release the mouse on SliceInk
       virtual void onSliceRect(const gfx::Rect& bounds) = 0;

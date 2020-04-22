@@ -39,6 +39,7 @@
 #include "app/ui/color_button.h"
 #include "app/ui/color_shades.h"
 #include "app/ui/dithering_selector.h"
+#include "app/ui/dynamics_popup.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/icon_button.h"
 #include "app/ui/keyboard_shortcuts.h"
@@ -972,6 +973,55 @@ private:
   bool m_lockChange;
 };
 
+class ContextBar::DynamicsField : public ButtonSet
+                                , public DynamicsPopup::Delegate {
+public:
+  DynamicsField(ContextBar* ctxBar)
+    : ButtonSet(1)
+    , m_ctxBar(ctxBar) {
+    addItem(SkinTheme::instance()->parts.dynamics());
+  }
+
+  void showPopup() {
+    if (!m_popup) {
+      m_popup.reset(new DynamicsPopup(this));
+      m_popup->remapWindow();
+    }
+
+    const gfx::Rect bounds = this->bounds();
+    m_popup->positionWindow(bounds.x, bounds.y+bounds.h);
+    m_popup->setHotRegion(gfx::Region(m_popup->bounds()));
+    m_popup->openWindow();
+  }
+
+  tools::DynamicsOptions getDynamics() {
+    if (m_popup)
+      return m_popup->getDynamics();
+    else
+      return tools::DynamicsOptions();
+  }
+
+private:
+  // DynamicsPopup::Delegate impl
+  doc::BrushRef getActiveBrush() override {
+    return m_ctxBar->activeBrush();
+  }
+
+  void onItemChange(Item* item) override {
+    ButtonSet::onItemChange(item);
+    showPopup();
+  }
+
+  void onInitTheme(InitThemeEvent& ev) override {
+    ButtonSet::onInitTheme(ev);
+    if (m_popup)
+      m_popup->initTheme();
+  }
+
+  std::unique_ptr<DynamicsPopup> m_popup;
+  ContextBar* m_ctxBar;
+};
+
 class ContextBar::FreehandAlgorithmField : public CheckBox {
 public:
   FreehandAlgorithmField() : CheckBox("Pixel-perfect") {
@@ -1500,6 +1550,7 @@ ContextBar::ContextBar(TooltipManager* tooltipManager,
   addChild(m_selectBoxHelp = new Label(""));
   addChild(m_freehandBox = new HBox());
 
+  m_freehandBox->addChild(m_dynamics = new DynamicsField(this));
   m_freehandBox->addChild(m_freehandAlgo = new FreehandAlgorithmField());
 
   addChild(m_symmetry = new SymmetryField());
@@ -2148,6 +2199,11 @@ render::GradientType ContextBar::gradientType()
   return m_gradientType->gradientType();
 }
 
+tools::DynamicsOptions ContextBar::getDynamics()
+{
+  return m_dynamics->getDynamics();
+}
+
 void ContextBar::setupTooltips(TooltipManager* tooltipManager)
 {
   tooltipManager->addTooltipFor(m_brushBack->at(0), "Discard Brush (Esc)", BOTTOM);
@@ -2161,6 +2217,7 @@ void ContextBar::setupTooltips(TooltipManager* tooltipManager)
   tooltipManager->addTooltipFor(m_spraySpeed, "Spray Speed", BOTTOM);
   tooltipManager->addTooltipFor(m_pivot->at(0), "Rotation Pivot", BOTTOM);
   tooltipManager->addTooltipFor(m_rotAlgo, "Rotation Algorithm", BOTTOM);
+  tooltipManager->addTooltipFor(m_dynamics->at(0), "Dynamics", BOTTOM);
   tooltipManager->addTooltipFor(m_freehandAlgo,
                                 key_tooltip("Freehand trace algorithm",
                                             CommandId::PixelPerfectMode()), BOTTOM);
@@ -2184,11 +2241,24 @@ void ContextBar::registerCommands()
       new QuickCommand(
         CommandId::ShowBrushes(),
         [this]{ this->showBrushes(); }));
+
+  Commands::instance()
+    ->add(
+      new QuickCommand(
+        CommandId::ShowDynamics(),
+        [this]{ this->showDynamics(); }));
 }
 
 void ContextBar::showBrushes()
 {
-  m_brushType->showPopup();
+  if (m_brushType->isVisible())
+    m_brushType->showPopup();
+}
+
+void ContextBar::showDynamics()
+{
+  if (m_dynamics->isVisible())
+    m_dynamics->showPopup();
 }
 
 } // namespace app

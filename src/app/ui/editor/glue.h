@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2016-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -27,7 +28,9 @@ inline tools::Pointer pointer_from_msg(Editor* editor,
                                        const ui::MouseMessage* msg) {
   return
     tools::Pointer(editor->screenToEditor(msg->position()),
-                   button_from_msg(msg));
+                   button_from_msg(msg),
+                   msg->pointerType(),
+                   msg->pressure());
 }
 
 } // namespace app

@@ -674,13 +674,17 @@ bool StandbyState::checkStartDrawingStraightLine(Editor* editor,
                         DrawingType::LineFreehand,
                         tools::Pointer(
                           editor->document()->lastDrawingPoint(),
-                          pointerButton));
+                          pointerButton,
+                          msg ? msg->pointerType(): PointerType::Unknown,
+                          msg ? msg->pressure(): 0.0f));
     if (drawingState) {
       drawingState->sendMovementToToolLoop(
         tools::Pointer(
           editor->screenToEditor(msg ? msg->position():
                                        ui::get_mouse_position()),
-          pointerButton));
+          pointerButton,
+          msg ? msg->pointerType(): tools::Pointer::Type::Unknown,
+          msg ? msg->pressure(): 0.0f));
       return true;
     }
   }

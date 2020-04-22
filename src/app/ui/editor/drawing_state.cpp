@@ -211,7 +211,9 @@ bool DrawingState::onMouseMove(Editor* editor, MouseMessage* msg)
   gfx::Point mousePos = editor->autoScroll(msg, AutoScroll::MouseDir);
   handleMouseMovement(
     tools::Pointer(editor->screenToEditor(mousePos),
-                   button_from_msg(msg)));
+                   button_from_msg(msg),
+                   msg->pointerType(),
+                   msg->pressure()));
 
   return true;
 }
@@ -269,7 +271,9 @@ bool DrawingState::onScrollChange(Editor* editor)
     gfx::Point mousePos = ui::get_mouse_position();
     handleMouseMovement(
       tools::Pointer(editor->screenToEditor(mousePos),
-                     m_lastPointer.button()));
+                     m_lastPointer.button(),
+                     tools::Pointer::Type::Unknown,
+                     0.0f));
   }
   return true;
 }

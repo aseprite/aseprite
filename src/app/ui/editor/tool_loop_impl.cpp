@@ -71,6 +71,7 @@ protected:
   Editor* m_editor;
   tools::Tool* m_tool;
   BrushRef m_brush;
+  BrushRef m_origBrush;
   gfx::Point m_oldPatternOrigin;
   Doc* m_document;
   Sprite* m_sprite;
@@ -112,6 +113,7 @@ public:
     : m_editor(editor)
     , m_tool(tool)
     , m_brush(brush)
+    , m_origBrush(brush)
     , m_oldPatternOrigin(m_brush->patternOrigin())
     , m_document(site.document())
     , m_sprite(site.sprite())
@@ -204,7 +206,7 @@ public:
   }
 
   ~ToolLoopBase() {
-    m_brush->setPatternOrigin(m_oldPatternOrigin);
+    m_origBrush->setPatternOrigin(m_oldPatternOrigin);
   }
 
   void forceSnapToTiles() {
@@ -215,6 +217,7 @@ public:
   // IToolLoop interface
   tools::Tool* getTool() override { return m_tool; }
   Brush* getBrush() override { return m_brush.get(); }
+  void setBrush(const BrushRef& newBrush) override { m_brush = newBrush; }
   Doc* getDocument() override { return m_document; }
   Sprite* sprite() override { return m_sprite; }
   Layer* getLayer() override { return m_layer; }
@@ -357,6 +360,14 @@ public:
     return App::instance()->contextBar()->gradientType();
 #else
     return render::GradientType::Linear;
+#endif
+  }
+
+  tools::DynamicsOptions getDynamics() override {
+#ifdef ENABLE_UI // TODO add support when UI is not enabled
+    return App::instance()->contextBar()->getDynamics();
+#else
+    return tools::DynamicsOptions();
 #endif
   }
 

@@ -418,6 +418,7 @@
         <part id="outline_vertical" x="192" y="224" w="13" h="15" />
         <part id="outline_empty_pixel" x="208" y="224" w="5" h="5" />
         <part id="outline_full_pixel" x="214" y="224" w="5" h="5" />
+        <part id="dynamics" x="176" y="144" w="16" h="16" />
     </parts>
     <styles>
         <style id="box" />

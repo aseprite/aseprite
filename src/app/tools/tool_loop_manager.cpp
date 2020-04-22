@@ -19,6 +19,7 @@
 #include "app/tools/point_shape.h"
 #include "app/tools/symmetry.h"
 #include "app/tools/tool_loop.h"
+#include "base/clamp.h"
 #include "doc/brush.h"
 #include "doc/image.h"
 #include "doc/primitives.h"
@@ -40,6 +41,8 @@ using namespace filters;
 
 ToolLoopManager::ToolLoopManager(ToolLoop* toolLoop)
   : m_toolLoop(toolLoop)
+  , m_brush0(*toolLoop->getBrush())
+  , m_dynamics(toolLoop->getDynamics())
 {
 }
 
@@ -154,8 +157,6 @@ bool ToolLoopManager::releaseButton(const Pointer& pointer)
 
 void ToolLoopManager::movement(const Pointer& pointer)
 {
-  TOOL_TRACE("ToolLoopManager::movement", pointer.point());
-
   m_lastPointer = pointer;
 
   if (isCanceled())
@@ -163,10 +164,15 @@ void ToolLoopManager::movement(const Pointer& pointer)
 
   // Convert the screen point to a sprite point
   Point spritePoint = pointer.point();
-  // Calculate the speed (new sprite point - old sprite point)
-  m_toolLoop->setSpeed(spritePoint - m_oldPoint);
+  // Calculate the velocity (new sprite point - old sprite point)
+  Point velocity = (spritePoint - m_oldPoint);
+  m_toolLoop->setSpeed(velocity);
   m_oldPoint = spritePoint;
   snapToGrid(spritePoint);
+
+  // Control dynamic parameters through sensors
+  if (m_dynamics.isDynamic())
+    adjustBrushWithDynamics(pointer, velocity);
 
   m_toolLoop->getController()->movement(m_toolLoop, m_stroke, spritePoint);
 
@@ -370,6 +376,54 @@ void ToolLoopManager::calculateDirtyArea(const Strokes& strokes)
       else
         break;
     }
+  }
+}
+
+void ToolLoopManager::adjustBrushWithDynamics(const Pointer& pointer,
+                                              const Point& velocity)
+{
+  int size = m_brush0.size();
+  int angle = m_brush0.angle();
+
+  // Pressure
+  bool hasP = (pointer.type() == Pointer::Type::Pen ||
+               pointer.type() == Pointer::Type::Eraser);
+  float p = (hasP ? pointer.pressure(): 1.0f);
+  ASSERT(p >= 0.0f && p <= 1.0f);
+
+  // Velocity
+  float v = float(std::sqrt(velocity.x*velocity.x +
+                            velocity.y*velocity.y)) / 32.0f; // TODO 16 should be configurable
+  v = base::clamp(v, 0.0f, 1.0f);
+
+  switch (m_dynamics.size) {
+    case DynamicSensor::Pressure:
+      if (hasP) size = (1.0f-p)*size + p*m_dynamics.maxSize;
+      break;
+    case DynamicSensor::Velocity:
+      size = (1.0f-v)*size + v*m_dynamics.maxSize;
+      break;
+  }
+
+  switch (m_dynamics.angle) {
+    case DynamicSensor::Pressure:
+      if (hasP) angle = (1.0f-p)*angle + p*m_dynamics.maxAngle;
+      break;
+    case DynamicSensor::Velocity:
+      angle = (1.0f-v)*angle + v*m_dynamics.maxAngle;
+      break;
+  }
+
+  size = base::clamp(size, int(Brush::kMinBrushSize), int(Brush::kMaxBrushSize));
+  angle = base::clamp(angle, -180, 180);
+
+  Brush* currrentBrush = m_toolLoop->getBrush();
+
+  if (currrentBrush->size() != size ||
+      (currrentBrush->type() != kCircleBrushType &&
+       currrentBrush->angle() != angle)) {
+    m_toolLoop->setBrush(
+      std::make_shared<Brush>(m_brush0.type(), size, angle));
   }
 }
 

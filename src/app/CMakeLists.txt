@@ -319,6 +319,7 @@ if(ENABLE_UI)
     ui/dithering_selector.cpp
     ui/doc_view.cpp
     ui/drop_down_button.cpp
+    ui/dynamics_popup.cpp
     ui/editor/brush_preview.cpp
     ui/editor/drawing_state.cpp
     ui/editor/editor.cpp
