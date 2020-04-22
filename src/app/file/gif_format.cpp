@@ -934,7 +934,8 @@ public:
     , m_hasBackground(m_sprite->isOpaque())
     , m_bitsPerPixel(1)
     , m_globalColormap(nullptr)
-    , m_globalColormapPalette(*m_sprite->palette(0)) {
+    , m_globalColormapPalette(*m_sprite->palette(0))
+    , m_preservePaletteOrder(false) {
 
     const auto gifOptions = std::static_pointer_cast<GifOptions>(fop->formatOptions());
 
@@ -943,26 +944,6 @@ public:
 
     m_interlaced = gifOptions->interlaced();
     m_loop = (gifOptions->loop() ? 0: -1);
-
-    if (m_sprite->pixelFormat() == PixelFormat::IMAGE_INDEXED) {
-      // For indexed and opaque sprite, we can preserve the exact
-      // palette order without lossing compression rate.
-      if (m_hasBackground) {
-        m_preservePaletteOrder = true;
-      }
-      // Only for transparent indexed images the user can choose to
-      // preserve or not the palette order.
-      else {
-        m_preservePaletteOrder = gifOptions->preservePaletteOrder();
-      }
-    }
-    // For RGB images we don't preserve the palette order (palettes
-    // will be generated as they are needed to optimize the file
-    // size).
-    else {
-      m_preservePaletteOrder = false;
-    }
-
     m_lastFrameBounds = m_spriteBounds;
     m_lastDisposal = DisposalMethod::NONE;
 
@@ -995,6 +976,14 @@ public:
       if (!quantizeColormaps) {
         m_globalColormap = createColorMap(&m_globalColormapPalette);
         m_bgIndex = m_sprite->transparentColor();
+        // For indexed and opaque sprite, we can preserve the exact
+        // palette order without lossing compression rate.
+        if (m_hasBackground)
+          m_preservePaletteOrder = true;
+        // Only for transparent indexed images the user can choose to
+        // preserve or not the palette order.
+        else
+          m_preservePaletteOrder = gifOptions->preservePaletteOrder();
       }
       else
         m_bgIndex = 0;
@@ -1071,7 +1060,7 @@ public:
     // Create the 3 temporary images (previous/current/next) to
     // compare pixels between them.
     for (int i=0; i<3; ++i)
-      m_images[i].reset(Image::create(IMAGE_RGB,
+      m_images[i].reset(Image::create((m_preservePaletteOrder)? IMAGE_INDEXED : IMAGE_RGB,
                                       m_spriteBounds.w,
                                       m_spriteBounds.h));
   }
@@ -1152,7 +1141,7 @@ private:
       // we must change disposal to RESTORE_BGCOLOR.
 
       // "Pixel clearing" detection:
-      if (!m_hasBackground) {
+      if (!m_hasBackground && !m_preservePaletteOrder) {
         const LockImageBits<RgbTraits> bits2(m_currentImage);
         const LockImageBits<RgbTraits> bits3(m_nextImage);
         typename LockImageBits<RgbTraits>::const_iterator it2, it3, end2, end3;
@@ -1165,68 +1154,72 @@ private:
           }
         }
       }
+      else if (m_preservePaletteOrder)
+        disposal = DisposalMethod::RESTORE_BGCOLOR;
     }
     else {
       int x1 = 0;
       int y1 = 0;
       int x2 = 0;
       int y2 = 0;
-      // When m_lastDisposal was RESTORE_BGBOLOR it implies
-      // we will have to cover with colors the entire previous frameBounds plus
-      // the current frameBounds due to color changes, so we must start with
-      // a frameBounds equal to the previous frame iteration (saved in m_lastFrameBounds).
-      // Then we must cover all the resultant frameBounds with full color
-      // in m_currentImage, the output image will be saved in deltaImage.
-      if (m_lastDisposal == DisposalMethod::RESTORE_BGCOLOR) {
-        x1 = m_lastFrameBounds.x;
-        y1 = m_lastFrameBounds.y;
-        x2 = m_lastFrameBounds.x + m_lastFrameBounds.w - 1;
-        y2 = m_lastFrameBounds.y + m_lastFrameBounds.h - 1;
-      }
-      else {
-        x1 = m_spriteBounds.w - 1;
-        y1 = m_spriteBounds.h - 1;
-      }
 
-      int i = 0;
-      int x, y;
-      const LockImageBits<RgbTraits> bits1(m_previousImage);
-      const LockImageBits<RgbTraits> bits2(m_currentImage);
-      const LockImageBits<RgbTraits> bits3(m_nextImage);
-      m_deltaImage.reset(Image::create(PixelFormat::IMAGE_RGB, m_spriteBounds.w, m_spriteBounds.h));
-      clear_image(m_deltaImage.get(), 0);
-      LockImageBits<RgbTraits> deltaBits(m_deltaImage.get());
-      typename LockImageBits<RgbTraits>::iterator deltaIt;
-      typename LockImageBits<RgbTraits>::const_iterator it1, it2, it3, end1, end2, end3, deltaEnd;
-
-      for (it1 = bits1.begin(), end1 = bits1.end(),
-           it2 = bits2.begin(), end2 = bits2.end(),
-           it3 = bits3.begin(), end2 = bits3.end(),
-           deltaIt = deltaBits.begin();
-           it1 != end1 && it2 != end2; ++it1, ++it2, ++it3, ++deltaIt, ++i) {
-        x = i % m_spriteBounds.w;
-        y = i / m_spriteBounds.w;
-        // While we are checking color differences,
-        // we enlarge the frameBounds where the color differences take place
-        if (*it1 != *it2 || *it3 == 0) {
-          *deltaIt = *it2;
-          if (x < x1) x1 = x;
-          if (x > x2) x2 = x;
-          if (y < y1) y1 = y;
-          if (y > y2) y2 = y;
+      if (!m_preservePaletteOrder) {
+        // When m_lastDisposal was RESTORE_BGBOLOR it implies
+        // we will have to cover with colors the entire previous frameBounds plus
+        // the current frameBounds due to color changes, so we must start with
+        // a frameBounds equal to the previous frame iteration (saved in m_lastFrameBounds).
+        // Then we must cover all the resultant frameBounds with full color
+        // in m_currentImage, the output image will be saved in deltaImage.
+        if (m_lastDisposal == DisposalMethod::RESTORE_BGCOLOR) {
+          x1 = m_lastFrameBounds.x;
+          y1 = m_lastFrameBounds.y;
+          x2 = m_lastFrameBounds.x + m_lastFrameBounds.w - 1;
+          y2 = m_lastFrameBounds.y + m_lastFrameBounds.h - 1;
+        }
+        else {
+          x1 = m_spriteBounds.w - 1;
+          y1 = m_spriteBounds.h - 1;
         }
 
-        // We need to change disposal mode DO_NOT_DISPOSE to RESTORE_BGCOLOR only
-        // if we found a "pixel clearing" in the next Image. RESTORE_BGCOLOR is
-        // our way to clear pixels.
-        if (*it2 != 0 && *it3 == 0) {
-          disposal = DisposalMethod::RESTORE_BGCOLOR;
-        }
-      }
+        int i = 0;
+        int x, y;
+        const LockImageBits<RgbTraits> bits1(m_previousImage);
+        const LockImageBits<RgbTraits> bits2(m_currentImage);
+        const LockImageBits<RgbTraits> bits3(m_nextImage);
+        m_deltaImage.reset(Image::create(PixelFormat::IMAGE_RGB, m_spriteBounds.w, m_spriteBounds.h));
+        clear_image(m_deltaImage.get(), 0);
+        LockImageBits<RgbTraits> deltaBits(m_deltaImage.get());
+        typename LockImageBits<RgbTraits>::iterator deltaIt;
+        typename LockImageBits<RgbTraits>::const_iterator it1, it2, it3, end1, end2, end3, deltaEnd;
 
-      if (m_preservePaletteOrder)
+        for (it1 = bits1.begin(), end1 = bits1.end(),
+             it2 = bits2.begin(), end2 = bits2.end(),
+             it3 = bits3.begin(), end2 = bits3.end(),
+             deltaIt = deltaBits.begin();
+             it1 != end1 && it2 != end2; ++it1, ++it2, ++it3, ++deltaIt, ++i) {
+          x = i % m_spriteBounds.w;
+          y = i / m_spriteBounds.w;
+          // While we are checking color differences,
+          // we enlarge the frameBounds where the color differences take place
+          if (*it1 != *it2 || *it3 == 0) {
+            *deltaIt = *it2;
+            if (x < x1) x1 = x;
+            if (x > x2) x2 = x;
+            if (y < y1) y1 = y;
+            if (y > y2) y2 = y;
+          }
+
+          // We need to change disposal mode DO_NOT_DISPOSE to RESTORE_BGCOLOR only
+          // if we found a "pixel clearing" in the next Image. RESTORE_BGCOLOR is
+          // our way to clear pixels.
+          if (*it2 != 0 && *it3 == 0) {
+            disposal = DisposalMethod::RESTORE_BGCOLOR;
+          }
+        }
+        frameBounds = gfx::Rect(x1, y1, x2-x1+1, y2-y1+1);
+      }
+      else
         disposal = DisposalMethod::RESTORE_BGCOLOR;
-      frameBounds = gfx::Rect(x1, y1, x2-x1+1, y2-y1+1);
 
       // We need to conditionate the deltaImage to the next step: 'writeImage()'
       // To do it, we need to crop deltaImage in frameBounds.
@@ -1368,7 +1361,11 @@ private:
     // will be used in each processed frame.
     PalettePicks usedColors(framePalette.size());
 
-    {
+    int localTransparent = m_transparentIndex;
+    ColorMapObject* colormap = m_globalColormap;
+    Remap remap(256);
+
+    if (!m_preservePaletteOrder) {
       const LockImageBits<RgbTraits> srcBits(m_deltaImage.get());
       LockImageBits<IndexedTraits> dstBits(frameImage.get());
 
@@ -1414,34 +1411,36 @@ private:
           *dstIt = i;
         }
       }
-    }
 
-    int usedNColors = usedColors.picks();
+      int usedNColors = usedColors.picks();
 
-    Remap remap(256);
-    for (int i=0; i<remap.size(); ++i)
-      remap.map(i, i);
+      for (int i=0; i<remap.size(); ++i)
+        remap.map(i, i);
 
-    int localTransparent = m_transparentIndex;
-    ColorMapObject* colormap = m_globalColormap;
-    if (!colormap) {
-      Palette reducedPalette(0, usedNColors);
+      if (!colormap) {
+        Palette reducedPalette(0, usedNColors);
 
-      for (int i=0, j=0; i<framePalette.size(); ++i) {
-        if (usedColors[i]) {
-          reducedPalette.setEntry(j, framePalette.getEntry(i));
-          remap.map(i, j);
-          ++j;
+        for (int i=0, j=0; i<framePalette.size(); ++i) {
+          if (usedColors[i]) {
+            reducedPalette.setEntry(j, framePalette.getEntry(i));
+            remap.map(i, j);
+            ++j;
+          }
         }
+
+        colormap = createColorMap(&reducedPalette);
+        if (localTransparent >= 0)
+          localTransparent = remap[localTransparent];
       }
 
-      colormap = createColorMap(&reducedPalette);
-      if (localTransparent >= 0)
-        localTransparent = remap[localTransparent];
+      if (localTransparent >= 0 && m_transparentIndex != localTransparent)
+        remap.map(m_transparentIndex, localTransparent);
     }
-
-    if (localTransparent >= 0 && m_transparentIndex != localTransparent)
-      remap.map(m_transparentIndex, localTransparent);
+    else {
+      frameImage.reset(Image::createCopy(m_deltaImage.get()));
+      for (int i=0; i<colormap->ColorCount; ++i)
+        remap.map(i, i);
+    }
 
     // Write extension record.
     writeExtension(gifFrame, frame, localTransparent,
@@ -1664,7 +1663,10 @@ private:
     render.setNewBlend(m_fop->newBlend());
 
     render.setBgType(render::BgType::NONE);
-    clear_image(dst, 0);
+    if (m_preservePaletteOrder)
+      clear_image(dst, m_bgIndex);
+    else
+      clear_image(dst, 0);
     render.renderSprite(dst, m_sprite, frame);
   }
 
