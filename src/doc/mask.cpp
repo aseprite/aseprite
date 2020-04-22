@@ -233,7 +233,8 @@ void Mask::intersect(const gfx::Rect& bounds)
   Image* image = NULL;
 
   if (!newBounds.isEmpty()) {
-    image = crop_image(m_bitmap.get(),
+    image = crop_image(
+      m_bitmap.get(),
       newBounds.x-m_bounds.x,
       newBounds.y-m_bounds.y,
       newBounds.w,
@@ -429,7 +430,8 @@ void Mask::reserve(const gfx::Rect& bounds)
     gfx::Rect newBounds = m_bounds.createUnion(bounds);
 
     if (m_bounds != newBounds) {
-      Image* image = crop_image(m_bitmap.get(),
+      Image* image = crop_image(
+        m_bitmap.get(),
         newBounds.x-m_bounds.x,
         newBounds.y-m_bounds.y,
         newBounds.w,
@@ -493,7 +495,10 @@ void Mask::shrink()
     m_bounds.w = x2 - x1 + 1;
     m_bounds.h = y2 - y1 + 1;
 
-    Image* image = crop_image(m_bitmap.get(), m_bounds.x-u, m_bounds.y-v, m_bounds.w, m_bounds.h, 0);
+    Image* image = crop_image(
+      m_bitmap.get(),
+      m_bounds.x-u, m_bounds.y-v,
+      m_bounds.w, m_bounds.h, 0);
     m_bitmap.reset(image);
   }
 

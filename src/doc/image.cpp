@@ -74,7 +74,7 @@ Image* Image::createCopy(const Image* image, const ImageBufferPtr& buffer)
 {
   ASSERT(image);
   return crop_image(image, 0, 0, image->width(), image->height(),
-    image->maskColor(), buffer);
+                    image->maskColor(), buffer);
 }
 
 } // namespace doc
