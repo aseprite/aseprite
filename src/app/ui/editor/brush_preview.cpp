@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -258,10 +258,12 @@ void BrushPreview::show(const gfx::Point& screenPos)
         loop->getController()->prepareController(loop.get());
         loop->getIntertwine()->prepareIntertwine();
         loop->getPointShape()->preparePointShape(loop.get());
-        loop->getPointShape()->transformPoint(
-          loop.get(),
-          brushBounds.x-origBrushBounds.x,
-          brushBounds.y-origBrushBounds.y);
+
+        tools::Stroke::Pt pt(brushBounds.x-origBrushBounds.x,
+                             brushBounds.y-origBrushBounds.y);
+        pt.size = brush->size();
+        pt.angle = brush->angle();
+        loop->getPointShape()->transformPoint(loop.get(), pt);
       }
     }
 

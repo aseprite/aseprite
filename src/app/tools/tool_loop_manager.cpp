@@ -103,12 +103,7 @@ void ToolLoopManager::pressButton(const Pointer& pointer)
     return;
   }
 
-  // Convert the screen point to a sprite point
-  Point spritePoint = pointer.point();
-  m_toolLoop->setSpeed(Point(0, 0));
-  m_oldPoint = spritePoint;
-  snapToGrid(spritePoint);
-
+  Stroke::Pt spritePoint = getSpriteStrokePt(pointer, true);
   m_toolLoop->getController()->pressButton(m_toolLoop, m_stroke, spritePoint);
 
   std::string statusText;
@@ -138,9 +133,7 @@ bool ToolLoopManager::releaseButton(const Pointer& pointer)
   if (isCanceled())
     return false;
 
-  Point spritePoint = pointer.point();
-  snapToGrid(spritePoint);
-
+  Stroke::Pt spritePoint = getSpriteStrokePt(pointer, false);
   bool res = m_toolLoop->getController()->releaseButton(m_stroke, spritePoint);
 
   if (!res && (m_toolLoop->getTracePolicy() == TracePolicy::Last ||
@@ -162,18 +155,7 @@ void ToolLoopManager::movement(const Pointer& pointer)
   if (isCanceled())
     return;
 
-  // Convert the screen point to a sprite point
-  Point spritePoint = pointer.point();
-  // Calculate the velocity (new sprite point - old sprite point)
-  Point velocity = (spritePoint - m_oldPoint);
-  m_toolLoop->setSpeed(velocity);
-  m_oldPoint = spritePoint;
-  snapToGrid(spritePoint);
-
-  // Control dynamic parameters through sensors
-  if (m_dynamics.isDynamic())
-    adjustBrushWithDynamics(pointer, velocity);
-
+  Stroke::Pt spritePoint = getSpriteStrokePt(pointer, false);
   m_toolLoop->getController()->movement(m_toolLoop, m_stroke, spritePoint);
 
   std::string statusText;
@@ -283,16 +265,19 @@ void ToolLoopManager::doLoopStep(bool lastStep)
 }
 
 // Applies the grid settings to the specified sprite point.
-void ToolLoopManager::snapToGrid(Point& point)
+void ToolLoopManager::snapToGrid(Stroke::Pt& pt)
 {
   if (!m_toolLoop->getController()->canSnapToGrid() ||
       !m_toolLoop->getSnapToGrid() ||
       m_toolLoop->isSelectingTiles())
     return;
 
+  gfx::Point point(pt.x, pt.y);
   point = snap_to_grid(m_toolLoop->getGridBounds(), point,
                        PreferSnapTo::ClosestGridVertex);
   point += m_toolLoop->getBrush()->center();
+  pt.x = point.x;
+  pt.y = point.y;
 }
 
 // Strokes are relative to sprite origin.
@@ -379,11 +364,58 @@ void ToolLoopManager::calculateDirtyArea(const Strokes& strokes)
   }
 }
 
-void ToolLoopManager::adjustBrushWithDynamics(const Pointer& pointer,
-                                              const Point& velocity)
+Stroke::Pt ToolLoopManager::getSpriteStrokePt(const Pointer& pointer,
+                                              const bool firstPoint)
 {
-  int size = m_brush0.size();
-  int angle = m_brush0.angle();
+  const base::tick_t t = base::current_tick();
+  const base::tick_t dt = t - m_lastPointerT;
+  m_lastPointerT = t;
+
+  // Convert the screen point to a sprite point
+  Stroke::Pt spritePoint = pointer.point();
+  spritePoint.size = m_brush0.size();
+  spritePoint.angle = m_brush0.angle();
+
+  // Calculate the velocity (new sprite point - old sprite point)
+  gfx::Point newVelocity;
+  if (firstPoint)
+    m_velocity = newVelocity = gfx::Point(0, 0);
+  else {
+    newVelocity.x = (spritePoint.x - m_oldPoint.x);
+    newVelocity.y = (spritePoint.y - m_oldPoint.y);
+    float a = base::clamp(float(dt) / 50.0f, 0.0f, 1.0f);
+    m_velocity.x = (1.0f-a)*m_velocity.x + a*newVelocity.x;
+    m_velocity.y = (1.0f-a)*m_velocity.y + a*newVelocity.y;
+  }
+  m_oldPoint.x = spritePoint.x;
+  m_oldPoint.y = spritePoint.y;
+
+  // Center the input to some grid point if needed
+  snapToGrid(spritePoint);
+
+  // Control dynamic parameters through sensors
+  if (useDynamics()) {
+    adjustPointWithDynamics(pointer, spritePoint);
+  }
+
+  // Inform the original velocity vector to the ToolLoop
+  m_toolLoop->setSpeed(newVelocity);
+
+  return spritePoint;
+}
+
+bool ToolLoopManager::useDynamics() const
+{
+  return (m_dynamics.isDynamic() &&
+          !m_toolLoop->getFilled() &&
+          m_toolLoop->getController()->isFreehand());
+}
+
+void ToolLoopManager::adjustPointWithDynamics(const Pointer& pointer,
+                                              Stroke::Pt& pt)
+{
+  int size = pt.size;
+  int angle = pt.angle;
 
   // Pressure
   bool hasP = (pointer.type() == Pointer::Type::Pen ||
@@ -392,8 +424,8 @@ void ToolLoopManager::adjustBrushWithDynamics(const Pointer& pointer,
   ASSERT(p >= 0.0f && p <= 1.0f);
 
   // Velocity
-  float v = float(std::sqrt(velocity.x*velocity.x +
-                            velocity.y*velocity.y)) / 32.0f; // TODO 16 should be configurable
+  float v = float(std::sqrt(m_velocity.x*m_velocity.x +
+                            m_velocity.y*m_velocity.y)) / 16.0f; // TODO 16 should be configurable
   v = base::clamp(v, 0.0f, 1.0f);
 
   switch (m_dynamics.size) {
@@ -414,17 +446,18 @@ void ToolLoopManager::adjustBrushWithDynamics(const Pointer& pointer,
       break;
   }
 
-  size = base::clamp(size, int(Brush::kMinBrushSize), int(Brush::kMaxBrushSize));
-  angle = base::clamp(angle, -180, 180);
-
-  Brush* currrentBrush = m_toolLoop->getBrush();
-
-  if (currrentBrush->size() != size ||
-      (currrentBrush->type() != kCircleBrushType &&
-       currrentBrush->angle() != angle)) {
-    m_toolLoop->setBrush(
-      std::make_shared<Brush>(m_brush0.type(), size, angle));
+  switch (m_dynamics.gradient) {
+    case DynamicSensor::Pressure:
+      if (hasP)
+        pt.gradient = p;
+      break;
+    case DynamicSensor::Velocity:
+      pt.gradient = v;
+      break;
   }
+
+  pt.size = base::clamp(size, int(Brush::kMinBrushSize), int(Brush::kMaxBrushSize));
+  pt.angle = base::clamp(angle, -180, 180);
 }
 
 } // namespace tools

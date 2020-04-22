@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -24,33 +24,74 @@ namespace tools {
 using namespace gfx;
 using namespace doc;
 
+Intertwine::LineData::LineData(ToolLoop* loop,
+                               const Stroke::Pt& a,
+                               const Stroke::Pt& b)
+  : loop(loop)
+  , a(a)
+  , b(b)
+  , pt(a)
+{
+  const int steps = std::max(std::abs(b.x - a.x),
+                             std::abs(b.y - a.y))+1;
+  t = 0.0f;
+  step = 1.0f / steps;
+}
+
+void Intertwine::LineData::doStep(int x, int y)
+{
+  t += step;
+  const float ti = 1.0f-t;
+
+  pt.x = x;
+  pt.y = y;
+  pt.size = ti*a.size + t*b.size;
+  pt.angle = ti*a.angle + t*b.angle;
+  pt.gradient = ti*a.gradient + t*b.gradient;
+}
+
 gfx::Rect Intertwine::getStrokeBounds(ToolLoop* loop, const Stroke& stroke)
 {
   return stroke.bounds();
 }
 
 // static
-void Intertwine::doPointshapePoint(int x, int y, ToolLoop* loop)
+void Intertwine::doPointshapeStrokePt(const Stroke::Pt& pt, ToolLoop* loop)
 {
   Symmetry* symmetry = loop->getSymmetry();
   if (symmetry) {
     // Convert the point to the sprite position so we can apply the
     // symmetry transformation.
     Stroke main_stroke;
-    main_stroke.addPoint(Point(x, y));
+    main_stroke.addPoint(pt);
 
     Strokes strokes;
     symmetry->generateStrokes(main_stroke, strokes, loop);
     for (const auto& stroke : strokes) {
       // We call transformPoint() moving back each point to the cel
       // origin.
-      loop->getPointShape()->transformPoint(
-        loop, stroke[0].x, stroke[0].y);
+      loop->getPointShape()->transformPoint(loop, stroke[0]);
     }
   }
   else {
-    loop->getPointShape()->transformPoint(loop, x, y);
+    loop->getPointShape()->transformPoint(loop, pt);
   }
+}
+
+// static
+void Intertwine::doPointshapePoint(int x, int y, ToolLoop* loop)
+{
+  Stroke::Pt pt(x, y);
+  pt.size = loop->getBrush()->size();
+  pt.angle = loop->getBrush()->angle();
+  doPointshapeStrokePt(pt, loop);
+}
+
+// static
+void Intertwine::doPointshapePointDynamics(int x, int y, Intertwine::LineData* data)
+{
+  data->doStep(x, y);
+  doPointshapeStrokePt(data->pt, data->loop);
 }
 
 // static

@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (c) 2019 Igara Studio S.A.
+// Copyright (c) 2019-2020 Igara Studio S.A.
 // Copyright (c) 2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -9,6 +9,7 @@
 #define RENDER_GRADIENT_H_INCLUDED
 #pragma once
 
+#include "doc/brush.h"
 #include "doc/color.h"
 #include "gfx/point.h"
 
@@ -52,6 +53,14 @@ void render_rgba_radial_gradient(
   doc::color_t c0,
   doc::color_t c1,
   const render::DitheringMatrix& matrix);
+
+void convert_bitmap_brush_to_dithering_brush(
+  doc::Brush* brush,
+  const doc::PixelFormat pixelFormat,
+  const render::DitheringMatrix& matrix,
+  const float f,
+  const doc::color_t c0,
+  const doc::color_t c1);
 
 } // namespace render
 

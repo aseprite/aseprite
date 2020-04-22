@@ -12,6 +12,7 @@
 #include "app/tools/dynamics.h"
 #include "app/tools/pointer.h"
 #include "app/tools/stroke.h"
+#include "base/time.h"
 #include "doc/brush.h"
 #include "gfx/point.h"
 #include "gfx/region.h"
@@ -73,9 +74,11 @@ public:
 
 private:
   void doLoopStep(bool lastStep);
-  void snapToGrid(gfx::Point& point);
-  void adjustBrushWithDynamics(const Pointer& pointer,
-                               const gfx::Point& velocity);
+  void snapToGrid(Stroke::Pt& pt);
+  Stroke::Pt getSpriteStrokePt(const Pointer& pointer,
+                               const bool firstPoint);
+  bool useDynamics() const;
+  void adjustPointWithDynamics(const Pointer& pointer, Stroke::Pt& pt);
 
   void calculateDirtyArea(const Strokes& strokes);
 
@@ -83,6 +86,8 @@ private:
   Stroke m_stroke;
   Pointer m_lastPointer;
   gfx::Point m_oldPoint;
+  gfx::Point m_velocity;
+  base::tick_t m_lastPointerT;
   gfx::Region m_dirtyArea;
   gfx::Region m_nextDirtyArea;
   doc::Brush m_brush0;

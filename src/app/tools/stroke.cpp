@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -16,44 +16,46 @@ namespace tools {
 
 void Stroke::reset()
 {
-  m_points.clear();
+  m_pts.clear();
 }
 
-void Stroke::reset(int n, const gfx::Point& point)
+void Stroke::reset(int n, const Pt& pt)
 {
-  m_points.resize(n, point);
+  m_pts.resize(n, pt);
 }
 
-void Stroke::addPoint(const gfx::Point& point)
+void Stroke::addPoint(const Pt& pt)
 {
-  m_points.push_back(point);
+  m_pts.push_back(pt);
 }
 
 void Stroke::offset(const gfx::Point& delta)
 {
-  for (auto& p : m_points)
-    p += delta;
+  for (auto& p : m_pts) {
+    p.x += delta.x;
+    p.y += delta.y;
+  }
 }
 
 void Stroke::erase(int index)
 {
-  ASSERT(0 <= index && index < m_points.size());
-  if (0 <= index && index < m_points.size())
-    m_points.erase(m_points.begin()+index);
+  ASSERT(0 <= index && index < m_pts.size());
+  if (0 <= index && index < m_pts.size())
+    m_pts.erase(m_pts.begin()+index);
 }
 
 gfx::Rect Stroke::bounds() const
 {
-  if (m_points.empty())
+  if (m_pts.empty())
     return gfx::Rect();
 
   gfx::Point
-    minpt(m_points[0]),
-    maxpt(m_points[0]);
+    minpt(m_pts[0].x, m_pts[0].y),
+    maxpt(m_pts[0].x, m_pts[0].y);
 
-  for (std::size_t c=1; c<m_points.size(); ++c) {
-    int x = m_points[c].x;
-    int y = m_points[c].y;
+  for (std::size_t c=1; c<m_pts.size(); ++c) {
+    int x = m_pts[c].x;
+    int y = m_pts[c].y;
     if (minpt.x > x) minpt.x = x;
     if (minpt.y > y) minpt.y = y;
     if (maxpt.x < x) maxpt.x = x;
@@ -63,6 +65,19 @@ gfx::Rect Stroke::bounds() const
   return gfx::Rect(minpt.x, minpt.y,
                    maxpt.x - minpt.x + 1,
                    maxpt.y - minpt.y + 1);
+}
+
+std::vector<int> Stroke::toXYInts() const
+{
+  std::vector<int> output;
+  if (!empty()) {
+    output.reserve(2*size());
+    for (auto pt : m_pts) {
+      output.push_back(pt.x);
+      output.push_back(pt.y);
+    }
+  }
+  return output;
 }
 
 } // namespace tools

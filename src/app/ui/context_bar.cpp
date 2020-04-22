@@ -1878,6 +1878,10 @@ void ContextBar::updateForTool(tools::Tool* tool)
     (tool->getInk(0)->withDitheringOptions() ||
      tool->getInk(1)->withDitheringOptions());
 
+  // True if the brush supports dynamics
+  // TODO add support for dynamics in custom brushes in the future
+  const bool supportDynamics = (!hasImageBrush);
+
   // Show/Hide fields
   m_zoomButtons->setVisible(needZoomButtons);
   m_brushBack->setVisible(supportOpacity && hasImageBrush && !withDithering);
@@ -1891,6 +1895,7 @@ void ContextBar::updateForTool(tools::Tool* tool)
   m_inkShades->setVisible(hasInkShades);
   m_eyedropperField->setVisible(isEyedropper);
   m_autoSelectLayer->setVisible(isMove);
+  m_dynamics->setVisible(isFreehand && supportDynamics);
   m_freehandBox->setVisible(isFreehand && supportOpacity);
   m_toleranceLabel->setVisible(hasTolerance);
   m_tolerance->setVisible(hasTolerance);

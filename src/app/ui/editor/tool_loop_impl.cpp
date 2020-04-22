@@ -162,6 +162,18 @@ public:
           m_tracePolicy = tools::TracePolicy::Accumulate;
           break;
       }
+
+      // Use overlap trace policy for dynamic gradient
+      auto dynamics = getDynamics();
+      if (dynamics.isDynamic() &&
+          dynamics.gradient != tools::DynamicSensor::Static &&
+          m_controller->isFreehand()) {
+        // Use overlap trace policy to accumulate changes of colors
+        // between stroke points.
+        //
+        // TODO this is connected with a condition in tools::PaintInk::prepareInk()
+        m_tracePolicy = tools::TracePolicy::Overlap;
+      }
     }
 
     // Symmetry mode
@@ -371,7 +383,6 @@ public:
 #endif
   }
 
-
   void onSliceRect(const gfx::Rect& bounds) override { }
 
 };
@@ -521,7 +532,7 @@ public:
       if (m_saveLastPoint) {
         m_tx(new cmd::SetLastPoint(
                m_document,
-               getController()->getLastPoint()));
+               getController()->getLastPoint().toPoint()));
       }
 
       // Paint ink
@@ -862,6 +873,11 @@ public:
 
   void cancel() override { }
   bool isCanceled() override { return true; }
+
+  tools::DynamicsOptions getDynamics() override {
+    // Preview without dynamics
+    return tools::DynamicsOptions();
+  }
 
 };
 

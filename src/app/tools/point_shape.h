@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -8,6 +9,7 @@
 #define APP_TOOLS_TOOL_POINT_SHAPE_H_INCLUDED
 #pragma once
 
+#include "app/tools/stroke.h"
 #include "gfx/rect.h"
 
 namespace app {
@@ -24,7 +26,7 @@ namespace app {
       virtual void preparePointShape(ToolLoop* loop) { }
 
       // The x, y position must be relative to the cel/src/dst image origin.
-      virtual void transformPoint(ToolLoop* loop, int x, int y) = 0;
+      virtual void transformPoint(ToolLoop* loop, const Stroke::Pt& pt) = 0;
       virtual void getModifiedArea(ToolLoop* loop, int x, int y, gfx::Rect& area) = 0;
 
     protected:
