@@ -101,10 +101,6 @@
       <value id="LEFT" value="1" />
       <value id="RIGHT" value="2" />
     </enum>
-    <enum id="HueSaturationMode">
-      <value id="HSV" value="0" />
-      <value id="HSL" value="1" />
-    </enum>
     <enum id="ColorProfileBehavior">
       <value id="DISABLE" value="0" />
       <value id="EMBEDDED" value="1" />
@@ -352,7 +348,7 @@
       <option id="image_preset" type="int" default="0" />
     </section>
     <section id="hue_saturation">
-      <option id="mode" type="HueSaturationMode" default="HueSaturationMode::HSL" />
+      <option id="mode" type="filters::HueSaturationFilter::Mode" default="filters::HueSaturationFilter::Mode::HSL_MUL" />
     </section>
     <section id="filters">
       <option id="cels_target" type="CelsTarget" default="CelsTarget::Selected" />

@@ -34,7 +34,7 @@ const char* HueSaturationFilter::getName()
 }
 
 HueSaturationFilter::HueSaturationFilter()
-  : m_mode(Mode::HSL)
+  : m_mode(Mode::HSL_MUL)
   , m_h(0.0)
   , m_s(0.0)
   , m_l(0.0)
@@ -200,7 +200,9 @@ void HueSaturationFilter::onApplyToPalette(FilterManager* filterMgr,
 template<class T,
          double (T::*get_lightness)() const,
          void (T::*set_lightness)(double)>
-void HueSaturationFilter::applyFilterToRgbT(const Target target, doc::color_t& c)
+void HueSaturationFilter::applyFilterToRgbT(const Target target,
+                                            doc::color_t& c,
+                                            bool multiply)
 {
   int r = rgba_getr(c);
   int g = rgba_getg(c);
@@ -213,10 +215,12 @@ void HueSaturationFilter::applyFilterToRgbT(const Target target, doc::color_t& c
   while (h < 0.0) h += 360.0;
   h = std::fmod(h, 360.0);
 
-  double s = hsl.saturation()*(1.0+m_s);
+  double s = (multiply ? hsl.saturation()*(1.0+m_s):
+                         hsl.saturation() + m_s);
   s = base::clamp(s, 0.0, 1.0);
 
-  double l = (hsl.*get_lightness)()*(1.0+m_l);
+  double l = (multiply ? (hsl.*get_lightness)()*(1.0+m_l):
+                         (hsl.*get_lightness)() + m_l);
   l = base::clamp(l, 0.0, 1.0);
 
   hsl.hue(h);
@@ -238,15 +242,25 @@ void HueSaturationFilter::applyFilterToRgbT(const Target target, doc::color_t& c
 void HueSaturationFilter::applyFilterToRgb(const Target target, doc::color_t& color)
 {
   switch (m_mode) {
-    case Mode::HSL:
-      applyFilterToRgbT<gfx::Hsl,
-                        &gfx::Hsl::lightness,
-                        &gfx::Hsl::lightness>(target, color);
-      break;
-    case Mode::HSV:
+    case Mode::HSV_MUL:
       applyFilterToRgbT<gfx::Hsv,
                         &gfx::Hsv::value,
-                        &gfx::Hsv::value>(target, color);
+                        &gfx::Hsv::value>(target, color, true);
+      break;
+    case Mode::HSL_MUL:
+      applyFilterToRgbT<gfx::Hsl,
+                        &gfx::Hsl::lightness,
+                        &gfx::Hsl::lightness>(target, color, true);
+      break;
+    case Mode::HSV_ADD:
+      applyFilterToRgbT<gfx::Hsv,
+                        &gfx::Hsv::value,
+                        &gfx::Hsv::value>(target, color, false);
+      break;
+    case Mode::HSL_ADD:
+      applyFilterToRgbT<gfx::Hsl,
+                        &gfx::Hsl::lightness,
+                        &gfx::Hsl::lightness>(target, color, false);
       break;
   }
 }
