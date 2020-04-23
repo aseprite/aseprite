@@ -146,8 +146,11 @@ public:
     , m_secondaryColor(button == tools::ToolLoop::Left ? m_bgColor: m_fgColor)
   {
 #ifdef ENABLE_UI // TODO add dynamics support when UI is not enabled
-    if (m_controller->isFreehand())
+    if (m_controller->isFreehand() &&
+        !m_ink->isEraser() &&
+        !m_pointShape->isFloodFill()) {
       m_dynamics = App::instance()->contextBar()->getDynamics();
+    }
 #endif
 
     if (m_tracePolicy == tools::TracePolicy::Accumulate ||

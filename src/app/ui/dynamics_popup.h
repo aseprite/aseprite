@@ -10,6 +10,7 @@
 
 #include "app/tools/dynamics.h"
 #include "app/ui/button_set.h"
+#include "base/time.h"
 #include "doc/brush.h"
 #include "gfx/region.h"
 #include "ui/popup_window.h"
@@ -33,6 +34,8 @@ namespace app {
     tools::DynamicsOptions getDynamics() const;
 
   private:
+    class MinMaxSlider;
+
     void setCheck(int i, bool state);
     bool isCheck(int i) const;
     void onValuesChange(ButtonSet::Item* item);
@@ -42,6 +45,10 @@ namespace app {
     gen::Dynamics* m_dynamics;
     DitheringSelector* m_ditheringSel;
     gfx::Region m_hotRegion;
+    MinMaxSlider* m_pressureTweaks;
+    MinMaxSlider* m_velocityTweaks;
+    gfx::Point m_lastPos, m_velocity;
+    base::tick_t m_lastPointerT;
   };
 
 } // namespace app

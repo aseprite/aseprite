@@ -22,9 +22,9 @@
     </buttonset>
     </hbox>
 
-    <separator id="separator" text="@.max_point_value" horizontal="true" />
-
     <grid id="options" columns="2" childspacing="0" expansive="true">
+      <separator id="separator" text="@.max_point_value" horizontal="true" cell_hspan="2" />
+
       <label id="max_size_label" text="@.size" style="mini_label" />
       <slider id="max_size" value="64" min="1" max="64" cell_align="horizontal" />
 
@@ -33,6 +33,13 @@
 
       <label id="gradient_label" text="@.gradient" style="mini_label"  />
       <hbox id="gradient_placeholder" />
+
+      <separator id="separator2" text="@.sensors_tweaks" horizontal="true" cell_hspan="2" />
+
+      <label id="pressure_label" text="@.pressure" style="mini_label" />
+      <hbox id="pressure_placeholder" cell_align="horizontal" />
+      <label id="velocity_label" text="@.velocity" style="mini_label" />
+      <hbox id="velocity_placeholder" cell_align="horizontal" />
     </grid>
 
   </vbox>

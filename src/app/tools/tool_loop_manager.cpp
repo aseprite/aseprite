@@ -420,12 +420,44 @@ void ToolLoopManager::adjustPointWithDynamics(const Pointer& pointer,
   // Pressure
   bool hasP = (pointer.type() == Pointer::Type::Pen ||
                pointer.type() == Pointer::Type::Eraser);
-  float p = (hasP ? pointer.pressure(): 1.0f);
+  float p = 1.0f;
+  if (hasP) {
+    p = pointer.pressure();
+    if (p < m_dynamics.minPressureThreshold) {
+      p = 0.0f;
+    }
+    else if (p > m_dynamics.maxPressureThreshold ||
+             // To avoid div by zero
+             m_dynamics.minPressureThreshold == m_dynamics.maxPressureThreshold) {
+      p = 1.0f;
+    }
+    else {
+      p =
+        (p - m_dynamics.minPressureThreshold) /
+        (m_dynamics.maxPressureThreshold - m_dynamics.minPressureThreshold);
+    }
+  }
   ASSERT(p >= 0.0f && p <= 1.0f);
+  p = base::clamp(p, 0.0f, 1.0f);
 
   // Velocity
   float v = float(std::sqrt(m_velocity.x*m_velocity.x +
-                            m_velocity.y*m_velocity.y)) / 16.0f; // TODO 16 should be configurable
+                            m_velocity.y*m_velocity.y)) / 32.0f; // TODO 32 should be configurable
+  v = base::clamp(v, 0.0f, 1.0f);
+  if (v < m_dynamics.minVelocityThreshold) {
+    v = 0.0f;
+  }
+  else if (v > m_dynamics.maxVelocityThreshold ||
+           // To avoid div by zero
+           m_dynamics.minVelocityThreshold == m_dynamics.maxVelocityThreshold) {
+    v = 1.0f;
+  }
+  else {
+    v =
+      (v - m_dynamics.minVelocityThreshold) /
+      (m_dynamics.maxVelocityThreshold - m_dynamics.minVelocityThreshold);
+  }
+  ASSERT(v >= 0.0f && v <= 1.0f);
   v = base::clamp(v, 0.0f, 1.0f);
 
   switch (m_dynamics.size) {
