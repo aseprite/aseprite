@@ -16,7 +16,10 @@
 #include "app/tools/stroke.h"
 #include "app/tools/symmetry.h"
 #include "app/tools/tool_loop.h"
+#include "base/pi.h"
 #include "doc/algo.h"
+
+#include <cmath>
 
 namespace app {
 namespace tools {
@@ -101,26 +104,60 @@ void Intertwine::doPointshapeHline(int x1, int y, int x2, ToolLoop* loop)
 }
 
 // static
-void Intertwine::doPointshapeLine(int x1, int y1, int x2, int y2, ToolLoop* loop)
+void Intertwine::doPointshapeLineWithoutDynamics(int x1, int y1, int x2, int y2, ToolLoop* loop)
 {
-  doc::AlgoLineWithAlgoPixel algo = getLineAlgo(loop);
-  algo(x1, y1, x2, y2, (void*)loop, (AlgoPixel)doPointshapePoint);
+  Stroke::Pt a(x1, y1);
+  Stroke::Pt b(x2, y2);
+  a.size = b.size = loop->getBrush()->size();
+  a.angle = b.angle = loop->getBrush()->angle();
+  doPointshapeLine(a, b, loop);
+}
+
+void Intertwine::doPointshapeLine(const Stroke::Pt& a,
+                                  const Stroke::Pt& b, ToolLoop* loop)
+{
+  doc::AlgoLineWithAlgoPixel algo = getLineAlgo(loop, a, b);
+  LineData lineData(loop, a, b);
+  algo(a.x, a.y, b.x, b.y, (void*)&lineData, (AlgoPixel)doPointshapePointDynamics);
 }
 
 // static
-doc::AlgoLineWithAlgoPixel Intertwine::getLineAlgo(ToolLoop* loop)
+doc::AlgoLineWithAlgoPixel Intertwine::getLineAlgo(ToolLoop* loop,
+                                                   const Stroke::Pt& a,
+                                                   const Stroke::Pt& b)
 {
+  bool needsFixForLineBrush = false;
+  if (loop->getBrush()->type() == kLineBrushType) {
+    if ((a.angle != 0.0f || b.angle != 0.0f) &&
+        (a.angle != b.angle)) {
+      needsFixForLineBrush = true;
+    }
+    else {
+      int angle = a.angle;
+      int p = SGN(b.x - a.x);
+      int q = SGN(a.y - b.y);
+      float rF = std::cos(PI * angle / 180);
+      float sF = std::sin(PI * angle / 180);
+      int r = SGN(rF);
+      int s = SGN(sF);
+      needsFixForLineBrush = ((p == q && r != s) ||
+                              (p != q && r == s));
+    }
+  }
+
   if (// When "Snap Angle" in being used or...
       (int(loop->getModifiers()) & int(ToolLoopModifiers::kSquareAspect)) ||
       // "Snap to Grid" is enabled
       (loop->getController()->canSnapToGrid() && loop->getSnapToGrid())) {
     // We prefer the perfect pixel lines that matches grid tiles
-    return algo_line_perfect;
+    return (needsFixForLineBrush ? algo_line_perfect_with_fix_for_line_brush:
+                                   algo_line_perfect);
   }
   else {
     // In other case we use the regular algorithm that is useful to
     // draw continuous lines/strokes.
-    return algo_line_continuous;
+    return (needsFixForLineBrush ? algo_line_continuous_with_fix_for_line_brush:
+                                   algo_line_continuous);
   }
 }
 

@@ -101,6 +101,7 @@ protected:
   doc::color_t m_bgColor;
   doc::color_t m_primaryColor;
   doc::color_t m_secondaryColor;
+  tools::DynamicsOptions m_dynamics;
 
 public:
   ToolLoopBase(Editor* editor, Site site,
@@ -144,6 +145,11 @@ public:
     , m_primaryColor(button == tools::ToolLoop::Left ? m_fgColor: m_bgColor)
     , m_secondaryColor(button == tools::ToolLoop::Left ? m_bgColor: m_fgColor)
   {
+#ifdef ENABLE_UI // TODO add dynamics support when UI is not enabled
+    if (m_controller->isFreehand())
+      m_dynamics = App::instance()->contextBar()->getDynamics();
+#endif
+
     if (m_tracePolicy == tools::TracePolicy::Accumulate ||
         m_tracePolicy == tools::TracePolicy::AccumulateUpdateLast) {
       tools::ToolBox* toolbox = App::instance()->toolBox();
@@ -164,9 +170,8 @@ public:
       }
 
       // Use overlap trace policy for dynamic gradient
-      auto dynamics = getDynamics();
-      if (dynamics.isDynamic() &&
-          dynamics.gradient != tools::DynamicSensor::Static &&
+      if (m_dynamics.isDynamic() &&
+          m_dynamics.gradient != tools::DynamicSensor::Static &&
           m_controller->isFreehand()) {
         // Use overlap trace policy to accumulate changes of colors
         // between stroke points.
@@ -376,11 +381,7 @@ public:
   }
 
   tools::DynamicsOptions getDynamics() override {
-#ifdef ENABLE_UI // TODO add support when UI is not enabled
-    return App::instance()->contextBar()->getDynamics();
-#else
-    return tools::DynamicsOptions();
-#endif
+    return m_dynamics;
   }
 
   void onSliceRect(const gfx::Rect& bounds) override { }
