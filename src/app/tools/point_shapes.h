@@ -29,6 +29,7 @@ public:
   bool isPixel() override { return true; }
 
   void transformPoint(ToolLoop* loop, const Stroke::Pt& pt) override {
+    loop->getInk()->prepareForPointShape(loop, true, pt.x, pt.y);
     doInkHline(pt.x, pt.y, pt.x, loop);
   }
 
@@ -226,6 +227,8 @@ public:
                                           srcImage->height()),
                                 pt.toPoint(), true);
 
+    loop->getInk()->prepareForPointShape(loop, true, wpt.x, wpt.y);
+
     doc::algorithm::floodfill(
       srcImage,
       (loop->useMask() ? loop->getMask(): nullptr),
@@ -286,6 +289,8 @@ public:
   }
 
   void transformPoint(ToolLoop* loop, const Stroke::Pt& pt) override {
+    loop->getInk()->prepareForPointShape(loop, true, pt.x, pt.y);
+
     int spray_width = loop->getSprayWidth();
     int spray_speed = loop->getSpraySpeed();
 
