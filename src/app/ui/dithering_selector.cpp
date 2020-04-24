@@ -124,8 +124,8 @@ private:
   void onSizeHint(SizeHintEvent& ev) override {
     gfx::Size sz = textSize();
 
-    sz.w = std::max(sz.w, preview()->width()) + 4*guiscale();
-    sz.h += 6*guiscale() + preview()->height();
+    sz.w = std::max(sz.w, preview()->width()*guiscale()) + 4*guiscale();
+    sz.h += 6*guiscale() + preview()->height()*guiscale();
 
     ev.setSizeHint(sz);
   }
@@ -153,8 +153,12 @@ private:
                            rc.y+2*guiscale()));
     g->drawRgbaSurface(
       preview(),
-      rc.x+2*guiscale(),
-      rc.y+4*guiscale()+textsz.h);
+      preview()->bounds(),
+      gfx::Rect(
+        rc.x+2*guiscale(),
+        rc.y+4*guiscale()+textsz.h,
+        preview()->width()*guiscale(),
+        preview()->height()*guiscale()));
   }
 
   bool m_matrixOnly;
@@ -179,6 +183,13 @@ DitheringSelector::DitheringSelector(Type type)
 
   setUseCustomWidget(true);
   regenerate();
+}
+
+void DitheringSelector::onInitTheme(ui::InitThemeEvent& ev)
+{
+  ComboBox::onInitTheme(ev);
+  if (getItem(0))
+    setSizeHint(getItem(0)->sizeHint());
 }
 
 void DitheringSelector::regenerate()
