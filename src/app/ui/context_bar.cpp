@@ -983,12 +983,11 @@ public:
   }
 
   void showPopup() {
-    if (!m_popup) {
+    if (!m_popup)
       m_popup.reset(new DynamicsPopup(this));
-      m_popup->remapWindow();
-    }
 
     const gfx::Rect bounds = this->bounds();
+    m_popup->remapWindow();
     m_popup->positionWindow(bounds.x, bounds.y+bounds.h);
     m_popup->setHotRegion(gfx::Region(m_popup->bounds()));
     m_popup->openWindow();
