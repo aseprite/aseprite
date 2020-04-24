@@ -983,8 +983,10 @@ public:
   }
 
   void showPopup() {
-    if (!m_popup)
+    if (!m_popup) {
       m_popup.reset(new DynamicsPopup(this));
+      m_popup->Close.connect([this](CloseEvent&){ deselectItems(); });
+    }
 
     const gfx::Rect bounds = this->bounds();
     m_popup->remapWindow();
