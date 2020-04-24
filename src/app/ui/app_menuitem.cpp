@@ -50,8 +50,11 @@ AppMenuItem::AppMenuItem(const std::string& text,
 AppMenuItem::~AppMenuItem()
 {
   if (m_native) {
-    if (m_native->menuItem)
-      m_native->menuItem->dispose();
+    // Do not call disposeNative(), the native handle will be disposed
+    // when the main menu (app menu) is disposed.
+
+    // TODO improve handling of these kind of pointer from laf-os library
+
     delete m_native;
   }
 }
@@ -67,10 +70,21 @@ void AppMenuItem::setNative(const Native& native)
   if (!m_native)
     m_native = new Native(native);
   else {
-    if (m_native->menuItem)
-      m_native->menuItem->dispose();
+    // Do not call disposeNative(), the native handle will be disposed
+    // when the main menu (app menu) is disposed.
+
     *m_native = native;
   }
+}
+
+void AppMenuItem::disposeNative()
+{
+#if 0   // TODO fix this and the whole handling of native menu items from laf-os
+  if (m_native->menuItem) {
+    m_native->menuItem->dispose();
+    m_native->menuItem = nullptr;
+  }
+#endif
 }
 
 void AppMenuItem::syncNativeMenuItemKeyShortcut()

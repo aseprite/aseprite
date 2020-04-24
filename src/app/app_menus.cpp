@@ -588,6 +588,10 @@ void AppMenus::removeMenuItemFromGroup(Pred pred)
           group.end = group.end->previousSibling();
 
         item->parent()->removeChild(item);
+        if (auto appItem = dynamic_cast<AppMenuItem*>(item)) {
+          if (appItem)
+            appItem->disposeNative();
+        }
         item->deferDelete();
 
         it = group.items.erase(it);
@@ -809,8 +813,7 @@ void AppMenus::createNativeMenus()
   if (!menus)       // This platform doesn't support native menu items
     return;
 
-  if (m_osMenu)
-    m_osMenu->dispose();
+  os::Menu* oldOSMenu = m_osMenu;
   m_osMenu = menus->createMenu();
 
 #ifdef __APPLE__ // Create default macOS app menus (App ... Window)
@@ -896,6 +899,8 @@ void AppMenus::createNativeMenus()
 #endif
 
   menus->setAppMenu(m_osMenu);
+  if (oldOSMenu)
+    oldOSMenu->dispose();
 }
 
 void AppMenus::createNativeSubmenus(os::Menu* osMenu, const ui::Menu* uiMenu)
