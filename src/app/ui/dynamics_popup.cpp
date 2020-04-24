@@ -54,6 +54,7 @@ class DynamicsPopup::MinMaxSlider : public Widget  {
 public:
   MinMaxSlider() {
     setExpansive(true);
+    initTheme();
   }
 
   float minThreshold() const { return m_minThreshold; }
@@ -65,6 +66,7 @@ public:
 
 private:
   void onInitTheme(InitThemeEvent& ev) override {
+    Widget::onInitTheme(ev);
     SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
     setBorder(
       gfx::Border(
@@ -72,18 +74,12 @@ private:
         theme->parts.miniSliderEmpty()->bitmapN()->height(),
         theme->parts.miniSliderEmpty()->bitmapE()->width(),
         theme->parts.miniSliderEmpty()->bitmapS()->height()));
-
-    Widget::onInitTheme(ev);
   }
 
   void onSizeHint(SizeHintEvent& ev) override {
-    int w = 0;
-    int h = 2*textHeight();
-
-    w += border().width();
-    h += border().height();
-
-    ev.setSizeHint(w, h);
+    ev.setSizeHint(
+      border().width(),
+      textHeight()+2*guiscale() + border().height());
   }
 
   void onPaint(PaintEvent& ev) override {
