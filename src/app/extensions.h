@@ -10,14 +10,11 @@
 #pragma once
 
 #include "obs/signal.h"
+#include "render/dithering_matrix.h"
 
 #include <map>
 #include <string>
 #include <vector>
-
-namespace render {
-  class DitheringMatrix;
-}
 
 namespace app {
 
@@ -50,19 +47,18 @@ namespace app {
 
     class DitheringMatrixInfo {
     public:
-      DitheringMatrixInfo() : m_matrix(nullptr) { }
+      DitheringMatrixInfo();
       DitheringMatrixInfo(const std::string& path,
-                          const std::string& name)
-        : m_path(path), m_name(name), m_matrix(nullptr) { }
+                          const std::string& name);
 
       const std::string& name() const { return m_name; }
       const render::DitheringMatrix& matrix() const;
-      void destroyMatrix();
 
     private:
       std::string m_path;
       std::string m_name;
-      mutable render::DitheringMatrix* m_matrix;
+      mutable render::DitheringMatrix m_matrix;
+      mutable bool m_loaded = false;
     };
 
     Extension(const std::string& path,

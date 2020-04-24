@@ -197,19 +197,24 @@ void write_json_file(const std::string& path, const json11::Json& json)
 //////////////////////////////////////////////////////////////////////
 // Extension
 
-const render::DitheringMatrix& Extension::DitheringMatrixInfo::matrix() const
+Extension::DitheringMatrixInfo::DitheringMatrixInfo()
 {
-  if (!m_matrix) {
-    m_matrix = new render::DitheringMatrix;
-    load_dithering_matrix_from_sprite(m_path, *m_matrix);
-  }
-  return *m_matrix;
 }
 
-void Extension::DitheringMatrixInfo::destroyMatrix()
+Extension::DitheringMatrixInfo::DitheringMatrixInfo(const std::string& path,
+                                                    const std::string& name)
+  : m_path(path)
+  , m_name(name)
 {
-  if (m_matrix)
-    delete m_matrix;
+}
+
+const render::DitheringMatrix& Extension::DitheringMatrixInfo::matrix() const
+{
+  if (!m_loaded) {
+    m_loaded = true;
+    load_dithering_matrix_from_sprite(m_path, m_matrix);
+  }
+  return m_matrix;
 }
 
 Extension::Extension(const std::string& path,
@@ -234,9 +239,6 @@ Extension::Extension(const std::string& path,
 
 Extension::~Extension()
 {
-  // Delete all matrices
-  for (auto& it : m_ditheringMatrices)
-    it.second.destroyMatrix();
 }
 
 void Extension::executeInitActions()
@@ -278,7 +280,7 @@ void Extension::addDitheringMatrix(const std::string& id,
                                    const std::string& name)
 {
   DitheringMatrixInfo info(path, name);
-  m_ditheringMatrices[id] = info;
+  m_ditheringMatrices[id] = std::move(info);
   updateCategory(Category::DitheringMatrices);
 }
 
