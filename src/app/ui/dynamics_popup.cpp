@@ -94,8 +94,6 @@ private:
     g->fillRect(bgcolor, rc);
 
     rc.shrink(border());
-    const int minX = this->minX();
-    const int maxX = this->maxX();
     rc = clientBounds();
 
     // Draw customized background
@@ -117,6 +115,8 @@ private:
       theme->drawRect(g, rc, nw.get());
     }
 
+    const int minX = this->minX();
+    const int maxX = this->maxX();
     const int sensorW = float(rc.w)*m_sensorValue;
 
     // Draw background
@@ -143,7 +143,7 @@ private:
 
       case kMouseDownMessage: {
         auto mouseMsg = static_cast<MouseMessage*>(msg);
-        const int u = mouseMsg->position().x - origin().x;
+        const int u = mouseMsg->position().x - (origin().x+border().left()+3*guiscale());
         const int minX = this->minX();
         const int maxX = this->maxX();
         if (ABS(u-minX) <
@@ -190,11 +190,15 @@ private:
 
   int minX() const {
     gfx::Rect rc = clientBounds();
+    rc.shrink(border());
+    rc.shrink(gfx::Border(3, 0, 3, 1) * guiscale());
     return rc.x + float(rc.w)*m_minThreshold;
   }
 
   int maxX() const {
     gfx::Rect rc = clientBounds();
+    rc.shrink(border());
+    rc.shrink(gfx::Border(3, 0, 3, 1) * guiscale());
     return rc.x + float(rc.w)*m_maxThreshold;
   }
 
