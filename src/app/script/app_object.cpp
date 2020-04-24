@@ -331,6 +331,7 @@ int App_useTool(lua_State* L)
       tools::Pointer pointer(
         pt,
         // TODO configurable params
+        tools::Vec2(0.0f, 0.0f),
         tools::Pointer::Button::Left,
         tools::Pointer::Type::Unknown,
         0.0f);

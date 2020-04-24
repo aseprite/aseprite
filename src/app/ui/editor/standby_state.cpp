@@ -674,6 +674,7 @@ bool StandbyState::checkStartDrawingStraightLine(Editor* editor,
                         DrawingType::LineFreehand,
                         tools::Pointer(
                           editor->document()->lastDrawingPoint(),
+                          tools::Vec2(0.0f, 0.0f),
                           pointerButton,
                           msg ? msg->pointerType(): PointerType::Unknown,
                           msg ? msg->pressure(): 0.0f));
@@ -682,6 +683,7 @@ bool StandbyState::checkStartDrawingStraightLine(Editor* editor,
         tools::Pointer(
           editor->screenToEditor(msg ? msg->position():
                                        ui::get_mouse_position()),
+          tools::Vec2(0.0f, 0.0f),
           pointerButton,
           msg ? msg->pointerType(): tools::Pointer::Type::Unknown,
           msg ? msg->pressure(): 0.0f));

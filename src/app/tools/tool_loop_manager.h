@@ -12,7 +12,6 @@
 #include "app/tools/dynamics.h"
 #include "app/tools/pointer.h"
 #include "app/tools/stroke.h"
-#include "base/time.h"
 #include "doc/brush.h"
 #include "gfx/point.h"
 #include "gfx/region.h"
@@ -85,9 +84,6 @@ private:
   ToolLoop* m_toolLoop;
   Stroke m_stroke;
   Pointer m_lastPointer;
-  gfx::Point m_oldPoint;
-  gfx::Point m_velocity;
-  base::tick_t m_lastPointerT;
   gfx::Region m_dirtyArea;
   gfx::Region m_nextDirtyArea;
   doc::Brush m_brush0;

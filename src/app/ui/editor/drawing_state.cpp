@@ -80,6 +80,7 @@ void DrawingState::initToolLoop(Editor* editor,
 
   ASSERT(!m_toolLoopManager->isCanceled());
 
+  m_velocity.reset();
   m_lastPointer = pointer;
   m_toolLoopManager->prepareLoop(pointer);
   m_toolLoopManager->pressButton(pointer);
@@ -110,7 +111,8 @@ bool DrawingState::onMouseDown(Editor* editor, MouseMessage* msg)
   if (!editor->hasCapture())
     editor->captureMouse();
 
-  tools::Pointer pointer = pointer_from_msg(editor, msg);
+  tools::Pointer pointer = pointer_from_msg(editor, msg,
+                                            m_velocity.velocity());
   m_lastPointer = pointer;
 
   // Check if this drawing state was started with a Shift+Pencil tool
@@ -165,7 +167,8 @@ bool DrawingState::onMouseUp(Editor* editor, MouseMessage* msg)
       m_type == DrawingType::SelectTiles ||
       (editor->getToolLoopModifiers() != tools::ToolLoopModifiers::kReplaceSelection &&
        editor->getToolLoopModifiers() != tools::ToolLoopModifiers::kIntersectSelection)) {
-    m_lastPointer = pointer_from_msg(editor, msg);
+    m_lastPointer = pointer_from_msg(editor, msg,
+                                     m_velocity.velocity());
 
     // Notify the release of the mouse button to the tool loop
     // manager. This is the correct way to say "the user finishes the
@@ -206,11 +209,15 @@ bool DrawingState::onMouseMove(Editor* editor, MouseMessage* msg)
   base::ScopedValue<bool> disableScroll(m_processScrollChange,
                                         false, m_processScrollChange);
 
+  // Update velocity sensor.
+  m_velocity.updateWithScreenPoint(msg->position());
+
   // The autoScroll() function controls the "infinite scroll" when we
   // touch the viewport borders.
   gfx::Point mousePos = editor->autoScroll(msg, AutoScroll::MouseDir);
   handleMouseMovement(
     tools::Pointer(editor->screenToEditor(mousePos),
+                   m_velocity.velocity(),
                    button_from_msg(msg),
                    msg->pointerType(),
                    msg->pressure()));
@@ -269,8 +276,13 @@ bool DrawingState::onScrollChange(Editor* editor)
 {
   if (m_processScrollChange) {
     gfx::Point mousePos = ui::get_mouse_position();
+
+    // Update velocity sensor.
+    m_velocity.updateWithScreenPoint(mousePos); // TODO add scroll as velocity?
+
     handleMouseMovement(
       tools::Pointer(editor->screenToEditor(mousePos),
+                     m_velocity.velocity(),
                      m_lastPointer.button(),
                      tools::Pointer::Type::Unknown,
                      0.0f));

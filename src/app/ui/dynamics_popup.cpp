@@ -24,7 +24,6 @@
 #include "dynamics.xml.h"
 
 #include <algorithm>
-#include <cmath>
 
 namespace app {
 
@@ -367,13 +366,9 @@ bool DynamicsPopup::onProcessMessage(Message* msg)
       manager()->removeMessageFilter(kMouseMoveMessage, this);
       break;
 
-    case kMouseEnterMessage: {
-      auto mouseMsg = static_cast<MouseMessage*>(msg);
-      m_lastPos = mouseMsg->position();
-      m_velocity = gfx::Point(0, 0);
-      m_lastPointerT = base::current_tick();
+    case kMouseEnterMessage:
+      m_velocity.reset();
       break;
-    }
 
     case kMouseMoveMessage: {
       auto mouseMsg = static_cast<MouseMessage*>(msg);
@@ -386,22 +381,12 @@ bool DynamicsPopup::onProcessMessage(Message* msg)
       }
 
       if (m_dynamics->velocityPlaceholder()->isVisible()) {
-        // TODO merge this with ToolLoopManager::getSpriteStrokePt() and
-        //                      ToolLoopManager::adjustPointWithDynamics()
-        const base::tick_t t = base::current_tick();
-        const base::tick_t dt = t - m_lastPointerT;
-        m_lastPointerT = t;
+        m_velocity.updateWithScreenPoint(mouseMsg->position());
 
-        float a = base::clamp(float(dt) / 50.0f, 0.0f, 1.0f);
-
-        gfx::Point newVelocity(mouseMsg->position() - m_lastPos);
-        m_velocity.x = (1.0f-a)*m_velocity.x + a*newVelocity.x;
-        m_velocity.y = (1.0f-a)*m_velocity.y + a*newVelocity.y;
-        m_lastPos = mouseMsg->position();
-
-        float v = float(std::sqrt(m_velocity.x*m_velocity.x +
-                                  m_velocity.y*m_velocity.y)) / 32.0f; // TODO 32 should be configurable
+        float v = m_velocity.velocity().magnitude()
+          / tools::VelocitySensor::kScreenPixelsForFullVelocity;
         v = base::clamp(v, 0.0f, 1.0f);
+
         m_velocityTweaks->setSensorValue(v);
       }
       break;

@@ -19,6 +19,7 @@
 #include "app/tools/point_shape.h"
 #include "app/tools/symmetry.h"
 #include "app/tools/tool_loop.h"
+#include "app/tools/velocity.h"
 #include "base/clamp.h"
 #include "doc/brush.h"
 #include "doc/image.h"
@@ -367,28 +368,10 @@ void ToolLoopManager::calculateDirtyArea(const Strokes& strokes)
 Stroke::Pt ToolLoopManager::getSpriteStrokePt(const Pointer& pointer,
                                               const bool firstPoint)
 {
-  const base::tick_t t = base::current_tick();
-  const base::tick_t dt = t - m_lastPointerT;
-  m_lastPointerT = t;
-
   // Convert the screen point to a sprite point
   Stroke::Pt spritePoint = pointer.point();
   spritePoint.size = m_brush0.size();
   spritePoint.angle = m_brush0.angle();
-
-  // Calculate the velocity (new sprite point - old sprite point)
-  gfx::Point newVelocity;
-  if (firstPoint)
-    m_velocity = newVelocity = gfx::Point(0, 0);
-  else {
-    newVelocity.x = (spritePoint.x - m_oldPoint.x);
-    newVelocity.y = (spritePoint.y - m_oldPoint.y);
-    float a = base::clamp(float(dt) / 50.0f, 0.0f, 1.0f);
-    m_velocity.x = (1.0f-a)*m_velocity.x + a*newVelocity.x;
-    m_velocity.y = (1.0f-a)*m_velocity.y + a*newVelocity.y;
-  }
-  m_oldPoint.x = spritePoint.x;
-  m_oldPoint.y = spritePoint.y;
 
   // Center the input to some grid point if needed
   snapToGrid(spritePoint);
@@ -399,7 +382,8 @@ Stroke::Pt ToolLoopManager::getSpriteStrokePt(const Pointer& pointer,
   }
 
   // Inform the original velocity vector to the ToolLoop
-  m_toolLoop->setSpeed(newVelocity);
+  m_toolLoop->setSpeed(gfx::Point(pointer.velocity().x,
+                                  pointer.velocity().y));
 
   return spritePoint;
 }
@@ -441,8 +425,7 @@ void ToolLoopManager::adjustPointWithDynamics(const Pointer& pointer,
   p = base::clamp(p, 0.0f, 1.0f);
 
   // Velocity
-  float v = float(std::sqrt(m_velocity.x*m_velocity.x +
-                            m_velocity.y*m_velocity.y)) / 32.0f; // TODO 32 should be configurable
+  float v = pointer.velocity().magnitude() / VelocitySensor::kScreenPixelsForFullVelocity;
   v = base::clamp(v, 0.0f, 1.0f);
   if (v < m_dynamics.minVelocityThreshold) {
     v = 0.0f;

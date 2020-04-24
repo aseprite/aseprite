@@ -589,6 +589,7 @@ add_library(app-lib
   tools/symmetries.cpp
   tools/tool_box.cpp
   tools/tool_loop_manager.cpp
+  tools/velocity.cpp
   transaction.cpp
   transformation.cpp
   ui/editor/tool_loop_impl.cpp

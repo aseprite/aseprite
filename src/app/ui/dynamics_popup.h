@@ -9,6 +9,7 @@
 #pragma once
 
 #include "app/tools/dynamics.h"
+#include "app/tools/velocity.h"
 #include "app/ui/button_set.h"
 #include "base/time.h"
 #include "doc/brush.h"
@@ -47,8 +48,7 @@ namespace app {
     gfx::Region m_hotRegion;
     MinMaxSlider* m_pressureTweaks;
     MinMaxSlider* m_velocityTweaks;
-    gfx::Point m_lastPos, m_velocity;
-    base::tick_t m_lastPointerT;
+    tools::VelocitySensor m_velocity;
   };
 
 } // namespace app
