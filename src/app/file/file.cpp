@@ -95,8 +95,6 @@ Doc* load_document(Context* context, const std::string& filename)
   }
 
   Doc* document = fop->releaseDocument();
-  fop.release();
-
   if (document && context)
     document->setContext(context);
 
