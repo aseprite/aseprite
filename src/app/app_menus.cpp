@@ -382,6 +382,11 @@ void AppMenus::reload()
     if (scriptsMenu) {
       delete scriptsMenu;
       delete m_rootMenu->findItemById("scripts_menu_separator");
+
+      // Remove scripts group
+      auto it = m_groups.find("file_scripts");
+      if (it != m_groups.end())
+        m_groups.erase(it);
     }
 #endif
   }
