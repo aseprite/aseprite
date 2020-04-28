@@ -260,14 +260,12 @@ void OctreeMap::feedWithImage(const Image* image,
 
 int OctreeMap::mapColor(color_t rgba) const
 {
-  if (rgba_geta(rgba) == 0 && m_maskColor >= 0)
-    return m_maskColor;
-  else if (m_root.children())
+  if (m_root.children())
     return m_root.mapColor(rgba_getr(rgba),
                            rgba_getg(rgba),
                            rgba_getb(rgba), 0);
   else
-    return 0;
+    return -1;
 }
 
 void OctreeMap::regenerateMap(const Palette* palette, const int maskIndex)
@@ -284,17 +282,30 @@ void OctreeMap::regenerateMap(const Palette* palette, const int maskIndex)
 
   m_root = OctreeNode();
   m_leavesVector.clear();
-  for (int i=0; i<palette->size(); i++)
+  m_maskIndex = maskIndex;
+  int maskColorBestFitIndex;
+  if (maskIndex < 0) {
+    m_maskColor = 0x00ffffff;
+    maskColorBestFitIndex = -1;
+  }
+  else {
+    m_maskColor = palette->getEntry(maskIndex);
+    maskColorBestFitIndex = palette->findBestfit(rgba_getr(m_maskColor),
+                                                 rgba_getg(m_maskColor),
+                                                 rgba_getb(m_maskColor), 255, maskIndex);
+  }
+
+  for (int i=0; i<palette->size(); i++) {
+    if (i == maskIndex) {
+      m_root.addColor(palette->entry(i), 0, &m_root, maskColorBestFitIndex, 8);
+      continue;
+    }
     m_root.addColor(palette->entry(i), 0, &m_root, i, 8);
+  }
   m_root.fillOrphansNodes(palette, 0, 0);
 
   m_palette = palette;
   m_modifications = palette->getModifications();
-  m_maskIndex = maskIndex;
-  if (maskIndex < 0)
-    m_maskColor = 0x00ffffff;
-  else
-    m_maskColor = palette->getEntry(maskIndex);
 }
 
 } // namespace doc
