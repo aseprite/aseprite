@@ -502,6 +502,19 @@ int Dialog_entry(lua_State* L)
   }
 
   auto widget = new ui::Entry(4096, text.c_str());
+
+  if (lua_istable(L, 2)) {
+    int type = lua_getfield(L, 2, "onchange");
+    if (type == LUA_TFUNCTION) {
+      Dialog_connect_signal(
+        L, 1, widget->Change,
+        [](lua_State* L){
+          // Do nothing
+        });
+    }
+    lua_pop(L, 1);
+  }
+
   return Dialog_add_widget(L, widget);
 }
 
@@ -520,6 +533,16 @@ int Dialog_number(lua_State* L)
     type = lua_getfield(L, 2, "decimals");
     if (type != LUA_TNIL) {
       widget->setDecimals(lua_tointegerx(L, -1, nullptr));
+    }
+    lua_pop(L, 1);
+
+    type = lua_getfield(L, 2, "onchange");
+    if (type == LUA_TFUNCTION) {
+      Dialog_connect_signal(
+        L, 1, widget->Change,
+        [](lua_State* L){
+          // Do nothing
+        });
     }
     lua_pop(L, 1);
   }
@@ -554,6 +577,29 @@ int Dialog_slider(lua_State* L)
   }
 
   auto widget = new ui::Slider(min, max, value);
+
+  if (lua_istable(L, 2)) {
+    int type = lua_getfield(L, 2, "onchange");
+    if (type == LUA_TFUNCTION) {
+      Dialog_connect_signal(
+        L, 1, widget->Change,
+        [](lua_State* L){
+          // Do nothing
+        });
+    }
+    lua_pop(L, 1);
+
+    type = lua_getfield(L, 2, "onrelease");
+    if (type == LUA_TFUNCTION) {
+      Dialog_connect_signal(
+        L, 1, widget->SliderReleased,
+        [](lua_State* L){
+          // Do nothing
+        });
+    }
+    lua_pop(L, 1);
+  }
+
   return Dialog_add_widget(L, widget);
 }
 
@@ -580,6 +626,16 @@ int Dialog_combobox(lua_State* L)
         if (index >= 0)
           widget->setSelectedItemIndex(index);
       }
+    }
+    lua_pop(L, 1);
+
+    type = lua_getfield(L, 2, "onchange");
+    if (type == LUA_TFUNCTION) {
+      Dialog_connect_signal(
+        L, 1, widget->Change,
+        [](lua_State* L){
+          // Do nothing
+        });
     }
     lua_pop(L, 1);
   }
