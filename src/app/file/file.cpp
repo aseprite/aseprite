@@ -1004,7 +1004,9 @@ void FileOp::postLoad()
 
 void FileOp::setLoadedFormatOptions(const FormatOptionsPtr& opts)
 {
-  ASSERT(!m_formatOptions);
+  // This assert can fail when we load a sequence of files.
+  // TODO what we should do, keep the first or the latest format options?
+  //ASSERT(!m_formatOptions);
   m_formatOptions = opts;
 }
 
