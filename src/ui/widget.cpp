@@ -171,9 +171,13 @@ void Widget::setBgColor(gfx::Color color)
   m_bgColor = color;
   onSetBgColor();
 
+#ifdef _DEBUG
   if (m_style) {
-    LOG(WARNING) << "Warning setting bgColor to a widget with style\n";
+    LOG(WARNING) << "UI: " << typeid(*this).name()
+                 << ": Warning setting bgColor to a widget with style ("
+                 << m_style->id() << ")\n";
   }
+#endif
 }
 
 void Widget::setTheme(Theme* theme)
@@ -701,14 +705,26 @@ void Widget::setBorder(const Border& br)
 {
   m_border = br;
 
+#ifdef _DEBUG
   if (m_style) {
-    LOG(WARNING) << "Warning setting border to a widget with style\n";
+    LOG(WARNING) << "UI: " << typeid(*this).name()
+                 << ": Warning setting border to a widget with style ("
+                 << m_style->id() << ")\n";
   }
+#endif
 }
 
 void Widget::setChildSpacing(int childSpacing)
 {
   m_childSpacing = childSpacing;
+
+#ifdef _DEBUG
+  if (m_style) {
+    LOG(WARNING) << "UI: " << typeid(*this).name()
+                 << ": Warning setting child spacing to a widget with style ("
+                 << m_style->id() << ")\n";
+  }
+#endif
 }
 
 void Widget::noBorderNoChildSpacing()
@@ -716,9 +732,13 @@ void Widget::noBorderNoChildSpacing()
   m_border = gfx::Border(0, 0, 0, 0);
   m_childSpacing = 0;
 
+#ifdef _DEBUG
   if (m_style) {
-    LOG(WARNING) << "Warning setting border to a widget with style\n";
+    LOG(WARNING) << "UI: " << typeid(*this).name()
+                 << ": Warning setting no border to a widget with style ("
+                 << m_style->id() << ")\n";
   }
+#endif
 }
 
 void Widget::getRegion(gfx::Region& region)
