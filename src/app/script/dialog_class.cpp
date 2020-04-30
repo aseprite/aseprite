@@ -873,7 +873,82 @@ int Dialog_modify(lua_State* L)
     }
     lua_pop(L, 1);
 
-    // TODO slider value? combobox option(s)? color? colors (shade)?)
+    type = lua_getfield(L, 2, "decimals");
+    if (type != LUA_TNIL) {
+      if (auto expr = dynamic_cast<ExprEntry*>(widget)) {
+        expr->setDecimals(lua_tointegerx(L, -1, nullptr));
+      }
+    }
+    lua_pop(L, 1);
+
+    type = lua_getfield(L, 2, "min");
+    if (type != LUA_TNIL) {
+      if (auto slider = dynamic_cast<ui::Slider*>(widget)) {
+        slider->setRange(lua_tointegerx(L, -1, nullptr), slider->getMaxValue());
+      }
+    }
+    lua_pop(L, 1);
+
+    type = lua_getfield(L, 2, "max");
+    if (type != LUA_TNIL) {
+      if (auto slider = dynamic_cast<ui::Slider*>(widget)) {
+        slider->setRange(slider->getMinValue(), lua_tointegerx(L, -1, nullptr));
+      }
+    }
+    lua_pop(L, 1);
+
+    type = lua_getfield(L, 2, "value");
+    if (type != LUA_TNIL) {
+      if (auto slider = dynamic_cast<ui::Slider*>(widget)) {
+        slider->setValue(lua_tointegerx(L, -1, nullptr));
+      }
+    }
+    lua_pop(L, 1);
+
+    type = lua_getfield(L, 2, "option");
+    if (auto p = lua_tostring(L, -1)) {
+      if (auto combobox = dynamic_cast<ui::ComboBox*>(widget)) {
+        int index = combobox->findItemIndex(p);
+        if (index >= 0)
+          combobox->setSelectedItemIndex(index);
+      }
+    }
+    lua_pop(L, 1);
+
+    type = lua_getfield(L, 2, "color");
+    if (type != LUA_TNIL) {
+      if (auto colorButton = dynamic_cast<ColorButton*>(widget)) {
+        colorButton->setColor(convert_args_into_color(L, -1));
+      }
+    }
+    lua_pop(L, 1);
+
+    type = lua_getfield(L, 2, "colors");
+    if (type != LUA_TNIL) {
+      if (auto colorShade = dynamic_cast<ColorShades*>(widget)) {
+        Shade shade;
+        if (lua_istable(L, -1)) {
+          lua_pushnil(L);
+          while (lua_next(L, -2) != 0) {
+            app::Color color = convert_args_into_color(L, -1);
+            shade.push_back(color);
+            lua_pop(L, 1);
+          }
+        }
+        colorShade->setShade(shade);
+      }
+    }
+    lua_pop(L, 1);
+
+    type = lua_getfield(L, 2, "filename");
+    if (auto p = lua_tostring(L, -1)) {
+      if (auto filenameField = dynamic_cast<FilenameField*>(widget)) {
+        filenameField->setFilename(p);
+      }
+    }
+    lua_pop(L, 1);
+
+    // TODO combobox options? shades mode? file title / open / save / filetypes? on* events?
 
     if (relayout) {
       dlg->window.layout();
