@@ -176,8 +176,11 @@ public:
     getItem(0)->setIcon(part, mono);
   }
 
-  void showPopup() {
-    openPopup();
+  void switchPopup() {
+    if (!m_popupWindow.isVisible())
+      openPopup();
+    else
+      closePopup();
   }
 
   void showPopupAndHighlightSlot(int slot) {
@@ -188,11 +191,7 @@ public:
 protected:
   void onItemChange(Item* item) override {
     ButtonSet::onItemChange(item);
-
-    if (!m_popupWindow.isVisible())
-      openPopup();
-    else
-      closePopup();
+    switchPopup();
   }
 
   void onSizeHint(SizeHintEvent& ev) override {
@@ -982,7 +981,13 @@ public:
     addItem(SkinTheme::instance()->parts.dynamics());
   }
 
-  void showPopup() {
+  void switchPopup() {
+    if (m_popup &&
+        m_popup->isVisible()) {
+      m_popup->closeWindow(nullptr);
+      return;
+    }
+
     if (!m_popup) {
       m_popup.reset(new DynamicsPopup(this));
       m_popup->Close.connect([this](CloseEvent&){ deselectItems(); });
@@ -1010,7 +1015,7 @@ private:
 
   void onItemChange(Item* item) override {
     ButtonSet::onItemChange(item);
-    showPopup();
+    switchPopup();
   }
 
   void onInitTheme(InitThemeEvent& ev) override {
@@ -2258,13 +2263,13 @@ void ContextBar::registerCommands()
 void ContextBar::showBrushes()
 {
   if (m_brushType->isVisible())
-    m_brushType->showPopup();
+    m_brushType->switchPopup();
 }
 
 void ContextBar::showDynamics()
 {
   if (m_dynamics->isVisible())
-    m_dynamics->showPopup();
+    m_dynamics->switchPopup();
 }
 
 } // namespace app
