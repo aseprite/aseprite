@@ -215,20 +215,6 @@ not_used:;
   return Widget::onProcessMessage(msg);
 }
 
-void Slider::onSizeHint(SizeHintEvent& ev)
-{
-  int min_w = font()->textLength(convertValueToText(m_min));
-  int max_w = font()->textLength(convertValueToText(m_max));
-
-  int w = std::max(min_w, max_w);
-  int h = textHeight();
-
-  w += border().width();
-  h += border().height();
-
-  ev.setSizeHint(w, h);
-}
-
 void Slider::onPaint(PaintEvent& ev)
 {
   theme()->paintSlider(ev);

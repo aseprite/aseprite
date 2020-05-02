@@ -958,5 +958,11 @@
             <icon part="aseprite_face_mouse" state="mouse" />
             <icon part="aseprite_face_pushed" state="mouse selected" />
         </style>
+        <style id="slider" border-top="4" border-bottom="5">
+          <background part="slider_empty" />
+          <background part="slider_empty_focused" state="focus" />
+          <text color="slider_empty_text" align="center middle" />
+          <text color="slider_empty_text" align="center middle" state="focus" y="1" />
+        </style>
     </styles>
 </theme>
