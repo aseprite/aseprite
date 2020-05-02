@@ -23,8 +23,8 @@ namespace tools {
     DynamicSensor size = DynamicSensor::Static;
     DynamicSensor angle = DynamicSensor::Static;
     DynamicSensor gradient = DynamicSensor::Static;
-    int maxSize = 0;
-    int maxAngle = 0;
+    int minSize = 0;
+    int minAngle = 0;
     render::DitheringMatrix ditheringMatrix;
     float minPressureThreshold = 0.0f, maxPressureThreshold = 1.0f;
     float minVelocityThreshold = 0.0f, maxVelocityThreshold = 1.0f;

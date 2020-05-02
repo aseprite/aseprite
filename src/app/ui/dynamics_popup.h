@@ -29,13 +29,15 @@ namespace app {
     public:
       virtual ~Delegate() { }
       virtual doc::BrushRef getActiveBrush() = 0;
+      virtual void setMaxSize(int size) = 0;
+      virtual void setMaxAngle(int angle) = 0;
     };
     DynamicsPopup(Delegate* delegate);
 
     tools::DynamicsOptions getDynamics() const;
 
   private:
-    class MinMaxSlider;
+    class ThresholdSlider;
 
     void setCheck(int i, bool state);
     bool isCheck(int i) const;
@@ -46,8 +48,8 @@ namespace app {
     gen::Dynamics* m_dynamics;
     DitheringSelector* m_ditheringSel;
     gfx::Region m_hotRegion;
-    MinMaxSlider* m_pressureTweaks;
-    MinMaxSlider* m_velocityTweaks;
+    ThresholdSlider* m_pressureThreshold;
+    ThresholdSlider* m_velocityThreshold;
     tools::VelocitySensor m_velocity;
   };
 

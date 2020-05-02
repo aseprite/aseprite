@@ -104,7 +104,7 @@ void ToolLoopManager::pressButton(const Pointer& pointer)
     return;
   }
 
-  Stroke::Pt spritePoint = getSpriteStrokePt(pointer, true);
+  Stroke::Pt spritePoint = getSpriteStrokePt(pointer);
   m_toolLoop->getController()->pressButton(m_toolLoop, m_stroke, spritePoint);
 
   std::string statusText;
@@ -134,7 +134,7 @@ bool ToolLoopManager::releaseButton(const Pointer& pointer)
   if (isCanceled())
     return false;
 
-  Stroke::Pt spritePoint = getSpriteStrokePt(pointer, false);
+  Stroke::Pt spritePoint = getSpriteStrokePt(pointer);
   bool res = m_toolLoop->getController()->releaseButton(m_stroke, spritePoint);
 
   if (!res && (m_toolLoop->getTracePolicy() == TracePolicy::Last ||
@@ -156,7 +156,7 @@ void ToolLoopManager::movement(const Pointer& pointer)
   if (isCanceled())
     return;
 
-  Stroke::Pt spritePoint = getSpriteStrokePt(pointer, false);
+  Stroke::Pt spritePoint = getSpriteStrokePt(pointer);
   m_toolLoop->getController()->movement(m_toolLoop, m_stroke, spritePoint);
 
   std::string statusText;
@@ -365,8 +365,7 @@ void ToolLoopManager::calculateDirtyArea(const Strokes& strokes)
   }
 }
 
-Stroke::Pt ToolLoopManager::getSpriteStrokePt(const Pointer& pointer,
-                                              const bool firstPoint)
+Stroke::Pt ToolLoopManager::getSpriteStrokePt(const Pointer& pointer)
 {
   // Convert the screen point to a sprite point
   Stroke::Pt spritePoint = pointer.point();
@@ -445,26 +444,25 @@ void ToolLoopManager::adjustPointWithDynamics(const Pointer& pointer,
 
   switch (m_dynamics.size) {
     case DynamicSensor::Pressure:
-      if (hasP) size = (1.0f-p)*size + p*m_dynamics.maxSize;
+      if (hasP) size = (1.0f-p)*m_dynamics.minSize + p*size;
       break;
     case DynamicSensor::Velocity:
-      size = (1.0f-v)*size + v*m_dynamics.maxSize;
+      size = (1.0f-v)*m_dynamics.minSize + v*size;
       break;
   }
 
   switch (m_dynamics.angle) {
     case DynamicSensor::Pressure:
-      if (hasP) angle = (1.0f-p)*angle + p*m_dynamics.maxAngle;
+      if (hasP) angle = (1.0f-p)*m_dynamics.minAngle + p*angle;
       break;
     case DynamicSensor::Velocity:
-      angle = (1.0f-v)*angle + v*m_dynamics.maxAngle;
+      angle = (1.0f-v)*m_dynamics.minAngle + v*angle;
       break;
   }
 
   switch (m_dynamics.gradient) {
     case DynamicSensor::Pressure:
-      if (hasP)
-        pt.gradient = p;
+      pt.gradient = p;
       break;
     case DynamicSensor::Velocity:
       pt.gradient = v;

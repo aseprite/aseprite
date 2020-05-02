@@ -74,8 +74,7 @@ public:
 private:
   void doLoopStep(bool lastStep);
   void snapToGrid(Stroke::Pt& pt);
-  Stroke::Pt getSpriteStrokePt(const Pointer& pointer,
-                               const bool firstPoint);
+  Stroke::Pt getSpriteStrokePt(const Pointer& pointer);
   bool useDynamics() const;
   void adjustPointWithDynamics(const Pointer& pointer, Stroke::Pt& pt);
 

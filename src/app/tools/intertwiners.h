@@ -111,7 +111,7 @@ public:
     if (stroke.size() == 0)
       return;
     else if (stroke.size() == 1) {
-      doPointshapePoint(stroke[0].x, stroke[0].y, loop);
+      doPointshapeStrokePt(stroke[0], loop);
     }
     else {
       Stroke pts;

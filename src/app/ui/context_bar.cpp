@@ -259,7 +259,7 @@ private:
 class ContextBar::BrushAngleField : public IntEntry {
 public:
   BrushAngleField(BrushTypeField* brushType)
-    : IntEntry(0, 180)
+    : IntEntry(-180, 180)
     , m_brushType(brushType) {
     setSuffix("\xc2\xb0");
   }
@@ -1011,6 +1011,16 @@ private:
   // DynamicsPopup::Delegate impl
   doc::BrushRef getActiveBrush() override {
     return m_ctxBar->activeBrush();
+  }
+
+  void setMaxSize(int size) override {
+    Tool* tool = App::instance()->activeTool();
+    Preferences::instance().tool(tool).brush.size(size);
+  }
+
+  void setMaxAngle(int angle) override {
+    Tool* tool = App::instance()->activeTool();
+    Preferences::instance().tool(tool).brush.angle(angle);
   }
 
   void onItemChange(Item* item) override {

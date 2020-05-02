@@ -69,7 +69,8 @@ struct app::skin::SkinTheme::BackwardCompatibility {
   }
   void createMissingStyles(SkinTheme* theme) {
     if (!hasSliderStyle &&
-        theme->styles.slider()) {
+        theme->styles.slider() &&
+        theme->styles.miniSlider()) {
       // Old slider style
       ui::Style style(nullptr);
       os::Font* font = theme->getDefaultFont();
@@ -86,6 +87,7 @@ struct app::skin::SkinTheme::BackwardCompatibility {
                     part->bitmapS()->height()-1*guiscale()+h/2));
 
       *theme->styles.slider() = style;
+      *theme->styles.miniSlider() = style;
     }
   }
 };

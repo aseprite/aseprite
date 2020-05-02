@@ -49,10 +49,10 @@ enum {
 
 } // anonymous namespace
 
-// Special slider to set min/max values of a sensor
-class DynamicsPopup::MinMaxSlider : public Widget  {
+// Special slider to set the min/max threshold values of a sensor
+class DynamicsPopup::ThresholdSlider : public Widget  {
 public:
-  MinMaxSlider() {
+  ThresholdSlider() {
     setExpansive(true);
     initTheme();
   }
@@ -218,10 +218,18 @@ DynamicsPopup::DynamicsPopup(Delegate* delegate)
     [this](ButtonSet::Item* item){
       onValuesChange(item);
     });
+  m_dynamics->maxSize()->Change.connect(
+    [this]{
+      m_delegate->setMaxSize(m_dynamics->maxSize()->getValue());
+    });
+  m_dynamics->maxAngle()->Change.connect(
+    [this]{
+      m_delegate->setMaxAngle(m_dynamics->maxAngle()->getValue());
+    });
 
   m_dynamics->gradientPlaceholder()->addChild(m_ditheringSel);
-  m_dynamics->pressurePlaceholder()->addChild(m_pressureTweaks = new MinMaxSlider);
-  m_dynamics->velocityPlaceholder()->addChild(m_velocityTweaks = new MinMaxSlider);
+  m_dynamics->pressurePlaceholder()->addChild(m_pressureThreshold = new ThresholdSlider);
+  m_dynamics->velocityPlaceholder()->addChild(m_velocityThreshold = new ThresholdSlider);
   addChild(m_dynamics);
 
   onValuesChange(nullptr);
@@ -242,14 +250,14 @@ tools::DynamicsOptions DynamicsPopup::getDynamics() const
     (isCheck(GRADIENT_WITH_PRESSURE) ? tools::DynamicSensor::Pressure:
      isCheck(GRADIENT_WITH_VELOCITY) ? tools::DynamicSensor::Velocity:
                                        tools::DynamicSensor::Static);
-  opts.maxSize = m_dynamics->maxSize()->getValue();
-  opts.maxAngle = m_dynamics->maxAngle()->getValue();
+  opts.minSize = m_dynamics->minSize()->getValue();
+  opts.minAngle = m_dynamics->minAngle()->getValue();
   opts.ditheringMatrix = m_ditheringSel->ditheringMatrix();
 
-  opts.minPressureThreshold = m_pressureTweaks->minThreshold();
-  opts.maxPressureThreshold = m_pressureTweaks->maxThreshold();
-  opts.minVelocityThreshold = m_velocityTweaks->minThreshold();
-  opts.maxVelocityThreshold = m_velocityTweaks->maxThreshold();
+  opts.minPressureThreshold = m_pressureThreshold->minThreshold();
+  opts.maxPressureThreshold = m_pressureThreshold->maxThreshold();
+  opts.minVelocityThreshold = m_velocityThreshold->minThreshold();
+  opts.maxVelocityThreshold = m_velocityThreshold->maxThreshold();
 
   return opts;
 }
@@ -315,17 +323,28 @@ void DynamicsPopup::onValuesChange(ButtonSet::Item* item)
   const bool any = (needsSize || needsAngle || needsGradient);
   doc::BrushRef brush = m_delegate->getActiveBrush();
 
-  if (needsSize && !m_dynamics->maxSize()->isVisible()) {
-    m_dynamics->maxSize()->setValue(
-      base::clamp(std::max(2*brush->size(), 4), 1, 64));
+  if (needsSize && !m_dynamics->minSize()->isVisible()) {
+    m_dynamics->minSize()->setValue(1);
+
+    int maxSize = brush->size();
+    if (maxSize == 1) {
+      // If brush size == 1, we put it to 4 so the user has some size
+      // change by default.
+      maxSize = 4;
+      m_delegate->setMaxSize(maxSize);
+    }
+    m_dynamics->maxSize()->setValue(maxSize);
   }
-  m_dynamics->maxSizeLabel()->setVisible(needsSize);
+  m_dynamics->sizeLabel()->setVisible(needsSize);
+  m_dynamics->minSize()->setVisible(needsSize);
   m_dynamics->maxSize()->setVisible(needsSize);
 
-  if (needsAngle && !m_dynamics->maxAngle()->isVisible()) {
+  if (needsAngle && !m_dynamics->minAngle()->isVisible()) {
+    m_dynamics->minAngle()->setValue(brush->angle());
     m_dynamics->maxAngle()->setValue(brush->angle());
   }
-  m_dynamics->maxAngleLabel()->setVisible(needsAngle);
+  m_dynamics->angleLabel()->setVisible(needsAngle);
+  m_dynamics->minAngle()->setVisible(needsAngle);
   m_dynamics->maxAngle()->setVisible(needsAngle);
 
   m_dynamics->gradientLabel()->setVisible(needsGradient);
@@ -358,12 +377,14 @@ bool DynamicsPopup::onProcessMessage(Message* msg)
       m_hotRegion = gfx::Region(bounds());
       setHotRegion(m_hotRegion);
       manager()->addMessageFilter(kMouseMoveMessage, this);
+      manager()->addMessageFilter(kMouseDownMessage, this);
       disableFlags(IGNORE_MOUSE);
       break;
 
     case kCloseMessage:
       m_hotRegion.clear();
       manager()->removeMessageFilter(kMouseMoveMessage, this);
+      manager()->removeMessageFilter(kMouseDownMessage, this);
       break;
 
     case kMouseEnterMessage:
@@ -376,7 +397,7 @@ bool DynamicsPopup::onProcessMessage(Message* msg)
       if (mouseMsg->pointerType() == PointerType::Pen ||
           mouseMsg->pointerType() == PointerType::Eraser) {
         if (m_dynamics->pressurePlaceholder()->isVisible()) {
-          m_pressureTweaks->setSensorValue(mouseMsg->pressure());
+          m_pressureThreshold->setSensorValue(mouseMsg->pressure());
         }
       }
 
@@ -387,7 +408,18 @@ bool DynamicsPopup::onProcessMessage(Message* msg)
           / tools::VelocitySensor::kScreenPixelsForFullVelocity;
         v = base::clamp(v, 0.0f, 1.0f);
 
-        m_velocityTweaks->setSensorValue(v);
+        m_velocityThreshold->setSensorValue(v);
+      }
+      break;
+    }
+
+    case kMouseDownMessage: {
+      auto mouseMsg = static_cast<MouseMessage*>(msg);
+      auto picked = manager()->pick(mouseMsg->position());
+      if ((picked == nullptr) ||
+          (picked->window() != this &&
+           picked->window() != m_ditheringSel->getWindowWidget())) {
+        closeWindow(nullptr);
       }
       break;
     }

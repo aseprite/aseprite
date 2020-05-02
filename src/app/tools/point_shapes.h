@@ -82,8 +82,8 @@ public:
       if (m_hasDynamicGradient &&
           m_dynamics.ditheringMatrix.rows() == 1 &&
           m_dynamics.ditheringMatrix.cols() == 1) {
-        color_t a = m_primaryColor;
-        color_t b = m_secondaryColor;
+        color_t a = m_secondaryColor;
+        color_t b = m_primaryColor;
         const float t = pt.gradient;
         const float ti = 1.0f - pt.gradient;
         switch (loop->sprite()->pixelFormat()) {
@@ -146,8 +146,8 @@ public:
             loop->sprite()->pixelFormat(),
             m_dynamics.ditheringMatrix,
             pt.gradient,
-            m_primaryColor,
-            m_secondaryColor);
+            m_secondaryColor,
+            m_primaryColor);
           prepareInk = true;
         }
         m_lastGradientValue = pt.gradient;

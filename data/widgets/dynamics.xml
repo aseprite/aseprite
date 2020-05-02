@@ -25,14 +25,23 @@
     <grid id="options" columns="2" childspacing="0" expansive="true">
       <separator id="separator" text="@.max_point_value" horizontal="true" cell_hspan="2" />
 
-      <label id="max_size_label" text="@.size" style="mini_label" />
-      <slider id="max_size" value="64" min="1" max="64" cell_align="horizontal" />
+      <label id="size_label" text="@.size" style="mini_label" />
+      <slider id="min_size" value="1" min="1" max="64" cell_align="horizontal" style="mini_slider"
+              tooltip="@.min_size_tooltip" tooltip_dir="left" />
+      <boxfiller />
+      <slider id="max_size" value="64" min="1" max="64" cell_align="horizontal" style="mini_slider"
+              tooltip="@.max_size_tooltip" tooltip_dir="left" />
 
-      <label id="max_angle_label" text="@.angle" style="mini_label"  />
-      <slider id="max_angle" value="0" min="-180" max="+180" cell_align="horizontal" />
+      <label id="angle_label" text="@.angle" style="mini_label" />
+      <slider id="min_angle" value="0" min="-180" max="+180" cell_align="horizontal" style="mini_slider"
+              tooltip="@.min_angle_tooltip" tooltip_dir="left" />
+      <boxfiller />
+      <slider id="max_angle" value="0" min="-180" max="+180" cell_align="horizontal" style="mini_slider"
+              tooltip="@.max_angle_tooltip" tooltip_dir="left" />
 
       <label id="gradient_label" text="@.gradient" style="mini_label"  />
-      <hbox id="gradient_placeholder" />
+      <hbox id="gradient_placeholder" cell_vspan="2" />
+      <boxfiller />
 
       <separator id="separator2" text="@.sensors_tweaks" horizontal="true" cell_hspan="2" />
 
