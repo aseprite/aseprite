@@ -84,16 +84,6 @@ doc::Remap* ColorShades::createShadeRemap(bool left)
   return remap.release();
 }
 
-int ColorShades::size() const
-{
-  return int(m_shade.size());
-}
-
-Shade ColorShades::getShade() const
-{
-  return m_shade;
-}
-
 void ColorShades::setShade(const Shade& shade)
 {
   m_shade = shade;

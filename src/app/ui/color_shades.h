@@ -35,9 +35,9 @@ namespace app {
     void setMinColors(int minColors);
     void reverseShadeColors();
     doc::Remap* createShadeRemap(bool left);
-    int size() const;
+    int size() const { return int(m_shade.size()); }
 
-    Shade getShade() const;
+    const Shade& getShade() const { return m_shade; }
     void setShade(const Shade& shade);
 
     int getHotEntry() const { return m_hotIndex; }
