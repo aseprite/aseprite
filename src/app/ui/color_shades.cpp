@@ -74,12 +74,18 @@ doc::Remap* ColorShades::createShadeRemap(bool left)
     remap->map(i, i);
 
   if (left) {
-    for (int i=1; i<int(colors.size()); ++i)
-      remap->map(colors[i].getIndex(), colors[i-1].getIndex());
+    for (int i=1; i<int(colors.size()); ++i) {
+      int j = colors[i].getIndex();
+      if (j >= 0 && j < remap->size())
+        remap->map(j, colors[i-1].getIndex());
+    }
   }
   else {
-    for (int i=0; i<int(colors.size())-1; ++i)
-      remap->map(colors[i].getIndex(), colors[i+1].getIndex());
+    for (int i=0; i<int(colors.size())-1; ++i) {
+      int j = colors[i].getIndex();
+      if (j >= 0 && j < remap->size())
+        remap->map(j, colors[i+1].getIndex());
+    }
   }
   return remap.release();
 }
