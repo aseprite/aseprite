@@ -829,14 +829,14 @@ public:
     Editor* editor,
     tools::Tool* tool,
     tools::Ink* ink,
+    const BrushRef& brush,
     const app::Color& fgColor,
     const app::Color& bgColor,
     Image* image,
     const gfx::Point& celOrigin)
     : ToolLoopBase(editor, editor->getSite(),
                    tool, ink, tool->getController(tools::ToolLoop::Left),
-                   App::instance()->contextBar()->activeBrush(tool, ink),
-                   tools::ToolLoop::Left, fgColor, bgColor)
+                   brush, tools::ToolLoop::Left, fgColor, bgColor)
     , m_image(image)
   {
     m_celOrigin = celOrigin;
@@ -885,7 +885,9 @@ public:
 };
 
 tools::ToolLoop* create_tool_loop_preview(
-  Editor* editor, Image* image,
+  Editor* editor,
+  const doc::BrushRef& brush,
+  Image* image,
   const gfx::Point& celOrigin)
 {
   tools::Tool* tool = editor->getCurrentEditorTool();
@@ -911,7 +913,7 @@ tools::ToolLoop* create_tool_loop_preview(
   // Create the new tool loop
   try {
     return new PreviewToolLoopImpl(
-      editor, tool, ink,
+      editor, tool, ink, brush,
       fg, bg, image, celOrigin);
   }
   catch (const std::exception&) {

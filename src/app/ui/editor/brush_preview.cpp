@@ -251,7 +251,7 @@ void BrushPreview::show(const gfx::Point& screenPos)
     {
       std::unique_ptr<tools::ToolLoop> loop(
         create_tool_loop_preview(
-          m_editor, extraImage,
+          m_editor, brush, extraImage,
           extraCelBounds.origin()));
       if (loop) {
         loop->getInk()->prepareInk(loop.get());
