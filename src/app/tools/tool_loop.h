@@ -9,6 +9,7 @@
 #define APP_TOOLS_TOOL_LOOP_H_INCLUDED
 #pragma once
 
+#include "app/shade.h"
 #include "app/tools/dynamics.h"
 #include "app/tools/tool_loop_modifiers.h"
 #include "app/tools/trace_policy.h"
@@ -215,6 +216,7 @@ namespace app {
       virtual TracePolicy getTracePolicy() = 0;
       virtual Symmetry* getSymmetry() = 0;
 
+      virtual const Shade& getShade() = 0;
       virtual const doc::Remap* getShadingRemap() = 0;
 
       // Used by the tool when the user cancels the operation pressing the

@@ -95,6 +95,7 @@ protected:
   tools::Intertwine* m_intertwine;
   tools::TracePolicy m_tracePolicy;
   std::unique_ptr<tools::Symmetry> m_symmetry;
+  Shade m_shade;
   std::unique_ptr<doc::Remap> m_shadingRemap;
   app::ColorTarget m_colorTarget;
   doc::color_t m_fgColor;
@@ -217,6 +218,7 @@ public:
 
 #ifdef ENABLE_UI // TODO add support when UI is not enabled
     if (m_toolPref.ink() == tools::InkType::SHADING) {
+      m_shade = App::instance()->contextBar()->getShade();
       m_shadingRemap.reset(
         App::instance()->contextBar()->createShadeRemap(
           button == tools::ToolLoop::Left));
@@ -303,6 +305,7 @@ public:
       return m_tracePolicy;
   }
   tools::Symmetry* getSymmetry() override { return m_symmetry.get(); }
+  const Shade& getShade() override { return m_shade; }
   doc::Remap* getShadingRemap() override { return m_shadingRemap.get(); }
 
   void limitDirtyAreaToViewport(gfx::Region& rgn) override {
