@@ -213,6 +213,7 @@ DynamicsPopup::DynamicsPopup(Delegate* delegate)
   , m_delegate(delegate)
   , m_dynamics(new gen::Dynamics)
   , m_ditheringSel(new DitheringSelector(DitheringSelector::SelectMatrix))
+  , m_fromTo(tools::ColorFromTo::BgToFg)
 {
   m_dynamics->values()->ItemChange.connect(
     [this](ButtonSet::Item* item){
@@ -225,6 +226,14 @@ DynamicsPopup::DynamicsPopup(Delegate* delegate)
   m_dynamics->maxAngle()->Change.connect(
     [this]{
       m_delegate->setMaxAngle(m_dynamics->maxAngle()->getValue());
+    });
+  m_dynamics->gradientFromTo()->Click.connect(
+    [this]{
+      if (m_fromTo == tools::ColorFromTo::BgToFg)
+        m_fromTo = tools::ColorFromTo::FgToBg;
+      else
+        m_fromTo = tools::ColorFromTo::BgToFg;
+      updateFromToText();
     });
 
   m_dynamics->gradientPlaceholder()->addChild(m_ditheringSel);
@@ -253,6 +262,7 @@ tools::DynamicsOptions DynamicsPopup::getDynamics() const
   opts.minSize = m_dynamics->minSize()->getValue();
   opts.minAngle = m_dynamics->minAngle()->getValue();
   opts.ditheringMatrix = m_ditheringSel->ditheringMatrix();
+  opts.colorFromTo = m_fromTo;
 
   opts.minPressureThreshold = m_pressureThreshold->minThreshold();
   opts.maxPressureThreshold = m_pressureThreshold->maxThreshold();
@@ -349,6 +359,8 @@ void DynamicsPopup::onValuesChange(ButtonSet::Item* item)
 
   m_dynamics->gradientLabel()->setVisible(needsGradient);
   m_dynamics->gradientPlaceholder()->setVisible(needsGradient);
+  m_dynamics->gradientFromTo()->setVisible(needsGradient);
+  updateFromToText();
 
   m_dynamics->separator()->setVisible(any);
   m_dynamics->options()->setVisible(any);
@@ -367,6 +379,13 @@ void DynamicsPopup::onValuesChange(ButtonSet::Item* item)
 
   if (isVisible())
     manager()->invalidateRect(oldBounds);
+}
+
+void DynamicsPopup::updateFromToText()
+{
+  m_dynamics->gradientFromTo()->setText(
+    m_fromTo == tools::ColorFromTo::BgToFg ? "BG > FG":
+    m_fromTo == tools::ColorFromTo::FgToBg ? "FG > BG": "-");
 }
 
 bool DynamicsPopup::onProcessMessage(Message* msg)

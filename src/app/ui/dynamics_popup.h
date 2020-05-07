@@ -43,6 +43,7 @@ namespace app {
     bool isCheck(int i) const;
     void onValuesChange(ButtonSet::Item* item);
     bool onProcessMessage(ui::Message* msg) override;
+    void updateFromToText();
 
     Delegate* m_delegate;
     gen::Dynamics* m_dynamics;
@@ -51,6 +52,7 @@ namespace app {
     ThresholdSlider* m_pressureThreshold;
     ThresholdSlider* m_velocityThreshold;
     tools::VelocitySensor m_velocity;
+    tools::ColorFromTo m_fromTo;
   };
 
 } // namespace app

@@ -41,7 +41,7 @@
 
       <label id="gradient_label" text="@.gradient" style="mini_label"  />
       <hbox id="gradient_placeholder" cell_vspan="2" />
-      <boxfiller />
+      <link id="gradient_from_to" style="mini_label"  />
 
       <separator id="separator2" text="@.sensors_tweaks" horizontal="true" cell_hspan="2" />
 

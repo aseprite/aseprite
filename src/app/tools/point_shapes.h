@@ -65,8 +65,15 @@ public:
 
     // For dynamic gradient
     m_hasDynamicGradient = (m_dynamics.gradient != DynamicSensor::Static);
-    m_primaryColor = loop->getPrimaryColor();
-    m_secondaryColor = loop->getSecondaryColor();
+    if (m_hasDynamicGradient &&
+        m_dynamics.colorFromTo == ColorFromTo::FgToBg) {
+      m_primaryColor = loop->getSecondaryColor();
+      m_secondaryColor = loop->getPrimaryColor();
+    }
+    else {
+      m_primaryColor = loop->getPrimaryColor();
+      m_secondaryColor = loop->getSecondaryColor();
+    }
     m_lastGradientValue = -1;
   }
 

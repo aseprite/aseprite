@@ -19,6 +19,11 @@ namespace tools {
     Velocity,
   };
 
+  enum class ColorFromTo {
+    BgToFg,
+    FgToBg,
+  };
+
   struct DynamicsOptions {
     DynamicSensor size = DynamicSensor::Static;
     DynamicSensor angle = DynamicSensor::Static;
@@ -26,6 +31,7 @@ namespace tools {
     int minSize = 0;
     int minAngle = 0;
     render::DitheringMatrix ditheringMatrix;
+    ColorFromTo colorFromTo = ColorFromTo::BgToFg;
     float minPressureThreshold = 0.0f, maxPressureThreshold = 1.0f;
     float minVelocityThreshold = 0.0f, maxVelocityThreshold = 1.0f;
 
