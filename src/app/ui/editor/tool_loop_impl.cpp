@@ -175,7 +175,8 @@ public:
       // Use overlap trace policy for dynamic gradient
       if (m_dynamics.isDynamic() &&
           m_dynamics.gradient != tools::DynamicSensor::Static &&
-          m_controller->isFreehand()) {
+          m_controller->isFreehand() &&
+          !m_ink->isEraser()) {
         // Use overlap trace policy to accumulate changes of colors
         // between stroke points.
         //

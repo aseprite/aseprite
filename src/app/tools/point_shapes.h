@@ -81,6 +81,7 @@ public:
     int x = pt.x;
     int y = pt.y;
 
+    Ink* ink = loop->getInk();
     Brush* brush = loop->getBrush();
 
     // Dynamics
@@ -145,7 +146,7 @@ public:
 
         // Dynamic gradient with dithering
         bool prepareInk = false;
-        if (m_hasDynamicGradient &&
+        if (m_hasDynamicGradient && !ink->isEraser() &&
             (m_dynamics.ditheringMatrix.rows() > 1 ||
              m_dynamics.ditheringMatrix.cols() > 1)) {
           convert_bitmap_brush_to_dithering_brush(
@@ -164,7 +165,7 @@ public:
 
         if (prepareInk) {
           // Prepare ink for the new brush
-          loop->getInk()->prepareInk(loop);
+          ink->prepareInk(loop);
         }
       }
     }
@@ -205,11 +206,11 @@ public:
       y = wrap_value(y, loop->sprite()->height());
     }
 
-    loop->getInk()->prepareForPointShape(loop, m_firstPoint, x, y);
+    ink->prepareForPointShape(loop, m_firstPoint, x, y);
 
     for (auto scanline : *m_compressedImage) {
       int u = x+scanline.x;
-      loop->getInk()->prepareVForPointShape(loop, y+scanline.y);
+      ink->prepareVForPointShape(loop, y+scanline.y);
       doInkHline(u, y+scanline.y, u+scanline.w-1, loop);
     }
     m_firstPoint = false;
