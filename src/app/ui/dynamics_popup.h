@@ -42,8 +42,9 @@ namespace app {
     void setCheck(int i, bool state);
     bool isCheck(int i) const;
     void onValuesChange(ButtonSet::Item* item);
-    bool onProcessMessage(ui::Message* msg) override;
     void updateFromToText();
+    void updateWidgetsWithBrush();
+    bool onProcessMessage(ui::Message* msg) override;
 
     Delegate* m_delegate;
     gen::Dynamics* m_dynamics;

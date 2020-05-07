@@ -388,6 +388,13 @@ void DynamicsPopup::updateFromToText()
     m_fromTo == tools::ColorFromTo::FgToBg ? "FG > BG": "-");
 }
 
+void DynamicsPopup::updateWidgetsWithBrush()
+{
+  doc::BrushRef brush = m_delegate->getActiveBrush();
+  m_dynamics->maxSize()->setValue(brush->size());
+  m_dynamics->maxAngle()->setValue(brush->angle());
+}
+
 bool DynamicsPopup::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
@@ -398,6 +405,8 @@ bool DynamicsPopup::onProcessMessage(Message* msg)
       manager()->addMessageFilter(kMouseMoveMessage, this);
       manager()->addMessageFilter(kMouseDownMessage, this);
       disableFlags(IGNORE_MOUSE);
+
+      updateWidgetsWithBrush();
       break;
 
     case kCloseMessage:
