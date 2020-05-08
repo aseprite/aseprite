@@ -24,12 +24,16 @@ SetUserData::SetUserData(doc::WithUserData* obj, const doc::UserData& userData)
 
 void SetUserData::onExecute()
 {
-  doc::get<doc::WithUserData>(m_objId)->setUserData(m_newUserData);
+  auto obj = doc::get<doc::WithUserData>(m_objId);
+  obj->setUserData(m_newUserData);
+  obj->incrementVersion();
 }
 
 void SetUserData::onUndo()
 {
-  doc::get<doc::WithUserData>(m_objId)->setUserData(m_oldUserData);
+  auto obj = doc::get<doc::WithUserData>(m_objId);
+  obj->setUserData(m_oldUserData);
+  obj->incrementVersion();
 }
 
 } // namespace cmd
