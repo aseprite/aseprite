@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -34,6 +34,7 @@
 #include "doc/string_io.h"
 #include "doc/tag.h"
 #include "doc/tag_io.h"
+#include "doc/user_data_io.h"
 #include "fixmath/fixmath.h"
 
 #include <fstream>
@@ -237,6 +238,9 @@ private:
         // writeSprite/writeAllLayersID() functions)
         break;
     }
+
+    // Save user data
+    write_user_data(s, lay->userData());
     return true;
   }
 

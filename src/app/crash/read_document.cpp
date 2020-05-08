@@ -37,6 +37,7 @@
 #include "doc/subobjects_io.h"
 #include "doc/tag.h"
 #include "doc/tag_io.h"
+#include "doc/user_data_io.h"
 #include "fixmath/fixmath.h"
 
 #include <fstream>
@@ -387,39 +388,50 @@ private:
            type == ObjectType::LayerGroup);
 
     std::string name = read_string(s);
+    std::unique_ptr<Layer> lay;
 
-    if (type == ObjectType::LayerImage) {
-      std::unique_ptr<LayerImage> lay(new LayerImage(m_sprite));
-      lay->setName(name);
-      lay->setFlags(flags);
+    switch (type) {
+      case ObjectType::LayerImage: {
+        lay.reset(new LayerImage(m_sprite));
+        lay->setName(name);
+        lay->setFlags(flags);
 
-      // Blend mode & opacity
-      lay->setBlendMode((BlendMode)read16(s));
-      lay->setOpacity(read8(s));
+        // Blend mode & opacity
+        static_cast<LayerImage*>(lay.get())->setBlendMode((BlendMode)read16(s));
+        static_cast<LayerImage*>(lay.get())->setOpacity(read8(s));
 
-      // Cels
-      int ncels = read32(s);
-      for (int i=0; i<ncels; ++i) {
-        if (canceled())
-          return nullptr;
+        // Cels
+        int ncels = read32(s);
+        for (int i=0; i<ncels; ++i) {
+          if (canceled())
+            return nullptr;
 
-        // Add a new cel to load in the future after we load all layers
-        ObjectId celId = read32(s);
-        m_celsToLoad.push_back(std::make_pair(lay->id(), celId));
+          // Add a new cel to load in the future after we load all layers
+          ObjectId celId = read32(s);
+          m_celsToLoad.push_back(std::make_pair(lay->id(), celId));
+        }
+        break;
       }
+
+      case ObjectType::LayerGroup:
+        lay.reset(new LayerGroup(m_sprite));
+        lay->setName(name);
+        lay->setFlags(flags);
+        break;
+
+      default:
+        Console().printf("Unable to load layer named '%s', type #%d\n",
+                         name.c_str(), (int)type);
+        break;
+    }
+
+    if (lay) {
+      UserData userData = read_user_data(s);
+      lay->setUserData(userData);
       return lay.release();
     }
-    else if (type == ObjectType::LayerGroup) {
-      std::unique_ptr<LayerGroup> lay(new LayerGroup(m_sprite));
-      lay->setName(name);
-      lay->setFlags(flags);
-      return lay.release();
-    }
-    else {
-      Console().printf("Unable to load layer named '%s', type #%d\n",
-        name.c_str(), (int)type);
+    else
       return nullptr;
-    }
   }
 
   Cel* readCel(std::ifstream& s) {
