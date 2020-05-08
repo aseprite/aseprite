@@ -148,7 +148,8 @@ public:
   {
 #ifdef ENABLE_UI // TODO add dynamics support when UI is not enabled
     if (m_controller->isFreehand() &&
-        !m_pointShape->isFloodFill()) {
+        !m_pointShape->isFloodFill() &&
+        App::instance()->contextBar()) {
       m_dynamics = App::instance()->contextBar()->getDynamics();
     }
 #endif
