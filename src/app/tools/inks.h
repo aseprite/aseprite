@@ -66,7 +66,7 @@ private:
 // (or foreground/background colors)
 class PaintInk : public BaseInk {
 public:
-  enum Type { Simple, WithFg, WithBg, Copy, LockAlpha };
+  enum Type { Simple, WithFg, WithBg, AlphaCompositing, Copy, LockAlpha};
 
 private:
   Type m_type;
@@ -147,6 +147,9 @@ public:
             setProc(get_ink_proc<TransparentInkProcessing>(loop));
           break;
         }
+        case AlphaCompositing:
+          setProc(get_ink_proc<TransparentInkProcessing>(loop));
+          break;
         case Copy:
           setProc(get_ink_proc<CopyInkProcessing>(loop));
           break;

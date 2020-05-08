@@ -273,7 +273,8 @@ public:
     m_palette(get_current_palette()),
     m_rgbmap(loop->getRgbMap()),
     m_opacity(loop->getOpacity()),
-    m_maskIndex(loop->getLayer()->isBackground() ? -1: loop->sprite()->transparentColor()) {
+    m_maskIndex(loop->getLayer()->isBackground() ? -1: loop->sprite()->transparentColor()),
+    m_colorIndex(loop->getFgColor()) {
   }
 
   void prepareForPointShape(ToolLoop* loop, bool firstPoint, int x, int y) override {
@@ -281,6 +282,9 @@ public:
   }
 
   void processPixel(int x, int y) {
+    if (m_colorIndex == m_maskIndex)
+      return;
+
     color_t c = *m_srcAddress;
     if (int(c) == m_maskIndex)
       c = m_palette->getEntry(c) & rgba_rgb_mask;  // Alpha = 0
@@ -300,6 +304,7 @@ private:
   const int m_opacity;
   color_t m_color;
   const int m_maskIndex;
+  int m_colorIndex;
 };
 
 //////////////////////////////////////////////////////////////////////
