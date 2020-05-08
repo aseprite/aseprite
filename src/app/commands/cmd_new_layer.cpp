@@ -421,9 +421,9 @@ void NewLayerCommand::onExecute(Context* context)
 
     StatusBar::instance()->invalidate();
     StatusBar::instance()->showTip(
-      1000, "%s '%s' created",
-      layerPrefix().c_str(),
-      name.c_str());
+      1000, fmt::format("{} '{}' created",
+                        layerPrefix(),
+                        name));
 
     App::instance()->mainWindow()->popTimeline();
   }

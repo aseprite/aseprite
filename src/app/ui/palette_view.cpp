@@ -29,6 +29,7 @@
 #include "doc/image.h"
 #include "doc/palette.h"
 #include "doc/remap.h"
+#include "fmt/format.h"
 #include "gfx/color.h"
 #include "gfx/point.h"
 #include "os/font.h"
@@ -935,9 +936,11 @@ void PaletteView::setStatusBar()
                     std::max(palSize,         destIndex + picks));
 
         statusBar->setStatusText(
-          0, "%s to %d - New Palette Size %d",
-          (m_copy ? "Copy": "Move"),
-          destIndex, newPalSize);
+          0,
+          fmt::format("{} to {} - New Palette Size {}",
+                      (m_copy ? "Copy": "Move"),
+                      destIndex,
+                      newPalSize));
       }
       else {
         statusBar->showDefaultText();
@@ -950,8 +953,8 @@ void PaletteView::setStatusBar()
           m_hot.part == Hit::RESIZE_HANDLE) {
         int newPalSize = std::max(1, m_hot.color);
         statusBar->setStatusText(
-          0, "New Palette Size %d",
-          newPalSize);
+          0, fmt::format("New Palette Size {}",
+                         newPalSize));
       }
       else {
         statusBar->showDefaultText();

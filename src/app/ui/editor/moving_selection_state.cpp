@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -20,6 +20,7 @@
 #include "app/ui_context.h"
 #include "app/ui_context.h"
 #include "doc/mask.h"
+#include "fmt/format.h"
 #include "ui/message.h"
 
 namespace app {
@@ -132,11 +133,13 @@ bool MovingSelectionState::onUpdateStatusBar(Editor* editor)
 {
   const gfx::Rect bounds = editor->document()->mask()->bounds();
 
-  StatusBar::instance()->setStatusText
-    (100, ":pos: %d %d :size: %3d %3d :offset: %d %d",
-     bounds.x, bounds.y,
-     bounds.w, bounds.h,
-     m_delta.x, m_delta.y);
+  StatusBar::instance()->setStatusText(
+    100,
+    fmt::format(
+      ":pos: {} {} :size: {:3d} {:3d} :offset: {} {}",
+      bounds.x, bounds.y,
+      bounds.w, bounds.h,
+      m_delta.x, m_delta.y));
 
   return true;
 }

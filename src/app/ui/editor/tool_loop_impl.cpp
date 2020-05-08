@@ -717,19 +717,19 @@ tools::ToolLoop* create_tool_loop(
     }
     else if (!layer->isVisibleHierarchy()) {
       StatusBar::instance()->showTip(
-        1000, "Layer '%s' is hidden", layer->name().c_str());
+        1000, fmt::format("Layer '{}' is hidden", layer->name()));
       return nullptr;
     }
     // If the active layer is read-only.
     else if (!layer->isEditableHierarchy()) {
       StatusBar::instance()->showTip(
-        1000, "Layer '%s' is locked", layer->name().c_str());
+        1000, fmt::format("Layer '{}' is locked", layer->name()));
       return nullptr;
     }
     // If the active layer is reference.
     else if (layer->isReference()) {
       StatusBar::instance()->showTip(
-        1000, "Layer '%s' is reference, cannot be modified", layer->name().c_str());
+        1000, fmt::format("Layer '{}' is reference, cannot be modified", layer->name()));
       return nullptr;
     }
   }

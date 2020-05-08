@@ -56,6 +56,7 @@
 #include "doc/slice.h"
 #include "doc/sprite.h"
 #include "fixmath/fixmath.h"
+#include "fmt/format.h"
 #include "gfx/rect.h"
 #include "os/surface.h"
 #include "os/system.h"
@@ -190,12 +191,12 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
           "The background layer cannot be moved");
       }
       else if (!layer->isVisibleHierarchy()) {
-        StatusBar::instance()->showTip(1000,
-          "Layer '%s' is hidden", layer->name().c_str());
+        StatusBar::instance()->showTip(
+          1000, fmt::format("Layer '{}' is hidden", layer->name()));
       }
       else if (!layer->isMovable() || !layer->isEditableHierarchy()) {
-        StatusBar::instance()->showTip(1000,
-          "Layer '%s' is locked", layer->name().c_str());
+        StatusBar::instance()->showTip(
+          1000, fmt::format("Layer '{}' is locked", layer->name()));
       }
       else {
         MovingCelCollect collect(editor, layer);
@@ -299,8 +300,8 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
         Image* image = site.image(&x, &y, &opacity);
         if (layer && image) {
           if (!layer->isEditableHierarchy()) {
-            StatusBar::instance()->showTip(1000,
-              "Layer '%s' is locked", layer->name().c_str());
+            StatusBar::instance()->showTip(
+              1000, fmt::format("Layer '{}' is locked", layer->name()));
             return true;
           }
 
@@ -320,8 +321,8 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
     // Move selected pixels
     if (layer && editor->canStartMovingSelectionPixels() && msg->left()) {
       if (!layer->isEditableHierarchy()) {
-        StatusBar::instance()->showTip(1000,
-          "Layer '%s' is locked", layer->name().c_str());
+        StatusBar::instance()->showTip(
+          1000, fmt::format("Layer '{}' is locked", layer->name()));
         return true;
       }
 
@@ -741,8 +742,8 @@ void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleT
   Layer* layer = editor->layer();
   if (layer && layer->isReference()) {
     StatusBar::instance()->showTip(
-      1000, "Layer '%s' is reference, cannot be transformed",
-      layer->name().c_str());
+      1000, fmt::format("Layer '{}' is reference, cannot be transformed",
+                        layer->name()));
     return;
   }
 

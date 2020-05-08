@@ -175,7 +175,7 @@ void NewBrushCommand::createBrush(const Site& site, const Mask* mask)
     std::string tooltip;
     tooltip += "Shortcut: ";
     tooltip += key->accels().front().toString();
-    StatusBar::instance()->showTip(2000, tooltip.c_str());
+    StatusBar::instance()->showTip(2000, tooltip);
   }
 }
 

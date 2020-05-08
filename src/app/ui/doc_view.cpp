@@ -327,9 +327,9 @@ bool DocView::onCloseView(Workspace* workspace, bool quitting)
     DocDestroyer destroyer(
       static_cast<app::Context*>(m_document->context()), m_document, 500);
 
-    StatusBar::instance()
-      ->setStatusText(0, "Sprite '%s' closed.",
-                      m_document->name().c_str());
+    StatusBar::instance()->setStatusText(
+      0, fmt::format("Sprite '{}' closed.",
+                     m_document->name()));
 
     // Just close the document (so we can reopen it with
     // ReopenClosedFile command).

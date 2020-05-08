@@ -28,6 +28,7 @@
 #include "doc/layer.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
+#include "fmt/format.h"
 #include "ui/message.h"
 
 #include <algorithm>
@@ -289,29 +290,31 @@ bool MovingCelState::onUpdateStatusBar(Editor* editor)
 
   if (m_hasReference) {
     if (m_scaled && m_cel) {
-      StatusBar::instance()->setStatusText
-        (0,
-         ":pos: %.2f %.2f :offset: %.2f %.2f :size: %.2f%% %.2f%%",
-         pos.x, pos.y,
-         m_celOffset.x, m_celOffset.y,
-         100.0*m_celScale.w*m_celMainSize.w/m_cel->image()->width(),
-         100.0*m_celScale.h*m_celMainSize.h/m_cel->image()->height());
+      StatusBar::instance()->setStatusText(
+        0,
+        fmt::format(
+          ":pos: {:.2f} {:.2f} :offset: {:.2f} {:.2f} :size: {:.2f}% {:.2f}%",
+          pos.x, pos.y,
+          m_celOffset.x, m_celOffset.y,
+          100.0*m_celScale.w*m_celMainSize.w/m_cel->image()->width(),
+          100.0*m_celScale.h*m_celMainSize.h/m_cel->image()->height()));
     }
     else {
-      StatusBar::instance()->setStatusText
-        (0,
-         ":pos: %.2f %.2f :offset: %.2f %.2f",
-         pos.x, pos.y,
-         m_celOffset.x, m_celOffset.y);
+      StatusBar::instance()->setStatusText(
+        0,
+        fmt::format(
+          ":pos: {:.2f} {:.2f} :offset: {:.2f} {:.2f}",
+          pos.x, pos.y,
+          m_celOffset.x, m_celOffset.y));
     }
   }
   else {
     gfx::Point intOffset = intCelOffset();
-    StatusBar::instance()->setStatusText
-      (0,
-       ":pos: %3d %3d :offset: %3d %3d",
-       int(pos.x), int(pos.y),
-       intOffset.x, intOffset.y);
+    StatusBar::instance()->setStatusText(
+      0,
+      fmt::format(":pos: {:3d} {:3d} :offset: {:3d} {:3d}",
+                  int(pos.x), int(pos.y),
+                  intOffset.x, intOffset.y));
   }
 
   return true;

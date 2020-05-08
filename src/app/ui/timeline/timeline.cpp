@@ -50,6 +50,7 @@
 #include "base/memory.h"
 #include "base/scoped_value.h"
 #include "doc/doc.h"
+#include "fmt/format.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "os/font.h"
@@ -3267,17 +3268,19 @@ void Timeline::updateStatusBar(ui::Message* msg)
     switch (m_range.type()) {
 
       case Range::kCels:
-        sb->setStatusText(0, "%s cels", verb);
-        break;
+        sb->setStatusText(0, fmt::format("{} cels", verb));
+        return;
 
       case Range::kFrames:
         if (validFrame(m_hot.frame)) {
           if (m_dropTarget.hhit == DropTarget::Before) {
-            sb->setStatusText(0, "%s before frame %d", verb, int(m_dropRange.firstFrame()+1));
+            sb->setStatusText(0, fmt::format("{} before frame {}",
+                                             verb, int(m_dropRange.firstFrame()+1)));
             return;
           }
           else if (m_dropTarget.hhit == DropTarget::After) {
-            sb->setStatusText(0, "%s after frame %d", verb, int(m_dropRange.lastFrame()+1));
+            sb->setStatusText(0, fmt::format("{} after frame {}",
+                                             verb, int(m_dropRange.lastFrame()+1)));
             return;
           }
         }
@@ -3291,7 +3294,7 @@ void Timeline::updateStatusBar(ui::Message* msg)
           break;
 
         if (m_dropTarget.vhit == DropTarget::VeryBottom) {
-          sb->setStatusText(0, "%s at the very bottom", verb);
+          sb->setStatusText(0, fmt::format("{} at the very bottom", verb));
           return;
         }
 
@@ -3306,13 +3309,16 @@ void Timeline::updateStatusBar(ui::Message* msg)
         if (layer) {
           switch (m_dropTarget.vhit) {
             case DropTarget::Bottom:
-              sb->setStatusText(0, "%s at bottom of layer %s", verb, layer->name().c_str());
+              sb->setStatusText(0, fmt::format("{} below layer '{}'",
+                                               verb, layer->name()));
               return;
             case DropTarget::Top:
-              sb->setStatusText(0, "%s at top of layer %s", verb, layer->name().c_str());
+              sb->setStatusText(0, fmt::format("{} above layer '{}'",
+                                               verb, layer->name()));
               return;
             case DropTarget::FirstChild:
-              sb->setStatusText(0, "%s as first child of layer %s", verb, layer->name().c_str());
+              sb->setStatusText(0, fmt::format("{} as first child of group '{}'",
+                                               verb, layer->name()));
               return;
           }
         }
@@ -3328,37 +3334,41 @@ void Timeline::updateStatusBar(ui::Message* msg)
     switch (m_hot.part) {
 
       case PART_HEADER_ONIONSKIN: {
-        sb->setStatusText(0, "Onionskin is %s",
-          docPref().onionskin.active() ? "enabled": "disabled");
+        sb->setStatusText(0, fmt::format("Onionskin is {}",
+                                         docPref().onionskin.active()
+                                         ? "enabled": "disabled"));
         return;
       }
 
       case PART_ROW_TEXT:
         if (layer != NULL) {
           sb->setStatusText(
-            0, "%s '%s' [%s%s]",
-            layer->isReference() ? "Reference layer": "Layer",
-            layer->name().c_str(),
-            layer->isVisible() ? "visible": "hidden",
-            layer->isEditable() ? "": " locked");
+            0, fmt::format("{} '{}' [{}{}]",
+                           layer->isReference() ? "Reference layer": "Layer",
+                           layer->name(),
+                           layer->isVisible() ? "visible": "hidden",
+                           layer->isEditable() ? "": " locked"));
           return;
         }
         break;
 
       case PART_ROW_EYE_ICON:
         if (layer != NULL) {
-          sb->setStatusText(0, "Layer '%s' is %s",
-            layer->name().c_str(),
-            layer->isVisible() ? "visible": "hidden");
+          sb->setStatusText(
+            0, fmt::format("Layer '{}' is {}",
+                           layer->name(),
+                           layer->isVisible() ? "visible": "hidden"));
           return;
         }
         break;
 
       case PART_ROW_PADLOCK_ICON:
         if (layer != NULL) {
-          sb->setStatusText(0, "Layer '%s' is %s",
-            layer->name().c_str(),
-            layer->isEditable() ? "unlocked (editable)": "locked (read-only)");
+          sb->setStatusText(
+            0, fmt::format("Layer '{}' is {}",
+                           layer->name(),
+                           layer->isEditable() ? "unlocked (editable)":
+                                                 "locked (read-only)"));
           return;
         }
         break;
@@ -3366,12 +3376,16 @@ void Timeline::updateStatusBar(ui::Message* msg)
       case PART_ROW_CONTINUOUS_ICON:
         if (layer) {
           if (layer->isImage())
-            sb->setStatusText(0, "Layer '%s' is %s (%s)",
-                              layer->name().c_str(),
-                              layer->isContinuous() ? "continuous": "discontinuous",
-                              layer->isContinuous() ? "prefer linked cels/frames": "prefer individual cels/frames");
+            sb->setStatusText(
+              0, fmt::format("Layer '{}' is {} ({})",
+                             layer->name(),
+                             layer->isContinuous() ? "continuous":
+                                                     "discontinuous",
+                             layer->isContinuous() ? "prefer linked cels/frames":
+                                                     "prefer individual cels/frames"));
           else if (layer->isGroup())
-            sb->setStatusText(0, "Group '%s'", layer->name().c_str());
+            sb->setStatusText(
+              0, fmt::format("Group '{}'", layer->name()));
           return;
         }
         break;
@@ -3455,8 +3469,7 @@ void Timeline::updateStatusBarForFrame(const frame_t frame,
     }
   }
 
-  StatusBar::instance()
-    ->setStatusText(0, buf);
+  StatusBar::instance()->setStatusText(0, buf);
 }
 
 void Timeline::showCel(layer_t layer, frame_t frame)

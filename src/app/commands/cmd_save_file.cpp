@@ -248,9 +248,9 @@ void SaveFileBaseCommand::saveDocumentInBackground(
       document->incrementVersion();
     }
 #ifdef ENABLE_UI
-    StatusBar::instance()
-      ->setStatusText(2000, "File <%s> saved.",
-        base::get_file_name(filename).c_str());
+    StatusBar::instance()->setStatusText(
+      2000, fmt::format("File <{}> saved.",
+                        base::get_file_name(filename)));
 #endif
   }
 }
