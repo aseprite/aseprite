@@ -369,7 +369,8 @@ int Dialog_separator(lua_State* L)
 {
   auto dlg = get_obj<Dialog>(L, 1);
 
-  std::string text;
+  std::string id, text;
+
   if (lua_isstring(L, 2)) {
     if (auto p = lua_tostring(L, 2))
       text = p;
@@ -381,9 +382,21 @@ int Dialog_separator(lua_State* L)
         text = p;
     }
     lua_pop(L, 1);
+
+    type = lua_getfield(L, 2, "id");
+    if (type == LUA_TSTRING) {
+      if (auto s = lua_tostring(L, -1))
+        id = s;
+    }
+    lua_pop(L, 1);
   }
 
   auto widget = new ui::Separator(text, ui::HORIZONTAL);
+  if (!id.empty()) {
+    widget->setId(id.c_str());
+    dlg->dataWidgets[id] = widget;
+  }
+
   dlg->grid.addChildInCell(widget, 2, 1, ui::HORIZONTAL | ui::TOP);
   dlg->hbox = nullptr;
 
@@ -972,6 +985,9 @@ int Dialog_get_data(lua_State* L)
   for (const auto& kv : dlg->dataWidgets) {
     const ui::Widget* widget = kv.second;
     switch (widget->type()) {
+      case ui::kSeparatorWidget:
+        // Do nothing
+        continue;
       case ui::kButtonWidget:
       case ui::kCheckWidget:
       case ui::kRadioWidget:
@@ -1062,6 +1078,9 @@ int Dialog_set_data(lua_State* L)
 
     ui::Widget* widget = kv.second;
     switch (widget->type()) {
+      case ui::kSeparatorWidget:
+        // Do nothing
+        break;
       case ui::kButtonWidget:
       case ui::kCheckWidget:
       case ui::kRadioWidget:
