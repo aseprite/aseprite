@@ -320,7 +320,7 @@ bool Entry::onProcessMessage(Message* msg)
             break;
 
           case kKeyBackspace:
-            if (msg->ctrlPressed())
+            if (msg->ctrlPressed() || msg->altPressed())
               cmd = EntryCmd::DeleteBackwardWord;
             else
               cmd = EntryCmd::DeleteBackward;
