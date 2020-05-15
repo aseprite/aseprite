@@ -285,6 +285,7 @@ int Dialog_add_widget(lua_State* L, Widget* widget)
   auto dlg = get_obj<Dialog>(L, 1);
   const char* label = nullptr;
   std::string id;
+  bool visible = true;
 
   // This is to separate different kind of widgets without label in
   // different rows.
@@ -317,11 +318,28 @@ int Dialog_add_widget(lua_State* L, Widget* widget)
     if (type != LUA_TNIL && lua_toboolean(L, -1))
       widget->setFocusMagnet(true);
     lua_pop(L, 1);
+
+    // Enabled
+    type = lua_getfield(L, 2, "enabled");
+    if (type != LUA_TNIL)
+      widget->setEnabled(lua_toboolean(L, -1));
+    lua_pop(L, 1);
+
+    // Visible
+    type = lua_getfield(L, 2, "visible");
+    if (type != LUA_TNIL) {
+      visible = lua_toboolean(L, -1);
+      widget->setVisible(visible);
+    }
+    lua_pop(L, 1);
   }
 
   if (label || !dlg->hbox) {
     if (label) {
       auto labelWidget = new ui::Label(label);
+      if (!visible)
+        labelWidget->setVisible(false);
+
       dlg->grid.addChildInCell(labelWidget, 1, 1, ui::LEFT | ui::TOP);
       if (!id.empty())
         dlg->labelWidgets[id] = labelWidget;
