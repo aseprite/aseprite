@@ -740,7 +740,7 @@ void Entry::executeCmd(EntryCmd cmd, int unicodeChar, bool shift_pressed)
       backwardWord();
       if (m_caret < m_select) {
         text.erase(m_boxes[m_caret].from,
-                   m_boxes[m_select].to - m_boxes[m_caret].from);
+                   m_boxes[m_select-1].to - m_boxes[m_caret].from);
       }
       m_select = -1;
       break;
