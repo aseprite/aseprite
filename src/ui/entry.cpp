@@ -172,17 +172,26 @@ void Entry::deselectText()
 
 std::string Entry::selectedText() const
 {
-  int selbeg, selend;
-  getEntryThemeInfo(nullptr, nullptr, nullptr, &selbeg, &selend);
-
-  if (selbeg >= 0 && selend >= 0) {
-    ASSERT(selbeg < int(m_boxes.size()));
-    ASSERT(selend < int(m_boxes.size()));
-    return text().substr(m_boxes[selbeg].from,
-                         m_boxes[selend].to - m_boxes[selbeg].from);
-  }
+  Range range = selectedRange();
+  if (!range.isEmpty())
+    return text().substr(m_boxes[range.from].from,
+                         m_boxes[range.to-1].to - m_boxes[range.from].from);
   else
     return std::string();
+}
+
+Entry::Range Entry::selectedRange() const
+{
+  Range range;
+  if ((m_select >= 0) &&
+      (m_caret != m_select)) {
+    range.from = std::min(m_caret, m_select);
+    range.to   = std::max(m_caret, m_select);
+
+    ASSERT(range.from >= 0 && range.from < int(m_boxes.size()));
+    ASSERT(range.to   >= 0 && range.to   <= int(m_boxes.size()));
+  }
+  return range;
 }
 
 void Entry::setSuffix(const std::string& suffix)
@@ -198,22 +207,12 @@ void Entry::setTranslateDeadKeys(bool state)
   m_translate_dead_keys = state;
 }
 
-void Entry::getEntryThemeInfo(int* scroll, int* caret, int* state,
-                              int* selbeg, int* selend) const
+void Entry::getEntryThemeInfo(int* scroll, int* caret, int* state, Range* range) const
 {
   if (scroll) *scroll = m_scroll;
   if (caret) *caret = m_caret;
   if (state) *state = !m_hidden && m_state;
-
-  if ((m_select >= 0) &&
-      (m_caret != m_select)) {
-    *selbeg = std::min(m_caret, m_select);
-    *selend = std::max(m_caret, m_select)-1;
-  }
-  else {
-    *selbeg = -1;
-    *selend = -1;
-  }
+  if (range) *range = selectedRange();
 }
 
 gfx::Rect Entry::getEntryTextBounds() const
@@ -545,9 +544,7 @@ int Entry::getCaretFromMouse(MouseMessage* mousemsg)
 void Entry::executeCmd(EntryCmd cmd, int unicodeChar, bool shift_pressed)
 {
   std::string text = this->text();
-  int selbeg, selend;
-
-  getEntryThemeInfo(nullptr, nullptr, nullptr, &selbeg, &selend);
+  const Range range = selectedRange();
 
   switch (cmd) {
 
@@ -556,11 +553,8 @@ void Entry::executeCmd(EntryCmd cmd, int unicodeChar, bool shift_pressed)
 
     case EntryCmd::InsertChar:
       // delete the entire selection
-      if (selbeg >= 0) {
-        text.erase(m_boxes[selbeg].from,
-                   m_boxes[selend].to - m_boxes[selbeg].from);
-
-        m_caret = selbeg;
+      if (!range.isEmpty()) {
+        deleteRange(range, text);
 
         // We set the caret to the beginning of the erased selection,
         // needed to show the first inserted character in case
@@ -657,16 +651,13 @@ void Entry::executeCmd(EntryCmd cmd, int unicodeChar, bool shift_pressed)
     case EntryCmd::DeleteForward:
     case EntryCmd::Cut:
       // delete the entire selection
-      if (selbeg >= 0) {
+      if (!range.isEmpty()) {
         // *cut* text!
         if (cmd == EntryCmd::Cut)
           set_clipboard_text(selectedText());
 
         // remove text
-        text.erase(m_boxes[selbeg].from,
-                   m_boxes[selend].to - m_boxes[selbeg].from);
-
-        m_caret = selbeg;
+        deleteRange(range, text);
       }
       // delete the next character
       else {
@@ -682,11 +673,8 @@ void Entry::executeCmd(EntryCmd cmd, int unicodeChar, bool shift_pressed)
       std::string clipboard;
       if (get_clipboard_text(clipboard)) {
         // delete the entire selection
-        if (selbeg >= 0) {
-          text.erase(m_boxes[selbeg].from,
-                     m_boxes[selend].to - m_boxes[selbeg].from);
-
-          m_caret = selbeg;
+        if (!range.isEmpty()) {
+          deleteRange(range, text);
           m_select = -1;
         }
 
@@ -711,17 +699,14 @@ void Entry::executeCmd(EntryCmd cmd, int unicodeChar, bool shift_pressed)
     }
 
     case EntryCmd::Copy:
-      if (selbeg >= 0)
+      if (!range.isEmpty())
         set_clipboard_text(selectedText());
       break;
 
     case EntryCmd::DeleteBackward:
       // delete the entire selection
-      if (selbeg >= 0) {
-        text.erase(m_boxes[selbeg].from,
-                   m_boxes[selend].to - m_boxes[selbeg].from);
-
-        m_caret = selbeg;
+      if (!range.isEmpty()) {
+        deleteRange(range, text);
       }
       // delete the previous character
       else {
@@ -896,6 +881,13 @@ void Entry::recalcCharBoxes(const std::string& text)
 bool Entry::shouldStartTimer(bool hasFocus)
 {
   return (!m_hidden && hasFocus && isEnabled());
+}
+
+void Entry::deleteRange(const Range& range, std::string& text)
+{
+  text.erase(m_boxes[range.from].from,
+             m_boxes[range.to-1].to - m_boxes[range.from].from);
+  m_caret = range.from;
 }
 
 } // namespace ui

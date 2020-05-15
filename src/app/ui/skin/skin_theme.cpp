@@ -1015,7 +1015,7 @@ public:
     , m_y(pos.y)
     , m_h(h)
   {
-    m_widget->getEntryThemeInfo(&m_index, &m_caret, &m_state, &m_selbeg, &m_selend);
+    m_widget->getEntryThemeInfo(&m_index, &m_caret, &m_state, &m_range);
   }
 
   int index() const { return m_index; }
@@ -1033,8 +1033,8 @@ public:
     fg = colors.text();
 
     // Selected
-    if ((m_index >= m_selbeg) &&
-        (m_index <= m_selend)) {
+    if ((m_index >= m_range.from) &&
+        (m_index < m_range.to)) {
       if (m_widget->hasFocus())
         bg = colors.selected();
       else
@@ -1093,8 +1093,7 @@ private:
   int m_index;
   int m_caret;
   int m_state;
-  int m_selbeg;
-  int m_selend;
+  Entry::Range m_range;
   gfx::Rect m_textBounds;
   bool m_caretDrawn;
   gfx::Color m_bg;
