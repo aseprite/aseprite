@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2018-2019  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-2020  Igara Studio S.A. -->
 <!-- Copyright (C) 2014-2018  David Capello -->
 <preferences>
 
@@ -101,10 +101,6 @@
       <value id="LEFT" value="1" />
       <value id="RIGHT" value="2" />
     </enum>
-    <enum id="HueSaturationMode">
-      <value id="HSV" value="0" />
-      <value id="HSL" value="1" />
-    </enum>
     <enum id="ColorProfileBehavior">
       <value id="DISABLE" value="0" />
       <value id="EMBEDDED" value="1" />
@@ -116,6 +112,12 @@
       <value id="MONITOR" value="0" />
       <value id="SRGB" value="1" />
       <value id="SPECIFIC" value="2" />
+    </enum>
+    <enum id="ToGrayAlgorithm">
+      <value id="DEFAULT" value="0" />
+      <value id="LUMA" value="0" />
+      <value id="HSV" value="1" />
+      <value id="HSL" value="2" />
     </enum>
   </types>
 
@@ -157,9 +159,14 @@
       <option id="auto_scroll" type="bool" default="true" />
       <option id="right_click_mode" type="RightClickMode" default="RightClickMode::PAINT_BGCOLOR" />
       <option id="auto_select_layer" type="bool" default="false" />
+      <option id="auto_select_layer_quick" type="bool" default="true" />
       <option id="straight_line_preview" type="bool" default="true" />
       <option id="play_once" type="bool" default="false" />
       <option id="play_all" type="bool" default="false" />
+      <!-- TODO this would be nice to be "true" but we have to fix
+           some performance issue rendering huge sprites with small
+           zoom levels -->
+      <option id="auto_fit" type="bool" default="false" />
     </section>
     <section id="cursor">
       <option id="use_native_cursor" type="bool" default="false" />
@@ -254,6 +261,7 @@
       <option id="with_alpha" type="bool" default="true" />
       <option id="dithering_algorithm" type="std::string" />
       <option id="dithering_factor" type="int" default="100" />
+      <option id="to_gray" type="ToGrayAlgorithm" default="ToGrayAlgorithm::DEFAULT" />
     </section>
     <section id="eyedropper" text="Editor">
       <option id="channel" type="EyedropperChannel" default="EyedropperChannel::COLOR_ALPHA" />
@@ -326,6 +334,11 @@
       <option id="show_alert" type="bool" default="true" />
       <option id="pixel_scale" type="int" default="1" />
     </section>
+    <section id="tga">
+      <option id="show_alert" type="bool" default="true" />
+      <option id="bits_per_pixel" type="int" default="0" />
+      <option id="compress" type="bool" default="true" />
+    </section>
     <section id="webp">
       <option id="show_alert" type="bool" default="true" />
       <option id="loop" type="bool" default="true" />
@@ -336,7 +349,7 @@
       <option id="image_preset" type="int" default="0" />
     </section>
     <section id="hue_saturation">
-      <option id="mode" type="HueSaturationMode" default="HueSaturationMode::HSL" />
+      <option id="mode" type="filters::HueSaturationFilter::Mode" default="filters::HueSaturationFilter::Mode::HSL_MUL" />
     </section>
     <section id="filters">
       <option id="cels_target" type="CelsTarget" default="CelsTarget::Selected" />

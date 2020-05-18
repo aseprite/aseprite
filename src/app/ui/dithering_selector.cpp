@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This program is distributed under the terms of
@@ -29,6 +29,8 @@
 #include "ui/listitem.h"
 #include "ui/paint_event.h"
 #include "ui/size_hint_event.h"
+
+#include <algorithm>
 
 namespace app {
 
@@ -122,8 +124,8 @@ private:
   void onSizeHint(SizeHintEvent& ev) override {
     gfx::Size sz = textSize();
 
-    sz.w = MAX(sz.w, preview()->width()) + 4*guiscale();
-    sz.h += 6*guiscale() + preview()->height();
+    sz.w = std::max(sz.w, preview()->width()*guiscale()) + 4*guiscale();
+    sz.h += 6*guiscale() + preview()->height()*guiscale();
 
     ev.setSizeHint(sz);
   }
@@ -151,8 +153,12 @@ private:
                            rc.y+2*guiscale()));
     g->drawRgbaSurface(
       preview(),
-      rc.x+2*guiscale(),
-      rc.y+4*guiscale()+textsz.h);
+      preview()->bounds(),
+      gfx::Rect(
+        rc.x+2*guiscale(),
+        rc.y+4*guiscale()+textsz.h,
+        preview()->width()*guiscale(),
+        preview()->height()*guiscale()));
   }
 
   bool m_matrixOnly;
@@ -177,6 +183,13 @@ DitheringSelector::DitheringSelector(Type type)
 
   setUseCustomWidget(true);
   regenerate();
+}
+
+void DitheringSelector::onInitTheme(ui::InitThemeEvent& ev)
+{
+  ComboBox::onInitTheme(ev);
+  if (getItem(0))
+    setSizeHint(getItem(0)->sizeHint());
 }
 
 void DitheringSelector::regenerate()

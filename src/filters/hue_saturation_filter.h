@@ -17,7 +17,10 @@ namespace filters {
 
   class HueSaturationFilter : public FilterWithPalette {
   public:
-    enum class Mode { HSL, HSV };
+    enum class Mode {
+      HSV_MUL, HSL_MUL,
+      HSV_ADD, HSL_ADD,
+    };
 
     HueSaturationFilter();
 
@@ -40,7 +43,7 @@ namespace filters {
     template<class T,
              double (T::*get_lightness)() const,
              void (T::*set_lightness)(double)>
-    void applyFilterToRgbT(const Target target, doc::color_t& color);
+    void applyFilterToRgbT(const Target target, doc::color_t& color, bool multiply);
     void applyFilterToRgb(const Target target, doc::color_t& color);
 
     Mode m_mode;

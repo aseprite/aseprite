@@ -158,10 +158,15 @@ void Param<filters::OutlineFilter::Matrix>::fromString(const std::string& value)
 template<>
 void Param<filters::HueSaturationFilter::Mode>::fromString(const std::string& value)
 {
-  if (base::utf8_icmp(value, "hsv") == 0)
-    setValue(filters::HueSaturationFilter::Mode::HSV);
+  if (base::utf8_icmp(value, "hsv") == 0 ||
+      base::utf8_icmp(value, "hsv_mul") == 0)
+    setValue(filters::HueSaturationFilter::Mode::HSV_MUL);
+  else if (base::utf8_icmp(value, "hsv_add") == 0)
+    setValue(filters::HueSaturationFilter::Mode::HSV_ADD);
+  else if (base::utf8_icmp(value, "hsl_add") == 0)
+    setValue(filters::HueSaturationFilter::Mode::HSL_ADD);
   else
-    setValue(filters::HueSaturationFilter::Mode::HSL);
+    setValue(filters::HueSaturationFilter::Mode::HSL_MUL);
 }
 
 template<>

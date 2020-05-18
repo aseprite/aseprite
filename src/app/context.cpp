@@ -100,6 +100,11 @@ void Context::setActiveFrame(const doc::frame_t frame)
   onSetActiveFrame(frame);
 }
 
+void Context::setRange(const DocRange& range)
+{
+  onSetRange(range);
+}
+
 void Context::setSelectedColors(const doc::PalettePicks& picks)
 {
   onSetSelectedColors(picks);
@@ -258,6 +263,12 @@ void Context::onSetActiveFrame(const doc::frame_t frame)
 {
   if (m_lastSelectedDoc)
     activeSiteHandler()->setActiveFrameInDoc(m_lastSelectedDoc, frame);
+}
+
+void Context::onSetRange(const DocRange& range)
+{
+  if (m_lastSelectedDoc)
+    activeSiteHandler()->setRangeInDoc(m_lastSelectedDoc, range);
 }
 
 void Context::onSetSelectedColors(const doc::PalettePicks& picks)

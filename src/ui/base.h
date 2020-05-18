@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -8,9 +8,6 @@
 #ifndef UI_BASE_H_INCLUDED
 #define UI_BASE_H_INCLUDED
 #pragma once
-
-// Get the system's definition of NULL
-#include <stddef.h>
 
 namespace ui {
 

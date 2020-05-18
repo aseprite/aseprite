@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -131,7 +131,7 @@ namespace app {
     void onFgColorButtonChange(const app::Color& color);
     void onBgColorButtonChange(const app::Color& color);
     void onColorButtonChange(const app::Color& color);
-    void onPickSpectrum(const app::Color& color, ui::MouseButtons buttons);
+    void onPickSpectrum(const app::Color& color, ui::MouseButton button);
     void onReverseColors();
     void onSortBy(doc::SortPaletteBy channel);
     void onGradient();
@@ -140,7 +140,7 @@ namespace app {
     void setAscending(bool ascending);
 
     // PaletteViewDelegate impl
-    void onPaletteViewIndexChange(int index, ui::MouseButtons buttons) override;
+    void onPaletteViewIndexChange(int index, ui::MouseButton button) override;
     void onPaletteViewModification(const doc::Palette* newPalette, PaletteViewModification mod) override;
     void onPaletteViewChangeSize(int boxsize) override;
     void onPaletteViewPasteColors(const Palette* fromPal, const doc::PalettePicks& from, const doc::PalettePicks& to) override;
@@ -153,7 +153,7 @@ namespace app {
                                 int& currentEntry,
                                 const int beforeIndex,
                                 const bool isCopy) override;
-    void onTilesViewIndexChange(int index, ui::MouseButtons buttons) override;
+    void onTilesViewIndexChange(int index, ui::MouseButton button) override;
 
   private:
     void showRemapPal();
@@ -228,7 +228,7 @@ namespace app {
     obs::scoped_connection m_bgConn;
     obs::scoped_connection m_sepConn;
     obs::scoped_connection m_appPalChangeConn;
-    ui::MouseButtons m_lastButtons;
+    ui::MouseButton m_lastButton;
 
     // True if the editing mode is on.
     bool m_editMode;

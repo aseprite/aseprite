@@ -19,6 +19,8 @@
 #include "app/tools/point_shape.h"
 #include "app/tools/symmetry.h"
 #include "app/tools/tool_loop.h"
+#include "app/tools/velocity.h"
+#include "base/clamp.h"
 #include "doc/brush.h"
 #include "doc/image.h"
 #include "doc/primitives.h"
@@ -40,6 +42,8 @@ using namespace filters;
 
 ToolLoopManager::ToolLoopManager(ToolLoop* toolLoop)
   : m_toolLoop(toolLoop)
+  , m_brush0(*toolLoop->getBrush())
+  , m_dynamics(toolLoop->getDynamics())
 {
 }
 
@@ -100,12 +104,7 @@ void ToolLoopManager::pressButton(const Pointer& pointer)
     return;
   }
 
-  // Convert the screen point to a sprite point
-  Point spritePoint = pointer.point();
-  m_toolLoop->setSpeed(Point(0, 0));
-  m_oldPoint = spritePoint;
-  snapToGrid(spritePoint);
-
+  Stroke::Pt spritePoint = getSpriteStrokePt(pointer);
   m_toolLoop->getController()->pressButton(m_toolLoop, m_stroke, spritePoint);
 
   std::string statusText;
@@ -135,9 +134,7 @@ bool ToolLoopManager::releaseButton(const Pointer& pointer)
   if (isCanceled())
     return false;
 
-  Point spritePoint = pointer.point();
-  snapToGrid(spritePoint);
-
+  Stroke::Pt spritePoint = getSpriteStrokePt(pointer);
   bool res = m_toolLoop->getController()->releaseButton(m_stroke, spritePoint);
 
   if (!res && (m_toolLoop->getTracePolicy() == TracePolicy::Last ||
@@ -154,20 +151,12 @@ bool ToolLoopManager::releaseButton(const Pointer& pointer)
 
 void ToolLoopManager::movement(const Pointer& pointer)
 {
-  TOOL_TRACE("ToolLoopManager::movement", pointer.point());
-
   m_lastPointer = pointer;
 
   if (isCanceled())
     return;
 
-  // Convert the screen point to a sprite point
-  Point spritePoint = pointer.point();
-  // Calculate the speed (new sprite point - old sprite point)
-  m_toolLoop->setSpeed(spritePoint - m_oldPoint);
-  m_oldPoint = spritePoint;
-  snapToGrid(spritePoint);
-
+  Stroke::Pt spritePoint = getSpriteStrokePt(pointer);
   m_toolLoop->getController()->movement(m_toolLoop, m_stroke, spritePoint);
 
   std::string statusText;
@@ -277,16 +266,19 @@ void ToolLoopManager::doLoopStep(bool lastStep)
 }
 
 // Applies the grid settings to the specified sprite point.
-void ToolLoopManager::snapToGrid(Point& point)
+void ToolLoopManager::snapToGrid(Stroke::Pt& pt)
 {
   if (!m_toolLoop->getController()->canSnapToGrid() ||
       !m_toolLoop->getSnapToGrid() ||
       m_toolLoop->isSelectingTiles())
     return;
 
+  gfx::Point point(pt.x, pt.y);
   point = snap_to_grid(m_toolLoop->getGridBounds(), point,
                        PreferSnapTo::ClosestGridVertex);
   point += m_toolLoop->getBrush()->center();
+  pt.x = point.x;
+  pt.y = point.y;
 }
 
 // Strokes are relative to sprite origin.
@@ -371,6 +363,114 @@ void ToolLoopManager::calculateDirtyArea(const Strokes& strokes)
         break;
     }
   }
+}
+
+Stroke::Pt ToolLoopManager::getSpriteStrokePt(const Pointer& pointer)
+{
+  // Convert the screen point to a sprite point
+  Stroke::Pt spritePoint = pointer.point();
+  spritePoint.size = m_brush0.size();
+  spritePoint.angle = m_brush0.angle();
+
+  // Center the input to some grid point if needed
+  snapToGrid(spritePoint);
+
+  // Control dynamic parameters through sensors
+  if (useDynamics()) {
+    adjustPointWithDynamics(pointer, spritePoint);
+  }
+
+  // Inform the original velocity vector to the ToolLoop
+  m_toolLoop->setSpeed(gfx::Point(pointer.velocity().x,
+                                  pointer.velocity().y));
+
+  return spritePoint;
+}
+
+bool ToolLoopManager::useDynamics() const
+{
+  return (m_dynamics.isDynamic() &&
+          !m_toolLoop->getFilled() &&
+          m_toolLoop->getController()->isFreehand());
+}
+
+void ToolLoopManager::adjustPointWithDynamics(const Pointer& pointer,
+                                              Stroke::Pt& pt)
+{
+  int size = pt.size;
+  int angle = pt.angle;
+
+  // Pressure
+  bool hasP = (pointer.type() == Pointer::Type::Pen ||
+               pointer.type() == Pointer::Type::Eraser);
+  float p = 1.0f;
+  if (hasP) {
+    p = pointer.pressure();
+    if (p < m_dynamics.minPressureThreshold) {
+      p = 0.0f;
+    }
+    else if (p > m_dynamics.maxPressureThreshold ||
+             // To avoid div by zero
+             m_dynamics.minPressureThreshold == m_dynamics.maxPressureThreshold) {
+      p = 1.0f;
+    }
+    else {
+      p =
+        (p - m_dynamics.minPressureThreshold) /
+        (m_dynamics.maxPressureThreshold - m_dynamics.minPressureThreshold);
+    }
+  }
+  ASSERT(p >= 0.0f && p <= 1.0f);
+  p = base::clamp(p, 0.0f, 1.0f);
+
+  // Velocity
+  float v = pointer.velocity().magnitude() / VelocitySensor::kScreenPixelsForFullVelocity;
+  v = base::clamp(v, 0.0f, 1.0f);
+  if (v < m_dynamics.minVelocityThreshold) {
+    v = 0.0f;
+  }
+  else if (v > m_dynamics.maxVelocityThreshold ||
+           // To avoid div by zero
+           m_dynamics.minVelocityThreshold == m_dynamics.maxVelocityThreshold) {
+    v = 1.0f;
+  }
+  else {
+    v =
+      (v - m_dynamics.minVelocityThreshold) /
+      (m_dynamics.maxVelocityThreshold - m_dynamics.minVelocityThreshold);
+  }
+  ASSERT(v >= 0.0f && v <= 1.0f);
+  v = base::clamp(v, 0.0f, 1.0f);
+
+  switch (m_dynamics.size) {
+    case DynamicSensor::Pressure:
+      if (hasP) size = (1.0f-p)*m_dynamics.minSize + p*size;
+      break;
+    case DynamicSensor::Velocity:
+      size = (1.0f-v)*m_dynamics.minSize + v*size;
+      break;
+  }
+
+  switch (m_dynamics.angle) {
+    case DynamicSensor::Pressure:
+      if (hasP) angle = (1.0f-p)*m_dynamics.minAngle + p*angle;
+      break;
+    case DynamicSensor::Velocity:
+      angle = (1.0f-v)*m_dynamics.minAngle + v*angle;
+      break;
+  }
+
+  switch (m_dynamics.gradient) {
+    case DynamicSensor::Pressure:
+      pt.gradient = p;
+      break;
+    case DynamicSensor::Velocity:
+      pt.gradient = v;
+      break;
+  }
+
+  pt.size = base::clamp(size, int(Brush::kMinBrushSize), int(Brush::kMaxBrushSize));
+  pt.angle = base::clamp(angle, -180, 180);
 }
 
 } // namespace tools

@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -39,10 +40,12 @@
 #include "font_popup.xml.h"
 
 #ifdef _WIN32
-#include <shlobj.h>
-#include <windows.h>
+  #include <shlobj.h>
+  #include <windows.h>
+  #undef max
 #endif
 
+#include <algorithm>
 #include <map>
 
 namespace app {
@@ -87,7 +90,7 @@ private:
       gfx::Size sz = ev.sizeHint();
       ev.setSizeHint(
         sz.w + 4 + m_image->width(),
-        MAX(sz.h, m_image->height()));
+        std::max(sz.h, m_image->height()));
     }
   }
 

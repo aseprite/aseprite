@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -14,7 +14,7 @@
 #include "app/ui/editor/standby_state.h"
 #include "gfx/fwd.h"
 #include "ui/cursor_type.h"
-#include "ui/mouse_buttons.h"
+#include "ui/mouse_button.h"
 
 #include <string>
 #include <vector>
@@ -32,7 +32,7 @@ namespace app {
 
     // Called only in QUICKBOX mode, when the user released the mouse
     // button.
-    virtual void onQuickboxEnd(Editor* editor, const gfx::Rect& rect, ui::MouseButtons buttons) { }
+    virtual void onQuickboxEnd(Editor* editor, const gfx::Rect& rect, ui::MouseButton button) { }
     virtual void onQuickboxCancel(Editor* editor) { }
 
     // Help text to be shown in the ContextBar
@@ -136,7 +136,7 @@ namespace app {
     int m_rulersDragAlign;      // Used to calculate the correct mouse cursor
     std::vector<int> m_movingRulers;
     bool m_selectingBox;
-    ui::MouseButtons m_selectingButtons;
+    ui::MouseButton m_selectingButton;
     gfx::Point m_startingPos;
     Flags m_flags;
   };

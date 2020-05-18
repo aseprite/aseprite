@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -107,8 +108,8 @@ void MedianFilter::setSize(int width, int height)
   ASSERT(width >= 1);
   ASSERT(height >= 1);
 
-  m_width = MAX(1, width);
-  m_height = MAX(1, height);
+  m_width = std::max(1, width);
+  m_height = std::max(1, height);
   m_ncolors = width*height;
 
   for (int c = 0; c < 4; ++c)

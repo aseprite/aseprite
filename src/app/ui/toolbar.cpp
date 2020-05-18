@@ -228,7 +228,7 @@ bool ToolBar::onProcessMessage(Message* msg)
           MouseMessage* mouseMsg2 = new MouseMessage(
             kMouseDownMessage,
             mouseMsg->pointerType(),
-            mouseMsg->buttons(),
+            mouseMsg->button(),
             mouseMsg->modifiers(),
             mouseMsg->position());
           mouseMsg2->setRecipient(strip);
@@ -660,7 +660,7 @@ bool ToolBar::ToolStrip::onProcessMessage(Message* msg)
           MouseMessage* mouseMsg2 = new MouseMessage(
             kMouseDownMessage,
             mouseMsg->pointerType(),
-            mouseMsg->buttons(),
+            mouseMsg->button(),
             mouseMsg->modifiers(),
             mouseMsg->position());
           mouseMsg2->setRecipient(bar);

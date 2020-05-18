@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -146,6 +146,8 @@ doc::frame_t get_frame_number_from_arg(lua_State* L, int index)
   auto obj = may_get_obj<FrameObj>(L, index);
   if (obj)
     return obj->frame;
+  else if (lua_isnil(L, index) || lua_isnone(L, index))
+    return 0;
   else
     return lua_tointeger(L, index)-1;
 }

@@ -1,4 +1,5 @@
 // Aseprite UI Library
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -37,7 +38,7 @@ ImageView::~ImageView()
 void ImageView::onSizeHint(SizeHintEvent& ev)
 {
   gfx::Rect box;
-  getTextIconInfo(&box, NULL, NULL,
+  getTextIconInfo(&box, nullptr, nullptr,
     align(), m_sur->width(), m_sur->height());
 
   ev.setSizeHint(

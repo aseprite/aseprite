@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019 Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -41,6 +41,7 @@
 #include "doc/algorithm/flip_image.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
+#include "fmt/format.h"
 #include "gfx/rect.h"
 #include "ui/manager.h"
 #include "ui/message.h"
@@ -491,19 +492,21 @@ bool MovingPixelsState::onUpdateStatusBar(Editor* editor)
   int w = int(transform.bounds().w);
   int h = int(transform.bounds().h);
   int gcd = base::gcd(w, h);
-  StatusBar::instance()->setStatusText
-    (100, ":pos: %d %d :size: %3d %3d :selsize: %d %d [%.02f%% %.02f%%] :angle: %.1f :aspect_ratio: %d:%d",
-     int(transform.bounds().x),
-     int(transform.bounds().y),
-     imageSize.w,
-     imageSize.h,
-     w,
-     h,
-     (double)w*100.0/imageSize.w,
-     (double)h*100.0/imageSize.h,
-     180.0 * transform.angle() / PI,
-     w/gcd,
-     h/gcd);
+  StatusBar::instance()->setStatusText(
+    100,
+    fmt::format(
+      ":pos: {} {} :size: {:3d} {:3d} :selsize: {} {} [{:.02f}% {:.02f}%] :angle: {:.1f} :aspect_ratio: {}:{}",
+      int(transform.bounds().x),
+      int(transform.bounds().y),
+      imageSize.w,
+      imageSize.h,
+      w,
+      h,
+      (double)w*100.0/imageSize.w,
+      (double)h*100.0/imageSize.h,
+      180.0 * transform.angle() / PI,
+      w/gcd,
+      h/gcd));
 
   return true;
 }

@@ -47,6 +47,7 @@ namespace app {
 
   tools::ToolLoop* create_tool_loop_preview(
     Editor* editor,
+    const doc::BrushRef& brush,
     doc::Image* image,
     const gfx::Point& celOrigin);
 

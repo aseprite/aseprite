@@ -172,10 +172,10 @@ void NewFrameCommand::onExecute(Context* context)
   if (context->isUIAvailable()) {
     update_screen_for_document(document);
 
-    StatusBar::instance()
-      ->showTip(1000, "New frame %d/%d",
-                (int)context->activeSite().frame()+1,
-                (int)sprite->totalFrames());
+    StatusBar::instance()->showTip(
+      1000, fmt::format("New frame {}/{}",
+                        (int)context->activeSite().frame()+1,
+                        (int)sprite->totalFrames()));
 
     App::instance()->mainWindow()->popTimeline();
   }

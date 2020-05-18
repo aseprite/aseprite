@@ -327,9 +327,9 @@ bool DocView::onCloseView(Workspace* workspace, bool quitting)
     DocDestroyer destroyer(
       static_cast<app::Context*>(m_document->context()), m_document, 500);
 
-    StatusBar::instance()
-      ->setStatusText(0, "Sprite '%s' closed.",
-                      m_document->name().c_str());
+    StatusBar::instance()->setStatusText(
+      0, fmt::format("Sprite '{}' closed.",
+                     m_document->name()));
 
     // Just close the document (so we can reopen it with
     // ReopenClosedFile command).
@@ -391,33 +391,6 @@ void DocView::onAddLayer(DocEvent& ev)
   if (current_editor == m_editor) {
     ASSERT(ev.layer() != NULL);
     m_editor->setLayer(ev.layer());
-  }
-}
-
-// TODO why note move this code to Editor::onBeforeRemoveLayer?
-void DocView::onBeforeRemoveLayer(DocEvent& ev)
-{
-  Sprite* sprite = ev.sprite();
-  Layer* layer = ev.layer();
-
-  // If the layer that was removed is the selected one in the editor,
-  // or is an ancestor of the selected one.
-  if ((m_editor->layer() == layer) ||
-      (m_editor->layer() &&
-       m_editor->layer()->hasAncestor(layer))) {
-    LayerGroup* parent = layer->parent();
-    Layer* layer_select = NULL;
-
-    // Select previous layer, or next layer, or the parent (if it is
-    // not the main layer of sprite set).
-    if (layer->getPrevious())
-      layer_select = layer->getPrevious();
-    else if (layer->getNext())
-      layer_select = layer->getNext();
-    else if (parent != sprite->root())
-      layer_select = parent;
-
-    m_editor->setLayer(layer_select);
   }
 }
 

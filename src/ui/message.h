@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -15,7 +15,7 @@
 #include "ui/base.h"
 #include "ui/keys.h"
 #include "ui/message_type.h"
-#include "ui/mouse_buttons.h"
+#include "ui/mouse_button.h"
 #include "ui/pointer_type.h"
 
 namespace ui {
@@ -116,35 +116,39 @@ namespace ui {
   public:
     MouseMessage(MessageType type,
                  PointerType pointerType,
-                 MouseButtons buttons,
+                 MouseButton button,
                  KeyModifiers modifiers,
                  const gfx::Point& pos,
                  const gfx::Point& wheelDelta = gfx::Point(0, 0),
-                 bool preciseWheel = false)
+                 bool preciseWheel = false,
+                 float pressure = 0.0f)
       : Message(type, modifiers),
         m_pointerType(pointerType),
-        m_buttons(buttons),
+        m_button(button),
         m_pos(pos),
         m_wheelDelta(wheelDelta),
-        m_preciseWheel(preciseWheel) {
+        m_preciseWheel(preciseWheel),
+        m_pressure(pressure) {
     }
 
     PointerType pointerType() const { return m_pointerType; }
-    MouseButtons buttons() const { return m_buttons; }
-    bool left() const { return (m_buttons & kButtonLeft) == kButtonLeft; }
-    bool right() const { return (m_buttons & kButtonRight) == kButtonRight; }
-    bool middle() const { return (m_buttons & kButtonMiddle) == kButtonMiddle; }
+    MouseButton button() const { return m_button; }
+    bool left() const { return (m_button == kButtonLeft); }
+    bool right() const { return (m_button == kButtonRight); }
+    bool middle() const { return (m_button == kButtonMiddle); }
     gfx::Point wheelDelta() const { return m_wheelDelta; }
     bool preciseWheel() const { return m_preciseWheel; }
+    float pressure() const { return m_pressure; }
 
     const gfx::Point& position() const { return m_pos; }
 
   private:
     PointerType m_pointerType;
-    MouseButtons m_buttons;     // Pressed buttons
+    MouseButton m_button;       // Pressed button
     gfx::Point m_pos;           // Mouse position
     gfx::Point m_wheelDelta;    // Wheel axis variation
     bool m_preciseWheel;
+    float m_pressure;
   };
 
   class TouchMessage : public Message {

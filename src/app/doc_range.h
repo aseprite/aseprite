@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -31,6 +32,8 @@ namespace app {
 
     DocRange();
     DocRange(Cel* cel);
+    DocRange(const DocRange&) = default;
+    DocRange& operator=(const DocRange&) = default;
 
     Type type() const { return m_type; }
     bool enabled() const { return m_type != kNone; }
@@ -38,6 +41,10 @@ namespace app {
     frame_t frames() const { return int(m_selectedFrames.size()); }
     const SelectedLayers& selectedLayers() const  { return m_selectedLayers; }
     const SelectedFrames& selectedFrames() const  { return m_selectedFrames; }
+
+    void setType(const Type type);
+    void setSelectedLayers(const SelectedLayers& layers);
+    void setSelectedFrames(const SelectedFrames& frames);
 
     void displace(layer_t layerDelta, frame_t frameDelta);
 
@@ -47,6 +54,12 @@ namespace app {
     }
     bool contains(const Layer* layer,
                   const frame_t frame) const;
+
+    // If the range includes the given layer, it will be erased from
+    // the selection and other candidates might be selected (e.g. a
+    // sibling, parent, etc.) using the
+    // candidate_if_layer_is_deleted() function.
+    void eraseAndAdjust(const Layer* layer);
 
     void clearRange();
     void startRange(Layer* fromLayer, frame_t fromFrame, Type type);

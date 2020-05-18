@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019 Igara Studio S.A.
+// Copyright (c) 2019-2020 Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -46,7 +46,7 @@ void shift_image(Image* image, int dx, int dy, double angle)
   // To simplify the algorithm we use a copy of the original image, we
   // could avoid this copy swapping rows and columns.
   ImageRef crop(crop_image(image, bounds.x, bounds.y, bounds.w, bounds.h,
-                         image->maskColor()));
+                           image->maskColor()));
 
   for (int y=0; y<bounds.h; ++y) {
     for (int x=0; x<bounds.w; ++x) {

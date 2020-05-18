@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -10,6 +10,7 @@
 #pragma once
 
 #include "app/tools/pointer.h"
+#include "app/tools/velocity.h"
 #include "app/ui/editor/standby_state.h"
 #include "obs/connection.h"
 #include <memory>
@@ -77,6 +78,10 @@ namespace app {
     // Stores the last mouse pointer, used to re-use the latest mouse
     // button when onScrollChange() event is received.
     tools::Pointer m_lastPointer;
+
+    // Used to calculate the velocity of the mouse (whch is a sensor
+    // to generate dynamic parameters).
+    tools::VelocitySensor m_velocity;
 
     // Used to know if the button was pressed after the DrawingState
     // was initialized. In this way we can cancel the ToolLoop if the

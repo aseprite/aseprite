@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -143,7 +143,7 @@ bool SelectBoxState::onMouseDown(Editor* editor, MouseMessage* msg)
 
     if (hasFlag(Flags::QuickBox) && m_movingRulers.empty()) {
       m_selectingBox = true;
-      m_selectingButtons = msg->buttons();
+      m_selectingButton = msg->button();
       setBoxBounds(gfx::Rect(m_startingPos, gfx::Size(1, 1)));
     }
 
@@ -162,8 +162,8 @@ bool SelectBoxState::onMouseUp(Editor* editor, MouseMessage* msg)
     m_selectingBox = false;
 
     if (m_delegate) {
-      if (m_selectingButtons == msg->buttons())
-        m_delegate->onQuickboxEnd(editor, getBoxBounds(), msg->buttons());
+      if (m_selectingButton == msg->button())
+        m_delegate->onQuickboxEnd(editor, getBoxBounds(), msg->button());
       else
         m_delegate->onQuickboxCancel(editor);
     }

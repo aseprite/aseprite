@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -10,6 +10,7 @@
 #endif
 
 #include "app/cmd/set_tag_anidir.h"
+#include "app/cmd/set_tag_color.h"
 #include "app/cmd/set_tag_name.h"
 #include "app/cmd/set_tag_range.h"
 #include "app/script/docobj.h"
@@ -82,6 +83,20 @@ int Tag_get_aniDir(lua_State* L)
   return 1;
 }
 
+int Tag_get_color(lua_State* L)
+{
+  auto tag = get_docobj<Tag>(L, 1);
+  doc::color_t docColor = tag->color();
+  app::Color appColor = app::Color::fromRgb(doc::rgba_getr(docColor),
+                                            doc::rgba_getg(docColor),
+                                            doc::rgba_getb(docColor),
+                                            doc::rgba_geta(docColor));
+  if (appColor.getAlpha() == 0)
+    appColor = app::Color::fromMask();
+  push_obj<app::Color>(L, appColor);
+  return 1;
+}
+
 int Tag_set_fromFrame(lua_State* L)
 {
   auto tag = get_docobj<Tag>(L, 1);
@@ -127,6 +142,16 @@ int Tag_set_aniDir(lua_State* L)
   return 0;
 }
 
+int Tag_set_color(lua_State* L)
+{
+  auto tag = get_docobj<Tag>(L, 1);
+  doc::color_t docColor = convert_args_into_pixel_color(L, 2, doc::IMAGE_RGB);
+  Tx tx;
+  tx(new cmd::SetTagColor(tag, docColor));
+  tx.commit();
+  return 0;
+}
+
 const luaL_Reg Tag_methods[] = {
   { "__eq", Tag_eq },
   { nullptr, nullptr }
@@ -139,6 +164,7 @@ const Property Tag_properties[] = {
   { "frames", Tag_get_frames, nullptr },
   { "name", Tag_get_name, Tag_set_name },
   { "aniDir", Tag_get_aniDir, Tag_set_aniDir },
+  { "color", Tag_get_color, Tag_set_color },
   { nullptr, nullptr, nullptr }
 };
 

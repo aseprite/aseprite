@@ -49,6 +49,7 @@ namespace app {
 
     Native* native() { return m_native; }
     void setNative(const Native& native);
+    void disposeNative();
     void syncNativeMenuItemKeyShortcut();
 
     static void setContextParams(const Params& params);

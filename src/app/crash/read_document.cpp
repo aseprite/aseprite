@@ -15,6 +15,7 @@
 #include "app/crash/doc_format.h"
 #include "app/crash/internals.h"
 #include "app/doc.h"
+#include "base/clamp.h"
 #include "base/convert_to.h"
 #include "base/exception.h"
 #include "base/fs.h"
@@ -41,6 +42,7 @@
 #include "doc/tileset.h"
 #include "doc/tileset_io.h"
 #include "doc/tilesets.h"
+#include "doc/user_data_io.h"
 #include "fixmath/fixmath.h"
 
 #include <fstream>
@@ -411,52 +413,64 @@ private:
            type == ObjectType::LayerTilemap);
 
     std::string name = read_string(s);
+    std::unique_ptr<Layer> lay;
 
-    if (type == ObjectType::LayerImage ||
-        type == ObjectType::LayerTilemap) {
-      std::unique_ptr<LayerImage> lay;
+    switch (type) {
 
-      switch (type) {
-        case ObjectType::LayerImage:
-          lay.reset(new LayerImage(m_sprite));
-          break;
-        case ObjectType::LayerTilemap: {
-          tileset_index tilesetIndex = read32(s);
-          lay.reset(new LayerTilemap(m_sprite, tilesetIndex));
-          break;
+      case ObjectType::LayerImage:
+      case ObjectType::LayerTilemap: {
+        std::unique_ptr<LayerImage> lay;
+
+        switch (type) {
+          case ObjectType::LayerImage:
+            lay.reset(new LayerImage(m_sprite));
+            break;
+          case ObjectType::LayerTilemap: {
+            tileset_index tilesetIndex = read32(s);
+            lay.reset(new LayerTilemap(m_sprite, tilesetIndex));
+            break;
+          }
         }
+
+        lay->setName(name);
+        lay->setFlags(flags);
+
+        // Blend mode & opacity
+        lay->setBlendMode((BlendMode)read16(s));
+        lay->setOpacity(read8(s));
+
+        // Cels
+        int ncels = read32(s);
+        for (int i=0; i<ncels; ++i) {
+          if (canceled())
+            return nullptr;
+
+          // Add a new cel to load in the future after we load all layers
+          ObjectId celId = read32(s);
+          m_celsToLoad.push_back(std::make_pair(lay->id(), celId));
+        }
+        break;
       }
 
-      lay->setName(name);
-      lay->setFlags(flags);
+      case ObjectType::LayerGroup:
+        lay.reset(new LayerGroup(m_sprite));
+        lay->setName(name);
+        lay->setFlags(flags);
+        break;
 
-      // Blend mode & opacity
-      lay->setBlendMode((BlendMode)read16(s));
-      lay->setOpacity(read8(s));
+      default:
+        Console().printf("Unable to load layer named '%s', type #%d\n",
+                         name.c_str(), (int)type);
+        break;
+    }
 
-      // Cels
-      int ncels = read32(s);
-      for (int i=0; i<ncels; ++i) {
-        if (canceled())
-          return nullptr;
-
-        // Add a new cel to load in the future after we load all layers
-        ObjectId celId = read32(s);
-        m_celsToLoad.push_back(std::make_pair(lay->id(), celId));
-      }
+    if (lay) {
+      UserData userData = read_user_data(s);
+      lay->setUserData(userData);
       return lay.release();
     }
-    else if (type == ObjectType::LayerGroup) {
-      std::unique_ptr<LayerGroup> lay(new LayerGroup(m_sprite));
-      lay->setName(name);
-      lay->setFlags(flags);
-      return lay.release();
-    }
-    else {
-      Console().printf("Unable to load layer named '%s', type #%d\n",
-        name.c_str(), (int)type);
+    else
       return nullptr;
-    }
   }
 
   Cel* readCel(std::ifstream& s) {
@@ -559,8 +573,8 @@ Doc* read_document_with_raw_images(const std::string& dir,
     info.height = 256;
     info.filename = "Unknown";
   }
-  info.width = MID(1, info.width, 99999);
-  info.height = MID(1, info.height, 99999);
+  info.width = base::clamp(info.width, 1, 99999);
+  info.height = base::clamp(info.height, 1, 99999);
   Sprite* spr = new Sprite(ImageSpec(info.mode, info.width, info.height), 256);
 
   // Load each image as a new frame

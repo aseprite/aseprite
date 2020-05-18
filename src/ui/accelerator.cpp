@@ -1,4 +1,5 @@
 // Aseprite UI Library
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -208,7 +209,7 @@ Accelerator::Accelerator(const std::string& str)
     }
     // F1, F2, ..., F11, F12
     else if (tok[0] == 'f' && (tok.size() <= 3)) {
-      int num = std::strtol(tok.c_str()+1, NULL, 10);
+      int num = std::strtol(tok.c_str()+1, nullptr, 10);
       if ((num >= 1) && (num <= 12))
         m_scancode = (KeyScancode)((int)kKeyF1 + num - 1);
     }

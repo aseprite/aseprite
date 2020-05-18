@@ -609,7 +609,7 @@ void StatusBar::onSelectedToolChange(tools::Tool* tool)
 
 void StatusBar::clearText()
 {
-  setStatusText(1, "");
+  setStatusText(1, std::string());
 }
 
 // TODO Workspace views should have a method to set the default status
@@ -621,8 +621,8 @@ void StatusBar::showDefaultText()
     showDefaultText(current_editor->document());
   }
   else if (App::instance()->mainWindow()->isHomeSelected()) {
-    setStatusText(0, "-- %s %s by David & Gaspar Capello -- Igara Studio --",
-                  get_app_name(), get_app_version());
+    setStatusText(0, fmt::format("-- {} {} by David & Gaspar Capello -- Igara Studio --",
+                                 get_app_name(), get_app_version()));
   }
   else {
     clearText();
@@ -647,7 +647,7 @@ void StatusBar::showDefaultText(Doc* doc)
         buf += fmt::format("  ({})", path);
     }
 
-    setStatusText(1, buf.c_str());
+    setStatusText(1, buf);
   }
 }
 
@@ -662,14 +662,9 @@ void StatusBar::showBackupIcon(BackupIcon icon)
   m_indicators->showBackupIcon(icon);
 }
 
-bool StatusBar::setStatusText(int msecs, const char* format, ...)
+bool StatusBar::setStatusText(int msecs, const std::string& msg)
 {
   if ((base::current_tick() > m_timeout) || (msecs > 0)) {
-    std::va_list ap;
-    va_start(ap, format);
-    std::string msg = base::string_vprintf(format, ap);
-    va_end(ap);
-
     IndicatorsGeneration(m_indicators).add(msg.c_str());
     m_timeout = base::current_tick() + msecs;
     return true;
@@ -678,13 +673,8 @@ bool StatusBar::setStatusText(int msecs, const char* format, ...)
     return false;
 }
 
-void StatusBar::showTip(int msecs, const char* format, ...)
+void StatusBar::showTip(int msecs, const std::string& msg)
 {
-  std::va_list ap;
-  va_start(ap, format);
-  std::string msg = base::string_vprintf(format, ap);
-  va_end(ap);
-
   if (m_tipwindow == NULL) {
     m_tipwindow = new CustomizedTipWindow(msg);
   }

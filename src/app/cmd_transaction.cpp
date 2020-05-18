@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -88,10 +88,7 @@ std::istream* CmdTransaction::documentRangeAfterExecute() const
 
 void CmdTransaction::onExecute()
 {
-  CmdSequence::onExecute();
-
-  // The execution of CmdTransaction is called by Transaction at the
-  // very beginning, just to save the current sprite position.
+  // Save the current site and doc range
   m_spritePositionBefore = calcSpritePosition();
 #ifdef ENABLE_UI
   if (isDocRangeEnabled()) {
@@ -99,6 +96,9 @@ void CmdTransaction::onExecute()
     calcDocRange().write(m_ranges->m_before);
   }
 #endif
+
+  // Execute the sequence of "cmds"
+  CmdSequence::onExecute();
 
   if (m_changeSavedState)
     ++(*m_savedCounter);

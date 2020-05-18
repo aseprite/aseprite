@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2015-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -12,6 +13,8 @@
 
 #include "app/ui/editor/editor.h"
 #include "app/ui/status_bar.h"
+#include "base/clamp.h"
+#include "fmt/format.h"
 #include "ui/message.h"
 
 #include <cmath>
@@ -48,12 +51,12 @@ bool MovingSymmetryState::onMouseMove(Editor* editor, MouseMessage* msg)
     case app::gen::SymmetryMode::HORIZONTAL:
       pos = m_symmetryAxisStart + delta.x;
       pos = std::round(pos*2.0)/2.0;
-      pos = MID(1.0, pos, editor->sprite()->width()-1.0);
+      pos = base::clamp(pos, 1.0, editor->sprite()->width()-1.0);
       break;
     case app::gen::SymmetryMode::VERTICAL:
       pos = m_symmetryAxisStart + delta.y;
       pos = std::round(pos*2.0)/2.0;
-      pos = MID(1.0, pos, editor->sprite()->height()-1.0);
+      pos = base::clamp(pos, 1.0, editor->sprite()->height()-1.0);
       break;
   }
   m_symmetryAxis(pos);
@@ -68,13 +71,15 @@ bool MovingSymmetryState::onMouseMove(Editor* editor, MouseMessage* msg)
 bool MovingSymmetryState::onUpdateStatusBar(Editor* editor)
 {
   if (m_symmetryMode == app::gen::SymmetryMode::HORIZONTAL)
-    StatusBar::instance()->setStatusText
-      (0, "Left %3.1f Right %3.1f", m_symmetryAxis(),
-       double(editor->sprite()->width()) - m_symmetryAxis());
+    StatusBar::instance()->setStatusText(
+      0, fmt::format("Left {:3.1f} Right {:3.1f}",
+                     m_symmetryAxis(),
+                     double(editor->sprite()->width()) - m_symmetryAxis()));
   else
-    StatusBar::instance()->setStatusText
-      (0, "Top %3.1f Bottom %3.1f", m_symmetryAxis(),
-       double(editor->sprite()->height()) - m_symmetryAxis());
+    StatusBar::instance()->setStatusText(
+      0, fmt::format("Top {:3.1f} Bottom {:3.1f}",
+                     m_symmetryAxis(),
+                     double(editor->sprite()->height()) - m_symmetryAxis()));
 
   return true;
 }

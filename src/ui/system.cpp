@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -47,7 +47,6 @@ static bool support_native_custom_cursor = false;
 
 // Mouse information (button and position).
 
-static volatile MouseButtons m_buttons;
 static gfx::Point m_mouse_pos;
 static int mouse_cursor_scale = 1;
 
@@ -73,9 +72,9 @@ static void update_mouse_overlay(const Cursor* cursor)
   }
   else if (mouse_cursor_overlay) {
     OverlayManager::instance()->removeOverlay(mouse_cursor_overlay);
-    mouse_cursor_overlay->setSurface(NULL);
+    mouse_cursor_overlay->setSurface(nullptr);
     delete mouse_cursor_overlay;
-    mouse_cursor_overlay = NULL;
+    mouse_cursor_overlay = nullptr;
   }
 }
 
@@ -262,7 +261,7 @@ bool get_clipboard_text(std::string& text)
 
 void update_cursor_overlay()
 {
-  if (mouse_cursor_overlay != NULL && mouse_scares == 0) {
+  if (mouse_cursor_overlay != nullptr && mouse_scares == 0) {
     gfx::Point newPos =
       get_mouse_position() - mouse_cursor->getFocus();
 
@@ -324,16 +323,6 @@ void _internal_no_mouse_position()
 void _internal_set_mouse_position(const gfx::Point& newPos)
 {
   m_mouse_pos = newPos;
-}
-
-void _internal_set_mouse_buttons(MouseButtons buttons)
-{
-  m_buttons = buttons;
-}
-
-MouseButtons _internal_get_mouse_buttons()
-{
-  return m_buttons;
 }
 
 const gfx::Point& get_mouse_position()

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -63,6 +63,13 @@ Preferences::Preferences()
       doc::Sprite::SetDefaultGridBounds(newValue);
     });
   doc::Sprite::SetDefaultGridBounds(defPref.grid.bounds());
+
+  // Reset confusing defaults for a new instance of the program.
+  defPref.grid.snap(false);
+  if (selection.mode() != gen::SelectionMode::DEFAULT &&
+      selection.mode() != gen::SelectionMode::ADD) {
+    selection.mode(gen::SelectionMode::DEFAULT);
+  }
 
   // Hide the menu bar depending on:
   // 1. this is the first run of the program
@@ -165,6 +172,10 @@ DocumentPreferences& Preferences::document(const Doc* doc)
 
     // Load specific settings of this document
     serializeDocPref(doc, docPref, false);
+
+    // Turn off snap to grid setting (it's confusing for most of the
+    // users to load this setting).
+    docPref->grid.snap.setValueAndDefault(false);
 
     return *docPref;
   }

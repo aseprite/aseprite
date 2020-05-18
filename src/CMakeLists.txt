@@ -19,6 +19,7 @@ if(MSVC)
 
   add_definitions(-D_SCL_SECURE_NO_WARNINGS)
   add_definitions(-wd4267) # disable warnings about signed/unsigned comparison
+  add_definitions(-wd4244) # disable warnings about possible loss of data
 else()
   # disable warnings about signed/unsigned comparison
   add_definitions(-Wno-sign-compare)
@@ -96,6 +97,7 @@ add_subdirectory(doc)
 add_subdirectory(filters)
 add_subdirectory(fixmath)
 add_subdirectory(flic)
+add_subdirectory(tga)
 add_subdirectory(render)
 add_subdirectory(dio)
 add_subdirectory(ui)

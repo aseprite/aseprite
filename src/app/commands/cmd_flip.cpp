@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -63,23 +63,23 @@ void FlipCommand::onLoadParams(const Params& params)
                                             doc::algorithm::FlipHorizontal);
 }
 
-bool FlipCommand::onEnabled(Context* context)
+bool FlipCommand::onEnabled(Context* ctx)
 {
-  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable);
+  return ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable);
 }
 
-void FlipCommand::onExecute(Context* context)
+void FlipCommand::onExecute(Context* ctx)
 {
-  Site site = context->activeSite();
-  Timeline* timeline = App::instance()->timeline();
-  LockTimelineRange lockRange(timeline);
+  Site site = ctx->activeSite();
+  LockTimelineRange lockRange(App::instance()->timeline());
 
   CelList cels;
   if (m_flipMask) {
     // If we want to flip the visible mask we can go to
     // MovingPixelsState (even when the range is enabled, because now
     // PixelsMovement support ranges).
-    if (site.document()->isMaskVisible()) {
+    if (site.document()->isMaskVisible() &&
+        ctx->isUIAvailable()) {
       // Select marquee tool
       if (tools::Tool* tool = App::instance()->toolBox()
           ->getToolById(tools::WellKnownTools::RectangularMarquee)) {
@@ -89,7 +89,7 @@ void FlipCommand::onExecute(Context* context)
       }
     }
 
-    auto range = timeline->range();
+    auto range = site.range();
     if (range.enabled()) {
       cels = get_unlocked_unique_cels(site.sprite(), range);
     }
@@ -101,7 +101,7 @@ void FlipCommand::onExecute(Context* context)
 
     if (cels.empty()) {
       StatusBar::instance()->showTip(
-        1000, Strings::statusbar_tips_all_layers_are_locked().c_str());
+        1000, Strings::statusbar_tips_all_layers_are_locked());
       return;
     }
   }
@@ -111,10 +111,10 @@ void FlipCommand::onExecute(Context* context)
       cels.push_back(cel);
   }
 
-  ContextWriter writer(context);
+  ContextWriter writer(ctx);
   Doc* document = writer.document();
   Sprite* sprite = writer.sprite();
-  Tx tx(writer.context(), friendlyName());
+  Tx tx(ctx, friendlyName());
   DocApi api = document->getApi(tx);
 
   Mask* mask = document->mask();
@@ -228,7 +228,11 @@ void FlipCommand::onExecute(Context* context)
   }
 
   tx.commit();
-  update_screen_for_document(document);
+
+#ifdef ENABLE_UI
+  if (ctx->isUIAvailable())
+    update_screen_for_document(document);
+#endif
 }
 
 std::string FlipCommand::onGetFriendlyName() const

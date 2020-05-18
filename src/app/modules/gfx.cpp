@@ -30,6 +30,8 @@
 #include "ui/system.h"
 #include "ui/theme.h"
 
+#include <algorithm>
+
 namespace app {
 
 using namespace app::skin;
@@ -183,7 +185,7 @@ void draw_alpha_slider(ui::Graphics* g,
                        const gfx::Rect& rc,
                        const app::Color& color)
 {
-  const int xmax = MAX(1, rc.w-1);
+  const int xmax = std::max(1, rc.w-1);
   const doc::color_t c =
     (color.getType() != app::Color::MaskType ?
      doc::rgba(color.getRed(),
@@ -210,7 +212,7 @@ void draw_alpha_slider(os::Surface* s,
                        const gfx::Rect& rc,
                        const app::Color& color)
 {
-  const int xmax = MAX(1, rc.w-1);
+  const int xmax = std::max(1, rc.w-1);
   const doc::color_t c =
     (color.getType() != app::Color::MaskType ?
      doc::rgba(color.getRed(),

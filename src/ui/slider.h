@@ -1,4 +1,5 @@
 // Aseprite UI Library
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -46,7 +47,6 @@ namespace ui {
   protected:
     // Events
     bool onProcessMessage(Message* msg) override;
-    void onSizeHint(SizeHintEvent& ev) override;
     void onPaint(PaintEvent& ev) override;
 
     // New events

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 // Copyright (C) 2015  Gabriel Rauter
 //
@@ -21,6 +21,7 @@
 #include "app/ini_file.h"
 #include "app/pref/preferences.h"
 #include "base/bind.h"
+#include "base/clamp.h"
 #include "base/convert_to.h"
 #include "base/file_handle.h"
 #include "doc/doc.h"
@@ -242,8 +243,8 @@ static int progress_report(int percent, const WebPPicture* pic)
   FileOp* fop = wd->fop;
 
   double newProgress = (double(wd->f) + double(percent)/100.0) / double(wd->n);
-  wd->progress = MAX(wd->progress, newProgress);
-  wd->progress = MID(0.0, wd->progress, 1.0);
+  wd->progress = std::max(wd->progress, newProgress);
+  wd->progress = base::clamp(wd->progress, 0.0, 1.0);
 
   fop->setProgress(wd->progress);
   if (fop->isStop())

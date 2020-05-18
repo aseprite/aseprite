@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -18,7 +18,7 @@
 #include "obs/connection.h"
 #include "obs/signal.h"
 #include "ui/event.h"
-#include "ui/mouse_buttons.h"
+#include "ui/mouse_button.h"
 #include "ui/widget.h"
 
 #include <memory>
@@ -40,7 +40,7 @@ namespace app {
   class PaletteViewDelegate {
   public:
     virtual ~PaletteViewDelegate() { }
-    virtual void onPaletteViewIndexChange(int index, ui::MouseButtons buttons) { }
+    virtual void onPaletteViewIndexChange(int index, ui::MouseButton button) { }
     virtual void onPaletteViewModification(const doc::Palette* newPalette, PaletteViewModification mod) { }
     virtual void onPaletteViewChangeSize(int boxsize) { }
     virtual void onPaletteViewPasteColors(
@@ -54,7 +54,7 @@ namespace app {
                                         int& currentEntry,
                                         const int beforeIndex,
                                         const bool isCopy) { }
-    virtual void onTilesViewIndexChange(int index, ui::MouseButtons buttons) { }
+    virtual void onTilesViewIndexChange(int index, ui::MouseButton button) { }
   };
 
   class AbstractPaletteViewAdapter;

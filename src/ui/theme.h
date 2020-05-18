@@ -1,4 +1,5 @@
 // Aseprite UI Library
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -109,6 +110,10 @@ namespace ui {
                             gfx::Size& topLeft,
                             gfx::Size& center,
                             gfx::Size& bottomRight);
+    virtual void calcTextInfo(const Widget* widget,
+                              const Style* style,
+                              const gfx::Rect& bounds,
+                              gfx::Rect& textBounds, int& textAlign);
     virtual gfx::Color calcBgColor(const Widget* widget,
                                    const Style* style);
 
@@ -139,12 +144,13 @@ namespace ui {
                       const Style* style,
                       const Style::Layer& layer,
                       gfx::Border& borderHint,
-                      gfx::Size& textHint, int& textAlign,
+                      gfx::Rect& textHint, int& textAlign,
                       gfx::Size& iconHint, int& iconAlign);
     void calcWidgetMetrics(const Widget* widget,
                            const Style* style,
                            gfx::Size& sizeHint,
-                           gfx::Border& borderHint);
+                           gfx::Border& borderHint,
+                           gfx::Rect& textHint, int& textAlign);
   };
 
 } // namespace ui

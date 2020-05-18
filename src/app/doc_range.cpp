@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -10,6 +11,7 @@
 
 #include "app/doc_range.h"
 
+#include "app/util/layer_utils.h"
 #include "base/serialization.h"
 #include "doc/cel.h"
 #include "doc/image.h"
@@ -91,6 +93,23 @@ void DocRange::selectLayers(const SelectedLayers& selLayers)
 
   for (auto layer : selLayers)
     m_selectedLayers.insert(layer);
+}
+
+void DocRange::eraseAndAdjust(const Layer* layer)
+{
+  if (!enabled())
+    return;
+
+  if (m_selectingFromLayer)
+    m_selectingFromLayer = candidate_if_layer_is_deleted(m_selectingFromLayer, layer);
+
+  SelectedLayers copy = m_selectedLayers;
+  m_selectedLayers.clear();
+  for (Layer* selectedLayer : copy) {
+    Layer* layerToSelect = candidate_if_layer_is_deleted(selectedLayer, layer);
+    if (layerToSelect)
+      m_selectedLayers.insert(layerToSelect);
+  }
 }
 
 bool DocRange::contains(const Layer* layer) const
@@ -237,6 +256,44 @@ void DocRange::selectLayerRange(Layer* fromLayer, Layer* toLayer)
 void DocRange::selectFrameRange(frame_t fromFrame, frame_t toFrame)
 {
   m_selectedFrames.insert(fromFrame, toFrame);
+}
+
+void DocRange::setType(const Type type)
+{
+  if (type != kNone) {
+    m_type = type;
+    m_flags |= type;
+  }
+  else  {
+    m_type = kNone;
+    m_flags = kNone;
+  }
+}
+
+void DocRange::setSelectedLayers(const SelectedLayers& layers)
+{
+  if (layers.empty()) {
+    m_type = kNone;
+    m_selectedLayers.clear();
+    return;
+  }
+
+  m_type = kLayers;
+  m_flags |= kLayers;
+  m_selectedLayers = layers;
+}
+
+void DocRange::setSelectedFrames(const SelectedFrames& frames)
+{
+  if (frames.empty()) {
+    m_type = kNone;
+    m_selectedFrames.clear();
+    return;
+  }
+
+  m_type = kFrames;
+  m_flags |= kFrames;
+  m_selectedFrames = frames;
 }
 
 } // namespace app

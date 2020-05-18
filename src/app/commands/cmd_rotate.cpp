@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -223,7 +223,7 @@ void RotateCommand::onExecute(Context* context)
 
       if (cels.empty()) {
         StatusBar::instance()->showTip(
-          1000, Strings::statusbar_tips_all_layers_are_locked().c_str());
+          1000, Strings::statusbar_tips_all_layers_are_locked());
         return;
       }
     }

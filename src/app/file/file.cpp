@@ -95,8 +95,6 @@ Doc* load_document(Context* context, const std::string& filename)
   }
 
   Doc* document = fop->releaseDocument();
-  fop.release();
-
   if (document && context)
     document->setContext(context);
 
@@ -168,8 +166,8 @@ FileOpROI::FileOpROI(const Doc* doc,
         m_selFrames.displace(m_tag->fromFrame());
 
       m_selFrames =
-        m_selFrames.filter(MAX(0, m_tag->fromFrame()),
-                           MIN(m_tag->toFrame(), doc->sprite()->lastFrame()));
+        m_selFrames.filter(std::max(0, m_tag->fromFrame()),
+                           std::min(m_tag->toFrame(), doc->sprite()->lastFrame()));
     }
     // All frames if selected frames is empty
     else if (m_selFrames.empty())
@@ -838,7 +836,7 @@ void FileOp::operate(IFileOpProgress* progress)
     setError(
       fmt::format("Save operation is not supported in trial version.\n"
                   "Go to {} and get the full-version.",
-                  get_app_download_url()));
+                  get_app_download_url()).c_str());
 #endif
   }
 
@@ -1007,7 +1005,9 @@ void FileOp::postLoad()
 
 void FileOp::setLoadedFormatOptions(const FormatOptionsPtr& opts)
 {
-  ASSERT(!m_formatOptions);
+  // This assert can fail when we load a sequence of files.
+  // TODO what we should do, keep the first or the latest format options?
+  //ASSERT(!m_formatOptions);
   m_formatOptions = opts;
 }
 

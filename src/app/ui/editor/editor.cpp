@@ -51,6 +51,7 @@
 #include "app/ui/timeline/timeline.h"
 #include "app/ui/toolbar.h"
 #include "app/ui_context.h"
+#include "app/util/layer_utils.h"
 #include "base/bind.h"
 #include "base/chrono.h"
 #include "base/clamp.h"
@@ -441,6 +442,14 @@ void Editor::setZoom(const render::Zoom& zoom)
 
 void Editor::setDefaultScroll()
 {
+  if (Preferences::instance().editor.autoFit())
+    setScrollAndZoomToFitScreen();
+  else
+    setScrollToCenter();
+}
+
+void Editor::setScrollToCenter()
+{
   View* view = View::getView(this);
   Rect vp = view->viewportBounds();
   gfx::Size canvas = canvasSize();
@@ -588,8 +597,8 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
 
   const int maxw = std::max(0, m_sprite->width()-expose.x);
   const int maxh = std::max(0, m_sprite->height()-expose.y);
-  expose.w = MID(0, expose.w, maxw);
-  expose.h = MID(0, expose.h, maxh);
+  expose.w = base::clamp(expose.w, 0, maxw);
+  expose.h = base::clamp(expose.h, 0, maxh);
   if (expose.isEmpty())
     return;
 
@@ -749,7 +758,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
 
         if (m_docPref.pixelGrid.autoOpacity()) {
           alpha = int(alpha * (m_proj.zoom().scale()-2.) / (16.-2.));
-          alpha = MID(0, alpha, 255);
+          alpha = base::clamp(alpha, 0, 255);
         }
 
         drawGrid(g, enclosingRect, Rect(0, 0, 1, 1),
@@ -774,7 +783,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
             double len = (m_proj.applyX(gridrc.w) +
                           m_proj.applyY(gridrc.h)) / 2.;
             alpha = int(alpha * len / 32.);
-            alpha = MID(0, alpha, 255);
+            alpha = base::clamp(alpha, 0, 255);
           }
 
           if (alpha > 8) {
@@ -911,7 +920,7 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
   }
 
   // Draw the mask
-  if (m_document->getMaskBoundaries())
+  if (m_document->hasMaskBoundaries())
     drawMask(g);
 
   // Post-render decorator.
@@ -951,34 +960,26 @@ void Editor::drawMask(Graphics* g)
       !m_docPref.show.selectionEdges())
     return;
 
-  ASSERT(m_document->getMaskBoundaries());
+  ASSERT(m_document->hasMaskBoundaries());
 
   gfx::Point pt = mainTilePosition();
   pt.x = m_padding.x + m_proj.applyX(pt.x);
   pt.y = m_padding.y + m_proj.applyY(pt.y);
 
-  for (const auto& seg : *m_document->getMaskBoundaries()) {
-    CheckedDrawMode checked(g, m_antsOffset,
-                            gfx::rgba(0, 0, 0, 255),
-                            gfx::rgba(255, 255, 255, 255));
-    gfx::Rect bounds = m_proj.apply(seg.bounds());
+  // Create the mask boundaries path
+  auto& segs = m_document->maskBoundaries();
+  segs.createPathIfNeeeded();
 
-    if (m_proj.scaleX() >= 1.0) {
-      if (!seg.open() && seg.vertical())
-        --bounds.x;
-    }
-
-    if (m_proj.scaleY() >= 1.0) {
-      if (!seg.open() && !seg.vertical())
-        --bounds.y;
-    }
-
-    // The color doesn't matter, we are using CheckedDrawMode
-    if (seg.vertical())
-      g->drawVLine(gfx::rgba(0, 0, 0), pt.x+bounds.x, pt.y+bounds.y, bounds.h);
-    else
-      g->drawHLine(gfx::rgba(0, 0, 0), pt.x+bounds.x, pt.y+bounds.y, bounds.w);
-  }
+  CheckedDrawMode checked(g, m_antsOffset,
+                          gfx::rgba(0, 0, 0, 255),
+                          gfx::rgba(255, 255, 255, 255));
+  os::Paint paint;
+  paint.style(os::Paint::Stroke);
+  paint.color(gfx::rgba(0, 0, 0));
+  g->setMatrix(Matrix::MakeTrans(pt.x, pt.y));
+  g->concat(m_proj.scaleMatrix());
+  g->drawPath(segs.path(), paint);
+  g->resetMatrix();
 }
 
 void Editor::drawMaskSafe()
@@ -988,7 +989,7 @@ void Editor::drawMaskSafe()
 
   if (isVisible() &&
       m_document &&
-      m_document->getMaskBoundaries()) {
+      m_document->hasMaskBoundaries()) {
     Region region;
     getDrawableRegion(region, kCutTopWindows);
     region.offset(-bounds().origin());
@@ -1356,8 +1357,8 @@ gfx::Point Editor::autoScroll(MouseMessage* msg, AutoScroll dir)
 
     m_oldPos = mousePos;
     mousePos = gfx::Point(
-      MID(vp.x, mousePos.x, vp.x+vp.w-1),
-      MID(vp.y, mousePos.y, vp.y+vp.h-1));
+      base::clamp(mousePos.x, vp.x, vp.x2()-1),
+      base::clamp(mousePos.y, vp.y, vp.y2()-1));
   }
   else
     m_oldPos = mousePos;
@@ -1624,7 +1625,7 @@ void Editor::updateToolLoopModifiersIndicators()
       // For move tool
       action = m_customizationDelegate->getPressedKeyAction(KeyContext::MoveTool);
       if (int(action & KeyAction::AutoSelectLayer))
-        newAutoSelectLayer = true;
+        newAutoSelectLayer = Preferences::instance().editor.autoSelectLayerQuick();
       else
         newAutoSelectLayer = Preferences::instance().editor.autoSelectLayer();
     }
@@ -2058,7 +2059,7 @@ void Editor::onPaint(ui::PaintEvent& ev)
 #endif // ENABLE_DEVMODE
 
       // Draw the mask boundaries
-      if (m_document->getMaskBoundaries()) {
+      if (m_document->hasMaskBoundaries()) {
         drawMask(g);
         m_antsTimer.start();
       }
@@ -2153,9 +2154,16 @@ void Editor::onSpritePixelRatioChanged(DocEvent& ev)
   invalidate();
 }
 
+// TODO similar to ActiveSiteHandler::onBeforeRemoveLayer() and Timeline::onBeforeRemoveLayer()
 void Editor::onBeforeRemoveLayer(DocEvent& ev)
 {
   m_showGuidesThisCel = nullptr;
+
+  // If the layer that was removed is the selected one in the editor,
+  // or is an ancestor of the selected one.
+  Layer* layerToSelect = candidate_if_layer_is_deleted(layer(), ev.layer());
+  if (layer() != layerToSelect)
+    setLayer(layerToSelect);
 }
 
 void Editor::onRemoveCel(DocEvent& ev)
@@ -2434,7 +2442,7 @@ void Editor::pasteImage(const Image* image, const Mask* mask)
     // In other case, if the center is visible, we put the pasted
     // image in its original location.
     else {
-      x = MID(visibleBounds.x-image->width(), x, visibleBounds.x+visibleBounds.w-1);
+      x = base::clamp(x, visibleBounds.x-image->width(), visibleBounds.x2()-1);
     }
 
     if (maskCenter.y < visibleBounds.y ||
@@ -2442,19 +2450,21 @@ void Editor::pasteImage(const Image* image, const Mask* mask)
       y = visibleBounds.y + visibleBounds.h/2 - image->height()/2;
     }
     else {
-      y = MID(visibleBounds.y-image->height(), y, visibleBounds.y+visibleBounds.h-1);
+      y = base::clamp(y, visibleBounds.y-image->height(), visibleBounds.y2()-1);
     }
 
     // Limit the image inside the sprite's bounds.
     if (sprite->width() <= image->width() ||
         sprite->height() <= image->height()) {
-      x = MID(0, x, sprite->width() - image->width());
-      y = MID(0, y, sprite->height() - image->height());
+      // TODO review this (I think limits are wrong and high limit can
+      //      be negative here)
+      x = base::clamp(x, 0, sprite->width() - image->width());
+      y = base::clamp(y, 0, sprite->height() - image->height());
     }
     else {
       // Also we always limit the 1 image pixel inside the sprite's bounds.
-      x = MID(-image->width()+1, x, sprite->width()-1);
-      y = MID(-image->height()+1, y, sprite->height()-1);
+      x = base::clamp(x, -image->width()+1, sprite->width()-1);
+      y = base::clamp(y, -image->height()+1, sprite->height()-1);
     }
   }
 
@@ -2499,6 +2509,12 @@ void Editor::notifyScrollChanged()
   ASSERT(m_state);
   if (m_state)
     m_state->onScrollChange(this);
+
+  // Update status bar and mouse cursor
+  if (hasMouse()) {
+    updateStatusBar();
+    setCursor(ui::get_mouse_position());
+  }
 }
 
 void Editor::notifyZoomChanged()

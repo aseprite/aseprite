@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -11,7 +11,7 @@
 
 #include "filters/replace_color_filter.h"
 
-#include "base/base.h"
+#include "base/clamp.h"
 #include "doc/image.h"
 #include "doc/palette.h"
 #include "doc/rgbmap.h"
@@ -40,7 +40,7 @@ void ReplaceColorFilter::setTo(const color_t to)
 
 void ReplaceColorFilter::setTolerance(int tolerance)
 {
-  m_tolerance = MID(0, tolerance, 255);
+  m_tolerance = base::clamp(tolerance, 0, 255);
 }
 
 const char* ReplaceColorFilter::getName()

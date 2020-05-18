@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -11,7 +11,7 @@
 
 #include "render/render.h"
 
-#include "base/base.h"
+#include "base/clamp.h"
 #include "doc/blend_internals.h"
 #include "doc/blend_mode.h"
 #include "doc/doc.h"
@@ -886,7 +886,7 @@ void Render::renderOnionskin(
         m_globalOpacity = m_onionskin.opacityBase() - m_onionskin.opacityStep() * ((frameOut - frame)-1);
       }
 
-      m_globalOpacity = MID(0, m_globalOpacity, 255);
+      m_globalOpacity = base::clamp(m_globalOpacity, 0, 255);
       if (m_globalOpacity > 0) {
         BlendMode blendMode = BlendMode::UNSPECIFIED;
         if (m_onionskin.type() == OnionskinType::MERGE)

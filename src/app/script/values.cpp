@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -151,7 +151,6 @@ FOR_ENUM(app::gen::ColorProfileBehavior)
 FOR_ENUM(app::gen::EyedropperChannel)
 FOR_ENUM(app::gen::EyedropperSample)
 FOR_ENUM(app::gen::FillReferTo)
-FOR_ENUM(app::gen::HueSaturationMode)
 FOR_ENUM(app::gen::OnionskinType)
 FOR_ENUM(app::gen::PaintingCursorType)
 FOR_ENUM(app::gen::PivotPosition)
@@ -162,12 +161,14 @@ FOR_ENUM(app::gen::StopAtGrid)
 FOR_ENUM(app::gen::SymmetryMode)
 FOR_ENUM(app::gen::TimelinePosition)
 FOR_ENUM(app::gen::WindowColorProfile)
+FOR_ENUM(app::gen::ToGrayAlgorithm)
 FOR_ENUM(app::tools::FreehandAlgorithm)
 FOR_ENUM(app::tools::InkType)
 FOR_ENUM(app::tools::RotationAlgorithm)
 FOR_ENUM(doc::AniDir)
 FOR_ENUM(doc::BrushPattern)
 FOR_ENUM(doc::ColorMode)
+FOR_ENUM(filters::HueSaturationFilter::Mode)
 FOR_ENUM(filters::TiledMode)
 FOR_ENUM(render::OnionskinPosition)
 

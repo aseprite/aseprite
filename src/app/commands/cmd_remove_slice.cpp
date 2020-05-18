@@ -21,6 +21,7 @@
 #include "doc/selected_objects.h"
 #include "doc/slice.h"
 #include "doc/sprite.h"
+#include "fmt/format.h"
 #include "ui/alert.h"
 #include "ui/widget.h"
 
@@ -121,10 +122,10 @@ void RemoveSliceCommand::onExecute(Context* context)
   StatusBar::instance()->invalidate();
   if (!sliceName.empty())
     StatusBar::instance()->showTip(
-      1000, "Slice '%s' removed", sliceName.c_str());
+      1000, fmt::format("Slice '{}' removed", sliceName));
   else
     StatusBar::instance()->showTip(
-      1000, "%d slice(s) removed", slicesToDelete.size());
+      1000, fmt::format("{} slice(s) removed", slicesToDelete.size()));
 }
 
 Command* CommandFactory::createRemoveSliceCommand()

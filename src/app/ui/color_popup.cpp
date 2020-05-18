@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -370,7 +371,7 @@ void ColorPopup::onMakeFixed()
   }
 }
 
-void ColorPopup::onPaletteViewIndexChange(int index, ui::MouseButtons buttons)
+void ColorPopup::onPaletteViewIndexChange(int index, ui::MouseButton button)
 {
   base::ScopedValue<bool> restore(m_insideChange, true,
                                   m_insideChange);
@@ -407,7 +408,7 @@ void ColorPopup::onColorHexEntryChange(const app::Color& color)
     m_disableHexUpdate = false;
 }
 
-void ColorPopup::onSelectOldColor()
+void ColorPopup::onSelectOldColor(ColorShades::ClickEvent&)
 {
   Shade shade = m_oldAndNew.getShade();
   int hot = m_oldAndNew.getHotEntry();

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -56,6 +56,7 @@ namespace app {
     void onSetActiveDocument(Doc* doc) override;
     void onSetActiveLayer(doc::Layer* layer) override;
     void onSetActiveFrame(const doc::frame_t frame) override;
+    void onSetRange(const DocRange& range) override;
     void onSetSelectedColors(const doc::PalettePicks& picks) override;
     void onCloseDocument(Doc* doc) override;
 

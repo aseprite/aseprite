@@ -26,6 +26,7 @@
 #include "app/xml_document.h"
 #include "app/xml_exception.h"
 #include "base/bind.h"
+#include "base/clamp.h"
 #include "base/fs.h"
 #include "base/log.h"
 #include "base/string.h"
@@ -42,6 +43,7 @@
 
 #include "tinyxml.h"
 
+#include <algorithm>
 #include <cstring>
 
 #define BGCOLOR                 (getWidgetBgColor(widget))
@@ -54,6 +56,41 @@ using namespace ui;
 
 // TODO For backward compatibility, in future versions we should remove this (extensions are preferred)
 const char* SkinTheme::kThemesFolderName = "themes";
+
+// This class offer backward compatibility with old themes, completing
+// or changing styles from the default theme to match the default
+// theme of previous versions, so third-party themes can look like
+// they are running in the old Aseprite without any modification.
+struct app::skin::SkinTheme::BackwardCompatibility {
+  bool hasSliderStyle = false;
+  void notifyStyleExistence(const char* styleId) {
+    if (std::strcmp(styleId, "slider") == 0)
+      hasSliderStyle = true;
+  }
+  void createMissingStyles(SkinTheme* theme) {
+    if (!hasSliderStyle &&
+        theme->styles.slider() &&
+        theme->styles.miniSlider()) {
+      // Old slider style
+      ui::Style style(nullptr);
+      os::Font* font = theme->getDefaultFont();
+      const int h = font->height();
+
+      style.setId(theme->styles.slider()->id());
+      style.setFont(font);
+
+      auto part = theme->parts.sliderEmpty();
+      style.setBorder(
+        gfx::Border(part->bitmapW()->width()-1*guiscale(),
+                    part->bitmapN()->height()+h/2,
+                    part->bitmapE()->width()-1*guiscale(),
+                    part->bitmapS()->height()-1*guiscale()+h/2));
+
+      *theme->styles.slider() = style;
+      *theme->styles.miniSlider() = style;
+    }
+  }
+};
 
 static const char* g_cursor_names[kCursorTypes] = {
   "null",                       // kNoCursor
@@ -222,7 +259,8 @@ void SkinTheme::onRegenerateTheme()
   // Then we load the selected theme to redefine default theme parts.
   if (pref.theme.selected.defaultValue() != pref.theme.selected()) {
     try {
-      loadAll(pref.theme.selected());
+      BackwardCompatibility backward;
+      loadAll(pref.theme.selected(), &backward);
     }
     catch (const std::exception& e) {
       LOG("THEME: Error loading user-theme: %s\n", e.what());
@@ -263,7 +301,8 @@ void SkinTheme::loadFontData()
   }
 }
 
-void SkinTheme::loadAll(const std::string& themeId)
+void SkinTheme::loadAll(const std::string& themeId,
+                        BackwardCompatibility* backward)
 {
   LOG("THEME: Loading theme %s\n", themeId.c_str());
 
@@ -275,7 +314,7 @@ void SkinTheme::loadAll(const std::string& themeId)
     throw base::Exception("Theme %s not found", themeId.c_str());
 
   loadSheet();
-  loadXml();
+  loadXml(backward);
 }
 
 void SkinTheme::loadSheet()
@@ -313,7 +352,7 @@ void SkinTheme::loadSheet()
   }
 }
 
-void SkinTheme::loadXml()
+void SkinTheme::loadXml(BackwardCompatibility* backward)
 {
   const int scale = guiscale();
 
@@ -513,6 +552,9 @@ void SkinTheme::loadXml()
       if (extends_id)
         base = m_styles[extends_id];
 
+      if (backward)
+        backward->notifyStyleExistence(style_id);
+
       ui::Style* style = m_styles[style_id];
       if (!style) {
         m_styles[style_id] = style = new ui::Style(base);
@@ -697,6 +739,9 @@ void SkinTheme::loadXml()
     }
   }
 
+  if (backward)
+    backward->createMissingStyles(this);
+
   ThemeFile<SkinTheme>::updateInternals();
 }
 
@@ -849,13 +894,7 @@ void SkinTheme::initWidget(Widget* widget)
       break;
 
     case kSliderWidget:
-      BORDER4(
-        parts.sliderEmpty()->bitmapW()->width()-1*scale,
-        parts.sliderEmpty()->bitmapN()->height(),
-        parts.sliderEmpty()->bitmapE()->width()-1*scale,
-        parts.sliderEmpty()->bitmapS()->height()-1*scale);
-      widget->setChildSpacing(widget->textHeight());
-      widget->setAlign(CENTER | MIDDLE);
+      widget->setStyle(styles.slider());
       break;
 
     case kTextBoxWidget:
@@ -976,7 +1015,7 @@ public:
     , m_y(pos.y)
     , m_h(h)
   {
-    m_widget->getEntryThemeInfo(&m_index, &m_caret, &m_state, &m_selbeg, &m_selend);
+    m_widget->getEntryThemeInfo(&m_index, &m_caret, &m_state, &m_range);
   }
 
   int index() const { return m_index; }
@@ -994,8 +1033,8 @@ public:
     fg = colors.text();
 
     // Selected
-    if ((m_index >= m_selbeg) &&
-        (m_index <= m_selend)) {
+    if ((m_index >= m_range.from) &&
+        (m_index < m_range.to)) {
       if (m_widget->hasFocus())
         bg = colors.selected();
       else
@@ -1054,8 +1093,7 @@ private:
   int m_index;
   int m_caret;
   int m_state;
-  int m_selbeg;
-  int m_selend;
+  Entry::Range m_range;
   gfx::Rect m_textBounds;
   bool m_caretDrawn;
   gfx::Color m_bg;
@@ -1077,7 +1115,7 @@ void SkinTheme::drawEntryText(ui::Graphics* g, ui::Entry* widget)
   const std::string& textString = widget->text();
   base::utf8_const_iterator utf8_it((textString.begin()));
   int textlen = base::utf8_length(textString);
-  scroll = MIN(scroll, textlen);
+  scroll = std::min(scroll, textlen);
   if (scroll)
     utf8_it += scroll;
 
@@ -1098,7 +1136,7 @@ void SkinTheme::drawEntryText(ui::Graphics* g, ui::Entry* widget)
       drawText(
         g, widget->getSuffix().c_str(),
         colors.entrySuffix(), ColorNone,
-        widget, sufBounds, 0, 0);
+        widget, sufBounds, widget->align(), 0);
     }
   }
 
@@ -1185,8 +1223,8 @@ void SkinTheme::paintMenuItem(ui::PaintEvent& ev)
   Rect pos = bounds;
   if (!bar)
     pos.offset(widget->childSpacing()/2, 0);
-  drawText(g, nullptr, fg, ColorNone, widget, pos, 0,
-           widget->mnemonic());
+  drawText(g, nullptr, fg, ColorNone, widget, pos,
+           widget->align(), widget->mnemonic());
 
   // For menu-box
   if (!bar) {
@@ -1223,7 +1261,7 @@ void SkinTheme::paintMenuItem(ui::PaintEvent& ev)
         std::string buf = appMenuItem->key()->accels().front().toString();
 
         widget->setAlign(RIGHT | MIDDLE);
-        drawText(g, buf.c_str(), fg, ColorNone, widget, pos, 0, 0);
+        drawText(g, buf.c_str(), fg, ColorNone, widget, pos, widget->align(), 0);
         widget->setAlign(old_align);
       }
     }
@@ -1234,7 +1272,7 @@ void SkinTheme::paintSlider(PaintEvent& ev)
 {
   Graphics* g = ev.graphics();
   Slider* widget = static_cast<Slider*>(ev.getSource());
-  Rect bounds = widget->clientBounds();
+  const Rect bounds = widget->clientBounds();
   int min, max, value;
 
   // Outside borders
@@ -1244,14 +1282,15 @@ void SkinTheme::paintSlider(PaintEvent& ev)
 
   widget->getSliderThemeInfo(&min, &max, &value);
 
-  Rect rc(Rect(bounds).shrink(widget->border()));
+  Rect rc = bounds;
+  rc.shrink(widget->border());
   int x;
   if (min != max)
     x = rc.x + rc.w * (value-min) / (max-min);
   else
     x = rc.x;
 
-  rc = widget->clientBounds();
+  rc = bounds;
 
   // The mini-look is used for sliders with tiny borders.
   bool isMiniLook = false;
@@ -1326,12 +1365,16 @@ void SkinTheme::paintSlider(PaintEvent& ev)
     std::string old_text = widget->text();
     widget->setTextQuiet(widget->convertValueToText(value));
 
+    gfx::Rect textrc;
+    int textAlign;
+    calcTextInfo(widget, widget->style(), bounds, textrc, textAlign);
+
     {
-      IntersectClip clip(g, Rect(rc.x, rc.y, x-rc.x, rc.h));
+      IntersectClip clip(g, Rect(rc.x, rc.y, x-rc.x+1, rc.h));
       if (clip) {
         drawText(g, nullptr,
                  colors.sliderFullText(), ColorNone,
-                 widget, rc, 0, widget->mnemonic());
+                 widget, textrc, textAlign, widget->mnemonic());
       }
     }
 
@@ -1340,7 +1383,7 @@ void SkinTheme::paintSlider(PaintEvent& ev)
       if (clip) {
         drawText(g, nullptr,
                  colors.sliderEmptyText(),
-                 ColorNone, widget, rc, 0, widget->mnemonic());
+                 ColorNone, widget, textrc, textAlign, widget->mnemonic());
       }
     }
 
@@ -1398,9 +1441,13 @@ gfx::Color SkinTheme::getWidgetBgColor(Widget* widget)
     return colors.face();
 }
 
-void SkinTheme::drawText(Graphics* g, const char *t, gfx::Color fg_color, gfx::Color bg_color,
-                         Widget* widget, const Rect& rc,
-                         int selected_offset, int mnemonic)
+void SkinTheme::drawText(Graphics* g, const char* t,
+                         const gfx::Color fgColor,
+                         const gfx::Color bgColor,
+                         const Widget* widget,
+                         const Rect& rc,
+                         const int textAlign,
+                         const int mnemonic)
 {
   if (t || widget->hasText()) {
     Rect textrc;
@@ -1414,33 +1461,28 @@ void SkinTheme::drawText(Graphics* g, const char *t, gfx::Color fg_color, gfx::C
 
     // Horizontally text alignment
 
-    if (widget->align() & RIGHT)
+    if (textAlign & RIGHT)
       textrc.x = rc.x + rc.w - textrc.w - 1;
-    else if (widget->align() & CENTER)
+    else if (textAlign & CENTER)
       textrc.x = rc.center().x - textrc.w/2;
     else
       textrc.x = rc.x;
 
     // Vertically text alignment
 
-    if (widget->align() & BOTTOM)
+    if (textAlign & BOTTOM)
       textrc.y = rc.y + rc.h - textrc.h - 1;
-    else if (widget->align() & MIDDLE)
+    else if (textAlign & MIDDLE)
       textrc.y = rc.center().y - textrc.h/2;
     else
       textrc.y = rc.y;
 
-    if (widget->isSelected()) {
-      textrc.x += selected_offset;
-      textrc.y += selected_offset;
-    }
-
     // Background
-    if (!is_transparent(bg_color)) {
+    if (!is_transparent(bgColor)) {
       if (!widget->isEnabled())
-        g->fillRect(bg_color, Rect(textrc).inflate(guiscale(), guiscale()));
+        g->fillRect(bgColor, Rect(textrc).inflate(guiscale(), guiscale()));
       else
-        g->fillRect(bg_color, textrc);
+        g->fillRect(bgColor, textrc);
     }
 
     // Text
@@ -1465,9 +1507,9 @@ void SkinTheme::drawText(Graphics* g, const char *t, gfx::Color fg_color, gfx::C
         t,
         (!widget->isEnabled() ?
          colors.disabled():
-         (gfx::geta(fg_color) > 0 ? fg_color :
-                                    colors.text())),
-        bg_color, textrc.origin(),
+         (gfx::geta(fgColor) > 0 ? fgColor :
+                                   colors.text())),
+        bgColor, textrc.origin(),
         mnemonic);
     }
   }
@@ -1634,7 +1676,7 @@ void SkinTheme::paintProgressBar(ui::Graphics* g, const gfx::Rect& rc0, double p
   rc.shrink(1);
 
   int u = (int)((double)rc.w*progress);
-  u = MID(0, u, rc.w);
+  u = base::clamp(u, 0, rc.w);
 
   if (u > 0)
     g->fillRect(colors.selected(), gfx::Rect(rc.x, rc.y, u, rc.h));

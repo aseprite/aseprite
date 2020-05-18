@@ -28,6 +28,7 @@
 #include "app/util/clipboard.h"
 #include "app/util/pal_ops.h"
 #include "base/bind.h"
+#include "base/clamp.h"
 #include "base/convert_to.h"
 #include "doc/conversion_to_surface.h"
 #include "doc/image.h"
@@ -35,6 +36,7 @@
 #include "doc/palette.h"
 #include "doc/remap.h"
 #include "doc/tileset.h"
+#include "fmt/format.h"
 #include "gfx/color.h"
 #include "gfx/point.h"
 #include "os/font.h"
@@ -71,7 +73,7 @@ public:
   virtual void clearSelection(PaletteView* paletteView,
                               doc::PalettePicks& picks) = 0;
   virtual void selectIndex(PaletteView* paletteView,
-                           int index, ui::MouseButtons buttons) = 0;
+                           int index, ui::MouseButton button) = 0;
   virtual void resizePalette(PaletteView* paletteView,
                              int newSize) = 0;
   virtual void dropColors(PaletteView* paletteView,
@@ -107,7 +109,7 @@ public:
                       doc::PalettePicks& picks) override {
     Palette palette(*this->palette());
     Palette newPalette(palette);
-    newPalette.resize(MAX(1, newPalette.size() - picks.picks()));
+    newPalette.resize(std::max(1, newPalette.size() - picks.picks()));
 
     Remap remap = create_remap_to_move_picks(picks, palette.size());
     for (int i=0; i<palette.size(); ++i) {
@@ -119,10 +121,10 @@ public:
                                PaletteViewModification::CLEAR);
   }
   void selectIndex(PaletteView* paletteView,
-                   int index, ui::MouseButtons buttons) override {
+                   int index, ui::MouseButton button) override {
     // Emit signal
     if (paletteView->delegate())
-      paletteView->delegate()->onPaletteViewIndexChange(index, buttons);
+      paletteView->delegate()->onPaletteViewIndexChange(index, button);
   }
   void resizePalette(PaletteView* paletteView,
                      int newSize) override {
@@ -155,13 +157,13 @@ public:
   }
   void showDragInfoInStatusBar(StatusBar* statusBar, bool copy, int destIndex, int newSize) override {
     statusBar->setStatusText(
-      0, "%s to %d - New Palette Size %d",
-      (copy ? "Copy": "Move"),
-      destIndex, newSize);
+      0, fmt::format("{} to {} - New Palette Size {}",
+                     (copy ? "Copy": "Move"),
+                     destIndex, newSize));
   }
   void showResizeInfoInStatusBar(StatusBar* statusBar, int newSize) override {
     statusBar->setStatusText(
-      0, "New Palette Size %d", newSize);
+      0, fmt::format("New Palette Size {}", newSize));
   }
   void drawEntry(ui::Graphics* g,
                  SkinTheme* theme,
@@ -222,10 +224,10 @@ public:
     paletteView->delegate()->onTilesViewClearTiles(picks);
   }
   void selectIndex(PaletteView* paletteView,
-                   int index, ui::MouseButtons buttons) override {
+                   int index, ui::MouseButton button) override {
     // Emit signal
     if (paletteView->delegate())
-      paletteView->delegate()->onTilesViewIndexChange(index, buttons);
+      paletteView->delegate()->onTilesViewIndexChange(index, button);
   }
   void resizePalette(PaletteView* paletteView,
                      int newSize) override {
@@ -259,17 +261,17 @@ public:
   }
   void showEntryInStatusBar(StatusBar* statusBar, int index) override {
     statusBar->setStatusText(
-      0, "Tile %d", index);
+      0, fmt::format("Tile {}", index));
   }
   void showDragInfoInStatusBar(StatusBar* statusBar, bool copy, int destIndex, int newSize) override {
     statusBar->setStatusText(
-      0, "%s to %d - New Tileset Size %d",
-      (copy ? "Copy": "Move"),
-      destIndex, newSize);
+      0, fmt::format("{} to {} - New Tileset Size {}",
+                     (copy ? "Copy": "Move"),
+                     destIndex, newSize));
   }
   void showResizeInfoInStatusBar(StatusBar* statusBar, int newSize) override {
     statusBar->setStatusText(
-      0, "New Tileset Size %d", newSize);
+      0, fmt::format("New Tileset Size {}", newSize));
   }
   void drawEntry(ui::Graphics* g,
                  SkinTheme* theme,
@@ -497,9 +499,9 @@ int PaletteView::getBoxSize() const
 void PaletteView::setBoxSize(double boxsize)
 {
   if (isTiles())
-    m_boxsize = MID(4.0, boxsize, 64.0);
+    m_boxsize = base::clamp(boxsize, 4.0, 64.0);
   else
-    m_boxsize = MID(4.0, boxsize, 32.0);
+    m_boxsize = base::clamp(boxsize, 4.0, 32.0);
 
   if (m_delegate)
     m_delegate->onPaletteViewChangeSize(int(m_boxsize));
@@ -611,14 +613,14 @@ bool PaletteView::onProcessMessage(Message* msg)
       if (m_state == State::SELECTING_COLOR &&
           m_hot.part == Hit::COLOR) {
         int idx = m_hot.color;
-        idx = MID(0, idx, m_adapter->size()-1);
+        idx = base::clamp(idx, 0, m_adapter->size()-1);
 
-        MouseButtons buttons = mouseMsg->buttons();
+        const MouseButton button = mouseMsg->button();
 
         if (hasCapture() && ((idx != m_currentEntry) ||
                              (msg->type() == kMouseDownMessage) ||
-                             ((buttons & kButtonMiddle) == kButtonMiddle))) {
-          if ((buttons & kButtonMiddle) == 0) {
+                             (button == kButtonMiddle))) {
+          if (button != kButtonMiddle) {
             if (!msg->ctrlPressed() && !msg->shiftPressed())
               deselect();
 
@@ -630,7 +632,7 @@ bool PaletteView::onProcessMessage(Message* msg)
             }
           }
 
-          m_adapter->selectIndex(this, idx, buttons);
+          m_adapter->selectIndex(this, idx, button);
         }
       }
 
@@ -915,7 +917,7 @@ void PaletteView::onResize(ui::ResizeEvent& ev)
          +this->childSpacing())
         / (boxSizePx()
            +this->childSpacing());
-      setColumns(MAX(1, columns));
+      setColumns(std::max(1, columns));
     }
     m_isUpdatingColumns = false;
   }
@@ -1054,7 +1056,8 @@ PaletteView::Hit PaletteView::hitTest(const gfx::Point& pos)
   int colsLimit = m_columns;
   if (m_state == State::DRAGGING_OUTLINE)
     --colsLimit;
-  int i = MID(0, (pos.x-vp.x)/box.w, colsLimit) + MAX(0, pos.y/box.h)*m_columns;
+  int i = base::clamp((pos.x-vp.x)/box.w, 0, colsLimit)
+    + std::max(0, pos.y/box.h)*m_columns;
   return Hit(Hit::POSSIBLE_COLOR, i);
 }
 
@@ -1178,7 +1181,7 @@ void PaletteView::setStatusBar()
            m_hot.part == Hit::OUTLINE ||
            m_hot.part == Hit::POSSIBLE_COLOR) &&
           (m_hot.color < m_adapter->size())) {
-        const int index = MAX(0, m_hot.color);
+        const int index = std::max(0, m_hot.color);
 
         m_adapter->showEntryInStatusBar(statusBar, index);
       }
@@ -1190,11 +1193,11 @@ void PaletteView::setStatusBar()
     case State::DRAGGING_OUTLINE:
       if (m_hot.part == Hit::COLOR) {
         const int picks = m_selectedEntries.picks();
-        const int destIndex = MAX(0, m_hot.color);
+        const int destIndex = std::max(0, m_hot.color);
         const int palSize = m_adapter->size();
         const int newPalSize =
-          (m_copy ? MAX(palSize + picks, destIndex + picks):
-                    MAX(palSize,         destIndex + picks));
+          (m_copy ? std::max(palSize + picks, destIndex + picks):
+                    std::max(palSize,         destIndex + picks));
 
         m_adapter->showDragInfoInStatusBar(
           statusBar, m_copy, destIndex, newPalSize);
@@ -1208,7 +1211,7 @@ void PaletteView::setStatusBar()
       if (m_hot.part == Hit::COLOR ||
           m_hot.part == Hit::POSSIBLE_COLOR ||
           m_hot.part == Hit::RESIZE_HANDLE) {
-        const int newSize = MAX(1, m_hot.color);
+        const int newSize = std::max(1, m_hot.color);
 
         m_adapter->showResizeInfoInStatusBar(statusBar, newSize);
       }

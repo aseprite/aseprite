@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -27,6 +27,7 @@
 #include "doc/blend_mode.h"
 #include "doc/color_mode.h"
 #include "filters/target.h"
+#include "ui/mouse_button.h"
 
 #include <fstream>
 #include <sstream>
@@ -162,6 +163,7 @@ void register_layer_class(lua_State* L);
 void register_layers_class(lua_State* L);
 void register_palette_class(lua_State* L);
 void register_palettes_class(lua_State* L);
+void register_plugin_class(lua_State* L);
 void register_point_class(lua_State* L);
 void register_range_class(lua_State* L);
 void register_rect_class(lua_State* L);
@@ -348,6 +350,17 @@ Engine::Engine()
 
   lua_newtable(L);
   lua_pushvalue(L, -1);
+  lua_setglobal(L, "MouseButton");
+  setfield_integer(L, "NONE",   (int)ui::kButtonNone);
+  setfield_integer(L, "LEFT",   (int)ui::kButtonLeft);
+  setfield_integer(L, "RIGHT",  (int)ui::kButtonRight);
+  setfield_integer(L, "MIDDLE", (int)ui::kButtonMiddle);
+  setfield_integer(L, "X1",     (int)ui::kButtonX1);
+  setfield_integer(L, "X2",     (int)ui::kButtonX2);
+  lua_pop(L, 1);
+
+  lua_newtable(L);
+  lua_pushvalue(L, -1);
   lua_setglobal(L, "TilesetMode");
   setfield_integer(L, "MANUAL", TilesetMode::Manual);
   setfield_integer(L, "AUTO", TilesetMode::Auto);
@@ -372,6 +385,7 @@ Engine::Engine()
   register_layers_class(L);
   register_palette_class(L);
   register_palettes_class(L);
+  register_plugin_class(L);
   register_point_class(L);
   register_range_class(L);
   register_rect_class(L);

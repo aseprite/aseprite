@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -12,7 +12,7 @@
 #include <vector>
 
 #define UI_FIRST_WIDGET(list_name)                      \
-  ((list_name).empty() ? NULL: (list_name).front())
+  ((list_name).empty() ? nullptr: (list_name).front())
 
 namespace ui {
 

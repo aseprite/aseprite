@@ -15,6 +15,7 @@
 
 #include "app/color.h"
 #include "app/commands/params.h"
+#include "app/extensions.h"
 #include "doc/brush.h"
 #include "doc/frame.h"
 #include "doc/object_ids.h"
@@ -96,6 +97,8 @@ namespace app {
       return m_returnCode;
     }
 
+    lua_State* luaState() { return L; }
+
   private:
     void onConsolePrint(const char* text);
 
@@ -133,6 +136,7 @@ namespace app {
   void push_images(lua_State* L, const doc::ObjectIds& images);
   void push_layers(lua_State* L, const doc::ObjectIds& layers);
   void push_palette(lua_State* L, doc::Palette* palette);
+  void push_plugin(lua_State* L, Extension* ext);
   void push_sprite_cel(lua_State* L, doc::Cel* cel);
   void push_sprite_frame(lua_State* L, doc::Sprite* sprite, doc::frame_t frame);
   void push_sprite_frames(lua_State* L, doc::Sprite* sprite);

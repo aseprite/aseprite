@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -70,6 +70,7 @@ private:
 SetPixelFormat::SetPixelFormat(Sprite* sprite,
                                const PixelFormat newFormat,
                                const render::Dithering& dithering,
+                               doc::rgba_to_graya_func toGray,
                                render::TaskDelegate* delegate)
   : WithSprite(sprite)
   , m_oldFormat(sprite->pixelFormat())
@@ -101,6 +102,7 @@ SetPixelFormat::SetPixelFormat(Sprite* sprite,
                  oldImage,
                  cel->frame(),
                  cel->layer()->isBackground(),
+                 toGray,
                  &superDel);
 
     superDel.nextImage();
@@ -116,6 +118,7 @@ SetPixelFormat::SetPixelFormat(Sprite* sprite,
                        oldImage,
                        0,     // TODO select a frame or generate other tilesets?
                        false, // TODO is background? it depends of the layer where this tileset is used
+                       toGray,
                        &superDel);
         }
         superDel.nextImage();
@@ -188,6 +191,7 @@ void SetPixelFormat::convertImage(doc::Sprite* sprite,
                                   const doc::ImageRef& oldImage,
                                   const doc::frame_t frame,
                                   const bool isBackground,
+                                  doc::rgba_to_graya_func toGray,
                                   render::TaskDelegate* delegate)
 {
   ASSERT(oldImage);
@@ -201,6 +205,7 @@ void SetPixelFormat::convertImage(doc::Sprite* sprite,
      sprite->palette(frame),
      isBackground,
      oldImage->maskColor(),
+     toGray,
      delegate));
 
   m_seq.add(new cmd::ReplaceImage(sprite, oldImage, newImage));

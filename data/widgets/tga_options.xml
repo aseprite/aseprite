@@ -1,0 +1,23 @@
+<!-- Aseprite -->
+<!-- Copyright (C) 2020  Igara Studio S.A. -->
+<gui>
+<window id="tga_options" text="@.title">
+  <grid columns="2">
+    <label text="@.bits_per_pixel" id="bits_per_pixel_label" />
+    <combobox id="bits_per_pixel" cell_align="horizontal" />
+
+    <check text="@.compress" id="compress" cell_hspan="2" />
+
+    <separator horizontal="true" cell_hspan="2" />
+
+    <hbox cell_hspan="2">
+      <check text="@general.dont_show" id="dont_show" tooltip="@general.dont_show_tooltip" />
+      <boxfiller />
+      <hbox homogeneous="true">
+        <button text="@general.ok" closewindow="true" id="ok" magnet="true" minwidth="60" />
+        <button text="@general.cancel" closewindow="true" />
+      </hbox>
+    </hbox>
+  </grid>
+</window>
+</gui>

@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2020  Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -12,6 +13,7 @@
 #include "base/serialization.h"
 #include "doc/palette.h"
 
+#include <algorithm>
 #include <cctype>
 #include <fstream>
 #include <memory>
@@ -36,7 +38,7 @@ Palette* load_act_file(const char *filename)
   int colors = ActMaxColors;
   // If there's extra bytes, it's the number of colors to use
   if (!f.eof()) {
-    colors = MIN(read16(f), ActMaxColors);
+    colors = std::min(read16(f), (uint16_t)ActMaxColors);
   }
 
   std::unique_ptr<Palette> pal(new Palette(frame_t(0), colors));
@@ -63,7 +65,7 @@ bool save_act_file(const Palette *pal, const char *filename)
   uint8_t rgb[ActMaxColors * 3] = { 0 };
   uint8_t *c = rgb;
 
-  int colors = MIN(pal->size(), ActMaxColors);
+  int colors = std::min(pal->size(), ActMaxColors);
   for (int i = 0; i < colors; ++i) {
     uint32_t col = pal->getEntry(i);
 

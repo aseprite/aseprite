@@ -8,13 +8,14 @@
 #include "app/util/wrap_point.h"
 
 #include "app/tools/ink.h"
+#include "render/gradient.h"
 
 namespace app {
 namespace tools {
 
 class NonePointShape : public PointShape {
 public:
-  void transformPoint(ToolLoop* loop, int x, int y) override {
+  void transformPoint(ToolLoop* loop, const Stroke::Pt& pt) override {
     // Do nothing
   }
 
@@ -27,8 +28,9 @@ class PixelPointShape : public PointShape {
 public:
   bool isPixel() override { return true; }
 
-  void transformPoint(ToolLoop* loop, int x, int y) override {
-    doInkHline(x, y, x, loop);
+  void transformPoint(ToolLoop* loop, const Stroke::Pt& pt) override {
+    loop->getInk()->prepareForPointShape(loop, true, pt.x, pt.y);
+    doInkHline(pt.x, pt.y, pt.x, loop);
   }
 
   void getModifiedArea(ToolLoop* loop, int x, int y, Rect& area) override {
@@ -37,61 +39,185 @@ public:
 };
 
 class BrushPointShape : public PointShape {
-  Brush* m_brush;
-  std::shared_ptr<CompressedImage> m_compressedImage;
   bool m_firstPoint;
+  Brush* m_lastBrush;
+  BrushType m_origBrushType;
+  std::shared_ptr<CompressedImage> m_compressedImage;
+  // For dynamics
+  DynamicsOptions m_dynamics;
+  bool m_useDynamics;
+  bool m_hasDynamicGradient;
+  color_t m_primaryColor;
+  color_t m_secondaryColor;
+  float m_lastGradientValue;
 
 public:
 
   void preparePointShape(ToolLoop* loop) override {
-    m_brush = loop->getBrush();
-    m_compressedImage.reset(new CompressedImage(m_brush->image(),
-                                                m_brush->maskBitmap(),
-                                                false));
     m_firstPoint = true;
+    m_lastBrush = nullptr;
+    m_origBrushType = loop->getBrush()->type();
+
+    m_dynamics = loop->getDynamics();
+    m_useDynamics = (m_dynamics.isDynamic() &&
+                     // TODO support custom brushes in future versions
+                     m_origBrushType != kImageBrushType);
+
+    // For dynamic gradient
+    m_hasDynamicGradient = (m_dynamics.gradient != DynamicSensor::Static);
+    if (m_hasDynamicGradient &&
+        m_dynamics.colorFromTo == ColorFromTo::FgToBg) {
+      m_primaryColor = loop->getSecondaryColor();
+      m_secondaryColor = loop->getPrimaryColor();
+    }
+    else {
+      m_primaryColor = loop->getPrimaryColor();
+      m_secondaryColor = loop->getSecondaryColor();
+    }
+    m_lastGradientValue = -1;
   }
 
-  void transformPoint(ToolLoop* loop, int x, int y) override {
-    x += m_brush->bounds().x;
-    y += m_brush->bounds().y;
+  void transformPoint(ToolLoop* loop, const Stroke::Pt& pt) override {
+    int x = pt.x;
+    int y = pt.y;
+
+    Ink* ink = loop->getInk();
+    Brush* brush = loop->getBrush();
+
+    // Dynamics
+    if (m_useDynamics) {
+      // Dynamic gradient info
+      if (m_hasDynamicGradient &&
+          m_dynamics.ditheringMatrix.rows() == 1 &&
+          m_dynamics.ditheringMatrix.cols() == 1) {
+        color_t a = m_secondaryColor;
+        color_t b = m_primaryColor;
+        const float t = pt.gradient;
+        const float ti = 1.0f - pt.gradient;
+        switch (loop->sprite()->pixelFormat()) {
+          case IMAGE_RGB:
+            if (rgba_geta(a) == 0) a = b;
+            else if (rgba_geta(b) == 0) b = a;
+            a = doc::rgba(int(ti*rgba_getr(a) + t*rgba_getr(b)),
+                          int(ti*rgba_getg(a) + t*rgba_getg(b)),
+                          int(ti*rgba_getb(a) + t*rgba_getb(b)),
+                          int(ti*rgba_geta(a) + t*rgba_geta(b)));
+            break;
+          case IMAGE_GRAYSCALE:
+            if (graya_geta(a) == 0) a = b;
+            else if (graya_geta(b) == 0) b = a;
+            a = doc::graya(int(ti*graya_getv(a) + t*graya_getv(b)),
+                           int(ti*graya_geta(a) + t*graya_geta(b)));
+            break;
+          case IMAGE_INDEXED: {
+            int maskIndex = (loop->getLayer()->isBackground() ? -1: loop->sprite()->transparentColor());
+            // Convert index to RGBA
+            if (a == maskIndex) a = 0;
+            else a = get_current_palette()->getEntry(a);
+            if (b == maskIndex) b = 0;
+            else b = get_current_palette()->getEntry(b);
+            // Same as in RGBA gradient
+            if (rgba_geta(a) == 0) a = b;
+            else if (rgba_geta(b) == 0) b = a;
+            a = doc::rgba(int(ti*rgba_getr(a) + t*rgba_getr(b)),
+                          int(ti*rgba_getg(a) + t*rgba_getg(b)),
+                          int(ti*rgba_getb(a) + t*rgba_getb(b)),
+                          int(ti*rgba_geta(a) + t*rgba_geta(b)));
+            // Convert RGBA to index
+            a = loop->getRgbMap()->mapColor(rgba_getr(a),
+                                            rgba_getg(a),
+                                            rgba_getb(a),
+                                            rgba_geta(a));
+            break;
+          }
+        }
+        loop->setPrimaryColor(a);
+      }
+
+      // Dynamic size and angle
+      int size = base::clamp(int(pt.size), int(Brush::kMinBrushSize), int(Brush::kMaxBrushSize));
+      int angle = base::clamp(int(pt.angle), -180, 180);
+      if ((brush->size() != size) ||
+          (brush->angle() != angle && m_origBrushType != kCircleBrushType) ||
+          (m_hasDynamicGradient && pt.gradient != m_lastGradientValue)) {
+        // TODO cache brushes
+        BrushRef newBrush = std::make_shared<Brush>(
+          m_origBrushType, size, angle);
+
+        // Dynamic gradient with dithering
+        bool prepareInk = false;
+        if (m_hasDynamicGradient && !ink->isEraser() &&
+            (m_dynamics.ditheringMatrix.rows() > 1 ||
+             m_dynamics.ditheringMatrix.cols() > 1)) {
+          convert_bitmap_brush_to_dithering_brush(
+            newBrush.get(),
+            loop->sprite()->pixelFormat(),
+            m_dynamics.ditheringMatrix,
+            pt.gradient,
+            m_secondaryColor,
+            m_primaryColor);
+          prepareInk = true;
+        }
+        m_lastGradientValue = pt.gradient;
+
+        loop->setBrush(newBrush);
+        brush = loop->getBrush();
+
+        if (prepareInk) {
+          // Prepare ink for the new brush
+          ink->prepareInk(loop);
+        }
+      }
+    }
+
+    // TODO cache compressed images (or remove them completelly)
+    if (m_lastBrush != brush) {
+      m_lastBrush = brush;
+      m_compressedImage.reset(new CompressedImage(brush->image(),
+                                                  brush->maskBitmap(),
+                                                  false));
+    }
+
+    x += brush->bounds().x;
+    y += brush->bounds().y;
 
     if (m_firstPoint) {
-      if ((m_brush->type() == kImageBrushType) &&
-          (m_brush->pattern() == BrushPattern::ALIGNED_TO_DST ||
-           m_brush->pattern() == BrushPattern::PAINT_BRUSH)) {
-        m_brush->setPatternOrigin(gfx::Point(x, y));
+      if ((brush->type() == kImageBrushType) &&
+          (brush->pattern() == BrushPattern::ALIGNED_TO_DST ||
+           brush->pattern() == BrushPattern::PAINT_BRUSH)) {
+        brush->setPatternOrigin(gfx::Point(x, y));
       }
     }
     else {
-      if (m_brush->type() == kImageBrushType &&
-          m_brush->pattern() == BrushPattern::PAINT_BRUSH) {
-        m_brush->setPatternOrigin(gfx::Point(x, y));
+      if (brush->type() == kImageBrushType &&
+          brush->pattern() == BrushPattern::PAINT_BRUSH) {
+        brush->setPatternOrigin(gfx::Point(x, y));
       }
     }
 
     if (int(loop->getTiledMode()) & int(TiledMode::X_AXIS)) {
-      int wrappedPatternOriginX = wrap_value(m_brush->patternOrigin().x, loop->sprite()->width()) % m_brush->bounds().w;
-      m_brush->setPatternOrigin(gfx::Point(wrappedPatternOriginX, m_brush->patternOrigin().y));
+      int wrappedPatternOriginX = wrap_value(brush->patternOrigin().x, loop->sprite()->width()) % brush->bounds().w;
+      brush->setPatternOrigin(gfx::Point(wrappedPatternOriginX, brush->patternOrigin().y));
       x = wrap_value(x, loop->sprite()->width());
     }
     if (int(loop->getTiledMode()) & int(TiledMode::Y_AXIS)) {
-      int wrappedPatternOriginY = wrap_value(m_brush->patternOrigin().y, loop->sprite()->height()) % m_brush->bounds().h;
-      m_brush->setPatternOrigin(gfx::Point(m_brush->patternOrigin().x, wrappedPatternOriginY));
+      int wrappedPatternOriginY = wrap_value(brush->patternOrigin().y, loop->sprite()->height()) % brush->bounds().h;
+      brush->setPatternOrigin(gfx::Point(brush->patternOrigin().x, wrappedPatternOriginY));
       y = wrap_value(y, loop->sprite()->height());
     }
 
-    loop->getInk()->prepareForPointShape(loop, m_firstPoint, x, y);
+    ink->prepareForPointShape(loop, m_firstPoint, x, y);
 
     for (auto scanline : *m_compressedImage) {
       int u = x+scanline.x;
-      loop->getInk()->prepareVForPointShape(loop, y+scanline.y);
+      ink->prepareVForPointShape(loop, y+scanline.y);
       doInkHline(u, y+scanline.y, u+scanline.w-1, loop);
     }
     m_firstPoint = false;
   }
 
   void getModifiedArea(ToolLoop* loop, int x, int y, Rect& area) override {
-    area = m_brush->bounds();
+    area = loop->getBrush()->bounds();
     area.x += x;
     area.y += y;
   }
@@ -102,21 +228,23 @@ class FloodFillPointShape : public PointShape {
 public:
   bool isFloodFill() override { return true; }
 
-  void transformPoint(ToolLoop* loop, int x, int y) override {
+  void transformPoint(ToolLoop* loop, const Stroke::Pt& pt) override {
     const doc::Image* srcImage = loop->getFloodFillSrcImage();
-    gfx::Point pt = wrap_point(loop->getTiledMode(),
-                               gfx::Size(srcImage->width(),
-                                         srcImage->height()),
-                               gfx::Point(x, y), true);
+    gfx::Point wpt = wrap_point(loop->getTiledMode(),
+                                gfx::Size(srcImage->width(),
+                                          srcImage->height()),
+                                pt.toPoint(), true);
+
+    loop->getInk()->prepareForPointShape(loop, true, wpt.x, wpt.y);
 
     ASSERT(srcImage->pixelFormat() != IMAGE_TILEMAP);
 
     doc::algorithm::floodfill(
       srcImage,
       (loop->useMask() ? loop->getMask(): nullptr),
-      pt.x, pt.y,
-      floodfillBounds(loop, pt.x, pt.y),
-      get_pixel(srcImage, pt.x, pt.y),
+      wpt.x, wpt.y,
+      floodfillBounds(loop, wpt.x, wpt.y),
+      get_pixel(srcImage, wpt.x, wpt.y),
       loop->getTolerance(),
       loop->getContiguous(),
       loop->isPixelConnectivityEightConnected(),
@@ -170,7 +298,9 @@ public:
     m_subPointShape.preparePointShape(loop);
   }
 
-  void transformPoint(ToolLoop* loop, int x, int y) override {
+  void transformPoint(ToolLoop* loop, const Stroke::Pt& pt) override {
+    loop->getInk()->prepareForPointShape(loop, true, pt.x, pt.y);
+
     int spray_width = loop->getSprayWidth();
     int spray_speed = loop->getSpraySpeed();
 
@@ -200,9 +330,10 @@ public:
       radius = rand() % fixmath::itofix(spray_width);
 #endif
 
-      int u = fixmath::fixtoi(fixmath::fixmul(radius, fixmath::fixcos(angle)));
-      int v = fixmath::fixtoi(fixmath::fixmul(radius, fixmath::fixsin(angle)));
-      m_subPointShape.transformPoint(loop, x+u, y+v);
+      Stroke::Pt pt2(pt);
+      pt2.x += fixmath::fixtoi(fixmath::fixmul(radius, fixmath::fixcos(angle)));
+      pt2.y += fixmath::fixtoi(fixmath::fixmul(radius, fixmath::fixsin(angle)));
+      m_subPointShape.transformPoint(loop, pt2);
     }
   }
 

@@ -171,6 +171,7 @@ if(ENABLE_SCRIPTING)
     script/palette_class.cpp
     script/palettes_class.cpp
     script/pixel_color_object.cpp
+    script/plugin_class.cpp
     script/point_class.cpp
     script/preferences_object.cpp
     script/range_class.cpp
@@ -224,7 +225,6 @@ if(ENABLE_UI)
     commands/cmd_eyedropper.cpp
     commands/cmd_fill_and_stroke.cpp
     commands/cmd_fit_screen.cpp
-    commands/cmd_flip.cpp
     commands/cmd_frame_properties.cpp
     commands/cmd_frame_tag_properties.cpp
     commands/cmd_fullscreen_preview.cpp
@@ -324,6 +324,7 @@ if(ENABLE_UI)
     ui/dithering_selector.cpp
     ui/doc_view.cpp
     ui/drop_down_button.cpp
+    ui/dynamics_popup.cpp
     ui/editor/brush_preview.cpp
     ui/editor/drawing_state.cpp
     ui/editor/editor.cpp
@@ -512,6 +513,7 @@ add_library(app-lib
   commands/cmd_crop.cpp
   commands/cmd_export_sprite_sheet.cpp
   commands/cmd_flatten_layers.cpp
+  commands/cmd_flip.cpp
   commands/cmd_layer_from_background.cpp
   commands/cmd_load_palette.cpp
   commands/cmd_merge_down_layer.cpp
@@ -601,6 +603,7 @@ add_library(app-lib
   tools/symmetries.cpp
   tools/tool_box.cpp
   tools/tool_loop_manager.cpp
+  tools/velocity.cpp
   transaction.cpp
   transformation.cpp
   ui/editor/tool_loop_impl.cpp
@@ -612,6 +615,7 @@ add_library(app-lib
   util/filetoks.cpp
   util/freetype_utils.cpp
   util/layer_boundaries.cpp
+  util/layer_utils.cpp
   util/msk_file.cpp
   util/new_image_from_mask.cpp
   util/pal_ops.cpp
@@ -642,6 +646,7 @@ target_link_libraries(app-lib
   filters-lib
   fixmath-lib
   flic-lib
+  tga-lib
   laf-gfx
   render-lib
   laf-ft

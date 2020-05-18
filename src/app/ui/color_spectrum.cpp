@@ -14,13 +14,16 @@
 #include "app/color_utils.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
+#include "base/clamp.h"
 #include "os/surface.h"
 #include "ui/graphics.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"
-#include "ui/size_hint_event.h"
 #include "ui/resize_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/system.h"
+
+#include <algorithm>
 
 namespace app {
 
@@ -38,10 +41,10 @@ app::Color ColorSpectrum::getMainAreaColor(const int u, const int umax,
   double hue = 360.0 * u / umax;
   double lit = 1.0 - (double(v)/double(vmax));
   return app::Color::fromHsl(
-    MID(0.0, hue, 360.0),
+    base::clamp(hue, 0.0, 360.0),
     m_color.getHslSaturation(),
-    MID(0.0, lit, 1.0),
-    m_color.getAlpha());
+    base::clamp(lit, 0.0, 1.0),
+    getCurrentAlphaForNewColor());
 }
 
 app::Color ColorSpectrum::getBottomBarColor(const int u, const int umax)
@@ -49,9 +52,9 @@ app::Color ColorSpectrum::getBottomBarColor(const int u, const int umax)
   double sat = double(u) / double(umax);
   return app::Color::fromHsl(
     m_color.getHslHue(),
-    MID(0.0, sat, 1.0),
+    base::clamp(sat, 0.0, 1.0),
     m_color.getHslLightness(),
-    m_color.getAlpha());
+    getCurrentAlphaForNewColor());
 }
 
 void ColorSpectrum::onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc)
@@ -87,8 +90,8 @@ void ColorSpectrum::onPaintSurfaceInBgThread(
 {
   if (m_paintFlags & MainAreaFlag) {
     double sat = m_color.getHslSaturation();
-    int umax = MAX(1, main.w-1);
-    int vmax = MAX(1, main.h-1);
+    int umax = std::max(1, main.w-1);
+    int vmax = std::max(1, main.h-1);
 
     for (int y=0; y<main.h && !stop; ++y) {
       for (int x=0; x<main.w && !stop; ++x) {
@@ -97,9 +100,9 @@ void ColorSpectrum::onPaintSurfaceInBgThread(
 
         gfx::Color color = color_utils::color_for_ui(
           app::Color::fromHsl(
-            MID(0.0, hue, 360.0),
+            base::clamp(hue, 0.0, 360.0),
             sat,
-            MID(0.0, lit, 1.0)));
+            base::clamp(lit, 0.0, 1.0)));
 
         s->putPixel(color, main.x+x, main.y+y);
       }

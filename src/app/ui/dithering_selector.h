@@ -28,6 +28,9 @@ namespace app {
     render::DitheringAlgorithm ditheringAlgorithm();
     render::DitheringMatrix ditheringMatrix();
 
+  protected:
+    void onInitTheme(ui::InitThemeEvent& ev) override;
+
   private:
     void regenerate();
 

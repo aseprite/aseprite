@@ -21,12 +21,14 @@ std::string XmlTranslator::operator()(const TiXmlElement* elem,
   const char* value = elem->Attribute(attrName);
   if (!value)
     return std::string();
-  else if (value[0] == '@') {
+  else if (value[0] == '@') {   // Translate string
     if (value[1] == '.')
       return Strings::instance()->translate((m_stringIdPrefix + (value+1)).c_str());
     else
       return Strings::instance()->translate(value+1);
   }
+  else if (value[0] == '!')     // Raw string
+    return std::string(value+1);
   else
     return std::string(value);
 }

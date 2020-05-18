@@ -65,7 +65,16 @@ namespace app {
                                              const KeyPtr& key);
     void syncNativeMenuItemKeyShortcuts();
 
+    // Menu item handling in groups
+    void addMenuItemIntoGroup(const std::string& groupId,
+                              std::unique_ptr<MenuItem>&& menuItem);
+    void removeMenuItemFromGroup(Command* cmd);
+    void removeMenuItemFromGroup(Widget* menuItem);
+
   private:
+    template<typename Pred>
+    void removeMenuItemFromGroup(Pred pred);
+
     Menu* loadMenuById(TiXmlHandle& handle, const char *id);
     Menu* convertXmlelemToMenu(TiXmlElement* elem);
     Widget* convertXmlelemToMenuitem(TiXmlElement* elem);
@@ -82,6 +91,11 @@ namespace app {
                             const bool rootLevel);
 #endif
 
+    struct GroupInfo {
+      Widget* end = nullptr;
+      WidgetsList items;
+    };
+
     std::unique_ptr<Menu> m_rootMenu;
     Widget* m_recentFilesPlaceholder;
     MenuItem* m_helpMenuitem;
@@ -97,6 +111,13 @@ namespace app {
     std::unique_ptr<Menu> m_inkPopupMenu;
     obs::scoped_connection m_recentFilesConn;
     std::vector<Menu*> m_menus;
+    // List of recent menu items pointing to recent files.
+    WidgetsList m_recentMenuItems;
+    // Extension points for plugins (each group is a place where new
+    // menu items can be added).
+    std::map<std::string, GroupInfo> m_groups;
+    // Native main menu bar (== nullptr if the platform doesn't
+    // support native menus)
     os::Menu* m_osMenu;
     XmlTranslator m_xmlTranslator;
   };

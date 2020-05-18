@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -22,10 +23,13 @@
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
+#include "base/clamp.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
 #include "gfx/rect_io.h"
 #include "ui/ui.h"
+
+#include <algorithm>
 
 namespace app {
 
@@ -302,11 +306,11 @@ void ColorButton::openPopup(const bool forcePinned)
   if (!pinned || (forcePinned && m_hiddenPopupBounds.isEmpty())) {
     winBounds = gfx::Rect(m_window->bounds().origin(),
                           m_window->sizeHint());
-    winBounds.x = MID(0, bounds().x, ui::display_w()-winBounds.w);
+    winBounds.x = base::clamp(bounds().x, 0, ui::display_w()-winBounds.w);
     if (bounds().y2() <= ui::display_h()-winBounds.h)
-      winBounds.y = MAX(0, bounds().y2());
+      winBounds.y = std::max(0, bounds().y2());
     else
-      winBounds.y = MAX(0, bounds().y-winBounds.h);
+      winBounds.y = std::max(0, bounds().y-winBounds.h);
   }
   else if (forcePinned) {
     winBounds = m_hiddenPopupBounds;
@@ -314,8 +318,8 @@ void ColorButton::openPopup(const bool forcePinned)
   else {
     winBounds = m_windowDefaultBounds;
   }
-  winBounds.x = MID(0, winBounds.x, ui::display_w()-winBounds.w);
-  winBounds.y = MID(0, winBounds.y, ui::display_h()-winBounds.h);
+  winBounds.x = base::clamp(winBounds.x, 0, ui::display_w()-winBounds.w);
+  winBounds.y = base::clamp(winBounds.y, 0, ui::display_h()-winBounds.h);
   m_window->setBounds(winBounds);
 
   m_window->manager()->dispatchMessages();

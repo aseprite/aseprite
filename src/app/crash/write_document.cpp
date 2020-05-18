@@ -39,6 +39,7 @@
 #include "doc/tileset.h"
 #include "doc/tileset_io.h"
 #include "doc/tilesets.h"
+#include "doc/user_data_io.h"
 #include "fixmath/fixmath.h"
 
 #include <fstream>
@@ -262,6 +263,9 @@ private:
         // writeSprite/writeAllLayersID() functions)
         break;
     }
+
+    // Save user data
+    write_user_data(s, lay->userData());
     return true;
   }
 

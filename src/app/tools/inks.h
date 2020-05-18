@@ -96,7 +96,7 @@ public:
         break;
     }
 
-    if (loop->getBrush()->type() == doc::kImageBrushType)
+    if (loop->getBrush()->type() == doc::kImageBrushType) {
       switch (m_type) {
         case Simple:
           setProc(get_ink_proc<BrushSimpleInkProcessing>(loop));
@@ -111,12 +111,19 @@ public:
           setProc(get_ink_proc<BrushSimpleInkProcessing>(loop));
           break;
       }
+    }
     else {
       switch (m_type) {
         case Simple: {
           bool opaque = false;
 
-          if (loop->getOpacity() == 255) {
+          if (loop->getOpacity() == 255 &&
+              // The trace policy is "overlap" when the dynamics has
+              // a gradient between FG <-> BG
+              //
+              // TODO this trace policy is configured in
+              //      ToolLoopBase() ctor, is there a better place?
+              loop->getTracePolicy() != TracePolicy::Overlap) {
             color_t color = loop->getPrimaryColor();
 
             switch (loop->sprite()->pixelFormat()) {

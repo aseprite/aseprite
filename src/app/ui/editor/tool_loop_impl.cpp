@@ -72,6 +72,7 @@ protected:
   Editor* m_editor;
   tools::Tool* m_tool;
   BrushRef m_brush;
+  BrushRef m_origBrush;
   gfx::Point m_oldPatternOrigin;
   Doc* m_document;
   Sprite* m_sprite;
@@ -95,12 +96,14 @@ protected:
   tools::Intertwine* m_intertwine;
   tools::TracePolicy m_tracePolicy;
   std::unique_ptr<tools::Symmetry> m_symmetry;
+  Shade m_shade;
   std::unique_ptr<doc::Remap> m_shadingRemap;
   app::ColorTarget m_colorTarget;
   doc::color_t m_fgColor;
   doc::color_t m_bgColor;
   doc::color_t m_primaryColor;
   doc::color_t m_secondaryColor;
+  tools::DynamicsOptions m_dynamics;
 
 public:
   ToolLoopBase(Editor* editor, Site site,
@@ -114,6 +117,7 @@ public:
     : m_editor(editor)
     , m_tool(tool)
     , m_brush(brush)
+    , m_origBrush(brush)
     , m_oldPatternOrigin(m_brush->patternOrigin())
     , m_document(site.document())
     , m_sprite(site.sprite())
@@ -144,6 +148,14 @@ public:
     , m_primaryColor(button == tools::ToolLoop::Left ? m_fgColor: m_bgColor)
     , m_secondaryColor(button == tools::ToolLoop::Left ? m_bgColor: m_fgColor)
   {
+#ifdef ENABLE_UI // TODO add dynamics support when UI is not enabled
+    if (m_controller->isFreehand() &&
+        !m_pointShape->isFloodFill() &&
+        App::instance()->contextBar()) {
+      m_dynamics = App::instance()->contextBar()->getDynamics();
+    }
+#endif
+
     if (m_tracePolicy == tools::TracePolicy::Accumulate ||
         m_tracePolicy == tools::TracePolicy::AccumulateUpdateLast) {
       tools::ToolBox* toolbox = App::instance()->toolBox();
@@ -161,6 +173,18 @@ public:
           m_intertwine = toolbox->getIntertwinerById(tools::WellKnownIntertwiners::None);
           m_tracePolicy = tools::TracePolicy::Accumulate;
           break;
+      }
+
+      // Use overlap trace policy for dynamic gradient
+      if (m_dynamics.isDynamic() &&
+          m_dynamics.gradient != tools::DynamicSensor::Static &&
+          m_controller->isFreehand() &&
+          !m_ink->isEraser()) {
+        // Use overlap trace policy to accumulate changes of colors
+        // between stroke points.
+        //
+        // TODO this is connected with a condition in tools::PaintInk::prepareInk()
+        m_tracePolicy = tools::TracePolicy::Overlap;
       }
     }
 
@@ -198,6 +222,7 @@ public:
 
 #ifdef ENABLE_UI // TODO add support when UI is not enabled
     if (m_toolPref.ink() == tools::InkType::SHADING) {
+      m_shade = App::instance()->contextBar()->getShade();
       m_shadingRemap.reset(
         App::instance()->contextBar()->createShadeRemap(
           button == tools::ToolLoop::Left));
@@ -206,7 +231,7 @@ public:
   }
 
   ~ToolLoopBase() {
-    m_brush->setPatternOrigin(m_oldPatternOrigin);
+    m_origBrush->setPatternOrigin(m_oldPatternOrigin);
   }
 
   void forceSnapToTiles() {
@@ -217,6 +242,7 @@ public:
   // IToolLoop interface
   tools::Tool* getTool() override { return m_tool; }
   Brush* getBrush() override { return m_brush.get(); }
+  void setBrush(const BrushRef& newBrush) override { m_brush = newBrush; }
   Doc* getDocument() override { return m_document; }
   Sprite* sprite() override { return m_sprite; }
   Layer* getLayer() override { return m_layer; }
@@ -283,6 +309,7 @@ public:
       return m_tracePolicy;
   }
   tools::Symmetry* getSymmetry() override { return m_symmetry.get(); }
+  const Shade& getShade() override { return m_shade; }
   doc::Remap* getShadingRemap() override { return m_shadingRemap.get(); }
 
   void limitDirtyAreaToViewport(gfx::Region& rgn) override {
@@ -362,6 +389,9 @@ public:
 #endif
   }
 
+  tools::DynamicsOptions getDynamics() override {
+    return m_dynamics;
+  }
 
   void onSliceRect(const gfx::Rect& bounds) override { }
 
@@ -508,7 +538,7 @@ public:
       if (m_saveLastPoint) {
         m_tx(new cmd::SetLastPoint(
                m_document,
-               getController()->getLastPoint()));
+               getController()->getLastPoint().toPoint()));
       }
 
       // Paint ink
@@ -692,19 +722,19 @@ tools::ToolLoop* create_tool_loop(
     }
     else if (!layer->isVisibleHierarchy()) {
       StatusBar::instance()->showTip(
-        1000, "Layer '%s' is hidden", layer->name().c_str());
+        1000, fmt::format("Layer '{}' is hidden", layer->name()));
       return nullptr;
     }
     // If the active layer is read-only.
     else if (!layer->isEditableHierarchy()) {
       StatusBar::instance()->showTip(
-        1000, "Layer '%s' is locked", layer->name().c_str());
+        1000, fmt::format("Layer '{}' is locked", layer->name()));
       return nullptr;
     }
     // If the active layer is reference.
     else if (layer->isReference()) {
       StatusBar::instance()->showTip(
-        1000, "Layer '%s' is reference, cannot be modified", layer->name().c_str());
+        1000, fmt::format("Layer '{}' is reference, cannot be modified", layer->name()));
       return nullptr;
     }
   }
@@ -808,6 +838,7 @@ public:
     Editor* editor,
     tools::Tool* tool,
     tools::Ink* ink,
+    const BrushRef& brush,
     const app::Color& fgColor,
     const app::Color& bgColor,
     Image* image,
@@ -815,8 +846,7 @@ public:
     : ToolLoopBase(editor, editor->getSite(),
                    editor->getSite().gridBounds(),
                    tool, ink, tool->getController(tools::ToolLoop::Left),
-                   App::instance()->contextBar()->activeBrush(tool, ink),
-                   tools::ToolLoop::Left, fgColor, bgColor)
+                   brush, tools::ToolLoop::Left, fgColor, bgColor)
     , m_image(image)
   {
     m_celOrigin = celOrigin;
@@ -857,10 +887,17 @@ public:
   void cancel() override { }
   bool isCanceled() override { return true; }
 
+  tools::DynamicsOptions getDynamics() override {
+    // Preview without dynamics
+    return tools::DynamicsOptions();
+  }
+
 };
 
 tools::ToolLoop* create_tool_loop_preview(
-  Editor* editor, Image* image,
+  Editor* editor,
+  const doc::BrushRef& brush,
+  Image* image,
   const gfx::Point& celOrigin)
 {
   tools::Tool* tool = editor->getCurrentEditorTool();
@@ -886,7 +923,7 @@ tools::ToolLoop* create_tool_loop_preview(
   // Create the new tool loop
   try {
     return new PreviewToolLoopImpl(
-      editor, tool, ink,
+      editor, tool, ink, brush,
       fg, bg, image, celOrigin);
   }
   catch (const std::exception&) {

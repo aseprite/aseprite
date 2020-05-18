@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -10,12 +10,22 @@
 namespace app {
 namespace tools {
 
-static void addPointsWithoutDuplicatingLastOne(int x, int y, Stroke* stroke)
+struct LineData2 {
+  Intertwine::LineData head;
+  Stroke& output;
+  LineData2(ToolLoop* loop, const Stroke::Pt& a, const Stroke::Pt& b,
+            Stroke& output)
+    : head(loop, a, b)
+    , output(output) {
+  }
+};
+
+static void addPointsWithoutDuplicatingLastOne(int x, int y, LineData2* data)
 {
-  const gfx::Point newPoint(x, y);
-  if (stroke->empty() ||
-      stroke->lastPoint() != newPoint) {
-    stroke->addPoint(newPoint);
+  data->head.doStep(x, y);
+  if (data->output.empty() ||
+      data->output.lastPoint() != data->head.pt) {
+    data->output.addPoint(data->head.pt);
   }
 }
 
@@ -24,7 +34,7 @@ public:
 
   void joinStroke(ToolLoop* loop, const Stroke& stroke) override {
     for (int c=0; c<stroke.size(); ++c)
-      doPointshapePoint(stroke[c].x, stroke[c].y, loop);
+      doPointshapeStrokePt(stroke[c], loop);
   }
 
   void fillStroke(ToolLoop* loop, const Stroke& stroke) override {
@@ -56,7 +66,7 @@ public:
       mid.y /= n;
     }
     else {
-      mid = stroke[0];
+      mid = stroke[0].toPoint();
     }
 
     doPointshapePoint(mid.x, mid.y, loop);
@@ -101,15 +111,16 @@ public:
     if (stroke.size() == 0)
       return;
     else if (stroke.size() == 1) {
-      doPointshapePoint(stroke[0].x, stroke[0].y, loop);
+      doPointshapeStrokePt(stroke[0], loop);
     }
     else {
       Stroke pts;
-      doc::AlgoLineWithAlgoPixel lineAlgo = getLineAlgo(loop);
       for (int c=0; c+1<stroke.size(); ++c) {
+        auto lineAlgo = getLineAlgo(loop, stroke[c], stroke[c+1]);
+        LineData2 lineData(loop, stroke[c], stroke[c+1], pts);
         lineAlgo(stroke[c].x, stroke[c].y,
                  stroke[c+1].x, stroke[c+1].y,
-                 (void*)&pts,
+                 (void*)&lineData,
                  (AlgoPixel)&addPointsWithoutDuplicatingLastOne);
       }
 
@@ -123,7 +134,7 @@ public:
          (m_retainedTracePolicyLast || !m_firstStroke) ? 1: 0);
 
       for (int c=start; c<pts.size(); ++c)
-        doPointshapePoint(pts[c].x, pts[c].y, loop);
+        doPointshapeStrokePt(pts[c], loop);
 
       // Closed shape (polygon outline)
       // Note: Contour tool was getting into the condition with no need, so
@@ -132,9 +143,7 @@ public:
       // contour tool, with brush type = kImageBrush with alpha content and
       // with not Pixel Perfect pencil mode.
       if (loop->getFilled() && !loop->getController()->isFreehand()) {
-        doPointshapeLine(stroke[stroke.size()-1].x,
-                         stroke[stroke.size()-1].y,
-                         stroke[0].x, stroke[0].y, loop);
+        doPointshapeLine(stroke[stroke.size()-1], stroke[0], loop);
       }
     }
     m_firstStroke = false;
@@ -160,7 +169,10 @@ public:
 #endif
 
     // Fill content
-    doc::algorithm::polygon(stroke.size(), (const int*)&stroke[0], loop, (AlgoHLine)doPointshapeHline);
+    auto v = stroke.toXYInts();
+    doc::algorithm::polygon(
+      v.size()/2, &v[0],
+      loop, (AlgoHLine)doPointshapeHline);
   }
 
 };
@@ -177,6 +189,7 @@ public:
     }
     else if (stroke.size() >= 2) {
       for (int c=0; c+1<stroke.size(); ++c) {
+        // TODO fix this with strokes and dynamics
         int x1 = stroke[c].x;
         int y1 = stroke[c].y;
         int x2 = stroke[c+1].x;
@@ -188,8 +201,8 @@ public:
 
         const double angle = loop->getController()->getShapeAngle();
         if (ABS(angle) < 0.001) {
-          doPointshapeLine(x1, y1, x2, y1, loop);
-          doPointshapeLine(x1, y2, x2, y2, loop);
+          doPointshapeLineWithoutDynamics(x1, y1, x2, y1, loop);
+          doPointshapeLineWithoutDynamics(x1, y2, x2, y2, loop);
 
           for (y=y1; y<=y2; y++) {
             doPointshapePoint(x1, y, loop);
@@ -200,11 +213,9 @@ public:
           Stroke p = rotateRectangle(x1, y1, x2, y2, angle);
           int n = p.size();
           for (int i=0; i+1<n; ++i) {
-            doPointshapeLine(p[i].x, p[i].y,
-                             p[i+1].x, p[i+1].y, loop);
+            doPointshapeLine(p[i], p[i+1], loop);
           }
-          doPointshapeLine(p[n-1].x, p[n-1].y,
-                           p[0].x, p[0].y, loop);
+          doPointshapeLine(p[n-1], p[0], loop);
         }
       }
     }
@@ -229,12 +240,13 @@ public:
       const double angle = loop->getController()->getShapeAngle();
       if (ABS(angle) < 0.001) {
         for (y=y1; y<=y2; y++)
-          doPointshapeLine(x1, y, x2, y, loop);
+          doPointshapeLineWithoutDynamics(x1, y, x2, y, loop);
       }
       else {
         Stroke p = rotateRectangle(x1, y1, x2, y2, angle);
+        auto v = p.toXYInts();
         doc::algorithm::polygon(
-          p.size(), (const int*)&p[0],
+          v.size()/2, &v[0],
           loop, (AlgoHLine)doPointshapeHline);
       }
     }
@@ -383,25 +395,24 @@ public:
 
     for (int c=0; c<stroke.size(); c += 4) {
       if (stroke.size()-c == 1) {
-        doPointshapePoint(stroke[c].x, stroke[c].y, loop);
+        doPointshapeStrokePt(stroke[c], loop);
       }
       else if (stroke.size()-c == 2) {
-        doPointshapeLine(stroke[c].x, stroke[c].y,
-                         stroke[c+1].x, stroke[c+1].y, loop);
+        doPointshapeLine(stroke[c], stroke[c+1], loop);
       }
       else if (stroke.size()-c == 3) {
         algo_spline(stroke[c  ].x, stroke[c  ].y,
                     stroke[c+1].x, stroke[c+1].y,
                     stroke[c+1].x, stroke[c+1].y,
                     stroke[c+2].x, stroke[c+2].y, loop,
-                    (AlgoLine)doPointshapeLine);
+                    (AlgoLine)doPointshapeLineWithoutDynamics);
       }
       else {
         algo_spline(stroke[c  ].x, stroke[c  ].y,
                     stroke[c+1].x, stroke[c+1].y,
                     stroke[c+2].x, stroke[c+2].y,
                     stroke[c+3].x, stroke[c+3].y, loop,
-                    (AlgoLine)doPointshapeLine);
+                    (AlgoLine)doPointshapeLineWithoutDynamics);
       }
     }
   }
@@ -445,39 +456,51 @@ public:
     else if (stroke.size() == 1) {
       if (m_pts.empty())
         m_pts = stroke;
-      doPointshapePoint(stroke[0].x, stroke[0].y, loop);
+      doPointshapeStrokePt(stroke[0], loop);
       return;
     }
     else {
       for (int c=0; c+1<stroke.size(); ++c) {
-        algo_line_continuous(
+        auto lineAlgo = getLineAlgo(loop, stroke[c], stroke[c+1]);
+        LineData2 lineData(loop, stroke[c], stroke[c+1], m_pts);
+        lineAlgo(
           stroke[c].x,
           stroke[c].y,
           stroke[c+1].x,
           stroke[c+1].y,
-          (void*)&m_pts,
+          (void*)&lineData,
           (AlgoPixel)&addPointsWithoutDuplicatingLastOne);
       }
     }
 
-    for (int c=0; c<m_pts.size(); ++c) {
-      // We ignore a pixel that is between other two pixels in the
-      // corner of a L-like shape.
-      if (c > 0 && c+1 < m_pts.size()
-        && (m_pts[c-1].x == m_pts[c].x || m_pts[c-1].y == m_pts[c].y)
-        && (m_pts[c+1].x == m_pts[c].x || m_pts[c+1].y == m_pts[c].y)
-        && m_pts[c-1].x != m_pts[c+1].x
-        && m_pts[c-1].y != m_pts[c+1].y) {
-        m_pts.erase(c);
+    // For line brush type, the pixel-perfect will create gaps so we
+    // avoid removing points
+    if (loop->getBrush()->type() != kLineBrushType ||
+        (loop->getDynamics().angle == tools::DynamicSensor::Static &&
+         (loop->getBrush()->angle() == 0.0f ||
+          loop->getBrush()->angle() == 90.0f ||
+          loop->getBrush()->angle() == 180.0f))) {
+      for (int c=0; c<m_pts.size(); ++c) {
+        // We ignore a pixel that is between other two pixels in the
+        // corner of a L-like shape.
+        if (c > 0 && c+1 < m_pts.size()
+            && (m_pts[c-1].x == m_pts[c].x || m_pts[c-1].y == m_pts[c].y)
+            && (m_pts[c+1].x == m_pts[c].x || m_pts[c+1].y == m_pts[c].y)
+            && m_pts[c-1].x != m_pts[c+1].x
+            && m_pts[c-1].y != m_pts[c+1].y) {
+          m_pts.erase(c);
+        }
       }
+    }
 
+    for (int c=0; c<m_pts.size(); ++c) {
       // We must ignore to print the first point of the line after
       // a joinStroke pass with a retained "Last" trace policy
       // (i.e. the user confirms draw a line while he is holding
       // the SHIFT key))
       if (c == 0 && m_retainedTracePolicyLast)
         continue;
-      doPointshapePoint(m_pts[c].x, m_pts[c].y, loop);
+      doPointshapeStrokePt(m_pts[c], loop);
     }
   }
 
@@ -486,8 +509,12 @@ public:
       joinStroke(loop, stroke);
       return;
     }
+
     // Fill content
-    doc::algorithm::polygon(m_pts.size(), (const int*)&m_pts[0], loop, (AlgoHLine)doPointshapeHline);
+    auto v = m_pts.toXYInts();
+    doc::algorithm::polygon(
+      v.size()/2, &v[0],
+      loop, (AlgoHLine)doPointshapeHline);
   }
 };
 
