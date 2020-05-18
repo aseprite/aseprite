@@ -33,8 +33,6 @@ if(NOT USE_SHARED_GIFLIB)
 endif()
 
 if(WITH_WEBP_SUPPORT)
-  # Enable img2webp so "webpmux" library is built
-  set(WEBP_BUILD_IMG2WEBP ON CACHE BOOL "Build the img2webp animation tool.")
   add_subdirectory(libwebp)
 endif()
 
