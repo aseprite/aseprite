@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -21,6 +21,8 @@
 #include <string>
 
 namespace gfx {
+  class Matrix;
+  class Path;
   class Region;
 }
 
@@ -58,6 +60,13 @@ namespace ui {
     void restoreClip();
     bool clipRect(const gfx::Rect& rc);
 
+    void save();
+    void concat(const gfx::Matrix& matrix);
+    void setMatrix(const gfx::Matrix& matrix);
+    void resetMatrix();
+    void restore();
+    gfx::Matrix matrix() const;
+
     void setDrawMode(DrawMode mode, int param = 0,
                      const gfx::Color a = gfx::ColorNone,
                      const gfx::Color b = gfx::ColorNone);
@@ -68,6 +77,7 @@ namespace ui {
     void drawHLine(gfx::Color color, int x, int y, int w);
     void drawVLine(gfx::Color color, int x, int y, int h);
     void drawLine(gfx::Color color, const gfx::Point& a, const gfx::Point& b);
+    void drawPath(gfx::Path& path, const Paint& paint);
 
     void drawRect(gfx::Color color, const gfx::Rect& rc);
     void fillRect(gfx::Color color, const gfx::Rect& rc);

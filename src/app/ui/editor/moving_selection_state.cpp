@@ -105,11 +105,11 @@ bool MovingSelectionState::onMouseMove(Editor* editor, MouseMessage* msg)
     editor->document()->mask()->setOrigin(newMaskOrigin.x,
                                           newMaskOrigin.y);
 
-    if (MaskBoundaries* boundaries =
-          const_cast<MaskBoundaries*>(editor->document()->getMaskBoundaries())) {
+    if (editor->document()->hasMaskBoundaries()) {
+      MaskBoundaries& boundaries = editor->document()->maskBoundaries();
       const gfx::Point boundariesDelta = newMaskOrigin - oldMaskOrigin;
-      boundaries->offset(boundariesDelta.x,
-                         boundariesDelta.y);
+      boundaries.offset(boundariesDelta.x,
+                        boundariesDelta.y);
     }
     else {
       ASSERT(false);

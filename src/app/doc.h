@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -20,6 +20,7 @@
 #include "doc/color.h"
 #include "doc/document.h"
 #include "doc/frame.h"
+#include "doc/mask_boundaries.h"
 #include "doc/pixel_format.h"
 #include "gfx/rect.h"
 #include "obs/observable.h"
@@ -32,7 +33,6 @@ namespace doc {
   class Cel;
   class Layer;
   class Mask;
-  class MaskBoundaries;
   class Sprite;
 }
 
@@ -143,8 +143,16 @@ namespace app {
     void destroyMaskBoundaries();
     void generateMaskBoundaries(const Mask* mask = nullptr);
 
-    const MaskBoundaries* getMaskBoundaries() const {
-     return m_maskBoundaries.get();
+    const MaskBoundaries& maskBoundaries() const {
+      return m_maskBoundaries;
+    }
+
+    MaskBoundaries& maskBoundaries() {
+      return m_maskBoundaries;
+    }
+
+    bool hasMaskBoundaries() const {
+      return !m_maskBoundaries.isEmpty();
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -217,7 +225,7 @@ namespace app {
     Transaction* m_transaction;
 
     // Selected mask region boundaries
-    std::unique_ptr<doc::MaskBoundaries> m_maskBoundaries;
+    doc::MaskBoundaries m_maskBoundaries;
 
     // Data to save the file in the same format that it was loaded
     FormatOptionsPtr m_format_options;

@@ -304,9 +304,9 @@ void Doc::generateMaskBoundaries(const Mask* mask)
   ASSERT(mask);
 
   if (!mask->isEmpty()) {
-    m_maskBoundaries.reset(new MaskBoundaries(mask->bitmap()));
-    m_maskBoundaries->offset(mask->bounds().x,
-                             mask->bounds().y);
+    m_maskBoundaries.regen(mask->bitmap());
+    m_maskBoundaries.offset(mask->bounds().x,
+                            mask->bounds().y);
   }
 
   notifySelectionBoundariesChanged();

@@ -832,13 +832,13 @@ bool StandbyState::overSelectionEdges(Editor* editor,
   if (Preferences::instance().selection.moveEdges() &&
       editor->isActive() &&
       editor->document()->isMaskVisible() &&
-      editor->document()->getMaskBoundaries() &&
+      editor->document()->hasMaskBoundaries() &&
       // TODO improve this check, how we can know that we aren't in the MovingPixelsState
       !dynamic_cast<MovingPixelsState*>(editor->getState().get())) {
     gfx::Point mainOffset(editor->mainTilePosition());
 
     // For each selection edge
-    for (const auto& seg : *editor->document()->getMaskBoundaries()) {
+    for (const auto& seg : editor->document()->maskBoundaries()) {
       gfx::Rect segBounds = seg.bounds();
       segBounds.offset(mainOffset);
       segBounds = editor->editorToScreen(segBounds);

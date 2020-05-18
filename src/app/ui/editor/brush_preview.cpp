@@ -371,7 +371,7 @@ void BrushPreview::generateBoundaries()
 {
   BrushRef brush = getCurrentBrush();
 
-  if (m_brushBoundaries &&
+  if (!m_brushBoundaries.isEmpty() &&
       m_brushGen == brush->gen())
     return;
 
@@ -398,12 +398,10 @@ void BrushPreview::generateBoundaries()
     mask = brush->maskBitmap();
   }
 
-  m_brushBoundaries.reset(
-    new MaskBoundaries(mask ? mask: brushImage));
-
+  m_brushBoundaries.regen(mask ? mask: brushImage);
   if (!isOnePixel)
-    m_brushBoundaries->offset(-brush->center().x,
-                              -brush->center().y);
+    m_brushBoundaries.offset(-brush->center().x,
+                             -brush->center().y);
 
   if (deleteMask)
     delete mask;
@@ -512,7 +510,7 @@ void BrushPreview::traceBrushBoundaries(ui::Graphics* g,
                                         gfx::Color color,
                                         PixelDelegate pixelDelegate)
 {
-  for (const auto& seg : *m_brushBoundaries) {
+  for (const auto& seg : m_brushBoundaries) {
     gfx::Rect bounds = seg.bounds();
     bounds.offset(pos);
     bounds = m_editor->editorToScreen(bounds);

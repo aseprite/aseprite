@@ -13,6 +13,8 @@
 
 #include "base/string.h"
 #include "gfx/clip.h"
+#include "gfx/matrix.h"
+#include "gfx/path.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "gfx/region.h"
@@ -81,6 +83,36 @@ bool Graphics::clipRect(const gfx::Rect& rc)
   return m_surface->clipRect(gfx::Rect(rc).offset(m_dx, m_dy));
 }
 
+void Graphics::save()
+{
+  m_surface->save();
+}
+
+void Graphics::concat(const gfx::Matrix& matrix)
+{
+  m_surface->concat(matrix);
+}
+
+void Graphics::setMatrix(const gfx::Matrix& matrix)
+{
+  m_surface->setMatrix(matrix);
+}
+
+void Graphics::resetMatrix()
+{
+  m_surface->resetMatrix();
+}
+
+void Graphics::restore()
+{
+  m_surface->restore();
+}
+
+gfx::Matrix Graphics::matrix() const
+{
+  return m_surface->matrix();
+}
+
 void Graphics::setDrawMode(DrawMode mode, int param,
                            const gfx::Color a,
                            const gfx::Color b)
@@ -142,6 +174,21 @@ void Graphics::drawLine(gfx::Color color, const gfx::Point& _a, const gfx::Point
   os::Paint paint;
   paint.color(color);
   m_surface->drawLine(a, b, paint);
+}
+
+void Graphics::drawPath(gfx::Path& path, const Paint& paint)
+{
+  os::SurfaceLock lock(m_surface);
+
+  auto m = matrix();
+  save();
+  setMatrix(gfx::Matrix::MakeTrans(m_dx, m_dy));
+  concat(m);
+
+  m_surface->drawPath(path, paint);
+
+  dirty(matrix().mapRect(path.bounds()).inflate(1, 1));
+  restore();
 }
 
 void Graphics::drawRect(gfx::Color color, const gfx::Rect& rcOrig)

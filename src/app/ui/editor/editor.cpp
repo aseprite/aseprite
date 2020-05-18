@@ -894,7 +894,7 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
   }
 
   // Draw the mask
-  if (m_document->getMaskBoundaries())
+  if (m_document->hasMaskBoundaries())
     drawMask(g);
 
   // Post-render decorator.
@@ -934,34 +934,26 @@ void Editor::drawMask(Graphics* g)
       !m_docPref.show.selectionEdges())
     return;
 
-  ASSERT(m_document->getMaskBoundaries());
+  ASSERT(m_document->hasMaskBoundaries());
 
   gfx::Point pt = mainTilePosition();
   pt.x = m_padding.x + m_proj.applyX(pt.x);
   pt.y = m_padding.y + m_proj.applyY(pt.y);
 
-  for (const auto& seg : *m_document->getMaskBoundaries()) {
-    CheckedDrawMode checked(g, m_antsOffset,
-                            gfx::rgba(0, 0, 0, 255),
-                            gfx::rgba(255, 255, 255, 255));
-    gfx::Rect bounds = m_proj.apply(seg.bounds());
+  // Create the mask boundaries path
+  auto& segs = m_document->maskBoundaries();
+  segs.createPathIfNeeeded();
 
-    if (m_proj.scaleX() >= 1.0) {
-      if (!seg.open() && seg.vertical())
-        --bounds.x;
-    }
-
-    if (m_proj.scaleY() >= 1.0) {
-      if (!seg.open() && !seg.vertical())
-        --bounds.y;
-    }
-
-    // The color doesn't matter, we are using CheckedDrawMode
-    if (seg.vertical())
-      g->drawVLine(gfx::rgba(0, 0, 0), pt.x+bounds.x, pt.y+bounds.y, bounds.h);
-    else
-      g->drawHLine(gfx::rgba(0, 0, 0), pt.x+bounds.x, pt.y+bounds.y, bounds.w);
-  }
+  CheckedDrawMode checked(g, m_antsOffset,
+                          gfx::rgba(0, 0, 0, 255),
+                          gfx::rgba(255, 255, 255, 255));
+  os::Paint paint;
+  paint.style(os::Paint::Stroke);
+  paint.color(gfx::rgba(0, 0, 0));
+  g->setMatrix(Matrix::MakeTrans(pt.x, pt.y));
+  g->concat(m_proj.scaleMatrix());
+  g->drawPath(segs.path(), paint);
+  g->resetMatrix();
 }
 
 void Editor::drawMaskSafe()
@@ -971,7 +963,7 @@ void Editor::drawMaskSafe()
 
   if (isVisible() &&
       m_document &&
-      m_document->getMaskBoundaries()) {
+      m_document->hasMaskBoundaries()) {
     Region region;
     getDrawableRegion(region, kCutTopWindows);
     region.offset(-bounds().origin());
@@ -2047,7 +2039,7 @@ void Editor::onPaint(ui::PaintEvent& ev)
 #endif // ENABLE_DEVMODE
 
       // Draw the mask boundaries
-      if (m_document->getMaskBoundaries()) {
+      if (m_document->hasMaskBoundaries()) {
         drawMask(g);
         m_antsTimer.start();
       }

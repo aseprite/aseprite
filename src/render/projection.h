@@ -1,4 +1,5 @@
 // Aseprite Render Library
+// Copyright (c) 2020 Igara Studio S.A.
 // Copyright (c) 2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -9,6 +10,7 @@
 #pragma once
 
 #include "doc/pixel_ratio.h"
+#include "gfx/matrix.h"
 #include "render/zoom.h"
 
 namespace render {
@@ -77,6 +79,10 @@ namespace render {
       return gfx::RectF(u, v,
                         removeX(r.x+r.w) - u,
                         removeY(r.y+r.h) - v);
+    }
+
+    gfx::Matrix scaleMatrix() const {
+      return gfx::Matrix::MakeScale(scaleX(), scaleY());
     }
 
   private:
