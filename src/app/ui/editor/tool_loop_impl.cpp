@@ -62,6 +62,18 @@ namespace app {
 
 using namespace ui;
 
+static void fill_toolloop_params_from_tool_preferences(ToolLoopParams& params)
+{
+  ToolPreferences& toolPref =
+    Preferences::instance().tool(params.tool);
+
+  params.inkType = toolPref.ink();
+  params.opacity = toolPref.opacity();
+  params.tolerance = toolPref.tolerance();
+  params.contiguous = toolPref.contiguous();
+  params.freehandAlgorithm = toolPref.freehandAlgorithm();
+}
+
 //////////////////////////////////////////////////////////////////////
 // Common properties between drawing/preview ToolLoop impl
 
@@ -106,16 +118,11 @@ protected:
 
 public:
   ToolLoopBase(Editor* editor, Site site,
-               tools::Tool* tool, tools::Ink* ink,
-               tools::Controller* controller,
-               const BrushRef& brush,
-               tools::ToolLoop::Button button,
-               const app::Color& fgColor,
-               const app::Color& bgColor)
+               ToolLoopParams& params)
     : m_editor(editor)
-    , m_tool(tool)
-    , m_brush(brush)
-    , m_origBrush(brush)
+    , m_tool(params.tool)
+    , m_brush(params.brush)
+    , m_origBrush(params.brush)
     , m_oldPatternOrigin(m_brush->patternOrigin())
     , m_document(site.document())
     , m_sprite(site.sprite())
@@ -124,15 +131,15 @@ public:
     , m_rgbMap(nullptr)
     , m_docPref(Preferences::instance().document(m_document))
     , m_toolPref(Preferences::instance().tool(m_tool))
-    , m_opacity(m_toolPref.opacity())
-    , m_tolerance(m_toolPref.tolerance())
-    , m_contiguous(m_toolPref.contiguous())
+    , m_opacity(params.opacity)
+    , m_tolerance(params.tolerance)
+    , m_contiguous(params.contiguous)
     , m_snapToGrid(m_docPref.grid.snap())
     , m_isSelectingTiles(false)
     , m_gridBounds(site.gridBounds())
-    , m_button(button)
-    , m_ink(ink->clone())
-    , m_controller(controller)
+    , m_button(params.button)
+    , m_ink(params.ink->clone())
+    , m_controller(params.controller)
     , m_pointShape(m_tool->getPointShape(m_button))
     , m_intertwine(m_tool->getIntertwine(m_button))
     , m_tracePolicy(m_tool->getTracePolicy(m_button))
@@ -141,11 +148,15 @@ public:
                               ColorTarget(ColorTarget::BackgroundLayer,
                                           m_sprite->pixelFormat(),
                                           m_sprite->transparentColor()))
-    , m_fgColor(color_utils::color_for_target_mask(fgColor, m_colorTarget))
-    , m_bgColor(color_utils::color_for_target_mask(bgColor, m_colorTarget))
-    , m_primaryColor(button == tools::ToolLoop::Left ? m_fgColor: m_bgColor)
-    , m_secondaryColor(button == tools::ToolLoop::Left ? m_bgColor: m_fgColor)
+    , m_fgColor(color_utils::color_for_target_mask(params.fg, m_colorTarget))
+    , m_bgColor(color_utils::color_for_target_mask(params.bg, m_colorTarget))
+    , m_primaryColor(m_button == tools::ToolLoop::Left ? m_fgColor: m_bgColor)
+    , m_secondaryColor(m_button == tools::ToolLoop::Left ? m_bgColor: m_fgColor)
   {
+    ASSERT(m_tool);
+    ASSERT(m_ink);
+    ASSERT(m_controller);
+
 #ifdef ENABLE_UI // TODO add dynamics support when UI is not enabled
     if (m_controller->isFreehand() &&
         !m_pointShape->isFloodFill() &&
@@ -158,7 +169,7 @@ public:
         m_tracePolicy == tools::TracePolicy::AccumulateUpdateLast) {
       tools::ToolBox* toolbox = App::instance()->toolBox();
 
-      switch (m_toolPref.freehandAlgorithm()) {
+      switch (params.freehandAlgorithm) {
         case tools::FreehandAlgorithm::DEFAULT:
           m_intertwine = toolbox->getIntertwinerById(tools::WellKnownIntertwiners::AsLines);
           m_tracePolicy = tools::TracePolicy::Accumulate;
@@ -212,18 +223,18 @@ public:
     }
 
     // Ignore opacity for these inks
-    if (!tools::inkHasOpacity(m_toolPref.ink()) &&
+    if (!tools::inkHasOpacity(params.inkType) &&
         m_brush->type() != kImageBrushType &&
         !m_ink->isEffect()) {
       m_opacity = 255;
     }
 
 #ifdef ENABLE_UI // TODO add support when UI is not enabled
-    if (m_toolPref.ink() == tools::InkType::SHADING) {
+    if (params.inkType == tools::InkType::SHADING) {
       m_shade = App::instance()->contextBar()->getShade();
       m_shadingRemap.reset(
         App::instance()->contextBar()->createShadeRemap(
-          button == tools::ToolLoop::Left));
+          m_button == tools::ToolLoop::Left));
     }
 #endif
   }
@@ -417,17 +428,9 @@ public:
   ToolLoopImpl(Editor* editor,
                Site site,
                Context* context,
-               tools::Tool* tool,
-               tools::Ink* ink,
-               tools::Controller* controller,
-               const BrushRef& brush,
-               tools::ToolLoop::Button button,
-               const app::Color& fgColor,
-               const app::Color& bgColor,
+               ToolLoopParams& params,
                const bool saveLastPoint)
-    : ToolLoopBase(editor, site,
-                   tool, ink, controller, brush,
-                   button, fgColor, bgColor)
+    : ToolLoopBase(editor, site, params)
     , m_context(context)
     , m_canceled(false)
     , m_tx(m_context,
@@ -489,7 +492,7 @@ public:
       m_floodfillSrcImage = const_cast<Image*>(getSrcImage());
 
     // Settings
-    switch (tool->getFill(m_button)) {
+    switch (m_tool->getFill(m_button)) {
       case tools::FillNone:
         m_filled = false;
         break;
@@ -675,6 +678,9 @@ private:
 
 };
 
+//////////////////////////////////////////////////////////////////////
+// For user UI painting
+
 #ifdef ENABLE_UI
 
 tools::ToolLoop* create_tool_loop(
@@ -684,14 +690,15 @@ tools::ToolLoop* create_tool_loop(
   const bool convertLineToFreehand,
   const bool selectTiles)
 {
-  tools::Tool* tool = editor->getCurrentEditorTool();
-  tools::Ink* ink = editor->getCurrentEditorInk();
-  if (!tool || !ink)
+  ToolLoopParams params;
+  params.tool = editor->getCurrentEditorTool();
+  params.ink = editor->getCurrentEditorInk();
+  if (!params.tool || !params.ink)
     return nullptr;
 
   if (selectTiles) {
-    tool = App::instance()->toolBox()->getToolById(tools::WellKnownTools::RectangularMarquee);
-    ink = tool->getInk(button == tools::Pointer::Left ? 0: 1);
+    params.tool = App::instance()->toolBox()->getToolById(tools::WellKnownTools::RectangularMarquee);
+    params.ink = params.tool->getInk(button == tools::Pointer::Left ? 0: 1);
   }
 
   Site site = editor->getSite();
@@ -705,8 +712,9 @@ tools::ToolLoop* create_tool_loop(
   // Anyway this cannot be used in 'magic wand' tool (isSelection +
   // isFloodFill) because we need the original layer source
   // image/pixels to stop the flood-fill algorithm.
-  if (ink->isSelection() &&
-      !tool->getPointShape(button != tools::Pointer::Left ? 1: 0)->isFloodFill()) {
+  if (params.ink->isSelection() &&
+      !params.tool->getPointShape(
+        button != tools::Pointer::Left ? 1: 0)->isFloodFill()) {
     site.layer(nullptr);
   }
   else {
@@ -737,10 +745,11 @@ tools::ToolLoop* create_tool_loop(
 
   // Get fg/bg colors
   ColorBar* colorbar = ColorBar::instance();
-  app::Color fg = colorbar->getFgColor();
-  app::Color bg = colorbar->getBgColor();
+  params.fg = colorbar->getFgColor();
+  params.bg = colorbar->getBgColor();
 
-  if (!fg.isValid() || !bg.isValid()) {
+  if (!params.fg.isValid() ||
+      !params.bg.isValid()) {
     if (Preferences::instance().colorBar.showInvalidFgBgColorAlert()) {
       OptionalAlert::show(
         Preferences::instance().colorBar.showInvalidFgBgColorAlert,
@@ -751,28 +760,29 @@ tools::ToolLoop* create_tool_loop(
 
   // Create the new tool loop
   try {
-    tools::ToolLoop::Button toolLoopButton =
+    params.button =
       (button == tools::Pointer::Left ? tools::ToolLoop::Left:
                                         tools::ToolLoop::Right);
 
-    tools::Controller* controller =
+    params.controller =
       (convertLineToFreehand ?
        App::instance()->toolBox()->getControllerById(
          tools::WellKnownControllers::LineFreehand):
-       tool->getController(toolLoopButton));
+       params.tool->getController(params.button));
 
     const bool saveLastPoint =
-      (ink->isPaint() &&
-       (controller->isFreehand() ||
+      (params.ink->isPaint() &&
+       (params.controller->isFreehand() ||
         convertLineToFreehand));
+
+    params.brush = App::instance()->contextBar()
+      ->activeBrush(params.tool, params.ink);
+
+    fill_toolloop_params_from_tool_preferences(params);
 
     ASSERT(context->activeDocument() == editor->document());
     auto toolLoop = new ToolLoopImpl(
-      editor, site, context,
-      tool, ink, controller,
-      App::instance()->contextBar()->activeBrush(tool, ink),
-      toolLoopButton, fg, bg,
-      saveLastPoint);
+      editor, site, context, params, saveLastPoint);
 
     if (selectTiles)
       toolLoop->forceSnapToTiles();
@@ -787,33 +797,30 @@ tools::ToolLoop* create_tool_loop(
 
 #endif // ENABLE_UI
 
+//////////////////////////////////////////////////////////////////////
+// For scripting
+
+#ifdef ENABLE_SCRIPTING
+
 tools::ToolLoop* create_tool_loop_for_script(
   Context* context,
   const Site& site,
-  tools::Tool* tool,
-  tools::Ink* ink,
-  const app::Color& color,
-  const doc::BrushRef& brush)
+  ToolLoopParams& params)
 {
-  ASSERT(tool);
-  ASSERT(ink);
+  ASSERT(params.tool);
+  ASSERT(params.ink);
   if (!site.layer())
     return nullptr;
 
   try {
-    const tools::ToolLoop::Button toolLoopButton = tools::ToolLoop::Left;
-    tools::Controller* controller = tool->getController(toolLoopButton);
-
     // If we don't have the UI available, we reset the tools
     // preferences, so scripts that are executed in batch mode have a
     // reproducible behavior.
     if (!context->isUIAvailable())
-      Preferences::instance().resetToolPreferences(tool);
+      Preferences::instance().resetToolPreferences(params.tool);
 
     return new ToolLoopImpl(
-      nullptr, site, context,
-      tool, ink, controller, brush,
-      toolLoopButton, color, color, false);
+      nullptr, site, context, params, false);
   }
   catch (const std::exception& ex) {
     Console::showException(ex);
@@ -821,8 +828,10 @@ tools::ToolLoop* create_tool_loop_for_script(
   }
 }
 
+#endif // ENABLE_SCRIPTING
+
 //////////////////////////////////////////////////////////////////////
-// For preview
+// For UI preview
 
 #ifdef ENABLE_UI
 
@@ -832,16 +841,10 @@ class PreviewToolLoopImpl : public ToolLoopBase {
 public:
   PreviewToolLoopImpl(
     Editor* editor,
-    tools::Tool* tool,
-    tools::Ink* ink,
-    const BrushRef& brush,
-    const app::Color& fgColor,
-    const app::Color& bgColor,
+    ToolLoopParams& params,
     Image* image,
     const gfx::Point& celOrigin)
-    : ToolLoopBase(editor, editor->getSite(),
-                   tool, ink, tool->getController(tools::ToolLoop::Left),
-                   brush, tools::ToolLoop::Left, fgColor, bgColor)
+    : ToolLoopBase(editor, editor->getSite(), params)
     , m_image(image)
   {
     m_celOrigin = celOrigin;
@@ -895,10 +898,11 @@ tools::ToolLoop* create_tool_loop_preview(
   Image* image,
   const gfx::Point& celOrigin)
 {
-  tools::Tool* tool = editor->getCurrentEditorTool();
-  tools::Ink* ink = editor->getCurrentEditorInk();
-  if (!tool || !ink)
-    return NULL;
+  ToolLoopParams params;
+  params.tool = editor->getCurrentEditorTool();
+  params.ink = editor->getCurrentEditorInk();
+  if (!params.tool || !params.ink)
+    return nullptr;
 
   Layer* layer = editor->layer();
   if (!layer ||
@@ -910,18 +914,25 @@ tools::ToolLoop* create_tool_loop_preview(
 
   // Get fg/bg colors
   ColorBar* colorbar = ColorBar::instance();
-  app::Color fg = colorbar->getFgColor();
-  app::Color bg = colorbar->getBgColor();
-  if (!fg.isValid() || !bg.isValid())
+  params.fg = colorbar->getFgColor();
+  params.bg = colorbar->getBgColor();
+  if (!params.fg.isValid() ||
+      !params.bg.isValid())
     return nullptr;
+
+  params.brush = brush;
+  params.button = tools::ToolLoop::Left;
+  params.controller = params.tool->getController(params.button);
 
   // Create the new tool loop
   try {
+    fill_toolloop_params_from_tool_preferences(params);
+
     return new PreviewToolLoopImpl(
-      editor, tool, ink, brush,
-      fg, bg, image, celOrigin);
+      editor, params, image, celOrigin);
   }
-  catch (const std::exception&) {
+  catch (const std::exception& e) {
+    LOG(ERROR, e.what());
     return nullptr;
   }
 }
