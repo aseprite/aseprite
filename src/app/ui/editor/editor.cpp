@@ -950,10 +950,13 @@ void Editor::drawMask(Graphics* g)
   os::Paint paint;
   paint.style(os::Paint::Stroke);
   paint.color(gfx::rgba(0, 0, 0));
-  g->setMatrix(Matrix::MakeTrans(pt.x, pt.y));
-  g->concat(m_proj.scaleMatrix());
-  g->drawPath(segs.path(), paint);
-  g->resetMatrix();
+
+  // We translate the path instead of applying a matrix to the
+  // ui::Graphics so the "checked" pattern is not scaled too.
+  gfx::Path path;
+  segs.path().transform(m_proj.scaleMatrix(), &path);
+  path.offset(pt.x, pt.y);
+  g->drawPath(path, paint);
 }
 
 void Editor::drawMaskSafe()
