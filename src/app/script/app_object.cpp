@@ -282,9 +282,21 @@ int App_useTool(lua_State* L)
   // Options to create the ToolLoop (tool, ink, color, opacity, etc.)
   ToolLoopParams params;
 
+  // Mouse button
+  params.button = tools::ToolLoop::Left;
+  type = lua_getfield(L, 1, "button");
+  if (type != LUA_TNIL) {
+    // Only supported button at the moment left (default) or right
+    if (lua_tointeger(L, -1) == (int)ui::kButtonRight)
+      params.button = tools::ToolLoop::Right;
+  }
+  lua_pop(L, 1);
+
   // Select tool by name
-  params.tool = App::instance()->activeToolManager()->activeTool();
-  params.ink = params.tool->getInk(0);
+  auto activeToolMgr = App::instance()->activeToolManager();
+  params.tool = activeToolMgr->activeTool();
+  params.ink = params.tool->getInk(params.button == tools::ToolLoop::Left ? 0: 1);
+  params.controller = params.tool->getController(params.button);
   type = lua_getfield(L, 1, "tool");
   if (type != LUA_TNIL) {
     if (auto toolArg = get_tool_from_arg(L, -1)) {
@@ -296,17 +308,11 @@ int App_useTool(lua_State* L)
   }
   lua_pop(L, 1);
 
-  // Mouse button
-  params.button = tools::ToolLoop::Left;
-  type = lua_getfield(L, 1, "button");
-  if (type != LUA_TNIL) {
-    // Only supported button at the moment left (default) or right
-    if (lua_tointeger(L, -1) == (int)ui::kButtonRight)
-      params.button = tools::ToolLoop::Right;
-  }
+  // Select ink by name
+  type = lua_getfield(L, 1, "ink");
+  if (type != LUA_TNIL)
+    params.inkType = get_value_from_lua<tools::InkType>(L, -1);
   lua_pop(L, 1);
-
-  params.controller = params.tool->getController(params.button);
 
   // Color
   type = lua_getfield(L, 1, "color");
@@ -324,6 +330,13 @@ int App_useTool(lua_State* L)
   else
     params.bg = params.fg;
   lua_pop(L, 1);
+
+  // Adjust ink depending on "inkType" and "color"
+  // (e.g. InkType::SIMPLE depends on the color too, to adjust
+  // eraser/alpha compositing/opaque depending on the color alpha
+  // value).
+  params.ink = activeToolMgr->adjustToolInkDependingOnSelectedInkType(
+    params.ink, params.inkType, params.fg);
 
   // Brush
   type = lua_getfield(L, 1, "brush");

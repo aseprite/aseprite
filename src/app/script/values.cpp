@@ -127,6 +127,23 @@ gfx::Rect get_value_from_lua(lua_State* L, int index) {
 }
 
 // ----------------------------------------------------------------------
+// tools::InkType
+
+template<>
+void push_value_to_lua(lua_State* L, const app::tools::InkType& inkType) {
+  lua_pushinteger(L, (int)inkType);
+}
+
+template<>
+app::tools::InkType get_value_from_lua(lua_State* L, int index) {
+  if (lua_type(L, index) == LUA_TSTRING) {
+    if (const char* s = lua_tostring(L, index))
+      return app::tools::string_id_to_ink_type(s);
+  }
+  return (app::tools::InkType)lua_tointeger(L, index);
+}
+
+// ----------------------------------------------------------------------
 // enums
 
 #define FOR_ENUM(T)                                             \
@@ -163,7 +180,6 @@ FOR_ENUM(app::gen::TimelinePosition)
 FOR_ENUM(app::gen::WindowColorProfile)
 FOR_ENUM(app::gen::ToGrayAlgorithm)
 FOR_ENUM(app::tools::FreehandAlgorithm)
-FOR_ENUM(app::tools::InkType)
 FOR_ENUM(app::tools::RotationAlgorithm)
 FOR_ENUM(doc::AniDir)
 FOR_ENUM(doc::BrushPattern)

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2016  David Capello
 //
 // This program is distributed under the terms of
@@ -11,6 +11,7 @@
 
 #include "app/tools/active_tool.h"
 
+#include "app/color.h"
 #include "app/pref/preferences.h"
 #include "app/tools/active_tool_observer.h"
 #include "app/tools/ink.h"
@@ -76,24 +77,32 @@ Ink* ActiveToolManager::activeInk() const
   Tool* tool = activeTool();
   Ink* ink = tool->getInk(m_rightClick ? 1: 0);
   if (ink->isPaint() && !ink->isEffect()) {
-    tools::InkType inkType = Preferences::instance().tool(tool).ink();
-    const char* id = nullptr;
-
-    switch (inkType) {
-
-      case tools::InkType::SIMPLE: {
-        id = tools::WellKnownInks::Paint;
-
+    const tools::InkType inkType = Preferences::instance().tool(tool).ink();
+    app::Color color;
 #ifdef ENABLE_UI
-        ColorBar* colorbar = ColorBar::instance();
-        app::Color color = (m_rightClick ? colorbar->getBgColor():
-                                           colorbar->getFgColor());
+    ColorBar* colorbar = ColorBar::instance();
+    color = (m_rightClick ? colorbar->getBgColor():
+                            colorbar->getFgColor());
+#endif
+    ink = adjustToolInkDependingOnSelectedInkType(ink, inkType, color);
+  }
+
+  return ink;
+}
+
+Ink* ActiveToolManager::adjustToolInkDependingOnSelectedInkType(
+  Ink* ink,
+  const InkType inkType,
+  const app::Color& color) const
+{
+  if (ink->isPaint() && !ink->isEffect()) {
+    const char* id = nullptr;
+    switch (inkType) {
+      case tools::InkType::SIMPLE:
+        id = tools::WellKnownInks::Paint;
         if (color.getAlpha() == 0)
           id = tools::WellKnownInks::PaintCopy;
-#endif
         break;
-      }
-
       case tools::InkType::ALPHA_COMPOSITING:
         id = tools::WellKnownInks::Paint;
         break;
@@ -107,11 +116,9 @@ Ink* ActiveToolManager::activeInk() const
         id = tools::WellKnownInks::Shading;
         break;
     }
-
     if (id)
       ink = m_toolbox->getInkById(id);
   }
-
   return ink;
 }
 

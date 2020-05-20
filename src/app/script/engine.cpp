@@ -331,6 +331,16 @@ Engine::Engine()
 
   lua_newtable(L);
   lua_pushvalue(L, -1);
+  lua_setglobal(L, "Ink");
+  setfield_integer(L, "SIMPLE", app::tools::InkType::SIMPLE);
+  setfield_integer(L, "ALPHA_COMPOSITING", app::tools::InkType::ALPHA_COMPOSITING);
+  setfield_integer(L, "COPY_COLOR", app::tools::InkType::COPY_COLOR);
+  setfield_integer(L, "LOCK_ALPHA", app::tools::InkType::LOCK_ALPHA);
+  setfield_integer(L, "SHADING", app::tools::InkType::SHADING);
+  lua_pop(L, 1);
+
+  lua_newtable(L);
+  lua_pushvalue(L, -1);
   lua_setglobal(L, "FilterChannels");
   setfield_integer(L, "RED",   TARGET_RED_CHANNEL);
   setfield_integer(L, "GREEN", TARGET_GREEN_CHANNEL);
