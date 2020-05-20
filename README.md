@@ -11,18 +11,19 @@
 
 * Sprites are composed of [layers &amp; frames](http://www.aseprite.org/docs/timeline/) as separated concepts.
 * Support for [color profiles](https://www.aseprite.org/docs/color-profile/) and different [color modes](http://www.aseprite.org/docs/color/): RGBA, Indexed (palettes up to 256 colors), Grayscale.
-* [Animation facilities](https://www.aseprite.org/docs/animation/), with real-time [preview](https://www.aseprite.org/docs/preview-window/) and [onion skinning](https://www.aseprite.org/docs/animation/#onion-skinning).
+* [Animation facilities](https://www.aseprite.org/docs/animation/), with real-time [preview](https://www.aseprite.org/docs/preview-window/) and [onion skinning](https://www.aseprite.org/docs/onion-skinning/).
 * [Export/import](https://www.aseprite.org/docs/exporting/) animations to/from [sprite sheets](https://www.aseprite.org/docs/sprite-sheet/), GIF files, or sequence of PNG files (and FLC, FLI, JPG, BMP, PCX, TGA).
 * [Multiple editors](http://www.aseprite.org/docs/workspace/#drag-and-drop-tabs) support.
-* Pixel-art specific tools like filled [pixel perfect freehand mode](https://twitter.com/aseprite/status/427135197671591936), [shading ink](http://www.aseprite.org/docs/shading/), [outline](https://twitter.com/aseprite/status/1126548469865431041), etc.
-* Tiled drawing mode, useful to draw patterns and textures.
-* Undo/Redo for every operation and support for [non-linear undo](https://imgur.com/9I42fZK).
+* [Layer groups](https://imgur.com/x3OKkGj) for organizing your work, and [reference layers](https://imgur.com/UR2qXR9) for rotoscoping.
+* Pixel-art specific tools like [Pixel Perfect freehand mode](https://imgur.com/0fdlNau), [Shading ink](http://www.aseprite.org/docs/shading/), [Custom Brushes](https://twitter.com/aseprite/status/1196883990080344067), [Outlines](https://twitter.com/aseprite/status/1126548469865431041), [Wide Pixels](https://imgur.com/1yZKUcs), etc.
+* Other special drawing tools like [Pressure sensitivity](https://twitter.com/aseprite/status/1253770784708886533), [Symmetry Tool](https://twitter.com/aseprite/status/659709226747625472), [Stroke and Fill](https://imgur.com/7JZQ81o) selection, [Gradients](https://twitter.com/aseprite/status/1126549217856622597).
+* [Tiled mode](https://twitter.com/pixel__toast/status/1132079817736695808) useful to draw patterns and textures.
 * [Transform multiple frames/layers](https://twitter.com/aseprite/status/1170007034651172866) at the same time.
-* [Pressure sensitivity](https://twitter.com/aseprite/status/1253770784708886533).
 * [Lua scripting capabilities](https://www.aseprite.org/docs/scripting/).
 * [CLI - Command Line Interface](https://www.aseprite.org/docs/cli/) to automatize tasks.
-* [Quick Reference / Cheat Sheet](https://www.aseprite.org/quickref/) of keyboard shortcuts (and customizable keyboard shortcuts).
+* [Quick Reference / Cheat Sheet](https://www.aseprite.org/quickref/) keyboard shortcuts ([customizable keys](https://imgur.com/rvAUxyF) and [mouse wheel](https://imgur.com/oNqFqVb)).
 * [Reopen closed files](https://twitter.com/aseprite/status/1202641475256881153) and [recover data](https://www.aseprite.org/docs/data-recovery/) in case of crash.
+* Undo/Redo for every operation and support for [non-linear undo](https://imgur.com/9I42fZK).
 * [More features &amp; tips](https://twitter.com/aseprite/status/1124442198651678720)
 
 ## Issues
