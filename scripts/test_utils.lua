@@ -60,11 +60,11 @@ function expect_img(image, expectedPixels)
 			      app.pixelColor.rgbaA(b)))
 	elseif image.colorMode == ColorMode.GRAY then
 	  print(string.format(' - Value A = gray(%d,%d)',
-			      app.pixelColor.grayG(a),
-			      app.pixelColor.grayA(a)))
+			      app.pixelColor.grayaV(a),
+			      app.pixelColor.grayaA(a)))
 	  print(string.format(' - Value B = gray(%d,%d)',
-			      app.pixelColor.grayV(b),
-			      app.pixelColor.grayA(b)))
+			      app.pixelColor.grayaV(b),
+			      app.pixelColor.grayaA(b)))
 	else
 	  print(' - Value A = ' .. tostring(a))
 	  print(' - Value B = ' .. tostring(b))
