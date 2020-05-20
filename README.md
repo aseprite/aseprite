@@ -7,21 +7,23 @@
 
 ## Introduction
 
-**Aseprite** is a program to create animated sprites. Its main
-features are:
+**Aseprite** is a program to create animated sprites. Its main features are:
 
-* Sprites are composed of [**layers** &amp; **frames**](http://www.aseprite.org/docs/timeline/) (as separated concepts).
-* Supported [color modes](http://www.aseprite.org/docs/color/): **RGBA**, **Indexed** (palettes up to 256
-  colors), and Grayscale.
-* Load/save a sequence of **PNG** files and **GIF** animations (and
-  FLC, FLI, JPG, BMP, PCX, TGA).
-* Export/import animations to/from **Sprite Sheets**.
-* **Tiled** drawing mode, useful to draw **patterns** and textures.
-* **Undo/Redo** for every operation.
-* Real-time **animation preview**.
-* [**Multiple editors**](http://www.aseprite.org/docs/workspace/#drag-and-drop-tabs) support.
-* Pixel-art specific tools like filled **Contour**, **Polygon**, [**Shading**](http://www.aseprite.org/docs/shading/) mode, etc.
-* [**Onion skinning**](https://www.aseprite.org/docs/animation/#onion-skinning)
+* Sprites are composed of [layers &amp; frames](http://www.aseprite.org/docs/timeline/) as separated concepts.
+* Support for [color profiles](https://www.aseprite.org/docs/color-profile/) and different [color modes](http://www.aseprite.org/docs/color/): RGBA, Indexed (palettes up to 256 colors), Grayscale.
+* [Animation facilities](https://www.aseprite.org/docs/animation/), with real-time [preview](https://www.aseprite.org/docs/preview-window/) and [onion skinning](https://www.aseprite.org/docs/animation/#onion-skinning).
+* [Export/import](https://www.aseprite.org/docs/exporting/) animations to/from [sprite sheets](https://www.aseprite.org/docs/sprite-sheet/), GIF files, or sequence of PNG files (and FLC, FLI, JPG, BMP, PCX, TGA).
+* [Multiple editors](http://www.aseprite.org/docs/workspace/#drag-and-drop-tabs) support.
+* Pixel-art specific tools like filled [pixel perfect freehand mode](https://twitter.com/aseprite/status/427135197671591936), [shading ink](http://www.aseprite.org/docs/shading/), [outline](https://twitter.com/aseprite/status/1126548469865431041), etc.
+* Tiled drawing mode, useful to draw patterns and textures.
+* Undo/Redo for every operation and support for [non-linear undo](https://imgur.com/9I42fZK).
+* [Transform multiple frames/layers](https://twitter.com/aseprite/status/1170007034651172866) at the same time.
+* [Pressure sensitivity](https://twitter.com/aseprite/status/1253770784708886533).
+* [Lua scripting capabilities](https://www.aseprite.org/docs/scripting/).
+* [CLI - Command Line Interface](https://www.aseprite.org/docs/cli/) to automatize tasks.
+* [Quick Reference / Cheat Sheet](https://www.aseprite.org/quickref/) of keyboard shortcuts (and customizable keyboard shortcuts).
+* [Reopen closed files](https://twitter.com/aseprite/status/1202641475256881153) and [recover data](https://www.aseprite.org/docs/data-recovery/) in case of crash.
+* [More features &amp; tips](https://twitter.com/aseprite/status/1124442198651678720)
 
 ## Issues
 
