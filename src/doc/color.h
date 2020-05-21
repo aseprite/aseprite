@@ -11,8 +11,6 @@
 
 #include "base/ints.h"
 
-#include <algorithm>
-
 namespace doc {
 
   // The greatest int type to storage a color for an image in the
@@ -95,31 +93,9 @@ namespace doc {
 
   typedef color_t (*rgba_to_graya_func)(const color_t c);
 
-  inline color_t rgba_to_graya_using_hsv(const color_t c) {
-    const uint8_t M = std::max(rgba_getr(c),
-                               std::max(rgba_getg(c),
-                                        rgba_getb(c)));
-    return graya(M,
-                 rgba_geta(c));
-  }
-
-  inline color_t rgba_to_graya_using_hsl(const color_t c) {
-    const int m = std::min(rgba_getr(c),
-                           std::min(rgba_getg(c),
-                                    rgba_getb(c)));
-    const int M = std::max(rgba_getr(c),
-                           std::max(rgba_getg(c),
-                                    rgba_getb(c)));
-    return graya((M + m) / 2,
-                 rgba_geta(c));
-  }
-
-  inline color_t rgba_to_graya_using_luma(const color_t c) {
-    return graya(rgb_luma(rgba_getr(c),
-                          rgba_getg(c),
-                          rgba_getb(c)),
-                 rgba_geta(c));
-  }
+  color_t rgba_to_graya_using_hsv(const color_t c);
+  color_t rgba_to_graya_using_hsl(const color_t c);
+  color_t rgba_to_graya_using_luma(const color_t c);
 
 } // namespace doc
 

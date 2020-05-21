@@ -1,4 +1,5 @@
 # Aseprite Document Library
+# Copyright (C) 2020 Igara Studio S.A.
 # Copyright (C) 2001-2018 David Capello
 
 if(WIN32)
@@ -28,6 +29,7 @@ add_library(doc-lib
   cel_data_io.cpp
   cel_io.cpp
   cels_range.cpp
+  color.cpp
   compressed_image.cpp
   conversion_to_surface.cpp
   document.cpp
