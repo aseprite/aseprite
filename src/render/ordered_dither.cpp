@@ -12,6 +12,7 @@
 #include "render/ordered_dither.h"
 
 #include "base/base.h"
+#include "doc/color.h"
 #include "render/dithering.h"
 #include "render/dithering_matrix.h"
 
@@ -29,16 +30,20 @@ static int colorDistance(int r1, int g1, int b1, int a1,
                          int r2, int g2, int b2, int a2)
 {
   int result = 0;
+  int da = a1 - a2;
 
-  // The factor for RGB components came from doc::rba_luma()
-  if (a1 && a2) {
-    result += int(std::abs(r1-r2) * 2126 +
-                  std::abs(g1-g2) * 7152 +
-                  std::abs(b1-b2) *  722);
+  if (a1 & a2) {
+    int ar = r1 + r2;
+    int dr = r1 - r2;
+    int dg = g1 - g2;
+    int db = b1 - b2;
+    if (dr) result += dr * dr * (1024 + ar);
+    if (dg) result += dg * dg * 2048;
+    if (db) result += db * db * (1535 - ar);
   }
 
-  result += (std::abs(a1-a2) * 20000);
-  return result;
+  if (da) result += (da * da * 8192);
+  return sqrt(result);
 }
 
 OrderedDither::OrderedDither(int transparentIndex)
@@ -102,13 +107,24 @@ doc::color_t OrderedDither::ditherRgbPixelToIndex(
   b2 = doc::rgba_getb(nearest2rgb);
   a2 = doc::rgba_geta(nearest2rgb);
 
-  // Here we calculate the distance between the original 'color'
-  // and 'nearest1rgb'. The maximum possible distance is given by
+  // The maximum possible distance is given by
   // the distance between 'nearest1rgb' and 'nearest2rgb'.
-  int d = colorDistance(r1, g1, b1, a1, r, g, b, a);
   int D = colorDistance(r1, g1, b1, a1, r2, g2, b2, a2);
   if (D == 0)
     return nearest1idx;
+
+  // Make nearest1 to always be a darker color
+  // so we can eliminate the "unpatterned" artifacts
+  // then calculate the distance between the original
+  // 'color' and 'nearest1rgb'.
+  int d = 0;
+  if (doc::rgba_luma(nearest1rgb) > doc::rgba_luma(nearest2rgb)) {
+    std::swap(nearest1idx, nearest2idx);
+    d = colorDistance(r2, g2, b2, a2, r, g, b, a);
+  }
+  else {
+    d = colorDistance(r1, g1, b1, a1, r, g, b, a);
+  }
 
   // We convert the d/D factor to the matrix range to compare it
   // with the threshold. If d > threshold, it means that we're
@@ -187,9 +203,9 @@ doc::color_t OrderedDither2::ditherRgbPixelToIndex(
     // maxMixValue, but this is too slow, so we try to figure out
     // a good mix factor using the RGB values of color0 and
     // color1.
-    int maxMixValue = matrix.maxValue();
+    long maxMixValue = matrix.maxValue();
 
-    int mix = 0;
+    long mix = 0;
     int div = 0;
     // If Alpha=0, RGB values are not representative for this entry.
     if (a && a0 && a1) {

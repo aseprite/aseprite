@@ -35,12 +35,12 @@ bool load_dithering_matrix_from_sprite(
   if (img) {
     const int w = spr->width();
     const int h = spr->height();
-    matrix = render::DitheringMatrix(h, w);
+    matrix = render::DitheringMatrix(h, w, 0x1000000);
     for (int i=0; i<h; ++i)
-      for (int j=0; j<w; ++j)
-        matrix(i, j) = img->getPixel(j, i);
-
-    matrix.calcMaxValue();
+      for (int j=0; j<w; ++j) {
+        color_t px = img->getPixel(i, j);
+        matrix(i, j) = rgba_getr(px) << 16 | rgba_getg(px) << 8 | rgba_getb(px);
+      }
   }
   else {
     matrix = render::DitheringMatrix();

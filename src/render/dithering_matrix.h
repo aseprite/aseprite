@@ -23,18 +23,19 @@ namespace render {
     DitheringMatrix(int rows, int cols)
       : m_rows(rows), m_cols(cols)
       , m_matrix(rows*cols, 0)
-      , m_maxValue(1) {
+      , m_maxValue(rows*cols) {
+    }
+
+    DitheringMatrix(int rows, int cols, int maxValue)
+      : m_rows(rows), m_cols(cols)
+      , m_matrix(rows*cols, 0)
+      , m_maxValue(maxValue) {
     }
 
     int rows() const { return m_rows; }
     int cols() const { return m_cols; }
 
     int maxValue() const { return m_maxValue; }
-    void calcMaxValue() {
-      m_maxValue = *std::max_element(m_matrix.begin(),
-                                     m_matrix.end());
-      m_maxValue = std::max(m_maxValue, 1);
-    }
 
     int operator()(int i, int j) const {
       return m_matrix[(i%m_rows)*m_cols + (j%m_cols)];
@@ -60,7 +61,6 @@ namespace render {
         for (int j=0; j<n; ++j)
           operator()(i, j) = Dn(i, j, n);
 
-      calcMaxValue();
     }
 
   private:
