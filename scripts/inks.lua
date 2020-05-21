@@ -92,16 +92,23 @@ function test_alpha_compositing_on_indexed_with_full_opacity_and_repeated_colors
   p:setColor(4, Color(255, 255, 255))
   s:setPalette(p)
 
-  app.command.BackgroundFromLayer()
-
   local inks = { Ink.SIMPLE, Ink.ALPHA_COMPOSITING }
-  for i = 1,2 do
-    for c = 0,4 do
-      expect_img(app.activeImage, { 0 })
-      app.useTool{ tool="pencil", color=c, points={ Point(0, 0) },
-                   ink=inks[i], opacity=255 }
-      expect_img(app.activeImage, { c })
-      app.undo()
+
+  -- k=1 -> transparent layer
+  -- k=2 -> background layer
+  for k=1,2 do
+    if k == 2 then app.command.BackgroundFromLayer() end
+    --  i=1 -> simple ink
+    --  i=2 -> alpha compositing ink
+    for i = 1,2 do
+      -- j=color index
+      for j = 0,4 do
+        expect_img(app.activeImage, { 0 })
+        app.useTool{ tool="pencil", color=j, points={ Point(0, 0) },
+                     ink=inks[i], opacity=255 }
+        expect_img(app.activeImage, { j })
+        app.undo()
+      end
     end
   end
 end
