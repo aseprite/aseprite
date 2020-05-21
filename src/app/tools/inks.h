@@ -114,9 +114,11 @@ public:
     }
     else {
       switch (m_type) {
-        case Simple: {
+        case Simple:
+        case AlphaCompositing: {
           bool opaque = false;
 
+          // Opacity is set to 255 when InkType=Simple in ToolLoopBase()
           if (loop->getOpacity() == 255 &&
               // The trace policy is "overlap" when the dynamics has
               // a gradient between FG <-> BG
@@ -134,8 +136,15 @@ public:
                 opaque = (graya_geta(color) == 255);
                 break;
               case IMAGE_INDEXED:
-                color = get_current_palette()->getEntry(color);
-                opaque = (rgba_geta(color) == 255);
+                // When we paint over a transparent layer with the
+                // mask color, we have to use the
+                // TransparentInkProcessing anyway (cannot use the
+                // fast path with CopyInkProcessing).
+                if (loop->getLayer()->isBackground() ||
+                    color != loop->sprite()->transparentColor()) {
+                  color = get_current_palette()->getEntry(color);
+                  opaque = (rgba_geta(color) == 255);
+                }
                 break;
             }
           }
@@ -147,9 +156,6 @@ public:
             setProc(get_ink_proc<TransparentInkProcessing>(loop));
           break;
         }
-        case AlphaCompositing:
-          setProc(get_ink_proc<TransparentInkProcessing>(loop));
-          break;
         case Copy:
           setProc(get_ink_proc<CopyInkProcessing>(loop));
           break;
