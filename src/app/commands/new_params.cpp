@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -13,6 +13,7 @@
 #include "app/color.h"
 #include "app/doc_exporter.h"
 #include "app/sprite_sheet_type.h"
+#include "app/tools/ink_type.h"
 #include "base/convert_to.h"
 #include "base/split_string.h"
 #include "base/string.h"
@@ -26,6 +27,7 @@
 #ifdef ENABLE_SCRIPTING
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
+#include "app/script/values.h"
 #endif
 
 namespace app {
@@ -158,10 +160,15 @@ void Param<filters::OutlineFilter::Matrix>::fromString(const std::string& value)
 template<>
 void Param<filters::HueSaturationFilter::Mode>::fromString(const std::string& value)
 {
-  if (base::utf8_icmp(value, "hsv") == 0)
-    setValue(filters::HueSaturationFilter::Mode::HSV);
+  if (base::utf8_icmp(value, "hsv") == 0 ||
+      base::utf8_icmp(value, "hsv_mul") == 0)
+    setValue(filters::HueSaturationFilter::Mode::HSV_MUL);
+  else if (base::utf8_icmp(value, "hsv_add") == 0)
+    setValue(filters::HueSaturationFilter::Mode::HSV_ADD);
+  else if (base::utf8_icmp(value, "hsl_add") == 0)
+    setValue(filters::HueSaturationFilter::Mode::HSL_ADD);
   else
-    setValue(filters::HueSaturationFilter::Mode::HSL);
+    setValue(filters::HueSaturationFilter::Mode::HSL_MUL);
 }
 
 template<>
@@ -177,6 +184,12 @@ void Param<filters::ColorCurve>::fromString(const std::string& value)
         base::convert_to<int>(parts[i+1])));
   }
   setValue(curve);
+}
+
+template<>
+void Param<tools::InkType>::fromString(const std::string& value)
+{
+  setValue(tools::string_id_to_ink_type(value));
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -305,6 +318,12 @@ void Param<filters::ColorCurve>::fromLua(lua_State* L, int index)
     }
     setValue(curve);
   }
+}
+
+template<>
+void Param<tools::InkType>::fromLua(lua_State* L, int index)
+{
+  script::get_value_from_lua<tools::InkType>(L, index);
 }
 
 void CommandWithNewParamsBase::loadParamsFromLuaTable(lua_State* L, int index)

@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2016  David Capello
 //
 // This program is distributed under the terms of
@@ -8,9 +9,12 @@
 #define APP_TOOLS_ACTIVE_TOOL_H_INCLUDED
 #pragma once
 
+#include "app/tools/ink_type.h"
 #include "obs/observable.h"
 
 namespace app {
+class Color;
+
 namespace tools {
 
 class ActiveToolObserver;
@@ -43,6 +47,11 @@ public:
   void pressButton(const Pointer& pointer);
   void releaseButtons();
   void setSelectedTool(Tool* tool);
+
+  Ink* adjustToolInkDependingOnSelectedInkType(
+    Ink* ink,
+    const InkType inkType,
+    const app::Color& color) const;
 
 private:
   static bool isToolAffectedByRightClickMode(Tool* tool);

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -343,7 +343,7 @@ bool FileList::onProcessMessage(Message* msg)
               FileItemList::iterator
                 link = m_list.begin() + ((select >= 0) ? select: 0);
 
-              for (i=MAX(select, 0); i<bottom; ++i, ++link) {
+              for (i=std::max(select, 0); i<bottom; ++i, ++link) {
                 IFileItem* fi = *link;
                 if (base::utf8_icmp(fi->displayName(), m_isearch, chrs) == 0) {
                   select = i;
@@ -358,7 +358,7 @@ bool FileList::onProcessMessage(Message* msg)
         }
 
         if (bottom > 0)
-          selectIndex(MID(0, select, bottom-1));
+          selectIndex(base::clamp(select, 0, bottom-1));
 
         return true;
       }

@@ -155,6 +155,7 @@ namespace app {
 
     void setZoom(const render::Zoom& zoom);
     void setDefaultScroll();
+    void setScrollToCenter();
     void setScrollAndZoomToFitScreen();
     void setEditorScroll(const gfx::Point& scroll);
     void setEditorZoom(const render::Zoom& zoom);

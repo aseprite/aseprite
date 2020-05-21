@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -29,6 +29,8 @@
 #include "ui/intern.h"
 #include "ui/system.h"
 #include "ui/theme.h"
+
+#include <algorithm>
 
 namespace app {
 
@@ -183,7 +185,7 @@ void draw_alpha_slider(ui::Graphics* g,
                        const gfx::Rect& rc,
                        const app::Color& color)
 {
-  const int xmax = MAX(1, rc.w-1);
+  const int xmax = std::max(1, rc.w-1);
   const doc::color_t c =
     (color.getType() != app::Color::MaskType ?
      doc::rgba(color.getRed(),
@@ -210,25 +212,26 @@ void draw_alpha_slider(os::Surface* s,
                        const gfx::Rect& rc,
                        const app::Color& color)
 {
-  const int xmax = MAX(1, rc.w-1);
+  const int xmax = std::max(1, rc.w-1);
   const doc::color_t c =
     (color.getType() != app::Color::MaskType ?
      doc::rgba(color.getRed(),
                color.getGreen(),
                color.getBlue(), 255): 0);
 
+  os::Paint paint;
   for (int x=0; x<rc.w; ++x) {
     const int a = (255 * x / xmax);
     const doc::color_t c1 = doc::rgba_blender_normal(gridColor1, c, a);
     const doc::color_t c2 = doc::rgba_blender_normal(gridColor2, c, a);
     const int mid = rc.h/2;
     const int odd = (x / rc.h) & 1;
-    s->drawVLine(
-      app::color_utils::color_for_ui(app::Color::fromImage(IMAGE_RGB, odd ? c2: c1)),
-      rc.x+x, rc.y, mid);
-    s->drawVLine(
-      app::color_utils::color_for_ui(app::Color::fromImage(IMAGE_RGB, odd ? c1: c2)),
-      rc.x+x, rc.y+mid, rc.h-mid);
+
+    paint.color(app::color_utils::color_for_ui(app::Color::fromImage(IMAGE_RGB, odd ? c2: c1)));
+    s->drawRect(gfx::Rect(rc.x+x, rc.y, 1, mid), paint);
+
+    paint.color(app::color_utils::color_for_ui(app::Color::fromImage(IMAGE_RGB, odd ? c1: c2)));
+    s->drawRect(gfx::Rect(rc.x+x, rc.y+mid, 1, rc.h-mid), paint);
   }
 }
 

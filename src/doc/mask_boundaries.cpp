@@ -14,8 +14,17 @@
 
 namespace doc {
 
-MaskBoundaries::MaskBoundaries(const Image* bitmap)
+void MaskBoundaries::reset()
 {
+  m_segs.clear();
+  if (!m_path.isEmpty())
+    m_path.rewind();
+}
+
+void MaskBoundaries::regen(const Image* bitmap)
+{
+  reset();
+
   int x, y, w = bitmap->width(), h = bitmap->height();
 
   const LockImageBits<BitmapTraits> bits(bitmap);
@@ -334,6 +343,24 @@ void MaskBoundaries::offset(int x, int y)
 {
   for (Segment& seg : m_segs)
     seg.offset(x, y);
+
+  m_path.offset(x, y);
+}
+
+void MaskBoundaries::createPathIfNeeeded()
+{
+  if (!m_path.isEmpty())
+    return;
+
+  for (const auto& seg : m_segs) {
+    gfx::Rect rc = seg.bounds();
+    m_path.moveTo(rc.x, rc.y);
+
+    if (seg.vertical())
+      m_path.lineTo(rc.x, rc.y2());
+    else
+      m_path.lineTo(rc.x2(), rc.y);
+  }
 }
 
 } // namespace doc

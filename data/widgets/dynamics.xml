@@ -1,0 +1,55 @@
+<!-- Aseprite -->
+<!-- Copyright (C) 2020  Igara Studio S.A. -->
+<gui>
+  <vbox id="dynamics">
+    <hbox>
+    <buttonset id="values" columns="3">
+      <item text="" />
+      <item text="@.pressure" tooltip="@.pressure_tooltip" tooltip_dir="bottom" />
+      <item text="@.velocity" tooltip="@.velocity_tooltip" tooltip_dir="bottom" />
+
+      <item text="@.size" tooltip="@.size_tooltip" tooltip_dir="right" />
+      <item text="" maxheight="1" />
+      <item text="" maxheight="1" />
+
+      <item text="@.angle" tooltip="@.angle_tooltip" tooltip_dir="right" />
+      <item text="" maxheight="1" />
+      <item text="" maxheight="1" />
+
+      <item text="@.gradient" tooltip="@.gradient_tooltip" tooltip_dir="right" />
+      <item text="" maxheight="1" />
+      <item text="" maxheight="1" />
+    </buttonset>
+    </hbox>
+
+    <grid id="options" columns="2" childspacing="0" expansive="true">
+      <separator id="separator" text="@.max_point_value" horizontal="true" cell_hspan="2" />
+
+      <label id="size_label" text="@.size" style="mini_label" />
+      <slider id="min_size" value="1" min="1" max="64" cell_align="horizontal" style="mini_slider"
+              tooltip="@.min_size_tooltip" tooltip_dir="left" />
+      <boxfiller />
+      <slider id="max_size" value="64" min="1" max="64" cell_align="horizontal" style="mini_slider"
+              tooltip="@.max_size_tooltip" tooltip_dir="left" />
+
+      <label id="angle_label" text="@.angle" style="mini_label" />
+      <slider id="min_angle" value="0" min="-180" max="+180" cell_align="horizontal" style="mini_slider"
+              tooltip="@.min_angle_tooltip" tooltip_dir="left" />
+      <boxfiller />
+      <slider id="max_angle" value="0" min="-180" max="+180" cell_align="horizontal" style="mini_slider"
+              tooltip="@.max_angle_tooltip" tooltip_dir="left" />
+
+      <label id="gradient_label" text="@.gradient" style="mini_label"  />
+      <hbox id="gradient_placeholder" cell_vspan="2" />
+      <link id="gradient_from_to" style="mini_label"  />
+
+      <separator id="separator2" text="@.sensors_tweaks" horizontal="true" cell_hspan="2" />
+
+      <label id="pressure_label" text="@.pressure" style="mini_label" />
+      <hbox id="pressure_placeholder" cell_align="horizontal" />
+      <label id="velocity_label" text="@.velocity" style="mini_label" />
+      <hbox id="velocity_placeholder" cell_align="horizontal" />
+    </grid>
+
+  </vbox>
+</gui>

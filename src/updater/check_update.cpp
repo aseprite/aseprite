@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -18,6 +19,7 @@
 #include "net/http_response.h"
 #include "tinyxml.h"
 #include "updater/user_agent.h"
+#include "ver/info.h"
 
 #include <iostream>
 #include <memory>
@@ -97,12 +99,7 @@ public:
 
   bool checkNewVersion(const Uuid& uuid, const std::string& extraParams, CheckUpdateDelegate* delegate)
   {
-#ifndef UPDATE_URL
-#define UPDATE_URL ""
-#pragma message("warning: Define UPDATE_URL macro")
-#endif
-
-    std::string url = UPDATE_URL;
+    std::string url = get_app_update_url();
     if (!uuid.empty()) {
       url += "&uuid=";
       url += uuid;

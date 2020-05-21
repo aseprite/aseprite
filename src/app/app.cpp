@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -67,6 +67,7 @@
 #include "render/render.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
+#include "ver/info.h"
 
 #include <iostream>
 #include <memory>
@@ -216,6 +217,8 @@ App::App(AppMod* mod)
 
 int App::initialize(const AppOptions& options)
 {
+  os::System* system = os::instance();
+
 #ifdef ENABLE_UI
   m_isGui = options.startUI() && !options.previewCLI();
 #else
@@ -227,12 +230,13 @@ int App::initialize(const AppOptions& options)
 #ifdef _WIN32
   if (options.disableWintab() ||
       !preferences().experimental.loadWintabDriver()) {
-    os::instance()->useWintabAPI(false);
+    system->useWintabAPI(false);
   }
 #endif
 
-  os::instance()->setAppMode(m_isGui ? os::AppMode::GUI:
-                                       os::AppMode::CLI);
+  system->setAppName(get_app_name());
+  system->setAppMode(m_isGui ? os::AppMode::GUI:
+                               os::AppMode::CLI);
 
   if (m_isGui)
     m_uiSystem.reset(new ui::UISystem);
@@ -308,6 +312,12 @@ int App::initialize(const AppOptions& options)
   }
 #endif  // ENABLE_UI
 
+#ifdef ENABLE_SCRIPTING
+  // Call the init() function from all plugins
+  LOG("APP: Initializing scripts...\n");
+  extensions().executeInitActions();
+#endif
+
   // Process options
   LOG("APP: Processing options...\n");
   {
@@ -323,7 +333,7 @@ int App::initialize(const AppOptions& options)
       return code;
   }
 
-  os::instance()->finishLaunching();
+  system->finishLaunching();
   return 0;
 }
 
@@ -394,7 +404,7 @@ void App::run()
     // we've to print errors).
     Console console;
 #ifdef ENABLE_SCRIPTING
-    // Use the app::Console() for script erros
+    // Use the app::Console() for script errors
     ConsoleEngineDelegate delegate;
     script::ScopedEngineDelegate setEngineDelegate(m_engine.get(), &delegate);
 #endif
@@ -412,6 +422,13 @@ void App::run()
     shell.run(*m_engine);
   }
 #endif  // ENABLE_SCRIPTING
+
+  // ----------------------------------------------------------------------
+
+#ifdef ENABLE_SCRIPTING
+  // Call the exit() function from all plugins
+  extensions().executeExitActions();
+#endif
 
 #ifdef ENABLE_UI
   if (isGui()) {
@@ -514,7 +531,7 @@ App::~App()
     // no re-throw
   }
   catch (...) {
-    os::error_message("Error closing " PACKAGE ".\n(uncaught exception)");
+    os::error_message("Error closing the program.\n(uncaught exception)");
 
     // no re-throw
   }
@@ -606,7 +623,8 @@ crash::DataRecovery* App::dataRecovery() const
 #ifdef ENABLE_UI
 void App::showNotification(INotificationDelegate* del)
 {
-  m_mainWindow->showNotification(del);
+  if (m_mainWindow)
+    m_mainWindow->showNotification(del);
 }
 
 void App::showBackupNotification(bool state)
@@ -625,7 +643,7 @@ void App::showBackupNotification(bool state)
 
 void App::updateDisplayTitleBar()
 {
-  std::string defaultTitle = PACKAGE " v" VERSION;
+  std::string defaultTitle = fmt::format("{} v{}", get_app_name(), get_app_version());
   std::string title;
 
   DocView* docView = UIContext::instance()->activeView();
@@ -636,7 +654,7 @@ void App::updateDisplayTitleBar()
   }
 
   title += defaultTitle;
-  os::instance()->defaultDisplay()->setTitleBar(title);
+  os::instance()->defaultDisplay()->setTitle(title);
 }
 
 InputChain& App::inputChain()
@@ -707,20 +725,6 @@ int app_get_color_to_clear_layer(Layer* layer)
     color = app::Color::fromMask();
 
   return color_utils::color_for_layer(color, layer);
-}
-
-std::string memory_dump_filename()
-{
-#ifdef _WIN32
-  static const char* kDefaultCrashName = PACKAGE "-crash-" VERSION ".dmp";
-
-  app::ResourceFinder rf;
-  rf.includeUserDir(kDefaultCrashName);
-  return rf.getFirstOrCreateDefault();
-
-#else
-  return "";
-#endif
 }
 
 } // namespace app

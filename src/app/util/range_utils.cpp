@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -24,7 +25,7 @@ namespace app {
 using namespace doc;
 
 // TODO the DocRange should be "iteratable" to replace this function
-static CelList get_cels_templ(Sprite* sprite,
+static CelList get_cels_templ(const Sprite* sprite,
                               DocRange range,
                               const bool onlyUniqueCels,
                               const bool onlyUnlockedCel)
@@ -59,17 +60,17 @@ static CelList get_cels_templ(Sprite* sprite,
   return cels;
 }
 
-CelList get_cels(doc::Sprite* sprite, const DocRange& range)
+CelList get_cels(const doc::Sprite* sprite, const DocRange& range)
 {
   return get_cels_templ(sprite, range, false, false);
 }
 
-CelList get_unique_cels(Sprite* sprite, const DocRange& range)
+CelList get_unique_cels(const Sprite* sprite, const DocRange& range)
 {
   return get_cels_templ(sprite, range, true, false);
 }
 
-CelList get_unlocked_unique_cels(Sprite* sprite, const DocRange& range)
+CelList get_unlocked_unique_cels(const Sprite* sprite, const DocRange& range)
 {
   return get_cels_templ(sprite, range, true, true);
 }

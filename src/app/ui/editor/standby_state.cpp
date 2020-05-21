@@ -56,6 +56,7 @@
 #include "doc/slice.h"
 #include "doc/sprite.h"
 #include "fixmath/fixmath.h"
+#include "fmt/format.h"
 #include "gfx/rect.h"
 #include "os/surface.h"
 #include "os/system.h"
@@ -190,12 +191,12 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
           "The background layer cannot be moved");
       }
       else if (!layer->isVisibleHierarchy()) {
-        StatusBar::instance()->showTip(1000,
-          "Layer '%s' is hidden", layer->name().c_str());
+        StatusBar::instance()->showTip(
+          1000, fmt::format("Layer '{}' is hidden", layer->name()));
       }
       else if (!layer->isMovable() || !layer->isEditableHierarchy()) {
-        StatusBar::instance()->showTip(1000,
-          "Layer '%s' is locked", layer->name().c_str());
+        StatusBar::instance()->showTip(
+          1000, fmt::format("Layer '{}' is locked", layer->name()));
       }
       else {
         MovingCelCollect collect(editor, layer);
@@ -299,8 +300,8 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
         Image* image = site.image(&x, &y, &opacity);
         if (layer && image) {
           if (!layer->isEditableHierarchy()) {
-            StatusBar::instance()->showTip(1000,
-              "Layer '%s' is locked", layer->name().c_str());
+            StatusBar::instance()->showTip(
+              1000, fmt::format("Layer '{}' is locked", layer->name()));
             return true;
           }
 
@@ -320,8 +321,8 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
     // Move selected pixels
     if (layer && editor->canStartMovingSelectionPixels() && msg->left()) {
       if (!layer->isEditableHierarchy()) {
-        StatusBar::instance()->showTip(1000,
-          "Layer '%s' is locked", layer->name().c_str());
+        StatusBar::instance()->showTip(
+          1000, fmt::format("Layer '{}' is locked", layer->name()));
         return true;
       }
 
@@ -395,6 +396,10 @@ bool StandbyState::onDoubleClick(Editor* editor, MouseMessage* msg)
   // Select a tile with double-click
   if (ink->isSelection() &&
       Preferences::instance().selection.doubleclickSelectTile()) {
+    // Drop pixels if we are in moving pixels state
+    if (dynamic_cast<MovingPixelsState*>(editor->getState().get()))
+      editor->backToPreviousState();
+
     // Start a tool-loop selecting tiles.
     startDrawingState(editor,
                       DrawingType::SelectTiles,
@@ -670,13 +675,19 @@ bool StandbyState::checkStartDrawingStraightLine(Editor* editor,
                         DrawingType::LineFreehand,
                         tools::Pointer(
                           editor->document()->lastDrawingPoint(),
-                          pointerButton));
+                          tools::Vec2(0.0f, 0.0f),
+                          pointerButton,
+                          msg ? msg->pointerType(): PointerType::Unknown,
+                          msg ? msg->pressure(): 0.0f));
     if (drawingState) {
       drawingState->sendMovementToToolLoop(
         tools::Pointer(
           editor->screenToEditor(msg ? msg->position():
                                        ui::get_mouse_position()),
-          pointerButton));
+          tools::Vec2(0.0f, 0.0f),
+          pointerButton,
+          msg ? msg->pointerType(): tools::Pointer::Type::Unknown,
+          msg ? msg->pressure(): 0.0f));
       return true;
     }
   }
@@ -731,8 +742,8 @@ void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleT
   Layer* layer = editor->layer();
   if (layer && layer->isReference()) {
     StatusBar::instance()->showTip(
-      1000, "Layer '%s' is reference, cannot be transformed",
-      layer->name().c_str());
+      1000, fmt::format("Layer '{}' is reference, cannot be transformed",
+                        layer->name()));
     return;
   }
 
@@ -821,13 +832,13 @@ bool StandbyState::overSelectionEdges(Editor* editor,
   if (Preferences::instance().selection.moveEdges() &&
       editor->isActive() &&
       editor->document()->isMaskVisible() &&
-      editor->document()->getMaskBoundaries() &&
+      editor->document()->hasMaskBoundaries() &&
       // TODO improve this check, how we can know that we aren't in the MovingPixelsState
       !dynamic_cast<MovingPixelsState*>(editor->getState().get())) {
     gfx::Point mainOffset(editor->mainTilePosition());
 
     // For each selection edge
-    for (const auto& seg : *editor->document()->getMaskBoundaries()) {
+    for (const auto& seg : editor->document()->maskBoundaries()) {
       gfx::Rect segBounds = seg.bounds();
       segBounds.offset(mainOffset);
       segBounds = editor->editorToScreen(segBounds);

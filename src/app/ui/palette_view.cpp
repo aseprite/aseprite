@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -24,10 +24,12 @@
 #include "app/util/clipboard.h"
 #include "app/util/pal_ops.h"
 #include "base/bind.h"
+#include "base/clamp.h"
 #include "base/convert_to.h"
 #include "doc/image.h"
 #include "doc/palette.h"
 #include "doc/remap.h"
+#include "fmt/format.h"
 #include "gfx/color.h"
 #include "gfx/point.h"
 #include "os/font.h"
@@ -220,7 +222,7 @@ int PaletteView::getBoxSize() const
 
 void PaletteView::setBoxSize(double boxsize)
 {
-  m_boxsize = MID(4.0, boxsize, 32.0);
+  m_boxsize = base::clamp(boxsize, 4.0, 32.0);
 
   if (m_delegate)
     m_delegate->onPaletteViewChangeSize(int(m_boxsize));
@@ -237,7 +239,7 @@ void PaletteView::clearSelection()
 
   Palette palette(*currentPalette());
   Palette newPalette(palette);
-  newPalette.resize(MAX(1, newPalette.size() - m_selectedEntries.picks()));
+  newPalette.resize(std::max(1, newPalette.size() - m_selectedEntries.picks()));
 
   Remap remap = create_remap_to_move_picks(m_selectedEntries, palette.size());
   for (int i=0; i<palette.size(); ++i) {
@@ -342,14 +344,14 @@ bool PaletteView::onProcessMessage(Message* msg)
       if (m_state == State::SELECTING_COLOR &&
           m_hot.part == Hit::COLOR) {
         int idx = m_hot.color;
-        idx = MID(0, idx, currentPalette()->size()-1);
+        idx = base::clamp(idx, 0, currentPalette()->size()-1);
 
-        MouseButtons buttons = mouseMsg->buttons();
+        const MouseButton button = mouseMsg->button();
 
         if (hasCapture() && ((idx != m_currentEntry) ||
                              (msg->type() == kMouseDownMessage) ||
-                             ((buttons & kButtonMiddle) == kButtonMiddle))) {
-          if ((buttons & kButtonMiddle) == 0) {
+                             (button == kButtonMiddle))) {
+          if (button != kButtonMiddle) {
             if (!msg->ctrlPressed() && !msg->shiftPressed())
               deselect();
 
@@ -363,7 +365,7 @@ bool PaletteView::onProcessMessage(Message* msg)
 
           // Emit signal
           if (m_delegate)
-            m_delegate->onPaletteViewIndexChange(idx, buttons);
+            m_delegate->onPaletteViewIndexChange(idx, button);
         }
       }
 
@@ -397,7 +399,7 @@ bool PaletteView::onProcessMessage(Message* msg)
           case State::RESIZING_PALETTE:
             if (m_hot.part == Hit::COLOR ||
                 m_hot.part == Hit::POSSIBLE_COLOR) {
-              int newPalSize = MAX(1, m_hot.color);
+              int newPalSize = std::max(1, m_hot.color);
               Palette newPalette(*currentPalette());
               newPalette.resize(newPalSize);
               setNewPalette(currentPalette(), &newPalette,
@@ -644,7 +646,7 @@ void PaletteView::onResize(ui::ResizeEvent& ev)
          +this->childSpacing())
         / (boxSizePx()
            +this->childSpacing());
-      setColumns(MAX(1, columns));
+      setColumns(std::max(1, columns));
     }
     m_isUpdatingColumns = false;
   }
@@ -783,7 +785,8 @@ PaletteView::Hit PaletteView::hitTest(const gfx::Point& pos)
   int colsLimit = m_columns;
   if (m_state == State::DRAGGING_OUTLINE)
     --colsLimit;
-  int i = MID(0, (pos.x-vp.x)/box.w, colsLimit) + MAX(0, pos.y/box.h)*m_columns;
+  int i = base::clamp((pos.x-vp.x)/box.w, 0, colsLimit)
+    + std::max(0, pos.y/box.h)*m_columns;
   return Hit(Hit::POSSIBLE_COLOR, i);
 }
 
@@ -913,7 +916,7 @@ void PaletteView::setStatusBar()
            m_hot.part == Hit::OUTLINE ||
            m_hot.part == Hit::POSSIBLE_COLOR) &&
           (m_hot.color < currentPalette()->size())) {
-        int i = MAX(0, m_hot.color);
+        int i = std::max(0, m_hot.color);
 
         statusBar->showColor(
           0, "", app::Color::fromIndex(i));
@@ -926,16 +929,18 @@ void PaletteView::setStatusBar()
     case State::DRAGGING_OUTLINE:
       if (m_hot.part == Hit::COLOR) {
         const int picks = m_selectedEntries.picks();
-        const int destIndex = MAX(0, m_hot.color);
+        const int destIndex = std::max(0, m_hot.color);
         const int palSize = currentPalette()->size();
         const int newPalSize =
-          (m_copy ? MAX(palSize + picks, destIndex + picks):
-                    MAX(palSize,         destIndex + picks));
+          (m_copy ? std::max(palSize + picks, destIndex + picks):
+                    std::max(palSize,         destIndex + picks));
 
         statusBar->setStatusText(
-          0, "%s to %d - New Palette Size %d",
-          (m_copy ? "Copy": "Move"),
-          destIndex, newPalSize);
+          0,
+          fmt::format("{} to {} - New Palette Size {}",
+                      (m_copy ? "Copy": "Move"),
+                      destIndex,
+                      newPalSize));
       }
       else {
         statusBar->showDefaultText();
@@ -946,10 +951,10 @@ void PaletteView::setStatusBar()
       if (m_hot.part == Hit::COLOR ||
           m_hot.part == Hit::POSSIBLE_COLOR ||
           m_hot.part == Hit::RESIZE_HANDLE) {
-        int newPalSize = MAX(1, m_hot.color);
+        int newPalSize = std::max(1, m_hot.color);
         statusBar->setStatusText(
-          0, "New Palette Size %d",
-          newPalSize);
+          0, fmt::format("New Palette Size {}",
+                         newPalSize));
       }
       else {
         statusBar->showDefaultText();

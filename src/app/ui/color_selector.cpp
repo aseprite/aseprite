@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -19,6 +19,7 @@
 #include "app/modules/gfx.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
+#include "base/clamp.h"
 #include "base/concurrent_queue.h"
 #include "base/scoped_value.h"
 #include "base/thread.h"
@@ -32,6 +33,7 @@
 #include "ui/size_hint_event.h"
 #include "ui/system.h"
 
+#include <algorithm>
 #include <cmath>
 #include <condition_variable>
 #include <thread>
@@ -113,7 +115,10 @@ public:
 
       auto oldCanvas = m_canvas;
       m_canvas = os::instance()->createSurface(w, h, activeCS);
-      m_canvas->fillRect(bgColor, gfx::Rect(0, 0, w, h));
+      os::Paint paint;
+      paint.color(bgColor);
+      paint.style(os::Paint::Fill);
+      m_canvas->drawRect(gfx::Rect(0, 0, w, h), paint);
       if (oldCanvas) {
         m_canvas->drawSurface(oldCanvas, 0, 0);
         oldCanvas->dispose();
@@ -257,7 +262,7 @@ app::Color ColorSelector::getColorByPosition(const gfx::Point& pos)
     return app::Color::fromMask();
 
   const int u = pos.x - rc.x;
-  const int umax = MAX(1, rc.w-1);
+  const int umax = std::max(1, rc.w-1);
 
   const gfx::Rect bottomBarBounds = this->bottomBarBounds();
   if (( hasCapture() && m_capturedInBottom) ||
@@ -270,7 +275,7 @@ app::Color ColorSelector::getColorByPosition(const gfx::Point& pos)
     return getAlphaBarColor(u, umax);
 
   const int v = pos.y - rc.y;
-  const int vmax = MAX(1, rc.h-bottomBarBounds.h-alphaBarBounds.h-1);
+  const int vmax = std::max(1, rc.h-bottomBarBounds.h-alphaBarBounds.h-1);
   return getMainAreaColor(u, umax,
                           v, vmax);
 }
@@ -279,7 +284,7 @@ app::Color ColorSelector::getAlphaBarColor(const int u, const int umax)
 {
   int alpha = (255 * u / umax);
   app::Color color = m_color;
-  color.setAlpha(MID(0, alpha, 255));
+  color.setAlpha(base::clamp(alpha, 0, 255));
   return color;
 }
 
@@ -315,7 +320,7 @@ bool ColorSelector::onProcessMessage(ui::Message* msg)
 
         StatusBar::instance()->showColor(0, "", color);
         if (hasCapture())
-          ColorChange(color, mouseMsg->buttons());
+          ColorChange(color, mouseMsg->button());
       }
       break;
     }
@@ -361,7 +366,7 @@ bool ColorSelector::onProcessMessage(ui::Message* msg)
               newHue,
               m_color.getHsvSaturation(),
               m_color.getHsvValue(),
-              m_color.getAlpha());
+              getCurrentAlphaForNewColor());
 
           ColorChange(newColor, kButtonNone);
         }
@@ -485,6 +490,14 @@ void ColorSelector::paintColorIndicator(ui::Graphics* g,
     white ? gfx::rgba(255, 255, 255): gfx::rgba(0, 0, 0),
     pos.x-icon->width()/2,
     pos.y-icon->height()/2);
+}
+
+int ColorSelector::getCurrentAlphaForNewColor() const
+{
+  if (m_color.getType() != Color::MaskType)
+    return m_color.getAlpha();
+  else
+    return 255;
 }
 
 gfx::Rect ColorSelector::bottomBarBounds() const

@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -171,9 +171,13 @@ void Widget::setBgColor(gfx::Color color)
   m_bgColor = color;
   onSetBgColor();
 
+#ifdef _DEBUG
   if (m_style) {
-    LOG(WARNING) << "Warning setting bgColor to a widget with style\n";
+    LOG(WARNING) << "UI: " << typeid(*this).name()
+                 << ": Warning setting bgColor to a widget with style ("
+                 << m_style->id() << ")\n";
   }
+#endif
 }
 
 void Widget::setTheme(Theme* theme)
@@ -425,17 +429,17 @@ Widget* Widget::nextSibling()
   assert_ui_thread();
 
   if (!m_parent)
-    return NULL;
+    return nullptr;
 
   WidgetsList::iterator begin = m_parent->m_children.begin();
   WidgetsList::iterator end = m_parent->m_children.end();
   WidgetsList::iterator it = std::find(begin, end, this);
 
   if (it == end)
-    return NULL;
+    return nullptr;
 
   if (++it == end)
-    return NULL;
+    return nullptr;
 
   return *it;
 }
@@ -445,16 +449,16 @@ Widget* Widget::previousSibling()
   assert_ui_thread();
 
   if (!m_parent)
-    return NULL;
+    return nullptr;
 
   WidgetsList::iterator begin = m_parent->m_children.begin();
   WidgetsList::iterator end = m_parent->m_children.end();
   WidgetsList::iterator it = std::find(begin, end, this);
 
   if (it == begin || it == end)
-    return NULL;
+    return nullptr;
 
-  return *(++it);
+  return *(--it);
 }
 
 Widget* Widget::pick(const gfx::Point& pt,
@@ -542,7 +546,7 @@ void Widget::removeChild(WidgetsList::iterator& it)
   if (manager)
     manager->freeWidget(child);
 
-  child->m_parent = NULL;
+  child->m_parent = nullptr;
 }
 
 void Widget::removeChild(Widget* child)
@@ -701,14 +705,26 @@ void Widget::setBorder(const Border& br)
 {
   m_border = br;
 
+#ifdef _DEBUG
   if (m_style) {
-    LOG(WARNING) << "Warning setting border to a widget with style\n";
+    LOG(WARNING) << "UI: " << typeid(*this).name()
+                 << ": Warning setting border to a widget with style ("
+                 << m_style->id() << ")\n";
   }
+#endif
 }
 
 void Widget::setChildSpacing(int childSpacing)
 {
   m_childSpacing = childSpacing;
+
+#ifdef _DEBUG
+  if (m_style) {
+    LOG(WARNING) << "UI: " << typeid(*this).name()
+                 << ": Warning setting child spacing to a widget with style ("
+                 << m_style->id() << ")\n";
+  }
+#endif
 }
 
 void Widget::noBorderNoChildSpacing()
@@ -716,9 +732,13 @@ void Widget::noBorderNoChildSpacing()
   m_border = gfx::Border(0, 0, 0, 0);
   m_childSpacing = 0;
 
+#ifdef _DEBUG
   if (m_style) {
-    LOG(WARNING) << "Warning setting border to a widget with style\n";
+    LOG(WARNING) << "UI: " << typeid(*this).name()
+                 << ": Warning setting no border to a widget with style ("
+                 << m_style->id() << ")\n";
   }
+#endif
 }
 
 void Widget::getRegion(gfx::Region& region)
@@ -1319,7 +1339,7 @@ bool Widget::offerCapture(ui::MouseMessage* mouseMsg, int widget_type)
       MouseMessage* mouseMsg2 = new MouseMessage(
         kMouseDownMessage,
         mouseMsg->pointerType(),
-        mouseMsg->buttons(),
+        mouseMsg->button(),
         mouseMsg->modifiers(),
         mouseMsg->position());
       mouseMsg2->setRecipient(pick);
@@ -1380,7 +1400,7 @@ bool Widget::isMnemonicPressed(const KeyMessage* keyMsg) const
 
 bool Widget::onProcessMessage(Message* msg)
 {
-  ASSERT(msg != NULL);
+  ASSERT(msg != nullptr);
 
   switch (msg->type()) {
 
@@ -1406,7 +1426,7 @@ bool Widget::onProcessMessage(Message* msg)
       MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
       MouseMessage mouseMsg2(kMouseDownMessage,
                              mouseMsg->pointerType(),
-                             mouseMsg->buttons(),
+                             mouseMsg->button(),
                              mouseMsg->modifiers(),
                              mouseMsg->position(),
                              mouseMsg->wheelDelta());

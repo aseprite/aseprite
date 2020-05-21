@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -21,6 +21,7 @@
 #include "app/sprite_job.h"
 #include "app/util/resize_image.h"
 #include "base/bind.h"
+#include "base/clamp.h"
 #include "base/convert_to.h"
 #include "doc/algorithm/resize_image.h"
 #include "doc/cel.h"
@@ -34,6 +35,8 @@
 #include "ui/ui.h"
 
 #include "sprite_size.xml.h"
+
+#include <algorithm>
 
 #define PERC_FORMAT     "%.4g"
 
@@ -129,7 +132,9 @@ protected:
       new_mask->replace(
         gfx::Rect(
           scale_x(document()->mask()->bounds().x-1),
-          scale_y(document()->mask()->bounds().y-1), MAX(1, w), MAX(1, h)));
+          scale_y(document()->mask()->bounds().y-1),
+          std::max(1, w),
+          std::max(1, h)));
 
       // Always use the nearest-neighbor method to resize the bitmap
       // mask.
@@ -382,8 +387,8 @@ void SpriteSizeCommand::onExecute(Context* context)
   }
 #endif // ENABLE_UI
 
-  new_width = MID(1, new_width, DOC_SPRITE_MAX_WIDTH);
-  new_height = MID(1, new_height, DOC_SPRITE_MAX_HEIGHT);
+  new_width = base::clamp(new_width, 1, DOC_SPRITE_MAX_WIDTH);
+  new_height = base::clamp(new_height, 1, DOC_SPRITE_MAX_HEIGHT);
 
   {
     SpriteSizeJob job(reader, new_width, new_height, resize_method);

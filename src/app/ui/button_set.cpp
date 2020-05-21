@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -26,6 +26,7 @@
 #include "ui/theme.h"
 #include "ui/widget.h"
 
+#include <algorithm>
 #include <cstdarg>
 
 namespace app {
@@ -264,8 +265,8 @@ void ButtonSet::Item::onSizeHint(ui::SizeHintEvent& ev)
   gfx::Size iconSize;
   if (m_icon) {
     iconSize = m_icon->size();
-    iconSize.w = MAX(iconSize.w, 16*guiscale());
-    iconSize.h = MAX(iconSize.h, 16*guiscale());
+    iconSize.w = std::max(iconSize.w, 16*guiscale());
+    iconSize.h = std::max(iconSize.h, 16*guiscale());
   }
 
   gfx::Rect boxRc;

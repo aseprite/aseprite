@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This program is distributed under the terms of
@@ -12,6 +13,7 @@
 
 #include "app/ui/skin/skin_property.h"
 #include "base/bind.h"
+#include "base/clamp.h"
 #include "ui/manager.h"
 #include "ui/message.h"
 
@@ -55,7 +57,7 @@ bool Slider2::Slider2Entry::onProcessMessage(ui::Message* msg)
             else
               ++value;
 
-            setTextf("%d", MID(minValue(), value, maxValue()));
+            setTextf("%d", base::clamp(value, minValue(), maxValue()));
             selectAllText();
 
             onChange();
@@ -118,7 +120,7 @@ void Slider2::onSliderChange()
 void Slider2::onEntryChange()
 {
   int v = m_entry.textInt();
-  v = MID(m_slider.getMinValue(), v, m_slider.getMaxValue());
+  v = base::clamp(v, m_slider.getMinValue(), m_slider.getMaxValue());
   m_slider.setValue(v);
 
   onChange();

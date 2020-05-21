@@ -9,6 +9,7 @@
 #include "base/gcd.h"
 #include "base/pi.h"
 
+#include <algorithm>
 #include <cmath>
 
 namespace app {
@@ -20,23 +21,24 @@ using namespace gfx;
 // using the space bar.
 class MoveOriginCapability : public Controller {
 public:
-  void pressButton(ToolLoop* loop, Stroke& stroke, const Point& point) override {
-    m_last = point;
+  void pressButton(ToolLoop* loop, Stroke& stroke, const Stroke::Pt& pt) override {
+    m_last = pt;
   }
 
 protected:
-  bool isMovingOrigin(ToolLoop* loop, Stroke& stroke, const Point& point) {
+  bool isMovingOrigin(ToolLoop* loop, Stroke& stroke, const Stroke::Pt& pt) {
     bool used = false;
 
     if (int(loop->getModifiers()) & int(ToolLoopModifiers::kMoveOrigin)) {
-      Point delta = (point - m_last);
+      Point delta(pt.x - m_last.x,
+                  pt.y - m_last.y);
       stroke.offset(delta);
 
       onMoveOrigin(delta);
       used = true;
     }
 
-    m_last = point;
+    m_last = pt;
     return used;
   }
 
@@ -47,7 +49,7 @@ protected:
 private:
   // Last known mouse position used to calculate delta values (dx, dy)
   // with the new mouse position to displace all points.
-  Point m_last;
+  Stroke::Pt m_last;
 };
 
 // Controls clicks for tools like pencil
@@ -55,20 +57,20 @@ class FreehandController : public Controller {
 public:
   bool isFreehand() override { return true; }
 
-  gfx::Point getLastPoint() const override { return m_last; }
+  Stroke::Pt getLastPoint() const override { return m_last; }
 
-  void pressButton(ToolLoop* loop, Stroke& stroke, const Point& point) override {
-    m_last = point;
-    stroke.addPoint(point);
+  void pressButton(ToolLoop* loop, Stroke& stroke, const Stroke::Pt& pt) override {
+    m_last = pt;
+    stroke.addPoint(pt);
   }
 
-  bool releaseButton(Stroke& stroke, const Point& point) override {
+  bool releaseButton(Stroke& stroke, const Stroke::Pt& pt) override {
     return false;
   }
 
-  void movement(ToolLoop* loop, Stroke& stroke, const Point& point) override {
-    m_last = point;
-    stroke.addPoint(point);
+  void movement(ToolLoop* loop, Stroke& stroke, const Stroke::Pt& pt) override {
+    m_last = pt;
+    stroke.addPoint(pt);
   }
 
   void getStrokeToInterwine(const Stroke& input, Stroke& output) override {
@@ -101,7 +103,7 @@ public:
   }
 
 private:
-  Point m_last;
+  Stroke::Pt m_last;
 };
 
 // Controls clicks for tools like line
@@ -109,29 +111,29 @@ class TwoPointsController : public MoveOriginCapability {
 public:
   bool isTwoPoints() override { return true; }
 
-  void pressButton(ToolLoop* loop, Stroke& stroke, const Point& point) override {
-    MoveOriginCapability::pressButton(loop, stroke, point);
+  void pressButton(ToolLoop* loop, Stroke& stroke, const Stroke::Pt& pt) override {
+    MoveOriginCapability::pressButton(loop, stroke, pt);
 
-    m_first = m_center = point;
+    m_first = m_center = pt;
     m_angle = 0.0;
 
-    stroke.addPoint(point);
-    stroke.addPoint(point);
+    stroke.addPoint(pt);
+    stroke.addPoint(pt);
 
     if (loop->isSelectingTiles())
       snapPointsToGridTiles(loop, stroke);
   }
 
-  bool releaseButton(Stroke& stroke, const Point& point) override {
+  bool releaseButton(Stroke& stroke, const Stroke::Pt& pt) override {
     return false;
   }
 
-  void movement(ToolLoop* loop, Stroke& stroke, const Point& point) override {
+  void movement(ToolLoop* loop, Stroke& stroke, const Stroke::Pt& pt) override {
     ASSERT(stroke.size() >= 2);
     if (stroke.size() < 2)
       return;
 
-    if (MoveOriginCapability::isMovingOrigin(loop, stroke, point))
+    if (MoveOriginCapability::isMovingOrigin(loop, stroke, pt))
       return;
 
     if (!loop->getIntertwine()->snapByAngle() &&
@@ -143,19 +145,19 @@ public:
         m_center.x = (stroke[0].x+stroke[1].x)/2;
         m_center.y = (stroke[0].y+stroke[1].y)/2;
       }
-      m_angle = std::atan2(static_cast<double>(point.y-m_center.y),
-                           static_cast<double>(point.x-m_center.x));
+      m_angle = std::atan2(static_cast<double>(pt.y-m_center.y),
+                           static_cast<double>(pt.x-m_center.x));
       return;
     }
 
     stroke[0] = m_first;
-    stroke[1] = point;
+    stroke[1] = pt;
 
     if ((int(loop->getModifiers()) & int(ToolLoopModifiers::kSquareAspect))) {
       int dx = stroke[1].x - m_first.x;
       int dy = stroke[1].y - m_first.y;
-      int minsize = MIN(ABS(dx), ABS(dy));
-      int maxsize = MAX(ABS(dx), ABS(dy));
+      int minsize = std::min(ABS(dx), ABS(dy));
+      int maxsize = std::max(ABS(dx), ABS(dy));
 
       // Lines
       if (loop->getIntertwine()->snapByAngle()) {
@@ -284,10 +286,10 @@ private:
   void snapPointsToGridTiles(ToolLoop* loop, Stroke& stroke) {
     auto grid = loop->getGridBounds();
 
-    Rect a(snap_to_grid(grid, stroke[0], PreferSnapTo::BoxOrigin),
-           snap_to_grid(grid, stroke[0], PreferSnapTo::BoxEnd));
-    Rect b(snap_to_grid(grid, stroke[1], PreferSnapTo::BoxOrigin),
-           snap_to_grid(grid, stroke[1], PreferSnapTo::BoxEnd));
+    Rect a(snap_to_grid(grid, stroke[0].toPoint(), PreferSnapTo::BoxOrigin),
+           snap_to_grid(grid, stroke[0].toPoint(), PreferSnapTo::BoxEnd));
+    Rect b(snap_to_grid(grid, stroke[1].toPoint(), PreferSnapTo::BoxOrigin),
+           snap_to_grid(grid, stroke[1].toPoint(), PreferSnapTo::BoxEnd));
 
     a |= b;
 
@@ -300,12 +302,14 @@ private:
   }
 
   void onMoveOrigin(const Point& delta) override {
-    m_first += delta;
-    m_center += delta;
+    m_first.x += delta.x;
+    m_first.y += delta.y;
+    m_center.x += delta.x;
+    m_center.y += delta.y;
   }
 
-  Point m_first;
-  Point m_center;
+  Stroke::Pt m_first;
+  Stroke::Pt m_center;
   double m_angle;
 };
 
@@ -313,34 +317,34 @@ private:
 class PointByPointController : public MoveOriginCapability {
 public:
 
-  void pressButton(ToolLoop* loop, Stroke& stroke, const Point& point) override {
-    MoveOriginCapability::pressButton(loop, stroke, point);
+  void pressButton(ToolLoop* loop, Stroke& stroke, const Stroke::Pt& pt) override {
+    MoveOriginCapability::pressButton(loop, stroke, pt);
 
-    stroke.addPoint(point);
-    stroke.addPoint(point);
+    stroke.addPoint(pt);
+    stroke.addPoint(pt);
   }
 
-  bool releaseButton(Stroke& stroke, const Point& point) override {
+  bool releaseButton(Stroke& stroke, const Stroke::Pt& pt) override {
     ASSERT(!stroke.empty());
     if (stroke.empty())
       return false;
 
-    if (stroke[stroke.size()-2] == point &&
-        stroke[stroke.size()-1] == point)
+    if (stroke[stroke.size()-2] == pt &&
+        stroke[stroke.size()-1] == pt)
       return false;             // Click in the same point (no-drag), we are done
     else
       return true;              // Continue adding points
   }
 
-  void movement(ToolLoop* loop, Stroke& stroke, const Point& point) override {
+  void movement(ToolLoop* loop, Stroke& stroke, const Stroke::Pt& pt) override {
     ASSERT(!stroke.empty());
     if (stroke.empty())
       return;
 
-    if (MoveOriginCapability::isMovingOrigin(loop, stroke, point))
+    if (MoveOriginCapability::isMovingOrigin(loop, stroke, pt))
       return;
 
-    stroke[stroke.size()-1] = point;
+    stroke[stroke.size()-1] = pt;
   }
 
   void getStrokeToInterwine(const Stroke& input, Stroke& output) override {
@@ -370,16 +374,16 @@ public:
   bool canSnapToGrid() override { return false; }
   bool isOnePoint() override { return true; }
 
-  void pressButton(ToolLoop* loop, Stroke& stroke, const Point& point) override {
+  void pressButton(ToolLoop* loop, Stroke& stroke, const Stroke::Pt& pt) override {
     if (stroke.size() == 0)
-      stroke.addPoint(point);
+      stroke.addPoint(pt);
   }
 
-  bool releaseButton(Stroke& stroke, const Point& point) override {
+  bool releaseButton(Stroke& stroke, const Stroke::Pt& pt) override {
     return false;
   }
 
-  void movement(ToolLoop* loop, Stroke& stroke, const Point& point) override {
+  void movement(ToolLoop* loop, Stroke& stroke, const Stroke::Pt& pt) override {
     // Do nothing
   }
 
@@ -405,38 +409,38 @@ public:
 class FourPointsController : public MoveOriginCapability {
 public:
 
-  void pressButton(ToolLoop* loop, Stroke& stroke, const Point& point) override {
-    MoveOriginCapability::pressButton(loop, stroke, point);
+  void pressButton(ToolLoop* loop, Stroke& stroke, const Stroke::Pt& pt) override {
+    MoveOriginCapability::pressButton(loop, stroke, pt);
 
     if (stroke.size() == 0) {
-      stroke.reset(4, point);
+      stroke.reset(4, pt);
       m_clickCounter = 0;
     }
     else
       m_clickCounter++;
   }
 
-  bool releaseButton(Stroke& stroke, const Point& point) override {
+  bool releaseButton(Stroke& stroke, const Stroke::Pt& pt) override {
     m_clickCounter++;
     return m_clickCounter < 4;
   }
 
-  void movement(ToolLoop* loop, Stroke& stroke, const Point& point) override {
-    if (MoveOriginCapability::isMovingOrigin(loop, stroke, point))
+  void movement(ToolLoop* loop, Stroke& stroke, const Stroke::Pt& pt) override {
+    if (MoveOriginCapability::isMovingOrigin(loop, stroke, pt))
       return;
 
     switch (m_clickCounter) {
       case 0:
         for (int i=1; i<stroke.size(); ++i)
-          stroke[i] = point;
+          stroke[i] = pt;
         break;
       case 1:
       case 2:
-        stroke[1] = point;
-        stroke[2] = point;
+        stroke[1] = pt;
+        stroke[2] = pt;
         break;
       case 3:
-        stroke[2] = point;
+        stroke[2] = pt;
         break;
     }
   }
@@ -471,14 +475,14 @@ class LineFreehandController : public Controller {
 public:
   bool isFreehand() override { return true; }
 
-  gfx::Point getLastPoint() const override { return m_last; }
+  Stroke::Pt getLastPoint() const override { return m_last; }
 
   void prepareController(ToolLoop* loop) override {
     m_controller = nullptr;
   }
 
-  void pressButton(ToolLoop* loop, Stroke& stroke, const Point& point) override {
-    m_last = point;
+  void pressButton(ToolLoop* loop, Stroke& stroke, const Stroke::Pt& pt) override {
+    m_last = pt;
 
     if (m_controller == nullptr)
       m_controller = &m_twoPoints;
@@ -487,18 +491,18 @@ public:
       return;                   // Don't send first pressButton() click to the freehand controller
     }
 
-    m_controller->pressButton(loop, stroke, point);
+    m_controller->pressButton(loop, stroke, pt);
   }
 
-  bool releaseButton(Stroke& stroke, const Point& point) override {
+  bool releaseButton(Stroke& stroke, const Stroke::Pt& pt) override {
     if (!stroke.empty())
       m_last = stroke.lastPoint();
     return false;
   }
 
-  void movement(ToolLoop* loop, Stroke& stroke, const Point& point) override {
-    m_last = point;
-    m_controller->movement(loop, stroke, point);
+  void movement(ToolLoop* loop, Stroke& stroke, const Stroke::Pt& pt) override {
+    m_last = pt;
+    m_controller->movement(loop, stroke, pt);
   }
 
   void getStrokeToInterwine(const Stroke& input, Stroke& output) override {
@@ -518,7 +522,7 @@ public:
   }
 
 private:
-  Point m_last;
+  Stroke::Pt m_last;
   TwoPointsController m_twoPoints;
   FreehandController m_freehand;
   Controller* m_controller;

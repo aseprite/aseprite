@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -490,15 +490,34 @@ gfx::Size Theme::calcSizeHint(const Widget* widget,
 {
   gfx::Size sizeHint;
   gfx::Border borderHint;
-  calcWidgetMetrics(widget, style, sizeHint, borderHint);
+  gfx::Rect textHint;
+  int textAlign;
+  calcWidgetMetrics(widget, style, sizeHint, borderHint,
+                    textHint, textAlign);
   return sizeHint;
+}
+
+void Theme::calcTextInfo(const Widget* widget,
+                         const Style* style,
+                         const gfx::Rect& bounds,
+                         gfx::Rect& textBounds, int& textAlign)
+{
+  gfx::Size sizeHint;
+  gfx::Border borderHint;
+  gfx::Rect textHint;
+  calcWidgetMetrics(widget, style, sizeHint, borderHint,
+                    textHint, textAlign);
+
+  textBounds = bounds;
+  textBounds.shrink(borderHint);
+  textBounds.offset(textHint.origin());
 }
 
 void Theme::measureLayer(const Widget* widget,
                          const Style* style,
                          const Style::Layer& layer,
                          gfx::Border& borderHint,
-                         gfx::Size& textHint, int& textAlign,
+                         gfx::Rect& textHint, int& textAlign,
                          gfx::Size& iconHint, int& iconAlign)
 {
   ASSERT(style);
@@ -531,6 +550,7 @@ void Theme::measureLayer(const Widget* widget,
         gfx::Size textSize(Graphics::measureUITextLength(widget->text(), font),
                            font->height());
 
+        textHint.offset(layer.offset());
         textHint.w = std::max(textHint.w, textSize.w+ABS(layer.offset().x));
         textHint.h = std::max(textHint.h, textSize.h+ABS(layer.offset().y));
         textAlign = layer.align();
@@ -555,7 +575,10 @@ gfx::Border Theme::calcBorder(const Widget* widget,
 {
   gfx::Size sizeHint;
   gfx::Border borderHint;
-  calcWidgetMetrics(widget, style, sizeHint, borderHint);
+  gfx::Rect textHint;
+  int textAlign;
+  calcWidgetMetrics(widget, style, sizeHint, borderHint,
+                    textHint, textAlign);
   return borderHint;
 }
 
@@ -610,7 +633,8 @@ gfx::Color Theme::calcBgColor(const Widget* widget,
 void Theme::calcWidgetMetrics(const Widget* widget,
                               const Style* style,
                               gfx::Size& sizeHint,
-                              gfx::Border& borderHint)
+                              gfx::Border& borderHint,
+                              gfx::Rect& textHint, int& textAlign)
 {
   ASSERT(widget);
   ASSERT(style);
@@ -619,9 +643,11 @@ void Theme::calcWidgetMetrics(const Widget* widget,
 
   borderHint = gfx::Border(0, 0, 0, 0);
   gfx::Border paddingHint(0, 0, 0, 0);
-  gfx::Size textHint(0, 0);
+
+  textHint = gfx::Rect(0, 0, 0, 0);
+  textAlign = CENTER | MIDDLE;
+
   gfx::Size iconHint(0, 0);
-  int textAlign = CENTER | MIDDLE;
   int iconAlign = CENTER | MIDDLE;
 
   for_each_layer(
@@ -794,7 +820,7 @@ void Theme::drawTextBox(Graphics* g, Widget* widget,
     }
     // With word-wrap
     else {
-      old_end = NULL;
+      old_end = nullptr;
       for (beg_end=beg;;) {
         end = std::strpbrk(beg_end, " \n");
         if (end) {

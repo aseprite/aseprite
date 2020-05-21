@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -34,6 +34,21 @@ public:
     m_proc->prepareForPointShape(loop, firstPoint, x, y);
   }
 
+  void prepareVForPointShape(ToolLoop* loop, int y) override {
+    ASSERT(m_proc);
+    m_proc->prepareVForPointShape(loop, y);
+  }
+
+  void prepareUForPointShapeWholeScanline(ToolLoop* loop, int x1) override {
+    ASSERT(m_proc);
+    m_proc->prepareUForPointShapeWholeScanline(loop, x1);
+  }
+
+  void prepareUForPointShapeSlicedScanline(ToolLoop* loop, bool leftSlice, int x1) override {
+    ASSERT(m_proc);
+    m_proc->prepareUForPointShapeSlicedScanline(loop, leftSlice, x1);
+  }
+
 protected:
   void setProc(BaseInkProcessing* proc) {
     m_proc.reset(proc);
@@ -51,7 +66,7 @@ private:
 // (or foreground/background colors)
 class PaintInk : public BaseInk {
 public:
-  enum Type { Simple, WithFg, WithBg, Copy, LockAlpha };
+  enum Type { Simple, WithFg, WithBg, AlphaCompositing, Copy, LockAlpha};
 
 private:
   Type m_type;
@@ -81,7 +96,7 @@ public:
         break;
     }
 
-    if (loop->getBrush()->type() == doc::kImageBrushType)
+    if (loop->getBrush()->type() == doc::kImageBrushType) {
       switch (m_type) {
         case Simple:
           setProc(get_ink_proc<BrushSimpleInkProcessing>(loop));
@@ -96,12 +111,19 @@ public:
           setProc(get_ink_proc<BrushSimpleInkProcessing>(loop));
           break;
       }
+    }
     else {
       switch (m_type) {
         case Simple: {
           bool opaque = false;
 
-          if (loop->getOpacity() == 255) {
+          if (loop->getOpacity() == 255 &&
+              // The trace policy is "overlap" when the dynamics has
+              // a gradient between FG <-> BG
+              //
+              // TODO this trace policy is configured in
+              //      ToolLoopBase() ctor, is there a better place?
+              loop->getTracePolicy() != TracePolicy::Overlap) {
             color_t color = loop->getPrimaryColor();
 
             switch (loop->sprite()->pixelFormat()) {
@@ -125,6 +147,9 @@ public:
             setProc(get_ink_proc<TransparentInkProcessing>(loop));
           break;
         }
+        case AlphaCompositing:
+          setProc(get_ink_proc<TransparentInkProcessing>(loop));
+          break;
         case Copy:
           setProc(get_ink_proc<CopyInkProcessing>(loop));
           break;

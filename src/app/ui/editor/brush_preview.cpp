@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -251,17 +251,19 @@ void BrushPreview::show(const gfx::Point& screenPos)
     {
       std::unique_ptr<tools::ToolLoop> loop(
         create_tool_loop_preview(
-          m_editor, extraImage,
+          m_editor, brush, extraImage,
           extraCelBounds.origin()));
       if (loop) {
         loop->getInk()->prepareInk(loop.get());
         loop->getController()->prepareController(loop.get());
         loop->getIntertwine()->prepareIntertwine();
         loop->getPointShape()->preparePointShape(loop.get());
-        loop->getPointShape()->transformPoint(
-          loop.get(),
-          brushBounds.x-origBrushBounds.x,
-          brushBounds.y-origBrushBounds.y);
+
+        tools::Stroke::Pt pt(brushBounds.x-origBrushBounds.x,
+                             brushBounds.y-origBrushBounds.y);
+        pt.size = brush->size();
+        pt.angle = brush->angle();
+        loop->getPointShape()->transformPoint(loop.get(), pt);
       }
     }
 
@@ -369,7 +371,7 @@ void BrushPreview::generateBoundaries()
 {
   BrushRef brush = getCurrentBrush();
 
-  if (m_brushBoundaries &&
+  if (!m_brushBoundaries.isEmpty() &&
       m_brushGen == brush->gen())
     return;
 
@@ -396,12 +398,10 @@ void BrushPreview::generateBoundaries()
     mask = brush->maskBitmap();
   }
 
-  m_brushBoundaries.reset(
-    new MaskBoundaries(mask ? mask: brushImage));
-
+  m_brushBoundaries.regen(mask ? mask: brushImage);
   if (!isOnePixel)
-    m_brushBoundaries->offset(-brush->center().x,
-                              -brush->center().y);
+    m_brushBoundaries.offset(-brush->center().x,
+                             -brush->center().y);
 
   if (deleteMask)
     delete mask;
@@ -510,7 +510,7 @@ void BrushPreview::traceBrushBoundaries(ui::Graphics* g,
                                         gfx::Color color,
                                         PixelDelegate pixelDelegate)
 {
-  for (const auto& seg : *m_brushBoundaries) {
+  for (const auto& seg : m_brushBoundaries) {
     gfx::Rect bounds = seg.bounds();
     bounds.offset(pos);
     bounds = m_editor->editorToScreen(bounds);

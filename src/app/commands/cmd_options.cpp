@@ -31,6 +31,7 @@
 #include "app/ui/separator_in_view.h"
 #include "app/ui/skin/skin_theme.h"
 #include "base/bind.h"
+#include "base/clamp.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
 #include "base/string.h"
@@ -68,6 +69,25 @@ app::gen::ColorProfileBehavior missingCsMap[] = {
   app::gen::ColorProfileBehavior::DISABLE,
   app::gen::ColorProfileBehavior::ASSIGN,
   app::gen::ColorProfileBehavior::ASK,
+};
+
+class ExtensionCategorySeparator : public SeparatorInView {
+public:
+  ExtensionCategorySeparator(const Extension::Category category,
+                             const std::string& text)
+    : SeparatorInView(text, ui::HORIZONTAL)
+    , m_category(category) {
+    InitTheme.connect(
+      [this]{
+        auto b = this->border();
+        b.top(2*b.top());
+        b.bottom(2*b.bottom());
+        this->setBorder(b);
+      });
+  }
+  Extension::Category category() const { return m_category; }
+private:
+  Extension::Category m_category;
 };
 
 } // anonymous namespace
@@ -121,6 +141,11 @@ class OptionsWindow : public app::gen::Options {
     }
 
     Extension* extension() { return m_extension; }
+
+    Extension::Category category() const {
+      ASSERT(m_extension);
+      return m_extension->category();
+    }
 
     bool isEnabled() const {
       ASSERT(m_extension);
@@ -421,11 +446,10 @@ public:
 
     // Links
     locateFile()->Click.connect(base::Bind<void>(&OptionsWindow::onLocateConfigFile, this));
-#if _WIN32
-    locateCrashFolder()->Click.connect(base::Bind<void>(&OptionsWindow::onLocateCrashFolder, this));
-#else
-    locateCrashFolder()->setVisible(false);
-#endif
+    if (!App::instance()->memoryDumpFilename().empty())
+      locateCrashFolder()->Click.connect(base::Bind<void>(&OptionsWindow::onLocateCrashFolder, this));
+    else
+      locateCrashFolder()->setVisible(false);
 
     // Undo preferences
     limitUndo()->Click.connect(base::Bind<void>(&OptionsWindow::onLimitUndoCheck, this));
@@ -621,7 +645,7 @@ public:
 
     int undo_size_limit_value;
     undo_size_limit_value = undoSizeLimit()->textInt();
-    undo_size_limit_value = MID(0, undo_size_limit_value, 999999);
+    undo_size_limit_value = base::clamp(undo_size_limit_value, 0, 999999);
 
     m_pref.undo.sizeLimit(undo_size_limit_value);
     m_pref.undo.gotoModified(undoGotoModified()->isSelected());
@@ -895,12 +919,13 @@ private:
     exportAnimationInSequenceAlert()->resetWithDefaultValue();
     overwriteFilesOnExportAlert()->resetWithDefaultValue();
     overwriteFilesOnExportSpriteSheetAlert()->resetWithDefaultValue();
-    gifOptionsAlert()->resetWithDefaultValue();
-    jpegOptionsAlert()->resetWithDefaultValue();
-    svgOptionsAlert()->resetWithDefaultValue();
     advancedModeAlert()->resetWithDefaultValue();
     invalidFgBgColorAlert()->resetWithDefaultValue();
     runScriptAlert()->resetWithDefaultValue();
+    gifOptionsAlert()->resetWithDefaultValue();
+    jpegOptionsAlert()->resetWithDefaultValue();
+    svgOptionsAlert()->resetWithDefaultValue();
+    tgaOptionsAlert()->resetWithDefaultValue();
   }
 
   void onChangeBgScope() {
@@ -1017,7 +1042,8 @@ private:
   }
 
   void onLocateCrashFolder() {
-    app::launcher::open_folder(base::get_file_path(app::memory_dump_filename()));
+    app::launcher::open_folder(
+      base::get_file_path(App::instance()->memoryDumpFilename()));
   }
 
   void onLocateConfigFile() {
@@ -1131,16 +1157,51 @@ private:
     themeList()->layout();
   }
 
+  void loadExtensionsByCategory(const Extension::Category category,
+                                const std::string& label) {
+    bool hasItems = false;
+    auto sep = new ExtensionCategorySeparator(category, label);
+    extensionsList()->addChild(sep);
+    for (auto e : App::instance()->extensions()) {
+      if (e->category() == category) {
+        ExtensionItem* item = new ExtensionItem(e);
+        extensionsList()->addChild(item);
+        hasItems = true;
+      }
+    }
+    sep->setVisible(hasItems);
+  }
+
   void loadExtensions() {
     // Extensions already loaded
     if (extensionsList()->getItemsCount() > 0)
       return;
 
-    for (auto extension : App::instance()->extensions()) {
-      ExtensionItem* item = new ExtensionItem(extension);
-      extensionsList()->addChild(item);
-    }
-    extensionsList()->sortItems();
+    loadExtensionsByCategory(
+      Extension::Category::Languages,
+      Strings::options_language_extensions());
+
+    loadExtensionsByCategory(
+      Extension::Category::Themes,
+      Strings::options_theme_extensions());
+
+#ifdef ENABLE_SCRIPTING
+    loadExtensionsByCategory(
+      Extension::Category::Scripts,
+      Strings::options_script_extensions());
+#endif
+
+    loadExtensionsByCategory(
+      Extension::Category::Palettes,
+      Strings::options_palette_extensions());
+
+    loadExtensionsByCategory(
+      Extension::Category::DitheringMatrices,
+      Strings::options_dithering_matrix_extensions());
+
+    loadExtensionsByCategory(
+      Extension::Category::Multiple,
+      Strings::options_multiple_extensions());
 
     onExtensionChange();
     extensionsList()->layout();
@@ -1297,7 +1358,33 @@ private:
       // Add the new extension in the listbox
       ExtensionItem* item = new ExtensionItem(ext);
       extensionsList()->addChild(item);
-      extensionsList()->sortItems();
+      updateCategoryVisibility();
+      extensionsList()->sortItems(
+        [](Widget* a, Widget* b){
+          auto aSep = dynamic_cast<ExtensionCategorySeparator*>(a);
+          auto bSep = dynamic_cast<ExtensionCategorySeparator*>(b);
+          auto aItem = dynamic_cast<ExtensionItem*>(a);
+          auto bItem = dynamic_cast<ExtensionItem*>(b);
+          auto aCat = (aSep ? aSep->category():
+                       aItem ? aItem->category(): Extension::Category::None);
+          auto bCat = (bSep ? bSep->category():
+                       bItem ? bItem->category(): Extension::Category::None);
+          if (aCat < bCat)
+            return true;
+          else if (aCat == bCat) {
+            // There are no two separators with same category.
+            ASSERT(!(aSep && bSep));
+
+            if (aSep && !bSep)
+              return true;
+            else if (!aSep && bSep)
+              return false;
+            else
+              return (base::compare_filenames(a->text(), b->text()) < 0);
+          }
+          else
+            return false;
+        });
       extensionsList()->layout();
       extensionsList()->selectChild(item);
     }
@@ -1337,6 +1424,7 @@ private:
   void deleteExtensionItem(ExtensionItem* item) {
     // Remove the item from the list
     extensionsList()->removeChild(item);
+    updateCategoryVisibility();
     extensionsList()->layout();
     item->deferDelete();
   }
@@ -1400,6 +1488,21 @@ private:
     while (rf.next())
       paths.push_back(base::normalize_path(rf.filename()));
     return paths;
+  }
+
+  void updateCategoryVisibility() {
+    bool visibleCategories[int(Extension::Category::Max)];
+    for (auto& v : visibleCategories)
+      v = false;
+    for (auto w : extensionsList()->children()) {
+      if (auto item = dynamic_cast<ExtensionItem*>(w)) {
+        visibleCategories[int(item->category())] = true;
+      }
+    }
+    for (auto w : extensionsList()->children()) {
+      if (auto sep = dynamic_cast<ExtensionCategorySeparator*>(w))
+        sep->setVisible(visibleCategories[int(sep->category())]);
+    }
   }
 
   Context* m_context;

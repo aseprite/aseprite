@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -23,6 +24,7 @@
 #include "ui/paint_event.h"
 #include "ui/size_hint_event.h"
 #include "ui/view.h"
+#include "ver/info.h"
 
 #include "tinyxml.h"
 
@@ -209,7 +211,7 @@ void NewsListBox::reload()
   if (view)
     view->updateView();
 
-  m_loader = new HttpLoader(WEBSITE_NEWS_RSS);
+  m_loader = new HttpLoader(get_app_news_rss_url());
   m_timer.start();
 }
 

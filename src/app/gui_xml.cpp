@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -38,19 +39,6 @@ GuiXml::GuiXml()
   // Load the XML file. As we've already checked "path" existence,
   // in a case of exception we should show the error and stop.
   m_doc = app::open_xml(rf.filename());
-}
-
-std::string GuiXml::version()
-{
-  TiXmlHandle handle(m_doc.get());
-  TiXmlElement* xmlKey = handle.FirstChild("gui").ToElement();
-
-  if (xmlKey && xmlKey->Attribute("version")) {
-    const char* guixml_version = xmlKey->Attribute("version");
-    return guixml_version;
-  }
-  else
-    return "";
 }
 
 } // namespace app

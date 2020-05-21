@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -29,15 +29,21 @@
 #include "base/bind.h"
 #include "base/fs.h"
 #include "base/string.h"
+#include "fmt/format.h"
 #include "os/menus.h"
 #include "os/system.h"
 #include "ui/ui.h"
+#include "ver/info.h"
 
 #include "tinyxml.h"
 
 #include <cctype>
-#include <cstdio>
 #include <cstring>
+#include <string>
+#include <algorithm>
+#include <cstdlib>
+
+#define MENUS_TRACE(...) // TRACEARGS
 
 namespace app {
 
@@ -58,6 +64,8 @@ const int kUnicodeLeft     = 0xF702; // NSLeftArrowFunctionKey
 const int kUnicodeRight    = 0xF703; // NSRightArrowFunctionKey
 const int kUnicodeUp       = 0xF700; // NSUpArrowFunctionKey
 const int kUnicodeDown     = 0xF701; // NSDownArrowFunctionKey
+
+const char* kFileRecentListGroup = "file_recent_list";
 
 void destroy_instance(AppMenus* instance)
 {
@@ -318,9 +326,23 @@ AppMenus::~AppMenus()
 
 void AppMenus::reload()
 {
+  MENUS_TRACE("MENUS: AppMenus::reload()");
+
   XmlDocumentRef doc(GuiXml::instance()->doc());
   TiXmlHandle handle(doc.get());
   const char* path = GuiXml::instance()->filename();
+
+  ////////////////////////////////////////
+  // Remove all menu items added to groups from recent files and
+  // scripts so we can re-add them later in the new menus.
+
+  for (auto& it : m_groups) {
+    GroupInfo& group = it.second;
+    MENUS_TRACE("MENUS: - groups", it.first, "with", group.items.size(), "item(s)");
+    group.end = nullptr;        // This value will be restored later
+    for (auto& item : group.items)
+      item->parent()->removeChild(item);
+  }
 
   ////////////////////////////////////////
   // Load menus
@@ -328,12 +350,6 @@ void AppMenus::reload()
   LOG("MENU: Loading menus from %s\n", path);
 
   m_rootMenu.reset(loadMenuById(handle, "main_menu"));
-
-#if _DEBUG
-  // Add a warning element because the user is not using the last well-known gui.xml file.
-  if (GuiXml::instance()->version() != VERSION)
-    m_rootMenu->insertChild(0, createInvalidVersionMenuitem());
-#endif
 
   LOG("MENU: Main menu loaded.\n");
 
@@ -366,8 +382,37 @@ void AppMenus::reload()
     if (scriptsMenu) {
       delete scriptsMenu;
       delete m_rootMenu->findItemById("scripts_menu_separator");
+
+      // Remove scripts group
+      auto it = m_groups.find("file_scripts");
+      if (it != m_groups.end())
+        m_groups.erase(it);
     }
 #endif
+  }
+
+  ////////////////////////////////////////
+  // Re-add menu items in groups (recent files & scripts)
+
+  for (auto& it : m_groups) {
+    GroupInfo& group = it.second;
+    if (group.end) {
+      MENUS_TRACE("MENUS: - re-adding group ", it.first, "with", group.items.size(), "item(s)");
+
+      auto menu = group.end->parent();
+      int insertIndex = menu->getChildIndex(group.end);
+      for (auto& item : group.items) {
+        menu->insertChild(++insertIndex, item);
+        group.end = item;
+      }
+    }
+    // Delete items that don't have a group now
+    else {
+      MENUS_TRACE("MENUS: - deleting group ", it.first, "with", group.items.size(), "item(s)");
+      for (auto& item : group.items)
+        item->deferDelete();
+      group.items.clear();
+    }
   }
 
   ////////////////////////////////////////
@@ -454,6 +499,8 @@ void AppMenus::initTheme()
 
 bool AppMenus::rebuildRecentList()
 {
+  MENUS_TRACE("MENUS: AppMenus::rebuildRecentList m_recentFilesPlaceholder=", m_recentFilesPlaceholder);
+
   if (!m_recentFilesPlaceholder)
     return true;
 
@@ -465,13 +512,10 @@ bool AppMenus::rebuildRecentList()
   if (!owner || owner->hasSubmenuOpened())
     return false;
 
-  int insertIndex = menu->getChildIndex(m_recentFilesPlaceholder)+1;
-
   // Remove active items
-  while (auto appItem = dynamic_cast<AppMenuItem*>(menu->at(insertIndex))) {
-    menu->removeChild(appItem);
-    appItem->deferDelete();
-  }
+  for (auto item : m_recentMenuItems)
+    removeMenuItemFromGroup(item);
+  m_recentMenuItems.clear();
 
   Command* openFile = Commands::instance()->byId(CommandId::OpenFile());
 
@@ -488,18 +532,24 @@ bool AppMenus::rebuildRecentList()
     for (const auto& fn : files) {
       params.set("filename", fn.c_str());
 
-      auto menuitem = new AppMenuItem(base::get_file_name(fn).c_str(),
-                                      openFile, params);
+      std::unique_ptr<AppMenuItem> menuitem(
+        new AppMenuItem(base::get_file_name(fn).c_str(),
+                        openFile, params));
       menuitem->setIsRecentFileItem(true);
-      menu->insertChild(insertIndex++, menuitem);
+
+      m_recentMenuItems.push_back(menuitem.get());
+      addMenuItemIntoGroup(kFileRecentListGroup, std::move(menuitem));
     }
   }
   else {
-    auto menuitem = new AppMenuItem(
-      Strings::main_menu_file_no_recent_file(), nullptr);
+      std::unique_ptr<AppMenuItem> menuitem(
+        new AppMenuItem(
+          Strings::main_menu_file_no_recent_file(), nullptr));
     menuitem->setIsRecentFileItem(true);
     menuitem->setEnabled(false);
-    menu->insertChild(insertIndex++, menuitem);
+
+    m_recentMenuItems.push_back(menuitem.get());
+    addMenuItemIntoGroup(kFileRecentListGroup, std::move(menuitem));
   }
 
   // Sync native menus
@@ -514,6 +564,65 @@ bool AppMenus::rebuildRecentList()
   }
 
   return true;
+}
+
+void AppMenus::addMenuItemIntoGroup(const std::string& groupId,
+                                    std::unique_ptr<MenuItem>&& menuItem)
+{
+  GroupInfo& group = m_groups[groupId];
+  Widget* menu = group.end->parent();
+  ASSERT(menu);
+  int insertIndex = menu->getChildIndex(group.end);
+  menu->insertChild(insertIndex+1, menuItem.get());
+
+  group.end = menuItem.get();
+  group.items.push_back(menuItem.get());
+
+  menuItem.release();
+}
+
+template<typename Pred>
+void AppMenus::removeMenuItemFromGroup(Pred pred)
+{
+  for (auto& it : m_groups) {
+    GroupInfo& group = it.second;
+    for (auto it=group.items.begin(); it != group.items.end(); ) {
+      auto& item = *it;
+      if (pred(item)) {
+        if (item == group.end)
+          group.end = group.end->previousSibling();
+
+        item->parent()->removeChild(item);
+        if (auto appItem = dynamic_cast<AppMenuItem*>(item)) {
+          if (appItem)
+            appItem->disposeNative();
+        }
+        item->deferDelete();
+
+        it = group.items.erase(it);
+      }
+      else {
+        ++it;
+      }
+    }
+  }
+}
+
+void AppMenus::removeMenuItemFromGroup(Command* cmd)
+{
+  removeMenuItemFromGroup(
+    [cmd](Widget* item){
+      auto appMenuItem = dynamic_cast<AppMenuItem*>(item);
+      return (appMenuItem && appMenuItem->getCommand() == cmd);
+    });
+}
+
+void AppMenus::removeMenuItemFromGroup(Widget* menuItem)
+{
+  removeMenuItemFromGroup(
+    [menuItem](Widget* item){
+      return (item == menuItem);
+    });
 }
 
 Menu* AppMenus::loadMenuById(TiXmlHandle& handle, const char* id)
@@ -561,6 +670,7 @@ Menu* AppMenus::convertXmlelemToMenu(TiXmlElement* elem)
 Widget* AppMenus::convertXmlelemToMenuitem(TiXmlElement* elem)
 {
   const char* id = elem->Attribute("id");
+  const char* group = elem->Attribute("group");
 
   // is it a <separator>?
   if (strcmp(elem->Value(), "separator") == 0) {
@@ -573,6 +683,8 @@ Widget* AppMenus::convertXmlelemToMenuitem(TiXmlElement* elem)
         m_recentFilesPlaceholder = item;
       }
     }
+    if (group)
+      m_groups[group].end = item;
     return item;
   }
 
@@ -604,6 +716,8 @@ Widget* AppMenus::convertXmlelemToMenuitem(TiXmlElement* elem)
 
   if (id) menuitem->setId(id);
   menuitem->processMnemonicFromText();
+  if (group)
+    m_groups[group].end = menuitem;
 
   // Has it a ID?
   if (id) {
@@ -622,20 +736,6 @@ Widget* AppMenus::convertXmlelemToMenuitem(TiXmlElement* elem)
     menuitem->setSubmenu(subMenu);
   }
 
-  return menuitem;
-}
-
-Widget* AppMenus::createInvalidVersionMenuitem()
-{
-  AppMenuItem* menuitem = new AppMenuItem("WARNING!");
-  Menu* subMenu = new Menu();
-  subMenu->addChild(new AppMenuItem(PACKAGE " is using a customized gui.xml (maybe from your HOME directory)."));
-  subMenu->addChild(new AppMenuItem("You should update your customized gui.xml file to the new version to get"));
-  subMenu->addChild(new AppMenuItem("the latest commands available."));
-  subMenu->addChild(new MenuSeparator);
-  subMenu->addChild(new AppMenuItem("You can bypass this validation adding the correct version"));
-  subMenu->addChild(new AppMenuItem("number in <gui version=\"" VERSION "\"> element."));
-  menuitem->setSubmenu(subMenu);
   return menuitem;
 }
 
@@ -718,13 +818,12 @@ void AppMenus::createNativeMenus()
   if (!menus)       // This platform doesn't support native menu items
     return;
 
-  if (m_osMenu)
-    m_osMenu->dispose();
+  os::Menu* oldOSMenu = m_osMenu;
   m_osMenu = menus->createMenu();
 
 #ifdef __APPLE__ // Create default macOS app menus (App ... Window)
   {
-    os::MenuItemInfo about("About " PACKAGE);
+    os::MenuItemInfo about(fmt::format("About {}", get_app_name()));
     auto native = get_native_shortcut_for_command(CommandId::About());
     about.shortcut = native.shortcut;
     about.execute = [native]{
@@ -750,10 +849,10 @@ void AppMenus::createNativeMenus()
       item->setEnabled(can_call_global_shortcut(&native));
     };
 
-    os::MenuItemInfo hide("Hide " PACKAGE, os::MenuItemInfo::Hide);
+    os::MenuItemInfo hide(fmt::format("Hide {}", get_app_name()), os::MenuItemInfo::Hide);
     hide.shortcut = os::Shortcut('h', os::kKeyCmdModifier);
 
-    os::MenuItemInfo quit("Quit " PACKAGE, os::MenuItemInfo::Quit);
+    os::MenuItemInfo quit(fmt::format("Quit {}", get_app_name()), os::MenuItemInfo::Quit);
     quit.shortcut = os::Shortcut('q', os::kKeyCmdModifier);
 
     os::Menu* appMenu = menus->createMenu();
@@ -805,6 +904,8 @@ void AppMenus::createNativeMenus()
 #endif
 
   menus->setAppMenu(m_osMenu);
+  if (oldOSMenu)
+    oldOSMenu->dispose();
 }
 
 void AppMenus::createNativeSubmenus(os::Menu* osMenu, const ui::Menu* uiMenu)

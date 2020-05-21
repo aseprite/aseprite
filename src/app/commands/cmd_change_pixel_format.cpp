@@ -44,12 +44,22 @@
 #include "ui/size_hint_event.h"
 
 #include "color_mode.xml.h"
+#include <string>
 
 namespace app {
 
 using namespace ui;
 
 namespace {
+
+rgba_to_graya_func get_gray_func(gen::ToGrayAlgorithm toGray) {
+  switch (toGray) {
+    case gen::ToGrayAlgorithm::LUMA: return &rgba_to_graya_using_luma;
+    case gen::ToGrayAlgorithm::HSV: return &rgba_to_graya_using_hsv;
+    case gen::ToGrayAlgorithm::HSL: return &rgba_to_graya_using_hsl;
+  }
+  return nullptr;
+}
 
 class ConversionItem : public ListItem {
 public:
@@ -79,6 +89,7 @@ public:
                 const doc::frame_t frame,
                 const doc::PixelFormat pixelFormat,
                 const render::Dithering& dithering,
+                const gen::ToGrayAlgorithm toGray,
                 const gfx::Point& pos,
                 const bool newBlend)
     : m_image(dstImage)
@@ -91,10 +102,12 @@ public:
        sprite, frame,
        pixelFormat,
        dithering,
+       toGray,
        newBlend]() { // Copy the matrix
         run(sprite, frame,
             pixelFormat,
             dithering,
+            toGray,
             newBlend);
       })
   {
@@ -118,6 +131,7 @@ private:
            const doc::frame_t frame,
            const doc::PixelFormat pixelFormat,
            const render::Dithering& dithering,
+           const gen::ToGrayAlgorithm toGray,
            const bool newBlend) {
     doc::ImageRef tmp(
       Image::create(sprite->pixelFormat(),
@@ -142,6 +156,7 @@ private:
       sprite->palette(frame),
       (sprite->backgroundLayer() != nullptr),
       0,
+      get_gray_func(toGray),
       this);
 
     m_running = false;
@@ -211,8 +226,11 @@ public:
     else {
       amount()->setVisible(false);
     }
-    if (from != IMAGE_GRAYSCALE)
+    if (from != IMAGE_GRAYSCALE) {
       colorMode()->addChild(new ConversionItem(IMAGE_GRAYSCALE));
+
+      toGrayCombobox()->Change.connect(base::Bind<void>(&ColorModeWindow::onToGrayChange, this));
+    }
 
     colorModeView()->setMinSize(
       colorModeView()->sizeHint() +
@@ -247,6 +265,15 @@ public:
     }
     d.factor(double(factor()->getValue()) / 100.0);
     return d;
+  }
+
+  gen::ToGrayAlgorithm toGray() const {
+    static_assert(
+      int(gen::ToGrayAlgorithm::LUMA) == 0 &&
+      int(gen::ToGrayAlgorithm::HSV) == 1 &&
+      int(gen::ToGrayAlgorithm::HSL) == 2,
+      "Check that 'to_gray_combobox' combobox items matches these indexes in color_mode.xml");
+    return (gen::ToGrayAlgorithm)toGrayCombobox()->getSelectedItemIndex();
   }
 
   bool flattenEnabled() const {
@@ -307,6 +334,11 @@ private:
       amount()->setVisible(toIndexed && errorDiff);
     }
 
+    {
+      const bool toGray = (dstPixelFormat == doc::IMAGE_GRAYSCALE);
+      toGrayCombobox()->setVisible(toGray);
+    }
+
     m_image.reset(
       Image::create(dstPixelFormat,
                     visibleBounds.w,
@@ -336,6 +368,7 @@ private:
         m_editor->frame(),
         dstPixelFormat,
         dithering(),
+        toGray(),
         visibleBounds.origin(),
         Preferences::instance().experimental.newBlend()));
 
@@ -343,6 +376,12 @@ private:
   }
 
   void onDithering() {
+    stop();
+    m_selectedItem = nullptr;
+    onChangeColorMode();
+  }
+
+  void onToGrayChange() {
     stop();
     m_selectedItem = nullptr;
     onChangeColorMode();
@@ -402,6 +441,7 @@ private:
   bool m_useUI;
   doc::PixelFormat m_format;
   render::Dithering m_dithering;
+  gen::ToGrayAlgorithm m_toGray;
 };
 
 ChangePixelFormatCommand::ChangePixelFormatCommand()
@@ -410,6 +450,7 @@ ChangePixelFormatCommand::ChangePixelFormatCommand()
   m_useUI = true;
   m_format = IMAGE_RGB;
   m_dithering = render::Dithering();
+  m_toGray = gen::ToGrayAlgorithm::DEFAULT;
 }
 
 void ChangePixelFormatCommand::onLoadParams(const Params& params)
@@ -418,7 +459,8 @@ void ChangePixelFormatCommand::onLoadParams(const Params& params)
 
   std::string format = params.get("format");
   if (format == "rgb") m_format = IMAGE_RGB;
-  else if (format == "grayscale") m_format = IMAGE_GRAYSCALE;
+  else if (format == "grayscale" ||
+           format == "gray") m_format = IMAGE_GRAYSCALE;
   else if (format == "indexed") m_format = IMAGE_INDEXED;
   else
     m_useUI = true;
@@ -454,6 +496,16 @@ void ChangePixelFormatCommand::onLoadParams(const Params& params)
     // TODO object slicing here (from BayerMatrix -> DitheringMatrix)
     m_dithering.matrix(render::BayerMatrix(8));
   }
+
+  std::string toGray = params.get("toGray");
+  if (toGray == "luma")
+    m_toGray = gen::ToGrayAlgorithm::LUMA;
+  else if (dithering == "hsv")
+    m_toGray = gen::ToGrayAlgorithm::HSV;
+  else if (dithering == "hsl")
+    m_toGray = gen::ToGrayAlgorithm::HSL;
+  else
+    m_toGray = gen::ToGrayAlgorithm::DEFAULT;
 }
 
 bool ChangePixelFormatCommand::onEnabled(Context* context)
@@ -518,6 +570,7 @@ void ChangePixelFormatCommand::onExecute(Context* context)
 
     m_format = window.pixelFormat();
     m_dithering = window.dithering();
+    m_toGray = window.toGray();
     flatten = window.flattenEnabled();
 
     window.saveDitheringOptions();
@@ -554,6 +607,7 @@ void ChangePixelFormatCommand::onExecute(Context* context)
           new cmd::SetPixelFormat(
             sprite, m_format,
             m_dithering,
+            get_gray_func(m_toGray),
             &job));             // SpriteJob is a render::TaskDelegate
       });
     job.waitJob();

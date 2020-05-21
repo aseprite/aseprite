@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -11,7 +11,7 @@
 
 #include "doc/sprite.h"
 
-#include "base/base.h"
+#include "base/clamp.h"
 #include "base/memory.h"
 #include "base/remove_from_container.h"
 #include "doc/cel.h"
@@ -77,7 +77,7 @@ Sprite::Sprite(const ImageSpec& spec,
     case ColorMode::BITMAP:
       for (int c=0; c<ncolors; c++) {
         int g = 255 * c / (ncolors-1);
-        g = MID(0, g, 255);
+        g = base::clamp(g, 0, 255);
         pal.setEntry(c, rgba(g, g, g, 255));
       }
       break;
@@ -394,7 +394,7 @@ void Sprite::removeFrame(frame_t frame)
 
 void Sprite::setTotalFrames(frame_t frames)
 {
-  frames = MAX(frame_t(1), frames);
+  frames = std::max(frame_t(1), frames);
   m_frlens.resize(frames);
 
   if (frames > m_frames) {
@@ -424,19 +424,19 @@ int Sprite::totalAnimationDuration() const
 void Sprite::setFrameDuration(frame_t frame, int msecs)
 {
   if (frame >= 0 && frame < m_frames)
-    m_frlens[frame] = MID(1, msecs, 65535);
+    m_frlens[frame] = base::clamp(msecs, 1, 65535);
 }
 
 void Sprite::setFrameRangeDuration(frame_t from, frame_t to, int msecs)
 {
   std::fill(
     m_frlens.begin()+(std::size_t)from,
-    m_frlens.begin()+(std::size_t)to+1, MID(1, msecs, 65535));
+    m_frlens.begin()+(std::size_t)to+1, base::clamp(msecs, 1, 65535));
 }
 
 void Sprite::setDurationForAllFrames(int msecs)
 {
-  std::fill(m_frlens.begin(), m_frlens.end(), MID(1, msecs, 65535));
+  std::fill(m_frlens.begin(), m_frlens.end(), base::clamp(msecs, 1, 65535));
 }
 
 //////////////////////////////////////////////////////////////////////

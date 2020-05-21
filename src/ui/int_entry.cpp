@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -96,7 +96,7 @@ bool IntEntry::onProcessMessage(Message* msg)
 
           MouseMessage mouseMsg2(kMouseDownMessage,
                                  mouseMsg->pointerType(),
-                                 mouseMsg->buttons(),
+                                 mouseMsg->button(),
                                  mouseMsg->modifiers(),
                                  mouseMsg->position());
           m_slider.sendMessage(&mouseMsg2);
@@ -204,9 +204,9 @@ void IntEntry::closePopup()
   if (m_popupWindow) {
     removeSlider();
 
-    m_popupWindow->closeWindow(NULL);
+    m_popupWindow->closeWindow(nullptr);
     delete m_popupWindow;
-    m_popupWindow = NULL;
+    m_popupWindow = nullptr;
   }
 }
 

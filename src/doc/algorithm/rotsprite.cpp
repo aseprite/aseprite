@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2020  Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -8,11 +9,11 @@
 #include "config.h"
 #endif
 
-#include "base/base.h"
 #include "doc/algorithm/rotate.h"
 #include "doc/image_impl.h"
 #include "doc/primitives.h"
 
+#include <algorithm>
 #include <memory>
 
 namespace doc {
@@ -173,10 +174,10 @@ void rotsprite_image(Image* bmp, const Image* spr, const Image* mask,
     if (!buf[i])
       buf[i].reset(new ImageBuffer(1));
 
-  int xmin = MIN(x1, MIN(x2, MIN(x3, x4)));
-  int xmax = MAX(x1, MAX(x2, MAX(x3, x4)));
-  int ymin = MIN(y1, MIN(y2, MIN(y3, y4)));
-  int ymax = MAX(y1, MAX(y2, MAX(y3, y4)));
+  int xmin = std::min(x1, std::min(x2, std::min(x3, x4)));
+  int xmax = std::max(x1, std::max(x2, std::max(x3, x4)));
+  int ymin = std::min(y1, std::min(y2, std::min(y3, y4)));
+  int ymax = std::max(y1, std::max(y2, std::max(y3, y4)));
   int rot_width = xmax - xmin;
   int rot_height = ymax - ymin;
 

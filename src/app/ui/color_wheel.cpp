@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -15,6 +16,7 @@
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
 #include "base/bind.h"
+#include "base/clamp.h"
 #include "base/pi.h"
 #include "filters/color_curve.h"
 #include "os/surface.h"
@@ -95,9 +97,9 @@ app::Color ColorWheel::getMainAreaColor(const int _u, const int umax,
     int b = 255 - di;
     if (d < m_wheelRadius+2*guiscale()) {
       return app::Color::fromRgb(
-        MID(0, r, 255),
-        MID(0, g, 255),
-        MID(128, b, 255));
+        base::clamp(r, 0, 255),
+        base::clamp(g, 0, 255),
+        base::clamp(b, 128, 255));
     }
     else {
       return app::Color::fromRgb(128, 128, 255);
@@ -131,17 +133,17 @@ app::Color ColorWheel::getMainAreaColor(const int _u, const int umax,
     }
 
     return app::Color::fromHsv(
-      MID(0, hue, 360),
-      MID(0, sat / 100.0, 1.0),
-      m_color.getHsvValue(),
-      m_color.getAlpha());
+      base::clamp(hue, 0, 360),
+      base::clamp(sat / 100.0, 0.0, 1.0),
+      (m_color.getType() != Color::MaskType ? m_color.getHsvValue(): 1.0),
+      getCurrentAlphaForNewColor());
   }
 
   // Pick harmonies
   if (m_color.getAlpha() > 0) {
     const gfx::Point pos(_u, _v);
     int n = getHarmonies();
-    int boxsize = MIN(umax/10, vmax/10);
+    int boxsize = std::min(umax/10, vmax/10);
 
     for (int i=0; i<n; ++i) {
       app::Color color = getColorInHarmony(i);
@@ -169,15 +171,15 @@ app::Color ColorWheel::getBottomBarColor(const int u, const int umax)
   return app::Color::fromHsv(
     m_color.getHsvHue(),
     m_color.getHsvSaturation(),
-    MID(0.0, val, 1.0),
-    m_color.getAlpha());
+    base::clamp(val, 0.0, 1.0),
+    getCurrentAlphaForNewColor());
 }
 
 void ColorWheel::onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc)
 {
   bool oldHarmonyPicked = m_harmonyPicked;
 
-  int r = MIN(rc.w/2, rc.h/2);
+  int r = std::min(rc.w/2, rc.h/2);
   m_wheelRadius = r;
   m_wheelBounds = gfx::Rect(rc.x+rc.w/2-r,
                             rc.y+rc.h/2-r,
@@ -188,7 +190,7 @@ void ColorWheel::onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc)
       double angle = std::atan2(m_color.getGreen()-128,
                                 m_color.getRed()-128);
       double dist = (255-m_color.getBlue()) / 128.0;
-      dist = MID(0.0, dist, 1.0);
+      dist = base::clamp(dist, 0.0, 1.0);
 
       gfx::Point pos =
         m_wheelBounds.center() +
@@ -198,7 +200,7 @@ void ColorWheel::onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc)
     }
     else {
       int n = getHarmonies();
-      int boxsize = MIN(rc.w/10, rc.h/10);
+      int boxsize = std::min(rc.w/10, rc.h/10);
 
       for (int i=0; i<n; ++i) {
         app::Color color = getColorInHarmony(i);
@@ -246,8 +248,8 @@ void ColorWheel::onPaintSurfaceInBgThread(os::Surface* s,
                                           bool& stop)
 {
   if (m_paintFlags & MainAreaFlag) {
-    int umax = MAX(1, main.w-1);
-    int vmax = MAX(1, main.h-1);
+    int umax = std::max(1, main.w-1);
+    int vmax = std::max(1, main.h-1);
 
     for (int y=0; y<main.h && !stop; ++y) {
       for (int x=0; x<main.w && !stop; ++x) {
@@ -275,12 +277,13 @@ void ColorWheel::onPaintSurfaceInBgThread(os::Surface* s,
   if (m_paintFlags & BottomBarFlag) {
     double hue = m_color.getHsvHue();
     double sat = m_color.getHsvSaturation();
-
+    os::Paint paint;
     for (int x=0; x<bottom.w && !stop; ++x) {
-      gfx::Color color = color_utils::color_for_ui(
-        app::Color::fromHsv(hue, sat, double(x) / double(bottom.w)));
+      paint.color(
+        color_utils::color_for_ui(
+          app::Color::fromHsv(hue, sat, double(x) / double(bottom.w))));
 
-      s->drawVLine(color, bottom.x+x, bottom.y, bottom.h);
+      s->drawRect(gfx::Rect(bottom.x+x, bottom.y, 1, bottom.h), paint);
     }
     if (stop)
       return;
@@ -331,18 +334,18 @@ void ColorWheel::setHarmony(Harmony harmony)
 
 int ColorWheel::getHarmonies() const
 {
-  int i = MID(0, (int)m_harmony, (int)Harmony::LAST);
+  int i = base::clamp((int)m_harmony, 0, (int)Harmony::LAST);
   return harmonies[i].n;
 }
 
 app::Color ColorWheel::getColorInHarmony(int j) const
 {
-  int i = MID(0, (int)m_harmony, (int)Harmony::LAST);
-  j = MID(0, j, harmonies[i].n-1);
+  int i = base::clamp((int)m_harmony, 0, (int)Harmony::LAST);
+  j = base::clamp(j, 0, harmonies[i].n-1);
   double hue = convertHueAngle(int(m_color.getHsvHue()), -1) + harmonies[i].hues[j];
   double sat = m_color.getHsvSaturation() * harmonies[i].sats[j] / 100.0;
   return app::Color::fromHsv(std::fmod(hue, 360),
-                             MID(0.0, sat, 1.0),
+                             base::clamp(sat, 0.0, 1.0),
                              m_color.getHsvValue());
 }
 

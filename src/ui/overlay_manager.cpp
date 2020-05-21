@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -24,11 +24,11 @@ static bool less_than(Overlay* x, Overlay* y) {
   return *x < *y;
 }
 
-OverlayManager* OverlayManager::m_singleton = NULL;
+OverlayManager* OverlayManager::m_singleton = nullptr;
 
 OverlayManager* OverlayManager::instance()
 {
-  if (m_singleton == NULL)
+  if (m_singleton == nullptr)
     m_singleton = new OverlayManager;
   return m_singleton;
 }

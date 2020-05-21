@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -113,7 +114,7 @@ bool PlayState::onMouseDown(Editor* editor, MouseMessage* msg)
   context->setActiveView(editor->getDocView());
 
   // A click with right-button stops the animation
-  if (msg->buttons() == kButtonRight) {
+  if (msg->button() == kButtonRight) {
     editor->stop();
     return true;
   }

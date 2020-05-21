@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -420,18 +420,27 @@ namespace app {
     } m_moveRangeData;
   };
 
+#ifdef ENABLE_UI
   class LockTimelineRange {
   public:
     LockTimelineRange(Timeline* timeline)
       : m_timeline(timeline) {
-      m_timeline->lockRange();
+      if (m_timeline)
+        m_timeline->lockRange();
     }
     ~LockTimelineRange() {
-      m_timeline->unlockRange();
+      if (m_timeline)
+        m_timeline->unlockRange();
     }
   private:
     Timeline* m_timeline;
   };
+#else  // !ENABLE_UI
+  class LockTimelineRange {
+  public:
+    LockTimelineRange(Timeline* timeline) { }
+  };
+#endif
 
 } // namespace app
 

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -121,7 +121,7 @@ static bool create_main_display(bool gpuAccel,
   try {
     if (w > 0 && h > 0) {
       main_display = os::instance()->createDisplay(
-        w, h, (scale == 0 ? 2: MID(1, scale, 4)));
+        w, h, (scale == 0 ? 2: base::clamp(scale, 1, 4)));
     }
   }
   catch (const os::DisplayCreationException& e) {

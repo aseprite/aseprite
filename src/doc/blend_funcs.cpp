@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019 Igara Studio S.A.
+// Copyright (c) 2019-2020 Igara Studio S.A.
 // Copyright (c) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -19,10 +19,10 @@
 
 #include "doc/blend_funcs.h"
 
-#include "base/base.h"
 #include "base/debug.h"
 #include "doc/blend_internals.h"
 
+#include <algorithm>
 #include <cmath>
 
 namespace  {
@@ -30,8 +30,8 @@ namespace  {
 #define blend_multiply(b, s, t)   (MUL_UN8((b), (s), (t)))
 #define blend_screen(b, s, t)     ((b) + (s) - MUL_UN8((b), (s), (t)))
 #define blend_overlay(b, s, t)    (blend_hard_light(s, b, t))
-#define blend_darken(b, s)        (MIN((b), (s)))
-#define blend_lighten(b, s)       (MAX((b), (s)))
+#define blend_darken(b, s)        (std::min((b), (s)))
+#define blend_lighten(b, s)       (std::max((b), (s)))
 #define blend_hard_light(b, s, t) ((s) < 128 ?                          \
                                    blend_multiply((b), (s)<<1, (t)):    \
                                    blend_screen((b), ((s)<<1)-255, (t)))
@@ -365,14 +365,14 @@ static double lum(double r, double g, double b)
 
 static double sat(double r, double g, double b)
 {
-  return MAX(r, MAX(g, b)) - MIN(r, MIN(g, b));
+  return std::max(r, std::max(g, b)) - std::min(r, std::min(g, b));
 }
 
 static void clip_color(double& r, double& g, double& b)
 {
   double l = lum(r, g, b);
-  double n = MIN(r, MIN(g, b));
-  double x = MAX(r, MAX(g, b));
+  double n = std::min(r, std::min(g, b));
+  double x = std::max(r, std::max(g, b));
 
   if (n < 0) {
     r = l + (((r - l) * l) / (l - n));
@@ -396,8 +396,18 @@ static void set_lum(double& r, double& g, double& b, double l)
   clip_color(r, g, b);
 }
 
+// TODO replace this with a better impl (and test this, not sure if it's correct)
 static void set_sat(double& r, double& g, double& b, double s)
 {
+#undef MIN
+#undef MAX
+#undef MID
+#define MIN(x,y)     (((x) < (y)) ? (x) : (y))
+#define MAX(x,y)     (((x) > (y)) ? (x) : (y))
+#define MID(x,y,z)   ((x) > (y) ? ((y) > (z) ? (y) : ((x) > (z) ?    \
+                       (z) : (x))) : ((y) > (z) ? ((z) > (x) ? (z) : \
+                       (x)): (y)))
+
   double& min = MIN(r, MIN(g, b));
   double& mid = MID(r, g, b);
   double& max = MAX(r, MAX(g, b));
@@ -489,7 +499,9 @@ color_t rgba_blender_addition(color_t backdrop, color_t src, int opacity)
   int r = rgba_getr(backdrop) + rgba_getr(src);
   int g = rgba_getg(backdrop) + rgba_getg(src);
   int b = rgba_getb(backdrop) + rgba_getb(src);
-  src = rgba(MIN(r, 255), MIN(g, 255), MIN(b, 255), 0) | (src & rgba_a_mask);
+  src = rgba(std::min(r, 255),
+             std::min(g, 255),
+             std::min(b, 255), 0) | (src & rgba_a_mask);
   return rgba_blender_normal(backdrop, src, opacity);
 }
 
@@ -701,14 +713,14 @@ color_t graya_blender_exclusion(color_t backdrop, color_t src, int opacity)
 color_t graya_blender_addition(color_t backdrop, color_t src, int opacity)
 {
   int v = graya_getv(backdrop) + graya_getv(src);
-  src = graya(MIN(v, 255), 0) | (src & graya_a_mask);
+  src = graya(std::min(v, 255), 0) | (src & graya_a_mask);
   return graya_blender_normal(backdrop, src, opacity);
 }
 
 color_t graya_blender_subtract(color_t backdrop, color_t src, int opacity)
 {
   int v = graya_getv(backdrop) - graya_getv(src);
-  src = graya(MAX(v, 0), 0) | (src & graya_a_mask);
+  src = graya(std::max(v, 0), 0) | (src & graya_a_mask);
   return graya_blender_normal(backdrop, src, opacity);
 }
 

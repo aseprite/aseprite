@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -17,6 +17,7 @@
 #include "app/file/file.h"
 #include "app/file_system.h"
 #include "base/bind.h"
+#include "base/clamp.h"
 #include "base/scoped_lock.h"
 #include "base/thread.h"
 #include "doc/algorithm/rotate.h"
@@ -29,6 +30,7 @@
 #include "render/projection.h"
 #include "render/render.h"
 
+#include <algorithm>
 #include <memory>
 #include <thread>
 
@@ -118,14 +120,14 @@ private:
         const int h = sprite->height()*sprite->pixelRatio().h;
 
         // Calculate the thumbnail size
-        int thumb_w = MAX_THUMBNAIL_SIZE * w / MAX(w, h);
-        int thumb_h = MAX_THUMBNAIL_SIZE * h / MAX(w, h);
-        if (MAX(thumb_w, thumb_h) > MAX(w, h)) {
+        int thumb_w = MAX_THUMBNAIL_SIZE * w / std::max(w, h);
+        int thumb_h = MAX_THUMBNAIL_SIZE * h / std::max(w, h);
+        if (std::max(thumb_w, thumb_h) > std::max(w, h)) {
           thumb_w = w;
           thumb_h = h;
         }
-        thumb_w = MID(1, thumb_w, MAX_THUMBNAIL_SIZE);
-        thumb_h = MID(1, thumb_h, MAX_THUMBNAIL_SIZE);
+        thumb_w = base::clamp(thumb_w, 1, MAX_THUMBNAIL_SIZE);
+        thumb_h = base::clamp(thumb_h, 1, MAX_THUMBNAIL_SIZE);
 
         // Stretch the 'image'
         thumbnailImage.reset(

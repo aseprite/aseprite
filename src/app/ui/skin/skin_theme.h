@@ -130,16 +130,24 @@ namespace app {
       void onRegenerateTheme() override;
 
     private:
+      struct BackwardCompatibility;
+
       void loadFontData();
-      void loadAll(const std::string& themeId);
+      void loadAll(const std::string& themeId,
+                   BackwardCompatibility* backward = nullptr);
       void loadSheet();
-      void loadXml();
+      void loadXml(BackwardCompatibility* backward);
 
       os::Surface* sliceSheet(os::Surface* sur, const gfx::Rect& bounds);
       gfx::Color getWidgetBgColor(ui::Widget* widget);
-      void drawText(ui::Graphics* g, const char *t, gfx::Color fg_color, gfx::Color bg_color,
-                    ui::Widget* widget, const gfx::Rect& rc,
-                    int selected_offset, int mnemonic);
+      void drawText(ui::Graphics* g,
+                    const char* t,
+                    const gfx::Color fgColor,
+                    const gfx::Color bgColor,
+                    const ui::Widget* widget,
+                    const gfx::Rect& rc,
+                    const int textAlign,
+                    const int mnemonic);
       void drawEntryText(ui::Graphics* g, ui::Entry* widget);
 
       std::string findThemePath(const std::string& themeId) const;

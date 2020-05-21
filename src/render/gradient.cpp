@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (c) 2019 Igara Studio S.A.
+// Copyright (c) 2019-2020 Igara Studio S.A.
 // Copyright (c) 2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -222,6 +222,59 @@ void render_rgba_radial_gradient(
       }
     }
   }
+}
+
+template<typename ImageTraits>
+static void create_dithering_pattern_templ(
+  doc::Image* pattern,
+  const render::DitheringMatrix& matrix,
+  const float f,
+  const doc::color_t c0,
+  const doc::color_t c1)
+{
+  const int w = pattern->width();
+  const int h = pattern->height();
+
+  doc::LockImageBits<ImageTraits> dstBits(pattern);
+  auto dst = dstBits.begin();
+  for (int y=0; y<h; ++y) {
+    for (int x=0; x<w; ++x, ++dst)
+      *dst = (f*(matrix.maxValue()+2) < matrix(y, x)+1 ? c0: c1);
+  }
+}
+
+void convert_bitmap_brush_to_dithering_brush(
+  doc::Brush* brush,
+  const doc::PixelFormat pixelFormat,
+  const render::DitheringMatrix& matrix,
+  const float f,
+  const doc::color_t c0,
+  const doc::color_t c1)
+{
+  // Create a pattern
+  doc::ImageRef pattern(
+    doc::Image::create(pixelFormat,
+                       matrix.cols(), matrix.rows()));
+
+  switch (pixelFormat) {
+    case doc::IMAGE_RGB:
+      create_dithering_pattern_templ<doc::RgbTraits>(
+        pattern.get(), matrix, f, c0, c1);
+      break;
+    case doc::IMAGE_GRAYSCALE:
+      create_dithering_pattern_templ<doc::GrayscaleTraits>(
+        pattern.get(), matrix, f, c0, c1);
+      break;
+    case doc::IMAGE_INDEXED:
+      create_dithering_pattern_templ<doc::IndexedTraits>(
+        pattern.get(), matrix, f, c0, c1);
+      break;
+  }
+
+  doc::ImageRef copy(doc::Image::createCopy(brush->image()));
+  brush->setImage(copy.get(), copy.get());
+  brush->setPatternImage(pattern);
+  brush->setPattern(doc::BrushPattern::PAINT_BRUSH);
 }
 
 } // namespace render

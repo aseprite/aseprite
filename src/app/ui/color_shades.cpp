@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -28,8 +28,8 @@
 #include "ui/paint_event.h"
 #include "ui/size_hint_event.h"
 #include "ui/system.h"
+#include <algorithm>
 
-#include <limits>
 
 namespace app {
 
@@ -74,24 +74,20 @@ doc::Remap* ColorShades::createShadeRemap(bool left)
     remap->map(i, i);
 
   if (left) {
-    for (int i=1; i<int(colors.size()); ++i)
-      remap->map(colors[i].getIndex(), colors[i-1].getIndex());
+    for (int i=1; i<int(colors.size()); ++i) {
+      int j = colors[i].getIndex();
+      if (j >= 0 && j < remap->size())
+        remap->map(j, colors[i-1].getIndex());
+    }
   }
   else {
-    for (int i=0; i<int(colors.size())-1; ++i)
-      remap->map(colors[i].getIndex(), colors[i+1].getIndex());
+    for (int i=0; i<int(colors.size())-1; ++i) {
+      int j = colors[i].getIndex();
+      if (j >= 0 && j < remap->size())
+        remap->map(j, colors[i+1].getIndex());
+    }
   }
   return remap.release();
-}
-
-int ColorShades::size() const
-{
-  return int(m_shade.size());
-}
-
-Shade ColorShades::getShade() const
-{
-  return m_shade;
 }
 
 void ColorShades::setShade(const Shade& shade)
@@ -147,11 +143,14 @@ bool ColorShades::onProcessMessage(ui::Message* msg)
       if (m_hotIndex >= 0 &&
           m_hotIndex < int(m_shade.size())) {
         switch (m_click) {
-          case ClickEntries:
-            Click();
+          case ClickEntries: {
+            ClickEvent ev(static_cast<ui::MouseMessage*>(msg)->button());
+            Click(ev);
+
             m_hotIndex = -1;
             invalidate();
             break;
+          }
           case DragAndDropEntries:
             m_dragIndex = m_hotIndex;
             m_dropBefore = false;
@@ -164,7 +163,10 @@ bool ColorShades::onProcessMessage(ui::Message* msg)
     case ui::kMouseUpMessage: {
       if (m_click == ClickWholeShade) {
         setSelected(true);
-        Click();
+
+        ClickEvent ev(static_cast<ui::MouseMessage*>(msg)->button());
+        Click(ev);
+
         closeWindow();
       }
 

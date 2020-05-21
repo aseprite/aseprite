@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -18,6 +19,7 @@
 #include "app/modules/gui.h"
 #include "app/tx.h"
 #include "app/ui/timeline/timeline.h"
+#include "base/clamp.h"
 #include "doc/layer.h"
 #include "fmt/format.h"
 
@@ -49,7 +51,7 @@ LayerOpacityCommand::LayerOpacityCommand()
 void LayerOpacityCommand::onLoadParams(const Params& params)
 {
   m_opacity = params.get_as<int>("opacity");
-  m_opacity = MID(0, m_opacity, 255);
+  m_opacity = base::clamp(m_opacity, 0, 255);
 }
 
 bool LayerOpacityCommand::onEnabled(Context* context)

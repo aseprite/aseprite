@@ -1,5 +1,5 @@
 # Aseprite
-# Copyright (C) 2019  Igara Studio S.A.
+# Copyright (C) 2019-2020  Igara Studio S.A.
 # Copyright (C) 2001-2018  David Capello
 
 ######################################################################
@@ -19,6 +19,7 @@ if(MSVC)
 
   add_definitions(-D_SCL_SECURE_NO_WARNINGS)
   add_definitions(-wd4267) # disable warnings about signed/unsigned comparison
+  add_definitions(-wd4244) # disable warnings about possible loss of data
 else()
   # disable warnings about signed/unsigned comparison
   add_definitions(-Wno-sign-compare)
@@ -35,13 +36,6 @@ endif()
 if(WIN32)
   # Needed to include icons in win32 .rc file
   include_directories(..)
-endif()
-
-######################################################################
-# Custom Aseprite website (for testing server-side)
-
-if(NOT "${CUSTOM_WEBSITE_URL}" STREQUAL "")
-  add_definitions(-DCUSTOM_WEBSITE_URL="${CUSTOM_WEBSITE_URL}")
 endif()
 
 ######################################################################
@@ -103,9 +97,11 @@ add_subdirectory(doc)
 add_subdirectory(filters)
 add_subdirectory(fixmath)
 add_subdirectory(flic)
+add_subdirectory(tga)
 add_subdirectory(render)
 add_subdirectory(dio)
 add_subdirectory(ui)
+add_subdirectory(ver)
 
 if(REQUIRE_CURL)
   add_subdirectory(net)
@@ -182,6 +178,7 @@ if(ENABLE_ASEPRITE_EXE)
   if(WIN32 AND ENABLE_UI)
     set_target_properties(aseprite PROPERTIES WIN32_EXECUTABLE true)
   endif()
+  set_target_properties(aseprite PROPERTIES LINK_FLAGS "${LAF_BACKEND_LINK_FLAGS}")
   target_link_libraries(aseprite app-lib)
   add_dependencies(aseprite copy_data)
 

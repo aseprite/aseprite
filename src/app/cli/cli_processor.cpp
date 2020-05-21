@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -23,6 +23,7 @@
 #include "app/filename_formatter.h"
 #include "app/restore_visible_layers.h"
 #include "app/ui_context.h"
+#include "base/clamp.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
 #include "base/split_string.h"
@@ -34,6 +35,7 @@
 #include "doc/tags.h"
 #include "render/dithering_algorithm.h"
 
+#include <algorithm>
 #include <queue>
 #include <vector>
 
@@ -517,7 +519,7 @@ int CliProcessor::process(Context* ctx)
             scaleWidth = (doc->width() > maxWidth ? maxWidth / doc->width() : 1.0);
             scaleHeight = (doc->height() > maxHeight ? maxHeight / doc->height() : 1.0);
             if (scaleWidth < 1.0 || scaleHeight < 1.0) {
-              scale = MIN(scaleWidth, scaleHeight);
+              scale = std::min(scaleWidth, scaleHeight);
               Params params;
               params.set("scale", base::convert_to<std::string>(scale).c_str());
               ctx->executeCommand(Commands::instance()->byId(CommandId::SpriteSize()),
@@ -642,8 +644,8 @@ bool CliProcessor::openFile(Context* ctx, CliOpenFile& cof)
         // --frame-range with --frame-tag
         if (tag) {
           selFrames.insert(
-            tag->fromFrame()+MID(0, cof.fromFrame, tag->frames()-1),
-            tag->fromFrame()+MID(0, cof.toFrame, tag->frames()-1));
+            tag->fromFrame()+base::clamp(cof.fromFrame, 0, tag->frames()-1),
+            tag->fromFrame()+base::clamp(cof.toFrame, 0, tag->frames()-1));
         }
         // --frame-range without --frame-tag
         else {

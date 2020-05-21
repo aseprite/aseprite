@@ -1,4 +1,5 @@
 // Aseprite Render Library
+// Copyright (c) 2020 Igara Studio S.A.
 // Copyright (c) 2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -8,6 +9,7 @@
 #define RENDER_DITHERING_MATRIX_H_INCLUDED
 #pragma once
 
+#include <algorithm>
 #include <vector>
 
 namespace render {

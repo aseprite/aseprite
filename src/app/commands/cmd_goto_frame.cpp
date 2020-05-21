@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -18,6 +18,7 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_customization_delegate.h"
 #include "app/ui/search_entry.h"
+#include "base/clamp.h"
 #include "doc/sprite.h"
 #include "doc/tag.h"
 #include "ui/combobox.h"
@@ -256,7 +257,9 @@ private:
       }
     }
 
-    return MID(0, m_frame-docPref.timeline.firstFrame(), editor->sprite()->lastFrame());
+    return base::clamp(
+      m_frame-docPref.timeline.firstFrame(),
+      0, editor->sprite()->lastFrame());
   }
 
 private:

@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -42,6 +42,7 @@ namespace doc {
 
     BrushPattern pattern() const { return m_pattern; }
     gfx::Point patternOrigin() const { return m_patternOrigin; }
+    Image* patternImage() const { return m_patternImage.get(); }
 
     const gfx::Rect& bounds() const { return m_bounds; }
     const gfx::Point& center() const { return m_center; }
@@ -57,6 +58,9 @@ namespace doc {
     }
     void setPatternOrigin(const gfx::Point& patternOrigin) {
       m_patternOrigin = patternOrigin;
+    }
+    void setPatternImage(ImageRef& patternImage) {
+      m_patternImage = patternImage;
     }
     void setCenter(const gfx::Point& center);
 
@@ -74,6 +78,7 @@ namespace doc {
     gfx::Point m_center;
     BrushPattern m_pattern;               // How the image should be replicated
     gfx::Point m_patternOrigin;           // From what position the brush was taken
+    ImageRef m_patternImage;
     int m_gen;
 
     // Extra data used for setImageColor()

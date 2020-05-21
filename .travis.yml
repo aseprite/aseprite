@@ -11,7 +11,7 @@ matrix:
       addons:
         apt:
           packages:
-            - libpixman-1-dev libfreetype6-dev libharfbuzz-dev libx11-dev libxcursor-dev ninja-build
+            - libpixman-1-dev libfreetype6-dev libharfbuzz-dev libx11-dev libxcursor-dev libxi-dev ninja-build
       env:
         - ENABLE_UI=OFF
         - XVFB=xvfb-run
@@ -19,7 +19,7 @@ matrix:
       addons:
         apt:
           packages:
-            - libpixman-1-dev libfreetype6-dev libharfbuzz-dev libx11-dev libxcursor-dev ninja-build
+            - libpixman-1-dev libfreetype6-dev libharfbuzz-dev libx11-dev libxcursor-dev libxi-dev ninja-build
       env:
         - ENABLE_SCRIPTING=OFF
         - XVFB=xvfb-run
@@ -27,7 +27,7 @@ matrix:
       addons:
         apt:
           packages:
-            - libpixman-1-dev libfreetype6-dev libharfbuzz-dev libx11-dev libxcursor-dev ninja-build
+            - libpixman-1-dev libfreetype6-dev libharfbuzz-dev libx11-dev libxcursor-dev libxi-dev ninja-build
       env:
         - ENABLE_SCRIPTING=OFF
         - ENABLE_UI=OFF
@@ -37,7 +37,7 @@ matrix:
       addons:
         apt:
           packages:
-            - libpixman-1-dev libfreetype6-dev libharfbuzz-dev libx11-dev libxcursor-dev ninja-build
+            - libpixman-1-dev libfreetype6-dev libharfbuzz-dev libx11-dev libxcursor-dev libxi-dev ninja-build
       env:
         - ENABLE_UI=ON
         - XVFB=xvfb-run
@@ -47,7 +47,7 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - g++-7 libpixman-1-dev libfreetype6-dev libharfbuzz-dev libx11-dev libxcursor-dev ninja-build
+            - g++-7 libpixman-1-dev libfreetype6-dev libharfbuzz-dev libx11-dev libxcursor-dev libxi-dev ninja-build
       env:
         - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
         - ENABLE_UI=ON

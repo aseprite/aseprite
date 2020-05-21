@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -154,6 +154,7 @@ public:
 
 // A more easy PIDLs interface (without using the SH* & IL* routines of W2K)
 #ifdef _WIN32
+  static SFGAOF get_pidl_attrib(FileItem* fileitem, SFGAOF attrib);
   static void update_by_pidl(FileItem* fileitem, SFGAOF attrib);
   static LPITEMIDLIST concat_pidl(LPITEMIDLIST pidlHead, LPITEMIDLIST pidlTail);
   static UINT get_pidl_size(LPITEMIDLIST pidl);
@@ -453,7 +454,7 @@ const FileItemList& FileItem::children()
         IEnumIDList *pEnum = NULL;
         ULONG c, fetched;
 
-        /* get the interface to enumerate subitems */
+        // Get the interface to enumerate subitems
         hr = pFolder->EnumObjects(reinterpret_cast<HWND>(os::instance()->defaultDisplay()->nativeHandle()),
           SHCONTF_FOLDERS | SHCONTF_NONFOLDERS, &pEnum);
 
@@ -461,16 +462,16 @@ const FileItemList& FileItem::children()
           LPITEMIDLIST itempidl[256];
           SFGAOF attribs[256];
 
-          /* enumerate the items in the folder */
+          // Enumerate the items in the folder
           while (pEnum->Next(256, itempidl, &fetched) == S_OK && fetched > 0) {
-            /* request the SFGAO_FOLDER attribute to know what of the
-               item is a folder */
+            // Request the SFGAO_FOLDER attribute to know what of the
+            // item is file or a folder
             for (c=0; c<fetched; ++c) {
               attribs[c] = SFGAO_FOLDER;
               pFolder->GetAttributesOf(1, (LPCITEMIDLIST *)itempidl, attribs+c);
             }
 
-            /* generate the FileItems */
+            // Generate the FileItems
             for (c=0; c<fetched; ++c) {
               LPITEMIDLIST fullpidl = concat_pidl(m_fullpidl,
                                                   itempidl[c]);
@@ -680,6 +681,34 @@ static bool calc_is_folder(std::string filename, SFGAOF attrib)
     && ((!filename.empty() && (*filename.begin()) != ':') || (filename == MYPC_CSLID));
 }
 
+static SFGAOF get_pidl_attrib(FileItem* fileitem, SFGAOF attrib)
+{
+  ASSERT(fileitem->m_pidl);
+  ASSERT(fileitem->m_parent);
+
+  HRESULT hr;
+
+  IShellFolder* pFolder = nullptr;
+  if (fileitem->m_parent == rootitem)
+    pFolder = shl_idesktop;
+  else {
+    hr = shl_idesktop->BindToObject(fileitem->m_parent->m_fullpidl,
+                                    nullptr, IID_IShellFolder, (LPVOID*)&pFolder);
+    if (hr != S_OK)
+      pFolder = nullptr;
+  }
+
+  if (pFolder) {
+    SFGAOF attrib2 = SFGAO_FOLDER;
+    hr = pFolder->GetAttributesOf(1, (LPCITEMIDLIST*)&fileitem->m_pidl, &attrib2);
+    if (hr == S_OK)
+      attrib = attrib2;
+    if (pFolder && pFolder != shl_idesktop)
+      pFolder->Release();
+  }
+  return attrib;
+}
+
 // Updates the names of the file-item through its PIDL
 static void update_by_pidl(FileItem* fileitem, SFGAOF attrib)
 {
@@ -693,7 +722,7 @@ static void update_by_pidl(FileItem* fileitem, SFGAOF attrib)
   else {
     ASSERT(fileitem->m_parent);
     hr = shl_idesktop->BindToObject(fileitem->m_parent->m_fullpidl,
-      NULL, IID_IShellFolder, (LPVOID *)&pFolder);
+                                    nullptr, IID_IShellFolder, (LPVOID*)&pFolder);
     if (hr != S_OK)
       pFolder = NULL;
   }
@@ -921,7 +950,7 @@ static FileItem* get_fileitem_by_fullpidl(LPITEMIDLIST fullpidl, bool create_if_
   if (!create_if_not)
     return nullptr;
 
-  // Check if the pidl exists
+  // Validate if the fullpidl exists.
   SFGAOF attrib = SFGAO_FOLDER | SFGAO_VALIDATE;
   HRESULT hr = shl_idesktop->GetAttributesOf(1, (LPCITEMIDLIST*)&fullpidl, &attrib);
   if (hr != S_OK)
@@ -939,6 +968,12 @@ static FileItem* get_fileitem_by_fullpidl(LPITEMIDLIST fullpidl, bool create_if_
     fileitem->m_parent = get_fileitem_by_fullpidl(parent_fullpidl, true);
 
     free_pidl(parent_fullpidl);
+
+    // Get specific pidl attributes
+    if (fileitem->m_pidl &&
+        fileitem->m_parent) {
+      attrib = get_pidl_attrib(fileitem, attrib);
+    }
   }
 
   update_by_pidl(fileitem, attrib);
@@ -949,9 +984,7 @@ static FileItem* get_fileitem_by_fullpidl(LPITEMIDLIST fullpidl, bool create_if_
   return fileitem;
 }
 
-/**
- * Inserts the @a fileitem in the hash map of items.
- */
+// Inserts the fileitem in the hash map of items.
 static void put_fileitem(FileItem* fileitem)
 {
   ASSERT(fileitem->m_filename != NOTINITIALIZED);

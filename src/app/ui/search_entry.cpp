@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (c) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -16,6 +17,8 @@
 #include "ui/message.h"
 #include "ui/paint_event.h"
 #include "ui/size_hint_event.h"
+
+#include <algorithm>
 
 namespace app {
 
@@ -75,7 +78,7 @@ void SearchEntry::onSizeHint(SizeHintEvent& ev)
 
   SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
   auto icon = theme->parts.iconSearch()->bitmap(0);
-  sz.h = MAX(sz.h, icon->height()+border().height());
+  sz.h = std::max(sz.h, icon->height()+border().height());
 
   ev.setSizeHint(sz);
 }

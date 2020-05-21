@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -142,8 +142,10 @@ private:
 
     {
       os::SurfaceLock lock(surface);
-      surface->fillRect(gfx::rgba(0, 0, 0, 0),
-                        gfx::Rect(0, 0, surface->width(), surface->height()));
+      os::Paint paint;
+      paint.color(gfx::rgba(0, 0, 0, 0));
+      paint.style(os::Paint::Fill);
+      surface->drawRect(gfx::Rect(0, 0, surface->width(), surface->height()), paint);
     }
     {
       ui::Graphics g(surface, 0, 0);

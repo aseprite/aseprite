@@ -1,0 +1,1 @@
+#cmakedefine VERSION "@VERSION@"

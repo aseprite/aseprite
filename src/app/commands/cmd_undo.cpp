@@ -116,9 +116,9 @@ void UndoCommand::onExecute(Context* context)
     else
       msg = "Redid " + undo->nextRedoLabel();
     if (Preferences::instance().undo.showTooltip())
-      statusbar->showTip(1000, msg.c_str());
+      statusbar->showTip(1000, msg);
     else
-      statusbar->setStatusText(0, msg.c_str());
+      statusbar->setStatusText(0, msg);
   }
 #endif // ENABLE_UI
 

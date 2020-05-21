@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -117,6 +117,9 @@ namespace app {
     script::Engine* scriptEngine() { return m_engine.get(); }
 #endif
 
+    const std::string& memoryDumpFilename() const { return m_memoryDumpFilename; }
+    void memoryDumpFilename(const std::string& fn) { m_memoryDumpFilename = fn; }
+
     // App Signals
     obs::signal<void()> Exit;
     obs::signal<void()> PaletteChange;
@@ -145,13 +148,16 @@ namespace app {
 #ifdef ENABLE_SCRIPTING
     std::unique_ptr<script::Engine> m_engine;
 #endif
+
+    // Set the memory dump filename to show in the Preferences dialog
+    // or the "send crash" dialog. It's set by the SendCrash class.
+    std::string m_memoryDumpFilename;
   };
 
   void app_refresh_screen();
   void app_rebuild_documents_tabs();
   PixelFormat app_get_current_pixel_format();
   int app_get_color_to_clear_layer(doc::Layer* layer);
-  std::string memory_dump_filename();
 
 } // namespace app
 

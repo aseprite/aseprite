@@ -418,6 +418,7 @@
         <part id="outline_vertical" x="192" y="224" w="13" h="15" />
         <part id="outline_empty_pixel" x="208" y="224" w="5" h="5" />
         <part id="outline_full_pixel" x="214" y="224" w="5" h="5" />
+        <part id="dynamics" x="176" y="144" w="16" h="16" />
     </parts>
     <styles>
         <style id="box" />
@@ -956,6 +957,17 @@
             <icon part="aseprite_face" />
             <icon part="aseprite_face_mouse" state="mouse" />
             <icon part="aseprite_face_pushed" state="mouse selected" />
+        </style>
+        <style id="slider" border-top="4" border-bottom="5">
+          <background part="slider_empty" />
+          <background part="slider_empty_focused" state="focus" />
+          <text color="slider_empty_text" align="center middle" />
+          <text color="slider_empty_text" align="center middle" state="focus" y="1" />
+        </style>
+        <style id="mini_slider" extends="slider" font="mini" padding-top="1" padding-bottom="3">
+          <background part="mini_slider_empty" />
+          <text color="slider_empty_text" align="center middle" />
+          <text color="slider_empty_text" align="center middle" state="focus" />
         </style>
     </styles>
 </theme>

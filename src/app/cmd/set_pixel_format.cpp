@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -69,6 +69,7 @@ private:
 SetPixelFormat::SetPixelFormat(Sprite* sprite,
                                const PixelFormat newFormat,
                                const render::Dithering& dithering,
+                               doc::rgba_to_graya_func toGray,
                                render::TaskDelegate* delegate)
   : WithSprite(sprite)
   , m_oldFormat(sprite->pixelFormat())
@@ -89,6 +90,7 @@ SetPixelFormat::SetPixelFormat(Sprite* sprite,
        sprite->palette(cel->frame()),
        cel->layer()->isBackground(),
        old_image->maskColor(),
+       toGray,
        &superDel));
 
     m_seq.add(new cmd::ReplaceImage(sprite, old_image, new_image));

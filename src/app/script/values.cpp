@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -127,6 +127,23 @@ gfx::Rect get_value_from_lua(lua_State* L, int index) {
 }
 
 // ----------------------------------------------------------------------
+// tools::InkType
+
+template<>
+void push_value_to_lua(lua_State* L, const app::tools::InkType& inkType) {
+  lua_pushinteger(L, (int)inkType);
+}
+
+template<>
+app::tools::InkType get_value_from_lua(lua_State* L, int index) {
+  if (lua_type(L, index) == LUA_TSTRING) {
+    if (const char* s = lua_tostring(L, index))
+      return app::tools::string_id_to_ink_type(s);
+  }
+  return (app::tools::InkType)lua_tointeger(L, index);
+}
+
+// ----------------------------------------------------------------------
 // enums
 
 #define FOR_ENUM(T)                                             \
@@ -151,7 +168,6 @@ FOR_ENUM(app::gen::ColorProfileBehavior)
 FOR_ENUM(app::gen::EyedropperChannel)
 FOR_ENUM(app::gen::EyedropperSample)
 FOR_ENUM(app::gen::FillReferTo)
-FOR_ENUM(app::gen::HueSaturationMode)
 FOR_ENUM(app::gen::OnionskinType)
 FOR_ENUM(app::gen::PaintingCursorType)
 FOR_ENUM(app::gen::PivotPosition)
@@ -162,12 +178,13 @@ FOR_ENUM(app::gen::StopAtGrid)
 FOR_ENUM(app::gen::SymmetryMode)
 FOR_ENUM(app::gen::TimelinePosition)
 FOR_ENUM(app::gen::WindowColorProfile)
+FOR_ENUM(app::gen::ToGrayAlgorithm)
 FOR_ENUM(app::tools::FreehandAlgorithm)
-FOR_ENUM(app::tools::InkType)
 FOR_ENUM(app::tools::RotationAlgorithm)
 FOR_ENUM(doc::AniDir)
 FOR_ENUM(doc::BrushPattern)
 FOR_ENUM(doc::ColorMode)
+FOR_ENUM(filters::HueSaturationFilter::Mode)
 FOR_ENUM(filters::TiledMode)
 FOR_ENUM(render::OnionskinPosition)
 

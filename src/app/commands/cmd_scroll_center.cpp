@@ -37,7 +37,7 @@ bool ScrollCenterCommand::onEnabled(Context* context)
 
 void ScrollCenterCommand::onExecute(Context* context)
 {
-  current_editor->setDefaultScroll();
+  current_editor->setScrollToCenter();
 }
 
 Command* CommandFactory::createScrollCenterCommand()

@@ -20,6 +20,7 @@
 #include "app/restore_visible_layers.h"
 #include "app/snap_to_grid.h"
 #include "app/util/autocrop.h"
+#include "base/clamp.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
 #include "base/fstream_path.h"
@@ -44,6 +45,7 @@
 #include "render/dithering.h"
 #include "render/ordered_dither.h"
 #include "render/render.h"
+#include "ver/info.h"
 
 #include <cstdio>
 #include <fstream>
@@ -124,7 +126,7 @@ int DocExporter::Item::frames() const
     return selFrames->size();
   else if (tag) {
     int result = tag->toFrame() - tag->fromFrame() + 1;
-    return MID(1, result, doc->sprite()->totalFrames());
+    return base::clamp(result, 1, doc->sprite()->totalFrames());
   }
   else
     return doc->sprite()->totalFrames();
@@ -137,8 +139,8 @@ doc::SelectedFrames DocExporter::Item::getSelectedFrames() const
 
   doc::SelectedFrames frames;
   if (tag) {
-    frames.insert(MID(0, tag->fromFrame(), doc->sprite()->lastFrame()),
-                  MID(0, tag->toFrame(), doc->sprite()->lastFrame()));
+    frames.insert(base::clamp(tag->fromFrame(), 0, doc->sprite()->lastFrame()),
+                  base::clamp(tag->toFrame(), 0, doc->sprite()->lastFrame()));
   }
   else {
     frames.insert(0, doc->sprite()->lastFrame());
@@ -1177,7 +1179,8 @@ void DocExporter::renderTexture(Context* ctx,
         sample.sprite(),
         textureImage->pixelFormat(),
         render::Dithering(),
-        nullptr)                // TODO add a delegate to show progress
+        nullptr, // toGray is not needed because the texture is Indexed or RGB
+        nullptr) // TODO add a delegate to show progress
         .execute(ctx);
     }
 
@@ -1299,8 +1302,8 @@ void DocExporter::createDataFile(const Samples& samples,
   // "meta" property
   os << ",\n"
      << " \"meta\": {\n"
-     << "  \"app\": \"" << WEBSITE << "\",\n"
-     << "  \"version\": \"" << VERSION << "\",\n";
+     << "  \"app\": \"" << get_app_url() << "\",\n"
+     << "  \"version\": \"" << get_app_version() << "\",\n";
 
   if (!m_textureFilename.empty())
     os << "  \"image\": \""

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -26,6 +26,7 @@
 #include "doc/blend_mode.h"
 #include "doc/color_mode.h"
 #include "filters/target.h"
+#include "ui/mouse_button.h"
 
 #include <fstream>
 #include <sstream>
@@ -160,6 +161,7 @@ void register_layer_class(lua_State* L);
 void register_layers_class(lua_State* L);
 void register_palette_class(lua_State* L);
 void register_palettes_class(lua_State* L);
+void register_plugin_class(lua_State* L);
 void register_point_class(lua_State* L);
 void register_range_class(lua_State* L);
 void register_rect_class(lua_State* L);
@@ -329,6 +331,16 @@ Engine::Engine()
 
   lua_newtable(L);
   lua_pushvalue(L, -1);
+  lua_setglobal(L, "Ink");
+  setfield_integer(L, "SIMPLE", app::tools::InkType::SIMPLE);
+  setfield_integer(L, "ALPHA_COMPOSITING", app::tools::InkType::ALPHA_COMPOSITING);
+  setfield_integer(L, "COPY_COLOR", app::tools::InkType::COPY_COLOR);
+  setfield_integer(L, "LOCK_ALPHA", app::tools::InkType::LOCK_ALPHA);
+  setfield_integer(L, "SHADING", app::tools::InkType::SHADING);
+  lua_pop(L, 1);
+
+  lua_newtable(L);
+  lua_pushvalue(L, -1);
   lua_setglobal(L, "FilterChannels");
   setfield_integer(L, "RED",   TARGET_RED_CHANNEL);
   setfield_integer(L, "GREEN", TARGET_GREEN_CHANNEL);
@@ -339,6 +351,17 @@ Engine::Engine()
   setfield_integer(L, "RGB",   TARGET_RED_CHANNEL | TARGET_GREEN_CHANNEL | TARGET_BLUE_CHANNEL);
   setfield_integer(L, "RGBA",   TARGET_RED_CHANNEL | TARGET_GREEN_CHANNEL | TARGET_BLUE_CHANNEL | TARGET_ALPHA_CHANNEL);
   setfield_integer(L, "GRAYA",   TARGET_GRAY_CHANNEL | TARGET_ALPHA_CHANNEL);
+  lua_pop(L, 1);
+
+  lua_newtable(L);
+  lua_pushvalue(L, -1);
+  lua_setglobal(L, "MouseButton");
+  setfield_integer(L, "NONE",   (int)ui::kButtonNone);
+  setfield_integer(L, "LEFT",   (int)ui::kButtonLeft);
+  setfield_integer(L, "RIGHT",  (int)ui::kButtonRight);
+  setfield_integer(L, "MIDDLE", (int)ui::kButtonMiddle);
+  setfield_integer(L, "X1",     (int)ui::kButtonX1);
+  setfield_integer(L, "X2",     (int)ui::kButtonX2);
   lua_pop(L, 1);
 
   // Register classes/prototypes
@@ -358,6 +381,7 @@ Engine::Engine()
   register_layers_class(L);
   register_palette_class(L);
   register_palettes_class(L);
+  register_plugin_class(L);
   register_point_class(L);
   register_range_class(L);
   register_rect_class(L);

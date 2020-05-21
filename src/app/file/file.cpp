@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -41,6 +41,7 @@
 #include "ui/alert.h"
 #include "ui/listitem.h"
 #include "ui/system.h"
+#include "ver/info.h"
 
 #include "ask_for_color_profile.xml.h"
 #include "open_sequence.xml.h"
@@ -94,8 +95,6 @@ Doc* load_document(Context* context, const std::string& filename)
   }
 
   Doc* document = fop->releaseDocument();
-  fop.release();
-
   if (document && context)
     document->setContext(context);
 
@@ -167,8 +166,8 @@ FileOpROI::FileOpROI(const Doc* doc,
         m_selFrames.displace(m_tag->fromFrame());
 
       m_selFrames =
-        m_selFrames.filter(MAX(0, m_tag->fromFrame()),
-                           MIN(m_tag->toFrame(), doc->sprite()->lastFrame()));
+        m_selFrames.filter(std::max(0, m_tag->fromFrame()),
+                           std::min(m_tag->toFrame(), doc->sprite()->lastFrame()));
     }
     // All frames if selected frames is empty
     else if (m_selFrames.empty())
@@ -200,7 +199,7 @@ FileOp* FileOp::createLoadDocumentOperation(Context* context,
     dio::detect_format(filename));
   if (!fop->m_format ||
       !fop->m_format->support(FILE_SUPPORT_LOAD)) {
-    fop->setError("%s can't load \"%s\" file (\"%s\")\n", PACKAGE,
+    fop->setError("%s can't load \"%s\" file (\"%s\")\n", get_app_name(),
                   filename.c_str(), base::get_file_extension(filename).c_str());
     goto done;
   }
@@ -354,7 +353,7 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
     dio::detect_format_by_file_extension(filename));
   if (!fop->m_format ||
       !fop->m_format->support(FILE_SUPPORT_SAVE)) {
-    fop->setError("%s can't save \"%s\" file (\"%s\")\n", PACKAGE,
+    fop->setError("%s can't save \"%s\" file (\"%s\")\n", get_app_name(),
                   filename.c_str(), base::get_file_extension(filename).c_str());
     return fop.release();
   }
@@ -834,8 +833,9 @@ void FileOp::operate(IFileOpProgress* progress)
     }
 #else
     setError(
-      "Save operation is not supported in trial version.\n"
-      "Go to " WEBSITE_DOWNLOAD " and get the full-version.");
+      fmt::format("Save operation is not supported in trial version.\n"
+                  "Go to {} and get the full-version.",
+                  get_app_download_url()).c_str());
 #endif
   }
 
@@ -1004,7 +1004,9 @@ void FileOp::postLoad()
 
 void FileOp::setLoadedFormatOptions(const FormatOptionsPtr& opts)
 {
-  ASSERT(!m_formatOptions);
+  // This assert can fail when we load a sequence of files.
+  // TODO what we should do, keep the first or the latest format options?
+  //ASSERT(!m_formatOptions);
   m_formatOptions = opts;
 }
 

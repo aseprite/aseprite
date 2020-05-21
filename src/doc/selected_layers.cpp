@@ -1,5 +1,6 @@
 // Aseprite Document Library
-// Copyright (c) 2016, 2018 David Capello
+// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2016-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -34,14 +35,14 @@ void SelectedLayers::insert(Layer* layer)
   m_set.insert(layer);
 }
 
-void SelectedLayers::erase(Layer* layer)
+void SelectedLayers::erase(const Layer* layer)
 {
-  m_set.erase(layer);
+  m_set.erase(const_cast<Layer*>(layer));
 }
 
-bool SelectedLayers::contains(Layer* layer) const
+bool SelectedLayers::contains(const Layer* layer) const
 {
-  return m_set.find(layer) != m_set.end();
+  return m_set.find(const_cast<Layer*>(layer)) != m_set.end();
 }
 
 bool SelectedLayers::hasSameParent() const

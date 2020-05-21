@@ -1,5 +1,5 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2018-2019  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-2020  Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2018  David Capello -->
 <gui>
   <window id="options" text="@.title">
@@ -203,6 +203,8 @@
           <check text="@.zoom_from_center_with_keys" id="zoom_from_center_with_keys" />
           <check text="@.show_scrollbars" id="show_scrollbars" tooltip="@.show_scrollbars_tooltip" />
           <check text="@.auto_scroll" id="auto_scroll" />
+          <check text="@.auto_fit" id="auto_fit"
+                 pref="editor.auto_fit" />
           <check text="@.straight_line_preview" id="straight_line_preview" tooltip="@.straight_line_preview_tooltip" />
           <check text="@.discard_brush" id="discard_brush" />
           <hbox>
@@ -408,18 +410,19 @@
                  pref="export_file.show_overwrite_files_alert" />
           <check id="overwrite_files_on_export_sprite_sheet_alert" text="@.overwrite_files_on_export_sprite_sheet_alert"
                  pref="sprite_sheet.show_overwrite_files_alert" />
-          <check id="gif_options_alert" text="@.gif_options_alert"
-                 pref="gif.show_alert" />
-          <check id="jpeg_options_alert" text="@.jpeg_options_alert"
-                 pref="jpeg.show_alert" />
-          <check id="svg_options_alert" text="@.svg_options_alert"
-                 pref="svg.show_alert" />
           <check id="advanced_mode_alert" text="@.advanced_mode_alert"
                  pref="advanced_mode.show_alert" />
           <check id="invalid_fg_bg_color_alert" text="@.invalid_fg_bg_color_alert"
                  pref="color_bar.show_invalid_fg_bg_color_alert" />
           <check id="run_script_alert" text="@.run_script_alert"
                  pref="scripts.show_run_script_alert" />
+	  <hbox>
+            <label text="@.image_format_alerts" />
+            <check id="gif_options_alert" text="!gif" pref="gif.show_alert" />
+            <check id="jpeg_options_alert" text="!jpeg" pref="jpeg.show_alert" />
+            <check id="svg_options_alert" text="!svg" pref="svg.show_alert" />
+            <check id="tga_options_alert" text="!tga" pref="tga.show_alert" />
+	  </hbox>
           <separator horizontal="true" />
 	  <hbox>
 	    <hbox expansive="true" />

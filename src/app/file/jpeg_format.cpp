@@ -19,6 +19,7 @@
 #include "app/find_widget.h"
 #include "app/load_widget.h"
 #include "app/pref/preferences.h"
+#include "base/clamp.h"
 #include "base/file_handle.h"
 #include "base/memory.h"
 #include "doc/doc.h"
@@ -356,7 +357,7 @@ bool JpegFormat::onSave(FileOp* fop)
   JSAMPARRAY buffer;
   JDIMENSION buffer_height;
   const auto jpeg_options = std::static_pointer_cast<JpegOptions>(fop->formatOptions());
-  const int qualityValue = (int)MID(0, 100.0f * jpeg_options->quality, 100);
+  const int qualityValue = (int)base::clamp(100.0f * jpeg_options->quality, 0.f, 100.f);
 
   int c;
 
