@@ -38,7 +38,6 @@ function test_inks(colorMode)
   -- With simple ink opacity doesn't have affect (always the color)
   local opacities = { 0, 128, 255 }
   for i = 1,#opacities do
-    print(opacities[i])
     expect_img(app.activeImage,
                { 0, 0, 0,
                  0, 0, 0,
@@ -82,6 +81,32 @@ function test_inks(colorMode)
                a, a, d })
 end
 
+function test_alpha_compositing_on_indexed_with_full_opacity_and_repeated_colors_in_palette()
+  local s = Sprite(1, 1, ColorMode.INDEXED)
+  local p = Palette()
+  p:resize(5)
+  p:setColor(0, Color(0, 0, 0))
+  p:setColor(1, Color(64, 64, 64))
+  p:setColor(2, Color(128, 128, 128))
+  p:setColor(3, Color(128, 128, 128))
+  p:setColor(4, Color(255, 255, 255))
+  s:setPalette(p)
+
+  app.command.BackgroundFromLayer()
+
+  local inks = { Ink.SIMPLE, Ink.ALPHA_COMPOSITING }
+  for i = 1,2 do
+    for c = 0,4 do
+      expect_img(app.activeImage, { 0 })
+      app.useTool{ tool="pencil", color=c, points={ Point(0, 0) },
+                   ink=inks[i], opacity=255 }
+      expect_img(app.activeImage, { c })
+      app.undo()
+    end
+  end
+end
+
 test_inks(ColorMode.RGB)
 test_inks(ColorMode.GRAY)
 test_inks(ColorMode.INDEXED)
+test_alpha_compositing_on_indexed_with_full_opacity_and_repeated_colors_in_palette()
