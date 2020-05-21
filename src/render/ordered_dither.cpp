@@ -202,9 +202,9 @@ doc::color_t OrderedDither2::ditherRgbPixelToIndex(
     // maxMixValue, but this is too slow, so we try to figure out
     // a good mix factor using the RGB values of color0 and
     // color1.
-    long maxMixValue = matrix.maxValue();
+    int maxMixValue = matrix.maxValue();
 
-    long mix = 0;
+    int mix = 0;
     int div = 0;
     // If Alpha=0, RGB values are not representative for this entry.
     if (a && a0 && a1) {
@@ -216,7 +216,7 @@ doc::color_t OrderedDither2::ditherRgbPixelToIndex(
     if (mix) {
       if (div)
         mix /= div;
-      mix = base::clamp(mix, 0L, maxMixValue);
+      mix = base::clamp(mix, 0, maxMixValue);
     }
 
     const int rM = r0 + (r1-r0) * mix / maxMixValue;
