@@ -62,6 +62,8 @@ namespace app {
 
 using namespace ui;
 
+#ifdef ENABLE_UI
+
 static void fill_toolloop_params_from_tool_preferences(ToolLoopParams& params)
 {
   ToolPreferences& toolPref =
@@ -73,6 +75,8 @@ static void fill_toolloop_params_from_tool_preferences(ToolLoopParams& params)
   params.contiguous = toolPref.contiguous();
   params.freehandAlgorithm = toolPref.freehandAlgorithm();
 }
+
+#endif // ENABLE_UI
 
 //////////////////////////////////////////////////////////////////////
 // Common properties between drawing/preview ToolLoop impl
