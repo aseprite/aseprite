@@ -224,11 +224,13 @@ TEST(Polygon, Triangle1Test)
 
 TEST(Polygon, Triangle2Test)
 {
-  //      P1
-  //     / \
-  //    /   \
-  //   /     \
-  //  P0-----P2
+  /*
+          P1
+         / \
+        /   \
+       /     \
+      P0-----P2
+  */
   int points[6] = { 0 , 4 ,
                     2 , 0 ,
                     4 , 4 ,
@@ -262,11 +264,13 @@ TEST(Polygon, Triangle2Test)
 
 TEST(Polygon, Triangle3Test)
 {
-  //      P2
-  //     / \
-  //    /   \
-  //   /     \
-  //  P0-----P1
+  /*
+          P2
+         / \
+        /   \
+       /     \
+      P0-----P1
+  */
   int points[6] = { 0 , 4 ,
                     4 , 4 ,
                     2 , 0 ,
@@ -300,11 +304,13 @@ TEST(Polygon, Triangle3Test)
 
 TEST(Polygon, Triangle4Test)
 {
-  //      P2
-  //     / \
-  //    /   \
-  //   /     \
-  //  P1-----P0
+  /*
+          P2
+         / \
+        /   \
+       /     \
+      P1-----P0
+  */
   int points[6] = { 4 , 4 ,
                     0 , 4 ,
                     2 , 0 ,
@@ -408,17 +414,18 @@ TEST(Polygon, Poligon1Test)
 
 TEST(Polygon, Polygon2Test)
 {
-  //             P3------P4
-  //  P0         |      /
-  //   \         |     /
-  //    \        |    /
-  //     \     / P2  P5
-  //      P1 /        \
-  //                   \
-  //      P9      /P7   \
-  //        \   /    \   \
-  //         P8        \ P6
-
+  /*
+                 P3------P4
+      P0         |      /
+       \         |     /
+        \        |    /
+         \     / P2  P5
+          P1 /        \
+                       \
+          P9      /P7   \
+            \   /    \   \
+             P8        \ P6
+  */
   int points[20] = { 0 , 1 ,
                      2 , 4 ,
                      4 , 3 ,
@@ -467,23 +474,23 @@ TEST(Polygon, Polygon2Test)
     EXPECT_EQ(results.scanLines[7].x1, 1);
     EXPECT_EQ(results.scanLines[7].x2, 7);
     EXPECT_EQ(results.scanLines[7].y, 4);
-    
+
     EXPECT_EQ(results.scanLines[8].x1, 2);
     EXPECT_EQ(results.scanLines[8].x2, 8);
     EXPECT_EQ(results.scanLines[8].y, 5);
-    
+
     EXPECT_EQ(results.scanLines[9].x1, 2);
     EXPECT_EQ(results.scanLines[9].x2, 4);
     EXPECT_EQ(results.scanLines[9].y, 6);
-    
+
     EXPECT_EQ(results.scanLines[10].x1, 7);
     EXPECT_EQ(results.scanLines[10].x2, 8);
     EXPECT_EQ(results.scanLines[10].y, 6);
-    
+
     EXPECT_EQ(results.scanLines[11].x1, 3);
     EXPECT_EQ(results.scanLines[11].x2, 3);
     EXPECT_EQ(results.scanLines[11].y, 7);
-    
+
     EXPECT_EQ(results.scanLines[12].x1, 9);
     EXPECT_EQ(results.scanLines[12].x2, 9);
     EXPECT_EQ(results.scanLines[12].y, 7);
@@ -768,7 +775,7 @@ TEST(createUnion, testC8)
   pairs.push_back(2);
   pairs.push_back(3);
   pairs.push_back(4);
-  
+
   EXPECT_EQ(doc::algorithm::createUnion(pairs, x, ints), true);
   EXPECT_EQ(pairs[0], 0);
   EXPECT_EQ(pairs[1], 4);
