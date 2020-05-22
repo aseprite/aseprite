@@ -18,6 +18,7 @@
 #include "app/script/luacpp.h"
 #include "app/script/security.h"
 #include "app/sprite_sheet_type.h"
+#include "app/tools/ink_type.h"
 #include "base/chrono.h"
 #include "base/file_handle.h"
 #include "base/fs.h"
