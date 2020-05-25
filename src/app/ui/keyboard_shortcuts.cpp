@@ -567,6 +567,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
     const char* action_id = xmlKey->Attribute("action");
     const char* action_key = get_shortcut(xmlKey);
     bool removed = bool_attr_is_true(xmlKey, "removed");
+    bool reverse = bool_attr_is_true(xmlKey, "reverse");
 
     if (action_id) {
       WheelAction action = base::convert_to<WheelAction, std::string>(action_id);
@@ -575,7 +576,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
         if (key && action_key) {
           LOG(VERBOSE) << "KEYS: Shortcut for wheel action " << action_id
                        << ": " << action_key << "\n";
-          Accelerator accel(action_key);
+          Accelerator accel(action_key, reverse);
 
           if (!removed)
             key->add(accel, source, *this);
@@ -685,6 +686,9 @@ void KeyboardShortcuts::exportAccel(TiXmlElement& parent, const Key* key, const 
   }
 
   elem.SetAttribute("shortcut", accel.toString().c_str());
+  
+  if (accel.reverseFlag())
+    elem.SetAttribute("reverse", "true");
 
   if (removed)
     elem.SetAttribute("removed", "true");
@@ -864,7 +868,8 @@ KeyAction KeyboardShortcuts::getCurrentActionModifiers(KeyContext context)
 }
 
 WheelAction KeyboardShortcuts::getWheelActionFromMouseMessage(const KeyContext context,
-                                                              const ui::Message* msg)
+                                                              const ui::Message* msg,
+                                                              double* dz)
 {
   WheelAction wheelAction = WheelAction::None;
   const ui::Accelerator* bestAccel = nullptr;
@@ -877,6 +882,7 @@ WheelAction KeyboardShortcuts::getWheelActionFromMouseMessage(const KeyContext c
           (!bestAccel || bestAccel->modifiers() < accel->modifiers())) {
         bestAccel = accel;
         wheelAction = key->wheelAction();
+        if (bestAccel->reverseFlag()) *dz = -*dz;
       }
     }
   }

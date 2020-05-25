@@ -21,9 +21,9 @@ namespace ui {
   class Accelerator {
   public:
     Accelerator();
-    Accelerator(KeyModifiers modifiers, KeyScancode scancode, int unicodeChar);
+    Accelerator(KeyModifiers modifiers, KeyScancode scancode, int unicodeChar, bool reverseFlag = false);
     // Convert string like "Ctrl+Q" or "Alt+X" into an accelerator.
-    explicit Accelerator(const std::string& str);
+    explicit Accelerator(const std::string& str, bool reverseFlag = false);
 
     bool isEmpty() const;
     std::string toString() const;
@@ -46,11 +46,14 @@ namespace ui {
     KeyModifiers modifiers() const { return m_modifiers; }
     KeyScancode scancode() const { return m_scancode; }
     int unicodeChar() const { return m_unicodeChar; }
+    // Used for mouse wheel hotkey reversal.
+    bool reverseFlag() const { return m_reverseFlag; }
 
   private:
     KeyModifiers m_modifiers;
     KeyScancode m_scancode;
     int m_unicodeChar;
+    bool m_reverseFlag;
   };
 
   // TODO rename this class to Shortcuts

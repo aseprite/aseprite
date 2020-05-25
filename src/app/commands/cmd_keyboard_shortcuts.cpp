@@ -450,9 +450,13 @@ private:
   }
 
   std::string getAccelText(const Accelerator& accel) const {
-    if (m_key && m_key->type() == KeyType::WheelAction &&
-        accel.isEmpty()) {
-      return "(Default Action)";
+    if (m_key && m_key->type() == KeyType::WheelAction) {
+      if (accel.isEmpty())
+        return "(Default Action)";
+      else if (accel.reverseFlag())
+        return accel.toString() + " (Reverse)";
+      else
+        return accel.toString();
     }
     else {
       return accel.toString();

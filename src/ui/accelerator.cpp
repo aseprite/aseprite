@@ -151,17 +151,19 @@ Accelerator::Accelerator()
 {
 }
 
-Accelerator::Accelerator(KeyModifiers modifiers, KeyScancode scancode, int unicodeChar)
+Accelerator::Accelerator(KeyModifiers modifiers, KeyScancode scancode, int unicodeChar, bool reverseFlag)
   : m_modifiers(modifiers)
   , m_scancode(scancode)
   , m_unicodeChar(unicodeChar)
+  , m_reverseFlag(reverseFlag)
 {
 }
 
-Accelerator::Accelerator(const std::string& str)
+Accelerator::Accelerator(const std::string& str, bool reverseFlag)
   : m_modifiers(kKeyNoneModifier)
   , m_scancode(kKeyNil)
   , m_unicodeChar(0)
+  , m_reverseFlag(reverseFlag)
 {
   // Special case: plus sign
   if (str == "+") {

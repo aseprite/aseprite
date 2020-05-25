@@ -58,7 +58,8 @@ namespace app {
     tools::Tool* getCurrentQuicktool(tools::Tool* currentTool);
     KeyAction getCurrentActionModifiers(KeyContext context);
     WheelAction getWheelActionFromMouseMessage(const KeyContext context,
-                                               const ui::Message* msg);
+                                               const ui::Message* msg,
+                                               double* dz);
     bool hasMouseWheelCustomization() const;
     void clearMouseWheelKeys();
     void addMissingMouseWheelKeys();

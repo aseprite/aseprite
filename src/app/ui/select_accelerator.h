@@ -29,6 +29,7 @@ namespace app {
 
   private:
     void onModifierChange(ui::KeyModifiers modifier, ui::CheckBox* checkbox);
+    void onReverseFlagChange(ui::CheckBox* checkbox);
     void onAccelChange(const ui::Accelerator* accel);
     void onClear();
     void onOK();

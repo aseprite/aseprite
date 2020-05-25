@@ -25,7 +25,8 @@ using namespace ui;
 
 class SelectAccelerator::KeyField : public ui::Entry {
 public:
-  KeyField(const Accelerator& accel) : ui::Entry(256, "") {
+  KeyField(const Accelerator& accel, bool isWheel) : ui::Entry(256, "") {
+    m_isWheel = isWheel;
     setTranslateDeadKeys(false);
     setExpansive(true);
     setFocusMagnet(true);
@@ -50,6 +51,7 @@ protected:
             break;
 
           KeyModifiers modifiers = keymsg->modifiers();
+          bool reverse = m_accel.reverseFlag();
 
           if (keymsg->scancode() == kKeySpace)
             modifiers = (KeyModifiers)(modifiers & ~kKeySpaceModifier);
@@ -63,11 +65,29 @@ protected:
           // Convert the accelerator to a string, and parse it
           // again. Just to obtain the exact accelerator we'll read
           // when we import the gui.xml file or an .aseprite-keys file.
-          m_accel = Accelerator(m_accel.toString());
+          m_accel = Accelerator(m_accel.toString(), reverse);
 
           updateText();
 
           AccelChange(&m_accel);
+          return true;
+        }
+        break;
+      case kMouseWheelMessage:
+        if (hasFocus() && !isReadOnly() && m_isWheel) {
+          MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
+          bool reverse = mouseMsg->wheelDelta().y > 0;
+          if (reverse != m_accel.reverseFlag()) {
+            m_accel = Accelerator(
+              m_accel.modifiers(),
+              m_accel.scancode(),
+              m_accel.unicodeChar(),
+              reverse
+            );
+            updateText();
+            
+            AccelChange(&m_accel);
+          }
           return true;
         }
         break;
@@ -84,12 +104,13 @@ protected:
   }
 
   Accelerator m_accel;
+  bool m_isWheel;
 };
 
 SelectAccelerator::SelectAccelerator(const ui::Accelerator& accel,
                                      const KeyContext keyContext,
                                      const KeyboardShortcuts& currentKeys)
-  : m_keyField(new KeyField(accel))
+  : m_keyField(new KeyField(accel, keyContext == KeyContext::MouseWheel))
   , m_keyContext(keyContext)
   , m_currentKeys(currentKeys)
   , m_accel(accel)
@@ -107,6 +128,10 @@ SelectAccelerator::SelectAccelerator(const ui::Accelerator& accel,
   shift()->Click.connect(base::Bind<void>(&SelectAccelerator::onModifierChange, this, kKeyShiftModifier, shift()));
   space()->Click.connect(base::Bind<void>(&SelectAccelerator::onModifierChange, this, kKeySpaceModifier, space()));
   win()->Click.connect(base::Bind<void>(&SelectAccelerator::onModifierChange, this, kKeyWinModifier, win()));
+  if (keyContext == KeyContext::MouseWheel)
+    reverse()->Click.connect(base::Bind<void>(&SelectAccelerator::onReverseFlagChange, this, reverse()));
+  else
+    reverse()->setVisible(false);
 
   m_keyField->AccelChange.connect(&SelectAccelerator::onAccelChange, this);
   clearButton()->Click.connect(base::Bind<void>(&SelectAccelerator::onClear, this));
@@ -129,6 +154,15 @@ void SelectAccelerator::onModifierChange(KeyModifiers modifier, CheckBox* checkb
 
   m_accel = Accelerator(modifiers, scancode, unicodeChar);
 
+  m_keyField->setAccel(m_accel);
+  m_keyField->requestFocus();
+  updateAssignedTo();
+}
+
+void SelectAccelerator::onReverseFlagChange(CheckBox* checkbox) {
+  bool state = (checkbox->isSelected());
+  
+  m_accel = Accelerator(m_accel.modifiers(), m_accel.scancode(), m_accel.unicodeChar(), state);
   m_keyField->setAccel(m_accel);
   m_keyField->requestFocus();
   updateAssignedTo();
@@ -170,6 +204,7 @@ void SelectAccelerator::updateModifiers()
   ctrl()->setSelected(m_accel.modifiers() & kKeyCtrlModifier ? true: false);
   shift()->setSelected(m_accel.modifiers() & kKeyShiftModifier ? true: false);
   space()->setSelected(m_accel.modifiers() & kKeySpaceModifier ? true: false);
+  reverse()->setSelected(m_accel.reverseFlag());
 #if __APPLE__
   win()->setVisible(false);
   cmd()->setSelected(m_accel.modifiers() & kKeyCmdModifier ? true: false);

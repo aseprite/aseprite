@@ -16,6 +16,7 @@
           <check text="@.shift" id="shift" />
           <check text="@.space" id="space" />
           <check text="@.win" id="win" />
+          <check text="@.reverse" id="reverse"/>
         </hbox>
 
         <label text="@.assigned_to" />

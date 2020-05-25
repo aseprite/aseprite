@@ -49,7 +49,7 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
       wheelAction = WheelAction::VScroll;
     else
       wheelAction = KeyboardShortcuts::instance()
-        ->getWheelActionFromMouseMessage(KeyContext::MouseWheel, msg);
+        ->getWheelActionFromMouseMessage(KeyContext::MouseWheel, msg, &dz);
   }
   // Default behavior
   // TODO replace this code using KeyboardShortcuts::getDefaultMouseWheelTable()
