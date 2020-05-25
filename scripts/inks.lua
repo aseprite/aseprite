@@ -5,16 +5,22 @@
 
 dofile('./test_utils.lua')
 
+local colorModes = { ColorMode.RGB,
+                     ColorMode.GRAY,
+                     ColorMode.INDEXED }
+
 local pencil = "pencil"
+local pc = app.pixelColor
+
+local function gray(g)
+  return pc.graya(g, 255)
+end
 
 function test_inks(colorMode)
   -- Test ink over a transparent sprite
   local s = Sprite(3, 3, colorMode)
   local p, a, b, c, d
   if colorMode == ColorMode.GRAY then
-    local function gray(g)
-      return app.pixelColor.graya(g, 255)
-    end
     p = s.palettes[1]
     a, b, c, d = gray(0), gray(64), gray(128), gray(255)
   else
@@ -79,6 +85,105 @@ function test_inks(colorMode)
              { d, a, a,
                c, d, b,
                a, a, d })
+
+  ----------------------------------------------------------------------
+  -- Inks with custom brushes
+
+  function test_custom_brush_inks(brushColorMode)
+    -- Colors in the brush image (ba, bb, bc, bd)
+    local ba, bb, bc, bd
+    if brushColorMode == ColorMode.RGB then
+      ba = Color(0, 0, 0)
+      bb = Color(64, 64, 64)
+      bc = Color(128, 128, 128)
+      bd = Color(255, 255, 255)
+    elseif brushColorMode == ColorMode.GRAY then
+      ba, bb, bc, bd = gray(0), gray(64), gray(128), gray(255)
+    else
+      ba, bb, bc, bd = 0, 1, 2, 3
+    end
+
+    local brushImage = Image(2, 2, brushColorMode)
+    array_to_pixels({ 0, bd,
+                      bc, 0 }, brushImage)
+    local brush = Brush(brushImage)
+
+    -- da, db, dc, dd are the final result after painting the custom
+    -- brush in the sprite
+    local ra, rb, rc, rd
+    if s.colorMode ~= ColorMode.INDEXED and
+       brushColorMode == ColorMode.INDEXED then
+      -- For indexed images we take the index of the brush and use the
+      -- sprite palette, we are not sure if this in the future might
+      -- change, e.g. having the original palette that was used to
+      -- create the brush integrated to the brush itself, in that case
+      -- we should convert the brush index using the same brush
+      -- palette (instead of the sprite palette).
+      --
+      -- TODO check BrushInkProcessingBase comment for more information
+      if s.colorMode == ColorMode.RGB then
+        ra, rb, rc, rd =
+          p:getColor(ba).rgbaPixel,
+          p:getColor(bb).rgbaPixel,
+          p:getColor(bc).rgbaPixel,
+          p:getColor(bd).rgbaPixel
+      else
+        ra, rb, rc, rd =
+          p:getColor(ba).grayPixel,
+          p:getColor(bb).grayPixel,
+          p:getColor(bc).grayPixel,
+          p:getColor(bd).grayPixel
+      end
+    else
+      ra, rb, rc, rd = a, b, c, d
+    end
+
+    array_to_pixels({ a, a, a,
+                      a, a, a,
+                      a, a, a }, app.activeImage)
+
+    -- Simple
+    expect_img(app.activeImage,
+               { a, a, a,
+                 a, a, a,
+                 a, a, a })
+    app.useTool{ tool=pencil, brush=brush, points={ Point(2, 2) },
+                 ink=Ink.SIMPLE }
+    expect_img(app.activeImage,
+               { a, a,  a,
+                 a, a,  rd,
+                 a, rc, a })
+
+    -- Alpha Compositing
+    app.useTool{ tool=pencil, brush=brush, points={ Point(1, 1) },
+                 ink=Ink.ALPHA_COMPOSITING, opacity=255 }
+    expect_img(app.activeImage,
+               {  a, rd,  a,
+                 rc,  a, rd,
+                  a, rc,  a })
+
+    local qc, qd
+    if s.colorMode == ColorMode.GRAY and
+       brushColorMode == ColorMode.INDEXED then
+      qc = gray(pc.grayaV(rc)/2)
+      qd = gray(pc.grayaV(rd)/2)
+    else
+      qc, qd = rb, rc
+    end
+
+    app.useTool{ tool=pencil, brush=brush, points={ Point(1, 2) },
+                 ink=Ink.ALPHA_COMPOSITING, opacity=128 }
+    expect_img(app.activeImage,
+               {  a, rd,  a,
+                 rc, qd, rd,
+                 qc, rc,  a })
+
+    -- TODO test Lock Alpha, Copy Color+Alpha, Shading...
+  end
+
+  for j = 1,#colorModes do
+    test_custom_brush_inks(colorModes[j])
+  end
 end
 
 function test_alpha_compositing_on_indexed_with_full_opacity_and_repeated_colors_in_palette()
@@ -113,7 +218,7 @@ function test_alpha_compositing_on_indexed_with_full_opacity_and_repeated_colors
   end
 end
 
-test_inks(ColorMode.RGB)
-test_inks(ColorMode.GRAY)
-test_inks(ColorMode.INDEXED)
+for i = 1,#colorModes do
+  test_inks(colorModes[i])
+end
 test_alpha_compositing_on_indexed_with_full_opacity_and_repeated_colors_in_palette()
