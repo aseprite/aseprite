@@ -2861,7 +2861,7 @@ gfx::Rect Timeline::getRangeBounds(const Range& range) const
     case Range::kLayers:
       for (auto layer : range.selectedLayers()) {
         layer_t layerIdx = getLayerIndex(layer);
-        rc |= getPartBounds(Hit(PART_ROW, layerIdx));
+        rc |= getPartBounds(Hit(PART_ROW_TEXT, layerIdx));
       }
       break;
   }
