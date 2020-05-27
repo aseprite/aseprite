@@ -44,7 +44,7 @@ namespace app {
     // "data/pref.xml" file.
     int opacity = 255;
     int tolerance = 0;
-    bool contiguous = false;
+    bool contiguous = true;
     tools::FreehandAlgorithm freehandAlgorithm = tools::FreehandAlgorithm::DEFAULT;
   };
 
