@@ -293,15 +293,17 @@ int App_useTool(lua_State* L)
   lua_pop(L, 1);
 
   // Select tool by name
+  const int buttonIdx = (params.button == tools::ToolLoop::Left ? 0: 1);
   auto activeToolMgr = App::instance()->activeToolManager();
   params.tool = activeToolMgr->activeTool();
-  params.ink = params.tool->getInk(params.button == tools::ToolLoop::Left ? 0: 1);
-  params.controller = params.tool->getController(params.button);
+  params.ink = params.tool->getInk(buttonIdx);
+  params.controller = params.tool->getController(buttonIdx);
   type = lua_getfield(L, 1, "tool");
   if (type != LUA_TNIL) {
     if (auto toolArg = get_tool_from_arg(L, -1)) {
       params.tool = toolArg;
-      params.ink = params.tool->getInk(0);
+      params.ink = params.tool->getInk(buttonIdx);
+      params.controller = params.tool->getController(buttonIdx);
     }
     else
       return luaL_error(L, "invalid tool specified in app.useTool() function");
