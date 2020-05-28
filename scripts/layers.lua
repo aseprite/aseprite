@@ -152,3 +152,36 @@ do
     assert(s.layers[i].name == "d")
   end
 end
+
+-- Test crash because ActiveSiteHandler::onBeforeRemoveLayer() didn't
+-- update the selected range of layers correctly (i.e. removing
+-- deleted layer from the selected layers in the active range).
+do
+  local s = Sprite(4, 4)
+  local a  = s:newGroup()   a.name = "a"
+  local b  = s:newGroup()   b.name = "b"
+  local c  = s:newGroup()   c.name = "c"
+  local ca = s:newGroup()  ca.name = "ca"
+  local cb = s:newGroup()  cb.name = "cb"
+  local d  = s:newGroup()   d.name = "d"
+
+  d.parent = ca
+  ca.parent = c
+  cb.parent = c
+  c.parent = b
+  b.parent = a
+
+  assert(#a.layers == 1)
+  assert(#c.layers == 2)
+
+  app.range.layers = { b }
+  app.command.RemoveLayer()
+  assert(#a.layers == 0)
+  app.undo()
+  assert(#a.layers == 1)
+  assert(#c.layers == 2)
+
+  -- Crash selecting a layer that was removed and then brought back to
+  -- life with "undo"
+  app.range.layers = { b }
+end
