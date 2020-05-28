@@ -10,7 +10,6 @@
 
 #include "app/app.h"
 #include "app/commands/command.h"
-#include "app/modules/editors.h"
 #include "app/ui/editor/editor.h"
 #include "ui/base.h"
 #include "app/context.h"
@@ -22,18 +21,12 @@ public:
   SwapCheckerboardColorsCommand();
 
 protected:
-  bool onEnabled(Context* context) override;
   void onExecute(Context* context) override;
 };
 
 SwapCheckerboardColorsCommand::SwapCheckerboardColorsCommand()
   : Command(CommandId::SwapCheckerboardColors(), CmdUIOnlyFlag)
 {
-}
-
-bool SwapCheckerboardColorsCommand::onEnabled(Context* context)
-{
-    return true;
 }
 
 void SwapCheckerboardColorsCommand::onExecute(Context* context)
