@@ -225,7 +225,7 @@ void RecentFiles::save()
 
     for (int j=0; j<m_paths[i].size(); ++j) {
       set_config_string(section,
-                        base::convert_to<std::string>(j).c_str(),
+                        base::convert_to_4_digits_string<std::string>(j).c_str(),
                         m_paths[i][j].c_str());
     }
     // Special entry that indicates that we've already converted
