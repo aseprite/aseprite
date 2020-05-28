@@ -327,6 +327,8 @@ int Layer_set_parent(lua_State* L)
   else if (auto parentLayer = may_get_docobj<Layer>(L, 2)) {
     if (parentLayer->isGroup())
       parent = static_cast<LayerGroup*>(parentLayer);
+    else
+      return luaL_error(L, "the given parent is not a layer group or sprite");
   }
 
   if (parent == layer)
