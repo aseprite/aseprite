@@ -513,6 +513,7 @@ add_library(app-lib
   commands/cmd_save_file.cpp
   commands/cmd_sprite_size.cpp
   commands/cmd_undo.cpp
+  commands/cmd_swap_checkerboard_colors.cpp
   commands/command.cpp
   commands/commands.cpp
   commands/filters/cmd_brightness_contrast.cpp

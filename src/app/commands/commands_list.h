@@ -160,6 +160,7 @@ FOR_EACH_COMMAND(ToggleTimelineThumbnails)
 FOR_EACH_COMMAND(UndoHistory)
 FOR_EACH_COMMAND(UnlinkCel)
 FOR_EACH_COMMAND(Zoom)
+FOR_EACH_COMMAND(SwapCheckerboardColors)
 #endif  // ENABLE_UI
 
 #ifdef ENABLE_SCRIPTING
