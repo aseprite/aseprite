@@ -136,12 +136,13 @@ public:
                 opaque = (graya_geta(color) == 255);
                 break;
               case IMAGE_INDEXED:
-                // When we paint over a transparent layer with the
-                // mask color, we have to use the
-                // TransparentInkProcessing anyway (cannot use the
-                // fast path with CopyInkProcessing).
-                if (loop->getLayer()->isBackground() ||
-                    color != loop->sprite()->transparentColor()) {
+                // Simple ink for indexed is better to use always
+                // opaque if opacity == 255.
+                if (m_type == Simple)
+                  opaque = true;
+                else if (color == loop->sprite()->transparentColor())
+                  opaque = false;
+                else {
                   color = get_current_palette()->getEntry(color);
                   opaque = (rgba_geta(color) == 255);
                 }
