@@ -66,7 +66,7 @@ private:
 // (or foreground/background colors)
 class PaintInk : public BaseInk {
 public:
-  enum Type { Simple, WithFg, WithBg, Copy, LockAlpha};
+  enum Type { Simple, WithFg, WithBg, AlphaCompositing, Copy, LockAlpha};
 
 private:
   Type m_type;
@@ -114,7 +114,8 @@ public:
     }
     else {
       switch (m_type) {
-        case Simple: {
+        case Simple:
+        case AlphaCompositing: {
           bool opaque = false;
 
           // Opacity is set to 255 when InkType=Simple in ToolLoopBase()

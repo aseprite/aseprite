@@ -104,7 +104,7 @@ Ink* ActiveToolManager::adjustToolInkDependingOnSelectedInkType(
           id = tools::WellKnownInks::PaintCopy;
         break;
       case tools::InkType::ALPHA_COMPOSITING:
-        id = tools::WellKnownInks::Paint;
+        id = tools::WellKnownInks::PaintAlphaCompositing;
         break;
       case tools::InkType::COPY_COLOR:
         id = tools::WellKnownInks::PaintCopy;
