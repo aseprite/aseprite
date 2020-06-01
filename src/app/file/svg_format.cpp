@@ -93,7 +93,7 @@ bool SvgFormat::onSave(FileOp* fop)
     fprintf(f, "/>\n");
   };
   fprintf(f, "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
-  fprintf(f, "<svg version=\"1.1\" width=\"%d\" height=\"%d\" xmlns=\"http://www.w3.org/2000/svg\">\n",
+  fprintf(f, "<svg version=\"1.1\" width=\"%d\" height=\"%d\" xmlns=\"http://www.w3.org/2000/svg\" shape-rendering=\"crispEdges\">\n",
           image->width()*pixelScaleValue, image->height()*pixelScaleValue);
 
   switch (image->pixelFormat()) {
