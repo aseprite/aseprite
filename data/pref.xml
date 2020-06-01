@@ -184,6 +184,9 @@
       <option id="font" type="std::string" />
       <option id="mini_font" type="std::string" />
     </section>
+    <section id="tablet" text="Tablet">
+      <option id="api" type="std::string" />
+    </section>
     <section id="experimental" text="Experimental">
       <option id="new_render_engine" type="bool" default="true" />
       <option id="new_blend" type="bool" default="true" />

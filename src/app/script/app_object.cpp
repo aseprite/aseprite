@@ -36,6 +36,7 @@
 #include "app/ui/editor/tool_loop_impl.h"
 #include "app/ui/timeline/timeline.h"
 #include "app/ui_context.h"
+#include "base/clamp.h"
 #include "base/fs.h"
 #include "base/replace_string.h"
 #include "base/version.h"
@@ -46,6 +47,7 @@
 #include "ui/alert.h"
 #include "ver/info.h"
 
+#include <cstring>
 #include <iostream>
 
 namespace app {
@@ -277,40 +279,113 @@ int App_useTool(lua_State* L)
   if (!site.document())
     return luaL_error(L, "there is no active document to draw with the tool");
 
+  // Options to create the ToolLoop (tool, ink, color, opacity, etc.)
+  ToolLoopParams params;
+
+  // Mouse button
+  params.button = tools::ToolLoop::Left;
+  type = lua_getfield(L, 1, "button");
+  if (type != LUA_TNIL) {
+    // Only supported button at the moment left (default) or right
+    if (lua_tointeger(L, -1) == (int)ui::kButtonRight)
+      params.button = tools::ToolLoop::Right;
+  }
+  lua_pop(L, 1);
+
   // Select tool by name
-  tools::Tool* tool = App::instance()->activeToolManager()->activeTool();
-  tools::Ink* ink = tool->getInk(0);
+  const int buttonIdx = (params.button == tools::ToolLoop::Left ? 0: 1);
+  auto activeToolMgr = App::instance()->activeToolManager();
+  params.tool = activeToolMgr->activeTool();
+  params.ink = params.tool->getInk(buttonIdx);
+  params.controller = params.tool->getController(buttonIdx);
   type = lua_getfield(L, 1, "tool");
   if (type != LUA_TNIL) {
     if (auto toolArg = get_tool_from_arg(L, -1)) {
-      tool = toolArg;
-      ink = tool->getInk(0);
+      params.tool = toolArg;
+      params.ink = params.tool->getInk(buttonIdx);
+      params.controller = params.tool->getController(buttonIdx);
     }
     else
       return luaL_error(L, "invalid tool specified in app.useTool() function");
   }
   lua_pop(L, 1);
 
-  // Default color is the active fgColor
-  app::Color color = Preferences::instance().colorBar.fgColor();
-  type = lua_getfield(L, 1, "color");
+  // Select ink by name
+  type = lua_getfield(L, 1, "ink");
   if (type != LUA_TNIL)
-    color = convert_args_into_color(L, -1);
+    params.inkType = get_value_from_lua<tools::InkType>(L, -1);
   lua_pop(L, 1);
 
-  // Default brush is the active brush in the context bar
-  BrushRef brush(nullptr);
-#ifdef ENABLE_UI
-  if (App::instance()->isGui() &&
-      App::instance()->contextBar())
-    brush = App::instance()->contextBar()->activeBrush(tool, ink);
-#endif
+  // Color
+  type = lua_getfield(L, 1, "color");
+  if (type != LUA_TNIL)
+    params.fg = convert_args_into_color(L, -1);
+  else {
+    // Default color is the active fgColor
+    params.fg = Preferences::instance().colorBar.fgColor();
+  }
+  lua_pop(L, 1);
+
+  type = lua_getfield(L, 1, "bgColor");
+  if (type != LUA_TNIL)
+    params.bg = convert_args_into_color(L, -1);
+  else
+    params.bg = params.fg;
+  lua_pop(L, 1);
+
+  // Adjust ink depending on "inkType" and "color"
+  // (e.g. InkType::SIMPLE depends on the color too, to adjust
+  // eraser/alpha compositing/opaque depending on the color alpha
+  // value).
+  params.ink = activeToolMgr->adjustToolInkDependingOnSelectedInkType(
+    params.ink, params.inkType, params.fg);
+
+  // Brush
   type = lua_getfield(L, 1, "brush");
   if (type != LUA_TNIL)
-    brush = get_brush_from_arg(L, -1);
+    params.brush = get_brush_from_arg(L, -1);
+  else {
+    // Default brush is the active brush in the context bar
+#ifdef ENABLE_UI
+    if (App::instance()->isGui() &&
+        App::instance()->contextBar()) {
+      params.brush = App::instance()
+        ->contextBar()->activeBrush(params.tool,
+                                    params.ink);
+    }
+#endif
+  }
   lua_pop(L, 1);
-  if (!brush)
-    brush.reset(new Brush(BrushType::kCircleBrushType, 1, 0));
+  if (!params.brush) {
+    // In case the brush is nullptr (e.g. there is no UI) we use the
+    // default 1 pixel brush (e.g. to run scripts from CLI).
+    params.brush.reset(new Brush(BrushType::kCircleBrushType, 1, 0));
+  }
+
+  // Opacity, tolerance, and others
+  type = lua_getfield(L, 1, "opacity");
+  if (type != LUA_TNIL) {
+    params.opacity = lua_tointeger(L, -1);
+    params.opacity = base::clamp(params.opacity, 0, 255);
+  }
+  lua_pop(L, 1);
+
+  type = lua_getfield(L, 1, "tolerance");
+  if (type != LUA_TNIL) {
+    params.tolerance = lua_tointeger(L, -1);
+    params.tolerance = base::clamp(params.tolerance, 0, 255);
+  }
+  lua_pop(L, 1);
+
+  type = lua_getfield(L, 1, "contiguous");
+  if (type != LUA_TNIL)
+    params.contiguous = lua_toboolean(L, -1);
+  lua_pop(L, 1);
+
+  type = lua_getfield(L, 1, "freehandAlgorithm");
+  if (type != LUA_TNIL)
+    params.freehandAlgorithm = get_value_from_lua<tools::FreehandAlgorithm>(L, -1);
+  lua_pop(L, 1);
 
   // How the tileset must be modified depending on this tool usage
   type = lua_getfield(L, 1, "tilesetMode");
@@ -323,7 +398,7 @@ int App_useTool(lua_State* L)
   type = lua_getfield(L, 1, "points");
   if (type == LUA_TTABLE) {
     std::unique_ptr<tools::ToolLoop> loop(
-      create_tool_loop_for_script(ctx, site, tool, ink, color, brush));
+      create_tool_loop_for_script(ctx, site, params));
     if (!loop)
       return luaL_error(L, "cannot draw in the active site");
 

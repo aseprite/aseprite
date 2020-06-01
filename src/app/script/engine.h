@@ -50,13 +50,13 @@ namespace doc {
   class WithUserData;
 }
 
-namespace tools {
-  class Tool;
-}
-
 namespace app {
 
   class Site;
+
+  namespace tools {
+    class Tool;
+  }
 
   namespace script {
 
@@ -151,7 +151,7 @@ namespace app {
   void push_tileset(lua_State* L, doc::Tileset* tileset);
   void push_tileset_image(lua_State* L, doc::Tileset* tileset, doc::Image* image);
   void push_tilesets(lua_State* L, doc::Tilesets* tilesets);
-  void push_tool(lua_State* L, tools::Tool* tool);
+  void push_tool(lua_State* L, app::tools::Tool* tool);
   void push_userdata(lua_State* L, doc::WithUserData* userData);
   void push_version(lua_State* L, const base::Version& ver);
 
@@ -167,7 +167,7 @@ namespace app {
   doc::Cel* get_image_cel_from_arg(lua_State* L, int index);
   doc::frame_t get_frame_number_from_arg(lua_State* L, int index);
   const doc::Mask* get_mask_from_arg(lua_State* L, int index);
-  tools::Tool* get_tool_from_arg(lua_State* L, int index);
+  app::tools::Tool* get_tool_from_arg(lua_State* L, int index);
   doc::BrushRef get_brush_from_arg(lua_State* L, int index);
 
   // Used by App.open(), Sprite{ fromFile }, and Image{ fromFile }

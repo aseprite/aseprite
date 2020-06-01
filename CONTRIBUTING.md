@@ -93,7 +93,7 @@ You can fork the GitHub repository using the Fork button at
 The Pull Requests (PR) systems works in this way:
 
 1. First of all you will need to sign our
-   [Contributor License Agreement](https://github.com/aseprite/opensource/blob/master/sign-cla.md#sign-the-cla) (CLA).
+   [Contributor License Agreement](https://github.com/aseprite/sourcecode/blob/master/sign-cla.md#sign-the-cla) (CLA).
 1. Then you can start working on Aseprite. Create a new branch from `master`, e.g. `fix-8` to fix the issue 8.
    Check this guide about [how to name your branch](https://github.com/agis/git-style-guide#branches).
 1. Start working on that new branch, and push your commits to your fork.

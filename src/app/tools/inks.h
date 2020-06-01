@@ -66,7 +66,7 @@ private:
 // (or foreground/background colors)
 class PaintInk : public BaseInk {
 public:
-  enum Type { Simple, WithFg, WithBg, Copy, LockAlpha };
+  enum Type { Simple, WithFg, WithBg, AlphaCompositing, Copy, LockAlpha};
 
 private:
   Type m_type;
@@ -114,9 +114,11 @@ public:
     }
     else {
       switch (m_type) {
-        case Simple: {
+        case Simple:
+        case AlphaCompositing: {
           bool opaque = false;
 
+          // Opacity is set to 255 when InkType=Simple in ToolLoopBase()
           if (loop->getOpacity() == 255 &&
               // The trace policy is "overlap" when the dynamics has
               // a gradient between FG <-> BG
@@ -134,8 +136,16 @@ public:
                 opaque = (graya_geta(color) == 255);
                 break;
               case IMAGE_INDEXED:
-                color = get_current_palette()->getEntry(color);
-                opaque = (rgba_geta(color) == 255);
+                // Simple ink for indexed is better to use always
+                // opaque if opacity == 255.
+                if (m_type == Simple)
+                  opaque = true;
+                else if (color == loop->sprite()->transparentColor())
+                  opaque = false;
+                else {
+                  color = get_current_palette()->getEntry(color);
+                  opaque = (rgba_geta(color) == 255);
+                }
                 break;
             }
           }

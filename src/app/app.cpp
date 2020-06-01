@@ -229,9 +229,14 @@ int App::initialize(const AppOptions& options)
 
 #ifdef _WIN32
   if (options.disableWintab() ||
-      !preferences().experimental.loadWintabDriver()) {
-    system->useWintabAPI(false);
+      !preferences().experimental.loadWintabDriver() ||
+      preferences().tablet.api() == "pointer") {
+    system->setTabletAPI(os::TabletAPI::WindowsPointerInput);
   }
+  else if (preferences().tablet.api() == "wintab_packets")
+    system->setTabletAPI(os::TabletAPI::WintabPackets);
+  else // preferences().tablet.api() == "wintab"
+    system->setTabletAPI(os::TabletAPI::Wintab);
 #endif
 
   system->setAppName(get_app_name());

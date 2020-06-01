@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -12,8 +12,8 @@
 #include "app/recent_files.h"
 
 #include "app/ini_file.h"
-#include "base/convert_to.h"
 #include "base/fs.h"
+#include "fmt/format.h"
 
 #include <cstdio>
 #include <cstring>
@@ -225,7 +225,7 @@ void RecentFiles::save()
 
     for (int j=0; j<m_paths[i].size(); ++j) {
       set_config_string(section,
-                        base::convert_to<std::string>(j).c_str(),
+                        fmt::format("{:04d}", j).c_str(),
                         m_paths[i][j].c_str());
     }
     // Special entry that indicates that we've already converted

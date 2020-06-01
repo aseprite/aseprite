@@ -16,7 +16,8 @@
       { "id": "EDG32",  "path": "./edg32.gpl" },
       { "id": "EDG8",   "path": "./edg8.gpl" },
       { "id": "EN4",    "path": "./en4.gpl" },
-      { "id": "ENOS16", "path": "./enos16.gpl" }
+      { "id": "ENOS16", "path": "./enos16.gpl" },
+      { "id": "HEPT32", "path": "./hept32.gpl" }
     ]
   }
 }

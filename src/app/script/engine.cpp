@@ -19,6 +19,7 @@
 #include "app/script/security.h"
 #include "app/sprite_sheet_type.h"
 #include "app/tileset_mode.h"
+#include "app/tools/ink_type.h"
 #include "base/chrono.h"
 #include "base/file_handle.h"
 #include "base/fs.h"
@@ -332,6 +333,16 @@ Engine::Engine()
   setfield_integer(L, "ORIGIN", doc::BrushPattern::ALIGNED_TO_SRC);
   setfield_integer(L, "TARGET", doc::BrushPattern::ALIGNED_TO_DST);
   setfield_integer(L, "NONE", doc::BrushPattern::PAINT_BRUSH);
+  lua_pop(L, 1);
+
+  lua_newtable(L);
+  lua_pushvalue(L, -1);
+  lua_setglobal(L, "Ink");
+  setfield_integer(L, "SIMPLE", app::tools::InkType::SIMPLE);
+  setfield_integer(L, "ALPHA_COMPOSITING", app::tools::InkType::ALPHA_COMPOSITING);
+  setfield_integer(L, "COPY_COLOR", app::tools::InkType::COPY_COLOR);
+  setfield_integer(L, "LOCK_ALPHA", app::tools::InkType::LOCK_ALPHA);
+  setfield_integer(L, "SHADING", app::tools::InkType::SHADING);
   lua_pop(L, 1);
 
   lua_newtable(L);

@@ -138,6 +138,10 @@ void ActiveSiteHandler::onBeforeRemoveLayer(DocEvent& ev)
   if (!selectedLayer)
     return;
 
+  // Remove layer from range
+  data.range.eraseAndAdjust(ev.layer());
+
+  // Select other layer as active
   doc::Layer* layerToSelect = candidate_if_layer_is_deleted(selectedLayer, ev.layer());
   if (selectedLayer != layerToSelect) {
     data.layer = (layerToSelect ? layerToSelect->id():

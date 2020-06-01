@@ -8,6 +8,7 @@
       <view maxsize="true">
         <listbox id="section_listbox">
           <listitem text="@.section_general" value="section_general" />
+          <listitem text="@.section_tablet" value="section_tablet" />
           <listitem text="@.section_files" value="section_files" />
           <listitem text="@.section_color" value="section_color" />
           <listitem text="@.section_alerts" value="section_alerts" />
@@ -71,6 +72,25 @@
           <separator horizontal="true" />
           <link id="locate_file" text="@.locate_file" />
           <link id="locate_crash_folder" text="@.locate_crash_folder" />
+        </vbox>
+
+        <!-- Tablet -->
+        <vbox id="section_tablet">
+          <separator text="@.section_tablet" horizontal="true" />
+          <radio id="tablet_api_windows_pointer" text="@.tablet_api_windows_pointer" group="1" />
+          <radio id="tablet_api_wintab_system" text="@.tablet_api_wintab_system" group="1" />
+          <radio id="tablet_api_wintab_direct" text="@.tablet_api_wintab_direct" group="1" />
+          <separator horizontal="true" />
+          <check id="one_finger_as_mouse_movement"
+                 text="@.one_finger_as_mouse_movement"
+                 tooltip="@.one_finger_as_mouse_movement_tooltip"
+                 pref="experimental.one_finger_as_mouse_movement" />
+          <hbox>
+            <check id="load_wintab_driver"
+                   text="@.load_wintab_driver"
+                   tooltip="@.load_wintab_driver_tooltip" />
+            <link text="@.wintab_more_info" url="https://www.aseprite.org/docs/wintab/" />
+          </hbox>
         </vbox>
 
         <!-- Files -->
@@ -473,15 +493,10 @@
           </hbox>
           <check id="native_clipboard" text="@.native_clipboard" />
           <check id="native_file_dialog" text="@.native_file_dialog" />
-          <check id="one_finger_as_mouse_movement"
-                 text="@.one_finger_as_mouse_movement"
-                 tooltip="@.one_finger_as_mouse_movement_tooltip"
-                 pref="experimental.one_finger_as_mouse_movement" />
 	  <hbox id="load_wintab_driver_box">
-            <check id="load_wintab_driver"
+            <check id="load_wintab_driver2"
                    text="@.load_wintab_driver"
-                   tooltip="@.load_wintab_driver_tooltip"
-                   pref="experimental.load_wintab_driver" />
+                   tooltip="@.load_wintab_driver_tooltip" />
             <link text="@.wintab_more_info" url="https://www.aseprite.org/docs/wintab/" />
           </hbox>
           <check id="flash_layer" text="@.flash_selected_layer" />

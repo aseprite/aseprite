@@ -50,6 +50,7 @@ namespace app {
 namespace {
 
 const char* kSectionGeneralId = "section_general";
+const char* kSectionTabletId = "section_tablet";
 const char* kSectionBgId = "section_bg";
 const char* kSectionGridId = "section_grid";
 const char* kSectionThemeId = "section_theme";
@@ -351,9 +352,47 @@ public:
     if (m_pref.experimental.useNativeFileDialog())
       nativeFileDialog()->setSelected(true);
 
-#ifndef _WIN32
-    oneFingerAsMouseMovement()->setVisible(false);
-    loadWintabDriverBox()->setVisible(false);
+#ifdef _WIN32 // Show Tablet section on Windows
+    {
+      os::TabletAPI tabletAPI = os::instance()->tabletAPI();
+
+      if (tabletAPI == os::TabletAPI::Wintab) {
+        tabletApiWintabSystem()->setSelected(true);
+        loadWintabDriver()->setSelected(true);
+        loadWintabDriver2()->setSelected(true);
+      }
+      else if (tabletAPI == os::TabletAPI::WintabPackets) {
+        tabletApiWintabDirect()->setSelected(true);
+        loadWintabDriver()->setSelected(true);
+        loadWintabDriver2()->setSelected(true);
+      }
+      else {
+        tabletApiWindowsPointer()->setSelected(true);
+        loadWintabDriver()->setSelected(false);
+        loadWintabDriver2()->setSelected(false);
+      }
+
+      tabletApiWindowsPointer()->Click.connect([this](Event&){ onTabletAPIChange(); });
+      tabletApiWintabSystem()->Click.connect([this](Event&){ onTabletAPIChange(); });
+      tabletApiWintabDirect()->Click.connect([this](Event&){ onTabletAPIChange(); });
+      loadWintabDriver()->Click.connect(
+        [this](Event&){ onLoadWintabChange(loadWintabDriver()->isSelected()); });
+      loadWintabDriver2()->Click.connect(
+        [this](Event&){ onLoadWintabChange(loadWintabDriver2()->isSelected()); });
+    }
+#else  // For macOS and Linux
+    {
+      // Hide the "section_tablet" item (which is only for Windows at the moment)
+      for (auto item : sectionListbox()->children()) {
+        if (static_cast<ListItem*>(item)->getValue() == kSectionTabletId) {
+          item->setVisible(false);
+          break;
+        }
+      }
+      sectionTablet()->setVisible(false);
+      loadWintabDriverBox()->setVisible(false);
+      loadWintabDriverBox()->setVisible(false);
+    }
 #endif
 
     if (m_pref.experimental.flashLayer())
@@ -658,9 +697,35 @@ public:
     m_pref.experimental.nonactiveLayersOpacity(nonactiveLayersOpacity()->getValue());
 
 #ifdef _WIN32
-    manager()->getDisplay()
-      ->setInterpretOneFingerGestureAsMouseMovement(
-        oneFingerAsMouseMovement()->isSelected());
+    {
+      os::TabletAPI tabletAPI = os::TabletAPI::Default;
+      std::string tabletStr;
+      bool wintabState = false;
+
+      if (tabletApiWindowsPointer()->isSelected()) {
+        tabletAPI = os::TabletAPI::WindowsPointerInput;
+        tabletStr = "pointer";
+      }
+      else if (tabletApiWintabSystem()->isSelected()) {
+        tabletAPI = os::TabletAPI::Wintab;
+        tabletStr = "wintab";
+        wintabState = true;
+      }
+      else if (tabletApiWintabDirect()->isSelected()) {
+        tabletAPI = os::TabletAPI::WintabPackets;
+        tabletStr = "wintab_packets";
+        wintabState = true;
+      }
+
+      m_pref.tablet.api(tabletStr);
+      m_pref.experimental.loadWintabDriver(wintabState);
+
+      manager()->getDisplay()
+        ->setInterpretOneFingerGestureAsMouseMovement(
+          oneFingerAsMouseMovement()->isSelected());
+
+      os::instance()->setTabletAPI(tabletAPI);
+    }
 #endif
 
     ui::set_use_native_cursors(m_pref.cursor.useNativeCursor());
@@ -1504,6 +1569,29 @@ private:
         sep->setVisible(visibleCategories[int(sep->category())]);
     }
   }
+
+#ifdef _WIN32
+  void onTabletAPIChange() {
+    if (tabletApiWindowsPointer()->isSelected()) {
+      loadWintabDriver()->setSelected(false);
+      loadWintabDriver2()->setSelected(false);
+    }
+    else if (tabletApiWintabSystem()->isSelected() ||
+             tabletApiWintabDirect()->isSelected()) {
+      loadWintabDriver()->setSelected(true);
+      loadWintabDriver2()->setSelected(true);
+    }
+  }
+  void onLoadWintabChange(bool state) {
+    loadWintabDriver()->setSelected(state);
+    loadWintabDriver2()->setSelected(state);
+    if (state)
+      tabletApiWintabSystem()->setSelected(true);
+    else
+      tabletApiWindowsPointer()->setSelected(true);
+  }
+
+#endif // _WIN32
 
   Context* m_context;
   Preferences& m_pref;
