@@ -459,8 +459,7 @@ private:
     else if (!m_hasLocalColormaps) {
       if (!global) {
         if (!m_firstLocalColormap)
-          m_firstLocalColormap = GifMakeMapObject(colormap->ColorCount,
-                                                  colormap->Colors);
+          m_firstLocalColormap = GifMakeMapObject(256, colormap->Colors);
         global = m_firstLocalColormap;
       }
 
@@ -528,8 +527,7 @@ private:
     if (m_sprite->pixelFormat() == IMAGE_INDEXED &&
         !m_opaque && m_bgIndex != m_localTransparentIndex) {
       for (const auto& i : LockImageBits<IndexedTraits>(frameImage)) {
-        if (i == m_bgIndex &&
-            i != m_localTransparentIndex) {
+        if (i == m_bgIndex) {
           needsExtraBgColor = true;
           break;
         }
@@ -619,6 +617,18 @@ private:
       int i = m_bgIndex;
       int j = base++;
       palette->setEntry(j, colormap2rgba(colormap, i));
+      // m_firstLocalColorMap, is used only if we have no global color map in the gif source,
+      // and we want to preserve original color indexes, as much we can.
+      // If the palette size is > 256, m_firstLocalColormal is no more useful, because
+      // the sprite pixel format will be converted in RGBA image, and the colors will
+      // be picked from the sprite palette, instead of m_firstLocalColorMap.
+      if (m_firstLocalColormap && m_firstLocalColormap->ColorCount > j) {
+        // We need add this last color to m_firstLocalColormap, because
+        // it was not considered in the function getFrameColormap.
+        m_firstLocalColormap->Colors[j].Red = rgba_getr(palette->getEntry(j));
+        m_firstLocalColormap->Colors[j].Green = rgba_getg(palette->getEntry(j));
+        m_firstLocalColormap->Colors[j].Blue = rgba_getb(palette->getEntry(j));
+      }
       m_remap.map(i, j);
     }
 
