@@ -283,6 +283,7 @@ if(ENABLE_UI)
     commands/cmd_show.cpp
     commands/cmd_slice_properties.cpp
     commands/cmd_sprite_properties.cpp
+    commands/cmd_swap_checkerboard_colors.cpp
     commands/cmd_switch_colors.cpp
     commands/cmd_symmetry_mode.cpp
     commands/cmd_tiled_mode.cpp
