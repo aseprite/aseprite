@@ -121,12 +121,23 @@ void BrushPreview::show(const gfx::Point& screenPos)
   tools::Ink* ink = m_editor->getCurrentEditorInk();
 
   const bool isFloodfill = m_editor->getCurrentEditorTool()->getPointShape(0)->isFloodFill();
+  const auto& dynamics = App::instance()->contextBar()->getDynamics();
 
   // Setup the cursor type depending on several factors (current tool,
   // foreground color, layer transparency, brush size, etc.).
   BrushRef brush = getCurrentBrush();
   color_t brush_color = getBrushColor(sprite, layer);
   color_t mask_index = sprite->transparentColor();
+
+  if (brush->type() != doc::kImageBrushType &&
+      (dynamics.size != tools::DynamicSensor::Static ||
+       dynamics.angle != tools::DynamicSensor::Static)) {
+    brush.reset(
+      new Brush(
+        brush->type(),
+        (dynamics.size != tools::DynamicSensor::Static ? dynamics.minSize: brush->size()),
+        (dynamics.angle != tools::DynamicSensor::Static ? dynamics.minAngle: brush->angle())));
+  }
 
   if (ink->isSelection() || ink->isSlice()) {
     m_type = SELECTION_CROSSHAIR;

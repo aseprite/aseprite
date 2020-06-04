@@ -990,7 +990,11 @@ public:
 
     if (!m_popup) {
       m_popup.reset(new DynamicsPopup(this));
-      m_popup->Close.connect([this](CloseEvent&){ deselectItems(); });
+      m_popup->Close.connect(
+        [this](CloseEvent&){
+          deselectItems();
+          m_dynamics = m_popup->getDynamics();
+        });
     }
 
     const gfx::Rect bounds = this->bounds();
@@ -1000,11 +1004,10 @@ public:
     m_popup->openWindow();
   }
 
-  tools::DynamicsOptions getDynamics() {
-    if (m_popup)
-      return m_popup->getDynamics();
-    else
-      return tools::DynamicsOptions();
+  const tools::DynamicsOptions& getDynamics() const {
+    if (m_popup && m_popup->isVisible())
+      m_dynamics = m_popup->getDynamics();
+    return m_dynamics;
   }
 
 private:
@@ -1023,11 +1026,13 @@ private:
     Preferences::instance().tool(tool).brush.angle(angle);
   }
 
+  // ButtonSet overrides
   void onItemChange(Item* item) override {
     ButtonSet::onItemChange(item);
     switchPopup();
   }
 
+  // Widget overrides
   void onInitTheme(InitThemeEvent& ev) override {
     ButtonSet::onInitTheme(ev);
     if (m_popup)
@@ -1036,6 +1041,7 @@ private:
 
   std::unique_ptr<DynamicsPopup> m_popup;
   ContextBar* m_ctxBar;
+  mutable tools::DynamicsOptions m_dynamics;
 };
 
 class ContextBar::FreehandAlgorithmField : public CheckBox {
@@ -2220,7 +2226,7 @@ render::GradientType ContextBar::gradientType()
   return m_gradientType->gradientType();
 }
 
-tools::DynamicsOptions ContextBar::getDynamics()
+const tools::DynamicsOptions& ContextBar::getDynamics() const
 {
   return m_dynamics->getDynamics();
 }
