@@ -10,6 +10,7 @@
   "contributes": {
     "palettes": [
       { "id": "Google UI",       "path": "./google-ui.gpl" },
+      { "id": "Minecraft",       "path": "./minecraft.gpl" },
       { "id": "Monokai",         "path": "./monokai.gpl" },
       { "id": "SmileBASIC",      "path": "./smile-basic.gpl" },
       { "id": "Solarized",       "path": "./solarized.gpl" },
