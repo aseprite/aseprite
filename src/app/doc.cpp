@@ -95,6 +95,46 @@ void Doc::setContext(Context* ctx)
   onContextChanged();
 }
 
+bool Doc::canWriteLockFromRead() const
+{
+  return m_rwLock.canWriteLockFromRead();
+}
+
+bool Doc::readLock(int timeout)
+{
+  return m_rwLock.lock(base::RWLock::ReadLock, timeout);
+}
+
+bool Doc::writeLock(int timeout)
+{
+  return m_rwLock.lock(base::RWLock::WriteLock, timeout);
+}
+
+bool Doc::upgradeToWrite(int timeout)
+{
+  return m_rwLock.upgradeToWrite(timeout);
+}
+
+void Doc::downgradeToRead()
+{
+  m_rwLock.downgradeToRead();
+}
+
+void Doc::unlock()
+{
+  m_rwLock.unlock();
+}
+
+bool Doc::weakLock(base::RWLock::WeakLock* weak_lock_flag)
+{
+  return m_rwLock.weakLock(weak_lock_flag);
+}
+
+void Doc::weakUnlock()
+{
+  m_rwLock.weakUnlock();
+}
+
 void Doc::setTransaction(Transaction* transaction)
 {
   if (transaction) {

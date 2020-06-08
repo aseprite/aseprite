@@ -82,13 +82,13 @@ namespace app {
 
     explicit DocReader(Doc* doc, int timeout)
       : DocAccess(doc) {
-      if (m_doc && !m_doc->lock(Doc::ReadLock, timeout))
+      if (m_doc && !m_doc->readLock(timeout))
         throw CannotReadDocException();
     }
 
     explicit DocReader(const DocReader& copy, int timeout)
       : DocAccess(copy) {
-      if (m_doc && !m_doc->lock(Doc::ReadLock, timeout))
+      if (m_doc && !m_doc->readLock(timeout))
         throw CannotReadDocException();
     }
 
@@ -126,7 +126,7 @@ namespace app {
       , m_from_reader(false)
       , m_locked(false) {
       if (m_doc) {
-        if (!m_doc->lock(Doc::WriteLock, timeout))
+        if (!m_doc->writeLock(timeout))
           throw CannotWriteDocException();
 
         m_locked = true;

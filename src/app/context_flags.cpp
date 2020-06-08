@@ -37,7 +37,7 @@ void ContextFlags::update(Context* context)
   if (document) {
     m_flags |= HasActiveDocument;
 
-    if (document->lock(Doc::ReadLock, 0)) {
+    if (document->readLock(0)) {
       m_flags |= ActiveDocumentIsReadable;
 
       if (document->isMaskVisible())
