@@ -35,6 +35,7 @@
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
+#include "app/util/layer_utils.h"
 #include "base/bind.h"
 #include "base/gcd.h"
 #include "base/pi.h"
@@ -298,6 +299,9 @@ bool MovingPixelsState::onMouseDown(Editor* editor, MouseMessage* msg)
                                                         getTransformation(editor));
 
     if (handle != NoHandle) {
+      if (layer_is_locked(editor))
+        return true;
+
       // Re-catch the image
       m_pixelsMovement->catchImageAgain(
         editor->screenToEditor(msg->position()), handle);
@@ -311,6 +315,9 @@ bool MovingPixelsState::onMouseDown(Editor* editor, MouseMessage* msg)
   // right-click can be used to deselect/subtract selection, so we
   // should drop the selection in this later case.
   if (editor->isInsideSelection() && msg->left()) {
+    if (layer_is_locked(editor))
+      return true;
+
     // In case that the user is pressing the copy-selection keyboard shortcut.
     EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
     if ((customization) &&
@@ -532,9 +539,22 @@ void MovingPixelsState::onBeforeCommandExecution(CommandExecutionEvent& ev)
   if (!isActiveEditor())
     return;
 
+  if (layer_is_locked(m_editor) &&
+      (command->id() == CommandId::Flip() ||
+      command->id() == CommandId::Cut() ||
+      command->id() == CommandId::Clear() ||
+      command->id() == CommandId::Rotate())) {
+    ev.cancel();
+    return;
+  }
+
   // We don't need to drop the pixels if a MoveMaskCommand of Content is executed.
   if (MoveMaskCommand* moveMaskCmd = dynamic_cast<MoveMaskCommand*>(command)) {
     if (moveMaskCmd->getTarget() == MoveMaskCommand::Content) {
+      if (layer_is_locked(m_editor)) {
+        ev.cancel();
+        return;
+      }
       gfx::Point delta = moveMaskCmd->getMoveThing().getDelta(UIContext::instance());
       // Verify Shift condition of the MoveMaskCommand (i.e. wrap = true)
       if (moveMaskCmd->isWrap()) {
