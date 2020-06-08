@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -8,14 +9,13 @@
 #include "config.h"
 #endif
 
+#include "app/cmd/layer_from_background.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
-#include "app/doc_api.h"
 #include "app/modules/gui.h"
 #include "app/tx.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
-#include "ui/ui.h"
 
 namespace app {
 
@@ -51,8 +51,8 @@ void LayerFromBackgroundCommand::onExecute(Context* context)
   ContextWriter writer(context);
   Doc* document(writer.document());
   {
-    Tx tx(writer.context(), "Layer from Background");
-    document->getApi(tx).layerFromBackground(writer.layer());
+    Tx tx(writer.context(), friendlyName());
+    tx(new cmd::LayerFromBackground(writer.layer()));
     tx.commit();
   }
 #ifdef ENABLE_UI

@@ -14,13 +14,11 @@
 #include "app/cmd/add_cel.h"
 #include "app/cmd/add_frame.h"
 #include "app/cmd/add_layer.h"
-#include "app/cmd/background_from_layer.h"
 #include "app/cmd/clear_cel.h"
 #include "app/cmd/clear_image.h"
 #include "app/cmd/copy_cel.h"
 #include "app/cmd/copy_frame.h"
 #include "app/cmd/flip_image.h"
-#include "app/cmd/layer_from_background.h"
 #include "app/cmd/move_cel.h"
 #include "app/cmd/move_layer.h"
 #include "app/cmd/remove_cel.h"
@@ -675,16 +673,6 @@ void DocApi::restackLayerBefore(Layer* layer, LayerGroup* parent, Layer* beforeT
     afterThis = parent->lastLayer();
 
   restackLayerAfter(layer, parent, afterThis);
-}
-
-void DocApi::backgroundFromLayer(Layer* layer)
-{
-  m_transaction.execute(new cmd::BackgroundFromLayer(layer));
-}
-
-void DocApi::layerFromBackground(Layer* layer)
-{
-  m_transaction.execute(new cmd::LayerFromBackground(layer));
 }
 
 Layer* DocApi::duplicateLayerAfter(Layer* sourceLayer, LayerGroup* parent, Layer* afterLayer)
