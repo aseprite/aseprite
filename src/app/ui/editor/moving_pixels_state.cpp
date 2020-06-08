@@ -35,6 +35,7 @@
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
+#include "app/util/layer_utils.h"
 #include "base/bind.h"
 #include "base/gcd.h"
 #include "base/pi.h"
@@ -298,6 +299,8 @@ bool MovingPixelsState::onMouseDown(Editor* editor, MouseMessage* msg)
                                                         getTransformation(editor));
 
     if (handle != NoHandle) {
+      if (layer_is_locked(editor))
+        return true;
       // Re-catch the image
       m_pixelsMovement->catchImageAgain(
         editor->screenToEditor(msg->position()), handle);
@@ -305,6 +308,8 @@ bool MovingPixelsState::onMouseDown(Editor* editor, MouseMessage* msg)
       editor->captureMouse();
       return true;
     }
+    else if (editor->isInsideSelection() && layer_is_locked(editor))
+      return true;
   }
 
   // Start "moving pixels" loop. Here we check only for left-click as
@@ -532,9 +537,22 @@ void MovingPixelsState::onBeforeCommandExecution(CommandExecutionEvent& ev)
   if (!isActiveEditor())
     return;
 
+  if (layer_is_locked(m_editor) &&
+      (command->id() == CommandId::Flip() ||
+      command->id() == CommandId::Cut() ||
+      command->id() == CommandId::Clear() ||
+      command->id() == CommandId::Rotate())) {
+    ev.cancel();
+    return;
+  }
+
   // We don't need to drop the pixels if a MoveMaskCommand of Content is executed.
   if (MoveMaskCommand* moveMaskCmd = dynamic_cast<MoveMaskCommand*>(command)) {
     if (moveMaskCmd->getTarget() == MoveMaskCommand::Content) {
+      if (layer_is_locked(m_editor)) {
+        ev.cancel();
+        return;
+      }
       gfx::Point delta = moveMaskCmd->getMoveThing().getDelta(UIContext::instance());
       // Verify Shift condition of the MoveMaskCommand (i.e. wrap = true)
       if (moveMaskCmd->isWrap()) {
