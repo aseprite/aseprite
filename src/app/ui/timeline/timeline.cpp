@@ -393,9 +393,16 @@ void Timeline::detachDocument()
     m_thumbnailsPrefConn.disconnect();
     m_document->remove_observer(this);
     m_document = nullptr;
-    m_sprite = nullptr;
-    m_layer = nullptr;
   }
+
+  // Reset all pointers to this document, even DocRanges, we don't
+  // want to store a pointer to a layer of a document that we are not
+  // observing anymore (because the document might be deleted soon).
+  m_sprite = nullptr;
+  m_layer = nullptr;
+  m_range.clearRange();
+  m_startRange.clearRange();
+  m_dropRange.clearRange();
 
   if (m_editor) {
     m_editor->remove_observer(this);

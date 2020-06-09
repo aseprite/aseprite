@@ -50,6 +50,12 @@ void DocRange::clearRange()
   m_flags = kNone;
   m_selectedLayers.clear();
   m_selectedFrames.clear();
+
+  // Reset the starting point of a previous startRange/endRange(), we
+  // don't want to store a pointer to an invalid
+  // "m_selectingFromLayer" layer.
+  m_selectingFromLayer = nullptr;
+  m_selectingFromFrame = -1;
 }
 
 void DocRange::startRange(Layer* fromLayer, frame_t fromFrame, Type type)
@@ -99,6 +105,14 @@ void DocRange::eraseAndAdjust(const Layer* layer)
 {
   if (!enabled())
     return;
+
+  // Check that the sprite of m_selectingFromLayer is the same than
+  // the given layer. In the past if we stored an invalid
+  // "m_selectingFromLayer" for too much time this could fail (even
+  // more, "m_selectingFromLayer" could be pointing to an already
+  // closed/deleted sprite).
+  ASSERT(!m_selectingFromLayer || !layer ||
+         m_selectingFromLayer->sprite() == layer->sprite());
 
   if (m_selectingFromLayer)
     m_selectingFromLayer = candidate_if_layer_is_deleted(m_selectingFromLayer, layer);
