@@ -51,7 +51,6 @@
 #include "base/fs.h"
 #include "base/scoped_value.h"
 #include "doc/brush.h"
-#include "doc/conversion_to_surface.h"
 #include "doc/image.h"
 #include "doc/palette.h"
 #include "doc/remap.h"

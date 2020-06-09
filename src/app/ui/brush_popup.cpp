@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -26,10 +26,10 @@
 #include "app/ui/main_window.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui_context.h"
+#include "app/util/conversion_to_surface.h"
 #include "base/bind.h"
 #include "base/convert_to.h"
 #include "doc/brush.h"
-#include "doc/conversion_to_surface.h"
 #include "doc/image.h"
 #include "doc/palette.h"
 #include "gfx/border.h"

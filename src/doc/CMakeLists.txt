@@ -31,7 +31,6 @@ add_library(doc-lib
   cels_range.cpp
   color.cpp
   compressed_image.cpp
-  conversion_to_surface.cpp
   document.cpp
   file/act_file.cpp
   file/col_file.cpp
@@ -70,10 +69,7 @@ add_library(doc-lib
   tags.cpp
   user_data_io.cpp)
 
-# TODO Remove 'os' as dependency and move conversion_to_surface.cpp/h files
-#      to other library/layer (render-lib? new conversion-lib?)
 target_link_libraries(doc-lib
-  laf-os
   laf-gfx
-  fixmath-lib
-  laf-base)
+  laf-base
+  fixmath-lib)
