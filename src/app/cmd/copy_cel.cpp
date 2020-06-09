@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -125,7 +125,11 @@ void CopyCel::onFireNotifications()
 {
   CmdSequence::onFireNotifications();
 
-  ASSERT(m_srcLayer.layer());
+  // The m_srcLayer can be nullptr now because the layer from where we
+  // copied this cel might not exist anymore (e.g. if we copied the
+  // cel from another document that is already closed)
+  //ASSERT(m_srcLayer.layer());
+
   ASSERT(m_dstLayer.layer());
 
   static_cast<Doc*>(m_dstLayer.layer()->sprite()->document())

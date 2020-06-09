@@ -228,7 +228,7 @@ void Doc::notifyLayerMergedDown(Layer* srcLayer, Layer* targetLayer)
 void Doc::notifyCelMoved(Layer* fromLayer, frame_t fromFrame, Layer* toLayer, frame_t toFrame)
 {
   DocEvent ev(this);
-  ev.sprite(fromLayer->sprite());
+  ev.sprite(toLayer->sprite());
   ev.layer(fromLayer);
   ev.frame(fromFrame);
   ev.targetLayer(toLayer);
@@ -239,8 +239,8 @@ void Doc::notifyCelMoved(Layer* fromLayer, frame_t fromFrame, Layer* toLayer, fr
 void Doc::notifyCelCopied(Layer* fromLayer, frame_t fromFrame, Layer* toLayer, frame_t toFrame)
 {
   DocEvent ev(this);
-  ev.sprite(fromLayer->sprite());
-  ev.layer(fromLayer);
+  ev.sprite(toLayer->sprite());
+  ev.layer(fromLayer);          // From layer can be nullptr
   ev.frame(fromFrame);
   ev.targetLayer(toLayer);
   ev.targetFrame(toFrame);
