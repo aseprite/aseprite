@@ -1202,6 +1202,7 @@ private:
         typename LockImageBits<RgbTraits>::iterator deltaIt;
         typename LockImageBits<RgbTraits>::const_iterator it1, it2, it3, end1, end2, end3, deltaEnd;
 
+        bool previousImageMatchsCurrent = true;
         for (it1 = bits1.begin(), end1 = bits1.end(),
              it2 = bits2.begin(), end2 = bits2.end(),
              it3 = bits3.begin(), end2 = bits3.end(),
@@ -1212,6 +1213,7 @@ private:
           // While we are checking color differences,
           // we enlarge the frameBounds where the color differences take place
           if (*it1 != *it2 || *it3 == 0) {
+            previousImageMatchsCurrent = false;
             *deltaIt = *it2;
             if (x < x1) x1 = x;
             if (x > x2) x2 = x;
@@ -1226,7 +1228,10 @@ private:
             disposal = DisposalMethod::RESTORE_BGCOLOR;
           }
         }
-        frameBounds = gfx::Rect(x1, y1, x2-x1+1, y2-y1+1);
+        if (previousImageMatchsCurrent)
+          frameBounds = gfx::Rect(m_lastFrameBounds);
+        else
+          frameBounds = gfx::Rect(x1, y1, x2-x1+1, y2-y1+1);
       }
       else
         disposal = DisposalMethod::RESTORE_BGCOLOR;
@@ -1239,12 +1244,12 @@ private:
       // from itself in frameBounds.
       if (disposal == DisposalMethod::RESTORE_BGCOLOR || m_lastDisposal == DisposalMethod::RESTORE_BGCOLOR) {
         m_deltaImage.reset(crop_image(m_currentImage, frameBounds, 0));
-        m_lastFrameBounds = frameBounds;
       }
       else {
         m_deltaImage.reset(crop_image(m_deltaImage.get(), frameBounds, 0));
         disposal = DisposalMethod::DO_NOT_DISPOSE;
       }
+      m_lastFrameBounds = frameBounds;
     }
 
     // TODO We could join both frames in a longer one (with more duration)
@@ -1529,8 +1534,10 @@ private:
         // frameBounds (we got 256 or less colors):
         m_transparentIndex = -1;
         pal = auxPalette;
-        if (disposal == DisposalMethod::DO_NOT_DISPOSE)
+        if (disposal == DisposalMethod::DO_NOT_DISPOSE) {
+          ASSERT(frameBounds.w >= 1);
           m_deltaImage.reset(crop_image(m_currentImage, frameBounds, 0));
+        }
       }
       else {
         // 2- If the previous step fails, we will to start to approximate colors from m_deltaImage
