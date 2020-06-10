@@ -585,6 +585,14 @@ void PixelsMovement::stampImage(bool finalStamp)
     cels.push_back(currentCel);
   }
 
+  if (currentCel && currentCel->layer() &&
+      currentCel->layer()->isImage() &&
+      !currentCel->layer()->isEditableHierarchy()) {
+    Transformation initialCelPos(gfx::Rect(m_initialMask0->bounds()));
+    redrawExtraImage(&initialCelPos);
+    stampExtraCelImage();
+  }
+
   for (Cel* target : cels) {
     // We'll re-create the transformation for the other cels
     if (target != currentCel) {
@@ -992,14 +1000,15 @@ CelList PixelsMovement::getEditableCels()
     // TODO This case is used in paste too, where the cel() can be
     //      nullptr (e.g. we paste the clipboard image into an empty
     //      cel).
-    cels.push_back(m_site.cel());
+    if (m_site.layer() && m_site.layer()->isEditableHierarchy())
+      cels.push_back(m_site.cel());
     return cels;
   }
 
   // Current cel (m_site.cel()) can be nullptr when we paste in an
   // empty cel (Ctrl+V) and cut (Ctrl+X) the floating pixels.
   if (m_site.cel() &&
-      m_site.cel()->layer()->isEditable()) {
+      m_site.cel()->layer()->isEditableHierarchy()) {
     auto it = std::find(cels.begin(), cels.end(), m_site.cel());
     if (it != cels.end())
       cels.erase(it);
