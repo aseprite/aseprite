@@ -69,6 +69,10 @@
 #include "ui/ui.h"
 #include "ver/info.h"
 
+#ifdef __APPLE__
+#include "os/osx/system.h"
+#endif
+
 #include <iostream>
 #include <memory>
 
@@ -237,6 +241,11 @@ int App::initialize(const AppOptions& options)
     system->setTabletAPI(os::TabletAPI::WintabPackets);
   else // preferences().tablet.api() == "wintab"
     system->setTabletAPI(os::TabletAPI::Wintab);
+#endif
+
+#ifdef __APPLE__
+  if (!preferences().general.osxAsyncView())
+    os::osx_set_async_view(false);
 #endif
 
   system->setAppName(get_app_name());

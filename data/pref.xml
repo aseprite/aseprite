@@ -143,6 +143,7 @@
       <option id="timeline_layer_panel_width" type="int" default="100" />
       <option id="show_menu_bar" type="bool" default="true" />
       <option id="recent_items" type="int" default="16" />
+      <option id="osx_async_view" type="bool" default="true" />
     </section>
     <section id="undo" text="Undo">
       <option id="size_limit" type="int" default="0" />
