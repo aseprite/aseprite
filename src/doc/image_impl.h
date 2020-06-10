@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -53,7 +53,7 @@ namespace doc {
 
   public:
     inline address_t address(int x, int y) const {
-      return (address_t)(m_rows[y] + x / (Traits::pixels_per_byte == 0 ? 1 : Traits::pixels_per_byte));
+      return (address_t)(getLineAddress(y) + x / (Traits::pixels_per_byte == 0 ? 1 : Traits::pixels_per_byte));
     }
 
     ImageImpl(const ImageSpec& spec,
@@ -222,15 +222,15 @@ namespace doc {
 
   template<>
   inline void ImageImpl<IndexedTraits>::clear(color_t color) {
-    std::fill(m_bits,
-              m_bits + width()*height(),
+    std::fill(getBitsAddress(),
+              getBitsAddress() + width()*height(),
               color);
   }
 
   template<>
   inline void ImageImpl<BitmapTraits>::clear(color_t color) {
-    std::fill(m_bits,
-              m_bits + BitmapTraits::getRowStrideBytes(width()) * height(),
+    std::fill(getBitsAddress(),
+              getBitsAddress() + BitmapTraits::getRowStrideBytes(width()) * height(),
               (color ? 0xff: 0x00));
   }
 
@@ -240,7 +240,7 @@ namespace doc {
     ASSERT(y >= 0 && y < height());
 
     std::div_t d = std::div(x, 8);
-    return ((*(m_rows[y] + d.quot)) & (1<<d.rem)) ? 1: 0;
+    return ((*(getLineAddress(y) + d.quot)) & (1<<d.rem)) ? 1: 0;
   }
 
   template<>
@@ -250,9 +250,9 @@ namespace doc {
 
     std::div_t d = std::div(x, 8);
     if (color)
-      (*(m_rows[y] + d.quot)) |= (1 << d.rem);
+      (*(getLineAddress(y) + d.quot)) |= (1 << d.rem);
     else
-      (*(m_rows[y] + d.quot)) &= ~(1 << d.rem);
+      (*(getLineAddress(y) + d.quot)) &= ~(1 << d.rem);
   }
 
   template<>
