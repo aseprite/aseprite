@@ -460,6 +460,7 @@ public:
 
   void setFinalStep(ToolLoop* loop, bool state) override {
     m_modify_selection = state;
+    int modifiers = int(loop->getModifiers());
 
     if (state) {
       m_maxBounds = loop->getMask()->bounds();
@@ -467,11 +468,16 @@ public:
       m_mask.copyFrom(loop->getMask());
       m_mask.freeze();
       m_mask.reserve(loop->sprite()->bounds());
+
+      if ((modifiers & int(ToolLoopModifiers::kIntersectSelection)) != 0) {
+        m_intersectMask.clear();
+        m_intersectMask.reserve(loop->sprite()->bounds());
+      }
     }
     else {
-      int modifiers = int(loop->getModifiers());
       if ((modifiers & int(ToolLoopModifiers::kIntersectSelection)) != 0) {
         m_mask.intersect(m_intersectMask);
+        m_intersectMask.clear();
       }
 
       // We can intersect the used bounds in inkHline() calls to
