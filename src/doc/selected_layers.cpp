@@ -71,7 +71,7 @@ LayerList SelectedLayers::toAllLayersList() const
 
   for (Layer* layer = (*begin())->sprite()->firstLayer();
        layer != nullptr;
-       layer = layer->getNext()) {
+       layer = layer->getNextInWholeHierarchy()) {
     if (contains(layer))
       output.push_back(layer);
   }
