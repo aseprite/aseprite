@@ -316,3 +316,18 @@ assert(#sheet2.meta.layers == 12)
 assert(json.encode(sheet1.meta.layers) == json.encode(sheet2.meta.layers))
 EOF
 $ASEPRITE -b -script "$d/check.lua" || exit 1
+
+# https://github.com/aseprite/aseprite/issues/2432
+# -ignore-layer is ignoring extra layers when -split-layers is used
+d=$t/issue-2432
+$ASEPRITE -b -trim -ignore-layer "c" -all-layers "sprites/groups3abc.aseprite" -data "$d/sheet1.json" -format json-array -sheet "$d/sheet1.png" -list-layers
+$ASEPRITE -b -trim -ignore-layer "c" -all-layers -split-layers "sprites/groups3abc.aseprite" -data "$d/sheet2.json" -format json-array -sheet "$d/sheet2.png" -list-layers
+cat >$d/check.lua <<EOF
+local json = dofile('third_party/json/json.lua')
+local sheet1 = json.decode(io.open('$d/sheet1.json'):read('a'))
+local sheet2 = json.decode(io.open('$d/sheet2.json'):read('a'))
+assert(#sheet1.meta.layers == 8)
+assert(#sheet2.meta.layers == 8)
+assert(json.encode(sheet1.meta.layers) == json.encode(sheet2.meta.layers))
+EOF
+$ASEPRITE -b -script "$d/check.lua" || exit 1
