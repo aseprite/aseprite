@@ -39,7 +39,7 @@ static CelList get_cels_templ(const Sprite* sprite,
   for (Layer* layer : range.selectedLayers()) {
     if (!layer ||
         !layer->isImage() ||
-        (onlyUnlockedCel && !layer->isEditable()))
+        (onlyUnlockedCel && !layer->isEditableHierarchy()))
       continue;
 
     LayerImage* layerImage = static_cast<LayerImage*>(layer);
