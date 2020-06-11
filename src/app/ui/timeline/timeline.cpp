@@ -1064,7 +1064,7 @@ bool Timeline::onProcessMessage(Message* msg)
         // we shouldn't change the hot (so the separator can be
         // tracked to the mouse's released).
         if (m_clk.part == PART_SEPARATOR) {
-          m_separator_x = std::max(0, mousePos.x);
+          setSeparatorX(mousePos.x);
           layout();
           return true;
         }
@@ -1532,6 +1532,7 @@ void Timeline::onResize(ui::ResizeEvent& ev)
       std::min(sz.w, m_separator_x),
       oneTagHeight()));
 
+  setSeparatorX(m_separator_x);
   updateScrollBars();
 }
 
@@ -4213,6 +4214,11 @@ void Timeline::setLayerCollapsedFlag(const layer_t l, const bool state)
     regenerateRows();
     invalidate();
   }
+}
+
+void Timeline::setSeparatorX(int newValue)
+{
+  m_separator_x = base::clamp(newValue, headerBoxWidth(), bounds().w-guiscale());
 }
 
 } // namespace app
