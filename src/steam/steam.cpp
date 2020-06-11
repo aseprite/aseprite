@@ -42,6 +42,10 @@ struct CallbackMsg_t {
   int cubParam;
 };
 
+#ifdef __GNUC__
+  #define __cdecl
+#endif
+
 // Steam main API
 typedef bool (__cdecl *SteamAPI_Init_Func)();
 typedef void (__cdecl *SteamAPI_Shutdown_Func)();
