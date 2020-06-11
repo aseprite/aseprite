@@ -1,4 +1,5 @@
 // Aseprite Steam Wrapper
+// Copyright (c) 2020 Igara Studio S.A.
 // Copyright (c) 2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -12,13 +13,22 @@
 
 #include "base/dll.h"
 #include "base/fs.h"
+#include "base/ints.h"
 #include "base/log.h"
 #include "base/string.h"
 
 namespace steam {
 
-typedef bool (*SteamAPI_Init_Func)();
-typedef void (*SteamAPI_Shutdown_Func)();
+typedef uint32_t ScreenshotHandle;
+typedef void* ISteamScreenshots;
+
+// Steam main API
+typedef bool __cdecl (*SteamAPI_Init_Func)();
+typedef void __cdecl (*SteamAPI_Shutdown_Func)();
+
+// ISteamScreenshots
+typedef ISteamScreenshots* __cdecl (*SteamAPI_SteamScreenshots_v003_Func)();
+typedef ScreenshotHandle __cdecl (*SteamAPI_ISteamScreenshots_WriteScreenshot_Func)(ISteamScreenshots*, void*, uint32_t, int, int);
 
 #ifdef _WIN32
   #ifdef _WIN64
@@ -32,9 +42,11 @@ typedef void (*SteamAPI_Shutdown_Func)();
   #define STEAM_API_DLL_FILENAME "libsteam_api.so"
 #endif
 
+#define GETPROC(name) base::get_dll_proc<name##_Func>(m_steamLib, #name)
+
 class SteamAPI::Impl {
 public:
-  Impl() : m_initialized(false) {
+  Impl() {
     m_steamLib = base::load_dll(
       base::join_path(base::get_file_path(base::get_app_path()),
                       STEAM_API_DLL_FILENAME));
@@ -43,18 +55,19 @@ public:
       return;
     }
 
-    auto SteamAPI_Init = base::get_dll_proc<SteamAPI_Init_Func>(m_steamLib, "SteamAPI_Init");
+    auto SteamAPI_Init = GETPROC(SteamAPI_Init);
     if (!SteamAPI_Init) {
       LOG("STEAM: SteamAPI_Init not found...\n");
       return;
     }
 
+    // Call SteamAPI_Init() to connect to Steam
     if (!SteamAPI_Init()) {
       LOG("STEAM: Steam is not initialized...\n");
       return;
     }
 
-    LOG("STEAM: Steam initialized...\n");
+    LOG("STEAM: Steam initialized\n");
     m_initialized = true;
   }
 
@@ -62,7 +75,7 @@ public:
     if (!m_steamLib)
       return;
 
-    auto SteamAPI_Shutdown = base::get_dll_proc<SteamAPI_Shutdown_Func>(m_steamLib, "SteamAPI_Shutdown");
+    auto SteamAPI_Shutdown = GETPROC(SteamAPI_Shutdown);
     if (SteamAPI_Shutdown) {
       LOG("STEAM: Steam shutdown...\n");
       SteamAPI_Shutdown();
@@ -75,24 +88,67 @@ public:
     return m_initialized;
   }
 
+  bool writeScreenshot(void* rgbBuffer,
+                       uint32_t sizeInBytes,
+                       int width, int height) {
+    if (!m_initialized)
+      return false;
+
+    auto SteamScreenshots = GETPROC(SteamAPI_SteamScreenshots_v003);
+    auto WriteScreenshot = GETPROC(SteamAPI_ISteamScreenshots_WriteScreenshot);
+    if (!SteamScreenshots || !WriteScreenshot) {
+      LOG("STEAM: Error getting Steam Screenshot API functions\n");
+      return false;
+    }
+
+    auto screenshots = SteamScreenshots();
+    if (!screenshots) {
+      LOG("STEAM: Error getting Steam Screenshot API instance\n");
+      return false;
+    }
+
+    WriteScreenshot(screenshots, rgbBuffer, sizeInBytes, width, height);
+    return true;
+  }
+
 private:
-  base::dll m_steamLib;
-  bool m_initialized;
+  bool m_initialized = false;
+  base::dll m_steamLib = nullptr;
 };
+
+SteamAPI* g_instance = nullptr;
+
+// static
+SteamAPI* SteamAPI::instance()
+{
+  return g_instance;
+}
 
 SteamAPI::SteamAPI()
   : m_impl(new Impl)
 {
+  ASSERT(g_instance == nullptr);
+  g_instance = this;
 }
 
 SteamAPI::~SteamAPI()
 {
   delete m_impl;
+
+  ASSERT(g_instance == this);
+  g_instance = nullptr;
 }
 
 bool SteamAPI::initialized() const
 {
   return m_impl->initialized();
+}
+
+bool SteamAPI::writeScreenshot(void* rgbBuffer,
+                               uint32_t sizeInBytes,
+                               int width, int height)
+{
+  return m_impl->writeScreenshot(rgbBuffer, sizeInBytes, width, height);
 }
 
 } // namespace steam

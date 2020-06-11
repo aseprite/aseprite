@@ -21,7 +21,6 @@
       <key command="ExportSpriteSheet" shortcut="Ctrl+E" mac="Cmd+E" />
       <key command="RepeatLastExport" shortcut="Ctrl+Shift+X" mac="Cmd+Shift+X" />
       <key command="AdvancedMode" shortcut="Ctrl+F" />
-      <key command="DeveloperConsole" shortcut="F12" />
       <key command="Exit" win="Ctrl+Q" linux="Ctrl+Q" mac="Cmd+Q" />
       <key command="Exit" win="Alt+F4" />
       <key command="Cancel" shortcut="Esc">
@@ -509,6 +508,9 @@
       <key command="Screenshot">
         <param name="save" value="true" />
         <param name="srgb" value="false" />
+      </key>
+      <key command="Screenshot" shortcut="F12">
+        <param name="steam" value="true" />
       </key>
     </commands>
 

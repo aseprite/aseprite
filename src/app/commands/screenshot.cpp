@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -17,15 +17,23 @@
 #include "app/file/file.h"
 #include "app/i18n/strings.h"
 #include "app/resource_finder.h"
+#include "base/buffer.h"
 #include "base/fs.h"
 #include "doc/cel.h"
 #include "doc/color.h"
+#include "doc/image_impl.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
 #include "fmt/format.h"
 #include "os/display.h"
 #include "os/surface.h"
+#include "ui/alert.h"
 #include "ui/manager.h"
+#include "ui/scale.h"
+
+#ifdef ENABLE_STEAM
+  #include "steam/steam.h"
+#endif
 
 namespace app {
 
@@ -34,6 +42,9 @@ using namespace ui;
 struct ScreenshotParams : public NewParams {
   Param<bool> save { this, false, "save" };
   Param<bool> srgb { this, true, "srgb" };
+#ifdef ENABLE_STEAM
+  Param<bool> steam { this, false, "steam" };
+#endif
 };
 
 class ScreenshotCommand : public CommandWithNewParams<ScreenshotParams> {
@@ -85,9 +96,11 @@ void ScreenshotCommand::onExecute(Context* ctx)
 
   doc::Cel* cel = spr->firstLayer()->cel(0);
   doc::Image* img = cel->image();
+  const int w = img->width();
+  const int h = img->height();
 
-  for (int y=0; y<img->height(); ++y) {
-    for (int x=0; x<img->width(); ++x) {
+  for (int y=0; y<h; ++y) {
+    for (int x=0; x<w; ++x) {
       gfx::Color c = surface->getPixel(x, y);
 
       img->putPixel(x, y, doc::rgba(gfx::getr(c),
@@ -103,6 +116,34 @@ void ScreenshotCommand::onExecute(Context* ctx)
   if (params().srgb())
     cmd::convert_color_profile(spr, gfx::ColorSpace::MakeSRGB());
 
+  if (params().steam()) {
+#ifdef ENABLE_STEAM
+    if (auto steamAPI = steam::SteamAPI::instance()) {
+      // Get image again (cmd::convert_color_profile() might have changed it)
+      img = cel->image();
+
+      const int scale = display->scale();
+      base::buffer rgbBuffer(3*w*h*scale*scale);
+      int c = 0;
+      doc::LockImageBits<RgbTraits> bits(img);
+      for (int y=0; y<h; ++y) {
+        for (int i=0; i<scale; ++i) {
+          for (int x=0; x<w; ++x) {
+            color_t color = get_pixel_fast<RgbTraits>(img, x, y);
+            for (int j=0; j<scale; ++j) {
+              rgbBuffer[c++] = doc::rgba_getr(color);
+              rgbBuffer[c++] = doc::rgba_getg(color);
+              rgbBuffer[c++] = doc::rgba_getb(color);
+            }
+          }
+        }
+      }
+      if (steamAPI->writeScreenshot(&rgbBuffer[0], rgbBuffer.size(), w*scale, h*scale))
+        return;
+    }
+#endif
+  }
+
   if (params().save()) {
     save_document(ctx, doc.get());
   }
@@ -115,7 +156,9 @@ void ScreenshotCommand::onExecute(Context* ctx)
 std::string ScreenshotCommand::onGetFriendlyName() const
 {
   std::string name;
-  if (params().save())
+  if (params().steam())
+    name = Strings::commands_Screenshot_Steam();
+  else if (params().save())
     name = Strings::commands_Screenshot_Save();
   else
     name = Strings::commands_Screenshot_Open();
