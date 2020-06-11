@@ -19,6 +19,7 @@ public:
   ~SteamAPI();
 
   bool initialized() const;
+  void runCallbacks();
 
   bool writeScreenshot(void* rgbBuffer,
                        uint32_t sizeInBytes,

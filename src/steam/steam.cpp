@@ -19,12 +19,34 @@
 
 namespace steam {
 
+typedef uint32_t HSteamPipe;
+typedef uint32_t HSteamUser;
 typedef uint32_t ScreenshotHandle;
 typedef void* ISteamScreenshots;
+
+enum {
+  // Last callback received from Steam client when it's Steam is closed
+  kSteamServersDisconnected = 103,
+  kSteamUndocumentedLastCallback = 1009,
+};
+
+struct CallbackMsg_t {
+  HSteamUser steamUser;
+  int callback;
+  uint8_t* pubParam;
+  int cubParam;
+};
 
 // Steam main API
 typedef bool __cdecl (*SteamAPI_Init_Func)();
 typedef void __cdecl (*SteamAPI_Shutdown_Func)();
+typedef HSteamPipe __cdecl (*SteamAPI_GetHSteamPipe_Func)();
+
+// Steam callbacks
+typedef void __cdecl (*SteamAPI_ManualDispatch_Init_Func)();
+typedef void __cdecl (*SteamAPI_ManualDispatch_RunFrame_Func)(HSteamPipe);
+typedef bool __cdecl (*SteamAPI_ManualDispatch_GetNextCallback_Func)(HSteamPipe, CallbackMsg_t*);
+typedef void __cdecl (*SteamAPI_ManualDispatch_FreeLastCallback_Func)(HSteamPipe);
 
 // ISteamScreenshots
 typedef ISteamScreenshots* __cdecl (*SteamAPI_SteamScreenshots_v003_Func)();
@@ -67,6 +89,21 @@ public:
       return;
     }
 
+    // Get functions to dispatch callbacks manually
+    auto SteamAPI_ManualDispatch_Init = GETPROC(SteamAPI_ManualDispatch_Init);
+    SteamAPI_ManualDispatch_RunFrame = GETPROC(SteamAPI_ManualDispatch_RunFrame);
+    SteamAPI_ManualDispatch_GetNextCallback = GETPROC(SteamAPI_ManualDispatch_GetNextCallback);
+    SteamAPI_ManualDispatch_FreeLastCallback = GETPROC(SteamAPI_ManualDispatch_FreeLastCallback);
+    auto SteamAPI_GetHSteamPipe = GETPROC(SteamAPI_GetHSteamPipe);
+    if (SteamAPI_ManualDispatch_Init &&
+        SteamAPI_ManualDispatch_RunFrame &&
+        SteamAPI_ManualDispatch_GetNextCallback &&
+        SteamAPI_ManualDispatch_FreeLastCallback &&
+        SteamAPI_GetHSteamPipe) {
+      SteamAPI_ManualDispatch_Init();
+      m_pipe = SteamAPI_GetHSteamPipe();
+    }
+
     LOG("STEAM: Steam initialized\n");
     m_initialized = true;
   }
@@ -81,11 +118,42 @@ public:
       SteamAPI_Shutdown();
     }
 
-    base::unload_dll(m_steamLib);
+    unloadLib();
   }
 
   bool initialized() const {
     return m_initialized;
+  }
+
+  void runCallbacks() {
+    if (!m_pipe)
+      return;
+
+    ASSERT(SteamAPI_ManualDispatch_RunFrame);
+    ASSERT(SteamAPI_ManualDispatch_GetNextCallback);
+    ASSERT(SteamAPI_ManualDispatch_FreeLastCallback);
+
+    SteamAPI_ManualDispatch_RunFrame(m_pipe);
+
+    CallbackMsg_t msg;
+    if (SteamAPI_ManualDispatch_GetNextCallback(m_pipe, &msg)) {
+      //TRACEARGS("SteamAPI_ManualDispatch_GetNextCallback", msg.callback);
+
+      bool disconnected = false;
+      if (msg.callback == kSteamServersDisconnected ||
+          msg.callback == kSteamUndocumentedLastCallback) {
+        disconnected = true;
+      }
+      SteamAPI_ManualDispatch_FreeLastCallback(m_pipe);
+
+      // If the Steam client is closed, we have to unload the DLL and
+      // don't use the pipe or any Steam API at all, in other case we
+      // would crash.
+      if (disconnected) {
+        LOG("STEAM: Disconnected\n");
+        unloadLib();
+      }
+    }
   }
 
   bool writeScreenshot(void* rgbBuffer,
@@ -112,8 +180,21 @@ public:
   }
 
 private:
+  void unloadLib() {
+    base::unload_dll(m_steamLib);
+    m_steamLib = nullptr;
+    m_initialized = false;
+    m_pipe = 0;
+  }
+
   bool m_initialized = false;
   base::dll m_steamLib = nullptr;
+
+  // To handle callbacks manually
+  HSteamPipe m_pipe = 0;
+  SteamAPI_ManualDispatch_RunFrame_Func SteamAPI_ManualDispatch_RunFrame = nullptr;
+  SteamAPI_ManualDispatch_GetNextCallback_Func SteamAPI_ManualDispatch_GetNextCallback = nullptr;
+  SteamAPI_ManualDispatch_FreeLastCallback_Func SteamAPI_ManualDispatch_FreeLastCallback = nullptr;
 };
 
 SteamAPI* g_instance = nullptr;
@@ -142,6 +223,11 @@ SteamAPI::~SteamAPI()
 bool SteamAPI::initialized() const
 {
   return m_impl->initialized();
+}
+
+void SteamAPI::runCallbacks()
+{
+  m_impl->runCallbacks();
 }
 
 bool SteamAPI::writeScreenshot(void* rgbBuffer,
