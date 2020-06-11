@@ -116,8 +116,8 @@ void ScreenshotCommand::onExecute(Context* ctx)
   if (params().srgb())
     cmd::convert_color_profile(spr, gfx::ColorSpace::MakeSRGB());
 
-  if (params().steam()) {
 #ifdef ENABLE_STEAM
+  if (params().steam()) {
     if (auto steamAPI = steam::SteamAPI::instance()) {
       // Get image again (cmd::convert_color_profile() might have changed it)
       img = cel->image();
@@ -141,8 +141,8 @@ void ScreenshotCommand::onExecute(Context* ctx)
       if (steamAPI->writeScreenshot(&rgbBuffer[0], rgbBuffer.size(), w*scale, h*scale))
         return;
     }
-#endif
   }
+#endif
 
   if (params().save()) {
     save_document(ctx, doc.get());
@@ -156,9 +156,12 @@ void ScreenshotCommand::onExecute(Context* ctx)
 std::string ScreenshotCommand::onGetFriendlyName() const
 {
   std::string name;
+#ifdef ENABLE_STEAM
   if (params().steam())
     name = Strings::commands_Screenshot_Steam();
-  else if (params().save())
+  else
+#endif
+  if (params().save())
     name = Strings::commands_Screenshot_Save();
   else
     name = Strings::commands_Screenshot_Open();
