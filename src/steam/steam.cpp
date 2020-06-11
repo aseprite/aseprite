@@ -43,23 +43,23 @@ struct CallbackMsg_t {
 };
 
 // Steam main API
-typedef bool __cdecl (*SteamAPI_Init_Func)();
-typedef void __cdecl (*SteamAPI_Shutdown_Func)();
-typedef HSteamPipe __cdecl (*SteamAPI_GetHSteamPipe_Func)();
+typedef bool (__cdecl *SteamAPI_Init_Func)();
+typedef void (__cdecl *SteamAPI_Shutdown_Func)();
+typedef HSteamPipe (__cdecl *SteamAPI_GetHSteamPipe_Func)();
 
 // Steam callbacks
-typedef void __cdecl (*SteamAPI_ManualDispatch_Init_Func)();
-typedef void __cdecl (*SteamAPI_ManualDispatch_RunFrame_Func)(HSteamPipe);
-typedef bool __cdecl (*SteamAPI_ManualDispatch_GetNextCallback_Func)(HSteamPipe, CallbackMsg_t*);
-typedef void __cdecl (*SteamAPI_ManualDispatch_FreeLastCallback_Func)(HSteamPipe);
+typedef void (__cdecl *SteamAPI_ManualDispatch_Init_Func)();
+typedef void (__cdecl *SteamAPI_ManualDispatch_RunFrame_Func)(HSteamPipe);
+typedef bool (__cdecl *SteamAPI_ManualDispatch_GetNextCallback_Func)(HSteamPipe, CallbackMsg_t*);
+typedef void (__cdecl *SteamAPI_ManualDispatch_FreeLastCallback_Func)(HSteamPipe);
 
 // ISteamScreenshots
-typedef ISteamScreenshots* __cdecl (*SteamAPI_SteamScreenshots_v003_Func)();
-typedef ScreenshotHandle __cdecl (*SteamAPI_ISteamScreenshots_WriteScreenshot_Func)(ISteamScreenshots*, void*, uint32_t, int, int);
+typedef ISteamScreenshots* (__cdecl *SteamAPI_SteamScreenshots_v003_Func)();
+typedef ScreenshotHandle (__cdecl *SteamAPI_ISteamScreenshots_WriteScreenshot_Func)(ISteamScreenshots*, void*, uint32_t, int, int);
 
 // ISteamUtils
-typedef ISteamUtils* __cdecl (*SteamAPI_SteamUtils_v009_Func)();
-typedef uint32_t __cdecl (*SteamAPI_ISteamUtils_GetAppID_Func)(ISteamUtils*);
+typedef ISteamUtils* (__cdecl *SteamAPI_SteamUtils_v009_Func)();
+typedef uint32_t (__cdecl *SteamAPI_ISteamUtils_GetAppID_Func)(ISteamUtils*);
 
 #ifdef _WIN32
   #ifdef _WIN64
