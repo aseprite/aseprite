@@ -1523,16 +1523,17 @@ void Timeline::onResize(ui::ResizeEvent& ev)
 {
   gfx::Rect rc = ev.bounds();
   setBoundsQuietly(rc);
+  setSeparatorX(m_separator_x);
 
   gfx::Size sz = m_aniControls.sizeHint();
   m_aniControls.setBounds(
     gfx::Rect(
       rc.x,
       rc.y+(visibleTagBands()-1)*oneTagHeight(),
-      std::min(sz.w, m_separator_x),
+      (!m_sprite || m_sprite->tags().empty() ? std::min(sz.w, rc.w):
+                                               std::min(sz.w, m_separator_x)),
       oneTagHeight()));
 
-  setSeparatorX(m_separator_x);
   updateScrollBars();
 }
 
@@ -2964,6 +2965,8 @@ void Timeline::regenerateRows()
 
 void Timeline::regenerateTagBands()
 {
+  const bool oldEmptyTagBand = m_tagBand.empty();
+
   // TODO improve this implementation
   std::vector<unsigned char> tagsPerFrame(m_sprite->totalFrames(), 0);
   std::vector<Tag*> bands(4, nullptr);
@@ -3001,8 +3004,13 @@ void Timeline::regenerateTagBands()
   if (m_tagFocusBand >= m_tagBands)
     m_tagFocusBand = -1;
 
-  if (oldVisibleBands != visibleTagBands())
+  if (oldVisibleBands != visibleTagBands() ||
+      // This case is to re-layout the timeline when the AniControl
+      // can use more/less space because there weren't tags and now
+      // there tags, or viceversa.
+      oldEmptyTagBand != m_tagBand.empty()) {
     layout();
+  }
 }
 
 int Timeline::visibleTagBands() const
