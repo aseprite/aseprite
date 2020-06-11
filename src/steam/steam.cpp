@@ -11,9 +11,11 @@
 
 #include "steam/steam.h"
 
+#include "base/convert_to.h"
 #include "base/dll.h"
 #include "base/fs.h"
 #include "base/ints.h"
+#include "base/launcher.h"
 #include "base/log.h"
 #include "base/string.h"
 
@@ -22,12 +24,15 @@ namespace steam {
 typedef uint32_t HSteamPipe;
 typedef uint32_t HSteamUser;
 typedef uint32_t ScreenshotHandle;
-typedef void* ISteamScreenshots;
+struct ISteamScreenshots;
+struct ISteamUtils;
 
 enum {
   // Last callback received from Steam client when it's Steam is closed
   kSteamServersDisconnected = 103,
   kSteamUndocumentedLastCallback = 1009,
+  // When a screenshot is ready in the library
+  kScreenshotReady = 2301,
 };
 
 struct CallbackMsg_t {
@@ -51,6 +56,10 @@ typedef void __cdecl (*SteamAPI_ManualDispatch_FreeLastCallback_Func)(HSteamPipe
 // ISteamScreenshots
 typedef ISteamScreenshots* __cdecl (*SteamAPI_SteamScreenshots_v003_Func)();
 typedef ScreenshotHandle __cdecl (*SteamAPI_ISteamScreenshots_WriteScreenshot_Func)(ISteamScreenshots*, void*, uint32_t, int, int);
+
+// ISteamUtils
+typedef ISteamUtils* __cdecl (*SteamAPI_SteamUtils_v009_Func)();
+typedef uint32_t __cdecl (*SteamAPI_ISteamUtils_GetAppID_Func)(ISteamUtils*);
 
 #ifdef _WIN32
   #ifdef _WIN64
@@ -140,9 +149,29 @@ public:
       //TRACEARGS("SteamAPI_ManualDispatch_GetNextCallback", msg.callback);
 
       bool disconnected = false;
-      if (msg.callback == kSteamServersDisconnected ||
-          msg.callback == kSteamUndocumentedLastCallback) {
-        disconnected = true;
+      switch (msg.callback) {
+        case kSteamServersDisconnected:
+        case kSteamUndocumentedLastCallback:
+          disconnected = true;
+          break;
+
+        // When a screenshot is ready, we open the Steam library of screenshots
+        case kScreenshotReady: {
+          std::string url = "steam://open/screenshots/";
+
+          auto SteamAPI_SteamUtils_v009 = GETPROC(SteamAPI_SteamUtils_v009);
+          auto SteamAPI_ISteamUtils_GetAppID = GETPROC(SteamAPI_ISteamUtils_GetAppID);
+          if (SteamAPI_SteamUtils_v009 &&
+              SteamAPI_ISteamUtils_GetAppID) {
+            ISteamUtils* utils = SteamAPI_SteamUtils_v009();
+            if (utils) {
+              int appId = SteamAPI_ISteamUtils_GetAppID(utils);
+              url += base::convert_to<std::string>(appId);
+            }
+          }
+          base::launcher::open_url(url);
+          break;
+        }
       }
       SteamAPI_ManualDispatch_FreeLastCallback(m_pipe);
 
