@@ -1,0 +1,19 @@
+GIMP Palette
+Channels: RGBA
+#
+  0   0   0   0 Transparent
+  1   1   1 255 Black
+ 62 184  73 255 Medium green
+116 208 125 255 Light green
+ 89  85 224 255 Dark blue
+128 118 241 255 Light blue
+185  94  81 255 Dark red
+101 219 239 255 Cyan
+219 101  89 255 Medium red
+255 137 125 255 Light red
+204 195  94 255 Dark yellow
+222 208 135 255 Light yellow
+ 58 162  65 255 Dark green
+183 102 181 255 Magenta
+204 204 204 255 Gray
+255 255 255 255 White
