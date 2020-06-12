@@ -48,6 +48,10 @@
 #include "ui/intern.h"
 #include "ui/ui.h"
 
+#ifdef ENABLE_STEAM
+  #include "steam/steam.h"
+#endif
+
 #include <algorithm>
 #include <list>
 #include <vector>
@@ -366,6 +370,11 @@ void defer_invalid_rect(const gfx::Rect& rc)
 // Manager event handler.
 bool CustomizedGuiManager::onProcessMessage(Message* msg)
 {
+#ifdef ENABLE_STEAM
+  if (auto steamAPI = steam::SteamAPI::instance())
+    steamAPI->runCallbacks();
+#endif
+
   switch (msg->type()) {
 
     case kCloseDisplayMessage: {

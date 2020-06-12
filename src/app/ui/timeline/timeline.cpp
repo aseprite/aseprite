@@ -393,9 +393,16 @@ void Timeline::detachDocument()
     m_thumbnailsPrefConn.disconnect();
     m_document->remove_observer(this);
     m_document = nullptr;
-    m_sprite = nullptr;
-    m_layer = nullptr;
   }
+
+  // Reset all pointers to this document, even DocRanges, we don't
+  // want to store a pointer to a layer of a document that we are not
+  // observing anymore (because the document might be deleted soon).
+  m_sprite = nullptr;
+  m_layer = nullptr;
+  m_range.clearRange();
+  m_startRange.clearRange();
+  m_dropRange.clearRange();
 
   if (m_editor) {
     m_editor->remove_observer(this);
@@ -1057,7 +1064,7 @@ bool Timeline::onProcessMessage(Message* msg)
         // we shouldn't change the hot (so the separator can be
         // tracked to the mouse's released).
         if (m_clk.part == PART_SEPARATOR) {
-          m_separator_x = std::max(0, mousePos.x);
+          setSeparatorX(mousePos.x);
           layout();
           return true;
         }
@@ -1516,13 +1523,15 @@ void Timeline::onResize(ui::ResizeEvent& ev)
 {
   gfx::Rect rc = ev.bounds();
   setBoundsQuietly(rc);
+  setSeparatorX(m_separator_x);
 
   gfx::Size sz = m_aniControls.sizeHint();
   m_aniControls.setBounds(
     gfx::Rect(
       rc.x,
       rc.y+(visibleTagBands()-1)*oneTagHeight(),
-      std::min(sz.w, m_separator_x),
+      (!m_sprite || m_sprite->tags().empty() ? std::min(sz.w, rc.w):
+                                               std::min(sz.w, m_separator_x)),
       oneTagHeight()));
 
   updateScrollBars();
@@ -2965,6 +2974,8 @@ void Timeline::regenerateRows()
 
 void Timeline::regenerateTagBands()
 {
+  const bool oldEmptyTagBand = m_tagBand.empty();
+
   // TODO improve this implementation
   std::vector<unsigned char> tagsPerFrame(m_sprite->totalFrames(), 0);
   std::vector<Tag*> bands(4, nullptr);
@@ -3002,8 +3013,13 @@ void Timeline::regenerateTagBands()
   if (m_tagFocusBand >= m_tagBands)
     m_tagFocusBand = -1;
 
-  if (oldVisibleBands != visibleTagBands())
+  if (oldVisibleBands != visibleTagBands() ||
+      // This case is to re-layout the timeline when the AniControl
+      // can use more/less space because there weren't tags and now
+      // there tags, or viceversa.
+      oldEmptyTagBand != m_tagBand.empty()) {
     layout();
+  }
 }
 
 int Timeline::visibleTagBands() const
@@ -4215,6 +4231,11 @@ void Timeline::setLayerCollapsedFlag(const layer_t l, const bool state)
     regenerateRows();
     invalidate();
   }
+}
+
+void Timeline::setSeparatorX(int newValue)
+{
+  m_separator_x = base::clamp(newValue, headerBoxWidth(), bounds().w-guiscale());
 }
 
 } // namespace app

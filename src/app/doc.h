@@ -58,7 +58,6 @@ namespace app {
   // An application document. It is the class used to contain one file
   // opened and being edited by the user (a sprite).
   class Doc : public doc::Document,
-              public base::RWLock,
               public obs::observable<DocObserver> {
     enum Flags {
       kAssociatedToFile = 1, // This sprite is associated to a file in the file-system
@@ -72,6 +71,17 @@ namespace app {
 
     Context* context() const { return m_ctx; }
     void setContext(Context* ctx);
+
+    // Lock/unlock API (RWLock wrapper)
+    bool canWriteLockFromRead() const;
+    bool readLock(int timeout);
+    bool writeLock(int timeout);
+    bool upgradeToWrite(int timeout);
+    void downgradeToRead();
+    void unlock();
+
+    bool weakLock(base::RWLock::WeakLock* weak_lock_flag);
+    void weakUnlock();
 
     // Sets active/running transaction.
     void setTransaction(Transaction* transaction);
@@ -216,8 +226,14 @@ namespace app {
     void removeFromContext();
     void updateOSColorSpace(bool appWideSignal);
 
+    // The document is in the collection of documents of this context.
     Context* m_ctx;
+
+    // Internal states of the document.
     int m_flags;
+
+    // Read-Write locks.
+    base::RWLock m_rwLock;
 
     // Undo and redo information about the document.
     std::unique_ptr<DocUndo> m_undo;

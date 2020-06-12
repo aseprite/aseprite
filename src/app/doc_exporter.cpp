@@ -47,6 +47,7 @@
 #include "render/render.h"
 #include "ver/info.h"
 
+#include <algorithm>
 #include <cstdio>
 #include <fstream>
 #include <iomanip>
@@ -1361,68 +1362,86 @@ void DocExporter::createDataFile(const Samples& samples,
 
   // meta.layers
   if (m_listLayers) {
-    os << ",\n"
-       << "  \"layers\": [";
-
-    bool firstLayer = true;
+    LayerList metaLayers;
     for (auto& item : m_documents) {
       Doc* doc = item.doc;
       Sprite* sprite = doc->sprite();
-      LayerList layers;
+      Layer* root = sprite->root();
 
+      LayerList layers;
       if (item.selLayers)
         layers = item.selLayers->toLayerList();
       else
         layers = sprite->allVisibleLayers();
 
       for (Layer* layer : layers) {
-        if (firstLayer)
-          firstLayer = false;
-        else
-          os << ",";
-        os << "\n   { \"name\": \"" << escape_for_json(layer->name()) << "\"";
-
-        if (layer->parent() != layer->sprite()->root())
-          os << ", \"group\": \"" << escape_for_json(layer->parent()->name()) << "\"";
-
-        if (LayerImage* layerImg = dynamic_cast<LayerImage*>(layer)) {
-          os << ", \"opacity\": " << layerImg->opacity()
-             << ", \"blendMode\": \"" << blend_mode_to_string(layerImg->blendMode()) << "\"";
+        // If this layer is inside a group, check that the group will
+        // be included in the meta data too.
+        Layer* group = layer->parent();
+        int pos = int(metaLayers.size());
+        while (group && group != root) {
+          if (std::find(metaLayers.begin(), metaLayers.end(), group) == metaLayers.end()) {
+            metaLayers.insert(metaLayers.begin()+pos, group);
+          }
+          group = group->parent();
         }
-        os << layer->userData();
+        // Insert the layer
+        if (std::find(metaLayers.begin(), metaLayers.end(), layer) == metaLayers.end()) {
+          metaLayers.push_back(layer);
+        }
+      }
+    }
 
-        // Cels
-        CelList cels;
-        layer->getCels(cels);
-        bool someCelWithData = false;
+    bool firstLayer = true;
+    os << ",\n"
+       << "  \"layers\": [";
+    for (Layer* layer : metaLayers) {
+      if (firstLayer)
+        firstLayer = false;
+      else
+        os << ",";
+      os << "\n   { \"name\": \"" << escape_for_json(layer->name()) << "\"";
+
+      if (layer->parent() != layer->sprite()->root())
+        os << ", \"group\": \"" << escape_for_json(layer->parent()->name()) << "\"";
+
+      if (LayerImage* layerImg = dynamic_cast<LayerImage*>(layer)) {
+        os << ", \"opacity\": " << layerImg->opacity()
+           << ", \"blendMode\": \"" << blend_mode_to_string(layerImg->blendMode()) << "\"";
+      }
+      os << layer->userData();
+
+      // Cels
+      CelList cels;
+      layer->getCels(cels);
+      bool someCelWithData = false;
+      for (const Cel* cel : cels) {
+        if (!cel->data()->userData().isEmpty()) {
+          someCelWithData = true;
+          break;
+        }
+      }
+
+      if (someCelWithData) {
+        bool firstCel = true;
+
+        os << ", \"cels\": [";
         for (const Cel* cel : cels) {
           if (!cel->data()->userData().isEmpty()) {
-            someCelWithData = true;
-            break;
+            if (firstCel)
+              firstCel = false;
+            else
+              os << ", ";
+
+            os << "{ \"frame\": " << cel->frame()
+               << cel->data()->userData()
+               << " }";
           }
         }
-
-        if (someCelWithData) {
-          bool firstCel = true;
-
-          os << ", \"cels\": [";
-          for (const Cel* cel : cels) {
-            if (!cel->data()->userData().isEmpty()) {
-              if (firstCel)
-                firstCel = false;
-              else
-                os << ", ";
-
-              os << "{ \"frame\": " << cel->frame()
-                 << cel->data()->userData()
-                 << " }";
-            }
-          }
-          os << "]";
-        }
-
-        os << " }";
+        os << "]";
       }
+
+      os << " }";
     }
     os << "\n  ]";
   }

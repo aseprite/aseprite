@@ -97,8 +97,6 @@ namespace app {
     void removeLayer(Layer* layer);
     void restackLayerAfter(Layer* layer, LayerGroup* parent, Layer* afterThis);
     void restackLayerBefore(Layer* layer, LayerGroup* parent, Layer* beforeThis);
-    void backgroundFromLayer(Layer* layer);
-    void layerFromBackground(Layer* layer);
     Layer* duplicateLayerAfter(Layer* sourceLayer, LayerGroup* parent, Layer* afterLayer);
     Layer* duplicateLayerBefore(Layer* sourceLayer, LayerGroup* parent, Layer* beforeLayer);
 

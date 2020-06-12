@@ -32,7 +32,7 @@ because they don't depend on any other component.
 
 ## Level 2
 
-  * [doc](doc/) (base, fixmath, gfx, os): Document model library.
+  * [doc](doc/) (base, fixmath, gfx): Document model library.
   * [ui](ui/) (base, gfx, os): Portable UI library (buttons, windows, text fields, etc.)
   * [updater](updater/) (base, cfg, net): Component to check for updates.
 

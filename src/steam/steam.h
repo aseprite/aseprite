@@ -1,4 +1,5 @@
 // Aseprite Steam Wrapper
+// Copyright (c) 2020 Igara Studio S.A.
 // Copyright (c) 2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -12,10 +13,17 @@ namespace steam {
 
 class SteamAPI {
 public:
+  static SteamAPI* instance();
+
   SteamAPI();
   ~SteamAPI();
 
   bool initialized() const;
+  void runCallbacks();
+
+  bool writeScreenshot(void* rgbBuffer,
+                       uint32_t sizeInBytes,
+                       int width, int height);
 
 private:
   class Impl;

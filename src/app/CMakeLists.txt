@@ -286,6 +286,7 @@ if(ENABLE_UI)
     commands/cmd_show.cpp
     commands/cmd_slice_properties.cpp
     commands/cmd_sprite_properties.cpp
+    commands/cmd_swap_checkerboard_colors.cpp
     commands/cmd_switch_colors.cpp
     commands/cmd_symmetry_mode.cpp
     commands/cmd_tiled_mode.cpp
@@ -611,6 +612,7 @@ add_library(app-lib
   util/autocrop.cpp
   util/buffer_region.cpp
   util/cel_ops.cpp
+  util/conversion_to_surface.cpp
   util/expand_cel_canvas.cpp
   util/filetoks.cpp
   util/freetype_utils.cpp

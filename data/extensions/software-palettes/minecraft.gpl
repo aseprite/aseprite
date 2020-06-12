@@ -1,0 +1,54 @@
+GIMP Palette
+Name: Minecraft
+#
+# Based on Minecraft 1.14 default texture
+# Order: wool, concrete, terracotta
+#
+234 237 237	white_wool
+241 119  22	orange_wool
+190  70 181	magenta_wool
+ 60 176 218	light_blue_wool
+249 198  41	yellow_wool
+113 186  26	lime_wool
+238 144 173	pink_wool
+ 63  69  72	gray_wool
+142 143 135	light_gray_wool
+ 21 138 145	cyan_wool
+123  43 173	purple_wool
+ 53  58 158	blue_wool
+115  72  41	brown_wool
+ 85 110  28	green_wool
+161  40  35	red_wool
+ 22  22  27	black_wool
+207 213 214	white_concrete
+224  97   1	orange_concrete
+169  48 159	magenta_concrete
+ 36 137 199	light_blue_concrete
+241 175  21	yellow_concrete
+ 94 169  25	lime_concrete
+214 101 143	pink_concrete
+ 55  58  62	gray_concrete
+125 125 115	light_gray_concrete
+ 21 119 136	cyan_concrete
+100  32 156	purple_concrete
+ 45  47 143	blue_concrete
+ 96  60  32	brown_concrete
+ 73  91  36	green_concrete
+142  33  33	red_concrete
+  8  10  15	black_concrete
+210 178 161	white_terracotta
+162  84  38	orange_terracotta
+150  88 109	magenta_terracotta
+114 109 138	light_blue_terracotta
+186 133  35	yellow_terracotta
+104 118  53	lime_terracotta
+162  78  79	pink_terracotta
+ 58  42  36	gray_terracotta
+135 107  98	light_gray_terracotta
+ 87  91  91	cyan_terracotta
+118  70  86	purple_terracotta
+ 74  60  91	blue_terracotta
+ 77  51  36	brown_terracotta
+ 76  83  42	green_terracotta
+143  61  47	red_terracotta
+ 37  23  16	black_terracotta

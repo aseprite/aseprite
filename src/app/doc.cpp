@@ -95,6 +95,46 @@ void Doc::setContext(Context* ctx)
   onContextChanged();
 }
 
+bool Doc::canWriteLockFromRead() const
+{
+  return m_rwLock.canWriteLockFromRead();
+}
+
+bool Doc::readLock(int timeout)
+{
+  return m_rwLock.lock(base::RWLock::ReadLock, timeout);
+}
+
+bool Doc::writeLock(int timeout)
+{
+  return m_rwLock.lock(base::RWLock::WriteLock, timeout);
+}
+
+bool Doc::upgradeToWrite(int timeout)
+{
+  return m_rwLock.upgradeToWrite(timeout);
+}
+
+void Doc::downgradeToRead()
+{
+  m_rwLock.downgradeToRead();
+}
+
+void Doc::unlock()
+{
+  m_rwLock.unlock();
+}
+
+bool Doc::weakLock(base::RWLock::WeakLock* weak_lock_flag)
+{
+  return m_rwLock.weakLock(weak_lock_flag);
+}
+
+void Doc::weakUnlock()
+{
+  m_rwLock.weakUnlock();
+}
+
 void Doc::setTransaction(Transaction* transaction)
 {
   if (transaction) {
@@ -188,7 +228,7 @@ void Doc::notifyLayerMergedDown(Layer* srcLayer, Layer* targetLayer)
 void Doc::notifyCelMoved(Layer* fromLayer, frame_t fromFrame, Layer* toLayer, frame_t toFrame)
 {
   DocEvent ev(this);
-  ev.sprite(fromLayer->sprite());
+  ev.sprite(toLayer->sprite());
   ev.layer(fromLayer);
   ev.frame(fromFrame);
   ev.targetLayer(toLayer);
@@ -199,8 +239,8 @@ void Doc::notifyCelMoved(Layer* fromLayer, frame_t fromFrame, Layer* toLayer, fr
 void Doc::notifyCelCopied(Layer* fromLayer, frame_t fromFrame, Layer* toLayer, frame_t toFrame)
 {
   DocEvent ev(this);
-  ev.sprite(fromLayer->sprite());
-  ev.layer(fromLayer);
+  ev.sprite(toLayer->sprite());
+  ev.layer(fromLayer);          // From layer can be nullptr
   ev.frame(fromFrame);
   ev.targetLayer(toLayer);
   ev.targetFrame(toFrame);

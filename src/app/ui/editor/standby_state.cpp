@@ -18,6 +18,7 @@
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/doc_range.h"
+#include "app/i18n/strings.h"
 #include "app/ini_file.h"
 #include "app/pref/preferences.h"
 #include "app/tools/active_tool.h"
@@ -47,6 +48,7 @@
 #include "app/ui/status_bar.h"
 #include "app/ui/timeline/timeline.h"
 #include "app/ui_context.h"
+#include "app/util/layer_utils.h"
 #include "app/util/new_image_from_mask.h"
 #include "app/util/readable_time.h"
 #include "base/bind.h"
@@ -197,7 +199,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
       }
       else if (!layer->isMovable() || !layer->isEditableHierarchy()) {
         StatusBar::instance()->showTip(
-          1000, fmt::format("Layer '{}' is locked", layer->name()));
+          1000, fmt::format(Strings::statusbar_tips_layer_locked(), layer->name()));
       }
       else {
         MovingCelCollect collect(editor, layer);
@@ -300,12 +302,6 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
         int x, y, opacity;
         Image* image = site.image(&x, &y, &opacity);
         if (layer && image) {
-          if (!layer->isEditableHierarchy()) {
-            StatusBar::instance()->showTip(
-              1000, fmt::format("Layer '{}' is locked", layer->name()));
-            return true;
-          }
-
           // Change to MovingPixelsState
           transformSelection(editor, msg, handle);
         }
@@ -321,12 +317,6 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
 
     // Move selected pixels
     if (layer && editor->canStartMovingSelectionPixels() && msg->left()) {
-      if (!layer->isEditableHierarchy()) {
-        StatusBar::instance()->showTip(
-          1000, fmt::format("Layer '{}' is locked", layer->name()));
-        return true;
-      }
-
       // Change to MovingPixelsState
       transformSelection(editor, msg, MovePixelsHandle);
       return true;
@@ -758,6 +748,9 @@ void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleT
                         layer->name()));
     return;
   }
+
+  if (layer_is_locked(editor))
+    return;
 
   try {
     // Clear brush preview, as the extra cel will be replaced with the

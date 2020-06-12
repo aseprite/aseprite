@@ -42,6 +42,7 @@
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
 #include "app/util/expand_cel_canvas.h"
+#include "app/util/layer_utils.h"
 #include "doc/cel.h"
 #include "doc/image.h"
 #include "doc/layer.h"
@@ -736,9 +737,7 @@ tools::ToolLoop* create_tool_loop(
       return nullptr;
     }
     // If the active layer is read-only.
-    else if (!layer->isEditableHierarchy()) {
-      StatusBar::instance()->showTip(
-        1000, fmt::format("Layer '{}' is locked", layer->name()));
+    else if (layer_is_locked(editor)) {
       return nullptr;
     }
     // If the active layer is reference.

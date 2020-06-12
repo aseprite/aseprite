@@ -367,14 +367,18 @@ private:
     }
 
     // Read color space
-    gfx::ColorSpacePtr colorSpace = readColorSpace(s);
-    if (colorSpace)
-      spr->setColorSpace(colorSpace);
+    if (!s.eof()) {
+      gfx::ColorSpacePtr colorSpace = readColorSpace(s);
+      if (colorSpace)
+        spr->setColorSpace(colorSpace);
+    }
 
     // Read grid bounds
-    gfx::Rect gridBounds = readGridBounds(s);
-    if (!gridBounds.isEmpty())
-      spr->setGridBounds(gridBounds);
+    if (!s.eof()) {
+      gfx::Rect gridBounds = readGridBounds(s);
+      if (!gridBounds.isEmpty())
+        spr->setGridBounds(gridBounds);
+    }
 
     return spr.release();
   }
@@ -384,6 +388,12 @@ private:
     const gfx::ColorSpace::Flag flags = (gfx::ColorSpace::Flag)read16(s);
     const double gamma = fixmath::fixtof(read32(s));
     const size_t n = read32(s);
+
+    // If the color space file is to big, it's because the sprite file
+    // is invalid or or from an old session without color spcae.
+    if (n > 1024*1024*64) // 64 MB is too much for an ICC file
+      return nullptr;
+
     std::vector<uint8_t> buf(n);
     if (n)
       s.read((char*)&buf[0], n);

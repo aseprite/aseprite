@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -21,7 +21,7 @@
 #include "app/ui/editor/editor_render.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/status_bar.h"
-#include "doc/conversion_to_surface.h"
+#include "app/util/conversion_to_surface.h"
 #include "doc/image.h"
 #include "doc/palette.h"
 #include "doc/primitives.h"
@@ -231,7 +231,7 @@ protected:
         break;
     }
 
-    doc::convert_image_to_surface(m_doublebuf.get(), m_pal,
+    convert_image_to_surface(m_doublebuf.get(), m_pal,
       m_doublesur, 0, 0, 0, 0, m_doublebuf->width(), m_doublebuf->height());
     g->blit(m_doublesur, 0, 0, 0, 0, m_doublesur->width(), m_doublesur->height());
   }

@@ -92,7 +92,7 @@ namespace app {
     render::GradientType gradientType();
 
     // For freehand with dynamics
-    tools::DynamicsOptions getDynamics();
+    const tools::DynamicsOptions& getDynamics() const;
 
     // Signals
     obs::signal<void()> BrushChange;

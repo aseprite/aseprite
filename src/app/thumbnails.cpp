@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 // Copyright (C) 2016  Carlo Caputo
 //
@@ -10,9 +10,9 @@
 #include "config.h"
 #endif
 
+#include "app/util/conversion_to_surface.h"
 #include "doc/blend_mode.h"
 #include "doc/cel.h"
-#include "doc/conversion_to_surface.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
 #include "os/surface.h"

@@ -26,6 +26,8 @@
       { "id": "Game Boy",             "path": "./gameboy.gpl" },
       { "id": "Game Boy Color Type1", "path": "./gameboy-color-type1.gpl" },
       { "id": "Master System",        "path": "./master-system.gpl" },
+      { "id": "MSX1",                 "path": "./msx1.gpl" },
+      { "id": "MSX2",                 "path": "./msx2.gpl" },
       { "id": "NES",                  "path": "./nes.gpl" },
       { "id": "NES NTSC",             "path": "./nes-ntsc.gpl" },
       { "id": "Teletext",             "path": "./teletext.gpl" },

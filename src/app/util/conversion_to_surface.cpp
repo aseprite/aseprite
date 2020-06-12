@@ -1,14 +1,15 @@
-// Aseprite Document Library
+// Aseprite
+// Copyright (c) 2020  Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
-// This file is released under the terms of the MIT license.
-// Read LICENSE.txt for more information.
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
-#include "doc/conversion_to_surface.h"
+#include "app/util/conversion_to_surface.h"
 
 #include "base/24bits.h"
 #include "doc/algo.h"
@@ -22,7 +23,9 @@
 #include <algorithm>
 #include <stdexcept>
 
-namespace doc {
+namespace app {
+
+using namespace doc;
 
 namespace {
 
@@ -131,8 +134,14 @@ void convert_image_to_surface_selector(const Image* image, os::Surface* surface,
 
 } // anonymous namespace
 
-void convert_image_to_surface(const Image* image, const Palette* palette,
-  os::Surface* surface, int src_x, int src_y, int dst_x, int dst_y, int w, int h)
+
+void convert_image_to_surface(
+  const doc::Image* image,
+  const doc::Palette* palette,
+  os::Surface* surface,
+  int src_x, int src_y,
+  int dst_x, int dst_y,
+  int w, int h)
 {
   gfx::Rect srcBounds(src_x, src_y, w, h);
   srcBounds = srcBounds.createIntersection(image->bounds());
@@ -198,4 +207,4 @@ void convert_image_to_surface(const Image* image, const Palette* palette,
   }
 }
 
-} // namespace doc
+} // namespace app

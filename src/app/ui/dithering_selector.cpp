@@ -15,8 +15,8 @@
 #include "app/extensions.h"
 #include "app/modules/palettes.h"
 #include "app/ui/skin/skin_theme.h"
+#include "app/util/conversion_to_surface.h"
 #include "base/bind.h"
-#include "doc/conversion_to_surface.h"
 #include "doc/image.h"
 #include "doc/image_ref.h"
 #include "doc/primitives.h"
@@ -113,8 +113,8 @@ private:
     }
 
     m_preview = os::instance()->createRgbaSurface(w, h);
-    doc::convert_image_to_surface(image2.get(), palette, m_preview,
-                                  0, 0, 0, 0, w, h);
+    convert_image_to_surface(image2.get(), palette, m_preview,
+                             0, 0, 0, 0, w, h);
 
     m_palId = palette->id();
     m_palMods = palette->getModifications();

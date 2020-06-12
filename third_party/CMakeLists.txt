@@ -33,6 +33,7 @@ if(NOT USE_SHARED_GIFLIB)
 endif()
 
 if(WITH_WEBP_SUPPORT)
+  set(WEBP_BUILD_EXTRAS OFF CACHE BOOL "Build extras.")
   add_subdirectory(libwebp)
 endif()
 

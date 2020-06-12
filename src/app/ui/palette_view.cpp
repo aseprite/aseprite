@@ -26,11 +26,11 @@
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
+#include "app/util/conversion_to_surface.h"
 #include "app/util/pal_ops.h"
 #include "base/bind.h"
 #include "base/clamp.h"
 #include "base/convert_to.h"
-#include "doc/conversion_to_surface.h"
 #include "doc/image.h"
 #include "doc/layer_tilemap.h"
 #include "doc/palette.h"
@@ -293,8 +293,8 @@ public:
       int w = tileImage->width();
       int h = tileImage->height();
       os::Surface* surface = os::instance()->createRgbaSurface(w, h);
-      doc::convert_image_to_surface(tileImage.get(), get_current_palette(),
-                                    surface, 0, 0, 0, 0, w, h);
+      convert_image_to_surface(tileImage.get(), get_current_palette(),
+                               surface, 0, 0, 0, 0, w, h);
       g->drawRgbaSurface(surface, gfx::Rect(0, 0, w, h), box);
       surface->dispose();
     }
