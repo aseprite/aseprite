@@ -46,8 +46,9 @@ clone the repository on Windows.
 
 # Dependencies
 
-To compile Aseprite you will need:
 **NOTICE: _With the 1.1.0 release of libwebp, you now need to self-compile Skia using the latest commit if you use Linux or you will have issues. Also be sure to use the aseprite target and copy the binary manually._**
+
+To compile Aseprite you will need:
 
 * The latest version of [CMake](https://cmake.org) (3.14 or greater)
 * [Ninja](https://ninja-build.org) build system
@@ -165,6 +166,7 @@ If you have a Retina display, check the following issue:
 ## Linux details
 
 **NOTICE: _With the 1.1.0 release of libwebp, you now need to self-compile Skia using the latest commit or you will have issues. Also be sure to use the `aseprite` target and copy the binary manually._**
+
 Run `cmake` with the following parameters and then `ninja`:
 
     cd aseprite
