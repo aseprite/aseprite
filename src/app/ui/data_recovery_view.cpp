@@ -15,6 +15,7 @@
 #include "app/app_menus.h"
 #include "app/crash/data_recovery.h"
 #include "app/crash/session.h"
+#include "app/doc.h"
 #include "app/i18n/strings.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
@@ -28,6 +29,7 @@
 #include "app/ui/workspace.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
+#include "base/fs.h"
 #include "fmt/format.h"
 #include "ui/alert.h"
 #include "ui/button.h"
@@ -172,6 +174,15 @@ private:
     if (dynamic_cast<DataRecoveryView*>(restoreView) &&
         isSelected()) {
       restoreView = nullptr;
+    }
+
+    // Check if the original path of the recovered document exists, in
+    // other case remove the path so we use the default one (last path
+    // used, or user docs folder, etc.)
+    {
+      std::string dir = base::get_file_path(doc->filename());
+      if (!base::is_directory(dir))
+        doc->setFilename(base::get_file_name(doc->filename()));
     }
 
     UIContext::instance()->documents().add(doc);
