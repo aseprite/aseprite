@@ -1523,7 +1523,6 @@ void Timeline::onResize(ui::ResizeEvent& ev)
 {
   gfx::Rect rc = ev.bounds();
   setBoundsQuietly(rc);
-  setSeparatorX(m_separator_x);
 
   gfx::Size sz = m_aniControls.sizeHint();
   m_aniControls.setBounds(
@@ -1531,7 +1530,7 @@ void Timeline::onResize(ui::ResizeEvent& ev)
       rc.x,
       rc.y+(visibleTagBands()-1)*oneTagHeight(),
       (!m_sprite || m_sprite->tags().empty() ? std::min(sz.w, rc.w):
-                                               std::min(sz.w, m_separator_x)),
+                                               std::min(sz.w, separatorX())),
       oneTagHeight()));
 
   updateScrollBars();
@@ -2628,7 +2627,7 @@ void Timeline::drawPaddings(ui::Graphics* g)
 gfx::Rect Timeline::getLayerHeadersBounds() const
 {
   gfx::Rect rc = clientBounds();
-  rc.w = m_separator_x;
+  rc.w = separatorX();
   int h = topHeight() + headerBoxHeight();
   rc.y += h;
   rc.h -= h;
@@ -2638,9 +2637,9 @@ gfx::Rect Timeline::getLayerHeadersBounds() const
 gfx::Rect Timeline::getFrameHeadersBounds() const
 {
   gfx::Rect rc = clientBounds();
-  rc.x += m_separator_x;
+  rc.x += separatorX();
   rc.y += topHeight();
-  rc.w -= m_separator_x;
+  rc.w -= separatorX();
   rc.h = headerBoxHeight();
   return rc;
 }
@@ -2667,8 +2666,8 @@ gfx::Rect Timeline::getOnionskinFramesBounds() const
 gfx::Rect Timeline::getCelsBounds() const
 {
   gfx::Rect rc = clientBounds();
-  rc.x += m_separator_x;
-  rc.w -= m_separator_x;
+  rc.x += separatorX();
+  rc.w -= separatorX();
   rc.y += headerBoxHeight() + topHeight();
   rc.h -= headerBoxHeight() + topHeight();
   return rc;
@@ -2688,8 +2687,8 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
       return gfx::Rect(bounds.x, bounds.y, bounds.w, y);
 
     case PART_SEPARATOR:
-      return gfx::Rect(bounds.x + m_separator_x, bounds.y + y,
-        m_separator_x + m_separator_w, bounds.h - y);
+      return gfx::Rect(bounds.x + separatorX(), bounds.y + y,
+                       separatorX() + m_separator_w, bounds.h - y);
 
     case PART_HEADER_EYE:
       return gfx::Rect(bounds.x + headerBoxWidth()*0, bounds.y + y,
@@ -2713,11 +2712,11 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
 
     case PART_HEADER_LAYER:
       return gfx::Rect(bounds.x + headerBoxWidth()*5, bounds.y + y,
-                       m_separator_x - headerBoxWidth()*5, headerBoxHeight());
+                       separatorX() - headerBoxWidth()*5, headerBoxHeight());
 
     case PART_HEADER_FRAME:
       return gfx::Rect(
-        bounds.x + m_separator_x + m_separator_w - 1
+        bounds.x + separatorX() + m_separator_w - 1
         + frameBoxWidth()*std::max(firstFrame(), hit.frame) - viewScroll().x,
         bounds.y + y, frameBoxWidth(), headerBoxHeight());
 
@@ -2725,7 +2724,7 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
       if (validLayer(hit.layer)) {
         return gfx::Rect(bounds.x,
           bounds.y + y + headerBoxHeight() + layerBoxHeight()*(lastLayer()-hit.layer) - viewScroll().y,
-          m_separator_x, layerBoxHeight());
+          separatorX(), layerBoxHeight());
       }
       break;
 
@@ -2758,14 +2757,14 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
         int x = headerBoxWidth()*3;
         return gfx::Rect(bounds.x + x,
           bounds.y + y + headerBoxHeight() + layerBoxHeight()*(lastLayer()-hit.layer) - viewScroll().y,
-          m_separator_x - x, layerBoxHeight());
+          separatorX() - x, layerBoxHeight());
       }
       break;
 
     case PART_CEL:
       if (validLayer(hit.layer) && hit.frame >= frame_t(0)) {
         return gfx::Rect(
-          bounds.x + m_separator_x + m_separator_w - 1 + frameBoxWidth()*hit.frame - viewScroll().x,
+          bounds.x + separatorX() + m_separator_w - 1 + frameBoxWidth()*hit.frame - viewScroll().x,
           bounds.y + y + headerBoxHeight() + layerBoxHeight()*(lastLayer()-hit.layer) - viewScroll().y,
           frameBoxWidth(), layerBoxHeight());
       }
@@ -2809,16 +2808,16 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
 
     case PART_TAGS:
       return gfx::Rect(
-        bounds.x + m_separator_x + m_separator_w - 1,
+        bounds.x + separatorX() + m_separator_w - 1,
         bounds.y,
-        bounds.w - m_separator_x - m_separator_w + 1, y);
+        bounds.w - separatorX() - m_separator_w + 1, y);
 
     case PART_TAG_BAND:
       return gfx::Rect(
-        bounds.x + m_separator_x + m_separator_w - 1,
+        bounds.x + separatorX() + m_separator_w - 1,
         bounds.y
         + (m_tagFocusBand < 0 ? oneTagHeight() * std::max(0, hit.band): 0),
-        bounds.w - m_separator_x - m_separator_w + 1,
+        bounds.w - separatorX() - m_separator_w + 1,
         oneTagHeight());
 
     case PART_TAG_SWITCH_BUTTONS: {
@@ -3059,7 +3058,7 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
         + scroll.y) / layerBoxHeight());
 
     hit.frame = frame_t((mousePos.x
-        - m_separator_x
+        - separatorX()
         - m_separator_w
         + scroll.x) / frameBoxWidth());
 
@@ -3088,8 +3087,8 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
       hit.part = PART_HEADER_ONIONSKIN_RANGE_RIGHT;
     }
     // Is the mouse on the separator.
-    else if (mousePos.x > m_separator_x-4
-          && mousePos.x <= m_separator_x)  {
+    else if (mousePos.x > separatorX()-4
+          && mousePos.x <= separatorX())  {
       hit.part = PART_SEPARATOR;
     }
     // Is the mouse on the frame tags area?
@@ -3164,7 +3163,7 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
     }
     // Is the mouse on the headers?
     else if (mousePos.y >= top && mousePos.y < top+headerBoxHeight()) {
-      if (mousePos.x < m_separator_x) {
+      if (mousePos.x < separatorX()) {
         if (getPartBounds(Hit(PART_HEADER_EYE)).contains(mousePos))
           hit.part = PART_HEADER_EYE;
         else if (getPartBounds(Hit(PART_HEADER_PADLOCK)).contains(mousePos))
@@ -3186,7 +3185,7 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
     else if (mousePos.y < top+headerBoxHeight())
       hit.part = PART_TOP;
     // Is the mouse on a layer's label?
-    else if (mousePos.x < m_separator_x) {
+    else if (mousePos.x < separatorX()) {
       if (getPartBounds(Hit(PART_ROW_EYE_ICON, hit.layer)).contains(mousePos))
         hit.part = PART_ROW_EYE_ICON;
       else if (getPartBounds(Hit(PART_ROW_PADLOCK_ICON, hit.layer)).contains(mousePos))
@@ -3242,7 +3241,7 @@ Timeline::Hit Timeline::hitTestCel(const gfx::Point& mousePos)
      + scroll.y) / layerBoxHeight());
 
   hit.frame = frame_t((mousePos.x
-                       - m_separator_x
+                       - separatorX()
                        - m_separator_w
                        + scroll.x) / frameBoxWidth());
 
@@ -4224,9 +4223,14 @@ void Timeline::setLayerCollapsedFlag(const layer_t l, const bool state)
   }
 }
 
+int Timeline::separatorX() const
+{
+  return base::clamp(m_separator_x, headerBoxWidth(), bounds().w-guiscale());
+}
+
 void Timeline::setSeparatorX(int newValue)
 {
-  m_separator_x = base::clamp(newValue, headerBoxWidth(), bounds().w-guiscale());
+  m_separator_x = std::max(0, newValue);
 }
 
 } // namespace app
