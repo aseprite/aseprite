@@ -1,5 +1,5 @@
 // Aseprite Config Library
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2014-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -96,7 +96,8 @@ public:
       m_ini.SetMultiLine();
       SI_Error err = m_ini.LoadFile(file.get());
       if (err != SI_OK) {
-        LOG(ERROR) << "CFG: Error " << err << " loading configuration from " << m_filename << "\n";
+        LOG(ERROR, "CFG: Error %d loading configuration from %s\n",
+            (int)err, m_filename.c_str());
       }
     }
   }
@@ -106,7 +107,8 @@ public:
     if (file) {
       SI_Error err = m_ini.SaveFile(file.get());
       if (err != SI_OK) {
-        LOG(ERROR) << "CFG: Error " << err << " saving configuration into " << m_filename << "\n";
+        LOG(ERROR, "CFG: Error %d saving configuration into %s\n",
+            (int)err, m_filename.c_str());
       }
     }
   }

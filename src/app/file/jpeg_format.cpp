@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -107,7 +107,7 @@ static void output_message(j_common_ptr cinfo)
   (*cinfo->err->format_message)(cinfo, buffer);
 
   // Put in the log file if.
-  LOG(ERROR) << "JPEG: \"" << buffer << "\"\n";
+  LOG(ERROR, "JPEG: \"%s\"\n", buffer);
 
   // Leave the message for the application.
   ((struct error_mgr *)cinfo->err)->fop->setError("%s\n", buffer);

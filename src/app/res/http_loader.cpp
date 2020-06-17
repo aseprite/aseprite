@@ -72,10 +72,10 @@ void HttpLoader::threadHttpRequest()
     LOG("HTTP: Response: %d\n", response.status());
   }
   catch (const std::exception& e) {
-    LOG(ERROR) << "HTTP: Unexpected exception sending http request: " << e.what() << "\n";
+    LOG(ERROR, "HTTP: Unexpected exception sending http request: %s\n", e.what());
   }
   catch (...) {
-    LOG(ERROR) << "HTTP: Unexpected unknown exception sending http request\n";
+    LOG(ERROR, "HTTP: Unexpected unknown exception sending http request\n");
   }
 
   delete m_request;
