@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -13,6 +13,7 @@
 #include "app/doc.h"
 #include "base/exception.h"
 
+#include <atomic>
 #include <exception>
 
 namespace app {
@@ -245,7 +246,7 @@ namespace app {
     WeakDocReader(const WeakDocReader&);
     WeakDocReader& operator=(const WeakDocReader&);
 
-    base::RWLock::WeakLock m_weak_lock;
+    std::atomic<base::RWLock::WeakLock> m_weak_lock;
   };
 
 } // namespace app

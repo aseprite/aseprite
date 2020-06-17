@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -10,6 +10,7 @@
 
 #include "base/time.h"
 
+#include <atomic>
 #include <condition_variable>
 #include <mutex>
 #include <thread>
@@ -49,7 +50,7 @@ namespace app {
       base::tick_t timestamp;
     };
 
-    bool m_done;
+    std::atomic<bool> m_done;
     base::tick_t m_dataRecoveryPeriodMSecs;
     base::tick_t m_keepClosedDocAliveForMSecs;
     std::vector<ClosedDoc> m_docs;

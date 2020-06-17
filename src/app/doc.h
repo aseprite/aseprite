@@ -26,6 +26,7 @@
 #include "obs/observable.h"
 #include "os/color_space.h"
 
+#include <atomic>
 #include <memory>
 #include <string>
 
@@ -79,7 +80,7 @@ namespace app {
     void downgradeToRead();
     void unlock();
 
-    bool weakLock(base::RWLock::WeakLock* weak_lock_flag);
+    bool weakLock(std::atomic<base::RWLock::WeakLock>* weak_lock_flag);
     void weakUnlock();
 
     // Sets active/running transaction.
