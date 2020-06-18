@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c)      2020 Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -89,6 +90,7 @@ namespace doc {
 
     int findExactMatch(int r, int g, int b, int a, int mask_index) const;
     int findBestfit(int r, int g, int b, int a, int mask_index) const;
+    int findBestfit2(int r, int g, int b) const;
 
     void applyRemap(const Remap& remap);
 

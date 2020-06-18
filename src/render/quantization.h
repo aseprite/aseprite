@@ -11,6 +11,7 @@
 
 #include "doc/frame.h"
 #include "doc/pixel_format.h"
+#include "doc/rgbmap_algorithm.h"
 #include "render/color_histogram.h"
 
 #include <vector>
@@ -45,7 +46,8 @@ namespace render {
     const bool withAlpha,
     doc::Palette* newPalette, // Can be NULL to create a new palette
     TaskDelegate* delegate,
-    const bool newBlend);
+    const bool newBlend,
+    const RgbMapAlgorithm mappingAlgorithm);
 
   // Changes the image pixel format. The dithering method is used only
   // when you want to convert from RGB to Indexed.

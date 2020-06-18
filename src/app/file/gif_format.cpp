@@ -1172,7 +1172,7 @@ private:
                   const DisposalMethod disposal,
                   const bool fixDuration) {
     std::unique_ptr<Palette> framePaletteRef;
-    std::unique_ptr<RgbMap> rgbmapRef;
+    std::unique_ptr<RgbMapRGB5A3> rgbmapRef;
     Palette* framePalette = m_sprite->palette(frame);
     RgbMap* rgbmap = m_sprite->rgbMap(frame);
 
@@ -1181,9 +1181,9 @@ private:
       framePaletteRef.reset(createOptimizedPalette(frameBounds));
       framePalette = framePaletteRef.get();
 
-      rgbmapRef.reset(new RgbMap);
+      rgbmapRef.reset(new RgbMapRGB5A3);
+      rgbmapRef->regenerateMap(framePalette, m_transparentIndex);
       rgbmap = rgbmapRef.get();
-      rgbmap->regenerate(framePalette, m_transparentIndex);
     }
 
     // We will store the frameBounds pixels in frameImage, with the
@@ -1229,6 +1229,8 @@ private:
           int i;
 
           if (rgba_geta(color) >= 128) {
+            color |= rgba_a_mask; // Set alpha=255
+
             i = framePalette->findExactMatch(
               rgba_getr(color),
               rgba_getg(color),
@@ -1236,10 +1238,7 @@ private:
               255,
               m_transparentIndex);
             if (i < 0)
-              i = rgbmap->mapColor(rgba_getr(color),
-                                   rgba_getg(color),
-                                   rgba_getb(color),
-                                   255);
+              i = rgbmap->mapColor(color);
           }
           else {
             ASSERT(m_transparentIndex >= 0);

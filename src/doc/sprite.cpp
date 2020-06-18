@@ -18,10 +18,11 @@
 #include "doc/cels_range.h"
 #include "doc/image_impl.h"
 #include "doc/layer.h"
+#include "doc/octree_map.h"
 #include "doc/palette.h"
 #include "doc/primitives.h"
 #include "doc/remap.h"
-#include "doc/rgbmap.h"
+#include "doc/rgbmap_rgb5a3.h"
 #include "doc/tag.h"
 
 #include <algorithm>
@@ -31,9 +32,7 @@
 
 namespace doc {
 
-//////////////////////////////////////////////////////////////////////
-// Constructors/Destructor
-
+static RgbMapAlgorithm g_rgbMapAlgorithm = RgbMapAlgorithm::DEFAULT;
 static gfx::Rect g_defaultGridBounds(0, 0, 16, 16);
 
 // static
@@ -48,6 +47,21 @@ void Sprite::SetDefaultGridBounds(const gfx::Rect& defGridBounds)
   g_defaultGridBounds = defGridBounds;
 }
 
+// static
+RgbMapAlgorithm Sprite::DefaultRgbMapAlgorithm()
+{
+  return g_rgbMapAlgorithm;
+}
+
+// static
+void Sprite::SetDefaultRgbMapAlgorithm(const RgbMapAlgorithm mapAlgo)
+{
+  g_rgbMapAlgorithm = mapAlgo;
+}
+
+//////////////////////////////////////////////////////////////////////
+// Constructors/Destructor
+
 Sprite::Sprite(const ImageSpec& spec,
                int ncolors)
   : Object(ObjectType::Sprite)
@@ -58,7 +72,6 @@ Sprite::Sprite(const ImageSpec& spec,
   , m_frlens(1, 100)            // First frame with 100 msecs of duration
   , m_root(new LayerGroup(this))
   , m_gridBounds(Sprite::DefaultGridBounds())
-  , m_rgbMap(nullptr)           // Initial RGB map
   , m_tags(this)
   , m_slices(this)
 {
@@ -98,9 +111,6 @@ Sprite::~Sprite()
     for (; it != end; ++it)
       delete *it;               // palette
   }
-
-  // Destroy RGB map
-  delete m_rgbMap;
 }
 
 // static
@@ -345,27 +355,46 @@ void Sprite::deletePalette(frame_t frame)
   }
 }
 
-RgbMap* Sprite::rgbMap(frame_t frame) const
+Sprite::RgbMapFor Sprite::rgbMapForSprite() const
 {
-  return rgbMap(frame, backgroundLayer() ? RgbMapFor::OpaqueLayer:
-                                           RgbMapFor::TransparentLayer);
+  return backgroundLayer() ? RgbMapFor::OpaqueLayer:
+                             RgbMapFor::TransparentLayer;
 }
 
-RgbMap* Sprite::rgbMap(frame_t frame, RgbMapFor forLayer) const
+RgbMap* Sprite::rgbMap(const frame_t frame) const
+{
+  return rgbMap(frame, rgbMapForSprite());
+}
+
+RgbMap* Sprite::rgbMap(const frame_t frame,
+                       const RgbMapFor forLayer) const
+{
+  return rgbMap(frame,
+                forLayer,
+                g_rgbMapAlgorithm);
+}
+
+RgbMap* Sprite::rgbMap(const frame_t frame,
+                       const RgbMapFor forLayer,
+                       const RgbMapAlgorithm mapAlgo) const
 {
   int maskIndex = (forLayer == RgbMapFor::OpaqueLayer ?
                    -1: transparentColor());
 
-  if (m_rgbMap == NULL) {
-    m_rgbMap = new RgbMap();
-    m_rgbMap->regenerate(palette(frame), maskIndex);
-  }
-  else if (!m_rgbMap->match(palette(frame)) ||
-           m_rgbMap->maskIndex() != maskIndex) {
-    m_rgbMap->regenerate(palette(frame), maskIndex);
+  if (!m_rgbMap || m_rgbMapAlgorithm != mapAlgo) {
+    m_rgbMapAlgorithm = mapAlgo;
+    switch (m_rgbMapAlgorithm) {
+      case RgbMapAlgorithm::RGB5A3: m_rgbMap.reset(new RgbMapRGB5A3); break;
+      case RgbMapAlgorithm::OCTREE: m_rgbMap.reset(new OctreeMap); break;
+      default:
+        m_rgbMap.reset(nullptr);
+        ASSERT(false);
+        return nullptr;
+    }
   }
 
-  return m_rgbMap;
+  m_rgbMap->regenerateMap(palette(frame), maskIndex);
+  return m_rgbMap.get();
 }
 
 //////////////////////////////////////////////////////////////////////

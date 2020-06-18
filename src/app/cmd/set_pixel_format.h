@@ -13,6 +13,7 @@
 #include "app/cmd_sequence.h"
 #include "doc/color.h"
 #include "doc/pixel_format.h"
+#include "doc/rgbmap_algorithm.h"
 
 namespace doc {
   class Sprite;
@@ -32,6 +33,7 @@ namespace cmd {
     SetPixelFormat(doc::Sprite* sprite,
                    const doc::PixelFormat newFormat,
                    const render::Dithering& dithering,
+                   const doc::RgbMapAlgorithm mapAlgorithm,
                    doc::rgba_to_graya_func toGray,
                    render::TaskDelegate* delegate);
 

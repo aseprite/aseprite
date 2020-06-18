@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -10,6 +10,7 @@
 
 #include "app/color.h"
 #include "app/pref/preferences.h"
+#include "doc/rgbmap_algorithm.h"
 #include "gfx/color_space.h"
 
 namespace app {
@@ -31,6 +32,9 @@ namespace app {
     bool newBlend = true;
 
     app::Color defaultSliceColor = app::Color::fromRgb(0, 0, 255);
+
+    // Algorithm used to create a palette from RGB files.
+    doc::RgbMapAlgorithm rgbMapAlgorithm = doc::RgbMapAlgorithm::DEFAULT;
 
     void fillFromPreferences();
   };

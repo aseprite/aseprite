@@ -69,6 +69,7 @@ private:
 SetPixelFormat::SetPixelFormat(Sprite* sprite,
                                const PixelFormat newFormat,
                                const render::Dithering& dithering,
+                               const doc::RgbMapAlgorithm mapAlgorithm,
                                doc::rgba_to_graya_func toGray,
                                render::TaskDelegate* delegate)
   : WithSprite(sprite)
@@ -79,6 +80,7 @@ SetPixelFormat::SetPixelFormat(Sprite* sprite,
     return;
 
   SuperDelegate superDel(sprite->uniqueCels().size(), delegate);
+  const auto rgbMapFor = sprite->rgbMapForSprite();
 
   for (Cel* cel : sprite->uniqueCels()) {
     ImageRef old_image = cel->imageRef();
@@ -86,7 +88,7 @@ SetPixelFormat::SetPixelFormat(Sprite* sprite,
       render::convert_pixel_format
       (old_image.get(), nullptr, newFormat,
        dithering,
-       sprite->rgbMap(cel->frame()),
+       sprite->rgbMap(cel->frame(), rgbMapFor, mapAlgorithm),
        sprite->palette(cel->frame()),
        cel->layer()->isBackground(),
        old_image->maskColor(),

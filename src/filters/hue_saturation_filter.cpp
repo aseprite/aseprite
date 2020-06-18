@@ -168,10 +168,7 @@ void HueSaturationFilter::applyToIndexed(FilterManager* filterMgr)
 
     color_t c = pal->getEntry(*(src_address++));
     applyFilterToRgb(target, c);
-    *(dst_address++) = rgbmap->mapColor(rgba_getr(c),
-                                        rgba_getg(c),
-                                        rgba_getb(c),
-                                        rgba_geta(c));
+    *(dst_address++) = rgbmap->mapColor(c);
   }
 }
 
