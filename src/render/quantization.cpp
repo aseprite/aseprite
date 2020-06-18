@@ -43,7 +43,8 @@ Palette* create_palette_from_sprite(
   Palette* palette,
   TaskDelegate* delegate,
   const bool newBlend,
-  const RgbMapAlgorithm mappingAlgorithm)
+  const RgbMapAlgorithm mappingAlgorithm,
+  const bool calculateWithTransparent)
 {
   PaletteOptimizer optimizer;
   OctreeMap octreemap;
@@ -88,10 +89,13 @@ Palette* create_palette_from_sprite(
       optimizer.calculate(
         palette,
         // Transparent color is needed if we have transparent layers
-        (sprite->backgroundLayer() &&
-         sprite->allLayersCount() == 1 ? -1: sprite->transparentColor()));
+        ((sprite->backgroundLayer() &&
+          sprite->allLayersCount() == 1) ||
+         !calculateWithTransparent)? -1: sprite->transparentColor());
       break;
     case RgbMapAlgorithm::OCTREE:
+      // TODO check calculateWithTransparent flag
+
       if (!octreemap.makePalette(palette, palette->size())) {
         // We can use an 8-bit deep octree map, instead of 7-bit of the
         // first attempt.
@@ -379,7 +383,15 @@ Image* convert_pixel_format(
 // Creation of optimized palette for RGB images
 // by David Capello
 
-void PaletteOptimizer::feedWithImage(Image* image, bool withAlpha)
+void PaletteOptimizer::feedWithImage(const Image* image,
+                                     const bool withAlpha)
+{
+  feedWithImage(image, image->bounds(), withAlpha);
+}
+
+void PaletteOptimizer::feedWithImage(const Image* image,
+                                     const gfx::Rect& bounds,
+                                     const bool withAlpha)
 {
   uint32_t color;
 
@@ -391,8 +403,8 @@ void PaletteOptimizer::feedWithImage(Image* image, bool withAlpha)
 
     case IMAGE_RGB:
       {
-        const LockImageBits<RgbTraits> bits(image);
-        LockImageBits<RgbTraits>::const_iterator it = bits.begin(), end = bits.end();
+        const LockImageBits<RgbTraits> bits(image, bounds);
+        auto it = bits.begin(), end = bits.end();
 
         for (; it != end; ++it) {
           color = *it;
@@ -408,8 +420,8 @@ void PaletteOptimizer::feedWithImage(Image* image, bool withAlpha)
 
     case IMAGE_GRAYSCALE:
       {
-        const LockImageBits<RgbTraits> bits(image);
-        LockImageBits<RgbTraits>::const_iterator it = bits.begin(), end = bits.end();
+        const LockImageBits<GrayscaleTraits> bits(image, bounds);
+        auto it = bits.begin(), end = bits.end();
 
         for (; it != end; ++it) {
           color = *it;

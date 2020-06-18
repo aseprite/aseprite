@@ -1,11 +1,13 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2014-2018 by David Capello -->
+<!-- Copyright (C) 2020  Igara Studio S.A. -->
+<!-- Copyright (C) 2014-2018  David Capello -->
 <gui>
 <window id="gif_options" text="@.title">
   <vbox>
     <separator text="@.general_options" left="true" horizontal="true" />
     <check text="@.interlaced" id="interlaced" />
     <check text="@.animation_loop" id="loop" />
+    <check text="@.preserve_palette_order" id="preserve_palette_order" />
 
     <separator horizontal="true" />
 

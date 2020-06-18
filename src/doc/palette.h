@@ -1,6 +1,6 @@
 // Aseprite Document Library
-// Copyright (c)      2020 Igara Studio S.A.
-// Copyright (c) 2001-2018 David Capello
+// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -23,10 +23,13 @@ namespace doc {
 
   class Palette : public Object {
   public:
+    Palette();
     Palette(frame_t frame, int ncolors);
     Palette(const Palette& palette);
     Palette(const Palette& palette, const Remap& remap);
     ~Palette();
+
+    Palette& operator=(const Palette& that);
 
     static Palette* createGrayscale();
 
