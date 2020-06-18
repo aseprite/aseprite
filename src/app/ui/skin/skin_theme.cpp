@@ -136,7 +136,7 @@ static FontData* load_font(std::map<std::string, FontData*>& fonts,
   if (it != fonts.end())
     return it->second;
 
-  LOG(VERBOSE) << "THEME: Loading font '" << name << "'\n";
+  LOG(VERBOSE, "THEME: Loading font '%s'\n", name.c_str());
 
   const char* typeStr = xmlFont->Attribute("type");
   if (!typeStr)
@@ -185,7 +185,7 @@ static FontData* load_font(std::map<std::string, FontData*>& fonts,
     font->setAntialias(antialias);
 
     if (!fontFilename.empty())
-      LOG(VERBOSE) << "THEME: Font file '" << fontFilename << "' found\n";
+      LOG(VERBOSE, "THEME: Font file '%s' found\n", fontFilename.c_str());
   }
   else {
     throw base::Exception("Invalid type=\"%s\" in '%s' for <font name=\"%s\" ...>\n",
@@ -389,7 +389,7 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
       FontData* fontData = load_font(m_fonts, xmlFont, xml_filename);
       if (idStr && fontData) {
         std::string id(idStr);
-        LOG(VERBOSE) << "THEME: Loading theme font '" << id << "\n";
+        LOG(VERBOSE, "THEME: Loading theme font %s\n", idStr);
 
         int size = 10;
         const char* sizeStr = xmlFont->Attribute("size");
@@ -425,7 +425,7 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
       std::string id = xmlDim->Attribute("id");
       uint32_t value = strtol(xmlDim->Attribute("value"), NULL, 10);
 
-      LOG(VERBOSE) << "THEME: Loading dimension '" << id << "\n";
+      LOG(VERBOSE, "THEME: Loading dimension %s\n", id.c_str());
 
       m_dimensions_by_id[id] = value;
       xmlDim = xmlDim->NextSiblingElement();
@@ -446,7 +446,7 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
         (value & 0xff00) >> 8,
         (value & 0xff));
 
-      LOG(VERBOSE) << "THEME: Loading color " << id << "\n";
+      LOG(VERBOSE, "THEME: Loading color %s\n", id.c_str());
 
       m_colors_by_id[id] = color;
       xmlColor = xmlColor->NextSiblingElement();
@@ -467,7 +467,7 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
       int w = (xmlPart->Attribute("w") ? scale*strtol(xmlPart->Attribute("w"), nullptr, 10): 0);
       int h = (xmlPart->Attribute("h") ? scale*strtol(xmlPart->Attribute("h"), nullptr, 10): 0);
 
-      LOG(VERBOSE) << "THEME: Loading part " << part_id << "\n";
+      LOG(VERBOSE, "THEME: Loading part %s\n", part_id);
 
       SkinPartPtr part = m_parts_by_id[part_id];
       if (!part)
@@ -504,7 +504,7 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
         int focusx = scale*std::strtol(xmlPart->Attribute("focusx"), NULL, 10);
         int focusy = scale*std::strtol(xmlPart->Attribute("focusy"), NULL, 10);
 
-        LOG(VERBOSE) << "THEME: Loading cursor '" << cursorName << "'\n";
+        LOG(VERBOSE, "THEME: Loading cursor '%s'\n", cursorName.c_str());
 
         auto it = m_cursors.find(cursorName);
         if (it != m_cursors.end() && it->second != nullptr) {
@@ -622,8 +622,7 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
       while (xmlLayer) {
         const std::string layerName = xmlLayer->Value();
 
-        LOG(VERBOSE) << "THEME: Layer " << layerName
-                     << " for " << style_id << "\n";
+        LOG(VERBOSE, "THEME: Layer %s for %s\n", layerName.c_str(), style_id);
 
         ui::Style::Layer layer;
 

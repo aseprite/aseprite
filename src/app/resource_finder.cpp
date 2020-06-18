@@ -28,8 +28,8 @@ namespace app {
 
 ResourceFinder::ResourceFinder(bool log)
   : m_log(log)
+  , m_current(-1)
 {
-  m_current = -1;
 }
 
 const std::string& ResourceFinder::filename() const

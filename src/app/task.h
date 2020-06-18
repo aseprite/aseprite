@@ -11,6 +11,7 @@
 #include "base/task.h"
 
 #include <functional>
+#include <mutex>
 
 namespace app {
 
@@ -33,6 +34,7 @@ namespace app {
     }
 
     bool canceled() const {
+      std::lock_guard<std::mutex> lock(m_token_mutex);
       if (m_token)
         return m_token->canceled();
       else
@@ -40,6 +42,7 @@ namespace app {
     }
 
     float progress() const {
+      std::lock_guard<std::mutex> lock(m_token_mutex);
       if (m_token)
         return m_token->progress();
       else
@@ -47,17 +50,20 @@ namespace app {
     }
 
     void cancel() {
+      std::lock_guard<std::mutex> lock(m_token_mutex);
       if (m_token)
         m_token->cancel();
     }
 
     void set_progress(float progress) {
+      std::lock_guard<std::mutex> lock(m_token_mutex);
       if (m_token)
         m_token->set_progress(progress);
     }
 
   private:
     base::task m_task;
+    mutable std::mutex m_token_mutex;
     base::task_token* m_token;
   };
 

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -12,6 +12,7 @@
 #include "base/disable_copying.h"
 #include "base/paths.h"
 
+#include <atomic>
 #include <string>
 
 namespace app {
@@ -64,7 +65,7 @@ namespace app {
   private:
     bool m_log;
     base::paths m_paths;
-    int m_current;
+    std::atomic<int> m_current;
     std::string m_default;
 
     DISABLE_COPYING(ResourceFinder);

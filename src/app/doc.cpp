@@ -125,7 +125,7 @@ void Doc::unlock()
   m_rwLock.unlock();
 }
 
-bool Doc::weakLock(base::RWLock::WeakLock* weak_lock_flag)
+bool Doc::weakLock(std::atomic<base::RWLock::WeakLock>* weak_lock_flag)
 {
   return m_rwLock.weakLock(weak_lock_flag);
 }

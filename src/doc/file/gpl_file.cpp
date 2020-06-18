@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2020  Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -25,7 +26,7 @@
 namespace doc {
 namespace file {
 
-Palette* load_gpl_file(const char *filename)
+Palette* load_gpl_file(const char* filename)
 {
   std::ifstream f(FSTREAM_PATH(filename));
   if (f.bad()) return NULL;
@@ -93,7 +94,7 @@ Palette* load_gpl_file(const char *filename)
 
   base::trim_string(comment, comment);
   if (!comment.empty()) {
-    LOG(VERBOSE) << "PAL: " << filename << " comment: " << comment << "\n";
+    LOG(VERBOSE, "PAL: %s comment: %s\n", filename, comment.c_str());
     pal->setComment(comment);
   }
 

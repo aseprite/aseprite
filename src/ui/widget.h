@@ -167,16 +167,17 @@ namespace ui {
 
     // Returns a list of children.
     const WidgetsList& children() const { return m_children; }
+    bool hasChildren() const { return !m_children.empty(); }
 
     Widget* at(int index) { return m_children[index]; }
     int getChildIndex(Widget* child);
 
     // Returns the first/last child or nullptr if it doesn't exist.
     Widget* firstChild() {
-      return (!m_children.empty() ? m_children.front(): nullptr);
+      return (hasChildren() ? m_children.front(): nullptr);
     }
     Widget* lastChild() {
-      return (!m_children.empty() ? m_children.back(): nullptr);
+      return (hasChildren() ? m_children.back(): nullptr);
     }
 
     // Returns the next or previous siblings.

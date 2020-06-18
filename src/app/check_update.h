@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -14,6 +15,7 @@
 #include "ui/timer.h"
 #include "updater/check_update.h"
 
+#include <atomic>
 #include <memory>
 
 namespace app {
@@ -47,7 +49,7 @@ namespace app {
     std::unique_ptr<base::thread> m_thread;
     std::unique_ptr<CheckUpdateBackgroundJob> m_bgJob;
     bool m_doCheck;
-    bool m_received;
+    std::atomic<bool> m_received;
 
     // Mini-stats
     int m_inits;

@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -41,14 +42,14 @@ private:
 Notifications::Notifications()
   : Button("")
   , m_flagStyle(skin::SkinTheme::instance()->styles.flag())
-  , m_withNotifications(false)
+  , m_red(false)
 {
 }
 
 void Notifications::addLink(INotificationDelegate* del)
 {
   m_popup.addChild(new NotificationItem(del));
-  m_withNotifications = true;
+  m_red = true;
 }
 
 void Notifications::onSizeHint(SizeHintEvent& ev)
@@ -62,7 +63,7 @@ void Notifications::onPaint(PaintEvent& ev)
 
   PaintWidgetPartInfo info;
   if (hasMouseOver()) info.styleFlags |= ui::Style::Layer::kMouse;
-  if (m_withNotifications) info.styleFlags |= ui::Style::Layer::kFocus;
+  if (m_red) info.styleFlags |= ui::Style::Layer::kFocus;
   if (isSelected()) info.styleFlags |= ui::Style::Layer::kSelected;
 
   theme()->paintWidgetPart(
@@ -71,7 +72,7 @@ void Notifications::onPaint(PaintEvent& ev)
 
 void Notifications::onClick(ui::Event& ev)
 {
-  m_withNotifications = false;
+  m_red = false;
   invalidate();
 
   gfx::Rect bounds = this->bounds();

@@ -173,9 +173,8 @@ void Widget::setBgColor(gfx::Color color)
 
 #ifdef _DEBUG
   if (m_style) {
-    LOG(WARNING) << "UI: " << typeid(*this).name()
-                 << ": Warning setting bgColor to a widget with style ("
-                 << m_style->id() << ")\n";
+    LOG(WARNING, "UI: %s: Warning setting bgColor to a widget with style (%s)\n",
+        typeid(*this).name(), m_style->id().c_str());
   }
 #endif
 }
@@ -707,9 +706,8 @@ void Widget::setBorder(const Border& br)
 
 #ifdef _DEBUG
   if (m_style) {
-    LOG(WARNING) << "UI: " << typeid(*this).name()
-                 << ": Warning setting border to a widget with style ("
-                 << m_style->id() << ")\n";
+    LOG(WARNING, "UI: %s: Warning setting border to a widget with style (%s)\n",
+        typeid(*this).name(), m_style->id().c_str());
   }
 #endif
 }
@@ -720,9 +718,8 @@ void Widget::setChildSpacing(int childSpacing)
 
 #ifdef _DEBUG
   if (m_style) {
-    LOG(WARNING) << "UI: " << typeid(*this).name()
-                 << ": Warning setting child spacing to a widget with style ("
-                 << m_style->id() << ")\n";
+    LOG(WARNING, "UI: %s: Warning setting child spacing to a widget with style (%s)\n",
+        typeid(*this).name(), m_style->id().c_str());
   }
 #endif
 }
@@ -734,9 +731,8 @@ void Widget::noBorderNoChildSpacing()
 
 #ifdef _DEBUG
   if (m_style) {
-    LOG(WARNING) << "UI: " << typeid(*this).name()
-                 << ": Warning setting no border to a widget with style ("
-                 << m_style->id() << ")\n";
+    LOG(WARNING, "UI: %s: Warning setting no border to a widget with style (%s)\n",
+        typeid(*this).name(), m_style->id().c_str());
   }
 #endif
 }

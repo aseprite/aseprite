@@ -110,6 +110,8 @@ void BackupObserver::onRemoveDocument(Doc* doc)
     // then it's deleted from ClosedDocs::backgroundThread()
 
     TRACE("RECO: Adding to CLOSEDOC %p\n", doc);
+
+    std::unique_lock<std::mutex> lock(m_mutex);
     m_closedDocs.push_back(doc);
   }
   else {

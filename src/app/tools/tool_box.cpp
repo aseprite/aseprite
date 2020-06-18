@@ -216,7 +216,7 @@ void ToolBox::loadTools()
     if (!groupId)
       throw base::Exception("The configuration file has a <group> without 'id' or 'text' attributes.");
 
-    LOG(VERBOSE) << "TOOL: Group " << groupId << "\n";
+    LOG(VERBOSE, "TOOL: %s group\n", groupId);
 
     // Find an existent ToolGroup (this is useful in case we are
     // reloading tool text/tooltips).
@@ -258,7 +258,7 @@ void ToolBox::loadTools()
       tool->setDefaultBrushSize(
         defaultBrushSize ? std::strtol(defaultBrushSize, nullptr, 10): 1);
 
-      LOG(VERBOSE) << "TOOL: Tool " << toolId << " in group " << groupId << " found\n";
+      LOG(VERBOSE, "TOOL: %s.%s tool\n", groupId, toolId);
 
       loadToolProperties(xmlTool, tool, 0, "left");
       loadToolProperties(xmlTool, tool, 1, "right");

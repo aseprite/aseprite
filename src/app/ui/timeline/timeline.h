@@ -357,6 +357,7 @@ namespace app {
     void setLayerContinuousFlag(const layer_t layer, const bool state);
     void setLayerCollapsedFlag(const layer_t layer, const bool state);
 
+    int separatorX() const;
     void setSeparatorX(int newValue);
 
     ui::ScrollBar m_hbar;

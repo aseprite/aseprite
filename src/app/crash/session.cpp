@@ -210,8 +210,8 @@ void Session::removeFromDisk()
   }
   catch (const std::exception& ex) {
     (void)ex;
-    LOG(ERROR) << "RECO: Session directory cannot be removed, it's not empty.\n"
-               << "      Error: " << ex.what() << "\n";
+    LOG(ERROR, "RECO: Session directory cannot be removed, it's not empty.\n"
+               "      Error: %s\n", ex.what());
   }
 }
 
@@ -265,7 +265,7 @@ void Session::removeDocument(Doc* doc)
     markDocumentAsCorrectlyClosed(doc);
   }
   catch (const std::exception& ex) {
-    LOG(FATAL) << "Exception deleting document " << ex.what() << "\n";
+    LOG(FATAL, "Exception deleting document %s\n", ex.what());
   }
 }
 

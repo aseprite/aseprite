@@ -539,7 +539,7 @@ App::~App()
     m_instance = NULL;
   }
   catch (const std::exception& e) {
-    LOG(ERROR) << "APP: Error: " << e.what() << "\n";
+    LOG(ERROR, "APP: Error: %s\n", e.what());
     os::error_message(e.what());
 
     // no re-throw
