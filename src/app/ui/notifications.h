@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -23,6 +24,7 @@ namespace app {
     Notifications();
 
     void addLink(INotificationDelegate* del);
+    bool hasNotifications() const { return m_popup.hasChildren(); }
 
   protected:
     void onSizeHint(ui::SizeHintEvent& ev) override;
@@ -31,7 +33,7 @@ namespace app {
 
   private:
     ui::Style* m_flagStyle;
-    bool m_withNotifications;
+    bool m_red;
     ui::Menu m_popup;
   };
 

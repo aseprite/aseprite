@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -116,9 +116,11 @@ int Selection_deselect(lua_State* L)
     Doc* doc = static_cast<Doc*>(sprite->document());
     ASSERT(doc);
 
-    Tx tx;
-    tx(new cmd::DeselectMask(doc));
-    tx.commit();
+    if (doc->isMaskVisible()) {
+      Tx tx;
+      tx(new cmd::DeselectMask(doc));
+      tx.commit();
+    }
   }
   else {
     auto mask = obj->mask(L);

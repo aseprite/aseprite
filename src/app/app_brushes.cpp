@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -184,7 +185,7 @@ AppBrushes::AppBrushes()
       load(fn);
   }
   catch (const std::exception& ex) {
-    LOG(ERROR) << "BRSH: Error loading user brushes: " << ex.what() << "\n";
+    LOG(ERROR, "BRSH: Error loading user brushes: %s\n", ex.what());
   }
 }
 

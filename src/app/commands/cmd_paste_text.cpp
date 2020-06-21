@@ -189,7 +189,8 @@ void PasteTextCommand::onExecute(Context* ctx)
             image.get(), NULL, sprite->pixelFormat(),
             render::Dithering(),
             rgbmap, sprite->palette(editor->frame()),
-            false, 0));
+            false,
+            sprite->transparentColor()));
       }
 
       // TODO we don't support pasting text in multiple cels at the

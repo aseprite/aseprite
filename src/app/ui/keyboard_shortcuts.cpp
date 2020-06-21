@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -488,7 +488,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
       if (tool) {
         KeyPtr key = this->tool(tool);
         if (key && tool_key) {
-          LOG(VERBOSE) << "KEYS: Shortcut for tool " << tool_id << ": " << tool_key << "\n";
+          LOG(VERBOSE, "KEYS: Shortcut for tool %s: %s\n", tool_id, tool_key);
           Accelerator accel(tool_key);
 
           if (!removed)
@@ -516,7 +516,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
       if (tool) {
         KeyPtr key = this->quicktool(tool);
         if (key && tool_key) {
-          LOG(VERBOSE) << "KEYS: Shortcut for quicktool " << tool_id << ": " << tool_key << "\n";
+          LOG(VERBOSE, "KEYS: Shortcut for quicktool %s: %s\n", tool_id, tool_key);
           Accelerator accel(tool_key);
 
           if (!removed)
@@ -544,8 +544,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
       if (action != KeyAction::None) {
         KeyPtr key = this->action(action);
         if (key && action_key) {
-          LOG(VERBOSE) << "KEYS: Shortcut for action " << action_id
-                       << ": " << action_key << "\n";
+          LOG(VERBOSE, "KEYS: Shortcut for action %s: %s\n", action_id, action_key);
           Accelerator accel(action_key);
 
           if (!removed)
@@ -573,8 +572,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
       if (action != WheelAction::None) {
         KeyPtr key = this->wheelAction(action);
         if (key && action_key) {
-          LOG(VERBOSE) << "KEYS: Shortcut for wheel action " << action_id
-                       << ": " << action_key << "\n";
+          LOG(VERBOSE, "KEYS: Shortcut for wheel action %s: %s\n", action_id, action_key);
           Accelerator accel(action_key);
 
           if (!removed)

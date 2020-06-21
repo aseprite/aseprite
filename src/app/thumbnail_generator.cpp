@@ -31,6 +31,7 @@
 #include "render/render.h"
 
 #include <algorithm>
+#include <atomic>
 #include <memory>
 #include <thread>
 
@@ -167,7 +168,10 @@ private:
           thumbnailImage.get(), palette.get(), thumbnail,
           0, 0, 0, 0, thumbnailImage->width(), thumbnailImage->height());
 
-        m_item.fileitem->setThumbnail(thumbnail);
+        {
+          base::scoped_lock lock(m_mutex);
+          m_item.fileitem->setThumbnail(thumbnail);
+        }
       }
 
       THUMB_TRACE("FOP done with thumbnail: %s %s\n",
@@ -176,7 +180,10 @@ private:
 
       // Reset the m_item (first the fileitem so this worker is not
       // associated to this fileitem anymore, and then the FileOp).
-      m_item.fileitem = nullptr;
+      {
+        base::scoped_lock lock(m_mutex);
+        m_item.fileitem = nullptr;
+      }
     }
     catch (const std::exception& e) {
       m_fop->setError("Error loading file:\n%s", e.what());
@@ -205,7 +212,7 @@ private:
   app::ThumbnailGenerator::Item m_item;
   FileOp* m_fop;
   mutable base::mutex m_mutex;
-  bool m_isDone;
+  std::atomic<bool> m_isDone;
   base::thread m_thread;
 };
 

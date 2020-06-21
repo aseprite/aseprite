@@ -80,8 +80,8 @@ public:
   unsigned int m_version;
   bool m_removed;
   mutable bool m_is_folder;
-  double m_thumbnailProgress;
-  os::Surface* m_thumbnail;
+  std::atomic<double> m_thumbnailProgress;
+  std::atomic<os::Surface*> m_thumbnail;
 #ifdef _WIN32
   LPITEMIDLIST m_pidl;            // relative to parent
   LPITEMIDLIST m_fullpidl;        // relative to the Desktop folder
@@ -593,9 +593,9 @@ os::Surface* FileItem::getThumbnail()
 
 void FileItem::setThumbnail(os::Surface* thumbnail)
 {
-  if (m_thumbnail)
-    m_thumbnail->dispose();
-  m_thumbnail = thumbnail;
+  auto old = m_thumbnail.exchange(thumbnail);
+  if (old)
+    old->dispose();
 }
 
 FileItem::FileItem(FileItem* parent)
@@ -621,8 +621,8 @@ FileItem::~FileItem()
 {
   FS_TRACE("FS: Destroying FileItem() with parent %p\n", m_parent);
 
-  if (m_thumbnail)
-    m_thumbnail->dispose();
+  if (auto ptr = m_thumbnail.load())
+    ptr->dispose();
 
 #ifdef _WIN32
   if (m_fullpidl && m_fullpidl != m_pidl) {

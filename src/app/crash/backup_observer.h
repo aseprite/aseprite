@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -13,6 +13,7 @@
 #include "app/doc_observer.h"
 #include "app/docs_observer.h"
 
+#include <atomic>
 #include <condition_variable>
 #include <mutex>
 #include <thread>
@@ -48,7 +49,7 @@ namespace crash {
     Context* m_ctx;
     std::vector<Doc*> m_documents;
     std::vector<Doc*> m_closedDocs;
-    bool m_done;
+    std::atomic<bool> m_done;
 
     std::mutex m_mutex;
 
