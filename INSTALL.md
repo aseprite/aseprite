@@ -8,6 +8,7 @@
   * [Linux dependencies](#linux-dependencies)
 * [Compiling](#compiling)
   * [Windows details](#windows-details)
+    * [MinGW](#mingw)
   * [macOS details](#macos-details)
     * [Issues with Retina displays](#issues-with-retina-displays)
   * [Linux details](#linux-details)
@@ -18,7 +19,7 @@
 You should be able to compile Aseprite successfully on the following
 platforms:
 
-* Windows 10 + [Visual Studio Community 2019 + Windows 10.0.18362.0 SDK](https://imgur.com/a/7zs51IT)
+* Windows 10 + [Visual Studio Community 2019 + Windows 10.0.18362.0 SDK](https://imgur.com/a/7zs51IT) (we don't support [MinGW](#mingw))
 * macOS 10.15.3 Mojave + Xcode 11.2.1 + macOS 10.15 SDK (older version might work)
 * Linux + gcc 9.2 or clang 9.0
 
@@ -58,7 +59,8 @@ To compile Aseprite you will need:
 
 ## Windows dependencies
 
-* Windows 10 (**we don't support cross-compiling and don't know if this would be possible**)
+* Windows 10 (we don't support [MinGW](#mingw), or cross-compiling,
+  and we don't know if this would be possible)
 * [Visual Studio Community 2019](https://visualstudio.microsoft.com/downloads/)
 * The [Desktop development with C++ item + Windows 10.0.18362.0 SDK](https://imgur.com/a/7zs51IT)
   from the Visual Studio installer
@@ -129,6 +131,15 @@ And then
 
 In this case, `C:\deps\skia` is the directory where Skia was compiled
 or uncompressed.
+
+## MinGW
+
+We don't support MinGW compiler. If you see that the detected C++
+compiler by cmake is `C:\MinGW\bin\c++.exe` or something similar, you
+have to get rid of MinGW path (`C:\MinGW\bin`) from the `PATH`
+environment variable and run cmake again from scratch so the Visual
+Studio C++ compiler (`cl.exe`) is used instead. More information in
+[issue #2449](https://github.com/aseprite/aseprite/issues/2449)
 
 ## macOS details
 
