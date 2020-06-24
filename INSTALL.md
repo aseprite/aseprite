@@ -59,9 +59,8 @@ To compile Aseprite you will need:
 
 ## Windows dependencies
 
-* Windows 10 (we don't support [MinGW](#mingw), or cross-compiling,
-  and we don't know if this would be possible)
-* [Visual Studio Community 2019](https://visualstudio.microsoft.com/downloads/)
+* Windows 10 (we don't support cross-compiling)
+* [Visual Studio Community 2019](https://visualstudio.microsoft.com/downloads/) (we don't support [MinGW](#mingw))
 * The [Desktop development with C++ item + Windows 10.0.18362.0 SDK](https://imgur.com/a/7zs51IT)
   from the Visual Studio installer
 
