@@ -131,7 +131,7 @@ And then
 In this case, `C:\deps\skia` is the directory where Skia was compiled
 or uncompressed.
 
-## MinGW
+### MinGW
 
 We don't support MinGW compiler and it might bring some problems into
 the compilation process. If you see that the detected C++ compiler by
