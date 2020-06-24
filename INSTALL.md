@@ -133,12 +133,20 @@ or uncompressed.
 
 ## MinGW
 
-We don't support MinGW compiler. If you see that the detected C++
-compiler by cmake is `C:\MinGW\bin\c++.exe` or something similar, you
-have to get rid of MinGW path (`C:\MinGW\bin`) from the `PATH`
-environment variable and run cmake again from scratch so the Visual
-Studio C++ compiler (`cl.exe`) is used instead. More information in
-[issue #2449](https://github.com/aseprite/aseprite/issues/2449)
+We don't support MinGW compiler and it might bring some problems into
+the compilation process. If you see that the detected C++ compiler by
+cmake is `C:\MinGW\bin\c++.exe` or something similar, you have to get
+rid of MinGW path (`C:\MinGW\bin`) from the `PATH` environment
+variable and run cmake again from scratch, so the Visual Studio C++
+compiler (`cl.exe`) is used instead.
+
+You can define the `CMAKE_IGNORE_PATH` variable when running cmake for
+the first time in case that you don't know or don't want to modify the
+`PATH` variable, e.g.:
+
+    cmake -DCMAKE_IGNORE_PATH=C:\MinGW\bin ...
+
+More information in [issue #2449](https://github.com/aseprite/aseprite/issues/2449)
 
 ## macOS details
 
