@@ -1,5 +1,5 @@
 // Aseprite Document IO Library
-// Copyright (c) 2018-2019 Igara Studio S.A.
+// Copyright (c) 2018-2020 Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -1004,7 +1004,7 @@ void AsepriteDecoder::readTilesetChunk(doc::Sprite* sprite,
   const std::string name = readString();
 
   // Errors
-  if (ntiles < 1 || w < 1 || h < 1) {
+  if (ntiles < 0 || w < 1 || h < 1) {
     delegate()->error(
       fmt::format("Error: Invalid tileset (number of tiles={0}, tile size={1}x{2})",
                   ntiles, w, h));
@@ -1032,19 +1032,20 @@ void AsepriteDecoder::readTilesetChunk(doc::Sprite* sprite,
   }
 
   if (flags & ASE_TILESET_FLAG_EMBEDDED) {
-    const size_t dataSize = read32(); // Size of compressed data
-    const size_t dataBeg = f()->tell();
-    const size_t dataEnd = dataBeg+dataSize;
+    if (ntiles > 0) {
+      const size_t dataSize = read32(); // Size of compressed data
+      const size_t dataBeg = f()->tell();
+      const size_t dataEnd = dataBeg+dataSize;
 
-    doc::ImageRef alltiles(doc::Image::create(sprite->pixelFormat(), w, h*ntiles));
-    read_compressed_image(f(), delegate(), alltiles.get(), header, dataEnd);
-    f()->seek(dataEnd);
+      doc::ImageRef alltiles(doc::Image::create(sprite->pixelFormat(), w, h*ntiles));
+      read_compressed_image(f(), delegate(), alltiles.get(), header, dataEnd);
+      f()->seek(dataEnd);
 
-    for (doc::tile_index i=0; i<ntiles; ++i) {
-      doc::ImageRef tile(doc::crop_image(alltiles.get(), 0, i*h, w, h, alltiles->maskColor()));
-      tileset->set(i, tile);
+      for (doc::tile_index i=0; i<ntiles; ++i) {
+        doc::ImageRef tile(doc::crop_image(alltiles.get(), 0, i*h, w, h, alltiles->maskColor()));
+        tileset->set(i, tile);
+      }
     }
-
     sprite->tilesets()->set(id, tileset);
   }
 }
