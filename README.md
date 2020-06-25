@@ -77,7 +77,7 @@ Aseprite includes color palettes created by:
 It tries to replicate some pixel-art algorithms:
 
 * [RotSprite](http://forums.sonicretro.org/index.php?showtopic=8848&st=15&p=159754&#entry159754) by Xenowhirl.
-* [Pixel perfect drawing algorithm](http://deepnight.net/pixel-perfect-drawing/) by [Sébastien Bénard](https://twitter.com/deepnightfr) and [Carduus](https://twitter.com/CarduusHimself/status/420554200737935361).
+* [Pixel perfect drawing algorithm](https://deepnight.net/blog/tools/pixel-perfect-drawing/) by [Sébastien Bénard](https://twitter.com/deepnightfr) and [Carduus](https://twitter.com/CarduusHimself/status/420554200737935361).
 
 Thanks to [third-party open source projects](docs/LICENSES.md), to
 [contributors](https://www.aseprite.org/contributors/), and all the
