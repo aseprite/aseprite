@@ -103,6 +103,7 @@ protected:
   bool m_contiguous;
   bool m_snapToGrid;
   bool m_isSelectingTiles;
+  doc::Grid m_grid;
   gfx::Rect m_gridBounds;
   gfx::Point m_celOrigin;
   gfx::Point m_speed;
@@ -123,7 +124,8 @@ protected:
   tools::DynamicsOptions m_dynamics;
 
 public:
-  ToolLoopBase(Editor* editor, Site site,
+  ToolLoopBase(Editor* editor,
+               const Site& site,
                ToolLoopParams& params)
     : m_editor(editor)
     , m_tool(params.tool)
@@ -142,7 +144,8 @@ public:
     , m_contiguous(params.contiguous)
     , m_snapToGrid(m_docPref.grid.snap())
     , m_isSelectingTiles(false)
-    , m_gridBounds(params.gridBounds)
+    , m_grid(site.grid())
+    , m_gridBounds(site.gridBounds())
     , m_button(params.button)
     , m_ink(params.ink->clone())
     , m_controller(params.controller)
@@ -150,7 +153,9 @@ public:
     , m_intertwine(m_tool->getIntertwine(m_button))
     , m_tracePolicy(m_tool->getTracePolicy(m_button))
     , m_symmetry(nullptr)
-    , m_colorTarget(m_layer ? ColorTarget(m_layer):
+    , m_colorTarget(site.tilemapMode() == TilemapMode::Tiles ? ColorTarget(ColorTarget::BackgroundLayer,
+                                                                           IMAGE_TILEMAP, 0):
+                    m_layer ? ColorTarget(m_layer):
                               ColorTarget(ColorTarget::BackgroundLayer,
                                           m_sprite->pixelFormat(),
                                           m_sprite->transparentColor()))
@@ -162,6 +167,11 @@ public:
     ASSERT(m_tool);
     ASSERT(m_ink);
     ASSERT(m_controller);
+
+    if (site.tilemapMode() == TilemapMode::Tiles) {
+      m_pointShape = App::instance()->toolBox()->getPointShapeById(
+        tools::WellKnownPointShapes::Tile);
+    }
 
 #ifdef ENABLE_UI // TODO add dynamics support when UI is not enabled
     if (m_controller->isFreehand() &&
@@ -309,6 +319,7 @@ public:
             == app::gen::PixelConnectivity::EIGHT_CONNECTED);
   }
 
+  const doc::Grid& getGrid() const override { return m_grid; }
   gfx::Rect getGridBounds() override { return m_gridBounds; }
   gfx::Point getCelOrigin() override { return m_celOrigin; }
   void setSpeed(const gfx::Point& speed) override { m_speed = speed; }
@@ -432,7 +443,7 @@ class ToolLoopImpl : public ToolLoopBase {
 
 public:
   ToolLoopImpl(Editor* editor,
-               Site site,
+               const Site& site,
                Context* context,
                ToolLoopParams& params,
                const bool saveLastPoint)
@@ -691,9 +702,18 @@ tools::ToolLoop* create_tool_loop(
   const bool convertLineToFreehand,
   const bool selectTiles)
 {
+  Site site = editor->getSite();
+
   ToolLoopParams params;
   params.tool = editor->getCurrentEditorTool();
   params.ink = editor->getCurrentEditorInk();
+
+  // TODO add inks for tilemaps
+  if (site.tilemapMode() == TilemapMode::Tiles) {
+    if (!params.ink->isSelection())
+      params.ink = App::instance()->toolBox()->getInkById(tools::WellKnownInks::PaintCopy);
+  }
+
   if (!params.tool || !params.ink)
     return nullptr;
 
@@ -701,14 +721,6 @@ tools::ToolLoop* create_tool_loop(
     params.tool = App::instance()->toolBox()->getToolById(tools::WellKnownTools::RectangularMarquee);
     params.ink = params.tool->getInk(button == tools::Pointer::Left ? 0: 1);
   }
-
-  Site site = editor->getSite();
-
-  // Get grid bounds from the original site (as we call
-  // site.layer(nullptr) in certain cases, we need to know if the
-  // active layer is a tilemap, and in that case the grid bounds can
-  // be different than the sprite grid bounds).
-  params.gridBounds = site.gridBounds();
 
   // For selection tools, we can use any layer (even without layers at
   // all), so we specify a nullptr here as the active layer. This is
@@ -750,11 +762,18 @@ tools::ToolLoop* create_tool_loop(
 
   // Get fg/bg colors
   ColorBar* colorbar = ColorBar::instance();
-  params.fg = colorbar->getFgColor();
-  params.bg = colorbar->getBgColor();
+  if (site.tilemapMode() == TilemapMode::Tiles) {
+    params.fg = app::Color::fromIndex(colorbar->getFgTile()); // TODO Color::fromTileIndex?
+    params.bg = app::Color::fromIndex(colorbar->getBgTile());
+  }
+  else {
+    params.fg = colorbar->getFgColor();
+    params.bg = colorbar->getBgColor();
+  }
 
-  if (!params.fg.isValid() ||
-      !params.bg.isValid()) {
+  if (site.tilemapMode() == TilemapMode::Pixels &&
+      (!params.fg.isValid() ||
+       !params.bg.isValid())) {
     if (Preferences::instance().colorBar.showInvalidFgBgColorAlert()) {
       OptionalAlert::show(
         Preferences::instance().colorBar.showInvalidFgBgColorAlert,
@@ -817,9 +836,6 @@ tools::ToolLoop* create_tool_loop_for_script(
   if (!site.layer())
     return nullptr;
 
-  // TODO should gridBounds be specified by the caller?
-  params.gridBounds = site.gridBounds();
-
   try {
     // If we don't have the UI available, we reset the tools
     // preferences, so scripts that are executed in batch mode have a
@@ -849,10 +865,11 @@ class PreviewToolLoopImpl : public ToolLoopBase {
 public:
   PreviewToolLoopImpl(
     Editor* editor,
+    const Site& site,
     ToolLoopParams& params,
     Image* image,
     const gfx::Point& celOrigin)
-    : ToolLoopBase(editor, editor->getSite(), params)
+    : ToolLoopBase(editor, site, params)
     , m_image(image)
   {
     m_celOrigin = celOrigin;
@@ -906,9 +923,19 @@ tools::ToolLoop* create_tool_loop_preview(
   Image* image,
   const gfx::Point& celOrigin)
 {
+  Site site = editor->getSite();
+
   ToolLoopParams params;
   params.tool = editor->getCurrentEditorTool();
   params.ink = editor->getCurrentEditorInk();
+
+  // TODO add inks for tilemaps
+  if (site.tilemapMode() == TilemapMode::Tiles &&
+      image->pixelFormat() == IMAGE_TILEMAP) {
+    if (!params.ink->isSelection())
+      params.ink = App::instance()->toolBox()->getInkById(tools::WellKnownInks::PaintCopy);
+  }
+
   if (!params.tool || !params.ink)
     return nullptr;
 
@@ -922,8 +949,16 @@ tools::ToolLoop* create_tool_loop_preview(
 
   // Get fg/bg colors
   ColorBar* colorbar = ColorBar::instance();
-  params.fg = colorbar->getFgColor();
-  params.bg = colorbar->getBgColor();
+  if (site.tilemapMode() == TilemapMode::Tiles) {
+    params.fg = app::Color::fromIndex(colorbar->getFgTile()); // TODO Color::fromTileIndex?
+    params.bg = app::Color::fromIndex(colorbar->getBgTile());
+    if (!params.fg.isValid() || !params.bg.isValid())
+      return nullptr;
+  }
+  else {
+    params.fg = colorbar->getFgColor();
+    params.bg = colorbar->getBgColor();
+  }
   if (!params.fg.isValid() ||
       !params.bg.isValid())
     return nullptr;
@@ -931,14 +966,13 @@ tools::ToolLoop* create_tool_loop_preview(
   params.brush = brush;
   params.button = tools::ToolLoop::Left;
   params.controller = params.tool->getController(params.button);
-  params.gridBounds = editor->getSite().gridBounds();
 
   // Create the new tool loop
   try {
     fill_toolloop_params_from_tool_preferences(params);
 
     return new PreviewToolLoopImpl(
-      editor, params, image, celOrigin);
+      editor, site, params, image, celOrigin);
   }
   catch (const std::exception& e) {
     LOG(ERROR, e.what());

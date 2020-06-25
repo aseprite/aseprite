@@ -170,7 +170,7 @@ ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
   , m_ascending(true)
   , m_lastButton(kButtonLeft)
   , m_editMode(false)
-  , m_tilesMode(false)
+  , m_tilemapMode(TilemapMode::Pixels)
   , m_tilesetMode(TilesetMode::Auto)
   , m_redrawTimer(250, this)
   , m_redrawAll(false)
@@ -388,6 +388,16 @@ void ColorBar::setBgColor(const app::Color& color)
     onColorButtonChange(color);
 }
 
+doc::tile_index ColorBar::getFgTile() const
+{
+  return m_fgColor.getColor().getIndex();  // TODO
+}
+
+doc::tile_index ColorBar::getBgTile() const
+{
+  return m_bgColor.getColor().getIndex();  // TODO
+}
+
 PaletteView* ColorBar::getPaletteView()
 {
   return &m_paletteView;
@@ -485,28 +495,31 @@ void ColorBar::setEditMode(bool state)
     m_paletteView.deselect();
 }
 
-bool ColorBar::inTilesMode() const
+TilemapMode ColorBar::tilemapMode() const
 {
   return
-    (m_tilesMode &&
-     m_tilesHBox.isVisible() &&
+    (m_tilesHBox.isVisible() &&
      m_lastDocument &&
-     m_lastDocument->sprite());
+     m_lastDocument->sprite()) ? m_tilemapMode:
+                                 TilemapMode::Pixels;
 }
 
-void ColorBar::setTilesMode(bool state)
+void ColorBar::setTilemapMode(const TilemapMode mode)
 {
   const Site site = UIContext::instance()->activeSite();
   const bool isTilemap = (site.layer() && site.layer()->isTilemap());
+  const bool editTiles = (mode == TilemapMode::Tiles);
 
   SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
   ButtonSet::Item* item = m_tilesButton.getItem(0);
 
-  m_tilesMode = state;
-  item->setHotColor(state ? theme->colors.editPalFace(): gfx::ColorNone);
+  m_tilemapMode = mode;
+  item->setHotColor(editTiles ?
+                    theme->colors.editPalFace():
+                    gfx::ColorNone);
   item->setMono(true);
 
-  if (state && isTilemap) {
+  if (editTiles && isTilemap) {
     manager()->freeWidget(&m_paletteView);
     m_scrollablePalView.setVisible(false);
     m_scrollableTilesView.setVisible(true);
@@ -575,8 +588,8 @@ void ColorBar::onActiveSiteChange(const Site& site)
   }
   if (!isTilemap) {
     m_lastTilesetId = doc::NullId;
-    if (m_tilesMode)
-      setTilesMode(false);
+    if (m_tilemapMode == TilemapMode::Tiles)
+      setTilemapMode(TilemapMode::Pixels);
   }
 }
 
@@ -679,7 +692,9 @@ void ColorBar::onPaletteButtonClick()
 void ColorBar::onTilesButtonClick()
 {
   m_tilesButton.deselectItems();
-  setTilesMode(!inTilesMode());
+  setTilemapMode(
+    (tilemapMode() == TilemapMode::Pixels ? TilemapMode::Tiles:
+                                            TilemapMode::Pixels));
 }
 
 void ColorBar::onTilesetModeButtonClick()
@@ -885,7 +900,7 @@ void ColorBar::setTransparentIndex(int index)
 
 void ColorBar::onPaletteViewChangeSize(int boxsize)
 {
-  if (inTilesMode())
+  if (tilemapMode() == TilemapMode::Tiles)
     Preferences::instance().colorBar.tilesBoxSize(boxsize);
   else
     Preferences::instance().colorBar.boxSize(boxsize);
@@ -1037,6 +1052,14 @@ void ColorBar::onTilesViewDragAndDrop(doc::Tileset* tileset,
 void ColorBar::onTilesViewIndexChange(int index, ui::MouseButton button)
 {
   // TODO show tools to stamp/draw/pick tiles
+
+  if (button == kButtonRight)
+    setBgColor(app::Color::fromIndex(index));
+  else if (button == kButtonLeft)
+    setFgColor(app::Color::fromIndex(index));
+  else if (button == kButtonMiddle) {
+    // TODO ?
+  }
 }
 
 void ColorBar::onFgColorChangeFromPreferences()
@@ -1323,7 +1346,7 @@ void ColorBar::onNewInputPriority(InputChainElement* element,
     return;
 
   if (element != this) {
-    if (m_tilesMode)
+    if (m_tilemapMode == TilemapMode::Tiles)
       m_tilesView.deselect();
     else
       m_paletteView.deselect();
@@ -1332,7 +1355,7 @@ void ColorBar::onNewInputPriority(InputChainElement* element,
 
 bool ColorBar::onCanCut(Context* ctx)
 {
-  if (m_tilesMode)
+  if (m_tilemapMode == TilemapMode::Tiles)
     return (m_tilesView.getSelectedEntriesCount() > 0);
   else
     return (m_paletteView.getSelectedEntriesCount() > 0);
@@ -1345,7 +1368,7 @@ bool ColorBar::onCanCopy(Context* ctx)
 
 bool ColorBar::onCanPaste(Context* ctx)
 {
-  if (m_tilesMode)
+  if (m_tilemapMode == TilemapMode::Tiles)
     return (clipboard::get_current_format() == clipboard::ClipboardTiles);
   else
     return (clipboard::get_current_format() == clipboard::ClipboardPaletteEntries);
@@ -1358,7 +1381,7 @@ bool ColorBar::onCanClear(Context* ctx)
 
 bool ColorBar::onCut(Context* ctx)
 {
-  if (m_tilesMode) {
+  if (m_tilemapMode == TilemapMode::Tiles) {
     m_tilesView.cutToClipboard();
     showRemapTiles();
   }
@@ -1369,7 +1392,7 @@ bool ColorBar::onCut(Context* ctx)
 
 bool ColorBar::onCopy(Context* ctx)
 {
-  if (m_tilesMode)
+  if (m_tilemapMode == TilemapMode::Tiles)
     m_tilesView.copyToClipboard();
   else
     m_paletteView.copyToClipboard();
@@ -1378,7 +1401,7 @@ bool ColorBar::onCopy(Context* ctx)
 
 bool ColorBar::onPaste(Context* ctx)
 {
-  if (m_tilesMode) {
+  if (m_tilemapMode == TilemapMode::Tiles) {
     m_tilesView.pasteFromClipboard();
     showRemapTiles();
   }
@@ -1389,7 +1412,7 @@ bool ColorBar::onPaste(Context* ctx)
 
 bool ColorBar::onClear(Context* ctx)
 {
-  if (m_tilesMode) {
+  if (m_tilemapMode == TilemapMode::Tiles) {
     m_tilesView.clearSelection();
     showRemapTiles();
   }

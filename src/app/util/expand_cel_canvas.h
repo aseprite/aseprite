@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -9,8 +9,10 @@
 #define APP_UTIL_EXPAND_CEL_CANVAS_H_INCLUDED
 #pragma once
 
+#include "app/tilemap_mode.h"
 #include "app/tileset_mode.h"
 #include "doc/frame.h"
+#include "doc/grid.h"
 #include "doc/image_ref.h"
 #include "filters/tiled_mode.h"
 #include "gfx/point.h"
@@ -100,6 +102,8 @@ namespace app {
     // reduce the patched region because both images will be the same.
     bool m_canCompareSrcVsDst;
 
+    doc::Grid m_grid;
+    TilemapMode m_tilemapMode;
     TilesetMode m_tilesetMode;
   };
 

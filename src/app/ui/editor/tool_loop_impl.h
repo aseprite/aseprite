@@ -46,8 +46,6 @@ namespace app {
     int tolerance = 0;
     bool contiguous = true;
     tools::FreehandAlgorithm freehandAlgorithm = tools::FreehandAlgorithm::DEFAULT;
-
-    gfx::Rect gridBounds;
   };
 
   //////////////////////////////////////////////////////////////////////

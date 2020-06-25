@@ -16,6 +16,7 @@
 #include "doc/brush.h"
 #include "doc/color.h"
 #include "doc/frame.h"
+#include "doc/grid.h"
 #include "filters/tiled_mode.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
@@ -182,6 +183,7 @@ namespace app {
       virtual bool getSnapToGrid() = 0;
       virtual bool isSelectingTiles() = 0;
       virtual bool getStopAtGrid() = 0; // For floodfill-like tools
+      virtual const doc::Grid& getGrid() const = 0;
       virtual gfx::Rect getGridBounds() = 0;
       virtual bool isPixelConnectivityEightConnected() = 0;
 

@@ -35,15 +35,7 @@ RgbMap* Site::rgbMap() const
   return (m_sprite ? m_sprite->rgbMap(m_frame): nullptr);
 }
 
-const Cel* Site::cel() const
-{
-  if (m_layer)
-    return m_layer->cel(m_frame);
-  else
-    return nullptr;
-}
-
-Cel* Site::cel()
+Cel* Site::cel() const
 {
   if (m_layer)
     return m_layer->cel(m_frame);

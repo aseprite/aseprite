@@ -158,7 +158,12 @@ public:
           break;
         }
         case Copy:
-          setProc(get_ink_proc<CopyInkProcessing>(loop));
+          if (loop->getDstImage()->pixelFormat() == IMAGE_TILEMAP) {
+            setProc(new CopyInkProcessing<TilemapTraits>(loop));
+          }
+          else {
+            setProc(get_ink_proc<CopyInkProcessing>(loop));
+          }
           break;
         case LockAlpha:
           setProc(get_ink_proc<LockAlphaInkProcessing>(loop));

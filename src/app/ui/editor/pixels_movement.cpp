@@ -785,7 +785,14 @@ void PixelsMovement::redrawExtraImage(Transformation* transformation)
   if (!m_extraCel)
     m_extraCel.reset(new ExtraCel);
 
-  m_extraCel->create(m_document->sprite(), bounds, m_site.frame(), opacity);
+  m_extraCel->create(
+    m_site.tilemapMode(),
+    m_document->sprite(),
+    bounds,
+    (m_site.tilemapMode() == TilemapMode::Tiles ? m_site.grid().tileToCanvas(bounds).size():
+                                                  bounds.size()),
+    m_site.frame(),
+    opacity);
   m_extraCel->setType(render::ExtraType::PATCH);
   m_extraCel->setBlendMode(m_site.layer()->isImage() ?
                            static_cast<LayerImage*>(m_site.layer())->blendMode():

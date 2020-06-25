@@ -410,12 +410,16 @@ void Editor::getSite(Site* site) const
   }
 
   if (m_layer && m_layer->isTilemap()) {
-    TilesetMode mode = site->tilesetMode();
+    TilemapMode tilemapMode = site->tilemapMode();
+    TilesetMode tilesetMode = site->tilesetMode();
     const ColorBar* colorbar = ColorBar::instance();
     ASSERT(colorbar);
-    if (colorbar)
-      mode = colorbar->tilesetMode();
-    site->tilesetMode(mode);
+    if (colorbar) {
+      tilemapMode = colorbar->tilemapMode();
+      tilesetMode = colorbar->tilesetMode();
+    }
+    site->tilemapMode(tilemapMode);
+    site->tilesetMode(tilesetMode);
   }
 }
 

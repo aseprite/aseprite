@@ -677,7 +677,8 @@ void Render::renderLayer(
 
   CompositeImageFunc compositeImage =
     getImageComposition(
-      dstImage->pixelFormat(),
+      (dstImage->pixelFormat() != IMAGE_TILEMAP ? dstImage->pixelFormat():
+                                                  m_sprite->pixelFormat()),
       m_sprite->pixelFormat(), layer);
   if (!compositeImage)
     return;
@@ -757,7 +758,10 @@ void Render::renderSprite(
   // Overlay preview image
   if (m_previewImage &&
       m_selectedLayer == nullptr &&
-      m_selectedFrame == frame) {
+      m_selectedFrame == frame
+      // TODO allow previewImage for tilemaps?
+      && m_previewImage->pixelFormat() == m_sprite->pixelFormat()
+      ) {
     renderImage(
       dstImage,
       m_previewImage,
@@ -768,7 +772,8 @@ void Render::renderSprite(
       area,
       getImageComposition(
         dstImage->pixelFormat(),
-        m_previewImage->pixelFormat(), sprite->root()),
+        m_previewImage->pixelFormat(),
+        sprite->root()),
       255,
       m_previewBlendMode);
   }
@@ -1033,11 +1038,7 @@ void Render::renderLayer(
   }
 
   if (drawExtra) {
-    extraArea = gfx::Rect(
-      m_extraCel->x(),
-      m_extraCel->y(),
-      m_extraImage->width(),
-      m_extraImage->height());
+    extraArea = m_extraCel->bounds();
     extraArea = m_proj.apply(extraArea);
     if (m_proj.scaleX() < 1.0) extraArea.w--;
     if (m_proj.scaleY() < 1.0) extraArea.h--;
@@ -1178,14 +1179,15 @@ void Render::renderLayer(
   if (drawExtra && m_extraType != ExtraType::NONE) {
     if (m_extraCel->opacity() > 0) {
       renderCel(
-        image, m_extraImage,
-        nullptr,                // Without layer
+        image,
+        m_sprite,
+        m_extraImage,
+        m_currentLayer, // Current layer (useful to use get the tileset if extra cel is a tilemap)
         m_sprite->palette(frame),
         m_extraCel->bounds(),
         gfx::Clip(area.dst.x+extraArea.x-area.src.x,
                   area.dst.y+extraArea.y-area.src.y,
                   extraArea),
-        compositeImage,
         m_extraCel->opacity(),
         m_extraBlendMode);
     }
@@ -1285,12 +1287,17 @@ void Render::renderCel(
         const tile_t t = cel_image->getPixel(u, v);
         const tile_index i = tile_geti(t);
 
-        const ImageRef tile_image = tileset->get(i);
-        if (!tile_image)
-          continue;
+        if (dst_image->pixelFormat() == IMAGE_TILEMAP) {
+          put_pixel(dst_image, u-area.dst.x, v-area.dst.y, t);
+        }
+        else {
+          const ImageRef tile_image = tileset->get(i);
+          if (!tile_image)
+            continue;
 
-        renderImage(dst_image, tile_image.get(), pal, tileBoundsOnCanvas,
-                    area, compositeImage, opacity, blendMode);
+          renderImage(dst_image, tile_image.get(), pal, tileBoundsOnCanvas,
+                      area, compositeImage, opacity, blendMode);
+        }
       }
     }
   }
@@ -1374,8 +1381,16 @@ CompositeImageFunc Render::getImageComposition(
         case IMAGE_INDEXED:   return get_fastest_composition_path<IndexedTraits, IndexedTraits>(m_proj, finegrain);
       }
       break;
+
+    case IMAGE_TILEMAP:
+      switch (dstFormat) {
+        case IMAGE_TILEMAP:
+          return get_fastest_composition_path<TilemapTraits, TilemapTraits>(m_proj, finegrain);
+      }
+      break;
   }
 
+  TRACE_RENDER_CEL("Render::getImageComposition srcFormat", srcFormat, "dstFormat", dstFormat);
   ASSERT(false && "Invalid pixel formats");
   return nullptr;
 }

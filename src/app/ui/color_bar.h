@@ -13,6 +13,7 @@
 #include "app/context_observer.h"
 #include "app/doc_observer.h"
 #include "app/docs_observer.h"
+#include "app/tilemap_mode.h"
 #include "app/tileset_mode.h"
 #include "app/ui/button_set.h"
 #include "app/ui/color_button.h"
@@ -71,6 +72,9 @@ namespace app {
     void setFgColor(const app::Color& color);
     void setBgColor(const app::Color& color);
 
+    doc::tile_index getFgTile() const;
+    doc::tile_index getBgTile() const;
+
     PaletteView* getPaletteView();
 
     ColorSelector getColorSelector() const;
@@ -81,8 +85,8 @@ namespace app {
     bool inEditMode() const;
     void setEditMode(bool state);
 
-    bool inTilesMode() const;
-    void setTilesMode(bool state);
+    TilemapMode tilemapMode() const;
+    void setTilemapMode(const TilemapMode mode);
 
     TilesetMode tilesetMode() const;
     void setTilesetMode(const TilesetMode mode);
@@ -234,7 +238,7 @@ namespace app {
     bool m_editMode;
 
     // True if we should be putting/setting tiles.
-    bool m_tilesMode;
+    TilemapMode m_tilemapMode;
     TilesetMode m_tilesetMode;
 
     // Timer to redraw editors after a palette change.

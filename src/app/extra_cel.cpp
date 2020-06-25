@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -20,21 +21,29 @@ ExtraCel::ExtraCel()
 {
 }
 
-void ExtraCel::create(doc::Sprite* sprite,
+void ExtraCel::create(const TilemapMode tilemapMode,
+                      doc::Sprite* sprite,
                       const gfx::Rect& bounds,
-                      doc::frame_t frame,
-                      int opacity)
+                      const gfx::Size& imageSize,
+                      const doc::frame_t frame,
+                      const int opacity)
 {
   ASSERT(sprite);
 
+  doc::PixelFormat pixelFormat;
+  if (tilemapMode == TilemapMode::Tiles)
+    pixelFormat = doc::IMAGE_TILEMAP;
+  else
+    pixelFormat = sprite->pixelFormat();
+
   if (!m_image ||
-      m_image->pixelFormat() != sprite->pixelFormat() ||
-      m_image->width() != bounds.w ||
-      m_image->height() != bounds.h) {
+      m_image->pixelFormat() != pixelFormat ||
+      m_image->width() != imageSize.w ||
+      m_image->height() != imageSize.h) {
     if (!m_imageBuffer)
       m_imageBuffer.reset(new doc::ImageBuffer(1));
-    doc::Image* newImage = doc::Image::create(sprite->pixelFormat(),
-                                              bounds.w, bounds.h,
+    doc::Image* newImage = doc::Image::create(pixelFormat,
+                                              imageSize.w, imageSize.h,
                                               m_imageBuffer);
     m_image.reset(newImage);
   }

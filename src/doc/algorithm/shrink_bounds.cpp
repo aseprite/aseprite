@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019 Igara Studio S.A.
+// Copyright (c) 2019-2020 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -399,7 +399,7 @@ bool shrink_bounds2(const Image* a,
     case IMAGE_GRAYSCALE: return shrink_bounds_templ2<GrayscaleTraits>(a, b, bounds);
     case IMAGE_INDEXED:   return shrink_bounds_templ2<IndexedTraits>(a, b, bounds);
     case IMAGE_BITMAP:    return shrink_bounds_templ2<BitmapTraits>(a, b, bounds);
-    // case IMAGE_TILEMAP:   return shrink_bounds_templ2<TilemapTraits>(a, b, bounds);
+    case IMAGE_TILEMAP:   return shrink_bounds_templ2<TilemapTraits>(a, b, bounds);
   }
   ASSERT(false);
   return false;

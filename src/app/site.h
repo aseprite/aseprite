@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -10,6 +10,7 @@
 #pragma once
 
 #include "app/doc_range.h"
+#include "app/tilemap_mode.h"
 #include "app/tileset_mode.h"
 #include "doc/frame.h"
 #include "doc/palette_picks.h"
@@ -52,6 +53,7 @@ namespace app {
       , m_sprite(nullptr)
       , m_layer(nullptr)
       , m_frame(0)
+      , m_tilemapMode(TilemapMode::Pixels)
       , m_tilesetMode(TilesetMode::Manual) { }
 
     const Focus focus() const { return m_focus; }
@@ -62,16 +64,11 @@ namespace app {
     bool inColorBar() const { return m_focus == InColorBar; }
     bool inTimeline() const { return (inLayers() || inFrames() || inCels()); }
 
-    const Doc* document() const { return m_document; }
-    const doc::Sprite* sprite() const { return m_sprite; }
-    const doc::Layer* layer() const { return m_layer; }
+    Doc* document() const { return m_document; }
+    doc::Sprite* sprite() const { return m_sprite; }
+    doc::Layer* layer() const { return m_layer; }
     doc::frame_t frame() const { return m_frame; }
-    const doc::Cel* cel() const;
-
-    Doc* document() { return m_document; }
-    doc::Sprite* sprite() { return m_sprite; }
-    doc::Layer* layer() { return m_layer; }
-    doc::Cel* cel();
+    doc::Cel* cel() const;
     const DocRange& range() const { return m_range; }
 
     void focus(Focus focus) { m_focus = focus; }
@@ -112,8 +109,10 @@ namespace app {
     doc::Grid grid() const;
     gfx::Rect gridBounds() const;
 
-    void tilesetMode(const TilesetMode& mode) { m_tilesetMode = mode; }
-    const TilesetMode& tilesetMode() const { return m_tilesetMode; }
+    void tilemapMode(const TilemapMode mode) { m_tilemapMode = mode; }
+    void tilesetMode(const TilesetMode mode) { m_tilesetMode = mode; }
+    TilemapMode tilemapMode() const { return m_tilemapMode; }
+    TilesetMode tilesetMode() const { return m_tilesetMode; }
 
   private:
     Focus m_focus;
@@ -125,6 +124,7 @@ namespace app {
     doc::PalettePicks m_selectedColors;
     doc::PalettePicks m_selectedTiles;
     doc::SelectedObjects m_selectedSlices;
+    TilemapMode m_tilemapMode;
     TilesetMode m_tilesetMode;
   };
 
