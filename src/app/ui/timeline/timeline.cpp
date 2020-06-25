@@ -1586,93 +1586,88 @@ void Timeline::onPaint(ui::PaintEvent& ev)
 
     // Draw each visible layer.
     DrawCelData data;
-    if (layer >= lastLayer &&
-        layer >= firstLayer) {
-      for (layer=lastLayer; layer>=firstLayer; --layer) {
-        ASSERT(layer >= 0 && layer < int(m_rows.size()));
+    for (layer=lastLayer; layer>=firstLayer; --layer) {
+      {
+        IntersectClip clip(g, getLayerHeadersBounds());
+        if (clip)
+          drawLayer(g, layer);
+      }
 
-        {
-          IntersectClip clip(g, getLayerHeadersBounds());
-          if (clip)
-            drawLayer(g, layer);
+      IntersectClip clip(g, getCelsBounds());
+      if (!clip)
+        continue;
+
+      Layer* layerPtr = m_rows[layer].layer();
+      if (!layerPtr->isImage()) {
+        // Draw empty cels
+        for (frame=firstFrame; frame<=lastFrame; ++frame) {
+          drawCel(g, layer, frame, nullptr, nullptr);
         }
+        continue;
+      }
 
-        IntersectClip clip(g, getCelsBounds());
-        if (!clip)
-          continue;
+      // Get the first CelIterator to be drawn (it is the first cel with cel->frame >= first_frame)
+      LayerImage* layerImagePtr = static_cast<LayerImage*>(layerPtr);
+      data.begin = layerImagePtr->getCelBegin();
+      data.end = layerImagePtr->getCelEnd();
+      data.it = layerImagePtr->findFirstCelIteratorAfter(firstFrame-1);
+      if (firstFrame > 0 && data.it != data.begin)
+        data.prevIt = data.it-1;
+      else
+        data.prevIt = data.end;
+      data.nextIt = (data.it != data.end ? data.it+1: data.end);
 
-        Layer* layerPtr = m_rows[layer].layer();
-        if (!layerPtr->isImage()) {
-          // Draw empty cels
-          for (frame=firstFrame; frame<=lastFrame; ++frame) {
-            drawCel(g, layer, frame, nullptr, nullptr);
-          }
-          continue;
-        }
+      // Calculate link range for the active cel
+      data.firstLink = data.end;
+      data.lastLink = data.end;
 
-        // Get the first CelIterator to be drawn (it is the first cel with cel->frame >= first_frame)
-        LayerImage* layerImagePtr = static_cast<LayerImage*>(layerPtr);
-        data.begin = layerImagePtr->getCelBegin();
-        data.end = layerImagePtr->getCelEnd();
-        data.it = layerImagePtr->findFirstCelIteratorAfter(firstFrame-1);
-        if (firstFrame > 0 && data.it != data.begin)
-          data.prevIt = data.it-1;
-        else
-          data.prevIt = data.end;
-        data.nextIt = (data.it != data.end ? data.it+1: data.end);
+      if (layerPtr == m_layer) {
+        data.activeIt = layerImagePtr->findCelIterator(m_frame);
+        if (data.activeIt != data.end) {
+          data.firstLink = data.activeIt;
+          data.lastLink = data.activeIt;
 
-        // Calculate link range for the active cel
-        data.firstLink = data.end;
-        data.lastLink = data.end;
+          ObjectId imageId = (*data.activeIt)->image()->id();
 
-        if (layerPtr == m_layer) {
-          data.activeIt = layerImagePtr->findCelIterator(m_frame);
-          if (data.activeIt != data.end) {
-            data.firstLink = data.activeIt;
-            data.lastLink = data.activeIt;
-
-            ObjectId imageId = (*data.activeIt)->image()->id();
-
-            auto it2 = data.activeIt;
-            if (it2 != data.begin) {
-              do {
-                --it2;
-                if ((*it2)->image()->id() == imageId) {
-                  data.firstLink = it2;
-                  if ((*data.firstLink)->frame() < firstFrame)
-                    break;
-                }
-              } while (it2 != data.begin);
-            }
-
-            it2 = data.activeIt;
-            while (it2 != data.end) {
+          auto it2 = data.activeIt;
+          if (it2 != data.begin) {
+            do {
+              --it2;
               if ((*it2)->image()->id() == imageId) {
-                data.lastLink = it2;
-                if ((*data.lastLink)->frame() > lastFrame)
+                data.firstLink = it2;
+                if ((*data.firstLink)->frame() < firstFrame)
                   break;
               }
-              ++it2;
+            } while (it2 != data.begin);
+          }
+
+          it2 = data.activeIt;
+          while (it2 != data.end) {
+            if ((*it2)->image()->id() == imageId) {
+              data.lastLink = it2;
+              if ((*data.lastLink)->frame() > lastFrame)
+                break;
             }
+            ++it2;
           }
         }
-        else
-          data.activeIt = data.end;
+      }
+      else
+        data.activeIt = data.end;
 
-        // Draw every visible cel for each layer.
-        for (frame=firstFrame; frame<=lastFrame; ++frame) {
-          Cel* cel =
-            (data.it != data.end &&
-             (*data.it)->frame() == frame ? *data.it: nullptr);
+      // Draw every visible cel for each layer.
+      for (frame=firstFrame; frame<=lastFrame; ++frame) {
+        Cel* cel =
+          (data.it != data.end &&
+           (*data.it)->frame() == frame ? *data.it: nullptr);
 
-          drawCel(g, layer, frame, cel, &data);
+        drawCel(g, layer, frame, cel, &data);
 
-          if (cel) {
-            data.prevIt = data.it;
-            data.it = data.nextIt; // Point to next cel
-            if (data.nextIt != data.end)
-              ++data.nextIt;
-          }
+        if (cel) {
+          data.prevIt = data.it;
+          data.it = data.nextIt; // Point to next cel
+          if (data.nextIt != data.end)
+            ++data.nextIt;
         }
       }
     }
