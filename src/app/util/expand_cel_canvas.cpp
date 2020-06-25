@@ -542,7 +542,7 @@ gfx::Rect ExpandCelCanvas::getTrimDstImageBounds() const
   else {
     gfx::Rect bounds;
     algorithm::shrink_bounds(m_dstImage.get(),
-                             m_dstImage->maskColor(), nullptr, bounds);
+                             m_dstImage->maskColor(), m_layer, bounds);
     return bounds;
   }
 }
