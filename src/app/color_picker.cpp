@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -126,24 +126,41 @@ void ColorPicker::pickColor(const Site& site,
 
     // Pick from the composed image
     case FromComposition: {
-      m_color = app::Color::fromImage(
-        sprite->pixelFormat(),
-        render::get_sprite_pixel(sprite, pos.x, pos.y,
-                                 site.frame(), proj,
-                                 Preferences::instance().experimental.newBlend()));
-
       doc::CelList cels;
       sprite->pickCels(pos.x, pos.y, site.frame(), kOpacityThreshold,
                        sprite->allVisibleLayers(), cels);
       if (!cels.empty())
         m_layer = cels.front()->layer();
+
+      if (site.tilemapMode() == TilemapMode::Tiles) {
+        if (!cels.empty()) {
+          gfx::Point tilePos = site.grid().canvasToTile(gfx::Point(pos));
+          m_color = app::Color::fromIndex(
+            doc::get_pixel(cels.front()->image(), tilePos.x, tilePos.y));
+        }
+      }
+      else if (site.tilemapMode() == TilemapMode::Pixels) {
+        m_color = app::Color::fromImage(
+          sprite->pixelFormat(),
+          render::get_sprite_pixel(sprite, pos.x, pos.y,
+                                   site.frame(), proj,
+                                   Preferences::instance().experimental.newBlend()));
+      }
       break;
     }
 
     // Pick from the current layer
     case FromActiveLayer: {
       const Cel* cel = site.cel();
-      if (cel) {
+      if (!cel)
+        return;
+
+      if (site.tilemapMode() == TilemapMode::Tiles) {
+        gfx::Point tilePos = site.grid().canvasToTile(gfx::Point(pos));
+        m_color = app::Color::fromIndex(
+          doc::get_pixel(cel->image(), tilePos.x, tilePos.y));
+      }
+      else if (site.tilemapMode() == TilemapMode::Pixels) {
         doc::color_t imageColor;
         if (!get_cel_pixel(cel, pos.x, pos.y,
                            site.frame(), imageColor))
