@@ -355,6 +355,7 @@ Image* ExpandCelCanvas::getSourceCanvas()
                     m_bounds.w, m_bounds.h, src_buffer));
 
     m_srcImage->setMaskColor(m_sprite->transparentColor());
+    m_srcImage->clear(m_sprite->transparentColor());
   }
   return m_srcImage.get();
 }
