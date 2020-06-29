@@ -84,7 +84,6 @@ static void fill_toolloop_params_from_tool_preferences(ToolLoopParams& params)
 // Common properties between drawing/preview ToolLoop impl
 
 class ToolLoopBase : public tools::ToolLoop {
-
 protected:
   Editor* m_editor;
   tools::Tool* m_tool;
@@ -125,7 +124,7 @@ protected:
 
 public:
   ToolLoopBase(Editor* editor,
-               const Site& site,
+               Site& site,
                ToolLoopParams& params)
     : m_editor(editor)
     , m_tool(params.tool)
@@ -171,6 +170,17 @@ public:
     if (site.tilemapMode() == TilemapMode::Tiles) {
       m_pointShape = App::instance()->toolBox()->getPointShapeById(
         tools::WellKnownPointShapes::Tile);
+
+      // In selection ink, we need the Pixels tilemap mode so
+      // ExpandCelCanvas uses the whole canvas for the selection
+      // preview.
+      //
+      // TODO in the future we could improve this, using 1) a special
+      //      tilemap layer to preview the selection, or 2) using a
+      //      path to show the selection (so there is no preview layer
+      //      at all and nor ExpandCelCanvas)
+      if (m_ink->isSelection())
+        site.tilemapMode(TilemapMode::Pixels);
     }
 
 #ifdef ENABLE_UI // TODO add dynamics support when UI is not enabled
@@ -443,7 +453,7 @@ class ToolLoopImpl : public ToolLoopBase {
 
 public:
   ToolLoopImpl(Editor* editor,
-               const Site& site,
+               Site& site,
                Context* context,
                ToolLoopParams& params,
                const bool saveLastPoint)
@@ -843,8 +853,9 @@ tools::ToolLoop* create_tool_loop_for_script(
     if (!context->isUIAvailable())
       Preferences::instance().resetToolPreferences(params.tool);
 
+    Site site2(site);
     return new ToolLoopImpl(
-      nullptr, site, context, params, false);
+      nullptr, site2, context, params, false);
   }
   catch (const std::exception& ex) {
     Console::showException(ex);
@@ -865,7 +876,7 @@ class PreviewToolLoopImpl : public ToolLoopBase {
 public:
   PreviewToolLoopImpl(
     Editor* editor,
-    const Site& site,
+    Site& site,
     ToolLoopParams& params,
     Image* image,
     const gfx::Point& celOrigin)

@@ -41,6 +41,7 @@ public:
 class TilePointShape : public PointShape {
 public:
   bool isPixel() override { return true; }
+  bool isTile() override { return true; }
 
   void transformPoint(ToolLoop* loop, const Stroke::Pt& pt) override {
     const doc::Grid& grid = loop->getGrid();
