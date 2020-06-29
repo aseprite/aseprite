@@ -124,7 +124,7 @@ protected:
 
 public:
   ToolLoopBase(Editor* editor,
-               Site& site,
+               Site& site, const doc::Grid& grid,
                ToolLoopParams& params)
     : m_editor(editor)
     , m_tool(params.tool)
@@ -143,8 +143,8 @@ public:
     , m_contiguous(params.contiguous)
     , m_snapToGrid(m_docPref.grid.snap())
     , m_isSelectingTiles(false)
-    , m_grid(site.grid())
-    , m_gridBounds(site.gridBounds())
+    , m_grid(grid)
+    , m_gridBounds(grid.origin(), grid.tileSize())
     , m_button(params.button)
     , m_ink(params.ink->clone())
     , m_controller(params.controller)
@@ -454,10 +454,11 @@ class ToolLoopImpl : public ToolLoopBase {
 public:
   ToolLoopImpl(Editor* editor,
                Site& site,
+               const doc::Grid& grid,
                Context* context,
                ToolLoopParams& params,
                const bool saveLastPoint)
-    : ToolLoopBase(editor, site, params)
+    : ToolLoopBase(editor, site, grid, params)
     , m_context(context)
     , m_canceled(false)
     , m_tx(m_context,
@@ -713,6 +714,7 @@ tools::ToolLoop* create_tool_loop(
   const bool selectTiles)
 {
   Site site = editor->getSite();
+  doc::Grid grid = site.grid();
 
   ToolLoopParams params;
   params.tool = editor->getCurrentEditorTool();
@@ -744,6 +746,8 @@ tools::ToolLoop* create_tool_loop(
   if (params.ink->isSelection() &&
       !params.tool->getPointShape(
         button != tools::Pointer::Left ? 1: 0)->isFloodFill()) {
+    // TODO improve the selection preview without using a preview
+    // image (e.g. we could use a gfx::Path)
     site.layer(nullptr);
   }
   else {
@@ -816,7 +820,7 @@ tools::ToolLoop* create_tool_loop(
 
     ASSERT(context->activeDocument() == editor->document());
     auto toolLoop = new ToolLoopImpl(
-      editor, site, context, params, saveLastPoint);
+      editor, site, grid, context, params, saveLastPoint);
 
     if (selectTiles)
       toolLoop->forceSnapToTiles();
@@ -855,7 +859,8 @@ tools::ToolLoop* create_tool_loop_for_script(
 
     Site site2(site);
     return new ToolLoopImpl(
-      nullptr, site2, context, params, false);
+      nullptr, site2, site2.grid(),
+      context, params, false);
   }
   catch (const std::exception& ex) {
     Console::showException(ex);
@@ -880,7 +885,7 @@ public:
     ToolLoopParams& params,
     Image* image,
     const gfx::Point& celOrigin)
-    : ToolLoopBase(editor, site, params)
+    : ToolLoopBase(editor, site, site.grid(), params)
     , m_image(image)
   {
     m_celOrigin = celOrigin;
