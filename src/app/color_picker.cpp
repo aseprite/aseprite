@@ -134,9 +134,11 @@ void ColorPicker::pickColor(const Site& site,
 
       if (site.tilemapMode() == TilemapMode::Tiles) {
         if (!cels.empty()) {
-          gfx::Point tilePos = site.grid().canvasToTile(gfx::Point(pos));
-          m_color = app::Color::fromIndex(
-            doc::get_pixel(cels.front()->image(), tilePos.x, tilePos.y));
+          const gfx::Point tilePos = site.grid().canvasToTile(gfx::Point(pos));
+          if (cels.front()->image()->bounds().contains(tilePos)) {
+            m_color = app::Color::fromIndex(
+              doc::get_pixel(cels.front()->image(), tilePos.x, tilePos.y));
+          }
         }
       }
       else if (site.tilemapMode() == TilemapMode::Pixels) {
@@ -156,9 +158,11 @@ void ColorPicker::pickColor(const Site& site,
         return;
 
       if (site.tilemapMode() == TilemapMode::Tiles) {
-        gfx::Point tilePos = site.grid().canvasToTile(gfx::Point(pos));
-        m_color = app::Color::fromIndex(
-          doc::get_pixel(cel->image(), tilePos.x, tilePos.y));
+        const gfx::Point tilePos = site.grid().canvasToTile(gfx::Point(pos));
+        if (cel->image()->bounds().contains(tilePos)) {
+          m_color = app::Color::fromIndex(
+            doc::get_pixel(cel->image(), tilePos.x, tilePos.y));
+        }
       }
       else if (site.tilemapMode() == TilemapMode::Pixels) {
         doc::color_t imageColor;
