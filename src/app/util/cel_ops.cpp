@@ -701,9 +701,10 @@ void move_tiles_in_tileset(
 {
   OPS_TRACE("move_tiles_in_tileset\n");
 
+  picks.resize(std::max<int>(picks.size(), beforeIndex));
+
   int n = beforeIndex - tileset->size();
   if (n > 0) {
-    picks.resize(picks.size()+n);
     while (n-- > 0)
       cmds->executeAndAdd(new cmd::AddTile(tileset, tileset->makeEmptyTile()));
   }
