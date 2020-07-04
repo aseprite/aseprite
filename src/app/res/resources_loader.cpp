@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -14,7 +15,6 @@
 #include "app/res/resource.h"
 #include "app/res/resources_loader_delegate.h"
 #include "app/resource_finder.h"
-#include "base/bind.h"
 #include "base/fs.h"
 #include "base/scoped_value.h"
 
@@ -24,9 +24,7 @@ ResourcesLoader::ResourcesLoader(ResourcesLoaderDelegate* delegate)
   : m_delegate(delegate)
   , m_done(false)
   , m_cancel(false)
-  , m_thread(
-    new base::thread(
-      base::Bind<void>(&ResourcesLoader::threadLoadResources, this)))
+  , m_thread(new base::thread([this]{ threadLoadResources(); }))
 {
 }
 
@@ -87,8 +85,7 @@ void ResourcesLoader::threadLoadResources()
 
 base::thread* ResourcesLoader::createThread()
 {
-  return new base::thread(
-    base::Bind<void>(&ResourcesLoader::threadLoadResources, this));
+  return new base::thread([this]{ threadLoadResources(); });
 }
 
 } // namespace app

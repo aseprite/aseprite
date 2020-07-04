@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -18,7 +18,6 @@
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui_context.h"
-#include "base/bind.h"
 #include "ui/tooltips.h"
 
 #include <algorithm>
@@ -50,7 +49,7 @@ AniControls::AniControls(TooltipManager* tooltipManager)
   addItem(theme->parts.aniPlay());
   addItem(theme->parts.aniNext());
   addItem(theme->parts.aniLast());
-  ItemChange.connect(base::Bind(&AniControls::onClickButton, this));
+  ItemChange.connect([this]{ onClickButton(); });
 
   setTriggerOnMouseUp(true);
   setTransparent(true);

@@ -53,7 +53,6 @@
 #include "app/ui_context.h"
 #include "app/util/conversion_to_surface.h"
 #include "app/util/layer_utils.h"
-#include "base/bind.h"
 #include "base/chrono.h"
 #include "base/clamp.h"
 #include "base/convert_to.h"
@@ -172,11 +171,11 @@ Editor::Editor(Doc* document, EditorFlags flags)
 
   m_fgColorChangeConn =
     Preferences::instance().colorBar.fgColor.AfterChange.connect(
-      base::Bind<void>(&Editor::onFgColorChange, this));
+      [this]{ onFgColorChange(); });
 
   m_contextBarBrushChangeConn =
     App::instance()->contextBar()->BrushChange.connect(
-      base::Bind<void>(&Editor::onContextBarBrushChange, this));
+      [this]{ onContextBarBrushChange(); });
 
   // Restore last site in preferences
   {
@@ -190,16 +189,16 @@ Editor::Editor(Doc* document, EditorFlags flags)
       setLayer(layers[layerIndex]);
   }
 
-  m_tiledConnBefore = m_docPref.tiled.BeforeChange.connect(base::Bind<void>(&Editor::onTiledModeBeforeChange, this));
-  m_tiledConn = m_docPref.tiled.AfterChange.connect(base::Bind<void>(&Editor::onTiledModeChange, this));
-  m_gridConn = m_docPref.grid.AfterChange.connect(base::Bind<void>(&Editor::invalidate, this));
-  m_pixelGridConn = m_docPref.pixelGrid.AfterChange.connect(base::Bind<void>(&Editor::invalidate, this));
-  m_bgConn = m_docPref.bg.AfterChange.connect(base::Bind<void>(&Editor::invalidate, this));
-  m_onionskinConn = m_docPref.onionskin.AfterChange.connect(base::Bind<void>(&Editor::invalidate, this));
-  m_symmetryModeConn = Preferences::instance().symmetryMode.enabled.AfterChange.connect(base::Bind<void>(&Editor::invalidateIfActive, this));
+  m_tiledConnBefore = m_docPref.tiled.BeforeChange.connect([this]{ onTiledModeBeforeChange(); });
+  m_tiledConn = m_docPref.tiled.AfterChange.connect([this]{ onTiledModeChange(); });
+  m_gridConn = m_docPref.grid.AfterChange.connect([this]{ invalidate(); });
+  m_pixelGridConn = m_docPref.pixelGrid.AfterChange.connect([this]{ invalidate(); });
+  m_bgConn = m_docPref.bg.AfterChange.connect([this]{ invalidate(); });
+  m_onionskinConn = m_docPref.onionskin.AfterChange.connect([this]{ invalidate(); });
+  m_symmetryModeConn = Preferences::instance().symmetryMode.enabled.AfterChange.connect([this]{ invalidateIfActive(); });
   m_showExtrasConn =
     m_docPref.show.AfterChange.connect(
-      base::Bind<void>(&Editor::onShowExtrasChange, this));
+      [this]{ onShowExtrasChange(); });
 
   m_document->add_observer(this);
 
@@ -2591,7 +2590,7 @@ void Editor::showAnimationSpeedMultiplierPopup(Option<bool>& playOnce,
 
   for (double option : options) {
     MenuItem* item = new MenuItem("Speed x" + base::convert_to<std::string>(option));
-    item->Click.connect(base::Bind<void>(&Editor::setAnimationSpeedMultiplier, this, option));
+    item->Click.connect([this, option]{ setAnimationSpeedMultiplier(option); });
     item->setSelected(m_aniSpeed == option);
     menu.addChild(item);
   }

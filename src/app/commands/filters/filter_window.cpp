@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -17,7 +18,6 @@
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
 #include "app/ui/editor/editor.h"
-#include "base/bind.h"
 
 namespace app {
 
@@ -73,7 +73,7 @@ FilterWindow::FilterWindow(const char* title, const char* cfgSection,
 
   if (m_tiledCheck) {
     m_tiledCheck->setSelected(tiledMode != TiledMode::NONE);
-    m_tiledCheck->Click.connect(base::Bind<void>(&FilterWindow::onTiledChange, this));
+    m_tiledCheck->Click.connect([this]{ onTiledChange(); });
 
     m_vbox.addChild(m_tiledCheck);
   }

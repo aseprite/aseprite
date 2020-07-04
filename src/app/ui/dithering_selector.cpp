@@ -16,7 +16,6 @@
 #include "app/modules/palettes.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/util/conversion_to_surface.h"
-#include "base/bind.h"
 #include "doc/image.h"
 #include "doc/image_ref.h"
 #include "doc/primitives.h"
@@ -179,7 +178,7 @@ DitheringSelector::DitheringSelector(Type type)
   // regenerate this DitheringSelector
   m_extChanges =
     extensions.DitheringMatricesChange.connect(
-      base::Bind<void>(&DitheringSelector::regenerate, this));
+      [this]{ regenerate(); });
 
   setUseCustomWidget(true);
   regenerate();

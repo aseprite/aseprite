@@ -26,7 +26,6 @@
 #include "app/ui/main_window.h"
 #include "app/ui_context.h"
 #include "app/util/filetoks.h"
-#include "base/bind.h"
 #include "base/fs.h"
 #include "base/string.h"
 #include "fmt/format.h"
@@ -304,7 +303,7 @@ AppMenus* AppMenus::instance()
   static AppMenus* instance = NULL;
   if (!instance) {
     instance = new AppMenus;
-    App::instance()->Exit.connect(base::Bind<void>(&destroy_instance, instance));
+    App::instance()->Exit.connect([]{ destroy_instance(instance); });
   }
   return instance;
 }
@@ -315,7 +314,7 @@ AppMenus::AppMenus()
 {
   m_recentFilesConn =
     App::instance()->recentFiles()->Changed.connect(
-      base::Bind(&AppMenus::rebuildRecentList, this));
+      [this]{ rebuildRecentList(); });
 }
 
 AppMenus::~AppMenus()

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -22,7 +22,6 @@
 #include "app/ui/color_bar.h"
 #include "app/ui/color_button.h"
 #include "app/ui/skin/skin_theme.h"
-#include "base/bind.h"
 #include "doc/image.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"

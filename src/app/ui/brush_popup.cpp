@@ -27,7 +27,6 @@
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui_context.h"
 #include "app/util/conversion_to_surface.h"
-#include "base/bind.h"
 #include "base/convert_to.h"
 #include "doc/brush.h"
 #include "doc/image.h"

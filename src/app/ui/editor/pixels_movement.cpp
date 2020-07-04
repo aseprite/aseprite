@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -29,7 +29,6 @@
 #include "app/util/expand_cel_canvas.h"
 #include "app/util/new_image_from_mask.h"
 #include "app/util/range_utils.h"
-#include "base/bind.h"
 #include "base/pi.h"
 #include "base/vector2d.h"
 #include "doc/algorithm/flip_image.h"
@@ -146,13 +145,13 @@ PixelsMovement::PixelsMovement(
 
   m_pivotVisConn =
     Preferences::instance().selection.pivotVisibility.AfterChange.connect(
-      base::Bind<void>(&PixelsMovement::onPivotChange, this));
+      [this]{ onPivotChange(); });
   m_pivotPosConn =
     Preferences::instance().selection.pivotPosition.AfterChange.connect(
-      base::Bind<void>(&PixelsMovement::onPivotChange, this));
+      [this]{ onPivotChange(); });
   m_rotAlgoConn =
     Preferences::instance().selection.rotationAlgorithm.AfterChange.connect(
-      base::Bind<void>(&PixelsMovement::onRotationAlgorithmChange, this));
+      [this]{ onRotationAlgorithmChange(); });
 
   // The extra cel must be null, because if it's not null, it means
   // that someone else is using it (e.g. the editor brush preview),

@@ -33,7 +33,6 @@
 #include "app/ui/layer_frame_comboboxes.h"
 #include "app/ui/optional_alert.h"
 #include "app/ui/status_bar.h"
-#include "base/bind.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
 #include "base/scoped_value.h"

@@ -28,7 +28,6 @@
 #include "app/ui/palette_view.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui_context.h"
-#include "base/bind.h"
 #include "base/scoped_value.h"
 #include "doc/image_impl.h"
 #include "doc/palette.h"
@@ -251,7 +250,7 @@ ColorPopup::ColorPopup(const ColorButtonOptions& options)
   m_vbox.addChild(&m_maskLabel);
   addChild(&m_vbox);
 
-  m_colorType.ItemChange.connect(base::Bind<void>(&ColorPopup::onColorTypeClick, this));
+  m_colorType.ItemChange.connect([this]{ onColorTypeClick(); });
 
   m_sliders.ColorChange.connect(&ColorPopup::onColorSlidersChange, this);
   m_hexColorEntry.ColorChange.connect(&ColorPopup::onColorHexEntryChange, this);

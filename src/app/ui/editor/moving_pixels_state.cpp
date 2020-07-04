@@ -36,7 +36,6 @@
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
 #include "app/util/layer_utils.h"
-#include "base/bind.h"
 #include "base/gcd.h"
 #include "base/pi.h"
 #include "doc/algorithm/flip_image.h"
@@ -93,10 +92,10 @@ MovingPixelsState::MovingPixelsState(Editor* editor, MouseMessage* msg, PixelsMo
   // Listen to any change to the transparent color from the ContextBar.
   m_opaqueConn =
     Preferences::instance().selection.opaque.AfterChange.connect(
-      base::Bind<void>(&MovingPixelsState::onTransparentColorChange, this));
+      [this]{ onTransparentColorChange(); });
   m_transparentConn =
     Preferences::instance().selection.transparentColor.AfterChange.connect(
-      base::Bind<void>(&MovingPixelsState::onTransparentColorChange, this));
+      [this]{ onTransparentColorChange(); });
 
   // Add the current editor as filter for key message of the manager
   // so we can catch the Enter key, and avoid to execute the

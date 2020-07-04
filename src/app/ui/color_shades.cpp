@@ -17,7 +17,6 @@
 #include "app/shade.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/skin/skin_theme.h"
-#include "base/bind.h"
 #include "base/clamp.h"
 #include "doc/color_mode.h"
 #include "doc/palette.h"

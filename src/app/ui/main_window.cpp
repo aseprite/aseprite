@@ -38,7 +38,6 @@
 #include "app/ui/workspace.h"
 #include "app/ui/workspace_tabs.h"
 #include "app/ui_context.h"
-#include "base/bind.h"
 #include "base/fs.h"
 #include "os/display.h"
 #include "os/system.h"
@@ -153,10 +152,8 @@ MainWindow::MainWindow()
 
   // Reconfigure workspace when the timeline position is changed.
   auto& pref = Preferences::instance();
-  pref.general.timelinePosition
-    .AfterChange.connect(base::Bind<void>(&MainWindow::configureWorkspaceLayout, this));
-  pref.general.showMenuBar
-    .AfterChange.connect(base::Bind<void>(&MainWindow::configureWorkspaceLayout, this));
+  pref.general.timelinePosition.AfterChange.connect([this]{ configureWorkspaceLayout(); });
+  pref.general.showMenuBar.AfterChange.connect([this]{ configureWorkspaceLayout(); });
 
   // Prepare the window
   remapWindow();

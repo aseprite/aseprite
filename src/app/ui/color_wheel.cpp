@@ -15,7 +15,6 @@
 #include "app/pref/preferences.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
-#include "base/bind.h"
 #include "base/clamp.h"
 #include "base/pi.h"
 #include "filters/color_curve.h"
@@ -56,7 +55,7 @@ ColorWheel::ColorWheel()
   , m_options("")
   , m_harmonyPicked(false)
 {
-  m_options.Click.connect(base::Bind<void>(&ColorWheel::onOptions, this));
+  m_options.Click.connect([this]{ onOptions(); });
   addChild(&m_options);
 
   InitTheme.connect(
@@ -389,7 +388,7 @@ void ColorWheel::onOptions()
 
   if (isDiscrete())
     discrete.setSelected(true);
-  discrete.Click.connect(base::Bind<void>(&ColorWheel::setDiscrete, this, !isDiscrete()));
+  discrete.Click.connect([this]{ setDiscrete(!isDiscrete()); });
 
   if (m_colorModel != ColorModel::NORMAL_MAP) {
     switch (m_harmony) {
@@ -402,14 +401,14 @@ void ColorWheel::onOptions()
       case Harmony::TETRADIC: tetradic.setSelected(true); break;
       case Harmony::SQUARE: square.setSelected(true); break;
     }
-    none.Click.connect(base::Bind<void>(&ColorWheel::setHarmony, this, Harmony::NONE));
-    complementary.Click.connect(base::Bind<void>(&ColorWheel::setHarmony, this, Harmony::COMPLEMENTARY));
-    monochromatic.Click.connect(base::Bind<void>(&ColorWheel::setHarmony, this, Harmony::MONOCHROMATIC));
-    analogous.Click.connect(base::Bind<void>(&ColorWheel::setHarmony, this, Harmony::ANALOGOUS));
-    split.Click.connect(base::Bind<void>(&ColorWheel::setHarmony, this, Harmony::SPLIT));
-    triadic.Click.connect(base::Bind<void>(&ColorWheel::setHarmony, this, Harmony::TRIADIC));
-    tetradic.Click.connect(base::Bind<void>(&ColorWheel::setHarmony, this, Harmony::TETRADIC));
-    square.Click.connect(base::Bind<void>(&ColorWheel::setHarmony, this, Harmony::SQUARE));
+    none.Click.connect([this]{ setHarmony(Harmony::NONE); });
+    complementary.Click.connect([this]{ setHarmony(Harmony::COMPLEMENTARY); });
+    monochromatic.Click.connect([this]{ setHarmony(Harmony::MONOCHROMATIC); });
+    analogous.Click.connect([this]{ setHarmony(Harmony::ANALOGOUS); });
+    split.Click.connect([this]{ setHarmony(Harmony::SPLIT); });
+    triadic.Click.connect([this]{ setHarmony(Harmony::TRIADIC); });
+    tetradic.Click.connect([this]{ setHarmony(Harmony::TETRADIC); });
+    square.Click.connect([this]{ setHarmony(Harmony::SQUARE); });
   }
 
   gfx::Rect rc = m_options.bounds();

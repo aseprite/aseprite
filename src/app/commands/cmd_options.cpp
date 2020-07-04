@@ -31,7 +31,6 @@
 #include "app/ui/rgbmap_algorithm_selector.h"
 #include "app/ui/separator_in_view.h"
 #include "app/ui/skin/skin_theme.h"
-#include "base/bind.h"
 #include "base/clamp.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
@@ -203,7 +202,7 @@ public:
     , m_restoreScreenScaling(m_pref.general.screenScale())
     , m_restoreUIScaling(m_pref.general.uiScale())
   {
-    sectionListbox()->Change.connect(base::Bind<void>(&OptionsWindow::onChangeSection, this));
+    sectionListbox()->Change.connect([this]{ onChangeSection(); });
 
     // Default extension to save files
     fillExtensionsCombobox(defaultExtension(), m_pref.saveFile.defaultExtension());
@@ -213,15 +212,15 @@ public:
 
     // Number of recent items
     recentFiles()->setValue(m_pref.general.recentItems());
-    clearRecentFiles()->Click.connect(base::Bind<void>(&OptionsWindow::onClearRecentFiles, this));
+    clearRecentFiles()->Click.connect([this]{ onClearRecentFiles(); });
 
     // Template item for active display color profiles
     m_templateTextForDisplayCS = windowCs()->getItem(2)->text();
     windowCs()->deleteItem(2);
 
     // Color profiles
-    resetColorManagement()->Click.connect(base::Bind<void>(&OptionsWindow::onResetColorManagement, this));
-    colorManagement()->Click.connect(base::Bind<void>(&OptionsWindow::onColorManagement, this));
+    resetColorManagement()->Click.connect([this]{ onResetColorManagement(); });
+    colorManagement()->Click.connect([this]{ onColorManagement(); });
     {
       os::instance()->listColorSpaces(m_colorSpaces);
       for (auto& cs : m_colorSpaces) {
@@ -237,7 +236,7 @@ public:
     }
 
     // Alerts
-    resetAlerts()->Click.connect(base::Bind<void>(&OptionsWindow::onResetAlerts, this));
+    resetAlerts()->Click.connect([this]{ onResetAlerts(); });
 
     // Cursor
     paintingCursorType()->setSelectedItemIndex(int(m_pref.cursor.paintingCursorType()));
@@ -251,7 +250,7 @@ public:
       cursorColorType()->setSelectedItemIndex(1);
       cursorColor()->setVisible(true);
     }
-    cursorColorType()->Change.connect(base::Bind<void>(&OptionsWindow::onCursorColorType, this));
+    cursorColorType()->Change.connect([this]{ onCursorColorType(); });
 
     // Brush preview
     brushPreview()->setSelectedItemIndex(
@@ -335,7 +334,7 @@ public:
          int(os::Capabilities::CustomNativeMouseCursor)) != 0) {
       if (m_pref.cursor.useNativeCursor())
         nativeCursor()->setSelected(true);
-      nativeCursor()->Click.connect(base::Bind<void>(&OptionsWindow::onNativeCursorChange, this));
+      nativeCursor()->Click.connect([this]{ onNativeCursorChange(); });
 
       cursorScale()->setSelectedItemIndex(
         cursorScale()->findItemIndexByValue(
@@ -423,11 +422,11 @@ public:
     if (context->activeDocument()) {
       bgScope()->addItem("Background for the Active Document");
       bgScope()->setSelectedItemIndex(1);
-      bgScope()->Change.connect(base::Bind<void>(&OptionsWindow::onChangeBgScope, this));
+      bgScope()->Change.connect([this]{ onChangeBgScope(); });
 
       gridScope()->addItem("Grid for the Active Document");
       gridScope()->setSelectedItemIndex(1);
-      gridScope()->Change.connect(base::Bind<void>(&OptionsWindow::onChangeGridScope, this));
+      gridScope()->Change.connect([this]{ onChangeGridScope(); });
     }
 
     selectScalingItems();
@@ -482,21 +481,21 @@ public:
     checkedBgSize()->addItem("2x2");
     checkedBgSize()->addItem("1x1");
     checkedBgSize()->addItem("Custom");
-    checkedBgSize()->Change.connect(base::Bind<void>(&OptionsWindow::onCheckedBgSizeChange, this));
+    checkedBgSize()->Change.connect([this]{ onCheckedBgSizeChange(); });
 
     // Reset buttons
-    resetBg()->Click.connect(base::Bind<void>(&OptionsWindow::onResetBg, this));
-    resetGrid()->Click.connect(base::Bind<void>(&OptionsWindow::onResetGrid, this));
+    resetBg()->Click.connect([this]{ onResetBg(); });
+    resetGrid()->Click.connect([this]{ onResetGrid(); });
 
     // Links
-    locateFile()->Click.connect(base::Bind<void>(&OptionsWindow::onLocateConfigFile, this));
+    locateFile()->Click.connect([this]{ onLocateConfigFile(); });
     if (!App::instance()->memoryDumpFilename().empty())
-      locateCrashFolder()->Click.connect(base::Bind<void>(&OptionsWindow::onLocateCrashFolder, this));
+      locateCrashFolder()->Click.connect([this]{ onLocateCrashFolder(); });
     else
       locateCrashFolder()->setVisible(false);
 
     // Undo preferences
-    limitUndo()->Click.connect(base::Bind<void>(&OptionsWindow::onLimitUndoCheck, this));
+    limitUndo()->Click.connect([this]{ onLimitUndoCheck(); });
     limitUndo()->setSelected(m_pref.undo.sizeLimit() != 0);
     onLimitUndoCheck();
 
@@ -504,20 +503,20 @@ public:
     undoAllowNonlinearHistory()->setSelected(m_pref.undo.allowNonlinearHistory());
 
     // Theme buttons
-    themeList()->Change.connect(base::Bind<void>(&OptionsWindow::onThemeChange, this));
-    themeList()->DoubleClickItem.connect(base::Bind<void>(&OptionsWindow::onSelectTheme, this));
-    selectTheme()->Click.connect(base::Bind<void>(&OptionsWindow::onSelectTheme, this));
-    openThemeFolder()->Click.connect(base::Bind<void>(&OptionsWindow::onOpenThemeFolder, this));
+    themeList()->Change.connect([this]{ onThemeChange(); });
+    themeList()->DoubleClickItem.connect([this]{ onSelectTheme(); });
+    selectTheme()->Click.connect([this]{ onSelectTheme(); });
+    openThemeFolder()->Click.connect([this]{ onOpenThemeFolder(); });
 
     // Extensions buttons
-    extensionsList()->Change.connect(base::Bind<void>(&OptionsWindow::onExtensionChange, this));
-    addExtension()->Click.connect(base::Bind<void>(&OptionsWindow::onAddExtension, this));
-    disableExtension()->Click.connect(base::Bind<void>(&OptionsWindow::onDisableExtension, this));
-    uninstallExtension()->Click.connect(base::Bind<void>(&OptionsWindow::onUninstallExtension, this));
-    openExtensionFolder()->Click.connect(base::Bind<void>(&OptionsWindow::onOpenExtensionFolder, this));
+    extensionsList()->Change.connect([this]{ onExtensionChange(); });
+    addExtension()->Click.connect([this]{ onAddExtension(); });
+    disableExtension()->Click.connect([this]{ onDisableExtension(); });
+    uninstallExtension()->Click.connect([this]{ onUninstallExtension(); });
+    openExtensionFolder()->Click.connect([this]{ onOpenExtensionFolder(); });
 
     // Apply button
-    buttonApply()->Click.connect(base::Bind<void>(&OptionsWindow::onApply, this));
+    buttonApply()->Click.connect([this]{ onApply(); });
 
     onChangeBgScope();
     onChangeGridScope();
@@ -526,12 +525,12 @@ public:
     // Refill languages combobox when extensions are enabled/disabled
     m_extLanguagesChanges =
       App::instance()->extensions().LanguagesChange.connect(
-        base::Bind<void>(&OptionsWindow::refillLanguages, this));
+        [this]{ refillLanguages(); });
 
     // Reload themes when extensions are enabled/disabled
     m_extThemesChanges =
       App::instance()->extensions().ThemesChange.connect(
-        base::Bind<void>(&OptionsWindow::reloadThemes, this));
+        [this]{ reloadThemes(); });
   }
 
   bool ok() {

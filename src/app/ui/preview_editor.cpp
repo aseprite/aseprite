@@ -26,7 +26,6 @@
 #include "app/ui/status_bar.h"
 #include "app/ui/toolbar.h"
 #include "app/ui_context.h"
-#include "base/bind.h"
 #include "doc/sprite.h"
 #include "gfx/rect.h"
 #include "ui/base.h"
@@ -186,9 +185,9 @@ PreviewEditorWindow::PreviewEditorWindow()
 
   m_isEnabled = get_config_bool("MiniEditor", "Enabled", true);
 
-  m_centerButton->Click.connect(base::Bind<void>(&PreviewEditorWindow::onCenterClicked, this));
-  m_playButton->Click.connect(base::Bind<void>(&PreviewEditorWindow::onPlayClicked, this));
-  m_playButton->Popup.connect(base::Bind<void>(&PreviewEditorWindow::onPopupSpeed, this));
+  m_centerButton->Click.connect([this]{ onCenterClicked(); });
+  m_playButton->Click.connect([this]{ onPlayClicked(); });
+  m_playButton->Popup.connect([this]{ onPopupSpeed(); });
 
   addChild(m_centerButton);
   addChild(m_playButton);

@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -21,7 +22,6 @@
 #include "app/ui/icon_button.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui_context.h"
-#include "base/bind.h"
 #include "base/launcher.h"
 #include "doc/palette.h"
 #include "doc/sprite.h"
@@ -123,7 +123,7 @@ PalettesListBox::PalettesListBox()
 
   m_extPaletteChanges =
     App::instance()->extensions().PalettesChange.connect(
-      base::Bind<void>(&PalettesListBox::reload, this));
+      [this]{ reload(); });
 }
 
 doc::Palette* PalettesListBox::selectedPalette()

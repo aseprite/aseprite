@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -29,7 +29,6 @@
 #include "app/ui/editor/select_box_state.h"
 #include "app/ui/editor/standby_state.h"
 #include "app/ui/workspace.h"
-#include "base/bind.h"
 #include "doc/cel.h"
 #include "doc/image.h"
 #include "doc/layer.h"
@@ -69,16 +68,16 @@ public:
     sheetType()->addItem("By Columns");
     sheetType()->setSelectedItemIndex((int)app::SpriteSheetType::Rows-1);
 
-    sheetType()->Change.connect(base::Bind<void>(&ImportSpriteSheetWindow::onSheetTypeChange, this));
-    x()->Change.connect(base::Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
-    y()->Change.connect(base::Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
-    width()->Change.connect(base::Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
-    height()->Change.connect(base::Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
-    paddingEnabled()->Click.connect(base::Bind<void>(&ImportSpriteSheetWindow::onPaddingEnabledChange, this));
-    horizontalPadding()->Change.connect(base::Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
-    verticalPadding()->Change.connect(base::Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
-    partialTiles()->Click.connect(base::Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
-    selectFile()->Click.connect(base::Bind<void>(&ImportSpriteSheetWindow::onSelectFile, this));
+    sheetType()->Change.connect([this]{ onSheetTypeChange(); });
+    x()->Change.connect([this]{ onEntriesChange(); });
+    y()->Change.connect([this]{ onEntriesChange(); });
+    width()->Change.connect([this]{ onEntriesChange(); });
+    height()->Change.connect([this]{ onEntriesChange(); });
+    paddingEnabled()->Click.connect([this]{ onPaddingEnabledChange(); });
+    horizontalPadding()->Change.connect([this]{ onEntriesChange(); });
+    verticalPadding()->Change.connect([this]{ onEntriesChange(); });
+    partialTiles()->Click.connect([this]{ onEntriesChange(); });
+    selectFile()->Click.connect([this]{ onSelectFile(); });
 
     remapWindow();
     centerWindow();

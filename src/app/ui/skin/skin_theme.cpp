@@ -25,7 +25,6 @@
 #include "app/ui/skin/skin_slider_property.h"
 #include "app/xml_document.h"
 #include "app/xml_exception.h"
-#include "base/bind.h"
 #include "base/clamp.h"
 #include "base/fs.h"
 #include "base/log.h"

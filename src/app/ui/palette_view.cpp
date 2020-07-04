@@ -23,7 +23,6 @@
 #include "app/ui/status_bar.h"
 #include "app/util/clipboard.h"
 #include "app/util/pal_ops.h"
-#include "base/bind.h"
 #include "base/clamp.h"
 #include "base/convert_to.h"
 #include "doc/image.h"
@@ -72,7 +71,7 @@ PaletteView::PaletteView(bool editable, PaletteViewStyle style, PaletteViewDeleg
 
   m_palConn = App::instance()->PaletteChange.connect(&PaletteView::onAppPaletteChange, this);
   m_csConn = App::instance()->ColorSpaceChange.connect(
-    base::Bind<void>(&PaletteView::invalidate, this));
+    [this]{ invalidate(); });
 
   {
     auto& entriesSep = Preferences::instance().colorBar.entriesSeparator;
