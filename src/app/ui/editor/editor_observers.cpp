@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -11,7 +12,6 @@
 #include "app/ui/editor/editor_observers.h"
 
 #include "app/ui/editor/editor_observer.h"
-#include "base/bind.h"
 
 namespace app {
 

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This program is distributed under the terms of
@@ -13,7 +13,6 @@
 
 #include "app/doc.h"
 #include "app/ui/user_data_popup.h"
-#include "base/bind.h"
 #include "doc/slice.h"
 #include "doc/sprite.h"
 
@@ -30,7 +29,7 @@ SliceWindow::SliceWindow(const doc::Sprite* sprite,
 
   Slice* slice = slices.frontAs<Slice>();
   m_userData = slice->userData();
-  userData()->Click.connect(base::Bind<void>(&SliceWindow::onPopupUserData, this));
+  userData()->Click.connect([this]{ onPopupUserData(); });
 
   if (slices.size() == 1) {
     // If we are going to edit just one slice, we indicate like all
@@ -51,8 +50,8 @@ SliceWindow::SliceWindow(const doc::Sprite* sprite,
     boundsW()->setTextf("%d", key->bounds().w);
     boundsH()->setTextf("%d", key->bounds().h);
 
-    center()->Click.connect(base::Bind<void>(&SliceWindow::onCenterChange, this));
-    pivot()->Click.connect(base::Bind<void>(&SliceWindow::onPivotChange, this));
+    center()->Click.connect([this]{ onCenterChange(); });
+    pivot()->Click.connect([this]{ onPivotChange(); });
 
     if (key->hasCenter()) {
       center()->setSelected(true);

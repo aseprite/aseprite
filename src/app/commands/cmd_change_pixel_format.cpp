@@ -27,7 +27,6 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_render.h"
 #include "app/ui/skin/skin_theme.h"
-#include "base/bind.h"
 #include "base/thread.h"
 #include "doc/image.h"
 #include "doc/layer.h"
@@ -217,11 +216,10 @@ public:
           m_ditheringSelector->setSelectedItemIndex(index);
       }
 
-      m_ditheringSelector->Change.connect(
-        base::Bind<void>(&ColorModeWindow::onDithering, this));
+      m_ditheringSelector->Change.connect([this]{ onDithering(); });
       ditheringPlaceholder()->addChild(m_ditheringSelector);
 
-      factor()->Change.connect(base::Bind<void>(&ColorModeWindow::onDithering, this));
+      factor()->Change.connect([this]{ onDithering(); });
     }
     else {
       amount()->setVisible(false);
@@ -229,15 +227,15 @@ public:
     if (from != IMAGE_GRAYSCALE) {
       colorMode()->addChild(new ConversionItem(IMAGE_GRAYSCALE));
 
-      toGrayCombobox()->Change.connect(base::Bind<void>(&ColorModeWindow::onToGrayChange, this));
+      toGrayCombobox()->Change.connect([this]{ onToGrayChange(); });
     }
 
     colorModeView()->setMinSize(
       colorModeView()->sizeHint() +
       colorMode()->sizeHint());
 
-    colorMode()->Change.connect(base::Bind<void>(&ColorModeWindow::onChangeColorMode, this));
-    m_timer.Tick.connect(base::Bind<void>(&ColorModeWindow::onMonitorProgress, this));
+    colorMode()->Change.connect([this]{ onChangeColorMode(); });
+    m_timer.Tick.connect([this]{ onMonitorProgress(); });
 
     progress()->setReadOnly(true);
 

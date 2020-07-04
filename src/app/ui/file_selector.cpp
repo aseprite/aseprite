@@ -24,7 +24,6 @@
 #include "app/ui/separator_in_view.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/widget_loader.h"
-#include "base/bind.h"
 #include "base/clamp.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
@@ -336,16 +335,16 @@ FileSelector::FileSelector(FileSelectorType type)
   m_fileView->setExpansive(true);
   fileViewPlaceholder()->addChild(m_fileView);
 
-  goBackButton()->Click.connect(base::Bind<void>(&FileSelector::onGoBack, this));
-  goForwardButton()->Click.connect(base::Bind<void>(&FileSelector::onGoForward, this));
-  goUpButton()->Click.connect(base::Bind<void>(&FileSelector::onGoUp, this));
-  newFolderButton()->Click.connect(base::Bind<void>(&FileSelector::onNewFolder, this));
-  viewType()->ItemChange.connect(base::Bind<void>(&FileSelector::onChangeViewType, this));
-  location()->CloseListBox.connect(base::Bind<void>(&FileSelector::onLocationCloseListBox, this));
-  fileType()->Change.connect(base::Bind<void>(&FileSelector::onFileTypeChange, this));
-  m_fileList->FileSelected.connect(base::Bind<void>(&FileSelector::onFileListFileSelected, this));
-  m_fileList->FileAccepted.connect(base::Bind<void>(&FileSelector::onFileListFileAccepted, this));
-  m_fileList->CurrentFolderChanged.connect(base::Bind<void>(&FileSelector::onFileListCurrentFolderChanged, this));
+  goBackButton()->Click.connect([this]{ onGoBack(); });
+  goForwardButton()->Click.connect([this]{ onGoForward(); });
+  goUpButton()->Click.connect([this]{ onGoUp(); });
+  newFolderButton()->Click.connect([this]{ onNewFolder(); });
+  viewType()->ItemChange.connect([this]{ onChangeViewType(); });
+  location()->CloseListBox.connect([this]{ onLocationCloseListBox(); });
+  fileType()->Change.connect([this]{ onFileTypeChange(); });
+  m_fileList->FileSelected.connect([this]{ onFileListFileSelected(); });
+  m_fileList->FileAccepted.connect([this]{ onFileListFileAccepted(); });
+  m_fileList->CurrentFolderChanged.connect([this]{ onFileListCurrentFolderChanged(); });
 }
 
 void FileSelector::setDefaultExtension(const std::string& extension)

@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -35,7 +35,6 @@
 
 #include "ui/alert.h"
 
-#include "base/bind.h"
 #include "base/clamp.h"
 #include "base/string.h"
 #include "ui/box.h"
@@ -119,7 +118,7 @@ void Alert::addButton(const std::string& text)
   char id[256];
   sprintf(id, "button-%lu", m_buttons.size());
   button->setId(id);
-  button->Click.connect(base::Bind<void>(&Window::closeWindow, this, button));
+  button->Click.connect([this, button]{ closeWindow(button); });
 
   m_buttonsPlaceholder->addChild(button);
 }

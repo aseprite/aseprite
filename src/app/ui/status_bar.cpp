@@ -35,7 +35,6 @@
 #include "app/ui/zoom_entry.h"
 #include "app/ui_context.h"
 #include "app/util/range_utils.h"
-#include "base/bind.h"
 #include "base/fs.h"
 #include "base/string.h"
 #include "doc/image.h"
@@ -507,7 +506,7 @@ public:
     makeFloating();
 
     addChild(&m_button);
-    m_button.Click.connect(base::Bind<void>(&SnapToGridWindow::onDisableSnapToGrid, this));
+    m_button.Click.connect([this]{ onDisableSnapToGrid(); });
   }
 
   void setDocument(Doc* doc) {
@@ -605,7 +604,7 @@ StatusBar::StatusBar(TooltipManager* tooltipManager)
     m_frameLabel = new Label("Frame:");
     m_currentFrame = new GotoFrameEntry();
     m_newFrame = new Button("+");
-    m_newFrame->Click.connect(base::Bind<void>(&StatusBar::newFrame, this));
+    m_newFrame->Click.connect([this]{ newFrame(); });
     m_zoomEntry = new ZoomEntry;
     m_zoomEntry->ZoomChange.connect(&StatusBar::onChangeZoom, this);
 

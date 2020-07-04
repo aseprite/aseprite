@@ -35,14 +35,13 @@ public:
   ConsoleWindow() : Window(Window::WithTitleBar, "Console"),
                     m_textbox("", WORDWRAP),
                     m_button("Cancel") {
-    m_button.Click.connect(base::Bind<void>(&ConsoleWindow::closeWindow, this, &m_button));
+    m_button.Click.connect([this]{ closeWindow(&m_button); });
 
     // When the window is closed, we clear the text
     Close.connect(
-      base::Bind<void>(
-        [this] {
-          m_textbox.setText(std::string());
-        }));
+      [this]{
+        m_textbox.setText(std::string());
+      });
 
     m_view.attachToView(&m_textbox);
 

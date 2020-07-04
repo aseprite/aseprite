@@ -14,7 +14,6 @@
 #include "app/app.h"
 #include "app/app_menus.h"
 #include "app/extensions.h"
-#include "base/bind.h"
 
 namespace app {
 
@@ -24,7 +23,7 @@ MainMenuBar::MainMenuBar()
 
   m_extScripts =
     extensions.ScriptsChange.connect(
-      base::Bind<void>(&MainMenuBar::reload, this));
+      [this]{ reload(); });
 }
 
 void MainMenuBar::reload()

@@ -26,7 +26,6 @@
 #include "app/ui/select_accelerator.h"
 #include "app/ui/separator_in_view.h"
 #include "app/ui/skin/skin_theme.h"
-#include "base/bind.h"
 #include "base/fs.h"
 #include "base/scoped_value.h"
 #include "base/split_string.h"
@@ -376,13 +375,13 @@ private:
 
               m_changeConn = obs::connection();
               m_changeButton.reset(new Button(""));
-              m_changeConn = m_changeButton->Click.connect(base::Bind<void>(&KeyItem::onChangeAccel, this, i));
+              m_changeConn = m_changeButton->Click.connect([this, i]{ onChangeAccel(i); });
               m_changeButton->setStyle(SkinTheme::instance()->styles.miniButton());
               addChild(m_changeButton.get());
 
               m_deleteConn = obs::connection();
               m_deleteButton.reset(new Button(""));
-              m_deleteConn = m_deleteButton->Click.connect(base::Bind<void>(&KeyItem::onDeleteAccel, this, i));
+              m_deleteConn = m_deleteButton->Click.connect([this, i]{ onDeleteAccel(i); });
               m_deleteButton->setStyle(SkinTheme::instance()->styles.miniButton());
               addChild(m_deleteButton.get());
 
@@ -409,7 +408,7 @@ private:
               (!m_menuitem || m_menuitem->getCommand())) {
             m_addConn = obs::connection();
             m_addButton.reset(new Button(""));
-            m_addConn = m_addButton->Click.connect(base::Bind<void>(&KeyItem::onAddAccel, this));
+            m_addConn = m_addButton->Click.connect([this]{ onAddAccel(); });
             m_addButton->setStyle(SkinTheme::instance()->styles.miniButton());
             addChild(m_addButton.get());
 
@@ -511,14 +510,14 @@ public:
 
     onWheelBehaviorChange();
 
-    wheelBehavior()->ItemChange.connect(base::Bind<void>(&KeyboardShortcutsWindow::onWheelBehaviorChange, this));
-    wheelZoom()->Click.connect(base::Bind<void>(&KeyboardShortcutsWindow::onWheelZoomChange, this));
+    wheelBehavior()->ItemChange.connect([this]{ onWheelBehaviorChange(); });
+    wheelZoom()->Click.connect([this]{ onWheelZoomChange(); });
 
-    search()->Change.connect(base::Bind<void>(&KeyboardShortcutsWindow::onSearchChange, this));
-    section()->Change.connect(base::Bind<void>(&KeyboardShortcutsWindow::onSectionChange, this));
-    importButton()->Click.connect(base::Bind<void>(&KeyboardShortcutsWindow::onImport, this));
-    exportButton()->Click.connect(base::Bind<void>(&KeyboardShortcutsWindow::onExport, this));
-    resetButton()->Click.connect(base::Bind<void>(&KeyboardShortcutsWindow::onReset, this));
+    search()->Change.connect([this]{ onSearchChange(); });
+    section()->Change.connect([this]{ onSectionChange(); });
+    importButton()->Click.connect([this]{ onImport(); });
+    exportButton()->Click.connect([this]{ onExport(); });
+    resetButton()->Click.connect([this]{ onReset(); });
 
     fillAllLists();
 

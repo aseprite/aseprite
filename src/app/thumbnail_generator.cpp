@@ -17,7 +17,6 @@
 #include "app/file/file.h"
 #include "app/file_system.h"
 #include "app/util/conversion_to_surface.h"
-#include "base/bind.h"
 #include "base/clamp.h"
 #include "base/scoped_lock.h"
 #include "base/thread.h"
@@ -46,7 +45,7 @@ public:
     : m_queue(queue)
     , m_fop(nullptr)
     , m_isDone(false)
-    , m_thread(base::Bind<void>(&Worker::loadBgThread, this)) {
+    , m_thread([this]{ loadBgThread(); }) {
   }
 
   ~Worker() {
@@ -226,7 +225,7 @@ ThumbnailGenerator* ThumbnailGenerator::instance()
   static ThumbnailGenerator* singleton = nullptr;
   if (singleton == NULL) {
     singleton = new ThumbnailGenerator();
-    App::instance()->Exit.connect(base::Bind<void>(&delete_singleton, singleton));
+    App::instance()->Exit.connect([&]{ delete_singleton(singleton); });
   }
   return singleton;
 }

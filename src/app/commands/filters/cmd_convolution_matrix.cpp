@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -23,7 +23,6 @@
 #include "app/ini_file.h"
 #include "app/load_widget.h"
 #include "app/pref/preferences.h"
-#include "base/bind.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
 #include "filters/convolution_matrix.h"
@@ -58,7 +57,9 @@ static const char* ConfigSection = "ConvolutionMatrix";
 
 class ConvolutionMatrixWindow : public FilterWindow {
 public:
-  ConvolutionMatrixWindow(ConvolutionMatrixFilter& filter, FilterManagerImpl& filterMgr, ConvolutionMatrixStock& stock)
+  ConvolutionMatrixWindow(ConvolutionMatrixFilter& filter,
+                          FilterManagerImpl& filterMgr,
+                          ConvolutionMatrixStock& stock)
     : FilterWindow("Convolution Matrix", ConfigSection, &filterMgr,
                    WithChannelsSelector,
                    WithTiledCheckBox,
@@ -72,14 +73,14 @@ public:
   {
     getContainer()->addChild(m_controlsWidget.get());
 
-    m_reloadButton->Click.connect(&ConvolutionMatrixWindow::onReloadStock, this);
-    m_stockListBox->Change.connect(base::Bind<void>(&ConvolutionMatrixWindow::onMatrixChange, this));
+    m_reloadButton->Click.connect([this]{ onReloadStock(); });
+    m_stockListBox->Change.connect([this]{ onMatrixChange(); });
 
     fillStockListBox();
   }
 
 private:
-  void onReloadStock(Event& ev) {
+  void onReloadStock() {
     m_stock.reloadStock();
     fillStockListBox();
   }

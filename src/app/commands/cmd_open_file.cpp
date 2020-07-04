@@ -25,7 +25,6 @@
 #include "app/recent_files.h"
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
-#include "base/bind.h"
 #include "base/fs.h"
 #include "base/thread.h"
 #include "doc/sprite.h"

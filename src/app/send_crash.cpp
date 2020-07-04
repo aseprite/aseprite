@@ -16,7 +16,6 @@
 #include "app/i18n/strings.h"
 #include "app/resource_finder.h"
 #include "app/task.h"
-#include "base/bind.h"
 #include "base/fs.h"
 #include "base/launcher.h"
 #include "fmt/format.h"
@@ -139,7 +138,7 @@ void SendCrash::notificationClick()
   if (isDev) {
     dlg.official()->setVisible(false);
     dlg.devFilename()->setText(m_dumpFilename);
-    dlg.devFilename()->Click.connect(base::Bind(&SendCrash::onClickDevFilename, this));
+    dlg.devFilename()->Click.connect([this]{ onClickDevFilename(); });
   }
   else
 #endif  // On other platforms the crash file might be useful even in
@@ -148,7 +147,7 @@ void SendCrash::notificationClick()
   {
     dlg.dev()->setVisible(false);
     dlg.filename()->setText(m_dumpFilename);
-    dlg.filename()->Click.connect(base::Bind(&SendCrash::onClickFilename, this));
+    dlg.filename()->Click.connect([this]{ onClickFilename(); });
   }
 
   dlg.openWindowInForeground();

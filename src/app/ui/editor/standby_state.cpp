@@ -51,7 +51,6 @@
 #include "app/util/layer_utils.h"
 #include "app/util/new_image_from_mask.h"
 #include "app/util/readable_time.h"
-#include "base/bind.h"
 #include "base/pi.h"
 #include "doc/layer.h"
 #include "doc/mask.h"
@@ -108,10 +107,10 @@ void StandbyState::onEnterState(Editor* editor)
 
   m_pivotVisConn =
     Preferences::instance().selection.pivotVisibility.AfterChange.connect(
-      base::Bind<void>(&StandbyState::onPivotChange, this, editor));
+      [this, editor]{ onPivotChange(editor); });
   m_pivotPosConn =
     Preferences::instance().selection.pivotPosition.AfterChange.connect(
-      base::Bind<void>(&StandbyState::onPivotChange, this, editor));
+      [this, editor]{ onPivotChange(editor); });
 }
 
 void StandbyState::onActiveToolChange(Editor* editor, tools::Tool* tool)

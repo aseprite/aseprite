@@ -29,7 +29,6 @@
 #include "app/ui/workspace.h"
 #include "app/ui/workspace.h"
 #include "app/ui_context.h"
-#include "base/bind.h"
 #include "base/fs.h"
 #include "fmt/format.h"
 #include "ui/alert.h"
@@ -264,13 +263,13 @@ DataRecoveryView::DataRecoveryView(crash::DataRecovery* dataRecovery)
   fillList();
   onChangeSelection();
 
-  m_openButton.Click.connect(base::Bind(&DataRecoveryView::onOpen, this));
-  m_openButton.DropDownClick.connect(base::Bind<void>(&DataRecoveryView::onOpenMenu, this));
-  m_deleteButton.Click.connect(base::Bind(&DataRecoveryView::onDelete, this));
-  m_refreshButton.Click.connect(base::Bind(&DataRecoveryView::onRefresh, this));
-  m_listBox.Change.connect(base::Bind(&DataRecoveryView::onChangeSelection, this));
-  m_listBox.DoubleClickItem.connect(base::Bind(&DataRecoveryView::onOpen, this));
-  m_waitToEnableRefreshTimer.Tick.connect(base::Bind(&DataRecoveryView::onCheckIfWeCanEnableRefreshButton, this));
+  m_openButton.Click.connect([this]{ onOpen(); });
+  m_openButton.DropDownClick.connect([this]{ onOpenMenu(); });
+  m_deleteButton.Click.connect([this]{ onDelete(); });
+  m_refreshButton.Click.connect([this]{ onRefresh(); });
+  m_listBox.Change.connect([this]{ onChangeSelection(); });
+  m_listBox.DoubleClickItem.connect([this]{ onOpen(); });
+  m_waitToEnableRefreshTimer.Tick.connect([this]{ onCheckIfWeCanEnableRefreshButton(); });
 
   m_conn = Preferences::instance()
     .general.showFullPath.AfterChange.connect(
@@ -454,8 +453,8 @@ void DataRecoveryView::onOpenMenu()
   menu.addChild(&rawFrames);
   menu.addChild(&rawLayers);
 
-  rawFrames.Click.connect(base::Bind(&DataRecoveryView::onOpenRaw, this, crash::RawImagesAs::kFrames));
-  rawLayers.Click.connect(base::Bind(&DataRecoveryView::onOpenRaw, this, crash::RawImagesAs::kLayers));
+  rawFrames.Click.connect([this]{ onOpenRaw(crash::RawImagesAs::kFrames); });
+  rawLayers.Click.connect([this]{ onOpenRaw(crash::RawImagesAs::kLayers); });
 
   menu.showPopup(gfx::Point(bounds.x, bounds.y+bounds.h));
 }

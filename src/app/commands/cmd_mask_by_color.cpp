@@ -24,7 +24,6 @@
 #include "app/ui/color_bar.h"
 #include "app/ui/color_button.h"
 #include "app/ui/selection_mode_field.h"
-#include "base/bind.h"
 #include "base/chrono.h"
 #include "base/convert_to.h"
 #include "base/scoped_value.h"
@@ -136,13 +135,13 @@ void MaskByColorCommand::onExecute(Context* context)
   if (get_config_bool("MaskColor", "Preview", true))
     m_checkPreview->setSelected(true);
 
-  button_ok->Click.connect(base::Bind<void>(&Window::closeWindow, m_window, button_ok));
-  button_cancel->Click.connect(base::Bind<void>(&Window::closeWindow, m_window, button_cancel));
+  button_ok->Click.connect([this, button_ok]{ m_window->closeWindow(button_ok); });
+  button_cancel->Click.connect([this, button_cancel]{ m_window->closeWindow(button_cancel); });
 
-  m_buttonColor->Change.connect(base::Bind<void>(&MaskByColorCommand::maskPreview, this, base::Ref(reader)));
-  m_sliderTolerance->Change.connect(base::Bind<void>(&MaskByColorCommand::maskPreview, this, base::Ref(reader)));
-  m_checkPreview->Click.connect(base::Bind<void>(&MaskByColorCommand::maskPreview, this, base::Ref(reader)));
-  m_selMode->ModeChange.connect(base::Bind<void>(&MaskByColorCommand::maskPreview, this, base::Ref(reader)));
+  m_buttonColor->Change.connect([&]{ maskPreview(reader); });
+  m_sliderTolerance->Change.connect([&]{ maskPreview(reader); });
+  m_checkPreview->Click.connect([&]{ maskPreview(reader); });
+  m_selMode->ModeChange.connect([&]{ maskPreview(reader); });
 
   button_ok->setFocusMagnet(true);
   m_buttonColor->setExpansive(true);

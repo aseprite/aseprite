@@ -23,7 +23,6 @@
 #include "app/ui/editor/select_box_state.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui_context.h"
-#include "base/bind.h"
 #include "base/clamp.h"
 #include "doc/image.h"
 #include "doc/mask.h"
@@ -79,13 +78,13 @@ public:
     setBottom(0);
     updateBorderFromRect();
 
-    width() ->Change.connect(base::Bind<void>(&CanvasSizeWindow::onSizeChange, this));
-    height()->Change.connect(base::Bind<void>(&CanvasSizeWindow::onSizeChange, this));
-    dir()   ->ItemChange.connect(base::Bind<void>(&CanvasSizeWindow::onDirChange, this));;
-    left()  ->Change.connect(base::Bind<void>(&CanvasSizeWindow::onBorderChange, this));
-    right() ->Change.connect(base::Bind<void>(&CanvasSizeWindow::onBorderChange, this));
-    top()   ->Change.connect(base::Bind<void>(&CanvasSizeWindow::onBorderChange, this));
-    bottom()->Change.connect(base::Bind<void>(&CanvasSizeWindow::onBorderChange, this));
+    width() ->Change.connect([this]{ onSizeChange(); });
+    height()->Change.connect([this]{ onSizeChange(); });
+    dir()   ->ItemChange.connect([this]{ onDirChange(); });
+    left()  ->Change.connect([this]{ onBorderChange(); });
+    right() ->Change.connect([this]{ onBorderChange(); });
+    top()   ->Change.connect([this]{ onBorderChange(); });
+    bottom()->Change.connect([this]{ onBorderChange(); });
 
     m_editor->setState(m_selectBoxState);
 

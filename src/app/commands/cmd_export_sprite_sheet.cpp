@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -32,7 +32,6 @@
 #include "app/ui/optional_alert.h"
 #include "app/ui/status_bar.h"
 #include "app/ui/timeline/timeline.h"
-#include "base/bind.h"
 #include "base/clamp.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
@@ -318,11 +317,11 @@ public:
     , m_executionID(0)
     , m_filenameFormat(params.filenameFormat())
   {
-    sectionTabs()->ItemChange.connect(base::Bind<void>(&ExportSpriteSheetWindow::onChangeSection, this));
-    expandSections()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::onExpandSections, this));
-    closeSpriteSection()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::onCloseSection, this, kSectionSprite));
-    closeBordersSection()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::onCloseSection, this, kSectionBorders));
-    closeOutputSection()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::onCloseSection, this, kSectionOutput));
+    sectionTabs()->ItemChange.connect([this]{ onChangeSection(); });
+    expandSections()->Click.connect([this]{ onExpandSections(); });
+    closeSpriteSection()->Click.connect([this]{ onCloseSection(kSectionSprite); });
+    closeBordersSection()->Click.connect([this]{ onCloseSection(kSectionBorders); });
+    closeOutputSection()->Click.connect([this]{ onCloseSection(kSectionOutput); });
 
     static_assert(
       (int)app::SpriteSheetType::None == 0 &&
@@ -430,32 +429,32 @@ public:
         m_dataFilename == kSpecifiedFilename)
       m_dataFilename = base + ".json";
 
-    exportButton()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::onExport, this));
-    sheetType()->Change.connect(&ExportSpriteSheetWindow::onSheetTypeChange, this);
-    constraintType()->Change.connect(&ExportSpriteSheetWindow::onConstraintTypeChange, this);
-    widthConstraint()->Change.connect(&ExportSpriteSheetWindow::generatePreview, this);
-    heightConstraint()->Change.connect(&ExportSpriteSheetWindow::generatePreview, this);
-    borderPadding()->Change.connect(base::Bind<void>(&ExportSpriteSheetWindow::generatePreview, this));
-    shapePadding()->Change.connect(base::Bind<void>(&ExportSpriteSheetWindow::generatePreview, this));
-    innerPadding()->Change.connect(base::Bind<void>(&ExportSpriteSheetWindow::generatePreview, this));
-    extrudeEnabled()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::generatePreview, this));
-    mergeDups()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::generatePreview, this));
-    ignoreEmpty()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::generatePreview, this));
-    imageEnabled()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::onImageEnabledChange, this));
-    imageFilename()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::onImageFilename, this));
-    dataEnabled()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::onDataEnabledChange, this));
-    dataFilename()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::onDataFilename, this));
-    trimSpriteEnabled()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::onTrimEnabledChange, this));
-    trimEnabled()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::onTrimEnabledChange, this));
-    gridTrimEnabled()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::generatePreview, this));
-    layers()->Change.connect(base::Bind<void>(&ExportSpriteSheetWindow::generatePreview, this));
-    splitLayers()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::onSplitLayersOrFrames, this));
-    splitTags()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::onSplitLayersOrFrames, this));
-    frames()->Change.connect(base::Bind<void>(&ExportSpriteSheetWindow::generatePreview, this));
-    dataFilenameFormat()->Change.connect(base::Bind<void>(&ExportSpriteSheetWindow::onDataFilenameFormatChange, this));
-    openGenerated()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::onOpenGeneratedChange, this));
-    preview()->Click.connect(base::Bind<void>(&ExportSpriteSheetWindow::generatePreview, this));
-    m_genTimer.Tick.connect(base::Bind<void>(&ExportSpriteSheetWindow::onGenTimerTick, this));
+    exportButton()->Click.connect([this]{ onExport(); });
+    sheetType()->Change.connect([this]{ onSheetTypeChange(); });
+    constraintType()->Change.connect([this]{ onConstraintTypeChange(); });
+    widthConstraint()->Change.connect([this]{ generatePreview(); });
+    heightConstraint()->Change.connect([this]{ generatePreview(); });
+    borderPadding()->Change.connect([this]{ generatePreview(); });
+    shapePadding()->Change.connect([this]{ generatePreview(); });
+    innerPadding()->Change.connect([this]{ generatePreview(); });
+    extrudeEnabled()->Click.connect([this]{ generatePreview(); });
+    mergeDups()->Click.connect([this]{ generatePreview(); });
+    ignoreEmpty()->Click.connect([this]{ generatePreview(); });
+    imageEnabled()->Click.connect([this]{ onImageEnabledChange(); });
+    imageFilename()->Click.connect([this]{ onImageFilename(); });
+    dataEnabled()->Click.connect([this]{ onDataEnabledChange(); });
+    dataFilename()->Click.connect([this]{ onDataFilename(); });
+    trimSpriteEnabled()->Click.connect([this]{ onTrimEnabledChange(); });
+    trimEnabled()->Click.connect([this]{ onTrimEnabledChange(); });
+    gridTrimEnabled()->Click.connect([this]{ generatePreview(); });
+    layers()->Change.connect([this]{ generatePreview(); });
+    splitLayers()->Click.connect([this]{ onSplitLayersOrFrames(); });
+    splitTags()->Click.connect([this]{ onSplitLayersOrFrames(); });
+    frames()->Change.connect([this]{ generatePreview(); });
+    dataFilenameFormat()->Change.connect([this]{ onDataFilenameFormatChange(); });
+    openGenerated()->Click.connect([this]{ onOpenGeneratedChange(); });
+    preview()->Click.connect([this]{ generatePreview(); });
+    m_genTimer.Tick.connect([this]{ onGenTimerTick(); });
 
     // Select tabs
     {

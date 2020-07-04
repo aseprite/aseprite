@@ -44,7 +44,6 @@
 #include "app/util/layer_boundaries.h"
 #include "app/util/layer_utils.h"
 #include "app/util/readable_time.h"
-#include "base/bind.h"
 #include "base/clamp.h"
 #include "base/convert_to.h"
 #include "base/memory.h"
@@ -354,7 +353,7 @@ void Timeline::updateUsingEditor(Editor* editor)
   DocumentPreferences& docPref = Preferences::instance().document(app_document);
 
   m_thumbnailsPrefConn = docPref.thumbnails.AfterChange.connect(
-    base::Bind<void>(&Timeline::onThumbnailsPrefChange, this));
+    [this]{ onThumbnailsPrefChange(); });
 
   setZoom(
     docPref.thumbnails.enabled() ?
@@ -377,7 +376,7 @@ void Timeline::updateUsingEditor(Editor* editor)
   m_clk.part = PART_NOTHING;
 
   m_firstFrameConn = Preferences::instance().document(m_document)
-    .timeline.firstFrame.AfterChange.connect(base::Bind<void>(&Timeline::invalidate, this));
+    .timeline.firstFrame.AfterChange.connect([this]{ invalidate(); });
 
   setFocusStop(true);
   regenerateRows();

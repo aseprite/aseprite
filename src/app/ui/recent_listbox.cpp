@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -20,7 +20,6 @@
 #include "app/ui/draggable_widget.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui_context.h"
-#include "base/bind.h"
 #include "base/fs.h"
 #include "ui/alert.h"
 #include "ui/graphics.h"
@@ -233,11 +232,11 @@ RecentListBox::RecentListBox()
 {
   m_recentFilesConn =
     App::instance()->recentFiles()->Changed.connect(
-      base::Bind(&RecentListBox::rebuildList, this));
+      [this]{ rebuildList(); });
 
   m_showFullPathConn =
     Preferences::instance().general.showFullPath.AfterChange.connect(
-      base::Bind<void>(&RecentListBox::invalidate, this));
+      [this]{ invalidate(); });
 }
 
 void RecentListBox::rebuildList()
