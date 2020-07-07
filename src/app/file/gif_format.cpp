@@ -458,8 +458,14 @@ private:
     }
     else if (!m_hasLocalColormaps) {
       if (!global) {
-        if (!m_firstLocalColormap)
-          m_firstLocalColormap = GifMakeMapObject(256, colormap->Colors);
+        if (!m_firstLocalColormap) {
+          m_firstLocalColormap = GifMakeMapObject(256, nullptr);
+          for (int i=0; i<colormap->ColorCount; ++i) {
+            m_firstLocalColormap->Colors[i].Red   = colormap->Colors[i].Red;
+            m_firstLocalColormap->Colors[i].Green = colormap->Colors[i].Green;
+            m_firstLocalColormap->Colors[i].Blue  = colormap->Colors[i].Blue;
+          }
+        }
         global = m_firstLocalColormap;
       }
 
@@ -503,13 +509,13 @@ private:
       // With this we avoid discarding the transparent index when a
       // frame indicates that it uses a specific index as transparent
       // but the image is completely opaque anyway.
-      if (m_localTransparentIndex >= 0 &&
+      if (!m_opaque && m_frameNum == 0 && m_localTransparentIndex >= 0 &&
           m_localTransparentIndex < ncolors) {
         usedEntries[m_localTransparentIndex] = true;
       }
 
       for (const auto& i : LockImageBits<IndexedTraits>(frameImage)) {
-        if (i >= 0 && i < ncolors)
+        if (i >= 0 && i < ncolors && i != m_localTransparentIndex)
           usedEntries[i] = true;
       }
     }
@@ -524,8 +530,14 @@ private:
     // Check if we need an extra color equal to the bg color in a
     // transparent frameImage.
     bool needsExtraBgColor = false;
+    bool needCheckLocalTransparent = m_bgIndex != m_localTransparentIndex ||
+                                     (ncolors > m_localTransparentIndex
+                                     && m_localTransparentIndex >= 0
+                                     && usedEntries[m_localTransparentIndex]);
+
     if (m_sprite->pixelFormat() == IMAGE_INDEXED &&
-        !m_opaque && m_bgIndex != m_localTransparentIndex) {
+        !m_opaque &&
+        needCheckLocalTransparent) {
       for (const auto& i : LockImageBits<IndexedTraits>(frameImage)) {
         if (i == m_bgIndex) {
           needsExtraBgColor = true;
@@ -623,8 +635,10 @@ private:
       // the sprite pixel format will be converted in RGBA image, and the colors will
       // be picked from the sprite palette, instead of m_firstLocalColorMap.
       if (m_firstLocalColormap && m_firstLocalColormap->ColorCount > j) {
-        // We need add this last color to m_firstLocalColormap, because
-        // it was not considered in the function getFrameColormap.
+        // We need add this extra color to m_firstLocalColormap, because
+        // it might has not been considered in the first getFrameColormap execution.
+        // (this happen when: in the first execution of getFrameColormap function
+        // an extra color was not needed)
         m_firstLocalColormap->Colors[j].Red = rgba_getr(palette->getEntry(j));
         m_firstLocalColormap->Colors[j].Green = rgba_getg(palette->getEntry(j));
         m_firstLocalColormap->Colors[j].Blue = rgba_getb(palette->getEntry(j));
