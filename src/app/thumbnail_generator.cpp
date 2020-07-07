@@ -158,13 +158,13 @@ private:
 
       // Set the thumbnail of the file-item.
       if (thumbnailImage) {
-        os::Surface* thumbnail =
-          os::instance()->createRgbaSurface(
+        os::SurfaceRef thumbnail =
+          os::instance()->makeRgbaSurface(
             thumbnailImage->width(),
             thumbnailImage->height());
 
         convert_image_to_surface(
-          thumbnailImage.get(), palette.get(), thumbnail,
+          thumbnailImage.get(), palette.get(), thumbnail.get(),
           0, 0, 0, 0, thumbnailImage->width(), thumbnailImage->height());
 
         {

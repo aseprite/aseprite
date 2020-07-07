@@ -1,5 +1,5 @@
 // Aseprite Document IO Library
-// Copyright (c) 2018-2019 Igara Studio S.A.
+// Copyright (c) 2018-2020 Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -757,7 +757,7 @@ void AsepriteDecoder::readColorProfile(doc::Sprite* sprite)
   readPadding(8);
 
   // Without color space, like old Aseprite versions
-  gfx::ColorSpacePtr cs(nullptr);
+  gfx::ColorSpaceRef cs(nullptr);
 
   switch (type) {
 

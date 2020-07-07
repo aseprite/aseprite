@@ -94,10 +94,8 @@ public:
       }
 
       m_paintingThread.join();
-      if (m_canvas) {
-        m_canvas->dispose();
-        m_canvas = nullptr;
-      }
+      if (m_canvas)
+        m_canvas.reset();
     }
   }
 
@@ -113,18 +111,16 @@ public:
       std::unique_lock<std::mutex> lock(m_mutex);
       stopCurrentPainting(lock);
 
-      auto oldCanvas = m_canvas;
-      m_canvas = os::instance()->createSurface(w, h, activeCS);
+      os::SurfaceRef oldCanvas = m_canvas;
+      m_canvas = os::instance()->makeSurface(w, h, activeCS);
       os::Paint paint;
       paint.color(bgColor);
       paint.style(os::Paint::Fill);
       m_canvas->drawRect(gfx::Rect(0, 0, w, h), paint);
-      if (oldCanvas) {
-        m_canvas->drawSurface(oldCanvas, 0, 0);
-        oldCanvas->dispose();
-      }
+      if (oldCanvas)
+        m_canvas->drawSurface(oldCanvas.get(), 0, 0);
     }
-    return m_canvas;
+    return m_canvas.get();
   }
 
   void startBgPainting(ColorSelector* colorSelector,
@@ -182,7 +178,7 @@ private:
       {
         lock.unlock();
         colorSel->onPaintSurfaceInBgThread(
-          m_canvas,
+          m_canvas.get(),
           m_mainBounds,
           m_bottomBarBounds,
           m_alphaBarBounds,
@@ -211,7 +207,7 @@ private:
   std::mutex m_mutex;
   std::condition_variable m_paintingCV;
   std::condition_variable m_waitStopCV;
-  os::Surface* m_canvas;
+  os::SurfaceRef m_canvas;
   ColorSelector* m_colorSelector;
   ui::Manager* m_manager;
   gfx::Rect m_mainBounds;

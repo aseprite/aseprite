@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -34,7 +34,7 @@ void move_region(Manager* manager, const Region& region, int dx, int dy)
   bounds |= gfx::Rect(bounds).offset(dx, dy);
   overlays->restoreOverlappedAreas(bounds);
 
-  os::Surface* surface = display->getSurface();
+  os::Surface* surface = display->surface();
   os::SurfaceLock lock(surface);
 
   // Fast path, move one rectangle.

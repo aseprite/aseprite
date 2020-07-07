@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -9,8 +9,10 @@
 #define UI_OVERLAY_H_INCLUDED
 #pragma once
 
+#include "base/ref.h"
 #include "gfx/fwd.h"
 #include "gfx/point.h"
+#include "os/surface.h"
 #include "ui/base.h"
 
 namespace os {
@@ -19,17 +21,22 @@ namespace os {
 
 namespace ui {
 
-  class Overlay {
+  class Overlay;
+  using OverlayRef = base::Ref<Overlay>;
+
+  class Overlay : public base::RefCountT<Overlay> {
   public:
-    typedef int ZOrder;
+    enum ZOrder {
+      NormalZOrder = 0,
+      MouseZOrder = 5000
+    };
 
-    static const ZOrder NormalZOrder = 0;
-    static const ZOrder MouseZOrder = 5000;
-
-    Overlay(os::Surface* overlaySurface, const gfx::Point& pos, ZOrder zorder = 0);
+    Overlay(const os::SurfaceRef& overlaySurface,
+            const gfx::Point& pos,
+            ZOrder zorder = NormalZOrder);
     ~Overlay();
 
-    os::Surface* setSurface(os::Surface* newSurface);
+    os::SurfaceRef setSurface(const os::SurfaceRef& newSurface);
 
     const gfx::Point& position() const { return m_pos; }
     gfx::Rect bounds() const;
@@ -45,8 +52,8 @@ namespace ui {
     }
 
   private:
-    os::Surface* m_surface;
-    os::Surface* m_overlap;
+    os::SurfaceRef m_surface;
+    os::SurfaceRef m_overlap;
 
     // Surface where we captured the overlapped (m_overlap)
     // region. It's nullptr if the overlay wasn't drawn yet.

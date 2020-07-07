@@ -169,7 +169,7 @@ void Sprite::setSize(int width, int height)
   m_spec.setSize(width, height);
 }
 
-void Sprite::setColorSpace(const gfx::ColorSpacePtr& colorSpace)
+void Sprite::setColorSpace(const gfx::ColorSpaceRef& colorSpace)
 {
   m_spec.setColorSpace(colorSpace);
   for (auto cel : uniqueCels())

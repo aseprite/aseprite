@@ -63,7 +63,7 @@ void SpritePropertiesCommand::onExecute(Context* context)
   ColorButton* color_button = nullptr;
 
   // List of available color profiles
-  std::vector<os::ColorSpacePtr> colorSpaces;
+  std::vector<os::ColorSpaceRef> colorSpaces;
   os::instance()->listColorSpaces(colorSpaces);
 
   // Load the window widget
@@ -152,7 +152,7 @@ void SpritePropertiesCommand::onExecute(Context* context)
       ++i;
     }
     if (selectedColorProfile < 0) {
-      colorSpaces.push_back(os::instance()->createColorSpace(sprite->colorSpace()));
+      colorSpaces.push_back(os::instance()->makeColorSpace(sprite->colorSpace()));
       selectedColorProfile = colorSpaces.size()-1;
     }
 

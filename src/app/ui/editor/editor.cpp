@@ -674,7 +674,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
 
   if (rendered) {
     // Convert the render to a os::Surface
-    static os::Surface* tmp = nullptr; // TODO move this to other centralized place
+    static os::SurfaceRef tmp = nullptr; // TODO move this to other centralized place
 
     if (!tmp ||
         tmp->width() < rc2.w ||
@@ -682,10 +682,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
         tmp->colorSpace() != m_document->osColorSpace()) {
       const int maxw = std::max(rc2.w, tmp ? tmp->width(): 0);
       const int maxh = std::max(rc2.h, tmp ? tmp->height(): 0);
-      if (tmp)
-        tmp->dispose();
-
-      tmp = os::instance()->createSurface(
+      tmp = os::instance()->makeSurface(
         maxw, maxh, m_document->osColorSpace());
     }
 
@@ -707,13 +704,13 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
       }
 
       convert_image_to_surface(rendered.get(), m_sprite->palette(m_frame),
-                               tmp, 0, 0, 0, 0, rc2.w, rc2.h);
+                               tmp.get(), 0, 0, 0, 0, rc2.w, rc2.h);
 
       if (newEngine) {
-        g->drawSurface(tmp, gfx::Rect(0, 0, rc2.w, rc2.h), dest);
+        g->drawSurface(tmp.get(), gfx::Rect(0, 0, rc2.w, rc2.h), dest);
       }
       else {
-        g->blit(tmp, 0, 0, dest.x, dest.y, dest.w, dest.h);
+        g->blit(tmp.get(), 0, 0, dest.x, dest.y, dest.w, dest.h);
       }
     }
   }

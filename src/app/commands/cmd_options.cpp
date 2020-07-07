@@ -99,13 +99,13 @@ class OptionsWindow : public app::gen::Options {
 
   class ColorSpaceItem : public ListItem {
   public:
-    ColorSpaceItem(const os::ColorSpacePtr& cs)
+    ColorSpaceItem(const os::ColorSpaceRef& cs)
       : ListItem(cs->gfxColorSpace()->name()),
         m_cs(cs) {
     }
-    os::ColorSpacePtr cs() const { return m_cs; }
+    os::ColorSpaceRef cs() const { return m_cs; }
   private:
-    os::ColorSpacePtr m_cs;
+    os::ColorSpaceRef m_cs;
   };
 
   class ThemeItem : public ListItem {
@@ -1609,7 +1609,7 @@ private:
   std::string m_restoreThisTheme;
   int m_restoreScreenScaling;
   int m_restoreUIScaling;
-  std::vector<os::ColorSpacePtr> m_colorSpaces;
+  std::vector<os::ColorSpaceRef> m_colorSpaces;
   std::string m_templateTextForDisplayCS;
   RgbMapAlgorithmSelector m_rgbmapAlgorithmSelector;
 };

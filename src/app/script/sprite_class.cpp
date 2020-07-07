@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -294,7 +294,7 @@ int Sprite_assignColorSpace(lua_State* L)
   auto cs = get_obj<gfx::ColorSpace>(L, 2);
   Tx tx;
   tx(new cmd::AssignColorProfile(
-       sprite, std::make_shared<gfx::ColorSpace>(*cs)));
+       sprite, base::make_ref<gfx::ColorSpace>(*cs)));
   tx.commit();
   return 1;
 }
@@ -305,7 +305,7 @@ int Sprite_convertColorSpace(lua_State* L)
   auto cs = get_obj<gfx::ColorSpace>(L, 2);
   Tx tx;
   tx(new cmd::ConvertColorProfile(
-       sprite, std::make_shared<gfx::ColorSpace>(*cs)));
+       sprite, base::make_ref<gfx::ColorSpace>(*cs)));
   tx.commit();
   return 1;
 }

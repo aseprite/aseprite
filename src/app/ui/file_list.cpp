@@ -455,8 +455,8 @@ void FileList::onPaint(ui::PaintEvent& ev)
     g->drawRect(gfx::rgba(0, 0, 0, 64), tbounds);
     tbounds.shrink(1);
 
-    os::Surface* thumbnail = m_selected->getThumbnail();
-    g->drawRgbaSurface(thumbnail,
+    os::SurfaceRef thumbnail = m_selected->getThumbnail();
+    g->drawRgbaSurface(thumbnail.get(),
                        gfx::Rect(0, 0, thumbnail->width(), thumbnail->height()),
                        tbounds);
   }
@@ -498,10 +498,10 @@ void FileList::paintItem(ui::Graphics* g, IFileItem* fi, const int i)
   gfx::Rect textBounds = info.text;
 
   // Folder icon or thumbnail
-  os::Surface* thumbnail = nullptr;
+  os::SurfaceRef thumbnail = nullptr;
   if (fi->isFolder()) {
     if (isListView()) {
-      thumbnail = theme->parts.folderIconSmall()->bitmap(0);
+      thumbnail = theme->parts.folderIconSmall()->bitmapRef(0);
       tbounds = textBounds;
       tbounds.x += 2*guiscale();
       tbounds.w = tbounds.h;
@@ -510,8 +510,8 @@ void FileList::paintItem(ui::Graphics* g, IFileItem* fi, const int i)
     else {
       thumbnail =
         (m_zoom < 4.0 ?
-         theme->parts.folderIconMedium()->bitmap(0):
-         theme->parts.folderIconBig()->bitmap(0));
+         theme->parts.folderIconMedium()->bitmapRef(0):
+         theme->parts.folderIconBig()->bitmapRef(0));
     }
   }
   else {
@@ -552,7 +552,7 @@ void FileList::paintItem(ui::Graphics* g, IFileItem* fi, const int i)
         tbounds.shrink(1);
       }
 
-      g->drawRgbaSurface(thumbnail,
+      g->drawRgbaSurface(thumbnail.get(),
                          gfx::Rect(0, 0, thumbnail->width(), thumbnail->height()),
                          tbounds);
     }
@@ -574,7 +574,7 @@ gfx::Rect FileList::mainThumbnailBounds()
   if (!m_selected)
     return result;
 
-  os::Surface* thumbnail = m_selected->getThumbnail();
+  os::SurfaceRef thumbnail = m_selected->getThumbnail();
   if (!thumbnail)
     return result;
 

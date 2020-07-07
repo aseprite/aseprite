@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -10,12 +11,11 @@
 
 #include "app/commands/params.h"
 #include "app/ui/key.h"
+#include "os/menus.h"
 #include "os/shortcut.h"
 #include "ui/menu.h"
 
-namespace os {
-  class MenuItem;
-}
+#include <memory>
 
 namespace app {
   class Command;
@@ -28,7 +28,7 @@ namespace app {
   class AppMenuItem : public ui::MenuItem {
   public:
     struct Native {
-      os::MenuItem* menuItem = nullptr;
+      os::MenuItemRef menuItem = nullptr;
       os::Shortcut shortcut;
       app::KeyContext keyContext = app::KeyContext::Any;
     };
@@ -36,7 +36,6 @@ namespace app {
     AppMenuItem(const std::string& text,
                 Command* command = nullptr,
                 const Params& params = Params());
-    ~AppMenuItem();
 
     KeyPtr key() { return m_key; }
     void setKey(const KeyPtr& key);
@@ -47,7 +46,7 @@ namespace app {
     Command* getCommand() { return m_command; }
     const Params& getParams() const { return m_params; }
 
-    Native* native() { return m_native; }
+    Native* native() const { return m_native.get(); }
     void setNative(const Native& native);
     void disposeNative();
     void syncNativeMenuItemKeyShortcut();
@@ -65,7 +64,7 @@ namespace app {
     Command* m_command;
     Params m_params;
     bool m_isRecentFileItem;
-    Native* m_native;
+    std::unique_ptr<Native> m_native;
 
     static Params s_contextParams;
   };

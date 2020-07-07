@@ -19,7 +19,6 @@
 #include "base/memory_dump.h"
 #include "base/system_console.h"
 #include "os/error.h"
-#include "os/scoped_handle.h"
 #include "os/system.h"
 
 #include <clocale>
@@ -67,7 +66,7 @@ int app_main(int argc, char* argv[])
     MemLeak memleak;
     base::SystemConsole systemConsole;
     app::AppOptions options(argc, const_cast<const char**>(argv));
-    os::ScopedHandle<os::System> system(os::create_system());
+    os::SystemRef system(os::make_system());
     app::App app;
 
     // Change the memory dump filename to save on disk (.dmp

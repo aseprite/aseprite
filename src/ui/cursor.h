@@ -1,4 +1,5 @@
 // Aseprite UI Library
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -9,6 +10,7 @@
 #pragma once
 
 #include "gfx/point.h"
+#include "os/surface.h"
 
 namespace os { class Surface; }
 
@@ -16,15 +18,13 @@ namespace ui {
 
   class Cursor {
   public:
-    // The surface is disposed in ~Cursor.
-    Cursor(os::Surface* surface, const gfx::Point& focus);
-    ~Cursor();
+    Cursor(const os::SurfaceRef& surface, const gfx::Point& focus);
 
-    os::Surface* getSurface() const { return m_surface; }
+    const os::SurfaceRef& getSurface() const { return m_surface; }
     const gfx::Point& getFocus() const { return m_focus; }
 
   private:
-    os::Surface* m_surface;
+    os::SurfaceRef m_surface;
     gfx::Point m_focus;
   };
 

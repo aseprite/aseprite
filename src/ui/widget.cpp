@@ -160,8 +160,8 @@ void Widget::setTextQuiet(const std::string& text)
 os::Font* Widget::font() const
 {
   if (!m_font && m_theme)
-    m_font = m_theme->getWidgetFont(this);
-  return m_font;
+    m_font = AddRef(m_theme->getWidgetFont(this));
+  return m_font.get();
 }
 
 void Widget::setBgColor(gfx::Color color)
@@ -198,7 +198,7 @@ void Widget::setStyle(Style* style)
   m_border = m_theme->calcBorder(this, style);
   m_bgColor = m_theme->calcBgColor(this, style);
   if (style->font())
-    m_font = style->font();
+    m_font = AddRef(style->font());
 }
 
 // ===============================================================
@@ -1050,10 +1050,10 @@ void Widget::paint(Graphics* graphics,
     region.createIntersection(region, drawRegion);
 
     Graphics graphics2(
-      graphics->getInternalSurface(),
+      base::AddRef(graphics->getInternalSurface()),
       widget->bounds().x,
       widget->bounds().y);
-    graphics2.setFont(widget->font());
+    graphics2.setFont(AddRef(widget->font()));
 
     for (Region::const_iterator
            it = region.begin(),
@@ -1142,48 +1142,49 @@ void Widget::invalidateRegion(const Region& region)
 
 class DeleteGraphicsAndSurface {
 public:
-  DeleteGraphicsAndSurface(const gfx::Rect& clip, os::Surface* surface)
+  DeleteGraphicsAndSurface(const gfx::Rect& clip,
+                           const os::SurfaceRef& surface)
     : m_pt(clip.origin()), m_surface(surface) {
   }
 
   void operator()(Graphics* graphics) {
     {
-      os::Surface* dst = os::instance()->defaultDisplay()->getSurface();
-      os::SurfaceLock lockSrc(m_surface);
+      os::Surface* dst = os::instance()->defaultDisplay()->surface();
+      os::SurfaceLock lockSrc(m_surface.get());
       os::SurfaceLock lockDst(dst);
       m_surface->blitTo(
         dst, 0, 0, m_pt.x, m_pt.y,
         m_surface->width(), m_surface->height());
     }
-    m_surface->dispose();
+    m_surface.reset();
     delete graphics;
   }
 
 private:
   gfx::Point m_pt;
-  os::Surface* m_surface;
+  os::SurfaceRef m_surface;
 };
 
 GraphicsPtr Widget::getGraphics(const gfx::Rect& clip)
 {
   GraphicsPtr graphics;
-  os::Surface* surface;
-  os::Surface* defaultSurface = os::instance()->defaultDisplay()->getSurface();
+  os::SurfaceRef surface;
+  os::Surface* defaultSurface = os::instance()->defaultDisplay()->surface();
 
   // In case of double-buffering, we need to create the temporary
   // buffer only if the default surface is the screen.
   if (isDoubleBuffered() && defaultSurface->isDirectToScreen()) {
-    surface = os::instance()->createSurface(clip.w, clip.h);
+    surface = os::instance()->makeSurface(clip.w, clip.h);
     graphics.reset(new Graphics(surface, -clip.x, -clip.y),
-      DeleteGraphicsAndSurface(clip, surface));
+                   DeleteGraphicsAndSurface(clip, surface));
   }
   // In other case, we can draw directly onto the screen.
   else {
-    surface = defaultSurface;
+    surface = AddRef(defaultSurface);
     graphics.reset(new Graphics(surface, bounds().x, bounds().y));
   }
 
-  graphics->setFont(font());
+  graphics->setFont(AddRef(font()));
   return graphics;
 }
 

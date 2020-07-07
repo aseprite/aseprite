@@ -185,7 +185,7 @@ private:
     return true;
   }
 
-  bool writeColorSpace(std::ofstream& s, const gfx::ColorSpacePtr& colorSpace) {
+  bool writeColorSpace(std::ofstream& s, const gfx::ColorSpaceRef& colorSpace) {
     write16(s, colorSpace->type());
     write16(s, colorSpace->flags());
     write32(s, fixmath::ftofix(colorSpace->gamma()));

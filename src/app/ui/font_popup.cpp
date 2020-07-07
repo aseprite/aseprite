@@ -71,15 +71,14 @@ private:
 
     if (m_image) {
       Graphics* g = ev.graphics();
-      os::Surface* sur = os::instance()->createRgbaSurface(m_image->width(),
-                                                             m_image->height());
+      os::SurfaceRef sur = os::instance()->makeRgbaSurface(m_image->width(),
+                                                           m_image->height());
 
       convert_image_to_surface(
-        m_image.get(), nullptr, sur,
+        m_image.get(), nullptr, sur.get(),
         0, 0, 0, 0, m_image->width(), m_image->height());
 
-      g->drawRgbaSurface(sur, textWidth()+4, 0);
-      sur->dispose();
+      g->drawRgbaSurface(sur.get(), textWidth()+4, 0);
     }
   }
 

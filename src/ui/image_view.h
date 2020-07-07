@@ -8,6 +8,7 @@
 #define UI_IMAGE_VIEW_H_INCLUDED
 #pragma once
 
+#include "os/ref.h"
 #include "ui/widget.h"
 
 namespace os {
@@ -18,16 +19,14 @@ namespace ui {
 
   class ImageView : public Widget {
   public:
-    ImageView(os::Surface* sur, int align, bool disposeSurface);
-    ~ImageView();
+    ImageView(const os::Ref<os::Surface>& sur, int align);
 
   protected:
     void onSizeHint(SizeHintEvent& ev) override;
     void onPaint(PaintEvent& ev) override;
 
   private:
-    os::Surface* m_sur;
-    bool m_disposeSurface;
+    os::Ref<os::Surface> m_sur;
   };
 
 } // namespace ui

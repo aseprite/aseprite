@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -17,7 +17,7 @@
 namespace app {
 namespace cmd {
 
-AssignColorProfile::AssignColorProfile(doc::Sprite* sprite, const gfx::ColorSpacePtr& cs)
+AssignColorProfile::AssignColorProfile(doc::Sprite* sprite, const gfx::ColorSpaceRef& cs)
   : WithSprite(sprite)
   , m_oldCS(sprite->colorSpace())
   , m_newCS(cs)

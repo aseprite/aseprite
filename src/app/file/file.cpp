@@ -914,7 +914,7 @@ void FileOp::postLoad()
   }
 
   // What to do with the sprite color profile?
-  gfx::ColorSpacePtr spriteCS = sprite->colorSpace();
+  gfx::ColorSpaceRef spriteCS = sprite->colorSpace();
   app::gen::ColorProfileBehavior behavior =
     app::gen::ColorProfileBehavior::DISABLE;
 

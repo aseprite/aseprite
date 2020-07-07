@@ -373,16 +373,13 @@ void App::run()
         ResourceFinder rf;
         rf.includeDataDir(fmt::format("icons/ase{0}.png", size).c_str());
         if (rf.findFirst()) {
-          os::Surface* surf = os::instance()->loadRgbaSurface(rf.filename().c_str());
+          os::SurfaceRef surf = os::instance()->loadRgbaSurface(rf.filename().c_str());
           if (surf)
             icons.push_back(surf);
         }
       }
 
       display->setIcons(icons);
-
-      for (auto surf : icons)
-        surf->dispose();
     }
     catch (const std::exception&) {
       // Just ignore the exception, we couldn't change the app icon, no
