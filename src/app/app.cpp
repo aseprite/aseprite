@@ -60,10 +60,10 @@
 #include "base/split_string.h"
 #include "doc/sprite.h"
 #include "fmt/format.h"
-#include "os/display.h"
 #include "os/error.h"
 #include "os/surface.h"
 #include "os/system.h"
+#include "os/window.h"
 #include "render/render.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
@@ -358,7 +358,7 @@ void App::run()
   if (isGui()) {
 #if LAF_WINDOWS
     // How to interpret one finger on Windows tablets.
-    ui::Manager::getDefault()->getDisplay()
+    ui::Manager::getDefault()->display()
       ->setInterpretOneFingerGestureAsMouseMovement(
         preferences().experimental.oneFingerAsMouseMovement());
 #endif
@@ -366,23 +366,20 @@ void App::run()
 #if LAF_LINUX
     // Setup app icon for Linux window managers
     try {
-      os::Display* display = os::instance()->defaultDisplay();
+      os::Window* display = os::instance()->defaultWindow();
       os::SurfaceList icons;
 
       for (const int size : { 32, 64, 128 }) {
         ResourceFinder rf;
         rf.includeDataDir(fmt::format("icons/ase{0}.png", size).c_str());
         if (rf.findFirst()) {
-          os::Surface* surf = os::instance()->loadRgbaSurface(rf.filename().c_str());
+          os::SurfaceRef surf = os::instance()->loadRgbaSurface(rf.filename().c_str());
           if (surf)
             icons.push_back(surf);
         }
       }
 
       display->setIcons(icons);
-
-      for (auto surf : icons)
-        surf->dispose();
     }
     catch (const std::exception&) {
       // Just ignore the exception, we couldn't change the app icon, no
@@ -668,7 +665,7 @@ void App::updateDisplayTitleBar()
   }
 
   title += defaultTitle;
-  os::instance()->defaultDisplay()->setTitle(title);
+  os::instance()->defaultWindow()->setTitle(title);
 }
 
 InputChain& App::inputChain()

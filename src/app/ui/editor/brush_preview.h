@@ -18,6 +18,7 @@
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "gfx/region.h"
+#include "os/surface.h"
 
 #include <vector>
 
@@ -129,7 +130,7 @@ namespace app {
     gfx::Point m_editorPosition; // Position in the editor (model)
 
     // Native mouse cursor to draw crosshair
-    os::Surface* m_cursor = nullptr;
+    os::SurfaceRef m_cursor;
     gfx::Point m_cursorCenter;
 
     // Information about current brush

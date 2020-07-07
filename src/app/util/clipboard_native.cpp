@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2021  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -20,7 +21,7 @@
 #include "doc/mask_io.h"
 #include "doc/palette_io.h"
 #include "gfx/size.h"
-#include "os/display.h"
+#include "os/window.h"
 #include "os/system.h"
 #include "ui/alert.h"
 
@@ -37,7 +38,7 @@ namespace {
   clip::format custom_image_format = 0;
 
   void* native_display_handle() {
-    return os::instance()->defaultDisplay()->nativeHandle();
+    return os::instance()->defaultWindow()->nativeHandle();
   }
 
   void custom_error_handler(clip::ErrorCode code) {

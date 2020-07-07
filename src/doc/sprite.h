@@ -81,12 +81,12 @@ namespace doc {
     gfx::Rect bounds() const { return m_spec.bounds(); }
     int width() const { return m_spec.width(); }
     int height() const { return m_spec.height(); }
-    const gfx::ColorSpacePtr& colorSpace() const { return m_spec.colorSpace(); }
+    const gfx::ColorSpaceRef& colorSpace() const { return m_spec.colorSpace(); }
 
     void setPixelFormat(PixelFormat format);
     void setPixelRatio(const PixelRatio& pixelRatio);
     void setSize(int width, int height);
-    void setColorSpace(const gfx::ColorSpacePtr& colorSpace);
+    void setColorSpace(const gfx::ColorSpaceRef& colorSpace);
 
     // Returns true if the sprite has a background layer and it's visible
     bool isOpaque() const;

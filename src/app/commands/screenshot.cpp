@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -25,8 +25,8 @@
 #include "doc/layer.h"
 #include "doc/sprite.h"
 #include "fmt/format.h"
-#include "os/display.h"
 #include "os/surface.h"
+#include "os/window.h"
 #include "ui/alert.h"
 #include "ui/manager.h"
 #include "ui/scale.h"
@@ -69,8 +69,8 @@ void ScreenshotCommand::onExecute(Context* ctx)
   app::ResourceFinder rf(false);
   rf.includeDesktopDir("");
 
-  os::Display* display = ui::Manager::getDefault()->getDisplay();
-  os::Surface* surface = display->getSurface();
+  os::Window* display = ui::Manager::getDefault()->display();
+  os::Surface* surface = display->surface();
   std::string fn;
 
   if (params().save()) {

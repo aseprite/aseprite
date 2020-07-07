@@ -136,10 +136,10 @@ We are using some modern C++ (C++11, C++14, etc.) features, mainly:
 * Use range-based for loops (`for (const auto& item : values) { ... }`)
 * Use template alias (`template<typename T> alias = orig<T>;`)
 * Use non-generic lambda functions
-* Use `std::shared_ptr` and `std::unique_ptr`
+* Use `std::shared_ptr`, `std::unique_ptr`, or `base::Ref`
 * Use `base::clamp` (no `std::clamp` yet)
 * Use `static constexpr T v = ...;`
 * You can use `<atomic>`, `<thread>`, `<mutex>`, and `<condition_variable>`
-* We can use `using T = ...;` instead of `typedef ... T`
+* Prefer `using T = ...;` instead of `typedef ... T`
 * We use gcc 9.2 or clang 9.0 on Linux, so check the features available in
   https://en.cppreference.com/w/cpp/compiler_support

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2018-2019  Igara Studio S.A.
+// Copyright (c) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -115,7 +115,7 @@ int ImageSpec_set_colorSpace(lua_State* L)
 {
   auto spec = get_obj<doc::ImageSpec>(L, 1);
   auto cs = get_obj<gfx::ColorSpace>(L, 2);
-  spec->setColorSpace(std::make_shared<gfx::ColorSpace>(*cs));
+  spec->setColorSpace(base::make_ref<gfx::ColorSpace>(*cs));
   return 0;
 }
 

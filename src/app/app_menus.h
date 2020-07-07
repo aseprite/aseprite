@@ -14,6 +14,7 @@
 #include "app/widget_type_mismatch.h"
 #include "base/disable_copying.h"
 #include "obs/connection.h"
+#include "os/menus.h"
 #include "ui/base.h"
 #include "ui/menu.h"
 
@@ -21,11 +22,6 @@
 
 class TiXmlElement;
 class TiXmlHandle;
-
-namespace os {
-  class Menu;
-  class Shortcut;
-}
 
 namespace app {
   class Command;
@@ -40,8 +36,6 @@ namespace app {
 
   public:
     static AppMenus* instance();
-
-    ~AppMenus();
 
     void reload();
     void initTheme();
@@ -83,7 +77,8 @@ namespace app {
     void syncNativeMenuItemKeyShortcuts(Menu* menu);
     void updateMenusList();
     void createNativeMenus();
-    void createNativeSubmenus(os::Menu* osMenu, const ui::Menu* uiMenu);
+    void createNativeSubmenus(os::Menu* osMenu,
+                              const ui::Menu* uiMenu);
 
 #ifdef ENABLE_SCRIPTING
     void loadScriptsSubmenu(ui::Menu* menu,
@@ -118,7 +113,7 @@ namespace app {
     std::map<std::string, GroupInfo> m_groups;
     // Native main menu bar (== nullptr if the platform doesn't
     // support native menus)
-    os::Menu* m_osMenu;
+    os::MenuRef m_osMenu;
     XmlTranslator m_xmlTranslator;
   };
 

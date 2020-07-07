@@ -63,11 +63,6 @@ public:
   {
   }
 
-  ~DitherItem() {
-    if (m_preview)
-      m_preview->dispose();
-  }
-
   render::DitheringAlgorithm algo() const {
     return m_dithering.algorithm();
   }
@@ -85,11 +80,10 @@ private:
       // Reuse the preview in case that the palette is exactly the same
       if (palette->id() == m_palId &&
           palette->getModifications() == m_palMods)
-        return m_preview;
+        return m_preview.get();
 
       // In other case regenerate the preview for the current palette
-      m_preview->dispose();
-      m_preview = nullptr;
+      m_preview.reset();
     }
 
     const int w = 128, h = 16;
@@ -116,13 +110,13 @@ private:
         m_dithering, nullptr, palette, true, -1, nullptr);
     }
 
-    m_preview = os::instance()->createRgbaSurface(w, h);
-    convert_image_to_surface(image2.get(), palette, m_preview,
+    m_preview = os::instance()->makeRgbaSurface(w, h);
+    convert_image_to_surface(image2.get(), palette, m_preview.get(),
                              0, 0, 0, 0, w, h);
 
     m_palId = palette->id();
     m_palMods = palette->getModifications();
-    return m_preview;
+    return m_preview.get();
   }
 
   void onSizeHint(SizeHintEvent& ev) override {
@@ -167,7 +161,7 @@ private:
 
   bool m_matrixOnly;
   render::Dithering m_dithering;
-  os::Surface* m_preview;
+  os::SurfaceRef m_preview;
   doc::ObjectId m_palId;
   int m_palMods;
 };

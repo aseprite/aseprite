@@ -37,8 +37,8 @@
 #include "base/version.h"
 #include "doc/image.h"
 #include "fmt/format.h"
-#include "os/display.h"
 #include "os/system.h"
+#include "os/window.h"
 #include "render/render.h"
 #include "ui/ui.h"
 
@@ -98,13 +98,13 @@ class OptionsWindow : public app::gen::Options {
 
   class ColorSpaceItem : public ListItem {
   public:
-    ColorSpaceItem(const os::ColorSpacePtr& cs)
+    ColorSpaceItem(const os::ColorSpaceRef& cs)
       : ListItem(cs->gfxColorSpace()->name()),
         m_cs(cs) {
     }
-    os::ColorSpacePtr cs() const { return m_cs; }
+    os::ColorSpaceRef cs() const { return m_cs; }
   private:
-    os::ColorSpacePtr m_cs;
+    os::ColorSpaceRef m_cs;
   };
 
   class ThemeItem : public ListItem {
@@ -641,7 +641,6 @@ public:
 
           if (j == winCs) {
             name = gfxCs->name();
-            os::instance()->setDisplaysColorSpace(cs);
             break;
           }
           ++j;
@@ -651,7 +650,7 @@ public:
         break;
       }
     }
-    update_displays_color_profile_from_preferences();
+    update_windows_color_profile_from_preferences();
 
     // Change sprite grid bounds
     if (m_context && m_context->activeDocument()) {
@@ -723,7 +722,7 @@ public:
       m_pref.tablet.api(tabletStr);
       m_pref.experimental.loadWintabDriver(wintabState);
 
-      manager()->getDisplay()
+      manager()->display()
         ->setInterpretOneFingerGestureAsMouseMovement(
           oneFingerAsMouseMovement()->isSelected());
 
@@ -843,10 +842,8 @@ private:
 
   void updateScreenScaling() {
     ui::Manager* manager = ui::Manager::getDefault();
-    os::Display* display = manager->getDisplay();
     os::instance()->setGpuAcceleration(m_pref.general.gpuAcceleration());
-    display->setScale(m_pref.general.screenScale());
-    manager->setDisplay(display);
+    manager->updateAllDisplaysWithNewScale(m_pref.general.screenScale());
   }
 
   void onApply() {
@@ -1608,7 +1605,7 @@ private:
   std::string m_restoreThisTheme;
   int m_restoreScreenScaling;
   int m_restoreUIScaling;
-  std::vector<os::ColorSpacePtr> m_colorSpaces;
+  std::vector<os::ColorSpaceRef> m_colorSpaces;
   std::string m_templateTextForDisplayCS;
 };
 

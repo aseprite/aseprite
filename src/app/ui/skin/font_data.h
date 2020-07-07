@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This program is distributed under the terms of
@@ -19,7 +20,6 @@ namespace skin {
   class FontData {
   public:
     FontData(os::FontType type);
-    ~FontData();
 
     void setFilename(const std::string& filename) { m_filename = filename; }
     void setAntialias(bool antialias) { m_antialias = antialias; }
@@ -28,13 +28,13 @@ namespace skin {
       m_fallbackSize = fallbackSize;
     }
 
-    os::Font* getFont(int size);
+    os::FontRef getFont(int size);
 
   private:
     os::FontType m_type;
     std::string m_filename;
     bool m_antialias;
-    std::map<int, os::Font*> m_fonts; // key=font size, value=real font
+    std::map<int, os::FontRef> m_fonts; // key=font size, value=real font
     FontData* m_fallback;
     int m_fallbackSize;
 

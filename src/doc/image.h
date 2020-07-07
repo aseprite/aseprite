@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2018 Igara Studio S.A.
+// Copyright (c) 2018-2020 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -52,7 +52,7 @@ namespace doc {
     gfx::Rect bounds() const { return m_spec.bounds(); }
     color_t maskColor() const { return m_spec.maskColor(); }
     void setMaskColor(color_t c) { m_spec.setMaskColor(c); }
-    void setColorSpace(const gfx::ColorSpacePtr& cs) { m_spec.setColorSpace(cs); }
+    void setColorSpace(const gfx::ColorSpaceRef& cs) { m_spec.setColorSpace(cs); }
 
     virtual int getMemSize() const override;
     int getRowStrideSize() const;

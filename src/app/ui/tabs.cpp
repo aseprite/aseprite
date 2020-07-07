@@ -931,12 +931,12 @@ void Tabs::createFloatingOverlay(Tab* tab)
 {
   ASSERT(!m_floatingOverlay);
 
-  os::Surface* surface = os::instance()->createRgbaSurface(
+  os::SurfaceRef surface = os::instance()->makeRgbaSurface(
     tab->width, m_tabsHeight);
 
   // Fill the surface with pink color
   {
-    os::SurfaceLock lock(surface);
+    os::SurfaceLock lock(surface.get());
     os::Paint paint;
     paint.color(gfx::rgba(0, 0, 0, 0));
     paint.style(os::Paint::Fill);
@@ -944,12 +944,14 @@ void Tabs::createFloatingOverlay(Tab* tab)
   }
   {
     Graphics g(surface, 0, 0);
-    g.setFont(font());
+    g.setFont(AddRef(font()));
     drawTab(&g, g.getClipBounds(), tab, 0, true, true);
   }
 
-  m_floatingOverlay.reset(new Overlay(surface, gfx::Point(), Overlay::MouseZOrder-1));
-  OverlayManager::instance()->addOverlay(m_floatingOverlay.get());
+  m_floatingOverlay = base::make_ref<ui::Overlay>(
+    surface, gfx::Point(),
+    (ui::Overlay::ZOrder)(Overlay::MouseZOrder-1));
+  OverlayManager::instance()->addOverlay(m_floatingOverlay);
 }
 
 void Tabs::destroyFloatingTab()
@@ -974,7 +976,7 @@ void Tabs::destroyFloatingTab()
 void Tabs::destroyFloatingOverlay()
 {
   if (m_floatingOverlay) {
-    OverlayManager::instance()->removeOverlay(m_floatingOverlay.get());
+    OverlayManager::instance()->removeOverlay(m_floatingOverlay);
     m_floatingOverlay.reset();
   }
 }

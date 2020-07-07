@@ -35,9 +35,9 @@
 #include "doc/image_impl.h"
 #include "doc/layer.h"
 #include "doc/primitives.h"
-#include "os/display.h"
 #include "os/surface.h"
 #include "os/system.h"
+#include "os/window.h"
 #include "render/render.h"
 #include "ui/manager.h"
 #include "ui/system.h"
@@ -53,8 +53,7 @@ BrushPreview::BrushPreview(Editor* editor)
 
 BrushPreview::~BrushPreview()
 {
-  if (m_cursor)
-    m_cursor->dispose();
+  m_cursor.reset();
 }
 
 BrushRef BrushPreview::getCurrentBrush()
@@ -462,8 +461,7 @@ void BrushPreview::createNativeCursor()
   if (m_cursor) {
     if (m_cursor->width() != cursorBounds.w ||
         m_cursor->height() != cursorBounds.h) {
-      m_cursor->dispose();
-      m_cursor = nullptr;
+      m_cursor.reset();
     }
   }
 
@@ -472,13 +470,13 @@ void BrushPreview::createNativeCursor()
     if (!(m_type & NATIVE_CROSSHAIR)) {
       // TODO should we use ui::set_mouse_cursor()?
       ui::set_mouse_cursor_reset_info();
-      m_editor->manager()->getDisplay()->setNativeMouseCursor(os::NativeCursor::kNoCursor);
+      m_editor->manager()->display()->setNativeMouseCursor(os::NativeCursor::Hidden);
     }
     return;
   }
 
   if (!m_cursor) {
-    m_cursor = os::instance()->createRgbaSurface(cursorBounds.w, cursorBounds.h);
+    m_cursor = os::instance()->makeRgbaSurface(cursorBounds.w, cursorBounds.h);
 
     // Cannot clear the cursor on each iteration because it can
     // generate a flicker effect when zooming in the same mouse
@@ -516,9 +514,10 @@ void BrushPreview::forEachLittleCrossPixel(
 
     // TODO should we use ui::set_mouse_cursor()?
     ui::set_mouse_cursor_reset_info();
-    m_editor->manager()->getDisplay()->setNativeMouseCursor(
-      m_cursor, m_cursorCenter,
-      m_editor->manager()->getDisplay()->scale());
+    m_editor->manager()->display()->setNativeMouseCursor(
+      m_cursor.get(),
+      m_cursorCenter,
+      m_editor->manager()->display()->scale());
   }
 }
 

@@ -1,4 +1,5 @@
 // Aseprite UI Library
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -9,6 +10,8 @@
 #endif
 
 #include "ui/style.h"
+
+#include "os/font.h"
 
 namespace ui {
 
@@ -27,6 +30,11 @@ Style::Style(const Style* base)
 {
   if (base)
     m_layers = base->layers();
+}
+
+void Style::setFont(const os::Ref<os::Font>& font)
+{
+  m_font = font;
 }
 
 void Style::addLayer(const Layer& layer)

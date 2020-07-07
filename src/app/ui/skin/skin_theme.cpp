@@ -76,7 +76,7 @@ struct app::skin::SkinTheme::BackwardCompatibility {
       const int h = font->height();
 
       style.setId(theme->styles.slider()->id());
-      style.setFont(font);
+      style.setFont(AddRef(font));
 
       auto part = theme->parts.sliderEmpty();
       style.setBorder(
@@ -236,9 +236,7 @@ SkinTheme::~SkinTheme()
   for (auto& it : m_cursors)
     delete it.second;           // Delete cursor
 
-  if (m_sheet)
-    m_sheet->dispose();
-
+  m_sheet.reset();
   m_parts_by_id.clear();
 
   // Delete all styles.
@@ -325,7 +323,7 @@ void SkinTheme::loadSheet()
 {
   // Load the skin sheet
   std::string sheet_filename(base::join_path(m_path, "sheet.png"));
-  os::Surface* newSheet = nullptr;
+  os::SurfaceRef newSheet;
   try {
     newSheet = os::instance()->loadRgbaSurface(sheet_filename.c_str());
   }
@@ -337,10 +335,8 @@ void SkinTheme::loadSheet()
     throw base::Exception("Error loading %s file", sheet_filename.c_str());
 
   // Replace the sprite sheet
-  if (m_sheet) {
-    m_sheet->dispose();
-    m_sheet = nullptr;
-  }
+  if (m_sheet)
+    m_sheet.reset();
   m_sheet = newSheet;
   if (m_sheet)
     m_sheet->applyScale(guiscale());
@@ -400,7 +396,7 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
         if (sizeStr)
           size = std::strtol(sizeStr, nullptr, 10);
 
-        os::Font* font = fontData->getFont(size);
+        os::FontRef font = fontData->getFont(size);
         m_themeFonts[idStr] = font;
 
         if (id == "default")
@@ -479,7 +475,7 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
 
       if (w > 0 && h > 0) {
         part->setSpriteBounds(gfx::Rect(x, y, w, h));
-        part->setBitmap(0, sliceSheet(part->bitmap(0), gfx::Rect(x, y, w, h)));
+        part->setBitmap(0, sliceSheet(part->bitmapRef(0), gfx::Rect(x, y, w, h)));
       }
       else if (xmlPart->Attribute("w1")) { // 3x3-1 part (NW, N, NE, E, SE, S, SW, W)
         int w1 = scale*strtol(xmlPart->Attribute("w1"), nullptr, 10);
@@ -492,14 +488,14 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
         part->setSpriteBounds(gfx::Rect(x, y, w1+w2+w3, h1+h2+h3));
         part->setSlicesBounds(gfx::Rect(w1, h1, w2, h2));
 
-        part->setBitmap(0, sliceSheet(part->bitmap(0), gfx::Rect(x, y, w1, h1))); // NW
-        part->setBitmap(1, sliceSheet(part->bitmap(1), gfx::Rect(x+w1, y, w2, h1))); // N
-        part->setBitmap(2, sliceSheet(part->bitmap(2), gfx::Rect(x+w1+w2, y, w3, h1))); // NE
-        part->setBitmap(3, sliceSheet(part->bitmap(3), gfx::Rect(x+w1+w2, y+h1, w3, h2))); // E
-        part->setBitmap(4, sliceSheet(part->bitmap(4), gfx::Rect(x+w1+w2, y+h1+h2, w3, h3))); // SE
-        part->setBitmap(5, sliceSheet(part->bitmap(5), gfx::Rect(x+w1, y+h1+h2, w2, h3))); // S
-        part->setBitmap(6, sliceSheet(part->bitmap(6), gfx::Rect(x, y+h1+h2, w1, h3))); // SW
-        part->setBitmap(7, sliceSheet(part->bitmap(7), gfx::Rect(x, y+h1, w1, h2))); // W
+        part->setBitmap(0, sliceSheet(part->bitmapRef(0), gfx::Rect(x, y, w1, h1))); // NW
+        part->setBitmap(1, sliceSheet(part->bitmapRef(1), gfx::Rect(x+w1, y, w2, h1))); // N
+        part->setBitmap(2, sliceSheet(part->bitmapRef(2), gfx::Rect(x+w1+w2, y, w3, h1))); // NE
+        part->setBitmap(3, sliceSheet(part->bitmapRef(3), gfx::Rect(x+w1+w2, y+h1, w3, h2))); // E
+        part->setBitmap(4, sliceSheet(part->bitmapRef(4), gfx::Rect(x+w1+w2, y+h1+h2, w3, h3))); // SE
+        part->setBitmap(5, sliceSheet(part->bitmapRef(5), gfx::Rect(x+w1, y+h1+h2, w2, h3))); // S
+        part->setBitmap(6, sliceSheet(part->bitmapRef(6), gfx::Rect(x, y+h1+h2, w1, h3))); // SW
+        part->setBitmap(7, sliceSheet(part->bitmapRef(7), gfx::Rect(x, y+h1, w1, h2))); // W
       }
 
       // Is it a mouse cursor?
@@ -516,10 +512,8 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
           it->second = nullptr;
         }
 
-        // TODO share the Surface with the SkinPart
-        os::Surface* slice = sliceSheet(nullptr, gfx::Rect(x, y, w, h));
-        Cursor* cursor =
-          new Cursor(slice, gfx::Point(focusx, focusy));
+        os::SurfaceRef slice = sliceSheet(nullptr, gfx::Rect(x, y, w, h));
+        Cursor* cursor = new Cursor(slice, gfx::Point(focusx, focusy));
         m_cursors[cursorName] = cursor;
 
         for (int c=0; c<kCursorTypes; ++c) {
@@ -617,7 +611,7 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
       {
         const char* fontId = xmlStyle->Attribute("font");
         if (fontId) {
-          os::Font* font = m_themeFonts[fontId];
+          os::FontRef font = m_themeFonts[fontId];
           style->setFont(font);
         }
       }
@@ -711,7 +705,7 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
             SkinPartPtr part = it->second;
             if (part) {
               if (layer.type() == ui::Style::Layer::Type::kIcon)
-                layer.setIcon(part->bitmap(0));
+                layer.setIcon(AddRef(part->bitmap(0)));
               else {
                 layer.setSpriteSheet(m_sheet);
                 layer.setSpriteBounds(part->spriteBounds());
@@ -748,21 +742,20 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
   ThemeFile<SkinTheme>::updateInternals();
 }
 
-os::Surface* SkinTheme::sliceSheet(os::Surface* sur, const gfx::Rect& bounds)
+os::SurfaceRef SkinTheme::sliceSheet(os::SurfaceRef sur, const gfx::Rect& bounds)
 {
   if (sur && (sur->width() != bounds.w ||
               sur->height() != bounds.h)) {
-    sur->dispose();
     sur = nullptr;
   }
 
   if (!bounds.isEmpty()) {
     if (!sur)
-      sur = os::instance()->createRgbaSurface(bounds.w, bounds.h);
+      sur = os::instance()->makeRgbaSurface(bounds.w, bounds.h);
 
-    os::SurfaceLock lockSrc(m_sheet);
-    os::SurfaceLock lockDst(sur);
-    m_sheet->blitTo(sur, bounds.x, bounds.y, 0, 0, bounds.w, bounds.h);
+    os::SurfaceLock lockSrc(m_sheet.get());
+    os::SurfaceLock lockDst(sur.get());
+    m_sheet->blitTo(sur.get(), bounds.x, bounds.y, 0, 0, bounds.w, bounds.h);
   }
   else {
     ASSERT(!sur);
@@ -1455,7 +1448,7 @@ void SkinTheme::drawText(Graphics* g, const char* t,
   if (t || widget->hasText()) {
     Rect textrc;
 
-    g->setFont(widget->font());
+    g->setFont(AddRef(widget->font()));
 
     if (!t)
       t = widget->text().c_str();
@@ -1606,7 +1599,7 @@ void SkinTheme::drawRect(Graphics* g, const Rect& rc,
 void SkinTheme::drawRect(ui::Graphics* g, const gfx::Rect& rc,
                          SkinPart* skinPart, const bool drawCenter)
 {
-  Theme::drawSlices(g, m_sheet, rc,
+  Theme::drawSlices(g, m_sheet.get(), rc,
                     skinPart->spriteBounds(),
                     skinPart->slicesBounds(),
                     gfx::ColorNone,

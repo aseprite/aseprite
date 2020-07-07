@@ -15,7 +15,6 @@
 #include "app/context.h"
 #include "app/modules/gui.h"
 #include "app/ui/status_bar.h"
-#include "base/bind.h"
 #include "base/memory.h"
 #include "base/string.h"
 #include "ui/system.h"
@@ -125,7 +124,7 @@ Console::Console(Context* ctx)
       (App::instance() &&
        App::instance()->isGui() &&
        Manager::getDefault() &&
-       Manager::getDefault()->getDisplay());
+       Manager::getDefault()->display());
 
   if (!m_withUI)
     return;
