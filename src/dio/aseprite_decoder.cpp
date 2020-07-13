@@ -810,7 +810,7 @@ void AsepriteDecoder::readColorProfile(doc::Sprite* sprite)
   readPadding(8);
 
   // Without color space, like old Aseprite versions
-  gfx::ColorSpacePtr cs(nullptr);
+  gfx::ColorSpaceRef cs(nullptr);
 
   switch (type) {
 

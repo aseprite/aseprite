@@ -26,7 +26,6 @@
 #include "app/ui/main_window.h"
 #include "app/ui_context.h"
 #include "app/util/filetoks.h"
-#include "base/bind.h"
 #include "base/fs.h"
 #include "base/string.h"
 #include "fmt/format.h"
@@ -312,7 +311,7 @@ AppMenus* AppMenus::instance()
   static AppMenus* instance = NULL;
   if (!instance) {
     instance = new AppMenus;
-    App::instance()->Exit.connect(base::Bind<void>(&destroy_instance, instance));
+    App::instance()->Exit.connect([]{ destroy_instance(instance); });
   }
   return instance;
 }
@@ -323,13 +322,7 @@ AppMenus::AppMenus()
 {
   m_recentFilesConn =
     App::instance()->recentFiles()->Changed.connect(
-      base::Bind(&AppMenus::rebuildRecentList, this));
-}
-
-AppMenus::~AppMenus()
-{
-  if (m_osMenu)
-    m_osMenu->dispose();
+      [this]{ rebuildRecentList(); });
 }
 
 void AppMenus::reload()
@@ -563,10 +556,10 @@ bool AppMenus::rebuildRecentList()
   // Sync native menus
   if (owner->native() &&
       owner->native()->menuItem) {
-    os::Menus* menus = os::instance()->menus();
-    os::Menu* osMenu = (menus ? menus->createMenu(): nullptr);
+    auto menus = os::instance()->menus();
+    os::MenuRef osMenu = (menus ? menus->makeMenu(): nullptr);
     if (osMenu) {
-      createNativeSubmenus(osMenu, menu);
+      createNativeSubmenus(osMenu.get(), menu);
       owner->native()->menuItem->setSubmenu(osMenu);
     }
   }
@@ -826,8 +819,9 @@ void AppMenus::createNativeMenus()
   if (!menus)       // This platform doesn't support native menu items
     return;
 
-  os::Menu* oldOSMenu = m_osMenu;
-  m_osMenu = menus->createMenu();
+  // Save a reference to the old menu to avoid destroying it.
+  os::MenuRef oldOSMenu = m_osMenu;
+  m_osMenu = menus->makeMenu();
 
 #ifdef __APPLE__ // Create default macOS app menus (App ... Window)
   {
@@ -863,24 +857,24 @@ void AppMenus::createNativeMenus()
     os::MenuItemInfo quit(fmt::format("Quit {}", get_app_name()), os::MenuItemInfo::Quit);
     quit.shortcut = os::Shortcut('q', os::kKeyCmdModifier);
 
-    os::Menu* appMenu = menus->createMenu();
-    appMenu->addItem(menus->createMenuItem(about));
-    appMenu->addItem(menus->createMenuItem(os::MenuItemInfo(os::MenuItemInfo::Separator)));
-    appMenu->addItem(menus->createMenuItem(preferences));
-    appMenu->addItem(menus->createMenuItem(os::MenuItemInfo(os::MenuItemInfo::Separator)));
-    appMenu->addItem(menus->createMenuItem(hide));
-    appMenu->addItem(menus->createMenuItem(os::MenuItemInfo("Hide Others", os::MenuItemInfo::HideOthers)));
-    appMenu->addItem(menus->createMenuItem(os::MenuItemInfo("Show All", os::MenuItemInfo::ShowAll)));
-    appMenu->addItem(menus->createMenuItem(os::MenuItemInfo(os::MenuItemInfo::Separator)));
-    appMenu->addItem(menus->createMenuItem(quit));
+    os::MenuRef appMenu = menus->makeMenu();
+    appMenu->addItem(menus->makeMenuItem(about));
+    appMenu->addItem(menus->makeMenuItem(os::MenuItemInfo(os::MenuItemInfo::Separator)));
+    appMenu->addItem(menus->makeMenuItem(preferences));
+    appMenu->addItem(menus->makeMenuItem(os::MenuItemInfo(os::MenuItemInfo::Separator)));
+    appMenu->addItem(menus->makeMenuItem(hide));
+    appMenu->addItem(menus->makeMenuItem(os::MenuItemInfo("Hide Others", os::MenuItemInfo::HideOthers)));
+    appMenu->addItem(menus->makeMenuItem(os::MenuItemInfo("Show All", os::MenuItemInfo::ShowAll)));
+    appMenu->addItem(menus->makeMenuItem(os::MenuItemInfo(os::MenuItemInfo::Separator)));
+    appMenu->addItem(menus->makeMenuItem(quit));
 
-    os::MenuItem* appItem = menus->createMenuItem(os::MenuItemInfo("App"));
+    os::MenuItemRef appItem = menus->makeMenuItem(os::MenuItemInfo("App"));
     appItem->setSubmenu(appMenu);
     m_osMenu->addItem(appItem);
   }
 #endif
 
-  createNativeSubmenus(m_osMenu, m_rootMenu.get());
+  createNativeSubmenus(m_osMenu.get(), m_rootMenu.get());
 
 #ifdef __APPLE__
   {
@@ -898,11 +892,11 @@ void AppMenus::createNativeMenus()
     os::MenuItemInfo minimize("Minimize", os::MenuItemInfo::Minimize);
     minimize.shortcut = os::Shortcut('m', os::kKeyCmdModifier);
 
-    os::Menu* windowMenu = menus->createMenu();
-    windowMenu->addItem(menus->createMenuItem(minimize));
-    windowMenu->addItem(menus->createMenuItem(os::MenuItemInfo("Zoom", os::MenuItemInfo::Zoom)));
+    os::MenuRef windowMenu = menus->makeMenu();
+    windowMenu->addItem(menus->makeMenuItem(minimize));
+    windowMenu->addItem(menus->makeMenuItem(os::MenuItemInfo("Zoom", os::MenuItemInfo::Zoom)));
 
-    os::MenuItem* windowItem = menus->createMenuItem(os::MenuItemInfo("Window"));
+    os::MenuItemRef windowItem = menus->makeMenuItem(os::MenuItemInfo("Window"));
     windowItem->setSubmenu(windowMenu);
 
     // We use helpIndex+1 because the first index in m_osMenu is the
@@ -913,10 +907,11 @@ void AppMenus::createNativeMenus()
 
   menus->setAppMenu(m_osMenu);
   if (oldOSMenu)
-    oldOSMenu->dispose();
+    oldOSMenu.reset();
 }
 
-void AppMenus::createNativeSubmenus(os::Menu* osMenu, const ui::Menu* uiMenu)
+void AppMenus::createNativeSubmenus(os::Menu* osMenu,
+                                    const ui::Menu* uiMenu)
 {
   os::Menus* menus = os::instance()->menus();
 
@@ -960,7 +955,7 @@ void AppMenus::createNativeSubmenus(os::Menu* osMenu, const ui::Menu* uiMenu)
       continue;
     }
 
-    os::MenuItem* osItem = menus->createMenuItem(info);
+    os::MenuItemRef osItem = menus->makeMenuItem(info);
     if (osItem) {
       osMenu->addItem(osItem);
       if (appMenuItem) {
@@ -970,8 +965,8 @@ void AppMenus::createNativeSubmenus(os::Menu* osMenu, const ui::Menu* uiMenu)
 
       if (child->type() == ui::kMenuItemWidget &&
           ((ui::MenuItem*)child)->hasSubmenu()) {
-        os::Menu* osSubmenu = menus->createMenu();
-        createNativeSubmenus(osSubmenu, ((ui::MenuItem*)child)->getSubmenu());
+        os::MenuRef osSubmenu = menus->makeMenu();
+        createNativeSubmenus(osSubmenu.get(), ((ui::MenuItem*)child)->getSubmenu());
         osItem->setSubmenu(osSubmenu);
       }
     }

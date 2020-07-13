@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -12,19 +12,15 @@
 #include "base/mutex.h"
 #include "base/paths.h"
 #include "obs/signal.h"
+#include "os/surface.h"
 
 #include <string>
 #include <vector>
 
-namespace os {
-  class Surface;
-}
-
 namespace app {
 
   class IFileItem;
-
-  typedef std::vector<IFileItem*> FileItemList;
+  using FileItemList = std::vector<IFileItem*>;
 
   class FileSystemModule {
     static FileSystemModule* m_instance;
@@ -91,8 +87,8 @@ namespace app {
     virtual double getThumbnailProgress() = 0;
     virtual void setThumbnailProgress(double progress) = 0;
 
-    virtual os::Surface* getThumbnail() = 0;
-    virtual void setThumbnail(os::Surface* thumbnail) = 0;
+    virtual os::SurfaceRef getThumbnail() = 0;
+    virtual void setThumbnail(const os::SurfaceRef& thumbnail) = 0;
   };
 
 } // namespace app

@@ -28,29 +28,7 @@ FontData::FontData(os::FontType type)
 {
 }
 
-FontData::~FontData()
-{
-#if _DEBUG
-  static std::set<os::Font*> deletedFonts;
-#endif
-
-  // Destroy all fonts
-  for (auto& it : m_fonts) {
-    os::Font* font = it.second;
-    if (font) {
-#if _DEBUG // Check that there are not double-cached fonts
-      auto it2 = deletedFonts.find(font);
-      ASSERT(it2 == deletedFonts.end());
-      deletedFonts.insert(font);
-#endif
-      // Don't delete font->fallback() as it's already m_fonts
-      font->dispose();
-    }
-  }
-  m_fonts.clear();
-}
-
-os::Font* FontData::getFont(int size)
+os::FontRef FontData::getFont(int size)
 {
   if (m_type == os::FontType::SpriteSheet)
     size = 1;                   // Same size always
@@ -61,7 +39,7 @@ os::Font* FontData::getFont(int size)
   if (it != m_fonts.end())
     return it->second;
 
-  os::Font* font = nullptr;
+  os::FontRef font = nullptr;
 
   switch (m_type) {
     case os::FontType::SpriteSheet:
@@ -76,9 +54,9 @@ os::Font* FontData::getFont(int size)
   }
 
   if (m_fallback) {
-    os::Font* fallback = m_fallback->getFont(m_fallbackSize);
+    os::FontRef fallback = m_fallback->getFont(m_fallbackSize);
     if (font)
-      font->setFallback(fallback);
+      font->setFallback(fallback.get());
     else
       return fallback;          // Don't double-cache the fallback font
   }

@@ -11,7 +11,6 @@
 
 #include "app/res/http_loader.h"
 
-#include "base/bind.h"
 #include "base/fs.h"
 #include "base/fstream_path.h"
 #include "base/replace_string.h"
@@ -29,7 +28,7 @@ HttpLoader::HttpLoader(const std::string& url)
   : m_url(url)
   , m_done(false)
   , m_request(nullptr)
-  , m_thread(base::Bind<void>(&HttpLoader::threadHttpRequest, this))
+  , m_thread([this]{ threadHttpRequest(); })
 {
 }
 

@@ -9,6 +9,7 @@
 #define APP_UI_TABS_H_INCLUDED
 #pragma once
 
+#include "base/ref.h"
 #include "ui/animated_widget.h"
 #include "ui/timer.h"
 #include "ui/widget.h"
@@ -286,7 +287,7 @@ namespace app {
     // (this overlay floats next to the mouse cursor).  It's destroyed
     // and recreated every time the tab is put inside or outside the
     // Tabs widget.
-    std::unique_ptr<ui::Overlay> m_floatingOverlay;
+    base::Ref<ui::Overlay> m_floatingOverlay;
 
     // Relative mouse position inside the m_dragTab (used to adjust
     // the m_floatingOverlay precisely).

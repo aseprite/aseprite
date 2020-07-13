@@ -25,7 +25,6 @@
 #include "app/ui/workspace.h"
 #include "app/ui/workspace_tabs.h"
 #include "app/ui_context.h"
-#include "base/bind.h"
 #include "base/exception.h"
 #include "fmt/format.h"
 #include "ui/label.h"
@@ -53,10 +52,10 @@ HomeView::HomeView()
   , m_dataRecovery(App::instance()->dataRecovery())
   , m_dataRecoveryView(nullptr)
 {
-  newFile()->Click.connect(base::Bind(&HomeView::onNewFile, this));
-  openFile()->Click.connect(base::Bind(&HomeView::onOpenFile, this));
+  newFile()->Click.connect([this]{ onNewFile(); });
+  openFile()->Click.connect([this]{ onOpenFile(); });
   if (m_dataRecovery)
-    recoverSprites()->Click.connect(base::Bind(&HomeView::onRecoverSprites, this));
+    recoverSprites()->Click.connect([this]{ onRecoverSprites(); });
   else
     recoverSprites()->setVisible(false);
 

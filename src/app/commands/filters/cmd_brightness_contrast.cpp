@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This program is distributed under the terms of
@@ -21,7 +21,6 @@
 #include "app/ui/color_button.h"
 #include "app/ui/color_sliders.h"
 #include "app/ui/slider2.h"
-#include "base/bind.h"
 #include "doc/image.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
@@ -59,8 +58,8 @@ public:
     getContainer()->addChild(&m_brightness);
     getContainer()->addChild(new ui::Label("Contrast:"));
     getContainer()->addChild(&m_contrast);
-    m_brightness.Change.connect(base::Bind<void>(&BrightnessContrastWindow::onChange, this));
-    m_contrast.Change.connect(base::Bind<void>(&BrightnessContrastWindow::onChange, this));
+    m_brightness.Change.connect([this]{ onChange(); });
+    m_contrast.Change.connect([this]{ onChange(); });
   }
 
 private:

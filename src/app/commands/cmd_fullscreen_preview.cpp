@@ -26,7 +26,6 @@
 #include "doc/palette.h"
 #include "doc/primitives.h"
 #include "doc/sprite.h"
-#include "os/scoped_handle.h"
 #include "os/surface.h"
 #include "os/system.h"
 
@@ -53,7 +52,7 @@ public:
     , m_proj(editor->projection())
     , m_index_bg_color(-1)
     , m_doublebuf(Image::create(IMAGE_RGB, ui::display_w(), ui::display_h()))
-    , m_doublesur(os::instance()->createRgbaSurface(ui::display_w(), ui::display_h())) {
+    , m_doublesur(os::instance()->makeRgbaSurface(ui::display_w(), ui::display_h())) {
     // Do not use DocWriter (do not lock the document) because we
     // will call other sub-commands (e.g. previous frame, next frame,
     // etc.).
@@ -232,8 +231,8 @@ protected:
     }
 
     convert_image_to_surface(m_doublebuf.get(), m_pal,
-      m_doublesur, 0, 0, 0, 0, m_doublebuf->width(), m_doublebuf->height());
-    g->blit(m_doublesur, 0, 0, 0, 0, m_doublesur->width(), m_doublesur->height());
+      m_doublesur.get(), 0, 0, 0, 0, m_doublebuf->width(), m_doublebuf->height());
+    g->blit(m_doublesur.get(), 0, 0, 0, 0, m_doublesur->width(), m_doublesur->height());
   }
 
 private:
@@ -249,7 +248,7 @@ private:
   int m_index_bg_color;
   std::unique_ptr<Image> m_render;
   std::unique_ptr<Image> m_doublebuf;
-  os::ScopedHandle<os::Surface> m_doublesur;
+  os::SurfaceRef m_doublesur;
   filters::TiledMode m_tiled;
 };
 

@@ -46,7 +46,6 @@
 #include "app/ui/selection_mode_field.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui_context.h"
-#include "base/bind.h"
 #include "base/clamp.h"
 #include "base/fs.h"
 #include "base/scoped_value.h"
@@ -520,10 +519,10 @@ public:
     m_shade.setText("Select colors in the palette");
     m_shade.setMinColors(2);
     m_conn = colorBar->ChangeSelection.connect(
-      base::Bind<void>(&InkShadesField::onChangeColorBarSelection, this));
+      [this]{ onChangeColorBarSelection(); });
 
     m_button.setFocusStop(false);
-    m_button.Click.connect(base::Bind<void>(&InkShadesField::onShowMenu, this));
+    m_button.Click.connect([this]{ onShowMenu(); });
 
     initTheme();
   }
@@ -582,8 +581,8 @@ private:
     bool hasShade = (m_shade.size() >= 2);
     reverse.setEnabled(hasShade);
     save.setEnabled(hasShade);
-    reverse.Click.connect(base::Bind<void>(&InkShadesField::reverseShadeColors, this));
-    save.Click.connect(base::Bind<void>(&InkShadesField::onSaveShade, this));
+    reverse.Click.connect([this]{ reverseShadeColors(); });
+    save.Click.connect([this]{ onSaveShade(); });
 
     if (!m_shades.empty()) {
       SkinTheme* theme = SkinTheme::instance();
@@ -607,11 +606,10 @@ private:
           });
         close->initTheme();
         close->Click.connect(
-          base::Bind<void>(
-            [this, i, close]{
-              m_shades.erase(m_shades.begin()+i);
-              close->closeWindow();
-            }));
+          [this, i, close]{
+            m_shades.erase(m_shades.begin()+i);
+            close->closeWindow();
+          });
 
         auto item = new HBox();
         item->InitTheme.connect(
@@ -770,11 +768,11 @@ public:
     sz.w += 2*guiscale();
     m_icon.getItem(0)->setMinSize(sz);
 
-    m_icon.ItemChange.connect(base::Bind<void>(&TransparentColorField::onPopup, this));
-    m_maskColor.Change.connect(base::Bind<void>(&TransparentColorField::onChangeColor, this));
+    m_icon.ItemChange.connect([this]{ onPopup(); });
+    m_maskColor.Change.connect([this]{ onChangeColor(); });
 
     Preferences::instance().selection.opaque.AfterChange.connect(
-      base::Bind<void>(&TransparentColorField::onOpaqueChange, this));
+      [this]{ onOpaqueChange(); });
 
     onOpaqueChange();
 
@@ -803,9 +801,9 @@ private:
       masked.setSelected(true);
     automatic.setSelected(Preferences::instance().selection.autoOpaque());
 
-    opaque.Click.connect(base::Bind<void>(&TransparentColorField::setOpaque, this, true));
-    masked.Click.connect(base::Bind<void>(&TransparentColorField::setOpaque, this, false));
-    automatic.Click.connect(base::Bind<void>(&TransparentColorField::onAutomatic, this));
+    opaque.Click.connect([this]{ setOpaque(true); });
+    masked.Click.connect([this]{ setOpaque(false); });
+    automatic.Click.connect([this]{ onAutomatic(); });
 
     menu.showPopup(gfx::Point(bounds.x, bounds.y+bounds.h));
   }
@@ -855,7 +853,7 @@ public:
     addItem(SkinTheme::instance()->parts.pivotCenter());
 
     Preferences::instance().selection.pivotPosition.AfterChange.connect(
-      base::Bind<void>(&PivotField::onPivotChange, this));
+      [this]{ onPivotChange(); });
 
     onPivotChange();
   }
@@ -1166,8 +1164,8 @@ public:
     addChild(new Label("Sample:"));
     addChild(&m_sample);
 
-    m_channel.Change.connect(base::Bind<void>(&EyedropperField::onChannelChange, this));
-    m_sample.Change.connect(base::Bind<void>(&EyedropperField::onSampleChange, this));
+    m_channel.Change.connect([this]{ onChannelChange(); });
+    m_sample.Change.connect([this]{ onSampleChange(); });
   }
 
   void updateFromPreferences(app::Preferences::Eyedropper& prefEyedropper) {
@@ -1586,14 +1584,14 @@ ContextBar::ContextBar(TooltipManager* tooltipManager,
 
   auto& pref = Preferences::instance();
   pref.symmetryMode.enabled.AfterChange.connect(
-    base::Bind<void>(&ContextBar::onSymmetryModeChange, this));
+    [this]{ onSymmetryModeChange(); });
   pref.colorBar.fgColor.AfterChange.connect(
-    base::Bind<void>(&ContextBar::onFgOrBgColorChange, this, doc::Brush::ImageColor::MainColor));
+    [this]{ onFgOrBgColorChange(doc::Brush::ImageColor::MainColor); });
   pref.colorBar.bgColor.AfterChange.connect(
-    base::Bind<void>(&ContextBar::onFgOrBgColorChange, this, doc::Brush::ImageColor::BackgroundColor));
+    [this]{ onFgOrBgColorChange(doc::Brush::ImageColor::BackgroundColor); });
 
   KeyboardShortcuts::instance()->UserChange.connect(
-    base::Bind<void>(&ContextBar::setupTooltips, this, tooltipManager));
+    [this, tooltipManager]{ setupTooltips(tooltipManager); });
 
   m_dropPixels->DropPixels.connect(&ContextBar::onDropPixels, this);
 
@@ -1771,11 +1769,11 @@ void ContextBar::updateForTool(tools::Tool* tool)
   }
 
   if (toolPref) {
-    m_sizeConn = brushPref->size.AfterChange.connect(base::Bind<void>(&ContextBar::onBrushSizeChange, this));
-    m_angleConn = brushPref->angle.AfterChange.connect(base::Bind<void>(&ContextBar::onBrushAngleChange, this));
+    m_sizeConn = brushPref->size.AfterChange.connect([this]{ onBrushSizeChange(); });
+    m_angleConn = brushPref->angle.AfterChange.connect([this]{ onBrushAngleChange(); });
     m_opacityConn = toolPref->opacity.AfterChange.connect(&ContextBar::onToolSetOpacity, this);
-    m_freehandAlgoConn = toolPref->freehandAlgorithm.AfterChange.connect(base::Bind<void>(&ContextBar::onToolSetFreehandAlgorithm, this));
-    m_contiguousConn = toolPref->contiguous.AfterChange.connect(base::Bind<void>(&ContextBar::onToolSetContiguous, this));
+    m_freehandAlgoConn = toolPref->freehandAlgorithm.AfterChange.connect([this]{ onToolSetFreehandAlgorithm(); });
+    m_contiguousConn = toolPref->contiguous.AfterChange.connect([this]{ onToolSetContiguous(); });
   }
 
   if (tool)

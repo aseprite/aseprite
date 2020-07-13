@@ -70,7 +70,7 @@ void ScreenshotCommand::onExecute(Context* ctx)
   rf.includeDesktopDir("");
 
   os::Display* display = ui::Manager::getDefault()->getDisplay();
-  os::Surface* surface = display->getSurface();
+  os::Surface* surface = display->surface();
   std::string fn;
 
   if (params().save()) {

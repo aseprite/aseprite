@@ -138,10 +138,10 @@ private:
     gfx::Size sz = getFloatingOverlaySize();
     sz.w = std::max(1, sz.w);
     sz.h = std::max(1, sz.h);
-    os::Surface* surface = os::instance()->createRgbaSurface(sz.w, sz.h);
+    os::SurfaceRef surface = os::instance()->makeRgbaSurface(sz.w, sz.h);
 
     {
-      os::SurfaceLock lock(surface);
+      os::SurfaceLock lock(surface.get());
       os::Paint paint;
       paint.color(gfx::rgba(0, 0, 0, 0));
       paint.style(os::Paint::Fill);
@@ -149,17 +149,18 @@ private:
     }
     {
       ui::Graphics g(surface, 0, 0);
-      g.setFont(this->font());
+      g.setFont(AddRef(this->font()));
       drawFloatingOverlay(g);
     }
 
-    m_floatingOverlay.reset(new ui::Overlay(surface, gfx::Point(),
-                                            ui::Overlay::MouseZOrder-1));
-    ui::OverlayManager::instance()->addOverlay(m_floatingOverlay.get());
+    m_floatingOverlay = base::make_ref<ui::Overlay>(
+      surface, gfx::Point(),
+      (ui::Overlay::ZOrder)(ui::Overlay::MouseZOrder-1));
+    ui::OverlayManager::instance()->addOverlay(m_floatingOverlay);
   }
 
   void destroyFloatingOverlay() {
-    ui::OverlayManager::instance()->removeOverlay(m_floatingOverlay.get());
+    ui::OverlayManager::instance()->removeOverlay(m_floatingOverlay);
     m_floatingOverlay.reset();
     m_isDragging = false;
   }
@@ -213,7 +214,7 @@ private:
 
   // Overlay used to show the floating widget (this overlay floats
   // next to the mouse cursor).
-  std::unique_ptr<ui::Overlay> m_floatingOverlay;
+  ui::OverlayRef m_floatingOverlay;
 
   // Relative mouse position between the widget and the overlay.
   gfx::Point m_floatingOffset;

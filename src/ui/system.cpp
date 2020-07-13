@@ -41,7 +41,7 @@ static CursorType mouse_cursor_type = kOutsideDisplay;
 static const Cursor* mouse_cursor_custom = nullptr;
 static const Cursor* mouse_cursor = nullptr;
 static os::Display* mouse_display = nullptr;
-static Overlay* mouse_cursor_overlay = nullptr;
+static OverlayRef mouse_cursor_overlay = nullptr;
 static bool use_native_mouse_cursor = true;
 static bool support_native_custom_cursor = false;
 
@@ -58,7 +58,7 @@ static void update_mouse_overlay(const Cursor* cursor)
 
   if (mouse_cursor && mouse_scares == 0) {
     if (!mouse_cursor_overlay) {
-      mouse_cursor_overlay = new Overlay(
+      mouse_cursor_overlay = base::make_ref<Overlay>(
         mouse_cursor->getSurface(),
         get_mouse_position(),
         Overlay::MouseZOrder);
@@ -73,8 +73,7 @@ static void update_mouse_overlay(const Cursor* cursor)
   else if (mouse_cursor_overlay) {
     OverlayManager::instance()->removeOverlay(mouse_cursor_overlay);
     mouse_cursor_overlay->setSurface(nullptr);
-    delete mouse_cursor_overlay;
-    mouse_cursor_overlay = nullptr;
+    mouse_cursor_overlay.reset();
   }
 }
 
@@ -88,7 +87,7 @@ static bool update_custom_native_cursor(const Cursor* cursor)
     if (cursor) {
       result = mouse_display->setNativeMouseCursor(
         // The surface is already scaled by guiscale()
-        cursor->getSurface(),
+        cursor->getSurface().get(),
         cursor->getFocus(),
         // We scale the cursor by the os::Display scale
         mouse_display->scale() * mouse_cursor_scale);

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -11,6 +11,7 @@
 
 #include "gfx/rect.h"
 #include "gfx/size.h"
+#include "os/surface_list.h"
 
 #include <memory>
 #include <vector>
@@ -24,7 +25,7 @@ namespace app {
 
     class SkinPart {
     public:
-      typedef std::vector<os::Surface*> Bitmaps;
+      using Bitmaps = os::SurfaceList;
 
       SkinPart();
       ~SkinPart();
@@ -35,12 +36,18 @@ namespace app {
       void clear();
 
       // It doesn't destroy the previous bitmap in the given "index".
-      void setBitmap(std::size_t index, os::Surface* bitmap);
+      void setBitmap(std::size_t index, const os::SurfaceRef& bitmap);
       void setSpriteBounds(const gfx::Rect& bounds);
       void setSlicesBounds(const gfx::Rect& bounds);
 
       os::Surface* bitmap(std::size_t index) const {
-        return (index < m_bitmaps.size() ? m_bitmaps[index]: nullptr);
+        return (index < m_bitmaps.size() ? const_cast<SkinPart*>(this)->m_bitmaps[index].get(): nullptr);
+      }
+
+      os::SurfaceRef bitmapRef(std::size_t index) {
+        return (index < m_bitmaps.size() ?
+          const_cast<SkinPart*>(this)->m_bitmaps[index]:
+          nullptr);
       }
 
       os::Surface* bitmapNW() const { return bitmap(0); }

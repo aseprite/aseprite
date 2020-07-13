@@ -70,6 +70,7 @@ private:
 SetPixelFormat::SetPixelFormat(Sprite* sprite,
                                const PixelFormat newFormat,
                                const render::Dithering& dithering,
+                               const doc::RgbMapAlgorithm mapAlgorithm,
                                doc::rgba_to_graya_func toGray,
                                render::TaskDelegate* delegate)
   : WithSprite(sprite)
@@ -102,6 +103,7 @@ SetPixelFormat::SetPixelFormat(Sprite* sprite,
                  oldImage,
                  cel->frame(),
                  cel->layer()->isBackground(),
+                 mapAlgorithm,
                  toGray,
                  &superDel);
 
@@ -118,6 +120,7 @@ SetPixelFormat::SetPixelFormat(Sprite* sprite,
                        oldImage,
                        0,     // TODO select a frame or generate other tilesets?
                        false, // TODO is background? it depends of the layer where this tileset is used
+                       mapAlgorithm,
                        toGray,
                        &superDel);
         }
@@ -191,6 +194,7 @@ void SetPixelFormat::convertImage(doc::Sprite* sprite,
                                   const doc::ImageRef& oldImage,
                                   const doc::frame_t frame,
                                   const bool isBackground,
+                                  const doc::RgbMapAlgorithm mapAlgorithm,
                                   doc::rgba_to_graya_func toGray,
                                   render::TaskDelegate* delegate)
 {
@@ -201,7 +205,7 @@ void SetPixelFormat::convertImage(doc::Sprite* sprite,
     render::convert_pixel_format
     (oldImage.get(), nullptr, m_newFormat,
      dithering,
-     sprite->rgbMap(frame),
+     sprite->rgbMap(frame, sprite->rgbMapForSprite(), mapAlgorithm),
      sprite->palette(frame),
      isBackground,
      oldImage->maskColor(),

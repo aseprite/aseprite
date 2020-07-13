@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -22,7 +22,6 @@
 #include "app/tx.h"
 #include "app/ui/color_button.h"
 #include "app/util/pixel_ratio.h"
-#include "base/bind.h"
 #include "base/mem_utils.h"
 #include "doc/image.h"
 #include "doc/palette.h"
@@ -64,7 +63,7 @@ void SpritePropertiesCommand::onExecute(Context* context)
   ColorButton* color_button = nullptr;
 
   // List of available color profiles
-  std::vector<os::ColorSpacePtr> colorSpaces;
+  std::vector<os::ColorSpaceRef> colorSpaces;
   os::instance()->listColorSpaces(colorSpaces);
 
   // Load the window widget
@@ -153,7 +152,7 @@ void SpritePropertiesCommand::onExecute(Context* context)
       ++i;
     }
     if (selectedColorProfile < 0) {
-      colorSpaces.push_back(os::instance()->createColorSpace(sprite->colorSpace()));
+      colorSpaces.push_back(os::instance()->makeColorSpace(sprite->colorSpace()));
       selectedColorProfile = colorSpaces.size()-1;
     }
 

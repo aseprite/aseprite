@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -25,7 +25,6 @@
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
-#include "base/bind.h"
 #include "fmt/format.h"
 #include "gfx/size.h"
 #include "obs/signal.h"
@@ -405,7 +404,7 @@ void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
 
   // In case this tool contains more than just one tool, show the popup window
   m_popupWindow = new TransparentPopupWindow(PopupWindow::ClickBehavior::CloseOnClickOutsideHotRegion);
-  m_closeConn = m_popupWindow->Close.connect(base::Bind<void, ToolBar, ToolBar>(&ToolBar::onClosePopup, this));
+  m_closeConn = m_popupWindow->Close.connect([this]{ onClosePopup(); });
   m_openedRecently = true;
 
   ToolStrip* toolstrip = new ToolStrip(tool_group, this);

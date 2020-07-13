@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -31,8 +32,8 @@ bool show_file_selector(
 
   if (Preferences::instance().experimental.useNativeFileDialog() &&
       os::instance()->nativeDialogs()) {
-    os::FileDialog* dlg =
-      os::instance()->nativeDialogs()->createFileDialog();
+    os::FileDialogRef dlg =
+      os::instance()->nativeDialogs()->makeFileDialog();
 
     if (dlg) {
       dlg->setTitle(title);
@@ -65,7 +66,6 @@ bool show_file_selector(
         else
           output.push_back(dlg->fileName());
       }
-      dlg->dispose();
       return res;
     }
   }

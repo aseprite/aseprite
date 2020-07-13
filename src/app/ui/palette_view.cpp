@@ -28,7 +28,6 @@
 #include "app/util/clipboard.h"
 #include "app/util/conversion_to_surface.h"
 #include "app/util/pal_ops.h"
-#include "base/bind.h"
 #include "base/clamp.h"
 #include "base/convert_to.h"
 #include "doc/image.h"
@@ -292,11 +291,10 @@ public:
     if (tileImage) {
       int w = tileImage->width();
       int h = tileImage->height();
-      os::Surface* surface = os::instance()->createRgbaSurface(w, h);
+      os::SurfaceRef surface = os::instance()->makeRgbaSurface(w, h);
       convert_image_to_surface(tileImage.get(), get_current_palette(),
-                               surface, 0, 0, 0, 0, w, h);
-      g->drawRgbaSurface(surface, gfx::Rect(0, 0, w, h), box);
-      surface->dispose();
+                               surface.get(), 0, 0, 0, 0, w, h);
+      g->drawRgbaSurface(surface.get(), gfx::Rect(0, 0, w, h), box);
     }
     negColor = gfx::rgba(255, 255, 255);
   }
@@ -333,7 +331,7 @@ PaletteView::PaletteView(bool editable, PaletteViewStyle style, PaletteViewDeleg
 
   m_palConn = App::instance()->PaletteChange.connect(&PaletteView::onAppPaletteChange, this);
   m_csConn = App::instance()->ColorSpaceChange.connect(
-    base::Bind<void>(&PaletteView::invalidate, this));
+    [this]{ invalidate(); });
 
   {
     auto& entriesSep = Preferences::instance().colorBar.entriesSeparator;
@@ -863,7 +861,7 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
 
         os::Font* minifont = theme->getMiniFont();
         const std::string text = base::convert_to<std::string>(k);
-        g->setFont(minifont);
+        g->setFont(AddRef(minifont));
         g->drawText(text, negColor, gfx::ColorNone,
                     gfx::Point(box2.x + box2.w/2 - minifont->textLength(text)/2,
                                box2.y + box2.h/2 - minifont->height()/2));

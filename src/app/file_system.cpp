@@ -56,7 +56,7 @@ namespace app {
 namespace {
 
 class FileItem;
-typedef std::map<std::string, FileItem*> FileItemMap;
+using FileItemMap = std::map<std::string, FileItem*>;
 
 // the root of the file-system
 FileItem* rootitem = nullptr;
@@ -121,8 +121,8 @@ public:
     m_thumbnailProgress = progress;
   }
 
-  os::Surface* getThumbnail() override;
-  void setThumbnail(os::Surface* thumbnail) override;
+  os::SurfaceRef getThumbnail() override;
+  void setThumbnail(const os::SurfaceRef& thumbnail) override;
 
   // Calls "delete this"
   void deleteItem() {
@@ -586,16 +586,21 @@ bool FileItem::hasExtension(const base::paths& extensions)
   return base::has_file_extension(m_filename, extensions);
 }
 
-os::Surface* FileItem::getThumbnail()
+os::SurfaceRef FileItem::getThumbnail()
 {
-  return m_thumbnail;
+  os::SurfaceRef ref(m_thumbnail.load());
+  if (ref)
+    ref->ref();        // base::Ref(T*) doesn't add an extra reference
+  return ref;
 }
 
-void FileItem::setThumbnail(os::Surface* thumbnail)
+void FileItem::setThumbnail(const os::SurfaceRef& newThumbnail)
 {
-  auto old = m_thumbnail.exchange(thumbnail);
+  if (newThumbnail)
+    newThumbnail->ref();
+  auto old = m_thumbnail.exchange(newThumbnail.get());
   if (old)
-    old->dispose();
+    old->unref();
 }
 
 FileItem::FileItem(FileItem* parent)
@@ -621,8 +626,7 @@ FileItem::~FileItem()
 {
   FS_TRACE("FS: Destroying FileItem() with parent %p\n", m_parent);
 
-  if (auto ptr = m_thumbnail.load())
-    ptr->dispose();
+  m_thumbnail.exchange(nullptr);
 
 #ifdef _WIN32
   if (m_fullpidl && m_fullpidl != m_pidl) {

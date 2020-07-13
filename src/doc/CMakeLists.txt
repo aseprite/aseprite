@@ -52,11 +52,12 @@ add_library(doc-lib
   mask_io.cpp
   object.cpp
   object.cpp
+  octree_map.cpp
   palette.cpp
   palette_io.cpp
   primitives.cpp
   remap.cpp
-  rgbmap.cpp
+  rgbmap_rgb5a3.cpp
   selected_frames.cpp
   selected_layers.cpp
   slice.cpp

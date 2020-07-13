@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -10,7 +10,6 @@
 #pragma once
 
 #include "base/disable_copying.h"
-#include "base/shared_ptr.h"
 #include "gfx/fwd.h"
 #include "gfx/point.h"
 
@@ -142,7 +141,7 @@ namespace app {
     DISABLE_COPYING(EditorState);
   };
 
-  typedef std::shared_ptr<EditorState> EditorStatePtr;
+  using EditorStatePtr = std::shared_ptr<EditorState>;
 
 } // namespace app
 

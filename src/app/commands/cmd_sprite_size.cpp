@@ -20,7 +20,6 @@
 #include "app/modules/palettes.h"
 #include "app/sprite_job.h"
 #include "app/util/resize_image.h"
-#include "base/bind.h"
 #include "base/clamp.h"
 #include "base/convert_to.h"
 #include "doc/algorithm/resize_image.h"
@@ -184,11 +183,11 @@ protected:
 class SpriteSizeWindow : public app::gen::SpriteSize {
 public:
   SpriteSizeWindow(Context* ctx, const SpriteSizeParams& params) : m_ctx(ctx) {
-    lockRatio()->Click.connect(base::Bind<void>(&SpriteSizeWindow::onLockRatioClick, this));
-    widthPx()->Change.connect(base::Bind<void>(&SpriteSizeWindow::onWidthPxChange, this));
-    heightPx()->Change.connect(base::Bind<void>(&SpriteSizeWindow::onHeightPxChange, this));
-    widthPerc()->Change.connect(base::Bind<void>(&SpriteSizeWindow::onWidthPercChange, this));
-    heightPerc()->Change.connect(base::Bind<void>(&SpriteSizeWindow::onHeightPercChange, this));
+    lockRatio()->Click.connect([this]{ onLockRatioClick(); });
+    widthPx()->Change.connect([this]{ onWidthPxChange(); });
+    heightPx()->Change.connect([this]{ onHeightPxChange(); });
+    widthPerc()->Change.connect([this]{ onWidthPercChange(); });
+    heightPerc()->Change.connect([this]{ onHeightPercChange(); });
 
     widthPx()->setTextf("%d", params.width());
     heightPx()->setTextf("%d", params.height());

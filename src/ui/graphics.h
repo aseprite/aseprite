@@ -15,7 +15,9 @@
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
+#include "os/font.h"
 #include "os/paint.h"
+#include "os/surface.h"
 
 #include <memory>
 #include <string>
@@ -28,8 +30,6 @@ namespace gfx {
 
 namespace os {
   class DrawTextDelegate;
-  class Font;
-  class Surface;
 }
 
 namespace ui {
@@ -44,13 +44,13 @@ namespace ui {
       Checked,
     };
 
-    Graphics(os::Surface* surface, int dx, int dy);
+    Graphics(const os::SurfaceRef& surface, int dx, int dy);
     ~Graphics();
 
     int width() const;
     int height() const;
 
-    os::Surface* getInternalSurface() { return m_surface; }
+    os::Surface* getInternalSurface() { return m_surface.get(); }
     int getInternalDeltaX() { return m_dx; }
     int getInternalDeltaY() { return m_dy; }
 
@@ -108,8 +108,8 @@ namespace ui {
     // FONT & TEXT
     // ======================================================================
 
-    os::Font* font() { return m_font; }
-    void setFont(os::Font* font);
+    os::Font* font() { return m_font.get(); }
+    void setFont(const os::FontRef& font);
 
     void drawText(base::utf8_const_iterator it,
                   const base::utf8_const_iterator& end,
@@ -127,11 +127,11 @@ namespace ui {
     gfx::Size doUIStringAlgorithm(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Rect& rc, int align, bool draw);
     void dirty(const gfx::Rect& bounds);
 
-    os::Surface* m_surface;
+    os::SurfaceRef m_surface;
     int m_dx;
     int m_dy;
     gfx::Rect m_clipBounds;
-    os::Font* m_font;
+    os::FontRef m_font;
     gfx::Rect m_dirtyBounds;
   };
 

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -13,7 +13,6 @@
 #include <cstdio>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/memory.h"
 #include "base/string.h"
 #include "ui/ui.h"
@@ -34,14 +33,13 @@ public:
   ConsoleWindow() : Window(Window::WithTitleBar, "Console"),
                     m_textbox("", WORDWRAP),
                     m_button("Cancel") {
-    m_button.Click.connect(base::Bind<void>(&ConsoleWindow::closeWindow, this, &m_button));
+    m_button.Click.connect([this]{ closeWindow(&m_button); });
 
     // When the window is closed, we clear the text
     Close.connect(
-      base::Bind<void>(
-        [this] {
-          m_textbox.setText(std::string());
-        }));
+      [this]{
+        m_textbox.setText(std::string());
+      });
 
     m_view.attachToView(&m_textbox);
     m_button.setMinSize(gfx::Size(60*ui::guiscale(), 0));

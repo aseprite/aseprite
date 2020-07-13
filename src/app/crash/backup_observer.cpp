@@ -26,7 +26,6 @@
 #include "app/doc_access.h"
 #include "app/doc_diff.h"
 #include "app/pref/preferences.h"
-#include "base/bind.h"
 #include "base/chrono.h"
 #include "base/remove_from_container.h"
 #include "ui/system.h"
@@ -63,7 +62,7 @@ BackupObserver::BackupObserver(RecoveryConfig* config,
   , m_session(session)
   , m_ctx(ctx)
   , m_done(false)
-  , m_thread(base::Bind<void>(&BackupObserver::backgroundThread, this))
+  , m_thread([this]{ backgroundThread(); })
 {
   m_ctx->add_observer(this);
   m_ctx->documents().add_observer(this);

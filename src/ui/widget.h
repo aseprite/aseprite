@@ -16,6 +16,7 @@
 #include "gfx/region.h"
 #include "gfx/size.h"
 #include "obs/signal.h"
+#include "os/font.h"
 #include "ui/base.h"
 #include "ui/component.h"
 #include "ui/graphics.h"
@@ -25,10 +26,6 @@
 #include <string>
 
 #define ASSERT_VALID_WIDGET(widget) ASSERT((widget) != nullptr)
-
-namespace os {
-  class Font;
-}
 
 namespace ui {
 
@@ -407,7 +404,7 @@ namespace ui {
     Theme* m_theme;              // Widget's theme
     Style* m_style;
     std::string m_text;          // Widget text
-    mutable os::Font* m_font;    // Cached font returned by the theme
+    mutable os::FontRef m_font;  // Cached font returned by the theme
     gfx::Color m_bgColor;        // Background color
     gfx::Rect m_bounds;
     gfx::Region m_updateRegion;   // Region to be redrawed.

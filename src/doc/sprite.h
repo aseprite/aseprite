@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -21,10 +21,12 @@
 #include "doc/object.h"
 #include "doc/pixel_format.h"
 #include "doc/pixel_ratio.h"
+#include "doc/rgbmap_algorithm.h"
 #include "doc/slices.h"
 #include "doc/tags.h"
 #include "gfx/rect.h"
 
+#include <memory>
 #include <vector>
 
 #define DOC_SPRITE_MAX_WIDTH  65535
@@ -42,6 +44,7 @@ namespace doc {
   class Palette;
   class Remap;
   class RgbMap;
+  class RgbMapRGB5A3;
   class SelectedFrames;
   class Tileset;
   class Tilesets;
@@ -83,12 +86,12 @@ namespace doc {
     gfx::Rect bounds() const { return m_spec.bounds(); }
     int width() const { return m_spec.width(); }
     int height() const { return m_spec.height(); }
-    const gfx::ColorSpacePtr& colorSpace() const { return m_spec.colorSpace(); }
+    const gfx::ColorSpaceRef& colorSpace() const { return m_spec.colorSpace(); }
 
     void setPixelFormat(PixelFormat format);
     void setPixelRatio(const PixelRatio& pixelRatio);
     void setSize(int width, int height);
-    void setColorSpace(const gfx::ColorSpacePtr& colorSpace);
+    void setColorSpace(const gfx::ColorSpaceRef& colorSpace);
 
     // Returns true if the sprite has a background layer and it's visible
     bool isOpaque() const;
@@ -102,8 +105,11 @@ namespace doc {
     color_t transparentColor() const { return m_spec.maskColor(); }
     void setTransparentColor(color_t color);
 
+    // Defaults
     static gfx::Rect DefaultGridBounds();
     static void SetDefaultGridBounds(const gfx::Rect& defGridBounds);
+    static RgbMapAlgorithm DefaultRgbMapAlgorithm();
+    static void SetDefaultRgbMapAlgorithm(const RgbMapAlgorithm mapAlgo);
 
     const gfx::Rect& gridBounds() const { return m_gridBounds; }
     void setGridBounds(const gfx::Rect& rc) { m_gridBounds = rc; }
@@ -133,8 +139,13 @@ namespace doc {
 
     void deletePalette(frame_t frame);
 
-    RgbMap* rgbMap(frame_t frame) const;
-    RgbMap* rgbMap(frame_t frame, RgbMapFor forLayer) const;
+    RgbMapFor rgbMapForSprite() const;
+    RgbMap* rgbMap(const frame_t frame) const;
+    RgbMap* rgbMap(const frame_t frame,
+                   const RgbMapFor forLayer) const;
+    RgbMap* rgbMap(const frame_t frame,
+                   const RgbMapFor forLayer,
+                   const RgbMapAlgorithm mapAlgo) const;
 
     ////////////////////////////////////////
     // Frames
@@ -212,7 +223,8 @@ namespace doc {
     gfx::Rect m_gridBounds;                // grid settings
 
     // Current rgb map
-    mutable RgbMap* m_rgbMap;
+    mutable RgbMapAlgorithm m_rgbMapAlgorithm;
+    mutable std::unique_ptr<RgbMap> m_rgbMap;
 
     Tags m_tags;
     Slices m_slices;

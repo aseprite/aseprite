@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -27,7 +27,6 @@
 #include "app/widget_not_found.h"
 #include "app/xml_document.h"
 #include "app/xml_exception.h"
-#include "base/bind.h"
 #include "base/exception.h"
 #include "base/fs.h"
 #include "base/memory.h"
@@ -184,7 +183,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
 
     if (closewindow) {
       static_cast<Button*>(widget)
-        ->Click.connect(base::Bind<void>(&Widget::closeWindow, widget));
+        ->Click.connect([widget]{ widget->closeWindow(); });
     }
   }
   else if (elem_name == "check") {
@@ -496,8 +495,8 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
         throw base::Exception("File %s not found", file);
 
       try {
-        os::Surface* sur = os::instance()->loadRgbaSurface(rf.filename().c_str());
-        widget = new ImageView(sur, 0, true);
+        os::SurfaceRef sur = os::instance()->loadRgbaSurface(rf.filename().c_str());
+        widget = new ImageView(sur, 0);
       }
       catch (...) {
         throw base::Exception("Error loading %s file", file);

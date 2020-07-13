@@ -96,9 +96,9 @@ protected:
   void saveLayout(Widget* widget, const std::string& str) override;
 };
 
-static os::Display* main_display = NULL;
-static CustomizedGuiManager* manager = NULL;
-static Theme* gui_theme = NULL;
+static os::DisplayRef main_display = nullptr;
+static CustomizedGuiManager* manager = nullptr;
+static Theme* gui_theme = nullptr;
 
 static ui::Timer* defered_invalid_timer = nullptr;
 static gfx::Region defered_invalid_region;
@@ -124,7 +124,7 @@ static bool create_main_display(bool gpuAccel,
 
   try {
     if (w > 0 && h > 0) {
-      main_display = os::instance()->createDisplay(
+      main_display = os::instance()->makeDisplay(
         w, h, (scale == 0 ? 2: base::clamp(scale, 1, 4)));
     }
   }
@@ -136,7 +136,7 @@ static bool create_main_display(bool gpuAccel,
     for (int c=0; try_resolutions[c].width; ++c) {
       try {
         main_display =
-          os::instance()->createDisplay(
+          os::instance()->makeDisplay(
             try_resolutions[c].width,
             try_resolutions[c].height,
             (scale == 0 ? try_resolutions[c].scale: scale));
@@ -193,7 +193,7 @@ int init_module_gui()
 
   // Create the default-manager
   manager = new CustomizedGuiManager();
-  manager->setDisplay(main_display);
+  manager->setDisplay(main_display.get());
 
   // Setup the GUI theme for all widgets
   gui_theme = new SkinTheme;
@@ -221,7 +221,8 @@ void exit_module_gui()
   ui::set_theme(nullptr, ui::guiscale());
   delete gui_theme;
 
-  main_display->dispose();
+  // This should be the last unref() of the display to delete it.
+  main_display.reset();
 }
 
 void update_displays_color_profile_from_preferences()
@@ -240,13 +241,13 @@ void update_displays_color_profile_from_preferences()
       break;
     case gen::WindowColorProfile::SRGB:
       system->setDisplaysColorSpace(
-        system->createColorSpace(gfx::ColorSpace::MakeSRGB()));
+        system->makeColorSpace(gfx::ColorSpace::MakeSRGB()));
       break;
     case gen::WindowColorProfile::SPECIFIC: {
       std::string name =
         Preferences::instance().color.windowProfileName();
 
-      std::vector<os::ColorSpacePtr> colorSpaces;
+      std::vector<os::ColorSpaceRef> colorSpaces;
       system->listColorSpaces(colorSpaces);
 
       for (auto& cs : colorSpaces) {

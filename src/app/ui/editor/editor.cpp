@@ -53,7 +53,6 @@
 #include "app/ui_context.h"
 #include "app/util/conversion_to_surface.h"
 #include "app/util/layer_utils.h"
-#include "base/bind.h"
 #include "base/chrono.h"
 #include "base/clamp.h"
 #include "base/convert_to.h"
@@ -173,11 +172,11 @@ Editor::Editor(Doc* document, EditorFlags flags)
 
   m_fgColorChangeConn =
     Preferences::instance().colorBar.fgColor.AfterChange.connect(
-      base::Bind<void>(&Editor::onFgColorChange, this));
+      [this]{ onFgColorChange(); });
 
   m_contextBarBrushChangeConn =
     App::instance()->contextBar()->BrushChange.connect(
-      base::Bind<void>(&Editor::onContextBarBrushChange, this));
+      [this]{ onContextBarBrushChange(); });
 
   // Restore last site in preferences
   {
@@ -191,16 +190,16 @@ Editor::Editor(Doc* document, EditorFlags flags)
       setLayer(layers[layerIndex]);
   }
 
-  m_tiledConnBefore = m_docPref.tiled.BeforeChange.connect(base::Bind<void>(&Editor::onTiledModeBeforeChange, this));
-  m_tiledConn = m_docPref.tiled.AfterChange.connect(base::Bind<void>(&Editor::onTiledModeChange, this));
-  m_gridConn = m_docPref.grid.AfterChange.connect(base::Bind<void>(&Editor::invalidate, this));
-  m_pixelGridConn = m_docPref.pixelGrid.AfterChange.connect(base::Bind<void>(&Editor::invalidate, this));
-  m_bgConn = m_docPref.bg.AfterChange.connect(base::Bind<void>(&Editor::invalidate, this));
-  m_onionskinConn = m_docPref.onionskin.AfterChange.connect(base::Bind<void>(&Editor::invalidate, this));
-  m_symmetryModeConn = Preferences::instance().symmetryMode.enabled.AfterChange.connect(base::Bind<void>(&Editor::invalidateIfActive, this));
+  m_tiledConnBefore = m_docPref.tiled.BeforeChange.connect([this]{ onTiledModeBeforeChange(); });
+  m_tiledConn = m_docPref.tiled.AfterChange.connect([this]{ onTiledModeChange(); });
+  m_gridConn = m_docPref.grid.AfterChange.connect([this]{ invalidate(); });
+  m_pixelGridConn = m_docPref.pixelGrid.AfterChange.connect([this]{ invalidate(); });
+  m_bgConn = m_docPref.bg.AfterChange.connect([this]{ invalidate(); });
+  m_onionskinConn = m_docPref.onionskin.AfterChange.connect([this]{ invalidate(); });
+  m_symmetryModeConn = Preferences::instance().symmetryMode.enabled.AfterChange.connect([this]{ invalidateIfActive(); });
   m_showExtrasConn =
     m_docPref.show.AfterChange.connect(
-      base::Bind<void>(&Editor::onShowExtrasChange, this));
+      [this]{ onShowExtrasChange(); });
 
   m_document->add_observer(this);
 
@@ -702,7 +701,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
 
   if (rendered) {
     // Convert the render to a os::Surface
-    static os::Surface* tmp = nullptr; // TODO move this to other centralized place
+    static os::SurfaceRef tmp = nullptr; // TODO move this to other centralized place
 
     if (!tmp ||
         tmp->width() < rc2.w ||
@@ -710,10 +709,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
         tmp->colorSpace() != m_document->osColorSpace()) {
       const int maxw = std::max(rc2.w, tmp ? tmp->width(): 0);
       const int maxh = std::max(rc2.h, tmp ? tmp->height(): 0);
-      if (tmp)
-        tmp->dispose();
-
-      tmp = os::instance()->createSurface(
+      tmp = os::instance()->makeSurface(
         maxw, maxh, m_document->osColorSpace());
     }
 
@@ -735,13 +731,13 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
       }
 
       convert_image_to_surface(rendered.get(), m_sprite->palette(m_frame),
-                               tmp, 0, 0, 0, 0, rc2.w, rc2.h);
+                               tmp.get(), 0, 0, 0, 0, rc2.w, rc2.h);
 
       if (newEngine) {
-        g->drawSurface(tmp, gfx::Rect(0, 0, rc2.w, rc2.h), dest);
+        g->drawSurface(tmp.get(), gfx::Rect(0, 0, rc2.w, rc2.h), dest);
       }
       else {
-        g->blit(tmp, 0, 0, dest.x, dest.y, dest.w, dest.h);
+        g->blit(tmp.get(), 0, 0, dest.x, dest.y, dest.w, dest.h);
       }
     }
   }
@@ -2615,7 +2611,7 @@ void Editor::showAnimationSpeedMultiplierPopup(Option<bool>& playOnce,
 
   for (double option : options) {
     MenuItem* item = new MenuItem("Speed x" + base::convert_to<std::string>(option));
-    item->Click.connect(base::Bind<void>(&Editor::setAnimationSpeedMultiplier, this, option));
+    item->Click.connect([this, option]{ setAnimationSpeedMultiplier(option); });
     item->setSelected(m_aniSpeed == option);
     menu.addChild(item);
   }

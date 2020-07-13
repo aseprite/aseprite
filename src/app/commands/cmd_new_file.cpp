@@ -27,7 +27,6 @@
 #include "app/util/clipboard.h"
 #include "app/util/clipboard.h"
 #include "app/util/pixel_ratio.h"
-#include "base/bind.h"
 #include "base/clamp.h"
 #include "doc/cel.h"
 #include "doc/image.h"
@@ -155,16 +154,15 @@ void NewFileCommand::onExecute(Context* ctx)
     bool advanced = pref.newFile.advanced();
     window.advancedCheck()->setSelected(advanced);
     window.advancedCheck()->Click.connect(
-      base::Bind<void>(
-        [&]{
-          gfx::Rect bounds = window.bounds();
-          window.advanced()->setVisible(window.advancedCheck()->isSelected());
-          window.setBounds(gfx::Rect(window.bounds().origin(),
-                                     window.sizeHint()));
-          window.layout();
+      [&]{
+        gfx::Rect bounds = window.bounds();
+        window.advanced()->setVisible(window.advancedCheck()->isSelected());
+        window.setBounds(gfx::Rect(window.bounds().origin(),
+                                   window.sizeHint()));
+        window.layout();
 
-          window.manager()->invalidateRect(bounds);
-        }));
+        window.manager()->invalidateRect(bounds);
+      });
     window.advanced()->setVisible(advanced);
     if (advanced)
       window.pixelRatio()->setValue(pref.newFile.pixelRatio());
@@ -275,7 +273,8 @@ void NewFileCommand::onExecute(Context* ctx)
       if (clipboardPalette.isBlack()) {
         render::create_palette_from_sprite(
           sprite.get(), 0, sprite->lastFrame(), true,
-          &clipboardPalette, nullptr, true);
+          &clipboardPalette, nullptr, true,
+          Preferences::instance().experimental.rgbmapAlgorithm());
       }
       sprite->setPalette(&clipboardPalette, false);
     }

@@ -22,6 +22,7 @@ void FileOpConfig::fillFromPreferences()
   newBlend = Preferences::instance().experimental.newBlend();
   defaultSliceColor = Preferences::instance().slices.defaultColor();
   workingCS = get_working_rgb_space_from_preferences();
+  rgbMapAlgorithm = Preferences::instance().experimental.rgbmapAlgorithm();
 }
 
 } // namespace app

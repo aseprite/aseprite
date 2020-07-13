@@ -20,7 +20,6 @@
 #include "app/tools/stroke.h"
 #include "app/tools/tool_group.h"
 #include "app/tools/tool_loop.h"
-#include "base/bind.h"
 #include "base/exception.h"
 #include "doc/algo.h"
 #include "doc/algorithm/floodfill.h"

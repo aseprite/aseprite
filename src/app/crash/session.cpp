@@ -20,7 +20,6 @@
 #include "app/doc_access.h"
 #include "app/file/file.h"
 #include "app/ui_context.h"
-#include "base/bind.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
 #include "base/fstream_path.h"

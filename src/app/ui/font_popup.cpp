@@ -21,7 +21,6 @@
 #include "app/ui_context.h"
 #include "app/util/conversion_to_surface.h"
 #include "app/util/freetype_utils.h"
-#include "base/bind.h"
 #include "base/fs.h"
 #include "base/string.h"
 #include "doc/image.h"
@@ -72,15 +71,14 @@ private:
 
     if (m_image) {
       Graphics* g = ev.graphics();
-      os::Surface* sur = os::instance()->createRgbaSurface(m_image->width(),
-                                                             m_image->height());
+      os::SurfaceRef sur = os::instance()->makeRgbaSurface(m_image->width(),
+                                                           m_image->height());
 
       convert_image_to_surface(
-        m_image.get(), nullptr, sur,
+        m_image.get(), nullptr, sur.get(),
         0, 0, 0, 0, m_image->width(), m_image->height());
 
-      g->drawRgbaSurface(sur, textWidth()+4, 0);
-      sur->dispose();
+      g->drawRgbaSurface(sur.get(), textWidth()+4, 0);
     }
   }
 
@@ -144,11 +142,11 @@ FontPopup::FontPopup()
 
   addChild(m_popup);
 
-  m_popup->search()->Change.connect(base::Bind<void>(&FontPopup::onSearchChange, this));
-  m_popup->loadFont()->Click.connect(base::Bind<void>(&FontPopup::onLoadFont, this));
+  m_popup->search()->Change.connect([this]{ onSearchChange(); });
+  m_popup->loadFont()->Click.connect([this]{ onLoadFont(); });
   m_listBox.setFocusMagnet(true);
-  m_listBox.Change.connect(base::Bind<void>(&FontPopup::onChangeFont, this));
-  m_listBox.DoubleClickItem.connect(base::Bind<void>(&FontPopup::onLoadFont, this));
+  m_listBox.Change.connect([this]{ onChangeFont(); });
+  m_listBox.DoubleClickItem.connect([this]{ onLoadFont(); });
 
   m_popup->view()->attachToView(&m_listBox);
 

@@ -292,10 +292,7 @@ public:
       c = m_palette->getEntry(c);
 
     c = rgba_blender_normal(c, m_color, m_opacity);
-    *m_dstAddress = m_rgbmap->mapColor(rgba_getr(c),
-                                       rgba_getg(c),
-                                       rgba_getb(c),
-                                       rgba_geta(c));
+    *m_dstAddress = m_rgbmap->mapColor(c);
   }
 
 private:
@@ -365,10 +362,7 @@ public:
       c = m_palette->getEntry(c);
 
     c = rgba_blender_merge(c, m_color, m_opacity);
-    *m_dstAddress = m_rgbmap->mapColor(rgba_getr(c),
-                                       rgba_getg(c),
-                                       rgba_getb(c),
-                                       rgba_geta(c));
+    *m_dstAddress = m_rgbmap->mapColor(c);
   }
 
 private:
@@ -520,8 +514,7 @@ public:
                            doc::rgba(m_area.r, m_area.g, m_area.b, m_area.a),
                            m_opacity);
 
-      *m_dstAddress = m_rgbmap->mapColor(
-        rgba_getr(c), rgba_getg(c), rgba_getb(c), rgba_geta(c));
+      *m_dstAddress = m_rgbmap->mapColor(c);
     }
     else {
       *m_dstAddress = *m_srcAddress;
@@ -633,8 +626,7 @@ public:
         color_t c = rgba_blender_normal(
           m_palette->getEntry(*m_srcAddress), m_color2, m_opacity);
 
-        *m_dstAddress = m_rgbmap->mapColor(
-          rgba_getr(c), rgba_getg(c), rgba_getb(c), rgba_geta(c));
+        *m_dstAddress = m_rgbmap->mapColor(c);
       }
     }
   }
@@ -721,10 +713,7 @@ void JumbleInkProcessing<IndexedTraits>::processPixel(int x, int y)
                                  tc, m_opacity);
 
   if (rgba_geta(c) >= 128)
-    *m_dstAddress = m_rgbmap->mapColor(rgba_getr(c),
-                                       rgba_getg(c),
-                                       rgba_getb(c),
-                                       rgba_geta(c));
+    *m_dstAddress = m_rgbmap->mapColor(c);
   else
     *m_dstAddress = 0;
 }
@@ -1060,10 +1049,7 @@ void GradientInkProcessing<IndexedTraits>::processPixel(int x, int y)
     c0 = m_palette->getEntry(c0);
   c = rgba_blender_normal(c0, c, m_opacity);
 
-  *m_dstAddress = m_rgbmap->mapColor(rgba_getr(c),
-                                     rgba_getg(c),
-                                     rgba_getb(c),
-                                     rgba_geta(c));
+  *m_dstAddress = m_rgbmap->mapColor(c);
 
   ++m_tmpAddress;
 }
@@ -1108,10 +1094,7 @@ public:
 
   void processPixel(int x, int y) {
     color_t c = rgba_blender_neg_bw(m_palette->getEntry(*m_srcAddress), m_color, 255);
-    *m_dstAddress = m_rgbmap->mapColor(rgba_getr(c),
-                                       rgba_getg(c),
-                                       rgba_getb(c),
-                                       rgba_geta(c));
+    *m_dstAddress = m_rgbmap->mapColor(c);
   }
 
 private:

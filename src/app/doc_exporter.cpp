@@ -1094,7 +1094,7 @@ Doc* DocExporter::createEmptyTexture(const Samples& samples,
   ColorMode colorMode = ColorMode::INDEXED;
   Palette* palette = nullptr;
   int maxColors = 256;
-  gfx::ColorSpacePtr colorSpace;
+  gfx::ColorSpaceRef colorSpace;
   color_t transparentColor = 0;
 
   for (const auto& sample : samples) {
@@ -1184,6 +1184,7 @@ void DocExporter::renderTexture(Context* ctx,
         sample.sprite(),
         textureImage->pixelFormat(),
         render::Dithering(),
+        Sprite::DefaultRgbMapAlgorithm(), // TODO add rgbmap algorithm preference
         nullptr, // toGray is not needed because the texture is Indexed or RGB
         nullptr) // TODO add a delegate to show progress
         .execute(ctx);

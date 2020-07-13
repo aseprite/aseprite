@@ -22,7 +22,6 @@
 #include "app/ui/button_set.h"
 #include "app/ui/color_button.h"
 #include "app/ui/color_sliders.h"
-#include "base/bind.h"
 #include "doc/image.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
@@ -75,11 +74,11 @@ public:
     m_colorType.addItem("HSV+")->setFocusStop(false);
     m_colorType.addItem("HSL+")->setFocusStop(false);
     m_colorType.setSelectedItem(int(mode));
-    m_colorType.ItemChange.connect(base::Bind<void>(&HueSaturationWindow::onChangeMode, this));
+    m_colorType.ItemChange.connect([this]{ onChangeMode(); });
 
     m_sliders.setColorType(app::Color::HslType);
     m_sliders.setMode(ColorSliders::Mode::Relative);
-    m_sliders.ColorChange.connect(base::Bind<void>(&HueSaturationWindow::onChangeControls, this));
+    m_sliders.ColorChange.connect([this]{ onChangeControls(); });
 
     onChangeMode();
   }

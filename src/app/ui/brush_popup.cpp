@@ -27,7 +27,6 @@
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui_context.h"
 #include "app/util/conversion_to_surface.h"
-#include "base/bind.h"
 #include "base/convert_to.h"
 #include "doc/brush.h"
 #include "doc/image.h"
@@ -444,7 +443,7 @@ void BrushPopup::onBrushChanges()
 }
 
 // static
-os::Surface* BrushPopup::createSurfaceForBrush(const BrushRef& origBrush)
+os::SurfaceRef BrushPopup::createSurfaceForBrush(const BrushRef& origBrush)
 {
   Image* image = nullptr;
   BrushRef brush = origBrush;
@@ -456,7 +455,7 @@ os::Surface* BrushPopup::createSurfaceForBrush(const BrushRef& origBrush)
     image = brush->image();
   }
 
-  os::Surface* surface = os::instance()->createRgbaSurface(
+  os::SurfaceRef surface = os::instance()->makeRgbaSurface(
     std::min(10, image ? image->width(): 4),
     std::min(10, image ? image->height(): 4));
 
@@ -469,7 +468,7 @@ os::Surface* BrushPopup::createSurfaceForBrush(const BrushRef& origBrush)
     }
 
     convert_image_to_surface(
-      image, palette, surface,
+      image, palette, surface.get(),
       0, 0, 0, 0, image->width(), image->height());
 
     if (image->pixelFormat() == IMAGE_BITMAP)

@@ -1,4 +1,5 @@
 // Aseprite Render Library
+// Copyright (c)      2020 Igara Studio S.A.
 // Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -101,6 +102,9 @@ namespace render {
         return result.size();
       }
     }
+
+    bool isHighPrecision() { return m_useHighPrecision; }
+    int highPrecisionSize() { return m_highPrecision.size(); }
 
   private:
     // Converts input color in a index for the histogram. It reduces

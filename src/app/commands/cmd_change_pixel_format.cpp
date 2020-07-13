@@ -26,8 +26,8 @@
 #include "app/ui/dithering_selector.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_render.h"
+#include "app/ui/rgbmap_algorithm_selector.h"
 #include "app/ui/skin/skin_theme.h"
-#include "base/bind.h"
 #include "base/thread.h"
 #include "doc/image.h"
 #include "doc/layer.h"
@@ -89,6 +89,7 @@ public:
                 const doc::frame_t frame,
                 const doc::PixelFormat pixelFormat,
                 const render::Dithering& dithering,
+                const doc::RgbMapAlgorithm rgbMapAlgorithm,
                 const gen::ToGrayAlgorithm toGray,
                 const gfx::Point& pos,
                 const bool newBlend)
@@ -102,11 +103,13 @@ public:
        sprite, frame,
        pixelFormat,
        dithering,
+       rgbMapAlgorithm,
        toGray,
        newBlend]() { // Copy the matrix
         run(sprite, frame,
             pixelFormat,
             dithering,
+            rgbMapAlgorithm,
             toGray,
             newBlend);
       })
@@ -131,6 +134,7 @@ private:
            const doc::frame_t frame,
            const doc::PixelFormat pixelFormat,
            const render::Dithering& dithering,
+           const doc::RgbMapAlgorithm rgbMapAlgorithm,
            const gen::ToGrayAlgorithm toGray,
            const bool newBlend) {
     doc::ImageRef tmp(
@@ -152,7 +156,9 @@ private:
       m_image.get(),
       pixelFormat,
       dithering,
-      sprite->rgbMap(frame),
+      sprite->rgbMap(frame,
+                     sprite->rgbMapForSprite(),
+                     rgbMapAlgorithm),
       sprite->palette(frame),
       (sprite->backgroundLayer() != nullptr),
       0,
@@ -189,9 +195,11 @@ public:
     , m_imageBuffer(new doc::ImageBuffer)
     , m_selectedItem(nullptr)
     , m_ditheringSelector(nullptr)
+    , m_mapAlgorithmSelector(nullptr)
     , m_imageJustCreated(true)
   {
-    doc::PixelFormat from = m_editor->sprite()->pixelFormat();
+    const auto& pref = Preferences::instance();
+    const doc::PixelFormat from = m_editor->sprite()->pixelFormat();
 
     // Add the color mode in the window title
     switch (from) {
@@ -209,40 +217,63 @@ public:
       m_ditheringSelector = new DitheringSelector(DitheringSelector::SelectBoth);
       m_ditheringSelector->setExpansive(true);
 
+      m_mapAlgorithmSelector = new RgbMapAlgorithmSelector;
+      m_mapAlgorithmSelector->setExpansive(true);
+
       // Select default dithering method
       {
         int index = m_ditheringSelector->findItemIndex(
-          Preferences::instance().quantization.ditheringAlgorithm());
+          pref.quantization.ditheringAlgorithm());
         if (index >= 0)
           m_ditheringSelector->setSelectedItemIndex(index);
       }
 
-      m_ditheringSelector->Change.connect(
-        base::Bind<void>(&ColorModeWindow::onDithering, this));
-      ditheringPlaceholder()->addChild(m_ditheringSelector);
+      // Select default RgbMap algorithm
+      m_mapAlgorithmSelector->algorithm(pref.experimental.rgbmapAlgorithm());
 
-      factor()->Change.connect(base::Bind<void>(&ColorModeWindow::onDithering, this));
+      ditheringPlaceholder()->addChild(m_ditheringSelector);
+      rgbmapAlgorithmPlaceholder()->addChild(m_mapAlgorithmSelector);
+
+      const bool adv = pref.quantization.advanced();
+      advancedCheck()->setSelected(adv);
+      advanced()->setVisible(adv);
+
+      // Signals
+      m_ditheringSelector->Change.connect([this]{ onIndexParamChange(); });
+      m_mapAlgorithmSelector->Change.connect([this]{ onIndexParamChange(); });
+      factor()->Change.connect([this]{ onIndexParamChange(); });
+
+      advancedCheck()->Click.connect(
+        [this](ui::Event&){
+          advanced()->setVisible(advancedCheck()->isSelected());
+
+          const gfx::Rect origBounds = bounds();
+          setBounds(gfx::Rect(bounds().origin(), sizeHint()));
+          manager()->invalidateRect(origBounds);
+        });
     }
     else {
       amount()->setVisible(false);
+      advancedCheck()->setVisible(false);
+      advanced()->setVisible(false);
     }
     if (from != IMAGE_GRAYSCALE) {
       colorMode()->addChild(new ConversionItem(IMAGE_GRAYSCALE));
 
-      toGrayCombobox()->Change.connect(base::Bind<void>(&ColorModeWindow::onToGrayChange, this));
+      toGrayCombobox()->Change.connect([this]{ onToGrayChange(); });
     }
 
     colorModeView()->setMinSize(
       colorModeView()->sizeHint() +
       colorMode()->sizeHint());
 
-    colorMode()->Change.connect(base::Bind<void>(&ColorModeWindow::onChangeColorMode, this));
-    m_timer.Tick.connect(base::Bind<void>(&ColorModeWindow::onMonitorProgress, this));
+    colorMode()->Change.connect([this]{ onChangeColorMode(); });
+    m_timer.Tick.connect([this]{ onMonitorProgress(); });
 
     progress()->setReadOnly(true);
 
     // Default dithering factor
-    factor()->setValue(Preferences::instance().quantization.ditheringFactor());
+    factor()->setValue(pref.quantization.ditheringFactor());
 
     // Select first option
     colorMode()->selectIndex(0);
@@ -267,6 +298,13 @@ public:
     return d;
   }
 
+  doc::RgbMapAlgorithm rgbMapAlgorithm() const {
+    if (m_mapAlgorithmSelector)
+      return m_mapAlgorithmSelector->algorithm();
+    else
+      return doc::RgbMapAlgorithm::DEFAULT;
+  }
+
   gen::ToGrayAlgorithm toGray() const {
     static_assert(
       int(gen::ToGrayAlgorithm::LUMA) == 0 &&
@@ -280,20 +318,25 @@ public:
     return flatten()->isSelected();
   }
 
-  // Save the dithering method used for the future
-  void saveDitheringOptions() {
+  void saveOptions() {
+    auto& pref = Preferences::instance();
+
+    // Save the dithering method used for the future
     if (m_ditheringSelector) {
       if (auto item = m_ditheringSelector->getSelectedItem()) {
-        Preferences::instance().quantization.ditheringAlgorithm(
+        pref.quantization.ditheringAlgorithm(
           item->text());
 
         if (m_ditheringSelector->ditheringAlgorithm() ==
             render::DitheringAlgorithm::ErrorDiffusion) {
-          Preferences::instance().quantization.ditheringFactor(
+          pref.quantization.ditheringFactor(
             factor()->getValue());
         }
       }
     }
+
+    if (m_mapAlgorithmSelector)
+      pref.quantization.advanced(advancedCheck()->isSelected());
   }
 
 private:
@@ -368,6 +411,7 @@ private:
         m_editor->frame(),
         dstPixelFormat,
         dithering(),
+        rgbMapAlgorithm(),
         toGray(),
         visibleBounds.origin(),
         Preferences::instance().experimental.newBlend()));
@@ -375,7 +419,7 @@ private:
     m_timer.start();
   }
 
-  void onDithering() {
+  void onIndexParamChange() {
     stop();
     m_selectedItem = nullptr;
     onChangeColorMode();
@@ -421,6 +465,7 @@ private:
   std::unique_ptr<ConvertThread> m_bgThread;
   ConversionItem* m_selectedItem;
   DitheringSelector* m_ditheringSelector;
+  RgbMapAlgorithmSelector* m_mapAlgorithmSelector;
   bool m_imageJustCreated;
 };
 
@@ -441,6 +486,7 @@ private:
   bool m_useUI;
   doc::PixelFormat m_format;
   render::Dithering m_dithering;
+  doc::RgbMapAlgorithm m_rgbmap;
   gen::ToGrayAlgorithm m_toGray;
 };
 
@@ -450,6 +496,7 @@ ChangePixelFormatCommand::ChangePixelFormatCommand()
   m_useUI = true;
   m_format = IMAGE_RGB;
   m_dithering = render::Dithering();
+  m_rgbmap = doc::RgbMapAlgorithm::DEFAULT;
   m_toGray = gen::ToGrayAlgorithm::DEFAULT;
 }
 
@@ -496,6 +543,15 @@ void ChangePixelFormatCommand::onLoadParams(const Params& params)
     // TODO object slicing here (from BayerMatrix -> DitheringMatrix)
     m_dithering.matrix(render::BayerMatrix(8));
   }
+
+  // TODO change this with NewParams as in ColorQuantizationParams
+  std::string rgbmap = params.get("rgbmap");
+  if (rgbmap == "octree")
+    m_rgbmap = doc::RgbMapAlgorithm::OCTREE;
+  else if (rgbmap == "rgb5a3")
+    m_rgbmap = doc::RgbMapAlgorithm::RGB5A3;
+  else
+    m_rgbmap = doc::RgbMapAlgorithm::DEFAULT;
 
   std::string toGray = params.get("toGray");
   if (toGray == "luma")
@@ -570,10 +626,11 @@ void ChangePixelFormatCommand::onExecute(Context* context)
 
     m_format = window.pixelFormat();
     m_dithering = window.dithering();
+    m_rgbmap = window.rgbMapAlgorithm();
     m_toGray = window.toGray();
     flatten = window.flattenEnabled();
 
-    window.saveDitheringOptions();
+    window.saveOptions();
   }
 #endif // ENABLE_UI
 
@@ -607,6 +664,7 @@ void ChangePixelFormatCommand::onExecute(Context* context)
           new cmd::SetPixelFormat(
             sprite, m_format,
             m_dithering,
+            m_rgbmap,
             get_gray_func(m_toGray),
             &job));             // SpriteJob is a render::TaskDelegate
       });

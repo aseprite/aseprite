@@ -602,7 +602,7 @@ void Doc::updateOSColorSpace(bool appWideSignal)
 {
   auto system = os::instance();
   if (system) {
-    m_osColorSpace = system->createColorSpace(sprite()->colorSpace());
+    m_osColorSpace = system->makeColorSpace(sprite()->colorSpace());
     if (!m_osColorSpace && system->defaultDisplay())
       m_osColorSpace = system->defaultDisplay()->colorSpace();
   }

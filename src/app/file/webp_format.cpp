@@ -20,7 +20,6 @@
 #include "app/file/webp_options.h"
 #include "app/ini_file.h"
 #include "app/pref/preferences.h"
-#include "base/bind.h"
 #include "base/clamp.h"
 #include "base/convert_to.h"
 #include "base/file_handle.h"
@@ -421,7 +420,7 @@ FormatOptionsPtr WebPFormat::onAskUserForFormatOptions(FileOp* fop)
         win.imagePreset()->setSelectedItemIndex(opts->imagePreset());
 
         updatePanels();
-        win.type()->Change.connect(base::Bind<void>(updatePanels));
+        win.type()->Change.connect(updatePanels);
 
         win.openWindowInForeground();
 

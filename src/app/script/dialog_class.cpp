@@ -19,7 +19,6 @@
 #include "app/ui/color_shades.h"
 #include "app/ui/expr_entry.h"
 #include "app/ui/filename_field.h"
-#include "base/bind.h"
 #include "base/paths.h"
 #include "ui/box.h"
 #include "ui/button.h"

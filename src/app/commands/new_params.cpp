@@ -19,6 +19,7 @@
 #include "base/string.h"
 #include "doc/algorithm/resize_image.h"
 #include "doc/color_mode.h"
+#include "doc/rgbmap_algorithm.h"
 #include "filters/color_curve.h"
 #include "filters/hue_saturation_filter.h"
 #include "filters/outline_filter.h"
@@ -192,6 +193,17 @@ void Param<tools::InkType>::fromString(const std::string& value)
   setValue(tools::string_id_to_ink_type(value));
 }
 
+template<>
+void Param<doc::RgbMapAlgorithm>::fromString(const std::string& value)
+{
+  if (base::utf8_icmp(value, "octree") == 0)
+    setValue(doc::RgbMapAlgorithm::OCTREE);
+  else if (base::utf8_icmp(value, "rgb5a3") == 0)
+    setValue(doc::RgbMapAlgorithm::RGB5A3);
+  else
+    setValue(doc::RgbMapAlgorithm::DEFAULT);
+}
+
 //////////////////////////////////////////////////////////////////////
 // Convert values from Lua
 //////////////////////////////////////////////////////////////////////
@@ -324,6 +336,15 @@ template<>
 void Param<tools::InkType>::fromLua(lua_State* L, int index)
 {
   script::get_value_from_lua<tools::InkType>(L, index);
+}
+
+template<>
+void Param<doc::RgbMapAlgorithm>::fromLua(lua_State* L, int index)
+{
+  if (lua_type(L, index) == LUA_TSTRING)
+    fromString(lua_tostring(L, index));
+  else
+    setValue((doc::RgbMapAlgorithm)lua_tointeger(L, index));
 }
 
 void CommandWithNewParamsBase::loadParamsFromLuaTable(lua_State* L, int index)

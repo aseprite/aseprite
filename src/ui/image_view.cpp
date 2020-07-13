@@ -21,18 +21,11 @@
 
 namespace ui {
 
-ImageView::ImageView(os::Surface* sur, int align, bool dispose)
+ImageView::ImageView(const os::SurfaceRef& sur, int align)
  : Widget(kImageViewWidget)
  , m_sur(sur)
- , m_disposeSurface(dispose)
 {
   setAlign(align);
-}
-
-ImageView::~ImageView()
-{
-  if (m_disposeSurface)
-    delete m_sur;
 }
 
 void ImageView::onSizeHint(SizeHintEvent& ev)
@@ -57,7 +50,7 @@ void ImageView::onPaint(PaintEvent& ev)
     m_sur->width(), m_sur->height());
 
   g->fillRect(bgColor(), bounds);
-  g->drawRgbaSurface(m_sur, icon.x, icon.y);
+  g->drawRgbaSurface(m_sur.get(), icon.x, icon.y);
 }
 
 } // namespace ui

@@ -22,6 +22,11 @@ namespace doc {
 
 using namespace gfx;
 
+Palette::Palette()
+  : Palette(0, 256)
+{
+}
+
 Palette::Palette(frame_t frame, int ncolors)
   : Object(ObjectType::Palette)
 {
@@ -56,6 +61,18 @@ Palette::Palette(const Palette& palette, const Remap& remap)
 
 Palette::~Palette()
 {
+}
+
+Palette& Palette::operator=(const Palette& that)
+{
+  m_frame = that.m_frame;
+  m_colors = that.m_colors;
+  m_names = that.m_names;
+  m_filename = that.m_filename;
+  m_comment = that.m_comment;
+
+  ++m_modifications;
+  return *this;
 }
 
 Palette* Palette::createGrayscale()
@@ -269,6 +286,31 @@ int Palette::findBestfit(int r, int g, int b, int a, int mask_index) const
     }
   }
 
+  return bestfit;
+}
+
+int Palette::findBestfit2(int r, int g, int b) const
+{
+  ASSERT(r >= 0 && r <= 255);
+  ASSERT(g >= 0 && g <= 255);
+  ASSERT(b >= 0 && b <= 255);
+
+  int bestfit = 0;
+  int lowest = std::numeric_limits<int>::max();
+  int size = m_colors.size();
+
+  for (int i=0; i<size; ++i) {
+    color_t rgb = m_colors[i];
+    int rDiff = r - rgba_getr(rgb);
+    int gDiff = g - rgba_getg(rgb);
+    int bDiff = b - rgba_getb(rgb);
+
+    int diff = rDiff * rDiff * 900 + gDiff * gDiff * 3481 + bDiff * bDiff * 121;
+    if (diff < lowest) {
+      lowest = diff;
+      bestfit = i;
+    }
+  }
   return bestfit;
 }
 

@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -19,7 +20,6 @@
 #include "app/ui/palettes_listbox.h"
 #include "app/ui/search_entry.h"
 #include "app/ui_context.h"
-#include "base/bind.h"
 #include "ui/box.h"
 #include "ui/button.h"
 #include "ui/scale.h"
@@ -41,10 +41,10 @@ PalettePopup::PalettePopup()
 
   addChild(m_popup);
 
-  m_paletteListBox.DoubleClickItem.connect(base::Bind<void>(&PalettePopup::onLoadPal, this));
-  m_popup->search()->Change.connect(base::Bind<void>(&PalettePopup::onSearchChange, this));
-  m_popup->loadPal()->Click.connect(base::Bind<void>(&PalettePopup::onLoadPal, this));
-  m_popup->openFolder()->Click.connect(base::Bind<void>(&PalettePopup::onOpenFolder, this));
+  m_paletteListBox.DoubleClickItem.connect([this]{ onLoadPal(); });
+  m_popup->search()->Change.connect([this]{ onSearchChange(); });
+  m_popup->loadPal()->Click.connect([this]{ onLoadPal(); });
+  m_popup->openFolder()->Click.connect([this]{ onOpenFolder(); });
 
   m_popup->view()->attachToView(&m_paletteListBox);
 

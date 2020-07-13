@@ -13,7 +13,6 @@
 
 #include "app/modules/gui.h"
 #include "app/ui/skin/skin_theme.h"
-#include "base/bind.h"
 #include "gfx/color.h"
 #include "os/surface.h"
 #include "ui/box.h"
@@ -160,7 +159,7 @@ void ButtonSet::Item::onPaint(ui::PaintEvent& ev)
   }
 
   if (hasText()) {
-    g->setFont(font());
+    g->setFont(AddRef(font()));
     g->drawUIText(text(), fg, gfx::ColorNone, textRc.origin(), 0);
   }
 }

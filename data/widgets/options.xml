@@ -504,6 +504,10 @@
             <label text="@.non_active_layer_opacity" />
             <slider id="nonactive_layers_opacity" min="0" max="255" width="128" />
           </hbox>
+          <hbox>
+            <label text="@rgbmap_algorithm_selector.label" />
+            <hbox id="rgbmap_algorithm_placeholder" />
+          </hbox>
         </vbox>
 
       </panel>

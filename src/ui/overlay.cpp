@@ -17,7 +17,9 @@
 
 namespace ui {
 
-Overlay::Overlay(os::Surface* overlaySurface, const gfx::Point& pos, ZOrder zorder)
+Overlay::Overlay(const os::SurfaceRef& overlaySurface,
+                 const gfx::Point& pos,
+                 ZOrder zorder)
   : m_surface(overlaySurface)
   , m_overlap(nullptr)
   , m_captured(nullptr)
@@ -36,16 +38,16 @@ Overlay::~Overlay()
       manager->invalidateRect(gfx::Rect(m_pos.x, m_pos.y,
                                         m_surface->width(),
                                         m_surface->height()));
-    m_surface->dispose();
+    m_surface.reset();
   }
 
   if (m_overlap)
-    m_overlap->dispose();
+    m_overlap.reset();
 }
 
-os::Surface* Overlay::setSurface(os::Surface* newSurface)
+os::SurfaceRef Overlay::setSurface(const os::SurfaceRef& newSurface)
 {
-  os::Surface* oldSurface = m_surface;
+  os::SurfaceRef oldSurface = m_surface;
   m_surface = newSurface;
   return oldSurface;
 }
@@ -64,8 +66,8 @@ void Overlay::drawOverlay()
       !m_captured)
     return;
 
-  os::SurfaceLock lock(m_surface);
-  m_captured->drawRgbaSurface(m_surface, m_pos.x, m_pos.y);
+  os::SurfaceLock lock(m_surface.get());
+  m_captured->drawRgbaSurface(m_surface.get(), m_pos.x, m_pos.y);
 
   Manager::getDefault()->dirtyRect(
     gfx::Rect(m_pos.x, m_pos.y,
@@ -89,13 +91,13 @@ void Overlay::captureOverlappedArea(os::Surface* screen)
 
   if (!m_overlap) {
     // Use the same color space for the overlay as in the screen
-    m_overlap = os::instance()->createSurface(m_surface->width(),
-                                              m_surface->height(),
-                                              screen->colorSpace());
+    m_overlap = os::instance()->makeSurface(m_surface->width(),
+                                            m_surface->height(),
+                                            screen->colorSpace());
   }
 
-  os::SurfaceLock lock(m_overlap);
-  screen->blitTo(m_overlap, m_pos.x, m_pos.y, 0, 0,
+  os::SurfaceLock lock(m_overlap.get());
+  screen->blitTo(m_overlap.get(), m_pos.x, m_pos.y, 0, 0,
                  m_overlap->width(), m_overlap->height());
 
   m_captured = screen;
@@ -112,7 +114,7 @@ void Overlay::restoreOverlappedArea(const gfx::Rect& restoreBounds)
       !restoreBounds.intersects(bounds()))
     return;
 
-  os::SurfaceLock lock(m_overlap);
+  os::SurfaceLock lock(m_overlap.get());
   m_overlap->blitTo(m_captured, 0, 0, m_pos.x, m_pos.y,
                     m_overlap->width(), m_overlap->height());
 

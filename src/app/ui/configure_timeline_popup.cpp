@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -22,7 +23,6 @@
 #include "app/ui/main_window.h"
 #include "app/ui/timeline/timeline.h"
 #include "app/ui_context.h"
-#include "base/bind.h"
 #include "base/scoped_value.h"
 #include "ui/box.h"
 #include "ui/button.h"
@@ -53,22 +53,22 @@ ConfigureTimelinePopup::ConfigureTimelinePopup()
   m_box = new app::gen::TimelineConf();
   addChild(m_box);
 
-  m_box->position()->ItemChange.connect(base::Bind<void>(&ConfigureTimelinePopup::onChangePosition, this));
-  m_box->firstFrame()->Change.connect(base::Bind<void>(&ConfigureTimelinePopup::onChangeFirstFrame, this));
-  m_box->merge()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onChangeType, this));
-  m_box->tint()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onChangeType, this));
-  m_box->opacity()->Change.connect(base::Bind<void>(&ConfigureTimelinePopup::onOpacity, this));
-  m_box->opacityStep()->Change.connect(base::Bind<void>(&ConfigureTimelinePopup::onOpacityStep, this));
-  m_box->resetOnionskin()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onResetOnionskin, this));
-  m_box->loopTag()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onLoopTagChange, this));
-  m_box->currentLayer()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onCurrentLayerChange, this));
-  m_box->behind()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onPositionChange, this));
-  m_box->infront()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onPositionChange, this));
+  m_box->position()->ItemChange.connect([this]{ onChangePosition(); });
+  m_box->firstFrame()->Change.connect([this]{ onChangeFirstFrame(); });
+  m_box->merge()->Click.connect([this]{ onChangeType(); });
+  m_box->tint()->Click.connect([this]{ onChangeType(); });
+  m_box->opacity()->Change.connect([this]{ onOpacity(); });
+  m_box->opacityStep()->Change.connect([this]{ onOpacityStep(); });
+  m_box->resetOnionskin()->Click.connect([this]{ onResetOnionskin(); });
+  m_box->loopTag()->Click.connect([this]{ onLoopTagChange(); });
+  m_box->currentLayer()->Click.connect([this]{ onCurrentLayerChange(); });
+  m_box->behind()->Click.connect([this]{ onPositionChange(); });
+  m_box->infront()->Click.connect([this]{ onPositionChange(); });
 
-  m_box->zoom()->Change.connect(base::Bind<void>(&ConfigureTimelinePopup::onZoomChange, this));
-  m_box->thumbEnabled()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onThumbEnabledChange, this));
-  m_box->thumbOverlayEnabled()->Click.connect(base::Bind<void>(&ConfigureTimelinePopup::onThumbOverlayEnabledChange, this));
-  m_box->thumbOverlaySize()->Change.connect(base::Bind<void>(&ConfigureTimelinePopup::onThumbOverlaySizeChange, this));
+  m_box->zoom()->Change.connect([this]{ onZoomChange(); });
+  m_box->thumbEnabled()->Click.connect([this]{ onThumbEnabledChange(); });
+  m_box->thumbOverlayEnabled()->Click.connect([this]{ onThumbOverlayEnabledChange(); });
+  m_box->thumbOverlaySize()->Change.connect([this]{ onThumbOverlaySizeChange(); });
 
   const bool visibleThumb = docPref().thumbnails.enabled();
   m_box->thumbHSeparator()->setVisible(visibleThumb);

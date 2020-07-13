@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -11,7 +12,6 @@
 #include "app/ui/backup_indicator.h"
 
 #include "app/ui/status_bar.h"
-#include "base/bind.h"
 #include "ui/manager.h"
 
 namespace app {
@@ -21,7 +21,7 @@ BackupIndicator::BackupIndicator()
   , m_small(false)
   , m_running(false)
 {
-  m_timer.Tick.connect(base::Bind<void>(&BackupIndicator::onTick, this));
+  m_timer.Tick.connect([this]{ onTick(); });
 }
 
 BackupIndicator::~BackupIndicator()

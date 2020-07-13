@@ -906,7 +906,8 @@ void FileOp::postLoad()
       std::shared_ptr<Palette> palette(
         render::create_palette_from_sprite(
           sprite, frame_t(0), sprite->lastFrame(), true,
-          nullptr, nullptr, m_config.newBlend));
+          nullptr, nullptr, m_config.newBlend,
+          m_config.rgbMapAlgorithm));
 
       sprite->resetPalettes();
       sprite->setPalette(palette.get(), false);
@@ -914,7 +915,7 @@ void FileOp::postLoad()
   }
 
   // What to do with the sprite color profile?
-  gfx::ColorSpacePtr spriteCS = sprite->colorSpace();
+  gfx::ColorSpaceRef spriteCS = sprite->colorSpace();
   app::gen::ColorProfileBehavior behavior =
     app::gen::ColorProfileBehavior::DISABLE;
 

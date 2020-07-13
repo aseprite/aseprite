@@ -227,6 +227,7 @@ if(ENABLE_UI)
     commands/cmd_fit_screen.cpp
     commands/cmd_frame_properties.cpp
     commands/cmd_frame_tag_properties.cpp
+    commands/cmd_fullscreen_mode.cpp
     commands/cmd_fullscreen_preview.cpp
     commands/cmd_goto_frame.cpp
     commands/cmd_goto_layer.cpp
@@ -372,6 +373,7 @@ if(ENABLE_UI)
     ui/preview_editor.cpp
     ui/recent_listbox.cpp
     ui/resources_listbox.cpp
+    ui/rgbmap_algorithm_selector.cpp
     ui/search_entry.cpp
     ui/select_accelerator.cpp
     ui/selection_mode_field.cpp
