@@ -18,6 +18,7 @@
 #include "app/script/luacpp.h"
 #include "app/script/security.h"
 #include "app/sprite_sheet_type.h"
+#include "app/tilemap_mode.h"
 #include "app/tileset_mode.h"
 #include "app/tools/ink_type.h"
 #include "base/chrono.h"
@@ -368,6 +369,13 @@ Engine::Engine()
   setfield_integer(L, "MIDDLE", (int)ui::kButtonMiddle);
   setfield_integer(L, "X1",     (int)ui::kButtonX1);
   setfield_integer(L, "X2",     (int)ui::kButtonX2);
+  lua_pop(L, 1);
+
+  lua_newtable(L);
+  lua_pushvalue(L, -1);
+  lua_setglobal(L, "TilemapMode");
+  setfield_integer(L, "PIXELS", TilemapMode::Pixels);
+  setfield_integer(L, "TILES", TilemapMode::Tiles);
   lua_pop(L, 1);
 
   lua_newtable(L);

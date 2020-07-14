@@ -387,6 +387,13 @@ int App_useTool(lua_State* L)
     params.freehandAlgorithm = get_value_from_lua<tools::FreehandAlgorithm>(L, -1);
   lua_pop(L, 1);
 
+  // Are we going to modify pixels or tiles?
+  type = lua_getfield(L, 1, "tilemapMode");
+  if (type != LUA_TNIL) {
+    site.tilemapMode(TilemapMode(lua_tointeger(L, -1)));
+  }
+  lua_pop(L, 1);
+
   // How the tileset must be modified depending on this tool usage
   type = lua_getfield(L, 1, "tilesetMode");
   if (type != LUA_TNIL) {
