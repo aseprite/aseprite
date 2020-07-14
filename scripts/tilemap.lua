@@ -13,7 +13,6 @@ local rgba = app.pixelColor.rgba
 -- Check constants
 assert(TilemapMode.PIXELS == 0)
 assert(TilemapMode.TILES == 1)
-assert(TilesetMode.STACK == 2)
 assert(TilesetMode.MANUAL == 0)
 assert(TilesetMode.AUTO == 1)
 assert(TilesetMode.STACK == 2)
@@ -97,12 +96,8 @@ do
   assert(not tileset:getTile(0):isEmpty())
   assert(not tileset:getTile(1):isEmpty())
   assert(tileset:getTile(2):isEmpty())
-  assert(tilemapCel.image.width == 2)
-  assert(tilemapCel.image.height == 2)
-  assert(tilemapCel.image:getPixel(0, 0) == 1)
-  assert(tilemapCel.image:getPixel(1, 0) == 2)
-  assert(tilemapCel.image:getPixel(0, 1) == 2)
-  assert(tilemapCel.image:getPixel(1, 1) == 0)
+  expect_img(tilemapCel.image, { 1, 2,
+                                 2, 0 })
 
   app.useTool{
     tool='pencil',
@@ -114,17 +109,94 @@ do
   assert(tilemapCel.bounds == Rectangle(-14, -14, 48, 48))
   assert(#tilemapLay.tileset == 4)
   assert(not tileset:getTile(3):isEmpty())
-  assert(tilemapCel.image.width == 3)
-  assert(tilemapCel.image.height == 3)
-  assert(tilemapCel.image:getPixel(0, 0) == 1)
-  assert(tilemapCel.image:getPixel(1, 0) == 2)
-  assert(tilemapCel.image:getPixel(2, 0) == 2)
-  assert(tilemapCel.image:getPixel(0, 1) == 2)
-  assert(tilemapCel.image:getPixel(1, 1) == 0)
-  assert(tilemapCel.image:getPixel(2, 1) == 2)
-  assert(tilemapCel.image:getPixel(0, 2) == 2)
-  assert(tilemapCel.image:getPixel(1, 2) == 2)
-  assert(tilemapCel.image:getPixel(2, 2) == 3)
+  expect_img(tilemapCel.image, { 1, 2, 2,
+                                 2, 0, 2,
+                                 2, 2, 3 })
+end
+
+----------------------------------------------------------------------
+-- Tests drawing in the tilemap with tiles
+----------------------------------------------------------------------
+
+do
+  local spr = Sprite(32, 32)
+  spr.gridBounds = Rectangle(0, 0, 8, 8)
+  app.command.NewLayer{ tilemap=true }
+
+  local tm = app.activeLayer
+  local ts = tm.tileset
+  assert(ts ~= nil)
+  expect_eq(0, ts.grid.origin.x)
+  expect_eq(0, ts.grid.origin.y)
+  expect_eq(8, ts.grid.tileSize.width)
+  expect_eq(8, ts.grid.tileSize.height)
+
+  app.useTool{
+    tool='pencil',
+    color=Color{ r=0, g=0, b=0 },
+    tilemapMode=TilesetMode.PIXELS,
+    tilesetMode=TilesetMode.STACK,
+    points={ Point(0, 0), Point(31, 31) }}
+
+  local cel = tm.cels[1];
+  expect_eq(2, #ts)
+  expect_img(cel.image, { 0,1,1,1,
+                          1,0,1,1,
+                          1,1,0,1,
+                          1,1,1,0 })
+
+  app.useTool{
+    tool='pencil',
+    color=Color(0),
+    tilemapMode=TilemapMode.TILES,
+    tilesetMode=TilesetMode.STACK,
+    points={ Point(0, 16) }} -- y=16 is the first pixel of 3rd row of tiles
+  cel = tm.cels[1];
+  expect_img(cel.image, { 0,1,1,1,
+                          1,0,1,1,
+                          0,1,0,1,
+                          1,1,1,0 })
+
+  app.useTool{
+    tool='pencil',
+    color=Color(0),
+    tilemapMode=TilemapMode.TILES,
+    tilesetMode=TilesetMode.STACK,
+    points={ Point(0, 0), Point(16, 0) }} -- x=16 is the first pixel of 3rd column of tiles
+  cel = tm.cels[1];
+  expect_img(cel.image, { 0,0,0,1,
+                          1,0,1,1,
+                          0,1,0,1,
+                          1,1,1,0 })
+
+  -- Move layer origin to 10, 8
+  cel.position = { 10, 8 }
+  expect_eq(Point{ 10, 8 }, cel.position)
+  app.useTool{
+    tool='pencil',
+    color=Color(1),
+    tilemapMode=TilemapMode.TILES,
+    tilesetMode=TilesetMode.STACK,
+    points={ Point(10, 8) }}    -- {10,8} is the first existent tile in the tilemap
+  cel = tm.cels[1];
+  expect_img(cel.image, { 1,0,0,1,
+                          1,0,1,1,
+                          0,1,0,1,
+                          1,1,1,0 })
+
+  app.useTool{
+    tool='pencil',
+    color=Color(0),
+    tilemapMode=TilemapMode.TILES,
+    tilesetMode=TilesetMode.STACK,
+    points={ Point(0, 0), Point(8, 8) }} -- Tile 0,0 and 1,1
+  cel = tm.cels[1];
+  expect_img(cel.image, { 0,1, 1,1,1,1,
+                          1,0, 1,0,0,1,
+                          1,1, 1,0,1,1,
+                          1,1, 0,1,0,1,
+                          1,1, 1,1,1,0 })
+
 end
 
 ----------------------------------------------------------------------
