@@ -429,8 +429,6 @@ private:
 
       case ObjectType::LayerImage:
       case ObjectType::LayerTilemap: {
-        std::unique_ptr<LayerImage> lay;
-
         switch (type) {
           case ObjectType::LayerImage:
             lay.reset(new LayerImage(m_sprite));
@@ -446,8 +444,8 @@ private:
         lay->setFlags(flags);
 
         // Blend mode & opacity
-        lay->setBlendMode((BlendMode)read16(s));
-        lay->setOpacity(read8(s));
+        static_cast<LayerImage*>(lay.get())->setBlendMode((BlendMode)read16(s));
+        static_cast<LayerImage*>(lay.get())->setOpacity(read8(s));
 
         // Cels
         int ncels = read32(s);
