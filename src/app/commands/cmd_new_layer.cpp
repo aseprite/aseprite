@@ -191,7 +191,7 @@ void NewLayerCommand::onExecute(Context* context)
       return;
   }
 
-  // Information about the tileset to be used  used for new tilemaps
+  // Information about the tileset to be used for new tilemaps
   TilesetSelector::Info tilesetInfo;
   tilesetInfo.newTileset = true;
   tilesetInfo.grid = context->activeSite().grid();
