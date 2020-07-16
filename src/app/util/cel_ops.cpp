@@ -757,6 +757,11 @@ void copy_tiles_in_tileset(
   for (int i=0; i<m; ++i) {
     picks[i] = (i >= beforeIndex && i < beforeIndex + npicks);
     if (picks[i]) {
+      // Fill the gap between the end of the tileset and the
+      // "beforeIndex" with empty tiles
+      while (tileset->size() < i)
+        cmds->executeAndAdd(new cmd::AddTile(tileset, tileset->makeEmptyTile()));
+
       tileset->insert(i, newTiles[j++]);
       cmds->executeAndAdd(new cmd::AddTile(tileset, i));
     }
