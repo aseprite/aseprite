@@ -277,7 +277,7 @@ do
 end
 
 ----------------------------------------------------------------------
--- Tests moving tiles
+-- Tests moving & copying tiles
 ----------------------------------------------------------------------
 
 do
@@ -307,6 +307,8 @@ do
   expect_eq(imgs[1+1], ts:getTile(1))
   expect_eq(imgs[2+1], ts:getTile(2))
   expect_eq(imgs[3+1], ts:getTile(3))
+  expect_eq(1, #app.range.tiles)
+  expect_eq(0, app.range.tiles[1])
 
   -- Move tile 1 before tile 0, result=1,0,2,3
   app.range.tiles = { 1 }
@@ -315,6 +317,8 @@ do
   expect_eq(imgs[0+1], ts:getTile(1))
   expect_eq(imgs[2+1], ts:getTile(2))
   expect_eq(imgs[3+1], ts:getTile(3))
+  expect_eq(1, #app.range.tiles)
+  expect_eq(0, app.range.tiles[1])
   app.undo()
 
   -- Move tiles 0 and 1 before 3, result=2,0,1,3
@@ -324,6 +328,9 @@ do
   expect_eq(imgs[0+1], ts:getTile(1))
   expect_eq(imgs[1+1], ts:getTile(2))
   expect_eq(imgs[3+1], ts:getTile(3))
+  expect_eq(2, #app.range.tiles)
+  expect_eq(1, app.range.tiles[1])
+  expect_eq(2, app.range.tiles[2])
   app.undo()
 
   -- Move tiles 0 and 2 before 2, result=1,0,2,3
@@ -333,6 +340,95 @@ do
   expect_eq(imgs[0+1], ts:getTile(1))
   expect_eq(imgs[2+1], ts:getTile(2))
   expect_eq(imgs[3+1], ts:getTile(3))
+  expect_eq(2, #app.range.tiles)
+  expect_eq(1, app.range.tiles[1])
+  expect_eq(2, app.range.tiles[2])
+  app.undo()
+
+  -- Copy tiles 0 before 0, result=0,0,1,2,3
+  app.range.tiles = { 0 }
+  app.command.CopyTiles({ before=0 })
+  expect_eq(1, #app.range.tiles)
+  expect_eq(0, app.range.tiles[1])
+  expect_eq(5, #ts)
+  assert(ts:getTile(0):isEqual(imgs[0+1]))
+  assert(ts:getTile(1):isEqual(imgs[0+1]))
+  assert(ts:getTile(2):isEqual(imgs[1+1]))
+  assert(ts:getTile(3):isEqual(imgs[2+1]))
+  assert(ts:getTile(4):isEqual(imgs[3+1]))
+  app.undo()
+
+  -- Copy tiles 0 before 3, result=0,1,2,0,3
+  app.range.tiles = { 0 }
+  app.command.CopyTiles({ before=3 })
+  expect_eq(1, #app.range.tiles)
+  expect_eq(3, app.range.tiles[1])
+  expect_eq(5, #ts)
+  assert(ts:getTile(0):isEqual(imgs[0+1]))
+  assert(ts:getTile(1):isEqual(imgs[1+1]))
+  assert(ts:getTile(2):isEqual(imgs[2+1]))
+  assert(ts:getTile(3):isEqual(imgs[0+1]))
+  assert(ts:getTile(4):isEqual(imgs[3+1]))
+  app.undo()
+
+  -- Copy tiles 0, 1, and 3, before 4, result=0,1,2,3,0,1,3
+  app.range.tiles = { 0, 1, 3 }
+  app.command.CopyTiles({ before=4 })
+  assert(ts:getTile(0):isEqual(imgs[0+1]))
+  assert(ts:getTile(1):isEqual(imgs[1+1]))
+  assert(ts:getTile(2):isEqual(imgs[2+1]))
+  assert(ts:getTile(3):isEqual(imgs[3+1]))
+  assert(ts:getTile(4):isEqual(imgs[0+1]))
+  assert(ts:getTile(5):isEqual(imgs[1+1]))
+  assert(ts:getTile(6):isEqual(imgs[3+1]))
+  app.undo()
+
+  -- Copy tiles 1, and 3, before 0, result=1,3,0,1,2,3
+  app.range.tiles = { 1, 3 }
+  app.command.CopyTiles({ before=0 })
+  assert(ts:getTile(0):isEqual(imgs[1+1]))
+  assert(ts:getTile(1):isEqual(imgs[3+1]))
+  assert(ts:getTile(2):isEqual(imgs[0+1]))
+  assert(ts:getTile(3):isEqual(imgs[1+1]))
+  assert(ts:getTile(4):isEqual(imgs[2+1]))
+  assert(ts:getTile(5):isEqual(imgs[3+1]))
+  app.undo()
+
+  -- Copy tiles 0, and 3, before 7, result=0,1,2,3,0,3
+  app.range.tiles = { 0, 3 }
+  app.command.CopyTiles({ before=4 })
+  assert(ts:getTile(0):isEqual(imgs[0+1]))
+  assert(ts:getTile(1):isEqual(imgs[1+1]))
+  assert(ts:getTile(2):isEqual(imgs[2+1]))
+  assert(ts:getTile(3):isEqual(imgs[3+1]))
+  assert(ts:getTile(4):isEqual(imgs[0+1]))
+  assert(ts:getTile(5):isEqual(imgs[3+1]))
+  app.undo()
+
+  -- Copy tiles 0, and 3, before 7, result=0,1,2,3,-,0,3
+  app.range.tiles = { 0, 3 }
+  app.command.CopyTiles({ before=5 })
+  assert(ts:getTile(0):isEqual(imgs[0+1]))
+  assert(ts:getTile(1):isEqual(imgs[1+1]))
+  assert(ts:getTile(2):isEqual(imgs[2+1]))
+  assert(ts:getTile(3):isEqual(imgs[3+1]))
+  assert(ts:getTile(4):isPlain())
+  assert(ts:getTile(5):isEqual(imgs[0+1]))
+  assert(ts:getTile(6):isEqual(imgs[3+1]))
+  app.undo()
+
+  -- Copy tiles 2, and 3, before 7, result=0,1,2,3,-,-,-,2,3
+  app.range.tiles = { 2, 3 }
+  app.command.CopyTiles({ before=7 })
+  assert(ts:getTile(0):isEqual(imgs[0+1]))
+  assert(ts:getTile(1):isEqual(imgs[1+1]))
+  assert(ts:getTile(2):isEqual(imgs[2+1]))
+  assert(ts:getTile(3):isEqual(imgs[3+1]))
+  assert(ts:getTile(4):isPlain())
+  assert(ts:getTile(5):isPlain())
+  assert(ts:getTile(6):isPlain())
+  assert(ts:getTile(7):isEqual(imgs[2+1]))
+  assert(ts:getTile(8):isEqual(imgs[3+1]))
   app.undo()
 
 end
