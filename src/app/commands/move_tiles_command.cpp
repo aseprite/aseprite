@@ -30,8 +30,9 @@ struct MoveTilesParams : public NewParams {
 class MoveTilesCommand : public CommandWithNewParams<MoveTilesParams> {
 public:
   MoveTilesCommand(const bool copy)
-    : CommandWithNewParams<MoveTilesParams>(CommandId::MoveTiles(),
-                                            CmdRecordableFlag)
+    : CommandWithNewParams<MoveTilesParams>(
+      (copy ? CommandId::CopyTiles():
+              CommandId::MoveTiles()), CmdRecordableFlag)
     , m_copy(copy) { }
 
 protected:
