@@ -726,9 +726,41 @@ void copy_tiles_in_tileset(
   int& currentEntry,
   int beforeIndex)
 {
-  OPS_TRACE("copy_tiles_in_tileset\n");
+  OPS_TRACE("copy_tiles_in_tileset beforeIndex=%d npicks=%d\n", beforeIndex, picks.picks());
 
-  // TODO copy tiles
+  std::vector<ImageRef> newTiles;
+  for (int i=0; i<picks.size(); ++i) {
+    if (!picks[i])
+      continue;
+    else if (i >= 0 && i < tileset->size()) {
+      newTiles.emplace_back(Image::createCopy(tileset->get(i).get()));
+    }
+    else {
+      newTiles.emplace_back(tileset->makeEmptyTile());
+    }
+  }
+
+  int n;
+  if (beforeIndex >= picks.size()) {
+    n = beforeIndex;
+    picks.resize(n);
+  }
+  else {
+    n = tileset->size();
+  }
+
+  const int npicks = picks.picks();
+  const int m = n + npicks;
+  int j = 0;
+  picks.resize(m);
+  ASSERT(newTiles.size() == npicks);
+  for (int i=0; i<m; ++i) {
+    picks[i] = (i >= beforeIndex && i < beforeIndex + npicks);
+    if (picks[i]) {
+      tileset->insert(i, newTiles[j++]);
+      cmds->executeAndAdd(new cmd::AddTile(tileset, i));
+    }
+  }
 }
 
 } // namespace app

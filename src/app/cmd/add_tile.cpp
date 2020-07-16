@@ -43,8 +43,14 @@ AddTile::AddTile(doc::Tileset* tileset,
 
 void AddTile::onExecute()
 {
+  if (m_tileIndex != doc::tile_i_notile) {
+    ASSERT(!m_imageRef);
+    return;
+  }
+
   doc::Tileset* tileset = this->tileset();
   ASSERT(tileset);
+  ASSERT(m_imageRef);
 
   addTile(tileset, m_imageRef);
 
