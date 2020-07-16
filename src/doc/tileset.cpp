@@ -15,6 +15,8 @@
 
 #include <memory>
 
+#define TS_TRACE(...) // TRACE(__VA_ARGS__)
+
 namespace doc {
 
 Tileset::Tileset(Sprite* sprite,
@@ -92,7 +94,8 @@ void Tileset::remap(const Remap& remap)
 {
   Tiles tmp = m_tiles;
   for (tile_index ti=0; ti<size(); ++ti) {
-    TRACE("m_tiles[%d] = tmp[%d]\n", remap[ti], ti);
+    TS_TRACE("m_tiles[%d] = tmp[%d]\n", remap[ti], ti);
+
     ASSERT(remap[ti] >= 0);
     ASSERT(remap[ti] < m_tiles.size());
     if (remap[ti] >= 0 &&
