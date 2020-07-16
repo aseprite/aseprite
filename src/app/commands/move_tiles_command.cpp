@@ -67,6 +67,8 @@ protected:
       move_tiles_in_tileset(tx, tileset, picks, currentEntry, beforeIndex);
 
     tx.commit();
+
+    ctx->setSelectedTiles(picks);
   }
 
 private:

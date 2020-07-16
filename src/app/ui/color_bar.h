@@ -75,7 +75,8 @@ namespace app {
     doc::tile_index getFgTile() const;
     doc::tile_index getBgTile() const;
 
-    PaletteView* getPaletteView();
+    PaletteView* getPaletteView() { return &m_paletteView; }
+    PaletteView* getTilesView() { return &m_tilesView; }
 
     ColorSelector getColorSelector() const;
     void setColorSelector(ColorSelector selector);

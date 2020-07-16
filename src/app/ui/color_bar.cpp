@@ -397,11 +397,6 @@ doc::tile_index ColorBar::getBgTile() const
   return m_bgColor.getColor().getIndex();  // TODO
 }
 
-PaletteView* ColorBar::getPaletteView()
-{
-  return &m_paletteView;
-}
-
 ColorBar::ColorSelector ColorBar::getColorSelector() const
 {
   return m_selector;
@@ -1032,7 +1027,8 @@ void ColorBar::onTilesViewDragAndDrop(doc::Tileset* tileset,
   showRemapTiles();
 
   try {
-    ContextWriter writer(UIContext::instance(), 500);
+    Context* ctx = UIContext::instance();
+    ContextWriter writer(ctx, 500);
     Tx tx(writer.context(), Strings::color_bar_drag_and_drop_tiles(), ModifyDocument);
     if (isCopy)
       copy_tiles_in_tileset(tx, tileset, picks, currentEntry, beforeIndex);
@@ -1042,6 +1038,8 @@ void ColorBar::onTilesViewDragAndDrop(doc::Tileset* tileset,
 
     m_scrollableTilesView.updateView();
     update_screen_for_document(writer.document());
+
+    ctx->setSelectedTiles(picks);
   }
   catch (base::Exception& e) {
     Console::showException(e);
