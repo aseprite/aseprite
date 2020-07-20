@@ -5,7 +5,7 @@
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
-#define COLOR_BAR_TRACE(...)    // TRACE
+#define COLOR_BAR_TRACE(...) // TRACE(__VA_ARGS__)
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
