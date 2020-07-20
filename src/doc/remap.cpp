@@ -137,12 +137,23 @@ void Remap::merge(const Remap& other)
 Remap Remap::invert() const
 {
   Remap inv(size());
+
+  for (int i=0; i<size(); ++i)
+    inv.m_map[i] = kNoMap;
+
   for (int i=0; i<size(); ++i) {
     int j = m_map[i];
-    if (j == kNoMap)
+    if (j == kNoMap ||
+        // Already mapped
+        inv.m_map[j] != kNoMap)
       continue;
     inv.map(j, i);
   }
+
+  for (int i=0; i<size(); ++i)
+    if (inv.m_map[i] == kNoMap)
+      inv.m_map[i] = i;
+
   return inv;
 }
 
