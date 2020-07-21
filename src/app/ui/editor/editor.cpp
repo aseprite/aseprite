@@ -1206,7 +1206,7 @@ void Editor::drawCelHGuide(ui::Graphics* g,
                            const int dottedX)
 {
   gfx::Color color = color_utils::color_for_ui(Preferences::instance().guides.autoGuidesColor());
-  g->drawHLine(color, scrX1, scrY, scrX2 - scrX1);
+  g->drawHLine(color, std::min(scrX1, scrX2), scrY, std::abs(scrX2 - scrX1));
 
   // Vertical guide to touch the horizontal line
   {
@@ -1232,7 +1232,7 @@ void Editor::drawCelVGuide(ui::Graphics* g,
                            const int dottedY)
 {
   gfx::Color color = color_utils::color_for_ui(Preferences::instance().guides.autoGuidesColor());
-  g->drawVLine(color, scrX, scrY1, scrY2 - scrY1);
+  g->drawVLine(color, scrX, std::min(scrY1, scrY2), std::abs(scrY2 - scrY1));
 
   // Horizontal guide to touch the vertical line
   {
