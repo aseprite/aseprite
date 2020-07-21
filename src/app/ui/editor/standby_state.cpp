@@ -990,8 +990,9 @@ void StandbyState::Decorator::postRenderDecorator(EditorPostRender* render)
     tools::Ink* ink = editor->getCurrentEditorInk();
 
     if (ink->isSelection()) {
-      getTransformHandles(editor)->drawHandles(editor,
-        m_standbyState->getTransformation(editor));
+      getTransformHandles(editor)
+        ->drawHandles(editor, render->getGraphics(),
+                      m_standbyState->getTransformation(editor));
 
       m_standbyState->m_transformSelectionHandlesAreVisible = true;
     }

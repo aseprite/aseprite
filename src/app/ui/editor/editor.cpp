@@ -93,6 +93,10 @@ public:
     return m_editor;
   }
 
+  Graphics* getGraphics() override {
+    return m_g;
+  }
+
   void drawLine(gfx::Color color, int x1, int y1, int x2, int y2) override {
     gfx::Point a(x1, y1);
     gfx::Point b(x2, y2);
