@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -84,9 +85,9 @@ HandleType TransformHandles::getHandleAtPoint(Editor* editor, const gfx::Point& 
   return NoHandle;
 }
 
-void TransformHandles::drawHandles(Editor* editor, const Transformation& transform)
+void TransformHandles::drawHandles(Editor* editor, ui::Graphics* g,
+                                   const Transformation& transform)
 {
-  ScreenGraphics g;
   fixmath::fixed angle = fixmath::ftofix(128.0 * transform.angle() / PI);
 
   Transformation::Corners corners;
@@ -95,29 +96,31 @@ void TransformHandles::drawHandles(Editor* editor, const Transformation& transfo
   std::vector<gfx::Point> screenPoints;
   getScreenPoints(editor, corners, screenPoints);
 
-  // TODO DO NOT COMMIT
+  const gfx::Point origin = editor->bounds().origin();
+
 #if 0 // Uncomment this if you want to see the bounds in red (only for debugging purposes)
   // -----------------------------------------------
   {
     gfx::Point
       a(transform.bounds().origin()),
       b(transform.bounds().point2());
-    a = editor->editorToScreen(a);
-    b = editor->editorToScreen(b);
-    g.drawRect(gfx::rgba(255, 0, 0), gfx::Rect(a, b));
+    a = editor->editorToScreen(a) - origin;
+    b = editor->editorToScreen(b) - origin;
+    g->drawRect(gfx::rgba(255, 0, 0), gfx::Rect(a, b));
 
     a = transform.pivot();
-    a = editor->editorToScreen(a);
-    g.drawRect(gfx::rgba(255, 0, 0), gfx::Rect(a.x-2, a.y-2, 5, 5));
+    a = editor->editorToScreen(a) - origin;
+    g->drawRect(gfx::rgba(255, 0, 0), gfx::Rect(a.x-2, a.y-2, 5, 5));
   }
   // -----------------------------------------------
 #endif
 
   // Draw corner handle
   for (size_t c=0; c<HANDLES; ++c) {
-    drawHandle(&g,
-      (screenPoints[handles_info[c].i1].x+screenPoints[handles_info[c].i2].x)/2,
-      (screenPoints[handles_info[c].i1].y+screenPoints[handles_info[c].i2].y)/2,
+    drawHandle(
+      g,
+      (screenPoints[handles_info[c].i1].x+screenPoints[handles_info[c].i2].x)/2 - origin.x,
+      (screenPoints[handles_info[c].i1].y+screenPoints[handles_info[c].i2].y)/2 - origin.y,
       angle + handles_info[c].angle);
   }
 
@@ -127,7 +130,9 @@ void TransformHandles::drawHandles(Editor* editor, const Transformation& transfo
     SkinTheme* theme = SkinTheme::instance();
     os::Surface* part = theme->parts.pivotHandle()->bitmap(0);
 
-    g.drawRgbaSurface(part, pivotBounds.x, pivotBounds.y);
+    g->drawRgbaSurface(part,
+                       pivotBounds.x - origin.x,
+                       pivotBounds.y - origin.y);
   }
 }
 

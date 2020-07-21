@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -30,7 +31,8 @@ namespace app {
     // has applied the given transformation to the selection.
     HandleType getHandleAtPoint(Editor* editor, const gfx::Point& pt, const Transformation& transform);
 
-    void drawHandles(Editor* editor, const Transformation& transform);
+    void drawHandles(Editor* editor, ui::Graphics* g,
+                     const Transformation& transform);
     void invalidateHandles(Editor* editor, const Transformation& transform);
 
   private:

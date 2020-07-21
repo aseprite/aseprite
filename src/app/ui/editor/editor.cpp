@@ -55,10 +55,10 @@
 #include "app/util/layer_utils.h"
 #include "base/chrono.h"
 #include "base/clamp.h"
-#include "base/convert_to.h"
 #include "doc/doc.h"
 #include "doc/mask_boundaries.h"
 #include "doc/slice.h"
+#include "fmt/format.h"
 #include "os/color_space.h"
 #include "os/display.h"
 #include "os/surface.h"
@@ -92,6 +92,10 @@ public:
 
   Editor* getEditor() override {
     return m_editor;
+  }
+
+  Graphics* getGraphics() override {
+    return m_g;
   }
 
   void drawLine(gfx::Color color, int x1, int y1, int x2, int y2) override {
@@ -1232,7 +1236,7 @@ void Editor::drawCelHGuide(ui::Graphics* g,
                            const int dottedX)
 {
   gfx::Color color = color_utils::color_for_ui(Preferences::instance().guides.autoGuidesColor());
-  g->drawHLine(color, scrX1, scrY, scrX2 - scrX1);
+  g->drawHLine(color, std::min(scrX1, scrX2), scrY, std::abs(scrX2 - scrX1));
 
   // Vertical guide to touch the horizontal line
   {
@@ -1244,7 +1248,7 @@ void Editor::drawCelHGuide(ui::Graphics* g,
       g->drawVLine(color, dottedX, scrCmpBounds.y2(), scrCelBounds.y2() - scrCmpBounds.y2());
   }
 
-  auto text = base::convert_to<std::string>(ABS(sprX2 - sprX1)) + "px";
+  auto text = fmt::format("{}px", ABS(sprX2 - sprX1));
   const int textW = Graphics::measureUITextLength(text, font());
   g->drawText(text,
               color_utils::blackandwhite_neg(color), color,
@@ -1258,7 +1262,7 @@ void Editor::drawCelVGuide(ui::Graphics* g,
                            const int dottedY)
 {
   gfx::Color color = color_utils::color_for_ui(Preferences::instance().guides.autoGuidesColor());
-  g->drawVLine(color, scrX, scrY1, scrY2 - scrY1);
+  g->drawVLine(color, scrX, std::min(scrY1, scrY2), std::abs(scrY2 - scrY1));
 
   // Horizontal guide to touch the vertical line
   {
@@ -1270,7 +1274,7 @@ void Editor::drawCelVGuide(ui::Graphics* g,
       g->drawHLine(color, scrCmpBounds.x2(), dottedY, scrCelBounds.x2() - scrCmpBounds.x2());
   }
 
-  auto text = base::convert_to<std::string>(ABS(sprY2 - sprY1)) + "px";
+  auto text = fmt::format("{}px", ABS(sprY2 - sprY1));
   g->drawText(text,
               color_utils::blackandwhite_neg(color), color,
               gfx::Point(scrX, (scrY1+scrY2)/2-textHeight()/2));
@@ -2610,7 +2614,7 @@ void Editor::showAnimationSpeedMultiplierPopup(Option<bool>& playOnce,
   Menu menu;
 
   for (double option : options) {
-    MenuItem* item = new MenuItem("Speed x" + base::convert_to<std::string>(option));
+    MenuItem* item = new MenuItem(fmt::format("Speed x{}", option));
     item->Click.connect([this, option]{ setAnimationSpeedMultiplier(option); });
     item->setSelected(m_aniSpeed == option);
     menu.addChild(item);
