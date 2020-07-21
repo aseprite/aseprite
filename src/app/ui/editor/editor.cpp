@@ -55,10 +55,10 @@
 #include "app/util/layer_utils.h"
 #include "base/chrono.h"
 #include "base/clamp.h"
-#include "base/convert_to.h"
 #include "doc/doc.h"
 #include "doc/mask_boundaries.h"
 #include "doc/slice.h"
+#include "fmt/format.h"
 #include "os/color_space.h"
 #include "os/display.h"
 #include "os/surface.h"
@@ -1214,7 +1214,7 @@ void Editor::drawCelHGuide(ui::Graphics* g,
       g->drawVLine(color, dottedX, scrCmpBounds.y2(), scrCelBounds.y2() - scrCmpBounds.y2());
   }
 
-  auto text = base::convert_to<std::string>(ABS(sprX2 - sprX1)) + "px";
+  auto text = fmt::format("{}px", ABS(sprX2 - sprX1));
   const int textW = Graphics::measureUITextLength(text, font());
   g->drawText(text,
               color_utils::blackandwhite_neg(color), color,
@@ -1240,7 +1240,7 @@ void Editor::drawCelVGuide(ui::Graphics* g,
       g->drawHLine(color, scrCmpBounds.x2(), dottedY, scrCelBounds.x2() - scrCmpBounds.x2());
   }
 
-  auto text = base::convert_to<std::string>(ABS(sprY2 - sprY1)) + "px";
+  auto text = fmt::format("{}px", ABS(sprY2 - sprY1));
   g->drawText(text,
               color_utils::blackandwhite_neg(color), color,
               gfx::Point(scrX, (scrY1+scrY2)/2-textHeight()/2));
@@ -2586,7 +2586,7 @@ void Editor::showAnimationSpeedMultiplierPopup(Option<bool>& playOnce,
   Menu menu;
 
   for (double option : options) {
-    MenuItem* item = new MenuItem("Speed x" + base::convert_to<std::string>(option));
+    MenuItem* item = new MenuItem(fmt::format("Speed x{}", option));
     item->Click.connect([this, option]{ setAnimationSpeedMultiplier(option); });
     item->setSelected(m_aniSpeed == option);
     menu.addChild(item);
