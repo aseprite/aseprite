@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -26,6 +27,8 @@ namespace app {
   public:
     PlayState(const bool playOnce,
               const bool playAll);
+
+    doc::Tag* playingTag() const;
 
     void onEnterState(Editor* editor) override;
     LeaveAction onLeaveState(Editor* editor, EditorState* newState) override;

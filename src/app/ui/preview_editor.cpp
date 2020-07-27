@@ -13,6 +13,7 @@
 
 #include "app/app.h"
 #include "app/doc.h"
+#include "app/doc_event.h"
 #include "app/ini_file.h"
 #include "app/loop_tag.h"
 #include "app/modules/editors.h"
@@ -22,6 +23,7 @@
 #include "app/ui/editor/editor_customization_delegate.h"
 #include "app/ui/editor/editor_view.h"
 #include "app/ui/editor/navigate_state.h"
+#include "app/ui/editor/play_state.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
 #include "app/ui/toolbar.h"
@@ -396,28 +398,7 @@ void PreviewEditorWindow::updateUsingEditor(Editor* editor)
     miniEditor->setFrame(editor->frame());
   }
   else {
-    if (miniEditor->isPlaying()) {
-      doc::Tag* tag = editor
-        ->getCustomizationDelegate()
-        ->getTagProvider()
-        ->getTagByFrame(editor->frame(), true);
-
-      doc::Tag* playingTag = editor
-        ->getCustomizationDelegate()
-        ->getTagProvider()
-        ->getTagByFrame(m_refFrame, true);
-
-      if (tag == playingTag)
-        return;
-
-      miniEditor->stop();
-    }
-
-    if (!miniEditor->isPlaying())
-      miniEditor->setFrame(m_refFrame = editor->frame());
-
-    miniEditor->play(Preferences::instance().preview.playOnce(),
-                     Preferences::instance().preview.playAll());
+    adjustPlayingTag();
   }
 }
 
@@ -478,6 +459,11 @@ void PreviewEditorWindow::onPreviewOtherEditor(Editor* editor)
   updateUsingEditor(editor);
 }
 
+void PreviewEditorWindow::onTagChangeEditor(Editor* editor, DocEvent& ev)
+{
+  adjustPlayingTag();
+}
+
 void PreviewEditorWindow::hideWindow()
 {
   destroyDocView();
@@ -493,6 +479,36 @@ void PreviewEditorWindow::destroyDocView()
     delete m_docView;
     m_docView = nullptr;
   }
+}
+
+void PreviewEditorWindow::adjustPlayingTag()
+{
+  Editor* editor = m_relatedEditor;
+  Editor* miniEditor = m_docView->editor();
+
+  ASSERT(editor);
+  ASSERT(miniEditor);
+
+  if (miniEditor->isPlaying()) {
+    doc::Tag* tag = editor
+      ->getCustomizationDelegate()
+      ->getTagProvider()
+      ->getTagByFrame(editor->frame(), true);
+
+    auto playState = dynamic_cast<PlayState*>(miniEditor->getState().get());
+    doc::Tag* playingTag = (playState ? playState->playingTag(): nullptr);
+
+    if (tag == playingTag)
+      return;
+
+    miniEditor->stop();
+  }
+
+  if (!miniEditor->isPlaying())
+    miniEditor->setFrame(m_refFrame = editor->frame());
+
+  miniEditor->play(Preferences::instance().preview.playOnce(),
+                   Preferences::instance().preview.playAll());
 }
 
 } // namespace app
