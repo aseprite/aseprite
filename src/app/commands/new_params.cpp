@@ -23,6 +23,7 @@
 #include "filters/hue_saturation_filter.h"
 #include "filters/outline_filter.h"
 #include "filters/tiled_mode.h"
+#include "gfx/rect.h"
 
 #ifdef ENABLE_SCRIPTING
 #include "app/script/engine.h"
@@ -58,6 +59,21 @@ template<>
 void Param<std::string>::fromString(const std::string& value)
 {
   setValue(value);
+}
+
+template<>
+void Param<gfx::Rect>::fromString(const std::string& value)
+{
+  gfx::Rect rect;
+  std::vector<std::string> parts;
+  base::split_string(value, parts, ",");
+  if (parts.size() == 4) {
+    rect.x = base::convert_to<int>(parts[0]);
+    rect.y = base::convert_to<int>(parts[1]);
+    rect.w = base::convert_to<int>(parts[2]);
+    rect.h = base::convert_to<int>(parts[3]);
+  }
+  setValue(rect);
 }
 
 template<>
@@ -223,6 +239,12 @@ void Param<std::string>::fromLua(lua_State* L, int index)
     setValue(s);
   else
     setValue(std::string());
+}
+
+template<>
+void Param<gfx::Rect>::fromLua(lua_State* L, int index)
+{
+  setValue(script::convert_args_into_rect(L, index));
 }
 
 template<>
