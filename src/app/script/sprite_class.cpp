@@ -78,9 +78,13 @@ int Sprite_new(lua_State* L)
           if (const char* fromFile = lua_tostring(L, -1)) {
             std::string fn = fromFile;
             lua_pop(L, 1);
+
+            bool oneFrame = (lua_is_key_true(L, -1, "oneFrame"));
+
             return load_sprite_from_file(
               L, fn.c_str(),
-              LoadSpriteFromFileParam::FullAniAsSprite);
+              (oneFrame ? LoadSpriteFromFileParam::OneFrameAsSprite:
+                          LoadSpriteFromFileParam::FullAniAsSprite));
           }
         }
         lua_pop(L, 1);

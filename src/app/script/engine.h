@@ -167,6 +167,7 @@ namespace app {
 
   // Used by App.open(), Sprite{ fromFile }, and Image{ fromFile }
   enum class LoadSpriteFromFileParam { FullAniAsSprite,
+                                       OneFrameAsSprite,
                                        OneFrameAsImage };
   int load_sprite_from_file(lua_State* L, const char* filename,
                             const LoadSpriteFromFileParam param);
