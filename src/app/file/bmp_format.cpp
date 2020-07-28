@@ -216,6 +216,9 @@ static void read_bmicolors(FileOp* fop, int bytes, FILE *f, bool win_flag)
     }
   }
 
+  // Set the number of colors in the palette
+  fop->sequenceSetNColors(j);
+
   for (; i<bytes; i++)
     fgetc(f);
 }
