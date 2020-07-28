@@ -21,6 +21,7 @@
 #include "app/ui/filename_field.h"
 #include "base/bind.h"
 #include "base/paths.h"
+#include "base/remove_from_container.h"
 #include "ui/box.h"
 #include "ui/button.h"
 #include "ui/combobox.h"
@@ -34,17 +35,21 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
-#define TRACE_DIALOG(...) // TRACEARGS
+#ifdef ENABLE_UI
+
+#define TRACE_DIALOG(...) // TRACEARGS(__VA_ARGS__)
 
 namespace app {
 namespace script {
 
-#ifdef ENABLE_UI
-
 using namespace ui;
 
 namespace {
+
+struct Dialog;
+std::vector<Dialog*> all_dialogs;
 
 struct Dialog {
   ui::Window window;
@@ -74,6 +79,11 @@ struct Dialog {
     : window(ui::Window::WithTitleBar, "Script"),
       grid(2, false) {
     window.addChild(&grid);
+    all_dialogs.push_back(this);
+  }
+
+  ~Dialog() {
+    base::remove_from_container(all_dialogs, this);
   }
 
   void unrefShowOnClose() {
@@ -1225,16 +1235,24 @@ const Property Dialog_properties[] = {
 
 DEF_MTNAME(Dialog);
 
-#endif  // ENABLE_UI
-
 void register_dialog_class(lua_State* L)
 {
-#ifdef ENABLE_UI
   REG_CLASS(L, Dialog);
   REG_CLASS_NEW(L, Dialog);
   REG_CLASS_PROPERTIES(L, Dialog);
-#endif
+}
+
+// close all opened Dialogs before closing the UI
+void close_all_dialogs()
+{
+  for (Dialog* dlg : all_dialogs) {
+    ASSERT(dlg);
+    if (dlg)
+      dlg->window.closeWindow(nullptr);
+  }
 }
 
 } // namespace script
 } // namespace app
+
+#endif  // ENABLE_UI
