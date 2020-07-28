@@ -30,8 +30,7 @@ gfx::Size Size_new(lua_State* L, int index)
   // Convert {x=int,y=int} or {int,int} into a Size
   else if (lua_istable(L, index)) {
     const int type = lua_getfield(L, index, "width");
-    if (type != LUA_TNONE &&
-        type != LUA_TNIL) {
+    if (VALID_LUATYPE(type)) {
       lua_getfield(L, index, "height");
       sz.w = lua_tointeger(L, -2);
       sz.h = lua_tointeger(L, -1);
