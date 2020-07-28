@@ -4,8 +4,10 @@
 -- Read LICENSE.txt for more information.
 
 local none = ColorSpace()         -- None
-local srgb = ColorSpace{ sRGB }
+local srgb = ColorSpace{ sRGB=true }
+local none2 = ColorSpace{ sRGB=false }
 assert(none ~= srgb)
+assert(none == none2)
 
 local spr = Sprite(32, 32)
 local cs1 = spr.colorSpace
