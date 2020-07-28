@@ -40,7 +40,7 @@ int ColorSpace_new(lua_State* L)
       lua_pop(L, 1);
 
     // Create sRGB profile with ColorSpace{ sRGB }
-    if (lua_getfield(L, 1, "sRGB") != LUA_TNONE) {
+    if (lua_is_key_true(L, 1, "sRGB")) {
       lua_pop(L, 1);
       push_new<gfx::ColorSpace>(L, *gfx::ColorSpace::MakeSRGB());
       return 1;
