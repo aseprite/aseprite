@@ -727,30 +727,24 @@ bool BmpFormat::onSave(FileOp *fop)
   int biSizeImage;
   int indexBits = fop->sequenceGetNColors();
   if(indexBits > 16)
-  {
     indexBits = 8;
-  }
   else
-  {
     indexBits = 4;
-  }
 
   int indexColorCount = (1<<indexBits);
   int bpp = (image->pixelFormat() == IMAGE_RGB) ? 24 : indexBits;
   int filler;
   if (bpp == 24)
-  {
-	 filler = 3 - ((image->width() * (bpp / 8) - 1) & 3);
-
-  }
+	  filler = 3 - ((image->width() * (bpp / 8) - 1) & 3);
+  else if(bpp == 8)
+	  filler = (3 - ((image->width() - 1) & 3));
   else
-  {
-	  filler = 3 - ((image->width()*bpp/8 - 1) & 3);
-  }
+	  filler = (3 - (((image->width()+1)/2 - 1) & 3));
+
   int c, i, j, r, g, b;
 
   if (bpp <= 8) {
-    biSizeImage = (image->width()*bpp/8 + filler) * image->height();
+    biSizeImage = (image->width() + filler)*bpp/8 * image->height();
     bfSize = (54                      /* header */
               + (indexColorCount)*4                 /* palette */
               + biSizeImage);         /* image data */
@@ -805,13 +799,9 @@ bool BmpFormat::onSave(FileOp *fop)
 
   int colorMask;
   if(bpp == 8)
-  {
     colorMask = 0xFF;
-  }
   else
-  {
     colorMask = 0xF;
-  }
 
   int colorsInByte = 8/bpp;
 
@@ -819,23 +809,21 @@ bool BmpFormat::onSave(FileOp *fop)
   for (i=image->height()-1; i>=0; i--) {
     for (j=0; j<image->width(); j++) {
       if (bpp <= 8) {
-        if (image->pixelFormat() == IMAGE_INDEXED)
-        {
+        if (image->pixelFormat() == IMAGE_INDEXED){
           char value = 0;
-          for(int k = colorsInByte-1; k >= 0; --k)
-          {
+          for(int k = colorsInByte-1; k >= 0; --k){
               int shiftValue = bpp*k;
-              value |= (get_pixel_fast<IndexedTraits>(image, j+(colorsInByte-1-k), i)<<((shiftValue)))&(colorMask<<((shiftValue)));
+              if(j+(colorsInByte-1-k) < image->width()) 
+                value |= (get_pixel_fast<IndexedTraits>(image, j+(colorsInByte-1-k), i)<<((shiftValue)))&(colorMask<<((shiftValue)));
+
           }
 
           fputc(value, f);
           j += colorsInByte-1;
         }
-          else if (image->pixelFormat() == IMAGE_GRAYSCALE)
-        {
+        else if (image->pixelFormat() == IMAGE_GRAYSCALE){
             char value = 0;
-          for(int k = colorsInByte-1; k >= 0; --k)
-          {
+          for(int k = colorsInByte-1; k >= 0; --k){
               int shiftValue = bpp*k;
               value |= (graya_getv(get_pixel_fast<GrayscaleTraits>(image, j+(colorsInByte-1-k), i)<<((shiftValue))))&(colorMask<<((shiftValue)));
           }
