@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -17,8 +17,12 @@
 #include "base/cfile.h"
 #include "base/file_handle.h"
 #include "doc/doc.h"
+#include "fmt/format.h"
 
 namespace app {
+
+// Max supported .bmp size (to filter out invalid image sizes)
+const uint32_t kMaxBmpSize = 1024*1024*128; // 128 MB
 
 using namespace base;
 
@@ -641,6 +645,28 @@ bool BmpFormat::onLoad(FileOp *fop)
   }
   else {
     return false;
+  }
+
+  // Check image size is valid
+  {
+    if (int(infoheader.biWidth) < 1 ||
+        ABS(int(infoheader.biHeight)) == 0) {
+      fop->setError("Invalid BMP size.\n");
+      return false;
+    }
+
+    uint32_t size = infoheader.biWidth * uint32_t(ABS(int(infoheader.biHeight)));
+    if (infoheader.biBitCount >= 8)
+      size *= (infoheader.biBitCount / 8);
+    else if (8 / infoheader.biBitCount > 0)
+      size /= (8 / infoheader.biBitCount);
+
+    if (size > kMaxBmpSize) {
+      fop->setError(fmt::format("BMP size unsupported ({:.2f} MB > {:.2f} MB).\n",
+                                size / 1024.0 / 1024.0,
+                                kMaxBmpSize / 1024.0 / 1024.0).c_str());
+      return false;
+    }
   }
 
   if ((infoheader.biBitCount == 32) ||
