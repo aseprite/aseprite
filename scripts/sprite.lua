@@ -125,3 +125,21 @@ do
   local s2 = Sprite{ fromFile="_test_sprite_gridbounds.png" }
   assert(s.gridBounds == Rectangle{2, 3, 8, 4})
 end
+
+-- Sprite{ fromFile, oneFrame }
+do
+  local s = Sprite(32, 32)
+  s:newFrame()
+  s:saveAs("_test1.png")
+  assert(#s.frames == 2)
+
+  s = Sprite{ fromFile="_test1.png" }
+  print(#s.frames)
+  assert(#s.frames == 2)
+
+  s = Sprite{ fromFile="_test1.png", oneFrame=true }
+  assert(#s.frames == 1)
+
+  s = Sprite{ fromFile="_test1.png", oneFrame=false }
+  assert(#s.frames == 2)
+end
