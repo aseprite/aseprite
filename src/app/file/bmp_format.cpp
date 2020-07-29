@@ -857,7 +857,10 @@ bool BmpFormat::onSave(FileOp *fop)
           char value = 0;
           for (int k = colorsInByte-1; k >= 0; --k) {
             int shiftValue = bpp*k;
-            value |= (graya_getv(get_pixel_fast<GrayscaleTraits>(image, j+(colorsInByte-1-k), i)<<((shiftValue))))&(colorMask<<((shiftValue)));
+            int u = (j+(colorsInByte-1-k));
+            if (u >= w)
+              break;
+            value |= (graya_getv(get_pixel_fast<GrayscaleTraits>(image, u, i)<<((shiftValue))))&(colorMask<<((shiftValue)));
           }
           fputc(value, f);
           j += colorsInByte-1;
