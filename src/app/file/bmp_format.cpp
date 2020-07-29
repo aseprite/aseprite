@@ -752,6 +752,8 @@ bool BmpFormat::onLoad(FileOp *fop)
 bool BmpFormat::onSave(FileOp *fop)
 {
   const Image* image = fop->sequenceImage();
+  const int w = image->width();
+  const int h = image->height();
   int bfSize;
   int biSizeImage;
   int indexBits = fop->sequenceGetNColors();
@@ -764,22 +766,22 @@ bool BmpFormat::onSave(FileOp *fop)
   int bpp = (image->pixelFormat() == IMAGE_RGB ? 24 : indexBits);
   int filler;
   if (bpp == 24)
-    filler = 3 - ((image->width() * (bpp / 8) - 1) & 3);
+    filler = 3 - ((w * (bpp / 8) - 1) & 3);
   else if(bpp == 8)
-    filler = (3 - ((image->width() - 1) & 3));
+    filler = (3 - ((w - 1) & 3));
   else
-    filler = (3 - (((image->width()+1)/2 - 1) & 3));
+    filler = (3 - (((w+1)/2 - 1) & 3));
 
   int c, i, j, r, g, b;
 
   if (bpp <= 8) {
-    biSizeImage = (image->width() + filler)*bpp/8 * image->height();
+    biSizeImage = (w + filler)*bpp/8 * h;
     bfSize = (54                      /* header */
               + (indexColorCount)*4   /* palette */
               + biSizeImage);         /* image data */
   }
   else {
-    biSizeImage = (image->width()*3 + filler) * image->height();
+    biSizeImage = (w*3 + filler) * h;
     bfSize = 54 + biSizeImage;       /* header + image data */
   }
 
@@ -799,8 +801,8 @@ bool BmpFormat::onSave(FileOp *fop)
 
   /* info_header */
   fputl(40, f);                  /* biSize */
-  fputl(image->width(), f);   /* biWidth */
-  fputl(image->height(), f);  /* biHeight */
+  fputl(w, f);                   /* biWidth */
+  fputl(h, f);                   /* biHeight */
   fputw(1, f);                   /* biPlanes */
   fputw(bpp, f);                 /* biBitCount */
   fputl(0, f);                   /* biCompression */
@@ -835,15 +837,17 @@ bool BmpFormat::onSave(FileOp *fop)
   int colorsInByte = 8/bpp;
 
   /* image data */
-  for (i=image->height()-1; i>=0; i--) {
-    for (j=0; j<image->width(); j++) {
+  for (i=h-1; i>=0; i--) {
+    for (j=0; j<w; j++) {
       if (bpp <= 8) {
         if (image->pixelFormat() == IMAGE_INDEXED) {
           char value = 0;
           for (int k = colorsInByte-1; k >= 0; --k) {
             int shiftValue = bpp*k;
-            if (j+(colorsInByte-1-k) < image->width())
-              value |= (get_pixel_fast<IndexedTraits>(image, j+(colorsInByte-1-k), i)<<((shiftValue)))&(colorMask<<((shiftValue)));
+            int u = (j+(colorsInByte-1-k));
+            if (u >= w)
+              break;
+            value |= (get_pixel_fast<IndexedTraits>(image, u, i)<<((shiftValue)))&(colorMask<<((shiftValue)));
           }
 
           fputc(value, f);
@@ -870,7 +874,7 @@ bool BmpFormat::onSave(FileOp *fop)
     for (j=0; j<filler; j++)
       fputc(0, f);
 
-    fop->setProgress((float)(image->height()-i) / (float)image->height());
+    fop->setProgress((float)(h-i) / (float)h);
   }
 
   if (ferror(f)) {
