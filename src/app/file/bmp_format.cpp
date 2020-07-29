@@ -754,14 +754,28 @@ bool BmpFormat::onSave(FileOp *fop)
   const Image* image = fop->sequenceImage();
   int bfSize;
   int biSizeImage;
-  int bpp = (image->pixelFormat() == IMAGE_RGB) ? 24 : 8;
-  int filler = 3 - ((image->width()*(bpp/8)-1) & 3);
+  int indexBits = fop->sequenceGetNColors();
+  if (indexBits > 16)
+    indexBits = 8;
+  else
+    indexBits = 4;
+
+  int indexColorCount = (1<<indexBits);
+  int bpp = (image->pixelFormat() == IMAGE_RGB ? 24 : indexBits);
+  int filler;
+  if (bpp == 24)
+    filler = 3 - ((image->width() * (bpp / 8) - 1) & 3);
+  else if(bpp == 8)
+    filler = (3 - ((image->width() - 1) & 3));
+  else
+    filler = (3 - (((image->width()+1)/2 - 1) & 3));
+
   int c, i, j, r, g, b;
 
-  if (bpp == 8) {
-    biSizeImage = (image->width() + filler) * image->height();
+  if (bpp <= 8) {
+    biSizeImage = (image->width() + filler)*bpp/8 * image->height();
     bfSize = (54                      /* header */
-              + 256*4                 /* palette */
+              + (indexColorCount)*4   /* palette */
               + biSizeImage);         /* image data */
   }
   else {
@@ -778,8 +792,8 @@ bool BmpFormat::onSave(FileOp *fop)
   fputw(0, f);                   /* bfReserved1 */
   fputw(0, f);                   /* bfReserved2 */
 
-  if (bpp == 8)                 /* bfOffBits */
-    fputl(54+256*4, f);
+  if (bpp <= 8)                 /* bfOffBits */
+    fputl(54+(indexColorCount)*4, f);
   else
     fputl(54, f);
 
@@ -794,12 +808,12 @@ bool BmpFormat::onSave(FileOp *fop)
   fputl(0xB12, f);               /* biXPelsPerMeter (0xB12 = 72 dpi) */
   fputl(0xB12, f);               /* biYPelsPerMeter */
 
-  if (bpp == 8) {
-    fputl(256, f);              /* biClrUsed */
-    fputl(256, f);              /* biClrImportant */
+  if (bpp <= 8) {
+    fputl((indexColorCount), f);              /* biClrUsed */
+    fputl((indexColorCount), f);              /* biClrImportant */
 
     /* palette */
-    for (i=0; i<256; i++) {
+    for (i=0; i<(indexColorCount); i++) {
       fop->sequenceGetColor(i, &r, &g, &b);
       fputc(b, f);
       fputc(g, f);
@@ -812,14 +826,38 @@ bool BmpFormat::onSave(FileOp *fop)
     fputl(0, f);                /* biClrImportant */
   }
 
+  int colorMask;
+  if (bpp == 8)
+    colorMask = 0xFF;
+  else
+    colorMask = 0xF;
+
+  int colorsInByte = 8/bpp;
+
   /* image data */
   for (i=image->height()-1; i>=0; i--) {
     for (j=0; j<image->width(); j++) {
-      if (bpp == 8) {
-        if (image->pixelFormat() == IMAGE_INDEXED)
-          fputc(get_pixel_fast<IndexedTraits>(image, j, i), f);
-        else if (image->pixelFormat() == IMAGE_GRAYSCALE)
-          fputc(graya_getv(get_pixel_fast<GrayscaleTraits>(image, j, i)), f);
+      if (bpp <= 8) {
+        if (image->pixelFormat() == IMAGE_INDEXED) {
+          char value = 0;
+          for (int k = colorsInByte-1; k >= 0; --k) {
+            int shiftValue = bpp*k;
+            if (j+(colorsInByte-1-k) < image->width())
+              value |= (get_pixel_fast<IndexedTraits>(image, j+(colorsInByte-1-k), i)<<((shiftValue)))&(colorMask<<((shiftValue)));
+          }
+
+          fputc(value, f);
+          j += colorsInByte-1;
+        }
+        else if (image->pixelFormat() == IMAGE_GRAYSCALE) {
+          char value = 0;
+          for (int k = colorsInByte-1; k >= 0; --k) {
+            int shiftValue = bpp*k;
+            value |= (graya_getv(get_pixel_fast<GrayscaleTraits>(image, j+(colorsInByte-1-k), i)<<((shiftValue))))&(colorMask<<((shiftValue)));
+          }
+          fputc(value, f);
+          j += colorsInByte-1;
+        }
       }
       else {
         c = get_pixel_fast<RgbTraits>(image, j, i);
