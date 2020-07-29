@@ -753,7 +753,7 @@ void ColorBar::onFgColorButtonBeforeChange(app::Color& color)
   if (m_fromPalView)
     return;
 
-  if (!inEditMode()) {
+  if (!inEditMode() || color.getType() == app::Color::IndexType) {
     m_paletteView.deselect();
     return;
   }
@@ -815,8 +815,7 @@ void ColorBar::onColorButtonChange(const app::Color& color)
 {
   COLOR_BAR_TRACE("ColorBar::onColorButtonChange(%s)\n", color.toString().c_str());
 
-  if (!inEditMode() ||
-      m_fromPref) {
+  if (!inEditMode() || color.getType() == app::Color::IndexType || m_fromPref) {
     if (color.getType() == app::Color::IndexType)
       m_paletteView.selectColor(color.getIndex());
     else {
