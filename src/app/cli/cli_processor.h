@@ -11,8 +11,8 @@
 
 #include "app/cli/cli_delegate.h"
 #include "app/cli/cli_open_file.h"
-#include "app/commands/cmd_open_file.h"
 #include "app/doc_exporter.h"
+#include "app/util/open_batch.h"
 #include "doc/selected_layers.h"
 
 #include <memory>
@@ -64,7 +64,7 @@ namespace app {
     // Files already used in the CLI processing (e.g. when used to
     // load a sequence of files) so we don't ask for them again.
     std::set<std::string> m_usedFiles;
-    OpenFileCommand::SequenceDecision m_lastDecision = OpenFileCommand::SequenceDecision::Ask;
+    OpenBatchOfFiles m_batch;
   };
 
 } // namespace app

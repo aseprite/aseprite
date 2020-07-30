@@ -36,6 +36,7 @@
 #include "app/ui/status_bar.h"
 #include "app/ui/toolbar.h"
 #include "app/ui_context.h"
+#include "app/util/open_batch.h"
 #include "base/clamp.h"
 #include "base/fs.h"
 #include "base/memory.h"
@@ -367,7 +368,9 @@ void defer_invalid_rect(const gfx::Rect& rc)
   defered_invalid_region.createUnion(defered_invalid_region, gfx::Region(rc));
 }
 
+//////////////////////////////////////////////////////////////////////
 // Manager event handler.
+
 bool CustomizedGuiManager::onProcessMessage(Message* msg)
 {
 #ifdef ENABLE_STEAM
@@ -392,6 +395,7 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
       if (getForegroundWindow() == App::instance()->mainWindow()) {
         base::paths files = static_cast<DropFilesMessage*>(msg)->files();
         UIContext* ctx = UIContext::instance();
+        OpenBatchOfFiles batch;
 
         while (!files.empty()) {
           auto fn = files.front();
@@ -422,14 +426,11 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
             }
             // Other extensions will be handled as an image/sprite
             else {
-              OpenFileCommand cmd;
-              Params params;
-              params.set("filename", fn.c_str());
-              params.set("repeat_checkbox", "true");
-              ctx->executeCommandFromMenuOrShortcut(&cmd, params);
+              batch.open(ctx, fn,
+                         false); // Open all frames
 
               // Remove all used file names from the "dropped files"
-              for (const auto& usedFn : cmd.usedFiles()) {
+              for (const auto& usedFn : batch.usedFiles()) {
                 auto it = std::find(files.begin(), files.end(), usedFn);
                 if (it != files.end())
                   files.erase(it);
