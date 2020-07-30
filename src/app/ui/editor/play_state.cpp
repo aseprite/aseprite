@@ -51,6 +51,11 @@ PlayState::PlayState(const bool playOnce,
     &PlayState::onBeforeCommandExecution, this);
 }
 
+Tag* PlayState::playingTag() const
+{
+  return m_tag;
+}
+
 void PlayState::onEnterState(Editor* editor)
 {
   StateWithWheelBehavior::onEnterState(editor);

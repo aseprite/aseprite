@@ -68,7 +68,8 @@ int load_sprite_from_file(lua_State* L, const char* filename,
     Commands::instance()->byId(CommandId::OpenFile());
   Params params;
   params.set("filename", absFn.c_str());
-  if (param == LoadSpriteFromFileParam::OneFrameAsImage)
+  if (param == LoadSpriteFromFileParam::OneFrameAsSprite ||
+      param == LoadSpriteFromFileParam::OneFrameAsImage)
     params.set("oneframe", "true");
   ctx->executeCommand(openCommand, params);
 

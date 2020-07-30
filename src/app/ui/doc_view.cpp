@@ -417,6 +417,12 @@ void DocView::onRemoveFrame(DocEvent& ev)
   }
 }
 
+void DocView::onTagChange(DocEvent& ev)
+{
+  if (m_previewDelegate)
+    m_previewDelegate->onTagChangeEditor(m_editor, ev);
+}
+
 void DocView::onAddCel(DocEvent& ev)
 {
   UIContext::instance()->notifyActiveSiteChanged();

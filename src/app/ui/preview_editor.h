@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -42,6 +43,7 @@ namespace app {
     void onScrollOtherEditor(Editor* editor) override;
     void onDisposeOtherEditor(Editor* editor) override;
     void onPreviewOtherEditor(Editor* editor) override;
+    void onTagChangeEditor(Editor* editor, DocEvent& ev) override;
 
   protected:
     bool onProcessMessage(ui::Message* msg) override;
@@ -59,6 +61,7 @@ namespace app {
     void hideWindow();
     void destroyDocView();
     void saveScrollPref();
+    void adjustPlayingTag();
 
     bool m_isEnabled;
     DocView* m_docView;

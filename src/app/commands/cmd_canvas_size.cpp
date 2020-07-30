@@ -42,10 +42,12 @@ using namespace app::skin;
 #endif
 
 struct CanvasSizeParams : public NewParams {
+  Param<bool> ui { this, true, "ui" };
   Param<int> left { this, 0, "left" };
   Param<int> right { this, 0, "right" };
   Param<int> top { this, 0, "top" };
   Param<int> bottom { this, 0, "bottom" };
+  Param<gfx::Rect> bounds { this, gfx::Rect(0, 0, 0, 0), "bounds" };
   Param<bool> trimOutside { this, false, "trimOutside" };
 };
 
@@ -58,9 +60,10 @@ class CanvasSizeWindow : public app::gen::CanvasSize
 public:
   enum class Dir { NW, N, NE, W, C, E, SW, S, SE };
 
-  CanvasSizeWindow(const CanvasSizeParams& params)
+  CanvasSizeWindow(const CanvasSizeParams& params,
+                   const gfx::Rect& bounds)
     : m_editor(current_editor)
-    , m_rect(0, 0, current_editor->sprite()->width(), current_editor->sprite()->height())
+    , m_rect(bounds)
     , m_selectBoxState(
       new SelectBoxState(
         this, m_rect,
@@ -73,6 +76,7 @@ public:
     setRight(0);
     setTop(0);
     setBottom(0);
+    updateBorderFromRect();
 
     width() ->Change.connect([this]{ onSizeChange(); });
     height()->Change.connect([this]{ onSizeChange(); });
@@ -307,18 +311,31 @@ bool CanvasSizeCommand::onEnabled(Context* context)
 
 void CanvasSizeCommand::onExecute(Context* context)
 {
+#ifdef ENABLE_UI
+  const bool ui = (params().ui() && context->isUIAvailable());
+#endif
   const ContextReader reader(context);
   const Sprite* sprite(reader.sprite());
   auto& params = this->params();
 
+  gfx::Rect bounds(0, 0, sprite->width(), sprite->height());
+  if (params.bounds.isSet()) {
+    bounds = params.bounds();
+  }
+  else {
+    bounds.enlarge(
+      gfx::Border(params.left(), params.top(),
+                  params.right(), params.bottom()));
+  }
+
 #ifdef ENABLE_UI
-  if (context->isUIAvailable()) {
+  if (ui) {
     if (!params.trimOutside.isSet()) {
       params.trimOutside(Preferences::instance().canvasSize.trimOutside());
     }
 
     // load the window widget
-    std::unique_ptr<CanvasSizeWindow> window(new CanvasSizeWindow(params));
+    std::unique_ptr<CanvasSizeWindow> window(new CanvasSizeWindow(params, bounds));
 
     window->remapWindow();
 
@@ -346,18 +363,15 @@ void CanvasSizeCommand::onExecute(Context* context)
     params.trimOutside(window->getTrimOutside());
 
     Preferences::instance().canvasSize.trimOutside(params.trimOutside());
+
+    bounds.enlarge(
+      gfx::Border(params.left(), params.top(),
+                  params.right(), params.bottom()));
   }
 #endif
 
-  // Resize canvas
-
-  int x1 = -params.left();
-  int y1 = -params.top();
-  int x2 = sprite->width() + params.right();
-  int y2 = sprite->height() + params.bottom();
-
-  if (x2 <= x1) x2 = x1+1;
-  if (y2 <= y1) y2 = y1+1;
+  if (bounds.w < 1) bounds.w = 1;
+  if (bounds.h < 1) bounds.h = 1;
 
   {
     ContextWriter writer(reader);
@@ -365,12 +379,7 @@ void CanvasSizeCommand::onExecute(Context* context)
     Sprite* sprite = writer.sprite();
     Tx tx(writer.context(), "Canvas Size");
     DocApi api = doc->getApi(tx);
-
-    api.cropSprite(sprite,
-                   gfx::Rect(x1, y1,
-                             base::clamp(x2-x1, 1, DOC_SPRITE_MAX_WIDTH),
-                             base::clamp(y2-y1, 1, DOC_SPRITE_MAX_HEIGHT)),
-                   params.trimOutside());
+    api.cropSprite(sprite, bounds, params.trimOutside());
     tx.commit();
 
 #ifdef ENABLE_UI

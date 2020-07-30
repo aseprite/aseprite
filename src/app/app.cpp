@@ -347,6 +347,7 @@ int App::initialize(const AppOptions& options)
       return code;
   }
 
+  LOG("APP: Finish launching...\n");
   system->finishLaunching();
   return 0;
 }

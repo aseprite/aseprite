@@ -14,6 +14,7 @@
 #include "app/cmd/assign_color_profile.h"
 #include "app/cmd/clear_cel.h"
 #include "app/cmd/convert_color_profile.h"
+#include "app/cmd/copy_region.h"
 #include "app/cmd/flatten_layers.h"
 #include "app/cmd/remove_layer.h"
 #include "app/cmd/remove_slice.h"
@@ -77,9 +78,13 @@ int Sprite_new(lua_State* L)
           if (const char* fromFile = lua_tostring(L, -1)) {
             std::string fn = fromFile;
             lua_pop(L, 1);
+
+            bool oneFrame = (lua_is_key_true(L, -1, "oneFrame"));
+
             return load_sprite_from_file(
               L, fn.c_str(),
-              LoadSpriteFromFileParam::FullAniAsSprite);
+              (oneFrame ? LoadSpriteFromFileParam::OneFrameAsSprite:
+                          LoadSpriteFromFileParam::FullAniAsSprite));
           }
         }
         lua_pop(L, 1);
@@ -444,30 +449,46 @@ int Sprite_newCel(lua_State* L)
   if (frame < 0 || frame > sprite->lastFrame())
     return luaL_error(L, "frame index out of bounds %d", frame+1);
 
+  Doc* doc = static_cast<Doc*>(sprite->document());
   LayerImage* layer = static_cast<LayerImage*>(layerBase);
   ImageRef image(nullptr);
-  gfx::Point pos(0, 0);
 
   Image* srcImage = may_get_image_from_arg(L, 4);
-  if (srcImage) {
-    image.reset(Image::createCopy(srcImage));
-    pos = convert_args_into_point(L, 5);
-  }
-  else {
-    image.reset(Image::create(sprite->spec()));
-  }
+  gfx::Point pos = convert_args_into_point(L, 5);
+  Cel* cel = nullptr;
 
-  auto cel = new Cel(frame, image);
-  cel->setPosition(pos);
+  // For background layers we just draw the image in the existent cel
+  if (layer->isBackground()) {
+    cel = layer->cel(frame);
+    ASSERT(cel);
 
-  Doc* doc = static_cast<Doc*>(sprite->document());
-
-  Tx tx;
-  DocApi api = doc->getApi(tx);
-  if (layer->cel(frame))
+    Tx tx;
+    DocApi api = doc->getApi(tx);
     api.clearCel(layer, frame);
-  api.addCel(layer, cel);
-  tx.commit();
+    if (srcImage) {
+      tx(new cmd::CopyRegion(cel->image(), srcImage,
+                             gfx::Region(srcImage->bounds()),
+                             pos, false));
+    }
+    tx.commit();
+  }
+  // For transparent layers we just draw the image in the existent cel
+  else {
+    if (srcImage)
+      image.reset(Image::createCopy(srcImage));
+    else
+      image.reset(Image::create(sprite->spec()));
+
+    cel = new Cel(frame, image);
+    cel->setPosition(pos);
+
+    Tx tx;
+    DocApi api = doc->getApi(tx);
+    if (layer->cel(frame))
+      api.clearCel(layer, frame);
+    api.addCel(layer, cel);
+    tx.commit();
+  }
 
   push_docobj(L, cel);
   return 1;

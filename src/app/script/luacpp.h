@@ -128,6 +128,8 @@ void create_mt_getters_setters(lua_State* L,
                                const char* tname,
                                const Property* properties);
 
+bool lua_is_key_true(lua_State* L, int tableIndex, const char* keyName);
+
 #define REG_CLASS_PROPERTIES(L, T) {                                \
     luaL_getmetatable(L, get_mtname<T>());                          \
     create_mt_getters_setters(L, get_mtname<T>(), T##_properties);  \
