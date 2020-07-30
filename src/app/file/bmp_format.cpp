@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -17,8 +17,12 @@
 #include "base/cfile.h"
 #include "base/file_handle.h"
 #include "doc/doc.h"
+#include "fmt/format.h"
 
 namespace app {
+
+// Max supported .bmp size (to filter out invalid image sizes)
+const uint32_t kMaxBmpSize = 1024*1024*128; // 128 MB
 
 using namespace base;
 
@@ -211,6 +215,9 @@ static void read_bmicolors(FileOp* fop, int bytes, FILE *f, bool win_flag)
       i++;
     }
   }
+
+  // Set the number of colors in the palette
+  fop->sequenceSetNColors(j);
 
   for (; i<bytes; i++)
     fgetc(f);
@@ -643,6 +650,28 @@ bool BmpFormat::onLoad(FileOp *fop)
     return false;
   }
 
+  // Check image size is valid
+  {
+    if (int(infoheader.biWidth) < 1 ||
+        ABS(int(infoheader.biHeight)) == 0) {
+      fop->setError("Invalid BMP size.\n");
+      return false;
+    }
+
+    uint32_t size = infoheader.biWidth * uint32_t(ABS(int(infoheader.biHeight)));
+    if (infoheader.biBitCount >= 8)
+      size *= (infoheader.biBitCount / 8);
+    else if (8 / infoheader.biBitCount > 0)
+      size /= (8 / infoheader.biBitCount);
+
+    if (size > kMaxBmpSize) {
+      fop->setError(fmt::format("BMP size unsupported ({:.2f} MB > {:.2f} MB).\n",
+                                size / 1024.0 / 1024.0,
+                                kMaxBmpSize / 1024.0 / 1024.0).c_str());
+      return false;
+    }
+  }
+
   if ((infoheader.biBitCount == 32) ||
       (infoheader.biBitCount == 24) ||
       (infoheader.biBitCount == 16))
@@ -723,21 +752,48 @@ bool BmpFormat::onLoad(FileOp *fop)
 bool BmpFormat::onSave(FileOp *fop)
 {
   const Image* image = fop->sequenceImage();
+  const int w = image->width();
+  const int h = image->height();
   int bfSize;
   int biSizeImage;
-  int bpp = (image->pixelFormat() == IMAGE_RGB) ? 24 : 8;
-  int filler = 3 - ((image->width()*(bpp/8)-1) & 3);
+  int ncolors = fop->sequenceGetNColors();
+  int bpp = 0;
+  switch (image->pixelFormat()) {
+    case IMAGE_RGB:
+      bpp = 24;
+      break;
+    case IMAGE_GRAYSCALE:
+      bpp = 8;
+      break;
+    case IMAGE_INDEXED: {
+      if (ncolors > 16)
+        bpp = 8;
+      else if (ncolors > 2)
+        bpp = 4;
+      else
+        bpp = 1;
+      ncolors = (1 << bpp);
+      break;
+    }
+    default:
+      // TODO save IMAGE_BITMAP as 1bpp bmp?
+      // Invalid image format
+      fop->setError("Unsupported color mode.\n");
+      return false;
+  }
+
+  int filler = int((32 - ((w*bpp-1) & 31)-1) / 8);
   int c, i, j, r, g, b;
 
-  if (bpp == 8) {
-    biSizeImage = (image->width() + filler) * image->height();
-    bfSize = (54                      /* header */
-              + 256*4                 /* palette */
-              + biSizeImage);         /* image data */
+  if (bpp <= 8) {
+    biSizeImage = (w + filler)*bpp/8 * h;
+    bfSize = (54                      // header
+              + ncolors*4             // palette
+              + biSizeImage);         // image data
   }
   else {
-    biSizeImage = (image->width()*3 + filler) * image->height();
-    bfSize = 54 + biSizeImage;       /* header + image data */
+    biSizeImage = (w*3 + filler) * h;
+    bfSize = 54 + biSizeImage;       // header + image data
   }
 
   FileHandle handle(open_file_with_exception_sync_on_close(fop->filename(), "wb"));
@@ -749,15 +805,15 @@ bool BmpFormat::onSave(FileOp *fop)
   fputw(0, f);                   /* bfReserved1 */
   fputw(0, f);                   /* bfReserved2 */
 
-  if (bpp == 8)                 /* bfOffBits */
-    fputl(54+256*4, f);
+  if (bpp <= 8)                 /* bfOffBits */
+    fputl(54+ncolors*4, f);
   else
     fputl(54, f);
 
   /* info_header */
   fputl(40, f);                  /* biSize */
-  fputl(image->width(), f);   /* biWidth */
-  fputl(image->height(), f);  /* biHeight */
+  fputl(w, f);                   /* biWidth */
+  fputl(h, f);                   /* biHeight */
   fputw(1, f);                   /* biPlanes */
   fputw(bpp, f);                 /* biBitCount */
   fputl(0, f);                   /* biCompression */
@@ -765,12 +821,12 @@ bool BmpFormat::onSave(FileOp *fop)
   fputl(0xB12, f);               /* biXPelsPerMeter (0xB12 = 72 dpi) */
   fputl(0xB12, f);               /* biYPelsPerMeter */
 
-  if (bpp == 8) {
-    fputl(256, f);              /* biClrUsed */
-    fputl(256, f);              /* biClrImportant */
+  if (bpp <= 8) {
+    fputl(ncolors, f);              /* biClrUsed */
+    fputl(ncolors, f);              /* biClrImportant */
 
-    /* palette */
-    for (i=0; i<256; i++) {
+    // Save the palette
+    for (i=0; i<ncolors; i++) {
       fop->sequenceGetColor(i, &r, &g, &b);
       fputc(b, f);
       fputc(g, f);
@@ -783,27 +839,49 @@ bool BmpFormat::onSave(FileOp *fop)
     fputl(0, f);                /* biClrImportant */
   }
 
-  /* image data */
-  for (i=image->height()-1; i>=0; i--) {
-    for (j=0; j<image->width(); j++) {
-      if (bpp == 8) {
-        if (image->pixelFormat() == IMAGE_INDEXED)
-          fputc(get_pixel_fast<IndexedTraits>(image, j, i), f);
-        else if (image->pixelFormat() == IMAGE_GRAYSCALE)
-          fputc(graya_getv(get_pixel_fast<GrayscaleTraits>(image, j, i)), f);
-      }
-      else {
-        c = get_pixel_fast<RgbTraits>(image, j, i);
-        fputc(rgba_getb(c), f);
-        fputc(rgba_getg(c), f);
-        fputc(rgba_getr(c), f);
-      }
+  // Only used in indexed mode
+  int colorsPerByte = std::max(1, 8/bpp);
+  int colorMask;
+  switch (bpp) {
+    case 8: colorMask = 0xFF; break;
+    case 4: colorMask = 0x0F; break;
+    case 1: colorMask = 0x01; break;
+    default: colorMask = 0; break;
+  }
+
+  // Save image pixels (from bottom to top)
+  for (i=h-1; i>=0; i--) {
+    switch (image->pixelFormat()) {
+      case IMAGE_RGB:
+        for (j=0; j<w; ++j) {
+          c = get_pixel_fast<RgbTraits>(image, j, i);
+          fputc(rgba_getb(c), f);
+          fputc(rgba_getg(c), f);
+          fputc(rgba_getr(c), f);
+        }
+        break;
+      case IMAGE_GRAYSCALE:
+        for (j=0; j<w; ++j) {
+          c = get_pixel_fast<GrayscaleTraits>(image, j, i);
+          fputc(graya_getv(c), f);
+        }
+        break;
+      case IMAGE_INDEXED:
+        for (j=0; j<w; ) {
+          uint8_t value = 0;
+          for (int k=colorsPerByte-1; k>=0 && j<w; --k, ++j) {
+            c = get_pixel_fast<IndexedTraits>(image, j, i);
+            value |= (c & colorMask) << (bpp*k);
+          }
+          fputc(value, f);
+        }
+        break;
     }
 
     for (j=0; j<filler; j++)
       fputc(0, f);
 
-    fop->setProgress((float)(image->height()-i) / (float)image->height());
+    fop->setProgress((float)(h-i) / (float)h);
   }
 
   if (ferror(f)) {

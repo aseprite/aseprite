@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -72,6 +72,9 @@ namespace app {
     // The selection has changed.
     virtual void onSelectionChanged(DocEvent& ev) { }
     virtual void onSelectionBoundariesChanged(DocEvent& ev) { }
+
+    // Tags
+    virtual void onTagChange(DocEvent& ev) { }
 
     // Slices
     virtual void onSliceNameChange(DocEvent& ev) { }

@@ -30,6 +30,7 @@ namespace app {
     virtual void onScrollOtherEditor(Editor* editor) = 0;
     virtual void onDisposeOtherEditor(Editor* editor) = 0;
     virtual void onPreviewOtherEditor(Editor* editor) = 0;
+    virtual void onTagChangeEditor(Editor* editor, DocEvent& ev) = 0;
   };
 
   class DocView : public ui::Box,
@@ -75,6 +76,7 @@ namespace app {
     void onAddLayer(DocEvent& ev) override;
     void onAddFrame(DocEvent& ev) override;
     void onRemoveFrame(DocEvent& ev) override;
+    void onTagChange(DocEvent& ev) override;
     void onAddCel(DocEvent& ev) override;
     void onRemoveCel(DocEvent& ev) override;
     void onTotalFramesChanged(DocEvent& ev) override;

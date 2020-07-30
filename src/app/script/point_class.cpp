@@ -30,8 +30,7 @@ gfx::Point Point_new(lua_State* L, int index)
   // Convert {x=int,y=int} or {int,int} into a Point
   else if (lua_istable(L, index)) {
     const int type = lua_getfield(L, index, "x");
-    if (type != LUA_TNONE &&
-        type != LUA_TNIL) {
+    if (VALID_LUATYPE(type)) {
       lua_getfield(L, index, "y");
       pt.x = lua_tointeger(L, -2);
       pt.y = lua_tointeger(L, -1);

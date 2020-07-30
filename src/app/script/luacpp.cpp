@@ -93,5 +93,15 @@ void create_mt_getters_setters(lua_State* L,
   ASSERT(lua_gettop(L) == top);
 }
 
+bool lua_is_key_true(lua_State* L, int tableIndex, const char* keyName)
+{
+  bool result = false;
+  int type = lua_getfield(L, tableIndex, keyName);
+  if (type != LUA_TNIL && lua_toboolean(L, -1))
+    result = true;
+  lua_pop(L, 1);
+  return result;
+}
+
 } // namespace script
 } // namespace app

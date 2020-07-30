@@ -29,8 +29,7 @@ gfx::Rect Rectangle_new(lua_State* L, int index)
   // Convert { x, y, width, height } into a Rectangle
   else if (lua_istable(L, index)) {
     const int type = lua_getfield(L, index, "x");
-    if (type != LUA_TNONE &&
-        type != LUA_TNIL) {
+    if (VALID_LUATYPE(type)) {
       lua_getfield(L, index, "y");
       lua_getfield(L, index, "width");
       lua_getfield(L, index, "height");

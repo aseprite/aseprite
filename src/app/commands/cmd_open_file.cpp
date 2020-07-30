@@ -122,6 +122,12 @@ void OpenFileCommand::onExecute(Context* context)
       // The user cancelled the operation through UI
       return;
     }
+
+    // If the user selected several files, show the checkbox to repeat
+    // the action for future filenames in the batch of selected files
+    // to open.
+    if (filenames.size() > 1)
+      m_repeatCheckbox = true;
   }
   else
 #endif // ENABLE_UI
@@ -152,7 +158,11 @@ void OpenFileCommand::onExecute(Context* context)
   if (m_oneFrame)
     flags |= FILE_LOAD_ONE_FRAME;
 
-  for (const auto& filename : filenames) {
+  std::string filename;
+  while (!filenames.empty()) {
+    filename = filenames[0];
+    filenames.erase(filenames.begin());
+
     std::unique_ptr<FileOp> fop(
       FileOp::createLoadDocumentOperation(
         context, filename, flags));
@@ -168,18 +178,29 @@ void OpenFileCommand::onExecute(Context* context)
     }
     else {
       if (fop->isSequence()) {
-
         if (fop->sequenceFlags() & FILE_LOAD_SEQUENCE_YES) {
           m_seqDecision = SequenceDecision::Agree;
+          flags &= ~FILE_LOAD_SEQUENCE_ASK;
+          flags |= FILE_LOAD_SEQUENCE_YES;
         }
         else if (fop->sequenceFlags() & FILE_LOAD_SEQUENCE_NONE) {
           m_seqDecision = SequenceDecision::Skip;
+          flags &= ~FILE_LOAD_SEQUENCE_ASK;
+          flags |= FILE_LOAD_SEQUENCE_NONE;
         }
 
-        m_usedFiles = fop->filenames();
+        for (std::string fn : fop->filenames()) {
+          fn = base::normalize_path(fn);
+          m_usedFiles.push_back(fn);
+
+          auto it = std::find(filenames.begin(), filenames.end(), fn);
+          if (it != filenames.end())
+            filenames.erase(it);
+        }
       }
       else {
-        m_usedFiles.push_back(fop->filename());
+        auto fn = base::normalize_path(fop->filename());
+        m_usedFiles.push_back(fn);
       }
 
       OpenFileJob task(fop.get());
