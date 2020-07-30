@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -25,6 +26,10 @@ namespace app {
 
     const base::paths& usedFiles() const {
       return m_usedFiles;
+    }
+
+    SequenceDecision seqDecision() const {
+      return m_seqDecision;
     }
 
   protected:

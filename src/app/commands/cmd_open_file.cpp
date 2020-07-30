@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -169,14 +169,12 @@ void OpenFileCommand::onExecute(Context* context)
     }
     else {
       if (fop->isSequence()) {
-
         if (fop->sequenceFlags() & FILE_LOAD_SEQUENCE_YES) {
           m_seqDecision = SequenceDecision::Agree;
         }
         else if (fop->sequenceFlags() & FILE_LOAD_SEQUENCE_NONE) {
           m_seqDecision = SequenceDecision::Skip;
         }
-
         m_usedFiles = fop->filenames();
       }
       else {

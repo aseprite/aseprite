@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -11,10 +11,12 @@
 
 #include "app/cli/cli_delegate.h"
 #include "app/cli/cli_open_file.h"
+#include "app/commands/cmd_open_file.h"
 #include "app/doc_exporter.h"
 #include "doc/selected_layers.h"
 
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -58,6 +60,11 @@ namespace app {
     CliDelegate* m_delegate;
     const AppOptions& m_options;
     std::unique_ptr<DocExporter> m_exporter;
+
+    // Files already used in the CLI processing (e.g. when used to
+    // load a sequence of files) so we don't ask for them again.
+    std::set<std::string> m_usedFiles;
+    OpenFileCommand::SequenceDecision m_lastDecision = OpenFileCommand::SequenceDecision::Ask;
   };
 
 } // namespace app

@@ -33,6 +33,7 @@
 #include "doc/slice.h"
 #include "doc/tag.h"
 #include "doc/tags.h"
+#include "os/system.h"
 #include "render/dithering_algorithm.h"
 
 #include <algorithm>
@@ -576,8 +577,14 @@ int CliProcessor::process(Context* ctx)
       else {
         cof.document = nullptr;
         cof.filename = base::normalize_path(value.value());
-        if (openFile(ctx, cof))
+
+        if (// Check that the filename wasn't used loading a sequence
+            // of images as one sprite
+            m_usedFiles.find(cof.filename) == m_usedFiles.end() &&
+            // Open sprite
+            openFile(ctx, cof)) {
           lastDoc = cof.document;
+        }
       }
     }
 
@@ -610,12 +617,39 @@ bool CliProcessor::openFile(Context* ctx, CliOpenFile& cof)
   m_delegate->beforeOpenFile(cof);
 
   Doc* oldDoc = ctx->activeDocument();
-  Command* openCommand = Commands::instance()->byId(CommandId::OpenFile());
+  auto openCommand = static_cast<OpenFileCommand*>(Commands::instance()->byId(CommandId::OpenFile()));
   Params params;
   params.set("filename", cof.filename.c_str());
   if (cof.oneFrame)
     params.set("oneframe", "true");
+  else {
+    switch (m_lastDecision) {
+      case OpenFileCommand::SequenceDecision::Ask:
+        params.set("sequence", "ask");
+        params.set("repeat_checkbox", "true");
+        break;
+      case OpenFileCommand::SequenceDecision::Skip:
+        params.set("sequence", "skip");
+        break;
+      case OpenFileCommand::SequenceDecision::Agree:
+        params.set("sequence", "agree");
+        break;
+    }
+  }
   ctx->executeCommand(openCommand, params);
+
+  // Mark used file names as "already processed" so we don't try to
+  // open then again
+  for (const auto& usedFn : openCommand->usedFiles()) {
+    auto fn = base::normalize_path(usedFn);
+    m_usedFiles.insert(fn);
+
+    os::instance()->markCliFileAsProcessed(fn);
+  }
+
+  // Future decision for other files in the CLI
+  if (openCommand->seqDecision() != OpenFileCommand::SequenceDecision::Ask)
+    m_lastDecision = openCommand->seqDecision();
 
   Doc* doc = ctx->activeDocument();
   // If the active document is equal to the previous one, it
