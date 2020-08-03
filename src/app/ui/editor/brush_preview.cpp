@@ -179,11 +179,13 @@ void BrushPreview::show(const gfx::Point& screenPos)
       showPreview = m_editor->getState()->requireBrushPreview();
       switch (brushPreview) {
         case app::gen::BrushPreview::FULLALL:
-          m_type = CROSSHAIR;
+          if (showPreview)
+            m_type = CROSSHAIR;
           cancelEdges = true;
           break;
         case app::gen::BrushPreview::FULLNEDGES:
-          showPreviewWithEdges = true;
+          if (showPreview)
+            showPreviewWithEdges = true;
           break;
       }
       break;
