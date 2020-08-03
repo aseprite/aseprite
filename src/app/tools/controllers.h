@@ -153,6 +153,8 @@ public:
     stroke[0] = m_first;
     stroke[1] = pt;
 
+    bool isoAngle = false;
+
     if ((int(loop->getModifiers()) & int(ToolLoopModifiers::kSquareAspect))) {
       int dx = stroke[1].x - m_first.x;
       int dy = stroke[1].y - m_first.y;
@@ -173,6 +175,7 @@ public:
         else if (angle < 36.0) {
           stroke[1].x = m_first.x + SGN(dx)*maxsize;
           stroke[1].y = m_first.y + SGN(dy)*maxsize/2;
+          isoAngle = true;
         }
         // Snap at 45
         else if (angle < 54.0) {
@@ -183,6 +186,7 @@ public:
         else if (angle < 72.0) {
           stroke[1].x = m_first.x + SGN(dx)*maxsize/2;
           stroke[1].y = m_first.y + SGN(dy)*maxsize;
+          isoAngle = true;
         }
         // Snap vertically
         else {
@@ -207,8 +211,8 @@ public:
     else if ((int(loop->getModifiers()) & int(ToolLoopModifiers::kFromCenter))) {
       int rx = stroke[1].x - m_first.x;
       int ry = stroke[1].y - m_first.y;
-      stroke[0].x = m_first.x - rx;
-      stroke[0].y = m_first.y - ry;
+      stroke[0].x = m_first.x - rx + (isoAngle && ABS(rx) > ABS(ry) ? SGN(rx)*(rx & 1): 0);
+      stroke[0].y = m_first.y - ry + (isoAngle && ABS(rx) < ABS(ry) ? SGN(ry)*(ry & 1): 0);
       stroke[1].x = m_first.x + rx;
       stroke[1].y = m_first.y + ry;
     }
