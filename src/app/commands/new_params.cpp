@@ -345,7 +345,7 @@ void Param<filters::ColorCurve>::fromLua(lua_State* L, int index)
 template<>
 void Param<tools::InkType>::fromLua(lua_State* L, int index)
 {
-  script::get_value_from_lua<tools::InkType>(L, index);
+  setValue(script::get_value_from_lua<tools::InkType>(L, index));
 }
 
 void CommandWithNewParamsBase::loadParamsFromLuaTable(lua_State* L, int index)
