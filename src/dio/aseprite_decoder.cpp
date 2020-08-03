@@ -1,5 +1,5 @@
 // Aseprite Document IO Library
-// Copyright (c) 2018-2019 Igara Studio S.A.
+// Copyright (c) 2018-2020 Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -36,6 +36,22 @@ bool AsepriteDecoder::decode()
   AsepriteHeader header;
   if (!readHeader(&header)) {
     delegate()->error("Error reading header");
+    return false;
+  }
+
+  if (header.depth != 32 &&
+      header.depth != 16 &&
+      header.depth != 8) {
+    delegate()->error(
+      fmt::format("Invalid color depth {0}",
+                  header.depth));
+    return false;
+  }
+
+  if (header.width < 1 || header.height < 1) {
+    delegate()->error(
+      fmt::format("Invalid sprite size {0}x{1}",
+                  header.width, header.height));
     return false;
   }
 
