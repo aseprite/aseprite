@@ -28,6 +28,8 @@
       <value id="NONE" value="0" />
       <value id="EDGES" value="1" />
       <value id="FULL" value="2" />
+      <value id="FULLALL" value="3" />
+      <value id="FULLNEDGES" value="4" />
     </enum>
     <enum id="BgType">
       <value id="CHECKED_16x16" value="0" />
