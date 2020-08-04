@@ -518,30 +518,7 @@ void Manager::handleMouseMove(const gfx::Point& mousePos,
                               const PointerType pointerType,
                               const float pressure)
 {
-  // Get the list of widgets to send mouse messages.
-  mouse_widgets_list.clear();
-  broadcastMouseMessage(mouse_widgets_list);
-
-  // Get the widget under the mouse
-  Widget* widget = nullptr;
-  for (auto mouseWidget : mouse_widgets_list) {
-    widget = mouseWidget->pick(mousePos);
-    if (widget) {
-      // Get the first ancestor of the picked widget that doesn't
-      // ignore mouse events.
-      while (widget && widget->hasFlags(IGNORE_MOUSE))
-        widget = widget->parent();
-      break;
-    }
-  }
-
-  // Fixup "mouse" flag
-  if (widget != mouse_widget) {
-    if (!widget)
-      freeMouse();
-    else
-      setMouse(widget);
-  }
+  updateMouseWidgets(mousePos);
 
   // Send the mouse movement message
   Widget* dst = (capture_widget ? capture_widget: mouse_widget);
@@ -681,6 +658,34 @@ void Manager::handleWindowZOrder()
 
   // Put the focus
   setFocus(mouse_widget);
+}
+
+void Manager::updateMouseWidgets(const gfx::Point& mousePos)
+{
+  // Get the list of widgets to send mouse messages.
+  mouse_widgets_list.clear();
+  broadcastMouseMessage(mouse_widgets_list);
+
+  // Get the widget under the mouse
+  Widget* widget = nullptr;
+  for (auto mouseWidget : mouse_widgets_list) {
+    widget = mouseWidget->pick(mousePos);
+    if (widget) {
+      // Get the first ancestor of the picked widget that doesn't
+      // ignore mouse events.
+      while (widget && widget->hasFlags(IGNORE_MOUSE))
+        widget = widget->parent();
+      break;
+    }
+  }
+
+  // Fixup "mouse" flag
+  if (widget != mouse_widget) {
+    if (!widget)
+      freeMouse();
+    else
+      setMouse(widget);
+  }
 }
 
 void Manager::dispatchMessages()
@@ -1103,9 +1108,7 @@ void Manager::_openWindow(Window* window)
 
   // Update mouse widget (as it can be a widget below the
   // recently opened window).
-  Widget* widget = pick(ui::get_mouse_position());
-  if (widget)
-    setMouse(widget);
+  updateMouseWidgets(ui::get_mouse_position());
 }
 
 void Manager::_closeWindow(Window* window, bool redraw_background)
@@ -1160,9 +1163,7 @@ void Manager::_closeWindow(Window* window, bool redraw_background)
 
   // Update mouse widget (as it can be a widget below the
   // recently closed window).
-  Widget* widget = pick(ui::get_mouse_position());
-  if (widget)
-    setMouse(widget);
+  updateMouseWidgets(ui::get_mouse_position());
 
   redrawState = RedrawState::AWindowHasJustBeenClosed;
 }
