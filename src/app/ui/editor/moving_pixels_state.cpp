@@ -5,6 +5,8 @@
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
+#define MOVPIXS_TRACE(...) // TRACE(__VA_ARGS__)
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -175,7 +177,7 @@ void MovingPixelsState::onEditorGotFocus(Editor* editor)
 
 EditorState::LeaveAction MovingPixelsState::onLeaveState(Editor* editor, EditorState* newState)
 {
-  TRACE("MOVPIXS: onLeaveState\n");
+  MOVPIXS_TRACE("MOVPIXS: onLeaveState\n");
 
   ASSERT(m_pixelsMovement);
   ASSERT(editor == m_editor);
@@ -490,8 +492,22 @@ bool MovingPixelsState::onKeyUp(Editor* editor, KeyMessage* msg)
 
 bool MovingPixelsState::onUpdateStatusBar(Editor* editor)
 {
+  MOVPIXS_TRACE("MOVPIXS: onUpdateStatusBar (%p)\n", m_pixelsMovement.get());
+
   ASSERT(m_pixelsMovement);
   ASSERT(editor == m_editor);
+
+  // We've received a crash report where this is nullptr when
+  // MovingPixelsState::onLeaveState() generates a general update
+  // notification (notifyGeneralUpdate()) just after the
+  // m_pixelsMovement is deleted with removePixelsMovement(). The
+  // general update signals a scroll update in the view which will ask
+  // for the status bar content again (Editor::notifyScrollChanged).
+  //
+  // We weren't able to reproduce this scenario anyway (which should
+  // be visible with the ASSERT() above).
+  if (!m_pixelsMovement)
+    return false;
 
   const Transformation& transform(getTransformation(editor));
   gfx::Size imageSize = m_pixelsMovement->getInitialImageSize();
@@ -533,7 +549,7 @@ void MovingPixelsState::onBeforeCommandExecution(CommandExecutionEvent& ev)
 {
   Command* command = ev.command();
 
-  TRACE("MOVPIXS: onBeforeCommandExecution %s\n", command->id().c_str());
+  MOVPIXS_TRACE("MOVPIXS: onBeforeCommandExecution %s\n", command->id().c_str());
 
   // If the command is for other editor, we don't drop pixels.
   if (!isActiveEditor())
@@ -744,7 +760,7 @@ void MovingPixelsState::setTransparentColor(bool opaque, const app::Color& color
 
 void MovingPixelsState::dropPixels()
 {
-  TRACE("MOVPIXS: dropPixels\n");
+  MOVPIXS_TRACE("MOVPIXS: dropPixels\n");
 
   // Just change to default state (StandbyState generally). We'll
   // receive an onLeaveState() event after this call.
