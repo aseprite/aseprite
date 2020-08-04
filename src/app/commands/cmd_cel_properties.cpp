@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -230,6 +231,11 @@ private:
   }
 
   // DocObserver impl
+  void onBeforeRemoveCel(DocEvent& ev) override {
+    if (m_cel == ev.cel())
+      setCel(m_document, nullptr);
+  }
+
   void onCelOpacityChange(DocEvent& ev) override {
     if (m_cel == ev.cel())
       updateFromCel();

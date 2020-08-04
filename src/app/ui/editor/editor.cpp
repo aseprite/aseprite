@@ -2149,7 +2149,7 @@ void Editor::onBeforeRemoveLayer(DocEvent& ev)
     setLayer(layerToSelect);
 }
 
-void Editor::onRemoveCel(DocEvent& ev)
+void Editor::onBeforeRemoveCel(DocEvent& ev)
 {
   m_showGuidesThisCel = nullptr;
 }

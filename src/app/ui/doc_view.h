@@ -78,7 +78,7 @@ namespace app {
     void onRemoveFrame(DocEvent& ev) override;
     void onTagChange(DocEvent& ev) override;
     void onAddCel(DocEvent& ev) override;
-    void onRemoveCel(DocEvent& ev) override;
+    void onAfterRemoveCel(DocEvent& ev) override;
     void onTotalFramesChanged(DocEvent& ev) override;
     void onLayerRestacked(DocEvent& ev) override;
 
