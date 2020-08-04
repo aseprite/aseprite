@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -21,7 +22,10 @@ Command::Command(const char* id, CommandFlags flags)
 {
   std::string strId = "commands.";
   strId += this->id();
-  m_friendlyName = Strings::instance()->translate(strId.c_str());
+  if (auto s = Strings::instance())
+    m_friendlyName = s->translate(strId.c_str());
+  else
+    m_friendlyName = strId;
 }
 
 Command::~Command()
