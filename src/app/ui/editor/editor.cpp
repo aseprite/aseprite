@@ -156,6 +156,7 @@ Editor::Editor(Doc* document, EditorFlags flags)
   , m_aniSpeed(1.0)
   , m_isPlaying(false)
   , m_showGuidesThisCel(nullptr)
+  , m_showAutoCelGuides(false)
   , m_tagFocusBand(-1)
 {
   if (!m_renderEngine)
@@ -875,8 +876,7 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
   }
 
   // Draw active layer/cel edges
-  bool showGuidesThisCel = this->showAutoCelGuides();
-  if ((m_docPref.show.layerEdges() || showGuidesThisCel) &&
+  if ((m_docPref.show.layerEdges() || m_showAutoCelGuides) &&
       // Show layer edges only on "standby" like states where brush
       // preview is shown (e.g. with this we avoid to showing the
       // edges in states like DrawingState, etc.).
@@ -887,9 +887,10 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
         g, cel,
         color_utils::color_for_ui(Preferences::instance().guides.layerEdgesColor()));
 
-      if (showGuidesThisCel &&
-          m_showGuidesThisCel != cel)
+      if (m_showAutoCelGuides &&
+          m_showGuidesThisCel != cel) {
         drawCelGuides(g, cel, m_showGuidesThisCel);
+      }
     }
   }
 
@@ -1764,6 +1765,9 @@ bool Editor::onProcessMessage(Message* msg)
     case kMouseLeaveMessage:
       m_brushPreview.hide();
       StatusBar::instance()->showDefaultText();
+
+      // Hide autoguides
+      updateAutoCelGuides(nullptr);
       break;
 
     case kMouseDownMessage:
@@ -2774,22 +2778,21 @@ void Editor::invalidateIfActive()
     invalidate();
 }
 
-bool Editor::showAutoCelGuides()
-{
-  return
-    (getCurrentEditorInk()->isCelMovement() &&
-     m_docPref.show.autoGuides() &&
-     m_customizationDelegate &&
-     int(m_customizationDelegate->getPressedKeyAction(KeyContext::MoveTool) & KeyAction::AutoSelectLayer));
-}
-
 void Editor::updateAutoCelGuides(ui::Message* msg)
 {
   Cel* oldShowGuidesThisCel = m_showGuidesThisCel;
+  bool oldShowAutoCelGuides = m_showAutoCelGuides;
+
+  m_showAutoCelGuides = (
+    msg &&
+    getCurrentEditorInk()->isCelMovement() &&
+    m_docPref.show.autoGuides() &&
+    m_customizationDelegate &&
+    int(m_customizationDelegate->getPressedKeyAction(KeyContext::MoveTool) & KeyAction::AutoSelectLayer));
 
   // Check if the user is pressing the Ctrl or Cmd key on move
   // tool to show automatic guides.
-  if (showAutoCelGuides() &&
+  if (m_showAutoCelGuides &&
       m_state->requireBrushPreview()) {
     ui::MouseMessage* mouseMsg = dynamic_cast<ui::MouseMessage*>(msg);
 
@@ -2805,8 +2808,10 @@ void Editor::updateAutoCelGuides(ui::Message* msg)
     m_showGuidesThisCel = nullptr;
   }
 
-  if (m_showGuidesThisCel != oldShowGuidesThisCel)
+  if (m_showGuidesThisCel != oldShowGuidesThisCel ||
+      m_showAutoCelGuides != oldShowAutoCelGuides) {
     invalidate();
+  }
 }
 
 // static

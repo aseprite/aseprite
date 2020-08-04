@@ -436,6 +436,7 @@ namespace app {
     // The Cel that is above the mouse if the Ctrl (or Cmd) key is
     // pressed (move key).
     Cel* m_showGuidesThisCel;
+    bool m_showAutoCelGuides;
 
     // Focused tag band. Used by the Timeline to save/restore the
     // focused tag band for each sprite/editor.
