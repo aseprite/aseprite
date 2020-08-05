@@ -484,10 +484,10 @@ void PreviewEditorWindow::destroyDocView()
 void PreviewEditorWindow::adjustPlayingTag()
 {
   Editor* editor = m_relatedEditor;
-  Editor* miniEditor = m_docView->editor();
+  if (!editor || !m_docView)
+    return;
 
-  ASSERT(editor);
-  ASSERT(miniEditor);
+  Editor* miniEditor = m_docView->editor();
 
   if (miniEditor->isPlaying()) {
     doc::Tag* tag = editor
