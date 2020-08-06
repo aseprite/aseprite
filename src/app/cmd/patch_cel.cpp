@@ -40,17 +40,17 @@ void PatchCel::onExecute()
 
   gfx::Rect newBounds;
   gfx::Region copyRegion = m_region;
-  Tileset* tileset = nullptr;
   doc::Grid grid;
-  if (cel->image()->pixelFormat() == IMAGE_TILEMAP ) {
+  if (cel->image()->pixelFormat() == IMAGE_TILEMAP) {
     newBounds = cel->bounds() | m_region.bounds();
-    tileset = static_cast<LayerTilemap*>(cel->layer())->tileset();
+    auto tileset = static_cast<LayerTilemap*>(cel->layer())->tileset();
     grid = tileset->grid();
     grid.origin(m_pos);
     copyRegion = grid.canvasToTile(m_region);
   }
   else
     newBounds = cel->bounds() | gfx::Rect(m_region.bounds()).offset(m_pos);
+
   if (cel->bounds() != newBounds) {
     executeAndAdd(new CropCel(cel, newBounds));
   }

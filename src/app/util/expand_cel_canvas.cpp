@@ -140,7 +140,7 @@ ExpandCelCanvas::ExpandCelCanvas(
     //  grid.origin()
     //  example = (-1, -1)
     //          O---------|---------|-----   <--- grid (example: tile size = 2x2)
-    //          |     ____________________      
+    //          |     ____________________
     //          |    |                       <-- sprite canvas
     //          -    |    .---------.
     //          |    |    |         |
@@ -262,8 +262,7 @@ void ExpandCelCanvas::commit()
     m_cel->setPosition(m_origCelPos);
 
 #ifdef _DEBUG
-    if (m_layer->isTilemap() &&
-        m_tilemapMode == TilemapMode::Pixels) {
+    if (m_layer->isTilemap()) {
       ASSERT(m_cel->image() != m_celImage.get());
     }
     else {
@@ -320,9 +319,9 @@ void ExpandCelCanvas::commit()
     // Check that the region to copy or patch is not empty before we
     // create the new cmd
     else if (!regionToPatch->isEmpty()) {
-      ASSERT(m_celImage.get() == m_cel->image());
-
       if (m_layer->isBackground()) {
+        ASSERT(m_celImage.get() == m_cel->image());
+
         m_cmds->executeAndAdd(
           new cmd::CopyRegion(
             m_cel->image(),
@@ -332,6 +331,8 @@ void ExpandCelCanvas::commit()
       }
       else {
         if (m_tilemapMode == TilemapMode::Tiles) {
+          ASSERT(m_celImage.get() != m_cel->image());
+
           m_cel->data()->setImage(m_celImage, m_layer);
           gfx::Region regionInCanvas = m_grid.tileToCanvas(regionToPatch);
           regionToPatch = &regionInCanvas;
@@ -343,6 +344,8 @@ void ExpandCelCanvas::commit()
               m_grid.origin()));
         }
         else {
+          ASSERT(m_celImage.get() == m_cel->image());
+
           m_cmds->executeAndAdd(
             new cmd::PatchCel(
               m_cel,
@@ -446,9 +449,6 @@ void ExpandCelCanvas::validateSourceCanvas(const gfx::Region& rgn)
     rgnToValidate.offset(-m_bounds.origin());
   rgnToValidate.createSubtraction(rgnToValidate, m_validSrcRegion);
   rgnToValidate.createIntersection(rgnToValidate, gfx::Region(m_srcImage->bounds()));
-
-  if (m_validSrcRegion.bounds() == gfx::Rect(1, 1, 6, 6))
-    int aaa = 0;
 
   if (m_celImage) {
     gfx::Region rgnToClear;
