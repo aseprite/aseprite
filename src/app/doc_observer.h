@@ -40,7 +40,8 @@ namespace app {
     // removed, and the sprite's total number of frames is modified.
     virtual void onRemoveFrame(DocEvent& ev) { }
     virtual void onRemoveTag(DocEvent& ev) { }
-    virtual void onRemoveCel(DocEvent& ev) { }
+    virtual void onBeforeRemoveCel(DocEvent& ev) { }
+    virtual void onAfterRemoveCel(DocEvent& ev) { }
     virtual void onRemoveSlice(DocEvent& ev) { }
 
     virtual void onSpriteSizeChanged(DocEvent& ev) { }

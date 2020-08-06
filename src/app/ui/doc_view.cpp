@@ -428,7 +428,7 @@ void DocView::onAddCel(DocEvent& ev)
   UIContext::instance()->notifyActiveSiteChanged();
 }
 
-void DocView::onRemoveCel(DocEvent& ev)
+void DocView::onAfterRemoveCel(DocEvent& ev)
 {
   // This can happen when we apply a filter that clear the whole cel
   // and then the cel is removed in a background/job

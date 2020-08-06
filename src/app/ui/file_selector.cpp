@@ -641,9 +641,10 @@ again:
     }
 #endif
 
-    // does it not have extension? ...we should add the extension
+    // Does it not have extension? ...we should add the extension
     // selected in the filetype combo-box
-    if (!buf.empty() && base::get_file_extension(buf).empty()) {
+    if (m_type == FileSelectorType::Save &&
+        !buf.empty() && base::get_file_extension(buf).empty()) {
       buf += '.';
       buf += getSelectedExtension();
     }

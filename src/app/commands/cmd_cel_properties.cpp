@@ -230,6 +230,11 @@ private:
   }
 
   // DocObserver impl
+  void onBeforeRemoveCel(DocEvent& ev) override {
+    if (m_cel == ev.cel())
+      setCel(m_document, nullptr);
+  }
+
   void onCelOpacityChange(DocEvent& ev) override {
     if (m_cel == ev.cel())
       updateFromCel();

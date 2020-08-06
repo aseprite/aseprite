@@ -145,6 +145,7 @@ namespace ui {
                             const KeyModifiers modifiers,
                             const double magnification);
     void handleWindowZOrder();
+    void updateMouseWidgets(const gfx::Point& mousePos);
 
     int pumpQueue();
     bool sendMessageToWidget(Message* msg, Widget* widget);
