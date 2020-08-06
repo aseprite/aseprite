@@ -5,6 +5,8 @@
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
+#define BP_TRACE(...) // TRACEARGS(__VA_ARGS__)
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -28,6 +30,7 @@
 #include "app/ui/editor/tool_loop_impl.h"
 #include "app/ui_context.h"
 #include "app/util/wrap_value.h"
+#include "base/debug.h"
 #include "doc/algo.h"
 #include "doc/blend_internals.h"
 #include "doc/brush.h"
@@ -35,6 +38,7 @@
 #include "doc/image_impl.h"
 #include "doc/layer.h"
 #include "doc/primitives.h"
+#include "gfx/rect_io.h"
 #include "os/display.h"
 #include "render/render.h"
 #include "ui/manager.h"
@@ -225,26 +229,11 @@ void BrushPreview::show(const gfx::Point& screenPos)
     Site site = m_editor->getSite();
 
     // TODO add support for "tile-brushes"
-    gfx::Rect origBrushBounds;
-    gfx::Rect brushBounds;
-    doc::Grid grid;
-    if (isFloodfill) {
-      origBrushBounds = gfx::Rect(0, 0, 1, 1);
-      brushBounds = origBrushBounds;
-      brushBounds.offset(spritePos);
-    }
-    else if (site.tilemapMode() == TilemapMode::Tiles) {
-      grid = site.grid();
-      brushBounds = gfx::Rect(grid.tileSize());
-      gfx::Point tileInGrid = grid.canvasToTile(spritePos);
-      brushBounds.offset(grid.tileBoundsInCanvas(tileInGrid).origin());
-      origBrushBounds.setOrigin(brushBounds.origin());
-    }
-    else {
-      origBrushBounds = brush->bounds();
-      brushBounds = origBrushBounds;
-      brushBounds.offset(spritePos);
-    }
+    gfx::Rect origBrushBounds =
+      (isFloodfill || site.tilemapMode() == TilemapMode::Tiles ? gfx::Rect(0, 0, 1, 1):
+                                                                 brush->bounds());
+    gfx::Rect brushBounds = origBrushBounds;
+    brushBounds.offset(spritePos);
     gfx::Rect extraCelBoundsInCanvas = brushBounds;
 
     // Tiled mode might require a bigger extra cel (to show the tiled)
@@ -270,11 +259,18 @@ void BrushPreview::show(const gfx::Point& screenPos)
     gfx::Rect extraCelBounds;
     if (site.tilemapMode() == TilemapMode::Tiles) {
       ASSERT(layer->isTilemap());
-      extraCelBounds = grid.canvasToTile(brushBounds);
+      doc::Grid grid = site.grid();
+      extraCelBounds = grid.canvasToTile(extraCelBoundsInCanvas);
+      extraCelBoundsInCanvas = grid.tileToCanvas(extraCelBounds);
     }
     else {
       extraCelBounds = extraCelBoundsInCanvas;
     }
+
+    BP_TRACE("BrushPreview:",
+             "brushBounds", brushBounds,
+             "extraCelBounds", extraCelBounds,
+             "extraCelBoundsInCanvas", extraCelBoundsInCanvas);
 
     // Create the extra cel to show the brush preview
     Cel* cel = site.cel();
@@ -303,7 +299,7 @@ void BrushPreview::show(const gfx::Point& screenPos)
     Image* extraImage = m_extraCel->image();
     if (extraImage->pixelFormat() == IMAGE_TILEMAP) {
       extraImage->setMaskColor(tile_i_notile);
-      clear_image(extraImage,tile_i_notile);
+      clear_image(extraImage, tile_i_notile);
     }
     else {
       extraImage->setMaskColor(mask_index);

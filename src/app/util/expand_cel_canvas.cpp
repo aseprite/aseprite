@@ -5,6 +5,8 @@
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
+#define EXP_TRACE(...) // TRACEARGS(__VA_ARGS__)
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -22,6 +24,7 @@
 #include "app/site.h"
 #include "app/util/cel_ops.h"
 #include "app/util/range_utils.h"
+#include "base/debug.h"
 #include "doc/algorithm/shrink_bounds.h"
 #include "doc/cel.h"
 #include "doc/image.h"
@@ -33,10 +36,10 @@
 #include "doc/tileset.h"
 #include "doc/tileset_hash_table.h"
 #include "doc/tilesets.h"
+#include "gfx/point_io.h"
 #include "gfx/rect_io.h"
+#include "gfx/size_io.h"
 #include "render/render.h"
-
-#define EXP_TRACE(...) // TRACEARGS
 
 namespace {
 
@@ -129,34 +132,28 @@ ExpandCelCanvas::ExpandCelCanvas(
   }
 
   if (m_tilemapMode == TilemapMode::Tiles) {
-    // m_bounds represents the bounds of the m_srcImage/m_dstImage in tiles.
-    gfx::Size srcSize = m_grid.canvasToTile(spriteBounds).size();
-    m_bounds = gfx::Rect(m_grid.origin().x, m_grid.origin().y, srcSize.w, srcSize.h);
-    // cel position will be according to the site.grid() (which is the grid origin,
-    // alocated in the top-left corner of the canvas, it can be fit in the corner or
-    // located a fraction outside of a tile.
-    // m_grid.origin() represents that fraction in pixels units.
-    //
-    //  grid.origin()
-    //  example = (-1, -1)
-    //          O---------|---------|-----   <--- grid (example: tile size = 2x2)
-    //          |     ____________________
-    //          |    |                       <-- sprite canvas
-    //          -    |    .---------.
-    //          |    |    |         |
-    //          |    |    |         |    <------- cel example= cel->position() = (1, 1)
-    //          -    |    '---------'
-    //          |    |
-    m_cel->setPosition(m_cel->position().x - m_grid.origin().x, m_cel->position().y - m_grid.origin().y);
-    // following the example, cel->position() = (2, 2)
-    // Here, we have a mixed units cel->bounds(): position in pixels, size in tiles.
+    // Bounds of the canvas in tiles.
+    m_bounds = m_grid.canvasToTile(m_bounds);
+
+    // As the grid origin depends on the current cel position (see
+    // Site::grid()), and we're going to modify the m_cel position
+    // temporarily, we need to adjust the grid to the new temporal
+    // grid origin matching the new m_dstImage position.
+    auto newCelPosition = m_grid.tileToCanvas(m_bounds.origin());
+    m_grid.origin(m_grid.origin() - m_cel->position() + newCelPosition);
+
+    // The origin of m_bounds must be in canvas position
+    m_bounds.setOrigin(newCelPosition);
   }
-  else {
-    // We have to adjust the cel position to match the m_dstImage
-    // position (the new m_dstImage will be used in RenderEngine to
-    // draw this cel).
-    m_cel->setPosition(m_bounds.x, m_bounds.y);
-  }
+
+  // We have to adjust the cel position to match the m_dstImage
+  // position (the new m_dstImage will be used in RenderEngine to
+  // draw this cel).
+  m_cel->setPosition(m_bounds.origin());
+  EXP_TRACE("ExpandCelCanvas",
+            "m_cel->bounds()=", m_cel->bounds(),
+            "m_bounds=", m_bounds,
+            "m_grid=", m_grid.origin(), m_grid.tileSize());
 
   if (m_celCreated) {
     getDestCanvas();

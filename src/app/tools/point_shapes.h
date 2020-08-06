@@ -47,8 +47,6 @@ public:
     const doc::Grid& grid = loop->getGrid();
     gfx::Point newPos = grid.canvasToTile(pt.toPoint());
 
-    if (loop->getInk()->needsCelCoordinates())
-      newPos += loop->getCelOrigin();
     loop->getInk()->prepareForPointShape(loop, true, newPos.x, newPos.y);
     doInkHline(newPos.x, newPos.y, newPos.x, loop);
   }
