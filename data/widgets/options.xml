@@ -292,6 +292,8 @@
               <listitem text="@.brush_preview_none" value="0" />
               <listitem text="@.brush_preview_edges" value="1" />
               <listitem text="@.brush_preview_full" value="2" />
+              <listitem text="@.brush_preview_fullall" value="3" />
+              <listitem text="@.brush_preview_fullnedges" value="4" />
             </combobox>
 
 	    <label text="@.cursor_color_type" />

@@ -39,6 +39,22 @@ bool AsepriteDecoder::decode()
     return false;
   }
 
+  if (header.depth != 32 &&
+      header.depth != 16 &&
+      header.depth != 8) {
+    delegate()->error(
+      fmt::format("Invalid color depth {0}",
+                  header.depth));
+    return false;
+  }
+
+  if (header.width < 1 || header.height < 1) {
+    delegate()->error(
+      fmt::format("Invalid sprite size {0}x{1}",
+                  header.width, header.height));
+    return false;
+  }
+
   // Create the new sprite
   std::unique_ptr<doc::Sprite> sprite(
     new doc::Sprite(doc::ImageSpec(header.depth == 32 ? doc::ColorMode::RGB:

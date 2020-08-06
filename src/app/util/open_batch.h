@@ -42,7 +42,10 @@ namespace app {
         }
       }
 
-      ctx->executeCommandFromMenuOrShortcut(&m_cmd, params);
+      if (ctx->isUIAvailable())
+        ctx->executeCommandFromMenuOrShortcut(&m_cmd, params);
+      else
+        ctx->executeCommand(&m_cmd, params);
 
       // Future decision for other files in the CLI
       auto d = m_cmd.seqDecision();

@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -108,10 +109,13 @@ void AddCel::removeCel(Layer* layer, Cel* cel)
   ev.sprite(layer->sprite());
   ev.layer(layer);
   ev.cel(cel);
-  doc->notify_observers<DocEvent&>(&DocObserver::onRemoveCel, ev);
+  doc->notify_observers<DocEvent&>(&DocObserver::onBeforeRemoveCel, ev);
 
   static_cast<LayerImage*>(layer)->removeCel(cel);
   layer->incrementVersion();
+
+  doc->notify_observers<DocEvent&>(&DocObserver::onAfterRemoveCel, ev);
+
   delete cel;
 }
 

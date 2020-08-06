@@ -127,7 +127,8 @@ doc::AlgoLineWithAlgoPixel Intertwine::getLineAlgo(ToolLoop* loop,
                                                    const Stroke::Pt& b)
 {
   bool needsFixForLineBrush = false;
-  if (loop->getBrush()->type() == kLineBrushType) {
+  if ((loop->getBrush()->type() == kLineBrushType) &&
+      (a.size > 1.0 || b.size > 1.0)) {
     if ((a.angle != 0.0f || b.angle != 0.0f) &&
         (a.angle != b.angle)) {
       needsFixForLineBrush = true;

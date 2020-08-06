@@ -148,7 +148,11 @@ void Context::executeCommand(Command* command, const Params& params)
   try {
     m_flags.update(this);
 
+#if 0
+    // params.empty() can be empty when we call the command from Lua
+    // with a table.
     ASSERT(!command->needsParams() || !params.empty());
+#endif
 
     command->loadParams(params);
 

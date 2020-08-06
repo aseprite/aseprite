@@ -149,7 +149,7 @@ void BrushPreview::show(const gfx::Point& screenPos)
      (ink->isEffect()) ||
      // or when the brush color is transparent and we are not in the background layer
      (!ink->isShading() &&
-      (layer && !layer->isBackground()) &&
+      (layer && layer->isTransparent()) &&
       ((sprite->pixelFormat() == IMAGE_INDEXED && brush_color == mask_index) ||
        (sprite->pixelFormat() == IMAGE_RGB && rgba_geta(brush_color) == 0) ||
        (sprite->pixelFormat() == IMAGE_GRAYSCALE && graya_geta(brush_color) == 0))))) {
@@ -160,6 +160,8 @@ void BrushPreview::show(const gfx::Point& screenPos)
   }
 
   bool showPreview = false;
+  bool showPreviewWithEdges = false;
+  bool cancelEdges = false;
   auto brushPreview = pref.cursor.brushPreview();
   if (!m_editor->docPref().show.brushPreview())
     brushPreview = app::gen::BrushPreview::NONE;
@@ -172,7 +174,20 @@ void BrushPreview::show(const gfx::Point& screenPos)
       m_type = BRUSH_BOUNDARIES;
       break;
     case app::gen::BrushPreview::FULL:
+    case app::gen::BrushPreview::FULLALL:
+    case app::gen::BrushPreview::FULLNEDGES:
       showPreview = m_editor->getState()->requireBrushPreview();
+      switch (brushPreview) {
+        case app::gen::BrushPreview::FULLALL:
+          if (showPreview)
+            m_type = CROSSHAIR;
+          cancelEdges = true;
+          break;
+        case app::gen::BrushPreview::FULLNEDGES:
+          if (showPreview)
+            showPreviewWithEdges = true;
+          break;
+      }
       break;
   }
 
@@ -183,6 +198,8 @@ void BrushPreview::show(const gfx::Point& screenPos)
   // layer) we don't show the brush preview temporally.
   if (showPreview && m_editor->isExtraCelLocked()) {
     showPreview = false;
+    showPreviewWithEdges = false;
+    cancelEdges = false;
     m_type |= BRUSH_BOUNDARIES;
   }
 
@@ -195,9 +212,12 @@ void BrushPreview::show(const gfx::Point& screenPos)
   // For cursor type 'bounds' we have to generate cursor boundaries
   if (m_type & BRUSH_BOUNDARIES) {
     if (brush->type() != kImageBrushType)
-      showPreview = false;
-    generateBoundaries();
+      showPreview = showPreviewWithEdges;
+    if (cancelEdges)
+      m_type &= ~BRUSH_BOUNDARIES;
   }
+  if (m_type & BRUSH_BOUNDARIES)
+    generateBoundaries();
 
   // Draw pixel/brush preview
   if (showPreview) {

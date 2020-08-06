@@ -10,7 +10,10 @@
 #endif
 
 #include "app/app.h"
+#include "app/app_menus.h"
 #include "app/commands/command.h"
+#include "app/ui/main_menu_bar.h"
+#include "app/ui/main_window.h"
 #include "app/ui/status_bar.h"
 #include "fmt/format.h"
 #include "ui/scale.h"
@@ -40,8 +43,15 @@ RefreshCommand::RefreshCommand()
 
 void RefreshCommand::onExecute(Context* context)
 {
+  // Reload menus (mainly to reload the File > Scripts menu)
+  //AppMenus::instance()->reload();
+  App::instance()->mainWindow()->getMenuBar()->reload();
+
+  // Reload theme
   ui::set_theme(ui::get_theme(),
                 ui::guiscale());
+
+  // Redraw screen
   app_refresh_screen();
 
   // Print memory information
