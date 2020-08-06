@@ -782,6 +782,8 @@ doc::Cel* AsepriteDecoder::readCelChunk(doc::Sprite* sprite,
 
       if (w > 0 && h > 0) {
         doc::ImageRef image(doc::Image::create(doc::IMAGE_TILEMAP, w, h));
+        image->setMaskColor(doc::tile_i_notile);
+        image->clear(doc::tile_i_notile);
         read_compressed_image(f(), delegate(), image.get(), header, chunk_end);
         cel.reset(new doc::Cel(frame, image));
         cel->setPosition(x, y);

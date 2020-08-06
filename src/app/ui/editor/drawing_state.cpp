@@ -72,7 +72,8 @@ void DrawingState::initToolLoop(Editor* editor,
     m_toolLoop->getLayer(),
     m_toolLoop->getFrame(),
     m_toolLoop->getDstImage(),
-    m_toolLoop->getCelOrigin(),
+    m_toolLoop->getDstImage()->pixelFormat() == IMAGE_TILEMAP ?
+      m_toolLoop->getGrid().origin() : m_toolLoop->getCelOrigin(),
     (m_toolLoop->getLayer() &&
      m_toolLoop->getLayer()->isImage() ?
      static_cast<LayerImage*>(m_toolLoop->getLayer())->blendMode():

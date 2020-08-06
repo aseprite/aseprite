@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -270,7 +270,8 @@ bool DocApi::cropCel(LayerImage* layer,
         crop_image(image,
                    paintPos.x, paintPos.y,
                    newCelBounds.w, newCelBounds.h,
-                   m_document->bgColor(layer)));
+                   image->pixelFormat() == IMAGE_TILEMAP ?
+                     tile_i_notile : m_document->bgColor(layer)));
 
       // Try to shrink the image ignoring transparent borders
       gfx::Rect frameBounds;
@@ -283,7 +284,8 @@ bool DocApi::cropCel(LayerImage* layer,
             crop_image(newImage.get(),
                        frameBounds.x, frameBounds.y,
                        frameBounds.w, frameBounds.h,
-                       m_document->bgColor(layer)));
+                       image->pixelFormat() == IMAGE_TILEMAP ?
+                         tile_i_notile : m_document->bgColor(layer)));
 
           newCelPos += frameBounds.origin();
         }

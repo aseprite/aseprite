@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019  Igara Studio S.A.
+// Copyright (c) 2019-2020  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -50,6 +50,15 @@ gfx::Rect Grid::tileToCanvas(const gfx::Rect& tileBounds) const
   gfx::Point pt1 = tileToCanvas(tileBounds.origin());
   gfx::Point pt2 = tileToCanvas(tileBounds.point2());
   return gfx::Rect(pt1, pt2);
+}
+
+gfx::Region Grid::tileToCanvas(gfx::Region* tileRgn)
+{
+  gfx::Region canvasRgn;
+  for (const gfx::Rect& rc : *tileRgn) {
+    canvasRgn |= gfx::Region(tileToCanvas(rc));
+  }
+  return canvasRgn;
 }
 
 gfx::Point Grid::canvasToTile(const gfx::Point& canvasPoint) const
@@ -105,6 +114,16 @@ gfx::Rect Grid::canvasToTile(const gfx::Rect& canvasBounds) const
                                            canvasBounds.y2()-1));
   return gfx::Rect(pt1, gfx::Size(pt2.x - pt1.x + 1,
                                   pt2.y - pt1.y + 1));
+}
+
+gfx::Region Grid::canvasToTile(const gfx::Region& canvasRgn)
+{
+  gfx::Region tilesRgn;
+  for (const gfx::Rect& rc : canvasRgn) {
+    tilesRgn |= gfx::Region(canvasToTile(rc));
+  }
+  return tilesRgn;
+
 }
 
 gfx::Size Grid::tilemapSizeToCanvas(const gfx::Size& tilemapSize) const

@@ -225,41 +225,55 @@ void BrushPreview::show(const gfx::Point& screenPos)
     Site site = m_editor->getSite();
 
     // TODO add support for "tile-brushes"
-    gfx::Rect origBrushBounds =
-      (isFloodfill || site.tilemapMode() == TilemapMode::Tiles ? gfx::Rect(0, 0, 1, 1):
-                                                                 brush->bounds());
-    gfx::Rect brushBounds = origBrushBounds;
-    brushBounds.offset(spritePos);
-    gfx::Rect extraCelBounds = brushBounds;
+    gfx::Rect origBrushBounds;
+    gfx::Rect brushBounds;
+    doc::Grid grid;
+    if (isFloodfill) {
+      origBrushBounds = gfx::Rect(0, 0, 1, 1);
+      brushBounds = origBrushBounds;
+      brushBounds.offset(spritePos);
+    }
+    else if (site.tilemapMode() == TilemapMode::Tiles) {
+      grid = site.grid();
+      brushBounds = gfx::Rect(grid.tileSize());
+      gfx::Point tileInGrid = grid.canvasToTile(spritePos);
+      brushBounds.offset(grid.tileBoundsInCanvas(tileInGrid).origin());
+      origBrushBounds.setOrigin(brushBounds.origin());
+    }
+    else {
+      origBrushBounds = brush->bounds();
+      brushBounds = origBrushBounds;
+      brushBounds.offset(spritePos);
+    }
+    gfx::Rect extraCelBoundsInCanvas = brushBounds;
 
     // Tiled mode might require a bigger extra cel (to show the tiled)
     if (int(m_editor->docPref().tiled.mode()) & int(filters::TiledMode::X_AXIS)) {
       brushBounds.x = wrap_value(brushBounds.x, sprite->width());
-      extraCelBounds.x = brushBounds.x;
-      if ((extraCelBounds.x < 0 && extraCelBounds.x2() > 0) ||
-          (extraCelBounds.x < sprite->width() && extraCelBounds.x2() > sprite->width())) {
-        extraCelBounds.x = 0;
-        extraCelBounds.w = sprite->width();
+      extraCelBoundsInCanvas.x = brushBounds.x;
+      if ((extraCelBoundsInCanvas.x < 0 && extraCelBoundsInCanvas.x2() > 0) ||
+          (extraCelBoundsInCanvas.x < sprite->width() && extraCelBoundsInCanvas.x2() > sprite->width())) {
+        extraCelBoundsInCanvas.x = 0;
+        extraCelBoundsInCanvas.w = sprite->width();
       }
     }
     if (int(m_editor->docPref().tiled.mode()) & int(filters::TiledMode::Y_AXIS)) {
       brushBounds.y = wrap_value(brushBounds.y, sprite->height());
-      extraCelBounds.y = brushBounds.y;
-      if ((extraCelBounds.y < 0 && extraCelBounds.y2() > 0) ||
-          (extraCelBounds.y < sprite->height() && extraCelBounds.y2() > sprite->height())) {
-        extraCelBounds.y = 0;
-        extraCelBounds.h = sprite->height();
+      extraCelBoundsInCanvas.y = brushBounds.y;
+      if ((extraCelBoundsInCanvas.y < 0 && extraCelBoundsInCanvas.y2() > 0) ||
+          (extraCelBoundsInCanvas.y < sprite->height() && extraCelBoundsInCanvas.y2() > sprite->height())) {
+        extraCelBoundsInCanvas.y = 0;
+        extraCelBoundsInCanvas.h = sprite->height();
       }
     }
 
-    gfx::Rect extraCelBoundsInCanvas;
+    gfx::Rect extraCelBounds;
     if (site.tilemapMode() == TilemapMode::Tiles) {
       ASSERT(layer->isTilemap());
-      extraCelBounds.setOrigin(site.grid().canvasToTile(extraCelBounds.origin()));
-      extraCelBoundsInCanvas = site.grid().tileToCanvas(extraCelBounds);
+      extraCelBounds = grid.canvasToTile(brushBounds);
     }
     else {
-      extraCelBoundsInCanvas = extraCelBounds;
+      extraCelBounds = extraCelBoundsInCanvas;
     }
 
     // Create the extra cel to show the brush preview
@@ -287,9 +301,15 @@ void BrushPreview::show(const gfx::Point& screenPos)
     document->setExtraCel(m_extraCel);
 
     Image* extraImage = m_extraCel->image();
-    extraImage->setMaskColor(mask_index);
-    clear_image(extraImage,
-                (extraImage->pixelFormat() == IMAGE_INDEXED ? mask_index: 0));
+    if (extraImage->pixelFormat() == IMAGE_TILEMAP) {
+      extraImage->setMaskColor(tile_i_notile);
+      clear_image(extraImage,tile_i_notile);
+    }
+    else {
+      extraImage->setMaskColor(mask_index);
+      clear_image(extraImage,
+                  (extraImage->pixelFormat() == IMAGE_INDEXED ? mask_index: 0));
+    }
 
     if (layer) {
       render::Render().renderLayer(

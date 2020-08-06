@@ -78,8 +78,18 @@ Grid Site::grid() const
 {
   if (m_layer && m_layer->isTilemap()) {
     doc::Grid grid = static_cast<LayerTilemap*>(m_layer)->tileset()->grid();
-    if (const Cel* cel = m_layer->cel(m_frame))
-      grid.origin(grid.origin() + cel->position());
+    if (const Cel* cel = m_layer->cel(m_frame)) {
+      gfx::Point gridOrigin(0, 0);
+      int remainderX = cel->position().x % grid.tileSize().w;
+      int remainderY = cel->position().y % grid.tileSize().h;
+
+      if (remainderX)
+        gridOrigin.x = remainderX - (remainderX > 0 ? grid.tileSize().w : 0);
+      if (remainderY)
+        gridOrigin.y = remainderY - (remainderY > 0 ? grid.tileSize().h : 0);
+
+      grid.origin(gridOrigin);
+    }
     return grid;
   }
 

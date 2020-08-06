@@ -1285,18 +1285,20 @@ void Render::renderCel(
           continue;
 
         const tile_t t = cel_image->getPixel(u, v);
-        const tile_index i = tile_geti(t);
+        if (t != tile_i_notile) {
+          const tile_index i = tile_geti(t);
 
-        if (dst_image->pixelFormat() == IMAGE_TILEMAP) {
-          put_pixel(dst_image, u-area.dst.x, v-area.dst.y, t);
-        }
-        else {
-          const ImageRef tile_image = tileset->get(i);
-          if (!tile_image)
-            continue;
+          if (dst_image->pixelFormat() == IMAGE_TILEMAP) {
+            put_pixel(dst_image, u-area.dst.x, v-area.dst.y, t);
+          }
+          else {
+            const ImageRef tile_image = tileset->get(i);
+            if (!tile_image)
+              continue;
 
-          renderImage(dst_image, tile_image.get(), pal, tileBoundsOnCanvas,
-                      area, compositeImage, opacity, blendMode);
+            renderImage(dst_image, tile_image.get(), pal, tileBoundsOnCanvas,
+                        area, compositeImage, opacity, blendMode);
+          }
         }
       }
     }

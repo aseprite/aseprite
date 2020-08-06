@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2016  David Capello
 //
 // This program is distributed under the terms of
@@ -14,6 +15,7 @@
 #include "app/cmd/crop_cel.h"
 #include "app/cmd/trim_cel.h"
 #include "doc/cel.h"
+#include "doc/layer_tilemap.h"
 
 namespace app {
 namespace cmd {
@@ -36,17 +38,35 @@ void PatchCel::onExecute()
 {
   Cel* cel = this->cel();
 
-  const gfx::Rect newBounds =
-    cel->bounds() | gfx::Rect(m_region.bounds()).offset(m_pos);
+  gfx::Rect newBounds;
+  gfx::Region copyRegion = m_region;
+  Tileset* tileset = nullptr;
+  doc::Grid grid;
+  if (cel->image()->pixelFormat() == IMAGE_TILEMAP ) {
+    newBounds = cel->bounds() | m_region.bounds();
+    tileset = static_cast<LayerTilemap*>(cel->layer())->tileset();
+    grid = tileset->grid();
+    grid.origin(m_pos);
+    copyRegion = grid.canvasToTile(m_region);
+  }
+  else
+    newBounds = cel->bounds() | gfx::Rect(m_region.bounds()).offset(m_pos);
   if (cel->bounds() != newBounds) {
     executeAndAdd(new CropCel(cel, newBounds));
   }
 
-  executeAndAdd(
-    new CopyRegion(cel->image(),
-                   m_patch,
-                   m_region,
-                   m_pos - cel->position()));
+  if (cel->image()->pixelFormat() == IMAGE_TILEMAP)
+    executeAndAdd(
+      new CopyRegion(cel->image(),
+                     m_patch,
+                     copyRegion,
+                     -grid.canvasToTile(cel->position())));
+  else
+    executeAndAdd(
+      new CopyRegion(cel->image(),
+                     m_patch,
+                     copyRegion,
+                     m_pos - cel->position()));
 
   executeAndAdd(new TrimCel(cel));
 
