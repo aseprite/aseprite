@@ -46,7 +46,7 @@ if [[ "$filter" == "" ]] || [[ "console" =~ $filter ]]; then
     echo ----------------------------------------------------------------------
     echo "Testing console..."
 
-    $ASEPRITE -b --script scripts/console_assert.lua >$t/tmp 2>$t/tmp_err
+    $ASEPRITE -b --script scripts/console_assert.lua >$t/tmp 2>&1
     ! grep -q "this should be in the output" $t/tmp && fail "print() text not found in output"
     ! grep -q "assertion failed" $t/tmp && fail "assert() text not found in output"
     grep -q "this should not be in the output" $t/tmp && fail "text that shouldn't be in the output is"
@@ -54,7 +54,7 @@ if [[ "$filter" == "" ]] || [[ "console" =~ $filter ]]; then
     if [[ "$(uname)" =~ "MINGW32" ]] || [[ "$(uname)" =~ "MSYS_NT-10.0" ]] ; then
 	echo Ignore console tests on Windows
     else
-	$ASEPRITE -b --script scripts/console_print.lua >$t/tmp 2>$t/tmp_err
+	$ASEPRITE -b --script scripts/console_print.lua >$t/tmp 2>&1
 	cat >$t/tmp_expected <<EOF
 hello world
 1	2	3
@@ -76,10 +76,8 @@ for script in scripts/*.lua ; do
 	first=1
     fi
     echo "Running $script"
-    if ! $ASEPRITE -b --script $script >$t/tmp 2>$t/tmp_err ; then
-	echo FAILED
-	echo STDOUT && cat $t/tmp
-	echo STDERR && cat $t/tmp_err
+    if ! $ASEPRITE -b --script $script >$t/tmp 2>&1 ; then
+	echo FAILED && cat $t/tmp
 	result=1
     fi
 done
