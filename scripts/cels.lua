@@ -1,7 +1,10 @@
+-- Copyright (C) 2020  Igara Studio S.A.
 -- Copyright (C) 2018  David Capello
 --
 -- This file is released under the terms of the MIT license.
 -- Read LICENSE.txt for more information.
+
+dofile('./test_utils.lua')
 
 do
   local s = Sprite(32, 32)
@@ -40,4 +43,44 @@ do
   s:deleteCel(cb[2])
   assert(cb[1] == b.cels[1])
   assert(cb[3] == b.cels[2])
+end
+
+-- Some extra tests of newCel() and deleteCel()
+do
+  local s = Sprite(4, 4, ColorMode.INDEXED)
+  local layer = app.activeLayer
+  app.bgColor = 0
+  app.command.BackgroundFromLayer()
+  expect_img(s.cels[1].image, { 0, 0, 0, 0,
+                                0, 0, 0, 0,
+                                0, 0, 0, 0,
+                                0, 0, 0, 0 })
+
+  -- Crash in old versions undoing newCel() in a background layer
+  s:newCel(layer, 1)
+  app.undo()
+
+  -- Check that newCel clears with bgColor in background layer
+  local img = Image(ImageSpec{ width=2, height=2,
+                               colorMode=ColorMode.INDEXED })
+  array_to_pixels({ 0, 1,
+                    2, 3 }, img)
+
+  app.bgColor = Color(1) -- bgColor used to clear the background cel
+  s:newCel(layer, 1, img, Point(1, 1))
+  expect_img(s.cels[1].image, { 1, 1, 1, 1,
+                                1, 0, 1, 1,
+                                1, 2, 3, 1,
+                                1, 1, 1, 1 })
+  app.undo()
+
+  -- Check deleteCel()
+  app.bgColor = Color(2)
+  s:deleteCel(layer, 1)
+  expect_img(s.cels[1].image, { 2, 2, 2, 2,
+                                2, 2, 2, 2,
+                                2, 2, 2, 2,
+                                2, 2, 2, 2 })
+  app.undo()
+
 end
