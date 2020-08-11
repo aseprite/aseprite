@@ -461,7 +461,8 @@ void PreviewEditorWindow::onPreviewOtherEditor(Editor* editor)
 
 void PreviewEditorWindow::onTagChangeEditor(Editor* editor, DocEvent& ev)
 {
-  adjustPlayingTag();
+  if (m_playButton->isPlaying())
+    adjustPlayingTag();
 }
 
 void PreviewEditorWindow::hideWindow()
