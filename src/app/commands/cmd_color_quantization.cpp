@@ -172,8 +172,10 @@ void ColorQuantizationCommand::onExecute(Context* ctx)
     }
     else {
       createPal = false;
-      if (window.currentPalette()->isSelected())
+      if (window.currentPalette()->isSelected()) {
+        entries = PalettePicks(site.palette()->size());
         entries.all();
+      }
     }
   }
   else
