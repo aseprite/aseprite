@@ -57,6 +57,7 @@
 #include "doc/image.h"
 #include "doc/image_impl.h"
 #include "doc/palette.h"
+#include "doc/palette_gradient_type.h"
 #include "doc/primitives.h"
 #include "doc/remap.h"
 #include "doc/rgbmap.h"
@@ -924,16 +925,21 @@ void ColorBar::onSortBy(SortPaletteBy channel)
   setPalette(&newPalette, "Sort Colors");
 }
 
-void ColorBar::onGradient()
+void ColorBar::onGradient(GradientType gradientType)
 {
   int index1, index2;
   if (!m_paletteView.getSelectedRange(index1, index2))
     return;
 
   Palette newPalette(*get_current_palette());
-  newPalette.makeGradient(index1, index2);
-
-  setPalette(&newPalette, "Gradient");
+  if (gradientType == GradientType::LINEAR) {
+    newPalette.makeGradient(index1, index2);
+    setPalette(&newPalette, "Gradient");
+  }
+  else {
+    newPalette.makeHueGradient(index1, index2);
+    setPalette(&newPalette, "Gradient by Hue");
+  }
 }
 
 void ColorBar::setAscending(bool ascending)
@@ -1249,6 +1255,7 @@ void ColorBar::showPaletteSortOptions()
   MenuItem
     rev("Reverse Colors"),
     grd("Gradient"),
+    grh("Gradient by Hue"),
     hue("Sort by Hue"),
     sat("Sort by Saturation"),
     bri("Sort by Brightness"),
@@ -1261,6 +1268,7 @@ void ColorBar::showPaletteSortOptions()
     des("Descending");
   menu.addChild(&rev);
   menu.addChild(&grd);
+  menu.addChild(&grh);
   menu.addChild(new ui::MenuSeparator);
   menu.addChild(&hue);
   menu.addChild(&sat);
@@ -1279,7 +1287,8 @@ void ColorBar::showPaletteSortOptions()
   else des.setSelected(true);
 
   rev.Click.connect([this]{ onReverseColors(); });
-  grd.Click.connect([this]{ onGradient(); });
+  grd.Click.connect([this]{ onGradient(GradientType::LINEAR); });
+  grh.Click.connect([this]{ onGradient(GradientType::HUE); });
   hue.Click.connect([this]{ onSortBy(SortPaletteBy::HUE); });
   sat.Click.connect([this]{ onSortBy(SortPaletteBy::SATURATION); });
   bri.Click.connect([this]{ onSortBy(SortPaletteBy::VALUE); });

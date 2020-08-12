@@ -13,6 +13,7 @@
 #include "doc/color.h"
 #include "doc/frame.h"
 #include "doc/object.h"
+#include "doc/palette_gradient_type.h"
 
 #include <vector>
 #include <string>
@@ -90,6 +91,7 @@ namespace doc {
     void makeBlack();
 
     void makeGradient(int from, int to);
+    void makeHueGradient(int from, int to);
 
     int findExactMatch(int r, int g, int b, int a, int mask_index) const;
     int findBestfit(int r, int g, int b, int a, int mask_index) const;

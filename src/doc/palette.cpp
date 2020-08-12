@@ -13,7 +13,10 @@
 
 #include "base/base.h"
 #include "doc/image.h"
+#include "doc/palette_gradient_type.h"
 #include "doc/remap.h"
+#include "gfx/hsv.h"
+#include "gfx/rgb.h"
 
 #include <algorithm>
 #include <limits>
@@ -203,6 +206,64 @@ void Palette::makeGradient(int from, int to)
     a = a1 + (a2-a1) * (i-from) / n;
 
     setEntry(i, rgba(r, g, b, a));
+  }
+}
+
+void Palette::makeHueGradient(int from, int to)
+{
+  int r1, g1, b1, a1;
+  int r2, g2, b2, a2;
+  int i, n;
+
+  ASSERT(from >= 0 && from < size());
+  ASSERT(to >= 0 && to < size());
+
+  if (from > to)
+    std::swap(from, to);
+
+  n = to - from;
+  if (n < 2)
+    return;
+
+  r1 = rgba_getr(getEntry(from));
+  g1 = rgba_getg(getEntry(from));
+  b1 = rgba_getb(getEntry(from));
+  a1 = rgba_geta(getEntry(from));
+
+  r2 = rgba_getr(getEntry(to));
+  g2 = rgba_getg(getEntry(to));
+  b2 = rgba_getb(getEntry(to));
+  a2 = rgba_geta(getEntry(to));
+
+  gfx::Hsv hsv1(gfx::Rgb(r1, g1, b1));
+  gfx::Hsv hsv2(gfx::Rgb(r2, g2, b2));
+
+  double h1 = hsv1.hue();
+  double s1 = hsv1.saturation();
+  double v1 = hsv1.value();
+
+  double h2 = hsv2.hue();
+  double s2 = hsv2.saturation();
+  double v2 = hsv2.value();
+
+  if (h2 >= h1) {
+    if (h2-h1 > 180.0)
+      h2 = h2 - 360.0;
+  }
+  else {
+    if (h1-h2 > 180.0)
+      h2 = h2 + 360.0;
+  }
+
+  gfx::Hsv hsv;
+  for (i=from+1; i<to; ++i) {
+    double t = double(i - from) / double(n);
+    hsv.hue(h1 + (h2 - h1) * t);
+    hsv.saturation(s1 + (s2 - s1) * t);
+    hsv.value(v1 + (v2 - v1) * t);
+    int alpha = int(a1 + double(a2 - a1) * t);
+    gfx::Rgb rgb(hsv);
+    setEntry(i, rgba(rgb.red(), rgb.green(), rgb.blue(), alpha));
   }
 }
 

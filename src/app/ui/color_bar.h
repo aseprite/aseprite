@@ -17,6 +17,7 @@
 #include "app/ui/color_button.h"
 #include "app/ui/input_chain_element.h"
 #include "app/ui/palette_view.h"
+#include "doc/palette_gradient_type.h"
 #include "doc/pixel_format.h"
 #include "doc/sort_palette.h"
 #include "obs/connection.h"
@@ -119,7 +120,7 @@ namespace app {
     void onPickSpectrum(const app::Color& color, ui::MouseButton button);
     void onReverseColors();
     void onSortBy(doc::SortPaletteBy channel);
-    void onGradient();
+    void onGradient(GradientType gradientType);
     void onFixWarningClick(ColorButton* colorButton, ui::Button* warningIcon);
     void onTimerTick();
     void setAscending(bool ascending);
