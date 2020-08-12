@@ -44,6 +44,22 @@ namespace {
 #endif
   };
 
+#ifdef _WIN32
+  // Successful calls to CoInitialize() (S_OK or S_FALSE) must match
+  // the calls to CoUninitialize().
+  // From: https://docs.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-couninitialize#remarks
+  struct CoInit {
+    HRESULT hr;
+    CoInit() {
+      hr = CoInitialize(nullptr);
+    }
+    ~CoInit() {
+      if (hr == S_OK || hr == S_FALSE)
+        CoUninitialize();
+    }
+  };
+#endif
+
 }
 
 // Aseprite entry point. (Called from "os" library.)
@@ -59,7 +75,7 @@ int app_main(int argc, char* argv[])
   std::srand(static_cast<unsigned int>(std::time(nullptr)));
 
 #ifdef _WIN32
-  ::CoInitialize(nullptr);
+  CoInit com;                   // To create COM objects
 #endif
 
   try {
