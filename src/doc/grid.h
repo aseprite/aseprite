@@ -47,7 +47,7 @@ namespace doc {
     // Converts a tile position into a canvas position
     gfx::Point tileToCanvas(const gfx::Point& tile) const;
     gfx::Rect tileToCanvas(const gfx::Rect& tileBounds) const;
-    gfx::Region tileToCanvas(gfx::Region* tileRgn);
+    gfx::Region tileToCanvas(const gfx::Region& tileRgn);
 
     // Converts a canvas position/rectangle into a tile position
     gfx::Point canvasToTile(const gfx::Point& canvasPoint) const;

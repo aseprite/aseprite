@@ -52,10 +52,10 @@ gfx::Rect Grid::tileToCanvas(const gfx::Rect& tileBounds) const
   return gfx::Rect(pt1, pt2);
 }
 
-gfx::Region Grid::tileToCanvas(gfx::Region* tileRgn)
+gfx::Region Grid::tileToCanvas(const gfx::Region& tileRgn)
 {
   gfx::Region canvasRgn;
-  for (const gfx::Rect& rc : *tileRgn) {
+  for (const gfx::Rect& rc : tileRgn) {
     canvasRgn |= gfx::Region(tileToCanvas(rc));
   }
   return canvasRgn;
