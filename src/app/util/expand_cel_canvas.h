@@ -74,6 +74,7 @@ namespace app {
     void copyValidDestToSourceCanvas(const gfx::Region& rgn);
 
     const Cel* getCel() const { return m_cel; }
+    const doc::Grid& getGrid() const { return m_grid; }
 
   private:
     gfx::Rect getTrimDstImageBounds() const;

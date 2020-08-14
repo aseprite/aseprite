@@ -5,6 +5,8 @@
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
+#define BP_TRACE(...) // TRACEARGS(__VA_ARGS__)
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -28,6 +30,7 @@
 #include "app/ui/editor/tool_loop_impl.h"
 #include "app/ui_context.h"
 #include "app/util/wrap_value.h"
+#include "base/debug.h"
 #include "doc/algo.h"
 #include "doc/blend_internals.h"
 #include "doc/brush.h"
@@ -35,6 +38,7 @@
 #include "doc/image_impl.h"
 #include "doc/layer.h"
 #include "doc/primitives.h"
+#include "gfx/rect_io.h"
 #include "os/display.h"
 #include "render/render.h"
 #include "ui/manager.h"
@@ -230,37 +234,43 @@ void BrushPreview::show(const gfx::Point& screenPos)
                                                                  brush->bounds());
     gfx::Rect brushBounds = origBrushBounds;
     brushBounds.offset(spritePos);
-    gfx::Rect extraCelBounds = brushBounds;
+    gfx::Rect extraCelBoundsInCanvas = brushBounds;
 
     // Tiled mode might require a bigger extra cel (to show the tiled)
     if (int(m_editor->docPref().tiled.mode()) & int(filters::TiledMode::X_AXIS)) {
       brushBounds.x = wrap_value(brushBounds.x, sprite->width());
-      extraCelBounds.x = brushBounds.x;
-      if ((extraCelBounds.x < 0 && extraCelBounds.x2() > 0) ||
-          (extraCelBounds.x < sprite->width() && extraCelBounds.x2() > sprite->width())) {
-        extraCelBounds.x = 0;
-        extraCelBounds.w = sprite->width();
+      extraCelBoundsInCanvas.x = brushBounds.x;
+      if ((extraCelBoundsInCanvas.x < 0 && extraCelBoundsInCanvas.x2() > 0) ||
+          (extraCelBoundsInCanvas.x < sprite->width() && extraCelBoundsInCanvas.x2() > sprite->width())) {
+        extraCelBoundsInCanvas.x = 0;
+        extraCelBoundsInCanvas.w = sprite->width();
       }
     }
     if (int(m_editor->docPref().tiled.mode()) & int(filters::TiledMode::Y_AXIS)) {
       brushBounds.y = wrap_value(brushBounds.y, sprite->height());
-      extraCelBounds.y = brushBounds.y;
-      if ((extraCelBounds.y < 0 && extraCelBounds.y2() > 0) ||
-          (extraCelBounds.y < sprite->height() && extraCelBounds.y2() > sprite->height())) {
-        extraCelBounds.y = 0;
-        extraCelBounds.h = sprite->height();
+      extraCelBoundsInCanvas.y = brushBounds.y;
+      if ((extraCelBoundsInCanvas.y < 0 && extraCelBoundsInCanvas.y2() > 0) ||
+          (extraCelBoundsInCanvas.y < sprite->height() && extraCelBoundsInCanvas.y2() > sprite->height())) {
+        extraCelBoundsInCanvas.y = 0;
+        extraCelBoundsInCanvas.h = sprite->height();
       }
     }
 
-    gfx::Rect extraCelBoundsInCanvas;
+    gfx::Rect extraCelBounds;
     if (site.tilemapMode() == TilemapMode::Tiles) {
       ASSERT(layer->isTilemap());
-      extraCelBounds.setOrigin(site.grid().canvasToTile(extraCelBounds.origin()));
-      extraCelBoundsInCanvas = site.grid().tileToCanvas(extraCelBounds);
+      doc::Grid grid = site.grid();
+      extraCelBounds = grid.canvasToTile(extraCelBoundsInCanvas);
+      extraCelBoundsInCanvas = grid.tileToCanvas(extraCelBounds);
     }
     else {
-      extraCelBoundsInCanvas = extraCelBounds;
+      extraCelBounds = extraCelBoundsInCanvas;
     }
+
+    BP_TRACE("BrushPreview:",
+             "brushBounds", brushBounds,
+             "extraCelBounds", extraCelBounds,
+             "extraCelBoundsInCanvas", extraCelBoundsInCanvas);
 
     // Create the extra cel to show the brush preview
     Cel* cel = site.cel();
@@ -287,9 +297,15 @@ void BrushPreview::show(const gfx::Point& screenPos)
     document->setExtraCel(m_extraCel);
 
     Image* extraImage = m_extraCel->image();
-    extraImage->setMaskColor(mask_index);
-    clear_image(extraImage,
-                (extraImage->pixelFormat() == IMAGE_INDEXED ? mask_index: 0));
+    if (extraImage->pixelFormat() == IMAGE_TILEMAP) {
+      extraImage->setMaskColor(tile_i_notile);
+      clear_image(extraImage, tile_i_notile);
+    }
+    else {
+      extraImage->setMaskColor(mask_index);
+      clear_image(extraImage,
+                  (extraImage->pixelFormat() == IMAGE_INDEXED ? mask_index: 0));
+    }
 
     if (layer) {
       render::Render().renderLayer(

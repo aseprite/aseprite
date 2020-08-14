@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019  Igara Studio S.A.
+// Copyright (c) 2019-2020  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -47,10 +47,12 @@ namespace doc {
     // Converts a tile position into a canvas position
     gfx::Point tileToCanvas(const gfx::Point& tile) const;
     gfx::Rect tileToCanvas(const gfx::Rect& tileBounds) const;
+    gfx::Region tileToCanvas(const gfx::Region& tileRgn);
 
     // Converts a canvas position/rectangle into a tile position
     gfx::Point canvasToTile(const gfx::Point& canvasPoint) const;
     gfx::Rect canvasToTile(const gfx::Rect& canvasBounds) const;
+    gfx::Region canvasToTile(const gfx::Region& canvasRgn);
 
     gfx::Size tilemapSizeToCanvas(const gfx::Size& tilemapSize) const;
     gfx::Rect tileBoundsInCanvas(const gfx::Point& tile) const;

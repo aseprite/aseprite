@@ -351,7 +351,8 @@ void draw_image_into_new_tilemap_cel(
     newTilemap.reset(doc::Image::create(IMAGE_TILEMAP,
                                         tilemapBounds.w,
                                         tilemapBounds.h));
-    newTilemap->clear(0); // <- This should not necessary
+    newTilemap->setMaskColor(tile_i_notile);
+    newTilemap->clear(tile_i_notile);
   }
   else {
     ASSERT(tilemapBounds.w == newTilemap->width());
@@ -444,7 +445,8 @@ void modify_tilemap_cel_region(
                          newTilemapBounds.w,
                          newTilemapBounds.h));
 
-    newTilemap->clear(0);   // TODO find the tile with empty content?
+    newTilemap->setMaskColor(tile_i_notile);
+    newTilemap->clear(tile_i_notile);   // TODO find the tile with empty content?
     newTilemap->copy(
       cel->image(),
       gfx::Clip(oldTilemapBounds.x-newTilemapBounds.x,
@@ -471,7 +473,7 @@ void modify_tilemap_cel_region(
       const doc::tile_index ti = doc::tile_geti(t);
       const doc::ImageRef existenTileImage = tileset->get(ti);
 
-      if (tilesetMode == TilesetMode::Auto)
+      if (tilesetMode == TilesetMode::Auto && t != tile_i_notile)
         modifiedTileIndexes[ti] = true;
 
       const gfx::Rect tileInCanvasRc(grid.tileToCanvas(tilePt), tileSize);
@@ -540,38 +542,40 @@ void modify_tilemap_cel_region(
         continue;
 
       const doc::tile_t t = cel->image()->getPixel(tilePt.x, tilePt.y);
-      const doc::tile_index ti = doc::tile_geti(t);
-      const doc::ImageRef existenTileImage = tileset->get(ti);
+      if (t != tile_i_notile) {
+        const doc::tile_index ti = doc::tile_geti(t);
+        const doc::ImageRef existenTileImage = tileset->get(ti);
 
-      const gfx::Rect tileInCanvasRc(grid.tileToCanvas(tilePt), tileSize);
-      ImageRef tileImage(getTileImage(existenTileImage, tileInCanvasRc));
-      if (grid.hasMask())
-        mask_image(tileImage.get(), grid.mask().get());
+        const gfx::Rect tileInCanvasRc(grid.tileToCanvas(tilePt), tileSize);
+        ImageRef tileImage(getTileImage(existenTileImage, tileInCanvasRc));
+        if (grid.hasMask())
+          mask_image(tileImage.get(), grid.mask().get());
 
-      gfx::Region tileRgn(tileInCanvasRc);
-      tileRgn.createIntersection(tileRgn, region);
-      tileRgn.offset(-tileInCanvasRc.origin());
+        gfx::Region tileRgn(tileInCanvasRc);
+        tileRgn.createIntersection(tileRgn, region);
+        tileRgn.offset(-tileInCanvasRc.origin());
 
-      ImageRef tileOrigImage = tileset->get(ti);
+        ImageRef tileOrigImage = tileset->get(ti);
 
-      gfx::Region diffRgn;
-      create_region_with_differences(tileOrigImage.get(),
-                                     tileImage.get(),
-                                     tileRgn.bounds(),
-                                     diffRgn);
+        gfx::Region diffRgn;
+        create_region_with_differences(tileOrigImage.get(),
+                                       tileImage.get(),
+                                       tileRgn.bounds(),
+                                       diffRgn);
 
-      // Keep only the modified region for this specific modification
-      tileRgn &= diffRgn;
+        // Keep only the modified region for this specific modification
+        tileRgn &= diffRgn;
 
-      if (!tileRgn.isEmpty()) {
-        Mod mod;
-        mod.tileIndex = ti;
-        mod.tileOrigImage = tileOrigImage;
-        mod.tileImage = tileImage;
-        mod.tileRgn = tileRgn;
-        mods.push_back(mod);
+        if (!tileRgn.isEmpty()) {
+          Mod mod;
+          mod.tileIndex = ti;
+          mod.tileOrigImage = tileOrigImage;
+          mod.tileImage = tileImage;
+          mod.tileRgn = tileRgn;
+          mods.push_back(mod);
 
-        modifiedTileIndexes[ti] = true;
+          modifiedTileIndexes[ti] = true;
+        }
       }
     }
 
@@ -655,12 +659,14 @@ void remove_unused_tiles_from_tileset(
     for_each_pixel<TilemapTraits>(
       tilemapImage,
       [&unusedTiles, &n](const doc::tile_t t) {
-        const doc::tile_index ti = doc::tile_geti(t);
-        n = std::max<int>(n, ti+1);
-        if (ti >= 0 &&
-            ti < int(unusedTiles.size()) &&
-            unusedTiles[ti]) {
-          unusedTiles[ti] = false;
+        if (t != tile_i_notile) {
+          const doc::tile_index ti = doc::tile_geti(t);
+          n = std::max<int>(n, ti+1);
+          if (ti >= 0 &&
+              ti < int(unusedTiles.size()) &&
+              unusedTiles[ti]) {
+            unusedTiles[ti] = false;
+          }
         }
       });
   }

@@ -96,7 +96,13 @@ public:
         break;
     }
 
-    if (loop->getBrush()->type() == doc::kImageBrushType) {
+    // TODO support different ink types for tilemaps (even custom brushes,
+    //      and custom inks script-driven)
+    if (loop->getDstImage()->pixelFormat() == IMAGE_TILEMAP) {
+      setProc(new CopyInkProcessing<TilemapTraits>(loop));
+    }
+    // Custom brushes
+    else if (loop->getBrush()->type() == doc::kImageBrushType) {
       switch (m_type) {
         case Simple:
           setProc(get_ink_proc<BrushSimpleInkProcessing>(loop));
@@ -158,12 +164,7 @@ public:
           break;
         }
         case Copy:
-          if (loop->getDstImage()->pixelFormat() == IMAGE_TILEMAP) {
-            setProc(new CopyInkProcessing<TilemapTraits>(loop));
-          }
-          else {
-            setProc(get_ink_proc<CopyInkProcessing>(loop));
-          }
+          setProc(get_ink_proc<CopyInkProcessing>(loop));
           break;
         case LockAlpha:
           setProc(get_ink_proc<LockAlphaInkProcessing>(loop));

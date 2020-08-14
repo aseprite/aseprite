@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2018-2019 Igara Studio S.A.
+// Copyright (c) 2018-2020 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -17,6 +17,7 @@
 #include "doc/palette.h"
 #include "doc/remap.h"
 #include "doc/rgbmap.h"
+#include "doc/tile.h"
 #include "gfx/region.h"
 
 #include <stdexcept>
@@ -426,8 +427,12 @@ void remap_image(Image* image, const Remap& remap)
     case IMAGE_TILEMAP:
       transform_image<TilemapTraits>(
         image, [&remap](color_t c) -> color_t {
-                 ASSERT(remap[c] != Remap::kNoMap);
-                 return remap[c];
+                  if (c == tile_i_notile)
+                    return tile_i_notile;
+                  else {
+                    ASSERT(remap[c] != Remap::kNoMap);
+                    return remap[c];
+                  }
                });
       break;
   }
