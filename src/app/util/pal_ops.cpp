@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (c) 2019-2020  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -31,15 +31,14 @@ void move_or_copy_palette_colors(
   }
 
   palette.copyColorsTo(&newPalette);
-  doc::Remap remap(palette.size());
 
   // Copy colors
   if (copy) {
     int npicks = picks.picks();
     ASSERT(npicks >= 1);
 
-    remap = doc::create_remap_to_expand_palette(palette.size()+npicks,
-                                                npicks, beforeIndex);
+    auto remap = doc::create_remap_to_expand_palette(palette.size()+npicks,
+                                                     npicks, beforeIndex);
 
     newPalette.resize(palette.size()+npicks);
     for (int i=0; i<palette.size(); ++i)
@@ -65,7 +64,7 @@ void move_or_copy_palette_colors(
   }
   // Move colors
   else {
-    remap = doc::create_remap_to_move_picks(picks, beforeIndex);
+    auto remap = doc::create_remap_to_move_picks(picks, beforeIndex);
 
     auto oldPicks = picks;
     for (int i=0; i<palette.size(); ++i) {

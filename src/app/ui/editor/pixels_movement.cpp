@@ -26,6 +26,7 @@
 #include "app/ui/editor/pivot_helpers.h"
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
+#include "app/util/cel_ops.h"
 #include "app/util/expand_cel_canvas.h"
 #include "app/util/new_image_from_mask.h"
 #include "app/util/range_utils.h"
@@ -277,7 +278,9 @@ void PixelsMovement::cutMask()
   {
     ContextWriter writer(m_reader, 1000);
     if (writer.cel()) {
-      m_tx(new cmd::ClearMask(writer.cel()));
+      clear_mask_from_cel(m_tx,
+                          writer.cel(),
+                          m_site.tilesetMode());
 
       // Do not trim here so we don't lost the information about all
       // linked cels related to "writer.cel()"
@@ -342,7 +345,7 @@ void PixelsMovement::moveImage(const gfx::Point& pos, MoveModifier moveModifier)
 
       if ((moveModifier & SnapToGridMovement) == SnapToGridMovement) {
         // Snap the x1,y1 point to the grid.
-        gfx::Rect gridBounds = m_document->sprite()->gridBounds();
+        gfx::Rect gridBounds = m_site.gridBounds();
         gfx::PointF gridOffset(
           snap_to_grid(
             gridBounds,
@@ -781,7 +784,14 @@ void PixelsMovement::redrawExtraImage(Transformation* transformation)
   if (!m_extraCel)
     m_extraCel.reset(new ExtraCel);
 
-  m_extraCel->create(m_document->sprite(), bounds, m_site.frame(), opacity);
+  m_extraCel->create(
+    m_site.tilemapMode(),
+    m_document->sprite(),
+    bounds,
+    (m_site.tilemapMode() == TilemapMode::Tiles ? m_site.grid().tileToCanvas(bounds).size():
+                                                  bounds.size()),
+    m_site.frame(),
+    opacity);
   m_extraCel->setType(render::ExtraType::PATCH);
   m_extraCel->setBlendMode(m_site.layer()->isImage() ?
                            static_cast<LayerImage*>(m_site.layer())->blendMode():
@@ -1088,7 +1098,9 @@ void PixelsMovement::reproduceAllTransformationsWithInnerCmds()
   for (const InnerCmd& c : m_innerCmds) {
     switch (c.type) {
       case InnerCmd::Clear:
-        m_tx(new cmd::ClearMask(m_site.cel()));
+        clear_mask_from_cel(m_tx,
+                            m_site.cel(),
+                            m_site.tilesetMode());
         break;
       case InnerCmd::Flip:
         flipOriginalImage(c.data.flip.type);

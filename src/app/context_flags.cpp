@@ -99,6 +99,9 @@ void ContextFlags::updateFlagsFromSite(const Site& site)
   if (layer->isReference())
     m_flags |= ActiveLayerIsReference;
 
+  if (layer->isTilemap())
+    m_flags |= ActiveLayerIsTilemap;
+
   if (layer->isImage()) {
     m_flags |= ActiveLayerIsImage;
 
@@ -113,6 +116,9 @@ void ContextFlags::updateFlagsFromSite(const Site& site)
 
   if (site.selectedColors().picks() > 0)
     m_flags |= HasSelectedColors;
+
+  if (site.selectedTiles().picks() > 0)
+    m_flags |= HasSelectedTiles;
 }
 
 } // namespace app

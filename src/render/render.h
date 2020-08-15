@@ -178,6 +178,7 @@ namespace render {
     void renderCel(
       Image* dst_image,
       const Image* cel_image,
+      const Layer* cel_layer,
       const Palette* pal,
       const gfx::RectF& celBounds,
       const gfx::Clip& area,

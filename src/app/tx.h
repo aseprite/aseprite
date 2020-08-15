@@ -73,6 +73,10 @@ namespace app {
       return *m_transaction;
     }
 
+    operator CmdTransaction*() {
+      return m_transaction->cmds();
+    }
+
   private:
     Doc* m_doc;
     Transaction* m_transaction;

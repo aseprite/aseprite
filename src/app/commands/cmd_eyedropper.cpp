@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -8,22 +9,18 @@
 #include "config.h"
 #endif
 
-#include "app/app.h"
 #include "app/color.h"
 #include "app/color_picker.h"
 #include "app/commands/cmd_eyedropper.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
-#include "app/modules/editors.h"
+#include "app/context.h"
 #include "app/pref/preferences.h"
 #include "app/site.h"
 #include "app/tools/tool.h"
 #include "app/tools/tool_box.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/editor/editor.h"
-#include "app/ui_context.h"
-#include "doc/image.h"
-#include "doc/sprite.h"
 #include "ui/manager.h"
 #include "ui/system.h"
 
@@ -64,6 +61,11 @@ void EyedropperCommand::pickSample(const Site& site,
     pref.eyedropper.channel();
 
   app::Color picked = picker.color();
+
+  if (site.tilemapMode() == TilemapMode::Tiles) {
+    color = app::Color::fromIndex(picked.getIndex());
+    return;
+  }
 
   switch (channel) {
     case app::gen::EyedropperChannel::COLOR_ALPHA:

@@ -96,7 +96,13 @@ public:
         break;
     }
 
-    if (loop->getBrush()->type() == doc::kImageBrushType) {
+    // TODO support different ink types for tilemaps (even custom brushes,
+    //      and custom inks script-driven)
+    if (loop->getDstImage()->pixelFormat() == IMAGE_TILEMAP) {
+      setProc(new CopyInkProcessing<TilemapTraits>(loop));
+    }
+    // Custom brushes
+    else if (loop->getBrush()->type() == doc::kImageBrushType) {
       switch (m_type) {
         case Simple:
           setProc(get_ink_proc<BrushSimpleInkProcessing>(loop));
@@ -437,24 +443,33 @@ public:
   }
 
   void inkHline(int x1, int y, int x2, ToolLoop* loop) override {
+    gfx::Rect rc(x1, y, x2-x1+1, 1);
+
+    // For tile point shape, the point shape is done in "tiles"
+    // coordinatse, but we want the selection in "canvas" coordinates.
+    if (loop->getPointShape()->isTile())
+      rc = loop->getGrid().tileToCanvas(rc);
+
     if (m_modify_selection) {
       int modifiers = int(loop->getModifiers());
 
       if ((modifiers & (int(ToolLoopModifiers::kReplaceSelection) |
                         int(ToolLoopModifiers::kAddSelection))) != 0) {
-        m_mask.add(gfx::Rect(x1, y, x2-x1+1, 1));
+        m_mask.add(rc);
       }
       else if ((modifiers & int(ToolLoopModifiers::kSubtractSelection)) != 0) {
-        m_mask.subtract(gfx::Rect(x1, y, x2-x1+1, 1));
+        m_mask.subtract(rc);
       }
       else if ((modifiers & int(ToolLoopModifiers::kIntersectSelection)) != 0) {
-        m_intersectMask.add(gfx::Rect(x1, y, x2-x1+1, 1));
+        m_intersectMask.add(rc);
       }
 
-      m_maxBounds |= gfx::Rect(x1, y, x2-x1+1, 1);
+      m_maxBounds |= rc;
     }
     else {
-      BaseInk::inkHline(x1, y, x2, loop);
+      rc &= loop->getDstImage()->bounds();
+      for (int v=rc.y; v<rc.y2(); ++v)
+        BaseInk::inkHline(rc.x, v, rc.x2()-1, loop);
     }
   }
 

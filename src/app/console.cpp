@@ -44,7 +44,7 @@ public:
     m_view.attachToView(&m_textbox);
     m_button.setMinSize(gfx::Size(60*ui::guiscale(), 0));
 
-    Grid* grid = new Grid(1, false);
+    ui::Grid* grid = new ui::Grid(1, false);
     grid->addChildInCell(&m_view, 1, 1, HORIZONTAL | VERTICAL);
     grid->addChildInCell(&m_button, 1, 1, CENTER);
     addChild(grid);

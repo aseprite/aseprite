@@ -2039,6 +2039,10 @@ void Timeline::drawHeaderFrame(ui::Graphics* g, frame_t frame)
 
 void Timeline::drawLayer(ui::Graphics* g, int layerIdx)
 {
+  ASSERT(layerIdx >= 0 && layerIdx < int(m_rows.size()));
+  if (layerIdx < 0 || layerIdx >= m_rows.size())
+    return;
+
   auto& styles = skinTheme()->styles;
   Layer* layer = m_rows[layerIdx].layer();
   bool is_active = isLayerActive(layerIdx);

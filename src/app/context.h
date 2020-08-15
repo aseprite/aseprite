@@ -91,6 +91,7 @@ namespace app {
     void setActiveFrame(doc::frame_t frame);
     void setRange(const DocRange& range);
     void setSelectedColors(const doc::PalettePicks& picks);
+    void setSelectedTiles(const doc::PalettePicks& picks);
     bool hasModifiedDocuments() const;
     void notifyActiveSiteChanged();
 
@@ -115,6 +116,7 @@ namespace app {
     virtual void onSetActiveFrame(const doc::frame_t frame);
     virtual void onSetRange(const DocRange& range);
     virtual void onSetSelectedColors(const doc::PalettePicks& picks);
+    virtual void onSetSelectedTiles(const doc::PalettePicks& picks);
     virtual void onCloseDocument(Doc* doc);
 
     Doc* lastSelectedDoc() { return m_lastSelectedDoc; }

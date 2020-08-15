@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -13,10 +14,6 @@
 #include "doc/color.h"
 #include "doc/frame.h"
 
-namespace doc {
-  class LayerImage;
-}
-
 namespace app {
 namespace cmd {
   using namespace doc;
@@ -24,8 +21,8 @@ namespace cmd {
   class CopyCel : public CmdSequence {
   public:
     CopyCel(
-      LayerImage* srcLayer, frame_t srcFrame,
-      LayerImage* dstLayer, frame_t dstFrame, bool continuous);
+      Layer* srcLayer, frame_t srcFrame,
+      Layer* dstLayer, frame_t dstFrame, bool continuous);
 
   protected:
     void onExecute() override;

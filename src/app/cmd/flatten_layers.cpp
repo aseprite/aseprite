@@ -124,7 +124,7 @@ void FlattenLayers::onExecute()
       else {
         gfx::Rect bounds(image->bounds());
         if (doc::algorithm::shrink_bounds(
-              image.get(), bounds, image->maskColor())) {
+              image.get(), image->maskColor(), nullptr, bounds)) {
           cel_image.reset(
             doc::crop_image(image.get(), bounds, image->maskColor()));
           cel = new Cel(frame, cel_image);

@@ -135,11 +135,22 @@ app::Color Color_new(lua_State* L, int index)
     }
     else
       lua_pop(L, 1);
+
+    // Convert { index } into a Color
+    if (lua_getfield(L, index, "index") != LUA_TNIL) {
+      color = app::Color::fromIndex(lua_tonumber(L, -1));
+      lua_pop(L, 1);
+      return color;
+    }
+    else
+      lua_pop(L, 1);
   }
   // raw color into app color
   else if (!lua_isnone(L, index)) {
     if (lua_isinteger(L, index) && (index < 0 || lua_isnone(L, index+1))) {
       doc::color_t docColor = lua_tointeger(L, index);
+
+      // TODO depending on current pixel format?
       switch (app_get_current_pixel_format()) {
         case IMAGE_RGB:
           color = app::Color::fromRgb(doc::rgba_getr(docColor),

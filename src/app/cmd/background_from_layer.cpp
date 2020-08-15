@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -43,21 +43,22 @@ BackgroundFromLayer::BackgroundFromLayer(Layer* layer)
 void BackgroundFromLayer::onExecute()
 {
   Layer* layer = this->layer();
+  ASSERT(!layer->isTilemap());  // TODO support background tilemaps
+
   Sprite* sprite = layer->sprite();
   auto doc = static_cast<Doc*>(sprite->document());
   color_t bgcolor = doc->bgColor();
 
   // Create a temporary image to draw each cel of the new Background
   // layer.
-  ImageRef bg_image(Image::create(sprite->pixelFormat(),
-      sprite->width(),
-      sprite->height()));
+  ImageRef bg_image(Image::create(sprite->spec()));
 
   CelList cels;
   layer->getCels(cels);
   for (Cel* cel : cels) {
     Image* cel_image = cel->image();
     ASSERT(cel_image);
+    ASSERT(cel_image->pixelFormat() != IMAGE_TILEMAP);
 
     clear_image(bg_image.get(), bgcolor);
     render::composite_image(

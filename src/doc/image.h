@@ -107,6 +107,7 @@ namespace doc {
       case IMAGE_GRAYSCALE: return GrayscaleTraits::getRowStrideBytes(pixels_per_row);
       case IMAGE_INDEXED:   return IndexedTraits::getRowStrideBytes(pixels_per_row);
       case IMAGE_BITMAP:    return BitmapTraits::getRowStrideBytes(pixels_per_row);
+      case IMAGE_TILEMAP:   return TilemapTraits::getRowStrideBytes(pixels_per_row);
     }
     return 0;
   }

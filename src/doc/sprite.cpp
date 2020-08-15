@@ -18,12 +18,14 @@
 #include "doc/cels_range.h"
 #include "doc/image_impl.h"
 #include "doc/layer.h"
+#include "doc/layer_tilemap.h"
 #include "doc/octree_map.h"
 #include "doc/palette.h"
 #include "doc/primitives.h"
 #include "doc/remap.h"
 #include "doc/rgbmap_rgb5a3.h"
 #include "doc/tag.h"
+#include "doc/tilesets.h"
 
 #include <algorithm>
 #include <cstring>
@@ -74,6 +76,7 @@ Sprite::Sprite(const ImageSpec& spec,
   , m_gridBounds(Sprite::DefaultGridBounds())
   , m_tags(this)
   , m_slices(this)
+  , m_tilesets(nullptr)
 {
   // Generate palette
   switch (spec.colorMode()) {
@@ -103,6 +106,9 @@ Sprite::~Sprite()
 {
   // Destroy layers
   delete m_root;
+
+  // Destroy tilesets
+  delete m_tilesets;
 
   // Destroy palettes
   {
@@ -208,9 +214,9 @@ void Sprite::setTransparentColor(color_t color)
   m_spec.setMaskColor(color);
 
   // Change the mask color of all images.
-  std::vector<Image*> images;
+  std::vector<ImageRef> images;
   getImages(images);
-  for (Image* image : images)
+  for (ImageRef& image : images)
     image->setMaskColor(color);
 }
 
@@ -218,9 +224,9 @@ int Sprite::getMemSize() const
 {
   int size = 0;
 
-  std::vector<Image*> images;
+  std::vector<ImageRef> images;
   getImages(images);
-  for (Image* image : images)
+  for (const ImageRef& image : images)
     size += image->getRowStrideSize() * image->height();
 
   return size;
@@ -469,13 +475,22 @@ void Sprite::setDurationForAllFrames(int msecs)
 }
 
 //////////////////////////////////////////////////////////////////////
-// Shared Images and CelData (for linked Cels)
+// Shared Images and CelData (for linked cels and tilesets)
 
 ImageRef Sprite::getImageRef(ObjectId imageId)
 {
   for (Cel* cel : cels()) {
     if (cel->image()->id() == imageId)
       return cel->imageRef();
+  }
+  if (hasTilesets()) {
+    for (Tileset* tileset : *tilesets()) {
+      for (tile_index i=0; i<tileset->size(); ++i) {
+        ImageRef image = tileset->get(i);
+        if (image && image->id() == imageId)
+          return image;
+      }
+    }
   }
   return ImageRef(nullptr);
 }
@@ -496,26 +511,55 @@ void Sprite::replaceImage(ObjectId curImageId, const ImageRef& newImage)
 {
   for (Cel* cel : cels()) {
     if (cel->image()->id() == curImageId)
-      cel->data()->setImage(newImage);
+      cel->data()->setImage(newImage, cel->layer());
+  }
+
+  if (hasTilesets()) {
+    for (Tileset* tileset : *tilesets()) {
+      for (tile_index i=0; i<tileset->size(); ++i) {
+        ImageRef image = tileset->get(i);
+        if (image && image->id() == curImageId)
+          tileset->set(i, newImage);
+      }
+    }
   }
 }
 
 // TODO replace it with a images iterator
-void Sprite::getImages(std::vector<Image*>& images) const
+void Sprite::getImages(std::vector<ImageRef>& images) const
 {
   for (const auto& cel : uniqueCels())
-    images.push_back(cel->image());
+    if (cel->image()->pixelFormat() != IMAGE_TILEMAP)
+      images.push_back(cel->imageRef());
+
+  if (hasTilesets()) {
+    for (Tileset* tileset : *tilesets()) {
+      for (tile_index i=0; i<tileset->size(); ++i) {
+        ImageRef image = tileset->get(i);
+        if (image)
+          images.push_back(image);
+      }
+    }
+  }
 }
 
-void Sprite::remapImages(frame_t frameFrom, frame_t frameTo, const Remap& remap)
+void Sprite::remapImages(const Remap& remap)
 {
   ASSERT(pixelFormat() == IMAGE_INDEXED);
   //ASSERT(remap.size() == 256);
 
-  for (const Cel* cel : uniqueCels()) {
-    // Remap this Cel because is inside the specified range
-    if (cel->frame() >= frameFrom &&
-        cel->frame() <= frameTo) {
+  std::vector<ImageRef> images;
+  getImages(images);
+  for (ImageRef& image : images)
+    remap_image(image.get(), remap);
+}
+
+void Sprite::remapTilemaps(const Tileset* tileset,
+                           const Remap& remap)
+{
+  for (Cel* cel : uniqueCels()) {
+    if (cel->layer()->isTilemap() &&
+        static_cast<LayerTilemap*>(cel->layer())->tileset() == tileset) {
       remap_image(cel->image(), remap);
     }
   }
@@ -535,8 +579,6 @@ void Sprite::pickCels(const double x,
 
   for (int i=(int)layers.size()-1; i>=0; --i) {
     const Layer* layer = layers[i];
-    if (!layer->isImage())
-      continue;
 
     Cel* cel = layer->cel(frame);
     if (!cel)
@@ -638,6 +680,16 @@ CelsRange Sprite::uniqueCels() const
 CelsRange Sprite::uniqueCels(const SelectedFrames& selFrames) const
 {
   return CelsRange(this, selFrames, CelsRange::UNIQUE);
+}
+
+////////////////////////////////////////
+// Tilesets
+
+Tilesets* Sprite::tilesets() const
+{
+  if (!m_tilesets)
+    m_tilesets = new Tilesets;
+  return m_tilesets;
 }
 
 } // namespace doc

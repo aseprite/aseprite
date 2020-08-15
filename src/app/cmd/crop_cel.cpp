@@ -1,5 +1,6 @@
 // Aseprite
-// Copyright (C) 2016  David Capello
+// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C)      2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -11,6 +12,8 @@
 #include "app/cmd/crop_cel.h"
 
 #include "doc/cel.h"
+#include "doc/layer.h"
+#include "doc/layer_tilemap.h"
 #include "doc/primitives.h"
 
 namespace app {
@@ -47,10 +50,18 @@ void CropCel::cropImage(const gfx::Point& origin,
 {
   Cel* cel = this->cel();
 
+  gfx::Rect localBounds(bounds);
+  if (cel->layer()->isTilemap()) {
+    doc::Tileset* tileset = static_cast<LayerTilemap*>(cel->layer())->tileset();
+    if (tileset) {
+      doc::Grid grid = tileset->grid();
+      localBounds = grid.canvasToTile(bounds);
+    }
+  }
   if (bounds != cel->image()->bounds()) {
     ImageRef image(crop_image(cel->image(),
-                              bounds.x, bounds.y,
-                              bounds.w, bounds.h,
+                              localBounds.x, localBounds.y,
+                              localBounds.w, localBounds.h,
                               cel->image()->maskColor()));
     ObjectId id = cel->image()->id();
     ObjectVersion ver = cel->image()->version();
@@ -59,7 +70,7 @@ void CropCel::cropImage(const gfx::Point& origin,
     image->setId(id);
     image->setVersion(ver);
     image->incrementVersion();
-    cel->data()->setImage(image);
+    cel->data()->setImage(image, cel->layer());
     cel->data()->incrementVersion();
   }
 

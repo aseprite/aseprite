@@ -12,6 +12,7 @@
 #include "app/crash/read_document.h"
 
 #include "app/console.h"
+#include "app/crash/doc_format.h"
 #include "app/crash/internals.h"
 #include "app/doc.h"
 #include "base/clamp.h"
@@ -28,6 +29,7 @@
 #include "doc/frame.h"
 #include "doc/image_io.h"
 #include "doc/layer.h"
+#include "doc/layer_tilemap.h"
 #include "doc/palette.h"
 #include "doc/palette_io.h"
 #include "doc/slice.h"
@@ -37,6 +39,9 @@
 #include "doc/subobjects_io.h"
 #include "doc/tag.h"
 #include "doc/tag_io.h"
+#include "doc/tileset.h"
+#include "doc/tileset_io.h"
+#include "doc/tilesets.h"
 #include "doc/user_data_io.h"
 #include "fixmath/fixmath.h"
 
@@ -56,7 +61,8 @@ class Reader : public SubObjectsIO {
 public:
   Reader(const std::string& dir,
          base::task_token* t)
-    : m_sprite(nullptr)
+    : m_docFormatVer(DOC_FORMAT_VERSION_0)
+    , m_sprite(nullptr)
     , m_dir(dir)
     , m_docId(0)
     , m_docVersions(nullptr)
@@ -178,6 +184,10 @@ private:
   Doc* readDocument(std::ifstream& s) {
     ObjectId sprId = read32(s);
     std::string filename = read_string(s);
+    m_docFormatVer = read16(s);
+    if (s.eof()) m_docFormatVer = DOC_FORMAT_VERSION_0;
+
+    TRACE("RECO: internal format version=%d\n", m_docFormatVer);
 
     // Load DocumentInfo only
     if (m_loadInfo) {
@@ -199,6 +209,7 @@ private:
   }
 
   Sprite* readSprite(std::ifstream& s) {
+    // Header
     ColorMode mode = (ColorMode)read8(s);
     int w = read16(s);
     int h = read16(s);
@@ -240,6 +251,19 @@ private:
     }
     else {
       Console().printf("Invalid number of frames #%d\n", nframes);
+    }
+
+    // IDs of all tilesets
+    if (m_docFormatVer >= DOC_FORMAT_VERSION_1) {
+      int ntilesets = read32(s);
+      if (ntilesets > 0 && ntilesets < 0xffffff) {
+        for (int i=0; i<ntilesets; ++i) {
+          ObjectId tilesetId = read32(s);
+          Tileset* tileset = loadObject<Tileset*>("tset", tilesetId, &Reader::readTileset);
+          if (tileset)
+            spr->tilesets()->add(tileset);
+        }
+      }
     }
 
     // Read layers
@@ -395,14 +419,27 @@ private:
     LayerFlags flags = (LayerFlags)read32(s);
     ObjectType type = (ObjectType)read16(s);
     ASSERT(type == ObjectType::LayerImage ||
-           type == ObjectType::LayerGroup);
+           type == ObjectType::LayerGroup ||
+           type == ObjectType::LayerTilemap);
 
     std::string name = read_string(s);
     std::unique_ptr<Layer> lay;
 
     switch (type) {
-      case ObjectType::LayerImage: {
-        lay.reset(new LayerImage(m_sprite));
+
+      case ObjectType::LayerImage:
+      case ObjectType::LayerTilemap: {
+        switch (type) {
+          case ObjectType::LayerImage:
+            lay.reset(new LayerImage(m_sprite));
+            break;
+          case ObjectType::LayerTilemap: {
+            tileset_index tilesetIndex = read32(s);
+            lay.reset(new LayerTilemap(m_sprite, tilesetIndex));
+            break;
+          }
+        }
+
         lay->setName(name);
         lay->setFlags(flags);
 
@@ -460,6 +497,10 @@ private:
     return read_palette(s);
   }
 
+  Tileset* readTileset(std::ifstream& s) {
+    return read_tileset(s, m_sprite, false);
+  }
+
   Tag* readTag(std::ifstream& s) {
     return read_tag(s, false);
   }
@@ -498,6 +539,7 @@ private:
       return false;
   }
 
+  int m_docFormatVer;
   Sprite* m_sprite;    // Used to pass the sprite in LayerImage() ctor
   std::string m_dir;
   ObjectVersion m_docId;

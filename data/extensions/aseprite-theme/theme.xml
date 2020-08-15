@@ -419,6 +419,10 @@
         <part id="outline_empty_pixel" x="208" y="224" w="5" h="5" />
         <part id="outline_full_pixel" x="214" y="224" w="5" h="5" />
         <part id="dynamics" x="176" y="144" w="16" h="16" />
+        <part id="tiles" x="144" y="208" w="6" h="6" />
+        <part id="tiles_manual" x="150" y="208" w="6" h="6" />
+        <part id="tiles_auto" x="156" y="208" w="6" h="6" />
+        <part id="tiles_stack" x="162" y="208" w="6" h="6" />
     </parts>
     <styles>
         <style id="box" />

@@ -46,6 +46,8 @@ namespace doc {
   class RgbMap;
   class RgbMapRGB5A3;
   class SelectedFrames;
+  class Tileset;
+  class Tilesets;
 
   typedef std::vector<Palette*> PalettesList;
 
@@ -177,8 +179,13 @@ namespace doc {
     // Images
 
     void replaceImage(ObjectId curImageId, const ImageRef& newImage);
-    void getImages(std::vector<Image*>& images) const;
-    void remapImages(frame_t frameFrom, frame_t frameTo, const Remap& remap);
+
+    // Returns all sprite images (cel + tiles) that aren't tilemaps
+    void getImages(std::vector<ImageRef>& images) const;
+
+    void remapImages(const Remap& remap);
+    void remapTilemaps(const Tileset* tileset,
+                       const Remap& remap);
     void pickCels(const double x,
                   const double y,
                   const frame_t frame,
@@ -199,6 +206,12 @@ namespace doc {
     CelsRange uniqueCels() const;
     CelsRange uniqueCels(const SelectedFrames& selFrames) const;
 
+    ////////////////////////////////////////
+    // Tilesets
+
+    bool hasTilesets() const { return m_tilesets != nullptr; }
+    Tilesets* tilesets() const;
+
   private:
     Document* m_document;
     ImageSpec m_spec;
@@ -215,6 +228,9 @@ namespace doc {
 
     Tags m_tags;
     Slices m_slices;
+
+    // Tilesets
+    mutable Tilesets* m_tilesets;
 
     // Disable default constructor and copying
     Sprite();

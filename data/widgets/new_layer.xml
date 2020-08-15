@@ -1,20 +1,25 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2001-2016 by David Capello -->
+<!-- Copyright (C) 2019  Igara Studio S.A. -->
+<!-- Copyright (C) 2001-2016  David Capello -->
 <gui>
   <window id="new_layer" text="@.title">
-    <box vertical="true">
-      <box horizontal="true">
-	<box vertical="true" homogeneous="true">
-          <label text="@.name" />
-	</box>
-	<box vertical="true" homogeneous="true">
-          <entry maxsize="256" text="@.default_new_layer_name" id="name" magnet="true" />
-	</box>
-      </box>
-      <box horizontal="true" homogeneous="true">
-	<button text="@general.ok" closewindow="true" id="ok" magnet="true" />
-	<button text="@general.cancel" closewindow="true" />
-      </box>
-    </box>
+    <vbox>
+      <grid columns="2">
+        <label text="@.name" />
+        <entry maxsize="256" text="@.default_new_layer_name" id="name" magnet="true" />
+
+        <vbox>
+          <label id="tileset_label" text="@.tileset" />
+        </vbox>
+        <hbox id="tileset_options" />
+      </grid>
+      <hbox>
+        <boxfiller />
+        <hbox homogeneous="true">
+          <button text="@general.ok" closewindow="true" id="ok" magnet="true" minwidth="60" />
+          <button text="@general.cancel" closewindow="true" />
+        </hbox>
+      </hbox>
+    </vbox>
   </window>
 </gui>

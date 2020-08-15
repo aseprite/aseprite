@@ -451,6 +451,16 @@ void DocView::onLayerRestacked(DocEvent& ev)
   m_editor->invalidate();
 }
 
+void DocView::onTilesetChanged(DocEvent& ev)
+{
+  // This can happen when a filter is applied to each tile in a
+  // background thread.
+  if (!ui::is_ui_thread())
+    return;
+
+  m_editor->invalidate();
+}
+
 void DocView::onNewInputPriority(InputChainElement* element,
                                  const ui::Message* msg)
 {
@@ -570,6 +580,7 @@ bool DocView::onClear(Context* ctx)
   if (cels.empty())            // No cels to modify
     return false;
 
+  // TODO This code is similar to clipboard::cut()
   {
     Tx tx(writer.context(), "Clear");
     const bool deselectMask =

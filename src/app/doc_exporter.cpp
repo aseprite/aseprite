@@ -958,7 +958,11 @@ void DocExporter::captureSamples(Samples& samples,
         else if (m_ignoreEmptyCels)
           refColor = sprite->transparentColor();
 
-        if (!algorithm::shrink_bounds(sampleRender.get(), spriteBounds, frameBounds, refColor)) {
+          if (!algorithm::shrink_bounds(sampleRender.get(),
+                                        refColor,
+                                        nullptr,        // layer
+                                        spriteBounds,   // startBounds
+                                        frameBounds)) { // output bounds
           // If shrink_bounds() returns false, it's because the whole
           // image is transparent (equal to the mask color).
 

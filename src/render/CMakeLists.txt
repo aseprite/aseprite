@@ -1,5 +1,6 @@
 # Aseprite Render Library
-# Copyright (C) 2001-2017 David Capello
+# Copyright (C) 2019  Igara Studio S.A.
+# Copyright (C) 2001-2018 David Capello
 
 add_library(render-lib
   error_diffusion.cpp
@@ -7,6 +8,7 @@ add_library(render-lib
   gradient.cpp
   ordered_dither.cpp
   quantization.cpp
+  rasterize.cpp
   render.cpp
   zoom.cpp)
 

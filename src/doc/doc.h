@@ -23,6 +23,7 @@
 #include "doc/image_ref.h"
 #include "doc/images_map.h"
 #include "doc/layer.h"
+#include "doc/layer_tilemap.h"
 #include "doc/mask.h"
 #include "doc/object.h"
 #include "doc/palette.h"
@@ -39,5 +40,8 @@
 #include "doc/sprite.h"
 #include "doc/tag.h"
 #include "doc/tags.h"
+#include "doc/tile.h"
+#include "doc/tileset.h"
+#include "doc/tilesets.h"
 
 #endif

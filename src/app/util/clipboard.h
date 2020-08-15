@@ -38,6 +38,7 @@ namespace app {
       ClipboardImage,
       ClipboardDocRange,
       ClipboardPaletteEntries,
+      ClipboardTiles,
     };
 
     // TODO Horrible API: refactor it (maybe a merge with os::clipboard).

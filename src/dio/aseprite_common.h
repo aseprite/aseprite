@@ -9,6 +9,9 @@
 #define DIO_ASEPRITE_COMMON_H_INCLUDED
 #pragma once
 
+#include <map>
+#include <string>
+
 #define ASE_FILE_MAGIC                      0xA5E0
 #define ASE_FILE_FRAME_MAGIC                0xF1FA
 
@@ -20,6 +23,7 @@
 #define ASE_FILE_CHUNK_CEL                  0x2005
 #define ASE_FILE_CHUNK_CEL_EXTRA            0x2006
 #define ASE_FILE_CHUNK_COLOR_PROFILE        0x2007
+#define ASE_FILE_CHUNK_EXTERNAL_FILE        0x2008
 #define ASE_FILE_CHUNK_MASK                 0x2016
 #define ASE_FILE_CHUNK_PATH                 0x2017
 #define ASE_FILE_CHUNK_TAGS                 0x2018
@@ -31,10 +35,12 @@
 
 #define ASE_FILE_LAYER_IMAGE                0
 #define ASE_FILE_LAYER_GROUP                1
+#define ASE_FILE_LAYER_TILEMAP              2
 
 #define ASE_FILE_RAW_CEL                    0
 #define ASE_FILE_LINK_CEL                   1
 #define ASE_FILE_COMPRESSED_CEL             2
+#define ASE_FILE_COMPRESSED_TILEMAP         3
 
 #define ASE_FILE_NO_COLOR_PROFILE           0
 #define ASE_FILE_SRGB_COLOR_PROFILE         1
@@ -51,6 +57,9 @@
 
 #define ASE_SLICE_FLAG_HAS_CENTER_BOUNDS    1
 #define ASE_SLICE_FLAG_HAS_PIVOT_POINT      2
+
+#define ASE_TILESET_FLAG_EXTERNAL_FILE      1
+#define ASE_TILESET_FLAG_EMBEDDED           2
 
 namespace dio {
 
@@ -88,6 +97,12 @@ struct AsepriteFrameHeader {
 struct AsepriteChunk {
   int type;
   int start;
+};
+
+struct AsepriteExternalFiles {
+  std::map<uint32_t, std::string> to_fn; // ID -> filename
+  std::map<std::string, uint32_t> to_id; // filename -> ID
+  uint32_t lastid = 0;
 };
 
 } // namespace dio

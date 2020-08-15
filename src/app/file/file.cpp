@@ -596,7 +596,8 @@ void FileOp::operate(IFileOpProgress* progress)
       auto add_image = [&]() {
         canvasSize |= m_seq.image->size();
 
-        m_seq.last_cel->data()->setImage(m_seq.image);
+        m_seq.last_cel->data()->setImage(m_seq.image,
+                                         m_seq.layer);
         m_seq.layer->addCel(m_seq.last_cel);
 
         if (m_document->sprite()->palette(frame)

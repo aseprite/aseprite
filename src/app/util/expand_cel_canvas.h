@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -8,7 +9,10 @@
 #define APP_UTIL_EXPAND_CEL_CANVAS_H_INCLUDED
 #pragma once
 
+#include "app/tilemap_mode.h"
+#include "app/tileset_mode.h"
 #include "doc/frame.h"
+#include "doc/grid.h"
 #include "doc/image_ref.h"
 #include "filters/tiled_mode.h"
 #include "gfx/point.h"
@@ -24,9 +28,9 @@ namespace doc {
 }
 
 namespace app {
+  class CmdSequence;
   class Doc;
   class Site;
-  class Transaction;
 
   using namespace filters;
   using namespace doc;
@@ -46,7 +50,9 @@ namespace app {
     };
 
     ExpandCelCanvas(Site site, Layer* layer,
-      TiledMode tiledMode, Transaction& undo, Flags flags);
+                    const TiledMode tiledMode,
+                    CmdSequence* cmds,
+                    const Flags flags);
     ~ExpandCelCanvas();
 
     // Commit changes made in getDestCanvas() in the cel's image. Adds
@@ -68,6 +74,7 @@ namespace app {
     void copyValidDestToSourceCanvas(const gfx::Region& rgn);
 
     const Cel* getCel() const { return m_cel; }
+    const doc::Grid& getGrid() const { return m_grid; }
 
   private:
     gfx::Rect getTrimDstImageBounds() const;
@@ -87,7 +94,7 @@ namespace app {
     ImageRef m_dstImage;
     bool m_closed;
     bool m_committed;
-    Transaction& m_transaction;
+    CmdSequence* m_cmds;
     gfx::Region m_validSrcRegion;
     gfx::Region m_validDstRegion;
 
@@ -95,6 +102,10 @@ namespace app {
     // cel. This is false when dst is copied to the src, so we cannot
     // reduce the patched region because both images will be the same.
     bool m_canCompareSrcVsDst;
+
+    doc::Grid m_grid;
+    TilemapMode m_tilemapMode;
+    TilesetMode m_tilesetMode;
   };
 
 } // namespace app

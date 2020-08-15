@@ -18,6 +18,8 @@
 #include "app/script/luacpp.h"
 #include "app/script/security.h"
 #include "app/sprite_sheet_type.h"
+#include "app/tilemap_mode.h"
+#include "app/tileset_mode.h"
 #include "app/tools/ink_type.h"
 #include "base/chrono.h"
 #include "base/file_handle.h"
@@ -156,6 +158,7 @@ void register_dialog_class(lua_State* L);
 #endif
 void register_frame_class(lua_State* L);
 void register_frames_class(lua_State* L);
+void register_grid_class(lua_State* L);
 void register_image_class(lua_State* L);
 void register_image_iterator_class(lua_State* L);
 void register_image_spec_class(lua_State* L);
@@ -177,6 +180,8 @@ void register_sprite_class(lua_State* L);
 void register_sprites_class(lua_State* L);
 void register_tag_class(lua_State* L);
 void register_tags_class(lua_State* L);
+void register_tileset_class(lua_State* L);
+void register_tilesets_class(lua_State* L);
 void register_tool_class(lua_State* L);
 void register_version_class(lua_State* L);
 
@@ -255,6 +260,7 @@ Engine::Engine()
   setfield_integer(L, "GRAY", doc::ColorMode::GRAYSCALE);
   setfield_integer(L, "GRAYSCALE", doc::ColorMode::GRAYSCALE);
   setfield_integer(L, "INDEXED", doc::ColorMode::INDEXED);
+  setfield_integer(L, "TILEMAP", doc::ColorMode::TILEMAP);
   lua_pop(L, 1);
 
   lua_newtable(L);
@@ -367,6 +373,21 @@ Engine::Engine()
   setfield_integer(L, "X2",     (int)ui::kButtonX2);
   lua_pop(L, 1);
 
+  lua_newtable(L);
+  lua_pushvalue(L, -1);
+  lua_setglobal(L, "TilemapMode");
+  setfield_integer(L, "PIXELS", TilemapMode::Pixels);
+  setfield_integer(L, "TILES", TilemapMode::Tiles);
+  lua_pop(L, 1);
+
+  lua_newtable(L);
+  lua_pushvalue(L, -1);
+  lua_setglobal(L, "TilesetMode");
+  setfield_integer(L, "MANUAL", TilesetMode::Manual);
+  setfield_integer(L, "AUTO", TilesetMode::Auto);
+  setfield_integer(L, "STACK", TilesetMode::Stack);
+  lua_pop(L, 1);
+
   // Register classes/prototypes
   register_brush_class(L);
   register_cel_class(L);
@@ -378,6 +399,7 @@ Engine::Engine()
 #endif
   register_frame_class(L);
   register_frames_class(L);
+  register_grid_class(L);
   register_image_class(L);
   register_image_iterator_class(L);
   register_image_spec_class(L);
@@ -399,6 +421,8 @@ Engine::Engine()
   register_sprites_class(L);
   register_tag_class(L);
   register_tags_class(L);
+  register_tileset_class(L);
+  register_tilesets_class(L);
   register_tool_class(L);
   register_version_class(L);
 

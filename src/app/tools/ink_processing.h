@@ -145,7 +145,7 @@ public:
   }
 
   void processPixel(int x, int y) {
-    *SimpleInkProcessing<CopyInkProcessing<ImageTraits>, ImageTraits>::m_dstAddress = m_color;
+    *this->m_dstAddress = m_color;
   }
 
 private:

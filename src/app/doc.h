@@ -35,6 +35,7 @@ namespace doc {
   class Layer;
   class Mask;
   class Sprite;
+  class Tileset;
 }
 
 namespace gfx {
@@ -114,6 +115,7 @@ namespace app {
     void notifyCelCopied(Layer* fromLayer, frame_t fromFrame, Layer* toLayer, frame_t toFrame);
     void notifySelectionChanged();
     void notifySelectionBoundariesChanged();
+    void notifyTilesetChanged(Tileset* tileset);
 
     //////////////////////////////////////////////////////////////////////
     // File related properties

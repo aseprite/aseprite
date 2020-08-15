@@ -38,6 +38,29 @@ public:
   }
 };
 
+class TilePointShape : public PointShape {
+public:
+  bool isPixel() override { return true; }
+  bool isTile() override { return true; }
+
+  void transformPoint(ToolLoop* loop, const Stroke::Pt& pt) override {
+    const doc::Grid& grid = loop->getGrid();
+    gfx::Point newPos = grid.canvasToTile(pt.toPoint());
+
+    loop->getInk()->prepareForPointShape(loop, true, newPos.x, newPos.y);
+    doInkHline(
+      newPos.x, newPos.y, newPos.x, loop,
+      // Don't adjust by loop->getCelOrigin() because loop->getGrid()
+      // is already adjusted to the new cel position.
+      false);
+  }
+
+  void getModifiedArea(ToolLoop* loop, int x, int y, Rect& area) override {
+    const doc::Grid& grid = loop->getGrid();
+    area = grid.alignBounds(Rect(x, y, 1, 1));
+  }
+};
+
 class BrushPointShape : public PointShape {
   bool m_firstPoint;
   Brush* m_lastBrush;
@@ -236,6 +259,8 @@ public:
                                 pt.toPoint(), true);
 
     loop->getInk()->prepareForPointShape(loop, true, wpt.x, wpt.y);
+
+    ASSERT(srcImage->pixelFormat() != IMAGE_TILEMAP);
 
     doc::algorithm::floodfill(
       srcImage,

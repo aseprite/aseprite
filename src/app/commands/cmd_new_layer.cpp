@@ -10,6 +10,7 @@
 #endif
 
 #include "app/app.h"
+#include "app/cmd/add_tileset.h"
 #include "app/cmd/clear_mask.h"
 #include "app/cmd/move_layer.h"
 #include "app/cmd/trim_cel.h"
@@ -27,11 +28,13 @@
 #include "app/tx.h"
 #include "app/ui/main_window.h"
 #include "app/ui/status_bar.h"
+#include "app/ui/tileset_selector.h"
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
 #include "app/util/new_image_from_mask.h"
 #include "app/util/range_utils.h"
 #include "doc/layer.h"
+#include "doc/layer_tilemap.h"
 #include "doc/primitives.h"
 #include "doc/sprite.h"
 #include "fmt/format.h"
@@ -56,6 +59,7 @@ struct NewLayerParams : public NewParams {
   Param<std::string> name { this, std::string(), "name" };
   Param<bool> group { this, false, "group" };
   Param<bool> reference { this, false, "reference" };
+  Param<bool> tilemap { this, false, "tilemap" };
   Param<bool> ask { this, false, "ask" };
   Param<bool> fromFile { this, false, { "fromFile", "from-file" } };
   Param<bool> fromClipboard { this, false, "fromClipboard" };
@@ -67,7 +71,7 @@ struct NewLayerParams : public NewParams {
 
 class NewLayerCommand : public CommandWithNewParams<NewLayerParams> {
 public:
-  enum class Type { Layer, Group, ReferenceLayer };
+  enum class Type { Layer, Group, ReferenceLayer, TilemapLayer };
   enum class Place { AfterActiveLayer, BeforeActiveLayer, Top };
 
   NewLayerCommand();
@@ -102,6 +106,10 @@ void NewLayerCommand::onLoadParams(const Params& commandParams)
     m_type = Type::Group;
   else if (params().reference())
     m_type = Type::ReferenceLayer;
+  else if (params().tilemap())
+    m_type = Type::TilemapLayer;
+  else
+    m_type = Type::Layer;
 
   m_place = Place::AfterActiveLayer;
   if (params().top())
@@ -142,10 +150,10 @@ private:
 
 void NewLayerCommand::onExecute(Context* context)
 {
-  ContextWriter writer(context);
+  ContextReader reader(context);
   Site site = context->activeSite();
-  Doc* document(writer.document());
-  Sprite* sprite(writer.sprite());
+  Doc* document(reader.document());
+  Sprite* sprite(reader.sprite());
   std::string name;
 
   Doc* pasteDoc = nullptr;
@@ -183,21 +191,40 @@ void NewLayerCommand::onExecute(Context* context)
       return;
   }
 
+  // Information about the tileset to be used for new tilemaps
+  TilesetSelector::Info tilesetInfo;
+  tilesetInfo.newTileset = true;
+  tilesetInfo.grid = context->activeSite().grid();
+
 #ifdef ENABLE_UI
   // If params specify to ask the user about the name...
   if (params().ask() && context->isUIAvailable()) {
     // We open the window to ask the name
     app::gen::NewLayer window;
+    TilesetSelector* tilesetSelector = nullptr;
     window.name()->setText(name.c_str());
     window.name()->setMinSize(gfx::Size(128, 0));
+
+    // Tileset selector for new tilemaps
+    const bool isTilemap = (m_type == Type::TilemapLayer);
+    window.tilesetLabel()->setVisible(isTilemap);
+    window.tilesetOptions()->setVisible(isTilemap);
+    if (isTilemap) {
+      tilesetSelector = new TilesetSelector(sprite, tilesetInfo);
+      window.tilesetOptions()->addChild(tilesetSelector);
+    }
+
     window.openWindowInForeground();
     if (window.closer() != window.ok())
       return;
 
     name = window.name()->text();
+    if (tilesetSelector)
+      tilesetInfo = tilesetSelector->getInfo();
   }
 #endif
 
+  ContextWriter writer(reader);
   LayerGroup* parent = sprite->root();
   Layer* activeLayer = writer.layer();
   SelectedLayers selLayers = site.selectedLayers();
@@ -236,6 +263,24 @@ void NewLayerCommand::onExecute(Context* context)
           layer->setReference(true);
         afterBackground = true;
         break;
+      case Type::TilemapLayer: {
+        tileset_index tsi;
+        if (tilesetInfo.newTileset) {
+          auto tileset = new Tileset(sprite, tilesetInfo.grid, 0);
+          auto addTileset = new cmd::AddTileset(sprite, tileset);
+          tx(addTileset);
+
+          tsi = addTileset->tilesetIndex();
+        }
+        else {
+          tsi = tilesetInfo.tsi;
+        }
+
+        layer = new LayerTilemap(sprite, tsi);
+        layer->setName(name);
+        api.addLayer(parent, layer, parent->lastLayer());
+        break;
+      }
     }
 
     ASSERT(layer);
@@ -443,6 +488,8 @@ std::string NewLayerCommand::onGetFriendlyName() const
     text = fmt::format(Strings::commands_NewLayer_ViaCopy(), text);
   if (params().viaCut())
     text = fmt::format(Strings::commands_NewLayer_ViaCut(), text);
+  if (params().ask())
+    text = fmt::format(Strings::commands_NewLayer_WithDialog(), text);
   return text;
 }
 
@@ -490,6 +537,7 @@ std::string NewLayerCommand::layerPrefix() const
     case Type::Layer: return Strings::commands_NewLayer_Layer();
     case Type::Group: return Strings::commands_NewLayer_Group();
     case Type::ReferenceLayer: return Strings::commands_NewLayer_ReferenceLayer();
+    case Type::TilemapLayer: return Strings::commands_NewLayer_TilemapLayer();
   }
   return "Unknown";
 }

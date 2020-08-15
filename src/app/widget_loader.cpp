@@ -258,8 +258,8 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
     bool same_width_columns = bool_attr_is_true(elem, "same_width_columns");
 
     if (columns != NULL) {
-      widget = new Grid(strtol(columns, NULL, 10),
-                        same_width_columns);
+      widget = new ui::Grid(strtol(columns, NULL, 10),
+                            same_width_columns);
     }
   }
   else if (elem_name == "label") {
@@ -676,16 +676,16 @@ void WidgetLoader::fillWidgetWithXmlElementAttributesWithChildren(const TiXmlEle
         int hspan = cell_hspan ? strtol(cell_hspan, NULL, 10): 1;
         int vspan = cell_vspan ? strtol(cell_vspan, NULL, 10): 1;
         int align = cell_align ? convert_align_value_to_flags(cell_align): 0;
-        Grid* grid = dynamic_cast<Grid*>(widget);
-        ASSERT(grid != NULL);
+        auto grid = dynamic_cast<ui::Grid*>(widget);
+        ASSERT(grid != nullptr);
 
         grid->addChildInCell(child, hspan, vspan, align);
       }
       // Attach the child in the view
       else if (widget->type() == kComboBoxWidget &&
                child->type() == kListItemWidget) {
-        ComboBox* combo = dynamic_cast<ComboBox*>(widget);
-        ASSERT(combo != NULL);
+        auto combo = dynamic_cast<ComboBox*>(widget);
+        ASSERT(combo != nullptr);
 
         combo->addItem(dynamic_cast<ListItem*>(child));
       }

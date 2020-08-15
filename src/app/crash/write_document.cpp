@@ -11,6 +11,7 @@
 
 #include "app/crash/write_document.h"
 
+#include "app/crash/doc_format.h"
 #include "app/crash/internals.h"
 #include "app/doc.h"
 #include "base/convert_to.h"
@@ -26,6 +27,7 @@
 #include "doc/frame.h"
 #include "doc/image_io.h"
 #include "doc/layer.h"
+#include "doc/layer_tilemap.h"
 #include "doc/palette.h"
 #include "doc/palette_io.h"
 #include "doc/slice.h"
@@ -34,6 +36,9 @@
 #include "doc/string_io.h"
 #include "doc/tag.h"
 #include "doc/tag_io.h"
+#include "doc/tileset.h"
+#include "doc/tileset_io.h"
+#include "doc/tilesets.h"
 #include "doc/user_data_io.h"
 #include "fixmath/fixmath.h"
 
@@ -71,6 +76,12 @@ public:
     for (Palette* pal : spr->getPalettes())
       if (!saveObject("pal", pal, &Writer::writePalette))
         return false;
+
+    if (spr->hasTilesets()) {
+      for (Tileset* tset : *spr->tilesets())
+        if (!saveObject("tset", tset, &Writer::writeTileset))
+          return false;
+    }
 
     for (Tag* frtag : spr->tags())
       if (!saveObject("frtag", frtag, &Writer::writeFrameTag))
@@ -135,19 +146,28 @@ private:
   bool writeDocumentFile(std::ofstream& s, Doc* doc) {
     write32(s, doc->sprite()->id());
     write_string(s, doc->filename());
+    write16(s, DOC_FORMAT_VERSION_LAST);
     return true;
   }
 
   bool writeSprite(std::ofstream& s, Sprite* spr) {
+    // Header
     write8(s, int(spr->colorMode()));
     write16(s, spr->width());
     write16(s, spr->height());
     write32(s, spr->transparentColor());
+    write32(s, spr->totalFrames());
 
     // Frame durations
-    write32(s, spr->totalFrames());
     for (frame_t fr = 0; fr < spr->totalFrames(); ++fr)
       write32(s, spr->frameDuration(fr));
+
+    // IDs of all tilesets
+    write32(s, spr->hasTilesets() ? spr->tilesets()->size(): 0);
+    if (spr->hasTilesets()) {
+      for (Tileset* tileset : *spr->tilesets())
+        write32(s, tileset->id());
+    }
 
     // IDs of all main layers
     write32(s, spr->allLayersCount());
@@ -216,7 +236,12 @@ private:
 
     switch (lay->type()) {
 
-      case ObjectType::LayerImage: {
+      case ObjectType::LayerImage:
+      case ObjectType::LayerTilemap: {
+        // Tileset index
+        if (lay->type() == ObjectType::LayerTilemap)
+          write32(s, static_cast<const LayerTilemap*>(lay)->tilesetIndex());
+
         CelConstIterator it, begin = static_cast<const LayerImage*>(lay)->getCelBegin();
         CelConstIterator end = static_cast<const LayerImage*>(lay)->getCelEnd();
 
@@ -260,6 +285,11 @@ private:
 
   bool writePalette(std::ofstream& s, Palette* pal) {
     write_palette(s, pal);
+    return true;
+  }
+
+  bool writeTileset(std::ofstream& s, Tileset* tileset) {
+    write_tileset(s, tileset);
     return true;
   }
 

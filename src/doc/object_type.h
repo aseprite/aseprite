@@ -31,6 +31,10 @@ namespace doc {
     Document = 11,
     Tag = 12,
     Slice = 13,
+
+    LayerTilemap = 14,
+    Tileset = 15,
+    Tilesets = 16,
   };
 
 } // namespace doc

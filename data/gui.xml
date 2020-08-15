@@ -83,6 +83,10 @@
       <key command="NewLayer" shortcut="Ctrl+Shift+J" mac="Cmd+Shift+J">
         <param name="viaCut" value="true" />
       </key>
+      <key command="NewLayer" shortcut="Space+N">
+        <param name="ask" value="true" />
+        <param name="tilemap" value="true" />
+      </key>
       <key command="GotoPreviousLayer" shortcut="Down" context="Normal" />
       <key command="GotoNextLayer" shortcut="Up" context="Normal" />
       <!-- Frame -->
@@ -137,6 +141,16 @@
       <key command="ToggleTimelineThumbnails" shortcut="F6" />
       <key command="Timeline" shortcut="Tab">
         <param name="switch" value="true" />
+      </key>
+      <key command="ToggleTilesMode" shortcut="Space+Tab" />
+      <key command="TilesetMode" shortcut="Space+1">
+        <param name="mode" value="manual" />
+      </key>
+      <key command="TilesetMode" shortcut="Space+2">
+        <param name="mode" value="auto" />
+      </key>
+      <key command="TilesetMode" shortcut="Space+3">
+        <param name="mode" value="stack" />
       </key>
       <key command="PaletteEditor" shortcut="A" />
       <key command="PaletteEditor" shortcut="F4">
@@ -424,6 +438,9 @@
       <key command="NewSpriteFromSelection" shortcut="Ctrl+Alt+N" mac="Cmd+Alt+N" />
 
       <!-- Commands not associated to menu items and without shortcuts by default -->
+      <key command="NewLayer">
+        <param name="tilemap" value="true" />
+      </key>
       <key command="PixelPerfectMode" />
       <key command="ContiguousFill" />
       <key command="SetInkType"><param name="type" value="simple" /></key>
@@ -810,6 +827,10 @@
           <item command="NewLayer" text="@.layer_new_reference_layer_from_file" group="layer_new">
             <param name="reference" value="true" />
             <param name="fromFile" value="true" />
+          </item>
+          <item command="NewLayer" text="@.layer_new_tilemap_layer">
+            <param name="tilemap" value="true" />
+            <param name="ask" value="true" />
           </item>
         </menu>
         <item command="RemoveLayer" text="@.layer_delete_layer" group="layer_remove" />

@@ -35,6 +35,7 @@ void fill_selection(Image* image,
     for (int u=0; u<maskBounds.w; ++u, ++it) {
       ASSERT(it != maskBits.end());
       if (*it) {
+        // TODO use iterators
         put_pixel(image,
                   u + offset.x,
                   v + offset.y, color);

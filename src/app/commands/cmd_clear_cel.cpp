@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -61,11 +62,9 @@ void ClearCelCommand::onExecute(Context* context)
           continue;
         }
 
-        LayerImage* layerImage = static_cast<LayerImage*>(layer);
-
         for (frame_t frame : site->selectedFrames().reversed()) {
-          if (layerImage->cel(frame))
-            document->getApi(tx).clearCel(layerImage, frame);
+          if (Cel* cel = layer->cel(frame))
+            document->getApi(tx).clearCel(cel);
         }
       }
     }

@@ -303,6 +303,16 @@ void DrawingState::onExposeSpritePixels(const gfx::Region& rgn)
     m_toolLoop->validateDstImage(rgn);
 }
 
+bool DrawingState::getGridBounds(Editor* editor, gfx::Rect& gridBounds)
+{
+  if (m_toolLoop) {
+    gridBounds = m_toolLoop->getGridBounds();
+    return true;
+  }
+  else
+    return false;
+}
+
 void DrawingState::handleMouseMovement(const tools::Pointer& pointer)
 {
   m_mouseMoveReceived = true;

@@ -23,6 +23,12 @@
 #include "doc/layer.h"
 #include "ui/system.h"
 
+#ifdef _DEBUG
+#include "doc/layer_tilemap.h"
+#include "doc/tileset.h"
+#include "doc/tilesets.h"
+#endif
+
 #include <algorithm>
 #include <stdexcept>
 
@@ -104,6 +110,11 @@ void Context::setSelectedColors(const doc::PalettePicks& picks)
   onSetSelectedColors(picks);
 }
 
+void Context::setSelectedTiles(const doc::PalettePicks& picks)
+{
+  onSetSelectedTiles(picks);
+}
+
 bool Context::hasModifiedDocuments() const
 {
   for (auto doc : documents())
@@ -175,6 +186,20 @@ void Context::executeCommand(Command* command, const Params& params)
     // TODO move this code to another place (e.g. a Workplace/Tabs widget)
     if (isUIAvailable())
       app_rebuild_documents_tabs();
+
+#ifdef _DEBUG // Special checks for debugging purposes
+    {
+      Site site = activeSite();
+      // Check that all tileset hash tables are valid
+      if (site.sprite() &&
+          site.sprite()->hasTilesets()) {
+        for (Tileset* tileset : *site.sprite()->tilesets()) {
+          if (tileset)
+            tileset->assertValidHashTable();
+        }
+      }
+    }
+#endif
   }
   catch (base::Exception& e) {
     LOG(ERROR, "CTXT: Exception caught executing %s command\n%s\n",
@@ -254,6 +279,12 @@ void Context::onSetSelectedColors(const doc::PalettePicks& picks)
 {
   if (m_lastSelectedDoc)
     activeSiteHandler()->setSelectedColorsInDoc(m_lastSelectedDoc, picks);
+}
+
+void Context::onSetSelectedTiles(const doc::PalettePicks& picks)
+{
+  if (m_lastSelectedDoc)
+    activeSiteHandler()->setSelectedTilesInDoc(m_lastSelectedDoc, picks);
 }
 
 ActiveSiteHandler* Context::activeSiteHandler() const

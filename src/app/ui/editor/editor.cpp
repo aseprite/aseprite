@@ -63,6 +63,7 @@
 #include "os/display.h"
 #include "os/surface.h"
 #include "os/system.h"
+#include "render/rasterize.h"
 #include "ui/ui.h"
 
 #include <algorithm>
@@ -334,11 +335,19 @@ void Editor::getInvalidDecoratoredRegion(gfx::Region& region)
 
 void Editor::setLayer(const Layer* layer)
 {
-  bool changed = (m_layer != layer);
+  const bool changed = (m_layer != layer);
+  const bool gridVisible = (changed && m_docPref.show.grid());
+
+  doc::Grid oldGrid, newGrid;
+  if (gridVisible)
+    oldGrid = getSite().grid();
 
   m_observers.notifyBeforeLayerChanged(this);
   m_layer = const_cast<Layer*>(layer);
   m_observers.notifyAfterLayerChanged(this);
+
+  if (gridVisible)
+    newGrid = getSite().grid();
 
   if (m_document && changed) {
     if (// If the onion skinning depends on the active layer
@@ -348,7 +357,11 @@ void Editor::setLayer(const Layer* layer)
         // If there is a different opacity for nonactive-layers
         Preferences::instance().experimental.nonactiveLayersOpacity() < 255 ||
         // If the automatic cel guides are visible...
-        m_showGuidesThisCel) {
+        m_showGuidesThisCel ||
+        // If grid settings changed
+        (gridVisible &&
+         (oldGrid.tileSize() != newGrid.tileSize() ||
+          oldGrid.origin() != newGrid.origin()))) {
       // We've to redraw the whole editor
       invalidate();
     }
@@ -387,6 +400,7 @@ void Editor::getSite(Site* site) const
   site->sprite(m_sprite);
   site->layer(m_layer);
   site->frame(m_frame);
+
   if (!m_selectedSlices.empty() &&
       getCurrentEditorInk()->isSlice()) {
     site->selectedSlices(m_selectedSlices);
@@ -397,6 +411,19 @@ void Editor::getSite(Site* site) const
   if (timeline &&
       timeline->range().enabled()) {
     site->range(timeline->range());
+  }
+
+  if (m_layer && m_layer->isTilemap()) {
+    TilemapMode tilemapMode = site->tilemapMode();
+    TilesetMode tilesetMode = site->tilesetMode();
+    const ColorBar* colorbar = ColorBar::instance();
+    ASSERT(colorbar);
+    if (colorbar) {
+      tilemapMode = colorbar->tilemapMode();
+      tilesetMode = colorbar->tilesetMode();
+    }
+    site->tilemapMode(tilemapMode);
+    site->tilesetMode(tilesetMode);
   }
 }
 
@@ -749,7 +776,10 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
 
       // Draw the grid
       if (m_docPref.show.grid()) {
-        gfx::Rect gridrc = m_sprite->gridBounds();
+        gfx::Rect gridrc;
+        if (!m_state->getGridBounds(this, gridrc))
+          gridrc = getSite().gridBounds();
+
         if (m_proj.applyX(gridrc.w) > 2 &&
             m_proj.applyY(gridrc.h) > 2) {
           int alpha = m_docPref.grid.opacity();
@@ -1286,15 +1316,9 @@ void Editor::flashCurrentLayer()
     m_renderEngine->removePreviewImage();
 
     ExtraCelRef extraCel(new ExtraCel);
-    extraCel->create(m_sprite, src_cel->bounds(), m_frame, 255);
-    extraCel->setType(render::ExtraType::COMPOSITE);
+    extraCel->setType(render::ExtraType::OVER_COMPOSITE);
     extraCel->setBlendMode(BlendMode::NEG_BW);
 
-    Image* flash_image = extraCel->image();
-    clear_image(flash_image, flash_image->maskColor());
-    copy_image(flash_image, src_cel->image(), 0, 0);
-
-    ExtraCelRef oldExtraCel = m_document->extraCel();
     m_document->setExtraCel(extraCel);
     m_flashing = Flashing::WithFlashExtraCel;
 

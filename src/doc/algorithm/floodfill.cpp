@@ -367,6 +367,8 @@ void floodfill(const Image* image,
       case IMAGE_INDEXED:
         replace_color<IndexedTraits>(image, bounds, src_color, tolerance, data, proc);
         break;
+      // TODO We could add the case IMAGE_TILEMAP: ... break;
+      //      to support replacing one tile with another one
     }
     return;
   }
