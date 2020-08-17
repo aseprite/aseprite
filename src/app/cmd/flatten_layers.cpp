@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019 Igara Studio S.A.
+// Copyright (C) 2019-2020 Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -61,7 +61,7 @@ void FlattenLayers::onExecute()
       backgroundIsSel = true;
   }
 
-  LayerList list = layers.toLayerList();
+  LayerList list = layers.toBrowsableLayerList();
   if (list.empty())
     return;                     // Do nothing
 

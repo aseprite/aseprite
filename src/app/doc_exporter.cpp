@@ -1365,10 +1365,14 @@ void DocExporter::createDataFile(const Samples& samples,
       Layer* root = sprite->root();
 
       LayerList layers;
-      if (item.selLayers)
-        layers = item.selLayers->toLayerList();
-      else
+      if (item.selLayers) {
+        // Select all layers (not only browseable ones)
+        layers = item.selLayers->toAllLayersList();
+      }
+      else {
+        // Select all visible layers by default
         layers = sprite->allVisibleLayers();
+      }
 
       for (Layer* layer : layers) {
         // If this layer is inside a group, check that the group will

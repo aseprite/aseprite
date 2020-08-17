@@ -79,7 +79,7 @@ LayerList SelectedLayers::toAllLayersList() const
   return output;
 }
 
-LayerList SelectedLayers::toLayerList() const
+LayerList SelectedLayers::toBrowsableLayerList() const
 {
   LayerList output;
 

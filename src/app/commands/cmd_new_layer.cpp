@@ -275,7 +275,7 @@ void NewLayerCommand::onExecute(Context* context)
       }
 
       if (sameParents == selLayers.size()) {
-        for (Layer* newChild : selLayers.toLayerList()) {
+        for (Layer* newChild : selLayers.toBrowsableLayerList()) {
           tx(
             new cmd::MoveLayer(newChild, layer,
                                static_cast<LayerGroup*>(layer)->lastLayer()));

@@ -275,8 +275,8 @@ static DocRange drop_range_op(
       if (op == Move) {
         SelectedLayers srcSelLayers = from.selectedLayers();
         SelectedLayers dstSelLayers = to.selectedLayers();
-        LayerList srcLayers = srcSelLayers.toLayerList();
-        LayerList dstLayers = dstSelLayers.toLayerList();
+        LayerList srcLayers = srcSelLayers.toBrowsableLayerList();
+        LayerList dstLayers = dstSelLayers.toBrowsableLayerList();
         ASSERT(!srcLayers.empty());
         if (srcLayers.empty())
           return from;
@@ -347,8 +347,8 @@ static DocRange drop_range_op(
         if (allLayers.empty())
           break;
 
-        LayerList srcLayers = from.selectedLayers().toLayerList();
-        LayerList dstLayers = to.selectedLayers().toLayerList();
+        LayerList srcLayers = from.selectedLayers().toBrowsableLayerList();
+        LayerList dstLayers = to.selectedLayers().toBrowsableLayerList();
         if (srcLayers.empty() ||
             dstLayers.empty())
           throw std::invalid_argument("You need to specify a non-empty cels range");
@@ -394,8 +394,8 @@ static DocRange drop_range_op(
         if (allLayers.empty())
           break;
 
-        LayerList srcLayers = from.selectedLayers().toLayerList();
-        LayerList dstLayers = to.selectedLayers().toLayerList();
+        LayerList srcLayers = from.selectedLayers().toBrowsableLayerList();
+        LayerList dstLayers = to.selectedLayers().toBrowsableLayerList();
         ASSERT(!srcLayers.empty());
 
         switch (op) {
@@ -502,7 +502,7 @@ void reverse_frames(Doc* doc, const DocRange& range)
     case DocRange::kCels:
       frameBegin = range.firstFrame();
       frameEnd = range.lastFrame();
-      layers = range.selectedLayers().toLayerList();
+      layers = range.selectedLayers().toBrowsableLayerList();
       swapCels = true;
       break;
     case DocRange::kFrames:
@@ -514,7 +514,7 @@ void reverse_frames(Doc* doc, const DocRange& range)
     case DocRange::kLayers:
       frameBegin = frame_t(0);
       frameEnd = sprite->totalFrames()-1;
-      layers = range.selectedLayers().toLayerList();
+      layers = range.selectedLayers().toBrowsableLayerList();
       swapCels = true;
       break;
   }
