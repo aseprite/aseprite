@@ -125,7 +125,7 @@ And then
     cd aseprite
     mkdir build
     cd build
-    cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DLAF_BACKEND=skia -DSKIA_DIR=C:\deps\skia -DSKIA_LIBRARY_DIR=C:\deps\skia\out\Release-x64 -G Ninja ..
+    cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DLAF_BACKEND=skia -DSKIA_DIR=C:\deps\skia -DSKIA_LIBRARY_DIR=C:\deps\skia\out\Release-x64 -DSKIA_LIBRARY=C:\deps\skia\out\Release-x64\skia.lib -G Ninja ..
     ninja aseprite
 
 In this case, `C:\deps\skia` is the directory where Skia was compiled
@@ -163,6 +163,7 @@ Run `cmake` with the following parameters and then `ninja`:
       -DLAF_BACKEND=skia \
       -DSKIA_DIR=$HOME/deps/skia \
       -DSKIA_LIBRARY_DIR=$HOME/deps/skia/out/Release-x64 \
+      -DSKIA_LIBRARY=$HOME/deps/skia/out/Release-x64/libskia.a \
       -G Ninja \
       ..
     ninja aseprite
@@ -191,6 +192,7 @@ Run `cmake` with the following parameters and then `ninja`:
       -DLAF_BACKEND=skia \
       -DSKIA_DIR=$HOME/deps/skia \
       -DSKIA_LIBRARY_DIR=$HOME/deps/skia/out/Release-x64 \
+      -DSKIA_LIBRARY=$HOME/deps/skia/out/Release-x64/libskia.a \
       -G Ninja \
       ..
     ninja aseprite
