@@ -511,7 +511,7 @@ void Timeline::prepareToMoveRange()
   ASSERT(m_range.enabled());
 
   layer_t i = 0;
-  for (auto layer : m_range.selectedLayers().toLayerList()) {
+  for (auto layer : m_range.selectedLayers().toBrowsableLayerList()) {
     if (layer == m_layer)
       break;
     ++i;
@@ -538,7 +538,7 @@ void Timeline::moveRange(const Range& range)
   m_range = range;
 
   layer_t i = 0;
-  for (auto layer : range.selectedLayers().toLayerList()) {
+  for (auto layer : range.selectedLayers().toBrowsableLayerList()) {
     if (i == m_moveRangeData.activeRelativeLayer) {
       setLayer(layer);
       break;

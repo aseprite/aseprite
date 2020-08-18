@@ -39,7 +39,7 @@ namespace doc {
 
     bool contains(const Layer* layer) const;
     bool hasSameParent() const;
-    LayerList toLayerList() const;
+    LayerList toBrowsableLayerList() const;
     LayerList toAllLayersList() const;
 
     void removeChildrenIfParentIsSelected();

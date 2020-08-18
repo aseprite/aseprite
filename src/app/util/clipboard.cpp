@@ -489,8 +489,8 @@ void paste(Context* ctx, const bool interactive)
           while (dstFrameFirst+srcRange.frames() > dstSpr->totalFrames())
             api.addFrame(dstSpr, dstSpr->totalFrames());
 
-          auto srcLayers = srcRange.selectedLayers().toLayerList();
-          auto dstLayers = dstRange.selectedLayers().toLayerList();
+          auto srcLayers = srcRange.selectedLayers().toBrowsableLayerList();
+          auto dstLayers = dstRange.selectedLayers().toBrowsableLayerList();
 
           auto srcIt = srcLayers.begin();
           auto dstIt = dstLayers.begin();
@@ -593,7 +593,7 @@ void paste(Context* ctx, const bool interactive)
           // copy the parent.
           SelectedLayers srcLayersSet = srcRange.selectedLayers();
           srcLayersSet.removeChildrenIfParentIsSelected();
-          LayerList srcLayers = srcLayersSet.toLayerList();
+          LayerList srcLayers = srcLayersSet.toBrowsableLayerList();
 
           // Expand frames of dstDoc if it's needed.
           frame_t maxFrame = 0;

@@ -51,6 +51,7 @@
 #include "ui/view.h"
 
 #include <cstring>
+#include <limits>
 
 namespace app {
 
@@ -62,6 +63,8 @@ MovingPixelsState::MovingPixelsState(Editor* editor, MouseMessage* msg, PixelsMo
   , m_observingEditor(false)
   , m_discarded(false)
   , m_renderTimer(50)
+  , m_oldSpritePos(std::numeric_limits<int>::min(),
+                   std::numeric_limits<int>::min())
 {
   // MovingPixelsState needs a selection tool to avoid problems
   // sharing the extra cel between the drawing cursor preview and the
@@ -366,14 +369,21 @@ bool MovingPixelsState::onMouseMove(Editor* editor, MouseMessage* msg)
 
   // If there is a button pressed
   if (m_pixelsMovement->isDragging()) {
-    m_renderTimer.start();
-    m_pixelsMovement->setFastMode(true);
-
     // Auto-scroll
     gfx::Point mousePos = editor->autoScroll(msg, AutoScroll::MouseDir);
 
     // Get the position of the mouse in the sprite
     gfx::Point spritePos = editor->screenToEditor(mousePos);
+    if (spritePos == m_oldSpritePos) {
+      // Avoid redrawing everything if the position in the canvas didn't change.
+      // TODO remove this if we add support for anti-aliasing in the
+      //      transformations
+      return true;
+    }
+    m_oldSpritePos = spritePos;
+
+    m_renderTimer.start();
+    m_pixelsMovement->setFastMode(true);
 
     // Get the customization for the pixels movement (snap to grid, angle snap, etc.).
     KeyContext keyContext = KeyContext::Normal;

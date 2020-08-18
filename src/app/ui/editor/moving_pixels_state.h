@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -94,6 +94,11 @@ namespace app {
     bool m_discarded;
 
     ui::Timer m_renderTimer;
+
+    // Position of the mouse in the canvas to avoid redrawing when the
+    // mouse position changes (only we redraw when the canvas position
+    // changes).
+    gfx::Point m_oldSpritePos;
 
     obs::connection m_ctxConn;
     obs::connection m_opaqueConn;
