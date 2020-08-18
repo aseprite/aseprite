@@ -777,7 +777,7 @@ int Dialog_file(lua_State* L)
     lua_pop(L, 1);
 
     int type = lua_getfield(L, 2, "save");
-    if (type == LUA_TBOOLEAN) {
+    if (type == LUA_TBOOLEAN && lua_toboolean(L, -1)) {
       dlgType = FileSelectorType::Save;
       title = "Save File";
     }
