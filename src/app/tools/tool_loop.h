@@ -202,6 +202,7 @@ namespace app {
 
       // X,Y origin of the cel where we are drawing
       virtual gfx::Point getCelOrigin() = 0;
+      virtual bool needsCelCoordinates() = 0;
 
       // Velocity vector of the mouse
       virtual void setSpeed(const gfx::Point& speed) = 0;

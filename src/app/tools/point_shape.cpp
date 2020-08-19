@@ -25,8 +25,7 @@ namespace tools {
 using namespace doc;
 using namespace filters;
 
-void PointShape::doInkHline(int x1, int y, int x2, ToolLoop* loop,
-                            bool adjustCoordinates)
+void PointShape::doInkHline(int x1, int y, int x2, ToolLoop* loop)
 {
   Ink* ink = loop->getInk();
   TiledMode tiledMode = loop->getTiledMode();
@@ -36,8 +35,7 @@ void PointShape::doInkHline(int x1, int y, int x2, ToolLoop* loop,
 
   // In case the ink needs original cel coordinates, we have to
   // translate the x1/y/x2 coordinate.
-  if (adjustCoordinates &&
-      ink->needsCelCoordinates()) {
+  if (loop->needsCelCoordinates()) {
     gfx::Point origin = loop->getCelOrigin();
     x1 -= origin.x;
     x2 -= origin.x;

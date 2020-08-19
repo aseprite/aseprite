@@ -33,8 +33,7 @@ namespace app {
     protected:
       // Calls loop->getInk()->inkHline() function for each horizontal-scanline
       // that should be drawn (applying the "tiled" mode loop->getTiledMode())
-      static void doInkHline(int x1, int y, int x2, ToolLoop* loop,
-                             const bool adjustCoordinates = true);
+      static void doInkHline(int x1, int y, int x2, ToolLoop* loop);
     };
 
   } // namespace tools

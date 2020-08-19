@@ -48,11 +48,7 @@ public:
     gfx::Point newPos = grid.canvasToTile(pt.toPoint());
 
     loop->getInk()->prepareForPointShape(loop, true, newPos.x, newPos.y);
-    doInkHline(
-      newPos.x, newPos.y, newPos.x, loop,
-      // Don't adjust by loop->getCelOrigin() because loop->getGrid()
-      // is already adjusted to the new cel position.
-      false);
+    doInkHline(newPos.x, newPos.y, newPos.x, loop);
   }
 
   void getModifiedArea(ToolLoop* loop, int x, int y, Rect& area) override {

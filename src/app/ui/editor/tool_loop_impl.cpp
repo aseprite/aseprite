@@ -115,6 +115,7 @@ protected:
   std::unique_ptr<tools::Symmetry> m_symmetry;
   Shade m_shade;
   std::unique_ptr<doc::Remap> m_shadingRemap;
+  bool m_tilesMode;
   app::ColorTarget m_colorTarget;
   doc::color_t m_fgColor;
   doc::color_t m_bgColor;
@@ -152,8 +153,9 @@ public:
     , m_intertwine(m_tool->getIntertwine(m_button))
     , m_tracePolicy(m_tool->getTracePolicy(m_button))
     , m_symmetry(nullptr)
-    , m_colorTarget(site.tilemapMode() == TilemapMode::Tiles ? ColorTarget(ColorTarget::BackgroundLayer,
-                                                                           IMAGE_TILEMAP, 0):
+    , m_tilesMode(site.tilemapMode() == TilemapMode::Tiles)
+    , m_colorTarget(m_tilesMode ? ColorTarget(ColorTarget::BackgroundLayer,
+                                              IMAGE_TILEMAP, 0):
                     m_layer ? ColorTarget(m_layer):
                               ColorTarget(ColorTarget::BackgroundLayer,
                                           m_sprite->pixelFormat(),
@@ -167,7 +169,7 @@ public:
     ASSERT(m_ink);
     ASSERT(m_controller);
 
-    if (site.tilemapMode() == TilemapMode::Tiles) {
+    if (m_tilesMode) {
       m_pointShape = App::instance()->toolBox()->getPointShapeById(
         tools::WellKnownPointShapes::Tile);
 
@@ -332,6 +334,7 @@ public:
   const doc::Grid& getGrid() const override { return m_grid; }
   gfx::Rect getGridBounds() override { return m_gridBounds; }
   gfx::Point getCelOrigin() override { return m_celOrigin; }
+  bool needsCelCoordinates() override { return m_ink->needsCelCoordinates(); }
   void setSpeed(const gfx::Point& speed) override { m_speed = speed; }
   gfx::Point getSpeed() override { return m_speed; }
   tools::Ink* getInk() override { return m_ink.get(); }
@@ -544,15 +547,19 @@ public:
       m_tx(new cmd::SetMask(m_document, &emptyMask));
     }
 
-    m_celOrigin = m_expandCelCanvas->getCel()->position();
+    // Setup the new grid of ExpandCelCanvas which can be displaced to
+    // match the new temporal cel position (m_celOrigin).
+    m_grid = m_expandCelCanvas->getGrid();
+
+    if (m_tilesMode)
+      m_celOrigin = m_grid.origin();
+    else
+      m_celOrigin = m_expandCelCanvas->getCel()->position();
+
     m_mask = m_document->mask();
     m_maskOrigin = (!m_mask->isEmpty() ? gfx::Point(m_mask->bounds().x-m_celOrigin.x,
                                                     m_mask->bounds().y-m_celOrigin.y):
                                          gfx::Point(0, 0));
-
-    // Setup the new grid of ExpandCelCanvas which can be displaced to
-    // match the new temporal cel position (m_celOrigin).
-    m_grid = m_expandCelCanvas->getGrid();
   }
 
   ~ToolLoopImpl() {
@@ -562,6 +569,17 @@ public:
   }
 
   // IToolLoop interface
+  bool needsCelCoordinates() override {
+    if (m_tilesMode) {
+      // When we are painting with tiles, we don't need to adjust the
+      // coordinates by the cel position in PointShape (points will be
+      // in tiles position relative to the tilemap origin already).
+      return false;
+    }
+    else
+      return ToolLoopBase::needsCelCoordinates();
+  }
+
   void commitOrRollback() override {
     bool redraw = false;
 
