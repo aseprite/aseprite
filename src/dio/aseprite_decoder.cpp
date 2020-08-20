@@ -21,6 +21,7 @@
 #include "dio/file_interface.h"
 #include "dio/pixel_io.h"
 #include "doc/doc.h"
+#include "doc/user_data.h"
 #include "fixmath/fixmath.h"
 #include "fmt/format.h"
 #include "zlib.h"
@@ -82,6 +83,9 @@ bool AsepriteDecoder::decode()
   doc::Layer* last_layer = sprite->root();
   doc::WithUserData* last_object_with_user_data = nullptr;
   doc::Cel* last_cel = nullptr;
+  auto tag_it = sprite->tags().begin();
+  auto tag_end = sprite->tags().end();
+  bool tagsInProcess = false;
   int current_level = -1;
   doc::LayerList allLayers;
   AsepriteExternalFiles extFiles;
@@ -198,7 +202,10 @@ bool AsepriteDecoder::decode()
             break;
 
           case ASE_FILE_CHUNK_TAGS:
+            tagsInProcess = true;
             readTagsChunk(&sprite->tags());
+            tag_it = sprite->tags().begin();
+            tag_end = sprite->tags().end();
             break;
 
           case ASE_FILE_CHUNK_SLICES: {
@@ -216,7 +223,17 @@ bool AsepriteDecoder::decode()
           case ASE_FILE_CHUNK_USER_DATA: {
             doc::UserData userData;
             readUserDataChunk(&userData);
-            if (last_object_with_user_data)
+            // The next condition implies user data is from tags
+            if (tagsInProcess) {
+              // Tag user data:
+              doc::Tag* tag = *tag_it;
+              tag->setUserData(userData);
+              tag_it++;
+              if (tag_it == tag_end)
+                tagsInProcess = false;
+              break;
+            }
+            else if (last_object_with_user_data)
               last_object_with_user_data->setUserData(userData);
             break;
           }

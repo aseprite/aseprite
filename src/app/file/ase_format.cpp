@@ -382,15 +382,23 @@ bool AseFormat::onSave(FileOp* fop)
       ase_file_write_tileset_chunks(f, fop, &frame_header, ext_files,
                                     sprite->tilesets());
 
-      // Write layer chunks
-      for (Layer* child : sprite->root()->layers())
-        ase_file_write_layers(f, &frame_header, child, 0);
-
       // Writer frame tags
-      if (sprite->tags().size() > 0)
+      if (sprite->tags().size() > 0) {
         ase_file_write_tags_chunk(f, &frame_header, &sprite->tags(),
                                   fop->roi().fromFrame(),
                                   fop->roi().toFrame());
+        // Write user data for tags
+        for (doc::Tag* tag : sprite->tags()) {
+          ase_file_write_user_data_chunk(f, &frame_header, &(tag->userData()));
+        }
+      }
+
+      // Write layer chunks.
+      // In older versions layers were before tags, but now we put tags
+      // before layers so older version don't get confused by the new
+      // user data chunks for tags.
+      for (Layer* child : sprite->root()->layers())
+        ase_file_write_layers(f, &frame_header, child, 0);
 
       // Write slice chunks
       ase_file_write_slice_chunks(f, &frame_header,
@@ -1106,8 +1114,6 @@ static void ase_file_write_tags_chunk(FILE* f,
     fputc(0, f);
 
     ase_file_write_string(f, tag->name());
-    if (!tag->userData().isEmpty())
-      ase_file_write_user_data_chunk(f, frame_header, &tag->userData());
   }
 }
 
