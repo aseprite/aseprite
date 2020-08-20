@@ -470,10 +470,13 @@ void modify_tilemap_cel_region(
         continue;
 
       const doc::tile_t t = newTilemap->getPixel(u, v);
+      if (t == tile_i_notile)
+        continue;
+
       const doc::tile_index ti = doc::tile_geti(t);
       const doc::ImageRef existenTileImage = tileset->get(ti);
 
-      if (tilesetMode == TilesetMode::Auto && t != tile_i_notile)
+      if (tilesetMode == TilesetMode::Auto)
         modifiedTileIndexes[ti] = true;
 
       const gfx::Rect tileInCanvasRc(grid.tileToCanvas(tilePt), tileSize);
