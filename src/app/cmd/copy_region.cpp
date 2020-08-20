@@ -29,17 +29,17 @@ CopyRegion::CopyRegion(Image* dst, const Image* src,
 {
   ASSERT(!region.isEmpty());
 
-  // Create region to save/swap later
-  for (const auto& rc : region) {
-    gfx::Clip clip(
-      rc.x+dstPos.x, rc.y+dstPos.y,
-      rc.x, rc.y, rc.w, rc.h);
-    if (!clip.clip(
-          dst->width(), dst->height(),
-          src->width(), src->height()))
-      continue;
-
-    m_region.createUnion(m_region, gfx::Region(clip.dstBounds()));
+  gfx::Rect rc = region.bounds();
+  gfx::Clip clip(
+    rc.x+dstPos.x, rc.y+dstPos.y,
+    rc.x, rc.y, rc.w, rc.h);
+  if (clip.clip(
+        dst->width(), dst->height(),
+        src->width(), src->height())) {
+    // Create region to save/swap later
+    m_region = region;
+    m_region.offset(dstPos);
+    m_region &= gfx::Region(clip.dstBounds());
   }
 
   save_image_region_in_buffer(m_region, src, dstPos, m_buffer);
