@@ -475,6 +475,7 @@ void modify_tilemap_cel_region(
 
       const doc::tile_index ti = doc::tile_geti(t);
       const doc::ImageRef existenTileImage = tileset->get(ti);
+      ASSERT(existenTileImage);
 
       if (tilesetMode == TilesetMode::Auto)
         modifiedTileIndexes[ti] = true;
@@ -545,45 +546,48 @@ void modify_tilemap_cel_region(
         continue;
 
       const doc::tile_t t = cel->image()->getPixel(tilePt.x, tilePt.y);
-      if (t != tile_i_notile) {
-        const doc::tile_index ti = doc::tile_geti(t);
-        const doc::ImageRef existenTileImage = tileset->get(ti);
+      if (t == tile_i_notile)
+        continue;
 
-        const gfx::Rect tileInCanvasRc(grid.tileToCanvas(tilePt), tileSize);
-        ImageRef tileImage(getTileImage(existenTileImage, tileInCanvasRc));
-        if (grid.hasMask())
-          mask_image(tileImage.get(), grid.mask().get());
+      const doc::tile_index ti = doc::tile_geti(t);
+      const doc::ImageRef existenTileImage = tileset->get(ti);
 
-        gfx::Region tileRgn(tileInCanvasRc);
-        tileRgn.createIntersection(tileRgn, region);
-        tileRgn.offset(-tileInCanvasRc.origin());
+      const gfx::Rect tileInCanvasRc(grid.tileToCanvas(tilePt), tileSize);
+      ImageRef tileImage(getTileImage(existenTileImage, tileInCanvasRc));
+      if (grid.hasMask())
+        mask_image(tileImage.get(), grid.mask().get());
 
-        ImageRef tileOrigImage = tileset->get(ti);
+      gfx::Region tileRgn(tileInCanvasRc);
+      tileRgn.createIntersection(tileRgn, region);
+      tileRgn.offset(-tileInCanvasRc.origin());
 
-        gfx::Region diffRgn;
-        create_region_with_differences(tileOrigImage.get(),
-                                       tileImage.get(),
-                                       tileRgn.bounds(),
-                                       diffRgn);
+      ImageRef tileOrigImage = tileset->get(ti);
 
-        // Keep only the modified region for this specific modification
-        tileRgn &= diffRgn;
+      gfx::Region diffRgn;
+      create_region_with_differences(tileOrigImage.get(),
+                                     tileImage.get(),
+                                     tileRgn.bounds(),
+                                     diffRgn);
 
-        if (!tileRgn.isEmpty()) {
-          Mod mod;
-          mod.tileIndex = ti;
-          mod.tileOrigImage = tileOrigImage;
-          mod.tileImage = tileImage;
-          mod.tileRgn = tileRgn;
-          mods.push_back(mod);
+      // Keep only the modified region for this specific modification
+      tileRgn &= diffRgn;
 
-          modifiedTileIndexes[ti] = true;
-        }
+      if (!tileRgn.isEmpty()) {
+        Mod mod;
+        mod.tileIndex = ti;
+        mod.tileOrigImage = tileOrigImage;
+        mod.tileImage = tileImage;
+        mod.tileRgn = tileRgn;
+        mods.push_back(mod);
+
+        modifiedTileIndexes[ti] = true;
       }
     }
 
     // Apply all modifications to tiles
     for (auto& mod : mods) {
+      // TODO avoid creating several CopyTileRegion for the same tile,
+      //      merge all mods for the same tile in some way
       cmds->executeAndAdd(
         new cmd::CopyTileRegion(
           mod.tileOrigImage.get(),
