@@ -1106,6 +1106,8 @@ static void ase_file_write_tags_chunk(FILE* f,
     fputc(0, f);
 
     ase_file_write_string(f, tag->name());
+    if (!tag->userData().isEmpty())
+      ase_file_write_user_data_chunk(f, frame_header, &tag->userData());
   }
 }
 

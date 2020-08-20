@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -11,16 +11,16 @@
 
 #include "base/disable_copying.h"
 #include "doc/anidir.h"
-#include "doc/color.h"
 #include "doc/frame.h"
 #include "doc/object.h"
+#include "doc/with_user_data.h"
 
 #include <string>
 
 namespace doc {
   class Tags;
 
-  class Tag : public Object {
+  class Tag : public WithUserData {
   public:
     Tag(frame_t from, frame_t to);
     Tag(const Tag& other);
@@ -31,7 +31,7 @@ namespace doc {
     frame_t toFrame() const { return m_to; }
     frame_t frames() const { return m_to - m_from + 1; }
     const std::string& name() const { return m_name; }
-    color_t color() const { return m_color; }
+    color_t color() const { return userData().color(); }
     AniDir aniDir() const { return m_aniDir; }
 
     void setFrameRange(frame_t from, frame_t to);
@@ -44,7 +44,6 @@ namespace doc {
   public:
     Tags* m_owner;
     frame_t m_from, m_to;
-    color_t m_color;
     std::string m_name;
     AniDir m_aniDir;
 

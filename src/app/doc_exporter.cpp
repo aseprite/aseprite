@@ -1355,7 +1355,8 @@ void DocExporter::createDataFile(const Samples& samples,
         os << "\n   { \"name\": \"" << escape_for_json(tag->name()) << "\","
            << " \"from\": " << (tag->fromFrame()+delta.first) << ","
            << " \"to\": " << (tag->toFrame()+delta.second) << ","
-           << " \"direction\": \"" << escape_for_json(convert_anidir_to_string(tag->aniDir())) << "\" }";
+           " \"direction\": \"" << escape_for_json(convert_anidir_to_string(tag->aniDir())) << "\"";
+        os << tag->userData() << " }";
       }
     }
     os << "\n  ]";

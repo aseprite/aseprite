@@ -14,6 +14,7 @@
 #include "app/doc.h"
 #include "app/pref/preferences.h"
 #include "app/ui/layer_frame_comboboxes.h"
+#include "app/ui/user_data_popup.h"
 #include "base/clamp.h"
 #include "doc/sprite.h"
 #include "doc/tag.h"
@@ -24,6 +25,7 @@ TagWindow::TagWindow(const doc::Sprite* sprite, const doc::Tag* tag)
   : m_sprite(sprite)
   , m_base(Preferences::instance().document(
      static_cast<Doc*>(sprite->document())).timeline.firstFrame())
+  , m_userData(tag->userData())
 {
   name()->setText(tag->name());
   from()->setTextf("%d", tag->fromFrame()+m_base);
@@ -34,6 +36,7 @@ TagWindow::TagWindow(const doc::Sprite* sprite, const doc::Tag* tag)
       doc::rgba_getb(tag->color())));
 
   fill_anidir_combobox(anidir(), tag->aniDir());
+  userData()->Click.connect([this]{ onPopupUserData(); });
 }
 
 bool TagWindow::show()
@@ -61,12 +64,27 @@ void TagWindow::rangeValue(doc::frame_t& from, doc::frame_t& to)
 doc::color_t TagWindow::colorValue()
 {
   app::Color color = this->color()->getColor();
+  m_userData.setColor(doc::rgba(color.getRed(),
+                                color.getGreen(),
+                                color.getBlue(), 255));
   return doc::rgba(color.getRed(), color.getGreen(), color.getBlue(), 255);
 }
 
 doc::AniDir TagWindow::aniDirValue()
 {
   return (doc::AniDir)anidir()->getSelectedItemIndex();
+}
+
+void TagWindow::onPopupUserData()
+{
+  if (m_userData.color() != colorValue())
+    m_userData.setColor(colorValue());
+  show_user_data_popup(userData()->bounds(), m_userData);
+  color_t color = m_userData.color();
+  app::Color c; 
+  this->color()->setColor(c.fromRgb(int(rgba_getr(color)),
+                                    int(rgba_getg(color)),
+                                    int(rgba_getb(color)), 255));
 }
 
 } // namespace app

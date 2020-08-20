@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -17,22 +17,20 @@
 namespace doc {
 
 Tag::Tag(frame_t from, frame_t to)
-  : Object(ObjectType::Tag)
+  : WithUserData(ObjectType::Tag)
   , m_owner(nullptr)
   , m_from(from)
   , m_to(to)
-  , m_color(rgba(0, 0, 0, 255))
   , m_name("Tag")
   , m_aniDir(AniDir::FORWARD)
 {
 }
 
 Tag::Tag(const Tag& other)
-  : Object(ObjectType::Tag)
+  : WithUserData(ObjectType::Tag)
   , m_owner(nullptr)
   , m_from(other.m_from)
   , m_to(other.m_to)
-  , m_color(other.m_color)
   , m_name(other.m_name)
   , m_aniDir(other.m_aniDir)
 {
@@ -68,7 +66,7 @@ void Tag::setName(const std::string& name)
 
 void Tag::setColor(color_t color)
 {
-  m_color = color;
+  userData().setColor(color);
 }
 
 void Tag::setAniDir(AniDir aniDir)

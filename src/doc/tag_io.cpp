@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -14,6 +14,7 @@
 #include "base/serialization.h"
 #include "doc/string_io.h"
 #include "doc/tag.h"
+#include "doc/user_data_io.h"
 
 #include <iostream>
 #include <memory>
@@ -33,6 +34,7 @@ void write_tag(std::ostream& os, const Tag* tag)
   write32(os, tag->color());
   write8(os, (int)tag->aniDir());
   write_string(os, tag->name());
+  write_user_data(os, tag->userData());
 }
 
 Tag* read_tag(std::istream& is, bool setId)
@@ -43,11 +45,13 @@ Tag* read_tag(std::istream& is, bool setId)
   color_t color = read32(is);
   AniDir aniDir = (AniDir)read8(is);
   std::string name = read_string(is);
+  UserData userData = read_user_data(is);
 
   std::unique_ptr<Tag> tag(new Tag(from, to));
   tag->setColor(color);
   tag->setAniDir(aniDir);
   tag->setName(name);
+  tag->setUserData(userData);
   if (setId)
     tag->setId(id);
   return tag.release();
