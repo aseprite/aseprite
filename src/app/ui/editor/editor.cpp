@@ -1663,12 +1663,30 @@ app::Color Editor::getColorByPosition(const gfx::Point& mousePos)
     gfx::PointF editorPos = screenToEditorF(mousePos);
 
     ColorPicker picker;
+    site.tilemapMode(TilemapMode::Pixels);
     picker.pickColor(site, editorPos, m_proj,
                      ColorPicker::FromComposition);
     return picker.color();
   }
   else
     return app::Color::fromMask();
+}
+
+doc::tile_t Editor::getTileByPosition(const gfx::Point& mousePos)
+{
+  Site site = getSite();
+  if (site.sprite()) {
+    gfx::PointF editorPos = screenToEditorF(mousePos);
+
+    ColorPicker picker;
+    site.tilemapMode(TilemapMode::Tiles);
+    picker.pickColor(site, editorPos, m_proj,
+                     ColorPicker::FromComposition);
+
+    return picker.tile();
+  }
+  else
+    return doc::tile_i_notile;
 }
 
 bool Editor::startStraightLineWithFreehandTool(const ui::MouseMessage* msg)

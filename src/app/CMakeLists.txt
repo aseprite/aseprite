@@ -388,6 +388,7 @@ if(ENABLE_UI)
     ui/tabs.cpp
     ui/tag_window.cpp
     ui/task_widget.cpp
+    ui/tile_button.cpp
     ui/tileset_selector.cpp
     ui/timeline/ani_controls.cpp
     ui/timeline/timeline.cpp

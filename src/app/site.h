@@ -25,6 +25,7 @@ namespace doc {
   class Palette;
   class RgbMap;
   class Sprite;
+  class Tileset;
 } // namespace doc
 
 namespace app {
@@ -106,6 +107,7 @@ namespace app {
     doc::Palette* palette() const;
     doc::RgbMap* rgbMap() const;
 
+    doc::Tileset* tileset() const;
     doc::Grid grid() const;
     gfx::Rect gridBounds() const;
 

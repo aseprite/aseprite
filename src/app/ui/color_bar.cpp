@@ -205,6 +205,7 @@ ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
   m_scrollableTilesView.setExpansive(true);
 
   m_scrollableTilesView.setVisible(false);
+  m_tilesHelpers.setVisible(false);
   m_remapPalButton.setVisible(false);
   m_remapTilesButton.setVisible(false);
 
@@ -243,14 +244,22 @@ ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
   addChild(&m_tilesHBox);
   addChild(&m_splitter);
 
+  addChild(&m_colorHelpers);
+  addChild(&m_tilesHelpers);
+
   HBox* fgBox = new HBox;
   HBox* bgBox = new HBox;
   fgBox->addChild(&m_fgColor);
   fgBox->addChild(m_fgWarningIcon);
   bgBox->addChild(&m_bgColor);
   bgBox->addChild(m_bgWarningIcon);
-  addChild(fgBox);
-  addChild(bgBox);
+  m_colorHelpers.addChild(fgBox);
+  m_colorHelpers.addChild(bgBox);
+
+  m_tilesHelpers.addChild(new BoxFiller);
+  m_tilesHelpers.addChild(&m_fgTile);
+  m_tilesHelpers.addChild(&m_bgTile);
+  m_tilesHelpers.addChild(new BoxFiller);
 
   m_fgColor.setId("fg_color");
   m_bgColor.setId("bg_color");
@@ -336,6 +345,8 @@ ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
   m_afterCmdConn = UIContext::instance()->AfterCommandExecution.connect(&ColorBar::onAfterExecuteCommand, this);
   m_fgConn = Preferences::instance().colorBar.fgColor.AfterChange.connect([this]{ onFgColorChangeFromPreferences(); });
   m_bgConn = Preferences::instance().colorBar.bgColor.AfterChange.connect([this]{ onBgColorChangeFromPreferences(); });
+  m_fgTileConn = Preferences::instance().colorBar.fgTile.AfterChange.connect([this]{ onFgTileChangeFromPreferences(); });
+  m_bgTileConn = Preferences::instance().colorBar.bgTile.AfterChange.connect([this]{ onBgTileChangeFromPreferences(); });
   m_sepConn = Preferences::instance().colorBar.entriesSeparator.AfterChange.connect([this]{ invalidate(); });
   m_paletteView.FocusOrClick.connect(&ColorBar::onFocusPaletteOrTilesView, this);
   m_tilesView.FocusOrClick.connect(&ColorBar::onFocusPaletteOrTilesView, this);
@@ -390,12 +401,12 @@ void ColorBar::setBgColor(const app::Color& color)
 
 doc::tile_index ColorBar::getFgTile() const
 {
-  return m_fgColor.getColor().getIndex();  // TODO
+  return m_fgTile.getTile();
 }
 
 doc::tile_index ColorBar::getBgTile() const
 {
-  return m_bgColor.getColor().getIndex();  // TODO
+  return m_bgTile.getTile();
 }
 
 ColorBar::ColorSelector ColorBar::getColorSelector() const
@@ -518,11 +529,17 @@ void ColorBar::setTilemapMode(const TilemapMode mode)
     manager()->freeWidget(&m_paletteView);
     m_scrollablePalView.setVisible(false);
     m_scrollableTilesView.setVisible(true);
+    m_selectorPlaceholder.setVisible(false);
+    m_colorHelpers.setVisible(false);
+    m_tilesHelpers.setVisible(true);
   }
   else {
     manager()->freeWidget(&m_tilesView);
     m_scrollablePalView.setVisible(true);
     m_scrollableTilesView.setVisible(false);
+    m_selectorPlaceholder.setVisible(true);
+    m_colorHelpers.setVisible(true);
+    m_tilesHelpers.setVisible(false);
   }
 
   layout();
@@ -1049,12 +1066,11 @@ void ColorBar::onTilesViewDragAndDrop(doc::Tileset* tileset,
 
 void ColorBar::onTilesViewIndexChange(int index, ui::MouseButton button)
 {
-  // TODO show tools to stamp/draw/pick tiles
-
+  auto& pref = Preferences::instance();
   if (button == kButtonRight)
-    setBgColor(app::Color::fromIndex(index));
+    pref.colorBar.bgTile(doc::tile(index, 0));
   else if (button == kButtonLeft)
-    setFgColor(app::Color::fromIndex(index));
+    pref.colorBar.fgTile(doc::tile(index, 0));
   else if (button == kButtonMiddle) {
     // TODO ?
   }
@@ -1089,6 +1105,24 @@ void ColorBar::onBgColorChangeFromPreferences()
     base::ScopedValue<bool> sync(m_fromPref, true, false);
     setBgColor(Preferences::instance().colorBar.bgColor());
   }
+}
+
+void ColorBar::onFgTileChangeFromPreferences()
+{
+  if (m_fromPref)
+    return;
+
+  base::ScopedValue<bool> sync(m_fromPref, true, false);
+  m_fgTile.setTile(Preferences::instance().colorBar.fgTile());
+}
+
+void ColorBar::onBgTileChangeFromPreferences()
+{
+  if (m_fromPref)
+    return;
+
+  base::ScopedValue<bool> sync(m_fromPref, true, false);
+  m_bgTile.setTile(Preferences::instance().colorBar.bgTile());
 }
 
 void ColorBar::onFgColorButtonBeforeChange(app::Color& color)

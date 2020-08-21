@@ -21,6 +21,7 @@
 #include "app/ui/editor/editor_observers.h"
 #include "app/ui/editor/editor_state.h"
 #include "app/ui/editor/editor_states_history.h"
+#include "app/ui/tile_source.h"
 #include "doc/algorithm/flip_type.h"
 #include "doc/frame.h"
 #include "doc/image_buffer.h"
@@ -73,6 +74,7 @@ namespace app {
   class Editor : public ui::Widget,
                  public app::DocObserver,
                  public IColorSource,
+                 public ITileSource,
                  public tools::ActiveToolObserver {
   public:
     enum EditorFlags {
@@ -281,6 +283,9 @@ namespace app {
 
     // IColorSource
     app::Color getColorByPosition(const gfx::Point& pos) override;
+
+    // ITileSource
+    doc::tile_t getTileByPosition(const gfx::Point& pos) override;
 
     void setTagFocusBand(int value) { m_tagFocusBand = value; }
     int tagFocusBand() const { return m_tagFocusBand; }

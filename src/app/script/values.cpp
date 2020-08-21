@@ -144,6 +144,19 @@ app::tools::InkType get_value_from_lua(lua_State* L, int index) {
 }
 
 // ----------------------------------------------------------------------
+// doc::tile_t
+
+template<>
+void push_value_to_lua(lua_State* L, const doc::tile_t& value) {
+  lua_pushinteger(L, value);
+}
+
+template<>
+doc::tile_t get_value_from_lua(lua_State* L, int index) {
+  return lua_tointeger(L, index);
+}
+
+// ----------------------------------------------------------------------
 // enums
 
 #define FOR_ENUM(T)                                             \

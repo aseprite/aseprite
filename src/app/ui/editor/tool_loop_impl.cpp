@@ -805,16 +805,14 @@ tools::ToolLoop* create_tool_loop(
   else {
     params.fg = colorbar->getFgColor();
     params.bg = colorbar->getBgColor();
-  }
-
-  if (site.tilemapMode() == TilemapMode::Pixels &&
-      (!params.fg.isValid() ||
-       !params.bg.isValid())) {
-    if (Preferences::instance().colorBar.showInvalidFgBgColorAlert()) {
-      OptionalAlert::show(
-        Preferences::instance().colorBar.showInvalidFgBgColorAlert,
-        1, Strings::alerts_invalid_fg_or_bg_colors());
-      return nullptr;
+    if (!params.fg.isValid() ||
+        !params.bg.isValid()) {
+      if (Preferences::instance().colorBar.showInvalidFgBgColorAlert()) {
+        OptionalAlert::show(
+          Preferences::instance().colorBar.showInvalidFgBgColorAlert,
+          1, Strings::alerts_invalid_fg_or_bg_colors());
+        return nullptr;
+      }
     }
   }
 
@@ -990,16 +988,14 @@ tools::ToolLoop* create_tool_loop_preview(
   if (site.tilemapMode() == TilemapMode::Tiles) {
     params.fg = app::Color::fromIndex(colorbar->getFgTile()); // TODO Color::fromTileIndex?
     params.bg = app::Color::fromIndex(colorbar->getBgTile());
-    if (!params.fg.isValid() || !params.bg.isValid())
-      return nullptr;
   }
   else {
     params.fg = colorbar->getFgColor();
     params.bg = colorbar->getBgColor();
+    if (!params.fg.isValid() ||
+        !params.bg.isValid())
+      return nullptr;
   }
-  if (!params.fg.isValid() ||
-      !params.bg.isValid())
-    return nullptr;
 
   params.brush = brush;
   params.button = tools::ToolLoop::Left;

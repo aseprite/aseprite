@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -26,6 +26,7 @@ namespace ui {
 }
 
 namespace app {
+  class Site;
 
   void draw_checked_grid(ui::Graphics* g,
                          const gfx::Rect& rc,
@@ -47,6 +48,18 @@ namespace app {
                          const doc::ColorMode colorMode,
                          const bool hot,
                          const bool drag);
+
+  void draw_tile(ui::Graphics* g,
+                 const gfx::Rect& rc,
+                 const Site& site,
+                 const doc::tile_t tile);
+
+  void draw_tile_button(ui::Graphics* g,
+                        const gfx::Rect& rc,
+                        const Site& site,
+                        doc::tile_t tile,
+                        const bool hot,
+                        const bool drag);
 
   void draw_alpha_slider(ui::Graphics* g,
                          const gfx::Rect& rc,

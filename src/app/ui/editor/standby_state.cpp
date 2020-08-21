@@ -542,19 +542,23 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
   }
   // For eye-dropper
   else if (ink->isEyedropper()) {
+    Site site = editor->getSite();
     EyedropperCommand cmd;
     app::Color color = Preferences::instance().colorBar.fgColor();
-    cmd.pickSample(editor->getSite(),
+    doc::tile_t tile = Preferences::instance().colorBar.fgTile();
+    cmd.pickSample(site,
                    spritePos,
                    editor->projection(),
-                   color);
+                   color, tile);
 
-    char buf[256];
-    sprintf(buf, " :pos: %d %d",
-            int(std::floor(spritePos.x)),
-            int(std::floor(spritePos.y)));
+    auto buf = fmt::format(" :pos: {} {}",
+                           int(std::floor(spritePos.x)),
+                           int(std::floor(spritePos.y)));
 
-    StatusBar::instance()->showColor(0, buf, color);
+    if (site.tilemapMode() == TilemapMode::Tiles)
+      StatusBar::instance()->showTile(0, buf.c_str(), tile);
+    else
+      StatusBar::instance()->showColor(0, buf.c_str(), color);
   }
   else {
     Site site = editor->getSite();

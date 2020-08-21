@@ -19,6 +19,7 @@
 #include "app/ui/color_button.h"
 #include "app/ui/input_chain_element.h"
 #include "app/ui/palette_view.h"
+#include "app/ui/tile_button.h"
 #include "doc/object_id.h"
 #include "doc/palette_gradient_type.h"
 #include "doc/pixel_format.h"
@@ -133,6 +134,8 @@ namespace app {
     void onPaletteIndexChange(PaletteIndexChangeEvent& ev);
     void onFgColorChangeFromPreferences();
     void onBgColorChangeFromPreferences();
+    void onFgTileChangeFromPreferences();
+    void onBgTileChangeFromPreferences();
     void onFgColorButtonBeforeChange(app::Color& color);
     void onFgColorButtonChange(const app::Color& color);
     void onBgColorButtonChange(const app::Color& color);
@@ -203,6 +206,8 @@ namespace app {
     PaletteView m_tilesView;
     ui::Button m_remapPalButton;
     ui::Button m_remapTilesButton;
+    ui::VBox m_colorHelpers;
+    ui::HBox m_tilesHelpers;
     ColorSelector m_selector;
     ColorTintShadeTone* m_tintShadeTone;
     ColorSpectrum* m_spectrum;
@@ -211,6 +216,8 @@ namespace app {
     ColorButton m_bgColor;
     WarningIcon* m_fgWarningIcon;
     WarningIcon* m_bgWarningIcon;
+    TileButton m_fgTile;
+    TileButton m_bgTile;
 
     // True when the user clicks the PaletteView so we're changing the
     // color from the palette view.
@@ -232,6 +239,8 @@ namespace app {
     obs::scoped_connection m_afterCmdConn;
     obs::scoped_connection m_fgConn;
     obs::scoped_connection m_bgConn;
+    obs::scoped_connection m_fgTileConn;
+    obs::scoped_connection m_bgTileConn;
     obs::scoped_connection m_sepConn;
     obs::scoped_connection m_appPalChangeConn;
     ui::MouseButton m_lastButton;

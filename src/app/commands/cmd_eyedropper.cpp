@@ -37,7 +37,8 @@ EyedropperCommand::EyedropperCommand()
 void EyedropperCommand::pickSample(const Site& site,
                                    const gfx::PointF& pixelPos,
                                    const render::Projection& proj,
-                                   app::Color& color)
+                                   app::Color& color,
+                                   doc::tile_t& tile)
 {
   // Check if we've to grab alpha channel or the merged color.
   Preferences& pref = Preferences::instance();
@@ -60,13 +61,12 @@ void EyedropperCommand::pickSample(const Site& site,
   app::gen::EyedropperChannel channel =
     pref.eyedropper.channel();
 
-  app::Color picked = picker.color();
-
   if (site.tilemapMode() == TilemapMode::Tiles) {
-    color = app::Color::fromIndex(picked.getIndex());
+    tile = picker.tile();
     return;
   }
 
+  app::Color picked = picker.color();
   switch (channel) {
     case app::gen::EyedropperChannel::COLOR_ALPHA:
       color = picked;
@@ -218,18 +218,30 @@ void EyedropperCommand::executeOnMousePos(Context* context,
   DisableColorBarEditMode disable;
   Preferences& pref = Preferences::instance();
   app::Color color =
-    foreground ? pref.colorBar.fgColor():
-                 pref.colorBar.bgColor();
+    (foreground ? pref.colorBar.fgColor():
+                  pref.colorBar.bgColor());
+  doc::tile_t tile =
+    (foreground ? pref.colorBar.fgTile():
+                  pref.colorBar.bgTile());
 
-  pickSample(editor->getSite(),
+  Site site = editor->getSite();
+  pickSample(site,
              pixelPos,
              editor->projection(),
-             color);
+             color, tile);
 
-  if (foreground)
-    pref.colorBar.fgColor(color);
-  else
-    pref.colorBar.bgColor(color);
+  if (site.tilemapMode() == TilemapMode::Tiles) {
+    if (foreground)
+      pref.colorBar.fgTile(tile);
+    else
+      pref.colorBar.bgTile(tile);
+  }
+  else {
+    if (foreground)
+      pref.colorBar.fgColor(color);
+    else
+      pref.colorBar.bgColor(color);
+  }
 }
 
 Command* CommandFactory::createEyedropperCommand()

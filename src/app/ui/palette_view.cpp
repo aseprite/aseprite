@@ -151,8 +151,7 @@ public:
                                PaletteViewModification::DRAGANDDROP);
   }
   void showEntryInStatusBar(StatusBar* statusBar, int index) override {
-    statusBar->showColor(
-      0, "", app::Color::fromIndex(index));
+    statusBar->showColor(0, "", app::Color::fromIndex(index));
   }
   void showDragInfoInStatusBar(StatusBar* statusBar, bool copy, int destIndex, int newSize) override {
     statusBar->setStatusText(
@@ -259,8 +258,7 @@ public:
     picks = newPicks;
   }
   void showEntryInStatusBar(StatusBar* statusBar, int index) override {
-    statusBar->setStatusText(
-      0, fmt::format("Tile {}", index));
+    statusBar->showTile(0, "", doc::tile(index, 0));
   }
   void showDragInfoInStatusBar(StatusBar* statusBar, bool copy, int destIndex, int newSize) override {
     statusBar->setStatusText(
@@ -481,6 +479,16 @@ app::Color PaletteView::getColorByPosition(const gfx::Point& pos)
       return app::Color::fromIndex(i);
   }
   return app::Color::fromMask();
+}
+
+doc::tile_t PaletteView::getTileByPosition(const gfx::Point& pos)
+{
+  gfx::Point relPos = pos - bounds().origin();
+  for (int i=0; i<m_adapter->size(); ++i) {
+    if (getPaletteEntryBounds(i).contains(relPos))
+      return doc::tile(i, 0);
+  }
+  return doc::tile_i_notile;
 }
 
 void PaletteView::onActiveSiteChange(const Site& site)

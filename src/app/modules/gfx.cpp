@@ -17,8 +17,10 @@
 #include "app/console.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
+#include "app/site.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/skin/skin_theme.h"
+#include "app/util/conversion_to_surface.h"
 #include "doc/blend_funcs.h"
 #include "doc/image.h"
 #include "doc/palette.h"
@@ -26,6 +28,7 @@
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "os/surface.h"
+#include "os/system.h"
 #include "ui/intern.h"
 #include "ui/system.h"
 #include "ui/theme.h"
@@ -160,6 +163,80 @@ void draw_color_button(ui::Graphics* g,
                   rc.h-2*scale),
              color,
              colorMode);
+
+  // Draw opaque border
+  theme->drawRect(
+    g, rc,
+    theme->parts.colorbar0()->bitmapNW(),
+    theme->parts.colorbar0()->bitmapN(),
+    theme->parts.colorbar1()->bitmapNE(),
+    theme->parts.colorbar1()->bitmapE(),
+    theme->parts.colorbar3()->bitmapSE(),
+    theme->parts.colorbar2()->bitmapS(),
+    theme->parts.colorbar2()->bitmapSW(),
+    theme->parts.colorbar0()->bitmapW());
+
+  // Draw hot
+  if (hot) {
+    theme->drawRect(
+      g, gfx::Rect(rc.x, rc.y, rc.w, rc.h-1 - 1*scale),
+      theme->parts.colorbarSelection().get());
+  }
+}
+
+void draw_tile(ui::Graphics* g,
+               const Rect& rc,
+               const Site& site,
+               doc::tile_t tile)
+{
+  if (rc.w < 1 || rc.h < 1)
+    return;
+
+  if (rc.w == rc.h)
+    draw_checked_grid(g, rc, gfx::Size(rc.w/2, rc.h/2));
+  else
+    draw_checked_grid(g, rc, gfx::Size(rc.w/4, rc.h/2));
+
+  if (tile == doc::tile_i_notile)
+    return;
+
+  doc::Tileset* ts = site.tileset();
+  if (!ts)
+    return;
+
+  doc::tile_index ti = doc::tile_geti(tile);
+  if (ti < 0 || ti >= ts->size())
+    return;
+
+  doc::ImageRef tileImage = ts->get(ti);
+  if (!tileImage)
+    return;
+
+  const int w = tileImage->width();
+  const int h = tileImage->height();
+  os::SurfaceRef surface = os::instance()->makeRgbaSurface(w, h);
+  convert_image_to_surface(tileImage.get(), get_current_palette(),
+                           surface.get(), 0, 0, 0, 0, w, h);
+  g->drawRgbaSurface(surface.get(), gfx::Rect(0, 0, w, h), rc);
+}
+
+void draw_tile_button(ui::Graphics* g,
+                      const gfx::Rect& rc,
+                      const Site& site,
+                      doc::tile_t tile,
+                      const bool hot,
+                      const bool drag)
+{
+  SkinTheme* theme = SkinTheme::instance();
+  int scale = ui::guiscale();
+
+  // Draw background (the tile)
+  draw_tile(g,
+            Rect(rc.x+1*scale,
+                 rc.y+1*scale,
+                 rc.w-2*scale,
+                 rc.h-2*scale),
+            site, tile);
 
   // Draw opaque border
   theme->drawRect(

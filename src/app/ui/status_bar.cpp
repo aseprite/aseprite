@@ -68,7 +68,8 @@ class StatusBar::Indicators : public HBox {
     enum IndicatorType {
       kText,
       kIcon,
-      kColor
+      kColor,
+      kTile
     };
     Indicator(IndicatorType type) : m_type(type) { }
     IndicatorType indicatorType() const { return m_type; }
@@ -195,6 +196,41 @@ class StatusBar::Indicators : public HBox {
     app::Color m_color;
   };
 
+  class TileIndicator : public Indicator {
+  public:
+    TileIndicator(doc::tile_t tile)
+      : Indicator(kTile)
+      , m_tile(doc::tile_i_notile) {
+      updateIndicator(tile, true);
+    }
+
+    bool updateIndicator(doc::tile_t tile, bool first = false) {
+      if (m_tile == tile && !first)
+        return false;
+
+      m_tile = tile;
+      setMinSize(minSize().createUnion(Size(32*guiscale(), 1)));
+      return true;
+    }
+
+  private:
+    void onPaint(ui::PaintEvent& ev) override {
+      Rect rc = clientBounds();
+      Graphics* g = ev.graphics();
+
+      // TODO could the site came from the Indicators or StatusBar itself
+      Site site = UIContext::instance()->activeSite();
+
+      g->fillRect(bgColor(), rc);
+      draw_tile_button(
+        g, Rect(rc.x, rc.y, 32*guiscale(), rc.h),
+        site, m_tile,
+        false, false);
+    }
+
+    doc::tile_t m_tile;
+  };
+
 public:
 
   Indicators()
@@ -276,6 +312,25 @@ public:
     }
 
     auto indicator = new ColorIndicator(color);
+    m_indicators.push_back(indicator);
+    m_iterator = m_indicators.end();
+    m_leftArea.addChild(indicator);
+    m_redraw = true;
+  }
+
+  void addTileIndicator(doc::tile_t tile) {
+    if (m_iterator != m_indicators.end()) {
+      if ((*m_iterator)->indicatorType() == Indicator::kTile) {
+        m_redraw |= static_cast<TileIndicator*>(*m_iterator)
+          ->updateIndicator(tile);
+        ++m_iterator;
+        return;
+      }
+      else
+        removeAllNextIndicators();
+    }
+
+    auto indicator = new TileIndicator(tile);
     m_indicators.push_back(indicator);
     m_iterator = m_indicators.end();
     m_leftArea.addChild(indicator);
@@ -394,10 +449,36 @@ public:
     std::string str = color.toHumanReadableString(
       app_get_current_pixel_format(),
       app::Color::LongHumanReadableString);
-    if (color.getAlpha() < 255) {
-      char buf[256];
-      sprintf(buf, " A%d", color.getAlpha());
-      str += buf;
+    if (color.getAlpha() < 255)
+      str += fmt::format(" A{}", color.getAlpha());
+    m_indicators->addTextIndicator(str.c_str());
+
+    return *this;
+  }
+
+  IndicatorsGeneration& add(doc::tile_t tile) {
+    auto theme = SkinTheme::instance();
+
+    // Eyedropper icon
+    add(theme->getToolPart("eyedropper"), false);
+
+    // Color
+    m_indicators->addTileIndicator(tile);
+
+    // Color description
+    std::string str;
+    if (tile == doc::tile_i_notile) {
+      str += "Empty";
+    }
+    else {
+      doc::tile_index ti = doc::tile_geti(tile);
+      doc::tile_flags tf = doc::tile_getf(tile);
+      str += fmt::format("{}", ti);
+      if (tf) {
+        if (tf & doc::tile_f_flipx) str += " FlipX";
+        if (tf & doc::tile_f_flipy) str += " FlipY";
+        if (tf & doc::tile_f_90cw) str += " Rot90CW";
+      }
     }
     m_indicators->addTextIndicator(str.c_str());
 
@@ -705,6 +786,18 @@ void StatusBar::showColor(int msecs, const char* text, const app::Color& color)
   if ((base::current_tick() > m_timeout) || (msecs > 0)) {
     IndicatorsGeneration gen(m_indicators);
     gen.add(color);
+    if (text)
+      gen.add(text);
+
+    m_timeout = base::current_tick() + msecs;
+  }
+}
+
+void StatusBar::showTile(int msecs, const char* text, doc::tile_t tile)
+{
+  if ((base::current_tick() > m_timeout) || (msecs > 0)) {
+    IndicatorsGeneration gen(m_indicators);
+    gen.add(tile);
     if (text)
       gen.add(text);
 

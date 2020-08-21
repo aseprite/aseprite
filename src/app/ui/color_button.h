@@ -61,9 +61,11 @@ namespace app {
     void onSaveLayout(ui::SaveLayoutEvent& ev) override;
 
   private:
+    // ContextObserver impl
+    void onActiveSiteChange(const Site& site) override;
+
     void onWindowClose(ui::CloseEvent& ev);
     void onWindowColorChange(const app::Color& color);
-    void onActiveSiteChange(const Site& site) override;
     bool canPin() const { return m_options.canPinSelector; }
 
     app::Color m_color;

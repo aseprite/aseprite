@@ -13,6 +13,7 @@
 #include "app/context_observer.h"
 #include "app/ui/color_source.h"
 #include "app/ui/marching_ants.h"
+#include "app/ui/tile_source.h"
 #include "doc/palette_picks.h"
 #include "doc/tile.h"
 #include "obs/connection.h"
@@ -64,6 +65,7 @@ namespace app {
   class PaletteView : public ui::Widget
                     , public MarchingAnts
                     , public IColorSource
+                    , public ITileSource
                     , public ContextObserver {
     friend class PaletteViewAdapter;
     friend class TilesetViewAdapter;
@@ -101,6 +103,9 @@ namespace app {
 
     // IColorSource
     app::Color getColorByPosition(const gfx::Point& pos) override;
+
+    // ITileSource
+    doc::tile_t getTileByPosition(const gfx::Point& pos) override;
 
     // ContextObserver impl
     void onActiveSiteChange(const Site& site) override;

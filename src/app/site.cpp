@@ -74,6 +74,14 @@ void Site::range(const DocRange& range)
   }
 }
 
+doc::Tileset* Site::tileset() const
+{
+  if (m_layer && m_layer->isTilemap())
+    return static_cast<LayerTilemap*>(m_layer)->tileset();
+  else
+    return nullptr;
+}
+
 Grid Site::grid() const
 {
   if (m_layer && m_layer->isTilemap()) {
