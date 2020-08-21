@@ -279,7 +279,7 @@ Never used.
 
 ### Tags Chunk (0x2018)
 
-After tha tags chunk, you can write one user data chunk for each tag.
+After the tags chunk, you can write one user data chunk for each tag.
 E.g. if there are 10 tags, you can then write 10 user data chunks one
 for each tag.
 
