@@ -279,6 +279,10 @@ Never used.
 
 ### Tags Chunk (0x2018)
 
+After tha tags chunk, you can write one user data chunk for each tag.
+E.g. if there are 10 tags, you can then write 10 user data chunks one
+for each tag.
+
     WORD        Number of tags
     BYTE[8]     For future (set to zero)
     + For each tag
@@ -290,6 +294,9 @@ Never used.
                   2 = Ping-pong
       BYTE[8]   For future (set to zero)
       BYTE[3]   RGB values of the tag color
+                  Deprecated, used only for backward compatibility with Aseprite v1.2.x
+                  The color of the tag is the one in the user data field following
+                  the tags chunk
       BYTE      Extra byte (zero)
       STRING    Tag name
 
@@ -313,7 +320,10 @@ Never used.
 
 Insert this user data in the last read chunk.  E.g. If we've read a
 layer, this user data belongs to that layer, if we've read a cel, it
-belongs to that cel, etc.
+belongs to that cel, etc. There are some special cases: After a Tags
+chunk, there will be several user data fields, one for each tag, you
+should associate the user data in the same order as the tags are in
+the Tags chunk.
 
     DWORD       Flags
                   1 = Has text

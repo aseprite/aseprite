@@ -85,7 +85,10 @@ bool AsepriteDecoder::decode()
   doc::Cel* last_cel = nullptr;
   auto tag_it = sprite->tags().begin();
   auto tag_end = sprite->tags().end();
+
+  // Used to read user data for each tag after a Tags chunk
   bool tagsInProcess = false;
+
   int current_level = -1;
   doc::LayerList allLayers;
   AsepriteExternalFiles extFiles;
@@ -202,10 +205,13 @@ bool AsepriteDecoder::decode()
             break;
 
           case ASE_FILE_CHUNK_TAGS:
-            tagsInProcess = true;
             readTagsChunk(&sprite->tags());
             tag_it = sprite->tags().begin();
             tag_end = sprite->tags().end();
+
+            // If there are tags, any following user data chunk will
+            // be for each tag (starting from tag_it to tag_end-1).
+            tagsInProcess = (tag_it != tag_end);
             break;
 
           case ASE_FILE_CHUNK_SLICES: {
@@ -223,20 +229,25 @@ bool AsepriteDecoder::decode()
           case ASE_FILE_CHUNK_USER_DATA: {
             doc::UserData userData;
             readUserDataChunk(&userData);
-            // The next condition implies user data is from tags
+
+            // Are we are reading the user data of tags?
             if (tagsInProcess) {
-              // Tag user data:
               doc::Tag* tag = *tag_it;
-              doc::color_t c = tag->color();// this line is for backward compatibility
+              // This will overwrite the tag color. The color field in
+              // Tags chunk is deprecated, only used for backward
+              // compatibility with old versions of Aseprite, we now
+              // use the color from the user data chunk.
               tag->setUserData(userData);
-              tag->setColor(c);// this line is for backward compatibility
               tag_it++;
+
+              // Avoid reading more user data chunks than tags (this
+              // can happen in ill-formed files only)
               if (tag_it == tag_end)
                 tagsInProcess = false;
-              break;
             }
-            else if (last_object_with_user_data)
+            else if (last_object_with_user_data) {
               last_object_with_user_data->setUserData(userData);
+            }
             break;
           }
 
@@ -948,7 +959,12 @@ void AsepriteDecoder::readTagsChunk(doc::Tags* tags)
     std::string name = readString();
 
     auto tag = new doc::Tag(from, to);
-    tag->setColor(doc::rgba(r, g, b, 255));// this line is for backward compatibility
+
+    // We read the color field just in case that this is a .aseprite
+    // file written by an old version of Aseprite (where the there are
+    // not user data for tags).
+    tag->setColor(doc::rgba(r, g, b, 255));
+
     tag->setName(name);
     tag->setAniDir((doc::AniDir)aniDir);
     tags->add(tag);
