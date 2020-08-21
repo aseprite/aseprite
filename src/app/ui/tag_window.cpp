@@ -68,13 +68,26 @@ doc::AniDir TagWindow::aniDirValue()
 
 void TagWindow::onPopupUserData()
 {
+  // Required because we are showing the color in the TagWindow so we
+  // have to put the color in the user data before showing the same
+  // color again in the user data tooltip.
+  //
+  // TODO remove this field in the future
+  app::Color c = color()->getColor();
+  m_userData.setColor(doc::rgba(c.getRed(),
+                                c.getGreen(),
+                                c.getBlue(),
+                                c.getAlpha()));
+
   if (show_user_data_popup(userData()->bounds(), m_userData)) {
-    color_t color = m_userData.color();
-    // Paint the tag properties color picker
-    app::Color c;
-    this->color()->setColor(c.fromRgb(int(rgba_getr(color)),
-                                      int(rgba_getg(color)),
-                                      int(rgba_getb(color)), 255));
+    color_t d = m_userData.color();
+    // And synchronize back the color from the user data with the
+    // color in the tag properties color picker.
+    color()->setColor(
+      app::Color::fromRgb(int(rgba_getr(d)),
+                          int(rgba_getg(d)),
+                          int(rgba_getb(d)),
+                          int(rgba_geta(d))));
   }
 }
 
