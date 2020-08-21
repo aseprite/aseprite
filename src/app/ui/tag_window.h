@@ -31,7 +31,6 @@ namespace app {
 
     std::string nameValue();
     void rangeValue(doc::frame_t& from, doc::frame_t& to);
-    doc::color_t colorValue();
     doc::AniDir aniDirValue();
     const doc::UserData& userDataValue() { return m_userData; }
 

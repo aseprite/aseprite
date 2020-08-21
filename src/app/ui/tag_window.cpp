@@ -61,15 +61,6 @@ void TagWindow::rangeValue(doc::frame_t& from, doc::frame_t& to)
   to   = base::clamp(to, from, last);
 }
 
-doc::color_t TagWindow::colorValue()
-{
-  app::Color color = this->color()->getColor();
-  m_userData.setColor(doc::rgba(color.getRed(),
-                                color.getGreen(),
-                                color.getBlue(), 255));
-  return doc::rgba(color.getRed(), color.getGreen(), color.getBlue(), 255);
-}
-
 doc::AniDir TagWindow::aniDirValue()
 {
   return (doc::AniDir)anidir()->getSelectedItemIndex();
@@ -77,14 +68,14 @@ doc::AniDir TagWindow::aniDirValue()
 
 void TagWindow::onPopupUserData()
 {
-  if (m_userData.color() != colorValue())
-    m_userData.setColor(colorValue());
-  show_user_data_popup(userData()->bounds(), m_userData);
-  color_t color = m_userData.color();
-  app::Color c; 
-  this->color()->setColor(c.fromRgb(int(rgba_getr(color)),
-                                    int(rgba_getg(color)),
-                                    int(rgba_getb(color)), 255));
+  if (show_user_data_popup(userData()->bounds(), m_userData)) {
+    color_t color = m_userData.color();
+    // Paint the tag properties color picker
+    app::Color c;
+    this->color()->setColor(c.fromRgb(int(rgba_getr(color)),
+                                      int(rgba_getg(color)),
+                                      int(rgba_getb(color)), 255));
+  }
 }
 
 } // namespace app

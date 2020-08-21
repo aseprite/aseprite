@@ -24,6 +24,8 @@ Tag::Tag(frame_t from, frame_t to)
   , m_name("Tag")
   , m_aniDir(AniDir::FORWARD)
 {
+  color_t defaultColor = rgba_a_mask;// black color with full opacity.
+  userData().setColor(defaultColor);
 }
 
 Tag::Tag(const Tag& other)

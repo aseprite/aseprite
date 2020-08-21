@@ -103,10 +103,6 @@ void FrameTagPropertiesCommand::onExecute(Context* context)
     tx(new cmd::SetTagRange(tag, from, to));
   }
 
-  doc::color_t docColor = window.colorValue();
-  if (tag->color() != docColor)
-    tx(new cmd::SetTagColor(tag, docColor));
-
   doc::AniDir anidir = window.aniDirValue();
   if (tag->aniDir() != anidir)
     tx(new cmd::SetTagAniDir(tag, anidir));

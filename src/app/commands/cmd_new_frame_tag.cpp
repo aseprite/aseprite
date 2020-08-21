@@ -68,7 +68,6 @@ void NewFrameTagCommand::onExecute(Context* context)
   window.rangeValue(from, to);
   tag->setFrameRange(from, to);
   tag->setName(window.nameValue());
-  tag->setColor(window.colorValue());
   tag->setAniDir(window.aniDirValue());
   tag->setUserData(window.userDataValue());
 

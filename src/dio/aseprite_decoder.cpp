@@ -227,7 +227,9 @@ bool AsepriteDecoder::decode()
             if (tagsInProcess) {
               // Tag user data:
               doc::Tag* tag = *tag_it;
+              doc::color_t c = tag->color();// this line is for backward compatibility
               tag->setUserData(userData);
+              tag->setColor(c);// this line is for backward compatibility
               tag_it++;
               if (tag_it == tag_end)
                 tagsInProcess = false;
@@ -946,7 +948,7 @@ void AsepriteDecoder::readTagsChunk(doc::Tags* tags)
     std::string name = readString();
 
     auto tag = new doc::Tag(from, to);
-    tag->setColor(doc::rgba(r, g, b, 255));
+    tag->setColor(doc::rgba(r, g, b, 255));// this line is for backward compatibility
     tag->setName(name);
     tag->setAniDir((doc::AniDir)aniDir);
     tags->add(tag);
