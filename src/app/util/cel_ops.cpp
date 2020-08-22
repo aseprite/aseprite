@@ -469,16 +469,19 @@ void modify_tilemap_cel_region(
       if (!newTilemap->bounds().contains(u, v))
         continue;
 
+      doc::ImageRef existenTileImage;
       const doc::tile_t t = newTilemap->getPixel(u, v);
-      if (t == tile_i_notile)
-        continue;
-
-      const doc::tile_index ti = doc::tile_geti(t);
-      const doc::ImageRef existenTileImage = tileset->get(ti);
-      ASSERT(existenTileImage);
-
-      if (tilesetMode == TilesetMode::Auto)
-        modifiedTileIndexes[ti] = true;
+      if (t == tile_i_notile) {
+        // For "no tiles" create a new temporal empty tile to draw the
+        // modification.
+        existenTileImage = tileset->makeEmptyTile();
+      }
+      else {
+        const doc::tile_index ti = doc::tile_geti(t);
+        existenTileImage = tileset->get(ti);
+        if (tilesetMode == TilesetMode::Auto)
+          modifiedTileIndexes[ti] = true;
+      }
 
       const gfx::Rect tileInCanvasRc(grid.tileToCanvas(tilePt), tileSize);
       ImageRef tileImage(getTileImage(existenTileImage, tileInCanvasRc));
