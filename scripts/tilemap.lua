@@ -138,7 +138,7 @@ do
     tilesetMode=TilesetMode.STACK,
     points={ Point(0, 0), Point(31, 31) }}
 
-  local cel = tm.cels[1];
+  local cel = tm.cels[1]
   expect_eq(2, #ts)
   expect_img(cel.image, { 0,1,1,1,
                           1,0,1,1,
@@ -147,11 +147,11 @@ do
 
   app.useTool{
     tool='pencil',
-    color=Color(0),
+    color=Color{ index=0 },
     tilemapMode=TilemapMode.TILES,
     tilesetMode=TilesetMode.STACK,
     points={ Point(0, 16) }} -- y=16 is the first pixel of 3rd row of tiles
-  cel = tm.cels[1];
+  cel = tm.cels[1]
   expect_img(cel.image, { 0,1,1,1,
                           1,0,1,1,
                           0,1,0,1,
@@ -159,11 +159,11 @@ do
 
   app.useTool{
     tool='pencil',
-    color=Color(0),
+    color=Color{ index=0 },
     tilemapMode=TilemapMode.TILES,
     tilesetMode=TilesetMode.STACK,
     points={ Point(0, 0), Point(16, 0) }} -- x=16 is the first pixel of 3rd column of tiles
-  cel = tm.cels[1];
+  cel = tm.cels[1]
   expect_img(cel.image, { 0,0,0,1,
                           1,0,1,1,
                           0,1,0,1,
@@ -174,28 +174,33 @@ do
   expect_eq(Point{ 10, 8 }, cel.position)
   app.useTool{
     tool='pencil',
-    color=Color(1),
+    color=Color{ index=1 },
     tilemapMode=TilemapMode.TILES,
     tilesetMode=TilesetMode.STACK,
-    points={ Point(10, 8) }}    -- {10,8} is the first existent tile in the tilemap
-  cel = tm.cels[1];
+    points={ { 10, 8 }, { 18, 16 } }} -- {10,8} is the first existent tile in the tilemap
+                                      -- these are tiles 2,1 and 3,2
+  cel = tm.cels[1]
   expect_img(cel.image, { 1,0,0,1,
-                          1,0,1,1,
+                          1,1,1,1,
                           0,1,0,1,
                           1,1,1,0 })
 
   app.useTool{
     tool='pencil',
-    color=Color(0),
+    color=Color{ index=0 },
     tilemapMode=TilemapMode.TILES,
     tilesetMode=TilesetMode.STACK,
-    points={ Point(0, 0), Point(8, 8) }} -- Tile 0,0 and 1,1
-  cel = tm.cels[1];
-  expect_img(cel.image, { 0,1, 1,1,1,1,
-                          1,0, 1,0,0,1,
-                          1,1, 1,0,1,1,
-                          1,1, 0,1,0,1,
-                          1,1, 1,1,1,0 })
+    points={ Point(1, 7), Point(2, 8) }} -- Tile 0,0 and 1,1
+
+  -- TODO add a constant for the empty tile
+  local e = 4294967295 -- empty tile (0xffffffff)
+
+  cel = tm.cels[1]
+  expect_img(cel.image, { 0,e, e,e,e,e,
+                          e,0, 1,0,0,1,
+                          e,e, 1,1,1,1,
+                          e,e, 0,1,0,1,
+                          e,e, 1,1,1,0 })
 
 end
 
