@@ -502,7 +502,8 @@ private:
   }
 
   Tag* readTag(std::ifstream& s) {
-    return read_tag(s, false);
+    const bool oldVersion = (m_docFormatVer < DOC_FORMAT_VERSION_1);
+    return read_tag(s, false, oldVersion);
   }
 
   Slice* readSlice(std::ifstream& s) {

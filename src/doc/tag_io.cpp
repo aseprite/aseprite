@@ -36,19 +36,34 @@ void write_tag(std::ostream& os, const Tag* tag)
   write_user_data(os, tag->userData());
 }
 
-Tag* read_tag(std::istream& is, bool setId)
+Tag* read_tag(std::istream& is,
+              const bool setId,
+              const bool oldVersion)
 {
   ObjectId id = read32(is);
   frame_t from = read32(is);
   frame_t to = read32(is);
+
+  // If we are reading a session from v1.2.x, there is a color field
+  color_t color;
+  if (oldVersion)
+    color = read32(is);
+
   AniDir aniDir = (AniDir)read8(is);
   std::string name = read_string(is);
-  UserData userData = read_user_data(is);
+  UserData userData;
+
+  // If we are reading the new v1.3.x version, there is a user data with the color + text
+  if (!oldVersion)
+    userData = read_user_data(is);
 
   std::unique_ptr<Tag> tag(new Tag(from, to));
   tag->setAniDir(aniDir);
   tag->setName(name);
-  tag->setUserData(userData);
+  if (oldVersion)
+    tag->setColor(color);
+  else
+    tag->setUserData(userData);
   if (setId)
     tag->setId(id);
   return tag.release();
