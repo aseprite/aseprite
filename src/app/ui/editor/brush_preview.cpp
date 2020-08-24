@@ -125,6 +125,9 @@ void BrushPreview::show(const gfx::Point& screenPos)
   // Get the current tool
   tools::Ink* ink = m_editor->getCurrentEditorInk();
 
+  // Get current tilemap mode
+  TilemapMode tilemapMode = ColorBar::instance()->tilemapMode();
+
   const bool isFloodfill = m_editor->getCurrentEditorTool()->getPointShape(0)->isFloodFill();
   const auto& dynamics = App::instance()->contextBar()->getDynamics();
 
@@ -148,6 +151,7 @@ void BrushPreview::show(const gfx::Point& screenPos)
     m_type = SELECTION_CROSSHAIR;
   }
   else if (
+    (tilemapMode == TilemapMode::Pixels) &&
     (brush->type() == kImageBrushType ||
      ((isFloodfill ? 1: brush->size()) > (1.0 / m_editor->zoom().scale()))) &&
     (// Use cursor bounds for inks that are effects (eraser, blur, etc.)
