@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020 Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -52,15 +53,25 @@ void SwitchColorsCommand::onExecute(Context* context)
   }
 
   DisableColorBarEditMode disable;
-  ColorBar* colorbar = ColorBar::instance();
-  app::Color fg = colorbar->getFgColor();
-  app::Color bg = colorbar->getBgColor();
+  Site site = context->activeSite();
+  if (site.tilemapMode() == TilemapMode::Tiles) {
+    auto& pref = Preferences::instance();
+    doc::tile_t fg = pref.colorBar.fgTile();
+    doc::tile_t bg = pref.colorBar.bgTile();
+    pref.colorBar.bgTile(fg);
+    pref.colorBar.fgTile(bg);
+  }
+  else {
+    ColorBar* colorbar = ColorBar::instance();
+    app::Color fg = colorbar->getFgColor();
+    app::Color bg = colorbar->getBgColor();
 
-  // Change the background and then the foreground color so the color
-  // spectrum and color wheel shows the foreground color as the
-  // selected one.
-  colorbar->setBgColor(fg);
-  colorbar->setFgColor(bg);
+    // Change the background and then the foreground color so the color
+    // spectrum and color wheel shows the foreground color as the
+    // selected one.
+    colorbar->setBgColor(fg);
+    colorbar->setFgColor(bg);
+  }
 }
 
 Command* CommandFactory::createSwitchColorsCommand()
