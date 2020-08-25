@@ -466,12 +466,12 @@ public:
     , m_canceled(false)
     , m_tx(m_context,
            m_tool->getText().c_str(),
-           ((getInk()->isSelection() ||
-             getInk()->isEyedropper() ||
-             getInk()->isScrollMovement() ||
-             getInk()->isSlice() ||
-             getInk()->isZoom()) ? DoesntModifyDocument:
-                                   ModifyDocument))
+           ((m_ink->isSelection() ||
+             m_ink->isEyedropper() ||
+             m_ink->isScrollMovement() ||
+             m_ink->isSlice() ||
+             m_ink->isZoom()) ? DoesntModifyDocument:
+                                ModifyDocument))
     , m_expandCelCanvas(nullptr)
     , m_floodfillSrcImage(nullptr)
     , m_saveLastPoint(saveLastPoint)
@@ -540,7 +540,7 @@ public:
       m_useMask = m_document->isMaskVisible();
 
     // Start with an empty mask if the user is selecting with "default selection mode"
-    if (getInk()->isSelection() &&
+    if (m_ink->isSelection() &&
         (!m_document->isMaskVisible() ||
          (int(getModifiers()) & int(tools::ToolLoopModifiers::kReplaceSelection)))) {
       Mask emptyMask;
@@ -592,7 +592,7 @@ public:
       }
 
       // Paint ink
-      if (getInk()->isPaint()) {
+      if (m_ink->isPaint()) {
         try {
           ContextReader reader(m_context, 500);
           ContextWriter writer(reader);
@@ -603,7 +603,7 @@ public:
         }
       }
       // Selection ink
-      else if (getInk()->isSelection()) {
+      else if (m_ink->isSelection()) {
         redraw = true;
 
         // Show selection edges
@@ -611,7 +611,7 @@ public:
           m_docPref.show.selectionEdges(true);
       }
       // Slice ink
-      else if (getInk()->isSlice()) {
+      else if (m_ink->isSlice()) {
         redraw = true;
       }
 
@@ -622,7 +622,7 @@ public:
     }
 
     // If the trace was canceled or it is not a 'paint' ink...
-    if (m_canceled || !getInk()->isPaint()) {
+    if (m_canceled || !m_ink->isPaint()) {
       try {
         ContextReader reader(m_context, 500);
         ContextWriter writer(reader);
