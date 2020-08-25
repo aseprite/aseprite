@@ -140,7 +140,8 @@ ExpandCelCanvas::ExpandCelCanvas(
     // temporarily, we need to adjust the grid to the new temporal
     // grid origin matching the new m_dstImage position.
     auto newCelPosition = m_grid.tileToCanvas(m_bounds.origin());
-    m_grid.origin(m_grid.origin() - m_cel->position() + newCelPosition);
+    m_grid.origin(newCelPosition);
+
 
     // The origin of m_bounds must be in canvas position
     m_bounds.setOrigin(newCelPosition);
