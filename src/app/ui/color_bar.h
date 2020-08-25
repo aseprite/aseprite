@@ -89,7 +89,7 @@ namespace app {
     void setEditMode(bool state);
 
     TilemapMode tilemapMode() const;
-    void setTilemapMode(const TilemapMode mode);
+    void setTilemapMode(TilemapMode mode);
 
     TilesetMode tilesetMode() const;
     void setTilesetMode(const TilesetMode mode);

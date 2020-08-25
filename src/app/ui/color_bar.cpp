@@ -510,10 +510,13 @@ TilemapMode ColorBar::tilemapMode() const
                                  TilemapMode::Pixels;
 }
 
-void ColorBar::setTilemapMode(const TilemapMode mode)
+void ColorBar::setTilemapMode(TilemapMode mode)
 {
   const Site site = UIContext::instance()->activeSite();
   const bool isTilemap = (site.layer() && site.layer()->isTilemap());
+  if (!isTilemap)
+    mode = TilemapMode::Pixels;
+
   const bool editTiles = (mode == TilemapMode::Tiles);
 
   SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
