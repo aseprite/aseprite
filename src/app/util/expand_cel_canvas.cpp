@@ -118,7 +118,8 @@ ExpandCelCanvas::ExpandCelCanvas(
   m_origCelPos = m_cel->position();
 
   // Region to draw
-  gfx::Rect celBounds = (m_celCreated ? m_sprite->bounds(): m_cel->bounds());
+  gfx::Rect celBounds = (m_celCreated ? m_sprite->bounds():
+                                        m_cel->bounds());
 
   gfx::Rect spriteBounds(0, 0,
     m_sprite->width(),
@@ -131,20 +132,28 @@ ExpandCelCanvas::ExpandCelCanvas(
     m_bounds = spriteBounds;
   }
 
-  if (m_tilemapMode == TilemapMode::Tiles) {
+  if ((m_tilemapMode == TilemapMode::Tiles) ||
+      ((m_flags & PixelsBounds) == PixelsBounds)) {
     // Bounds of the canvas in tiles.
     m_bounds = m_grid.canvasToTile(m_bounds);
+
+    // New tiles bounds in pixels coordinates.
+    gfx::Rect newBoundsFromTiles = m_grid.tileToCanvas(m_bounds);
 
     // As the grid origin depends on the current cel position (see
     // Site::grid()), and we're going to modify the m_cel position
     // temporarily, we need to adjust the grid to the new temporal
     // grid origin matching the new m_dstImage position.
-    auto newCelPosition = m_grid.tileToCanvas(m_bounds.origin());
-    m_grid.origin(newCelPosition);
-
+    m_grid.origin(newBoundsFromTiles.origin());
 
     // The origin of m_bounds must be in canvas position
-    m_bounds.setOrigin(newCelPosition);
+    if ((m_flags & PixelsBounds) == PixelsBounds) {
+      m_bounds = newBoundsFromTiles;
+    }
+    else {
+      // Bounds for the new cel which is a tilemap
+      m_bounds.setOrigin(newBoundsFromTiles.origin());
+    }
   }
 
   // We have to adjust the cel position to match the m_dstImage

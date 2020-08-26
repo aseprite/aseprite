@@ -512,6 +512,9 @@ public:
         // pixels. See ExpandCelCanvas::commit() for details about this flag.
         (getController()->isFreehand() ?
          ExpandCelCanvas::UseModifiedRegionAsUndoInfo:
+         ExpandCelCanvas::None) |
+        (!m_tilesMode || m_ink->isSelection() ?
+         ExpandCelCanvas::PixelsBounds:
          ExpandCelCanvas::None)));
 
     if (!m_floodfillSrcImage)
@@ -550,11 +553,7 @@ public:
     // Setup the new grid of ExpandCelCanvas which can be displaced to
     // match the new temporal cel position (m_celOrigin).
     m_grid = m_expandCelCanvas->getGrid();
-
-    if (m_tilesMode)
-      m_celOrigin = m_grid.origin();
-    else
-      m_celOrigin = m_expandCelCanvas->getCel()->position();
+    m_celOrigin = m_expandCelCanvas->getCel()->position();
 
     m_mask = m_document->mask();
     m_maskOrigin = (!m_mask->isEmpty() ? gfx::Point(m_mask->bounds().x-m_celOrigin.x,
@@ -768,9 +767,8 @@ tools::ToolLoop* create_tool_loop(
   if (params.ink->isSelection() &&
       !params.tool->getPointShape(
         button != tools::Pointer::Left ? 1: 0)->isFloodFill()) {
-    // TODO improve the selection preview without using a preview
-    // image (e.g. we could use a gfx::Path)
-    site.layer(nullptr);
+    // Don't call site.layer(nullptr) because we want to keep the
+    // site.layer() to know if we are in a tilemap layer
   }
   else {
     Layer* layer = site.layer();

@@ -446,9 +446,18 @@ public:
     gfx::Rect rc(x1, y, x2-x1+1, 1);
 
     // For tile point shape, the point shape is done in "tiles"
-    // coordinatse, but we want the selection in "canvas" coordinates.
-    if (loop->getPointShape()->isTile())
-      rc = loop->getGrid().tileToCanvas(rc);
+    // coordinates, but we want the selection in canvas/pixels
+    // coordinates.
+    if (loop->getPointShape()->isTile()) {
+      const Grid& grid = loop->getGrid();
+      rc = grid.tileToCanvas(rc);
+      if (!m_modify_selection) {
+        // For feedback purposes, the coordinates must be relative to
+        // the getDstImage() and not in absolute sprite canvas
+        // coordinates.
+        rc.offset(-grid.origin());
+      }
+    }
 
     if (m_modify_selection) {
       int modifiers = int(loop->getModifiers());
