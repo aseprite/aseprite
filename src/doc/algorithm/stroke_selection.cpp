@@ -18,9 +18,10 @@ namespace doc {
 namespace algorithm {
 
 void stroke_selection(Image* image,
-                      const gfx::Point& offset,
+                      const gfx::Rect& imageBounds,
                       const Mask* origMask,
-                      const color_t color)
+                      const color_t color,
+                      const Grid* grid)
 {
   ASSERT(origMask);
   ASSERT(origMask->bitmap());
@@ -44,7 +45,7 @@ void stroke_selection(Image* image,
   ASSERT(mask.bounds() == origMask->bounds());
 
   if (mask.bitmap())
-    fill_selection(image, offset, &mask, color);
+    fill_selection(image, imageBounds, &mask, color, grid);
 }
 
 } // namespace algorithm

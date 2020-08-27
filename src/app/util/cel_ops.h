@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -9,6 +9,7 @@
 #define APP_UTIL_CEL_OPS_H_INCLUDED
 #pragma once
 
+#include "app/tilemap_mode.h"
 #include "app/tileset_mode.h"
 #include "doc/color.h"
 #include "doc/frame.h"
@@ -69,6 +70,7 @@ namespace app {
   void clear_mask_from_cel(
     CmdSequence* cmds,
     doc::Cel* cel,
+    const TilemapMode tilemapMode,
     const TilesetMode tilesetMode);
 
   // unusedTiles is a set of possibles tiles to check if they are

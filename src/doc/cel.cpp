@@ -11,11 +11,13 @@
 
 #include "doc/cel.h"
 
-#include "gfx/rect.h"
+#include "doc/grid.h"
 #include "doc/image.h"
 #include "doc/layer.h"
+#include "doc/layer_tilemap.h"
 #include "doc/sprite.h"
 #include "doc/tile.h"
+#include "gfx/rect.h"
 
 namespace doc {
 
@@ -144,6 +146,20 @@ void Cel::setParentLayer(LayerImage* layer)
 {
   m_layer = layer;
   fixupImage();
+}
+
+Grid Cel::grid() const
+{
+  if (m_layer) {
+    if (m_layer->isTilemap()) {
+      doc::Grid grid = static_cast<LayerTilemap*>(m_layer)->tileset()->grid();
+      grid.origin(grid.origin() + position());
+      return grid;
+    }
+    else
+      return m_layer->grid();
+  }
+  return Grid();
 }
 
 void Cel::fixupImage()

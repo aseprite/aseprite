@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019 Igara Studio S.A.
+// Copyright (c) 2019-2020 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -20,6 +20,7 @@
 namespace doc {
 
   class Document;
+  class Grid;
   class LayerImage;
   class Sprite;
 
@@ -67,6 +68,7 @@ namespace doc {
     }
 
     void setParentLayer(LayerImage* layer);
+    Grid grid() const;
 
   private:
     void fixupImage();

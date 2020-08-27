@@ -46,6 +46,7 @@ namespace doc {
     const ImageSpec& spec() const { return m_spec; }
     ColorMode colorMode() const { return m_spec.colorMode(); }
     PixelFormat pixelFormat() const { return (PixelFormat)colorMode(); }
+    bool isTilemap() const { return m_spec.colorMode() == ColorMode::TILEMAP; }
     int width() const { return m_spec.width(); }
     int height() const { return m_spec.height(); }
     gfx::Size size() const { return m_spec.size(); }

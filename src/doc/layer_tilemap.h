@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019  Igara Studio S.A.
+// Copyright (c) 2019-2020  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -18,6 +18,8 @@ namespace doc {
   public:
     explicit LayerTilemap(Sprite* sprite, const tileset_index tsi);
     ~LayerTilemap();
+
+    Grid grid() const override;
 
     // Returns the tileset of this layer. New automatically-created
     // tiles should be stored into this tileset, and all tiles in the

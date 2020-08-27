@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019  Igara Studio S.A.
+// Copyright (c) 2019-2020  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -26,6 +26,14 @@ LayerTilemap::LayerTilemap(Sprite* sprite, const tileset_index tsi)
 
 LayerTilemap::~LayerTilemap()
 {
+}
+
+Grid LayerTilemap::grid() const
+{
+  if (m_tileset)
+    return m_tileset->grid();
+  else
+    return Layer::grid();
 }
 
 void LayerTilemap::setTilesetIndex(tileset_index tsi)

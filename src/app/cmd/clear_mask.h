@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -13,6 +14,7 @@
 #include "app/cmd/with_image.h"
 #include "app/cmd_sequence.h"
 #include "doc/image_ref.h"
+#include "gfx/rect.h"
 
 #include <memory>
 
@@ -39,10 +41,8 @@ namespace cmd {
     void restore();
 
     CmdSequence m_seq;
-    std::unique_ptr<WithImage> m_dstImage;
     ImageRef m_copy;
-    gfx::Point m_offset;
-    int m_boundsX, m_boundsY;
+    gfx::Point m_cropPos;
     color_t m_bgcolor;
   };
 

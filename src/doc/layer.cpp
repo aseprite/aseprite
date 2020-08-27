@@ -12,6 +12,7 @@
 #include "doc/layer.h"
 
 #include "doc/cel.h"
+#include "doc/grid.h"
 #include "doc/image.h"
 #include "doc/primitives.h"
 #include "doc/sprite.h"
@@ -188,6 +189,15 @@ bool Layer::hasAncestor(const Layer* ancestor) const
     it = it->parent();
   }
   return false;
+}
+
+Grid Layer::grid() const
+{
+  gfx::Rect rc = (m_sprite ? m_sprite->gridBounds():
+                             doc::Sprite::DefaultGridBounds());
+  doc::Grid grid = Grid(rc.size());
+  grid.origin(gfx::Point(rc.x % rc.w, rc.y % rc.h));
+  return grid;
 }
 
 Cel* Layer::cel(frame_t frame) const

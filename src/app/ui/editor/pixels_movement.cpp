@@ -280,6 +280,7 @@ void PixelsMovement::cutMask()
     if (writer.cel()) {
       clear_mask_from_cel(m_tx,
                           writer.cel(),
+                          m_site.tilemapMode(),
                           m_site.tilesetMode());
 
       // Do not trim here so we don't lost the information about all
@@ -1100,6 +1101,7 @@ void PixelsMovement::reproduceAllTransformationsWithInnerCmds()
       case InnerCmd::Clear:
         clear_mask_from_cel(m_tx,
                             m_site.cel(),
+                            m_site.tilemapMode(),
                             m_site.tilesetMode());
         break;
       case InnerCmd::Flip:

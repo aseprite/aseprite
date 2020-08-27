@@ -21,11 +21,12 @@
 namespace doc {
 
   class Cel;
+  class Grid;
   class Image;
-  class Sprite;
   class Layer;
   class LayerGroup;
   class LayerImage;
+  class Sprite;
 
   //////////////////////////////////////////////////////////////////////
   // Layer class
@@ -120,6 +121,7 @@ namespace doc {
         m_flags = LayerFlags(int(m_flags) & ~int(flags));
     }
 
+    virtual Grid grid() const;
     virtual Cel* cel(frame_t frame) const;
     virtual void getCels(CelList& cels) const = 0;
     virtual void displaceFrames(frame_t fromThis, frame_t delta) = 0;

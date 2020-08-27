@@ -612,13 +612,14 @@ void modify_tilemap_cel_region(
 
 void clear_mask_from_cel(CmdSequence* cmds,
                          doc::Cel* cel,
+                         const TilemapMode tilemapMode,
                          const TilesetMode tilesetMode)
 {
   ASSERT(cmds);
   ASSERT(cel);
   ASSERT(cel->layer());
 
-  if (cel->layer()->isTilemap()) {
+  if (cel->layer()->isTilemap() && tilemapMode == TilemapMode::Pixels) {
     Doc* doc = static_cast<Doc*>(cel->document());
 
     // Simple case (there is no visible selection, so we remove the
@@ -640,9 +641,10 @@ void clear_mask_from_cel(CmdSequence* cmds,
         doc::ImageRef modified(doc::Image::createCopy(origTile.get()));
         doc::algorithm::fill_selection(
           modified.get(),
-          mask->bounds().origin() - tileBoundsInCanvas.origin(),
+          tileBoundsInCanvas,
           mask,
-          bgcolor);
+          bgcolor,
+          nullptr);
         return modified;
       });
   }

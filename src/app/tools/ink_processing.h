@@ -1062,25 +1062,18 @@ void GradientInkProcessing<IndexedTraits>::processPixel(int x, int y)
 template<typename ImageTraits>
 class XorInkProcessing : public DoubleInkProcessing<XorInkProcessing<ImageTraits>, ImageTraits> {
 public:
-  XorInkProcessing(ToolLoop* loop) {
-    m_color = loop->getPrimaryColor();
-  }
-  void processPixel(int x, int y) {
-    // Do nothing
-  }
-
-private:
-  color_t m_color;
+  XorInkProcessing(ToolLoop* loop) { }
+  void processPixel(int x, int y) { }
 };
 
 template<>
 void XorInkProcessing<RgbTraits>::processPixel(int x, int y) {
-  *m_dstAddress = rgba_blender_neg_bw(*m_srcAddress, m_color, 255);
+  *m_dstAddress = rgba_blender_neg_bw(*m_srcAddress, 0, 255);
 }
 
 template<>
 void XorInkProcessing<GrayscaleTraits>::processPixel(int x, int y) {
-  *m_dstAddress = graya_blender_neg_bw(*m_srcAddress, m_color, 255);
+  *m_dstAddress = graya_blender_neg_bw(*m_srcAddress, 0, 255);
 }
 
 template<>
@@ -1088,19 +1081,17 @@ class XorInkProcessing<IndexedTraits> : public DoubleInkProcessing<XorInkProcess
 public:
   XorInkProcessing(ToolLoop* loop) :
     m_palette(get_current_palette()),
-    m_rgbmap(loop->getRgbMap()),
-    m_color(m_palette->getEntry(loop->getPrimaryColor())) {
+    m_rgbmap(loop->getRgbMap()) {
   }
 
   void processPixel(int x, int y) {
-    color_t c = rgba_blender_neg_bw(m_palette->getEntry(*m_srcAddress), m_color, 255);
+    color_t c = rgba_blender_neg_bw(m_palette->getEntry(*m_srcAddress), 0, 255);
     *m_dstAddress = m_rgbmap->mapColor(c);
   }
 
 private:
   const Palette* m_palette;
   const RgbMap* m_rgbmap;
-  color_t m_color;
 };
 
 //////////////////////////////////////////////////////////////////////

@@ -253,7 +253,10 @@ void clear_mask_from_cels(Tx& tx,
     ObjectId celId = cel->id();
 
     clear_mask_from_cel(
-      tx, cel, ColorBar::instance()->tilesetMode());
+      tx, cel,
+      // TODO use Site information instead of color bar
+      ColorBar::instance()->tilemapMode(),
+      ColorBar::instance()->tilesetMode());
 
     // Get cel again just in case the cmd::ClearMask() called cmd::ClearCel()
     cel = doc::get<Cel>(celId);
