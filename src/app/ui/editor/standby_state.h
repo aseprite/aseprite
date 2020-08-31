@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -20,7 +20,6 @@ namespace app {
   namespace tools {
     class Ink;
     class Pointer;
-    class Command;
   }
 
   class DrawingState;
@@ -55,7 +54,8 @@ namespace app {
 
   protected:
     void callEyedropper(Editor* editor, const ui::MouseMessage* msg);
-    bool checkStartDrawingStraightLine(Editor* editor, const ui::MouseMessage* msg);
+    bool checkStartDrawingStraightLine(Editor* editor,
+                                       const tools::Pointer* pointer);
     virtual bool canCheckStartDrawingStraightLine() { return true; }
 
     class Decorator : public EditorDecorator {

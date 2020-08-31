@@ -324,10 +324,12 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
 
   // Start the Tool-Loop
   if (layer && (layer->isImage() || clickedInk->isSelection())) {
+    tools::Pointer pointer = pointer_from_msg(editor, msg);
+
     // Shift+click on Pencil tool starts a line onMouseDown() when the
     // preview (onKeyDown) is disabled.
     if (!Preferences::instance().editor.straightLinePreview() &&
-        checkStartDrawingStraightLine(editor, msg)) {
+        checkStartDrawingStraightLine(editor, &pointer)) {
       // Send first mouse down to draw the straight line and start the
       // freehand mode.
       editor->getState()->onMouseDown(editor, msg);
@@ -344,7 +346,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
 
     startDrawingState(editor,
                       DrawingType::Regular,
-                      pointer_from_msg(editor, msg));
+                      pointer);
 
     // Restore layer edges
     if (layerEdges)
@@ -667,13 +669,13 @@ DrawingState* StandbyState::startDrawingState(
 }
 
 bool StandbyState::checkStartDrawingStraightLine(Editor* editor,
-                                                 const ui::MouseMessage* msg)
+                                                 const tools::Pointer* pointer)
 {
   // Start line preview with shift key
   if (canCheckStartDrawingStraightLine() &&
-      editor->startStraightLineWithFreehandTool(msg)) {
+      editor->startStraightLineWithFreehandTool(pointer)) {
     tools::Pointer::Button pointerButton =
-      (msg ? button_from_msg(msg): tools::Pointer::Left);
+      (pointer ? pointer->button(): tools::Pointer::Left);
 
     DrawingState* drawingState =
       startDrawingState(editor,
@@ -682,17 +684,16 @@ bool StandbyState::checkStartDrawingStraightLine(Editor* editor,
                           editor->document()->lastDrawingPoint(),
                           tools::Vec2(0.0f, 0.0f),
                           pointerButton,
-                          msg ? msg->pointerType(): PointerType::Unknown,
-                          msg ? msg->pressure(): 0.0f));
+                          pointer ? pointer->type(): PointerType::Unknown,
+                          pointer ? pointer->pressure(): 0.0f));
     if (drawingState) {
       drawingState->sendMovementToToolLoop(
         tools::Pointer(
-          editor->screenToEditor(msg ? msg->position():
-                                       ui::get_mouse_position()),
+          pointer ? pointer->point(): editor->screenToEditor(ui::get_mouse_position()),
           tools::Vec2(0.0f, 0.0f),
           pointerButton,
-          msg ? msg->pointerType(): tools::Pointer::Type::Unknown,
-          msg ? msg->pressure(): 0.0f));
+          pointer ? pointer->type(): tools::Pointer::Type::Unknown,
+          pointer ? pointer->pressure(): 0.0f));
       return true;
     }
   }

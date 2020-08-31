@@ -63,6 +63,7 @@ namespace app {
 
   namespace tools {
     class Ink;
+    class Pointer;
     class Tool;
   }
 
@@ -292,7 +293,7 @@ namespace app {
 
     // Returns true if the Shift key to draw straight lines with a
     // freehand tool is pressed.
-    bool startStraightLineWithFreehandTool(const ui::MouseMessage* msg);
+    bool startStraightLineWithFreehandTool(const tools::Pointer* pointer);
 
     // Functions to handle the set of selected slices.
     bool isSliceSelected(const doc::Slice* slice) const;

@@ -1689,11 +1689,11 @@ doc::tile_t Editor::getTileByPosition(const gfx::Point& mousePos)
     return doc::tile_i_notile;
 }
 
-bool Editor::startStraightLineWithFreehandTool(const ui::MouseMessage* msg)
+bool Editor::startStraightLineWithFreehandTool(const tools::Pointer* pointer)
 {
   tools::Tool* tool = App::instance()->activeToolManager()->selectedTool();
   // TODO add support for more buttons (X1, X2, etc.)
-  int i = (msg && msg->right() ? 1: 0);
+  int i = (pointer && pointer->button() == tools::Pointer::Button::Right ? 1: 0);
   return
     (isActive() &&
      (hasMouse() || hasCapture()) &&

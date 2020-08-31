@@ -144,7 +144,7 @@ bool DrawingState::onMouseDown(Editor* editor, MouseMessage* msg)
   // checkStartDrawingStraightLine() with the right-button.
   if (recreateLoop && isCanceled) {
     ASSERT(!m_toolLoopManager);
-    checkStartDrawingStraightLine(editor, msg);
+    checkStartDrawingStraightLine(editor, &pointer);
   }
 
   return true;
@@ -153,6 +153,8 @@ bool DrawingState::onMouseDown(Editor* editor, MouseMessage* msg)
 bool DrawingState::onMouseUp(Editor* editor, MouseMessage* msg)
 {
   ASSERT(m_toolLoopManager != NULL);
+
+  tools::Pointer pointer = pointer_from_msg(editor, msg, m_velocity.velocity());
 
   // Selection tools with Replace mode are cancelled with a simple click.
   // ("one point" controller selection tool i.e. the magic wand, and
@@ -167,8 +169,7 @@ bool DrawingState::onMouseUp(Editor* editor, MouseMessage* msg)
       m_type == DrawingType::SelectTiles ||
       (editor->getToolLoopModifiers() != tools::ToolLoopModifiers::kReplaceSelection &&
        editor->getToolLoopModifiers() != tools::ToolLoopModifiers::kIntersectSelection)) {
-    m_lastPointer = pointer_from_msg(editor, msg,
-                                     m_velocity.velocity());
+    m_lastPointer = pointer;
 
     // Notify the release of the mouse button to the tool loop
     // manager. This is the correct way to say "the user finishes the
@@ -191,7 +192,7 @@ bool DrawingState::onMouseUp(Editor* editor, MouseMessage* msg)
   // button, if the Shift key is pressed, the whole ToolLoop starts
   // again.
   if (Preferences::instance().editor.straightLinePreview())
-    checkStartDrawingStraightLine(editor, msg);
+    checkStartDrawingStraightLine(editor, &pointer);
 
   return true;
 }
