@@ -105,6 +105,7 @@ protected:
   doc::Grid m_grid;
   gfx::Rect m_gridBounds;
   gfx::Point m_celOrigin;
+  gfx::Point m_mainTilePos;
   gfx::Point m_speed;
   tools::ToolLoop::Button m_button;
   std::unique_ptr<tools::Ink> m_ink;
@@ -122,6 +123,10 @@ protected:
   doc::color_t m_primaryColor;
   doc::color_t m_secondaryColor;
   tools::DynamicsOptions m_dynamics;
+
+  // Visible region (on the screen) of the all editors showing the
+  // given document.
+  gfx::Region m_allVisibleRgn;
 
 public:
   ToolLoopBase(Editor* editor,
@@ -146,6 +151,9 @@ public:
     , m_isSelectingTiles(false)
     , m_grid(grid)
     , m_gridBounds(grid.origin(), grid.tileSize())
+#ifdef ENABLE_UI
+    , m_mainTilePos(editor ? -editor->mainTilePosition(): gfx::Point(0, 0))
+#endif
     , m_button(params.button)
     , m_ink(params.ink->clone())
     , m_controller(params.controller)
@@ -265,6 +273,19 @@ public:
           m_button == tools::ToolLoop::Left));
     }
 #endif
+
+#ifdef ENABLE_UI
+    // TODO use the context given to the ToolLoopImpl ctor
+    for (auto e : UIContext::instance()->getAllEditorsIncludingPreview(m_document)) {
+      gfx::Region viewportRegion;
+      e->getDrawableRegion(viewportRegion, Widget::kCutTopWindows);
+      for (auto rc : viewportRegion) {
+        gfx::Region subrgn(e->screenToEditor(rc).inflate(1, 1));
+        e->collapseRegionByTiledMode(subrgn);
+        m_allVisibleRgn |= subrgn;
+      }
+    }
+#endif // ENABLE_UI
   }
 
   ~ToolLoopBase() {
@@ -353,22 +374,7 @@ public:
 
   void limitDirtyAreaToViewport(gfx::Region& rgn) override {
 #ifdef ENABLE_UI
-    // Visible region (on the screen) of the all editors showing the
-    // given document.
-    gfx::Region allVisibleRgn;
-
-    // TODO use the context given to the ToolLoopImpl ctor
-    for (auto e : UIContext::instance()->getAllEditorsIncludingPreview(m_document)) {
-      gfx::Region viewportRegion;
-      e->getDrawableRegion(viewportRegion, Widget::kCutTopWindows);
-      for (auto rc : viewportRegion) {
-        gfx::Region subrgn(e->screenToEditor(rc).inflate(1, 1));
-        e->collapseRegionByTiledMode(subrgn);
-        allVisibleRgn |= subrgn;
-      }
-    }
-
-    rgn &= allVisibleRgn;
+    rgn &= m_allVisibleRgn;
 #endif // ENABLE_UI
   }
 
@@ -397,11 +403,7 @@ public:
   }
 
   gfx::Point statusBarPositionOffset() override {
-#ifdef ENABLE_UI
-    return (m_editor ? -m_editor->mainTilePosition(): gfx::Point(0, 0));
-#else
-    return gfx::Point(0, 0);
-#endif
+    return m_mainTilePos;
   }
 
   render::DitheringMatrix getDitheringMatrix() override {
