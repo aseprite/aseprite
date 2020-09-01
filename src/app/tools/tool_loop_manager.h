@@ -47,7 +47,16 @@ public:
   ToolLoopManager(ToolLoop* toolLoop);
   virtual ~ToolLoopManager();
 
+  // Returns true if the loop was canceled by the user
   bool isCanceled() const;
+
+  // Called when the tool loop must be canceled because another
+  // command was executed or the Esc key pressed.
+  void cancel();
+
+  // Called when the tool loop ends (this will commit or rollback the
+  // tool loop).
+  void end();
 
   // Should be called when the user start a tool-trace (pressing the
   // left or right button for first time in the editor).
@@ -81,6 +90,7 @@ private:
   void calculateDirtyArea(const Strokes& strokes);
 
   ToolLoop* m_toolLoop;
+  bool m_canceled;
   Stroke m_stroke;
   Pointer m_lastPointer;
   gfx::Region m_dirtyArea;

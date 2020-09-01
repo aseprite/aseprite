@@ -439,7 +439,7 @@ int App_useTool(lua_State* L)
     if (!first)
       manager.releaseButton(lastPointer);
 
-    loop->commitOrRollback();
+    manager.end();
   }
   lua_pop(L, 1);
   return 0;

@@ -450,7 +450,7 @@ class ToolLoopImpl : public ToolLoopBase {
   bool m_useMask;
   Mask* m_mask;
   gfx::Point m_maskOrigin;
-  bool m_canceled;
+  bool m_internalCancel = false;
   Tx m_tx;
   ExpandCelCanvas* m_expandCelCanvas;
   Image* m_floodfillSrcImage;
@@ -465,7 +465,6 @@ public:
                const bool saveLastPoint)
     : ToolLoopBase(editor, site, grid, params)
     , m_context(context)
-    , m_canceled(false)
     , m_tx(m_context,
            m_tool->getText().c_str(),
            ((m_ink->isSelection() ||
@@ -581,10 +580,10 @@ public:
       return ToolLoopBase::needsCelCoordinates();
   }
 
-  void commitOrRollback() override {
+  void commit() override {
     bool redraw = false;
 
-    if (!m_canceled) {
+    if (!m_internalCancel) {
       // Freehand changes the last point
       if (m_saveLastPoint) {
         m_tx(new cmd::SetLastPoint(
@@ -619,19 +618,7 @@ public:
       m_tx.commit();
     }
     else {
-      redraw = true;
-    }
-
-    // If the trace was canceled or it is not a 'paint' ink...
-    if (m_canceled || !m_ink->isPaint()) {
-      try {
-        ContextReader reader(m_context, 500);
-        ContextWriter writer(reader);
-        m_expandCelCanvas->rollback();
-      }
-      catch (const LockedDocException& ex) {
-        Console::showException(ex);
-      }
+      rollback();
     }
 
 #ifdef ENABLE_UI
@@ -639,6 +626,20 @@ public:
       update_screen_for_document(m_document);
 #else
     (void)redraw;               // To avoid warning about unused variable
+#endif
+  }
+
+  void rollback() override {
+    try {
+      ContextReader reader(m_context, 500);
+      ContextWriter writer(reader);
+      m_expandCelCanvas->rollback();
+    }
+    catch (const LockedDocException& ex) {
+      Console::showException(ex);
+    }
+#ifdef ENABLE_UI
+    update_screen_for_document(m_document);
 #endif
   }
 
@@ -672,9 +673,6 @@ public:
   int getSprayWidth() override { return m_sprayWidth; }
   int getSpraySpeed() override { return m_spraySpeed; }
 
-  void cancel() override { m_canceled = true; }
-  bool isCanceled() override { return m_canceled; }
-
   void onSliceRect(const gfx::Rect& bounds) override {
 #ifdef ENABLE_UI // TODO add support for slice tool from batch scripts without UI?
     if (m_editor && getMouseButton() == ToolLoop::Left) {
@@ -704,7 +702,7 @@ public:
 
     // Cancel the operation (do not create a new transaction for this
     // no-op, e.g. just change the set of selected slices).
-    m_canceled = true;
+    m_internalCancel = true;
   }
 
 private:
@@ -922,9 +920,8 @@ public:
   }
 
   // IToolLoop interface
-  void commitOrRollback() override {
-    // Do nothing
-  }
+  void commit() override { }
+  void rollback() override { }
   const Image* getSrcImage() override { return m_image; }
   const Image* getFloodFillSrcImage() override { return m_image; }
   Image* getDstImage() override { return m_image; }
@@ -942,9 +939,6 @@ public:
   bool getPreviewFilled() override { return false; }
   int getSprayWidth() override { return 0; }
   int getSpraySpeed() override { return 0; }
-
-  void cancel() override { }
-  bool isCanceled() override { return true; }
 
   tools::DynamicsOptions getDynamics() override {
     // Preview without dynamics

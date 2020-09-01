@@ -265,7 +265,7 @@ bool DrawingState::onKeyUp(Editor* editor, KeyMessage* msg)
       (m_type == DrawingType::LineFreehand &&
        !m_mousePressedReceived &&
        !editor->startStraightLineWithFreehandTool(nullptr))) {
-    m_toolLoop->cancel();
+    m_toolLoopManager->cancel();
   }
 
   // The user might have canceled the tool loop pressing the 'Esc' key.
@@ -338,7 +338,7 @@ bool DrawingState::canExecuteCommands()
 void DrawingState::onBeforeCommandExecution(CommandExecutionEvent& cmd)
 {
   if (canExecuteCommands() && m_toolLoop) {
-    m_toolLoop->cancel();
+    m_toolLoopManager->cancel();
     destroyLoopIfCanceled(m_editor);
   }
 }
@@ -360,8 +360,8 @@ void DrawingState::destroyLoop(Editor* editor)
   if (editor)
     editor->renderEngine().removePreviewImage();
 
-  if (m_toolLoop)
-    m_toolLoop->commitOrRollback();
+  if (m_toolLoopManager)
+    m_toolLoopManager->end();
 
   m_toolLoopManager.reset(nullptr);
   m_toolLoop.reset(nullptr);

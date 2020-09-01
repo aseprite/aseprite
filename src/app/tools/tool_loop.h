@@ -68,7 +68,8 @@ namespace app {
 
       virtual ~ToolLoop() { }
 
-      virtual void commitOrRollback() = 0;
+      virtual void commit() = 0;
+      virtual void rollback() = 0;
 
       // Returns the tool to use to draw or use
       virtual Tool* getTool() = 0;
@@ -221,13 +222,6 @@ namespace app {
 
       virtual const Shade& getShade() = 0;
       virtual const doc::Remap* getShadingRemap() = 0;
-
-      // Used by the tool when the user cancels the operation pressing the
-      // other mouse button.
-      virtual void cancel() = 0;
-
-      // Returns true if the loop was canceled by the user
-      virtual bool isCanceled() = 0;
 
       virtual void limitDirtyAreaToViewport(gfx::Region& rgn) = 0;
 

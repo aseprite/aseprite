@@ -31,7 +31,7 @@
 
 #include <climits>
 
-#define TOOL_TRACE(...) // TRACEARGS
+#define TOOL_TRACE(...) // TRACEARGS(__VA_ARGS__)
 
 namespace app {
 namespace tools {
@@ -42,6 +42,7 @@ using namespace filters;
 
 ToolLoopManager::ToolLoopManager(ToolLoop* toolLoop)
   : m_toolLoop(toolLoop)
+  , m_canceled(false)
   , m_brush0(*toolLoop->getBrush())
   , m_dynamics(toolLoop->getDynamics())
 {
@@ -53,7 +54,20 @@ ToolLoopManager::~ToolLoopManager()
 
 bool ToolLoopManager::isCanceled() const
 {
- return m_toolLoop->isCanceled();
+  return m_canceled;
+}
+
+void ToolLoopManager::cancel()
+{
+  m_canceled = true;
+}
+
+void ToolLoopManager::end()
+{
+  if (m_canceled)
+    m_toolLoop->rollback();
+  else
+    m_toolLoop->commit();
 }
 
 void ToolLoopManager::prepareLoop(const Pointer& pointer)
@@ -100,7 +114,7 @@ void ToolLoopManager::pressButton(const Pointer& pointer)
   if ((m_toolLoop->getMouseButton() == ToolLoop::Left && pointer.button() == Pointer::Right) ||
       (m_toolLoop->getMouseButton() == ToolLoop::Right && pointer.button() == Pointer::Left)) {
     // Cancel the tool-loop (the destination image should be completely discarded)
-    m_toolLoop->cancel();
+    cancel();
     return;
   }
 
