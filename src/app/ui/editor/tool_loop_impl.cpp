@@ -37,6 +37,7 @@
 #include "app/ui/color_bar.h"
 #include "app/ui/context_bar.h"
 #include "app/ui/editor/editor.h"
+#include "app/ui/editor/editor_observer.h"
 #include "app/ui/main_window.h"
 #include "app/ui/optional_alert.h"
 #include "app/ui/status_bar.h"
@@ -275,17 +276,8 @@ public:
 #endif
 
 #ifdef ENABLE_UI
-    // TODO use the context given to the ToolLoopImpl ctor
-    for (auto e : UIContext::instance()->getAllEditorsIncludingPreview(m_document)) {
-      gfx::Region viewportRegion;
-      e->getDrawableRegion(viewportRegion, Widget::kCutTopWindows);
-      for (auto rc : viewportRegion) {
-        gfx::Region subrgn(e->screenToEditor(rc).inflate(1, 1));
-        e->collapseRegionByTiledMode(subrgn);
-        m_allVisibleRgn |= subrgn;
-      }
-    }
-#endif // ENABLE_UI
+    updateAllVisibleRegion();
+#endif
   }
 
   ~ToolLoopBase() {
@@ -436,12 +428,30 @@ public:
 
   void onSliceRect(const gfx::Rect& bounds) override { }
 
+#ifdef ENABLE_UI
+protected:
+  void updateAllVisibleRegion() {
+    m_allVisibleRgn.clear();
+    // TODO use the context given to the ToolLoopImpl ctor
+    for (auto e : UIContext::instance()->getAllEditorsIncludingPreview(m_document)) {
+      gfx::Region viewportRegion;
+      e->getDrawableRegion(viewportRegion, Widget::kCutTopWindows);
+      for (auto rc : viewportRegion) {
+        gfx::Region subrgn(e->screenToEditor(rc).inflate(1, 1));
+        e->collapseRegionByTiledMode(subrgn);
+        m_allVisibleRgn |= subrgn;
+      }
+    }
+  }
+#endif // ENABLE_UI
+
 };
 
 //////////////////////////////////////////////////////////////////////
 // For drawing
 
-class ToolLoopImpl : public ToolLoopBase {
+class ToolLoopImpl : public ToolLoopBase,
+                     public EditorObserver {
   Context* m_context;
   bool m_filled;
   bool m_previewFilled;
@@ -560,9 +570,19 @@ public:
     m_maskOrigin = (!m_mask->isEmpty() ? gfx::Point(m_mask->bounds().x-m_celOrigin.x,
                                                     m_mask->bounds().y-m_celOrigin.y):
                                          gfx::Point(0, 0));
+
+#ifdef ENABLE_UI
+    if (m_editor)
+      m_editor->add_observer(this);
+#endif
   }
 
   ~ToolLoopImpl() {
+#ifdef ENABLE_UI
+    if (m_editor)
+      m_editor->remove_observer(this);
+#endif
+
     if (m_floodfillSrcImage != getSrcImage())
       delete m_floodfillSrcImage;
     delete m_expandCelCanvas;
@@ -705,9 +725,12 @@ public:
     m_internalCancel = true;
   }
 
-private:
-
 #ifdef ENABLE_UI
+private:
+  // EditorObserver impl
+  void onScrollChanged(Editor* editor) override { updateAllVisibleRegion(); }
+  void onZoomChanged(Editor* editor) override { updateAllVisibleRegion(); }
+
   std::string getUniqueSliceName() const {
     std::string prefix = "Slice";
     int max = 0;
@@ -718,7 +741,7 @@ private:
 
     return fmt::format("{} {}", prefix, max+1);
   }
-#endif
+#endif  // ENABLE_UI
 
 };
 
