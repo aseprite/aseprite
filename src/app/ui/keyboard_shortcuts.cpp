@@ -64,6 +64,22 @@ namespace {
 
   static struct {
     const char* name;
+    app::KeyContext context;
+  } contexts[] = {
+    { ""                     , app::KeyContext::Any },
+    { "Normal"               , app::KeyContext::Normal },
+    { "Selection"            , app::KeyContext::SelectionTool },
+    { "TranslatingSelection" , app::KeyContext::TranslatingSelection },
+    { "ScalingSelection"     , app::KeyContext::ScalingSelection },
+    { "RotatingSelection"    , app::KeyContext::RotatingSelection },
+    { "MoveTool"             , app::KeyContext::MoveTool },
+    { "FreehandTool"         , app::KeyContext::FreehandTool },
+    { "ShapeTool"            , app::KeyContext::ShapeTool },
+    { NULL                   , app::KeyContext::Any }
+  };
+
+  static struct {
+    const char* name;
     const char* userfriendly;
     app::WheelAction action;
   } wheel_actions[] = {
@@ -160,6 +176,22 @@ namespace base {
         return wheel_actions[c].name;
     }
     return "";
+  }
+
+  template<> app::KeyContext convert_to(const std::string& from) {
+    for (int c=0; contexts[c].name; ++c) {
+      if (from == contexts[c].name)
+        return contexts[c].context;
+    }
+    return app::KeyContext::Any;
+  }
+
+  template<> std::string convert_to(const app::KeyContext& from) {
+    for (int c=0; contexts[c].name; ++c) {
+      if (from == contexts[c].context)
+        return contexts[c].name;
+    }
+    return std::string();
   }
 
 } // namespace base
@@ -426,12 +458,8 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
         // Read context
         KeyContext keycontext = KeyContext::Any;
         const char* keycontextstr = xmlKey->Attribute("context");
-        if (keycontextstr) {
-          if (strcmp(keycontextstr, "Selection") == 0)
-            keycontext = KeyContext::SelectionTool;
-          else if (strcmp(keycontextstr, "Normal") == 0)
-            keycontext = KeyContext::Normal;
-        }
+        if (keycontextstr)
+          keycontext = base::convert_to<KeyContext>(std::string(keycontextstr));
 
         // Read params
         Params params;
@@ -650,9 +678,10 @@ void KeyboardShortcuts::exportAccel(TiXmlElement& parent, const Key* key, const 
     case KeyType::Command: {
       elem.SetAttribute("command", key->command()->id().c_str());
 
-      if (key->keycontext() != KeyContext::Any)
-        elem.SetAttribute(
-          "context", convertKeyContextToString(key->keycontext()).c_str());
+      if (key->keycontext() != KeyContext::Any) {
+        elem.SetAttribute("context",
+                          base::convert_to<std::string>(key->keycontext()).c_str());
+      }
 
       for (const auto& param : key->params()) {
         if (param.second.empty())
@@ -673,12 +702,12 @@ void KeyboardShortcuts::exportAccel(TiXmlElement& parent, const Key* key, const 
 
     case KeyType::Action:
       elem.SetAttribute("action",
-        base::convert_to<std::string>(key->action()).c_str());
+                        base::convert_to<std::string>(key->action()).c_str());
       break;
 
     case KeyType::WheelAction:
       elem.SetAttribute("action",
-        base::convert_to<std::string>(key->wheelAction()).c_str());
+                        base::convert_to<std::string>(key->wheelAction()).c_str());
       break;
   }
 
@@ -1007,31 +1036,6 @@ std::string key_tooltip(const char* str, const app::Key* key)
     res += ")";
   }
   return res;
-}
-
-std::string convertKeyContextToString(KeyContext keyContext)
-{
-  switch (keyContext) {
-    case KeyContext::Any:
-      return std::string();
-    case KeyContext::Normal:
-      return "Normal";
-    case KeyContext::SelectionTool:
-      return "Selection";
-    case KeyContext::TranslatingSelection:
-      return "TranslatingSelection";
-    case KeyContext::ScalingSelection:
-      return "ScalingSelection";
-    case KeyContext::RotatingSelection:
-      return "RotatingSelection";
-    case KeyContext::MoveTool:
-      return "MoveTool";
-    case KeyContext::FreehandTool:
-      return "FreehandTool";
-    case KeyContext::ShapeTool:
-      return "ShapeTool";
-  }
-  return std::string();
 }
 
 std::string convertKeyContextToUserFriendlyString(KeyContext keyContext)

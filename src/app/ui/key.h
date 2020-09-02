@@ -164,7 +164,6 @@ namespace app {
   typedef std::shared_ptr<Key> KeyPtr;
   typedef std::vector<KeyPtr> Keys;
 
-  std::string convertKeyContextToString(KeyContext keyContext);
   std::string convertKeyContextToUserFriendlyString(KeyContext keyContext);
 
 } // namespace app
