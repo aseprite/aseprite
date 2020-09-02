@@ -578,16 +578,16 @@
 
     <!-- Special keyboard shortcuts for specific actions -->
     <actions>
-      <!-- When you drag-and-drop the selection, pressing this
-           keyboard shortcut you can copy instead of move -->
+      <!-- When we are going to drag the selection, pressing this
+           shortcut starts a copy instead of move -->
       <key action="CopySelection" shortcut="Ctrl" />
 
-      <!-- When you move the selection, pressing this
-           keyboard shortcut you can snap to grid -->
+      <!-- When we are moving the selection, pressing this shortcut
+           snaps the selection origin to the grid -->
       <key action="SnapToGrid" shortcut="Alt" />
 
-      <!-- When you move the selection, pressing this keyboard
-           shortcut so you lock the movement to one axis -->
+      <!-- When we are moving the selection, pressing this shortcut
+           locks the movement to one axis (X or Y) -->
       <key action="LockAxis" shortcut="Shift" />
 
       <!-- When you rotate the selection, pressing this
