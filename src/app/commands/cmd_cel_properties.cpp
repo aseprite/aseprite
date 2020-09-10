@@ -20,7 +20,7 @@
 #include "app/modules/gui.h"
 #include "app/tx.h"
 #include "app/ui/timeline/timeline.h"
-#include "app/ui/user_data_popup.h"
+#include "app/ui/user_data_view.h"
 #include "app/ui_context.h"
 #include "base/mem_utils.h"
 #include "base/scoped_value.h"
@@ -49,10 +49,14 @@ public:
     , m_document(nullptr)
     , m_cel(nullptr)
     , m_selfUpdate(false)
-    , m_newUserData(false) {
+    , m_userDataView(new gen::UserData(), &Preferences::instance().cels.userDataVisibility)
+  {
     opacity()->Change.connect([this]{ onStartTimer(); });
-    userData()->Click.connect([this]{ onPopupUserData(); });
+    userData()->Click.connect([this]{ onToggleUserData(); });
     m_timer.Tick.connect([this]{ onCommitChange(); });
+
+    m_userDataView.entry()->Change.connect([this]{ onStartTimer(); });
+    m_userDataView.color()->Change.connect([this]{ onStartTimer(); });
 
     remapWindow();
     centerWindow();
@@ -80,6 +84,14 @@ public:
     if (m_document)
       m_document->add_observer(this);
 
+    if (countCels() > 0 && m_cel) {
+      ui::Grid* mainGrid = g_window->propertiesGrid();
+      m_userDataView.configureAndSet(m_cel->data()->userData(), mainGrid);
+    }
+    else if (!m_cel)
+      m_userDataView.setVisible(false, false);
+    g_window->remapWindow();
+    manager()->invalidate();
     updateFromCel();
   }
 
@@ -136,9 +148,9 @@ private:
 
       case kCloseMessage:
         // Save changes before we close the window
+        if (m_cel)
+          save_window_pos(this, "CelProperties");
         setCel(nullptr, nullptr);
-        save_window_pos(this, "CelProperties");
-
         deferDelete();
         g_window = nullptr;
         break;
@@ -160,11 +172,12 @@ private:
     m_timer.stop();
 
     const int newOpacity = opacityValue();
+    const UserData newUserData= m_userDataView.userData();
     const int count = countCels();
 
     if ((count > 1) ||
         (count == 1 && m_cel && (newOpacity != m_cel->opacity() ||
-                                 m_userData != m_cel->data()->userData()))) {
+                                 newUserData != m_cel->data()->userData()))) {
       try {
         ContextWriter writer(UIContext::instance());
         Tx tx(writer.context(), "Set Cel Properties");
@@ -178,15 +191,16 @@ private:
         }
 
         Sprite* sprite = m_document->sprite();
+        const bool userDataChanged = (newUserData != m_cel->data()->userData());
         for (Cel* cel : sprite->uniqueCels(range.selectedFrames())) {
           if (range.contains(cel->layer())) {
             if (!cel->layer()->isBackground() && newOpacity != cel->opacity()) {
               tx(new cmd::SetCelOpacity(cel, newOpacity));
             }
 
-            if (m_newUserData &&
-                m_userData != cel->data()->userData()) {
-              tx(new cmd::SetUserData(cel->data(), m_userData));
+            if (userDataChanged &&
+                newUserData != cel->data()->userData()) {
+              tx(new cmd::SetUserData(cel->data(), newUserData, m_document));
 
               // Redraw timeline because the cel's user data/color
               // might have changed.
@@ -205,18 +219,11 @@ private:
     }
   }
 
-  void onPopupUserData() {
-    if (countCels() > 0) {
-      m_newUserData = false;
-      if (m_cel)
-        m_userData = m_cel->data()->userData();
-      else
-        m_userData = UserData();
-
-      if (show_user_data_popup(userData()->bounds(), m_userData)) {
-        m_newUserData = true;
-        onCommitChange();
-      }
+  void onToggleUserData() {
+    if (m_cel) {
+      m_userDataView.toggleVisibility();
+      g_window->remapWindow();
+      manager()->invalidate();
     }
   }
 
@@ -240,6 +247,11 @@ private:
       updateFromCel();
   }
 
+  void onUserDataChange(DocEvent& ev) override {
+     if (m_cel && m_cel->data() == ev.withUserData())
+      updateFromCel();
+  }
+
   void updateFromCel() {
     if (m_selfUpdate)
       return;
@@ -251,18 +263,18 @@ private:
     int bgCount = 0;
     int count = countCels(&bgCount);
 
-    m_userData = UserData();
-    m_newUserData = false;
-
     if (count > 0) {
       if (m_cel) {
         opacity()->setValue(m_cel->opacity());
-        m_userData = m_cel->data()->userData();
+        color_t c = m_cel->data()->userData().color();
+        m_userDataView.color()->setColor(Color::fromRgb(rgba_getr(c), rgba_getg(c), rgba_getb(c), rgba_geta(c)));
+        m_userDataView.entry()->setText(m_cel->data()->userData().text());
       }
       opacity()->setEnabled(bgCount < count);
     }
     else {
       opacity()->setEnabled(false);
+      m_userDataView.setVisible(false, false);
     }
   }
 
@@ -271,8 +283,7 @@ private:
   Cel* m_cel;
   DocRange m_range;
   bool m_selfUpdate;
-  UserData m_userData;
-  bool m_newUserData;
+  UserDataView m_userDataView;
 };
 
 class CelPropertiesCommand : public Command {

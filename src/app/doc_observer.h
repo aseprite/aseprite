@@ -61,6 +61,8 @@ namespace app {
     virtual void onCelPositionChanged(DocEvent& ev) { }
     virtual void onCelOpacityChange(DocEvent& ev) { }
 
+    virtual void onUserDataChange(DocEvent& ev) { }
+
     virtual void onFrameDurationChanged(DocEvent& ev) { }
 
     virtual void onImagePixelsModified(DocEvent& ev) { }

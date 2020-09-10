@@ -23,7 +23,7 @@
 #include "app/tx.h"
 #include "app/ui/separator_in_view.h"
 #include "app/ui/timeline/timeline.h"
-#include "app/ui/user_data_popup.h"
+#include "app/ui/user_data_view.h"
 #include "app/ui_context.h"
 #include "base/scoped_value.h"
 #include "doc/image.h"
@@ -70,7 +70,8 @@ public:
     : m_timer(250, this)
     , m_document(nullptr)
     , m_layer(nullptr)
-    , m_selfUpdate(false) {
+    , m_selfUpdate(false)
+    , m_userDataView(new gen::UserData(), &Preferences::instance().layers.userDataVisibility) {
     name()->setMinSize(gfx::Size(128, 0));
     name()->setExpansive(true);
 
@@ -103,7 +104,10 @@ public:
     mode()->Change.connect([this]{ onStartTimer(); });
     opacity()->Change.connect([this]{ onStartTimer(); });
     m_timer.Tick.connect([this]{ onCommitChange(); });
-    userData()->Click.connect([this]{ onPopupUserData(); });
+    userData()->Click.connect([this]{ onToggleUserData(); });
+
+    m_userDataView.entry()->Change.connect([this]{ onStartTimer(); });
+    m_userDataView.color()->Change.connect([this]{ onStartTimer(); });
 
     remapWindow();
     centerWindow();
@@ -129,6 +133,11 @@ public:
 
     if (m_document)
       m_document->add_observer(this);
+
+    if (countLayers() > 0) {
+      ui::Grid* mainGrid = g_window->propertiesGrid();
+      m_userDataView.configureAndSet(m_layer->userData(), mainGrid);
+    }
 
     updateFromLayer();
   }
@@ -212,11 +221,12 @@ private:
 
     std::string newName = nameValue();
     int newOpacity = opacityValue();
+    const doc::UserData newUserData = m_userDataView.userData();
     BlendMode newBlendMode = blendModeValue();
 
     if ((count > 1) ||
         (count == 1 && m_layer && (newName != m_layer->name() ||
-                                   m_userData != m_layer->userData() ||
+                                   newUserData != m_layer->userData() ||
                                    (m_layer->isImage() &&
                                     (newOpacity != static_cast<LayerImage*>(m_layer)->opacity() ||
                                      newBlendMode != static_cast<LayerImage*>(m_layer)->blendMode()))))) {
@@ -233,7 +243,7 @@ private:
         }
 
         const bool nameChanged = (newName != m_layer->name());
-        const bool userDataChanged = (m_userData != m_layer->userData());
+        const bool userDataChanged = (newUserData != m_layer->userData());
         const bool opacityChanged = (m_layer->isImage() && newOpacity != static_cast<LayerImage*>(m_layer)->opacity());
         const bool blendModeChanged = (m_layer->isImage() && newBlendMode != static_cast<LayerImage*>(m_layer)->blendMode());
 
@@ -241,8 +251,8 @@ private:
           if (nameChanged && newName != layer->name())
             tx(new cmd::SetLayerName(layer, newName));
 
-          if (userDataChanged && m_userData != layer->userData())
-            tx(new cmd::SetUserData(layer, m_userData));
+          if (userDataChanged && newUserData != layer->userData())
+            tx(new cmd::SetUserData(layer, newUserData, m_document));
 
           if (layer->isImage()) {
             if (opacityChanged && newOpacity != static_cast<LayerImage*>(layer)->opacity())
@@ -292,12 +302,16 @@ private:
       updateFromLayer();
   }
 
-  void onPopupUserData() {
+  void onUserDataChange(DocEvent& ev) override {
+    if (m_layer == ev.withUserData())
+      updateFromLayer();
+  }
+
+  void onToggleUserData() {
     if (m_layer) {
-      m_userData = m_layer->userData();
-      if (show_user_data_popup(userData()->bounds(), m_userData)) {
-        onCommitChange();
-      }
+      m_userDataView.toggleVisibility();
+      g_window->remapWindow();
+      manager()->invalidate();
     }
   }
 
@@ -331,15 +345,17 @@ private:
         mode()->setEnabled(false);
         opacity()->setEnabled(false);
       }
+      color_t c = m_layer->userData().color();
+      m_userDataView.color()->setColor(Color::fromRgb(rgba_getr(c), rgba_getg(c), rgba_getb(c), rgba_geta(c)));
+      m_userDataView.entry()->setText(m_layer->userData().text());
 
-      m_userData = m_layer->userData();
     }
     else {
       name()->setText("No Layer");
       name()->setEnabled(false);
       mode()->setEnabled(false);
       opacity()->setEnabled(false);
-      m_userData = UserData();
+      m_userDataView.setVisible(false, false);
     }
   }
 
@@ -348,7 +364,7 @@ private:
   Layer* m_layer;
   DocRange m_range;
   bool m_selfUpdate;
-  UserData m_userData;
+  UserDataView m_userDataView;
 };
 
 LayerPropertiesCommand::LayerPropertiesCommand()

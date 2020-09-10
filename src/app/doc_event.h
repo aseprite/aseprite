@@ -39,6 +39,7 @@ namespace app {
       , m_tag(nullptr)
       , m_slice(nullptr)
       , m_tileset(nullptr)
+      , m_withUserData(nullptr)
       , m_targetLayer(nullptr)
       , m_targetFrame(0) {
     }
@@ -55,6 +56,7 @@ namespace app {
     doc::Slice* slice() const { return m_slice; }
     doc::Tileset* tileset() const { return m_tileset; }
     const gfx::Region& region() const { return m_region; }
+    doc::WithUserData* withUserData() const { return m_withUserData; }
 
     void sprite(doc::Sprite* sprite) { m_sprite = sprite; }
     void layer(doc::Layer* layer) { m_layer = layer; }
@@ -66,6 +68,7 @@ namespace app {
     void slice(doc::Slice* slice) { m_slice = slice; }
     void tileset(doc::Tileset* tileset) { m_tileset = tileset; }
     void region(const gfx::Region& rgn) { m_region = rgn; }
+    void withUserData(doc::WithUserData* withUserData) { m_withUserData = withUserData; }
 
     // Destination of the operation.
     doc::Layer* targetLayer() const { return m_targetLayer; }
@@ -86,6 +89,7 @@ namespace app {
     doc::Slice* m_slice;
     doc::Tileset* m_tileset;
     gfx::Region m_region;
+    doc::WithUserData* m_withUserData;
 
     // For copy/move commands, the m_layer/m_frame are source of the
     // operation, and these are the destination of the operation.

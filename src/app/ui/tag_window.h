@@ -10,6 +10,7 @@
 #pragma once
 
 #include "app/ui/color_button.h"
+#include "app/ui/user_data_view.h"
 #include "doc/anidir.h"
 #include "doc/frame.h"
 #include "doc/user_data.h"
@@ -32,14 +33,15 @@ namespace app {
     std::string nameValue();
     void rangeValue(doc::frame_t& from, doc::frame_t& to);
     doc::AniDir aniDirValue();
-    const doc::UserData& userDataValue() { return m_userData; }
+    const doc::UserData& userDataValue() const { return m_userDataView.userData(); }
 
   private:
-    void onPopupUserData();
+    void onToggleUserData();
 
     const doc::Sprite* m_sprite;
     int m_base;
     doc::UserData m_userData;
+    UserDataView m_userDataView;
   };
 
 }

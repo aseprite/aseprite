@@ -393,7 +393,7 @@ if(ENABLE_UI)
     ui/timeline/ani_controls.cpp
     ui/timeline/timeline.cpp
     ui/toolbar.cpp
-    ui/user_data_popup.cpp
+    ui/user_data_view.cpp
     ui/workspace.cpp
     ui/workspace_panel.cpp
     ui/workspace_tabs.cpp

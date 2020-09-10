@@ -171,6 +171,15 @@
            zoom levels -->
       <option id="auto_fit" type="bool" default="false" />
     </section>
+    <section id="cels">
+      <option id="user_data_visibility" type="bool" default="false" />
+    </section>
+    <section id="layers">
+      <option id="user_data_visibility" type="bool" default="false" />
+    </section>
+    <section id="tags">
+      <option id="user_data_visibility" type="bool" default="false" />
+    </section>
     <section id="cursor">
       <option id="use_native_cursor" type="bool" default="false" />
       <option id="cursor_scale" type="int" default="1" />
@@ -311,6 +320,7 @@
     </section>
     <section id="slices">
       <option id="default_color" type="app::Color" default="app::Color::fromRgb(0, 0, 255)" />
+      <option id="user_data_visibility" type="bool" default="false" />
     </section>
     <section id="advanced_mode">
       <option id="show_alert" type="bool" default="true" />

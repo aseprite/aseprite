@@ -110,7 +110,7 @@ void FrameTagPropertiesCommand::onExecute(Context* context)
   // Change user data
   doc::UserData userData = window.userDataValue();
   if (tag->userData() != userData)
-    tx(new cmd::SetUserData(tag, userData));
+    tx(new cmd::SetUserData(tag, userData, static_cast<Doc*>(sprite->document())));
 
   tx.commit();
 }

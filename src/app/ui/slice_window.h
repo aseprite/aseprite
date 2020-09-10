@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This program is distributed under the terms of
@@ -9,6 +9,7 @@
 #define APP_UI_SLICE_WINDOW_H_INCLUDED
 #pragma once
 
+#include "app/ui/user_data_view.h"
 #include "doc/anidir.h"
 #include "doc/frame.h"
 #include "doc/selected_objects.h"
@@ -52,23 +53,23 @@ namespace app {
     gfx::Rect boundsValue() const;
     gfx::Rect centerValue() const;
     gfx::Point pivotValue() const;
-    const doc::UserData& userDataValue() { return m_userData; }
+    const doc::UserData& userDataValue() const { return m_userDataView.userData(); }
 
     Mods modifiedFields() const { return m_mods; }
 
   private:
     void onCenterChange();
     void onPivotChange();
-    void onPopupUserData();
+    void onToggleUserData();
     void onModifyField(ui::Entry* entry, const Mods mods);
-
-    doc::UserData m_userData;
+    void onPossibleColorChange();
 
     // Flags used to know what specific entry/checkbox was modified
     // when we edit multiple-slices in the same property dialog. In
     // this way we know what field modify of each slice in
     // SlicePropertiesCommand::onExecute().
     Mods m_mods;
+    UserDataView m_userDataView;
   };
 
 }

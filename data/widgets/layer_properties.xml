@@ -1,9 +1,10 @@
 <!-- Aseprite -->
+<!-- Copyright (C) 2020 by Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2016 by David Capello -->
 <gui>
 <window id="layer_properties" text="@.title">
   <vbox>
-    <grid columns="3">
+    <grid id="properties_grid" columns="3">
       <label text="@.name" />
       <entry text="" id="name" magnet="true" maxsize="256" minwidth="64" cell_align="horizontal" />
       <button id="user_data" icon="icon_user_data" tooltip="@general.user_data" />

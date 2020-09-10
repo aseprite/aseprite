@@ -14,10 +14,11 @@
 #include "app/doc.h"
 #include "app/pref/preferences.h"
 #include "app/ui/layer_frame_comboboxes.h"
-#include "app/ui/user_data_popup.h"
+#include "app/ui/user_data_view.h"
 #include "base/clamp.h"
 #include "doc/sprite.h"
 #include "doc/tag.h"
+#include "ui/manager.h"
 
 namespace app {
 
@@ -26,17 +27,17 @@ TagWindow::TagWindow(const doc::Sprite* sprite, const doc::Tag* tag)
   , m_base(Preferences::instance().document(
      static_cast<Doc*>(sprite->document())).timeline.firstFrame())
   , m_userData(tag->userData())
+  , m_userDataView(new gen::UserData(), &Preferences::instance().tags.userDataVisibility)
 {
+  auto mainGrid = findChildT<ui::Grid>("properties_grid");
+  m_userDataView.configureAndSet(m_userData, mainGrid);
+
   name()->setText(tag->name());
   from()->setTextf("%d", tag->fromFrame()+m_base);
   to()->setTextf("%d", tag->toFrame()+m_base);
-  color()->setColor(app::Color::fromRgb(
-      doc::rgba_getr(tag->color()),
-      doc::rgba_getg(tag->color()),
-      doc::rgba_getb(tag->color())));
 
   fill_anidir_combobox(anidir(), tag->aniDir());
-  userData()->Click.connect([this]{ onPopupUserData(); });
+  userData()->Click.connect([this]{ onToggleUserData(); });
 }
 
 bool TagWindow::show()
@@ -66,29 +67,11 @@ doc::AniDir TagWindow::aniDirValue()
   return (doc::AniDir)anidir()->getSelectedItemIndex();
 }
 
-void TagWindow::onPopupUserData()
+void TagWindow::onToggleUserData()
 {
-  // Required because we are showing the color in the TagWindow so we
-  // have to put the color in the user data before showing the same
-  // color again in the user data tooltip.
-  //
-  // TODO remove this field in the future
-  app::Color c = color()->getColor();
-  m_userData.setColor(doc::rgba(c.getRed(),
-                                c.getGreen(),
-                                c.getBlue(),
-                                c.getAlpha()));
-
-  if (show_user_data_popup(userData()->bounds(), m_userData)) {
-    color_t d = m_userData.color();
-    // And synchronize back the color from the user data with the
-    // color in the tag properties color picker.
-    color()->setColor(
-      app::Color::fromRgb(int(rgba_getr(d)),
-                          int(rgba_getg(d)),
-                          int(rgba_getb(d)),
-                          int(rgba_geta(d))));
-  }
+  m_userDataView.toggleVisibility();
+  remapWindow();
+  manager()->invalidate();
 }
 
 } // namespace app

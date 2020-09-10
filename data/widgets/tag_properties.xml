@@ -4,29 +4,28 @@
 <!-- Copyright (C) 2015-2018  David Capello -->
 <gui>
 <window id="tag_properties" text="@.title">
-  <grid columns="3">
-    <label text="@.name" />
-    <entry maxsize="256" id="name" magnet="true" cell_aling="horizontal" />
-    <button id="user_data" icon="icon_user_data" tooltip="@general.user_data" />
+  <vbox>
+    <grid id="properties_grid" columns="3">
+      <label text="@.name" />
+      <entry maxsize="256" id="name" cell_align="horizontal" expansive="true" />
+      <button id="user_data" icon="icon_user_data" maxsize="32" tooltip="@general.user_data" />
+      <label text="@.from" />
+      <expr id="from" cell_hspan="2" />
 
-    <label text="@.from" />
-    <expr id="from" cell_hspan="2" />
+      <label text="@.to" />
+      <expr id="to" cell_hspan="2" />
+      <label text="@.ani_dir" />
+      <combobox id="anidir" cell_hspan="2" />
 
-    <label text="@.to" />
-    <expr id="to" cell_hspan="2" />
+    </grid>
+    <grid columns="2">
+      <separator horizontal="true" cell_hspan="2" minwidth="180" />
 
-    <label text="@.color" />
-    <colorpicker id="color" simple="true" cell_hspan="2" />
-
-    <label text="@.ani_dir" />
-    <combobox id="anidir" cell_hspan="2" />
-
-    <separator horizontal="true" cell_hspan="3" />
-
-    <box horizontal="true" homogeneous="true" cell_hspan="3" cell_align="right">
-      <button text="@general.ok" closewindow="true" id="ok" magnet="true" minwidth="60" />
-      <button text="@general.cancel" closewindow="true" />
-    </box>
-  </grid>
+      <box horizontal="true" homogeneous="true" cell_hspan="2" cell_align="right">
+        <button text="@general.ok" closewindow="true" id="ok" magnet="true" minwidth="60" />
+        <button text="@general.cancel" closewindow="true" />
+      </box>
+    </grid>
+  </vbox>
 </window>
 </gui>
