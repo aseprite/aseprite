@@ -387,29 +387,34 @@ int CliProcessor::process(Context* ctx)
           if (lastDoc) {
             std::string fn = value.value();
 
-            // Automatic --split-layer, --split-tags, --split-slices
-            // in case the output filename already contains {layer},
-            // {tag}, or {slice} template elements.
-            bool hasLayerTemplate = (is_layer_in_filename_format(fn) ||
-                                     is_group_in_filename_format(fn));
-            bool hasTagTemplate = is_tag_in_filename_format(fn);
-            bool hasSliceTemplate = is_slice_in_filename_format(fn);
+            // Automatic --filename-format 
+            // in case the output filename already contains template elements.
+            bool hasTemplateElement = is_template_in_filename(fn);
 
-            if (hasLayerTemplate || hasTagTemplate || hasSliceTemplate) {
-              cof.splitLayers = (cof.splitLayers || hasLayerTemplate);
-              cof.splitTags = (cof.splitTags || hasTagTemplate);
-              cof.splitSlices = (cof.splitSlices || hasSliceTemplate);
-              cof.filenameFormat =
-                get_default_filename_format(
-                  fn,
-                  true,                                   // With path
-                  (lastDoc->sprite()->totalFrames() > 1), // Has frames
-                  false,                                  // Has layer
-                  false);                                 // Has frame tag
+            if (hasTemplateElement) {
+              cof.filenameFormat = fn;
+              // Automatic --split-layer, --split-tags, --split-slices
+              // in case the output filename already contains {layer},
+              // {tag}, or {slice} template elements.
+              bool hasLayerTemplate = (is_layer_in_filename_format(fn) ||
+                                      is_group_in_filename_format(fn));
+              bool hasTagTemplate = is_tag_in_filename_format(fn);
+              bool hasSliceTemplate = is_slice_in_filename_format(fn);
+
+              if (hasLayerTemplate || hasTagTemplate || hasSliceTemplate) {
+                cof.splitLayers = (cof.splitLayers || hasLayerTemplate);
+                cof.splitTags = (cof.splitTags || hasTagTemplate);
+                cof.splitSlices = (cof.splitSlices || hasSliceTemplate);
+              }
+              
+              if (m_exporter)
+                m_exporter->setFilenameFormat(cof.filenameFormat);
             }
+            else {
+              cof.filename = fn;
+            } 
 
             cof.document = lastDoc;
-            cof.filename = fn;
             saveFile(ctx, cof);
           }
           else
