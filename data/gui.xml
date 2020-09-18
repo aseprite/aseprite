@@ -590,6 +590,12 @@
            locks the movement to one axis (X or Y) -->
       <key action="LockAxis" shortcut="Shift" />
 
+      <!-- When we are moving the selection, pressing this shortcut
+           moves the selection to a subpixel level (floating point
+           coordinates). Useful for anti-aliasing effects. -->
+      <key action="FineControl" shortcut="Ctrl" context="TranslatingSelection" />
+      <key action="FineControl" shortcut="Ctrl" context="ScalingSelection" />
+
       <!-- When you rotate the selection, pressing this
            keyboard shortcut you activate angle snap -->
       <key action="AngleSnap" shortcut="Shift" />

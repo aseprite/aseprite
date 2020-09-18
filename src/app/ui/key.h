@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -63,6 +63,7 @@ namespace app {
     ScaleFromCenter           = 0x00008000,
     AngleSnapFromLastPoint    = 0x00010000,
     RotateShape               = 0x00020000,
+    FineControl               = 0x00040000,
   };
 
   enum class WheelAction {
@@ -100,10 +101,12 @@ namespace app {
 
   class Key {
   public:
-    Key(Command* command, const Params& params, KeyContext keyContext);
-    Key(KeyType type, tools::Tool* tool);
-    explicit Key(KeyAction action);
-    explicit Key(WheelAction action);
+    Key(Command* command, const Params& params,
+        const KeyContext keyContext);
+    Key(const KeyType type, tools::Tool* tool);
+    explicit Key(const KeyAction action,
+                 const KeyContext keyContext);
+    explicit Key(const WheelAction action);
 
     KeyType type() const { return m_type; }
     const ui::Accelerators& accels() const {

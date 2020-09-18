@@ -53,11 +53,17 @@
 #define DUMP_INNER_CMDS()
 #endif
 
+using vec2 = base::Vector2d<double>;
+
 namespace app {
 
 template<typename T>
-static inline const base::Vector2d<double> point2Vector(const gfx::PointT<T>& pt) {
-  return base::Vector2d<double>(pt.x, pt.y);
+static inline const vec2 to_vec2(const gfx::PointT<T>& pt) {
+  return vec2(pt.x, pt.y);
+}
+
+static inline const gfx::PointF to_point(const vec2& v) {
+  return gfx::PointF(v.x, v.y);
 }
 
 PixelsMovement::InnerCmd::InnerCmd(InnerCmd&& c)
@@ -180,6 +186,11 @@ bool PixelsMovement::editMultipleCels() const
       m_site.range().type() == DocRange::kCels));
 }
 
+void PixelsMovement::setDelegate(PixelsMovementDelegate* delegate)
+{
+  m_delegate = delegate;
+}
+
 void PixelsMovement::setFastMode(const bool fastMode)
 {
   bool redraw = (m_fastMode && !fastMode);
@@ -243,6 +254,49 @@ void PixelsMovement::shift(int dx, int dy)
   }
 }
 
+void PixelsMovement::setTransformation(const Transformation& t)
+{
+  m_initialData = m_currentData;
+
+  setTransformationBase(t);
+
+  redrawCurrentMask();
+  updateDocumentMask();
+
+  update_screen_for_document(m_document);
+}
+
+void PixelsMovement::setTransformationBase(const Transformation& t)
+{
+  // Get old transformed corners, update transformation, and get new
+  // transformed corners. These corners will be used to know what to
+  // update in the editor's canvas.
+  auto oldCorners = m_currentData.transformedCorners();
+  m_currentData = t;
+  auto newCorners = m_currentData.transformedCorners();
+
+  redrawExtraImage();
+
+  m_document->setTransformation(m_currentData);
+
+  // Create a union of all corners, and that will be the bounds to
+  // redraw of the sprite.
+  gfx::Rect fullBounds;
+  for (int i=0; i<Transformation::Corners::NUM_OF_CORNERS; ++i) {
+    fullBounds |= gfx::Rect((int)oldCorners[i].x, (int)oldCorners[i].y, 1, 1);
+    fullBounds |= gfx::Rect((int)newCorners[i].x, (int)newCorners[i].y, 1, 1);
+  }
+
+  // If "fullBounds" is empty is because the cel was not moved
+  if (!fullBounds.isEmpty()) {
+    // Notify the modified region.
+    m_document->notifySpritePixelsModified(
+      m_site.sprite(),
+      gfx::Region(fullBounds),
+      m_site.frame());
+  }
+}
+
 void PixelsMovement::trim()
 {
   ContextWriter writer(m_reader, 1000);
@@ -296,7 +350,7 @@ void PixelsMovement::copyMask()
   hideDocumentMask();
 }
 
-void PixelsMovement::catchImage(const gfx::Point& pos, HandleType handle)
+void PixelsMovement::catchImage(const gfx::PointF& pos, HandleType handle)
 {
   ASSERT(handle != NoHandle);
 
@@ -305,7 +359,7 @@ void PixelsMovement::catchImage(const gfx::Point& pos, HandleType handle)
   m_handle = handle;
 }
 
-void PixelsMovement::catchImageAgain(const gfx::Point& pos, HandleType handle)
+void PixelsMovement::catchImageAgain(const gfx::PointF& pos, HandleType handle)
 {
   // Create a new Transaction to move the pixels to other position
   m_initialData = m_currentData;
@@ -316,33 +370,33 @@ void PixelsMovement::catchImageAgain(const gfx::Point& pos, HandleType handle)
   hideDocumentMask();
 }
 
-void PixelsMovement::moveImage(const gfx::Point& pos, MoveModifier moveModifier)
+void PixelsMovement::moveImage(const gfx::PointF& pos, MoveModifier moveModifier)
 {
-  Transformation::Corners oldCorners;
-  m_currentData.transformBox(oldCorners);
-
   ContextWriter writer(m_reader, 1000);
   gfx::RectF bounds = m_initialData.bounds();
-  bool updateBounds = false;
-  double dx, dy;
+  gfx::PointF abs_initial_pivot = m_initialData.pivot();
+  gfx::PointF abs_pivot = m_currentData.pivot();
 
-  dx = ((pos.x - m_catchPos.x) *  cos(m_currentData.angle()) +
-        (pos.y - m_catchPos.y) * -sin(m_currentData.angle()));
-  dy = ((pos.x - m_catchPos.x) *  sin(m_currentData.angle()) +
-        (pos.y - m_catchPos.y) *  cos(m_currentData.angle()));
+  auto newTransformation = m_currentData;
 
   switch (m_handle) {
 
-    case MovePixelsHandle:
+    case MovePixelsHandle: {
+      double dx = (pos.x - m_catchPos.x);
+      double dy = (pos.y - m_catchPos.y);
+      if ((moveModifier & FineControl) == 0) {
+        if (dx >= 0.0) { dx = std::floor(dx); } else { dx = std::ceil(dx); }
+        if (dy >= 0.0) { dy = std::floor(dy); } else { dy = std::ceil(dy); }
+      }
+
       if ((moveModifier & LockAxisMovement) == LockAxisMovement) {
-        if (ABS(dx) < ABS(dy))
+        if (std::abs(dx) < std::abs(dy))
           dx = 0.0;
         else
           dy = 0.0;
       }
 
       bounds.offset(dx, dy);
-      updateBounds = true;
 
       if ((moveModifier & SnapToGridMovement) == SnapToGridMovement) {
         // Snap the x1,y1 point to the grid.
@@ -355,10 +409,15 @@ void PixelsMovement::moveImage(const gfx::Point& pos, MoveModifier moveModifier)
 
         // Now we calculate the difference from x1,y1 point and we can
         // use it to adjust all coordinates (x1, y1, x2, y2).
-        gridOffset -= bounds.origin();
-        bounds.offset(gridOffset);
+        bounds.setOrigin(gridOffset);
       }
+
+      newTransformation.bounds(bounds);
+      newTransformation.pivot(abs_initial_pivot +
+                              bounds.origin() -
+                              m_initialData.bounds().origin());
       break;
+    }
 
     case ScaleNWHandle:
     case ScaleNHandle:
@@ -379,8 +438,7 @@ void PixelsMovement::moveImage(const gfx::Point& pos, MoveModifier moveModifier)
         handles[m_handle-ScaleNWHandle][1]);
 
       if ((moveModifier & ScaleFromPivot) == ScaleFromPivot) {
-        pivot.x = m_currentData.pivot().x;
-        pivot.y = m_currentData.pivot().y;
+        pivot = m_currentData.pivot();
       }
       else {
         pivot.x = 1.0 - handle.x;
@@ -393,26 +451,36 @@ void PixelsMovement::moveImage(const gfx::Point& pos, MoveModifier moveModifier)
       gfx::PointF b = bounds.point2();
 
       if ((moveModifier & MaintainAspectRatioMovement) == MaintainAspectRatioMovement) {
-        auto u = point2Vector(gfx::PointF(m_catchPos) - pivot);
-        auto v = point2Vector(gfx::PointF(pos) - pivot);
-        auto w = v.projectOn(u);
+        vec2 u = to_vec2(m_catchPos - pivot);
+        vec2 v = to_vec2(pos - pivot);
+        vec2 w = v.projectOn(u);
         double scale = u.magnitude();
-        if (scale != 0.0)
+        if (scale != 0.0) {
           scale = (std::fabs(w.angle()-u.angle()) < PI/2.0 ? 1.0: -1.0) * w.magnitude() / scale;
+        }
         else
           scale = 1.0;
 
-        a.x = int((a.x-pivot.x)*scale + pivot.x);
-        a.y = int((a.y-pivot.y)*scale + pivot.y);
-        b.x = int((b.x-pivot.x)*scale + pivot.x);
-        b.y = int((b.y-pivot.y)*scale + pivot.y);
+        a.x = ((a.x-pivot.x)*scale + pivot.x);
+        a.y = ((a.y-pivot.y)*scale + pivot.y);
+        b.x = ((b.x-pivot.x)*scale + pivot.x);
+        b.y = ((b.y-pivot.y)*scale + pivot.y);
       }
       else {
         handle.x = bounds.x + bounds.w*handle.x;
         handle.y = bounds.y + bounds.h*handle.y;
 
+        double z = m_currentData.angle();
         double w = (handle.x-pivot.x);
         double h = (handle.y-pivot.y);
+        double dx = ((pos.x - m_catchPos.x) *  std::cos(z) +
+                     (pos.y - m_catchPos.y) * -std::sin(z));
+        double dy = ((pos.x - m_catchPos.x) *  std::sin(z) +
+                     (pos.y - m_catchPos.y) *  std::cos(z));
+        if ((moveModifier & FineControl) == 0) {
+          if (dx >= 0.0) { dx = std::floor(dx); } else { dx = std::ceil(dx); }
+          if (dy >= 0.0) { dy = std::floor(dy); } else { dy = std::ceil(dy); }
+        }
 
         if (m_handle == ScaleNHandle || m_handle == ScaleSHandle) {
           dx = 0.0;
@@ -423,10 +491,10 @@ void PixelsMovement::moveImage(const gfx::Point& pos, MoveModifier moveModifier)
           h = 1.0;
         }
 
-        a.x = int((a.x-pivot.x)*(1.0+dx/w) + pivot.x);
-        a.y = int((a.y-pivot.y)*(1.0+dy/h) + pivot.y);
-        b.x = int((b.x-pivot.x)*(1.0+dx/w) + pivot.x);
-        b.y = int((b.y-pivot.y)*(1.0+dy/h) + pivot.y);
+        a.x = ((a.x-pivot.x)*(1.0+dx/w) + pivot.x);
+        a.y = ((a.y-pivot.y)*(1.0+dy/h) + pivot.y);
+        b.x = ((b.x-pivot.x)*(1.0+dx/w) + pivot.x);
+        b.y = ((b.y-pivot.y)*(1.0+dy/h) + pivot.y);
       }
 
       // Do not use "gfx::Rect(a, b)" here because if a > b we want to
@@ -437,109 +505,210 @@ void PixelsMovement::moveImage(const gfx::Point& pos, MoveModifier moveModifier)
       bounds.w = b.x - a.x;
       bounds.h = b.y - a.y;
 
-      updateBounds = true;
+      newTransformation.bounds(bounds);
+      m_adjustPivot = true;
       break;
     }
 
     case RotateNWHandle:
-    case RotateNHandle:
     case RotateNEHandle:
-    case RotateWHandle:
-    case RotateEHandle:
     case RotateSWHandle:
-    case RotateSHandle:
-    case RotateSEHandle:
-      {
-        gfx::PointF abs_initial_pivot = m_initialData.pivot();
-        gfx::PointF abs_pivot = m_currentData.pivot();
+    case RotateSEHandle: {
+      double da = (std::atan2((double)(-pos.y + abs_pivot.y),
+                              (double)(+pos.x - abs_pivot.x)) -
+                   std::atan2((double)(-m_catchPos.y + abs_initial_pivot.y),
+                              (double)(+m_catchPos.x - abs_initial_pivot.x)));
+      double newAngle = m_initialData.angle() + da;
+      newAngle = base::fmod_radians(newAngle);
 
-        double newAngle =
-          m_initialData.angle()
-          + atan2((double)(-pos.y + abs_pivot.y),
-                  (double)(+pos.x - abs_pivot.x))
-          - atan2((double)(-m_catchPos.y + abs_initial_pivot.y),
-                  (double)(+m_catchPos.x - abs_initial_pivot.x));
+      // Is the "angle snap" is activated, we've to snap the angle
+      // to common (pixel art) angles.
+      if ((moveModifier & AngleSnapMovement) == AngleSnapMovement) {
+        // TODO make this configurable
+        static const double keyAngles[] = {
+          0.0, 26.565, 45.0, 63.435, 90.0, 116.565, 135.0, 153.435, 180.0,
+          180.0, -153.435, -135.0, -116, -90.0, -63.435, -45.0, -26.565
+        };
 
-        newAngle = base::fmod_radians(newAngle);
+        double newAngleDegrees = 180.0 * newAngle / PI;
 
-        // Is the "angle snap" is activated, we've to snap the angle
-        // to common (pixel art) angles.
-        if ((moveModifier & AngleSnapMovement) == AngleSnapMovement) {
-          // TODO make this configurable
-          static const double keyAngles[] = {
-            0.0, 26.565, 45.0, 63.435, 90.0, 116.565, 135.0, 153.435, 180.0,
-            180.0, -153.435, -135.0, -116, -90.0, -63.435, -45.0, -26.565
-          };
-
-          double newAngleDegrees = 180.0 * newAngle / PI;
-
-          int closest = 0;
-          int last = sizeof(keyAngles) / sizeof(keyAngles[0]) - 1;
-          for (int i=0; i<=last; ++i) {
-            if (std::fabs(newAngleDegrees-keyAngles[closest]) >
-                std::fabs(newAngleDegrees-keyAngles[i]))
-              closest = i;
-          }
-
-          newAngle = PI * keyAngles[closest] / 180.0;
+        int closest = 0;
+        int last = sizeof(keyAngles) / sizeof(keyAngles[0]) - 1;
+        for (int i=0; i<=last; ++i) {
+          if (std::fabs(newAngleDegrees-keyAngles[closest]) >
+              std::fabs(newAngleDegrees-keyAngles[i]))
+            closest = i;
         }
 
-        m_currentData.angle(newAngle);
+        newAngle = PI * keyAngles[closest] / 180.0;
       }
+
+      newTransformation.angle(newAngle);
       break;
+    }
 
-    case PivotHandle:
-      {
-        // Calculate the new position of the pivot
-        gfx::PointF newPivot(m_initialData.pivot().x + (pos.x - m_catchPos.x),
-                             m_initialData.pivot().y + (pos.y - m_catchPos.y));
+    case SkewNHandle:
+    case SkewSHandle:
+    case SkewWHandle:
+    case SkewEHandle: {
+      //    u
+      // ------>
+      //
+      // A --- B   |
+      // |     |   | v
+      // |     |   |
+      // C --- D   v
+      auto corners = m_initialData.transformedCorners();
+      auto A = corners[Transformation::Corners::LEFT_TOP];
+      auto B = corners[Transformation::Corners::RIGHT_TOP];
+      auto C = corners[Transformation::Corners::LEFT_BOTTOM];
+      auto D = corners[Transformation::Corners::RIGHT_BOTTOM];
 
-        m_currentData = m_initialData;
-        m_currentData.displacePivotTo(newPivot);
+      // Pivot in pixels
+      gfx::PointF pivotPoint = m_currentData.pivot();
+
+      // Pivot in [0.0, 1.0] range
+      gfx::PointF pivot((pivotPoint.x - bounds.x) / bounds.w,
+                        (pivotPoint.y - bounds.y) / bounds.h);
+
+      // Vector from AB (or CD), and AC (or BD)
+      vec2 u = to_vec2(B - A);
+      vec2 v = to_vec2(C - A);
+
+      // Move PQ and RS side by a delta value projected on u vector
+      vec2 delta = to_vec2(pos - m_catchPos);
+      switch (m_handle) {
+        case SkewNHandle:
+          delta = delta.projectOn(u);
+          A.x += delta.x;
+          A.y += delta.y;
+          B.x += delta.x;
+          B.y += delta.y;
+          break;
+        case SkewSHandle:
+          delta = delta.projectOn(u);
+          C.x += delta.x;
+          C.y += delta.y;
+          D.x += delta.x;
+          D.y += delta.y;
+          break;
+        case SkewWHandle: {
+          delta = delta.projectOn(v);
+          A.x += delta.x;
+          A.y += delta.y;
+          C.x += delta.x;
+          C.y += delta.y;
+
+          vec2 toPivot = to_vec2(pivotPoint - (A*(1.0-pivot.y) + C*pivot.y));
+          // TODO avoid division by zero (which happens when the pivot
+          //      is in the exact same X pos as the west handle edge)
+          vec2 toOtherSide = toPivot / pivot.x;
+          B = A + to_point(toOtherSide);
+          D = C + to_point(toOtherSide);
+          break;
+        }
+        case SkewEHandle: {
+          delta = delta.projectOn(v);
+          B.x += delta.x;
+          B.y += delta.y;
+          D.x += delta.x;
+          D.y += delta.y;
+
+          vec2 toPivot = to_vec2(pivotPoint - (B*(1.0-pivot.y) + D*pivot.y));
+          // TODO avoid division by zero (which happens when the pivot
+          //      is in the exact same X pos as the east handle edge)
+          vec2 toOtherSide = toPivot / (1.0-pivot.x);
+          A = B + to_point(toOtherSide);
+          C = D + to_point(toOtherSide);
+          break;
+        }
       }
+
+      // t0 will be a transformation without skew, so we can compare
+      // the angle between vector PR with skew and without skew.
+      auto t0 = m_initialData;
+      t0.skew(0.0);
+      auto corners0 = t0.transformedCorners();
+      auto A0 = corners0[Transformation::Corners::LEFT_TOP];
+      auto B0 = corners0[Transformation::Corners::RIGHT_TOP];
+      auto C0 = corners0[Transformation::Corners::LEFT_BOTTOM];
+
+      //      A0 ------- B
+      //     /|         /
+      //    / ACp      /   <- pivot position
+      //   /  |       /
+      //  C -C0----- D
+      vec2 AC0 = to_vec2(C0 - A0);
+      auto ACp = A0*(1.0-pivot.y) + C0*pivot.y;
+      vec2 AC;
+      switch (m_handle) {
+        case SkewNHandle: AC = to_vec2(ACp - A); break;
+        case SkewSHandle: AC = to_vec2(C - ACp); break;
+        case SkewWHandle:
+        case SkewEHandle: {
+          vec2 AB = to_vec2(B - A);
+          bounds.w = AB.magnitude();
+          bounds.x = pivotPoint.x - bounds.w*pivot.x;
+
+          // New rotation angle is the angle between AB points
+          newTransformation.angle(-AB.angle());
+
+          // New skew angle is the angle between AC0 (vector from A to
+          // B rotated 45 degrees, like an AC vector without skew) and
+          // the current to AC vector.
+          //
+          //          B
+          //        / |
+          //      /   |
+          //    /     |
+          //  A       |
+          //  | \     D
+          //  |  \  /
+          //  |   / <- AC0=AB rotated 45 degrees, if pivot is here
+          //  | /
+          //  C
+          auto ABp = A*(1.0-pivot.x) + B*pivot.x;
+          AC0 = vec2(ABp.y - B.y, B.x - ABp.x);
+          AC = to_vec2(C - A);
+
+          bounds.h = AC.projectOn(AC0).magnitude();
+          bounds.y = pivotPoint.y - bounds.h*pivot.y;
+          newTransformation.bounds(bounds);
+          break;
+        }
+      }
+
+      // Calculate angle between AC and AC0
+      double newSkew = std::atan2(AC.x*AC0.y - AC.y*AC0.x, AC * AC0);
+      newTransformation.skew(newSkew);
       break;
+    }
+
+    case PivotHandle: {
+      // Calculate the new position of the pivot
+      gfx::PointF newPivot = m_initialData.pivot() + pos - m_catchPos;
+      newTransformation = m_initialData;
+      newTransformation.displacePivotTo(newPivot);
+      break;
+    }
   }
 
-  if (updateBounds) {
-    m_currentData.bounds(bounds);
-    m_adjustPivot = true;
-  }
-
-  redrawExtraImage();
-
-  m_document->setTransformation(m_currentData);
-
-  // Get the new transformed corners
-  Transformation::Corners newCorners;
-  m_currentData.transformBox(newCorners);
-
-  // Create a union of all corners, and that will be the bounds to
-  // redraw of the sprite.
-  gfx::Rect fullBounds;
-  for (int i=0; i<Transformation::Corners::NUM_OF_CORNERS; ++i) {
-    fullBounds = fullBounds.createUnion(gfx::Rect((int)oldCorners[i].x, (int)oldCorners[i].y, 1, 1));
-    fullBounds = fullBounds.createUnion(gfx::Rect((int)newCorners[i].x, (int)newCorners[i].y, 1, 1));
-  }
-
-  // If "fullBounds" is empty is because the cel was not moved
-  if (!fullBounds.isEmpty()) {
-    // Notify the modified region.
-    m_document->notifySpritePixelsModified(
-      m_site.sprite(),
-      gfx::Region(fullBounds),
-      m_site.frame());
-  }
+  setTransformationBase(newTransformation);
 }
 
 void PixelsMovement::getDraggedImageCopy(std::unique_ptr<Image>& outputImage,
                                          std::unique_ptr<Mask>& outputMask)
 {
   gfx::Rect bounds = m_currentData.transformedBounds();
+  if (bounds.isEmpty())
+    return;
+
   std::unique_ptr<Image> image(
     Image::create(
       m_site.sprite()->pixelFormat(), bounds.w, bounds.h));
 
-  drawImage(m_currentData, image.get(), bounds.origin(), false);
+  drawImage(m_currentData, image.get(),
+            gfx::PointF(bounds.origin()), false);
 
   // Draw mask without shrinking it, so the mask size is equal to the
   // "image" render.
@@ -623,8 +792,11 @@ void PixelsMovement::stampImage(bool finalStamp)
 
 void PixelsMovement::stampExtraCelImage()
 {
-  const Cel* cel = m_extraCel->cel();
   const Image* image = m_extraCel->image();
+  if (!image)
+    return;
+
+  const Cel* cel = m_extraCel->cel();
 
   // Expand the canvas to paste the image in the fully visible
   // portion of sprite.
@@ -664,27 +836,10 @@ void PixelsMovement::dropImageTemporarily()
     // Displace the pivot to the new site:
     if (m_adjustPivot) {
       m_adjustPivot = false;
+      adjustPivot();
 
-      // Get the a factor for the X/Y position of the initial pivot
-      // position inside the initial non-rotated bounds.
-      gfx::PointF pivotPosFactor(m_initialData.pivot() - m_initialData.bounds().origin());
-      pivotPosFactor.x /= m_initialData.bounds().w;
-      pivotPosFactor.y /= m_initialData.bounds().h;
-
-      // Get the current transformed bounds.
-      Transformation::Corners corners;
-      m_currentData.transformBox(corners);
-
-      // The new pivot will be located from the rotated left-top
-      // corner a distance equal to the transformed bounds's
-      // width/height multiplied with the previously calculated X/Y
-      // factor.
-      base::Vector2d<double> newPivot(corners.leftTop().x,
-                                      corners.leftTop().y);
-      newPivot += pivotPosFactor.x * point2Vector(corners.rightTop() - corners.leftTop());
-      newPivot += pivotPosFactor.y * point2Vector(corners.leftBottom() - corners.leftTop());
-
-      m_currentData.displacePivotTo(gfx::PointF(newPivot.x, newPivot.y));
+      if (m_delegate)
+        m_delegate->onPivotChange();
     }
 
     redrawCurrentMask();
@@ -692,6 +847,29 @@ void PixelsMovement::dropImageTemporarily()
 
     update_screen_for_document(m_document);
   }
+}
+
+void PixelsMovement::adjustPivot()
+{
+  // Get the a factor for the X/Y position of the initial pivot
+  // position inside the initial non-rotated bounds.
+  gfx::PointF pivotPosFactor(m_initialData.pivot() - m_initialData.bounds().origin());
+  pivotPosFactor.x /= m_initialData.bounds().w;
+  pivotPosFactor.y /= m_initialData.bounds().h;
+
+  // Get the current transformed bounds.
+  auto corners = m_currentData.transformedCorners();
+
+  // The new pivot will be located from the rotated left-top
+  // corner a distance equal to the transformed bounds's
+  // width/height multiplied with the previously calculated X/Y
+  // factor.
+  vec2 newPivot(corners.leftTop().x,
+                corners.leftTop().y);
+  newPivot += pivotPosFactor.x * to_vec2(corners.rightTop() - corners.leftTop());
+  newPivot += pivotPosFactor.y * to_vec2(corners.leftBottom() - corners.leftTop());
+
+  m_currentData.displacePivotTo(gfx::PointF(newPivot.x, newPivot.y));
 }
 
 void PixelsMovement::dropImage()
@@ -780,28 +958,35 @@ void PixelsMovement::redrawExtraImage(Transformation* transformation)
   Cel* cel = m_site.cel();
   if (cel) opacity = MUL_UN8(opacity, cel->opacity(), t);
 
-  gfx::Rect bounds = transformation->transformedBounds();
-
   if (!m_extraCel)
     m_extraCel.reset(new ExtraCel);
 
-  m_extraCel->create(
-    m_site.tilemapMode(),
-    m_document->sprite(),
-    bounds,
-    (m_site.tilemapMode() == TilemapMode::Tiles ? m_site.grid().tileToCanvas(bounds).size():
-                                                  bounds.size()),
-    m_site.frame(),
-    opacity);
-  m_extraCel->setType(render::ExtraType::PATCH);
-  m_extraCel->setBlendMode(m_site.layer()->isImage() ?
-                           static_cast<LayerImage*>(m_site.layer())->blendMode():
-                           BlendMode::NORMAL);
+  gfx::Rect bounds = transformation->transformedBounds();
+  if (!bounds.isEmpty()) {
+    m_extraCel->create(
+      m_site.tilemapMode(),
+      m_document->sprite(),
+      bounds,
+      (m_site.tilemapMode() == TilemapMode::Tiles ? m_site.grid().tileToCanvas(bounds).size():
+                                                    bounds.size()),
+      m_site.frame(),
+      opacity);
+    m_extraCel->setType(render::ExtraType::PATCH);
+    m_extraCel->setBlendMode(m_site.layer()->isImage() ?
+                             static_cast<LayerImage*>(m_site.layer())->blendMode():
+                             BlendMode::NORMAL);
+  }
+  else
+    m_extraCel->reset();
+
   m_document->setExtraCel(m_extraCel);
 
-  // Draw the transformed pixels in the extra-cel which is the chunk
-  // of pixels that the user is moving.
-  drawImage(*transformation, m_extraCel->image(), bounds.origin(), true);
+  if (m_extraCel->image()) {
+    // Draw the transformed pixels in the extra-cel which is the chunk
+    // of pixels that the user is moving.
+    drawImage(*transformation, m_extraCel->image(),
+              gfx::PointF(bounds.origin()), true);
+  }
 }
 
 void PixelsMovement::redrawCurrentMask()
@@ -811,13 +996,12 @@ void PixelsMovement::redrawCurrentMask()
 
 void PixelsMovement::drawImage(
   const Transformation& transformation,
-  doc::Image* dst, const gfx::Point& pt,
+  doc::Image* dst, const gfx::PointF& pt,
   const bool renderOriginalLayer)
 {
   ASSERT(dst);
 
-  Transformation::Corners corners;
-  transformation.transformBox(corners);
+  auto corners = transformation.transformedCorners();
   gfx::Rect bounds = corners.bounds();
 
   dst->setMaskColor(m_site.sprite()->transparentColor());
@@ -854,9 +1038,13 @@ void PixelsMovement::drawImage(
 
 void PixelsMovement::drawMask(doc::Mask* mask, bool shrink)
 {
-  Transformation::Corners corners;
-  m_currentData.transformBox(corners);
+  auto corners = m_currentData.transformedCorners();
   gfx::Rect bounds = corners.bounds();
+
+  if (bounds.isEmpty()) {
+    mask->clear();
+    return;
+  }
 
   mask->replace(bounds);
   if (shrink)
@@ -866,7 +1054,8 @@ void PixelsMovement::drawMask(doc::Mask* mask, bool shrink)
                     mask->bitmap(),
                     m_initialMask->bitmap(),
                     nullptr,
-                    corners, bounds.origin());
+                    corners,
+                    gfx::PointF(bounds.origin()));
   if (shrink)
     mask->unfreeze();
 }
@@ -875,7 +1064,7 @@ void PixelsMovement::drawParallelogram(
   const Transformation& transformation,
   doc::Image* dst, const doc::Image* src, const doc::Mask* mask,
   const Transformation::Corners& corners,
-  const gfx::Point& leftTop)
+  const gfx::PointF& leftTop)
 {
   tools::RotationAlgorithm rotAlgo = Preferences::instance().selection.rotationAlgorithm();
 
@@ -943,6 +1132,9 @@ void PixelsMovement::onPivotChange()
 {
   set_pivot_from_preferences(m_currentData);
   onRotationAlgorithmChange();
+
+  if (m_delegate)
+    m_delegate->onPivotChange();
 }
 
 void PixelsMovement::onRotationAlgorithmChange()

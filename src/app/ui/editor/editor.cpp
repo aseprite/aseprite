@@ -681,7 +681,8 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
     }
 
     ExtraCelRef extraCel = m_document->extraCel();
-    if (extraCel && extraCel->type() != render::ExtraType::NONE) {
+    if (extraCel &&
+        extraCel->type() != render::ExtraType::NONE) {
       m_renderEngine->setExtraImage(
         extraCel->type(),
         extraCel->cel(),
@@ -1307,7 +1308,7 @@ void Editor::flashCurrentLayer()
     return;
 
   Site site = getSite();
-  if (const Cel* src_cel = site.cel()) {
+  if (site.cel()) {
     // Hide and destroy the extra cel used by the brush preview
     // because we'll need to use the extra cel now for the flashing
     // layer.
@@ -2514,7 +2515,7 @@ void Editor::pasteImage(const Image* image, const Mask* mask)
 void Editor::startSelectionTransformation(const gfx::Point& move, double angle)
 {
   if (auto movingPixels = dynamic_cast<MovingPixelsState*>(m_state.get())) {
-    movingPixels->translate(move);
+    movingPixels->translate(gfx::PointF(move));
     if (std::fabs(angle) > 1e-5)
       movingPixels->rotate(angle);
   }
@@ -2529,6 +2530,12 @@ void Editor::startFlipTransformation(doc::algorithm::FlipType flipType)
     movingPixels->flip(flipType);
   else if (auto standby = dynamic_cast<StandbyState*>(m_state.get()))
     standby->startFlipTransformation(this, flipType);
+}
+
+void Editor::updateTransformation(const Transformation& transform)
+{
+  if (auto movingPixels = dynamic_cast<MovingPixelsState*>(m_state.get()))
+    movingPixels->updateTransformation(transform);
 }
 
 void Editor::notifyScrollChanged()

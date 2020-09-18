@@ -29,7 +29,8 @@ namespace app {
   class MovingPixelsState
     : public StandbyState
     , EditorObserver
-    , ContextBarObserver {
+    , ContextBarObserver
+    , PixelsMovementDelegate {
   public:
     MovingPixelsState(Editor* editor, ui::MouseMessage* msg, PixelsMovementPtr pixelsMovement, HandleType handle);
     virtual ~MovingPixelsState();
@@ -38,10 +39,12 @@ namespace app {
       return m_pixelsMovement->canHandleFrameChange();
     }
 
-    void translate(const gfx::Point& delta);
+    void translate(const gfx::PointF& delta);
     void rotate(double angle);
     void flip(doc::algorithm::FlipType flipType);
     void shift(int dx, int dy);
+
+    void updateTransformation(const Transformation& t);
 
     // EditorState
     virtual void onEnterState(Editor* editor) override;
@@ -65,6 +68,9 @@ namespace app {
 
     // ContextBarObserver
     virtual void onDropPixels(ContextBarObserver::DropAction action) override;
+
+    // PixelsMovementDelegate
+    virtual void onPivotChange() override;
 
     virtual Transformation getTransformation(Editor* editor) override;
 
@@ -98,7 +104,7 @@ namespace app {
     // Position of the mouse in the canvas to avoid redrawing when the
     // mouse position changes (only we redraw when the canvas position
     // changes).
-    gfx::Point m_oldSpritePos;
+    gfx::PointF m_oldSpritePos;
 
     obs::connection m_ctxConn;
     obs::connection m_opaqueConn;

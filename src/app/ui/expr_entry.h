@@ -26,6 +26,8 @@ namespace app {
     int onGetTextInt() const override;
     double onGetTextDouble() const override;
 
+    virtual void onFormatExprFocusLeave(std::string& buf);
+
     int m_decimals;
   };
 

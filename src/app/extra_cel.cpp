@@ -58,4 +58,11 @@ void ExtraCel::create(const TilemapMode tilemapMode,
   m_cel->setFrame(frame);
 }
 
+void ExtraCel::reset()
+{
+  m_type = render::ExtraType::NONE;
+  m_image.reset();
+  m_cel.reset();
+}
+
 } // namespace app

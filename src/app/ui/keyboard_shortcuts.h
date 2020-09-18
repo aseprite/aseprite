@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -43,11 +44,13 @@ namespace app {
     void reset();
 
     KeyPtr command(const char* commandName,
-      const Params& params = Params(), KeyContext keyContext = KeyContext::Any);
+                   const Params& params = Params(),
+                   const KeyContext keyContext = KeyContext::Any);
     KeyPtr tool(tools::Tool* tool);
     KeyPtr quicktool(tools::Tool* tool);
-    KeyPtr action(KeyAction action);
-    KeyPtr wheelAction(WheelAction action);
+    KeyPtr action(const KeyAction action,
+                  const KeyContext keyContext = KeyContext::Any);
+    KeyPtr wheelAction(const WheelAction action);
 
     void disableAccel(const ui::Accelerator& accel,
                       const KeyContext keyContext,
@@ -88,9 +91,11 @@ namespace app {
         commandName, params, keyContext).get());
   }
 
-  inline std::string key_tooltip(const char* str, KeyAction keyAction) {
+  inline std::string key_tooltip(const char* str,
+                                 KeyAction keyAction,
+                                 KeyContext keyContext = KeyContext::Any) {
     return key_tooltip(
-      str, KeyboardShortcuts::instance()->action(keyAction).get());
+      str, KeyboardShortcuts::instance()->action(keyAction, keyContext).get());
   }
 
 } // namespace app

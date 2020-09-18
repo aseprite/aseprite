@@ -157,6 +157,11 @@ void Mask::invert()
 
 void Mask::replace(const gfx::Rect& bounds)
 {
+  if (bounds.isEmpty()) {
+    clear();
+    return;
+  }
+
   m_bounds = bounds;
 
   m_bitmap.reset(Image::create(IMAGE_BITMAP, bounds.w, bounds.h, m_buffer));

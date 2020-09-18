@@ -51,13 +51,13 @@
 #include "app/util/layer_utils.h"
 #include "app/util/new_image_from_mask.h"
 #include "app/util/readable_time.h"
+#include "base/clamp.h"
 #include "base/pi.h"
 #include "doc/grid.h"
 #include "doc/layer.h"
 #include "doc/mask.h"
 #include "doc/slice.h"
 #include "doc/sprite.h"
-#include "fixmath/fixmath.h"
 #include "fmt/format.h"
 #include "gfx/rect.h"
 #include "os/surface.h"
@@ -73,17 +73,6 @@
 namespace app {
 
 using namespace ui;
-
-static CursorType rotated_size_cursors[8] = {
-  kSizeECursor,
-  kSizeNECursor,
-  kSizeNCursor,
-  kSizeNWCursor,
-  kSizeWCursor,
-  kSizeSWCursor,
-  kSizeSCursor,
-  kSizeSECursor
-};
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355) // warning C4355: 'this' : used in base member initializer list
@@ -714,7 +703,7 @@ void StandbyState::startSelectionTransformation(Editor* editor,
   transformSelection(editor, NULL, NoHandle);
 
   if (MovingPixelsState* movingPixels = dynamic_cast<MovingPixelsState*>(editor->getState().get())) {
-    movingPixels->translate(move);
+    movingPixels->translate(gfx::PointF(move));
     if (std::fabs(angle) > 1e-5)
       movingPixels->rotate(angle);
   }
@@ -905,65 +894,77 @@ bool StandbyState::Decorator::onSetCursor(tools::Ink* ink, Editor* editor, const
 
     CursorType newCursorType = kArrowCursor;
     const Cursor* newCursor = nullptr;
+    int angle = 0;
+
+    // TODO improve this for depending if we are handling corners or
+    //      sides (e.g. from sides we can use the normal to know the
+    //      angle/mouse cursor to show)
+    {
+      gfx::Point center = gfx::Point(
+        editor->editorToScreenF(transformation.transformedBounds()).center());
+      // Adjust the cursor depending the current transformation angle.
+      int dy = mouseScreenPos.y - center.y;
+      int dx = mouseScreenPos.x - center.x;
+      double a = std::atan2(-dy, dx);
+      a += PI * (45.0/2.0) / 180.0;
+      a = base::fmod_radians(a) + PI;
+      ASSERT(a >= 0.0 && a <= 2*PI);
+      angle = base::clamp<int>(std::floor(7.9 * a / (2.0*PI)), 0, 7);
+    }
 
     switch (handle) {
-      case ScaleNWHandle:         newCursorType = kSizeNWCursor; break;
-      case ScaleNHandle:          newCursorType = kSizeNCursor; break;
-      case ScaleNEHandle:         newCursorType = kSizeNECursor; break;
-      case ScaleWHandle:          newCursorType = kSizeWCursor; break;
-      case ScaleEHandle:          newCursorType = kSizeECursor; break;
-      case ScaleSWHandle:         newCursorType = kSizeSWCursor; break;
-      case ScaleSHandle:          newCursorType = kSizeSCursor; break;
-      case ScaleSEHandle:         newCursorType = kSizeSECursor; break;
-      case RotateNWHandle:        newCursor = theme->cursors.rotateNw(); break;
-      case RotateNHandle:         newCursor = theme->cursors.rotateN(); break;
-      case RotateNEHandle:        newCursor = theme->cursors.rotateNe(); break;
-      case RotateWHandle:         newCursor = theme->cursors.rotateW(); break;
-      case RotateEHandle:         newCursor = theme->cursors.rotateE(); break;
-      case RotateSWHandle:        newCursor = theme->cursors.rotateSw(); break;
-      case RotateSHandle:         newCursor = theme->cursors.rotateS(); break;
-      case RotateSEHandle:        newCursor = theme->cursors.rotateSe(); break;
-      case PivotHandle:           newCursorType = kHandCursor; break;
+      case ScaleNWHandle: newCursorType = kSizeNWCursor; break;
+      case ScaleNHandle:  newCursorType = kSizeNCursor; break;
+      case ScaleNEHandle: newCursorType = kSizeNECursor; break;
+      case ScaleWHandle:  newCursorType = kSizeWCursor; break;
+      case ScaleEHandle:  newCursorType = kSizeECursor; break;
+      case ScaleSWHandle: newCursorType = kSizeSWCursor; break;
+      case ScaleSHandle:  newCursorType = kSizeSCursor; break;
+      case ScaleSEHandle: newCursorType = kSizeSECursor; break;
+      case PivotHandle:   newCursorType = kHandCursor; break;
+      case RotateNWHandle:
+      case RotateNEHandle:
+      case RotateSWHandle:
+      case RotateSEHandle:
+      case SkewNHandle:
+      case SkewWHandle:
+      case SkewEHandle:
+      case SkewSHandle:
+        break;
       default:
         return false;
     }
 
-    // Adjust the cursor depending the current transformation angle.
-    fixmath::fixed angle = fixmath::ftofix(128.0 * transformation.angle() / PI);
-    angle = fixmath::fixadd(angle, fixmath::itofix(16));
-    angle &= (255<<16);
-    angle >>= 16;
-    angle /= 32;
-
     if (newCursorType >= kSizeNCursor &&
         newCursorType <= kSizeNWCursor) {
-      size_t num = sizeof(rotated_size_cursors) / sizeof(rotated_size_cursors[0]);
-      size_t c;
-      for (c=num-1; c>0; --c)
-        if (rotated_size_cursors[c] == newCursorType)
-          break;
-
-      newCursorType = rotated_size_cursors[(c+angle) % num];
-    }
-    else if (newCursor) {
-      auto theme = skin::SkinTheme::instance();
-      const Cursor* rotated_rotate_cursors[8] = {
-        theme->cursors.rotateE(),
-        theme->cursors.rotateNe(),
-        theme->cursors.rotateN(),
-        theme->cursors.rotateNw(),
-        theme->cursors.rotateW(),
-        theme->cursors.rotateSw(),
-        theme->cursors.rotateS(),
-        theme->cursors.rotateSe()
+      const CursorType rotated_size_cursors[8] = {
+        kSizeWCursor,
+        kSizeSWCursor, kSizeSCursor, kSizeSECursor,
+        kSizeECursor,
+        kSizeNECursor, kSizeNCursor, kSizeNWCursor,
       };
-      size_t num = sizeof(rotated_rotate_cursors) / sizeof(rotated_rotate_cursors[0]);
-      size_t c;
-      for (c=num-1; c>0; --c)
-        if (rotated_rotate_cursors[c] == newCursor)
-          break;
-
-      newCursor = rotated_rotate_cursors[(c+angle) % num];
+      newCursorType = rotated_size_cursors[angle];
+    }
+    else if (handle >= RotateNWHandle &&
+             handle <= RotateSEHandle) {
+      const Cursor* rotated_rotate_cursors[8] = {
+        theme->cursors.rotateW(),
+        theme->cursors.rotateSw(), theme->cursors.rotateS(), theme->cursors.rotateSe(),
+        theme->cursors.rotateE(),
+        theme->cursors.rotateNe(), theme->cursors.rotateN(), theme->cursors.rotateNw(),
+      };
+      newCursor = rotated_rotate_cursors[angle];
+      newCursorType = kCustomCursor;
+    }
+    else if (handle >= SkewNHandle &&
+             handle <= SkewSHandle) {
+      const Cursor* rotated_skew_cursors[8] = {
+        theme->cursors.skewW(),
+        theme->cursors.skewSw(), theme->cursors.skewS(), theme->cursors.skewSe(),
+        theme->cursors.skewE(),
+        theme->cursors.skewNe(), theme->cursors.skewN(), theme->cursors.skewNw(),
+      };
+      newCursor = rotated_skew_cursors[angle];
       newCursorType = kCustomCursor;
     }
 

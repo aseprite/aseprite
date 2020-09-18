@@ -40,26 +40,29 @@ namespace {
     const char* name;
     const char* userfriendly;
     app::KeyAction action;
+    app::KeyContext context;
   } actions[] = {
-    { "CopySelection"       , "Copy Selection"     , app::KeyAction::CopySelection },
-    { "SnapToGrid"          , "Snap To Grid"       , app::KeyAction::SnapToGrid },
-    { "AngleSnap"           , "Angle Snap"         , app::KeyAction::AngleSnap },
-    { "MaintainAspectRatio" , "Maintain Aspect Ratio", app::KeyAction::MaintainAspectRatio },
-    { "ScaleFromCenter"     , "Scale From Center"  , app::KeyAction::ScaleFromCenter },
-    { "LockAxis"            , "Lock Axis"          , app::KeyAction::LockAxis },
-    { "AddSelection"        , "Add Selection"      , app::KeyAction::AddSelection },
-    { "SubtractSelection"   , "Subtract Selection" , app::KeyAction::SubtractSelection },
-    { "IntersectSelection"  , "Intersect Selection" , app::KeyAction::IntersectSelection },
-    { "AutoSelectLayer"     , "Auto Select Layer"  , app::KeyAction::AutoSelectLayer },
-    { "StraightLineFromLastPoint", "Straight Line from Last Point", app::KeyAction::StraightLineFromLastPoint },
-    { "AngleSnapFromLastPoint", "Angle Snap from Last Point", app::KeyAction::AngleSnapFromLastPoint },
-    { "MoveOrigin"          , "Move Origin"        , app::KeyAction::MoveOrigin },
-    { "SquareAspect"        , "Square Aspect"      , app::KeyAction::SquareAspect },
-    { "DrawFromCenter"      , "Draw From Center"   , app::KeyAction::DrawFromCenter },
-    { "RotateShape"         , "Rotate Shape"       , app::KeyAction::RotateShape },
-    { "LeftMouseButton"     , "Trigger Left Mouse Button" , app::KeyAction::LeftMouseButton },
-    { "RightMouseButton"    , "Trigger Right Mouse Button" , app::KeyAction::RightMouseButton },
-    { NULL                  , NULL                 , app::KeyAction::None }
+    { "CopySelection"       , "Copy Selection"     , app::KeyAction::CopySelection, app::KeyContext::TranslatingSelection },
+    { "SnapToGrid"          , "Snap To Grid"       , app::KeyAction::SnapToGrid, app::KeyContext::TranslatingSelection },
+    { "LockAxis"            , "Lock Axis"          , app::KeyAction::LockAxis, app::KeyContext::TranslatingSelection },
+    { "FineControl"         , "Fine Translating"   , app::KeyAction::FineControl , app::KeyContext::TranslatingSelection },
+    { "MaintainAspectRatio" , "Maintain Aspect Ratio", app::KeyAction::MaintainAspectRatio, app::KeyContext::ScalingSelection },
+    { "ScaleFromCenter"     , "Scale From Center"  , app::KeyAction::ScaleFromCenter, app::KeyContext::ScalingSelection },
+    { "FineControl"         , "Fine Scaling"       , app::KeyAction::FineControl , app::KeyContext::ScalingSelection },
+    { "AngleSnap"           , "Angle Snap"         , app::KeyAction::AngleSnap, app::KeyContext::RotatingSelection },
+    { "AddSelection"        , "Add Selection"      , app::KeyAction::AddSelection, app::KeyContext::SelectionTool },
+    { "SubtractSelection"   , "Subtract Selection" , app::KeyAction::SubtractSelection, app::KeyContext::SelectionTool },
+    { "IntersectSelection"  , "Intersect Selection" , app::KeyAction::IntersectSelection, app::KeyContext::SelectionTool },
+    { "AutoSelectLayer"     , "Auto Select Layer"  , app::KeyAction::AutoSelectLayer, app::KeyContext::MoveTool },
+    { "StraightLineFromLastPoint", "Straight Line from Last Point", app::KeyAction::StraightLineFromLastPoint, app::KeyContext::FreehandTool },
+    { "AngleSnapFromLastPoint", "Angle Snap from Last Point", app::KeyAction::AngleSnapFromLastPoint, app::KeyContext::FreehandTool },
+    { "MoveOrigin"          , "Move Origin"        , app::KeyAction::MoveOrigin, app::KeyContext::ShapeTool },
+    { "SquareAspect"        , "Square Aspect"      , app::KeyAction::SquareAspect, app::KeyContext::ShapeTool },
+    { "DrawFromCenter"      , "Draw From Center"   , app::KeyAction::DrawFromCenter, app::KeyContext::ShapeTool },
+    { "RotateShape"         , "Rotate Shape"       , app::KeyAction::RotateShape, app::KeyContext::ShapeTool },
+    { "LeftMouseButton"     , "Trigger Left Mouse Button" , app::KeyAction::LeftMouseButton, app::KeyContext::Any },
+    { "RightMouseButton"    , "Trigger Right Mouse Button" , app::KeyAction::RightMouseButton, app::KeyContext::Any },
+    { NULL                  , NULL                 , app::KeyAction::None, app::KeyContext::Any }
   };
 
   static struct {
@@ -124,9 +127,11 @@ namespace {
     return shortcut;
   }
 
-  std::string get_user_friendly_string_for_keyaction(app::KeyAction action) {
+  std::string get_user_friendly_string_for_keyaction(app::KeyAction action,
+                                                     app::KeyContext context) {
     for (int c=0; actions[c].name; ++c) {
-      if (action == actions[c].action)
+      if (action == actions[c].action &&
+          context == actions[c].context)
         return actions[c].userfriendly;
     }
     return std::string();
@@ -203,7 +208,7 @@ using namespace ui;
 //////////////////////////////////////////////////////////////////////
 // Key
 
-Key::Key(Command* command, const Params& params, KeyContext keyContext)
+Key::Key(Command* command, const Params& params, const KeyContext keyContext)
   : m_type(KeyType::Command)
   , m_useUsers(false)
   , m_keycontext(keyContext)
@@ -212,7 +217,7 @@ Key::Key(Command* command, const Params& params, KeyContext keyContext)
 {
 }
 
-Key::Key(KeyType type, tools::Tool* tool)
+Key::Key(const KeyType type, tools::Tool* tool)
   : m_type(type)
   , m_useUsers(false)
   , m_keycontext(KeyContext::Any)
@@ -220,12 +225,17 @@ Key::Key(KeyType type, tools::Tool* tool)
 {
 }
 
-Key::Key(KeyAction action)
+Key::Key(const KeyAction action,
+         const KeyContext keyContext)
   : m_type(KeyType::Action)
   , m_useUsers(false)
-  , m_keycontext(KeyContext::Any)
+  , m_keycontext(keyContext)
   , m_action(action)
 {
+  if (m_keycontext != KeyContext::Any)
+    return;
+
+  // Automatic key context
   switch (action) {
     case KeyAction::None:
       m_keycontext = KeyContext::Any;
@@ -233,6 +243,7 @@ Key::Key(KeyAction action)
     case KeyAction::CopySelection:
     case KeyAction::SnapToGrid:
     case KeyAction::LockAxis:
+    case KeyAction::FineControl:
       m_keycontext = KeyContext::TranslatingSelection;
       break;
     case KeyAction::AngleSnap:
@@ -269,7 +280,7 @@ Key::Key(KeyAction action)
   }
 }
 
-Key::Key(WheelAction wheelAction)
+Key::Key(const WheelAction wheelAction)
   : m_type(KeyType::WheelAction)
   , m_useUsers(false)
   , m_keycontext(KeyContext::MouseWheel)
@@ -395,7 +406,8 @@ std::string Key::triggerString() const
       return text;
     }
     case KeyType::Action:
-      return get_user_friendly_string_for_keyaction(m_action);
+      return get_user_friendly_string_for_keyaction(m_action,
+                                                    m_keycontext);
     case KeyType::WheelAction:
       return get_user_friendly_string_for_wheelaction(m_wheelAction);
   }
@@ -570,9 +582,16 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
     if (action_id) {
       KeyAction action = base::convert_to<KeyAction, std::string>(action_id);
       if (action != KeyAction::None) {
-        KeyPtr key = this->action(action);
+        // Read context
+        KeyContext keycontext = KeyContext::Any;
+        const char* keycontextstr = xmlKey->Attribute("context");
+        if (keycontextstr)
+          keycontext = base::convert_to<KeyContext>(std::string(keycontextstr));
+
+        KeyPtr key = this->action(action, keycontext);
         if (key && action_key) {
-          LOG(VERBOSE, "KEYS: Shortcut for action %s: %s\n", action_id, action_key);
+          LOG(VERBOSE, "KEYS: Shortcut for action %s/%s: %s\n", action_id,
+              (keycontextstr ? keycontextstr: "Any"), action_key);
           Accelerator accel(action_key);
 
           if (!removed)
@@ -703,6 +722,9 @@ void KeyboardShortcuts::exportAccel(TiXmlElement& parent, const Key* key, const 
     case KeyType::Action:
       elem.SetAttribute("action",
                         base::convert_to<std::string>(key->action()).c_str());
+      if (key->keycontext() != KeyContext::Any)
+        elem.SetAttribute("context",
+                          base::convert_to<std::string>(key->keycontext()).c_str());
       break;
 
     case KeyType::WheelAction:
@@ -773,16 +795,18 @@ KeyPtr KeyboardShortcuts::quicktool(tools::Tool* tool)
   return key;
 }
 
-KeyPtr KeyboardShortcuts::action(KeyAction action)
+KeyPtr KeyboardShortcuts::action(KeyAction action,
+                                 KeyContext keyContext)
 {
   for (KeyPtr& key : m_keys) {
     if (key->type() == KeyType::Action &&
-        key->action() == action) {
+        key->action() == action &&
+        key->keycontext() == keyContext) {
       return key;
     }
   }
 
-  KeyPtr key = std::make_shared<Key>(action);
+  KeyPtr key = std::make_shared<Key>(action, keyContext);
   m_keys.push_back(key);
   return key;
 }

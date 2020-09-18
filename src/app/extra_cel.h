@@ -37,6 +37,7 @@ namespace app {
                 const gfx::Size& imageSize,
                 const doc::frame_t frame,
                 const int opacity);
+    void reset();
 
     render::ExtraType type() const { return m_type; }
     void setType(render::ExtraType type) { m_type = type; }

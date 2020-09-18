@@ -41,6 +41,7 @@
 #include "app/ui/dithering_selector.h"
 #include "app/ui/dynamics_popup.h"
 #include "app/ui/editor/editor.h"
+#include "app/ui/expr_entry.h"
 #include "app/ui/icon_button.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/selection_mode_field.h"
@@ -48,6 +49,7 @@
 #include "app/ui_context.h"
 #include "base/clamp.h"
 #include "base/fs.h"
+#include "base/pi.h"
 #include "base/scoped_value.h"
 #include "doc/brush.h"
 #include "doc/image.h"
@@ -55,6 +57,7 @@
 #include "doc/remap.h"
 #include "doc/selected_objects.h"
 #include "doc/slice.h"
+#include "fmt/format.h"
 #include "obs/connection.h"
 #include "os/surface.h"
 #include "os/system.h"
@@ -969,6 +972,156 @@ private:
   bool m_lockChange;
 };
 
+class ContextBar::TransformationFields : public HBox {
+public:
+  class CustomEntry : public ExprEntry {
+  public:
+    CustomEntry() {
+      setDecimals(1);
+    }
+  private:
+    bool onProcessMessage(Message* msg) override {
+      switch (msg->type()) {
+
+        case kKeyDownMessage:
+          if (ExprEntry::onProcessMessage(msg))
+            return true;
+          else if (hasFocus() && manager()->processFocusMovementMessage(msg))
+            return true;
+          return false;
+
+        case kFocusLeaveMessage: {
+          bool res = ExprEntry::onProcessMessage(msg);
+          deselectText();
+          setCaretPos(0);
+          return res;
+        }
+      }
+      return ExprEntry::onProcessMessage(msg);
+    }
+    void onVisible(bool visible) override {
+      if (!visible && hasFocus()) {
+        releaseFocus();
+      }
+      ExprEntry::onVisible(visible);
+    }
+    void onFormatExprFocusLeave(std::string& buf) override {
+      buf = formatDec(onGetTextDouble());
+    }
+  };
+
+  TransformationFields() {
+    m_angle.setSuffix("°");
+    m_skew.setSuffix("°");
+
+    addChild(new Label("P:"));
+    addChild(&m_x);
+    addChild(&m_y);
+    addChild(&m_w);
+    addChild(&m_h);
+    addChild(new Label("R:"));
+    addChild(&m_angle);
+    addChild(&m_skew);
+
+    InitTheme.connect(
+      [this]{
+        gfx::Size sz(
+          font()->textLength("8")*4 + m_x.border().width(),
+          std::numeric_limits<int>::max());
+        setChildSpacing(0);
+        m_x.setMaxSize(sz);
+        m_y.setMaxSize(sz);
+        m_w.setMaxSize(sz);
+        m_h.setMaxSize(sz);
+        m_angle.setMaxSize(sz);
+        m_skew.setMaxSize(sz);
+      });
+    initTheme();
+
+    m_x.Change.connect([this]{ auto rc = bounds(); rc.x = m_x.textDouble(); onChangePos(rc); });
+    m_y.Change.connect([this]{ auto rc = bounds(); rc.y = m_y.textDouble(); onChangePos(rc); });
+    m_w.Change.connect([this]{ auto rc = bounds(); rc.w = m_w.textDouble(); onChangeSize(rc); });
+    m_h.Change.connect([this]{ auto rc = bounds(); rc.h = m_h.textDouble(); onChangeSize(rc); });
+    m_angle.Change.connect([this]{ onChangeAngle(); });
+    m_skew.Change.connect([this]{ onChangeSkew(); });
+  }
+
+  void update(const Transformation& t) {
+    auto rc = t.bounds();
+
+    m_x.setText(formatDec(rc.x));
+    m_y.setText(formatDec(rc.y));
+    m_w.setText(formatDec(rc.w));
+    m_h.setText(formatDec(rc.h));
+    m_angle.setText(formatDec(180.0 * t.angle() / PI));
+    m_skew.setText(formatDec(180.0 * t.skew() / PI));
+
+    m_t = t;
+  }
+
+private:
+  static std::string formatDec(const double x) {
+    std::string s = fmt::format("{:0.1f}", x);
+    if (s.size() > 2 &&
+        s[s.size()-1] == '0' &&
+        s[s.size()-2] == '.') {
+      s.erase(s.size()-2, 2);
+    }
+    return s;
+  }
+
+  gfx::RectF bounds() const {
+    return m_t.bounds();
+  }
+  void onChangePos(gfx::RectF newBounds) {
+    // Adjust new pivot position depending on the new bounds origin
+    gfx::RectF bounds = m_t.bounds();
+    gfx::PointF pivot = m_t.pivot();
+    if (!bounds.isEmpty()) {
+      pivot.x = (pivot.x - bounds.x) / bounds.w;
+      pivot.y = (pivot.y - bounds.y) / bounds.h;
+      pivot.x = newBounds.x + pivot.x*newBounds.w;
+      pivot.y = newBounds.y + pivot.y*newBounds.h;
+      m_t.pivot(pivot);
+    }
+    m_t.bounds(newBounds);
+    updateEditor();
+  }
+  void onChangeSize(gfx::RectF newBounds) {
+    // Adjust bounds origin depending on the new size and the current pivot
+    gfx::RectF bounds = m_t.bounds();
+    gfx::PointF pivot = m_t.pivot();
+    if (!bounds.isEmpty()) {
+      pivot.x = (pivot.x - bounds.x) / bounds.w;
+      pivot.y = (pivot.y - bounds.y) / bounds.h;
+      newBounds.x -= (newBounds.w-bounds.w)*pivot.x;
+      newBounds.y -= (newBounds.h-bounds.h)*pivot.y;
+
+      m_x.setText(formatDec(newBounds.x));
+      m_y.setText(formatDec(newBounds.y));
+    }
+    m_t.bounds(newBounds);
+    updateEditor();
+  }
+  void onChangeAngle() {
+    m_t.angle(PI * m_angle.textDouble() / 180.0);
+    updateEditor();
+  }
+  void onChangeSkew() {
+    m_t.skew(PI * m_skew.textDouble() / 180.0);
+    updateEditor();
+  }
+  void updateEditor() {
+    if (current_editor)
+      current_editor->updateTransformation(m_t);
+  }
+
+  CustomEntry m_x, m_y, m_w, m_h;
+  CustomEntry m_angle;
+  CustomEntry m_skew;
+  Transformation m_t;
+};
+
 class ContextBar::DynamicsField : public ButtonSet
                                 , public DynamicsPopup::Delegate {
 public:
@@ -1529,10 +1682,13 @@ private:
 ContextBar::ContextBar(TooltipManager* tooltipManager,
                        ColorBar* colorBar)
 {
+  auto& pref = Preferences::instance();
+
   addChild(m_selectionOptionsBox = new HBox());
   m_selectionOptionsBox->addChild(m_dropPixels = new DropPixelsField());
   m_selectionOptionsBox->addChild(m_selectionMode = new SelectionModeField);
   m_selectionOptionsBox->addChild(m_transparentColor = new TransparentColorField(this, tooltipManager));
+  m_selectionOptionsBox->addChild(m_transformation = new TransformationFields);
   m_selectionOptionsBox->addChild(m_pivot = new PivotField);
   m_selectionOptionsBox->addChild(m_rotAlgo = new RotAlgorithmField());
 
@@ -1573,7 +1729,7 @@ ContextBar::ContextBar(TooltipManager* tooltipManager,
   m_freehandBox->addChild(m_freehandAlgo = new FreehandAlgorithmField());
 
   addChild(m_symmetry = new SymmetryField());
-  m_symmetry->setVisible(Preferences::instance().symmetryMode.enabled());
+  m_symmetry->setVisible(pref.symmetryMode.enabled());
 
   addChild(m_sliceFields = new SliceFields);
 
@@ -1582,7 +1738,6 @@ ContextBar::ContextBar(TooltipManager* tooltipManager,
   App::instance()->activeToolManager()->add_observer(this);
   UIContext::instance()->add_observer(this);
 
-  auto& pref = Preferences::instance();
   pref.symmetryMode.enabled.AfterChange.connect(
     [this]{ onSymmetryModeChange(); });
   pref.colorBar.fgColor.AfterChange.connect(
@@ -1927,6 +2082,7 @@ void ContextBar::updateForTool(tools::Tool* tool)
   m_selectionMode->setVisible(true);
   m_pivot->setVisible(true);
   m_dropPixels->setVisible(false);
+  m_transformation->setVisible(false);
   m_selectBoxHelp->setVisible(false);
 
   m_symmetry->setVisible(
@@ -1943,7 +2099,7 @@ void ContextBar::updateForTool(tools::Tool* tool)
   layout();
 }
 
-void ContextBar::updateForMovingPixels()
+void ContextBar::updateForMovingPixels(const Transformation& t)
 {
   tools::Tool* tool = App::instance()->toolBox()->getToolById(
     tools::WellKnownTools::RectangularMarquee);
@@ -1953,6 +2109,8 @@ void ContextBar::updateForMovingPixels()
   m_dropPixels->deselectItems();
   m_dropPixels->setVisible(true);
   m_selectionMode->setVisible(false);
+  m_transformation->setVisible(true);
+  m_transformation->update(t);
   layout();
 }
 

@@ -423,6 +423,14 @@
         <part id="tiles_manual" x="150" y="208" w="6" h="6" />
         <part id="tiles_auto" x="156" y="208" w="6" h="6" />
         <part id="tiles_stack" x="162" y="208" w="6" h="6" />
+        <part id="cursor_skew_n" x="272" y="192" w="16" h="16" focusx="8" focusy="8" />
+        <part id="cursor_skew_s" x="288" y="192" w="16" h="16" focusx="8" focusy="8" />
+        <part id="cursor_skew_sw" x="272" y="208" w="16" h="16" focusx="8" focusy="8" />
+        <part id="cursor_skew_se" x="288" y="208" w="16" h="16" focusx="8" focusy="8" />
+        <part id="cursor_skew_w" x="272" y="176" w="16" h="16" focusx="8" focusy="8" />
+        <part id="cursor_skew_e" x="288" y="176" w="16" h="16" focusx="8" focusy="8" />
+        <part id="cursor_skew_nw" x="272" y="160" w="16" h="16" focusx="8" focusy="8" />
+        <part id="cursor_skew_ne" x="288" y="160" w="16" h="16" focusx="8" focusy="8" />
     </parts>
     <styles>
         <style id="box" />

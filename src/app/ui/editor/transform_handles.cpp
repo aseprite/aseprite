@@ -42,13 +42,13 @@ static struct HandlesInfo {
   // The exact handle type ([0] for scaling, [1] for rotating).
   HandleType handle[2];
 } handles_info[HANDLES] = {
-  { 1, 2,   0 << 16, { ScaleEHandle,  RotateEHandle } },
+  { 1, 2,   0 << 16, { ScaleEHandle,  SkewEHandle } },
   { 1, 1,  32 << 16, { ScaleNEHandle, RotateNEHandle } },
-  { 0, 1,  64 << 16, { ScaleNHandle,  RotateNHandle } },
+  { 0, 1,  64 << 16, { ScaleNHandle,  SkewNHandle } },
   { 0, 0,  96 << 16, { ScaleNWHandle, RotateNWHandle } },
-  { 0, 3, 128 << 16, { ScaleWHandle,  RotateWHandle } },
+  { 0, 3, 128 << 16, { ScaleWHandle,  SkewWHandle } },
   { 3, 3, 160 << 16, { ScaleSWHandle, RotateSWHandle } },
-  { 3, 2, 192 << 16, { ScaleSHandle,  RotateSHandle } },
+  { 3, 2, 192 << 16, { ScaleSHandle,  SkewSHandle } },
   { 2, 2, 224 << 16, { ScaleSEHandle, RotateSEHandle } },
 };
 
@@ -58,8 +58,7 @@ HandleType TransformHandles::getHandleAtPoint(Editor* editor, const gfx::Point& 
   os::Surface* gfx = theme->parts.transformationHandle()->bitmap(0);
   fixmath::fixed angle = fixmath::ftofix(128.0 * transform.angle() / PI);
 
-  Transformation::Corners corners;
-  transform.transformBox(corners);
+  auto corners = transform.transformedCorners();
 
   std::vector<gfx::Point> screenPoints;
   getScreenPoints(editor, corners, screenPoints);
@@ -90,8 +89,7 @@ void TransformHandles::drawHandles(Editor* editor, ui::Graphics* g,
 {
   fixmath::fixed angle = fixmath::ftofix(128.0 * transform.angle() / PI);
 
-  Transformation::Corners corners;
-  transform.transformBox(corners);
+  auto corners = transform.transformedCorners();
 
   std::vector<gfx::Point> screenPoints;
   getScreenPoints(editor, corners, screenPoints);
@@ -99,8 +97,7 @@ void TransformHandles::drawHandles(Editor* editor, ui::Graphics* g,
   const gfx::Point origin = editor->bounds().origin();
 
 #if 0 // Uncomment this if you want to see the bounds in red (only for debugging purposes)
-  // -----------------------------------------------
-  {
+  {   // Bounds
     gfx::Point
       a(transform.bounds().origin()),
       b(transform.bounds().point2());
@@ -112,7 +109,26 @@ void TransformHandles::drawHandles(Editor* editor, ui::Graphics* g,
     a = editor->editorToScreen(a) - origin;
     g->drawRect(gfx::rgba(255, 0, 0), gfx::Rect(a.x-2, a.y-2, 5, 5));
   }
-  // -----------------------------------------------
+  {   // Rotated bounds
+    const gfx::Point& a = screenPoints[0] - origin;
+    const gfx::Point& b = screenPoints[1] - origin;
+    const gfx::Point& c = screenPoints[2] - origin;
+    const gfx::Point& d = screenPoints[3] - origin;
+
+    ui::Paint paint;
+    paint.style(ui::Paint::Stroke);
+    paint.antialias(true);
+    paint.color(gfx::rgba(255, 0, 0));
+
+    gfx::Path p;
+    p.moveTo(a.x, a.y);
+    p.lineTo(b.x, b.y);
+    p.lineTo(c.x, c.y);
+    p.lineTo(d.x, d.y);
+    p.close();
+
+    g->drawPath(p, paint);
+  }
 #endif
 
   // Draw corner handle
@@ -141,8 +157,7 @@ void TransformHandles::invalidateHandles(Editor* editor, const Transformation& t
   SkinTheme* theme = SkinTheme::instance();
   fixmath::fixed angle = fixmath::ftofix(128.0 * transform.angle() / PI);
 
-  Transformation::Corners corners;
-  transform.transformBox(corners);
+  auto corners = transform.transformedCorners();
 
   std::vector<gfx::Point> screenPoints;
   getScreenPoints(editor, corners, screenPoints);
@@ -266,9 +281,9 @@ void TransformHandles::getScreenPoints(
 
   screenPoints.resize(corners.size());
   for (size_t c=0; c<corners.size(); ++c)
-    screenPoints[c] = editor->editorToScreen(
-      gfx::Point((int)corners[c].x+main.x,
-                 (int)corners[c].y+main.y));
+    screenPoints[c] = editor->editorToScreenF(
+      gfx::PointF(corners[c].x+main.x,
+                  corners[c].y+main.y));
 }
 
 } // namespace app

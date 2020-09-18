@@ -60,6 +60,7 @@ namespace app {
   class EditorRender;
   class PixelsMovement;
   class Site;
+  class Transformation;
 
   namespace tools {
     class Ink;
@@ -242,8 +243,8 @@ namespace app {
     void pasteImage(const Image* image, const Mask* mask = nullptr);
 
     void startSelectionTransformation(const gfx::Point& move, double angle);
-
     void startFlipTransformation(doc::algorithm::FlipType flipType);
+    void updateTransformation(const Transformation& transform);
 
     // Used by EditorView to notify changes in the view's scroll
     // position.

@@ -423,6 +423,9 @@ bool Entry::onProcessMessage(Message* msg)
       return true;
 
     case kDoubleClickMessage:
+      if (!hasFocus())
+        requestFocus();
+
       forwardWord();
       m_select = m_caret;
       backwardWord();
