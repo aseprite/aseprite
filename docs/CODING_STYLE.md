@@ -77,11 +77,11 @@ private:
 
 ## C++11
 
-We are using some C++11 features, mainly:
+We are using some modern C++ (C++11, C++14, etc.) features, mainly:
 
 * Use `nullptr` instead of `NULL` macro
-* Use `auto` for complex types, iterators, or when it's variable type
-  obvious (e.g. `auto s = new Sprite;`)
+* Use `auto` for complex types, iterators, or when the variable type
+  is obvious (e.g. `auto s = new Sprite;`)
 * Use range-based for loops (`for (const auto& item : values) { ... }`)
 * Use template alias (`template<typename T> alias = orig<T>;`)
 * Use non-generic lambda functions
