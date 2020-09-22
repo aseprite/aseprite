@@ -336,22 +336,15 @@ public:
     m_pointRemainder = points_to_spray - integral_points;
     ASSERT(m_pointRemainder >= 0 && m_pointRemainder < 1.0f);
 
-    fixmath::fixed angle, radius;
+    double angle, radius;
 
     for (int c=0; c<integral_points; c++) {
-
-#if RAND_MAX <= 0xffff
-      // In Windows, rand() has a RAND_MAX too small
-      angle = fixmath::itofix(rand() * 255 / RAND_MAX);
-      radius = fixmath::itofix(rand() * spray_width / RAND_MAX);
-#else
-      angle = rand();
-      radius = rand() % fixmath::itofix(spray_width);
-#endif
+      angle = 360.0 * rand() / RAND_MAX;
+      radius = double(spray_width) * rand() / RAND_MAX;
 
       Stroke::Pt pt2(pt);
-      pt2.x += fixmath::fixtoi(fixmath::fixmul(radius, fixmath::fixcos(angle)));
-      pt2.y += fixmath::fixtoi(fixmath::fixmul(radius, fixmath::fixsin(angle)));
+      pt2.x += double(radius * std::cos(angle));
+      pt2.y += double(radius * std::sin(angle));
       m_subPointShape.transformPoint(loop, pt2);
     }
   }

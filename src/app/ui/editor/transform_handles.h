@@ -11,7 +11,6 @@
 
 #include "app/transformation.h"
 #include "app/ui/editor/handle_type.h"
-#include "fixmath/fixmath.h"
 #include "gfx/point.h"
 
 #include <vector>
@@ -40,10 +39,10 @@ namespace app {
       const Transformation& transform,
       const Transformation::Corners& corners);
 
-    bool inHandle(const gfx::Point& pt, int x, int y, int gfx_w, int gfx_h, fixmath::fixed angle);
-    void drawHandle(ui::Graphics* g, int x, int y, fixmath::fixed angle);
-    void adjustHandle(int& x, int& y, int handle_w, int handle_h, fixmath::fixed angle);
-    bool visiblePivot(fixmath::fixed angle) const;
+    bool inHandle(const gfx::Point& pt, int x, int y, int gfx_w, int gfx_h, double angle);
+    void drawHandle(ui::Graphics* g, int x, int y, double angle);
+    void adjustHandle(int& x, int& y, int handle_w, int handle_h, double angle);
+    bool visiblePivot(double angle) const;
     void getScreenPoints(
       Editor* editor,
       const Transformation::Corners& corners,

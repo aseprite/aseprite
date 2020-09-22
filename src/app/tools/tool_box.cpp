@@ -28,7 +28,6 @@
 #include "doc/compressed_image.h"
 #include "doc/image_impl.h"
 #include "doc/mask.h"
-#include "fixmath/fixmath.h"
 
 #include <algorithm>
 #include <cstdlib>

@@ -14,6 +14,7 @@
 #include "app/pref/preferences.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/skin/skin_theme.h"
+#include "base/clamp.h"
 #include "base/pi.h"
 #include "os/surface.h"
 
@@ -38,25 +39,25 @@ static struct HandlesInfo {
   //
   int i1, i2;
   // The angle bias of this specific handle.
-  fixmath::fixed angle;
+  double angle;
   // The exact handle type ([0] for scaling, [1] for rotating).
   HandleType handle[2];
 } handles_info[HANDLES] = {
-  { 1, 2,   0 << 16, { ScaleEHandle,  SkewEHandle } },
-  { 1, 1,  32 << 16, { ScaleNEHandle, RotateNEHandle } },
-  { 0, 1,  64 << 16, { ScaleNHandle,  SkewNHandle } },
-  { 0, 0,  96 << 16, { ScaleNWHandle, RotateNWHandle } },
-  { 0, 3, 128 << 16, { ScaleWHandle,  SkewWHandle } },
-  { 3, 3, 160 << 16, { ScaleSWHandle, RotateSWHandle } },
-  { 3, 2, 192 << 16, { ScaleSHandle,  SkewSHandle } },
-  { 2, 2, 224 << 16, { ScaleSEHandle, RotateSEHandle } },
+  { 1, 2, (PI *   0.0 / 180.0), { ScaleEHandle,  SkewEHandle } },
+  { 1, 1, (PI *  45.0 / 180.0), { ScaleNEHandle, RotateNEHandle } },
+  { 0, 1, (PI *  90.0 / 180.0), { ScaleNHandle,  SkewNHandle } },
+  { 0, 0, (PI * 135.0 / 180.0), { ScaleNWHandle, RotateNWHandle } },
+  { 0, 3, (PI * 180.0 / 180.0), { ScaleWHandle,  SkewWHandle } },
+  { 3, 3, (PI * 225.0 / 180.0), { ScaleSWHandle, RotateSWHandle } },
+  { 3, 2, (PI * 270.0 / 180.0), { ScaleSHandle,  SkewSHandle } },
+  { 2, 2, (PI * 315.0 / 180.0), { ScaleSEHandle, RotateSEHandle } },
 };
 
 HandleType TransformHandles::getHandleAtPoint(Editor* editor, const gfx::Point& pt, const Transformation& transform)
 {
   SkinTheme* theme = SkinTheme::instance();
   os::Surface* gfx = theme->parts.transformationHandle()->bitmap(0);
-  fixmath::fixed angle = fixmath::ftofix(128.0 * transform.angle() / PI);
+  double angle = transform.angle();
 
   auto corners = transform.transformedCorners();
 
@@ -87,7 +88,7 @@ HandleType TransformHandles::getHandleAtPoint(Editor* editor, const gfx::Point& 
 void TransformHandles::drawHandles(Editor* editor, ui::Graphics* g,
                                    const Transformation& transform)
 {
-  fixmath::fixed angle = fixmath::ftofix(128.0 * transform.angle() / PI);
+  double angle = transform.angle();
 
   auto corners = transform.transformedCorners();
 
@@ -129,6 +130,24 @@ void TransformHandles::drawHandles(Editor* editor, ui::Graphics* g,
 
     g->drawPath(p, paint);
   }
+  // Mouse active areas
+  {
+    auto theme = SkinTheme::instance();
+    auto gfx = theme->parts.transformationHandle()->bitmap(0);
+
+    int handle_rs[2] = { gfx->width()*2, gfx->width()*3 };
+    for (int i=0; i<2; ++i) {
+      int handle_r = handle_rs[i];
+      for (size_t c=0; c<HANDLES; ++c) {
+        int x = (screenPoints[handles_info[c].i1].x+screenPoints[handles_info[c].i2].x)/2 - origin.x;
+        int y = (screenPoints[handles_info[c].i1].y+screenPoints[handles_info[c].i2].y)/2 - origin.y;
+        adjustHandle(x, y, handle_r, handle_r, angle + handles_info[c].angle);
+        g->drawRect(
+          gfx::rgba(255, 0, 0),
+          gfx::Rect(x, y, handle_r, handle_r));
+      }
+    }
+  }
 #endif
 
   // Draw corner handle
@@ -155,7 +174,7 @@ void TransformHandles::drawHandles(Editor* editor, ui::Graphics* g,
 void TransformHandles::invalidateHandles(Editor* editor, const Transformation& transform)
 {
   SkinTheme* theme = SkinTheme::instance();
-  fixmath::fixed angle = fixmath::ftofix(128.0 * transform.angle() / PI);
+  double angle = transform.angle();
 
   auto corners = transform.transformedCorners();
 
@@ -202,7 +221,7 @@ gfx::Rect TransformHandles::getPivotHandleBounds(Editor* editor,
     partSize.h);
 }
 
-bool TransformHandles::inHandle(const gfx::Point& pt, int x, int y, int gfx_w, int gfx_h, fixmath::fixed angle)
+bool TransformHandles::inHandle(const gfx::Point& pt, int x, int y, int gfx_w, int gfx_h, double angle)
 {
   adjustHandle(x, y, gfx_w, gfx_h, angle);
 
@@ -210,7 +229,7 @@ bool TransformHandles::inHandle(const gfx::Point& pt, int x, int y, int gfx_w, i
           pt.y >= y && pt.y < y+gfx_h);
 }
 
-void TransformHandles::drawHandle(Graphics* g, int x, int y, fixmath::fixed angle)
+void TransformHandles::drawHandle(Graphics* g, int x, int y, double angle)
 {
   SkinTheme* theme = SkinTheme::instance();
   os::Surface* part = theme->parts.transformationHandle()->bitmap(0);
@@ -220,15 +239,13 @@ void TransformHandles::drawHandle(Graphics* g, int x, int y, fixmath::fixed angl
   g->drawRgbaSurface(part, x, y);
 }
 
-void TransformHandles::adjustHandle(int& x, int& y, int handle_w, int handle_h, fixmath::fixed angle)
+void TransformHandles::adjustHandle(int& x, int& y, int handle_w, int handle_h, double angle)
 {
-  angle = fixmath::fixadd(angle, fixmath::itofix(16));
-  angle &= (255<<16);
-  angle >>= 16;
-  angle /= 32;
+  angle = base::fmod_radians(angle + PI) + PI;
+  const int angleInt = base::clamp<int>(std::floor(8.0 * angle / (2.0*PI) + 0.5), 0, 8) % 8;
 
   // Adjust x,y position depending the angle of the handle
-  switch (angle) {
+  switch (angleInt) {
 
     case 0:
       y = y-handle_h/2;
@@ -267,7 +284,7 @@ void TransformHandles::adjustHandle(int& x, int& y, int handle_w, int handle_h, 
   }
 }
 
-bool TransformHandles::visiblePivot(fixmath::fixed angle) const
+bool TransformHandles::visiblePivot(double angle) const
 {
   return (Preferences::instance().selection.pivotVisibility() || angle != 0);
 }
