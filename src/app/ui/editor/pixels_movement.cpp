@@ -24,6 +24,7 @@
 #include "app/site.h"
 #include "app/snap_to_grid.h"
 #include "app/ui/editor/pivot_helpers.h"
+#include "app/ui/editor/vec2.h"
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
 #include "app/util/cel_ops.h"
@@ -31,7 +32,6 @@
 #include "app/util/new_image_from_mask.h"
 #include "app/util/range_utils.h"
 #include "base/pi.h"
-#include "base/vector2d.h"
 #include "doc/algorithm/flip_image.h"
 #include "doc/algorithm/rotate.h"
 #include "doc/algorithm/rotsprite.h"
@@ -53,18 +53,7 @@
 #define DUMP_INNER_CMDS()
 #endif
 
-using vec2 = base::Vector2d<double>;
-
 namespace app {
-
-template<typename T>
-static inline const vec2 to_vec2(const gfx::PointT<T>& pt) {
-  return vec2(pt.x, pt.y);
-}
-
-static inline const gfx::PointF to_point(const vec2& v) {
-  return gfx::PointF(v.x, v.y);
-}
 
 PixelsMovement::InnerCmd::InnerCmd(InnerCmd&& c)
   : type(None)
