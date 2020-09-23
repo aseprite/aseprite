@@ -31,6 +31,7 @@
 #include "app/util/expand_cel_canvas.h"
 #include "app/util/new_image_from_mask.h"
 #include "app/util/range_utils.h"
+#include "base/clamp.h"
 #include "base/pi.h"
 #include "doc/algorithm/flip_image.h"
 #include "doc/algorithm/rotate.h"
@@ -589,9 +590,7 @@ void PixelsMovement::moveImage(const gfx::PointF& pos, MoveModifier moveModifier
           C.y += delta.y;
 
           vec2 toPivot = to_vec2(pivotPoint - (A*(1.0-pivot.y) + C*pivot.y));
-          // TODO avoid division by zero (which happens when the pivot
-          //      is in the exact same X pos as the west handle edge)
-          vec2 toOtherSide = toPivot / pivot.x;
+          vec2 toOtherSide = toPivot / (std::fabs(pivot.x) > 0.00001 ? pivot.x: 1.0);
           B = A + to_point(toOtherSide);
           D = C + to_point(toOtherSide);
           break;
@@ -604,9 +603,7 @@ void PixelsMovement::moveImage(const gfx::PointF& pos, MoveModifier moveModifier
           D.y += delta.y;
 
           vec2 toPivot = to_vec2(pivotPoint - (B*(1.0-pivot.y) + D*pivot.y));
-          // TODO avoid division by zero (which happens when the pivot
-          //      is in the exact same X pos as the east handle edge)
-          vec2 toOtherSide = toPivot / (1.0-pivot.x);
+          vec2 toOtherSide = toPivot / (std::fabs(1.0-pivot.x) > 0.00001 ? (1.0-pivot.x): 1.0);
           A = B + to_point(toOtherSide);
           C = D + to_point(toOtherSide);
           break;
@@ -669,6 +666,7 @@ void PixelsMovement::moveImage(const gfx::PointF& pos, MoveModifier moveModifier
 
       // Calculate angle between AC and AC0
       double newSkew = std::atan2(AC.x*AC0.y - AC.y*AC0.x, AC * AC0);
+      newSkew = base::clamp(newSkew, -PI*85.0/180.0, PI*85.0/180.0);
       newTransformation.skew(newSkew);
       break;
     }

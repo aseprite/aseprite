@@ -1108,7 +1108,9 @@ private:
     updateEditor();
   }
   void onChangeSkew() {
-    m_t.skew(PI * m_skew.textDouble() / 180.0);
+    double newSkew = PI * m_skew.textDouble() / 180.0;
+    newSkew = base::clamp(newSkew, -PI*85.0/180.0, PI*85.0/180.0);
+    m_t.skew(newSkew);
     updateEditor();
   }
   void updateEditor() {
