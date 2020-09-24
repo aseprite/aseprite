@@ -565,7 +565,12 @@ void PixelsMovement::moveImage(const gfx::PointF& pos, MoveModifier moveModifier
       vec2 u = to_vec2(B - A);
       vec2 v = to_vec2(C - A);
 
-      // Move PQ and RS side by a delta value projected on u vector
+      // Move sides depending of a delta value (the mouse pos - catch
+      // pos) projected on u or v vectors. North and south cases are
+      // simple because only AB or CD sides can be modified (and then
+      // skew angle is calculated from the pivot position), but with
+      // east and west handles we modify all points to recalculate all
+      // the transformation parameters from scratch.
       vec2 delta = to_vec2(pos - m_catchPos);
       switch (m_handle) {
         case SkewNHandle:
