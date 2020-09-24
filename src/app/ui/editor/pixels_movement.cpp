@@ -616,7 +616,6 @@ void PixelsMovement::moveImage(const gfx::PointF& pos, MoveModifier moveModifier
       t0.skew(0.0);
       auto corners0 = t0.transformedCorners();
       auto A0 = corners0[Transformation::Corners::LEFT_TOP];
-      auto B0 = corners0[Transformation::Corners::RIGHT_TOP];
       auto C0 = corners0[Transformation::Corners::LEFT_BOTTOM];
 
       //      A0 ------- B
