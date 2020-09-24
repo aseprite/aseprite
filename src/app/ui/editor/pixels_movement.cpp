@@ -558,8 +558,8 @@ void PixelsMovement::moveImage(const gfx::PointF& pos, MoveModifier moveModifier
       gfx::PointF pivotPoint = m_currentData.pivot();
 
       // Pivot in [0.0, 1.0] range
-      gfx::PointF pivot((pivotPoint.x - bounds.x) / bounds.w,
-                        (pivotPoint.y - bounds.y) / bounds.h);
+      gfx::PointF pivot((pivotPoint.x - bounds.x) / ABS(bounds.w),
+                        (pivotPoint.y - bounds.y) / ABS(bounds.h));
 
       // Vector from AB (or CD), and AC (or BD)
       vec2 u = to_vec2(B - A);
