@@ -139,7 +139,7 @@ public:
 #ifdef ENABLE_UI
   RecentFiles m_recent_files;
   InputChain m_inputChain;
-  clipboard::ClipboardManager m_clipboardManager;
+  Clipboard m_clipboard;
 #endif
   // This is a raw pointer because we want to delete it explicitly.
   // (e.g. if an exception occurs, the ~Modules() doesn't have to
@@ -296,7 +296,7 @@ int App::initialize(const AppOptions& options)
 
     // Set the ClipboardDelegate impl to copy/paste text in the native
     // clipboard from the ui::Entry control.
-    m_uiSystem->setClipboardDelegate(&m_modules->m_clipboardManager);
+    m_uiSystem->setClipboardDelegate(&m_modules->m_clipboard);
 
     // Setup the GUI cursor and redraw screen
     ui::set_use_native_cursors(preferences().cursor.useNativeCursor());

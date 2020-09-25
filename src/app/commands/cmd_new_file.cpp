@@ -25,7 +25,6 @@
 #include "app/ui/workspace.h"
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
-#include "app/util/clipboard.h"
 #include "app/util/pixel_ratio.h"
 #include "base/clamp.h"
 #include "doc/cel.h"
@@ -72,12 +71,12 @@ NewFileCommand::NewFileCommand()
 {
 }
 
-bool NewFileCommand::onEnabled(Context* context)
+bool NewFileCommand::onEnabled(Context* ctx)
 {
   return
     (!params().fromClipboard()
 #ifdef ENABLE_UI
-     || (clipboard::get_current_format() == clipboard::ClipboardImage)
+     || (ctx->clipboard()->format() == ClipboardFormat::Image)
 #endif
      );
 }
@@ -97,7 +96,7 @@ void NewFileCommand::onExecute(Context* ctx)
 
 #ifdef ENABLE_UI
   if (params().fromClipboard()) {
-    clipboardImage = clipboard::get_image(&clipboardPalette);
+    clipboardImage = ctx->clipboard()->getImage(&clipboardPalette);
     if (!clipboardImage)
       return;
 
@@ -133,7 +132,7 @@ void NewFileCommand::onExecute(Context* ctx)
     // If the clipboard contains an image, we can show the size of the
     // clipboard as default image size.
     gfx::Size clipboardSize;
-    if (clipboard::get_image_size(clipboardSize)) {
+    if (ctx->clipboard()->getImageSize(clipboardSize)) {
       w = clipboardSize.w;
       h = clipboardSize.h;
     }

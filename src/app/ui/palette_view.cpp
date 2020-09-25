@@ -534,7 +534,7 @@ void PaletteView::cutToClipboard()
   if (!m_selectedEntries.picks())
     return;
 
-  clipboard::copy_palette(currentPalette(), m_selectedEntries);
+  Clipboard::instance()->copyPalette(currentPalette(), m_selectedEntries);
 
   clearSelection();
 }
@@ -544,7 +544,7 @@ void PaletteView::copyToClipboard()
   if (!m_selectedEntries.picks())
     return;
 
-  clipboard::copy_palette(currentPalette(), m_selectedEntries);
+  Clipboard::instance()->copyPalette(currentPalette(), m_selectedEntries);
 
   startMarchingAnts();
   invalidate();
@@ -552,11 +552,12 @@ void PaletteView::copyToClipboard()
 
 void PaletteView::pasteFromClipboard()
 {
-  if (clipboard::get_current_format() == clipboard::ClipboardPaletteEntries) {
+  auto clipboard = Clipboard::instance();
+  if (clipboard->format() == ClipboardFormat::PaletteEntries) {
     if (m_delegate)
       m_delegate->onPaletteViewPasteColors(
-        clipboard::get_palette(),
-        clipboard::get_palette_picks(),
+        clipboard->getPalette(),
+        clipboard->getPalettePicks(),
         m_selectedEntries);
 
     // We just hide the marching ants, the user can paste multiple
@@ -886,9 +887,10 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
   // Draw marching ants
   if ((m_state == State::WAITING) &&
       (isMarchingAntsRunning()) &&
-      (clipboard::get_current_format() == clipboard::ClipboardPaletteEntries)) {
-    Palette* clipboardPalette = clipboard::get_palette();
-    const PalettePicks& clipboardPicks = clipboard::get_palette_picks();
+      (Clipboard::instance()->format() == ClipboardFormat::PaletteEntries)) {
+    auto clipboard = Clipboard::instance();
+    Palette* clipboardPalette = clipboard->getPalette();
+    const PalettePicks& clipboardPicks = clipboard->getPalettePicks();
 
     if (clipboardPalette &&
         clipboardPalette->countDiff(palette, nullptr, nullptr) == 0) {

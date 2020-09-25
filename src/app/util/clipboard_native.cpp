@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -8,7 +9,7 @@
 #include "config.h"
 #endif
 
-#include "app/util/clipboard_native.h"
+#include "app/util/clipboard.h"
 
 #include "app/i18n/strings.h"
 #include "base/serialization.h"
@@ -28,7 +29,6 @@
 #include <vector>
 
 namespace app {
-namespace clipboard {
 
 using namespace base::serialization;
 using namespace base::serialization::little_endian;
@@ -53,20 +53,20 @@ namespace {
 
 }
 
-void register_native_clipboard_formats()
+void Clipboard::registerNativeFormats()
 {
   clip::set_error_handler(custom_error_handler);
   custom_image_format = clip::register_format("org.aseprite.Image");
 }
 
-bool has_native_clipboard_bitmap()
+bool Clipboard::hasNativeBitmap() const
 {
   return clip::has(clip::image_format());
 }
 
-bool set_native_clipboard_bitmap(const doc::Image* image,
-                                 const doc::Mask* mask,
-                                 const doc::Palette* palette)
+bool Clipboard::setNativeBitmap(const doc::Image* image,
+                                const doc::Mask* mask,
+                                const doc::Palette* palette)
 {
   clip::lock l(native_display_handle());
   if (!l.locked())
@@ -163,9 +163,9 @@ bool set_native_clipboard_bitmap(const doc::Image* image,
   return true;
 }
 
-bool get_native_clipboard_bitmap(doc::Image** image,
-                                 doc::Mask** mask,
-                                 doc::Palette** palette)
+bool Clipboard::getNativeBitmap(doc::Image** image,
+                                doc::Mask** mask,
+                                doc::Palette** palette)
 {
   *image = nullptr;
   *mask = nullptr;
@@ -286,7 +286,7 @@ bool get_native_clipboard_bitmap(doc::Image** image,
   return true;
 }
 
-bool get_native_clipboard_bitmap_size(gfx::Size* size)
+bool Clipboard::getNativeBitmapSize(gfx::Size* size)
 {
   clip::image_spec spec;
   if (clip::get_image_spec(spec)) {
@@ -298,5 +298,4 @@ bool get_native_clipboard_bitmap_size(gfx::Size* size)
     return false;
 }
 
-} // namespace clipboard
 } // namespace app

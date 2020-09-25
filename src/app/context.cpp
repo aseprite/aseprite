@@ -19,6 +19,7 @@
 #include "app/doc.h"
 #include "app/pref/preferences.h"
 #include "app/site.h"
+#include "app/util/clipboard.h"
 #include "base/scoped_value.h"
 #include "doc/layer.h"
 #include "ui/system.h"
@@ -57,6 +58,16 @@ Preferences& Context::preferences() const
     m_docs.add_observer(m_preferences.get());
   }
   return *m_preferences;
+}
+
+Clipboard* Context::clipboard() const
+{
+#ifdef ENABLE_UI
+  return Clipboard::instance();
+#else
+  // TODO support clipboard when !ENABLE_UI
+  throw std::runtime_error("Clipboard not supported");
+#endif
 }
 
 void Context::sendDocumentToTop(Doc* document)

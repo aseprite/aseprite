@@ -118,21 +118,21 @@ void NewLayerCommand::onLoadParams(const Params& commandParams)
     m_place = Place::BeforeActiveLayer;
 }
 
-bool NewLayerCommand::onEnabled(Context* context)
+bool NewLayerCommand::onEnabled(Context* ctx)
 {
-  if (!context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                           ContextFlags::HasActiveSprite))
+  if (!ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+                       ContextFlags::HasActiveSprite))
     return false;
 
 #ifdef ENABLE_UI
   if (params().fromClipboard() &&
-      clipboard::get_current_format() != clipboard::ClipboardImage)
+      ctx->clipboard()->format() != ClipboardFormat::Image)
     return false;
 #endif
 
   if ((params().viaCut() ||
        params().viaCopy()) &&
-      !context->checkFlags(ContextFlags::HasVisibleMask))
+      !ctx->checkFlags(ContextFlags::HasVisibleMask))
     return false;
 
   return true;
@@ -392,7 +392,7 @@ void NewLayerCommand::onExecute(Context* context)
 #ifdef ENABLE_UI
     // Paste new layer from clipboard
     else if (params().fromClipboard() && layer->isImage()) {
-      clipboard::paste(context, false);
+      context->clipboard()->paste(context, false);
 
       if (layer->isReference()) {
         if (Cel* cel = layer->cel(site.frame())) {

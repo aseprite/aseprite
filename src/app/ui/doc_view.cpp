@@ -499,7 +499,7 @@ bool DocView::onCanCopy(Context* ctx)
 bool DocView::onCanPaste(Context* ctx)
 {
   return
-    (clipboard::get_current_format() == clipboard::ClipboardImage
+    (ctx->clipboard()->format() == ClipboardFormat::Image
      && ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable |
                         ContextFlags::ActiveLayerIsVisible |
                         ContextFlags::ActiveLayerIsEditable |
@@ -526,7 +526,7 @@ bool DocView::onCanClear(Context* ctx)
 bool DocView::onCut(Context* ctx)
 {
   ContextWriter writer(ctx);
-  clipboard::cut(writer);
+  ctx->clipboard()->cut(writer);
   return true;
 }
 
@@ -536,7 +536,7 @@ bool DocView::onCopy(Context* ctx)
   if (reader.site()->document() &&
       static_cast<const Doc*>(reader.site()->document())->isMaskVisible() &&
       reader.site()->image()) {
-    clipboard::copy(reader);
+    ctx->clipboard()->copy(reader);
     return true;
   }
   else
@@ -545,8 +545,9 @@ bool DocView::onCopy(Context* ctx)
 
 bool DocView::onPaste(Context* ctx)
 {
-  if (clipboard::get_current_format() == clipboard::ClipboardImage) {
-    clipboard::paste(ctx, true);
+  auto clipboard = ctx->clipboard();
+  if (clipboard->format() == ClipboardFormat::Image) {
+    clipboard->paste(ctx, true);
     return true;
   }
   else
@@ -587,7 +588,7 @@ bool DocView::onClear(Context* ctx)
       (visibleMask &&
        !Preferences::instance().selection.keepSelectionAfterClear());
 
-    clipboard::clear_mask_from_cels(
+    ctx->clipboard()->clearMaskFromCels(
       tx, document, cels,
       deselectMask);
 

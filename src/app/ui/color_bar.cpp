@@ -1407,10 +1407,11 @@ bool ColorBar::onCanCopy(Context* ctx)
 
 bool ColorBar::onCanPaste(Context* ctx)
 {
+  auto format = ctx->clipboard()->format();
   if (m_tilemapMode == TilemapMode::Tiles)
-    return (clipboard::get_current_format() == clipboard::ClipboardTiles);
+    return (format == ClipboardFormat::Tileset);
   else
-    return (clipboard::get_current_format() == clipboard::ClipboardPaletteEntries);
+    return (format == ClipboardFormat::PaletteEntries);
 }
 
 bool ColorBar::onCanClear(Context* ctx)

@@ -608,7 +608,7 @@ bool Timeline::onProcessMessage(Message* msg)
       if (static_cast<TimerMessage*>(msg)->timer() == &m_clipboard_timer) {
         Doc* clipboard_document;
         DocRange clipboard_range;
-        clipboard::get_document_range_info(
+        Clipboard::instance()->getDocumentRangeInfo(
           &clipboard_document,
           &clipboard_range);
 
@@ -1944,7 +1944,7 @@ void Timeline::drawClipboardRange(ui::Graphics* g)
 {
   Doc* clipboard_document;
   DocRange clipboard_range;
-  clipboard::get_document_range_info(
+  Clipboard::instance()->getDocumentRangeInfo(
     &clipboard_document,
     &clipboard_range);
 
@@ -3865,14 +3865,15 @@ void Timeline::clearClipboardRange()
 {
   Doc* clipboard_document;
   DocRange clipboard_range;
-  clipboard::get_document_range_info(
+  auto clipboard = Clipboard::instance();
+  clipboard->getDocumentRangeInfo(
     &clipboard_document,
     &clipboard_range);
 
   if (!m_document || clipboard_document != m_document)
     return;
 
-  clipboard::clear_content();
+  clipboard->clearContent();
   m_clipboard_timer.stop();
 }
 
@@ -4012,7 +4013,7 @@ bool Timeline::onCanCopy(Context* ctx)
 bool Timeline::onCanPaste(Context* ctx)
 {
   return
-    (clipboard::get_current_format() == clipboard::ClipboardDocRange &&
+    (ctx->clipboard()->format() == ClipboardFormat::DocRange &&
      ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable));
 }
 
@@ -4031,7 +4032,7 @@ bool Timeline::onCopy(Context* ctx)
   if (m_range.enabled()) {
     const ContextReader reader(ctx);
     if (reader.document()) {
-      clipboard::copy_range(reader, m_range);
+      ctx->clipboard()->copyRange(reader, m_range);
       return true;
     }
   }
@@ -4040,8 +4041,9 @@ bool Timeline::onCopy(Context* ctx)
 
 bool Timeline::onPaste(Context* ctx)
 {
-  if (clipboard::get_current_format() == clipboard::ClipboardDocRange) {
-    clipboard::paste(ctx, true);
+  auto clipboard = ctx->clipboard();
+  if (clipboard->format() == ClipboardFormat::DocRange) {
+    clipboard->paste(ctx, true);
     return true;
   }
   else

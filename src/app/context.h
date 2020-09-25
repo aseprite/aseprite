@@ -30,6 +30,7 @@ namespace doc {
 
 namespace app {
   class ActiveSiteHandler;
+  class Clipboard;
   class Command;
   class Doc;
   class DocRange;
@@ -72,6 +73,7 @@ namespace app {
     Docs& documents() { return m_docs; }
 
     Preferences& preferences() const;
+    Clipboard* clipboard() const;
 
     virtual bool isUIAvailable() const     { return false; }
     virtual bool isRecordingMacro() const  { return false; }
