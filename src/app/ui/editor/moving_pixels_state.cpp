@@ -584,7 +584,7 @@ void MovingPixelsState::onBeforeCommandExecution(CommandExecutionEvent& ev)
   }
 
   // We don't need to drop the pixels if a MoveMaskCommand of Content is executed.
-  if (MoveMaskCommand* moveMaskCmd = dynamic_cast<MoveMaskCommand*>(command)) {
+  if (auto moveMaskCmd = dynamic_cast<MoveMaskCommand*>(command)) {
     if (moveMaskCmd->getTarget() == MoveMaskCommand::Content) {
       if (layer_is_locked(m_editor)) {
         ev.cancel();
@@ -656,7 +656,7 @@ void MovingPixelsState::onBeforeCommandExecution(CommandExecutionEvent& ev)
   // Flip Horizontally/Vertically commands are handled manually to
   // avoid dropping the floating region of pixels.
   else if (command->id() == CommandId::Flip()) {
-    if (FlipCommand* flipCommand = dynamic_cast<FlipCommand*>(command)) {
+    if (auto flipCommand = dynamic_cast<FlipCommand*>(command)) {
       this->flip(flipCommand->getFlipType());
 
       ev.cancel();
@@ -665,7 +665,7 @@ void MovingPixelsState::onBeforeCommandExecution(CommandExecutionEvent& ev)
   }
   // Rotate is quite simple, we can add the angle to the current transformation.
   else if (command->id() == CommandId::Rotate()) {
-    if (RotateCommand* rotate = dynamic_cast<RotateCommand*>(command)) {
+    if (auto rotate = dynamic_cast<RotateCommand*>(command)) {
       if (rotate->flipMask()) {
         this->rotate(rotate->angle());
 

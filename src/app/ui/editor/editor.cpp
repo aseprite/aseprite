@@ -2519,7 +2519,7 @@ void Editor::startSelectionTransformation(const gfx::Point& move, double angle)
     if (std::fabs(angle) > 1e-5)
       movingPixels->rotate(angle);
   }
-  else if (StandbyState* standby = dynamic_cast<StandbyState*>(m_state.get())) {
+  else if (auto standby = dynamic_cast<StandbyState*>(m_state.get())) {
     standby->startSelectionTransformation(this, move, angle);
   }
 }
@@ -2843,7 +2843,7 @@ void Editor::updateAutoCelGuides(ui::Message* msg)
   // tool to show automatic guides.
   if (m_showAutoCelGuides &&
       m_state->requireBrushPreview()) {
-    ui::MouseMessage* mouseMsg = dynamic_cast<ui::MouseMessage*>(msg);
+    auto mouseMsg = dynamic_cast<ui::MouseMessage*>(msg);
 
     ColorPicker picker;
     picker.pickColor(getSite(),

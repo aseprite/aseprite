@@ -704,7 +704,7 @@ void StandbyState::startSelectionTransformation(Editor* editor,
 {
   transformSelection(editor, NULL, NoHandle);
 
-  if (MovingPixelsState* movingPixels = dynamic_cast<MovingPixelsState*>(editor->getState().get())) {
+  if (auto movingPixels = dynamic_cast<MovingPixelsState*>(editor->getState().get())) {
     movingPixels->translate(gfx::PointF(move));
     if (std::fabs(angle) > 1e-5)
       movingPixels->rotate(angle);
@@ -715,7 +715,7 @@ void StandbyState::startFlipTransformation(Editor* editor, doc::algorithm::FlipT
 {
   transformSelection(editor, NULL, NoHandle);
 
-  if (MovingPixelsState* movingPixels = dynamic_cast<MovingPixelsState*>(editor->getState().get()))
+  if (auto movingPixels = dynamic_cast<MovingPixelsState*>(editor->getState().get()))
     movingPixels->flip(flipType);
 }
 
