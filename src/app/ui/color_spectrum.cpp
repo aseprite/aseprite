@@ -40,6 +40,11 @@ app::Color ColorSpectrum::getMainAreaColor(const int u, const int umax,
 {
   double hue = 360.0 * u / umax;
   double lit = 1.0 - (double(v)/double(vmax));
+
+  if (v > vmax) {
+      return app::Color::fromMask();
+  }
+
   return app::Color::fromHsl(
     base::clamp(hue, 0.0, 360.0),
     m_color.getHslSaturation(),

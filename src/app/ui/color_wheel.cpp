@@ -76,7 +76,7 @@ app::Color ColorWheel::getMainAreaColor(const int _u, const int umax,
   int u = _u - umax/2;
   int v = _v - vmax/2;
   double d = std::sqrt(u*u + v*v);
-
+  
   if (m_colorModel == ColorModel::NORMAL_MAP) {
     double a = std::atan2(-v, u);
     int di = int(128.0 * d / m_wheelRadius);
@@ -102,7 +102,7 @@ app::Color ColorWheel::getMainAreaColor(const int _u, const int umax,
         base::clamp(b, 128, 255));
     }
     else {
-      return app::Color::fromRgb(128, 128, 255);
+      return app::Color::fromMask();
     }
   }
 

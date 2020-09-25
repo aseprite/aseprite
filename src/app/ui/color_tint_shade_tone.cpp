@@ -33,6 +33,11 @@ app::Color ColorTintShadeTone::getMainAreaColor(const int u, const int umax,
 {
   double sat = (1.0 * u / umax);
   double val = (1.0 - double(v) / double(vmax));
+
+  if (v > vmax) {
+      return app::Color::fromMask();
+  }
+
   return app::Color::fromHsv(
     m_color.getHsvHue(),
     base::clamp(sat, 0.0, 1.0),
