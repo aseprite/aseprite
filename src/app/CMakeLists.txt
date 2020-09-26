@@ -91,9 +91,6 @@ if(WITH_WEBP_SUPPORT)
   add_definitions(-DASEPRITE_WITH_WEBP_SUPPORT)
 endif()
 
-# libarchive definitions
-add_definitions(-DLIBARCHIVE_STATIC)
-
 ######################################################################
 # app-lib target
 
@@ -652,7 +649,7 @@ target_link_libraries(app-lib
   ${FREETYPE_LIBRARIES}
   ${HARFBUZZ_LIBRARIES}
   json11
-  archive_static
+  ${ARCHIVE_LIBRARIES}
   fmt
   tinyexpr)
 

@@ -104,16 +104,18 @@ endif()
 add_subdirectory(json11)
 
 # libarchive
-set(ENABLE_WERROR OFF CACHE BOOL "Treat warnings as errors - default is ON for Debug, OFF otherwise.")
-set(ENABLE_TEST OFF CACHE BOOL "Enable unit and regression tests")
-set(ENABLE_COVERAGE OFF CACHE BOOL "Enable code coverage (GCC only, automatically sets ENABLE_TEST to ON)")
-set(ENABLE_LZMA OFF CACHE BOOL "Enable the use of the system LZMA library if found")
-set(ENABLE_CNG OFF CACHE BOOL "Enable the use of CNG(Crypto Next Generation)")
-set(ENABLE_BZip2 OFF CACHE BOOL "Enable the use of the system BZip2 library if found")
-set(ENABLE_LIBXML2 OFF CACHE BOOL "Enable the use of the system libxml2 library if found")
-add_subdirectory(libarchive)
-target_include_directories(archive_static INTERFACE
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/libarchive/libarchive>)
+if(NOT USE_SHARED_LIBARCHIVE)
+  set(ENABLE_WERROR OFF CACHE BOOL "Treat warnings as errors - default is ON for Debug, OFF otherwise.")
+  set(ENABLE_TEST OFF CACHE BOOL "Enable unit and regression tests")
+  set(ENABLE_COVERAGE OFF CACHE BOOL "Enable code coverage (GCC only, automatically sets ENABLE_TEST to ON)")
+  set(ENABLE_LZMA OFF CACHE BOOL "Enable the use of the system LZMA library if found")
+  set(ENABLE_CNG OFF CACHE BOOL "Enable the use of CNG(Crypto Next Generation)")
+  set(ENABLE_BZip2 OFF CACHE BOOL "Enable the use of the system BZip2 library if found")
+  set(ENABLE_LIBXML2 OFF CACHE BOOL "Enable the use of the system libxml2 library if found")
+  add_subdirectory(libarchive)
+  target_include_directories(archive_static INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/libarchive/libarchive>)
+endif()
 
 # benchmark
 if(ENABLE_BENCHMARKS)

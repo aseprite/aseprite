@@ -60,6 +60,7 @@ option(USE_SHARED_CURL    "Use your installed copy of curl" off)
 option(USE_SHARED_GIFLIB  "Use your installed copy of giflib" off)
 option(USE_SHARED_JPEGLIB "Use your installed copy of jpeglib" off)
 option(USE_SHARED_ZLIB    "Use your installed copy of zlib" off)
+option(USE_SHARED_LIBARCHIVE "Use your installed copy of libarchive" off)
 option(USE_SHARED_LIBPNG  "Use your installed copy of libpng" off)
 option(USE_SHARED_TINYXML "Use your installed copy of tinyxml" off)
 option(USE_SHARED_PIXMAN  "Use your installed copy of pixman" off)
@@ -199,6 +200,15 @@ else()
   set(ZLIB_INCLUDE_DIR ${ZLIB_INCLUDE_DIRS} CACHE PATH "")
 endif()
 include_directories(${ZLIB_INCLUDE_DIRS})
+
+# libarchive
+if(USE_SHARED_LIBARCHIVE)
+  find_library(ARCHIVE_LIBRARIES NAMES archive)
+  find_path(ARCHIVE_INCLUDE_DIRS NAMES archive.h)
+else()
+  add_definitions(-DLIBARCHIVE_STATIC)
+  set(ARCHIVE_LIBRARIES archive_static)
+endif()
 
 # libpng
 if(USE_SHARED_LIBPNG)
