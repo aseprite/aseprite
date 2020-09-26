@@ -66,6 +66,7 @@ option(USE_SHARED_TINYXML "Use your installed copy of tinyxml" off)
 option(USE_SHARED_PIXMAN  "Use your installed copy of pixman" off)
 option(USE_SHARED_FREETYPE "Use shared FreeType library" off)
 option(USE_SHARED_HARFBUZZ "Use shared HarfBuzz library" off)
+option(USE_SHARED_WEBP    "Use your installed copy of webp" off)
 option(ENABLE_ASEPRITE_EXE "Compile main Aseprite executable" on)
 option(ENABLE_MEMLEAK      "Enable memory-leaks detector (only for developers)" off)
 option(ENABLE_NEWS         "Enable the news in Home tab" on)
@@ -229,9 +230,14 @@ add_definitions(-DPNG_NO_MMX_CODE) # Do not use MMX optimizations in PNG code
 
 # libwebp
 if(WITH_WEBP_SUPPORT)
-  set(WEBP_LIBRARIES webp webpdemux libwebpmux)
-  set(WEBP_INCLUDE_DIR ${LIBWEBP_DIR}/src)
-  include_directories(${WEBP_INCLUDE_DIR})
+  if(USE_SHARED_WEBP)
+    find_library(WEBP_LIBRARIES NAMES webp)
+    find_path(WEBP_INCLUDE_DIRS NAMES decode.h PATH_SUFFIXES webp)
+  else()
+    set(WEBP_LIBRARIES webp webpdemux libwebpmux)
+    set(WEBP_INCLUDE_DIR ${LIBWEBP_DIR}/src)
+    include_directories(${WEBP_INCLUDE_DIR})
+  endif()
 endif()
 
 # tinyxml

@@ -32,7 +32,7 @@ if(NOT USE_SHARED_GIFLIB)
   add_subdirectory(giflib)
 endif()
 
-if(WITH_WEBP_SUPPORT)
+if(WITH_WEBP_SUPPORT AND NOT USE_SHARED_WEBP)
   set(WEBP_BUILD_EXTRAS OFF CACHE BOOL "Build extras.")
   add_subdirectory(libwebp)
 endif()
