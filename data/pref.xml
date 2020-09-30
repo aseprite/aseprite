@@ -70,6 +70,7 @@
       <value id="ALL_LAYERS" value="0" />
       <value id="CURRENT_LAYER" value="1" />
       <value id="FIRST_REFERENCE_LAYER" value="2" />
+      <value id="FIRST_VISIBLE_LAYER" value="3" />
     </enum>
     <enum id="SelectionMode">
       <value id="DEFAULT" value="0" />

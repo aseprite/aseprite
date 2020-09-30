@@ -144,6 +144,34 @@ void ColorPicker::pickColor(const Site& site,
       }
       break;
     }
+
+    case FromFirstVisible: {
+      doc::CelList cels;
+      sprite->pickCels(pos.x, pos.y, site.frame(), kOpacityThreshold,
+                       sprite->allVisibleLayers(), cels);
+      
+      if (cels.empty())
+        return;
+
+      const Cel* cel = cels.front();
+      doc::color_t imageColor;
+      get_cel_pixel(cel, pos.x, pos.y, site.frame(), imageColor);
+      
+      const doc::Image* image = cel->image();
+      switch (image->pixelFormat()) {
+        case IMAGE_RGB:
+          m_alpha = doc::rgba_geta(imageColor);
+          break;
+        case IMAGE_GRAYSCALE:
+          m_alpha = doc::graya_geta(imageColor);
+          break;
+      }
+            
+      m_color = app::Color::fromImage(image->pixelFormat(), imageColor);
+      m_layer = const_cast<Layer*>((Layer*)cel->layer());
+      
+      break;
+    }
   }
 }
 

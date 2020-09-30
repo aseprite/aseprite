@@ -24,7 +24,8 @@ namespace app {
     enum Mode {
       FromComposition,
       FromActiveLayer,
-      FromFirstReferenceLayer
+      FromFirstReferenceLayer,
+      FromFirstVisible
     };
 
     ColorPicker();
