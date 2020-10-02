@@ -23,6 +23,7 @@ namespace doc {
   class Mask;
   class Palette;
   class PalettePicks;
+  class Tileset;
 }
 
 namespace app {
@@ -88,7 +89,8 @@ namespace app {
     void setData(doc::Image* image,
                  doc::Mask* mask,
                  doc::Palette* palette,
-                 bool set_system_clipboard,
+                 doc::Tileset* tileset,
+                 bool set_native_clipboard,
                  bool image_source_is_transparent);
     bool copyFromDocument(const Site& site, bool merged = false);
 
@@ -97,10 +99,12 @@ namespace app {
     bool hasNativeBitmap() const;
     bool setNativeBitmap(const doc::Image* image,
                          const doc::Mask* mask,
-                         const doc::Palette* palette);
+                         const doc::Palette* palette,
+                         const doc::Tileset* tileset = nullptr);
     bool getNativeBitmap(doc::Image** image,
                          doc::Mask** mask,
-                         doc::Palette** palette);
+                         doc::Palette** palette,
+                         doc::Tileset** tileset);
     bool getNativeBitmapSize(gfx::Size* size);
 
     struct Data;

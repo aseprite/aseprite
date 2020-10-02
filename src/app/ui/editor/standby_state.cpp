@@ -753,12 +753,22 @@ void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleT
     editor->brushPreview().hide();
 
     EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
-    std::unique_ptr<Image> tmpImage(new_image_from_mask(editor->getSite(),
-                                                        Preferences::instance().experimental.newBlend()));
+    Site site = editor->getSite();
+    ImageRef tmpImage;
+
+    if (site.layer() &&
+        site.layer()->isTilemap() &&
+        site.tilemapMode() == TilemapMode::Tiles) {
+      tmpImage.reset(new_tilemap_from_mask(site, site.document()->mask()));
+    }
+    else {
+      tmpImage.reset(new_image_from_mask(site,
+                                         Preferences::instance().experimental.newBlend()));
+    }
 
     PixelsMovementPtr pixelsMovement(
       new PixelsMovement(UIContext::instance(),
-                         editor->getSite(),
+                         site,
                          tmpImage.get(),
                          document->mask(),
                          "Transformation"));

@@ -27,6 +27,7 @@
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/pref/preferences.h"
+#include "app/snap_to_grid.h"
 #include "app/tools/active_tool.h"
 #include "app/tools/controller.h"
 #include "app/tools/ink.h"
@@ -2498,6 +2499,19 @@ void Editor::pasteImage(const Image* image, const Mask* mask)
     }
   }
 
+  Site site = getSite();
+
+  // Snap to grid a pasted tilemap
+  // TODO should we move this to PixelsMovement or MovingPixelsState?
+  if (site.tilemapMode() == TilemapMode::Tiles) {
+    gfx::Rect gridBounds = site.gridBounds();
+    gfx::Point pt = snap_to_grid(gridBounds,
+                                 gfx::Point(x, y),
+                                 PreferSnapTo::ClosestGridVertex);
+    x = pt.x;
+    y = pt.y;
+  }
+
   // Clear brush preview, as the extra cel will be replaced with the
   // pasted image.
   m_brushPreview.hide();
@@ -2506,7 +2520,7 @@ void Editor::pasteImage(const Image* image, const Mask* mask)
   mask2.setOrigin(x, y);
 
   PixelsMovementPtr pixelsMovement(
-    new PixelsMovement(UIContext::instance(), getSite(),
+    new PixelsMovement(UIContext::instance(), site,
                        image, &mask2, "Paste"));
 
   setState(EditorStatePtr(new MovingPixelsState(this, NULL, pixelsMovement, NoHandle)));

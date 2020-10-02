@@ -20,6 +20,7 @@
 #include "doc/image_io.h"
 #include "doc/mask_io.h"
 #include "doc/palette_io.h"
+#include "doc/tileset_io.h"
 #include "gfx/size.h"
 #include "os/display.h"
 #include "os/system.h"
@@ -66,7 +67,8 @@ bool Clipboard::hasNativeBitmap() const
 
 bool Clipboard::setNativeBitmap(const doc::Image* image,
                                 const doc::Mask* mask,
-                                const doc::Palette* palette)
+                                const doc::Palette* palette,
+                                const doc::Tileset* tileset)
 {
   clip::lock l(native_display_handle());
   if (!l.locked())
@@ -83,10 +85,12 @@ bool Clipboard::setNativeBitmap(const doc::Image* image,
     write32(os,
             (image   ? 1: 0) |
             (mask    ? 2: 0) |
-            (palette ? 4: 0));
+            (palette ? 4: 0) |
+            (tileset ? 8: 0));
     if (image) doc::write_image(os, image);
     if (mask) doc::write_mask(os, mask);
     if (palette) doc::write_palette(os, palette);
+    if (tileset) doc::write_tileset(os, tileset);
 
     if (os.good()) {
       size_t size = (size_t)os.tellp();
@@ -165,11 +169,13 @@ bool Clipboard::setNativeBitmap(const doc::Image* image,
 
 bool Clipboard::getNativeBitmap(doc::Image** image,
                                 doc::Mask** mask,
-                                doc::Palette** palette)
+                                doc::Palette** palette,
+                                doc::Tileset** tileset)
 {
   *image = nullptr;
   *mask = nullptr;
   *palette = nullptr;
+  *tileset = nullptr;
 
   clip::lock l(native_display_handle());
   if (!l.locked())
@@ -189,6 +195,7 @@ bool Clipboard::getNativeBitmap(doc::Image** image,
         if (bits & 1) *image   = doc::read_image(is, false);
         if (bits & 2) *mask    = doc::read_mask(is);
         if (bits & 4) *palette = doc::read_palette(is);
+        if (bits & 8) *tileset = doc::read_tileset(is, nullptr);
         if (image)
           return true;
       }

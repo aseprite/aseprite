@@ -59,7 +59,7 @@ public:
       gfx::RectF bounds() const {
         gfx::RectF bounds;
         for (int i=0; i<Corners::NUM_OF_CORNERS; ++i)
-          bounds |= gfx::RectF(m_corners[i].x, m_corners[i].y, 1, 1);
+          bounds |= gfx::RectF(m_corners[i].x, m_corners[i].y, 0.001, 0.001);
         return bounds;
       }
 

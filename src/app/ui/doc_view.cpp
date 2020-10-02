@@ -498,13 +498,21 @@ bool DocView::onCanCopy(Context* ctx)
 
 bool DocView::onCanPaste(Context* ctx)
 {
-  return
-    (ctx->clipboard()->format() == ClipboardFormat::Image
-     && ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                        ContextFlags::ActiveLayerIsVisible |
-                        ContextFlags::ActiveLayerIsEditable |
-                        ContextFlags::ActiveLayerIsImage)
-     && !ctx->checkFlags(ContextFlags::ActiveLayerIsReference));
+  if (ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+                      ContextFlags::ActiveLayerIsVisible |
+                      ContextFlags::ActiveLayerIsEditable |
+                      ContextFlags::ActiveLayerIsImage)
+      && !ctx->checkFlags(ContextFlags::ActiveLayerIsReference)) {
+    auto format = ctx->clipboard()->format();
+    if (format == ClipboardFormat::Image) {
+      return true;
+    }
+    else if (format == ClipboardFormat::Tilemap &&
+             ctx->checkFlags(ContextFlags::ActiveLayerIsTilemap)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 bool DocView::onCanClear(Context* ctx)
@@ -546,7 +554,8 @@ bool DocView::onCopy(Context* ctx)
 bool DocView::onPaste(Context* ctx)
 {
   auto clipboard = ctx->clipboard();
-  if (clipboard->format() == ClipboardFormat::Image) {
+  if (clipboard->format() == ClipboardFormat::Image ||
+      clipboard->format() == ClipboardFormat::Tilemap) {
     clipboard->paste(ctx, true);
     return true;
   }

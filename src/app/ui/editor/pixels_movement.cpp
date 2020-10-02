@@ -388,7 +388,8 @@ void PixelsMovement::moveImage(const gfx::PointF& pos, MoveModifier moveModifier
 
       bounds.offset(dx, dy);
 
-      if ((moveModifier & SnapToGridMovement) == SnapToGridMovement) {
+      if ((m_site.tilemapMode() == TilemapMode::Tiles) ||
+          (moveModifier & SnapToGridMovement) == SnapToGridMovement) {
         // Snap the x1,y1 point to the grid.
         gfx::Rect gridBounds = m_site.gridBounds();
         gfx::PointF gridOffset(
@@ -487,6 +488,13 @@ void PixelsMovement::moveImage(const gfx::PointF& pos, MoveModifier moveModifier
         b.y = ((b.y-pivot.y)*(1.0+dy/h) + pivot.y);
       }
 
+      // Snap to grid when resizing tilemaps
+      if (m_site.tilemapMode() == TilemapMode::Tiles) {
+        gfx::Rect gridBounds = m_site.gridBounds();
+        a = gfx::PointF(snap_to_grid(gridBounds, gfx::Point(a), PreferSnapTo::BoxOrigin));
+        b = gfx::PointF(snap_to_grid(gridBounds, gfx::Point(b), PreferSnapTo::BoxOrigin));
+      }
+
       // Do not use "gfx::Rect(a, b)" here because if a > b we want to
       // keep a rectangle with negative width or height (to know that
       // it was flipped).
@@ -504,6 +512,11 @@ void PixelsMovement::moveImage(const gfx::PointF& pos, MoveModifier moveModifier
     case RotateNEHandle:
     case RotateSWHandle:
     case RotateSEHandle: {
+      // Cannot rotate tiles
+      // TODO add support to rotate tiles in straight angles (changing tile flags)
+      if (m_site.tilemapMode() == TilemapMode::Tiles)
+        break;
+
       double da = (std::atan2((double)(-pos.y + abs_pivot.y),
                               (double)(+pos.x - abs_pivot.x)) -
                    std::atan2((double)(-m_catchPos.y + abs_initial_pivot.y),
@@ -541,6 +554,12 @@ void PixelsMovement::moveImage(const gfx::PointF& pos, MoveModifier moveModifier
     case SkewSHandle:
     case SkewWHandle:
     case SkewEHandle: {
+      // Cannot skew tiles
+      // TODO could we support to skew tiles if we have the set of tiles (e.g. diagonals)?
+      //      maybe too complex to implement in UI terms
+      if (m_site.tilemapMode() == TilemapMode::Tiles)
+        break;
+
       //    u
       // ------>
       //
@@ -796,21 +815,22 @@ void PixelsMovement::stampExtraCelImage()
     TiledMode::NONE, m_tx,
     ExpandCelCanvas::None);
 
+  gfx::Point dstPt;
+  gfx::Size canvasImageSize = image->size();
+  if (m_site.tilemapMode() == TilemapMode::Tiles) {
+    doc::Grid grid = m_site.grid();
+    dstPt = grid.canvasToTile(cel->position());
+    canvasImageSize = grid.tileToCanvas(gfx::Rect(dstPt, canvasImageSize)).size();
+  }
+  else {
+    dstPt = cel->position() - expand.getCel()->position();
+  }
+
   // We cannot use cel->bounds() because cel->image() is nullptr
-  gfx::Rect modifiedRect(
-    cel->x(),
-    cel->y(),
-    image->width(),
-    image->height());
+  expand.validateDestCanvas(
+    gfx::Region(gfx::Rect(cel->position(), canvasImageSize)));
 
-  gfx::Region modifiedRegion(modifiedRect);
-  expand.validateDestCanvas(modifiedRegion);
-
-  expand.getDestCanvas()->copy(
-    image, gfx::Clip(
-      cel->x()-expand.getCel()->x(),
-      cel->y()-expand.getCel()->y(),
-      image->bounds()));
+  expand.getDestCanvas()->copy(image, gfx::Clip(dstPt, image->bounds()));
 
   expand.commit();
 }
@@ -953,13 +973,23 @@ void PixelsMovement::redrawExtraImage(Transformation* transformation)
     m_extraCel.reset(new ExtraCel);
 
   gfx::Rect bounds = transformation->transformedBounds();
+
   if (!bounds.isEmpty()) {
+    gfx::Size extraCelSize;
+    if (m_site.tilemapMode() == TilemapMode::Tiles) {
+      // Transforming tiles
+      extraCelSize = m_site.grid().canvasToTile(bounds).size();
+    }
+    else {
+      // Transforming pixels
+      extraCelSize = bounds.size();
+    }
+
     m_extraCel->create(
       m_site.tilemapMode(),
       m_document->sprite(),
       bounds,
-      (m_site.tilemapMode() == TilemapMode::Tiles ? m_site.grid().tileToCanvas(bounds).size():
-                                                    bounds.size()),
+      extraCelSize,
       m_site.frame(),
       opacity);
     m_extraCel->setType(render::ExtraType::PATCH);
@@ -995,36 +1025,47 @@ void PixelsMovement::drawImage(
   auto corners = transformation.transformedCorners();
   gfx::Rect bounds = corners.bounds();
 
-  dst->setMaskColor(m_site.sprite()->transparentColor());
-  dst->clear(dst->maskColor());
+  if (m_site.tilemapMode() == TilemapMode::Tiles) {
+    dst->setMaskColor(doc::tile_i_notile);
+    dst->clear(dst->maskColor());
 
-  if (renderOriginalLayer) {
-    render::Render render;
-    render.renderLayer(
-      dst, m_site.layer(), m_site.frame(),
-      gfx::Clip(bounds.x-pt.x, bounds.y-pt.y, bounds),
-      BlendMode::SRC);
+    drawTransformedTilemap(
+      transformation,
+      dst, m_originalImage.get(),
+      m_initialMask.get(), corners, pt);
   }
+  else {
+    dst->setMaskColor(m_site.sprite()->transparentColor());
+    dst->clear(dst->maskColor());
 
-  color_t maskColor = m_maskColor;
+    if (renderOriginalLayer) {
+      render::Render render;
+      render.renderLayer(
+        dst, m_site.layer(), m_site.frame(),
+        gfx::Clip(bounds.x-pt.x, bounds.y-pt.y, bounds),
+        BlendMode::SRC);
+    }
 
-  // In case that Opaque option is enabled, or if we are drawing the
-  // image for the clipboard (renderOriginalLayer is false), we use a
-  // dummy mask color to call drawParallelogram(). In this way all
-  // pixels will be opaqued (all colors are copied)
-  if (m_opaque ||
-      !renderOriginalLayer) {
-    if (m_originalImage->pixelFormat() == IMAGE_INDEXED)
-      maskColor = -1;
-    else
-      maskColor = 0;
+    color_t maskColor = m_maskColor;
+
+    // In case that Opaque option is enabled, or if we are drawing the
+    // image for the clipboard (renderOriginalLayer is false), we use a
+    // dummy mask color to call drawParallelogram(). In this way all
+    // pixels will be opaqued (all colors are copied)
+    if (m_opaque ||
+        !renderOriginalLayer) {
+      if (m_originalImage->pixelFormat() == IMAGE_INDEXED)
+        maskColor = -1;
+      else
+        maskColor = 0;
+    }
+    m_originalImage->setMaskColor(maskColor);
+
+    drawParallelogram(
+      transformation,
+      dst, m_originalImage.get(),
+      m_initialMask.get(), corners, pt);
   }
-  m_originalImage->setMaskColor(maskColor);
-
-  drawParallelogram(
-    transformation,
-    dst, m_originalImage.get(),
-    m_initialMask.get(), corners, pt);
 }
 
 void PixelsMovement::drawMask(doc::Mask* mask, bool shrink)
@@ -1117,6 +1158,36 @@ retry:;      // In case that we don't have enough memory for RotSprite
       break;
 
   }
+}
+
+void PixelsMovement::drawTransformedTilemap(
+  const Transformation& transformation,
+  doc::Image* dst, const doc::Image* src, const doc::Mask* mask,
+  const Transformation::Corners& corners,
+  const gfx::PointF& leftTop)
+{
+  const int boxw = std::max(1, src->width()-2);
+  const int boxh = std::max(1, src->height()-2);
+
+  // Function to copy a whole row of tiles (h=number of tiles in Y axis)
+  auto draw_row =
+    [dst, src, boxw](int y, int v, int h) {
+      dst->copy(src, gfx::Clip(0, y, 0, v, 1, h));
+      if (boxw) {
+        const int u = std::min(1, src->width()-1);
+        for (int x=1; x<dst->width()-1; x+=boxw)
+          dst->copy(src, gfx::Clip(x, y, u, v, boxw, h));
+      }
+      dst->copy(src, gfx::Clip(dst->width()-1, y, src->width()-1, v, 1, h));
+    };
+
+  draw_row(0, 0, 1);
+  if (boxh) {
+    const int v = std::min(1, src->height()-1);
+    for (int y=1; y<dst->height()-1; y+=boxh)
+      draw_row(y, v, boxh);
+  }
+  draw_row(dst->height()-1, src->height()-1, 1);
 }
 
 void PixelsMovement::onPivotChange()

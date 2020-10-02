@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -15,7 +16,6 @@
 #include "app/tools/tool_box.h"
 #include "app/ui/context_bar.h"
 #include "app/ui_context.h"
-#include "app/util/new_image_from_mask.h"
 
 namespace app {
 

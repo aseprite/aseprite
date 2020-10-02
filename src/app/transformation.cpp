@@ -86,7 +86,7 @@ RectF Transformation::transformedBounds() const
   // Create a union of all corners
   RectF bounds;
   for (int i=0; i<Corners::NUM_OF_CORNERS; ++i)
-    bounds = bounds.createUnion(RectF(corners[i].x, corners[i].y, 1, 1));
+    bounds = bounds.createUnion(RectF(corners[i].x, corners[i].y, 0.001, 0.001));
 
   return bounds;
 }

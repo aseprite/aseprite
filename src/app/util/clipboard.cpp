@@ -209,49 +209,85 @@ bool Clipboard::getClipboardText(std::string& text)
 void Clipboard::setData(Image* image,
                         Mask* mask,
                         Palette* palette,
-                        bool set_system_clipboard,
+                        Tileset* tileset,
+                        bool set_native_clipboard,
                         bool image_source_is_transparent)
 {
+  const bool isTilemap = (image && image->isTilemap());
+
   m_data->clear();
   m_data->palette.reset(palette);
-  m_data->image.reset(image);
+  m_data->tileset.reset(tileset);
   m_data->mask.reset(mask);
+  if (isTilemap)
+    m_data->tilemap.reset(image);
+  else
+    m_data->image.reset(image);
 
-  // Copy image to the native clipboard
-  if (set_system_clipboard) {
-    color_t oldMask;
-    if (image) {
-      oldMask = image->maskColor();
-      if (!image_source_is_transparent)
-        image->setMaskColor(-1);
+  if (set_native_clipboard) {
+    // Copy tilemap to the native clipboard
+    if (isTilemap) {
+      ASSERT(tileset);
+      setNativeBitmap(image, mask, palette, tileset);
     }
+    // Copy non-tilemap images to the native clipboard
+    else {
+      color_t oldMask;
+      if (image) {
+        oldMask = image->maskColor();
+        if (!image_source_is_transparent)
+          image->setMaskColor(-1);
+      }
 
-    if (use_native_clipboard())
-      setNativeBitmap(image, mask, palette);
+      if (use_native_clipboard())
+        setNativeBitmap(image, mask, palette);
 
-    if (image && !image_source_is_transparent)
-      image->setMaskColor(oldMask);
+      if (image && !image_source_is_transparent)
+        image->setMaskColor(oldMask);
+    }
   }
 }
 
 bool Clipboard::copyFromDocument(const Site& site, bool merged)
 {
-  const Doc* document = static_cast<const Doc*>(site.document());
-  ASSERT(document);
+  ASSERT(site.document());
+  const Doc* doc = static_cast<const Doc*>(site.document());
+  const Mask* mask = doc->mask();
+  const Palette* pal = doc->sprite()->palette(site.frame());
 
-  const Mask* mask = document->mask();
+  if (!merged &&
+      site.layer() &&
+      site.layer()->isTilemap() &&
+      site.tilemapMode() == TilemapMode::Tiles) {
+    const Tileset* ts = static_cast<LayerTilemap*>(site.layer())->tileset();
+
+    Image* image = new_tilemap_from_mask(site, mask);
+    if (!image)
+      return false;
+
+    setData(
+      image,
+      (mask ? new Mask(*mask): nullptr),
+      (pal ? new Palette(*pal): nullptr),
+      new Tileset(*ts),
+      true,                       // set native clipboard
+      site.layer() && !site.layer()->isBackground());
+
+    return true;
+  }
+
   Image* image = new_image_from_mask(site, mask,
                                      Preferences::instance().experimental.newBlend(),
                                      merged);
   if (!image)
     return false;
 
-  const Palette* pal = document->sprite()->palette(site.frame());
   setData(
     image,
     (mask ? new Mask(*mask): nullptr),
     (pal ? new Palette(*pal): nullptr),
-    true,
+    nullptr,
+    true,                       // set native clipboard
     site.layer() && !site.layer()->isBackground());
 
   return true;
@@ -260,10 +296,12 @@ bool Clipboard::copyFromDocument(const Site& site, bool merged)
 ClipboardFormat Clipboard::format() const
 {
   // Check if the native clipboard has an image
-  if (use_native_clipboard() && hasNativeBitmap())
+  if (use_native_clipboard() && hasNativeBitmap()) {
     return ClipboardFormat::Image;
-  else
+  }
+  else {
     return m_data->format();
+  }
 }
 
 void Clipboard::getDocumentRangeInfo(Doc** document, DocRange* range)
@@ -375,16 +413,20 @@ void Clipboard::copyRange(const ContextReader& reader, const DocRange& range)
   App::instance()->timeline()->activateClipboardRange();
 }
 
-void Clipboard::copyImage(const Image* image, const Mask* mask, const Palette* pal)
+void Clipboard::copyImage(const Image* image,
+                          const Mask* mask,
+                          const Palette* pal)
 {
   setData(
     Image::createCopy(image),
     (mask ? new Mask(*mask): nullptr),
     (pal ? new Palette(*pal): nullptr),
+    nullptr,
     true, false);
 }
 
-void Clipboard::copyPalette(const Palette* palette, const doc::PalettePicks& picks)
+void Clipboard::copyPalette(const Palette* palette,
+                            const PalettePicks& picks)
 {
   if (!picks.picks())
     return;                     // Do nothing case
@@ -392,11 +434,14 @@ void Clipboard::copyPalette(const Palette* palette, const doc::PalettePicks& pic
   setData(nullptr,
           nullptr,
           new Palette(*palette),
-          true, false);
+          nullptr,
+          true,                 // set native clipboard
+          false);
   m_data->picks = picks;
 }
 
-void Clipboard::paste(Context* ctx, const bool interactive)
+void Clipboard::paste(Context* ctx,
+                      const bool interactive)
 {
   Site site = ctx->activeSite();
   Doc* dstDoc = site.document();
@@ -420,11 +465,12 @@ void Clipboard::paste(Context* ctx, const bool interactive)
 
       // Source image (clipboard or a converted copy to the destination 'imgtype')
       ImageRef src_image;
-      if (m_data->image->pixelFormat() == dstSpr->pixelFormat() &&
-        // Indexed images can be copied directly only if both images
-        // have the same palette.
-        (m_data->image->pixelFormat() != IMAGE_INDEXED ||
-         m_data->palette->countDiff(dst_palette, NULL, NULL) == 0)) {
+      if (// Copy image of the same pixel format
+        (m_data->image->pixelFormat() == dstSpr->pixelFormat() &&
+         // Indexed images can be copied directly only if both images
+         // have the same palette.
+         (m_data->image->pixelFormat() != IMAGE_INDEXED ||
+          m_data->palette->countDiff(dst_palette, NULL, NULL) == 0))) {
         src_image = m_data->image;
       }
       else {
@@ -479,6 +525,21 @@ void Clipboard::paste(Context* ctx, const bool interactive)
         }
 
         tx.commit();
+      }
+      break;
+    }
+
+    case ClipboardFormat::Tilemap: {
+      if (current_editor && interactive) {
+        // TODO match both tilesets?
+        // TODO add post-command parameters (issue #2324)
+
+        // Change to MovingTilemapState
+        current_editor->pasteImage(m_data->tilemap.get(),
+                                   m_data->mask.get());
+      }
+      else {
+        // TODO non-interactive version (for scripts)
       }
       break;
     }
@@ -683,14 +744,18 @@ ImageRef Clipboard::getImage(Palette* palette)
     Image* native_image = nullptr;
     Mask* native_mask = nullptr;
     Palette* native_palette = nullptr;
+    Tileset* native_tileset = nullptr;
     getNativeBitmap(&native_image,
                     &native_mask,
-                    &native_palette);
-    if (native_image)
+                    &native_palette,
+                    &native_tileset);
+    if (native_image) {
       setData(native_image,
               native_mask,
               native_palette,
+              native_tileset,
               false, false);
+    }
   }
   if (m_data->palette && palette)
     m_data->palette->copyColorsTo(palette);

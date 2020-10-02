@@ -148,6 +148,11 @@ namespace app {
       doc::Image* dst, const doc::Image* src, const doc::Mask* mask,
       const Transformation::Corners& corners,
       const gfx::PointF& leftTop);
+    void drawTransformedTilemap(
+      const Transformation& transformation,
+      doc::Image* dst, const doc::Image* src, const doc::Mask* mask,
+      const Transformation::Corners& corners,
+      const gfx::PointF& leftTop);
     void updateDocumentMask();
     void hideDocumentMask();
 

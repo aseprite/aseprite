@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019 Igara Studio S.A.
+// Copyright (C) 2019-2020 Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -110,6 +110,57 @@ doc::Image* new_image_from_mask(const Site& site,
     }
     else if (src != dst.get()) {
       copy_image(dst.get(), src, -srcBounds.x, -srcBounds.y);
+    }
+  }
+
+  return dst.release();
+}
+
+doc::Image* new_tilemap_from_mask(const Site& site,
+                                  const doc::Mask* srcMask)
+{
+  const Sprite* srcSprite = site.sprite();
+  ASSERT(srcSprite);
+  ASSERT(srcMask);
+
+  const doc::Grid grid = site.grid();
+  const Image* srcMaskBitmap = srcMask->bitmap();
+  const gfx::Rect& srcBounds = srcMask->bounds();
+  const gfx::Rect srcTilesBounds = grid.canvasToTile(srcBounds);
+
+  ASSERT(srcMaskBitmap);
+  ASSERT(!srcTilesBounds.isEmpty());
+  ASSERT(site.layer()->isTilemap());
+
+  std::unique_ptr<Image> dst(Image::create(IMAGE_TILEMAP,
+                                           srcTilesBounds.w,
+                                           srcTilesBounds.h));
+  if (!dst)
+    return nullptr;
+
+  // Clear the new tilemap
+  clear_image(dst.get(), dst->maskColor());
+
+  if (auto cel = site.cel()) {
+    // Just copy tilemap data
+    dst->copy(cel->image(), gfx::Clip(0, 0, srcTilesBounds));
+  }
+
+  // Copy the masked zones
+  if (srcMaskBitmap) {
+    // Copy active layer with mask
+    const LockImageBits<BitmapTraits> maskBits(srcMaskBitmap, gfx::Rect(0, 0, srcBounds.w, srcBounds.h));
+    LockImageBits<BitmapTraits>::const_iterator mask_it = maskBits.begin();
+
+    for (int v=0; v<srcBounds.h; ++v) {
+      for (int u=0; u<srcBounds.w; ++u, ++mask_it) {
+        ASSERT(mask_it != maskBits.end());
+        if (!*mask_it) {
+          gfx::Point pt = grid.canvasToTile(gfx::Point(srcBounds.x+u, srcBounds.y+v));
+          if (dst->bounds().contains(pt))
+            dst->putPixel(pt.x, pt.y, dst->maskColor());
+        }
+      }
     }
   }
 

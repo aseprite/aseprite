@@ -27,7 +27,11 @@ Tileset::Tileset(Sprite* sprite,
   , m_grid(grid)
   , m_tiles(ntiles)
 {
-  ASSERT(sprite);
+  // TODO at the moment retrieving a tileset from the clipboard use no
+  //      sprite, but in the future we should save a whole sprite in the
+  //      clipboard
+  //ASSERT(sprite);
+
   for (tile_index ti=0; ti<ntiles; ++ti) {
     m_tiles[ti] = makeEmptyTile();
     m_hash[m_tiles[ti]] = ti;
