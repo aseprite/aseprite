@@ -176,7 +176,6 @@ ExpandCelCanvas::ExpandCelCanvas(
            m_tilemapMode == TilemapMode::Tiles) {
     // Calling "getDestCanvas()" we create the m_dstImage
     getDestCanvas();
-    m_dstImage->clear(tile_i_notile);
     m_cel->data()->setImage(m_dstImage, m_layer);
   }
   // If we are in a tilemap, we use m_dstImage to draw pixels (instead
@@ -250,7 +249,10 @@ void ExpandCelCanvas::commit()
           ASSERT(newImage);
 
           m_cel->data()->setImage(newImage, m_layer);
-          m_cel->setPosition(m_cel->position() + trimBounds.origin());
+          m_cel->setPosition(
+            m_cel->position() +
+            // TODO we should get the exact coordinate from getTrimDstImageBounds()
+            m_grid.tileToCanvas(trimBounds.origin()));
         }
 
         // And add the cel again in the layer.
@@ -408,17 +410,15 @@ Image* ExpandCelCanvas::getSourceCanvas()
   if (!m_srcImage) {
     if (m_tilemapMode == TilemapMode::Tiles) {
       m_srcImage.reset(Image::create(IMAGE_TILEMAP,
-                         m_bounds.w, m_bounds.h, src_buffer));
+                                     m_bounds.w, m_bounds.h, src_buffer));
       m_srcImage->setMaskColor(tile_i_notile);
-      m_srcImage->clear(tile_i_notile);
     }
     else {
-      m_srcImage.reset(
-      Image::create(m_sprite->pixelFormat(),
-                    m_bounds.w, m_bounds.h, src_buffer));
+      m_srcImage.reset(Image::create(m_sprite->pixelFormat(),
+                                     m_bounds.w, m_bounds.h, src_buffer));
       m_srcImage->setMaskColor(m_sprite->transparentColor());
-      m_srcImage->clear(m_sprite->transparentColor());
     }
+    m_srcImage->clear(m_srcImage->maskColor());
   }
   return m_srcImage.get();
 }
@@ -428,14 +428,15 @@ Image* ExpandCelCanvas::getDestCanvas()
   if (!m_dstImage) {
     if (m_tilemapMode == TilemapMode::Tiles) {
       m_dstImage.reset(Image::create(IMAGE_TILEMAP,
-                         m_bounds.w, m_bounds.h, dst_buffer));
+                                     m_bounds.w, m_bounds.h, dst_buffer));
       m_dstImage->setMaskColor(tile_i_notile);
     }
     else {
       m_dstImage.reset(Image::create(m_sprite->pixelFormat(),
-                       m_bounds.w, m_bounds.h, dst_buffer));
+                                     m_bounds.w, m_bounds.h, dst_buffer));
       m_dstImage->setMaskColor(m_sprite->transparentColor());
     }
+    m_dstImage->clear(m_dstImage->maskColor());
   }
   return m_dstImage.get();
 }
