@@ -567,6 +567,10 @@ void ColorBar::setTilesetMode(const TilesetMode mode)
     ButtonSet::Item* item = m_tilesetModeButtons.getItem(i);
     item->setSelected(int(mode) == i);
   }
+
+  // Change to pixels mode automatically
+  if (m_tilemapMode == TilemapMode::Tiles)
+    setTilemapMode(TilemapMode::Pixels);
 }
 
 void ColorBar::onActiveSiteChange(const Site& site)
