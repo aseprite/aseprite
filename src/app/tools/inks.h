@@ -14,6 +14,7 @@
 #include "app/doc_undo.h"
 #include "app/tools/pick_ink.h"
 #include "doc/mask.h"
+#include "doc/tile.h"
 #include "gfx/region.h"
 
 namespace app {
@@ -334,6 +335,12 @@ public:
         if (loop->getBrush()->type() == doc::kImageBrushType) {
           setProc(get_ink_proc<BrushEraserInkProcessing>(loop));
         }
+        else if (loop->getDstImage()->pixelFormat() == IMAGE_TILEMAP) {
+          color_t clearColor = doc::tile_i_notile;
+          loop->setPrimaryColor(clearColor);
+          loop->setSecondaryColor(clearColor);
+          setProc(new CopyInkProcessing<TilemapTraits>(loop));
+        }
         else {
           // TODO app_get_color_to_clear_layer should receive the context as parameter
           color_t clearColor = app_get_color_to_clear_layer(loop->getLayer());
@@ -362,13 +369,13 @@ public:
       case ReplaceFgWithBg:
         loop->setPrimaryColor(loop->getFgColor());
         loop->setSecondaryColor(loop->getBgColor());
-        setProc(get_ink_proc<ReplaceInkProcessing>(loop));
+        setProc(get_ink_proc2<ReplaceInkProcessing>(loop));
         break;
 
       case ReplaceBgWithFg:
         loop->setPrimaryColor(loop->getBgColor());
         loop->setSecondaryColor(loop->getFgColor());
-        setProc(get_ink_proc<ReplaceInkProcessing>(loop));
+        setProc(get_ink_proc2<ReplaceInkProcessing>(loop));
         break;
     }
   }

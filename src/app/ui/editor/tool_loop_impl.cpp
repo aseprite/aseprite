@@ -750,6 +750,16 @@ private:
 
 #ifdef ENABLE_UI
 
+// TODO add inks for tilemaps
+static void adjust_ink_for_tilemaps(const Site& site,
+                                    ToolLoopParams& params)
+{
+  if (!params.ink->isSelection() &&
+      !params.ink->isEraser()) {
+    params.ink = App::instance()->toolBox()->getInkById(tools::WellKnownInks::PaintCopy);
+  }
+}
+
 tools::ToolLoop* create_tool_loop(
   Editor* editor,
   Context* context,
@@ -764,10 +774,8 @@ tools::ToolLoop* create_tool_loop(
   params.tool = editor->getCurrentEditorTool();
   params.ink = editor->getCurrentEditorInk();
 
-  // TODO add inks for tilemaps
   if (site.tilemapMode() == TilemapMode::Tiles) {
-    if (!params.ink->isSelection())
-      params.ink = App::instance()->toolBox()->getInkById(tools::WellKnownInks::PaintCopy);
+    adjust_ink_for_tilemaps(site, params);
   }
 
   if (!params.tool || !params.ink)
@@ -982,11 +990,9 @@ tools::ToolLoop* create_tool_loop_preview(
   params.tool = editor->getCurrentEditorTool();
   params.ink = editor->getCurrentEditorInk();
 
-  // TODO add inks for tilemaps
   if (site.tilemapMode() == TilemapMode::Tiles &&
       image->pixelFormat() == IMAGE_TILEMAP) {
-    if (!params.ink->isSelection())
-      params.ink = App::instance()->toolBox()->getInkById(tools::WellKnownInks::PaintCopy);
+    adjust_ink_for_tilemaps(site, params);
   }
 
   if (!params.tool || !params.ink)

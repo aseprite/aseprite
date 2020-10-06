@@ -639,6 +639,12 @@ private:
   int m_opacity;
 };
 
+template<>
+void ReplaceInkProcessing<TilemapTraits>::processPixel(int x, int y) {
+  color_t c = *m_srcAddress;
+  *m_dstAddress = (c == m_color1 ? m_color2: c);
+}
+
 //////////////////////////////////////////////////////////////////////
 // Jumble Ink
 //////////////////////////////////////////////////////////////////////
@@ -1898,6 +1904,19 @@ BaseInkProcessing* get_ink_proc(ToolLoop* loop)
     case IMAGE_RGB:       return new T<RgbTraits>(loop);
     case IMAGE_GRAYSCALE: return new T<GrayscaleTraits>(loop);
     case IMAGE_INDEXED:   return new T<IndexedTraits>(loop);
+  }
+  ASSERT(false);
+  return nullptr;
+}
+
+template<template<typename> class T>
+BaseInkProcessing* get_ink_proc2(ToolLoop* loop)
+{
+  switch (loop->getDstImage()->pixelFormat()) {
+    case IMAGE_RGB:       return new T<RgbTraits>(loop);
+    case IMAGE_GRAYSCALE: return new T<GrayscaleTraits>(loop);
+    case IMAGE_INDEXED:   return new T<IndexedTraits>(loop);
+    case IMAGE_TILEMAP:   return new T<TilemapTraits>(loop);
   }
   ASSERT(false);
   return nullptr;
