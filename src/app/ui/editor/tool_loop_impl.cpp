@@ -179,8 +179,11 @@ public:
     ASSERT(m_controller);
 
     if (m_tilesMode) {
-      m_pointShape = App::instance()->toolBox()->getPointShapeById(
-        tools::WellKnownPointShapes::Tile);
+      // Use FloodFillPointShape or TilePointShape in tiles mode
+      if (!m_pointShape->isFloodFill()) {
+        m_pointShape = App::instance()->toolBox()->getPointShapeById(
+          tools::WellKnownPointShapes::Tile);
+      }
 
       // In selection ink, we need the Pixels tilemap mode so
       // ExpandCelCanvas uses the whole canvas for the selection
@@ -488,9 +491,13 @@ public:
     , m_saveLastPoint(saveLastPoint)
   {
     if (m_pointShape->isFloodFill()) {
+      if (m_tilesMode) {
+        // This will be set later to getSrcImage()
+        m_floodfillSrcImage = nullptr;
+      }
       // Prepare a special image for floodfill when it's configured to
       // stop using all visible layers.
-      if (m_toolPref.floodfill.referTo() == gen::FillReferTo::ALL_LAYERS) {
+      else if (m_toolPref.floodfill.referTo() == gen::FillReferTo::ALL_LAYERS) {
         m_floodfillSrcImage = Image::create(m_sprite->pixelFormat(),
                                             m_sprite->width(),
                                             m_sprite->height());
@@ -945,8 +952,9 @@ public:
         tools::WellKnownPointShapes::Brush);
     }
     else if (m_pointShape->isFloodFill()) {
-      m_pointShape = App::instance()->toolBox()->getPointShapeById(
-        tools::WellKnownPointShapes::Pixel);
+      m_pointShape = App::instance()->toolBox()->getPointShapeById
+        (m_tilesMode ? tools::WellKnownPointShapes::Tile:
+                       tools::WellKnownPointShapes::Pixel);
     }
   }
 

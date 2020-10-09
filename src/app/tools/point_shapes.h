@@ -249,20 +249,27 @@ public:
 
   void transformPoint(ToolLoop* loop, const Stroke::Pt& pt) override {
     const doc::Image* srcImage = loop->getFloodFillSrcImage();
-    gfx::Point wpt = wrap_point(loop->getTiledMode(),
-                                gfx::Size(srcImage->width(),
-                                          srcImage->height()),
-                                pt.toPoint(), true);
+    const bool tilesMode = (srcImage->pixelFormat() == IMAGE_TILEMAP);
+    gfx::Point wpt = pt.toPoint();
+    if (tilesMode) { // Tiles mode
+      const doc::Grid& grid = loop->getGrid();
+      wpt = grid.canvasToTile(wpt);
+    }
+    else {
+      wpt = wrap_point(loop->getTiledMode(),
+                       gfx::Size(srcImage->width(),
+                                 srcImage->height()),
+                       wpt, true);
+    }
 
     loop->getInk()->prepareForPointShape(loop, true, wpt.x, wpt.y);
-
-    ASSERT(srcImage->pixelFormat() != IMAGE_TILEMAP);
 
     doc::algorithm::floodfill(
       srcImage,
       (loop->useMask() ? loop->getMask(): nullptr),
       wpt.x, wpt.y,
-      floodfillBounds(loop, wpt.x, wpt.y),
+      (tilesMode ? srcImage->bounds():
+                   floodfillBounds(loop, wpt.x, wpt.y)),
       get_pixel(srcImage, wpt.x, wpt.y),
       loop->getTolerance(),
       loop->getContiguous(),
@@ -276,11 +283,16 @@ public:
 
 private:
   gfx::Rect floodfillBounds(ToolLoop* loop, int x, int y) const {
+    const doc::Image* srcImage = loop->getFloodFillSrcImage();
     gfx::Rect bounds = loop->sprite()->bounds();
-    bounds &= loop->getFloodFillSrcImage()->bounds();
+    bounds &= srcImage->bounds();
 
+    if (srcImage->pixelFormat() == IMAGE_TILEMAP) { // Tiles mode
+      const doc::Grid& grid = loop->getGrid();
+      bounds = grid.tileToCanvas(bounds);
+    }
     // Limit the flood-fill to the current tile if the grid is visible.
-    if (loop->getStopAtGrid()) {
+    else if (loop->getStopAtGrid()) {
       gfx::Rect grid = loop->getGridBounds();
       if (!grid.isEmpty()) {
         div_t d, dx, dy;
