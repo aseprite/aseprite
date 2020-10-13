@@ -531,7 +531,8 @@ public:
         (getController()->isFreehand() ?
          ExpandCelCanvas::UseModifiedRegionAsUndoInfo:
          ExpandCelCanvas::None) |
-        (!m_tilesMode || m_ink->isSelection() ?
+        (m_layer->isTilemap() &&
+         (!m_tilesMode || m_ink->isSelection()) ?
          ExpandCelCanvas::PixelsBounds:
          ExpandCelCanvas::None)));
 
