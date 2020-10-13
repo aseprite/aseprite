@@ -543,3 +543,49 @@ do
   expect_img(j, { 7, 2, 1, 4,
                   3, 6, 5, 0 })
 end
+
+-- Fill
+do
+  local s = Sprite(4, 2, ColorMode.INDEXED)
+  local c = s.cels[1]
+  local i = c.image
+  i:clear(1)
+  array_to_pixels({ 1, 1, 1, 1,
+                    1, 1, 1, 1 }, i)
+  app.fgColor = Color{ index=0 }
+  s.selection = Selection(Rectangle(1, 1, 2, 1))
+  app.command.Fill()
+  expect_eq(Rectangle(0, 0, 4, 2), c.bounds)
+  expect_img(i, { 1, 1, 1, 1,
+                  1, 0, 0, 1 })
+
+  c.position = { x=0, y=1 }
+  app.fgColor = Color{ index=2 }
+  s.selection = Selection(Rectangle(1, 0, 2, 2))
+  app.command.Fill()
+  expect_eq(Rectangle(0, 0, 4, 3), c.bounds)
+  expect_img(i, { 0, 2, 2, 0,
+                  1, 2, 2, 1,
+                  1, 0, 0, 1 })
+
+  app.fgColor = Color{ index=0 }
+  s.selection = Selection(Rectangle(0, 0, 3, 3))
+  app.command.Fill()
+  expect_eq(Rectangle(3, 1, 1, 2), c.bounds)
+  expect_img(i, { 1,
+                  1 })
+
+  app.undo() -- undo Fill
+  expect_eq(Rectangle(0, 0, 4, 3), c.bounds)
+  expect_img(i, { 0, 2, 2, 0,
+                  1, 2, 2, 1,
+                  1, 0, 0, 1 })
+
+  expect_eq(Rectangle(0, 0, 3, 3), s.selection.bounds)
+  app.undo() -- undo selection change
+  expect_eq(Rectangle(1, 0, 2, 2), s.selection.bounds)
+  app.undo() -- undo Fill
+  expect_eq(Rectangle(0, 1, 4, 2), c.bounds)
+  expect_img(i, { 1, 1, 1, 1,
+                  1, 0, 0, 1 })
+end
