@@ -18,6 +18,7 @@
 #include <string>
 
 namespace doc {
+  class Sprite;
   class Tags;
 
   class Tag : public WithUserData {
@@ -26,6 +27,7 @@ namespace doc {
     Tag(const Tag& other);
     ~Tag();
 
+    Sprite* sprite() const;
     Tags* owner() const { return m_owner; }
     frame_t fromFrame() const { return m_from; }
     frame_t toFrame() const { return m_to; }

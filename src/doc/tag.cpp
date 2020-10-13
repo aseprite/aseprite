@@ -43,6 +43,14 @@ Tag::~Tag()
   ASSERT(!m_owner);
 }
 
+Sprite* Tag::sprite() const
+{
+  if (m_owner)
+    return m_owner->sprite();
+  else
+    return nullptr;
+}
+
 void Tag::setOwner(Tags* owner)
 {
   m_owner = owner;
