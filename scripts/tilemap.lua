@@ -193,7 +193,7 @@ do
     points={ Point(1, 7), Point(2, 8) }} -- Tile 0,0 and 1,1
 
   -- TODO add a constant for the empty tile
-  local e = 4294967295 -- empty tile (0xffffffff)
+  local e = tonumber("ffffffff", 16) -- empty tile (0xffffffff)
 
   cel = tm.cels[1]
   expect_img(cel.image, { 0,e, e,e,e,e,
