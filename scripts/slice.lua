@@ -21,4 +21,7 @@ do
   assert(a.pivot == nil)
   a.pivot = Point(16, 17)
   assert(a.pivot == Point(16, 17))
+
+  a.data = "Data"
+  assert(a.data == "Data")
 end

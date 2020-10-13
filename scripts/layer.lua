@@ -16,4 +16,7 @@ do
   assert(l.name == "My Layer")
   assert(l.opacity == 128)
   assert(l.blendMode == BlendMode.MULTIPLY)
+
+  l.data = "Data"
+  assert(l.data == "Data")
 end
