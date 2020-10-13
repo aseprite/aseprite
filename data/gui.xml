@@ -925,6 +925,7 @@
           <item command="ShowAutoGuides" text="@.view_show_auto_guides" />
           <item command="ShowSlices" text="@.view_show_slices" />
           <item command="ShowPixelGrid" text="@.view_show_pixel_grid" />
+          <item command="ShowTileNumbers" text="@.view_show_tile_numbers" />
           <separator />
           <item command="ShowBrushPreview" text="@.view_show_brush_preview" />
         </menu>

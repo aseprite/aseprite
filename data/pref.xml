@@ -526,6 +526,7 @@
       <option id="brush_preview" type="bool" default="true" />
       <option id="slices" type="bool" default="true" />
       <option id="auto_guides" type="bool" default="true" />
+      <option id="tile_numbers" type="bool" default="true" />
     </section>
   </document>
 

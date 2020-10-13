@@ -915,9 +915,39 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
       m_state->requireBrushPreview()) {
     Cel* cel = (m_layer ? m_layer->cel(m_frame): nullptr);
     if (cel) {
-      drawCelBounds(
-        g, cel,
-        color_utils::color_for_ui(Preferences::instance().guides.layerEdgesColor()));
+      gfx::Color color = color_utils::color_for_ui(Preferences::instance().guides.layerEdgesColor());
+      drawCelBounds(g, cel, color);
+
+      // Draw tile numbers
+      if (m_docPref.show.tileNumbers() &&
+          cel->layer()->isTilemap()) {
+        color = color_utils::color_for_ui(Preferences::instance().guides.autoGuidesColor());
+        gfx::Color fgColor = color_utils::blackandwhite_neg(color);
+
+        const doc::Grid grid = getSite().grid();
+        const gfx::Size tileSize = editorToScreen(grid.tileToCanvas(gfx::Rect(0, 0, 1, 1))).size();
+        if (tileSize.h > g->font()->height()) {
+          const gfx::Point offset(tileSize.w/2,
+                                  tileSize.h/2 - g->font()->height()/2);
+          const gfx::Rect rc = cel->bounds();
+          const doc::Image* image = cel->image();
+          std::string text;
+          for (int y=0; y<image->height(); ++y) {
+            for (int x=0; x<image->width(); ++x) {
+              doc::tile_t t = image->getPixel(x, y);
+              if (t != doc::tile_i_notile) {
+                gfx::Point pt = editorToScreen(grid.tileToCanvas(gfx::Point(x, y)));
+                pt -= bounds().origin();
+                pt += offset;
+
+                text = fmt::format("{}", (t & doc::tile_i_mask));
+                pt.x -= g->measureUIText(text).w/2;
+                g->drawText(text, fgColor, color, pt);
+              }
+            }
+          }
+        }
+      }
 
       if (m_showAutoCelGuides &&
           m_showGuidesThisCel != cel) {
@@ -1157,9 +1187,8 @@ void Editor::drawCelGuides(ui::Graphics* g, const Cel* cel, const Cel* mouseCel)
     scrCmpBounds = getCelScreenBounds(mouseCel);
     sprCmpBounds = mouseCel->bounds();
 
-    drawCelBounds(
-      g, mouseCel,
-      color_utils::color_for_ui(Preferences::instance().guides.autoGuidesColor()));
+    const gfx::Color color = color_utils::color_for_ui(Preferences::instance().guides.autoGuidesColor());
+    drawCelBounds(g, mouseCel, color);
   }
   // Use whole canvas
   else {
