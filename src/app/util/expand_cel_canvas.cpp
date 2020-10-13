@@ -251,8 +251,10 @@ void ExpandCelCanvas::commit()
           m_cel->data()->setImage(newImage, m_layer);
           m_cel->setPosition(
             m_cel->position() +
-            // TODO we should get the exact coordinate from getTrimDstImageBounds()
-            m_grid.tileToCanvas(trimBounds.origin()));
+            (m_layer->isTilemap() ?
+             // TODO we should get the exact coordinate from getTrimDstImageBounds()
+             m_grid.tileToCanvas(trimBounds.origin()):
+             trimBounds.origin()));
         }
 
         // And add the cel again in the layer.
