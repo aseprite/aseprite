@@ -26,6 +26,9 @@
 * Undo/Redo for every operation and support for [non-linear undo](https://imgur.com/9I42fZK).
 * [More features &amp; tips](https://twitter.com/aseprite/status/1124442198651678720)
 
+## Demo
+  A working demo video or trailer can be found [here](https://youtu.be/eG6AJcj5KTY).
+  
 ## Issues
 
 There is a list of
