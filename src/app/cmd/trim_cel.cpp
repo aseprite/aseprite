@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2016  David Capello
 //
 // This program is distributed under the terms of
@@ -25,14 +25,13 @@ using namespace doc;
 
 TrimCel::TrimCel(Cel* cel)
 {
-  gfx::Rect newBounds;
-  if (algorithm::shrink_bounds(cel->image(),
-                               cel->image()->maskColor(),
-                               cel->layer(), newBounds)) {
-    newBounds.offset(cel->position());
-    if (cel->imageBounds() != newBounds) {
+  gfx::Rect newBounds = cel->bounds();
+
+  if (algorithm::shrink_cel_bounds(cel,
+                                   cel->image()->maskColor(),
+                                   newBounds)) {
+    if (cel->bounds() != newBounds)
       add(new cmd::CropCel(cel, newBounds));
-    }
   }
   else {
     // Delete the given "cel" and all its links.
