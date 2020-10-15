@@ -331,10 +331,7 @@ void Clipboard::clearMaskFromCels(Tx& tx,
 
     // Get cel again just in case the cmd::ClearMask() called cmd::ClearCel()
     cel = doc::get<Cel>(celId);
-    if (cel &&
-        cel->layer()->isTransparent() &&
-        // Don't shrink tilemaps automatically
-        !cel->layer()->isTilemap()) {
+    if (cel && cel->layer()->isTransparent()) {
       tx(new cmd::TrimCel(cel));
     }
   }
