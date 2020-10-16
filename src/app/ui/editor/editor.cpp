@@ -1156,8 +1156,11 @@ void Editor::drawTileNumbers(ui::Graphics* g, const Cel* cel)
   const doc::Grid grid = getSite().grid();
   const gfx::Size tileSize = editorToScreen(grid.tileToCanvas(gfx::Rect(0, 0, 1, 1))).size();
   if (tileSize.h > g->font()->height()) {
-    const gfx::Point offset(tileSize.w/2,
-                            tileSize.h/2 - g->font()->height()/2);
+    const gfx::Point offset =
+      gfx::Point(tileSize.w/2,
+                 tileSize.h/2 - g->font()->height()/2)
+      + mainTilePosition();
+
     const gfx::Rect rc = cel->bounds();
     const doc::Image* image = cel->image();
     std::string text;
