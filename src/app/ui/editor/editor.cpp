@@ -921,34 +921,10 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
       // Draw tile numbers
       if (m_docPref.show.tileNumbers() &&
           cel->layer()->isTilemap()) {
-        color = color_utils::color_for_ui(Preferences::instance().guides.autoGuidesColor());
-        gfx::Color fgColor = color_utils::blackandwhite_neg(color);
-
-        const doc::Grid grid = getSite().grid();
-        const gfx::Size tileSize = editorToScreen(grid.tileToCanvas(gfx::Rect(0, 0, 1, 1))).size();
-        if (tileSize.h > g->font()->height()) {
-          const gfx::Point offset(tileSize.w/2,
-                                  tileSize.h/2 - g->font()->height()/2);
-          const gfx::Rect rc = cel->bounds();
-          const doc::Image* image = cel->image();
-          std::string text;
-          for (int y=0; y<image->height(); ++y) {
-            for (int x=0; x<image->width(); ++x) {
-              doc::tile_t t = image->getPixel(x, y);
-              if (t != doc::tile_i_notile) {
-                gfx::Point pt = editorToScreen(grid.tileToCanvas(gfx::Point(x, y)));
-                pt -= bounds().origin();
-                pt += offset;
-
-                text = fmt::format("{}", (t & doc::tile_i_mask));
-                pt.x -= g->measureUIText(text).w/2;
-                g->drawText(text, fgColor, color, pt);
-              }
-            }
-          }
-        }
+        drawTileNumbers(g, cel);
       }
 
+      // Draw auto-guides to other cel
       if (m_showAutoCelGuides &&
           m_showGuidesThisCel != cel) {
         drawCelGuides(g, cel, m_showGuidesThisCel);
@@ -1168,6 +1144,36 @@ void Editor::drawSlices(ui::Graphics* g)
     }
     else {
       g->drawRect(color, out);
+    }
+  }
+}
+
+void Editor::drawTileNumbers(ui::Graphics* g, const Cel* cel)
+{
+  gfx::Color color = color_utils::color_for_ui(Preferences::instance().guides.autoGuidesColor());
+  gfx::Color fgColor = color_utils::blackandwhite_neg(color);
+
+  const doc::Grid grid = getSite().grid();
+  const gfx::Size tileSize = editorToScreen(grid.tileToCanvas(gfx::Rect(0, 0, 1, 1))).size();
+  if (tileSize.h > g->font()->height()) {
+    const gfx::Point offset(tileSize.w/2,
+                            tileSize.h/2 - g->font()->height()/2);
+    const gfx::Rect rc = cel->bounds();
+    const doc::Image* image = cel->image();
+    std::string text;
+    for (int y=0; y<image->height(); ++y) {
+      for (int x=0; x<image->width(); ++x) {
+        doc::tile_t t = image->getPixel(x, y);
+        if (t != doc::tile_i_notile) {
+          gfx::Point pt = editorToScreen(grid.tileToCanvas(gfx::Point(x, y)));
+          pt -= bounds().origin();
+          pt += offset;
+
+          text = fmt::format("{}", (t & doc::tile_i_mask));
+          pt.x -= g->measureUIText(text).w/2;
+          g->drawText(text, fgColor, color, pt);
+        }
+      }
     }
   }
 }
