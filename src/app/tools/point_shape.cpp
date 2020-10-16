@@ -61,8 +61,8 @@ void PointShape::doInkHline(int x1, int y, int x2, ToolLoop* loop)
     if (w >= size)
       ink->inkHline(0, y, size-1, loop);
     else {
-      x = wrap_value(x1, loop->sprite()->width());
-      if (x+w <= loop->sprite()->width()) {
+      x = wrap_value(x1, dstw);
+      if (x+w <= dstw) {
         // Here we asure that tile limit line does not bisect the current
         // scanline, i.e. the scanline is enterely contained inside the tile.
         ink->prepareUForPointShapeWholeScanline(loop, x1);
