@@ -813,17 +813,19 @@ void ColorBar::onRemapTilesButtonClick()
     auto tileset = m_tilesView.tileset();
 
     // Remap all tiles in the same order as in newTileset
-    Remap remap(tileset->size());
-    for (tile_index ti=0; ti<remap.size(); ++ti) {
+    const int n = std::max(m_oldTileset->size(),
+                           tileset->size());
+    Remap remap(n);
+    for (tile_index ti=0; ti<n; ++ti) {
       auto img = m_oldTileset->get(ti);
       tile_index destTi = (img ? tileset->findTileIndex(img):
                                  doc::tile_i_notile);
-      if (img && destTi != doc::tile_i_notile) {
+      if (img) {
         COLOR_BAR_TRACE(" - Remap tile %d -> %d\n", ti, destTi);
         remap.map(ti, destTi);
       }
       else {
-        remap.map(ti, ti);
+        remap.map(ti, doc::tile_i_notile);
       }
     }
     // Nothing to remap
@@ -1426,8 +1428,8 @@ bool ColorBar::onCanClear(Context* ctx)
 bool ColorBar::onCut(Context* ctx)
 {
   if (m_tilemapMode == TilemapMode::Tiles) {
-    m_tilesView.cutToClipboard();
     showRemapTiles();
+    m_tilesView.cutToClipboard();
   }
   else
     m_paletteView.cutToClipboard();
@@ -1446,8 +1448,8 @@ bool ColorBar::onCopy(Context* ctx)
 bool ColorBar::onPaste(Context* ctx)
 {
   if (m_tilemapMode == TilemapMode::Tiles) {
-    m_tilesView.pasteFromClipboard();
     showRemapTiles();
+    m_tilesView.pasteFromClipboard();
   }
   else
     m_paletteView.pasteFromClipboard();
@@ -1457,8 +1459,8 @@ bool ColorBar::onPaste(Context* ctx)
 bool ColorBar::onClear(Context* ctx)
 {
   if (m_tilemapMode == TilemapMode::Tiles) {
-    m_tilesView.clearSelection();
     showRemapTiles();
+    m_tilesView.clearSelection();
   }
   else
     m_paletteView.clearSelection();
