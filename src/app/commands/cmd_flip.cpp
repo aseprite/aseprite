@@ -252,9 +252,9 @@ std::string FlipCommand::onGetFriendlyName() const
     content = Strings::commands_Flip_Canvas();
 
   if (m_flipType == doc::algorithm::FlipHorizontal)
-    content = Strings::commands_Flip_Horizontally();
+    orientation = Strings::commands_Flip_Horizontally();
   else
-    content = Strings::commands_Flip_Vertically();
+    orientation = Strings::commands_Flip_Vertically();
 
   return fmt::format(getBaseFriendlyName(), content, orientation);
 }
