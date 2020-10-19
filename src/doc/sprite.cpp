@@ -528,7 +528,7 @@ void Sprite::replaceImage(ObjectId curImageId, const ImageRef& newImage)
 // TODO replace it with a images iterator
 void Sprite::getImages(std::vector<ImageRef>& images) const
 {
-  for (const auto& cel : uniqueCels())
+  for (Cel* cel : uniqueCels())
     if (cel->image()->pixelFormat() != IMAGE_TILEMAP)
       images.push_back(cel->imageRef());
 
@@ -539,6 +539,17 @@ void Sprite::getImages(std::vector<ImageRef>& images) const
         if (image)
           images.push_back(image);
       }
+    }
+  }
+}
+
+void Sprite::getTilemapsByTileset(const Tileset* tileset,
+                                  std::vector<ImageRef>& images) const
+{
+  for (const Cel* cel : uniqueCels()) {
+    if (cel->layer()->isTilemap() &&
+        static_cast<LayerTilemap*>(cel->layer())->tileset() == tileset) {
+      images.push_back(cel->imageRef());
     }
   }
 }

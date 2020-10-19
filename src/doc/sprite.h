@@ -183,6 +183,10 @@ namespace doc {
     // Returns all sprite images (cel + tiles) that aren't tilemaps
     void getImages(std::vector<ImageRef>& images) const;
 
+    // TODO replace this with a co-routine when we start using C++20 (std::generator<ImageRef>)
+    void getTilemapsByTileset(const Tileset* tileset,
+                              std::vector<ImageRef>& images) const;
+
     void remapImages(const Remap& remap);
     void remapTilemaps(const Tileset* tileset,
                        const Remap& remap);

@@ -810,12 +810,23 @@ void ColorBar::onRemapTilesButtonClick()
     if (!sprite)
       return;
 
-    auto tileset = m_tilesView.tileset();
+    doc::Tileset* tileset = m_tilesView.tileset();
+    std::vector<ImageRef> tilemaps;
+    sprite->getTilemapsByTileset(tileset, tilemaps);
+    PalettePicks usedTiles(tileset->size());
+
+    for (const ImageRef& tilemap : tilemaps) {
+      for (const doc::tile_t t : LockImageBits<TilemapTraits>(tilemap.get()))
+        if (t != doc::tile_i_notile)
+          usedTiles[doc::tile_geti(t)] = true;
+    }
 
     // Remap all tiles in the same order as in newTileset
     const int n = std::max(m_oldTileset->size(),
                            tileset->size());
     Remap remap(n);
+    bool existMapToEmpty = false;
+
     for (tile_index ti=0; ti<n; ++ti) {
       auto img = m_oldTileset->get(ti);
       tile_index destTi = (img ? tileset->findTileIndex(img):
@@ -825,9 +836,15 @@ void ColorBar::onRemapTilesButtonClick()
         remap.map(ti, destTi);
       }
       else {
-        remap.map(ti, doc::tile_i_notile);
+        remap.map(ti, destTi = doc::tile_i_notile);
+      }
+
+      if (destTi == doc::tile_i_notile && ti < usedTiles.size() && usedTiles[ti]) {
+        COLOR_BAR_TRACE(" - Remap tile %d to empty (used=%d)\n", ti, usedTiles[ti]);
+        existMapToEmpty = true;
       }
     }
+
     // Nothing to remap
     if (remap.isIdentity()) {
       COLOR_BAR_TRACE(" - Nothing to remap\n");
@@ -835,7 +852,19 @@ void ColorBar::onRemapTilesButtonClick()
     }
 
     Tx tx(writer.context(), Strings::color_bar_remap_tiles(), ModifyDocument);
-    tx(new cmd::RemapTilemaps(tileset, remap));
+    if (!existMapToEmpty &&
+        remap.isInvertible(usedTiles)) {
+      tx(new cmd::RemapTilemaps(tileset, remap));
+    }
+    else {
+      for (const ImageRef& tilemap : tilemaps) {
+        ImageRef newTilemap(Image::createCopy(tilemap.get()));
+        doc::remap_image(newTilemap.get(), remap);
+
+        // TODO improve this with a cmd::CopyRegion()
+        tx(new cmd::ReplaceImage(sprite, tilemap, newTilemap));
+      }
+    }
     tx.commit();
 
     hideRemapTiles();
