@@ -469,22 +469,22 @@ void modify_tilemap_cel_region(
       if (!newTilemap->bounds().contains(u, v))
         continue;
 
-      doc::ImageRef existenTileImage;
+      doc::ImageRef existentTileImage;
       const doc::tile_t t = newTilemap->getPixel(u, v);
       if (t == tile_i_notile) {
         // For "no tiles" create a new temporal empty tile to draw the
         // modification.
-        existenTileImage = tileset->makeEmptyTile();
+        existentTileImage = tileset->makeEmptyTile();
       }
       else {
         const doc::tile_index ti = doc::tile_geti(t);
-        existenTileImage = tileset->get(ti);
+        existentTileImage = tileset->get(ti);
         if (tilesetMode == TilesetMode::Auto)
           modifiedTileIndexes[ti] = true;
       }
 
       const gfx::Rect tileInCanvasRc(grid.tileToCanvas(tilePt), tileSize);
-      ImageRef tileImage(getTileImage(existenTileImage, tileInCanvasRc));
+      ImageRef tileImage(getTileImage(existentTileImage, tileInCanvasRc));
       if (grid.hasMask())
         mask_image(tileImage.get(), grid.mask().get());
 
@@ -553,10 +553,10 @@ void modify_tilemap_cel_region(
         continue;
 
       const doc::tile_index ti = doc::tile_geti(t);
-      const doc::ImageRef existenTileImage = tileset->get(ti);
+      const doc::ImageRef existentTileImage = tileset->get(ti);
 
       const gfx::Rect tileInCanvasRc(grid.tileToCanvas(tilePt), tileSize);
-      ImageRef tileImage(getTileImage(existenTileImage, tileInCanvasRc));
+      ImageRef tileImage(getTileImage(existentTileImage, tileInCanvasRc));
       if (grid.hasMask())
         mask_image(tileImage.get(), grid.mask().get());
 
