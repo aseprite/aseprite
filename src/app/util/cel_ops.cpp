@@ -47,7 +47,7 @@
 #include <memory>
 #include <vector>
 
-#define OPS_TRACE(...)          // TRACE
+#define OPS_TRACE(...) // TRACE(__VA_ARGS__)
 
 namespace app {
 
@@ -111,6 +111,20 @@ void create_region_with_differences(const Image* a,
   }
 }
 
+// TODO merge this with Sprite::getTilemapsByTileset()
+template<typename UnaryFunction>
+void for_each_tile_using_tileset(Tileset* tileset, UnaryFunction f)
+{
+  for (Cel* cel : tileset->sprite()->cels()) {
+    if (!cel->layer()->isTilemap() ||
+        static_cast<LayerTilemap*>(cel->layer())->tileset() != tileset)
+      continue;
+
+    Image* tilemapImage = cel->image();
+    for_each_pixel<TilemapTraits>(tilemapImage, f);
+  }
+}
+
 struct Mod {
   tile_index tileIndex;
   ImageRef tileOrigImage;
@@ -119,6 +133,11 @@ struct Mod {
 };
 
 } // anonymous namespace
+
+static void remove_unused_tiles_from_tileset(
+  CmdSequence* cmds,
+  doc::Tileset* tileset,
+  std::vector<size_t>& tilesHistogram);
 
 doc::ImageRef crop_cel_image(
   const doc::Cel* cel,
@@ -434,8 +453,6 @@ void modify_tilemap_cel_region(
             region.bounds().x, region.bounds().y, region.bounds().w, region.bounds().h,
             newTilemapBounds.x, newTilemapBounds.y, newTilemapBounds.w, newTilemapBounds.h);
 
-  std::vector<bool> modifiedTileIndexes(tileset->size(), false);
-
   // Autogenerate tiles
   if (tilesetMode == TilesetMode::Auto ||
       tilesetMode == TilesetMode::Stack) {
@@ -462,6 +479,18 @@ void modify_tilemap_cel_region(
     regionToPatch -= gfx::Region(grid.tileToCanvas(oldTilemapBounds));
     regionToPatch |= region;
 
+    std::vector<size_t> tilesHistogram(tileset->size(), 0);
+    if (tilesetMode == TilesetMode::Auto) {
+      for_each_tile_using_tileset(
+        tileset, [tileset, &tilesHistogram](const doc::tile_t t){
+                   if (t != doc::tile_i_notile) {
+                     doc::tile_index ti = doc::tile_geti(t);
+                     if (ti >= 0 && ti < tileset->size())
+                       ++tilesHistogram[ti];
+                   }
+                 });
+    }
+
     for (const gfx::Point& tilePt : grid.tilesInCanvasRegion(regionToPatch)) {
       const int u = tilePt.x-newTilemapBounds.x;
       const int v = tilePt.y-newTilemapBounds.y;
@@ -471,16 +500,14 @@ void modify_tilemap_cel_region(
 
       doc::ImageRef existentTileImage;
       const doc::tile_t t = newTilemap->getPixel(u, v);
+      const doc::tile_index ti = (t != tile_i_notile ? doc::tile_geti(t): tile_i_notile);
       if (t == tile_i_notile) {
         // For "no tiles" create a new temporal empty tile to draw the
         // modification.
         existentTileImage = tileset->makeEmptyTile();
       }
       else {
-        const doc::tile_index ti = doc::tile_geti(t);
         existentTileImage = tileset->get(ti);
-        if (tilesetMode == TilesetMode::Auto)
-          modifiedTileIndexes[ti] = true;
       }
 
       const gfx::Rect tileInCanvasRc(grid.tileToCanvas(tilePt), tileSize);
@@ -488,13 +515,25 @@ void modify_tilemap_cel_region(
       if (grid.hasMask())
         mask_image(tileImage.get(), grid.mask().get());
 
-      tile_index tileIndex =
-        tileset->findTileIndex(tileImage);
+      tile_index tileIndex = tileset->findTileIndex(tileImage);
       if (tileIndex != tile_i_notile) {
-        if (tilesetMode == TilesetMode::Auto) {
-          if (tileIndex >= 0 && tileIndex < modifiedTileIndexes.size())
-            modifiedTileIndexes[tileIndex] = false;
-        }
+        // We can re-use an existent tile (tileIndex) from the tileset
+      }
+      else if (tilesetMode == TilesetMode::Auto &&
+               t != tile_i_notile &&
+               ti >= 0 && ti < tilesHistogram.size() &&
+               tilesHistogram[ti] == 1) {
+        // Common case: Re-utilize the same tile in Auto mode.
+        tileIndex = ti;
+        cmds->executeAndAdd(
+          new cmd::CopyTileRegion(
+            existentTileImage.get(),
+            tileImage.get(),
+            gfx::Region(tileImage->bounds()), // TODO calculate better region
+            gfx::Point(0, 0),
+            false,
+            tileIndex,
+            tileset));
       }
       else {
         auto addTile = new cmd::AddTile(tileset, tileImage);
@@ -503,7 +542,18 @@ void modify_tilemap_cel_region(
         tileIndex = addTile->tileIndex();
       }
 
-      OPS_TRACE(" - tile %d -> %d\n", ti, tileIndex);
+      // If the tile changed, we have to remove the old tile index
+      // (ti) from the histogram count.
+      if (tilesetMode == TilesetMode::Auto &&
+          t != tile_i_notile &&
+          ti >= 0 && ti < tilesHistogram.size() &&
+          ti != tileIndex) {
+        --tilesHistogram[ti];
+      }
+
+      OPS_TRACE(" - tile %d -> %d\n",
+                (t == tile_i_notile ? -1: ti),
+                tileIndex);
 
       const doc::tile_t tile = doc::tile(tileIndex, 0);
       if (t != tile) {
@@ -533,8 +583,7 @@ void modify_tilemap_cel_region(
 
     // Remove unused tiles
     if (tilesetMode == TilesetMode::Auto) {
-      // TODO reuse tiles that will be removed in the algorithm above
-      remove_unused_tiles_from_tileset(cmds, tileset, modifiedTileIndexes);
+      remove_unused_tiles_from_tileset(cmds, tileset, tilesHistogram);
     }
 
     doc->notifyTilesetChanged(tileset);
@@ -582,8 +631,6 @@ void modify_tilemap_cel_region(
         mod.tileImage = tileImage;
         mod.tileRgn = tileRgn;
         mods.push_back(mod);
-
-        modifiedTileIndexes[ti] = true;
       }
     }
 
@@ -653,44 +700,32 @@ void clear_mask_from_cel(CmdSequence* cmds,
   }
 }
 
-void remove_unused_tiles_from_tileset(
+static void remove_unused_tiles_from_tileset(
   CmdSequence* cmds,
   doc::Tileset* tileset,
-  std::vector<bool>& unusedTiles)
+  std::vector<size_t>& tilesHistogram)
 {
   OPS_TRACE("remove_unused_tiles_from_tileset\n");
 
   int n = tileset->size();
 
-  for (Cel* cel : tileset->sprite()->cels()) {
-    if (!cel->layer()->isTilemap() ||
-        static_cast<LayerTilemap*>(cel->layer())->tileset() != tileset)
-      continue;
-
-    Image* tilemapImage = cel->image();
-    for_each_pixel<TilemapTraits>(
-      tilemapImage,
-      [&unusedTiles, &n](const doc::tile_t t) {
-        if (t != tile_i_notile) {
-          const doc::tile_index ti = doc::tile_geti(t);
-          n = std::max<int>(n, ti+1);
-          if (ti >= 0 &&
-              ti < int(unusedTiles.size()) &&
-              unusedTiles[ti]) {
-            unusedTiles[ti] = false;
-          }
-        }
-      });
-  }
+  for_each_tile_using_tileset(
+    tileset,
+    [&n](const doc::tile_t t){
+      if (t != doc::tile_i_notile) {
+        const doc::tile_index ti = doc::tile_geti(t);
+        n = std::max<int>(n, ti+1);
+      }
+    });
 
   doc::Remap remap(n);
   doc::tile_index ti, tj;
   ti = tj = 0;
   for (; ti<remap.size(); ++ti) {
-    OPS_TRACE(" - ti=%d tj=%d unusedTiles[%d]=%d\n",
-              ti, tj, ti, (ti < unusedTiles.size() && unusedTiles[ti] ? 1: 0));
-    if (ti < unusedTiles.size() &&
-        unusedTiles[ti]) {
+    OPS_TRACE(" - ti=%d tj=%d tilesHistogram[%d]=%d\n",
+              ti, tj, ti, (ti < tilesHistogram.size() ? tilesHistogram[ti]: 0));
+    if (ti < tilesHistogram.size() &&
+        tilesHistogram[ti] == 0) {
       cmds->executeAndAdd(new cmd::RemoveTile(tileset, tj));
       // Map to nothing, so the map can be invertible
       remap.map(ti, doc::Remap::kNoMap);

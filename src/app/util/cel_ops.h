@@ -73,13 +73,6 @@ namespace app {
     const TilemapMode tilemapMode,
     const TilesetMode tilesetMode);
 
-  // unusedTiles is a set of possibles tiles to check if they are
-  // really unused by all tilemaps.
-  void remove_unused_tiles_from_tileset(
-    CmdSequence* cmds,
-    doc::Tileset* tileset,
-    std::vector<bool>& unusedTiles);
-
   void move_tiles_in_tileset(
     CmdSequence* cmds,
     doc::Tileset* tileset,
