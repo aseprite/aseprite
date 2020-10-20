@@ -137,7 +137,8 @@ struct Mod {
 static void remove_unused_tiles_from_tileset(
   CmdSequence* cmds,
   doc::Tileset* tileset,
-  std::vector<size_t>& tilesHistogram);
+  std::vector<size_t>& tilesHistogram,
+  const std::vector<bool>& modifiedTileIndexes);
 
 doc::ImageRef crop_cel_image(
   const doc::Cel* cel,
@@ -479,6 +480,7 @@ void modify_tilemap_cel_region(
     regionToPatch -= gfx::Region(grid.tileToCanvas(oldTilemapBounds));
     regionToPatch |= region;
 
+    std::vector<bool> modifiedTileIndexes(tileset->size(), false);
     std::vector<size_t> tilesHistogram(tileset->size(), 0);
     if (tilesetMode == TilesetMode::Auto) {
       for_each_tile_using_tileset(
@@ -549,6 +551,9 @@ void modify_tilemap_cel_region(
           ti >= 0 && ti < tilesHistogram.size() &&
           ti != tileIndex) {
         --tilesHistogram[ti];
+
+        if (tilesetMode == TilesetMode::Auto)
+          modifiedTileIndexes[ti] = true;
       }
 
       OPS_TRACE(" - tile %d -> %d\n",
@@ -583,7 +588,9 @@ void modify_tilemap_cel_region(
 
     // Remove unused tiles
     if (tilesetMode == TilesetMode::Auto) {
-      remove_unused_tiles_from_tileset(cmds, tileset, tilesHistogram);
+      remove_unused_tiles_from_tileset(cmds, tileset,
+                                       tilesHistogram,
+                                       modifiedTileIndexes);
     }
 
     doc->notifyTilesetChanged(tileset);
@@ -703,7 +710,8 @@ void clear_mask_from_cel(CmdSequence* cmds,
 static void remove_unused_tiles_from_tileset(
   CmdSequence* cmds,
   doc::Tileset* tileset,
-  std::vector<size_t>& tilesHistogram)
+  std::vector<size_t>& tilesHistogram,
+  const std::vector<bool>& modifiedTileIndexes)
 {
   OPS_TRACE("remove_unused_tiles_from_tileset\n");
 
@@ -725,7 +733,8 @@ static void remove_unused_tiles_from_tileset(
     OPS_TRACE(" - ti=%d tj=%d tilesHistogram[%d]=%d\n",
               ti, tj, ti, (ti < tilesHistogram.size() ? tilesHistogram[ti]: 0));
     if (ti < tilesHistogram.size() &&
-        tilesHistogram[ti] == 0) {
+        tilesHistogram[ti] == 0 &&
+        modifiedTileIndexes[ti]) {
       cmds->executeAndAdd(new cmd::RemoveTile(tileset, tj));
       // Map to nothing, so the map can be invertible
       remap.map(ti, doc::Remap::kNoMap);
