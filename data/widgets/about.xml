@@ -1,5 +1,5 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2018-2019  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-2020  Igara Studio S.A. -->
 <!-- Copyright (C) 2018  David Capello -->
 <gui i18nwarnings="false">
 <window id="about" text="About Aseprite">
@@ -15,7 +15,9 @@
 
       <separator text="Contributors:" horizontal="true" cell_hspan="2" />
       <link text="Ilija Melentijevic" url="https://ilkke.net/" />
-      <label text="- Default skin &amp;&amp; graphics introduced in v0.8" />
+      <label text="- Default theme &amp;&amp; graphics introduced in v0.8" />
+      <link text="Nicolas Desilets" url="https://twitter.com/MapleGecko" />
+      <label text="- Default dark theme introduced in v1.3" />
 
       <hbox cell_hspan="2">
 	<link text="Other Contributors" url="https://www.aseprite.org/contributors/" />
