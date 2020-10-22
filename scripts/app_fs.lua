@@ -52,3 +52,26 @@ do
   assert(runTestsFound)
   assert(readmeFound)
 end
+
+-- Create directories
+do
+  assert(fs.makeDirectory("_tmp"))
+  assert(fs.isDirectory("_tmp"))
+
+  assert(fs.makeAllDirectories("_tmp/a/b"))
+  assert(fs.isDirectory("_tmp/a"))
+  assert(fs.isDirectory("_tmp/a/b"))
+
+  assert(fs.removeDirectory("_tmp/a/b"))
+  assert(not fs.isDirectory("_tmp/a/b"))
+  assert(fs.isDirectory("_tmp/a"))
+
+  assert(not fs.removeDirectory("_tmp")) -- Should fail
+  assert(fs.isDirectory("_tmp/a"))
+  assert(fs.isDirectory("_tmp"))
+
+  assert(fs.removeDirectory("_tmp/a"))
+  assert(fs.removeDirectory("_tmp"))
+  assert(not fs.isDirectory("_tmp/a"))
+  assert(not fs.isDirectory("_tmp"))
+end
