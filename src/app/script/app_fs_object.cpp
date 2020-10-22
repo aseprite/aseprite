@@ -120,7 +120,7 @@ int AppFS_listFiles(lua_State* L)
 
 int AppFS_makeDirectory(lua_State* L)
 {
-  const char* path = lua_tostring(L, 1);
+  const char* path = luaL_checkstring(L, 1);
   if (base::is_directory(path)) {
     lua_pushboolean(L, true);
     return 1;
@@ -142,7 +142,7 @@ int AppFS_makeDirectory(lua_State* L)
 
 int AppFS_makeAllDirectories(lua_State* L)
 {
-  const char* path = lua_tostring(L, 1);
+  const char* path = luaL_checkstring(L, 1);
   if (base::is_directory(path)) {
     lua_pushboolean(L, true);
     return 1;
@@ -163,7 +163,7 @@ int AppFS_makeAllDirectories(lua_State* L)
 
 int AppFS_removeDirectory(lua_State* L)
 {
-  const char* path = lua_tostring(L, 1);
+  const char* path = luaL_checkstring(L, 1);
   if (!base::is_directory(path)) {
     lua_pushboolean(L, (base::is_file(path) ? false:  // Cannot remove files
                                               true)); // The directory is already removed
