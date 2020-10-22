@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -11,6 +11,7 @@
 #include "app/app.h"
 #include "app/resource_finder.h"
 #include "app/script/luacpp.h"
+#include "app/script/security.h"
 #include "base/fs.h"
 
 namespace app {
@@ -117,6 +118,71 @@ int AppFS_listFiles(lua_State* L)
   return 1;
 }
 
+int AppFS_makeDirectory(lua_State* L)
+{
+  const char* path = lua_tostring(L, 1);
+  if (base::is_directory(path)) {
+    lua_pushboolean(L, true);
+    return 1;
+  }
+
+  if (!ask_access(L, path, FileAccessMode::Write, true))
+    return luaL_error(L, "the script doesn't have access to create the directory '%s'", path);
+
+  try {
+    // TODO don't throw exception from base::make_directory() function
+    base::make_directory(path);
+  }
+  catch (const std::exception&) {
+    // Do nothing
+  }
+  lua_pushboolean(L, base::is_directory(path));
+  return 1;
+}
+
+int AppFS_makeAllDirectories(lua_State* L)
+{
+  const char* path = lua_tostring(L, 1);
+  if (base::is_directory(path)) {
+    lua_pushboolean(L, true);
+    return 1;
+  }
+
+  if (!ask_access(L, path, FileAccessMode::Write, true))
+    return luaL_error(L, "the script doesn't have access to create all directories '%s'", path);
+
+  try {
+    base::make_all_directories(path);
+  }
+  catch (const std::exception&) {
+    // Do nothing
+  }
+  lua_pushboolean(L, base::is_directory(path));
+  return 1;
+}
+
+int AppFS_removeDirectory(lua_State* L)
+{
+  const char* path = lua_tostring(L, 1);
+  if (!base::is_directory(path)) {
+    lua_pushboolean(L, (base::is_file(path) ? false:  // Cannot remove files
+                                              true)); // The directory is already removed
+    return 1;
+  }
+
+  if (!ask_access(L, path, FileAccessMode::Write, true))
+    return luaL_error(L, "the script doesn't have access to remove the directory '%s'", path);
+
+  try {
+    base::remove_directory(path);
+  }
+  catch (const std::exception&) {
+    // do nothing...
+  }
+  lua_pushboolean(L, !base::is_directory(path));
+  return 1;
+}
+
 const Property AppFS_properties[] = {
   { "pathSeparator", AppFS_pathSeparator, nullptr },
   // Special folder names
@@ -142,6 +208,10 @@ const luaL_Reg AppFS_methods[] = {
   { "isDirectory", AppFS_isDirectory },
   { "fileSize", AppFS_fileSize },
   { "listFiles", AppFS_listFiles },
+  // Manipulate directories
+  { "makeDirectory", AppFS_makeDirectory },
+  { "makeAllDirectories", AppFS_makeAllDirectories },
+  { "removeDirectory", AppFS_removeDirectory },
   { nullptr, nullptr }
 };
 
