@@ -620,13 +620,15 @@ bool PaletteView::onProcessMessage(Message* msg)
       if (m_state == State::SELECTING_COLOR &&
           m_hot.part == Hit::COLOR) {
         int idx = m_hot.color;
-        idx = base::clamp(idx, 0, m_adapter->size()-1);
+        idx = base::clamp(idx, 0, std::max(0, m_adapter->size()-1));
 
         const MouseButton button = mouseMsg->button();
 
-        if (hasCapture() && ((idx != m_currentEntry) ||
-                             (msg->type() == kMouseDownMessage) ||
-                             (button == kButtonMiddle))) {
+        if (hasCapture() &&
+            (idx >= 0 && idx < m_adapter->size()) &&
+            ((idx != m_currentEntry) ||
+             (msg->type() == kMouseDownMessage) ||
+             (button == kButtonMiddle))) {
           if (button != kButtonMiddle) {
             if (!msg->ctrlPressed() && !msg->shiftPressed())
               deselect();
