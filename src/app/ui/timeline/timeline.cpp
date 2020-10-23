@@ -2108,15 +2108,9 @@ void Timeline::drawLayer(ui::Graphics* g, int layerIdx)
     textBounds.w -= w;
   }
 
+  // Layer name background
   drawPart(g, bounds, nullptr, styles.timelineLayer(),
            is_active || (clklayer && m_clk.part == PART_ROW_TEXT),
-           (hotlayer && m_hot.part == PART_ROW_TEXT),
-           (clklayer && m_clk.part == PART_ROW_TEXT));
-
-  drawPart(g, textBounds,
-           &layer->name(),
-           styles.timelineLayer(),
-           is_active,
            (hotlayer && m_hot.part == PART_ROW_TEXT),
            (clklayer && m_clk.part == PART_ROW_TEXT));
 
@@ -2129,14 +2123,28 @@ void Timeline::drawLayer(ui::Graphics* g, int layerIdx)
                           doc::rgba_getb(layerColor),
                           doc::rgba_geta(layerColor)),
                 b2);
+  }
 
-    drawPart(g, textBounds,
-             &layer->name(),
-             styles.timelineLayerTextOnly(),
-             is_active,
+  // Tilemap icon
+  if (layer->isTilemap()) {
+    drawPart(g, textBounds, nullptr, styles.timelineTilemapLayer(),
+             is_active || (clklayer && m_clk.part == PART_ROW_TEXT),
              (hotlayer && m_hot.part == PART_ROW_TEXT),
              (clklayer && m_clk.part == PART_ROW_TEXT));
+
+    gfx::Size sz = skinTheme()->calcSizeHint(
+      this, skinTheme()->styles.timelineTilemapLayer());
+    textBounds.x += sz.w;
+    textBounds.w -= sz.w;
   }
+
+  // Layer text
+  drawPart(g, textBounds,
+           &layer->name(),
+           styles.timelineLayerTextOnly(),
+           is_active,
+           (hotlayer && m_hot.part == PART_ROW_TEXT),
+           (clklayer && m_clk.part == PART_ROW_TEXT));
 
   if (layer->isBackground()) {
     int s = ui::guiscale();

@@ -861,6 +861,11 @@
             <background-border part="timeline_none" state="focus mouse" />
             <background-border part="timeline_none" state="selected" />
         </style>
+        <style id="timeline_tilemap_layer">
+            <icon part="tiles" color="timeline_normal_text" align="left middle" x="4" />
+            <icon part="tiles" color="timeline_active_text" align="left middle" x="4" state="focus" />
+            <icon part="tiles" color="timeline_clicked_text" align="left middle" x="4" state="selected" />
+        </style>
         <style id="timeline_header_frame" extends="timeline_box" font="mini">
             <text color="timeline_normal_text" />
             <text color="timeline_hover_text" state="mouse" />
