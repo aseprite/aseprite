@@ -136,7 +136,8 @@ DocDiff compare_docs(const Doc* a,
 
       if (aLay->type() != bLay->type() ||
           aLay->name() != bLay->name() ||
-          aLay->flags() != bLay->flags() ||
+          ((int(aLay->flags()) & int(LayerFlags::PersistentFlagsMask)) !=
+           (int(bLay->flags()) & int(LayerFlags::PersistentFlagsMask))) ||
           (aLay->isImage() && bLay->isImage() &&
            (((const LayerImage*)aLay)->opacity() != ((const LayerImage*)bLay)->opacity())) ||
           (aLay->isTilemap() && bLay->isTilemap() &&
