@@ -1011,8 +1011,14 @@ app::Color ColorBar::onPaletteViewGetBackgroundIndex()
   return getBgColor();
 }
 
-void ColorBar::onTilesViewClearTiles(const doc::PalettePicks& picks)
+void ColorBar::onTilesViewClearTiles(const doc::PalettePicks& _picks)
 {
+  // Copy the collection of selected tiles because in case that the
+  // user want to delete a range of tiles (several tiles at the same
+  // time), after the first cmd::RemoveTile() is executed this
+  // collection (_picks) will be modified and we'll lost the other
+  // selected tiles to remove.
+  doc::PalettePicks picks = _picks;
   try {
     ContextWriter writer(UIContext::instance(), 500);
     Sprite* sprite = writer.sprite();
@@ -1021,7 +1027,7 @@ void ColorBar::onTilesViewClearTiles(const doc::PalettePicks& picks)
       auto tileset = m_tilesView.tileset();
 
       Tx tx(writer.context(), "Clear Tiles", ModifyDocument);
-      for (doc::tile_index ti=0; ti<picks.size(); ++ti) {
+      for (int ti=int(picks.size())-1; ti>=0; --ti) {
         if (picks[ti])
           tx(new cmd::RemoveTile(tileset, ti));
       }
