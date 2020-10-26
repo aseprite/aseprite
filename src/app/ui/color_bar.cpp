@@ -813,17 +813,20 @@ void ColorBar::onRemapTilesButtonClick()
     doc::Tileset* tileset = m_tilesView.tileset();
     std::vector<ImageRef> tilemaps;
     sprite->getTilemapsByTileset(tileset, tilemaps);
-    PalettePicks usedTiles(tileset->size());
 
-    for (const ImageRef& tilemap : tilemaps) {
-      for (const doc::tile_t t : LockImageBits<TilemapTraits>(tilemap.get()))
-        if (t != doc::tile_i_notile)
-          usedTiles[doc::tile_geti(t)] = true;
+    const int n = std::max(m_oldTileset->size(),
+                           tileset->size());
+    PalettePicks usedTiles(n);
+
+    if (n > 0) {
+      for (const ImageRef& tilemap : tilemaps) {
+        for (const doc::tile_t t : LockImageBits<TilemapTraits>(tilemap.get()))
+          if (t != doc::tile_i_notile)
+            usedTiles[doc::tile_geti(t)] = true;
+      }
     }
 
     // Remap all tiles in the same order as in newTileset
-    const int n = std::max(m_oldTileset->size(),
-                           tileset->size());
     Remap remap(n);
     bool existMapToEmpty = false;
 
