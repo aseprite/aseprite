@@ -1047,6 +1047,8 @@ void ColorBar::onTilesViewResize(const int newSize)
   if (!tileset || tileset->size() == newSize)
     return;
 
+  showRemapTiles();
+
   try {
     ContextWriter writer(UIContext::instance(), 500);
     Sprite* sprite = writer.sprite();
