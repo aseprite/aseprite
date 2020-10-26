@@ -394,9 +394,19 @@ void draw_image_into_new_tilemap_cel(
       tileset->findTileIndex(tileImage);
     if (tileIndex == tile_i_notile) {
       auto addTile = new cmd::AddTile(tileset, tileImage);
-      cmds->executeAndAdd(addTile);
+
+      if (cmds)
+        cmds->executeAndAdd(addTile);
+      else {
+        // TODO a little hacky
+        addTile->execute(
+          static_cast<Doc*>(dstLayer->sprite()->document())->context());
+      }
 
       tileIndex = addTile->tileIndex();
+
+      if (!cmds)
+        delete addTile;
     }
 
     newTilemap->putPixel(
