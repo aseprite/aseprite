@@ -472,17 +472,17 @@ public:
     }
     else {
       // TODO could the site came from the Indicators or StatusBar itself
-      int firstVisibleIndex = 1;
+      int baseIndex = 1;
       Site site = UIContext::instance()->activeSite();
       if (site.tileset())
-        firstVisibleIndex = site.tileset()->firstVisibleIndex();
+        baseIndex = site.tileset()->baseIndex();
 
       doc::tile_index ti = doc::tile_geti(tile);
       doc::tile_flags tf = doc::tile_getf(tile);
-      if (firstVisibleIndex < 0)
-        str += fmt::format("{}", ((int)ti) + firstVisibleIndex - 1);
+      if (baseIndex < 0)
+        str += fmt::format("{}", ((int)ti) + baseIndex - 1);
       else
-        str += fmt::format("{}", ti + firstVisibleIndex - 1);
+        str += fmt::format("{}", ti + baseIndex - 1);
       if (tf) {
         if (tf & doc::tile_f_flipx) str += " FlipX";
         if (tf & doc::tile_f_flipy) str += " FlipY";

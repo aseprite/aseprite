@@ -19,14 +19,14 @@ void fix_old_tileset(
   // case we can use this tileset as a new tileset without any
   // conversion.
   if (tileset->size() > 0 && is_empty_image(tileset->get(0).get())) {
-    tileset->setFirstVisibleIndex(1);
+    tileset->setBaseIndex(1);
   }
   else {
     // Add the empty tile in the index = 0
     tileset->insert(0, tileset->makeEmptyTile());
 
     // The tile 1 will be displayed as tile 0 in the editor
-    tileset->setFirstVisibleIndex(0);
+    tileset->setBaseIndex(0);
   }
 }
 
@@ -36,7 +36,7 @@ void fix_old_tilemap(
   const tile_t tileIDMask,
   const tile_t tileFlagsMask)
 {
-  int delta = (tileset->firstVisibleIndex() == 0 ? 1: 0);
+  int delta = (tileset->baseIndex() == 0 ? 1: 0);
 
   // Convert old empty tile (0xffffffff) to new empty tile (index 0 = notile)
   transform_image<TilemapTraits>(

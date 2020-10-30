@@ -69,18 +69,18 @@ int Tileset_get_grid(lua_State* L)
   return 1;
 }
 
-int Tileset_get_firstVisibleIndex(lua_State* L)
+int Tileset_get_baseIndex(lua_State* L)
 {
   auto tileset = get_docobj<Tileset>(L, 1);
-  lua_pushinteger(L, tileset->firstVisibleIndex());
+  lua_pushinteger(L, tileset->baseIndex());
   return 1;
 }
 
-int Tileset_set_firstVisibleIndex(lua_State* L)
+int Tileset_set_baseIndex(lua_State* L)
 {
   auto tileset = get_docobj<Tileset>(L, 1);
   int i = lua_tointeger(L, 2);
-  tileset->setFirstVisibleIndex(i);
+  tileset->setBaseIndex(i);
   return 0;
 }
 
@@ -96,7 +96,7 @@ const luaL_Reg Tileset_methods[] = {
 const Property Tileset_properties[] = {
   { "name", Tileset_get_name, Tileset_set_name },
   { "grid", Tileset_get_grid, nullptr },
-  { "firstVisibleIndex", Tileset_get_firstVisibleIndex, Tileset_set_firstVisibleIndex },
+  { "baseIndex", Tileset_get_baseIndex, Tileset_set_baseIndex },
   { nullptr, nullptr, nullptr }
 };
 

@@ -71,7 +71,7 @@ Tileset* read_tileset(std::istream& is,
     if (isOldVersion)
       *isOldVersion = false;
 
-    tileset->setFirstVisibleIndex(1);
+    tileset->setBaseIndex(1);
   }
   // Old tileset used in internal versions (this was added to recover
   // old files, maybe in a future we could remove this code)

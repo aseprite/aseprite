@@ -1068,7 +1068,7 @@ void AsepriteDecoder::readTilesetChunk(doc::Sprite* sprite,
   const doc::tile_index ntiles = read32();
   const int w = read16();
   const int h = read16();
-  const int firstVisibleIndex = short(read16());
+  const int baseIndex = short(read16());
   readPadding(14);
   const std::string name = readString();
 
@@ -1083,7 +1083,7 @@ void AsepriteDecoder::readTilesetChunk(doc::Sprite* sprite,
   doc::Grid grid(gfx::Size(w, h));
   auto tileset = new doc::Tileset(sprite, grid, ntiles);
   tileset->setName(name);
-  tileset->setFirstVisibleIndex(firstVisibleIndex);
+  tileset->setBaseIndex(baseIndex);
 
   if (flags & ASE_TILESET_FLAG_EXTERNAL_FILE) {
     const uint32_t extFileId = read32(); // filename ID in the external files chunk

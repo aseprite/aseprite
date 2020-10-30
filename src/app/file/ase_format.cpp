@@ -1283,7 +1283,7 @@ static void ase_file_write_tileset_chunk(FILE* f, FileOp* fop,
   fputl(tileset->size(), f);
   fputw(tileset->grid().tileSize().w, f);
   fputw(tileset->grid().tileSize().h, f);
-  fputw(short(tileset->firstVisibleIndex()), f);
+  fputw(short(tileset->baseIndex()), f);
   ase_file_write_padding(f, 14);
   ase_file_write_string(f, tileset->name()); // tileset name
 

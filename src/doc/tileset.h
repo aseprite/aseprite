@@ -45,8 +45,8 @@ namespace doc {
     const std::string& name() const { return m_name; }
     void setName(const std::string& name) { m_name = name; }
 
-    int firstVisibleIndex() const { return m_firstVisibleIndex; }
-    void setFirstVisibleIndex(int index) { m_firstVisibleIndex = index; }
+    int baseIndex() const { return m_baseIndex; }
+    void setBaseIndex(int index) { m_baseIndex = index; }
 
     int getMemSize() const override;
 
@@ -124,7 +124,7 @@ namespace doc {
     Tiles m_tiles;
     TilesetHashTable m_hash;
     std::string m_name;
-    int m_firstVisibleIndex = 1;
+    int m_baseIndex = 1;
     struct External {
       std::string filename;
       tileset_index tileset;

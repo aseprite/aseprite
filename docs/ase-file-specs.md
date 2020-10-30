@@ -374,9 +374,12 @@ the Tags chunk.
     DWORD       Number of tiles
     WORD        Tile Width
     WORD        Tile Height
-    SHORT       Number to show in the screen from the tile with index 1 and
-                so on (by default this is field is 1, so the data that is
-                displayed is equivalent to the data in memory)
+    SHORT       Base Index: Number to show in the screen from the tile with
+                index 1 and so on (by default this is field is 1, so the data
+                that is displayed is equivalent to the data in memory). But it
+                can be 0 to display zero-based indexing (this field isn't used
+                for the representation of the data in the file, it's just for
+                UI purposes).
     BYTE[14]    Reserved
     STRING      Name of the tileset
     + If flag 1 is set

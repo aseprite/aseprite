@@ -1162,7 +1162,7 @@ void Editor::drawTileNumbers(ui::Graphics* g, const Cel* cel)
       + mainTilePosition();
 
     int ti_offset =
-      static_cast<LayerTilemap*>(cel->layer())->tileset()->firstVisibleIndex() - 1;
+      static_cast<LayerTilemap*>(cel->layer())->tileset()->baseIndex() - 1;
 
     const gfx::Rect rc = cel->bounds();
     const doc::Image* image = cel->image();

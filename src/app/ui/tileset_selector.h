@@ -25,7 +25,7 @@ namespace app {
     struct Info {
       bool newTileset = true;
       doc::Grid grid;
-      int firstVisibleIndex = 1;
+      int baseIndex = 1;
       doc::tileset_index tsi = 0;
     };
 

@@ -27,7 +27,7 @@ TilesetSelector::TilesetSelector(const doc::Sprite* sprite,
 
   gridWidth()->setTextf("%d", info.grid.tileSize().w);
   gridHeight()->setTextf("%d", info.grid.tileSize().h);
-  firstVisibleIndex()->setTextf("%d", info.firstVisibleIndex);
+  baseIndex()->setTextf("%d", info.baseIndex);
 
   doc::tileset_index tsi = 0;
   for (doc::Tileset* tileset : *sprite->tilesets()) {
@@ -60,7 +60,7 @@ TilesetSelector::Info TilesetSelector::getInfo()
 
     info.newTileset = true;
     info.grid = doc::Grid::MakeRect(sz);
-    info.firstVisibleIndex = firstVisibleIndex()->textInt();
+    info.baseIndex = baseIndex()->textInt();
   }
   else {
     info.newTileset = false;

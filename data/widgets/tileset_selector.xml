@@ -13,9 +13,9 @@
     <label text="@.grid_height" />
     <expr id="grid_height" text="" />
 
-    <label text="@.first_visible_index" />
-    <expr id="first_visible_index" text="1" tooltip="@.first_visible_index_tooltip" />
-    <booxfiller cell_hspan="2" />
+    <label text="@.base_index" />
+    <expr id="base_index" text="1" tooltip="@.base_tooltip" />
+    <boxfiller cell_hspan="2" />
   </grid>
 </vbox>
 </gui>
