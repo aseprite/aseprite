@@ -10,6 +10,7 @@
 
 #include "doc/tileset.h"
 
+#include "doc/primitives.h"
 #include "doc/remap.h"
 #include "doc/sprite.h"
 
@@ -33,8 +34,9 @@ Tileset::Tileset(Sprite* sprite,
   //ASSERT(sprite);
 
   for (tile_index ti=0; ti<ntiles; ++ti) {
-    m_tiles[ti] = makeEmptyTile();
-    m_hash[m_tiles[ti]] = ti;
+    ImageRef tile = makeEmptyTile();
+    m_tiles[ti] = tile;
+    hashImage(ti, tile);
   }
 }
 
@@ -97,13 +99,19 @@ void Tileset::resize(const tile_index ntiles)
 void Tileset::remap(const Remap& remap)
 {
   Tiles tmp = m_tiles;
-  for (tile_index ti=0; ti<size(); ++ti) {
+
+  // The notile cannot be remapped
+  ASSERT(remap[0] == 0);
+
+  for (tile_index ti=1; ti<size(); ++ti) {
     TS_TRACE("m_tiles[%d] = tmp[%d]\n", remap[ti], ti);
 
     ASSERT(remap[ti] >= 0);
     ASSERT(remap[ti] < m_tiles.size());
     if (remap[ti] >= 0 &&
         remap[ti] < m_tiles.size()) {
+      ASSERT(remap[ti] != notile);
+
       m_tiles[remap[ti]] = tmp[ti];
     }
   }
@@ -114,11 +122,17 @@ void Tileset::remap(const Remap& remap)
 void Tileset::set(const tile_index ti,
                   const ImageRef& image)
 {
+#if _DEBUG
+  if (ti == notile && !is_empty_image(image.get())) {
+    TRACEARGS("Warning: setting tile 0 with a non-empty image");
+  }
+#endif
+
   removeFromHash(ti, false);
 
   m_tiles[ti] = image;
   if (!m_hash.empty())
-    m_hash[image] = ti;
+    hashImage(ti, image);
 }
 
 tile_index Tileset::add(const ImageRef& image)
@@ -127,14 +141,20 @@ tile_index Tileset::add(const ImageRef& image)
 
   const tile_index newIndex = tile_index(m_tiles.size()-1);
   if (!m_hash.empty())
-    m_hash[image] = newIndex;
+    hashImage(newIndex, image);
   return newIndex;
 }
 
 void Tileset::insert(const tile_index ti,
                      const ImageRef& image)
 {
-  ASSERT(ti <= size());
+#if _DEBUG
+  if (ti == notile && !is_empty_image(image.get())) {
+    TRACEARGS("Warning: inserting tile 0 with a non-empty image");
+  }
+#endif
+
+  ASSERT(ti >= 0 && ti <= m_tiles.size()+1);
   m_tiles.insert(m_tiles.begin()+ti, image);
 
   if (!m_hash.empty()) {
@@ -144,7 +164,7 @@ void Tileset::insert(const tile_index ti,
         ++it.second;
 
     // And now we can add the new image with the "ti" index
-    m_hash[image] = ti;
+    hashImage(ti, image);
   }
 }
 
@@ -172,20 +192,27 @@ void Tileset::setExternal(const std::string& filename,
   m_external.tileset = tsi;
 }
 
-tile_index Tileset::findTileIndex(const ImageRef& tileImage)
+bool Tileset::findTileIndex(const ImageRef& tileImage,
+                            tile_index& ti)
 {
   ASSERT(tileImage);
-  if (!tileImage)
-    return tile_i_notile;
+  if (!tileImage) {
+    ti = notile;
+    return false;
+  }
 
   auto& h = hashTable(); // Don't use m_hash directly in case that
                          // we've to regenerate the hash table.
 
   auto it = h.find(tileImage);
-  if (it != h.end())
-    return it->second;
-  else
-    return tile_i_notile;
+  if (it != h.end()) {
+    ti = it->second;
+    return true;
+  }
+  else {
+    ti = notile;
+    return false;
+  }
 }
 
 void Tileset::notifyTileContentChange(const tile_index ti)
@@ -215,7 +242,8 @@ void Tileset::notifyTileContentChange(const tile_index ti)
   // In other case we can do a fast-path, just removing and
   // re-adding the tile to the hash table.
   removeFromHash(ti, false);
-  m_hash[m_tiles[ti]] = ti;
+  if (!m_hash.empty())
+    hashImage(ti, m_tiles[ti]);
 
 #else // Regenerate the whole hash map (at the moment this is the
       // only way to make it work correctly)
@@ -224,6 +252,17 @@ void Tileset::notifyTileContentChange(const tile_index ti)
   rehash();
 
 #endif
+}
+
+void Tileset::notifyRegenerateEmptyTile()
+{
+  if (size() == 0)
+    return;
+
+  ImageRef image = get(doc::notile);
+  if (image)
+    doc::clear_image(image.get(), image->maskColor());
+  rehash();
 }
 
 void Tileset::removeFromHash(const tile_index ti,
@@ -279,6 +318,13 @@ void Tileset::assertValidHashTable()
 }
 #endif
 
+void Tileset::hashImage(const tile_index ti,
+                        const ImageRef& tileImage)
+{
+  if (m_hash.find(tileImage) == m_hash.end())
+    m_hash[tileImage] = ti;
+}
+
 void Tileset::rehash()
 {
   // Clear the hash table, we'll lazy-rehash it when
@@ -292,7 +338,7 @@ TilesetHashTable& Tileset::hashTable()
     // Re-hash/create the whole hash table from scratch
     tile_index ti = 0;
     for (auto tile : m_tiles)
-      m_hash[tile] = ti++;
+      hashImage(ti++, tile);
   }
   return m_hash;
 }

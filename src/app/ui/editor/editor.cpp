@@ -1161,18 +1161,21 @@ void Editor::drawTileNumbers(ui::Graphics* g, const Cel* cel)
                  tileSize.h/2 - g->font()->height()/2)
       + mainTilePosition();
 
+    int ti_offset =
+      static_cast<LayerTilemap*>(cel->layer())->tileset()->firstVisibleIndex() - 1;
+
     const gfx::Rect rc = cel->bounds();
     const doc::Image* image = cel->image();
     std::string text;
     for (int y=0; y<image->height(); ++y) {
       for (int x=0; x<image->width(); ++x) {
         doc::tile_t t = image->getPixel(x, y);
-        if (t != doc::tile_i_notile) {
+        if (t != doc::notile) {
           gfx::Point pt = editorToScreen(grid.tileToCanvas(gfx::Point(x, y)));
           pt -= bounds().origin();
           pt += offset;
 
-          text = fmt::format("{}", (t & doc::tile_i_mask));
+          text = fmt::format("{}", int(t & doc::tile_i_mask) + ti_offset);
           pt.x -= g->measureUIText(text).w/2;
           g->drawText(text, fgColor, color, pt);
         }
@@ -1726,7 +1729,7 @@ doc::tile_t Editor::getTileByPosition(const gfx::Point& mousePos)
     return picker.tile();
   }
   else
-    return doc::tile_i_notile;
+    return doc::notile;
 }
 
 bool Editor::startStraightLineWithFreehandTool(const tools::Pointer* pointer)

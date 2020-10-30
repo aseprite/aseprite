@@ -219,6 +219,17 @@ public:
   }
   void clearSelection(PaletteView* paletteView,
                       doc::PalettePicks& picks) override {
+    // Cannot delete the empty tile (index 0)
+    int i = picks.firstPick();
+    if (i == doc::notile) {
+      picks[i] = false;
+      if (!picks.picks()) {
+        // Cannot remove empty tile
+        StatusBar::instance()->showTip(1000, "Cannot delete the empty tile");
+        return;
+      }
+    }
+
     paletteView->delegate()->onTilesViewClearTiles(picks);
   }
   void selectIndex(PaletteView* paletteView,
@@ -234,7 +245,7 @@ public:
   void dropColors(PaletteView* paletteView,
                   doc::PalettePicks& picks,
                   int& currentEntry,
-                  const int beforeIndex,
+                  const int _beforeIndex,
                   const bool isCopy) override {
     PAL_TRACE("dropColors");
 
@@ -251,6 +262,19 @@ public:
     // ColorBar::onTilesetChanged() called, and finally we'll receive a
     // PaletteView::deselect() that will clear the whole picks.
     auto newPicks = picks;
+    int beforeIndex = _beforeIndex;
+
+    // We cannot move the empty tile (index 0) no any place
+    if (beforeIndex == 0)
+      ++beforeIndex;
+    if (!isCopy && newPicks.size() > 0 && newPicks[0])
+      newPicks[0] = false;
+    if (!newPicks.picks()) {
+      // Cannot move empty tile
+      StatusBar::instance()->showTip(1000, "Cannot move the empty tile");
+      return;
+    }
+
     paletteView->delegate()->onTilesViewDragAndDrop(
       tileset, newPicks, currentEntry, beforeIndex, isCopy);
 
@@ -488,7 +512,7 @@ doc::tile_t PaletteView::getTileByPosition(const gfx::Point& pos)
     if (getPaletteEntryBounds(i).contains(relPos))
       return doc::tile(i, 0);
   }
-  return doc::tile_i_notile;
+  return doc::notile;
 }
 
 void PaletteView::onActiveSiteChange(const Site& site)

@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019  Igara Studio S.A.
+// Copyright (c) 2019-2020  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -20,7 +20,7 @@ namespace doc {
   const uint32_t tile_i_shift = 0;  // Tile index
   const uint32_t tile_f_shift = 28; // Flags (flip, rotation)
 
-  const uint32_t tile_i_notile = 0xffffffff;
+  const uint32_t notile       = 0;
   const uint32_t tile_i_mask  = 0x1fffffff;
   const uint32_t tile_f_mask  = 0xe0000000; // 3 flags
   const uint32_t tile_f_flipx = 0x20000000;

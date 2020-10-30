@@ -1270,18 +1270,21 @@ static void ase_file_write_tileset_chunk(FILE* f, FileOp* fop,
                                          const tileset_index si)
 {
   ChunkWriter chunk(f, frame_header, ASE_FILE_CHUNK_TILESET);
-  int flags = 0;
+
+  // We always save with the tile zero as the empty tile now
+  int flags = ASE_TILESET_FLAG_ZERO_IS_NOTILE;
   if (!tileset->externalFilename().empty())
     flags |= ASE_TILESET_FLAG_EXTERNAL_FILE;
   else
     flags |= ASE_TILESET_FLAG_EMBEDDED;
 
-  fputl(si, f);             // Tileset ID
-  fputl(flags, f);      // Tileset Flags (2=include tiles inside file)
+  fputl(si, f);         // Tileset ID
+  fputl(flags, f);      // Tileset Flags
   fputl(tileset->size(), f);
   fputw(tileset->grid().tileSize().w, f);
   fputw(tileset->grid().tileSize().h, f);
-  ase_file_write_padding(f, 16);
+  fputw(short(tileset->firstVisibleIndex()), f);
+  ase_file_write_padding(f, 14);
   ase_file_write_string(f, tileset->name()); // tileset name
 
   // Flag 1 = external tileset

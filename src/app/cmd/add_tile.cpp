@@ -19,14 +19,12 @@
 namespace app {
 namespace cmd {
 
-using namespace doc;
-
 AddTile::AddTile(doc::Tileset* tileset,
                  const doc::ImageRef& image)
   : WithTileset(tileset)
   , WithImage(image.get())
   , m_size(0)
-  , m_tileIndex(doc::tile_i_notile)
+  , m_tileIndex(doc::notile)
   , m_imageRef(image)
 {
 }
@@ -46,7 +44,7 @@ void AddTile::onExecute()
   doc::Tileset* tileset = this->tileset();
   ASSERT(tileset);
 
-  if (m_tileIndex != doc::tile_i_notile) {
+  if (m_tileIndex != doc::notile) {
     ASSERT(!m_imageRef);
     tileset->sprite()->incrementVersion();
     tileset->incrementVersion();
@@ -99,7 +97,7 @@ void AddTile::onFireNotifications()
 
 void AddTile::addTile(doc::Tileset* tileset, const doc::ImageRef& image)
 {
-  if (m_tileIndex == doc::tile_i_notile)
+  if (m_tileIndex == doc::notile)
     m_tileIndex = tileset->add(image);
   else
     tileset->insert(m_tileIndex, image);

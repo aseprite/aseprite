@@ -22,7 +22,8 @@ namespace doc {
 
   Tileset* read_tileset(std::istream& is,
                         Sprite* sprite,
-                        bool setId = true);
+                        bool setId = true,
+                        bool* isOldVersion = nullptr);
 
 } // namespace doc
 

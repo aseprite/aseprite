@@ -84,7 +84,7 @@ Color Color::fromGray(int g, int a)
 // static
 Color Color::fromIndex(int index)
 {
-  ASSERT(index >= 0 || index == tile_i_notile);
+  ASSERT(index >= 0 || index == doc::notile);
 
   Color color(Color::IndexType);
   color.m_value.index = index;

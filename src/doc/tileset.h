@@ -28,6 +28,9 @@ namespace doc {
     typedef Tiles::iterator iterator;
     typedef Tiles::const_iterator const_iterator;
 
+    // Creates a new tileset with "ntiles". The first tile will be
+    // always the empty tile. So ntiles must be > 1 to contain at
+    // least one non-empty tile.
     Tileset(Sprite* sprite,
             const Grid& grid,
             const tileset_index ntiles);
@@ -42,6 +45,9 @@ namespace doc {
     const std::string& name() const { return m_name; }
     void setName(const std::string& name) { m_name = name; }
 
+    int firstVisibleIndex() const { return m_firstVisibleIndex; }
+    void setFirstVisibleIndex(int index) { m_firstVisibleIndex = index; }
+
     int getMemSize() const override;
 
     iterator begin() { return m_tiles.begin(); }
@@ -53,7 +59,7 @@ namespace doc {
     void remap(const Remap& remap);
 
     ImageRef get(const tile_index ti) const {
-      if (ti < size())
+      if (ti >= 0 && ti < size())
         return m_tiles[ti];
       else
         return ImageRef(nullptr);
@@ -87,13 +93,19 @@ namespace doc {
     ImageRef makeEmptyTile();
 
     // If there is a tile in the set that matches the pixels of the
-    // given "tileImage", this function returns the index of that
-    // tile. Returns tile_i_notile if the image is not in the tileset.
-    tile_index findTileIndex(const ImageRef& tileImage);
+    // given "tileImage", this function returns true and the index of
+    // that tile in the "ti" parameter. Returns false if the image is
+    // not in the tileset.
+    bool findTileIndex(const ImageRef& tileImage,
+                       tile_index& ti);
 
     // Must be called when a tile image was modified externally, so
     // the hash elements are re-calculated for that specific tile.
     void notifyTileContentChange(const tile_index ti);
+
+    // Called when the mask color of the sprite is modified, so we
+    // have to regenerate the empty tile with that new mask color.
+    void notifyRegenerateEmptyTile();
 
 #ifdef _DEBUG
     void assertValidHashTable();
@@ -102,6 +114,8 @@ namespace doc {
   private:
     void removeFromHash(const tile_index ti,
                         const bool adjustIndexes);
+    void hashImage(const tile_index ti,
+                   const ImageRef& tileImage);
     void rehash();
     TilesetHashTable& hashTable();
 
@@ -110,6 +124,7 @@ namespace doc {
     Tiles m_tiles;
     TilesetHashTable m_hash;
     std::string m_name;
+    int m_firstVisibleIndex = 1;
     struct External {
       std::string filename;
       tileset_index tileset;

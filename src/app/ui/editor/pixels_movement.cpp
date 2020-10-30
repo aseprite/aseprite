@@ -1026,7 +1026,7 @@ void PixelsMovement::drawImage(
   gfx::Rect bounds = corners.bounds();
 
   if (m_site.tilemapMode() == TilemapMode::Tiles) {
-    dst->setMaskColor(doc::tile_i_notile);
+    dst->setMaskColor(doc::notile);
     dst->clear(dst->maskColor());
 
     drawTransformedTilemap(

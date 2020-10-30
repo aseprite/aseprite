@@ -271,7 +271,7 @@ bool DocApi::cropCel(LayerImage* layer,
                    paintPos.x, paintPos.y,
                    newCelBounds.w, newCelBounds.h,
                    image->pixelFormat() == IMAGE_TILEMAP ?
-                     tile_i_notile : m_document->bgColor(layer)));
+                     notile : m_document->bgColor(layer)));
 
       // Try to shrink the image ignoring transparent borders
       gfx::Rect frameBounds;
@@ -285,7 +285,7 @@ bool DocApi::cropCel(LayerImage* layer,
                        frameBounds.x, frameBounds.y,
                        frameBounds.w, frameBounds.h,
                        image->pixelFormat() == IMAGE_TILEMAP ?
-                         tile_i_notile : m_document->bgColor(layer)));
+                         notile : m_document->bgColor(layer)));
 
           newCelPos += frameBounds.origin();
         }

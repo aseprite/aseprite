@@ -218,6 +218,12 @@ void Sprite::setTransparentColor(color_t color)
   getImages(images);
   for (ImageRef& image : images)
     image->setMaskColor(color);
+
+  // Transform the empty tile of all tilemaps
+  if (hasTilesets()) {
+    for (Tileset* tileset : *tilesets())
+      tileset->notifyRegenerateEmptyTile();
+  }
 }
 
 int Sprite::getMemSize() const

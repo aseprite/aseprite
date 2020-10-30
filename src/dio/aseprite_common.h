@@ -1,5 +1,5 @@
 // Aseprite Document IO Library
-// Copyright (c) 2018-2019 Igara Studio S.A.
+// Copyright (c) 2018-2020 Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -60,6 +60,7 @@
 
 #define ASE_TILESET_FLAG_EXTERNAL_FILE      1
 #define ASE_TILESET_FLAG_EMBEDDED           2
+#define ASE_TILESET_FLAG_ZERO_IS_NOTILE     4
 
 namespace dio {
 

@@ -413,7 +413,7 @@ Image* ExpandCelCanvas::getSourceCanvas()
     if (m_tilemapMode == TilemapMode::Tiles) {
       m_srcImage.reset(Image::create(IMAGE_TILEMAP,
                                      m_bounds.w, m_bounds.h, src_buffer));
-      m_srcImage->setMaskColor(tile_i_notile);
+      m_srcImage->setMaskColor(doc::notile);
     }
     else {
       m_srcImage.reset(Image::create(m_sprite->pixelFormat(),
@@ -431,7 +431,7 @@ Image* ExpandCelCanvas::getDestCanvas()
     if (m_tilemapMode == TilemapMode::Tiles) {
       m_dstImage.reset(Image::create(IMAGE_TILEMAP,
                                      m_bounds.w, m_bounds.h, dst_buffer));
-      m_dstImage->setMaskColor(tile_i_notile);
+      m_dstImage->setMaskColor(doc::notile);
     }
     else {
       m_dstImage.reset(Image::create(m_sprite->pixelFormat(),

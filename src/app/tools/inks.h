@@ -336,7 +336,7 @@ public:
           setProc(get_ink_proc<BrushEraserInkProcessing>(loop));
         }
         else if (loop->getDstImage()->pixelFormat() == IMAGE_TILEMAP) {
-          color_t clearColor = doc::tile_i_notile;
+          color_t clearColor = doc::notile;
           loop->setPrimaryColor(clearColor);
           loop->setSecondaryColor(clearColor);
           setProc(new CopyInkProcessing<TilemapTraits>(loop));

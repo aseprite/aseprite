@@ -16,8 +16,13 @@
 #include "doc/image_io.h"
 #include "doc/subobjects_io.h"
 #include "doc/tileset.h"
+#include "doc/util.h"
 
 #include <iostream>
+
+// Extra BYTE with special flags to check the tileset version.  This
+// field didn't exist in Aseprite v1.3-alpha3 (so read8() fails = 0)
+#define TILESET_VER1     1
 
 namespace doc {
 
@@ -39,12 +44,14 @@ bool write_tileset(std::ostream& os,
     write_image(os, tileset->get(ti).get(), cancel);
   }
 
+  write8(os, TILESET_VER1);
   return true;
 }
 
 Tileset* read_tileset(std::istream& is,
                       Sprite* sprite,
-                      bool setId)
+                      bool setId,
+                      bool* isOldVersion)
 {
   ObjectId id = read32(is);
   tileset_index ntiles = read32(is);
@@ -56,6 +63,23 @@ Tileset* read_tileset(std::istream& is,
   for (tileset_index ti=0; ti<ntiles; ++ti) {
     ImageRef image(read_image(is, setId));
     tileset->set(ti, image);
+  }
+
+  // Read extra version byte after tiles
+  uint32_t ver = read8(is);
+  if (ver == TILESET_VER1) {
+    if (isOldVersion)
+      *isOldVersion = false;
+
+    tileset->setFirstVisibleIndex(1);
+  }
+  // Old tileset used in internal versions (this was added to recover
+  // old files, maybe in a future we could remove this code)
+  else {
+    if (isOldVersion)
+      *isOldVersion = true;
+
+    fix_old_tileset(tileset);
   }
 
   return tileset;

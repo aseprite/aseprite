@@ -96,7 +96,7 @@ bool get_cel_pixel(const Cel* cel,
 }
 
 ColorPicker::ColorPicker()
-  : m_tile(doc::tile_i_notile)
+  : m_tile(doc::notile)
   , m_alpha(0)
   , m_layer(nullptr)
 {

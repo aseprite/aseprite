@@ -206,9 +206,9 @@ This chunk determine where to put a cel in the specified layer/frame.
       WORD      Height in pixels
       BYTE[]    "Raw Cel" data compressed with ZLIB method (see NOTE.3)
     + For cel type = 3 (Compressed Tilemap)
-      WORD      Width in pixels
-      WORD      Height in pixels
-      WORD      Bits per tile (8, 16, or 32)
+      WORD      Width in number of tiles
+      WORD      Height in number of tiles
+      WORD      Bits per tile (at the moment it's always 32-bit per tile)
       DWORD     Bitmask for tile ID (e.g. 0x1fffffff for 32-bit tiles)
       DWORD     Bitmask for X flip
       DWORD     Bitmask for Y flip
@@ -367,10 +367,17 @@ the Tags chunk.
     DWORD       Tileset flags
                   1 - Include link to external file
                   2 - Include tiles inside this file
+                  4 - Tilemaps using this tileset use tile ID=0 as empty tile
+                      (this is the new format). In rare cases this bit is off,
+                      and the empty tile will be equal to 0xffffffff (used in
+                      internal versions of Aseprite)
     DWORD       Number of tiles
     WORD        Tile Width
     WORD        Tile Height
-    BYTE[16]    Reserved
+    SHORT       Number to show in the screen from the tile with index 1 and
+                so on (by default this is field is 1, so the data that is
+                displayed is equivalent to the data in memory)
+    BYTE[14]    Reserved
     STRING      Name of the tileset
     + If flag 1 is set
       DWORD     ID of the external file. This ID is one entry

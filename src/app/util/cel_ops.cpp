@@ -371,8 +371,8 @@ void draw_image_into_new_tilemap_cel(
     newTilemap.reset(doc::Image::create(IMAGE_TILEMAP,
                                         tilemapBounds.w,
                                         tilemapBounds.h));
-    newTilemap->setMaskColor(tile_i_notile);
-    newTilemap->clear(tile_i_notile);
+    newTilemap->setMaskColor(doc::notile);
+    newTilemap->clear(doc::notile);
   }
   else {
     ASSERT(tilemapBounds.w == newTilemap->width());
@@ -390,9 +390,8 @@ void draw_image_into_new_tilemap_cel(
     if (grid.hasMask())
       mask_image(tileImage.get(), grid.mask().get());
 
-    doc::tile_index tileIndex =
-      tileset->findTileIndex(tileImage);
-    if (tileIndex == tile_i_notile) {
+    doc::tile_index tileIndex;
+    if (!tileset->findTileIndex(tileImage, tileIndex)) {
       auto addTile = new cmd::AddTile(tileset, tileImage);
 
       if (cmds)
@@ -473,8 +472,8 @@ void modify_tilemap_cel_region(
                          newTilemapBounds.w,
                          newTilemapBounds.h));
 
-    newTilemap->setMaskColor(tile_i_notile);
-    newTilemap->clear(tile_i_notile);   // TODO find the tile with empty content?
+    newTilemap->setMaskColor(doc::notile);
+    newTilemap->clear(doc::notile);   // TODO find the tile with empty content?
     newTilemap->copy(
       cel->image(),
       gfx::Clip(oldTilemapBounds.x-newTilemapBounds.x,
@@ -495,7 +494,7 @@ void modify_tilemap_cel_region(
     if (tilesetMode == TilesetMode::Auto) {
       for_each_tile_using_tileset(
         tileset, [tileset, &tilesHistogram](const doc::tile_t t){
-                   if (t != doc::tile_i_notile) {
+                   if (t != doc::notile) {
                      doc::tile_index ti = doc::tile_geti(t);
                      if (ti >= 0 && ti < tileset->size())
                        ++tilesHistogram[ti];
@@ -510,29 +509,21 @@ void modify_tilemap_cel_region(
       if (!newTilemap->bounds().contains(u, v))
         continue;
 
-      doc::ImageRef existentTileImage;
       const doc::tile_t t = newTilemap->getPixel(u, v);
-      const doc::tile_index ti = (t != tile_i_notile ? doc::tile_geti(t): tile_i_notile);
-      if (t == tile_i_notile) {
-        // For "no tiles" create a new temporal empty tile to draw the
-        // modification.
-        existentTileImage = tileset->makeEmptyTile();
-      }
-      else {
-        existentTileImage = tileset->get(ti);
-      }
+      const doc::tile_index ti = (t != doc::notile ? doc::tile_geti(t): doc::notile);
+      const doc::ImageRef existentTileImage = tileset->get(ti);
 
       const gfx::Rect tileInCanvasRc(grid.tileToCanvas(tilePt), tileSize);
       ImageRef tileImage(getTileImage(existentTileImage, tileInCanvasRc));
       if (grid.hasMask())
         mask_image(tileImage.get(), grid.mask().get());
 
-      tile_index tileIndex = tileset->findTileIndex(tileImage);
-      if (tileIndex != tile_i_notile) {
+      tile_index tileIndex;
+      if (tileset->findTileIndex(tileImage, tileIndex)) {
         // We can re-use an existent tile (tileIndex) from the tileset
       }
       else if (tilesetMode == TilesetMode::Auto &&
-               t != tile_i_notile &&
+               t != doc::notile &&
                ti >= 0 && ti < tilesHistogram.size() &&
                tilesHistogram[ti] == 1) {
         // Common case: Re-utilize the same tile in Auto mode.
@@ -557,7 +548,7 @@ void modify_tilemap_cel_region(
       // If the tile changed, we have to remove the old tile index
       // (ti) from the histogram count.
       if (tilesetMode == TilesetMode::Auto &&
-          t != tile_i_notile &&
+          t != doc::notile &&
           ti >= 0 && ti < tilesHistogram.size() &&
           ti != tileIndex) {
         --tilesHistogram[ti];
@@ -567,7 +558,7 @@ void modify_tilemap_cel_region(
       }
 
       OPS_TRACE(" - tile %d -> %d\n",
-                (t == tile_i_notile ? -1: ti),
+                (t == doc::notile ? -1: ti),
                 tileIndex);
 
       const doc::tile_t tile = doc::tile(tileIndex, 0);
@@ -615,11 +606,15 @@ void modify_tilemap_cel_region(
         continue;
 
       const doc::tile_t t = cel->image()->getPixel(tilePt.x, tilePt.y);
-      if (t == tile_i_notile)
+      if (t == doc::notile)
         continue;
 
       const doc::tile_index ti = doc::tile_geti(t);
       const doc::ImageRef existentTileImage = tileset->get(ti);
+      if (!existentTileImage) {
+        // TODO add support to fill the tileset with the tile "ti"
+        continue;
+      }
 
       const gfx::Rect tileInCanvasRc(grid.tileToCanvas(tilePt), tileSize);
       ImageRef tileImage(getTileImage(existentTileImage, tileInCanvasRc));
@@ -730,7 +725,7 @@ static void remove_unused_tiles_from_tileset(
   for_each_tile_using_tileset(
     tileset,
     [&n](const doc::tile_t t){
-      if (t != doc::tile_i_notile) {
+      if (t != doc::notile) {
         const doc::tile_index ti = doc::tile_geti(t);
         n = std::max<int>(n, ti+1);
       }
@@ -773,6 +768,14 @@ void move_tiles_in_tileset(
 {
   OPS_TRACE("move_tiles_in_tileset\n");
 
+  // We cannot move the empty tile (index 0) no any place
+  if (beforeIndex == 0)
+    ++beforeIndex;
+  if (picks.size() > 0 && picks[0])
+    picks[0] = false;
+  if (!picks.picks())
+    return;
+
   picks.resize(std::max<int>(picks.size(), beforeIndex));
 
   int n = beforeIndex - tileset->size();
@@ -798,6 +801,10 @@ void copy_tiles_in_tileset(
   int& currentEntry,
   int beforeIndex)
 {
+  // We cannot move tiles before the empty tile
+  if (beforeIndex == 0)
+    ++beforeIndex;
+
   OPS_TRACE("copy_tiles_in_tileset beforeIndex=%d npicks=%d\n", beforeIndex, picks.picks());
 
   std::vector<ImageRef> newTiles;

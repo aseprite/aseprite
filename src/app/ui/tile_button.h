@@ -44,7 +44,7 @@ namespace app {
     // ContextObserver impl
     void onActiveSiteChange(const Site& site) override;
 
-    doc::tile_t m_tile = doc::tile_i_notile;
+    doc::tile_t m_tile = doc::notile;
   };
 
 } // namespace app

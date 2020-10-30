@@ -302,8 +302,8 @@ void BrushPreview::show(const gfx::Point& screenPos)
 
     Image* extraImage = m_extraCel->image();
     if (extraImage->pixelFormat() == IMAGE_TILEMAP) {
-      extraImage->setMaskColor(tile_i_notile);
-      clear_image(extraImage, tile_i_notile);
+      extraImage->setMaskColor(notile);
+      clear_image(extraImage, notile);
     }
     else {
       extraImage->setMaskColor(mask_index);

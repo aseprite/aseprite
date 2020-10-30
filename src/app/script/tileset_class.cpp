@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -69,6 +69,21 @@ int Tileset_get_grid(lua_State* L)
   return 1;
 }
 
+int Tileset_get_firstVisibleIndex(lua_State* L)
+{
+  auto tileset = get_docobj<Tileset>(L, 1);
+  lua_pushinteger(L, tileset->firstVisibleIndex());
+  return 1;
+}
+
+int Tileset_set_firstVisibleIndex(lua_State* L)
+{
+  auto tileset = get_docobj<Tileset>(L, 1);
+  int i = lua_tointeger(L, 2);
+  tileset->setFirstVisibleIndex(i);
+  return 0;
+}
+
 const luaL_Reg Tileset_methods[] = {
   { "__eq", Tileset_eq },
   { "__len", Tileset_len },
@@ -81,6 +96,7 @@ const luaL_Reg Tileset_methods[] = {
 const Property Tileset_properties[] = {
   { "name", Tileset_get_name, Tileset_set_name },
   { "grid", Tileset_get_grid, nullptr },
+  { "firstVisibleIndex", Tileset_get_firstVisibleIndex, Tileset_set_firstVisibleIndex },
   { nullptr, nullptr, nullptr }
 };
 

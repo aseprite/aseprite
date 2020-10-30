@@ -821,7 +821,7 @@ void ColorBar::onRemapTilesButtonClick()
     if (n > 0) {
       for (const ImageRef& tilemap : tilemaps) {
         for (const doc::tile_t t : LockImageBits<TilemapTraits>(tilemap.get()))
-          if (t != doc::tile_i_notile)
+          if (t != doc::notile)
             usedTiles[doc::tile_geti(t)] = true;
       }
     }
@@ -832,17 +832,19 @@ void ColorBar::onRemapTilesButtonClick()
 
     for (tile_index ti=0; ti<n; ++ti) {
       auto img = m_oldTileset->get(ti);
-      tile_index destTi = (img ? tileset->findTileIndex(img):
-                                 doc::tile_i_notile);
+      tile_index destTi;
       if (img) {
+        tileset->findTileIndex(img, destTi);
+
         COLOR_BAR_TRACE(" - Remap tile %d -> %d\n", ti, destTi);
         remap.map(ti, destTi);
       }
       else {
-        remap.map(ti, destTi = doc::tile_i_notile);
+        remap.map(ti, destTi = doc::notile);
       }
 
-      if (destTi == doc::tile_i_notile && ti < usedTiles.size() && usedTiles[ti]) {
+      if (destTi == doc::notile &&
+          ti < usedTiles.size() && usedTiles[ti]) {
         COLOR_BAR_TRACE(" - Remap tile %d to empty (used=%d)\n", ti, usedTiles[ti]);
         existMapToEmpty = true;
       }

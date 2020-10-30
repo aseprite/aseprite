@@ -144,8 +144,12 @@ void TileButton::onPaint(PaintEvent& ev)
                    hasMouseOver(), false);
 
   // Draw text
-  if (m_tile != doc::tile_i_notile) {
-    std::string str = fmt::format("{}", doc::tile_geti(m_tile));
+  if (m_tile != doc::notile) {
+    int firstVisibleIndex = 1;
+    if (site.tileset())
+      firstVisibleIndex = site.tileset()->firstVisibleIndex();
+
+    std::string str = fmt::format("{}", doc::tile_geti(m_tile) + firstVisibleIndex - 1);
     setTextQuiet(str.c_str());
 
     // TODO calc a proper color for the text

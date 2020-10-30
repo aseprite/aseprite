@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -27,6 +27,7 @@ TilesetSelector::TilesetSelector(const doc::Sprite* sprite,
 
   gridWidth()->setTextf("%d", info.grid.tileSize().w);
   gridHeight()->setTextf("%d", info.grid.tileSize().h);
+  firstVisibleIndex()->setTextf("%d", info.firstVisibleIndex);
 
   doc::tileset_index tsi = 0;
   for (doc::Tileset* tileset : *sprite->tilesets()) {
@@ -59,6 +60,7 @@ TilesetSelector::Info TilesetSelector::getInfo()
 
     info.newTileset = true;
     info.grid = doc::Grid::MakeRect(sz);
+    info.firstVisibleIndex = firstVisibleIndex()->textInt();
   }
   else {
     info.newTileset = false;

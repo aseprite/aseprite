@@ -200,7 +200,7 @@ class StatusBar::Indicators : public HBox {
   public:
     TileIndicator(doc::tile_t tile)
       : Indicator(kTile)
-      , m_tile(doc::tile_i_notile) {
+      , m_tile(doc::notile) {
       updateIndicator(tile, true);
     }
 
@@ -467,13 +467,22 @@ public:
 
     // Color description
     std::string str;
-    if (tile == doc::tile_i_notile) {
+    if (tile == doc::notile) {
       str += "Empty";
     }
     else {
+      // TODO could the site came from the Indicators or StatusBar itself
+      int firstVisibleIndex = 1;
+      Site site = UIContext::instance()->activeSite();
+      if (site.tileset())
+        firstVisibleIndex = site.tileset()->firstVisibleIndex();
+
       doc::tile_index ti = doc::tile_geti(tile);
       doc::tile_flags tf = doc::tile_getf(tile);
-      str += fmt::format("{}", ti);
+      if (firstVisibleIndex < 0)
+        str += fmt::format("{}", ((int)ti) + firstVisibleIndex - 1);
+      else
+        str += fmt::format("{}", ti + firstVisibleIndex - 1);
       if (tf) {
         if (tf & doc::tile_f_flipx) str += " FlipX";
         if (tf & doc::tile_f_flipy) str += " FlipY";
@@ -755,6 +764,8 @@ bool StatusBar::setStatusText(int msecs, const std::string& msg)
 
 void StatusBar::showTip(int msecs, const std::string& msg)
 {
+  ASSERT(msecs > 0);
+
   if (m_tipwindow == NULL) {
     m_tipwindow = new CustomizedTipWindow(msg);
   }

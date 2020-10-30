@@ -427,9 +427,8 @@ void remap_image(Image* image, const Remap& remap)
     case IMAGE_TILEMAP:
       transform_image<TilemapTraits>(
         image, [&remap](color_t c) -> color_t {
-                  if (c == tile_i_notile ||
-                      remap[c] == Remap::kNoMap)
-                    return tile_i_notile;
+                  if (c == notile || remap[c] == Remap::kNoMap)
+                    return notile;
                   else
                     return remap[c];
                });

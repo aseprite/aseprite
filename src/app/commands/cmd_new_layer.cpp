@@ -195,6 +195,7 @@ void NewLayerCommand::onExecute(Context* context)
   TilesetSelector::Info tilesetInfo;
   tilesetInfo.newTileset = true;
   tilesetInfo.grid = context->activeSite().grid();
+  tilesetInfo.firstVisibleIndex = 1;
 
 #ifdef ENABLE_UI
   // If params specify to ask the user about the name...
@@ -266,7 +267,9 @@ void NewLayerCommand::onExecute(Context* context)
       case Type::TilemapLayer: {
         tileset_index tsi;
         if (tilesetInfo.newTileset) {
-          auto tileset = new Tileset(sprite, tilesetInfo.grid, 0);
+          auto tileset = new Tileset(sprite, tilesetInfo.grid, 1);
+          tileset->setFirstVisibleIndex(tilesetInfo.firstVisibleIndex);
+
           auto addTileset = new cmd::AddTileset(sprite, tileset);
           tx(addTileset);
 

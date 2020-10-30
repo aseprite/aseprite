@@ -43,6 +43,7 @@
 #include "doc/tileset_io.h"
 #include "doc/tilesets.h"
 #include "doc/user_data_io.h"
+#include "doc/util.h"
 #include "fixmath/fixmath.h"
 
 #include <fstream>
@@ -498,7 +499,11 @@ private:
   }
 
   Tileset* readTileset(std::ifstream& s) {
-    return read_tileset(s, m_sprite, false);
+    bool isOldVersion = false;
+    Tileset* tileset = read_tileset(s, m_sprite, false, &isOldVersion);
+    if (tileset && isOldVersion)
+      m_updateOldTilemapWithTileset.insert(tileset->id());
+    return tileset;
   }
 
   Tag* readTag(std::ifstream& s) {
@@ -531,6 +536,22 @@ private:
         }
       }
     }
+
+    // Fix tilemaps using old tilesets
+    if (!m_updateOldTilemapWithTileset.empty()) {
+      for (Tileset* tileset : *spr->tilesets()) {
+        if (m_updateOldTilemapWithTileset.find(tileset->id()) == m_updateOldTilemapWithTileset.end())
+          continue;
+
+        for (Cel* cel : spr->uniqueCels()) {
+          if (cel->image()->pixelFormat() == IMAGE_TILEMAP &&
+              static_cast<LayerTilemap*>(cel->layer())->tileset() == tileset) {
+            doc::fix_old_tilemap(cel->image(), tileset,
+                                 tile_i_mask, tile_f_mask);
+          }
+        }
+      }
+    }
   }
 
   bool canceled() const {
@@ -550,6 +571,9 @@ private:
   std::vector<std::pair<ObjectId, ObjectId> > m_celsToLoad;
   std::map<ObjectId, ImageRef> m_images;
   std::map<ObjectId, CelDataRef> m_celdatas;
+  // Each ObjectId is a tileset ID that didn't contain the empty tile
+  // as the first tile (this was an old format used in internal betas)
+  std::set<ObjectId> m_updateOldTilemapWithTileset;
   base::task_token* m_taskToken;
 };
 

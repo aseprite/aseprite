@@ -15,15 +15,16 @@
 #include "base/exception.h"
 #include "base/file_handle.h"
 #include "base/fs.h"
-#include "gfx/color_space.h"
 #include "dio/aseprite_common.h"
 #include "dio/decode_delegate.h"
 #include "dio/file_interface.h"
 #include "dio/pixel_io.h"
 #include "doc/doc.h"
 #include "doc/user_data.h"
+#include "doc/util.h"
 #include "fixmath/fixmath.h"
 #include "fmt/format.h"
+#include "gfx/color_space.h"
 #include "zlib.h"
 
 #include <cstdio>
@@ -89,8 +90,9 @@ bool AsepriteDecoder::decode()
   // Used to read user data for each tag after a Tags chunk
   bool tagsInProcess = false;
 
+  m_allLayers.clear();
+
   int current_level = -1;
-  doc::LayerList allLayers;
   AsepriteExternalFiles extFiles;
 
   // Just one frame?
@@ -158,7 +160,7 @@ bool AsepriteDecoder::decode()
                              &last_layer,
                              &current_level);
             if (newLayer) {
-              allLayers.push_back(newLayer);
+              m_allLayers.push_back(newLayer);
               last_object_with_user_data = newLayer;
             }
             break;
@@ -166,7 +168,7 @@ bool AsepriteDecoder::decode()
 
           case ASE_FILE_CHUNK_CEL: {
             doc::Cel* cel =
-              readCelChunk(sprite.get(), allLayers, frame,
+              readCelChunk(sprite.get(), frame,
                            sprite->pixelFormat(), &header,
                            chunk_pos+chunk_size);
             if (cel) {
@@ -691,7 +693,6 @@ void read_compressed_image(FileInterface* f,
 //////////////////////////////////////////////////////////////////////
 
 doc::Cel* AsepriteDecoder::readCelChunk(doc::Sprite* sprite,
-                                        doc::LayerList& allLayers,
                                         doc::frame_t frame,
                                         doc::PixelFormat pixelFormat,
                                         const AsepriteHeader* header,
@@ -706,8 +707,8 @@ doc::Cel* AsepriteDecoder::readCelChunk(doc::Sprite* sprite,
   readPadding(7);
 
   doc::Layer* layer = nullptr;
-  if (layer_index >= 0 && layer_index < doc::layer_t(allLayers.size()))
-    layer = allLayers[layer_index];
+  if (layer_index >= 0 && layer_index < doc::layer_t(m_allLayers.size()))
+    layer = m_allLayers[layer_index];
 
   if (!layer) {
     delegate()->error(
@@ -803,18 +804,32 @@ doc::Cel* AsepriteDecoder::readCelChunk(doc::Sprite* sprite,
       // Read width and height
       int w = read16();
       int h = read16();
-      int bitsPerTile = read16();
-      uint32_t tileIDkMask = read32();
+      int bitsPerTile = read16(); // TODO add support for more bpp
+      uint32_t tileIDMask = read32();
       uint32_t flipxMask = read32();
-      uint32_t fileyMask = read32();
+      uint32_t flipyMask = read32();
       uint32_t rot90Mask = read32();
+      uint32_t flagsMask = (flipxMask | flipyMask | rot90Mask);
       readPadding(10);
 
       if (w > 0 && h > 0) {
         doc::ImageRef image(doc::Image::create(doc::IMAGE_TILEMAP, w, h));
-        image->setMaskColor(doc::tile_i_notile);
-        image->clear(doc::tile_i_notile);
+        image->setMaskColor(doc::notile);
+        image->clear(doc::notile);
         read_compressed_image(f(), delegate(), image.get(), header, chunk_end);
+
+        // Check if the tileset of this tilemap has the
+        // "ASE_TILESET_FLAG_ZERO_IS_NOTILE" we have to adjust all
+        // tile references to the new format (where empty tile is
+        // zero)
+        doc::Tileset* ts = static_cast<doc::LayerTilemap*>(layer)->tileset();
+        doc::tileset_index tsi = static_cast<doc::LayerTilemap*>(layer)->tilesetIndex();
+        ASSERT(tsi >= 0 && tsi < m_tilesetFlags.size());
+        if (tsi >= 0 && tsi < m_tilesetFlags.size() &&
+            (m_tilesetFlags[tsi] & ASE_TILESET_FLAG_ZERO_IS_NOTILE) == 0) {
+          doc::fix_old_tilemap(image.get(), ts, tileIDMask, flagsMask);
+        }
+
         cel.reset(new doc::Cel(frame, image));
         cel->setPosition(x, y);
         cel->setOpacity(opacity);
@@ -1053,7 +1068,8 @@ void AsepriteDecoder::readTilesetChunk(doc::Sprite* sprite,
   const doc::tile_index ntiles = read32();
   const int w = read16();
   const int h = read16();
-  readPadding(16);
+  const int firstVisibleIndex = short(read16());
+  readPadding(14);
   const std::string name = readString();
 
   // Errors
@@ -1067,6 +1083,7 @@ void AsepriteDecoder::readTilesetChunk(doc::Sprite* sprite,
   doc::Grid grid(gfx::Size(w, h));
   auto tileset = new doc::Tileset(sprite, grid, ntiles);
   tileset->setName(name);
+  tileset->setFirstVisibleIndex(firstVisibleIndex);
 
   if (flags & ASE_TILESET_FLAG_EXTERNAL_FILE) {
     const uint32_t extFileId = read32(); // filename ID in the external files chunk
@@ -1098,9 +1115,17 @@ void AsepriteDecoder::readTilesetChunk(doc::Sprite* sprite,
         doc::ImageRef tile(doc::crop_image(alltiles.get(), 0, i*h, w, h, alltiles->maskColor()));
         tileset->set(i, tile);
       }
+
+      // If we are reading and old .aseprite file (where empty tile is not the zero]
+      if ((flags & ASE_TILESET_FLAG_ZERO_IS_NOTILE) == 0)
+        doc::fix_old_tileset(tileset);
     }
     sprite->tilesets()->set(id, tileset);
   }
+
+  if (id >= m_tilesetFlags.size())
+    m_tilesetFlags.resize(id+1, 0);
+  m_tilesetFlags[id] = flags;
 }
 
 } // namespace dio

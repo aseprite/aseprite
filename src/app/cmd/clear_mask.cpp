@@ -54,7 +54,7 @@ ClearMask::ClearMask(Cel* cel)
     imageBounds = gfx::Rect(grid.canvasToTile(cel->position()),
                             cel->image()->size());
     maskBounds = grid.canvasToTile(mask->bounds());
-    m_bgcolor = doc::tile_i_notile; // TODO configurable empty tile
+    m_bgcolor = doc::notile; // TODO configurable empty tile
   }
   else {
     imageBounds = cel->bounds();

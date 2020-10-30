@@ -197,7 +197,7 @@ void draw_tile(ui::Graphics* g,
   else
     draw_checked_grid(g, rc, gfx::Size(rc.w/4, rc.h/2));
 
-  if (tile == doc::tile_i_notile)
+  if (tile == doc::notile)
     return;
 
   doc::Tileset* ts = site.tileset();

@@ -221,8 +221,8 @@
       <option id="tiles_box_size" type="int" default="16" />
       <option id="fg_color" type="app::Color" default="app::Color::fromRgb(255, 255, 255)" />
       <option id="bg_color" type="app::Color" default="app::Color::fromRgb(0, 0, 0)" />
-      <option id="fg_tile" type="doc::tile_t" default="doc::tile_i_notile" />
-      <option id="bg_tile" type="doc::tile_t" default="doc::tile_i_notile" />
+      <option id="fg_tile" type="doc::tile_t" default="doc::notile" />
+      <option id="bg_tile" type="doc::tile_t" default="doc::notile" />
       <option id="selector" type="app::ColorBar::ColorSelector" default="app::ColorBar::ColorSelector::TINT_SHADE_TONE" />
       <option id="discrete_wheel" type="bool" default="false" />
       <option id="wheel_model" type="int" default="0" />

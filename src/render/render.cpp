@@ -1285,7 +1285,7 @@ void Render::renderCel(
           continue;
 
         const tile_t t = cel_image->getPixel(u, v);
-        if (t != tile_i_notile) {
+        if (t != doc::notile) {
           const tile_index i = tile_geti(t);
 
           if (dst_image->pixelFormat() == IMAGE_TILEMAP) {

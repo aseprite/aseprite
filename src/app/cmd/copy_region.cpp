@@ -86,7 +86,7 @@ void CopyRegion::swap()
 
 void CopyTileRegion::rehash()
 {
-  ASSERT(m_tileIndex != tile_i_notile);
+  ASSERT(m_tileIndex != notile);
   ASSERT(m_tilesetId != NullId);
   if (m_tilesetId != NullId) {
     auto tileset = get<Tileset>(m_tilesetId);
@@ -95,7 +95,7 @@ void CopyTileRegion::rehash()
       tileset->incrementVersion();
       tileset->notifyTileContentChange(m_tileIndex);
 
-      // Notify thath the tileset changed
+      // Notify that the tileset changed
       static_cast<Doc*>(tileset->sprite()->document())
         ->notifyTilesetChanged(tileset);
     }

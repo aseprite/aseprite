@@ -167,7 +167,7 @@ void Cel::fixupImage()
   // Change the mask color to the sprite mask color
   if (m_layer && image()) {
     image()->setMaskColor((image()->pixelFormat() == IMAGE_TILEMAP) ?
-                            tile_i_notile : m_layer->sprite()->transparentColor());
+                            notile : m_layer->sprite()->transparentColor());
     ASSERT(m_data);
     m_data->adjustBounds(m_layer);
   }
