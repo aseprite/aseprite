@@ -13,6 +13,7 @@
 #include "app/cmd/set_layer_blend_mode.h"
 #include "app/cmd/set_layer_name.h"
 #include "app/cmd/set_layer_opacity.h"
+#include "app/cmd/set_tileset_base_index.h"
 #include "app/cmd/set_user_data.h"
 #include "app/commands/command.h"
 #include "app/console.h"
@@ -21,18 +22,23 @@
 #include "app/doc_event.h"
 #include "app/modules/gui.h"
 #include "app/tx.h"
+#include "app/ui/main_window.h"
 #include "app/ui/separator_in_view.h"
+#include "app/ui/tileset_selector.h"
 #include "app/ui/timeline/timeline.h"
 #include "app/ui/user_data_view.h"
 #include "app/ui_context.h"
 #include "base/scoped_value.h"
 #include "doc/image.h"
 #include "doc/layer.h"
+#include "doc/layer_tilemap.h"
 #include "doc/sprite.h"
+#include "doc/tileset.h"
 #include "doc/user_data.h"
 #include "ui/ui.h"
 
 #include "layer_properties.xml.h"
+#include "tileset_selector_window.xml.h"
 
 namespace app {
 
@@ -105,6 +111,7 @@ public:
     opacity()->Change.connect([this]{ onStartTimer(); });
     m_timer.Tick.connect([this]{ onCommitChange(); });
     userData()->Click.connect([this]{ onToggleUserData(); });
+    tileset()->Click.connect([this]{ onTileset(); });
 
     m_userDataView.entry()->Change.connect([this]{ onStartTimer(); });
     m_userDataView.color()->Change.connect([this]{ onStartTimer(); });
@@ -315,6 +322,47 @@ private:
     }
   }
 
+  void onTileset() {
+    if (!m_layer || !m_layer->isTilemap())
+      return;
+
+    auto tilemap = static_cast<LayerTilemap*>(m_layer);
+    auto tileset = tilemap->tileset();
+
+    // Information about the tileset to be used for new tilemaps
+    TilesetSelector::Info tilesetInfo;
+    tilesetInfo.enabled = false;
+    tilesetInfo.newTileset = false;
+    tilesetInfo.grid = tileset->grid();
+    tilesetInfo.baseIndex = tileset->baseIndex();
+    tilesetInfo.tsi = tilemap->tilesetIndex();
+
+    gen::TilesetSelectorWindow window;
+    TilesetSelector tilesetSel(tilemap->sprite(), tilesetInfo);
+    window.tilesetOptions()->addChild(&tilesetSel);
+    window.openWindowInForeground();
+    if (window.closer() != window.ok())
+      return;
+
+    tilesetInfo = tilesetSel.getInfo();
+
+    // TODO add options to change the tileset index, grid size, etc.
+
+    if (tileset->baseIndex() != tilesetInfo.baseIndex) {
+      try {
+        ContextWriter writer(UIContext::instance());
+        Tx tx(writer.context(), "Set Base Index");
+        tx(new cmd::SetTilesetBaseIndex(tileset, tilesetInfo.baseIndex));
+        // TODO catch the tileset base index modification from the editor
+        App::instance()->mainWindow()->invalidate();
+        tx.commit();
+      }
+      catch (const std::exception& e) {
+        Console::showException(e);
+      }
+    }
+  }
+
   void updateFromLayer() {
     if (m_selfUpdate)
       return;
@@ -323,6 +371,7 @@ private:
 
     base::ScopedValue<bool> switchSelf(m_selfUpdate, true, false);
 
+    const bool tilemapVisibility = (m_layer && m_layer->isTilemap());
     if (m_layer) {
       name()->setText(m_layer->name().c_str());
       name()->setEnabled(true);
@@ -345,10 +394,10 @@ private:
         mode()->setEnabled(false);
         opacity()->setEnabled(false);
       }
+
       color_t c = m_layer->userData().color();
       m_userDataView.color()->setColor(Color::fromRgb(rgba_getr(c), rgba_getg(c), rgba_getb(c), rgba_geta(c)));
       m_userDataView.entry()->setText(m_layer->userData().text());
-
     }
     else {
       name()->setText("No Layer");
@@ -356,6 +405,11 @@ private:
       mode()->setEnabled(false);
       opacity()->setEnabled(false);
       m_userDataView.setVisible(false, false);
+    }
+
+    if (tileset()->isVisible() != tilemapVisibility) {
+      tileset()->setVisible(tilemapVisibility);
+      tileset()->parent()->layout();
     }
   }
 

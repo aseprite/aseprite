@@ -23,18 +23,17 @@ namespace app {
   class TilesetSelector : public app::gen::TilesetSelector {
   public:
     struct Info {
+      bool enabled = true;
       bool newTileset = true;
       doc::Grid grid;
       int baseIndex = 1;
-      doc::tileset_index tsi = 0;
+      doc::tileset_index tsi = -1;
     };
 
     TilesetSelector(const doc::Sprite* sprite,
                     const TilesetSelector::Info& info);
 
     Info getInfo();
-
-  protected:
   };
 
 } // namespace app

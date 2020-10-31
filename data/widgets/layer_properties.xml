@@ -10,7 +10,8 @@
       <button id="user_data" icon="icon_user_data" tooltip="@general.user_data" />
 
       <label text="@.mode" />
-      <combobox id="mode" cell_hspan="2" />
+      <combobox id="mode" />
+      <button id="tileset" icon="tiles" tooltip="@.tileset_tooltip" />
 
       <label text="@.opacity" />
       <slider id="opacity" min="0" max="255" width="128" cell_align="horizontal" cell_hspan="2" />

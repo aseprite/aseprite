@@ -31,21 +31,33 @@ TilesetSelector::TilesetSelector(const doc::Sprite* sprite,
 
   doc::tileset_index tsi = 0;
   for (doc::Tileset* tileset : *sprite->tilesets()) {
-    tilesets()->addItem(
-      new ListItem(
-        fmt::format("Tileset #{0} ({1}x{2}): \"{3}\"",
-                    tsi,
-                    tileset->grid().tileSize().w,
-                    tileset->grid().tileSize().w,
-                    tileset->name())));
+    auto item = new ListItem(
+      fmt::format("Tileset #{0} ({1}x{2}): \"{3}\"",
+                  tsi,
+                  tileset->grid().tileSize().w,
+                  tileset->grid().tileSize().w,
+                  tileset->name()));
+    tilesets()->addItem(item);
+
+    if (info.tsi == tsi)
+      tilesets()->setSelectedItem(item);
+
     ++tsi;
   }
 
+  if (!info.enabled) {
+    tilesets()->setEnabled(false);
+    gridWidth()->setEnabled(false);
+    gridHeight()->setEnabled(false);
+  }
+
   tilesets()->Change.connect(
-    [this]() {
+    [this, sprite]() {
       int index = tilesets()->getSelectedItemIndex();
       gridOptions()->setVisible(index == 0);
       gridOptions()->setVisible(index == 0);
+      baseIndex()->setTextf(
+        "%d", (index == 0 ? 1: sprite->tilesets()->get(index-1)->baseIndex()));
       this->window()->layout();
     });
 }
@@ -60,12 +72,12 @@ TilesetSelector::Info TilesetSelector::getInfo()
 
     info.newTileset = true;
     info.grid = doc::Grid::MakeRect(sz);
-    info.baseIndex = baseIndex()->textInt();
   }
   else {
     info.newTileset = false;
     info.tsi = itemIndex-1;
   }
+  info.baseIndex = baseIndex()->textInt();
   return info;
 }
 
