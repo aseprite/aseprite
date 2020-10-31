@@ -1,0 +1,16 @@
+<!-- Aseprite -->
+<!-- Copyright (C) 2020 by Igara Studio S.A. -->
+<gui>
+  <window id="tileset_selector_window" text="@.title">
+    <vbox>
+      <hbox id="tileset_options" />
+      <hbox>
+        <boxfiller />
+        <hbox homogeneous="true">
+          <button text="@general.ok" closewindow="true" id="ok" magnet="true" minwidth="60" />
+          <button text="@general.cancel" closewindow="true" />
+        </hbox>
+      </hbox>
+    </vbox>
+  </window>
+</gui>
