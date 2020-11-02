@@ -614,9 +614,35 @@ void Sprite::pickCels(const double x,
     if (!celBounds.contains(pos))
       continue;
 
-    const gfx::Point ipos(
-      int((pos.x-celBounds.x)*image->width()/celBounds.w),
-      int((pos.y-celBounds.y)*image->height()/celBounds.h));
+    gfx::Point ipos;
+    if (image->isTilemap()) {
+      Tileset* tileset = static_cast<LayerTilemap*>(cel->layer())->tileset();
+      if (!tileset)
+        continue;
+
+      const Grid grid = cel->grid();
+
+      tile_t tile = notile;
+      gfx::Point tilePos = grid.canvasToTile(gfx::Point(pos));
+      if (image->bounds().contains(tilePos.x, tilePos.y))
+        tile = image->getPixel(tilePos.x, tilePos.y);
+      if (tile == notile)
+        continue;
+
+      image = tileset->get(tile).get();
+      if (!image)
+        continue;
+
+      gfx::Point tileStart = grid.tileToCanvas(tilePos);
+      ipos = gfx::Point(pos.x - tileStart.x,
+                        pos.y - tileStart.y);
+    }
+    else {
+      ipos = gfx::Point(
+        int((pos.x-celBounds.x)*image->width()/celBounds.w),
+        int((pos.y-celBounds.y)*image->height()/celBounds.h));
+    }
+
     if (!image->bounds().contains(ipos))
       continue;
 
