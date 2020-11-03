@@ -187,12 +187,12 @@ ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
   m_buttons.addItem(theme->parts.palOptions());
   m_tilesButton.addItem(theme->parts.tiles());
 
-  static_assert(0 == int(TilesetMode::Auto) &&
-                1 == int(TilesetMode::Manual) &&
+  static_assert(0 == int(TilesetMode::Manual) &&
+                1 == int(TilesetMode::Auto) &&
                 2 == int(TilesetMode::Stack), "Tileset mode buttons doesn't match TilesetMode enum values");
 
-  m_tilesetModeButtons.addItem(theme->parts.tilesAuto());
   m_tilesetModeButtons.addItem(theme->parts.tilesManual());
+  m_tilesetModeButtons.addItem(theme->parts.tilesAuto());
   m_tilesetModeButtons.addItem(theme->parts.tilesStack());
   setTilesetMode(m_tilesetMode);
 

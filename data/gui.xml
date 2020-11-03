@@ -144,10 +144,10 @@
       </key>
       <key command="ToggleTilesMode" shortcut="Space+Tab" />
       <key command="TilesetMode" shortcut="Space+1">
-        <param name="mode" value="auto" />
+        <param name="mode" value="manual" />
       </key>
       <key command="TilesetMode" shortcut="Space+2">
-        <param name="mode" value="manual" />
+        <param name="mode" value="auto" />
       </key>
       <key command="TilesetMode" shortcut="Space+3">
         <param name="mode" value="stack" />
