@@ -525,12 +525,6 @@ public:
       m_tx,
       ExpandCelCanvas::Flags(
         ExpandCelCanvas::NeedsSource |
-        // If the tool is freehand-like, we can use the modified
-        // region directly as undo information to save the modified
-        // pixels. See ExpandCelCanvas::commit() for details about this flag.
-        (getController()->isFreehand() ?
-         ExpandCelCanvas::UseModifiedRegionAsUndoInfo:
-         ExpandCelCanvas::None) |
         (m_layer->isTilemap() &&
          (!m_tilesMode || m_ink->isSelection()) ?
          ExpandCelCanvas::PixelsBounds:

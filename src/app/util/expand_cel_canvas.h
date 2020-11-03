@@ -46,10 +46,9 @@ namespace app {
     enum Flags {
       None = 0,
       NeedsSource = 1,
-      UseModifiedRegionAsUndoInfo = 2,
       // Use tiles mode but with pixels bounds in dst image (e.g. for
       // selection preview)
-      PixelsBounds = 4,
+      PixelsBounds = 2,
     };
 
     ExpandCelCanvas(Site site, Layer* layer,
