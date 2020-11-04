@@ -13,8 +13,8 @@ local rgba = app.pixelColor.rgba
 -- Check constants
 assert(TilemapMode.PIXELS == 0)
 assert(TilemapMode.TILES == 1)
-assert(TilesetMode.AUTO == 0)
-assert(TilesetMode.MANUAL == 1)
+assert(TilesetMode.MANUAL == 0)
+assert(TilesetMode.AUTO == 1)
 assert(TilesetMode.STACK == 2)
 
 ----------------------------------------------------------------------
@@ -22,7 +22,8 @@ assert(TilesetMode.STACK == 2)
 ----------------------------------------------------------------------
 
 do
-  local spr = Sprite(32, 32)
+  local spr = Sprite(32, 32, ColorMode.INDEXED)
+  spr.gridBounds = Rectangle{ 0, 0, 4, 4 }
   assert(spr.layers[1].isImage)
   assert(not spr.layers[1].isTilemap)
 
@@ -43,23 +44,29 @@ do
 
   app.useTool{
     tool='pencil',
-    color=Color{ r=0, g=0, b=0 },
+    color=1,
     layer=tilemapLay,
     tilesetMode=TilesetMode.STACK,
-    points={ Point(2, 2), Point(3, 2) }}
+    points={ Point(1, 2), Point(2, 2) }}
   assert(#tilemapLay.cels == 1)
   assert(tilemapLay:cel(1).image.colorMode == ColorMode.TILEMAP)
   local tilemapCel = tilemapLay:cel(1)
-  assert(tilemapCel.bounds == Rectangle(0, 0, 16, 16))
+  assert(tilemapCel.bounds == Rectangle(0, 0, 4, 4))
 
   assert(#spr.tilesets == 1) -- one tileset
   assert(spr.tilesets[1] == tilemapLay.tileset)
 
   local tileset = tilemapLay.tileset
   assert(#tileset == 2) -- empty tile + our tile
+  assert(tileset:getTile(0):isEmpty())
+  assert(not tileset:getTile(1):isEmpty())
+  expect_img(tileset:getTile(1), { 0,0,0,0,
+                                   0,0,0,0,
+                                   0,1,1,0,
+                                   0,0,0,0 })
 
   tilemapCel.position = Point(2, 2)
-  assert(tilemapCel.bounds == Rectangle(2, 2, 16, 16))
+  assert(tilemapCel.bounds == Rectangle(2, 2, 4, 4))
   assert(#tileset == 2)
 
   assert(tilemapCel.image.width == 1)
@@ -72,12 +79,12 @@ do
 
   app.useTool{
     tool='pencil',
-    color=Color{ r=0, g=0, b=0 },
+    color=1,
     cel=tilemapCel,
     tilesetMode=TilesetMode.MANUAL,
     points={ Point(0, 0) }}
 
-  assert(tilemapCel.bounds == Rectangle(2, 2, 16, 16))
+  assert(tilemapCel.bounds == Rectangle(2, 2, 4, 4))
   assert(#tileset == 2)
 
   ----------------------------------------------------------------------
@@ -86,12 +93,12 @@ do
 
   app.useTool{
     tool='pencil',
-    color=Color{ r=0, g=0, b=0 },
+    color=1,
     cel=tilemapCel,
     tilesetMode=TilesetMode.STACK,
     points={ Point(0, 0) }}
 
-  assert(tilemapCel.bounds == Rectangle(-14, -14, 32, 32))
+  assert(tilemapCel.bounds == Rectangle(-2, -2, 8, 8))
   assert(#tileset == 3)
   assert(tileset:getTile(0):isEmpty())
   assert(not tileset:getTile(1):isEmpty())
@@ -101,17 +108,91 @@ do
 
   app.useTool{
     tool='pencil',
-    color=Color{ r=0, g=0, b=0 },
+    color=1,
     cel=tilemapCel,
     tilesetMode=TilesetMode.STACK,
-    points={ Point(19, 19) }}
+    points={ Point(6, 6) }}
 
-  assert(tilemapCel.bounds == Rectangle(-14, -14, 48, 48))
-  assert(#tilemapLay.tileset == 4)
+  assert(tilemapCel.bounds == Rectangle(-2, -2, 12, 12))
+  assert(#tileset == 4)
   assert(not tileset:getTile(3):isEmpty())
   expect_img(tilemapCel.image, { 2, 0, 0,
                                  0, 1, 0,
                                  0, 0, 3 })
+
+  ----------------------------------------------------------------------
+  -- Draw in manual mode to modify existent tiles
+  ----------------------------------------------------------------------
+
+  assert(tilemapCel.bounds == Rectangle(-2, -2, 12, 12))
+  assert(#tileset == 4)
+  expect_img(tileset:getTile(1), { 0,0,0,0,
+                                   0,0,0,0,
+                                   0,1,1,0,
+                                   0,0,0,0 })
+  expect_img(tileset:getTile(2), { 0,0,0,0,
+                                   0,0,0,0,
+                                   0,0,1,0,
+                                   0,0,0,0 })
+  expect_img(tileset:getTile(3), { 1,0,0,0,
+                                   0,0,0,0,
+                                   0,0,0,0,
+                                   0,0,0,0 })
+  expect_img(tilemapCel.image, { 2, 0, 0,
+                                 0, 1, 0,
+                                 0, 0, 3 })
+
+  app.useTool{
+    tool='rectangle',
+    color=2,
+    cel=tilemapCel,
+    tilesetMode=TilesetMode.MANUAL,
+    points={ Point(0, 0), Point(9, 9) }}
+
+  assert(tilemapCel.bounds == Rectangle(-2, -2, 12, 12))
+  assert(#tileset == 4)
+  expect_img(tileset:getTile(1), { 0,0,0,0,
+                                   0,0,0,0,
+                                   0,1,1,0,
+                                   0,0,0,0 })
+  expect_img(tileset:getTile(2), { 0,0,0,0,
+                                   0,0,0,0,
+                                   0,0,2,2,
+                                   0,0,2,0 })
+  expect_img(tileset:getTile(3), { 1,0,0,2,
+                                   0,0,0,2,
+                                   0,0,0,2,
+                                   2,2,2,2 })
+  expect_img(tilemapCel.image, { 2, 0, 0,
+                                 0, 1, 0,
+                                 0, 0, 3 })
+
+  tilemapCel.position = Point(1, 1)
+  app.useTool{
+    tool='line',
+    color=3,
+    cel=tilemapCel,
+    tilesetMode=TilesetMode.MANUAL,
+    points={ Point(1, 1), Point(12, 12) }}
+
+  assert(tilemapCel.bounds == Rectangle(1, 1, 12, 12))
+  assert(#tileset == 4)
+  expect_img(tileset:getTile(1), { 3,0,0,0,
+                                   0,3,0,0,
+                                   0,1,3,0,
+                                   0,0,0,3 })
+  expect_img(tileset:getTile(2), { 3,0,0,0,
+                                   0,3,0,0,
+                                   0,0,3,2,
+                                   0,0,2,3 })
+  expect_img(tileset:getTile(3), { 3,0,0,2,
+                                   0,3,0,2,
+                                   0,0,3,2,
+                                   2,2,2,3 })
+  expect_img(tilemapCel.image, { 2, 0, 0,
+                                 0, 1, 0,
+                                 0, 0, 3 })
+
 end
 
 ----------------------------------------------------------------------
