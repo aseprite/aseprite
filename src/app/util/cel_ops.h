@@ -35,6 +35,11 @@ namespace app {
   typedef std::function<doc::ImageRef(const doc::ImageRef& origTile,
                                       const gfx::Rect& tileBoundsInCanvas)> GetTileImageFunc;
 
+  void create_region_with_differences(const doc::Image* a,
+                                      const doc::Image* b,
+                                      const gfx::Rect& bounds,
+                                      gfx::Region& output);
+
   // Creates a new image of the given cel
   doc::ImageRef crop_cel_image(
     const doc::Cel* cel,
@@ -63,6 +68,7 @@ namespace app {
   void modify_tilemap_cel_region(
     CmdSequence* cmds,
     doc::Cel* cel,
+    doc::Tileset* previewTileset, // Temporary tileset that can be used for preview
     const gfx::Region& region,
     const TilesetMode tilesetMode,
     const GetTileImageFunc& getTileImage);

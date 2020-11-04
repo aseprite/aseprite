@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -226,7 +226,7 @@ void FilterManagerImpl::apply()
       if (m_cel->layer()->isTilemap()) {
         modify_tilemap_cel_region(
           *m_tx,
-          m_cel,
+          m_cel, nullptr,
           gfx::Region(output),
           m_site.tilesetMode(),
           [this](const doc::ImageRef& origTile,

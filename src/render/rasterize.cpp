@@ -43,6 +43,7 @@ void rasterize(
     render::Render render;
     render.renderCel(
       dst,
+      cel,
       sprite,
       cel->image(),
       cel->layer(),

@@ -273,8 +273,10 @@ void ToolLoopManager::doLoopStep(bool lastStep)
     m_toolLoop->copyValidDstToSrcImage(m_dirtyArea);
   }
 
-  if (!m_dirtyArea.isEmpty())
+  if (!m_dirtyArea.isEmpty()) {
+    m_toolLoop->validateDstTileset(m_dirtyArea);
     m_toolLoop->updateDirtyArea(m_dirtyArea);
+  }
 
   TOOL_TRACE("ToolLoopManager::doLoopStep dirtyArea", m_dirtyArea.bounds());
 }

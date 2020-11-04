@@ -526,9 +526,14 @@ public:
       ExpandCelCanvas::Flags(
         ExpandCelCanvas::NeedsSource |
         (m_layer->isTilemap() &&
-         (!m_tilesMode || m_ink->isSelection()) ?
-         ExpandCelCanvas::PixelsBounds:
-         ExpandCelCanvas::None)));
+         (!m_tilesMode ||
+          m_ink->isSelection()) ? ExpandCelCanvas::PixelsBounds:
+                                  ExpandCelCanvas::None) |
+        (m_layer->isTilemap() &&
+         site.tilemapMode() == TilemapMode::Pixels &&
+         site.tilesetMode() == TilesetMode::Manual &&
+         !m_ink->isSelection() ? ExpandCelCanvas::TilesetPreview:
+                                 ExpandCelCanvas::None)));
 
     if (!m_floodfillSrcImage)
       m_floodfillSrcImage = const_cast<Image*>(getSrcImage());
@@ -566,7 +571,7 @@ public:
     // Setup the new grid of ExpandCelCanvas which can be displaced to
     // match the new temporal cel position (m_celOrigin).
     m_grid = m_expandCelCanvas->getGrid();
-    m_celOrigin = m_expandCelCanvas->getCel()->position();
+    m_celOrigin = m_expandCelCanvas->getCelOrigin();
 
     m_mask = m_document->mask();
     m_maskOrigin = (!m_mask->isEmpty() ? gfx::Point(m_mask->bounds().x-m_celOrigin.x,
@@ -668,11 +673,15 @@ public:
   const Image* getSrcImage() override { return m_expandCelCanvas->getSourceCanvas(); }
   const Image* getFloodFillSrcImage() override { return m_floodfillSrcImage; }
   Image* getDstImage() override { return m_expandCelCanvas->getDestCanvas(); }
+  Tileset* getDstTileset() override { return m_expandCelCanvas->getDestTileset(); }
   void validateSrcImage(const gfx::Region& rgn) override {
     m_expandCelCanvas->validateSourceCanvas(rgn);
   }
   void validateDstImage(const gfx::Region& rgn) override {
     m_expandCelCanvas->validateDestCanvas(rgn);
+  }
+  void validateDstTileset(const gfx::Region& rgn) override {
+    m_expandCelCanvas->validateDestTileset(rgn);
   }
   void invalidateDstImage() override {
     m_expandCelCanvas->invalidateDestCanvas();
@@ -959,8 +968,10 @@ public:
   const Image* getSrcImage() override { return m_image; }
   const Image* getFloodFillSrcImage() override { return m_image; }
   Image* getDstImage() override { return m_image; }
+  Tileset* getDstTileset() override { return nullptr; }
   void validateSrcImage(const gfx::Region& rgn) override { }
   void validateDstImage(const gfx::Region& rgn) override { }
+  void validateDstTileset(const gfx::Region& rgn) override { }
   void invalidateDstImage() override { }
   void invalidateDstImage(const gfx::Region& rgn) override { }
   void copyValidDstToSrcImage(const gfx::Region& rgn) override { }

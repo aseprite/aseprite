@@ -64,7 +64,7 @@ doc::Image* new_image_from_mask(const Site& site,
       ASSERT(site.layer()->isTilemap());
       if (auto cel = site.cel()) {
         render.renderCel(
-          dst.get(), srcSprite,
+          dst.get(), cel, srcSprite,
           cel->image(), cel->layer(),
           srcSprite->palette(cel->frame()),
           cel->bounds(),

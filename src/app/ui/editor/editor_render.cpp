@@ -104,12 +104,14 @@ void EditorRender::setSelectedLayer(const doc::Layer* layer)
 }
 
 void EditorRender::setPreviewImage(const doc::Layer* layer,
-                         const doc::frame_t frame,
-                         const doc::Image* image,
-                         const gfx::Point& pos,
-                         const doc::BlendMode blendMode)
+                                   const doc::frame_t frame,
+                                   const doc::Image* image,
+                                   const doc::Tileset* tileset,
+                                   const gfx::Point& pos,
+                                   const doc::BlendMode blendMode)
 {
-  m_render->setPreviewImage(layer, frame, image, pos, blendMode);
+  m_render->setPreviewImage(layer, frame, image, tileset,
+                            pos, blendMode);
 }
 
 void EditorRender::removePreviewImage()

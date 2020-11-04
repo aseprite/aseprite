@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -48,6 +48,7 @@ void FilterPreview::setEnablePreview(bool state)
       m_filterMgr->layer(),
       m_filterMgr->frame(),
       m_filterMgr->destinationImage(),
+      nullptr,
       m_filterMgr->position(),
       static_cast<doc::LayerImage*>(m_filterMgr->layer())->blendMode());
   }

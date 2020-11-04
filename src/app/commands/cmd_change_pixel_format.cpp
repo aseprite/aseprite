@@ -396,6 +396,7 @@ private:
       nullptr,
       m_editor->frame(),
       m_image.get(),
+      nullptr,
       visibleBounds.origin(),
       doc::BlendMode::SRC);
 

@@ -66,12 +66,15 @@ DrawingState::~DrawingState()
 void DrawingState::initToolLoop(Editor* editor,
                                 const tools::Pointer& pointer)
 {
+  Tileset* tileset = m_toolLoop->getDstTileset();
+
   // Prepare preview image (the destination image will be our preview
   // in the tool-loop time, so we can see what we are drawing)
   editor->renderEngine().setPreviewImage(
     m_toolLoop->getLayer(),
     m_toolLoop->getFrame(),
-    m_toolLoop->getDstImage(),
+    tileset ? nullptr: m_toolLoop->getDstImage(),
+    tileset,
     m_toolLoop->getCelOrigin(),
     (m_toolLoop->getLayer() &&
      m_toolLoop->getLayer()->isImage() ?

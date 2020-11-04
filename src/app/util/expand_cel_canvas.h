@@ -25,6 +25,7 @@ namespace doc {
   class Image;
   class Layer;
   class Sprite;
+  class Tileset;
 }
 
 namespace app {
@@ -49,6 +50,10 @@ namespace app {
       // Use tiles mode but with pixels bounds in dst image (e.g. for
       // selection preview)
       PixelsBounds = 2,
+      // True if you want to preview the changes in the tileset. Only
+      // useful in TilesetMode::Manual mode when editing tiles in a
+      // tilemap.
+      TilesetPreview = 4,
     };
 
     ExpandCelCanvas(Site site, Layer* layer,
@@ -66,11 +71,17 @@ namespace app {
     // was created.
     void rollback();
 
+    gfx::Point getCelOrigin() const;
+
     Image* getSourceCanvas(); // You can read pixels from here
     Image* getDestCanvas();   // You can write pixels right here
 
+    Tileset* getDestTileset(); // You can use this as a preview-tileset
+                               // when the user is editing in "Manual" mode
+
     void validateSourceCanvas(const gfx::Region& rgn);
     void validateDestCanvas(const gfx::Region& rgn);
+    void validateDestTileset(const gfx::Region& rgn);
     void invalidateDestCanvas();
     void invalidateDestCanvas(const gfx::Region& rgn);
     void copyValidDestToSourceCanvas(const gfx::Region& rgn);
@@ -81,6 +92,7 @@ namespace app {
   private:
     gfx::Rect getTrimDstImageBounds() const;
     ImageRef trimDstImage(const gfx::Rect& bounds) const;
+    void copySourceTilestToDestTileset();
 
     Doc* m_document;
     Sprite* m_sprite;
@@ -89,11 +101,13 @@ namespace app {
     Cel* m_cel;
     ImageRef m_celImage;
     bool m_celCreated;
+    bool m_tilesetPreview;
     gfx::Point m_origCelPos;
     Flags m_flags;
     gfx::Rect m_bounds;
     ImageRef m_srcImage;
     ImageRef m_dstImage;
+    std::unique_ptr<Tileset> m_dstTileset;
     bool m_closed;
     bool m_committed;
     CmdSequence* m_cmds;

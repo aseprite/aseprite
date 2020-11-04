@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -26,6 +26,7 @@ namespace doc {
   class Layer;
   class Palette;
   class Sprite;
+  class Tileset;
 }
 
 namespace render {
@@ -54,6 +55,7 @@ namespace app {
     void setPreviewImage(const doc::Layer* layer,
                          const doc::frame_t frame,
                          const doc::Image* image,
+                         const doc::Tileset* tileset,
                          const gfx::Point& pos,
                          const doc::BlendMode blendMode);
     void removePreviewImage();

@@ -49,6 +49,7 @@ os::SurfaceRef get_cel_thumbnail(const doc::Cel* cel,
   const doc::Palette* palette = cel->sprite()->palette(cel->frame());
   render.renderCel(
     thumbnailImage.get(),
+    cel,
     cel->sprite(),
     cel->image(),
     cel->layer(),

@@ -98,19 +98,6 @@ void create_region_with_differences_templ(const Image* a,
   }
 }
 
-void create_region_with_differences(const Image* a,
-                                    const Image* b,
-                                    const gfx::Rect& bounds,
-                                    gfx::Region& output)
-{
-  ASSERT(a->pixelFormat() == b->pixelFormat());
-  switch (a->pixelFormat()) {
-    case IMAGE_RGB: create_region_with_differences_templ<RgbTraits>(a, b, bounds, output); break;
-    case IMAGE_GRAYSCALE: create_region_with_differences_templ<GrayscaleTraits>(a, b, bounds, output); break;
-    case IMAGE_INDEXED: create_region_with_differences_templ<IndexedTraits>(a, b, bounds, output); break;
-  }
-}
-
 // TODO merge this with Sprite::getTilemapsByTileset()
 template<typename UnaryFunction>
 void for_each_tile_using_tileset(Tileset* tileset, UnaryFunction f)
@@ -127,12 +114,25 @@ void for_each_tile_using_tileset(Tileset* tileset, UnaryFunction f)
 
 struct Mod {
   tile_index tileIndex;
-  ImageRef tileOrigImage;
+  ImageRef tileDstImage;
   ImageRef tileImage;
   gfx::Region tileRgn;
 };
 
 } // anonymous namespace
+
+void create_region_with_differences(const Image* a,
+                                    const Image* b,
+                                    const gfx::Rect& bounds,
+                                    gfx::Region& output)
+{
+  ASSERT(a->pixelFormat() == b->pixelFormat());
+  switch (a->pixelFormat()) {
+    case IMAGE_RGB: create_region_with_differences_templ<RgbTraits>(a, b, bounds, output); break;
+    case IMAGE_GRAYSCALE: create_region_with_differences_templ<GrayscaleTraits>(a, b, bounds, output); break;
+    case IMAGE_INDEXED: create_region_with_differences_templ<IndexedTraits>(a, b, bounds, output); break;
+  }
+}
 
 static void remove_unused_tiles_from_tileset(
   CmdSequence* cmds,
@@ -151,6 +151,7 @@ doc::ImageRef crop_cel_image(
 
     render::Render().renderCel(
       dstImage.get(),
+      cel,
       sprite,
       cel->image(),
       cel->layer(),
@@ -222,6 +223,7 @@ Cel* create_cel_copy(CmdSequence* cmds,
         doc::ImageRef tmpImage(doc::Image::create(spec));
         render::Render().renderCel(
           tmpImage.get(),
+          srcCel,
           dstSprite,
           srcImage,
           srcCel->layer(),
@@ -246,6 +248,7 @@ Cel* create_cel_copy(CmdSequence* cmds,
     else {
       render::Render().renderCel(
         dstCel->image(),
+        srcCel,
         dstSprite,
         srcImage,
         srcCel->layer(),
@@ -423,6 +426,7 @@ void draw_image_into_new_tilemap_cel(
 void modify_tilemap_cel_region(
   CmdSequence* cmds,
   doc::Cel* cel,
+  doc::Tileset* tileset,
   const gfx::Region& region,
   const TilesetMode tilesetMode,
   const GetTileImageFunc& getTileImage)
@@ -440,7 +444,11 @@ void modify_tilemap_cel_region(
   doc::LayerTilemap* tilemapLayer = static_cast<doc::LayerTilemap*>(cel->layer());
 
   Doc* doc = static_cast<Doc*>(tilemapLayer->sprite()->document());
-  doc::Tileset* tileset = tilemapLayer->tileset();
+  bool addUndoToTileset = false;
+  if (!tileset) {
+    tileset = tilemapLayer->tileset();
+    addUndoToTileset = true;
+  }
   doc::Grid grid = tileset->grid();
   grid.origin(grid.origin() + cel->position());
 
@@ -625,10 +633,11 @@ void modify_tilemap_cel_region(
       tileRgn.createIntersection(tileRgn, region);
       tileRgn.offset(-tileInCanvasRc.origin());
 
-      ImageRef tileOrigImage = tileset->get(ti);
+      ImageRef tileDstImage = tileset->get(ti);
 
+      // Compare with the original tile from the original tileset
       gfx::Region diffRgn;
-      create_region_with_differences(tileOrigImage.get(),
+      create_region_with_differences(tilemapLayer->tileset()->get(ti).get(),
                                      tileImage.get(),
                                      tileRgn.bounds(),
                                      diffRgn);
@@ -637,28 +646,38 @@ void modify_tilemap_cel_region(
       tileRgn &= diffRgn;
 
       if (!tileRgn.isEmpty()) {
-        Mod mod;
-        mod.tileIndex = ti;
-        mod.tileOrigImage = tileOrigImage;
-        mod.tileImage = tileImage;
-        mod.tileRgn = tileRgn;
-        mods.push_back(mod);
+        if (addUndoToTileset) {
+          Mod mod;
+          mod.tileIndex = ti;
+          mod.tileDstImage = tileDstImage;
+          mod.tileImage = tileImage;
+          mod.tileRgn = tileRgn;
+          mods.push_back(mod);
+        }
+        else {
+          copy_image(tileDstImage.get(),
+                     tileImage.get(),
+                     tileRgn);
+          tileset->notifyTileContentChange(ti);
+        }
       }
     }
 
     // Apply all modifications to tiles
-    for (auto& mod : mods) {
-      // TODO avoid creating several CopyTileRegion for the same tile,
-      //      merge all mods for the same tile in some way
-      cmds->executeAndAdd(
-        new cmd::CopyTileRegion(
-          mod.tileOrigImage.get(),
-          mod.tileImage.get(),
-          mod.tileRgn,
-          gfx::Point(0, 0),
-          false,
-          mod.tileIndex,
-          tileset));
+    if (addUndoToTileset) {
+      for (auto& mod : mods) {
+        // TODO avoid creating several CopyTileRegion for the same tile,
+        //      merge all mods for the same tile in some way
+        cmds->executeAndAdd(
+          new cmd::CopyTileRegion(
+            mod.tileDstImage.get(),
+            mod.tileImage.get(),
+            mod.tileRgn,
+            gfx::Point(0, 0),
+            false,
+            mod.tileIndex,
+            tileset));
+      }
     }
 
     doc->notifyTilesetChanged(tileset);
@@ -692,7 +711,7 @@ void clear_mask_from_cel(CmdSequence* cmds,
     doc::Mask* mask = doc->mask();
 
     modify_tilemap_cel_region(
-      cmds, cel,
+      cmds, cel, nullptr,
       gfx::Region(doc->mask()->bounds()),
       tilesetMode,
       [bgcolor, mask](const doc::ImageRef& origTile,

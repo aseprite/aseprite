@@ -541,6 +541,7 @@ Render::Render()
   , m_selectedLayer(nullptr)
   , m_selectedFrame(-1)
   , m_previewImage(nullptr)
+  , m_previewTileset(nullptr)
   , m_previewBlendMode(BlendMode::NORMAL)
   , m_onionskin(OnionskinType::NONE)
 {
@@ -602,12 +603,14 @@ void Render::setSelectedLayer(const Layer* layer)
 void Render::setPreviewImage(const Layer* layer,
                              const frame_t frame,
                              const Image* image,
+                             const Tileset* tileset,
                              const gfx::Point& pos,
                              const BlendMode blendMode)
 {
   m_selectedLayer = layer;
   m_selectedFrame = frame;
   m_previewImage = image;
+  m_previewTileset = tileset;
   m_previewPos = pos;
   m_previewBlendMode = blendMode;
 }
@@ -629,6 +632,7 @@ void Render::setExtraImage(
 void Render::removePreviewImage()
 {
   m_previewImage = nullptr;
+  m_previewTileset = nullptr;
 }
 
 void Render::removeExtraImage()
@@ -1068,30 +1072,15 @@ void Render::renderLayer(
         gfx::RectF celBounds;
 
         // Is the 'm_previewImage' set to be used with this layer?
-        bool usePreview = false;
-        if ((m_previewImage) &&
-            (m_selectedLayer == layer)) {
-          if (m_selectedFrame == frame) {
-            usePreview = true;
-          }
-          else {
-            // This preview might be useful if we are rendering a
-            // linked frame to the preview.
-            Cel* cel2 = layer->cel(m_selectedFrame);
-            if (cel2->data() == cel->data()) {
-              usePreview = true;
-            }
-          }
-        }
-
-        // If not, we use the original cel-image from the images' stock
-        if (usePreview) {
+        if (m_previewImage &&
+            checkIfWeShouldUsePreview(cel)) {
           celImage = m_previewImage;
           celBounds = gfx::RectF(m_previewPos.x,
                                  m_previewPos.y,
                                  m_previewImage->width(),
                                  m_previewImage->height());
         }
+        // If not, we use the original cel-image from the images' stock
         else {
           celImage = cel->image();
           if (cel->layer()->isReference())
@@ -1131,7 +1120,7 @@ void Render::renderLayer(
 
               for (auto rc : originalAreas) {
                 renderCel(
-                  image, celImage, layer, pal, celBounds,
+                  image, cel, celImage, layer, pal, celBounds,
                   gfx::Clip(area.dst.x+rc.x-area.src.x,
                             area.dst.y+rc.y-area.src.y, rc),
                   compositeImage, opacity, layerBlendMode);
@@ -1140,7 +1129,7 @@ void Render::renderLayer(
             // Draw the whole cel
             else {
               renderCel(
-                image, celImage, layer, pal,
+                image, cel, celImage, layer, pal,
                 celBounds, area, compositeImage,
                 opacity, layerBlendMode);
             }
@@ -1180,6 +1169,7 @@ void Render::renderLayer(
     if (m_extraCel->opacity() > 0) {
       renderCel(
         image,
+        m_extraCel,
         m_sprite,
         m_extraImage,
         m_currentLayer, // Current layer (useful to use get the tileset if extra cel is a tilemap)
@@ -1196,6 +1186,7 @@ void Render::renderLayer(
 
 void Render::renderCel(
   Image* dst_image,
+  const Cel* cel,
   const Sprite* sprite,
   const Image* cel_image,
   const Layer* cel_layer,
@@ -1216,6 +1207,7 @@ void Render::renderCel(
 
   renderCel(
     dst_image,
+    cel,
     cel_image,
     cel_layer,
     pal,
@@ -1228,6 +1220,7 @@ void Render::renderCel(
 
 void Render::renderCel(
   Image* dst_image,
+  const Cel* cel,
   const Image* cel_image,
   const Layer* cel_layer,
   const Palette* pal,
@@ -1248,18 +1241,26 @@ void Render::renderCel(
       cel_image->pixelFormat() == IMAGE_TILEMAP) {
     ASSERT(cel_layer->isTilemap());
 
+    if (area.size.w < 1 ||
+        area.size.h < 1)
+      return;
+
     auto tilemapLayer = static_cast<const LayerTilemap*>(cel_layer);
     doc::Grid grid = tilemapLayer->tileset()->grid();
     grid.origin(grid.origin() + gfx::Point(celBounds.origin()));
 
-    const Tileset* tileset = tilemapLayer->tileset();
-    ASSERT(tileset);
-    if (!tileset)
-      return;
-
-    if (area.size.w < 1 ||
-        area.size.h < 1)
-      return;
+    // Is the 'm_previewTileset' set to be used with this layer?
+    const Tileset* tileset;
+    if (m_previewTileset && cel &&
+        checkIfWeShouldUsePreview(cel)) {
+      tileset = m_previewTileset;
+    }
+    else {
+      tileset = tilemapLayer->tileset();
+      ASSERT(tileset);
+      if (!tileset)
+        return;
+    }
 
     gfx::Rect tilesToDraw = grid.canvasToTile(
       m_proj.remove(gfx::Rect(area.src, area.size)));
@@ -1395,6 +1396,23 @@ CompositeImageFunc Render::getImageComposition(
   TRACE_RENDER_CEL("Render::getImageComposition srcFormat", srcFormat, "dstFormat", dstFormat);
   ASSERT(false && "Invalid pixel formats");
   return nullptr;
+}
+
+bool Render::checkIfWeShouldUsePreview(const Cel* cel) const
+{
+  if ((m_selectedLayer == cel->layer())) {
+    if (m_selectedFrame == cel->frame()) {
+      return true;
+    }
+    else if (cel->layer()) {
+      // This preview might be useful if we are rendering a linked
+      // frame to preview.
+      Cel* cel2 = cel->layer()->cel(m_selectedFrame);
+      if (cel2 && cel2->data() == cel->data())
+        return true;
+    }
+  }
+  return false;
 }
 
 void composite_image(Image* dst,

@@ -34,6 +34,7 @@ namespace doc {
   class RgbMap;
   class Slice;
   class Sprite;
+  class Tileset;
 }
 
 namespace render {
@@ -99,6 +100,11 @@ namespace app {
       // Should return an image where we can write pixels
       virtual Image* getDstImage() = 0;
 
+      // Can return a tileset used for preview purposes in Manual
+      // tiles mode (to show a preview modifying all instances of the
+      // same tile at the same time).
+      virtual Tileset* getDstTileset() = 0;
+
       // Makes the specified region valid in the source
       // image. Basically the implementation should copy from the
       // original cel the given region to the source image. The source
@@ -110,6 +116,7 @@ namespace app {
       // brush, so we've to make sure that the destination image
       // matches the original cel when we make that composition.
       virtual void validateDstImage(const gfx::Region& rgn) = 0;
+      virtual void validateDstTileset(const gfx::Region& rgn) = 0;
 
       // Invalidates the whole destination image. It's used for tools
       // like line or rectangle which don't accumulate the effect so

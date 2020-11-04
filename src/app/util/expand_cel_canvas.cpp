@@ -80,12 +80,16 @@ ExpandCelCanvas::ExpandCelCanvas(
   , m_sprite(site.sprite())
   , m_layer(layer)
   , m_frame(site.frame())
-  , m_cel(NULL)
-  , m_celImage(NULL)
+  , m_cel(nullptr)
+  , m_celImage(nullptr)
   , m_celCreated(false)
+  // When editing the tiles of a tilemap manually we use a tileset as
+  // preview, see getDestTileset() for details.
+  , m_tilesetPreview((flags & TilesetPreview) == TilesetPreview)
   , m_flags(flags)
-  , m_srcImage(NULL)
-  , m_dstImage(NULL)
+  , m_srcImage(nullptr)
+  , m_dstImage(nullptr)
+  , m_dstTileset(nullptr)
   , m_closed(false)
   , m_committed(false)
   , m_cmds(cmds)
@@ -159,14 +163,18 @@ ExpandCelCanvas::ExpandCelCanvas(
   // We have to adjust the cel position to match the m_dstImage
   // position (the new m_dstImage will be used in RenderEngine to
   // draw this cel).
-  m_cel->setPosition(m_bounds.origin());
+  if (!m_tilesetPreview)
+    m_cel->setPosition(m_bounds.origin());
+
   EXP_TRACE("ExpandCelCanvas",
             "m_cel->bounds()=", m_cel->bounds(),
             "m_bounds=", m_bounds,
             "m_grid=", m_grid.origin(), m_grid.tileSize());
 
   if (m_celCreated) {
+    // Calling "getDestCanvas()" we create the m_dstImage
     getDestCanvas();
+
     m_cel->data()->setImage(m_dstImage, m_layer);
 
     if (m_layer && m_layer->isImage())
@@ -174,17 +182,19 @@ ExpandCelCanvas::ExpandCelCanvas(
   }
   else if (m_layer->isTilemap() &&
            m_tilemapMode == TilemapMode::Tiles) {
-    // Calling "getDestCanvas()" we create the m_dstImage
     getDestCanvas();
     m_cel->data()->setImage(m_dstImage, m_layer);
   }
   // If we are in a tilemap, we use m_dstImage to draw pixels (instead
   // of the tilemap image).
   else if (m_layer->isTilemap() &&
-           m_tilemapMode == TilemapMode::Pixels) {
-    // Calling "getDestCanvas()" we create the m_dstImage
+           m_tilemapMode == TilemapMode::Pixels &&
+           !m_tilesetPreview) {
     getDestCanvas();
     m_cel->data()->setImage(m_dstImage, m_layer);
+  }
+  else if (m_tilesetPreview) {
+    getDestTileset();
   }
 }
 
@@ -273,7 +283,7 @@ void ExpandCelCanvas::commit()
     m_cel->setPosition(m_origCelPos);
 
 #ifdef _DEBUG
-    if (m_layer->isTilemap()) {
+    if (m_layer->isTilemap() && !m_tilesetPreview) {
       ASSERT(m_cel->image() != m_celImage.get());
     }
     else {
@@ -302,7 +312,6 @@ void ExpandCelCanvas::commit()
     // Convert the image to tiles again
     if (m_layer->isTilemap() &&
         m_tilemapMode == TilemapMode::Pixels) {
-      ASSERT(m_celImage.get() != m_cel->image());
       ASSERT(m_celImage->pixelFormat() == IMAGE_TILEMAP);
 
       // Validate the whole m_dstImage (invalid areas are cleared, as we
@@ -312,20 +321,50 @@ void ExpandCelCanvas::commit()
       // Restore the original m_celImage, because the cel contained
       // the m_dstImage temporally for drawing purposes. No undo
       // information is required at this moment.
-      m_cel->data()->setImage(m_celImage, m_layer);
+      if (!m_dstTileset) {
+        ASSERT(m_celImage.get() != m_cel->image());
+        m_cel->data()->setImage(m_celImage, m_layer);
 
-      // Put the region in absolute sprite canvas coordinates (instead
-      // of relative to the m_cel).
-      regionToPatch->offset(m_bounds.origin());
+        // Put the region in absolute sprite canvas coordinates (instead
+        // of relative to the m_cel).
+        regionToPatch->offset(m_bounds.origin());
 
-      modify_tilemap_cel_region(
-        m_cmds, m_cel,
-        *regionToPatch,
-        m_tilesetMode,
-        [this](const doc::ImageRef& origTile,
-               const gfx::Rect& tileBoundsInCanvas) -> doc::ImageRef {
-          return trimDstImage(tileBoundsInCanvas);
-        });
+        modify_tilemap_cel_region(
+          m_cmds, m_cel, nullptr,
+          *regionToPatch,
+          m_tilesetMode,
+          [this](const doc::ImageRef& origTile,
+                 const gfx::Rect& tileBoundsInCanvas) -> doc::ImageRef {
+            return trimDstImage(tileBoundsInCanvas);
+          });
+      }
+      else {
+        ASSERT(m_celImage.get() == m_cel->image());
+
+        const Tileset* srcTileset = static_cast<LayerTilemap*>(m_layer)->tileset();
+        ASSERT(srcTileset);
+        ASSERT(srcTileset->size() == m_dstTileset->size());
+
+        // Patch tiles
+        for (tile_index ti=1; ti<srcTileset->size(); ++ti) {
+          gfx::Region diffRgn;
+          create_region_with_differences(srcTileset->get(ti).get(),
+                                         m_dstTileset->get(ti).get(),
+                                         m_dstTileset->get(ti)->bounds(),
+                                         diffRgn);
+          if (!diffRgn.isEmpty()) {
+            m_cmds->executeAndAdd(
+              new cmd::CopyTileRegion(
+                srcTileset->get(ti).get(),
+                m_dstTileset->get(ti).get(),
+                diffRgn,
+                gfx::Point(0, 0),
+                false,
+                ti,
+                srcTileset));
+          }
+        }
+      }
     }
     // Check that the region to copy or patch is not empty before we
     // create the new cmd
@@ -405,6 +444,14 @@ void ExpandCelCanvas::rollback()
   m_closed = true;
 }
 
+gfx::Point ExpandCelCanvas::getCelOrigin() const
+{
+  if (m_tilesetPreview)
+    return m_bounds.origin();
+  else
+    return m_cel->position();
+}
+
 Image* ExpandCelCanvas::getSourceCanvas()
 {
   ASSERT((m_flags & NeedsSource) == NeedsSource);
@@ -441,6 +488,28 @@ Image* ExpandCelCanvas::getDestCanvas()
     m_dstImage->clear(m_dstImage->maskColor());
   }
   return m_dstImage.get();
+}
+
+Tileset* ExpandCelCanvas::getDestTileset()
+{
+  EXP_TRACE("ExpandCelCanvas::getDestTileset()"
+            "celCreated", m_celCreated,
+            "tilesetPreview", m_tilesetPreview);
+
+  // When we edit the pixels in manual mode, we can create a tileset
+  // that will be used for preview purposes to see changes in all
+  // instances of the same tile.
+  if (!m_celCreated && m_tilesetPreview) {
+    // Copy the whole tileset
+    const Tileset* srcTileset = static_cast<LayerTilemap*>(m_layer)->tileset();
+
+    ASSERT(srcTileset);
+    m_dstTileset.reset(new Tileset(m_sprite,
+                                   srcTileset->grid(),
+                                   srcTileset->size()));
+    copySourceTilestToDestTileset();
+  }
+  return m_dstTileset.get();
 }
 
 void ExpandCelCanvas::validateSourceCanvas(const gfx::Region& rgn)
@@ -488,6 +557,7 @@ void ExpandCelCanvas::validateSourceCanvas(const gfx::Region& rgn)
       for (const auto& rc : rgnToValidate) {
         subRender.renderCel(
           m_srcImage.get(),
+          m_cel,
           m_sprite,
           m_celImage.get(),
           m_layer,
@@ -592,10 +662,34 @@ void ExpandCelCanvas::validateDestCanvas(const gfx::Region& rgn)
   m_validDstRegion.createUnion(m_validDstRegion, rgnToValidate);
 }
 
+void ExpandCelCanvas::validateDestTileset(const gfx::Region& rgn)
+{
+  EXP_TRACE("ExpandCelCanvas::validateDestTileset", rgn.bounds(), m_dstTileset);
+
+  // Update tiles from the valid dest image
+  if (m_dstTileset) {
+    gfx::Region regionToPatch = rgn;
+    modify_tilemap_cel_region(
+      m_cmds, m_cel,
+      m_dstTileset.get(),
+      regionToPatch,
+      m_tilesetMode,
+      [this](const doc::ImageRef& origTile,
+             const gfx::Rect& tileBoundsInCanvas) -> doc::ImageRef {
+        return trimDstImage(tileBoundsInCanvas);
+      });
+  }
+}
+
 void ExpandCelCanvas::invalidateDestCanvas()
 {
   EXP_TRACE("ExpandCelCanvas::invalidateDestCanvas");
   m_validDstRegion.clear();
+
+  // Copy tileset for preview again
+  // TODO Is there a way to avoid copying tiles that weren't modified? comparing versions maybe?
+  if (m_dstTileset)
+    copySourceTilestToDestTileset();
 }
 
 void ExpandCelCanvas::invalidateDestCanvas(const gfx::Region& rgn)
@@ -645,6 +739,20 @@ ImageRef ExpandCelCanvas::trimDstImage(const gfx::Rect& bounds) const
                bounds.y-m_bounds.y,
                bounds.w, bounds.h,
                m_dstImage->maskColor()));
+}
+
+void ExpandCelCanvas::copySourceTilestToDestTileset()
+{
+  ASSERT(m_layer->isTilemap());
+  const Tileset* srcTileset = static_cast<LayerTilemap*>(m_layer)->tileset();
+
+  for (tile_index i=0; i<srcTileset->size(); ++i) {
+    doc::copy_image(m_dstTileset->get(i).get(),
+                    srcTileset->get(i).get());
+
+    // To rehash the tileset
+    m_dstTileset->notifyTileContentChange(i);
+  }
 }
 
 } // namespace app
