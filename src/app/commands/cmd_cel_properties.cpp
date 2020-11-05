@@ -229,6 +229,7 @@ private:
 
   // ContextObserver impl
   void onActiveSiteChange(const Site& site) override {
+    onCommitChange();
     if (isVisible())
       setCel(const_cast<Doc*>(site.document()),
              const_cast<Cel*>(site.cel()));

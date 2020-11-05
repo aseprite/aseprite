@@ -286,6 +286,7 @@ private:
 
   // ContextObserver impl
   void onActiveSiteChange(const Site& site) override {
+    onCommitChange();
     if (isVisible())
       setLayer(const_cast<Doc*>(site.document()),
                const_cast<Layer*>(site.layer()));
