@@ -149,6 +149,7 @@ ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
   , m_tilesButton(1)
   , m_tilesetModeButtons(3)
   , m_splitter(Splitter::ByPercentage, VERTICAL)
+  , m_splitterPalTil(Splitter::ByPercentage, VERTICAL)
   , m_paletteView(true, PaletteView::FgBgColors, this, 16)
   , m_tilesView(true, PaletteView::FgBgTiles, this, 16)
   , m_remapPalButton(Strings::color_bar_remap_palette())
@@ -176,6 +177,7 @@ ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
   , m_redrawAll(false)
   , m_implantChange(false)
   , m_selfPalChange(false)
+  , m_splitterPalTilPos(50.0)
 {
   m_instance = this;
 
@@ -203,14 +205,16 @@ ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
   m_scrollableTilesView.attachToView(&m_tilesView);
   m_scrollablePalView.setExpansive(true);
   m_scrollableTilesView.setExpansive(true);
+  m_splitterPalTil.setExpansive(true);
 
   m_scrollableTilesView.setVisible(false);
   m_tilesHelpers.setVisible(false);
   m_remapPalButton.setVisible(false);
   m_remapTilesButton.setVisible(false);
 
-  m_palettePlaceholder.addChild(&m_scrollablePalView);
-  m_palettePlaceholder.addChild(&m_scrollableTilesView);
+  m_splitterPalTil.addChild(&m_scrollablePalView);
+  m_splitterPalTil.addChild(&m_scrollableTilesView);
+  m_palettePlaceholder.addChild(&m_splitterPalTil);
   m_palettePlaceholder.addChild(&m_remapPalButton);
   m_palettePlaceholder.addChild(&m_remapTilesButton);
   m_splitter.setId("palette_spectrum_splitter");
@@ -277,6 +281,7 @@ ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
   m_editPal.ItemChange.connect([this]{ onSwitchPalEditMode(); });
   m_buttons.ItemChange.connect([this]{ onPaletteButtonClick(); });
   m_tilesButton.ItemChange.connect([this]{ onTilesButtonClick(); });
+  m_tilesButton.RightClick.connect([this]{ onTilesButtonRightClick(); });
   m_tilesetModeButtons.ItemChange.connect([this]{ onTilesetModeButtonClick(); });
 
   InitTheme.connect(
@@ -317,6 +322,7 @@ ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
 
       // Styles
       m_splitter.setStyle(theme->styles.workspaceSplitter());
+      m_splitterPalTil.setStyle(theme->styles.workspaceSplitter());
 
       fgBox->noBorderNoChildSpacing();
       bgBox->noBorderNoChildSpacing();
@@ -348,8 +354,8 @@ ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
   m_fgTileConn = Preferences::instance().colorBar.fgTile.AfterChange.connect([this]{ onFgTileChangeFromPreferences(); });
   m_bgTileConn = Preferences::instance().colorBar.bgTile.AfterChange.connect([this]{ onBgTileChangeFromPreferences(); });
   m_sepConn = Preferences::instance().colorBar.entriesSeparator.AfterChange.connect([this]{ invalidate(); });
-  m_paletteView.FocusOrClick.connect(&ColorBar::onFocusPaletteOrTilesView, this);
-  m_tilesView.FocusOrClick.connect(&ColorBar::onFocusPaletteOrTilesView, this);
+  m_paletteView.FocusOrClick.connect(&ColorBar::onFocusPaletteView, this);
+  m_tilesView.FocusOrClick.connect(&ColorBar::onFocusTilesView, this);
   m_appPalChangeConn = App::instance()->PaletteChange.connect(&ColorBar::onAppPaletteChange, this);
   KeyboardShortcuts::instance()->UserChange.connect(
     [this, tooltipManager]{ setupTooltips(tooltipManager); });
@@ -512,37 +518,60 @@ TilemapMode ColorBar::tilemapMode() const
 
 void ColorBar::setTilemapMode(TilemapMode mode)
 {
-  const Site site = UIContext::instance()->activeSite();
-  const bool isTilemap = (site.layer() && site.layer()->isTilemap());
-  if (!isTilemap)
-    mode = TilemapMode::Pixels;
+  m_tilemapMode = mode;
+  updateFromTilemapMode();
+}
 
-  const bool editTiles = (mode == TilemapMode::Tiles);
-
+void ColorBar::updateFromTilemapMode()
+{
   SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
   ButtonSet::Item* item = m_tilesButton.getItem(0);
 
-  m_tilemapMode = mode;
-  item->setHotColor(editTiles ?
-                    theme->colors.editPalFace():
-                    gfx::ColorNone);
+  const bool canEditTiles = this->canEditTiles();
+  const bool editTiles = (canEditTiles &&
+                          m_tilemapMode == TilemapMode::Tiles);
+
+  item->setHotColor(editTiles ? theme->colors.editPalFace():
+                                gfx::ColorNone);
   item->setMono(true);
 
-  if (editTiles && isTilemap) {
-    manager()->freeWidget(&m_paletteView);
-    m_scrollablePalView.setVisible(false);
-    m_scrollableTilesView.setVisible(true);
-    m_selectorPlaceholder.setVisible(false);
-    m_colorHelpers.setVisible(false);
-    m_tilesHelpers.setVisible(true);
+  if (Preferences::instance().colorBar.showColorAndTiles()) {
+    m_scrollablePalView.setVisible(true);
+    m_selectorPlaceholder.setVisible(true);
+    if (canEditTiles) {
+      m_scrollableTilesView.setVisible(true);
+    }
+    else {
+      manager()->freeWidget(&m_tilesView);
+      m_scrollableTilesView.setVisible(false);
+    }
+
+    if (editTiles) {
+      m_colorHelpers.setVisible(false);
+      m_tilesHelpers.setVisible(true);
+    }
+    else {
+      m_colorHelpers.setVisible(true);
+      m_tilesHelpers.setVisible(false);
+    }
   }
   else {
-    manager()->freeWidget(&m_tilesView);
-    m_scrollablePalView.setVisible(true);
-    m_scrollableTilesView.setVisible(false);
-    m_selectorPlaceholder.setVisible(true);
-    m_colorHelpers.setVisible(true);
-    m_tilesHelpers.setVisible(false);
+    if (editTiles) {
+      manager()->freeWidget(&m_paletteView);
+      m_scrollablePalView.setVisible(false);
+      m_scrollableTilesView.setVisible(true);
+      m_selectorPlaceholder.setVisible(false);
+      m_colorHelpers.setVisible(false);
+      m_tilesHelpers.setVisible(true);
+    }
+    else {
+      manager()->freeWidget(&m_tilesView);
+      m_scrollablePalView.setVisible(true);
+      m_scrollableTilesView.setVisible(false);
+      m_selectorPlaceholder.setVisible(true);
+      m_colorHelpers.setVisible(true);
+      m_tilesHelpers.setVisible(false);
+    }
   }
 
   layout();
@@ -571,6 +600,18 @@ void ColorBar::setTilesetMode(const TilesetMode mode)
   // Change to pixels mode automatically
   if (m_tilemapMode == TilemapMode::Tiles)
     setTilemapMode(TilemapMode::Pixels);
+}
+
+void ColorBar::onSizeHint(ui::SizeHintEvent& ev)
+{
+  m_colorHelpers.resetSizeHint();
+  m_tilesHelpers.resetSizeHint();
+  gfx::Size sz = m_colorHelpers.sizeHint();
+  sz |= m_tilesHelpers.sizeHint();
+  m_colorHelpers.setSizeHint(sz);
+  m_tilesHelpers.setSizeHint(sz);
+
+  Box::onSizeHint(ev);
 }
 
 void ColorBar::onActiveSiteChange(const Site& site)
@@ -605,11 +646,11 @@ void ColorBar::onActiveSiteChange(const Site& site)
       m_scrollableTilesView.updateView();
     }
   }
-  if (!isTilemap) {
+  else {
     m_lastTilesetId = doc::NullId;
-    if (m_tilemapMode == TilemapMode::Tiles)
-      setTilemapMode(TilemapMode::Pixels);
   }
+
+  updateFromTilemapMode();
 }
 
 void ColorBar::onGeneralUpdate(DocEvent& ev)
@@ -642,8 +683,17 @@ void ColorBar::onAppPaletteChange()
   updateWarningIcon(m_bgColor.getColor(), m_bgWarningIcon);
 }
 
-void ColorBar::onFocusPaletteOrTilesView(ui::Message* msg)
+void ColorBar::onFocusPaletteView(ui::Message* msg)
 {
+  if (tilemapMode() != TilemapMode::Pixels)
+    setTilemapMode(TilemapMode::Pixels);
+  App::instance()->inputChain().prioritize(this, msg);
+}
+
+void ColorBar::onFocusTilesView(ui::Message* msg)
+{
+  if (tilemapMode() != TilemapMode::Tiles)
+    setTilemapMode(TilemapMode::Tiles);
   App::instance()->inputChain().prioritize(this, msg);
 }
 
@@ -714,6 +764,13 @@ void ColorBar::onTilesButtonClick()
   setTilemapMode(
     (tilemapMode() == TilemapMode::Pixels ? TilemapMode::Tiles:
                                             TilemapMode::Pixels));
+}
+
+void ColorBar::onTilesButtonRightClick()
+{
+  auto& pref = Preferences::instance();
+  pref.colorBar.showColorAndTiles(!pref.colorBar.showColorAndTiles());
+  updateFromTilemapMode();
 }
 
 void ColorBar::onTilesetModeButtonClick()
@@ -1269,6 +1326,10 @@ void ColorBar::onColorButtonChange(const app::Color& color)
 
 void ColorBar::onPickSpectrum(const app::Color& color, ui::MouseButton button)
 {
+  // Change to pixels mode automatically
+  if (m_tilemapMode == TilemapMode::Tiles)
+    setTilemapMode(TilemapMode::Pixels);
+
   if (button == kButtonNone)
     button = m_lastButton;
 
@@ -1844,6 +1905,13 @@ void ColorBar::showPaletteOptions()
 
     menu->showPopup(gfx::Point(bounds.x, bounds.y+bounds.h));
   }
+}
+
+bool ColorBar::canEditTiles() const
+{
+  const Site site = UIContext::instance()->activeSite();
+  return (site.layer() &&
+          site.layer()->isTilemap());
 }
 
 } // namespace app
