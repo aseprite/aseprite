@@ -112,6 +112,7 @@ public:
     m_timer.Tick.connect([this]{ onCommitChange(); });
     userData()->Click.connect([this]{ onToggleUserData(); });
     tileset()->Click.connect([this]{ onTileset(); });
+    tileset()->setVisible(false);
 
     m_userDataView.entry()->Change.connect([this]{ onStartTimer(); });
     m_userDataView.color()->Change.connect([this]{ onStartTimer(); });
