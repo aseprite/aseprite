@@ -192,10 +192,7 @@ void draw_tile(ui::Graphics* g,
   if (rc.w < 1 || rc.h < 1)
     return;
 
-  if (rc.w == rc.h)
-    draw_checked_grid(g, rc, gfx::Size(rc.w/2, rc.h/2));
-  else
-    draw_checked_grid(g, rc, gfx::Size(rc.w/4, rc.h/2));
+  draw_checked_grid(g, rc, gfx::Size(rc.w/2, rc.h/2));
 
   if (tile == doc::notile)
     return;
