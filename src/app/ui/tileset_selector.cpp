@@ -10,6 +10,7 @@
 
 #include "app/ui/tileset_selector.h"
 
+#include "app/i18n/strings.h"
 #include "doc/sprite.h"
 #include "doc/tilesets.h"
 #include "fmt/format.h"
@@ -25,6 +26,7 @@ TilesetSelector::TilesetSelector(const doc::Sprite* sprite,
 {
   initTheme();
 
+  name()->setText(info.name);
   gridWidth()->setTextf("%d", info.grid.tileSize().w);
   gridHeight()->setTextf("%d", info.grid.tileSize().h);
   baseIndex()->setTextf("%d", info.baseIndex);
@@ -45,21 +47,36 @@ TilesetSelector::TilesetSelector(const doc::Sprite* sprite,
     ++tsi;
   }
 
-  if (!info.enabled) {
+  if (info.enabled) {
+    tilesets()->Change.connect(
+      [this, sprite]() {
+        int index = tilesets()->getSelectedItemIndex();
+        bool editable = (index == 0);
+
+        if (index == 0) {
+          name()->setText("");
+          baseIndex()->setTextf("%d", 1);
+        }
+        else {
+          doc::Tileset* ts = sprite->tilesets()->get(index-1);
+          doc::Grid grid = ts->grid();
+          name()->setText(ts->name());
+          gridWidth()->setTextf("%d", grid.tileSize().w);
+          gridHeight()->setTextf("%d", grid.tileSize().h);
+          baseIndex()->setTextf("%d", ts->baseIndex());
+        }
+
+        name()->setEnabled(editable);
+        gridWidth()->setEnabled(editable);
+        gridHeight()->setEnabled(editable);
+        baseIndex()->setEnabled(editable);
+      });
+  }
+  else {
     tilesets()->setEnabled(false);
     gridWidth()->setEnabled(false);
     gridHeight()->setEnabled(false);
   }
-
-  tilesets()->Change.connect(
-    [this, sprite]() {
-      int index = tilesets()->getSelectedItemIndex();
-      gridOptions()->setVisible(index == 0);
-      gridOptions()->setVisible(index == 0);
-      baseIndex()->setTextf(
-        "%d", (index == 0 ? 1: sprite->tilesets()->get(index-1)->baseIndex()));
-      this->window()->layout();
-    });
 }
 
 TilesetSelector::Info TilesetSelector::getInfo()
@@ -77,6 +94,7 @@ TilesetSelector::Info TilesetSelector::getInfo()
     info.newTileset = false;
     info.tsi = itemIndex-1;
   }
+  info.name = name()->text();
   info.baseIndex = baseIndex()->textInt();
   return info;
 }

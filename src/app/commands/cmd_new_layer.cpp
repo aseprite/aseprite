@@ -85,6 +85,7 @@ protected:
 private:
   void adjustRefCelBounds(Cel* cel, gfx::RectF bounds);
   std::string getUniqueLayerName(const Sprite* sprite) const;
+  std::string getUniqueTilesetName(const Sprite* sprite) const;
   int getMaxLayerNum(const Layer* layer) const;
   std::string layerPrefix() const;
 
@@ -269,6 +270,7 @@ void NewLayerCommand::onExecute(Context* context)
         if (tilesetInfo.newTileset) {
           auto tileset = new Tileset(sprite, tilesetInfo.grid, 1);
           tileset->setBaseIndex(tilesetInfo.baseIndex);
+          tileset->setName(tilesetInfo.name);
 
           auto addTileset = new cmd::AddTileset(sprite, tileset);
           tx(addTileset);
@@ -513,6 +515,13 @@ std::string NewLayerCommand::getUniqueLayerName(const Sprite* sprite) const
   return fmt::format("{} {}",
                      layerPrefix(),
                      getMaxLayerNum(sprite->root())+1);
+}
+
+std::string NewLayerCommand::getUniqueTilesetName(const Sprite* sprite) const
+{
+  return fmt::format("{} {}",
+                     Strings::instance()->tileset_selector_default_name(),
+                     sprite->tilesets()->size()+1);
 }
 
 int NewLayerCommand::getMaxLayerNum(const Layer* layer) const

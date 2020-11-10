@@ -14,6 +14,7 @@
 #include "app/cmd/set_layer_name.h"
 #include "app/cmd/set_layer_opacity.h"
 #include "app/cmd/set_tileset_base_index.h"
+#include "app/cmd/set_tileset_name.h"
 #include "app/cmd/set_user_data.h"
 #include "app/commands/command.h"
 #include "app/console.h"
@@ -336,32 +337,35 @@ private:
     tilesetInfo.enabled = false;
     tilesetInfo.newTileset = false;
     tilesetInfo.grid = tileset->grid();
+    tilesetInfo.name = tileset->name();
     tilesetInfo.baseIndex = tileset->baseIndex();
     tilesetInfo.tsi = tilemap->tilesetIndex();
 
-    gen::TilesetSelectorWindow window;
-    TilesetSelector tilesetSel(tilemap->sprite(), tilesetInfo);
-    window.tilesetOptions()->addChild(&tilesetSel);
-    window.openWindowInForeground();
-    if (window.closer() != window.ok())
-      return;
+    try {
+      gen::TilesetSelectorWindow window;
+      TilesetSelector tilesetSel(tilemap->sprite(), tilesetInfo);
+      window.tilesetOptions()->addChild(&tilesetSel);
+      window.openWindowInForeground();
+      if (window.closer() != window.ok())
+        return;
 
-    tilesetInfo = tilesetSel.getInfo();
+      tilesetInfo = tilesetSel.getInfo();
 
-    // TODO add options to change the tileset index, grid size, etc.
-
-    if (tileset->baseIndex() != tilesetInfo.baseIndex) {
-      try {
+      if (tileset->name() != tilesetInfo.name ||
+          tileset->baseIndex() != tilesetInfo.baseIndex) {
         ContextWriter writer(UIContext::instance());
-        Tx tx(writer.context(), "Set Base Index");
-        tx(new cmd::SetTilesetBaseIndex(tileset, tilesetInfo.baseIndex));
+        Tx tx(writer.context(), "Set Tileset Properties");
+        if (tileset->name() != tilesetInfo.name)
+          tx(new cmd::SetTilesetName(tileset, tilesetInfo.name));
+        if (tileset->baseIndex() != tilesetInfo.baseIndex)
+          tx(new cmd::SetTilesetBaseIndex(tileset, tilesetInfo.baseIndex));
         // TODO catch the tileset base index modification from the editor
         App::instance()->mainWindow()->invalidate();
         tx.commit();
       }
-      catch (const std::exception& e) {
-        Console::showException(e);
-      }
+    }
+    catch (const std::exception& e) {
+      Console::showException(e);
     }
   }
 

@@ -6,10 +6,12 @@
     <listitem text="@.new_tileset" value="-1" />
   </combobox>
 
-  <grid id="grid_options" columns="4">
+  <grid columns="4" expansive="true">
+    <label text="@.name" />
+    <entry maxsize="256" id="name" text="" cell_hspan="3" />
+
     <label text="@.grid_width" />
     <expr id="grid_width" text="" />
-
     <label text="@.grid_height" />
     <expr id="grid_height" text="" />
 

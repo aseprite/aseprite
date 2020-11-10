@@ -11,6 +11,8 @@
 #include "doc/grid.h"
 #include "doc/tile.h"
 
+#include <string>
+
 #include "tileset_selector.xml.h"
 
 namespace doc {
@@ -25,6 +27,7 @@ namespace app {
     struct Info {
       bool enabled = true;
       bool newTileset = true;
+      std::string name;
       doc::Grid grid;
       int baseIndex = 1;
       doc::tileset_index tsi = -1;

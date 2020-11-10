@@ -489,6 +489,7 @@ add_library(app-lib
   cmd/set_tag_name.cpp
   cmd/set_tag_range.cpp
   cmd/set_tileset_base_index.cpp
+  cmd/set_tileset_name.cpp
   cmd/set_total_frames.cpp
   cmd/set_transparent_color.cpp
   cmd/set_user_data.cpp
