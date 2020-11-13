@@ -251,6 +251,9 @@ bool ListBox::onProcessMessage(Message* msg)
             picked = pick(mousePos);
           }
 
+          if (dynamic_cast<ui::Separator*>(picked))
+            picked = nullptr;
+
           // If the picked widget is a child of the list, select it
           if (picked && hasChild(picked))
             selectChild(picked, msg);
