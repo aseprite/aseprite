@@ -32,6 +32,7 @@
 #include "doc/palette.h"
 #include "doc/sprite.h"
 #include "doc/tag.h"
+#include "doc/slice.h"
 #include "os/display.h"
 #include "os/system.h"
 #include "ui/system.h"
@@ -510,6 +511,17 @@ Doc* Doc::duplicate(DuplicateType type) const
   // Copy frame tags
   for (const Tag* tag : sourceSprite->tags())
     spriteCopy->tags().add(new Tag(*tag));
+
+  // Copy slices
+  for (const Slice *slice : sourceSprite->slices()) {
+    auto sliceCopy = new Slice(*slice);
+    sliceCopy->setUserData(slice->userData());
+
+    for (frame_t i(0); i < sourceSprite->totalFrames(); ++i)
+      sliceCopy->insert(i, *slice->getByFrame(i));
+
+    spriteCopy->slices().add(sliceCopy);
+  }
 
   // Copy color palettes
   {
