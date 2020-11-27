@@ -148,7 +148,7 @@ Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects)
     }
 
     case ObjectType::LayerGroup: {
-      // Create the layer set
+      // Create the layer group
       layer.reset(new LayerGroup(subObjects->sprite()));
 
       // Number of sub-layers

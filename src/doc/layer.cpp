@@ -384,7 +384,7 @@ void LayerImage::displaceFrames(frame_t fromThis, frame_t delta)
 LayerGroup::LayerGroup(Sprite* sprite)
   : Layer(ObjectType::LayerGroup, sprite)
 {
-  setName("Layer Set");
+  setName("Group");
 }
 
 LayerGroup::~LayerGroup()
