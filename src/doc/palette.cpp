@@ -199,28 +199,16 @@ int Palette::findExactMatch(int r, int g, int b, int a, int mask_index) const
 }
 
 //////////////////////////////////////////////////////////////////////
-// Based on Allegro's bestfit_color
+// Based on https://www.compuphase.com/cmetric.htm
 
 static std::vector<uint32_t> col_diff;
-static uint32_t* col_diff_g;
-static uint32_t* col_diff_r;
-static uint32_t* col_diff_b;
-static uint32_t* col_diff_a;
 
 static void initBestfit()
 {
-  col_diff.resize(4*128, 0);
-  col_diff_g = &col_diff[128*0];
-  col_diff_r = &col_diff[128*1];
-  col_diff_b = &col_diff[128*2];
-  col_diff_a = &col_diff[128*3];
+  col_diff.resize(512, 0);
 
-  for (int i=1; i<64; ++i) {
-    int k = i * i;
-    col_diff_g[i] = col_diff_g[128-i] = k * 59 * 59;
-    col_diff_r[i] = col_diff_r[128-i] = k * 30 * 30;
-    col_diff_b[i] = col_diff_b[128-i] = k * 11 * 11;
-    col_diff_a[i] = col_diff_a[128-i] = k * 8 * 8;
+  for (int i=1; i<256; ++i) {
+    col_diff[i] = col_diff[512-i] = i * i;
   }
 }
 
@@ -234,11 +222,6 @@ int Palette::findBestfit(int r, int g, int b, int a, int mask_index) const
   if (col_diff.empty())
     initBestfit();
 
-  r >>= 3;
-  g >>= 3;
-  b >>= 3;
-  a >>= 3;
-
   // Mask index is like alpha = 0, so we can use it as transparent color.
   if (a == 0 && mask_index >= 0)
     return mask_index;
@@ -250,13 +233,14 @@ int Palette::findBestfit(int r, int g, int b, int a, int mask_index) const
   for (int i=0; i<size; ++i) {
     color_t rgb = m_colors[i];
 
-    int coldiff = col_diff_g[((rgba_getg(rgb)>>3) - g) & 127];
+    int coldiff = col_diff[(rgba_getg(rgb) - g) & 511] * 2048;
     if (coldiff < lowest) {
-      coldiff += col_diff_r[(((rgba_getr(rgb)>>3) - r) & 127)];
+      int rbar = rgba_getr(rgb) + r;
+      coldiff += col_diff[(rgba_getr(rgb) - r) & 511] * (1024 + rbar);
       if (coldiff < lowest) {
-        coldiff += col_diff_b[(((rgba_getb(rgb)>>3) - b) & 127)];
+        coldiff += col_diff[(rgba_getb(rgb) - b) & 511] * (1535 - rbar);
         if (coldiff < lowest) {
-          coldiff += col_diff_a[(((rgba_geta(rgb)>>3) - a) & 127)];
+          coldiff += col_diff[(rgba_geta(rgb) - a) & 511] * 4096;
           if (coldiff < lowest && i != mask_index) {
             if (coldiff == 0)
               return i;

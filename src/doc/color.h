@@ -55,7 +55,8 @@ namespace doc {
   }
 
   inline int rgb_luma(int r, int g, int b) {
-    return (r*2126 + g*7152 + b*722) / 10000;
+    // gamma correction of 2.2 would be ideal but 2.0 is way faster
+    return (unsigned) (r*r*13933 + g*g*46871 + b*b*4732) >> 24;
   }
 
   inline uint8_t rgba_luma(uint32_t c) {

@@ -12,6 +12,7 @@
 #include "render/ordered_dither.h"
 
 #include "base/clamp.h"
+#include "doc/color.h"
 #include "render/dithering.h"
 #include "render/dithering_matrix.h"
 
@@ -30,15 +31,20 @@ static int colorDistance(int r1, int g1, int b1, int a1,
 {
   int result = 0;
 
-  // The factor for RGB components came from doc::rba_luma()
-  if (a1 && a2) {
-    result += int(std::abs(r1-r2) * 2126 +
-                  std::abs(g1-g2) * 7152 +
-                  std::abs(b1-b2) *  722);
+  int da = a1 - a2;
+
+  if (a1 & a2) {
+    int ar = r1 + r2;
+    int dr = r1 - r2;
+    int dg = g1 - g2;
+    int db = b1 - b2;
+    if (dr) result += dr * dr * (1024 + ar);
+    if (dg) result += dg * dg * 2048;
+    if (db) result += db * db * (1535 - ar);
   }
 
-  result += (std::abs(a1-a2) * 20000);
-  return result;
+  if (da) result += (da * da * 8192);
+  return sqrt(result);
 }
 
 OrderedDither::OrderedDither(int transparentIndex)
@@ -102,13 +108,24 @@ doc::color_t OrderedDither::ditherRgbPixelToIndex(
   b2 = doc::rgba_getb(nearest2rgb);
   a2 = doc::rgba_geta(nearest2rgb);
 
-  // Here we calculate the distance between the original 'color'
-  // and 'nearest1rgb'. The maximum possible distance is given by
+  // The maximum possible distance is given by
   // the distance between 'nearest1rgb' and 'nearest2rgb'.
-  int d = colorDistance(r1, g1, b1, a1, r, g, b, a);
   int D = colorDistance(r1, g1, b1, a1, r2, g2, b2, a2);
   if (D == 0)
     return nearest1idx;
+  
+  // Make nearest1 to always be a darker color
+  // so we can eliminate noise artifacts at the halfway
+  // then calculate the distance between the original
+  // 'color' and 'nearest1rgb'.
+  int d = 0;
+  if (doc::rgba_luma(nearest1rgb) > doc::rgba_luma(nearest2rgb)) {
+    std::swap(nearest1idx, nearest2idx);
+    d = colorDistance(r2, g2, b2, a2, r, g, b, a);
+  }
+  else {
+    d = colorDistance(r1, g1, b1, a1, r, g, b, a);
+  }
 
   // We convert the d/D factor to the matrix range to compare it
   // with the threshold. If d > threshold, it means that we're
@@ -156,7 +173,7 @@ doc::color_t OrderedDither2::ditherRgbPixelToIndex(
   const int a = doc::rgba_geta(color);
 
   // Find the best palette entry for the given color.
-  const int index =
+  int index =
     (rgbmap ? rgbmap->mapColor(r, g, b, a):
               palette->findBestfit(r, g, b, a, m_transparentIndex));
 
@@ -168,6 +185,7 @@ doc::color_t OrderedDither2::ditherRgbPixelToIndex(
 
   // Find the best combination between the found nearest index and
   // an alternative palette color to create the original RGB color.
+  const long maxMixValue = matrix.maxValue();
   int bestMix = 0;
   int altIndex = -1;
   int closestDistance = std::numeric_limits<int>::max();
@@ -187,9 +205,8 @@ doc::color_t OrderedDither2::ditherRgbPixelToIndex(
     // maxMixValue, but this is too slow, so we try to figure out
     // a good mix factor using the RGB values of color0 and
     // color1.
-    int maxMixValue = matrix.maxValue();
 
-    int mix = 0;
+    long mix = 0;
     int div = 0;
     // If Alpha=0, RGB values are not representative for this entry.
     if (a && a0 && a1) {
@@ -201,7 +218,7 @@ doc::color_t OrderedDither2::ditherRgbPixelToIndex(
     if (mix) {
       if (div)
         mix /= div;
-      mix = base::clamp(mix, 0, maxMixValue);
+      mix = base::clamp(mix, 0L, maxMixValue);
     }
 
     const int rM = r0 + (r1-r0) * mix / maxMixValue;
@@ -218,6 +235,14 @@ doc::color_t OrderedDither2::ditherRgbPixelToIndex(
       bestMix = mix;
       altIndex = i;
     }
+  }
+
+  // Make index to always be a darker color than altIndex
+  // so we can eliminate noise artifacts at the halfway
+  const doc::color_t altColor = palette->getEntry(altIndex);
+  if (altIndex >= 0 && doc::rgba_luma(color0) > doc::rgba_luma(altColor)) {
+    std::swap(index, altIndex);
+    bestMix = maxMixValue - bestMix;
   }
 
   // Using the bestMix factor the dithering matrix tells us if we
