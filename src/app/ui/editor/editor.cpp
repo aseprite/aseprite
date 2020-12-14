@@ -1536,7 +1536,7 @@ void Editor::updateToolByTipProximity(ui::PointerType pointerType)
   }
 }
 
-void Editor::updateToolLoopModifiersIndicators()
+void Editor::updateToolLoopModifiersIndicators(const bool firstFromMouseDown)
 {
   int modifiers = int(tools::ToolLoopModifiers::kNone);
   const bool autoSelectLayer = isAutoSelectLayer();
@@ -1569,7 +1569,13 @@ void Editor::updateToolLoopModifiersIndicators()
           modifiers |= int(tools::ToolLoopModifiers::kSquareAspect);
         if (int(action & KeyAction::DrawFromCenter))
           modifiers |= int(tools::ToolLoopModifiers::kFromCenter);
-        if (int(action & KeyAction::RotateShape))
+
+        // We prefer to activate the rotation only when the user press
+        // the Alt key again in the ToolLoop (and not before starting
+        // the loop). So Alt+Shift+selection tool will subtract the
+        // selection but will not start the rotation until we release
+        // and press the Alt key again.
+        if ((int(action & KeyAction::RotateShape)) && !firstFromMouseDown)
           modifiers |= int(tools::ToolLoopModifiers::kRotateShape);
       }
 
@@ -1800,7 +1806,16 @@ bool Editor::onProcessMessage(Message* msg)
           ->pressButton(pointer_from_msg(this, mouseMsg));
 
         EditorStatePtr holdState(m_state);
-        return m_state->onMouseDown(this, mouseMsg);
+        bool state = m_state->onMouseDown(this, mouseMsg);
+
+        // Re-update the tool modifiers if the state has changed
+        // (e.g. we are on DrawingState now). This is required for the
+        // Line tool to be able to Shift+press mouse buttons to start
+        // drawing lines with the angle snapped.
+        if (m_state != holdState)
+          updateToolLoopModifiersIndicators(true);
+
+        return state;
       }
       break;
 
