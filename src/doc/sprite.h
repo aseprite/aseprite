@@ -94,6 +94,8 @@ namespace doc {
     void setSize(int width, int height);
     void setColorSpace(const gfx::ColorSpaceRef& colorSpace);
 
+    const Sprite* sprite() { return this; }
+
     // Returns true if the sprite has a background layer and it's visible
     bool isOpaque() const;
 

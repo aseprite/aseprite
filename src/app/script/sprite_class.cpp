@@ -36,6 +36,7 @@
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
 #include "app/script/security.h"
+#include "app/script/userdata.h"
 #include "app/site.h"
 #include "app/transaction.h"
 #include "app/tx.h"
@@ -832,6 +833,8 @@ const Property Sprite_properties[] = {
   { "transparentColor", Sprite_get_transparentColor, Sprite_set_transparentColor },
   { "bounds", Sprite_get_bounds, nullptr },
   { "gridBounds", Sprite_get_gridBounds, Sprite_set_gridBounds },
+  { "color", UserData_get_color<Sprite>, UserData_set_color<Sprite> },
+  { "data", UserData_get_text<Sprite>, UserData_set_text<Sprite> },
   { nullptr, nullptr, nullptr }
 };
 
