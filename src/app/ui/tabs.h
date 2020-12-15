@@ -41,6 +41,9 @@ namespace app {
 
     // Returns the icon to be shown in the tab
     virtual TabIcon getTabIcon() = 0;
+
+    // Returns the tab background color
+    virtual gfx::Color getTabColor() = 0;
   };
 
   enum class DropTabResult {
@@ -116,6 +119,7 @@ namespace app {
       TabView* view;
       std::string text;
       TabIcon icon;
+      gfx::Color color;
       int x, width;
       int oldX, oldWidth;
       bool modified;
@@ -124,6 +128,7 @@ namespace app {
         ASSERT(view);
         text = view->getTabText();
         icon = view->getTabIcon();
+        color = view->getTabColor();
 
         x = width = oldX = oldWidth =
 #if _DEBUG

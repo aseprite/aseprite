@@ -378,6 +378,11 @@ TabIcon DataRecoveryView::getTabIcon()
   return TabIcon::NONE;
 }
 
+gfx::Color DataRecoveryView::getTabColor()
+{
+  return gfx::ColorNone;
+}
+
 void DataRecoveryView::onWorkspaceViewSelected()
 {
   // Do nothing

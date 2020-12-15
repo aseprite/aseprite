@@ -66,7 +66,7 @@ void Sprite::SetDefaultRgbMapAlgorithm(const RgbMapAlgorithm mapAlgo)
 
 Sprite::Sprite(const ImageSpec& spec,
                int ncolors)
-  : Object(ObjectType::Sprite)
+  : WithUserData(ObjectType::Sprite)
   , m_document(nullptr)
   , m_spec(spec)
   , m_pixelRatio(1, 1)

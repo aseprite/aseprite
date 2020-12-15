@@ -113,6 +113,11 @@ TabIcon DevConsoleView::getTabIcon()
   return TabIcon::NONE;
 }
 
+gfx::Color DevConsoleView::getTabColor()
+{
+  return gfx::ColorNone;
+}
+
 WorkspaceView* DevConsoleView::cloneWorkspaceView()
 {
   return new DevConsoleView();

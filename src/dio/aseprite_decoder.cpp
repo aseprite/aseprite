@@ -82,7 +82,7 @@ bool AsepriteDecoder::decode()
 
   // Prepare variables for layer chunks
   doc::Layer* last_layer = sprite->root();
-  doc::WithUserData* last_object_with_user_data = nullptr;
+  doc::WithUserData* last_object_with_user_data = sprite.get();
   doc::Cel* last_cel = nullptr;
   auto tag_it = sprite->tags().begin();
   auto tag_end = sprite->tags().end();

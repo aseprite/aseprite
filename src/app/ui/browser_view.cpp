@@ -560,6 +560,11 @@ TabIcon BrowserView::getTabIcon()
   return TabIcon::NONE;
 }
 
+gfx::Color BrowserView::getTabColor()
+{
+  return gfx::ColorNone;
+}
+
 WorkspaceView* BrowserView::cloneWorkspaceView()
 {
   return new BrowserView();

@@ -111,6 +111,11 @@ TabIcon HomeView::getTabIcon()
   return TabIcon::HOME;
 }
 
+gfx::Color HomeView::getTabColor()
+{
+  return gfx::ColorNone;
+}
+
 bool HomeView::onCloseView(Workspace* workspace, bool quitting)
 {
   workspace->removeView(this);

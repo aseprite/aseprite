@@ -38,6 +38,7 @@
 #include "app/util/clipboard.h"
 #include "app/util/range_utils.h"
 #include "base/fs.h"
+#include "doc/color.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
 #include "fmt/format.h"
@@ -232,6 +233,12 @@ std::string DocView::getTabText()
 TabIcon DocView::getTabIcon()
 {
   return TabIcon::NONE;
+}
+
+gfx::Color DocView::getTabColor()
+{
+  color_t c = m_editor->sprite()->userData().color();
+  return gfx::rgba(doc::rgba_getr(c), doc::rgba_getg(c), doc::rgba_getb(c), doc::rgba_geta(c));
 }
 
 WorkspaceView* DocView::cloneWorkspaceView()

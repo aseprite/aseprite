@@ -174,6 +174,7 @@ void Tabs::updateTabs()
 
     tab->text = tab->view->getTabText();
     tab->icon = tab->view->getTabIcon();
+    tab->color = tab->view->getTabColor();
     tab->x = int(x);
     tab->width = int(x+tabWidth) - int(x);
     x += tabWidth;
@@ -626,6 +627,10 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& _box,
     // Tab with text + clipping the close button
     if (box.w > 8*ui::guiscale()) {
       info.text = &tab->text;
+      if (tab->color != gfx::ColorNone) {
+        g->fillRect(tab->color, gfx::Rect(box.x+dx+2, box.y+dy+3, box.w-dx-2, box.h-3));
+        g->fillRect(tab->color, gfx::Rect(box.x+dx+3, box.y+dy+2, box.w-dx-3, 1));
+      }
       theme->paintWidgetPart(
         g, theme->styles.tabText(),
         gfx::Rect(box.x+dx, box.y+dy, box.w-dx, box.h),
@@ -654,6 +659,11 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& _box,
           (!hover || !m_hotCloseButton)) {
         style = theme->styles.tabModifiedIcon();
       }
+    }
+
+    if (tab->color != gfx::ColorNone) {
+      g->fillRect(tab->color, gfx::Rect(closeBox.x, closeBox.y+3, closeBox.w-3, closeBox.h-3));
+      g->fillRect(tab->color, gfx::Rect(closeBox.x, closeBox.y+2, closeBox.w-4, 1));
     }
 
     info.styleFlags = 0;

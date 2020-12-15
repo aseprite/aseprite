@@ -378,6 +378,10 @@ bool AseFormat::onSave(FileOp* fop)
 
     // Write extra chunks in the first frame
     if (frame == fop->roi().fromFrame()) {
+      // Write sprite user data only if needed
+      if (!sprite->userData().isEmpty())
+        ase_file_write_user_data_chunk(f, &frame_header, &sprite->userData());
+
       // Write tilesets
       ase_file_write_tileset_chunks(f, fop, &frame_header, ext_files,
                                     sprite->tilesets());

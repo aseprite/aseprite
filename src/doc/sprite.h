@@ -24,6 +24,7 @@
 #include "doc/rgbmap_algorithm.h"
 #include "doc/slices.h"
 #include "doc/tags.h"
+#include "doc/with_user_data.h"
 #include "gfx/rect.h"
 
 #include <memory>
@@ -52,7 +53,7 @@ namespace doc {
   typedef std::vector<Palette*> PalettesList;
 
   // The main structure used in the whole program to handle a sprite.
-  class Sprite : public Object {
+  class Sprite : public WithUserData {
   public:
     enum class RgbMapFor {
       OpaqueLayer,

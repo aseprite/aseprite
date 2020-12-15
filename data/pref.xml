@@ -177,6 +177,9 @@
     <section id="layers">
       <option id="user_data_visibility" type="bool" default="false" />
     </section>
+    <section id="sprite">
+      <option id="user_data_visibility" type="bool" default="false" />
+    </section>
     <section id="tags">
       <option id="user_data_visibility" type="bool" default="false" />
     </section>
