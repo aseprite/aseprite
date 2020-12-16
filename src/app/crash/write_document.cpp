@@ -194,6 +194,15 @@ private:
     // Grid bounds
     writeGridBounds(s, spr->gridBounds());
 
+    // Write Sprite User Data
+    writeUserData(s, spr->userData());
+
+    return true;
+  }
+
+  bool writeUserData(std::ofstream& s, const UserData& userData) {
+    write_string(s, userData.text());
+    write32(s, (uint32_t)userData.color());
     return true;
   }
 

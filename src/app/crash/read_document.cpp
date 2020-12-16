@@ -381,7 +381,21 @@ private:
         spr->setGridBounds(gridBounds);
     }
 
+    // Read Sprite User Data
+    if (!s.eof()) {
+      UserData userData = readUserData(s);
+      if (!userData.isEmpty())
+        spr->setUserData(userData);
+    }
+
     return spr.release();
+  }
+
+  UserData readUserData(std::ifstream& s) {
+    UserData userData;
+    userData.setText(read_string(s));
+    userData.setColor(read32(s));
+    return userData;
   }
 
   gfx::ColorSpaceRef readColorSpace(std::ifstream& s) {
