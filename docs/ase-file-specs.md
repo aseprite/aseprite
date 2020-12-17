@@ -324,6 +324,8 @@ belongs to that cel, etc. There are some special cases: After a Tags
 chunk, there will be several user data fields, one for each tag, you
 should associate the user data in the same order as the tags are in
 the Tags chunk.
+In version 1.3 a sprite has associated user data, to consider this case
+there is an User Data Chunk at the first frame after the Palette Chunk.
 
     DWORD       Flags
                   1 = Has text
