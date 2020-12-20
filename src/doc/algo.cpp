@@ -27,7 +27,8 @@ void algo_line_perfect(int x1, int y1, int x2, int y2, void* data, AlgoPixel pro
 
   // If the height if the line is bigger than the width, we'll iterate
   // over the y-axis.
-  if (ABS(y2-y1) > ABS(x2-x1)) {
+  if (ABS(y2-y1) > ABS(x2-x1)) 
+  {
     std::swap(x1, y1);
     std::swap(x2, y2);
     yaxis = true;
@@ -49,7 +50,8 @@ void algo_line_perfect(int x1, int y1, int x2, int y2, void* data, AlgoPixel pro
   // in the origin (x1,y1).
   x2 += dx;
 
-  for (int x=x1; x!=x2; x+=dx) {
+  for (int x=x1; x!=x2; x+=dx) 
+  {
     if (yaxis)
       proc(y, x, data);
     else
@@ -58,7 +60,8 @@ void algo_line_perfect(int x1, int y1, int x2, int y2, void* data, AlgoPixel pro
     // The error advances "h/w" per each "x" step. As we're using a
     // integer value for "e", we use "w" as the unit.
     e += h;
-    if (e >= w) {
+    if (e >= w) 
+    {
       y += dy;
       e -= w;
     }
@@ -75,7 +78,8 @@ void algo_line_perfect_with_fix_for_line_brush(int x1, int y1, int x2, int y2, v
 {
   bool yaxis;
 
-  if (ABS(y2-y1) > ABS(x2-x1)) {
+  if (ABS(y2-y1) > ABS(x2-x1))
+  {
     std::swap(x1, y1);
     std::swap(x2, y2);
     yaxis = true;
@@ -93,17 +97,20 @@ void algo_line_perfect_with_fix_for_line_brush(int x1, int y1, int x2, int y2, v
 
   x2 += dx;
 
-  for (int x=x1; x!=x2; x+=dx) {
+  for (int x=x1; x!=x2; x+=dx) 
+  {
     if (yaxis)
       proc(y, x, data);
     else
       proc(x, y, data);
 
     e += h;
-    if (e >= w) {
+    if (e >= w) 
+    {
       y += dy;
       e -= w;
-      if (x+dx != x2) {
+      if (x+dx != x2) 
+      {
         if (yaxis)
           proc(y, x, data);
         else
@@ -121,16 +128,19 @@ void algo_line_continuous(int x0, int y0, int x1, int y1, void* data, AlgoPixel 
   int dy = -ABS(y1-y0), sy = (y0 < y1 ? 1: -1);
   int err = dx+dy, e2;                                  // error value e_xy
 
-  for (;;) {
+  for (;;) 
+  {
     proc(x0, y0, data);
     e2 = 2*err;
-    if (e2 >= dy) {                                       // e_xy+e_x > 0
+    if (e2 >= dy) 
+    {                                       // e_xy+e_x > 0
       if (x0 == x1)
         break;
       err += dy;
       x0 += sx;
     }
-    if (e2 <= dx) {                                       // e_xy+e_y < 0
+    if (e2 <= dx) 
+    {                                       // e_xy+e_y < 0
       if (y0 == y1)
         break;
       err += dx;
@@ -148,19 +158,23 @@ void algo_line_continuous_with_fix_for_line_brush(int x0, int y0, int x1, int y1
   int err = dx+dy, e2;                                  // error value e_xy
   bool x_changed;
 
-  for (;;) {
+  for (;;) 
+  {
     x_changed = false;
 
     proc(x0, y0, data);
     e2 = 2*err;
-    if (e2 >= dy) {                                       // e_xy+e_x > 0
+    if (e2 >= dy) 
+    {                                       // e_xy+e_x > 0
       if (x0 == x1)
         break;
       err += dy;
       x0 += sx;
       x_changed = true;
     }
-    if (e2 <= dx) {                                       // e_xy+e_y < 0
+    
+    if (e2 <= dx) 
+    {                                       // e_xy+e_y < 0
       if (y0 == y1)
         break;
       err += dx;
@@ -183,11 +197,16 @@ void algo_ellipse(int x0, int y0, int x1, int y1, void* data, AlgoPixel proc)
   double err = dx+dy+b1*a*a, e2;                          // error of 1.step
 
   if (x0 > x1) { x0 = x1; x1 += a; }        // if called with swapped points
-  if (y0 > y1) y0 = y1;                                  // .. exchange them
-  y0 += (b+1)/2; y1 = y0-b1;                               // starting pixel
-  a = 8*a*a; b1 = 8*b*b;
+  if (y0 > y1) { y0 = y1; }                                  // .. exchange them
+  
+  y0 += (b+1)/2;
+  y1 = y0-b1;                               // starting pixel
+  
+  a = 8*a*a; 
+  b1 = 8*b*b;
 
-  do {
+  do 
+  {
     proc(x1, y0, data);                                      //   I. Quadrant
     proc(x0, y0, data);                                      //  II. Quadrant
     proc(x0, y1, data);                                      // III. Quadrant
@@ -195,9 +214,11 @@ void algo_ellipse(int x0, int y0, int x1, int y1, void* data, AlgoPixel proc)
     e2 = 2*err;
     if (e2 <= dy) { y0++; y1--; err += dy += a; }                 // y step
     if (e2 >= dx || 2*err > dy) { x0++; x1--; err += dx += b1; }  // x step
+    
   } while (x0 <= x1);
 
-  while (y0-y1 <= b) {          // too early stop of flat ellipses a=1
+  while (y0-y1 <= b)            // too early stop of flat ellipses a=1
+  {                            
     proc(x0-1, y0, data);       // -> finish tip of ellipse
     proc(x1+1, y0++, data);
     proc(x0-1, y1, data);
@@ -208,38 +229,38 @@ void algo_ellipse(int x0, int y0, int x1, int y1, void* data, AlgoPixel proc)
 void algo_ellipsefill(int x0, int y0, int x1, int y1, void* data, AlgoHLine proc)
 {
   long a = abs(x1-x0), b = abs(y1-y0), b1 = b&1;                 // diameter
-  double dx = 4*(1.0-a)*b*b, dy = 4*(b1+1)*a*a;           // error increment
+  double dx = 4*(1.0-a)*b*b, dy = 4*(b1+1)*a*a;                  // error increment
   double err = dx+dy+b1*a*a, e2;                          // error of 1.step
 
-  if (x0 > x1) { x0 = x1; x1 += a; }        // if called with swapped points
-  if (y0 > y1) y0 = y1;                                  // .. exchange them
+  if (x0 > x1) { x0 = x1; x1 += a; }                       // if called with swapped points
+  if (y0 > y1) { y0 = y1; }                                // .. exchange them
   y0 += (b+1)/2; y1 = y0-b1;                               // starting pixel
-  a = 8*a*a; b1 = 8*b*b;
+  a = 8*a*a; 
+  b1 = 8*b*b;
 
-  do {
+  do 
+  {
     proc(x0, y0, x1, data);
     proc(x0, y1, x1, data);
     e2 = 2*err;
     if (e2 <= dy) { y0++; y1--; err += dy += a; }                 // y step
     if (e2 >= dx || 2*err > dy) { x0++; x1--; err += dx += b1; }  // x step
+    
   } while (x0 <= x1);
 
-  while (y0-y1 <= b) {          // too early stop of flat ellipses a=1
-    proc(x0-1, y0, x0-1, data);       // -> finish tip of ellipse
+  while (y0-y1 <= b)                    // too early stop of flat ellipses a=1
+  {                                     // -> finish tip of ellipse
+    proc(x0-1, y0, x0-1, data);       
     proc(x1+1, y0++, x1+1, data);
     proc(x0-1, y1, x0-1, data);
     proc(x1+1, y1--, x1+1, data);
   }
 }
 
-static void draw_quad_rational_bezier_seg(int x0, int y0,
-                                          int x1, int y1,
-                                          int x2, int y2,
-                                          double w,
-                                          void* data,
-                                          AlgoPixel proc)
-{                   // plot a limited rational Bezier segment, squared weight
-  int sx = x2-x1;                 // relative values for checks
+static void draw_quad_rational_bezier_seg(int x0, int y0, int x1, int y1, int x2, int y2, double w, void* data,AlgoPixel proc)
+{                                 
+  // plot a limited rational Bezier segment, squared weight relative values for checks
+  int sx = x2-x1;                 
   int sy = y2-y1;
   int dx = x0-x2;
   int dy = y0-y2;
@@ -251,8 +272,10 @@ static void draw_quad_rational_bezier_seg(int x0, int y0,
 
   ASSERT(xx*sx <= 0.0 && yy*sy <= 0.0);   // sign of gradient must not change
 
-  if (cur != 0.0 && w > 0.0) {                            // no straight line
-    if (sx*sx+sy*sy > xx*xx+yy*yy) {               // begin with shorter part
+  if (cur != 0.0 && w > 0.0)                        // no straight line
+  {                                                 
+    if (sx*sx+sy*sy > xx*xx+yy*yy)                  // begin with shorter part
+    {                                               
       // swap P0 P2
       x2 = x0;
       x0 -= dx;
@@ -266,13 +289,15 @@ static void draw_quad_rational_bezier_seg(int x0, int y0,
     sy = y0 < y2 ? 1 : -1;                                // y step direction
     xy = -2.0*sx*sy*(2.0*w*xy+dx*dy);
 
-    if (cur*sx*sy < 0.0) {                              // negated curvature?
+    if (cur*sx*sy < 0.0)                            // negated curvature?                                      
+    {                              
       xx = -xx; yy = -yy; xy = -xy; cur = -cur;
     }
     dx = 4.0*w*(x1-x0)*sy*cur+xx/2.0+xy;            // differences 1st degree
     dy = 4.0*w*(y0-y1)*sx*cur+yy/2.0+xy;
 
-    if (w < 0.5 && (dy > xy || dx < xy)) {   // flat ellipse, algorithm fails
+    if (w < 0.5 && (dy > xy || dx < xy))             // flat ellipse, algorithm fails
+    {  
       cur = (w+1.0)/2.0;
       w = std::sqrt(w);
       xy = 1.0/(w+1.0);
@@ -290,7 +315,8 @@ static void draw_quad_rational_bezier_seg(int x0, int y0,
       return;
     }
     err = dx+dy-xy;             // error 1.step
-    do {
+    do 
+    {
       // plot curve
       proc(x0, y0, data);
 
