@@ -232,12 +232,11 @@ void NewFileCommand::onExecute(Context* ctx)
   if (sprite->colorMode() != ColorMode::GRAYSCALE)
     get_default_palette()->copyColorsTo(sprite->palette(frame_t(0)));
 
-  // If the background color isn't transparent, we have to
-  // convert the `Layer 1' in a `Background'
-  if (bgColor.getType() != app::Color::MaskType) {
-    Layer* layer = sprite->root()->firstLayer();
-
-    if (layer && layer->isImage()) {
+  Layer* layer = sprite->root()->firstLayer();
+  if (layer && layer->isImage()) {
+    // If the background color isn't transparent, we have to
+    // convert the `Layer 1' in a `Background'
+    if (bgColor.getType() != app::Color::MaskType) {
       LayerImage* layerImage = static_cast<LayerImage*>(layer);
       layerImage->configureAsBackground();
 
@@ -258,11 +257,8 @@ void NewFileCommand::onExecute(Context* ctx)
 
       set_current_palette(&oldPal, false);
     }
-  }
 #ifdef ENABLE_UI
-  else if (clipboardImage) {
-    Layer* layer = sprite->root()->firstLayer();
-    if (layer && layer->isImage()) {
+    else if (clipboardImage) {
       LayerImage* layerImage = static_cast<LayerImage*>(layer);
       // layerImage->configureAsBackground();
 
@@ -277,13 +273,19 @@ void NewFileCommand::onExecute(Context* ctx)
       }
       sprite->setPalette(&clipboardPalette, false);
     }
-  }
 #endif // ENABLE_UI
+
+    if (layer->isBackground())
+      layer->setName(Strings::commands_NewFile_BackgroundLayer());
+    else
+      layer->setName(fmt::format("{} {}", Strings::commands_NewLayer_Layer(), 1));
+  }
 
   // Show the sprite to the user
   std::unique_ptr<Doc> doc(new Doc(sprite.get()));
   sprite.release();
-  doc->setFilename(fmt::format("Sprite-{:04d}", ++g_spriteCounter));
+  doc->setFilename(fmt::format("{}-{:04d}",
+                               Strings::commands_NewFile_Sprite(), ++g_spriteCounter));
   doc->setContext(ctx);
   doc.release();
 }

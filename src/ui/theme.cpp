@@ -704,11 +704,10 @@ void set_theme(Theme* theme, const int uiscale)
     details::reinitThemeForAllWidgets();
 
     // Reinitialize all widget using the new theme/uiscale
-    Manager* manager = Manager::getDefault();
-    if (manager)
+    if (Manager* manager = Manager::getDefault()) {
       manager->initTheme();
-
-    manager->invalidate();
+      manager->invalidate();
+    }
   }
 
   old_ui_scale = current_ui_scale;

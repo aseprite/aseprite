@@ -341,7 +341,10 @@ namespace app {
     void setStateInternal(const EditorStatePtr& newState);
     void updateQuicktool();
     void updateToolByTipProximity(ui::PointerType pointerType);
-    void updateToolLoopModifiersIndicators();
+
+    // firstFromMouseDown=true when we call this function from the
+    // first MouseDown message (instead of KeyDown).
+    void updateToolLoopModifiersIndicators(const bool firstFromMouseDown = false);
 
     void drawBackground(ui::Graphics* g);
     void drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc);
