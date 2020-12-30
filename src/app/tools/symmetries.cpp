@@ -38,8 +38,13 @@ void HorizontalSymmetry::generateStrokes(const Stroke& mainStroke, Strokes& stro
   strokes.push_back(mainStroke);
 
   Stroke stroke2;
+  const bool isDynamic = loop->getDynamics().isDynamic();
   for (const auto& pt : mainStroke) {
     Stroke::Pt pt2 = pt;
+    if (isDynamic) {
+      brushSize = pt2.size;
+      brushCenter = (brushSize - brushSize % 2) / 2;
+    }
     pt2.x = m_x - ((pt.x-brushCenter) - m_x + 1) - (brushSize - brushCenter - 1);
     stroke2.addPoint(pt2);
   }
@@ -63,8 +68,13 @@ void VerticalSymmetry::generateStrokes(const Stroke& mainStroke, Strokes& stroke
   strokes.push_back(mainStroke);
 
   Stroke stroke2;
+  const bool isDynamic = loop->getDynamics().isDynamic();
   for (const auto& pt : mainStroke) {
     Stroke::Pt pt2 = pt;
+    if (isDynamic) {
+      brushSize = pt2.size;
+      brushCenter = (brushSize - brushSize % 2) / 2;
+    }
     pt2.y = m_y - ((pt.y-brushCenter) - m_y + 1) - (brushSize - brushCenter - 1);
     stroke2.addPoint(pt2);
   }
