@@ -182,7 +182,7 @@ namespace app {
     obs::signal<void(Extension*)> NewExtension;
     obs::signal<void(Extension*)> LanguagesChange;
     obs::signal<void(Extension*)> ThemesChange;
-    obs::signal<void(Extension*)> PalettesChange;
+    obs::signal<void()> PalettesChange;
     obs::signal<void(Extension*)> DitheringMatricesChange;
     obs::signal<void(Extension*)> ScriptsChange;
 

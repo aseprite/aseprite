@@ -210,6 +210,7 @@ void ResourcesListBox::onTick()
     resource.release();
     listItem.release();
   }
+  Change();
 
   if (m_resourcesLoader->isDone())
     stop();

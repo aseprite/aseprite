@@ -8,10 +8,12 @@
 #include "config.h"
 #endif
 
+#include "app/app.h"
 #include "app/commands/cmd_set_palette.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/context.h"
+#include "app/extensions.h"
 #include "app/file/palette_file.h"
 #include "app/file_selector.h"
 #include "app/i18n/strings.h"
@@ -76,6 +78,9 @@ void SavePaletteCommand::onExecute(Context* context)
     set_default_palette(palette);
     if (!context->activeDocument())
       set_current_palette(palette, false);
+  }
+  if (m_save_as_preset) {
+      App::instance()->extensions().PalettesChange();
   }
 }
 
