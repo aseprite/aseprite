@@ -26,6 +26,7 @@
 #include "app/doc_event.h"
 #include "app/doc_range_ops.h"
 #include "app/doc_undo.h"
+#include "app/i18n/strings.h"
 #include "app/loop_tag.h"
 #include "app/modules/editors.h"
 #include "app/modules/gfx.h"
