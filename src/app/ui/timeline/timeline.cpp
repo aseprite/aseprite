@@ -1379,6 +1379,8 @@ bool Timeline::onProcessMessage(Message* msg)
                      (m_state == STATE_RESIZING_TAG_LEFT ? m_resizeTagData.from: tag->fromFrame()),
                      (m_state == STATE_RESIZING_TAG_RIGHT ? m_resizeTagData.to: tag->toFrame())));
                 tx.commit();
+
+                regenerateRows();
               }
             }
             m_resizeTagData.reset();
