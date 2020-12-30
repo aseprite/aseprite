@@ -1080,6 +1080,9 @@
       <separator />
       <item command="LoadPalette" text="@.load_palette" />
       <item command="SavePalette" text="@.save_palette" />
+      <item command="SavePalette" text="@.save_palette_as_preset">
+        <param name="save_as_preset" value="true" />
+      </item>
       <item command="LoadPalette" text="@.load_default_palette">
         <param name="preset" value="default" />
       </item>

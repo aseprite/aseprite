@@ -35,6 +35,7 @@ protected:
 
 private:
   std::string m_preset;
+  bool m_save_as_preset;
 };
 
 SavePaletteCommand::SavePaletteCommand()
@@ -45,6 +46,7 @@ SavePaletteCommand::SavePaletteCommand()
 void SavePaletteCommand::onLoadParams(const Params& params)
 {
   m_preset = params.get("preset");
+  m_save_as_preset = params.get("save_as_preset") == "true";
 }
 
 void SavePaletteCommand::onExecute(Context* context)
@@ -58,8 +60,9 @@ void SavePaletteCommand::onExecute(Context* context)
   else {
     base::paths exts = get_writable_palette_extensions();
     base::paths selFilename;
+    std::string initialPath = m_save_as_preset ? get_preset_palettes_dir() : "";
     if (!app::show_file_selector(
-          "Save Palette", "", exts,
+          "Save Palette", initialPath, exts,
           FileSelectorType::Save, selFilename))
       return;
 
