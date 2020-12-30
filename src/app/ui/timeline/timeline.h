@@ -10,18 +10,21 @@
 #pragma once
 
 #include "app/doc_observer.h"
-#include "app/docs_observer.h"
 #include "app/doc_range.h"
+#include "app/docs_observer.h"
 #include "app/loop_tag.h"
 #include "app/pref/preferences.h"
 #include "app/ui/editor/editor_observer.h"
 #include "app/ui/input_chain_element.h"
 #include "app/ui/timeline/ani_controls.h"
+#include "base/debug.h"
 #include "doc/frame.h"
 #include "doc/layer.h"
 #include "doc/selected_frames.h"
 #include "doc/selected_layers.h"
 #include "doc/sprite.h"
+#include "doc/tag.h"
+#include "gfx/color.h"
 #include "obs/connection.h"
 #include "ui/scroll_bar.h"
 #include "ui/timer.h"
@@ -76,6 +79,9 @@ namespace app {
       STATE_MOVING_RANGE,
       STATE_MOVING_ONIONSKIN_RANGE_LEFT,
       STATE_MOVING_ONIONSKIN_RANGE_RIGHT,
+      STATE_MOVING_TAG,
+      STATE_RESIZING_TAG_LEFT,
+      STATE_RESIZING_TAG_RIGHT,
       // Changing layers flags states
       STATE_SHOWING_LAYERS,
       STATE_HIDING_LAYERS,
@@ -273,6 +279,10 @@ namespace app {
                                Cel* cel, frame_t frame, bool is_active, bool is_hover,
                                DrawCelData* data);
     void drawTags(ui::Graphics* g);
+    void drawTagBraces(ui::Graphics* g,
+                       gfx::Color tagColor,
+                       const gfx::Rect& bounds,
+                       const gfx::Rect& clipBounds);
     void drawRangeOutline(ui::Graphics* g);
     void drawPaddings(ui::Graphics* g);
     bool drawPart(ui::Graphics* g, int part, layer_t layer, frame_t frame);
@@ -360,6 +370,8 @@ namespace app {
     int separatorX() const;
     void setSeparatorX(int newValue);
 
+    static gfx::Color highlightColor(const gfx::Color color);
+
     ui::ScrollBar m_hbar;
     ui::ScrollBar m_vbar;
     gfx::Rect m_viewportArea;
@@ -421,6 +433,26 @@ namespace app {
       layer_t activeRelativeLayer;
       frame_t activeRelativeFrame;
     } m_moveRangeData;
+
+    // Temporal data used to move tags.
+    struct ResizeTag {
+      doc::ObjectId tag = doc::NullId;
+      doc::frame_t from, to;
+      void reset() {
+        tag = doc::NullId;
+      }
+      void reset(const doc::ObjectId tagId) {
+        auto tag = doc::get<doc::Tag>(tagId);
+        if (tag) {
+          this->tag = tagId;
+          this->from = tag->fromFrame();
+          this->to = tag->toFrame();
+        }
+        else {
+          this->tag = doc::NullId;
+        }
+      }
+    } m_resizeTagData;
   };
 
 #ifdef ENABLE_UI

@@ -13,6 +13,7 @@
 
 #include "app/app.h"
 #include "app/app_menus.h"
+#include "app/cmd/set_tag_range.h"
 #include "app/cmd_transaction.h"
 #include "app/color_utils.h"
 #include "app/commands/command.h"
@@ -31,6 +32,7 @@
 #include "app/modules/gui.h"
 #include "app/thumbnails.h"
 #include "app/transaction.h"
+#include "app/tx.h"
 #include "app/ui/app_menuitem.h"
 #include "app/ui/configure_timeline_popup.h"
 #include "app/ui/doc_view.h"
@@ -89,6 +91,8 @@ enum {
   PART_CEL,
   PART_RANGE_OUTLINE,
   PART_TAG,
+  PART_TAG_LEFT,
+  PART_TAG_RIGHT,
   PART_TAGS,
   PART_TAG_BAND,
   PART_TAG_SWITCH_BUTTONS,
@@ -963,6 +967,23 @@ bool Timeline::onProcessMessage(Message* msg)
               m_clk.frame = m_range.lastFrame();
           }
           break;
+
+        case PART_TAG:
+          m_state = STATE_MOVING_TAG;
+          m_resizeTagData.reset(m_clk.tag);
+          break;
+        case PART_TAG_LEFT:
+          m_state = STATE_RESIZING_TAG_LEFT;
+          m_resizeTagData.reset(m_clk.tag);
+          // TODO reduce the scope of the invalidation
+          invalidate();
+          break;
+        case PART_TAG_RIGHT:
+          m_state = STATE_RESIZING_TAG_RIGHT;
+          m_resizeTagData.reset(m_clk.tag);
+          invalidate();
+          break;
+
       }
 
       // Redraw the new clicked part (header, layer or cel).
@@ -1145,7 +1166,7 @@ bool Timeline::onProcessMessage(Message* msg)
             break;
           }
 
-          case STATE_SELECTING_CELS:
+          case STATE_SELECTING_CELS: {
             Layer* hitLayer = m_rows[hit.layer].layer();
             if ((m_layer != hitLayer) || (m_frame != hit.frame)) {
               m_clk.layer = hit.layer;
@@ -1157,6 +1178,29 @@ bool Timeline::onProcessMessage(Message* msg)
               setFrame(m_clk.frame = hit.frame, true);
             }
             break;
+          }
+
+          case STATE_MOVING_TAG:
+            // TODO
+            break;
+
+          case STATE_RESIZING_TAG_LEFT:
+          case STATE_RESIZING_TAG_RIGHT: {
+            auto tag = doc::get<doc::Tag>(m_resizeTagData.tag);
+            if (tag) {
+              switch (m_state) {
+                case STATE_RESIZING_TAG_LEFT:
+                  m_resizeTagData.from = base::clamp(hit.frame, 0, tag->toFrame());
+                  break;
+                case STATE_RESIZING_TAG_RIGHT:
+                  m_resizeTagData.to = base::clamp(hit.frame, tag->fromFrame(), m_sprite->lastFrame());
+                  break;
+              }
+              invalidate();
+            }
+            break;
+          }
+
         }
       }
 
@@ -1309,11 +1353,37 @@ bool Timeline::onProcessMessage(Message* msg)
         if (relayout)
           layout();
 
-        if (m_state == STATE_MOVING_RANGE &&
-            m_dropRange.type() != Range::kNone) {
-          dropRange(is_copy_key_pressed(mouseMsg) ?
-            Timeline::kCopy:
-            Timeline::kMove);
+        switch (m_state) {
+          case STATE_MOVING_RANGE:
+            if (m_dropRange.type() != Range::kNone) {
+              dropRange(is_copy_key_pressed(mouseMsg) ?
+                        Timeline::kCopy:
+                        Timeline::kMove);
+            }
+            break;
+
+          case STATE_MOVING_TAG:
+            m_resizeTagData.reset();
+            break;
+
+          case STATE_RESIZING_TAG_LEFT:
+          case STATE_RESIZING_TAG_RIGHT: {
+            auto tag = doc::get<doc::Tag>(m_resizeTagData.tag);
+            if (tag) {
+              if ((m_state == STATE_RESIZING_TAG_LEFT && tag->fromFrame() != m_resizeTagData.from) ||
+                  (m_state == STATE_RESIZING_TAG_RIGHT && tag->toFrame() != m_resizeTagData.to)) {
+                Tx tx(UIContext::instance(), Strings::commands_FrameTagProperties());
+                tx(new cmd::SetTagRange(
+                     tag,
+                     (m_state == STATE_RESIZING_TAG_LEFT ? m_resizeTagData.from: tag->fromFrame()),
+                     (m_state == STATE_RESIZING_TAG_RIGHT ? m_resizeTagData.to: tag->toFrame())));
+                tx.commit();
+              }
+            }
+            m_resizeTagData.reset();
+            break;
+          }
+
         }
 
         // Clean the clicked-part & redraw the hot-part.
@@ -1889,6 +1959,12 @@ void Timeline::setCursor(ui::Message* msg, const Hit& hit)
   else if (hit.part == PART_TAG) {
     ui::set_mouse_cursor(kHandCursor);
   }
+  else if (hit.part == PART_TAG_RIGHT) {
+    ui::set_mouse_cursor(kSizeECursor);
+  }
+  else if (hit.part == PART_TAG_LEFT) {
+    ui::set_mouse_cursor(kSizeWCursor);
+  }
   else {
     ui::set_mouse_cursor(kArrowCursor);
   }
@@ -2432,8 +2508,15 @@ void Timeline::drawTags(ui::Graphics* g)
         }
       }
 
-      gfx::Rect bounds1 = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), tag->fromFrame()));
-      gfx::Rect bounds2 = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), tag->toFrame()));
+      doc::frame_t fromFrame = tag->fromFrame();
+      doc::frame_t toFrame = tag->toFrame();
+      if (m_resizeTagData.tag == tag->id()) {
+        fromFrame = m_resizeTagData.from;
+        toFrame = m_resizeTagData.to;
+      }
+
+      gfx::Rect bounds1 = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), fromFrame));
+      gfx::Rect bounds2 = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), toFrame));
       gfx::Rect bounds = bounds1.createUnion(bounds2);
       gfx::Rect tagBounds = getPartBounds(Hit(PART_TAG, 0, 0, tag->id()));
       bounds.h = bounds.y2() - tagBounds.y2();
@@ -2468,39 +2551,45 @@ void Timeline::drawTags(ui::Graphics* g)
       bounds.w += dw;
       tagBounds.x += dx;
 
-      gfx::Color bg =
+      const gfx::Color tagColor =
         (m_tagFocusBand < 0 || pass == 1) ?
         tag->color(): theme->colors.timelineBandBg();
-      {
-        IntersectClip clip(g, bounds);
-        if (clip) {
-          for (auto& layer : styles.timelineLoopRange()->layers()) {
-            if (layer.type() == Style::Layer::Type::kBackground ||
-                layer.type() == Style::Layer::Type::kBackgroundBorder ||
-                layer.type() == Style::Layer::Type::kBorder) {
-              const_cast<Style::Layer*>(&layer)->setColor(bg);
-            }
-          }
-          drawPart(g, bounds, nullptr, styles.timelineLoopRange());
-        }
+      gfx::Color bg = tagColor;
+
+      // Draw the tag braces
+      drawTagBraces(g, bg, bounds, bounds);
+      if ((m_clk.part == PART_TAG_LEFT && m_clk.tag == tag->id()) ||
+          (m_clk.part != PART_TAG_LEFT &&
+           m_hot.part == PART_TAG_LEFT && m_hot.tag == tag->id())) {
+        if (m_clk.part == PART_TAG_LEFT)
+          bg = color_utils::blackandwhite_neg(tagColor);
+        else
+          bg = Timeline::highlightColor(tagColor);
+        drawTagBraces(g, bg, bounds, gfx::Rect(bounds.x, bounds.y,
+                                               frameBoxWidth()/2, bounds.h));
+      }
+      else if ((m_clk.part == PART_TAG_RIGHT && m_clk.tag == tag->id()) ||
+               (m_clk.part != PART_TAG_RIGHT &&
+                m_hot.part == PART_TAG_RIGHT && m_hot.tag == tag->id())) {
+        if (m_clk.part == PART_TAG_RIGHT)
+          bg = color_utils::blackandwhite_neg(tagColor);
+        else
+          bg = Timeline::highlightColor(tagColor);
+        drawTagBraces(g, bg, bounds,
+                      gfx::Rect(bounds.x2()-frameBoxWidth()/2, bounds.y,
+                                frameBoxWidth()/2, bounds.h));
       }
 
+      // Draw tag text
       if (m_tagFocusBand < 0 || pass == 1) {
         bounds = tagBounds;
 
-        if (m_clk.part == PART_TAG && m_clk.tag == tag->id()) {
-          bg = color_utils::blackandwhite_neg(bg);
-        }
-        else if (m_hot.part == PART_TAG && m_hot.tag == tag->id()) {
-          int r, g, b;
-          r = gfx::getr(bg)+32;
-          g = gfx::getg(bg)+32;
-          b = gfx::getb(bg)+32;
-          r = base::clamp(r, 0, 255);
-          g = base::clamp(g, 0, 255);
-          b = base::clamp(b, 0, 255);
-          bg = gfx::rgba(r, g, b, gfx::geta(bg));
-        }
+        if (m_clk.part == PART_TAG && m_clk.tag == tag->id())
+          bg = color_utils::blackandwhite_neg(tagColor);
+        else if (m_hot.part == PART_TAG && m_hot.tag == tag->id())
+          bg = Timeline::highlightColor(tagColor);
+        else
+          bg = tagColor;
         g->fillRect(bg, bounds);
 
         bounds.y += 2*ui::guiscale();
@@ -2527,6 +2616,26 @@ void Timeline::drawTags(ui::Graphics* g)
     }
     theme->paintWidgetPart(g, styles.timelineSwitchBandButton(),
                            butBounds, info);
+  }
+}
+
+void Timeline::drawTagBraces(ui::Graphics* g,
+                             gfx::Color tagColor,
+                             const gfx::Rect& bounds,
+                             const gfx::Rect& clipBounds)
+{
+  IntersectClip clip(g, clipBounds);
+  if (clip) {
+    SkinTheme* theme = skinTheme();
+    auto& styles = theme->styles;
+    for (auto& layer : styles.timelineLoopRange()->layers()) {
+      if (layer.type() == Style::Layer::Type::kBackground ||
+          layer.type() == Style::Layer::Type::kBackgroundBorder ||
+          layer.type() == Style::Layer::Type::kBorder) {
+        const_cast<Style::Layer*>(&layer)->setColor(tagColor);
+      }
+    }
+    drawPart(g, bounds, nullptr, styles.timelineLoopRange());
   }
 }
 
@@ -2791,8 +2900,15 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
     case PART_TAG: {
       Tag* tag = hit.getTag();
       if (tag) {
-        gfx::Rect bounds1 = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), tag->fromFrame()));
-        gfx::Rect bounds2 = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), tag->toFrame()));
+        doc::frame_t fromFrame = tag->fromFrame();
+        doc::frame_t toFrame = tag->toFrame();
+        if (m_resizeTagData.tag == tag->id()) {
+          fromFrame = m_resizeTagData.from;
+          toFrame = m_resizeTagData.to;
+        }
+
+        gfx::Rect bounds1 = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), fromFrame));
+        gfx::Rect bounds2 = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), toFrame));
         gfx::Rect bounds = bounds1.createUnion(bounds2);
         bounds.y -= skinTheme()->dimensions.timelineTagsAreaHeight();
 
@@ -3095,11 +3211,6 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
     else if (!bounds.isEmpty() && gfx::Rect(bounds.x+bounds.w-3, bounds.y, 3, bounds.h).contains(mousePos)) {
       hit.part = PART_HEADER_ONIONSKIN_RANGE_RIGHT;
     }
-    // Is the mouse on the separator.
-    else if (mousePos.x > separatorX()-4
-          && mousePos.x <= separatorX())  {
-      hit.part = PART_SEPARATOR;
-    }
     // Is the mouse on the frame tags area?
     else if (getPartBounds(Hit(PART_TAGS)).contains(mousePos)) {
       // Mouse in switch band button
@@ -3130,17 +3241,49 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
       // Mouse in frame tags
       if (hit.part == PART_NOTHING) {
         for (Tag* tag : m_sprite->tags()) {
-          gfx::Rect bounds = getPartBounds(Hit(PART_TAG, 0, 0, tag->id()));
-          if (bounds.contains(mousePos)) {
-            const int band = m_tagBand[tag];
-            if (m_tagFocusBand >= 0 &&
-                m_tagFocusBand != band)
-              continue;
+          const int band = m_tagBand[tag];
 
+          // Skip unfocused bands
+          if (m_tagFocusBand >= 0 &&
+              m_tagFocusBand != band) {
+            continue;
+          }
+
+          gfx::Rect tagBounds = getPartBounds(Hit(PART_TAG, 0, 0, tag->id()));
+          if (tagBounds.contains(mousePos)) {
             hit.part = PART_TAG;
             hit.tag = tag->id();
             hit.band = band;
             break;
+          }
+          // Check if we are in the left/right handles to resize the tag
+          else {
+            gfx::Rect bounds1 = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), tag->fromFrame()));
+            gfx::Rect bounds2 = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), tag->toFrame()));
+            gfx::Rect bounds = bounds1.createUnion(bounds2);
+            bounds.h = bounds.y2() - tagBounds.y2();
+            bounds.y = tagBounds.y2();
+
+            gfx::Rect bandBounds = getPartBounds(Hit(PART_TAG_BAND, 0, 0, doc::NullId, band));
+
+            const int fw = frameBoxWidth()/2;
+            if (gfx::Rect(bounds.x2()-fw, bounds.y, fw, bounds.h).contains(mousePos)) {
+              hit.part = PART_TAG_RIGHT;
+              hit.tag = tag->id();
+              hit.band = band;
+              // If we are in the band, we hit this tag, in other
+              // case, we can try to hit other tag that might be a
+              // better match.
+              if (bandBounds.contains(mousePos))
+                break;
+            }
+            else if (gfx::Rect(bounds.x, bounds.y, fw, bounds.h).contains(mousePos)) {
+              hit.part = PART_TAG_LEFT;
+              hit.tag = tag->id();
+              hit.band = band;
+              if (bandBounds.contains(mousePos))
+                break;
+            }
           }
         }
       }
@@ -3169,6 +3312,11 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
           }
         }
       }
+    }
+    // Is the mouse on the separator.
+    else if (mousePos.x > separatorX()-4 &&
+             mousePos.x <= separatorX()) {
+      hit.part = PART_SEPARATOR;
     }
     // Is the mouse on the headers?
     else if (mousePos.y >= top && mousePos.y < top+headerBoxHeight()) {
@@ -4242,6 +4390,19 @@ int Timeline::separatorX() const
 void Timeline::setSeparatorX(int newValue)
 {
   m_separator_x = std::max(0, newValue);
+}
+
+//static
+gfx::Color Timeline::highlightColor(const gfx::Color color)
+{
+  int r, g, b;
+  r = gfx::getr(color)+64; // TODO make this customizable in the theme XML?
+  g = gfx::getg(color)+64;
+  b = gfx::getb(color)+64;
+  r = base::clamp(r, 0, 255);
+  g = base::clamp(g, 0, 255);
+  b = base::clamp(b, 0, 255);
+  return gfx::rgba(r, g, b, gfx::geta(color));
 }
 
 } // namespace app
