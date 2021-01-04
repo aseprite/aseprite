@@ -515,12 +515,9 @@ Doc* Doc::duplicate(DuplicateType type) const
   // Copy slices
   for (const Slice *slice : sourceSprite->slices()) {
     auto sliceCopy = new Slice(*slice);
-    sliceCopy->setUserData(slice->userData());
-
-    for (frame_t i(0); i < sourceSprite->totalFrames(); ++i)
-      sliceCopy->insert(i, *slice->getByFrame(i));
-
     spriteCopy->slices().add(sliceCopy);
+
+    ASSERT(sliceCopy->owner() == &spriteCopy->slices());
   }
 
   // Copy color palettes

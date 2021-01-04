@@ -42,12 +42,12 @@ Slice::Slice()
 }
 
 Slice::Slice(const Slice& other)
-  : WithUserData(ObjectType::Slice)
+  : WithUserData(other)
   , m_owner(nullptr)
   , m_name(other.m_name)
+  , m_keys(other.m_keys)
 {
 }
-
 
 Slice::~Slice()
 {
