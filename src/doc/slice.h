@@ -54,6 +54,7 @@ namespace doc {
     typedef List::const_iterator const_iterator;
 
     Slice();
+    Slice(const Slice& other);
     ~Slice();
 
     int getMemSize() const override;
@@ -88,8 +89,6 @@ namespace doc {
     Slices* m_owner;
     std::string m_name;
     List m_keys;
-
-    DISABLE_COPYING(Slice);
   };
 
 } // namespace doc
