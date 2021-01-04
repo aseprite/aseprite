@@ -1132,7 +1132,7 @@ void Extensions::generateExtensionSignals(Extension* extension)
 {
   if (extension->hasLanguages()) LanguagesChange(extension);
   if (extension->hasThemes()) ThemesChange(extension);
-  if (extension->hasPalettes()) PalettesChange();
+  if (extension->hasPalettes()) PalettesChange(extension);
   if (extension->hasDitheringMatrices()) DitheringMatricesChange(extension);
 #ifdef ENABLE_SCRIPTING
   if (extension->hasScripts()) ScriptsChange(extension);

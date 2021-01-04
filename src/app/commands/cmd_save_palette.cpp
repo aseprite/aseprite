@@ -13,7 +13,6 @@
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/context.h"
-#include "app/extensions.h"
 #include "app/file/palette_file.h"
 #include "app/file_selector.h"
 #include "app/i18n/strings.h"
@@ -80,7 +79,7 @@ void SavePaletteCommand::onExecute(Context* context)
       set_current_palette(palette, false);
   }
   if (m_save_as_preset) {
-      App::instance()->extensions().PalettesChange();
+      App::instance()->PalettePresetsChange();
   }
 }
 
