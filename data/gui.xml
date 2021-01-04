@@ -1078,19 +1078,18 @@
         <param name="type" value="normal-map-wheel" />
       </item>
       <separator />
+      <item command="ColorQuantization" text="@.create_palette_from_current_sprite" group="palette_generation" />
       <item command="LoadPalette" text="@.load_palette" />
+      <item command="LoadPalette" text="@.load_default_palette">
+        <param name="preset" value="default" />
+      </item>
       <item command="SavePalette" text="@.save_palette" />
       <item command="SavePalette" text="@.save_palette_as_preset">
         <param name="save_as_preset" value="true" />
       </item>
-      <item command="LoadPalette" text="@.load_default_palette">
-        <param name="preset" value="default" />
-      </item>
       <item command="SavePalette" text="@.save_as_default_palette" group="palette_files">
         <param name="preset" value="default" />
       </item>
-      <separator />
-      <item command="ColorQuantization" text="@.create_palette_from_current_sprite" group="palette_generation" />
     </menu>
 
     <menu id="ink_popup_menu">
