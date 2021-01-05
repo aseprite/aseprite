@@ -34,7 +34,8 @@ class CssFormat : public FileFormat {
   class CssOptions : public FormatOptions {
   public:
     CssOptions() : pixelScale(1), gutterSize(0),
-                   generateHtml(false), withVars(true) { }
+                   generateHtml(false),
+                   withVars(false) { }
     int pixelScale;
     int gutterSize;
     bool generateHtml;
