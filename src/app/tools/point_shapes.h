@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -43,6 +43,7 @@ class BrushPointShape : public PointShape {
   Brush* m_lastBrush;
   BrushType m_origBrushType;
   std::shared_ptr<CompressedImage> m_compressedImage;
+  doc::Symmetry m_currentSymmetry;
   // For dynamics
   DynamicsOptions m_dynamics;
   bool m_useDynamics;
@@ -171,11 +172,13 @@ public:
     }
 
     // TODO cache compressed images (or remove them completelly)
-    if (m_lastBrush != brush) {
+    if (m_lastBrush != brush || m_currentSymmetry != pt.symmetry) {
       m_lastBrush = brush;
+      m_currentSymmetry = pt.symmetry;
       m_compressedImage.reset(new CompressedImage(brush->image(),
                                                   brush->maskBitmap(),
-                                                  false));
+                                                  false,
+                                                  m_currentSymmetry));
     }
 
     x += brush->bounds().x;

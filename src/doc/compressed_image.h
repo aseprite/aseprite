@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2021 Igara Sttudio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -10,6 +11,7 @@
 
 #include "doc/color.h"
 #include "doc/image.h"
+#include "doc/symmetry.h"
 
 #include <vector>
 
@@ -31,7 +33,9 @@ namespace doc {
     // for each row of consecutive pixels different than the mask
     // color.
     CompressedImage(const Image* image,
-                    const Image* maskBitmap, bool diffColors);
+                    const Image* maskBitmap,
+                    bool diffColors,
+                    Symmetry symmetry = Symmetry::NONE);
 
     const_iterator begin() const { return m_scanlines.begin(); }
     const_iterator end() const { return m_scanlines.end(); }
