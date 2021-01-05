@@ -42,7 +42,7 @@ PalettePopup::PalettePopup()
   addChild(m_popup);
 
   m_paletteListBox.DoubleClickItem.connect(base::Bind<void>(&PalettePopup::onLoadPal, this));
-  m_paletteListBox.Change.connect(base::Bind<void>(&PalettePopup::onSearchChange, this));
+  m_paletteListBox.FinishLoading.connect(base::Bind<void>(&PalettePopup::onSearchChange, this));
   m_popup->search()->Change.connect(base::Bind<void>(&PalettePopup::onSearchChange, this));
   m_popup->loadPal()->Click.connect(base::Bind<void>(&PalettePopup::onLoadPal, this));
   m_popup->openFolder()->Click.connect(base::Bind<void>(&PalettePopup::onOpenFolder, this));
