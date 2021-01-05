@@ -124,6 +124,9 @@ PalettesListBox::PalettesListBox()
   m_extPaletteChanges =
     App::instance()->extensions().PalettesChange.connect(
       base::Bind<void>(&PalettesListBox::reload, this));
+  m_extPresetsChanges =
+    App::instance()->PalettePresetsChange.connect(
+      base::Bind<void>(&PalettesListBox::reload, this));
 }
 
 doc::Palette* PalettesListBox::selectedPalette()

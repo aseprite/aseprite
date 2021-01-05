@@ -33,6 +33,7 @@ namespace app {
   std::string get_preset_palette_filename(const std::string& preset,
                                           const std::string& dot_extension);
   std::string get_default_palette_preset_name();
+  std::string get_preset_palettes_dir();
 
 } // namespace app
 

@@ -124,6 +124,7 @@ namespace app {
     obs::signal<void()> Exit;
     obs::signal<void()> PaletteChange;
     obs::signal<void()> ColorSpaceChange;
+    obs::signal<void()> PalettePresetsChange;
 
   private:
     class CoreModules;
