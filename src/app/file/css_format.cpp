@@ -33,8 +33,8 @@ using namespace base;
 class CssFormat : public FileFormat {
   class CssOptions : public FormatOptions {
   public:
-    CssOptions(): pixelScale(1), gutterSize(0), 
-          generateHtml(false), withVars(true) {}
+    CssOptions() : pixelScale(1), gutterSize(0),
+                   generateHtml(false), withVars(true) { }
     int pixelScale;
     int gutterSize;
     bool generateHtml;
@@ -78,11 +78,14 @@ FileFormat *CreateCssFormat()
   return new CssFormat;
 }
 
-bool CssFormat::onLoad(FileOp *fop) { return false; }
+bool CssFormat::onLoad(FileOp* fop)
+{
+  return false;
+}
 
 #ifdef ENABLE_SAVE
 
-bool CssFormat::onSave(FileOp *fop)
+bool CssFormat::onSave(FileOp* fop)
 {
   const Image* image = fop->sequenceImage();
   int x, y, c, r, g, b, a, alpha;
@@ -92,7 +95,8 @@ bool CssFormat::onSave(FileOp *fop)
   auto print_color = [f](int r, int g, int b, int a) {
     if (a == 255) {
       fprintf(f, "#%02X%02X%02X", r, g, b);
-    } else {
+    }
+    else {
       fprintf(f, "rgba(%d, %d, %d, %d)", r, g, b, a);
     }
   };
@@ -117,8 +121,13 @@ bool CssFormat::onSave(FileOp *fop)
             x, y, i);
   };
   if (css_options->withVars) {
-    fprintf(f, ":root {\n\t--blur: 0px;\n\t--spread: 0px;\n\t--pixel-size: %dpx;\n\t--gutter-size: %dpx;\n",
-            css_options->pixelScale, css_options->gutterSize);
+    fprintf(f, ":root {\n"
+               "\t--blur: 0px;\n"
+               "\t--spread: 0px;\n"
+               "\t--pixel-size: %dpx;\n"
+               "\t--gutter-size: %dpx;\n",
+            css_options->pixelScale,
+            css_options->gutterSize);
     fprintf(f, "\t--shadow-mult: calc(var(--gutter-size) + var(--pixel-size));\n");
     if (image->pixelFormat() == IMAGE_INDEXED) {
       for (y = 0; y < 256; y++) {
@@ -222,7 +231,7 @@ bool CssFormat::onSave(FileOp *fop)
   }
   if (css_options->generateHtml) {
     std::string html_filepath = fop->filename() + ".html";
-    FileHandle handle(open_file_with_exception_sync_on_close(html_filepath, "wb"));    
+    FileHandle handle(open_file_with_exception_sync_on_close(html_filepath, "wb"));
     FILE* h = handle.get();
     fprintf(h,
             "<html><head><link rel=\"stylesheet\" media=\"all\" "
@@ -240,15 +249,13 @@ bool CssFormat::onSave(FileOp *fop)
 #endif
 
 // Shows the CSS configuration dialog.
-FormatOptionsPtr CssFormat::onAskUserForFormatOptions(FileOp *fop)
+FormatOptionsPtr CssFormat::onAskUserForFormatOptions(FileOp* fop)
 {
   auto opts = fop->formatOptionsOfDocument<CssOptions>();
 
 #ifdef ENABLE_UI
-  if (fop->context() && fop->context()->isUIAvailable())
-  {
-    try
-    {
+  if (fop->context() && fop->context()->isUIAvailable()) {
+    try {
       auto &pref = Preferences::instance();
 
       if (pref.isSet(pref.css.pixelScale))
@@ -260,16 +267,14 @@ FormatOptionsPtr CssFormat::onAskUserForFormatOptions(FileOp *fop)
       if (pref.isSet(pref.css.generateHtml))
         opts->generateHtml = pref.css.generateHtml();
 
-      if (pref.css.showAlert())
-      {
+      if (pref.css.showAlert()) {
         app::gen::CssOptions win;
         win.pixelScale()->setTextf("%d", opts->pixelScale);
         win.withVars()->setSelected(opts->withVars);
         win.generateHtml()->setSelected(opts->generateHtml);
         win.openWindowInForeground();
 
-        if (win.closer() == win.ok())
-        {
+        if (win.closer() == win.ok()) {
           pref.css.showAlert(!win.dontShow()->isSelected());
           pref.css.pixelScale((int)win.pixelScale()->textInt());
           pref.css.withVars(win.withVars()->isSelected());
@@ -279,14 +284,12 @@ FormatOptionsPtr CssFormat::onAskUserForFormatOptions(FileOp *fop)
           opts->withVars = pref.css.withVars();
           opts->pixelScale = pref.css.pixelScale();
         }
-        else
-        {
+        else {
           opts.reset();
         }
       }
     }
-    catch (std::exception &e)
-    {
+    catch (std::exception &e) {
       Console::showException(e);
       return std::shared_ptr<CssOptions>(nullptr);
     }

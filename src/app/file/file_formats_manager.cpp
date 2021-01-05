@@ -22,6 +22,7 @@ namespace app {
 
 extern FileFormat* CreateAseFormat();
 extern FileFormat* CreateBmpFormat();
+extern FileFormat* CreateCssFormat();
 extern FileFormat* CreateFliFormat();
 extern FileFormat* CreateGifFormat();
 extern FileFormat* CreateIcoFormat();
@@ -30,7 +31,6 @@ extern FileFormat* CreatePcxFormat();
 extern FileFormat* CreatePngFormat();
 extern FileFormat* CreateSvgFormat();
 extern FileFormat* CreateTgaFormat();
-extern FileFormat* CreateCssFormat();
 
 #ifdef ASEPRITE_WITH_WEBP_SUPPORT
 extern FileFormat* CreateWebPFormat();
@@ -58,6 +58,7 @@ FileFormatsManager::FileFormatsManager()
   // The first format is the default image format in FileSelector
   registerFormat(CreateAseFormat());
   registerFormat(CreateBmpFormat());
+  registerFormat(CreateCssFormat());
   registerFormat(CreateFliFormat());
   registerFormat(CreateGifFormat());
   registerFormat(CreateIcoFormat());
@@ -66,7 +67,6 @@ FileFormatsManager::FileFormatsManager()
   registerFormat(CreatePngFormat());
   registerFormat(CreateSvgFormat());
   registerFormat(CreateTgaFormat());
-  registerFormat(CreateCssFormat());
 
 #ifdef ASEPRITE_WITH_WEBP_SUPPORT
   registerFormat(CreateWebPFormat());

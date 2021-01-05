@@ -987,10 +987,10 @@ private:
     advancedModeAlert()->resetWithDefaultValue();
     invalidFgBgColorAlert()->resetWithDefaultValue();
     runScriptAlert()->resetWithDefaultValue();
+    cssOptionsAlert()->resetWithDefaultValue();
     gifOptionsAlert()->resetWithDefaultValue();
     jpegOptionsAlert()->resetWithDefaultValue();
     svgOptionsAlert()->resetWithDefaultValue();
-    cssOptionsAlert()->resetWithDefaultValue();
     tgaOptionsAlert()->resetWithDefaultValue();
   }
 
