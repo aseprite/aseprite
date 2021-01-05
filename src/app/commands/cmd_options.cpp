@@ -990,6 +990,7 @@ private:
     gifOptionsAlert()->resetWithDefaultValue();
     jpegOptionsAlert()->resetWithDefaultValue();
     svgOptionsAlert()->resetWithDefaultValue();
+    cssOptionsAlert()->resetWithDefaultValue();
     tgaOptionsAlert()->resetWithDefaultValue();
   }
 

@@ -141,6 +141,9 @@ FileFormat detect_format_by_file_extension(const std::string& filename)
   if (ext == "tga")
     return FileFormat::TARGA_IMAGE;
 
+  if (ext == "css")
+    return FileFormat::CSS_STYLE;
+
   if (ext == "webp")
     return FileFormat::WEBP_ANIMATION;
 
