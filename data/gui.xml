@@ -1085,7 +1085,7 @@
       </item>
       <item command="SavePalette" text="@.save_palette" />
       <item command="SavePalette" text="@.save_palette_as_preset">
-        <param name="save_as_preset" value="true" />
+        <param name="saveAsPreset" value="true" />
       </item>
       <item command="SavePalette" text="@.save_as_default_palette" group="palette_files">
         <param name="preset" value="default" />
