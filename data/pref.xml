@@ -344,6 +344,12 @@
       <option id="bits_per_pixel" type="int" default="0" />
       <option id="compress" type="bool" default="true" />
     </section>
+    <section id="css">
+      <option id="show_alert" type="bool" default="true" />
+      <option id="pixel_scale" type="int" default="1" />
+      <option id="with_vars" type="bool" default="false" />
+      <option id="generate_html" type="bool" default="false" />
+    </section>
     <section id="webp">
       <option id="show_alert" type="bool" default="true" />
       <option id="loop" type="bool" default="true" />

@@ -73,7 +73,10 @@ FileFormat* CreateSvgFormat()
   return new SvgFormat;
 }
 
-  bool SvgFormat::onLoad(FileOp* fop) { return false;}
+bool SvgFormat::onLoad(FileOp* fop)
+{
+  return false;
+}
 
 #ifdef ENABLE_SAVE
 
