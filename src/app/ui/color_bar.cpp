@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -624,11 +624,15 @@ void ColorBar::setPalette(const doc::Palette* newPalette, const std::string& act
     ContextWriter writer(UIContext::instance());
     Sprite* sprite = writer.sprite();
     frame_t frame = writer.frame();
-    if (sprite &&
-        newPalette->countDiff(sprite->palette(frame), nullptr, nullptr)) {
-      Tx tx(writer.context(), actionText, ModifyDocument);
-      tx(new cmd::SetPalette(sprite, frame, newPalette));
-      tx.commit();
+    if (sprite && newPalette->countDiff(sprite->palette(frame), nullptr, nullptr)) {
+        Tx tx(writer.context(), actionText, ModifyDocument);
+        tx(new cmd::SetPalette(sprite, frame, newPalette));
+        tx.commit();
+        if (actionText == "Paste Colors") {
+            // When pasting in the ColorBar, finalize with running setBounds()
+            // to update the screen and display the ColorSelector properly
+            setBounds(bounds());
+        }
     }
   }
   catch (base::Exception& e) {
