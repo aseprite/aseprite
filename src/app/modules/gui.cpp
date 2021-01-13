@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -202,6 +202,21 @@ int init_module_gui()
 
   if (maximized)
     main_display->maximize();
+
+  // Handle live resize too redraw the entire manager, dispatch the UI
+  // messages, and flip the display.
+  main_display->handleResize =
+    [](os::Display* display) {
+      manager->invalidate();
+
+      Message* msg = new Message(kResizeDisplayMessage);
+      msg->setRecipient(manager);
+      msg->setPropagateToChildren(true);
+      manager->enqueueMessage(msg);
+
+      manager->dispatchMessages();
+      manager->flipDisplay();
+    };
 
   // Set graphics options for next time
   save_gui_config();

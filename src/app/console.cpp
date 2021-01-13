@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -177,7 +177,9 @@ void Console::printf(const char* format, ...)
 // static
 void Console::showException(const std::exception& e)
 {
-  ui::assert_ui_thread();
+  // TODO called from Session::deleteBackup() which is run in background thread
+  //ui::assert_ui_thread();
+
   if (!ui::is_ui_thread()) {
     LOG(ERROR, "A problem has occurred.\n\nDetails:\n%s\n", e.what());
     return;
