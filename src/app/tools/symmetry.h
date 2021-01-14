@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2021  Igara Studio S.A.
 // Copyright (C) 2015  David Capello
 //
 // This program is distributed under the terms of
@@ -9,24 +10,34 @@
 #pragma once
 
 #include "app/tools/stroke.h"
-
-#include <vector>
+#include "app/pref/preferences.h"
 
 namespace app {
-  namespace tools {
+namespace tools {
 
-    class ToolLoop;
+class ToolLoop;
 
-    // This class controls user input.
-    class Symmetry {
-    public:
-      virtual ~Symmetry() { }
+class Symmetry {
+public:
+  Symmetry(gen::SymmetryMode symmetryMode, double x, double y)
+    : m_symmetryMode(symmetryMode)
+    , m_x(x)
+    , m_y(y) {
+  }
 
-      // The "stroke" must be relative to the sprite origin.
-      virtual void generateStrokes(const Stroke& stroke, Strokes& strokes, ToolLoop* loop) = 0;
-    };
+  void generateStrokes(const Stroke& stroke, Strokes& strokes, ToolLoop* loop);
 
-  } // namespace tools
+  gen::SymmetryMode mode() const { return m_symmetryMode; }
+
+private:
+  void calculateSymmetricalStroke(const Stroke& refStroke, Stroke& stroke,
+                                  ToolLoop* loop, gen::SymmetryMode symmetryMode);
+
+  gen::SymmetryMode m_symmetryMode;
+  double m_x, m_y;
+};
+
+} // namespace tools
 } // namespace app
 
 #endif

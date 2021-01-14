@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -29,7 +29,7 @@
 #include "app/tools/freehand_algorithm.h"
 #include "app/tools/ink.h"
 #include "app/tools/point_shape.h"
-#include "app/tools/symmetries.h"
+#include "app/tools/symmetry.h"
 #include "app/tools/tool.h"
 #include "app/tools/tool_box.h"
 #include "app/tools/tool_loop.h"
@@ -204,27 +204,10 @@ public:
 
     // Symmetry mode
     if (Preferences::instance().symmetryMode.enabled()) {
-      switch (m_docPref.symmetry.mode()) {
-
-        case app::gen::SymmetryMode::NONE:
-          ASSERT(m_symmetry == nullptr);
-          break;
-
-        case app::gen::SymmetryMode::HORIZONTAL:
-          m_symmetry.reset(new app::tools::HorizontalSymmetry(m_docPref.symmetry.xAxis()));
-          break;
-
-        case app::gen::SymmetryMode::VERTICAL:
-          m_symmetry.reset(new app::tools::VerticalSymmetry(m_docPref.symmetry.yAxis()));
-          break;
-
-        case app::gen::SymmetryMode::BOTH:
-          m_symmetry.reset(
-            new app::tools::SymmetryCombo(
-              new app::tools::HorizontalSymmetry(m_docPref.symmetry.xAxis()),
-              new app::tools::VerticalSymmetry(m_docPref.symmetry.yAxis())));
-          break;
-      }
+      if (m_docPref.symmetry.mode() != gen::SymmetryMode::NONE)
+          m_symmetry.reset(new tools::Symmetry(m_docPref.symmetry.mode(),
+                                               m_docPref.symmetry.xAxis(),
+                                               m_docPref.symmetry.yAxis()));
     }
 
     // Ignore opacity for these inks
