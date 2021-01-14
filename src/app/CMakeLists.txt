@@ -588,7 +588,7 @@ add_library(app-lib
   tools/pick_ink.cpp
   tools/point_shape.cpp
   tools/stroke.cpp
-  tools/symmetries.cpp
+  tools/symmetry.cpp
   tools/tool_box.cpp
   tools/tool_loop_manager.cpp
   tools/velocity.cpp

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -8,6 +8,7 @@
 #include "app/util/wrap_point.h"
 
 #include "app/tools/ink.h"
+#include "doc/algorithm/flip_image.h"
 #include "render/gradient.h"
 
 namespace app {
@@ -42,7 +43,7 @@ class BrushPointShape : public PointShape {
   bool m_firstPoint;
   Brush* m_lastBrush;
   BrushType m_origBrushType;
-  std::shared_ptr<CompressedImage> m_compressedImage;
+  std::array<std::shared_ptr<CompressedImage>, 4> m_compressedImages;
   // For dynamics
   DynamicsOptions m_dynamics;
   bool m_useDynamics;
@@ -173,9 +174,7 @@ public:
     // TODO cache compressed images (or remove them completelly)
     if (m_lastBrush != brush) {
       m_lastBrush = brush;
-      m_compressedImage.reset(new CompressedImage(brush->image(),
-                                                  brush->maskBitmap(),
-                                                  false));
+      m_compressedImages.fill(nullptr);
     }
 
     x += brush->bounds().x;
@@ -208,7 +207,7 @@ public:
 
     ink->prepareForPointShape(loop, m_firstPoint, x, y);
 
-    for (auto scanline : *m_compressedImage) {
+    for (auto scanline : getCompressedImage(pt.symmetry)) {
       int u = x+scanline.x;
       ink->prepareVForPointShape(loop, y+scanline.y);
       doInkHline(u, y+scanline.y, u+scanline.w-1, loop);
@@ -222,6 +221,47 @@ public:
     area.y += y;
   }
 
+private:
+  CompressedImage& getCompressedImage(gen::SymmetryMode symmetryMode) {
+    auto& compressPtr = m_compressedImages[int(symmetryMode)];
+    if (!compressPtr) {
+      switch (symmetryMode) {
+        case gen::SymmetryMode::NONE: {
+          compressPtr.reset(new CompressedImage(m_lastBrush->image(),
+                                                m_lastBrush->maskBitmap(),
+                                                false));
+          break;
+        }
+        case gen::SymmetryMode::HORIZONTAL:
+        case gen::SymmetryMode::VERTICAL: {
+          std::unique_ptr<Image> tempImage(Image::createCopy(m_lastBrush->image()));
+          doc::algorithm::FlipType flip =
+            (symmetryMode == gen::SymmetryMode::HORIZONTAL)?
+              doc::algorithm::FlipType::FlipHorizontal:
+              doc::algorithm::FlipType::FlipVertical;
+          doc::algorithm::flip_image(tempImage.get(), tempImage->bounds(), flip);
+          compressPtr.reset(new CompressedImage(tempImage.get(),
+                                                m_lastBrush->maskBitmap(),
+                                                false));
+          break;
+        }
+        case gen::SymmetryMode::BOTH: {
+          std::unique_ptr<Image> tempImage(Image::createCopy(m_lastBrush->image()));
+          doc::algorithm::flip_image(tempImage.get(),
+                                     tempImage->bounds(),
+                                     doc::algorithm::FlipType::FlipVertical);
+          doc::algorithm::flip_image(tempImage.get(),
+                                     tempImage->bounds(),
+                                     doc::algorithm::FlipType::FlipHorizontal);
+          compressPtr.reset(new CompressedImage(tempImage.get(),
+                                                m_lastBrush->maskBitmap(),
+                                                false));
+          break;
+        }
+      }
+    }
+    return *compressPtr;
+  }
 };
 
 class FloodFillPointShape : public PointShape {
