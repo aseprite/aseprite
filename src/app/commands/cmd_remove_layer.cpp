@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -78,7 +78,7 @@ void RemoveLayerCommand::onExecute(Context* context)
       }
     }
     else {
-      if (sprite->allLayersCount() == 1) {
+      if (sprite->root()->layersCount() == 1) {
         ui::Alert::show(Strings::alerts_cannot_delete_all_layers());
         return;
       }
