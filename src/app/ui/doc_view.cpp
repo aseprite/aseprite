@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -241,7 +241,8 @@ WorkspaceView* DocView::cloneWorkspaceView()
 
 void DocView::onWorkspaceViewSelected()
 {
-  StatusBar::instance()->showDefaultText(m_document);
+  if (auto statusBar = StatusBar::instance())
+    statusBar->showDefaultText(m_document);
 }
 
 void DocView::onClonedFrom(WorkspaceView* from)

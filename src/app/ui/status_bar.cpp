@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -61,6 +61,40 @@ using namespace app::skin;
 using namespace gfx;
 using namespace ui;
 using namespace doc;
+
+class StatusBar::AboutStatusBar : public HBox {
+public:
+  AboutStatusBar()
+    : m_label(fmt::format("{} {} by ", get_app_name(), get_app_version()))
+    , m_link("", "Igara Studio")
+  {
+    m_link.Click.connect(
+      []{
+        Command* cmd = Commands::instance()->byId(CommandId::About());
+        UIContext::instance()->executeCommandFromMenuOrShortcut(cmd);
+      });
+
+    addChild(new BoxFiller);
+    addChild(&m_label);
+    addChild(&m_link);
+    addChild(new BoxFiller);
+
+    InitTheme.connect(
+      [this]{
+        SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+        ui::Style* style = theme->styles.workspaceLink();
+        noBorderNoChildSpacing();
+        m_label.setStyle(style);
+        m_link.setStyle(style);
+        m_label.noBorderNoChildSpacing();
+        m_link.noBorderNoChildSpacing();
+      });
+    initTheme();
+  }
+
+  ui::Label m_label;
+  ui::LinkLabel m_link;
+};
 
 class StatusBar::Indicators : public HBox {
 
@@ -543,6 +577,7 @@ StatusBar* StatusBar::m_instance = NULL;
 
 StatusBar::StatusBar(TooltipManager* tooltipManager)
   : m_timeout(0)
+  , m_about(new AboutStatusBar)
   , m_indicators(new Indicators)
   , m_docControls(new HBox)
   , m_tipwindow(nullptr)
@@ -553,8 +588,12 @@ StatusBar::StatusBar(TooltipManager* tooltipManager)
   setDoubleBuffered(true);
   setFocusStop(true);
 
+  m_about->setExpansive(true);
+  m_about->setVisible(true);
   m_indicators->setExpansive(true);
+  m_indicators->setVisible(false);
   m_docControls->setVisible(false);
+  addChild(m_about);
   addChild(m_indicators);
   addChild(m_docControls);
 
@@ -609,6 +648,7 @@ void StatusBar::onSelectedToolChange(tools::Tool* tool)
 
 void StatusBar::clearText()
 {
+  showIndicators();
   setStatusText(1, std::string());
 }
 
@@ -617,16 +657,11 @@ void StatusBar::clearText()
 //      details of the main window/docs/etc.
 void StatusBar::showDefaultText()
 {
-  if (current_editor) {
-    showDefaultText(current_editor->document());
-  }
-  else if (App::instance()->mainWindow()->isHomeSelected()) {
-    setStatusText(0, fmt::format("-- {} {} by David & Gaspar Capello -- Igara Studio --",
-                                 get_app_name(), get_app_version()));
-  }
-  else {
+  auto mainWindow = (App::instance() ? App::instance()->mainWindow(): nullptr);
+  if (mainWindow)
+    mainWindow->showDefaultStatusBar();
+  else
     clearText();
-  }
 }
 
 void StatusBar::showDefaultText(Doc* doc)
@@ -653,18 +688,22 @@ void StatusBar::showDefaultText(Doc* doc)
 
 void StatusBar::updateFromEditor(Editor* editor)
 {
-  if (editor)
+  if (editor) {
+    showIndicators();
     m_zoomEntry->setZoom(editor->zoom());
+  }
 }
 
 void StatusBar::showBackupIcon(BackupIcon icon)
 {
+  showIndicators();
   m_indicators->showBackupIcon(icon);
 }
 
 bool StatusBar::setStatusText(int msecs, const std::string& msg)
 {
   if ((base::current_tick() > m_timeout) || (msecs > 0)) {
+    showIndicators();
     IndicatorsGeneration(m_indicators).add(msg.c_str());
     m_timeout = base::current_tick() + msecs;
     return true;
@@ -704,6 +743,7 @@ void StatusBar::showTip(int msecs, const std::string& msg)
 void StatusBar::showColor(int msecs, const char* text, const app::Color& color)
 {
   if ((base::current_tick() > m_timeout) || (msecs > 0)) {
+    showIndicators();
     IndicatorsGeneration gen(m_indicators);
     gen.add(color);
     if (text)
@@ -715,7 +755,9 @@ void StatusBar::showColor(int msecs, const char* text, const app::Color& color)
 
 void StatusBar::showTool(int msecs, tools::Tool* tool)
 {
-  ASSERT(tool != NULL);
+  showIndicators();
+
+  ASSERT(tool != nullptr);
   IndicatorsGeneration(m_indicators).add(tool);
 
   m_timeout = base::current_tick() + msecs;
@@ -841,6 +883,24 @@ void StatusBar::updateSnapToGridWindowPosition()
   m_snapToGridWindow->positionWindow(
     rc.x+rc.w-toolBarWidth-m_snapToGridWindow->bounds().w,
     rc.y-m_snapToGridWindow->bounds().h);
+}
+
+void StatusBar::showAbout()
+{
+  if (!m_about->isVisible()) {
+    m_indicators->setVisible(false);
+    m_about->setVisible(true);
+    m_about->layout();
+  }
+}
+
+void StatusBar::showIndicators()
+{
+  if (!m_indicators->isVisible()) {
+    m_about->setVisible(false);
+    m_indicators->setVisible(true);
+    m_indicators->layout();
+  }
 }
 
 } // namespace app

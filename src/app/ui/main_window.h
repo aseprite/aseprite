@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -71,9 +71,10 @@ namespace app {
     void showNotification(INotificationDelegate* del);
     void showHomeOnOpen();
     void showHome();
-    bool isHomeSelected();
+    void showDefaultStatusBar();
     void showDevConsole();
     void showBrowser(const std::string& filename);
+    bool isHomeSelected() const;
 
     Mode getMode() const { return m_mode; }
     void setMode(Mode mode);
