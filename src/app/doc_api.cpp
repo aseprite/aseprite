@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -452,7 +452,8 @@ void DocApi::moveFrameLayer(Layer* layer, frame_t frame, frame_t beforeFrame)
 
   switch (layer->type()) {
 
-    case ObjectType::LayerImage: {
+    case ObjectType::LayerImage:
+    case ObjectType::LayerTilemap: {
       LayerImage* imglayer = static_cast<LayerImage*>(layer);
 
       CelList cels;
