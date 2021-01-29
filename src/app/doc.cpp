@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -403,7 +403,7 @@ void Doc::setTransformation(const Transformation& transform)
 
 void Doc::resetTransformation()
 {
-  m_transformation = Transformation(gfx::RectF(m_mask->bounds()));
+  m_transformation = Transformation(gfx::RectF(m_mask->bounds()), m_transformation.cornerThick());
 }
 
 //////////////////////////////////////////////////////////////////////

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -24,8 +24,9 @@ Transformation::Transformation()
 {
 }
 
-Transformation::Transformation(const RectF& bounds)
+Transformation::Transformation(const RectF& bounds, double cornerThick)
   : m_bounds(bounds)
+  , m_cornerThick(cornerThick)
 {
   m_pivot.x = bounds.x + bounds.w/2;
   m_pivot.y = bounds.y + bounds.h/2;
@@ -86,7 +87,7 @@ RectF Transformation::transformedBounds() const
   // Create a union of all corners
   RectF bounds;
   for (int i=0; i<Corners::NUM_OF_CORNERS; ++i)
-    bounds = bounds.createUnion(RectF(corners[i].x, corners[i].y, 0.001, 0.001));
+    bounds = bounds.createUnion(RectF(corners[i].x, corners[i].y, m_cornerThick, m_cornerThick));
 
   return bounds;
 }

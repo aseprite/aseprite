@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -13,6 +13,7 @@
 #include "app/doc.h"
 #include "app/doc_undo.h"
 #include "app/tools/pick_ink.h"
+#include "app/transformation.h"
 #include "doc/mask.h"
 #include "doc/tile.h"
 #include "gfx/region.h"
@@ -518,8 +519,11 @@ public:
       m_mask.unfreeze();
 
       loop->setMask(&m_mask);
+      double cornerThick = (loop->isTilemapMode()) ? 
+                              CORNER_THICK_FOR_TILEMAP_MODE :
+                              CORNER_THICK_FOR_PIXELS_MODE;
       loop->getDocument()->setTransformation(
-        Transformation(RectF(m_mask.bounds())));
+        Transformation(RectF(m_mask.bounds()), cornerThick));
 
       m_mask.clear();
     }

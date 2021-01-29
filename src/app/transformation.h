@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2021  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -12,6 +12,9 @@
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include <vector>
+
+#define CORNER_THICK_FOR_TILEMAP_MODE 0.001
+#define CORNER_THICK_FOR_PIXELS_MODE 1.0
 
 namespace app {
 
@@ -56,10 +59,10 @@ public:
       void rightBottom(const gfx::PointF& pt) { m_corners[RIGHT_BOTTOM] = pt; }
       void leftBottom(const gfx::PointF& pt) { m_corners[LEFT_BOTTOM] = pt; }
 
-      gfx::RectF bounds() const {
+      gfx::RectF bounds(double cornerThick) const {
         gfx::RectF bounds;
         for (int i=0; i<Corners::NUM_OF_CORNERS; ++i)
-          bounds |= gfx::RectF(m_corners[i].x, m_corners[i].y, 0.001, 0.001);
+          bounds |= gfx::RectF(m_corners[i].x, m_corners[i].y, cornerThick, cornerThick);
         return bounds;
       }
 
@@ -68,12 +71,13 @@ public:
   };
 
   Transformation();
-  Transformation(const gfx::RectF& bounds);
+  Transformation(const gfx::RectF& bounds, double cornerThick);
 
   // Simple getters and setters. The angle is in radians.
 
   const gfx::RectF& bounds() const { return m_bounds; }
   const gfx::PointF& pivot() const { return m_pivot; }
+  double cornerThick() const { return m_cornerThick; }
   double angle() const { return m_angle; }
   double skew() const { return m_skew; }
 
@@ -103,6 +107,7 @@ private:
   gfx::PointF m_pivot = gfx::PointF(0.0, 0.0);
   double m_angle = 0.0;
   double m_skew = 0.0;
+  double m_cornerThick = CORNER_THICK_FOR_PIXELS_MODE;
 };
 
 } // namespace app

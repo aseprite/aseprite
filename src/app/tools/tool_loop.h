@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -87,6 +87,9 @@ namespace app {
 
       // Returns the layer that will be modified if the tool paints
       virtual Layer* getLayer() = 0;
+
+      // Returns true if the current mode is TileMap (false = Pixels)
+      virtual bool isTilemapMode() = 0;
 
       // Returns the frame where we're paiting
       virtual frame_t getFrame() = 0;

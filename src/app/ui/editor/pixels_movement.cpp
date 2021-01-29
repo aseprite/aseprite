@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -130,7 +130,10 @@ PixelsMovement::PixelsMovement(
   , m_fastMode(false)
   , m_needsRotSpriteRedraw(false)
 {
-  Transformation transform(mask->bounds());
+  double cornerThick = (m_site.tilemapMode() == TilemapMode::Tiles) ?
+                          CORNER_THICK_FOR_TILEMAP_MODE :
+                          CORNER_THICK_FOR_PIXELS_MODE;
+  Transformation transform(mask->bounds(), cornerThick);
   set_pivot_from_preferences(transform);
 
   m_initialData = transform;
@@ -770,7 +773,7 @@ void PixelsMovement::stampImage(bool finalStamp)
   if (currentCel && currentCel->layer() &&
       currentCel->layer()->isImage() &&
       !currentCel->layer()->isEditableHierarchy()) {
-    Transformation initialCelPos(gfx::Rect(m_initialMask0->bounds()));
+    Transformation initialCelPos(gfx::Rect(m_initialMask0->bounds()), m_currentData.cornerThick());
     redrawExtraImage(&initialCelPos);
     stampExtraCelImage();
   }
@@ -1023,7 +1026,7 @@ void PixelsMovement::drawImage(
   ASSERT(dst);
 
   auto corners = transformation.transformedCorners();
-  gfx::Rect bounds = corners.bounds();
+  gfx::Rect bounds = corners.bounds(transformation.cornerThick());
 
   if (m_site.tilemapMode() == TilemapMode::Tiles) {
     dst->setMaskColor(doc::notile);
@@ -1071,7 +1074,7 @@ void PixelsMovement::drawImage(
 void PixelsMovement::drawMask(doc::Mask* mask, bool shrink)
 {
   auto corners = m_currentData.transformedCorners();
-  gfx::Rect bounds = corners.bounds();
+  gfx::Rect bounds = corners.bounds(m_currentData.cornerThick());
 
   if (bounds.isEmpty()) {
     mask->clear();

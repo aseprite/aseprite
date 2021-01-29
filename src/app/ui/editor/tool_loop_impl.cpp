@@ -282,6 +282,7 @@ public:
   Doc* getDocument() override { return m_document; }
   Sprite* sprite() override { return m_sprite; }
   Layer* getLayer() override { return m_layer; }
+  bool isTilemapMode() override { return m_tilesMode; };
   frame_t getFrame() override { return m_frame; }
   RgbMap* getRgbMap() override {
     if (!m_rgbMap) {
