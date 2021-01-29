@@ -211,8 +211,10 @@ void ResourcesListBox::onTick()
     listItem.release();
   }
 
-  if (m_resourcesLoader->isDone())
+  if (m_resourcesLoader->isDone()) {
+    FinishLoading();
     stop();
+  }
 }
 
 void ResourcesListBox::stop()

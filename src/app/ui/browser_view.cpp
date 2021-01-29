@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2016-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -16,6 +16,7 @@
 #include "app/ui/main_window.h"
 #include "app/ui/separator_in_view.h"
 #include "app/ui/skin/skin_theme.h"
+#include "app/ui/status_bar.h"
 #include "app/ui/workspace.h"
 #include "base/file_handle.h"
 #include "base/fs.h"
@@ -572,7 +573,8 @@ WorkspaceView* BrowserView::cloneWorkspaceView()
 
 void BrowserView::onWorkspaceViewSelected()
 {
-  // Do nothing
+  if (auto statusBar = StatusBar::instance())
+    statusBar->clearText();
 }
 
 bool BrowserView::onCloseView(Workspace* workspace, bool quitting)

@@ -9,6 +9,7 @@
 #pragma once
 
 #include "app/res/resources_loader.h"
+#include "obs/signal.h"
 #include "ui/listbox.h"
 #include "ui/listitem.h"
 #include "ui/timer.h"
@@ -42,6 +43,8 @@ class ResourceListItem : public ui::ListItem {
     Resource* selectedResource();
 
     void reload();
+
+    obs::signal<void()> FinishLoading;
 
   protected:
     virtual bool onProcessMessage(ui::Message* msg) override;

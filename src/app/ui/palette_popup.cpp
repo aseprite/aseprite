@@ -42,6 +42,7 @@ PalettePopup::PalettePopup()
   addChild(m_popup);
 
   m_paletteListBox.DoubleClickItem.connect([this]{ onLoadPal(); });
+  m_paletteListBox.FinishLoading.connect([this]{ onSearchChange(); });
   m_popup->search()->Change.connect([this]{ onSearchChange(); });
   m_popup->loadPal()->Click.connect([this]{ onLoadPal(); });
   m_popup->openFolder()->Click.connect([this]{ onOpenFolder(); });

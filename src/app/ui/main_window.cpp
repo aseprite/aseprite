@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -261,9 +261,19 @@ void MainWindow::showHome()
   m_tabsBar->selectTab(m_homeView);
 }
 
-bool MainWindow::isHomeSelected()
+void MainWindow::showDefaultStatusBar()
 {
-  return (m_tabsBar->getSelectedTab() == m_homeView && m_homeView);
+  if (DocView* docView = getDocView())
+    m_statusBar->showDefaultText(docView->document());
+  else if (isHomeSelected())
+    m_statusBar->showAbout();
+  else
+    m_statusBar->clearText();
+}
+
+bool MainWindow::isHomeSelected() const
+{
+  return (m_homeView && m_workspace->activeView() == m_homeView);
 }
 
 void MainWindow::showBrowser(const std::string& filename)
@@ -473,12 +483,12 @@ void MainWindow::onTabsContainerDoubleClicked(Tabs* tabs)
 void MainWindow::onMouseOverTab(Tabs* tabs, TabView* tabView)
 {
   // Note: tabView can be NULL
-  if (DocView* docView = dynamic_cast<DocView*>(tabView)) {
+  if (DocView* docView = dynamic_cast<DocView*>(tabView))
     m_statusBar->showDefaultText(docView->document());
-  }
-  else {
+  else if (tabView)
+    m_statusBar->setStatusText(0, tabView->getTabText());
+  else
     m_statusBar->showDefaultText();
-  }
 }
 
 void MainWindow::onMouseLeaveTab()

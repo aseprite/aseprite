@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -106,7 +106,11 @@ Widget::~Widget()
 
 void Widget::deferDelete()
 {
-  manager()->addToGarbage(this);
+  if (auto man = manager())
+    man->addToGarbage(this);
+  else {
+    ASSERT(false);
+  }
 }
 
 void Widget::initTheme()
@@ -219,7 +223,8 @@ void Widget::setVisible(bool state)
   }
   else {
     if (!hasFlags(HIDDEN)) {
-      manager()->freeWidget(this); // Free from manager
+      if (auto man = manager())
+        man->freeWidget(this); // Free from manager
       enableFlags(HIDDEN);
 
       onVisible(false);
@@ -241,7 +246,8 @@ void Widget::setEnabled(bool state)
   }
   else {
     if (!hasFlags(DISABLED)) {
-      manager()->freeWidget(this); // Free from the manager
+      if (auto man = manager())
+        man->freeWidget(this); // Free from the manager
 
       enableFlags(DISABLED);
       invalidate();
@@ -541,9 +547,8 @@ void Widget::removeChild(WidgetsList::iterator& it)
     m_children.erase(it);
 
   // Free from manager
-  Manager* manager = this->manager();
-  if (manager)
-    manager->freeWidget(child);
+  if (auto man = manager())
+    man->freeWidget(child);
 
   child->m_parent = nullptr;
 }
@@ -617,7 +622,8 @@ void Widget::layout()
 void Widget::loadLayout()
 {
   if (!m_id.empty()) {
-    LayoutIO* io = manager()->getLayoutIO();
+    auto man = manager();
+    LayoutIO* io = (man ? man->getLayoutIO(): nullptr);
     if (io) {
       std::string layout = io->loadLayout(this);
       if (!layout.empty()) {
@@ -636,7 +642,8 @@ void Widget::loadLayout()
 void Widget::saveLayout()
 {
   if (!m_id.empty()) {
-    LayoutIO* io = manager()->getLayoutIO();
+    auto man = manager();
+    LayoutIO* io = (man ? man->getLayoutIO(): nullptr);
     if (io) {
       std::stringstream s;
       SaveLayoutEvent ev(this, s);
@@ -690,8 +697,8 @@ void Widget::setBoundsQuietly(const gfx::Rect& rc)
     m_bounds = rc;
 
     // Remove all paint messages for this widget.
-    if (Manager* manager = this->manager())
-      manager->removeMessagesFor(this, kPaintMessage);
+    if (Manager* man = manager())
+      man->removeMessagesFor(this, kPaintMessage);
   }
 
   // TODO Test moving this inside the if (m_bounds != rc) { ... }
@@ -975,6 +982,8 @@ void Widget::flushRedraw()
 
   Manager* manager = this->manager();
   ASSERT(manager);
+  if (!manager)
+    return;
 
   while (!processing.empty()) {
     Widget* widget = processing.front();
@@ -1300,36 +1309,44 @@ void Widget::resetSizeHint()
 
 void Widget::requestFocus()
 {
-  manager()->setFocus(this);
+  if (auto man = manager())
+    man->setFocus(this);
 }
 
 void Widget::releaseFocus()
 {
-  if (hasFocus())
-    manager()->freeFocus();
+  if (hasFocus()) {
+    if (auto man = manager())
+      man->freeFocus();
+  }
 }
 
 // Captures the mouse to send all the future mouse messsages to the
 // specified widget (included the kMouseMoveMessage and kSetCursorMessage).
 void Widget::captureMouse()
 {
-  if (!manager()->getCapture()) {
-    manager()->setCapture(this);
+  if (auto man = manager()) {
+    if (!man->getCapture()) {
+      man->setCapture(this);
+    }
   }
 }
 
 // Releases the capture of the mouse events.
 void Widget::releaseMouse()
 {
-  if (manager()->getCapture() == this) {
-    manager()->freeCapture();
+  if (auto man = manager()) {
+    if (man->getCapture() == this) {
+      man->freeCapture();
+    }
   }
 }
 
 bool Widget::offerCapture(ui::MouseMessage* mouseMsg, int widget_type)
 {
   if (hasCapture()) {
-    Widget* pick = manager()->pick(mouseMsg->position());
+    auto man = manager();
+    Widget* pick = (man ? man->pick(mouseMsg->position()): nullptr);
     if (pick && pick != this && pick->type() == widget_type) {
       releaseMouse();
 
@@ -1340,7 +1357,7 @@ bool Widget::offerCapture(ui::MouseMessage* mouseMsg, int widget_type)
         mouseMsg->modifiers(),
         mouseMsg->position());
       mouseMsg2->setRecipient(pick);
-      manager()->enqueueMessage(mouseMsg2);
+      man->enqueueMessage(mouseMsg2);
       return true;
     }
   }
@@ -1601,8 +1618,8 @@ void Widget::offsetWidgets(int dx, int dy)
   m_bounds.offset(dx, dy);
 
   // Remove all paint messages for this widget.
-  if (Manager* manager = this->manager())
-    manager->removeMessagesFor(this, kPaintMessage);
+  if (auto man = manager())
+    man->removeMessagesFor(this, kPaintMessage);
 
   for (auto child : m_children)
     child->offsetWidgets(dx, dy);

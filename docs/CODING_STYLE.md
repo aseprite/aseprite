@@ -25,7 +25,7 @@ void global_function(int arg1, int arg2,
 
   do {
     ...
-  } while  (condition);
+  } while (condition);
 
   switch (condition) {
     case 1:

@@ -1,17 +1,19 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2018-2020  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-2021  Igara Studio S.A. -->
 <!-- Copyright (C) 2018  David Capello -->
 <gui i18nwarnings="false">
 <window id="about" text="About Aseprite">
   <vbox>
     <label text="" id="title" />
     <label text="Animated sprite editor &amp;&amp; pixel art tool" />
-    <separator text="Authors:" horizontal="true" />
+    <separator text="Developers:" horizontal="true" />
     <grid columns="2">
       <link text="David Capello" url="https://twitter.com/davidcapello" />
-      <label text="- Lead developer, graphics &amp;&amp; maintainer" />
+      <label text="- Lead developer, new features &amp;&amp; bug fixing in desktop &amp;&amp; web" />
       <link text="Gaspar Capello" url="https://twitter.com/Gasparoken" />
-      <label text="- Programmer, bug fixing" />
+      <label text="- Developer, new features &amp;&amp; bug fixing in desktop" />
+      <link text="Martin Capello" url="https://twitter.com/martincapell0" />
+      <label text="- Developer, new store website" />
 
       <separator text="Contributors:" horizontal="true" cell_hspan="2" />
       <link text="Ilija Melentijevic" url="https://ilkke.net/" />
@@ -20,14 +22,14 @@
       <label text="- Default dark theme introduced in v1.3" />
 
       <hbox cell_hspan="2">
-	<link text="Other Contributors" url="https://www.aseprite.org/contributors/" />
+        <link text="Other Contributors" url="https://www.aseprite.org/contributors/" />
         <label text="&amp;&amp;" />
         <link text="Third-Party Projects" url="" id="licenses" />
       </hbox>
     </grid>
     <separator horizontal="true" />
     <hbox>
-      <label text="Copyright (C) 2001-2020" />
+      <label text="Copyright (C) 2001-2021" />
       <link text="Igara Studio S.A." url="https://www.igarastudio.com/" />
     </hbox>
     <link text="https://www.aseprite.org/" url="https://www.aseprite.org/" />

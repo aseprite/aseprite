@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -100,16 +100,17 @@ void UIContext::setActiveView(DocView* docView)
     return;
 
   if (docView) {
+    current_editor = docView->editor();
     mainWin->getTabsBar()->selectTab(docView);
 
     if (mainWin->getWorkspace()->activeView() != docView)
       mainWin->getWorkspace()->setActiveView(docView);
+
+    if (current_editor)
+      current_editor->requestFocus();
   }
-
-  current_editor = (docView ? docView->editor(): nullptr);
-
-  if (current_editor)
-    current_editor->requestFocus();
+  else
+    current_editor = nullptr;
 
   mainWin->getPreviewEditor()->updateUsingEditor(current_editor);
   mainWin->getTimeline()->updateUsingEditor(current_editor);
