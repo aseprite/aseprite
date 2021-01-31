@@ -200,6 +200,19 @@ Run `cmake` with the following parameters and then `ninja`:
 In this case, `$HOME/deps/skia` is the directory where Skia was
 compiled or uncompressed.
 
+---
+**NOTE**
+
+For armv7l and older arm version's building, add this cmake parameters:
+```
+-DCMAKE_CXX_FLAGS:STRING="-march=armv7-a -mfloat-abi=hard -mfpu=neon -mtune=cortex-a15 -Wno-psabi"  \
+-DCMAKE_C_FLAGS:STRING="-march=armv7-a -mfloat-abi=hard -mfpu=neon -mtune=cortex-a15 -Wno-psabi"    \
+-DCMAKE_ASM_FLAGS:STRING="-march=armv7-a -mfloat-abi=hard -mfpu=neon -mtune=cortex-a15 -g"
+```
+This is necessary for fix up libwebp compilation errors.
+
+---
+
 # Using shared third party libraries
 
 If you don't want to use the embedded code of third party libraries
