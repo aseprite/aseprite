@@ -377,6 +377,14 @@ void Manager::generateMessagesFromOSEvents()
 
     switch (osEvent.type()) {
 
+      case os::Event::CloseApp: {
+        Message* msg = new Message(kCloseDisplayMessage);
+        msg->setRecipient(this);
+        msg->setPropagateToChildren(true);
+        enqueueMessage(msg);
+        break;
+      }
+
       case os::Event::CloseDisplay: {
         Message* msg = new Message(kCloseDisplayMessage);
         msg->setRecipient(this);
