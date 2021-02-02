@@ -93,10 +93,10 @@ static bool update_custom_native_cursor(const Cursor* cursor)
         mouse_window->scale() * mouse_cursor_scale);
     }
     else if (mouse_cursor_type == kOutsideDisplay) {
-      result = mouse_window->setNativeMouseCursor(os::kArrowCursor);
+      result = mouse_window->setNativeMouseCursor(os::NativeCursor::Arrow);
     }
     else {
-      result = mouse_window->setNativeMouseCursor(os::kNoCursor);
+      result = mouse_window->setNativeMouseCursor(os::NativeCursor::Hidden);
     }
   }
 
@@ -105,43 +105,43 @@ static bool update_custom_native_cursor(const Cursor* cursor)
 
 static void update_mouse_cursor()
 {
-  os::NativeCursor nativeCursor = os::kNoCursor;
+  os::NativeCursor nativeCursor = os::NativeCursor::Hidden;
   const Cursor* cursor = nullptr;
 
   if (use_native_mouse_cursor ||
       mouse_cursor_type == kOutsideDisplay) {
     switch (mouse_cursor_type) {
       case ui::kOutsideDisplay:
-        nativeCursor = os::kArrowCursor;
+        nativeCursor = os::NativeCursor::Arrow;
         break;
       case ui::kNoCursor: break;
       case ui::kArrowCursor:
       case ui::kArrowPlusCursor:
-        nativeCursor = os::kArrowCursor;
+        nativeCursor = os::NativeCursor::Arrow;
         break;
       case ui::kCrosshairCursor:
-        nativeCursor = os::kCrosshairCursor;
+        nativeCursor = os::NativeCursor::Crosshair;
         break;
       case ui::kForbiddenCursor:
-        nativeCursor = os::kForbiddenCursor;
+        nativeCursor = os::NativeCursor::Forbidden;
         break;
       case ui::kHandCursor:
-        nativeCursor = os::kLinkCursor;
+        nativeCursor = os::NativeCursor::Link;
         break;
       case ui::kScrollCursor:
       case ui::kMoveCursor:
-        nativeCursor = os::kMoveCursor;
+        nativeCursor = os::NativeCursor::Move;
         break;
-      case ui::kSizeNSCursor: nativeCursor = os::kSizeNSCursor; break;
-      case ui::kSizeWECursor: nativeCursor = os::kSizeWECursor; break;
-      case ui::kSizeNCursor: nativeCursor = os::kSizeNCursor; break;
-      case ui::kSizeNECursor: nativeCursor = os::kSizeNECursor; break;
-      case ui::kSizeECursor: nativeCursor = os::kSizeECursor; break;
-      case ui::kSizeSECursor: nativeCursor = os::kSizeSECursor; break;
-      case ui::kSizeSCursor: nativeCursor = os::kSizeSCursor; break;
-      case ui::kSizeSWCursor: nativeCursor = os::kSizeSWCursor; break;
-      case ui::kSizeWCursor: nativeCursor = os::kSizeWCursor; break;
-      case ui::kSizeNWCursor: nativeCursor = os::kSizeNWCursor; break;
+      case ui::kSizeNSCursor: nativeCursor = os::NativeCursor::SizeNS; break;
+      case ui::kSizeWECursor: nativeCursor = os::NativeCursor::SizeWE; break;
+      case ui::kSizeNCursor: nativeCursor = os::NativeCursor::SizeN; break;
+      case ui::kSizeNECursor: nativeCursor = os::NativeCursor::SizeNE; break;
+      case ui::kSizeECursor: nativeCursor = os::NativeCursor::SizeE; break;
+      case ui::kSizeSECursor: nativeCursor = os::NativeCursor::SizeSE; break;
+      case ui::kSizeSCursor: nativeCursor = os::NativeCursor::SizeS; break;
+      case ui::kSizeSWCursor: nativeCursor = os::NativeCursor::SizeSW; break;
+      case ui::kSizeWCursor: nativeCursor = os::NativeCursor::SizeW; break;
+      case ui::kSizeNWCursor: nativeCursor = os::NativeCursor::SizeNW; break;
     }
   }
 
@@ -153,11 +153,11 @@ static void update_mouse_cursor()
     // so we can should use the internal overlay (even when we
     // have use_native_mouse_cursor flag enabled).
     if (!ok)
-      nativeCursor = os::kNoCursor;
+      nativeCursor = os::NativeCursor::Hidden;
   }
 
   // Use a custom cursor
-  if (nativeCursor == os::kNoCursor &&
+  if (nativeCursor == os::NativeCursor::Hidden &&
       mouse_cursor_type != ui::kOutsideDisplay) {
     if (get_theme() && mouse_cursor_type != ui::kCustomCursor)
       cursor = get_theme()->getStandardCursor(mouse_cursor_type);
@@ -166,7 +166,7 @@ static void update_mouse_cursor()
   }
 
   // Try to use a custom native cursor if it's possible
-  if (nativeCursor == os::kNoCursor &&
+  if (nativeCursor == os::NativeCursor::Hidden &&
       !update_custom_native_cursor(cursor)) {
     // Or an overlay as last resource
     update_mouse_overlay(cursor);
