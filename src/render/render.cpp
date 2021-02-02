@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -1264,6 +1264,13 @@ void Render::renderCel(
 
     gfx::Rect tilesToDraw = grid.canvasToTile(
       m_proj.remove(gfx::Rect(area.src, area.size)));
+
+    int yPixelsPerTile = m_proj.applyY(grid.tileSize().h);
+    if (yPixelsPerTile > 0 && (area.size.h + area.src.y) % yPixelsPerTile > 0)
+      tilesToDraw.h += 1;
+    int xPixelsPerTile = m_proj.applyX(grid.tileSize().w);
+    if (xPixelsPerTile > 0 && (area.size.w + area.src.x) % xPixelsPerTile > 0)
+      tilesToDraw.w += 1;
 
     // As area.size is not empty at this point, we have to draw at
     // least one tile (and the clipping will be performed for the
