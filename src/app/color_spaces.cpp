@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -14,8 +14,8 @@
 #include "app/modules/editors.h"
 #include "app/pref/preferences.h"
 #include "app/ui/editor/editor.h"
-#include "os/display.h"
 #include "os/system.h"
+#include "os/window.h"
 
 namespace app {
 
@@ -35,7 +35,7 @@ void initialize_color_spaces(Preferences& pref)
 
 os::ColorSpaceRef get_screen_color_space()
 {
-  return os::instance()->defaultDisplay()->colorSpace();
+  return os::instance()->defaultWindow()->colorSpace();
 }
 
 os::ColorSpaceRef get_current_color_space()

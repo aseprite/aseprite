@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -13,11 +13,11 @@
 
 #include "base/thread.h"
 #include "gfx/point.h"
-#include "os/display.h"
 #include "os/event.h"
 #include "os/event_queue.h"
 #include "os/surface.h"
 #include "os/system.h"
+#include "os/window.h"
 #include "ui/clipboard_delegate.h"
 #include "ui/cursor.h"
 #include "ui/intern.h"
@@ -40,7 +40,7 @@ base::thread::native_id_type main_gui_thread;
 static CursorType mouse_cursor_type = kOutsideDisplay;
 static const Cursor* mouse_cursor_custom = nullptr;
 static const Cursor* mouse_cursor = nullptr;
-static os::Display* mouse_display = nullptr;
+static os::Window* mouse_window = nullptr;
 static OverlayRef mouse_cursor_overlay = nullptr;
 static bool use_native_mouse_cursor = true;
 static bool support_native_custom_cursor = false;
@@ -83,20 +83,20 @@ static bool update_custom_native_cursor(const Cursor* cursor)
 
   // Check if we can use a custom native mouse in this platform
   if (support_native_custom_cursor &&
-      mouse_display) {
+      mouse_window) {
     if (cursor) {
-      result = mouse_display->setNativeMouseCursor(
+      result = mouse_window->setNativeMouseCursor(
         // The surface is already scaled by guiscale()
         cursor->getSurface().get(),
         cursor->getFocus(),
         // We scale the cursor by the os::Display scale
-        mouse_display->scale() * mouse_cursor_scale);
+        mouse_window->scale() * mouse_cursor_scale);
     }
     else if (mouse_cursor_type == kOutsideDisplay) {
-      result = mouse_display->setNativeMouseCursor(os::kArrowCursor);
+      result = mouse_window->setNativeMouseCursor(os::kArrowCursor);
     }
     else {
-      result = mouse_display->setNativeMouseCursor(os::kNoCursor);
+      result = mouse_window->setNativeMouseCursor(os::kNoCursor);
     }
   }
 
@@ -146,8 +146,8 @@ static void update_mouse_cursor()
   }
 
   // Set native cursor
-  if (mouse_display) {
-    bool ok = mouse_display->setNativeMouseCursor(nativeCursor);
+  if (mouse_window) {
+    bool ok = mouse_window->setNativeMouseCursor(nativeCursor);
 
     // It looks like the specific native cursor is not supported,
     // so we can should use the internal overlay (even when we
@@ -207,7 +207,7 @@ UISystem::~UISystem()
 
   details::exitWidgets();
 
-  _internal_set_mouse_display(nullptr);
+  _internal_set_mouse_window(nullptr);
   if (!update_custom_native_cursor(nullptr))
     update_mouse_overlay(nullptr);
 
@@ -215,27 +215,27 @@ UISystem::~UISystem()
   g_instance = nullptr;
 }
 
-void _internal_set_mouse_display(os::Display* display)
+void _internal_set_mouse_window(os::Window* window)
 {
   CursorType cursor = get_mouse_cursor();
   set_mouse_cursor(kNoCursor);
-  mouse_display = display;
-  if (display)
+  mouse_window = window;
+  if (window)
     set_mouse_cursor(cursor);  // Restore mouse cursor
 }
 
 int display_w()
 {
-  if (mouse_display)
-    return mouse_display->width() / mouse_display->scale();
+  if (mouse_window)
+    return mouse_window->width() / mouse_window->scale();
   else
     return 1;
 }
 
 int display_h()
 {
-  if (mouse_display)
-    return mouse_display->height() / mouse_display->scale();
+  if (mouse_window)
+    return mouse_window->height() / mouse_window->scale();
   else
     return 1;
 }
@@ -331,8 +331,8 @@ const gfx::Point& get_mouse_position()
 
 void set_mouse_position(const gfx::Point& newPos)
 {
-  if (mouse_display)
-    mouse_display->setMousePosition(newPos);
+  if (mouse_window)
+    mouse_window->setMousePosition(newPos);
 
   _internal_set_mouse_position(newPos);
 }

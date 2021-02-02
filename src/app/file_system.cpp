@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -19,9 +19,9 @@
 
 #include "base/fs.h"
 #include "base/string.h"
-#include "os/display.h"
 #include "os/surface.h"
 #include "os/system.h"
+#include "os/window.h"
 
 #include <algorithm>
 #include <cstdio>
@@ -455,7 +455,8 @@ const FileItemList& FileItem::children()
         ULONG c, fetched;
 
         // Get the interface to enumerate subitems
-        hr = pFolder->EnumObjects(reinterpret_cast<HWND>(os::instance()->defaultDisplay()->nativeHandle()),
+        hr = pFolder->EnumObjects(
+          reinterpret_cast<HWND>(os::instance()->defaultWindow()->nativeHandle()),
           SHCONTF_FOLDERS | SHCONTF_NONFOLDERS, &pEnum);
 
         if (hr == S_OK && pEnum != NULL) {

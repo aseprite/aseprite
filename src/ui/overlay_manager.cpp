@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -11,8 +11,8 @@
 
 #include "ui/overlay_manager.h"
 
-#include "os/display.h"
 #include "os/surface.h"
+#include "os/window.h"
 #include "ui/manager.h"
 #include "ui/overlay.h"
 
@@ -86,11 +86,11 @@ void OverlayManager::drawOverlays()
   if (!manager)
     return;
 
-  os::Surface* displaySurface = manager->getDisplay()->surface();
-  os::SurfaceLock lock(displaySurface);
+  os::Surface* windowSurface = manager->nativeWindow()->surface();
+  os::SurfaceLock lock(windowSurface);
 
   for (auto& overlay : *this)
-    overlay->captureOverlappedArea(displaySurface);
+    overlay->captureOverlappedArea(windowSurface);
 
   for (auto& overlay : *this)
     overlay->drawOverlay();

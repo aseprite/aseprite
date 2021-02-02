@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2021  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -14,8 +14,8 @@
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
 #include "app/context.h"
-#include "os/display.h"
 #include "os/system.h"
+#include "os/window.h"
 
 namespace app {
 
@@ -43,13 +43,13 @@ void FullscreenModeCommand::onExecute(Context* ctx)
   if (!manager)
     return;
 
-  os::Display* display = manager->getDisplay();
-  ASSERT(display);
-  if (!display)
+  os::Window* window = manager->nativeWindow();
+  ASSERT(window);
+  if (!window)
     return;
 
-  display->setFullscreen(
-    !display->isFullscreen());
+  window->setFullscreen(
+    !window->isFullscreen());
 }
 
 Command* CommandFactory::createFullscreenModeCommand()

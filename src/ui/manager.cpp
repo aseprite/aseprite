@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -22,11 +22,11 @@
 #include "base/concurrent_queue.h"
 #include "base/scoped_value.h"
 #include "base/time.h"
-#include "os/display.h"
 #include "os/event.h"
 #include "os/event_queue.h"
 #include "os/surface.h"
 #include "os/system.h"
+#include "os/window.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
 
@@ -162,7 +162,7 @@ bool Manager::widgetAssociatedToManager(Widget* widget)
 
 Manager::Manager()
   : Widget(kManagerWidget)
-  , m_display(nullptr)
+  , m_window(nullptr)
   , m_eventQueue(nullptr)
   , m_lockedWindow(nullptr)
   , m_mouseButton(kButtonNone)
@@ -226,13 +226,13 @@ Manager::~Manager()
   }
 }
 
-void Manager::setDisplay(os::Display* display)
+void Manager::setNativeWindow(os::Window* window)
 {
   base::ScopedValue<bool> lock(
     auto_window_adjustment, false,
     auto_window_adjustment);
 
-  m_display = display;
+  m_window = window;
   m_eventQueue = os::instance()->eventQueue();
 
   onNewDisplayConfiguration();
@@ -255,7 +255,7 @@ void Manager::run()
 
 void Manager::flipDisplay()
 {
-  if (!m_display)
+  if (!m_window)
     return;
 
   OverlayManager* overlays = OverlayManager::instance();
@@ -271,7 +271,7 @@ void Manager::flipDisplay()
     gfx::Region(gfx::Rect(0, 0, ui::display_w(), ui::display_h())));
 
   if (!m_dirtyRegion.isEmpty()) {
-    m_display->invalidateRegion(m_dirtyRegion);
+    m_window->invalidateRegion(m_dirtyRegion);
     m_dirtyRegion.clear();
   }
 }
@@ -385,7 +385,7 @@ void Manager::generateMessagesFromOSEvents()
         break;
       }
 
-      case os::Event::CloseDisplay: {
+      case os::Event::CloseWindow: {
         Message* msg = new Message(kCloseDisplayMessage);
         msg->setRecipient(this);
         msg->setPropagateToChildren(true);
@@ -393,7 +393,7 @@ void Manager::generateMessagesFromOSEvents()
         break;
       }
 
-      case os::Event::ResizeDisplay: {
+      case os::Event::ResizeWindow: {
         Message* msg = new Message(kResizeDisplayMessage);
         msg->setRecipient(this);
         msg->setPropagateToChildren(true);
@@ -888,7 +888,7 @@ void Manager::setCapture(Widget* widget)
   widget->enableFlags(HAS_CAPTURE);
   capture_widget = widget;
 
-  m_display->captureMouse();
+  m_window->captureMouse();
 }
 
 // Sets the focus to the "magnetic" widget inside the window
@@ -928,7 +928,7 @@ void Manager::freeCapture()
     capture_widget->disableFlags(HAS_CAPTURE);
     capture_widget = nullptr;
 
-    m_display->releaseMouse();
+    m_window->releaseMouse();
   }
 }
 
@@ -1309,8 +1309,8 @@ void Manager::onInitTheme(InitThemeEvent& ev)
         gfx::Rect bounds = window->bounds();
         bounds *= newUIScale;
         bounds /= oldUIScale;
-        bounds.x = base::clamp(bounds.x, 0, m_display->width() - bounds.w);
-        bounds.y = base::clamp(bounds.y, 0, m_display->height() - bounds.h);
+        bounds.x = base::clamp(bounds.x, 0, m_window->width() - bounds.w);
+        bounds.y = base::clamp(bounds.y, 0, m_window->height() - bounds.h);
         window->setBounds(bounds);
       }
     }
@@ -1324,16 +1324,16 @@ LayoutIO* Manager::onGetLayoutIO()
 
 void Manager::onNewDisplayConfiguration()
 {
-  if (m_display) {
-    int w = m_display->width() / m_display->scale();
-    int h = m_display->height() / m_display->scale();
+  if (m_window) {
+    int w = m_window->width() / m_window->scale();
+    int h = m_window->height() / m_window->scale();
     if ((bounds().w != w ||
          bounds().h != h)) {
       setBounds(gfx::Rect(0, 0, w, h));
     }
   }
 
-  _internal_set_mouse_display(m_display);
+  _internal_set_mouse_window(m_window);
   invalidate();
   flushRedraw();
 }
@@ -1500,7 +1500,7 @@ bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
     // Restore overlays in the region that we're going to paint.
     OverlayManager::instance()->restoreOverlappedAreas(paintMsg->rect());
 
-    os::Surface* surface = m_display->surface();
+    os::Surface* surface = m_window->surface();
     surface->saveClip();
 
     if (surface->clipRect(paintMsg->rect())) {
@@ -1519,10 +1519,10 @@ bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
         surface->fillRect(gfx::rgba(0, 0, 255), paintMsg->rect());
       }
 
-      if (m_display) {
-        m_display->invalidateRegion(
+      if (m_window) {
+        m_window->invalidateRegion(
           gfx::Region(gfx::Rect(0, 0, display_w(), display_h())));
-        // TODO m_display->update() ??
+        // TODO m_window->update() ??
       }
 
       base::this_thread::sleep_for(0.002);

@@ -123,7 +123,7 @@ Console::Console(Context* ctx)
       (App::instance() &&
        App::instance()->isGui() &&
        Manager::getDefault() &&
-       Manager::getDefault()->getDisplay());
+       Manager::getDefault()->nativeWindow());
 
   if (!m_withUI)
     return;

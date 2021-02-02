@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2021  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -22,8 +22,8 @@
 #include "doc/palette_io.h"
 #include "doc/tileset_io.h"
 #include "gfx/size.h"
-#include "os/display.h"
 #include "os/system.h"
+#include "os/window.h"
 #include "ui/alert.h"
 
 #include <sstream>
@@ -37,8 +37,8 @@ using namespace base::serialization::little_endian;
 namespace {
   clip::format custom_image_format = 0;
 
-  void* native_display_handle() {
-    return os::instance()->defaultDisplay()->nativeHandle();
+  void* native_window_handle() {
+    return os::instance()->defaultWindow()->nativeHandle();
   }
 
   void custom_error_handler(clip::ErrorCode code) {
@@ -70,7 +70,7 @@ bool Clipboard::setNativeBitmap(const doc::Image* image,
                                 const doc::Palette* palette,
                                 const doc::Tileset* tileset)
 {
-  clip::lock l(native_display_handle());
+  clip::lock l(native_window_handle());
   if (!l.locked())
     return false;
 
@@ -177,7 +177,7 @@ bool Clipboard::getNativeBitmap(doc::Image** image,
   *palette = nullptr;
   *tileset = nullptr;
 
-  clip::lock l(native_display_handle());
+  clip::lock l(native_window_handle());
   if (!l.locked())
     return false;
 

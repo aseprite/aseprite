@@ -42,10 +42,10 @@
 #include "base/memory.h"
 #include "base/string.h"
 #include "doc/sprite.h"
-#include "os/display.h"
 #include "os/error.h"
 #include "os/surface.h"
 #include "os/system.h"
+#include "os/window.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
 
@@ -97,7 +97,7 @@ protected:
   void saveLayout(Widget* widget, const std::string& str) override;
 };
 
-static os::DisplayRef main_display = nullptr;
+static os::WindowRef main_window = nullptr;
 static CustomizedGuiManager* manager = nullptr;
 static Theme* gui_theme = nullptr;
 
@@ -109,7 +109,7 @@ static void load_gui_config(int& w, int& h, bool& maximized,
                             std::string& windowLayout);
 static void save_gui_config();
 
-static bool create_main_display(bool gpuAccel,
+static bool create_main_window(bool gpuAccel,
                                 bool& maximized,
                                 std::string& lastError)
 {
@@ -125,44 +125,44 @@ static bool create_main_display(bool gpuAccel,
 
   try {
     if (w > 0 && h > 0) {
-      main_display = os::instance()->makeDisplay(
+      main_window = os::instance()->makeWindow(
         w, h, (scale == 0 ? 2: base::clamp(scale, 1, 4)));
     }
   }
-  catch (const os::DisplayCreationException& e) {
+  catch (const os::WindowCreationException& e) {
     lastError = e.what();
   }
 
-  if (!main_display) {
+  if (!main_window) {
     for (int c=0; try_resolutions[c].width; ++c) {
       try {
-        main_display =
-          os::instance()->makeDisplay(
+        main_window =
+          os::instance()->makeWindow(
             try_resolutions[c].width,
             try_resolutions[c].height,
             (scale == 0 ? try_resolutions[c].scale: scale));
         break;
       }
-      catch (const os::DisplayCreationException& e) {
+      catch (const os::WindowCreationException& e) {
         lastError = e.what();
       }
     }
   }
 
-  if (main_display) {
+  if (main_window) {
     // Change the scale value only in the first run (this will be
     // saved when the program is closed).
     if (scale == 0)
-      Preferences::instance().general.screenScale(main_display->scale());
+      Preferences::instance().general.screenScale(main_window->scale());
 
     if (!windowLayout.empty()) {
-      main_display->setLayout(windowLayout);
-      if (main_display->isMinimized())
-        main_display->maximize();
+      main_window->setLayout(windowLayout);
+      if (main_window->isMinimized())
+        main_window->maximize();
     }
   }
 
-  return (main_display != nullptr);
+  return (main_window != nullptr);
 }
 
 // Initializes GUI.
@@ -173,40 +173,40 @@ int init_module_gui()
   std::string lastError = "Unknown error";
   bool gpuAccel = pref.general.gpuAcceleration();
 
-  if (!create_main_display(gpuAccel, maximized, lastError)) {
-    // If we've created the display with hardware acceleration,
+  if (!create_main_window(gpuAccel, maximized, lastError)) {
+    // If we've created the native window with hardware acceleration,
     // now we try to do it without hardware acceleration.
     if (gpuAccel &&
         (int(os::instance()->capabilities()) &
          int(os::Capabilities::GpuAccelerationSwitch)) == int(os::Capabilities::GpuAccelerationSwitch)) {
-      if (create_main_display(false, maximized, lastError)) {
+      if (create_main_window(false, maximized, lastError)) {
         // Disable hardware acceleration
         pref.general.gpuAcceleration(false);
       }
     }
   }
 
-  if (!main_display) {
+  if (!main_window) {
     os::error_message(
-      ("Unable to create a user-interface display.\nDetails: "+lastError+"\n").c_str());
+      ("Unable to create a user-interface window.\nDetails: "+lastError+"\n").c_str());
     return -1;
   }
 
   // Create the default-manager
   manager = new CustomizedGuiManager();
-  manager->setDisplay(main_display.get());
+  manager->setNativeWindow(main_window.get());
 
   // Setup the GUI theme for all widgets
   gui_theme = new SkinTheme;
   ui::set_theme(gui_theme, pref.general.uiScale());
 
   if (maximized)
-    main_display->maximize();
+    main_window->maximize();
 
   // Handle live resize too redraw the entire manager, dispatch the UI
-  // messages, and flip the display.
-  main_display->handleResize =
-    [](os::Display* display) {
+  // messages, and flip the window.
+  main_window->handleResize =
+    [](os::Window* window) {
       manager->invalidate();
 
       Message* msg = new Message(kResizeDisplayMessage);
@@ -221,7 +221,7 @@ int init_module_gui()
   // Set graphics options for next time
   save_gui_config();
 
-  update_displays_color_profile_from_preferences();
+  update_windows_color_profile_from_preferences();
 
   return 0;
 }
@@ -238,10 +238,10 @@ void exit_module_gui()
   delete gui_theme;
 
   // This should be the last unref() of the display to delete it.
-  main_display.reset();
+  main_window.reset();
 }
 
-void update_displays_color_profile_from_preferences()
+void update_windows_color_profile_from_preferences()
 {
   auto system = os::instance();
 
@@ -253,10 +253,10 @@ void update_displays_color_profile_from_preferences()
 
   switch (windowProfile) {
     case gen::WindowColorProfile::MONITOR:
-      system->setDisplaysColorSpace(nullptr);
+      system->setWindowsColorSpace(nullptr);
       break;
     case gen::WindowColorProfile::SRGB:
-      system->setDisplaysColorSpace(
+      system->setWindowsColorSpace(
         system->makeColorSpace(gfx::ColorSpace::MakeSRGB()));
       break;
     case gen::WindowColorProfile::SPECIFIC: {
@@ -270,7 +270,7 @@ void update_displays_color_profile_from_preferences()
         auto gfxCs = cs->gfxColorSpace();
         if (gfxCs->type() == gfx::ColorSpace::ICC &&
             gfxCs->name() == name) {
-          system->setDisplaysColorSpace(cs);
+          system->setWindowsColorSpace(cs);
           break;
         }
       }
@@ -282,7 +282,7 @@ void update_displays_color_profile_from_preferences()
 static void load_gui_config(int& w, int& h, bool& maximized,
                             std::string& windowLayout)
 {
-  gfx::Size defSize = os::instance()->defaultNewDisplaySize();
+  gfx::Size defSize = os::instance()->defaultNewWindowSize();
 
   w = get_config_int("GfxMode", "Width", defSize.w);
   h = get_config_int("GfxMode", "Height", defSize.h);
@@ -292,13 +292,13 @@ static void load_gui_config(int& w, int& h, bool& maximized,
 
 static void save_gui_config()
 {
-  os::Display* display = manager->getDisplay();
-  if (display) {
-    set_config_bool("GfxMode", "Maximized", display->isMaximized());
-    set_config_int("GfxMode", "Width", display->originalWidth());
-    set_config_int("GfxMode", "Height", display->originalHeight());
+  os::Window* window = manager->nativeWindow();
+  if (window) {
+    set_config_bool("GfxMode", "Maximized", window->isMaximized());
+    set_config_int("GfxMode", "Width", window->originalWidth());
+    set_config_int("GfxMode", "Height", window->originalHeight());
 
-    std::string windowLayout = display->getLayout();
+    std::string windowLayout = window->getLayout();
     if (!windowLayout.empty())
       set_config_string("GfxMode", "WindowLayout", windowLayout.c_str());
   }
@@ -575,8 +575,8 @@ bool CustomizedGuiManager::onProcessDevModeKeyDown(KeyMessage* msg)
   if (msg->ctrlPressed() &&
       msg->scancode() == kKeyF1) {
     try {
-      os::Display* display = getDisplay();
-      int screenScale = display->scale();
+      os::Window* window = nativeWindow();
+      int screenScale = window->scale();
       int uiScale = ui::guiscale();
 
       if (msg->shiftPressed()) {
@@ -611,9 +611,9 @@ bool CustomizedGuiManager::onProcessDevModeKeyDown(KeyMessage* msg)
       if (uiScale != ui::guiscale()) {
         ui::set_theme(ui::get_theme(), uiScale);
       }
-      if (screenScale != display->scale()) {
-        display->setScale(screenScale);
-        setDisplay(display);
+      if (screenScale != window->scale()) {
+        window->setScale(screenScale);
+        setWindow(window);
       }
     }
     catch (const std::exception& ex) {
@@ -659,7 +659,7 @@ void CustomizedGuiManager::onNewDisplayConfiguration()
   save_gui_config();
 
   // TODO Should we provide a more generic way for all ui::Window to
-  //      detect the ui::Display (or UI Screen Scaling) change?
+  //      detect the os::Window (or UI Screen Scaling) change?
   Console::notifyNewDisplayConfiguration();
 }
 

@@ -16,10 +16,10 @@
 #include "base/clamp.h"
 #include "base/memory.h"
 #include "base/string.h"
-#include "os/display.h"
 #include "os/font.h"
 #include "os/surface.h"
 #include "os/system.h"
+#include "os/window.h"
 #include "ui/init_theme_event.h"
 #include "ui/intern.h"
 #include "ui/layout_io.h"
@@ -28,9 +28,9 @@
 #include "ui/message.h"
 #include "ui/move_region.h"
 #include "ui/paint_event.h"
-#include "ui/size_hint_event.h"
 #include "ui/resize_event.h"
 #include "ui/save_layout_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/system.h"
 #include "ui/theme.h"
 #include "ui/view.h"
@@ -1158,7 +1158,7 @@ public:
 
   void operator()(Graphics* graphics) {
     {
-      os::Surface* dst = os::instance()->defaultDisplay()->surface();
+      os::Surface* dst = os::instance()->defaultWindow()->surface();
       os::SurfaceLock lockSrc(m_surface.get());
       os::SurfaceLock lockDst(dst);
       m_surface->blitTo(
@@ -1178,7 +1178,7 @@ GraphicsPtr Widget::getGraphics(const gfx::Rect& clip)
 {
   GraphicsPtr graphics;
   os::SurfaceRef surface;
-  os::Surface* defaultSurface = os::instance()->defaultDisplay()->surface();
+  os::Surface* defaultSurface = os::instance()->defaultWindow()->surface();
 
   // In case of double-buffering, we need to create the temporary
   // buffer only if the default surface is the screen.

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -38,8 +38,8 @@
 #include "base/version.h"
 #include "doc/image.h"
 #include "fmt/format.h"
-#include "os/display.h"
 #include "os/system.h"
+#include "os/window.h"
 #include "render/render.h"
 #include "ui/ui.h"
 
@@ -645,7 +645,7 @@ public:
 
           if (j == winCs) {
             name = gfxCs->name();
-            os::instance()->setDisplaysColorSpace(cs);
+            os::instance()->setWindowsColorSpace(cs);
             break;
           }
           ++j;
@@ -655,7 +655,7 @@ public:
         break;
       }
     }
-    update_displays_color_profile_from_preferences();
+    update_windows_color_profile_from_preferences();
 
     // Change sprite grid bounds
     if (m_context && m_context->activeDocument()) {
@@ -725,7 +725,7 @@ public:
       m_pref.tablet.api(tabletStr);
       m_pref.experimental.loadWintabDriver(wintabState);
 
-      manager()->getDisplay()
+      manager()->nativeWindow()
         ->setInterpretOneFingerGestureAsMouseMovement(
           oneFingerAsMouseMovement()->isSelected());
 
@@ -845,10 +845,10 @@ private:
 
   void updateScreenScaling() {
     ui::Manager* manager = ui::Manager::getDefault();
-    os::Display* display = manager->getDisplay();
+    os::Window* window = manager->nativeWindow();
     os::instance()->setGpuAcceleration(m_pref.general.gpuAcceleration());
-    display->setScale(m_pref.general.screenScale());
-    manager->setDisplay(display);
+    window->setScale(m_pref.general.screenScale());
+    manager->setNativeWindow(window);
   }
 
   void onApply() {

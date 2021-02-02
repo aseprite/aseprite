@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -19,11 +19,11 @@
 #include "gfx/rect.h"
 #include "gfx/region.h"
 #include "gfx/size.h"
-#include "os/display.h"
 #include "os/draw_text.h"
 #include "os/font.h"
 #include "os/surface.h"
 #include "os/system.h"
+#include "os/window.h"
 #include "ui/manager.h"
 #include "ui/scale.h"
 #include "ui/theme.h"
@@ -45,7 +45,7 @@ Graphics::~Graphics()
 {
   // If we were drawing in the screen surface, we mark these regions
   // as dirty for the final flip.
-  if (m_surface == os::instance()->defaultDisplay()->surface())
+  if (m_surface == os::instance()->defaultWindow()->surface())
     Manager::getDefault()->dirtyRect(m_dirtyBounds);
 }
 
@@ -612,7 +612,7 @@ void Graphics::dirty(const gfx::Rect& bounds)
 // ScreenGraphics
 
 ScreenGraphics::ScreenGraphics()
-  : Graphics(AddRef(os::instance()->defaultDisplay()->surface()), 0, 0)
+  : Graphics(AddRef(os::instance()->defaultWindow()->surface()), 0, 0)
 {
   setFont(AddRef(get_theme()->getDefaultFont()));
 }

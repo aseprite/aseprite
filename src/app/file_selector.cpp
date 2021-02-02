@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -14,9 +14,9 @@
 #include "app/app.h"
 #include "app/pref/preferences.h"
 #include "app/ui/file_selector.h"
-#include "os/display.h"
 #include "os/native_dialogs.h"
 #include "os/system.h"
+#include "os/window.h"
 
 namespace app {
 
@@ -59,7 +59,7 @@ bool show_file_selector(
       if (!defExtension.empty())
         dlg->setDefaultExtension(defExtension);
 
-      bool res = dlg->show(os::instance()->defaultDisplay());
+      bool res = dlg->show(os::instance()->defaultWindow());
       if (res) {
         if (type == FileSelectorType::OpenMultiple)
           dlg->getMultipleFileNames(output);

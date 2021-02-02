@@ -30,11 +30,11 @@
 #include "doc/mask.h"
 #include "doc/mask_boundaries.h"
 #include "doc/palette.h"
+#include "doc/slice.h"
 #include "doc/sprite.h"
 #include "doc/tag.h"
-#include "doc/slice.h"
-#include "os/display.h"
 #include "os/system.h"
+#include "os/window.h"
 #include "ui/system.h"
 
 #include <limits>
@@ -612,8 +612,8 @@ void Doc::updateOSColorSpace(bool appWideSignal)
   auto system = os::instance();
   if (system) {
     m_osColorSpace = system->makeColorSpace(sprite()->colorSpace());
-    if (!m_osColorSpace && system->defaultDisplay())
-      m_osColorSpace = system->defaultDisplay()->colorSpace();
+    if (!m_osColorSpace && system->defaultWindow())
+      m_osColorSpace = system->defaultWindow()->colorSpace();
   }
 
   if (appWideSignal &&

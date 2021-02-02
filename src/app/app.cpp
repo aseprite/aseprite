@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -60,10 +60,10 @@
 #include "base/split_string.h"
 #include "doc/sprite.h"
 #include "fmt/format.h"
-#include "os/display.h"
 #include "os/error.h"
 #include "os/surface.h"
 #include "os/system.h"
+#include "os/window.h"
 #include "render/render.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
@@ -359,7 +359,7 @@ void App::run()
   if (isGui()) {
 #ifdef _WIN32
     // How to interpret one finger on Windows tablets.
-    ui::Manager::getDefault()->getDisplay()
+    ui::Manager::getDefault()->nativeWindow()
       ->setInterpretOneFingerGestureAsMouseMovement(
         preferences().experimental.oneFingerAsMouseMovement());
 #endif
@@ -367,7 +367,7 @@ void App::run()
 #if !defined(_WIN32) && !defined(__APPLE__)
     // Setup app icon for Linux window managers
     try {
-      os::Display* display = os::instance()->defaultDisplay();
+      os::Window* window = os::instance()->defaultWindow();
       os::SurfaceList icons;
 
       for (const int size : { 32, 64, 128 }) {
@@ -380,7 +380,7 @@ void App::run()
         }
       }
 
-      display->setIcons(icons);
+      window->setIcons(icons);
     }
     catch (const std::exception&) {
       // Just ignore the exception, we couldn't change the app icon, no
@@ -666,7 +666,7 @@ void App::updateDisplayTitleBar()
   }
 
   title += defaultTitle;
-  os::instance()->defaultDisplay()->setTitle(title);
+  os::instance()->defaultWindow()->setTitle(title);
 }
 
 InputChain& App::inputChain()

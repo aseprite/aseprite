@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -17,8 +17,8 @@
 #include "ui/widget.h"
 
 namespace os {
-  class Display;
   class EventQueue;
+  class Window;
 }
 
 namespace ui {
@@ -35,9 +35,8 @@ namespace ui {
     Manager();
     ~Manager();
 
-    os::Display* getDisplay() { return m_display; }
-
-    void setDisplay(os::Display* display);
+    os::Window* nativeWindow() { return m_window; }
+    void setNativeWindow(os::Window* window);
 
     // Executes the main message loop.
     void run();
@@ -168,7 +167,7 @@ namespace ui {
     static gfx::Region m_dirtyRegion;
 
     WidgetsList m_garbage;
-    os::Display* m_display;
+    os::Window* m_window;
     os::EventQueue* m_eventQueue;
     gfx::Region m_invalidRegion;  // Invalid region (we didn't receive paint messages yet for this).
 

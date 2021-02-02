@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -16,7 +16,7 @@
 #include <functional>
 #include <string>
 
-namespace os { class Display; }
+namespace os { class Window; }
 
 namespace ui {
 
@@ -61,7 +61,7 @@ namespace ui {
   void hide_mouse_cursor();
   void show_mouse_cursor();
 
-  void _internal_set_mouse_display(os::Display* display);
+  void _internal_set_mouse_window(os::Window* window);
   void _internal_no_mouse_position();
   void _internal_set_mouse_position(const gfx::Point& newPos);
 
