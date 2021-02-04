@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -331,7 +331,10 @@ void Clipboard::clearMaskFromCels(Tx& tx,
 
     // Get cel again just in case the cmd::ClearMask() called cmd::ClearCel()
     cel = doc::get<Cel>(celId);
-    if (cel && cel->layer()->isTransparent()) {
+    if (cel && cel->layer()->isTransparent() &&
+        !(ColorBar::instance()->tilemapMode() == TilemapMode::Pixels &&
+          ColorBar::instance()->tilesetMode() == TilesetMode::Manual &&
+          cel->layer()->isTilemap())) {
       tx(new cmd::TrimCel(cel));
     }
   }
