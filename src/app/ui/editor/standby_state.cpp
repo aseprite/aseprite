@@ -570,9 +570,9 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
             sprite->height());
 
     if (mask)
-      sprintf(buf+std::strlen(buf), " :selsize: %d %d",
-              mask->bounds().w,
-              mask->bounds().h);
+      sprintf(buf+std::strlen(buf), " :start: %d %d :selsize: %d %d",
+              mask->bounds().x, mask->bounds().y,
+              mask->bounds().w, mask->bounds().h);
 
     if (sprite->totalFrames() > 1) {
       sprintf(
