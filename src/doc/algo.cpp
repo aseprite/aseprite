@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2018-2020 Igara Studio S.A.
+// Copyright (c) 2018-2021 Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -176,59 +176,134 @@ void algo_line_continuous_with_fix_for_line_brush(int x0, int y0, int x1, int y1
 //
 // Adapted for Aseprite by David Capello
 
-void algo_ellipse(int x0, int y0, int x1, int y1, void* data, AlgoPixel proc)
+void algo_ellipse(int x0, int y0, int x1, int y1, int extraXPxs, int extraYPxs, void* data, AlgoPixel proc)
 {
-  long a = abs(x1-x0), b = abs(y1-y0), b1 = b&1;                 // diameter
-  double dx = 4*(1.0-a)*b*b, dy = 4*(b1+1)*a*a;           // error increment
-  double err = dx+dy+b1*a*a, e2;                          // error of 1.step
+  if (x0 > x1) {        // if called with swapped points
+    int aux = x0;
+    x0 = x1;
+    x1 = aux;
+  }
+  if (y0 > y1) {
+    int aux = y0;
+    y0 = y1;
+    y1 = aux;
+  }
+  int h = y1 - y0 + 1;
+  int w = x1 - x0 + 1;
 
-  if (x0 > x1) { x0 = x1; x1 += a; }        // if called with swapped points
-  if (y0 > y1) y0 = y1;                                  // .. exchange them
-  y0 += (b+1)/2; y1 = y0-b1;                               // starting pixel
-  a = 8*a*a; b1 = 8*b*b;
+  if (extraXPxs > 0 && w - extraXPxs > 3)
+    x1 -= extraXPxs;
+  else
+    extraXPxs = 0;
+  if (extraYPxs > 0 && h - extraYPxs > 3)
+    y1 -= extraYPxs;
+  else
+    extraYPxs = 0;
 
+  long a = abs(x1-x0);
+  long b = abs(y1-y0);                // diameter
+  long b1 = b&1;
+  double dx = 4*(1.0-a)*b*b;          // error increment
+  double dy = 4*(b1+1)*a*a;           // error increment
+  double err = dx + dy + b1*a*a;      // error of 1.step
+  double e2;
+
+  y0 += (b+1)/2;
+  y1 = y0-b1;           // starting pixel
+  a = 8*a*a;
+  b1 = 8*b*b;
+
+  int initialY0 = y0;
+  int initialY1 = y1;
+  int initialX0 = x0;
+  int initialX1 = x1 + extraXPxs;
   do {
-    proc(x1, y0, data);                                      //   I. Quadrant
-    proc(x0, y0, data);                                      //  II. Quadrant
+    proc(x1 + extraXPxs, y0 + extraYPxs, data);              //   I. Quadrant
+    proc(x0, y0 + extraYPxs, data);                          //  II. Quadrant
     proc(x0, y1, data);                                      // III. Quadrant
-    proc(x1, y1, data);                                      //  IV. Quadrant
+    proc(x1 + extraXPxs, y1, data);                          //  IV. Quadrant
+
     e2 = 2*err;
     if (e2 <= dy) { y0++; y1--; err += dy += a; }                 // y step
     if (e2 >= dx || 2*err > dy) { x0++; x1--; err += dx += b1; }  // x step
   } while (x0 <= x1);
 
-  while (y0-y1 <= b) {          // too early stop of flat ellipses a=1
-    proc(x0-1, y0, data);       // -> finish tip of ellipse
-    proc(x1+1, y0++, data);
-    proc(x0-1, y1, data);
-    proc(x1+1, y1--, data);
+  while (y0 + extraYPxs - y1 + 1 <= h) {          // too early stop of flat ellipses a=1
+    proc(x0 - 1, y0 + extraYPxs, data);          // -> finish tip of ellipse
+    proc(x1 + 1 + extraXPxs, y0++ + extraYPxs, data);
+    proc(x0 - 1, y1, data);
+    proc(x1 + 1 + extraXPxs, y1--, data);
+  }
+
+  // Extra straight pixels
+  if (extraXPxs > 0) {
+    for (int i = x0; i < x1 + extraXPxs + 1; i++) {
+      proc(i, y1 + 1, data);
+      proc(i, y0 + extraYPxs - 1, data);
+    }
+  }
+  if (extraYPxs > 0) {
+    for (int i = initialY1 + 1; i < initialY0 + extraYPxs; i++) {
+      proc(initialX0, i, data);
+      proc(initialX1, i, data);
+    }
   }
 }
 
-void algo_ellipsefill(int x0, int y0, int x1, int y1, void* data, AlgoHLine proc)
+void algo_ellipsefill(int x0, int y0, int x1, int y1, int extraXPxs, int extraYPxs, void* data, AlgoHLine proc)
 {
+  if (x0 > x1) {        // if called with swapped points
+    int aux = x0;
+    x0 = x1;
+    x1 = aux;
+  }
+  if (y0 > y1) {
+    int aux = y0;
+    y0 = y1;
+    y1 = aux;
+  }
+  int h = y1 - y0 + 1;
+  int w = x1 - x0 + 1;
+
+  if (extraXPxs > 0 && w - extraXPxs > 3)
+    x1 -= extraXPxs;
+  else
+    extraXPxs = 0;
+  if (extraYPxs > 0 && h - extraYPxs > 3)
+    y1 -= extraYPxs;
+  else
+    extraYPxs = 0;
+
   long a = abs(x1-x0), b = abs(y1-y0), b1 = b&1;                 // diameter
   double dx = 4*(1.0-a)*b*b, dy = 4*(b1+1)*a*a;           // error increment
   double err = dx+dy+b1*a*a, e2;                          // error of 1.step
 
-  if (x0 > x1) { x0 = x1; x1 += a; }        // if called with swapped points
-  if (y0 > y1) y0 = y1;                                  // .. exchange them
   y0 += (b+1)/2; y1 = y0-b1;                               // starting pixel
   a = 8*a*a; b1 = 8*b*b;
 
+  int initialY0 = y0;
+  int initialY1 = y1;
+  int initialX0 = x0;
+  int initialX1 = x1 + extraXPxs;
+
   do {
-    proc(x0, y0, x1, data);
-    proc(x0, y1, x1, data);
+    proc(x0, y0 + extraYPxs, x1 + extraXPxs, data);
+    proc(x0, y1, x1 + extraXPxs, data);
     e2 = 2*err;
     if (e2 <= dy) { y0++; y1--; err += dy += a; }                 // y step
     if (e2 >= dx || 2*err > dy) { x0++; x1--; err += dx += b1; }  // x step
   } while (x0 <= x1);
 
-  while (y0-y1 <= b) {          // too early stop of flat ellipses a=1
-    proc(x0-1, y0, x0-1, data);       // -> finish tip of ellipse
-    proc(x1+1, y0++, x1+1, data);
-    proc(x0-1, y1, x0-1, data);
-    proc(x1+1, y1--, x1+1, data);
+  while (y0 + extraYPxs - y1 + 1 < h) {          // too early stop of flat ellipses a=1
+    proc(x0-1, ++y0 + extraYPxs, x0-1, data);       // -> finish tip of ellipse
+    proc(x1+1 + extraXPxs, y0 + extraYPxs, x1+1 + extraXPxs, data);
+    proc(x0-1, --y1, x0-1, data);
+    proc(x1+1 + extraXPxs, y1, x1+1 + extraXPxs, data);
+  }
+
+  if (extraYPxs > 0) {
+    for (int i = initialY1 + 1; i < initialY0 + extraYPxs; i++)
+      proc(initialX0, i, initialX1, data);
   }
 }
 
@@ -324,7 +399,7 @@ static void draw_rotated_ellipse_rect(int x0, int y0, int x1, int y1, double zd,
   double w = xd*yd;
 
   if (zd == 0)
-    return algo_ellipse(x0, y0, x1, y1, data, proc);
+    return algo_ellipse(x0, y0, x1, y1, 0, 0, data, proc);
 
   if (w != 0.0)
     w = (w-zd) / (w+w); // squared weight of P1
