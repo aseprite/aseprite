@@ -81,8 +81,13 @@ static struct {
 
 //////////////////////////////////////////////////////////////////////
 
-class CustomizedGuiManager : public Manager
-                           , public LayoutIO {
+class CustomizedGuiManager : public ui::Manager
+                           , public ui::LayoutIO {
+public:
+  CustomizedGuiManager(const os::WindowRef& nativeWindow)
+    : ui::Manager(nativeWindow) {
+  }
+
 protected:
   bool onProcessMessage(Message* msg) override;
 #if ENABLE_DEVMODE
@@ -90,7 +95,7 @@ protected:
 #endif
   void onInitTheme(InitThemeEvent& ev) override;
   LayoutIO* onGetLayoutIO() override { return this; }
-  void onNewDisplayConfiguration() override;
+  void onNewDisplayConfiguration(Display* display) override;
 
   // LayoutIO implementation
   std::string loadLayout(Widget* widget) override;
@@ -193,8 +198,7 @@ int init_module_gui()
   }
 
   // Create the default-manager
-  manager = new CustomizedGuiManager();
-  manager->setNativeWindow(main_window.get());
+  manager = new CustomizedGuiManager(main_window);
 
   // Setup the GUI theme for all widgets
   gui_theme = new SkinTheme;
@@ -205,17 +209,20 @@ int init_module_gui()
 
   // Handle live resize too redraw the entire manager, dispatch the UI
   // messages, and flip the window.
-  main_window->handleResize =
+  os::instance()->handleWindowResize =
     [](os::Window* window) {
-      manager->invalidate();
+      Display* display = manager->getDisplayFromNativeWindow(window);
+      if (!display)
+        display = manager->display();
+      ASSERT(display);
 
       Message* msg = new Message(kResizeDisplayMessage);
+      msg->setDisplay(display);
       msg->setRecipient(manager);
       msg->setPropagateToChildren(true);
-      manager->enqueueMessage(msg);
 
+      manager->enqueueMessage(msg);
       manager->dispatchMessages();
-      manager->flipDisplay();
     };
 
   // Set graphics options for next time
@@ -292,7 +299,7 @@ static void load_gui_config(int& w, int& h, bool& maximized,
 
 static void save_gui_config()
 {
-  os::Window* window = manager->nativeWindow();
+  os::Window* window = manager->display()->nativeWindow();
   if (window) {
     set_config_bool("GfxMode", "Maximized", window->isMaximized());
     set_config_int("GfxMode", "Width", window->originalWidth());
@@ -327,6 +334,8 @@ void update_screen_for_document(const Doc* document)
 void load_window_pos(Widget* window, const char* section,
                      const bool limitMinSize)
 {
+  Size desktopSize = ui::get_desktop_size();
+
   // Default position
   Rect orig_pos = window->bounds();
   Rect pos = orig_pos;
@@ -335,16 +344,16 @@ void load_window_pos(Widget* window, const char* section,
   pos = get_config_rect(section, "WindowPos", pos);
 
   if (limitMinSize) {
-    pos.w = base::clamp(pos.w, orig_pos.w, ui::display_w());
-    pos.h = base::clamp(pos.h, orig_pos.h, ui::display_h());
+    pos.w = base::clamp(pos.w, orig_pos.w, desktopSize.w);
+    pos.h = base::clamp(pos.h, orig_pos.h, desktopSize.h);
   }
   else {
-    pos.w = std::min(pos.w, ui::display_w());
-    pos.h = std::min(pos.h, ui::display_h());
+    pos.w = std::min(pos.w, desktopSize.w);
+    pos.h = std::min(pos.h, desktopSize.h);
   }
 
-  pos.setOrigin(Point(base::clamp(pos.x, 0, ui::display_w()-pos.w),
-                      base::clamp(pos.y, 0, ui::display_h()-pos.h)));
+  pos.setOrigin(Point(base::clamp(pos.x, 0, desktopSize.w-pos.w),
+                      base::clamp(pos.y, 0, desktopSize.h-pos.h)));
 
   window->setBounds(pos);
 }
@@ -653,9 +662,9 @@ void CustomizedGuiManager::onInitTheme(InitThemeEvent& ev)
   AppMenus::instance()->initTheme();
 }
 
-void CustomizedGuiManager::onNewDisplayConfiguration()
+void CustomizedGuiManager::onNewDisplayConfiguration(Display* display)
 {
-  Manager::onNewDisplayConfiguration();
+  Manager::onNewDisplayConfiguration(display);
   save_gui_config();
 
   // TODO Should we provide a more generic way for all ui::Window to

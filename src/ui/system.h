@@ -16,12 +16,11 @@
 #include <functional>
 #include <string>
 
-namespace os { class Window; }
-
 namespace ui {
 
   class ClipboardDelegate;
   class Cursor;
+  class Display;
   class Widget;
 
   class UISystem {
@@ -41,8 +40,7 @@ namespace ui {
     ClipboardDelegate* m_clipboardDelegate;
   };
 
-  int display_w();
-  int display_h();
+  gfx::Size get_desktop_size();
 
   void set_clipboard_text(const std::string& text);
   bool get_clipboard_text(std::string& text);
@@ -61,7 +59,8 @@ namespace ui {
   void hide_mouse_cursor();
   void show_mouse_cursor();
 
-  void _internal_set_mouse_window(os::Window* window);
+  void _internal_set_mouse_display(Display* display);
+  void _internal_free_mouse_display(Display* display);
   void _internal_no_mouse_position();
   void _internal_set_mouse_position(const gfx::Point& newPos);
 

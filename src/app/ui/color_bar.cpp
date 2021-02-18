@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -1884,12 +1884,13 @@ void ColorBar::showPalettePresets()
   }
 
   if (!m_palettePopup->isVisible()) {
+    gfx::Size displaySize = ui::get_desktop_size();
     gfx::Rect bounds = m_buttons.getItem(
       static_cast<int>(PalButton::PRESETS))->bounds();
 
     m_palettePopup->showPopup(
       gfx::Rect(bounds.x, bounds.y+bounds.h,
-                ui::display_w()/2, ui::display_h()*3/4));
+                displaySize.w/2, displaySize.h*3/4));
   }
   else {
     m_palettePopup->closeWindow(NULL);

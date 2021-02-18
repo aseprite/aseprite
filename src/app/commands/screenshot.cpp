@@ -69,7 +69,7 @@ void ScreenshotCommand::onExecute(Context* ctx)
   app::ResourceFinder rf(false);
   rf.includeDesktopDir("");
 
-  os::Window* window = ui::Manager::getDefault()->nativeWindow();
+  os::Window* window = ui::Manager::getDefault()->display()->nativeWindow();
   os::Surface* surface = window->surface();
   std::string fn;
 

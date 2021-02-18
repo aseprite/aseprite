@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -13,14 +13,16 @@
 
 #include "os/surface.h"
 #include "os/system.h"
-#include "ui/manager.h"
+#include "ui/display.h"
 
 namespace ui {
 
-Overlay::Overlay(const os::SurfaceRef& overlaySurface,
+Overlay::Overlay(Display* display,
+                 const os::SurfaceRef& overlaySurface,
                  const gfx::Point& pos,
                  ZOrder zorder)
-  : m_surface(overlaySurface)
+  : m_display(display)
+  , m_surface(overlaySurface)
   , m_overlap(nullptr)
   , m_captured(nullptr)
   , m_pos(pos)
@@ -33,11 +35,8 @@ Overlay::~Overlay()
   ASSERT(!m_captured);
 
   if (m_surface) {
-    Manager* manager = Manager::getDefault();
-    if (manager)
-      manager->invalidateRect(gfx::Rect(m_pos.x, m_pos.y,
-                                        m_surface->width(),
-                                        m_surface->height()));
+    if (m_display)
+      m_display->invalidateRect(bounds());
     m_surface.reset();
   }
 
@@ -69,7 +68,7 @@ void Overlay::drawOverlay()
   os::SurfaceLock lock(m_surface.get());
   m_captured->drawRgbaSurface(m_surface.get(), m_pos.x, m_pos.y);
 
-  Manager::getDefault()->dirtyRect(
+  m_display->dirtyRect(
     gfx::Rect(m_pos.x, m_pos.y,
               m_surface->width(),
               m_surface->height()));
@@ -83,24 +82,27 @@ void Overlay::moveOverlay(const gfx::Point& newPos)
   m_pos = newPos;
 }
 
-void Overlay::captureOverlappedArea(os::Surface* screen)
+void Overlay::captureOverlappedArea()
 {
   if (!m_surface ||
       m_captured)
     return;
 
+  os::Surface* displaySurface = m_display->surface();
+  os::SurfaceLock lockDisplaySurface(displaySurface);
+
   if (!m_overlap) {
     // Use the same color space for the overlay as in the screen
     m_overlap = os::instance()->makeSurface(m_surface->width(),
                                             m_surface->height(),
-                                            screen->colorSpace());
+                                            displaySurface->colorSpace());
   }
 
   os::SurfaceLock lock(m_overlap.get());
-  screen->blitTo(m_overlap.get(), m_pos.x, m_pos.y, 0, 0,
-                 m_overlap->width(), m_overlap->height());
+  displaySurface->blitTo(m_overlap.get(), m_pos.x, m_pos.y, 0, 0,
+                         m_overlap->width(), m_overlap->height());
 
-  m_captured = screen;
+  m_captured = displaySurface;
 }
 
 void Overlay::restoreOverlappedArea(const gfx::Rect& restoreBounds)
@@ -118,8 +120,7 @@ void Overlay::restoreOverlappedArea(const gfx::Rect& restoreBounds)
   m_overlap->blitTo(m_captured, 0, 0, m_pos.x, m_pos.y,
                     m_overlap->width(), m_overlap->height());
 
-  Manager::getDefault()->dirtyRect(bounds());
-
+  m_display->dirtyRect(bounds());
   m_captured = nullptr;
 }
 

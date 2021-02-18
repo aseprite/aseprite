@@ -420,6 +420,14 @@ Manager* Widget::manager() const
   return Manager::getDefault();
 }
 
+Display* Widget::display() const
+{
+  if (Window* win = this->window())
+    return win->display();
+  else
+    return manager()->display();
+}
+
 int Widget::getChildIndex(Widget* child)
 {
   auto it = std::find(m_children.begin(), m_children.end(), child);
@@ -754,36 +762,31 @@ void Widget::getRegion(gfx::Region& region)
 
 void Widget::getDrawableRegion(gfx::Region& region, DrawableRegionFlags flags)
 {
-  Widget* window, *manager, *view;
-
   getRegion(region);
 
   // Cut the top windows areas
   if (flags & kCutTopWindows) {
-    window = this->window();
-    manager = (window ? window->manager(): nullptr);
+    Window* window = this->window();
+    Display* display = this->display();
 
-    while (manager) {
-      const WidgetsList& windows_list = manager->children();
-      WidgetsList::const_reverse_iterator it =
-        std::find(windows_list.rbegin(), windows_list.rend(), window);
+    const auto& uiWindows = display->getWindows();
 
-      if (!windows_list.empty() &&
-          window != windows_list.front() &&
-          it != windows_list.rend()) {
-        // Subtract the rectangles
-        for (++it; it != windows_list.rend(); ++it) {
-          if (!(*it)->isVisible())
-            continue;
+    // Reverse iterator
+    auto it = std::find(uiWindows.rbegin(),
+                        uiWindows.rend(), window);
 
-          Region reg1;
-          (*it)->getRegion(reg1);
-          region.createSubtraction(region, reg1);
-        }
+    if (!uiWindows.empty() &&
+        window != uiWindows.front() &&
+        it != uiWindows.rend()) {
+      // Subtract the rectangles of each window
+      for (++it; it != uiWindows.rend(); ++it) {
+        if (!(*it)->isVisible())
+          continue;
+
+        Region reg1;
+        (*it)->getRegion(reg1);
+        region -= reg1;
       }
-
-      window = manager->window();
-      manager = (window ? window->manager(): nullptr);
     }
   }
 
@@ -804,7 +807,7 @@ void Widget::getDrawableRegion(gfx::Region& region, DrawableRegionFlags flags)
         else {
           reg1.createIntersection(reg2, reg3);
         }
-        region.createSubtraction(region, reg1);
+        region -= reg1;
       }
     }
   }
@@ -813,36 +816,35 @@ void Widget::getDrawableRegion(gfx::Region& region, DrawableRegionFlags flags)
   if (!hasFlags(DECORATIVE)) {
     Widget* p = this->parent();
     while (p) {
-      region.createIntersection(
-        region, Region(p->childrenBounds()));
+      region &= Region(p->childrenBounds());
       p = p->parent();
     }
   }
   else {
     Widget* p = parent();
     if (p) {
-      region.createIntersection(
-        region, Region(p->bounds()));
+      region &= Region(p->bounds());
     }
   }
 
   // Limit to the manager area
-  window = this->window();
-  manager = (window ? window->manager(): nullptr);
+  {
+    Window* window = this->window();
+    Manager* manager = (window ? window->manager(): nullptr);
+    while (manager) {
+      View* view = View::getView(manager);
 
-  while (manager) {
-    view = View::getView(manager);
+      Rect cpos;
+      if (view)
+        cpos = static_cast<View*>(view)->viewportBounds();
+      else
+        cpos = manager->childrenBounds();
 
-    Rect cpos;
-    if (view)
-      cpos = static_cast<View*>(view)->viewportBounds();
-    else
-      cpos = manager->childrenBounds();
+      region &= Region(cpos);
 
-    region.createIntersection(region, Region(cpos));
-
-    window = manager->window();
-    manager = (window ? window->manager(): nullptr);
+      window = manager->window();
+      manager = (window ? window->manager(): nullptr);
+    }
   }
 }
 
@@ -980,6 +982,7 @@ void Widget::flushRedraw()
     processing.push(this);
   }
 
+  Display* display = this->display();
   Manager* manager = this->manager();
   ASSERT(manager);
   if (!manager)
@@ -1018,13 +1021,14 @@ void Widget::flushRedraw()
       for (c=0; c<nrects; ++c, ++it, --count) {
         // Create the draw message
         msg = new PaintMessage(count, *it);
+        msg->setDisplay(display);
         msg->setRecipient(widget);
 
         // Enqueue the draw message
         manager->enqueueMessage(msg);
       }
 
-      manager->addInvalidRegion(widget->m_updateRegion);
+      display->addInvalidRegion(widget->m_updateRegion);
       widget->m_updateRegion.clear();
     }
   }
@@ -1039,6 +1043,8 @@ void Widget::paint(Graphics* graphics,
 
   std::queue<Widget*> processing;
   processing.push(this);
+
+  Display* display = this->display();
 
   while (!processing.empty()) {
     Widget* widget = processing.front();
@@ -1059,17 +1065,17 @@ void Widget::paint(Graphics* graphics,
     region.createIntersection(region, drawRegion);
 
     Graphics graphics2(
+      display,
       base::AddRef(graphics->getInternalSurface()),
       widget->bounds().x,
       widget->bounds().y);
     graphics2.setFont(AddRef(widget->font()));
 
-    for (Region::const_iterator
-           it = region.begin(),
-           end = region.end(); it != end; ++it) {
-      IntersectClip clip(&graphics2, Rect(*it).offset(
-          -widget->bounds().x,
-          -widget->bounds().y));
+    for (const gfx::Rect& rc : region) {
+      IntersectClip clip(&graphics2,
+                         Rect(rc).offset(
+                           -widget->bounds().x,
+                           -widget->bounds().y));
       widget->paintEvent(&graphics2, isBg);
     }
   }
@@ -1089,14 +1095,22 @@ bool Widget::paintEvent(Graphics* graphics,
     enableFlags(HIDDEN);
 
     if (parent()) {
-      gfx::Region rgn(parent()->bounds());
-      rgn.createIntersection(
-        rgn,
-        gfx::Region(
+      if (parent()->display() == display()) {
+        gfx::Region rgn(parent()->bounds());
+        rgn &= gfx::Region(
           graphics->getClipBounds().offset(
             graphics->getInternalDeltaX(),
-            graphics->getInternalDeltaY())));
-      parent()->paint(graphics, rgn, true);
+            graphics->getInternalDeltaY()));
+        parent()->paint(graphics, rgn, true);
+      }
+      else {
+        // TODO clear surface with transparent color, the following
+        //      line doesn't work because we have to specify the
+        //      SkBlendMode::kSrc mode instead of
+        //      SkBlendMode::kSrcOver
+
+        //graphics->fillRect(gfx::rgba(0, 0, 0, 0), clientBounds());
+      }
     }
 
     disableFlags(HIDDEN);
@@ -1152,17 +1166,19 @@ void Widget::invalidateRegion(const Region& region)
 class DeleteGraphicsAndSurface {
 public:
   DeleteGraphicsAndSurface(const gfx::Rect& clip,
-                           const os::SurfaceRef& surface)
-    : m_pt(clip.origin()), m_surface(surface) {
+                           const os::SurfaceRef& surface,
+                           os::SurfaceRef& dst)
+    : m_pt(clip.origin())
+    , m_surface(surface)
+    , m_dst(dst) {
   }
 
   void operator()(Graphics* graphics) {
     {
-      os::Surface* dst = os::instance()->defaultWindow()->surface();
       os::SurfaceLock lockSrc(m_surface.get());
-      os::SurfaceLock lockDst(dst);
+      os::SurfaceLock lockDst(m_dst.get());
       m_surface->blitTo(
-        dst, 0, 0, m_pt.x, m_pt.y,
+        m_dst.get(), 0, 0, m_pt.x, m_pt.y,
         m_surface->width(), m_surface->height());
     }
     m_surface.reset();
@@ -1172,25 +1188,27 @@ public:
 private:
   gfx::Point m_pt;
   os::SurfaceRef m_surface;
+  os::SurfaceRef m_dst;
 };
 
 GraphicsPtr Widget::getGraphics(const gfx::Rect& clip)
 {
   GraphicsPtr graphics;
-  os::SurfaceRef surface;
-  os::Surface* defaultSurface = os::instance()->defaultWindow()->surface();
+  Display* display = this->display();
+  os::SurfaceRef dstSurface = AddRef(display->surface());
 
   // In case of double-buffering, we need to create the temporary
   // buffer only if the default surface is the screen.
-  if (isDoubleBuffered() && defaultSurface->isDirectToScreen()) {
-    surface = os::instance()->makeSurface(clip.w, clip.h);
-    graphics.reset(new Graphics(surface, -clip.x, -clip.y),
-                   DeleteGraphicsAndSurface(clip, surface));
+  if (isDoubleBuffered() && dstSurface->isDirectToScreen()) {
+    os::SurfaceRef surface =
+      os::instance()->makeSurface(clip.w, clip.h);
+    graphics.reset(new Graphics(display, surface, -clip.x, -clip.y),
+                   DeleteGraphicsAndSurface(clip, surface,
+                                            dstSurface));
   }
   // In other case, we can draw directly onto the screen.
   else {
-    surface = AddRef(defaultSurface);
-    graphics.reset(new Graphics(surface, bounds().x, bounds().y));
+    graphics.reset(new Graphics(display, dstSurface, bounds().x, bounds().y));
   }
 
   graphics->setFont(AddRef(font()));

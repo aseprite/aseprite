@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -20,6 +20,7 @@
 
 namespace ui {
 
+  class Display;
   class Timer;
   class Widget;
 
@@ -35,6 +36,7 @@ namespace ui {
     virtual ~Message();
 
     MessageType type() const { return m_type; }
+    Display* display() const { return m_display; }
     Widget* recipient() const { return m_recipient; }
     bool fromFilter() const { return hasFlag(FromFilter); }
     void setFromFilter(const bool state) { setFlag(FromFilter, state); }
@@ -50,6 +52,7 @@ namespace ui {
     bool onlyCmdPressed() const { return m_modifiers == kKeyCmdModifier; }
     bool onlyWinPressed() const { return m_modifiers == kKeyWinModifier; }
 
+    void setDisplay(Display* display);
     void setRecipient(Widget* widget);
     void removeRecipient(Widget* widget);
 
@@ -72,6 +75,7 @@ namespace ui {
 
     MessageType m_type;       // Type of message
     int m_flags;              // Special flags for this message
+    Display* m_display;
     Widget* m_recipient;      // Recipient of this message
     Widget* m_commonAncestor; // Common ancestor between the Leave <-> Enter messages
     KeyModifiers m_modifiers; // Key modifiers pressed when message was created
@@ -101,7 +105,9 @@ namespace ui {
   class PaintMessage : public Message {
   public:
     PaintMessage(int count, const gfx::Rect& rect)
-      : Message(kPaintMessage), m_count(count), m_rect(rect) {
+      : Message(kPaintMessage)
+      , m_count(count)
+      , m_rect(rect) {
     }
 
     int count() const { return m_count; }

@@ -224,13 +224,14 @@ bool PreviewEditorWindow::onProcessMessage(ui::Message* msg)
         SkinTheme* theme = SkinTheme::instance();
 
         // Default bounds
-        int width = ui::display_w()/4;
-        int height = ui::display_h()/4;
+        gfx::Size desktopSize = ui::get_desktop_size();
+        const int width = desktopSize.w/4;
+        const int height = desktopSize.h/4;
         int extra = 2*theme->dimensions.miniScrollbarSize();
         setBounds(
           gfx::Rect(
-            ui::display_w() - width - ToolBar::instance()->bounds().w - extra,
-            ui::display_h() - height - StatusBar::instance()->bounds().h - extra,
+            desktopSize.w - width - ToolBar::instance()->bounds().w - extra,
+            desktopSize.h - height - StatusBar::instance()->bounds().h - extra,
             width, height));
 
         load_window_pos(this, "MiniEditor", false);

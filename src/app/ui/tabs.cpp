@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -941,6 +941,7 @@ void Tabs::createFloatingOverlay(Tab* tab)
 {
   ASSERT(!m_floatingOverlay);
 
+  ui::Display* display = this->display();
   os::SurfaceRef surface = os::instance()->makeRgbaSurface(
     tab->width, m_tabsHeight);
 
@@ -953,13 +954,13 @@ void Tabs::createFloatingOverlay(Tab* tab)
     surface->drawRect(gfx::Rect(0, 0, surface->width(), surface->height()), paint);
   }
   {
-    Graphics g(surface, 0, 0);
+    Graphics g(display, surface, 0, 0);
     g.setFont(AddRef(font()));
     drawTab(&g, g.getClipBounds(), tab, 0, true, true);
   }
 
   m_floatingOverlay = base::make_ref<ui::Overlay>(
-    surface, gfx::Point(),
+    display, surface, gfx::Point(),
     (ui::Overlay::ZOrder)(Overlay::MouseZOrder-1));
   OverlayManager::instance()->addOverlay(m_floatingOverlay);
 }

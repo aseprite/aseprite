@@ -77,10 +77,8 @@ public:
 
     ui::set_theme(ui::get_theme(), newUIScale);
 
-    Manager* manager = Manager::getDefault();
-    os::Window* window = manager->nativeWindow();
-    window->setScale(newScreenScale);
-    manager->setNativeWindow(window);
+    Manager::getDefault()
+      ->updateAllDisplaysWithNewScale(newScreenScale);
   }
 };
 
@@ -370,12 +368,13 @@ void MainWindow::onResize(ui::ResizeEvent& ev)
 {
   app::gen::MainWindow::onResize(ev);
 
-  os::Window* window = manager()->nativeWindow();
-  if ((window) &&
-      (window->scale()*ui::guiscale() > 2) &&
+  gfx::Size desktopSize = ui::get_desktop_size();
+  ui::Display* display = this->display();
+  if ((display) &&
+      (display->nativeWindow()->scale()*ui::guiscale() > 2) &&
       (!m_scalePanic) &&
-      (ui::display_w()/ui::guiscale() < 320 ||
-       ui::display_h()/ui::guiscale() < 260)) {
+      (desktopSize.w/ui::guiscale() < 320 ||
+       desktopSize.h/ui::guiscale() < 260)) {
     showNotification(m_scalePanic = new ScreenScalePanic);
   }
 }

@@ -421,7 +421,8 @@ bool FileSelector::show(
 
   FILESEL_TRACE("FILESEL: Start folder '%s' (%p)\n", start_folder_path.c_str(), start_folder);
 
-  setMinSize(gfx::Size(ui::display_w()*9/10, ui::display_h()*9/10));
+  gfx::Size displaySize = ui::get_desktop_size();
+  setMinSize(gfx::Size(displaySize.w*9/10, displaySize.h*9/10));
   remapWindow();
   centerWindow();
 

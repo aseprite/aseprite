@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -33,7 +33,9 @@ namespace os {
 }
 
 namespace ui {
-  using os::Paint;
+  using os::Paint;              // Define ui::Paint = os::Paint
+
+  class Display;
 
   // Class to render a widget in the screen.
   class Graphics {
@@ -44,7 +46,7 @@ namespace ui {
       Checked,
     };
 
-    Graphics(const os::SurfaceRef& surface, int dx, int dy);
+    Graphics(Display* display, const os::SurfaceRef& surface, int dx, int dy);
     ~Graphics();
 
     int width() const;
@@ -127,6 +129,7 @@ namespace ui {
     gfx::Size doUIStringAlgorithm(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Rect& rc, int align, bool draw);
     void dirty(const gfx::Rect& bounds);
 
+    Display* m_display;
     os::SurfaceRef m_surface;
     int m_dx;
     int m_dy;
@@ -138,7 +141,7 @@ namespace ui {
   // Class to draw directly in the screen.
   class ScreenGraphics : public Graphics {
   public:
-    ScreenGraphics();
+    ScreenGraphics(Display* display);
     virtual ~ScreenGraphics();
   };
 

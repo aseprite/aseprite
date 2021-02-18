@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -13,6 +13,7 @@
 
 #include "gfx/size.h"
 #include "ui/button.h"
+#include "ui/display.h"
 #include "ui/graphics.h"
 #include "ui/intern.h"
 #include "ui/label.h"
@@ -107,6 +108,7 @@ protected:
 
 Window::Window(Type type, const std::string& text)
   : Widget(kWindowWidget)
+  , m_display(nullptr)
   , m_closer(nullptr)
   , m_titleLabel(nullptr)
   , m_closeButton(nullptr)
@@ -131,6 +133,27 @@ Window::Window(Type type, const std::string& text)
 Window::~Window()
 {
   manager()->_closeWindow(this, isVisible());
+}
+
+Display* Window::display() const
+{
+  if (m_display)
+    return m_display;
+  else if (auto man = manager())
+    return man->display();
+  else
+    return nullptr;
+}
+
+void Window::setDisplay(Display* display)
+{
+  if (m_display)
+    m_display->removeWindow(this);
+
+  m_display = display;
+
+  if (m_display)
+    m_display->addWindow(this);
 }
 
 void Window::setAutoRemap(bool state)
@@ -658,12 +681,13 @@ void Window::moveWindow(const gfx::Rect& rect, bool use_blit)
     moveableRegion.createIntersection(oldDrawableRegion, reg1);
 
     // Move the window's graphics
-    ScreenGraphics g;
+    Display* display = this->display();
+    ScreenGraphics g(display);
     hide_mouse_cursor();
     {
       IntersectClip clip(&g, man_pos);
       if (clip) {
-        ui::move_region(manager, moveableRegion, dx, dy);
+        ui::move_region(display, moveableRegion, dx, dy);
       }
     }
     show_mouse_cursor();

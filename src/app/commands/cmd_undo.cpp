@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -94,7 +94,7 @@ void UndoCommand::onExecute(Context* context)
       current_editor->drawSpriteClipped(
         gfx::Region(gfx::Rect(0, 0, sprite->width(), sprite->height())));
 
-      current_editor->manager()->flipDisplay();
+      current_editor->display()->flipDisplay();
       base::this_thread::sleep_for(0.01);
     }
   }

@@ -359,7 +359,7 @@ void App::run()
   if (isGui()) {
 #ifdef _WIN32
     // How to interpret one finger on Windows tablets.
-    ui::Manager::getDefault()->nativeWindow()
+    ui::Manager::getDefault()->display()->nativeWindow()
       ->setInterpretOneFingerGestureAsMouseMovement(
         preferences().experimental.oneFingerAsMouseMovement());
 #endif

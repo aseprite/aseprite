@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -9,14 +9,17 @@
 #include "config.h"
 #endif
 
+#include "ui/fit_bounds.h"
+
 #include "base/clamp.h"
 #include "gfx/rect.h"
 #include "ui/base.h"
+#include "ui/display.h"
 #include "ui/system.h"
 
 namespace ui {
 
-int fit_bounds(int arrowAlign, const gfx::Rect& target, gfx::Rect& bounds)
+int fit_bounds(Display* display, int arrowAlign, const gfx::Rect& target, gfx::Rect& bounds)
 {
   bounds.x = target.x;
   bounds.y = target.y;
@@ -58,8 +61,9 @@ int fit_bounds(int arrowAlign, const gfx::Rect& target, gfx::Rect& bounds)
         break;
     }
 
-    bounds.x = base::clamp(bounds.x, 0, ui::display_w()-bounds.w);
-    bounds.y = base::clamp(bounds.y, 0, ui::display_h()-bounds.h);
+    gfx::Size displaySize = display->size();
+    bounds.x = base::clamp(bounds.x, 0, displaySize.w-bounds.w);
+    bounds.y = base::clamp(bounds.y, 0, displaySize.h-bounds.h);
 
     if (target.intersects(bounds)) {
       switch (trycount) {

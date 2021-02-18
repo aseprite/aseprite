@@ -36,17 +36,15 @@ namespace ui {
 base::thread::native_id_type main_gui_thread;
 
 // Current mouse cursor type.
-
 static CursorType mouse_cursor_type = kOutsideDisplay;
 static const Cursor* mouse_cursor_custom = nullptr;
 static const Cursor* mouse_cursor = nullptr;
-static os::Window* mouse_window = nullptr;
+static Display* mouse_display = nullptr;
 static OverlayRef mouse_cursor_overlay = nullptr;
 static bool use_native_mouse_cursor = true;
 static bool support_native_custom_cursor = false;
 
 // Mouse information (button and position).
-
 static gfx::Point m_mouse_pos;
 static int mouse_cursor_scale = 1;
 
@@ -58,7 +56,9 @@ static void update_mouse_overlay(const Cursor* cursor)
 
   if (mouse_cursor && mouse_scares == 0) {
     if (!mouse_cursor_overlay) {
+      ASSERT(mouse_display);
       mouse_cursor_overlay = base::make_ref<Overlay>(
+        mouse_display,
         mouse_cursor->getSurface(),
         get_mouse_position(),
         Overlay::MouseZOrder);
@@ -83,20 +83,22 @@ static bool update_custom_native_cursor(const Cursor* cursor)
 
   // Check if we can use a custom native mouse in this platform
   if (support_native_custom_cursor &&
-      mouse_window) {
+      mouse_display) {
+    os::Window* nativeWindow = mouse_display->nativeWindow();
+
     if (cursor) {
-      result = mouse_window->setNativeMouseCursor(
+      result = nativeWindow->setNativeMouseCursor(
         // The surface is already scaled by guiscale()
         cursor->getSurface().get(),
         cursor->getFocus(),
         // We scale the cursor by the os::Display scale
-        mouse_window->scale() * mouse_cursor_scale);
+        nativeWindow->scale() * mouse_cursor_scale);
     }
     else if (mouse_cursor_type == kOutsideDisplay) {
-      result = mouse_window->setNativeMouseCursor(os::NativeCursor::Arrow);
+      result = nativeWindow->setNativeMouseCursor(os::NativeCursor::Arrow);
     }
     else {
-      result = mouse_window->setNativeMouseCursor(os::NativeCursor::Hidden);
+      result = nativeWindow->setNativeMouseCursor(os::NativeCursor::Hidden);
     }
   }
 
@@ -146,8 +148,8 @@ static void update_mouse_cursor()
   }
 
   // Set native cursor
-  if (mouse_window) {
-    bool ok = mouse_window->setNativeMouseCursor(nativeCursor);
+  if (mouse_display) {
+    bool ok = mouse_display->nativeWindow()->setNativeMouseCursor(nativeCursor);
 
     // It looks like the specific native cursor is not supported,
     // so we can should use the internal overlay (even when we
@@ -166,7 +168,8 @@ static void update_mouse_cursor()
   }
 
   // Try to use a custom native cursor if it's possible
-  if (nativeCursor == os::NativeCursor::Hidden &&
+  if (mouse_display &&
+      nativeCursor == os::NativeCursor::Hidden &&
       !update_custom_native_cursor(cursor)) {
     // Or an overlay as last resource
     update_mouse_overlay(cursor);
@@ -207,7 +210,7 @@ UISystem::~UISystem()
 
   details::exitWidgets();
 
-  _internal_set_mouse_window(nullptr);
+  _internal_set_mouse_display(nullptr);
   if (!update_custom_native_cursor(nullptr))
     update_mouse_overlay(nullptr);
 
@@ -215,29 +218,24 @@ UISystem::~UISystem()
   g_instance = nullptr;
 }
 
-void _internal_set_mouse_window(os::Window* window)
+void _internal_set_mouse_display(Display* display)
 {
   CursorType cursor = get_mouse_cursor();
   set_mouse_cursor(kNoCursor);
-  mouse_window = window;
-  if (window)
+  mouse_display = display;
+  if (display)
     set_mouse_cursor(cursor);  // Restore mouse cursor
 }
 
-int display_w()
+void _internal_free_mouse_display(Display* display)
 {
-  if (mouse_window)
-    return mouse_window->width() / mouse_window->scale();
-  else
-    return 1;
+  if (mouse_display == display)
+    _internal_set_mouse_display(nullptr);
 }
 
-int display_h()
+gfx::Size get_desktop_size()
 {
-  if (mouse_window)
-    return mouse_window->height() / mouse_window->scale();
-  else
-    return 1;
+  return Manager::getDefault()->display()->size();
 }
 
 void set_clipboard_text(const std::string& text)
@@ -331,8 +329,8 @@ const gfx::Point& get_mouse_position()
 
 void set_mouse_position(const gfx::Point& newPos)
 {
-  if (mouse_window)
-    mouse_window->setMousePosition(newPos);
+  if (mouse_display)
+    mouse_display->nativeWindow()->setMousePosition(newPos);
 
   _internal_set_mouse_position(newPos);
 }

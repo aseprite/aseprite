@@ -725,7 +725,7 @@ public:
       m_pref.tablet.api(tabletStr);
       m_pref.experimental.loadWintabDriver(wintabState);
 
-      manager()->nativeWindow()
+      manager()->display()->nativeWindow()
         ->setInterpretOneFingerGestureAsMouseMovement(
           oneFingerAsMouseMovement()->isSelected());
 
@@ -845,10 +845,8 @@ private:
 
   void updateScreenScaling() {
     ui::Manager* manager = ui::Manager::getDefault();
-    os::Window* window = manager->nativeWindow();
     os::instance()->setGpuAcceleration(m_pref.general.gpuAcceleration());
-    window->setScale(m_pref.general.screenScale());
-    manager->setNativeWindow(window);
+    manager->updateAllDisplaysWithNewScale(m_pref.general.screenScale());
   }
 
   void onApply() {

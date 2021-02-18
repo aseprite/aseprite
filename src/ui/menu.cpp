@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -14,6 +14,7 @@
 #include "base/clamp.h"
 #include "gfx/size.h"
 #include "os/font.h"
+#include "ui/display.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
 
@@ -102,14 +103,15 @@ static MenuItem* find_previtem(Menu* menu, MenuItem* menuitem);
 static void add_scrollbars_if_needed(Window* window)
 {
   const gfx::Rect rc0 = window->bounds();
+  gfx::Size displaySize = window->display()->size();
   gfx::Rect rc = rc0;
 
   if (rc.x < 0) {
     rc.w += rc.x;
     rc.x = 0;
   }
-  if (rc.x2() > ui::display_w()) {
-    rc.w = ui::display_w() - rc.x;
+  if (rc.x2() > displaySize.w) {
+    rc.w = displaySize.w - rc.x;
   }
 
   bool vscrollbarsAdded = false;
@@ -118,8 +120,8 @@ static void add_scrollbars_if_needed(Window* window)
     rc.y = 0;
     vscrollbarsAdded = true;
   }
-  if (rc.y2() > ui::display_h()) {
-    rc.h = ui::display_h() - rc.y;
+  if (rc.y2() > displaySize.h) {
+    rc.h = displaySize.h - rc.y;
     vscrollbarsAdded = true;
   }
 
@@ -133,11 +135,11 @@ static void add_scrollbars_if_needed(Window* window)
 
   if (vscrollbarsAdded) {
     rc.w += 2*view->verticalBar()->getBarWidth();
-    if (rc.x2() > ui::display_w()) {
-      rc.x = ui::display_w() - rc.w;
+    if (rc.x2() > displaySize.w) {
+      rc.x = displaySize.w - rc.w;
       if (rc.x < 0) {
         rc.x = 0;
-        rc.w = ui::display_w();
+        rc.w = displaySize.w;
       }
     }
   }
@@ -311,6 +313,7 @@ void Menu::showPopup(const gfx::Point& pos)
   MenuBaseData* base = menubox->createBase();
   base->was_clicked = true;
   window->setMoveable(false);   // Can't move the window
+  window->setSizeable(false);   // Can't resize the window
 
   // Set children
   menubox->setMenu(this);
@@ -320,9 +323,10 @@ void Menu::showPopup(const gfx::Point& pos)
   window->remapWindow();
 
   // Menubox position
+  gfx::Size displaySize = display()->size();
   window->positionWindow(
-    base::clamp(pos.x, 0, ui::display_w() - window->bounds().w),
-    base::clamp(pos.y, 0, ui::display_h() - window->bounds().h));
+    base::clamp(pos.x, 0, displaySize.w - window->bounds().w),
+    base::clamp(pos.y, 0, displaySize.h - window->bounds().h));
 
   add_scrollbars_if_needed(window.get());
 
@@ -821,9 +825,10 @@ bool MenuItem::onProcessMessage(Message* msg)
 
         // Menubox position
         Rect pos = window->bounds();
+        Size displaySize = display()->size();
 
         if (inBar()) {
-          pos.x = base::clamp(bounds().x, 0, ui::display_w()-pos.w);
+          pos.x = base::clamp(bounds().x, 0, displaySize.w-pos.w);
           pos.y = std::max(0, bounds().y2());
         }
         else {
@@ -832,9 +837,9 @@ bool MenuItem::onProcessMessage(Message* msg)
           int x, y = bounds().y-3*guiscale();
           Rect r1(0, 0, pos.w, pos.h), r2(0, 0, pos.w, pos.h);
 
-          r1.x = x_left = base::clamp(x_left, 0, ui::display_w()-pos.w);
-          r2.x = x_right = base::clamp(x_right, 0, ui::display_w()-pos.w);
-          r1.y = r2.y = y = base::clamp(y, 0, ui::display_h()-pos.h);
+          r1.x = x_left = base::clamp(x_left, 0, displaySize.w-pos.w);
+          r2.x = x_right = base::clamp(x_right, 0, displaySize.w-pos.w);
+          r1.y = r2.y = y = base::clamp(y, 0, displaySize.h-pos.h);
 
           // Calculate both intersections
           gfx::Rect s1 = r1.createIntersection(old_pos);
@@ -1408,6 +1413,7 @@ MenuBoxWindow::MenuBoxWindow(MenuBox* menubox)
   : Window(WithoutTitleBar, "")
 {
   setMoveable(false); // Can't move the window
+  setSizeable(false); // Can't resize the window
   addChild(menubox);
   remapWindow();
 }

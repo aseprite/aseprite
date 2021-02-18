@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -88,8 +88,9 @@ public:
     m_keyLabel.setStyle(theme->styles.listHeaderLabel());
     m_contextLabel.setStyle(theme->styles.listHeaderLabel());
 
-    m_splitter1.setPosition(ui::display_w()*3/4 * 4/10);
-    m_splitter2.setPosition(ui::display_w()*3/4 * 2/10);
+    gfx::Size displaySize = display()->size();
+    m_splitter1.setPosition(displaySize.w*3/4 * 4/10);
+    m_splitter2.setPosition(displaySize.w*3/4 * 2/10);
 
     addChild(&m_splitter1);
     m_splitter1.addChild(&m_actionLabel);
@@ -881,7 +882,8 @@ void KeyboardShortcutsCommand::onExecute(Context* context)
   std::string neededSearchCopy = m_search;
   KeyboardShortcutsWindow window(keys, menuKeys, neededSearchCopy);
 
-  window.setBounds(gfx::Rect(0, 0, ui::display_w()*3/4, ui::display_h()*3/4));
+  gfx::Size displaySize = ui::get_desktop_size();
+  window.setBounds(gfx::Rect(0, 0, displaySize.w*3/4, displaySize.h*3/4));
   window.loadLayout();
 
   window.centerWindow();

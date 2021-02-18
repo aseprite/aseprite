@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -122,7 +122,11 @@ void TooltipManager::onTick()
     if (!arrowAlign)
       target.setOrigin(ui::get_mouse_position()+12*guiscale());
 
-    if (m_tipWindow->pointAt(arrowAlign, target)) {
+    if (m_tipWindow->pointAt(arrowAlign,
+                             target,
+                             m_target.widget->display())) {
+      // TODO create a native transparent window for the tooltip
+      m_tipWindow->setDisplay(m_target.widget->display());
       m_tipWindow->openWindow();
     }
     else {
@@ -161,7 +165,9 @@ void TipWindow::setCloseOnKeyDown(bool state)
   m_closeOnKeyDown = state;
 }
 
-bool TipWindow::pointAt(int arrowAlign, const gfx::Rect& target)
+bool TipWindow::pointAt(int arrowAlign,
+                        const gfx::Rect& target,
+                        const ui::Display* display)
 {
   // TODO merge this code with the new ui::fit_bounds() algorithm
 
@@ -212,8 +218,9 @@ bool TipWindow::pointAt(int arrowAlign, const gfx::Rect& target)
         break;
     }
 
-    x = base::clamp(x, 0, ui::display_w()-w);
-    y = base::clamp(y, 0, ui::display_h()-h);
+    auto displayBounds = display->bounds();
+    x = base::clamp(x, displayBounds.x, displayBounds.x2()-w);
+    y = base::clamp(y, displayBounds.y, displayBounds.y2()-h);
 
     if (m_target.intersects(gfx::Rect(x, y, w, h))) {
       switch (trycount) {

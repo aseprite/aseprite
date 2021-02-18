@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -13,8 +13,8 @@
 
 #include "base/clamp.h"
 #include "gfx/size.h"
+#include "ui/display.h"
 #include "ui/intern.h"
-#include "ui/manager.h"
 #include "ui/message.h"
 #include "ui/move_region.h"
 #include "ui/resize_event.h"
@@ -28,8 +28,8 @@
 
 #ifdef DEBUG_SCROLL_EVENTS
 #include "base/thread.h"
-#include "os/display.h"
 #include "os/surface.h"
+#include "os/window.h"
 #endif
 
 #include <algorithm>
@@ -289,9 +289,9 @@ void View::onSetViewScroll(const gfx::Point& pt)
 
   // Remove invalid region in the screen (areas that weren't
   // re-painted yet)
-  Manager* manager = this->manager();
-  if (manager)
-    validRegion -= manager->getInvalidRegion();
+  Display* display = this->display();
+  if (display)
+    validRegion -= display->getInvalidRegion();
 
   // Add extra regions that cannot be scrolled (this can be customized
   // by subclassing ui::View). We use two ScrollRegionEvent, this
@@ -327,27 +327,25 @@ void View::onSetViewScroll(const gfx::Point& pt)
     invalidRegion -= movable;   // Remove the moved region as invalid
     movable.offset(-delta);
 
-    ui::move_region(manager, movable, delta.x, delta.y);
+    ui::move_region(display, movable, delta.x, delta.y);
   }
 
 #ifdef DEBUG_SCROLL_EVENTS
   // Paint invalid region with red fill
-  {
-    auto display = manager->getDisplay();
-    if (display)
-      display->invalidateRegion(
-        gfx::Region(gfx::Rect(0, 0, display_w(), display_h())));
+  if (auto nativeWindow = display->nativeWindow()) {
+    nativeWindow->invalidateRegion(gfx::Region(display->bounds()));
     base::this_thread::sleep_for(0.002);
     {
-      os::Surface* surface = display->getSurface();
+      os::Surface* surface = nativeWindow->surface();
       os::SurfaceLock lock(surface);
+      os::Paint p;
+      p.style(os::Paint::Fill);
+      p.color(gfx::rgba(255, 0, 0));
       for (const auto& rc : invalidRegion)
-        surface->fillRect(gfx::rgba(255, 0, 0), rc);
+        surface->drawRect(rc, p);
     }
-    if (display)
-      display->invalidateRegion(
-        gfx::Region(gfx::Rect(0, 0, display_w(), display_h())));
-    base::this_thread::sleep_for(0.002);
+    nativeWindow->invalidateRegion(gfx::Region(display->bounds()));
+    base::this_thread::sleep_for(0.02);
   }
 #endif
 

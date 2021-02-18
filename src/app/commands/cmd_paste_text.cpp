@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -29,7 +29,7 @@
 #include "render/dithering.h"
 #include "render/ordered_dither.h"
 #include "render/quantization.h"
-#include "ui/system.h"
+#include "ui/manager.h"
 
 #include "paste_text.xml.h"
 
@@ -124,10 +124,11 @@ private:
     }
 
     if (!m_fontPopup->isVisible()) {
+      gfx::Size displaySize = manager()->display()->size();
       gfx::Rect bounds = fontFace()->bounds();
       m_fontPopup->showPopup(
         gfx::Rect(bounds.x, bounds.y+bounds.h,
-                  ui::display_w()/2, ui::display_h()/2));
+                  displaySize.w/2, displaySize.h/2));
     }
     else {
       m_fontPopup->closeWindow(NULL);

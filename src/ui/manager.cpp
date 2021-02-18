@@ -76,7 +76,6 @@ typedef std::list<Message*> Messages;
 typedef std::list<Filter*> Filters;
 
 Manager* Manager::m_defaultManager = nullptr;
-gfx::Region Manager::m_dirtyRegion;
 
 #ifdef DEBUG_UI_THREADS
 static base::thread::native_id_type manager_thread = 0;
@@ -160,13 +159,15 @@ bool Manager::widgetAssociatedToManager(Widget* widget)
                     widget) != mouse_widgets_list.end());
 }
 
-Manager::Manager()
+Manager::Manager(const os::WindowRef& nativeWindow)
   : Widget(kManagerWidget)
-  , m_window(nullptr)
-  , m_eventQueue(nullptr)
+  , m_display(nativeWindow, this)
+  , m_eventQueue(os::instance()->eventQueue())
   , m_lockedWindow(nullptr)
   , m_mouseButton(kButtonNone)
 {
+  nativeWindow->setUserData(&m_display);
+
 #ifdef DEBUG_UI_THREADS
   ASSERT(!manager_thread);
   manager_thread = base::this_thread::native_id();
@@ -183,14 +184,15 @@ Manager::Manager()
     capture_widget = nullptr;
   }
 
-  setBounds(gfx::Rect(0, 0, ui::display_w(), ui::display_h()));
+  setBounds(m_display.bounds());
   setVisible(true);
-
-  m_dirtyRegion = bounds();
 
   // Default manager is the first one (and is always visible).
   if (!m_defaultManager)
     m_defaultManager = this;
+
+  // TODO check if this is needed
+  onNewDisplayConfiguration(&m_display);
 }
 
 Manager::~Manager()
@@ -226,16 +228,12 @@ Manager::~Manager()
   }
 }
 
-void Manager::setNativeWindow(os::Window* window)
+Display* Manager::getDisplayFromNativeWindow(os::Window* window) const
 {
-  base::ScopedValue<bool> lock(
-    auto_window_adjustment, false,
-    auto_window_adjustment);
-
-  m_window = window;
-  m_eventQueue = os::instance()->eventQueue();
-
-  onNewDisplayConfiguration();
+  if (window)
+    return window->userData<Display>();
+  else
+    return nullptr;
 }
 
 void Manager::run()
@@ -253,11 +251,8 @@ void Manager::run()
     loop.pumpMessages();
 }
 
-void Manager::flipDisplay()
+void Manager::flipAllDisplays()
 {
-  if (!m_window)
-    return;
-
   OverlayManager* overlays = OverlayManager::instance();
 
   update_cursor_overlay();
@@ -265,15 +260,15 @@ void Manager::flipDisplay()
   // Draw overlays.
   overlays->drawOverlays();
 
-  // Invalidate the dirty region in the laf::os::Display (the real OS window).
-  m_dirtyRegion.createIntersection(
-    m_dirtyRegion,
-    gfx::Region(gfx::Rect(0, 0, ui::display_w(), ui::display_h())));
+  m_display.flipDisplay();
+}
 
-  if (!m_dirtyRegion.isEmpty()) {
-    m_window->invalidateRegion(m_dirtyRegion);
-    m_dirtyRegion.clear();
-  }
+void Manager::updateAllDisplaysWithNewScale(int scale)
+{
+  os::Window* nativeWindow = m_display.nativeWindow();
+  nativeWindow->setScale(scale);
+
+  onNewDisplayConfiguration(&m_display);
 }
 
 bool Manager::generateMessages()
@@ -308,7 +303,8 @@ bool Manager::generateMessages()
     return false;
 }
 
-void Manager::generateSetCursorMessage(const gfx::Point& mousePos,
+void Manager::generateSetCursorMessage(Display* display,
+                                       const gfx::Point& mousePos,
                                        KeyModifiers modifiers,
                                        PointerType pointerType)
 {
@@ -319,7 +315,8 @@ void Manager::generateSetCursorMessage(const gfx::Point& mousePos,
   if (dst)
     enqueueMessage(
       newMouseMessage(
-        kSetCursorMessage, dst,
+        kSetCursorMessage,
+        display, dst,
         mousePos,
         pointerType,
         m_mouseButton,
@@ -375,10 +372,15 @@ void Manager::generateMessagesFromOSEvents()
     if (osEvent.type() == os::Event::None)
       break;
 
+    Display* display = getDisplayFromNativeWindow(osEvent.window().get());
+    if (!display)
+      display = this->display();
+
     switch (osEvent.type()) {
 
       case os::Event::CloseApp: {
         Message* msg = new Message(kCloseDisplayMessage);
+        msg->setDisplay(display);
         msg->setRecipient(this);
         msg->setPropagateToChildren(true);
         enqueueMessage(msg);
@@ -387,6 +389,7 @@ void Manager::generateMessagesFromOSEvents()
 
       case os::Event::CloseWindow: {
         Message* msg = new Message(kCloseDisplayMessage);
+        msg->setDisplay(display);
         msg->setRecipient(this);
         msg->setPropagateToChildren(true);
         enqueueMessage(msg);
@@ -395,6 +398,7 @@ void Manager::generateMessagesFromOSEvents()
 
       case os::Event::ResizeWindow: {
         Message* msg = new Message(kResizeDisplayMessage);
+        msg->setDisplay(display);
         msg->setRecipient(this);
         msg->setPropagateToChildren(true);
         enqueueMessage(msg);
@@ -403,6 +407,7 @@ void Manager::generateMessagesFromOSEvents()
 
       case os::Event::DropFiles: {
         Message* msg = new DropFilesMessage(osEvent.files());
+        msg->setDisplay(display);
         msg->setRecipient(this);
         enqueueMessage(msg);
         break;
@@ -418,6 +423,8 @@ void Manager::generateMessagesFromOSEvents()
           osEvent.modifiers(),
           osEvent.unicodeChar(),
           osEvent.repeat());
+
+        msg->setDisplay(display);
 
         if (osEvent.isDeadKey())
           static_cast<KeyMessage*>(msg)->setDeadKey(true);
@@ -449,6 +456,7 @@ void Manager::generateMessagesFromOSEvents()
       case os::Event::MouseMove: {
         _internal_set_mouse_position(osEvent.position());
         handleMouseMove(
+          display,
           osEvent.position(),
           osEvent.modifiers(),
           osEvent.pointerType(),
@@ -459,6 +467,7 @@ void Manager::generateMessagesFromOSEvents()
 
       case os::Event::MouseDown: {
         handleMouseDown(
+          display,
           osEvent.position(),
           m_mouseButton = mouse_button_from_os_to_ui(osEvent),
           osEvent.modifiers(),
@@ -468,6 +477,7 @@ void Manager::generateMessagesFromOSEvents()
 
       case os::Event::MouseUp: {
         handleMouseUp(
+          display,
           osEvent.position(),
           mouse_button_from_os_to_ui(osEvent),
           osEvent.modifiers(),
@@ -478,6 +488,7 @@ void Manager::generateMessagesFromOSEvents()
 
       case os::Event::MouseDoubleClick: {
         handleMouseDoubleClick(
+          display,
           osEvent.position(),
           m_mouseButton = mouse_button_from_os_to_ui(osEvent),
           osEvent.modifiers(),
@@ -486,7 +497,8 @@ void Manager::generateMessagesFromOSEvents()
       }
 
       case os::Event::MouseWheel: {
-        handleMouseWheel(osEvent.position(),
+        handleMouseWheel(display,
+                         osEvent.position(),
                          osEvent.modifiers(),
                          osEvent.pointerType(),
                          osEvent.wheelDelta(),
@@ -497,7 +509,8 @@ void Manager::generateMessagesFromOSEvents()
       case os::Event::TouchMagnify: {
         _internal_set_mouse_position(osEvent.position());
 
-        handleTouchMagnify(osEvent.position(),
+        handleTouchMagnify(display,
+                           osEvent.position(),
                            osEvent.modifiers(),
                            osEvent.magnification());
         break;
@@ -515,13 +528,20 @@ void Manager::generateMessagesFromOSEvents()
   // Generate just one kSetCursorMessage for the last mouse position
   if (lastMouseMoveEvent.type() != os::Event::None) {
     osEvent = lastMouseMoveEvent;
-    generateSetCursorMessage(osEvent.position(),
+
+    Display* display = getDisplayFromNativeWindow(osEvent.window().get());
+    if (!display)
+      display = this->display();
+
+    generateSetCursorMessage(display,
+                             osEvent.position(),
                              osEvent.modifiers(),
                              osEvent.pointerType());
   }
 }
 
-void Manager::handleMouseMove(const gfx::Point& mousePos,
+void Manager::handleMouseMove(Display* display,
+                              const gfx::Point& mousePos,
                               const KeyModifiers modifiers,
                               const PointerType pointerType,
                               const float pressure)
@@ -532,7 +552,8 @@ void Manager::handleMouseMove(const gfx::Point& mousePos,
   Widget* dst = (capture_widget ? capture_widget: mouse_widget);
   enqueueMessage(
     newMouseMessage(
-      kMouseMoveMessage, dst,
+      kMouseMoveMessage,
+      display, dst,
       mousePos,
       pointerType,
       m_mouseButton,
@@ -542,7 +563,8 @@ void Manager::handleMouseMove(const gfx::Point& mousePos,
       pressure));
 }
 
-void Manager::handleMouseDown(const gfx::Point& mousePos,
+void Manager::handleMouseDown(Display* display,
+                              const gfx::Point& mousePos,
                               MouseButton mouseButton,
                               KeyModifiers modifiers,
                               PointerType pointerType)
@@ -552,6 +574,7 @@ void Manager::handleMouseDown(const gfx::Point& mousePos,
   enqueueMessage(
     newMouseMessage(
       kMouseDownMessage,
+      display,
       (capture_widget ? capture_widget: mouse_widget),
       mousePos,
       pointerType,
@@ -559,7 +582,8 @@ void Manager::handleMouseDown(const gfx::Point& mousePos,
       modifiers));
 }
 
-void Manager::handleMouseUp(const gfx::Point& mousePos,
+void Manager::handleMouseUp(Display* display,
+                            const gfx::Point& mousePos,
                             MouseButton mouseButton,
                             KeyModifiers modifiers,
                             PointerType pointerType)
@@ -567,6 +591,7 @@ void Manager::handleMouseUp(const gfx::Point& mousePos,
   enqueueMessage(
     newMouseMessage(
       kMouseUpMessage,
+      display,
       (capture_widget ? capture_widget: mouse_widget),
       mousePos,
       pointerType,
@@ -574,7 +599,8 @@ void Manager::handleMouseUp(const gfx::Point& mousePos,
       modifiers));
 }
 
-void Manager::handleMouseDoubleClick(const gfx::Point& mousePos,
+void Manager::handleMouseDoubleClick(Display* display,
+                                     const gfx::Point& mousePos,
                                      MouseButton mouseButton,
                                      KeyModifiers modifiers,
                                      PointerType pointerType)
@@ -584,12 +610,13 @@ void Manager::handleMouseDoubleClick(const gfx::Point& mousePos,
     enqueueMessage(
       newMouseMessage(
         kDoubleClickMessage,
-        dst, mousePos, pointerType,
+        display, dst, mousePos, pointerType,
         mouseButton, modifiers));
   }
 }
 
-void Manager::handleMouseWheel(const gfx::Point& mousePos,
+void Manager::handleMouseWheel(Display* display,
+                               const gfx::Point& mousePos,
                                KeyModifiers modifiers,
                                PointerType pointerType,
                                const gfx::Point& wheelDelta,
@@ -597,12 +624,14 @@ void Manager::handleMouseWheel(const gfx::Point& mousePos,
 {
   enqueueMessage(newMouseMessage(
       kMouseWheelMessage,
+      display,
       (capture_widget ? capture_widget: mouse_widget),
       mousePos, pointerType, m_mouseButton, modifiers,
       wheelDelta, preciseWheel));
 }
 
-void Manager::handleTouchMagnify(const gfx::Point& mousePos,
+void Manager::handleTouchMagnify(Display* display,
+                                 const gfx::Point& mousePos,
                                  const KeyModifiers modifiers,
                                  const double magnification)
 {
@@ -614,6 +643,7 @@ void Manager::handleTouchMagnify(const gfx::Point& mousePos,
       mousePos,
       magnification);
 
+    msg->setDisplay(display);
     msg->setRecipient(widget);
 
     enqueueMessage(msg);
@@ -622,6 +652,8 @@ void Manager::handleTouchMagnify(const gfx::Point& mousePos,
 
 // Handles Z order: Send the window to top (only when you click in a
 // window that aren't the desktop).
+//
+// TODO code similar to Display::handleWindowZOrder()
 void Manager::handleWindowZOrder()
 {
   if (capture_widget || !mouse_widget)
@@ -641,6 +673,8 @@ void Manager::handleWindowZOrder()
     // If the window is not already the top window of the manager.
     (window != win_manager->getTopWindow())) {
     base::ScopedValue<Widget*> scoped(m_lockedWindow, window, nullptr);
+
+    window->display()->handleWindowZOrder(window);
 
     // Put it in the top of the list
     win_manager->removeChild(window);
@@ -718,8 +752,8 @@ void Manager::dispatchMessages()
       flushRedraw();
       pumpQueue();
 
-      // Flip the back-buffer to the real display.
-      flipDisplay();
+      // Flip back-buffers to real displays.
+      flipAllDisplays();
     }
   }
 }
@@ -854,8 +888,11 @@ void Manager::setMouse(Widget* widget)
     // Put the mouse
     mouse_widget = widget;
     if (widget) {
+      Display* display = mouse_widget->display();
+
       auto msg = newMouseMessage(
-        kMouseEnterMessage, nullptr,
+        kMouseEnterMessage,
+        display, nullptr,
         get_mouse_position(),
         PointerType::Unknown,
         m_mouseButton,
@@ -865,7 +902,8 @@ void Manager::setMouse(Widget* widget)
       msg->setPropagateToParent(true);
       msg->setCommonAncestor(commonAncestor);
       enqueueMessage(msg);
-      generateSetCursorMessage(get_mouse_position(),
+      generateSetCursorMessage(display,
+                               get_mouse_position(),
                                kKeyUninitializedModifier,
                                PointerType::Unknown);
 
@@ -888,7 +926,10 @@ void Manager::setCapture(Widget* widget)
   widget->enableFlags(HAS_CAPTURE);
   capture_widget = widget;
 
-  m_window->captureMouse();
+  Display* display = (widget ? widget->display(): &m_display);
+  ASSERT(display && display->nativeWindow());
+  if (display && display->nativeWindow())
+    display->nativeWindow()->captureMouse();
 }
 
 // Sets the focus to the "magnetic" widget inside the window
@@ -925,10 +966,14 @@ void Manager::freeMouse()
 void Manager::freeCapture()
 {
   if (capture_widget) {
+    Display* display = capture_widget->display();
+
     capture_widget->disableFlags(HAS_CAPTURE);
     capture_widget = nullptr;
 
-    m_window->releaseMouse();
+    ASSERT(display && display->nativeWindow());
+    if (display && display->nativeWindow())
+      display->nativeWindow()->releaseMouse();
   }
 }
 
@@ -1073,11 +1118,6 @@ bool Manager::isFocusMovementMessage(Message* msg)
   return false;
 }
 
-void Manager::dirtyRect(const gfx::Rect& bounds)
-{
-  m_dirtyRegion.createUnion(m_dirtyRegion, gfx::Region(bounds));
-}
-
 // Configures the window for begin the loop
 void Manager::_openWindow(Window* window)
 {
@@ -1100,6 +1140,9 @@ void Manager::_openWindow(Window* window)
   // Relayout
   window->layout();
 
+  // Same display as the manager.
+  window->setDisplay(this->display());
+
   // Dirty the entire window and show it
   window->setVisible(true);
   window->invalidate();
@@ -1121,6 +1164,8 @@ void Manager::_openWindow(Window* window)
 
 void Manager::_closeWindow(Window* window, bool redraw_background)
 {
+  window->setDisplay(nullptr);
+
   if (!hasChild(window))
     return;
 
@@ -1189,7 +1234,7 @@ bool Manager::onProcessMessage(Message* msg)
       return true;
 
     case kResizeDisplayMessage:
-      onNewDisplayConfiguration();
+      onNewDisplayConfiguration(msg->display());
       break;
 
     case kKeyDownMessage:
@@ -1236,7 +1281,7 @@ void Manager::onResize(ResizeEvent& ev)
   setBoundsQuietly(new_pos);
 
   // The whole manager area is invalid now.
-  m_invalidRegion = gfx::Region(new_pos);
+  m_display.setInvalidRegion(gfx::Region(new_pos));
 
   const int dx = new_pos.x - old_pos.x;
   const int dy = new_pos.y - old_pos.y;
@@ -1306,11 +1351,12 @@ void Manager::onInitTheme(InitThemeEvent& ev)
         window->layout();
       }
       else {
+        gfx::Size displaySize = m_display.size();
         gfx::Rect bounds = window->bounds();
         bounds *= newUIScale;
         bounds /= oldUIScale;
-        bounds.x = base::clamp(bounds.x, 0, m_window->width() - bounds.w);
-        bounds.y = base::clamp(bounds.y, 0, m_window->height() - bounds.h);
+        bounds.x = base::clamp(bounds.x, 0, displaySize.w - bounds.w);
+        bounds.y = base::clamp(bounds.y, 0, displaySize.h - bounds.h);
         window->setBounds(bounds);
       }
     }
@@ -1322,19 +1368,19 @@ LayoutIO* Manager::onGetLayoutIO()
   return nullptr;
 }
 
-void Manager::onNewDisplayConfiguration()
+void Manager::onNewDisplayConfiguration(Display* display)
 {
-  if (m_window) {
-    int w = m_window->width() / m_window->scale();
-    int h = m_window->height() / m_window->scale();
-    if ((bounds().w != w ||
-         bounds().h != h)) {
-      setBounds(gfx::Rect(0, 0, w, h));
-    }
+  ASSERT(display);
+  Widget* container = display->containedWidget();
+
+  gfx::Size displaySize = display->size();
+  if ((bounds().w != displaySize.w ||
+       bounds().h != displaySize.h)) {
+    container->setBounds(gfx::Rect(displaySize));
   }
 
-  _internal_set_mouse_window(m_window);
-  invalidate();
+  _internal_set_mouse_display(display);
+  container->invalidate();
   flushRedraw();
 }
 
@@ -1497,10 +1543,11 @@ bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
 
     PaintMessage* paintMsg = static_cast<PaintMessage*>(msg);
 
+    // TODO use paintMsg->display() here
     // Restore overlays in the region that we're going to paint.
     OverlayManager::instance()->restoreOverlappedAreas(paintMsg->rect());
 
-    os::Surface* surface = m_window->surface();
+    os::Surface* surface = paintMsg->display()->surface();
     surface->saveClip();
 
     if (surface->clipRect(paintMsg->rect())) {
@@ -1520,8 +1567,7 @@ bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
       }
 
       if (m_window) {
-        m_window->invalidateRegion(
-          gfx::Region(gfx::Rect(0, 0, display_w(), display_h())));
+        m_window->invalidateRegion(gfx::Region(m_window->bounds()));
         // TODO m_window->update() ??
       }
 
@@ -1539,7 +1585,7 @@ bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
 
     // As this kPaintMessage's rectangle was updated, we can
     // remove it from "m_invalidRegion".
-    m_invalidRegion -= gfx::Region(paintMsg->rect());
+    paintMsg->display()->subtractInvalidRegion(gfx::Region(paintMsg->rect()));
   }
   else {
     // Call the message handler
@@ -1690,6 +1736,7 @@ Widget* Manager::findMagneticWidget(Widget* widget)
 // static
 Message* Manager::newMouseMessage(
   MessageType type,
+  Display* display,
   Widget* widget,
   const gfx::Point& mousePos,
   PointerType pointerType,
@@ -1715,6 +1762,9 @@ Message* Manager::newMouseMessage(
   Message* msg = new MouseMessage(
     type, pointerType, button, modifiers, mousePos,
     wheelDelta, preciseWheel, pressure);
+
+  if (display)
+    msg->setDisplay(display);
 
   if (widget)
     msg->setRecipient(widget);

@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -614,8 +614,12 @@ void ComboBox::openListBox()
   m_window = new Window(Window::WithoutTitleBar);
   View* view = new View();
   m_listbox = new ComboBoxListBox(this);
+  // TODO create a real native window for comboboxes
+  m_window->setDisplay(display());
   m_window->setOnTop(true);
   m_window->setWantFocus(false);
+  m_window->setSizeable(false);
+  m_window->setMoveable(false);
 
   Widget* viewport = view->viewport();
   {
@@ -627,8 +631,10 @@ void ComboBox::openListBox()
       if (!item->hasFlags(HIDDEN))
         size.h += item->sizeHint().h;
 
-    int max = std::max(entryBounds.y, ui::display_h() - entryBounds.y2()) - 8*guiscale();
-    size.h = base::clamp(size.h, textHeight(), max);
+    const int maxVal =
+      std::max(entryBounds.y, display()->size().h - entryBounds.y2())
+      - 8*guiscale();
+    size.h = base::clamp(size.h, textHeight(), maxVal);
     viewport->setMinSize(size);
   }
 
@@ -688,7 +694,7 @@ gfx::Rect ComboBox::getListBoxPos() const
                gfx::Point(m_button->bounds().x2(),
                           entryBounds.y2() + m_window->bounds().h));
 
-  if (rc.y2() > ui::display_h())
+  if (rc.y2() > display()->size().h)
     rc.offset(0, -(rc.h + entryBounds.h));
 
   return rc;

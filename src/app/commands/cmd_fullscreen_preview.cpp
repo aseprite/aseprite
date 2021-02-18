@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -51,8 +51,13 @@ public:
     , m_pal(m_sprite->palette(editor->frame()))
     , m_proj(editor->projection())
     , m_index_bg_color(-1)
-    , m_doublebuf(Image::create(IMAGE_RGB, ui::display_w(), ui::display_h()))
-    , m_doublesur(os::instance()->makeRgbaSurface(ui::display_w(), ui::display_h())) {
+    , m_doublebuf(Image::create(
+                    IMAGE_RGB,
+                    editor->display()->size().w,
+                    editor->display()->size().h))
+    , m_doublesur(os::instance()->makeRgbaSurface(
+                    editor->display()->size().w,
+                    editor->display()->size().h)) {
     // Do not use DocWriter (do not lock the document) because we
     // will call other sub-commands (e.g. previous frame, next frame,
     // etc.).
@@ -170,6 +175,7 @@ protected:
   }
 
   virtual void onPaint(PaintEvent& ev) override {
+    gfx::Size displaySize = display()->size();
     Graphics* g = ev.graphics();
     EditorRender& render = m_editor->renderEngine();
     render.setRefLayersVisiblity(false);
@@ -213,18 +219,18 @@ protected:
                            255, BlendMode::NORMAL);
         break;
       case TiledMode::X_AXIS:
-        for (u=x-w; u<ui::display_w()+w; u+=w)
+        for (u=x-w; u<displaySize.w+w; u+=w)
           render.renderImage(m_doublebuf.get(), m_render.get(), m_pal, u, y,
                              255, BlendMode::NORMAL);
         break;
       case TiledMode::Y_AXIS:
-        for (v=y-h; v<ui::display_h()+h; v+=h)
+        for (v=y-h; v<displaySize.h+h; v+=h)
           render.renderImage(m_doublebuf.get(), m_render.get(), m_pal, x, v,
                              255, BlendMode::NORMAL);
         break;
       case TiledMode::BOTH:
-        for (v=y-h; v<ui::display_h()+h; v+=h)
-          for (u=x-w; u<ui::display_w()+w; u+=w)
+        for (v=y-h; v<displaySize.h+h; v+=h)
+          for (u=x-w; u<displaySize.w+w; u+=w)
             render.renderImage(m_doublebuf.get(), m_render.get(), m_pal, u, v,
                                255, BlendMode::NORMAL);
         break;

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -302,12 +302,13 @@ void ColorButton::openPopup(const bool forcePinned)
   m_window->setColor(m_color, ColorPopup::ChangeType);
   m_window->openWindow();
 
+  gfx::Size displaySize = ui::get_desktop_size();
   gfx::Rect winBounds;
   if (!pinned || (forcePinned && m_hiddenPopupBounds.isEmpty())) {
     winBounds = gfx::Rect(m_window->bounds().origin(),
                           m_window->sizeHint());
-    winBounds.x = base::clamp(bounds().x, 0, ui::display_w()-winBounds.w);
-    if (bounds().y2() <= ui::display_h()-winBounds.h)
+    winBounds.x = base::clamp(bounds().x, 0, displaySize.w-winBounds.w);
+    if (bounds().y2() <= displaySize.h-winBounds.h)
       winBounds.y = std::max(0, bounds().y2());
     else
       winBounds.y = std::max(0, bounds().y-winBounds.h);
@@ -318,8 +319,8 @@ void ColorButton::openPopup(const bool forcePinned)
   else {
     winBounds = m_windowDefaultBounds;
   }
-  winBounds.x = base::clamp(winBounds.x, 0, ui::display_w()-winBounds.w);
-  winBounds.y = base::clamp(winBounds.y, 0, ui::display_h()-winBounds.h);
+  winBounds.x = base::clamp(winBounds.x, 0, displaySize.w-winBounds.w);
+  winBounds.y = base::clamp(winBounds.y, 0, displaySize.h-winBounds.h);
   m_window->setBounds(winBounds);
 
   m_window->manager()->dispatchMessages();

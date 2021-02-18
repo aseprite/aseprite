@@ -183,10 +183,11 @@ void IntEntry::openPopup()
 
   Rect rc = bounds();
   gfx::Size sz = m_popupWindow->sizeHint();
+  gfx::Size displaySize = display()->size();
   rc.w = 128*guiscale();
-  if (rc.x+rc.w > ui::display_w())
+  if (rc.x+rc.w > displaySize.w)
     rc.x = rc.x-rc.w+bounds().w;
-  if (rc.y+rc.h+sz.h < ui::display_h())
+  if (rc.y+rc.h+sz.h < displaySize.h)
     rc.y += rc.h;
   else
     rc.y -= sz.h;

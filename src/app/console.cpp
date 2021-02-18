@@ -70,8 +70,13 @@ public:
 
   void centerConsole() {
     initTheme();
+
     remapWindow();
-    setBounds(gfx::Rect(0, 0, ui::display_w()*9/10, ui::display_h()*6/10));
+
+    // TODO center to main window or screen workspace
+    gfx::Size displaySize = manager()->display()->size();
+    setBounds(gfx::Rect(0, 0, displaySize.w*9/10, displaySize.h*6/10));
+
     centerWindow();
     invalidate();
   }
@@ -116,14 +121,16 @@ Console::Console(Context* ctx)
   if (!ui::is_ui_thread())
     return;
 
-  if (ctx)
+  if (ctx) {
     m_withUI = (ctx->isUIAvailable());
-  else
+  }
+  else {
     m_withUI =
       (App::instance() &&
        App::instance()->isGui() &&
        Manager::getDefault() &&
-       Manager::getDefault()->nativeWindow());
+       Manager::getDefault()->display()->nativeWindow());
+  }
 
   if (!m_withUI)
     return;

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -1242,7 +1242,7 @@ bool Timeline::onProcessMessage(Message* msg)
 
             if (!m_confPopup->isVisible()) {
               gfx::Rect bounds = m_confPopup->bounds();
-              ui::fit_bounds(BOTTOM, gearBounds, bounds);
+              ui::fit_bounds(display(), BOTTOM, gearBounds, bounds);
 
               m_confPopup->moveWindow(bounds);
               m_confPopup->openWindow();

@@ -947,7 +947,7 @@ void Editor::drawSpriteClipped(const gfx::Region& updateRegion)
   Region screenRegion;
   getDrawableRegion(screenRegion, kCutTopWindows);
 
-  ScreenGraphics screenGraphics;
+  ScreenGraphics screenGraphics(display());
   GraphicsPtr editorGraphics = getGraphics(clientBounds());
 
   for (const Rect& updateRect : updateRegion) {
@@ -1163,7 +1163,6 @@ void Editor::drawTileNumbers(ui::Graphics* g, const Cel* cel)
     int ti_offset =
       static_cast<LayerTilemap*>(cel->layer())->tileset()->baseIndex() - 1;
 
-    const gfx::Rect rc = cel->bounds();
     const doc::Image* image = cel->image();
     std::string text;
     for (int y=0; y<image->height(); ++y) {

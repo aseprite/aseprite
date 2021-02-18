@@ -530,7 +530,8 @@ void ToolBar::openTipWindow(int group_index, Tool* tool)
   if (tool && m_popupWindow && m_popupWindow->isVisible())
     toolrc.x += arrow.x - m_popupWindow->bounds().w;
 
-  m_tipWindow->pointAt(TOP | RIGHT, toolrc);
+  m_tipWindow->pointAt(TOP | RIGHT, toolrc,
+                       ui::Manager::getDefault()->display());
 
   if (m_tipOpened)
     m_tipWindow->openWindow();
