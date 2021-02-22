@@ -317,6 +317,7 @@ void Clipboard::getDocumentRangeInfo(Doc** document, DocRange* range)
 
 void Clipboard::clearMaskFromCels(Tx& tx,
                                   Doc* doc,
+                                  const Site& site,
                                   const CelList& cels,
                                   const bool deselectMask)
 {
@@ -325,18 +326,13 @@ void Clipboard::clearMaskFromCels(Tx& tx,
 
     clear_mask_from_cel(
       tx, cel,
-      // TODO use Site information instead of color bar
-      ColorBar::instance()->tilemapMode(),
-      ColorBar::instance()->tilesetMode());
+      site.tilemapMode(),
+      site.tilesetMode());
 
     // Get cel again just in case the cmd::ClearMask() called cmd::ClearCel()
     cel = doc::get<Cel>(celId);
-    if (cel && cel->layer()->isTransparent() &&
-        !(ColorBar::instance()->tilemapMode() == TilemapMode::Pixels &&
-          ColorBar::instance()->tilesetMode() == TilesetMode::Manual &&
-          cel->layer()->isTilemap())) {
+    if (site.shouldTrimCel(cel))
       tx(new cmd::TrimCel(cel));
-    }
   }
 
   if (deselectMask)
@@ -372,6 +368,7 @@ void Clipboard::cut(ContextWriter& writer)
       }
       clearMaskFromCels(tx,
                         writer.document(),
+                        site,
                         cels,
                         true); // Deselect mask
       tx.commit();

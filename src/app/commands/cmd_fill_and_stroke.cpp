@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -121,7 +121,7 @@ void FillCommand::onExecute(Context* ctx)
 
     // If the cel wasn't deleted by cmd::ClearMask, we trim it.
     Cel* cel = ctx->activeSite().cel();
-    if (cel && layer->isTransparent())
+    if (site.shouldTrimCel(cel))
       tx(new cmd::TrimCel(cel));
 
     tx.commit();

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -119,6 +119,17 @@ gfx::Rect Site::gridBounds() const
       return bounds;
   }
   return doc::Sprite::DefaultGridBounds();
+}
+
+bool Site::shouldTrimCel(Cel* cel) const
+{
+  return (cel &&
+          cel->layer() &&
+          cel->layer()->isTransparent() &&
+          // Don't trim tiles in manual mode
+          !(m_tilemapMode == TilemapMode::Pixels &&
+            m_tilesetMode == TilesetMode::Manual &&
+            cel->layer()->isTilemap()));
 }
 
 } // namespace app

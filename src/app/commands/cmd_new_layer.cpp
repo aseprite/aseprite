@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -454,7 +454,7 @@ void NewLayerCommand::onExecute(Context* context)
             if (layer->isTransparent()) {
               // If the cel wasn't deleted by cmd::ClearMask, we trim it.
               origCel = layer->cel(frame);
-              if (origCel)
+              if (site.shouldTrimCel(origCel))
                 tx(new cmd::TrimCel(origCel));
             }
           }

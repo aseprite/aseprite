@@ -606,8 +606,7 @@ bool DocView::onClear(Context* ctx)
        !Preferences::instance().selection.keepSelectionAfterClear());
 
     ctx->clipboard()->clearMaskFromCels(
-      tx, document, cels,
-      deselectMask);
+      tx, document, site, cels, deselectMask);
 
     tx.commit();
   }

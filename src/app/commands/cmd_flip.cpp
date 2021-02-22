@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -154,7 +154,7 @@ void FlipCommand::onExecute(Context* ctx)
         else
           api.flipImage(image, flipBounds, m_flipType);
 
-        if (cel->layer()->isTransparent())
+        if (site.shouldTrimCel(cel))
           tx(new cmd::TrimCel(cel));
       }
       // When the mask is bigger than the cel bounds, we have to
