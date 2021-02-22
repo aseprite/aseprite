@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2018-2020  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-2021  Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2018  David Capello -->
 <gui>
   <!-- Keyboard shortcuts -->
@@ -840,8 +840,10 @@
           </item>
         </menu>
         <item command="RemoveLayer" text="@.layer_delete_layer" group="layer_remove" />
-        <item command="BackgroundFromLayer" text="@.layer_background_from_layer" />
-        <item command="LayerFromBackground" text="@.layer_layer_from_background" group="layer_background" />
+	<menu text="@.layer_convert">
+          <item command="BackgroundFromLayer" text="@.layer_background_from_layer" />
+          <item command="LayerFromBackground" text="@.layer_layer_from_background" group="layer_background" />
+        </menu>
         <separator />
         <item command="DuplicateLayer" text="@.layer_duplicate" group="layer_duplicate" />
         <item command="MergeDownLayer" text="@.layer_merge_down" />
@@ -1016,8 +1018,10 @@
         <param name="group" value="true" />
       </item>
       <item command="RemoveLayer" text="@main_menu.layer_delete_layer" />
-      <item command="BackgroundFromLayer" text="@main_menu.layer_background_from_layer" />
-      <item command="LayerFromBackground" text="@main_menu.layer_layer_from_background" group="layer_popup_background" />
+      <menu text="@main_menu.layer_convert">
+        <item command="BackgroundFromLayer" text="@main_menu.layer_background_from_layer" />
+        <item command="LayerFromBackground" text="@main_menu.layer_layer_from_background" group="layer_popup_background" />
+      </menu>
       <separator />
       <item command="DuplicateLayer" text="@main_menu.layer_duplicate" />
       <item command="MergeDownLayer" text="@main_menu.layer_merge_down" />
