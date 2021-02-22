@@ -1108,6 +1108,8 @@ void AsepriteDecoder::readTilesetChunk(doc::Sprite* sprite,
       const size_t dataEnd = dataBeg+dataSize;
 
       doc::ImageRef alltiles(doc::Image::create(sprite->pixelFormat(), w, h*ntiles));
+      alltiles->setMaskColor(sprite->transparentColor());
+
       read_compressed_image(f(), delegate(), alltiles.get(), header, dataEnd);
       f()->seek(dataEnd);
 
