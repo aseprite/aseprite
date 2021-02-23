@@ -1118,6 +1118,11 @@ bool Manager::isFocusMovementMessage(Message* msg)
   return false;
 }
 
+Widget* Manager::pickFromScreenPos(const gfx::Point& screenPos) const
+{
+  return pick(gfx::Point(screenPos) - display()->nativeWindow()->contentRect().origin());
+}
+
 // Configures the window for begin the loop
 void Manager::_openWindow(Window* window)
 {

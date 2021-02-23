@@ -27,6 +27,8 @@
 #include "doc/layer.h"
 #include "doc/sprite.h"
 #include "gfx/rect_io.h"
+#include "os/system.h"
+#include "os/window.h"
 #include "ui/ui.h"
 
 #include <algorithm>
@@ -145,14 +147,50 @@ bool ColorButton::onProcessMessage(Message* msg)
     case kMouseMoveMessage:
       if (hasCapture()) {
         gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
-        Widget* picked = manager()->pick(mousePos);
         app::Color color = m_color;
 
-        if (picked && picked != this) {
-          // Pick a color from a IColorSource
-          if (IColorSource* colorSource = dynamic_cast<IColorSource*>(picked)) {
-            color = colorSource->getColorByPosition(mousePos);
+        // Pick a color from a IColorSource
+        Widget* picked = window()->pick(mousePos);
+        IColorSource* colorSource = (picked != this ? dynamic_cast<IColorSource*>(picked): nullptr);
+
+        // If there is no color source, get the color from the display
+        // surface, and finally from the desktop. The desktop must be
+        // a last resource method, because in macOS it will ask for
+        // permissions to record the screen.
+        if (!colorSource) {
+          os::Window* nativeWindow = display()->nativeWindow();
+          gfx::Point screenPos = nativeWindow->pointToScreen(mousePos);
+
+          picked = manager()->pickFromScreenPos(screenPos);
+          colorSource = (picked != this ? dynamic_cast<IColorSource*>(picked): nullptr);
+          if (colorSource) {
+            nativeWindow = picked->display()->nativeWindow();
+            mousePos = nativeWindow->pointFromScreen(screenPos);
           }
+          else {
+            gfx::Color gfxColor = gfx::ColorNone;
+
+            // Get color from native window surface
+            if (nativeWindow->contentRect().contains(screenPos)) {
+              mousePos = nativeWindow->pointFromScreen(screenPos);
+              if (nativeWindow->surface()->bounds().contains(mousePos))
+                gfxColor = nativeWindow->surface()->getPixel(mousePos.x, mousePos.y);
+            }
+
+            // Or get the color from the screen
+            if (gfxColor == gfx::ColorNone) {
+              gfxColor = os::instance()->getColorFromScreen(screenPos);
+            }
+
+            color = app::Color::fromRgb(gfx::getr(gfxColor),
+                                        gfx::getg(gfxColor),
+                                        gfx::getb(gfxColor),
+                                        gfx::geta(gfxColor));
+          }
+        }
+
+        if (colorSource) {
+          color = colorSource->getColorByPosition(mousePos);
         }
 
         // Did the color change?

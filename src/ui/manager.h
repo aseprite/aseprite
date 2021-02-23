@@ -36,7 +36,7 @@ namespace ui {
     Manager(const os::WindowRef& nativeWindow);
     ~Manager();
 
-    Display* display() { return &m_display; }
+    Display* display() const { return &const_cast<Manager*>(this)->m_display; }
     Display* getDisplayFromNativeWindow(os::Window* window) const;
 
     // Executes the main message loop.
@@ -88,6 +88,8 @@ namespace ui {
 
     bool isFocusMovementMessage(Message* msg);
     bool processFocusMovementMessage(Message* msg);
+
+    Widget* pickFromScreenPos(const gfx::Point& screenPos) const;
 
     void _openWindow(Window* window);
     void _closeWindow(Window* window, bool redraw_background);
