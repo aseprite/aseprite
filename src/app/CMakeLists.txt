@@ -1,5 +1,5 @@
 # Aseprite
-# Copyright (C) 2018-2020  Igara Studio S.A.
+# Copyright (C) 2018-2021  Igara Studio S.A.
 # Copyright (C) 2001-2018  David Capello
 
 # Generate a ui::Widget for each widget in a XML file
@@ -535,6 +535,7 @@ add_library(app-lib
   commands/cmd_undo.cpp
   commands/command.cpp
   commands/commands.cpp
+  commands/convert_layer.cpp
   commands/filters/cmd_brightness_contrast.cpp
   commands/filters/cmd_color_curve.cpp
   commands/filters/cmd_convolution_matrix.cpp

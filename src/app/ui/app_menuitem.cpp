@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -87,8 +87,12 @@ bool AppMenuItem::onProcessMessage(Message* msg)
   switch (msg->type()) {
 
     case kCloseMessage:
-      // disable the menu (the keyboard shortcuts are processed by "manager_msg_proc")
-      setEnabled(false);
+      // Don't disable items with submenus
+      if (!hasSubmenu()) {
+        // Disable the menu item (the keyboard shortcuts are processed
+        // by "manager_msg_proc")
+        setEnabled(false);
+      }
       break;
   }
 

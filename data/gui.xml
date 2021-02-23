@@ -840,9 +840,17 @@
           </item>
         </menu>
         <item command="RemoveLayer" text="@.layer_delete_layer" group="layer_remove" />
-	<menu text="@.layer_convert">
-          <item command="BackgroundFromLayer" text="@.layer_background_from_layer" />
-          <item command="LayerFromBackground" text="@.layer_layer_from_background" group="layer_background" />
+        <menu text="@.layer_convert_to">
+          <item command="ConvertLayer" text="@.layer_convert_to_background">
+            <param name="to" value="background" />
+          </item>
+          <item command="ConvertLayer" text="@.layer_convert_to_layer">
+            <param name="to" value="layer" />
+          </item>
+          <separator />
+          <item command="ConvertLayer" text="@.layer_convert_to_tilemap">
+            <param name="to" value="tilemap" />
+          </item>
         </menu>
         <separator />
         <item command="DuplicateLayer" text="@.layer_duplicate" group="layer_duplicate" />
@@ -1018,9 +1026,17 @@
         <param name="group" value="true" />
       </item>
       <item command="RemoveLayer" text="@main_menu.layer_delete_layer" />
-      <menu text="@main_menu.layer_convert">
-        <item command="BackgroundFromLayer" text="@main_menu.layer_background_from_layer" />
-        <item command="LayerFromBackground" text="@main_menu.layer_layer_from_background" group="layer_popup_background" />
+      <menu text="@main_menu.layer_convert_to">
+        <item command="ConvertLayer" text="@main_menu.layer_convert_to_background">
+          <param name="to" value="background" />
+        </item>
+        <item command="ConvertLayer" text="@main_menu.layer_convert_to_layer">
+          <param name="to" value="layer" />
+        </item>
+        <separator />
+        <item command="ConvertLayer" text="@main_menu.layer_convert_to_tilemap">
+          <param name="to" value="tilemap" />
+        </item>
       </menu>
       <separator />
       <item command="DuplicateLayer" text="@main_menu.layer_duplicate" />

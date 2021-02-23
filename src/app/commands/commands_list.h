@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -14,6 +14,7 @@ FOR_EACH_COMMAND(CelOpacity)
 FOR_EACH_COMMAND(ChangePixelFormat)
 FOR_EACH_COMMAND(ColorCurve)
 FOR_EACH_COMMAND(ColorQuantization)
+FOR_EACH_COMMAND(ConvertLayer)
 FOR_EACH_COMMAND(ConvolutionMatrix)
 FOR_EACH_COMMAND(CopyColors)
 FOR_EACH_COMMAND(CopyTiles)
