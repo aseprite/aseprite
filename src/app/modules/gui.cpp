@@ -584,7 +584,7 @@ bool CustomizedGuiManager::onProcessDevModeKeyDown(KeyMessage* msg)
   if (msg->ctrlPressed() &&
       msg->scancode() == kKeyF1) {
     try {
-      os::Window* window = nativeWindow();
+      os::Window* window = display()->nativeWindow();
       int screenScale = window->scale();
       int uiScale = ui::guiscale();
 
@@ -621,8 +621,7 @@ bool CustomizedGuiManager::onProcessDevModeKeyDown(KeyMessage* msg)
         ui::set_theme(ui::get_theme(), uiScale);
       }
       if (screenScale != window->scale()) {
-        window->setScale(screenScale);
-        setWindow(window);
+        updateAllDisplaysWithNewScale(screenScale);
       }
     }
     catch (const std::exception& ex) {
