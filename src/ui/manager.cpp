@@ -45,6 +45,13 @@
 #include <utility>
 #include <vector>
 
+#if defined(_WIN32) && defined(DEBUG_PAINT_EVENTS)
+  #define WIN32_LEAN_AND_MEAN
+  #include <windows.h>
+  #undef min
+  #undef max
+#endif
+
 namespace ui {
 
 namespace {
@@ -1568,15 +1575,23 @@ bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
 #ifdef DEBUG_PAINT_EVENTS
       {
         os::SurfaceLock lock(surface);
-        surface->fillRect(gfx::rgba(0, 0, 255), paintMsg->rect());
+        os::Paint p;
+        p.color(gfx::rgba(0, 0, 255));
+        surface->drawRect(paintMsg->rect(), p);
       }
 
       if (m_window) {
         m_window->invalidateRegion(gfx::Region(m_window->bounds()));
-        // TODO m_window->update() ??
+
+#ifdef _WIN32 // TODO add a m_display->updateNow() method ??
+        HWND hwnd = (HWND)m_display->nativeHandle();
+        UpdateWindow(hwnd);
+#endif
       }
 
+#ifndef _WIN32
       base::this_thread::sleep_for(0.002);
+#endif
 #endif
 
       if (surface) {

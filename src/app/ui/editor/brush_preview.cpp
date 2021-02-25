@@ -31,6 +31,7 @@
 #include "app/ui_context.h"
 #include "app/util/wrap_value.h"
 #include "base/debug.h"
+#include "base/scoped_value.h"
 #include "doc/algo.h"
 #include "doc/blend_internals.h"
 #include "doc/brush.h"
@@ -38,7 +39,9 @@
 #include "doc/image_impl.h"
 #include "doc/layer.h"
 #include "doc/primitives.h"
-#include "gfx/rect_io.h"
+#include "os/surface.h"
+#include "os/system.h"
+#include "os/window.h"
 #include "render/render.h"
 #include "ui/manager.h"
 #include "ui/system.h"
@@ -49,17 +52,12 @@ using namespace doc;
 
 BrushPreview::BrushPreview(Editor* editor)
   : m_editor(editor)
-  , m_type(CROSSHAIR)
-  , m_onScreen(false)
-  , m_withModifiedPixels(false)
-  , m_withRealPreview(false)
-  , m_screenPosition(0, 0)
-  , m_editorPosition(0, 0)
 {
 }
 
 BrushPreview::~BrushPreview()
 {
+  m_cursor.reset();
 }
 
 BrushRef BrushPreview::getCurrentBrush()
@@ -352,8 +350,13 @@ void BrushPreview::show(const gfx::Point& screenPos)
     ui::ScreenGraphics g(m_editor->display());
     ui::SetClip clip(&g);
     gfx::Color uiCursorColor = color_utils::color_for_ui(appCursorColor);
-    forEachBrushPixel(&g, m_screenPosition, spritePos, uiCursorColor, &BrushPreview::savePixelDelegate);
-    forEachBrushPixel(&g, m_screenPosition, spritePos, uiCursorColor, &BrushPreview::drawPixelDelegate);
+
+    createNativeCursor();
+    if (m_cursor)
+      forEachLittleCrossPixel(&g, m_screenPosition, uiCursorColor, &BrushPreview::putPixelInCursorDelegate);
+
+    forEachBrushPixel(&g, spritePos, uiCursorColor, &BrushPreview::savePixelDelegate);
+    forEachBrushPixel(&g, spritePos, uiCursorColor, &BrushPreview::drawPixelDelegate);
     m_withModifiedPixels = true;
   }
 
@@ -378,6 +381,12 @@ void BrushPreview::hide()
   if (!m_onScreen)
     return;
 
+  // Don't hide the cursor to avoid flickering, the native mouse
+  // cursor will be changed anyway after the hide() by the caller.
+  //
+  //if (m_cursor)
+  //  m_editor->m_editor->display()->nativeWindow()->setNativeMouseCursor(os::NativeCursor::Hidden);
+
   // Get drawable region
   m_editor->getDrawableRegion(m_clippingRegion, ui::Widget::kCutTopWindows);
 
@@ -389,7 +398,7 @@ void BrushPreview::hide()
     // Restore pixels
     ui::ScreenGraphics g(m_editor->display());
     ui::SetClip clip(&g);
-    forEachBrushPixel(&g, m_screenPosition, m_editorPosition, gfx::ColorNone,
+    forEachBrushPixel(&g, m_editorPosition, gfx::ColorNone,
                       &BrushPreview::clearPixelDelegate);
   }
 
@@ -411,6 +420,7 @@ void BrushPreview::hide()
   }
 
   m_onScreen = false;
+
   m_clippingRegion.clear();
   m_oldClippingRegion.clear();
 }
@@ -451,12 +461,7 @@ void BrushPreview::generateBoundaries()
     (m_editor->getCurrentEditorTool()->getPointShape(0)->isPixel() ||
      m_editor->getCurrentEditorTool()->getPointShape(0)->isFloodFill());
   Image* brushImage = brush->image();
-  int w = (isOnePixel ? 1: brushImage->width());
-  int h = (isOnePixel ? 1: brushImage->height());
-
   m_brushGen = brush->gen();
-  m_brushWidth = w;
-  m_brushHeight = h;
 
   Image* mask = nullptr;
   bool deleteMask = true;
@@ -479,23 +484,52 @@ void BrushPreview::generateBoundaries()
     delete mask;
 }
 
-void BrushPreview::forEachBrushPixel(
+void BrushPreview::createNativeCursor()
+{
+  gfx::Rect cursorBounds;
+
+  if (m_type & CROSSHAIR) {
+    cursorBounds |= gfx::Rect(-3, -3, 7, 7);
+    m_cursorCenter = -cursorBounds.origin();
+  }
+  // Special case of a cursor for one pixel
+  else if (!(m_type & NATIVE_CROSSHAIR) &&
+           m_editor->zoom().scale() >= 4.0) {
+    cursorBounds = gfx::Rect(0, 0, 1, 1);
+    m_cursorCenter = gfx::Point(0, 0);
+  }
+
+  if (m_cursor) {
+    if (m_cursor->width() != cursorBounds.w ||
+        m_cursor->height() != cursorBounds.h) {
+      m_cursor.reset();
+    }
+  }
+
+  if (cursorBounds.isEmpty()) {
+    ASSERT(!m_cursor);
+    m_editor->display()->nativeWindow()->setNativeMouseCursor(os::NativeCursor::Hidden);
+    return;
+  }
+
+  if (!m_cursor) {
+    m_cursor = os::instance()->makeRgbaSurface(cursorBounds.w, cursorBounds.h);
+
+    // Cannot clear the cursor on each iteration because it can
+    // generate a flicker effect when zooming in the same mouse
+    // position. That's strange.
+    m_cursor->clear();
+  }
+}
+
+void BrushPreview::forEachLittleCrossPixel(
   ui::Graphics* g,
   const gfx::Point& screenPos,
-  const gfx::Point& spritePos,
   gfx::Color color,
   PixelDelegate pixelDelegate)
 {
-  m_savedPixelsIterator = 0;
-
   if (m_type & CROSSHAIR)
     traceCrossPixels(g, screenPos, color, pixelDelegate);
-
-  if (m_type & SELECTION_CROSSHAIR)
-    traceSelectionCrossPixels(g, spritePos, color, 1, pixelDelegate);
-
-  if (m_type & BRUSH_BOUNDARIES)
-    traceBrushBoundaries(g, spritePos, color, pixelDelegate);
 
   // Depending on the editor zoom, maybe we need subpixel movement (a
   // little dot inside the active pixel)
@@ -503,6 +537,36 @@ void BrushPreview::forEachBrushPixel(
       m_editor->zoom().scale() >= 4.0) {
     (this->*pixelDelegate)(g, screenPos, color);
   }
+  else {
+    // We'll remove the pixel (as we didn't called Surface::clear() to
+    // avoid a flickering issue when zooming in the same mouse
+    // position).
+    base::ScopedValue<bool> restore(m_blackAndWhiteNegative, false,
+                                    m_blackAndWhiteNegative);
+    (this->*pixelDelegate)(g, screenPos, gfx::ColorNone);
+  }
+
+  if (m_cursor) {
+    m_editor->display()->nativeWindow()->setNativeMouseCursor(
+      m_cursor.get(),
+      m_cursorCenter,
+      m_editor->display()->nativeWindow()->scale());
+  }
+}
+
+void BrushPreview::forEachBrushPixel(
+  ui::Graphics* g,
+  const gfx::Point& spritePos,
+  gfx::Color color,
+  PixelDelegate pixelDelegate)
+{
+  m_savedPixelsIterator = 0;
+
+  if (m_type & SELECTION_CROSSHAIR)
+    traceSelectionCrossPixels(g, spritePos, color, 1, pixelDelegate);
+
+  if (m_type & BRUSH_BOUNDARIES)
+    traceBrushBoundaries(g, spritePos, color, pixelDelegate);
 
   m_savedPixelsLimit = m_savedPixelsIterator;
 }
@@ -535,9 +599,7 @@ void BrushPreview::traceCrossPixels(
   }
 }
 
-//////////////////////////////////////////////////////////////////////
-// Old Thick Cross
-
+// Old thick cross (used for selection tools)
 void BrushPreview::traceSelectionCrossPixels(
   ui::Graphics* g,
   const gfx::Point& pt, gfx::Color color,
@@ -574,9 +636,7 @@ void BrushPreview::traceSelectionCrossPixels(
   }
 }
 
-//////////////////////////////////////////////////////////////////////
-// Current Brush Bounds
-
+// Current brush edges
 void BrushPreview::traceBrushBoundaries(ui::Graphics* g,
                                         gfx::Point pos,
                                         gfx::Color color,
@@ -601,6 +661,33 @@ void BrushPreview::traceBrushBoundaries(ui::Graphics* g,
       for (; pt.x<bounds.x+bounds.w; ++pt.x)
         (this->*pixelDelegate)(g, pt, color);
     }
+  }
+}
+
+//////////////////////////////////////////////////////////////////////
+// Pixel delegates
+
+void BrushPreview::putPixelInCursorDelegate(ui::Graphics* g, const gfx::Point& pt, gfx::Color color)
+{
+  ASSERT(m_cursor);
+
+  if (!m_clippingRegion.contains(pt))
+    return;
+
+  if (m_blackAndWhiteNegative) {
+    color_t c = g->getPixel(pt.x, pt.y);
+    int r = gfx::getr(c);
+    int g = gfx::getg(c);
+    int b = gfx::getb(c);
+
+    m_cursor->putPixel(color_utils::blackandwhite_neg(gfx::rgba(r, g, b)),
+                       pt.x - m_screenPosition.x + m_cursorCenter.x,
+                       pt.y - m_screenPosition.y + m_cursorCenter.y);
+  }
+  else {
+    m_cursor->putPixel(color,
+                       pt.x - m_screenPosition.x + m_cursorCenter.x,
+                       pt.y - m_screenPosition.y + m_cursorCenter.y);
   }
 }
 
