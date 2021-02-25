@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -44,6 +44,13 @@
 #include <memory>
 #include <utility>
 #include <vector>
+
+#if defined(_WIN32) && defined(DEBUG_PAINT_EVENTS)
+  #define WIN32_LEAN_AND_MEAN
+  #include <windows.h>
+  #undef min
+  #undef max
+#endif
 
 namespace ui {
 
@@ -1508,16 +1515,24 @@ bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
 #ifdef DEBUG_PAINT_EVENTS
       {
         os::SurfaceLock lock(surface);
-        surface->fillRect(gfx::rgba(0, 0, 255), paintMsg->rect());
+        os::Paint p;
+        p.color(gfx::rgba(0, 0, 255));
+        surface->drawRect(paintMsg->rect(), p);
       }
 
       if (m_display) {
         m_display->invalidateRegion(
           gfx::Region(gfx::Rect(0, 0, display_w(), display_h())));
-        // TODO m_display->update() ??
+
+#ifdef _WIN32 // TODO add a m_display->updateNow() method ??
+        HWND hwnd = (HWND)m_display->nativeHandle();
+        UpdateWindow(hwnd);
+#endif
       }
 
+#ifndef _WIN32
       base::this_thread::sleep_for(0.002);
+#endif
 #endif
 
       if (surface) {
