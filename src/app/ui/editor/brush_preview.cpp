@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -34,8 +34,8 @@
 #include "doc/image_impl.h"
 #include "doc/layer.h"
 #include "doc/primitives.h"
-#include "render/render.h"
 #include "os/display.h"
+#include "render/render.h"
 #include "ui/manager.h"
 #include "ui/system.h"
 
@@ -410,12 +410,7 @@ void BrushPreview::generateBoundaries()
     (m_editor->getCurrentEditorTool()->getPointShape(0)->isPixel() ||
      m_editor->getCurrentEditorTool()->getPointShape(0)->isFloodFill());
   Image* brushImage = brush->image();
-  int w = (isOnePixel ? 1: brushImage->width());
-  int h = (isOnePixel ? 1: brushImage->height());
-
   m_brushGen = brush->gen();
-  m_brushWidth = w;
-  m_brushHeight = h;
 
   Image* mask = nullptr;
   bool deleteMask = true;
