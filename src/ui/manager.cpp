@@ -34,10 +34,6 @@
 #include "base/thread.h"
 #endif
 
-#ifdef REPORT_EVENTS
-#include <iostream>
-#endif
-
 #include <algorithm>
 #include <limits>
 #include <list>
@@ -861,16 +857,9 @@ void Manager::setFocus(Widget* widget)
 void Manager::setMouse(Widget* widget)
 {
 #ifdef REPORT_EVENTS
-  std::cout << "Manager::setMouse ";
-  if (widget) {
-    std::cout << typeid(*widget).name();
-    if (!widget->id().empty())
-      std::cout << " (" << widget->id() << ")";
-  }
-  else {
-    std::cout << "null";
-  }
-  std::cout << std::endl;
+  TRACEARGS("Manager::setMouse ",
+            (widget ? typeid(*widget).name(): "null"),
+            (widget ? widget->id(): ""));
 #endif
 
   if ((mouse_widget != widget) && (!capture_widget)) {
@@ -1564,12 +1553,7 @@ bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
 
     if (surface->clipRect(paintMsg->rect())) {
 #ifdef REPORT_EVENTS
-      std::cout << " - clip("
-                << paintMsg->rect().x << ", "
-                << paintMsg->rect().y << ", "
-                << paintMsg->rect().w << ", "
-                << paintMsg->rect().h << ")"
-                << std::endl;
+      TRACEARGS(" - clipRect ", paintMsg->rect());
 #endif
 
 #ifdef DEBUG_PAINT_EVENTS
