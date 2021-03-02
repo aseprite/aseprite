@@ -44,6 +44,9 @@ namespace ui {
     void positionWindow(int x, int y);
     void moveWindow(const gfx::Rect& rect);
 
+    // Expands or shrink the window to the given side (generally sizeHint())
+    void expandWindow(const gfx::Size& size);
+
     void openWindow();
     void openWindowInForeground();
     void closeWindow(Widget* closer);

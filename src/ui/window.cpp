@@ -285,11 +285,10 @@ void Window::remapWindow()
 {
   if (m_isAutoRemap) {
     m_isAutoRemap = false;
-    this->setVisible(true);
+    setVisible(true);
   }
 
-  setBounds(Rect(Point(bounds().x, bounds().y),
-                 sizeHint()));
+  expandWindow(sizeHint());
 
   // load layout
   loadLayout();
@@ -321,6 +320,16 @@ void Window::positionWindow(int x, int y)
 void Window::moveWindow(const gfx::Rect& rect)
 {
   moveWindow(rect, true);
+}
+
+void Window::expandWindow(const gfx::Size& size)
+{
+  const gfx::Rect oldBounds = bounds();
+
+  setBounds(gfx::Rect(bounds().origin(), size));
+
+  layout();
+  manager()->invalidateRect(oldBounds);
 }
 
 void Window::openWindow()

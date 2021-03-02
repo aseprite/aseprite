@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -154,13 +154,8 @@ void NewFileCommand::onExecute(Context* ctx)
     window.advancedCheck()->setSelected(advanced);
     window.advancedCheck()->Click.connect(
       [&]{
-        gfx::Rect bounds = window.bounds();
         window.advanced()->setVisible(window.advancedCheck()->isSelected());
-        window.setBounds(gfx::Rect(window.bounds().origin(),
-                                   window.sizeHint()));
-        window.layout();
-
-        window.manager()->invalidateRect(bounds);
+        window.expandWindow(window.sizeHint());
       });
     window.advanced()->setVisible(advanced);
     if (advanced)
