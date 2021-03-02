@@ -1525,12 +1525,10 @@ bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
        msg->type() < sizeof(msg_name)/sizeof(const char*)) ?
       msg_name[msg->type()]: "Unknown";
 
-    std::cout << "Event " << msg->type() << " (" << string << ") "
-              << "for " << ((void*)widget) << std::flush;
-    std::cout << " (" << typeid(*widget).name() << ")";
-    if (!widget->id().empty())
-      std::cout << " (" << widget->id() << ")";
-    std::cout << std::endl;
+    TRACEARGS("Event", msg->type(), "(", string, ")",
+              "for", ((void*)widget),
+              typeid(*widget).name(),
+              widget->id().empty());
   }
 #endif
 
