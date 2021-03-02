@@ -1,5 +1,5 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2018-2020  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-2021  Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2018  David Capello -->
 <gui>
   <window id="options" text="@.title">
@@ -484,6 +484,8 @@
         <!-- Experimental -->
         <vbox id="section_experimental">
           <separator text="@.user_interface" horizontal="true" />
+          <check id="multiple_windows" text="@.multiple_windows"
+                 pref="experimental.multiple_windows" />
           <hbox>
             <check text="@.new_render_engine"
                    pref="experimental.new_render_engine" />

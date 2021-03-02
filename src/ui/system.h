@@ -40,6 +40,8 @@ namespace ui {
     ClipboardDelegate* m_clipboardDelegate;
   };
 
+  void set_multiple_displays(bool multi);
+  bool get_multiple_displays();
   gfx::Size get_desktop_size();
 
   void set_clipboard_text(const std::string& text);
@@ -60,12 +62,15 @@ namespace ui {
   void show_mouse_cursor();
 
   void _internal_set_mouse_display(Display* display);
-  void _internal_free_mouse_display(Display* display);
   void _internal_no_mouse_position();
-  void _internal_set_mouse_position(const gfx::Point& newPos);
 
-  const gfx::Point& get_mouse_position();
-  void set_mouse_position(const gfx::Point& newPos);
+  // Returns desktop/screen mouse position (relative to no-display)
+  gfx::Point get_mouse_position();
+
+  // Sets the mouse position relative to a specific display (or
+  // relative to the desktop if it's nullptr)
+  void set_mouse_position(const gfx::Point& newPos,
+                          Display* display);
 
   void execute_from_ui_thread(std::function<void()>&& func);
   bool is_ui_thread();

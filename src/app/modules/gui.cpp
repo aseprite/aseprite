@@ -219,7 +219,7 @@ int init_module_gui()
       Message* msg = new Message(kResizeDisplayMessage);
       msg->setDisplay(display);
       msg->setRecipient(manager);
-      msg->setPropagateToChildren(true);
+      msg->setPropagateToChildren(false);
 
       manager->enqueueMessage(msg);
       manager->dispatchMessages();
@@ -295,6 +295,8 @@ static void load_gui_config(int& w, int& h, bool& maximized,
   h = get_config_int("GfxMode", "Height", defSize.h);
   maximized = get_config_bool("GfxMode", "Maximized", false);
   windowLayout = get_config_string("GfxMode", "WindowLayout", "");
+
+  ui::set_multiple_displays(Preferences::instance().experimental.multipleWindows());
 }
 
 static void save_gui_config()
@@ -331,21 +333,20 @@ void update_screen_for_document(const Doc* document)
   }
 }
 
-void load_window_pos(Widget* window, const char* section,
+void load_window_pos(Window* window, const char* section,
                      const bool limitMinSize)
 {
   Size desktopSize = ui::get_desktop_size();
 
   // Default position
-  Rect orig_pos = window->bounds();
-  Rect pos = orig_pos;
+  Rect origPos = window->bounds();
 
   // Load configurated position
-  pos = get_config_rect(section, "WindowPos", pos);
+  Rect pos = get_config_rect(section, "WindowPos", origPos);
 
   if (limitMinSize) {
-    pos.w = base::clamp(pos.w, orig_pos.w, desktopSize.w);
-    pos.h = base::clamp(pos.h, orig_pos.h, desktopSize.h);
+    pos.w = base::clamp(pos.w, origPos.w, desktopSize.w);
+    pos.h = base::clamp(pos.h, origPos.h, desktopSize.h);
   }
   else {
     pos.w = std::min(pos.w, desktopSize.w);
@@ -356,11 +357,36 @@ void load_window_pos(Widget* window, const char* section,
                       base::clamp(pos.y, 0, desktopSize.h-pos.h)));
 
   window->setBounds(pos);
+
+  if (get_multiple_displays()) {
+    Rect frame = get_config_rect(section, "WindowFrame", gfx::Rect());
+    if (!frame.isEmpty()) {
+      // TODO limit window area to current workspace / all available screen limits (?)
+      window->loadNativeFrame(frame);
+    }
+  }
+  else {
+    del_config_value(section, "WindowFrame");
+  }
 }
 
-void save_window_pos(Widget* window, const char *section)
+void save_window_pos(Window* window, const char *section)
 {
-  set_config_rect(section, "WindowPos", window->bounds());
+  gfx::Rect rc;
+
+  if (!window->lastNativeFrame().isEmpty()) {
+    os::Window* mainNativeWindow = manager->display()->nativeWindow();
+    int scale = mainNativeWindow->scale();
+    rc = window->lastNativeFrame();
+    set_config_rect(section, "WindowFrame", rc);
+    rc.offset(-mainNativeWindow->frame().origin());
+    rc /= scale;
+  }
+  else {
+    rc = window->bounds();
+  }
+
+  set_config_rect(section, "WindowPos", rc);
 }
 
 // TODO Replace this with new theme styles
@@ -405,12 +431,15 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
 
   switch (msg->type()) {
 
-    case kCloseDisplayMessage: {
-      // Execute the "Exit" command.
-      Command* command = Commands::instance()->byId(CommandId::Exit());
-      UIContext::instance()->executeCommandFromMenuOrShortcut(command);
+    case kCloseDisplayMessage:
+      // When the main display is closed...
+      if (msg->display() == this->display()) {
+        // Execute the "Exit" command.
+        Command* command = Commands::instance()->byId(CommandId::Exit());
+        UIContext::instance()->executeCommandFromMenuOrShortcut(command);
+        return true;
+      }
       break;
-    }
 
     case kDropFilesMessage:
       // Files are processed only when the main window is the current
@@ -580,7 +609,7 @@ bool CustomizedGuiManager::onProcessDevModeKeyDown(KeyMessage* msg)
     return true; // This line should not be executed anyway
   }
 
-  // F1 switches screen/UI scaling
+  // Ctrl+F1 switches screen/UI scaling
   if (msg->ctrlPressed() &&
       msg->scancode() == kKeyF1) {
     try {

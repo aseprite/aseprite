@@ -120,13 +120,13 @@ void TooltipManager::onTick()
     int arrowAlign = m_target.tipInfo.arrowAlign;
     gfx::Rect target = m_target.widget->bounds();
     if (!arrowAlign)
-      target.setOrigin(ui::get_mouse_position()+12*guiscale());
+      target.setOrigin(m_target.widget->mousePosInDisplay()+12*guiscale());
 
     if (m_tipWindow->pointAt(arrowAlign,
                              target,
                              m_target.widget->display())) {
       // TODO create a native transparent window for the tooltip
-      m_tipWindow->setDisplay(m_target.widget->display());
+      m_tipWindow->setDisplay(m_target.widget->display(), false);
       m_tipWindow->openWindow();
     }
     else {

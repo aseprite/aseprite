@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2020  Igara Studio S.A.
+// Copyright (c) 2020-2021  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -20,6 +20,7 @@
 #include "ui/paint_event.h"
 #include "ui/size_hint_event.h"
 #include "ui/system.h"
+#include "ui/window.h"
 
 namespace app {
 
@@ -88,16 +89,32 @@ bool TileButton::onProcessMessage(Message* msg)
       break;
 
     case kMouseMoveMessage:
+      // TODO code similar to ColorButton::onProcessMessage()
       if (hasCapture()) {
         gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
-        Widget* picked = manager()->pick(mousePos);
         doc::tile_t tile = m_tile;
 
-        if (picked && picked != this) {
-          // Pick a tile from a ITileSource
-          if (ITileSource* tileSource = dynamic_cast<ITileSource*>(picked)) {
-            tile = tileSource->getTileByPosition(mousePos);
+        // Pick a tile from a ITileSource
+        Widget* picked = window()->pick(mousePos);
+        ITileSource* tileSource = (picked != this ? dynamic_cast<ITileSource*>(picked): nullptr);
+
+        // If there is no tile source in this window, try to get the
+        // tile from other display, i.e. and editor in other native
+        // window.
+        if (!tileSource && get_multiple_displays()) {
+          os::Window* nativeWindow = display()->nativeWindow();
+          gfx::Point screenPos = nativeWindow->pointToScreen(mousePos);
+
+          picked = manager()->pickFromScreenPos(screenPos);
+          tileSource = (picked != this ? dynamic_cast<ITileSource*>(picked): nullptr);
+          if (tileSource) {
+            nativeWindow = picked->display()->nativeWindow();
+            mousePos = nativeWindow->pointFromScreen(screenPos);
           }
+        }
+
+        if (tileSource) {
+          tile = tileSource->getTileByPosition(mousePos);
         }
 
         // Did the tile change?

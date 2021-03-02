@@ -112,6 +112,7 @@ Window::Window(Type type, const std::string& text)
   , m_closer(nullptr)
   , m_titleLabel(nullptr)
   , m_closeButton(nullptr)
+  , m_ownDisplay(false)
   , m_isDesktop(type == DesktopWindow)
   , m_isMoveable(!m_isDesktop)
   , m_isSizeable(!m_isDesktop)
@@ -145,12 +146,16 @@ Display* Window::display() const
     return nullptr;
 }
 
-void Window::setDisplay(Display* display)
+void Window::setDisplay(Display* display, const bool own)
 {
-  if (m_display)
+  if (m_display) {
+    if (m_ownDisplay)
+      m_lastFrame = m_display->nativeWindow()->frame();
     m_display->removeWindow(this);
+  }
 
   m_display = display;
+  m_ownDisplay = own;
 
   if (m_display)
     m_display->addWindow(this);
@@ -198,7 +203,7 @@ void Window::onHitTest(HitTestEvent& ev)
 {
   HitTest ht = HitTestNowhere;
 
-  // If this window is not movable or we are not completely visible.
+  // If this window is not movable
   if (!m_isMoveable) {
     ev.setHit(ht);
     return;
@@ -207,7 +212,7 @@ void Window::onHitTest(HitTestEvent& ev)
   // TODO check why this is necessary, there should be a bug in
   // the manager where we are receiving mouse events and are not
   // the top most window.
-  Widget* picked = manager()->pick(ev.point());
+  Widget* picked = pick(ev.point());
   if (picked &&
       picked != this &&
       picked->type() != kWindowTitleLabelWidget) {
@@ -230,6 +235,14 @@ void Window::onHitTest(HitTestEvent& ev)
   }
   // Resize
   else if (m_isSizeable) {
+#ifdef __APPLE__
+    // TODO on macOS we cannot start resize actions on native windows
+    if (ownDisplay()) {
+      ev.setHit(ht);
+      return;
+    }
+#endif
+
     if ((x >= pos.x) && (x < cpos.x)) {
       if ((y >= pos.y) && (y < cpos.y))
         ht = HitTestBorderNW;
@@ -326,19 +339,28 @@ void Window::expandWindow(const gfx::Size& size)
 {
   const gfx::Rect oldBounds = bounds();
 
-  setBounds(gfx::Rect(bounds().origin(), size));
+  if (ownDisplay()) {
+    os::Window* nativeWindow = display()->nativeWindow();
+    const int scale = nativeWindow->scale();
+    gfx::Rect frame = nativeWindow->frame();
+    frame.setSize(size * scale);
+    nativeWindow->setFrame(frame);
 
-  layout();
-  manager()->invalidateRect(oldBounds);
+    layout();
+    invalidate();
+  }
+  else {
+    setBounds(gfx::Rect(bounds().origin(), size));
+
+    layout();
+    manager()->invalidateRect(oldBounds);
+  }
 }
 
 void Window::openWindow()
 {
   if (!parent()) {
-    if (m_isAutoRemap)
-      centerWindow();
-
-    Manager::getDefault()->_openWindow(this);
+    Manager::getDefault()->_openWindow(this, m_isAutoRemap);
   }
 }
 
@@ -348,9 +370,7 @@ void Window::openWindowInForeground()
 
   openWindow();
 
-  MessageLoop loop(manager());
-  while (!hasFlags(HIDDEN))
-    loop.pumpMessages();
+  Manager::getDefault()->_runModalWindow(this);
 
   m_isForeground = false;
 }
@@ -400,6 +420,26 @@ bool Window::onProcessMessage(Message* msg)
           clickedWindowPos = new gfx::Rect(bounds());
         else
           *clickedWindowPos = bounds();
+
+        // Handle native window action
+        if (ownDisplay()) {
+          os::WindowAction action = os::WindowAction::Cancel;
+          switch (m_hitTest) {
+            case HitTestCaption:  action = os::WindowAction::Move; break;
+            case HitTestBorderNW: action = os::WindowAction::ResizeFromTopLeft; break;
+            case HitTestBorderN:  action = os::WindowAction::ResizeFromTop;  break;
+            case HitTestBorderNE: action = os::WindowAction::ResizeFromTopRight; break;
+            case HitTestBorderW:  action = os::WindowAction::ResizeFromLeft;  break;
+            case HitTestBorderE:  action = os::WindowAction::ResizeFromRight;  break;
+            case HitTestBorderSW: action = os::WindowAction::ResizeFromBottomLeft; break;
+            case HitTestBorderS:  action = os::WindowAction::ResizeFromBottom;  break;
+            case HitTestBorderSE: action = os::WindowAction::ResizeFromBottomRight; break;
+          }
+          if (action != os::WindowAction::Cancel) {
+            display()->nativeWindow()->performWindowAction(action, nullptr);
+            return true;
+          }
+        }
 
         captureMouse();
         return true;
@@ -521,6 +561,50 @@ bool Window::onProcessMessage(Message* msg)
   return Widget::onProcessMessage(msg);
 }
 
+// TODO similar to Manager::onInvalidateRegion
+void Window::onInvalidateRegion(const gfx::Region& region)
+{
+  if (!ownDisplay()) {
+    Widget::onInvalidateRegion(region);
+    return;
+  }
+
+  if (!isVisible() || region.contains(bounds()) == gfx::Region::Out)
+    return;
+
+  Display* display = this->display();
+
+  // Intersect only with window bounds, we don't need to use
+  // getDrawableRegion() because each sub-window in the display will
+  // be processed in the following for() loop
+  gfx::Region reg1;
+  reg1.createIntersection(region, gfx::Region(bounds()));
+
+  // Redraw windows from top to background.
+  for (auto window : display->getWindows()) {
+    // Invalidating the manager only works for the main display, to
+    // invalidate windows you have to invalidate them.
+    if (window->ownDisplay()) {
+      ASSERT(this == window);
+      break;
+    }
+
+    // Invalidate regions of this window
+    window->invalidateRegion(reg1);
+
+    // Clip this window area for the next window.
+    gfx::Region reg2;
+    window->getRegion(reg2);
+    reg1 -= reg2;
+  }
+
+  // TODO we should be able to modify m_updateRegion directly here,
+  // so we avoid the getDrawableRegion() call from
+  // Widget::onInvalidateRegion().
+  if (!reg1.isEmpty())
+    Widget::onInvalidateRegion(reg1);
+}
+
 void Window::onResize(ResizeEvent& ev)
 {
   windowSetPosition(ev.bounds());
@@ -555,9 +639,11 @@ void Window::onSizeHint(SizeHintEvent& ev)
   }
 }
 
-void Window::onBroadcastMouseMessage(WidgetsList& targets)
+void Window::onBroadcastMouseMessage(const gfx::Point& screenPos,
+                                     WidgetsList& targets)
 {
-  targets.push_back(this);
+  if (!ownDisplay() || display()->nativeWindow()->frame().contains(screenPos))
+    targets.push_back(this);
 
   // Continue sending the message to siblings windows until a desktop
   // or foreground window.
@@ -566,7 +652,7 @@ void Window::onBroadcastMouseMessage(WidgetsList& targets)
 
   Widget* sibling = nextSibling();
   if (sibling)
-    sibling->broadcastMouseMessage(targets);
+    sibling->broadcastMouseMessage(screenPos, targets);
 }
 
 void Window::onSetText()

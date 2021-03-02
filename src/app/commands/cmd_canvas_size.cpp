@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -142,8 +142,9 @@ protected:
     updateEditorBoxFromRect();
   }
 
-  virtual void onBroadcastMouseMessage(WidgetsList& targets) override {
-    Window::onBroadcastMouseMessage(targets);
+  virtual void onBroadcastMouseMessage(const gfx::Point& screenPos,
+                                       WidgetsList& targets) override {
+    Window::onBroadcastMouseMessage(screenPos, targets);
 
     // Add the editor as receptor of mouse events too.
     targets.push_back(View::getView(m_editor));

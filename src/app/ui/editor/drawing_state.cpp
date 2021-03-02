@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -214,7 +214,7 @@ bool DrawingState::onMouseMove(Editor* editor, MouseMessage* msg)
                                         false, m_processScrollChange);
 
   // Update velocity sensor.
-  m_velocity.updateWithScreenPoint(msg->position());
+  m_velocity.updateWithDisplayPoint(msg->position());
 
   // The autoScroll() function controls the "infinite scroll" when we
   // touch the viewport borders.
@@ -279,10 +279,10 @@ bool DrawingState::onKeyUp(Editor* editor, KeyMessage* msg)
 bool DrawingState::onScrollChange(Editor* editor)
 {
   if (m_processScrollChange) {
-    gfx::Point mousePos = ui::get_mouse_position();
+    gfx::Point mousePos = editor->mousePosInDisplay();
 
     // Update velocity sensor.
-    m_velocity.updateWithScreenPoint(mousePos); // TODO add scroll as velocity?
+    m_velocity.updateWithDisplayPoint(mousePos); // TODO add scroll as velocity?
 
     handleMouseMovement(
       tools::Pointer(editor->screenToEditor(mousePos),

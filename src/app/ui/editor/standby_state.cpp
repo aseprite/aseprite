@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -66,7 +66,6 @@
 #include "os/system.h"
 #include "ui/alert.h"
 #include "ui/message.h"
-#include "ui/system.h"
 #include "ui/view.h"
 
 #include <cmath>
@@ -527,7 +526,7 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
   tools::Ink* ink = editor->getCurrentEditorInk();
   const Sprite* sprite = editor->sprite();
   gfx::PointF spritePos =
-    editor->screenToEditorF(ui::get_mouse_position())
+    editor->screenToEditorF(editor->mousePosInDisplay())
     - gfx::PointF(editor->mainTilePosition());
 
   if (!sprite) {
@@ -680,7 +679,7 @@ bool StandbyState::checkStartDrawingStraightLine(Editor* editor,
     if (drawingState) {
       drawingState->sendMovementToToolLoop(
         tools::Pointer(
-          pointer ? pointer->point(): editor->screenToEditor(ui::get_mouse_position()),
+          pointer ? pointer->point(): editor->screenToEditor(editor->mousePosInDisplay()),
           tools::Vec2(0.0f, 0.0f),
           pointerButton,
           pointer ? pointer->type(): tools::Pointer::Type::Unknown,

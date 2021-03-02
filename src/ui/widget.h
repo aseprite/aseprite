@@ -185,6 +185,8 @@ namespace ui {
 
     Widget* pick(const gfx::Point& pt,
                  const bool checkParentsVisibility = true) const;
+    virtual Widget* pickFromScreenPos(const gfx::Point& screenPos) const;
+
     bool hasChild(Widget* child);
     bool hasAncestor(Widget* ancestor);
     Widget* findChild(const char* id);
@@ -318,7 +320,8 @@ namespace ui {
     bool sendMessage(Message* msg);
     void closeWindow();
 
-    void broadcastMouseMessage(WidgetsList& targets);
+    void broadcastMouseMessage(const gfx::Point& screenPos,
+                               WidgetsList& targets);
 
     // ===============================================================
     // SIZE & POSITION
@@ -342,7 +345,19 @@ namespace ui {
     bool hasFocus() const { return hasFlags(HAS_FOCUS); }
     bool hasMouse() const { return hasFlags(HAS_MOUSE); }
     bool hasCapture() const { return hasFlags(HAS_CAPTURE); }
+
+    // Checking if the mouse is currently above the widget.
     bool hasMouseOver() const;
+
+    // Returns the mouse position relative to the top-left corner of
+    // the ui::Display's client area/content rect.
+    gfx::Point mousePosInDisplay() const;
+
+    // Returns the mouse position relative to the top-left cornder of
+    // the widget bounds.
+    gfx::Point mousePosInClientBounds() const {
+      return toClient(mousePosInDisplay());
+    }
 
     // Offer the capture to widgets of the given type. Returns true if
     // the capture was passed to other widget.
@@ -380,7 +395,8 @@ namespace ui {
     virtual void onSaveLayout(SaveLayoutEvent& ev);
     virtual void onResize(ResizeEvent& ev);
     virtual void onPaint(PaintEvent& ev);
-    virtual void onBroadcastMouseMessage(WidgetsList& targets);
+    virtual void onBroadcastMouseMessage(const gfx::Point& screenPos,
+                                         WidgetsList& targets);
     virtual void onInitTheme(InitThemeEvent& ev);
     virtual void onSetDecorativeWidgetBounds();
     virtual void onVisible(bool visible);

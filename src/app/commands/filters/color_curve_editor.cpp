@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -71,12 +71,12 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
       switch (static_cast<KeyMessage*>(msg)->scancode()) {
 
         case kKeyInsert: {
-          addPoint(screenToView(get_mouse_position()));
+          addPoint(screenToView(mousePosInDisplay()));
           break;
         }
 
         case kKeyDel: {
-          if (gfx::Point* point = getClosestPoint(screenToView(get_mouse_position())))
+          if (gfx::Point* point = getClosestPoint(screenToView(mousePosInDisplay())))
             removePoint(*point);
           break;
         }

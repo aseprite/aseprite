@@ -28,8 +28,9 @@ namespace ui {
     explicit Window(Type type, const std::string& text = "");
     ~Window();
 
+    bool ownDisplay() const { return m_ownDisplay; }
     Display* display() const;
-    void setDisplay(Display* display);
+    void setDisplay(Display* display, const bool own);
 
     Widget* closer() const { return m_closer; }
 
@@ -61,14 +62,22 @@ namespace ui {
 
     HitTest hitTest(const gfx::Point& point);
 
+    // Last native window frame bounds. Saved just before we close the
+    // native window so we can save this information in the
+    // configuration file.
+    gfx::Rect lastNativeFrame() const { return m_lastFrame; }
+    void loadNativeFrame(const gfx::Rect& frame) { m_lastFrame = frame; }
+
     // Signals
     obs::signal<void (CloseEvent&)> Close;
 
   protected:
     virtual bool onProcessMessage(Message* msg) override;
+    virtual void onInvalidateRegion(const gfx::Region& region) override;
     virtual void onResize(ResizeEvent& ev) override;
     virtual void onSizeHint(SizeHintEvent& ev) override;
-    virtual void onBroadcastMouseMessage(WidgetsList& targets) override;
+    virtual void onBroadcastMouseMessage(const gfx::Point& screenPos,
+                                         WidgetsList& targets) override;
     virtual void onSetText() override;
 
     // New events
@@ -88,6 +97,7 @@ namespace ui {
     Widget* m_closer;
     Label* m_titleLabel;
     ButtonBase* m_closeButton;
+    bool m_ownDisplay : 1;
     bool m_isDesktop : 1;
     bool m_isMoveable : 1;
     bool m_isSizeable : 1;
@@ -96,6 +106,7 @@ namespace ui {
     bool m_isForeground : 1;
     bool m_isAutoRemap : 1;
     int m_hitTest;
+    gfx::Rect m_lastFrame;
   };
 
 } // namespace ui

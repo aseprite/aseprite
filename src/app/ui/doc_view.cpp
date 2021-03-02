@@ -128,7 +128,7 @@ protected:
               PointerType::Unknown,
               (lmb->isPressed(msg, *keys) ? kButtonLeft: kButtonRight),
               msg->modifiers(),
-              ui::get_mouse_position());
+              mousePosInDisplay());
 
             sendMessage(&mouseMsg);
             return true;
@@ -362,7 +362,7 @@ void DocView::onTabPopup(Workspace* workspace)
   ctx->setActiveView(this);
   ctx->updateFlags();
 
-  menu->showPopup(ui::get_mouse_position());
+  menu->showPopup(mousePosInDisplay());
 }
 
 bool DocView::onProcessMessage(Message* msg)

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -186,12 +186,16 @@ void EyedropperCommand::onLoadParams(const Params& params)
 void EyedropperCommand::onExecute(Context* context)
 {
   gfx::Point mousePos = ui::get_mouse_position();
-  Widget* widget = ui::Manager::getDefault()->pick(mousePos);
+  Widget* widget = ui::Manager::getDefault()->pickFromScreenPos(mousePos);
   if (!widget || widget->type() != Editor::Type())
     return;
 
   Editor* editor = static_cast<Editor*>(widget);
-  executeOnMousePos(context, editor, mousePos, !m_background);
+  executeOnMousePos(
+    context,
+    editor,
+    editor->display()->nativeWindow()->pointFromScreen(mousePos),
+    !m_background);
 }
 
 void EyedropperCommand::executeOnMousePos(Context* context,

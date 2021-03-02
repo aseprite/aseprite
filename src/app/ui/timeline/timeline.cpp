@@ -888,7 +888,7 @@ bool Timeline::onProcessMessage(Message* msg)
                 m_state = STATE_COLLAPSING_LAYERS;
 
               setLayerCollapsedFlag(m_clk.layer, m_state == STATE_COLLAPSING_LAYERS);
-              updateByMousePos(msg, ui::get_mouse_position() - bounds().origin());
+              updateByMousePos(msg, mousePosInClientBounds());
 
               // The m_clk might have changed because we've
               // expanded/collapsed a group just right now (i.e. we've
@@ -1075,7 +1075,7 @@ bool Timeline::onProcessMessage(Message* msg)
             m_clk = hit;
             if (hit.part == PART_ROW_CONTINUOUS_ICON) {
               setLayerCollapsedFlag(hit.layer, m_state == STATE_COLLAPSING_LAYERS);
-              updateByMousePos(msg, ui::get_mouse_position() - bounds().origin());
+              updateByMousePos(msg, mousePosInClientBounds());
             }
             break;
 
@@ -1483,7 +1483,7 @@ bool Timeline::onProcessMessage(Message* msg)
         }
       }
 
-      updateByMousePos(msg, ui::get_mouse_position() - bounds().origin());
+      updateByMousePos(msg, mousePosInClientBounds());
       if (used)
         return true;
 
@@ -1502,7 +1502,7 @@ bool Timeline::onProcessMessage(Message* msg)
         }
       }
 
-      updateByMousePos(msg, ui::get_mouse_position() - bounds().origin());
+      updateByMousePos(msg, mousePosInClientBounds());
       if (used)
         return true;
 

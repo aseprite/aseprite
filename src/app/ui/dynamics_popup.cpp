@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2021  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -430,7 +430,7 @@ bool DynamicsPopup::onProcessMessage(Message* msg)
       }
 
       if (m_dynamics->velocityPlaceholder()->isVisible()) {
-        m_velocity.updateWithScreenPoint(mouseMsg->position());
+        m_velocity.updateWithDisplayPoint(mouseMsg->position());
 
         float v = m_velocity.velocity().magnitude()
           / tools::VelocitySensor::kScreenPixelsForFullVelocity;

@@ -301,7 +301,7 @@ void Editor::setStateInternal(const EditorStatePtr& newState)
     invalidate();
 
   // Setup the new mouse cursor
-  setCursor(ui::get_mouse_position());
+  setCursor(mousePosInDisplay());
 
   updateStatusBar();
 }
@@ -539,7 +539,7 @@ void Editor::setEditorScroll(const gfx::Point& scroll)
 void Editor::setEditorZoom(const render::Zoom& zoom)
 {
   setZoomAndCenterInMouse(
-    zoom, ui::get_mouse_position(),
+    zoom, mousePosInDisplay(),
     Editor::ZoomBehavior::CENTER);
 }
 
@@ -1402,7 +1402,8 @@ gfx::Point Editor::autoScroll(MouseMessage* msg, AutoScroll dir)
     setEditorScroll(scroll);
 
     mousePos -= delta;
-    ui::set_mouse_position(mousePos);
+    ui::set_mouse_position(mousePos,
+                           display());
 
     m_oldPos = mousePos;
     mousePos = gfx::Point(
@@ -1976,7 +1977,7 @@ bool Editor::onProcessMessage(Message* msg)
         updateAutoCelGuides(msg);
         if (hasMouse()) {
           updateQuicktool();
-          setCursor(ui::get_mouse_position());
+          setCursor(mousePosInDisplay());
         }
 
         if (used)
@@ -1993,7 +1994,7 @@ bool Editor::onProcessMessage(Message* msg)
         updateAutoCelGuides(msg);
         if (hasMouse()) {
           updateQuicktool();
-          setCursor(ui::get_mouse_position());
+          setCursor(mousePosInDisplay());
         }
 
         if (used)
@@ -2040,7 +2041,7 @@ bool Editor::onProcessMessage(Message* msg)
           // (e.g. in the case of the Eraser tool).
           m_document->setExtraCel(ExtraCelRef(nullptr));
 
-          showBrushPreview(ui::get_mouse_position());
+          showBrushPreview(mousePosInDisplay());
         }
         else {
           m_document->setExtraCel(ExtraCelRef(nullptr));
@@ -2174,7 +2175,7 @@ void Editor::onActiveToolChange(tools::Tool* tool)
   m_state->onActiveToolChange(this, tool);
   if (hasMouse()) {
     updateStatusBar();
-    setCursor(ui::get_mouse_position());
+    setCursor(mousePosInDisplay());
   }
 }
 
@@ -2277,15 +2278,15 @@ void Editor::onRemoveSlice(DocEvent& ev)
   }
 }
 
-void Editor::setCursor(const gfx::Point& mouseScreenPos)
+void Editor::setCursor(const gfx::Point& mouseDisplayPos)
 {
   Rect vp = View::getView(this)->viewportBounds();
-  if (!vp.contains(mouseScreenPos))
+  if (!vp.contains(mouseDisplayPos))
     return;
 
   bool used = false;
   if (m_sprite)
-    used = m_state->onSetCursor(this, mouseScreenPos);
+    used = m_state->onSetCursor(this, mouseDisplayPos);
 
   if (!used)
     showMouseCursor(kArrowCursor);
@@ -2302,7 +2303,7 @@ bool Editor::canDraw()
 
 bool Editor::isInsideSelection()
 {
-  gfx::Point spritePos = screenToEditor(ui::get_mouse_position());
+  gfx::Point spritePos = screenToEditor(mousePosInDisplay());
   spritePos -= mainTilePosition();
 
   KeyAction action = m_customizationDelegate->getPressedKeyAction(KeyContext::SelectionTool);
@@ -2617,7 +2618,7 @@ void Editor::notifyScrollChanged()
   // Update status bar and mouse cursor
   if (hasMouse()) {
     updateStatusBar();
-    setCursor(ui::get_mouse_position());
+    setCursor(mousePosInDisplay());
   }
 }
 
@@ -2753,7 +2754,7 @@ void Editor::showAnimationSpeedMultiplierPopup(Option<bool>& playOnce,
     menu.addChild(item);
   }
 
-  menu.showPopup(ui::get_mouse_position());
+  menu.showPopup(mousePosInDisplay());
 
   if (isPlaying()) {
     // Re-play
@@ -2916,7 +2917,7 @@ void Editor::updateAutoCelGuides(ui::Message* msg)
     ColorPicker picker;
     picker.pickColor(getSite(),
                      screenToEditorF(mouseMsg ? mouseMsg->position():
-                                                ui::get_mouse_position()),
+                                                mousePosInDisplay()),
                      m_proj, ColorPicker::FromComposition);
     m_showGuidesThisCel = (picker.layer() ? picker.layer()->cel(m_frame):
                                             nullptr);

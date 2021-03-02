@@ -145,6 +145,7 @@ bool ColorButton::onProcessMessage(Message* msg)
       break;
 
     case kMouseMoveMessage:
+      // TODO code similar to TileButton::onProcessMessage()
       if (hasCapture()) {
         gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
         app::Color color = m_color;
@@ -157,7 +158,7 @@ bool ColorButton::onProcessMessage(Message* msg)
         // surface, and finally from the desktop. The desktop must be
         // a last resource method, because in macOS it will ask for
         // permissions to record the screen.
-        if (!colorSource) {
+        if (!colorSource && get_multiple_displays()) {
           os::Window* nativeWindow = display()->nativeWindow();
           gfx::Point screenPos = nativeWindow->pointToScreen(mousePos);
 

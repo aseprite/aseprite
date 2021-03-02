@@ -62,6 +62,7 @@ namespace ui {
 
     Window* getTopWindow();
     Window* getForegroundWindow();
+    Display* getForegroundDisplay();
 
     Widget* getFocus();
     Widget* getMouse();
@@ -79,6 +80,7 @@ namespace ui {
     void removeMessagesFor(Widget* widget);
     void removeMessagesFor(Widget* widget, MessageType type);
     void removeMessagesForTimer(Timer* timer);
+    void removePaintMessagesForDisplay(Display* display);
 
     void addMessageFilter(int message, Widget* widget);
     void removeMessageFilter(int message, Widget* widget);
@@ -89,17 +91,19 @@ namespace ui {
     bool isFocusMovementMessage(Message* msg);
     bool processFocusMovementMessage(Message* msg);
 
-    Widget* pickFromScreenPos(const gfx::Point& screenPos) const;
+    Widget* pickFromScreenPos(const gfx::Point& screenPos) const override;
 
-    void _openWindow(Window* window);
+    void _openWindow(Window* window, bool center);
     void _closeWindow(Window* window, bool redraw_background);
+    void _runModalWindow(Window* window);
 
   protected:
     bool onProcessMessage(Message* msg) override;
     void onInvalidateRegion(const gfx::Region& region) override;
     void onResize(ResizeEvent& ev) override;
     void onSizeHint(SizeHintEvent& ev) override;
-    void onBroadcastMouseMessage(WidgetsList& targets) override;
+    void onBroadcastMouseMessage(const gfx::Point& screenPos,
+                                 WidgetsList& targets) override;
     void onInitTheme(InitThemeEvent& ev) override;
     virtual LayoutIO* onGetLayoutIO();
     virtual void onNewDisplayConfiguration(Display* display);
@@ -142,7 +146,8 @@ namespace ui {
                             const KeyModifiers modifiers,
                             const double magnification);
     void handleWindowZOrder();
-    void updateMouseWidgets(const gfx::Point& mousePos);
+    void updateMouseWidgets(const gfx::Point& mousePos,
+                            Display* display);
 
     int pumpQueue();
     bool sendMessageToWidget(Message* msg, Widget* widget);

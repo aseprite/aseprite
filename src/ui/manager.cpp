@@ -27,6 +27,7 @@
 #include "os/surface.h"
 #include "os/system.h"
 #include "os/window.h"
+#include "os/window_spec.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
 
@@ -90,6 +91,16 @@ static Messages used_msg_queue;        // Messages queue
 static base::concurrent_queue<Message*> concurrent_msg_queue;
 static Filters msg_filters[NFILTERS]; // Filters for every enqueued message
 static int filter_locks = 0;
+
+// Current display with the mouse, used to avoid processing a
+// os::Event::MouseLeave of the non-current display/window as when we
+// move the mouse between two windows we can receive:
+//
+//   1. A os::Event::MouseEnter of the new window
+//   2. A os::Event::MouseLeave of the old window
+//
+// Instead of the MouseLeave event of the old window first.
+static Display* mouse_display = nullptr;
 
 static Widget* focus_widget;    // The widget with the focus
 static Widget* mouse_widget;    // The widget with the mouse
@@ -164,7 +175,7 @@ bool Manager::widgetAssociatedToManager(Widget* widget)
 
 Manager::Manager(const os::WindowRef& nativeWindow)
   : Widget(kManagerWidget)
-  , m_display(nativeWindow, this)
+  , m_display(nullptr, nativeWindow, this)
   , m_eventQueue(os::instance()->eventQueue())
   , m_lockedWindow(nullptr)
   , m_mouseButton(kButtonNone)
@@ -264,12 +275,30 @@ void Manager::flipAllDisplays()
   overlays->drawOverlays();
 
   m_display.flipDisplay();
+  if (get_multiple_displays()) {
+    for (auto child : children()) {
+      auto window = static_cast<Window*>(child);
+      if (window->ownDisplay())
+        window->display()->flipDisplay();
+    }
+  }
 }
 
 void Manager::updateAllDisplaysWithNewScale(int scale)
 {
   os::Window* nativeWindow = m_display.nativeWindow();
   nativeWindow->setScale(scale);
+
+  if (get_multiple_displays()) {
+    for (auto child : children()) {
+      auto window = static_cast<Window*>(child);
+      if (window->ownDisplay()) {
+        Display* display = static_cast<Window*>(child)->display();
+        display->nativeWindow()->setScale(scale);
+        onNewDisplayConfiguration(display);
+      }
+    }
+  }
 
   onNewDisplayConfiguration(&m_display);
 }
@@ -403,7 +432,7 @@ void Manager::generateMessagesFromOSEvents()
         Message* msg = new Message(kResizeDisplayMessage);
         msg->setDisplay(display);
         msg->setRecipient(this);
-        msg->setPropagateToChildren(true);
+        msg->setPropagateToChildren(false);
         enqueueMessage(msg);
         break;
       }
@@ -438,26 +467,34 @@ void Manager::generateMessagesFromOSEvents()
       }
 
       case os::Event::MouseEnter: {
-        _internal_set_mouse_position(osEvent.position());
+        if (get_multiple_displays()) {
+          if (osEvent.window()) {
+            ASSERT(display != nullptr);
+            _internal_set_mouse_display(display);
+          }
+        }
         set_mouse_cursor(kArrowCursor);
         lastMouseMoveEvent = osEvent;
+        mouse_display = display;
         break;
       }
 
       case os::Event::MouseLeave: {
-        set_mouse_cursor(kOutsideDisplay);
-        setMouse(nullptr);
+        if (mouse_display == display) {
+          set_mouse_cursor(kOutsideDisplay);
+          setMouse(nullptr);
 
-        _internal_no_mouse_position();
+          _internal_no_mouse_position();
+          mouse_display = nullptr;
 
-        // To avoid calling kSetCursorMessage when the mouse leaves
-        // the window.
-        lastMouseMoveEvent = os::Event();
+          // To avoid calling kSetCursorMessage when the mouse leaves
+          // the window.
+          lastMouseMoveEvent = os::Event();
+        }
         break;
       }
 
       case os::Event::MouseMove: {
-        _internal_set_mouse_position(osEvent.position());
         handleMouseMove(
           display,
           osEvent.position(),
@@ -510,8 +547,6 @@ void Manager::generateMessagesFromOSEvents()
       }
 
       case os::Event::TouchMagnify: {
-        _internal_set_mouse_position(osEvent.position());
-
         handleTouchMagnify(display,
                            osEvent.position(),
                            osEvent.modifiers(),
@@ -549,7 +584,7 @@ void Manager::handleMouseMove(Display* display,
                               const PointerType pointerType,
                               const float pressure)
 {
-  updateMouseWidgets(mousePos);
+  updateMouseWidgets(mousePos, display);
 
   // Send the mouse movement message
   Widget* dst = (capture_widget ? capture_widget: mouse_widget);
@@ -669,6 +704,8 @@ void Manager::handleWindowZOrder()
   if ((window) &&
     // We cannot change Z-order of desktop windows
     (!window->isDesktop()) &&
+    // We cannot change window order of native windows (they are handled by the OS)
+    (!window->ownDisplay()) &&
     // We cannot change Z order of foreground windows because a
     // foreground window can launch other background windows
     // which should be kept on top of the foreground one.
@@ -705,16 +742,44 @@ void Manager::handleWindowZOrder()
   setFocus(mouse_widget);
 }
 
-void Manager::updateMouseWidgets(const gfx::Point& mousePos)
+// If display is nullptr, mousePos is in screen coordinates, if not,
+// it's relative to the display content rect.
+void Manager::updateMouseWidgets(const gfx::Point& mousePos,
+                                 Display* display)
 {
+  gfx::Point screenPos = (display ? display->nativeWindow()->pointToScreen(mousePos):
+                                    mousePos);
+
   // Get the list of widgets to send mouse messages.
   mouse_widgets_list.clear();
-  broadcastMouseMessage(mouse_widgets_list);
+  broadcastMouseMessage(screenPos,
+                        mouse_widgets_list);
 
   // Get the widget under the mouse
   Widget* widget = nullptr;
   for (auto mouseWidget : mouse_widgets_list) {
-    widget = mouseWidget->pick(mousePos);
+    if (get_multiple_displays()) {
+      gfx::Point displayPos;
+      if (display) {
+        if (display != mouseWidget->display()) {
+          displayPos = mouseWidget->display()->nativeWindow()->pointFromScreen(screenPos);
+          widget = mouseWidget->display()->containedWidget()->pick(displayPos);
+        }
+        else {
+          widget = mouseWidget->pick(mousePos);
+        }
+      }
+      else {
+        displayPos = mouseWidget->display()->nativeWindow()->pointFromScreen(screenPos);
+        widget = mouseWidget->display()->containedWidget()->pick(displayPos);
+      }
+    }
+    else {
+      if (display)
+        widget = mouseWidget->pick(mousePos);
+      else
+        widget = mouseWidget->pickFromScreenPos(screenPos);
+    }
     if (widget) {
       // Get the first ancestor of the picked widget that doesn't
       // ignore mouse events.
@@ -726,10 +791,12 @@ void Manager::updateMouseWidgets(const gfx::Point& mousePos)
 
   // Fixup "mouse" flag
   if (widget != mouse_widget) {
-    if (!widget)
+    if (!widget) {
       freeMouse();
-    else
+    }
+    else {
       setMouse(widget);
+    }
   }
 }
 
@@ -791,6 +858,16 @@ Window* Manager::getForegroundWindow()
       return window;
   }
   return nullptr;
+}
+
+Display* Manager::getForegroundDisplay()
+{
+  if (get_multiple_displays()) {
+    Window* window = getForegroundWindow();
+    if (window)
+      return window->display();
+  }
+  return &m_display;
 }
 
 Widget* Manager::getFocus()
@@ -885,11 +962,12 @@ void Manager::setMouse(Widget* widget)
     mouse_widget = widget;
     if (widget) {
       Display* display = mouse_widget->display();
+      gfx::Point mousePos = display->nativeWindow()->pointFromScreen(get_mouse_position());
 
       auto msg = newMouseMessage(
         kMouseEnterMessage,
         display, nullptr,
-        get_mouse_position(),
+        mousePos,
         PointerType::Unknown,
         m_mouseButton,
         kKeyUninitializedModifier);
@@ -899,7 +977,7 @@ void Manager::setMouse(Widget* widget)
       msg->setCommonAncestor(commonAncestor);
       enqueueMessage(msg);
       generateSetCursorMessage(display,
-                               get_mouse_position(),
+                               mousePos,
                                kKeyUninitializedModifier,
                                PointerType::Unknown);
 
@@ -1050,6 +1128,24 @@ void Manager::removeMessagesForTimer(Timer* timer)
   }
 }
 
+void Manager::removePaintMessagesForDisplay(Display* display)
+{
+#ifdef DEBUG_UI_THREADS
+  ASSERT(manager_thread == base::this_thread::native_id());
+#endif
+
+  for (auto it=msg_queue.begin(); it != msg_queue.end(); ) {
+    Message* msg = *it;
+    if (msg->type() == kPaintMessage &&
+        static_cast<PaintMessage*>(msg)->display() == display) {
+      delete msg;
+      it = msg_queue.erase(it);
+    }
+    else
+      ++it;
+  }
+}
+
 void Manager::addMessageFilter(int message, Widget* widget)
 {
 #ifdef DEBUG_UI_THREADS
@@ -1116,12 +1212,37 @@ bool Manager::isFocusMovementMessage(Message* msg)
 
 Widget* Manager::pickFromScreenPos(const gfx::Point& screenPos) const
 {
-  return pick(gfx::Point(screenPos) - display()->nativeWindow()->contentRect().origin());
+  Display* mainDisplay = display();
+
+  if (get_multiple_displays()) {
+    for (auto child : children()) {
+      auto window = static_cast<Window*>(child);
+      if (window->ownDisplay() ||
+          window->display() != mainDisplay) {
+        os::Window* nativeWindow = window->display()->nativeWindow();
+        if (nativeWindow->frame().contains(screenPos))
+          return window->pick(nativeWindow->pointFromScreen(screenPos));
+      }
+    }
+
+    gfx::Point displayPos = display()->nativeWindow()->pointFromScreen(screenPos);
+    for (auto child : children()) {
+      auto window = static_cast<Window*>(child);
+      if (window->display() == mainDisplay) {
+        if (auto picked = window->pick(displayPos))
+          return picked;
+      }
+    }
+  }
+  return Widget::pickFromScreenPos(screenPos);
 }
 
 // Configures the window for begin the loop
-void Manager::_openWindow(Window* window)
+void Manager::_openWindow(Window* window, bool center)
 {
+  Display* parentDisplay = getForegroundDisplay();
+  ASSERT(parentDisplay);
+
   // Free all widgets of special states.
   if (window->isWantFocus()) {
     freeCapture();
@@ -1139,10 +1260,79 @@ void Manager::_openWindow(Window* window)
   }
 
   // Relayout
-  window->layout();
+  if (center)
+    window->centerWindow();
+  else
+    window->layout();
 
-  // Same display as the manager.
-  window->setDisplay(this->display());
+  // If the window already was set a display, we don't setup it
+  // (i.e. in the case of combobox popup/window the display field is
+  // set to the same display where the ComboBox widget is located)
+  if (window->display() == &m_display) {
+    // In other case, we can try to create a display/native window for
+    // the UI window.
+    if (get_multiple_displays()
+        && !window->isDesktop()
+#if 1   // TODO Add support for menuboxes and tooltips with native windows
+        && window->isSizeable()
+#endif
+        ) {
+      const int scale = parentDisplay->nativeWindow()->scale();
+
+      os::WindowSpec spec;
+      gfx::Rect frame;
+      if (!window->lastNativeFrame().isEmpty()) {
+        frame = window->lastNativeFrame();
+      }
+      else {
+        gfx::Rect relativeToFrame = parentDisplay->nativeWindow()->contentRect();
+        frame = window->bounds();
+        frame *= scale;
+        frame.offset(relativeToFrame.origin());
+      }
+      spec.position(os::WindowSpec::Position::Frame);
+      spec.frame(frame);
+      spec.scale(scale);
+      // Only desktop will have the real native window title bar
+      // TODO in the future other windows could use the native title bar
+      //      when there are no special decorators (or we could just add
+      //      the possibility to create new buttons in the native window
+      //      title bar)
+      spec.titled(window->isDesktop());
+      spec.floating(!window->isDesktop());
+      spec.resizable(window->isDesktop() || window->isSizeable());
+      spec.maximizable(spec.resizable());
+      spec.minimizable(window->isDesktop());
+      spec.borderless(!window->isDesktop());
+
+      if (!window->isDesktop()) {
+        spec.parent(parentDisplay->nativeWindow());
+      }
+
+      os::WindowRef newNativeWindow = os::instance()->makeWindow(spec);
+      ui::Display* newDisplay = new ui::Display(parentDisplay, newNativeWindow, window);
+
+      newNativeWindow->setUserData(newDisplay);
+      window->setDisplay(newDisplay, true);
+
+      // Set native title bar text
+      newNativeWindow->setTitle(window->text());
+
+      // Activate only non-floating windows
+      if (!spec.floating())
+        newNativeWindow->activate();
+      else
+        m_display.nativeWindow()->activate();
+
+      // Move all widgets to the os::Display origin (0,0)
+      window->offsetWidgets(-window->origin().x, -window->origin().y);
+    }
+    else {
+      // Same display for desktop window or when multiple displays is
+      // disabled.
+      window->setDisplay(this->display(), false);
+    }
+  }
 
   // Dirty the entire window and show it
   window->setVisible(true);
@@ -1160,19 +1350,51 @@ void Manager::_openWindow(Window* window)
 
   // Update mouse widget (as it can be a widget below the
   // recently opened window).
-  updateMouseWidgets(ui::get_mouse_position());
+  updateMouseWidgets(ui::get_mouse_position(), nullptr);
 }
 
 void Manager::_closeWindow(Window* window, bool redraw_background)
 {
-  window->setDisplay(nullptr);
+  Display* windowDisplay = window->display();
+  Display* parentDisplay;
+
+  if (// The display can be nullptr if the window was not opened or
+      // was closed before.
+      window->ownDisplay()) {
+    parentDisplay = windowDisplay->parentDisplay();
+    ASSERT(parentDisplay);
+    ASSERT(windowDisplay);
+    ASSERT(windowDisplay != this->display());
+
+    // Remove all paint messages for this display.
+    removePaintMessagesForDisplay(windowDisplay);
+
+    window->setDisplay(nullptr, false);
+    windowDisplay->nativeWindow()->setUserData<void*>(nullptr);
+
+    // Remove the mouse cursor from the display that we are going to
+    // delete.
+    _internal_set_mouse_display(parentDisplay);
+
+    // The ui::Display should destroy the os::Window
+    delete windowDisplay;
+
+    // Activate main windows
+    parentDisplay->nativeWindow()->activate();
+  }
+  else {
+    parentDisplay = windowDisplay;
+    window->setDisplay(nullptr, false);
+  }
 
   if (!hasChild(window))
     return;
 
   gfx::Region reg1;
-  if (redraw_background)
-    window->getRegion(reg1);
+  if (!window->ownDisplay()) {
+    if (redraw_background)
+      window->getRegion(reg1);
+  }
 
   // Close all windows to this desktop
   if (window->isDesktop()) {
@@ -1183,7 +1405,7 @@ void Manager::_closeWindow(Window* window, bool redraw_background)
       else {
         gfx::Region reg2;
         window->getRegion(reg2);
-        reg1.createUnion(reg1, reg2);
+        reg1 |= reg2;
 
         _closeWindow(child, false);
       }
@@ -1213,13 +1435,20 @@ void Manager::_closeWindow(Window* window, bool redraw_background)
   removeChild(window);
 
   // Redraw background.
-  invalidateRegion(reg1);
+  parentDisplay->containedWidget()->invalidateRegion(reg1);
 
   // Update mouse widget (as it can be a widget below the
   // recently closed window).
-  updateMouseWidgets(ui::get_mouse_position());
+  updateMouseWidgets(ui::get_mouse_position(), nullptr);
 
   redrawState = RedrawState::AWindowHasJustBeenClosed;
+}
+
+void Manager::_runModalWindow(Window* window)
+{
+  MessageLoop loop(manager());
+  while (!window->hasFlags(HIDDEN))
+    loop.pumpMessages();
 }
 
 bool Manager::onProcessMessage(Message* msg)
@@ -1233,6 +1462,15 @@ bool Manager::onProcessMessage(Message* msg)
       // (the last main window content is kept until the Display is
       // finally closed.)
       return true;
+
+    case kCloseDisplayMessage: {
+      if (msg->display() != &m_display) {
+        if (Window* window = dynamic_cast<Window*>(msg->display()->containedWidget())) {
+          window->closeWindow(this);
+        }
+      }
+      break;
+    }
 
     case kResizeDisplayMessage:
       onNewDisplayConfiguration(msg->display());
@@ -1291,6 +1529,9 @@ void Manager::onResize(ResizeEvent& ev)
 
   for (auto child : children()) {
     Window* window = static_cast<Window*>(child);
+    if (window->ownDisplay())
+      continue;
+
     if (window->isDesktop()) {
       window->setBounds(new_pos);
       break;
@@ -1329,13 +1570,14 @@ void Manager::onResize(ResizeEvent& ev)
   }
 }
 
-void Manager::onBroadcastMouseMessage(WidgetsList& targets)
+void Manager::onBroadcastMouseMessage(const gfx::Point& screenPos,
+                                      WidgetsList& targets)
 {
   // Ask to the first window in the "children" list to know how to
   // propagate mouse messages.
   Widget* widget = UI_FIRST_WIDGET(children());
   if (widget)
-    widget->broadcastMouseMessage(targets);
+    widget->broadcastMouseMessage(screenPos, targets);
 }
 
 void Manager::onInitTheme(InitThemeEvent& ev)
@@ -1382,7 +1624,7 @@ void Manager::onNewDisplayConfiguration(Display* display)
 
   _internal_set_mouse_display(display);
   container->invalidate();
-  flushRedraw();
+  container->flushRedraw();
 }
 
 void Manager::onSizeHint(SizeHintEvent& ev)
@@ -1576,14 +1818,12 @@ bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
 #endif
 #endif
 
-      if (surface) {
-        // Call the message handler
-        used = widget->sendMessage(msg);
-
-        // Restore clip region for paint messages.
-        surface->restoreClip();
-      }
+      // Call the message handler
+      used = widget->sendMessage(msg);
     }
+
+    // Restore clip region for paint messages.
+    surface->restoreClip();
 
     // As this kPaintMessage's rectangle was updated, we can
     // remove it from "m_invalidRegion".
@@ -1600,6 +1840,8 @@ bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
 // It's like Widget::onInvalidateRegion() but optimized for the
 // Manager (as we know that all children in a Manager will be windows,
 // we can use this knowledge to avoid some calculations).
+//
+// TODO similar to Window::onInvalidateRegion
 void Manager::onInvalidateRegion(const gfx::Region& region)
 {
   if (!isVisible() || region.contains(bounds()) == gfx::Region::Out)
@@ -1618,6 +1860,11 @@ void Manager::onInvalidateRegion(const gfx::Region& region)
     ASSERT(dynamic_cast<Window*>(child));
     ASSERT(child->type() == kWindowWidget);
     Window* window = static_cast<Window*>(child);
+
+    // Invalidating the manager only works for the main display, to
+    // invalidate windows you have to invalidate them.
+    if (window->ownDisplay())
+      continue;
 
     // Invalidate regions of this window
     window->invalidateRegion(reg1);

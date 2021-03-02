@@ -74,7 +74,7 @@ public:
     gfx::Rect vp = view->viewportBounds();
     gfx::Point scroll = view->viewScroll();
 
-    m_oldMousePos = ui::get_mouse_position();
+    m_oldMousePos = mousePosInDisplay();
     m_pos.x = -scroll.x + vp.x + editor->padding().x;
     m_pos.y = -scroll.y + vp.y + editor->padding().y;
 

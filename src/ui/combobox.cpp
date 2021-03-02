@@ -375,7 +375,8 @@ bool ComboBox::onProcessMessage(Message* msg)
           closeListBox();
 
           MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
-          Widget* pick = manager()->pick(mouseMsg->position());
+          Widget* pick = manager()->pickFromScreenPos(
+            display()->nativeWindow()->pointFromScreen(mouseMsg->position()));
           if (pick && pick->hasAncestor(this))
             return true;
         }
@@ -503,7 +504,8 @@ bool ComboBoxEntry::onProcessMessage(Message* msg)
     case kMouseMoveMessage:
       if (hasCapture()) {
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
-        Widget* pick = manager()->pick(mouseMsg->position());
+        Widget* pick = manager()->pickFromScreenPos(
+          display()->nativeWindow()->pointToScreen(mouseMsg->position()));
         Widget* listbox = m_comboBox->m_listbox;
 
         if (pick != nullptr &&
@@ -615,7 +617,7 @@ void ComboBox::openListBox()
   View* view = new View();
   m_listbox = new ComboBoxListBox(this);
   // TODO create a real native window for comboboxes
-  m_window->setDisplay(display());
+  m_window->setDisplay(display(), false);
   m_window->setOnTop(true);
   m_window->setWantFocus(false);
   m_window->setSizeable(false);
@@ -667,6 +669,7 @@ void ComboBox::closeListBox()
 
     m_window->closeWindow(this);
     delete m_window;            // window, frame
+
     m_window = nullptr;
     m_listbox = nullptr;
 

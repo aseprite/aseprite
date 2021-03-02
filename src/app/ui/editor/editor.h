@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -172,6 +172,11 @@ namespace app {
 
     void flashCurrentLayer();
 
+    // Convert ui::Display coordinates (pixel relative to the top-left
+    // corner of the in the display content bounds) from/to
+    // editor/sprite coordinates (pixel in the canvas).
+    //
+    // TODO we should rename these functions to displayToEditor() and editorToDisplay()
     gfx::Point screenToEditor(const gfx::Point& pt);
     gfx::PointF screenToEditorF(const gfx::Point& pt);
     gfx::Point editorToScreen(const gfx::Point& pt);
@@ -368,7 +373,7 @@ namespace app {
                        const int dottedY);
     gfx::Rect getCelScreenBounds(const Cel* cel);
 
-    void setCursor(const gfx::Point& mouseScreenPos);
+    void setCursor(const gfx::Point& mouseDisplayPos);
 
     // Draws the specified portion of sprite in the editor.  Warning:
     // You should setup the clip of the screen before calling this

@@ -499,6 +499,11 @@ Widget* Widget::pick(const gfx::Point& pt,
   return const_cast<Widget*>(picked);
 }
 
+Widget* Widget::pickFromScreenPos(const gfx::Point& screenPos) const
+{
+  return pick(display()->nativeWindow()->pointFromScreen(screenPos));
+}
+
 bool Widget::hasChild(Widget* child)
 {
   ASSERT_VALID_WIDGET(child);
@@ -762,13 +767,13 @@ void Widget::getRegion(gfx::Region& region)
 
 void Widget::getDrawableRegion(gfx::Region& region, DrawableRegionFlags flags)
 {
+  Window* window = this->window();
+  Display* display = this->display();
+
   getRegion(region);
 
   // Cut the top windows areas
   if (flags & kCutTopWindows) {
-    Window* window = this->window();
-    Display* display = this->display();
-
     const auto& uiWindows = display->getWindows();
 
     // Reverse iterator
@@ -815,7 +820,7 @@ void Widget::getDrawableRegion(gfx::Region& region, DrawableRegionFlags flags)
   // Intersect with the parent area
   if (!hasFlags(DECORATIVE)) {
     Widget* p = this->parent();
-    while (p) {
+    while (p && p->type() != kManagerWidget) {
       region &= Region(p->childrenBounds());
       p = p->parent();
     }
@@ -827,25 +832,15 @@ void Widget::getDrawableRegion(gfx::Region& region, DrawableRegionFlags flags)
     }
   }
 
-  // Limit to the manager area
-  {
-    Window* window = this->window();
-    Manager* manager = (window ? window->manager(): nullptr);
-    while (manager) {
-      View* view = View::getView(manager);
+  // Limit to the displayable area
+  View* view = View::getView(display->containedWidget());
+  Rect cpos;
+  if (view)
+    cpos = static_cast<View*>(view)->viewportBounds();
+  else
+    cpos = display->containedWidget()->bounds();
 
-      Rect cpos;
-      if (view)
-        cpos = static_cast<View*>(view)->viewportBounds();
-      else
-        cpos = manager->childrenBounds();
-
-      region &= Region(cpos);
-
-      window = manager->window();
-      manager = (window ? window->manager(): nullptr);
-    }
-  }
+  region &= Region(cpos);
 }
 
 int Widget::textWidth() const
@@ -982,7 +977,6 @@ void Widget::flushRedraw()
     processing.push(this);
   }
 
-  Display* display = this->display();
   Manager* manager = this->manager();
   ASSERT(manager);
   if (!manager)
@@ -1017,6 +1011,7 @@ void Widget::flushRedraw()
       Region::const_iterator it = widget->m_updateRegion.begin();
 
       // Draw the widget
+      Display* display = widget->display();
       int count = nrects-1;
       for (c=0; c<nrects; ++c, ++it, --count) {
         // Create the draw message
@@ -1094,23 +1089,28 @@ bool Widget::paintEvent(Graphics* graphics,
 
     enableFlags(HIDDEN);
 
-    if (parent()) {
-      if (parent()->display() == display()) {
-        gfx::Region rgn(parent()->bounds());
-        rgn &= gfx::Region(
-          graphics->getClipBounds().offset(
-            graphics->getInternalDeltaX(),
-            graphics->getInternalDeltaY()));
-        parent()->paint(graphics, rgn, true);
-      }
-      else {
-        // TODO clear surface with transparent color, the following
-        //      line doesn't work because we have to specify the
-        //      SkBlendMode::kSrc mode instead of
-        //      SkBlendMode::kSrcOver
+    Widget* parentWidget;
+    if (type() == kWindowWidget) {
+      parentWidget = display()->containedWidget();
+    }
+    else {
+      parentWidget = parent();
+    }
+    if (parentWidget) {
+      gfx::Region rgn(parentWidget->bounds());
+      rgn &= gfx::Region(
+        graphics->getClipBounds().offset(
+          graphics->getInternalDeltaX(),
+          graphics->getInternalDeltaY()));
+      parentWidget->paint(graphics, rgn, true);
+    }
+    else {
+      // TODO clear surface with transparent color, the following
+      //      line doesn't work because we have to specify the
+      //      SkBlendMode::kSrc mode instead of
+      //      SkBlendMode::kSrcOver
 
-        //graphics->fillRect(gfx::rgba(0, 0, 0, 0), clientBounds());
-      }
+      //graphics->fillRect(gfx::rgba(0, 0, 0, 0), clientBounds());
     }
 
     disableFlags(HIDDEN);
@@ -1231,9 +1231,10 @@ void Widget::closeWindow()
     w->closeWindow(this);
 }
 
-void Widget::broadcastMouseMessage(WidgetsList& targets)
+void Widget::broadcastMouseMessage(const gfx::Point& screenPos,
+                                   WidgetsList& targets)
 {
-  onBroadcastMouseMessage(targets);
+  onBroadcastMouseMessage(screenPos, targets);
 }
 
 // ===============================================================
@@ -1384,7 +1385,12 @@ bool Widget::offerCapture(ui::MouseMessage* mouseMsg, int widget_type)
 
 bool Widget::hasMouseOver() const
 {
-  return (this == pick(get_mouse_position()));
+  return (this == pickFromScreenPos(get_mouse_position()));
+}
+
+gfx::Point Widget::mousePosInDisplay() const
+{
+  return display()->nativeWindow()->pointFromScreen(get_mouse_position());
 }
 
 void Widget::setMnemonic(int mnemonic)
@@ -1566,7 +1572,8 @@ void Widget::onPaint(PaintEvent& ev)
                          clientBounds());
 }
 
-void Widget::onBroadcastMouseMessage(WidgetsList& targets)
+void Widget::onBroadcastMouseMessage(const gfx::Point& screenPos,
+                                     WidgetsList& targets)
 {
   // Do nothing
 }

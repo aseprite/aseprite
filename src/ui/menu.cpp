@@ -454,7 +454,8 @@ bool MenuBox::onProcessMessage(Message* msg)
         // popuped menu-box) to detect if the user press outside of
         // the widget
         if (msg->type() == kMouseDownMessage && m_base != nullptr) {
-          Widget* picked = manager()->pick(mousePos);
+          Widget* picked = manager()->pickFromScreenPos(
+            display()->nativeWindow()->pointToScreen(mousePos));
 
           // If one of these conditions are accomplished we have to
           // close all menus (back to menu-bar or close the popuped

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2021  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -27,7 +27,7 @@ void VelocitySensor::reset()
   m_velocity = Vec2(0.0f, 0.0f);
 }
 
-void VelocitySensor::updateWithScreenPoint(const gfx::Point& screenPoint)
+void VelocitySensor::updateWithDisplayPoint(const gfx::Point& screenPoint)
 {
   const base::tick_t t = base::current_tick();
   const base::tick_t dt = t - m_lastUpdate;

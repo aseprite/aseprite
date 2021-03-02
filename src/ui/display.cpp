@@ -18,9 +18,11 @@
 
 namespace ui {
 
-Display::Display(const os::WindowRef& nativeWindow,
+Display::Display(Display* parentDisplay,
+                 const os::WindowRef& nativeWindow,
                  Widget* containedWidget)
-  : m_nativeWindow(nativeWindow)
+  : m_parentDisplay(parentDisplay)
+  , m_nativeWindow(nativeWindow)
   , m_containedWidget(containedWidget)
 {
   ASSERT(m_nativeWindow);
@@ -46,7 +48,7 @@ gfx::Size Display::size() const
 
 void Display::dirtyRect(const gfx::Rect& bounds)
 {
-  m_dirtyRegion.createUnion(m_dirtyRegion, gfx::Region(bounds));
+  m_dirtyRegion |= gfx::Region(bounds);
 }
 
 void Display::flipDisplay()

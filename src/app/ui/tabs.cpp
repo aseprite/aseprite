@@ -728,7 +728,7 @@ void Tabs::calculateHot()
 
   gfx::Rect rect = bounds();
   gfx::Rect box(rect.x+m_border*guiscale(), rect.y, 0, rect.h-1);
-  gfx::Point mousePos = ui::get_mouse_position();
+  gfx::Point mousePos = mousePosInDisplay();
   TabPtr hot(nullptr);
   bool hotCloseButton = false;
 
@@ -1040,7 +1040,7 @@ void Tabs::updateDragCopyCursor(ui::Message* msg)
                 (tab && m_delegate && m_delegate->canCloneTab(this, tab->view)));
 
   if (oldDragCopy != m_dragCopy) {
-    updateDragTabIndexes(get_mouse_position().x, true);
+    updateDragTabIndexes(mousePosInDisplay().x, true);
     updateMouseCursor();
   }
 }

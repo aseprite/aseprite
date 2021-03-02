@@ -25,9 +25,11 @@ namespace ui {
   // (tooltips?)
   class Display {
   public:
-    Display(const os::WindowRef& nativeWindow,
+    Display(Display* parentDisplay,
+            const os::WindowRef& nativeWindow,
             Widget* containedWidget);
 
+    Display* parentDisplay() { return m_parentDisplay; }
     os::Window* nativeWindow() { return m_nativeWindow.get(); }
     os::Surface* surface() const;
 
@@ -71,6 +73,7 @@ namespace ui {
     const std::vector<Window*>& getWindows() const { return m_windows; }
 
   private:
+    Display* m_parentDisplay;
     os::WindowRef m_nativeWindow;
     Widget* m_containedWidget;      // A ui::Manager or a ui::Window
     std::vector<Window*> m_windows; // Sub-windows in this display
