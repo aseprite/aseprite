@@ -63,6 +63,7 @@ enum class RedrawState {
    Normal,
    AWindowHasJustBeenClosed,
    RedrawDelayed,
+   ClosingApp,
 };
 RedrawState redrawState = RedrawState::Normal;
 
@@ -702,11 +703,14 @@ void Manager::dispatchMessages()
   // returns a number greater than 0, it means that we've processed
   // some messages, so we've to redraw the screen.
   if (pumpQueue() > 0 || redrawState == RedrawState::RedrawDelayed) {
+    if (redrawState == RedrawState::ClosingApp) {
+      // Do nothing, we don't flush nor process paint messages
+    }
     // If a window has just been closed with Manager::_closeWindow()
     // after processing messages, we'll wait the next event generation
     // to process painting events (so the manager doesn't lost the
     // DIRTY flag right now).
-    if (redrawState == RedrawState::AWindowHasJustBeenClosed) {
+    else if (redrawState == RedrawState::AWindowHasJustBeenClosed) {
       redrawState = RedrawState::RedrawDelayed;
     }
     else {
@@ -1080,6 +1084,10 @@ void Manager::dirtyRect(const gfx::Rect& bounds)
 // Configures the window for begin the loop
 void Manager::_openWindow(Window* window)
 {
+  // Opening other window in the "close app" state, ok, let's back to normal.
+  if (redrawState == RedrawState::ClosingApp)
+    redrawState = RedrawState::Normal;
+
   // Free all widgets of special states.
   if (window->isWantFocus()) {
     freeCapture();
@@ -1172,7 +1180,13 @@ void Manager::_closeWindow(Window* window, bool redraw_background)
   // recently closed window).
   updateMouseWidgets(ui::get_mouse_position());
 
-  redrawState = RedrawState::AWindowHasJustBeenClosed;
+  if (children().empty()) {
+    // All windows were closed...
+    redrawState = RedrawState::ClosingApp;
+  }
+  else {
+    redrawState = RedrawState::AWindowHasJustBeenClosed;
+  }
 }
 
 bool Manager::onProcessMessage(Message* msg)
@@ -1492,6 +1506,10 @@ bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
   // before we call Widget::sendMessage().
   if (msg->type() == kPaintMessage) {
     if (widget->hasFlags(HIDDEN))
+      return false;
+
+    // Ignore all paint messages when we are closing the app
+    if (redrawState == RedrawState::ClosingApp)
       return false;
 
     PaintMessage* paintMsg = static_cast<PaintMessage*>(msg);
