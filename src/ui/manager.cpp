@@ -1454,7 +1454,7 @@ void Manager::_closeWindow(Window* window, bool redraw_background)
     redrawState = RedrawState::ClosingApp;
   }
   else {
-  redrawState = RedrawState::AWindowHasJustBeenClosed;
+    redrawState = RedrawState::AWindowHasJustBeenClosed;
   }
 }
 
