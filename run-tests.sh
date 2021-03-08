@@ -45,6 +45,7 @@ export ASEPRITE_USER_FOLDER=$t
 if [[ "$filter" == "" ]] || [[ "console" =~ $filter ]]; then
     echo ----------------------------------------------------------------------
     echo "Testing console..."
+    echo "uname=$(uname)"
 
     $ASEPRITE -b --script scripts/console_assert.lua >$t/tmp 2>$t/tmp_err
     ! grep -q "this should be in the output" $t/tmp && fail "print() text not found in output"
