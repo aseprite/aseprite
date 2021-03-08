@@ -14,7 +14,7 @@ function fail() {
 }
 
 function expect() {
-    if [[ $1 != $($2) ]] ; then
+    if [[ $1 != "$($2 | tr -d "\r")" ]] ; then
 	echo "FAILED: $2"
 	echo "EXPECTED: $1"
 	echo "RESULT: $($2)"
