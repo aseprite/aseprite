@@ -33,7 +33,7 @@ if [[ "$filter" != "" ]]; then
 fi
 
 t=$(mktemp -d)
-if [[ "$(uname)" =~ "MINGW32" ]] || [[ "$(uname)" =~ "MSYS_NT-10.0" ]] ; then
+if [[ "$(uname)" =~ "MINGW" ]] || [[ "$(uname)" =~ "MSYS" ]] ; then
     PWDARG=-W
     t=$(cd "$t" && pwd $PWDARG)
 else
@@ -52,7 +52,7 @@ if [[ "$filter" == "" ]] || [[ "console" =~ $filter ]]; then
     ! grep -q "assertion failed" $t/tmp && fail "assert() text not found in output"
     grep -q "this should not be in the output" $t/tmp && fail "text that shouldn't be in the output is"
 
-    if [[ "$(uname)" =~ "MINGW32" ]] || [[ "$(uname)" =~ "MSYS_NT-10.0" ]] ; then
+    if [[ "$(uname)" =~ "MINGW" ]] || [[ "$(uname)" =~ "MSYS" ]] ; then
 	echo Ignore console tests on Windows
     else
 	$ASEPRITE -b --script scripts/console_print.lua >$t/tmp 2>$t/tmp_err
