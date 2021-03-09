@@ -1,5 +1,5 @@
 #! /bin/bash
-# Copyright (C) 2018-2019 Igara Studio S.A.
+# Copyright (C) 2018-2021 Igara Studio S.A.
 
 function list_files() {
     oldwd=$(pwd $PWDARG)
@@ -179,25 +179,25 @@ cd $oldwd
 
 d=$t/save-as-groups-and-hidden
 mkdir $d
-$ASEPRITE -b sprites/groups2.aseprite -layer '*' -save-as "$d/g2-all.png" || exit 1
-$ASEPRITE -b sprites/groups2.aseprite -layer '*' -ignore-layer items -save-as "$d/g2-all-without-items.png" || exit 1
-$ASEPRITE -b sprites/groups2.aseprite -layer '*' -ignore-layer gun -save-as "$d/g2-all-without-gun1.png" || exit 1
-$ASEPRITE -b sprites/groups2.aseprite -layer '*' -ignore-layer sword -save-as "$d/g2-all-without-sword1.png" || exit 1
-$ASEPRITE -b sprites/groups2.aseprite -layer '*' -ignore-layer items/gun -save-as "$d/g2-all-without-gun2.png" || exit 1
-$ASEPRITE -b sprites/groups2.aseprite -layer '*' -ignore-layer items/sword -save-as "$d/g2-all-without-sword2.png" || exit 1
-$ASEPRITE -b sprites/groups2.aseprite -layer '*' -ignore-layer player -save-as "$d/g2-all-without-player.png" || exit 1
+$ASEPRITE -b sprites/groups2.aseprite -layer \* -save-as "$d/g2-all.png" || exit 1
+$ASEPRITE -b sprites/groups2.aseprite -layer \* -ignore-layer items -save-as "$d/g2-all-without-items.png" || exit 1
+$ASEPRITE -b sprites/groups2.aseprite -layer \* -ignore-layer gun -save-as "$d/g2-all-without-gun1.png" || exit 1
+$ASEPRITE -b sprites/groups2.aseprite -layer \* -ignore-layer sword -save-as "$d/g2-all-without-sword1.png" || exit 1
+$ASEPRITE -b sprites/groups2.aseprite -layer \* -ignore-layer items/gun -save-as "$d/g2-all-without-gun2.png" || exit 1
+$ASEPRITE -b sprites/groups2.aseprite -layer \* -ignore-layer items/sword -save-as "$d/g2-all-without-sword2.png" || exit 1
+$ASEPRITE -b sprites/groups2.aseprite -layer \* -ignore-layer player -save-as "$d/g2-all-without-player.png" || exit 1
 $ASEPRITE -b sprites/groups2.aseprite -layer player -save-as "$d/g2-player.png" || exit 1
 $ASEPRITE -b sprites/groups2.aseprite -layer items -save-as "$d/g2-items.png" || exit 1
-$ASEPRITE -b sprites/groups2.aseprite -layer 'items/*' -save-as "$d/g2-items-all.png" || exit 1
+$ASEPRITE -b sprites/groups2.aseprite -layer items/\* -save-as "$d/g2-items-all.png" || exit 1
 $ASEPRITE -b sprites/groups2.aseprite -layer sword -save-as "$d/g2-sword.png" || exit 1
 $ASEPRITE -b sprites/groups2.aseprite -layer gun -save-as "$d/g2-gun.png" || exit 1
 
 $ASEPRITE -b sprites/groups3abc.aseprite -layer a -save-as "$d/g3-a.png" || exit 1
 $ASEPRITE -b sprites/groups3abc.aseprite -layer b -save-as "$d/g3-b.png" || exit 1
 $ASEPRITE -b sprites/groups3abc.aseprite -layer c -save-as "$d/g3-c.png" || exit 1
-$ASEPRITE -b sprites/groups3abc.aseprite -layer 'a/*' -save-as "$d/g3-a-all.png" || exit 1
-$ASEPRITE -b sprites/groups3abc.aseprite -layer 'b/*' -save-as "$d/g3-b-all.png" || exit 1
-$ASEPRITE -b sprites/groups3abc.aseprite -layer 'c/*' -save-as "$d/g3-c-all.png" || exit 1
+$ASEPRITE -b sprites/groups3abc.aseprite -layer a/\* -save-as "$d/g3-a-all.png" || exit 1
+$ASEPRITE -b sprites/groups3abc.aseprite -layer b/\* -save-as "$d/g3-b-all.png" || exit 1
+$ASEPRITE -b sprites/groups3abc.aseprite -layer c/\* -save-as "$d/g3-c-all.png" || exit 1
 $ASEPRITE -b sprites/groups3abc.aseprite -layer a/a -save-as "$d/g3-aa.png" || exit 1
 $ASEPRITE -b sprites/groups3abc.aseprite -layer b/a -save-as "$d/g3-ba.png" || exit 1
 $ASEPRITE -b sprites/groups3abc.aseprite -layer c/a -save-as "$d/g3-ca.png" || exit 1
