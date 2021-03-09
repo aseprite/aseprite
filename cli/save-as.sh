@@ -179,6 +179,7 @@ cd $oldwd
 
 if [[ "$(uname)" =~ "MINGW" ]] || [[ "$(uname)" =~ "MSYS" ]] ; then
     # Ignore this test on Windows because we cannot give * as a parameter (?)
+    echo Do nothing
 else
 d=$t/save-as-groups-and-hidden
 mkdir $d
