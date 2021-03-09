@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -334,6 +334,7 @@ int App::initialize(const AppOptions& options)
 
   // Process options
   LOG("APP: Processing options...\n");
+  int code;
   {
     std::unique_ptr<CliDelegate> delegate;
     if (options.previewCLI())
@@ -342,14 +343,12 @@ int App::initialize(const AppOptions& options)
       delegate.reset(new DefaultCliDelegate);
 
     CliProcessor cli(delegate.get(), options);
-    int code = cli.process(context());
-    if (code != 0)
-      return code;
+    code = cli.process(context());
   }
 
   LOG("APP: Finish launching...\n");
   system->finishLaunching();
-  return 0;
+  return code;
 }
 
 void App::run()

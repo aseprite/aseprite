@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -532,7 +532,14 @@ int CliProcessor::process(Context* ctx)
         // --script <filename>
         else if (opt == &m_options.script()) {
           std::string filename = value.value();
-          int code = m_delegate->execScript(filename, scriptParams);
+          int code;
+          try {
+            code = m_delegate->execScript(filename, scriptParams);
+          }
+          catch (const std::exception& ex) {
+            Console::showException(ex);
+            return -1;
+          }
           if (code != 0)
             return code;
         }
