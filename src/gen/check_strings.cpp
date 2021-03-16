@@ -1,4 +1,5 @@
 // Aseprite Code Generator
+// Copyright (c) 2021 Igara Studio S.A.
 // Copyright (c) 2016-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -90,9 +91,9 @@ public:
 
   void loadStrings(const std::string& dir) {
     for (const auto& fn : base::list_files(dir)) {
-      cfg::CfgFile* f = new cfg::CfgFile;
+      std::unique_ptr<cfg::CfgFile> f(new cfg::CfgFile);
       f->load(base::join_path(dir, fn));
-      m_stringFiles.push_back(f);
+      m_stringFiles.push_back(std::move(f));
     }
   }
 
@@ -183,7 +184,7 @@ public:
     if (!text)
       return;                   // Do nothing
     else if (text[0] == '@') {
-      for (auto cfg : m_stringFiles) {
+      for (auto& cfg : m_stringFiles) {
         std::string lang = base::get_file_title(cfg->filename());
         std::string section, var;
 
@@ -222,7 +223,7 @@ public:
   }
 
 private:
-  std::vector<cfg::CfgFile*> m_stringFiles;
+  std::vector<std::unique_ptr<cfg::CfgFile>> m_stringFiles;
   std::string m_prefixId;
 };
 

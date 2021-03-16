@@ -1,4 +1,5 @@
 // Aseprite Code Generator
+// Copyright (c) 2021 Igara Studio S.A.
 // Copyright (c) 2014-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -17,6 +18,7 @@
 #include "tinyxml.h"
 
 #include <iostream>
+#include <memory>
 
 typedef base::ProgramOptions PO;
 
@@ -36,13 +38,13 @@ static void run(int argc, const char* argv[])
   po.parse(argc, argv);
 
   // Try to load the XML file
-  TiXmlDocument* doc = nullptr;
+  std::unique_ptr<TiXmlDocument> doc;
 
   std::string inputFilename = po.value_of(inputOpt);
   if (!inputFilename.empty() &&
       base::get_file_extension(inputFilename) == "xml") {
     base::FileHandle inputFile(base::open_file(inputFilename, "rb"));
-    doc = new TiXmlDocument();
+    doc.reset(new TiXmlDocument);
     doc->SetValue(inputFilename.c_str());
     if (!doc->LoadFile(inputFile.get())) {
       std::cerr << doc->Value() << ":"
@@ -58,16 +60,16 @@ static void run(int argc, const char* argv[])
   if (doc) {
     // Generate widget class
     if (po.enabled(widgetId))
-      gen_ui_class(doc, inputFilename, po.value_of(widgetId));
+      gen_ui_class(doc.get(), inputFilename, po.value_of(widgetId));
     // Generate preference header file
     else if (po.enabled(prefH))
-      gen_pref_header(doc, inputFilename);
+      gen_pref_header(doc.get(), inputFilename);
     // Generate preference c++ file
     else if (po.enabled(prefCpp))
-      gen_pref_impl(doc, inputFilename);
+      gen_pref_impl(doc.get(), inputFilename);
     // Generate theme class
     else if (po.enabled(theme))
-      gen_theme_class(doc, inputFilename);
+      gen_theme_class(doc.get(), inputFilename);
   }
   // Generate strings.ini.h file
   else if (po.enabled(strings)) {
