@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2021 Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -53,6 +54,9 @@ namespace app {
 
   private:
     gfx::Point intCelOffset() const;
+    bool restoreCelStartPosition() const;
+    // ContextObserver
+    void onBeforeCommandExecution(CommandExecutionEvent& ev);
 
     ContextReader m_reader;
     Cel* m_cel;
@@ -66,6 +70,9 @@ namespace app {
     bool m_hasReference;
     bool m_scaled;
     HandleType m_handle;
+    Editor* m_editor;
+
+    obs::scoped_connection m_ctxConn;
   };
 
 } // namespace app
