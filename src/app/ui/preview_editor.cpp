@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -33,6 +33,7 @@
 #include "ui/base.h"
 #include "ui/button.h"
 #include "ui/close_event.h"
+#include "ui/fit_bounds.h"
 #include "ui/message.h"
 #include "ui/system.h"
 
@@ -219,25 +220,27 @@ bool PreviewEditorWindow::onProcessMessage(ui::Message* msg)
 {
   switch (msg->type()) {
 
-    case kOpenMessage:
-      {
-        SkinTheme* theme = SkinTheme::instance();
+    case kOpenMessage: {
+      Manager* manager = this->manager();
+      Display* mainDisplay = manager->display();
 
-        // Default bounds
-        gfx::Size desktopSize = ui::get_desktop_size();
-        const int width = desktopSize.w/4;
-        const int height = desktopSize.h/4;
-        int extra = 2*theme->dimensions.miniScrollbarSize();
-        setBounds(
-          gfx::Rect(
-            desktopSize.w - width - ToolBar::instance()->bounds().w - extra,
-            desktopSize.h - height - StatusBar::instance()->bounds().h - extra,
-            width, height));
+      gfx::Rect defaultBounds(mainDisplay->size() / 4);
+      SkinTheme* theme = SkinTheme::instance();
+      gfx::Rect mainWindow = manager->bounds();
 
-        load_window_pos(this, "MiniEditor", false);
-        invalidate();
+      int extra = theme->dimensions.miniScrollbarSize();
+      if (get_multiple_displays()) {
+        extra *= mainDisplay->scale();
       }
+      defaultBounds.x = mainWindow.x2() - ToolBar::instance()->sizeHint().w - defaultBounds.w - extra;
+      defaultBounds.y = mainWindow.y2() - StatusBar::instance()->sizeHint().h - defaultBounds.h - extra;
+
+      fit_bounds(mainDisplay, this, defaultBounds);
+
+      load_window_pos(this, "MiniEditor", false);
+      invalidate();
       break;
+    }
 
     case kCloseMessage:
       save_window_pos(this, "MiniEditor");

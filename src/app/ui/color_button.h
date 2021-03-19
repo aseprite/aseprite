@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -68,11 +69,17 @@ namespace app {
     void onWindowColorChange(const app::Color& color);
     bool canPin() const { return m_options.canPinSelector; }
 
+    // Used to convert saved bounds (m_window/hiddenDefaultBounds,
+    // which can be relative to the display or relative to the screen)
+    // to the current system of coordinates.
+    gfx::Rect convertBounds(const gfx::Rect& bounds) const;
+
     app::Color m_color;
     PixelFormat m_pixelFormat;
     ColorPopup* m_window;
     gfx::Rect m_windowDefaultBounds;
     gfx::Rect m_hiddenPopupBounds;
+    bool m_desktopCoords;       // True if m_windowDefault/hiddenPopupBounds are screen coordinates
     bool m_dependOnLayer;
     ColorButtonOptions m_options;
   };

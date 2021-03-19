@@ -370,15 +370,10 @@ void DynamicsPopup::onValuesChange(ButtonSet::Item* item)
   m_dynamics->velocityLabel()->setVisible(hasVelocity);
   m_dynamics->velocityPlaceholder()->setVisible(hasVelocity);
 
-  auto oldBounds = bounds();
-  layout();
-  setBounds(gfx::Rect(origin(), sizeHint()));
+  expandWindow(sizeHint());
 
-  m_hotRegion |= gfx::Region(bounds());
+  m_hotRegion |= gfx::Region(boundsOnScreen());
   setHotRegion(m_hotRegion);
-
-  if (isVisible())
-    manager()->invalidateRect(oldBounds);
 }
 
 void DynamicsPopup::updateFromToText()
@@ -400,7 +395,7 @@ bool DynamicsPopup::onProcessMessage(Message* msg)
   switch (msg->type()) {
 
     case kOpenMessage:
-      m_hotRegion = gfx::Region(bounds());
+      m_hotRegion = gfx::Region(boundsOnScreen());
       setHotRegion(m_hotRegion);
       manager()->addMessageFilter(kMouseMoveMessage, this);
       manager()->addMessageFilter(kMouseDownMessage, this);
@@ -442,8 +437,13 @@ bool DynamicsPopup::onProcessMessage(Message* msg)
     }
 
     case kMouseDownMessage: {
+      if (!msg->display())
+        break;
+
+      os::Window* nativeWindow = msg->display()->nativeWindow();
       auto mouseMsg = static_cast<MouseMessage*>(msg);
-      auto picked = manager()->pick(mouseMsg->position());
+      auto screenPos = nativeWindow->pointToScreen(mouseMsg->position());
+      auto picked = manager()->pickFromScreenPos(screenPos);
       if ((picked == nullptr) ||
           (picked->window() != this &&
            picked->window() != m_ditheringSel->getWindowWidget())) {
@@ -451,6 +451,7 @@ bool DynamicsPopup::onProcessMessage(Message* msg)
       }
       break;
     }
+
   }
   return PopupWindow::onProcessMessage(msg);
 }

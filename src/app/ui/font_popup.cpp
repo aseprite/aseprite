@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -29,6 +29,7 @@
 #include "os/system.h"
 #include "ui/box.h"
 #include "ui/button.h"
+#include "ui/fit_bounds.h"
 #include "ui/graphics.h"
 #include "ui/listitem.h"
 #include "ui/paint_event.h"
@@ -183,15 +184,23 @@ FontPopup::FontPopup()
     m_listBox.addChild(new ListItem("No system fonts were found"));
 }
 
-void FontPopup::showPopup(const gfx::Rect& bounds)
+void FontPopup::showPopup(Display* display,
+                          const gfx::Rect& buttonBounds)
 {
   m_popup->loadFont()->setEnabled(false);
   m_listBox.selectChild(NULL);
 
-  moveWindow(bounds);
+  ui::fit_bounds(display, this,
+                 gfx::Rect(buttonBounds.x, buttonBounds.y2(), 32, 32),
+                 [](const gfx::Rect& workarea,
+                    gfx::Rect& bounds,
+                    std::function<gfx::Rect(Widget*)> getWidgetBounds) {
+                   bounds.w = workarea.w / 2;
+                   bounds.h = workarea.h / 2;
+                 });
 
   // Setup the hot-region
-  setHotRegion(gfx::Region(gfx::Rect(bounds).enlarge(32 * guiscale())));
+  setHotRegion(gfx::Region(gfx::Rect(boundsOnScreen()).enlarge(32*guiscale()*display->scale())));
 
   openWindow();
 }

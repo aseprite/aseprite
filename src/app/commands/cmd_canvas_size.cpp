@@ -342,12 +342,17 @@ void CanvasSizeCommand::onExecute(Context* context)
 
     // Find best position for the window on the editor
     if (DocView* docView = static_cast<UIContext*>(context)->activeView()) {
-      window->positionWindow(
-        docView->bounds().x2() - window->bounds().w,
-        docView->bounds().y);
+      Display* display = ui::Manager::getDefault()->display();
+      ui::fit_bounds(display,
+                     window.get(),
+                     gfx::Rect(docView->bounds().x2() - window->bounds().w,
+                               docView->bounds().y,
+                               window->bounds().w,
+                               window->bounds().h));
     }
-    else
+    else {
       window->centerWindow();
+    }
 
     load_window_pos(window.get(), "CanvasSize");
     window->setVisible(true);

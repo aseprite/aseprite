@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -22,6 +22,7 @@
 #include "app/ui_context.h"
 #include "ui/box.h"
 #include "ui/button.h"
+#include "ui/fit_bounds.h"
 #include "ui/scale.h"
 #include "ui/theme.h"
 #include "ui/view.h"
@@ -58,13 +59,21 @@ PalettePopup::PalettePopup()
   initTheme();
 }
 
-void PalettePopup::showPopup(const gfx::Rect& bounds)
+void PalettePopup::showPopup(ui::Display* display,
+                             const gfx::Rect& buttonPos)
 {
   m_popup->loadPal()->setEnabled(false);
   m_popup->openFolder()->setEnabled(false);
   m_paletteListBox.selectChild(NULL);
 
-  moveWindow(bounds);
+  fit_bounds(display, this,
+             gfx::Rect(buttonPos.x, buttonPos.y2(), 32, 32),
+             [](const gfx::Rect& workarea,
+                gfx::Rect& bounds,
+                std::function<gfx::Rect(Widget*)> getWidgetBounds) {
+               bounds.w = workarea.w/2;
+               bounds.h = workarea.h*3/4;
+             });
 
   openWindowInForeground();
 }

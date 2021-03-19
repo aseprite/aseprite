@@ -124,11 +124,7 @@ private:
     }
 
     if (!m_fontPopup->isVisible()) {
-      gfx::Size displaySize = manager()->display()->size();
-      gfx::Rect bounds = fontFace()->bounds();
-      m_fontPopup->showPopup(
-        gfx::Rect(bounds.x, bounds.y+bounds.h,
-                  displaySize.w/2, displaySize.h/2));
+      m_fontPopup->showPopup(display(), fontFace()->bounds());
     }
     else {
       m_fontPopup->closeWindow(NULL);

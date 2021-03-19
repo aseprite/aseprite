@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -66,6 +66,7 @@
 #include "render/ordered_dither.h"
 #include "ui/button.h"
 #include "ui/combobox.h"
+#include "ui/fit_bounds.h"
 #include "ui/int_entry.h"
 #include "ui/label.h"
 #include "ui/listbox.h"
@@ -209,20 +210,19 @@ protected:
 private:
   // Returns a little rectangle that can be used by the popup as the
   // first brush position.
-  gfx::Rect getPopupBox() {
+  gfx::Point popupPosCandidate() const {
     Rect rc = bounds();
     rc.y += rc.h - 2*guiscale();
-    rc.setSize(sizeHint());
-    return rc;
+    return rc.origin();
   }
 
   void openPopup() {
     doc::BrushRef brush = m_owner->activeBrush();
 
-    m_popupWindow.regenerate(getPopupBox());
+    m_popupWindow.regenerate(display(), popupPosCandidate());
     m_popupWindow.setBrush(brush.get());
 
-    Region rgn(m_popupWindow.bounds().createUnion(bounds()));
+    Region rgn(m_popupWindow.boundsOnScreen().createUnion(boundsOnScreen()));
     m_popupWindow.setHotRegion(rgn);
 
     m_popupWindow.openWindow();
@@ -450,7 +450,8 @@ protected:
         }
       });
 
-    menu.showPopup(gfx::Point(bounds.x, bounds.y+bounds.h));
+    menu.showPopup(gfx::Point(bounds.x, bounds.y2()),
+                   display());
     deselectItems();
   }
 
@@ -502,7 +503,8 @@ protected:
 
     AppMenus::instance()
       ->getInkPopupMenu()
-      ->showPopup(gfx::Point(bounds.x, bounds.y+bounds.h));
+      ->showPopup(gfx::Point(bounds.x, bounds.y2()),
+                  display());
 
     deselectItems();
   }
@@ -627,7 +629,8 @@ private:
       }
     }
 
-    menu.showPopup(gfx::Point(bounds.x, bounds.y+bounds.h));
+    menu.showPopup(gfx::Point(bounds.x, bounds.y2()),
+                   display());
     m_button.invalidate();
   }
 
@@ -808,7 +811,8 @@ private:
     masked.Click.connect([this]{ setOpaque(false); });
     automatic.Click.connect([this]{ onAutomatic(); });
 
-    menu.showPopup(gfx::Point(bounds.x, bounds.y+bounds.h));
+    menu.showPopup(gfx::Point(bounds.x, bounds.y2()),
+                   display());
   }
 
   void onChangeColor() {
@@ -905,7 +909,8 @@ private:
           app::gen::PivotPosition(buttonset.selectedItem()));
       });
 
-    menu.showPopup(gfx::Point(bounds.x, bounds.y+bounds.h));
+    menu.showPopup(gfx::Point(bounds.x, bounds.y2()),
+                   display());
   }
 
   void onPivotChange() {
@@ -1151,8 +1156,10 @@ public:
 
     const gfx::Rect bounds = this->bounds();
     m_popup->remapWindow();
-    m_popup->positionWindow(bounds.x, bounds.y+bounds.h);
-    m_popup->setHotRegion(gfx::Region(m_popup->bounds()));
+    fit_bounds(display(), m_popup.get(),
+               gfx::Rect(gfx::Point(bounds.x, bounds.y2()),
+                         m_popup->sizeHint()));
+    m_popup->setHotRegion(gfx::Region(m_popup->boundsOnScreen()));
     m_popup->openWindow();
   }
 
@@ -1436,7 +1443,8 @@ private:
           doc->notifyGeneralUpdate();
         });
 
-      menu.showPopup(gfx::Point(bounds.x, bounds.y+bounds.h));
+      menu.showPopup(gfx::Point(bounds.x, bounds.y2()),
+                     display());
     }
   }
 };

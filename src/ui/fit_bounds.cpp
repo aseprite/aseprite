@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -16,6 +16,7 @@
 #include "ui/base.h"
 #include "ui/display.h"
 #include "ui/system.h"
+#include "ui/window.h"
 
 namespace ui {
 
@@ -85,6 +86,52 @@ int fit_bounds(Display* display, int arrowAlign, const gfx::Rect& target, gfx::R
   }
 
   return arrowAlign;
+}
+
+void fit_bounds(Display* parentDisplay,
+                Window* window,
+                const gfx::Rect& candidateBoundsRelativeToParentDisplay,
+                std::function<void(const gfx::Rect& workarea,
+                                   gfx::Rect& bounds,
+                                   std::function<gfx::Rect(Widget*)> getWidgetBounds)> fitLogic)
+{
+  gfx::Point pos = candidateBoundsRelativeToParentDisplay.origin();
+
+  if (get_multiple_displays() && window->shouldCreateNativeWindow()) {
+    const os::Window* nativeWindow = parentDisplay->nativeWindow();
+    const gfx::Rect workarea = nativeWindow->screen()->workarea();
+    const int scale = nativeWindow->scale();
+
+    // Screen frame bounds
+    gfx::Rect frame(
+      nativeWindow->pointToScreen(pos),
+      candidateBoundsRelativeToParentDisplay.size() * scale);
+
+    if (fitLogic)
+      fitLogic(workarea, frame, [](Widget* widget){ return widget->boundsOnScreen(); });
+
+    frame.x = base::clamp(frame.x, workarea.x, workarea.x2() - frame.w);
+    frame.y = base::clamp(frame.y, workarea.y, workarea.y2() - frame.h);
+
+    // Set frame bounds directly
+    window->setBounds(gfx::Rect(0, 0, frame.w / scale, frame.h / scale));
+    window->loadNativeFrame(frame);
+
+    if (window->isVisible())
+      window->expandWindow(frame.size() / scale);
+  }
+  else {
+    const gfx::Rect displayBounds(parentDisplay->size());
+    gfx::Rect frame(candidateBoundsRelativeToParentDisplay);
+
+    if (fitLogic)
+      fitLogic(displayBounds, frame, [](Widget* widget){ return widget->bounds(); });
+
+    frame.x = base::clamp(frame.x, 0, displayBounds.w - frame.w);
+    frame.y = base::clamp(frame.y, 0, displayBounds.h - frame.h);
+
+    window->setBounds(frame);
+  }
 }
 
 } // namespace ui

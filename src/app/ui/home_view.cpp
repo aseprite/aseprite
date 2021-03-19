@@ -136,7 +136,7 @@ void HomeView::onTabPopup(Workspace* workspace)
   if (!menu)
     return;
 
-  menu->showPopup(mousePosInDisplay());
+  menu->showPopup(mousePosInDisplay(), display());
 }
 
 void HomeView::onWorkspaceViewSelected()

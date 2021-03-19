@@ -242,6 +242,9 @@ namespace ui {
     gfx::Rect childrenBounds() const;
     gfx::Rect clientChildrenBounds() const;
 
+    // Bounds of this widget or window on native screen/desktop coordinates.
+    gfx::Rect boundsOnScreen() const;
+
     // Sets the bounds of the widget generating a onResize() event.
     void setBounds(const gfx::Rect& rc);
 

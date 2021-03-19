@@ -589,7 +589,7 @@ void BrowserView::onTabPopup(Workspace* workspace)
   if (!menu)
     return;
 
-  menu->showPopup(mousePosInDisplay());
+  menu->showPopup(mousePosInDisplay(), display());
 }
 
 } // namespace app

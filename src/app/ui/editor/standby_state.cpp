@@ -256,7 +256,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
             if (!editor->hasSelectedSlices())
               params.set("id", base::convert_to<std::string>(hit.slice()->id()).c_str());
             AppMenuItem::setContextParams(params);
-            popupMenu->showPopup(msg->position());
+            popupMenu->showPopup(msg->position(), editor->display());
             AppMenuItem::setContextParams(Params());
           }
         }

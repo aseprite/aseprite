@@ -80,6 +80,7 @@ namespace ui {
     void removeMessagesFor(Widget* widget);
     void removeMessagesFor(Widget* widget, MessageType type);
     void removeMessagesForTimer(Timer* timer);
+    void removeMessagesForDisplay(Display* display);
     void removePaintMessagesForDisplay(Display* display);
 
     void addMessageFilter(int message, Widget* widget);

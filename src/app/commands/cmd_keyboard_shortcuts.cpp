@@ -32,6 +32,7 @@
 #include "base/string.h"
 #include "fmt/format.h"
 #include "ui/alert.h"
+#include "ui/fit_bounds.h"
 #include "ui/graphics.h"
 #include "ui/listitem.h"
 #include "ui/message.h"
@@ -882,11 +883,19 @@ void KeyboardShortcutsCommand::onExecute(Context* context)
   std::string neededSearchCopy = m_search;
   KeyboardShortcutsWindow window(keys, menuKeys, neededSearchCopy);
 
-  gfx::Size displaySize = ui::get_desktop_size();
-  window.setBounds(gfx::Rect(0, 0, displaySize.w*3/4, displaySize.h*3/4));
+  ui::Display* mainDisplay = Manager::getDefault()->display();
+  ui::fit_bounds(mainDisplay, &window,
+                 gfx::Rect(mainDisplay->size()),
+                 [](const gfx::Rect& workarea,
+                    gfx::Rect& bounds,
+                    std::function<gfx::Rect(Widget*)> getWidgetBounds) {
+                   gfx::Point center = bounds.center();
+                   bounds.setSize(workarea.size()*3/4);
+                   bounds.setOrigin(center - gfx::Point(bounds.size()/2));
+                 });
+
   window.loadLayout();
 
-  window.centerWindow();
   window.setVisible(true);
   window.openWindowInForeground();
 

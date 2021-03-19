@@ -71,14 +71,15 @@ public:
   void centerConsole() {
     initTheme();
 
-    remapWindow();
+    Display* display = ui::Manager::getDefault()->display();
+    const gfx::Rect displayRc = display->bounds();
+    gfx::Rect rc;
+    rc.w = displayRc.w*9/10;
+    rc.h = displayRc.h*6/10;
+    rc.x = displayRc.x + displayRc.w/2 - rc.w/2;
+    rc.y = displayRc.y + displayRc.h/2 - rc.h/2;
 
-    // TODO center to main window or screen workspace
-    gfx::Size displaySize = manager()->display()->size();
-    setBounds(gfx::Rect(0, 0, displaySize.w*9/10, displaySize.h*6/10));
-
-    centerWindow();
-    invalidate();
+    ui::fit_bounds(display, this, rc);
   }
 
 private:

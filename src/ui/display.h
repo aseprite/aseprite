@@ -33,6 +33,7 @@ namespace ui {
     os::Window* nativeWindow() { return m_nativeWindow.get(); }
     os::Surface* surface() const;
 
+    int scale() const { return m_nativeWindow->scale(); }
     gfx::Size size() const;
     gfx::Rect bounds() const { return gfx::Rect(size()); }
 

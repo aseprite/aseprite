@@ -1243,12 +1243,12 @@ bool Timeline::onProcessMessage(Message* msg)
             if (!m_confPopup->isVisible()) {
               gfx::Rect bounds = m_confPopup->bounds();
               ui::fit_bounds(display(), BOTTOM, gearBounds, bounds);
-
-              m_confPopup->moveWindow(bounds);
+              ui::fit_bounds(display(), m_confPopup, bounds);
               m_confPopup->openWindow();
             }
-            else
-              m_confPopup->closeWindow(NULL);
+            else {
+              m_confPopup->closeWindow(nullptr);
+            }
             break;
           }
 
@@ -1258,7 +1258,7 @@ bool Timeline::onProcessMessage(Message* msg)
               if (m_clk.frame == m_hot.frame) {
                 Menu* popupMenu = AppMenus::instance()->getFramePopupMenu();
                 if (popupMenu) {
-                  popupMenu->showPopup(mouseMsg->position());
+                  popupMenu->showPopup(mouseMsg->position(), display());
 
                   m_state = STATE_STANDBY;
                   invalidate();
@@ -1273,7 +1273,7 @@ bool Timeline::onProcessMessage(Message* msg)
               if (m_clk.layer == m_hot.layer) {
                 Menu* popupMenu = AppMenus::instance()->getLayerPopupMenu();
                 if (popupMenu) {
-                  popupMenu->showPopup(mouseMsg->position());
+                  popupMenu->showPopup(mouseMsg->position(), display());
 
                   m_state = STATE_STANDBY;
                   invalidate();
@@ -1293,7 +1293,7 @@ bool Timeline::onProcessMessage(Message* msg)
                   AppMenus::instance()->getCelMovementPopupMenu():
                   AppMenus::instance()->getCelPopupMenu();
               if (popupMenu) {
-                popupMenu->showPopup(mouseMsg->position());
+                popupMenu->showPopup(mouseMsg->position(), display());
 
                 // Do not drop in this function, the drop is done from
                 // the menu in case we've used the
@@ -1321,7 +1321,7 @@ bool Timeline::onProcessMessage(Message* msg)
                 Menu* popupMenu = AppMenus::instance()->getTagPopupMenu();
                 if (popupMenu) {
                   AppMenuItem::setContextParams(params);
-                  popupMenu->showPopup(mouseMsg->position());
+                  popupMenu->showPopup(mouseMsg->position(), display());
                   AppMenuItem::setContextParams(Params());
 
                   m_state = STATE_STANDBY;

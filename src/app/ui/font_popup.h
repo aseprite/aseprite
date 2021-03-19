@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2021  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -26,7 +27,8 @@ namespace app {
   public:
     FontPopup();
 
-    void showPopup(const gfx::Rect& bounds);
+    void showPopup(ui::Display* display,
+                   const gfx::Rect& buttonBounds);
 
     obs::signal<void(const std::string&)> Load;
 

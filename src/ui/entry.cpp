@@ -819,7 +819,7 @@ void Entry::showEditPopupMenu(const gfx::Point& pt)
     paste.setEnabled(false);
   }
 
-  menu.showPopup(pt);
+  menu.showPopup(pt, display());
 }
 
 class Entry::CalcBoxesTextDelegate : public os::DrawTextDelegate {

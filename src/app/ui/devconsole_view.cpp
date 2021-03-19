@@ -140,7 +140,7 @@ void DevConsoleView::onTabPopup(Workspace* workspace)
   if (!menu)
     return;
 
-  menu->showPopup(mousePosInDisplay());
+  menu->showPopup(mousePosInDisplay(), display());
 }
 
 bool DevConsoleView::onProcessMessage(Message* msg)

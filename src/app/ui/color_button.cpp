@@ -53,6 +53,7 @@ ColorButton::ColorButton(const app::Color& color,
   , m_color(color)
   , m_pixelFormat(pixelFormat)
   , m_window(nullptr)
+  , m_desktopCoords(false)
   , m_dependOnLayer(false)
   , m_options(options)
 {
@@ -306,9 +307,12 @@ void ColorButton::onLoadLayout(ui::LoadLayoutEvent& ev)
 {
   if (canPin()) {
     bool pinned = false;
+
+    m_desktopCoords = false;
     ev.stream() >> pinned;
     if (ev.stream() && pinned)
-      ev.stream() >> m_windowDefaultBounds;
+      ev.stream() >> m_windowDefaultBounds
+                  >> m_desktopCoords;
 
     m_hiddenPopupBounds = m_windowDefaultBounds;
   }
@@ -316,8 +320,12 @@ void ColorButton::onLoadLayout(ui::LoadLayoutEvent& ev)
 
 void ColorButton::onSaveLayout(ui::SaveLayoutEvent& ev)
 {
-  if (canPin() && m_window && m_window->isPinned())
-    ev.stream() << 1 << ' ' << m_window->bounds();
+  if (canPin() && m_window && m_window->isPinned()) {
+    if (m_desktopCoords)
+      ev.stream() << 1 << ' ' << m_window->lastNativeFrame() << ' ' << 1;
+    else
+      ev.stream() << 1 << ' ' << m_window->bounds() << ' ' << 0;
+  }
   else
     ev.stream() << 0;
 }
@@ -339,37 +347,39 @@ void ColorButton::openPopup(const bool forcePinned)
   }
 
   m_window->setColor(m_color, ColorPopup::ChangeType);
+  m_window->remapWindow();
+
+  fit_bounds(
+    display(),
+    m_window,
+    gfx::Rect(m_window->sizeHint()),
+    [this, pinned, forcePinned](const gfx::Rect& workarea,
+                                gfx::Rect& winBounds,
+                                std::function<gfx::Rect(Widget*)> getWidgetBounds) {
+      if (!pinned || (forcePinned && m_hiddenPopupBounds.isEmpty())) {
+        gfx::Rect bounds = getWidgetBounds(this);
+
+        winBounds.x = base::clamp(bounds.x, workarea.x, workarea.x2()-winBounds.w);
+        if (bounds.y2()+winBounds.h <= workarea.y2())
+          winBounds.y = std::max(0, bounds.y2());
+        else
+          winBounds.y = std::max(0, bounds.y-winBounds.h);
+      }
+      else if (forcePinned) {
+        winBounds = convertBounds(m_hiddenPopupBounds);
+      }
+      else {
+        winBounds = convertBounds(m_windowDefaultBounds);
+      }
+    });
+
   m_window->openWindow();
-
-  gfx::Size displaySize = ui::get_desktop_size();
-  gfx::Rect winBounds;
-  if (!pinned || (forcePinned && m_hiddenPopupBounds.isEmpty())) {
-    winBounds = gfx::Rect(m_window->bounds().origin(),
-                          m_window->sizeHint());
-    winBounds.x = base::clamp(bounds().x, 0, displaySize.w-winBounds.w);
-    if (bounds().y2() <= displaySize.h-winBounds.h)
-      winBounds.y = std::max(0, bounds().y2());
-    else
-      winBounds.y = std::max(0, bounds().y-winBounds.h);
-  }
-  else if (forcePinned) {
-    winBounds = m_hiddenPopupBounds;
-  }
-  else {
-    winBounds = m_windowDefaultBounds;
-  }
-  winBounds.x = base::clamp(winBounds.x, 0, displaySize.w-winBounds.w);
-  winBounds.y = base::clamp(winBounds.y, 0, displaySize.h-winBounds.h);
-  m_window->setBounds(winBounds);
-
-  m_window->manager()->dispatchMessages();
-  m_window->layout();
 
   m_window->setPinned(pinned);
 
   // Add the ColorButton area to the ColorPopup hot-region
   if (!pinned) {
-    gfx::Rect rc = bounds().createUnion(m_window->bounds());
+    gfx::Rect rc = boundsOnScreen().createUnion(m_window->boundsOnScreen());
     rc.enlarge(8);
     gfx::Region rgn(rc);
     static_cast<PopupWindow*>(m_window)->setHotRegion(rgn);
@@ -386,7 +396,14 @@ void ColorButton::closePopup()
 
 void ColorButton::onWindowClose(ui::CloseEvent& ev)
 {
-  m_hiddenPopupBounds = m_window->bounds();
+  if (get_multiple_displays()) {
+    m_desktopCoords = true;
+    m_hiddenPopupBounds = m_window->lastNativeFrame();
+  }
+  else {
+    m_desktopCoords = false;
+    m_hiddenPopupBounds = m_window->bounds();
+  }
 }
 
 void ColorButton::onWindowColorChange(const app::Color& color)
@@ -416,6 +433,25 @@ void ColorButton::onActiveSiteChange(const Site& site)
         m_window->setVisible(true);
     }
   }
+}
+
+gfx::Rect ColorButton::convertBounds(const gfx::Rect& bounds) const
+{
+  // Convert to desktop
+  if (get_multiple_displays() && !m_desktopCoords) {
+    auto nativeWindow = display()->nativeWindow();
+    return gfx::Rect(nativeWindow->pointToScreen(bounds.origin()),
+                     nativeWindow->pointToScreen(bounds.point2()));
+  }
+  // Convert to display
+  else if (!get_multiple_displays() && m_desktopCoords) {
+    auto nativeWindow = display()->nativeWindow();
+    return gfx::Rect(nativeWindow->pointFromScreen(bounds.origin()),
+                     nativeWindow->pointFromScreen(bounds.point2()));
+  }
+  // No conversion is required
+  else
+    return bounds;
 }
 
 } // namespace app

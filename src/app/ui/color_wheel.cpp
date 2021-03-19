@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -412,7 +412,7 @@ void ColorWheel::onOptions()
   }
 
   gfx::Rect rc = m_options.bounds();
-  menu.showPopup(gfx::Point(rc.x+rc.w, rc.y));
+  menu.showPopup(gfx::Point(rc.x2(), rc.y), display());
 }
 
 int ColorWheel::convertHueAngle(int hue, int dir) const

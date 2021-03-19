@@ -31,6 +31,7 @@ namespace ui {
     bool ownDisplay() const { return m_ownDisplay; }
     Display* display() const;
     void setDisplay(Display* display, const bool own);
+    bool hasDisplaySet() const { return m_display != nullptr; }
 
     Widget* closer() const { return m_closer; }
 
@@ -41,7 +42,7 @@ namespace ui {
     void setWantFocus(bool state);
 
     void remapWindow();
-    void centerWindow();
+    void centerWindow(Display* parentDisplay = nullptr);
     void positionWindow(int x, int y);
     void moveWindow(const gfx::Rect& rect);
 
@@ -59,6 +60,11 @@ namespace ui {
     bool isWantFocus() const { return m_isWantFocus; }
     bool isSizeable() const { return m_isSizeable; }
     bool isMoveable() const { return m_isMoveable; }
+
+    bool shouldCreateNativeWindow() const {
+      return (!isDesktop() &&
+              !isTransparent());
+    }
 
     HitTest hitTest(const gfx::Point& point);
 

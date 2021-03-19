@@ -24,6 +24,7 @@
 #include "base/time.h"
 #include "os/event.h"
 #include "os/event_queue.h"
+#include "os/screen.h"
 #include "os/surface.h"
 #include "os/system.h"
 #include "os/window.h"
@@ -1132,6 +1133,21 @@ void Manager::removeMessagesForTimer(Timer* timer)
   }
 }
 
+void Manager::removeMessagesForDisplay(Display* display)
+{
+#ifdef DEBUG_UI_THREADS
+  ASSERT(manager_thread == base::this_thread::native_id());
+#endif
+
+  for (Message* msg : msg_queue)
+    if (msg->display() == display)
+      msg->removeRecipient(msg->recipient());
+
+  for (Message* msg : used_msg_queue)
+    if (msg->display() == display)
+      msg->removeRecipient(msg->recipient());
+}
+
 void Manager::removePaintMessagesForDisplay(Display* display)
 {
 #ifdef DEBUG_UI_THREADS
@@ -1141,7 +1157,7 @@ void Manager::removePaintMessagesForDisplay(Display* display)
   for (auto it=msg_queue.begin(); it != msg_queue.end(); ) {
     Message* msg = *it;
     if (msg->type() == kPaintMessage &&
-        static_cast<PaintMessage*>(msg)->display() == display) {
+        msg->display() == display) {
       delete msg;
       it = msg_queue.erase(it);
     }
@@ -1269,22 +1285,18 @@ void Manager::_openWindow(Window* window, bool center)
 
   // Relayout
   if (center)
-    window->centerWindow();
+    window->centerWindow(parentDisplay);
   else
     window->layout();
 
   // If the window already was set a display, we don't setup it
   // (i.e. in the case of combobox popup/window the display field is
   // set to the same display where the ComboBox widget is located)
-  if (window->display() == &m_display) {
+  if (!window->hasDisplaySet()) {
     // In other case, we can try to create a display/native window for
     // the UI window.
     if (get_multiple_displays()
-        && !window->isDesktop()
-#if 1   // TODO Add support for menuboxes and tooltips with native windows
-        && window->isSizeable()
-#endif
-        ) {
+        && window->shouldCreateNativeWindow()) {
       const int scale = parentDisplay->nativeWindow()->scale();
 
       os::WindowSpec spec;
@@ -1298,6 +1310,31 @@ void Manager::_openWindow(Window* window, bool center)
         frame *= scale;
         frame.offset(relativeToFrame.origin());
       }
+
+      // Limit window position using the union of all workareas
+      //
+      // TODO at least the title bar should be visible so we can
+      //      resize it, because workareas can form an irregular shape
+      //      (not rectangular) the calculation is a little more
+      //      complex
+      {
+        gfx::Region wa;
+        os::ScreenList screens;
+        os::instance()->listScreens(screens);
+        for (const auto& screen : screens)
+          wa |= gfx::Region(screen->workarea());
+
+        // TODO use a "visibleFrameRegion = frame & wa" to check the
+        // visible regions and calculate if we should move the frame
+        // position
+
+        gfx::Rect waBounds = wa.bounds();
+        if (frame.x < waBounds.x) frame.x = waBounds.x;
+        if (frame.y < waBounds.y) frame.y = waBounds.y;
+        if (frame.x2() > waBounds.x2()) frame.w -= frame.x2() - waBounds.x2();
+        if (frame.y2() > waBounds.y2()) frame.h -= frame.y2() - waBounds.y2();
+      }
+
       spec.position(os::WindowSpec::Position::Frame);
       spec.frame(frame);
       spec.scale(scale);
@@ -1374,8 +1411,8 @@ void Manager::_closeWindow(Window* window, bool redraw_background)
     ASSERT(windowDisplay);
     ASSERT(windowDisplay != this->display());
 
-    // Remove all paint messages for this display.
-    removePaintMessagesForDisplay(windowDisplay);
+    // Remove all messages for this display.
+    removeMessagesForDisplay(windowDisplay);
 
     window->setDisplay(nullptr, false);
     windowDisplay->nativeWindow()->setUserData<void*>(nullptr);

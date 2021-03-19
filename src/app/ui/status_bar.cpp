@@ -878,6 +878,8 @@ void StatusBar::showSnapToGridWarning(bool state)
     if (!m_snapToGridWindow)
       m_snapToGridWindow = new SnapToGridWindow;
 
+    m_snapToGridWindow->setDisplay(display(), false);
+
     if (!m_snapToGridWindow->isVisible()) {
       m_snapToGridWindow->openWindow();
       m_snapToGridWindow->remapWindow();

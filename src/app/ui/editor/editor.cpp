@@ -2754,7 +2754,7 @@ void Editor::showAnimationSpeedMultiplierPopup(Option<bool>& playOnce,
     menu.addChild(item);
   }
 
-  menu.showPopup(mousePosInDisplay());
+  menu.showPopup(mousePosInDisplay(), display());
 
   if (isPlaying()) {
     // Re-play

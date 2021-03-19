@@ -362,7 +362,7 @@ void DocView::onTabPopup(Workspace* workspace)
   ctx->setActiveView(this);
   ctx->updateFlags();
 
-  menu->showPopup(mousePosInDisplay());
+  menu->showPopup(mousePosInDisplay(), display());
 }
 
 bool DocView::onProcessMessage(Message* msg)

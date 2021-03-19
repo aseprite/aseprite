@@ -698,6 +698,16 @@ Rect Widget::clientChildrenBounds() const
               m_bounds.h - border().height());
 }
 
+gfx::Rect Widget::boundsOnScreen() const
+{
+  gfx::Rect rc = bounds();
+  os::Window* nativeWindow = display()->nativeWindow();
+  rc = gfx::Rect(
+    nativeWindow->pointToScreen(rc.origin()),
+    nativeWindow->pointToScreen(rc.point2()));
+  return rc;
+}
+
 void Widget::setBounds(const Rect& rc)
 {
   ResizeEvent ev(this, rc);

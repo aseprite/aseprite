@@ -292,7 +292,8 @@ bool MenuItem::hasSubmenu() const
   return (m_submenu && !m_submenu->children().empty());
 }
 
-void Menu::showPopup(const gfx::Point& pos)
+void Menu::showPopup(const gfx::Point& pos,
+                     Display* parentDisplay)
 {
   // Generally, when we call showPopup() the menu shouldn't contain a
   // parent menu-box, because we're filtering kMouseDownMessage to
@@ -322,11 +323,9 @@ void Menu::showPopup(const gfx::Point& pos)
 
   window->remapWindow();
 
-  // Menubox position
-  gfx::Size displaySize = display()->size();
-  window->positionWindow(
-    base::clamp(pos.x, 0, displaySize.w - window->bounds().w),
-    base::clamp(pos.y, 0, displaySize.h - window->bounds().h));
+  fit_bounds(parentDisplay,
+             window.get(),
+             gfx::Rect(pos, window->size()));
 
   add_scrollbars_if_needed(window.get());
 
@@ -442,20 +441,20 @@ bool MenuBox::onProcessMessage(Message* msg)
 
     case kMouseDownMessage:
     case kDoubleClickMessage:
-      if (menu) {
+      if (menu && msg->display()) {
         ASSERT(menu->parent() == this);
 
         if (get_base(this)->is_processing)
           break;
 
-        gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
+        const gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
+        const gfx::Point screenPos = msg->display()->nativeWindow()->pointToScreen(mousePos);
 
         // Here we catch the filtered messages (menu-bar or the
         // popuped menu-box) to detect if the user press outside of
         // the widget
         if (msg->type() == kMouseDownMessage && m_base != nullptr) {
-          Widget* picked = manager()->pickFromScreenPos(
-            display()->nativeWindow()->pointToScreen(mousePos));
+          Widget* picked = manager()->pickFromScreenPos(screenPos);
 
           // If one of these conditions are accomplished we have to
           // close all menus (back to menu-bar or close the popuped
@@ -466,16 +465,17 @@ bool MenuBox::onProcessMessage(Message* msg)
               (get_base_menubox(picked) != this ||
                (this->type() == kMenuBarWidget &&
                 picked->type() == kMenuWidget))) {
-
             // The user click outside all the menu-box/menu-items, close all
             menu->closeAll();
+
+            // Change to "return false" if you want to send the click
+            // to the window after closing all menus.
             return true;
           }
         }
 
         // Get the widget below the mouse cursor
-        Widget* picked = menu->pick(mousePos);
-        if (picked) {
+        if (Widget* picked = menu->pickFromScreenPos(screenPos)) {
           if ((picked->type() == kMenuItemWidget) &&
               !(picked->hasFlags(DISABLED))) {
             MenuItem* pickedItem = static_cast<MenuItem*>(picked);
@@ -814,9 +814,6 @@ bool MenuItem::onProcessMessage(Message* msg)
         ASSERT(base->is_processing);
         ASSERT(hasSubmenu());
 
-        Rect old_pos = window()->bounds();
-        old_pos.w -= 1*guiscale();
-
         MenuBox* menubox = new MenuBox();
         m_submenu_menubox = menubox;
         menubox->setMenu(m_submenu);
@@ -824,42 +821,47 @@ bool MenuItem::onProcessMessage(Message* msg)
         // New window and new menu-box
         auto window = new MenuBoxWindow(menubox);
 
-        // Menubox position
-        Rect pos = window->bounds();
-        Size displaySize = display()->size();
+        fit_bounds(
+          display(), window, window->bounds(),
+          [this](const gfx::Rect& workarea,
+                 gfx::Rect& pos,
+                 std::function<gfx::Rect(Widget*)> getWidgetBounds){
+            Rect parentPos = getWidgetBounds(this->window());
+            Rect bounds = getWidgetBounds(this);
 
-        if (inBar()) {
-          pos.x = base::clamp(bounds().x, 0, displaySize.w-pos.w);
-          pos.y = std::max(0, bounds().y2());
-        }
-        else {
-          int x_left = old_pos.x - pos.w;
-          int x_right = old_pos.x2();
-          int x, y = bounds().y-3*guiscale();
-          Rect r1(0, 0, pos.w, pos.h), r2(0, 0, pos.w, pos.h);
+            if (inBar()) {
+              pos.x = base::clamp(bounds.x, workarea.x, workarea.x2()-pos.w);
+              pos.y = std::max(workarea.y, bounds.y2());
+            }
+            else {
+              int x_left = parentPos.x - pos.w + 1*guiscale();
+              int x_right = parentPos.x2() - 1*guiscale();
+              int x, y = bounds.y-3*guiscale();
+              Rect r1(0, 0, pos.w, pos.h);
+              Rect r2(0, 0, pos.w, pos.h);
 
-          r1.x = x_left = base::clamp(x_left, 0, displaySize.w-pos.w);
-          r2.x = x_right = base::clamp(x_right, 0, displaySize.w-pos.w);
-          r1.y = r2.y = y = base::clamp(y, 0, displaySize.h-pos.h);
+              r1.x = x_left = base::clamp(x_left, 0, workarea.w-pos.w);
+              r2.x = x_right = base::clamp(x_right, 0, workarea.w-pos.w);
+              r1.y = r2.y = y = base::clamp(y, 0, workarea.h-pos.h);
 
-          // Calculate both intersections
-          gfx::Rect s1 = r1.createIntersection(old_pos);
-          gfx::Rect s2 = r2.createIntersection(old_pos);
+              // Calculate both intersections
+              const gfx::Rect s1 = r1.createIntersection(parentPos);
+              const gfx::Rect s2 = r2.createIntersection(parentPos);
 
-          if (s2.isEmpty())
-            x = x_right;        // Use the right because there aren't intersection with it
-          else if (s1.isEmpty())
-            x = x_left;         // Use the left because there are not intersection
-          else if (r2.w*r2.h <= r1.w*r1.h)
-            x = x_right;                // Use the right because there are less intersection area
-          else
-            x = x_left;         // Use the left because there are less intersection area
+              if (s2.isEmpty())
+                x = x_right;        // Use the right because there aren't intersection with it
+              else if (s1.isEmpty())
+                x = x_left;         // Use the left because there are not intersection
+              else if (s2.w*s2.h <= s1.w*s1.h)
+                x = x_right;        // Use the right because there are less intersection area
+              else
+                x = x_left;         // Use the left because there are less intersection area
 
-          pos.x = x;
-          pos.y = y;
-        }
+              pos.x = x;
+              pos.y = y;
+            }
+          });
 
-        window->positionWindow(pos.x, pos.y);
         add_scrollbars_if_needed(window);
 
         // Set the focus to the new menubox
@@ -1133,7 +1135,7 @@ void Menu::unhighlightItem()
   highlightItem(nullptr, false, false, false);
 }
 
-bool MenuItem::inBar()
+bool MenuItem::inBar() const
 {
   return
     (parent() &&

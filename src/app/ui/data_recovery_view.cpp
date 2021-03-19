@@ -413,7 +413,7 @@ void DataRecoveryView::onTabPopup(Workspace* workspace)
   if (!menu)
     return;
 
-  menu->showPopup(mousePosInDisplay());
+  menu->showPopup(mousePosInDisplay(), display());
 }
 
 void DataRecoveryView::onOpen()
@@ -461,7 +461,7 @@ void DataRecoveryView::onOpenMenu()
   rawFrames.Click.connect([this]{ onOpenRaw(crash::RawImagesAs::kFrames); });
   rawLayers.Click.connect([this]{ onOpenRaw(crash::RawImagesAs::kLayers); });
 
-  menu.showPopup(gfx::Point(bounds.x, bounds.y+bounds.h));
+  menu.showPopup(gfx::Point(bounds.x, bounds.y+bounds.h), display());
 }
 
 void DataRecoveryView::onDelete()

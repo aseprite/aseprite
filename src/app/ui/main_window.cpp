@@ -40,7 +40,6 @@
 #include "app/ui_context.h"
 #include "base/fs.h"
 #include "os/system.h"
-#include "os/window.h"
 #include "ui/message.h"
 #include "ui/splitter.h"
 #include "ui/system.h"
@@ -368,13 +367,12 @@ void MainWindow::onResize(ui::ResizeEvent& ev)
 {
   app::gen::MainWindow::onResize(ev);
 
-  gfx::Size desktopSize = ui::get_desktop_size();
   ui::Display* display = this->display();
   if ((display) &&
-      (display->nativeWindow()->scale()*ui::guiscale() > 2) &&
+      (display->scale()*ui::guiscale() > 2) &&
       (!m_scalePanic) &&
-      (desktopSize.w/ui::guiscale() < 320 ||
-       desktopSize.h/ui::guiscale() < 260)) {
+      (display->size().w / ui::guiscale() < 320 ||
+       display->size().h / ui::guiscale() < 260)) {
     showNotification(m_scalePanic = new ScreenScalePanic);
   }
 }

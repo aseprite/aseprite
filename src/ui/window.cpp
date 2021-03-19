@@ -309,19 +309,24 @@ void Window::remapWindow()
   invalidate();
 }
 
-void Window::centerWindow()
+void Window::centerWindow(Display* parentDisplay)
 {
-  Widget* manager = this->manager();
-
   if (m_isAutoRemap)
     remapWindow();
 
-  positionWindow(manager->bounds().w/2 - bounds().w/2,
-                 manager->bounds().h/2 - bounds().h/2);
+  if (!parentDisplay)
+    parentDisplay = manager()->getDefault()->display();
+
+  gfx::Size displaySize = parentDisplay->size();
+  positionWindow(displaySize.w/2 - bounds().w/2,
+                 displaySize.h/2 - bounds().h/2);
 }
 
 void Window::positionWindow(int x, int y)
 {
+  // TODO don't use in ownDisplay() windows
+  ASSERT(!ownDisplay());
+
   if (m_isAutoRemap)
     remapWindow();
 
@@ -437,6 +442,12 @@ bool Window::onProcessMessage(Message* msg)
           }
           if (action != os::WindowAction::Cancel) {
             display()->nativeWindow()->performWindowAction(action, nullptr);
+
+            // As Window::moveWindow() will not be called, we have to
+            // call onWindowMovement() event from here.
+            if (action == os::WindowAction::Move)
+              onWindowMovement();
+
             return true;
           }
         }

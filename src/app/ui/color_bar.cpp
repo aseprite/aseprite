@@ -1868,7 +1868,7 @@ void ColorBar::showPaletteSortOptions()
   asc.Click.connect([this]{ setAscending(true); });
   des.Click.connect([this]{ setAscending(false); });
 
-  menu.showPopup(gfx::Point(bounds.x, bounds.y+bounds.h));
+  menu.showPopup(gfx::Point(bounds.x, bounds.y2()), display());
 }
 
 void ColorBar::showPalettePresets()
@@ -1884,16 +1884,13 @@ void ColorBar::showPalettePresets()
   }
 
   if (!m_palettePopup->isVisible()) {
-    gfx::Size displaySize = ui::get_desktop_size();
     gfx::Rect bounds = m_buttons.getItem(
       static_cast<int>(PalButton::PRESETS))->bounds();
 
-    m_palettePopup->showPopup(
-      gfx::Rect(bounds.x, bounds.y+bounds.h,
-                displaySize.w/2, displaySize.h*3/4));
+    m_palettePopup->showPopup(display(), bounds);
   }
   else {
-    m_palettePopup->closeWindow(NULL);
+    m_palettePopup->closeWindow(nullptr);
   }
 }
 
@@ -1904,7 +1901,7 @@ void ColorBar::showPaletteOptions()
     gfx::Rect bounds = m_buttons.getItem(
       static_cast<int>(PalButton::OPTIONS))->bounds();
 
-    menu->showPopup(gfx::Point(bounds.x, bounds.y+bounds.h));
+    menu->showPopup(gfx::Point(bounds.x, bounds.y2()), display());
   }
 }
 
