@@ -13,6 +13,8 @@
 
 #include "base/clamp.h"
 #include "gfx/rect.h"
+#include "os/screen.h"
+#include "os/system.h"
 #include "ui/base.h"
 #include "ui/display.h"
 #include "ui/system.h"
@@ -132,6 +134,33 @@ void fit_bounds(Display* parentDisplay,
 
     window->setBounds(frame);
   }
+}
+
+// Limit window position using the union of all workareas
+//
+// TODO at least the title bar should be visible so we can
+//      resize it, because workareas can form an irregular shape
+//      (not rectangular) the calculation is a little more
+//      complex
+void limit_with_workarea(gfx::Rect& frame)
+{
+  if (!get_multiple_displays())
+    return;
+
+  gfx::Region wa;
+  os::ScreenList screens;
+  os::instance()->listScreens(screens);
+  for (const auto& screen : screens)
+    wa |= gfx::Region(screen->workarea());
+
+  // TODO use a "visibleFrameRegion = frame & wa" to check the
+  // visible regions and calculate if we should move the frame
+  // position
+  gfx::Rect waBounds = wa.bounds();
+  if (frame.x < waBounds.x) frame.x = waBounds.x;
+  if (frame.y < waBounds.y) frame.y = waBounds.y;
+  if (frame.x2() > waBounds.x2()) frame.w -= frame.x2() - waBounds.x2();
+  if (frame.y2() > waBounds.y2()) frame.h -= frame.y2() - waBounds.y2();
 }
 
 } // namespace ui

@@ -24,7 +24,6 @@
 #include "base/time.h"
 #include "os/event.h"
 #include "os/event_queue.h"
-#include "os/screen.h"
 #include "os/surface.h"
 #include "os/system.h"
 #include "os/window.h"
@@ -1311,29 +1310,7 @@ void Manager::_openWindow(Window* window, bool center)
         frame.offset(relativeToFrame.origin());
       }
 
-      // Limit window position using the union of all workareas
-      //
-      // TODO at least the title bar should be visible so we can
-      //      resize it, because workareas can form an irregular shape
-      //      (not rectangular) the calculation is a little more
-      //      complex
-      {
-        gfx::Region wa;
-        os::ScreenList screens;
-        os::instance()->listScreens(screens);
-        for (const auto& screen : screens)
-          wa |= gfx::Region(screen->workarea());
-
-        // TODO use a "visibleFrameRegion = frame & wa" to check the
-        // visible regions and calculate if we should move the frame
-        // position
-
-        gfx::Rect waBounds = wa.bounds();
-        if (frame.x < waBounds.x) frame.x = waBounds.x;
-        if (frame.y < waBounds.y) frame.y = waBounds.y;
-        if (frame.x2() > waBounds.x2()) frame.w -= frame.x2() - waBounds.x2();
-        if (frame.y2() > waBounds.y2()) frame.h -= frame.y2() - waBounds.y2();
-      }
+      limit_with_workarea(frame);
 
       spec.position(os::WindowSpec::Position::Frame);
       spec.frame(frame);

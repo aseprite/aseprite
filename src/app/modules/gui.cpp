@@ -361,7 +361,7 @@ void load_window_pos(Window* window, const char* section,
   if (get_multiple_displays()) {
     Rect frame = get_config_rect(section, "WindowFrame", gfx::Rect());
     if (!frame.isEmpty()) {
-      // TODO limit window area to current workspace / all available screen limits (?)
+      limit_with_workarea(frame);
       window->loadNativeFrame(frame);
     }
   }
