@@ -11,6 +11,9 @@
 #include "doc/algorithm/flip_image.h"
 #include "render/gradient.h"
 
+#include <array>
+#include <memory>
+
 namespace app {
 namespace tools {
 

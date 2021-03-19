@@ -15,7 +15,7 @@ if(COMMAND cmake_policy)
     # CMP0046: Old behavior to silently ignore non-existent dependencies.
     cmake_policy(SET CMP0046 OLD)
   endif()
-endif(COMMAND cmake_policy)
+endif()
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING

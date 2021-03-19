@@ -77,12 +77,12 @@ encouraged to create mockups for any issue you see and attach them.
 ## Hacking
 
 The first thing to keep in mind if you want to modify the source code:
-checkout the **master** branch. It is the branch that we use to
+checkout the **main** branch. It is the branch that we use to
 develop new features and fix issues that are planned for the next big
 release. See the [INSTALL](INSTALL.md) guide to know how to compile.
 
 To start looking the source code, see how it is organized in
-[src/README.md](https://github.com/aseprite/aseprite/tree/master/src/#aseprite-source-code)
+[src/README.md](https://github.com/aseprite/aseprite/tree/main/src/#aseprite-source-code)
 file.
 
 ## Forking & Pull Requests
@@ -93,22 +93,22 @@ You can fork the GitHub repository using the Fork button at
 The Pull Requests (PR) systems works in this way:
 
 1. First of all you will need to sign our
-   [Contributor License Agreement](https://github.com/aseprite/sourcecode/blob/master/sign-cla.md#sign-the-cla) (CLA).
-1. Then you can start working on Aseprite. Create a new branch from `master`, e.g. `fix-8` to fix the issue 8.
+   [Contributor License Agreement](https://github.com/aseprite/sourcecode/blob/main/sign-cla.md#sign-the-cla) (CLA).
+1. Then you can start working on Aseprite. Create a new branch from `main`, e.g. `fix-8` to fix the issue 8.
    Check this guide about [how to name your branch](https://github.com/agis/git-style-guide#branches).
 1. Start working on that new branch, and push your commits to your fork.
-1. Create a new PR to merge your `fix-8` branch to the official `master`.
+1. Create a new PR to merge your `fix-8` branch to the official `main`.
 1. If the PR is accepted (does not require review/comments/modifications),
-   your branch is merged into `master`.
-1. You will need to pull changes from the official `master` branch, and
-   merge them in your own `master` branch. Finally you can discard your
+   your branch is merged into `main`.
+1. You will need to pull changes from the official `main` branch, and
+   merge them in your own `main` branch. Finally you can discard your
    own `fix-8` branch (because those changes should be already merged
-   into `master` if the PR was accepted).
-1. Continue working from the new `master` head.
+   into `main` if the PR was accepted).
+1. Continue working from the new `main` head.
 
-To keep in mind: **always** start working from the `master` head, if you
+To keep in mind: **always** start working from the `main` head, if you
 want to fix three different issues, create three different branches
-from `master` and then send three different PR. Do not chain all the
+from `main` and then send three different PR. Do not chain all the
 fixes in one single branch. E.g. `fix-issues-3-and-8-and-25`.
 
 ## Community

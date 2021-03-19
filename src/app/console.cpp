@@ -185,7 +185,6 @@ void Console::printf(const char* format, ...)
 // static
 void Console::showException(const std::exception& e)
 {
-  ui::assert_ui_thread();
   if (!ui::is_ui_thread()) {
     LOG(ERROR, "A problem has occurred.\n\nDetails:\n%s\n", e.what());
     return;
