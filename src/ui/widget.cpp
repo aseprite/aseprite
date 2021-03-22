@@ -1374,8 +1374,9 @@ void Widget::releaseMouse()
 bool Widget::offerCapture(ui::MouseMessage* mouseMsg, int widget_type)
 {
   if (hasCapture()) {
+    const gfx::Point screenPos = mouseMsg->display()->nativeWindow()->pointToScreen(mouseMsg->position());
     auto man = manager();
-    Widget* pick = (man ? man->pick(mouseMsg->position()): nullptr);
+    Widget* pick = (man ? man->pickFromScreenPos(screenPos): nullptr);
     if (pick && pick != this && pick->type() == widget_type) {
       releaseMouse();
 
