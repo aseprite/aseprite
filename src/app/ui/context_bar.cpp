@@ -1159,8 +1159,9 @@ public:
     fit_bounds(display(), m_popup.get(),
                gfx::Rect(gfx::Point(bounds.x, bounds.y2()),
                          m_popup->sizeHint()));
-    m_popup->setHotRegion(gfx::Region(m_popup->boundsOnScreen()));
+
     m_popup->openWindow();
+    m_popup->setHotRegion(gfx::Region(m_popup->boundsOnScreen()));
   }
 
   const tools::DynamicsOptions& getDynamics() const {
