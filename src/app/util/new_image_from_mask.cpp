@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020 Igara Studio S.A.
+// Copyright (C) 2019-2021 Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -123,6 +123,10 @@ doc::Image* new_tilemap_from_mask(const Site& site,
   ASSERT(srcSprite);
   ASSERT(srcMask);
 
+  const Cel* srcCel = site.cel();
+  if (!srcCel)
+    return nullptr;
+
   const doc::Grid grid = site.grid();
   const Image* srcMaskBitmap = srcMask->bitmap();
   const gfx::Rect& srcBounds = srcMask->bounds();
@@ -141,27 +145,31 @@ doc::Image* new_tilemap_from_mask(const Site& site,
   // Clear the new tilemap
   clear_image(dst.get(), dst->maskColor());
 
-  if (auto cel = site.cel()) {
-    // Just copy tilemap data
-    dst->copy(cel->image(), gfx::Clip(0, 0, srcTilesBounds));
-  }
-
   // Copy the masked zones
   if (srcMaskBitmap) {
     // Copy active layer with mask
     const LockImageBits<BitmapTraits> maskBits(srcMaskBitmap, gfx::Rect(0, 0, srcBounds.w, srcBounds.h));
-    LockImageBits<BitmapTraits>::const_iterator mask_it = maskBits.begin();
+    auto mask_it = maskBits.begin();
+    const gfx::Point originPt = grid.canvasToTile(srcBounds.origin());
 
     for (int v=0; v<srcBounds.h; ++v) {
       for (int u=0; u<srcBounds.w; ++u, ++mask_it) {
         ASSERT(mask_it != maskBits.end());
-        if (!*mask_it) {
-          gfx::Point pt = grid.canvasToTile(gfx::Point(srcBounds.x+u, srcBounds.y+v));
-          if (dst->bounds().contains(pt))
-            dst->putPixel(pt.x, pt.y, dst->maskColor());
+        if (*mask_it) {
+          gfx::Point srcPt = grid.canvasToTile(gfx::Point(srcBounds.x+u, srcBounds.y+v));
+          gfx::Point dstPt = srcPt - originPt;
+
+          if (dst->bounds().contains(dstPt) &&
+              srcCel->image()->bounds().contains(srcPt)) {
+            dst->putPixel(dstPt.x, dstPt.y, srcCel->image()->getPixel(srcPt.x, srcPt.y));
+          }
         }
       }
     }
+  }
+  else {
+    // Just copy tilemap data
+    dst->copy(srcCel->image(), gfx::Clip(0, 0, srcTilesBounds));
   }
 
   return dst.release();

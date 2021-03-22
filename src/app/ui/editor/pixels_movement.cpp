@@ -1032,10 +1032,16 @@ void PixelsMovement::drawImage(
     dst->setMaskColor(doc::notile);
     dst->clear(dst->maskColor());
 
+    if (renderOriginalLayer && m_site.cel()) {
+      doc::Grid grid = m_site.grid();
+      dst->copy(m_site.cel()->image(),
+                gfx::Clip(0, 0, grid.canvasToTile(bounds)));
+    }
+
     drawTransformedTilemap(
       transformation,
       dst, m_originalImage.get(),
-      m_initialMask.get(), corners, pt);
+      m_initialMask.get());
   }
   else {
     dst->setMaskColor(m_site.sprite()->transparentColor());
@@ -1163,11 +1169,31 @@ retry:;      // In case that we don't have enough memory for RotSprite
   }
 }
 
+static void merge_tilemaps(Image* dst, const Image* src, gfx::Clip area)
+{
+  if (!area.clip(dst->width(), dst->height(), src->width(), src->height()))
+    return;
+
+  ImageConstIterator<TilemapTraits> src_it(src, area.srcBounds(), area.src.x, area.src.y);
+  ImageIterator<TilemapTraits> dst_it(dst, area.dstBounds(), area.dst.x, area.dst.y);
+
+  int end_x = area.dst.x+area.size.w;
+
+  for (int end_y=area.dst.y+area.size.h;
+       area.dst.y<end_y;
+       ++area.dst.y, ++area.src.y) {
+    for (int x=area.dst.x; x<end_x; ++x) {
+      if (*src_it != doc::notile)
+        *dst_it = *src_it;
+      ++src_it;
+      ++dst_it;
+    }
+  }
+}
+
 void PixelsMovement::drawTransformedTilemap(
   const Transformation& transformation,
-  doc::Image* dst, const doc::Image* src, const doc::Mask* mask,
-  const Transformation::Corners& corners,
-  const gfx::PointF& leftTop)
+  doc::Image* dst, const doc::Image* src, const doc::Mask* mask)
 {
   const int boxw = std::max(1, src->width()-2);
   const int boxh = std::max(1, src->height()-2);
@@ -1175,13 +1201,13 @@ void PixelsMovement::drawTransformedTilemap(
   // Function to copy a whole row of tiles (h=number of tiles in Y axis)
   auto draw_row =
     [dst, src, boxw](int y, int v, int h) {
-      dst->copy(src, gfx::Clip(0, y, 0, v, 1, h));
+      merge_tilemaps(dst, src, gfx::Clip(0, y, 0, v, 1, h));
       if (boxw) {
         const int u = std::min(1, src->width()-1);
         for (int x=1; x<dst->width()-1; x+=boxw)
-          dst->copy(src, gfx::Clip(x, y, u, v, boxw, h));
+          merge_tilemaps(dst, src, gfx::Clip(x, y, u, v, boxw, h));
       }
-      dst->copy(src, gfx::Clip(dst->width()-1, y, src->width()-1, v, 1, h));
+      merge_tilemaps(dst, src, gfx::Clip(dst->width()-1, y, src->width()-1, v, 1, h));
     };
 
   draw_row(0, 0, 1);
