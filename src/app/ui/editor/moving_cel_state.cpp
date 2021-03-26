@@ -112,12 +112,12 @@ MovingCelState::MovingCelState(Editor* editor,
       else
         m_celStarts.push_back(cel->bounds());
     }
-
-    // Hook BeforeCommandExecution signal so we know if the user wants
-    // to execute other command, so we can drop pixels.
-    m_ctxConn = UIContext::instance()->BeforeCommandExecution.connect(
-                  &MovingCelState::onBeforeCommandExecution, this);
   }
+
+  // Hook BeforeCommandExecution signal so we know if the user wants
+  // to execute other command, so we can drop pixels.
+  m_ctxConn = UIContext::instance()->BeforeCommandExecution.connect(
+    &MovingCelState::onBeforeCommandExecution, this);
 
   m_cursorStart = editor->screenToEditorF(msg->position());
   editor->captureMouse();
@@ -130,14 +130,10 @@ MovingCelState::MovingCelState(Editor* editor,
   }
 }
 
-MovingCelState::~MovingCelState()
-{
-  m_ctxConn.disconnect();
-}
-
 void MovingCelState::onBeforePopState(Editor* editor)
 {
   m_ctxConn.disconnect();
+  StandbyState::onBeforePopState(editor);
 }
 
 bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)

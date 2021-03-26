@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -101,6 +101,12 @@ void DrawingState::notifyToolLoopModifiersChange(Editor* editor)
 {
   if (!m_toolLoopManager->isCanceled())
     m_toolLoopManager->notifyToolLoopModifiersChange();
+}
+
+void DrawingState::onBeforePopState(Editor* editor)
+{
+  m_beforeCmdConn.disconnect();
+  StandbyState::onBeforePopState(editor);
 }
 
 bool DrawingState::onMouseDown(Editor* editor, MouseMessage* msg)

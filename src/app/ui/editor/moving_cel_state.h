@@ -44,7 +44,6 @@ namespace app {
                    ui::MouseMessage* msg,
                    const HandleType handle,
                    const MovingCelCollect& collect);
-    ~MovingCelState();
 
     virtual void onBeforePopState(Editor* editor) override;
     virtual bool onMouseUp(Editor* editor, ui::MouseMessage* msg) override;
@@ -74,7 +73,7 @@ namespace app {
     HandleType m_handle;
     Editor* m_editor;
 
-    obs::connection m_ctxConn;
+    obs::scoped_connection m_ctxConn;
   };
 
 } // namespace app
