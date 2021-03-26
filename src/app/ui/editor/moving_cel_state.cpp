@@ -130,6 +130,16 @@ MovingCelState::MovingCelState(Editor* editor,
   }
 }
 
+MovingCelState::~MovingCelState()
+{
+  m_ctxConn.disconnect();
+}
+
+void MovingCelState::onBeforePopState(Editor* editor)
+{
+  m_ctxConn.disconnect();
+}
+
 bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
 {
   Doc* document = editor->document();
@@ -357,4 +367,5 @@ void MovingCelState::onBeforeCommandExecution(CommandExecutionEvent& ev)
   }
   ev.cancel();
 }
+
 } // namespace app
