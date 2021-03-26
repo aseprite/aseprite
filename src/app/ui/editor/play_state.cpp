@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -107,6 +107,12 @@ EditorState::LeaveAction PlayState::onLeaveState(Editor* editor, EditorState* ne
       m_editor->setFrame(m_refFrame);
   }
   return KeepState;
+}
+
+void PlayState::onBeforePopState(Editor* editor)
+{
+  m_ctxConn.disconnect();
+  StateWithWheelBehavior::onBeforePopState(editor);
 }
 
 bool PlayState::onMouseDown(Editor* editor, MouseMessage* msg)

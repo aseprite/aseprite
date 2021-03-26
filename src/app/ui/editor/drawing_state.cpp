@@ -106,6 +106,12 @@ void DrawingState::notifyToolLoopModifiersChange(Editor* editor)
     m_toolLoopManager->notifyToolLoopModifiersChange();
 }
 
+void DrawingState::onBeforePopState(Editor* editor)
+{
+  m_beforeCmdConn.disconnect();
+  StandbyState::onBeforePopState(editor);
+}
+
 bool DrawingState::onMouseDown(Editor* editor, MouseMessage* msg)
 {
   // Drawing loop
@@ -247,8 +253,11 @@ bool DrawingState::onKeyDown(Editor* editor, KeyMessage* msg)
   Params params;
   if (KeyboardShortcuts::instance()
         ->getCommandFromKeyMessage(msg, &command, &params)) {
-    // We accept zoom commands.
-    if (command->id() == CommandId::Zoom()) {
+    // We accept some commands...
+    if (command->id() == CommandId::Zoom() ||
+        command->id() == CommandId::Undo() ||
+        command->id() == CommandId::Redo() ||
+        command->id() == CommandId::Cancel()) {
       UIContext::instance()->executeCommandFromMenuOrShortcut(command, params);
       return true;
     }
@@ -338,9 +347,22 @@ bool DrawingState::canExecuteCommands()
           !m_mousePressedReceived);
 }
 
-void DrawingState::onBeforeCommandExecution(CommandExecutionEvent& cmd)
+void DrawingState::onBeforeCommandExecution(CommandExecutionEvent& ev)
 {
-  if (canExecuteCommands() && m_toolLoop) {
+  if (!m_toolLoop)
+    return;
+
+  if (canExecuteCommands() ||
+      // Undo/Redo/Cancel will cancel the ToolLoop
+      ev.command()->id() == CommandId::Undo() ||
+      ev.command()->id() == CommandId::Redo() ||
+      ev.command()->id() == CommandId::Cancel()) {
+    if (!canExecuteCommands()) {
+      // Cancel the execution of Undo/Redo/Cancel because we've
+      // simulated it here
+      ev.cancel();
+    }
+
     m_toolLoopManager->cancel();
     destroyLoopIfCanceled(m_editor);
   }

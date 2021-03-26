@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -29,6 +29,7 @@ namespace app {
                  tools::ToolLoop* loop,
                  const DrawingType type);
     virtual ~DrawingState();
+    virtual void onBeforePopState(Editor* editor) override;
     virtual bool onMouseDown(Editor* editor, ui::MouseMessage* msg) override;
     virtual bool onMouseUp(Editor* editor, ui::MouseMessage* msg) override;
     virtual bool onMouseMove(Editor* editor, ui::MouseMessage* msg) override;
@@ -57,7 +58,7 @@ namespace app {
   private:
     void handleMouseMovement(const tools::Pointer& pointer);
     bool canExecuteCommands();
-    void onBeforeCommandExecution(CommandExecutionEvent& cmd);
+    void onBeforeCommandExecution(CommandExecutionEvent& ev);
     void destroyLoopIfCanceled(Editor* editor);
     void destroyLoop(Editor* editor);
 
