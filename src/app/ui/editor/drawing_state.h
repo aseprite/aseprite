@@ -56,7 +56,7 @@ namespace app {
   private:
     void handleMouseMovement(const tools::Pointer& pointer);
     bool canExecuteCommands();
-    void onBeforeCommandExecution(CommandExecutionEvent& cmd);
+    void onBeforeCommandExecution(CommandExecutionEvent& ev);
     void destroyLoopIfCanceled(Editor* editor);
     void destroyLoop(Editor* editor);
 
