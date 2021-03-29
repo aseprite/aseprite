@@ -83,9 +83,6 @@ ExpandCelCanvas::ExpandCelCanvas(
   , m_cel(nullptr)
   , m_celImage(nullptr)
   , m_celCreated(false)
-  // When editing the tiles of a tilemap manually we use a tileset as
-  // preview, see getDestTileset() for details.
-  , m_tilesetPreview((flags & TilesetPreview) == TilesetPreview)
   , m_flags(flags)
   , m_srcImage(nullptr)
   , m_dstImage(nullptr)
@@ -107,7 +104,7 @@ ExpandCelCanvas::ExpandCelCanvas(
 
   create_buffers();
 
-  if (m_layer && m_layer->isImage()) {
+  if (previewSpecificLayerChanges()) {
     m_cel = m_layer->cel(site.frame());
     if (m_cel)
       m_celImage = m_cel->imageRef();
@@ -163,7 +160,7 @@ ExpandCelCanvas::ExpandCelCanvas(
   // We have to adjust the cel position to match the m_dstImage
   // position (the new m_dstImage will be used in RenderEngine to
   // draw this cel).
-  if (!m_tilesetPreview)
+  if (!isTilesetPreview())
     m_cel->setPosition(m_bounds.origin());
 
   EXP_TRACE("ExpandCelCanvas",
@@ -177,7 +174,7 @@ ExpandCelCanvas::ExpandCelCanvas(
 
     m_cel->data()->setImage(m_dstImage, m_layer);
 
-    if (m_layer && m_layer->isImage())
+    if (previewSpecificLayerChanges())
       static_cast<LayerImage*>(m_layer)->addCel(m_cel);
   }
   else if (m_layer->isTilemap() &&
@@ -189,11 +186,11 @@ ExpandCelCanvas::ExpandCelCanvas(
   // of the tilemap image).
   else if (m_layer->isTilemap() &&
            m_tilemapMode == TilemapMode::Pixels &&
-           !m_tilesetPreview) {
+           !isTilesetPreview()) {
     getDestCanvas();
     m_cel->data()->setImage(m_dstImage, m_layer);
   }
-  else if (m_tilesetPreview) {
+  else if (isTilesetPreview()) {
     getDestTileset();
   }
 }
@@ -235,7 +232,7 @@ void ExpandCelCanvas::commit()
     // don't have a m_celImage)
     validateDestCanvas(gfx::Region(m_bounds));
 
-    if (m_layer->isImage()) {
+    if (previewSpecificLayerChanges()) {
       // We can temporary remove the cel.
       static_cast<LayerImage*>(m_layer)->removeCel(m_cel);
 
@@ -271,9 +268,11 @@ void ExpandCelCanvas::commit()
         m_cmds->executeAndAdd(new cmd::AddCel(m_layer, m_cel));
       }
     }
-    // We are selecting inside a layer group...
+    // We are selecting...
     else {
-      // Just delete the created layer
+      ASSERT(isSelectionPreview());
+
+      // Just delete the created cel for preview purposes of the selection
       delete m_cel;
       m_cel = nullptr;
     }
@@ -283,7 +282,7 @@ void ExpandCelCanvas::commit()
     m_cel->setPosition(m_origCelPos);
 
 #ifdef _DEBUG
-    if (m_layer->isTilemap() && !m_tilesetPreview) {
+    if (m_layer->isTilemap() && !isTilesetPreview()) {
       ASSERT(m_cel->image() != m_celImage.get());
     }
     else {
@@ -428,7 +427,7 @@ void ExpandCelCanvas::rollback()
   m_cel->setPosition(m_origCelPos);
 
   if (m_celCreated) {
-    if (m_layer && m_layer->isImage())
+    if (previewSpecificLayerChanges())
       static_cast<LayerImage*>(m_layer)->removeCel(m_cel);
 
     delete m_cel;
@@ -446,7 +445,7 @@ void ExpandCelCanvas::rollback()
 
 gfx::Point ExpandCelCanvas::getCelOrigin() const
 {
-  if (m_tilesetPreview)
+  if (isTilesetPreview())
     return m_bounds.origin();
   else
     return m_cel->position();
@@ -494,12 +493,12 @@ Tileset* ExpandCelCanvas::getDestTileset()
 {
   EXP_TRACE("ExpandCelCanvas::getDestTileset()"
             "celCreated", m_celCreated,
-            "tilesetPreview", m_tilesetPreview);
+            "tilesetPreview", isTilesetPreview());
 
   // When we edit the pixels in manual mode, we can create a tileset
   // that will be used for preview purposes to see changes in all
   // instances of the same tile.
-  if (!m_celCreated && m_tilesetPreview) {
+  if (!m_celCreated && isTilesetPreview()) {
     // Copy the whole tileset
     const Tileset* srcTileset = static_cast<LayerTilemap*>(m_layer)->tileset();
 
@@ -537,7 +536,7 @@ void ExpandCelCanvas::validateSourceCanvas(const gfx::Region& rgn)
   rgnToValidate.createSubtraction(rgnToValidate, m_validSrcRegion);
   rgnToValidate.createIntersection(rgnToValidate, gfx::Region(m_srcImage->bounds()));
 
-  if (m_celImage) {
+  if (m_celImage && previewSpecificLayerChanges()) {
     gfx::Region rgnToClear;
     rgnToClear.createSubtraction(
       rgnToValidate,

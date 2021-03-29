@@ -68,18 +68,24 @@ void DrawingState::initToolLoop(Editor* editor,
 {
   Tileset* tileset = m_toolLoop->getDstTileset();
 
+  // For selection inks we don't use a "the selected layer" for
+  // preview purposes, because we want the selection feedback to be at
+  // the top of all layers.
+  Layer* previewLayer = (m_toolLoop->getInk()->isSelection() ? nullptr:
+                                                               m_toolLoop->getLayer());
+
   // Prepare preview image (the destination image will be our preview
   // in the tool-loop time, so we can see what we are drawing)
   editor->renderEngine().setPreviewImage(
-    m_toolLoop->getLayer(),
+    previewLayer,
     m_toolLoop->getFrame(),
     tileset ? nullptr: m_toolLoop->getDstImage(),
     tileset,
     m_toolLoop->getCelOrigin(),
-    (m_toolLoop->getLayer() &&
-     m_toolLoop->getLayer()->isImage() ?
+    (previewLayer &&
+     previewLayer->isImage() ?
      static_cast<LayerImage*>(m_toolLoop->getLayer())->blendMode():
-     BlendMode::NEG_BW));
+     BlendMode::NEG_BW)); // To preview the selection ink we use the negative black & white blender
 
   ASSERT(!m_toolLoopManager->isCanceled());
 

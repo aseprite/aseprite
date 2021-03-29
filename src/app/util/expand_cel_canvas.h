@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -14,6 +14,7 @@
 #include "doc/frame.h"
 #include "doc/grid.h"
 #include "doc/image_ref.h"
+#include "doc/layer.h"
 #include "filters/tiled_mode.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
@@ -52,8 +53,11 @@ namespace app {
       PixelsBounds = 2,
       // True if you want to preview the changes in the tileset. Only
       // useful in TilesetMode::Manual mode when editing tiles in a
-      // tilemap.
+      // tilemap. See getDestTileset() for details.
       TilesetPreview = 4,
+      // Enable when we are going to use the expanded cel canvas for
+      // preview purposes of a selection tools.
+      SelectionPreview = 8,
     };
 
     ExpandCelCanvas(Site site, Layer* layer,
@@ -94,6 +98,22 @@ namespace app {
     ImageRef trimDstImage(const gfx::Rect& bounds) const;
     void copySourceTilestToDestTileset();
 
+    bool isTilesetPreview() const {
+      return ((m_flags & TilesetPreview) == TilesetPreview);
+    }
+
+    bool isSelectionPreview() const {
+      return ((m_flags & SelectionPreview) == SelectionPreview);
+    }
+
+    // This is the common case where we want to preview a change in
+    // the given layer of ExpandCelCanvas ctor.
+    bool previewSpecificLayerChanges() const {
+      return (m_layer &&
+              m_layer->isImage() &&
+              !isSelectionPreview());
+    }
+
     Doc* m_document;
     Sprite* m_sprite;
     Layer* m_layer;
@@ -101,7 +121,6 @@ namespace app {
     Cel* m_cel;
     ImageRef m_celImage;
     bool m_celCreated;
-    bool m_tilesetPreview;
     gfx::Point m_origCelPos;
     Flags m_flags;
     gfx::Rect m_bounds;

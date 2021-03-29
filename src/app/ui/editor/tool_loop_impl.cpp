@@ -60,6 +60,7 @@
 #include "ui/ui.h"
 
 #include <algorithm>
+#include <memory>
 
 namespace app {
 
@@ -449,7 +450,7 @@ class ToolLoopImpl : public ToolLoopBase,
   gfx::Point m_maskOrigin;
   bool m_internalCancel = false;
   Tx m_tx;
-  ExpandCelCanvas* m_expandCelCanvas;
+  std::unique_ptr<ExpandCelCanvas> m_expandCelCanvas;
   Image* m_floodfillSrcImage;
   bool m_saveLastPoint;
 
@@ -470,7 +471,6 @@ public:
              m_ink->isSlice() ||
              m_ink->isZoom()) ? DoesntModifyDocument:
                                 ModifyDocument))
-    , m_expandCelCanvas(nullptr)
     , m_floodfillSrcImage(nullptr)
     , m_saveLastPoint(saveLastPoint)
   {
@@ -503,8 +503,8 @@ public:
       }
     }
 
-    m_expandCelCanvas = new ExpandCelCanvas(
-      site, site.layer(),
+    m_expandCelCanvas.reset(new ExpandCelCanvas(
+      site, m_layer,
       m_docPref.tiled.mode(),
       m_tx,
       ExpandCelCanvas::Flags(
@@ -517,7 +517,9 @@ public:
          site.tilemapMode() == TilemapMode::Pixels &&
          site.tilesetMode() == TilesetMode::Manual &&
          !m_ink->isSelection() ? ExpandCelCanvas::TilesetPreview:
-                                 ExpandCelCanvas::None)));
+                                 ExpandCelCanvas::None) |
+        (m_ink->isSelection() ? ExpandCelCanvas::SelectionPreview:
+                                ExpandCelCanvas::None))));
 
     if (!m_floodfillSrcImage)
       m_floodfillSrcImage = const_cast<Image*>(getSrcImage());
@@ -539,10 +541,12 @@ public:
     m_sprayWidth = m_toolPref.spray.width();
     m_spraySpeed = m_toolPref.spray.speed();
 
-    if (m_ink->isSelection())
+    if (m_ink->isSelection()) {
       m_useMask = false;
-    else
+    }
+    else {
       m_useMask = m_document->isMaskVisible();
+    }
 
     // Start with an empty mask if the user is selecting with "default selection mode"
     if (m_ink->isSelection() &&
@@ -576,7 +580,6 @@ public:
 
     if (m_floodfillSrcImage != getSrcImage())
       delete m_floodfillSrcImage;
-    delete m_expandCelCanvas;
   }
 
   // IToolLoop interface
