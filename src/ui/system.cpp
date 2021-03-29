@@ -249,7 +249,6 @@ UISystem::~UISystem()
 void _internal_set_mouse_display(Display* display)
 {
   CursorType cursor = get_mouse_cursor();
-  set_mouse_cursor(kNoCursor);
   mouse_display = display;
   if (display)
     set_mouse_cursor(cursor);  // Restore mouse cursor
