@@ -22,6 +22,16 @@
 
 namespace ui {
 
+static gfx::Region get_workarea_region()
+{
+  gfx::Region wa;
+  os::ScreenList screens;
+  os::instance()->listScreens(screens);
+  for (const auto& screen : screens)
+    wa |= gfx::Region(screen->workarea());
+  return wa;
+}
+
 int fit_bounds(Display* display, int arrowAlign, const gfx::Rect& target, gfx::Rect& bounds)
 {
   bounds.x = target.x;
@@ -101,7 +111,7 @@ void fit_bounds(Display* parentDisplay,
 
   if (get_multiple_displays() && window->shouldCreateNativeWindow()) {
     const os::Window* nativeWindow = parentDisplay->nativeWindow();
-    const gfx::Rect workarea = nativeWindow->screen()->workarea();
+    const gfx::Rect workarea = get_workarea_region().bounds();
     const int scale = nativeWindow->scale();
 
     // Screen frame bounds
@@ -147,11 +157,7 @@ void limit_with_workarea(gfx::Rect& frame)
   if (!get_multiple_displays())
     return;
 
-  gfx::Region wa;
-  os::ScreenList screens;
-  os::instance()->listScreens(screens);
-  for (const auto& screen : screens)
-    wa |= gfx::Region(screen->workarea());
+  gfx::Region wa = get_workarea_region();
 
   // TODO use a "visibleFrameRegion = frame & wa" to check the
   // visible regions and calculate if we should move the frame
