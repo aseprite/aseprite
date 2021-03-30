@@ -1644,12 +1644,20 @@ void OptionsCommand::onExecute(Context* context)
   static int curSection = 0;
 
   OptionsWindow window(context, curSection);
-  window.openWindow();
 
-  if (!m_installExtensionFilename.empty()) {
-    if (!window.showDialogToInstallExtension(m_installExtensionFilename))
-      return;
-  }
+  // As showDialogToInstallExtension() will show an ui::Alert, we need
+  // to call this function after window.openWindowInForeground(), so
+  // the parent window of the alert will be our OptionsWindow (and not
+  // the main window).
+  window.Open.connect(
+    [&]() {
+      if (!m_installExtensionFilename.empty()) {
+        if (!window.showDialogToInstallExtension(this->m_installExtensionFilename)) {
+          window.closeWindow(&window);
+          return;
+        }
+      }
+    });
 
   window.openWindowInForeground();
   if (window.ok())

@@ -284,6 +284,12 @@ void Window::onHitTest(HitTestEvent& ev)
   ev.setHit(ht);
 }
 
+void Window::onOpen(Event& ev)
+{
+  // Fire Open signal
+  Open(ev);
+}
+
 void Window::onWindowResize()
 {
   // Do nothing
@@ -366,6 +372,10 @@ void Window::openWindow()
 {
   if (!parent()) {
     Manager::getDefault()->_openWindow(this, m_isAutoRemap);
+
+    // Open event
+    Event ev(this);
+    onOpen(ev);
   }
 }
 

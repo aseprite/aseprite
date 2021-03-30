@@ -75,6 +75,7 @@ namespace ui {
     void loadNativeFrame(const gfx::Rect& frame) { m_lastFrame = frame; }
 
     // Signals
+    obs::signal<void (Event&)> Open;
     obs::signal<void (CloseEvent&)> Close;
 
   protected:
@@ -87,6 +88,7 @@ namespace ui {
     virtual void onSetText() override;
 
     // New events
+    virtual void onOpen(Event& ev);
     virtual void onClose(CloseEvent& ev);
     virtual void onHitTest(HitTestEvent& ev);
     virtual void onWindowResize();
