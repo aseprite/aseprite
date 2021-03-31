@@ -3785,6 +3785,8 @@ void Timeline::setViewScroll(const gfx::Point& pt)
     gfx::Rect rc;
     if (m_tagBands > 0)
       rc |= getPartBounds(Hit(PART_TAG_BAND));
+    if (m_range.enabled())
+      rc |= getRangeBounds(m_range).enlarge(outlineWidth());
     rc |= getFrameHeadersBounds();
     rc |= getCelsBounds();
     rc.offset(origin());
