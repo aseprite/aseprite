@@ -34,6 +34,7 @@
 #include "app/doc_undo.h"
 #include "app/i18n/strings.h"
 #include "app/ini_file.h"
+#include "app/inline_command_execution.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
@@ -787,6 +788,7 @@ void ColorBar::onRemapPalButtonClick()
   // Create remap from m_oldPalette to the current palette
   Remap remap(1);
   try {
+    InlineCommandExecution inlineCmd(UIContext::instance());
     ContextWriter writer(UIContext::instance());
     Sprite* sprite = writer.sprite();
     ASSERT(sprite);
@@ -808,6 +810,7 @@ void ColorBar::onRemapPalButtonClick()
   }
 
   try {
+    InlineCommandExecution inlineCmd(UIContext::instance());
     ContextWriter writer(UIContext::instance());
     Sprite* sprite = writer.sprite();
     if (sprite) {
@@ -862,6 +865,7 @@ void ColorBar::onRemapTilesButtonClick()
 {
   COLOR_BAR_TRACE("remapTiles\n");
   try {
+    InlineCommandExecution inlineCmd(UIContext::instance());
     ContextWriter writer(UIContext::instance(), 500);
     Sprite* sprite = writer.sprite();
     if (!sprite)
@@ -973,6 +977,7 @@ void ColorBar::setPalette(const doc::Palette* newPalette, const std::string& act
   showRemapPal();
 
   try {
+    InlineCommandExecution inlineCmd(UIContext::instance());
     ContextWriter writer(UIContext::instance(), 500);
     Sprite* sprite = writer.sprite();
     frame_t frame = writer.frame();
@@ -991,6 +996,7 @@ void ColorBar::setPalette(const doc::Palette* newPalette, const std::string& act
 void ColorBar::setTransparentIndex(int index)
 {
   try {
+    InlineCommandExecution inlineCmd(UIContext::instance());
     ContextWriter writer(UIContext::instance());
     Sprite* sprite = writer.sprite();
     if (sprite &&
@@ -1079,6 +1085,7 @@ void ColorBar::onTilesViewClearTiles(const doc::PalettePicks& _picks)
   // selected tiles to remove.
   doc::PalettePicks picks = _picks;
   try {
+    InlineCommandExecution inlineCmd(UIContext::instance());
     ContextWriter writer(UIContext::instance(), 500);
     Sprite* sprite = writer.sprite();
     ASSERT(writer.layer()->isTilemap());
@@ -1109,6 +1116,7 @@ void ColorBar::onTilesViewResize(const int newSize)
   showRemapTiles();
 
   try {
+    InlineCommandExecution inlineCmd(UIContext::instance());
     ContextWriter writer(UIContext::instance(), 500);
     Sprite* sprite = writer.sprite();
     ASSERT(writer.layer()->isTilemap());
@@ -1154,6 +1162,7 @@ void ColorBar::onTilesViewDragAndDrop(doc::Tileset* tileset,
 
   try {
     Context* ctx = UIContext::instance();
+    InlineCommandExecution inlineCmd(ctx);
     ContextWriter writer(ctx, 500);
     Tx tx(writer.context(), Strings::color_bar_drag_and_drop_tiles(), ModifyDocument);
     if (isCopy)
@@ -1620,6 +1629,7 @@ void ColorBar::onTimerTick()
 
     // Redraw all editors
     try {
+      InlineCommandExecution inlineCmd(UIContext::instance());
       ContextWriter writer(UIContext::instance());
       Doc* document(writer.document());
       if (document != NULL)
@@ -1702,6 +1712,7 @@ void ColorBar::updateCurrentSpritePalette(const char* operationName)
   if (UIContext::instance()->activeDocument() &&
       UIContext::instance()->activeDocument()->sprite()) {
     try {
+      InlineCommandExecution inlineCmd(UIContext::instance());
       ContextWriter writer(UIContext::instance());
       Doc* document(writer.document());
       Sprite* sprite(writer.sprite());
