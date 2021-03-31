@@ -1102,6 +1102,14 @@ bool Widget::paintEvent(Graphics* graphics,
     Widget* parentWidget;
     if (type() == kWindowWidget) {
       parentWidget = display()->containedWidget();
+
+      // Draw the desktop window as the background, not the manager
+      // (as the manager contains all windows as children and will try
+      // to draw other foreground windows here).
+      if (get_multiple_displays() &&
+          parentWidget->type() == kManagerWidget) {
+        parentWidget = static_cast<Manager*>(parentWidget)->getDesktopWindow();
+      }
     }
     else {
       parentWidget = parent();

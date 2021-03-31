@@ -61,6 +61,7 @@ namespace ui {
     void collectGarbage();
 
     Window* getTopWindow();
+    Window* getDesktopWindow();
     Window* getForegroundWindow();
     Display* getForegroundDisplay();
 

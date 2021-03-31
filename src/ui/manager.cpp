@@ -760,19 +760,16 @@ void Manager::updateMouseWidgets(const gfx::Point& mousePos,
   Widget* widget = nullptr;
   for (auto mouseWidget : mouse_widgets_list) {
     if (get_multiple_displays()) {
-      gfx::Point displayPos;
       if (display) {
         if (display != mouseWidget->display()) {
-          displayPos = mouseWidget->display()->nativeWindow()->pointFromScreen(screenPos);
-          widget = mouseWidget->display()->containedWidget()->pick(displayPos);
+          widget = mouseWidget->display()->containedWidget()->pickFromScreenPos(screenPos);
         }
         else {
           widget = mouseWidget->pick(mousePos);
         }
       }
       else {
-        displayPos = mouseWidget->display()->nativeWindow()->pointFromScreen(screenPos);
-        widget = mouseWidget->display()->containedWidget()->pick(displayPos);
+        widget = mouseWidget->display()->containedWidget()->pickFromScreenPos(screenPos);
       }
     }
     else {
@@ -851,6 +848,16 @@ void Manager::enqueueMessage(Message* msg)
 Window* Manager::getTopWindow()
 {
   return static_cast<Window*>(UI_FIRST_WIDGET(children()));
+}
+
+Window* Manager::getDesktopWindow()
+{
+  for (auto child : children()) {
+    Window* window = static_cast<Window*>(child);
+    if (window->isDesktop())
+      return window;
+  }
+  return nullptr;
 }
 
 Window* Manager::getForegroundWindow()
