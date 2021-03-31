@@ -1393,7 +1393,10 @@ bool Widget::offerCapture(ui::MouseMessage* mouseMsg, int widget_type)
         mouseMsg->pointerType(),
         mouseMsg->button(),
         mouseMsg->modifiers(),
-        mouseMsg->position());
+        (mouseMsg->display() == pick->display() ?
+         mouseMsg->position():
+         pick->display()->nativeWindow()->pointFromScreen(screenPos)));
+      mouseMsg2->setDisplay(pick->display());
       mouseMsg2->setRecipient(pick);
       man->enqueueMessage(mouseMsg2);
       return true;
