@@ -2867,14 +2867,17 @@ gfx::Rect Timeline::getRangeBounds(const Range& range) const
       }
       break;
     case Range::kFrames: {
-      for (auto frame : range.selectedFrames())
+      for (auto frame : range.selectedFrames()) {
         rc |= getPartBounds(Hit(PART_HEADER_FRAME, 0, frame));
+        rc |= getPartBounds(Hit(PART_CEL, 0, frame));
+      }
       break;
     }
     case Range::kLayers:
       for (auto layer : range.selectedLayers()) {
         layer_t layerIdx = getLayerIndex(layer);
         rc |= getPartBounds(Hit(PART_ROW_TEXT, layerIdx));
+        rc |= getPartBounds(Hit(PART_CEL, layerIdx, m_sprite->lastFrame()));
       }
       break;
   }
@@ -2883,11 +2886,28 @@ gfx::Rect Timeline::getRangeBounds(const Range& range) const
 
 gfx::Rect Timeline::getRangeClipBounds(const Range& range) const
 {
-  gfx::Rect clipBounds;
+  gfx::Rect celBounds = getCelsBounds();
+  gfx::Rect clipBounds, unionBounds;
   switch (range.type()) {
-    case Range::kCels: clipBounds = getCelsBounds(); break;
-    case Range::kFrames: clipBounds = getFrameHeadersBounds(); break;
-    case Range::kLayers: clipBounds = getLayerHeadersBounds(); break;
+    case Range::kCels:
+      clipBounds = celBounds;
+      break;
+    case Range::kFrames: {
+      clipBounds = getFrameHeadersBounds();
+
+      unionBounds = (clipBounds | celBounds);
+      clipBounds.y = unionBounds.y;
+      clipBounds.h = unionBounds.h;
+      break;
+    }
+    case Range::kLayers: {
+      clipBounds = getLayerHeadersBounds();
+
+      unionBounds = (clipBounds | celBounds);
+      clipBounds.x = unionBounds.x;
+      clipBounds.w = unionBounds.w;
+      break;
+    }
   }
   return clipBounds;
 }
