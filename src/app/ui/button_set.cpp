@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -196,7 +196,9 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
       // user leaves the ButtonSet without releasing the mouse button
       // and the mouse capture if offered to other ButtonSet.
       if (buttonSet()->m_triggerOnMouseUp) {
-        ASSERT(g_itemBeforeCapture < 0);
+        // g_itemBeforeCapture can be >= 0 if we clicked other button
+        // without releasing the first button.
+        //ASSERT(g_itemBeforeCapture < 0);
         g_itemBeforeCapture = buttonSet()->selectedItem();
       }
 
