@@ -1,5 +1,5 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2018-2020  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-2021  Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2018  David Capello -->
 <gui>
   <window id="options" text="@.title">
@@ -258,6 +258,8 @@
 		 pref="general.autoshow_timeline" />
           <check text="@.rewind_on_stop" id="rewind_on_stop" tooltip="@.rewind_on_stop_tooltip"
 		 pref="general.rewind_on_stop" />
+          <check text="@.keep_timeline_selection" id="keep_selection" tooltip="@.keep_timeline_selection_tooltip"
+		 pref="timeline.keep_selection" />
 	  <hbox>
 	    <label text="@.default_first_frame" />
 	    <expr id="first_frame" />

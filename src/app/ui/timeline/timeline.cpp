@@ -320,18 +320,24 @@ void Timeline::updateUsingEditor(Editor* editor)
 
   m_aniControls.updateUsingEditor(editor);
 
+  DocRange oldRange;
   if (editor != m_editor) {
     // Save active m_tagFocusBand into the old focused editor
     if (m_editor)
       m_editor->setTagFocusBand(m_tagFocusBand);
     m_tagFocusBand = -1;
   }
+  else {
+    oldRange = m_range;
+  }
 
   detachDocument();
 
-  if (m_range.enabled() &&
-      m_rangeLocks == 0) {
-    m_range.clearRange();
+  if (Preferences::instance().timeline.keepSelection())
+    m_range = oldRange;
+  else {
+    // The range is reset in detachDocument()
+    ASSERT(!m_range.enabled());
   }
 
   // We always update the editor. In this way the timeline keeps in
@@ -3991,8 +3997,10 @@ void Timeline::onNewInputPriority(InputChainElement* element,
       return;
 
     if (element != this && m_rangeLocks == 0) {
-      m_range.clearRange();
-      invalidate();
+      if (!Preferences::instance().timeline.keepSelection()) {
+        m_range.clearRange();
+        invalidate();
+      }
     }
   }
 }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2018-2020  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-2021  Igara Studio S.A. -->
 <!-- Copyright (C) 2014-2018  David Capello -->
 <preferences>
 
@@ -170,6 +170,9 @@
            some performance issue rendering huge sprites with small
            zoom levels -->
       <option id="auto_fit" type="bool" default="false" />
+    </section>
+    <section id="timeline">
+      <option id="keep_selection" type="bool" default="false" />
     </section>
     <section id="cursor">
       <option id="use_native_cursor" type="bool" default="false" />
