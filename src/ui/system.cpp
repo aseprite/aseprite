@@ -248,10 +248,11 @@ UISystem::~UISystem()
 
 void _internal_set_mouse_display(Display* display)
 {
-  CursorType cursor = get_mouse_cursor();
-  mouse_display = display;
-  if (display)
-    set_mouse_cursor(cursor);  // Restore mouse cursor
+  if (display != mouse_display) {
+    mouse_display = display;
+    if (mouse_display)
+      update_mouse_cursor();
+  }
 }
 
 void set_multiple_displays(bool multi)
