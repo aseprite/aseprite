@@ -134,12 +134,13 @@ void ColorPicker::pickColor(const Site& site,
         m_layer = cels.front()->layer();
 
       if (site.tilemapMode() == TilemapMode::Tiles) {
-        if (!cels.empty()) {
-          const gfx::Point tilePos = site.grid().canvasToTile(gfx::Point(pos));
-          if (cels.front()->image()->bounds().contains(tilePos)) {
-            m_tile = doc::get_pixel(cels.front()->image(), tilePos.x, tilePos.y);
-            m_color = app::Color::fromIndex(m_tile);
-          }
+        if (cels.empty() || !cels.front()->image()->isTilemap())
+          return;
+
+        const gfx::Point tilePos = site.grid().canvasToTile(gfx::Point(pos));
+        if (cels.front()->image()->bounds().contains(tilePos)) {
+          m_tile = doc::get_pixel(cels.front()->image(), tilePos.x, tilePos.y);
+          m_color = app::Color::fromIndex(m_tile);
         }
       }
       else if (site.tilemapMode() == TilemapMode::Pixels) {
