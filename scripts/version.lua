@@ -1,4 +1,4 @@
--- Copyright (C) 2019  Igara Studio S.A.
+-- Copyright (C) 2019-2021  Igara Studio S.A.
 -- Copyright (C) 2018  David Capello
 --
 -- This file is released under the terms of the MIT license.
@@ -8,7 +8,7 @@ assert(string.sub(tostring(app.version), 1, 1) == "1")
 assert(string.sub(tostring(app.version), 2, 2) == ".")
 assert(app.version.major == 1)
 
--- We cannot test the specific app.version from the master branch
+-- We cannot test the specific app.version from the "main" branch
 -- because it's "1.x-dev" (which is converted to "1.0-dev" as Version object)
 --assert(app.version > Version("1.2.10-beta4"))
 

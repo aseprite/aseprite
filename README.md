@@ -4,14 +4,14 @@ Test suite for [Aseprite](https://github.com/aseprite/aseprite)
 to avoid breaking backward compatibility.
 
 This project is cloned by the
-[.travis.yml](https://github.com/aseprite/aseprite/blob/master/.travis.yml) file
+[build.yml](https://github.com/aseprite/aseprite/blob/main/.github/workflows/build.yml) file
 on Aseprite project to do several automated tests:
 
 * Save/load file formats correctly. For this we have `.aseprite`, `.png`,
-  `.gif`, etc. files [sprites](https://github.com/aseprite/tests/tree/master/sprites)
+  `.gif`, etc. files [sprites](https://github.com/aseprite/tests/tree/main/sprites)
   folder.
 * Test backward compatibility with [Aseprite CLI](https://www.aseprite.org/docs/cli/) options
-* Future [scripting API](https://github.com/aseprite/api) using [scripts](https://github.com/aseprite/tests/tree/master/scripts)
+* Future [scripting API](https://github.com/aseprite/api) using [scripts](https://github.com/aseprite/tests/tree/main/scripts)
 
 ## How to run tests?
 
