@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -183,6 +183,10 @@ DocumentPreferences& Preferences::document(const Doc* doc)
 
 void Preferences::resetToolPreferences(tools::Tool* tool)
 {
+  if (tool->prefAlreadyResetFromScript())
+    return;
+  tool->markPrefAlreadyResetFromScript();
+
   auto it = m_tools.find(tool->getId());
   if (it != m_tools.end())
     m_tools.erase(it);
