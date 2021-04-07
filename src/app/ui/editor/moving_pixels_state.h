@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -15,6 +15,7 @@
 #include "app/ui/editor/pixels_movement.h"
 #include "app/ui/editor/standby_state.h"
 #include "app/ui/status_bar.h"
+#include "app/ui/timeline/timeline_observer.h"
 #include "obs/connection.h"
 #include "ui/timer.h"
 
@@ -29,6 +30,7 @@ namespace app {
   class MovingPixelsState
     : public StandbyState
     , EditorObserver
+    , TimelineObserver
     , ContextBarObserver {
   public:
     MovingPixelsState(Editor* editor, ui::MouseMessage* msg, PixelsMovementPtr pixelsMovement, HandleType handle);
@@ -62,6 +64,9 @@ namespace app {
     virtual void onDestroyEditor(Editor* editor) override;
     virtual void onBeforeFrameChanged(Editor* editor) override;
     virtual void onBeforeLayerChanged(Editor* editor) override;
+
+    // TimelineObserver
+    virtual void onBeforeRangeChanged(Timeline* timeline) override;
 
     // ContextBarObserver
     virtual void onDropPixels(ContextBarObserver::DropAction action) override;
