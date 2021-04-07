@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -1008,7 +1008,21 @@ CelList PixelsMovement::getEditableCels()
   // empty cel (Ctrl+V) and cut (Ctrl+X) the floating pixels.
   if (m_site.cel() &&
       m_site.cel()->layer()->isEditableHierarchy()) {
-    auto it = std::find(cels.begin(), cels.end(), m_site.cel());
+    CelList::iterator it;
+
+    // If we are in a linked cel, remove the cel that matches the
+    // linked cel. In this way we avoid having two Cel in cels
+    // pointing to the same CelData.
+    if (Cel* link = m_site.cel()->link()) {
+      it = std::find_if(cels.begin(), cels.end(),
+                        [link](const Cel* cel){
+                          return (cel == link ||
+                                  cel->link() == link);
+                        });
+    }
+    else {
+      it = std::find(cels.begin(), cels.end(), m_site.cel());
+    }
     if (it != cels.end())
       cels.erase(it);
     cels.insert(cels.begin(), m_site.cel());
