@@ -328,9 +328,14 @@ void UIContext::onGetActiveSite(Site* site) const
     view->getSite(site);
 
     if (site->sprite()) {
-      // Selected range in the timeline
+      // Selected range in the timeline. We use it only if the
+      // timeline is visible. A common scenario might be
+      // undoing/redoing actions where the range is re-selected, that
+      // could enable the range even if the timeline is hidden. In
+      // this way we avoid using the timeline selection unexpectedly.
       Timeline* timeline = App::instance()->timeline();
       if (timeline &&
+          timeline->isVisible() &&
           timeline->range().enabled()) {
         site->range(timeline->range());
       }
