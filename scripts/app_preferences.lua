@@ -1,10 +1,13 @@
--- Copyright (C) 2019  Igara Studio S.A.
+-- Copyright (C) 2019-2021  Igara Studio S.A.
 --
 -- This file is released under the terms of the MIT license.
 -- Read LICENSE.txt for more information.
 
 -- Preferences for tools
 do
+  -- The first time we get the tool preferences in CLI mode, we get
+  -- the default options for this tool (in GUI, we get the current
+  -- user-defined options).
   local t = app.preferences.tool('pencil')
   assert(t.opacity == 255)
   assert(t.tolerance == 0)
@@ -14,10 +17,10 @@ do
   t.brush.size = 2
   assert(t.brush.size == 2)
 
-  -- Getting the tool again will give us the default configuration
-  -- again in batch mode
+  -- Getting the tool again must give us the configuration that was
+  -- set inside the script
   t = app.preferences.tool('pencil')
-  assert(t.brush.size == 1)
+  assert(t.brush.size == 2)
 end
 
 -- Preferences for documents

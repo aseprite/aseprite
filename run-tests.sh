@@ -14,7 +14,7 @@ function fail() {
 }
 
 function expect() {
-    if [[ $1 != $($2) ]] ; then
+    if [[ $1 != "$($2 | tr -d "\r")" ]] ; then
 	echo "FAILED: $2"
 	echo "EXPECTED: $1"
 	echo "RESULT: $($2)"
@@ -33,7 +33,7 @@ if [[ "$filter" != "" ]]; then
 fi
 
 t=$(mktemp -d)
-if [[ "$(uname)" =~ "MINGW32" ]] || [[ "$(uname)" =~ "MSYS_NT-10.0" ]] ; then
+if [[ "$(uname)" =~ "MINGW" ]] || [[ "$(uname)" =~ "MSYS" ]] ; then
     PWDARG=-W
     t=$(cd "$t" && pwd $PWDARG)
 else
@@ -45,13 +45,14 @@ export ASEPRITE_USER_FOLDER=$t
 if [[ "$filter" == "" ]] || [[ "console" =~ $filter ]]; then
     echo ----------------------------------------------------------------------
     echo "Testing console..."
+    echo "uname=$(uname)"
 
     $ASEPRITE -b --script scripts/console_assert.lua >$t/tmp 2>&1
     ! grep -q "this should be in the output" $t/tmp && fail "print() text not found in output"
     ! grep -q "assertion failed" $t/tmp && fail "assert() text not found in output"
     grep -q "this should not be in the output" $t/tmp && fail "text that shouldn't be in the output is"
 
-    if [[ "$(uname)" =~ "MINGW32" ]] || [[ "$(uname)" =~ "MSYS_NT-10.0" ]] ; then
+    if [[ "$(uname)" =~ "MINGW" ]] || [[ "$(uname)" =~ "MSYS" ]] ; then
 	echo Ignore console tests on Windows
     else
 	$ASEPRITE -b --script scripts/console_print.lua >$t/tmp 2>&1
