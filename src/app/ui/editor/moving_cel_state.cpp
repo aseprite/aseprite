@@ -88,8 +88,6 @@ MovingCelState::MovingCelState(Editor* editor,
   , m_celList(collect.celList())
   , m_celOffset(0.0, 0.0)
   , m_celScale(1.0, 1.0)
-  , m_hasReference(false)
-  , m_scaled(false)
   , m_handle(handle)
   , m_editor(editor)
 {
@@ -190,6 +188,13 @@ bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
     // like to update all the editors.
     document->notifyGeneralUpdate();
   }
+  // Just a click in the current layer
+  else if (!m_moved & !m_scaled) {
+    // Deselect the whole range if we are in "Auto Select Layer"
+    if (editor->isAutoSelectLayer()) {
+      App::instance()->timeline()->clearAndInvalidateRange();
+    }
+  }
 
   // Restore the mask visibility.
   if (m_maskVisible) {
@@ -220,6 +225,8 @@ bool MovingCelState::onMouseMove(Editor* editor, MouseMessage* msg)
           m_celOffset.y = 0;
         }
       }
+      if (!m_moved && intCelOffset() != gfx::Point(0, 0))
+        m_moved = true;
       break;
 
     case ScaleSEHandle: {
@@ -248,6 +255,7 @@ bool MovingCelState::onMouseMove(Editor* editor, MouseMessage* msg)
     if (cel->layer()->isReference()) {
       celBounds.x += m_celOffset.x;
       celBounds.y += m_celOffset.y;
+      m_moved = true;
       if (m_scaled) {
         celBounds.w *= m_celScale.w;
         celBounds.h *= m_celScale.h;

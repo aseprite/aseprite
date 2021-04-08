@@ -68,8 +68,9 @@ namespace app {
     gfx::SizeF m_celMainSize;
     gfx::SizeF m_celScale;
     bool m_maskVisible;
-    bool m_hasReference;
-    bool m_scaled;
+    bool m_hasReference = false;
+    bool m_moved = false;
+    bool m_scaled = false;
     HandleType m_handle;
     Editor* m_editor;
 
