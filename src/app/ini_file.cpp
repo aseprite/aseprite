@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -81,7 +81,7 @@ ConfigModule::ConfigModule()
 #elif !defined(_WIN32)
 
   // On Linux we migrate the old configuration file name
-  // (.asepriterc -> ~/.config/aseprite/aseprite.ini)
+  // (~/.asepriterc -> ~/.config/aseprite/aseprite.ini)
   {
     ResourceFinder old_rf;
     old_rf.includeHomeDir(".asepriterc");
