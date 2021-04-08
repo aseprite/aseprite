@@ -47,8 +47,10 @@ MovingCelCollect::MovingCelCollect(Editor* editor, Layer* layer)
   if (layer && layer->isImage())
     m_mainCel = layer->cel(editor->frame());
 
-  DocRange range = App::instance()->timeline()->range();
-  if (!range.enabled()) {
+  Timeline* timeline = App::instance()->timeline();
+  DocRange range = timeline->range();
+  if (!range.enabled() ||
+      !timeline->isVisible()) {
     range.startRange(editor->layer(), editor->frame(), DocRange::kCels);
     range.endRange(editor->layer(), editor->frame());
   }
