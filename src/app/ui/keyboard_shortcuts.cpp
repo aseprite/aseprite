@@ -879,7 +879,7 @@ bool KeyboardShortcuts::getCommandFromKeyMessage(const Message* msg, Command** c
 tools::Tool* KeyboardShortcuts::getCurrentQuicktool(tools::Tool* currentTool)
 {
   if (currentTool && currentTool->getInk(0)->isSelection()) {
-    KeyPtr key = action(KeyAction::CopySelection);
+    KeyPtr key = action(KeyAction::CopySelection, KeyContext::TranslatingSelection);
     if (key && key->isPressed())
       return NULL;
   }
