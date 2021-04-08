@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -263,8 +263,7 @@ void FilterManagerImpl::applyToTarget()
       }
       else if (m_site.cel() &&
                m_site.layer() &&
-               m_site.layer()->isEditable() &&
-               !m_site.layer()->isReference()) {
+               m_site.layer()->canEditPixels()) {
         cels.push_back(m_site.cel());
       }
       break;
@@ -272,8 +271,7 @@ void FilterManagerImpl::applyToTarget()
 
     case CelsTarget::All: {
       for (Cel* cel : m_site.sprite()->uniqueCels()) {
-        if (cel->layer()->isEditable() &&
-            !cel->layer()->isReference())
+        if (cel->layer()->canEditPixels())
           cels.push_back(cel);
       }
       break;

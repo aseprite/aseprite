@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -89,6 +89,7 @@ namespace doc {
 
     bool isVisibleHierarchy() const;
     bool isEditableHierarchy() const;
+    bool canEditPixels() const;
     bool hasAncestor(const Layer* ancestor) const;
 
     void setBackground(bool state) { switchFlags(LayerFlags::Background, state); }

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -217,7 +217,7 @@ void RotateCommand::onExecute(Context* context)
         cels = get_unlocked_unique_cels(site.sprite(), range);
       else if (site.cel() &&
                site.layer() &&
-               site.layer()->isEditable()) {
+               site.layer()->canEditPixels()) {
         cels.push_back(site.cel());
       }
 

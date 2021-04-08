@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -172,6 +172,24 @@ bool Layer::isEditableHierarchy() const
   while (layer) {
     if (!layer->isEditable())
       return false;
+    layer = layer->parent();
+  }
+  return true;
+}
+
+// It's like isVisibleHierarchy + isEditableHierarchy. Returns true if
+// the whole layer hierarchy is unlocked and visible, so the user can
+// edit its pixels without unexpected side-effects (e.g. editing
+// hidden layers).
+bool Layer::canEditPixels() const
+{
+  const Layer* layer = this;
+  while (layer) {
+    if (!layer->isVisible() ||
+        !layer->isEditable() ||
+        layer->isReference()) { // Cannot edit pixels from reference layers
+      return false;
+    }
     layer = layer->parent();
   }
   return true;

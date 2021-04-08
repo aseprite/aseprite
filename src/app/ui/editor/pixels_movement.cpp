@@ -999,15 +999,17 @@ CelList PixelsMovement::getEditableCels()
     // TODO This case is used in paste too, where the cel() can be
     //      nullptr (e.g. we paste the clipboard image into an empty
     //      cel).
-    if (m_site.layer() && m_site.layer()->isEditableHierarchy())
+    if (m_site.layer() &&
+        m_site.layer()->canEditPixels()) {
       cels.push_back(m_site.cel());
+    }
     return cels;
   }
 
   // Current cel (m_site.cel()) can be nullptr when we paste in an
   // empty cel (Ctrl+V) and cut (Ctrl+X) the floating pixels.
   if (m_site.cel() &&
-      m_site.cel()->layer()->isEditableHierarchy()) {
+      m_site.cel()->layer()->canEditPixels()) {
     CelList::iterator it;
 
     // If we are in a linked cel, remove the cel that matches the
