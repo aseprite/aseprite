@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -105,8 +105,8 @@ void ResourceFinder::includeDataDir(const char* filename)
 #else
 
   // $HOME/.config/aseprite/filename
-  sprintf(buf, ".config/aseprite/data/%s", filename);
-  includeHomeDir(buf);
+  sprintf(buf, "aseprite/data/%s", filename);
+  includeHomeConfigDir(buf);
 
   // $BINDIR/data/filename
   sprintf(buf, "data/%s", filename);
@@ -150,6 +150,24 @@ void ResourceFinder::includeHomeDir(const char* filename)
 #endif
 }
 
+#if !defined(_WIN32) && !defined(__APPLE__)
+
+// For Linux: It's $XDG_CONFIG_HOME or $HOME/.config
+void ResourceFinder::includeHomeConfigDir(const char* filename)
+{
+  char* configHome = std::getenv("XDG_CONFIG_HOME");
+  if (configHome && *configHome) {
+    // $XDG_CONFIG_HOME/filename
+    addPath(base::join_path(configHome, filename));
+  }
+  else {
+    // $HOME/.config/filename
+    includeHomeDir(base::join_path(std::string(".config"), filename).c_str());
+  }
+}
+
+#endif // !defined(_WIN32) && !defined(__APPLE__)
+
 void ResourceFinder::includeUserDir(const char* filename)
 {
 #ifdef _WIN32
@@ -185,7 +203,7 @@ void ResourceFinder::includeUserDir(const char* filename)
   #else  // !__APPLE__
 
     // $HOME/.config/aseprite/filename
-    includeHomeDir((std::string(".config/aseprite/") + filename).c_str());
+    includeHomeConfigDir((std::string("aseprite/") + filename).c_str());
 
   #endif
   }

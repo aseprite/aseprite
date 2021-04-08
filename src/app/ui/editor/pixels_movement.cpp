@@ -1293,16 +1293,32 @@ CelList PixelsMovement::getEditableCels()
     // TODO This case is used in paste too, where the cel() can be
     //      nullptr (e.g. we paste the clipboard image into an empty
     //      cel).
-    if (m_site.layer() && m_site.layer()->isEditableHierarchy())
+    if (m_site.layer() &&
+        m_site.layer()->canEditPixels()) {
       cels.push_back(m_site.cel());
+    }
     return cels;
   }
 
   // Current cel (m_site.cel()) can be nullptr when we paste in an
   // empty cel (Ctrl+V) and cut (Ctrl+X) the floating pixels.
   if (m_site.cel() &&
-      m_site.cel()->layer()->isEditableHierarchy()) {
-    auto it = std::find(cels.begin(), cels.end(), m_site.cel());
+      m_site.cel()->layer()->canEditPixels()) {
+    CelList::iterator it;
+
+    // If we are in a linked cel, remove the cel that matches the
+    // linked cel. In this way we avoid having two Cel in cels
+    // pointing to the same CelData.
+    if (Cel* link = m_site.cel()->link()) {
+      it = std::find_if(cels.begin(), cels.end(),
+                        [link](const Cel* cel){
+                          return (cel == link ||
+                                  cel->link() == link);
+                        });
+    }
+    else {
+      it = std::find(cels.begin(), cels.end(), m_site.cel());
+    }
     if (it != cels.end())
       cels.erase(it);
     cels.insert(cels.begin(), m_site.cel());

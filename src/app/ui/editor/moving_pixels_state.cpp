@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -36,6 +36,7 @@
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/main_window.h"
 #include "app/ui/status_bar.h"
+#include "app/ui/timeline/timeline.h"
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
 #include "app/util/layer_utils.h"
@@ -114,10 +115,14 @@ MovingPixelsState::MovingPixelsState(Editor* editor, MouseMessage* msg, PixelsMo
   ContextBar* contextBar = App::instance()->contextBar();
   contextBar->updateForMovingPixels(getTransformation(editor));
   contextBar->add_observer(this);
+
+  App::instance()->mainWindow()->getTimeline()->add_observer(this);
 }
 
 MovingPixelsState::~MovingPixelsState()
 {
+  App::instance()->mainWindow()->getTimeline()->remove_observer(this);
+
   ContextBar* contextBar = App::instance()->contextBar();
   contextBar->remove_observer(this);
   contextBar->updateForActiveTool();
@@ -715,6 +720,15 @@ void MovingPixelsState::onBeforeFrameChanged(Editor* editor)
 }
 
 void MovingPixelsState::onBeforeLayerChanged(Editor* editor)
+{
+  if (!isActiveDocument())
+    return;
+
+  if (m_pixelsMovement)
+    dropPixels();
+}
+
+void MovingPixelsState::onBeforeRangeChanged(Timeline* timeline)
 {
   if (!isActiveDocument())
     return;

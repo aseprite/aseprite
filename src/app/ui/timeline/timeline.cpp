@@ -4051,6 +4051,8 @@ void Timeline::invalidateRange()
 void Timeline::clearAndInvalidateRange()
 {
   if (m_range.enabled()) {
+    notify_observers(&TimelineObserver::onBeforeRangeChanged, this);
+
     invalidateRange();
     m_range.clearRange();
   }

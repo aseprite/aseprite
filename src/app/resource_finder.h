@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -41,6 +41,11 @@ namespace app {
     void includeBinDir(const char* filename);
     void includeDataDir(const char* filename);
     void includeHomeDir(const char* filename);
+
+#if !defined(_WIN32) && !defined(__APPLE__)
+    // For Linux: It's $XDG_CONFIG_HOME or $HOME/.config
+    void includeHomeConfigDir(const char* filename);
+#endif
 
     // Tries to add the given filename in these locations:
     // For Windows:

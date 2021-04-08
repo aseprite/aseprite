@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -25,6 +25,7 @@ namespace app {
 using namespace doc;
 
 // TODO the DocRange should be "iteratable" to replace this function
+//      or we can wait to C++20 coroutines and co_yield
 static CelList get_cels_templ(const Sprite* sprite,
                               DocRange range,
                               const bool onlyUniqueCels,
@@ -39,8 +40,9 @@ static CelList get_cels_templ(const Sprite* sprite,
   for (Layer* layer : range.selectedLayers()) {
     if (!layer ||
         !layer->isImage() ||
-        (onlyUnlockedCel && !layer->isEditableHierarchy()))
+        (onlyUnlockedCel && !layer->canEditPixels())) {
       continue;
+    }
 
     LayerImage* layerImage = static_cast<LayerImage*>(layer);
     for (frame_t frame : range.selectedFrames()) {

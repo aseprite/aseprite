@@ -409,6 +409,7 @@ void Editor::getSite(Site* site) const
   // TODO we should not access timeline directly here
   Timeline* timeline = App::instance()->timeline();
   if (timeline &&
+      timeline->isVisible() &&
       timeline->range().enabled()) {
     site->range(timeline->range());
   }

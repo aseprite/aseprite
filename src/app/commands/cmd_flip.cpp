@@ -96,8 +96,8 @@ void FlipCommand::onExecute(Context* ctx)
       cels = get_unlocked_unique_cels(site.sprite(), range);
     }
     else if (site.cel() &&
-              site.layer() &&
-              site.layer()->isEditable()) {
+             site.layer() &&
+             site.layer()->canEditPixels()) {
       cels.push_back(site.cel());
     }
 
