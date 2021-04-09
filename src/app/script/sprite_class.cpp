@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -21,6 +21,7 @@
 #include "app/cmd/remove_tag.h"
 #include "app/cmd/set_grid_bounds.h"
 #include "app/cmd/set_mask.h"
+#include "app/cmd/set_pixel_ratio.h"
 #include "app/cmd/set_sprite_size.h"
 #include "app/cmd/set_transparent_color.h"
 #include "app/color_spaces.h"
@@ -774,6 +775,23 @@ int Sprite_set_gridBounds(lua_State* L)
   return 0;
 }
 
+int Sprite_get_pixelRatio(lua_State* L)
+{
+  const auto sprite = get_docobj<Sprite>(L, 1);
+  push_obj<gfx::Size>(L, sprite->pixelRatio());
+  return 1;
+}
+
+int Sprite_set_pixelRatio(lua_State* L)
+{
+  auto sprite = get_docobj<Sprite>(L, 1);
+  const gfx::Size pixelRatio = convert_args_into_size(L, 2);
+  Tx tx;
+  tx(new cmd::SetPixelRatio(sprite, pixelRatio));
+  tx.commit();
+  return 0;
+}
+
 const luaL_Reg Sprite_methods[] = {
   { "__eq", Sprite_eq },
   { "resize", Sprite_resize },
@@ -824,6 +842,7 @@ const Property Sprite_properties[] = {
   { "transparentColor", Sprite_get_transparentColor, Sprite_set_transparentColor },
   { "bounds", Sprite_get_bounds, nullptr },
   { "gridBounds", Sprite_get_gridBounds, Sprite_set_gridBounds },
+  { "pixelRatio", Sprite_get_pixelRatio, Sprite_set_pixelRatio },
   { nullptr, nullptr, nullptr }
 };
 
