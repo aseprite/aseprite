@@ -149,8 +149,10 @@ bool TgaFormat::onLoad(FileOp* fop)
                             tga::getr(c),
                             tga::getg(c),
                             tga::getb(c));
-      if (tga::geta(c) < 255)
+      if (tga::geta(c) < 255) {
         fop->sequenceSetAlpha(i, tga::geta(c));
+        fop->sequenceSetHasAlpha(true); // Is a transparent sprite
+      }
     }
   }
   // Generate grayscale palette
