@@ -14,6 +14,7 @@
 #include "gfx/size.h"
 #include "ui/button.h"
 #include "ui/display.h"
+#include "ui/fit_bounds.h"
 #include "ui/graphics.h"
 #include "ui/intern.h"
 #include "ui/label.h"
@@ -323,9 +324,19 @@ void Window::centerWindow(Display* parentDisplay)
   if (!parentDisplay)
     parentDisplay = manager()->getDefault()->display();
 
-  gfx::Size displaySize = parentDisplay->size();
-  positionWindow(displaySize.w/2 - bounds().w/2,
-                 displaySize.h/2 - bounds().h/2);
+  ASSERT(parentDisplay);
+
+  if (m_isAutoRemap)
+    remapWindow();
+
+  const gfx::Size displaySize = parentDisplay->size();
+  const gfx::Size windowSize = bounds().size();
+
+  fit_bounds(parentDisplay,
+             this,
+             gfx::Rect(displaySize.w/2 - windowSize.w/2,
+                       displaySize.h/2 - windowSize.h/2,
+                       windowSize.w, windowSize.h));
 }
 
 void Window::positionWindow(int x, int y)
