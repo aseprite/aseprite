@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -24,6 +24,7 @@
 #include "filters/outline_filter.h"
 #include "filters/tiled_mode.h"
 #include "gfx/rect.h"
+#include "gfx/size.h"
 
 #ifdef ENABLE_SCRIPTING
 #include "app/script/engine.h"
@@ -59,6 +60,19 @@ template<>
 void Param<std::string>::fromString(const std::string& value)
 {
   setValue(value);
+}
+
+template<>
+void Param<gfx::Size>::fromString(const std::string& value)
+{
+  gfx::Size size;
+  std::vector<std::string> parts;
+  base::split_string(value, parts, ",");
+  if (parts.size() == 2) {
+    size.w = base::convert_to<int>(parts[0]);
+    size.h = base::convert_to<int>(parts[1]);
+  }
+  setValue(size);
 }
 
 template<>
@@ -239,6 +253,12 @@ void Param<std::string>::fromLua(lua_State* L, int index)
     setValue(s);
   else
     setValue(std::string());
+}
+
+template<>
+void Param<gfx::Size>::fromLua(lua_State* L, int index)
+{
+  setValue(script::convert_args_into_size(L, index));
 }
 
 template<>
