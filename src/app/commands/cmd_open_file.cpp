@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -78,7 +78,7 @@ OpenFileCommand::OpenFileCommand()
   : Command(CommandId::OpenFile(), CmdRecordableFlag)
   , m_repeatCheckbox(false)
   , m_oneFrame(false)
-  , m_seqDecision(SequenceDecision::Ask)
+  , m_seqDecision(gen::SequenceDecision::ASK)
 {
 }
 
@@ -90,12 +90,18 @@ void OpenFileCommand::onLoadParams(const Params& params)
   m_oneFrame = params.get_as<bool>("oneframe");
 
   std::string sequence = params.get("sequence");
-  if (m_oneFrame || sequence == "skip")
-    m_seqDecision = SequenceDecision::Skip;
-  else if (sequence == "agree")
-    m_seqDecision = SequenceDecision::Agree;
-  else
-    m_seqDecision = SequenceDecision::Ask;
+  if (m_oneFrame ||
+      sequence == "skip" ||
+      sequence == "no") {
+    m_seqDecision = gen::SequenceDecision::NO;
+  }
+  else if (sequence == "agree" ||
+           sequence == "yes") {
+    m_seqDecision = gen::SequenceDecision::YES;
+  }
+  else {
+    m_seqDecision = gen::SequenceDecision::ASK;
+  }
 }
 
 void OpenFileCommand::onExecute(Context* context)
@@ -143,14 +149,25 @@ void OpenFileCommand::onExecute(Context* context)
     FILE_LOAD_CREATE_PALETTE |
     (m_repeatCheckbox ? FILE_LOAD_SEQUENCE_ASK_CHECKBOX: 0);
 
+  if (context->isUIAvailable() &&
+      m_seqDecision == gen::SequenceDecision::ASK) {
+    if (Preferences::instance().openFile.openSequence() == gen::SequenceDecision::ASK) {
+      // Do nothing (ask by default, or whatever the command params
+      // specified)
+    }
+    else {
+      m_seqDecision = Preferences::instance().openFile.openSequence();
+    }
+  }
+
   switch (m_seqDecision) {
-    case SequenceDecision::Ask:
+    case gen::SequenceDecision::ASK:
       flags |= FILE_LOAD_SEQUENCE_ASK;
       break;
-    case SequenceDecision::Agree:
+    case gen::SequenceDecision::YES:
       flags |= FILE_LOAD_SEQUENCE_YES;
       break;
-    case SequenceDecision::Skip:
+    case gen::SequenceDecision::NO:
       flags |= FILE_LOAD_SEQUENCE_NONE;
       break;
   }
@@ -179,12 +196,12 @@ void OpenFileCommand::onExecute(Context* context)
     else {
       if (fop->isSequence()) {
         if (fop->sequenceFlags() & FILE_LOAD_SEQUENCE_YES) {
-          m_seqDecision = SequenceDecision::Agree;
+          m_seqDecision = gen::SequenceDecision::YES;
           flags &= ~FILE_LOAD_SEQUENCE_ASK;
           flags |= FILE_LOAD_SEQUENCE_YES;
         }
         else if (fop->sequenceFlags() & FILE_LOAD_SEQUENCE_NONE) {
-          m_seqDecision = SequenceDecision::Skip;
+          m_seqDecision = gen::SequenceDecision::NO;
           flags &= ~FILE_LOAD_SEQUENCE_ASK;
           flags |= FILE_LOAD_SEQUENCE_NONE;
         }

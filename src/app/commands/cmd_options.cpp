@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -235,6 +235,7 @@ public:
     }
 
     // Alerts
+    openSequence()->setSelectedItemIndex(int(m_pref.openFile.openSequence()));
     resetAlerts()->Click.connect([this]{ onResetAlerts(); });
 
     // Cursor
@@ -680,6 +681,9 @@ public:
     m_curPref->bg.zoom(checkedBgZoom()->isSelected());
     m_curPref->bg.color1(checkedBgColor1()->getColor());
     m_curPref->bg.color2(checkedBgColor2()->getColor());
+
+    // Alerts preferences
+    m_pref.openFile.openSequence(gen::SequenceDecision(openSequence()->getSelectedItemIndex()));
 
     int undo_size_limit_value;
     undo_size_limit_value = undoSizeLimit()->textInt();

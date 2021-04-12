@@ -426,6 +426,14 @@
         <!-- Alerts -->
         <vbox id="section_alerts">
           <separator text="@.section_alerts" horizontal="true" />
+          <hbox>
+            <label text="@.open_sequence_alert" />
+            <combobox id="open_sequence">
+              <listitem text="@.open_sequence_alert_ask" value="0" />
+              <listitem text="@.open_sequence_alert_yes" value="1" />
+              <listitem text="@.open_sequence_alert_no" value="2" />
+            </combobox>
+          </hbox>
           <check id="file_format_doesnt_support_alert" text="@.file_format_doesnt_support_alert"
                  pref="save_file.show_file_format_doesnt_support_alert" />
           <check id="export_animation_in_sequence_alert" text="@.export_animation_in_sequence_alert"

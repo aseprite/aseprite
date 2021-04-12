@@ -121,6 +121,11 @@
       <value id="HSV" value="1" />
       <value id="HSL" value="2" />
     </enum>
+    <enum id="SequenceDecision">
+      <value id="ASK" value="0" />
+      <value id="YES" value="1" />
+      <value id="NO" value="2" />
+    </enum>
   </types>
 
   <global>
@@ -312,6 +317,9 @@
     </section>
     <section id="advanced_mode">
       <option id="show_alert" type="bool" default="true" />
+    </section>
+    <section id="open_file">
+      <option id="open_sequence" type="SequenceDecision" default="SequenceDecision::ASK" />
     </section>
     <section id="save_file">
       <option id="show_file_format_doesnt_support_alert" type="bool" default="true" />
