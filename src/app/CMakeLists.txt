@@ -235,7 +235,6 @@ if(ENABLE_UI)
     commands/cmd_goto_tab.cpp
     commands/cmd_grid.cpp
     commands/cmd_home.cpp
-    commands/cmd_import_sprite_sheet.cpp
     commands/cmd_invert_mask.cpp
     commands/cmd_keyboard_shortcuts.cpp
     commands/cmd_launch.cpp
@@ -521,6 +520,7 @@ add_library(app-lib
   commands/cmd_export_sprite_sheet.cpp
   commands/cmd_flatten_layers.cpp
   commands/cmd_flip.cpp
+  commands/cmd_import_sprite_sheet.cpp
   commands/cmd_layer_from_background.cpp
   commands/cmd_load_palette.cpp
   commands/cmd_merge_down_layer.cpp

@@ -1,4 +1,5 @@
 <!-- Aseprite -->
+<!-- Copyright (C) 2021 by Igara Studio S.A. -->
 <!-- Copyright (C) 2016 by David Capello -->
 <gui>
 <window id="open_sequence" text="@.title">
@@ -9,6 +10,7 @@
     </view>
     <separator horizontal="true" />
     <check id="repeat" text="@.repeat" />
+    <check id="dont_show" text="@general.dont_show" />
     <hbox>
       <boxfiller />
       <hbox homogeneous="true">
