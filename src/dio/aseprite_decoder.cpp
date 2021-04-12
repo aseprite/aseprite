@@ -1,5 +1,5 @@
 // Aseprite Document IO Library
-// Copyright (c) 2018-2020 Igara Studio S.A.
+// Copyright (c) 2018-2021 Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -86,9 +86,6 @@ bool AsepriteDecoder::decode()
   doc::Cel* last_cel = nullptr;
   auto tag_it = sprite->tags().begin();
   auto tag_end = sprite->tags().end();
-
-  // Used to read user data for each tag after a Tags chunk
-  bool tagsInProcess = false;
 
   m_allLayers.clear();
 
@@ -211,9 +208,10 @@ bool AsepriteDecoder::decode()
             tag_it = sprite->tags().begin();
             tag_end = sprite->tags().end();
 
-            // If there are tags, any following user data chunk will
-            // be for each tag (starting from tag_it to tag_end-1).
-            tagsInProcess = (tag_it != tag_end);
+            if (tag_it != tag_end)
+              last_object_with_user_data = *tag_it;
+            else
+              last_object_with_user_data = nullptr;
             break;
 
           case ASE_FILE_CHUNK_SLICES: {
@@ -232,23 +230,30 @@ bool AsepriteDecoder::decode()
             doc::UserData userData;
             readUserDataChunk(&userData);
 
-            // Are we are reading the user data of tags?
-            if (tagsInProcess) {
-              doc::Tag* tag = *tag_it;
-              // This will overwrite the tag color. The color field in
-              // Tags chunk is deprecated, only used for backward
-              // compatibility with old versions of Aseprite, we now
-              // use the color from the user data chunk.
-              tag->setUserData(userData);
-              tag_it++;
-
-              // Avoid reading more user data chunks than tags (this
-              // can happen in ill-formed files only)
-              if (tag_it == tag_end)
-                tagsInProcess = false;
-            }
-            else if (last_object_with_user_data) {
+            if (last_object_with_user_data) {
               last_object_with_user_data->setUserData(userData);
+
+              if (last_object_with_user_data->type() == doc::ObjectType::Tag) {
+                // Tags are a special case, user data for tags come
+                // all together (one next to other) after the tags
+                // chunk, in the same order:
+                //
+                // * TAGS CHUNK (TAG1, TAG2, ..., TAGn)
+                // * USER DATA CHUNK FOR TAG1
+                // * USER DATA CHUNK FOR TAG2
+                // * ...
+                // * USER DATA CHUNK FOR TAGn
+                //
+                // So here we expect that the next user data chunk
+                // will correspond to the next tag in the tags
+                // collection.
+                ++tag_it;
+
+                if (tag_it != tag_end)
+                  last_object_with_user_data = *tag_it;
+                else
+                  last_object_with_user_data = nullptr;
+              }
             }
             break;
           }
