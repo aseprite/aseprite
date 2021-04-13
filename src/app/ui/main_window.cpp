@@ -276,12 +276,13 @@ bool MainWindow::isHomeSelected() const
   return (m_homeView && m_workspace->activeView() == m_homeView);
 }
 
-void MainWindow::showBrowser(const std::string& filename)
+void MainWindow::showBrowser(const std::string& filename,
+                             const std::string& section)
 {
   if (!m_browserView)
     m_browserView = new BrowserView;
 
-  m_browserView->loadFile(filename);
+  m_browserView->loadFile(filename, section);
 
   if (!m_browserView->parent()) {
     m_workspace->addView(m_browserView);

@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2021  Igara Studio S.A.
 // Copyright (C) 2016  David Capello
 //
 // This program is distributed under the terms of
@@ -20,7 +21,8 @@ namespace app {
     BrowserView();
     ~BrowserView();
 
-    void loadFile(const std::string& file);
+    void loadFile(const std::string& file,
+                  const std::string& section = std::string());
 
     // TabView implementation
     std::string getTabText() override;

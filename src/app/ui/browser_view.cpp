@@ -90,7 +90,8 @@ public:
     return m_file;
   }
 
-  void loadFile(const std::string& inputFile) {
+  void loadFile(const std::string& inputFile,
+                const std::string& section = std::string()) {
     std::string file = inputFile;
     {
       ResourceFinder rf;
@@ -121,9 +122,8 @@ public:
         cmark_parser_feed(parser, "\n```\n", 5);
 
       cmark_node* root = cmark_parser_finish(parser);
-
       if (root) {
-        processNode(root);
+        processNode(root, section);
         cmark_node_free(root);
       }
       fclose(fp);
@@ -138,6 +138,16 @@ public:
 
     relayout();
     FileChange();
+  }
+
+  void focusSection() {
+    View* view = View::getView(this);
+    if (m_sectionWidget) {
+      int y = m_sectionWidget->bounds().y - bounds().y;
+      view->setViewScroll(gfx::Point(0, y));
+
+      m_sectionWidget = nullptr;
+    }
   }
 
 private:
@@ -265,7 +275,8 @@ private:
       delete firstChild();
   }
 
-  void processNode(cmark_node* root) {
+  void processNode(cmark_node* root,
+                   const std::string& section) {
     clear();
 
     m_content.clear();
@@ -293,8 +304,11 @@ private:
             }
             else {
               m_content += text;
-              if (inHeading)
+              if (inHeading) {
                 closeContent();
+                if (section == text)
+                  m_sectionWidget = lastChild();
+              }
             }
           }
           break;
@@ -520,6 +534,7 @@ private:
 
   std::string m_file;
   std::string m_content;
+  Widget* m_sectionWidget = nullptr;
 };
 
 BrowserView::BrowserView()
@@ -546,9 +561,10 @@ BrowserView::~BrowserView()
   delete m_textBox;
 }
 
-void BrowserView::loadFile(const std::string& file)
+void BrowserView::loadFile(const std::string& file,
+                           const std::string& section)
 {
-  m_textBox->loadFile(file);
+  m_textBox->loadFile(file, section);
 }
 
 std::string BrowserView::getTabText()
@@ -570,6 +586,9 @@ void BrowserView::onWorkspaceViewSelected()
 {
   if (auto statusBar = StatusBar::instance())
     statusBar->clearText();
+
+  if (m_textBox)
+    m_textBox->focusSection();
 }
 
 bool BrowserView::onCloseView(Workspace* workspace, bool quitting)

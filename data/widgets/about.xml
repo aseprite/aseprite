@@ -6,25 +6,23 @@
   <vbox>
     <label text="" id="title" />
     <label text="Animated sprite editor &amp;&amp; pixel art tool" />
-    <separator text="Developers:" horizontal="true" />
-    <grid columns="2">
-      <link text="David Capello" url="https://twitter.com/davidcapello" />
-      <label text="- Lead developer, new features &amp;&amp; bug fixing in desktop &amp;&amp; web" />
-      <link text="Gaspar Capello" url="https://twitter.com/Gasparoken" />
-      <label text="- Developer, new features &amp;&amp; bug fixing in desktop" />
-      <link text="Martin Capello" url="https://twitter.com/martincapell0" />
-      <label text="- Developer, new store website" />
-
-      <separator text="Contributors:" horizontal="true" cell_hspan="2" />
-      <link text="Ilija Melentijevic" url="https://ilkke.net/" />
-      <label text="- Default skin &amp;&amp; graphics introduced in v0.8" />
-
-      <hbox cell_hspan="2">
-        <link text="Other Contributors" url="https://www.aseprite.org/contributors/" />
-        <label text="&amp;&amp;" />
-        <link text="Third-Party Projects" url="" id="licenses" />
+    <hbox homogeneous="true">
+      <hbox>
+	<vbox expansive="true">
+          <separator text="Developer Team" horizontal="true" />
+          <link text="David Capello" url="https://twitter.com/davidcapello" />
+          <link text="Gaspar Capello" url="https://twitter.com/Gasparoken" />
+          <link text="Martin Capello" url="https://twitter.com/martincapell0" />
+	  <vbox minheight="8" />
+	</vbox>
+	<separator vertical="true" />
       </hbox>
-    </grid>
+      <vbox>
+        <separator text="Credits" horizontal="true" cell_hspan="2" />
+        <link text="Contributors" url="" id="credits" />
+        <link text="Open Source Projects" url="" id="licenses" />
+      </vbox>
+    </hbox>
     <separator horizontal="true" />
     <hbox>
       <label text="Copyright (C) 2001-2021" />
