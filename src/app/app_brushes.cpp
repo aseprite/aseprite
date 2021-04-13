@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2021  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -180,7 +180,7 @@ AppBrushes::AppBrushes()
   m_standard.push_back(BrushRef(new Brush(kLineBrushType, 7, 44)));
 
   try {
-    std::string fn = userBrushesFilename();
+    std::string fn = m_userBrushesFilename = userBrushesFilename();
     if (base::is_file(fn))
       load(fn);
   }
@@ -191,7 +191,8 @@ AppBrushes::AppBrushes()
 
 AppBrushes::~AppBrushes()
 {
-  save(userBrushesFilename());
+  if (!m_userBrushesFilename.empty())
+    save(m_userBrushesFilename);
 }
 
 AppBrushes::slot_id AppBrushes::addBrushSlot(const BrushSlot& brush)
