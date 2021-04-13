@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -11,6 +12,7 @@
 #include "ui/alert.h"
 #include "ui/timer.h"
 
+#include <atomic>
 #include <exception>
 
 namespace base {
@@ -64,7 +66,7 @@ namespace app {
     std::unique_ptr<ui::Timer> m_timer;
     base::mutex* m_mutex;
     ui::AlertPtr m_alert_window;
-    double m_last_progress;
+    std::atomic<double> m_last_progress;
     bool m_done_flag;
     bool m_canceled_flag;
     std::exception_ptr m_error;
