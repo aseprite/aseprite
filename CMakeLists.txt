@@ -1,5 +1,5 @@
 # Aseprite
-# Copyright (C) 2018-2020  Igara Studio S.A.
+# Copyright (C) 2018-2021  Igara Studio S.A.
 # Copyright (C) 2001-2018  David Capello
 
 cmake_minimum_required(VERSION 3.4)
@@ -292,8 +292,7 @@ if(USE_SHARED_CMARK)
   find_path(CMARK_INCLUDE_DIRS NAMES cmark.h)
 else()
   add_definitions(-DCMARK_STATIC_DEFINE)
-  set(CMARK_LIBRARIES libcmark_static)
-  include_directories(${CMAKE_CURRENT_BINARY_DIR}/third_party/cmark)
+  set(CMARK_LIBRARIES cmark_static)
 endif()
 
 if(REQUIRE_CURL)

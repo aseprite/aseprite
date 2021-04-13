@@ -73,7 +73,8 @@ namespace app {
     void showHome();
     void showDefaultStatusBar();
     void showDevConsole();
-    void showBrowser(const std::string& filename);
+    void showBrowser(const std::string& filename,
+                     const std::string& section = std::string());
     bool isHomeSelected() const;
 
     Mode getMode() const { return m_mode; }

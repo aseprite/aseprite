@@ -51,18 +51,19 @@ You can ask for help in:
 
 Aseprite is being developed by [Igara Studio](https://www.igarastudio.com/):
 
-* [David Capello](https://davidcapello.com/): Lead developer,
-  bug fixing & new features in desktop & web, and user support.
-* [Gaspar Capello](https://github.com/Gasparoken): Developer,
-  bug fixing & new features in desktop, and user support.
-* [Martin Capello](https://github.com/martincapello): Developer,
-  new store website.
+* [David Capello](https://davidcapello.com/)
+* [Gaspar Capello](https://github.com/Gasparoken)
+* [Martin Capello](https://github.com/martincapello)
 
 ## Credits
 
 The default Aseprite theme was introduced in v0.8, created by:
 
 * [Ilija Melentijevic](https://ilkke.net/)
+
+And the dark theme version introduced in v1.3-beta1 by:
+
+* [Nicolas Desilets](https://twitter.com/MapleGecko)
 
 Aseprite includes color palettes created by:
 
