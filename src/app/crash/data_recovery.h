@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -14,6 +14,7 @@
 #include "base/disable_copying.h"
 #include "obs/signal.h"
 
+#include <atomic>
 #include <mutex>
 #include <thread>
 #include <vector>
@@ -60,7 +61,7 @@ namespace crash {
     Sessions m_sessions;
     SessionPtr m_inProgress;
     BackupObserver* m_backup;
-    bool m_searching;
+    std::atomic<bool> m_searching;
 
     DISABLE_COPYING(DataRecovery);
   };
