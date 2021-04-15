@@ -78,6 +78,7 @@ option(ENABLE_DEVMODE      "Compile vesion for developers" off)
 option(ENABLE_UI           "Compile UI (turn off to compile CLI-only version)" on)
 option(FULLSCREEN_PLATFORM "Enable fullscreen by default" off)
 option(ENABLE_CLANG_TIDY   "Enable static analysis" off)
+option(ENABLE_CCACHE       "Use CCache to improve recompilation speed (optional)" ON)
 set(CUSTOM_WEBSITE_URL "" CACHE STRING "Enable custom local webserver to check updates")
 
 if(ENABLE_NEWS OR ENABLE_UPDATER)
@@ -168,6 +169,14 @@ set(ZLIB_DIR            ${CMAKE_CURRENT_SOURCE_DIR}/third_party/zlib)
 
 # Search in the "cmake" directory for additional CMake modules.
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+
+find_package(CCache)
+
+if (CCache_FOUND AND ENABLE_CCACHE)
+  # Use e.g. "ccache clang++" instead of "clang++"
+  set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CCache_EXECUTABLE}")
+  set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK    "${CCache_EXECUTABLE}")
+endif (CCache_FOUND AND ENABLE_CCACHE)
 
 # Put libraries into "lib".
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
