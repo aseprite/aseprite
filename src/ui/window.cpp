@@ -367,6 +367,7 @@ void Window::expandWindow(const gfx::Size& size)
     gfx::Rect frame = nativeWindow->frame();
     frame.setSize(size * scale);
     nativeWindow->setFrame(frame);
+    setBounds(gfx::Rect(bounds().origin(), size));
 
     layout();
     invalidate();
