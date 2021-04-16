@@ -361,7 +361,7 @@ void Clipboard::cut(ContextWriter& writer)
       Site site = writer.context()->activeSite();
       CelList cels;
       if (site.range().enabled()) {
-        cels = get_unlocked_unique_cels(site.sprite(), site.range());
+        cels = get_unique_cels_to_edit_pixels(site.sprite(), site.range());
       }
       else if (site.cel()) {
         cels.push_back(site.cel());

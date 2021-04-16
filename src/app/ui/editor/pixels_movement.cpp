@@ -1286,8 +1286,8 @@ CelList PixelsMovement::getEditableCels()
   CelList cels;
 
   if (editMultipleCels()) {
-    cels = get_unlocked_unique_cels(
-      m_site.sprite(), m_site.range());
+    cels = get_unique_cels_to_edit_pixels(m_site.sprite(),
+                                          m_site.range());
   }
   else {
     // TODO This case is used in paste too, where the cel() can be

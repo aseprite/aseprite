@@ -57,6 +57,7 @@ namespace ui {
   CursorType get_mouse_cursor();
   void set_mouse_cursor(CursorType type, const Cursor* cursor = nullptr);
   void set_mouse_cursor_scale(const int newScale);
+  void set_mouse_cursor_reset_info();
 
   void hide_mouse_cursor();
   void show_mouse_cursor();

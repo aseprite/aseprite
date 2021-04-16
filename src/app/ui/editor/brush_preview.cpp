@@ -508,7 +508,11 @@ void BrushPreview::createNativeCursor()
 
   if (cursorBounds.isEmpty()) {
     ASSERT(!m_cursor);
-    m_editor->display()->nativeWindow()->setNativeMouseCursor(os::NativeCursor::Hidden);
+    if (!(m_type & NATIVE_CROSSHAIR)) {
+      // TODO should we use ui::set_mouse_cursor()?
+      ui::set_mouse_cursor_reset_info();
+      m_editor->display()->nativeWindow()->setNativeMouseCursor(os::NativeCursor::Hidden);
+    }
     return;
   }
 
@@ -547,6 +551,8 @@ void BrushPreview::forEachLittleCrossPixel(
   }
 
   if (m_cursor) {
+    // TODO should we use ui::set_mouse_cursor()?
+    ui::set_mouse_cursor_reset_info();
     m_editor->display()->nativeWindow()->setNativeMouseCursor(
       m_cursor.get(),
       m_cursorCenter,

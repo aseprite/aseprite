@@ -336,6 +336,12 @@ void set_mouse_cursor_scale(const int newScale)
   update_mouse_cursor();
 }
 
+void set_mouse_cursor_reset_info()
+{
+  mouse_cursor_type = kCustomCursor;
+  mouse_cursor_custom = nullptr;
+}
+
 void hide_mouse_cursor()
 {
   ASSERT(mouse_scares >= 0);

@@ -274,10 +274,8 @@ void FilterManagerImpl::applyToTarget()
     case CelsTarget::Selected: {
       auto range = m_site.range();
       if (range.enabled()) {
-        for (Cel* cel : get_unlocked_unique_cels(m_site.sprite(), range)) {
-          if (!cel->layer()->isReference())
-            cels.push_back(cel);
-        }
+        for (Cel* cel : get_unique_cels_to_edit_pixels(m_site.sprite(), range))
+          cels.push_back(cel);
       }
       else if (m_site.cel() &&
                m_site.layer() &&
