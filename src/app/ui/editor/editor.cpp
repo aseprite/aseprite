@@ -2680,10 +2680,6 @@ void Editor::showMouseCursor(CursorType cursorType,
 
 void Editor::showBrushPreview(const gfx::Point& screenPos)
 {
-  if (Preferences::instance().cursor.paintingCursorType() !=
-      app::gen::PaintingCursorType::SIMPLE_CROSSHAIR)
-    ui::set_mouse_cursor(kNoCursor);
-
   m_brushPreview.show(screenPos);
 }
 

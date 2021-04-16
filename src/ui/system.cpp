@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -297,6 +297,12 @@ void set_mouse_cursor_scale(const int newScale)
 {
   mouse_cursor_scale = newScale;
   update_mouse_cursor();
+}
+
+void set_mouse_cursor_reset_info()
+{
+  mouse_cursor_type = kCustomCursor;
+  mouse_cursor_custom = nullptr;
 }
 
 void hide_mouse_cursor()
