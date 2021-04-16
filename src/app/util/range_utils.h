@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -24,7 +24,8 @@ namespace app {
 
   doc::CelList get_cels(const doc::Sprite* sprite, const DocRange& range);
   doc::CelList get_unique_cels(const doc::Sprite* sprite, const DocRange& range);
-  doc::CelList get_unlocked_unique_cels(const doc::Sprite* sprite, const DocRange& range);
+  doc::CelList get_unique_cels_to_edit_pixels(const doc::Sprite* sprite, const DocRange& range);
+  doc::CelList get_unique_cels_to_move_cel(const doc::Sprite* sprite, const DocRange& range);
 
 } // namespace app
 

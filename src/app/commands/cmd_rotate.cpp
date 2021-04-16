@@ -214,7 +214,7 @@ void RotateCommand::onExecute(Context* context)
 
       auto range = App::instance()->timeline()->range();
       if (range.enabled())
-        cels = get_unlocked_unique_cels(site.sprite(), range);
+        cels = get_unique_cels_to_edit_pixels(site.sprite(), range);
       else if (site.cel() &&
                site.layer() &&
                site.layer()->canEditPixels()) {

@@ -70,7 +70,7 @@ MovingCelCollect::MovingCelCollect(Editor* editor, Layer* layer)
   }
 
   // Record start positions of all cels in selected range
-  for (Cel* cel : get_unlocked_unique_cels(editor->sprite(), range2)) {
+  for (Cel* cel : get_unique_cels_to_move_cel(editor->sprite(), range2)) {
     Layer* layer = cel->layer();
     ASSERT(layer);
 

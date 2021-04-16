@@ -93,7 +93,7 @@ void FlipCommand::onExecute(Context* ctx)
 
     auto range = site.range();
     if (range.enabled()) {
-      cels = get_unlocked_unique_cels(site.sprite(), range);
+      cels = get_unique_cels_to_edit_pixels(site.sprite(), range);
     }
     else if (site.cel() &&
              site.layer() &&
