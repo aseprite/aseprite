@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -187,15 +187,26 @@ Cel* create_cel_copy(CmdSequence* cmds,
   // From Tilemap -> Image
   if (srcCel->layer()->isTilemap() && !dstLayer->isTilemap()) {
     auto layerTilemap = static_cast<doc::LayerTilemap*>(srcCel->layer());
-    const auto& grid = layerTilemap->tileset()->grid();
-    dstSize = grid.tilemapSizeToCanvas(dstSize);
+    dstSize = layerTilemap->tileset()->grid().tilemapSizeToCanvas(dstSize);
   }
   // From Image or Tilemap -> Tilemap
   else if (dstLayer->isTilemap()) {
-    auto layerTilemap = static_cast<doc::LayerTilemap*>(dstLayer);
-    auto grid = layerTilemap->tileset()->grid();
-    if (srcCel->layer()->isTilemap())  // TODO check if this is correct
-      grid.origin(grid.origin() + srcCel->position());
+    auto dstLayerTilemap = static_cast<doc::LayerTilemap*>(dstLayer);
+
+    // Tilemap -> Tilemap
+    Grid grid;
+    if (srcCel->layer()->isTilemap()) {
+      grid = dstLayerTilemap->tileset()->grid();
+      if (srcCel->layer()->isTilemap())
+        grid.origin(srcCel->position());
+    }
+    // Image -> Tilemap
+    else {
+      auto gridBounds = dstLayerTilemap->sprite()->gridBounds();
+      grid.origin(gridBounds.origin());
+      grid.tileSize(gridBounds.size());
+    }
+
     const gfx::Rect tilemapBounds = grid.canvasToTile(srcCel->bounds());
     dstSize = tilemapBounds.size();
   }
@@ -276,7 +287,8 @@ Cel* create_cel_copy(CmdSequence* cmds,
     draw_image_into_new_tilemap_cel(
       cmds, static_cast<doc::LayerTilemap*>(dstLayer), dstCel.get(),
       srcImage,
-      gfx::Point(0, 0),
+      // Use the grid origin of the sprite
+      srcCel->sprite()->gridBounds().origin(),
       srcCel->bounds().origin(),
       srcCel->bounds(),
       tilemap);
@@ -356,7 +368,7 @@ void draw_image_into_new_tilemap_cel(
   doc::LayerTilemap* dstLayer,
   doc::Cel* dstCel,
   const doc::Image* srcImage,
-  const gfx::Point& originOffset,
+  const gfx::Point& gridOrigin,
   const gfx::Point& srcImagePos,
   const gfx::Rect& canvasBounds,
   doc::ImageRef& newTilemap)
@@ -365,7 +377,7 @@ void draw_image_into_new_tilemap_cel(
 
   doc::Tileset* tileset = dstLayer->tileset();
   doc::Grid grid = tileset->grid();
-  grid.origin(grid.origin() + originOffset);
+  grid.origin(gridOrigin);
 
   gfx::Size tileSize = grid.tileSize();
   const gfx::Rect tilemapBounds = grid.canvasToTile(canvasBounds);

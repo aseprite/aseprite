@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -60,7 +60,7 @@ namespace app {
     doc::LayerTilemap* dstLayer,
     doc::Cel* dstCel,
     const doc::Image* srcImage,
-    const gfx::Point& originOffset,
+    const gfx::Point& gridOrigin,
     const gfx::Point& srcImagePos,
     const gfx::Rect& canvasBounds,
     doc::ImageRef& newTilemap);

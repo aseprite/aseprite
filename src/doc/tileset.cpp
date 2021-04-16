@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2020  Igara Studio S.A.
+// Copyright (c) 2019-2021  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -28,6 +28,10 @@ Tileset::Tileset(Sprite* sprite,
   , m_grid(grid)
   , m_tiles(ntiles)
 {
+  // The origin of tileset grids must be 0,0 (the origin is then
+  // specified by each cel position)
+  ASSERT(grid.origin() == gfx::Point(0, 0));
+
   // TODO at the moment retrieving a tileset from the clipboard use no
   //      sprite, but in the future we should save a whole sprite in the
   //      clipboard
@@ -71,11 +75,6 @@ Tileset* Tileset::MakeCopyCopyingImages(const Tileset* tileset)
     copy->set(ti, ImageRef(Image::createCopy(image.get())));
   }
   return copy.release();
-}
-
-void Tileset::setOrigin(const gfx::Point& pt)
-{
-  m_grid.origin(pt);
 }
 
 int Tileset::getMemSize() const
@@ -137,6 +136,10 @@ void Tileset::set(const tile_index ti,
 
 tile_index Tileset::add(const ImageRef& image)
 {
+  ASSERT(image);
+  ASSERT(image->width() == m_grid.tileSize().w);
+  ASSERT(image->height() == m_grid.tileSize().h);
+
   m_tiles.push_back(image);
 
   const tile_index newIndex = tile_index(m_tiles.size()-1);
@@ -153,6 +156,10 @@ void Tileset::insert(const tile_index ti,
     TRACEARGS("Warning: inserting tile 0 with a non-empty image");
   }
 #endif
+
+  ASSERT(image);
+  ASSERT(image->width() == m_grid.tileSize().w);
+  ASSERT(image->height() == m_grid.tileSize().h);
 
   ASSERT(ti >= 0 && ti <= m_tiles.size()+1);
   m_tiles.insert(m_tiles.begin()+ti, image);

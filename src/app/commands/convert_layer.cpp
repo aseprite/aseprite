@@ -165,7 +165,7 @@ void ConvertLayerCommand::onExecute(Context* ctx)
         if (srcLayer->isBackground()) {
           tx(new cmd::LayerFromBackground(srcLayer));
         }
-        // Background -> Tilemap
+        // Tilemap -> Layer
         else if (srcLayer->isTilemap()) {
           auto newLayer = new LayerImage(sprite);
           newLayer->setName(srcLayer->name());
@@ -183,7 +183,9 @@ void ConvertLayerCommand::onExecute(Context* ctx)
         if (srcLayer->isImage() &&
             (srcLayer->isBackground() ||
              srcLayer->isTransparent())) {
-          auto tileset = new Tileset(sprite, site.grid(), 1);
+          Grid grid0 = site.grid();
+          grid0.origin(gfx::Point(0, 0));
+          auto tileset = new Tileset(sprite, grid0, 1);
 
           auto addTileset = new cmd::AddTileset(sprite, tileset);
           tx(addTileset);

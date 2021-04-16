@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2020  Igara Studio S.A.
+// Copyright (c) 2019-2021  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -128,10 +128,8 @@ gfx::Region Grid::canvasToTile(const gfx::Region& canvasRgn)
 
 gfx::Size Grid::tilemapSizeToCanvas(const gfx::Size& tilemapSize) const
 {
-  gfx::Point pt = tileToCanvas(gfx::Point(tilemapSize.w-1,
-                                          tilemapSize.h-1));
-  return gfx::Size(pt.x + m_tileSize.w,
-                   pt.y + m_tileSize.h);
+  return gfx::Size(tilemapSize.w * m_tileSize.w,
+                   tilemapSize.h * m_tileSize.h);
 }
 
 gfx::Rect Grid::tileBoundsInCanvas(const gfx::Point& tile) const

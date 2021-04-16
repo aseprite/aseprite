@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2020  Igara Studio S.A.
+// Copyright (c) 2019-2021  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -40,7 +40,6 @@ namespace doc {
 
     Sprite* sprite() const { return m_sprite; }
     const Grid& grid() const { return m_grid; }
-    void setOrigin(const gfx::Point& pt);
 
     const std::string& name() const { return m_name; }
     void setName(const std::string& name) { m_name = name; }
