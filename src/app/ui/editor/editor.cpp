@@ -1556,27 +1556,34 @@ void Editor::updateToolLoopModifiersIndicators(const bool firstFromMouseDown)
                      int(tools::ToolLoopModifiers::kSubtractSelection) |
                      int(tools::ToolLoopModifiers::kIntersectSelection)));
 
-      tools::Controller* controller =
-        (atm->selectedTool() ?
-         atm->selectedTool()->getController(0): nullptr);
+      tools::Tool* tool = atm->selectedTool();
+      tools::Controller* controller = (tool ? tool->getController(0): nullptr);
+      tools::Ink* ink = (tool ? tool->getInk(0): nullptr);
 
       // Shape tools modifiers (line, curves, rectangles, etc.)
       if (controller && controller->isTwoPoints()) {
         action = m_customizationDelegate->getPressedKeyAction(KeyContext::ShapeTool);
-        if (int(action & KeyAction::MoveOrigin))
-          modifiers |= int(tools::ToolLoopModifiers::kMoveOrigin);
-        if (int(action & KeyAction::SquareAspect))
-          modifiers |= int(tools::ToolLoopModifiers::kSquareAspect);
-        if (int(action & KeyAction::DrawFromCenter))
-          modifiers |= int(tools::ToolLoopModifiers::kFromCenter);
 
-        // We prefer to activate the rotation only when the user press
-        // the Alt key again in the ToolLoop (and not before starting
-        // the loop). So Alt+Shift+selection tool will subtract the
+        // For two-points-selection-like tools (Rectangular/Elliptical
+        // Marquee) we prefer to activate the
+        // square-aspect/rotation/etc. only when the user presses the
+        // modifier key again in the ToolLoop (and not before starting
+        // the loop). So Alt+selection will add a selection, but
+        // willn't start the square-aspect until we press Alt key
+        // again, or Alt+Shift+selection tool will subtract the
         // selection but will not start the rotation until we release
         // and press the Alt key again.
-        if ((int(action & KeyAction::RotateShape)) && !firstFromMouseDown)
-          modifiers |= int(tools::ToolLoopModifiers::kRotateShape);
+        if (!firstFromMouseDown ||
+            !ink || !ink->isSelection()) {
+          if (int(action & KeyAction::MoveOrigin))
+            modifiers |= int(tools::ToolLoopModifiers::kMoveOrigin);
+          if (int(action & KeyAction::SquareAspect))
+            modifiers |= int(tools::ToolLoopModifiers::kSquareAspect);
+          if (int(action & KeyAction::DrawFromCenter))
+            modifiers |= int(tools::ToolLoopModifiers::kFromCenter);
+          if (int(action & KeyAction::RotateShape))
+            modifiers |= int(tools::ToolLoopModifiers::kRotateShape);
+        }
       }
 
       // Freehand modifiers
