@@ -541,9 +541,11 @@ public:
       sendMessage(msg);
     }
 
-    // Update language
-    Strings::instance()->setCurrentLanguage(
-      language()->getItemText(language()->getSelectedItemIndex()));
+    // Update language (only when the language combobox is inited)
+    if (language()->getItemCount() > 0) {
+      Strings::instance()->setCurrentLanguage(
+        language()->getItemText(language()->getSelectedItemIndex()));
+    }
 
     m_globPref.timeline.firstFrame(firstFrame()->textInt());
     m_pref.general.showFullPath(showFullPath()->isSelected());
