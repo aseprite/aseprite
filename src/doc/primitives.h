@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2018-2019 Igara Studio S.A.
+// Copyright (c) 2018-2021 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -52,6 +52,10 @@ namespace doc {
 
   uint32_t calculate_image_hash(const Image* image,
                                 const gfx::Rect& bounds);
+
+  // Sets RGB values to 0 when alpha=0 (to match images with alpha=0
+  // in tilesets/calculate_image_hash)
+  void preprocess_transparent_pixels(Image* image);
 
 } // namespace doc
 

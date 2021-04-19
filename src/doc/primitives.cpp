@@ -312,7 +312,7 @@ bool is_plain_image_templ(const Image* img, const color_t color)
   const LockImageBits<ImageTraits> bits(img);
   typename LockImageBits<ImageTraits>::const_iterator it, end;
   for (it=bits.begin(), end=bits.end(); it!=end; ++it) {
-    if (*it != color)
+    if (!ImageTraits::same_color(*it, color))
       return false;
   }
   ASSERT(it == end);
@@ -480,6 +480,33 @@ uint32_t calculate_image_hash(const Image* img, const gfx::Rect& bounds)
   }
   ASSERT(false);
   return 0;
+}
+
+void preprocess_transparent_pixels(Image* image)
+{
+  switch (image->pixelFormat()) {
+
+    case IMAGE_RGB: {
+      LockImageBits<RgbTraits> bits(image);
+      auto it = bits.begin(), end = bits.end();
+      for (; it != end; ++it) {
+        if (rgba_geta(*it) == 0)
+          *it = 0;
+      }
+      break;
+    }
+
+    case IMAGE_GRAYSCALE: {
+      LockImageBits<RgbTraits> bits(image);
+      auto it = bits.begin(), end = bits.end();
+      for (; it != end; ++it) {
+        if (graya_geta(*it) == 0)
+          *it = 0;
+      }
+      break;
+    }
+
+  }
 }
 
 } // namespace doc

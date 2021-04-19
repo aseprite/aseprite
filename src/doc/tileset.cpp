@@ -129,7 +129,9 @@ void Tileset::set(const tile_index ti,
 
   removeFromHash(ti, false);
 
+  preprocess_transparent_pixels(image.get());
   m_tiles[ti] = image;
+
   if (!m_hash.empty())
     hashImage(ti, image);
 }
@@ -140,6 +142,7 @@ tile_index Tileset::add(const ImageRef& image)
   ASSERT(image->width() == m_grid.tileSize().w);
   ASSERT(image->height() == m_grid.tileSize().h);
 
+  preprocess_transparent_pixels(image.get());
   m_tiles.push_back(image);
 
   const tile_index newIndex = tile_index(m_tiles.size()-1);
@@ -162,6 +165,7 @@ void Tileset::insert(const tile_index ti,
   ASSERT(image->height() == m_grid.tileSize().h);
 
   ASSERT(ti >= 0 && ti <= m_tiles.size()+1);
+  preprocess_transparent_pixels(image.get());
   m_tiles.insert(m_tiles.begin()+ti, image);
 
   if (!m_hash.empty()) {
@@ -256,6 +260,10 @@ void Tileset::notifyTileContentChange(const tile_index ti)
       // only way to make it work correctly)
 
   (void)ti;                     // unused
+
+  if (ti >= 0 && ti < m_tiles.size() && m_tiles[ti])
+    preprocess_transparent_pixels(m_tiles[ti].get());
+
   rehash();
 
 #endif

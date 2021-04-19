@@ -95,6 +95,9 @@ namespace doc {
     // given "tileImage", this function returns true and the index of
     // that tile in the "ti" parameter. Returns false if the image is
     // not in the tileset.
+    //
+    // Warning: Use preprocess_transparent_pixels() with tileImage
+    // before calling this function.
     bool findTileIndex(const ImageRef& tileImage,
                        tile_index& ti);
 

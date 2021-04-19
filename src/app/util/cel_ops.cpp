@@ -405,6 +405,8 @@ void draw_image_into_new_tilemap_cel(
     if (grid.hasMask())
       mask_image(tileImage.get(), grid.mask().get());
 
+    preprocess_transparent_pixels(tileImage.get());
+
     doc::tile_index tileIndex;
     if (!tileset->findTileIndex(tileImage, tileIndex)) {
       auto addTile = new cmd::AddTile(tileset, tileImage);
@@ -537,6 +539,8 @@ void modify_tilemap_cel_region(
       ImageRef tileImage(getTileImage(existentTileImage, tileInCanvasRc));
       if (grid.hasMask())
         mask_image(tileImage.get(), grid.mask().get());
+
+      preprocess_transparent_pixels(tileImage.get());
 
       tile_index tileIndex;
       if (tileset->findTileIndex(tileImage, tileIndex)) {
