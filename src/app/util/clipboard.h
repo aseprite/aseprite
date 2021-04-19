@@ -96,6 +96,7 @@ namespace app {
     bool copyFromDocument(const Site& site, bool merged = false);
 
     // Native clipboard
+    void clearNativeContent();
     void registerNativeFormats();
     bool hasNativeBitmap() const;
     bool setNativeBitmap(const doc::Image* image,

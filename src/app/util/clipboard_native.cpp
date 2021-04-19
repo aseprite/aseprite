@@ -54,6 +54,12 @@ namespace {
 
 }
 
+void Clipboard::clearNativeContent()
+{
+  clip::lock l(native_window_handle());
+  l.clear();
+}
+
 void Clipboard::registerNativeFormats()
 {
   clip::set_error_handler(custom_error_handler);

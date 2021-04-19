@@ -341,6 +341,8 @@ void Clipboard::clearMaskFromCels(Tx& tx,
 
 void Clipboard::clearContent()
 {
+  if (use_native_clipboard())
+    clearNativeContent();
   m_data->clear();
 }
 
