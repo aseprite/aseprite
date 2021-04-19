@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2018-2020 Igara Studio S.A.
+// Copyright (c) 2018-2021 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -19,6 +19,8 @@
 #include "doc/rgbmap.h"
 #include "doc/tile.h"
 #include "gfx/region.h"
+
+#include <city.h>
 
 #include <stdexcept>
 
@@ -442,21 +444,30 @@ template <typename ImageTraits, uint32_t Mask>
 static uint32_t calculate_image_hash_templ(const Image* image,
                                            const gfx::Rect& bounds)
 {
-  uint32_t hash = 0;
-  for (int y=0; y<bounds.h; ++y) {
-    auto p = (typename ImageTraits::address_t)image->getPixelAddress(bounds.x, bounds.y+y);
-    for (int x=0; x<bounds.w; ++x, ++p) {
-      uint32_t value = *p;
-      uint32_t mask = Mask;
-      while (mask) {
-        hash += value & mask & 0xff;
-        hash <<= 1;
-        value >>= 8;
-        mask >>= 8;
-      }
-    }
+#if defined(__LP64__) || defined(__x86_64__) || defined(_WIN64)
+  #define CITYHASH(buf, len) (CityHash64(buf, len) & 0xffffffff)
+  static_assert(sizeof(void*) == 8, "This CPU is not 64-bit");
+#else
+  #define CITYHASH(buf, len) CityHash32(buf, len)
+  static_assert(sizeof(void*) == 4, "This CPU is not 32-bit");
+#endif
+
+  const uint32_t rowlen = ImageTraits::getRowStrideBytes(bounds.w);
+  const uint32_t len = rowlen * bounds.h;
+  if (bounds == image->bounds()) {
+    return CITYHASH((const char*)image->getPixelAddress(0, 0), len);
   }
-  return hash;
+  else {
+    ASSERT(false);              // TODO not used at this moment
+
+    std::vector<uint8_t> buf(len);
+    uint8_t* dst = &buf[0];
+    for (int y=0; y<bounds.h; ++y, dst+=rowlen) {
+      auto src = image->getPixelAddress(bounds.x, bounds.y+y);
+      std::copy(dst, dst+rowlen, src);
+    }
+    return CITYHASH((const char*)&buf[0], buf.size());
+  }
 }
 
 uint32_t calculate_image_hash(const Image* img, const gfx::Rect& bounds)
@@ -467,18 +478,8 @@ uint32_t calculate_image_hash(const Image* img, const gfx::Rect& bounds)
     case IMAGE_INDEXED:   return calculate_image_hash_templ<IndexedTraits, 0xff>(img, bounds);
     case IMAGE_BITMAP:    return calculate_image_hash_templ<BitmapTraits, 1>(img, bounds);
   }
-
-  uint32_t hash = 0;
-  for (int y=0; y<bounds.h; ++y) {
-    int bytes = img->getRowStrideSize(bounds.w);
-    uint8_t* p = img->getPixelAddress(bounds.x, bounds.y+y);
-    while (bytes-- > 0) {
-      hash += *p;
-      hash <<= 1;
-      ++p;
-    }
-  }
-  return hash;
+  ASSERT(false);
+  return 0;
 }
 
 } // namespace doc

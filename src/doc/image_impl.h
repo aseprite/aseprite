@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -71,6 +71,9 @@ namespace doc {
         m_buffer = std::make_shared<ImageBuffer>(required_size);
       else
         m_buffer->resizeIfNecessary(required_size);
+
+      std::fill(m_buffer->buffer(),
+                m_buffer->buffer()+required_size, 0);
 
       m_rows = (address_t*)m_buffer->buffer();
       m_bits = (address_t)(m_buffer->buffer() + for_rows);

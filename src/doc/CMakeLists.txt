@@ -1,5 +1,5 @@
 # Aseprite Document Library
-# Copyright (C) 2019-2020 Igara Studio S.A.
+# Copyright (C) 2019-2021 Igara Studio S.A.
 # Copyright (C) 2001-2018 David Capello
 
 if(WIN32)
@@ -80,4 +80,5 @@ add_library(doc-lib
 target_link_libraries(doc-lib
   laf-gfx
   laf-base
-  fixmath-lib)
+  fixmath-lib
+  cityhash)

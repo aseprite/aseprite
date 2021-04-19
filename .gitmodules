@@ -66,3 +66,6 @@
 [submodule "src/tga"]
 	path = src/tga
 	url = https://github.com/aseprite/tga.git
+[submodule "third_party/cityhash"]
+	path = third_party/cityhash
+	url = https://github.com/aseprite/cityhash.git
