@@ -1,4 +1,4 @@
--- Copyright (C) 2019-2020  Igara Studio S.A.
+-- Copyright (C) 2019-2021  Igara Studio S.A.
 --
 -- This file is released under the terms of the MIT license.
 -- Read LICENSE.txt for more information.
@@ -520,5 +520,41 @@ do
   assert(ts:getTile(8):isEqual(imgs[3]))
   assert(ts:getTile(9):isEqual(imgs[4]))
   app.undo()
+
+end
+
+----------------------------------------------------------------------
+-- Tests bug with alpha=0 and different RGB values
+----------------------------------------------------------------------
+
+do
+  local spr = Sprite(32, 32)
+  spr.gridBounds = Rectangle(0, 0, 2, 2)
+  app.command.NewLayer{ tilemap=true }
+
+  local tm = app.activeLayer
+  local ts = tm.tileset
+  expect_eq(1, #ts)
+
+  app.useTool{
+    tool='pencil',
+    color=Color{ r=0, g=0, b=0, a=255 },
+    tilemapMode=TilesetMode.PIXELS,
+    tilesetMode=TilesetMode.STACK,
+    points={ Point(0, 0), Point(3, 0) }}
+
+  expect_eq(2, #ts)
+
+  app.useTool{
+    tool='pencil',
+    color=Color{ r=255, g=0, b=0, a=0 },
+    tilemapMode=TilesetMode.PIXELS,
+    tilesetMode=TilesetMode.STACK,
+    points={ Point(0, 0), Point(1, 0) }}
+
+  -- If #ts is == 3, it means that the last useTool() with a r=255 a=0
+  -- created a new tile, that shouldn't be the case (because a=0
+  -- should ignore RGB values to compare tiles)
+  expect_eq(2, #ts)
 
 end
