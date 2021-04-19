@@ -1,4 +1,4 @@
--- Copyright (C) 2019  Igara Studio S.A.
+-- Copyright (C) 2019-2021  Igara Studio S.A.
 -- Copyright (C) 2018  David Capello
 --
 -- This file is released under the terms of the MIT license.
@@ -120,10 +120,22 @@ do
   assert(s.gridBounds == Rectangle{0, 0, 16, 16})
   s.gridBounds = Rectangle{2, 3, 8, 4}
   assert(s.gridBounds == Rectangle{2, 3, 8, 4})
-  s:saveAs("_test_sprite_gridbounds.png")
+  s:saveAs("_test_sprite_gridbounds.aseprite")
 
-  local s2 = Sprite{ fromFile="_test_sprite_gridbounds.png" }
-  assert(s.gridBounds == Rectangle{2, 3, 8, 4})
+  local s2 = Sprite{ fromFile="_test_sprite_gridbounds.aseprite" }
+  assert(s2.gridBounds == Rectangle{2, 3, 8, 4})
+end
+
+-- Pixel ratio
+do
+  local s = Sprite(32, 32)
+  assert(s.pixelRatio == Size{1, 1})
+  s.pixelRatio = Size{3, 2}
+  assert(s.pixelRatio == Size{3, 2})
+  s:saveAs("_test_sprite_pixelratio.aseprite")
+
+  local s2 = Sprite{ fromFile="_test_sprite_pixelratio.aseprite" }
+  assert(s2.pixelRatio == Size{3, 2})
 end
 
 -- Sprite{ fromFile, oneFrame }
