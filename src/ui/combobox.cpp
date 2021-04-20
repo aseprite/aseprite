@@ -16,6 +16,7 @@
 #include "os/font.h"
 #include "ui/button.h"
 #include "ui/entry.h"
+#include "ui/fit_bounds.h"
 #include "ui/listbox.h"
 #include "ui/listitem.h"
 #include "ui/manager.h"
@@ -352,8 +353,8 @@ bool ComboBox::onProcessMessage(Message* msg)
       break;
 
     case kWinMoveMessage:
-      if (m_window)
-        m_window->moveWindow(getListBoxPos());
+      // If we mouse the parent window, we close the list box popup.
+      closeListBox();
       break;
 
     case kKeyDownMessage:
@@ -371,7 +372,18 @@ bool ComboBox::onProcessMessage(Message* msg)
 
     case kMouseDownMessage:
       if (m_window) {
-        if (!View::getView(m_listbox)->hasMouse()) {
+        if (View::getView(m_listbox)->hasMouse()) {
+          // As we are filtering the kMouseDownMessage, and the
+          // ListBox has the mouse, we "return false" here to say "we
+          // are not interested in this mouse message, it will be
+          // processed by the ListBox itself". In other case, if we
+          // "break" and call Widget::onProcessMessage(), the message
+          // will be propagated to the parent window and could be used
+          // to move the parent window (instead of clicking a listbox
+          // item of the popup m_window).
+          return false;
+        }
+        else {
           closeListBox();
 
           MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
@@ -505,7 +517,7 @@ bool ComboBoxEntry::onProcessMessage(Message* msg)
       if (hasCapture()) {
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
         Widget* pick = manager()->pickFromScreenPos(
-          display()->nativeWindow()->pointToScreen(mouseMsg->position()));
+          mouseMsg->display()->nativeWindow()->pointToScreen(mouseMsg->position()));
         Widget* listbox = m_comboBox->m_listbox;
 
         if (pick != nullptr &&
@@ -616,8 +628,6 @@ void ComboBox::openListBox()
   m_window = new Window(Window::WithoutTitleBar);
   View* view = new View();
   m_listbox = new ComboBoxListBox(this);
-  // TODO create a real native window for comboboxes
-  m_window->setDisplay(display(), false);
   m_window->setOnTop(true);
   m_window->setWantFocus(false);
   m_window->setSizeable(false);
@@ -633,10 +643,13 @@ void ComboBox::openListBox()
       if (!item->hasFlags(HIDDEN))
         size.h += item->sizeHint().h;
 
-    const int maxVal =
-      std::max(entryBounds.y, display()->size().h - entryBounds.y2())
-      - 8*guiscale();
-    size.h = base::clamp(size.h, textHeight(), maxVal);
+    if (!get_multiple_displays()) {
+      const int maxVal =
+        std::max(entryBounds.y, display()->size().h - entryBounds.y2())
+        - 8*guiscale();
+      size.h = base::clamp(size.h, textHeight(), maxVal);
+    }
+
     viewport->setMinSize(size);
   }
 
@@ -648,8 +661,7 @@ void ComboBox::openListBox()
   initTheme();
   m_window->remapWindow();
 
-  gfx::Rect rc = getListBoxPos();
-  m_window->positionWindow(rc.x, rc.y);
+  updateListBoxPos();
   m_window->openWindow();
 
   filterMessages();
@@ -689,7 +701,7 @@ void ComboBox::switchListBox()
     closeListBox();
 }
 
-gfx::Rect ComboBox::getListBoxPos() const
+void ComboBox::updateListBoxPos()
 {
   gfx::Rect entryBounds = m_entry->bounds();
   gfx::Rect rc(gfx::Point(entryBounds.x,
@@ -697,10 +709,16 @@ gfx::Rect ComboBox::getListBoxPos() const
                gfx::Point(m_button->bounds().x2(),
                           entryBounds.y2() + m_window->bounds().h));
 
-  if (rc.y2() > display()->size().h)
-    rc.offset(0, -(rc.h + entryBounds.h));
-
-  return rc;
+  fit_bounds(
+    display(),
+    m_window,
+    rc,
+    [this](const gfx::Rect& workarea,
+           gfx::Rect& bounds,
+           std::function<gfx::Rect(Widget*)> getWidgetBounds) {
+      if (bounds.y2() > workarea.h)
+        bounds.offset(0, -(bounds.h + getWidgetBounds(m_entry).h));
+    });
 }
 
 void ComboBox::onChange()
