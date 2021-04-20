@@ -840,9 +840,9 @@ bool MenuItem::onProcessMessage(Message* msg)
               Rect r1(0, 0, pos.w, pos.h);
               Rect r2(0, 0, pos.w, pos.h);
 
-              r1.x = x_left = base::clamp(x_left, 0, workarea.w-pos.w);
-              r2.x = x_right = base::clamp(x_right, 0, workarea.w-pos.w);
-              r1.y = r2.y = y = base::clamp(y, 0, workarea.h-pos.h);
+              r1.x = x_left = base::clamp(x_left, workarea.x, workarea.w-pos.w);
+              r2.x = x_right = base::clamp(x_right, workarea.x, workarea.w-pos.w);
+              r1.y = r2.y = y = base::clamp(y, workarea.y, workarea.h-pos.h);
 
               // Calculate both intersections
               const gfx::Rect s1 = r1.createIntersection(parentPos);

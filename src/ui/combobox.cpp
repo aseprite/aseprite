@@ -716,7 +716,7 @@ void ComboBox::updateListBoxPos()
     [this](const gfx::Rect& workarea,
            gfx::Rect& bounds,
            std::function<gfx::Rect(Widget*)> getWidgetBounds) {
-      if (bounds.y2() > workarea.h)
+      if (bounds.y2() > workarea.y2())
         bounds.offset(0, -(bounds.h + getWidgetBounds(m_entry).h));
     });
 }

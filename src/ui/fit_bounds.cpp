@@ -111,7 +111,9 @@ void fit_bounds(Display* parentDisplay,
 
   if (get_multiple_displays() && window->shouldCreateNativeWindow()) {
     const os::Window* nativeWindow = parentDisplay->nativeWindow();
-    const gfx::Rect workarea = get_workarea_region().bounds();
+    // Limit to the current screen workarea (instead of using all the
+    // available workarea between all monitors, get_workarea_region())
+    const gfx::Rect workarea = nativeWindow->screen()->workarea();
     const int scale = nativeWindow->scale();
 
     // Screen frame bounds

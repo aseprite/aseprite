@@ -355,9 +355,9 @@ void ColorButton::openPopup(const bool forcePinned)
 
         winBounds.x = base::clamp(bounds.x, workarea.x, workarea.x2()-winBounds.w);
         if (bounds.y2()+winBounds.h <= workarea.y2())
-          winBounds.y = std::max(0, bounds.y2());
+          winBounds.y = std::max(workarea.y, bounds.y2());
         else
-          winBounds.y = std::max(0, bounds.y-winBounds.h);
+          winBounds.y = std::max(workarea.y, bounds.y-winBounds.h);
       }
       else if (forcePinned) {
         winBounds = convertBounds(m_hiddenPopupBounds);
