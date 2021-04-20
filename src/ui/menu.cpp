@@ -100,32 +100,67 @@ static MenuItem* check_for_letter(Menu* menu, const KeyMessage* keymsg);
 static MenuItem* find_nextitem(Menu* menu, MenuItem* menuitem);
 static MenuItem* find_previtem(Menu* menu, MenuItem* menuitem);
 
-static void add_scrollbars_if_needed(Window* window)
+static void choose_side(gfx::Rect& bounds,
+                        const gfx::Rect& workarea,
+                        const gfx::Rect& parentBounds)
 {
-  const gfx::Rect rc0 = window->bounds();
-  gfx::Size displaySize = window->display()->size();
-  gfx::Rect rc = rc0;
+  int scale = guiscale();
+  if (get_multiple_displays())
+    scale = Manager::getDefault()->display()->scale();
 
-  if (rc.x < 0) {
-    rc.w += rc.x;
-    rc.x = 0;
+  int x_left = parentBounds.x - bounds.w + 1*scale;
+  int x_right = parentBounds.x2() - 1*scale;
+  int x, y = bounds.y;
+  Rect r1(0, 0, bounds.w, bounds.h);
+  Rect r2(0, 0, bounds.w, bounds.h);
+
+  r1.x = x_left = base::clamp(x_left, workarea.x, workarea.x2()-bounds.w);
+  r2.x = x_right = base::clamp(x_right, workarea.x, workarea.x2()-bounds.w);
+  r1.y = r2.y = y = base::clamp(y, workarea.y, workarea.y2()-bounds.h);
+
+  // Calculate both intersections
+  const gfx::Rect s1 = r1.createIntersection(parentBounds);
+  const gfx::Rect s2 = r2.createIntersection(parentBounds);
+
+  if (s2.isEmpty())
+    x = x_right;        // Use the right because there aren't intersection with it
+  else if (s1.isEmpty())
+    x = x_left;         // Use the left because there are not intersection
+  else if (s2.w*s2.h <= s1.w*s1.h)
+    x = x_right;        // Use the right because there are less intersection area
+  else
+    x = x_left;         // Use the left because there are less intersection area
+
+  bounds.x = x;
+  bounds.y = y;
+}
+
+static void add_scrollbars_if_needed(Window* window,
+                                     const gfx::Rect& workarea,
+                                     gfx::Rect& bounds)
+{
+  gfx::Rect rc = bounds;
+
+  if (rc.x < workarea.x) {
+    rc.w -= (workarea.x - rc.x);
+    rc.x = workarea.x;
   }
-  if (rc.x2() > displaySize.w) {
-    rc.w = displaySize.w - rc.x;
+  if (rc.x2() > workarea.x2()) {
+    rc.w = workarea.x2() - rc.x;
   }
 
   bool vscrollbarsAdded = false;
-  if (rc.y < 0) {
-    rc.h += rc.y;
-    rc.y = 0;
+  if (rc.y < workarea.y) {
+    rc.h -= (workarea.y - rc.y);
+    rc.y = workarea.y;
     vscrollbarsAdded = true;
   }
-  if (rc.y2() > displaySize.h) {
-    rc.h = displaySize.h - rc.y;
+  if (rc.y2() > workarea.y2()) {
+    rc.h = workarea.y2() - rc.y;
     vscrollbarsAdded = true;
   }
 
-  if (rc == rc0)
+  if (rc == bounds)
     return;
 
   Widget* menubox = window->firstChild();
@@ -134,17 +169,22 @@ static void add_scrollbars_if_needed(Window* window)
   view->initTheme();
 
   if (vscrollbarsAdded) {
-    rc.w += 2*view->verticalBar()->getBarWidth();
-    if (rc.x2() > displaySize.w) {
-      rc.x = displaySize.w - rc.w;
-      if (rc.x < 0) {
-        rc.x = 0;
-        rc.w = displaySize.w;
+    int barWidth = view->verticalBar()->getBarWidth();;
+    if (get_multiple_displays())
+      barWidth *= window->display()->scale();
+
+    rc.w += 2*barWidth;
+    if (rc.x2() > workarea.x2()) {
+      rc.x = workarea.x2() - rc.x2();
+      if (rc.x < workarea.x) {
+        rc.x = workarea.x;
+        rc.w = workarea.w;
       }
     }
   }
 
-  window->setBounds(rc);
+  // New bounds
+  bounds = rc;
 
   window->removeChild(menubox);
   view->attachToView(menubox);
@@ -325,9 +365,13 @@ void Menu::showPopup(const gfx::Point& pos,
 
   fit_bounds(parentDisplay,
              window.get(),
-             gfx::Rect(pos, window->size()));
-
-  add_scrollbars_if_needed(window.get());
+             gfx::Rect(pos, window->size()),
+             [&window, pos](const gfx::Rect& workarea,
+                            gfx::Rect& bounds,
+                            std::function<gfx::Rect(Widget*)> getWidgetBounds) {
+               choose_side(bounds, workarea, gfx::Rect(bounds.x-1, bounds.y, 1, 1));
+               add_scrollbars_if_needed(window.get(), workarea, bounds);
+             });
 
   // Set the focus to the new menubox
   Manager* manager = Manager::getDefault();
@@ -823,46 +867,26 @@ bool MenuItem::onProcessMessage(Message* msg)
 
         fit_bounds(
           display(), window, window->bounds(),
-          [this](const gfx::Rect& workarea,
-                 gfx::Rect& pos,
-                 std::function<gfx::Rect(Widget*)> getWidgetBounds){
-            Rect parentPos = getWidgetBounds(this->window());
-            Rect bounds = getWidgetBounds(this);
-
+          [this, window](const gfx::Rect& workarea,
+                         gfx::Rect& bounds,
+                         std::function<gfx::Rect(Widget*)> getWidgetBounds){
+            const gfx::Rect itemBounds = getWidgetBounds(this);
             if (inBar()) {
-              pos.x = base::clamp(bounds.x, workarea.x, workarea.x2()-pos.w);
-              pos.y = std::max(workarea.y, bounds.y2());
+              bounds.x = base::clamp(itemBounds.x, workarea.x, workarea.x2()-bounds.w);
+              bounds.y = std::max(workarea.y, itemBounds.y2());
             }
             else {
-              int x_left = parentPos.x - pos.w + 1*guiscale();
-              int x_right = parentPos.x2() - 1*guiscale();
-              int x, y = bounds.y-3*guiscale();
-              Rect r1(0, 0, pos.w, pos.h);
-              Rect r2(0, 0, pos.w, pos.h);
+              int scale = guiscale();
+              if (get_multiple_displays())
+                scale = display()->scale();
 
-              r1.x = x_left = base::clamp(x_left, workarea.x, workarea.w-pos.w);
-              r2.x = x_right = base::clamp(x_right, workarea.x, workarea.w-pos.w);
-              r1.y = r2.y = y = base::clamp(y, workarea.y, workarea.h-pos.h);
-
-              // Calculate both intersections
-              const gfx::Rect s1 = r1.createIntersection(parentPos);
-              const gfx::Rect s2 = r2.createIntersection(parentPos);
-
-              if (s2.isEmpty())
-                x = x_right;        // Use the right because there aren't intersection with it
-              else if (s1.isEmpty())
-                x = x_left;         // Use the left because there are not intersection
-              else if (s2.w*s2.h <= s1.w*s1.h)
-                x = x_right;        // Use the right because there are less intersection area
-              else
-                x = x_left;         // Use the left because there are less intersection area
-
-              pos.x = x;
-              pos.y = y;
+              const gfx::Rect parentBounds = getWidgetBounds(this->window());
+              bounds.y = itemBounds.y-3*scale;
+              choose_side(bounds, workarea, parentBounds);
             }
-          });
 
-        add_scrollbars_if_needed(window);
+            add_scrollbars_if_needed(window, workarea, bounds);
+          });
 
         // Set the focus to the new menubox
         menubox->setFocusMagnet(true);
