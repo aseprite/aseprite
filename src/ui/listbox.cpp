@@ -13,6 +13,7 @@
 
 #include "base/clamp.h"
 #include "base/fs.h"
+#include "ui/display.h"
 #include "ui/listitem.h"
 #include "ui/message.h"
 #include "ui/resize_event.h"
@@ -218,7 +219,8 @@ bool ListBox::onProcessMessage(Message* msg)
 
     case kMouseMoveMessage:
       if (hasCapture()) {
-        gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
+        gfx::Point screenPos = msg->display()->nativeWindow()->pointToScreen(static_cast<MouseMessage*>(msg)->position());
+        gfx::Point mousePos = display()->nativeWindow()->pointFromScreen(screenPos);
         View* view = View::getView(this);
         bool pick_item = true;
 
