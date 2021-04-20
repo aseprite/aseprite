@@ -516,19 +516,23 @@ bool ComboBoxEntry::onProcessMessage(Message* msg)
     case kMouseMoveMessage:
       if (hasCapture()) {
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
-        Widget* pick = manager()->pickFromScreenPos(
-          mouseMsg->display()->nativeWindow()->pointToScreen(mouseMsg->position()));
+        gfx::Point screenPos = mouseMsg->display()->nativeWindow()->pointToScreen(mouseMsg->position());
+        Widget* pick = manager()->pickFromScreenPos(screenPos);
         Widget* listbox = m_comboBox->m_listbox;
 
         if (pick != nullptr &&
             (pick == listbox || pick->hasAncestor(listbox))) {
           releaseMouse();
 
-          MouseMessage mouseMsg2(kMouseDownMessage,
-                                 mouseMsg->pointerType(),
-                                 mouseMsg->button(),
-                                 mouseMsg->modifiers(),
-                                 mouseMsg->position());
+          MouseMessage mouseMsg2(
+            kMouseDownMessage,
+            mouseMsg->pointerType(),
+            mouseMsg->button(),
+            mouseMsg->modifiers(),
+            (mouseMsg->display() == pick->display() ?
+             mouseMsg->position():
+             pick->display()->nativeWindow()->pointFromScreen(screenPos)));
+          mouseMsg2.setDisplay(pick->display());
           pick->sendMessage(&mouseMsg2);
           return true;
         }
