@@ -778,6 +778,10 @@ public:
                     warnings));
     }
 
+    // Probably it's safe to switch this flag in runtime
+    if (m_pref.experimental.multipleWindows() != ui::get_multiple_displays())
+      ui::set_multiple_displays(m_pref.experimental.multipleWindows());
+
     if (reset_screen)
       updateScreenScaling();
   }
