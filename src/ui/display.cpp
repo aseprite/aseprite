@@ -11,6 +11,7 @@
 #include "ui/display.h"
 
 #include "base/debug.h"
+#include "ui/system.h"
 #include "ui/widget.h"
 #include "ui/window.h"
 
@@ -110,6 +111,18 @@ void Display::handleWindowZOrder(Window* window)
     }
 
     m_windows.insert(m_windows.begin()+pos, window);
+  }
+}
+
+gfx::Size Display::workareaSizeUIScale()
+{
+  if (get_multiple_displays()) {
+    return
+      nativeWindow()->screen()->workarea().size() /
+      nativeWindow()->scale();
+  }
+  else {
+    return size();
   }
 }
 

@@ -265,18 +265,6 @@ bool get_multiple_displays()
   return multi_displays;
 }
 
-gfx::Size get_desktop_size()
-{
-  if (get_multiple_displays()) {
-    return
-      os::instance()->mainScreen()->workarea().size() /
-      Manager::getDefault()->display()->nativeWindow()->scale();
-  }
-  else {
-    return Manager::getDefault()->display()->size();
-  }
-}
-
 void set_clipboard_text(const std::string& text)
 {
   ASSERT(g_instance);

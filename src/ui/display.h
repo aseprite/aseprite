@@ -73,6 +73,8 @@ namespace ui {
     void handleWindowZOrder(Window* window);
     const std::vector<Window*>& getWindows() const { return m_windows; }
 
+    gfx::Size Display::workareaSizeUIScale();
+
   private:
     Display* m_parentDisplay;
     os::WindowRef m_nativeWindow;

@@ -38,7 +38,7 @@ namespace ui {
                                      std::function<gfx::Rect(Widget*)> getWidgetBounds)> fitLogic = nullptr);
 
   // The "frame" is a native windows frame bounds.
-  void limit_with_workarea(gfx::Rect& frame);
+  void limit_with_workarea(Display* parentDisplay, gfx::Rect& frame);
 
 } // namespace ui
 

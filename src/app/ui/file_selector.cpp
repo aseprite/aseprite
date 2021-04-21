@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -421,8 +421,11 @@ bool FileSelector::show(
 
   FILESEL_TRACE("FILESEL: Start folder '%s' (%p)\n", start_folder_path.c_str(), start_folder);
 
-  gfx::Size displaySize = ui::get_desktop_size();
-  setMinSize(gfx::Size(displaySize.w*9/10, displaySize.h*9/10));
+  {
+    const gfx::Size workareaSize = ui::Manager::getDefault()->display()->workareaSizeUIScale();
+    setMinSize(workareaSize*9/10);
+  }
+
   remapWindow();
   centerWindow();
 

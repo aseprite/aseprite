@@ -16,6 +16,7 @@
 #include "os/draw_text.h"
 #include "os/font.h"
 #include "os/system.h"
+#include "ui/display.h"
 #include "ui/menu.h"
 #include "ui/message.h"
 #include "ui/scale.h"
@@ -451,7 +452,7 @@ gfx::Size Entry::sizeHintWithText(Entry* entry,
     + 2*entry->theme()->getEntryCaretSize(entry).w
     + entry->border().width();
 
-  w = std::min(w, ui::get_desktop_size().w/2);
+  w = std::min(w, entry->display()->workareaSizeUIScale().w/2);
 
   int h =
     + entry->font()->height()
@@ -470,7 +471,7 @@ void Entry::onSizeHint(SizeHintEvent& ev)
     + trailing
     + border().width();
 
-  w = std::min(w, ui::get_desktop_size().w/2);
+  w = std::min(w, display()->workareaSizeUIScale().w/2);
 
   int h =
     + font()->height()

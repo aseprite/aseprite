@@ -154,17 +154,14 @@ void fit_bounds(Display* parentDisplay,
 //      resize it, because workareas can form an irregular shape
 //      (not rectangular) the calculation is a little more
 //      complex
-void limit_with_workarea(gfx::Rect& frame)
+void limit_with_workarea(Display* parentDisplay, gfx::Rect& frame)
 {
   if (!get_multiple_displays())
     return;
 
-  gfx::Region wa = get_workarea_region();
+  ASSERT(parentDisplay);
 
-  // TODO use a "visibleFrameRegion = frame & wa" to check the
-  // visible regions and calculate if we should move the frame
-  // position
-  gfx::Rect waBounds = wa.bounds();
+  gfx::Rect waBounds = parentDisplay->nativeWindow()->screen()->workarea();
   if (frame.x < waBounds.x) frame.x = waBounds.x;
   if (frame.y < waBounds.y) frame.y = waBounds.y;
   if (frame.x2() > waBounds.x2()) frame.w -= frame.x2() - waBounds.x2();

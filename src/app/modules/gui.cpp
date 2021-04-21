@@ -336,7 +336,13 @@ void update_screen_for_document(const Doc* document)
 void load_window_pos(Window* window, const char* section,
                      const bool limitMinSize)
 {
-  Size desktopSize = ui::get_desktop_size();
+  Display* parentDisplay =
+    (window->display() ? window->display():
+                         window->manager()->display());
+  Rect workarea =
+    (get_multiple_displays() ?
+     parentDisplay->nativeWindow()->screen()->workarea():
+     parentDisplay->bounds());
 
   // Default position
   Rect origPos = window->bounds();
@@ -345,23 +351,23 @@ void load_window_pos(Window* window, const char* section,
   Rect pos = get_config_rect(section, "WindowPos", origPos);
 
   if (limitMinSize) {
-    pos.w = base::clamp(pos.w, origPos.w, desktopSize.w);
-    pos.h = base::clamp(pos.h, origPos.h, desktopSize.h);
+    pos.w = base::clamp(pos.w, origPos.w, workarea.w);
+    pos.h = base::clamp(pos.h, origPos.h, workarea.h);
   }
   else {
-    pos.w = std::min(pos.w, desktopSize.w);
-    pos.h = std::min(pos.h, desktopSize.h);
+    pos.w = std::min(pos.w, workarea.w);
+    pos.h = std::min(pos.h, workarea.h);
   }
 
-  pos.setOrigin(Point(base::clamp(pos.x, 0, desktopSize.w-pos.w),
-                      base::clamp(pos.y, 0, desktopSize.h-pos.h)));
+  pos.setOrigin(Point(base::clamp(pos.x, workarea.x, workarea.x2()-pos.w),
+                      base::clamp(pos.y, workarea.y, workarea.y2()-pos.h)));
 
   window->setBounds(pos);
 
   if (get_multiple_displays()) {
     Rect frame = get_config_rect(section, "WindowFrame", gfx::Rect());
     if (!frame.isEmpty()) {
-      limit_with_workarea(frame);
+      limit_with_workarea(parentDisplay, frame);
       window->loadNativeFrame(frame);
     }
   }

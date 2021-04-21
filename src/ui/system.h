@@ -42,7 +42,6 @@ namespace ui {
 
   void set_multiple_displays(bool multi);
   bool get_multiple_displays();
-  gfx::Size get_desktop_size();
 
   void set_clipboard_text(const std::string& text);
   bool get_clipboard_text(std::string& text);

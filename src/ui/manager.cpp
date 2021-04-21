@@ -1317,7 +1317,7 @@ void Manager::_openWindow(Window* window, bool center)
         frame.offset(relativeToFrame.origin());
       }
 
-      limit_with_workarea(frame);
+      limit_with_workarea(parentDisplay, frame);
 
       spec.position(os::WindowSpec::Position::Frame);
       spec.frame(frame);
