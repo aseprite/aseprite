@@ -126,6 +126,9 @@ protected:
   doc::color_t m_secondaryColor;
   tools::DynamicsOptions m_dynamics;
 
+  // Modifiers that can be used with scripts
+  tools::ToolLoopModifiers m_staticToolModifiers;
+
   // Visible region (on the screen) of the all editors showing the
   // given document.
   gfx::Region m_allVisibleRgn;
@@ -174,6 +177,7 @@ public:
     , m_bgColor(color_utils::color_for_target_mask(params.bg, m_colorTarget))
     , m_primaryColor(m_button == tools::ToolLoop::Left ? m_fgColor: m_bgColor)
     , m_secondaryColor(m_button == tools::ToolLoop::Left ? m_bgColor: m_fgColor)
+    , m_staticToolModifiers(params.modifiers)
   {
     ASSERT(m_tool);
     ASSERT(m_ink);
@@ -307,8 +311,10 @@ public:
   int getTolerance() override { return m_tolerance; }
   bool getContiguous() override { return m_contiguous; }
   tools::ToolLoopModifiers getModifiers() override {
-    return m_editor ? m_editor->getToolLoopModifiers():
-                      tools::ToolLoopModifiers::kNone;
+    return
+      (m_staticToolModifiers == tools::ToolLoopModifiers::kNone &&
+       m_editor ? m_editor->getToolLoopModifiers():
+                  m_staticToolModifiers);
   }
   filters::TiledMode getTiledMode() override { return m_docPref.tiled.mode(); }
   bool getGridVisible() override { return m_docPref.show.grid(); }
