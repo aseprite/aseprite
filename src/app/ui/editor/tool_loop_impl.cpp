@@ -501,10 +501,8 @@ public:
           m_frame,
           gfx::Clip(m_sprite->bounds()));
       }
-      else {
-        Cel* cel = m_layer->cel(m_frame);
-        if (cel && (cel->x() != 0 || cel->y() != 0))
-          m_floodfillSrcImage = render::rasterize_with_sprite_bounds(cel);
+      else if (Cel* cel = m_layer->cel(m_frame)) {
+        m_floodfillSrcImage = render::rasterize_with_sprite_bounds(cel);
       }
     }
 
