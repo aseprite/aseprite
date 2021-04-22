@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -26,6 +26,7 @@
 #include "app/script/security.h"
 #include "app/site.h"
 #include "app/tools/active_tool.h"
+#include "app/tools/ink.h"
 #include "app/tools/tool_box.h"
 #include "app/tools/tool_loop.h"
 #include "app/tools/tool_loop_manager.h"
@@ -387,6 +388,30 @@ int App_useTool(lua_State* L)
   if (type != LUA_TNIL)
     params.freehandAlgorithm = get_value_from_lua<tools::FreehandAlgorithm>(L, -1);
   lua_pop(L, 1);
+
+  if (params.ink->isSelection()) {
+    gen::SelectionMode selectionMode = Preferences::instance().selection.mode();
+
+    type = lua_getfield(L, 1, "selection");
+    if (type != LUA_TNIL)
+      selectionMode = get_value_from_lua<gen::SelectionMode>(L, -1);
+    lua_pop(L, 1);
+
+    switch (selectionMode) {
+      case gen::SelectionMode::REPLACE:
+        params.modifiers = tools::ToolLoopModifiers::kReplaceSelection;
+        break;
+      case gen::SelectionMode::ADD:
+        params.modifiers = tools::ToolLoopModifiers::kAddSelection;
+        break;
+      case gen::SelectionMode::SUBTRACT:
+        params.modifiers = tools::ToolLoopModifiers::kSubtractSelection;
+        break;
+      case gen::SelectionMode::INTERSECT:
+        params.modifiers = tools::ToolLoopModifiers::kIntersectSelection;
+        break;
+    }
+  }
 
   // Do the tool loop
   type = lua_getfield(L, 1, "points");

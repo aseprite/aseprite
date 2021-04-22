@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -15,6 +15,7 @@
 #include "app/console.h"
 #include "app/doc_exporter.h"
 #include "app/doc_range.h"
+#include "app/pref/preferences.h"
 #include "app/script/luacpp.h"
 #include "app/script/security.h"
 #include "app/sprite_sheet_type.h"
@@ -365,6 +366,15 @@ Engine::Engine()
   setfield_integer(L, "MIDDLE", (int)ui::kButtonMiddle);
   setfield_integer(L, "X1",     (int)ui::kButtonX1);
   setfield_integer(L, "X2",     (int)ui::kButtonX2);
+  lua_pop(L, 1);
+
+  lua_newtable(L);
+  lua_pushvalue(L, -1);
+  lua_setglobal(L, "SelectionMode");
+  setfield_integer(L, "REPLACE",   (int)gen::SelectionMode::REPLACE);
+  setfield_integer(L, "ADD",       (int)gen::SelectionMode::ADD);
+  setfield_integer(L, "SUBTRACT",  (int)gen::SelectionMode::SUBTRACT);
+  setfield_integer(L, "INTERSECT", (int)gen::SelectionMode::INTERSECT);
   lua_pop(L, 1);
 
   // Register classes/prototypes
