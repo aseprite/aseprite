@@ -1384,38 +1384,6 @@ void Manager::_openWindow(Window* window, bool center)
 
 void Manager::_closeWindow(Window* window, bool redraw_background)
 {
-  Display* windowDisplay = window->display();
-  Display* parentDisplay;
-
-  if (// The display can be nullptr if the window was not opened or
-      // was closed before.
-      window->ownDisplay()) {
-    parentDisplay = windowDisplay->parentDisplay();
-    ASSERT(parentDisplay);
-    ASSERT(windowDisplay);
-    ASSERT(windowDisplay != this->display());
-
-    // Remove all messages for this display.
-    removeMessagesForDisplay(windowDisplay);
-
-    window->setDisplay(nullptr, false);
-    windowDisplay->nativeWindow()->setUserData<void*>(nullptr);
-
-    // Remove the mouse cursor from the display that we are going to
-    // delete.
-    _internal_set_mouse_display(parentDisplay);
-
-    // The ui::Display should destroy the os::Window
-    delete windowDisplay;
-
-    // Activate main windows
-    parentDisplay->nativeWindow()->activate();
-  }
-  else {
-    parentDisplay = windowDisplay;
-    window->setDisplay(nullptr, false);
-  }
-
   if (!hasChild(window))
     return;
 
@@ -1458,6 +1426,38 @@ void Manager::_closeWindow(Window* window, bool redraw_background)
   {
     std::unique_ptr<Message> msg(new Message(kCloseMessage));
     window->sendMessage(msg.get());
+  }
+
+  // Destroy native window associated with this window's display if needed
+  Display* windowDisplay = window->display();
+  Display* parentDisplay;
+  if (// The display can be nullptr if the window was not opened or
+      // was closed before.
+      window->ownDisplay()) {
+    parentDisplay = windowDisplay->parentDisplay();
+    ASSERT(parentDisplay);
+    ASSERT(windowDisplay);
+    ASSERT(windowDisplay != this->display());
+
+    // Remove all messages for this display.
+    removeMessagesForDisplay(windowDisplay);
+
+    // Remove the mouse cursor from the display that we are going to
+    // delete.
+    _internal_set_mouse_display(parentDisplay);
+
+    window->setDisplay(nullptr, false);
+    windowDisplay->nativeWindow()->setUserData<void*>(nullptr);
+
+    // The ui::Display should destroy the os::Window
+    delete windowDisplay;
+
+    // Activate main windows
+    parentDisplay->nativeWindow()->activate();
+  }
+  else {
+    parentDisplay = windowDisplay;
+    window->setDisplay(nullptr, false);
   }
 
   // Update manager list stuff.
