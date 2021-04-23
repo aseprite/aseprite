@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -242,21 +242,6 @@ void ToolLoopManager::doLoopStep(bool lastStep)
     // last trace only) or to draw the final result in contour tool
     // (the final result is filled).
     m_toolLoop->invalidateDstImage();
-  }
-  else if (m_toolLoop->getTracePolicy() == TracePolicy::AccumulateUpdateLast) {
-    // Revalidate only this last dirty area (e.g. pixel-perfect
-    // freehand algorithm needs this trace policy to redraw only the
-    // last dirty area, which can vary in one pixel from the previous
-    // tool loop cycle).
-    if (m_toolLoop->getBrush()->type() != kImageBrushType) {
-      m_toolLoop->invalidateDstImage(m_dirtyArea);
-    }
-    // For custom brush we revalidate the whole destination area so
-    // the whole trace is redrawn from scratch.
-    else {
-      m_toolLoop->invalidateDstImage();
-      m_toolLoop->validateDstImage(gfx::Region(m_toolLoop->getDstImage()->bounds()));
-    }
   }
 
   m_toolLoop->validateDstImage(m_dirtyArea);

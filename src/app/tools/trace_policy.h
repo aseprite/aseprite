@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2021  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -22,12 +23,6 @@ namespace app {
       // All pixels are accumulated in the destination image. Used by
       // freehand like tools.
       Accumulate,
-
-      // It's like accumulate, but the last modified area in the
-      // destination is invalidated and redraw from the source image +
-      // tool trace. It's used by pixel-perfect freehand algorithm
-      // (because last modified pixels can differ).
-      AccumulateUpdateLast,
 
       // Only the last trace is used. It means that on each ToolLoop
       // step, the destination image is completely invalidated and

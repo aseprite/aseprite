@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -451,6 +451,8 @@ public:
       m_pts.reset();
     }
 
+    int thirdFromLastPt = 0, nextPt = 0;
+
     if (stroke.size() == 0)
       return;
     else if (stroke.size() == 1) {
@@ -460,6 +462,13 @@ public:
       return;
     }
     else {
+      if (m_pts[m_pts.size() - 1] == stroke.lastPoint() &&
+          stroke.firstPoint() == stroke.lastPoint())
+        return;
+
+      nextPt = m_pts.size();
+      thirdFromLastPt = (m_pts.size() > 2 ? m_pts.size() - 3 : m_pts.size() - 1);
+
       for (int c=0; c+1<stroke.size(); ++c) {
         auto lineAlgo = getLineAlgo(loop, stroke[c], stroke[c+1]);
         LineData2 lineData(loop, stroke[c], stroke[c+1], m_pts);
@@ -480,7 +489,7 @@ public:
          (loop->getBrush()->angle() == 0.0f ||
           loop->getBrush()->angle() == 90.0f ||
           loop->getBrush()->angle() == 180.0f))) {
-      for (int c=0; c<m_pts.size(); ++c) {
+      for (int c=thirdFromLastPt; c<m_pts.size(); ++c) {
         // We ignore a pixel that is between other two pixels in the
         // corner of a L-like shape.
         if (c > 0 && c+1 < m_pts.size()
@@ -488,18 +497,26 @@ public:
             && (m_pts[c+1].x == m_pts[c].x || m_pts[c+1].y == m_pts[c].y)
             && m_pts[c-1].x != m_pts[c+1].x
             && m_pts[c-1].y != m_pts[c+1].y) {
+          loop->restoreLastPts(c, m_pts[c]);
+          if (c == nextPt-1)
+            nextPt--;
           m_pts.erase(c);
         }
       }
     }
 
-    for (int c=0; c<m_pts.size(); ++c) {
+    for (int c=nextPt; c<m_pts.size(); ++c) {
       // We must ignore to print the first point of the line after
       // a joinStroke pass with a retained "Last" trace policy
       // (i.e. the user confirms draw a line while he is holding
       // the SHIFT key))
       if (c == 0 && m_retainedTracePolicyLast)
         continue;
+      // For the last point we store the source image content at that point so we
+      // can restore it when erasing a point because of pixel-perfect.
+      if (c == m_pts.size() - 1) {
+        loop->savePointshapeStrokePtArea(c, m_pts[c]);
+      }
       doPointshapeStrokePt(m_pts[c], loop);
     }
   }

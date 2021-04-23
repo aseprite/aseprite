@@ -133,6 +133,21 @@ protected:
   // given document.
   gfx::Region m_allVisibleRgn;
 
+  // Helper struct to store an image's area that will be affected by the stroke
+  // point at the specified position of the original image.
+  struct SavedArea {
+    doc::ImageRef img;
+    // Original stroke point position.
+    tools::Stroke::Pt pos;
+    // Area of the original image that was saved into img.
+    gfx::Rect r;
+  };
+  // Holds the areas saved by savePointshapeStrokePtArea method and restored by
+  // restoreLastPts method.
+  std::vector<SavedArea> m_savedAreas;
+  // Last point index.
+  int m_lastPti;
+
 public:
   ToolLoopBase(Editor* editor,
                Site& site, const doc::Grid& grid,
@@ -210,22 +225,18 @@ public:
     }
 #endif
 
-    if (m_tracePolicy == tools::TracePolicy::Accumulate ||
-        m_tracePolicy == tools::TracePolicy::AccumulateUpdateLast) {
+    if (m_tracePolicy == tools::TracePolicy::Accumulate) {
       tools::ToolBox* toolbox = App::instance()->toolBox();
 
       switch (params.freehandAlgorithm) {
         case tools::FreehandAlgorithm::DEFAULT:
           m_intertwine = toolbox->getIntertwinerById(tools::WellKnownIntertwiners::AsLines);
-          m_tracePolicy = tools::TracePolicy::Accumulate;
           break;
         case tools::FreehandAlgorithm::PIXEL_PERFECT:
           m_intertwine = toolbox->getIntertwinerById(tools::WellKnownIntertwiners::AsPixelPerfect);
-          m_tracePolicy = tools::TracePolicy::AccumulateUpdateLast;
           break;
         case tools::FreehandAlgorithm::DOTS:
           m_intertwine = toolbox->getIntertwinerById(tools::WellKnownIntertwiners::None);
-          m_tracePolicy = tools::TracePolicy::Accumulate;
           break;
       }
 
@@ -420,6 +431,10 @@ public:
   }
 
   void onSliceRect(const gfx::Rect& bounds) override { }
+
+  void savePointshapeStrokePtArea(const int pti, const tools::Stroke::Pt& pt) override { }
+
+  void restoreLastPts(const int pti, const tools::Stroke::Pt& pt) override { }
 
 #ifdef ENABLE_UI
 protected:
@@ -726,8 +741,77 @@ public:
     m_internalCancel = true;
   }
 
-#ifdef ENABLE_UI
+  // Saves the combined source image's areas and destination image's areas
+  // that will be updated by the last point of each stroke. The idea is to have
+  // the state of the image (only the portion modified by the stroke's point
+  // shape) before drawing the last point of the stroke, then if that point has
+  // to be deleted by the pixel-perfect algorithm, we can use this image to
+  // restore the image to the state previous to the deletion. This method is
+  // used by IntertwineAsPixelPerfect.joinStroke() method.
+  void savePointshapeStrokePtArea(const int pti, const tools::Stroke::Pt& pt) override {
+    if (m_savedAreas.size() > 0 && m_savedAreas[0].pos == pt)
+      return;
+
+    m_savedAreas.clear();
+    m_lastPti = pti;
+
+    auto saveArea = [this](const tools::Stroke::Pt& pt) {
+      tools::Stroke::Pt pos = pt;
+      // By wrapping the stroke point position when tiled mode is active, the
+      // user can draw outside the canvas and still get the pixel-perfect
+      // effect.
+      wrapPositionOnTiledMode(pt, pos);
+
+      gfx::Rect r;
+      getPointShape()->getModifiedArea(this, pos.x, pos.y, r);
+
+      gfx::Region rgn(r);
+      m_editor->collapseRegionByTiledMode(rgn);
+
+      for (auto a : rgn) {
+        ImageRef i(Image::create(getSrcImage()->pixelFormat(), a.w, a.h));
+        i->copy(getSrcImage(), gfx::Clip(0, 0, a));
+        i->copy(getDstImage(), gfx::Clip(0, 0, a));
+        m_savedAreas.push_back(SavedArea{ i, pt, a});
+      }
+    };
+
+    tools::Symmetry* symmetry = getSymmetry();
+    if (symmetry) {
+      // Convert the point to the sprite position so we can apply the
+      // symmetry transformation.
+      tools::Stroke main_stroke;
+      main_stroke.addPoint(pt);
+
+      tools::Strokes strokes;
+      symmetry->generateStrokes(main_stroke, strokes, this);
+      for (const auto& stroke : strokes)
+        saveArea(stroke[0]);
+    }
+    else
+      saveArea(pt);
+  }
+
+  // Takes the images saved by savePointshapeStrokePtArea and copies them to
+  // the destination image. It restores the destination image because the
+  // images in m_savedAreas are from previous states of the destination
+  // image. This method is used by IntertwineAsPixelPerfect.joinStroke()
+  // method.
+  void restoreLastPts(const int pti, const tools::Stroke::Pt& pt) override {
+    if (m_savedAreas.empty() || pti != m_lastPti || m_savedAreas[0].pos != pt)
+      return;
+
+    tools::Stroke::Pt pos;
+    for (int i=0; i<m_savedAreas.size(); ++i) {
+      getDstImage()->copy(m_savedAreas[i].img.get(),
+                          gfx::Clip(m_savedAreas[i].r.origin(),
+                                    m_savedAreas[i].img->bounds()));
+    }
+  }
+
 private:
+
+#ifdef ENABLE_UI
   // EditorObserver impl
   void onScrollChanged(Editor* editor) override { updateAllVisibleRegion(); }
   void onZoomChanged(Editor* editor) override { updateAllVisibleRegion(); }
@@ -744,6 +828,19 @@ private:
   }
 #endif  // ENABLE_UI
 
+  void wrapPositionOnTiledMode(const tools::Stroke::Pt& pt, tools::Stroke::Pt& result) {
+    result = pt;
+    if (int(getTiledMode()) & int(TiledMode::X_AXIS)) {
+      result.x %= m_editor->canvasSize().w;
+      if (result.x < 0)
+        result.x += m_editor->canvasSize().w;
+    }
+    if (int(getTiledMode()) & int(TiledMode::Y_AXIS)) {
+      result.y %= m_editor->canvasSize().h;
+      if (result.y < 0)
+        result.y += m_editor->canvasSize().h;
+    }
+  }
 };
 
 //////////////////////////////////////////////////////////////////////

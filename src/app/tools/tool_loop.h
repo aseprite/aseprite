@@ -11,6 +11,7 @@
 
 #include "app/shade.h"
 #include "app/tools/dynamics.h"
+#include "app/tools/stroke.h"
 #include "app/tools/tool_loop_modifiers.h"
 #include "app/tools/trace_policy.h"
 #include "doc/brush.h"
@@ -251,6 +252,10 @@ namespace app {
 
       // Called when the user release the mouse on SliceInk
       virtual void onSliceRect(const gfx::Rect& bounds) = 0;
+
+      virtual void savePointshapeStrokePtArea(const int pti, const Stroke::Pt& pt) = 0;
+
+      virtual void restoreLastPts(const int pti, const tools::Stroke::Pt& pt) = 0;
     };
 
   } // namespace tools
