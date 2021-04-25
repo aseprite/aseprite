@@ -192,6 +192,8 @@
         <part id="combobox_arrow_right" x="99" y="196" w="9" h="9" />
         <part id="combobox_arrow_right_selected" x="115" y="196" w="9" h="9" />
         <part id="combobox_arrow_right_disabled" x="131" y="196" w="9" h="9" />
+        <part id="arrow_circle_cw" x="99" y="243" w="10" h="10" />
+        <part id="arrow_circle_cw_selected" x="115" y="243" w="10" h="10" />
         <part id="newfolder" x="99" y="211" w="9" h="9" />
         <part id="newfolder_selected" x="115" y="211" w="9" h="9" />
         <part id="list_view" x="96" y="224" w="9" h="9" />
@@ -628,6 +630,10 @@
             <icon part="combobox_arrow_up" />
             <icon part="combobox_arrow_up_selected" state="selected" />
             <icon part="combobox_arrow_up_disabled" state="disabled" />
+        </style>
+        <style id="refresh_button" extends="mini_button">
+            <icon part="arrow_circle_cw" />
+            <icon part="arrow_circle_cw_selected" state="selected" />
         </style>
         <style id="new_folder_button" extends="mini_button">
             <icon part="newfolder" />

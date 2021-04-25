@@ -279,6 +279,7 @@ protected:
         bool enter = (msg->altPressed() && scancode == kKeyDown);
         bool back = (msg->altPressed() && scancode == kKeyLeft);
         bool forward = (msg->altPressed() && scancode == kKeyRight);
+        bool refresh = (scancode == kKeyF5 || (msg->ctrlPressed() && scancode == kKeyR));
 #endif
 
         if (up) {
@@ -296,6 +297,9 @@ protected:
         if (forward) {
           m_filesel->goForward();
           return true;
+        }
+        if (refresh) {
+          m_filesel->refreshCurrentFolder();
         }
         return false;
       }
@@ -320,6 +324,7 @@ FileSelector::FileSelector(FileSelectorType type)
   goBackButton()->setFocusStop(false);
   goForwardButton()->setFocusStop(false);
   goUpButton()->setFocusStop(false);
+  refreshButton()->setFocusStop(false);
   newFolderButton()->setFocusStop(false);
   viewType()->setFocusStop(false);
   for (auto child : viewType()->children())
@@ -338,6 +343,7 @@ FileSelector::FileSelector(FileSelectorType type)
   goBackButton()->Click.connect([this]{ onGoBack(); });
   goForwardButton()->Click.connect([this]{ onGoForward(); });
   goUpButton()->Click.connect([this]{ onGoUp(); });
+  refreshButton()->Click.connect([this] { onRefreshFolder(); });
   newFolderButton()->Click.connect([this]{ onNewFolder(); });
   viewType()->ItemChange.connect([this]{ onChangeViewType(); });
   location()->CloseListBox.connect([this]{ onLocationCloseListBox(); });
@@ -373,11 +379,18 @@ void FileSelector::goUp()
 
 void FileSelector::goInsideFolder()
 {
+  refresh();
+
   if (m_fileList->selectedFileItem() &&
       m_fileList->selectedFileItem()->isBrowsable()) {
     m_fileList->setCurrentFolder(
       m_fileList->selectedFileItem());
   }
+}
+
+void FileSelector::refreshCurrentFolder()
+{
+  onRefreshFolder();
 }
 
 bool FileSelector::show(
@@ -801,6 +814,7 @@ void FileSelector::addInNavigationHistory(IFileItem* folder)
 
 void FileSelector::onGoBack()
 {
+  refresh();
   if (navigation_history.size() > 1) {
     // The default navigation position is at the end of the history
     if (navigation_position.is_null())
@@ -827,6 +841,7 @@ void FileSelector::onGoBack()
 
 void FileSelector::onGoForward()
 {
+  refresh();
   if (navigation_history.size() > 1) {
     // This should not happen, because the forward button should be
     // disabled when the navigation position is null.
@@ -856,7 +871,14 @@ void FileSelector::onGoForward()
 
 void FileSelector::onGoUp()
 {
+  refresh();
   m_fileList->goUp();
+}
+
+void FileSelector::onRefreshFolder()
+{
+  refresh();
+  m_fileList->setCurrentFolder(*navigation_position.get());
 }
 
 void FileSelector::onNewFolder()
@@ -890,6 +912,7 @@ void FileSelector::onNewFolder()
 
 void FileSelector::onChangeViewType()
 {
+  onRefreshFolder();
   double newZoom = m_fileList->zoom();
   switch (viewType()->selectedItem()) {
     case 0: newZoom = 1.0; break;
@@ -931,6 +954,7 @@ void FileSelector::onLocationCloseListBox()
 // change the file-extension in the 'filename' entry widget
 void FileSelector::onFileTypeChange()
 {
+  refresh();
   base::paths exts;
   auto* selExtItem = dynamic_cast<CustomFileExtensionItem*>(fileType()->getSelectedItem());
   if (selExtItem)
@@ -999,6 +1023,13 @@ std::string FileSelector::getSelectedExtension() const
     return selExtItem->extensions().front();
   else
     return m_defExtension;
+}
+
+void FileSelector::refresh()
+{
+  FileSystemModule *fs = FileSystemModule::instance();
+  LockFS lock(fs);
+  fs->refresh();
 }
 
 } // namespace app
