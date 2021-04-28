@@ -558,3 +558,23 @@ do
   expect_eq(2, #ts)
 
 end
+
+----------------------------------------------------------------------
+-- Tests tiles dissapearing in AUTO mode
+----------------------------------------------------------------------
+
+do
+  local spr = Sprite(32, 16, ColorMode.INDEXED)
+  spr.gridBounds = Rectangle(0, 0, 2, 2)
+  app.command.ConvertLayer{ to="tilemap" }
+  app.useTool{ points={ Point(0, 0), Point(31, 31) }, color=1, tool="filled_ellipse", tilesetMode=TilesetMode.AUTO }
+  app.useTool{ points={ Point(4, 4), Point(27, 27) }, color=2, tool="filled_ellipse", tilesetMode=TilesetMode.AUTO }
+  app.useTool{ points={ Point(0, 0), Point(32, 16) }, color=3, tool="line", tilesetMode=TilesetMode.AUTO }
+  app.useTool{ points={ Point(0, 0), Point(31, 8),
+                        Point(0, 8), Point(31, 16) },
+               brush=4, color=3, tool="pencil", tilesetMode=TilesetMode.AUTO }
+
+  local i = spr.cels[1].image
+  assert(i:getPixel(4, 6) ~= 0)
+  assert(i:getPixel(8, 7) ~= 0)
+end
