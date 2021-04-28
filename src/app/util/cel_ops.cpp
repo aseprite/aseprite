@@ -549,6 +549,8 @@ void modify_tilemap_cel_region(
       else if (tilesetMode == TilesetMode::Auto &&
                t != doc::notile &&
                ti >= 0 && ti < tilesHistogram.size() &&
+               // If the tile is just used once, we can modify this
+               // same tile
                tilesHistogram[ti] == 1) {
         // Common case: Re-utilize the same tile in Auto mode.
         tileIndex = ti;
@@ -577,8 +579,10 @@ void modify_tilemap_cel_region(
           ti != tileIndex) {
         --tilesHistogram[ti];
 
-        if (tilesetMode == TilesetMode::Auto)
-          modifiedTileIndexes[ti] = true;
+        // It indicates that the tile "ti" was modified to
+        // "tileIndex", so then, in case that we have to remove tiles,
+        // we can check the ones that were modified & are unused.
+        modifiedTileIndexes[ti] = true;
       }
 
       OPS_TRACE(" - tile %d -> %d\n",
@@ -589,6 +593,13 @@ void modify_tilemap_cel_region(
       if (t != tile) {
         newTilemap->putPixel(u, v, tile);
         tilePtsRgn |= gfx::Region(gfx::Rect(u, v, 1, 1));
+
+        // We add the new one tileIndex in the histogram count.
+        if (tilesetMode == TilesetMode::Auto &&
+            tileIndex != doc::notile &&
+            tileIndex >= 0 && tileIndex < tilesHistogram.size()) {
+          ++tilesHistogram[tileIndex];
+        }
       }
     }
 
@@ -756,15 +767,33 @@ static void remove_unused_tiles_from_tileset(
   OPS_TRACE("remove_unused_tiles_from_tileset\n");
 
   int n = tileset->size();
+#ifdef _DEBUG
+  // Histogram just to check that we've a correct tilesHistogram
+  std::vector<size_t> tilesHistogram2(n, 0);
+#endif
 
   for_each_tile_using_tileset(
     tileset,
-    [&n](const doc::tile_t t){
+    [&n
+#ifdef _DEBUG
+     , &tilesHistogram2
+#endif
+     ](const doc::tile_t t){
       if (t != doc::notile) {
         const doc::tile_index ti = doc::tile_geti(t);
         n = std::max<int>(n, ti+1);
+#ifdef _DEBUG
+        ++tilesHistogram2[ti];
+#endif
       }
     });
+
+#ifdef _DEBUG
+  for (int k=0; k<tilesHistogram.size(); ++k) {
+    OPS_TRACE("comparing [%d] -> %d vs %d\n", k, tilesHistogram[k], tilesHistogram2[k]);
+    ASSERT(tilesHistogram[k] == tilesHistogram2[k]);
+  }
+#endif
 
   doc::Remap remap(n);
   doc::tile_index ti, tj;
