@@ -22,8 +22,10 @@
 
 namespace ui {
 
+#if 0 // TODO unused function, referenced in a comment in this file
 static gfx::Region get_workarea_region()
 {
+  // Returns the union of the workarea of all available screens
   gfx::Region wa;
   os::ScreenList screens;
   os::instance()->listScreens(screens);
@@ -31,6 +33,7 @@ static gfx::Region get_workarea_region()
     wa |= gfx::Region(screen->workarea());
   return wa;
 }
+#endif
 
 int fit_bounds(Display* display, int arrowAlign, const gfx::Rect& target, gfx::Rect& bounds)
 {
