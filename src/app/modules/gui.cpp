@@ -43,6 +43,7 @@
 #include "base/string.h"
 #include "doc/sprite.h"
 #include "os/error.h"
+#include "os/screen.h"
 #include "os/surface.h"
 #include "os/system.h"
 #include "os/window.h"
@@ -110,17 +111,15 @@ static ui::Timer* defered_invalid_timer = nullptr;
 static gfx::Region defered_invalid_region;
 
 // Load & save graphics configuration
-static void load_gui_config(int& w, int& h, bool& maximized,
-                            std::string& windowLayout);
+static void load_gui_config(os::WindowSpec& spec, bool& maximized);
 static void save_gui_config();
 
 static bool create_main_window(bool gpuAccel,
-                                bool& maximized,
-                                std::string& lastError)
+                               bool& maximized,
+                               std::string& lastError)
 {
-  int w, h;
-  std::string windowLayout;
-  load_gui_config(w, h, maximized, windowLayout);
+  os::WindowSpec spec;
+  load_gui_config(spec, maximized);
 
   // Scale is equal to 0 when it's the first time the program is
   // executed.
@@ -129,9 +128,10 @@ static bool create_main_window(bool gpuAccel,
   os::instance()->setGpuAcceleration(gpuAccel);
 
   try {
-    if (w > 0 && h > 0) {
-      main_window = os::instance()->makeWindow(
-        w, h, (scale == 0 ? 2: base::clamp(scale, 1, 4)));
+    if (!spec.frame().isEmpty() ||
+        !spec.contentRect().isEmpty()) {
+      spec.scale(scale == 0 ? 2: base::clamp(scale, 1, 4));
+      main_window = os::instance()->makeWindow(spec);
     }
   }
   catch (const os::WindowCreationException& e) {
@@ -141,11 +141,13 @@ static bool create_main_window(bool gpuAccel,
   if (!main_window) {
     for (int c=0; try_resolutions[c].width; ++c) {
       try {
-        main_window =
-          os::instance()->makeWindow(
-            try_resolutions[c].width,
-            try_resolutions[c].height,
-            (scale == 0 ? try_resolutions[c].scale: scale));
+        spec.frame();
+        spec.position(os::WindowSpec::Position::Default);
+        spec.scale(scale == 0 ? try_resolutions[c].scale: scale);
+        spec.contentRect(gfx::Rect(0, 0,
+                                   try_resolutions[c].width * spec.scale(),
+                                   try_resolutions[c].height * spec.scale()));
+        main_window = os::instance()->makeWindow(spec);
         break;
       }
       catch (const os::WindowCreationException& e) {
@@ -160,11 +162,8 @@ static bool create_main_window(bool gpuAccel,
     if (scale == 0)
       Preferences::instance().general.screenScale(main_window->scale());
 
-    if (!windowLayout.empty()) {
-      main_window->setLayout(windowLayout);
-      if (main_window->isMinimized())
-        main_window->maximize();
-    }
+    if (main_window->isMinimized())
+      main_window->maximize();
   }
 
   return (main_window != nullptr);
@@ -286,15 +285,49 @@ void update_windows_color_profile_from_preferences()
   }
 }
 
-static void load_gui_config(int& w, int& h, bool& maximized,
-                            std::string& windowLayout)
+static void load_gui_config(os::WindowSpec& spec, bool& maximized)
 {
-  gfx::Size defSize = os::instance()->defaultNewWindowSize();
+  os::ScreenRef screen = os::instance()->mainScreen();
+  spec.screen(screen);
 
-  w = get_config_int("GfxMode", "Width", defSize.w);
-  h = get_config_int("GfxMode", "Height", defSize.h);
-  maximized = get_config_bool("GfxMode", "Maximized", false);
-  windowLayout = get_config_string("GfxMode", "WindowLayout", "");
+  gfx::Rect frame;
+  frame = get_config_rect("GfxMode", "Frame", frame);
+  if (!frame.isEmpty()) {
+    spec.position(os::WindowSpec::Position::Frame);
+
+    // Limit the content rect position into the available workarea,
+    // e.g. this is needed in case that the user closed Aseprite in a
+    // 2nd monitor that then unplugged and start Aseprite again.
+    bool ok = false;
+    os::ScreenList screens;
+    os::instance()->listScreens(screens);
+    for (const auto& screen : screens) {
+      gfx::Rect wa = screen->workarea();
+      gfx::Rect intersection = (frame & wa);
+      if (intersection.w >= 32 &&
+          intersection.h >= 32) {
+        ok = true;
+        break;
+      }
+    }
+
+    // Reset content rect
+    if (!ok) {
+      spec.position(os::WindowSpec::Position::Default);
+      frame = gfx::Rect();
+    }
+  }
+
+  if (frame.isEmpty()) {
+    frame = screen->workarea().shrink(64);
+
+    // Try to get Width/Height from previous Aseprite versions
+    frame.w = get_config_int("GfxMode", "Width", frame.w);
+    frame.h = get_config_int("GfxMode", "Height", frame.h);
+  }
+  spec.frame(frame);
+
+  maximized = get_config_bool("GfxMode", "Maximized", true);
 
   ui::set_multiple_displays(Preferences::instance().experimental.multipleWindows());
 }
@@ -303,13 +336,13 @@ static void save_gui_config()
 {
   os::Window* window = manager->display()->nativeWindow();
   if (window) {
-    set_config_bool("GfxMode", "Maximized", window->isMaximized());
-    set_config_int("GfxMode", "Width", window->originalWidth());
-    set_config_int("GfxMode", "Height", window->originalHeight());
+    const bool maximized = (window->isMaximized() ||
+                            window->isFullscreen());
+    const gfx::Rect frame = (maximized ? window->restoredFrame():
+                                         window->frame());
 
-    std::string windowLayout = window->getLayout();
-    if (!windowLayout.empty())
-      set_config_string("GfxMode", "WindowLayout", windowLayout.c_str());
+    set_config_bool("GfxMode", "Maximized", maximized);
+    set_config_rect("GfxMode", "Frame", frame);
   }
 }
 
