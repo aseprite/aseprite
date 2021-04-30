@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -38,12 +38,14 @@ namespace app {
     RESIZE,
   };
 
+  class PaletteView;
+
   class PaletteViewDelegate {
   public:
     virtual ~PaletteViewDelegate() { }
     virtual void onPaletteViewIndexChange(int index, ui::MouseButton button) { }
     virtual void onPaletteViewModification(const doc::Palette* newPalette, PaletteViewModification mod) { }
-    virtual void onPaletteViewChangeSize(int boxsize) { }
+    virtual void onPaletteViewChangeSize(PaletteView* paletteView, int boxsize) { }
     virtual void onPaletteViewPasteColors(
       const doc::Palette* fromPal, const doc::PalettePicks& from, const doc::PalettePicks& to) { }
     virtual app::Color onPaletteViewGetForegroundIndex() { return app::Color::fromMask(); }

@@ -1016,9 +1016,9 @@ void ColorBar::setTransparentIndex(int index)
   }
 }
 
-void ColorBar::onPaletteViewChangeSize(int boxsize)
+void ColorBar::onPaletteViewChangeSize(PaletteView* paletteView, int boxsize)
 {
-  if (tilemapMode() == TilemapMode::Tiles)
+  if (paletteView == &m_tilesView)
     Preferences::instance().colorBar.tilesBoxSize(boxsize);
   else
     Preferences::instance().colorBar.boxSize(boxsize);

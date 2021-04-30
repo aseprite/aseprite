@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -534,7 +534,7 @@ void PaletteView::setBoxSize(double boxsize)
     m_boxsize = base::clamp(boxsize, 4.0, 32.0);
 
   if (m_delegate)
-    m_delegate->onPaletteViewChangeSize(int(m_boxsize));
+    m_delegate->onPaletteViewChangeSize(this, int(m_boxsize));
 
   View* view = View::getView(this);
   if (view)
