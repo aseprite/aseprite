@@ -716,9 +716,22 @@ void PixelsMovement::getDraggedImageCopy(std::unique_ptr<Image>& outputImage,
   if (bounds.isEmpty())
     return;
 
+  doc::PixelFormat pixelFormat;
+  gfx::Size imgSize;
+  if (m_site.tilemapMode() == TilemapMode::Tiles) {
+    imgSize = m_site.grid().canvasToTile(bounds).size();
+    pixelFormat = IMAGE_TILEMAP;
+  }
+  else {
+    imgSize = bounds.size();
+    pixelFormat = m_site.sprite()->pixelFormat();
+  }
+
   std::unique_ptr<Image> image(
     Image::create(
-      m_site.sprite()->pixelFormat(), bounds.w, bounds.h));
+      pixelFormat,
+      imgSize.w,
+      imgSize.h));
 
   drawImage(m_currentData, image.get(),
             gfx::PointF(bounds.origin()), false);
@@ -1177,12 +1190,8 @@ static void merge_tilemaps(Image* dst, const Image* src, gfx::Clip area)
   ImageConstIterator<TilemapTraits> src_it(src, area.srcBounds(), area.src.x, area.src.y);
   ImageIterator<TilemapTraits> dst_it(dst, area.dstBounds(), area.dst.x, area.dst.y);
 
-  int end_x = area.dst.x+area.size.w;
-
-  for (int end_y=area.dst.y+area.size.h;
-       area.dst.y<end_y;
-       ++area.dst.y, ++area.src.y) {
-    for (int x=area.dst.x; x<end_x; ++x) {
+  for (int y=0; y<area.size.h; ++y) {
+    for (int x=0; x<area.size.w; ++x) {
       if (*src_it != doc::notile)
         *dst_it = *src_it;
       ++src_it;
@@ -1195,6 +1204,9 @@ void PixelsMovement::drawTransformedTilemap(
   const Transformation& transformation,
   doc::Image* dst, const doc::Image* src, const doc::Mask* mask)
 {
+  ASSERT(dst->pixelFormat() == IMAGE_TILEMAP);
+  ASSERT(src->pixelFormat() == IMAGE_TILEMAP);
+
   const int boxw = std::max(1, src->width()-2);
   const int boxh = std::max(1, src->height()-2);
 

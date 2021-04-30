@@ -630,10 +630,21 @@ void MovingPixelsState::onBeforeCommandExecution(CommandExecutionEvent& ev)
       std::unique_ptr<Mask> floatingMask;
       m_pixelsMovement->getDraggedImageCopy(floatingImage, floatingMask);
 
-      Clipboard::instance()->
-        copyImage(floatingImage.get(),
-                  floatingMask.get(),
-                  document->sprite()->palette(m_editor->frame()));
+      if (floatingImage->isTilemap()) {
+        Site site = m_editor->getSite();
+        ASSERT(site.tileset());
+        Clipboard::instance()->
+          copyTilemap(floatingImage.get(),
+                      floatingMask.get(),
+                      document->sprite()->palette(m_editor->frame()),
+                      site.tileset());
+      }
+      else {
+        Clipboard::instance()->
+          copyImage(floatingImage.get(),
+                    floatingMask.get(),
+                    document->sprite()->palette(m_editor->frame()));
+      }
     }
 
     // Clear floating pixels on Cut/Clear.

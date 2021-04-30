@@ -416,11 +416,26 @@ void Clipboard::copyImage(const Image* image,
                           const Mask* mask,
                           const Palette* pal)
 {
+  ASSERT(image->pixelFormat() != IMAGE_TILEMAP);
   setData(
     Image::createCopy(image),
     (mask ? new Mask(*mask): nullptr),
     (pal ? new Palette(*pal): nullptr),
     nullptr,
+    true, false);
+}
+
+void Clipboard::copyTilemap(const Image* image,
+                            const Mask* mask,
+                            const Palette* pal,
+                            const Tileset* tileset)
+{
+  ASSERT(image->pixelFormat() == IMAGE_TILEMAP);
+  setData(
+    Image::createCopy(image),
+    (mask ? new Mask(*mask): nullptr),
+    (pal ? new Palette(*pal): nullptr),
+    Tileset::MakeCopyCopyingImages(tileset),
     true, false);
 }
 

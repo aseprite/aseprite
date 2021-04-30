@@ -68,6 +68,10 @@ namespace app {
     void copyImage(const doc::Image* image,
                    const doc::Mask* mask,
                    const doc::Palette* palette);
+    void copyTilemap(const doc::Image* image,
+                     const doc::Mask* mask,
+                     const doc::Palette* pal,
+                     const doc::Tileset* tileset);
     void copyPalette(const doc::Palette* palette,
                      const doc::PalettePicks& picks);
     void paste(Context* ctx, const bool interactive);
