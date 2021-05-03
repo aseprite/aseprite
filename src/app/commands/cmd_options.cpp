@@ -310,6 +310,9 @@ public:
 
     if (m_pref.editor.zoomFromCenterWithKeys())
       zoomFromCenterWithKeys()->setSelected(true);
+    
+    if (m_pref.editor.invertBrushSizeScroll())
+      invertBrushSizeScroll()->setSelected(true);
 
     if (m_pref.selection.autoOpaque())
       autoOpaque()->setSelected(true);
@@ -592,6 +595,7 @@ public:
 
     m_pref.editor.zoomFromCenterWithWheel(zoomFromCenterWithWheel()->isSelected());
     m_pref.editor.zoomFromCenterWithKeys(zoomFromCenterWithKeys()->isSelected());
+    m_pref.editor.invertBrushSizeScroll(invertBrushSizeScroll()->isSelected());
     m_pref.editor.showScrollbars(showScrollbars()->isSelected());
     m_pref.editor.autoScroll(autoScroll()->isSelected());
     m_pref.editor.straightLinePreview(straightLinePreview()->isSelected());

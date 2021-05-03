@@ -164,6 +164,7 @@
       <option id="zoom_with_slide" type="bool" default="false" />
       <option id="zoom_from_center_with_wheel" type="bool" default="false" />
       <option id="zoom_from_center_with_keys" type="bool" default="false" />
+      <option id="invert_brush_size_scroll" type="bool" default="false" />
       <option id="show_scrollbars" type="bool" default="true" />
       <option id="auto_scroll" type="bool" default="true" />
       <option id="right_click_mode" type="RightClickMode" default="RightClickMode::PAINT_BGCOLOR" />

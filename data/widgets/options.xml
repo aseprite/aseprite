@@ -221,6 +221,7 @@
                  pref="editor.zoom_with_slide" />
           <check text="@.zoom_from_center_with_wheel" id="zoom_from_center_with_wheel" />
           <check text="@.zoom_from_center_with_keys" id="zoom_from_center_with_keys" />
+          <check text="@.invert_brush_size_scroll" id="invert_brush_size_scroll" />
           <check text="@.show_scrollbars" id="show_scrollbars" tooltip="@.show_scrollbars_tooltip" />
           <check text="@.auto_scroll" id="auto_scroll" />
           <check text="@.auto_fit" id="auto_fit"
