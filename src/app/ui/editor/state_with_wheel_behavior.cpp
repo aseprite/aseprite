@@ -190,6 +190,10 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
       ToolPreferences::Brush& brush =
         Preferences::instance().tool(tool).brush;
 
+#if defined(_WIN32) || defined(__linux__)
+      dz = -dz;
+#endif
+
       int newBrushSize;
       if (Preferences::instance().editor.invertBrushSizeScroll())
         newBrushSize = int(brush.size()-dz);
