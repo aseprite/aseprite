@@ -1782,15 +1782,20 @@ void ColorBar::setupTooltips(TooltipManager* tooltipManager)
     m_tilesButton.getItem(0),
     key_tooltip(Strings::color_bar_switch_tileset().c_str(), CommandId::ToggleTilesMode()),
     BOTTOM);
+  Command* cmd = Commands::instance()->byId(CommandId::TilesetMode());
+  Params params;
+  params.set("mode", "manual");
   tooltipManager->addTooltipFor(
     m_tilesetModeButtons.getItem((int)TilesetMode::Manual),
-    Strings::color_bar_tileset_mode_manual(), BOTTOM);
+    key_tooltip(Strings::color_bar_tileset_mode_manual().c_str(), cmd->id().c_str(), params), BOTTOM);
+  params.set("mode", "auto");
   tooltipManager->addTooltipFor(
     m_tilesetModeButtons.getItem((int)TilesetMode::Auto),
-    Strings::color_bar_tileset_mode_auto(), BOTTOM);
+    key_tooltip(Strings::color_bar_tileset_mode_auto().c_str(), cmd->id().c_str(), params), BOTTOM);
+  params.set("mode", "stack");
   tooltipManager->addTooltipFor(
     m_tilesetModeButtons.getItem((int)TilesetMode::Stack),
-    Strings::color_bar_tileset_mode_stack(), BOTTOM);
+    key_tooltip(Strings::color_bar_tileset_mode_stack().c_str(), cmd->id().c_str(), params), BOTTOM);
 }
 
 // static
