@@ -1,0 +1,136 @@
+-- Copyright (C) 2019-2021  Igara Studio S.A.
+--
+-- This file is released under the terms of the MIT license.
+-- Read LICENSE.txt for more information.
+
+dofile("./test_utils.lua")
+
+local rgba = app.pixelColor.rgba
+
+----------------------------------------------------------------------
+-- app.command.ColorQuantization
+
+do
+  -- One sprite with a background layer
+  local s = Sprite(2, 2)
+  app.command.BackgroundFromLayer()
+
+  local i = s.cels[1].image
+  local p = s.palettes[1]
+  assert(#p == 256)
+  assert(s.colorMode == ColorMode.RGB)
+  app.command.ColorQuantization()
+  assert(#p == 1)
+
+  array_to_pixels({ rgba(255, 255, 0), rgba(255, 255, 0),
+                    rgba(255, 255, 0), rgba(255, 255, 0) }, i)
+  app.command.ColorQuantization()
+  assert(#p == 1)
+  assert(p:getColor(0) == Color(255, 255, 0))
+
+  array_to_pixels({ rgba(255,   0, 0), rgba(255, 0,   0),
+                    rgba(255, 255, 0), rgba(255, 255, 0) }, i)
+  app.command.ColorQuantization()
+  assert(#p == 2)
+  assert(p:getColor(0) == Color(255, 0, 0))
+  assert(p:getColor(1) == Color(255, 255, 0))
+
+  array_to_pixels({ rgba(255,   0, 0), rgba(255, 0,   0),
+                    rgba(255, 255, 0), rgba(0,   0, 255) }, i)
+  app.command.ColorQuantization()
+  assert(#p == 3)
+  assert(p:getColor(0) == Color(255, 0, 0))
+  assert(p:getColor(1) == Color(255, 255, 0))
+  assert(p:getColor(2) == Color(0, 0, 255))
+
+  -- Convert the background layer to a transparent layer
+
+  app.command.LayerFromBackground()
+  app.command.ColorQuantization{ withAlpha=false }
+  assert(#p == 4) -- One extra color for transparent layer
+  assert(p:getColor(0) == Color(0, 0, 0))
+  assert(p:getColor(1) == Color(255, 0, 0))
+  assert(p:getColor(2) == Color(255, 255, 0))
+  assert(p:getColor(3) == Color(0, 0, 255))
+
+  app.command.ColorQuantization()
+  assert(#p == 4)
+  assert(p:getColor(0) == Color(0, 0, 0, 0))
+  assert(p:getColor(1) == Color(255, 0, 0))
+  assert(p:getColor(2) == Color(255, 255, 0))
+  assert(p:getColor(3) == Color(0, 0, 255))
+
+  array_to_pixels({ rgba(0,     0, 0), rgba(255, 0,   0),
+                    rgba(255,   0, 0), rgba(0,   0, 255) }, i)
+  app.command.ColorQuantization{ withAlpha=false }
+  assert(#p == 4)
+  assert(p:getColor(0) == Color(0, 0, 0))
+  assert(p:getColor(1) == Color(0, 0, 0))
+  assert(p:getColor(2) == Color(255, 0, 0))
+  assert(p:getColor(3) == Color(0, 0, 255))
+
+  app.command.ColorQuantization()
+  assert(#p == 4)
+  assert(p:getColor(0) == Color(0, 0, 0, 0))
+  assert(p:getColor(1) == Color(0, 0, 0))
+  assert(p:getColor(2) == Color(255, 0, 0))
+  assert(p:getColor(3) == Color(0, 0, 255))
+end
+
+do
+  -- One sprite with a transparent layer + a background layer
+  local s = Sprite(2, 2)
+  local p = s.palettes[1]
+  app.command.BackgroundFromLayer()
+  local bg = s.cels[1].image
+  local fg = s:newCel(s:newLayer(), 1).image
+
+  assert(#s.frames == 1)
+  assert(#s.layers == 2)
+  assert(#s.cels == 2)
+
+  array_to_pixels({ rgba(0, 0, 0, 0), rgba(0, 255, 0),
+                    rgba(255, 0, 0), rgba(0, 0, 0, 0) }, fg)
+  array_to_pixels({ rgba(0, 0, 0), rgba(0, 0, 0),
+                    rgba(0, 0, 0), rgba(0, 0, 255) }, bg)
+
+  app.command.ColorQuantization()
+  assert(#p == 5)
+  assert(p:getColor(0) == Color(0, 0, 0, 0))
+  assert(p:getColor(1) == Color(0, 0, 0))
+  assert(p:getColor(2) == Color(0, 255, 0))
+  assert(p:getColor(3) == Color(255, 0, 0))
+  assert(p:getColor(4) == Color(0, 0, 255))
+end
+
+----------------------------------------------------------------------
+-- app.command.ChangePixelFormat
+
+do
+  local s = Sprite(2, 2, ColorMode.RGB)
+  local p = Palette(4)
+  p:setColor(0, Color(0, 0, 0))
+  p:setColor(1, Color(101, 90, 200))
+  p:setColor(2, Color(102, 91, 201))
+  p:setColor(3, Color(103, 92, 203))
+  s:setPalette(p)
+
+  app.command.BackgroundFromLayer()
+
+  local bg = s.cels[1].image
+  array_to_pixels({ rgba(0, 0, 0), rgba(101, 90, 200),
+                    rgba(102, 91, 201), rgba(103, 92, 203) }, bg)
+
+  app.command.ChangePixelFormat{ format="indexed", rgbmap="rgb5a3" }
+  local bg = s.cels[1].image
+  -- Using the 5-bit precision of RGB5A3 will match everything with
+  -- the first palette entry.
+  expect_img(bg, { 0, 1,
+                   1, 1 })
+  app.undo()
+
+  app.command.ChangePixelFormat{ format="indexed", rgbmap="octree" }
+  local bg = s.cels[1].image
+  expect_img(bg, { 0, 1,
+                   2, 3 })
+end
