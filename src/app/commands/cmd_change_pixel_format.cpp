@@ -548,8 +548,10 @@ void ChangePixelFormatCommand::onLoadParams(const Params& params)
     m_rgbmap = doc::RgbMapAlgorithm::OCTREE;
   else if (rgbmap == "rgb5a3")
     m_rgbmap = doc::RgbMapAlgorithm::RGB5A3;
-  else
-    m_rgbmap = doc::RgbMapAlgorithm::DEFAULT;
+  else {
+    // Use the configured algorithm by default.
+    m_rgbmap = Preferences::instance().experimental.rgbmapAlgorithm();
+  }
 
   std::string toGray = params.get("toGray");
   if (toGray == "luma")
