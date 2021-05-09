@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2020  Igara Studio S.A.
+// Copyright (c) 2020-2021  Igara Studio S.A.
 // Copyright (c) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -366,6 +366,9 @@ int Palette::findBestfit2(int r, int g, int b) const
     int gDiff = g - rgba_getg(rgb);
     int bDiff = b - rgba_getb(rgb);
 
+    // TODO We should have two different ways to calculate the
+    // distance between colors, like "Perceptual" and "Linear", or a
+    // way to configure these coefficients.
     int diff = rDiff * rDiff * 900 + gDiff * gDiff * 3481 + bDiff * bDiff * 121;
     if (diff < lowest) {
       lowest = diff;
