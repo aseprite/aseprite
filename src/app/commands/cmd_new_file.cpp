@@ -264,7 +264,7 @@ void NewFileCommand::onExecute(Context* ctx)
         render::create_palette_from_sprite(
           sprite.get(), 0, sprite->lastFrame(), true,
           &clipboardPalette, nullptr, true,
-          Preferences::instance().experimental.rgbmapAlgorithm());
+          Preferences::instance().quantization.rgbmapAlgorithm());
       }
       sprite->setPalette(&clipboardPalette, false);
     }

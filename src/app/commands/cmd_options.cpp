@@ -403,7 +403,7 @@ public:
 
     rgbmapAlgorithmPlaceholder()->addChild(&m_rgbmapAlgorithmSelector);
     m_rgbmapAlgorithmSelector.setExpansive(true);
-    m_rgbmapAlgorithmSelector.algorithm(m_pref.experimental.rgbmapAlgorithm());
+    m_rgbmapAlgorithmSelector.algorithm(m_pref.quantization.rgbmapAlgorithm());
 
     if (m_pref.editor.showScrollbars())
       showScrollbars()->setSelected(true);
@@ -703,7 +703,7 @@ public:
     m_pref.experimental.useNativeFileDialog(nativeFileDialog()->isSelected());
     m_pref.experimental.flashLayer(flashLayer()->isSelected());
     m_pref.experimental.nonactiveLayersOpacity(nonactiveLayersOpacity()->getValue());
-    m_pref.experimental.rgbmapAlgorithm(m_rgbmapAlgorithmSelector.algorithm());
+    m_pref.quantization.rgbmapAlgorithm(m_rgbmapAlgorithmSelector.algorithm());
 
 #ifdef _WIN32
     {

@@ -229,7 +229,7 @@ public:
       }
 
       // Select default RgbMap algorithm
-      m_mapAlgorithmSelector->algorithm(pref.experimental.rgbmapAlgorithm());
+      m_mapAlgorithmSelector->algorithm(pref.quantization.rgbmapAlgorithm());
 
       ditheringPlaceholder()->addChild(m_ditheringSelector);
       rgbmapAlgorithmPlaceholder()->addChild(m_mapAlgorithmSelector);
@@ -548,9 +548,11 @@ void ChangePixelFormatCommand::onLoadParams(const Params& params)
     m_rgbmap = doc::RgbMapAlgorithm::OCTREE;
   else if (rgbmap == "rgb5a3")
     m_rgbmap = doc::RgbMapAlgorithm::RGB5A3;
+  else if (rgbmap == "default")
+    m_rgbmap = doc::RgbMapAlgorithm::DEFAULT;
   else {
     // Use the configured algorithm by default.
-    m_rgbmap = Preferences::instance().experimental.rgbmapAlgorithm();
+    m_rgbmap = Preferences::instance().quantization.rgbmapAlgorithm();
   }
 
   std::string toGray = params.get("toGray");

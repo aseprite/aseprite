@@ -1,5 +1,5 @@
 // Aseprite Rener Library
-// Copyright (c) 2019-2020  Igara Studio S.A.
+// Copyright (c) 2019-2021  Igara Studio S.A.
 // Copyright (c) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -53,7 +53,7 @@ namespace render {
     doc::Palette* newPalette, // Can be NULL to create a new palette
     TaskDelegate* delegate,
     const bool newBlend,
-    const RgbMapAlgorithm mappingAlgorithm,
+    RgbMapAlgorithm mapAlgo,
     const bool calculateWithTransparent = true);
 
   // Changes the image pixel format. The dithering method is used only

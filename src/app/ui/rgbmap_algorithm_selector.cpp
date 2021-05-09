@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2021  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -17,10 +17,12 @@ namespace app {
 RgbMapAlgorithmSelector::RgbMapAlgorithmSelector()
 {
   // addItem() must match the RgbMapAlgorithm enum
-  static_assert(int(doc::RgbMapAlgorithm::RGB5A3) == 0 &&
-                int(doc::RgbMapAlgorithm::OCTREE) == 1,
+  static_assert(int(doc::RgbMapAlgorithm::DEFAULT) == 0 &&
+                int(doc::RgbMapAlgorithm::RGB5A3) == 1 &&
+                int(doc::RgbMapAlgorithm::OCTREE) == 2,
                 "Unexpected doc::RgbMapAlgorithm values");
 
+  addItem(Strings::rgbmap_algorithm_selector_default());
   addItem(Strings::rgbmap_algorithm_selector_rgb5a3());
   addItem(Strings::rgbmap_algorithm_selector_octree());
 

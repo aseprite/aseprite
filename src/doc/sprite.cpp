@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -388,10 +388,20 @@ RgbMap* Sprite::rgbMap(const frame_t frame,
 
 RgbMap* Sprite::rgbMap(const frame_t frame,
                        const RgbMapFor forLayer,
-                       const RgbMapAlgorithm mapAlgo) const
+                       RgbMapAlgorithm mapAlgo) const
 {
   int maskIndex = (forLayer == RgbMapFor::OpaqueLayer ?
                    -1: transparentColor());
+
+  if (mapAlgo == RgbMapAlgorithm::DEFAULT) {
+    mapAlgo = RgbMapAlgorithm::OCTREE;
+    for (const auto& pal : getPalettes()) {
+      if (pal->hasSemiAlpha()) {
+        mapAlgo = RgbMapAlgorithm::RGB5A3;
+        break;
+      }
+    }
+  }
 
   if (!m_rgbMap || m_rgbMapAlgorithm != mapAlgo) {
     m_rgbMapAlgorithm = mapAlgo;

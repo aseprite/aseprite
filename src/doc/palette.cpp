@@ -108,6 +108,16 @@ bool Palette::hasAlpha() const
   return false;
 }
 
+bool Palette::hasSemiAlpha() const
+{
+  for (int i=0; i<(int)m_colors.size(); ++i) {
+    int a = rgba_geta(getEntry(i));
+    if (a > 0 && a < 255)
+      return true;
+  }
+  return false;
+}
+
 void Palette::setFrame(frame_t frame)
 {
   ASSERT(frame >= 0);

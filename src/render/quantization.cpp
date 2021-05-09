@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (c) 2019-2020  Igara Studio S.A.
+// Copyright (c) 2019-2021  Igara Studio S.A.
 // Copyright (c) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -43,7 +43,7 @@ Palette* create_palette_from_sprite(
   Palette* palette,
   TaskDelegate* delegate,
   const bool newBlend,
-  const RgbMapAlgorithm mappingAlgorithm,
+  RgbMapAlgorithm mapAlgo,
   const bool calculateWithTransparent)
 {
   PaletteOptimizer optimizer;
@@ -59,18 +59,40 @@ Palette* create_palette_from_sprite(
   ImageRef flat_image(Image::create(IMAGE_RGB,
       sprite->width(), sprite->height()));
 
-  // Feed the optimizer with all rendered frames
   render::Render render;
   render.setNewBlend(newBlend);
+
+  // Use octree if there are no semi-transparent pixels.
+  if (mapAlgo == RgbMapAlgorithm::DEFAULT) {
+    for (frame_t frame=fromFrame;
+         frame<=toFrame && mapAlgo == RgbMapAlgorithm::DEFAULT;
+         ++frame) {
+      render.renderSprite(flat_image.get(), sprite, frame);
+      doc::for_each_pixel<RgbTraits>(
+        flat_image.get(),
+        [&mapAlgo](const color_t p) {
+          if (rgba_geta(p) > 0 && rgba_geta(p) < 255) {
+            mapAlgo = RgbMapAlgorithm::RGB5A3;
+          }
+        });
+    }
+    if (mapAlgo == RgbMapAlgorithm::DEFAULT)
+      mapAlgo = RgbMapAlgorithm::OCTREE;
+  }
+
+  // Feed the optimizer with all rendered frames
   for (frame_t frame=fromFrame; frame<=toFrame; ++frame) {
     render.renderSprite(flat_image.get(), sprite, frame);
 
-    switch (mappingAlgorithm) {
+    switch (mapAlgo) {
       case RgbMapAlgorithm::RGB5A3:
         optimizer.feedWithImage(flat_image.get(), withAlpha);
         break;
       case RgbMapAlgorithm::OCTREE:
         octreemap.feedWithImage(flat_image.get(), maskColor);
+        break;
+      default:
+        ASSERT(false);
         break;
     }
 
@@ -83,7 +105,8 @@ Palette* create_palette_from_sprite(
     }
   }
 
-  switch (mappingAlgorithm) {
+  switch (mapAlgo) {
+
     case RgbMapAlgorithm::RGB5A3:
       // Generate an optimized palette
       optimizer.calculate(
@@ -93,6 +116,7 @@ Palette* create_palette_from_sprite(
           sprite->allLayersCount() == 1) ||
          !calculateWithTransparent)? -1: sprite->transparentColor());
       break;
+
     case RgbMapAlgorithm::OCTREE:
       // TODO check calculateWithTransparent flag
 

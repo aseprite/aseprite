@@ -57,6 +57,7 @@ public:
     m_algoSelector.Change.connect(
       [this](){
         switch (algorithm()) {
+          case RgbMapAlgorithm::DEFAULT:
           case RgbMapAlgorithm::RGB5A3:
             alphaChannel()->setEnabled(true);
             break;
@@ -126,7 +127,7 @@ void ColorQuantizationCommand::onExecute(Context* ctx)
       const Palette* curPalette = site.sprite()->palette(site.frame());
 
       if (!params().algorithm.isSet())
-        algorithm = pref.experimental.rgbmapAlgorithm();
+        algorithm = pref.quantization.rgbmapAlgorithm();
       if (!params().withAlpha.isSet())
         withAlpha = pref.quantization.withAlpha();
 
