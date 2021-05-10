@@ -409,19 +409,19 @@ void load_window_pos(Window* window, const char* section,
   }
 }
 
-void save_window_pos(Window* window, const char *section)
+void save_window_pos(Window* window, const char* section)
 {
   gfx::Rect rc;
 
   if (!window->lastNativeFrame().isEmpty()) {
-    os::Window* mainNativeWindow = manager->display()->nativeWindow();
-    int scale = mainNativeWindow->scale();
+    const os::Window* mainNativeWindow = manager->display()->nativeWindow();
     rc = window->lastNativeFrame();
     set_config_rect(section, "WindowFrame", rc);
     rc.offset(-mainNativeWindow->frame().origin());
-    rc /= scale;
+    rc /= mainNativeWindow->scale();
   }
   else {
+    del_config_value(section, "WindowFrame");
     rc = window->bounds();
   }
 

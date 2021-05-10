@@ -149,11 +149,8 @@ Display* Window::display() const
 
 void Window::setDisplay(Display* display, const bool own)
 {
-  if (m_display) {
-    if (m_ownDisplay)
-      m_lastFrame = m_display->nativeWindow()->frame();
+  if (m_display)
     m_display->removeWindow(this);
-  }
 
   m_display = display;
   m_ownDisplay = own;
@@ -405,6 +402,8 @@ void Window::openWindowInForeground()
 void Window::closeWindow(Widget* closer)
 {
   m_closer = closer;
+  if (m_ownDisplay)
+    m_lastFrame = m_display->nativeWindow()->frame();
 
   manager()->_closeWindow(this, true);
 
