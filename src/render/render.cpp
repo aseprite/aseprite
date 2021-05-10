@@ -762,10 +762,7 @@ void Render::renderSprite(
   // Overlay preview image
   if (m_previewImage &&
       m_selectedLayer == nullptr &&
-      m_selectedFrame == frame
-      // TODO allow previewImage for tilemaps?
-      && m_previewImage->pixelFormat() == m_sprite->pixelFormat()
-      ) {
+      m_selectedFrame == frame) {
     renderImage(
       dstImage,
       m_previewImage,
