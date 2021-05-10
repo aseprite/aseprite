@@ -705,8 +705,6 @@ void Manager::handleWindowZOrder()
   if ((window) &&
     // We cannot change Z-order of desktop windows
     (!window->isDesktop()) &&
-    // We cannot change window order of native windows (they are handled by the OS)
-    (!window->ownDisplay()) &&
     // We cannot change Z order of foreground windows because a
     // foreground window can launch other background windows
     // which should be kept on top of the foreground one.
@@ -736,7 +734,8 @@ void Manager::handleWindowZOrder()
       win_manager->insertChild(pos, window);
     }
 
-    window->invalidate();
+    if (!window->ownDisplay())
+      window->invalidate();
   }
 
   // Put the focus
