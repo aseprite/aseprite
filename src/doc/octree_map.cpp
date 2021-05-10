@@ -208,9 +208,9 @@ bool OctreeMap::makePalette(Palette* palette,
           OctreeNodes sortedVector;
           int auxVectorSize = auxLeavesVector.size();
           for (int k=0; k < auxVectorSize; k++) {
-            int maximumCount = -1;
-            int maximumIndex = -1;
-            for (int j=0; j < auxLeavesVector.size(); j++) {
+            size_t maximumCount = auxLeavesVector[0]->leafColor().pixelCount();
+            int maximumIndex = 0;
+            for (int j=1; j < auxLeavesVector.size(); j++) {
               if (auxLeavesVector[j]->leafColor().pixelCount() > maximumCount) {
                 maximumCount = auxLeavesVector[j]->leafColor().pixelCount();
                 maximumIndex = j;
