@@ -124,6 +124,7 @@ void PalettePopup::onLoadPal()
   UIContext::instance()->executeCommandFromMenuOrShortcut(cmd);
 
   m_paletteListBox.requestFocus();
+  m_paletteListBox.invalidate();
 }
 
 void PalettePopup::onOpenFolder()
