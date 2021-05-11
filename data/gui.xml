@@ -1021,10 +1021,17 @@
     <menu id="layer_popup_menu">
       <item command="LayerProperties" text="@main_menu.layer_properties" group="layer_popup_properties" />
       <separator />
-      <item command="NewLayer" text="@main_menu.layer_new_layer" />
-      <item command="NewLayer" text="@main_menu.layer_new_group" group="layer_popup_new">
-        <param name="group" value="true" />
-      </item>
+      <menu text="@main_menu.layer_new">
+        <item command="NewLayer" text="@main_menu.layer_new_layer" />
+        <item command="NewLayer" text="@main_menu.layer_new_group">
+          <param name="group" value="true" />
+        </item>
+        <separator />
+        <item command="NewLayer" text="@main_menu.layer_new_tilemap_layer" group="layer_popup_new">
+          <param name="tilemap" value="true" />
+          <param name="ask" value="true" />
+        </item>
+      </menu>
       <item command="RemoveLayer" text="@main_menu.layer_delete_layer" />
       <menu text="@main_menu.layer_convert_to">
         <item command="ConvertLayer" text="@main_menu.layer_convert_to_background">
