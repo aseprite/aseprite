@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -172,7 +172,8 @@ bool Remap::isFor8bit() const
 bool Remap::isInvertible(const PalettePicks& usedEntries) const
 {
   PalettePicks picks(size());
-  for (int i=0; i<size(); ++i) {
+  const int n = std::min(size(), usedEntries.size());
+  for (int i=0; i<n; ++i) {
     if (!usedEntries[i])
       continue;
 
