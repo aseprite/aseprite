@@ -58,20 +58,7 @@ void show_popup_menu(PopupWindow* popupWindow,
                      const gfx::Point& pt,
                      Display* display)
 {
-  // Here we make the popup window temporaly floating, so it's
-  // not closed by the popup menu.
-  popupWindow->makeFloating();
-
   popupMenu->showPopup(pt, display);
-
-  // Add the menu popup region to the window popup hot region so it's
-  // not closed after we close the menu.
-  popupWindow->makeFixed();
-
-  gfx::Region rgn;
-  rgn.createUnion(gfx::Region(popupWindow->boundsOnScreen()),
-                  gfx::Region(popupMenu->boundsOnScreen()));
-  popupWindow->setHotRegion(rgn);
 }
 
 class SelectBrushItem : public ButtonSet::Item {
