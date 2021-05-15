@@ -134,9 +134,7 @@ bool PopupWindow::onProcessMessage(Message* msg)
       break;
 
     case kMouseDownMessage:
-      if (m_filtering &&
-          manager()->getTopWindow() == this &&
-          msg->display()) {
+      if (m_filtering && msg->display()) {
         gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
         gfx::Point screenPos = msg->display()->nativeWindow()->pointToScreen(mousePos);
 

@@ -58,7 +58,19 @@ void show_popup_menu(PopupWindow* popupWindow,
                      const gfx::Point& pt,
                      Display* display)
 {
+  // Add the menu window region when it popups to the the BrushPopup
+  // hot region, so when we click inside the popup menu it doesn't
+  // close the BrushPopup.
+  obs::scoped_connection c = popupMenu->OpenPopup.connect([popupWindow, popupMenu]{
+    gfx::Region rgn(popupWindow->boundsOnScreen());
+    rgn |= gfx::Region(popupMenu->boundsOnScreen());
+    popupWindow->setHotRegion(rgn);
+  });
+
   popupMenu->showPopup(pt, display);
+
+  // Restore hot region of the BrushPopup window
+  popupWindow->setHotRegion(gfx::Region(popupWindow->boundsOnScreen()));
 }
 
 class SelectBrushItem : public ButtonSet::Item {
@@ -322,7 +334,7 @@ private:
 } // anonymous namespace
 
 BrushPopup::BrushPopup()
-  : PopupWindow("", ClickBehavior::CloseOnClickInOtherWindow)
+  : PopupWindow("", ClickBehavior::CloseOnClickOutsideHotRegion)
   , m_standardBrushes(3)
   , m_customBrushes(nullptr)
 {

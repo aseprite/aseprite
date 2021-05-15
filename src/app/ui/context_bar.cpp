@@ -163,6 +163,13 @@ public:
     SkinPartPtr part(new SkinPart);
     part->setBitmap(0, BrushPopup::createSurfaceForBrush(BrushRef(nullptr)));
     addItem(part);
+
+    m_popupWindow.Open.connect(
+      [this]{
+        gfx::Region rgn(m_popupWindow.boundsOnScreen());
+        rgn |= gfx::Region(this->boundsOnScreen());
+        m_popupWindow.setHotRegion(rgn);
+      });
   }
 
   ~BrushTypeField() {
@@ -221,10 +228,6 @@ private:
 
     m_popupWindow.regenerate(display(), popupPosCandidate());
     m_popupWindow.setBrush(brush.get());
-
-    Region rgn(m_popupWindow.boundsOnScreen().createUnion(boundsOnScreen()));
-    m_popupWindow.setHotRegion(rgn);
-
     m_popupWindow.openWindow();
   }
 

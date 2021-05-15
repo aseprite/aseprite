@@ -37,10 +37,13 @@ namespace ui {
       return m_menuitem;
     }
 
+    obs::signal<void()> OpenPopup;
+
   protected:
     virtual void onPaint(PaintEvent& ev) override;
     virtual void onResize(ResizeEvent& ev) override;
     virtual void onSizeHint(SizeHintEvent& ev) override;
+    virtual void onOpenPopup();
 
   private:
     void setOwnerMenuItem(MenuItem* ownerMenuItem) {

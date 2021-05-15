@@ -214,6 +214,11 @@ Menu::~Menu()
   }
 }
 
+void Menu::onOpenPopup()
+{
+  OpenPopup();
+}
+
 //////////////////////////////////////////////////////////////////////
 // MenuBox
 
@@ -350,6 +355,8 @@ void Menu::showPopup(const gfx::Point& pos,
 
   // New window and new menu-box
   std::unique_ptr<Window> window(new Window(Window::WithoutTitleBar));
+  window->Open.connect([this]{ this->onOpenPopup(); });
+
   MenuBox* menubox = new MenuBox();
   MenuBaseData* base = menubox->createBase();
   base->was_clicked = true;
