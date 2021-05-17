@@ -284,6 +284,9 @@ bool DocView::onCloseView(Workspace* workspace, bool quitting)
     {
       // see if the sprite has changes
       while (m_document->isModified()) {
+        // Show user what they are about to close
+        ctx->setActiveView(this);
+
         // ask what want to do the user with the changes in the sprite
         int ret = Alert::show(
           fmt::format(
