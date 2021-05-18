@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -394,7 +394,14 @@ private:
   UserData readUserData(std::ifstream& s) {
     UserData userData;
     userData.setText(read_string(s));
-    userData.setColor(read32(s));
+    // This check is here because we've been restoring sprites from
+    // old sessions where the color is restored incorrectly if we
+    // don't check if there is enough space to read from the file
+    // (e.g. reading a random color or just white, maybe -1 which is
+    // 0xffffffff in 32-bit).
+    if (!s.eof()) {
+      userData.setColor(read32(s));
+    }
     return userData;
   }
 
