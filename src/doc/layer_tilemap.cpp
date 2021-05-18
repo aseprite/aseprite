@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2020  Igara Studio S.A.
+// Copyright (c) 2019-2021  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -38,6 +38,10 @@ Grid LayerTilemap::grid() const
 
 void LayerTilemap::setTilesetIndex(tileset_index tsi)
 {
+  // "m_tilesetIndex" could be already equal to "tsi", but this
+  // function is used by Sprite::replaceTilemap() to update the
+  // m_tileset pointer even in that case.
+
   m_tilesetIndex = tsi;
   m_tileset = sprite()->tilesets()->get(tsi);
 }

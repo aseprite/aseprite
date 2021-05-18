@@ -24,6 +24,7 @@
 #include "doc/rgbmap_algorithm.h"
 #include "doc/slices.h"
 #include "doc/tags.h"
+#include "doc/tile.h"
 #include "doc/with_user_data.h"
 #include "gfx/rect.h"
 
@@ -183,6 +184,7 @@ namespace doc {
     // Images
 
     void replaceImage(ObjectId curImageId, const ImageRef& newImage);
+    void replaceTileset(tileset_index tsi, Tileset* newTileset);
 
     // Returns all sprite images (cel + tiles) that aren't tilemaps
     void getImages(std::vector<ImageRef>& images) const;

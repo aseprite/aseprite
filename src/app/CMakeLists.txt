@@ -463,6 +463,7 @@ add_library(app-lib
   cmd/remove_tile.cpp
   cmd/remove_tileset.cpp
   cmd/replace_image.cpp
+  cmd/replace_tileset.cpp
   cmd/reselect_mask.cpp
   cmd/set_cel_bounds.cpp
   cmd/set_cel_data.cpp

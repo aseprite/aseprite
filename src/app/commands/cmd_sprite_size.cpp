@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -9,6 +9,7 @@
 #include "config.h"
 #endif
 
+#include "app/cmd/replace_tileset.h"
 #include "app/cmd/set_cel_bounds.h"
 #include "app/cmd/set_slice_key.h"
 #include "app/commands/command.h"
@@ -27,10 +28,12 @@
 #include "doc/cels_range.h"
 #include "doc/image.h"
 #include "doc/layer.h"
+#include "doc/layer_tilemap.h"
 #include "doc/mask.h"
 #include "doc/primitives.h"
 #include "doc/slice.h"
 #include "doc/sprite.h"
+#include "doc/tilesets.h"
 #include "ui/ui.h"
 
 #include "sprite_size.xml.h"
@@ -89,28 +92,91 @@ protected:
   // [working thread]
   void onJob() override {
     DocApi api = writer().document()->getApi(tx());
+    Tilesets* tilesets = sprite()->tilesets();
 
-    int cels_count = 0;
+    int img_count = 0;
+    if (tilesets) {
+      for (Tileset* tileset : *tilesets) {
+        img_count += tileset->size();
+      }
+    }
     for (Cel* cel : sprite()->uniqueCels()) { // TODO add size() member function to CelsRange
       (void)cel;
-      ++cels_count;
+      ++img_count;
     }
 
+    int progress = 0;
     const gfx::SizeF scale(
       double(m_new_width) / double(sprite()->width()),
       double(m_new_height) / double(sprite()->height()));
 
+    // Resize tilesets
+    if (tilesets) {
+      for (tileset_index tsi=0; tsi<tilesets->size(); ++tsi) {
+        Tileset* tileset = tilesets->get(tsi);
+        ASSERT(tileset);
+
+        gfx::Size newGridSize = tileset->grid().tileSize();
+        newGridSize.w *= scale.w;
+        newGridSize.h *= scale.h;
+        if (newGridSize.w < 1) newGridSize.w = 1;
+        if (newGridSize.h < 1) newGridSize.h = 1;
+        doc::Grid newGrid(newGridSize);
+
+        auto newTileset = new doc::Tileset(sprite(), newGrid, tileset->size());
+        doc::tile_index idx = 0;
+        for (doc::ImageRef tileImg : *tileset) {
+          if (idx != 0) {
+            doc::ImageRef newTileImg(
+              resize_image(
+                tileImg.get(),
+                scale,
+                m_resize_method,
+                sprite()->palette(0),
+                sprite()->rgbMap(0)));   // TODO first frame?
+
+            newTileset->set(idx, newTileImg);
+          }
+
+          jobProgress((float)progress / img_count);
+          ++progress;
+          ++idx;
+        }
+        tx()(new cmd::ReplaceTileset(sprite(), tsi, newTileset));
+
+        // Cancel all the operation?
+        if (isCanceled())
+          return;        // Tx destructor will undo all operations
+      }
+    }
+
     // For each cel...
-    int progress = 0;
     for (Cel* cel : sprite()->uniqueCels()) {
-      resize_cel_image(
-        tx(), cel, scale,
-        m_resize_method,
-        cel->layer()->isReference() ?
+      // We need to adjust only the origin/position of tilemap cels
+      // (because tiles are resized automatically when we resize the
+      // tileset).
+      if (cel->layer()->isTilemap()) {
+        Tileset* tileset = static_cast<LayerTilemap*>(cel->layer())->tileset();
+        gfx::Size canvasSize =
+          tileset->grid().tilemapSizeToCanvas(
+            gfx::Size(cel->image()->width(),
+                      cel->image()->height()));
+        gfx::Rect newBounds(cel->x()*scale.w,
+                            cel->y()*scale.h,
+                            canvasSize.w,
+                            canvasSize.h);
+        tx()(new cmd::SetCelBoundsF(cel, newBounds));
+      }
+      else {
+        resize_cel_image(
+          tx(), cel, scale,
+          m_resize_method,
+          cel->layer()->isReference() ?
           -cel->boundsF().origin():
           gfx::PointF(-cel->bounds().origin()));
+      }
 
-      jobProgress((float)progress / cels_count);
+      jobProgress((float)progress / img_count);
       ++progress;
 
       // Cancel all the operation?

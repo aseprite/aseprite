@@ -541,6 +541,22 @@ void Sprite::replaceImage(ObjectId curImageId, const ImageRef& newImage)
   }
 }
 
+void Sprite::replaceTileset(tileset_index tsi, Tileset* newTileset)
+{
+  ASSERT(hasTilesets());
+
+  tilesets()->set(tsi, newTileset);
+
+  for (Layer* layer : allLayers()) {
+    if (layer->isTilemap() &&
+        static_cast<LayerTilemap*>(layer)->tilesetIndex() == tsi) {
+      // Set same index just to update the internal tileset pointer in
+      // LayerTilemap
+      static_cast<LayerTilemap*>(layer)->setTilesetIndex(tsi);
+    }
+  }
+}
+
 // TODO replace it with a images iterator
 void Sprite::getImages(std::vector<ImageRef>& images) const
 {
