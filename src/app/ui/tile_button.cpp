@@ -96,7 +96,12 @@ bool TileButton::onProcessMessage(Message* msg)
 
         // Pick a tile from a ITileSource
         Widget* picked = window()->pick(mousePos);
-        ITileSource* tileSource = (picked != this ? dynamic_cast<ITileSource*>(picked): nullptr);
+        if (picked == this) {
+          // Do nothing
+          break;
+        }
+
+        ITileSource* tileSource = dynamic_cast<ITileSource*>(picked);
 
         // If there is no tile source in this window, try to get the
         // tile from other display, i.e. and editor in other native

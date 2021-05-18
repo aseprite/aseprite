@@ -159,7 +159,12 @@ bool ColorButton::onProcessMessage(Message* msg)
         gfx::Point screenPos = nativeWindow->pointToScreen(mousePos);
 
         Widget* picked = manager()->pickFromScreenPos(screenPos);
-        IColorSource* colorSource = (picked != this ? dynamic_cast<IColorSource*>(picked): nullptr);
+        if (picked == this) {
+          // Do nothing
+          break;
+        }
+
+        IColorSource* colorSource = dynamic_cast<IColorSource*>(picked);
         if (colorSource) {
           nativeWindow = picked->display()->nativeWindow();
           mousePos = nativeWindow->pointFromScreen(screenPos);
