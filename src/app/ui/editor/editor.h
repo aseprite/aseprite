@@ -22,6 +22,7 @@
 #include "app/ui/editor/editor_state.h"
 #include "app/ui/editor/editor_states_history.h"
 #include "app/ui/tile_source.h"
+#include "app/util/tiled_mode.h"
 #include "doc/algorithm/flip_type.h"
 #include "doc/frame.h"
 #include "doc/image_buffer.h"
@@ -403,6 +404,8 @@ namespace app {
     frame_t m_frame;              // Active frame in the editor
     render::Projection m_proj;    // Zoom/pixel ratio in the editor
     DocumentPreferences& m_docPref;
+    // Helper functions affected by the current Tiled Mode.
+    app::TiledModeHelper m_tiledModeHelper;
 
     // Brush preview
     BrushPreview m_brushPreview;

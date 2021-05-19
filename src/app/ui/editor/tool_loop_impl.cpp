@@ -473,6 +473,7 @@ class ToolLoopImpl : public ToolLoopBase,
   std::unique_ptr<ExpandCelCanvas> m_expandCelCanvas;
   Image* m_floodfillSrcImage;
   bool m_saveLastPoint;
+  app::TiledModeHelper m_tiledModeHelper;
 
 public:
   ToolLoopImpl(Editor* editor,
@@ -493,6 +494,7 @@ public:
                                 ModifyDocument))
     , m_floodfillSrcImage(nullptr)
     , m_saveLastPoint(saveLastPoint)
+    , m_tiledModeHelper(m_docPref.tiled.mode(), m_sprite)
   {
     if (m_pointShape->isFloodFill()) {
       if (m_tilesMode) {
@@ -766,7 +768,7 @@ public:
       getPointShape()->getModifiedArea(this, pos.x, pos.y, r);
 
       gfx::Region rgn(r);
-      m_editor->collapseRegionByTiledMode(rgn);
+      m_tiledModeHelper.collapseRegionByTiledMode(rgn);
 
       for (auto a : rgn) {
         ImageRef i(Image::create(getSrcImage()->pixelFormat(), a.w, a.h));
@@ -834,10 +836,10 @@ private:
       return;
 
     if (int(getTiledMode()) & int(TiledMode::X_AXIS)) {
-      result.x %= m_editor->canvasSize().w;
+      result.x %= m_tiledModeHelper.canvasSize().w;
     }
     if (int(getTiledMode()) & int(TiledMode::Y_AXIS)) {
-      result.y %= m_editor->canvasSize().h;
+      result.y %= m_tiledModeHelper.canvasSize().h;
     }
 
     gfx::Rect r;
@@ -845,12 +847,12 @@ private:
 
     if (r.x < 0)
       result.x += m_sprite->width();
-    else if (r.x2() > m_editor->canvasSize().w)
+    else if (r.x2() > m_tiledModeHelper.canvasSize().w)
       result.x -= m_sprite->width();
 
     if (r.y < 0)
       result.y += m_sprite->height();
-    else if (r.y2() > m_editor->canvasSize().h)
+    else if (r.y2() > m_tiledModeHelper.canvasSize().h)
       result.y -= m_sprite->height();
   }
 };
