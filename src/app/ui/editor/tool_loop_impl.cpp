@@ -830,16 +830,28 @@ private:
 
   void wrapPositionOnTiledMode(const tools::Stroke::Pt& pt, tools::Stroke::Pt& result) {
     result = pt;
+    if (getTiledMode() == TiledMode::NONE)
+      return;
+
     if (int(getTiledMode()) & int(TiledMode::X_AXIS)) {
       result.x %= m_editor->canvasSize().w;
-      if (result.x < 0)
-        result.x += m_editor->canvasSize().w;
     }
     if (int(getTiledMode()) & int(TiledMode::Y_AXIS)) {
       result.y %= m_editor->canvasSize().h;
-      if (result.y < 0)
-        result.y += m_editor->canvasSize().h;
     }
+
+    gfx::Rect r;
+    getPointShape()->getModifiedArea(this, result.x, result.y, r);
+
+    if (r.x < 0)
+      result.x += m_sprite->width();
+    else if (r.x2() > m_editor->canvasSize().w)
+      result.x -= m_sprite->width();
+
+    if (r.y < 0)
+      result.y += m_sprite->height();
+    else if (r.y2() > m_editor->canvasSize().h)
+      result.y -= m_sprite->height();
   }
 };
 
