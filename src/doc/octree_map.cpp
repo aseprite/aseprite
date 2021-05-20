@@ -278,16 +278,32 @@ void OctreeMap::feedWithImage(const Image* image,
                               const int levelDeep)
 {
   ASSERT(image);
-  ASSERT(image->pixelFormat() == IMAGE_RGB);
+  ASSERT(image->pixelFormat() == IMAGE_RGB || image->pixelFormat() == IMAGE_GRAYSCALE);
   uint32_t color;
-  const LockImageBits<RgbTraits> bits(image);
-  auto it = bits.begin(), end = bits.end();
+  if (image->pixelFormat() == IMAGE_RGB) {
+    const LockImageBits<RgbTraits> bits(image);
+    auto it = bits.begin(), end = bits.end();
 
-  for (; it != end; ++it) {
-    color = *it;
-    if (rgba_geta(color) > 0)
-      addColor(color, levelDeep);
+    for (; it != end; ++it) {
+      color = *it;
+      if (rgba_geta(color) > 0)
+        addColor(color, levelDeep);
+    }
   }
+  else {
+    const LockImageBits<GrayscaleTraits> bits(image);
+    auto it = bits.begin(), end = bits.end();
+
+    for (; it != end; ++it) {
+      color = *it;
+      if (graya_geta(color) > 0)
+        addColor(rgba(graya_getv(color),
+                      graya_getv(color),
+                      graya_getv(color),
+                      255), levelDeep);
+    }
+  }
+
 
   m_maskColor = maskColor;
 }

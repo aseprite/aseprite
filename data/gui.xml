@@ -1116,6 +1116,22 @@
       <item command="PaletteEditor" text="@.edit_palette" />
       <item command="PaletteSize" text="@.palette_size" group="palette_main" />
       <separator />
+      <menu id="select_palette_colors" text="@.select_palette_colors">
+        <item command="SelectPaletteColors" text="@.used_colors">
+          <param name="modifier" value="used_colors" />
+        </item>
+        <item command="SelectPaletteColors" text="@.unused_colors">
+          <param name="modifier" value="unused_colors" />
+        </item>
+        <separator />
+        <item command="SelectPaletteColors" text="@.used_tiles">
+          <param name="modifier" value="used_tiles" />
+        </item>
+        <item command="SelectPaletteColors" text="@.unused_tiles">
+          <param name="modifier" value="unused_tiles" />
+        </item>
+      </menu>
+      <separator />
       <item command="SetPaletteEntrySize" text="@.small_size">
         <param name="size" value="7" />
       </item>

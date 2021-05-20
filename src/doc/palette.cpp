@@ -286,6 +286,15 @@ int Palette::findExactMatch(int r, int g, int b, int a, int mask_index) const
   return -1;
 }
 
+bool Palette::findExactMatch(color_t color) const
+{
+  for (int i=0; i<(int)m_colors.size(); ++i) {
+    if (getEntry(i) == color)
+      return true;
+  }
+  return false;
+}
+
 //////////////////////////////////////////////////////////////////////
 // Based on Allegro's bestfit_color
 

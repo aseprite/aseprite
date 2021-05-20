@@ -97,6 +97,7 @@ namespace doc {
     void makeHueGradient(int from, int to);
 
     int findExactMatch(int r, int g, int b, int a, int mask_index) const;
+    bool findExactMatch(color_t color) const;
     int findBestfit(int r, int g, int b, int a, int mask_index) const;
     int findBestfit2(int r, int g, int b) const;
 

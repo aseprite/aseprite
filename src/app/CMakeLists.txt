@@ -275,6 +275,7 @@ if(ENABLE_UI)
     commands/cmd_rotate.cpp
     commands/cmd_save_mask.cpp
     commands/cmd_save_palette.cpp
+    commands/cmd_select_palette.cpp
     commands/cmd_scroll.cpp
     commands/cmd_scroll_center.cpp
     commands/cmd_select_tile.cpp
