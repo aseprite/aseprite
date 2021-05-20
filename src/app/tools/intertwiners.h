@@ -462,8 +462,7 @@ public:
       return;
     }
     else {
-      if (m_pts[m_pts.size() - 1] == stroke.lastPoint() &&
-          stroke.firstPoint() == stroke.lastPoint())
+      if (stroke.firstPoint() == stroke.lastPoint())
         return;
 
       nextPt = m_pts.size();
