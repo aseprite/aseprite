@@ -138,7 +138,11 @@ Remap Remap::invert() const
 {
   Remap inv(size());
   for (int i=0; i<size(); ++i)
-    inv.map(operator[](i), i);
+    inv.unused(i);
+  for (int i=0; i<size(); ++i) {
+    if (operator[](i) != kUnused)
+      inv.map(operator[](i), i);
+  }
   return inv;
 }
 

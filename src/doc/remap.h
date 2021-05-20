@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2021  Igara Studio S.A.
 // Copyright (c) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -18,6 +19,8 @@ namespace doc {
 
   class Remap {
   public:
+    constexpr static const int kUnused = -1;
+
     Remap(int entries = 1) : m_map(entries, 0) { }
 
     int size() const {
@@ -30,6 +33,11 @@ namespace doc {
       ASSERT(toIndex >= 0 && toIndex < size());
 
       m_map[fromIndex] = toIndex;
+    }
+
+    void unused(int i) {
+      ASSERT(i >= 0 && i < size());
+      m_map[i] = kUnused;
     }
 
     int operator[](int index) const {

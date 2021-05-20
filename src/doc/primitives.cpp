@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2018-2019 Igara Studio S.A.
+// Copyright (c) 2018-2021 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -407,13 +407,11 @@ void remap_image(Image* image, const Remap& remap)
   if (image->pixelFormat() != IMAGE_INDEXED)
     return;
 
-  LockImageBits<IndexedTraits> bits(image);
-  LockImageBits<IndexedTraits>::iterator
-    it = bits.begin(),
-    end = bits.end();
-
-  for (; it != end; ++it)
-    *it = remap[*it];
+  for (auto& pixel : LockImageBits<IndexedTraits>(image)) {
+    auto to = remap[pixel];
+    if (to != Remap::kUnused)
+      pixel = to;
+  }
 }
 
 // TODO test this hash routine and find a better alternative
