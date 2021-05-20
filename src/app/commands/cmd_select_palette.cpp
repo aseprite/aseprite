@@ -62,11 +62,17 @@ SelectPaletteColorsCommand::SelectPaletteColorsCommand()
 
 bool SelectPaletteColorsCommand::onEnabled(Context* context)
 {
-  TilemapMode tilemapMode = context->activeSite().tilemapMode();
-  if (m_modifier == Modifier::UsedColors || m_modifier == Modifier::UnusedColors)
-    return (tilemapMode == TilemapMode::Pixels) ? true : false;
-  else
-    return (tilemapMode == TilemapMode::Tiles) ? true : false;
+  if (!context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+                           ContextFlags::HasActiveSprite))
+    return false;
+
+  if (m_modifier == Modifier::UsedTiles ||
+      m_modifier == Modifier::UnusedTiles) {
+    Layer* layer = context->activeSite().layer();
+    return (layer && layer->isTilemap());
+  }
+
+  return true;
 }
 
 void SelectPaletteColorsCommand::onLoadParams(const Params& params)
@@ -90,19 +96,17 @@ bool SelectPaletteColorsCommand::selectTiles(
 {
   Tileset* currentTileset = site->tileset();
   Layer* layer = site->layer();
-  int tilesetSize = 0;
-  SelectedFrames::const_iterator selected_frames_it = selectedFrames.begin();
-  SelectedFrames::const_iterator selected_frames_end = selectedFrames.end();
-  CelList tilemapCels;
+
   if (!currentTileset || !site->layer() || !layer->isTilemap())
     return false;
 
-  for (;selected_frames_it != selected_frames_end; ++selected_frames_it) {
-    int frame = *selected_frames_it;
-    if (layer->cel(frame))
-      tilemapCels.push_back(layer->cel(frame));
+  CelList tilemapCels;
+  for (frame_t frame : selectedFrames) {
+    if (Cel* cel = layer->cel(frame))
+      tilemapCels.push_back(cel);
   }
-  tilesetSize = currentTileset->size();
+
+  int tilesetSize = currentTileset->size();
   if (usedTilesIndices.size() != tilesetSize)
     usedTilesIndices.resize(tilesetSize);
   usedTilesIndices.clear();
@@ -110,11 +114,10 @@ bool SelectPaletteColorsCommand::selectTiles(
   if (tilemapCels.size() <=  0 || tilesetSize <= 0)
     return false;
 
-  tile_index i = 0;
-  for (; i<tilesetSize; ++i) {
+  for (tile_index i=0; i<tilesetSize; ++i) {
     for (auto cel : tilemapCels) {
       bool skiptilesetIndex = false;
-      for (const doc::tile_t t : LockImageBits<TilemapTraits>(cel->imageRef().get())) {
+      for (const doc::tile_t t : LockImageBits<TilemapTraits>(cel->image())) {
         if (t == i) {
           usedTilesIndices[doc::tile_geti(t)] = true;
           skiptilesetIndex = true;
@@ -130,7 +133,6 @@ bool SelectPaletteColorsCommand::selectTiles(
 
 void SelectPaletteColorsCommand::onExecute(Context* context)
 {
-  TilemapMode tilemapMode = context->activeSite().tilemapMode();
   Site site = context->activeSite();
   Sprite* sprite = site.sprite();
   DocRange range = site.range();
@@ -148,42 +150,43 @@ void SelectPaletteColorsCommand::onExecute(Context* context)
     selectedLayers = range.selectedLayers();
   }
 
-  if (tilemapMode == TilemapMode::Pixels) {
+  if (m_modifier == Modifier::UsedColors ||
+      m_modifier == Modifier::UnusedColors) {
     doc::OctreeMap octreemap;
-    SelectedFrames::const_iterator selected_frames_it = selectedFrames.begin();
-    SelectedFrames::const_iterator selected_frames_end = selectedFrames.end();
     const doc::Palette* currentPalette = get_current_palette();
     PalettePicks usedEntries(currentPalette->size());
 
-    // Loop throught selected layers and frames:
+    auto countImage = [&octreemap, &usedEntries](const Image* image){
+      switch (image->pixelFormat()) {
+
+        case IMAGE_RGB:
+        case IMAGE_GRAYSCALE:
+          octreemap.feedWithImage(image, image->maskColor(), 8);
+          break;
+
+        case IMAGE_INDEXED:
+          doc::for_each_pixel<IndexedTraits>(
+            image,
+            [&usedEntries](const color_t p) {
+              usedEntries[p] = true;
+            });
+          break;
+      }
+    };
+
+    // Loop throught selected layers and frames
     for (auto& layer : selectedLayers) {
-      selected_frames_it = selectedFrames.begin();
-      for (;selected_frames_it != selected_frames_end; ++selected_frames_it) {
-        int frame = *selected_frames_it;
-        if (layer->cel(frame) && layer->cel(frame)->image()) {
-          Image* image = layer->cel(frame)->image();
-          // Ordinary layer case:
-          if (!layer->isTilemap()) {
-            // INDEXED case:
-            if (image->pixelFormat() == IMAGE_INDEXED) {
-              doc::for_each_pixel<IndexedTraits>(
-                image,
-                [&usedEntries](const color_t p) {
-                  usedEntries[p] = true;
-                });
-            }
-            // RGB / GRAYSCALE case:
-            else if (image->pixelFormat() == IMAGE_RGB ||
-                     image->pixelFormat() == IMAGE_GRAYSCALE)
-              octreemap.feedWithImage(image, image->maskColor(), 8);
-            else
-              ASSERT(false);
-          }
-          // Tilemap layer case:
-          else if (layer->isTilemap()) {
+      for (frame_t frame : selectedFrames) {
+        const Cel* cel = layer->cel(frame);
+        if (cel && cel->image()) {
+          const Image* image = cel->image();
+
+          // Tilemap layer case
+          if (layer->isTilemap()) {
             Tileset* tileset = static_cast<LayerTilemap*>(layer)->tileset();
             tile_index ti;
             PalettePicks usedTiles(tileset->size());
+
             // Looking for tiles (available in tileset) used in the tilemap image:
             doc::for_each_pixel<TilemapTraits>(
               image,
@@ -191,30 +194,18 @@ void SelectPaletteColorsCommand::onExecute(Context* context)
                 if (tileset->findTileIndex(tileset->get(t), ti))
                   usedTiles[ti] = true;
               });
+
             // Looking for tile matches in usedTiles. If a tile matches, then
             // search into the tilemap (pixel by pixel) looking for color matches.
             for (int i=0; i<usedTiles.size(); ++i) {
-              if (usedTiles[i]) {
-                // The tileset format is INDEXED:
-                if (tileset->get(i).get()->pixelFormat() == IMAGE_INDEXED) {
-                  // Looking pixel by pixel in each usedTiles
-                  doc::for_each_pixel<IndexedTraits>(
-                    image,
-                    [&usedEntries](const color_t p) {
-                      usedEntries[p] = true;
-                    });
-                }
-                // The tileset format is RGB / GRAYSCALE:
-                else if (tileset->get(i).get()->pixelFormat() == IMAGE_RGB ||
-                         tileset->get(i).get()->pixelFormat() == IMAGE_GRAYSCALE)
-                  octreemap.feedWithImage(tileset->get(i).get(), image->maskColor(), 8);
-                else
-                  ASSERT(false);
-              }
+              if (usedTiles[i])
+                countImage(tileset->get(i).get());
             }
           }
-          else
-            ASSERT(false);
+          // Regular layers
+          else {
+            countImage(image);
+          }
         }
       }
     }
@@ -229,31 +220,25 @@ void SelectPaletteColorsCommand::onExecute(Context* context)
       }
     }
 
-    if (m_modifier == Modifier::UsedColors) {
-      context->setSelectedColors(usedEntries);
-    }
-    else if (m_modifier == Modifier::UnusedColors) {
+    if (m_modifier == Modifier::UnusedColors) {
       for (int i=0; i<usedEntries.size(); ++i)
         usedEntries[i] = !usedEntries[i];
-      context->setSelectedColors(usedEntries);
     }
-    else
-      ASSERT(false);
+    context->setSelectedColors(usedEntries);
   }
-  else { // tilemapMode == TilemapMode::Tiles
+  else if (m_modifier == Modifier::UsedTiles ||
+           m_modifier == Modifier::UnusedTiles) {
     if (!site.tileset())
       return;
+
     PalettePicks usedTileIndices(site.tileset()->size());
     selectTiles(sprite, &site, usedTileIndices, selectedFrames);
-    if (m_modifier == Modifier::UsedTiles)
-      context->setSelectedTiles(usedTileIndices);
-    else if (m_modifier == Modifier::UnusedTiles) {
+
+    if (m_modifier == Modifier::UnusedTiles) {
       for (int i=0; i<usedTileIndices.size(); ++i)
         usedTileIndices[i] = !usedTileIndices[i];
-      context->setSelectedTiles(usedTileIndices);
     }
-    else
-      ASSERT(false);
+    context->setSelectedTiles(usedTileIndices);
   }
 }
 
