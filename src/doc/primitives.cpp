@@ -497,7 +497,7 @@ void preprocess_transparent_pixels(Image* image)
     }
 
     case IMAGE_GRAYSCALE: {
-      LockImageBits<RgbTraits> bits(image);
+      LockImageBits<GrayscaleTraits> bits(image);
       auto it = bits.begin(), end = bits.end();
       for (; it != end; ++it) {
         if (graya_geta(*it) == 0)
