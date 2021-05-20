@@ -115,7 +115,23 @@ private:
   Label m_contextLabel;
 };
 
-class KeyItem : public ListItem {
+class KeyItemBase : public ListItem {
+public:
+  KeyItemBase(const std::string& text)
+    : ListItem(text) {
+  }
+
+protected:
+  void onSizeHint(SizeHintEvent& ev) override {
+    gfx::Size size = textSize();
+    size.w = size.w + border().width();
+    size.h = size.h + border().height() + 6*guiscale();
+    ev.setSizeHint(size);
+  }
+
+};
+
+class KeyItem : public KeyItemBase {
 
   // Used to avoid deleting the Add/Change/Del buttons on
   // kMouseLeaveMessage when a foreground window is popup on a signal
@@ -138,7 +154,7 @@ public:
           AppMenuItem* menuitem,
           const int level,
           HeaderItem* headerItem)
-    : ListItem(text)
+    : KeyItemBase(text)
     , m_keys(keys)
     , m_menuKeys(menuKeys)
     , m_key(key)
@@ -174,10 +190,20 @@ public:
         result.insert(0, w->text());
 
         w = w->parent();
-        if (w && w->type() == kMenuWidget)
-          w = static_cast<Menu*>(w)->getOwnerMenuItem();
-        else
+        if (w && w->type() == kMenuWidget) {
+          auto owner = static_cast<Menu*>(w)->getOwnerMenuItem();
+
+          // Add the text of the menu (useful for the Palette Menu)
+          if (!owner && !w->text().empty()) {
+            result.insert(0, " > ");
+            result.insert(0, w->text());
+          }
+
+          w = owner;
+        }
+        else {
           w = nullptr;
+        }
       }
       return result;
     }
@@ -253,9 +279,8 @@ private:
   }
 
   void onSizeHint(SizeHintEvent& ev) override {
-    gfx::Size size = textSize();
-    size.w = size.w + border().width();
-    size.h = size.h + border().height() + 6*guiscale();
+    KeyItemBase::onSizeHint(ev);
+    gfx::Size size = ev.sizeHint();
 
     if (m_key && m_key->keycontext() != KeyContext::Any) {
       int w =
@@ -333,7 +358,7 @@ private:
   }
 
   void onResize(ResizeEvent& ev) override {
-    ListItem::onResize(ev);
+    KeyItemBase::onResize(ev);
     destroyButtons();
   }
 
@@ -427,7 +452,7 @@ private:
         break;
       }
     }
-    return ListItem::onProcessMessage(msg);
+    return KeyItemBase::onProcessMessage(msg);
   }
 
   void destroyButtons() {
@@ -551,8 +576,18 @@ private:
   void fillAllLists() {
     deleteAllKeyItems();
 
-    // Load keyboard shortcuts
+    // Fill each list box with the keyboard shortcuts...
+
     fillMenusList(menus(), AppMenus::instance()->getRootMenu(), 0);
+
+    {
+      // Create a pseudo-item for the palette menu
+      KeyItemBase* listItem = new KeyItemBase(
+        Strings::palette_popup_menu_title());
+      menus()->addChild(listItem);
+      fillMenusList(menus(), AppMenus::instance()->getPalettePopupMenu(), 1);
+    }
+
     fillToolsList(tools(), App::instance()->toolBox());
     fillWheelActionsList();
 
@@ -875,6 +910,7 @@ void KeyboardShortcutsCommand::onExecute(Context* context)
 
   MenuKeys menuKeys;
   fillMenusKeys(keys, menuKeys, AppMenus::instance()->getRootMenu());
+  fillMenusKeys(keys, menuKeys, AppMenus::instance()->getPalettePopupMenu());
 
   // Here we copy the m_search field because
   // KeyboardShortcutsWindow::fillAllLists() modifies this same

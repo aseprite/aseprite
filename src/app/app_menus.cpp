@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -652,6 +652,7 @@ Menu* AppMenus::loadMenuById(TiXmlHandle& handle, const char* id)
 Menu* AppMenus::convertXmlelemToMenu(TiXmlElement* elem)
 {
   Menu* menu = new Menu();
+  menu->setText(m_xmlTranslator(elem, "text"));
 
   TiXmlElement* child = elem->FirstChildElement();
   while (child) {

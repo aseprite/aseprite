@@ -1112,7 +1112,7 @@
       <item command="RemoveSlice" text="@.delete" group="slice_popup_delete" />
     </menu>
 
-    <menu id="palette_popup_menu">
+    <menu id="palette_popup_menu" text="@.title">
       <item command="PaletteEditor" text="@.edit_palette" />
       <item command="PaletteSize" text="@.palette_size" group="palette_main" />
       <separator />

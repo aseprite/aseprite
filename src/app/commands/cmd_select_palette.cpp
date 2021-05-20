@@ -13,6 +13,7 @@
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/context.h"
+#include "app/i18n/strings.h"
 #include "app/modules/palettes.h"
 #include "app/site.h"
 #include "doc/cel.h"
@@ -30,13 +31,12 @@ using namespace ui;
 
 class SelectPaletteColorsCommand : public Command {
 public:
-
-  typedef enum {
+  enum Modifier {
     UsedColors,
     UnusedColors,
     UsedTiles,
     UnusedTiles
-  } Modifier;
+  };
 
   SelectPaletteColorsCommand();
 
@@ -44,6 +44,7 @@ protected:
   bool onEnabled(Context* context) override;
   void onLoadParams(const Params& params) override;
   void onExecute(Context* context) override;
+  std::string onGetFriendlyName() const override;
 
 private:
   bool selectTiles(Sprite* sprite,
@@ -240,6 +241,17 @@ void SelectPaletteColorsCommand::onExecute(Context* context)
     }
     context->setSelectedTiles(usedTileIndices);
   }
+}
+
+std::string SelectPaletteColorsCommand::onGetFriendlyName() const
+{
+  switch (m_modifier) {
+    case UsedColors:   return Strings::commands_SelectPaletteColors();
+    case UnusedColors: return Strings::commands_SelectPaletteColors_UnusedColors();
+    case UsedTiles:    return Strings::commands_SelectPaletteColors_UsedTiles();
+    case UnusedTiles:  return Strings::commands_SelectPaletteColors_UnusedTiles();
+  }
+  return getBaseFriendlyName();
 }
 
 Command* CommandFactory::createSelectPaletteColorsCommand()
