@@ -53,7 +53,7 @@ Aseprite is being developed by [Igara Studio](https://www.igarastudio.com/):
 
 * [David Capello](https://davidcapello.com/)
 * [Gaspar Capello](https://github.com/Gasparoken)
-* [Martin Capello](https://github.com/martincapello)
+* [Martín Capello](https://github.com/martincapello)
 
 ## Credits
 
