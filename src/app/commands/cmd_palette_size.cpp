@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -30,6 +30,7 @@ public:
 
 protected:
   void onLoadParams(const Params& params) override;
+  bool onEnabled(Context* context) override;
   void onExecute(Context* context) override;
 
 private:
@@ -45,6 +46,11 @@ PaletteSizeCommand::PaletteSizeCommand()
 void PaletteSizeCommand::onLoadParams(const Params& params)
 {
   m_size = params.get_as<int>("size");
+}
+
+bool PaletteSizeCommand::onEnabled(Context* context)
+{
+  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable);
 }
 
 void PaletteSizeCommand::onExecute(Context* context)
