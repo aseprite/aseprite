@@ -32,6 +32,8 @@ function expect_img(image, expectedPixels)
   local h = image.height
   if w*h ~= #expectedPixels then
     print(debug.traceback())
+    print('Expected pixels: #=' .. #expectedPixels) 
+    print('Image size: w=' .. w .. ' h=' .. h .. ' #=' .. w*h)
     dump_img(image)
     assert(w*h == #expectedPixels)
   end
@@ -72,6 +74,14 @@ function expect_img(image, expectedPixels)
 	assert(a == b)
       end
     end
+  end
+end
+
+function expect_img_msg(image, expectedPixels, msg)
+  local status, err = pcall(expect_img, image, expectedPixels)
+  if not status then
+    print(msg)
+    error(err)
   end
 end
 
