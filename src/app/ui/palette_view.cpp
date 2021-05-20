@@ -487,6 +487,10 @@ void PaletteView::setSelectedEntries(const doc::PalettePicks& entries)
   m_selectedEntries = entries;
   m_selectedEntries.resize(m_adapter->size());
   m_currentEntry = m_selectedEntries.firstPick();
+
+  if (entries.picks() > 0)
+    requestFocus();
+
   invalidate();
 }
 
