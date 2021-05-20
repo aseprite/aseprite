@@ -47,10 +47,9 @@ protected:
   std::string onGetFriendlyName() const override;
 
 private:
-  bool selectTiles(Sprite* sprite,
-                   Site* site,
-                   PalettePicks& usedTilesIndices,
-                   SelectedFrames& selectedFrames);
+  void selectTiles(const Layer* layer,
+                   const SelectedFrames& selectedFrames,
+                   PalettePicks& usedTiles);
 
   Modifier m_modifier;
 };
@@ -89,47 +88,24 @@ void SelectPaletteColorsCommand::onLoadParams(const Params& params)
     m_modifier = Modifier::UsedColors;
 }
 
-bool SelectPaletteColorsCommand::selectTiles(
-  Sprite* sprite,
-  Site* site,
-  PalettePicks& usedTilesIndices,
-  SelectedFrames& selectedFrames)
+void SelectPaletteColorsCommand::selectTiles(
+  const Layer* layer,
+  const SelectedFrames& selectedFrames,
+  PalettePicks& usedTiles)
 {
-  Tileset* currentTileset = site->tileset();
-  Layer* layer = site->layer();
+  ASSERT(layer);
+  ASSERT(layer->isTilemap());
 
-  if (!currentTileset || !site->layer() || !layer->isTilemap())
-    return false;
-
-  CelList tilemapCels;
+  // For each tile on each cel's tilemap
   for (frame_t frame : selectedFrames) {
-    if (Cel* cel = layer->cel(frame))
-      tilemapCels.push_back(cel);
-  }
-
-  int tilesetSize = currentTileset->size();
-  if (usedTilesIndices.size() != tilesetSize)
-    usedTilesIndices.resize(tilesetSize);
-  usedTilesIndices.clear();
-
-  if (tilemapCels.size() <=  0 || tilesetSize <= 0)
-    return false;
-
-  for (tile_index i=0; i<tilesetSize; ++i) {
-    for (auto cel : tilemapCels) {
-      bool skiptilesetIndex = false;
+    if (Cel* cel = layer->cel(frame)) {
       for (const doc::tile_t t : LockImageBits<TilemapTraits>(cel->image())) {
-        if (t == i) {
-          usedTilesIndices[doc::tile_geti(t)] = true;
-          skiptilesetIndex = true;
-          break;
-        }
+        tile_index ti = doc::tile_geti(t);
+        if (ti >= 0 && ti < usedTiles.size())
+          usedTiles[ti] = true;
       }
-      if (skiptilesetIndex)
-        break;
     }
   }
-  return true;
 }
 
 void SelectPaletteColorsCommand::onExecute(Context* context)
@@ -229,17 +205,23 @@ void SelectPaletteColorsCommand::onExecute(Context* context)
   }
   else if (m_modifier == Modifier::UsedTiles ||
            m_modifier == Modifier::UnusedTiles) {
-    if (!site.tileset())
+    Tileset* tileset = site.tileset();
+    if (!tileset)
       return;
 
-    PalettePicks usedTileIndices(site.tileset()->size());
-    selectTiles(sprite, &site, usedTileIndices, selectedFrames);
+    PalettePicks usedTiles(tileset->size());
+    for (const Layer* layer : selectedLayers) {
+      if (layer->isTilemap() &&
+          static_cast<const LayerTilemap*>(layer)->tileset() == tileset) {
+        selectTiles(layer, selectedFrames, usedTiles);
+      }
+    }
 
     if (m_modifier == Modifier::UnusedTiles) {
-      for (int i=0; i<usedTileIndices.size(); ++i)
-        usedTileIndices[i] = !usedTileIndices[i];
+      for (int i=0; i<usedTiles.size(); ++i)
+        usedTiles[i] = !usedTiles[i];
     }
-    context->setSelectedTiles(usedTileIndices);
+    context->setSelectedTiles(usedTiles);
   }
 }
 
