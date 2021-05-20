@@ -147,6 +147,7 @@ Editor::Editor(Doc* document, EditorFlags flags)
   , m_layer(m_sprite->root()->firstLayer())
   , m_frame(frame_t(0))
   , m_docPref(Preferences::instance().document(document))
+  , m_tiledModeHelper(app::TiledModeHelper(m_docPref.tiled.mode(), m_sprite))
   , m_brushPreview(this)
   , m_toolLoopModifiers(tools::ToolLoopModifiers::kNone)
   , m_padding(0, 0)
@@ -2222,6 +2223,8 @@ void Editor::onTiledModeChange()
   screenPos = editorToScreen(spritePos);
 
   centerInSpritePoint(spritePos);
+
+  m_tiledModeHelper.mode(m_docPref.tiled.mode());
 }
 
 void Editor::onShowExtrasChange()
@@ -2810,77 +2813,23 @@ gfx::Point Editor::calcExtraPadding(const Projection& proj)
 
 gfx::Size Editor::canvasSize() const
 {
-  gfx::Size sz(m_sprite->width(),
-               m_sprite->height());
-  if (int(m_docPref.tiled.mode()) & int(filters::TiledMode::X_AXIS)) {
-    sz.w += sz.w*2;
-  }
-  if (int(m_docPref.tiled.mode()) & int(filters::TiledMode::Y_AXIS)) {
-    sz.h += sz.h*2;
-  }
-  return sz;
+  return m_tiledModeHelper.canvasSize();
 }
 
 gfx::Point Editor::mainTilePosition() const
 {
-  gfx::Point pt(0, 0);
-  if (int(m_docPref.tiled.mode()) & int(filters::TiledMode::X_AXIS)) {
-    pt.x += m_sprite->width();
-  }
-  if (int(m_docPref.tiled.mode()) & int(filters::TiledMode::Y_AXIS)) {
-    pt.y += m_sprite->height();
-  }
-  return pt;
+  return m_tiledModeHelper.mainTilePosition();
 }
 
 void Editor::expandRegionByTiledMode(gfx::Region& rgn,
                                      const bool withProj) const
 {
-  gfx::Region tile = rgn;
-  const bool xTiled = (int(m_docPref.tiled.mode()) & int(filters::TiledMode::X_AXIS));
-  const bool yTiled = (int(m_docPref.tiled.mode()) & int(filters::TiledMode::Y_AXIS));
-  int w = m_sprite->width();
-  int h = m_sprite->height();
-  if (withProj) {
-    w = m_proj.applyX(w);
-    h = m_proj.applyY(h);
-  }
-  if (xTiled) {
-    tile.offset(w, 0); rgn |= tile;
-    tile.offset(w, 0); rgn |= tile;
-    tile.offset(-2*w, 0);
-  }
-  if (yTiled) {
-    tile.offset(0, h); rgn |= tile;
-    tile.offset(0, h); rgn |= tile;
-    tile.offset(0, -2*h);
-  }
-  if (xTiled && yTiled) {
-    tile.offset(w, h); rgn |= tile;
-    tile.offset(w, 0); rgn |= tile;
-    tile.offset(-w, h); rgn |= tile;
-    tile.offset(w, 0); rgn |= tile;
-  }
+  m_tiledModeHelper.expandRegionByTiledMode(rgn, withProj ? &m_proj : nullptr);
 }
 
 void Editor::collapseRegionByTiledMode(gfx::Region& rgn) const
 {
-  auto canvasSize = this->canvasSize();
-  rgn &= gfx::Region(gfx::Rect(canvasSize));
-
-  const int sprW = m_sprite->width();
-  const int sprH = m_sprite->height();
-
-  gfx::Region newRgn;
-  for (int v=0; v<canvasSize.h; v+=sprH) {
-    for (int u=0; u<canvasSize.w; u+=sprW) {
-      gfx::Region tmp(gfx::Rect(u, v, sprW, sprH));
-      tmp &= rgn;
-      tmp.offset(-u, -v);
-      newRgn |= tmp;
-    }
-  }
-  rgn = newRgn;
+  m_tiledModeHelper.collapseRegionByTiledMode(rgn);
 }
 
 bool Editor::isMovingPixels() const
