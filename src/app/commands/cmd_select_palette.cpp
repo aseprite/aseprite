@@ -197,10 +197,8 @@ void SelectPaletteColorsCommand::onExecute(Context* context)
       }
     }
 
-    if (m_modifier == Modifier::UnusedColors) {
-      for (int i=0; i<usedEntries.size(); ++i)
-        usedEntries[i] = !usedEntries[i];
-    }
+    if (m_modifier == Modifier::UnusedColors)
+      usedEntries.invert();
     context->setSelectedColors(usedEntries);
   }
   else if (m_modifier == Modifier::UsedTiles ||
@@ -217,10 +215,8 @@ void SelectPaletteColorsCommand::onExecute(Context* context)
       }
     }
 
-    if (m_modifier == Modifier::UnusedTiles) {
-      for (int i=0; i<usedTiles.size(); ++i)
-        usedTiles[i] = !usedTiles[i];
-    }
+    if (m_modifier == Modifier::UnusedTiles)
+      usedTiles.invert();
     context->setSelectedTiles(usedTiles);
   }
 }

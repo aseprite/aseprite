@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019 Igara Studio S.A.
+// Copyright (c) 2019-2021 Igara Studio S.A.
 // Copyright (c) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -78,6 +78,11 @@ namespace doc {
           result[j++] = i;
       }
       return result;
+    }
+
+    void invert() {
+      for (int i=0; i<size(); ++i)
+        m_items[i] = !m_items[i];
     }
 
   private:
