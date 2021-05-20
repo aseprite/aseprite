@@ -1,4 +1,5 @@
 // Aseprite UI Library
+// Copyright (C) 2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -40,6 +41,8 @@ namespace ui {
 
     // New events
     virtual void onClick(Event& ev);
+    virtual void onStartDrag();
+    virtual void onSelectWhenDragging();
 
   private:
     void generateButtonSelectSignal();

@@ -160,8 +160,11 @@ bool ColorButton::onProcessMessage(Message* msg)
 
         Widget* picked = manager()->pickFromScreenPos(screenPos);
         if (picked == this) {
-          // Do nothing
+          setColor(m_startDragColor);
           break;
+        }
+        else {
+          m_mouseLeft = true;
         }
 
         IColorSource* colorSource = dynamic_cast<IColorSource*>(picked);
@@ -300,6 +303,20 @@ void ColorButton::onClick(Event& ev)
     // If it is visible, close it
     closePopup();
   }
+}
+
+void ColorButton::onStartDrag()
+{
+  m_startDragColor = m_color;
+  m_mouseLeft = false;
+}
+
+void ColorButton::onSelectWhenDragging()
+{
+  if (m_mouseLeft)
+    setSelected(false);
+  else
+    ButtonBase::onSelectWhenDragging();
 }
 
 void ColorButton::onLoadLayout(ui::LoadLayoutEvent& ev)

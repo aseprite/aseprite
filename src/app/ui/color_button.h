@@ -58,6 +58,8 @@ namespace app {
     void onSizeHint(ui::SizeHintEvent& ev) override;
     void onPaint(ui::PaintEvent& ev) override;
     void onClick(ui::Event& ev) override;
+    void onStartDrag() override;
+    void onSelectWhenDragging() override;
     void onLoadLayout(ui::LoadLayoutEvent& ev) override;
     void onSaveLayout(ui::SaveLayoutEvent& ev) override;
 
@@ -75,12 +77,14 @@ namespace app {
     gfx::Rect convertBounds(const gfx::Rect& bounds) const;
 
     app::Color m_color;
+    app::Color m_startDragColor;
     PixelFormat m_pixelFormat;
     ColorPopup* m_window;
     gfx::Rect m_windowDefaultBounds;
     gfx::Rect m_hiddenPopupBounds;
     bool m_desktopCoords;       // True if m_windowDefault/hiddenPopupBounds are screen coordinates
     bool m_dependOnLayer;
+    bool m_mouseLeft;
     ColorButtonOptions m_options;
   };
 
