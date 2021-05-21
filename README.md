@@ -61,9 +61,10 @@ The default Aseprite theme was introduced in v0.8, created by:
 
 * [Ilija Melentijevic](https://ilkke.net/)
 
-And the dark theme version introduced in v1.3-beta1 by:
+A modified dark version of this theme introduced in v1.3-beta1 was created by:
 
 * [Nicolas Desilets](https://twitter.com/MapleGecko)
+* [David Capello](https://twitter.com/davidcapello)
 
 Aseprite includes color palettes created by:
 
