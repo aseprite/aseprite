@@ -235,6 +235,13 @@ DynamicsPopup::DynamicsPopup(Delegate* delegate)
         m_fromTo = tools::ColorFromTo::BgToFg;
       updateFromToText();
     });
+  m_ditheringSel->OpenListBox.connect(
+    [this]{
+      if (auto comboboxWindow = m_ditheringSel->getWindowWidget()) {
+        m_hotRegion |= gfx::Region(comboboxWindow->boundsOnScreen());
+        setHotRegion(m_hotRegion);
+      }
+    });
 
   m_dynamics->gradientPlaceholder()->addChild(m_ditheringSel);
   m_dynamics->pressurePlaceholder()->addChild(m_pressureThreshold = new ThresholdSlider);
