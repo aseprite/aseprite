@@ -388,7 +388,7 @@ bool ComboBox::onProcessMessage(Message* msg)
 
           MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
           Widget* pick = manager()->pickFromScreenPos(
-            mouseMsg->display()->nativeWindow()->pointFromScreen(mouseMsg->position()));
+            mouseMsg->display()->nativeWindow()->pointToScreen(mouseMsg->position()));
           if (pick && pick->hasAncestor(this))
             return true;
         }
