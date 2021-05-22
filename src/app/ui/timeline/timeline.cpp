@@ -2900,7 +2900,7 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
     case PART_RANGE_OUTLINE: {
       gfx::Rect rc = getRangeBounds(m_range);
       int s = outlineWidth();
-      rc.enlarge(s);
+      rc.enlarge(gfx::Border(s-1, s-1, s, s));
       if (rc.x < bounds.x) rc.offset(s, 0).inflate(-s, 0);
       if (rc.y < bounds.y) rc.offset(0, s).inflate(0, -s);
       return rc;
