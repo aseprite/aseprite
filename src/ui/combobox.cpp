@@ -632,6 +632,7 @@ void ComboBox::openListBox()
   m_window = new Window(Window::WithoutTitleBar);
   View* view = new View();
   m_listbox = new ComboBoxListBox(this);
+  m_window->setAutoRemap(false);
   m_window->setOnTop(true);
   m_window->setWantFocus(false);
   m_window->setSizeable(false);
