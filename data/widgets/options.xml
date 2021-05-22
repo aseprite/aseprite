@@ -39,7 +39,7 @@
               <listitem text="300%" value="3" />
               <listitem text="400%" value="4" />
             </combobox>
-	    <boxfiller />
+	    <hbox id="theme_variants" />
 
             <label text="@.ui_scaling" />
             <combobox id="ui_scale">

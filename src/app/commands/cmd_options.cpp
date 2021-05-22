@@ -110,11 +110,13 @@ class OptionsWindow : public app::gen::Options {
 
   class ThemeItem : public ListItem {
   public:
-    ThemeItem(const std::string& path,
-              const std::string& name)
-      : ListItem(name.empty() ? "-- " + path + " --": name),
+    ThemeItem(const std::string& id,
+              const std::string& path,
+              const std::string& displayName = std::string(),
+              const std::string& variant = std::string())
+      : ListItem(createLabel(path, id, displayName, variant)),
         m_path(path),
-        m_name(name) {
+        m_name(id) {
     }
 
     const std::string& themePath() const { return m_path; }
@@ -129,6 +131,30 @@ class OptionsWindow : public app::gen::Options {
     }
 
   private:
+    static std::string createLabel(const std::string& path,
+                                   const std::string& id,
+                                   const std::string& displayName,
+                                   const std::string& variant) {
+      if (displayName.empty()) {
+        if (id.empty())
+          return fmt::format("-- {} --", path);
+        else
+          return id;
+      }
+      else if (id == displayName) {
+        if (variant.empty())
+          return id;
+        else
+          return fmt::format("{} - {}", id, variant);
+      }
+      else {
+        if (variant.empty())
+          return displayName;
+        else
+          return fmt::format("{} - {}", displayName, variant);
+      }
+    }
+
     std::string m_path;
     std::string m_name;
   };
@@ -190,6 +216,24 @@ class OptionsWindow : public app::gen::Options {
     Extension* m_extension;
   };
 
+  class ThemeVariantItem : public ButtonSet::Item {
+  public:
+    ThemeVariantItem(OptionsWindow* options,
+                     const std::string& id,
+                     const std::string& variant)
+      : m_options(options)
+      , m_themeId(id) {
+      setText(variant);
+    }
+  private:
+    void onClick() override {
+      m_options->setUITheme(m_themeId, true,
+                            false); // Don't recreate variants
+    }
+    OptionsWindow* m_options;
+    std::string m_themeId;
+  };
+
 public:
   OptionsWindow(Context* context, int& curSection)
     : m_context(context)
@@ -203,6 +247,9 @@ public:
     , m_restoreUIScaling(m_pref.general.uiScale())
   {
     sectionListbox()->Change.connect([this]{ onChangeSection(); });
+
+    // Theme variants
+    fillThemeVariants();
 
     // Default extension to save files
     fillExtensionsCombobox(defaultExtension(), m_pref.saveFile.defaultExtension());
@@ -823,6 +870,42 @@ public:
 
 private:
 
+  void fillThemeVariants() {
+    ButtonSet* list = nullptr;
+    for (Extension* ext : App::instance()->extensions()) {
+      if (ext->isCurrentTheme()) {
+        // Number of variants
+        int c = 0;
+        for (auto it : ext->themes()) {
+          if (!it.second.variant.empty())
+            ++c;
+        }
+
+        if (c >= 2) {
+          list = new ButtonSet(c);
+          for (auto it : ext->themes()) {
+            if (!it.second.variant.empty()) {
+              auto item = list->addItem(
+                new ThemeVariantItem(this, it.first, it.second.variant));
+
+              if (it.first == Preferences::instance().theme.selected())
+                list->setSelectedItem(item, false);
+            }
+          }
+        }
+        break;
+      }
+    }
+    if (list) {
+      themeVariants()->addChild(list);
+    }
+    if (m_themeVars) {
+      themeVariants()->removeChild(m_themeVars);
+      m_themeVars->deferDelete();
+    }
+    m_themeVars = list;
+  }
+
   void fillExtensionsCombobox(ui::ComboBox* combobox,
                               const std::string& defExt) {
     base::paths exts = get_writable_extensions();
@@ -1196,7 +1279,7 @@ private:
             new SeparatorInView(base::normalize_path(path), HORIZONTAL));
         }
 
-        ThemeItem* item = new ThemeItem(fullPath, fn);
+        ThemeItem* item = new ThemeItem(fn, fullPath);
         themeList()->addChild(item);
 
         // Selected theme
@@ -1221,11 +1304,14 @@ private:
       }
 
       for (auto it : ext->themes()) {
-        ThemeItem* item = new ThemeItem(it.second, it.first);
+        ThemeItem* item = new ThemeItem(it.first,
+                                        it.second.path,
+                                        ext->displayName(),
+                                        it.second.variant);
         themeList()->addChild(item);
 
         // Selected theme
-        if (it.second == selectedPath)
+        if (it.second.path == selectedPath)
           themeList()->selectChild(item);
       }
     }
@@ -1296,7 +1382,8 @@ private:
   }
 
   void setUITheme(const std::string& themeName,
-                  const bool updateScaling) {
+                  const bool updateScaling,
+                  const bool recreateVariantsFields = true) {
     try {
       if (themeName != m_pref.theme.selected()) {
         auto theme = static_cast<skin::SkinTheme*>(ui::get_theme());
@@ -1343,6 +1430,9 @@ private:
             selectScalingItems();
           }
         }
+
+        if (recreateVariantsFields)
+          fillThemeVariants();
       }
     }
     catch (const std::exception& ex) {
@@ -1618,6 +1708,7 @@ private:
   std::vector<os::ColorSpaceRef> m_colorSpaces;
   std::string m_templateTextForDisplayCS;
   RgbMapAlgorithmSelector m_rgbmapAlgorithmSelector;
+  ButtonSet* m_themeVars = nullptr;
 };
 
 class OptionsCommand : public Command {
