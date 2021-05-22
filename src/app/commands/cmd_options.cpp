@@ -227,7 +227,8 @@ class OptionsWindow : public app::gen::Options {
     }
   private:
     void onClick() override {
-      m_options->setUITheme(m_themeId, true,
+      m_options->setUITheme(m_themeId,
+                            false,  // Don't adjust scale
                             false); // Don't recreate variants
     }
     OptionsWindow* m_options;
