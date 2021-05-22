@@ -646,7 +646,6 @@ public:
 
           if (j == winCs) {
             name = gfxCs->name();
-            os::instance()->setWindowsColorSpace(cs);
             break;
           }
           ++j;

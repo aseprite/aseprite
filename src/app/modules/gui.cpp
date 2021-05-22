@@ -47,6 +47,7 @@
 #include "os/surface.h"
 #include "os/system.h"
 #include "os/window.h"
+#include "os/window.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
 
@@ -257,13 +258,14 @@ void update_windows_color_profile_from_preferences()
   else
     windowProfile = gen::WindowColorProfile::SRGB;
 
+  os::ColorSpaceRef osCS = nullptr;
+
   switch (windowProfile) {
     case gen::WindowColorProfile::MONITOR:
-      system->setWindowsColorSpace(nullptr);
+      osCS = nullptr;
       break;
     case gen::WindowColorProfile::SRGB:
-      system->setWindowsColorSpace(
-        system->makeColorSpace(gfx::ColorSpace::MakeSRGB()));
+      osCS = system->makeColorSpace(gfx::ColorSpace::MakeSRGB());
       break;
     case gen::WindowColorProfile::SPECIFIC: {
       std::string name =
@@ -276,11 +278,25 @@ void update_windows_color_profile_from_preferences()
         auto gfxCs = cs->gfxColorSpace();
         if (gfxCs->type() == gfx::ColorSpace::ICC &&
             gfxCs->name() == name) {
-          system->setWindowsColorSpace(cs);
+          osCS = cs;
           break;
         }
       }
       break;
+    }
+  }
+
+  // Set the default color space for all windows (osCS can be nullptr
+  // which means that each window should use its monitor color space)
+  system->setWindowsColorSpace(osCS);
+
+  // Set the color space of all windows
+  for (ui::Widget* widget : manager->children()) {
+    ASSERT(widget->type() == ui::kWindowWidget);
+    auto window = static_cast<ui::Window*>(widget);
+    if (window->ownDisplay()) {
+      if (auto display = window->display())
+        display->nativeWindow()->setColorSpace(osCS);
     }
   }
 }
