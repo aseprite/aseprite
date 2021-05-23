@@ -283,6 +283,8 @@ ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
   m_buttons.ItemChange.connect([this]{ onPaletteButtonClick(); });
   m_tilesButton.ItemChange.connect([this]{ onTilesButtonClick(); });
   m_tilesButton.RightClick.connect([this]{ onTilesButtonRightClick(); });
+  m_fgTile.Change.connect(&ColorBar::onFgTileButtonChange, this);
+  m_bgTile.Change.connect(&ColorBar::onBgTileButtonChange, this);
   m_tilesetModeButtons.ItemChange.connect([this]{ onTilesetModeButtonClick(); });
 
   InitTheme.connect(
@@ -948,6 +950,13 @@ void ColorBar::onRemapTilesButtonClick()
   }
 }
 
+bool ColorBar::onIsPaletteViewActive(PaletteView* paletteView) const
+{
+  return
+    (paletteView == &m_paletteView && m_tilemapMode == TilemapMode::Pixels) ||
+    (paletteView == &m_tilesView && m_tilemapMode == TilemapMode::Tiles);
+}
+
 void ColorBar::onPaletteViewIndexChange(int index, ui::MouseButton button)
 {
   COLOR_BAR_TRACE("ColorBar::onPaletteViewIndexChange(%d)\n", index);
@@ -1080,6 +1089,16 @@ app::Color ColorBar::onPaletteViewGetForegroundIndex()
 app::Color ColorBar::onPaletteViewGetBackgroundIndex()
 {
   return getBgColor();
+}
+
+doc::tile_index ColorBar::onPaletteViewGetForegroundTile()
+{
+  return doc::tile_geti(getFgTile());
+}
+
+doc::tile_index ColorBar::onPaletteViewGetBackgroundTile()
+{
+  return doc::tile_geti(getBgTile());
 }
 
 void ColorBar::onTilesViewClearTiles(const doc::PalettePicks& _picks)
@@ -1236,7 +1255,9 @@ void ColorBar::onFgTileChangeFromPreferences()
     return;
 
   base::ScopedValue<bool> sync(m_fromPref, true, false);
-  m_fgTile.setTile(Preferences::instance().colorBar.fgTile());
+  auto tile = Preferences::instance().colorBar.fgTile();
+  m_fgTile.setTile(tile);
+  m_tilesView.selectColor(tile);
 }
 
 void ColorBar::onBgTileChangeFromPreferences()
@@ -1245,7 +1266,9 @@ void ColorBar::onBgTileChangeFromPreferences()
     return;
 
   base::ScopedValue<bool> sync(m_fromPref, true, false);
-  m_bgTile.setTile(Preferences::instance().colorBar.bgTile());
+  auto tile = Preferences::instance().colorBar.bgTile();
+  m_bgTile.setTile(tile);
+  m_tilesView.selectColor(tile);
 }
 
 void ColorBar::onFgColorButtonBeforeChange(app::Color& color)
@@ -1337,6 +1360,18 @@ void ColorBar::onColorButtonChange(const app::Color& color)
 
   if (m_wheel && m_wheel->isVisible())
     m_wheel->selectColor(color);
+}
+
+void ColorBar::onFgTileButtonChange(doc::tile_t tile)
+{
+  if (!m_fromPref)
+    Preferences::instance().colorBar.fgTile(tile);
+}
+
+void ColorBar::onBgTileButtonChange(doc::tile_t tile)
+{
+  if (!m_fromPref)
+    Preferences::instance().colorBar.bgTile(tile);
 }
 
 void ColorBar::onPickSpectrum(const app::Color& color, ui::MouseButton button)

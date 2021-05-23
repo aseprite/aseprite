@@ -43,6 +43,7 @@ namespace app {
   class PaletteViewDelegate {
   public:
     virtual ~PaletteViewDelegate() { }
+    virtual bool onIsPaletteViewActive(PaletteView* paletteView) const { return false; }
     virtual void onPaletteViewIndexChange(int index, ui::MouseButton button) { }
     virtual void onPaletteViewModification(const doc::Palette* newPalette, PaletteViewModification mod) { }
     virtual void onPaletteViewChangeSize(PaletteView* paletteView, int boxsize) { }
@@ -50,6 +51,8 @@ namespace app {
       const doc::Palette* fromPal, const doc::PalettePicks& from, const doc::PalettePicks& to) { }
     virtual app::Color onPaletteViewGetForegroundIndex() { return app::Color::fromMask(); }
     virtual app::Color onPaletteViewGetBackgroundIndex() { return app::Color::fromMask(); }
+    virtual doc::tile_index onPaletteViewGetForegroundTile() { return -1; }
+    virtual doc::tile_index onPaletteViewGetBackgroundTile() { return -1; }
     virtual void onTilesViewClearTiles(const doc::PalettePicks& tiles) { }
     virtual void onTilesViewResize(const int newSize) { }
     virtual void onTilesViewDragAndDrop(doc::Tileset* tileset,

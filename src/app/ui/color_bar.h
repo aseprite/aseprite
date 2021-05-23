@@ -143,6 +143,8 @@ namespace app {
     void onFgColorButtonChange(const app::Color& color);
     void onBgColorButtonChange(const app::Color& color);
     void onColorButtonChange(const app::Color& color);
+    void onFgTileButtonChange(doc::tile_t tile);
+    void onBgTileButtonChange(doc::tile_t tile);
     void onPickSpectrum(const app::Color& color, ui::MouseButton button);
     void onReverseColors();
     void onSortBy(doc::SortPaletteBy channel);
@@ -152,12 +154,15 @@ namespace app {
     void setAscending(bool ascending);
 
     // PaletteViewDelegate impl
+    bool onIsPaletteViewActive(PaletteView* paletteView) const override;
     void onPaletteViewIndexChange(int index, ui::MouseButton button) override;
     void onPaletteViewModification(const doc::Palette* newPalette, PaletteViewModification mod) override;
     void onPaletteViewChangeSize(PaletteView* paletteView, int boxsize) override;
     void onPaletteViewPasteColors(const Palette* fromPal, const doc::PalettePicks& from, const doc::PalettePicks& to) override;
     app::Color onPaletteViewGetForegroundIndex() override;
     app::Color onPaletteViewGetBackgroundIndex() override;
+    doc::tile_index onPaletteViewGetForegroundTile() override;
+    doc::tile_index onPaletteViewGetBackgroundTile() override;
     void onTilesViewClearTiles(const doc::PalettePicks& picks) override;
     void onTilesViewResize(const int newSize) override;
     void onTilesViewDragAndDrop(doc::Tileset* tileset,

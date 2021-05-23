@@ -503,7 +503,9 @@ app::Color PaletteView::getColorByPosition(const gfx::Point& pos)
 {
   gfx::Point relPos = pos - bounds().origin();
   for (int i=0; i<m_adapter->size(); ++i) {
-    if (getPaletteEntryBounds(i).contains(relPos))
+    auto box = getPaletteEntryBounds(i);
+    box.inflate(childSpacing());
+    if (box.contains(relPos))
       return app::Color::fromIndex(i);
   }
   return app::Color::fromMask();
@@ -513,7 +515,9 @@ doc::tile_t PaletteView::getTileByPosition(const gfx::Point& pos)
 {
   gfx::Point relPos = pos - bounds().origin();
   for (int i=0; i<m_adapter->size(); ++i) {
-    if (getPaletteEntryBounds(i).contains(relPos))
+    auto box = getPaletteEntryBounds(i);
+    box.inflate(childSpacing());
+    if (box.contains(relPos))
       return doc::tile(i, 0);
   }
   return doc::notile;
@@ -791,12 +795,22 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
   const bool dragging = (m_state == State::DRAGGING_OUTLINE && hotColor);
   const bool resizing = (m_state == State::RESIZING_PALETTE && hotColor);
 
-  if (m_style == FgBgColors && m_delegate) {
-    fgIndex = findExactIndex(m_delegate->onPaletteViewGetForegroundIndex());
-    bgIndex = findExactIndex(m_delegate->onPaletteViewGetBackgroundIndex());
+  if (m_delegate) {
+    switch (m_style) {
 
-    if (current_editor && current_editor->sprite()->pixelFormat() == IMAGE_INDEXED)
-      transparentIndex = current_editor->sprite()->transparentColor();
+      case FgBgColors:
+        fgIndex = findExactIndex(m_delegate->onPaletteViewGetForegroundIndex());
+        bgIndex = findExactIndex(m_delegate->onPaletteViewGetBackgroundIndex());
+
+        if (current_editor && current_editor->sprite()->pixelFormat() == IMAGE_INDEXED)
+          transparentIndex = current_editor->sprite()->transparentColor();
+        break;
+
+      case FgBgTiles:
+        fgIndex = m_delegate->onPaletteViewGetForegroundTile();
+        bgIndex = m_delegate->onPaletteViewGetBackgroundTile();
+        break;
+    }
   }
 
   g->fillRect(theme->colors.editorFace(), bounds);
@@ -826,28 +840,38 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
     m_adapter->drawEntry(g, theme, i + idxOffset, i + boxOffset,
                          childSpacing(), box, negColor);
     const int boxsize = boxSizePx();
+    const int scale = guiscale();
 
-    switch (m_style) {
+    if (!m_delegate || m_delegate->onIsPaletteViewActive(this)) {
+      switch (m_style) {
 
-      case SelectOneColor:
-        if (m_currentEntry == i)
-          g->fillRect(negColor, gfx::Rect(box.center(), gfx::Size(guiscale(), guiscale())));
-        break;
+        case SelectOneColor:
+          if (m_currentEntry == i)
+            g->fillRect(negColor, gfx::Rect(box.center(), gfx::Size(scale, scale)));
+          break;
 
-      case FgBgColors:
-        if (fgIndex == i) {
-          for (int i=0; i<int(boxsize/2); ++i)
-            g->drawHLine(negColor, box.x, box.y+i, int(boxsize/2)-i);
-        }
+        case FgBgColors:
+        case FgBgTiles:
+          if (fgIndex == i) {
+            for (int i=0; i<int(boxsize/2); i += scale) {
+              g->fillRect(negColor,
+                          gfx::Rect(box.x, box.y+i, int(boxsize/2)-i, scale));
+            }
+          }
 
-        if (bgIndex == i) {
-          for (int i=0; i<int(boxsize/4); ++i)
-            g->drawHLine(negColor, box.x+box.w-(i+1), box.y+box.h-int(boxsize/4)+i, i+1);
-        }
+          if (bgIndex == i) {
+            for (int i=0; i<int(boxsize/4); i += scale) {
+              g->fillRect(negColor,
+                          gfx::Rect(box.x+box.w-(i+scale),
+                                    box.y+box.h-int(boxsize/4)+i,
+                                    i+scale, scale));
+            }
+          }
 
-        if (transparentIndex == i)
-          g->fillRect(negColor, gfx::Rect(box.center(), gfx::Size(guiscale(), guiscale())));
-        break;
+          if (transparentIndex == i)
+            g->fillRect(negColor, gfx::Rect(box.center(), gfx::Size(scale, scale)));
+          break;
+      }
     }
   }
 
