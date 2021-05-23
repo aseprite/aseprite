@@ -172,6 +172,7 @@ Ignore this chunk if you find the new palette chunk (0x2019)
     BYTE        Opacity
                   Note: valid only if file header flags field has bit 1 set
     BYTE[3]     For future (set to zero)
+    WORD        Length of layer name
     STRING      Layer name
 
 ### Cel Chunk (0x2005)
