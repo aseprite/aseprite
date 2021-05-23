@@ -139,20 +139,18 @@ Remap Remap::invert() const
   Remap inv(size());
 
   for (int i=0; i<size(); ++i)
-    inv.m_map[i] = kNoMap;
+    inv.unused(i);
 
   for (int i=0; i<size(); ++i) {
     int j = m_map[i];
-    if (j == kNoMap ||
-        // Already mapped
-        inv.m_map[j] != kNoMap)
+    if (j == kUnused ||
+        j == kNoTile ||
+        inv.m_map[j] != kUnused) { // Already mapped (strange case, we
+                                   // cannot invert this Remap)
       continue;
+    }
     inv.map(j, i);
   }
-
-  for (int i=0; i<size(); ++i)
-    if (inv.m_map[i] == kNoMap)
-      inv.m_map[i] = i;
 
   return inv;
 }
@@ -178,8 +176,10 @@ bool Remap::isInvertible(const PalettePicks& usedEntries) const
       continue;
 
     int j = m_map[i];
-    if (j == kNoMap)
+    if (j == kUnused ||
+        j == kNoTile) {
       continue;
+    }
 
     if (picks[j])
       return false;
@@ -192,8 +192,11 @@ bool Remap::isInvertible(const PalettePicks& usedEntries) const
 bool Remap::isIdentity() const
 {
   for (int i=0; i<size(); ++i) {
-    if (m_map[i] != i)
+    int j = m_map[i];
+    if (j != i &&
+        j != kUnused) {
       return false;
+    }
   }
   return true;
 }

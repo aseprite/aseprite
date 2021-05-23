@@ -423,17 +423,24 @@ void remap_image(Image* image, const Remap& remap)
     case IMAGE_INDEXED:
       transform_image<IndexedTraits>(
         image, [&remap](color_t c) -> color_t {
-                 return remap[c];
-               });
+          auto to = remap[c];
+          if (to != Remap::kUnused)
+            return to;
+          else
+            return c;
+        });
       break;
     case IMAGE_TILEMAP:
       transform_image<TilemapTraits>(
         image, [&remap](color_t c) -> color_t {
-                  if (c == notile || remap[c] == Remap::kNoMap)
-                    return notile;
-                  else
-                    return remap[c];
-               });
+          auto to = remap[c];
+          if (c == notile || to == Remap::kNoTile)
+            return notile;
+          else if (to != Remap::kUnused)
+            return to;
+          else
+            return c;
+        });
       break;
   }
 }

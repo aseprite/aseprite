@@ -119,6 +119,9 @@ void ColorButton::onInitTheme(InitThemeEvent& ev)
 {
   ButtonBase::onInitTheme(ev);
   setStyle(SkinTheme::instance()->styles.colorButton());
+
+  if (m_window)
+    m_window->initTheme();
 }
 
 bool ColorButton::onProcessMessage(Message* msg)

@@ -831,6 +831,12 @@ void ColorBar::onRemapPalButtonClick()
         }
 
         if (remap.isInvertible(usedEntries)) {
+          for (int i=0; i<remap.size(); ++i) {
+            if (i >= usedEntries.size() || !usedEntries[i]) {
+              remap.unused(i);
+            }
+          }
+
           tx(new cmd::RemapColors(sprite, remap));
           remapPixels = false;
         }

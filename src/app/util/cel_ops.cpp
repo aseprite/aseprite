@@ -806,7 +806,7 @@ static void remove_unused_tiles_from_tileset(
         modifiedTileIndexes[ti]) {
       cmds->executeAndAdd(new cmd::RemoveTile(tileset, tj));
       // Map to nothing, so the map can be invertible
-      remap.map(ti, doc::Remap::kNoMap);
+      remap.notile(ti);
     }
     else {
       remap.map(ti, tj++);

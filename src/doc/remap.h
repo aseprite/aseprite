@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -19,7 +19,13 @@ namespace doc {
 
   class Remap {
   public:
-    static const int kNoMap = -1;
+    // Unused is like a "no map" operation, we don't want to remap
+    // this entry.
+    constexpr static const int kUnused = -1;
+
+    // NoTile is to specify that we want to remap a tile to the
+    // doc::notile value.
+    constexpr static const int kNoTile = -2;
 
     Remap(int entries = 1) : m_map(entries, 0) { }
 
@@ -30,12 +36,18 @@ namespace doc {
     // Maps input "fromIndex" value, to "toIndex" output.
     void map(int fromIndex, int toIndex) {
       ASSERT(fromIndex >= 0 && fromIndex < size());
-      // toIndex = kNoMap means (there is no remap for this value, useful
-      // to ignore this entry when we invert the map)
-      ASSERT((toIndex == kNoMap) ||
-             (toIndex >= 0 && toIndex < size()));
-
+      ASSERT(toIndex >= 0 && toIndex < size());
       m_map[fromIndex] = toIndex;
+    }
+
+    void unused(int i) {
+      ASSERT(i >= 0 && i < size());
+      m_map[i] = kUnused;
+    }
+
+    void notile(int i) {
+      ASSERT(i >= 0 && i < size());
+      m_map[i] = kNoTile;
     }
 
     int operator[](int index) const {
