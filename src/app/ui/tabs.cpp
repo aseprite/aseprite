@@ -11,6 +11,7 @@
 
 #include "app/ui/tabs.h"
 
+#include "app/color_utils.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
 #include "app/ui/editor/editor_view.h"
@@ -600,6 +601,16 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& _box,
     gfx::Rect(box.x, box.y+dy, box.w, box.h),
     info);
 
+  gfx::Color tabColor = tab->color;
+  gfx::Color textColor = gfx::ColorNone;
+  if (tabColor != gfx::ColorNone) {
+    textColor = color_utils::blackandwhite_neg(tabColor);
+    if (!selected) {
+      tabColor = gfx::seta(tabColor, gfx::geta(tabColor)*3/4);
+      textColor = gfx::seta(textColor, gfx::geta(textColor)*3/4);
+    }
+  }
+
   {
     IntersectClip clip(g, gfx::Rect(box.x, box.y+dy, box.w-clipTextRightSide, box.h));
 
@@ -626,13 +637,27 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& _box,
 
     // Tab with text + clipping the close button
     if (box.w > 8*ui::guiscale()) {
+      Style* stylePtr = theme->styles.tabText();
+      Style newStyle(nullptr);
+
       info.text = &tab->text;
-      if (tab->color != gfx::ColorNone) {
-        g->fillRect(tab->color, gfx::Rect(box.x+dx+2, box.y+dy+3, box.w-dx-2, box.h-3));
-        g->fillRect(tab->color, gfx::Rect(box.x+dx+3, box.y+dy+2, box.w-dx-3, 1));
+      if (tabColor != gfx::ColorNone) {
+        // TODO replace these fillRect() with a new theme part (which
+        // should be painted with the specific user-defined color)
+        g->fillRect(tabColor, gfx::Rect(box.x+dx+2, box.y+dy+3, box.w-dx-2, box.h-3));
+        g->fillRect(tabColor, gfx::Rect(box.x+dx+3, box.y+dy+2, box.w-dx-3, 1));
+
+        newStyle = Style(*stylePtr);
+        for (auto& layer : newStyle.layers()) {
+          if (layer.type() == ui::Style::Layer::Type::kText ||
+              layer.type() == ui::Style::Layer::Type::kBackground) {
+            layer.setColor(textColor);
+          }
+        }
+        stylePtr = &newStyle;
       }
       theme->paintWidgetPart(
-        g, theme->styles.tabText(),
+        g, stylePtr,
         gfx::Rect(box.x+dx, box.y+dy, box.w-dx, box.h),
         info);
       info.text = nullptr;
@@ -661,9 +686,9 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& _box,
       }
     }
 
-    if (tab->color != gfx::ColorNone) {
-      g->fillRect(tab->color, gfx::Rect(closeBox.x, closeBox.y+3, closeBox.w-3, closeBox.h-3));
-      g->fillRect(tab->color, gfx::Rect(closeBox.x, closeBox.y+2, closeBox.w-4, 1));
+    if (tabColor != gfx::ColorNone) {
+      g->fillRect(tabColor, gfx::Rect(closeBox.x, closeBox.y+3, closeBox.w-3, closeBox.h-3));
+      g->fillRect(tabColor, gfx::Rect(closeBox.x, closeBox.y+2, closeBox.w-4, 1));
     }
 
     info.styleFlags = 0;
