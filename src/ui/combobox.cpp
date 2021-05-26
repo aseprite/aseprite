@@ -682,6 +682,8 @@ void ComboBox::openListBox()
 void ComboBox::closeListBox()
 {
   if (m_window) {
+    removeMessageFilters();
+
     m_listbox->clean();
 
     m_window->closeWindow(this);
@@ -690,7 +692,6 @@ void ComboBox::closeListBox()
     m_window = nullptr;
     m_listbox = nullptr;
 
-    removeMessageFilters();
     putSelectedItemAsCustomWidget();
     m_entry->requestFocus();
 
