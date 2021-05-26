@@ -102,7 +102,7 @@ void create_region_with_differences_templ(const Image* a,
 template<typename UnaryFunction>
 void for_each_tile_using_tileset(Tileset* tileset, UnaryFunction f)
 {
-  for (Cel* cel : tileset->sprite()->cels()) {
+  for (Cel* cel : tileset->sprite()->uniqueCels()) {
     if (!cel->layer()->isTilemap() ||
         static_cast<LayerTilemap*>(cel->layer())->tileset() != tileset)
       continue;
