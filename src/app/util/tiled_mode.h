@@ -98,6 +98,17 @@ namespace app {
       rgn = newRgn;
     }
 
+    void wrapPosition(gfx::Region& rgn) const {
+      if (int(m_mode) == int(filters::TiledMode::NONE))
+        return;
+
+      if (int(m_mode) & int(filters::TiledMode::X_AXIS))
+        rgn.offset(m_canvas->width() * (1 - (rgn.bounds().x / m_canvas->width())), 0);
+
+      if (int(m_mode) & int(filters::TiledMode::Y_AXIS))
+        rgn.offset(0, m_canvas->height() * (1 - (rgn.bounds().y / m_canvas->height())));
+    }
+
   private:
     filters::TiledMode m_mode;
     const doc::Sprite* m_canvas;

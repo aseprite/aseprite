@@ -758,16 +758,14 @@ public:
     m_lastPti = pti;
 
     auto saveArea = [this](const tools::Stroke::Pt& pt) {
-      tools::Stroke::Pt pos = pt;
-      // By wrapping the stroke point position when tiled mode is active, the
-      // user can draw outside the canvas and still get the pixel-perfect
-      // effect.
-      wrapPositionOnTiledMode(pt, pos);
-
       gfx::Rect r;
-      getPointShape()->getModifiedArea(this, pos.x, pos.y, r);
+      getPointShape()->getModifiedArea(this, pt.x, pt.y, r);
 
       gfx::Region rgn(r);
+      // By wrapping the modified area's position when tiled mode is active, the
+      // user can draw outside the canvas and still get the pixel-perfect
+      // effect.
+      m_tiledModeHelper.wrapPosition(rgn);
       m_tiledModeHelper.collapseRegionByTiledMode(rgn);
 
       for (auto a : rgn) {
@@ -830,31 +828,6 @@ private:
   }
 #endif  // ENABLE_UI
 
-  void wrapPositionOnTiledMode(const tools::Stroke::Pt& pt, tools::Stroke::Pt& result) {
-    result = pt;
-    if (getTiledMode() == TiledMode::NONE)
-      return;
-
-    if (int(getTiledMode()) & int(TiledMode::X_AXIS)) {
-      result.x %= m_tiledModeHelper.canvasSize().w;
-    }
-    if (int(getTiledMode()) & int(TiledMode::Y_AXIS)) {
-      result.y %= m_tiledModeHelper.canvasSize().h;
-    }
-
-    gfx::Rect r;
-    getPointShape()->getModifiedArea(this, result.x, result.y, r);
-
-    if (r.x < 0)
-      result.x += m_sprite->width();
-    else if (r.x2() > m_tiledModeHelper.canvasSize().w)
-      result.x -= m_sprite->width();
-
-    if (r.y < 0)
-      result.y += m_sprite->height();
-    else if (r.y2() > m_tiledModeHelper.canvasSize().h)
-      result.y -= m_sprite->height();
-  }
 };
 
 //////////////////////////////////////////////////////////////////////
