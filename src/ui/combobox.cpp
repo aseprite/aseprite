@@ -384,11 +384,17 @@ bool ComboBox::onProcessMessage(Message* msg)
           return false;
         }
         else {
+          MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
+
+          // Use the nativeWindow() from the mouseMsg before we close
+          // the listbox because the mouseMsg->display() could be from
+          // the same popup.
+          const gfx::Point screenPos =
+            mouseMsg->display()->nativeWindow()->pointToScreen(mouseMsg->position());
+
           closeListBox();
 
-          MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
-          Widget* pick = manager()->pickFromScreenPos(
-            mouseMsg->display()->nativeWindow()->pointToScreen(mouseMsg->position()));
+          Widget* pick = manager()->pickFromScreenPos(screenPos);
           if (pick && pick->hasAncestor(this))
             return true;
         }
