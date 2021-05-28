@@ -2207,6 +2207,8 @@ void Editor::onTiledModeChange()
 {
   ASSERT(m_sprite);
 
+  m_tiledModeHelper.mode(m_docPref.tiled.mode());
+
   // Get the sprite point in the middle of the editor, so we can
   // restore this with the new tiled mode in the main tile.
   View* view = View::getView(this);
@@ -2223,8 +2225,6 @@ void Editor::onTiledModeChange()
   screenPos = editorToScreen(spritePos);
 
   centerInSpritePoint(spritePos);
-
-  m_tiledModeHelper.mode(m_docPref.tiled.mode());
 }
 
 void Editor::onShowExtrasChange()
