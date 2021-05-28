@@ -1580,6 +1580,9 @@ void Timeline::onInitTheme(ui::InitThemeEvent& ev)
   m_vbar.setStyle(theme->styles.transparentScrollbar());
   m_hbar.setThumbStyle(theme->styles.transparentScrollbarThumb());
   m_vbar.setThumbStyle(theme->styles.transparentScrollbarThumb());
+
+  if (m_confPopup)
+    m_confPopup->initTheme();
 }
 
 void Timeline::onInvalidateRegion(const gfx::Region& region)
