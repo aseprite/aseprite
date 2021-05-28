@@ -32,6 +32,7 @@
 #include "ui/timer.h"
 #include "ui/widget.h"
 
+#include <memory>
 #include <vector>
 
 namespace doc {
@@ -408,7 +409,7 @@ namespace app {
     // Absolute mouse positions for scrolling.
     gfx::Point m_oldPos;
     // Configure timeline
-    ConfigureTimelinePopup* m_confPopup;
+    std::unique_ptr<ConfigureTimelinePopup> m_confPopup;
     obs::scoped_connection m_ctxConn;
     obs::connection m_firstFrameConn;
 

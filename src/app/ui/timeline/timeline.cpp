@@ -250,7 +250,7 @@ Timeline::Timeline(TooltipManager* tooltipManager)
   , m_separator_x(
       Preferences::instance().general.timelineLayerPanelWidth() * guiscale())
   , m_separator_w(1)
-  , m_confPopup(NULL)
+  , m_confPopup(nullptr)
   , m_clipboard_timer(100, this)
   , m_offset_count(0)
   , m_redrawMarchingAntsOnly(false)
@@ -285,7 +285,7 @@ Timeline::~Timeline()
   detachDocument();
   m_context->documents().remove_observer(this);
   m_context->remove_observer(this);
-  delete m_confPopup;
+  m_confPopup.reset();
 }
 
 void Timeline::setZoom(const double zoom)
@@ -1239,17 +1239,14 @@ bool Timeline::onProcessMessage(Message* msg)
               getPartBounds(Hit(PART_HEADER_GEAR)).offset(bounds().origin());
 
             if (!m_confPopup) {
-              ConfigureTimelinePopup* popup =
-                new ConfigureTimelinePopup();
-
-              popup->remapWindow();
-              m_confPopup = popup;
+              m_confPopup.reset(new ConfigureTimelinePopup);
+              m_confPopup->remapWindow();
             }
 
             if (!m_confPopup->isVisible()) {
               gfx::Rect bounds = m_confPopup->bounds();
               ui::fit_bounds(display(), BOTTOM, gearBounds, bounds);
-              ui::fit_bounds(display(), m_confPopup, bounds);
+              ui::fit_bounds(display(), m_confPopup.get(), bounds);
               m_confPopup->openWindow();
             }
             else {
