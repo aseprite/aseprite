@@ -327,42 +327,8 @@ void ToolLoopManager::calculateDirtyArea(const Strokes& strokes)
   // Apply tiled mode
   TiledMode tiledMode = m_toolLoop->getTiledMode();
   if (tiledMode != TiledMode::NONE) {
-    int w = m_toolLoop->sprite()->width();
-    int h = m_toolLoop->sprite()->height();
-    Region sprite_area(Rect(0, 0, w, h));
-    Region outside;
-    outside.createSubtraction(m_dirtyArea, sprite_area);
-
-    switch (tiledMode) {
-      case TiledMode::X_AXIS:
-        outside.createIntersection(outside, Region(Rect(-w*10000, 0, w*20000, h)));
-        break;
-      case TiledMode::Y_AXIS:
-        outside.createIntersection(outside, Region(Rect(0, -h*10000, w, h*20000)));
-        break;
-    }
-
-    Rect outsideBounds = outside.bounds();
-    if (outsideBounds.x < 0) outside.offset(w * (1+((-outsideBounds.x) / w)), 0);
-    if (outsideBounds.y < 0) outside.offset(0, h * (1+((-outsideBounds.y) / h)));
-    int x1 = outside.bounds().x;
-
-    while (true) {
-      Region in_sprite;
-      in_sprite.createIntersection(outside, sprite_area);
-      outside.createSubtraction(outside, in_sprite);
-      m_dirtyArea.createUnion(m_dirtyArea, in_sprite);
-
-      outsideBounds = outside.bounds();
-      if (outsideBounds.isEmpty())
-        break;
-      else if (outsideBounds.x+outsideBounds.w > w)
-        outside.offset(-w, 0);
-      else if (outsideBounds.y+outsideBounds.h > h)
-        outside.offset(x1-outsideBounds.x, -h);
-      else
-        break;
-    }
+    m_toolLoop->getTiledModeHelper().wrapPosition(m_dirtyArea);
+    m_toolLoop->getTiledModeHelper().collapseRegionByTiledMode(m_dirtyArea);
   }
 }
 

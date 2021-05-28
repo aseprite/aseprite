@@ -148,6 +148,8 @@ protected:
   // Last point index.
   int m_lastPti;
 
+  app::TiledModeHelper m_tiledModeHelper;
+
 public:
   ToolLoopBase(Editor* editor,
                Site& site, const doc::Grid& grid,
@@ -193,6 +195,7 @@ public:
     , m_primaryColor(m_button == tools::ToolLoop::Left ? m_fgColor: m_bgColor)
     , m_secondaryColor(m_button == tools::ToolLoop::Left ? m_bgColor: m_fgColor)
     , m_staticToolModifiers(params.modifiers)
+    , m_tiledModeHelper(m_docPref.tiled.mode(), m_sprite)
   {
     ASSERT(m_tool);
     ASSERT(m_ink);
@@ -436,6 +439,10 @@ public:
 
   void restoreLastPts(const int pti, const tools::Stroke::Pt& pt) override { }
 
+  const app::TiledModeHelper& getTiledModeHelper() override {
+    return m_tiledModeHelper;
+  }
+
 #ifdef ENABLE_UI
 protected:
   void updateAllVisibleRegion() {
@@ -473,7 +480,6 @@ class ToolLoopImpl : public ToolLoopBase,
   std::unique_ptr<ExpandCelCanvas> m_expandCelCanvas;
   Image* m_floodfillSrcImage;
   bool m_saveLastPoint;
-  app::TiledModeHelper m_tiledModeHelper;
 
 public:
   ToolLoopImpl(Editor* editor,
@@ -494,7 +500,6 @@ public:
                                 ModifyDocument))
     , m_floodfillSrcImage(nullptr)
     , m_saveLastPoint(saveLastPoint)
-    , m_tiledModeHelper(m_docPref.tiled.mode(), m_sprite)
   {
     if (m_pointShape->isFloodFill()) {
       if (m_tilesMode) {

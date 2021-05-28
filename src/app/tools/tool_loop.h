@@ -10,6 +10,7 @@
 #pragma once
 
 #include "app/shade.h"
+#include "app/util/tiled_mode.h"
 #include "app/tools/dynamics.h"
 #include "app/tools/stroke.h"
 #include "app/tools/tool_loop_modifiers.h"
@@ -256,6 +257,8 @@ namespace app {
       virtual void savePointshapeStrokePtArea(const int pti, const Stroke::Pt& pt) = 0;
 
       virtual void restoreLastPts(const int pti, const tools::Stroke::Pt& pt) = 0;
+
+      virtual const app::TiledModeHelper& getTiledModeHelper() = 0;
     };
 
   } // namespace tools
