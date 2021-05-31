@@ -60,7 +60,11 @@ void Display::flipDisplay()
 
     if (!m_dirtyRegion.isEmpty()) {
       // Invalidate the dirty region in the os::Window
-      m_nativeWindow->invalidateRegion(m_dirtyRegion);
+      if (m_nativeWindow->isVisible())
+        m_nativeWindow->invalidateRegion(m_dirtyRegion);
+      else
+        m_nativeWindow->setVisible(true);
+
       m_dirtyRegion.clear();
     }
   }
