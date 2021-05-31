@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -94,7 +94,7 @@ app::Color ColorWheel::getMainAreaColor(const int _u, const int umax,
     int r = 128 + di*std::cos(a);
     int g = 128 + di*std::sin(a);
     int b = 255 - di;
-    if (d < m_wheelRadius+2*guiscale()) {
+    if (d <= m_wheelRadius) {
       return app::Color::fromRgb(
         base::clamp(r, 0, 255),
         base::clamp(g, 0, 255),
@@ -106,7 +106,7 @@ app::Color ColorWheel::getMainAreaColor(const int _u, const int umax,
   }
 
   // Pick from the wheel
-  if (d < m_wheelRadius+2*guiscale()) {
+  if (d <= m_wheelRadius) {
     double a = std::atan2(-v, u);
 
     int hue = (int(180.0 * a / PI)
@@ -178,8 +178,8 @@ void ColorWheel::onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc)
 {
   bool oldHarmonyPicked = m_harmonyPicked;
 
-  int r = std::min(rc.w/2, rc.h/2);
-  m_wheelRadius = r;
+  double r = std::max(1.0, std::min(rc.w, rc.h) / 2.0);
+  m_wheelRadius = r-0.1;
   m_wheelBounds = gfx::Rect(rc.x+rc.w/2-r,
                             rc.y+rc.h/2-r,
                             r*2, r*2);
