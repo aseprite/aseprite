@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -226,8 +226,6 @@ ColorSelector::ColorSelector()
   : Widget(kGenericWidget)
   , m_paintFlags(AllAreasFlag)
   , m_lockColor(false)
-  , m_capturedInBottom(false)
-  , m_capturedInAlpha(false)
   , m_timer(100, this)
 {
   initTheme();
@@ -312,6 +310,9 @@ bool ColorSelector::onProcessMessage(ui::Message* msg)
       if (msg->type() == kMouseDownMessage) {
         m_capturedInBottom = bottomBarBounds().contains(pos);
         m_capturedInAlpha = alphaBarBounds().contains(pos);
+        m_capturedInMain = (hasCapture() &&
+                            !m_capturedInMain &&
+                            !m_capturedInBottom);
       }
 
       app::Color color = getColorByPosition(pos);
@@ -329,6 +330,7 @@ bool ColorSelector::onProcessMessage(ui::Message* msg)
       if (hasCapture()) {
         m_capturedInBottom = false;
         m_capturedInAlpha = false;
+        m_capturedInMain = false;
         releaseMouse();
       }
       return true;

@@ -74,7 +74,36 @@ app::Color ColorWheel::getMainAreaColor(const int _u, const int umax,
 
   int u = _u - umax/2;
   int v = _v - vmax/2;
+
+  // Pick harmonies
+  if (m_color.getAlpha() > 0) {
+    const gfx::Point pos(_u, _v);
+    int n = getHarmonies();
+    int boxsize = std::min(umax/10, vmax/10);
+
+    for (int i=0; i<n; ++i) {
+      app::Color color = getColorInHarmony(i);
+
+      if (gfx::Rect(umax-(n-i)*boxsize,
+                    vmax-boxsize,
+                    boxsize, boxsize).contains(pos)) {
+        m_harmonyPicked = true;
+
+        color = app::Color::fromHsv(convertHueAngle(int(color.getHsvHue()), 1),
+                                    color.getHsvSaturation(),
+                                    color.getHsvValue(),
+                                    m_color.getAlpha());
+        return color;
+      }
+    }
+  }
+
   double d = std::sqrt(u*u + v*v);
+
+  // When we click the main area we can limit the distance to the
+  // wheel radius to pick colors even outside the wheel radius.
+  if (hasCaptureInMainArea() && d > m_wheelRadius)
+    d = m_wheelRadius;
 
   if (m_colorModel == ColorModel::NORMAL_MAP) {
     double a = std::atan2(-v, u);
@@ -136,29 +165,6 @@ app::Color ColorWheel::getMainAreaColor(const int _u, const int umax,
       base::clamp(sat / 100.0, 0.0, 1.0),
       (m_color.getType() != Color::MaskType ? m_color.getHsvValue(): 1.0),
       getCurrentAlphaForNewColor());
-  }
-
-  // Pick harmonies
-  if (m_color.getAlpha() > 0) {
-    const gfx::Point pos(_u, _v);
-    int n = getHarmonies();
-    int boxsize = std::min(umax/10, vmax/10);
-
-    for (int i=0; i<n; ++i) {
-      app::Color color = getColorInHarmony(i);
-
-      if (gfx::Rect(umax-(n-i)*boxsize,
-                    vmax-boxsize,
-                    boxsize, boxsize).contains(pos)) {
-        m_harmonyPicked = true;
-
-        color = app::Color::fromHsv(convertHueAngle(int(color.getHsvHue()), 1),
-                                    color.getHsvSaturation(),
-                                    color.getHsvValue(),
-                                    m_color.getAlpha());
-        return color;
-      }
-    }
   }
 
   return app::Color::fromMask();
