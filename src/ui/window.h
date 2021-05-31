@@ -72,7 +72,7 @@ namespace ui {
     // native window so we can save this information in the
     // configuration file.
     gfx::Rect lastNativeFrame() const { return m_lastFrame; }
-    void loadNativeFrame(const gfx::Rect& frame) { m_lastFrame = frame; }
+    void loadNativeFrame(const gfx::Rect& frame);
 
     // Signals
     obs::signal<void (Event&)> Open;

@@ -167,8 +167,20 @@ void limit_with_workarea(Display* parentDisplay, gfx::Rect& frame)
   gfx::Rect waBounds = parentDisplay->nativeWindow()->screen()->workarea();
   if (frame.x < waBounds.x) frame.x = waBounds.x;
   if (frame.y < waBounds.y) frame.y = waBounds.y;
-  if (frame.x2() > waBounds.x2()) frame.w -= frame.x2() - waBounds.x2();
-  if (frame.y2() > waBounds.y2()) frame.h -= frame.y2() - waBounds.y2();
+  if (frame.x2() > waBounds.x2()) {
+    frame.x -= frame.x2() - waBounds.x2();
+    if (frame.x < waBounds.x) {
+      frame.x = waBounds.x;
+      frame.w = waBounds.w;
+    }
+  }
+  if (frame.y2() > waBounds.y2()) {
+    frame.y -= frame.y2() - waBounds.y2();
+    if (frame.y < waBounds.y) {
+      frame.y = waBounds.y;
+      frame.h = waBounds.h;
+    }
+  }
 }
 
 } // namespace ui

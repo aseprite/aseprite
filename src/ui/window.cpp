@@ -23,6 +23,7 @@
 #include "ui/message_loop.h"
 #include "ui/move_region.h"
 #include "ui/resize_event.h"
+#include "ui/scale.h"
 #include "ui/size_hint_event.h"
 #include "ui/system.h"
 #include "ui/theme.h"
@@ -189,6 +190,21 @@ HitTest Window::hitTest(const gfx::Point& point)
   HitTestEvent ev(this, point, HitTestNowhere);
   onHitTest(ev);
   return ev.hit();
+}
+
+void Window::loadNativeFrame(const gfx::Rect& frame)
+{
+  m_lastFrame = frame;
+
+  // Just in case the saved value is too small, we can take the value
+  // as invalid.
+  gfx::Size sz = sizeHint() * guiscale();
+  if (display())
+    sz *= display()->scale();
+  if (m_lastFrame.w < sz.w/5 ||
+      m_lastFrame.h < sz.h/5) {
+    m_lastFrame.setSize(sz);
+  }
 }
 
 void Window::onClose(CloseEvent& ev)
@@ -653,6 +669,9 @@ void Window::onSizeHint(SizeHintEvent& ev)
   else {
     Size maxSize(0, 0);
     Size reqSize;
+
+    if (m_titleLabel)
+      maxSize.w = maxSize.h = 40*guiscale();
 
     for (auto child : children()) {
       if (!child->isDecorative()) {
