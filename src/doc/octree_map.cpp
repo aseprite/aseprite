@@ -12,7 +12,6 @@
 
 #include "doc/palette.h"
 
-#define MID_VALUE_COLOR ((rgba_r_mask / 2) + 1)
 #define MIN_LEVEL_OCTREE_DEEP 3
 
 namespace doc {
@@ -62,14 +61,10 @@ void OctreeNode::fillOrphansNodes(const Palette* palette,
         continue;
       }
       int currentBranchColorAdd = octetToBranchColor(i, level);
-      int midColorAdd = MID_VALUE_COLOR >> (level + 1);
-      midColorAdd = ((midColorAdd) << rgba_r_shift)
-                  + ((midColorAdd) << rgba_g_shift)
-                  + ((midColorAdd) << rgba_b_shift);
-      color_t branchColorMed = rgba_a_mask
-                             + upstreamBranchColor
-                             + currentBranchColorAdd
-                             + midColorAdd;
+      color_t branchColorMed = rgba_a_mask |
+                               upstreamBranchColor |
+                               currentBranchColorAdd |
+                               ((level == 7) ? 0 : (0x00010101 << (6 - level))); // mid color adition
       int indexMed = palette->findBestfit2(rgba_getr(branchColorMed),
                                            rgba_getg(branchColorMed),
                                            rgba_getb(branchColorMed));
@@ -93,11 +88,7 @@ void OctreeNode::fillMostSignificantNodes(int level)
 
 int OctreeNode::mapColor(int r, int g, int b, int level) const
 {
-  int indexLevel = (  (b >> (7 - level)) & 1) * 4
-                   + ((g >> (7 - level)) & 1) * 2
-                   + ((r >> (7 - level)) & 1);
-
-  OctreeNode& child = (*m_children)[indexLevel];
+  OctreeNode& child = (*m_children)[getOctet(rgba(r, g, b, 0), level)];
   if (child.hasChildren())
     return child.mapColor(r, g, b, level+1);
   else
@@ -146,20 +137,17 @@ int OctreeNode::removeLeaves(OctreeNodes& auxParentVector,
 // static
 int OctreeNode::getOctet(color_t c, int level)
 {
-  int aux = c >> (7 - level);
-  int octet = aux & 1;
-  aux = aux >> (7);
-  octet += (aux & 2);
-  return octet + ((aux >> 7) & 4);
+  return ((c & (0x00000080 >> level)) ? 1 : 0) |
+         ((c & (0x00008000 >> level)) ? 2 : 0) |
+         ((c & (0x00800000 >> level)) ? 4 : 0);
 }
 
 // static
 color_t OctreeNode::octetToBranchColor(int octet, int level)
 {
-  int auxR = (octet & 1) << (7 - level);
-  int auxG = (octet & 2) << (14 - level);
-  int auxB = (octet & 4) << (21 - level);
-  return auxR + auxG + auxB;
+  return ((octet & 1) ? 0x00000080 >> level : 0) |
+         ((octet & 2) ? 0x00008000 >> level : 0) |
+         ((octet & 4) ? 0x00800000 >> level : 0);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -221,7 +209,7 @@ bool OctreeMap::makePalette(Palette* palette,
           }
           // End Sort colors.
           // Blend colors:
-          for(;;) {
+          for (;;) {
             if (sortedVector.size() <= colorCount) {
               for (int k=0; k<sortedVector.size(); k++)
                 m_leavesVector.push_back(sortedVector[k]);
@@ -255,7 +243,7 @@ bool OctreeMap::makePalette(Palette* palette,
   int aux = 0;
   if (m_maskColor == 0x00FFFFFF)
     palette->resize(leafCount);
-  else{
+  else {
     palette->resize(leafCount + 1);
     palette->setEntry(0, m_maskColor);
     aux = 1;
