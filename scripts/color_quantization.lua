@@ -19,25 +19,25 @@ do
   local p = s.palettes[1]
   assert(#p == 256)
   assert(s.colorMode == ColorMode.RGB)
-  app.command.ColorQuantization()
+  app.command.ColorQuantization{ algorithm="rgb5a3" }
   assert(#p == 1)
 
   array_to_pixels({ rgba(255, 255, 0), rgba(255, 255, 0),
                     rgba(255, 255, 0), rgba(255, 255, 0) }, i)
-  app.command.ColorQuantization()
+  app.command.ColorQuantization{ algorithm="rgb5a3" }
   assert(#p == 1)
   assert(p:getColor(0) == Color(255, 255, 0))
 
   array_to_pixels({ rgba(255,   0, 0), rgba(255, 0,   0),
                     rgba(255, 255, 0), rgba(255, 255, 0) }, i)
-  app.command.ColorQuantization()
+  app.command.ColorQuantization{ algorithm="rgb5a3" }
   assert(#p == 2)
   assert(p:getColor(0) == Color(255, 0, 0))
   assert(p:getColor(1) == Color(255, 255, 0))
 
   array_to_pixels({ rgba(255,   0, 0), rgba(255, 0,   0),
                     rgba(255, 255, 0), rgba(0,   0, 255) }, i)
-  app.command.ColorQuantization()
+  app.command.ColorQuantization{ algorithm="rgb5a3" }
   assert(#p == 3)
   assert(p:getColor(0) == Color(255, 0, 0))
   assert(p:getColor(1) == Color(255, 255, 0))
@@ -46,7 +46,7 @@ do
   -- Convert the background layer to a transparent layer
 
   app.command.LayerFromBackground()
-  app.command.ColorQuantization{ withAlpha=false }
+  app.command.ColorQuantization{ algorithm="rgb5a3", withAlpha=false }
   assert(#p == 4) -- One extra color for transparent layer
   assert(p:getColor(0) == Color(0, 0, 0))
   assert(p:getColor(1) == Color(255, 0, 0))
@@ -62,14 +62,14 @@ do
 
   array_to_pixels({ rgba(0,     0, 0), rgba(255, 0,   0),
                     rgba(255,   0, 0), rgba(0,   0, 255) }, i)
-  app.command.ColorQuantization{ withAlpha=false }
+  app.command.ColorQuantization{ algorithm="rgb5a3", withAlpha=false }
   assert(#p == 4)
   assert(p:getColor(0) == Color(0, 0, 0))
   assert(p:getColor(1) == Color(0, 0, 0))
   assert(p:getColor(2) == Color(255, 0, 0))
   assert(p:getColor(3) == Color(0, 0, 255))
 
-  app.command.ColorQuantization()
+  app.command.ColorQuantization{ algorithm="rgb5a3" }
   assert(#p == 4)
   assert(p:getColor(0) == Color(0, 0, 0, 0))
   assert(p:getColor(1) == Color(0, 0, 0))
@@ -94,7 +94,7 @@ do
   array_to_pixels({ rgba(0, 0, 0), rgba(0, 0, 0),
                     rgba(0, 0, 0), rgba(0, 0, 255) }, bg)
 
-  app.command.ColorQuantization()
+  app.command.ColorQuantization{ algorithm="rgb5a3" }
   assert(#p == 5)
   assert(p:getColor(0) == Color(0, 0, 0, 0))
   assert(p:getColor(1) == Color(0, 0, 0))
@@ -122,15 +122,26 @@ do
                     rgba(102, 91, 201), rgba(103, 92, 203) }, bg)
 
   app.command.ChangePixelFormat{ format="indexed", rgbmap="rgb5a3" }
-  local bg = s.cels[1].image
   -- Using the 5-bit precision of RGB5A3 will match everything with
   -- the first palette entry.
+  bg = s.cels[1].image
   expect_img(bg, { 0, 1,
                    1, 1 })
   app.undo()
 
   app.command.ChangePixelFormat{ format="indexed", rgbmap="octree" }
-  local bg = s.cels[1].image
+  bg = s.cels[1].image
   expect_img(bg, { 0, 1,
                    2, 3 })
+  app.undo()
+
+  p:setColor(0, Color(0, 0, 0, 0))
+  bg = s.cels[1].image
+  array_to_pixels({ rgba(101, 90, 200, 0), rgba(101, 90, 200),
+                    rgba(102, 91, 201), rgba(103, 92, 203, 0) }, bg)
+  app.command.ChangePixelFormat{ format="indexed", rgbmap="octree" }
+  bg = s.cels[1].image
+  expect_img(bg, { 0, 1,
+                   2, 0 })
+
 end
