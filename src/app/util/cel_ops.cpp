@@ -783,7 +783,11 @@ static void remove_unused_tiles_from_tileset(
         const doc::tile_index ti = doc::tile_geti(t);
         n = std::max<int>(n, ti+1);
 #ifdef _DEBUG
-        ++tilesHistogram2[ti];
+        // This check is necessary in case the tilemap has a reference
+        // to a tile outside the valid range (e.g. when we resize the
+        // tileset deleting tiles that will not be present anymore)
+        if (ti >= 0 && ti < tilesHistogram2.size())
+          ++tilesHistogram2[ti];
 #endif
       }
     });
