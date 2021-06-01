@@ -747,11 +747,6 @@ void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleT
     return;
 
   try {
-    // Clear brush preview, as the extra cel will be replaced with the
-    // transformed image.
-    editor->brushPreview().hide();
-
-    EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
     Site site = editor->getSite();
     ImageRef tmpImage;
 
@@ -765,6 +760,18 @@ void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleT
                                          Preferences::instance().experimental.newBlend()));
     }
 
+    ASSERT(tmpImage);
+    if (!tmpImage) {
+      // We've received a bug report with this case, we're not sure
+      // yet how to reproduce it. Probably new_tilemap_from_mask() can
+      // return nullptr (e.g. when site.cel() is nullptr?)
+      return;
+    }
+
+    // Clear brush preview, as the extra cel will be replaced with the
+    // transformed image.
+    editor->brushPreview().hide();
+
     PixelsMovementPtr pixelsMovement(
       new PixelsMovement(UIContext::instance(),
                          site,
@@ -773,6 +780,7 @@ void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleT
                          "Transformation"));
 
     // If the Ctrl key is pressed start dragging a copy of the selection
+    EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
     if ((customization) &&
         int(customization->getPressedKeyAction(KeyContext::TranslatingSelection) & KeyAction::CopySelection))
       pixelsMovement->copyMask();
