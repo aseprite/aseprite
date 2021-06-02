@@ -269,7 +269,7 @@ bool Clipboard::copyFromDocument(const Site& site, bool merged)
       image,
       (mask ? new Mask(*mask): nullptr),
       (pal ? new Palette(*pal): nullptr),
-      new Tileset(*ts),
+      Tileset::MakeCopyCopyingImages(ts),
       true,                       // set native clipboard
       site.layer() && !site.layer()->isBackground());
 
