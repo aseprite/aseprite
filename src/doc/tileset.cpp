@@ -121,6 +121,10 @@ void Tileset::remap(const Remap& remap)
 void Tileset::set(const tile_index ti,
                   const ImageRef& image)
 {
+  ASSERT(image);
+  ASSERT(image->width() == m_grid.tileSize().w);
+  ASSERT(image->height() == m_grid.tileSize().h);
+
 #if _DEBUG
   if (ti == notile && !is_empty_image(image.get())) {
     TRACEARGS("Warning: setting tile 0 with a non-empty image");
@@ -154,15 +158,15 @@ tile_index Tileset::add(const ImageRef& image)
 void Tileset::insert(const tile_index ti,
                      const ImageRef& image)
 {
+  ASSERT(image);
+  ASSERT(image->width() == m_grid.tileSize().w);
+  ASSERT(image->height() == m_grid.tileSize().h);
+
 #if _DEBUG
   if (ti == notile && !is_empty_image(image.get())) {
     TRACEARGS("Warning: inserting tile 0 with a non-empty image");
   }
 #endif
-
-  ASSERT(image);
-  ASSERT(image->width() == m_grid.tileSize().w);
-  ASSERT(image->height() == m_grid.tileSize().h);
 
   ASSERT(ti >= 0 && ti <= m_tiles.size()+1);
   preprocess_transparent_pixels(image.get());
