@@ -774,6 +774,7 @@ public:
       m_tiledModeHelper.collapseRegionByTiledMode(rgn);
 
       for (auto a : rgn) {
+        a.offset(-m_celOrigin);
         ImageRef i(Image::create(getDstImage()->pixelFormat(), a.w, a.h));
         i->copy(getDstImage(), gfx::Clip(0, 0, a));
         m_savedAreas.push_back(SavedArea{ i, pt, a});
