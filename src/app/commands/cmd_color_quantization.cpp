@@ -54,19 +54,6 @@ public:
         expandWindow(sizeHint());
       });
 
-    m_algoSelector.Change.connect(
-      [this](){
-        switch (algorithm()) {
-          case RgbMapAlgorithm::DEFAULT:
-          case RgbMapAlgorithm::RGB5A3:
-            alphaChannel()->setEnabled(true);
-            break;
-          case RgbMapAlgorithm::OCTREE:
-            alphaChannel()->setSelected(false);
-            alphaChannel()->setEnabled(false);
-            break;
-        }
-      });
   }
 
   doc::RgbMapAlgorithm algorithm() {

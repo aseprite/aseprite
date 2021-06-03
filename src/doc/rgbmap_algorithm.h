@@ -11,9 +11,9 @@
 namespace doc {
 
   enum class RgbMapAlgorithm {
-    DEFAULT, // Select best algorithm (generally octree when alpha is=255 in all colors)
-    RGB5A3,
-    OCTREE,
+    DEFAULT = 0,
+    RGB5A3 = 1,
+    OCTREE = 2,
   };
 
 } // namespace doc

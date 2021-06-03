@@ -138,7 +138,7 @@ void SelectPaletteColorsCommand::onExecute(Context* context)
 
         case IMAGE_RGB:
         case IMAGE_GRAYSCALE:
-          octreemap.feedWithImage(image, image->maskColor(), 8);
+          octreemap.feedWithImage(image, true, image->maskColor(), 8);
           break;
 
         case IMAGE_INDEXED:

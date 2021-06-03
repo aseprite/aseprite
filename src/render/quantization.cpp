@@ -46,10 +46,13 @@ Palette* create_palette_from_sprite(
   RgbMapAlgorithm mapAlgo,
   const bool calculateWithTransparent)
 {
+   if (mapAlgo == doc::RgbMapAlgorithm::DEFAULT)
+     mapAlgo = doc::RgbMapAlgorithm::OCTREE;
+
   PaletteOptimizer optimizer;
   OctreeMap octreemap;
   const color_t maskColor = (sprite->backgroundLayer()
-                             && sprite->allLayersCount() == 1) ? 0x00FFFFFF:
+                             && sprite->allLayersCount() == 1) ? DOC_OCTREE_IS_OPAQUE:
                                                                  sprite->transparentColor();
 
   if (!palette)
@@ -62,24 +65,6 @@ Palette* create_palette_from_sprite(
   render::Render render;
   render.setNewBlend(newBlend);
 
-  // Use octree if there are no semi-transparent pixels.
-  if (mapAlgo == RgbMapAlgorithm::DEFAULT) {
-    for (frame_t frame=fromFrame;
-         frame<=toFrame && mapAlgo == RgbMapAlgorithm::DEFAULT;
-         ++frame) {
-      render.renderSprite(flat_image.get(), sprite, frame);
-      doc::for_each_pixel<RgbTraits>(
-        flat_image.get(),
-        [&mapAlgo](const color_t p) {
-          if (rgba_geta(p) > 0 && rgba_geta(p) < 255) {
-            mapAlgo = RgbMapAlgorithm::RGB5A3;
-          }
-        });
-    }
-    if (mapAlgo == RgbMapAlgorithm::DEFAULT)
-      mapAlgo = RgbMapAlgorithm::OCTREE;
-  }
-
   // Feed the optimizer with all rendered frames
   for (frame_t frame=fromFrame; frame<=toFrame; ++frame) {
     render.renderSprite(flat_image.get(), sprite, frame);
@@ -89,7 +74,7 @@ Palette* create_palette_from_sprite(
         optimizer.feedWithImage(flat_image.get(), withAlpha);
         break;
       case RgbMapAlgorithm::OCTREE:
-        octreemap.feedWithImage(flat_image.get(), maskColor);
+        octreemap.feedWithImage(flat_image.get(), withAlpha, maskColor);
         break;
       default:
         ASSERT(false);
@@ -126,7 +111,7 @@ Palette* create_palette_from_sprite(
         octreemap = OctreeMap();
         for (frame_t frame=fromFrame; frame<=toFrame; ++frame) {
           render.renderSprite(flat_image.get(), sprite, frame);
-          octreemap.feedWithImage(flat_image.get(), maskColor , 8);
+          octreemap.feedWithImage(flat_image.get(), withAlpha, maskColor , 8);
           if (delegate) {
             if (!delegate->continueTask())
               return nullptr;
