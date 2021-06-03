@@ -748,13 +748,13 @@ public:
     m_internalCancel = true;
   }
 
-  // Saves the combined source image's areas and destination image's areas
-  // that will be updated by the last point of each stroke. The idea is to have
-  // the state of the image (only the portion modified by the stroke's point
-  // shape) before drawing the last point of the stroke, then if that point has
-  // to be deleted by the pixel-perfect algorithm, we can use this image to
-  // restore the image to the state previous to the deletion. This method is
-  // used by IntertwineAsPixelPerfect.joinStroke() method.
+  // Saves the destination image's areas that will be updated by the last point
+  // of each stroke. The idea is to have the state of the image (only the
+  // portion modified by the stroke's point shape) before drawing the last
+  // point of the stroke, then if that point has to be deleted by the
+  // pixel-perfect algorithm, we can use this image to restore the image to the
+  // state previous to the deletion. This method is used by
+  // IntertwineAsPixelPerfect.joinStroke() method.
   void savePointshapeStrokePtArea(const int pti, const tools::Stroke::Pt& pt) override {
     if (m_savedAreas.size() > 0 && m_savedAreas[0].pos == pt)
       return;
@@ -774,8 +774,7 @@ public:
       m_tiledModeHelper.collapseRegionByTiledMode(rgn);
 
       for (auto a : rgn) {
-        ImageRef i(Image::create(getSrcImage()->pixelFormat(), a.w, a.h));
-        i->copy(getSrcImage(), gfx::Clip(0, 0, a));
+        ImageRef i(Image::create(getDstImage()->pixelFormat(), a.w, a.h));
         i->copy(getDstImage(), gfx::Clip(0, 0, a));
         m_savedAreas.push_back(SavedArea{ i, pt, a});
       }
