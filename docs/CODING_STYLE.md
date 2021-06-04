@@ -142,4 +142,4 @@ We are using some modern C++ (C++11, C++14, etc.) features, mainly:
 * You can use `<atomic>`, `<thread>`, `<mutex>`, and `<condition_variable>`
 * Prefer `using T = ...;` instead of `typedef ... T`
 * We use gcc 9.2 or clang 9.0 on Linux, so check the features available in
-  https://developer.mozilla.org/en-US/docs/Mozilla/Using_CXX_in_Mozilla_code
+  https://en.cppreference.com/w/cpp/compiler_support
