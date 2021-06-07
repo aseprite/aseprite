@@ -589,9 +589,9 @@ public:
   void saveConfig() {
     // Save preferences in widgets that are bound to options automatically
     {
-      Message* msg = new Message(kSavePreferencesMessage);
-      msg->setPropagateToChildren(msg);
-      sendMessage(msg);
+      Message msg(kSavePreferencesMessage);
+      msg.setPropagateToChildren(&msg);
+      sendMessage(&msg);
     }
 
     // Update language

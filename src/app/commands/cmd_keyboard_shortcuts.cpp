@@ -942,9 +942,9 @@ void KeyboardShortcutsCommand::onExecute(Context* context)
 
     // Save preferences in widgets that are bound to options automatically
     {
-      Message* msg = new Message(kSavePreferencesMessage);
-      msg->setPropagateToChildren(msg);
-      window.sendMessage(msg);
+      Message msg(kSavePreferencesMessage);
+      msg.setPropagateToChildren(&msg);
+      window.sendMessage(&msg);
     }
 
     // Save keyboard shortcuts in configuration file
