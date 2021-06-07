@@ -24,6 +24,7 @@
 #include "base/file_handle.h"
 #include "base/fs.h"
 #include "doc/doc.h"
+#include "doc/octree_map.h"
 #include "gfx/clip.h"
 #include "render/dithering.h"
 #include "render/ordered_dither.h"
@@ -798,7 +799,8 @@ private:
         render::convert_pixel_format
         (oldImage, nullptr, IMAGE_RGB,
          render::Dithering(),
-         nullptr,
+         nullptr, // rgbmap isn't needed, because isn't used in
+                  // INDEXED->RGB conversions
          m_sprite->palette(cel->frame()),
          m_opaque,
          m_bgIndex,
@@ -849,16 +851,15 @@ private:
   }
 
   void reduceToAnOptimizedPalette() {
-    render::PaletteOptimizer optimizer;
+    OctreeMap octree;
     const Palette* palette = m_sprite->palette(0);
 
-    // Feed the palette optimizer with pixels inside frameBounds
-    for (int i=0; i<palette->size(); ++i) {
-      optimizer.feedWithRgbaColor(palette->getEntry(i));
-    }
+    // Feed the octree with palette colors
+    for (int i=0; i<palette->size(); ++i)
+      octree.addColor(palette->getEntry(i));
 
     Palette newPalette(0, 256);
-    optimizer.calculate(&newPalette, m_bgIndex);
+    octree.makePalette(&newPalette, 256, 8);
     m_sprite->setPalette(&newPalette, false);
   }
 
@@ -1060,7 +1061,7 @@ public:
         !m_hasBackground) {
         // We create a new palette with 255 colors + one extra entry
         // for the transparent color
-        Palette newPalette(0, 255);
+        Palette newPalette(0, 256);
         render::create_palette_from_sprite(
           m_sprite,
           0,
@@ -1069,15 +1070,10 @@ public:
           &newPalette,
           nullptr,
           m_fop->newBlend(),
-          RgbMapAlgorithm::DEFAULT, // TODO configurable?
+          RgbMapAlgorithm::OCTREE, // TODO configurable?
           false); // Do not add the transparent color yet
 
-        // We will use the last palette entry (e.g. index=255) as the
-        // transparent index
-        newPalette.addEntry(0);
-        ASSERT(newPalette.size() <= 256);
-
-        m_transparentIndex = newPalette.size() - 1;
+        m_transparentIndex = 0;
         m_globalColormapPalette = newPalette;
         m_globalColormap = createColorMap(&m_globalColormapPalette);
       }
@@ -1377,11 +1373,10 @@ private:
     if (m_globalColormap)
       framePalette = m_globalColormapPalette;
     else
-      framePalette = calculatePalette(frameBounds, disposal);
+      framePalette = calculatePalette();
 
-    RgbMapRGB5A3 rgbmap;        // TODO RgbMapRGB5A3 configurable?
-    rgbmap.regenerateMap(&framePalette, m_transparentIndex);
-
+    OctreeMap octree;
+    octree.regenerateMap(&framePalette, m_transparentIndex);
     ImageRef frameImage(Image::create(IMAGE_INDEXED,
                                       frameBounds.w,
                                       frameBounds.h,
@@ -1419,7 +1414,7 @@ private:
               255,
               m_transparentIndex);
             if (i < 0)
-              i = rgbmap.mapColor(color | rgba_a_mask); // alpha=255
+              i = octree.mapColor(color | rgba_a_mask); // alpha=255
           }
           else {
             if (m_transparentIndex >= 0)
@@ -1519,174 +1514,38 @@ private:
       GifFreeMapObject(colormap);
   }
 
-  Palette calculatePalette(const gfx::Rect& frameBounds,
-                           const DisposalMethod disposal) {
-    // First, we must check the palette color count in m_deltaImage (our best shot
-    // to find the smaller palette color count)
-    Palette pal(createOptimizedPalette(m_deltaImage.get(), m_deltaImage->bounds(), 256));
-    if (pal.size() == 256) {
-      // Here the palette has 256 colors, there is no place to include
-      // the 0 color (createOptimizedPalette() doesn't create an entry
-      // for it).
-      //
-      // We have two paths:
-      // 1- Giving a try to palette generation on m_currentImage in frameBouns limits.
-      // 2- If the previous step is not possible (color count > 256), we will to start
-      //    to approximate colors from m_deltaImage with some criterion. Final target:
-      //    to approximate the palette to 255 colors + clear color (0)).
-
-      // 1- Giving a try to palette generation on m_currentImage in frameBouns limits.
-      // if disposal == RESTORE_BGCOLOR m_deltaImage already is a cropped copy of m_currentImage.
-      Palette auxPalette;
-      if (disposal == DisposalMethod::DO_NOT_DISPOSE)
-        auxPalette = createOptimizedPalette(m_currentImage, frameBounds, 257);
-      else
-        auxPalette = pal;
-
-      if (auxPalette.size() <= 256) {
-        // We are fine with color count in m_currentImage contained in
-        // frameBounds (we got 256 or less colors):
-        m_transparentIndex = -1;
-        pal = auxPalette;
-        if (disposal == DisposalMethod::DO_NOT_DISPOSE) {
-          ASSERT(frameBounds.w >= 1);
-          m_deltaImage.reset(crop_image(m_currentImage, frameBounds, 0));
-        }
+  Palette calculatePalette()
+  {
+    OctreeMap octree;
+    const LockImageBits<RgbTraits> imageBits(m_deltaImage.get());
+    auto it = imageBits.begin(), end = imageBits.end();
+    bool maskColorFounded = false;
+    for (; it != end; ++it) {
+      color_t i = *it;
+      if (i == 0 || m_transparentIndex == i) {
+        maskColorFounded = true;
+        continue;
       }
-      else {
-        // 2- If the previous step fails, we will to start to approximate colors from m_deltaImage
-        //    with some criterion:
-
-        // Final target: to approximate the palette to 255 colors + clear color (0)).
-        // CRITERION:
-        // Find a palette of 220 or less colors (in high precision) into the square border
-        // contained in m_deltaImage, then into the center square quantize the remaining colors
-        // to complete a palette of 255 colors, finally add the transparent color (0).
-        //
-        //  m_currentImage__      __ m_deltaImage (same rectangle size as `frameBounds` variable)
-        //                 |    |
-        //   --------------*----|-----------
-        //  |                   |           |
-        //  |     --------------*-          |
-        //  |    |                |         |
-        //  |    |    ________    |         |
-        //  |    |   |        | *--------------- square border (we will collect
-        //  |    |   |        |   |         |    high precision colors from this area, less than 220)
-        //  |    |   |        |   |         |
-        //  |    |   |    *--------------------- center rectangle (we will to quantize
-        //  |    |   |        |   |         |    colors contained in this area)
-        //  |    |   |________|   |         |
-        //  |    |                |         |
-        //  |    |________________|         |
-        //  |                               |
-        //  |_______________________________|
-        //
-
-        const gfx::Size deltaSize = m_deltaImage->size();
-        int thicknessTop = deltaSize.h / 4;
-        int thicknessLeft = deltaSize.w / 4;
-        int repeatCounter = 0;
-        while (repeatCounter < 10 && thicknessTop > 0 && thicknessLeft > 0) {
-
-          //      ----------------
-          //     |________________|
-          //     |   |        |   |
-          //     |   |        |   |
-          //     |   |________|   |
-          //     |________________|
-          render::PaletteOptimizer optimizer;
-          gfx::Rect auxRect(0, 0, deltaSize.w, thicknessTop);
-          optimizer.feedWithImage(m_deltaImage.get(), auxRect, false);
-
-          //      ----------------
-          //     |    ________    |
-          //     |   |        |   |
-          //     |   |        |   |
-          //     |___|________|___|
-          //     |________________|
-          auxRect = gfx::Rect(0, deltaSize.h - thicknessTop - 1, deltaSize.w, thicknessTop);
-          optimizer.feedWithImage(m_deltaImage.get(), auxRect, false);
-
-          //      ----------------
-          //     |____________    |
-          //     |   |        |   |
-          //     |   |        |   |
-          //     |___|________|   |
-          //     |________________|
-          auxRect = gfx::Rect(0, thicknessTop, thicknessLeft, deltaSize.h - 2 * thicknessTop);
-          optimizer.feedWithImage(m_deltaImage.get(), auxRect, false);
-
-          //      ----------------
-          //     |   _____________|
-          //     |   |        |   |
-          //     |   |        |   |
-          //     |   |________|___|
-          //     |________________|
-          auxRect = gfx::Rect(deltaSize.w - thicknessLeft - 1, thicknessTop, thicknessLeft, deltaSize.h - 2 * thicknessTop);
-          optimizer.feedWithImage(m_deltaImage.get(), auxRect, false);
-
-          int maxBorderColorCount = 220;
-          if (optimizer.isHighPrecision() && (optimizer.highPrecisionSize() < maxBorderColorCount)) {
-            pal.resize(optimizer.highPrecisionSize());
-            optimizer.calculate(&pal, -1);
-            break;
-          }
-          else if (thicknessTop <= 1 || thicknessLeft <= 1) {
-            pal.resize(0);
-            thicknessTop = 0;
-            thicknessLeft = 0;
-            break;
-          }
-          else {
-            thicknessTop -= thicknessTop / 2;
-            thicknessLeft -= thicknessLeft / 2;
-          }
-
-          repeatCounter++;
-        }
-        // Quantize the colors contained into center rectangle and add these in `pal`:
-        if (pal.size() < 255) {
-          gfx::Rect centerRect(thicknessLeft,
-                               thicknessTop,
-                               deltaSize.w - 2 * thicknessLeft,
-                               deltaSize.h - 2 * thicknessTop);
-          Palette centerPalette(0, 255 - pal.size());
-          centerPalette = createOptimizedPalette(m_deltaImage.get(),
-                                                 centerRect, 255 - pal.size());
-          for (int i=0; i < centerPalette.size(); i++)
-            pal.addEntry(centerPalette.getEntry(i));
-        }
-        // Finally add transparent color:
-        ASSERT(pal.size() <= 255);
-        pal.addEntry(0);
-        m_transparentIndex = pal.size() - 1;
-      }
+      octree.addColor(i);
     }
-    // We are fine, we got 255 or less, there is room for the transparent color
-    else if (pal.size() <= 255) {
-      pal.addEntry(0);
-      m_transparentIndex = pal.size() - 1;
+    Palette palette;
+    if (maskColorFounded) {
+      // If there is a mask color, the OctreeMap::makePalette adds it
+      // by default at entry == 0.
+      octree.makePalette(&palette, 256, 8);
+      m_transparentIndex = 0;
+      return palette;
     }
-    return pal;
-  }
-
-  static Palette createOptimizedPalette(const Image* image,
-                                        const gfx::Rect& bounds,
-                                        const int ncolors) {
-    render::PaletteOptimizer optimizer;
-
-    // Feed the palette optimizer with pixels inside the given bounds
-    for (const auto& color : LockImageBits<RgbTraits>(image, bounds)) {
-      if (rgba_geta(color) >= 128) // Note: the mask color won't be part of the final palette
-        optimizer.feedWithRgbaColor(
-          rgba(rgba_getr(color),
-               rgba_getg(color),
-               rgba_getb(color), 255));
+    else {
+      // If there isn't mask color we need to remove the 0 entry
+      // added in OctreeMap::makePalette.
+      octree.makePalette(&palette, 257, 8);
+      Palette paletteWithoutMask(0, palette.size() - 1);
+      for (int i=0; i < paletteWithoutMask.size(); i++)
+        paletteWithoutMask.setEntry(i, palette.entry(i+1));
+      m_transparentIndex = -1;
+      return paletteWithoutMask;
     }
-
-    Palette palette(0, ncolors);
-    optimizer.calculate(&palette, -1);
-    return palette;
   }
 
   void renderFrame(frame_t frame, Image* dst) {
