@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -240,6 +240,11 @@ SkinTheme::~SkinTheme()
     m_sheet->dispose();
 
   m_parts_by_id.clear();
+
+  // Delete all styles.
+  for (auto style : m_styles)
+    delete style.second;
+  m_styles.clear();
 
   // Destroy fonts
   for (auto& kv : m_fonts)

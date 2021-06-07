@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This program is distributed under the terms of
@@ -61,6 +61,11 @@ public:
     , m_palId(0)
     , m_palMods(0)
   {
+  }
+
+  ~DitherItem() {
+    if (m_preview)
+      m_preview->dispose();
   }
 
   render::DitheringAlgorithm algo() const {
