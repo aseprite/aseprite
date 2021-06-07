@@ -590,7 +590,7 @@ public:
     // Save preferences in widgets that are bound to options automatically
     {
       Message msg(kSavePreferencesMessage);
-      msg.setPropagateToChildren(&msg);
+      msg.setPropagateToChildren(true);
       sendMessage(&msg);
     }
 
