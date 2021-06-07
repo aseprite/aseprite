@@ -56,6 +56,7 @@
 #endif
 
 #include <algorithm>
+#include <cstdio>
 #include <list>
 #include <vector>
 
@@ -112,7 +113,7 @@ static ui::Timer* defered_invalid_timer = nullptr;
 static gfx::Region defered_invalid_region;
 
 // Load & save graphics configuration
-static void load_gui_config(os::WindowSpec& spec, bool& maximized);
+static bool load_gui_config(os::WindowSpec& spec, bool& maximized);
 static void save_gui_config();
 
 static bool create_main_window(bool gpuAccel,
@@ -120,7 +121,8 @@ static bool create_main_window(bool gpuAccel,
                                std::string& lastError)
 {
   os::WindowSpec spec;
-  load_gui_config(spec, maximized);
+  if (!load_gui_config(spec, maximized))
+    return false;
 
   // Scale is equal to 0 when it's the first time the program is
   // executed.
@@ -301,9 +303,26 @@ void update_windows_color_profile_from_preferences()
   }
 }
 
-static void load_gui_config(os::WindowSpec& spec, bool& maximized)
+static bool load_gui_config(os::WindowSpec& spec, bool& maximized)
 {
   os::ScreenRef screen = os::instance()->mainScreen();
+#ifdef LAF_SKIA
+  ASSERT(screen);
+#else
+  // Compiled without Skia (none backend), without screen.
+  if (!screen) {
+    std::printf(
+      "\n"
+      "  Aseprite cannot initialize GUI because it was compiled with LAF_BACKEND=none\n"
+      "\n"
+      "  Check the documentation in:\n"
+      "  https://github.com/aseprite/laf/blob/main/README.md\n"
+      "  https://github.com/aseprite/aseprite/blob/main/INSTALL.md\n"
+      "\n");
+    return false;
+  }
+#endif
+
   spec.screen(screen);
 
   gfx::Rect frame;
@@ -346,6 +365,7 @@ static void load_gui_config(os::WindowSpec& spec, bool& maximized)
   maximized = get_config_bool("GfxMode", "Maximized", true);
 
   ui::set_multiple_displays(Preferences::instance().experimental.multipleWindows());
+  return true;
 }
 
 static void save_gui_config()
