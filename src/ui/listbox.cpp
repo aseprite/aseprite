@@ -92,6 +92,8 @@ Widget* ListBox::getChildByIndex(int index)
 
 void ListBox::selectChild(Widget* item, Message* msg)
 {
+  bool didChange = false;
+
   int itemIndex = getChildIndex(item);
   m_lastSelectedIndex = itemIndex;
 
@@ -108,7 +110,10 @@ void ListBox::selectChild(Widget* item, Message* msg)
         bool state = child->isSelected();
         if (msg && !msg->ctrlPressed() && !msg->cmdPressed())
           state = false;
-        m_states[i] = state;
+        if (m_states[i] != state) {
+          didChange = true;
+          m_states[i] = state;
+        }
         ++i;
       }
     }
@@ -131,8 +136,10 @@ void ListBox::selectChild(Widget* item, Message* msg)
       newState = (child == item);
     }
 
-    if (child->isSelected() != newState)
+    if (child->isSelected() != newState) {
+      didChange = true;
       child->setSelected(newState);
+    }
 
     ++i;
   }
@@ -140,7 +147,8 @@ void ListBox::selectChild(Widget* item, Message* msg)
   if (item)
     makeChildVisible(item);
 
-  onChange();
+  if (didChange)
+    onChange();
 }
 
 void ListBox::selectIndex(int index, Message* msg)
