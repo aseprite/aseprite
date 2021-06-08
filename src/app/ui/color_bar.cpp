@@ -521,8 +521,10 @@ TilemapMode ColorBar::tilemapMode() const
 
 void ColorBar::setTilemapMode(TilemapMode mode)
 {
-  m_tilemapMode = mode;
-  updateFromTilemapMode();
+  if (m_tilemapMode != mode) {
+    m_tilemapMode = mode;
+    updateFromTilemapMode();
+  }
 }
 
 void ColorBar::updateFromTilemapMode()
@@ -638,7 +640,7 @@ void ColorBar::onActiveSiteChange(const Site& site)
 
   if (m_tilesHBox.isVisible() != isTilemap) {
     m_tilesHBox.setVisible(isTilemap);
-    layout();
+    updateFromTilemapMode();
   }
 
   if (isTilemap) {
@@ -652,8 +654,6 @@ void ColorBar::onActiveSiteChange(const Site& site)
   else {
     m_lastTilesetId = doc::NullId;
   }
-
-  updateFromTilemapMode();
 }
 
 void ColorBar::onGeneralUpdate(DocEvent& ev)
