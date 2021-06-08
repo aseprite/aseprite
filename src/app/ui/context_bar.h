@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -122,6 +122,7 @@ namespace app {
     void onSymmetryModeChange();
     void onFgOrBgColorChange(doc::Brush::ImageColor imageColor);
     void onDropPixels(ContextBarObserver::DropAction action);
+    void updateSliceFields(const Site& site);
 
     // ActiveToolObserver impl
     void onActiveToolChange(tools::Tool* tool) override;

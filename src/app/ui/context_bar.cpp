@@ -1569,10 +1569,12 @@ public:
                     const doc::SelectedObjects& slices) {
     if (!slices.empty()) {
       auto selected = slices.frontAs<doc::Slice>();
-      m_combobox.setValue(selected->name());
+      if (m_combobox.getValue() != selected->name())
+        m_combobox.setValue(selected->name());
     }
     else {
-      m_combobox.setValue(std::string());
+      if (!m_combobox.getValue().empty())
+        m_combobox.setValue(std::string());
     }
     updateLayout();
   }
@@ -1619,10 +1621,14 @@ private:
 
   void updateLayout() {
     const bool visible = (m_doc && !m_doc->sprite()->slices().empty());
+    const bool relayout = (visible != m_combobox.isVisible() ||
+                           visible != m_action.isVisible());
+
     m_combobox.setVisible(visible);
     m_action.setVisible(visible);
 
-    parent()->layout();
+    if (relayout)
+      parent()->layout();
   }
 
   void onSelAction(const int item) {
@@ -1825,11 +1831,8 @@ void ContextBar::onToolSetContiguous()
 void ContextBar::onActiveSiteChange(const Site& site)
 {
   DocObserverWidget<ui::HBox>::onActiveSiteChange(site);
-  if (site.sprite())
-    m_sliceFields->selectSlices(site.sprite(),
-                                site.selectedSlices());
-  else
-    m_sliceFields->closeComboBox();
+  if (m_sliceFields->isVisible())
+    updateSliceFields(site);
 }
 
 void ContextBar::onDocChange(Doc* doc)
@@ -1908,6 +1911,15 @@ void ContextBar::onFgOrBgColorChange(doc::Brush::ImageColor imageColor)
 void ContextBar::onDropPixels(ContextBarObserver::DropAction action)
 {
   notify_observers(&ContextBarObserver::onDropPixels, action);
+}
+
+void ContextBar::updateSliceFields(const Site& site)
+{
+  if (site.sprite())
+    m_sliceFields->selectSlices(site.sprite(),
+                                site.selectedSlices());
+  else
+    m_sliceFields->closeComboBox();
 }
 
 void ContextBar::updateForActiveTool()
@@ -2105,6 +2117,8 @@ void ContextBar::updateForTool(tools::Tool* tool)
   m_symmetry->updateWithCurrentDocument();
 
   m_sliceFields->setVisible(isSlice);
+  if (isSlice)
+    updateSliceFields(UIContext::instance()->activeSite());
 
   // Update ink shades with the current selected palette entries
   if (updateShade)
