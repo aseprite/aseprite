@@ -391,7 +391,8 @@ void Editor::setFrame(frame_t frame)
   if (isActive())
     UIContext::instance()->notifyActiveSiteChanged();
 
-  invalidate();
+  // Invalidate canvas area
+  invalidateCanvas();
   updateStatusBar();
 }
 
@@ -1365,7 +1366,7 @@ void Editor::flashCurrentLayer()
     m_document->setExtraCel(extraCel);
     m_flashing = Flashing::WithFlashExtraCel;
 
-    invalidate();
+    invalidateCanvas();
   }
 }
 
@@ -1877,7 +1878,7 @@ bool Editor::onProcessMessage(Message* msg)
         // layer.
         if (m_flashing != Flashing::None) {
           m_flashing = Flashing::None;
-          invalidate();
+          invalidateCanvas();
         }
 
         m_oldPos = mouseMsg->position();
@@ -1974,7 +1975,7 @@ bool Editor::onProcessMessage(Message* msg)
           static_cast<KeyMessage*>(msg)->scancode() == kKeyF1) {
         Preferences::instance().experimental.newRenderEngine(
           !Preferences::instance().experimental.newRenderEngine());
-        invalidate();
+        invalidateCanvas();
         return true;
       }
 #endif
@@ -2059,7 +2060,7 @@ bool Editor::onProcessMessage(Message* msg)
         // Redraw all editors (without this the preview editor will
         // still show the flashing layer).
         for (auto editor : UIContext::instance()->getAllEditorsIncludingPreview(m_document)) {
-          editor->invalidate();
+          editor->invalidateCanvas();
 
           // Re-generate painting messages just right now (it looks
           // like the widget update region is lost after the last
@@ -2843,8 +2844,17 @@ void Editor::dropMovingPixels()
   backToPreviousState();
 }
 
+void Editor::invalidateCanvas()
+{
+  if (m_sprite)
+    invalidateRect(editorToScreen(getVisibleSpriteBounds()));
+  else
+    invalidate();
+}
+
 void Editor::invalidateIfActive()
 {
+
   if (isActive())
     invalidate();
 }

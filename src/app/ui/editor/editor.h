@@ -383,6 +383,7 @@ namespace app {
 
     gfx::Point calcExtraPadding(const render::Projection& proj);
 
+    void invalidateCanvas();
     void invalidateIfActive();
     bool showAutoCelGuides();
     void updateAutoCelGuides(ui::Message* msg);
