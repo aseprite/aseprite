@@ -941,8 +941,12 @@ void StatusBar::onActiveSiteChange(const Site& site)
     showSnapToGridWarning(docPref.grid.snap());
 
     // Current frame
-    m_currentFrame->setTextf(
-      "%d", site.frame()+docPref.timeline.firstFrame());
+    {
+      std::string newText =
+        fmt::format("{}", site.frame()+docPref.timeline.firstFrame());
+      if (m_currentFrame->text() != newText)
+        m_currentFrame->setText(newText);
+    }
 
     // Zoom level
     if (current_editor)
@@ -952,7 +956,6 @@ void StatusBar::onActiveSiteChange(const Site& site)
     m_docControls->setVisible(false);
     showSnapToGridWarning(false);
   }
-  layout();
 }
 
 void StatusBar::onPixelFormatChanged(DocEvent& ev)
