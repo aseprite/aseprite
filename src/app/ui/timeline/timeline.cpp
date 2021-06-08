@@ -62,6 +62,7 @@
 
 #include <algorithm>
 #include <cstdio>
+#include <limits>
 #include <vector>
 
 namespace app {
@@ -260,7 +261,9 @@ Timeline::Timeline(TooltipManager* tooltipManager)
 {
   enableFlags(CTRL_RIGHT_CLICK);
 
-  m_ctxConn = m_context->AfterCommandExecution.connect(
+  m_ctxConn1 = m_context->BeforeCommandExecution.connect(
+    &Timeline::onBeforeCommandExecution, this);
+  m_ctxConn2 = m_context->AfterCommandExecution.connect(
     &Timeline::onAfterCommandExecution, this);
   m_context->documents().add_observer(this);
   m_context->add_observer(this);
@@ -1777,15 +1780,24 @@ paintNoDoc:;
       skinTheme()->styles.timelinePadding());
 }
 
+void Timeline::onBeforeCommandExecution(CommandExecutionEvent& ev)
+{
+  m_savedCounter = (m_document ? *m_document->undoHistory()->savedCounter():
+                                 std::numeric_limits<int>::min());
+}
+
 void Timeline::onAfterCommandExecution(CommandExecutionEvent& ev)
 {
   if (!m_document)
     return;
 
   // TODO improve this: no need to regenerate everything after each command
-  regenerateRows();
-  showCurrentCel();
-  invalidate();
+  const int currentCounter = *m_document->undoHistory()->savedCounter();
+  if (m_savedCounter != currentCounter) {
+    regenerateRows();
+    showCurrentCel();
+    invalidate();
+  }
 }
 
 void Timeline::onActiveSiteChange(const Site& site)

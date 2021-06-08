@@ -162,6 +162,7 @@ namespace app {
     void onRemoveTag(DocEvent& ev) override;
 
     // app::Context slots.
+    void onBeforeCommandExecution(CommandExecutionEvent& ev);
     void onAfterCommandExecution(CommandExecutionEvent& ev);
 
     // ContextObserver impl
@@ -392,6 +393,11 @@ namespace app {
     Range m_dropRange;
     State m_state;
 
+    // Value of DocUndo::savedCounter() before executing a
+    // command. Used to compare after executing a command to avoid
+    // regenerating all rows if it's not necessary.
+    int m_savedCounter;
+
     // Data used to display each row in the timeline
     std::vector<Row> m_rows;
 
@@ -410,7 +416,7 @@ namespace app {
     gfx::Point m_oldPos;
     // Configure timeline
     std::unique_ptr<ConfigureTimelinePopup> m_confPopup;
-    obs::scoped_connection m_ctxConn;
+    obs::scoped_connection m_ctxConn1, m_ctxConn2;
     obs::connection m_firstFrameConn;
 
     // Marching ants stuff to show the range in the clipboard.
