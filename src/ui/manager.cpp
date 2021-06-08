@@ -1823,12 +1823,13 @@ bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
       return false;
 
     PaintMessage* paintMsg = static_cast<PaintMessage*>(msg);
+    Display* display = paintMsg->display();
 
     // TODO use paintMsg->display() here
     // Restore overlays in the region that we're going to paint.
     OverlayManager::instance()->restoreOverlappedAreas(paintMsg->rect());
 
-    os::Surface* surface = paintMsg->display()->surface();
+    os::Surface* surface = display->surface();
     surface->saveClip();
 
     if (surface->clipRect(paintMsg->rect())) {
@@ -1841,21 +1842,19 @@ bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
         os::SurfaceLock lock(surface);
         os::Paint p;
         p.color(gfx::rgba(0, 0, 255));
+        p.style(os::Paint::Fill);
         surface->drawRect(paintMsg->rect(), p);
-      }
 
-      if (m_window) {
-        m_window->invalidateRegion(gfx::Region(m_window->bounds()));
+        display->nativeWindow()
+          ->invalidateRegion(gfx::Region(paintMsg->rect()));
 
-#ifdef _WIN32 // TODO add a m_display->updateNow() method ??
-        HWND hwnd = (HWND)m_display->nativeHandle();
+#ifdef _WIN32 // TODO add a display->nativeWindow()->updateNow() method ??
+        HWND hwnd = (HWND)display->nativeWindow()->nativeHandle();
         UpdateWindow(hwnd);
+#else
+        base::this_thread::sleep_for(0.002);
 #endif
       }
-
-#ifndef _WIN32
-      base::this_thread::sleep_for(0.002);
-#endif
 #endif
 
       // Call the message handler
@@ -1867,7 +1866,7 @@ bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
 
     // As this kPaintMessage's rectangle was updated, we can
     // remove it from "m_invalidRegion".
-    paintMsg->display()->subtractInvalidRegion(gfx::Region(paintMsg->rect()));
+    display->subtractInvalidRegion(gfx::Region(paintMsg->rect()));
   }
   else {
     // Call the message handler
