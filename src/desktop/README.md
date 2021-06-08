@@ -1,7 +1,6 @@
 # Desktop Integration
-*Copyright (C) 2017-2018 David Capello*
 
-> Distributed under [MIT license](LICENSE.txt)
+[![MIT Licensed](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.txt)
 
 ## Windows
 
