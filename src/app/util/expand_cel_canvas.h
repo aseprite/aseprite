@@ -85,7 +85,7 @@ namespace app {
 
     void validateSourceCanvas(const gfx::Region& rgn);
     void validateDestCanvas(const gfx::Region& rgn);
-    void validateDestTileset(const gfx::Region& rgn);
+    void validateDestTileset(const gfx::Region& rgn, const gfx::Region& forceRgn);
     void invalidateDestCanvas();
     void invalidateDestCanvas(const gfx::Region& rgn);
     void copyValidDestToSourceCanvas(const gfx::Region& rgn);

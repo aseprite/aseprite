@@ -429,6 +429,7 @@ class IntertwineAsPixelPerfect : public Intertwine {
   // we have to ignore printing the first pixel of the line.
   bool m_retainedTracePolicyLast = false;
   Stroke m_pts;
+  bool m_saveStrokeArea = false;
 
 public:
   // Useful for Shift+Ctrl+pencil to draw straight lines and snap
@@ -458,7 +459,10 @@ public:
     else if (stroke.size() == 1) {
       if (m_pts.empty())
         m_pts = stroke;
+
+      m_saveStrokeArea = false;
       doPointshapeStrokePt(stroke[0], loop);
+
       return;
     }
     else {
@@ -511,10 +515,15 @@ public:
       // the SHIFT key))
       if (c == 0 && m_retainedTracePolicyLast)
         continue;
-      // For the last point we store the source image content at that point so we
-      // can restore it when erasing a point because of pixel-perfect.
-      if (c == m_pts.size() - 1) {
-        loop->savePointshapeStrokePtArea(c, m_pts[c]);
+
+      // For the last point we need to store the source image content at that
+      // point so we can restore it when erasing a point because of
+      // pixel-perfect. So we set the following flag to indicate this, and
+      // use it in doTransformPoint.
+      m_saveStrokeArea = (c == m_pts.size() - 1 && !m_retainedTracePolicyLast);
+      if (m_saveStrokeArea) {
+        loop->clearPointshapeStrokePtAreas();
+        loop->setLastPtIndex(c);
       }
       doPointshapeStrokePt(m_pts[c], loop);
     }
@@ -531,6 +540,18 @@ public:
     doc::algorithm::polygon(
       v.size()/2, &v[0],
       loop, (AlgoHLine)doPointshapeHline);
+  }
+
+protected:
+  void doTransformPoint(const Stroke::Pt& pt, ToolLoop* loop) override {
+    if (m_saveStrokeArea)
+      loop->savePointshapeStrokePtArea(pt);
+
+    Intertwine::doTransformPoint(pt, loop);
+
+    if (loop->getLayer()->isTilemap()) {
+      loop->updateTempTileset(pt);
+    }
   }
 };
 

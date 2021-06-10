@@ -449,7 +449,8 @@ void modify_tilemap_cel_region(
   doc::Tileset* tileset,
   const gfx::Region& region,
   const TilesetMode tilesetMode,
-  const GetTileImageFunc& getTileImage)
+  const GetTileImageFunc& getTileImage,
+  const gfx::Region& forceRegion)
 {
   OPS_TRACE("modify_tilemap_cel_region %d %d %d %d\n",
             region.bounds().x, region.bounds().y,
@@ -677,6 +678,12 @@ void modify_tilemap_cel_region(
 
       // Keep only the modified region for this specific modification
       tileRgn &= diffRgn;
+
+      if (!forceRegion.isEmpty()) {
+        gfx::Region fr(forceRegion);
+        fr.offset(-tileInCanvasRc.origin());
+        tileRgn |= fr;
+      }
 
       if (!tileRgn.isEmpty()) {
         if (addUndoToTileset) {

@@ -71,7 +71,8 @@ namespace app {
     doc::Tileset* previewTileset, // Temporary tileset that can be used for preview
     const gfx::Region& region,
     const TilesetMode tilesetMode,
-    const GetTileImageFunc& getTileImage);
+    const GetTileImageFunc& getTileImage,
+    const gfx::Region& forceRegion = gfx::Region());
 
   void clear_mask_from_cel(
     CmdSequence* cmds,

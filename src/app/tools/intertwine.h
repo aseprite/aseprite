@@ -43,7 +43,8 @@ namespace app {
       };
 
     protected:
-      static void doPointshapeStrokePt(const Stroke::Pt& pt, ToolLoop* loop);
+      virtual void doTransformPoint(const Stroke::Pt& pt, ToolLoop* loop);
+      virtual void doPointshapeStrokePt(const Stroke::Pt& pt, ToolLoop* loop);
       // The given point must be relative to the cel origin.
       static void doPointshapePoint(int x, int y, ToolLoop* loop);
       static void doPointshapePointDynamics(int x, int y, LineData* data);

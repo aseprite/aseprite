@@ -254,9 +254,12 @@ namespace app {
       // Called when the user release the mouse on SliceInk
       virtual void onSliceRect(const gfx::Rect& bounds) = 0;
 
-      virtual void savePointshapeStrokePtArea(const int pti, const Stroke::Pt& pt) = 0;
-
+      // The following functions are used in pixel perfect mode
+      virtual void clearPointshapeStrokePtAreas() = 0;
+      virtual void setLastPtIndex(const int pti) = 0;
+      virtual void savePointshapeStrokePtArea(const Stroke::Pt& pt) = 0;
       virtual void restoreLastPts(const int pti, const tools::Stroke::Pt& pt) = 0;
+      virtual void updateTempTileset(const tools::Stroke::Pt& pt) = 0;
 
       virtual const app::TiledModeHelper& getTiledModeHelper() = 0;
     };

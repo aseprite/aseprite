@@ -661,7 +661,7 @@ void ExpandCelCanvas::validateDestCanvas(const gfx::Region& rgn)
   m_validDstRegion.createUnion(m_validDstRegion, rgnToValidate);
 }
 
-void ExpandCelCanvas::validateDestTileset(const gfx::Region& rgn)
+void ExpandCelCanvas::validateDestTileset(const gfx::Region& rgn, const gfx::Region& forceRgn)
 {
   EXP_TRACE("ExpandCelCanvas::validateDestTileset", rgn.bounds(), m_dstTileset);
 
@@ -676,7 +676,8 @@ void ExpandCelCanvas::validateDestTileset(const gfx::Region& rgn)
       [this](const doc::ImageRef& origTile,
              const gfx::Rect& tileBoundsInCanvas) -> doc::ImageRef {
         return trimDstImage(tileBoundsInCanvas);
-      });
+      },
+      forceRgn);
   }
 }
 
