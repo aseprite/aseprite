@@ -1523,7 +1523,11 @@ void Editor::setCustomizationDelegate(EditorCustomizationDelegate* delegate)
 
 Rect Editor::getViewportBounds()
 {
-  return screenToEditor(View::getView(this)->viewportBounds());
+  ui::View* view = View::getView(this);
+  if (view)
+    return screenToEditor(view->viewportBounds());
+  else
+    return bounds();
 }
 
 // Returns the visible area of the active sprite.
@@ -2846,6 +2850,9 @@ void Editor::dropMovingPixels()
 
 void Editor::invalidateCanvas()
 {
+  if (!isVisible())
+    return;
+
   if (m_sprite)
     invalidateRect(editorToScreen(getVisibleSpriteBounds()));
   else
