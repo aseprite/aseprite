@@ -313,7 +313,7 @@ public:
 
         const double angle = loop->getController()->getShapeAngle();
         if (ABS(angle) < 0.001) {
-          algo_ellipse(x1, y1, x2, y2, loop, (AlgoPixel)doPointshapePoint);
+          algo_ellipse(x1, y1, x2, y2, 0, 0, loop, (AlgoPixel)doPointshapePoint);
         }
         else {
           draw_rotated_ellipse((x1+x2)/2, (y1+y2)/2,
@@ -343,7 +343,7 @@ public:
 
       const double angle = loop->getController()->getShapeAngle();
       if (ABS(angle) < 0.001) {
-        algo_ellipsefill(x1, y1, x2, y2, loop, (AlgoHLine)doPointshapeHline);
+        algo_ellipsefill(x1, y1, x2, y2, 0, 0, loop, (AlgoHLine)doPointshapeHline);
       }
       else {
         fill_rotated_ellipse((x1+x2)/2, (y1+y2)/2,

@@ -1,4 +1,5 @@
 // Desktop Integration
+// Copyright (C) 2021  Igara Studio S.A.
 // Copyright (C) 2017-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -18,6 +19,7 @@
 
 #include "desktop/win/thumbnail_handler.h"
 
+#include <algorithm>
 #include <cassert>
 #include <new>
 
@@ -174,6 +176,9 @@ HRESULT ThumbnailHandler::Initialize(IStream* pStream, DWORD grfMode)
 // IThumbnailProvider
 HRESULT ThumbnailHandler::GetThumbnail(UINT cx, HBITMAP* phbmp, WTS_ALPHATYPE* pdwAlpha)
 {
+  if (cx < 1 || !phbmp || !pdwAlpha)
+    return E_INVALIDARG;
+
   if (!m_stream.get())
     return E_FAIL;
 
@@ -186,16 +191,27 @@ HRESULT ThumbnailHandler::GetThumbnail(UINT cx, HBITMAP* phbmp, WTS_ALPHATYPE* p
     if (!dio::decode_file(&delegate, &adaptor))
       return E_FAIL;
 
-    doc::Sprite* spr = delegate.sprite();
+    const doc::Sprite* spr = delegate.sprite();
     w = spr->width();
     h = spr->height();
+    int wh = std::max<int>(w, h);
 
-    image.reset(doc::Image::create(doc::IMAGE_RGB, w, h));
+    image.reset(doc::Image::create(doc::IMAGE_RGB,
+                                   cx * w / wh,
+                                   cx * h / wh));
+    image->clear(0);
 
 #undef TRANSPARENT              // Windows defines TRANSPARENT macro
     render::Render render;
     render.setBgType(render::BgType::TRANSPARENT);
-    render.renderSprite(image.get(), spr, 0);
+    render.setProjection(render::Projection(doc::PixelRatio(1, 1),
+                                            render::Zoom(cx, wh)));
+    render.renderSprite(image.get(), spr, 0,
+                        gfx::ClipF(0, 0, 0, 0,
+                                   image->width(), image->height()));
+
+    w = image->width();
+    h = image->height();
   }
   catch (const std::exception&) {
     // TODO convert exception into a HRESULT

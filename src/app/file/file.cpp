@@ -473,7 +473,6 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
 #ifdef ENABLE_UI
     // Interative
     if (context && context->isUIAvailable()) {
-      auto& showAlertOption = Preferences::instance().saveFile.showFileFormatDoesntSupportAlert;
       int ret;
 
       // If the error is fatal, we cannot ignore a no-op, we always
