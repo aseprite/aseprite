@@ -282,16 +282,16 @@ void draw_line(Image* image, int x1, int y1, int x2, int y2, color_t color)
   algo_line_continuous(x1, y1, x2, y2, &data, (AlgoPixel)pixel_for_image);
 }
 
-void draw_ellipse(Image* image, int x1, int y1, int x2, int y2, color_t color)
+void draw_ellipse(Image* image, int x1, int y1, int x2, int y2, int extraXPxs, int extraYPxs, color_t color)
 {
   Data data = { image, color };
-  algo_ellipse(x1, y1, x2, y2, &data, (AlgoPixel)pixel_for_image);
+  algo_ellipse(x1, y1, x2, y2, extraXPxs, extraYPxs, &data, (AlgoPixel)pixel_for_image);
 }
 
-void fill_ellipse(Image* image, int x1, int y1, int x2, int y2, color_t color)
+void fill_ellipse(Image* image, int x1, int y1, int x2, int y2, int extraXPxs, int extraYPxs, color_t color)
 {
   Data data = { image, color };
-  algo_ellipsefill(x1, y1, x2, y2, &data, (AlgoHLine)hline_for_image);
+  algo_ellipsefill(x1, y1, x2, y2, extraXPxs, extraYPxs, &data, (AlgoHLine)hline_for_image);
 }
 
 namespace {

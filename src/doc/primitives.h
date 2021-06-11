@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2018-2019 Igara Studio S.A.
+// Copyright (c) 2018-2021 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -38,8 +38,8 @@ namespace doc {
   void fill_rect(Image* image, const gfx::Rect& rc, color_t c);
   void blend_rect(Image* image, int x1, int y1, int x2, int y2, color_t c, int opacity);
   void draw_line(Image* image, int x1, int y1, int x2, int y2, color_t c);
-  void draw_ellipse(Image* image, int x1, int y1, int x2, int y2, color_t c);
-  void fill_ellipse(Image* image, int x1, int y1, int x2, int y2, color_t c);
+  void draw_ellipse(Image* image, int x1, int y1, int x2, int y2, int extraXPxs, int extraYPxs, color_t color);
+  void fill_ellipse(Image* image, int x1, int y1, int x2, int y2, int extraXPxs, int extraYPxs, color_t color);
 
   bool is_plain_image(const Image* img, color_t c);
   bool is_empty_image(const Image* img);
