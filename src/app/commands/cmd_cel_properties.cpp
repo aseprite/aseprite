@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -191,20 +191,20 @@ private:
         }
 
         Sprite* sprite = m_document->sprite();
-        const bool userDataChanged = (newUserData != m_cel->data()->userData());
         for (Cel* cel : sprite->uniqueCels(range.selectedFrames())) {
           if (range.contains(cel->layer())) {
             if (!cel->layer()->isBackground() && newOpacity != cel->opacity()) {
               tx(new cmd::SetCelOpacity(cel, newOpacity));
             }
 
-            if (userDataChanged &&
-                newUserData != cel->data()->userData()) {
+            if (newUserData != cel->data()->userData()) {
               tx(new cmd::SetUserData(cel->data(), newUserData, m_document));
 
               // Redraw timeline because the cel's user data/color
               // might have changed.
-              App::instance()->timeline()->invalidate();
+              if (newUserData.color() != cel->data()->userData().color()) {
+                App::instance()->timeline()->invalidate();
+              }
             }
           }
         }
