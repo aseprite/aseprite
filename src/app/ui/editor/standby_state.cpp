@@ -946,6 +946,11 @@ bool StandbyState::Decorator::onSetCursor(tools::Ink* ink, Editor* editor, const
         v = to_vec2(A - C);
         v = vec2(v.y, -v.x);
         break;
+      case PivotHandle:
+        break;
+      default:
+        // The cursor will be set by Editor::onSetCursor()
+        return false;
     }
 
     double angle = v.angle();
