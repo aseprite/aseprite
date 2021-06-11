@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2021 Igara Studio S.A.
 // Copyright (c) 2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -41,7 +42,7 @@ void modify_selection(const SelectionModifier modifier,
   std::unique_ptr<doc::Image> kernel(doc::Image::create(IMAGE_BITMAP, size, size));
   doc::clear_image(kernel.get(), 0);
   if (brush == doc::kCircleBrushType)
-    doc::fill_ellipse(kernel.get(), 0, 0, size-1, size-1, 1);
+    doc::fill_ellipse(kernel.get(), 0, 0, size-1, size-1, 0, 0, 1);
   else
     doc::fill_rect(kernel.get(), 0, 0, size-1, size-1, 1);
   doc::put_pixel(kernel.get(), radius, radius, 0);

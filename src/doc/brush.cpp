@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -328,7 +328,7 @@ void Brush::regenerate()
     switch (m_type) {
 
       case kCircleBrushType:
-        fill_ellipse(m_image.get(), 0, 0, size-1, size-1, BitmapTraits::max_value);
+        fill_ellipse(m_image.get(), 0, 0, size-1, size-1, 0, 0, BitmapTraits::max_value);
         break;
 
       case kSquareBrushType:
