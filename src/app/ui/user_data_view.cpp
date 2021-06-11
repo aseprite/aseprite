@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2021  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -29,7 +29,7 @@ UserDataView::UserDataView(gen::UserData* userDataWidgetsContainer, Option<bool>
 {
 }
 
-void UserDataView::configureAndSet(doc::UserData& userData, ui::Grid* parent)
+void UserDataView::configureAndSet(const doc::UserData& userData, ui::Grid* parent)
 {
   if (!isConfigured()) {
     // Find the correct hspan to add to an arbitrary grid column count:

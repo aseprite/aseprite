@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2021  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -24,7 +24,7 @@ namespace app {
   public:
     UserDataView(gen::UserData* userDataWidgetsContainer, Option<bool>* visibility);
 
-    void configureAndSet(doc::UserData& userData, ui::Grid* parent);
+    void configureAndSet(const doc::UserData& userData, ui::Grid* parent);
     void toggleVisibility();
     void setVisible(bool state, bool saveAsDefault = true);
     void freeUserDataWidgets(ui::Grid* parent);

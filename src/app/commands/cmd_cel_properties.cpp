@@ -84,14 +84,16 @@ public:
     if (m_document)
       m_document->add_observer(this);
 
-    if (countCels() > 0 && m_cel) {
+    if (countCels() > 0) {
       ui::Grid* mainGrid = g_window->propertiesGrid();
-      m_userDataView.configureAndSet(m_cel->data()->userData(), mainGrid);
+      m_userDataView.configureAndSet(
+        (m_cel ? m_cel->data()->userData(): UserData()), mainGrid);
     }
     else if (!m_cel)
       m_userDataView.setVisible(false, false);
-    g_window->remapWindow();
-    manager()->invalidate();
+
+    g_window->expandWindow(gfx::Size(g_window->bounds().w,
+                                     g_window->sizeHint().h));
     updateFromCel();
   }
 
@@ -220,10 +222,10 @@ private:
   }
 
   void onToggleUserData() {
-    if (m_cel) {
+    if (countCels() > 0) {
       m_userDataView.toggleVisibility();
-      g_window->remapWindow();
-      manager()->invalidate();
+      g_window->expandWindow(gfx::Size(g_window->bounds().w,
+                                       g_window->sizeHint().h));
     }
   }
 
