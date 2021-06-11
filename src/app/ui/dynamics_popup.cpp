@@ -215,6 +215,19 @@ DynamicsPopup::DynamicsPopup(Delegate* delegate)
   , m_ditheringSel(new DitheringSelector(DitheringSelector::SelectMatrix))
   , m_fromTo(tools::ColorFromTo::BgToFg)
 {
+  m_dynamics->stabilizer()->Click.connect(
+    [this](){
+      if (m_dynamics->stabilizer()->isSelected() &&
+          m_dynamics->stabilizerFactor()->getValue() == 0) {
+        // TODO default value when we enable stabilizer when it's zero
+        m_dynamics->stabilizerFactor()->setValue(16);
+      }
+    });
+  m_dynamics->stabilizerFactor()->Change.connect(
+    [this](){
+      m_dynamics->stabilizer()->setSelected(m_dynamics->stabilizerFactor()->getValue() > 0);
+    });
+
   m_dynamics->values()->ItemChange.connect(
     [this](ButtonSet::Item* item){
       onValuesChange(item);
@@ -254,6 +267,14 @@ DynamicsPopup::DynamicsPopup(Delegate* delegate)
 tools::DynamicsOptions DynamicsPopup::getDynamics() const
 {
   tools::DynamicsOptions opts;
+
+  if (m_dynamics->stabilizer()->isSelected()) {
+    opts.stabilizerFactor = m_dynamics->stabilizerFactor()->getValue();
+  }
+  else {
+    opts.stabilizerFactor = 0;
+  }
+
   opts.size =
     (isCheck(SIZE_WITH_PRESSURE) ? tools::DynamicSensor::Pressure:
      isCheck(SIZE_WITH_VELOCITY) ? tools::DynamicSensor::Velocity:

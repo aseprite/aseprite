@@ -30,6 +30,7 @@
 #include "gfx/region.h"
 
 #include <climits>
+#include <cmath>
 
 #define TOOL_TRACE(...) // TRACEARGS(__VA_ARGS__)
 
@@ -118,6 +119,8 @@ void ToolLoopManager::pressButton(const Pointer& pointer)
     return;
   }
 
+  m_stabilizerCenter = pointer.point();
+
   Stroke::Pt spritePoint = getSpriteStrokePt(pointer);
   m_toolLoop->getController()->pressButton(m_toolLoop, m_stroke, spritePoint);
 
@@ -163,8 +166,27 @@ bool ToolLoopManager::releaseButton(const Pointer& pointer)
   return res;
 }
 
-void ToolLoopManager::movement(const Pointer& pointer)
+void ToolLoopManager::movement(Pointer pointer)
 {
+  // Filter points with the stabilizer
+  if (m_dynamics.stabilizerFactor > 0) {
+    const double f = m_dynamics.stabilizerFactor;
+    const gfx::Point delta = (pointer.point() - m_stabilizerCenter);
+    const double distance = std::sqrt(delta.x*delta.x + delta.y*delta.y);
+
+    const double angle = std::atan2(delta.y, delta.x);
+    const gfx::PointF newPoint(m_stabilizerCenter.x + distance/f*std::cos(angle),
+                               m_stabilizerCenter.y + distance/f*std::sin(angle));
+
+    m_stabilizerCenter = newPoint;
+
+    pointer = Pointer(gfx::Point(newPoint),
+                      pointer.velocity(),
+                      pointer.button(),
+                      pointer.type(),
+                      pointer.pressure());
+  }
+
   m_lastPointer = pointer;
 
   if (isCanceled())

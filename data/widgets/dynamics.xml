@@ -1,7 +1,14 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2020  Igara Studio S.A. -->
+<!-- Copyright (C) 2020-2021  Igara Studio S.A. -->
 <gui>
   <vbox id="dynamics">
+    <hbox>
+      <check id="stabilizer" text="@.stabilizer"
+             tooltip="@.stabilizer_tooltip" tooltip_dir="bottom" />
+      <slider id="stabilizer_factor" value="16" min="0" max="64" expansive="true" style="mini_slider"
+              tooltip="@.stabilizer_tooltip" tooltip_dir="bottom" />
+    </hbox>
+
     <hbox>
     <buttonset id="values" columns="3">
       <item text="" />

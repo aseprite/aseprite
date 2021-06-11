@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -76,7 +76,7 @@ public:
   bool releaseButton(const Pointer& pointer);
 
   // Should be called each time the user moves the mouse inside the editor.
-  void movement(const Pointer& pointer);
+  void movement(Pointer pointer);
 
   const Pointer& lastPointer() const { return m_lastPointer; }
 
@@ -97,6 +97,7 @@ private:
   gfx::Region m_nextDirtyArea;
   doc::Brush m_brush0;
   DynamicsOptions m_dynamics;
+  gfx::PointF m_stabilizerCenter;
 };
 
 } // namespace tools
