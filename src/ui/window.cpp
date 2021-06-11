@@ -671,7 +671,7 @@ void Window::onSizeHint(SizeHintEvent& ev)
     Size reqSize;
 
     if (m_titleLabel)
-      maxSize.w = maxSize.h = 40*guiscale();
+      maxSize.w = maxSize.h = 16*guiscale();
 
     for (auto child : children()) {
       if (!child->isDecorative()) {
