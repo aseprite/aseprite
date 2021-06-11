@@ -2105,7 +2105,7 @@ void ContextBar::updateForTool(tools::Tool* tool)
   m_autoSelectLayer->setVisible(isMove);
   m_dynamics->setVisible(isFreehand && supportDynamics);
   m_dynamics->setOptionsGridVisibility(isFreehand && !hasSelectOptions);
-  m_freehandBox->setVisible(isFreehand);
+  m_freehandBox->setVisible(isFreehand && (supportOpacity || hasSelectOptions));
   m_toleranceLabel->setVisible(hasTolerance);
   m_tolerance->setVisible(hasTolerance);
   m_contiguous->setVisible(hasTolerance);
