@@ -264,6 +264,13 @@ DynamicsPopup::DynamicsPopup(Delegate* delegate)
   onValuesChange(nullptr);
 }
 
+void DynamicsPopup::setOptionsGridVisibility(bool state)
+{
+  m_dynamics->grid()->setVisible(state);
+  if (isVisible())
+    expandWindow(sizeHint());
+}
+
 tools::DynamicsOptions DynamicsPopup::getDynamics() const
 {
   tools::DynamicsOptions opts;

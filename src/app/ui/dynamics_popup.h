@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2021  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -35,6 +35,7 @@ namespace app {
     DynamicsPopup(Delegate* delegate);
 
     tools::DynamicsOptions getDynamics() const;
+    void setOptionsGridVisibility(bool state);
 
   private:
     class ThresholdSlider;

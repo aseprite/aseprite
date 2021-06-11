@@ -1150,6 +1150,7 @@ public:
 
     if (!m_popup) {
       m_popup.reset(new DynamicsPopup(this));
+      m_popup->setOptionsGridVisibility(m_optionsGridVisibility);
       m_popup->Close.connect(
         [this](CloseEvent&){
           deselectItems();
@@ -1171,6 +1172,12 @@ public:
     if (m_popup && m_popup->isVisible())
       m_dynamics = m_popup->getDynamics();
     return m_dynamics;
+  }
+
+  void setOptionsGridVisibility(bool state) {
+    m_optionsGridVisibility = state;
+    if (m_popup)
+      m_popup->setOptionsGridVisibility(state);
   }
 
 private:
@@ -1205,6 +1212,7 @@ private:
   std::unique_ptr<DynamicsPopup> m_popup;
   ContextBar* m_ctxBar;
   mutable tools::DynamicsOptions m_dynamics;
+  bool m_optionsGridVisibility = true;
 };
 
 class ContextBar::FreehandAlgorithmField : public CheckBox {
@@ -2096,7 +2104,8 @@ void ContextBar::updateForTool(tools::Tool* tool)
   m_eyedropperField->setVisible(isEyedropper);
   m_autoSelectLayer->setVisible(isMove);
   m_dynamics->setVisible(isFreehand && supportDynamics);
-  m_freehandBox->setVisible(isFreehand && supportOpacity);
+  m_dynamics->setOptionsGridVisibility(isFreehand && !hasSelectOptions);
+  m_freehandBox->setVisible(isFreehand);
   m_toleranceLabel->setVisible(hasTolerance);
   m_tolerance->setVisible(hasTolerance);
   m_contiguous->setVisible(hasTolerance);

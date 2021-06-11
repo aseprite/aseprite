@@ -6,10 +6,10 @@
       <check id="stabilizer" text="@.stabilizer"
              tooltip="@.stabilizer_tooltip" tooltip_dir="bottom" />
       <slider id="stabilizer_factor" value="16" min="0" max="64" expansive="true" style="mini_slider"
-              tooltip="@.stabilizer_tooltip" tooltip_dir="bottom" />
+              tooltip="@.stabilizer_tooltip" tooltip_dir="bottom" minwidth="64" />
     </hbox>
 
-    <hbox>
+    <hbox id="grid">
     <buttonset id="values" columns="3">
       <item text="" />
       <item text="@.pressure" tooltip="@.pressure_tooltip" tooltip_dir="bottom" />
