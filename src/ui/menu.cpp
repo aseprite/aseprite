@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -186,7 +186,6 @@ MenuBox::MenuBox(WidgetType type)
 MenuBox::~MenuBox()
 {
   stopFilteringMouseDown();
-  delete m_base;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -241,9 +240,8 @@ Menu* MenuBox::getMenu()
 
 MenuBaseData* MenuBox::createBase()
 {
-  delete m_base;
-  m_base = new MenuBaseData;
-  return m_base;
+  m_base.reset(new MenuBaseData);
+  return m_base.get();
 }
 
 Menu* MenuItem::getSubmenu()
