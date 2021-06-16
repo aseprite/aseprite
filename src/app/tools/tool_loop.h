@@ -90,8 +90,12 @@ namespace app {
       // Returns the layer that will be modified if the tool paints
       virtual Layer* getLayer() = 0;
 
+      virtual const Cel* getCel() = 0;
+
       // Returns true if the current mode is TileMap (false = Pixels)
       virtual bool isTilemapMode() = 0;
+
+      virtual bool isManualTilesetMode() const = 0;
 
       // Returns the frame where we're paiting
       virtual frame_t getFrame() = 0;
@@ -253,13 +257,6 @@ namespace app {
 
       // Called when the user release the mouse on SliceInk
       virtual void onSliceRect(const gfx::Rect& bounds) = 0;
-
-      // The following functions are used in pixel perfect mode
-      virtual void clearPointshapeStrokePtAreas() = 0;
-      virtual void setLastPtIndex(const int pti) = 0;
-      virtual void savePointshapeStrokePtArea(const Stroke::Pt& pt) = 0;
-      virtual void restoreLastPts(const int pti, const tools::Stroke::Pt& pt) = 0;
-      virtual void updateTempTileset(const tools::Stroke::Pt& pt) = 0;
 
       virtual const app::TiledModeHelper& getTiledModeHelper() = 0;
     };

@@ -326,7 +326,7 @@ void BrushPreview::show(const gfx::Point& screenPos)
       if (loop) {
         loop->getInk()->prepareInk(loop.get());
         loop->getController()->prepareController(loop.get());
-        loop->getIntertwine()->prepareIntertwine();
+        loop->getIntertwine()->prepareIntertwine(loop.get());
         loop->getPointShape()->preparePointShape(loop.get());
 
         tools::Stroke::Pt pt(brushBounds.x-origBrushBounds.x,

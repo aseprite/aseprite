@@ -6,6 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #include "base/pi.h"
+#include "doc/layer_tilemap.h"
 
 namespace app {
 namespace tools {
@@ -94,7 +95,7 @@ class IntertwineAsLines : public Intertwine {
 public:
   bool snapByAngle() override { return true; }
 
-  void prepareIntertwine() override {
+  void prepareIntertwine(ToolLoop* loop) override {
     m_retainedTracePolicyLast = false;
     m_firstStroke = true;
   }
@@ -431,14 +432,48 @@ class IntertwineAsPixelPerfect : public Intertwine {
   Stroke m_pts;
   bool m_saveStrokeArea = false;
 
+  // Helper struct to store an image's area that will be affected by the stroke
+  // point at the specified position of the original image.
+  struct SavedArea {
+    doc::ImageRef img;
+    // Original stroke point position.
+    tools::Stroke::Pt pos;
+    // Area of the original image that was saved into img.
+    gfx::Rect r;
+  };
+  // Holds the areas saved by savePointshapeStrokePtArea method and restored by
+  // restoreLastPts method.
+  std::vector<SavedArea> m_savedAreas;
+  // When a SavedArea is restored we add its Rect to this Region, then we use
+  // this to expand the modified region when editing a tilemap manually.
+  gfx::Region m_restoredRegion;
+  // Last point index.
+  int m_lastPti;
+
+  // Temporal tileset with latest changes to be used by pixel perfect only when
+  // modifying a tilemap in Manual mode.
+  std::unique_ptr<Tileset> m_tempTileset;
+  doc::Grid m_grid;
+
 public:
   // Useful for Shift+Ctrl+pencil to draw straight lines and snap
   // angle when "pixel perfect" is selected.
   bool snapByAngle() override { return true; }
 
-  void prepareIntertwine() override {
+  void prepareIntertwine(ToolLoop* loop) override {
     m_pts.reset();
     m_retainedTracePolicyLast = false;
+    m_grid = loop->getGrid();
+
+    if (loop->getLayer()->isTilemap() &&
+        !loop->isTilemapMode() &&
+        loop->isManualTilesetMode()) {
+      const Tileset* srcTileset = static_cast<LayerTilemap*>(loop->getLayer())->tileset();
+      m_tempTileset.reset(Tileset::MakeCopyCopyingImages(srcTileset));
+    }
+    else {
+      m_tempTileset.reset();
+    }
   }
 
   void joinStroke(ToolLoop* loop, const Stroke& stroke) override {
@@ -500,7 +535,7 @@ public:
             && (m_pts[c+1].x == m_pts[c].x || m_pts[c+1].y == m_pts[c].y)
             && m_pts[c-1].x != m_pts[c+1].x
             && m_pts[c-1].y != m_pts[c+1].y) {
-          loop->restoreLastPts(c, m_pts[c]);
+          restoreLastPts(loop, c, m_pts[c]);
           if (c == nextPt-1)
             nextPt--;
           m_pts.erase(c);
@@ -522,8 +557,8 @@ public:
       // use it in doTransformPoint.
       m_saveStrokeArea = (c == m_pts.size() - 1 && !m_retainedTracePolicyLast);
       if (m_saveStrokeArea) {
-        loop->clearPointshapeStrokePtAreas();
-        loop->setLastPtIndex(c);
+        clearPointshapeStrokePtAreas();
+        setLastPtIndex(c);
       }
       doPointshapeStrokePt(m_pts[c], loop);
     }
@@ -542,17 +577,172 @@ public:
       loop, (AlgoHLine)doPointshapeHline);
   }
 
+  gfx::Region forceTilemapRegionToValidate() override {
+    return m_restoredRegion;
+  }
+
 protected:
   void doTransformPoint(const Stroke::Pt& pt, ToolLoop* loop) override {
     if (m_saveStrokeArea)
-      loop->savePointshapeStrokePtArea(pt);
+      savePointshapeStrokePtArea(loop, pt);
 
     Intertwine::doTransformPoint(pt, loop);
 
     if (loop->getLayer()->isTilemap()) {
-      loop->updateTempTileset(pt);
+      updateTempTileset(loop, pt);
     }
   }
+
+private:
+  void clearPointshapeStrokePtAreas() {
+    m_savedAreas.clear();
+  }
+
+  void setLastPtIndex(const int pti) {
+    m_lastPti = pti;
+  }
+
+  // Saves the destination image's area that will be updated by the point
+  // passed. The idea is to have the state of the image (only the
+  // portion modified by the stroke's point shape) before drawing the last
+  // point of the stroke, then if that point has to be deleted by the
+  // pixel-perfect algorithm, we can use this image to restore the image to the
+  // state previous to the deletion. This method is used by
+  // IntertwineAsPixelPerfect.joinStroke() method.
+  void savePointshapeStrokePtArea(ToolLoop* loop, const tools::Stroke::Pt& pt) {
+    gfx::Rect r;
+    loop->getPointShape()->getModifiedArea(loop, pt.x, pt.y, r);
+
+    gfx::Region rgn(r);
+    // By wrapping the modified area's position when tiled mode is active, the
+    // user can draw outside the canvas and still get the pixel-perfect
+    // effect.
+    loop->getTiledModeHelper().wrapPosition(rgn);
+    loop->getTiledModeHelper().collapseRegionByTiledMode(rgn);
+
+    for (auto a : rgn) {
+      a.offset(-loop->getCelOrigin());
+
+      if (m_tempTileset) {
+        forEachTilePos(
+          loop, m_grid.tilesInCanvasRegion(gfx::Region(a)),
+          [loop](const doc::ImageRef existentTileImage,
+                 const gfx::Point tilePos) {
+            loop->getDstImage()->copy(
+              existentTileImage.get(),
+              gfx::Clip(tilePos.x, tilePos.y, 0, 0,
+                        existentTileImage.get()->width(),
+                        existentTileImage.get()->height()));
+          });
+      }
+
+      ImageRef i(Image::create(loop->getDstImage()->pixelFormat(), a.w, a.h));
+      i->copy(loop->getDstImage(), gfx::Clip(0, 0, a));
+      m_savedAreas.push_back(SavedArea{ i, pt, a });
+    }
+  }
+
+  // Takes the images saved by savePointshapeStrokePtArea and copies them to
+  // the destination image. It restores the destination image because the
+  // images in m_savedAreas are from previous states of the destination
+  // image. This method is used by IntertwineAsPixelPerfect.joinStroke()
+  // method.
+  void restoreLastPts(ToolLoop* loop, const int pti, const tools::Stroke::Pt& pt) {
+    if (m_savedAreas.empty() || pti != m_lastPti || m_savedAreas[0].pos != pt)
+      return;
+
+    m_restoredRegion.clear();
+
+    tools::Stroke::Pt pos;
+    for (int i=0; i<m_savedAreas.size(); ++i) {
+      loop->getDstImage()->copy(
+        m_savedAreas[i].img.get(),
+        gfx::Clip(m_savedAreas[i].r.origin(),
+                  m_savedAreas[i].img->bounds()));
+
+      if (m_tempTileset) {
+        auto r = m_savedAreas[i].r;
+        forEachTilePos(
+          loop, m_grid.tilesInCanvasRegion(gfx::Region(r)),
+          [this, i, r](const doc::ImageRef existentTileImage,
+                       const gfx::Point tilePos) {
+            existentTileImage->copy(
+              m_savedAreas[i].img.get(),
+              gfx::Clip(r.x - tilePos.x,
+                        r.y - tilePos.y,
+                        0, 0, r.w, r.h));
+          });
+      }
+
+      m_restoredRegion |= gfx::Region(m_savedAreas[i].r);
+    }
+  }
+
+  void updateTempTileset(ToolLoop* loop, const tools::Stroke::Pt& pt) {
+    if (!m_tempTileset)
+      return;
+
+    gfx::Rect r;
+    loop->getPointShape()->getModifiedArea(loop, pt.x, pt.y, r);
+
+    auto tilesPts = m_grid.tilesInCanvasRegion(gfx::Region(r));
+    forEachTilePos(
+      loop, tilesPts,
+      [loop, r](const doc::ImageRef existentTileImage,
+                const gfx::Point tilePos) {
+        existentTileImage->copy(
+          loop->getDstImage(),
+          gfx::Clip(r.x - tilePos.x,
+                    r.y - tilePos.y, r));
+      });
+
+    if (tilesPts.size() > 1) {
+      forEachTilePos(
+        loop, tilesPts,
+        [loop](const doc::ImageRef existentTileImage,
+               const gfx::Point tilePos) {
+          loop->getDstImage()->copy(
+            existentTileImage.get(),
+            gfx::Clip(tilePos.x, tilePos.y, 0, 0,
+                      existentTileImage.get()->width(),
+                      existentTileImage.get()->height()));
+        });
+    }
+  }
+
+  // Loops over the points in tilesPts, and for each one calls the provided
+  // processTempTileImage callback passing to it the corresponding temp tile
+  // image and canvas position.
+  void forEachTilePos(ToolLoop* loop,
+                      const std::vector<gfx::Point>& tilesPts,
+                      const std::function<void(const doc::ImageRef existentTileImage,
+                                               const gfx::Point tilePos)>& processTempTileImage) {
+    ASSERT(loop->getCel());
+    if (!loop->getCel())
+      return;
+
+    const Image* tilemapImage = loop->getCel()->image();
+    for (const gfx::Point& tilePt : tilesPts) {
+      // Ignore modifications outside the tilemap
+      if (!tilemapImage->bounds().contains(tilePt.x, tilePt.y))
+        continue;
+
+      const doc::tile_t t = tilemapImage->getPixel(tilePt.x, tilePt.y);
+      if (t == doc::notile)
+        continue;
+
+      const doc::tile_index ti = doc::tile_geti(t);
+      const doc::ImageRef existentTileImage = m_tempTileset->get(ti);
+      if (!existentTileImage) {
+        continue;
+      }
+
+      auto tilePos = m_grid.tileToCanvas(tilePt);
+
+      processTempTileImage(existentTileImage, tilePos);
+    }
+  }
+
 };
 
 } // namespace tools
