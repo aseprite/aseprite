@@ -291,7 +291,7 @@ public:
   Layer* getLayer() override { return m_layer; }
   const Cel* getCel() override { return nullptr; }
   bool isTilemapMode() override { return m_tilesMode; };
-  bool isManualTilesetMode() const override { return m_tilesetMode == TilesetMode::Manual; };
+  bool isManualTilesetMode() const override { return m_tilesetMode == TilesetMode::Manual; }
   frame_t getFrame() override { return m_frame; }
   RgbMap* getRgbMap() override {
     if (!m_rgbMap) {
@@ -976,6 +976,12 @@ public:
   void invalidateDstImage() override { }
   void invalidateDstImage(const gfx::Region& rgn) override { }
   void copyValidDstToSrcImage(const gfx::Region& rgn) override { }
+
+  bool isManualTilesetMode() const override {
+    // Return false because this is only the preview, so we avoid
+    // creating a new tileset
+    return false;
+  }
 
   bool useMask() override { return false; }
   Mask* getMask() override { return nullptr; }
