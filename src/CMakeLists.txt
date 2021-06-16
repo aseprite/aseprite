@@ -134,33 +134,35 @@ add_subdirectory(app)
 ######################################################################
 # Copy data/ directory target
 
+set(DATA_OUTPUT_DIR ${CMAKE_BINARY_DIR}/bin/data)
+
 file(GLOB_RECURSE src_data_files
   RELATIVE ${SOURCE_DATA_DIR}/ "${SOURCE_DATA_DIR}/*.*")
 foreach(fn ${src_data_files})
   add_custom_command(
-    OUTPUT ${CMAKE_BINARY_DIR}/bin/data/${fn}
-    COMMAND ${CMAKE_COMMAND} -E copy ${SOURCE_DATA_DIR}/${fn} ${CMAKE_BINARY_DIR}/bin/data/${fn}
+    OUTPUT ${DATA_OUTPUT_DIR}/${fn}
+    COMMAND ${CMAKE_COMMAND} -E copy ${SOURCE_DATA_DIR}/${fn} ${DATA_OUTPUT_DIR}/${fn}
     MAIN_DEPENDENCY ${SOURCE_DATA_DIR}/${fn})
-  list(APPEND out_data_files ${CMAKE_BINARY_DIR}/bin/data/${fn})
+  list(APPEND out_data_files ${DATA_OUTPUT_DIR}/${fn})
 endforeach()
 
 add_custom_command(
-  OUTPUT ${CMAKE_BINARY_DIR}/bin/data/README.md
-  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/../README.md ${CMAKE_BINARY_DIR}/bin/data/README.md
+  OUTPUT ${DATA_OUTPUT_DIR}/README.md
+  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/../README.md ${DATA_OUTPUT_DIR}/README.md
   MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/../README.md)
-list(APPEND out_data_files ${CMAKE_BINARY_DIR}/bin/data/README.md)
+list(APPEND out_data_files ${DATA_OUTPUT_DIR}/README.md)
 
 add_custom_command(
-  OUTPUT ${CMAKE_BINARY_DIR}/bin/data/EULA.txt
-  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/../EULA.txt ${CMAKE_BINARY_DIR}/bin/data/EULA.txt
+  OUTPUT ${DATA_OUTPUT_DIR}/EULA.txt
+  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/../EULA.txt ${DATA_OUTPUT_DIR}/EULA.txt
   MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/../EULA.txt)
-list(APPEND out_data_files ${CMAKE_BINARY_DIR}/bin/data/EULA.txt)
+list(APPEND out_data_files ${DATA_OUTPUT_DIR}/EULA.txt)
 
 add_custom_command(
-  OUTPUT ${CMAKE_BINARY_DIR}/bin/data/docs/LICENSES.md
-  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/../docs/LICENSES.md ${CMAKE_BINARY_DIR}/bin/data/docs/LICENSES.md
+  OUTPUT ${DATA_OUTPUT_DIR}/docs/LICENSES.md
+  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/../docs/LICENSES.md ${DATA_OUTPUT_DIR}/docs/LICENSES.md
   MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/../docs/LICENSES.md)
-list(APPEND out_data_files ${CMAKE_BINARY_DIR}/bin/data/docs/LICENSES.md)
+list(APPEND out_data_files ${DATA_OUTPUT_DIR}/docs/LICENSES.md)
 
 add_custom_target(copy_data DEPENDS ${out_data_files})
 
@@ -168,26 +170,32 @@ add_custom_target(copy_data DEPENDS ${out_data_files})
 # Aseprite application
 
 if(ENABLE_ASEPRITE_EXE)
+  set(main_target aseprite)
+
   if(WIN32)
-    set(win32_resources
+    set(main_resources
       main/resources_win32.rc
       main/settings.manifest)
   endif()
 
-  add_executable(aseprite main/main.cpp ${win32_resources})
-  if(WIN32 AND ENABLE_UI)
-    set_target_properties(aseprite PROPERTIES WIN32_EXECUTABLE true)
+  add_executable(${main_target}
+    main/main.cpp
+    ${main_resources})
+  if(ENABLE_UI)
+    if(WIN32)
+      set_target_properties(${main_target} PROPERTIES WIN32_EXECUTABLE true)
+    endif()
   endif()
-  set_target_properties(aseprite PROPERTIES LINK_FLAGS "${LAF_BACKEND_LINK_FLAGS}")
-  target_link_libraries(aseprite app-lib)
-  add_dependencies(aseprite copy_data)
+  set_target_properties(${main_target} PROPERTIES LINK_FLAGS "${LAF_BACKEND_LINK_FLAGS}")
+  target_link_libraries(${main_target} app-lib)
+  add_dependencies(${main_target} copy_data)
 
   if(LAF_OS_BACKEND_LINK_FLAGS)
-    set_target_properties(aseprite PROPERTIES LINK_FLAGS
+    set_target_properties(${main_target} PROPERTIES LINK_FLAGS
       ${LAF_OS_BACKEND_LINK_FLAGS})
   endif()
 
-  install(TARGETS aseprite
+  install(TARGETS ${main_target}
     RUNTIME DESTINATION bin)
 
   install(DIRECTORY ../data
