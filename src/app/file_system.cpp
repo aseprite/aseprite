@@ -19,7 +19,6 @@
 
 #include "base/fs.h"
 #include "base/string.h"
-#include "base/win/comptr.h"
 #include "os/display.h"
 #include "os/surface.h"
 #include "os/system.h"
@@ -31,6 +30,8 @@
 #include <vector>
 
 #ifdef _WIN32
+  #include "base/win/comptr.h"
+
   #include <windows.h>
 
   #include <shlobj.h>
