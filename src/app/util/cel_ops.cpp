@@ -425,9 +425,15 @@ void draw_image_into_new_tilemap_cel(
         delete addTile;
     }
 
-    newTilemap->putPixel(
-      tilePt.x-tilemapBounds.x,
-      tilePt.y-tilemapBounds.y, tileIndex);
+    // We were using newTilemap->putPixel() directly but received a
+    // crash report about an "access violation". So now we've added
+    // some checks to the operation.
+    {
+      const int u = tilePt.x-tilemapBounds.x;
+      const int v = tilePt.y-tilemapBounds.y;
+      ASSERT((u >= 0) && (v >= 0) && (u < newTilemap->width()) && (v < newTilemap->height()));
+      doc::put_pixel(newTilemap.get(), u, v, tileIndex);
+    }
   }
 
   static_cast<Doc*>(dstLayer->sprite()->document())
