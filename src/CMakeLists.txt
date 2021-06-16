@@ -134,33 +134,35 @@ add_subdirectory(app)
 ######################################################################
 # Copy data/ directory target
 
+set(DATA_OUTPUT_DIR ${CMAKE_BINARY_DIR}/bin/data)
+
 file(GLOB_RECURSE src_data_files
   RELATIVE ${SOURCE_DATA_DIR}/ "${SOURCE_DATA_DIR}/*.*")
 foreach(fn ${src_data_files})
   add_custom_command(
-    OUTPUT ${CMAKE_BINARY_DIR}/bin/data/${fn}
-    COMMAND ${CMAKE_COMMAND} -E copy ${SOURCE_DATA_DIR}/${fn} ${CMAKE_BINARY_DIR}/bin/data/${fn}
+    OUTPUT ${DATA_OUTPUT_DIR}/${fn}
+    COMMAND ${CMAKE_COMMAND} -E copy ${SOURCE_DATA_DIR}/${fn} ${DATA_OUTPUT_DIR}/${fn}
     MAIN_DEPENDENCY ${SOURCE_DATA_DIR}/${fn})
-  list(APPEND out_data_files ${CMAKE_BINARY_DIR}/bin/data/${fn})
+  list(APPEND out_data_files ${DATA_OUTPUT_DIR}/${fn})
 endforeach()
 
 add_custom_command(
-  OUTPUT ${CMAKE_BINARY_DIR}/bin/data/README.md
-  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/../README.md ${CMAKE_BINARY_DIR}/bin/data/README.md
+  OUTPUT ${DATA_OUTPUT_DIR}/README.md
+  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/../README.md ${DATA_OUTPUT_DIR}/README.md
   MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/../README.md)
-list(APPEND out_data_files ${CMAKE_BINARY_DIR}/bin/data/README.md)
+list(APPEND out_data_files ${DATA_OUTPUT_DIR}/README.md)
 
 add_custom_command(
-  OUTPUT ${CMAKE_BINARY_DIR}/bin/data/EULA.txt
-  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/../EULA.txt ${CMAKE_BINARY_DIR}/bin/data/EULA.txt
+  OUTPUT ${DATA_OUTPUT_DIR}/EULA.txt
+  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/../EULA.txt ${DATA_OUTPUT_DIR}/EULA.txt
   MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/../EULA.txt)
-list(APPEND out_data_files ${CMAKE_BINARY_DIR}/bin/data/EULA.txt)
+list(APPEND out_data_files ${DATA_OUTPUT_DIR}/EULA.txt)
 
 add_custom_command(
-  OUTPUT ${CMAKE_BINARY_DIR}/bin/data/docs/LICENSES.md
-  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/../docs/LICENSES.md ${CMAKE_BINARY_DIR}/bin/data/docs/LICENSES.md
+  OUTPUT ${DATA_OUTPUT_DIR}/docs/LICENSES.md
+  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/../docs/LICENSES.md ${DATA_OUTPUT_DIR}/docs/LICENSES.md
   MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/../docs/LICENSES.md)
-list(APPEND out_data_files ${CMAKE_BINARY_DIR}/bin/data/docs/LICENSES.md)
+list(APPEND out_data_files ${DATA_OUTPUT_DIR}/docs/LICENSES.md)
 
 add_custom_target(copy_data DEPENDS ${out_data_files})
 
