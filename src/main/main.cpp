@@ -27,7 +27,7 @@
 #include <ctime>
 #include <iostream>
 
-#ifdef _WIN32
+#if LAF_WINDOWS
   #include <windows.h>
 #endif
 
@@ -44,7 +44,7 @@ namespace {
 #endif
   };
 
-#ifdef _WIN32
+#if LAF_WINDOWS
   // Successful calls to CoInitialize() (S_OK or S_FALSE) must match
   // the calls to CoUninitialize().
   // From: https://docs.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-couninitialize#remarks
@@ -74,7 +74,7 @@ int app_main(int argc, char* argv[])
   // Initialize the random seed.
   std::srand(static_cast<unsigned int>(std::time(nullptr)));
 
-#ifdef _WIN32
+#if LAF_WINDOWS
   CoInit com;                   // To create COM objects
 #endif
 
