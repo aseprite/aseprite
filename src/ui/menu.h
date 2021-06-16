@@ -71,7 +71,7 @@ namespace ui {
     void setMenu(Menu* menu);
 
     MenuBaseData* getBase() {
-      return m_base;
+      return m_base.get();
     }
 
     // Closes all menu-boxes and goes back to the normal state of the
@@ -89,7 +89,7 @@ namespace ui {
     void startFilteringMouseDown();
     void stopFilteringMouseDown();
 
-    MenuBaseData* m_base;
+    std::unique_ptr<MenuBaseData> m_base;
 
     friend class Menu;
     friend class MenuItem;

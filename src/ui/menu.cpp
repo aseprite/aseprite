@@ -233,7 +233,6 @@ MenuBox::MenuBox(WidgetType type)
 MenuBox::~MenuBox()
 {
   stopFilteringMouseDown();
-  delete m_base;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -288,9 +287,8 @@ Menu* MenuBox::getMenu()
 
 MenuBaseData* MenuBox::createBase()
 {
-  delete m_base;
-  m_base = new MenuBaseData;
-  return m_base;
+  m_base.reset(new MenuBaseData);
+  return m_base.get();
 }
 
 Menu* MenuItem::getSubmenu()
@@ -484,18 +482,29 @@ bool MenuBox::onProcessMessage(Message* msg)
 
   switch (msg->type()) {
 
-    case kMouseMoveMessage:
-      if (!get_base(this)->was_clicked)
+    case kMouseMoveMessage: {
+      MenuBaseData* base = get_base(this);
+      ASSERT(base);
+      if (!base)
         break;
 
-      // Fall through
+      if (!base->was_clicked)
+        break;
+
+      //[[fallthrough]];
+    }
 
     case kMouseDownMessage:
     case kDoubleClickMessage:
       if (menu && msg->display()) {
         ASSERT(menu->parent() == this);
 
-        if (get_base(this)->is_processing)
+        MenuBaseData* base = get_base(this);
+        ASSERT(base);
+        if (!base)
+          break;
+
+        if (base->is_processing)
           break;
 
         const gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
@@ -556,11 +565,11 @@ bool MenuBox::onProcessMessage(Message* msg)
 
                 // Set this flag to false so the submenu is not open
                 // again on kMouseMoveMessage.
-                get_base(this)->was_clicked = false;
+                base->was_clicked = false;
               }
             }
           }
-          else if (!get_base(this)->was_clicked) {
+          else if (!base->was_clicked) {
             menu->unhighlightItem();
           }
         }
@@ -569,7 +578,12 @@ bool MenuBox::onProcessMessage(Message* msg)
 
     case kMouseLeaveMessage:
       if (menu) {
-        if (get_base(this)->is_processing)
+        MenuBaseData* base = get_base(this);
+        ASSERT(base);
+        if (!base)
+          break;
+
+        if (base->is_processing)
           break;
 
         MenuItem* highlight = menu->getHighlightedItem();
@@ -580,7 +594,12 @@ bool MenuBox::onProcessMessage(Message* msg)
 
     case kMouseUpMessage:
       if (menu) {
-        if (get_base(this)->is_processing)
+        MenuBaseData* base = get_base(this);
+        ASSERT(base);
+        if (!base)
+          break;
+
+        if (base->is_processing)
           break;
 
         // The item is highlighted and not opened (and the timer to open the submenu is stopped)
@@ -598,10 +617,15 @@ bool MenuBox::onProcessMessage(Message* msg)
       if (menu) {
         MenuItem* selected;
 
-        if (get_base(this)->is_processing)
+        MenuBaseData* base = get_base(this);
+        ASSERT(base);
+        if (!base)
           break;
 
-        get_base(this)->was_clicked = false;
+        if (base->is_processing)
+          break;
+
+        base->was_clicked = false;
 
         // Check for ALT+some underlined letter
         if (((this->type() == kMenuBoxWidget) && (msg->modifiers() == kKeyNoneModifier || // <-- Inside menu-boxes we can use letters without Alt modifier pressed
@@ -738,6 +762,9 @@ bool MenuBox::onProcessMessage(Message* msg)
                 else if (menu->m_menuitem) {
                   // Get the root menu
                   MenuBox* root = get_base_menubox(this);
+                  ASSERT(root);
+                  if (!root)
+                    break;
                   menu = root->getMenu();
 
                   // Go to the next item in the root
@@ -859,9 +886,12 @@ bool MenuItem::onProcessMessage(Message* msg)
         validateItem();
 
         MenuBaseData* base = get_base(this);
+        ASSERT(base);
+        if (!base)
+          break;
+
         bool select_first = static_cast<OpenMenuItemMessage*>(msg)->select_first();
 
-        ASSERT(base != nullptr);
         ASSERT(base->is_processing);
         ASSERT(hasSubmenu());
 
@@ -931,8 +961,10 @@ bool MenuItem::onProcessMessage(Message* msg)
       else if (msg->type() == kCloseMenuItemMessage) {
         bool last_of_close_chain = static_cast<CloseMenuItemMessage*>(msg)->last_of_close_chain();
         MenuBaseData* base = get_base(this);
+        ASSERT(base);
+        if (!base)
+          break;
 
-        ASSERT(base != nullptr);
         ASSERT(base->is_processing);
 
         MenuBox* menubox = m_submenu_menubox;
@@ -977,6 +1009,9 @@ bool MenuItem::onProcessMessage(Message* msg)
     case kTimerMessage:
       if (static_cast<TimerMessage*>(msg)->timer() == m_submenu_timer.get()) {
         MenuBaseData* base = get_base(this);
+        ASSERT(base);
+        if (!base)
+          break;
 
         ASSERT(hasSubmenu());
 
@@ -1055,6 +1090,12 @@ static MenuBox* get_base_menubox(Widget* widget)
 
         ASSERT(menu != nullptr);
         ASSERT(menu->getOwnerMenuItem() != nullptr);
+
+        // We have received a crash report where the "menu" variable
+        // can be nullptr in the kMouseDownMessage message processing
+        // from MenuBox::onProcessMessage().
+        if (menu == nullptr)
+          return nullptr;
 
         widget = menu->getOwnerMenuItem();
       }
@@ -1150,7 +1191,10 @@ void Menu::highlightItem(MenuItem* menuitem, bool click, bool open_submenu, bool
           menuitem->openSubmenu(select_first_child);
 
         // The mouse was clicked
-        get_base(menuitem)->was_clicked = true;
+        MenuBaseData* base = get_base(menuitem);
+        ASSERT(base);
+        if (base)
+          base->was_clicked = true;
       }
     }
     // Execute menuitem action
@@ -1207,7 +1251,9 @@ void MenuItem::openSubmenu(bool select_first)
 
   // Get the 'base'
   MenuBaseData* base = get_base(this);
-  ASSERT(base != nullptr);
+  ASSERT(base);
+  if (!base)
+    return;
   ASSERT(base->is_processing == false);
 
   // Reset flags
@@ -1253,11 +1299,13 @@ void MenuItem::closeSubmenu(bool last_of_close_chain)
   if (last_of_close_chain) {
     // Get the 'base'
     base = get_base(this);
-    ASSERT(base != nullptr);
-    ASSERT(base->is_processing == false);
+    ASSERT(base);
+    if (base) {
+      ASSERT(base->is_processing == false);
 
-    // Start processing
-    base->is_processing = true;
+      // Start processing
+      base->is_processing = true;
+    }
   }
 }
 
@@ -1349,17 +1397,23 @@ void MenuBox::stopFilteringMouseDown()
 void MenuBox::cancelMenuLoop()
 {
   Menu* menu = getMenu();
-  if (menu) {
-    // Do not close the popup menus if we're already processing
-    // open/close popup messages.
-    if (get_base(this)->is_processing)
-      return;
+  if (!menu)
+    return;
 
-    menu->closeAll();
+  MenuBaseData* base = get_base(this);
+  ASSERT(base);
+  if (!base)
+    return;
 
-    // Lost focus
-    Manager::getDefault()->freeFocus();
-  }
+  // Do not close the popup menus if we're already processing
+  // open/close popup messages.
+  if (base->is_processing)
+    return;
+
+  menu->closeAll();
+
+  // Lost focus
+  Manager::getDefault()->freeFocus();
 }
 
 void MenuItem::executeClick()
