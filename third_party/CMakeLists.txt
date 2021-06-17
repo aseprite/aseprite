@@ -154,6 +154,7 @@ if(ENABLE_SCRIPTING)
     lua/ltablib.c
     lua/lutf8lib.c)
   target_compile_definitions(lua PUBLIC LUA_FLOORN2I=1)
+  target_compile_definitions(lualib PRIVATE HAVE_SYSTEM)
   target_include_directories(lua PUBLIC lua)
   target_include_directories(lauxlib PUBLIC lua)
   target_include_directories(lualib PUBLIC lua)
