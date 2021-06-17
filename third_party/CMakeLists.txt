@@ -83,6 +83,7 @@ add_subdirectory(fmt)
 
 # Add cmark without tests
 if(NOT USE_SHARED_CMARK)
+  set(CMARK_PROGRAM OFF CACHE BOOL "Build cmark executable")
   set(CMARK_TESTS OFF CACHE BOOL "Build cmark tests and enable testing")
   add_subdirectory(cmark)
 endif()
