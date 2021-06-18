@@ -464,6 +464,7 @@ public:
     m_pts.reset();
     m_retainedTracePolicyLast = false;
     m_grid = loop->getGrid();
+    m_restoredRegion.clear();
 
     if (loop->getLayer()->isTilemap() &&
         !loop->isTilemapMode() &&
@@ -620,11 +621,12 @@ private:
     loop->getTiledModeHelper().collapseRegionByTiledMode(rgn);
 
     for (auto a : rgn) {
-      a.offset(-loop->getCelOrigin());
-
       if (m_tempTileset) {
+        gfx::Rect a2(a);
+        a2.offset(-loop->getCel()->position());
+        a2.offset(loop->getCelOrigin());
         forEachTilePos(
-          loop, m_grid.tilesInCanvasRegion(gfx::Region(a)),
+          loop, m_grid.tilesInCanvasRegion(gfx::Region(a2)),
           [loop](const doc::ImageRef existentTileImage,
                  const gfx::Point tilePos) {
             loop->getDstImage()->copy(
@@ -635,6 +637,7 @@ private:
           });
       }
 
+      a.offset(-loop->getCelOrigin());
       ImageRef i(crop_image(loop->getDstImage(), a, loop->getDstImage()->maskColor()));
       m_savedAreas.push_back(SavedArea{ i, pt, a });
     }
@@ -660,8 +663,12 @@ private:
 
       if (m_tempTileset) {
         auto r = m_savedAreas[i].r;
+        gfx::Rect r2(r);
+        r2.offset(-loop->getCel()->position());
+        r2.offset(loop->getCelOrigin());
+        r2.offset(loop->getCelOrigin());
         forEachTilePos(
-          loop, m_grid.tilesInCanvasRegion(gfx::Region(r)),
+          loop, m_grid.tilesInCanvasRegion(gfx::Region(r2)),
           [this, i, r](const doc::ImageRef existentTileImage,
                        const gfx::Point tilePos) {
             existentTileImage->copy(
@@ -674,6 +681,8 @@ private:
 
       m_restoredRegion |= gfx::Region(m_savedAreas[i].r);
     }
+
+    m_restoredRegion.offset(loop->getCelOrigin());
   }
 
   void updateTempTileset(ToolLoop* loop, const tools::Stroke::Pt& pt) {
@@ -682,7 +691,13 @@ private:
     gfx::Rect r;
     loop->getPointShape()->getModifiedArea(loop, pt.x, pt.y, r);
 
-    auto tilesPts = m_grid.tilesInCanvasRegion(gfx::Region(r));
+    gfx::Rect r2(r);
+
+    r.offset(-loop->getCelOrigin());
+
+    r2.offset(loop->getCelOrigin());
+    r2.offset(-loop->getCel()->position());
+    auto tilesPts = m_grid.tilesInCanvasRegion(gfx::Region(r2));
     forEachTilePos(
       loop, tilesPts,
       [loop, r](const doc::ImageRef existentTileImage,
@@ -734,7 +749,9 @@ private:
         continue;
 
       auto tilePos = m_grid.tileToCanvas(tilePt);
-
+      tilePos -= loop->getCelOrigin();
+      tilePos -= loop->getCelOrigin();
+      tilePos += loop->getCel()->position();
       processTempTileImage(existentTileImage, tilePos);
     }
   }
