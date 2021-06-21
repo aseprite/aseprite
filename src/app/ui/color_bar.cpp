@@ -75,6 +75,7 @@
 
 #include <cstring>
 #include <limits>
+#include <memory>
 
 namespace app {
 
@@ -1182,9 +1183,16 @@ void ColorBar::updateCurrentSpritePalette(const char* operationName)
           cmd->execute(UIContext::instance());
         }
         else {
-          Tx tx(writer.context(), operationName, ModifyDocument);
-          tx(cmd);
-          tx.commit();
+          std::unique_ptr<Tx> tx;
+          try {
+            tx = std::unique_ptr<Tx>(new Tx(writer.context(), operationName, ModifyDocument));
+          }
+          catch (...) {
+            delete cmd;
+            throw;
+          }
+          (*tx)(cmd);
+          tx->commit();
         }
       }
     }

@@ -203,7 +203,13 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
         // Automatic bind <check> widget with bool preference option
         if (pref) {
           auto prefWidget = new BoolPrefWidget<CheckBox>("");
-          prefWidget->setPref(pref);
+          try {
+            prefWidget->setPref(pref);
+          }
+          catch (...) {
+            delete prefWidget;
+            throw;
+          }
           widget = prefWidget;
         }
         else {
