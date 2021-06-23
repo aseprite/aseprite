@@ -79,6 +79,10 @@ On Fedora:
 
     sudo dnf install -y gcc-c++ cmake ninja-build libX11-devel libXcursor-devel libXi-devel mesa-libGL-devel fontconfig-devel
 
+On Arch:
+
+    sudo pacman -S gcc cmake ninja libx11 libxcursor mesa-libgl fontconfig
+
 # Compiling
 
 1. [Get Aseprite code](#get-the-source-code), put it in a folder like
