@@ -115,11 +115,10 @@ void MaskByColorCommand::onExecute(Context* context)
   auto box3 = new Box(HORIZONTAL);
   auto box4 = new Box(HORIZONTAL | HOMOGENEOUS);
   auto label_color = new Label("Color:");
-  m_buttonColor = new ColorButton
-    (get_config_color(ConfigSection, "Color",
-                      ColorBar::instance()->getFgColor()),
-     sprite->pixelFormat(),
-     ColorButtonOptions());
+  m_buttonColor = new ColorButton(
+    ColorBar::instance()->getFgColor(),
+    sprite->pixelFormat(),
+    ColorButtonOptions());
   auto label_tolerance = new Label("Tolerance:");
   m_sliderTolerance = new Slider(0, 255, get_config_int(ConfigSection, "Tolerance", 0));
 
@@ -189,7 +188,6 @@ void MaskByColorCommand::onExecute(Context* context)
     tx(new cmd::SetMask(document, mask.get()));
     tx.commit();
 
-    set_config_color(ConfigSection, "Color", m_buttonColor->getColor());
     set_config_int(ConfigSection, "Tolerance", m_sliderTolerance->getValue());
     set_config_bool(ConfigSection, "Preview", m_checkPreview->isSelected());
   }
