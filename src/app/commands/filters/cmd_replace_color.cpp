@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -180,19 +180,12 @@ void ReplaceColorCommand::onExecute(Context* context)
     TARGET_GRAY_CHANNEL |
     TARGET_ALPHA_CHANNEL);
 
+  filter.setFrom(Preferences::instance().colorBar.fgColor());
+  filter.setTo(Preferences::instance().colorBar.bgColor());
 #ifdef ENABLE_UI
-  if (ui) {
-    filter.setFrom(get_config_color(ConfigSection, "Color1", Preferences::instance().colorBar.fgColor()));
-    filter.setTo(get_config_color(ConfigSection, "Color2", Preferences::instance().colorBar.bgColor()));
+  if (ui)
     filter.setTolerance(get_config_int(ConfigSection, "Tolerance", 0));
-  }
-  else
 #endif // ENABLE_UI
-  {
-    filter.setFrom(Preferences::instance().colorBar.fgColor());
-    filter.setTo(Preferences::instance().colorBar.bgColor());
-    filter.setTolerance(params().tolerance());
-  }
 
   if (params().from.isSet()) filter.setFrom(params().from());
   if (params().to.isSet())  filter.setTo(params().to());
@@ -202,11 +195,8 @@ void ReplaceColorCommand::onExecute(Context* context)
 #ifdef ENABLE_UI
   if (ui) {
     ReplaceColorWindow window(filter, filterMgr);
-    if (window.doModal()) {
-      set_config_color(ConfigSection, "From", filter.getFrom());
-      set_config_color(ConfigSection, "To", filter.getTo());
+    if (window.doModal())
       set_config_int(ConfigSection, "Tolerance", filter.getTolerance());
-    }
   }
   else
 #endif // ENABLE_UI
