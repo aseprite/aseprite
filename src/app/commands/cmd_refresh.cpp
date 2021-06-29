@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2021  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -34,6 +34,9 @@ public:
 
 protected:
   void onExecute(Context* context) override;
+
+private:
+  void postCancelMenuLoop();
 };
 
 RefreshCommand::RefreshCommand()
@@ -43,8 +46,26 @@ RefreshCommand::RefreshCommand()
 
 void RefreshCommand::onExecute(Context* context)
 {
+  if (!context->isUIAvailable())
+    return;
+
+  // Close the current menu loop just in case if there is a menu popup
+  // open, and then enqueue the postReload() function after all menus
+  // are closed.
+  App::instance()->mainWindow()->getMenuBar()->cancelMenuLoop();
+
+  // Now that all menus are going to be closed (the final close
+  // messages are enqueued in the UI message queue), we can queue a
+  // function call that will reload all menus.
+  ui::execute_from_ui_thread(
+    [this]{
+      postCancelMenuLoop();
+    });
+}
+
+void RefreshCommand::postCancelMenuLoop()
+{
   // Reload menus (mainly to reload the File > Scripts menu)
-  //AppMenus::instance()->reload();
   App::instance()->mainWindow()->getMenuBar()->reload();
 
   // Reload theme
