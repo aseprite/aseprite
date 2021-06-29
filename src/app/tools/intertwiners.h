@@ -588,9 +588,8 @@ protected:
 
     Intertwine::doTransformPoint(pt, loop);
 
-    if (loop->getLayer()->isTilemap()) {
+    if (loop->getLayer()->isTilemap() && m_tempTileset)
       updateTempTileset(loop, pt);
-    }
   }
 
 private:
@@ -631,13 +630,12 @@ private:
             loop->getDstImage()->copy(
               existentTileImage.get(),
               gfx::Clip(tilePos.x, tilePos.y, 0, 0,
-                        existentTileImage.get()->width(),
-                        existentTileImage.get()->height()));
+                        existentTileImage->width(),
+                        existentTileImage->height()));
           });
       }
 
-      ImageRef i(Image::create(loop->getDstImage()->pixelFormat(), a.w, a.h));
-      i->copy(loop->getDstImage(), gfx::Clip(0, 0, a));
+      ImageRef i(crop_image(loop->getDstImage(), a, loop->getDstImage()->maskColor()));
       m_savedAreas.push_back(SavedArea{ i, pt, a });
     }
   }
@@ -679,8 +677,7 @@ private:
   }
 
   void updateTempTileset(ToolLoop* loop, const tools::Stroke::Pt& pt) {
-    if (!m_tempTileset)
-      return;
+    ASSERT(m_tempTileset);
 
     gfx::Rect r;
     loop->getPointShape()->getModifiedArea(loop, pt.x, pt.y, r);
@@ -704,8 +701,8 @@ private:
           loop->getDstImage()->copy(
             existentTileImage.get(),
             gfx::Clip(tilePos.x, tilePos.y, 0, 0,
-                      existentTileImage.get()->width(),
-                      existentTileImage.get()->height()));
+                      existentTileImage->width(),
+                      existentTileImage->height()));
         });
     }
   }
@@ -733,9 +730,8 @@ private:
 
       const doc::tile_index ti = doc::tile_geti(t);
       const doc::ImageRef existentTileImage = m_tempTileset->get(ti);
-      if (!existentTileImage) {
+      if (!existentTileImage)
         continue;
-      }
 
       auto tilePos = m_grid.tileToCanvas(tilePt);
 
