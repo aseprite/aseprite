@@ -454,6 +454,8 @@ class IntertwineAsPixelPerfect : public Intertwine {
   // modifying a tilemap in Manual mode.
   std::unique_ptr<Tileset> m_tempTileset;
   doc::Grid m_grid;
+  doc::Grid m_dstGrid;
+  doc::Grid m_celGrid;
 
 public:
   // Useful for Shift+Ctrl+pencil to draw straight lines and snap
@@ -463,7 +465,7 @@ public:
   void prepareIntertwine(ToolLoop* loop) override {
     m_pts.reset();
     m_retainedTracePolicyLast = false;
-    m_grid = loop->getGrid();
+    m_grid = m_dstGrid = m_celGrid = loop->getGrid();
     m_restoredRegion.clear();
 
     if (loop->getLayer()->isTilemap() &&
@@ -471,6 +473,12 @@ public:
         loop->isManualTilesetMode()) {
       const Tileset* srcTileset = static_cast<LayerTilemap*>(loop->getLayer())->tileset();
       m_tempTileset.reset(Tileset::MakeCopyCopyingImages(srcTileset));
+
+      // Grid to convert to dstImage coordinates
+      m_dstGrid.origin(gfx::Point(0, 0));
+
+      // Grid where the original cel is the origin
+      m_celGrid.origin(loop->getCel()->position());
     }
     else {
       m_tempTileset.reset();
@@ -621,12 +629,11 @@ private:
     loop->getTiledModeHelper().collapseRegionByTiledMode(rgn);
 
     for (auto a : rgn) {
+      a.offset(-loop->getCelOrigin());
+
       if (m_tempTileset) {
-        gfx::Rect a2(a);
-        a2.offset(-loop->getCel()->position());
-        a2.offset(loop->getCelOrigin());
         forEachTilePos(
-          loop, m_grid.tilesInCanvasRegion(gfx::Region(a2)),
+          loop, m_dstGrid.tilesInCanvasRegion(gfx::Region(a)),
           [loop](const doc::ImageRef existentTileImage,
                  const gfx::Point tilePos) {
             loop->getDstImage()->copy(
@@ -637,7 +644,6 @@ private:
           });
       }
 
-      a.offset(-loop->getCelOrigin());
       ImageRef i(crop_image(loop->getDstImage(), a, loop->getDstImage()->maskColor()));
       m_savedAreas.push_back(SavedArea{ i, pt, a });
     }
@@ -663,12 +669,8 @@ private:
 
       if (m_tempTileset) {
         auto r = m_savedAreas[i].r;
-        gfx::Rect r2(r);
-        r2.offset(-loop->getCel()->position());
-        r2.offset(loop->getCelOrigin());
-        r2.offset(loop->getCelOrigin());
         forEachTilePos(
-          loop, m_grid.tilesInCanvasRegion(gfx::Region(r2)),
+          loop, m_dstGrid.tilesInCanvasRegion(gfx::Region(r)),
           [this, i, r](const doc::ImageRef existentTileImage,
                        const gfx::Point tilePos) {
             existentTileImage->copy(
@@ -691,13 +693,8 @@ private:
     gfx::Rect r;
     loop->getPointShape()->getModifiedArea(loop, pt.x, pt.y, r);
 
-    gfx::Rect r2(r);
-
     r.offset(-loop->getCelOrigin());
-
-    r2.offset(loop->getCelOrigin());
-    r2.offset(-loop->getCel()->position());
-    auto tilesPts = m_grid.tilesInCanvasRegion(gfx::Region(r2));
+    auto tilesPts = m_dstGrid.tilesInCanvasRegion(gfx::Region(r));
     forEachTilePos(
       loop, tilesPts,
       [loop, r](const doc::ImageRef existentTileImage,
@@ -734,12 +731,20 @@ private:
       return;
 
     const Image* tilemapImage = loop->getCel()->image();
+
+    // Offset to convert a tile from dstImage coordinates to tilemap
+    // image coordinates (to get the tile from the original tilemap)
+    const gfx::Point tilePt0 = m_celGrid.canvasToTile(gfx::Point(0, 0));
+
     for (const gfx::Point& tilePt : tilesPts) {
+      const gfx::Point tilePtInTilemap = tilePt0 + tilePt;
+
       // Ignore modifications outside the tilemap
-      if (!tilemapImage->bounds().contains(tilePt.x, tilePt.y))
+      if (!tilemapImage->bounds().contains(tilePtInTilemap))
         continue;
 
-      const doc::tile_t t = tilemapImage->getPixel(tilePt.x, tilePt.y);
+      const doc::tile_t t = tilemapImage->getPixel(tilePtInTilemap.x,
+                                                   tilePtInTilemap.y);
       if (t == doc::notile)
         continue;
 
@@ -748,11 +753,8 @@ private:
       if (!existentTileImage)
         continue;
 
-      auto tilePos = m_grid.tileToCanvas(tilePt);
-      tilePos -= loop->getCelOrigin();
-      tilePos -= loop->getCelOrigin();
-      tilePos += loop->getCel()->position();
-      processTempTileImage(existentTileImage, tilePos);
+      const gfx::Point tilePosInDstImage = m_dstGrid.tileToCanvas(tilePt);
+      processTempTileImage(existentTileImage, tilePosInDstImage);
     }
   }
 
