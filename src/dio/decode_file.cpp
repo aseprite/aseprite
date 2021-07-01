@@ -1,4 +1,5 @@
 // Aseprite Document IO Library
+// Copyright (c) 2021 Igara Studio S.A.
 // Copyright (c) 2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -22,8 +23,8 @@ bool decode_file(DecodeDelegate* delegate,
   assert(delegate);
   assert(f);
 
-  std::vector<uint8_t> buf(8, 0);
-  size_t n = f->readBytes(&buf[0], 8);
+  uint8_t buf[12];
+  size_t n = f->readBytes(&buf[0], 12);
   FileFormat format = detect_format_by_file_content_bytes(&buf[0], n);
   f->seek(0);                // Rewind
 
