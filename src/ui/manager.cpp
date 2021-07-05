@@ -267,7 +267,12 @@ void Manager::flipDisplay()
     gfx::Region(gfx::Rect(0, 0, ui::display_w(), ui::display_h())));
 
   if (!m_dirtyRegion.isEmpty()) {
-    m_display->invalidateRegion(m_dirtyRegion);
+    // Invalidate the dirty region in the os::Window
+    if (m_display->isVisible())
+      m_display->invalidateRegion(m_dirtyRegion);
+    else
+      m_display->setVisible(true);
+
     m_dirtyRegion.clear();
   }
 }
