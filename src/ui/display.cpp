@@ -26,10 +26,12 @@ Display::Display(Display* parentDisplay,
   , m_nativeWindow(nativeWindow)
   , m_containedWidget(containedWidget)
 {
+#if 0 // When compiling tests all these values can be nullptr
   ASSERT(m_nativeWindow);
   ASSERT(m_containedWidget);
   ASSERT(m_containedWidget->type() == kManagerWidget ||
          m_containedWidget->type() == kWindowWidget);
+#endif
   m_dirtyRegion = bounds();
 }
 
@@ -40,7 +42,10 @@ os::Surface* Display::surface() const
 
 gfx::Size Display::size() const
 {
-  ASSERT(m_nativeWindow);
+  // When running tests this can be nullptr
+  if (!m_nativeWindow)
+    return gfx::Size(1, 1);
+
   const int scale = m_nativeWindow->scale();
   ASSERT(scale > 0);
   return gfx::Size(m_nativeWindow->width() / scale,

@@ -181,7 +181,9 @@ Manager::Manager(const os::WindowRef& nativeWindow)
   , m_lockedWindow(nullptr)
   , m_mouseButton(kButtonNone)
 {
-  nativeWindow->setUserData(&m_display);
+  // The native window can be nullptr when running tests
+  if (nativeWindow)
+    nativeWindow->setUserData(&m_display);
 
 #ifdef DEBUG_UI_THREADS
   ASSERT(!manager_thread);
@@ -1657,6 +1659,10 @@ void Manager::onNewDisplayConfiguration(Display* display)
        bounds().h != displaySize.h)) {
     container->setBounds(gfx::Rect(displaySize));
   }
+
+  // The native window can be nullptr when running tests.
+  if (!display->nativeWindow())
+    return;
 
   _internal_set_mouse_display(display);
   container->invalidate();
