@@ -47,7 +47,6 @@
 #include "os/surface.h"
 #include "os/system.h"
 #include "os/window.h"
-#include "os/window.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
 
