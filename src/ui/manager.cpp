@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -45,6 +45,13 @@
 #include <utility>
 #include <vector>
 
+#if defined(_WIN32) && defined(DEBUG_PAINT_EVENTS)
+  #define WIN32_LEAN_AND_MEAN
+  #include <windows.h>
+  #undef min
+  #undef max
+#endif
+
 namespace ui {
 
 namespace {
@@ -56,6 +63,7 @@ enum class RedrawState {
    Normal,
    AWindowHasJustBeenClosed,
    RedrawDelayed,
+   ClosingApp,
 };
 RedrawState redrawState = RedrawState::Normal;
 
@@ -695,11 +703,14 @@ void Manager::dispatchMessages()
   // returns a number greater than 0, it means that we've processed
   // some messages, so we've to redraw the screen.
   if (pumpQueue() > 0 || redrawState == RedrawState::RedrawDelayed) {
+    if (redrawState == RedrawState::ClosingApp) {
+      // Do nothing, we don't flush nor process paint messages
+    }
     // If a window has just been closed with Manager::_closeWindow()
     // after processing messages, we'll wait the next event generation
     // to process painting events (so the manager doesn't lost the
     // DIRTY flag right now).
-    if (redrawState == RedrawState::AWindowHasJustBeenClosed) {
+    else if (redrawState == RedrawState::AWindowHasJustBeenClosed) {
       redrawState = RedrawState::RedrawDelayed;
     }
     else {
@@ -1073,6 +1084,10 @@ void Manager::dirtyRect(const gfx::Rect& bounds)
 // Configures the window for begin the loop
 void Manager::_openWindow(Window* window)
 {
+  // Opening other window in the "close app" state, ok, let's back to normal.
+  if (redrawState == RedrawState::ClosingApp)
+    redrawState = RedrawState::Normal;
+
   // Free all widgets of special states.
   if (window->isWantFocus()) {
     freeCapture();
@@ -1165,7 +1180,13 @@ void Manager::_closeWindow(Window* window, bool redraw_background)
   // recently closed window).
   updateMouseWidgets(ui::get_mouse_position());
 
-  redrawState = RedrawState::AWindowHasJustBeenClosed;
+  if (children().empty()) {
+    // All windows were closed...
+    redrawState = RedrawState::ClosingApp;
+  }
+  else {
+    redrawState = RedrawState::AWindowHasJustBeenClosed;
+  }
 }
 
 bool Manager::onProcessMessage(Message* msg)
@@ -1487,6 +1508,10 @@ bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
     if (widget->hasFlags(HIDDEN))
       return false;
 
+    // Ignore all paint messages when we are closing the app
+    if (redrawState == RedrawState::ClosingApp)
+      return false;
+
     PaintMessage* paintMsg = static_cast<PaintMessage*>(msg);
 
     // Restore overlays in the region that we're going to paint.
@@ -1508,16 +1533,24 @@ bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
 #ifdef DEBUG_PAINT_EVENTS
       {
         os::SurfaceLock lock(surface);
-        surface->fillRect(gfx::rgba(0, 0, 255), paintMsg->rect());
+        os::Paint p;
+        p.color(gfx::rgba(0, 0, 255));
+        surface->drawRect(paintMsg->rect(), p);
       }
 
       if (m_display) {
         m_display->invalidateRegion(
           gfx::Region(gfx::Rect(0, 0, display_w(), display_h())));
-        // TODO m_display->update() ??
+
+#ifdef _WIN32 // TODO add a m_display->updateNow() method ??
+        HWND hwnd = (HWND)m_display->nativeHandle();
+        UpdateWindow(hwnd);
+#endif
       }
 
+#ifndef _WIN32
       base::this_thread::sleep_for(0.002);
+#endif
 #endif
 
       if (surface) {

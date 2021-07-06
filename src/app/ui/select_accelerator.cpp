@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -12,7 +13,6 @@
 
 #include "app/ui/key.h"
 #include "app/ui/keyboard_shortcuts.h"
-#include "base/bind.h"
 #include "obs/signal.h"
 #include "ui/entry.h"
 #include "ui/message.h"
@@ -101,17 +101,17 @@ SelectAccelerator::SelectAccelerator(const ui::Accelerator& accel,
 
   keyPlaceholder()->addChild(m_keyField);
 
-  alt()->Click.connect(base::Bind<void>(&SelectAccelerator::onModifierChange, this, kKeyAltModifier, alt()));
-  cmd()->Click.connect(base::Bind<void>(&SelectAccelerator::onModifierChange, this, kKeyCmdModifier, cmd()));
-  ctrl()->Click.connect(base::Bind<void>(&SelectAccelerator::onModifierChange, this, kKeyCtrlModifier, ctrl()));
-  shift()->Click.connect(base::Bind<void>(&SelectAccelerator::onModifierChange, this, kKeyShiftModifier, shift()));
-  space()->Click.connect(base::Bind<void>(&SelectAccelerator::onModifierChange, this, kKeySpaceModifier, space()));
-  win()->Click.connect(base::Bind<void>(&SelectAccelerator::onModifierChange, this, kKeyWinModifier, win()));
+  alt()->Click.connect([this]{ onModifierChange(kKeyAltModifier, alt()); });
+  cmd()->Click.connect([this]{ onModifierChange(kKeyCmdModifier, cmd()); });
+  ctrl()->Click.connect([this]{ onModifierChange(kKeyCtrlModifier, ctrl()); });
+  shift()->Click.connect([this]{ onModifierChange(kKeyShiftModifier, shift()); });
+  space()->Click.connect([this]{ onModifierChange(kKeySpaceModifier, space()); });
+  win()->Click.connect([this]{ onModifierChange(kKeyWinModifier, win()); });
 
   m_keyField->AccelChange.connect(&SelectAccelerator::onAccelChange, this);
-  clearButton()->Click.connect(base::Bind<void>(&SelectAccelerator::onClear, this));
-  okButton()->Click.connect(base::Bind<void>(&SelectAccelerator::onOK, this));
-  cancelButton()->Click.connect(base::Bind<void>(&SelectAccelerator::onCancel, this));
+  clearButton()->Click.connect([this]{ onClear(); });
+  okButton()->Click.connect([this]{ onOK(); });
+  cancelButton()->Click.connect([this]{ onCancel(); });
 
   addChild(&m_tooltipManager);
 }

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -53,7 +53,6 @@
 #include "app/ui_context.h"
 #include "app/util/conversion_to_surface.h"
 #include "app/util/layer_utils.h"
-#include "base/bind.h"
 #include "base/chrono.h"
 #include "base/clamp.h"
 #include "base/convert_to.h"
@@ -173,11 +172,11 @@ Editor::Editor(Doc* document, EditorFlags flags)
 
   m_fgColorChangeConn =
     Preferences::instance().colorBar.fgColor.AfterChange.connect(
-      base::Bind<void>(&Editor::onFgColorChange, this));
+      [this]{ onFgColorChange(); });
 
   m_contextBarBrushChangeConn =
     App::instance()->contextBar()->BrushChange.connect(
-      base::Bind<void>(&Editor::onContextBarBrushChange, this));
+      [this]{ onContextBarBrushChange(); });
 
   // Restore last site in preferences
   {
@@ -191,16 +190,16 @@ Editor::Editor(Doc* document, EditorFlags flags)
       setLayer(layers[layerIndex]);
   }
 
-  m_tiledConnBefore = m_docPref.tiled.BeforeChange.connect(base::Bind<void>(&Editor::onTiledModeBeforeChange, this));
-  m_tiledConn = m_docPref.tiled.AfterChange.connect(base::Bind<void>(&Editor::onTiledModeChange, this));
-  m_gridConn = m_docPref.grid.AfterChange.connect(base::Bind<void>(&Editor::invalidate, this));
-  m_pixelGridConn = m_docPref.pixelGrid.AfterChange.connect(base::Bind<void>(&Editor::invalidate, this));
-  m_bgConn = m_docPref.bg.AfterChange.connect(base::Bind<void>(&Editor::invalidate, this));
-  m_onionskinConn = m_docPref.onionskin.AfterChange.connect(base::Bind<void>(&Editor::invalidate, this));
-  m_symmetryModeConn = Preferences::instance().symmetryMode.enabled.AfterChange.connect(base::Bind<void>(&Editor::invalidateIfActive, this));
+  m_tiledConnBefore = m_docPref.tiled.BeforeChange.connect([this]{ onTiledModeBeforeChange(); });
+  m_tiledConn = m_docPref.tiled.AfterChange.connect([this]{ onTiledModeChange(); });
+  m_gridConn = m_docPref.grid.AfterChange.connect([this]{ invalidate(); });
+  m_pixelGridConn = m_docPref.pixelGrid.AfterChange.connect([this]{ invalidate(); });
+  m_bgConn = m_docPref.bg.AfterChange.connect([this]{ invalidate(); });
+  m_onionskinConn = m_docPref.onionskin.AfterChange.connect([this]{ invalidate(); });
+  m_symmetryModeConn = Preferences::instance().symmetryMode.enabled.AfterChange.connect([this]{ invalidateIfActive(); });
   m_showExtrasConn =
     m_docPref.show.AfterChange.connect(
-      base::Bind<void>(&Editor::onShowExtrasChange, this));
+      [this]{ onShowExtrasChange(); });
 
   m_document->add_observer(this);
 
@@ -392,6 +391,7 @@ void Editor::getSite(Site* site) const
   // TODO we should not access timeline directly here
   Timeline* timeline = App::instance()->timeline();
   if (timeline &&
+      timeline->isVisible() &&
       timeline->range().enabled()) {
     site->range(timeline->range());
   }
@@ -1536,7 +1536,7 @@ void Editor::updateToolByTipProximity(ui::PointerType pointerType)
   }
 }
 
-void Editor::updateToolLoopModifiersIndicators()
+void Editor::updateToolLoopModifiersIndicators(const bool firstFromMouseDown)
 {
   int modifiers = int(tools::ToolLoopModifiers::kNone);
   const bool autoSelectLayer = isAutoSelectLayer();
@@ -1556,21 +1556,34 @@ void Editor::updateToolLoopModifiersIndicators()
                      int(tools::ToolLoopModifiers::kSubtractSelection) |
                      int(tools::ToolLoopModifiers::kIntersectSelection)));
 
-      tools::Controller* controller =
-        (atm->selectedTool() ?
-         atm->selectedTool()->getController(0): nullptr);
+      tools::Tool* tool = atm->selectedTool();
+      tools::Controller* controller = (tool ? tool->getController(0): nullptr);
+      tools::Ink* ink = (tool ? tool->getInk(0): nullptr);
 
       // Shape tools modifiers (line, curves, rectangles, etc.)
       if (controller && controller->isTwoPoints()) {
         action = m_customizationDelegate->getPressedKeyAction(KeyContext::ShapeTool);
-        if (int(action & KeyAction::MoveOrigin))
-          modifiers |= int(tools::ToolLoopModifiers::kMoveOrigin);
-        if (int(action & KeyAction::SquareAspect))
-          modifiers |= int(tools::ToolLoopModifiers::kSquareAspect);
-        if (int(action & KeyAction::DrawFromCenter))
-          modifiers |= int(tools::ToolLoopModifiers::kFromCenter);
-        if (int(action & KeyAction::RotateShape))
-          modifiers |= int(tools::ToolLoopModifiers::kRotateShape);
+
+        // For two-points-selection-like tools (Rectangular/Elliptical
+        // Marquee) we prefer to activate the
+        // square-aspect/rotation/etc. only when the user presses the
+        // modifier key again in the ToolLoop (and not before starting
+        // the loop). So Alt+selection will add a selection, but
+        // willn't start the square-aspect until we press Alt key
+        // again, or Alt+Shift+selection tool will subtract the
+        // selection but will not start the rotation until we release
+        // and press the Alt key again.
+        if (!firstFromMouseDown ||
+            !ink || !ink->isSelection()) {
+          if (int(action & KeyAction::MoveOrigin))
+            modifiers |= int(tools::ToolLoopModifiers::kMoveOrigin);
+          if (int(action & KeyAction::SquareAspect))
+            modifiers |= int(tools::ToolLoopModifiers::kSquareAspect);
+          if (int(action & KeyAction::DrawFromCenter))
+            modifiers |= int(tools::ToolLoopModifiers::kFromCenter);
+          if (int(action & KeyAction::RotateShape))
+            modifiers |= int(tools::ToolLoopModifiers::kRotateShape);
+        }
       }
 
       // Freehand modifiers
@@ -1800,7 +1813,16 @@ bool Editor::onProcessMessage(Message* msg)
           ->pressButton(pointer_from_msg(this, mouseMsg));
 
         EditorStatePtr holdState(m_state);
-        return m_state->onMouseDown(this, mouseMsg);
+        bool state = m_state->onMouseDown(this, mouseMsg);
+
+        // Re-update the tool modifiers if the state has changed
+        // (e.g. we are on DrawingState now). This is required for the
+        // Line tool to be able to Shift+press mouse buttons to start
+        // drawing lines with the angle snapped.
+        if (m_state != holdState)
+          updateToolLoopModifiersIndicators(true);
+
+        return state;
       }
       break;
 
@@ -2595,7 +2617,7 @@ void Editor::showAnimationSpeedMultiplierPopup(Option<bool>& playOnce,
 
   for (double option : options) {
     MenuItem* item = new MenuItem("Speed x" + base::convert_to<std::string>(option));
-    item->Click.connect(base::Bind<void>(&Editor::setAnimationSpeedMultiplier, this, option));
+    item->Click.connect([this, option]{ setAnimationSpeedMultiplier(option); });
     item->setSelected(m_aniSpeed == option);
     menu.addChild(item);
   }
@@ -2665,10 +2687,6 @@ void Editor::showMouseCursor(CursorType cursorType,
 
 void Editor::showBrushPreview(const gfx::Point& screenPos)
 {
-  if (Preferences::instance().cursor.paintingCursorType() !=
-      app::gen::PaintingCursorType::SIMPLE_CROSSHAIR)
-    ui::set_mouse_cursor(kNoCursor);
-
   m_brushPreview.show(screenPos);
 }
 

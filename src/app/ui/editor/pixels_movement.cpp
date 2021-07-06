@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -29,7 +29,6 @@
 #include "app/util/expand_cel_canvas.h"
 #include "app/util/new_image_from_mask.h"
 #include "app/util/range_utils.h"
-#include "base/bind.h"
 #include "base/pi.h"
 #include "base/vector2d.h"
 #include "doc/algorithm/flip_image.h"
@@ -146,13 +145,13 @@ PixelsMovement::PixelsMovement(
 
   m_pivotVisConn =
     Preferences::instance().selection.pivotVisibility.AfterChange.connect(
-      base::Bind<void>(&PixelsMovement::onPivotChange, this));
+      [this]{ onPivotChange(); });
   m_pivotPosConn =
     Preferences::instance().selection.pivotPosition.AfterChange.connect(
-      base::Bind<void>(&PixelsMovement::onPivotChange, this));
+      [this]{ onPivotChange(); });
   m_rotAlgoConn =
     Preferences::instance().selection.rotationAlgorithm.AfterChange.connect(
-      base::Bind<void>(&PixelsMovement::onRotationAlgorithmChange, this));
+      [this]{ onRotationAlgorithmChange(); });
 
   // The extra cel must be null, because if it's not null, it means
   // that someone else is using it (e.g. the editor brush preview),
@@ -993,23 +992,39 @@ CelList PixelsMovement::getEditableCels()
   CelList cels;
 
   if (editMultipleCels()) {
-    cels = get_unlocked_unique_cels(
-      m_site.sprite(), m_site.range());
+    cels = get_unique_cels_to_edit_pixels(m_site.sprite(),
+                                          m_site.range());
   }
   else {
     // TODO This case is used in paste too, where the cel() can be
     //      nullptr (e.g. we paste the clipboard image into an empty
     //      cel).
-    if (m_site.layer() && m_site.layer()->isEditableHierarchy())
+    if (m_site.layer() &&
+        m_site.layer()->canEditPixels()) {
       cels.push_back(m_site.cel());
+    }
     return cels;
   }
 
   // Current cel (m_site.cel()) can be nullptr when we paste in an
   // empty cel (Ctrl+V) and cut (Ctrl+X) the floating pixels.
   if (m_site.cel() &&
-      m_site.cel()->layer()->isEditableHierarchy()) {
-    auto it = std::find(cels.begin(), cels.end(), m_site.cel());
+      m_site.cel()->layer()->canEditPixels()) {
+    CelList::iterator it;
+
+    // If we are in a linked cel, remove the cel that matches the
+    // linked cel. In this way we avoid having two Cel in cels
+    // pointing to the same CelData.
+    if (Cel* link = m_site.cel()->link()) {
+      it = std::find_if(cels.begin(), cels.end(),
+                        [link](const Cel* cel){
+                          return (cel == link ||
+                                  cel->link() == link);
+                        });
+    }
+    else {
+      it = std::find(cels.begin(), cels.end(), m_site.cel());
+    }
     if (it != cels.end())
       cels.erase(it);
     cels.insert(cels.begin(), m_site.cel());

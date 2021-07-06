@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -22,7 +22,6 @@
 #include "app/tx.h"
 #include "app/ui/color_button.h"
 #include "app/util/pixel_ratio.h"
-#include "base/bind.h"
 #include "base/mem_utils.h"
 #include "doc/image.h"
 #include "doc/palette.h"

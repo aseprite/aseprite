@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -22,6 +22,7 @@ FOR_EACH_COMMAND(ExportSpriteSheet)
 FOR_EACH_COMMAND(FlattenLayers)
 FOR_EACH_COMMAND(Flip)
 FOR_EACH_COMMAND(HueSaturation)
+FOR_EACH_COMMAND(ImportSpriteSheet)
 FOR_EACH_COMMAND(InvertColor)
 FOR_EACH_COMMAND(LayerFromBackground)
 FOR_EACH_COMMAND(LoadPalette)
@@ -86,7 +87,6 @@ FOR_EACH_COMMAND(GotoPreviousLayer)
 FOR_EACH_COMMAND(GotoPreviousTab)
 FOR_EACH_COMMAND(GridSettings)
 FOR_EACH_COMMAND(Home)
-FOR_EACH_COMMAND(ImportSpriteSheet)
 FOR_EACH_COMMAND(InvertMask)
 FOR_EACH_COMMAND(KeyboardShortcuts)
 FOR_EACH_COMMAND(Launch)

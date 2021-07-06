@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -13,6 +13,7 @@
 
 #include "app/app.h"
 #include "app/app_menus.h"
+#include "app/console.h"
 #include "app/crash/data_recovery.h"
 #include "app/crash/session.h"
 #include "app/doc.h"
@@ -28,7 +29,6 @@
 #include "app/ui/workspace.h"
 #include "app/ui/workspace.h"
 #include "app/ui_context.h"
-#include "base/bind.h"
 #include "base/fs.h"
 #include "fmt/format.h"
 #include "ui/alert.h"
@@ -107,19 +107,31 @@ public:
 
     m_task = new TaskWidget(
       TaskWidget::kCannotCancel,
-      [this](base::task_token& t){
-        // Warning: This is executed from a worker thread
-        m_session->deleteBackup(m_backup);
-        ui::execute_from_ui_thread(
-          [this]{
-            onDeleteTaskWidget();
+      [this](base::task_token& t) {
+        try {
+          // Warning: This is executed from a worker thread
+          m_session->deleteBackup(m_backup);
 
-            // We cannot use this->deferDelete() here because it looks
-            // like the m_task field can be still in use.
-            setVisible(false);
+          ui::execute_from_ui_thread(
+            [this]{
+              onDeleteTaskWidget();
 
-            updateView();
-          });
+              // We cannot use this->deferDelete() here because it looks
+              // like the m_task field can be still in use.
+              setVisible(false);
+
+              updateView();
+            });
+        }
+        catch (const std::exception& ex) {
+          std::string err = ex.what();
+          if (!err.empty()) {
+            ui::execute_from_ui_thread(
+              [err]{
+                Console().printf("Error deleting file: %s", err.c_str());
+              });
+          }
+        }
       });
     addChild(m_task);
     updateView();
@@ -251,13 +263,13 @@ DataRecoveryView::DataRecoveryView(crash::DataRecovery* dataRecovery)
   fillList();
   onChangeSelection();
 
-  m_openButton.Click.connect(base::Bind(&DataRecoveryView::onOpen, this));
-  m_openButton.DropDownClick.connect(base::Bind<void>(&DataRecoveryView::onOpenMenu, this));
-  m_deleteButton.Click.connect(base::Bind(&DataRecoveryView::onDelete, this));
-  m_refreshButton.Click.connect(base::Bind(&DataRecoveryView::onRefresh, this));
-  m_listBox.Change.connect(base::Bind(&DataRecoveryView::onChangeSelection, this));
-  m_listBox.DoubleClickItem.connect(base::Bind(&DataRecoveryView::onOpen, this));
-  m_waitToEnableRefreshTimer.Tick.connect(base::Bind(&DataRecoveryView::onCheckIfWeCanEnableRefreshButton, this));
+  m_openButton.Click.connect([this]{ onOpen(); });
+  m_openButton.DropDownClick.connect([this]{ onOpenMenu(); });
+  m_deleteButton.Click.connect([this]{ onDelete(); });
+  m_refreshButton.Click.connect([this]{ onRefresh(); });
+  m_listBox.Change.connect([this]{ onChangeSelection(); });
+  m_listBox.DoubleClickItem.connect([this]{ onOpen(); });
+  m_waitToEnableRefreshTimer.Tick.connect([this]{ onCheckIfWeCanEnableRefreshButton(); });
 
   m_conn = Preferences::instance()
     .general.showFullPath.AfterChange.connect(
@@ -441,8 +453,8 @@ void DataRecoveryView::onOpenMenu()
   menu.addChild(&rawFrames);
   menu.addChild(&rawLayers);
 
-  rawFrames.Click.connect(base::Bind(&DataRecoveryView::onOpenRaw, this, crash::RawImagesAs::kFrames));
-  rawLayers.Click.connect(base::Bind(&DataRecoveryView::onOpenRaw, this, crash::RawImagesAs::kLayers));
+  rawFrames.Click.connect([this]{ onOpenRaw(crash::RawImagesAs::kFrames); });
+  rawLayers.Click.connect([this]{ onOpenRaw(crash::RawImagesAs::kLayers); });
 
   menu.showPopup(gfx::Point(bounds.x, bounds.y+bounds.h));
 }
@@ -473,6 +485,7 @@ void DataRecoveryView::onDelete()
                     int(items.size()))) != 1)
     return;                     // Cancel
 
+  Console console;
   for (auto item : items)
     item->deleteBackup();
 }

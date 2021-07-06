@@ -11,7 +11,6 @@
 
 #include "ui/entry.h"
 
-#include "base/bind.h"
 #include "base/clamp.h"
 #include "base/string.h"
 #include "os/draw_text.h"
@@ -809,9 +808,9 @@ void Entry::showEditPopupMenu(const gfx::Point& pt)
   menu.addChild(&cut);
   menu.addChild(&copy);
   menu.addChild(&paste);
-  cut.Click.connect(base::Bind(&Entry::executeCmd, this, EntryCmd::Cut, 0, false));
-  copy.Click.connect(base::Bind(&Entry::executeCmd, this, EntryCmd::Copy, 0, false));
-  paste.Click.connect(base::Bind(&Entry::executeCmd, this, EntryCmd::Paste, 0, false));
+  cut.Click.connect([this]{ executeCmd(EntryCmd::Cut, 0, false); });
+  copy.Click.connect([this]{ executeCmd(EntryCmd::Copy, 0, false); });
+  paste.Click.connect([this]{ executeCmd(EntryCmd::Paste, 0, false); });
 
   if (isReadOnly()) {
     cut.setEnabled(false);

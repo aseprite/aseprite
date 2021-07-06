@@ -22,7 +22,6 @@
 #include "app/ui/timeline/timeline.h"
 #include "app/ui/user_data_popup.h"
 #include "app/ui_context.h"
-#include "base/bind.h"
 #include "base/mem_utils.h"
 #include "base/scoped_value.h"
 #include "doc/cel.h"
@@ -51,9 +50,9 @@ public:
     , m_cel(nullptr)
     , m_selfUpdate(false)
     , m_newUserData(false) {
-    opacity()->Change.connect(base::Bind<void>(&CelPropertiesWindow::onStartTimer, this));
-    userData()->Click.connect(base::Bind<void>(&CelPropertiesWindow::onPopupUserData, this));
-    m_timer.Tick.connect(base::Bind<void>(&CelPropertiesWindow::onCommitChange, this));
+    opacity()->Change.connect([this]{ onStartTimer(); });
+    userData()->Click.connect([this]{ onPopupUserData(); });
+    m_timer.Tick.connect([this]{ onCommitChange(); });
 
     remapWindow();
     centerWindow();

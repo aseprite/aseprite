@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2018-2020  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-2021  Igara Studio S.A. -->
 <!-- Copyright (C) 2014-2018  David Capello -->
 <preferences>
 
@@ -73,6 +73,7 @@
     </enum>
     <enum id="SelectionMode">
       <value id="DEFAULT" value="0" />
+      <value id="REPLACE" value="0" />
       <value id="ADD" value="1" />
       <value id="SUBTRACT" value="2" />
       <value id="INTERSECT" value="3" />
@@ -120,6 +121,11 @@
       <value id="LUMA" value="0" />
       <value id="HSV" value="1" />
       <value id="HSL" value="2" />
+    </enum>
+    <enum id="SequenceDecision">
+      <value id="ASK" value="0" />
+      <value id="YES" value="1" />
+      <value id="NO" value="2" />
     </enum>
   </types>
 
@@ -170,6 +176,9 @@
            some performance issue rendering huge sprites with small
            zoom levels -->
       <option id="auto_fit" type="bool" default="false" />
+    </section>
+    <section id="timeline">
+      <option id="keep_selection" type="bool" default="false" />
     </section>
     <section id="cursor">
       <option id="use_native_cursor" type="bool" default="false" />
@@ -310,6 +319,9 @@
     <section id="advanced_mode">
       <option id="show_alert" type="bool" default="true" />
     </section>
+    <section id="open_file">
+      <option id="open_sequence" type="SequenceDecision" default="SequenceDecision::ASK" />
+    </section>
     <section id="save_file">
       <option id="show_file_format_doesnt_support_alert" type="bool" default="true" />
       <option id="show_export_animation_in_sequence_alert" type="bool" default="true" />
@@ -343,6 +355,12 @@
       <option id="show_alert" type="bool" default="true" />
       <option id="bits_per_pixel" type="int" default="0" />
       <option id="compress" type="bool" default="true" />
+    </section>
+    <section id="css">
+      <option id="show_alert" type="bool" default="true" />
+      <option id="pixel_scale" type="int" default="1" />
+      <option id="with_vars" type="bool" default="false" />
+      <option id="generate_html" type="bool" default="false" />
     </section>
     <section id="webp">
       <option id="show_alert" type="bool" default="true" />

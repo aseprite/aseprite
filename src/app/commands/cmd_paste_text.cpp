@@ -21,7 +21,6 @@
 #include "app/ui/font_popup.h"
 #include "app/ui/timeline/timeline.h"
 #include "app/util/freetype_utils.h"
-#include "base/bind.h"
 #include "base/clamp.h"
 #include "base/fs.h"
 #include "base/string.h"
@@ -69,8 +68,8 @@ public:
       updateFontFaceButton();
 
     fontSize()->setTextf("%d", size);
-    fontFace()->Click.connect(base::Bind<void>(&PasteTextWindow::onSelectFontFile, this));
-    fontFace()->DropDownClick.connect(base::Bind<void>(&PasteTextWindow::onSelectSystemFont, this));
+    fontFace()->Click.connect([this]{ onSelectFontFile(); });
+    fontFace()->DropDownClick.connect([this]{ onSelectSystemFont(); });
     fontColor()->setColor(color);
     this->antialias()->setSelected(antialias);
   }
@@ -116,7 +115,7 @@ private:
       try {
         m_fontPopup.reset(new FontPopup());
         m_fontPopup->Load.connect(&PasteTextWindow::setFontFace, this);
-        m_fontPopup->Close.connect(base::Bind<void>(&PasteTextWindow::onCloseFontPopup, this));
+        m_fontPopup->Close.connect([this]{ onCloseFontPopup(); });
       }
       catch (const std::exception& ex) {
         Console::showException(ex);

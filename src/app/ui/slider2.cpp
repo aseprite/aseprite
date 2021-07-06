@@ -12,7 +12,6 @@
 #include "app/ui/slider2.h"
 
 #include "app/ui/skin/skin_property.h"
-#include "base/bind.h"
 #include "base/clamp.h"
 #include "ui/manager.h"
 #include "ui/message.h"
@@ -97,8 +96,8 @@ Slider2::Slider2(int min, int max, int value)
   m_slider.setSizeHint(gfx::Size(128, 0));
   skin::get_skin_property(&m_entry)->setLook(skin::MiniLook);
 
-  m_slider.Change.connect(base::Bind<void>(&Slider2::onSliderChange, this));
-  m_entry.Change.connect(base::Bind<void>(&Slider2::onEntryChange, this));
+  m_slider.Change.connect([this]{ onSliderChange(); });
+  m_entry.Change.connect([this]{ onEntryChange(); });
 
   addChild(&m_slider);
   addChild(&m_entry);

@@ -22,6 +22,7 @@ namespace app {
 
 extern FileFormat* CreateAseFormat();
 extern FileFormat* CreateBmpFormat();
+extern FileFormat* CreateCssFormat();
 extern FileFormat* CreateFliFormat();
 extern FileFormat* CreateGifFormat();
 extern FileFormat* CreateIcoFormat();
@@ -57,6 +58,7 @@ FileFormatsManager::FileFormatsManager()
   // The first format is the default image format in FileSelector
   registerFormat(CreateAseFormat());
   registerFormat(CreateBmpFormat());
+  registerFormat(CreateCssFormat());
   registerFormat(CreateFliFormat());
   registerFormat(CreateGifFormat());
   registerFormat(CreateIcoFormat());

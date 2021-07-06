@@ -1,7 +1,6 @@
 # Aseprite
 
-[![Build Status](https://travis-ci.org/aseprite/aseprite.svg)](https://travis-ci.org/aseprite/aseprite)
-[![Build status](https://ci.appveyor.com/api/projects/status/kdu2gt7ls014i25h?svg=true)](https://ci.appveyor.com/project/dacap/aseprite)
+[![build](https://github.com/aseprite/aseprite/actions/workflows/build.yml/badge.svg)](https://github.com/aseprite/aseprite/actions/workflows/build.yml)
 [![Discourse Community](https://img.shields.io/badge/discourse-community-brightgreen.svg?style=flat)](https://community.aseprite.org/)
 [![Discord Server](https://discordapp.com/api/guilds/324979738533822464/embed.png)](https://discord.gg/Yb2CeX8)
 
@@ -50,12 +49,11 @@ You can ask for help in:
 
 ## Authors
 
-[Igara Studio](https://www.igarastudio.com/) is developing Aseprite:
+Aseprite is being developed by [Igara Studio](https://www.igarastudio.com/):
 
-* [David Capello](https://davidcapello.com/): Lead developer, fixing
-  issues, new features, and user support.
-* [Gaspar Capello](https://github.com/Gasparoken): Developer, fixing
-  issues and new features.
+* [David Capello](https://davidcapello.com/)
+* [Gaspar Capello](https://github.com/Gasparoken)
+* [Martín Capello](https://github.com/martincapello)
 
 ## Credits
 

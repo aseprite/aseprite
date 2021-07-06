@@ -1,5 +1,5 @@
 # Aseprite
-# Copyright (C) 2018-2020  Igara Studio S.A.
+# Copyright (C) 2018-2021  Igara Studio S.A.
 # Copyright (C) 2001-2018  David Capello
 
 cmake_minimum_required(VERSION 3.4)
@@ -15,7 +15,7 @@ if(COMMAND cmake_policy)
     # CMP0046: Old behavior to silently ignore non-existent dependencies.
     cmake_policy(SET CMP0046 OLD)
   endif()
-endif(COMMAND cmake_policy)
+endif()
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING
@@ -79,6 +79,7 @@ option(ENABLE_DEVMODE      "Compile vesion for developers" off)
 option(ENABLE_UI           "Compile UI (turn off to compile CLI-only version)" on)
 option(FULLSCREEN_PLATFORM "Enable fullscreen by default" off)
 option(ENABLE_CLANG_TIDY   "Enable static analysis" off)
+option(ENABLE_CCACHE       "Use CCache to improve recompilation speed (optional)" on)
 set(CUSTOM_WEBSITE_URL "" CACHE STRING "Enable custom local webserver to check updates")
 
 if(ENABLE_NEWS OR ENABLE_UPDATER)
@@ -170,6 +171,14 @@ set(ZLIB_DIR            ${CMAKE_CURRENT_SOURCE_DIR}/third_party/zlib)
 # Search in the "cmake" directory for additional CMake modules.
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
+if(ENABLE_CCACHE)
+  find_package(CCache)
+  if(CCache_FOUND)
+    # Use e.g. "ccache clang++" instead of "clang++"
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CCache_EXECUTABLE}")
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK    "${CCache_EXECUTABLE}")
+  endif()
+endif()
 # Put libraries into "lib".
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
 
@@ -303,8 +312,7 @@ if(USE_SHARED_CMARK)
   find_path(CMARK_INCLUDE_DIRS NAMES cmark.h)
 else()
   add_definitions(-DCMARK_STATIC_DEFINE)
-  set(CMARK_LIBRARIES libcmark_static)
-  include_directories(${CMAKE_CURRENT_BINARY_DIR}/third_party/cmark)
+  set(CMARK_LIBRARIES cmark_static)
 endif()
 
 if(REQUIRE_CURL)

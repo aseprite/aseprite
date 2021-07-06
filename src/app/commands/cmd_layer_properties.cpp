@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -24,7 +25,6 @@
 #include "app/ui/timeline/timeline.h"
 #include "app/ui/user_data_popup.h"
 #include "app/ui_context.h"
-#include "base/bind.h"
 #include "base/scoped_value.h"
 #include "doc/image.h"
 #include "doc/layer.h"
@@ -99,11 +99,11 @@ public:
     mode()->addItem(new BlendModeItem("Color", doc::BlendMode::HSL_COLOR));
     mode()->addItem(new BlendModeItem("Luminosity", doc::BlendMode::HSL_LUMINOSITY));
 
-    name()->Change.connect(base::Bind<void>(&LayerPropertiesWindow::onStartTimer, this));
-    mode()->Change.connect(base::Bind<void>(&LayerPropertiesWindow::onStartTimer, this));
-    opacity()->Change.connect(base::Bind<void>(&LayerPropertiesWindow::onStartTimer, this));
-    m_timer.Tick.connect(base::Bind<void>(&LayerPropertiesWindow::onCommitChange, this));
-    userData()->Click.connect(base::Bind<void>(&LayerPropertiesWindow::onPopupUserData, this));
+    name()->Change.connect([this]{ onStartTimer(); });
+    mode()->Change.connect([this]{ onStartTimer(); });
+    opacity()->Change.connect([this]{ onStartTimer(); });
+    m_timer.Tick.connect([this]{ onCommitChange(); });
+    userData()->Click.connect([this]{ onPopupUserData(); });
 
     remapWindow();
     centerWindow();

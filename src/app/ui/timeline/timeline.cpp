@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -44,7 +44,6 @@
 #include "app/util/layer_boundaries.h"
 #include "app/util/layer_utils.h"
 #include "app/util/readable_time.h"
-#include "base/bind.h"
 #include "base/clamp.h"
 #include "base/convert_to.h"
 #include "base/memory.h"
@@ -321,18 +320,24 @@ void Timeline::updateUsingEditor(Editor* editor)
 
   m_aniControls.updateUsingEditor(editor);
 
+  DocRange oldRange;
   if (editor != m_editor) {
     // Save active m_tagFocusBand into the old focused editor
     if (m_editor)
       m_editor->setTagFocusBand(m_tagFocusBand);
     m_tagFocusBand = -1;
   }
+  else {
+    oldRange = m_range;
+  }
 
   detachDocument();
 
-  if (m_range.enabled() &&
-      m_rangeLocks == 0) {
-    m_range.clearRange();
+  if (Preferences::instance().timeline.keepSelection())
+    m_range = oldRange;
+  else {
+    // The range is reset in detachDocument()
+    ASSERT(!m_range.enabled());
   }
 
   // We always update the editor. In this way the timeline keeps in
@@ -354,7 +359,7 @@ void Timeline::updateUsingEditor(Editor* editor)
   DocumentPreferences& docPref = Preferences::instance().document(app_document);
 
   m_thumbnailsPrefConn = docPref.thumbnails.AfterChange.connect(
-    base::Bind<void>(&Timeline::onThumbnailsPrefChange, this));
+    [this]{ onThumbnailsPrefChange(); });
 
   setZoom(
     docPref.thumbnails.enabled() ?
@@ -377,7 +382,7 @@ void Timeline::updateUsingEditor(Editor* editor)
   m_clk.part = PART_NOTHING;
 
   m_firstFrameConn = Preferences::instance().document(m_document)
-    .timeline.firstFrame.AfterChange.connect(base::Bind<void>(&Timeline::invalidate, this));
+    .timeline.firstFrame.AfterChange.connect([this]{ invalidate(); });
 
   setFocusStop(true);
   regenerateRows();
@@ -2862,14 +2867,17 @@ gfx::Rect Timeline::getRangeBounds(const Range& range) const
       }
       break;
     case Range::kFrames: {
-      for (auto frame : range.selectedFrames())
+      for (auto frame : range.selectedFrames()) {
         rc |= getPartBounds(Hit(PART_HEADER_FRAME, 0, frame));
+        rc |= getPartBounds(Hit(PART_CEL, 0, frame));
+      }
       break;
     }
     case Range::kLayers:
       for (auto layer : range.selectedLayers()) {
         layer_t layerIdx = getLayerIndex(layer);
         rc |= getPartBounds(Hit(PART_ROW_TEXT, layerIdx));
+        rc |= getPartBounds(Hit(PART_CEL, layerIdx, m_sprite->lastFrame()));
       }
       break;
   }
@@ -2878,11 +2886,28 @@ gfx::Rect Timeline::getRangeBounds(const Range& range) const
 
 gfx::Rect Timeline::getRangeClipBounds(const Range& range) const
 {
-  gfx::Rect clipBounds;
+  gfx::Rect celBounds = getCelsBounds();
+  gfx::Rect clipBounds, unionBounds;
   switch (range.type()) {
-    case Range::kCels: clipBounds = getCelsBounds(); break;
-    case Range::kFrames: clipBounds = getFrameHeadersBounds(); break;
-    case Range::kLayers: clipBounds = getLayerHeadersBounds(); break;
+    case Range::kCels:
+      clipBounds = celBounds;
+      break;
+    case Range::kFrames: {
+      clipBounds = getFrameHeadersBounds();
+
+      unionBounds = (clipBounds | celBounds);
+      clipBounds.y = unionBounds.y;
+      clipBounds.h = unionBounds.h;
+      break;
+    }
+    case Range::kLayers: {
+      clipBounds = getLayerHeadersBounds();
+
+      unionBounds = (clipBounds | celBounds);
+      clipBounds.x = unionBounds.x;
+      clipBounds.w = unionBounds.w;
+      break;
+    }
   }
   return clipBounds;
 }
@@ -3780,6 +3805,8 @@ void Timeline::setViewScroll(const gfx::Point& pt)
     gfx::Rect rc;
     if (m_tagBands > 0)
       rc |= getPartBounds(Hit(PART_TAG_BAND));
+    if (m_range.enabled())
+      rc |= getRangeBounds(m_range).enlarge(outlineWidth());
     rc |= getFrameHeadersBounds();
     rc |= getCelsBounds();
     rc.offset(origin());
@@ -3890,6 +3917,8 @@ void Timeline::invalidateRange()
 void Timeline::clearAndInvalidateRange()
 {
   if (m_range.enabled()) {
+    notify_observers(&TimelineObserver::onBeforeRangeChanged, this);
+
     invalidateRange();
     m_range.clearRange();
   }
@@ -3990,8 +4019,10 @@ void Timeline::onNewInputPriority(InputChainElement* element,
       return;
 
     if (element != this && m_rangeLocks == 0) {
-      m_range.clearRange();
-      invalidate();
+      if (!Preferences::instance().timeline.keepSelection()) {
+        m_range.clearRange();
+        invalidate();
+      }
     }
   }
 }

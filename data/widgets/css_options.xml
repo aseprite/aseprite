@@ -1,0 +1,25 @@
+<!-- Aseprite -->
+<!-- Copyright (C) 2018 by Igara Studio S.A. -->
+<gui>
+<window id="css_options" text="@.title">
+  <grid columns="2">
+    <label text="@.pixel_scale" />
+    <expr id="pixel_scale" magnet="true" cell_align="horizontal"/>
+
+    <check text="@.with_vars" id="with_vars" cell_hspan="2" />
+
+    <check text="@.generate_html" id="generate_html" cell_hspan="2" />
+
+    <separator horizontal="true" cell_hspan="2" />
+
+    <hbox cell_hspan="2">
+      <check text="@general.dont_show" id="dont_show" tooltip="@general.dont_show_tooltip" />
+      <boxfiller />
+    </hbox>
+    <box horizontal="true" homogeneous="true" cell_hspan="2" cell_align="right">
+      <button text="@general.ok" closewindow="true" id="ok" magnet="true" minwidth="60" />
+      <button text="@general.cancel" closewindow="true" />
+    </box>
+  </grid>
+</window>
+</gui>

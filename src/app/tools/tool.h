@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -61,12 +62,22 @@ namespace app {
       void setIntertwine(int button, Intertwine* intertwine) { m_button[button].m_intertwine = intertwine; }
       void setTracePolicy(int button, TracePolicy trace_policy) { m_button[button].m_trace_policy = trace_policy; }
 
+      bool prefAlreadyResetFromScript() const { return m_prefAlreadyResetFromScript; }
+      void markPrefAlreadyResetFromScript() { m_prefAlreadyResetFromScript = true; }
+
     private:
       ToolGroup* m_group;
       std::string m_id;
       std::string m_text;
       std::string m_tips;
       int m_default_brush_size;
+
+      // Flag used to indicate that the preferences of this tool were
+      // already reset from scripts when they are executed in CLI mode
+      // (without GUI). This is needed to reset the preferences only
+      // once, but if the script then modifies the preferences, they
+      // are not reset again.
+      bool m_prefAlreadyResetFromScript = false;
 
       struct {
         Fill m_fill;

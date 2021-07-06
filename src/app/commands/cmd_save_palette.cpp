@@ -8,6 +8,7 @@
 #include "config.h"
 #endif
 
+#include "app/app.h"
 #include "app/commands/cmd_set_palette.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
@@ -35,6 +36,7 @@ protected:
 
 private:
   std::string m_preset;
+  bool m_saveAsPreset = false;
 };
 
 SavePaletteCommand::SavePaletteCommand()
@@ -45,6 +47,7 @@ SavePaletteCommand::SavePaletteCommand()
 void SavePaletteCommand::onLoadParams(const Params& params)
 {
   m_preset = params.get("preset");
+  m_saveAsPreset = (params.get("saveAsPreset") == "true");
 }
 
 void SavePaletteCommand::onExecute(Context* context)
@@ -58,8 +61,9 @@ void SavePaletteCommand::onExecute(Context* context)
   else {
     base::paths exts = get_writable_palette_extensions();
     base::paths selFilename;
+    std::string initialPath = (m_saveAsPreset ? get_preset_palettes_dir(): "");
     if (!app::show_file_selector(
-          "Save Palette", "", exts,
+          "Save Palette", initialPath, exts,
           FileSelectorType::Save, selFilename))
       return;
 
@@ -73,6 +77,9 @@ void SavePaletteCommand::onExecute(Context* context)
     set_default_palette(palette);
     if (!context->activeDocument())
       set_current_palette(palette, false);
+  }
+  if (m_saveAsPreset) {
+      App::instance()->PalettePresetsChange();
   }
 }
 

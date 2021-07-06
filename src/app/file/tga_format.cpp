@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -52,7 +52,8 @@ class TgaFormat : public FileFormat {
       FILE_SUPPORT_GRAY |
       FILE_SUPPORT_INDEXED |
       FILE_SUPPORT_SEQUENCES |
-      FILE_SUPPORT_GET_FORMAT_OPTIONS;
+      FILE_SUPPORT_GET_FORMAT_OPTIONS |
+      FILE_SUPPORT_PALETTE_WITH_ALPHA;
   }
 
   bool onLoad(FileOp* fop) override;
@@ -148,8 +149,10 @@ bool TgaFormat::onLoad(FileOp* fop)
                             tga::getr(c),
                             tga::getg(c),
                             tga::getb(c));
-      if (tga::geta(c) < 255)
+      if (tga::geta(c) < 255) {
         fop->sequenceSetAlpha(i, tga::geta(c));
+        fop->sequenceSetHasAlpha(true); // Is a transparent sprite
+      }
     }
   }
   // Generate grayscale palette

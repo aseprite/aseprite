@@ -1,5 +1,5 @@
 # Aseprite
-# Copyright (C) 2018-2020  Igara Studio S.A.
+# Copyright (C) 2018-2021  Igara Studio S.A.
 # Copyright (C) 2001-2018  David Capello
 
 # Generate a ui::Widget for each widget in a XML file
@@ -125,6 +125,7 @@ endif()
 set(file_formats
   file/ase_format.cpp
   file/bmp_format.cpp
+  file/css_format.cpp
   file/fli_format.cpp
   file/gif_format.cpp
   file/ico_format.cpp
@@ -230,7 +231,6 @@ if(ENABLE_UI)
     commands/cmd_goto_tab.cpp
     commands/cmd_grid.cpp
     commands/cmd_home.cpp
-    commands/cmd_import_sprite_sheet.cpp
     commands/cmd_invert_mask.cpp
     commands/cmd_keyboard_shortcuts.cpp
     commands/cmd_launch.cpp
@@ -502,6 +502,7 @@ add_library(app-lib
   commands/cmd_export_sprite_sheet.cpp
   commands/cmd_flatten_layers.cpp
   commands/cmd_flip.cpp
+  commands/cmd_import_sprite_sheet.cpp
   commands/cmd_layer_from_background.cpp
   commands/cmd_load_palette.cpp
   commands/cmd_merge_down_layer.cpp
@@ -587,7 +588,7 @@ add_library(app-lib
   tools/pick_ink.cpp
   tools/point_shape.cpp
   tools/stroke.cpp
-  tools/symmetries.cpp
+  tools/symmetry.cpp
   tools/tool_box.cpp
   tools/tool_loop_manager.cpp
   tools/velocity.cpp

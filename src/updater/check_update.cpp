@@ -11,7 +11,6 @@
 
 #include "updater/check_update.h"
 
-#include "base/bind.h"
 #include "base/convert_to.h"
 #include "base/debug.h"
 #include "net/http_headers.h"

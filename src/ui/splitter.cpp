@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -32,6 +32,7 @@ using namespace gfx;
 Splitter::Splitter(Type type, int align)
   : Widget(kSplitterWidget)
   , m_type(type)
+  , m_userPos(50)
   , m_pos(50)
   , m_guiscale(guiscale())
 {
@@ -41,8 +42,8 @@ Splitter::Splitter(Type type, int align)
 
 void Splitter::setPosition(double pos)
 {
-  m_pos = pos;
-  limitPos();
+  m_userPos = pos;
+  calcPos();
   onPositionChange();
 
   invalidate();
@@ -111,25 +112,25 @@ bool Splitter::onProcessMessage(Message* msg)
         if (align() & HORIZONTAL) {
           switch (m_type) {
             case ByPercentage:
-              m_pos = 100.0 * (mousePos.x - bounds().x) / bounds().w;
+              m_userPos = 100.0 * (mousePos.x - bounds().x) / bounds().w;
               break;
             case ByPixel:
-              m_pos = mousePos.x - bounds().x;
+              m_userPos = mousePos.x - bounds().x;
               break;
           }
         }
         else {
           switch (m_type) {
             case ByPercentage:
-              m_pos = 100.0 * (mousePos.y - bounds().y) / bounds().h;
+              m_userPos = 100.0 * (mousePos.y - bounds().y) / bounds().h;
               break;
             case ByPixel:
-              m_pos = mousePos.y - bounds().y;
+              m_userPos = mousePos.y - bounds().y;
               break;
           }
         }
 
-        limitPos();
+        calcPos();
         onPositionChange();
         return true;
       }
@@ -243,7 +244,7 @@ void Splitter::onResize(ResizeEvent& ev)
   int avail;
 
   setBoundsQuietly(rc);
-  limitPos();
+  calcPos();
 
   Widget* child1 = panel1();
   Widget* child2 = panel2();
@@ -315,15 +316,18 @@ void Splitter::onSizeHint(SizeHintEvent& ev)
 
 void Splitter::onLoadLayout(LoadLayoutEvent& ev)
 {
-  ev.stream() >> m_pos;
-  if (m_pos < 0) m_pos = 0;
+  ev.stream() >> m_userPos;
+  if (m_userPos < 0) m_userPos = 0;
   if (m_type == ByPixel)
-    m_pos *= m_guiscale;
+    m_userPos *= m_guiscale;
+
+  calcPos();
 }
 
 void Splitter::onSaveLayout(SaveLayoutEvent& ev)
 {
-  double pos = (m_type == ByPixel ? m_pos / m_guiscale: m_pos);
+  double pos = (m_type == ByPixel ? m_userPos / m_guiscale:
+                                    m_userPos);
   ev.stream() << pos;
 }
 
@@ -350,27 +354,27 @@ Widget* Splitter::panel2() const
     return nullptr;
 }
 
-void Splitter::limitPos()
+void Splitter::calcPos()
 {
   if (align() & HORIZONTAL) {
     switch (m_type) {
       case ByPercentage:
-        m_pos = base::clamp<double>(m_pos, 0, 100);
+        m_pos = base::clamp<double>(m_userPos, 0, 100);
         break;
       case ByPixel:
         if (isVisible())
-          m_pos = base::clamp<double>(m_pos, 0, bounds().w);
+          m_pos = base::clamp<double>(m_userPos, 0, bounds().w);
         break;
     }
   }
   else {
     switch (m_type) {
       case ByPercentage:
-        m_pos = base::clamp<double>(m_pos, 0, 100);
+        m_pos = base::clamp<double>(m_userPos, 0, 100);
         break;
       case ByPixel:
         if (isVisible())
-          m_pos = base::clamp<double>(m_pos, 0, bounds().h);
+          m_pos = base::clamp<double>(m_userPos, 0, bounds().h);
         break;
     }
   }

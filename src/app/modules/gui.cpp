@@ -641,6 +641,10 @@ void CustomizedGuiManager::onNewDisplayConfiguration()
 {
   Manager::onNewDisplayConfiguration();
   save_gui_config();
+
+  // TODO Should we provide a more generic way for all ui::Window to
+  //      detect the ui::Display (or UI Screen Scaling) change?
+  Console::notifyNewDisplayConfiguration();
 }
 
 std::string CustomizedGuiManager::loadLayout(Widget* widget)

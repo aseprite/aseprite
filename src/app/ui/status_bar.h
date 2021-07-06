@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -55,7 +55,8 @@ namespace app {
 
     void clearText();
     void showDefaultText();
-    void showDefaultText(Doc* document);
+    void showDefaultText(Doc* doc);
+    void showAbout();
 
     bool setStatusText(int msecs, const std::string& text);
     void showTip(int msecs, const std::string& msg);
@@ -86,8 +87,13 @@ namespace app {
     void newFrame();
     void onChangeZoom(const render::Zoom& zoom);
     void updateSnapToGridWindowPosition();
+    void showIndicators();
 
     base::tick_t m_timeout;
+
+    // About text
+    class AboutStatusBar;
+    AboutStatusBar* m_about;
 
     // Indicators
     class Indicators;

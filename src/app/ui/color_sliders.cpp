@@ -16,7 +16,6 @@
 #include "app/ui/color_sliders.h"
 #include "app/ui/skin/skin_slider_property.h"
 #include "app/ui/skin/skin_theme.h"
-#include "base/bind.h"
 #include "base/scoped_value.h"
 #include "gfx/hsl.h"
 #include "gfx/rgb.h"
@@ -375,9 +374,9 @@ void ColorSliders::addSlider(const Channel channel,
   item.absSlider->setDoubleBuffered(true);
   get_skin_property(item.entry)->setLook(MiniLook);
 
-  item.absSlider->Change.connect(base::Bind<void>(&ColorSliders::onSliderChange, this, channel));
-  item.relSlider->Change.connect(base::Bind<void>(&ColorSliders::onSliderChange, this, channel));
-  item.entry->Change.connect(base::Bind<void>(&ColorSliders::onEntryChange, this, channel));
+  item.absSlider->Change.connect([this, channel]{ onSliderChange(channel); });
+  item.relSlider->Change.connect([this, channel]{ onSliderChange(channel); });
+  item.entry->Change.connect([this, channel]{ onEntryChange(channel); });
 
   item.box->addChild(item.absSlider);
   item.box->addChild(item.relSlider);

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -82,6 +82,8 @@ namespace app {
     // m_color.getAlpha() if it's really a color.
     int getCurrentAlphaForNewColor() const;
 
+    bool hasCaptureInMainArea() const { return m_capturedInMain; }
+
     app::Color m_color;
 
     // These flags indicate which areas must be redrawed in the
@@ -108,8 +110,9 @@ namespace app {
     // slider. It's used to avoid swapping in both areas (main color
     // area vs bottom slider) when we drag the mouse above this
     // widget.
-    bool m_capturedInBottom;
-    bool m_capturedInAlpha;
+    bool m_capturedInBottom = false;
+    bool m_capturedInAlpha = false;
+    bool m_capturedInMain = false;
 
     ui::Timer m_timer;
 

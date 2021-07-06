@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -15,7 +15,6 @@
 #include "app/pref/preferences.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
-#include "base/bind.h"
 #include "base/clamp.h"
 #include "base/pi.h"
 #include "filters/color_curve.h"
@@ -56,7 +55,7 @@ ColorWheel::ColorWheel()
   , m_options("")
   , m_harmonyPicked(false)
 {
-  m_options.Click.connect(base::Bind<void>(&ColorWheel::onOptions, this));
+  m_options.Click.connect([this]{ onOptions(); });
   addChild(&m_options);
 
   InitTheme.connect(
@@ -75,7 +74,36 @@ app::Color ColorWheel::getMainAreaColor(const int _u, const int umax,
 
   int u = _u - umax/2;
   int v = _v - vmax/2;
+
+  // Pick harmonies
+  if (m_color.getAlpha() > 0) {
+    const gfx::Point pos(_u, _v);
+    int n = getHarmonies();
+    int boxsize = std::min(umax/10, vmax/10);
+
+    for (int i=0; i<n; ++i) {
+      app::Color color = getColorInHarmony(i);
+
+      if (gfx::Rect(umax-(n-i)*boxsize,
+                    vmax-boxsize,
+                    boxsize, boxsize).contains(pos)) {
+        m_harmonyPicked = true;
+
+        color = app::Color::fromHsv(convertHueAngle(int(color.getHsvHue()), 1),
+                                    color.getHsvSaturation(),
+                                    color.getHsvValue(),
+                                    m_color.getAlpha());
+        return color;
+      }
+    }
+  }
+
   double d = std::sqrt(u*u + v*v);
+
+  // When we click the main area we can limit the distance to the
+  // wheel radius to pick colors even outside the wheel radius.
+  if (hasCaptureInMainArea() && d > m_wheelRadius)
+    d = m_wheelRadius;
 
   if (m_colorModel == ColorModel::NORMAL_MAP) {
     double a = std::atan2(-v, u);
@@ -95,7 +123,7 @@ app::Color ColorWheel::getMainAreaColor(const int _u, const int umax,
     int r = 128 + di*std::cos(a);
     int g = 128 + di*std::sin(a);
     int b = 255 - di;
-    if (d < m_wheelRadius+2*guiscale()) {
+    if (d <= m_wheelRadius) {
       return app::Color::fromRgb(
         base::clamp(r, 0, 255),
         base::clamp(g, 0, 255),
@@ -107,7 +135,7 @@ app::Color ColorWheel::getMainAreaColor(const int _u, const int umax,
   }
 
   // Pick from the wheel
-  if (d < m_wheelRadius+2*guiscale()) {
+  if (d <= m_wheelRadius) {
     double a = std::atan2(-v, u);
 
     int hue = (int(180.0 * a / PI)
@@ -139,29 +167,6 @@ app::Color ColorWheel::getMainAreaColor(const int _u, const int umax,
       getCurrentAlphaForNewColor());
   }
 
-  // Pick harmonies
-  if (m_color.getAlpha() > 0) {
-    const gfx::Point pos(_u, _v);
-    int n = getHarmonies();
-    int boxsize = std::min(umax/10, vmax/10);
-
-    for (int i=0; i<n; ++i) {
-      app::Color color = getColorInHarmony(i);
-
-      if (gfx::Rect(umax-(n-i)*boxsize,
-                    vmax-boxsize,
-                    boxsize, boxsize).contains(pos)) {
-        m_harmonyPicked = true;
-
-        color = app::Color::fromHsv(convertHueAngle(int(color.getHsvHue()), 1),
-                                    color.getHsvSaturation(),
-                                    color.getHsvValue(),
-                                    m_color.getAlpha());
-        return color;
-      }
-    }
-  }
-
   return app::Color::fromMask();
 }
 
@@ -179,8 +184,8 @@ void ColorWheel::onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc)
 {
   bool oldHarmonyPicked = m_harmonyPicked;
 
-  int r = std::min(rc.w/2, rc.h/2);
-  m_wheelRadius = r;
+  double r = std::max(1.0, std::min(rc.w, rc.h) / 2.0);
+  m_wheelRadius = r-0.1;
   m_wheelBounds = gfx::Rect(rc.x+rc.w/2-r,
                             rc.y+rc.h/2-r,
                             r*2, r*2);
@@ -389,7 +394,7 @@ void ColorWheel::onOptions()
 
   if (isDiscrete())
     discrete.setSelected(true);
-  discrete.Click.connect(base::Bind<void>(&ColorWheel::setDiscrete, this, !isDiscrete()));
+  discrete.Click.connect([this]{ setDiscrete(!isDiscrete()); });
 
   if (m_colorModel != ColorModel::NORMAL_MAP) {
     switch (m_harmony) {
@@ -402,14 +407,14 @@ void ColorWheel::onOptions()
       case Harmony::TETRADIC: tetradic.setSelected(true); break;
       case Harmony::SQUARE: square.setSelected(true); break;
     }
-    none.Click.connect(base::Bind<void>(&ColorWheel::setHarmony, this, Harmony::NONE));
-    complementary.Click.connect(base::Bind<void>(&ColorWheel::setHarmony, this, Harmony::COMPLEMENTARY));
-    monochromatic.Click.connect(base::Bind<void>(&ColorWheel::setHarmony, this, Harmony::MONOCHROMATIC));
-    analogous.Click.connect(base::Bind<void>(&ColorWheel::setHarmony, this, Harmony::ANALOGOUS));
-    split.Click.connect(base::Bind<void>(&ColorWheel::setHarmony, this, Harmony::SPLIT));
-    triadic.Click.connect(base::Bind<void>(&ColorWheel::setHarmony, this, Harmony::TRIADIC));
-    tetradic.Click.connect(base::Bind<void>(&ColorWheel::setHarmony, this, Harmony::TETRADIC));
-    square.Click.connect(base::Bind<void>(&ColorWheel::setHarmony, this, Harmony::SQUARE));
+    none.Click.connect([this]{ setHarmony(Harmony::NONE); });
+    complementary.Click.connect([this]{ setHarmony(Harmony::COMPLEMENTARY); });
+    monochromatic.Click.connect([this]{ setHarmony(Harmony::MONOCHROMATIC); });
+    analogous.Click.connect([this]{ setHarmony(Harmony::ANALOGOUS); });
+    split.Click.connect([this]{ setHarmony(Harmony::SPLIT); });
+    triadic.Click.connect([this]{ setHarmony(Harmony::TRIADIC); });
+    tetradic.Click.connect([this]{ setHarmony(Harmony::TETRADIC); });
+    square.Click.connect([this]{ setHarmony(Harmony::SQUARE); });
   }
 
   gfx::Rect rc = m_options.bounds();

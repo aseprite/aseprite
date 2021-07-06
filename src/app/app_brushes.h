@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2021  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -12,6 +13,7 @@
 #include "doc/brushes.h"
 #include "obs/signal.h"
 
+#include <string>
 #include <vector>
 
 namespace app {
@@ -49,6 +51,7 @@ namespace app {
 
     doc::Brushes m_standard;
     BrushSlots m_slots;
+    std::string m_userBrushesFilename;
   };
 
 } // namespace app

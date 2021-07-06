@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -50,7 +50,6 @@
 #include "app/ui_context.h"
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
-#include "base/bind.h"
 #include "base/clamp.h"
 #include "base/scoped_value.h"
 #include "doc/cel.h"
@@ -76,6 +75,7 @@
 
 #include <cstring>
 #include <limits>
+#include <memory>
 
 namespace app {
 
@@ -200,14 +200,14 @@ ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
   m_fgColor.setExpansive(true);
   m_bgColor.setExpansive(true);
 
-  m_remapButton.Click.connect(base::Bind<void>(&ColorBar::onRemapButtonClick, this));
+  m_remapButton.Click.connect([this]{ onRemapButtonClick(); });
   m_fgColor.Change.connect(&ColorBar::onFgColorButtonChange, this);
   m_fgColor.BeforeChange.connect(&ColorBar::onFgColorButtonBeforeChange, this);
   m_bgColor.Change.connect(&ColorBar::onBgColorButtonChange, this);
-  m_fgWarningIcon->Click.connect(base::Bind<void>(&ColorBar::onFixWarningClick, this, &m_fgColor, m_fgWarningIcon));
-  m_bgWarningIcon->Click.connect(base::Bind<void>(&ColorBar::onFixWarningClick, this, &m_bgColor, m_bgWarningIcon));
-  m_redrawTimer.Tick.connect(base::Bind<void>(&ColorBar::onTimerTick, this));
-  m_buttons.ItemChange.connect(base::Bind<void>(&ColorBar::onPaletteButtonClick, this));
+  m_fgWarningIcon->Click.connect([this]{ onFixWarningClick(&m_fgColor, m_fgWarningIcon); });
+  m_bgWarningIcon->Click.connect([this]{ onFixWarningClick(&m_bgColor, m_bgWarningIcon); });
+  m_redrawTimer.Tick.connect([this]{ onTimerTick(); });
+  m_buttons.ItemChange.connect([this]{ onPaletteButtonClick(); });
 
   tooltipManager->addTooltipFor(&m_fgColor, "Foreground color", LEFT);
   tooltipManager->addTooltipFor(&m_bgColor, "Background color", LEFT);
@@ -270,13 +270,13 @@ ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
   UIContext::instance()->add_observer(this);
   m_beforeCmdConn = UIContext::instance()->BeforeCommandExecution.connect(&ColorBar::onBeforeExecuteCommand, this);
   m_afterCmdConn = UIContext::instance()->AfterCommandExecution.connect(&ColorBar::onAfterExecuteCommand, this);
-  m_fgConn = Preferences::instance().colorBar.fgColor.AfterChange.connect(base::Bind<void>(&ColorBar::onFgColorChangeFromPreferences, this));
-  m_bgConn = Preferences::instance().colorBar.bgColor.AfterChange.connect(base::Bind<void>(&ColorBar::onBgColorChangeFromPreferences, this));
-  m_sepConn = Preferences::instance().colorBar.entriesSeparator.AfterChange.connect(base::Bind<void>(&ColorBar::invalidate, this));
+  m_fgConn = Preferences::instance().colorBar.fgColor.AfterChange.connect([this]{ onFgColorChangeFromPreferences(); });
+  m_bgConn = Preferences::instance().colorBar.bgColor.AfterChange.connect([this]{ onBgColorChangeFromPreferences(); });
+  m_sepConn = Preferences::instance().colorBar.entriesSeparator.AfterChange.connect([this]{ invalidate(); });
   m_paletteView.FocusOrClick.connect(&ColorBar::onFocusPaletteView, this);
   m_appPalChangeConn = App::instance()->PaletteChange.connect(&ColorBar::onAppPaletteChange, this);
   KeyboardShortcuts::instance()->UserChange.connect(
-    base::Bind<void>(&ColorBar::setupTooltips, this, tooltipManager));
+    [this, tooltipManager]{ setupTooltips(tooltipManager); });
 
   setEditMode(false);
   registerCommands();
@@ -554,6 +554,12 @@ void ColorBar::onRemapButtonClick()
         }
 
         if (remap.isInvertible(usedEntries)) {
+          for (int i=0; i<remap.size(); ++i) {
+            if (i >= usedEntries.size() || !usedEntries[i]) {
+              remap.unused(i);
+            }
+          }
+
           tx(new cmd::RemapColors(sprite, remap));
           remapPixels = false;
         }
@@ -1164,7 +1170,8 @@ void ColorBar::updateCurrentSpritePalette(const char* operationName)
 
       if (from >= 0 && to >= from) {
         DocUndo* undo = document->undoHistory();
-        Cmd* cmd = new cmd::SetPalette(sprite, frame, newPalette);
+        std::unique_ptr<cmd::SetPalette> cmd(
+          new cmd::SetPalette(sprite, frame, newPalette));
 
         // Add undo information to save the range of pal entries that will be modified.
         if (m_implantChange &&
@@ -1173,12 +1180,17 @@ void ColorBar::updateCurrentSpritePalette(const char* operationName)
           // Implant the cmd in the last CmdSequence if it's
           // related about color palette modifications
           ASSERT(dynamic_cast<CmdSequence*>(undo->lastExecutedCmd()));
-          static_cast<CmdSequence*>(undo->lastExecutedCmd())->add(cmd);
-          cmd->execute(UIContext::instance());
+          static_cast<CmdSequence*>(undo->lastExecutedCmd())->add(cmd.get());
+          // Release the unique pointer because it's already in the
+          // last executed command CmdSequence::m_cmds container, and
+          // execute it.
+          cmd.release()->execute(UIContext::instance());
         }
         else {
           Tx tx(writer.context(), operationName, ModifyDocument);
-          tx(cmd);
+          // If tx() fails it will delete the cmd anyway, so we can
+          // release the unique pointer here.
+          tx(cmd.release());
           tx.commit();
         }
       }
@@ -1279,18 +1291,18 @@ void ColorBar::showPaletteSortOptions()
   if (m_ascending) asc.setSelected(true);
   else des.setSelected(true);
 
-  rev.Click.connect(base::Bind<void>(&ColorBar::onReverseColors, this));
-  grd.Click.connect(base::Bind<void>(&ColorBar::onGradient, this));
-  hue.Click.connect(base::Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::HUE));
-  sat.Click.connect(base::Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::SATURATION));
-  bri.Click.connect(base::Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::VALUE));
-  lum.Click.connect(base::Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::LUMA));
-  red.Click.connect(base::Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::RED));
-  grn.Click.connect(base::Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::GREEN));
-  blu.Click.connect(base::Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::BLUE));
-  alp.Click.connect(base::Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::ALPHA));
-  asc.Click.connect(base::Bind<void>(&ColorBar::setAscending, this, true));
-  des.Click.connect(base::Bind<void>(&ColorBar::setAscending, this, false));
+  rev.Click.connect([this]{ onReverseColors(); });
+  grd.Click.connect([this]{ onGradient(); });
+  hue.Click.connect([this]{ onSortBy(SortPaletteBy::HUE); });
+  sat.Click.connect([this]{ onSortBy(SortPaletteBy::SATURATION); });
+  bri.Click.connect([this]{ onSortBy(SortPaletteBy::VALUE); });
+  lum.Click.connect([this]{ onSortBy(SortPaletteBy::LUMA); });
+  red.Click.connect([this]{ onSortBy(SortPaletteBy::RED); });
+  grn.Click.connect([this]{ onSortBy(SortPaletteBy::GREEN); });
+  blu.Click.connect([this]{ onSortBy(SortPaletteBy::BLUE); });
+  alp.Click.connect([this]{ onSortBy(SortPaletteBy::ALPHA); });
+  asc.Click.connect([this]{ setAscending(true); });
+  des.Click.connect([this]{ setAscending(false); });
 
   menu.showPopup(gfx::Point(bounds.x, bounds.y+bounds.h));
 }

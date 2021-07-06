@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -93,11 +93,11 @@ void FlipCommand::onExecute(Context* ctx)
 
     auto range = site.range();
     if (range.enabled()) {
-      cels = get_unlocked_unique_cels(site.sprite(), range);
+      cels = get_unique_cels_to_edit_pixels(site.sprite(), range);
     }
     else if (site.cel() &&
-              site.layer() &&
-              site.layer()->isEditable()) {
+             site.layer() &&
+             site.layer()->canEditPixels()) {
       cels.push_back(site.cel());
     }
 
@@ -252,9 +252,9 @@ std::string FlipCommand::onGetFriendlyName() const
     content = Strings::commands_Flip_Canvas();
 
   if (m_flipType == doc::algorithm::FlipHorizontal)
-    content = Strings::commands_Flip_Horizontally();
+    orientation = Strings::commands_Flip_Horizontally();
   else
-    content = Strings::commands_Flip_Vertically();
+    orientation = Strings::commands_Flip_Vertically();
 
   return fmt::format(getBaseFriendlyName(), content, orientation);
 }

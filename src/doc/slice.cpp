@@ -41,6 +41,14 @@ Slice::Slice()
 {
 }
 
+Slice::Slice(const Slice& other)
+  : WithUserData(other)
+  , m_owner(nullptr)
+  , m_name(other.m_name)
+  , m_keys(other.m_keys)
+{
+}
+
 Slice::~Slice()
 {
   ASSERT(!m_owner);

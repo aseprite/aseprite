@@ -34,6 +34,7 @@ namespace app {
 
     ui::TooltipManager m_tooltips;
     obs::scoped_connection m_extPaletteChanges;
+    obs::scoped_connection m_extPresetsChanges;
   };
 
 } // namespace app

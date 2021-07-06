@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -10,19 +10,21 @@
 #pragma once
 
 #include "app/doc_observer.h"
-#include "app/docs_observer.h"
 #include "app/doc_range.h"
+#include "app/docs_observer.h"
 #include "app/loop_tag.h"
 #include "app/pref/preferences.h"
 #include "app/ui/editor/editor_observer.h"
 #include "app/ui/input_chain_element.h"
 #include "app/ui/timeline/ani_controls.h"
+#include "app/ui/timeline/timeline_observer.h"
 #include "doc/frame.h"
 #include "doc/layer.h"
 #include "doc/selected_frames.h"
 #include "doc/selected_layers.h"
 #include "doc/sprite.h"
 #include "obs/connection.h"
+#include "obs/observable.h"
 #include "ui/scroll_bar.h"
 #include "ui/timer.h"
 #include "ui/widget.h"
@@ -57,6 +59,7 @@ namespace app {
 
   class Timeline : public ui::Widget,
                    public ui::ScrollableViewDelegate,
+                   public obs::observable<TimelineObserver>,
                    public ContextObserver,
                    public DocsObserver,
                    public DocObserver,

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -12,7 +12,6 @@
 
 #include "app/i18n/strings.h"
 #include "app/ui/skin/skin_theme.h"
-#include "base/bind.h"
 #include "base/fs.h"
 #include "ui/box.h"
 #include "ui/button.h"
@@ -43,21 +42,19 @@ FilenameField::FilenameField(const Type type,
 
   if (m_entry) {
     m_entry->Change.connect(
-      base::Bind<void>(
-        [this]{
-          m_file = m_entry->text();
-          Change();
-        }));
+      [this]{
+        m_file = m_entry->text();
+        Change();
+      });
   }
 
   m_button.Click.connect(
-    base::Bind<void>(
-      [this]{
-        std::string fn = SelectFile();
-        if (!fn.empty()) {
-          setFilename(fn);
-        }
-      }));
+    [this]{
+      std::string fn = SelectFile();
+      if (!fn.empty()) {
+        setFilename(fn);
+      }
+    });
 
   initTheme();
 }

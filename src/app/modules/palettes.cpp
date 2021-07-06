@@ -161,12 +161,7 @@ bool set_current_palette(const Palette *_palette, bool forced)
 std::string get_preset_palette_filename(const std::string& preset,
                                         const std::string& dot_extension)
 {
-  ResourceFinder rf;
-  rf.includeUserDir(base::join_path("palettes", ".").c_str());
-  std::string palettesDir = rf.getFirstOrCreateDefault();
-
-  if (!base::is_directory(palettesDir))
-    base::make_directory(palettesDir);
+  std::string palettesDir = get_preset_palettes_dir();
 
   return base::join_path(palettesDir, preset + dot_extension);
 }
@@ -174,6 +169,18 @@ std::string get_preset_palette_filename(const std::string& preset,
 std::string get_default_palette_preset_name()
 {
   return "default";
+}
+
+std::string get_preset_palettes_dir()
+{
+  ResourceFinder rf;
+  rf.includeUserDir(base::join_path("palettes", ".").c_str());
+  std::string palettesDir = rf.getFirstOrCreateDefault();
+
+  if (!base::is_directory(palettesDir))
+    base::make_directory(palettesDir);
+
+  return palettesDir;
 }
 
 } // namespace app

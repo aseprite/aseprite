@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -20,7 +20,6 @@
 #include "app/doc_access.h"
 #include "app/file/file.h"
 #include "app/ui_context.h"
-#include "base/bind.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
 #include "base/fstream_path.h"
@@ -333,18 +332,13 @@ Doc* Session::restoreBackupRawImages(Backup* backup,
 
 void Session::deleteBackup(Backup* backup)
 {
-  try {
-    auto it = std::find(m_backups.begin(), m_backups.end(), backup);
-    ASSERT(it != m_backups.end());
-    if (it != m_backups.end())
-      m_backups.erase(it);
+  auto it = std::find(m_backups.begin(), m_backups.end(), backup);
+  ASSERT(it != m_backups.end());
+  if (it != m_backups.end())
+    m_backups.erase(it);
 
-    if (base::is_directory(backup->dir()))
-      deleteDirectory(backup->dir());
-  }
-  catch (const std::exception& ex) {
-    Console::showException(ex);
-  }
+  if (base::is_directory(backup->dir()))
+    deleteDirectory(backup->dir());
 }
 
 void Session::loadPid()

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -26,6 +26,10 @@ namespace doc {
   class Sprite;
 }
 
+namespace os {
+  class Surface;
+}
+
 namespace ui {
   class Graphics;
 }
@@ -37,10 +41,34 @@ namespace app {
   public:
     // Brush type
     enum {
-      CROSSHAIR           = 1,
+      // A simple cursor in the mouse position for drawing tools. The
+      // crosshair is painted in real-time with black and white
+      // depending on the pixel of the screen.
+      //
+      //     |
+      //     |
+      // --- * ---
+      //     |
+      //     |
+      CROSSHAIR = 1,
+
+      // Crosshair used in the selection tools in the sprite position.
+      //
+      //   | |
+      // --   --
+      //    *
+      // --   --
+      //   | |
       SELECTION_CROSSHAIR = 2,
-      BRUSH_BOUNDARIES    = 4,
-      NATIVE_CROSSHAIR    = 8,
+
+      // The boundaries of the brush used in the sprite position
+      // (depends on the shape of the brush generated with
+      // doc::MaskBoundaries).
+      BRUSH_BOUNDARIES = 4,
+
+      // Use a pre-defined native cursor that is a crosshair in the
+      // mouse position.
+      NATIVE_CROSSHAIR = 8,
     };
 
     BrushPreview(Editor* editor);
@@ -63,9 +91,16 @@ namespace app {
     static doc::color_t getBrushColor(doc::Sprite* sprite, doc::Layer* layer);
 
     void generateBoundaries();
-    void forEachBrushPixel(
+
+    // Creates a little native cursor to draw the CROSSHAIR
+    void createNativeCursor();
+    void forEachLittleCrossPixel(
       ui::Graphics* g,
       const gfx::Point& screenPos,
+      gfx::Color color,
+      PixelDelegate pixelDelegate);
+    void forEachBrushPixel(
+      ui::Graphics* g,
       const gfx::Point& spritePos,
       gfx::Color color,
       PixelDelegate pixelDelegate);
@@ -74,30 +109,36 @@ namespace app {
     void traceSelectionCrossPixels(ui::Graphics* g, const gfx::Point& pt, gfx::Color color, int thickness, PixelDelegate pixel);
     void traceBrushBoundaries(ui::Graphics* g, gfx::Point pos, gfx::Color color, PixelDelegate pixel);
 
+    void putPixelInCursorDelegate(ui::Graphics* g, const gfx::Point& pt, gfx::Color color);
     void savePixelDelegate(ui::Graphics* g, const gfx::Point& pt, gfx::Color color);
     void drawPixelDelegate(ui::Graphics* g, const gfx::Point& pt, gfx::Color color);
     void clearPixelDelegate(ui::Graphics* g, const gfx::Point& pt, gfx::Color color);
 
     Editor* m_editor;
-    int m_type;
+    int m_type = CROSSHAIR;
 
     // The brush preview shows the cross or brush boundaries as black
     // & white negative.
     bool m_blackAndWhiteNegative;
 
     // The brush preview is on the screen.
-    bool m_onScreen;
-    bool m_withModifiedPixels;
-    bool m_withRealPreview;
+    bool m_onScreen = false;
+
+    bool m_withRealPreview = false;
     gfx::Point m_screenPosition; // Position in the screen (view)
     gfx::Point m_editorPosition; // Position in the editor (model)
+
+    // Native mouse cursor to draw crosshair
+    os::Surface* m_cursor = nullptr;
+    gfx::Point m_cursorCenter;
 
     // Information about current brush
     doc::MaskBoundaries m_brushBoundaries;
     int m_brushGen;
-    int m_brushWidth;
-    int m_brushHeight;
 
+    // True if we've modified pixels in the display surface
+    // (e.g. drawing the selection crosshair or the brush edges).
+    bool m_withModifiedPixels = false;
     std::vector<gfx::Color> m_savedPixels;
     int m_savedPixelsIterator;
     int m_savedPixelsLimit;

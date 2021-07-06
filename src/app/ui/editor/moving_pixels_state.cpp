@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -35,10 +35,10 @@
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/main_window.h"
 #include "app/ui/status_bar.h"
+#include "app/ui/timeline/timeline.h"
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
 #include "app/util/layer_utils.h"
-#include "base/bind.h"
 #include "base/gcd.h"
 #include "base/pi.h"
 #include "doc/algorithm/flip_image.h"
@@ -98,10 +98,10 @@ MovingPixelsState::MovingPixelsState(Editor* editor, MouseMessage* msg, PixelsMo
   // Listen to any change to the transparent color from the ContextBar.
   m_opaqueConn =
     Preferences::instance().selection.opaque.AfterChange.connect(
-      base::Bind<void>(&MovingPixelsState::onTransparentColorChange, this));
+      [this]{ onTransparentColorChange(); });
   m_transparentConn =
     Preferences::instance().selection.transparentColor.AfterChange.connect(
-      base::Bind<void>(&MovingPixelsState::onTransparentColorChange, this));
+      [this]{ onTransparentColorChange(); });
 
   // Add the current editor as filter for key message of the manager
   // so we can catch the Enter key, and avoid to execute the
@@ -114,10 +114,14 @@ MovingPixelsState::MovingPixelsState(Editor* editor, MouseMessage* msg, PixelsMo
   ContextBar* contextBar = App::instance()->contextBar();
   contextBar->updateForMovingPixels();
   contextBar->add_observer(this);
+
+  App::instance()->mainWindow()->getTimeline()->add_observer(this);
 }
 
 MovingPixelsState::~MovingPixelsState()
 {
+  App::instance()->mainWindow()->getTimeline()->remove_observer(this);
+
   ContextBar* contextBar = App::instance()->contextBar();
   contextBar->remove_observer(this);
   contextBar->updateForActiveTool();
@@ -705,6 +709,15 @@ void MovingPixelsState::onBeforeFrameChanged(Editor* editor)
 }
 
 void MovingPixelsState::onBeforeLayerChanged(Editor* editor)
+{
+  if (!isActiveDocument())
+    return;
+
+  if (m_pixelsMovement)
+    dropPixels();
+}
+
+void MovingPixelsState::onBeforeRangeChanged(Timeline* timeline)
 {
   if (!isActiveDocument())
     return;

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -38,7 +38,6 @@
 #include "app/ui/workspace.h"
 #include "app/ui/workspace_tabs.h"
 #include "app/ui_context.h"
-#include "base/bind.h"
 #include "base/fs.h"
 #include "os/display.h"
 #include "os/system.h"
@@ -153,10 +152,8 @@ MainWindow::MainWindow()
 
   // Reconfigure workspace when the timeline position is changed.
   auto& pref = Preferences::instance();
-  pref.general.timelinePosition
-    .AfterChange.connect(base::Bind<void>(&MainWindow::configureWorkspaceLayout, this));
-  pref.general.showMenuBar
-    .AfterChange.connect(base::Bind<void>(&MainWindow::configureWorkspaceLayout, this));
+  pref.general.timelinePosition.AfterChange.connect([this]{ configureWorkspaceLayout(); });
+  pref.general.showMenuBar.AfterChange.connect([this]{ configureWorkspaceLayout(); });
 
   // Prepare the window
   remapWindow();
@@ -264,17 +261,28 @@ void MainWindow::showHome()
   m_tabsBar->selectTab(m_homeView);
 }
 
-bool MainWindow::isHomeSelected()
+void MainWindow::showDefaultStatusBar()
 {
-  return (m_tabsBar->getSelectedTab() == m_homeView && m_homeView);
+  if (DocView* docView = getDocView())
+    m_statusBar->showDefaultText(docView->document());
+  else if (isHomeSelected())
+    m_statusBar->showAbout();
+  else
+    m_statusBar->clearText();
 }
 
-void MainWindow::showBrowser(const std::string& filename)
+bool MainWindow::isHomeSelected() const
+{
+  return (m_homeView && m_workspace->activeView() == m_homeView);
+}
+
+void MainWindow::showBrowser(const std::string& filename,
+                             const std::string& section)
 {
   if (!m_browserView)
     m_browserView = new BrowserView;
 
-  m_browserView->loadFile(filename);
+  m_browserView->loadFile(filename, section);
 
   if (!m_browserView->parent()) {
     m_workspace->addView(m_browserView);
@@ -476,12 +484,12 @@ void MainWindow::onTabsContainerDoubleClicked(Tabs* tabs)
 void MainWindow::onMouseOverTab(Tabs* tabs, TabView* tabView)
 {
   // Note: tabView can be NULL
-  if (DocView* docView = dynamic_cast<DocView*>(tabView)) {
+  if (DocView* docView = dynamic_cast<DocView*>(tabView))
     m_statusBar->showDefaultText(docView->document());
-  }
-  else {
+  else if (tabView)
+    m_statusBar->setStatusText(0, tabView->getTabText());
+  else
     m_statusBar->showDefaultText();
-  }
 }
 
 void MainWindow::onMouseLeaveTab()

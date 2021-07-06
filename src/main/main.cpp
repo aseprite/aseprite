@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -27,7 +27,7 @@
 #include <ctime>
 #include <iostream>
 
-#ifdef _WIN32
+#if LAF_WINDOWS
   #include <windows.h>
 #endif
 
@@ -44,7 +44,7 @@ namespace {
 #endif
   };
 
-#ifdef _WIN32
+#if LAF_WINDOWS
   // Successful calls to CoInitialize() (S_OK or S_FALSE) must match
   // the calls to CoUninitialize().
   // From: https://docs.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-couninitialize#remarks
@@ -74,7 +74,7 @@ int app_main(int argc, char* argv[])
   // Initialize the random seed.
   std::srand(static_cast<unsigned int>(std::time(nullptr)));
 
-#ifdef _WIN32
+#if LAF_WINDOWS
   CoInit com;                   // To create COM objects
 #endif
 
@@ -95,14 +95,15 @@ int app_main(int argc, char* argv[])
     }
 
     const int code = app.initialize(options);
-    if (code != 0)
-      return code;
 
     if (options.startShell())
       systemConsole.prepareShell();
 
     app.run();
-    return 0;
+
+    // After starting the GUI, we'll always return 0, but in batch
+    // mode we can return the error code.
+    return (app.isGui() ? 0: code);
   }
   catch (std::exception& e) {
     std::cerr << e.what() << '\n';

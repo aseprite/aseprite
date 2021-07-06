@@ -15,7 +15,6 @@
 
 #include "app/check_update_delegate.h"
 #include "app/pref/preferences.h"
-#include "base/bind.h"
 #include "base/convert_to.h"
 #include "base/launcher.h"
 #include "base/replace_string.h"
@@ -127,7 +126,7 @@ void CheckUpdateThreadLauncher::launch()
   m_delegate->onCheckingUpdates();
 
   m_bgJob.reset(new CheckUpdateBackgroundJob);
-  m_thread.reset(new base::thread(base::Bind<void>(&CheckUpdateThreadLauncher::checkForUpdates, this)));
+  m_thread.reset(new base::thread([this]{ checkForUpdates(); }));
 
   // Start a timer to monitoring the progress of the background job
   // executed in "m_thread". The "onMonitoringTick" method will be

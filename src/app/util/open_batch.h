@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2021  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -29,14 +29,14 @@ namespace app {
         params.set("oneframe", "true");
       else {
         switch (m_lastDecision) {
-          case OpenFileCommand::SequenceDecision::Ask:
+          case gen::SequenceDecision::ASK:
             params.set("sequence", "ask");
             params.set("repeat_checkbox", "true");
             break;
-          case OpenFileCommand::SequenceDecision::Skip:
+          case gen::SequenceDecision::NO:
             params.set("sequence", "skip");
             break;
-          case OpenFileCommand::SequenceDecision::Agree:
+          case gen::SequenceDecision::YES:
             params.set("sequence", "agree");
             break;
         }
@@ -49,7 +49,7 @@ namespace app {
 
       // Future decision for other files in the CLI
       auto d = m_cmd.seqDecision();
-      if (d != OpenFileCommand::SequenceDecision::Ask)
+      if (d != gen::SequenceDecision::ASK)
         m_lastDecision = d;
     }
 
@@ -59,7 +59,7 @@ namespace app {
 
   private:
     OpenFileCommand m_cmd;
-    OpenFileCommand::SequenceDecision m_lastDecision = OpenFileCommand::SequenceDecision::Ask;
+    gen::SequenceDecision m_lastDecision = gen::SequenceDecision::ASK;
   };
 
 } // namespace app

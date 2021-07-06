@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -13,7 +14,6 @@
 #include "app/res/resource.h"
 #include "app/res/resources_loader.h"
 #include "app/ui/skin/skin_theme.h"
-#include "base/bind.h"
 #include "ui/graphics.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"
@@ -114,7 +114,7 @@ ResourcesListBox::ResourcesListBox(ResourcesLoader* resourcesLoader)
   , m_reload(false)
   , m_loadingItem(nullptr)
 {
-  m_resourcesTimer.Tick.connect(base::Bind<void>(&ResourcesListBox::onTick, this));
+  m_resourcesTimer.Tick.connect([this]{ onTick(); });
 }
 
 Resource* ResourcesListBox::selectedResource()
@@ -211,8 +211,10 @@ void ResourcesListBox::onTick()
     listItem.release();
   }
 
-  if (m_resourcesLoader->isDone())
+  if (m_resourcesLoader->isDone()) {
+    FinishLoading();
     stop();
+  }
 }
 
 void ResourcesListBox::stop()

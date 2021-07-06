@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -261,10 +261,19 @@ FileOp* FileOp::createLoadDocumentOperation(Context* context,
 
         window.openWindowInForeground();
 
+        // Don't show this alert again.
+        if (window.dontShow()->isSelected()) {
+          Preferences::instance().openFile.openSequence(
+            window.closer() == window.agree() ?
+              gen::SequenceDecision::YES:
+              gen::SequenceDecision::NO);
+        }
+
         // If the user selected the "do the same for other files"
         // checkbox, we've to save what the user want to do for the
         // following files.
-        if (window.repeat()->isSelected()) {
+        if (window.repeat()->isSelected() ||
+            window.dontShow()->isSelected()) {
           if (window.closer() == window.agree())
             fop->m_seq.flags = FILE_LOAD_SEQUENCE_YES;
           else
@@ -464,14 +473,27 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
 #ifdef ENABLE_UI
     // Interative
     if (context && context->isUIAvailable()) {
-      int ret = OptionalAlert::show(
-        Preferences::instance().saveFile.showFileFormatDoesntSupportAlert,
-        1, // Yes is the default option when the alert dialog is disabled
-        fmt::format(
-          (fatal ? Strings::alerts_file_format_doesnt_support_error():
-                   Strings::alerts_file_format_doesnt_support_warning()),
-          fop->m_format->name(),
-          warnings));
+      int ret;
+
+      // If the error is fatal, we cannot ignore a no-op, we always
+      // show the alert dialog.
+      if (fatal) {
+        ui::Alert::show(
+          fmt::format(
+            Strings::alerts_file_format_doesnt_support_error(),
+            fop->m_format->name(),
+            warnings));
+        ret = 1;
+      }
+      else {
+        ret = OptionalAlert::show(
+          Preferences::instance().saveFile.showFileFormatDoesntSupportAlert,
+          1, // Yes is the default option when the alert dialog is disabled
+          fmt::format(
+            Strings::alerts_file_format_doesnt_support_warning(),
+            fop->m_format->name(),
+            warnings));
+      }
 
       // Operation can't be done (by fatal error) or the user cancel
       // the operation

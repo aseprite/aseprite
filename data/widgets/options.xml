@@ -1,5 +1,5 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2018-2020  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-2021  Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2018  David Capello -->
 <gui>
   <window id="options" text="@.title">
@@ -258,6 +258,8 @@
 		 pref="general.autoshow_timeline" />
           <check text="@.rewind_on_stop" id="rewind_on_stop" tooltip="@.rewind_on_stop_tooltip"
 		 pref="general.rewind_on_stop" />
+          <check text="@.keep_timeline_selection" id="keep_selection" tooltip="@.keep_timeline_selection_tooltip"
+		 pref="timeline.keep_selection" />
 	  <hbox>
 	    <label text="@.default_first_frame" />
 	    <expr id="first_frame" />
@@ -424,6 +426,14 @@
         <!-- Alerts -->
         <vbox id="section_alerts">
           <separator text="@.section_alerts" horizontal="true" />
+          <hbox>
+            <label text="@.open_sequence_alert" />
+            <combobox id="open_sequence">
+              <listitem text="@.open_sequence_alert_ask" value="0" />
+              <listitem text="@.open_sequence_alert_yes" value="1" />
+              <listitem text="@.open_sequence_alert_no" value="2" />
+            </combobox>
+          </hbox>
           <check id="file_format_doesnt_support_alert" text="@.file_format_doesnt_support_alert"
                  pref="save_file.show_file_format_doesnt_support_alert" />
           <check id="export_animation_in_sequence_alert" text="@.export_animation_in_sequence_alert"
@@ -440,6 +450,7 @@
                  pref="scripts.show_run_script_alert" />
 	  <hbox>
             <label text="@.image_format_alerts" />
+            <check id="css_options_alert" text="!css" pref="css.show_alert" />
             <check id="gif_options_alert" text="!gif" pref="gif.show_alert" />
             <check id="jpeg_options_alert" text="!jpeg" pref="jpeg.show_alert" />
             <check id="svg_options_alert" text="!svg" pref="svg.show_alert" />

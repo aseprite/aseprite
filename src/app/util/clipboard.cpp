@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -283,7 +283,7 @@ void cut(ContextWriter& writer)
       Site site = writer.context()->activeSite();
       CelList cels;
       if (site.range().enabled()) {
-        cels = get_unlocked_unique_cels(site.sprite(), site.range());
+        cels = get_unique_cels_to_edit_pixels(site.sprite(), site.range());
       }
       else if (site.cel()) {
         cels.push_back(site.cel());

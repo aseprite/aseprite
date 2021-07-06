@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2018-2019 Igara Studio S.A.
+// Copyright (c) 2018-2021 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -282,16 +282,16 @@ void draw_line(Image* image, int x1, int y1, int x2, int y2, color_t color)
   algo_line_continuous(x1, y1, x2, y2, &data, (AlgoPixel)pixel_for_image);
 }
 
-void draw_ellipse(Image* image, int x1, int y1, int x2, int y2, color_t color)
+void draw_ellipse(Image* image, int x1, int y1, int x2, int y2, int extraXPxs, int extraYPxs, color_t color)
 {
   Data data = { image, color };
-  algo_ellipse(x1, y1, x2, y2, &data, (AlgoPixel)pixel_for_image);
+  algo_ellipse(x1, y1, x2, y2, extraXPxs, extraYPxs, &data, (AlgoPixel)pixel_for_image);
 }
 
-void fill_ellipse(Image* image, int x1, int y1, int x2, int y2, color_t color)
+void fill_ellipse(Image* image, int x1, int y1, int x2, int y2, int extraXPxs, int extraYPxs, color_t color)
 {
   Data data = { image, color };
-  algo_ellipsefill(x1, y1, x2, y2, &data, (AlgoHLine)hline_for_image);
+  algo_ellipsefill(x1, y1, x2, y2, extraXPxs, extraYPxs, &data, (AlgoHLine)hline_for_image);
 }
 
 namespace {
@@ -407,13 +407,11 @@ void remap_image(Image* image, const Remap& remap)
   if (image->pixelFormat() != IMAGE_INDEXED)
     return;
 
-  LockImageBits<IndexedTraits> bits(image);
-  LockImageBits<IndexedTraits>::iterator
-    it = bits.begin(),
-    end = bits.end();
-
-  for (; it != end; ++it)
-    *it = remap[*it];
+  for (auto& pixel : LockImageBits<IndexedTraits>(image)) {
+    auto to = remap[pixel];
+    if (to != Remap::kUnused)
+      pixel = to;
+  }
 }
 
 // TODO test this hash routine and find a better alternative

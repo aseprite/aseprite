@@ -80,6 +80,14 @@ namespace app {
     // executing new Cmds again.
     void rollbackAndStartAgain();
 
+    // Executes the given command and tries to add it to the container
+    // of executed commands (m_cmds).
+    //
+    // If some of these operations fails, the given "cmd" will be
+    // deleted anyway.
+    //
+    // TODO In the future we should refactor this using unique
+    //      pointers-like structure only
     void execute(Cmd* cmd);
 
   private:
