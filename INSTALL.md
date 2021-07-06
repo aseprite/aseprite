@@ -69,6 +69,40 @@ To compile Aseprite you will need:
 On macOS you will need macOS 10.15 SDK and Xcode 11.2.1 (older
 versions might work).
 
+    brew install cmake ninja jpeg
+    
+ ### You will need the Skia Library
+ 
+```
+mkdir $HOME/deps
+cd $HOME/deps
+  
+git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+git clone -b aseprite-m81 https://github.com/aseprite/skia.git
+  
+export PATH="${PWD}/depot_tools:${PATH}"
+  
+cd skia
+  
+python tools/git-sync-deps
+  
+gn gen out/Release-x64 --args="is_debug=false is_official_build=true 
+skia_use_system_icu=false skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false skia_use_sfntly=false skia_use_freetype=true skia_use_harfbuzz=true skia_pdf_subset_harfbuzz=true skia_use_system_freetype2=false skia_use_system_harfbuzz=false target_cpu=\"x64\" 
+extra_cflags=[\"-stdlib=libc++\", \"-mmacosx-version-min=10.9\"] extra_cflags_cc=[\"-frtti\"]"
+
+ninja -C out/Release-x64 skia modules
+ ```
+ 
+ Then clone the aseprite into your `$HOME/deps`
+ 
+ ```
+ cd ..
+
+git clone --recursive https://github.com/aseprite/aseprite.git
+cd aseprite
+git pull && git submodule update --init --recursive
+ ```
+
 ## Linux dependencies
 
 You will need the following dependencies on Ubuntu/Debian:
@@ -156,26 +190,32 @@ More information in [issue #2449](https://github.com/aseprite/aseprite/issues/24
 
 Run `cmake` with the following parameters and then `ninja`:
 
-    cd aseprite
+    cd $HOME/deps/aseprite
     mkdir build
     cd build
+
     cmake \
-      -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-      -DCMAKE_OSX_ARCHITECTURES=x86_64 \
-      -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 \
-      -DCMAKE_OSX_SYSROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk \
-      -DLAF_BACKEND=skia \
-      -DSKIA_DIR=$HOME/deps/skia \
-      -DSKIA_LIBRARY_DIR=$HOME/deps/skia/out/Release-x64 \
-      -DSKIA_LIBRARY=$HOME/deps/skia/out/Release-x64/libskia.a \
-      -G Ninja \
-      ..
+    -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+    -DCMAKE_OSX_ARCHITECTURES=x86_64 \
+    -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15 \
+    -DCMAKE_OSX_SYSROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk \
+    -DLAF_BACKEND=skia \
+    -DSKIA_DIR=$HOME/deps/skia \
+    -DSKIA_LIBRARY_DIR=$HOME/deps/skia/out/Release-x64 \
+    -DSKIA_LIBRARY=$HOME/deps/skia/out/Release-x64/libskia.a \
+    -G Ninja \
+    ..
+      
     ninja aseprite
+    
+    # start aseprite software
+    ./bin/aseprite
+    
 
 In this case, `$HOME/deps/skia` is the directory where Skia was
 compiled or downloaded.  Make sure that `CMAKE_OSX_SYSROOT` is
 pointing to the correct SDK directory (in this case
-`/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk`),
+`/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk`),
 but it could be different in your Mac.
 
 ### Issues with Retina displays
