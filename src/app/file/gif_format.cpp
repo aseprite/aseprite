@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -1170,7 +1170,7 @@ private:
         for (it2 = bits2.begin(), end2 = bits2.end(),
              it3 = bits3.begin(), end3 = bits3.end();
               it2 != end2 && it3 != end3; ++it2, ++it3) {
-          if (*it2 != 0 && *it3 == 0) {
+          if (rgba_geta(*it2) != 0 && rgba_geta(*it3) == 0) {
             disposal = DisposalMethod::RESTORE_BGCOLOR;
             break;
           }
@@ -1206,26 +1206,28 @@ private:
         int i = 0;
         int x, y;
         const LockImageBits<RgbTraits> bits1(m_previousImage);
-        const LockImageBits<RgbTraits> bits2(m_currentImage);
+        LockImageBits<RgbTraits> bits2(m_currentImage);
         const LockImageBits<RgbTraits> bits3(m_nextImage);
         m_deltaImage.reset(Image::create(PixelFormat::IMAGE_RGB, m_spriteBounds.w, m_spriteBounds.h));
         clear_image(m_deltaImage.get(), 0);
         LockImageBits<RgbTraits> deltaBits(m_deltaImage.get());
         typename LockImageBits<RgbTraits>::iterator deltaIt;
-        typename LockImageBits<RgbTraits>::const_iterator it1, it2, it3, end1, end2, end3, deltaEnd;
+        typename LockImageBits<RgbTraits>::iterator it2, end2;
+        typename LockImageBits<RgbTraits>::const_iterator it1, it3, end1, deltaEnd;
 
         bool previousImageMatchsCurrent = true;
         for (it1 = bits1.begin(), end1 = bits1.end(),
              it2 = bits2.begin(), end2 = bits2.end(),
-             it3 = bits3.begin(), end2 = bits3.end(),
+             it3 = bits3.begin(),
              deltaIt = deltaBits.begin();
              it1 != end1 && it2 != end2; ++it1, ++it2, ++it3, ++deltaIt, ++i) {
           x = i % m_spriteBounds.w;
           y = i / m_spriteBounds.w;
           // While we are checking color differences,
           // we enlarge the frameBounds where the color differences take place
-          if (*it1 != *it2 || *it3 == 0) {
+          if ((rgba_geta(*it2) != 0 && *it1 != *it2) || rgba_geta(*it3) == 0) {
             previousImageMatchsCurrent = false;
+            *it2 = (rgba_geta(*it2) ? *it2 : 0);
             *deltaIt = *it2;
             if (x < x1) x1 = x;
             if (x > x2) x2 = x;
@@ -1236,7 +1238,7 @@ private:
           // We need to change disposal mode DO_NOT_DISPOSE to RESTORE_BGCOLOR only
           // if we found a "pixel clearing" in the next Image. RESTORE_BGCOLOR is
           // our way to clear pixels.
-          if (*it2 != 0 && *it3 == 0) {
+          if (rgba_geta(*it2) != 0 && rgba_geta(*it3) == 0) {
             disposal = DisposalMethod::RESTORE_BGCOLOR;
           }
         }
@@ -1514,19 +1516,18 @@ private:
       GifFreeMapObject(colormap);
   }
 
-  Palette calculatePalette()
-  {
+  Palette calculatePalette() {
     OctreeMap octree;
     const LockImageBits<RgbTraits> imageBits(m_deltaImage.get());
     auto it = imageBits.begin(), end = imageBits.end();
     bool maskColorFounded = false;
     for (; it != end; ++it) {
-      color_t i = *it;
-      if (i == 0 || m_transparentIndex == i) {
+      color_t c = *it;
+      if (rgba_geta(c) == 0) {
         maskColorFounded = true;
         continue;
       }
-      octree.addColor(i);
+      octree.addColor(c);
     }
     Palette palette;
     if (maskColorFounded) {
