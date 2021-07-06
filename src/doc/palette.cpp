@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2020  Igara Studio S.A.
+// Copyright (c) 2020-2021  Igara Studio S.A.
 // Copyright (c) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -195,6 +195,15 @@ int Palette::findExactMatch(int r, int g, int b, int a, int mask_index) const
     if (getEntry(i) == rgba(r, g, b, a) && i != mask_index)
       return i;
 
+  return -1;
+}
+
+int Palette::findMaskColor() const
+{
+  for (int i=0; i<(int)m_colors.size(); ++i) {
+    if (rgba_geta(getEntry(i)) == 0)
+      return i;
+  }
   return -1;
 }
 

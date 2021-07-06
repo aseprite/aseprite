@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2021 Igara Studio SA
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -88,6 +89,7 @@ namespace doc {
     void makeGradient(int from, int to);
 
     int findExactMatch(int r, int g, int b, int a, int mask_index) const;
+    int findMaskColor() const;
     int findBestfit(int r, int g, int b, int a, int mask_index) const;
 
     void applyRemap(const Remap& remap);
