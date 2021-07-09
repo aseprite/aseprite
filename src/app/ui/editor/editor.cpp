@@ -233,6 +233,7 @@ Editor::~Editor()
 
 void Editor::destroyEditorSharedInternals()
 {
+  BrushPreview::destroyInternals();
   if (m_renderEngine) {
     delete m_renderEngine;
     m_renderEngine = nullptr;

@@ -222,12 +222,12 @@ SkinTheme* SkinTheme::instance()
 
 SkinTheme::SkinTheme()
   : m_sheet(nullptr)
-  , m_standardCursors(ui::kCursorTypes, nullptr)
   , m_defaultFont(nullptr)
   , m_miniFont(nullptr)
   , m_preferredScreenScaling(-1)
   , m_preferredUIScaling(-1)
 {
+  m_standardCursors.fill(nullptr);
 }
 
 SkinTheme::~SkinTheme()

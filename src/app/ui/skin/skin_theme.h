@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2021  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -12,15 +12,17 @@
 #include "app/ui/skin/skin_part.h"
 #include "gfx/color.h"
 #include "gfx/fwd.h"
+#include "ui/cursor.h"
+#include "ui/cursor_type.h"
 #include "ui/manager.h"
 #include "ui/scale.h"
 #include "ui/theme.h"
 
 #include "theme.xml.h"
 
+#include <array>
 #include <map>
 #include <string>
-#include <vector>
 
 namespace ui {
   class Entry;
@@ -155,7 +157,7 @@ namespace app {
       std::map<std::string, gfx::Color> m_colors_by_id;
       std::map<std::string, int> m_dimensions_by_id;
       std::map<std::string, ui::Cursor*> m_cursors;
-      std::vector<ui::Cursor*> m_standardCursors;
+      std::array<ui::Cursor*, ui::kCursorTypes> m_standardCursors;
       std::map<std::string, ui::Style*> m_styles;
       std::map<std::string, FontData*> m_fonts;
       std::map<std::string, os::FontRef> m_themeFonts;
