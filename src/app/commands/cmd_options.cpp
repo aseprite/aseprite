@@ -331,7 +331,7 @@ public:
 
     // If the platform supports native cursors...
     if ((int(os::instance()->capabilities()) &
-         int(os::Capabilities::CustomNativeMouseCursor)) != 0) {
+         int(os::Capabilities::CustomMouseCursor)) != 0) {
       if (m_pref.cursor.useNativeCursor())
         nativeCursor()->setSelected(true);
       nativeCursor()->Click.connect([this]{ onNativeCursorChange(); });
@@ -855,9 +855,9 @@ private:
 
   void onNativeCursorChange() {
     bool state =
-      // If the platform supports native cursors...
+      // If the platform supports custom cursors...
       (((int(os::instance()->capabilities()) &
-         int(os::Capabilities::CustomNativeMouseCursor)) != 0) &&
+         int(os::Capabilities::CustomMouseCursor)) != 0) &&
        // If the native cursor option is not selec
        !nativeCursor()->isSelected());
 
