@@ -26,6 +26,7 @@ namespace app {
     virtual bool onMouseMove(Editor* editor, ui::MouseMessage* msg) override;
     virtual bool onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos) override;
     virtual bool onUpdateStatusBar(Editor* editor) override;
+    virtual void onBeforePopState(Editor* editor) override;
     virtual bool requireBrushPreview() override { return false; }
 
   private:
@@ -37,6 +38,7 @@ namespace app {
     gfx::Point m_selOrigin;
     gfx::Point m_delta;
     obs::scoped_connection m_ctxConn;
+    bool m_selectionCanceled;
   };
 
 } // namespace app

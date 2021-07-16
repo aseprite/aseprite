@@ -12,6 +12,8 @@
 #include "app/ui/editor/moving_selection_state.h"
 
 #include "app/cmd/set_mask_position.h"
+#include "app/commands/command.h"
+#include "app/commands/commands.h"
 #include "app/context_access.h"
 #include "app/tx.h"
 #include "app/ui/editor/editor.h"
@@ -31,6 +33,7 @@ MovingSelectionState::MovingSelectionState(Editor* editor, MouseMessage* msg)
   : m_editor(editor)
   , m_cursorStart(editor->screenToEditor(msg->position()))
   , m_selOrigin(editor->document()->mask()->bounds().origin())
+  , m_selectionCanceled(false)
 {
   editor->captureMouse();
 
@@ -42,6 +45,12 @@ MovingSelectionState::MovingSelectionState(Editor* editor, MouseMessage* msg)
 
 void MovingSelectionState::onBeforeCommandExecution(CommandExecutionEvent& ev)
 {
+  if (ev.command()->id() == CommandId::Cancel()) {
+    // We cancel the cancel command to avoid calling the inputChain()->cancel(), which
+    // deselects the selection.
+    ev.cancel();
+    m_selectionCanceled = true;
+  }
   m_editor->backToPreviousState();
   m_editor->releaseMouse();
 }
@@ -66,16 +75,27 @@ EditorState::LeaveAction MovingSelectionState::onLeaveState(Editor* editor, Edit
                   m_selOrigin.y);
   mask->unfreeze();
 
-  {
-    ContextWriter writer(UIContext::instance(), 1000);
-    Tx tx(writer.context(), "Move Selection Edges", DoesntModifyDocument);
-    tx(new cmd::SetMaskPosition(doc, newOrigin));
-    tx.commit();
+  if (m_selectionCanceled) {
+    doc->resetTransformation();
+    doc->generateMaskBoundaries();
   }
-
-  doc->resetTransformation();
+  else {
+    {
+      ContextWriter writer(UIContext::instance(), 1000);
+      Tx tx(writer.context(), "Move Selection Edges", DoesntModifyDocument);
+      tx(new cmd::SetMaskPosition(doc, newOrigin));
+      tx.commit();
+    }
+    doc->resetTransformation();
+  }
   doc->notifyGeneralUpdate();
   return StandbyState::onLeaveState(editor, newState);
+}
+
+void MovingSelectionState::onBeforePopState(Editor* editor)
+{
+  m_ctxConn.disconnect();
+  StandbyState::onBeforePopState(editor);
 }
 
 bool MovingSelectionState::onMouseDown(Editor* editor, MouseMessage* msg)
