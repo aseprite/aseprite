@@ -11,6 +11,7 @@
 *.log
 *.res
 .DS_Store
+.vs
 
 # CMake output
 build
