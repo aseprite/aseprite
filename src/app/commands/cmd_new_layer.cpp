@@ -221,11 +221,11 @@ void NewLayerCommand::onExecute(Context* context)
       fmt::format(Strings::commands_NewLayer(), layerPrefix()));
     DocApi api = document->getApi(tx);
     bool afterBackground = false;
-
 #ifdef ENABLE_UI
     // Since the timeline status changes when a layer is added, get the necessary value here.
     bool allLayersContinuous = App::instance()->timeline()->allLayersContinuous();
 #endif
+
     switch (m_type) {
       case Type::Layer:
         layer = api.newLayer(parent, name);
