@@ -28,6 +28,7 @@
 #include "app/ui/main_window.h"
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
+#include "app/ui/timeline/timeline.h"
 #include "app/util/clipboard.h"
 #include "app/util/new_image_from_mask.h"
 #include "app/util/range_utils.h"
@@ -221,9 +222,12 @@ void NewLayerCommand::onExecute(Context* context)
     DocApi api = document->getApi(tx);
     bool afterBackground = false;
 
+    bool allLayersContinuous = App::instance()->timeline()->allLayersContinuous();
     switch (m_type) {
       case Type::Layer:
         layer = api.newLayer(parent, name);
+        if (layer)
+          layer->setContinuous(allLayersContinuous);
         if (m_place == Place::BeforeActiveLayer)
           api.restackLayerBefore(layer, parent, activeLayer);
         break;
@@ -232,8 +236,10 @@ void NewLayerCommand::onExecute(Context* context)
         break;
       case Type::ReferenceLayer:
         layer = api.newLayer(parent, name);
-        if (layer)
+        if (layer) {
           layer->setReference(true);
+          layer->setContinuous(allLayersContinuous);
+        }
         afterBackground = true;
         break;
     }

@@ -135,6 +135,9 @@ namespace app {
 
     void clearAndInvalidateRange();
 
+    bool allLayersContinuous();
+    bool allLayersDiscontinuous();
+
   protected:
     bool onProcessMessage(ui::Message* msg) override;
     void onInitTheme(ui::InitThemeEvent& ev) override;
@@ -254,8 +257,6 @@ namespace app {
     bool allLayersInvisible();
     bool allLayersLocked();
     bool allLayersUnlocked();
-    bool allLayersContinuous();
-    bool allLayersDiscontinuous();
     void detachDocument();
     void setCursor(ui::Message* msg, const Hit& hit);
     void getDrawableLayers(layer_t* firstLayer, layer_t* lastLayer);
