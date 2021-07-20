@@ -223,6 +223,7 @@ void NewLayerCommand::onExecute(Context* context)
     bool afterBackground = false;
 
 #ifdef ENABLE_UI
+    // Since the timeline status changes when a layer is added, get the necessary value here.
     bool allLayersContinuous = App::instance()->timeline()->allLayersContinuous();
 #endif
     switch (m_type) {
