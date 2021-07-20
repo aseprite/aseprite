@@ -222,12 +222,16 @@ void NewLayerCommand::onExecute(Context* context)
     DocApi api = document->getApi(tx);
     bool afterBackground = false;
 
+#ifdef ENABLE_UI
     bool allLayersContinuous = App::instance()->timeline()->allLayersContinuous();
+#endif
     switch (m_type) {
       case Type::Layer:
         layer = api.newLayer(parent, name);
+#ifdef ENABLE_UI
         if (layer)
           layer->setContinuous(allLayersContinuous);
+#endif
         if (m_place == Place::BeforeActiveLayer)
           api.restackLayerBefore(layer, parent, activeLayer);
         break;
@@ -238,7 +242,9 @@ void NewLayerCommand::onExecute(Context* context)
         layer = api.newLayer(parent, name);
         if (layer) {
           layer->setReference(true);
+#ifdef ENABLE_UI
           layer->setContinuous(allLayersContinuous);
+#endif
         }
         afterBackground = true;
         break;
