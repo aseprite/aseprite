@@ -123,7 +123,11 @@ Open a [developer command prompt](https://docs.microsoft.com/en-us/dotnet/framew
 or in the command line (`cmd.exe`) call:
 
     call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat" -arch=x64
+    
+For AMD Processors, instead of the above, call:
 
+    call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat" -arch=amd64
+    
 And then
 
     cd aseprite
