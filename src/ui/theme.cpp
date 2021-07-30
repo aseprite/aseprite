@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -245,7 +245,7 @@ void Theme::paintTooltip(Graphics* g,
     paintWidget(g, widget, style, bounds);
 
   // Draw arrow
-  if (arrowStyle) {
+  if (arrowStyle && arrowAlign) {
     gfx::Size topLeft;
     gfx::Size center;
     gfx::Size bottomRight;

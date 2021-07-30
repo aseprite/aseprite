@@ -535,9 +535,7 @@ bool ComboBoxEntry::onProcessMessage(Message* msg)
             mouseMsg->pointerType(),
             mouseMsg->button(),
             mouseMsg->modifiers(),
-            (mouseMsg->display() == pick->display() ?
-             mouseMsg->position():
-             pick->display()->nativeWindow()->pointFromScreen(screenPos)));
+            mouseMsg->positionForDisplay(pick->display()));
           mouseMsg2.setDisplay(pick->display());
           pick->sendMessage(&mouseMsg2);
           return true;

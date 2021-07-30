@@ -97,8 +97,7 @@ ToolBar::ToolBar()
   m_tipOpened = false;
 
   ToolBox* toolbox = App::instance()->toolBox();
-  for (ToolIterator it = toolbox->begin(); it != toolbox->end(); ++it) {
-    Tool* tool = *it;
+  for (Tool* tool : *toolbox) {
     if (m_selectedInGroup.find(tool->getGroup()) == m_selectedInGroup.end())
       m_selectedInGroup[tool->getGroup()] = tool;
   }
@@ -124,7 +123,8 @@ bool ToolBar::onProcessMessage(Message* msg)
   switch (msg->type()) {
 
     case kMouseDownMessage: {
-      MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
+      auto mouseMsg = static_cast<const MouseMessage*>(msg);
+      const Point mousePos = mouseMsg->positionForDisplay(display());
       ToolBox* toolbox = App::instance()->toolBox();
       int groups = toolbox->getGroupsCount();
       Rect toolrc;
@@ -135,8 +135,8 @@ bool ToolBar::onProcessMessage(Message* msg)
         Tool* tool = m_selectedInGroup[tool_group];
 
         toolrc = getToolGroupBounds(c);
-        if (mouseMsg->position().y >= toolrc.y &&
-            mouseMsg->position().y < toolrc.y+toolrc.h) {
+        if (mousePos.y >= toolrc.y &&
+            mousePos.y < toolrc.y+toolrc.h) {
           selectTool(tool);
 
           openPopupWindow(c, tool_group);
@@ -149,8 +149,8 @@ bool ToolBar::onProcessMessage(Message* msg)
       }
 
       toolrc = getToolGroupBounds(PreviewVisibilityIndex);
-      if (mouseMsg->position().y >= toolrc.y &&
-          mouseMsg->position().y < toolrc.y+toolrc.h) {
+      if (mousePos.y >= toolrc.y &&
+          mousePos.y < toolrc.y+toolrc.h) {
         // Toggle preview visibility
         PreviewEditorWindow* preview =
           App::instance()->mainWindow()->getPreviewEditor();
@@ -161,7 +161,8 @@ bool ToolBar::onProcessMessage(Message* msg)
     }
 
     case kMouseMoveMessage: {
-      MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
+      auto mouseMsg = static_cast<const MouseMessage*>(msg);
+      const Point mousePos = mouseMsg->positionForDisplay(display());
       ToolBox* toolbox = App::instance()->toolBox();
       int groups = toolbox->getGroupsCount();
       Tool* new_hot_tool = NULL;
@@ -175,8 +176,8 @@ bool ToolBar::onProcessMessage(Message* msg)
         Tool* tool = m_selectedInGroup[tool_group];
 
         toolrc = getToolGroupBounds(c);
-        if (mouseMsg->position().y >= toolrc.y &&
-            mouseMsg->position().y < toolrc.y+toolrc.h) {
+        if (mousePos.y >= toolrc.y &&
+            mousePos.y < toolrc.y+toolrc.h) {
           new_hot_tool = tool;
           new_hot_index = c;
 
@@ -188,8 +189,8 @@ bool ToolBar::onProcessMessage(Message* msg)
       }
 
       toolrc = getToolGroupBounds(PreviewVisibilityIndex);
-      if (mouseMsg->position().y >= toolrc.y &&
-          mouseMsg->position().y < toolrc.y+toolrc.h) {
+      if (mousePos.y >= toolrc.y &&
+          mousePos.y < toolrc.y+toolrc.h) {
         new_hot_index = PreviewVisibilityIndex;
       }
 
@@ -220,7 +221,7 @@ bool ToolBar::onProcessMessage(Message* msg)
       // mouse over the ToolBar.
       if (hasCapture()) {
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
-        Widget* pick = manager()->pick(mouseMsg->position());
+        Widget* pick = manager()->pickFromScreenPos(mouseMsg->screenPosition());
         if (ToolStrip* strip = dynamic_cast<ToolStrip*>(pick)) {
           releaseMouse();
 
@@ -229,8 +230,9 @@ bool ToolBar::onProcessMessage(Message* msg)
             mouseMsg->pointerType(),
             mouseMsg->button(),
             mouseMsg->modifiers(),
-            mouseMsg->position());
+            mouseMsg->positionForDisplay(strip->display()));
           mouseMsg2->setRecipient(strip);
+          mouseMsg2->setDisplay(strip->display());
           manager()->enqueueMessage(mouseMsg2);
         }
       }
@@ -414,8 +416,7 @@ void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
   Rect rc = getToolGroupBounds(group_index);
   int w = 0;
 
-  for (ToolIterator it = toolbox->begin(); it != toolbox->end(); ++it) {
-    Tool* tool = *it;
+  for (Tool* tool : *toolbox) {
     if (tool->getGroup() == tool_group)
       w += bounds().w-border().width()-1;
   }
@@ -424,15 +425,15 @@ void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
   rc.w = w;
 
   // Set hotregion of popup window
-  Region rgn(gfx::Rect(rc).enlarge(16*guiscale()));
+  m_popupWindow->setAutoRemap(false);
+  ui::fit_bounds(display(), m_popupWindow, rc);
+  m_popupWindow->setBounds(rc);
+
+  Region rgn(m_popupWindow->boundsOnScreen().enlarge(16*guiscale()));
   rgn.createUnion(rgn, Region(boundsOnScreen()));
   m_popupWindow->setHotRegion(rgn);
-  m_popupWindow->setAutoRemap(false);
-  m_popupWindow->setBounds(rc);
-  toolstrip->setBounds(rc);
-  m_popupWindow->openWindow();
 
-  toolstrip->setBounds(rc);
+  m_popupWindow->openWindow();
 }
 
 void ToolBar::closePopupWindow()
@@ -616,15 +617,14 @@ bool ToolBar::ToolStrip::onProcessMessage(Message* msg)
       // fallthrough
 
     case kMouseMoveMessage: {
-      MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
-      gfx::Point mousePos = mouseMsg->position();
+      auto mouseMsg = static_cast<const MouseMessage*>(msg);
+      const Point mousePos = mouseMsg->positionForDisplay(display());
       ToolBox* toolbox = App::instance()->toolBox();
       Tool* hot_tool = NULL;
       Rect toolrc;
       int index = 0;
 
-      for (ToolIterator it = toolbox->begin(); it != toolbox->end(); ++it) {
-        Tool* tool = *it;
+      for (Tool* tool : *toolbox) {
         if (tool->getGroup() == m_group) {
           toolrc = getToolBounds(index++);
           if (toolrc.contains(Point(mousePos.x, mousePos.y))) {
@@ -653,7 +653,7 @@ bool ToolBar::ToolStrip::onProcessMessage(Message* msg)
         if (m_hotTool)
           m_toolbar->selectTool(m_hotTool);
 
-        Widget* pick = manager()->pick(mouseMsg->position());
+        Widget* pick = manager()->pickFromScreenPos(mouseMsg->screenPosition());
         if (ToolBar* bar = dynamic_cast<ToolBar*>(pick)) {
           releaseMouse();
 
@@ -662,8 +662,9 @@ bool ToolBar::ToolStrip::onProcessMessage(Message* msg)
             mouseMsg->pointerType(),
             mouseMsg->button(),
             mouseMsg->modifiers(),
-            mouseMsg->position());
+            mouseMsg->positionForDisplay(pick->display()));
           mouseMsg2->setRecipient(bar);
+          mouseMsg2->setDisplay(pick->display());
           manager()->enqueueMessage(mouseMsg2);
         }
       }
@@ -706,8 +707,7 @@ void ToolBar::ToolStrip::onPaint(PaintEvent& ev)
   Rect toolrc;
   int index = 0;
 
-  for (ToolIterator it = toolbox->begin(); it != toolbox->end(); ++it) {
-    Tool* tool = *it;
+  for (Tool* tool : *toolbox) {
     if (tool->getGroup() == m_group) {
       SkinPartPtr nw;
 

@@ -121,7 +121,7 @@ bool Slider::onProcessMessage(Message* msg)
       if (hasCapture()) {
         int value, accuracy, range;
         gfx::Rect rc = childrenBounds();
-        gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
+        gfx::Point mousePos = static_cast<MouseMessage*>(msg)->positionForDisplay(display());
 
         range = m_max - m_min + 1;
 

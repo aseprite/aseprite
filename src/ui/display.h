@@ -30,7 +30,7 @@ namespace ui {
             Widget* containedWidget);
 
     Display* parentDisplay() { return m_parentDisplay; }
-    os::Window* nativeWindow() { return m_nativeWindow.get(); }
+    os::Window* nativeWindow() const { return m_nativeWindow.get(); }
     os::Surface* surface() const;
 
     int scale() const { return m_nativeWindow->scale(); }

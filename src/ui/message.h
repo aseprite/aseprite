@@ -148,6 +148,13 @@ namespace ui {
 
     const gfx::Point& position() const { return m_pos; }
 
+    // Returns the mouse message position relative to the given
+    // "anotherDisplay" (the m_pos field is relative to m_display).
+    gfx::Point positionForDisplay(Display* anotherDisplay) const;
+
+    // Absolute position of this message on the screen.
+    gfx::Point screenPosition() const;
+
   private:
     PointerType m_pointerType;
     MouseButton m_button;       // Pressed button

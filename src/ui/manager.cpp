@@ -1336,6 +1336,7 @@ void Manager::_openWindow(Window* window, bool center)
       spec.maximizable(spec.resizable());
       spec.minimizable(window->isDesktop());
       spec.borderless(!window->isDesktop());
+      spec.transparent(window->isTransparent());
 
       if (!window->isDesktop()) {
         spec.parent(parentDisplay->nativeWindow());

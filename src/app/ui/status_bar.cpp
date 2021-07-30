@@ -815,15 +815,16 @@ void StatusBar::showTip(int msecs, const std::string& msg)
   m_tipwindow->setInterval(msecs);
 
   if (m_tipwindow->isVisible())
-    m_tipwindow->closeWindow(NULL);
+    m_tipwindow->closeWindow(nullptr);
 
-  m_tipwindow->openWindow();
   m_tipwindow->remapWindow();
 
-  int x = bounds().x2() - m_tipwindow->bounds().w;
-  int y = bounds().y - m_tipwindow->bounds().h;
-  m_tipwindow->positionWindow(x, y);
+  gfx::Rect rc = m_tipwindow->bounds();
+  rc.x = bounds().x2() - rc.w;
+  rc.y = bounds().y - rc.h;
+  ui::fit_bounds(display(), m_tipwindow, rc);
 
+  m_tipwindow->openWindow();
   m_tipwindow->startTimer();
 
   // Set the text in status-bar (with inmediate timeout)
@@ -988,9 +989,11 @@ void StatusBar::updateSnapToGridWindowPosition()
 
   Rect rc = bounds();
   int toolBarWidth = ToolBar::instance()->sizeHint().w;
-  m_snapToGridWindow->positionWindow(
-    rc.x+rc.w-toolBarWidth-m_snapToGridWindow->bounds().w,
-    rc.y-m_snapToGridWindow->bounds().h);
+
+  gfx::Rect snapRc = m_snapToGridWindow->bounds();
+  snapRc.x = rc.x+rc.w-toolBarWidth-snapRc.w;
+  snapRc.y = rc.y-snapRc.h;
+  m_snapToGridWindow->setBounds(snapRc);
 }
 
 void StatusBar::showAbout()

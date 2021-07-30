@@ -352,19 +352,6 @@ void Window::centerWindow(Display* parentDisplay)
                        windowSize.w, windowSize.h));
 }
 
-void Window::positionWindow(int x, int y)
-{
-  // TODO don't use in ownDisplay() windows
-  ASSERT(!ownDisplay());
-
-  if (m_isAutoRemap)
-    remapWindow();
-
-  setBounds(Rect(x, y, bounds().w, bounds().h));
-
-  invalidate();
-}
-
 void Window::moveWindow(const gfx::Rect& rect)
 {
   moveWindow(rect, true);

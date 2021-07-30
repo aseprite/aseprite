@@ -100,8 +100,9 @@ bool IntEntry::onProcessMessage(Message* msg)
                                  mouseMsg->pointerType(),
                                  mouseMsg->button(),
                                  mouseMsg->modifiers(),
-                                 mouseMsg->position());
-          m_slider.sendMessage(&mouseMsg2);
+                                 mouseMsg->positionForDisplay(pick->display()));
+          mouseMsg2.setDisplay(pick->display());
+          pick->sendMessage(&mouseMsg2);
         }
       }
       break;

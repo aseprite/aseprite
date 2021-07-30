@@ -103,7 +103,7 @@ int fit_bounds(Display* display, int arrowAlign, const gfx::Rect& target, gfx::R
   return arrowAlign;
 }
 
-void fit_bounds(Display* parentDisplay,
+void fit_bounds(const Display* parentDisplay,
                 Window* window,
                 const gfx::Rect& candidateBoundsRelativeToParentDisplay,
                 std::function<void(const gfx::Rect& workarea,
@@ -113,7 +113,7 @@ void fit_bounds(Display* parentDisplay,
   gfx::Point pos = candidateBoundsRelativeToParentDisplay.origin();
 
   if (get_multiple_displays() && window->shouldCreateNativeWindow()) {
-    const os::Window* nativeWindow = parentDisplay->nativeWindow();
+    const os::Window* nativeWindow = const_cast<ui::Display*>(parentDisplay)->nativeWindow();
     // Limit to the current screen workarea (instead of using all the
     // available workarea between all monitors, get_workarea_region())
     const gfx::Rect workarea = nativeWindow->screen()->workarea();

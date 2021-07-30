@@ -43,7 +43,6 @@ namespace ui {
 
     void remapWindow();
     void centerWindow(Display* parentDisplay = nullptr);
-    void positionWindow(int x, int y);
     void moveWindow(const gfx::Rect& rect);
 
     // Expands or shrink the window to the given side (generally sizeHint())
@@ -62,8 +61,7 @@ namespace ui {
     bool isMoveable() const { return m_isMoveable; }
 
     bool shouldCreateNativeWindow() const {
-      return (!isDesktop() &&
-              !isTransparent());
+      return !isDesktop();
     }
 
     HitTest hitTest(const gfx::Point& point);

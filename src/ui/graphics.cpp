@@ -193,6 +193,16 @@ void Graphics::drawPath(gfx::Path& path, const Paint& paint)
   restore();
 }
 
+void Graphics::drawRect(const gfx::Rect& rcOrig, const Paint& paint)
+{
+  gfx::Rect rc(rcOrig);
+  rc.offset(m_dx, m_dy);
+  dirty(rc);
+
+  os::SurfaceLock lock(m_surface.get());
+  m_surface->drawRect(rc, paint);
+}
+
 void Graphics::drawRect(gfx::Color color, const gfx::Rect& rcOrig)
 {
   gfx::Rect rc(rcOrig);

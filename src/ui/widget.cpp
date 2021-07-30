@@ -1094,21 +1094,29 @@ bool Widget::paintEvent(Graphics* graphics,
 #if _DEBUG
     // In debug mode we can fill the area with Red so we know if the
     // we are drawing the parent correctly.
-    graphics->fillRect(gfx::rgba(255, 0, 0), clientBounds());
+    if (window() && !window()->ownDisplay())
+      graphics->fillRect(gfx::rgba(255, 0, 0), clientBounds());
 #endif
 
     enableFlags(HIDDEN);
 
-    Widget* parentWidget;
+    Widget* parentWidget = nullptr;
     if (type() == kWindowWidget) {
       parentWidget = display()->containedWidget();
 
-      // Draw the desktop window as the background, not the manager
-      // (as the manager contains all windows as children and will try
-      // to draw other foreground windows here).
-      if (get_multiple_displays() &&
-          parentWidget->type() == kManagerWidget) {
-        parentWidget = static_cast<Manager*>(parentWidget)->getDesktopWindow();
+      if (get_multiple_displays()) {
+        // Draw the desktop window as the background, not the manager
+        // (as the manager contains all windows as children and will
+        // try to draw other foreground windows here).
+        if (parentWidget->type() == kManagerWidget) {
+          parentWidget = static_cast<Manager*>(parentWidget)->getDesktopWindow();
+        }
+        // If this ui::Window has it's own native window (os::Window),
+        // we'll fill a transparent rectangle because we already have
+        // a transparent native window.
+        else if (static_cast<Window*>(this)->ownDisplay()) {
+          parentWidget = nullptr;
+        }
       }
     }
     else {
@@ -1123,12 +1131,11 @@ bool Widget::paintEvent(Graphics* graphics,
       parentWidget->paint(graphics, rgn, true);
     }
     else {
-      // TODO clear surface with transparent color, the following
-      //      line doesn't work because we have to specify the
-      //      SkBlendMode::kSrc mode instead of
-      //      SkBlendMode::kSrcOver
-
-      //graphics->fillRect(gfx::rgba(0, 0, 0, 0), clientBounds());
+      // Clear surface with transparent color
+      os::Paint p;
+      p.color(gfx::rgba(0, 0, 0, 0));
+      p.blendMode(os::BlendMode::Src);
+      graphics->drawRect(clientBounds(), p);
     }
 
     disableFlags(HIDDEN);
@@ -1393,9 +1400,7 @@ bool Widget::offerCapture(ui::MouseMessage* mouseMsg, int widget_type)
         mouseMsg->pointerType(),
         mouseMsg->button(),
         mouseMsg->modifiers(),
-        (mouseMsg->display() == pick->display() ?
-         mouseMsg->position():
-         pick->display()->nativeWindow()->pointFromScreen(screenPos)));
+        mouseMsg->positionForDisplay(pick->display()));
       mouseMsg2->setDisplay(pick->display());
       mouseMsg2->setRecipient(pick);
       man->enqueueMessage(mouseMsg2);
@@ -1490,7 +1495,7 @@ bool Widget::onProcessMessage(Message* msg)
                              mouseMsg->modifiers(),
                              mouseMsg->position(),
                              mouseMsg->wheelDelta());
-
+      mouseMsg2.setDisplay(mouseMsg->display());
       sendMessage(&mouseMsg2);
       break;
     }

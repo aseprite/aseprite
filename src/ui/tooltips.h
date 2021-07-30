@@ -76,6 +76,8 @@ namespace ui {
                  const gfx::Rect& target,
                  const ui::Display* display);
 
+    void adjustTargetFrom(const ui::Display* targetDisplay);
+
     TextBox* textBox() const { return m_textBox; }
 
   protected:

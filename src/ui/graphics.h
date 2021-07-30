@@ -81,6 +81,7 @@ namespace ui {
     void drawLine(gfx::Color color, const gfx::Point& a, const gfx::Point& b);
     void drawPath(gfx::Path& path, const Paint& paint);
 
+    void drawRect(const gfx::Rect& rc, const Paint& paint);
     void drawRect(gfx::Color color, const gfx::Rect& rc);
     void fillRect(gfx::Color color, const gfx::Rect& rc);
     void fillRegion(gfx::Color color, const gfx::Region& rgn);

@@ -475,9 +475,8 @@ bool DynamicsPopup::onProcessMessage(Message* msg)
       if (!msg->display())
         break;
 
-      os::Window* nativeWindow = msg->display()->nativeWindow();
-      auto mouseMsg = static_cast<MouseMessage*>(msg);
-      auto screenPos = nativeWindow->pointToScreen(mouseMsg->position());
+      auto mouseMsg = static_cast<const MouseMessage*>(msg);
+      auto screenPos = mouseMsg->screenPosition();
       auto picked = manager()->pickFromScreenPos(screenPos);
       if ((picked == nullptr) ||
           (picked->window() != this &&

@@ -13,6 +13,7 @@
 
 #include "base/clamp.h"
 #include "gfx/size.h"
+#include "ui/fit_bounds.h"
 #include "ui/graphics.h"
 #include "ui/intern.h"
 #include "ui/manager.h"
@@ -122,12 +123,13 @@ void TooltipManager::onTick()
     if (!arrowAlign)
       target.setOrigin(m_target.widget->mousePosInDisplay()+12*guiscale());
 
+    ui::Display* targetDisplay = m_target.widget->display();
+
     if (m_tipWindow->pointAt(arrowAlign,
                              target,
-                             m_target.widget->display())) {
-      // TODO create a native transparent window for the tooltip
-      m_tipWindow->setDisplay(m_target.widget->display(), false);
+                             targetDisplay)) {
       m_tipWindow->openWindow();
+      m_tipWindow->adjustTargetFrom(targetDisplay);
     }
     else {
       // No enough room for the tooltip
@@ -181,6 +183,8 @@ bool TipWindow::pointAt(int arrowAlign,
   int w = bounds().w;
   int h = bounds().h;
 
+  os::Window* nativeParentWindow = display->nativeWindow();
+
   int trycount = 0;
   for (; trycount < 4; ++trycount) {
     switch (arrowAlign) {
@@ -218,9 +222,20 @@ bool TipWindow::pointAt(int arrowAlign,
         break;
     }
 
-    auto displayBounds = display->bounds();
-    x = base::clamp(x, displayBounds.x, displayBounds.x2()-w);
-    y = base::clamp(y, displayBounds.y, displayBounds.y2()-h);
+    if (get_multiple_displays()) {
+      const gfx::Rect waBounds = nativeParentWindow->screen()->workarea();
+      gfx::Point pt = nativeParentWindow->pointToScreen(gfx::Point(x, y));
+      pt.x = base::clamp(pt.x, waBounds.x, waBounds.x2()-w);
+      pt.y = base::clamp(pt.y, waBounds.y, waBounds.y2()-h);
+      pt = nativeParentWindow->pointFromScreen(pt);
+      x = pt.x;
+      y = pt.y;
+    }
+    else {
+      const gfx::Rect displayBounds = display->bounds();
+      x = base::clamp(x, displayBounds.x, displayBounds.x2()-w);
+      y = base::clamp(y, displayBounds.y, displayBounds.y2()-h);
+    }
 
     if (m_target.intersects(gfx::Rect(x, y, w, h))) {
       switch (trycount) {
@@ -239,12 +254,26 @@ bool TipWindow::pointAt(int arrowAlign,
     }
     else {
       m_arrowAlign = arrowAlign;
-      positionWindow(x, y);
+      ui::fit_bounds(display, this, gfx::Rect(x, y, w, h));
       break;
     }
   }
 
   return (trycount < 4);
+}
+
+void TipWindow::adjustTargetFrom(const ui::Display* targetDisplay)
+{
+  // Convert the target relative to this window coordinates
+  if (get_multiple_displays()) {
+    gfx::Point pt = m_target.origin();
+    pt = targetDisplay->nativeWindow()->pointToScreen(pt);
+    pt = display()->nativeWindow()->pointFromScreen(pt);
+    m_target.setOrigin(pt);
+  }
+  else {
+    m_target.offset(-bounds().origin());
+  }
 }
 
 bool TipWindow::onProcessMessage(Message* msg)
@@ -267,7 +296,7 @@ void TipWindow::onPaint(PaintEvent& ev)
   theme()->paintTooltip(
     ev.graphics(), this, style(), arrowStyle(),
     clientBounds(), arrowAlign(),
-    gfx::Rect(target()).offset(-bounds().origin()));
+    target());
 }
 
 void TipWindow::onBuildTitleLabel()

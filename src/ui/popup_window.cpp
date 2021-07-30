@@ -135,8 +135,8 @@ bool PopupWindow::onProcessMessage(Message* msg)
 
     case kMouseDownMessage:
       if (m_filtering && msg->display()) {
-        gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
-        gfx::Point screenPos = msg->display()->nativeWindow()->pointToScreen(mousePos);
+        auto mouseMsg = static_cast<const MouseMessage*>(msg);
+        gfx::Point screenPos = mouseMsg->screenPosition();
 
         switch (m_clickBehavior) {
 

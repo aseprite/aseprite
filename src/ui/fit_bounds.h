@@ -30,7 +30,7 @@ namespace ui {
   // in the "fitLogic" (the bounds will be relative to the screen or
   // to the display depending if get_multiple_displays() is true or
   // false).
-  void fit_bounds(Display* parentDisplay,
+  void fit_bounds(const Display* parentDisplay,
                   Window* window,
                   const gfx::Rect& candidateBoundsRelativeToParentDisplay,
                   std::function<void(const gfx::Rect& workarea,

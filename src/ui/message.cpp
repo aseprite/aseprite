@@ -13,6 +13,7 @@
 
 #include "base/memory.h"
 #include "os/system.h"
+#include "ui/display.h"
 #include "ui/widget.h"
 
 #include <cstring>
@@ -65,6 +66,23 @@ KeyMessage::KeyMessage(MessageType type,
   , m_isDead(false)
 {
   setPropagateToParent(true);
+}
+
+gfx::Point MouseMessage::positionForDisplay(Display* anotherDisplay) const
+{
+  if (display() == anotherDisplay) {
+    return position();          // There is no need for transformation
+  }
+  else {
+    ASSERT(anotherDisplay);
+    ASSERT(anotherDisplay->nativeWindow());
+    return anotherDisplay->nativeWindow()->pointFromScreen(screenPosition());
+  }
+}
+
+gfx::Point MouseMessage::screenPosition() const
+{
+  return display()->nativeWindow()->pointToScreen(position());
 }
 
 } // namespace ui
