@@ -39,10 +39,6 @@ using namespace gfx;
 
 namespace {
 
-// TODO hard-coded values, use pref.xml values
-gfx::Color gridColor1 = gfx::rgba(128, 128, 128);
-gfx::Color gridColor2 = gfx::rgba(192, 192, 192);
-
 void draw_checked_grid(ui::Graphics* g,
                        const gfx::Rect& rc,
                        const gfx::Size& tile,
@@ -82,7 +78,8 @@ void draw_checked_grid(ui::Graphics* g,
                        const gfx::Size& tile)
 {
   draw_checked_grid(g, rc, tile,
-                    gridColor1, gridColor2);
+                    color_utils::color_for_ui(current_editor->docPref().bg.color1()),
+                    color_utils::color_for_ui(current_editor->docPref().bg.color2()));
 }
 
 void draw_checked_grid(ui::Graphics* g,
@@ -194,8 +191,8 @@ void draw_alpha_slider(ui::Graphics* g,
 
   for (int x=0; x<rc.w; ++x) {
     const int a = (255 * x / xmax);
-    const doc::color_t c1 = doc::rgba_blender_normal(gridColor1, c, a);
-    const doc::color_t c2 = doc::rgba_blender_normal(gridColor2, c, a);
+    const doc::color_t c1 = doc::rgba_blender_normal(color_utils::color_for_ui(current_editor->docPref().bg.color1()), c, a);
+    const doc::color_t c2 = doc::rgba_blender_normal(color_utils::color_for_ui(current_editor->docPref().bg.color2()), c, a);
     const int mid = rc.h/2;
     const int odd = (x / rc.h) & 1;
     g->drawVLine(
@@ -222,8 +219,8 @@ void draw_alpha_slider(os::Surface* s,
   os::Paint paint;
   for (int x=0; x<rc.w; ++x) {
     const int a = (255 * x / xmax);
-    const doc::color_t c1 = doc::rgba_blender_normal(gridColor1, c, a);
-    const doc::color_t c2 = doc::rgba_blender_normal(gridColor2, c, a);
+    const doc::color_t c1 = doc::rgba_blender_normal(color_utils::color_for_ui(current_editor->docPref().bg.color1()), c, a);
+    const doc::color_t c2 = doc::rgba_blender_normal(color_utils::color_for_ui(current_editor->docPref().bg.color2()), c, a);
     const int mid = rc.h/2;
     const int odd = (x / rc.h) & 1;
 
