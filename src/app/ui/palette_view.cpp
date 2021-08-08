@@ -333,6 +333,11 @@ bool PaletteView::onProcessMessage(Message* msg)
           break;
       }
 
+      if(m_hot.color >= currentPalette()->size()){
+        deselect();
+        break;
+      }
+
       captureMouse();
 
       // Continue...
