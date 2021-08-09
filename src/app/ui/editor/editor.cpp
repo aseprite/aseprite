@@ -956,6 +956,13 @@ void Editor::drawMask(Graphics* g)
   segs.path().transform(m_proj.scaleMatrix(), &path);
   path.offset(pt.x, pt.y);
   g->drawPath(path, paint);
+
+  // Double the size on 100% screen scale
+  if(manager()->display()->scale() == 1)
+  {
+    path.offset(1, 1);
+    g->drawPath(path, paint);
+  }
 }
 
 void Editor::drawMaskSafe()
