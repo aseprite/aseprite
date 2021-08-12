@@ -37,7 +37,8 @@ namespace ui {
     ~Manager();
 
     Display* display() const { return &const_cast<Manager*>(this)->m_display; }
-    Display* getDisplayFromNativeWindow(os::Window* window) const;
+
+    static Display* getDisplayFromNativeWindow(os::Window* window);
 
     // Executes the main message loop.
     void run();

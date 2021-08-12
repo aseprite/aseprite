@@ -212,7 +212,7 @@ int init_module_gui()
   // messages, and flip the window.
   os::instance()->handleWindowResize =
     [](os::Window* window) {
-      Display* display = manager->getDisplayFromNativeWindow(window);
+      Display* display = Manager::getDisplayFromNativeWindow(window);
       if (!display)
         display = manager->display();
       ASSERT(display);

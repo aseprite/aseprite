@@ -161,6 +161,29 @@ public:
   }
 };
 
+os::Hit handle_native_hittest(os::Window* osWindow,
+                              const gfx::Point& pos)
+{
+  Display* display = Manager::getDisplayFromNativeWindow(osWindow);
+  if (display) {
+    auto window = static_cast<Window*>(display->containedWidget());
+    switch (window->hitTest(pos)) {
+      case HitTestNowhere:  return os::Hit::Content;
+      case HitTestCaption:  return os::Hit::TitleBar;
+      case HitTestClient:   return os::Hit::Content;
+      case HitTestBorderNW: return os::Hit::TopLeft;
+      case HitTestBorderN:  return os::Hit::Top;
+      case HitTestBorderNE: return os::Hit::TopRight;
+      case HitTestBorderE:  return os::Hit::Right;
+      case HitTestBorderSE: return os::Hit::BottomRight;
+      case HitTestBorderS:  return os::Hit::Bottom;
+      case HitTestBorderSW: return os::Hit::BottomLeft;
+      case HitTestBorderW:  return os::Hit::Left;
+    }
+  }
+  return os::Hit::None;
+}
+
 } // anonymous namespace
 
 // static
@@ -245,7 +268,8 @@ Manager::~Manager()
   }
 }
 
-Display* Manager::getDisplayFromNativeWindow(os::Window* window) const
+// static
+Display* Manager::getDisplayFromNativeWindow(os::Window* window)
 {
   if (window)
     return window->userData<Display>();
@@ -1359,6 +1383,10 @@ void Manager::_openWindow(Window* window, bool center)
 
       // Move all widgets to the os::Display origin (0,0)
       window->offsetWidgets(-window->origin().x, -window->origin().y);
+
+      // Handle native hit testing. Required to be able to move/resize
+      // a window with a non-mouse pointer (e.g. stylus) on Windows.
+      newNativeWindow->handleHitTest = handle_native_hittest;
     }
     else {
       // Same display for desktop window or when multiple displays is
