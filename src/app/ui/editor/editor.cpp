@@ -1381,6 +1381,17 @@ gfx::Point Editor::screenToEditor(const gfx::Point& pt)
     m_proj.removeY(pt.y - vp.y + scroll.y - m_padding.y));
 }
 
+gfx::Point Editor::screenToEditorCeiling(const gfx::Point& pt)
+{
+  View* view = View::getView(this);
+  Rect vp = view->viewportBounds();
+  Point scroll = view->viewScroll();
+  return gfx::Point(
+    m_proj.removeXCeiling(pt.x - vp.x + scroll.x - m_padding.x),
+    m_proj.removeYCeiling(pt.y - vp.y + scroll.y - m_padding.y));
+}
+
+
 gfx::PointF Editor::screenToEditorF(const gfx::Point& pt)
 {
   View* view = View::getView(this);
@@ -1415,7 +1426,7 @@ Rect Editor::screenToEditor(const Rect& rc)
 {
   return gfx::Rect(
     screenToEditor(rc.origin()),
-    screenToEditor(rc.point2()));
+    screenToEditorCeiling(rc.point2()));
 }
 
 Rect Editor::editorToScreen(const Rect& rc)
