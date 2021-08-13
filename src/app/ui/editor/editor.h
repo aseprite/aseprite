@@ -179,6 +179,7 @@ namespace app {
     //
     // TODO we should rename these functions to displayToEditor() and editorToDisplay()
     gfx::Point screenToEditor(const gfx::Point& pt);
+    gfx::Point screenToEditorCeiling(const gfx::Point& pt);
     gfx::PointF screenToEditorF(const gfx::Point& pt);
     gfx::Point editorToScreen(const gfx::Point& pt);
     gfx::PointF editorToScreenF(const gfx::PointF& pt);
