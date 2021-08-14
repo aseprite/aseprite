@@ -691,18 +691,18 @@ void BrushPreview::traceSelectionCrossPixels(
   if (size2.w == 0) size2.w = 1;
   if (size2.h == 0) size2.h = 1;
 
-  const int scaleFactor = (m_editor->manager()->display()->scale() == 1)?2:1;
+  const int scale = ui::guiscale();
 
   for (int v=0; v<6; v++) {
     for (int u=0; u<6; u++) {
       if (!cross[v*6+u])
         continue;
 
-      for(int x=0; x<scaleFactor; x++){
-        for(int y=0; y<scaleFactor; y++){
+      for(int x=0; x < scale; x++){
+        for(int y=0; y < scale; y++){
           out = outpt;
-          out.x += ((u<3) ? u*scaleFactor-size.w+x-3*scaleFactor: u*scaleFactor-size.w-3*scaleFactor-x+size2.w);
-          out.y += ((v<3) ? v*scaleFactor-size.h+y-3*scaleFactor: v*scaleFactor-size.h-3*scaleFactor-y+size2.h);
+          out.x += ((u<3) ? (u*scale - size.w+x - 3*scale) : (u*scale - size.w - 3*scale - x+size2.w));
+          out.y += ((v<3) ? (v*scale - size.h+y - 3*scale) : (v*scale - size.h - 3*scale - y+size2.h));
 
           (this->*pixelDelegate)(g, out, color);
         }
