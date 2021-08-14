@@ -128,6 +128,7 @@
       <key command="Refresh" shortcut="F5" />
       <key command="TogglePreview" shortcut="F7" />
       <key command="FullscreenPreview" shortcut="F8" />
+      <key command="FullscreenMode" shortcut="F11" mac="Cmd+Ctrl+F" />
       <key command="ShowGrid" shortcut="Ctrl+'" mac="Cmd+'" />
       <key command="ShowPixelGrid" shortcut="Ctrl+Shift+'" mac="Cmd+Shift+'" />
       <key command="SnapToGrid" shortcut="Shift+S" />
@@ -929,7 +930,8 @@
           <param name="switch" value="true" />
         </item>
         <item command="TogglePreview" text="@.view_preview" />
-        <item command="AdvancedMode" text="@.view_full_screen_mode" />
+        <item command="AdvancedMode" text="@.view_advanced_mode" />
+        <item command="FullscreenMode" text="@.view_full_screen_mode" />
         <item command="FullscreenPreview" text="@.view_full_screen_preview" />
         <item command="Home" text="@.view_home" group="view_controls" />
         <separator />

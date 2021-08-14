@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -75,6 +75,7 @@
 
 #include <cstring>
 #include <limits>
+#include <memory>
 
 namespace app {
 
@@ -553,6 +554,12 @@ void ColorBar::onRemapButtonClick()
         }
 
         if (remap.isInvertible(usedEntries)) {
+          for (int i=0; i<remap.size(); ++i) {
+            if (i >= usedEntries.size() || !usedEntries[i]) {
+              remap.unused(i);
+            }
+          }
+
           tx(new cmd::RemapColors(sprite, remap));
           remapPixels = false;
         }
@@ -1163,7 +1170,8 @@ void ColorBar::updateCurrentSpritePalette(const char* operationName)
 
       if (from >= 0 && to >= from) {
         DocUndo* undo = document->undoHistory();
-        Cmd* cmd = new cmd::SetPalette(sprite, frame, newPalette);
+        std::unique_ptr<cmd::SetPalette> cmd(
+          new cmd::SetPalette(sprite, frame, newPalette));
 
         // Add undo information to save the range of pal entries that will be modified.
         if (m_implantChange &&
@@ -1172,12 +1180,17 @@ void ColorBar::updateCurrentSpritePalette(const char* operationName)
           // Implant the cmd in the last CmdSequence if it's
           // related about color palette modifications
           ASSERT(dynamic_cast<CmdSequence*>(undo->lastExecutedCmd()));
-          static_cast<CmdSequence*>(undo->lastExecutedCmd())->add(cmd);
-          cmd->execute(UIContext::instance());
+          static_cast<CmdSequence*>(undo->lastExecutedCmd())->add(cmd.get());
+          // Release the unique pointer because it's already in the
+          // last executed command CmdSequence::m_cmds container, and
+          // execute it.
+          cmd.release()->execute(UIContext::instance());
         }
         else {
           Tx tx(writer.context(), operationName, ModifyDocument);
-          tx(cmd);
+          // If tx() fails it will delete the cmd anyway, so we can
+          // release the unique pointer here.
+          tx(cmd.release());
           tx.commit();
         }
       }

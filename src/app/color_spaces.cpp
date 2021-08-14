@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -14,8 +14,8 @@
 #include "app/modules/editors.h"
 #include "app/pref/preferences.h"
 #include "app/ui/editor/editor.h"
-#include "os/display.h"
 #include "os/system.h"
+#include "os/window.h"
 
 namespace app {
 
@@ -33,12 +33,12 @@ void initialize_color_spaces(Preferences& pref)
     });
 }
 
-os::ColorSpacePtr get_screen_color_space()
+os::ColorSpaceRef get_screen_color_space()
 {
-  return os::instance()->defaultDisplay()->colorSpace();
+  return os::instance()->defaultWindow()->colorSpace();
 }
 
-os::ColorSpacePtr get_current_color_space()
+os::ColorSpaceRef get_current_color_space()
 {
 #ifdef ENABLE_UI
   if (current_editor)
@@ -48,14 +48,14 @@ os::ColorSpacePtr get_current_color_space()
     return get_screen_color_space();
 }
 
-gfx::ColorSpacePtr get_working_rgb_space_from_preferences()
+gfx::ColorSpaceRef get_working_rgb_space_from_preferences()
 {
   if (Preferences::instance().color.manage()) {
     const std::string name = Preferences::instance().color.workingRgbSpace();
     if (name == "sRGB")
       return gfx::ColorSpace::MakeSRGB();
 
-    std::vector<os::ColorSpacePtr> colorSpaces;
+    std::vector<os::ColorSpaceRef> colorSpaces;
     os::instance()->listColorSpaces(colorSpaces);
     for (auto& cs : colorSpaces) {
       if (cs->gfxColorSpace()->name() == name)
@@ -78,8 +78,8 @@ ConvertCS::ConvertCS()
   }
 }
 
-ConvertCS::ConvertCS(const os::ColorSpacePtr& srcCS,
-                     const os::ColorSpacePtr& dstCS)
+ConvertCS::ConvertCS(const os::ColorSpaceRef& srcCS,
+                     const os::ColorSpaceRef& dstCS)
 {
   if (g_manage) {
     m_conversion = os::instance()->convertBetweenColorSpace(srcCS, dstCS);
@@ -108,10 +108,10 @@ ConvertCS convert_from_current_to_screen_color_space()
   return ConvertCS();
 }
 
-ConvertCS convert_from_custom_to_srgb(const os::ColorSpacePtr& from)
+ConvertCS convert_from_custom_to_srgb(const os::ColorSpaceRef& from)
 {
   return ConvertCS(from,
-                   os::instance()->createColorSpace(gfx::ColorSpace::MakeSRGB()));
+                   os::instance()->makeColorSpace(gfx::ColorSpace::MakeSRGB()));
 }
 
 } // namespace app

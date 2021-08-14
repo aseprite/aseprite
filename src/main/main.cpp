@@ -19,7 +19,6 @@
 #include "base/memory_dump.h"
 #include "base/system_console.h"
 #include "os/error.h"
-#include "os/scoped_handle.h"
 #include "os/system.h"
 
 #include <clocale>
@@ -27,7 +26,7 @@
 #include <ctime>
 #include <iostream>
 
-#ifdef _WIN32
+#if LAF_WINDOWS
   #include <windows.h>
 #endif
 
@@ -44,7 +43,7 @@ namespace {
 #endif
   };
 
-#ifdef _WIN32
+#if LAF_WINDOWS
   // Successful calls to CoInitialize() (S_OK or S_FALSE) must match
   // the calls to CoUninitialize().
   // From: https://docs.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-couninitialize#remarks
@@ -74,7 +73,7 @@ int app_main(int argc, char* argv[])
   // Initialize the random seed.
   std::srand(static_cast<unsigned int>(std::time(nullptr)));
 
-#ifdef _WIN32
+#if LAF_WINDOWS
   CoInit com;                   // To create COM objects
 #endif
 
@@ -83,7 +82,7 @@ int app_main(int argc, char* argv[])
     MemLeak memleak;
     base::SystemConsole systemConsole;
     app::AppOptions options(argc, const_cast<const char**>(argv));
-    os::ScopedHandle<os::System> system(os::create_system());
+    os::SystemRef system(os::make_system());
     app::App app;
 
     // Change the memory dump filename to save on disk (.dmp

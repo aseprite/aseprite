@@ -344,7 +344,7 @@ private:
 
     // Read color space
     if (!s.eof()) {
-      gfx::ColorSpacePtr colorSpace = readColorSpace(s);
+      gfx::ColorSpaceRef colorSpace = readColorSpace(s);
       if (colorSpace)
         spr->setColorSpace(colorSpace);
     }
@@ -359,7 +359,7 @@ private:
     return spr.release();
   }
 
-  gfx::ColorSpacePtr readColorSpace(std::ifstream& s) {
+  gfx::ColorSpaceRef readColorSpace(std::ifstream& s) {
     const gfx::ColorSpace::Type type = (gfx::ColorSpace::Type)read16(s);
     const gfx::ColorSpace::Flag flags = (gfx::ColorSpace::Flag)read16(s);
     const double gamma = fixmath::fixtof(read32(s));
@@ -375,7 +375,7 @@ private:
       s.read((char*)&buf[0], n);
     std::string name = read_string(s);
 
-    auto colorSpace = std::make_shared<gfx::ColorSpace>(
+    auto colorSpace = base::make_ref<gfx::ColorSpace>(
       type, flags, gamma, std::move(buf));
     colorSpace->setName(name);
     return colorSpace;

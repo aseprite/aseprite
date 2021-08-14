@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -68,7 +69,7 @@ namespace app {
 
     gfx::Rect m_wheelBounds;
     gfx::Color m_bgColor;
-    int m_wheelRadius;
+    double m_wheelRadius;
     bool m_discrete;
     ColorModel m_colorModel;
     Harmony m_harmony;

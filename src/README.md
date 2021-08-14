@@ -73,7 +73,17 @@ In Debug mode (`_DEBUG`):
 
 # Detect Platform
 
-You can check the platform using the following checks:
+You can check the platform using some `laf` macros:
+
+    #if LAF_WINDOWS
+      // ...
+    #elif LAF_MACOS
+      // ...
+    #elif LAF_LINUX
+      // ...
+    #endif
+
+Or using platform-specific macros:
 
     #ifdef _WIN32
       #ifdef _WIN64

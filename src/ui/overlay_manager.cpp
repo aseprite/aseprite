@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -11,8 +11,8 @@
 
 #include "ui/overlay_manager.h"
 
-#include "os/display.h"
 #include "os/surface.h"
+#include "os/window.h"
 #include "ui/manager.h"
 #include "ui/overlay.h"
 
@@ -20,8 +20,8 @@
 
 namespace ui {
 
-static bool less_than(Overlay* x, Overlay* y) {
-  return *x < *y;
+static bool zorder_less_than(const OverlayRef& a, const OverlayRef& b) {
+  return *a < *b;
 }
 
 OverlayManager* OverlayManager::m_singleton = nullptr;
@@ -46,13 +46,13 @@ OverlayManager::~OverlayManager()
 {
 }
 
-void OverlayManager::addOverlay(Overlay* overlay)
+void OverlayManager::addOverlay(const OverlayRef& overlay)
 {
-  iterator it = std::lower_bound(begin(), end(), overlay, less_than);
+  iterator it = std::lower_bound(begin(), end(), overlay, zorder_less_than);
   m_overlays.insert(it, overlay);
 }
 
-void OverlayManager::removeOverlay(Overlay* overlay)
+void OverlayManager::removeOverlay(const OverlayRef& overlay)
 {
   if (overlay)
     overlay->restoreOverlappedArea(gfx::Rect());
@@ -73,7 +73,7 @@ void OverlayManager::restoreOverlappedAreas(const gfx::Rect& restoreBounds)
   if (!manager)
     return;
 
-  for (Overlay* overlay : *this)
+  for (auto& overlay : *this)
     overlay->restoreOverlappedArea(restoreBounds);
 }
 
@@ -86,13 +86,13 @@ void OverlayManager::drawOverlays()
   if (!manager)
     return;
 
-  os::Surface* displaySurface = manager->getDisplay()->getSurface();
+  os::Surface* displaySurface = manager->display()->surface();
   os::SurfaceLock lock(displaySurface);
 
-  for (Overlay* overlay : *this)
+  for (auto& overlay : *this)
     overlay->captureOverlappedArea(displaySurface);
 
-  for (Overlay* overlay : *this)
+  for (auto& overlay : *this)
     overlay->drawOverlay();
 }
 

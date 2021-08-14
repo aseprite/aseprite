@@ -325,7 +325,7 @@ public:
       gfx::Region viewportRegion;
       e->getDrawableRegion(viewportRegion, Widget::kCutTopWindows);
       for (auto rc : viewportRegion) {
-        gfx::Region subrgn(e->screenToEditor(rc).inflate(1, 1));
+        gfx::Region subrgn(e->screenToEditor(rc));
         e->collapseRegionByTiledMode(subrgn);
         allVisibleRgn |= subrgn;
       }

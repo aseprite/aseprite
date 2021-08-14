@@ -37,10 +37,9 @@ int main(int argc, char* argv[])
 
   #ifdef TEST_GUI
     {
-      // Do not create a os::System, as we don't need it for testing purposes.
-      //os::ScopedHandle<os::System> system(os::create_system());
+      os::SystemRef system(os::make_system());
       ui::UISystem uiSystem;
-      ui::Manager uiManager;
+      ui::Manager uiManager(nullptr);
   #endif
 
       exitcode = RUN_ALL_TESTS();

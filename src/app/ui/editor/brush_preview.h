@@ -18,6 +18,8 @@
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "gfx/region.h"
+#include "os/surface.h"
+#include "ui/cursor.h"
 
 #include <vector>
 
@@ -71,6 +73,8 @@ namespace app {
       NATIVE_CROSSHAIR = 8,
     };
 
+    static void destroyInternals();
+
     BrushPreview(Editor* editor);
     ~BrushPreview();
 
@@ -93,23 +97,17 @@ namespace app {
     void generateBoundaries();
 
     // Creates a little native cursor to draw the CROSSHAIR
-    void createNativeCursor();
-    void forEachLittleCrossPixel(
-      ui::Graphics* g,
-      const gfx::Point& screenPos,
-      gfx::Color color,
-      PixelDelegate pixelDelegate);
+    void createCrosshairCursor(ui::Graphics* g, const gfx::Color cursorColor);
+
     void forEachBrushPixel(
       ui::Graphics* g,
       const gfx::Point& spritePos,
       gfx::Color color,
       PixelDelegate pixelDelegate);
 
-    void traceCrossPixels(ui::Graphics* g, const gfx::Point& pt, gfx::Color color, PixelDelegate pixel);
     void traceSelectionCrossPixels(ui::Graphics* g, const gfx::Point& pt, gfx::Color color, int thickness, PixelDelegate pixel);
     void traceBrushBoundaries(ui::Graphics* g, gfx::Point pos, gfx::Color color, PixelDelegate pixel);
 
-    void putPixelInCursorDelegate(ui::Graphics* g, const gfx::Point& pt, gfx::Color color);
     void savePixelDelegate(ui::Graphics* g, const gfx::Point& pt, gfx::Color color);
     void drawPixelDelegate(ui::Graphics* g, const gfx::Point& pt, gfx::Color color);
     void clearPixelDelegate(ui::Graphics* g, const gfx::Point& pt, gfx::Color color);
@@ -127,10 +125,6 @@ namespace app {
     bool m_withRealPreview = false;
     gfx::Point m_screenPosition; // Position in the screen (view)
     gfx::Point m_editorPosition; // Position in the editor (model)
-
-    // Native mouse cursor to draw crosshair
-    os::Surface* m_cursor = nullptr;
-    gfx::Point m_cursorCenter;
 
     // Information about current brush
     doc::MaskBoundaries m_brushBoundaries;

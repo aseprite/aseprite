@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2021  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -16,7 +17,7 @@
 #include "app/ui/status_bar.h"
 #include "doc/sprite.h"
 #include "gfx/rect.h"
-#include "os/display.h"
+#include "os/window.h"
 #include "ui/manager.h"
 #include "ui/message.h"
 #include "ui/system.h"
@@ -66,7 +67,7 @@ bool ZoomingState::onMouseUp(Editor* editor, MouseMessage* msg)
 bool ZoomingState::onMouseMove(Editor* editor, MouseMessage* msg)
 {
   gfx::Point pt = (msg->position() - m_startPos);
-  int threshold = 8 * guiscale() * editor->manager()->getDisplay()->scale();
+  int threshold = 8 * guiscale() * editor->manager()->display()->scale();
 
   if (m_moved || std::sqrt(pt.x*pt.x + pt.y*pt.y) > threshold) {
     m_moved = true;

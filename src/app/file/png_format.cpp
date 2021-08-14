@@ -59,7 +59,7 @@ class PngFormat : public FileFormat {
   }
 
   bool onLoad(FileOp* fop) override;
-  gfx::ColorSpacePtr loadColorSpace(png_structp png, png_infop info);
+  gfx::ColorSpaceRef loadColorSpace(png_structp png, png_infop info);
 #ifdef ENABLE_SAVE
   bool onSave(FileOp* fop) override;
   void saveColorSpace(png_structp png, png_infop info, const gfx::ColorSpace* colorSpace);
@@ -457,7 +457,7 @@ bool PngFormat::onLoad(FileOp* fop)
 //
 // Code to read color spaces from png files from Skia (SkPngCodec.cpp)
 // by Google Inc.
-gfx::ColorSpacePtr PngFormat::loadColorSpace(png_structp png_ptr, png_infop info_ptr)
+gfx::ColorSpaceRef PngFormat::loadColorSpace(png_structp png_ptr, png_infop info_ptr)
 {
   // First check for an ICC profile
   png_bytep profile;

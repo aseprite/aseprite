@@ -49,6 +49,12 @@ namespace render {
     template<typename T>
     T removeY(T y) const { return m_zoom.remove<T>(y) / T(m_pixelRatio.h); }
 
+    template<typename T>
+    T removeXCeiling(T x) const { return T(m_zoom.removeCeiling(x)) / T(m_pixelRatio.w); }
+
+    template<typename T>
+    T removeYCeiling(T y) const { return T(m_zoom.removeCeiling(y)) / T(m_pixelRatio.h); }
+
     gfx::Rect apply(const gfx::Rect& r) const {
       int u = applyX(r.x);
       int v = applyY(r.y);

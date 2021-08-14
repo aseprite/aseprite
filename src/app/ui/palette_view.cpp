@@ -591,7 +591,7 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
         gfx::Color neg = color_utils::blackandwhite_neg(negColor);
         os::Font* minifont = theme->getMiniFont();
         const std::string text = base::convert_to<std::string>(k);
-        g->setFont(minifont);
+        g->setFont(AddRef(minifont));
         g->drawText(text, neg, gfx::ColorNone,
                     gfx::Point(box2.x + box2.w/2 - minifont->textLength(text)/2,
                                box2.y + box2.h/2 - minifont->height()/2));

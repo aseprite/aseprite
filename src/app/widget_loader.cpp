@@ -39,6 +39,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <limits>
+#include <memory>
 
 namespace app {
 
@@ -202,9 +203,10 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
       if (!widget) {
         // Automatic bind <check> widget with bool preference option
         if (pref) {
-          auto prefWidget = new BoolPrefWidget<CheckBox>("");
+          std::unique_ptr<BoolPrefWidget<CheckBox>> prefWidget(
+            new BoolPrefWidget<CheckBox>(""));
           prefWidget->setPref(pref);
-          widget = prefWidget;
+          widget = prefWidget.release();
         }
         else {
           widget = new CheckBox("");
@@ -495,8 +497,8 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
         throw base::Exception("File %s not found", file);
 
       try {
-        os::Surface* sur = os::instance()->loadRgbaSurface(rf.filename().c_str());
-        widget = new ImageView(sur, 0, true);
+        os::SurfaceRef sur = os::instance()->loadRgbaSurface(rf.filename().c_str());
+        widget = new ImageView(sur, 0);
       }
       catch (...) {
         throw base::Exception("Error loading %s file", file);

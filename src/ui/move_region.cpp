@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -11,9 +11,9 @@
 
 #include "ui/manager.h"
 
-#include "os/display.h"
 #include "os/surface.h"
 #include "os/system.h"
+#include "os/window.h"
 #include "ui/overlay_manager.h"
 
 #include <vector>
@@ -24,9 +24,9 @@ using namespace gfx;
 
 void move_region(Manager* manager, const Region& region, int dx, int dy)
 {
-  os::Display* display = manager->getDisplay();
-  ASSERT(display);
-  if (!display)
+  os::Window* window = manager->display();
+  ASSERT(window);
+  if (!window)
     return;
 
   auto overlays = ui::OverlayManager::instance();
@@ -34,7 +34,7 @@ void move_region(Manager* manager, const Region& region, int dx, int dy)
   bounds |= gfx::Rect(bounds).offset(dx, dy);
   overlays->restoreOverlappedAreas(bounds);
 
-  os::Surface* surface = display->getSurface();
+  os::Surface* surface = window->surface();
   os::SurfaceLock lock(surface);
 
   // Fast path, move one rectangle.

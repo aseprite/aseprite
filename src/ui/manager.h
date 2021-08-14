@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -10,6 +10,7 @@
 #pragma once
 
 #include "gfx/region.h"
+#include "os/window.h"
 #include "ui/keys.h"
 #include "ui/message_type.h"
 #include "ui/mouse_button.h"
@@ -17,7 +18,6 @@
 #include "ui/widget.h"
 
 namespace os {
-  class Display;
   class EventQueue;
 }
 
@@ -32,18 +32,18 @@ namespace ui {
     static Manager* getDefault() { return m_defaultManager; }
     static bool widgetAssociatedToManager(Widget* widget);
 
-    Manager();
+    Manager(const os::WindowRef& nativeWindow);
     ~Manager();
 
-    os::Display* getDisplay() { return m_display; }
-
-    void setDisplay(os::Display* display);
+    os::Window* display() const { return m_display.get(); }
 
     // Executes the main message loop.
     void run();
 
     // Refreshes the real display with the UI content.
     void flipDisplay();
+
+    void updateAllDisplaysWithNewScale(int scale);
 
     // Adds the given "msg" message to the queue of messages to be
     // dispached. "msg" cannot be used after this function, it'll be
@@ -168,7 +168,7 @@ namespace ui {
     static gfx::Region m_dirtyRegion;
 
     WidgetsList m_garbage;
-    os::Display* m_display;
+    os::WindowRef m_display;
     os::EventQueue* m_eventQueue;
     gfx::Region m_invalidRegion;  // Invalid region (we didn't receive paint messages yet for this).
 

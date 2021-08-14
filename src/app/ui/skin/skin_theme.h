@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020-2021  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -11,23 +12,21 @@
 #include "app/ui/skin/skin_part.h"
 #include "gfx/color.h"
 #include "gfx/fwd.h"
+#include "ui/cursor.h"
+#include "ui/cursor_type.h"
 #include "ui/manager.h"
 #include "ui/scale.h"
 #include "ui/theme.h"
 
 #include "theme.xml.h"
 
+#include <array>
 #include <map>
 #include <string>
-#include <vector>
 
 namespace ui {
   class Entry;
   class Graphics;
-}
-
-namespace os {
-  class Surface;
 }
 
 namespace app {
@@ -51,9 +50,9 @@ namespace app {
       int preferredScreenScaling() { return m_preferredScreenScaling; }
       int preferredUIScaling() { return m_preferredUIScaling; }
 
-      os::Font* getDefaultFont() const override { return m_defaultFont; }
+      os::Font* getDefaultFont() const override { return m_defaultFont.get(); }
       os::Font* getWidgetFont(const ui::Widget* widget) const override;
-      os::Font* getMiniFont() const { return m_miniFont; }
+      os::Font* getMiniFont() const { return m_miniFont.get(); }
 
       ui::Cursor* getStandardCursor(ui::CursorType type) override;
       void initWidget(ui::Widget* widget) override;
@@ -138,7 +137,7 @@ namespace app {
       void loadSheet();
       void loadXml(BackwardCompatibility* backward);
 
-      os::Surface* sliceSheet(os::Surface* sur, const gfx::Rect& bounds);
+      os::SurfaceRef sliceSheet(os::SurfaceRef sur, const gfx::Rect& bounds);
       gfx::Color getWidgetBgColor(ui::Widget* widget);
       void drawText(ui::Graphics* g,
                     const char* t,
@@ -153,17 +152,17 @@ namespace app {
       std::string findThemePath(const std::string& themeId) const;
 
       std::string m_path;
-      os::Surface* m_sheet;
+      os::SurfaceRef m_sheet;
       std::map<std::string, SkinPartPtr> m_parts_by_id;
       std::map<std::string, gfx::Color> m_colors_by_id;
       std::map<std::string, int> m_dimensions_by_id;
       std::map<std::string, ui::Cursor*> m_cursors;
-      std::vector<ui::Cursor*> m_standardCursors;
+      std::array<ui::Cursor*, ui::kCursorTypes> m_standardCursors;
       std::map<std::string, ui::Style*> m_styles;
       std::map<std::string, FontData*> m_fonts;
-      std::map<std::string, os::Font*> m_themeFonts;
-      os::Font* m_defaultFont;
-      os::Font* m_miniFont;
+      std::map<std::string, os::FontRef> m_themeFonts;
+      os::FontRef m_defaultFont;
+      os::FontRef m_miniFont;
       int m_preferredScreenScaling;
       int m_preferredUIScaling;
     };

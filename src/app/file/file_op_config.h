@@ -24,7 +24,7 @@ namespace app {
     // profile or without a color profile.
     app::gen::ColorProfileBehavior filesWithProfile = app::gen::ColorProfileBehavior::EMBEDDED;
     app::gen::ColorProfileBehavior missingProfile = app::gen::ColorProfileBehavior::ASSIGN;
-    gfx::ColorSpacePtr workingCS = gfx::ColorSpace::MakeSRGB();
+    gfx::ColorSpaceRef workingCS = gfx::ColorSpace::MakeSRGB();
 
     // True if we should render each frame to save it with the new
     // blend mode.h

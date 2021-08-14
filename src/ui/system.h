@@ -16,7 +16,9 @@
 #include <functional>
 #include <string>
 
-namespace os { class Display; }
+namespace os {
+  class Window;
+}
 
 namespace ui {
 
@@ -62,7 +64,7 @@ namespace ui {
   void hide_mouse_cursor();
   void show_mouse_cursor();
 
-  void _internal_set_mouse_display(os::Display* display);
+  void _internal_set_mouse_display(os::Window* display);
   void _internal_no_mouse_position();
   void _internal_set_mouse_position(const gfx::Point& newPos);
 

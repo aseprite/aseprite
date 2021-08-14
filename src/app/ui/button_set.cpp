@@ -159,7 +159,7 @@ void ButtonSet::Item::onPaint(ui::PaintEvent& ev)
   }
 
   if (hasText()) {
-    g->setFont(font());
+    g->setFont(AddRef(font()));
     g->drawUIText(text(), fg, gfx::ColorNone, textRc.origin(), 0);
   }
 }

@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -26,15 +27,10 @@ SkinPart::~SkinPart()
 
 void SkinPart::clear()
 {
-  for (auto& bitmap : m_bitmaps) {
-    if (bitmap) {
-      bitmap->dispose();
-      bitmap = nullptr;
-    }
-  }
+  m_bitmaps.clear();
 }
 
-void SkinPart::setBitmap(std::size_t index, os::Surface* bitmap)
+void SkinPart::setBitmap(std::size_t index, const os::SurfaceRef& bitmap)
 {
   if (index >= m_bitmaps.size())
     m_bitmaps.resize(index+1, nullptr);

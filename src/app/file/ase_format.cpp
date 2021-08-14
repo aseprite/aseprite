@@ -868,7 +868,7 @@ static void ase_file_write_color_profile(FILE* f,
                                          dio::AsepriteFrameHeader* frame_header,
                                          const doc::Sprite* sprite)
 {
-  const gfx::ColorSpacePtr& cs = sprite->colorSpace();
+  const gfx::ColorSpaceRef& cs = sprite->colorSpace();
   if (!cs)                      // No color
     return;
 

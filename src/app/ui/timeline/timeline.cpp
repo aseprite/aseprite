@@ -2253,14 +2253,13 @@ void Timeline::drawCel(ui::Graphics* g, layer_t layerIndex, frame_t frame, Cel* 
         skinTheme()->calcBorder(this, style));
 
     if (!thumb_bounds.isEmpty()) {
-      if (os::Surface* surface = thumb::get_cel_thumbnail(cel, thumb_bounds.size())) {
+      if (os::SurfaceRef surface = thumb::get_cel_thumbnail(cel, thumb_bounds.size())) {
         const int t = base::clamp(thumb_bounds.w/8, 4, 16);
         draw_checked_grid(g, thumb_bounds, gfx::Size(t, t), docPref());
 
-        g->drawRgbaSurface(surface,
+        g->drawRgbaSurface(surface.get(),
                            thumb_bounds.center().x-surface->width()/2,
                            thumb_bounds.center().y-surface->height()/2);
-        surface->dispose();
       }
     }
   }
@@ -2343,14 +2342,13 @@ void Timeline::drawCelOverlay(ui::Graphics* g)
 
   gfx::Rect rc = m_sprite->bounds().fitIn(
     gfx::Rect(m_thumbnailsOverlayBounds).shrink(1));
-  if (os::Surface* surface = thumb::get_cel_thumbnail(cel, rc.size())) {
+  if (os::SurfaceRef surface = thumb::get_cel_thumbnail(cel, rc.size())) {
     draw_checked_grid(g, rc, gfx::Size(8, 8)*ui::guiscale(), docPref());
 
-    g->drawRgbaSurface(surface,
+    g->drawRgbaSurface(surface.get(),
                        rc.center().x-surface->width()/2,
                        rc.center().y-surface->height()/2);
     g->drawRect(gfx::rgba(0, 0, 0, 128), m_thumbnailsOverlayBounds);
-    surface->dispose();
   }
 }
 

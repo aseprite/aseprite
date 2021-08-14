@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -74,7 +74,36 @@ app::Color ColorWheel::getMainAreaColor(const int _u, const int umax,
 
   int u = _u - umax/2;
   int v = _v - vmax/2;
+
+  // Pick harmonies
+  if (m_color.getAlpha() > 0) {
+    const gfx::Point pos(_u, _v);
+    int n = getHarmonies();
+    int boxsize = std::min(umax/10, vmax/10);
+
+    for (int i=0; i<n; ++i) {
+      app::Color color = getColorInHarmony(i);
+
+      if (gfx::Rect(umax-(n-i)*boxsize,
+                    vmax-boxsize,
+                    boxsize, boxsize).contains(pos)) {
+        m_harmonyPicked = true;
+
+        color = app::Color::fromHsv(convertHueAngle(int(color.getHsvHue()), 1),
+                                    color.getHsvSaturation(),
+                                    color.getHsvValue(),
+                                    m_color.getAlpha());
+        return color;
+      }
+    }
+  }
+
   double d = std::sqrt(u*u + v*v);
+
+  // When we click the main area we can limit the distance to the
+  // wheel radius to pick colors even outside the wheel radius.
+  if (hasCaptureInMainArea() && d > m_wheelRadius)
+    d = m_wheelRadius;
 
   if (m_colorModel == ColorModel::NORMAL_MAP) {
     double a = std::atan2(-v, u);
@@ -94,7 +123,7 @@ app::Color ColorWheel::getMainAreaColor(const int _u, const int umax,
     int r = 128 + di*std::cos(a);
     int g = 128 + di*std::sin(a);
     int b = 255 - di;
-    if (d < m_wheelRadius+2*guiscale()) {
+    if (d <= m_wheelRadius) {
       return app::Color::fromRgb(
         base::clamp(r, 0, 255),
         base::clamp(g, 0, 255),
@@ -106,7 +135,7 @@ app::Color ColorWheel::getMainAreaColor(const int _u, const int umax,
   }
 
   // Pick from the wheel
-  if (d < m_wheelRadius+2*guiscale()) {
+  if (d <= m_wheelRadius) {
     double a = std::atan2(-v, u);
 
     int hue = (int(180.0 * a / PI)
@@ -138,29 +167,6 @@ app::Color ColorWheel::getMainAreaColor(const int _u, const int umax,
       getCurrentAlphaForNewColor());
   }
 
-  // Pick harmonies
-  if (m_color.getAlpha() > 0) {
-    const gfx::Point pos(_u, _v);
-    int n = getHarmonies();
-    int boxsize = std::min(umax/10, vmax/10);
-
-    for (int i=0; i<n; ++i) {
-      app::Color color = getColorInHarmony(i);
-
-      if (gfx::Rect(umax-(n-i)*boxsize,
-                    vmax-boxsize,
-                    boxsize, boxsize).contains(pos)) {
-        m_harmonyPicked = true;
-
-        color = app::Color::fromHsv(convertHueAngle(int(color.getHsvHue()), 1),
-                                    color.getHsvSaturation(),
-                                    color.getHsvValue(),
-                                    m_color.getAlpha());
-        return color;
-      }
-    }
-  }
-
   return app::Color::fromMask();
 }
 
@@ -178,8 +184,8 @@ void ColorWheel::onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc)
 {
   bool oldHarmonyPicked = m_harmonyPicked;
 
-  int r = std::min(rc.w/2, rc.h/2);
-  m_wheelRadius = r;
+  double r = std::max(1.0, std::min(rc.w, rc.h) / 2.0);
+  m_wheelRadius = r-0.1;
   m_wheelBounds = gfx::Rect(rc.x+rc.w/2-r,
                             rc.y+rc.h/2-r,
                             r*2, r*2);

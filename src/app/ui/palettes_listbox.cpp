@@ -152,7 +152,7 @@ void PalettesListBox::onResourceChange(Resource* resource)
 void PalettesListBox::onPaintResource(Graphics* g, gfx::Rect& bounds, Resource* resource)
 {
   doc::Palette* palette = static_cast<PaletteResource*>(resource)->palette();
-  auto tick = SkinTheme::instance()->parts.checkSelected()->bitmap(0);
+  os::Surface* tick = SkinTheme::instance()->parts.checkSelected()->bitmap(0);
 
   // Draw tick (to say "this palette matches the active sprite
   // palette").

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -44,6 +44,8 @@
 namespace app {
 
 using namespace ui;
+
+static const char* ConfigSection = "MaskColor";
 
 class MaskByColorCommand : public Command {
 public:
@@ -113,13 +115,12 @@ void MaskByColorCommand::onExecute(Context* context)
   auto box3 = new Box(HORIZONTAL);
   auto box4 = new Box(HORIZONTAL | HOMOGENEOUS);
   auto label_color = new Label("Color:");
-  m_buttonColor = new ColorButton
-    (get_config_color("MaskColor", "Color",
-                      ColorBar::instance()->getFgColor()),
-     sprite->pixelFormat(),
-     ColorButtonOptions());
+  m_buttonColor = new ColorButton(
+    ColorBar::instance()->getFgColor(),
+    sprite->pixelFormat(),
+    ColorButtonOptions());
   auto label_tolerance = new Label("Tolerance:");
-  m_sliderTolerance = new Slider(0, 255, get_config_int("MaskColor", "Tolerance", 0));
+  m_sliderTolerance = new Slider(0, 255, get_config_int(ConfigSection, "Tolerance", 0));
 
   m_selMode = new SelModeField;
   m_selMode->setupTooltips(tooltipManager);
@@ -132,7 +133,7 @@ void MaskByColorCommand::onExecute(Context* context)
   button_ok->processMnemonicFromText();
   button_cancel->processMnemonicFromText();
 
-  if (get_config_bool("MaskColor", "Preview", true))
+  if (get_config_bool(ConfigSection, "Preview", true))
     m_checkPreview->setSelected(true);
 
   button_ok->Click.connect([this, button_ok]{ m_window->closeWindow(button_ok); });
@@ -169,7 +170,7 @@ void MaskByColorCommand::onExecute(Context* context)
   maskPreview(reader);
 
   // Load window configuration
-  load_window_pos(m_window, "MaskColor");
+  load_window_pos(m_window, ConfigSection);
 
   // Open the window
   m_window->openWindowInForeground();
@@ -187,9 +188,8 @@ void MaskByColorCommand::onExecute(Context* context)
     tx(new cmd::SetMask(document, mask.get()));
     tx.commit();
 
-    set_config_color("MaskColor", "Color", m_buttonColor->getColor());
-    set_config_int("MaskColor", "Tolerance", m_sliderTolerance->getValue());
-    set_config_bool("MaskColor", "Preview", m_checkPreview->isSelected());
+    set_config_int(ConfigSection, "Tolerance", m_sliderTolerance->getValue());
+    set_config_bool(ConfigSection, "Preview", m_checkPreview->isSelected());
   }
   else {
     document->generateMaskBoundaries();
@@ -199,7 +199,7 @@ void MaskByColorCommand::onExecute(Context* context)
   update_screen_for_document(document);
 
   // Save window configuration.
-  save_window_pos(m_window, "MaskColor");
+  save_window_pos(m_window, ConfigSection);
 }
 
 Mask* MaskByColorCommand::generateMask(const Mask& origMask,

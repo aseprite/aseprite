@@ -39,8 +39,8 @@
 #include "app/ui/workspace_tabs.h"
 #include "app/ui_context.h"
 #include "base/fs.h"
-#include "os/display.h"
 #include "os/system.h"
+#include "os/window.h"
 #include "ui/message.h"
 #include "ui/splitter.h"
 #include "ui/system.h"
@@ -77,10 +77,8 @@ public:
 
     ui::set_theme(ui::get_theme(), newUIScale);
 
-    Manager* manager = Manager::getDefault();
-    os::Display* display = manager->getDisplay();
-    display->setScale(newScreenScale);
-    manager->setDisplay(display);
+    Manager::getDefault()
+      ->updateAllDisplaysWithNewScale(newScreenScale);
   }
 };
 
@@ -371,7 +369,7 @@ void MainWindow::onResize(ui::ResizeEvent& ev)
 {
   app::gen::MainWindow::onResize(ev);
 
-  os::Display* display = manager()->getDisplay();
+  os::Window* display = manager()->display();
   if ((display) &&
       (display->scale()*ui::guiscale() > 2) &&
       (!m_scalePanic) &&

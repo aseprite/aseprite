@@ -1090,7 +1090,7 @@ Doc* DocExporter::createEmptyTexture(const Samples& samples,
   ColorMode colorMode = ColorMode::INDEXED;
   Palette* palette = nullptr;
   int maxColors = 256;
-  gfx::ColorSpacePtr colorSpace;
+  gfx::ColorSpaceRef colorSpace;
   color_t transparentColor = 0;
 
   for (const auto& sample : samples) {

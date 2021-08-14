@@ -22,11 +22,11 @@
 #include "base/concurrent_queue.h"
 #include "base/scoped_value.h"
 #include "base/time.h"
-#include "os/display.h"
 #include "os/event.h"
 #include "os/event_queue.h"
 #include "os/surface.h"
 #include "os/system.h"
+#include "os/window.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
 
@@ -168,10 +168,10 @@ bool Manager::widgetAssociatedToManager(Widget* widget)
                     widget) != mouse_widgets_list.end());
 }
 
-Manager::Manager()
+Manager::Manager(const os::WindowRef& nativeWindow)
   : Widget(kManagerWidget)
-  , m_display(nullptr)
-  , m_eventQueue(nullptr)
+  , m_display(nativeWindow)
+  , m_eventQueue(os::instance()->eventQueue())
   , m_lockedWindow(nullptr)
   , m_mouseButton(kButtonNone)
 {
@@ -234,18 +234,6 @@ Manager::~Manager()
   }
 }
 
-void Manager::setDisplay(os::Display* display)
-{
-  base::ScopedValue<bool> lock(
-    auto_window_adjustment, false,
-    auto_window_adjustment);
-
-  m_display = display;
-  m_eventQueue = os::instance()->eventQueue();
-
-  onNewDisplayConfiguration();
-}
-
 void Manager::run()
 {
   MessageLoop loop(this);
@@ -279,9 +267,21 @@ void Manager::flipDisplay()
     gfx::Region(gfx::Rect(0, 0, ui::display_w(), ui::display_h())));
 
   if (!m_dirtyRegion.isEmpty()) {
-    m_display->invalidateRegion(m_dirtyRegion);
+    // Invalidate the dirty region in the os::Window
+    if (m_display->isVisible())
+      m_display->invalidateRegion(m_dirtyRegion);
+    else
+      m_display->setVisible(true);
+
     m_dirtyRegion.clear();
   }
+}
+
+void Manager::updateAllDisplaysWithNewScale(int scale)
+{
+  m_display->setScale(scale);
+
+  onNewDisplayConfiguration();
 }
 
 bool Manager::generateMessages()
@@ -359,33 +359,36 @@ void Manager::generateMessagesFromOSEvents()
   // Events from laf-os
   os::Event osEvent;
   for (;;) {
-    // TODO Add timers to laf::os library so we can wait for then in
-    //      the OS message loop.
-    bool canWait = (msg_queue.empty() &&
-                    redrawState == RedrawState::Normal &&
-                    !Timer::haveRunningTimers());
+    // Calculate how much time we can wait for the next message in the
+    // event queue.
+    double timeout = 0.0;
+    if (msg_queue.empty() && redrawState == RedrawState::Normal) {
+      if (!Timer::getNextTimeout(timeout))
+        timeout = os::EventQueue::kWithoutTimeout;
+    }
 
-    if (canWait && used_msg_queue.empty())
+    if (timeout == os::EventQueue::kWithoutTimeout && used_msg_queue.empty())
       collectGarbage();
 #if _DEBUG
     else if (!m_garbage.empty()) {
       GARBAGE_TRACE("collectGarbage() wasn't called #objects=%d"
-                    " (msg_queue=%d used_msg_queue=%d redrawState=%d runningTimers=%d)\n",
+                    " (msg_queue=%d used_msg_queue=%d redrawState=%d timeout=%.16g)\n",
                     int(m_garbage.size()),
                     msg_queue.size(),
                     used_msg_queue.size(),
                     int(redrawState),
-                    Timer::haveRunningTimers());
+                    timeout);
     }
 #endif
 
-    m_eventQueue->getEvent(osEvent, canWait);
+    m_eventQueue->getEvent(osEvent, timeout);
     if (osEvent.type() == os::Event::None)
       break;
 
     switch (osEvent.type()) {
 
-      case os::Event::CloseDisplay: {
+      case os::Event::CloseApp:
+      case os::Event::CloseWindow: {
         Message* msg = new Message(kCloseDisplayMessage);
         msg->setRecipient(this);
         msg->setPropagateToChildren(true);
@@ -393,7 +396,7 @@ void Manager::generateMessagesFromOSEvents()
         break;
       }
 
-      case os::Event::ResizeDisplay: {
+      case os::Event::ResizeWindow: {
         Message* msg = new Message(kResizeDisplayMessage);
         msg->setRecipient(this);
         msg->setPropagateToChildren(true);
@@ -1346,7 +1349,7 @@ void Manager::onNewDisplayConfiguration()
     }
   }
 
-  _internal_set_mouse_display(m_display);
+  _internal_set_mouse_display(m_display.get());
   invalidate();
   flushRedraw();
 }
@@ -1517,7 +1520,7 @@ bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
     // Restore overlays in the region that we're going to paint.
     OverlayManager::instance()->restoreOverlappedAreas(paintMsg->rect());
 
-    os::Surface* surface = m_display->getSurface();
+    os::Surface* surface = m_display->surface();
     surface->saveClip();
 
     if (surface->clipRect(paintMsg->rect())) {

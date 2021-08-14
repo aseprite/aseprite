@@ -65,6 +65,7 @@ namespace app {
       m_transaction->rollbackAndStartAgain();
     }
 
+    // If the command cannot be executed, it will be deleted anyway.
     void operator()(Cmd* cmd) {
       m_transaction->execute(cmd);
     }

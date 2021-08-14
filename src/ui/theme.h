@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2021  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -59,7 +59,7 @@ namespace ui {
     virtual os::Font* getDefaultFont() const = 0;
     virtual os::Font* getWidgetFont(const Widget* widget) const = 0;
 
-    virtual Cursor* getStandardCursor(CursorType type) = 0;
+    virtual ui::Cursor* getStandardCursor(CursorType type) = 0;
     virtual void initWidget(Widget* widget) = 0;
     virtual void getWindowMask(Widget* widget, gfx::Region& region) = 0;
     virtual void setDecorativeWidgetBounds(Widget* widget);

@@ -55,7 +55,7 @@ void SearchEntry::onPaint(ui::PaintEvent& ev)
   SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
   theme->paintEntry(ev);
 
-  auto icon = theme->parts.iconSearch()->bitmap(0);
+  os::Surface* icon = theme->parts.iconSearch()->bitmap(0);
   Rect bounds = clientBounds();
   ev.graphics()->drawColoredRgbaSurface(
     icon, theme->colors.text(),

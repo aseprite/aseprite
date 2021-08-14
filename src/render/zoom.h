@@ -32,6 +32,8 @@ namespace render {
     template<typename T>
     T remove(T x) const { return (x * m_den / m_num); }
 
+    int removeCeiling(int x) const;
+
     gfx::Rect apply(const gfx::Rect& r) const;
     gfx::Rect remove(const gfx::Rect& r) const;
 
@@ -76,6 +78,14 @@ namespace render {
       return (x * m_den / m_num) - 1;
     else
       return (x * m_den / m_num);
+  }
+
+  inline int Zoom::removeCeiling(int x) const {
+    int v = x * m_den;
+    if (x < 0)
+      return (v / m_num);
+    else
+      return (v / m_num) + (v % m_num != 0);
   }
 
   inline gfx::Rect Zoom::apply(const gfx::Rect& r) const {

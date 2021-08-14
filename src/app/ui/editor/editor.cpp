@@ -60,9 +60,9 @@
 #include "doc/mask_boundaries.h"
 #include "doc/slice.h"
 #include "os/color_space.h"
-#include "os/display.h"
 #include "os/surface.h"
 #include "os/system.h"
+#include "os/window.h"
 #include "ui/ui.h"
 
 #include <algorithm>
@@ -227,6 +227,7 @@ Editor::~Editor()
 
 void Editor::destroyEditorSharedInternals()
 {
+  BrushPreview::destroyInternals();
   if (m_renderEngine) {
     delete m_renderEngine;
     m_renderEngine = nullptr;
@@ -676,7 +677,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
 
   if (rendered) {
     // Convert the render to a os::Surface
-    static os::Surface* tmp = nullptr; // TODO move this to other centralized place
+    static os::SurfaceRef tmp = nullptr; // TODO move this to other centralized place
 
     if (!tmp ||
         tmp->width() < rc2.w ||
@@ -684,10 +685,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
         tmp->colorSpace() != m_document->osColorSpace()) {
       const int maxw = std::max(rc2.w, tmp ? tmp->width(): 0);
       const int maxh = std::max(rc2.h, tmp ? tmp->height(): 0);
-      if (tmp)
-        tmp->dispose();
-
-      tmp = os::instance()->createSurface(
+      tmp = os::instance()->makeSurface(
         maxw, maxh, m_document->osColorSpace());
     }
 
@@ -709,13 +707,13 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
       }
 
       convert_image_to_surface(rendered.get(), m_sprite->palette(m_frame),
-                               tmp, 0, 0, 0, 0, rc2.w, rc2.h);
+                               tmp.get(), 0, 0, 0, 0, rc2.w, rc2.h);
 
       if (newEngine) {
-        g->drawSurface(tmp, gfx::Rect(0, 0, rc2.w, rc2.h), dest);
+        g->drawSurface(tmp.get(), gfx::Rect(0, 0, rc2.w, rc2.h), dest);
       }
       else {
-        g->blit(tmp, 0, 0, dest.x, dest.y, dest.w, dest.h);
+        g->blit(tmp.get(), 0, 0, dest.x, dest.y, dest.w, dest.h);
       }
     }
   }
@@ -1383,6 +1381,17 @@ gfx::Point Editor::screenToEditor(const gfx::Point& pt)
     m_proj.removeY(pt.y - vp.y + scroll.y - m_padding.y));
 }
 
+gfx::Point Editor::screenToEditorCeiling(const gfx::Point& pt)
+{
+  View* view = View::getView(this);
+  Rect vp = view->viewportBounds();
+  Point scroll = view->viewScroll();
+  return gfx::Point(
+    m_proj.removeXCeiling(pt.x - vp.x + scroll.x - m_padding.x),
+    m_proj.removeYCeiling(pt.y - vp.y + scroll.y - m_padding.y));
+}
+
+
 gfx::PointF Editor::screenToEditorF(const gfx::Point& pt)
 {
   View* view = View::getView(this);
@@ -1417,7 +1426,7 @@ Rect Editor::screenToEditor(const Rect& rc)
 {
   return gfx::Rect(
     screenToEditor(rc.origin()),
-    screenToEditor(rc.point2()));
+    screenToEditorCeiling(rc.point2()));
 }
 
 Rect Editor::editorToScreen(const Rect& rc)

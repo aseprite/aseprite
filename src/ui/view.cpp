@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -28,8 +28,8 @@
 
 #ifdef DEBUG_SCROLL_EVENTS
 #include "base/thread.h"
-#include "os/display.h"
 #include "os/surface.h"
+#include "os/window.h"
 #endif
 
 #include <algorithm>

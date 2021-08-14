@@ -1,4 +1,5 @@
 // Aseprite UI Library
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -13,6 +14,8 @@
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
+#include "os/font.h"
+#include "os/surface.h"
 #include "ui/base.h"
 
 #include <string>
@@ -62,8 +65,8 @@ namespace ui {
       int align() const { return m_align; }
 
       gfx::Color color() const { return m_color; }
-      os::Surface* icon() const { return m_icon; }
-      os::Surface* spriteSheet() const { return m_spriteSheet; }
+      os::Surface* icon() const { return m_icon.get(); }
+      os::Surface* spriteSheet() const { return m_spriteSheet.get(); }
       const gfx::Rect& spriteBounds() const { return m_spriteBounds; }
       const gfx::Rect& slicesBounds() const { return m_slicesBounds; }
       const gfx::Point& offset() const { return m_offset; }
@@ -72,8 +75,8 @@ namespace ui {
       void setFlags(const int flags) { m_flags = flags; }
       void setAlign(const int align) { m_align = align; }
       void setColor(gfx::Color color) { m_color = color; }
-      void setIcon(os::Surface* icon) { m_icon = icon; }
-      void setSpriteSheet(os::Surface* spriteSheet) { m_spriteSheet = spriteSheet; }
+      void setIcon(const os::SurfaceRef& icon) { m_icon = icon; }
+      void setSpriteSheet(const os::SurfaceRef& spriteSheet) { m_spriteSheet = spriteSheet; }
       void setSpriteBounds(const gfx::Rect& bounds) { m_spriteBounds = bounds; }
       void setSlicesBounds(const gfx::Rect& bounds) { m_slicesBounds = bounds; }
       void setOffset(const gfx::Point& offset) { m_offset = offset; }
@@ -83,8 +86,8 @@ namespace ui {
       int m_flags;
       int m_align;
       gfx::Color m_color;
-      os::Surface* m_icon;
-      os::Surface* m_spriteSheet;
+      os::SurfaceRef m_icon;
+      os::SurfaceRef m_spriteSheet;
       gfx::Rect m_spriteBounds;
       gfx::Rect m_slicesBounds;
       gfx::Point m_offset;
@@ -100,7 +103,7 @@ namespace ui {
     const gfx::Border& margin() const { return m_margin; }
     const gfx::Border& border() const { return m_border; }
     const gfx::Border& padding() const { return m_padding; }
-    os::Font* font() const { return m_font; }
+    os::Font* font() const { return m_font.get(); }
     const Layers& layers() const { return m_layers; }
     Layers& layers() { return m_layers; }
 
@@ -108,7 +111,7 @@ namespace ui {
     void setMargin(const gfx::Border& value) { m_margin = value; }
     void setBorder(const gfx::Border& value) { m_border = value; }
     void setPadding(const gfx::Border& value) { m_padding = value; }
-    void setFont(os::Font* font) { m_font = font; }
+    void setFont(const os::FontRef& font);
     void addLayer(const Layer& layer);
 
   private:
@@ -118,7 +121,7 @@ namespace ui {
     gfx::Border m_margin;
     gfx::Border m_border;
     gfx::Border m_padding;
-    os::Font* m_font;
+    os::FontRef m_font;
   };
 
 } // namespace ui

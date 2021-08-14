@@ -473,14 +473,27 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
 #ifdef ENABLE_UI
     // Interative
     if (context && context->isUIAvailable()) {
-      int ret = OptionalAlert::show(
-        Preferences::instance().saveFile.showFileFormatDoesntSupportAlert,
-        1, // Yes is the default option when the alert dialog is disabled
-        fmt::format(
-          (fatal ? Strings::alerts_file_format_doesnt_support_error():
-                   Strings::alerts_file_format_doesnt_support_warning()),
-          fop->m_format->name(),
-          warnings));
+      int ret;
+
+      // If the error is fatal, we cannot ignore a no-op, we always
+      // show the alert dialog.
+      if (fatal) {
+        ui::Alert::show(
+          fmt::format(
+            Strings::alerts_file_format_doesnt_support_error(),
+            fop->m_format->name(),
+            warnings));
+        ret = 1;
+      }
+      else {
+        ret = OptionalAlert::show(
+          Preferences::instance().saveFile.showFileFormatDoesntSupportAlert,
+          1, // Yes is the default option when the alert dialog is disabled
+          fmt::format(
+            Strings::alerts_file_format_doesnt_support_warning(),
+            fop->m_format->name(),
+            warnings));
+      }
 
       // Operation can't be done (by fatal error) or the user cancel
       // the operation
@@ -922,7 +935,7 @@ void FileOp::postLoad()
   }
 
   // What to do with the sprite color profile?
-  gfx::ColorSpacePtr spriteCS = sprite->colorSpace();
+  gfx::ColorSpaceRef spriteCS = sprite->colorSpace();
   app::gen::ColorProfileBehavior behavior =
     app::gen::ColorProfileBehavior::DISABLE;
 
