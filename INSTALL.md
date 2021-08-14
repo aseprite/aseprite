@@ -19,7 +19,7 @@
 You should be able to compile Aseprite successfully on the following
 platforms:
 
-* Windows 10 + [Visual Studio Community 2019 + Windows 10.0.18362.0 SDK](https://imgur.com/a/7zs51IT) (we don't support [MinGW](#mingw))
+* Windows 10 + [Visual Studio Community 2019 + Windows 10.0 SDK (the latest version available)](https://imgur.com/a/7zs51IT) (we don't support [MinGW](#mingw))
 * macOS 10.15.3 Catalina + Xcode 11.2.1 + macOS 10.15 SDK (older version might work)
 * Linux + gcc 9.2 or clang 9.0
 
