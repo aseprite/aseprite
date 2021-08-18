@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -357,7 +357,9 @@ bool JpegFormat::onSave(FileOp* fop)
   JSAMPARRAY buffer;
   JDIMENSION buffer_height;
   const auto jpeg_options = std::static_pointer_cast<JpegOptions>(fop->formatOptions());
-  const int qualityValue = (int)base::clamp(100.0f * jpeg_options->quality, 0.f, 100.f);
+  const int qualityValue =
+    (jpeg_options ? (int)base::clamp(100.0f * jpeg_options->quality, 0.f, 100.f):
+                    100);
 
   int c;
 

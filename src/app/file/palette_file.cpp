@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -47,7 +47,7 @@ base::paths get_readable_palette_extensions()
 
 base::paths get_writable_palette_extensions()
 {
-  base::paths paths = get_writable_extensions();
+  base::paths paths = get_writable_extensions(FILE_SUPPORT_INDEXED);
   for (const char* s : palExts)
     paths.push_back(s);
   return paths;
