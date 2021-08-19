@@ -284,7 +284,7 @@ void Manager::run()
   if (first_time) {
     first_time = false;
 
-    Manager::getDefault()->invalidate();
+    invalidate();
     set_mouse_cursor(kArrowCursor);
   }
 

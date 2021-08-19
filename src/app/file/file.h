@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -281,7 +281,7 @@ namespace app {
 
   // Available extensions for each load/save operation.
   base::paths get_readable_extensions();
-  base::paths get_writable_extensions();
+  base::paths get_writable_extensions(const int requiredFormatFlag = 0);
 
   // High-level routines to load/save documents.
   Doc* load_document(Context* context, const std::string& filename);

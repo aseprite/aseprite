@@ -303,7 +303,8 @@ int App::initialize(const AppOptions& options)
     ui::set_mouse_cursor_scale(preferences().cursor.cursorScale());
     ui::set_mouse_cursor(kArrowCursor);
 
-    ui::Manager::getDefault()->invalidate();
+    auto manager = ui::Manager::getDefault();
+    manager->invalidate();
 
     // Create the main window.
     m_mainWindow.reset(new MainWindow);
@@ -322,7 +323,16 @@ int App::initialize(const AppOptions& options)
     m_mainWindow->openWindow();
 
     // Redraw the whole screen.
-    ui::Manager::getDefault()->invalidate();
+    manager->invalidate();
+
+    // Pump some messages so we receive the first
+    // Manager::onNewDisplayConfiguration() and we known the manager
+    // initial size. This is required so if the OpenFileCommand
+    // (called when we're processing the CLI with OpenBatchOfFiles)
+    // shows a dialog to open a sequence of files, the dialog is
+    // centered correctly to the manager bounds.
+    ui::MessageLoop loop(manager);
+    loop.pumpMessages();
   }
 #endif  // ENABLE_UI
 

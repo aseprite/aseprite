@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -50,7 +51,7 @@ void SavePaletteCommand::onLoadParams(const Params& params)
   m_saveAsPreset = (params.get("saveAsPreset") == "true");
 }
 
-void SavePaletteCommand::onExecute(Context* context)
+void SavePaletteCommand::onExecute(Context* ctx)
 {
   const doc::Palette* palette = get_current_palette();
   std::string filename;
@@ -68,6 +69,18 @@ void SavePaletteCommand::onExecute(Context* context)
       return;
 
     filename = selFilename.front();
+
+    // Check that the file format supports saving indexed images/color
+    // palettes (e.g. if the user specified .jpg we should show that
+    // that file format is not supported to save color palettes)
+    if (!base::has_file_extension(filename, exts)) {
+      if (ctx->isUIAvailable()) {
+        ui::Alert::show(
+          fmt::format(Strings::alerts_file_format_doesnt_support_palette(),
+                      base::get_file_extension(filename)));
+      }
+      return;
+    }
   }
 
   if (!save_palette(filename.c_str(), palette, 16)) // TODO 16 should be configurable
@@ -75,7 +88,7 @@ void SavePaletteCommand::onExecute(Context* context)
 
   if (m_preset == get_default_palette_preset_name()) {
     set_default_palette(palette);
-    if (!context->activeDocument())
+    if (!ctx->activeDocument())
       set_current_palette(palette, false);
   }
   if (m_saveAsPreset) {
