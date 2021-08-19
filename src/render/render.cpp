@@ -1021,7 +1021,15 @@ void Render::renderLayer(
       m_extraImage &&
       layer == m_currentLayer &&
       ((layer->isBackground() && render_background) ||
-       (!layer->isBackground() && render_transparent))) {
+       (!layer->isBackground() && render_transparent)) &&
+      // Don't use a tilemap extra cel (IMAGE_TILEMAP) in a
+      // non-tilemap layer (in the other hand tilemap layers allow
+      // extra cels of any kind). This fixes a crash on renderCel()
+      // when we were painting the Preview window using a tilemap
+      // extra image to patch a regular layer, when switching from a
+      // tilemap layer to a regular layer.
+      ((layer->isTilemap()) ||
+       (!layer->isTilemap() && m_extraImage->pixelFormat() != IMAGE_TILEMAP))) {
     if (frame == m_extraCel->frame() &&
         frame == m_currentFrame) { // TODO this double check is not necessary
       drawExtra = true;

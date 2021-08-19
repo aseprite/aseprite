@@ -345,6 +345,17 @@ void Editor::setLayer(const Layer* layer)
     oldGrid = getSite().grid();
 
   m_observers.notifyBeforeLayerChanged(this);
+
+  // Remove extra cel information if we change between different layer
+  // type (e.g. from a tilemap layer to an image layer). This is
+  // useful to avoid a flickering effect in the preview window (using
+  // a non-updated extra cel to patch the new "layer" with the
+  // background of the previous selected "m_layer".
+  if ((layer == nullptr) ||
+      (m_layer != nullptr && m_layer->type() != layer->type())) {
+    m_document->setExtraCel(ExtraCelRef(nullptr));
+  }
+
   m_layer = const_cast<Layer*>(layer);
   m_observers.notifyAfterLayerChanged(this);
 
