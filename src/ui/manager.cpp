@@ -1334,14 +1334,17 @@ void Manager::_openWindow(Window* window, bool center)
 
       os::WindowSpec spec;
       gfx::Rect frame;
+      bool changeFrame;
       if (!window->lastNativeFrame().isEmpty()) {
         frame = window->lastNativeFrame();
+        changeFrame = true;
       }
       else {
         gfx::Rect relativeToFrame = parentDisplay->nativeWindow()->contentRect();
         frame = window->bounds();
         frame *= scale;
         frame.offset(relativeToFrame.origin());
+        changeFrame = false;
       }
 
       limit_with_workarea(parentDisplay, frame);
@@ -1382,7 +1385,12 @@ void Manager::_openWindow(Window* window, bool center)
         m_display.nativeWindow()->activate();
 
       // Move all widgets to the os::Display origin (0,0)
-      window->offsetWidgets(-window->origin().x, -window->origin().y);
+      if (changeFrame) {
+        window->setBounds(newNativeWindow->bounds() / scale);
+      }
+      else {
+        window->offsetWidgets(-window->origin().x, -window->origin().y);
+      }
 
       // Handle native hit testing. Required to be able to move/resize
       // a window with a non-mouse pointer (e.g. stylus) on Windows.
