@@ -892,7 +892,8 @@ void DocExporter::captureSamples(Samples& samples,
         .outerTagName(outerTag ? outerTag->name(): "")
         .frame(outputFrame)
         .tagFrame(innerTag ? frame - innerTag->fromFrame():
-                             outputFrame);
+                             outputFrame)
+        .duration(sprite->frameDuration(frame));
       ++outputFrame;
 
       std::string filename = filename_formatter(format, fnInfo);
