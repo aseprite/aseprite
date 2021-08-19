@@ -45,6 +45,8 @@ namespace app {
               base::paths& output);
 
   private:
+    bool onProcessMessage(ui::Message* msg) override;
+
     void updateLocation();
     void updateNavigationButtons();
     void addInNavigationHistory(IFileItem* folder);
