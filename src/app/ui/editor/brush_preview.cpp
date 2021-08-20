@@ -589,9 +589,18 @@ void BrushPreview::createCrosshairCursor(ui::Graphics* g,
         }
       }
       if (requireLittleCenterDot) {
-        cursorSurface->putPixel(
-          (k == 0x100 || k == 0x300 ? black: white),
-          cursorBounds.w/2, cursorBounds.h/2);
+        if (m_type & CROSSHAIR) {
+          if (k & (0x100 | 0x200)) { // 0x100 or 0x200
+            cursorSurface->putPixel(
+              (k & 0x100 ? black: white),
+              cursorBounds.w/2, cursorBounds.h/2);
+          }
+        }
+        else {                       // 0x300 or 0x301
+          cursorSurface->putPixel(
+            (k == 0x300 ? black: white),
+            cursorBounds.w/2, cursorBounds.h/2);
+        }
       }
 
       cursor = g_bwCursors[k] =
