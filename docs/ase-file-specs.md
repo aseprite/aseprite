@@ -25,7 +25,10 @@ ASE files use Intel (little-endian) byte order.
 * `PIXEL`: One pixel, depending on the image pixel format:
   - **RGBA**: `BYTE[4]`, each pixel have 4 bytes in this order Red, Green, Blue, Alpha.
   - **Grayscale**: `BYTE[2]`, each pixel have 2 bytes in the order Value, Alpha.
-  - **Indexed**: `BYTE`, Each pixel uses 1 byte (the index).
+  - **Indexed**: `BYTE`, each pixel uses 1 byte (the index).
+* `TILE`: **Tilemaps**: Each tile can be a 8-bit (`BYTE`), 16-bit
+  (`WORD`), or 32-bit (`DWORD`) value and there are masks related to
+  the meaning of each bit.
 
 ## Introduction
 
@@ -146,6 +149,7 @@ Ignore this chunk if you find the new palette chunk (0x2019)
     WORD        Layer type
                   0 = Normal (image) layer
                   1 = Group
+                  2 = Tilemap
     WORD        Layer child level (see NOTE.1)
     WORD        Default layer width in pixels (ignored)
     WORD        Default layer height in pixels (ignored)
@@ -173,19 +177,24 @@ Ignore this chunk if you find the new palette chunk (0x2019)
                   Note: valid only if file header flags field has bit 1 set
     BYTE[3]     For future (set to zero)
     STRING      Layer name
+    + If layer type = 2
+      DWORD     Tileset index
 
 ### Cel Chunk (0x2005)
 
-  This chunk determine where to put a cel in the specified
-  layer/frame.
+This chunk determine where to put a cel in the specified layer/frame.
 
     WORD        Layer index (see NOTE.2)
     SHORT       X position
     SHORT       Y position
     BYTE        Opacity level
-    WORD        Cel type
+    WORD        Cel Type
+                0 - Raw Image Data (unused, compressed image is preferred)
+                1 - Linked Cel
+                2 - Compressed Image
+                3 - Compressed Tilemap
     BYTE[7]     For future (set to zero)
-    + For cel type = 0 (Raw Cel)
+    + For cel type = 0 (Raw Image Data)
       WORD      Width in pixels
       WORD      Height in pixels
       PIXEL[]   Raw pixel data: row by row from top to bottom,
@@ -195,14 +204,18 @@ Ignore this chunk if you find the new palette chunk (0x2019)
     + For cel type = 2 (Compressed Image)
       WORD      Width in pixels
       WORD      Height in pixels
-      BYTE[]    "Raw Cel" data compressed with ZLIB method
-
-Details about the ZLIB and DEFLATE compression methods:
-
-* https://www.ietf.org/rfc/rfc1950
-* https://www.ietf.org/rfc/rfc1951
-* Some extra notes that might help you to decode the data:
-  http://george.chiramattel.com/blog/2007/09/deflatestream-block-length-does-not-match.html
+      BYTE[]    "Raw Cel" data compressed with ZLIB method (see NOTE.3)
+    + For cel type = 3 (Compressed Tilemap)
+      WORD      Width in number of tiles
+      WORD      Height in number of tiles
+      WORD      Bits per tile (at the moment it's always 32-bit per tile)
+      DWORD     Bitmask for tile ID (e.g. 0x1fffffff for 32-bit tiles)
+      DWORD     Bitmask for X flip
+      DWORD     Bitmask for Y flip
+      DWORD     Bitmask for 90CW rotation
+      BYTE[10]  Reserved
+      TILE[]    Row by row, from top to bottom tile by tile
+                compressed with ZLIB method (see NOTE.3)
 
 ### Cel Extra Chunk (0x2006)
 
@@ -231,10 +244,22 @@ Color profile for RGB or grayscale values.
                 this fixed gamma, because sRGB uses different gamma sections
                 (linear and non-linear). If sRGB is specified with a fixed
                 gamma = 1.0, it means that this is Linear sRGB.
-    BYTE[8]     Reserved (set to zero]
+    BYTE[8]     Reserved (set to zero)
     + If type = ICC:
       DWORD     ICC profile data length
       BYTE[]    ICC profile data. More info: http://www.color.org/ICC1V42.pdf
+
+### External Files Chunk (0x2008)
+
+A list of external files linked with this file. It might be used to
+reference external palettes or tilesets.
+
+    DWORD       Number of entries
+    BYTE[8]     Reserved (set to zero)
+    + For each entry
+      DWORD     Entry ID (this ID is referenced by tilesets or palettes)
+      BYTE[8]   Reserved (set to zero)
+      STRING    External file name
 
 ### Mask Chunk (0x2016) DEPRECATED
 
@@ -254,6 +279,10 @@ Never used.
 
 ### Tags Chunk (0x2018)
 
+After the tags chunk, you can write one user data chunk for each tag.
+E.g. if there are 10 tags, you can then write 10 user data chunks one
+for each tag.
+
     WORD        Number of tags
     BYTE[8]     For future (set to zero)
     + For each tag
@@ -265,6 +294,9 @@ Never used.
                   2 = Ping-pong
       BYTE[8]   For future (set to zero)
       BYTE[3]   RGB values of the tag color
+                  Deprecated, used only for backward compatibility with Aseprite v1.2.x
+                  The color of the tag is the one in the user data field following
+                  the tags chunk
       BYTE      Extra byte (zero)
       STRING    Tag name
 
@@ -288,7 +320,12 @@ Never used.
 
 Insert this user data in the last read chunk.  E.g. If we've read a
 layer, this user data belongs to that layer, if we've read a cel, it
-belongs to that cel, etc.
+belongs to that cel, etc. There are some special cases: After a Tags
+chunk, there will be several user data fields, one for each tag, you
+should associate the user data in the same order as the tags are in
+the Tags chunk.
+In version 1.3 a sprite has associated user data, to consider this case
+there is an User Data Chunk at the first frame after the Palette Chunk.
 
     DWORD       Flags
                   1 = Has text
@@ -326,6 +363,36 @@ belongs to that cel, etc.
         LONG    Pivot X position (relative to the slice origin)
         LONG    Pivot Y position (relative to the slice origin)
 
+### Tileset Chunk (0x2023)
+
+    DWORD       Tileset ID
+    DWORD       Tileset flags
+                  1 - Include link to external file
+                  2 - Include tiles inside this file
+                  4 - Tilemaps using this tileset use tile ID=0 as empty tile
+                      (this is the new format). In rare cases this bit is off,
+                      and the empty tile will be equal to 0xffffffff (used in
+                      internal versions of Aseprite)
+    DWORD       Number of tiles
+    WORD        Tile Width
+    WORD        Tile Height
+    SHORT       Base Index: Number to show in the screen from the tile with
+                index 1 and so on (by default this is field is 1, so the data
+                that is displayed is equivalent to the data in memory). But it
+                can be 0 to display zero-based indexing (this field isn't used
+                for the representation of the data in the file, it's just for
+                UI purposes).
+    BYTE[14]    Reserved
+    STRING      Name of the tileset
+    + If flag 1 is set
+      DWORD     ID of the external file. This ID is one entry
+                of the the External Files Chunk.
+      DWORD     Tileset ID in the external file
+    + If flag 2 is set
+      DWORD     Compressed data length
+      PIXEL[]   Compressed Tileset image (see NOTE.3):
+                  (Tile Width) x (Tile Height x Number of Tiles)
+
 ### Notes
 
 #### NOTE.1
@@ -355,6 +422,15 @@ example:
       |- My set1                  3
       |  `- Layer2                4
       `- Layer3                   5
+
+#### NOTE.3
+
+Details about the ZLIB and DEFLATE compression methods:
+
+* https://www.ietf.org/rfc/rfc1950
+* https://www.ietf.org/rfc/rfc1951
+* Some extra notes that might help you to decode the data:
+  http://george.chiramattel.com/blog/2007/09/deflatestream-block-length-does-not-match.html
 
 ## File Format Changes
 
