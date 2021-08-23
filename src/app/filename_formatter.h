@@ -24,6 +24,7 @@ namespace app {
     const std::string& sliceName() const { return m_sliceName; }
     int frame() const { return m_frame; }
     int tagFrame() const { return m_tagFrame; }
+    int duration() const { return m_duration; }
 
     FilenameInfo& filename(const std::string& value) {
       m_filename = value;
@@ -65,6 +66,11 @@ namespace app {
       return *this;
     }
 
+    FilenameInfo& duration(int value) {
+      m_duration = value;
+      return *this;
+    }
+
   private:
     std::string m_filename;
     std::string m_layerName;
@@ -74,6 +80,7 @@ namespace app {
     std::string m_sliceName;
     int m_frame;
     int m_tagFrame;
+    int m_duration;
   };
 
   // Returns the information inside {frame} tag.

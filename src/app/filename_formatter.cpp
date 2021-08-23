@@ -112,6 +112,7 @@ std::string filename_formatter(
   base::replace_string(output, "{layer}", info.layerName());
   base::replace_string(output, "{group}", info.groupName());
   base::replace_string(output, "{slice}", info.sliceName());
+  base::replace_string(output, "{duration}", std::to_string(info.duration()));
 
   if (replaceFrame) {
     base::replace_string(output, "{tag}", info.innerTagName());
