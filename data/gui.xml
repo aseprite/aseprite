@@ -1009,7 +1009,7 @@
           <param name="path" value="http://twitter.com/aseprite" />
         </item>
         <separator />
-        <item command="Register" text="@.help_register" group="help_register" />
+        <item command="EnterLicense" text="@.help_enter_license" group="help_enter_license" />
         <separator />
         <item command="About" text="@.help_about" group="help_about" />
       </menu>
