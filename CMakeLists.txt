@@ -41,8 +41,8 @@ if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/laf/CMakeLists.txt)
   message(FATAL_ERROR "Your Aseprite repository is incomplete, initialize submodules using:\n  git submodule update --init --recursive")
 endif()
 
-# This required for KDE/Qt destop integration, which sets BUILD_SHARED_LIBS to
-# TRUE by default
+# This is required for KDE/Qt destop integration, which sets
+# BUILD_SHARED_LIBS to TRUE by default
 set(BUILD_SHARED_LIBS off)
 
 enable_testing()
