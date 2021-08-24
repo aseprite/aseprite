@@ -54,6 +54,10 @@ else()
   add_definitions(-DENABLE_TRIAL_MODE)
 endif()
 
+if(ENABLE_DRM)
+  add_definitions(-DENABLE_DRM)
+endif()
+
 if(ENABLE_DEVMODE)
   add_definitions(-DENABLE_DEVMODE)
 endif()
