@@ -8,6 +8,7 @@
 #include "config.h"
 #endif
 
+#include "app/drm.h"
 #include "app/file/file_format.h"
 #include "app/file/format_options.h"
 
@@ -47,6 +48,8 @@ bool FileFormat::load(FileOp* fop)
 #ifdef ENABLE_SAVE
 bool FileFormat::save(FileOp* fop)
 {
+  DRM_INVALID return false;
+
   ASSERT(support(FILE_SUPPORT_SAVE));
   return onSave(fop);
 }

@@ -16,6 +16,7 @@
 #include "app/console.h"
 #include "app/context.h"
 #include "app/doc.h"
+#include "app/drm.h"
 #include "app/file/file_data.h"
 #include "app/file/file_format.h"
 #include "app/file/file_formats_manager.h"
@@ -749,6 +750,15 @@ void FileOp::operate(IFileOpProgress* progress)
            m_format != NULL &&
            m_format->support(FILE_SUPPORT_SAVE)) {
 #ifdef ENABLE_SAVE
+
+    DRM_INVALID {
+      setError(
+        fmt::format("Save operation is not supported, activate this Aseprite first.\n"
+                    "Go to {} and get an activation code or get the DRM-FREE full-version.",
+                    get_app_download_url()).c_str());
+      return;
+    }
+
     // Save a sequence
     if (isSequence()) {
       ASSERT(m_format->support(FILE_SUPPORT_SEQUENCES));

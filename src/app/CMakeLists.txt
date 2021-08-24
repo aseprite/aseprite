@@ -265,6 +265,7 @@ if(ENABLE_UI)
     commands/cmd_pixel_perfect_mode.cpp
     commands/cmd_play_animation.cpp
     commands/cmd_refresh.cpp
+    commands/cmd_register.cpp
     commands/cmd_remove_frame.cpp
     commands/cmd_remove_frame_tag.cpp
     commands/cmd_remove_slice.cpp
