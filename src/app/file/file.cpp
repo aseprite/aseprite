@@ -891,7 +891,7 @@ void FileOp::operate(IFileOpProgress* progress)
     DRM_INVALID {
       setError(
         fmt::format("Save operation is not supported, activate this Aseprite first.\n"
-                    "Go to {} and get an activation code or get the DRM-FREE full-version.",
+                    "Go to {} and get a license key.",
                     get_app_download_url()).c_str());
       return;
     }
