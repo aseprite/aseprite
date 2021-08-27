@@ -14,6 +14,7 @@
 #include "app/doc_event.h"
 #include "app/doc_observer.h"
 #include "doc/sprite.h"
+#include "app/pref/preferences.h"
 
 namespace app {
 namespace cmd {
@@ -31,6 +32,13 @@ void SetGridBounds::onExecute()
 {
   Sprite* spr = sprite();
   spr->setGridBounds(m_newBounds);
+  // if this is a call to onExecute via onRedo(), then we need 
+  // to update the preference
+  Doc* doc = static_cast<Doc*>(spr->document());
+  if (doc) {
+	auto& docPref = Preferences::instance().document(doc);
+	docPref.grid.bounds(m_newBounds);
+  }
   spr->incrementVersion();
 }
 
@@ -38,6 +46,12 @@ void SetGridBounds::onUndo()
 {
   Sprite* spr = sprite();
   spr->setGridBounds(m_oldBounds);
+
+  Doc* doc = static_cast<Doc*>(spr->document());
+  if (doc) {
+	auto& docPref = Preferences::instance().document(doc);
+	docPref.grid.bounds(m_oldBounds);
+  }
   spr->incrementVersion();
 }
 
