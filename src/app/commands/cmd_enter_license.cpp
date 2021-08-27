@@ -7,6 +7,14 @@
 #include "app/app.h"
 #include "app/commands/command.h"
 #include "app/context.h"
+#include "ver/info.h"
+
+#ifdef ENABLE_DRM
+#include "drm/license_manager.h"
+#else
+#include "app/i18n/strings.h"
+#include "ui/alert.h"
+#endif
 
 #include "enter_license.xml.h"
 
@@ -26,16 +34,26 @@ EnterLicenseCommand::EnterLicenseCommand()
 
 void EnterLicenseCommand::onExecute(Context* context)
 {
+#ifdef ENABLE_DRM
   // Load the window widget
   app::gen::EnterLicense window;
 
   window.setSizeable(false);
   window.licenseKey()->Change.connect([&window]() {
     window.licenseKey()->setText(base::string_to_upper(window.licenseKey()->text()));
+    window.okButton()->setEnabled(window.licenseKey()->text().size() > 0);
+  });
+  window.okButton()->setEnabled(false);
+  window.okButton()->Click.connect([&window](ui::Event&) {
+    drm::LicenseManager::instance()->activate(window.licenseKey()->text(), get_app_name(), get_app_version());
+    window.closeWindow(nullptr);
   });
 
   // Open the window
   window.openWindowInForeground();
+#else
+  ui::Alert::show(Strings::alerts_enter_license_disabled());
+#endif
 }
 
 Command* CommandFactory::createRegisterCommand()
