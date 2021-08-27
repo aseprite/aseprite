@@ -77,9 +77,8 @@ protected:
     Tx tx(writer.context(), friendlyName(), ModifyDocument);
     tx(new cmd::SetGridBounds(writer.sprite(), newGrid));
     tx.commit();
-
+    
     auto& docPref = Preferences::instance().document(doc);
-    docPref.grid.bounds(newGrid);
     if (!docPref.show.grid())   // Make grid visible
       docPref.show.grid(true);
   }
