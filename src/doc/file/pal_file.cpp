@@ -59,10 +59,10 @@ Palette* load_pal_file(const char *filename)
     if (line.empty())
       continue;
 
-    int r, g, b;
+    int r, g, b, a=255;
     std::istringstream lineIn(line);
-    lineIn >> r >> g >> b;
-    pal->addEntry(rgba(r, g, b, 255));
+    lineIn >> r >> g >> b >> a;
+    pal->addEntry(rgba(r, g, b, a));
   }
 
   return pal.release();
@@ -77,11 +77,16 @@ bool save_pal_file(const Palette *pal, const char *filename)
     << "0100\n"
     << pal->size() << "\n";
 
+  const bool hasAlpha = pal->hasAlpha();
   for (int i=0; i<pal->size(); ++i) {
     uint32_t col = pal->getEntry(i);
     f << ((int)rgba_getr(col)) << " "
       << ((int)rgba_getg(col)) << " "
-      << ((int)rgba_getb(col)) << "\n";
+      << ((int)rgba_getb(col));
+    if (hasAlpha) {
+      f << " " << ((int)rgba_geta(col));
+    }
+    f << "\n";
   }
 
   return true;
