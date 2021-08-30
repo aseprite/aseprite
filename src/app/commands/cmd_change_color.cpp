@@ -75,15 +75,17 @@ void ChangeColorCommand::onExecute(Context* context)
       // do nothing
       break;
     case IncrementIndex: {
-      int index = color.getIndex();
-      if (index < get_current_palette()->size()-1)
-        color = app::Color::fromIndex(index+1);
+      const int palSize = get_current_palette()->size();
+      if (palSize > 1) {
+        color = app::Color::fromIndex((color.getIndex() + 1) % palSize);
+      }
       break;
     }
     case DecrementIndex: {
-      int index = color.getIndex();
-      if (index > 0)
-        color = app::Color::fromIndex(index-1);
+      const int palSize = get_current_palette()->size();
+      if (palSize > 1) {
+        color = app::Color::fromIndex(((color.getIndex() - 1) % palSize + palSize) % palSize);
+      }
       break;
     }
   }
