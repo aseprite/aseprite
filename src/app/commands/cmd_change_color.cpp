@@ -75,20 +75,15 @@ void ChangeColorCommand::onExecute(Context* context)
       // do nothing
       break;
     case IncrementIndex: {
-      const int palSize = get_current_palette()->size();
-      if (palSize > 1) {
-        color = app::Color::fromIndex((color.getIndex() + 1) % palSize);
-      }
+      int index = color.getIndex();
+      if (index < get_current_palette()->size()-1)
+        color = app::Color::fromIndex(index+1);
       break;
     }
     case DecrementIndex: {
-      const int palSize = get_current_palette()->size();
-      if (palSize > 1) {
-        // Variants on floorMod(int, int):
-        // (a % b + b) % b
-        // a - b * (a / b); if a < 0 then a += b
-        color = app::Color::fromIndex(((color.getIndex() - 1) % palSize + palSize) % palSize);
-      }
+      int index = color.getIndex();
+      if (index > 0)
+        color = app::Color::fromIndex(index-1);
       break;
     }
   }
