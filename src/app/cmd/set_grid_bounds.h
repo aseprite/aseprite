@@ -33,6 +33,8 @@ namespace cmd {
     }
 
   private:
+    void setGrid(const gfx::Rect& grid);
+
     gfx::Rect m_oldBounds;
     gfx::Rect m_newBounds;
   };

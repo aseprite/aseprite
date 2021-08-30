@@ -13,6 +13,7 @@
 #include "app/doc.h"
 #include "app/doc_event.h"
 #include "app/doc_observer.h"
+#include "app/pref/preferences.h"
 #include "doc/sprite.h"
 
 namespace app {
@@ -29,15 +30,23 @@ SetGridBounds::SetGridBounds(Sprite* sprite, const gfx::Rect& bounds)
 
 void SetGridBounds::onExecute()
 {
-  Sprite* spr = sprite();
-  spr->setGridBounds(m_newBounds);
-  spr->incrementVersion();
+  setGrid(m_newBounds);
 }
 
 void SetGridBounds::onUndo()
 {
+  setGrid(m_oldBounds);
+}
+
+void SetGridBounds::setGrid(const gfx::Rect& grid)
+{
   Sprite* spr = sprite();
-  spr->setGridBounds(m_oldBounds);
+  spr->setGridBounds(grid);
+
+  Doc* doc = static_cast<Doc*>(spr->document());
+  auto& docPref = Preferences::instance().document(doc);
+  docPref.grid.bounds(grid);
+
   spr->incrementVersion();
 }
 
