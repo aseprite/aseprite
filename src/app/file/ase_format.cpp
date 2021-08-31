@@ -691,8 +691,8 @@ static void ase_file_write_layer_chunk(FILE* f, dio::AsepriteFrameHeader* frame_
   // Default width & height, and blend mode
   fputw(0, f);
   fputw(0, f);
-  fputw(layer->isImage() ? (int)static_cast<const LayerImage*>(layer)->blendMode(): 0, f);
-  fputc(layer->isImage() ? (int)static_cast<const LayerImage*>(layer)->opacity(): 0, f);
+  fputw(layer->isImage() ? (int)dynamic_cast<const LayerImage*>(layer)->blendMode(): 0, f);
+  fputc(layer->isImage() ? (int)dynamic_cast<const LayerImage*>(layer)->opacity(): 0, f);
 
   // Padding
   ase_file_write_padding(f, 3);
