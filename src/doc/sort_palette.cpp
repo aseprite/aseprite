@@ -40,82 +40,137 @@ struct PalEntryWithIndexPredicate {
   }
 
   bool operator()(const PalEntryWithIndex& a, const PalEntryWithIndex& b) {
-    color_t c1 = a.color;
-    color_t c2 = b.color;
-    int value1 = 0, value2 = 0;
+    const color_t c1 = a.color;
+    const color_t c2 = b.color;
+
+    // Handle cases where, e.g., transparent yellow
+    // is visually indistinguishable from transparent
+    // black. Push 0 alpha toward index 0, regardless
+    // of sort order being ascending or descending.
+    const uint8_t a1 = rgba_geta(c1);
+    const uint8_t a2 = rgba_geta(c2);
+
+    if (a1 == 0 && a2 == 0) {
+      return true;
+    }
+    else if (a1 == 0) {
+      return true;
+    }
+    else if (a2 == 0) {
+      return false;
+    }
+
+    const uint8_t r1 = rgba_getr(c1);
+    const uint8_t g1 = rgba_getg(c1);
+    const uint8_t b1 = rgba_getb(c1);
+
+    const uint8_t r2 = rgba_getr(c2);
+    const uint8_t g2 = rgba_getg(c2);
+    const uint8_t b2 = rgba_getb(c2);
 
     switch (channel) {
 
       case SortPaletteBy::RED:
-        value1 = rgba_getr(c1);
-        value2 = rgba_getr(c2);
-        break;
+        return (ascending ? r1 < r2: r2 < r1);
 
       case SortPaletteBy::GREEN:
-        value1 = rgba_getg(c1);
-        value2 = rgba_getg(c2);
-        break;
+        return (ascending ? g1 < g2: g2 < g1);
 
       case SortPaletteBy::BLUE:
-        value1 = rgba_getb(c1);
-        value2 = rgba_getb(c2);
-        break;
+        return (ascending ? b1 < b2: b2 < b1);
 
       case SortPaletteBy::ALPHA:
-        value1 = rgba_geta(c1);
-        value2 = rgba_geta(c2);
-        break;
+        return (ascending ? a1 < a2: a2 < a1);
 
-      case SortPaletteBy::HUE:
-      case SortPaletteBy::SATURATION:
-      case SortPaletteBy::VALUE: {
-        Hsv hsv1(Rgb(rgba_getr(c1),
-                     rgba_getg(c1),
-                     rgba_getb(c1)));
-        Hsv hsv2(Rgb(rgba_getr(c2),
-                     rgba_getg(c2),
-                     rgba_getb(c2)));
+      case SortPaletteBy::HUE: {
+        const Hsv hsv1(Rgb(r1, g1, b1));
+        const Hsv hsv2(Rgb(r2, g2, b2));
 
-        switch (channel) {
-          case SortPaletteBy::HUE:
-            value1 = hsv1.hueInt();
-            value2 = hsv2.hueInt();
-            break;
-          case SortPaletteBy::SATURATION:
-            value1 = hsv1.saturationInt();
-            value2 = hsv2.saturationInt();
-            break;
-          case SortPaletteBy::VALUE:
-            value1 = hsv1.valueInt();
-            value2 = hsv2.valueInt();
-            break;
-          default:
-            ASSERT(false);
-            break;
+        // When a color is desaturated, its hue
+        // is the quotient of division by zero.
+        // It is not zero, which is red.
+        const int sat1 = hsv1.saturationInt();
+        const int sat2 = hsv2.saturationInt();
+
+        if (sat1 == 0 && sat2 == 0) {
+          const int val1 = hsv1.valueInt();
+          const int val2 = hsv2.valueInt();
+          return (ascending ? val1 < val2: val2 < val1);
         }
-        break;
+        else if (sat1 == 0) {
+          return ascending;
+        }
+        else if (sat2 == 0) {
+          return !ascending;
+        }
+
+        const int hue1 = hsv1.hueInt();
+        const int hue2 = hsv2.hueInt();
+        return (ascending ? hue1 < hue2: hue2 < hue1);
       }
 
-      case SortPaletteBy::LIGHTNESS: {
-        value1 = (std::max(rgba_getr(c1), std::max(rgba_getg(c1), rgba_getb(c1))) +
-                  std::min(rgba_getr(c1), std::min(rgba_getg(c1), rgba_getb(c1)))) / 2;
-        value2 = (std::max(rgba_getr(c2), std::max(rgba_getg(c2), rgba_getb(c2))) +
-                  std::min(rgba_getr(c2), std::min(rgba_getg(c2), rgba_getb(c2)))) / 2;
-        break;
+      case SortPaletteBy::SATURATION: {
+        // This could be inlined with
+        // (max(r, g, b) - min(r, g, b)) / max(r, g, b)
+        // but (1.) there is already opportunity for
+        // confusion: HSV and HSL saturation share
+        // the same name but arise from different
+        // calculations; (2.) HSV components can
+        // almost never be compared in isolation.
+        const Hsv hsv1(Rgb(r1, g1, b1));
+        const Hsv hsv2(Rgb(r2, g2, b2));
+        const int sat1 = hsv1.saturationInt();
+        const int sat2 = hsv2.saturationInt();
+        if (sat1 == sat2) {
+          const int val1 = hsv1.valueInt();
+          const int val2 = hsv2.valueInt();
+          return (ascending ? val1 < val2: val2 < val1);
+        }
+        return (ascending ? sat1 < sat2: sat2 < sat1);
+      }
+
+      case SortPaletteBy::VALUE: {
+        const Hsv hsv1(Rgb(r1, g1, b1));
+        const Hsv hsv2(Rgb(r2, g2, b2));
+        const int val1 = hsv1.valueInt();
+        const int val2 = hsv2.valueInt();
+        if (val1 == val2) {
+          const int sat1 = hsv1.saturationInt();
+          const int sat2 = hsv2.saturationInt();
+          return (ascending ? sat1 < sat2: sat2 < sat1);
+        }
+        return (ascending ? val1 < val2: val2 < val1);
       }
 
       case SortPaletteBy::LUMA: {
-        value1 = rgb_luma(rgba_getr(c1), rgba_getg(c1), rgba_getb(c1));
-        value2 = rgb_luma(rgba_getr(c2), rgba_getg(c2), rgba_getb(c2));
-        break;
+        // Perceptual, or relative, luminance.
+        // Finds the square for fast approximation
+        // of 2.4 or 2.2 exponent needed to convert
+        // from gamma to linear. Assumes that the
+        // source for palette colors is sRGB.
+        const int lum1 = rgb_luma(r1 * r1, g1 * g1, b1 * b1);
+        const int lum2 = rgb_luma(r2 * r2, g2 * g2, b2 * b2);
+        return (ascending ? lum1 < lum2: lum2 < lum1);
       }
 
+      case SortPaletteBy::LIGHTNESS: {
+        // HSL Lightness
+        const int mn1 = std::min(r1, std::min(g1, b1));
+        const int mx1 = std::max(r1, std::max(g1, b1));
+        const int light1 = (mn1 + mx1) / 2;
+
+        const int mn2 = std::min(r2, std::min(g2, b2));
+        const int mx2 = std::max(r2, std::max(g2, b2));
+        const int light2 = (mn2 + mx2) / 2;
+
+        return (ascending ? light1 < light2: light2 < light1);
+      }
+
+      default: {
+        ASSERT(false);
+        return false;
+      }
     }
-
-    if (!ascending)
-      std::swap(value1, value2);
-
-    return (value1 < value2);
   }
 };
 

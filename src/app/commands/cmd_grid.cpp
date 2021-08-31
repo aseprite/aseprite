@@ -131,7 +131,6 @@ void GridSettingsCommand::onExecute(Context* context)
     tx.commit();
 
     auto& docPref = Preferences::instance().document(site.document());
-    docPref.grid.bounds(bounds);
     if (!docPref.show.grid()) // Make grid visible
       docPref.show.grid(true);
   }

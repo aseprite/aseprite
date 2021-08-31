@@ -126,6 +126,10 @@ protected:
 };
 ```
 
+## Const
+
+* [NL.26: Use conventional const notation](https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#nl26-use-conventional-const-notation)
+
 ## C++11
 
 We are using some modern C++ (C++11, C++14, etc.) features, mainly:

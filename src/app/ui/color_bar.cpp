@@ -856,7 +856,9 @@ void ColorBar::onRemapPalButtonClick()
       }
 
       color_t oldTransparent = sprite->transparentColor();
-      color_t newTransparent = remap[oldTransparent];
+      color_t newTransparent = (remap[oldTransparent] >= 0) ? remap[oldTransparent] : oldTransparent;
+      if (newTransparent >= get_current_palette()->size())
+        newTransparent = get_current_palette()->size() - 1;
       if (oldTransparent != newTransparent)
         tx(new cmd::SetTransparentColor(sprite, newTransparent));
 
