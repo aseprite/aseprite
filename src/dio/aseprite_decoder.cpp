@@ -502,12 +502,14 @@ doc::Layer* AsepriteDecoder::readLayerChunk(AsepriteHeader* header,
   }
 
   if (layer) {
-    if (layer->isImage() && !(flags & int(doc::LayerFlags::Background))) {
-      // Only transparent layers can have blend mode and opacity
+    if (layer->isImage() &&
+        // Only transparent layers can have blend mode and opacity
+        !(flags & int(doc::LayerFlags::Background))) {
       static_cast<doc::LayerImage*>(layer)->setBlendMode((doc::BlendMode)blendmode);
       if (header->flags & ASE_FILE_FLAG_LAYER_WITH_OPACITY)
         static_cast<doc::LayerImage*>(layer)->setOpacity(opacity);
     }
+
     // flags
     layer->setFlags(static_cast<doc::LayerFlags>(
                       flags &
