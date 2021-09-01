@@ -76,7 +76,7 @@ void ChangeColorCommand::onExecute(Context* context)
       break;
     case IncrementIndex: {
       const int palSize = get_current_palette()->size();
-      if (palSize > 1) {
+      if (palSize >= 1) {
         // Seems safe to assume getIndex() will return a
         // positive number, so use truncation modulo.
         color = app::Color::fromIndex((color.getIndex() + 1) % palSize);
@@ -85,7 +85,7 @@ void ChangeColorCommand::onExecute(Context* context)
     }
     case DecrementIndex: {
       const int palSize = get_current_palette()->size();
-      if (palSize > 1) {
+      if (palSize >= 1) {
         // Floor modulo.
         color = app::Color::fromIndex(((color.getIndex() - 1) % palSize + palSize) % palSize);
       }
