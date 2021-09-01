@@ -15,6 +15,7 @@
 #include "app/color_spaces.h"
 #include "app/color_utils.h"
 #include "app/console.h"
+#include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/ui/editor/editor.h"
