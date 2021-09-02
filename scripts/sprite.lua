@@ -146,7 +146,6 @@ do
   assert(#s.frames == 2)
 
   s = Sprite{ fromFile="_test1.png" }
-  print(#s.frames)
   assert(#s.frames == 2)
 
   s = Sprite{ fromFile="_test1.png", oneFrame=true }
