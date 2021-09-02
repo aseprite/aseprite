@@ -110,12 +110,14 @@ public:
 template<>
 class BlenderHelper<IndexedTraits, IndexedTraits> {
   BlendMode m_blendMode;
-  color_t m_mask_color;
+  color_t m_maskColor;
+  int m_paletteSize;
 public:
   BlenderHelper(const Image* src, const Palette* pal, BlendMode blendMode, const bool newBlend)
   {
     m_blendMode = blendMode;
-    m_mask_color = src->maskColor();
+    m_maskColor = src->maskColor();
+    m_paletteSize = pal->size();
   }
   inline IndexedTraits::pixel_t
   operator()(const IndexedTraits::pixel_t& dst,
@@ -126,13 +128,13 @@ public:
       return src;
     }
     else if (m_blendMode == BlendMode::DST_OVER) {
-      if (dst != m_mask_color)
+      if (dst != m_maskColor)
         return dst;
       else
         return src;
     }
     else {
-      if (src != m_mask_color)
+      if (src != m_maskColor && src < m_paletteSize)
         return src;
       else
         return dst;
