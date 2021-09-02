@@ -154,3 +154,46 @@ do
   s = Sprite{ fromFile="_test1.png", oneFrame=false }
   assert(#s.frames == 2)
 end
+
+-- Issues with sprites having pixel with indexes out of palette bounds:
+-- Saving png failed (https://github.com/aseprite/aseprite/issues/2842)
+do
+  local s = Sprite(2, 2, ColorMode.INDEXED)
+  assert(#s.palettes == 1)
+
+  s.transparentColor = 1
+  s.palettes[1]:resize(8)
+  assert(#s.palettes[1] == 8)
+  s.cels[1].image:clear(2)
+  s.cels[1].image:putPixel(0, 0, 7)
+  s:saveAs("_test1_.png")  -- OK
+
+  s.palettes[1]:resize(4)
+  assert(#s.palettes[1] == 4)
+  local result = s:saveAs("_test2_palerr_.png") -- Used to fail
+
+  -- If result=false we got a "libpng: Wrote palette index exceeding num_palette"
+  assert(result)
+
+  local s2 = app.open("_test2_palerr_.png")
+  assert(s2 ~= nil)
+  print(s2.cels[1].image:getPixel(0, 0))
+  assert(s2.cels[1].image:getPixel(0, 0) == 1)
+end
+-- Flatten visible layers uses indices outside the palette range as opaque colors instead of transparent color (https://github.com/aseprite/aseprite/issues/2912)
+do
+  local s = Sprite(2, 2, ColorMode.INDEXED)
+
+  s.transparentColor = 0
+  s.palettes[1]:resize(4)
+
+  s.cels[1].image:clear(1)
+  local l = s:newLayer()
+  s:newCel(l)
+  s.cels[2].image:putPixel(0, 0, 2)
+  s.cels[2].image:putPixel(1, 0, 7)
+  s:flatten()
+
+  assert(s.cels[1].image:getPixel(0, 0) == 2)
+  assert(s.cels[1].image:getPixel(1, 0) == 1) -- Get the color of the first layer
+end
