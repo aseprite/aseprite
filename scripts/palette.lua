@@ -85,15 +85,3 @@ do
   spr:setPalette(db32)
   assert(sprPal == db32)
 end
-
--- Test crash
-do
-  local p = Palette{ fromResource="DB32" }
-  p:saveAs("_test_.jpg")
-
-  local q = Palette{ fromFile="_test_.gpl" }
-  assert(#p == #q)
-  for i=0,#q-1 do
-    assert(p:getColor(i) == q:getColor(i))
-  end
-end
