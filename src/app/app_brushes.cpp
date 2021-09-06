@@ -379,13 +379,13 @@ void AppBrushes::load(const std::string& filename)
 
     // Pixel-perfect
     if (TiXmlElement* pixelPerfectElem = brushElem->FirstChildElement("pixelperfect")) {
-      pixelPerfect = bool_attr_is_true(pixelPerfectElem, "value");
+      pixelPerfect = bool_attr(pixelPerfectElem, "value", false);
       flags |= int(BrushSlot::Flags::PixelPerfect);
     }
 
     // Image color (enabled by default for backward compatibility)
     if (!brushElem->Attribute("imagecolor") ||
-        bool_attr_is_true(brushElem, "imagecolor"))
+        bool_attr(brushElem, "imagecolor", false))
       flags |= int(BrushSlot::Flags::ImageColor);
 
     if (flags != 0)
