@@ -487,21 +487,28 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
   else if (elem_name == "image") {
     if (!widget) {
       const char* file = elem->Attribute("file");
+      const char* icon = elem->Attribute("icon");
 
-      // Load image
-      std::string icon(file);
+      if (file) {
+        ResourceFinder rf;
+        rf.includeDataDir(file);
+        if (!rf.findFirst())
+          throw base::Exception("File %s not found", file);
 
-      ResourceFinder rf;
-      rf.includeDataDir(file);
-      if (!rf.findFirst())
-        throw base::Exception("File %s not found", file);
-
-      try {
-        os::SurfaceRef sur = os::instance()->loadRgbaSurface(rf.filename().c_str());
-        widget = new ImageView(sur, 0);
+        try {
+          os::SurfaceRef sur = os::instance()->loadRgbaSurface(rf.filename().c_str());
+          widget = new ImageView(sur, 0);
+        }
+        catch (...) {
+          throw base::Exception("Error loading %s file", file);
+        }
       }
-      catch (...) {
-        throw base::Exception("Error loading %s file", file);
+
+      if (icon) {
+        SkinPartPtr part = SkinTheme::instance()->getPartById(std::string(icon));
+        if (part) {
+          widget = new ImageView(part->bitmapRef(0), 0);
+        }
       }
     }
   }
