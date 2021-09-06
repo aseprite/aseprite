@@ -16,7 +16,13 @@ namespace ui {
   {
   public:
     CloseEvent(Component* source)
-      : Event(source) { }
+      : Event(source)
+      , m_canceled(false) { }
+    void cancel() { m_canceled = true; }
+    bool canceled() const { return m_canceled; }
+
+  private:
+    bool m_canceled;
   };
 
 } // namespace ui

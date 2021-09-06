@@ -87,6 +87,7 @@ namespace ui {
 
     // New events
     virtual void onOpen(Event& ev);
+    virtual void onBeforeClose(CloseEvent& ev) {}
     virtual void onClose(CloseEvent& ev);
     virtual void onHitTest(HitTestEvent& ev);
     virtual void onWindowResize();

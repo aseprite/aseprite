@@ -462,7 +462,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
   while (xmlKey) {
     const char* command_name = xmlKey->Attribute("command");
     const char* command_key = get_shortcut(xmlKey);
-    bool removed = bool_attr_is_true(xmlKey, "removed");
+    bool removed = bool_attr(xmlKey, "removed", false);
 
     if (command_name) {
       Command* command = Commands::instance()->byId(command_name);
@@ -521,7 +521,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
   while (xmlKey) {
     const char* tool_id = xmlKey->Attribute("tool");
     const char* tool_key = get_shortcut(xmlKey);
-    bool removed = bool_attr_is_true(xmlKey, "removed");
+    bool removed = bool_attr(xmlKey, "removed", false);
 
     if (tool_id) {
       tools::Tool* tool = App::instance()->toolBox()->getToolById(tool_id);
@@ -549,7 +549,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
   while (xmlKey) {
     const char* tool_id = xmlKey->Attribute("tool");
     const char* tool_key = get_shortcut(xmlKey);
-    bool removed = bool_attr_is_true(xmlKey, "removed");
+    bool removed = bool_attr(xmlKey, "removed", false);
 
     if (tool_id) {
       tools::Tool* tool = App::instance()->toolBox()->getToolById(tool_id);
@@ -577,7 +577,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
   while (xmlKey) {
     const char* action_id = xmlKey->Attribute("action");
     const char* action_key = get_shortcut(xmlKey);
-    bool removed = bool_attr_is_true(xmlKey, "removed");
+    bool removed = bool_attr(xmlKey, "removed", false);
 
     if (action_id) {
       KeyAction action = base::convert_to<KeyAction, std::string>(action_id);
@@ -612,7 +612,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
   while (xmlKey) {
     const char* action_id = xmlKey->Attribute("action");
     const char* action_key = get_shortcut(xmlKey);
-    bool removed = bool_attr_is_true(xmlKey, "removed");
+    bool removed = bool_attr(xmlKey, "removed", false);
 
     if (action_id) {
       WheelAction action = base::convert_to<WheelAction, std::string>(action_id);

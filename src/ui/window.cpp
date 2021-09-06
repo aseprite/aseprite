@@ -404,14 +404,18 @@ void Window::openWindowInForeground()
 
 void Window::closeWindow(Widget* closer)
 {
+  // Close event
+  CloseEvent ev(closer);
+  onBeforeClose(ev);
+  if (ev.canceled())
+    return;
+
   m_closer = closer;
   if (m_ownDisplay)
     m_lastFrame = m_display->nativeWindow()->frame();
 
   manager()->_closeWindow(this, true);
 
-  // Close event
-  CloseEvent ev(closer);
   onClose(ev);
 }
 

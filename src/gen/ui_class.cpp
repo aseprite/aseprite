@@ -116,6 +116,9 @@ static Item convert_to_item(TiXmlElement* elem)
   if (name == "hbox")
     return item.typeIncl("ui::HBox",
                          "ui/box.h");
+  if (name == "image")
+    return item.typeIncl("ui::ImageView",
+                         "ui/image_view.h");
   if (name == "item" &&
       parent == "buttonset")
     return item.typeIncl("app::ButtonSet::Item",
