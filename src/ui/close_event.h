@@ -16,7 +16,8 @@ namespace ui {
   {
   public:
     CloseEvent(Component* source)
-      : m_canceled(false), Event(source) { }
+      : Event(source)
+      , m_canceled(false) { }
     void cancel() { m_canceled = true; }
     bool canceled() const { return m_canceled; }
 
