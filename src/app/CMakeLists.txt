@@ -367,6 +367,7 @@ if(ENABLE_UI)
     ui/editor/state_with_wheel_behavior.cpp
     ui/editor/transform_handles.cpp
     ui/editor/zooming_state.cpp
+    ui/enter_license.cpp
     ui/export_file_window.cpp
     ui/expr_entry.cpp
     ui/file_list.cpp
