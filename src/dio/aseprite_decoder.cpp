@@ -836,6 +836,14 @@ doc::Cel* AsepriteDecoder::readCelChunk(doc::Sprite* sprite,
           doc::fix_old_tilemap(image.get(), ts, tileIDMask, flagsMask);
         }
 
+        // normalize the tile, so its value is never out of bounds
+        const doc::tile_index tilesetSize = ts->size();
+        doc::transform_image<doc::TilemapTraits>(
+          image.get(),
+          [tilesetSize](const doc::tile_t& tile){
+            return doc::tile_geti(tile) >= tilesetSize ? doc::notile : tile;
+          });
+
         cel.reset(new doc::Cel(frame, image));
         cel->setPosition(x, y);
         cel->setOpacity(opacity);
