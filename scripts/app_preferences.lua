@@ -102,6 +102,24 @@ do
   end
 end
 
+do -- Test that undoing grid bounds, updates the grid in the preferences correctly
+  local doc = Sprite(32, 32)
+  assert(doc.gridBounds == Rectangle(0, 0, 64, 64))
+  assert(app.preferences.document(doc).grid.bounds == Rectangle(0, 0, 64, 64))
+
+  doc.gridBounds = Rectangle(0, 0, 4, 4)
+  assert(doc.gridBounds == Rectangle(0, 0, 4, 4))
+  assert(app.preferences.document(doc).grid.bounds == Rectangle(0, 0, 4, 4))
+
+  app.undo()
+  assert(doc.gridBounds == Rectangle(0, 0, 64, 64))
+  assert(app.preferences.document(doc).grid.bounds == Rectangle(0, 0, 64, 64))
+
+  app.redo()
+  assert(doc.gridBounds == Rectangle(0, 0, 4, 4))
+  assert(app.preferences.document(doc).grid.bounds == Rectangle(0, 0, 4, 4))
+end
+
 do -- Test symmetry preferences
   do -- File with default preferences
     local doc = Sprite(200, 100)
