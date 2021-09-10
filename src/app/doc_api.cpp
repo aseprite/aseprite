@@ -261,17 +261,36 @@ bool DocApi::cropCel(LayerImage* layer,
       newCelBounds.offset(-bounds.origin());
 
       gfx::Point paintPos(newCelBounds.x - newCelPos.x,
-                          newCelBounds.y - newCelPos.y);
+        newCelBounds.y - newCelPos.y);
 
+      const color_t bg = image->pixelFormat() == IMAGE_TILEMAP ?
+                           notile :
+                           m_document->bgColor(layer);
       newCelPos = newCelBounds.origin();
 
-      // Crop the image
+      doc::Grid grid;
+      if (layer->isTilemap()) {
+        const Tileset* tileset = static_cast<LayerTilemap*>(layer)->tileset();
+        grid = tileset->grid();
+
+        const gfx::Rect  roiRect(bounds.origin() - cel->position(),
+                                 newCelBounds.size());
+        const gfx::Size newImageSize = grid.canvasToTile(roiRect).size();
+        newCelBounds.setSize(newImageSize);
+
+        const gfx::Point prevPaintPos = paintPos;
+        paintPos = grid.canvasToTile(paintPos);
+
+        const gfx::Point celPaintPixelPos = grid.tileToCanvas(paintPos);
+        newCelPos += (celPaintPixelPos - prevPaintPos);
+      }
+
+      // crop the image
       ImageRef newImage(
         crop_image(image,
                    paintPos.x, paintPos.y,
                    newCelBounds.w, newCelBounds.h,
-                   image->pixelFormat() == IMAGE_TILEMAP ?
-                     notile : m_document->bgColor(layer)));
+                   bg));
 
       // Try to shrink the image ignoring transparent borders
       gfx::Rect frameBounds;
@@ -284,10 +303,11 @@ bool DocApi::cropCel(LayerImage* layer,
             crop_image(newImage.get(),
                        frameBounds.x, frameBounds.y,
                        frameBounds.w, frameBounds.h,
-                       image->pixelFormat() == IMAGE_TILEMAP ?
-                         notile : m_document->bgColor(layer)));
-
-          newCelPos += frameBounds.origin();
+                       bg));
+          if (layer->isTilemap())
+            newCelPos += grid.tileToCanvas(frameBounds.origin());
+          else
+            newCelPos += frameBounds.origin();
         }
       }
       else {
@@ -295,7 +315,7 @@ bool DocApi::cropCel(LayerImage* layer,
         return false;
       }
 
-      // If it's the same iamge, we can re-use the cel image and just
+      // If it's the same image, we can re-use the cel image and just
       // move the cel position.
       if (!is_same_image(cel->image(), newImage.get())) {
         replaceImage(cel->sprite(),
