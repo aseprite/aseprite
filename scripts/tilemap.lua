@@ -578,3 +578,159 @@ do
   assert(i:getPixel(4, 6) ~= 0)
   assert(i:getPixel(8, 7) ~= 0)
 end
+
+-----------------------------------------------------------------------
+-- Test CanvasSize with tilemaps when we trim out content
+-----------------------------------------------------------------------
+
+do
+  local sprite = Sprite(32, 32)
+  sprite.gridBounds = Rectangle(0, 0, 16, 16)
+
+  -- Create a 2x2 tilemap with 4 tiles drawing an ellipse
+  app.command.NewLayer{ tilemap=true }
+  app.useTool{
+    tool='filled_ellipse',
+    color=Color{ r=255, g=255, b=0 },
+    tilesetMode=TilesetMode.AUTO,
+    points={ Point(0, 0), Point(31, 31) }
+  }
+  assert(#sprite.layers == 2)
+  -- remove the unused layer image
+  sprite:deleteLayer("Layer 1")
+  assert(#sprite.layers == 1)
+
+  local celMap = app.activeLayer.cels[1]
+  assert(celMap.bounds == Rectangle(0, 0, 32, 32))
+
+  -- resize the canvas to 16x16 starting point(4,9)
+  -- covering a large part of the tile in 0,0
+  app.command.CanvasSize{
+    bounds=Rectangle(4,9,16,16),
+    trimOutside=true
+  }
+
+  assert(#app.activeLayer.cels == 1)
+
+  expect_eq(celMap.bounds.width, 32)
+  expect_eq(celMap.bounds.height, 32)
+  expect_eq(sprite.bounds.width, 16)
+  expect_eq(sprite.bounds.height, 16)
+
+  -- the expected visible part of the image is the part
+  -- specified in the bounds
+  expect_eq(celMap.bounds.x, -4)
+  expect_eq(celMap.bounds.y, -9)
+
+  -- grid is 16x16, so expected image width/height is 2
+  expect_eq(celMap.image.width, 2)
+  expect_eq(celMap.image.height, 2)
+  expect_eq(celMap.image:getPixel(0,0), 1)
+  expect_eq(celMap.image:getPixel(1,0), 2)
+  expect_eq(celMap.image:getPixel(0,1), 3)
+  expect_eq(celMap.image:getPixel(1,1), 4)
+
+  -- undo the last canvas resize
+  app.command.Undo()
+
+  -- reposition the cel in the sprite
+  celMap.position = Point(0,16)
+  expect_eq(celMap.bounds, Rectangle(0, 16, 32, 32))
+
+  -- deleting the whole tilemap cel when it's outside the bounds
+  app.command.CanvasSize {
+    bounds=Rectangle(0,0,8,8),
+    trimOutside=true
+  }
+
+  expect_eq(#app.activeLayer.cels, 0)
+  expect_eq(sprite.bounds.width, 8)
+  expect_eq(sprite.bounds.height, 8)
+
+  -- undo canvas resize
+  app.command.Undo()
+
+  -- undo set position
+  app.command.Undo()
+  expect_eq(celMap.bounds, Rectangle(0, 0, 32, 32))
+
+  app.command.CanvasSize{
+    bounds=Rectangle(16,16,16,16),
+    trimOutside=true
+  }
+
+  assert(celMap ~= nil)
+  expect_eq(celMap.bounds.x, 0)
+  expect_eq(celMap.bounds.y, 0)
+  expect_eq(celMap.image.width, 1)
+  expect_eq(celMap.image.height, 1)
+  expect_eq(celMap.position, Point(0,0))
+  expect_eq(celMap.image:getPixel(0,0), 4)
+end
+
+-----------------------------------------------------------------------
+-- Test CanvasSize when the bounds of an image is shrunken
+-----------------------------------------------------------------------
+
+do
+  local sprite = Sprite(32, 32)
+  sprite.gridBounds = Rectangle(0, 0, 8, 8)
+
+  app.command.NewLayer{ tilemap=true }
+  local tilemapLayer = sprite.layers[2]
+
+  -- tile 1
+  app.useTool {
+    tool='pencil', color=Color{r=255, b=0, g=255},
+    layer=tilemapLayer,
+    points={ Point(7,8), Point(0, 15) },
+    tilesetMode=TilesetMode.AUTO
+  }
+
+  local celMap = tilemapLayer.cels[1]
+
+  -- tile 2
+  app.useTool {
+    tool='pencil', color=Color{r=0, b=255, g=255},
+    cel=celMap,
+    points={ Point(24,16), Point(31, 23) },
+    tilesetMode=TilesetMode.AUTO
+  }
+
+  -- tile 3
+  app.useTool {
+    tool='pencil', color=Color{r=0, b=0, g=255},
+    cel=celMap,
+    points={ Point(30,24), Point(24, 31) },
+    tilesetMode=TilesetMode.AUTO
+  }
+
+  -- tile 4
+  app.useTool {
+    tool='pencil', color=Color{r=0, b=255, g=0},
+    cel=celMap,
+    points={ Point(17,24), Point(23, 31) },
+    tilesetMode=TilesetMode.AUTO
+  }
+
+  -- crop this sprite a little below pixel(0,0)
+  app.command.CanvasSize {
+    bounds=Rectangle(8,16,20,16),
+    trimOutside=true, ui=false
+  }
+
+  expect_eq(sprite.bounds.width, 20)
+  expect_eq(sprite.bounds.height, 16)
+
+  -- ideally, we expect a 3x2 image, however, some parts of top and left
+  -- of the image are empty/notile, so it's optimized by shrunking it
+  -- we got paddings instead.
+
+  expect_eq(celMap.image.width, 2)
+  expect_eq(celMap.image.height, 2)
+  expect_eq(celMap.image:getPixel(0, 0), 0)
+  expect_eq(celMap.image:getPixel(1, 0), 2)
+  expect_eq(celMap.image:getPixel(1, 1), 3)
+  expect_eq(celMap.image:getPixel(0, 1), 4)
+
+end
