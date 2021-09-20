@@ -115,7 +115,7 @@ static bool set_native_cursor_on_all_displays(Display* display,
     else {
       result |= nativeWindow->setCursor(cursor);
     }
-    display = display->parentDisplay();
+    display = (display ? display->parentDisplay() : nullptr);
   }
   return result;
 }
