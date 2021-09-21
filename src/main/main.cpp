@@ -16,10 +16,16 @@
 #include "app/send_crash.h"
 #include "base/exception.h"
 #include "base/memory.h"
-#include "base/memory_dump.h"
 #include "base/system_console.h"
 #include "os/error.h"
 #include "os/system.h"
+#include "ver/info.h"
+
+#if ENABLE_SENTRY
+  #include "sentry.h"
+#else
+  #include "base/memory_dump.h"
+#endif
 
 #include <clocale>
 #include <cstdlib>
@@ -59,6 +65,28 @@ namespace {
   };
 #endif
 
+#if ENABLE_SENTRY
+  class Sentry {
+  public:
+    Sentry() {
+      sentry_options_t* options = sentry_options_new();
+      sentry_options_set_dsn(options, SENTRY_DNS);
+
+      std::string release = "aseprite@";
+      release += get_app_version();
+      sentry_options_set_release(options, release.c_str());
+
+#if _DEBUG
+      sentry_options_set_debug(options, 1);
+#endif
+      sentry_init(options);
+    }
+    ~Sentry() {
+      sentry_close();
+    }
+  };
+#endif
+
 }
 
 // Aseprite entry point. (Called from "os" library.)
@@ -78,13 +106,18 @@ int app_main(int argc, char* argv[])
 #endif
 
   try {
+#if ENABLE_SENTRY
+    Sentry sentry;
+#else
     base::MemoryDump memoryDump;
+#endif
     MemLeak memleak;
     base::SystemConsole systemConsole;
     app::AppOptions options(argc, const_cast<const char**>(argv));
     os::SystemRef system(os::make_system());
     app::App app;
 
+#if !ENABLE_SENTRY
     // Change the memory dump filename to save on disk (.dmp
     // file). Note: Only useful on Windows.
     {
@@ -92,6 +125,7 @@ int app_main(int argc, char* argv[])
       if (!fn.empty())
         memoryDump.setFileName(fn);
     }
+#endif
 
     const int code = app.initialize(options);
 
