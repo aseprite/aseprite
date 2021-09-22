@@ -76,6 +76,8 @@ namespace app {
 
     doc::tile_index getFgTile() const;
     doc::tile_index getBgTile() const;
+    void setFgTile(doc::tile_t tile);
+    void setBgTile(doc::tile_t tile);
 
     PaletteView* getPaletteView() { return &m_paletteView; }
     PaletteView* getTilesView() { return &m_tilesView; }

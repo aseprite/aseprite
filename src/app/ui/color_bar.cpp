@@ -409,6 +409,22 @@ void ColorBar::setBgColor(const app::Color& color)
     onColorButtonChange(color);
 }
 
+void ColorBar::setFgTile(doc::tile_t tile)
+{
+  m_fgTile.setTile(tile);
+  m_tilesView.selectColor(tile);
+  if (!m_fromPalView)
+    onFgTileButtonChange(tile);
+}
+
+void ColorBar::setBgTile(doc::tile_t tile)
+{
+  m_bgTile.setTile(tile);
+  m_tilesView.selectColor(tile);
+  if (!m_fromPalView)
+    onBgTileButtonChange(tile);
+}
+
 doc::tile_index ColorBar::getFgTile() const
 {
   return m_fgTile.getTile();
@@ -1367,14 +1383,18 @@ void ColorBar::onColorButtonChange(const app::Color& color)
 
 void ColorBar::onFgTileButtonChange(doc::tile_t tile)
 {
-  if (!m_fromPref)
+  if (!m_fromPref) {
     Preferences::instance().colorBar.fgTile(tile);
+    m_tilesView.deselect();
+  }
 }
 
 void ColorBar::onBgTileButtonChange(doc::tile_t tile)
 {
-  if (!m_fromPref)
+  if (!m_fromPref) {
     Preferences::instance().colorBar.bgTile(tile);
+    m_tilesView.deselect();
+  }
 }
 
 void ColorBar::onPickSpectrum(const app::Color& color, ui::MouseButton button)
@@ -1547,10 +1567,8 @@ void ColorBar::onNewInputPriority(InputChainElement* element,
     return;
 
   if (element != this) {
-    if (m_tilemapMode == TilemapMode::Tiles)
-      m_tilesView.deselect();
-    else
-      m_paletteView.deselect();
+    m_paletteView.deselect();
+    m_tilesView.deselect();
   }
 }
 
