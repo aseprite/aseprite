@@ -364,9 +364,14 @@ void CanvasSizeCommand::onExecute(Context* context)
 
     Preferences::instance().canvasSize.trimOutside(params.trimOutside());
 
-    bounds.enlarge(
-      gfx::Border(params.left(), params.top(),
-                  params.right(), params.bottom()));
+    if (params.bounds.isSet()) {
+      bounds = params.bounds();
+    }
+    else {
+      bounds.enlarge(
+        gfx::Border(params.left(), params.top(),
+                    params.right(), params.bottom()));
+    }
   }
 #endif
 
