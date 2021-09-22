@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2021  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -56,10 +56,11 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
   else {
     // Alt+mouse wheel changes the fg/bg colors
     if (msg->altPressed()) {
+      bool tilemapMode = (editor->getSite().tilemapMode() == TilemapMode::Tiles);
       if (msg->shiftPressed())
-        wheelAction = WheelAction::BgColor;
+        wheelAction = (tilemapMode ? WheelAction::BgTile : WheelAction::BgColor);
       else
-        wheelAction = WheelAction::FgColor;
+        wheelAction = (tilemapMode ? WheelAction::FgTile : WheelAction::FgColor);
     }
     // Normal behavior: mouse wheel zooms If the message is from a
     // precise wheel i.e. a trackpad/touch-like device, we scroll by
@@ -127,6 +128,24 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
       int newIndex = ColorBar::instance()->getBgColor().getIndex() + int(dz);
       newIndex = base::clamp(newIndex, 0, lastIndex);
       ColorBar::instance()->setBgColor(app::Color::fromIndex(newIndex));
+      break;
+    }
+
+    case WheelAction::FgTile: {
+      auto tilesView = ColorBar::instance()->getTilesView();
+      int lastIndex = tilesView->tileset()->size()-1;
+      int newIndex = ColorBar::instance()->getFgTile() + int(dz);
+      newIndex = base::clamp(newIndex, 0, lastIndex);
+      ColorBar::instance()->setFgTile(newIndex);
+      break;
+    }
+
+    case WheelAction::BgTile: {
+      auto tilesView = ColorBar::instance()->getTilesView();
+      int lastIndex = tilesView->tileset()->size()-1;
+      int newIndex = ColorBar::instance()->getBgTile() + int(dz);
+      newIndex = base::clamp(newIndex, 0, lastIndex);
+      ColorBar::instance()->setBgTile(newIndex);
       break;
     }
 
