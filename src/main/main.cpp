@@ -22,7 +22,7 @@
 #include "ver/info.h"
 
 #if ENABLE_SENTRY
-  #include "sentry.h"
+  #include "app/sentry_wrapper.h"
 #else
   #include "base/memory_dump.h"
 #endif
@@ -65,28 +65,6 @@ namespace {
   };
 #endif
 
-#if ENABLE_SENTRY
-  class Sentry {
-  public:
-    Sentry() {
-      sentry_options_t* options = sentry_options_new();
-      sentry_options_set_dsn(options, SENTRY_DNS);
-
-      std::string release = "aseprite@";
-      release += get_app_version();
-      sentry_options_set_release(options, release.c_str());
-
-#if _DEBUG
-      sentry_options_set_debug(options, 1);
-#endif
-      sentry_init(options);
-    }
-    ~Sentry() {
-      sentry_close();
-    }
-  };
-#endif
-
 }
 
 // Aseprite entry point. (Called from "os" library.)
@@ -107,7 +85,7 @@ int app_main(int argc, char* argv[])
 
   try {
 #if ENABLE_SENTRY
-    Sentry sentry;
+    app::Sentry sentry;
 #else
     base::MemoryDump memoryDump;
 #endif
@@ -117,7 +95,9 @@ int app_main(int argc, char* argv[])
     os::SystemRef system(os::make_system());
     app::App app;
 
-#if !ENABLE_SENTRY
+#if ENABLE_SENTRY
+    sentry.init();
+#else
     // Change the memory dump filename to save on disk (.dmp
     // file). Note: Only useful on Windows.
     {
