@@ -20,6 +20,11 @@ public:
   void init();
   ~Sentry();
 
+  static bool requireConsent();
+  static bool consentGiven();
+  static void giveConsent();
+  static void revokeConsent();
+
 private:
   void setupDirs(sentry_options_t* options);
 

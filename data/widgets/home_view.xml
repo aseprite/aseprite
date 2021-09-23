@@ -1,5 +1,5 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2019  Igara Studio S.A. -->
+<!-- Copyright (C) 2019-2021  Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2017  David Capello -->
 <gui>
   <vbox noborders="true" id="home_view" border="4" childspacing="2" expansive="true">
@@ -14,6 +14,8 @@
       </vbox>
       <boxfiller />
       <vbox border="4">
+        <check id="share_crashdb" text="@.share_crashdb"
+               tooltip="@.share_crashdb_tooltip" style="workspace_check_box" />
         <link id="check_update" text="" style="workspace_link" />
       </vbox>
     </hbox>

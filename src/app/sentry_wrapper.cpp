@@ -33,6 +33,9 @@ void Sentry::init()
 
   setupDirs(options);
 
+  // We require the user consent to upload files.
+  sentry_options_set_require_user_consent(options, 1);
+
   if (sentry_init(options) == 0)
     m_init = true;
 }
@@ -41,6 +44,30 @@ Sentry::~Sentry()
 {
   if (m_init)
     sentry_close();
+}
+
+// static
+bool Sentry::requireConsent()
+{
+  return (sentry_user_consent_get() != SENTRY_USER_CONSENT_GIVEN);
+}
+
+// static
+bool Sentry::consentGiven()
+{
+  return (sentry_user_consent_get() == SENTRY_USER_CONSENT_GIVEN);
+}
+
+// static
+void Sentry::giveConsent()
+{
+  sentry_user_consent_give();
+}
+
+// static
+void Sentry::revokeConsent()
+{
+  sentry_user_consent_revoke();
 }
 
 void Sentry::setupDirs(sentry_options_t* options)

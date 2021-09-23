@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -45,6 +45,10 @@ namespace app {
     // When crash::DataRecovery finish to search for sessions, this
     // function is called.
     void dataRecoverySessionsAreReady();
+
+#if ENABLE_SENTRY
+    void updateConsentCheckbox();
+#endif
 
     // TabView implementation
     std::string getTabText() override;

@@ -723,6 +723,9 @@
         <style id="workspace_tabs">
             <background color="workspace" />
         </style>
+        <style id="workspace_check_box" extends="check_box" padding="4">
+          <text color="workspace_text" align="left middle" x="14" />
+        </style>
         <style id="tab">
             <background part="tab_normal" align="middle" />
             <background part="tab_active" align="middle" state="focus" />
