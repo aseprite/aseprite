@@ -211,9 +211,7 @@ void HomeView::onCheckingUpdates()
 
 void HomeView::onUpToDate()
 {
-  checkUpdate()->setText(
-    fmt::format(Strings::home_view_is_up_to_date(), get_app_name()));
-  checkUpdate()->setVisible(true);
+  checkUpdate()->setVisible(false);
 
   layout();
 }
