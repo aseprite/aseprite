@@ -52,10 +52,12 @@ bool FillCommand::onEnabled(Context* ctx)
                       ContextFlags::ActiveLayerIsImage)) {
     return true;
   }
+#if ENABLE_UI
   else if (current_editor &&
            current_editor->isMovingPixels()) {
     return true;
   }
+#endif
   else
     return false;
 }
