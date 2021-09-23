@@ -75,7 +75,8 @@ HomeView::HomeView()
 #if ENABLE_SENTRY
   // Show this option in home tab only when we require consent for the
   // first time and there is crash data available to report
-  if (Sentry::requireConsent()) {
+  if (Sentry::requireConsent() &&
+      Sentry::areThereCrashesToReport()) {
     shareCrashdb()->setVisible(true);
     shareCrashdb()->Click.connect(
       [this]{

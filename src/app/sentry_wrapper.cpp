@@ -11,12 +11,16 @@
 #include "app/sentry_wrapper.h"
 
 #include "app/resource_finder.h"
+#include "base/fs.h"
 #include "base/string.h"
 #include "ver/info.h"
 
 #include "sentry.h"
 
 namespace app {
+
+// Directory where Sentry database is saved.
+std::string Sentry::m_dbdir;
 
 void Sentry::init()
 {
@@ -70,17 +74,32 @@ void Sentry::revokeConsent()
   sentry_user_consent_revoke();
 }
 
+// static
+bool Sentry::areThereCrashesToReport()
+{
+  if (m_dbdir.empty())
+    return false;
+
+  for (auto f : base::list_files(base::join_path(m_dbdir, "completed"))) {
+    if (base::get_file_extension(f) == "dmp")
+      return true;              // At least one .dmp file in the completed/ directory
+  }
+  return false;
+}
+
 void Sentry::setupDirs(sentry_options_t* options)
 {
   ResourceFinder rf;
   rf.includeUserDir("crashdb");
-  std::string dir = rf.getFirstOrCreateDefault();
+  const std::string dir = rf.getFirstOrCreateDefault();
 
 #if SENTRY_PLATFORM_WINDOWS
   sentry_options_set_database_pathw(options, base::from_utf8(dir).c_str());
 #else
   sentry_options_set_database_path(options, dir.c_str());
 #endif
+
+  m_dbdir = dir;
 }
 
 } // namespace app

@@ -13,6 +13,8 @@
 
 #include "sentry.h"
 
+#include <string>
+
 namespace app {
 
 class Sentry {
@@ -25,10 +27,15 @@ public:
   static void giveConsent();
   static void revokeConsent();
 
+  // Returns true if there are some crash to report. Used to display
+  // the "give consent" check box for first time.
+  static bool areThereCrashesToReport();
+
 private:
   void setupDirs(sentry_options_t* options);
 
   bool m_init = false;
+  static std::string m_dbdir;
 };
 
 } // namespace app
