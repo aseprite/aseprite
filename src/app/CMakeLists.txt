@@ -403,7 +403,9 @@ if(ENABLE_UI)
 endif()
 
 set(send_crash_files)
-if(NOT ENABLE_SENTRY)
+if(ENABLE_SENTRY)
+  set(send_crash_files sentry_wrapper.cpp)
+else()
   set(send_crash_files send_crash.cpp)
 endif()
 
