@@ -22,6 +22,8 @@ public:
   void init();
   ~Sentry();
 
+  static void setUserID(const std::string& uuid);
+
   static bool requireConsent();
   static bool consentGiven();
   static void giveConsent();

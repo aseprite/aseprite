@@ -51,6 +51,14 @@ Sentry::~Sentry()
 }
 
 // static
+void Sentry::setUserID(const std::string& uuid)
+{
+  sentry_value_t user = sentry_value_new_object();
+  sentry_value_set_by_key(user, "id", sentry_value_new_string(uuid.c_str()));
+  sentry_set_user(user);
+}
+
+// static
 bool Sentry::requireConsent()
 {
   return (sentry_user_consent_get() != SENTRY_USER_CONSENT_GIVEN);
