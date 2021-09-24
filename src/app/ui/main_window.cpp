@@ -223,6 +223,13 @@ CheckUpdateDelegate* MainWindow::getCheckUpdateDelegate()
 }
 #endif
 
+#if ENABLE_SENTRY
+void MainWindow::updateConsentCheckbox()
+{
+  getHomeView()->updateConsentCheckbox();
+}
+#endif
+
 void MainWindow::showNotification(INotificationDelegate* del)
 {
   m_notifications->addLink(del);

@@ -401,6 +401,13 @@ if(ENABLE_UI)
   endif()
 endif()
 
+set(send_crash_files)
+if(ENABLE_SENTRY)
+  set(send_crash_files sentry_wrapper.cpp)
+else()
+  set(send_crash_files send_crash.cpp)
+endif()
+
 add_library(app-lib
   active_site_handler.cpp
   app.cpp
@@ -575,7 +582,6 @@ add_library(app-lib
   res/resources_loader.cpp
   resource_finder.cpp
   restore_visible_layers.cpp
-  send_crash.cpp
   shade.cpp
   site.cpp
   snap_to_grid.cpp
@@ -617,6 +623,7 @@ add_library(app-lib
   util/wrap_point.cpp
   xml_document.cpp
   xml_exception.cpp
+  ${send_crash_files}
   ${ui_app_files}
   ${app_platform_files}
   ${data_recovery_files}
@@ -676,4 +683,13 @@ endif()
 if(ENABLE_STEAM)
   add_definitions(-DENABLE_STEAM)
   target_link_libraries(app-lib steam-lib)
+endif()
+
+if(ENABLE_SENTRY)
+  target_compile_definitions(app-lib PUBLIC
+    -DENABLE_SENTRY
+    -DSENTRY_BUILD_STATIC=1
+    -DSENTRY_DNS="${SENTRY_DNS}")
+  add_subdirectory(${SENTRY_DIR} sentry)
+  target_link_libraries(app-lib sentry)
 endif()
