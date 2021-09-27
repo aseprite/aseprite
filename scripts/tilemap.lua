@@ -732,5 +732,359 @@ do
   expect_eq(celMap.image:getPixel(1, 0), 2)
   expect_eq(celMap.image:getPixel(1, 1), 3)
   expect_eq(celMap.image:getPixel(0, 1), 4)
+end
 
+----------------------------------------------------------------------
+-- Tests canvas resizing in the tilemap with tiles 1x1
+----------------------------------------------------------------------
+
+do
+  local sprite1 = Sprite(4, 4)
+  -- Create a tilemap layer which grid size is 1x1
+  sprite1.gridBounds = Rectangle(1, 1, 1, 1)
+  app.command.NewLayer{ tilemap=true }
+  -- Create a tilemap of 2x2 tiles:
+  --   ______
+  --  |  ∏∏  |
+  --  |  ∏∏  |
+  --  |      |
+  --  |______|
+  app.useTool{
+    tool='pencil',
+    color=Color{ r=255, g=0, b=0 },
+    tilesetMode=TilesetMode.AUTO,
+    points={ Point(1, 0) }
+  }
+  app.useTool{
+    tool='pencil',
+    color=Color{ r=0, g=255, b=0 },
+    tilesetMode=TilesetMode.AUTO,
+    points={ Point(2, 0) }
+  }
+  app.useTool{
+    tool='pencil',
+    color=Color{ r=0, g=0, b=255 },
+    tilesetMode=TilesetMode.AUTO,
+    points={ Point(1, 1) }
+  }
+  app.useTool{
+    tool='pencil',
+    color=Color{ r=255, g=255, b=255 },
+    tilesetMode=TilesetMode.AUTO,
+    points={ Point(2, 1) }
+  }
+
+  app.command.CanvasSize{
+    ui=false,
+    bounds=Rectangle(0,0,2,2),
+    trimOutside=true
+  }
+
+  expect_eq(app.activeLayer.cels[1].image.width, 1)
+  expect_eq(app.activeLayer.cels[1].image.height, 2)
+
+  app.command.CanvasSize{
+    ui=false,
+    bounds=Rectangle(0,0,2,1),
+    trimOutside=true
+  }
+
+  expect_eq(app.activeLayer.cels[1].image.width, 1)
+  expect_eq(app.activeLayer.cels[1].image.height, 1)
+end
+
+----------------------------------------------------------------------
+-- Tests canvas resizing in the tilemap with tiles 2x2, origin 2,1
+----------------------------------------------------------------------
+
+do
+  local sprite2 = Sprite(8, 8)
+  -- Create a tilemap layer which grid size is 2x2
+  sprite2.gridBounds = Rectangle(0, 0, 2, 2)
+  app.command.NewLayer{ tilemap=true }
+  -- Create a tilemap of 4x4 tiles:
+  --
+  --        ,--------- x = 2
+  --       |
+  --   ____v______
+  --  |           |
+  --  |    ∏∏XX   |<-- y = 1
+  --  |    ∏∏XX   |
+  --  |    OO∏∏   |
+  --  |    OO∏∏   |
+  --  |           |
+  --  |           |
+  --  |___________|
+
+  -- Making a pixel to make a Cel
+  app.useTool{
+    tool='pencil',
+    color=Color{ r=255, g=0, b=0 },
+    tilesetMode=TilesetMode.AUTO,
+    points={ Point(0, 0) }
+  }
+
+  -- Moving the Cel to de desired position
+  app.activeLayer.cels[1].position = Point(2, 1)
+
+  -- Filling with squares of 2x2
+  app.useTool{
+    tool='pencil',
+    color=Color{ r=255, g=0, b=0 },
+    tilesetMode=TilesetMode.AUTO,
+    points={ Point(3, 1), Point(3, 2), Point(2, 2) }
+  }
+
+  app.useTool{
+    tool='pencil',
+    color=Color{ r=0, g=255, b=0 },
+    tilesetMode=TilesetMode.AUTO,
+    points={ Point(4, 1), Point(5, 1), Point(5, 2), Point(4, 2) }
+  }
+
+  app.useTool{
+    tool='pencil',
+    color=Color{ r=0, g=0, b=255 },
+    tilesetMode=TilesetMode.AUTO,
+    points={ Point(2, 3), Point(3, 3), Point(3, 4), Point(2, 4) }
+  }
+
+  app.useTool{
+    tool='pencil',
+    color=Color{ r=255, g=255, b=255 },
+    tilesetMode=TilesetMode.AUTO,
+    points={ Point(4, 3), Point(5, 3), Point(5, 4), Point(4, 4) }
+  }
+  -- ======================================================================
+  -- Cutting the canvas from the bottom
+  --        ,--------- x = 2
+  --       |
+  --   ____v______
+  --  |           |
+  --  |    ∏∏XX   |<-- y = 1
+  --  |    ∏∏XX   |
+  app.command.CanvasSize{
+    ui=false,
+    bounds=Rectangle(0,0,8,3),
+    trimOutside=true
+  }
+
+  expect_eq(app.activeLayer.cels[1].position, Point(2,1))
+  expect_eq(app.activeLayer.cels[1].image.width, 2) -- width in tilemap terms
+  expect_eq(app.activeLayer.cels[1].image.height, 1) -- height in tilemap terms
+  -- ======================================================================
+  -- Cutting the canvas from the right
+  --        ,--------- x = 2
+  --       |
+  --   ____v_
+  --  |      |
+  --  |    ∏∏|<-- y = 1
+  --  |    ∏∏|
+  app.command.CanvasSize{
+    ui=false,
+    bounds=Rectangle(0,0,4,3),
+    trimOutside=true
+  }
+
+  expect_eq(app.activeLayer.cels[1].position, Point(2,1))
+  expect_eq(app.activeLayer.cels[1].image.width, 1) -- width in tilemap terms
+  expect_eq(app.activeLayer.cels[1].image.height, 1) -- height in tilemap terms
+  -- ======================================================================
+
+  app.command.Undo()
+  app.command.Undo()
+
+  -- ======================================================================
+  -- Cutting the canvas from the left, partial tile:
+  --
+  --       ,--------- x = -1
+  --      |
+  --      v ______
+  --  |    |      |
+  --  |   ∏|∏XX   |<-- y = 1
+  --  |   ∏|∏XX   |
+  --  |   O|O∏∏   |
+  --  |   O|O∏∏   |
+  --  |    |      |
+  --  |    |      |
+  --  |    |______|
+  app.command.CanvasSize{
+    ui=false,
+    bounds=Rectangle(3,0,5,8),
+    trimOutside=true
+  }
+
+  expect_eq(app.activeLayer.cels[1].position, Point(-1, 1))
+  expect_eq(app.activeLayer.cels[1].image.width, 2) -- width in tilemap terms
+  expect_eq(app.activeLayer.cels[1].image.height, 2) -- height in tilemap terms
+  -- ======================================================================
+
+  app.command.Undo()
+
+  -- ======================================================================
+  -- Cutting the canvas from the top, partial tile:
+  --
+  --        ,--------- x = 2
+  --       |
+  --   ____|______
+  --       v
+  --   ____∏∏XX___ <-- y = -1
+  --  |    ∏∏XX   |
+  --  |    OO∏∏   |
+  --  |    OO∏∏   |
+  --  |           |
+  --  |           |
+  --  |___________|
+  app.command.CanvasSize{
+    ui=false,
+    bounds=Rectangle(0,2,8,6),
+    trimOutside=true
+  }
+
+  expect_eq(app.activeLayer.cels[1].position, Point(2, -1))
+  expect_eq(app.activeLayer.cels[1].image.width, 2) -- width in tilemap terms
+  expect_eq(app.activeLayer.cels[1].image.height, 2) -- height in tilemap terms
+
+  -- ======================================================================
+
+  app.command.Undo()
+
+  -- ======================================================================
+  -- Cutting the canvas from the left, cutting first tile column:
+  --
+  --         ,--------- x = 0
+  --         |
+  --         v____
+  --  |     |     |
+  --  |     |XX   |<-- y = 1
+  --  |     |XX   |
+  --  |     |∏∏   |
+  --  |     |∏∏   |
+  --  |     |     |
+  --  |     |     |
+  --  |     |_____|
+  app.command.CanvasSize{
+    ui=false,
+    bounds=Rectangle(4,0,4,8),
+    trimOutside=true
+  }
+
+  expect_eq(app.activeLayer.cels[1].position, Point(0, 1))
+  expect_eq(app.activeLayer.cels[1].image.width, 1) -- width in tilemap terms
+  expect_eq(app.activeLayer.cels[1].image.height, 2) -- height in tilemap terms
+  -- ======================================================================
+
+  app.command.Undo()
+
+  -- ======================================================================
+  -- Cutting the canvas from the top, cutting the top tile row:
+  --
+  --        ,--------- x = 2
+  --       |
+  --   ____|______
+  --       |
+  --       |
+  --   ____v______
+  --  |    OO∏∏   | <-- y = 0
+  --  |    OO∏∏   |
+  --  |           |
+  --  |           |
+  --  |___________|
+  app.command.CanvasSize{
+    ui=false,
+    bounds=Rectangle(0,3,8,5),
+    trimOutside=true
+  }
+
+  expect_eq(app.activeLayer.cels[1].position, Point(2, 0))
+  expect_eq(app.activeLayer.cels[1].image.width, 2) -- width in tilemap terms
+  expect_eq(app.activeLayer.cels[1].image.height, 1) -- height in tilemap terms
+end
+
+----------------------------------------------------------------------
+-- Tests canvas resizing in the tilemap with tiles 2x2 with shrink action
+----------------------------------------------------------------------
+
+do
+  local sprite3 = Sprite(8, 8)
+  -- Create a tilemap layer which grid size is 2x2
+  sprite3.gridBounds = Rectangle(0, 0, 2, 2)
+  app.command.NewLayer{ tilemap=true }
+  -- Create a tilemap of 4x4 tiles:
+  --
+  --    ,--------- x = 0
+  --   |
+  --   v__________
+  --  |           |
+  --  |∏∏         |<-- y = 1
+  --  |∏∏         |
+  --  |OO       XX|
+  --  |OO       XX|
+  --  |         ∏∏|
+  --  |         ∏∏|
+  --  |___________|
+
+  -- Making a pixel to make a Cel
+  app.useTool{
+    tool='pencil',
+    color=Color{ r=255, g=0, b=0 },
+    tilesetMode=TilesetMode.AUTO,
+    points={ Point(0, 0) }
+  }
+
+  -- Moving the Cel to de desired position
+  app.activeLayer.cels[1].position = Point(0, 1)
+
+  -- Filling with squares of 2x2
+  app.useTool{
+    tool='pencil',
+    color=Color{ r=255, g=0, b=0 },
+    tilesetMode=TilesetMode.AUTO,
+    points={ Point(1, 1), Point(1, 2), Point(0, 2) }
+  }
+
+  app.useTool{
+    tool='pencil',
+    color=Color{ r=0, g=255, b=0 },
+    tilesetMode=TilesetMode.AUTO,
+    points={ Point(0, 3), Point(1, 3), Point(1, 4), Point(0, 4) }
+  }
+
+  app.useTool{
+    tool='pencil',
+    color=Color{ r=0, g=0, b=255 },
+    tilesetMode=TilesetMode.AUTO,
+    points={ Point(6, 3), Point(7, 3), Point(6, 4), Point(7, 4) }
+  }
+
+  app.useTool{
+    tool='pencil',
+    color=Color{ r=255, g=255, b=255 },
+    tilesetMode=TilesetMode.AUTO,
+    points={ Point(6, 5), Point(7, 5), Point(6, 6), Point(7, 6) }
+  }
+
+  -- ======================================================================
+  -- Cutting the canvas from the left, cutting the most left tile column:
+  --
+  --             ,--------- x = 4
+  --            |
+  --      ______v_
+  --  |  |        |
+  --  |  |        |
+  --  |  |        |
+  --  |  |      XX| <-- y = 3
+  --  |  |      XX|
+  --  |  |      ∏∏|
+  --  |  |      ∏∏|
+  --  |  |________|
+  app.command.CanvasSize{
+    ui=false,
+    bounds=Rectangle(2,0,6,8),
+    trimOutside=true
+  }
+
+  expect_eq(app.activeLayer.cels[1].position, Point(4, 3))
+  expect_eq(app.activeLayer.cels[1].image.width, 1) -- width in tilemap terms
+  expect_eq(app.activeLayer.cels[1].image.height, 2) -- height in tilemap terms
 end
