@@ -855,6 +855,36 @@ do
     tilesetMode=TilesetMode.AUTO,
     points={ Point(4, 3), Point(5, 3), Point(5, 4), Point(4, 4) }
   }
+
+  -- ======================================================================
+  -- Cutting the canvas in the midle of the tilemap:
+  --
+  --       ,--------- x = -1
+  --      |
+  --   ___v _______
+  --  |    |  |    |
+  --      ∏|∏X|X    <-- y = -1
+  --  |----|--|----|
+  --      ∏|∏X|X
+  --      O|O∏|∏
+  --  |----|--|----|
+  --      O|O∏|∏
+  --       |  |
+  --       |  |
+  --  |____|__|____|
+  app.command.CanvasSize{
+    ui=false,
+    bounds=Rectangle(3,2,2,2),
+    trimOutside=true
+  }
+
+  expect_eq(app.activeLayer.cels[1].position, Point(-1,-1))
+  expect_eq(app.activeLayer.cels[1].image.width, 2) -- width in tilemap terms
+  expect_eq(app.activeLayer.cels[1].image.height, 2) -- height in tilemap terms
+  -- ======================================================================
+
+  app.command.Undo()
+
   -- ======================================================================
   -- Cutting the canvas from the bottom
   --        ,--------- x = 2
