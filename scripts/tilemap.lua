@@ -612,15 +612,9 @@ do
 
   assert(#app.activeLayer.cels == 1)
 
-  expect_eq(celMap.bounds.width, 32)
-  expect_eq(celMap.bounds.height, 32)
+  expect_eq(celMap.bounds, Rectangle(-4, -9, 32, 32))
   expect_eq(sprite.bounds.width, 16)
   expect_eq(sprite.bounds.height, 16)
-
-  -- the expected visible part of the image is the part
-  -- specified in the bounds
-  expect_eq(celMap.bounds.x, -4)
-  expect_eq(celMap.bounds.y, -9)
 
   -- grid is 16x16, so expected image width/height is 2
   expect_eq(celMap.image.width, 2)
@@ -726,6 +720,7 @@ do
   -- of the image are empty/notile, so it's optimized by shrunking it
   -- we got paddings instead.
 
+  expect_eq(celMap.position, Point(8, 0))
   expect_eq(celMap.image.width, 2)
   expect_eq(celMap.image.height, 2)
   expect_eq(celMap.image:getPixel(0, 0), 0)
@@ -780,8 +775,10 @@ do
     trimOutside=true
   }
 
-  expect_eq(app.activeLayer.cels[1].image.width, 1)
-  expect_eq(app.activeLayer.cels[1].image.height, 2)
+  local cel = app.activeLayer.cels[1]
+  expect_eq(cel.image.width, 1)
+  expect_eq(cel.image.height, 2)
+  expect_eq(cel.bounds, Rectangle(1, 0, 1, 2))
 
   app.command.CanvasSize{
     ui=false,
@@ -789,8 +786,10 @@ do
     trimOutside=true
   }
 
-  expect_eq(app.activeLayer.cels[1].image.width, 1)
-  expect_eq(app.activeLayer.cels[1].image.height, 1)
+  cel = app.activeLayer.cels[1]
+  expect_eq(cel.image.width, 1)
+  expect_eq(cel.image.height, 1)
+  expect_eq(cel.bounds, Rectangle(1, 0, 1, 1))
 end
 
 ----------------------------------------------------------------------
