@@ -53,12 +53,18 @@ SetPalette::SetPalette(Sprite* sprite, frame_t frame, const Palette* newPalette)
         m_newColors[i] = newPalette->getEntry(m_from+i);
     }
   }
+
   if (sprite->pixelFormat() == IMAGE_INDEXED) {
     m_oldTransparentIndex = sprite->transparentColor();
     if (m_oldTransparentIndex >= newPalette->size())
-      m_newTransparentIndex = newPalette->size() -1;
+      m_newTransparentIndex = newPalette->size() - 1;
     else
       m_newTransparentIndex = m_oldTransparentIndex;
+  }
+  else {
+    ASSERT(sprite->transparentColor() == 0);
+    m_oldTransparentIndex = 0;
+    m_newTransparentIndex = 0;
   }
 }
 
@@ -71,7 +77,9 @@ void SetPalette::onExecute()
   for (size_t i=0; i<m_newColors.size(); ++i)
     palette->setEntry(m_from+i, m_newColors[i]);
 
-  sprite->setTransparentColor(m_newTransparentIndex);
+  if (m_newTransparentIndex != m_oldTransparentIndex)
+    sprite->setTransparentColor(m_newTransparentIndex);
+
   palette->incrementVersion();
 }
 
@@ -84,7 +92,9 @@ void SetPalette::onUndo()
   for (size_t i=0; i<m_oldColors.size(); ++i)
     palette->setEntry(m_from+i, m_oldColors[i]);
 
-  sprite->setTransparentColor(m_oldTransparentIndex);
+  if (m_newTransparentIndex != m_oldTransparentIndex)
+    sprite->setTransparentColor(m_oldTransparentIndex);
+
   palette->incrementVersion();
 }
 

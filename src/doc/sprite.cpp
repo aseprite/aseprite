@@ -195,6 +195,12 @@ bool Sprite::supportAlpha() const
 
 void Sprite::setTransparentColor(color_t color)
 {
+#if _DEBUG
+  if (colorMode() != ColorMode::INDEXED) {
+    ASSERT(color == 0);
+  }
+#endif // _DEBUG
+
   m_spec.setMaskColor(color);
 
   // Change the mask color of all images.

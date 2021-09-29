@@ -1,5 +1,5 @@
 // Aseprite Document IO Library
-// Copyright (c) 2018-2020 Igara Studio S.A.
+// Copyright (c) 2018-2021 Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -276,6 +276,9 @@ bool AsepriteDecoder::readHeader(AsepriteHeader* header)
   header->grid_y       = (int16_t)read16();
   header->grid_width   = read16();
   header->grid_height  = read16();
+
+  if (header->depth != 8)       // Transparent index only valid for indexed images
+    header->transparent_index = 0;
 
   if (header->ncolors == 0)     // 0 means 256 (old .ase files)
     header->ncolors = 256;

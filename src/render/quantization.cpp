@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (c) 2019-2020  Igara Studio S.A.
+// Copyright (c) 2019-2021  Igara Studio S.A.
 // Copyright (c) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -69,12 +69,19 @@ Palette* create_palette_from_sprite(
     }
   }
 
+  // Transparent color is needed if we have transparent layers
+  int maskIndex;
+  if (sprite->backgroundLayer() && sprite->allLayersCount() == 1)
+    maskIndex = -1;
+  else if (sprite->colorMode() == ColorMode::INDEXED)
+    maskIndex = sprite->transparentColor();
+  else {
+    ASSERT(sprite->transparentColor() == 0);
+    maskIndex = 0; // For RGB/Grayscale images we use index 0 as the transparent index by default
+  }
+
   // Generate an optimized palette
-  optimizer.calculate(
-    palette,
-    // Transparent color is needed if we have transparent layers
-    (sprite->backgroundLayer() &&
-     sprite->allLayersCount() == 1 ? -1: sprite->transparentColor()));
+  optimizer.calculate(palette, maskIndex);
 
   return palette;
 }
