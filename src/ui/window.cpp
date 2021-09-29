@@ -325,12 +325,16 @@ void Window::openWindowInForeground()
 
 void Window::closeWindow(Widget* closer)
 {
+  // Close event
+  CloseEvent ev(closer);
+  onBeforeClose(ev);
+  if (ev.canceled())
+    return;
+
   m_closer = closer;
 
   manager()->_closeWindow(this, true);
 
-  // Close event
-  CloseEvent ev(closer);
   onClose(ev);
 }
 

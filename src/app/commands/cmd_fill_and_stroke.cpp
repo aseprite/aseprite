@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2021  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -51,10 +52,12 @@ bool FillCommand::onEnabled(Context* ctx)
                       ContextFlags::ActiveLayerIsImage)) {
     return true;
   }
+#if ENABLE_UI
   else if (current_editor &&
            current_editor->isMovingPixels()) {
     return true;
   }
+#endif
   else
     return false;
 }

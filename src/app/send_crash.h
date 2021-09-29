@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -15,6 +15,8 @@
 #include <string>
 
 namespace app {
+
+#if !ENABLE_SENTRY
 
   class SendCrash
 #ifdef ENABLE_UI
@@ -42,6 +44,8 @@ namespace app {
     Task m_task;
     std::string m_dumpFilename;
   };
+
+#endif // !ENABLE_SENTRY
 
 } // namespace app
 

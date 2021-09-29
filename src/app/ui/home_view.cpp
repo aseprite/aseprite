@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -38,6 +38,10 @@
 #include "app/ui/news_listbox.h"
 #endif
 
+#if ENABLE_SENTRY
+#include "app/sentry_wrapper.h"
+#endif
+
 namespace app {
 
 using namespace ui;
@@ -66,6 +70,23 @@ HomeView::HomeView()
 #endif
 
   checkUpdate()->setVisible(false);
+  shareCrashdb()->setVisible(false);
+
+#if ENABLE_SENTRY
+  // Show this option in home tab only when we require consent for the
+  // first time and there is crash data available to report
+  if (Sentry::requireConsent() &&
+      Sentry::areThereCrashesToReport()) {
+    shareCrashdb()->setVisible(true);
+    shareCrashdb()->Click.connect(
+      [this]{
+        if (shareCrashdb()->isSelected())
+          Sentry::giveConsent();
+        else
+          Sentry::revokeConsent();
+      });
+  }
+#endif
 
   InitTheme.connect(
     [this]{
@@ -100,6 +121,21 @@ void HomeView::dataRecoverySessionsAreReady()
   }
 #endif
 }
+
+#if ENABLE_SENTRY
+void HomeView::updateConsentCheckbox()
+{
+  if (Sentry::requireConsent()) {
+    shareCrashdb()->setVisible(true);
+    shareCrashdb()->setSelected(false);
+  }
+  else if (Sentry::consentGiven()) {
+    shareCrashdb()->setVisible(false);
+    shareCrashdb()->setSelected(true);
+  }
+  layout();
+}
+#endif
 
 std::string HomeView::getTabText()
 {
@@ -176,9 +212,7 @@ void HomeView::onCheckingUpdates()
 
 void HomeView::onUpToDate()
 {
-  checkUpdate()->setText(
-    fmt::format(Strings::home_view_is_up_to_date(), get_app_name()));
-  checkUpdate()->setVisible(true);
+  checkUpdate()->setVisible(false);
 
   layout();
 }

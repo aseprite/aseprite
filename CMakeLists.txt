@@ -79,7 +79,13 @@ option(ENABLE_UI           "Compile UI (turn off to compile CLI-only version)" o
 option(FULLSCREEN_PLATFORM "Enable fullscreen by default" off)
 option(ENABLE_CLANG_TIDY   "Enable static analysis" off)
 option(ENABLE_CCACHE       "Use CCache to improve recompilation speed (optional)" on)
+option(ENABLE_SENTRY       "Use Sentry SDK to report crashes" off)
 set(CUSTOM_WEBSITE_URL "" CACHE STRING "Enable custom local webserver to check updates")
+
+if(ENABLE_SENTRY)
+  set(SENTRY_DIR "" CACHE STRING "Sentry native location")
+  set(SENTRY_DNS "" CACHE STRING "Sentry DNS URL")
+endif()
 
 if(ENABLE_NEWS OR ENABLE_UPDATER)
   set(REQUIRE_CURL ON)

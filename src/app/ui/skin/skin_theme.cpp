@@ -168,7 +168,7 @@ static FontData* load_font(std::map<std::string, FontData*>& fonts,
     const char* fileStr = xmlFont->Attribute("file");
     bool antialias = true;
     if (xmlFont->Attribute("antialias"))
-      antialias = bool_attr_is_true(xmlFont, "antialias");
+      antialias = bool_attr(xmlFont, "antialias", false);
 
     std::string fontFilename;
     if (platformFileStr)

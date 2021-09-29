@@ -56,8 +56,13 @@ jobs:
         if [[ "${{ runner.os }}" == "Linux" ]] ; then
           export XVFB=xvfb-run
         fi
+        if [[ "${{ github.base_ref }}" == "beta" ]] || [[ "${{ github.ref }}" == "refs/heads/beta" ]] ; then
+          export TESTS_BRANCH=beta
+        else
+          export TESTS_BRANCH=main
+        fi
         cd build
         export ASEPRITE=$PWD/bin/aseprite
-        git clone --recursive https://github.com/aseprite/tests.git
+        git clone --branch $TESTS_BRANCH --recursive https://github.com/aseprite/tests.git
         cd tests
         $XVFB bash run-tests.sh

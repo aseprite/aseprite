@@ -65,6 +65,7 @@ namespace ui {
     virtual void onSetText() override;
 
     // New events
+    virtual void onBeforeClose(CloseEvent& ev) {}
     virtual void onClose(CloseEvent& ev);
     virtual void onHitTest(HitTestEvent& ev);
     virtual void onWindowResize();
