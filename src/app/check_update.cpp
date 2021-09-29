@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2021  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -20,6 +20,10 @@
 #include "base/replace_string.h"
 #include "base/version.h"
 #include "ver/info.h"
+
+#if ENABLE_SENTRY
+  #include "app/sentry_wrapper.h"
+#endif
 
 #include <ctime>
 #include <sstream>
@@ -113,15 +117,20 @@ CheckUpdateThreadLauncher::~CheckUpdateThreadLauncher()
 
 void CheckUpdateThreadLauncher::launch()
 {
+  if (m_uuid.empty())
+    m_uuid = m_preferences.updater.uuid();
+
+#if ENABLE_SENTRY
+  if (!m_uuid.empty())
+    Sentry::setUserID(m_uuid);
+#endif
+
   // In this case we are in the "wait days" period, so we don't check
   // for updates.
   if (!m_doCheck) {
     showUI();
     return;
   }
-
-  if (m_uuid.empty())
-    m_uuid = m_preferences.updater.uuid();
 
   m_delegate->onCheckingUpdates();
 
@@ -168,6 +177,11 @@ void CheckUpdateThreadLauncher::onMonitoringTick()
   if (!m_response.getUuid().empty()) {
     m_uuid = m_response.getUuid();
     m_preferences.updater.uuid(m_uuid);
+
+#if ENABLE_SENTRY
+    if (!m_uuid.empty())
+      Sentry::setUserID(m_uuid);
+#endif
   }
 
   // Set the date of the last "check for updates" and the "WaitDays" parameter.

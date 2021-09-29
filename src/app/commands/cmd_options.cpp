@@ -27,6 +27,7 @@
 #include "app/resource_finder.h"
 #include "app/tx.h"
 #include "app/ui/color_button.h"
+#include "app/ui/main_window.h"
 #include "app/ui/pref_widget.h"
 #include "app/ui/rgbmap_algorithm_selector.h"
 #include "app/ui/separator_in_view.h"
@@ -42,6 +43,10 @@
 #include "os/window.h"
 #include "render/render.h"
 #include "ui/ui.h"
+
+#if ENABLE_SENTRY
+#include "app/sentry_wrapper.h"
+#endif
 
 #include "options.xml.h"
 
@@ -543,6 +548,13 @@ public:
     else
       locateCrashFolder()->setVisible(false);
 
+    // Share crashdb
+#if ENABLE_SENTRY
+    shareCrashdb()->setSelected(Sentry::consentGiven());
+#else
+    shareCrashdb()->setVisible(false);
+#endif
+
     // Undo preferences
     limitUndo()->Click.connect([this]{ onLimitUndoCheck(); });
     limitUndo()->setSelected(m_pref.undo.sizeLimit() != 0);
@@ -593,6 +605,15 @@ public:
       msg.setPropagateToChildren(true);
       sendMessage(&msg);
     }
+
+    // Share crashdb
+#if ENABLE_SENTRY
+    if (shareCrashdb()->isSelected())
+      Sentry::giveConsent();
+    else
+      Sentry::revokeConsent();
+    App::instance()->mainWindow()->updateConsentCheckbox();
+#endif
 
     // Update language
     Strings::instance()->setCurrentLanguage(

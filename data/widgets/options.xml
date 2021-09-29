@@ -68,6 +68,9 @@
                  text="@.color_bar_entries_separator"
                  tooltip="@.color_bar_entries_separator"
                  pref="color_bar.entries_separator" />
+          <check id="share_crashdb"
+                 text="@home_view.share_crashdb"
+                 tooltip="@home_view.share_crashdb_tooltip" />
 
           <separator horizontal="true" />
           <link id="locate_file" text="@.locate_file" />

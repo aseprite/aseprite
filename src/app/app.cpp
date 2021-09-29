@@ -418,8 +418,10 @@ void App::run()
     checkUpdate.launch();
 #endif
 
+#if !ENABLE_SENTRY
     app::SendCrash sendCrash;
     sendCrash.search();
+#endif
 
     // Keep the console alive the whole program execute (just in case
     // we've to print errors).

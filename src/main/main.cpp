@@ -16,10 +16,16 @@
 #include "app/send_crash.h"
 #include "base/exception.h"
 #include "base/memory.h"
-#include "base/memory_dump.h"
 #include "base/system_console.h"
 #include "os/error.h"
 #include "os/system.h"
+#include "ver/info.h"
+
+#if ENABLE_SENTRY
+  #include "app/sentry_wrapper.h"
+#else
+  #include "base/memory_dump.h"
+#endif
 
 #include <clocale>
 #include <cstdlib>
@@ -78,13 +84,20 @@ int app_main(int argc, char* argv[])
 #endif
 
   try {
+#if ENABLE_SENTRY
+    app::Sentry sentry;
+#else
     base::MemoryDump memoryDump;
+#endif
     MemLeak memleak;
     base::SystemConsole systemConsole;
     app::AppOptions options(argc, const_cast<const char**>(argv));
     os::SystemRef system(os::make_system());
     app::App app;
 
+#if ENABLE_SENTRY
+    sentry.init();
+#else
     // Change the memory dump filename to save on disk (.dmp
     // file). Note: Only useful on Windows.
     {
@@ -92,6 +105,7 @@ int app_main(int argc, char* argv[])
       if (!fn.empty())
         memoryDump.setFileName(fn);
     }
+#endif
 
     const int code = app.initialize(options);
 
