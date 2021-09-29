@@ -27,11 +27,14 @@
 #include "app/color_spaces.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
+#include "app/console.h"
 #include "app/context.h"
 #include "app/doc.h"
 #include "app/doc_access.h"
 #include "app/doc_api.h"
 #include "app/doc_range.h"
+#include "app/doc_undo.h"
+#include "app/doc_undo_observer.h"
 #include "app/file/palette_file.h"
 #include "app/script/docobj.h"
 #include "app/script/engine.h"
@@ -56,6 +59,43 @@ namespace app {
 namespace script {
 
 namespace {
+
+class ScriptDocObserver : public DocUndoObserver {
+public:
+  ScriptDocObserver(int callbackRef)
+    : DocUndoObserver(),
+      m_callbackRef(callbackRef)
+  { }
+
+  void onAddUndoState(DocUndo* history) { callback();  }
+  void onDeleteUndoState(DocUndo* history, undo::UndoState* state) { }
+  void onCurrentUndoStateChange(DocUndo* history) { callback(); }
+  void onClearRedo(DocUndo* history) { }
+  void onTotalUndoSizeChange(DocUndo* history) { }
+
+private:
+  void callback() {
+    script::Engine* engine = App::instance()->scriptEngine();
+    lua_State* L = engine->luaState();
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, m_callbackRef);
+    if (lua_pcall(L, 0, 0, 0)) {
+      if (const char* s = lua_tostring(L, -1)) {
+        Console().printf("Error: %s", s);
+      }
+    }
+  }
+
+  int m_callbackRef;
+};
+
+const luaL_Reg ScriptDocObserver_methods[] = {
+    { nullptr, nullptr } 
+};
+
+const Property ScriptDocObserver_properties[] = {
+  { nullptr, nullptr, nullptr }
+};
 
 int Sprite_new(lua_State* L)
 {
@@ -589,6 +629,32 @@ int Sprite_deleteSlice(lua_State* L)
   }
 }
 
+int Sprite_watch(lua_State* L)
+{
+  auto sprite = get_docobj<Sprite>(L, 1);
+  auto doc = static_cast<Doc*>(sprite->document());
+  ScriptDocObserver* obs;
+
+  if (lua_isfunction(L, 2)) {
+    int callbackRef = luaL_ref(L, LUA_REGISTRYINDEX);
+    obs = push_new<ScriptDocObserver>(L, callbackRef);
+    doc->undoHistory()->add_observer(obs);
+    return 1;
+  }
+  return 0;
+}
+
+int Sprite_unwatch(lua_State* L)
+{
+  if (auto obs = may_get_obj<ScriptDocObserver>(L, 2)) {
+    auto sprite = get_docobj<Sprite>(L, 1);
+    auto doc = static_cast<Doc*>(sprite->document());
+
+    doc->undoHistory()->remove_observer(obs);
+  }
+  return 0;
+}
+
 int Sprite_get_filename(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
@@ -821,6 +887,9 @@ const luaL_Reg Sprite_methods[] = {
   // Slices
   { "newSlice", Sprite_newSlice },
   { "deleteSlice", Sprite_deleteSlice },
+  // Observer
+  { "watch", Sprite_watch },
+  { "unwatch", Sprite_unwatch },
   { nullptr, nullptr }
 };
 
@@ -849,6 +918,7 @@ const Property Sprite_properties[] = {
 } // anonymous namespace
 
 DEF_MTNAME(doc::Sprite);
+DEF_MTNAME(ScriptDocObserver);
 
 void register_sprite_class(lua_State* L)
 {
@@ -856,6 +926,8 @@ void register_sprite_class(lua_State* L)
   REG_CLASS(L, Sprite);
   REG_CLASS_NEW(L, Sprite);
   REG_CLASS_PROPERTIES(L, Sprite);
+
+  REG_CLASS(L, ScriptDocObserver);
 }
 
 } // namespace script
