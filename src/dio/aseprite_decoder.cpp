@@ -318,6 +318,9 @@ bool AsepriteDecoder::readHeader(AsepriteHeader* header)
   header->grid_width   = read16();
   header->grid_height  = read16();
 
+  if (header->depth != 8)       // Transparent index only valid for indexed images
+    header->transparent_index = 0;
+
   if (header->ncolors == 0)     // 0 means 256 (old .ase files)
     header->ncolors = 256;
 

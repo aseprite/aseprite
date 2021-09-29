@@ -51,6 +51,21 @@ Palette* create_palette_from_sprite(
 
   PaletteOptimizer optimizer;
   OctreeMap octreemap;
+
+  // Transparent color is needed if we have transparent layers
+  int maskIndex;
+  if ((sprite->backgroundLayer() && sprite->allLayersCount() == 1) ||
+      !calculateWithTransparent)
+    maskIndex = -1;
+  else if (sprite->colorMode() == ColorMode::INDEXED)
+    maskIndex = sprite->transparentColor();
+  else {
+    ASSERT(sprite->transparentColor() == 0);
+    maskIndex = 0; // For RGB/Grayscale images we use index 0 as the transparent index by default
+  }
+
+  // TODO check if how this is used in OctreeMap, if as a RGBA value
+  //      or as an index (here we are using it as an index).
   const color_t maskColor = (sprite->backgroundLayer()
                              && sprite->allLayersCount() == 1) ? DOC_OCTREE_IS_OPAQUE:
                                                                  sprite->transparentColor();
@@ -92,15 +107,11 @@ Palette* create_palette_from_sprite(
 
   switch (mapAlgo) {
 
-    case RgbMapAlgorithm::RGB5A3:
+    case RgbMapAlgorithm::RGB5A3: {
       // Generate an optimized palette
-      optimizer.calculate(
-        palette,
-        // Transparent color is needed if we have transparent layers
-        ((sprite->backgroundLayer() &&
-          sprite->allLayersCount() == 1) ||
-         !calculateWithTransparent)? -1: sprite->transparentColor());
+      optimizer.calculate(palette, maskIndex);
       break;
+    }
 
     case RgbMapAlgorithm::OCTREE:
       // TODO check calculateWithTransparent flag
