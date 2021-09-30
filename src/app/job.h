@@ -14,11 +14,8 @@
 
 #include <atomic>
 #include <exception>
-
-namespace base {
-  class thread;
-  class mutex;
-}
+#include <mutex>
+#include <thread>
 
 namespace app {
 
@@ -62,9 +59,9 @@ namespace app {
     static void monitor_proc(void* data);
     static void monitor_free(void* data);
 
-    base::thread* m_thread;
+    std::thread m_thread;
     std::unique_ptr<ui::Timer> m_timer;
-    base::mutex* m_mutex;
+    std::mutex m_mutex;
     ui::AlertPtr m_alert_window;
     std::atomic<double> m_last_progress;
     bool m_done_flag;
