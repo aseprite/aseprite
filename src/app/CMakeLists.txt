@@ -673,7 +673,7 @@ if(REQUIRE_CURL)
 endif()
 
 if(ENABLE_SCRIPTING)
-  target_link_libraries(app-lib lua lauxlib lualib)
+  target_link_libraries(app-lib lua lauxlib lualib ixwebsocket)
 endif()
 
 if(ENABLE_UPDATER)

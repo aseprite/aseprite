@@ -159,4 +159,8 @@ if(ENABLE_SCRIPTING)
   target_include_directories(lauxlib PUBLIC lua)
   target_include_directories(lualib PUBLIC lua)
   target_link_libraries(lauxlib lua)
+
+# ixwebsocket
+add_subdirectory(ixwebsocket)
+target_include_directories(ixwebsocket PUBLIC)
 endif()
