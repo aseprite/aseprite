@@ -189,6 +189,7 @@ if(ENABLE_SCRIPTING)
     script/tool_class.cpp
     script/values.cpp
     script/version_class.cpp
+    script/websocket_class.cpp
     shell.cpp
     ${scripting_files_ui})
 endif()
