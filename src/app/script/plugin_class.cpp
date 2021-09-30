@@ -141,7 +141,7 @@ int Plugin_newCommand(lua_State* L)
       group = s;
     }
     lua_pop(L, 1);
-    
+
     int type = lua_getfield(L, 2, "onenabled");
     if (type == LUA_TFUNCTION) {
       onenabledRef = luaL_ref(L, LUA_REGISTRYINDEX); // does a pop
