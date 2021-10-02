@@ -93,7 +93,6 @@ int WebSocket_sendText(lua_State* L)
     const char* buf = lua_tolstring(L, i, &bufLen);
     data.write(buf, bufLen);
   }
-  lua_pop(L, argc);
 
   ws->sendText(data.str());
   return 0;
@@ -110,7 +109,6 @@ int WebSocket_sendBinary(lua_State* L)
     const char* buf = lua_tolstring(L, i, &bufLen);
     data.write(buf, bufLen);
   }
-  lua_pop(L, argc);
 
   ws->sendBinary(data.str());
   return 0;
@@ -119,7 +117,6 @@ int WebSocket_sendBinary(lua_State* L)
 int WebSocket_connect(lua_State* L)
 {
   auto ws = get_ptr<ix::WebSocket>(L, 1);
-  lua_pop(L, 1);
   ws->start();
   return 0;
 }
@@ -127,7 +124,6 @@ int WebSocket_connect(lua_State* L)
 int WebSocket_close(lua_State* L)
 {
   auto ws = get_ptr<ix::WebSocket>(L, 1);
-  lua_pop(L, 1);
   ws->stop();
   return 0;
 }
@@ -135,7 +131,6 @@ int WebSocket_close(lua_State* L)
 int WebSocket_get_url(lua_State* L)
 {
   auto ws = get_ptr<ix::WebSocket>(L, 1);
-  lua_pop(L, 1);
   lua_pushstring(L, ws->getUrl().c_str());
   return 1;
 }
