@@ -172,6 +172,18 @@ int Sprite_new(lua_State* L)
   return 1;
 }
 
+int Sprite_gc(lua_State* L)
+{
+  auto sprite = get_docobj<Sprite>(L, 1);
+  auto doc = static_cast<Doc*>(sprite->document());
+
+  if (ScriptDocObserver* obs = script_observers[sprite->id()]) {
+    doc->undoHistory()->remove_observer(obs);
+    script_observers.erase(sprite->id());
+  }
+  return 0;
+}
+
 int Sprite_eq(lua_State* L)
 {
   const auto a = get_docobj<Sprite>(L, 1);
@@ -871,6 +883,7 @@ int Sprite_set_pixelRatio(lua_State* L)
 }
 
 const luaL_Reg Sprite_methods[] = {
+  { "__gc", Sprite_gc },
   { "__eq", Sprite_eq },
   { "resize", Sprite_resize },
   { "crop", Sprite_crop },
