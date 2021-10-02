@@ -9,6 +9,10 @@
 #include "config.h"
 #endif
 
+#include "app/app.h"
+#include "app/console.h"
+#include "app/context.h"
+#include "app/context_observer.h"
 #include "app/script/docobj.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
@@ -21,6 +25,47 @@ namespace app {
 namespace script {
 
 namespace {
+
+class ScriptSiteObserver : public ContextObserver {
+public:
+  static ScriptSiteObserver* instance() { 
+    static ScriptSiteObserver instance;
+    return &instance;
+  }
+
+  void onActiveSiteChange(const Site& site) {
+    if (m_onchangeRef == 0)
+      return;
+
+    script::Engine* engine = App::instance()->scriptEngine();
+    lua_State* L = engine->luaState();
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, m_onchangeRef);
+    if (lua_pcall(L, 0, 0, 0)) {
+      if (const char* s = lua_tostring(L, -1)) {
+        Console().printf("Error: %s", s);
+      }
+    }
+  }
+
+  int callbackRef() { 
+    return m_onchangeRef; 
+  }
+
+  void setCallbackRef(int onchangeRef) { 
+    m_onchangeRef = onchangeRef;
+  }
+
+private:
+  ScriptSiteObserver()
+    : ContextObserver(),
+      m_onchangeRef(0)
+  { }
+
+  ~ScriptSiteObserver() { }
+
+  int m_onchangeRef;
+};
 
 int Site_get_sprite(lua_State* L)
 {
@@ -79,6 +124,33 @@ int Site_get_image(lua_State* L)
   return 1;
 }
 
+int Site_get_onChange(lua_State* L)
+{
+  lua_rawgeti(L, LUA_REGISTRYINDEX, ScriptSiteObserver::instance()->callbackRef());
+  return 1;
+}
+
+int Site_set_onChange(lua_State* L)
+{
+  auto site = get_obj<Site>(L, 1);
+  auto obs = ScriptSiteObserver::instance();
+
+  if (lua_isnil(L, 2) && obs->callbackRef()) {
+    luaL_unref(L, LUA_REGISTRYINDEX, obs->callbackRef());
+    obs->setCallbackRef(0);
+    App::instance()->context()->remove_observer(obs);
+  }
+  else if (lua_isfunction(L, 2)) {
+    int onchangeRef = luaL_ref(L, LUA_REGISTRYINDEX);
+    if (!obs->callbackRef()) {
+      App::instance()->context()->add_observer(obs);
+    }
+    obs->setCallbackRef(onchangeRef);
+  }
+  
+  return 0;
+}
+
 const luaL_Reg Site_methods[] = {
   { nullptr, nullptr }
 };
@@ -90,6 +162,7 @@ const Property Site_properties[] = {
   { "frame", Site_get_frame, nullptr },
   { "frameNumber", Site_get_frameNumber, nullptr },
   { "image", Site_get_image, nullptr },
+  { "onChange", Site_get_onChange, Site_set_onChange },
   { nullptr, nullptr, nullptr }
 };
 
