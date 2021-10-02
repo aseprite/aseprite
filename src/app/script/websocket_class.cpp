@@ -11,9 +11,9 @@
 
 #include "app/app.h"
 #include "app/console.h"
-#include "app/script/docobj.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
+#include "ui/system.h"
 
 #include <ixwebsocket/IXNetSystem.h>
 #include <ixwebsocket/IXWebSocket.h>
@@ -46,19 +46,25 @@ int WebSocket_new(lua_State* L)
     if (type == LUA_TFUNCTION) {
       int onreceiveRef = luaL_ref(L, LUA_REGISTRYINDEX);
 
-      ws->setOnMessageCallback([L, ws, onreceiveRef](const ix::WebSocketMessagePtr& msg) {
-        lua_rawgeti(L, LUA_REGISTRYINDEX, onreceiveRef);
-        lua_pushnumber(L, (msg->binary ? MESSAGE_TYPE_BINARY : static_cast<int>(msg->type)));
-        lua_pushlstring(L, msg->str.c_str(), msg->str.length());
+      ws->setOnMessageCallback(
+        [L, ws, onreceiveRef](const ix::WebSocketMessagePtr& msg) {
+          int msgType =
+            (msg->binary ? MESSAGE_TYPE_BINARY : static_cast<int>(msg->type));
+          std::string msgData = msg->str;
 
-        if (lua_pcall(L, 2, 0, 0)) {
-          if (const char* s = lua_tostring(L, -1)) {
-            App::instance()->scriptEngine()->consolePrint(s);
-            ws->disableAutomaticReconnection();
-            ws->close();
-          }
-        }
-      });
+          ui::execute_from_ui_thread([=]() {
+            lua_rawgeti(L, LUA_REGISTRYINDEX, onreceiveRef);
+            lua_pushinteger(L, msgType);
+            lua_pushlstring(L, msgData.c_str(), msgData.length());
+
+            if (lua_pcall(L, 2, 0, 0)) {
+              if (const char* s = lua_tostring(L, -1)) {
+                App::instance()->scriptEngine()->consolePrint(s);
+                ws->stop();
+              }
+            }
+          });
+        });
     }
     else {
       lua_pop(L, 1);
@@ -114,7 +120,6 @@ int WebSocket_connect(lua_State* L)
 {
   auto ws = get_ptr<ix::WebSocket>(L, 1);
   lua_pop(L, 1);
-  ws->enableAutomaticReconnection();
   ws->start();
   return 0;
 }
@@ -123,8 +128,7 @@ int WebSocket_close(lua_State* L)
 {
   auto ws = get_ptr<ix::WebSocket>(L, 1);
   lua_pop(L, 1);
-  ws->disableAutomaticReconnection();
-  ws->close();
+  ws->stop();
   return 0;
 }
 
