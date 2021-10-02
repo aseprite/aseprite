@@ -483,6 +483,30 @@ int Image_resize(lua_State* L)
   return 0;
 }
 
+int Image_get_bytes(lua_State* L)
+{
+  const auto img = get_obj<ImageObj>(L, 1)->image(L);
+  lua_pushlstring(L, (const char*)img->getPixelAddress(0, 0), img->getRowStrideSize() * img->height());
+  return 1;
+}
+
+int Image_set_bytes(lua_State* L)
+{
+  const auto img = get_obj<ImageObj>(L, 1)->image(L);
+  size_t bytes_size, bytes_needed = img->getRowStrideSize() * img->height();
+  const char* bytes = lua_tolstring(L, 2, &bytes_size);
+
+  if (bytes_size == bytes_needed) {
+    memcpy_s(img->getPixelAddress(0, 0), bytes_needed, bytes, bytes_size);
+  }
+  else {
+    lua_pushfstring(L, "Data size does not match: given %d, needed %d.", bytes_size, bytes_needed);
+    lua_error(L);
+  }
+
+  return 0;
+}
+
 int Image_get_width(lua_State* L)
 {
   const auto obj = get_obj<ImageObj>(L, 1);
@@ -537,6 +561,7 @@ const luaL_Reg Image_methods[] = {
 };
 
 const Property Image_properties[] = {
+  { "bytes", Image_get_bytes, Image_set_bytes },
   { "width", Image_get_width, nullptr },
   { "height", Image_get_height, nullptr },
   { "colorMode", Image_get_colorMode, nullptr },
