@@ -412,7 +412,9 @@ Engine::Engine()
   register_tags_class(L);
   register_tool_class(L);
   register_version_class(L);
+#if ENABLE_WEBSOCKET
   register_websocket_class(L);
+ #endif
 
   // Check that we have a clean start (without dirty in the stack)
   ASSERT(lua_gettop(L) == top);

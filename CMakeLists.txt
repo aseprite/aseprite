@@ -70,6 +70,7 @@ option(ENABLE_MEMLEAK      "Enable memory-leaks detector (only for developers)" 
 option(ENABLE_NEWS         "Enable the news in Home tab" on)
 option(ENABLE_UPDATER      "Enable automatic check for updates" on)
 option(ENABLE_SCRIPTING    "Compile with scripting support" on)
+option(ENABLE_WEBSOCKET    "Compile with websocket support" on)
 option(ENABLE_TESTS        "Compile unit tests" off)
 option(ENABLE_BENCHMARKS   "Compile benchmarks" off)
 option(ENABLE_TRIAL_MODE   "Compile the trial version" off)
