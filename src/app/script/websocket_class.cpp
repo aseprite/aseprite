@@ -42,6 +42,15 @@ int WebSocket_new(lua_State* L)
     }
     lua_pop(L, 1);
 
+    lua_getfield(L, 1, "deflate");
+    if (lua_toboolean(L, -1)) {
+      ws->enablePerMessageDeflate();
+    }
+    else {
+      ws->disablePerMessageDeflate();
+    }
+    lua_pop(L, 1);
+
     int type = lua_getfield(L, 1, "onreceive");
     if (type == LUA_TFUNCTION) {
       int onreceiveRef = luaL_ref(L, LUA_REGISTRYINDEX);
@@ -94,7 +103,10 @@ int WebSocket_sendText(lua_State* L)
     data.write(buf, bufLen);
   }
 
-  ws->sendText(data.str());
+  if (!ws->sendText(data.str()).success) {
+    lua_pushstring(L, "Websocket error");
+    lua_error(L);
+  }
   return 0;
 }
 
@@ -110,7 +122,24 @@ int WebSocket_sendBinary(lua_State* L)
     data.write(buf, bufLen);
   }
 
-  ws->sendBinary(data.str());
+  if (!ws->sendBinary(data.str()).success) {
+    lua_pushstring(L, "Websocket error");
+    lua_error(L);
+  }
+  return 0;
+}
+
+int WebSocket_sendPing(lua_State* L)
+{
+  auto ws = get_ptr<ix::WebSocket>(L, 1);
+  size_t bufLen;
+  const char* buf = lua_tolstring(L, 2, &bufLen);
+  std::string data(buf, bufLen);
+
+  if (!ws->ping(data).success) {
+    lua_pushstring(L, "Websocket error");
+    lua_error(L);
+  }
   return 0;
 }
 
@@ -141,6 +170,7 @@ const luaL_Reg WebSocket_methods[] = {
   { "connect", WebSocket_connect },
   { "sendText", WebSocket_sendText },
   { "sendBinary", WebSocket_sendBinary },
+  { "sendPing", WebSocket_sendPing },
   { nullptr, nullptr }
 };
 
