@@ -33,6 +33,7 @@
 #include "render/render.h"
 
 #include <algorithm>
+#include <cstring>
 #include <memory>
 
 namespace app {
@@ -497,7 +498,7 @@ int Image_set_bytes(lua_State* L)
   const char* bytes = lua_tolstring(L, 2, &bytes_size);
 
   if (bytes_size == bytes_needed) {
-    memcpy_s(img->getPixelAddress(0, 0), bytes_needed, bytes, bytes_size);
+    std::memcpy(img->getPixelAddress(0, 0), bytes, std::min(bytes_needed, bytes_size));
   }
   else {
     lua_pushfstring(L, "Data size does not match: given %d, needed %d.", bytes_size, bytes_needed);
