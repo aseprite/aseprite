@@ -1172,13 +1172,19 @@ void Manager::removeMessagesForDisplay(Display* display)
   ASSERT(manager_thread == base::this_thread::native_id());
 #endif
 
-  for (Message* msg : msg_queue)
-    if (msg->display() == display)
+  for (Message* msg : msg_queue) {
+    if (msg->display() == display) {
       msg->removeRecipient(msg->recipient());
+      msg->setDisplay(nullptr);
+    }
+  }
 
-  for (Message* msg : used_msg_queue)
-    if (msg->display() == display)
+  for (Message* msg : used_msg_queue) {
+    if (msg->display() == display) {
       msg->removeRecipient(msg->recipient());
+      msg->setDisplay(nullptr);
+    }
+  }
 }
 
 void Manager::removePaintMessagesForDisplay(Display* display)
