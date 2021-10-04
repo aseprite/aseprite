@@ -176,11 +176,6 @@ int Sprite_gc(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   auto doc = static_cast<Doc*>(sprite->document());
-
-  if (ScriptDocObserver* obs = script_observers[sprite->id()]) {
-    doc->undoHistory()->remove_observer(obs);
-    script_observers.erase(sprite->id());
-  }
   return 0;
 }
 
@@ -659,13 +654,7 @@ int Sprite_set_onChange(lua_State* L)
   auto doc = static_cast<Doc*>(sprite->document());
   ScriptDocObserver* obs = script_observers[sprite->id()];
 
-  if (lua_isnil(L, 2) && obs) {
-    doc->undoHistory()->remove_observer(obs);
-    script_observers.erase(sprite->id());
-    luaL_unref(L, LUA_REGISTRYINDEX, obs->callbackRef());
-    delete obs;
-  }
-  else if (lua_isfunction(L, 2)) {
+  if (lua_isfunction(L, 2)) {
     int callbackRef = luaL_ref(L, LUA_REGISTRYINDEX);
     if (obs) {
       obs->setCallbackRef(callbackRef);
@@ -676,6 +665,13 @@ int Sprite_set_onChange(lua_State* L)
       script_observers[sprite->id()] = obs;
     }
   }
+  else if (obs) {
+    doc->undoHistory()->remove_observer(obs);
+    script_observers.erase(sprite->id());
+    luaL_unref(L, LUA_REGISTRYINDEX, obs->callbackRef());
+    delete obs;
+  }
+
   return 0;
 }
 

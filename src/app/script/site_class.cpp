@@ -135,17 +135,17 @@ int Site_set_onChange(lua_State* L)
   auto site = get_obj<Site>(L, 1);
   auto obs = ScriptSiteObserver::instance();
 
-  if (lua_isnil(L, 2) && obs->callbackRef()) {
-    luaL_unref(L, LUA_REGISTRYINDEX, obs->callbackRef());
-    obs->setCallbackRef(0);
-    App::instance()->context()->remove_observer(obs);
-  }
-  else if (lua_isfunction(L, 2)) {
+  if (lua_isfunction(L, 2)) {
     int onchangeRef = luaL_ref(L, LUA_REGISTRYINDEX);
     if (!obs->callbackRef()) {
       App::instance()->context()->add_observer(obs);
     }
     obs->setCallbackRef(onchangeRef);
+  }
+  else if (obs->callbackRef()) {
+    luaL_unref(L, LUA_REGISTRYINDEX, obs->callbackRef());
+    obs->setCallbackRef(0);
+    App::instance()->context()->remove_observer(obs);
   }
   
   return 0;
