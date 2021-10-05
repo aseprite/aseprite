@@ -1192,6 +1192,12 @@ void Manager::_closeWindow(Window* window, bool redraw_background)
   }
 }
 
+void Manager::_updateMouseWidgets()
+{
+  // Update mouse widget.
+  updateMouseWidgets(ui::get_mouse_position());
+}
+
 bool Manager::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {

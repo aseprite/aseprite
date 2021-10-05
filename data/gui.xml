@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2018-2020  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-2021  Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2018  David Capello -->
 <gui>
   <!-- Keyboard shortcuts -->
@@ -637,6 +637,8 @@
         <menu id="scripts_menu" text="@.file_scripts" group="file_scripts">
           <item command="OpenScriptFolder" text="@.file_open_script_folder" />
           <item command="Refresh" text="@.file_rescan_script_folder" />
+          <separator />
+          <item command="Debugger" text="@.file_debugger" />
         </menu>
         <separator group="file_app" />
         <item command="Exit" text="@.file_exit" />

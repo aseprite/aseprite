@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -148,7 +148,10 @@ void ButtonSet::Item::onPaint(ui::PaintEvent& ev)
   if (m_icon) {
     os::Surface* bmp = m_icon->bitmap(0);
 
-    if (isSelected() && hasCapture())
+    if (!isEnabled())
+      g->drawColoredRgbaSurface(bmp, theme->colors.disabled(),
+                                iconRc.x, iconRc.y);
+    else if (isSelected() && hasCapture())
       g->drawColoredRgbaSurface(bmp, theme->colors.buttonSelectedText(),
                                 iconRc.x, iconRc.y);
     else if (m_mono)

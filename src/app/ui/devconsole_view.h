@@ -42,6 +42,7 @@ namespace app {
     void onTabPopup(Workspace* workspace) override;
 
     // EngineDelegate impl
+    virtual void onConsoleError(const char* text) override;
     virtual void onConsolePrint(const char* text) override;
 
   protected:

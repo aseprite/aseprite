@@ -1,4 +1,5 @@
 // Aseprite Code Generator
+// Copyright (c) 2021 Igara Studio S.A.
 // Copyright (c) 2014-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -153,6 +154,9 @@ static Item convert_to_item(TiXmlElement* elem)
   if (name == "splitter")
     return item.typeIncl("ui::Splitter",
                          "ui/splitter.h");
+  if (name == "textbox")
+    return item.typeIncl("ui::TextBox",
+                         "ui/textbox.h");
   if (name == "tipwindow")
     return item.typeIncl("ui::TipWindow",
                          "ui/tooltips.h");

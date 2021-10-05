@@ -104,6 +104,7 @@ namespace ui {
 
     void _openWindow(Window* window);
     void _closeWindow(Window* window, bool redraw_background);
+    void _updateMouseWidgets();
 
   protected:
     bool onProcessMessage(Message* msg) override;

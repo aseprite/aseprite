@@ -145,6 +145,7 @@ if(ENABLE_SCRIPTING)
     set(scripting_files_ui
       commands/cmd_developer_console.cpp
       commands/cmd_open_script_folder.cpp
+      commands/debugger.cpp
       ui/devconsole_view.cpp)
   endif()
   if(ENABLE_WEBSOCKET)
