@@ -84,10 +84,20 @@ if(ENABLE_SENTRY)
   set(SENTRY_DNS "" CACHE STRING "Sentry DNS URL")
 endif()
 
-if(ENABLE_NEWS OR ENABLE_UPDATER)
+if(ENABLE_NEWS OR ENABLE_UPDATER OR ENABLE_DRM)
   set(REQUIRE_CURL ON)
 else()
   set(REQUIRE_CURL OFF)
+endif()
+
+# Select libcurl's TLS backend according to target platform
+if(REQUIRE_CURL AND ENABLE_DRM)
+  if(APPLE)
+    option(CMAKE_USE_SECTRANSP "enable Apple OS native SSL/TLS" ON)
+  endif()
+  if(WIN32)
+    set(CMAKE_USE_SCHANNEL "enable Windows native SSL/TLS" ON)
+  endif()
 endif()
 
 if(NOT LAF_OS_BACKEND)

@@ -56,6 +56,7 @@ endif()
 
 if(ENABLE_DRM)
   add_definitions(-DENABLE_DRM)
+  add_definitions(-DENABLE_SAVE)
 endif()
 
 if(ENABLE_DEVMODE)
@@ -66,7 +67,7 @@ if(ENABLE_UI)
   add_definitions(-DENABLE_UI)
 endif()
 
-if(ENABLE_UI AND NOT ENABLE_TRIAL_MODE)
+if(ENABLE_UI AND (NOT ENABLE_TRIAL_MODE OR ENABLE_DRM))
   set(ENABLE_DATA_RECOVERY on)
   add_definitions(-DENABLE_DATA_RECOVERY)
 else()
