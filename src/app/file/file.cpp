@@ -888,13 +888,14 @@ void FileOp::operate(IFileOpProgress* progress)
            m_format->support(FILE_SUPPORT_SAVE)) {
 #ifdef ENABLE_SAVE
 
-    DRM_INVALID {
+#if defined(ENABLE_TRIAL_MODE)
+    DRM_INVALID{
       setError(
-        fmt::format("Save operation is not supported, activate this Aseprite first.\n"
-                    "Go to {} and get a license key.",
+        fmt::format("Save operation is not supported in trial version, activate this Aseprite first.\n"
+                    "Go to {} and get a license key to upgrade.",
                     get_app_download_url()).c_str());
-      return;
     }
+#endif
 
     // Save a sequence
     if (isSequence()) {

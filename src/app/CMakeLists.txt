@@ -367,7 +367,6 @@ if(ENABLE_UI)
     ui/editor/state_with_wheel_behavior.cpp
     ui/editor/transform_handles.cpp
     ui/editor/zooming_state.cpp
-    ui/enter_license.cpp
     ui/export_file_window.cpp
     ui/expr_entry.cpp
     ui/file_list.cpp
@@ -427,6 +426,11 @@ if(ENABLE_UI)
       res/http_loader.cpp
       ui/news_listbox.cpp
       ${ui_app_files})
+  endif()
+  if(ENABLE_DRM)
+    set(ui_app_files
+      ui/enter_license.cpp
+    ${ui_app_files})
   endif()
 endif()
 
