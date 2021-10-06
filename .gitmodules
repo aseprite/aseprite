@@ -66,3 +66,6 @@
 [submodule "src/tga"]
 	path = src/tga
 	url = https://github.com/aseprite/tga.git
+[submodule "third_party/curl"]
+	path = third_party/curl
+	url = https://github.com/aseprite/curl.git
