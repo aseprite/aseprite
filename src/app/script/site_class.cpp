@@ -28,7 +28,7 @@ namespace {
 
 class ScriptSiteObserver : public ContextObserver {
 public:
-  static ScriptSiteObserver* instance() { 
+  static ScriptSiteObserver* instance() {
     static ScriptSiteObserver instance;
     return &instance;
   }
@@ -48,11 +48,11 @@ public:
     }
   }
 
-  int callbackRef() { 
-    return m_onchangeRef; 
+  int callbackRef() {
+    return m_onchangeRef;
   }
 
-  void setCallbackRef(int onchangeRef) { 
+  void setCallbackRef(int onchangeRef) {
     m_onchangeRef = onchangeRef;
   }
 
@@ -147,7 +147,7 @@ int Site_set_onChange(lua_State* L)
     obs->setCallbackRef(0);
     App::instance()->context()->remove_observer(obs);
   }
-  
+
   return 0;
 }
 

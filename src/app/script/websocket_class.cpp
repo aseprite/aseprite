@@ -34,7 +34,7 @@ int WebSocket_new(lua_State* L)
   auto ws = new ix::WebSocket();
 
   push_ptr(L, ws);
-  
+
   if (lua_istable(L, 1)) {
     lua_getfield(L, 1, "url");
     if (const char* s = lua_tostring(L, -1)) {
@@ -164,7 +164,7 @@ int WebSocket_get_url(lua_State* L)
   return 1;
 }
 
-const luaL_Reg WebSocket_methods[] = { 
+const luaL_Reg WebSocket_methods[] = {
   { "__gc", WebSocket_gc },
   { "close", WebSocket_close },
   { "connect", WebSocket_connect },
@@ -174,7 +174,7 @@ const luaL_Reg WebSocket_methods[] = {
   { nullptr, nullptr }
 };
 
-const Property WebSocket_properties[] = { 
+const Property WebSocket_properties[] = {
   { "url", WebSocket_get_url, nullptr },
   { nullptr, nullptr, nullptr }
 };
