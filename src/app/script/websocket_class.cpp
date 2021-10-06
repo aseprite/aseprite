@@ -23,8 +23,9 @@ namespace app {
 namespace script {
 
 namespace {
-// additional "enum" value to make message callback simpler
-#define MESSAGE_TYPE_BINARY (int)ix::WebSocketMessageType::Fragment + 10
+
+// Additional "enum" value to make message callback simpler
+#define MESSAGE_TYPE_BINARY ((int)ix::WebSocketMessageType::Fragment + 10)
 
 int WebSocket_new(lua_State* L)
 {
