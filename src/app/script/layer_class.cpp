@@ -201,6 +201,13 @@ int Layer_get_isExpanded(lua_State* L)
   return 1;
 }
 
+int Layer_get_isReference(lua_State* L)
+{
+  auto layer = get_docobj<Layer>(L, 1);
+  lua_pushboolean(L, layer->isReference());
+  return 1;
+}
+
 int Layer_get_cels(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
@@ -377,6 +384,7 @@ const Property Layer_properties[] = {
   { "isContinuous", Layer_get_isContinuous, Layer_set_isContinuous },
   { "isCollapsed", Layer_get_isCollapsed, Layer_set_isCollapsed },
   { "isExpanded", Layer_get_isExpanded, Layer_set_isExpanded },
+  { "isReference", Layer_get_isReference, nullptr },
   { "cels", Layer_get_cels, nullptr },
   { "color", UserData_get_color<Layer>, UserData_set_color<Layer> },
   { "data", UserData_get_text<Layer>, UserData_set_text<Layer> },
