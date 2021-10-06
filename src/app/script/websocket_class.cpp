@@ -194,7 +194,7 @@ void register_websocket_class(lua_State* L)
   // message type enum
   lua_newtable(L);
   lua_pushvalue(L, -1);
-  lua_setglobal(L, "MessageType");
+  lua_setglobal(L, "WebSocketMessageType");
   setfield_integer(L, "Text", (int)ix::WebSocketMessageType::Message);
   setfield_integer(L, "Binary", MESSAGE_TYPE_BINARY);
   setfield_integer(L, "Open", (int)ix::WebSocketMessageType::Open);
