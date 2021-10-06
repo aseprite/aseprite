@@ -498,7 +498,7 @@ int Image_set_bytes(lua_State* L)
   const char* bytes = lua_tolstring(L, 2, &bytes_size);
 
   if (bytes_size == bytes_needed) {
-    std::memcpy(img->getPixelAddress(0, 0), bytes, std::min(bytes_needed, bytes_size));
+    std::memcpy(img->getPixelAddress(0, 0), bytes, bytes_size);
   }
   else {
     lua_pushfstring(L, "Data size does not match: given %d, needed %d.", bytes_size, bytes_needed);
