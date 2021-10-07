@@ -126,7 +126,7 @@ int AppFS_makeDirectory(lua_State* L)
     return 1;
   }
 
-  if (!ask_access(L, path, FileAccessMode::Write, true))
+  if (!ask_access(L, path, FileAccessMode::Full, ResourceType::File))
     return luaL_error(L, "the script doesn't have access to create the directory '%s'", path);
 
   try {
@@ -148,7 +148,7 @@ int AppFS_makeAllDirectories(lua_State* L)
     return 1;
   }
 
-  if (!ask_access(L, path, FileAccessMode::Write, true))
+  if (!ask_access(L, path, FileAccessMode::Write, ResourceType::File))
     return luaL_error(L, "the script doesn't have access to create all directories '%s'", path);
 
   try {
@@ -170,7 +170,7 @@ int AppFS_removeDirectory(lua_State* L)
     return 1;
   }
 
-  if (!ask_access(L, path, FileAccessMode::Write, true))
+  if (!ask_access(L, path, FileAccessMode::Write, ResourceType::File))
     return luaL_error(L, "the script doesn't have access to remove the directory '%s'", path);
 
   try {

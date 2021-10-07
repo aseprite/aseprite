@@ -58,13 +58,6 @@ namespace app {
 
   namespace script {
 
-  enum class FileAccessMode {
-    Execute = 1,
-    Write = 2,
-    Read = 4,
-    Full = 7
-  };
-
   class EngineDelegate {
   public:
     virtual ~EngineDelegate() { }

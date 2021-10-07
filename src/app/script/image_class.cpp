@@ -367,7 +367,7 @@ int Image_saveAs(lua_State* L)
     return luaL_error(L, "missing filename in Image:saveAs()");
 
   std::string absFn = base::get_absolute_path(fn);
-  if (!ask_access(L, absFn.c_str(), FileAccessMode::Write, true))
+  if (!ask_access(L, absFn.c_str(), FileAccessMode::Write, ResourceType::File))
     return luaL_error(L, "script doesn't have access to write file %s",
                       absFn.c_str());
 
