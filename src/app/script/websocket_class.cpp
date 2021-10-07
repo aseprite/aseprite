@@ -1,6 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
-// Copyright (C) 2018  David Capello
+// Copyright (C) 2021  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -13,6 +12,7 @@
 #include "app/console.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
+#include "app/script/security.h"
 #include "ui/system.h"
 
 #include <ixwebsocket/IXNetSystem.h>
@@ -39,6 +39,9 @@ int WebSocket_new(lua_State* L)
   if (lua_istable(L, 1)) {
     lua_getfield(L, 1, "url");
     if (const char* s = lua_tostring(L, -1)) {
+      if (!ask_access(L, s, FileAccessMode::OpenSocket, ResourceType::WebSocket))
+        return luaL_error(L, "the script doesn't have access to create a WebSocket for '%s'", s);
+
       ws->setUrl(s);
     }
     lua_pop(L, 1);
@@ -180,7 +183,7 @@ const Property WebSocket_properties[] = {
   { nullptr, nullptr, nullptr }
 };
 
-} // namespace { }
+} // anonymous namespace
 
 using WebSocket = ix::WebSocket;
 DEF_MTNAME(WebSocket);

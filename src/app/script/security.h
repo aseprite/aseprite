@@ -23,11 +23,13 @@ namespace script {
     Write = 2,
     Read = 4,
     Full = 7,
+    OpenSocket = 8,
   };
 
   enum class ResourceType {
     File,
     Command,
+    WebSocket,
   };
 
   int secure_io_open(lua_State* L);

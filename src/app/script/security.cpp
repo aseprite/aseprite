@@ -136,6 +136,8 @@ bool ask_access(lua_State* L,
       return true;
 
     std::string allowButtonText =
+      mode == FileAccessMode::OpenSocket ?
+        Strings::script_access_allow_open_conn_access():
       mode == FileAccessMode::Execute ?
         Strings::script_access_allow_execute_access():
       mode == FileAccessMode::Write ?
@@ -150,6 +152,7 @@ bool ask_access(lua_State* L,
       switch (resourceType) {
         case ResourceType::File: label = Strings::script_access_file_label(); break;
         case ResourceType::Command: label = Strings::script_access_command_label(); break;
+        case ResourceType::WebSocket: label = Strings::script_access_websocket_label(); break;
       }
       dlg.fileLabel()->setText(label);
     }
