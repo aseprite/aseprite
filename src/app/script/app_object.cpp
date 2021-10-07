@@ -456,6 +456,12 @@ int App_useTool(lua_State* L)
   return 0;
 }
 
+int App_get_events(lua_State* L)
+{
+  push_app_events(L);
+  return 1;
+}
+
 int App_get_activeSprite(lua_State* L)
 {
   app::Context* ctx = App::instance()->context();
@@ -736,6 +742,7 @@ const Property App_properties[] = {
   { "range", App_get_range, nullptr },
   { "isUIAvailable", App_get_isUIAvailable, nullptr },
   { "defaultPalette", App_get_defaultPalette, App_set_defaultPalette },
+  { "events", App_get_events, nullptr },
   { nullptr, nullptr, nullptr }
 };
 

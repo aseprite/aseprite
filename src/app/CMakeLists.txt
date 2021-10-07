@@ -163,6 +163,7 @@ if(ENABLE_SCRIPTING)
     script/color_space_class.cpp
     script/dialog_class.cpp
     script/engine.cpp
+    script/events_class.cpp
     script/frame_class.cpp
     script/frames_class.cpp
     script/image_class.cpp

@@ -59,41 +59,6 @@ namespace app {
 namespace script {
 
 namespace {
-// in lua, observers become `Sprite.onChange`
-class ScriptDocObserver : public DocUndoObserver {
-public:
-  ScriptDocObserver(int callbackRef)
-    : DocUndoObserver(),
-      m_callbackRef(callbackRef)
-  { }
-
-  void onAddUndoState(DocUndo* history) { callback();  }
-  void onDeleteUndoState(DocUndo* history, undo::UndoState* state) { }
-  void onCurrentUndoStateChange(DocUndo* history) { callback(); }
-  void onClearRedo(DocUndo* history) { }
-  void onTotalUndoSizeChange(DocUndo* history) { }
-
-  int callbackRef() { return m_callbackRef; }
-  void setCallbackRef(int callbackRef) { m_callbackRef = callbackRef; }
-
-private:
-  void callback() {
-    script::Engine* engine = App::instance()->scriptEngine();
-    lua_State* L = engine->luaState();
-
-    lua_rawgeti(L, LUA_REGISTRYINDEX, m_callbackRef);
-    if (lua_pcall(L, 0, 0, 0)) {
-      if (const char* s = lua_tostring(L, -1)) {
-        Console().printf("Error: %s", s);
-      }
-    }
-  }
-
-  int m_callbackRef;
-};
-
-// used to maintain one-to-one relation between sprites and observers
-std::map<doc::ObjectId, ScriptDocObserver*> script_observers;
 
 int Sprite_new(lua_State* L)
 {
@@ -627,45 +592,11 @@ int Sprite_deleteSlice(lua_State* L)
   }
 }
 
-int Sprite_get_onChange(lua_State* L)
+int Sprite_get_events(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
-  ScriptDocObserver* obs = script_observers[sprite->id()];
-
-  if (obs) {
-    lua_rawgeti(L, LUA_REGISTRYINDEX, obs->callbackRef());
-  }
-  else {
-    lua_pushnil(L);
-  }
+  push_sprite_events(L, sprite);
   return 1;
-}
-
-int Sprite_set_onChange(lua_State* L)
-{
-  auto sprite = get_docobj<Sprite>(L, 1);
-  auto doc = static_cast<Doc*>(sprite->document());
-  ScriptDocObserver* obs = script_observers[sprite->id()];
-
-  if (lua_isfunction(L, 2)) {
-    int callbackRef = luaL_ref(L, LUA_REGISTRYINDEX);
-    if (obs) {
-      obs->setCallbackRef(callbackRef);
-    }
-    else {
-      obs = new ScriptDocObserver(callbackRef);
-      doc->undoHistory()->add_observer(obs);
-      script_observers[sprite->id()] = obs;
-    }
-  }
-  else if (obs) {
-    doc->undoHistory()->remove_observer(obs);
-    script_observers.erase(sprite->id());
-    luaL_unref(L, LUA_REGISTRYINDEX, obs->callbackRef());
-    delete obs;
-  }
-
-  return 0;
 }
 
 int Sprite_get_filename(lua_State* L)
@@ -922,7 +853,7 @@ const Property Sprite_properties[] = {
   { "bounds", Sprite_get_bounds, nullptr },
   { "gridBounds", Sprite_get_gridBounds, Sprite_set_gridBounds },
   { "pixelRatio", Sprite_get_pixelRatio, Sprite_set_pixelRatio },
-  { "onChange", Sprite_get_onChange, Sprite_set_onChange },
+  { "events", Sprite_get_events, nullptr },
   { nullptr, nullptr, nullptr }
 };
 
