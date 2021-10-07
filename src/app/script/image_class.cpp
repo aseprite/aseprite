@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -484,6 +484,13 @@ int Image_resize(lua_State* L)
   return 0;
 }
 
+int Image_get_rowStride(lua_State* L)
+{
+  const auto obj = get_obj<ImageObj>(L, 1);
+  lua_pushinteger(L, obj->image(L)->getRowStrideSize());
+  return 1;
+}
+
 int Image_get_bytes(lua_State* L)
 {
   const auto img = get_obj<ImageObj>(L, 1)->image(L);
@@ -562,6 +569,7 @@ const luaL_Reg Image_methods[] = {
 };
 
 const Property Image_properties[] = {
+  { "rowStride", Image_get_rowStride, nullptr },
   { "bytes", Image_get_bytes, Image_set_bytes },
   { "width", Image_get_width, nullptr },
   { "height", Image_get_height, nullptr },
