@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2021  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -19,12 +20,12 @@ namespace app {
   class DocUndoObserver {
   public:
     virtual ~DocUndoObserver() { }
-    virtual void onAddUndoState(DocUndo* history) = 0;
+    virtual void onAddUndoState(DocUndo* history) { }
     virtual void onDeleteUndoState(DocUndo* history,
-                                   undo::UndoState* state) = 0;
-    virtual void onCurrentUndoStateChange(DocUndo* history) = 0;
-    virtual void onClearRedo(DocUndo* history) = 0;
-    virtual void onTotalUndoSizeChange(DocUndo* history) = 0;
+                                   undo::UndoState* state) { }
+    virtual void onCurrentUndoStateChange(DocUndo* history) { }
+    virtual void onClearRedo(DocUndo* history) { }
+    virtual void onTotalUndoSizeChange(DocUndo* history) { }
   };
 
 } // namespace app

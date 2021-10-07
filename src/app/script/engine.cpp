@@ -155,6 +155,7 @@ void register_color_space_class(lua_State* L);
 #ifdef ENABLE_UI
 void register_dialog_class(lua_State* L);
 #endif
+void register_events_class(lua_State* L);
 void register_frame_class(lua_State* L);
 void register_frames_class(lua_State* L);
 void register_image_class(lua_State* L);
@@ -180,6 +181,7 @@ void register_tag_class(lua_State* L);
 void register_tags_class(lua_State* L);
 void register_tool_class(lua_State* L);
 void register_version_class(lua_State* L);
+void register_websocket_class(lua_State* L);
 
 void set_app_params(lua_State* L, const Params& params);
 
@@ -386,6 +388,7 @@ Engine::Engine()
 #ifdef ENABLE_UI
   register_dialog_class(L);
 #endif
+  register_events_class(L);
   register_frame_class(L);
   register_frames_class(L);
   register_image_class(L);
@@ -411,6 +414,9 @@ Engine::Engine()
   register_tags_class(L);
   register_tool_class(L);
   register_version_class(L);
+#if ENABLE_WEBSOCKET
+  register_websocket_class(L);
+ #endif
 
   // Check that we have a clean start (without dirty in the stack)
   ASSERT(lua_gettop(L) == top);

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -110,7 +110,7 @@ namespace app {
     void onRemoveDocument(Doc* doc) override;
 
     virtual void onGetActiveSite(Site* site) const;
-    virtual void onSetActiveDocument(Doc* doc);
+    virtual void onSetActiveDocument(Doc* doc, bool notify);
     virtual void onSetActiveLayer(doc::Layer* layer);
     virtual void onSetActiveFrame(const doc::frame_t frame);
     virtual void onSetRange(const DocRange& range);
@@ -122,10 +122,12 @@ namespace app {
   private:
     ActiveSiteHandler* activeSiteHandler() const;
 
+    // This must be defined before m_docs because ActiveSiteHandler
+    // will be an observer of all documents.
+    mutable std::unique_ptr<ActiveSiteHandler> m_activeSiteHandler;
     mutable Docs m_docs;
     ContextFlags m_flags;       // Last updated flags.
     Doc* m_lastSelectedDoc;
-    mutable std::unique_ptr<ActiveSiteHandler> m_activeSiteHandler;
     mutable std::unique_ptr<Preferences> m_preferences;
 
     DISABLE_COPYING(Context);

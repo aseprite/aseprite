@@ -17,6 +17,7 @@ namespace app {
   public:
     virtual ~DocObserver() { }
 
+    virtual void onDestroy(Doc* doc) { }
     virtual void onFileNameChanged(Doc* doc) { }
 
     // General update. If an observer receives this event, it's because
@@ -80,8 +81,6 @@ namespace app {
     // Slices
     virtual void onSliceNameChange(DocEvent& ev) { }
 
-    // Called to destroy the observable. (Here you could call "delete this".)
-    virtual void dispose() { }
   };
 
 } // namespace app

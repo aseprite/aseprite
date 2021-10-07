@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -81,7 +81,7 @@ Doc* Context::activeDocument() const
 
 void Context::setActiveDocument(Doc* document)
 {
-  onSetActiveDocument(document);
+  onSetActiveDocument(document, true);
 }
 
 void Context::setActiveLayer(doc::Layer* layer)
@@ -206,15 +206,19 @@ void Context::onAddDocument(Doc* doc)
 
   if (m_activeSiteHandler)
     m_activeSiteHandler->addDoc(doc);
+
+  notifyActiveSiteChanged();
 }
 
 void Context::onRemoveDocument(Doc* doc)
 {
-  if (doc == m_lastSelectedDoc)
-    m_lastSelectedDoc = nullptr;
-
   if (m_activeSiteHandler)
     m_activeSiteHandler->removeDoc(doc);
+
+  if (doc == m_lastSelectedDoc) {
+    m_lastSelectedDoc = nullptr;
+    notifyActiveSiteChanged();
+  }
 }
 
 void Context::onGetActiveSite(Site* site) const
@@ -224,24 +228,33 @@ void Context::onGetActiveSite(Site* site) const
     activeSiteHandler()->getActiveSiteForDoc(doc, site);
 }
 
-void Context::onSetActiveDocument(Doc* doc)
+void Context::onSetActiveDocument(Doc* doc, bool notify)
 {
   m_lastSelectedDoc = doc;
+  if (notify)
+    notifyActiveSiteChanged();
 }
 
 void Context::onSetActiveLayer(doc::Layer* layer)
 {
   Doc* newDoc = (layer ? static_cast<Doc*>(layer->sprite()->document()): nullptr);
+  if (!newDoc)
+    return;
+
+  activeSiteHandler()->setActiveLayerInDoc(newDoc, layer);
+
   if (newDoc != m_lastSelectedDoc)
     setActiveDocument(newDoc);
-  if (newDoc)
-    activeSiteHandler()->setActiveLayerInDoc(newDoc, layer);
+  else
+    notifyActiveSiteChanged();
 }
 
 void Context::onSetActiveFrame(const doc::frame_t frame)
 {
   if (m_lastSelectedDoc)
     activeSiteHandler()->setActiveFrameInDoc(m_lastSelectedDoc, frame);
+
+  notifyActiveSiteChanged();
 }
 
 void Context::onSetRange(const DocRange& range)

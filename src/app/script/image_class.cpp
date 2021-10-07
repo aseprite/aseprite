@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -33,6 +33,7 @@
 #include "render/render.h"
 
 #include <algorithm>
+#include <cstring>
 #include <memory>
 
 namespace app {
@@ -366,7 +367,7 @@ int Image_saveAs(lua_State* L)
     return luaL_error(L, "missing filename in Image:saveAs()");
 
   std::string absFn = base::get_absolute_path(fn);
-  if (!ask_access(L, absFn.c_str(), FileAccessMode::Write, true))
+  if (!ask_access(L, absFn.c_str(), FileAccessMode::Write, ResourceType::File))
     return luaL_error(L, "script doesn't have access to write file %s",
                       absFn.c_str());
 
@@ -483,6 +484,37 @@ int Image_resize(lua_State* L)
   return 0;
 }
 
+int Image_get_rowStride(lua_State* L)
+{
+  const auto obj = get_obj<ImageObj>(L, 1);
+  lua_pushinteger(L, obj->image(L)->getRowStrideSize());
+  return 1;
+}
+
+int Image_get_bytes(lua_State* L)
+{
+  const auto img = get_obj<ImageObj>(L, 1)->image(L);
+  lua_pushlstring(L, (const char*)img->getPixelAddress(0, 0), img->getRowStrideSize() * img->height());
+  return 1;
+}
+
+int Image_set_bytes(lua_State* L)
+{
+  const auto img = get_obj<ImageObj>(L, 1)->image(L);
+  size_t bytes_size, bytes_needed = img->getRowStrideSize() * img->height();
+  const char* bytes = lua_tolstring(L, 2, &bytes_size);
+
+  if (bytes_size == bytes_needed) {
+    std::memcpy(img->getPixelAddress(0, 0), bytes, bytes_size);
+  }
+  else {
+    lua_pushfstring(L, "Data size does not match: given %d, needed %d.", bytes_size, bytes_needed);
+    lua_error(L);
+  }
+
+  return 0;
+}
+
 int Image_get_width(lua_State* L)
 {
   const auto obj = get_obj<ImageObj>(L, 1);
@@ -537,6 +569,8 @@ const luaL_Reg Image_methods[] = {
 };
 
 const Property Image_properties[] = {
+  { "rowStride", Image_get_rowStride, nullptr },
+  { "bytes", Image_get_bytes, Image_set_bytes },
   { "width", Image_get_width, nullptr },
   { "height", Image_get_height, nullptr },
   { "colorMode", Image_get_colorMode, nullptr },
