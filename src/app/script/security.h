@@ -22,8 +22,8 @@ namespace script {
     Execute = 1,
     Write = 2,
     Read = 4,
-    Full = 7,
     OpenSocket = 8,
+    Full = Execute | Write | Read | OpenSocket,
   };
 
   enum class ResourceType {
