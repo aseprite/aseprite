@@ -289,7 +289,10 @@ int Events_off(lua_State* L)
     return luaL_error(L, "first argument must be a function or a EventListener");
   }
 
-  if (callbackRef != LUA_REFNIL) {
+  if (callbackRef != LUA_REFNIL &&
+      // Check that we are removing a listener from this Events and no
+      // other random value from the Lua registry
+      evs->hasListener(callbackRef)) {
     evs->remove(callbackRef);
     luaL_unref(L, LUA_REGISTRYINDEX, callbackRef);
   }
