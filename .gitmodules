@@ -69,3 +69,6 @@
 [submodule "third_party/cityhash"]
 	path = third_party/cityhash
 	url = https://github.com/aseprite/cityhash.git
+[submodule "src/psd"]
+	path = src/psd
+	url = https://github.com/iamOgunyinka/psd.git

@@ -670,6 +670,7 @@ target_link_libraries(app-lib
   render-lib
   laf-ft
   laf-os
+  psd-lib
   ui-lib
   ver-lib
   undo
