@@ -5,7 +5,6 @@
 
 dofile('./test_utils.lua')
 
-if false then
 -- Test app.events
 do
   local i = 0
@@ -41,8 +40,6 @@ do
   spr.events:off(incChanges)
   app.undo()
   expect_eq(3, changes)
-end
-
 end
 
 -- Multiple listeners
