@@ -36,6 +36,12 @@ endif()
 if(WITH_WEBP_SUPPORT)
   set(WEBP_BUILD_EXTRAS OFF CACHE BOOL "Build extras.")
   add_subdirectory(libwebp)
+
+  if(NOT USE_SHARED_LIBPNG)
+    add_dependencies(webp ${PNG_LIBRARY})
+    add_dependencies(webpdemux ${PNG_LIBRARY})
+    add_dependencies(libwebpmux ${PNG_LIBRARY})
+  endif()
 endif()
 
 if(NOT USE_SHARED_TINYXML)
