@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -81,7 +81,7 @@ int secure_io_open(lua_State* L)
     mode = FileAccessMode::Write;
   }
 
-  if (!ask_access(L, absFilename.c_str(), mode, true)) {
+  if (!ask_access(L, absFilename.c_str(), mode, ResourceType::File)) {
     return luaL_error(L, "the script doesn't have access to file '%s'",
                       absFilename.c_str());
   }
@@ -101,7 +101,7 @@ int secure_os_execute(lua_State* L)
     return 0;
 
   const char* cmd = lua_tostring(L, 1);
-  if (!ask_access(L, cmd, FileAccessMode::Execute, false)) {
+  if (!ask_access(L, cmd, FileAccessMode::Execute, ResourceType::Command)) {
     // Stop script
     return luaL_error(L, "the script doesn't have access to execute the command: '%s'",
                       cmd);
@@ -117,7 +117,7 @@ int secure_os_execute(lua_State* L)
 bool ask_access(lua_State* L,
                 const char* filename,
                 const FileAccessMode mode,
-                const bool canOpenFile)
+                const ResourceType resourceType)
 {
 #ifdef ENABLE_UI
   // Ask for permission to open the file
@@ -136,6 +136,8 @@ bool ask_access(lua_State* L,
       return true;
 
     std::string allowButtonText =
+      mode == FileAccessMode::OpenSocket ?
+        Strings::script_access_allow_open_conn_access():
       mode == FileAccessMode::Execute ?
         Strings::script_access_allow_execute_access():
       mode == FileAccessMode::Write ?
@@ -144,10 +146,17 @@ bool ask_access(lua_State* L,
 
     app::gen::ScriptAccess dlg;
     dlg.script()->setText(script);
-    dlg.fileLabel()->setText(
-      canOpenFile ?
-        Strings::script_access_file_label():
-        Strings::script_access_command_label());
+
+    {
+      std::string label;
+      switch (resourceType) {
+        case ResourceType::File: label = Strings::script_access_file_label(); break;
+        case ResourceType::Command: label = Strings::script_access_command_label(); break;
+        case ResourceType::WebSocket: label = Strings::script_access_websocket_label(); break;
+      }
+      dlg.fileLabel()->setText(label);
+    }
+
     dlg.file()->setText(filename);
     dlg.allow()->setText(allowButtonText);
     dlg.allow()->processMnemonicFromText();
@@ -174,7 +183,7 @@ bool ask_access(lua_State* L,
         }
       });
 
-    if (canOpenFile) {
+    if (resourceType == ResourceType::File) {
       dlg.file()->Click.connect(
         [&dlg]{
           std::string fn = dlg.file()->text();

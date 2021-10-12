@@ -45,6 +45,7 @@ endif()
 if(REQUIRE_CURL AND NOT USE_SHARED_CURL)
   set(BUILD_RELEASE_DEBUG_DIRS ON BOOL)
   set(CMAKE_USE_OPENSSL OFF CACHE BOOL "Use OpenSSL code. Experimental")
+  set(BUILD_CURL_EXE OFF CACHE BOOL "Set to ON to build curl executable.")
   add_subdirectory(curl)
 endif()
 
@@ -162,4 +163,12 @@ if(ENABLE_SCRIPTING)
   target_include_directories(lauxlib PUBLIC lua)
   target_include_directories(lualib PUBLIC lua)
   target_link_libraries(lauxlib lua)
+
+  # ixwebsocket
+  if(ENABLE_WEBSOCKET)
+    set(IXWEBSOCKET_INSTALL OFF CACHE BOOL "Install IXWebSocket")
+    add_subdirectory(IXWebSocket)
+    target_include_directories(ixwebsocket PUBLIC)
+  endif()
+
 endif()

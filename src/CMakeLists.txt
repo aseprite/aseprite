@@ -74,6 +74,11 @@ if(ENABLE_SCRIPTING)
   add_definitions(-DENABLE_SCRIPTING)
 endif()
 
+if(ENABLE_WEBSOCKET)
+  # Needed for "app" and "main"
+  add_definitions(-DENABLE_WEBSOCKET)
+endif()
+
 ######################################################################
 # Aseprite Libraries (in preferred order to be built)
 

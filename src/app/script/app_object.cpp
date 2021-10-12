@@ -58,7 +58,7 @@ int load_sprite_from_file(lua_State* L, const char* filename,
                           const LoadSpriteFromFileParam param)
 {
   std::string absFn = base::get_absolute_path(filename);
-  if (!ask_access(L, absFn.c_str(), FileAccessMode::Read, true))
+  if (!ask_access(L, absFn.c_str(), FileAccessMode::Read, ResourceType::File))
     return luaL_error(L, "script doesn't have access to open file %s",
                       absFn.c_str());
 
@@ -470,6 +470,12 @@ int App_useTool(lua_State* L)
   return 0;
 }
 
+int App_get_events(lua_State* L)
+{
+  push_app_events(L);
+  return 1;
+}
+
 int App_get_activeSprite(lua_State* L)
 {
   app::Context* ctx = App::instance()->context();
@@ -750,6 +756,7 @@ const Property App_properties[] = {
   { "range", App_get_range, nullptr },
   { "isUIAvailable", App_get_isUIAvailable, nullptr },
   { "defaultPalette", App_get_defaultPalette, App_set_defaultPalette },
+  { "events", App_get_events, nullptr },
   { nullptr, nullptr, nullptr }
 };
 

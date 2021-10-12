@@ -134,10 +134,10 @@ void UIContext::setActiveView(DocView* docView)
   notifyActiveSiteChanged();
 }
 
-void UIContext::onSetActiveDocument(Doc* document)
+void UIContext::onSetActiveDocument(Doc* document, bool notify)
 {
-  bool notify = (lastSelectedDoc() != document);
-  app::Context::onSetActiveDocument(document);
+  notify = (notify && lastSelectedDoc() != document);
+  app::Context::onSetActiveDocument(document, false);
 
   DocView* docView = getFirstDocView(document);
   if (docView) {     // The view can be null if we are in --batch mode

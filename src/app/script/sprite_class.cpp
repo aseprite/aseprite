@@ -27,11 +27,14 @@
 #include "app/color_spaces.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
+#include "app/console.h"
 #include "app/context.h"
 #include "app/doc.h"
 #include "app/doc_access.h"
 #include "app/doc_api.h"
 #include "app/doc_range.h"
+#include "app/doc_undo.h"
+#include "app/doc_undo_observer.h"
 #include "app/file/palette_file.h"
 #include "app/script/docobj.h"
 #include "app/script/engine.h"
@@ -206,7 +209,7 @@ int Sprite_saveAs_base(lua_State* L, std::string& absFn)
     appCtx->setActiveDocument(doc);
 
     absFn = base::get_absolute_path(fn);
-    if (!ask_access(L, absFn.c_str(), FileAccessMode::Write, true))
+    if (!ask_access(L, absFn.c_str(), FileAccessMode::Write, ResourceType::File))
       return luaL_error(L, "script doesn't have access to write file %s",
                         absFn.c_str());
 
@@ -265,7 +268,7 @@ int Sprite_loadPalette(lua_State* L)
   const char* fn = luaL_checkstring(L, 2);
   if (fn && sprite) {
     std::string absFn = base::get_absolute_path(fn);
-    if (!ask_access(L, absFn.c_str(), FileAccessMode::Read, true))
+    if (!ask_access(L, absFn.c_str(), FileAccessMode::Read, ResourceType::File))
       return luaL_error(L, "script doesn't have access to open file %s",
                         absFn.c_str());
 
@@ -590,6 +593,13 @@ int Sprite_deleteSlice(lua_State* L)
   }
 }
 
+int Sprite_get_events(lua_State* L)
+{
+  auto sprite = get_docobj<Sprite>(L, 1);
+  push_sprite_events(L, sprite);
+  return 1;
+}
+
 int Sprite_get_filename(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
@@ -854,6 +864,7 @@ const Property Sprite_properties[] = {
   { "color", UserData_get_color<Sprite>, UserData_set_color<Sprite> },
   { "data", UserData_get_text<Sprite>, UserData_set_text<Sprite> },
   { "pixelRatio", Sprite_get_pixelRatio, Sprite_set_pixelRatio },
+  { "events", Sprite_get_events, nullptr },
   { nullptr, nullptr, nullptr }
 };
 

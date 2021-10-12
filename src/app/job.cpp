@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -12,10 +13,10 @@
 
 #include "app/app.h"
 #include "app/console.h"
+#include "app/context.h"
 #include "app/i18n/strings.h"
 #include "base/mutex.h"
 #include "base/scoped_lock.h"
-#include "base/thread.h"
 #include "fmt/format.h"
 #include "ui/alert.h"
 #include "ui/widget.h"
@@ -36,13 +37,9 @@ int Job::runningJobs()
 
 Job::Job(const char* jobName)
 {
-  m_mutex = NULL;
-  m_thread = NULL;
   m_last_progress = 0.0;
   m_done_flag = false;
   m_canceled_flag = false;
-
-  m_mutex = new base::mutex();
 
   if (App::instance()->isGui()) {
     m_alert_window = ui::Alert::create(
@@ -59,19 +56,15 @@ Job::~Job()
 {
   if (App::instance()->isGui()) {
     ASSERT(!m_timer->isRunning());
-    ASSERT(m_thread == NULL);
 
     if (m_alert_window)
       m_alert_window->closeWindow(NULL);
   }
-
-  if (m_mutex)
-    delete m_mutex;
 }
 
 void Job::startJob()
 {
-  m_thread = new base::thread(&Job::thread_proc, this);
+  m_thread = std::thread(&Job::thread_proc, this);
   ++g_runningJobs;
 
   if (m_alert_window) {
@@ -79,7 +72,7 @@ void Job::startJob()
 
     // The job was canceled by the user?
     {
-      base::scoped_lock hold(*m_mutex);
+      std::unique_lock<std::mutex> hold(m_mutex);
       if (!m_done_flag)
         m_canceled_flag = true;
     }
@@ -107,10 +100,8 @@ void Job::waitJob()
   if (m_timer && m_timer->isRunning())
     m_timer->stop();
 
-  if (m_thread) {
-    m_thread->join();
-    delete m_thread;
-    m_thread = nullptr;
+  if (m_thread.joinable()) {
+    m_thread.join();
 
     --g_runningJobs;
   }
@@ -128,7 +119,7 @@ bool Job::isCanceled()
 
 void Job::onMonitoringTick()
 {
-  base::scoped_lock hold(*m_mutex);
+  std::unique_lock<std::mutex> hold(m_mutex);
 
   // update progress
   m_alert_window->setProgress(m_last_progress);
@@ -142,7 +133,7 @@ void Job::onMonitoringTick()
 
 void Job::done()
 {
-  base::scoped_lock hold(*m_mutex);
+  std::unique_lock<std::mutex> hold(m_mutex);
   m_done_flag = true;
 }
 

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -28,10 +28,11 @@ ActiveSiteHandler::~ActiveSiteHandler()
 void ActiveSiteHandler::addDoc(Doc* doc)
 {
   Data data;
-  if (doc::Layer* layer = doc->sprite()->root()->firstLayer())
-    data.layer = layer->id();
-  else
-    data.layer = doc::NullId;
+  data.layer = doc::NullId;
+  if (doc->sprite()) {      // The sprite can be nullptr in some tests
+    if (doc::Layer* layer = doc->sprite()->root()->firstLayer())
+      data.layer = layer->id();
+  }
   data.frame = 0;
   m_data.insert(std::make_pair(doc, data));
   doc->add_observer(this);

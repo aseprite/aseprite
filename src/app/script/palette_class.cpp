@@ -76,7 +76,7 @@ int Palette_new(lua_State* L)
         std::string absFn = base::get_absolute_path(fromFile);
         lua_pop(L, 1);
 
-        if (!ask_access(L, absFn.c_str(), FileAccessMode::Read, true))
+        if (!ask_access(L, absFn.c_str(), FileAccessMode::Read, ResourceType::File))
           return luaL_error(L, "script doesn't have access to open file %s",
                             absFn.c_str());
 
@@ -105,7 +105,7 @@ int Palette_new(lua_State* L)
         if (!idAndPaths[id].empty()) {
           std::string absFn = base::get_absolute_path(idAndPaths[id]);
 
-          if (!ask_access(L, absFn.c_str(), FileAccessMode::Read, true))
+          if (!ask_access(L, absFn.c_str(), FileAccessMode::Read, ResourceType::File))
             return luaL_error(L, "script doesn't have access to open file %s",
                               absFn.c_str());
 
@@ -240,7 +240,7 @@ int Palette_saveAs(lua_State* L)
   const char* fn = luaL_checkstring(L, 2);
   if (fn) {
     std::string absFn = base::get_absolute_path(fn);
-    if (!ask_access(L, absFn.c_str(), FileAccessMode::Write, true))
+    if (!ask_access(L, absFn.c_str(), FileAccessMode::Write, ResourceType::File))
       return luaL_error(L, "script doesn't have access to write file %s",
                         absFn.c_str());
     save_palette(absFn.c_str(), pal, pal->size());

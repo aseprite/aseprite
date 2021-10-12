@@ -147,6 +147,10 @@ if(ENABLE_SCRIPTING)
       commands/cmd_open_script_folder.cpp
       ui/devconsole_view.cpp)
   endif()
+  if(ENABLE_WEBSOCKET)
+    set(scripting_files_ws
+      script/websocket_class.cpp)
+  endif()
   set(scripting_files
     commands/cmd_run_script.cpp
     script/app_command_object.cpp
@@ -159,6 +163,7 @@ if(ENABLE_SCRIPTING)
     script/color_space_class.cpp
     script/dialog_class.cpp
     script/engine.cpp
+    script/events_class.cpp
     script/frame_class.cpp
     script/frames_class.cpp
     script/grid_class.cpp
@@ -193,6 +198,7 @@ if(ENABLE_SCRIPTING)
     script/values.cpp
     script/version_class.cpp
     shell.cpp
+    ${scripting_files_ws}
     ${scripting_files_ui})
 endif()
 
@@ -695,6 +701,10 @@ endif()
 
 if(ENABLE_SCRIPTING)
   target_link_libraries(app-lib lua lauxlib lualib)
+
+  if(ENABLE_WEBSOCKET)
+    target_link_libraries(app-lib ixwebsocket)
+  endif()
 endif()
 
 if(ENABLE_UPDATER)
