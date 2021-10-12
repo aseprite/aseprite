@@ -394,8 +394,8 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
   else if (elem_name == "slider") {
     const char *min = elem->Attribute("min");
     const char *max = elem->Attribute("max");
-    int min_value = min != NULL ? strtol(min, NULL, 10): 0;
-    int max_value = max != NULL ? strtol(max, NULL, 10): 0;
+    int min_value = (min ? strtol(min, nullptr, 10): 0);
+    int max_value = (max ? strtol(max, nullptr, 10): 0);
 
     widget = new Slider(min_value, max_value, min_value);
   }
