@@ -118,6 +118,8 @@ public:
     parentSprite->setTotalFrames(frame_t(1));
   }
 
+  // emitted when a new layer has been chosen and its channel image data
+  // is about to be read
   void onLayerSelected(const psd::LayerRecord& layerRecord) override
   {
     auto findIter = std::find_if(
@@ -135,6 +137,7 @@ public:
     }
   }
 
+  // emitted only if there's a palette in an image
   void onColorModeData(const psd::ColorModeData& colorModeD) override
   {
     if (!colorModeD.colors.empty()) {
@@ -145,6 +148,7 @@ public:
     }
   }
 
+  // emitted when an image data is about to be transmitted
   void onBeginImage(const psd::ImageData& imageData) override
   {
     // only occurs where there's an image with no layer
@@ -160,7 +164,7 @@ public:
     }
   }
 
-  // emitted when a new layer's image is about to be worked on
+  // emitted when all layers and their masks have been processed
   void onLayersAndMask(const psd::LayersInformation& layersInfo) override
   {
     if (layersInfo.layers.size() == layers.size()) {
@@ -179,7 +183,10 @@ public:
       }
     }
   }
-  // this is called on images stored in raw data
+
+  /* this is called on images stored in raw data, most likely called when
+  the first alpha channel contains the transparency data for the merged
+  result. This channel is almost always stored in raw data format */
   void onImageScanline(const psd::ImageData& imgData,
                        const int y,
                        const psd::ChannelID chanID,
