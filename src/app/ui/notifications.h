@@ -9,6 +9,7 @@
 #define APP_UI_NOTIFICATIONS_H_INCLUDED
 #pragma once
 
+#include "app/ui/dockable.h"
 #include "ui/button.h"
 #include "ui/menu.h"
 
@@ -19,12 +20,16 @@ class Style;
 namespace app {
 class INotificationDelegate;
 
-class Notifications : public ui::Button {
+class Notifications : public ui::Button,
+                      public Dockable {
 public:
   Notifications();
 
   void addLink(INotificationDelegate* del);
   bool hasNotifications() const { return m_popup.hasChildren(); }
+
+  // Dockable impl
+  int dockableAt() const override { return ui::TOP | ui::BOTTOM | ui::LEFT | ui::RIGHT; }
 
 protected:
   void onSizeHint(ui::SizeHintEvent& ev) override;
