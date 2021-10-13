@@ -71,4 +71,4 @@
 	url = https://github.com/aseprite/cityhash.git
 [submodule "src/psd"]
 	path = src/psd
-	url = https://github.com/iamOgunyinka/psd.git
+	url = https://github.com/aseprite/psd.git
