@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2025  Igara Studio S.A.
+// Copyright (C) 2021-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -10,6 +10,7 @@
 #pragma once
 
 #include "app/tools/active_tool_observer.h"
+#include "app/ui/dockable.h"
 #include "app/ui/skin/skin_part.h"
 #include "gfx/point.h"
 #include "obs/connection.h"
@@ -32,6 +33,7 @@ class ToolGroup;
 
 // Class to show selected tools for each tool (vertically)
 class ToolBar : public ui::Widget,
+                public Dockable,
                 public tools::ActiveToolObserver {
   static ToolBar* m_instance;
 
@@ -51,6 +53,14 @@ public:
 
   void openTipWindow(tools::ToolGroup* toolGroup, tools::Tool* tool);
   void closeTipWindow();
+
+  // Dockable impl
+  int dockableAt() const override
+  {
+    // TODO add future support to dock the tool bar at the
+    // top/bottom sides
+    return ui::LEFT | ui::RIGHT;
+  }
 
 protected:
   bool onProcessMessage(ui::Message* msg) override;
