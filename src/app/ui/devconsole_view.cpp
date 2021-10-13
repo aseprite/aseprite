@@ -154,6 +154,11 @@ void DevConsoleView::onExecuteCommand(const std::string& cmd)
   m_engine->evalCode(cmd);
 }
 
+void DevConsoleView::onConsoleError(const char* text)
+{
+  onConsolePrint(text);
+}
+
 void DevConsoleView::onConsolePrint(const char* text)
 {
   if (text)

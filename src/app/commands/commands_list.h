@@ -173,6 +173,7 @@ FOR_EACH_COMMAND(Zoom)
 
 #ifdef ENABLE_SCRIPTING
   #ifdef ENABLE_UI
+    FOR_EACH_COMMAND(Debugger)
     FOR_EACH_COMMAND(DeveloperConsole)
     FOR_EACH_COMMAND(OpenScriptFolder)
   #endif

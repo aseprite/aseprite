@@ -95,6 +95,9 @@ namespace {
 
 class ConsoleEngineDelegate : public script::EngineDelegate {
 public:
+  void onConsoleError(const char* text) override {
+    onConsolePrint(text);
+  }
   void onConsolePrint(const char* text) override {
     m_console.printf("%s\n", text);
   }

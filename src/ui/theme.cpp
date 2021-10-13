@@ -747,7 +747,7 @@ void Theme::drawSlices(Graphics* g, os::Surface* sheet,
 void Theme::drawTextBox(Graphics* g, Widget* widget,
                         int* w, int* h, gfx::Color bg, gfx::Color fg)
 {
-  View* view = View::getView(widget);
+  View* view = (g ? View::getView(widget): nullptr);
   char* text = const_cast<char*>(widget->text().c_str());
   char* beg, *end;
   int x1, y1;

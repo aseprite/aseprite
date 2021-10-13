@@ -23,10 +23,12 @@
 #include "gfx/fwd.h"
 
 #include <cstdio>
-#include <string>
+#include <functional>
 #include <map>
+#include <string>
 
 struct lua_State;
+struct lua_Debug;
 
 namespace base {
   class Version;
@@ -63,7 +65,17 @@ namespace app {
   class EngineDelegate {
   public:
     virtual ~EngineDelegate() { }
+    virtual void onConsoleError(const char* text) = 0;
     virtual void onConsolePrint(const char* text) = 0;
+  };
+
+  class DebuggerDelegate {
+  public:
+    virtual ~DebuggerDelegate() { }
+    virtual void hook(lua_State* L, lua_Debug* ar) = 0;
+    virtual void startFile(const std::string& file,
+                           const std::string& content) = 0;
+    virtual void endFile(const std::string& file) = 0;
   };
 
   class Engine {
@@ -92,7 +104,11 @@ namespace app {
 
     lua_State* luaState() { return L; }
 
+    void startDebugger(DebuggerDelegate* debuggerDelegate);
+    void stopDebugger();
+
   private:
+    void onConsoleError(const char* text);
     void onConsolePrint(const char* text);
 
     lua_State* L;

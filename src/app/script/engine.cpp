@@ -48,6 +48,9 @@ base::Chrono luaClock;
 // Stack of script filenames that are being executed.
 std::stack<std::string> current_script_dirs;
 
+// Just one debugger delegate is possible.
+DebuggerDelegate* g_debuggerDelegate = nullptr;
+
 class AddScriptFilename {
 public:
   AddScriptFilename(const std::string& fn) {
@@ -468,7 +471,7 @@ bool Engine::evalCode(const std::string& code,
         lua_pcall(L, 0, 1, 0)) {
       const char* s = lua_tostring(L, -1);
       if (s)
-        onConsolePrint(s);
+        onConsoleError(s);
       ok = false;
       m_returnCode = -1;
     }
@@ -491,7 +494,7 @@ bool Engine::evalCode(const std::string& code,
     lua_pop(L, 1);
   }
   catch (const std::exception& ex) {
-    onConsolePrint(ex.what());
+    onConsoleError(ex.what());
     ok = false;
     m_returnCode = -1;
   }
@@ -516,7 +519,44 @@ bool Engine::evalFile(const std::string& filename,
 
   AddScriptFilename add(absFilename);
   set_app_params(L, params);
-  return evalCode(buf.str(), "@" + absFilename);
+
+  if (g_debuggerDelegate)
+    g_debuggerDelegate->startFile(absFilename, buf.str());
+
+  bool result = evalCode(buf.str(), "@" + absFilename);
+
+  if (g_debuggerDelegate)
+    g_debuggerDelegate->endFile(absFilename);
+
+  return result;
+}
+
+void Engine::startDebugger(DebuggerDelegate* debuggerDelegate)
+{
+  g_debuggerDelegate = debuggerDelegate;
+
+  lua_Hook hook = [](lua_State* L, lua_Debug* ar) {
+    int ret = lua_getinfo(L, "l", ar);
+    if (ret == 0 || ar->currentline < 0)
+      return;
+
+    g_debuggerDelegate->hook(L, ar);
+  };
+
+  lua_sethook(L, hook, LUA_MASKCALL | LUA_MASKRET | LUA_MASKLINE | LUA_MASKCOUNT, 1);
+}
+
+void Engine::stopDebugger()
+{
+  lua_sethook(L, nullptr, 0, 0);
+}
+
+void Engine::onConsoleError(const char* text)
+{
+  if (text && m_delegate)
+    m_delegate->onConsoleError(text);
+  else
+    onConsolePrint(text);
 }
 
 void Engine::onConsolePrint(const char* text)

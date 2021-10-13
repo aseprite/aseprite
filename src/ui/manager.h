@@ -99,6 +99,7 @@ namespace ui {
     void _openWindow(Window* window, bool center);
     void _closeWindow(Window* window, bool redraw_background);
     void _runModalWindow(Window* window);
+    void _updateMouseWidgets();
 
   protected:
     bool onProcessMessage(Message* msg) override;

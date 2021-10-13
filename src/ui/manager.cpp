@@ -1532,6 +1532,12 @@ void Manager::_runModalWindow(Window* window)
     loop.pumpMessages();
 }
 
+void Manager::_updateMouseWidgets()
+{
+  // Update mouse widget.
+  updateMouseWidgets(ui::get_mouse_position(), nullptr);
+}
+
 bool Manager::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {

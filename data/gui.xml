@@ -667,6 +667,8 @@
         <menu id="scripts_menu" text="@.file_scripts" group="file_scripts">
           <item command="OpenScriptFolder" text="@.file_open_script_folder" />
           <item command="Refresh" text="@.file_rescan_script_folder" />
+          <separator />
+          <item command="Debugger" text="@.file_debugger" />
         </menu>
         <separator group="file_app" />
         <item command="Exit" text="@.file_exit" />
