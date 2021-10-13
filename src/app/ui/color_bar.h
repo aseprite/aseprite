@@ -17,6 +17,7 @@
 #include "app/tileset_mode.h"
 #include "app/ui/button_set.h"
 #include "app/ui/color_button.h"
+#include "app/ui/dockable.h"
 #include "app/ui/input_chain_element.h"
 #include "app/ui/palette_view.h"
 #include "app/ui/tile_button.h"
@@ -50,7 +51,8 @@ namespace app {
                  , public PaletteViewDelegate
                  , public ContextObserver
                  , public DocObserver
-                 , public InputChainElement {
+                 , public InputChainElement
+                 , public Dockable {
     static ColorBar* m_instance;
   public:
     enum class ColorSelector {
@@ -64,7 +66,7 @@ namespace app {
 
     static ColorBar* instance() { return m_instance; }
 
-    ColorBar(int align, ui::TooltipManager* tooltipManager);
+    ColorBar(ui::TooltipManager* tooltipManager);
     ~ColorBar();
 
     void setPixelFormat(PixelFormat pixelFormat);
@@ -118,6 +120,12 @@ namespace app {
     bool onPaste(Context* ctx) override;
     bool onClear(Context* ctx) override;
     void onCancel(Context* ctx) override;
+
+    // Dockable impl
+    int dockableAt() const override {
+      // TODO split the ColorBar in different dockable widgets
+      return ui::LEFT | ui::RIGHT | ui::EXPANSIVE;
+    }
 
     obs::signal<void()> ChangeSelection;
 

@@ -12,7 +12,7 @@
 #include "app/ui/tabs.h"
 #include "ui/window.h"
 
-#include "main_window.xml.h"
+#include <memory>
 
 namespace ui {
   class Splitter;
@@ -30,13 +30,16 @@ namespace app {
   class ContextBar;
   class DevConsoleView;
   class DocView;
+  class Dock;
   class HomeView;
   class INotificationDelegate;
   class MainMenuBar;
+  class LayoutSelector;
   class Notifications;
   class PreviewEditorWindow;
   class StatusBar;
   class Timeline;
+  class ToolBar;
   class Workspace;
   class WorkspaceTabs;
 
@@ -44,7 +47,7 @@ namespace app {
     class DataRecovery;
   }
 
-  class MainWindow : public app::gen::MainWindow
+  class MainWindow : public ui::Window
                    , public TabsDelegate {
   public:
     enum Mode {
@@ -87,6 +90,9 @@ namespace app {
     void setTimelineVisibility(bool visible);
     void popTimeline();
 
+    void setDefaultLayout();
+    void setDefaultMirrorLayout();
+
     // When crash::DataRecovery finish to search for sessions, this
     // function is called.
     void dataRecoverySessionsAreReady();
@@ -113,7 +119,6 @@ namespace app {
   protected:
     bool onProcessMessage(ui::Message* msg) override;
     void onInitTheme(ui::InitThemeEvent& ev) override;
-    void onSaveLayout(ui::SaveLayoutEvent& ev) override;
     void onResize(ui::ResizeEvent& ev) override;
     void onActiveViewChange();
 
@@ -123,11 +128,14 @@ namespace app {
     void configureWorkspaceLayout();
 
     ui::TooltipManager* m_tooltipManager;
+    Dock* m_dock;
+    Dock* m_customizableDock;
     MainMenuBar* m_menuBar;
+    LayoutSelector* m_layoutSelector;
     StatusBar* m_statusBar;
     ColorBar* m_colorBar;
     ContextBar* m_contextBar;
-    ui::Widget* m_toolBar;
+    ToolBar* m_toolBar;
     WorkspaceTabs* m_tabsBar;
     Mode m_mode;
     Timeline* m_timeline;

@@ -440,6 +440,7 @@
         <part id="cursor_skew_e" x="288" y="176" w="16" h="16" focusx="8" focusy="8" />
         <part id="cursor_skew_nw" x="272" y="160" w="16" h="16" focusx="8" focusy="8" />
         <part id="cursor_skew_ne" x="288" y="160" w="16" h="16" focusx="8" focusy="8" />
+        <part id="layout" x="224" y="224" w="12" h="12" />
     </parts>
     <styles>
         <style id="box" />
