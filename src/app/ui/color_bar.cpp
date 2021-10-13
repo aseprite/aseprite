@@ -138,8 +138,8 @@ void ColorBar::ScrollableView::onInitTheme(InitThemeEvent& ev)
 
 ColorBar* ColorBar::m_instance = NULL;
 
-ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
-  : Box(align)
+ColorBar::ColorBar(TooltipManager* tooltipManager)
+  : Box(VERTICAL)
   , m_editPal(1)
   , m_buttons(int(PalButton::MAX))
   , m_tilesButton(1)

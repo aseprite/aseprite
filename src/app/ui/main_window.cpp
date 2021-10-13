@@ -24,9 +24,11 @@
 #include "app/ui/color_bar.h"
 #include "app/ui/context_bar.h"
 #include "app/ui/doc_view.h"
+#include "app/ui/dock.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_view.h"
 #include "app/ui/home_view.h"
+#include "app/ui/layout_selector.h"
 #include "app/ui/main_menu_bar.h"
 #include "app/ui/notifications.h"
 #include "app/ui/preview_editor.h"
@@ -83,7 +85,10 @@ public:
 };
 
 MainWindow::MainWindow()
-  : m_mode(NormalMode)
+  : ui::Window(ui::Window::DesktopWindow)
+  , m_dock(new Dock)
+  , m_customizableDock(new Dock)
+  , m_mode(NormalMode)
   , m_homeView(nullptr)
   , m_scalePanic(nullptr)
   , m_browserView(nullptr)
@@ -105,8 +110,9 @@ MainWindow::MainWindow()
 // Refer to https://github.com/aseprite/aseprite/issues/3914
 void MainWindow::initialize()
 {
-  m_tooltipManager = new TooltipManager();
-  m_menuBar = new MainMenuBar();
+  m_tooltipManager = new TooltipManager;
+  m_menuBar = new MainMenuBar;
+  m_layoutSelector = new LayoutSelector;
 
   // Register commands to load menus+shortcuts for these commands
   Editor::registerCommands();
@@ -123,7 +129,7 @@ void MainWindow::initialize()
   m_tabsBar = new WorkspaceTabs(this);
   m_workspace = new Workspace();
   m_previewEditor = new PreviewEditorWindow();
-  m_colorBar = new ColorBar(colorBarPlaceholder()->align(), m_tooltipManager);
+  m_colorBar = new ColorBar(m_tooltipManager);
   m_contextBar = new ContextBar(m_tooltipManager, m_colorBar);
 
   // The timeline (AniControls) tooltips will use the keyboard
@@ -148,19 +154,24 @@ void MainWindow::initialize()
 
   // Add the widgets in the boxes
   addChild(m_tooltipManager);
-  menuBarPlaceholder()->addChild(m_menuBar);
-  menuBarPlaceholder()->addChild(m_notifications);
-  contextBarPlaceholder()->addChild(m_contextBar);
-  colorBarPlaceholder()->addChild(m_colorBar);
-  toolBarPlaceholder()->addChild(m_toolBar);
-  statusBarPlaceholder()->addChild(m_statusBar);
-  tabsPlaceholder()->addChild(m_tabsBar);
-  workspacePlaceholder()->addChild(m_workspace);
-  timelinePlaceholder()->addChild(m_timeline);
+  addChild(m_dock);
 
-  // Default splitter positions
-  colorBarSplitter()->setPosition(m_colorBar->sizeHint().w);
-  timelineSplitter()->setPosition(75);
+  auto customizableDockPlaceholder = new Widget;
+  customizableDockPlaceholder->addChild(m_customizableDock);
+  customizableDockPlaceholder->InitTheme.connect([this] {
+    auto theme = static_cast<skin::SkinTheme*>(this->theme());
+    m_customizableDock->setBgColor(theme->colors.workspace());
+  });
+  customizableDockPlaceholder->initTheme();
+
+  m_dock->top()->right()->dock(ui::RIGHT, m_notifications);
+  m_dock->top()->right()->dock(ui::CENTER, m_layoutSelector);
+  m_dock->top()->dock(ui::BOTTOM, m_tabsBar);
+  m_dock->top()->dock(ui::CENTER, m_menuBar);
+  m_dock->dock(ui::CENTER, customizableDockPlaceholder);
+  m_dock->dock(ui::BOTTOM, m_statusBar);
+
+  setDefaultLayout();
 
   // Reconfigure workspace when the timeline position is changed.
   auto& pref = Preferences::instance();
@@ -179,6 +190,9 @@ void MainWindow::initialize()
 
 MainWindow::~MainWindow()
 {
+  m_dock->reset();
+  m_customizableDock->reset();
+
   delete m_scalePanic;
 
 #ifdef ENABLE_SCRIPTING
@@ -254,7 +268,7 @@ void MainWindow::showNotification(INotificationDelegate* del)
 {
   m_notifications->addLink(del);
   m_notifications->setVisible(true);
-  m_notifications->parent()->layout();
+  layout();
 }
 
 void MainWindow::showHomeOnOpen()
@@ -360,6 +374,34 @@ void MainWindow::popTimeline()
     setTimelineVisibility(true);
 }
 
+void MainWindow::setDefaultLayout()
+{
+  m_customizableDock->reset();
+  m_customizableDock->dock(ui::LEFT, m_colorBar);
+  m_customizableDock->center()->dock(ui::TOP, m_contextBar);
+  m_customizableDock->center()->dock(ui::RIGHT, m_toolBar);
+  m_customizableDock->center()->center()->dock(ui::BOTTOM,
+                                               m_timeline,
+                                               gfx::Size(64 * guiscale(), 64 * guiscale()));
+  m_customizableDock->center()->center()->dock(ui::CENTER, m_workspace);
+
+  layout();
+}
+
+void MainWindow::setDefaultMirrorLayout()
+{
+  m_customizableDock->reset();
+  m_customizableDock->dock(ui::RIGHT, m_colorBar);
+  m_customizableDock->center()->dock(ui::TOP, m_contextBar);
+  m_customizableDock->center()->dock(ui::LEFT, m_toolBar);
+  m_customizableDock->center()->center()->dock(ui::BOTTOM,
+                                               m_timeline,
+                                               gfx::Size(64 * guiscale(), 64 * guiscale()));
+  m_customizableDock->center()->center()->dock(ui::CENTER, m_workspace);
+
+  layout();
+}
+
 void MainWindow::dataRecoverySessionsAreReady()
 {
   getHomeView()->dataRecoverySessionsAreReady();
@@ -375,24 +417,15 @@ bool MainWindow::onProcessMessage(ui::Message* msg)
 
 void MainWindow::onInitTheme(ui::InitThemeEvent& ev)
 {
-  app::gen::MainWindow::onInitTheme(ev);
+  ui::Window::onInitTheme(ev);
+  noBorderNoChildSpacing();
   if (m_previewEditor)
     m_previewEditor->initTheme();
 }
 
-void MainWindow::onSaveLayout(SaveLayoutEvent& ev)
-{
-  // Invert the timeline splitter position before we save the setting.
-  if (Preferences::instance().general.timelinePosition() == gen::TimelinePosition::LEFT) {
-    timelineSplitter()->setPosition(100 - timelineSplitter()->getPosition());
-  }
-
-  Window::onSaveLayout(ev);
-}
-
 void MainWindow::onResize(ui::ResizeEvent& ev)
 {
-  app::gen::MainWindow::onResize(ev);
+  ui::Window::onResize(ev);
 
   os::Window* nativeWindow = (display() ? display()->nativeWindow() : nullptr);
   if (nativeWindow && nativeWindow->screen()) {
@@ -593,16 +626,21 @@ void MainWindow::configureWorkspaceLayout()
   bool isDoc = (getDocView() != nullptr);
 
   if (os::System::instance()->menus() == nullptr || pref.general.showMenuBar()) {
-    m_menuBar->resetMaxSize();
+    if (!m_menuBar->parent())
+      m_dock->top()->dock(CENTER, m_menuBar);
   }
   else {
-    m_menuBar->setMaxSize(gfx::Size(0, 0));
+    if (m_menuBar->parent())
+      m_dock->undock(m_menuBar);
   }
 
   m_menuBar->setVisible(normal);
   m_notifications->setVisible(normal && m_notifications->hasNotifications());
   m_tabsBar->setVisible(normal);
-  colorBarPlaceholder()->setVisible(normal && isDoc);
+
+  // TODO set visibility of color bar widgets
+  m_colorBar->setVisible(normal && isDoc);
+
   m_toolBar->setVisible(normal && isDoc);
   m_statusBar->setVisible(normal);
   m_contextBar->setVisible(isDoc && (m_mode == NormalMode || m_mode == ContextBarAndTimelineMode));
@@ -610,41 +648,22 @@ void MainWindow::configureWorkspaceLayout()
   // Configure timeline
   {
     auto timelinePosition = pref.general.timelinePosition();
-    bool invertWidgets = false;
-    int align = VERTICAL;
+    int side = ui::BOTTOM;
+
+    m_customizableDock->undock(m_timeline);
+
     switch (timelinePosition) {
-      case gen::TimelinePosition::LEFT:
-        align = HORIZONTAL;
-        invertWidgets = true;
-        break;
-      case gen::TimelinePosition::RIGHT:  align = HORIZONTAL; break;
-      case gen::TimelinePosition::BOTTOM: break;
+      case gen::TimelinePosition::LEFT:   side = ui::LEFT; break;
+      case gen::TimelinePosition::RIGHT:  side = ui::RIGHT; break;
+      case gen::TimelinePosition::BOTTOM: side = ui::BOTTOM; break;
     }
 
-    timelineSplitter()->setAlign(align);
-    timelinePlaceholder()->setVisible(
-      isDoc && (m_mode == NormalMode || m_mode == ContextBarAndTimelineMode) &&
-      pref.general.visibleTimeline());
+    m_customizableDock->center()->center()->dock(side,
+                                                 m_timeline,
+                                                 gfx::Size(64 * guiscale(), 64 * guiscale()));
 
-    bool invertSplitterPos = false;
-    if (invertWidgets) {
-      if (timelineSplitter()->firstChild() == workspacePlaceholder() &&
-          timelineSplitter()->lastChild() == timelinePlaceholder()) {
-        timelineSplitter()->removeChild(workspacePlaceholder());
-        timelineSplitter()->addChild(workspacePlaceholder());
-        invertSplitterPos = true;
-      }
-    }
-    else {
-      if (timelineSplitter()->firstChild() == timelinePlaceholder() &&
-          timelineSplitter()->lastChild() == workspacePlaceholder()) {
-        timelineSplitter()->removeChild(timelinePlaceholder());
-        timelineSplitter()->addChild(timelinePlaceholder());
-        invertSplitterPos = true;
-      }
-    }
-    if (invertSplitterPos)
-      timelineSplitter()->setPosition(100 - timelineSplitter()->getPosition());
+    m_timeline->setVisible(isDoc && (m_mode == NormalMode || m_mode == ContextBarAndTimelineMode) &&
+                           pref.general.visibleTimeline());
   }
 
   if (m_contextBar->isVisible()) {
@@ -652,7 +671,6 @@ void MainWindow::configureWorkspaceLayout()
   }
 
   layout();
-  invalidate();
 }
 
 } // namespace app
