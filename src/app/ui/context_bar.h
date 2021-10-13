@@ -17,6 +17,7 @@
 #include "app/tools/tool_loop_modifiers.h"
 #include "app/ui/context_bar_observer.h"
 #include "app/ui/doc_observer_widget.h"
+#include "app/ui/dockable.h"
 #include "doc/brush.h"
 #include "obs/connection.h"
 #include "obs/observable.h"
@@ -58,7 +59,8 @@ namespace app {
 
   class ContextBar : public DocObserverWidget<ui::HBox>
                    , public obs::observable<ContextBarObserver>
-                   , public tools::ActiveToolObserver {
+                   , public tools::ActiveToolObserver
+                   , public Dockable {
   public:
     ContextBar(ui::TooltipManager* tooltipManager,
                ColorBar* colorBar);
@@ -96,6 +98,11 @@ namespace app {
 
     // For freehand with dynamics
     const tools::DynamicsOptions& getDynamics() const;
+
+    // Dockable impl
+    int dockableAt() const override {
+      return ui::TOP | ui::BOTTOM;
+    }
 
     // Signals
     obs::signal<void()> BrushChange;
