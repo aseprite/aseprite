@@ -402,6 +402,8 @@ public:
       onEvalExpression(expr);
     });
 
+    mainArea()->setVisible(false);
+
     sourcePlaceholder()->attachToView(&m_sourceViewer);
     sourcePlaceholder()->setVisible(false);
 
@@ -618,6 +620,7 @@ public:
     updateControls();
 
     if (m_state == State::WaitingNextCommand) {
+      mainArea()->setVisible(true);
       sourcePlaceholder()->setVisible(true);
       stackPlaceholder()->setVisible(true);
       layout();

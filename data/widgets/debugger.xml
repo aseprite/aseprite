@@ -14,7 +14,7 @@
         <item icon="debug_breakpoint" tooltip="@.toggle_breakpoint" tooltip_dir="bottom" />
       </buttonset>
     </hbox>
-    <splitter horizontal="true" noborders="true" childspacing="2" expansive="true">
+    <splitter id="main_area" horizontal="true" noborders="true" childspacing="2" expansive="true">
       <view id="source_placeholder" />
       <splitter vertical="true" noborders="true" childspacing="2" expansive="true">
         <vbox id="stack_part">
