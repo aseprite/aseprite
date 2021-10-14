@@ -120,21 +120,28 @@ public:
 
   // emitted when a new layer has been chosen and its channel image data
   // is about to be read
-  void onLayerSelected(const psd::LayerRecord& layerRecord) override
+  void onBeginLayer(const psd::LayerRecord& layerRecord) override
   {
     auto findIter = std::find_if(
       layers.begin(), layers.end(), [&layerRecord](doc::Layer* layer) {
         return layer->name() == layerRecord.name;
       });
 
-    if (findIter == layers.end()) {
-      m_currentImage.reset();
+    if (findIter == layers.end())
       createNewLayer(layerRecord.name);
-    }
     else {
       m_currentLayer = *findIter;
       m_currentImage = m_currentLayer->cel(frame_t(0))->imageRef();
     }
+  }
+
+  void onEndLayer(const psd::LayerRecord& layerRecord) override
+  {
+    ASSERT(m_currentLayer);
+    ASSERT(m_currentImage);
+
+    m_currentImage.reset();
+    m_currentLayer = nullptr;
   }
 
   // emitted only if there's a palette in an image
@@ -151,15 +158,12 @@ public:
   // emitted when an image data is about to be transmitted
   void onBeginImage(const psd::ImageData& imageData) override
   {
-    // only occurs where there's an image with no layer
-    if (layers.empty() && !m_currentImage) {
+    if (!m_currentImage) {
       createNewImage();
-      createNewLayer("Layer Y");
-      linkNewCel(m_currentLayer, m_currentImage);
-    }
-
-    else if (m_currentLayer && !m_currentImage) {
-      createNewImage();
+      if (layers.empty())  // only occurs where there's an image with no layer
+        createNewLayer("Layer 1");
+      else if (!m_currentLayer)
+        createNewLayer("Preview");
       linkNewCel(m_currentLayer, m_currentImage);
     }
   }
@@ -168,7 +172,6 @@ public:
   void onLayersAndMask(const psd::LayersInformation& layersInfo) override
   {
     if (layersInfo.layers.size() == layers.size()) {
-      const std::vector<uint8_t>& globalMasks = layersInfo.globalMaskData;
       for (int i = 0; i < layers.size(); ++i) {
         const psd::LayerRecord& layerRecord = layersInfo.layers[i];
 
@@ -177,9 +180,7 @@ public:
 
         Cel* cel = layer->cel(frame_t(0));
         cel->setOpacity(layerRecord.opacity);
-        // cel->setPosition(gfx::Point(layerRecord.left, layerRecord.top));
-        if (globalMasks.size() > i)
-          cel->image()->setMaskColor(globalMasks[i]);
+        cel->setPosition(gfx::Point(layerRecord.left, layerRecord.top));
       }
     }
   }
@@ -226,7 +227,7 @@ public:
   }
 
 private:
-  // TODO: this is meant to convert values of a channel based on its depth 
+  // TODO: this is meant to convert values of a channel based on its depth
   std::uint32_t normalizeValue(const uint32_t value, const int depth)
   {
     return value;
@@ -278,7 +279,6 @@ private:
       int r = rgba_getr(prevPixelValue);
       int g = rgba_getg(prevPixelValue);
       int b = rgba_getb(prevPixelValue);
-      int a = rgba_geta(prevPixelValue);
       if (chanID == psd::ChannelID::Red) {
         r = pixelValue;
       }
@@ -288,10 +288,7 @@ private:
       else if (chanID == psd::ChannelID::Blue) {
         b = pixelValue;
       }
-      else if (chanID == psd::ChannelID::Alpha) {
-        a = pixelValue;
-      }
-      m_currentImage->putPixel(x, y, rgba(r, g, b, a));
+      m_currentImage->putPixel(x, y, rgba(r, g, b, 255));
     }
     else if (pixelFormat == doc::PixelFormat::IMAGE_GRAYSCALE) {
       int a = graya_geta(prevPixelValue);
