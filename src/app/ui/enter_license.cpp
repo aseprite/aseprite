@@ -13,7 +13,6 @@
 #include "app/resource_finder.h"
 #include "base/fs.h"
 #include "enter_license.h"
-#include "enter_license.xml.h"
 #include "ui/message.h"
 #include "ui/style.h"
 #include "ui/system.h"
