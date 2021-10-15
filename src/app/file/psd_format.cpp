@@ -77,6 +77,7 @@ class PsdFormat : public FileFormat {
 
   void onGetExtensions(base::paths& exts) const override
   {
+    exts.push_back("psb");
     exts.push_back("psd");
   }
 
@@ -101,11 +102,9 @@ public:
   PsdDecoderDelegate()
     : m_currentLayer(nullptr)
     , m_currentImage(nullptr)
-#ifdef _DEBUG
-    , m_prevImage(nullptr)
-#endif  // _DEBUG
-    , parentSprite(nullptr)
+    , m_sprite(nullptr)
     , m_pixelFormat(PixelFormat::IMAGE_INDEXED)
+    , m_layerHasTransparentChannel(false)
   { }
 
   Sprite* getSprite() { return assembleDocument(); }
@@ -113,22 +112,24 @@ public:
   void onFileHeader(const psd::FileHeader& header) override
   {
     m_pixelFormat = psd_cmode_to_ase_format(header.colorMode);
-    parentSprite = new Sprite(
+    m_sprite = new Sprite(
       ImageSpec(ColorMode(m_pixelFormat), header.width, header.width));
-    parentSprite->setTotalFrames(frame_t(1));
+    m_sprite->setTotalFrames(frame_t(1));
   }
 
-  // emitted when a new layer has been chosen and its channel image data
+  // Emitted when a new layer has been chosen and its channel image data
   // is about to be read
   void onBeginLayer(const psd::LayerRecord& layerRecord) override
   {
     auto findIter = std::find_if(
-      layers.begin(), layers.end(), [&layerRecord](doc::Layer* layer) {
+      m_layers.begin(), m_layers.end(), [&layerRecord](doc::Layer* layer) {
         return layer->name() == layerRecord.name;
       });
-
-    if (findIter == layers.end())
+    if (findIter == m_layers.end()) {
       createNewLayer(layerRecord.name);
+      m_currentLayer->setVisible(layerRecord.isVisible());
+      m_layerHasTransparentChannel = hasTransparency(layerRecord.channels);
+    }
     else {
       m_currentLayer = *findIter;
       m_currentImage = m_currentLayer->cel(frame_t(0))->imageRef();
@@ -142,9 +143,10 @@ public:
 
     m_currentImage.reset();
     m_currentLayer = nullptr;
+    m_layerHasTransparentChannel = false;
   }
 
-  // emitted only if there's a palette in an image
+  // Emitted only if there's a palette in an image
   void onColorModeData(const psd::ColorModeData& colorModeD) override
   {
     if (!colorModeD.colors.empty()) {
@@ -155,27 +157,30 @@ public:
     }
   }
 
-  // emitted when an image data is about to be transmitted
+  // Emitted when an image data is about to be transmitted
   void onBeginImage(const psd::ImageData& imageData) override
   {
     if (!m_currentImage) {
-      createNewImage();
-      if (layers.empty())  // only occurs where there's an image with no layer
+      // only occurs where there's an image with no layer
+      if (m_layers.empty()) {
         createNewLayer("Layer 1");
-      else if (!m_currentLayer)
-        createNewLayer("Preview");
-      linkNewCel(m_currentLayer, m_currentImage);
+        m_layerHasTransparentChannel = hasTransparency(imageData.channels);
+      }
+      if (m_currentLayer) {
+        createNewImage(imageData.width, imageData.height);
+        linkNewCel(m_currentLayer, m_currentImage);
+      }
     }
   }
 
-  // emitted when all layers and their masks have been processed
+  // Emitted when all layers and their masks have been processed
   void onLayersAndMask(const psd::LayersInformation& layersInfo) override
   {
-    if (layersInfo.layers.size() == layers.size()) {
-      for (int i = 0; i < layers.size(); ++i) {
+    if (layersInfo.layers.size() == m_layers.size()) {
+      for (int i = 0; i < m_layers.size(); ++i) {
         const psd::LayerRecord& layerRecord = layersInfo.layers[i];
 
-        LayerImage* layer = static_cast<LayerImage*>(layers[i]);
+        LayerImage* layer = static_cast<LayerImage*>(m_layers[i]);
         layer->setBlendMode(psd_blendmode_to_ase(layerRecord.blendMode));
 
         Cel* cel = layer->cel(frame_t(0));
@@ -185,52 +190,65 @@ public:
     }
   }
 
-  /* this is called on images stored in raw data, most likely called when
-  the first alpha channel contains the transparency data for the merged
-  result. This channel is almost always stored in raw data format */
+  // This is called on images stored in raw data, most likely called when
+  // the first alpha channel contains the transparency data for the merged
+  // result. This channel is almost always stored in raw data format
   void onImageScanline(const psd::ImageData& imgData,
                        const int y,
                        const psd::ChannelID chanID,
                        const std::vector<uint32_t>& data) override
   {
-    ASSERT(m_currentImage);
-    ASSERT(m_currentImage->width() >= data.size());
+    if (!m_currentImage)
+      return;
 
     for (int x = 0; x < data.size(); ++x) {
       const color_t c = m_currentImage->getPixel(x, y);
-      putPixel(
-        x, y, c, normalizeValue(data[x], imgData.depth), chanID, m_pixelFormat);
+      const uint32_t pixel = normalizeValue(data[x], imgData.depth);
+      putPixel(x, y, c, pixel, chanID, m_pixelFormat);
     }
   }
 
-  // this method is called on images stored in RLE format
+  // This method is called on images stored in RLE format
   void onImageScanline(const psd::ImageData& img,
                        const int y,
                        const psd::ChannelID chanID,
                        const uint8_t* data,
                        const int bytes) override
   {
-    ASSERT(m_currentImage);
-    if (!m_currentImage) {
-      throw std::runtime_error("there was a problem in RLE image scanline");
-    }
-
-    if (y >= m_currentImage->height())
+    if (!m_currentImage || y >= m_currentImage->height())
       return;
 
-    // uint32_t* dst_address = (uint32_t*)m_currentImage->getPixelAddress(0, y);
-    for (int x = 0; x < m_currentImage->width(); ++x) {
+    for (int x = 0; x < bytes && x < m_currentImage->width(); ++x) {
       const color_t c = m_currentImage->getPixel(x, y);
-      putPixel(
-        x, y, c, normalizeValue(data[x], img.depth), chanID, m_pixelFormat);
+      const uint32_t pixel = normalizeValue(data[x], img.depth);
+      putPixel(x, y, c, pixel, chanID, m_pixelFormat);
     }
   }
 
 private:
-  // TODO: this is meant to convert values of a channel based on its depth
+  // TODO: This is meant to convert values of a channel based on its depth
   std::uint32_t normalizeValue(const uint32_t value, const int depth)
   {
     return value;
+  }
+
+  bool hasTransparency(const std::vector<psd::ChannelID>& channelIDs)
+  {
+    return std::any_of(channelIDs.cbegin(),
+                       channelIDs.cend(),
+                       [](const psd::ChannelID& channelID) {
+                         return channelID == psd::ChannelID::TransparencyMask ||
+                                channelID == psd::ChannelID::Alpha;
+                       });
+  }
+
+  bool hasTransparency(const std::vector<psd::Channel>& channels)
+  {
+    return std::any_of(
+      channels.cbegin(), channels.cend(), [](const psd::Channel& channel) {
+        return channel.channelID == psd::ChannelID::TransparencyMask ||
+               channel.channelID == psd::ChannelID::Alpha;
+      });
   }
 
   void linkNewCel(Layer* layer, doc::ImageRef image)
@@ -242,29 +260,18 @@ private:
 
   void createNewLayer(const std::string& layerName)
   {
-    m_currentLayer = new LayerImage(parentSprite);
-    parentSprite->root()->addLayer(m_currentLayer);
-    layers.push_back(m_currentLayer);
+    m_currentLayer = new LayerImage(m_sprite);
+    m_sprite->root()->addLayer(m_currentLayer);
+    m_layers.push_back(m_currentLayer);
     m_currentLayer->setName(layerName);
   }
 
   Sprite* assembleDocument()
   {
-    if (m_pixelFormat == doc::PixelFormat::IMAGE_INDEXED ||
-        m_pixelFormat == doc::PixelFormat::IMAGE_GRAYSCALE) {
-      parentSprite->setPalette(&m_palette, true);
-    }
-#ifdef _DEBUG
-    ASSERT(layers.size() >= 1);
-    for (int i = 0; i < layers.size(); ++i) {
-      LayerImage* currLayer = static_cast<LayerImage*>(layers[i]);
-      ASSERT(currLayer);
-      ASSERT(currLayer->getCelsCount() >= 1);
-      ASSERT(currLayer->cel(frame_t(0))->data());
-    }
-#endif  // _DEBUG
+    if (m_palette.getModifications() > 1)
+      m_sprite->setPalette(&m_palette, true);
 
-    return parentSprite;
+    return m_sprite;
   }
 
   template<typename NewPixel>
@@ -279,6 +286,8 @@ private:
       int r = rgba_getr(prevPixelValue);
       int g = rgba_getg(prevPixelValue);
       int b = rgba_getb(prevPixelValue);
+      int a = m_layerHasTransparentChannel ? rgba_geta(prevPixelValue) : 255;
+
       if (chanID == psd::ChannelID::Red) {
         r = pixelValue;
       }
@@ -288,22 +297,18 @@ private:
       else if (chanID == psd::ChannelID::Blue) {
         b = pixelValue;
       }
-      m_currentImage->putPixel(x, y, rgba(r, g, b, 255));
-    }
-    else if (pixelFormat == doc::PixelFormat::IMAGE_GRAYSCALE) {
-      int a = graya_geta(prevPixelValue);
-      int v = graya_getv(prevPixelValue);
-      if (chanID == psd::ChannelID::TransparencyMask) {
+      else if (chanID == psd::ChannelID::Alpha ||
+               chanID == psd::ChannelID::TransparencyMask) {
         a = pixelValue;
       }
-      else if (chanID == psd::ChannelID::Red) {
+      m_currentImage->putPixel(x, y, rgba(r, g, b, a));
+    }
+    else if (pixelFormat == doc::PixelFormat::IMAGE_GRAYSCALE) {
+      int v = graya_getv(prevPixelValue);
+      if (chanID == psd::ChannelID::Red) {
         v = pixelValue;
       }
-      else {
-        ASSERT(false);
-        throw std::runtime_error("Invalid channel ID encountered");
-      }
-      m_currentImage->putPixel(x, y, graya(v, a));
+      m_currentImage->putPixel(x, y, gray(v));
     }
     else if (pixelFormat == doc::PixelFormat::IMAGE_INDEXED) {
       m_currentImage->putPixel(x, y, (color_t)pixelValue);
@@ -314,31 +319,19 @@ private:
     }
   }
 
-  void createNewImage()
+  void createNewImage(const int width, const int height)
   {
-    m_currentImage.reset(Image::create(
-      m_pixelFormat, parentSprite->width(), parentSprite->height()));
+    m_currentImage.reset(Image::create(m_pixelFormat, width, height));
     clear_image(m_currentImage.get(), 0);
-#ifdef _DEBUG
-    if (!m_prevImage) {
-      m_prevImage = m_currentImage;
-      return;
-    }
-    ASSERT(m_currentImage != m_prevImage);
-    m_prevImage = m_currentImage;
-#endif  // _DEBUG
   }
 
-  doc::Layer* m_currentLayer;
   doc::ImageRef m_currentImage;
-#ifdef _DEBUG
-  doc::ImageRef m_prevImage;
-#endif  // _DEBUG
-
-  Sprite* parentSprite;
+  doc::Layer* m_currentLayer;
+  Sprite* m_sprite;
   PixelFormat m_pixelFormat;
-  std::vector<doc::Layer*> layers;
+  std::vector<doc::Layer*> m_layers;
   Palette m_palette;
+  bool m_layerHasTransparentChannel;
 };
 
 bool PsdFormat::onLoad(FileOp* fop)
@@ -360,35 +353,25 @@ bool PsdFormat::onLoad(FileOp* fop)
   if (header.colorMode != psd::ColorMode::RGB &&
       header.colorMode != psd::ColorMode::Indexed &&
       header.colorMode != psd::ColorMode::Grayscale) {
-    fop->setError("this preliminary work only supports "
+    fop->setError("This preliminary work only supports "
                   "RGB, Grayscale && Indexed\n");
     return false;
   }
 
-  //this would be removed when support for 32bit per channel is supported
+  // This would be removed when support for 32bit per channel is supported
   if (header.depth >= 32) {
-    fop->setError("support for 32bit per channel isn't supported yet");
+    fop->setError("Support for 32bit per channel isn't supported yet");
     return false;
   }
 
-  if (!decoder.readColorModeData()) {
-    fop->setError("unable to read color mode of the file\n");
-    return false;
+  try {
+    decoder.readColorModeData();
+    decoder.readImageResources();
+    decoder.readLayersAndMask();
+    decoder.readImageData();
   }
-
-  if (!decoder.readImageResources()) {
-    fop->setError("unable to read the image resources\n");
-    return false;
-  }
-
-  if (!decoder.readLayersAndMask()) {
-    fop->setError("there was a problem reading the "
-                  "layers information\n");
-    return false;
-  }
-
-  if (!decoder.readImageData()) {
-    fop->setError("unable to decode the image data section\n");
+  catch (const std::runtime_error& e) {
+    fop->setError(e.what());
     return false;
   }
 
