@@ -306,8 +306,7 @@ int App::initialize(const AppOptions& options)
     ui::set_mouse_cursor_scale(preferences().cursor.cursorScale());
     ui::set_mouse_cursor(kArrowCursor);
 
-    auto manager = ui::Manager::getDefault();
-    manager->invalidate();
+    ui::Manager::getDefault()->invalidate();
 
     // Create the main window.
     m_mainWindow.reset(new MainWindow);
@@ -325,17 +324,15 @@ int App::initialize(const AppOptions& options)
     // Show the main window (this is not modal, the code continues)
     m_mainWindow->openWindow();
 
-    // Redraw the whole screen.
-    manager->invalidate();
-
-    // Pump some messages so we receive the first
-    // Manager::onNewDisplayConfiguration() and we known the manager
-    // initial size. This is required so if the OpenFileCommand
+    // To refresh the manager size we call to
+    // Manager::updateAllDisplaysWithNewScale(...) to call to
+    // Manager::onNewDisplayConfiguration()
+    // This is required to OpenFileCommand
     // (called when we're processing the CLI with OpenBatchOfFiles)
     // shows a dialog to open a sequence of files, the dialog is
     // centered correctly to the manager bounds.
-    ui::MessageLoop loop(manager);
-    loop.pumpMessages();
+    const int scale = Preferences::instance().general.screenScale();
+    ui::Manager::getDefault()->updateAllDisplaysWithNewScale(scale);
   }
 #endif  // ENABLE_UI
 
