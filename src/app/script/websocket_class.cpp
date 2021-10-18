@@ -13,11 +13,14 @@
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
 #include "app/script/security.h"
+#include "ui/timer.h"
+#include "ui/manager.h"
 #include "ui/system.h"
 
 #include <ixwebsocket/IXNetSystem.h>
 #include <ixwebsocket/IXWebSocket.h>
 #include <sstream>
+#include <set>
 
 namespace app {
 namespace script {
@@ -26,6 +29,9 @@ namespace {
 
 // Additional "enum" value to make message callback simpler
 #define MESSAGE_TYPE_BINARY ((int)ix::WebSocketMessageType::Fragment + 10)
+
+static ui::Timer* timer;
+static std::set<ix::WebSocket *> connections;
 
 int WebSocket_new(lua_State* L)
 {
@@ -163,6 +169,13 @@ int WebSocket_connect(lua_State* L)
 {
   auto ws = get_ptr<ix::WebSocket>(L, 1);
   ws->start();
+
+  if (connections.empty()) {
+    timer = new ui::Timer(33, ui::Manager::getDefault());
+    timer->start();
+  }
+  connections.insert(ws);
+
   return 0;
 }
 
@@ -170,6 +183,13 @@ int WebSocket_close(lua_State* L)
 {
   auto ws = get_ptr<ix::WebSocket>(L, 1);
   ws->stop();
+
+  connections.erase(ws);
+  if (connections.empty()) {
+    delete timer;
+    timer = nullptr;
+  }
+
   return 0;
 }
 
