@@ -55,7 +55,19 @@ int WebSocket_new(lua_State* L)
     }
     lua_pop(L, 1);
 
-    int type = lua_getfield(L, 1, "onreceive");
+    int type = lua_getfield(L, 1, "minreconnectwait");
+    if (type == LUA_TNUMBER) {
+      ws->setMinWaitBetweenReconnectionRetries(lua_tointeger(L, -1));
+    }
+    lua_pop(L, 1);
+
+    type = lua_getfield(L, 1, "maxreconnectwait");
+    if (type == LUA_TNUMBER) {
+      ws->setMaxWaitBetweenReconnectionRetries(lua_tointeger(L, -1));
+    }
+    lua_pop(L, 1);
+
+    type = lua_getfield(L, 1, "onreceive");
     if (type == LUA_TFUNCTION) {
       int onreceiveRef = luaL_ref(L, LUA_REGISTRYINDEX);
 
