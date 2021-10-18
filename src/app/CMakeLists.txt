@@ -132,6 +132,7 @@ set(file_formats
   file/jpeg_format.cpp
   file/pcx_format.cpp
   file/png_format.cpp
+  file/psd_format.cpp
   file/svg_format.cpp
   file/tga_format.cpp)
 if(WITH_WEBP_SUPPORT)
@@ -676,6 +677,7 @@ target_link_libraries(app-lib
   render-lib
   laf-ft
   laf-os
+  psd
   ui-lib
   ver-lib
   undo
