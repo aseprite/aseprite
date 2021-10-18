@@ -100,8 +100,8 @@ FileFormat* CreatePsdFormat()
 class PsdDecoderDelegate : public psd::DecoderDelegate {
 public:
   PsdDecoderDelegate()
-    : m_currentLayer(nullptr)
-    , m_currentImage(nullptr)
+    : m_currentImage(nullptr)
+    , m_currentLayer(nullptr)
     , m_sprite(nullptr)
     , m_pixelFormat(PixelFormat::IMAGE_INDEXED)
     , m_layerHasTransparentChannel(false)
@@ -305,10 +305,15 @@ private:
     }
     else if (pixelFormat == doc::PixelFormat::IMAGE_GRAYSCALE) {
       int v = graya_getv(prevPixelValue);
+      int a = m_layerHasTransparentChannel ? graya_geta(prevPixelValue) : 255;
       if (chanID == psd::ChannelID::Red) {
         v = pixelValue;
       }
-      m_currentImage->putPixel(x, y, gray(v));
+      else if (chanID == psd::ChannelID::Alpha ||
+               chanID == psd::ChannelID::TransparencyMask) {
+        a = pixelValue;
+      }
+      m_currentImage->putPixel(x, y, graya(v, a));
     }
     else if (pixelFormat == doc::PixelFormat::IMAGE_INDEXED) {
       m_currentImage->putPixel(x, y, (color_t)pixelValue);
@@ -321,6 +326,9 @@ private:
 
   void createNewImage(const int width, const int height)
   {
+    if (width <= 0 || height <= 0)
+      throw std::runtime_error("invalid image width/height");
+
     m_currentImage.reset(Image::create(m_pixelFormat, width, height));
     clear_image(m_currentImage.get(), 0);
   }
