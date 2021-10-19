@@ -238,14 +238,14 @@ void register_websocket_class(lua_State* L)
   lua_newtable(L);
   lua_pushvalue(L, -1);
   lua_setglobal(L, "WebSocketMessageType");
-  setfield_integer(L, "Text", (int)ix::WebSocketMessageType::Message);
-  setfield_integer(L, "Binary", MESSAGE_TYPE_BINARY);
-  setfield_integer(L, "Open", (int)ix::WebSocketMessageType::Open);
-  setfield_integer(L, "Close", (int)ix::WebSocketMessageType::Close);
-  setfield_integer(L, "Error", (int)ix::WebSocketMessageType::Error);
-  setfield_integer(L, "Ping", (int)ix::WebSocketMessageType::Ping);
-  setfield_integer(L, "Pong", (int)ix::WebSocketMessageType::Pong);
-  setfield_integer(L, "Fragment", (int)ix::WebSocketMessageType::Fragment);
+  setfield_integer(L, "TEXT", (int)ix::WebSocketMessageType::Message);
+  setfield_integer(L, "BINARY", MESSAGE_TYPE_BINARY);
+  setfield_integer(L, "OPEN", (int)ix::WebSocketMessageType::Open);
+  setfield_integer(L, "CLOSE", (int)ix::WebSocketMessageType::Close);
+  setfield_integer(L, "ERROR", (int)ix::WebSocketMessageType::Error);
+  setfield_integer(L, "PING", (int)ix::WebSocketMessageType::Ping);
+  setfield_integer(L, "PONG", (int)ix::WebSocketMessageType::Pong);
+  setfield_integer(L, "FRAGMENT", (int)ix::WebSocketMessageType::Fragment);
   lua_pop(L, 1);
 }
 
