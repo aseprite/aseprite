@@ -33,6 +33,15 @@ namespace {
 static std::unique_ptr<ui::Timer> g_timer;
 static std::set<ix::WebSocket*> g_connections;
 
+static void close_ws(ix::WebSocket* ws)
+{
+  ws->stop();
+
+  g_connections.erase(ws);
+  if (g_connections.empty())
+    g_timer.reset();
+}
+
 int WebSocket_new(lua_State* L)
 {
   static std::once_flag f;
@@ -108,7 +117,7 @@ int WebSocket_new(lua_State* L)
 int WebSocket_gc(lua_State* L)
 {
   auto ws = get_ptr<ix::WebSocket>(L, 1);
-  ws->stop();
+  close_ws(ws);
   delete ws;
   return 0;
 }
@@ -182,13 +191,7 @@ int WebSocket_connect(lua_State* L)
 int WebSocket_close(lua_State* L)
 {
   auto ws = get_ptr<ix::WebSocket>(L, 1);
-  ws->stop();
-
-  g_connections.erase(ws);
-  if (g_connections.empty()) {
-    g_timer = nullptr;
-  }
-
+  close_ws(ws);
   return 0;
 }
 
