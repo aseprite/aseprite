@@ -13,11 +13,14 @@
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
 #include "app/script/security.h"
+#include "ui/timer.h"
+#include "ui/manager.h"
 #include "ui/system.h"
 
 #include <ixwebsocket/IXNetSystem.h>
 #include <ixwebsocket/IXWebSocket.h>
 #include <sstream>
+#include <set>
 
 namespace app {
 namespace script {
@@ -26,6 +29,18 @@ namespace {
 
 // Additional "enum" value to make message callback simpler
 #define MESSAGE_TYPE_BINARY ((int)ix::WebSocketMessageType::Fragment + 10)
+
+static std::unique_ptr<ui::Timer> g_timer;
+static std::set<ix::WebSocket*> g_connections;
+
+static void close_ws(ix::WebSocket* ws)
+{
+  ws->stop();
+
+  g_connections.erase(ws);
+  if (g_connections.empty())
+    g_timer.reset();
+}
 
 int WebSocket_new(lua_State* L)
 {
@@ -55,7 +70,19 @@ int WebSocket_new(lua_State* L)
     }
     lua_pop(L, 1);
 
-    int type = lua_getfield(L, 1, "onreceive");
+    int type = lua_getfield(L, 1, "minreconnectwait");
+    if (type == LUA_TNUMBER) {
+      ws->setMinWaitBetweenReconnectionRetries(1000 * lua_tonumber(L, -1));
+    }
+    lua_pop(L, 1);
+
+    type = lua_getfield(L, 1, "maxreconnectwait");
+    if (type == LUA_TNUMBER) {
+      ws->setMaxWaitBetweenReconnectionRetries(1000 * lua_tonumber(L, -1));
+    }
+    lua_pop(L, 1);
+
+    type = lua_getfield(L, 1, "onreceive");
     if (type == LUA_TFUNCTION) {
       int onreceiveRef = luaL_ref(L, LUA_REGISTRYINDEX);
 
@@ -80,6 +107,8 @@ int WebSocket_new(lua_State* L)
         });
     }
     else {
+      // Set a default handler to avoid a std::bad_function_call exception
+      ws->setOnMessageCallback([](const ix::WebSocketMessagePtr& msg) { });
       lua_pop(L, 1);
     }
   }
@@ -90,7 +119,7 @@ int WebSocket_new(lua_State* L)
 int WebSocket_gc(lua_State* L)
 {
   auto ws = get_ptr<ix::WebSocket>(L, 1);
-  ws->stop();
+  close_ws(ws);
   delete ws;
   return 0;
 }
@@ -151,13 +180,24 @@ int WebSocket_connect(lua_State* L)
 {
   auto ws = get_ptr<ix::WebSocket>(L, 1);
   ws->start();
+
+  if (g_connections.empty()) {
+#ifdef ENABLE_UI
+    if (App::instance()->isGui()) {
+      g_timer = std::make_unique<ui::Timer>(33, ui::Manager::getDefault());
+      g_timer->start();
+    }
+#endif
+  }
+  g_connections.insert(ws);
+
   return 0;
 }
 
 int WebSocket_close(lua_State* L)
 {
   auto ws = get_ptr<ix::WebSocket>(L, 1);
-  ws->stop();
+  close_ws(ws);
   return 0;
 }
 
@@ -198,14 +238,14 @@ void register_websocket_class(lua_State* L)
   lua_newtable(L);
   lua_pushvalue(L, -1);
   lua_setglobal(L, "WebSocketMessageType");
-  setfield_integer(L, "Text", (int)ix::WebSocketMessageType::Message);
-  setfield_integer(L, "Binary", MESSAGE_TYPE_BINARY);
-  setfield_integer(L, "Open", (int)ix::WebSocketMessageType::Open);
-  setfield_integer(L, "Close", (int)ix::WebSocketMessageType::Close);
-  setfield_integer(L, "Error", (int)ix::WebSocketMessageType::Error);
-  setfield_integer(L, "Ping", (int)ix::WebSocketMessageType::Ping);
-  setfield_integer(L, "Pong", (int)ix::WebSocketMessageType::Pong);
-  setfield_integer(L, "Fragment", (int)ix::WebSocketMessageType::Fragment);
+  setfield_integer(L, "TEXT", (int)ix::WebSocketMessageType::Message);
+  setfield_integer(L, "BINARY", MESSAGE_TYPE_BINARY);
+  setfield_integer(L, "OPEN", (int)ix::WebSocketMessageType::Open);
+  setfield_integer(L, "CLOSE", (int)ix::WebSocketMessageType::Close);
+  setfield_integer(L, "ERROR", (int)ix::WebSocketMessageType::Error);
+  setfield_integer(L, "PING", (int)ix::WebSocketMessageType::Ping);
+  setfield_integer(L, "PONG", (int)ix::WebSocketMessageType::Pong);
+  setfield_integer(L, "FRAGMENT", (int)ix::WebSocketMessageType::Fragment);
   lua_pop(L, 1);
 }
 

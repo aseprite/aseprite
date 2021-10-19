@@ -169,14 +169,6 @@ public:
     doc()->add_observer(this);
   }
 
-  ~SpriteEvents() {
-    if (m_observingUndo) {
-      doc()->undoHistory()->remove_observer(this);
-      m_observingUndo = false;
-    }
-    doc()->remove_observer(this);
-  }
-
   EventType eventType(const char* eventName) const {
     if (std::strcmp(eventName, "change") == 0)
       return Change;
