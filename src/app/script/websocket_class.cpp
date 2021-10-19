@@ -31,7 +31,7 @@ namespace {
 #define MESSAGE_TYPE_BINARY ((int)ix::WebSocketMessageType::Fragment + 10)
 
 static std::unique_ptr<ui::Timer> g_timer;
-static std::set<ix::WebSocket *> g_connections;
+static std::set<ix::WebSocket*> g_connections;
 
 int WebSocket_new(lua_State* L)
 {
