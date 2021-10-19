@@ -24,6 +24,31 @@ do
   expect_eq(3, i)
 end
 
+do
+  local pref = app.preferences
+  pref.color_bar.fg_color = Color(0, 0, 0)
+  pref.color_bar.bg_color = Color(0, 0, 0)
+
+  local fg, bg = 0, 0
+  local a = app.events:on('fgcolorchange', function() fg = fg + 1 end)
+  local b = app.events:on('bgcolorchange', function() bg = bg + 1 end)
+  assert(fg == 0)
+  assert(bg == 0)
+
+  pref.color_bar.fg_color = Color(255, 0, 0)
+  pref.color_bar.bg_color = Color(255, 0, 0)
+  assert(fg == 1)
+  assert(bg == 1)
+  pref.color_bar.fg_color = Color(255, 0, 0) -- No change (same color)
+  assert(fg == 1)
+  pref.color_bar.fg_color = Color(0, 0, 0)
+  assert(fg == 2)
+  app.events:off(a)
+  app.events:off(b)
+  pref.color_bar.fg_color = Color(255, 0, 0)
+  assert(fg == 2)
+end
+
 -- Test Sprite.events
 do
   local spr = Sprite(32, 64)
