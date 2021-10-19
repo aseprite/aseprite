@@ -458,9 +458,13 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
   switch (msg->type()) {
 
     case kCloseDisplayMessage: {
-      // Execute the "Exit" command.
-      Command* command = Commands::instance()->byId(CommandId::Exit());
-      UIContext::instance()->executeCommandFromMenuOrShortcut(command);
+      // Exit command is only allowed when the main window is the current
+      // window running.
+      if (getForegroundWindow() == App::instance()->mainWindow()) {
+        // Execute the "Exit" command.
+        Command* command = Commands::instance()->byId(CommandId::Exit());
+        UIContext::instance()->executeCommandFromMenuOrShortcut(command);
+      }
       break;
     }
 
