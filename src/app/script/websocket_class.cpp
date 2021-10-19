@@ -30,8 +30,8 @@ namespace {
 // Additional "enum" value to make message callback simpler
 #define MESSAGE_TYPE_BINARY ((int)ix::WebSocketMessageType::Fragment + 10)
 
-static ui::Timer* timer;
-static std::set<ix::WebSocket *> connections;
+static std::unique_ptr<ui::Timer> g_timer;
+static std::set<ix::WebSocket *> g_connections;
 
 int WebSocket_new(lua_State* L)
 {
@@ -63,13 +63,13 @@ int WebSocket_new(lua_State* L)
 
     int type = lua_getfield(L, 1, "minreconnectwait");
     if (type == LUA_TNUMBER) {
-      ws->setMinWaitBetweenReconnectionRetries(lua_tointeger(L, -1));
+      ws->setMinWaitBetweenReconnectionRetries(1000 * lua_tonumber(L, -1));
     }
     lua_pop(L, 1);
 
     type = lua_getfield(L, 1, "maxreconnectwait");
     if (type == LUA_TNUMBER) {
-      ws->setMaxWaitBetweenReconnectionRetries(lua_tointeger(L, -1));
+      ws->setMaxWaitBetweenReconnectionRetries(1000 * lua_tonumber(L, -1));
     }
     lua_pop(L, 1);
 
@@ -170,11 +170,11 @@ int WebSocket_connect(lua_State* L)
   auto ws = get_ptr<ix::WebSocket>(L, 1);
   ws->start();
 
-  if (connections.empty()) {
-    timer = new ui::Timer(33, ui::Manager::getDefault());
-    timer->start();
+  if (g_connections.empty()) {
+    g_timer = std::make_unique<ui::Timer>(33, ui::Manager::getDefault());
+    g_timer->start();
   }
-  connections.insert(ws);
+  g_connections.insert(ws);
 
   return 0;
 }
@@ -184,10 +184,9 @@ int WebSocket_close(lua_State* L)
   auto ws = get_ptr<ix::WebSocket>(L, 1);
   ws->stop();
 
-  connections.erase(ws);
-  if (connections.empty()) {
-    delete timer;
-    timer = nullptr;
+  g_connections.erase(ws);
+  if (g_connections.empty()) {
+    g_timer = nullptr;
   }
 
   return 0;
