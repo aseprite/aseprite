@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -17,7 +17,7 @@ namespace app {
   public:
     virtual ~DocObserver() { }
 
-    virtual void onDestroy(Doc* doc) { }
+    virtual void onCloseDocument(Doc* doc) { }
     virtual void onFileNameChanged(Doc* doc) { }
 
     // General update. If an observer receives this event, it's because

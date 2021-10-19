@@ -170,11 +170,12 @@ public:
   }
 
   ~SpriteEvents() {
-    if (m_observingUndo) {
-      doc()->undoHistory()->remove_observer(this);
-      m_observingUndo = false;
+    auto doc = this->doc();
+    ASSERT(doc);
+    if (doc) {
+      disconnectFromUndoHistory(doc);
+      doc->remove_observer(this);
     }
-    doc()->remove_observer(this);
   }
 
   EventType eventType(const char* eventName) const {
@@ -185,11 +186,13 @@ public:
   }
 
   // DocObserver impl
-  void onDestroy(Doc* doc) override {
+  void onCloseDocument(Doc* doc) override {
     auto it = g_spriteEvents.find(m_spriteId);
     ASSERT(it != g_spriteEvents.end());
-    if (it != g_spriteEvents.end())
+    if (it != g_spriteEvents.end()) {
+      // As this is an unique_ptr, here we are calling ~SpriteEvents()
       g_spriteEvents.erase(it);
+    }
   }
 
   // DocUndoObserver impl
@@ -211,10 +214,7 @@ private:
   void onRemoveLastListener(EventType eventType) override {
     switch (eventType) {
       case Change: {
-        if (m_observingUndo) {
-          doc()->undoHistory()->remove_observer(this);
-          m_observingUndo = false;
-        }
+        disconnectFromUndoHistory(doc());
         break;
       }
     }
@@ -226,6 +226,13 @@ private:
       return static_cast<Doc*>(sprite->document());
     else
       return nullptr;
+  }
+
+  void disconnectFromUndoHistory(Doc* doc) {
+    if (m_observingUndo) {
+      doc->undoHistory()->remove_observer(this);
+      m_observingUndo = false;
+    }
   }
 
   ObjectId m_spriteId;
