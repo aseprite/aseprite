@@ -107,6 +107,8 @@ int WebSocket_new(lua_State* L)
         });
     }
     else {
+      // Set a default handler to avoid a std::bad_function_call exception
+      ws->setOnMessageCallback([](const ix::WebSocketMessagePtr& msg) { });
       lua_pop(L, 1);
     }
   }
