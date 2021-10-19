@@ -14,6 +14,7 @@
 #include "app/doc.h"
 #include "app/doc_undo.h"
 #include "app/doc_undo_observer.h"
+#include "app/pref/preferences.h"
 #include "app/script/docobj.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
@@ -122,7 +123,7 @@ private:
 class AppEvents : public Events
                 , private ContextObserver {
 public:
-  enum : EventType { Unknown = -1, SiteChange };
+  enum : EventType { Unknown = -1, SiteChange, FgColorChange, BgColorChange };
 
   AppEvents() {
   }
@@ -130,6 +131,10 @@ public:
   EventType eventType(const char* eventName) const {
     if (std::strcmp(eventName, "sitechange") == 0)
       return SiteChange;
+    else if (std::strcmp(eventName, "fgcolorchange") == 0)
+      return FgColorChange;
+    else if (std::strcmp(eventName, "bgcolorchange") == 0)
+      return BgColorChange;
     else
       return Unknown;
   }
@@ -138,24 +143,49 @@ private:
 
   void onAddFirstListener(EventType eventType) override {
     switch (eventType) {
-      case SiteChange: {
+      case SiteChange:
         App::instance()->context()->add_observer(this);
         break;
-      }
+      case FgColorChange:
+        m_fgConn = Preferences::instance().colorBar.fgColor
+          .AfterChange.connect([this]{ onFgColorChange(); });
+        break;
+      case BgColorChange:
+        m_bgConn = Preferences::instance().colorBar.bgColor
+          .AfterChange.connect([this]{ onBgColorChange(); });
+        break;
     }
   }
 
   void onRemoveLastListener(EventType eventType) override {
     switch (eventType) {
-      case SiteChange: {
+      case SiteChange:
         App::instance()->context()->remove_observer(this);
         break;
-      }
+      case FgColorChange:
+        m_fgConn.disconnect();
+        break;
+      case BgColorChange:
+        m_bgConn.disconnect();
+        break;
     }
   }
 
+  void onFgColorChange() {
+    call(FgColorChange);
+  }
+
+  void onBgColorChange() {
+    call(BgColorChange);
+  }
+
   // ContextObserver impl
-  void onActiveSiteChange(const Site& site) override { call(SiteChange); }
+  void onActiveSiteChange(const Site& site) override {
+    call(SiteChange);
+  }
+
+  obs::scoped_connection m_fgConn;
+  obs::scoped_connection m_bgConn;
 };
 
 class SpriteEvents : public Events
