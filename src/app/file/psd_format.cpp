@@ -114,6 +114,7 @@ public:
     m_sprite = new Sprite(
       ImageSpec(ColorMode(m_pixelFormat), header.width, header.width));
     m_sprite->setTotalFrames(frame_t(1));
+    m_layerHasTransparentChannel = hasTransparency(header.nchannels);
   }
 
   // Emitted when a new layer has been chosen and its channel image data
@@ -127,7 +128,8 @@ public:
     if (findIter == m_layers.end()) {
       createNewLayer(layerRecord.name);
       m_currentLayer->setVisible(layerRecord.isVisible());
-      m_layerHasTransparentChannel = hasTransparency(layerRecord.channels);
+      m_layerHasTransparentChannel =
+        hasTransparency(layerRecord.channels.size());
     }
     else {
       m_currentLayer = *findIter;
@@ -163,7 +165,8 @@ public:
       // only occurs where there's an image with no layer
       if (m_layers.empty()) {
         createNewLayer("Layer 1");
-        m_layerHasTransparentChannel = hasTransparency(imageData.channels);
+        m_layerHasTransparentChannel =
+          hasTransparency(imageData.channels.size());
       }
       if (m_currentLayer) {
         createNewImage(imageData.width, imageData.height);
@@ -214,23 +217,10 @@ private:
     return value;
   }
 
-  bool hasTransparency(const std::vector<psd::ChannelID>& channelIDs)
+  inline bool hasTransparency(const size_t nchannels)
   {
-    return std::any_of(channelIDs.cbegin(),
-                       channelIDs.cend(),
-                       [](const psd::ChannelID& channelID) {
-                         return channelID == psd::ChannelID::TransparencyMask ||
-                                channelID == psd::ChannelID::Alpha;
-                       });
-  }
-
-  bool hasTransparency(const std::vector<psd::Channel>& channels)
-  {
-    return std::any_of(
-      channels.cbegin(), channels.cend(), [](const psd::Channel& channel) {
-        return channel.channelID == psd::ChannelID::TransparencyMask ||
-               channel.channelID == psd::ChannelID::Alpha;
-      });
+    // RGBA or grayscale image with alpha channel
+    return nchannels == 4 || nchannels == 2;
   }
 
   void linkNewCel(Layer* layer, doc::ImageRef image)
