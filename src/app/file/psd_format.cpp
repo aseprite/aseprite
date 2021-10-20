@@ -189,24 +189,6 @@ public:
     }
   }
 
-  // This is called on images stored in raw data, most likely called when
-  // the first alpha channel contains the transparency data for the merged
-  // result. This channel is almost always stored in raw data format
-  void onImageScanline(const psd::ImageData& imgData,
-                       const int y,
-                       const psd::ChannelID chanID,
-                       const std::vector<uint32_t>& data) override
-  {
-    if (!m_currentImage)
-      return;
-
-    for (int x = 0; x < data.size(); ++x) {
-      const color_t c = m_currentImage->getPixel(x, y);
-      const uint32_t pixel = normalizeValue(data[x], imgData.depth);
-      putPixel(x, y, c, pixel, chanID, m_pixelFormat);
-    }
-  }
-
   // This method is called on images stored in RLE format
   void onImageScanline(const psd::ImageData& img,
                        const int y,
@@ -217,9 +199,10 @@ public:
     if (!m_currentImage || y >= m_currentImage->height())
       return;
 
-    for (int x = 0; x < bytes && x < m_currentImage->width(); ++x) {
+    const int dataCount = bytes / (img.depth >= 8 ? (img.depth / 8) : 1);
+    for (int x = 0; x < dataCount && x < m_currentImage->width(); ++x) {
       const color_t c = m_currentImage->getPixel(x, y);
-      const uint32_t pixel = normalizeValue(data[x], img.depth);
+      const uint32_t pixel = getValue(data, img.depth);
       putPixel(x, y, c, pixel, chanID, m_pixelFormat);
     }
   }
@@ -271,6 +254,29 @@ private:
       m_sprite->setPalette(&m_palette, true);
 
     return m_sprite;
+  }
+
+  std::uint32_t getValue(const std::uint8_t*& data, const int depth)
+  {
+    uint32_t value = 0;
+    switch (depth) {
+      case 1:
+      case 8:
+        value = data[0];
+        ++data;
+        return value;
+      case 16:
+        value = int(data[0]) | int(data[1] << 8);
+        data += 2;
+        return value;
+      case 32:
+        value = int(data[0] << 24) | int(data[1] << 16) | int(data[2] << 8) |
+                int(data[3]);
+        data += 4;
+        return value;
+      default:
+        throw std::runtime_error("invalid image depth");
+    }
   }
 
   template<typename NewPixel>
