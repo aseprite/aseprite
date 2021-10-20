@@ -70,14 +70,6 @@ Doc::Doc(Sprite* sprite)
 Doc::~Doc()
 {
   DOC_TRACE("DOC: Deleting", this);
-
-  try {
-    notify_observers<Doc*>(&DocObserver::onDestroy, this);
-  }
-  catch (...) {
-    LOG(ERROR, "DOC: Exception on DocObserver::onDestroy()\n");
-  }
-
   removeFromContext();
 }
 
@@ -592,6 +584,13 @@ Doc* Doc::duplicate(DuplicateType type) const
 
 void Doc::close()
 {
+  try {
+    notify_observers<Doc*>(&DocObserver::onCloseDocument, this);
+  }
+  catch (...) {
+    LOG(ERROR, "DOC: Exception on DocObserver::onCloseDocument()\n");
+  }
+
   removeFromContext();
 }
 

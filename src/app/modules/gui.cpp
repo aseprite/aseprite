@@ -506,8 +506,11 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
   switch (msg->type()) {
 
     case kCloseDisplayMessage:
-      // When the main display is closed...
-      if (msg->display() == this->display()) {
+      // Only call the exit command/close the app when the the main
+      // display is the closed window in this kCloseDisplayMessage
+      // message and it's the current running foreground window.
+      if (msg->display() == this->display() &&
+          getForegroundWindow() == App::instance()->mainWindow()) {
         // Execute the "Exit" command.
         Command* command = Commands::instance()->byId(CommandId::Exit());
         UIContext::instance()->executeCommandFromMenuOrShortcut(command);

@@ -17,7 +17,7 @@ namespace app {
   public:
     virtual ~DocObserver() { }
 
-    virtual void onDestroy(Doc* doc) { }
+    virtual void onCloseDocument(Doc* doc) { }
     virtual void onFileNameChanged(Doc* doc) { }
 
     // General update. If an observer receives this event, it's because

@@ -325,17 +325,15 @@ int App::initialize(const AppOptions& options)
     // Show the main window (this is not modal, the code continues)
     m_mainWindow->openWindow();
 
-    // Redraw the whole screen.
-    manager->invalidate();
-
-    // Pump some messages so we receive the first
-    // Manager::onNewDisplayConfiguration() and we known the manager
-    // initial size. This is required so if the OpenFileCommand
-    // (called when we're processing the CLI with OpenBatchOfFiles)
-    // shows a dialog to open a sequence of files, the dialog is
-    // centered correctly to the manager bounds.
-    ui::MessageLoop loop(manager);
-    loop.pumpMessages();
+    // To know the initial manager size we call to
+    // Manager::updateAllDisplaysWithNewScale(...) so we receive a
+    // Manager::onNewDisplayConfiguration() (which will update the
+    // bounds of the manager for first time).  This is required so if
+    // the OpenFileCommand (called when we're processing the CLI with
+    // OpenBatchOfFiles) shows a dialog to open a sequence of files,
+    // the dialog is centered correctly to the manager bounds.
+    const int scale = Preferences::instance().general.screenScale();
+    manager->updateAllDisplaysWithNewScale(scale);
   }
 #endif  // ENABLE_UI
 

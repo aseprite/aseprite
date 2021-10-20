@@ -394,10 +394,12 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
   else if (elem_name == "slider") {
     const char *min = elem->Attribute("min");
     const char *max = elem->Attribute("max");
+    const bool readonly = bool_attr(elem, "readonly", false);
     int min_value = (min ? strtol(min, nullptr, 10): 0);
     int max_value = (max ? strtol(max, nullptr, 10): 0);
 
     widget = new Slider(min_value, max_value, min_value);
+    static_cast<Slider*>(widget)->setReadOnly(readonly);
   }
   else if (elem_name == "textbox") {
     const char* text = (elem->GetText() ? elem->GetText(): "");
