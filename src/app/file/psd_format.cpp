@@ -192,7 +192,6 @@ public:
     }
   }
 
-  // This method is called on images stored in RLE format
   void onImageScanline(const psd::ImageData& img,
                        const int y,
                        const psd::ChannelID chanID,
@@ -203,20 +202,63 @@ public:
       return;
 
     const int dataCount = bytes / (img.depth >= 8 ? (img.depth / 8) : 1);
-    for (int x = 0; x < dataCount && x < m_currentImage->width(); ++x) {
-      const color_t c = m_currentImage->getPixel(x, y);
-      const uint32_t pixel = getValue(data, img.depth);
-      putPixel(x, y, c, pixel, chanID, m_pixelFormat);
+    uint8_t* dstGenericAddress = m_currentImage->getPixelAddress(0, y);
+
+    if (m_pixelFormat == doc::PixelFormat::IMAGE_INDEXED) {
+      IndexedTraits::address_t dstAddress =
+        (IndexedTraits::address_t)dstGenericAddress;
+      for (int x = 0; x < dataCount && x < m_currentImage->width(); ++x) {
+        *(dstAddress)++ = getNormalizedPixelValue(data, img.depth);
+      }
+    }
+    else if (m_pixelFormat == doc::PixelFormat::IMAGE_GRAYSCALE) {
+      GrayscaleTraits::address_t dstAddress =
+        (GrayscaleTraits::address_t)dstGenericAddress;
+      uint8_t v = 0, a = 0;
+      for (int x = 0; x < dataCount && x < m_currentImage->width(); ++x) {
+        const GrayscaleTraits::pixel_t pixel = *dstAddress;
+        const uint8_t newPixelValue = getNormalizedPixelValue(data, img.depth);
+        if (chanID == psd::ChannelID::Red) {
+          v = newPixelValue;
+          a = m_layerHasTransparentChannel ? graya_geta(pixel) : 255;
+        }
+        else if (chanID == psd::ChannelID::Alpha ||
+                 chanID == psd::ChannelID::TransparencyMask) {
+          a = newPixelValue;
+          v = graya_getv(pixel);
+        }
+        *(dstAddress++) = graya(v, a);
+      }
+    }
+    else if (m_pixelFormat == doc::PixelFormat::IMAGE_RGB) {
+      RgbTraits::address_t dstAddress = (RgbTraits::address_t)dstGenericAddress;
+      uint8_t r, g, b, a;
+      for (int x = 0; x < dataCount && x < m_currentImage->width(); ++x) {
+        const uint8_t newPixelValue = getNormalizedPixelValue(data, img.depth);
+        const color_t c = *(dstAddress);
+        r = rgba_getr(c);
+        g = rgba_getg(c);
+        b = rgba_getb(c);
+        a = m_layerHasTransparentChannel ? rgba_geta(c) : 255;
+        if (chanID == psd::ChannelID::Red) {
+          r = newPixelValue;
+        }
+        else if (chanID == psd::ChannelID::Green) {
+          g = newPixelValue;
+        }
+        else if (chanID == psd::ChannelID::Blue) {
+          b = newPixelValue;
+        }
+        else if (chanID == psd::ChannelID::Alpha ||
+                 chanID == psd::ChannelID::TransparencyMask) {
+          a = newPixelValue;
+        }
+        *(dstAddress++) = rgba(r, g, b, a);
+      }
     }
   }
 
 private:
-  // TODO: This is meant to convert values of a channel based on its depth
-  std::uint32_t normalizeValue(const uint32_t value, const int depth)
-  {
-    return value;
-  }
-
   inline bool hasTransparency(const size_t nchannels)
   {
     // RGBA or grayscale image with alpha channel
@@ -246,77 +288,25 @@ private:
     return m_sprite;
   }
 
-  std::uint32_t getValue(const std::uint8_t*& data, const int depth)
+  std::uint8_t getNormalizedPixelValue(const std::uint8_t*& data,
+                                       const int depth)
   {
-    uint32_t value = 0;
-    switch (depth) {
-      case 1:
-      case 8:
-        value = data[0];
-        ++data;
-        return value;
-      case 16:
-        value = int(data[0]) | int(data[1] << 8);
-        data += 2;
-        return value;
-      case 32:
-        value = int(data[0] << 24) | int(data[1] << 16) | int(data[2] << 8) |
-                int(data[3]);
-        data += 4;
-        return value;
-      default:
-        throw std::runtime_error("invalid image depth");
+    if (depth == 1 || depth == 8) {
+      return *(data++);
     }
-  }
-
-  template<typename NewPixel>
-  void putPixel(const int x,
-                const int y,
-                const color_t prevPixelValue,
-                const NewPixel pixelValue,
-                const psd::ChannelID chanID,
-                const PixelFormat pixelFormat)
-  {
-    if (pixelFormat == doc::PixelFormat::IMAGE_RGB) {
-      int r = rgba_getr(prevPixelValue);
-      int g = rgba_getg(prevPixelValue);
-      int b = rgba_getb(prevPixelValue);
-      int a = m_layerHasTransparentChannel ? rgba_geta(prevPixelValue) : 255;
-
-      if (chanID == psd::ChannelID::Red) {
-        r = pixelValue;
-      }
-      else if (chanID == psd::ChannelID::Green) {
-        g = pixelValue;
-      }
-      else if (chanID == psd::ChannelID::Blue) {
-        b = pixelValue;
-      }
-      else if (chanID == psd::ChannelID::Alpha ||
-               chanID == psd::ChannelID::TransparencyMask) {
-        a = pixelValue;
-      }
-      m_currentImage->putPixel(x, y, rgba(r, g, b, a));
+    else if (depth == 16) {
+      const uint16_t value = int(data[0]) | int(data[1] << 8);
+      data += 2;
+      return value >> 8;
     }
-    else if (pixelFormat == doc::PixelFormat::IMAGE_GRAYSCALE) {
-      int v = graya_getv(prevPixelValue);
-      int a = m_layerHasTransparentChannel ? graya_geta(prevPixelValue) : 255;
-      if (chanID == psd::ChannelID::Red) {
-        v = pixelValue;
-      }
-      else if (chanID == psd::ChannelID::Alpha ||
-               chanID == psd::ChannelID::TransparencyMask) {
-        a = pixelValue;
-      }
-      m_currentImage->putPixel(x, y, graya(v, a));
+    else if (depth == 32) {
+      const uint32_t value = int(data[0] << 24) | int(data[1] << 16) |
+                             int(data[2] << 8) | int(data[3]);
+      data += 4;
+      return value >> 24;
     }
-    else if (pixelFormat == doc::PixelFormat::IMAGE_INDEXED) {
-      m_currentImage->putPixel(x, y, (color_t)pixelValue);
-    }
-    else {
-      throw std::runtime_error(
-        "Only RGB/Grayscale/Indexed format is supported");
-    }
+    else
+      throw std::runtime_error("invalid image depth");
   }
 
   void createNewImage(const int width, const int height)
@@ -357,13 +347,7 @@ bool PsdFormat::onLoad(FileOp* fop)
       header.colorMode != psd::ColorMode::Indexed &&
       header.colorMode != psd::ColorMode::Grayscale) {
     fop->setError("This preliminary work only supports "
-                  "RGB, Grayscale & Indexed\n");
-    return false;
-  }
-
-  // This would be removed when support for 32bit per channel is supported
-  if (header.depth >= 32) {
-    fop->setError("Support for 32bit per channel isn't supported yet");
+                  "RGB, Grayscale & Indexed images\n");
     return false;
   }
 
