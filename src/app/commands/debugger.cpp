@@ -189,17 +189,11 @@ protected:
       vp = clientBounds();
 
     auto f = font();
-    gfx::Rect linesVp(
-      vp.x, vp.y,
-      Graphics::measureUITextLength(base::convert_to<std::string>(nlines), f)
-      + 4*guiscale(),           // TODO configurable from the theme?
-      vp.h);
-    vp.x += linesVp.w;
-    vp.w -= linesVp.w;
+    gfx::Rect linesVp(0, vp.y, getLineNumberColumnWidth(), vp.h);
 
     // Fill background
-    g->fillRect(linesBg, linesVp);
     g->fillRect(bg, vp);
+    g->fillRect(linesBg, linesVp);
 
     if (m_fileContent) {
       auto icon = theme->parts.debugContinue()->bitmap(0);
@@ -240,12 +234,22 @@ protected:
           m_maxLineWidth = std::max(m_maxLineWidth, Graphics::measureUITextLength(tmp, f));
         }
       }
-      ev.setSizeHint(gfx::Size(m_maxLineWidth,
+
+      ev.setSizeHint(gfx::Size(m_maxLineWidth + getLineNumberColumnWidth(),
                                m_fileContent->lines.size() * textHeight()));
     }
   }
 
 private:
+
+  int getLineNumberColumnWidth() const {
+    auto f = font();
+    int nlines = (m_fileContent ? m_fileContent->lines.size(): 0);
+    return
+      Graphics::measureUITextLength(base::convert_to<std::string>(nlines), f)
+      + 4*guiscale();           // TODO configurable from the theme?
+  }
+
   FileContentPtr m_fileContent;
   int m_currentLine = -1;
   int m_maxLineWidth = 0;
