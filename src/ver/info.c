@@ -10,14 +10,20 @@
 #define PACKAGE                 "Aseprite"
 #define COPYRIGHT               "Copyright (C) 2001-2021 Igara Studio S.A."
 
-#ifdef CUSTOM_WEBSITE_URL
-#define WEBSITE                 CUSTOM_WEBSITE_URL /* To test web server */
+#if defined(_WIN32) || defined(__APPLE__)
+  #define HTTP                  "https"
 #else
-#define WEBSITE                 "http://www.aseprite.org/"
+  #define HTTP                  "http"
+#endif
+
+#ifdef CUSTOM_WEBSITE_URL
+  #define WEBSITE               CUSTOM_WEBSITE_URL /* To test web server */
+#else
+  #define WEBSITE               HTTP "://www.aseprite.org/"
 #endif
 #define WEBSITE_DOWNLOAD        WEBSITE "download/"
 #define WEBSITE_CONTRIBUTORS    WEBSITE "contributors/"
-#define WEBSITE_NEWS_RSS        "http://blog.aseprite.org/rss"
+#define WEBSITE_NEWS_RSS        HTTP "://blog.aseprite.org/rss"
 #define WEBSITE_UPDATE          WEBSITE "update/?xml=1"
 
 const char* get_app_name() { return PACKAGE; }
