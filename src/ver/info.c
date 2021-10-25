@@ -1,5 +1,5 @@
 /* Aseprite
-   Copyright (C) 2020  Igara Studio S.A.
+   Copyright (C) 2020-2021  Igara Studio S.A.
 
    This program is distributed under the terms of
    the End-User License Agreement for Aseprite.  */
@@ -8,16 +8,22 @@
 #include "generated_version.h"  /* It defines the VERSION macro */
 
 #define PACKAGE                 "Aseprite"
-#define COPYRIGHT               "Copyright (C) 2001-2020 Igara Studio S.A."
+#define COPYRIGHT               "Copyright (C) 2001-2021 Igara Studio S.A."
+
+#if defined(_WIN32) || defined(__APPLE__)
+  #define HTTP                  "https"
+#else
+  #define HTTP                  "http"
+#endif
 
 #ifdef CUSTOM_WEBSITE_URL
-#define WEBSITE                 CUSTOM_WEBSITE_URL /* To test web server */
+  #define WEBSITE               CUSTOM_WEBSITE_URL /* To test web server */
 #else
-#define WEBSITE                 "http://www.aseprite.org/"
+  #define WEBSITE               HTTP "://www.aseprite.org/"
 #endif
 #define WEBSITE_DOWNLOAD        WEBSITE "download/"
 #define WEBSITE_CONTRIBUTORS    WEBSITE "contributors/"
-#define WEBSITE_NEWS_RSS        "http://blog.aseprite.org/rss"
+#define WEBSITE_NEWS_RSS        HTTP "://blog.aseprite.org/rss"
 #define WEBSITE_UPDATE          WEBSITE "update/?xml=1"
 
 const char* get_app_name() { return PACKAGE; }
