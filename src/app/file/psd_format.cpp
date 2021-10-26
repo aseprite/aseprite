@@ -101,6 +101,7 @@ public:
   PsdDecoderDelegate()
     : m_currentImage(nullptr)
     , m_currentLayer(nullptr)
+    , m_layerGroup(nullptr)
     , m_sprite(nullptr)
     , m_pixelFormat(PixelFormat::IMAGE_INDEXED)
     , m_layerHasTransparentChannel(false)
@@ -121,27 +122,52 @@ public:
   // is about to be read
   void onBeginLayer(const psd::LayerRecord& layerRecord) override
   {
-    auto findIter = std::find_if(
-      m_layers.begin(), m_layers.end(), [&layerRecord](doc::Layer* layer) {
-        return layer->name() == layerRecord.name;
-      });
-    if (findIter == m_layers.end()) {
-      createNewLayer(layerRecord.name);
-      m_currentLayer->setVisible(layerRecord.isVisible());
-      m_layerHasTransparentChannel =
-        hasTransparency(layerRecord.channels.size());
+    if (layerRecord.layerType == psd::LayerType::LayerGroupStart) {
+      LayerGroup* layerGroup = new LayerGroup(m_sprite);
+      if (m_groups.empty())
+        m_sprite->root()->addLayer(layerGroup);
+      else
+        m_layerGroup->addLayer(layerGroup);
+
+      m_layerGroup = layerGroup;
+      m_groups.push_back(layerGroup);
+    }
+    else if (layerRecord.layerType == psd::LayerType::LayerGroupEnd) {
+      if (!m_layerGroup)
+        throw std::runtime_error("unexpected end of a group layer");
+
+      m_layerGroup->setName(layerRecord.name);
+      if (!m_groups.empty())
+        m_groups.pop_back();
+
+      if (m_groups.empty())
+        m_layerGroup = m_sprite->root();
+      else
+        m_layerGroup = m_groups.back();
     }
     else {
-      m_currentLayer = *findIter;
-      m_currentImage = m_currentLayer->cel(frame_t(0))->imageRef();
+      auto findIter = std::find_if(
+        m_layers.begin(), m_layers.end(), [&layerRecord](doc::Layer* layer) {
+          return layer->name() == layerRecord.name;
+        });
+      if (findIter == m_layers.end()) {
+        if (!m_layerGroup)  // In this case, there are no layer groups
+          m_layerGroup = m_sprite->root();
+
+        createNewLayer(layerRecord.name);
+        m_currentLayer->setVisible(layerRecord.isVisible());
+        m_layerHasTransparentChannel =
+          hasTransparency(layerRecord.channels.size());
+      }
+      else {
+        m_currentLayer = *findIter;
+        m_currentImage = m_currentLayer->cel(frame_t(0))->imageRef();
+      }
     }
   }
 
   void onEndLayer(const psd::LayerRecord& layerRecord) override
   {
-    ASSERT(m_currentLayer);
-    ASSERT(m_currentImage);
-
     m_currentImage.reset();
     m_currentLayer = nullptr;
     m_layerHasTransparentChannel = false;
@@ -162,8 +188,9 @@ public:
   void onBeginImage(const psd::ImageData& imageData) override
   {
     if (!m_currentImage) {
-      // only occurs where there's an image with no layer
+      // Only occurs where there's an image with no layer
       if (m_layers.empty()) {
+        m_layerGroup = m_sprite->root();
         createNewLayer("Layer 1");
         m_layerHasTransparentChannel =
           hasTransparency(imageData.channels.size());
@@ -267,6 +294,8 @@ private:
 
   void linkNewCel(Layer* layer, doc::ImageRef image)
   {
+    if (!image)
+      return;
     std::unique_ptr<Cel> cel(new doc::Cel(frame_t(0), image));
     cel->setPosition(0, 0);
     static_cast<LayerImage*>(layer)->addCel(cel.release());
@@ -275,7 +304,7 @@ private:
   void createNewLayer(const std::string& layerName)
   {
     m_currentLayer = new LayerImage(m_sprite);
-    m_sprite->root()->addLayer(m_currentLayer);
+    m_layerGroup->addLayer(m_currentLayer);
     m_layers.push_back(m_currentLayer);
     m_currentLayer->setName(layerName);
   }
@@ -312,7 +341,7 @@ private:
   void createNewImage(const int width, const int height)
   {
     if (width <= 0 || height <= 0)
-      throw std::runtime_error("invalid image width/height");
+      return;  //throw std::runtime_error("invalid image width/height");
 
     m_currentImage.reset(Image::create(m_pixelFormat, width, height));
     clear_image(m_currentImage.get(), 0);
@@ -320,9 +349,11 @@ private:
 
   doc::ImageRef m_currentImage;
   doc::Layer* m_currentLayer;
+  doc::LayerGroup* m_layerGroup;
   Sprite* m_sprite;
   PixelFormat m_pixelFormat;
   std::vector<doc::Layer*> m_layers;
+  std::vector<doc::LayerGroup*> m_groups;
   Palette m_palette;
   bool m_layerHasTransparentChannel;
 };
