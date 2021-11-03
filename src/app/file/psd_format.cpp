@@ -103,6 +103,7 @@ public:
     , m_currentLayer(nullptr)
     , m_layerGroup(nullptr)
     , m_sprite(nullptr)
+    , m_activeFrameIndex(0)
     , m_pixelFormat(PixelFormat::IMAGE_INDEXED)
     , m_layerHasTransparentChannel(false)
   { }
@@ -114,15 +115,31 @@ public:
     m_pixelFormat = psd_cmode_to_ase_format(header.colorMode);
     m_sprite = new Sprite(
       ImageSpec(ColorMode(m_pixelFormat), header.width, header.width));
-    m_sprite->setTotalFrames(frame_t(1));
     m_layerHasTransparentChannel = hasTransparency(header.nchannels);
+  }
+
+  void onFramesData(const std::vector<psd::FrameInformation>& frameInfo,
+                    const uint32_t activeFrameIndex) override
+  {
+    m_framesInfo = frameInfo;
+    m_activeFrameIndex = activeFrameIndex;
+    if (frameInfo.empty()) {
+      m_sprite->setTotalFrames(frame_t(1));
+      psd::FrameInformation frameInfo;
+      frameInfo.id = 1;
+      frameInfo.duration = 10;
+      frameInfo.ga = 0;
+      m_framesInfo.push_back(std::move(frameInfo));
+    }
+    else
+      m_sprite->setTotalFrames(frame_t(frameInfo.size()));
   }
 
   // Emitted when a new layer has been chosen and its channel image data
   // is about to be read
   void onBeginLayer(const psd::LayerRecord& layerRecord) override
   {
-    if (layerRecord.layerType == psd::LayerType::LayerGroupStart) {
+    if (layerRecord.isOpenGroup()) {
       LayerGroup* layerGroup = new LayerGroup(m_sprite);
       if (m_groups.empty())
         m_sprite->root()->addLayer(layerGroup);
@@ -132,7 +149,7 @@ public:
       m_layerGroup = layerGroup;
       m_groups.push_back(layerGroup);
     }
-    else if (layerRecord.layerType == psd::LayerType::LayerGroupEnd) {
+    else if (layerRecord.isCloseGroup()) {
       if (!m_layerGroup)
         throw std::runtime_error("unexpected end of a group layer");
 
@@ -155,7 +172,7 @@ public:
           m_layerGroup = m_sprite->root();
 
         createNewLayer(layerRecord.name);
-        m_currentLayer->setVisible(layerRecord.isVisible());
+        //m_currentLayer->setVisible(layerRecord.isVisible());
         m_layerHasTransparentChannel =
           hasTransparency(layerRecord.channels.size());
       }
@@ -168,6 +185,30 @@ public:
 
   void onEndLayer(const psd::LayerRecord& layerRecord) override
   {
+    if (!m_framesInfo.empty() &&
+        (layerRecord.inFrames.size() == m_framesInfo.size()) &&
+        m_currentImage) {
+      std::unique_ptr<Cel> layerCel(m_currentLayer->cel(frame_t(0)));
+      LayerImage* imageLayer = static_cast<LayerImage*>(m_currentLayer);
+      imageLayer->removeCel(layerCel.get());
+
+      for (const auto& inFrame : layerRecord.inFrames) {
+        if (inFrame.isVisibleInFrame) {
+          const auto findIter = std::find_if(
+            m_framesInfo.cbegin(),
+            m_framesInfo.cend(),
+            [id = inFrame.frameID](const psd::FrameInformation& frameInfo) {
+              return id == frameInfo.id;
+            });
+          if (findIter != m_framesInfo.cend()) {
+            const size_t index = std::distance(m_framesInfo.cbegin(), findIter);
+            auto newCel = Cel::MakeCopy(index, layerCel.get());
+            imageLayer->addCel(newCel);
+          }
+        }
+      }
+    }
+
     m_currentImage.reset();
     m_currentLayer = nullptr;
     m_layerHasTransparentChannel = false;
@@ -212,9 +253,13 @@ public:
         LayerImage* layer = static_cast<LayerImage*>(m_layers[i]);
         layer->setBlendMode(psd_blendmode_to_ase(layerRecord.blendMode));
 
-        Cel* cel = layer->cel(frame_t(0));
-        cel->setOpacity(layerRecord.opacity);
-        cel->setPosition(gfx::Point(layerRecord.left, layerRecord.top));
+        for (size_t i = 0; i < m_framesInfo.size(); ++i) {
+          Cel* cel = layer->cel(frame_t(i));
+          if (cel) {
+            cel->setOpacity(layerRecord.opacity);
+            cel->setPosition(gfx::Point(layerRecord.left, layerRecord.top));
+          }
+        }
       }
     }
   }
@@ -314,6 +359,12 @@ private:
     if (m_palette.getModifications() > 1)
       m_sprite->setPalette(&m_palette, true);
 
+    for (size_t i = 0; i < m_framesInfo.size(); ++i) {
+      const psd::FrameInformation& frameInfo = m_framesInfo[i];
+      const int timeMs = frameInfo.duration * 10;
+      m_sprite->setFrameDuration(frame_t(i), timeMs);
+    }
+    // at this point, we're supposed to be able to set the activeFrame
     return m_sprite;
   }
 
@@ -351,9 +402,11 @@ private:
   doc::Layer* m_currentLayer;
   doc::LayerGroup* m_layerGroup;
   Sprite* m_sprite;
+  uint32_t m_activeFrameIndex;
   PixelFormat m_pixelFormat;
   std::vector<doc::Layer*> m_layers;
   std::vector<doc::LayerGroup*> m_groups;
+  std::vector<psd::FrameInformation> m_framesInfo;
   Palette m_palette;
   bool m_layerHasTransparentChannel;
 };
