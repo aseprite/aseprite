@@ -873,9 +873,9 @@ void PixelsMovement::drawParallelogram(
   // as it's pixel-perfect match with the original selection when just
   // a translation is applied.
   double angle = 180.0*transformation.angle()/PI;
+  angle = angle-360.0*std::floor(angle/360.0);
   if (!Preferences::instance().selection.forceRotsprite() &&
-      (std::fabs(std::fmod(std::fabs(angle), 90.0)) < 0.01 ||
-       std::fabs(std::fmod(std::fabs(angle), 90.0)-90.0) < 0.01)) {
+      std::fmod(angle, 90.0) < 0.01) {
     rotAlgo = tools::RotationAlgorithm::FAST;
   }
 
