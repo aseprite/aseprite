@@ -12,7 +12,7 @@
   #include "drm/drm.h"
 #else
   #define DRM_INVALID if (false)
-  #define DRM_CONFIGURE(path)
+  #define DRM_CONFIGURE(path, userAgent)
 #endif
 
 #endif

@@ -36,16 +36,6 @@ EnterLicense::EnterLicense() : m_timer(500, this), m_activationInProgress(false)
     startActivation();
   });
 
-  m_activatedConn = drm::LicenseManager::instance()->Activated.connect(
-    [this](drm::ActivatedEvent& ev) { onActivated(ev); });
-
-  m_activationFailedConn = drm::LicenseManager::instance()->ActivationFailed.connect(
-    [this](drm::LicenseManager::Exception& e) { onActivationFailed(e); });
-
-  Close.connect([this]() {
-    m_activatedConn.disconnect();
-    m_activationFailedConn.disconnect();
-  });
 
   m_timer.start();
 }
@@ -57,18 +47,18 @@ void EnterLicense::onBeforeClose(ui::CloseEvent& ev)
   }
 }
 
-void EnterLicense::onActivationFailed(drm::LicenseManager::Exception& e)
+void EnterLicense::onActivationFailed(drm::LicenseManager::ActivationException& e)
 {
   ui::execute_from_ui_thread([this, e]() {
     showError(e.what());
   });
 }
 
-void EnterLicense::onActivated(drm::ActivatedEvent& ev)
+void EnterLicense::onActivated(std::string token)
 {
-  drm::LicenseManager::instance()->save(ev.getToken());
+  drm::LicenseManager::instance()->save(token);
 
-  ui::execute_from_ui_thread([this, ev]() {
+  ui::execute_from_ui_thread([this]() {
     showSuccess();
   });
 }
@@ -82,7 +72,13 @@ void EnterLicense::startActivation()
   std::string key = licenseKey()->text();
   m_activationInProgress = true;
   m_activation = std::thread([this, key]() {
-    drm::LicenseManager::instance()->activate(key, get_app_name(), get_app_version());
+    try {
+      auto token = drm::LicenseManager::instance()->activate(key, get_app_name(), get_app_version());
+      onActivated(token);
+    }
+    catch (drm::LicenseManager::ActivationException& e) {
+      onActivationFailed(e);
+    }
   });
 }
 

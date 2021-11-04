@@ -19,15 +19,13 @@ public:
 
 protected:
   void onBeforeClose(ui::CloseEvent& ev) override;
-  void onActivationFailed(drm::LicenseManager::Exception& e);
-  void onActivated(drm::ActivatedEvent& ev);
+  void onActivationFailed(drm::LicenseManager::ActivationException& e);
+  void onActivated(std::string token);
 
 private:
   std::thread m_activation;
   ui::Timer m_timer;
   bool m_activationInProgress;
-  obs::connection m_activationFailedConn;
-  obs::connection m_activatedConn;
 
   void startActivation();
   void showError(const std::string& msg);
