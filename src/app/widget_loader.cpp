@@ -506,8 +506,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
           throw base::Exception("Error loading %s file", file);
         }
       }
-
-      if (icon) {
+      else if (icon) {
         SkinPartPtr part = SkinTheme::instance()->getPartById(std::string(icon));
         if (part) {
           widget = new ImageView(part->bitmapRef(0), 0);
