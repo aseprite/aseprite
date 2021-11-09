@@ -500,7 +500,10 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
 
         try {
           os::SurfaceRef sur = os::instance()->loadRgbaSurface(rf.filename().c_str());
-          widget = new ImageView(sur, 0);
+          if (sur) {
+            sur->setImmutable();
+            widget = new ImageView(sur, 0);
+          }
         }
         catch (...) {
           throw base::Exception("Error loading %s file", file);

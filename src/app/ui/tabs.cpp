@@ -948,6 +948,8 @@ void Tabs::createFloatingOverlay(Tab* tab)
     drawTab(&g, g.getClipBounds(), tab, 0, true, true);
   }
 
+  surface->setImmutable();
+
   m_floatingOverlay = base::make_ref<ui::Overlay>(
     surface, gfx::Point(),
     (ui::Overlay::ZOrder)(Overlay::MouseZOrder-1));
