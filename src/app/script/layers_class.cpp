@@ -61,7 +61,7 @@ int Layers_index(lua_State* L)
   auto obj = get_obj<LayersObj>(L, 1);
 
   // Index by layer name
-  if (lua_isstring(L, 2)) {
+  if (lua_type(L, 2) == LUA_TSTRING) {
     if (const char* name = lua_tostring(L, 2)) {
       for (ObjectId layerId : obj->layers) {
         Layer* layer = doc::get<Layer>(layerId);
