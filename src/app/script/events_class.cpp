@@ -192,7 +192,7 @@ class SpriteEvents : public Events
                    , public DocUndoObserver
                    , public DocObserver {
 public:
-  enum : EventType { Unknown = -1, Change };
+  enum : EventType { Unknown = -1, Change, FilenameChange };
 
   SpriteEvents(const Sprite* sprite)
     : m_spriteId(sprite->id()) {
@@ -211,6 +211,8 @@ public:
   EventType eventType(const char* eventName) const {
     if (std::strcmp(eventName, "change") == 0)
       return Change;
+    if (std::strcmp(eventName, "filenamechange") == 0)
+      return FilenameChange;
     else
       return Unknown;
   }
@@ -224,6 +226,8 @@ public:
       g_spriteEvents.erase(it);
     }
   }
+
+  void onFileNameChanged(Doc* doc) override { call(FilenameChange); }
 
   // DocUndoObserver impl
   void onAddUndoState(DocUndo* history) override { call(Change);  }
