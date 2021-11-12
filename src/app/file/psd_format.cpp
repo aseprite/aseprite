@@ -11,6 +11,7 @@
 #include "doc/image_impl.h"
 #include "doc/layer.h"
 #include "doc/palette.h"
+#include "doc/slice.h"
 #include "doc/sprite.h"
 #include "psd/psd.h"
 
@@ -116,6 +117,25 @@ public:
     m_sprite = new Sprite(
       ImageSpec(ColorMode(m_pixelFormat), header.width, header.width));
     m_layerHasTransparentChannel = hasTransparency(header.nchannels);
+  }
+
+  void onSlicesData(const psd::Slices& slices) override
+  {
+    auto& spriteSlices = m_sprite->slices();
+    for (const auto& slice : slices.slices) {
+      const gfx::Rect rect(slice.bound.left,
+                           slice.bound.top,
+                           slice.bound.right - slice.bound.left,
+                           slice.bound.bottom - slice.bound.top);
+      if (!rect.isEmpty()) {
+        auto slice = new Slice;
+        slice->insert(0, doc::SliceKey(rect));
+
+        // TO-DO: the slices color should come from the app preference
+        slice->userData().setColor(doc::rgba(0, 0, 255, 255));
+        spriteSlices.add(slice);
+      }
+    }
   }
 
   void onFramesData(const std::vector<psd::FrameInformation>& frameInfo,
@@ -364,16 +384,15 @@ private:
       const int timeMs = frameInfo.duration * 10;
       m_sprite->setFrameDuration(frame_t(i), timeMs);
     }
-    // at this point, we're supposed to be able to set the activeFrame
+
     return m_sprite;
   }
 
   std::uint8_t getNormalizedPixelValue(const std::uint8_t*& data,
                                        const int depth)
   {
-    if (depth == 1 || depth == 8) {
+    if (depth == 1 || depth == 8)
       return *(data++);
-    }
     else if (depth == 16) {
       const uint16_t value = int(data[0]) | int(data[1] << 8);
       data += 2;
