@@ -185,3 +185,22 @@ do
   -- life with "undo"
   app.range.layers = { b }
 end
+
+-- Test layer name bug when iterating over layers where names given to
+-- some layers are integers and also are valid ranges/indexes in the
+-- list of layers
+do
+  local layerNames = { "2", "4", "Non-integer", "1" }
+  local s = Sprite(4, 4)
+  local layer1 = s.layers[1]   layer1.name = layerNames[1]
+  local layer2 = s:newLayer()  layer2.name = layerNames[2]
+  local layer3 = s:newLayer()  layer3.name = layerNames[3]
+  local layer4 = s:newLayer()  layer4.name = layerNames[4]
+
+  local i = 1
+  for index, layer in ipairs(app.activeSprite.layers) do
+    assert(index == i)
+    assert(layer.name == layerNames[i])
+    i = i + 1
+  end
+end
