@@ -230,15 +230,16 @@ int Image_drawImage(lua_State* L)
     doc::copy_image(dst, src, pos.x, pos.y);
   }
   else {
-    gfx::Rect bounds(pos, src->size());
-    gfx::Rect output;
-    if (doc::algorithm::shrink_bounds2(src, dst, bounds, output)) {
-      Tx tx;
-      tx(new cmd::CopyRegion(
-           dst, src, gfx::Region(output),
-           gfx::Point(0, 0)));
-      tx.commit();
-    }
+    gfx::Rect bounds(0, 0, src->size().w, src->size().h);
+
+    // TODO Use something similar to doc::algorithm::shrink_bounds2()
+    //      but we need something that does the render and compares
+    //      the minimal modified area.
+    Tx tx;
+    tx(new cmd::CopyRegion(
+         dst, src, gfx::Region(bounds),
+         gfx::Point(pos.x + bounds.x, pos.y + bounds.y)));
+    tx.commit();
   }
   return 0;
 }
