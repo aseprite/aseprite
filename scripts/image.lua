@@ -1,4 +1,4 @@
--- Copyright (C) 2019-2020  Igara Studio S.A.
+-- Copyright (C) 2019-2021  Igara Studio S.A.
 -- Copyright (C) 2018  David Capello
 --
 -- This file is released under the terms of the MIT license.
@@ -212,4 +212,55 @@ do
   assert(img ~= nil)
   assert(img.spec == spr.spec)
   assert(img:getPixel(15, 15) == 129)
+end
+
+-- Fix drawImage() when drawing in a cel image
+do
+  local a = Image(3, 2, ColorMode.INDEXED)
+  array_to_pixels({ 0, 1, 2,
+                    2, 3, 4 }, a)
+
+  local function test(b)
+    expect_img(b, { 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0 })
+
+    b:drawImage(a, Point(2, 1))
+    expect_img(b, { 0, 0, 0, 0, 0,
+                    0, 0, 0, 1, 2,
+                    0, 0, 2, 3, 4,
+                    0, 0, 0, 0, 0 })
+
+    b:drawImage(a, Point(0, 1))
+    expect_img(b, { 0, 0, 0, 0, 0,
+                    0, 1, 2, 1, 2,
+                    2, 3, 4, 3, 4,
+                    0, 0, 0, 0, 0 })
+
+    b:drawImage(a, Point(-1, 2))
+    expect_img(b, { 0, 0, 0, 0, 0,
+                    0, 1, 2, 1, 2,
+                    1, 2, 4, 3, 4,
+                    3, 4, 0, 0, 0 })
+
+    b:drawImage(a, Point(0, 3))
+    expect_img(b, { 0, 0, 0, 0, 0,
+                    0, 1, 2, 1, 2,
+                    1, 2, 4, 3, 4,
+                    0, 1, 2, 0, 0 })
+
+    b:drawImage(a, Point(0, 3)) -- Do nothing
+    expect_img(b, { 0, 0, 0, 0, 0,
+                    0, 1, 2, 1, 2,
+                    1, 2, 4, 3, 4,
+                    0, 1, 2, 0, 0 })
+  end
+
+  local b = Image(5, 4, ColorMode.INDEXED)
+  test(b)
+
+  local s = Sprite(5, 4, ColorMode.INDEXED)
+  test(app.activeCel.image)
+
 end
