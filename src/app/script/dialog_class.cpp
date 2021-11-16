@@ -946,17 +946,17 @@ int Dialog_modify(lua_State* L)
       if (lua_istable(L, -1)) {
         if (auto combobox = dynamic_cast<ui::ComboBox*>(widget)) {
           combobox->deleteAllItems();
-        lua_pushnil(L);
-        bool empty = true;
-        while (lua_next(L, -2) != 0) {
-          if (auto p = lua_tostring(L, -1)){
-            combobox->addItem(p);
-            empty = false;
+          lua_pushnil(L);
+          bool empty = true;
+          while (lua_next(L, -2) != 0) {
+            if (auto p = lua_tostring(L, -1)){
+              combobox->addItem(p);
+              empty = false;
+            }
+            lua_pop(L, 1);
           }
-          lua_pop(L, 1);
-        }
-        if (empty)
-          combobox->getEntryWidget()->setText("");
+          if (empty)
+            combobox->getEntryWidget()->setText("");
         }
       }
     }
