@@ -211,7 +211,7 @@ public:
   EventType eventType(const char* eventName) const {
     if (std::strcmp(eventName, "change") == 0)
       return Change;
-    if (std::strcmp(eventName, "filenamechange") == 0)
+    else if (std::strcmp(eventName, "filenamechange") == 0)
       return FilenameChange;
     else
       return Unknown;
