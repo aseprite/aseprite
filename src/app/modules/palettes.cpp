@@ -109,7 +109,7 @@ void load_default_palette()
     // Save default.ase file
     if (pal) {
       palFile = defaultPalName;
-      save_palette(palFile.c_str(), pal.get(), 0);
+      save_palette(palFile.c_str(), pal.get(), 0, nullptr);
     }
   }
 

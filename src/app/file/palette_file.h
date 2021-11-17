@@ -10,6 +10,7 @@
 #pragma once
 
 #include "base/paths.h"
+#include "gfx/color_space.h"
 
 namespace doc {
   class Palette;
@@ -23,8 +24,10 @@ namespace app {
 
   doc::Palette* load_palette(const char *filename,
                              const FileOpConfig* config = nullptr);
-  bool save_palette(const char *filename, const doc::Palette* pal,
-                    int columns);
+  bool save_palette(const char *filename,
+                    const doc::Palette* pal,
+                    int columns,
+                    const gfx::ColorSpaceRef& colorSpace);
 
 } // namespace app
 
