@@ -391,8 +391,10 @@ void App::run()
         rf.includeDataDir(fmt::format("icons/ase{0}.png", size).c_str());
         if (rf.findFirst()) {
           os::SurfaceRef surf = os::instance()->loadRgbaSurface(rf.filename().c_str());
-          if (surf)
+          if (surf) {
+            surf->setImmutable();
             icons.push_back(surf);
+          }
         }
       }
 

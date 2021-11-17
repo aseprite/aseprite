@@ -340,6 +340,7 @@ void SkinTheme::loadSheet()
   m_sheet = newSheet;
   if (m_sheet)
     m_sheet->applyScale(guiscale());
+  m_sheet->setImmutable();
 
   // Reset sprite sheet and font of all layer styles (to avoid
   // dangling pointers to os::Surface or os::Font).
@@ -756,6 +757,7 @@ os::SurfaceRef SkinTheme::sliceSheet(os::SurfaceRef sur, const gfx::Rect& bounds
     os::SurfaceLock lockSrc(m_sheet.get());
     os::SurfaceLock lockDst(sur.get());
     m_sheet->blitTo(sur.get(), bounds.x, bounds.y, 0, 0, bounds.w, bounds.h);
+    sur->setImmutable();
   }
   else {
     ASSERT(!sur);
