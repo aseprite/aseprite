@@ -325,6 +325,11 @@ int App::initialize(const AppOptions& options)
     // Show the main window (this is not modal, the code continues)
     m_mainWindow->openWindow();
 
+#if LAF_LINUX // TODO check why this is required and we cannot call
+              //      updateAllDisplaysWithNewScale() on Linux/X11
+    // Redraw the whole screen.
+    manager->invalidate();
+#else
     // To know the initial manager size we call to
     // Manager::updateAllDisplaysWithNewScale(...) so we receive a
     // Manager::onNewDisplayConfiguration() (which will update the
@@ -334,6 +339,7 @@ int App::initialize(const AppOptions& options)
     // the dialog is centered correctly to the manager bounds.
     const int scale = Preferences::instance().general.screenScale();
     manager->updateAllDisplaysWithNewScale(scale);
+#endif
   }
 #endif  // ENABLE_UI
 
