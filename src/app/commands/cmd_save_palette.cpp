@@ -14,6 +14,7 @@
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/context.h"
+#include "app/doc.h"
 #include "app/file/palette_file.h"
 #include "app/file_selector.h"
 #include "app/i18n/strings.h"
@@ -82,13 +83,17 @@ void SavePaletteCommand::onExecute(Context* ctx)
       return;
     }
   }
+  gfx::ColorSpaceRef colorSpace = nullptr;
+  auto activeDoc = ctx->activeDocument();
+  if (activeDoc)
+    colorSpace = activeDoc->sprite()->colorSpace();
 
-  if (!save_palette(filename.c_str(), palette, 16)) // TODO 16 should be configurable
+  if (!save_palette(filename.c_str(), palette, 16, colorSpace)) // TODO 16 should be configurable
     ui::Alert::show(fmt::format(Strings::alerts_error_saving_file(), filename));
 
   if (m_preset == get_default_palette_preset_name()) {
     set_default_palette(palette);
-    if (!ctx->activeDocument())
+    if (!activeDoc)
       set_current_palette(palette, false);
   }
   if (m_saveAsPreset) {
