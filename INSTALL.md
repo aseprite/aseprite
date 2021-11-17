@@ -163,7 +163,7 @@ Run `cmake` with the following parameters and then `ninja`:
       -DCMAKE_BUILD_TYPE=RelWithDebInfo \
       -DCMAKE_OSX_ARCHITECTURES=x86_64 \
       -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 \
-      -DCMAKE_OSX_SYSROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk \
+      -DCMAKE_OSX_SYSROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk \
       -DLAF_BACKEND=skia \
       -DSKIA_DIR=$HOME/deps/skia \
       -DSKIA_LIBRARY_DIR=$HOME/deps/skia/out/Release-x64 \
@@ -175,8 +175,27 @@ Run `cmake` with the following parameters and then `ninja`:
 In this case, `$HOME/deps/skia` is the directory where Skia was
 compiled or downloaded.  Make sure that `CMAKE_OSX_SYSROOT` is
 pointing to the correct SDK directory (in this case
-`/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk`),
+`/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk`),
 but it could be different in your Mac.
+
+### Apple Silicon
+
+If you running macOS on an ARM64/AArch64/Apple Silicon Mac (e.g. M1),
+you can compile a native ARM64 version of Aseprite following the same
+steps as above but when we call `cmake`, we have some differences:
+
+    cmake \
+      -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+      -DCMAKE_OSX_ARCHITECTURES=arm64 \
+      -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
+      -DCMAKE_OSX_SYSROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk \
+      -DLAF_BACKEND=skia \
+      -DSKIA_DIR=$HOME/deps/skia \
+      -DSKIA_LIBRARY_DIR=$HOME/deps/skia/out/Release-arm64 \
+      -DSKIA_LIBRARY=$HOME/deps/skia/out/Release-arm64/libskia.a \
+      -DPNG_ARM_NEON:STRING=on \
+      -G Ninja \
+      ..
 
 ### Issues with Retina displays
 
@@ -203,6 +222,12 @@ Run `cmake` with the following parameters and then `ninja`:
 
 In this case, `$HOME/deps/skia` is the directory where Skia was
 compiled or uncompressed.
+
+### GCC compiler
+
+In case that you are using the pre-compiled Skia version, you will
+need to use the Clang compiler to compile Aseprite. Only if you
+compile Skia with GCC, you will be able to compile Aseprite with GCC.
 
 # Using shared third party libraries
 

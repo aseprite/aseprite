@@ -101,6 +101,7 @@ void Overlay::captureOverlappedArea()
   os::SurfaceLock lock(m_overlap.get());
   displaySurface->blitTo(m_overlap.get(), m_pos.x, m_pos.y, 0, 0,
                          m_overlap->width(), m_overlap->height());
+  m_overlap->setImmutable();
 
   m_captured = displaySurface;
 }
