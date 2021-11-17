@@ -31,8 +31,9 @@ set(CMAKE_USER_MAKE_RULES_OVERRIDE_CXX ${CMAKE_CURRENT_SOURCE_DIR}/laf/cmake/cxx
 project(aseprite C CXX)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
-  # As we compile with CMAKE_OSX_DEPLOYMENT_TARGET=10.7, we have to
-  # explicitly say that we want to use libc++ instead of the GNU libstdc++
+  # As we compile with CMAKE_OSX_DEPLOYMENT_TARGET=10.9, we have to
+  # explicitly say that we want to use libc++ instead of the GNU
+  # libstdc++
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
 endif()
 
@@ -277,15 +278,7 @@ include_directories(${FREETYPE_INCLUDE_DIRS})
 if(USE_SHARED_HARFBUZZ)
   find_package(HarfBuzz)
 else()
-  if(LAF_BACKEND STREQUAL "skia")
-    # Use the Skia harfbuzz (it's a modified version with C++11
-    # mutexes).
-    add_definitions(-DHAVE_CONFIG_OVERRIDE_H=1)
-    set(HARFBUZZ_LIBRARIES ${SKIA_HARFBUZZ_LIBRARY})
-    set(HARFBUZZ_INCLUDE_DIRS
-      ${SKIA_DIR}/third_party/harfbuzz
-      ${SKIA_DIR}/third_party/externals/harfbuzz/src)
-  else()
+  if(NOT LAF_BACKEND STREQUAL "skia")
     set(HARFBUZZ_LIBRARIES harfbuzz)
     set(HARFBUZZ_INCLUDE_DIRS ${HARFBUZZ_DIR}/src)
   endif()
@@ -348,6 +341,16 @@ set(LAF_WITH_TESTS ${ENABLE_TESTS} CACHE BOOL "Enable LAF tests")
 set(UNDO_TESTS     ${ENABLE_TESTS} CACHE BOOL "Enable undo tests")
 
 add_subdirectory(laf)
+
+# Use the Skia harfbuzz (it's a modified version with C++11 mutexes).
+if(LAF_BACKEND STREQUAL "skia")
+  add_definitions(-DHAVE_CONFIG_OVERRIDE_H=1)
+  set(HARFBUZZ_LIBRARIES ${SKIA_HARFBUZZ_LIBRARY})
+  set(HARFBUZZ_INCLUDE_DIRS
+    ${SKIA_DIR}/third_party/harfbuzz
+    ${SKIA_DIR}/third_party/externals/harfbuzz/src)
+endif()
+
 add_subdirectory(src)
 
 ######################################################################
