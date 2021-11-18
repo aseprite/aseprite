@@ -757,7 +757,12 @@ os::SurfaceRef SkinTheme::sliceSheet(os::SurfaceRef sur, const gfx::Rect& bounds
     os::SurfaceLock lockSrc(m_sheet.get());
     os::SurfaceLock lockDst(sur.get());
     m_sheet->blitTo(sur.get(), bounds.x, bounds.y, 0, 0, bounds.w, bounds.h);
-    sur->setImmutable();
+
+    // The new surface is immutable because we're going to re-use the
+    // surface if we reload the theme.
+    //
+    // TODO Add sub-surfaces (SkBitmap::extractSubset())
+    //sur->setImmutable();
   }
   else {
     ASSERT(!sur);
