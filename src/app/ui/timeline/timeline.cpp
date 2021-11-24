@@ -1782,8 +1782,8 @@ paintNoDoc:;
 
 void Timeline::onBeforeCommandExecution(CommandExecutionEvent& ev)
 {
-  m_savedCounter = (m_document ? *m_document->undoHistory()->savedCounter():
-                                 std::numeric_limits<int>::min());
+  m_savedVersion = (m_document ? m_document->sprite()->version():
+                                 std::numeric_limits<doc::ObjectVersion>::max());
 }
 
 void Timeline::onAfterCommandExecution(CommandExecutionEvent& ev)
@@ -1792,8 +1792,8 @@ void Timeline::onAfterCommandExecution(CommandExecutionEvent& ev)
     return;
 
   // TODO improve this: no need to regenerate everything after each command
-  const int currentCounter = *m_document->undoHistory()->savedCounter();
-  if (m_savedCounter != currentCounter) {
+  const doc::ObjectVersion currentVersion = m_document->sprite()->version();
+  if (m_savedVersion != currentVersion) {
     regenerateRows();
     showCurrentCel();
     invalidate();
