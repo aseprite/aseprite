@@ -1490,6 +1490,19 @@ void Manager::_closeWindow(Window* window, bool redraw_background)
     ASSERT(windowDisplay);
     ASSERT(windowDisplay != this->display());
 
+    // Just as we've set the origin of the window bounds to (0, 0)
+    // when we created the native window, we have to restore the
+    // ui::Window bounds' origin now that we are going to remove/close
+    // the native window.
+    if (parentDisplay && windowDisplay) {
+      const int scale = parentDisplay->nativeWindow()->scale();
+      const gfx::Point parentOrigin = parentDisplay->nativeWindow()->contentRect().origin();
+      const gfx::Point origin = windowDisplay->nativeWindow()->contentRect().origin();
+      const gfx::Rect newBounds((origin - parentOrigin) / scale,
+                                window->bounds().size());
+      window->setBounds(newBounds);
+    }
+
     // Remove all messages for this display.
     removeMessagesForDisplay(windowDisplay);
 
