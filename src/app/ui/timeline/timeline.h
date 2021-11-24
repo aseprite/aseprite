@@ -21,6 +21,7 @@
 #include "base/debug.h"
 #include "doc/frame.h"
 #include "doc/layer.h"
+#include "doc/object_version.h"
 #include "doc/selected_frames.h"
 #include "doc/selected_layers.h"
 #include "doc/sprite.h"
@@ -393,10 +394,10 @@ namespace app {
     Range m_dropRange;
     State m_state;
 
-    // Value of DocUndo::savedCounter() before executing a
-    // command. Used to compare after executing a command to avoid
+    // Version of the sprite before executing a command. Used to check
+    // if the sprite was modified after executing a command to avoid
     // regenerating all rows if it's not necessary.
-    int m_savedCounter;
+    doc::ObjectVersion m_savedVersion;
 
     // Data used to display each row in the timeline
     std::vector<Row> m_rows;

@@ -62,7 +62,6 @@
 
 #include <algorithm>
 #include <cstdio>
-#include <limits>
 #include <vector>
 
 namespace app {
@@ -1782,8 +1781,7 @@ paintNoDoc:;
 
 void Timeline::onBeforeCommandExecution(CommandExecutionEvent& ev)
 {
-  m_savedCounter = (m_document ? *m_document->undoHistory()->savedCounter():
-                                 std::numeric_limits<int>::min());
+  m_savedVersion = (m_document ? m_document->sprite()->version(): 0);
 }
 
 void Timeline::onAfterCommandExecution(CommandExecutionEvent& ev)
@@ -1791,9 +1789,9 @@ void Timeline::onAfterCommandExecution(CommandExecutionEvent& ev)
   if (!m_document)
     return;
 
-  // TODO improve this: no need to regenerate everything after each command
-  const int currentCounter = *m_document->undoHistory()->savedCounter();
-  if (m_savedCounter != currentCounter) {
+  // TODO Improve this: check if the structure of layers/frames has changed
+  const doc::ObjectVersion currentVersion = m_document->sprite()->version();
+  if (m_savedVersion != currentVersion) {
     regenerateRows();
     showCurrentCel();
     invalidate();
