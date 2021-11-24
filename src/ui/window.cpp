@@ -411,8 +411,20 @@ void Window::closeWindow(Widget* closer)
     return;
 
   m_closer = closer;
-  if (m_ownDisplay)
+  if (m_ownDisplay) {
     m_lastFrame = m_display->nativeWindow()->frame();
+    if (!m_lastFrame.isEmpty() && parent()) {
+      const auto parentDisplay = this->parent()->display();
+      const gfx::Point parentOrigin =
+        parentDisplay->nativeWindow()->contentRect().origin();
+      const gfx::Point origin =
+        this->display()->nativeWindow()->contentRect().origin();
+      const int scale = parentDisplay->scale();
+      const gfx::Rect newBounds((origin -parentOrigin) / scale,
+        m_lastFrame.size());
+      setBounds(newBounds);
+    }
+  }
 
   manager()->_closeWindow(this, true);
 
