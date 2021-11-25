@@ -56,7 +56,7 @@ void EnterLicense::onActivationFailed(drm::LicenseManager::ActivationException& 
 
 void EnterLicense::onActivated(std::string token)
 {
-  drm::LicenseManager::instance()->save(token);
+  drm::LicenseManager::instance()->saveToken(token);
 
   ui::execute_from_ui_thread([this]() {
     showSuccess();
@@ -73,7 +73,7 @@ void EnterLicense::startActivation()
   m_activationInProgress = true;
   m_activation = std::thread([this, key]() {
     try {
-      auto token = drm::LicenseManager::instance()->activate(key, get_app_name(), get_app_version());
+      auto token = drm::LicenseManager::instance()->activate(key);
       onActivated(token);
     }
     catch (drm::LicenseManager::ActivationException& e) {

@@ -22,6 +22,7 @@
 #include "app/commands/commands.h"
 #include "app/console.h"
 #include "app/crash/data_recovery.h"
+#include "app/drm.h"
 #include "app/extensions.h"
 #include "app/file/file.h"
 #include "app/file/file_formats_manager.h"
@@ -59,7 +60,6 @@
 #include "base/scoped_lock.h"
 #include "base/split_string.h"
 #include "doc/sprite.h"
-#include "drm.h"
 #include "fmt/format.h"
 #include "os/error.h"
 #include "os/surface.h"
@@ -846,9 +846,13 @@ int app_get_color_to_clear_layer(Layer* layer)
 
 #ifdef ENABLE_DRM
 void app_configure_drm() {
-  ResourceFinder rf;
-  rf.includeUserDir("");
-  DRM_CONFIGURE(rf.getFirstOrCreateDefault(), updater::getUserAgent());
+  ResourceFinder userDirRf, dataDirRf;
+  userDirRf.includeUserDir("");
+  dataDirRf.includeDataDir("");
+  std::map<std::string, std::string> config = {
+    {"data", dataDirRf.getFirstOrCreateDefault()}
+  };
+  DRM_CONFIGURE(get_app_name(), get_app_version(), userDirRf.getFirstOrCreateDefault(), updater::getUserAgent(), config);
 }
 #endif
 

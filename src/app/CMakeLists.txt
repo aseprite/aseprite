@@ -430,6 +430,7 @@ if(ENABLE_UI)
   if(ENABLE_DRM)
     set(ui_app_files
       ui/enter_license.cpp
+      ui/aseprite_update.cpp
     ${ui_app_files})
   endif()
 endif()

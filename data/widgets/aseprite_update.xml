@@ -1,0 +1,23 @@
+<!-- Aseprite -->
+<!-- Copyright (c) 2021  Igara Studio S.A. -->
+<gui>
+  <window id="aseprite_update" text="@.title" minwidth="300" minheight="200">
+    <box vertical="true" expansive="true">
+      <hbox>
+        <slider min="0" max="100" id="progress" cell_align="horizontal" expansive="true" readonly="true" />
+      </hbox>
+      <hbox expansive="true">
+        <view expansive="true" style="workspace_view">
+          <listbox id="logitems" />
+        </view>
+      </hbox>
+      <box horizontal="true">
+        <box horizontal="true" expansive="true" />
+        <box horizontal="true" homogeneous="true">
+          <button text="@general.ok" id="ok_button" magnet="true" width="60" />
+          <button text="@general.cancel" closewindow="true" />
+        </box>
+      </box>
+    </box>
+  </window>
+</gui>
