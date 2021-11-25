@@ -110,6 +110,7 @@ namespace app {
     doc::Tileset* tileset() const;
     doc::Grid grid() const;
     gfx::Rect gridBounds() const;
+    gfx::Rect displayableGridBounds() const;
 
     void tilemapMode(const TilemapMode mode) { m_tilemapMode = mode; }
     void tilesetMode(const TilesetMode mode) { m_tilesetMode = mode; }

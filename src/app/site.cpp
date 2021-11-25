@@ -121,6 +121,16 @@ gfx::Rect Site::gridBounds() const
   return doc::Sprite::DefaultGridBounds();
 }
 
+gfx::Rect Site::displayableGridBounds() const
+{
+  gfx::Rect bounds;
+  if (m_sprite)
+    bounds = m_sprite->gridBounds();
+  if (bounds.isEmpty())
+    bounds = gridBounds();
+  return bounds;
+}
+
 bool Site::shouldTrimCel(Cel* cel) const
 {
   return (cel &&

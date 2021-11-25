@@ -109,7 +109,7 @@ void GridSettingsCommand::onExecute(Context* context)
   gen::GridSettings window;
 
   Site site = context->activeSite();
-  Rect bounds = site.gridBounds();
+  Rect bounds = site.displayableGridBounds();
 
   window.gridX()->setTextf("%d", bounds.x);
   window.gridY()->setTextf("%d", bounds.y);

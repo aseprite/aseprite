@@ -794,7 +794,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
       if (m_docPref.show.grid()) {
         gfx::Rect gridrc;
         if (!m_state->getGridBounds(this, gridrc))
-          gridrc = getSite().gridBounds();
+          gridrc = getSite().displayableGridBounds();
 
         if (m_proj.applyX(gridrc.w) > 2 &&
             m_proj.applyY(gridrc.h) > 2) {
