@@ -24,6 +24,7 @@ namespace app {
     virtual bool onKeyDown(Editor* editor, ui::KeyMessage* msg) override;
     virtual bool onKeyUp(Editor* editor, ui::KeyMessage* msg) override;
     virtual bool onUpdateStatusBar(Editor* editor) override;
+    virtual bool allowLayerEdges() override { return true; }
 
     virtual LeaveAction onLeaveState(Editor* editor, EditorState* newState) override {
       // Just discard this state if we want to enter to another state

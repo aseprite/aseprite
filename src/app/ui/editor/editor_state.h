@@ -124,6 +124,9 @@ namespace app {
     // drawing cursor.
     virtual bool requireBrushPreview() { return false; }
 
+    // Returns true if this state allow layer edges and cel guides
+    virtual bool allowLayerEdges() { return false; }
+
     // Returns true if this state accept the given quicktool.
     virtual bool acceptQuickTool(tools::Tool* tool) { return true; }
 

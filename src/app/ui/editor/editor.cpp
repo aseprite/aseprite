@@ -961,10 +961,9 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
 
   // Draw active layer/cel edges
   if ((m_docPref.show.layerEdges() || m_showAutoCelGuides) &&
-      // Show layer edges only on "standby" like states where brush
-      // preview is shown (e.g. with this we avoid to showing the
-      // edges in states like DrawingState, etc.).
-      m_state->requireBrushPreview()) {
+      // Show layer edges and possibly cel guides only on states that
+      // allows it (e.g scrolling state)
+      m_state->allowLayerEdges()) {
     Cel* cel = (m_layer ? m_layer->cel(m_frame): nullptr);
     if (cel) {
       gfx::Color color = color_utils::color_for_ui(Preferences::instance().guides.layerEdgesColor());
@@ -2952,7 +2951,7 @@ void Editor::updateAutoCelGuides(ui::Message* msg)
   // Check if the user is pressing the Ctrl or Cmd key on move
   // tool to show automatic guides.
   if (m_showAutoCelGuides &&
-      m_state->requireBrushPreview()) {
+      m_state->allowLayerEdges()) {
     auto mouseMsg = dynamic_cast<ui::MouseMessage*>(msg);
 
     ColorPicker picker;
