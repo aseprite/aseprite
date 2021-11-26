@@ -46,6 +46,9 @@ namespace app {
     // the brush-preview.
     virtual bool requireBrushPreview() override { return true; }
 
+    // layer edges and cel guides are allowed to be drawn
+    virtual bool allowLayerEdges() override { return true; }
+
     virtual Transformation getTransformation(Editor* editor);
 
     void startSelectionTransformation(Editor* editor, const gfx::Point& move, double angle);
