@@ -238,3 +238,13 @@ configuring each `USE_SHARED_` option.
 After running `cmake -G`, you can edit `build/CMakeCache.txt` file,
 and enable the `USE_SHARED_` flag (set its value to `ON`) of the
 library that you want to be linked dynamically.
+
+# Build using podman/docker
+
+```sh
+podman build -t aseprite .
+container_id=$(podman create aseprite)
+podman cp ${container_id}:/tmp/aseprite/build/bin/aseprite .
+podman rm ${container_id}
+podman rmi aseprite # if you need to save disk space
+```
