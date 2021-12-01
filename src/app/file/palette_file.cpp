@@ -118,7 +118,8 @@ Palette* load_palette(const char* filename,
   return pal;
 }
 
-bool save_palette(const char* filename, const Palette* pal, int columns)
+bool save_palette(const char* filename, const Palette* pal, int columns,
+                  const gfx::ColorSpaceRef& cs)
 {
   dio::FileFormat dioFormat = dio::detect_format_by_file_extension(filename);
   bool success = false;
@@ -154,11 +155,12 @@ bool save_palette(const char* filename, const Palette* pal, int columns)
       int h = (pal->size() / w) + (pal->size() % w > 0 ? 1: 0);
 
       Context tmpContext;
+      gfx::ColorSpaceRef colorSpace = (cs ? cs: gfx::ColorSpace::MakeNone());
       Doc* doc = tmpContext.documents().add(
         new Doc(Sprite::MakeStdSprite(
                   ImageSpec((pal->size() <= 256 ? doc::ColorMode::INDEXED:
                                                   doc::ColorMode::RGB),
-                            w, h), pal->size())));
+                            w, h, 0, colorSpace), pal->size())));
 
       Sprite* sprite = doc->sprite();
       doc->sprite()->setPalette(pal, false);

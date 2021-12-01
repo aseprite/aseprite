@@ -238,12 +238,17 @@ int Palette_saveAs(lua_State* L)
   auto obj = get_obj<PaletteObj>(L, 1);
   auto pal = obj->palette(L);
   const char* fn = luaL_checkstring(L, 2);
+  Sprite* sprite = obj->sprite(L);
+
   if (fn) {
     std::string absFn = base::get_absolute_path(fn);
     if (!ask_access(L, absFn.c_str(), FileAccessMode::Write, ResourceType::File))
       return luaL_error(L, "script doesn't have access to write file %s",
                         absFn.c_str());
-    save_palette(absFn.c_str(), pal, pal->size());
+    save_palette(absFn.c_str(),
+                 pal,
+                 pal->size(),
+                 (sprite ? sprite->colorSpace(): nullptr));
   }
   return 0;
 }

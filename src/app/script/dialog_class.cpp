@@ -975,6 +975,29 @@ int Dialog_modify(lua_State* L)
     }
     lua_pop(L, 1);
 
+    // Handling options before option should support
+    // using both or only one of them at the same time
+    type = lua_getfield(L, 2, "options");
+    if (type != LUA_TNIL) {
+      if (lua_istable(L, -1)) {
+        if (auto combobox = dynamic_cast<ui::ComboBox*>(widget)) {
+          combobox->deleteAllItems();
+          lua_pushnil(L);
+          bool empty = true;
+          while (lua_next(L, -2) != 0) {
+            if (auto p = lua_tostring(L, -1)) {
+              combobox->addItem(p);
+              empty = false;
+            }
+            lua_pop(L, 1);
+          }
+          if (empty)
+            combobox->getEntryWidget()->setText("");
+        }
+      }
+    }
+    lua_pop(L, 1);
+
     type = lua_getfield(L, 2, "option");
     if (auto p = lua_tostring(L, -1)) {
       if (auto combobox = dynamic_cast<ui::ComboBox*>(widget)) {
@@ -1018,7 +1041,7 @@ int Dialog_modify(lua_State* L)
     }
     lua_pop(L, 1);
 
-    // TODO combobox options? shades mode? file title / open / save / filetypes? on* events?
+    // TODO shades mode? file title / open / save / filetypes? on* events?
 
     if (relayout) {
       dlg->window.layout();
