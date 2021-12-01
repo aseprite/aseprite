@@ -79,7 +79,7 @@ if(NOT USE_SHARED_PIXMAN)
   add_subdirectory(pixman-cmake)
 endif()
 
-if(NOT USE_SHARED_FREETYPE)
+if(NOT USE_SHARED_FREETYPE AND NOT LAF_BACKEND STREQUAL "skia")
   set(SKIP_INSTALL_ALL on)
   set(WITH_BZip2 OFF CACHE BOOL "")
 
