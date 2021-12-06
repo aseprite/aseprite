@@ -273,7 +273,7 @@ public:
         LayerImage* layer = static_cast<LayerImage*>(m_layers[i]);
         layer->setBlendMode(psd_blendmode_to_ase(layerRecord.blendMode));
 
-        for (size_t i = 0; i < m_framesInfo.size(); ++i) {
+        for (size_t i = 0; i < m_sprite->totalFrames(); ++i) {
           Cel* cel = layer->cel(frame_t(i));
           if (cel) {
             cel->setOpacity(layerRecord.opacity);
