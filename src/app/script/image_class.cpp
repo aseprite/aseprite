@@ -231,7 +231,7 @@ int Image_drawImage(lua_State* L)
 
   // If the destination image is not related to a sprite, we just draw
   // the source image without undo information.
-  if (obj->cel(L) == nullptr) {
+  if (doc::get<doc::Cel>(obj->celId) == nullptr) {
     doc::copy_image(dst, src, pos.x, pos.y);
   }
   else {
@@ -262,7 +262,7 @@ int Image_drawSprite(lua_State* L)
 
   // If the destination image is not related to a sprite, we just draw
   // the source image without undo information.
-  if (obj->cel(L) == nullptr) {
+  if (doc::get<doc::Cel>(obj->celId) == nullptr) {
     render_sprite(dst, sprite, frame, pos.x, pos.y);
   }
   else {
