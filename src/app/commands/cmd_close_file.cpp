@@ -73,6 +73,7 @@ protected:
     }
 
     for (auto docView : docViews) {
+      workspace->setActiveView(docView);
       if (!workspace->closeView(docView, m_quitting))
         break;
     }
