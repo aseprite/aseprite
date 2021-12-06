@@ -11,6 +11,7 @@
 #include "doc/image_impl.h"
 #include "doc/layer.h"
 #include "doc/palette.h"
+#include "doc/slice.h"
 #include "doc/sprite.h"
 #include "psd/psd.h"
 
@@ -116,6 +117,25 @@ public:
     m_sprite = new Sprite(
       ImageSpec(ColorMode(m_pixelFormat), header.width, header.width));
     m_layerHasTransparentChannel = hasTransparency(header.nchannels);
+  }
+
+  void onSlicesData(const psd::Slices& slices) override
+  {
+    auto& spriteSlices = m_sprite->slices();
+    for (const auto& slice : slices.slices) {
+      const gfx::Rect rect(slice.bound.left,
+                           slice.bound.top,
+                           slice.bound.right - slice.bound.left,
+                           slice.bound.bottom - slice.bound.top);
+      if (!rect.isEmpty() && slice.groupID > 0) {
+        auto slice = new doc::Slice;
+        slice->insert(0, doc::SliceKey(rect));
+
+        // TO-DO: the slices color should come from the app preference
+        slice->userData().setColor(doc::rgba(0, 0, 255, 255));
+        spriteSlices.add(slice);
+      }
+    }
   }
 
   void onFramesData(const std::vector<psd::FrameInformation>& frameInfo,
