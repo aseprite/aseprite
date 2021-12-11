@@ -134,6 +134,7 @@ namespace app {
   int push_image_iterator_function(lua_State* L, const doc::Image* image, int extraArgIndex);
   void push_brush(lua_State* L, const doc::BrushRef& brush);
   void push_cel_image(lua_State* L, doc::Cel* cel);
+  void push_cel_images(lua_State* L, const doc::ObjectIds& cels);
   void push_cels(lua_State* L, const doc::ObjectIds& cels);
   void push_cels(lua_State* L, doc::Layer* layer);
   void push_cels(lua_State* L, doc::Sprite* sprite);
@@ -141,7 +142,6 @@ namespace app {
   void push_doc_range(lua_State* L, Site& site);
   void push_group_layers(lua_State* L, doc::LayerGroup* group);
   void push_image(lua_State* L, doc::Image* image);
-  void push_images(lua_State* L, const doc::ObjectIds& images);
   void push_layers(lua_State* L, const doc::ObjectIds& layers);
   void push_palette(lua_State* L, doc::Palette* palette);
   void push_plugin(lua_State* L, Extension* ext);

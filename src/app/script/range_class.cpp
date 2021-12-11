@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -203,31 +203,35 @@ int Range_get_cels(lua_State* L)
 int Range_get_images(lua_State* L)
 {
   auto obj = get_obj<RangeObj>(L, 1);
-  std::set<ObjectId> imagesSet;
+  std::set<ObjectId> set;
   for (auto celId : obj->cels) {
     Cel* cel = check_docobj(L, doc::get<Cel>(celId));
-    imagesSet.insert(cel->image()->id());
+    if (Cel* link = cel->link())
+      cel = link;
+    set.insert(cel->id());
   }
-  ObjectIds images;
-  for (auto imageId : imagesSet)
-    images.push_back(imageId);
-  push_images(L, images);
+  ObjectIds cels;
+  for (auto celId : set)
+    cels.push_back(celId);
+  push_cel_images(L, cels);
   return 1;
 }
 
 int Range_get_editableImages(lua_State* L)
 {
   auto obj = get_obj<RangeObj>(L, 1);
-  std::set<ObjectId> imagesSet;
+  std::set<ObjectId> set;
   for (auto celId : obj->cels) {
     Cel* cel = check_docobj(L, doc::get<Cel>(celId));
+    if (Cel* link = cel->link())
+      cel = link;
     if (cel->layer()->isEditable())
-      imagesSet.insert(cel->image()->id());
+      set.insert(cel->id());
   }
-  ObjectIds images;
-  for (auto imageId : imagesSet)
-    images.push_back(imageId);
-  push_images(L, images);
+  ObjectIds cels;
+  for (auto celId : set)
+    cels.push_back(celId);
+  push_cel_images(L, cels);
   return 1;
 }
 
