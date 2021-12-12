@@ -127,6 +127,11 @@ int WebSocket_gc(lua_State* L)
 int WebSocket_sendText(lua_State* L)
 {
   auto ws = get_ptr<ix::WebSocket>(L, 1);
+
+  if (ws->getReadyState() != ix::ReadyState::Open) {
+    return luaL_error(L, "Websocket is not connected, can't send text");
+  }
+
   std::stringstream data;
   int argc = lua_gettop(L);
 
@@ -137,8 +142,7 @@ int WebSocket_sendText(lua_State* L)
   }
 
   if (!ws->sendText(data.str()).success) {
-    lua_pushstring(L, "Websocket error");
-    lua_error(L);
+    return luaL_error(L, "Websocket failed to send text");
   }
   return 0;
 }
@@ -146,6 +150,11 @@ int WebSocket_sendText(lua_State* L)
 int WebSocket_sendBinary(lua_State* L)
 {
   auto ws = get_ptr<ix::WebSocket>(L, 1);
+
+  if (ws->getReadyState() != ix::ReadyState::Open) {
+    return luaL_error(L, "Websocket is not connected, can't send data");
+  } 
+
   std::stringstream data;
   int argc = lua_gettop(L);
 
@@ -154,10 +163,9 @@ int WebSocket_sendBinary(lua_State* L)
     const char* buf = lua_tolstring(L, i, &bufLen);
     data.write(buf, bufLen);
   }
-
+  
   if (!ws->sendBinary(data.str()).success) {
-    lua_pushstring(L, "Websocket error");
-    lua_error(L);
+    return luaL_error(L, "Websocket failed to send data");
   }
   return 0;
 }
@@ -165,13 +173,17 @@ int WebSocket_sendBinary(lua_State* L)
 int WebSocket_sendPing(lua_State* L)
 {
   auto ws = get_ptr<ix::WebSocket>(L, 1);
+
+  if (ws->getReadyState() != ix::ReadyState::Open) {
+    return luaL_error(L, "Websocket is not connected, can't send ping");
+  }
+
   size_t bufLen;
   const char* buf = lua_tolstring(L, 2, &bufLen);
   std::string data(buf, bufLen);
 
   if (!ws->ping(data).success) {
-    lua_pushstring(L, "Websocket error");
-    lua_error(L);
+    return luaL_error(L, "Websocket failed to send ping");
   }
   return 0;
 }
