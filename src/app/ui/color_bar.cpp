@@ -971,9 +971,20 @@ void ColorBar::onRemapTilesButtonClick()
 
 bool ColorBar::onIsPaletteViewActive(PaletteView* paletteView) const
 {
-  return
-    (paletteView == &m_paletteView && m_tilemapMode == TilemapMode::Pixels) ||
-    (paletteView == &m_tilesView && m_tilemapMode == TilemapMode::Tiles);
+  if (paletteView == &m_paletteView) {
+    return
+      (m_tilemapMode == TilemapMode::Pixels) ||
+      // As the m_tilemapMode value is kept to restore it if we go
+      // back to a tilemap layer, there is a possibility where we are
+      // in a regular layer with the tiles mode enabled (because we
+      // were in a tilemap layer just right before). We have to check
+      // this special case where we are in "tiles mode" but we are
+      // actually in a regular layer (canEditTiles() is false).
+      (m_tilemapMode == TilemapMode::Tiles && !canEditTiles());
+  }
+  else if (paletteView == &m_tilesView) {
+    return (m_tilemapMode == TilemapMode::Tiles);
+  }
 }
 
 void ColorBar::onPaletteViewIndexChange(int index, ui::MouseButton button)
