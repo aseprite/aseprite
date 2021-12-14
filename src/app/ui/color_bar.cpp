@@ -971,8 +971,13 @@ void ColorBar::onRemapTilesButtonClick()
 
 bool ColorBar::onIsPaletteViewActive(PaletteView* paletteView) const
 {
+  // As the m_tilemapMode is kept to restore it if we go back to a tilemap layer,
+  // there is a possibility where we are in a regular layer and the tilemap
+  // mode is a tile. So we need an extra check to see if the tilemap is editable.
+  // A palette view is active iff the tile is not editable.
   return
     (paletteView == &m_paletteView && m_tilemapMode == TilemapMode::Pixels) ||
+    (paletteView == &m_paletteView && m_tilemapMode == TilemapMode::Tiles && !canEditTiles()) ||
     (paletteView == &m_tilesView && m_tilemapMode == TilemapMode::Tiles);
 }
 
