@@ -133,7 +133,9 @@ public:
               //
               // TODO this trace policy is configured in
               //      ToolLoopBase() ctor, is there a better place?
-              loop->getTracePolicy() != TracePolicy::Overlap) {
+              (loop->getTracePolicy() != TracePolicy::Overlap ||
+               (loop->getTracePolicy() == TracePolicy::Overlap &&
+                m_type == Simple))) {
             color_t color = loop->getPrimaryColor();
 
             switch (loop->sprite()->pixelFormat()) {
