@@ -87,8 +87,8 @@ add_custom_command(
   DEPENDS ${GEN_DEP} ${widget_files} ${string_files} "${SOURCE_DATA_DIR}/gui.xml")
 list(APPEND generated_files ${output_fn})
 
-if(WITH_WEBP_SUPPORT)
-  add_definitions(-DASEPRITE_WITH_WEBP_SUPPORT)
+if(ENABLE_WEBP)
+  add_definitions(-DENABLE_WEBP)
 endif()
 
 if(ENABLE_PSD)
@@ -138,7 +138,7 @@ set(file_formats
   file/png_format.cpp
   file/svg_format.cpp
   file/tga_format.cpp)
-if(WITH_WEBP_SUPPORT)
+if(ENABLE_WEBP)
   list(APPEND file_formats file/webp_format.cpp)
 endif()
 if(ENABLE_PSD)

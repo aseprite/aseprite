@@ -133,7 +133,7 @@ if(ENABLE_STEAM)
   add_subdirectory(steam)
 endif()
 
-if(WITH_DESKTOP_INTEGRATION)
+if(ENABLE_DESKTOP_INTEGRATION)
   add_subdirectory(desktop)
 endif()
 

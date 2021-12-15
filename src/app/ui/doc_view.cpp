@@ -55,6 +55,32 @@ namespace app {
 
 using namespace ui;
 
+namespace {
+
+// Used to show a view temporarily (the one with the file to be
+// closed) and restore the previous view. E.g. When we close the
+// non-active sprite pressing the cross button in a sprite tab.
+class SetRestoreDocView {
+public:
+  SetRestoreDocView(UIContext* ctx, DocView* newView)
+    : m_ctx(ctx)
+    , m_oldView(ctx->activeView()) {
+    if (newView != m_oldView)
+      m_ctx->setActiveView(newView);
+    else
+      m_oldView = nullptr;
+  }
+
+  ~SetRestoreDocView() {
+    if (m_oldView)
+      m_ctx->setActiveView(m_oldView);
+  }
+
+private:
+  UIContext* m_ctx;
+  DocView* m_oldView;
+};
+
 class AppEditor : public Editor,
                   public EditorObserver,
                   public EditorCustomizationDelegate {
@@ -193,6 +219,8 @@ public:
   }
 };
 
+} // anonymous namespace
+
 DocView::DocView(Doc* document, Type type,
                  DocViewPreviewDelegate* previewDelegate)
   : Box(VERTICAL)
@@ -282,42 +310,41 @@ bool DocView::onCloseView(Workspace* workspace, bool quitting)
   }
 
   UIContext* ctx = UIContext::instance();
+  SetRestoreDocView restoreView(ctx, this);
   bool save_it;
   bool try_again = true;
 
   while (try_again) {
     // This flag indicates if we have to sabe the sprite before to destroy it
     save_it = false;
-    {
-      // see if the sprite has changes
-      while (m_document->isModified()) {
-        // ask what want to do the user with the changes in the sprite
-        int ret = Alert::show(
-          fmt::format(
-            Strings::alerts_save_sprite_changes(),
-            m_document->name(),
-            (quitting ? Strings::alerts_save_sprite_changes_quitting():
-                        Strings::alerts_save_sprite_changes_closing())));
 
-        if (ret == 1) {
-          // "save": save the changes
-          save_it = true;
-          break;
-        }
-        else if (ret != 2) {
-          // "cancel" or "ESC" */
-          return false; // we back doing nothing
-        }
-        else {
-          // "discard"
-          break;
-        }
+    // See if the sprite has changes
+    while (m_document->isModified()) {
+      // ask what want to do the user with the changes in the sprite
+      int ret = Alert::show(
+        fmt::format(
+          Strings::alerts_save_sprite_changes(),
+          m_document->name(),
+          (quitting ? Strings::alerts_save_sprite_changes_quitting():
+                      Strings::alerts_save_sprite_changes_closing())));
+
+      if (ret == 1) {
+        // "save": save the changes
+        save_it = true;
+        break;
+      }
+      else if (ret != 2) {
+        // "cancel" or "ESC" */
+        return false; // we back doing nothing
+      }
+      else {
+        // "discard"
+        break;
       }
     }
 
     // Does we need to save the sprite?
     if (save_it) {
-      ctx->setActiveView(this);
       ctx->updateFlags();
 
       Command* save_command =

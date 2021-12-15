@@ -329,8 +329,13 @@ Image* convert_pixel_format(
 
             if (!is_background && c == image->maskColor())
               *dst_it = rgba(0, 0, 0, 0);
-            else
-              *dst_it = palette->getEntry(c);
+            else {
+              const uint32_t p = palette->getEntry(c);
+              if (is_background)
+                *dst_it = rgba(rgba_getr(p), rgba_getg(p), rgba_getb(p), 255);
+              else
+                *dst_it = p;
+            }
           }
           ASSERT(dst_it == dst_end);
           break;
