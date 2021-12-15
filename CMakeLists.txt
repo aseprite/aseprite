@@ -82,6 +82,7 @@ option(FULLSCREEN_PLATFORM "Enable fullscreen by default" off)
 option(ENABLE_CLANG_TIDY   "Enable static analysis" off)
 option(ENABLE_CCACHE       "Use CCache to improve recompilation speed (optional)" on)
 option(ENABLE_SENTRY       "Use Sentry SDK to report crashes" off)
+option(ENABLE_PSD          "Enable experimental support for .psd files" off)
 set(CUSTOM_WEBSITE_URL "" CACHE STRING "Enable custom local webserver to check updates")
 
 if(ENABLE_SENTRY)

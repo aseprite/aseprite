@@ -91,6 +91,10 @@ if(WITH_WEBP_SUPPORT)
   add_definitions(-DASEPRITE_WITH_WEBP_SUPPORT)
 endif()
 
+if(ENABLE_PSD)
+  add_definitions(-DENABLE_PSD)
+endif()
+
 # libarchive definitions
 add_definitions(-DLIBARCHIVE_STATIC)
 
@@ -132,11 +136,13 @@ set(file_formats
   file/jpeg_format.cpp
   file/pcx_format.cpp
   file/png_format.cpp
-  file/psd_format.cpp
   file/svg_format.cpp
   file/tga_format.cpp)
 if(WITH_WEBP_SUPPORT)
   list(APPEND file_formats file/webp_format.cpp)
+endif()
+if(ENABLE_PSD)
+  list(APPEND file_formats file/psd_format.cpp)
 endif()
 
 set(scripting_files)
@@ -677,7 +683,6 @@ target_link_libraries(app-lib
   render-lib
   laf-ft
   laf-os
-  psd
   ui-lib
   ver-lib
   undo
@@ -694,6 +699,10 @@ target_link_libraries(app-lib
   archive_static
   fmt
   tinyexpr)
+
+if(ENABLE_PSD)
+  target_link_libraries(app-lib psd)
+endif()
 
 # Directory where generated files by "gen" utility will stay.
 target_include_directories(app-lib PUBLIC ${CMAKE_CURRENT_BINARY_DIR})

@@ -30,9 +30,12 @@ extern FileFormat* CreateIcoFormat();
 extern FileFormat* CreateJpegFormat();
 extern FileFormat* CreatePcxFormat();
 extern FileFormat* CreatePngFormat();
-extern FileFormat* CreatePsdFormat();
 extern FileFormat* CreateSvgFormat();
 extern FileFormat* CreateTgaFormat();
+
+#ifdef ENABLE_PSD
+extern FileFormat* CreatePsdFormat();
+#endif
 
 #ifdef ASEPRITE_WITH_WEBP_SUPPORT
 extern FileFormat* CreateWebPFormat();
@@ -67,7 +70,11 @@ FileFormatsManager::FileFormatsManager()
   registerFormat(CreateJpegFormat());
   registerFormat(CreatePcxFormat());
   registerFormat(CreatePngFormat());
+
+#ifdef ENABLE_PSD
   registerFormat(CreatePsdFormat());
+#endif
+
   registerFormat(CreateSvgFormat());
   registerFormat(CreateTgaFormat());
 
