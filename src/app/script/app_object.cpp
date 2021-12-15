@@ -135,10 +135,12 @@ int App_transaction(lua_State* L)
   int nresults = 0;
   if (lua_isfunction(L, 1)) {
     Tx tx; // Create a new transaction so it exists in the whole
-           // duration of the argument function call.
+            // duration of the argument function call.
     lua_pushvalue(L, -1);
     if (lua_pcall(L, 0, LUA_MULTRET, 0) == LUA_OK)
       tx.commit();
+    else
+      return lua_error(L); // pcall already put an error object on the stack
     nresults = lua_gettop(L) - top;
   }
   return nresults;
