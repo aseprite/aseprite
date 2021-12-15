@@ -23,6 +23,7 @@
 #define PNG_MAGIC_DWORD2 0x0A1A0A0D
 #define WEBP_STAMP_1     "RIFF" // "RIFFnnnnWEBP"
 #define WEBP_STAMP_2     "WEBP"
+#define PSD_STAMP        "8BPS"
 
 namespace dio {
 
@@ -64,6 +65,9 @@ FileFormat detect_format_by_file_content_bytes(const uint8_t* buf,
       if (std::strncmp((const char*)buf, GIF_87_STAMP, 6) == 0 ||
           std::strncmp((const char*)buf, GIF_89_STAMP, 6) == 0)
         return FileFormat::GIF_ANIMATION;
+
+      if (std::strncmp((const char*)buf, PSD_STAMP, 4) == 0)
+        return FileFormat::PSD_IMAGE;
 
       if (IS_MAGIC_WORD(4, ASE_MAGIC_NUMBER))
         return FileFormat::ASE_ANIMATION;
@@ -155,6 +159,10 @@ FileFormat detect_format_by_file_extension(const std::string& filename)
 
   if (ext == "webp")
     return FileFormat::WEBP_ANIMATION;
+
+  if (ext == "psd" ||
+      ext == "psb")
+    return FileFormat::PSD_IMAGE;
 
   return FileFormat::UNKNOWN;
 }
