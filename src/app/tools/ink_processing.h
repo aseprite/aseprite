@@ -282,8 +282,10 @@ public:
   }
 
   void processPixel(int x, int y) {
-    if (m_colorIndex == m_maskIndex)
+    if (m_colorIndex == m_maskIndex) {
+      *m_dstAddress = m_maskIndex;
       return;
+    }
 
     color_t c = *m_srcAddress;
     if (int(c) == m_maskIndex)
