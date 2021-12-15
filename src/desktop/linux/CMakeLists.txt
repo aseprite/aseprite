@@ -10,6 +10,6 @@ install(PROGRAMS aseprite-thumbnailer DESTINATION bin)
 install(FILES gnome/aseprite.thumbnailer DESTINATION share/thumbnailers)
 
 # Qt Thumbnailer
-if(WITH_QT_THUMBNAILER)
+if(ENABLE_QT_THUMBNAILER)
   add_subdirectory(kde)
 endif()
