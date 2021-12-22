@@ -329,9 +329,6 @@ include_directories(${SIMPLEINI_DIR})
 # Third parties
 add_subdirectory(third_party)
 
-# LAF libraries + Aseprite are compiled with config.h
-include_directories(src)
-add_definitions(-DHAVE_CONFIG_H)
 if(ENABLE_MEMLEAK)
   add_definitions(-DLAF_MEMLEAK)
 endif()
@@ -340,6 +337,11 @@ set(LAF_WITH_TESTS ${ENABLE_TESTS} CACHE BOOL "Enable LAF tests")
 set(UNDO_TESTS     ${ENABLE_TESTS} CACHE BOOL "Enable undo tests")
 
 add_subdirectory(laf)
+
+# LAF libraries + Aseprite are compiled with config.h
+target_include_directories(laf-base PUBLIC src)
+target_compile_definitions(laf-base PUBLIC HAVE_CONFIG_H)
+
 add_subdirectory(src)
 
 ######################################################################
