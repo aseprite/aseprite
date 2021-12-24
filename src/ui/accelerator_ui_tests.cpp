@@ -5,7 +5,7 @@
 // Read LICENSE.txt for more information.
 
 #define TEST_GUI
-#include "tests/test.h"
+#include "tests/app_test.h"
 
 using namespace ui;
 

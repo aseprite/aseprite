@@ -5,7 +5,7 @@
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
-#include "tests/test.h"
+#include "tests/app_test.h"
 
 #include "app/context.h"
 #include "app/doc.h"
