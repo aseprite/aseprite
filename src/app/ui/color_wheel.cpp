@@ -207,32 +207,63 @@ app::Color ColorWheel::getMainAreaColor(const int _u, const int umax,
 
   // When we click the main area we can limit the distance to the
   // wheel radius to pick colors even outside the wheel radius.
-  if (hasCaptureInMainArea() && d > m_wheelRadius)
+  if (hasCaptureInMainArea() && d > m_wheelRadius) {
     d = m_wheelRadius;
+  }
 
   if (m_colorModel == ColorModel::NORMAL_MAP) {
-    double a = std::atan2(-v, u);
-    int di = int(128.0 * d / m_wheelRadius);
-
-    if (m_discrete) {
-      int ai = (int(180.0 * a / PI) + 360);
-      ai += 15;
-      ai /= 30;
-      ai *= 30;
-      a = PI * ai / 180.0;
-
-      di /= 32;
-      di *= 32;
-    }
-
-    int r = 128 + di*std::cos(a);
-    int g = 128 + di*std::sin(a);
-    int b = 255 - di;
     if (d <= m_wheelRadius) {
+      double normalizedDistance = d / m_wheelRadius;
+      double normalizedU = u / m_wheelRadius;
+      double normalizedV = v / m_wheelRadius;
+
+      double blueAngle = std::acos(normalizedDistance);
+
+      int r, g, b;
+      if (m_discrete) {
+        double angle = std::atan2(-v, u);
+
+        int intAngle = (int(180.0 * angle / PI) + 360);
+        intAngle += 15;
+        intAngle /= 30;
+        intAngle *= 30;
+        angle = PI * intAngle / 180.0;
+
+        int blueAngleDegrees;
+        if (normalizedDistance < 0.25) {
+          normalizedDistance = 0;
+          blueAngleDegrees = 90;
+          angle = PI / 2;
+          angle = 0;
+        }
+        else if (normalizedDistance < 0.5) {
+          normalizedDistance = 0.25;
+          blueAngleDegrees = 45;
+        }
+        else if (normalizedDistance < 0.75) {
+          normalizedDistance = 0.5;
+          blueAngleDegrees = 30;
+        }
+        else {
+          normalizedDistance = 0.75;
+          blueAngleDegrees = 15;
+        }
+        blueAngle = PI * blueAngleDegrees / 180.0;
+
+        r = 128 + int(128.0 * normalizedDistance * std::cos(angle));
+        g = 128 + int(128.0 * normalizedDistance * std::sin(angle));
+      }
+      else {
+        r = 128 + int(128.0 * normalizedU);
+        g = 128 - int(128.0 * normalizedV);
+      }
+
+      b = 128 + int(128.0 * std::sin(blueAngle));
+
       return app::Color::fromRgb(
         std::clamp(r, 0, 255),
         std::clamp(g, 0, 255),
-        std::clamp(b, 128, 255));
+        std::clamp(b, 0/*128*/, 255));
     }
     else {
       return app::Color::fromRgb(128, 128, 255);
