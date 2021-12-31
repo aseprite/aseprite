@@ -112,9 +112,9 @@ app::Color ColorWheel::getMainAreaColor(const int _u, const int umax,
       double normalizedU = u / m_wheelRadius;
       double normalizedV = v / m_wheelRadius;
       
-      double blueAngle = std::acos(normalizedDistance);
-
+      double blueAngle;
       int r, g, b;
+
       if (m_discrete) {
         double angle = std::atan2(-v, u);
 
@@ -151,6 +151,8 @@ app::Color ColorWheel::getMainAreaColor(const int _u, const int umax,
       else {
         r = 128 + int(128.0 * normalizedU);
         g = 128 - int(128.0 * normalizedV);
+
+        blueAngle = std::acos(normalizedDistance);
       }
 
       b = 128 + int(128.0 * std::sin(blueAngle));
@@ -223,15 +225,27 @@ void ColorWheel::onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc)
 
   if (m_color.getAlpha() > 0) {
     if (m_colorModel == ColorModel::NORMAL_MAP) {
-      double angle = std::atan2(m_color.getGreen()-128,
-                                m_color.getRed()-128);
-      double dist = (255-m_color.getBlue()) / 128.0;
-      dist = base::clamp(dist, 0.0, 1.0);
+      double normalizedRed = (double(m_color.getRed()) / 255.0) * 2.0 - 1.0;
+      double normalizedGreen = (double(m_color.getGreen()) / 255.0) * 2.0 - 1.0;
+      double normalizedBlue = (double(m_color.getBlue()) / 255.0) * 2.0 - 1.0;
+      normalizedBlue = base::clamp(normalizedBlue, 0.0, 1.0);
 
-      gfx::Point pos =
-        m_wheelBounds.center() +
-        gfx::Point(int(+std::cos(angle)*double(m_wheelRadius)*dist),
-                   int(-std::sin(angle)*double(m_wheelRadius)*dist));
+      double x, y;
+
+      double approximationThreshold = (246.0 / 255.0) * 2.0 - 1.0;
+      if (normalizedBlue > approximationThreshold) { // If blue is too high, we use red and green only as approximation
+        x = normalizedRed * m_wheelRadius;
+        y = -normalizedGreen * m_wheelRadius;
+      }
+      else {
+        double normalizedDistance = std::cos(std::asin(normalizedBlue));
+        double angle = std::atan2(normalizedGreen, normalizedRed);
+
+        x = std::cos(angle) * m_wheelRadius * normalizedDistance;
+        y = -std::sin(angle) * m_wheelRadius * normalizedDistance;
+      }
+
+      gfx::Point pos = m_wheelBounds.center() + gfx::Point(int(x), int(y));
       paintColorIndicator(g, pos, true);
     }
     else {
