@@ -13,6 +13,7 @@
 
 #include "app/app.h"
 #include "app/extensions.h"
+#include "app/i18n/strings.h"
 #include "app/modules/palettes.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/util/conversion_to_surface.h"
@@ -206,29 +207,30 @@ void DitheringSelector::regenerate()
   switch (m_type) {
     case SelectBoth:
       addItem(new DitherItem(render::DitheringAlgorithm::None,
-                             render::DitheringMatrix(), "No Dithering"));
+                             render::DitheringMatrix(),
+                             Strings::dithering_selector_no_dithering()));
       for (const auto& it : ditheringMatrices) {
-        addItem(
-          new DitherItem(
-            render::DitheringAlgorithm::Ordered,
-            it.matrix(),
-            "Ordered Dithering+" + it.name()));
+        addItem(new DitherItem(
+          render::DitheringAlgorithm::Ordered,
+          it.matrix(),
+          Strings::dithering_selector_ordered_dithering() + it.name()));
       }
       for (const auto& it : ditheringMatrices) {
         addItem(
           new DitherItem(
             render::DitheringAlgorithm::Old,
             it.matrix(),
-            "Old Dithering+" + it.name()));
+            Strings::dithering_selector_old_dithering() + it.name()));
       }
       addItem(
         new DitherItem(
           render::DitheringAlgorithm::ErrorDiffusion,
           render::DitheringMatrix(),
-          "Floyd-Steinberg Error Diffusion Dithering"));
+          Strings::dithering_selector_floyd_steinberg()));
       break;
     case SelectMatrix:
-      addItem(new DitherItem(render::DitheringMatrix(), "No Dithering"));
+      addItem(new DitherItem(render::DitheringMatrix(),
+                             Strings::dithering_selector_no_dithering()));
       for (auto& it : ditheringMatrices)
         addItem(new DitherItem(it.matrix(), it.name()));
       break;
