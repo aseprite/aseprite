@@ -81,6 +81,8 @@ namespace app {
   };
 
   std::string key_tooltip(const char* str, const Key* key);
+  void clear_tool_actions();
+  void clear_wheel_actions();
 
   inline std::string key_tooltip(const char* str,
                                  const char* commandName,
