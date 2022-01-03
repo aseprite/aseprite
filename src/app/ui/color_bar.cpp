@@ -1456,7 +1456,7 @@ void ColorBar::onReverseColors()
   }
 
   Palette newPalette(*get_current_palette(), remap);
-  setPalette(&newPalette, "Reverse Colors");
+  setPalette(&newPalette, Strings::color_bar_reverse_colors());
 }
 
 void ColorBar::onSortBy(SortPaletteBy channel)
@@ -1500,7 +1500,7 @@ void ColorBar::onSortBy(SortPaletteBy channel)
   // Create a new palette and apply the remap. This is the final new
   // palette for the sprite.
   Palette newPalette(palette, remapOrig);
-  setPalette(&newPalette, "Sort Colors");
+  setPalette(&newPalette, Strings::color_bar_sort_colors());
 }
 
 void ColorBar::onGradient(GradientType gradientType)
@@ -1512,11 +1512,11 @@ void ColorBar::onGradient(GradientType gradientType)
   Palette newPalette(*get_current_palette());
   if (gradientType == GradientType::LINEAR) {
     newPalette.makeGradient(index1, index2);
-    setPalette(&newPalette, "Gradient");
+    setPalette(&newPalette, Strings::color_bar_gradient());
   }
   else {
     newPalette.makeHueGradient(index1, index2);
-    setPalette(&newPalette, "Gradient by Hue");
+    setPalette(&newPalette, Strings::color_bar_gradient_by_hue());
   }
 }
 
@@ -1919,19 +1919,19 @@ void ColorBar::showPaletteSortOptions()
 
   Menu menu;
   MenuItem
-    rev("Reverse Colors"),
-    grd("Gradient"),
-    grh("Gradient by Hue"),
-    hue("Sort by Hue"),
-    sat("Sort by Saturation"),
-    bri("Sort by Brightness"),
-    lum("Sort by Luminance"),
-    red("Sort by Red"),
-    grn("Sort by Green"),
-    blu("Sort by Blue"),
-    alp("Sort by Alpha"),
-    asc("Ascending"),
-    des("Descending");
+    rev(Strings::color_bar_reverse_colors()),
+    grd(Strings::color_bar_gradient()),
+    grh(Strings::color_bar_gradient_by_hue()),
+    hue(Strings::color_bar_sort_by_hue()),
+    sat(Strings::color_bar_sort_by_saturation()),
+    bri(Strings::color_bar_sort_by_brightness()),
+    lum(Strings::color_bar_sort_by_luminance()),
+    red(Strings::color_bar_sort_by_red()),
+    grn(Strings::color_bar_sort_by_green()),
+    blu(Strings::color_bar_sort_by_blue()),
+    alp(Strings::color_bar_sort_by_alpha()),
+    asc(Strings::color_bar_ascending()),
+    des(Strings::color_bar_descending());
   menu.addChild(&rev);
   menu.addChild(&grd);
   menu.addChild(&grh);
