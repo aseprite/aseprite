@@ -96,8 +96,8 @@ public:
   ZoomButtons()
     : ButtonSet(3) {
     addItem("100%");
-    addItem("Center");
-    addItem("Fit Screen");
+    addItem(Strings::context_bar_center());
+    addItem(Strings::context_bar_fit_screen());
   }
 
 private:
@@ -141,7 +141,7 @@ class ContextBar::BrushBackField : public ButtonSet {
 public:
   BrushBackField()
     : ButtonSet(1) {
-    addItem("Back");
+    addItem(Strings::context_bar_back());
   }
 
 protected:
@@ -293,9 +293,9 @@ public:
     // brush when we call ComboBox::addItem() (because the first
     // addItem() generates an onChange() event).
     m_lock = true;
-    addItem("Pattern aligned to source");
-    addItem("Pattern aligned to destination");
-    addItem("Paint brush");
+    addItem(Strings::context_bar_pattern_aligned_to_src());
+    addItem(Strings::context_bar_pattern_aligned_to_dest());
+    addItem(Strings::context_bar_paint_brush());
     m_lock = false;
 
     setSelectedItemIndex((int)Preferences::instance().brush.pattern());
@@ -355,7 +355,8 @@ protected:
 
 class ContextBar::ContiguousField : public CheckBox {
 public:
-  ContiguousField() : CheckBox("Contiguous") {
+  ContiguousField()
+    : CheckBox(Strings::context_bar_contiguous()) {
     initTheme();
   }
 
@@ -392,16 +393,16 @@ protected:
 
     Menu menu;
     MenuItem
-      stopAtGrid("Stop at Grid"),
-      activeLayer("Refer only active layer"),
-      allLayers("Refer visible layers");
+      stopAtGrid(Strings::context_bar_stop_at_grid()),
+      activeLayer(Strings::context_bar_refer_active_layer()),
+      allLayers(Strings::context_bar_refer_visible_layer());
     menu.addChild(&stopAtGrid);
     menu.addChild(new MenuSeparator());
     menu.addChild(&activeLayer);
     menu.addChild(&allLayers);
 
     menu.addChild(new MenuSeparator);
-    menu.addChild(new Label("Pixel Connectivity:"));
+    menu.addChild(new Label(Strings::context_bar_pixel_connectivity()));
 
     HBox box;
     ButtonSet buttonset(2);
@@ -524,7 +525,7 @@ public:
     addChild(&m_button);
     addChild(&m_shade);
 
-    m_shade.setText("Select colors in the palette");
+    m_shade.setText(Strings::context_bar_select_palette_color());
     m_shade.setMinColors(2);
     m_conn = colorBar->ChangeSelection.connect(
       [this]{ onChangeColorBarSelection(); });
@@ -581,8 +582,8 @@ private:
 
     Menu menu;
     MenuItem
-      reverse("Reverse Shade"),
-      save("Save Shade");
+      reverse(Strings::context_bar_reverse_shade()),
+      save(Strings::context_bar_save_shade());
     menu.addChild(&reverse);
     menu.addChild(&save);
 
@@ -785,8 +786,10 @@ public:
 
     onOpaqueChange();
 
-    tooltipManager->addTooltipFor(m_icon.at(0), "Transparent Color Options", BOTTOM);
-    tooltipManager->addTooltipFor(&m_maskColor, "Transparent Color", BOTTOM);
+    tooltipManager->addTooltipFor(
+      m_icon.at(0), Strings::context_bar_transparent_color_options(), BOTTOM);
+    tooltipManager->addTooltipFor(
+      &m_maskColor, Strings::context_bar_transparent_color(), BOTTOM);
   }
 
 private:
@@ -796,9 +799,9 @@ private:
 
     Menu menu;
     MenuItem
-      opaque("Opaque"),
-      masked("Transparent"),
-      automatic("Adjust automatically depending on layer type");
+      opaque(Strings::context_bar_opaque()),
+      masked(Strings::context_bar_transparent()),
+      automatic(Strings::context_bar_auto_adjust_layer());
     menu.addChild(&opaque);
     menu.addChild(&masked);
     menu.addChild(new MenuSeparator);
@@ -877,7 +880,7 @@ private:
     gfx::Rect bounds = this->bounds();
 
     Menu menu;
-    CheckBox visible("Display pivot by default");
+    CheckBox visible(Strings::context_bar_default_display_pivot());
     HBox box;
     ButtonSet buttonset(3);
     buttonset.addItem(theme->parts.pivotNorthwest());
@@ -943,8 +946,10 @@ public:
     // algorithm when we call ComboBox::addItem() (because the first
     // addItem() generates an onChange() event).
     m_lockChange = true;
-    addItem(new Item("Fast Rotation", tools::RotationAlgorithm::FAST));
-    addItem(new Item("RotSprite", tools::RotationAlgorithm::ROTSPRITE));
+    addItem(
+      new Item(Strings::context_bar_fast_rotation(), tools::RotationAlgorithm::FAST));
+    addItem(
+      new Item(Strings::context_bar_rotsprite(), tools::RotationAlgorithm::ROTSPRITE));
     m_lockChange = false;
 
     setSelectedItemIndex((int)Preferences::instance().selection.rotationAlgorithm());
@@ -1217,7 +1222,9 @@ private:
 
 class ContextBar::FreehandAlgorithmField : public CheckBox {
 public:
-  FreehandAlgorithmField() : CheckBox("Pixel-perfect") {
+  FreehandAlgorithmField()
+    : CheckBox(Strings::context_bar_pixel_perfect())
+  {
     initTheme();
   }
 
@@ -1275,8 +1282,10 @@ public:
   }
 
   void setupTooltips(TooltipManager* tooltipManager) {
-    tooltipManager->addTooltipFor(at(0), "Linear Gradient", BOTTOM);
-    tooltipManager->addTooltipFor(at(1), "Radial Gradient", BOTTOM);
+    tooltipManager->addTooltipFor(
+      at(0), Strings::context_bar_linear_gradient(), BOTTOM);
+    tooltipManager->addTooltipFor(
+      at(1), Strings::context_bar_radial_gradient(), BOTTOM);
   }
 
   render::GradientType gradientType() const {
@@ -1296,8 +1305,8 @@ public:
 
   void setupTooltips(TooltipManager* tooltipManager) {
     // TODO Enter and Esc should be configurable keys
-    tooltipManager->addTooltipFor(at(0), "Drop pixels here (Enter)", BOTTOM);
-    tooltipManager->addTooltipFor(at(1), "Cancel drag and drop (Esc)", BOTTOM);
+    tooltipManager->addTooltipFor(at(0), Strings::context_bar_drop_pixel(), BOTTOM);
+    tooltipManager->addTooltipFor(at(1), Strings::context_bar_cancel_drag(), BOTTOM);
   }
 
   obs::signal<void(ContextBarObserver::DropAction)> DropPixels;
@@ -1327,15 +1336,15 @@ public:
     m_channel.addItem("HSL");
     m_channel.addItem("Gray+Alpha");
     m_channel.addItem("Gray");
-    m_channel.addItem("Best fit Index");
+    m_channel.addItem(Strings::context_bar_best_fit_index());
 
-    m_sample.addItem("All Layers");
-    m_sample.addItem("Current Layer");
-    m_sample.addItem("First Reference Layer");
+    m_sample.addItem(Strings::context_bar_all_layers());
+    m_sample.addItem(Strings::context_bar_current_layer());
+    m_sample.addItem(Strings::context_bar_first_ref_layer());
 
-    addChild(new Label("Pick:"));
+    addChild(new Label(Strings::context_bar_pick()));
     addChild(&m_channel);
-    addChild(new Label("Sample:"));
+    addChild(new Label(Strings::context_bar_sample()));
     addChild(&m_sample);
 
     m_channel.Change.connect([this]{ onChannelChange(); });
@@ -1364,7 +1373,9 @@ private:
 
 class ContextBar::AutoSelectLayerField : public CheckBox {
 public:
-  AutoSelectLayerField() : CheckBox("Auto Select Layer") {
+  AutoSelectLayerField()
+    : CheckBox(Strings::context_bar_auto_select_layer())
+  {
     initTheme();
   }
 
@@ -1519,8 +1530,8 @@ public:
   {
     SkinTheme* theme = SkinTheme::instance();
 
-    m_sel.addItem("All");
-    m_sel.addItem("None");
+    m_sel.addItem(Strings::context_bar_all());
+    m_sel.addItem(Strings::context_bar_none());
     m_sel.ItemChange.connect(
       [this](ButtonSet::Item* item){
         onSelAction(m_sel.selectedItem());
@@ -1546,10 +1557,14 @@ public:
   }
 
   void setupTooltips(TooltipManager* tooltipManager) {
-    tooltipManager->addTooltipFor(m_sel.at(0), "Select All Slices", BOTTOM);
-    tooltipManager->addTooltipFor(m_sel.at(1), "Deselect Slices", BOTTOM);
-    tooltipManager->addTooltipFor(m_action.at(0), "Slice Properties", BOTTOM);
-    tooltipManager->addTooltipFor(m_action.at(1), "Delete Slice", BOTTOM);
+    tooltipManager->addTooltipFor(
+      m_sel.at(0), Strings::context_bar_select_slices(), BOTTOM);
+    tooltipManager->addTooltipFor(
+      m_sel.at(1), Strings::context_bar_deselect_slices(), BOTTOM);
+    tooltipManager->addTooltipFor(
+      m_action.at(0), Strings::context_bar_slice_props(), BOTTOM);
+    tooltipManager->addTooltipFor(
+      m_action.at(1), Strings::context_bar_delete_slice(), BOTTOM);
   }
 
   void setDoc(Doc* doc) {
@@ -2425,26 +2440,38 @@ const tools::DynamicsOptions& ContextBar::getDynamics() const
 
 void ContextBar::setupTooltips(TooltipManager* tooltipManager)
 {
-  tooltipManager->addTooltipFor(m_brushBack->at(0), "Discard Brush (Esc)", BOTTOM);
-  tooltipManager->addTooltipFor(m_brushType->at(0), "Brush Type", BOTTOM);
-  tooltipManager->addTooltipFor(m_brushSize, "Brush Size (in pixels)", BOTTOM);
-  tooltipManager->addTooltipFor(m_brushAngle, "Brush Angle (in degrees)", BOTTOM);
-  tooltipManager->addTooltipFor(m_inkType->at(0), "Ink", BOTTOM);
-  tooltipManager->addTooltipFor(m_inkOpacity, "Opacity (paint intensity)", BOTTOM);
-  tooltipManager->addTooltipFor(m_inkShades->at(0), "Shades", BOTTOM);
-  tooltipManager->addTooltipFor(m_sprayWidth, "Spray Width", BOTTOM);
-  tooltipManager->addTooltipFor(m_spraySpeed, "Spray Speed", BOTTOM);
-  tooltipManager->addTooltipFor(m_pivot->at(0), "Rotation Pivot", BOTTOM);
-  tooltipManager->addTooltipFor(m_rotAlgo, "Rotation Algorithm", BOTTOM);
-  tooltipManager->addTooltipFor(m_dynamics->at(0), "Dynamics", BOTTOM);
+  tooltipManager->addTooltipFor(
+    m_brushBack->at(0), Strings::context_bar_discard_brush(), BOTTOM);
+  tooltipManager->addTooltipFor(
+    m_brushType->at(0), Strings::context_bar_brush_type(), BOTTOM);
+  tooltipManager->addTooltipFor(
+    m_brushSize, Strings::context_bar_brush_size(), BOTTOM);
+  tooltipManager->addTooltipFor(
+    m_brushAngle, Strings::context_bar_brush_angle(), BOTTOM);
+  tooltipManager->addTooltipFor(
+    m_inkType->at(0), Strings::context_bar_ink(), BOTTOM);
+  tooltipManager->addTooltipFor(
+    m_inkOpacity, Strings::context_bar_opacity(), BOTTOM);
+  tooltipManager->addTooltipFor(
+    m_inkShades->at(0), Strings::context_bar_shades(), BOTTOM);
+  tooltipManager->addTooltipFor(
+    m_sprayWidth, Strings::context_bar_spray_width(), BOTTOM);
+  tooltipManager->addTooltipFor(
+    m_spraySpeed, Strings::context_bar_spray_speed(), BOTTOM);
+  tooltipManager->addTooltipFor(
+    m_pivot->at(0), Strings::context_bar_rotation_pivot(), BOTTOM);
+  tooltipManager->addTooltipFor(
+    m_rotAlgo, Strings::context_bar_rotation_algorithm(), BOTTOM);
+  tooltipManager->addTooltipFor(
+    m_dynamics->at(0), Strings::context_bar_dynamics(), BOTTOM);
   tooltipManager->addTooltipFor(m_freehandAlgo,
                                 key_tooltip("Freehand trace algorithm",
                                             CommandId::PixelPerfectMode()), BOTTOM);
   tooltipManager->addTooltipFor(m_contiguous,
                                 key_tooltip("Fill contiguous areas color",
                                             CommandId::ContiguousFill()), BOTTOM);
-  tooltipManager->addTooltipFor(m_paintBucketSettings->at(0),
-                                "Extra paint bucket options", BOTTOM);
+  tooltipManager->addTooltipFor(
+    m_paintBucketSettings->at(0), Strings::context_bar_paint_bucket_option(), BOTTOM);
 
   m_selectionMode->setupTooltips(tooltipManager);
   m_gradientType->setupTooltips(tooltipManager);
