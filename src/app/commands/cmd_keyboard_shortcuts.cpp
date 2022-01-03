@@ -80,9 +80,9 @@ public:
 class HeaderItem : public ListItem {
 public:
   HeaderItem()
-    : m_actionLabel("Action")
-    , m_keyLabel("Key")
-    , m_contextLabel("Context") {
+    : m_actionLabel(Strings::keyboard_shortcuts_header_action())
+    , m_keyLabel(Strings::keyboard_shortcuts_header_key())
+    , m_contextLabel(Strings::keyboard_shortcuts_header_context()) {
     setBorder(gfx::Border(0));
 
     auto theme = SkinTheme::get(this);
@@ -840,7 +840,7 @@ private:
     base::paths exts = { KEYBOARD_FILENAME_EXTENSION };
     base::paths filename;
     if (!app::show_file_selector(
-          "Import Keyboard Shortcuts", "", exts,
+          Strings::keyboard_shortcuts_import_keyboard_sc(), "", exts,
           FileSelectorType::Open, filename))
       return;
 
@@ -856,7 +856,7 @@ private:
     base::paths filename;
 
     if (!app::show_file_selector(
-          "Export Keyboard Shortcuts", "", exts,
+          Strings::keyboard_shortcuts_export_keyboard_sc(), "", exts,
           FileSelectorType::Save, filename))
       return;
 
