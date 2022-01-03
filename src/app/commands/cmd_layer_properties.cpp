@@ -21,6 +21,7 @@
 #include "app/context_access.h"
 #include "app/doc.h"
 #include "app/doc_event.h"
+#include "app/i18n/strings.h"
 #include "app/modules/gui.h"
 #include "app/tx.h"
 #include "app/ui/main_window.h"
@@ -79,30 +80,49 @@ public:
     name()->setMinSize(gfx::Size(128, 0));
     name()->setExpansive(true);
 
-    mode()->addItem(new BlendModeItem("Normal", doc::BlendMode::NORMAL));
+    mode()->addItem(new BlendModeItem(Strings::layer_properties_normal(),
+                                      doc::BlendMode::NORMAL));
     mode()->addItem(new SeparatorInView);
-    mode()->addItem(new BlendModeItem("Darken", doc::BlendMode::DARKEN));
-    mode()->addItem(new BlendModeItem("Multiply", doc::BlendMode::MULTIPLY));
-    mode()->addItem(new BlendModeItem("Color Burn", doc::BlendMode::COLOR_BURN));
+    mode()->addItem(new BlendModeItem(Strings::layer_properties_darken(),
+                                      doc::BlendMode::DARKEN));
+    mode()->addItem(new BlendModeItem(Strings::layer_properties_multiply(),
+                                      doc::BlendMode::MULTIPLY));
+    mode()->addItem(new BlendModeItem(Strings::layer_properties_color_burn(),
+                                      doc::BlendMode::COLOR_BURN));
     mode()->addItem(new SeparatorInView);
-    mode()->addItem(new BlendModeItem("Lighten", doc::BlendMode::LIGHTEN));
-    mode()->addItem(new BlendModeItem("Screen", doc::BlendMode::SCREEN));
-    mode()->addItem(new BlendModeItem("Color Dodge", doc::BlendMode::COLOR_DODGE));
-    mode()->addItem(new BlendModeItem("Addition", doc::BlendMode::ADDITION));
+    mode()->addItem(new BlendModeItem(Strings::layer_properties_lighten(),
+                                      doc::BlendMode::LIGHTEN));
+    mode()->addItem(new BlendModeItem(Strings::layer_properties_screen(),
+                                      doc::BlendMode::SCREEN));
+    mode()->addItem(new BlendModeItem(Strings::layer_properties_color_dodge(),
+                                      doc::BlendMode::COLOR_DODGE));
+    mode()->addItem(new BlendModeItem(Strings::layer_properties_addition(),
+                                      doc::BlendMode::ADDITION));
     mode()->addItem(new SeparatorInView);
-    mode()->addItem(new BlendModeItem("Overlay", doc::BlendMode::OVERLAY));
-    mode()->addItem(new BlendModeItem("Soft Light", doc::BlendMode::SOFT_LIGHT));
-    mode()->addItem(new BlendModeItem("Hard Light", doc::BlendMode::HARD_LIGHT));
+    mode()->addItem(new BlendModeItem(Strings::layer_properties_overlay(),
+                                      doc::BlendMode::OVERLAY));
+    mode()->addItem(new BlendModeItem(Strings::layer_properties_soft_light(),
+                                      doc::BlendMode::SOFT_LIGHT));
+    mode()->addItem(new BlendModeItem(Strings::layer_properties_hard_light(),
+                                      doc::BlendMode::HARD_LIGHT));
     mode()->addItem(new SeparatorInView);
-    mode()->addItem(new BlendModeItem("Difference", doc::BlendMode::DIFFERENCE));
-    mode()->addItem(new BlendModeItem("Exclusion", doc::BlendMode::EXCLUSION));
-    mode()->addItem(new BlendModeItem("Subtract", doc::BlendMode::SUBTRACT));
-    mode()->addItem(new BlendModeItem("Divide", doc::BlendMode::DIVIDE));
+    mode()->addItem(new BlendModeItem(Strings::layer_properties_difference(),
+                                      doc::BlendMode::DIFFERENCE));
+    mode()->addItem(new BlendModeItem(Strings::layer_properties_exclusion(),
+                                      doc::BlendMode::EXCLUSION));
+    mode()->addItem(new BlendModeItem(Strings::layer_properties_subtract(),
+                                      doc::BlendMode::SUBTRACT));
+    mode()->addItem(new BlendModeItem(Strings::layer_properties_divide(),
+                                      doc::BlendMode::DIVIDE));
     mode()->addItem(new SeparatorInView);
-    mode()->addItem(new BlendModeItem("Hue", doc::BlendMode::HSL_HUE));
-    mode()->addItem(new BlendModeItem("Saturation", doc::BlendMode::HSL_SATURATION));
-    mode()->addItem(new BlendModeItem("Color", doc::BlendMode::HSL_COLOR));
-    mode()->addItem(new BlendModeItem("Luminosity", doc::BlendMode::HSL_LUMINOSITY));
+    mode()->addItem(new BlendModeItem(Strings::layer_properties_hue(),
+                                      doc::BlendMode::HSL_HUE));
+    mode()->addItem(new BlendModeItem(Strings::layer_properties_saturation(),
+                                      doc::BlendMode::HSL_SATURATION));
+    mode()->addItem(new BlendModeItem(Strings::layer_properties_color(),
+                                      doc::BlendMode::HSL_COLOR));
+    mode()->addItem(new BlendModeItem(Strings::layer_properties_luminosity(),
+                                      doc::BlendMode::HSL_LUMINOSITY));
 
     name()->Change.connect([this]{ onStartTimer(); });
     mode()->Change.connect([this]{ onStartTimer(); });
@@ -407,7 +427,7 @@ private:
       m_userDataView.entry()->setText(m_layer->userData().text());
     }
     else {
-      name()->setText("No Layer");
+      name()->setText(Strings::layer_properties_no_layer());
       name()->setEnabled(false);
       mode()->setEnabled(false);
       opacity()->setEnabled(false);
