@@ -15,6 +15,7 @@
 #include "app/brush_slot.h"
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
+#include "app/i18n/strings.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/pref/preferences.h"
@@ -160,10 +161,10 @@ private:
 
   void onClick() override {
     Menu menu;
-    AppMenuItem save("Save Brush Here");
-    AppMenuItem lockItem("Locked");
-    AppMenuItem deleteItem("Delete");
-    AppMenuItem deleteAllItem("Delete All");
+    AppMenuItem save(Strings::brush_slot_params_save_brush());
+    AppMenuItem lockItem(Strings::brush_slot_params_locked());
+    AppMenuItem deleteItem(Strings::brush_slot_params_delete());
+    AppMenuItem deleteAllItem(Strings::brush_slot_params_delete_all());
 
     lockItem.setSelected(m_brushes.isBrushSlotLocked(m_slot));
 
@@ -179,7 +180,8 @@ private:
     menu.addChild(new MenuSeparator);
     menu.addChild(&deleteAllItem);
     menu.addChild(new Label(""));
-    menu.addChild(new Separator("Saved Parameters", HORIZONTAL));
+    menu.addChild(
+      new Separator(Strings::brush_slot_params_saved_parameters(), HORIZONTAL));
 
     app::gen::BrushSlotParams params;
     menu.addChild(&params);
@@ -263,7 +265,7 @@ private:
 class NewCustomBrushItem : public ButtonSet::Item {
 public:
   NewCustomBrushItem() {
-    setText("Save Brush");
+    setText(Strings::brush_slot_params_save_brush());
   }
 
 private:
