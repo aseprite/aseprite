@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2020-2021  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -19,6 +19,7 @@
 
 namespace ui {
 
+  class MenuBoxWindow;
   class MenuItem;
   class Timer;
   struct MenuBaseData;
@@ -160,6 +161,7 @@ namespace ui {
 
     friend class Menu;
     friend class MenuBox;
+    friend class MenuBoxWindow;
   };
 
   class MenuSeparator : public Separator {
@@ -170,9 +172,16 @@ namespace ui {
 
   class MenuBoxWindow : public Window {
   public:
-    MenuBoxWindow(MenuBox* menubox);
+    MenuBoxWindow(MenuItem* menuitem,
+                  MenuBox* menubox,
+                  const bool deferDelete);
+    ~MenuBoxWindow();
+    MenuBox* menubox() { return static_cast<MenuBox*>(firstChild()); }
   protected:
     bool onProcessMessage(Message* msg) override;
+  private:
+    MenuItem* m_menuitem;
+    const bool m_deferDelete;
   };
 
   extern RegisterMessage kOpenMenuItemMessage;

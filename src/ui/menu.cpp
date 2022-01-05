@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -135,7 +135,7 @@ static void choose_side(gfx::Rect& bounds,
   bounds.y = y;
 }
 
-static void add_scrollbars_if_needed(Window* window,
+static void add_scrollbars_if_needed(MenuBoxWindow* window,
                                      const gfx::Rect& workarea,
                                      gfx::Rect& bounds)
 {
@@ -163,7 +163,7 @@ static void add_scrollbars_if_needed(Window* window,
   if (rc == bounds)
     return;
 
-  Widget* menubox = window->firstChild();
+  MenuBox* menubox = window->menubox();
   View* view = new View;
   view->InitTheme.connect([view]{ view->noBorderNoChildSpacing(); });
   view->initTheme();
@@ -352,21 +352,18 @@ void Menu::showPopup(const gfx::Point& pos,
   }
 
   // New window and new menu-box
-  std::unique_ptr<Window> window(new Window(Window::WithoutTitleBar));
+  MenuBox* menubox = new MenuBox();
+  std::unique_ptr<MenuBoxWindow> window(
+    new MenuBoxWindow(nullptr, menubox,
+                      false));  // Deleted by unique_ptr
   window->Open.connect([this]{ this->onOpenPopup(); });
 
-  MenuBox* menubox = new MenuBox();
   MenuBaseData* base = menubox->createBase();
   base->was_clicked = true;
-  window->setMoveable(false);   // Can't move the window
-  window->setSizeable(false);   // Can't resize the window
 
   // Set children
   menubox->setMenu(this);
   menubox->startFilteringMouseDown();
-  window->addChild(menubox);
-
-  window->remapWindow();
 
   fit_bounds(parentDisplay,
              window.get(),
@@ -393,8 +390,6 @@ void Menu::showPopup(const gfx::Point& pos,
   if (focus && focus->window() == window.get())
     focus->releaseFocus();
 
-  // Fetch the "menu" so it isn't destroyed
-  menubox->setMenu(nullptr);
   menubox->stopFilteringMouseDown();
 }
 
@@ -900,7 +895,9 @@ bool MenuItem::onProcessMessage(Message* msg)
         menubox->setMenu(m_submenu);
 
         // New window and new menu-box
-        auto window = new MenuBoxWindow(menubox);
+        auto window = new MenuBoxWindow(
+          this, menubox,
+          true); // Call defer delete when it's closed
 
         fit_bounds(
           display(), window, window->bounds(),
@@ -974,9 +971,6 @@ bool MenuItem::onProcessMessage(Message* msg)
 
         Window* window = menubox->window();
         ASSERT(window && window->type() == kWindowWidget);
-
-        // Fetch the "menu" to avoid destroy it with 'delete'.
-        menubox->setMenu(nullptr);
 
         // Destroy the window
         window->closeWindow(nullptr);
@@ -1497,8 +1491,12 @@ static MenuItem* find_previtem(Menu* menu, MenuItem* menuitem)
 //////////////////////////////////////////////////////////////////////
 // MenuBoxWindow
 
-MenuBoxWindow::MenuBoxWindow(MenuBox* menubox)
+MenuBoxWindow::MenuBoxWindow(MenuItem* menuitem,
+                             MenuBox* menubox,
+                             const bool deferDelete)
   : Window(WithoutTitleBar, "")
+  , m_menuitem(menuitem)
+  , m_deferDelete(deferDelete)
 {
   setMoveable(false); // Can't move the window
   setSizeable(false); // Can't resize the window
@@ -1506,13 +1504,41 @@ MenuBoxWindow::MenuBoxWindow(MenuBox* menubox)
   remapWindow();
 }
 
+MenuBoxWindow::~MenuBoxWindow()
+{
+  if (auto menubox = this->menubox()) {
+    // The menu of the menubox should already be nullptr because it
+    // was reset in kCloseMessage.
+    ASSERT(menubox->getMenu() == nullptr);
+    menubox->setMenu(nullptr);
+  }
+}
+
 bool MenuBoxWindow::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
 
     case kCloseMessage:
+      if (m_menuitem) {
+        MenuBaseData* base = get_base(m_menuitem);
+
+        // If this window was closed using the OS close button
+        // (e.g. on Linux we can Super key+right click to show the
+        // popup menu and close the window)
+        if (base && !base->is_processing) {
+          if (m_menuitem->hasSubmenuOpened())
+            m_menuitem->closeSubmenu(true);
+        }
+      }
+
+      // Fetch the "menu" to avoid destroy it with 'delete'.
+      auto menubox = this->menubox();
+      if (menubox)
+        menubox->setMenu(nullptr);
+
       // Delete this window automatically
-      deferDelete();
+      if (m_deferDelete)
+        deferDelete();
       break;
 
   }
