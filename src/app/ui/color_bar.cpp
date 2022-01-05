@@ -985,6 +985,9 @@ bool ColorBar::onIsPaletteViewActive(PaletteView* paletteView) const
   else if (paletteView == &m_tilesView) {
     return (m_tilemapMode == TilemapMode::Tiles);
   }
+  else {
+    return false;
+  }
 }
 
 void ColorBar::onPaletteViewIndexChange(int index, ui::MouseButton button)
