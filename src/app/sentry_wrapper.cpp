@@ -97,13 +97,26 @@ bool Sentry::areThereCrashesToReport()
 
 void Sentry::setupDirs(sentry_options_t* options)
 {
+  // The expected handler executable name is aseprite_crashpad_handler (.exe)
+  const std::string handler =
+    base::join_path(base::get_file_path(base::get_app_path()),
+                    "aseprite_crashpad_handler"
+#if LAF_WINDOWS
+                    ".exe"
+#endif
+                    );
+
+  // The crash database will be located in the user directory as the
+  // "crashdb" directory (along with "sessions", "extensions", etc.)
   ResourceFinder rf;
   rf.includeUserDir("crashdb");
   const std::string dir = rf.getFirstOrCreateDefault();
 
-#if SENTRY_PLATFORM_WINDOWS
+#if LAF_WINDOWS
+  sentry_options_set_handler_pathw(options, base::from_utf8(handler).c_str());
   sentry_options_set_database_pathw(options, base::from_utf8(dir).c_str());
 #else
+  sentry_options_set_handler_path(options, handler.c_str());
   sentry_options_set_database_path(options, dir.c_str());
 #endif
 

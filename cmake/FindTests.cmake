@@ -1,12 +1,10 @@
+# Copyright (C) 2021  Igara Studio S.A.
 # Copyright (C) 2001-2016  David Capello
 # Find tests and add rules to compile them and run them
 
 function(find_tests dir dependencies)
   file(GLOB tests ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/*_tests.cpp)
   list(REMOVE_AT ARGV 0)
-
-  # Add gtest include directory so we can #include <gtest/gtest.h> in tests source code
-  include_directories(${CMAKE_SOURCE_DIR}/third_party/gtest/include)
 
   # See if the test is linked with "laf-os" library.
   list(FIND dependencies laf-os link_with_os)
@@ -27,6 +25,13 @@ function(find_tests dir dependencies)
     endif()
 
     target_link_libraries(${testname} gtest ${ARGV} ${PLATFORM_LIBS})
+
+    target_include_directories(${testname} PUBLIC
+      # So we can include "tests/app_test.h"
+      ${CMAKE_SOURCE_DIR}/src
+      # Add gtest include directory so we can #include <gtest/gtest.h>
+      # in tests source code
+      ${CMAKE_SOURCE_DIR}/third_party/gtest/include)
 
     if(extra_definitions)
       set_target_properties(${testname}
