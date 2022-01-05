@@ -46,12 +46,16 @@ AsepriteUpdate::AsepriteUpdate(std::string version) : m_timer(500, this), m_down
 
 void AsepriteUpdate::onBeforeClose(ui::CloseEvent& ev)
 {
-  if (m_download.status() != drm::DownloadThread::Status::FINISHED) {
+  if (m_download.status() != drm::Thread::Status::FINISHED ||
+      m_installation && m_installation->status() != drm::Thread::Status::FINISHED) {
       log("Stopping, please wait...");
       ev.cancel();
   }
   if (!m_closing) {
     m_download.shutdown();
+    if (m_installation) {
+      m_installation->shutdown();
+    }
   }
   m_closing = true;
 
@@ -75,13 +79,74 @@ void AsepriteUpdate::onDownloadFinished(drm::Package& package)
 {
   ui::execute_from_ui_thread([this, package] {
     log("Download finished!");
-    drm::LicenseManager::instance()->installPackage(package);
+    m_installation.reset(new drm::InstallationThread(package));
+    m_installation->InstallationFailed.connect([this](drm::LicenseManager::InstallationException& e) {
+      onInstallationFailed(e);
+    });
+    m_installation->InstallationPhaseChanged.connect([this](drm::InstallationPhase oldPhase, drm::InstallationPhase phase) {
+      onInstallationPhaseChanged(oldPhase, phase);
+    });
+    m_installation->start();
+  });
+}
+
+void AsepriteUpdate::onInstallationPhaseChanged(drm::InstallationPhase oldPhase, drm::InstallationPhase phase)
+{
+  ui::execute_from_ui_thread([this, oldPhase, phase] {
+    std::string msg;
+
+    switch (oldPhase) {
+    case drm::InstallationPhase::UNSPECIFIED:
+      msg = "Installation process started...";
+      break;
+    case drm::InstallationPhase::SAVING_PACKAGE:
+      msg = "Package saved!";
+      break;
+    case drm::InstallationPhase::CREATING_BACKUP:
+      msg = "Backup created!";
+      break;
+    case drm::InstallationPhase::UNPACKING_PACKAGE:
+      msg = "Package unpacked!";
+      break;
+    case drm::InstallationPhase::INSTALLING_FILES:
+      msg = "Files installed!";
+      break;
+    }
+    if (!msg.empty()) log(msg);
+
+    msg = "";
+    switch (phase) {
+    case drm::InstallationPhase::SAVING_PACKAGE:
+      msg = "Saving package...";
+      break;
+    case drm::InstallationPhase::CREATING_BACKUP:
+      msg = "Creating backup...";
+      break;
+    case drm::InstallationPhase::UNPACKING_PACKAGE:
+      msg = "Unpacking package...";
+      break;
+    case drm::InstallationPhase::INSTALLING_FILES:
+      msg = "Installing files...";
+      break;
+    case drm::InstallationPhase::DONE:
+      msg = "Installation process finished!";
+      break;
+    }
+    if (!msg.empty()) log(msg);
+  });
+}
+
+// TODO: Create a unique onFailure() method to handle any exception.
+void AsepriteUpdate::onInstallationFailed(drm::LicenseManager::InstallationException& e)
+{
+  ui::execute_from_ui_thread([this, e] {
+    log(e.what());
   });
 }
 
 void AsepriteUpdate::onTimerTick()
 {
-  if (m_closing && m_download.status() == drm::DownloadThread::Status::FINISHED) {
+  if (m_closing && m_download.status() == drm::Thread::Status::FINISHED) {
     this->closeWindow(this);
   }
 }
