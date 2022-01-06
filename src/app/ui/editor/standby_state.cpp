@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -319,7 +319,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
     // Shift+click on Pencil tool starts a line onMouseDown() when the
     // preview (onKeyDown) is disabled.
     if (!Preferences::instance().editor.straightLinePreview() &&
-        checkStartDrawingStraightLine(editor, &pointer)) {
+        checkStartDrawingStraightLine(editor, msg, &pointer)) {
       // Send first mouse down to draw the straight line and start the
       // freehand mode.
       editor->getState()->onMouseDown(editor, msg);
@@ -334,7 +334,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
     if (layerEdges)
       layerEdgesOption(false);
 
-    startDrawingState(editor,
+    startDrawingState(editor, msg,
                       DrawingType::Regular,
                       pointer);
 
@@ -383,7 +383,7 @@ bool StandbyState::onDoubleClick(Editor* editor, MouseMessage* msg)
       editor->backToPreviousState();
 
     // Start a tool-loop selecting tiles.
-    startDrawingState(editor,
+    startDrawingState(editor, msg,
                       DrawingType::SelectTiles,
                       pointer_from_msg(editor, msg));
     return true;
@@ -511,7 +511,7 @@ bool StandbyState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
 bool StandbyState::onKeyDown(Editor* editor, KeyMessage* msg)
 {
   if (Preferences::instance().editor.straightLinePreview() &&
-      checkStartDrawingStraightLine(editor, nullptr))
+      checkStartDrawingStraightLine(editor, nullptr, nullptr))
     return false;
   return false;
 }
@@ -627,6 +627,7 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
 
 DrawingState* StandbyState::startDrawingState(
   Editor* editor,
+  const ui::MouseMessage* msg,
   const DrawingType drawingType,
   const tools::Pointer& pointer)
 {
@@ -652,13 +653,13 @@ DrawingState* StandbyState::startDrawingState(
   editor->setState(newState);
 
   static_cast<DrawingState*>(newState.get())
-    ->initToolLoop(editor,
-                   pointer);
+    ->initToolLoop(editor, msg, pointer);
 
   return static_cast<DrawingState*>(newState.get());
 }
 
 bool StandbyState::checkStartDrawingStraightLine(Editor* editor,
+                                                 const ui::MouseMessage* msg,
                                                  const tools::Pointer* pointer)
 {
   // Start line preview with shift key
@@ -668,7 +669,7 @@ bool StandbyState::checkStartDrawingStraightLine(Editor* editor,
       (pointer ? pointer->button(): tools::Pointer::Left);
 
     DrawingState* drawingState =
-      startDrawingState(editor,
+      startDrawingState(editor, msg,
                         DrawingType::LineFreehand,
                         tools::Pointer(
                           editor->document()->lastDrawingPoint(),

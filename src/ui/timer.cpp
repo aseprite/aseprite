@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -57,6 +57,10 @@ void Timer::start()
 {
   assert_ui_thread();
 
+  // Infinite timer? Do nothing.
+  if (m_interval == 0)
+    return;
+
   m_lastTick = base::current_tick();
   if (!m_running) {
     m_running = true;
@@ -109,6 +113,8 @@ void Timer::pollTimers()
 
     for (auto timer : timers) {
       if (timer && timer->isRunning()) {
+        ASSERT(timer->interval() > 0);
+
         int64_t count = ((t - timer->m_lastTick) / timer->m_interval);
         if (count > 0) {
           timer->m_lastTick += count * timer->m_interval;
