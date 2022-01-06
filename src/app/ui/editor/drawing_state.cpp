@@ -239,7 +239,7 @@ bool DrawingState::onMouseMove(Editor* editor, MouseMessage* msg)
   // Update velocity sensor.
   m_velocity.updateWithScreenPoint(msg->position());
 
-  m_lastPointer = tools::Pointer(m_delayedMouseMove.spritePos(),
+  m_lastPointer = tools::Pointer(gfx::Point(m_delayedMouseMove.spritePos()),
                                  m_velocity.velocity(),
                                  button_from_msg(msg),
                                  msg->pointerType(),
@@ -253,7 +253,7 @@ bool DrawingState::onMouseMove(Editor* editor, MouseMessage* msg)
 }
 
 void DrawingState::onCommitMouseMove(Editor* editor,
-                                     const gfx::Point& spritePos)
+                                     const gfx::PointF& spritePos)
 {
   if (m_toolLoop &&
       !m_toolLoop->isCanceled()) {

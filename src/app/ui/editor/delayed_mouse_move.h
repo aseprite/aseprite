@@ -24,7 +24,7 @@ namespace app {
   public:
     virtual ~DelayedMouseMoveDelegate() { }
     virtual void onCommitMouseMove(Editor* editor,
-                                   const gfx::Point& spritePos) = 0;
+                                   const gfx::PointF& spritePos) = 0;
   };
 
   // Helper class to group several onMouseMove() calls into one
@@ -45,7 +45,7 @@ namespace app {
     bool onMouseMove(const ui::MouseMessage* msg);
     void onMouseUp(const ui::MouseMessage* msg);
 
-    const gfx::Point& spritePos() const;
+    const gfx::PointF& spritePos() const;
 
   private:
     void commitMouseMove();
@@ -58,7 +58,7 @@ namespace app {
     // Position of the mouse in the canvas to avoid redrawing when the
     // mouse position changes (only we redraw when the canvas position
     // changes).
-    gfx::Point m_spritePos;
+    gfx::PointF m_spritePos;
   };
 
 } // namespace app

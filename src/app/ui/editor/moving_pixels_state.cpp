@@ -389,7 +389,7 @@ bool MovingPixelsState::onMouseMove(Editor* editor, MouseMessage* msg)
 }
 
 void MovingPixelsState::onCommitMouseMove(Editor* editor,
-                                          const gfx::Point& spritePos)
+                                          const gfx::PointF& spritePos)
 {
   m_pixelsMovement->setFastMode(true);
 
@@ -446,7 +446,7 @@ void MovingPixelsState::onCommitMouseMove(Editor* editor,
   transfHandles->invalidateHandles(m_editor, m_pixelsMovement->getTransformation());
 
   // Drag the image to that position
-  m_pixelsMovement->moveImage(spritePos, moveModifier);
+  m_pixelsMovement->moveImage(gfx::Point(spritePos), moveModifier);
 
   m_editor->updateStatusBar();
 }

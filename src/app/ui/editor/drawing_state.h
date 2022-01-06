@@ -65,7 +65,7 @@ namespace app {
 
     // DelayedMouseMoveDelegate impl
     void onCommitMouseMove(Editor* editor,
-                           const gfx::Point& spritePos) override;
+                           const gfx::PointF& spritePos) override;
 
     Editor* m_editor;
     DrawingType m_type;

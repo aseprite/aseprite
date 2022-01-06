@@ -81,7 +81,7 @@ namespace app {
   private:
     // DelayedMouseMoveDelegate impl
     void onCommitMouseMove(Editor* editor,
-                           const gfx::Point& spritePos) override;
+                           const gfx::PointF& spritePos) override;
 
     void onTransparentColorChange();
     void onRenderTimer();

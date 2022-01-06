@@ -20,8 +20,8 @@ DelayedMouseMove::DelayedMouseMove(DelayedMouseMoveDelegate* delegate,
   : m_delegate(delegate)
   , m_editor(editor)
   , m_timer(interval)
-  , m_spritePos(std::numeric_limits<int>::min(),
-                std::numeric_limits<int>::min())
+  , m_spritePos(std::numeric_limits<double>::min(),
+                std::numeric_limits<double>::min())
 {
   ASSERT(m_delegate);
   m_timer.Tick.connect([this] { commitMouseMove(); });
@@ -63,10 +63,10 @@ void DelayedMouseMove::commitMouseMove()
   m_delegate->onCommitMouseMove(m_editor, spritePos());
 }
 
-const gfx::Point& DelayedMouseMove::spritePos() const
+const gfx::PointF& DelayedMouseMove::spritePos() const
 {
-  ASSERT(m_spritePos.x != std::numeric_limits<int>::min() &&
-         m_spritePos.y != std::numeric_limits<int>::min());
+  ASSERT(m_spritePos.x != std::numeric_limits<double>::min() &&
+         m_spritePos.y != std::numeric_limits<double>::min());
   return m_spritePos;
 }
 
@@ -75,13 +75,10 @@ bool DelayedMouseMove::updateSpritePos(const ui::MouseMessage* msg)
   // The autoScroll() function controls the "infinite scroll" when we
   // touch the viewport borders.
   const gfx::Point mousePos = m_editor->autoScroll(msg, AutoScroll::MouseDir);
-  const gfx::Point spritePos = m_editor->screenToEditor(mousePos);
+  const gfx::PointF spritePos = m_editor->screenToEditorF(mousePos);
 
   // Avoid redrawing everything if the position in the canvas didn't
   // change.
-  //
-  // TODO Remove this if we add support for anti-aliasing in the
-  //      transformations.
   if (m_spritePos != spritePos) {
     m_spritePos = spritePos;
     return true;
