@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2021  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -80,10 +80,11 @@ MovingCelCollect::MovingCelCollect(Editor* editor, Layer* layer)
 }
 
 MovingCelState::MovingCelState(Editor* editor,
-                               MouseMessage* msg,
+                               const MouseMessage* msg,
                                const HandleType handle,
                                const MovingCelCollect& collect)
   : m_reader(UIContext::instance(), 500)
+  , m_delayedMouseMove(this, editor, 5)
   , m_cel(nullptr)
   , m_celList(collect.celList())
   , m_celOffset(0.0, 0.0)
@@ -128,6 +129,8 @@ MovingCelState::MovingCelState(Editor* editor,
     document->setMaskVisible(false);
     document->generateMaskBoundaries();
   }
+
+  m_delayedMouseMove.onMouseDown(msg);
 }
 
 void MovingCelState::onBeforePopState(Editor* editor)
@@ -138,6 +141,8 @@ void MovingCelState::onBeforePopState(Editor* editor)
 
 bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
 {
+  m_delayedMouseMove.onMouseUp(msg);
+
   Doc* document = editor->document();
   bool modified = restoreCelStartPosition();
 
@@ -209,9 +214,15 @@ bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
 
 bool MovingCelState::onMouseMove(Editor* editor, MouseMessage* msg)
 {
-  const gfx::Point mousePos = editor->autoScroll(msg, AutoScroll::MouseDir);
-  const gfx::PointF newCursorPos = editor->screenToEditorF(mousePos);
+  m_delayedMouseMove.onMouseMove(msg);
 
+  // Use StandbyState implementation
+  return StandbyState::onMouseMove(editor, msg);
+}
+
+void MovingCelState::onCommitMouseMove(Editor* editor,
+                                       const gfx::PointF& newCursorPos)
+{
   switch (m_handle) {
 
     case MovePixelsHandle:
@@ -271,9 +282,6 @@ bool MovingCelState::onMouseMove(Editor* editor, MouseMessage* msg)
 
   // Redraw the new cel position.
   editor->invalidate();
-
-  // Use StandbyState implementation
-  return StandbyState::onMouseMove(editor, msg);
 }
 
 bool MovingCelState::onKeyDown(Editor* editor, KeyMessage* msg)

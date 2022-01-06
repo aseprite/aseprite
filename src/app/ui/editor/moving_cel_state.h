@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021 Igara Studio S.A.
+// Copyright (C) 2021-2022 Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -12,6 +12,7 @@
 #include "app/ui/editor/standby_state.h"
 
 #include "app/context_access.h"
+#include "app/ui/editor/delayed_mouse_move.h"
 #include "app/ui/editor/handle_type.h"
 #include "doc/cel_list.h"
 
@@ -38,10 +39,11 @@ namespace app {
     CelList m_celList;
   };
 
-  class MovingCelState : public StandbyState {
+  class MovingCelState : public StandbyState
+                       , DelayedMouseMoveDelegate {
   public:
     MovingCelState(Editor* editor,
-                   ui::MouseMessage* msg,
+                   const ui::MouseMessage* msg,
                    const HandleType handle,
                    const MovingCelCollect& collect);
 
@@ -59,7 +61,12 @@ namespace app {
     // ContextObserver
     void onBeforeCommandExecution(CommandExecutionEvent& ev);
 
+    // DelayedMouseMoveDelegate impl
+    void onCommitMouseMove(Editor* editor,
+                           const gfx::PointF& spritePos) override;
+
     ContextReader m_reader;
+    DelayedMouseMove m_delayedMouseMove;
     Cel* m_cel;
     CelList m_celList;
     std::vector<gfx::RectF> m_celStarts;
