@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -1300,7 +1300,8 @@ void Editor::flashCurrentLayer()
   }
 }
 
-gfx::Point Editor::autoScroll(MouseMessage* msg, AutoScroll dir)
+gfx::Point Editor::autoScroll(const ui::MouseMessage* msg,
+                              const AutoScroll dir)
 {
   gfx::Point mousePos = msg->position();
   if (!Preferences::instance().editor.autoScroll())

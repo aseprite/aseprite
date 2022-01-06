@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -178,6 +178,13 @@ namespace ui {
 
     int count() const { return m_count; }
     Timer* timer() { return m_timer; }
+
+    // Used by Manager::removeMessagesForTimer() to invalidate the
+    // message. It's like removing the message from the queue, but
+    // without touching the queue in case that we're iterating it
+    // (which can happen if we remove the timer from a kTimerMessage
+    // handler).
+    void _resetTimer() { m_timer = nullptr; }
 
   private:
     int m_count;                    // Accumulated calls

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -341,7 +341,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
     if (layerEdges)
       layerEdgesOption(false);
 
-    startDrawingState(editor,
+    startDrawingState(editor, msg,
                       DrawingType::Regular,
                       pointer_from_msg(editor, msg));
 
@@ -390,7 +390,7 @@ bool StandbyState::onDoubleClick(Editor* editor, MouseMessage* msg)
       editor->backToPreviousState();
 
     // Start a tool-loop selecting tiles.
-    startDrawingState(editor,
+    startDrawingState(editor, msg,
                       DrawingType::SelectTiles,
                       pointer_from_msg(editor, msg));
     return true;
@@ -619,6 +619,7 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
 
 DrawingState* StandbyState::startDrawingState(
   Editor* editor,
+  const ui::MouseMessage* msg,
   const DrawingType drawingType,
   const tools::Pointer& pointer)
 {
@@ -644,8 +645,7 @@ DrawingState* StandbyState::startDrawingState(
   editor->setState(newState);
 
   static_cast<DrawingState*>(newState.get())
-    ->initToolLoop(editor,
-                   pointer);
+    ->initToolLoop(editor, msg, pointer);
 
   return static_cast<DrawingState*>(newState.get());
 }
@@ -660,7 +660,7 @@ bool StandbyState::checkStartDrawingStraightLine(Editor* editor,
       (msg ? button_from_msg(msg): tools::Pointer::Left);
 
     DrawingState* drawingState =
-      startDrawingState(editor,
+      startDrawingState(editor, msg,
                         DrawingType::LineFreehand,
                         tools::Pointer(
                           editor->document()->lastDrawingPoint(),

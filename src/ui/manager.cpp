@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -1003,15 +1003,20 @@ void Manager::removeMessagesForTimer(Timer* timer)
   ASSERT(manager_thread == base::this_thread::native_id());
 #endif
 
-  for (auto it=msg_queue.begin(); it != msg_queue.end(); ) {
-    Message* msg = *it;
+  for (Message* msg : msg_queue) {
     if (msg->type() == kTimerMessage &&
         static_cast<TimerMessage*>(msg)->timer() == timer) {
-      delete msg;
-      it = msg_queue.erase(it);
+      msg->removeRecipient(msg->recipient());
+      static_cast<TimerMessage*>(msg)->_resetTimer();
     }
-    else
-      ++it;
+  }
+
+  for (Message* msg : used_msg_queue) {
+    if (msg->type() == kTimerMessage &&
+        static_cast<TimerMessage*>(msg)->timer() == timer) {
+      msg->removeRecipient(msg->recipient());
+      static_cast<TimerMessage*>(msg)->_resetTimer();
+    }
   }
 }
 
@@ -1411,8 +1416,9 @@ int Manager::pumpQueue()
 
     // Call Timer::tick() if this is a tick message.
     if (msg->type() == kTimerMessage) {
-      ASSERT(static_cast<TimerMessage*>(msg)->timer() != nullptr);
-      static_cast<TimerMessage*>(msg)->timer()->tick();
+      // The timer can be nullptr if it was removed with removeMessagesForTimer()
+      if (auto timer = static_cast<TimerMessage*>(msg)->timer())
+        timer->tick();
     }
 
     bool done = false;

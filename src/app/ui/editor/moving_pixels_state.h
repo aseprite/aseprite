@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -10,6 +10,7 @@
 #pragma once
 
 #include "app/ui/context_bar_observer.h"
+#include "app/ui/editor/delayed_mouse_move.h"
 #include "app/ui/editor/editor_observer.h"
 #include "app/ui/editor/handle_type.h"
 #include "app/ui/editor/pixels_movement.h"
@@ -31,9 +32,13 @@ namespace app {
     : public StandbyState
     , EditorObserver
     , TimelineObserver
-    , ContextBarObserver {
+    , ContextBarObserver
+    , DelayedMouseMoveDelegate {
   public:
-    MovingPixelsState(Editor* editor, ui::MouseMessage* msg, PixelsMovementPtr pixelsMovement, HandleType handle);
+    MovingPixelsState(Editor* editor,
+                      ui::MouseMessage* msg,
+                      PixelsMovementPtr pixelsMovement,
+                      HandleType handle);
     virtual ~MovingPixelsState();
 
     bool canHandleFrameChange() const {
@@ -74,6 +79,10 @@ namespace app {
     virtual Transformation getTransformation(Editor* editor) override;
 
   private:
+    // DelayedMouseMoveDelegate impl
+    void onCommitMouseMove(Editor* editor,
+                           const gfx::Point& spritePos) override;
+
     void onTransparentColorChange();
     void onRenderTimer();
 
@@ -91,6 +100,7 @@ namespace app {
 
     // Helper member to move/translate selection and pixels.
     PixelsMovementPtr m_pixelsMovement;
+    DelayedMouseMove m_delayedMouseMove;
     Editor* m_editor;
     bool m_observingEditor;
 
@@ -99,11 +109,6 @@ namespace app {
     bool m_discarded;
 
     ui::Timer m_renderTimer;
-
-    // Position of the mouse in the canvas to avoid redrawing when the
-    // mouse position changes (only we redraw when the canvas position
-    // changes).
-    gfx::Point m_oldSpritePos;
 
     obs::connection m_ctxConn;
     obs::connection m_opaqueConn;

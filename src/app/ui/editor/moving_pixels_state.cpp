@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -52,20 +52,21 @@
 #include "ui/view.h"
 
 #include <cstring>
-#include <limits>
 
 namespace app {
 
 using namespace ui;
 
-MovingPixelsState::MovingPixelsState(Editor* editor, MouseMessage* msg, PixelsMovementPtr pixelsMovement, HandleType handle)
+MovingPixelsState::MovingPixelsState(Editor* editor,
+                                     MouseMessage* msg,
+                                     PixelsMovementPtr pixelsMovement,
+                                     HandleType handle)
   : m_pixelsMovement(pixelsMovement)
+  , m_delayedMouseMove(this, editor, 5)
   , m_editor(editor)
   , m_observingEditor(false)
   , m_discarded(false)
   , m_renderTimer(50)
-  , m_oldSpritePos(std::numeric_limits<int>::min(),
-                   std::numeric_limits<int>::min())
 {
   // MovingPixelsState needs a selection tool to avoid problems
   // sharing the extra cel between the drawing cursor preview and the
@@ -270,6 +271,8 @@ bool MovingPixelsState::onMouseDown(Editor* editor, MouseMessage* msg)
   ASSERT(m_pixelsMovement);
   ASSERT(editor == m_editor);
 
+  m_delayedMouseMove.onMouseDown(msg);
+
   // Set this editor as the active one and setup the ContextBar for
   // moving pixels. This is needed in case that the user is working
   // with a couple of Editors, in one is moving pixels and the other
@@ -357,6 +360,8 @@ bool MovingPixelsState::onMouseUp(Editor* editor, MouseMessage* msg)
   ASSERT(m_pixelsMovement);
   ASSERT(editor == m_editor);
 
+  m_delayedMouseMove.onMouseUp(msg);
+
   // Drop the image temporarily in this location (where the user releases the mouse)
   m_pixelsMovement->dropImageTemporarily();
 
@@ -374,83 +379,76 @@ bool MovingPixelsState::onMouseMove(Editor* editor, MouseMessage* msg)
 
   // If there is a button pressed
   if (m_pixelsMovement->isDragging()) {
-    // Auto-scroll
-    gfx::Point mousePos = editor->autoScroll(msg, AutoScroll::MouseDir);
-
-    // Get the position of the mouse in the sprite
-    gfx::Point spritePos = editor->screenToEditor(mousePos);
-    if (spritePos == m_oldSpritePos) {
-      // Avoid redrawing everything if the position in the canvas didn't change.
-      // TODO remove this if we add support for anti-aliasing in the
-      //      transformations
-      return true;
-    }
-    m_oldSpritePos = spritePos;
-
-    m_renderTimer.start();
-    m_pixelsMovement->setFastMode(true);
-
-    // Get the customization for the pixels movement (snap to grid, angle snap, etc.).
-    KeyContext keyContext = KeyContext::Normal;
-    switch (m_pixelsMovement->handle()) {
-      case MovePixelsHandle:
-        keyContext = KeyContext::TranslatingSelection;
-        break;
-      case ScaleNWHandle:
-      case ScaleNHandle:
-      case ScaleNEHandle:
-      case ScaleWHandle:
-      case ScaleEHandle:
-      case ScaleSWHandle:
-      case ScaleSHandle:
-      case ScaleSEHandle:
-        keyContext = KeyContext::ScalingSelection;
-        break;
-      case RotateNWHandle:
-      case RotateNHandle:
-      case RotateNEHandle:
-      case RotateWHandle:
-      case RotateEHandle:
-      case RotateSWHandle:
-      case RotateSHandle:
-      case RotateSEHandle:
-        keyContext = KeyContext::RotatingSelection;
-        break;
-    }
-
-    PixelsMovement::MoveModifier moveModifier = PixelsMovement::NormalMovement;
-    KeyAction action = editor->getCustomizationDelegate()
-      ->getPressedKeyAction(keyContext);
-
-    if (int(action & KeyAction::SnapToGrid))
-      moveModifier |= PixelsMovement::SnapToGridMovement;
-
-    if (int(action & KeyAction::AngleSnap))
-      moveModifier |= PixelsMovement::AngleSnapMovement;
-
-    if (int(action & KeyAction::MaintainAspectRatio))
-      moveModifier |= PixelsMovement::MaintainAspectRatioMovement;
-
-    if (int(action & KeyAction::ScaleFromCenter))
-      moveModifier |= PixelsMovement::ScaleFromPivot;
-
-    if (int(action & KeyAction::LockAxis))
-      moveModifier |= PixelsMovement::LockAxisMovement;
-
-    // Invalidate handles
-    Decorator* decorator = static_cast<Decorator*>(editor->decorator());
-    TransformHandles* transfHandles = decorator->getTransformHandles(editor);
-    transfHandles->invalidateHandles(editor, m_pixelsMovement->getTransformation());
-
-    // Drag the image to that position
-    m_pixelsMovement->moveImage(spritePos, moveModifier);
-
-    editor->updateStatusBar();
+    if (m_delayedMouseMove.onMouseMove(msg))
+      m_renderTimer.start();
     return true;
   }
 
   // Use StandbyState implementation
   return StandbyState::onMouseMove(editor, msg);
+}
+
+void MovingPixelsState::onCommitMouseMove(Editor* editor,
+                                          const gfx::Point& spritePos)
+{
+  m_pixelsMovement->setFastMode(true);
+
+  // Get the customization for the pixels movement (snap to grid, angle snap, etc.).
+  KeyContext keyContext = KeyContext::Normal;
+  switch (m_pixelsMovement->handle()) {
+    case MovePixelsHandle:
+      keyContext = KeyContext::TranslatingSelection;
+      break;
+    case ScaleNWHandle:
+    case ScaleNHandle:
+    case ScaleNEHandle:
+    case ScaleWHandle:
+    case ScaleEHandle:
+    case ScaleSWHandle:
+    case ScaleSHandle:
+    case ScaleSEHandle:
+      keyContext = KeyContext::ScalingSelection;
+      break;
+    case RotateNWHandle:
+    case RotateNHandle:
+    case RotateNEHandle:
+    case RotateWHandle:
+    case RotateEHandle:
+    case RotateSWHandle:
+    case RotateSHandle:
+    case RotateSEHandle:
+      keyContext = KeyContext::RotatingSelection;
+      break;
+  }
+
+  PixelsMovement::MoveModifier moveModifier = PixelsMovement::NormalMovement;
+  KeyAction action = m_editor->getCustomizationDelegate()
+    ->getPressedKeyAction(keyContext);
+
+  if (int(action & KeyAction::SnapToGrid))
+    moveModifier |= PixelsMovement::SnapToGridMovement;
+
+  if (int(action & KeyAction::AngleSnap))
+    moveModifier |= PixelsMovement::AngleSnapMovement;
+
+  if (int(action & KeyAction::MaintainAspectRatio))
+    moveModifier |= PixelsMovement::MaintainAspectRatioMovement;
+
+  if (int(action & KeyAction::ScaleFromCenter))
+    moveModifier |= PixelsMovement::ScaleFromPivot;
+
+  if (int(action & KeyAction::LockAxis))
+    moveModifier |= PixelsMovement::LockAxisMovement;
+
+  // Invalidate handles
+  Decorator* decorator = static_cast<Decorator*>(m_editor->decorator());
+  TransformHandles* transfHandles = decorator->getTransformHandles(m_editor);
+  transfHandles->invalidateHandles(m_editor, m_pixelsMovement->getTransformation());
+
+  // Drag the image to that position
+  m_pixelsMovement->moveImage(spritePos, moveModifier);
+
+  m_editor->updateStatusBar();
 }
 
 bool MovingPixelsState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)

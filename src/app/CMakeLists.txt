@@ -1,5 +1,5 @@
 # Aseprite
-# Copyright (C) 2018-2021  Igara Studio S.A.
+# Copyright (C) 2018-2022  Igara Studio S.A.
 # Copyright (C) 2001-2018  David Capello
 
 # Generate a ui::Widget for each widget in a XML file
@@ -329,6 +329,7 @@ if(ENABLE_UI)
     ui/drop_down_button.cpp
     ui/dynamics_popup.cpp
     ui/editor/brush_preview.cpp
+    ui/editor/delayed_mouse_move.cpp
     ui/editor/drawing_state.cpp
     ui/editor/editor.cpp
     ui/editor/editor_observers.cpp

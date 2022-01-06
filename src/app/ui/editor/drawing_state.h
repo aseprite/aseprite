@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -11,6 +11,7 @@
 
 #include "app/tools/pointer.h"
 #include "app/tools/velocity.h"
+#include "app/ui/editor/delayed_mouse_move.h"
 #include "app/ui/editor/standby_state.h"
 #include "obs/connection.h"
 #include <memory>
@@ -23,7 +24,8 @@ namespace app {
 
   class CommandExecutionEvent;
 
-  class DrawingState : public StandbyState {
+  class DrawingState : public StandbyState
+                     , DelayedMouseMoveDelegate {
   public:
     DrawingState(Editor* editor,
                  tools::ToolLoop* loop,
@@ -45,6 +47,7 @@ namespace app {
     virtual bool requireBrushPreview() override { return false; }
 
     void initToolLoop(Editor* editor,
+                      const ui::MouseMessage* msg,
                       const tools::Pointer& pointer);
 
     // Used to send a movement() to the ToolLoopManager when
@@ -54,14 +57,19 @@ namespace app {
     void notifyToolLoopModifiersChange(Editor* editor);
 
   private:
-    void handleMouseMovement(const tools::Pointer& pointer);
+    void handleMouseMovement();
     bool canExecuteCommands();
     void onBeforeCommandExecution(CommandExecutionEvent& ev);
     void destroyLoopIfCanceled(Editor* editor);
     void destroyLoop(Editor* editor);
 
+    // DelayedMouseMoveDelegate impl
+    void onCommitMouseMove(Editor* editor,
+                           const gfx::Point& spritePos) override;
+
     Editor* m_editor;
     DrawingType m_type;
+    DelayedMouseMove m_delayedMouseMove;
 
     // The tool-loop.
     std::unique_ptr<tools::ToolLoop> m_toolLoop;
