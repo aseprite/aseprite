@@ -171,17 +171,13 @@ class ConversionItem : public ListItem {
 public:
   ConversionItem(const doc::PixelFormat pixelFormat)
     : m_pixelFormat(pixelFormat) {
+    std::string toMode;
     switch (pixelFormat) {
-      case IMAGE_RGB:
-        setText("-> RGB");
-        break;
-      case IMAGE_GRAYSCALE:
-        setText("-> Grayscale");
-        break;
-      case IMAGE_INDEXED:
-        setText("-> Indexed");
-        break;
+      case IMAGE_RGB:       toMode = Strings::commands_ChangePixelFormat_RGB();       break;
+      case IMAGE_GRAYSCALE: toMode = Strings::commands_ChangePixelFormat_Grayscale(); break;
+      case IMAGE_INDEXED:   toMode = Strings::commands_ChangePixelFormat_Indexed();   break;
     }
+    setText(fmt::format("-> {}", toMode));
   }
   doc::PixelFormat pixelFormat() const { return m_pixelFormat; }
 private:
@@ -204,11 +200,13 @@ public:
     const doc::PixelFormat from = m_editor->sprite()->pixelFormat();
 
     // Add the color mode in the window title
+    std::string fromMode;
     switch (from) {
-      case IMAGE_RGB: setText(text() + ": RGB"); break;
-      case IMAGE_GRAYSCALE: setText(text() + ": Grayscale"); break;
-      case IMAGE_INDEXED: setText(text() + ": Indexed"); break;
+      case IMAGE_RGB:       fromMode = Strings::commands_ChangePixelFormat_RGB();       break;
+      case IMAGE_GRAYSCALE: fromMode = Strings::commands_ChangePixelFormat_Grayscale(); break;
+      case IMAGE_INDEXED:   fromMode = Strings::commands_ChangePixelFormat_Indexed();   break;
     }
+    setText(fmt::format("{}: {}", text(), fromMode));
 
     // Add conversion items
     if (from != IMAGE_RGB)
@@ -646,7 +644,7 @@ void ChangePixelFormatCommand::onExecute(Context* context)
 
   {
     const ContextReader reader(context);
-    SpriteJob job(reader, "Color Mode Change");
+    SpriteJob job(reader, Strings::color_mode_title().c_str());
     Sprite* sprite(job.sprite());
 
     // TODO this was moved in the main UI thread because
