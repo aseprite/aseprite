@@ -15,6 +15,7 @@
 #include "app/commands/commands.h"
 #include "app/console.h"
 #include "app/font_path.h"
+#include "app/i18n/strings.h"
 #include "app/match_words.h"
 #include "app/ui/search_entry.h"
 #include "app/ui/skin/skin_theme.h"
@@ -133,7 +134,7 @@ private:
 };
 
 FontPopup::FontPopup()
-  : PopupWindow("Fonts",
+  : PopupWindow(Strings::font_popup_title(),
                 ClickBehavior::CloseOnClickInOtherWindow,
                 EnterBehavior::DoNothingOnEnter)
   , m_popup(new gen::FontPopup())
@@ -181,7 +182,7 @@ FontPopup::FontPopup()
   }
 
   if (m_listBox.children().empty())
-    m_listBox.addChild(new ListItem("No system fonts were found"));
+    m_listBox.addChild(new ListItem(Strings::font_popup_empty_fonts()));
 }
 
 void FontPopup::showPopup(Display* display,

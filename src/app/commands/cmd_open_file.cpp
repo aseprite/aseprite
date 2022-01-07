@@ -18,6 +18,7 @@
 #include "app/doc.h"
 #include "app/file/file.h"
 #include "app/file_selector.h"
+#include "app/i18n/strings.h"
 #include "app/job.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
@@ -37,7 +38,7 @@ namespace app {
 class OpenFileJob : public Job, public IFileOpProgress {
 public:
   OpenFileJob(FileOp* fop)
-    : Job("Loading file")
+    : Job(Strings::open_file_loading().c_str())
     , m_fop(fop)
   {
   }
@@ -122,7 +123,7 @@ void OpenFileCommand::onExecute(Context* context)
     if (!m_folder.empty() && !base::is_path_separator(m_folder[m_folder.size()-1]))
       m_folder.push_back(base::path_separator);
 
-    if (!app::show_file_selector("Open", m_folder, exts,
+    if (!app::show_file_selector(Strings::open_file_title(), m_folder, exts,
                                  FileSelectorType::OpenMultiple,
                                  filenames)) {
       // The user cancelled the operation through UI
