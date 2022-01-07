@@ -171,8 +171,8 @@ void FilterWorker::run()
     console.printf("A problem has occurred.\n\nDetails:\n%s", m_error.c_str());
   }
   else if (m_cancelled && !m_filterMgr->isTransaction()) {
-    StatusBar::instance()
-      ->showTip(2500, "No unlocked layers to apply filter");
+    StatusBar::instance()->showTip(2500,
+      Strings::statusbar_tips_filter_no_unlocked_layer());
   }
 #endif // ENABLE_UI
 }
