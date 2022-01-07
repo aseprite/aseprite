@@ -11,6 +11,7 @@
 
 #include "app/ui/layer_frame_comboboxes.h"
 
+#include "app/i18n/strings.h"
 #include "app/restore_visible_layers.h"
 #include "app/site.h"
 #include "doc/anidir.h"
@@ -46,12 +47,15 @@ std::string LayerListItem::buildName(const doc::Layer* layer)
     name.insert(0, layer->name());
     layer = layer->parent();
   }
-  name.insert(0, isGroup ? "Group: ": "Layer: ");
+  const std::string namePrefix =
+    (isGroup ? Strings::layer_frame_combo_group() :
+               Strings::layer_frame_combo_layer()) + " ";
+  name.insert(0, namePrefix);
   return name;
 }
 
 FrameListItem::FrameListItem(doc::Tag* tag)
-  : ListItem("Tag: " + tag->name())
+  : ListItem(Strings::layer_frame_combo_tag() + " " + tag->name())
   , m_tag(tag)
 {
   setValue(m_tag->name());
@@ -59,10 +63,10 @@ FrameListItem::FrameListItem(doc::Tag* tag)
 
 void fill_layers_combobox(const doc::Sprite* sprite, ui::ComboBox* layers, const std::string& defLayer)
 {
-  int i = layers->addItem("Visible layers");
+  int i = layers->addItem(Strings::layer_frame_combo_visible_layers());
   dynamic_cast<ui::ListItem*>(layers->getItem(i))->setValue(kAllLayers);
 
-  i = layers->addItem("Selected layers");
+  i = layers->addItem(Strings::layer_frame_combo_selected_layers());
   dynamic_cast<ui::ListItem*>(layers->getItem(i))->setValue(kSelectedLayers);
   if (defLayer == kSelectedLayers)
     layers->setSelectedItemIndex(i);
@@ -78,10 +82,10 @@ void fill_layers_combobox(const doc::Sprite* sprite, ui::ComboBox* layers, const
 
 void fill_frames_combobox(const doc::Sprite* sprite, ui::ComboBox* frames, const std::string& defFrame)
 {
-  int i = frames->addItem("All frames");
+  int i = frames->addItem(Strings::layer_frame_combo_all_frames());
   dynamic_cast<ui::ListItem*>(frames->getItem(i))->setValue(kAllFrames);
 
-  i = frames->addItem("Selected frames");
+  i = frames->addItem(Strings::layer_frame_combo_selected_frames());
   dynamic_cast<ui::ListItem*>(frames->getItem(i))->setValue(kSelectedFrames);
   if (defFrame == kSelectedFrames)
     frames->setSelectedItemIndex(i);
@@ -104,9 +108,9 @@ void fill_anidir_combobox(ui::ComboBox* anidir, doc::AniDir defAnidir)
     int(doc::AniDir::REVERSE) == 1 &&
     int(doc::AniDir::PING_PONG) == 2, "doc::AniDir has changed");
 
-  anidir->addItem("Forward");
-  anidir->addItem("Reverse");
-  anidir->addItem("Ping-pong");
+  anidir->addItem(Strings::layer_frame_combo_forward());
+  anidir->addItem(Strings::layer_frame_combo_reverse());
+  anidir->addItem(Strings::layer_frame_combo_ping_pong());
   anidir->setSelectedItemIndex(int(defAnidir));
 }
 
