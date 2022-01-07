@@ -1335,7 +1335,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
 
     StatusBar* statusbar = StatusBar::instance();
     if (statusbar)
-      statusbar->showTip(1000, "Sprite Sheet Generated");
+      statusbar->showTip(1000, Strings::export_sprite_sheet_generated());
 
     // Save the exported sprite sheet as a recent file
     if (newDocument->isAssociatedToFile())

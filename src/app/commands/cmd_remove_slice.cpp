@@ -14,6 +14,7 @@
 #include "app/cmd/set_slice_key.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
+#include "app/i18n/strings.h"
 #include "app/modules/gui.h"
 #include "app/tx.h"
 #include "app/ui/status_bar.h"
@@ -122,10 +123,12 @@ void RemoveSliceCommand::onExecute(Context* context)
   StatusBar::instance()->invalidate();
   if (!sliceName.empty())
     StatusBar::instance()->showTip(
-      1000, fmt::format("Slice '{}' removed", sliceName));
+      1000, fmt::format(Strings::remove_slice_x_removed(), sliceName));
   else
     StatusBar::instance()->showTip(
-      1000, fmt::format("{} slice(s) removed", slicesToDelete.size()));
+      1000,
+      fmt::format(Strings::remove_slice_n_slices_removed(),
+                  slicesToDelete.size()));
 }
 
 Command* CommandFactory::createRemoveSliceCommand()

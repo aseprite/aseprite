@@ -19,6 +19,7 @@
 #include "app/console.h"
 #include "app/doc.h"
 #include "app/doc_api.h"
+#include "app/i18n/strings.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
 #include "app/site.h"
@@ -1170,8 +1171,9 @@ retry:;      // In case that we don't have enough memory for RotSprite
           int(corners.leftBottom().y-leftTop.y));
       }
       catch (const std::bad_alloc&) {
-        StatusBar::instance()->showTip(1000,
-          "Not enough memory for RotSprite");
+        StatusBar::instance()->showTip(
+          1000,
+          Strings::statusbar_tips_not_enough_rotsprite_memory());
 
         rotAlgo = tools::RotationAlgorithm::FAST;
         goto retry;
