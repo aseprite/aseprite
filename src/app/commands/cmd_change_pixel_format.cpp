@@ -67,13 +67,13 @@ public:
     : m_pixelFormat(pixelFormat) {
     switch (pixelFormat) {
       case IMAGE_RGB:
-        setText("-> RGB");
+        setText(Strings::change_pixel_format_rgb_conversion());
         break;
       case IMAGE_GRAYSCALE:
-        setText("-> Grayscale");
+        setText(Strings::change_pixel_format_grayscale_conversion());
         break;
       case IMAGE_INDEXED:
-        setText("-> Indexed");
+        setText(Strings::change_pixel_format_indexed_conversion());
         break;
     }
   }
@@ -203,9 +203,15 @@ public:
 
     // Add the color mode in the window title
     switch (from) {
-      case IMAGE_RGB: setText(text() + ": RGB"); break;
-      case IMAGE_GRAYSCALE: setText(text() + ": Grayscale"); break;
-      case IMAGE_INDEXED: setText(text() + ": Indexed"); break;
+      case IMAGE_RGB:
+        setText(text() + Strings::change_pixel_format_rgb_window_title());
+        break;
+      case IMAGE_GRAYSCALE:
+        setText(text() + Strings::change_pixel_format_gray_window_title());
+        break;
+      case IMAGE_INDEXED:
+        setText(text() + Strings::change_pixel_format_indexed_window_title());
+        break;
     }
 
     // Add conversion items
@@ -642,7 +648,7 @@ void ChangePixelFormatCommand::onExecute(Context* context)
 
   {
     const ContextReader reader(context);
-    SpriteJob job(reader, "Color Mode Change");
+    SpriteJob job(reader, Strings::change_pixel_format_job_name().c_str());
     Sprite* sprite(job.sprite());
 
     // TODO this was moved in the main UI thread because
