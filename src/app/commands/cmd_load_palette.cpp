@@ -66,7 +66,7 @@ void LoadPaletteCommand::onExecute(Context* context)
     base::paths exts = get_readable_palette_extensions();
     base::paths filenames;
     if (app::show_file_selector(
-          "Load Palette", "", exts,
+          Strings::file_selector_load_palette(), "", exts,
           FileSelectorType::Open, filenames)) {
       filename = filenames.front();
     }

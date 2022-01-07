@@ -48,7 +48,7 @@ void SaveMaskCommand::onExecute(Context* context)
   base::paths exts = { "msk" };
   base::paths selFilename;
   if (!app::show_file_selector(
-        "Save .msk File", "default.msk", exts,
+        Strings::file_selector_save_mask(), "default.msk", exts,
         FileSelectorType::Save, selFilename))
     return;
 

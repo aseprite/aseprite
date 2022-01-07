@@ -64,8 +64,9 @@ void SavePaletteCommand::onExecute(Context* ctx)
     base::paths exts = get_writable_palette_extensions();
     base::paths selFilename;
     std::string initialPath = (m_saveAsPreset ? get_preset_palettes_dir(): "");
-    if (!app::show_file_selector(
-          "Save Palette", initialPath, exts,
+    if (!app::show_file_selector(Strings::file_selector_save_palette(),
+                                 initialPath,
+                                 exts,
           FileSelectorType::Save, selFilename))
       return;
 

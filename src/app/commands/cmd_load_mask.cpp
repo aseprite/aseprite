@@ -61,7 +61,7 @@ void LoadMaskCommand::onExecute(Context* context)
     base::paths exts = { "msk" };
     base::paths selectedFilename;
     if (!app::show_file_selector(
-          "Load .msk File", m_filename, exts,
+          Strings::file_selector_load_mask(), m_filename, exts,
           FileSelectorType::Open, selectedFilename))
       return;
 
@@ -77,7 +77,9 @@ void LoadMaskCommand::onExecute(Context* context)
   {
     ContextWriter writer(reader);
     Doc* document = writer.document();
-    Tx tx(writer.context(), "Mask Load", DoesntModifyDocument);
+    Tx tx(writer.context(),
+          Strings::file_selector_load_mask(),
+          DoesntModifyDocument);
     tx(new cmd::SetMask(document, mask.get()));
     tx.commit();
 
