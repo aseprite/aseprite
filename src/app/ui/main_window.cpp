@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -390,12 +390,20 @@ void MainWindow::onResize(ui::ResizeEvent& ev)
 // inform to the UIContext that the current view has changed.
 void MainWindow::onActiveViewChange()
 {
+  // First we have to configure the MainWindow layout (e.g. show
+  // Timeline if needed) as UIContext::setActiveView() will configure
+  // several widgets (calling updateUsingEditor() functions) using the
+  // active document, and we need to know the available space on
+  // screen for each widget (e.g. the Timeline will configure its
+  // scrollable area/position depending on the number of
+  // layers/frames, but it needs to know its position on screen
+  // first).
+  configureWorkspaceLayout();
+
   if (DocView* docView = getDocView())
     UIContext::instance()->setActiveView(docView);
   else
     UIContext::instance()->setActiveView(nullptr);
-
-  configureWorkspaceLayout();
 }
 
 bool MainWindow::isTabModified(Tabs* tabs, TabView* tabView)
