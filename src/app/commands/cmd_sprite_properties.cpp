@@ -133,7 +133,7 @@ void SpritePropertiesCommand::onExecute(Context* context)
         break;
       default:
         ASSERT(false);
-        imgtype_text = Strings::sprite_properties_unknown();
+        imgtype_text = Strings::general_unknown();
         break;
     }
 

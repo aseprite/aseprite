@@ -15,6 +15,7 @@
 #include "app/commands/commands.h"
 #include "app/console.h"
 #include "app/context_access.h"
+#include "app/i18n/strings.h"
 #include "app/modules/editors.h"
 #include "app/tools/active_tool.h"
 #include "app/tools/ink.h"
@@ -46,7 +47,7 @@ protected:
   void onQuickboxCancel(Editor* editor) override;
 
   std::string onGetContextBarHelp() override {
-    return "Select brush bounds | Right-click to cut";
+    return Strings::new_brush_context_bar_help();
   }
 
 private:
@@ -173,7 +174,7 @@ void NewBrushCommand::createBrush(const Site& site, const Mask* mask)
     CommandId::ChangeBrush(), params);
   if (key && !key->accels().empty()) {
     std::string tooltip;
-    tooltip += "Shortcut: ";
+    tooltip += Strings::new_brush_shortcut() + " ";
     tooltip += key->accels().front().toString();
     StatusBar::instance()->showTip(2000, tooltip);
   }

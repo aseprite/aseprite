@@ -2798,7 +2798,7 @@ void Editor::showAnimationSpeedMultiplierPopup(Option<bool>& playOnce,
   Menu menu;
 
   for (double option : options) {
-    MenuItem* item = new MenuItem(fmt::format("Speed x{}", option));
+    MenuItem* item = new MenuItem(fmt::format(Strings::preview_speed_x(), option));
     item->Click.connect([this, option]{ setAnimationSpeedMultiplier(option); });
     item->setSelected(m_aniSpeed == option);
     menu.addChild(item);
@@ -2808,7 +2808,7 @@ void Editor::showAnimationSpeedMultiplierPopup(Option<bool>& playOnce,
 
   // Play once option
   {
-    MenuItem* item = new MenuItem("Play Once");
+    MenuItem* item = new MenuItem(Strings::preview_play_once());
     item->Click.connect(
       [&playOnce]() {
         playOnce(!playOnce());
@@ -2819,7 +2819,7 @@ void Editor::showAnimationSpeedMultiplierPopup(Option<bool>& playOnce,
 
   // Play all option
   {
-    MenuItem* item = new MenuItem("Play All Frames (Ignore Tags)");
+    MenuItem* item = new MenuItem(Strings::preview_play_all_no_tags());
     item->Click.connect(
       [&playAll]() {
         playAll(!playAll());
@@ -2829,7 +2829,7 @@ void Editor::showAnimationSpeedMultiplierPopup(Option<bool>& playOnce,
   }
 
   if (withStopBehaviorOptions) {
-    MenuItem* item = new MenuItem("Rewind on Stop");
+    MenuItem* item = new MenuItem(Strings::preview_rewind_on_stop());
     item->Click.connect(
       []() {
         // Switch the "rewind_on_stop" option

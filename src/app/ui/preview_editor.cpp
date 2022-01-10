@@ -16,6 +16,7 @@
 #include "app/doc_event.h"
 #include "app/ini_file.h"
 #include "app/loop_tag.h"
+#include "app/i18n/strings.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
@@ -176,7 +177,7 @@ private:
 };
 
 PreviewEditorWindow::PreviewEditorWindow()
-  : Window(WithTitleBar, "Preview")
+  : Window(WithTitleBar, Strings::preview_title())
   , m_docView(NULL)
   , m_centerButton(new MiniCenterButton())
   , m_playButton(new MiniPlayButton())
