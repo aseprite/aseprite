@@ -1,5 +1,5 @@
 // Aseprite Document IO Library
-// Copyright (c) 2018-2021 Igara Studio S.A.
+// Copyright (c) 2018-2022 Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -616,6 +616,16 @@ void read_compressed_image_templ(FileInterface* f,
     }
 
     size_t bytes_read = f->readBytes(&compressed[0], input_bytes);
+
+    // Error reading "input_bytes" bytes, broken file? chunk without
+    // enough compressed data?
+    if (bytes_read == 0) {
+      delegate->error(
+        fmt::format("Error reading {} bytes of compressed data",
+                    input_bytes));
+      break;
+    }
+
     zstream.next_in = (Bytef*)&compressed[0];
     zstream.avail_in = bytes_read;
 
