@@ -47,7 +47,7 @@ class RotateJob : public SpriteJob {
 public:
 
   RotateJob(const ContextReader& reader, int angle, const CelList& cels, bool rotateSprite)
-    : SpriteJob(reader, "Rotate Canvas")
+    : SpriteJob(reader, Strings::jobs_rotate_canvas().c_str())
     , m_cels(cels)
     , m_rotateSprite(rotateSprite) {
     m_angle = angle;
