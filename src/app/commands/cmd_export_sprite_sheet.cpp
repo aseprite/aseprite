@@ -836,7 +836,7 @@ private:
   void onImageFilename() {
     base::paths newFilename;
     if (!app::show_file_selector(
-          "Save Sprite Sheet", m_filename,
+          Strings::export_sprite_sheet_save_title(), m_filename,
           get_writable_extensions(),
           FileSelectorType::Save, newFilename))
       return;
@@ -861,8 +861,11 @@ private:
     base::paths exts = { "json" };
     base::paths newFilename;
     if (!app::show_file_selector(
-          "Save JSON Data", m_dataFilename, exts,
-          FileSelectorType::Save, newFilename))
+           Strings::export_sprite_sheet_save_json_title(),
+           m_dataFilename,
+           exts,
+           FileSelectorType::Save,
+           newFilename))
       return;
 
     ASSERT(!newFilename.empty());
