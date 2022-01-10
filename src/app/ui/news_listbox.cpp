@@ -12,6 +12,7 @@
 #include "app/ui/news_listbox.h"
 
 #include "app/app.h"
+#include "app/i18n/strings.h"
 #include "app/pref/preferences.h"
 #include "app/res/http_loader.h"
 #include "app/ui/skin/skin_theme.h"
@@ -168,7 +169,8 @@ private:
 
 class ProblemsItem : public NewsItem {
 public:
-  ProblemsItem() : NewsItem("", "Problems loading news. Retry.", "") {
+  ProblemsItem()
+    : NewsItem("", Strings::news_listbox_problem_loading(), "") {
   }
 
 protected:
@@ -306,7 +308,8 @@ void NewsListBox::parseFile(const std::string& filename)
     .FirstChild("channel")
     .FirstChild("link").ToElement();
   if (linkXml && linkXml->GetText())
-    addChild(new NewsItem(linkXml->GetText(), "More...", ""));
+    addChild(
+      new NewsItem(linkXml->GetText(), Strings::news_listbox_more(), ""));
 
   if (view)
     view->updateView();
