@@ -444,7 +444,7 @@ private:
 
             m_addButton->setBgColor(gfx::ColorNone);
             m_addButton->setBounds(itemBounds);
-            m_addButton->setText("Add");
+            m_addButton->setText(Strings::keyboard_shortcuts_add());
 
             invalidate();
           }
@@ -478,7 +478,7 @@ private:
   std::string getAccelText(const Accelerator& accel) const {
     if (m_key && m_key->type() == KeyType::WheelAction &&
         accel.isEmpty()) {
-      return "(Default Action)";
+      return Strings::keyboard_shortcuts_accel_text();
     }
     else {
       return accel.toString();

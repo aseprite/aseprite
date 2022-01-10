@@ -20,6 +20,7 @@
 #include "app/cmd/set_layer_name.h"
 #include "app/cmd/unlink_cel.h"
 #include "app/doc.h"
+#include "app/i18n/strings.h"
 #include "app/restore_visible_layers.h"
 #include "doc/algorithm/shrink_bounds.h"
 #include "doc/cel.h"
@@ -81,7 +82,8 @@ void FlattenLayers::onExecute()
     flatLayer = new LayerImage(sprite);
     ASSERT(flatLayer->isVisible());
     executeAndAdd(new cmd::AddLayer(sprite->root(), flatLayer, nullptr));
-    executeAndAdd(new cmd::SetLayerName(flatLayer, "Flattened"));
+    executeAndAdd(
+      new cmd::SetLayerName(flatLayer, Strings::layer_properties_flattened()));
     bgcolor = sprite->transparentColor();
 
     if (list.front())
