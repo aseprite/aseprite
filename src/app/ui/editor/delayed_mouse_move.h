@@ -41,6 +41,11 @@ namespace app {
                      Editor* editor,
                      const int interval);
 
+    // In case the event wasn't started with onMouseDown() we can
+    // initialize the sprite position directly (e.g. starting a line
+    // from last painted point with Shift+click with Pencil tool).
+    void initSpritePos(const gfx::PointF& pos);
+
     void onMouseDown(const ui::MouseMessage* msg);
     bool onMouseMove(const ui::MouseMessage* msg);
     void onMouseUp(const ui::MouseMessage* msg);

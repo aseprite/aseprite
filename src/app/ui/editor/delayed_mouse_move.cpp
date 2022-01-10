@@ -27,6 +27,11 @@ DelayedMouseMove::DelayedMouseMove(DelayedMouseMoveDelegate* delegate,
   m_timer.Tick.connect([this] { commitMouseMove(); });
 }
 
+void DelayedMouseMove::initSpritePos(const gfx::PointF& pos)
+{
+  m_spritePos = pos;
+}
+
 void DelayedMouseMove::onMouseDown(const ui::MouseMessage* msg)
 {
   updateSpritePos(msg);

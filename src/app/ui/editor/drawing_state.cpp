@@ -83,7 +83,10 @@ void DrawingState::initToolLoop(Editor* editor,
                                 const ui::MouseMessage* msg,
                                 const tools::Pointer& pointer)
 {
-  m_delayedMouseMove.onMouseDown(msg);
+  if (msg)
+    m_delayedMouseMove.onMouseDown(msg);
+  else
+    m_delayedMouseMove.initSpritePos(gfx::PointF(pointer.point()));
 
   // Prepare preview image (the destination image will be our preview
   // in the tool-loop time, so we can see what we are drawing)
