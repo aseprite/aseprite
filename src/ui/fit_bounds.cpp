@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -134,8 +134,10 @@ void fit_bounds(const Display* parentDisplay,
     window->setBounds(gfx::Rect(0, 0, frame.w / scale, frame.h / scale));
     window->loadNativeFrame(frame);
 
-    if (window->isVisible())
-      window->expandWindow(frame.size() / scale);
+    if (window->isVisible()) {
+      if (window->ownDisplay())
+        window->display()->nativeWindow()->setFrame(frame);
+    }
   }
   else {
     const gfx::Rect displayBounds(parentDisplay->size());
