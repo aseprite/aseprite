@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -304,7 +304,6 @@ void Timeline::setZoomAndUpdate(const double zoom,
     setZoom(zoom);
     regenerateTagBands();
     updateScrollBars();
-    setViewScroll(viewScroll());
     invalidate();
   }
   if (updatePref && zoom != docPref().thumbnails.zoom()) {
@@ -3192,6 +3191,8 @@ void Timeline::updateScrollBars()
                        m_viewportArea, *this,
                        m_hbar,
                        m_vbar);
+
+  setViewScroll(viewScroll());
 }
 
 void Timeline::updateByMousePos(ui::Message* msg, const gfx::Point& mousePos)
