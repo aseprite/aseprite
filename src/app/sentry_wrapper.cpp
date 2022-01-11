@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021  Igara Studio S.A.
+// Copyright (C) 2021-2022  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -88,9 +88,24 @@ bool Sentry::areThereCrashesToReport()
   if (m_dbdir.empty())
     return false;
 
+  // If the last_crash file exists, we can say that there are
+  // something to report (this file is created on Windows and Linux).
+  if (base::is_file(base::join_path(m_dbdir, "last_crash")))
+    return true;
+
+  // At least one .dmp file in the completed/ directory means that
+  // there was at least one crash in the past (this is for macOS).
   for (auto f : base::list_files(base::join_path(m_dbdir, "completed"))) {
     if (base::get_file_extension(f) == "dmp")
-      return true;              // At least one .dmp file in the completed/ directory
+      return true;
+  }
+
+  // In case that "last_crash" doesn't exist we can check for some
+  // .dmp file in the reports/ directory (it looks like the completed/
+  // directory is not generated on Windows).
+  for (auto f : base::list_files(base::join_path(m_dbdir, "reports"))) {
+    if (base::get_file_extension(f) == "dmp")
+      return true;
   }
   return false;
 }
