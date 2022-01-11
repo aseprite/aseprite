@@ -1503,15 +1503,17 @@ void Manager::_closeWindow(Window* window, bool redraw_background)
       window->setBounds(newBounds);
     }
 
+    // Set the native window user data to nullptr so any other queued
+    // native message is not processed.
+    window->setDisplay(nullptr, false);
+    windowDisplay->nativeWindow()->setUserData<void*>(nullptr);
+
     // Remove all messages for this display.
     removeMessagesForDisplay(windowDisplay);
 
     // Remove the mouse cursor from the display that we are going to
     // delete.
     _internal_set_mouse_display(parentDisplay);
-
-    window->setDisplay(nullptr, false);
-    windowDisplay->nativeWindow()->setUserData<void*>(nullptr);
 
     // The ui::Display should destroy the os::Window
     delete windowDisplay;
