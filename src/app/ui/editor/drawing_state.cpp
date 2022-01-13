@@ -242,11 +242,17 @@ bool DrawingState::onMouseMove(Editor* editor, MouseMessage* msg)
   // Update velocity sensor.
   m_velocity.updateWithScreenPoint(msg->position());
 
+  // Update pointer with new mouse position
   m_lastPointer = tools::Pointer(gfx::Point(m_delayedMouseMove.spritePos()),
                                  m_velocity.velocity(),
                                  button_from_msg(msg),
                                  msg->pointerType(),
                                  msg->pressure());
+
+  // Indicate that we've received a real mouse movement event here
+  // (used in the Rectangular Marquee to deselect when we just do a
+  // simple click without moving the mouse).
+  m_mouseMoveReceived = true;
 
   // Use DelayedMouseMove for tools like line, rectangle, etc. (that
   // use the only the last mouse position) to filter out rapid mouse
@@ -347,8 +353,6 @@ void DrawingState::onExposeSpritePixels(const gfx::Region& rgn)
 
 void DrawingState::handleMouseMovement()
 {
-  m_mouseMoveReceived = true;
-
   // Notify mouse movement to the tool
   ASSERT(m_toolLoopManager);
   m_toolLoopManager->movement(m_lastPointer);
