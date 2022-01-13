@@ -36,6 +36,9 @@
 #include "app/ui/main_window.h"
 #include "app/ui/timeline/timeline.h"
 
+#include <algorithm>
+#include <cmath>
+#include <cstdlib>
 #include <cstring>
 
 namespace app {
@@ -113,6 +116,9 @@ void DrawingState::initToolLoop(Editor* editor,
 
   m_velocity.reset();
   m_lastPointer = pointer;
+  m_mouseDownPos = msg->position();
+  m_mouseDownTime = base::current_tick();
+
   m_toolLoopManager->prepareLoop(pointer);
   m_toolLoopManager->pressButton(pointer);
 
@@ -202,7 +208,7 @@ bool DrawingState::onMouseUp(Editor* editor, MouseMessage* msg)
   // one click).
   if (!m_toolLoop->getInk()->isSelection() ||
       m_toolLoop->getController()->isOnePoint() ||
-      m_mouseMoveReceived ||
+      !canInterpretMouseMovementAsJustOneClick() ||
       // In case of double-click (to select tiles) we don't want to
       // deselect if the mouse is not moved. In this case the tile
       // will be selected anyway even if the mouse is not moved.
@@ -251,11 +257,20 @@ bool DrawingState::onMouseMove(Editor* editor, MouseMessage* msg)
   // Update velocity sensor.
   m_velocity.updateWithDisplayPoint(msg->position());
 
+  // Update pointer with new mouse position
   m_lastPointer = tools::Pointer(gfx::Point(m_delayedMouseMove.spritePos()),
                                  m_velocity.velocity(),
                                  button_from_msg(msg),
                                  msg->pointerType(),
                                  msg->pressure());
+
+  // Indicate that we've received a real mouse movement event here
+  // (used in the Rectangular Marquee to deselect when we just do a
+  // simple click without moving the mouse).
+  m_mouseMoveReceived = true;
+  gfx::Point delta = (msg->position() - m_mouseDownPos);
+  m_mouseMaxDelta.x = std::max(m_mouseMaxDelta.x, std::abs(delta.x));
+  m_mouseMaxDelta.y = std::max(m_mouseMaxDelta.y, std::abs(delta.y));
 
   // Use DelayedMouseMove for tools like line, rectangle, etc. (that
   // use the only the last mouse position) to filter out rapid mouse
@@ -367,11 +382,21 @@ bool DrawingState::getGridBounds(Editor* editor, gfx::Rect& gridBounds)
 
 void DrawingState::handleMouseMovement()
 {
-  m_mouseMoveReceived = true;
-
   // Notify mouse movement to the tool
   ASSERT(m_toolLoopManager);
   m_toolLoopManager->movement(m_lastPointer);
+}
+
+bool DrawingState::canInterpretMouseMovementAsJustOneClick()
+{
+  // If the user clicked (pressed and released the mouse button) in
+  // less than 250 milliseconds in "the same place" (inside a 7 pixels
+  // rectangle actually, to detect stylus shake).
+  return
+    !m_mouseMoveReceived ||
+    (m_mouseMaxDelta.x < 4 &&
+     m_mouseMaxDelta.y < 4 &&
+     (base::current_tick() - m_mouseDownTime < 250));
 }
 
 bool DrawingState::canExecuteCommands()
