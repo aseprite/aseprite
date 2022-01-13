@@ -116,7 +116,8 @@ void DrawingState::initToolLoop(Editor* editor,
 
   m_velocity.reset();
   m_lastPointer = pointer;
-  m_mouseDownPos = msg->position();
+  m_mouseDownPos = (msg ? msg->position():
+                          editor->editorToScreen(pointer.point()));
   m_mouseDownTime = base::current_tick();
 
   m_toolLoopManager->prepareLoop(pointer);
