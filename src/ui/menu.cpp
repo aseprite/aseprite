@@ -365,6 +365,8 @@ void Menu::showPopup(const gfx::Point& pos,
   menubox->setMenu(this);
   menubox->startFilteringMouseDown();
 
+  window->remapWindow();
+
   fit_bounds(parentDisplay,
              window.get(),
              gfx::Rect(pos, window->size()),
