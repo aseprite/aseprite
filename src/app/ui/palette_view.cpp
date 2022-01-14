@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -842,16 +842,16 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
     const int boxsize = boxSizePx();
     const int scale = guiscale();
 
-    if (!m_delegate || m_delegate->onIsPaletteViewActive(this)) {
-      switch (m_style) {
+    switch (m_style) {
 
-        case SelectOneColor:
-          if (m_currentEntry == i)
-            g->fillRect(negColor, gfx::Rect(box.center(), gfx::Size(scale, scale)));
-          break;
+      case SelectOneColor:
+        if (m_currentEntry == i)
+          g->fillRect(negColor, gfx::Rect(box.center(), gfx::Size(scale, scale)));
+        break;
 
-        case FgBgColors:
-        case FgBgTiles:
+      case FgBgColors:
+      case FgBgTiles:
+        if (!m_delegate || m_delegate->onIsPaletteViewActive(this)) {
           if (fgIndex == i) {
             for (int i=0; i<int(boxsize/2); i += scale) {
               g->fillRect(negColor,
@@ -870,8 +870,8 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
 
           if (transparentIndex == i)
             g->fillRect(negColor, gfx::Rect(box.center(), gfx::Size(scale, scale)));
-          break;
-      }
+        }
+        break;
     }
   }
 
