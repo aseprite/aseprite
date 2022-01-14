@@ -175,7 +175,7 @@ static void add_scrollbars_if_needed(MenuBoxWindow* window,
 
     rc.w += 2*barWidth;
     if (rc.x2() > workarea.x2()) {
-      rc.x = workarea.x2() - rc.x2();
+      rc.x = workarea.x2() - rc.w;
       if (rc.x < workarea.x) {
         rc.x = workarea.x;
         rc.w = workarea.w;
