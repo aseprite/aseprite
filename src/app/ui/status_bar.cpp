@@ -935,6 +935,8 @@ void StatusBar::onActiveSiteChange(const Site& site)
 {
   DocObserverWidget<ui::HBox>::onActiveSiteChange(site);
 
+  const bool controlsWereVisible = m_docControls->isVisible();
+
   if (doc()) {
     auto& docPref = Preferences::instance().document(doc());
 
@@ -957,6 +959,11 @@ void StatusBar::onActiveSiteChange(const Site& site)
     m_docControls->setVisible(false);
     showSnapToGridWarning(false);
   }
+
+  // Relayout the StatusBar so we can put the m_docControls widget in
+  // the right place now that it's visibility changed.
+  if (m_docControls->isVisible() != controlsWereVisible)
+    layout();
 }
 
 void StatusBar::onPixelFormatChanged(DocEvent& ev)
