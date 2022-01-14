@@ -352,12 +352,10 @@ void Menu::showPopup(const gfx::Point& pos,
   }
 
   // New window and new menu-box
-  MenuBox* menubox = new MenuBox();
-  std::unique_ptr<MenuBoxWindow> window(
-    new MenuBoxWindow(nullptr, menubox,
-                      false));  // Deleted by unique_ptr
-  window->Open.connect([this]{ this->onOpenPopup(); });
+  MenuBoxWindow window;
+  window.Open.connect([this]{ this->onOpenPopup(); });
 
+  MenuBox* menubox = window.menubox();
   MenuBaseData* base = menubox->createBase();
   base->was_clicked = true;
 
@@ -365,31 +363,29 @@ void Menu::showPopup(const gfx::Point& pos,
   menubox->setMenu(this);
   menubox->startFilteringMouseDown();
 
-  window->remapWindow();
-
+  window.remapWindow();
   fit_bounds(parentDisplay,
-             window.get(),
-             gfx::Rect(pos, window->size()),
+             &window,
+             gfx::Rect(pos, window.size()),
              [&window, pos](const gfx::Rect& workarea,
                             gfx::Rect& bounds,
                             std::function<gfx::Rect(Widget*)> getWidgetBounds) {
                choose_side(bounds, workarea, gfx::Rect(bounds.x-1, bounds.y, 1, 1));
-               add_scrollbars_if_needed(window.get(), workarea, bounds);
+               add_scrollbars_if_needed(&window, workarea, bounds);
              });
 
   // Set the focus to the new menubox
   Manager* manager = Manager::getDefault();
   manager->setFocus(menubox);
-  menubox->setFocusMagnet(true);
 
   // Open the window
-  window->openWindowInForeground();
+  window.openWindowInForeground();
 
   // Free the keyboard focus if it's in the menu popup, in other case
   // it means that the user set the focus to other specific widget
   // before we closed the popup.
   Widget* focus = manager->getFocus();
-  if (focus && focus->window() == window.get())
+  if (focus && focus->window() == &window)
     focus->releaseFocus();
 
   menubox->stopFilteringMouseDown();
@@ -892,15 +888,17 @@ bool MenuItem::onProcessMessage(Message* msg)
         ASSERT(base->is_processing);
         ASSERT(hasSubmenu());
 
-        MenuBox* menubox = new MenuBox();
+        // New window that will be automatically deleted
+        auto window = new MenuBoxWindow(this);
+        window->Close.connect([window]{
+          window->deferDelete();
+        });
+
+        MenuBox* menubox = window->menubox();
         m_submenu_menubox = menubox;
         menubox->setMenu(m_submenu);
 
-        // New window and new menu-box
-        auto window = new MenuBoxWindow(
-          this, menubox,
-          true); // Call defer delete when it's closed
-
+        window->remapWindow();
         fit_bounds(
           display(), window, window->bounds(),
           [this, window](const gfx::Rect& workarea,
@@ -923,9 +921,6 @@ bool MenuItem::onProcessMessage(Message* msg)
 
             add_scrollbars_if_needed(window, workarea, bounds);
           });
-
-        // Set the focus to the new menubox
-        menubox->setFocusMagnet(true);
 
         // Setup the highlight of the new menubox
         if (select_first) {
@@ -966,13 +961,10 @@ bool MenuItem::onProcessMessage(Message* msg)
 
         ASSERT(base->is_processing);
 
-        MenuBox* menubox = m_submenu_menubox;
-        m_submenu_menubox = nullptr;
-
-        ASSERT(menubox != nullptr);
-
-        Window* window = menubox->window();
+        ASSERT(m_submenu_menubox);
+        Window* window = m_submenu_menubox->window();
         ASSERT(window && window->type() == kWindowWidget);
+        m_submenu_menubox = nullptr;
 
         // Destroy the window
         window->closeWindow(nullptr);
@@ -1493,26 +1485,34 @@ static MenuItem* find_previtem(Menu* menu, MenuItem* menuitem)
 //////////////////////////////////////////////////////////////////////
 // MenuBoxWindow
 
-MenuBoxWindow::MenuBoxWindow(MenuItem* menuitem,
-                             MenuBox* menubox,
-                             const bool deferDelete)
+MenuBoxWindow::MenuBoxWindow(MenuItem* menuitem)
   : Window(WithoutTitleBar, "")
   , m_menuitem(menuitem)
-  , m_deferDelete(deferDelete)
 {
   setMoveable(false); // Can't move the window
   setSizeable(false); // Can't resize the window
-  addChild(menubox);
-  remapWindow();
+
+  m_menubox.setFocusMagnet(true);
+
+  addChild(&m_menubox);
 }
 
 MenuBoxWindow::~MenuBoxWindow()
 {
-  if (auto menubox = this->menubox()) {
-    // The menu of the menubox should already be nullptr because it
-    // was reset in kCloseMessage.
-    ASSERT(menubox->getMenu() == nullptr);
-    menubox->setMenu(nullptr);
+  // The menu of the menubox should already be nullptr because it
+  // was reset in kCloseMessage.
+  ASSERT(m_menubox.getMenu() == nullptr);
+  m_menubox.setMenu(nullptr);
+
+  // This can fail in case that add_scrollbars_if_needed() replaced
+  // the MenuBox widget with a View, and now the MenuBox is inside the
+  // viewport.
+  if (hasChild(&m_menubox)) {
+    removeChild(&m_menubox);
+  }
+  else {
+    ASSERT(firstChild() != nullptr &&
+           firstChild()->type() == kViewWidget);
   }
 }
 
@@ -1534,13 +1534,7 @@ bool MenuBoxWindow::onProcessMessage(Message* msg)
       }
 
       // Fetch the "menu" to avoid destroy it with 'delete'.
-      auto menubox = this->menubox();
-      if (menubox)
-        menubox->setMenu(nullptr);
-
-      // Delete this window automatically
-      if (m_deferDelete)
-        deferDelete();
+      m_menubox.setMenu(nullptr);
       break;
 
   }

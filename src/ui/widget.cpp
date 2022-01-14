@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -553,13 +553,21 @@ void Widget::addChild(Widget* child)
 
 void Widget::removeChild(WidgetsList::iterator& it)
 {
-  Widget* child = *it;
+  Widget* child = nullptr;
 
   ASSERT(it != m_children.end());
-  if (it != m_children.end())
+  if (it != m_children.end()) {
+    child = *it;
     m_children.erase(it);
 
-  // Free from manager
+    ASSERT(child);
+    if (!child)
+      return;
+  }
+  else
+    return;
+
+  // Free child from manager
   if (auto man = manager())
     man->freeWidget(child);
 
@@ -571,8 +579,10 @@ void Widget::removeChild(Widget* child)
   ASSERT_VALID_WIDGET(this);
   ASSERT_VALID_WIDGET(child);
 
-  WidgetsList::iterator it = std::find(m_children.begin(), m_children.end(), child);
-  removeChild(it);
+  auto it = std::find(m_children.begin(), m_children.end(), child);
+  ASSERT(it != m_children.end());
+  if (it != m_children.end())
+    removeChild(it);
 }
 
 void Widget::removeAllChildren()

@@ -172,16 +172,14 @@ namespace ui {
 
   class MenuBoxWindow : public Window {
   public:
-    MenuBoxWindow(MenuItem* menuitem,
-                  MenuBox* menubox,
-                  const bool deferDelete);
+    MenuBoxWindow(MenuItem* menuitem = nullptr);
     ~MenuBoxWindow();
-    MenuBox* menubox() { return static_cast<MenuBox*>(firstChild()); }
+    MenuBox* menubox() { return &m_menubox; }
   protected:
     bool onProcessMessage(Message* msg) override;
   private:
+    MenuBox m_menubox;
     MenuItem* m_menuitem;
-    const bool m_deferDelete;
   };
 
   extern RegisterMessage kOpenMenuItemMessage;
