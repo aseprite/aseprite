@@ -375,6 +375,10 @@ int Sprite_deleteLayer(lua_State* L)
     }
   }
   if (layer) {
+    const auto& rootLayers = sprite->root()->layers();
+    if (rootLayers.size() == 1 && rootLayers[0] == layer)
+      return luaL_error(L, "You cannot delete all layers");
+
     Tx tx;
     tx(new cmd::RemoveLayer(layer));
     tx.commit();
