@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -375,6 +375,8 @@ int Sprite_deleteLayer(lua_State* L)
     }
   }
   if (layer) {
+    if (sprite != layer->sprite())
+      return luaL_error(L, "the layer doesn't belong to the sprite");
     Tx tx;
     tx(new cmd::RemoveLayer(layer));
     tx.commit();
