@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -548,6 +548,8 @@ int Sprite_deleteTag(lua_State* L)
       tag = sprite->tags().getByName(tagName);
   }
   if (tag) {
+    if (sprite != tag->owner()->sprite())
+      return luaL_error(L, "the tag doesn't belong to the sprite");
     Tx tx;
     tx(new cmd::RemoveTag(sprite, tag));
     tx.commit();
