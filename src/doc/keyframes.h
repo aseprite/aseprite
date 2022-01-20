@@ -10,6 +10,7 @@
 
 #include "doc/frame.h"
 
+#include <algorithm>
 #include <vector>
 
 namespace doc {
@@ -124,6 +125,9 @@ namespace doc {
       else {
         ++it;
         m_keys.insert(it, Key(frame, value));
+        std::sort(begin(), end(), [](const auto& a, const auto& b) {
+          return a.frame() < b.frame();
+        });
       }
     }
 
