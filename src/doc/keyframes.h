@@ -24,10 +24,14 @@ namespace doc {
       frame_t frame() const { return m_frame; }
       T* value() const { return m_value; }
       void setFrame(const frame_t frame) { m_frame = frame; }
-      void setValue(T* value) { m_value = value; }
+      void setValue(T* value) {
+        if (m_value)
+          delete m_value;
+        m_value = value;
+      }
     private:
-      frame_t m_frame;
-      T* m_value;
+      frame_t m_frame = -1;
+      T* m_value = nullptr;
     };
 
     typedef std::vector<Key> List;
