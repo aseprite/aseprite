@@ -391,6 +391,9 @@ bool MovingPixelsState::onMouseMove(Editor* editor, MouseMessage* msg)
 void MovingPixelsState::onCommitMouseMove(Editor* editor,
                                           const gfx::PointF& spritePos)
 {
+  if (!m_pixelsMovement->isDragging())
+    return;
+
   m_pixelsMovement->setFastMode(true);
 
   // Get the customization for the pixels movement (snap to grid, angle snap, etc.).
