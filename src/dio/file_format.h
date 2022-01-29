@@ -30,6 +30,7 @@ enum class FileFormat {
   PNG_IMAGE,
   SVG_IMAGE,
   TARGA_IMAGE,
+  TIFF_IMAGE,
   WEBP_ANIMATION,
   CSS_STYLE,
 };

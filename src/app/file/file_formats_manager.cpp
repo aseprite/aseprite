@@ -31,6 +31,7 @@ extern FileFormat* CreatePcxFormat();
 extern FileFormat* CreatePngFormat();
 extern FileFormat* CreateSvgFormat();
 extern FileFormat* CreateTgaFormat();
+extern FileFormat* CreateTiffFormat();
 
 #ifdef ENABLE_WEBP
 extern FileFormat* CreateWebPFormat();
@@ -67,6 +68,7 @@ FileFormatsManager::FileFormatsManager()
   registerFormat(CreatePngFormat());
   registerFormat(CreateSvgFormat());
   registerFormat(CreateTgaFormat());
+  registerFormat(CreateTiffFormat());
 
 #ifdef ENABLE_WEBP
   registerFormat(CreateWebPFormat());

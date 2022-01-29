@@ -222,11 +222,13 @@ bool JpegFormat::onLoad(FileOp* fop)
       uint8_t* src_address;
       uint32_t* dst_address;
       int x, y, r, g, b;
-
+      // for each line
       for (y=0; y<(int)num_scanlines; y++) {
         src_address = ((uint8_t**)buffer)[y];
+        // get a pointer to this line
         dst_address = (uint32_t*)image->getPixelAddress(0, dinfo.output_scanline-1+y);
 
+        // for pixel on this line
         for (x=0; x<image->width(); x++) {
           r = *(src_address++);
           g = *(src_address++);

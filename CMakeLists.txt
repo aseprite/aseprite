@@ -323,6 +323,8 @@ if(REQUIRE_CURL)
   include_directories(${CURL_INCLUDE_DIRS})
 endif()
 
+find_package(TinyTIFF REQUIRED)
+
 # simpleini
 include_directories(${SIMPLEINI_DIR})
 

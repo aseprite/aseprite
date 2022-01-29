@@ -21,6 +21,7 @@
 #define GIF_89_STAMP     "GIF89a"
 #define PNG_MAGIC_DWORD1 0x474E5089
 #define PNG_MAGIC_DWORD2 0x0A1A0A0D
+//#define TIFF_MAGIC_DWORD 0x     //TODO implement byte check
 #define WEBP_STAMP_1     "RIFF" // "RIFFnnnnWEBP"
 #define WEBP_STAMP_2     "WEBP"
 
@@ -149,6 +150,10 @@ FileFormat detect_format_by_file_extension(const std::string& filename)
 
   if (ext == "tga")
     return FileFormat::TARGA_IMAGE;
+
+  if (ext == "tif" ||
+      ext == "tiff")
+    return FileFormat::TIFF_IMAGE;
 
   if (ext == "css")
     return FileFormat::CSS_STYLE;
