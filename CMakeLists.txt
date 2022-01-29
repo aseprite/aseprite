@@ -173,6 +173,7 @@ set(HARFBUZZ_DIR        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/harfbuzz)
 set(SIMPLEINI_DIR       ${CMAKE_CURRENT_SOURCE_DIR}/third_party/simpleini)
 set(TINYXML_DIR         ${CMAKE_CURRENT_SOURCE_DIR}/third_party/tinyxml)
 set(ZLIB_DIR            ${CMAKE_CURRENT_SOURCE_DIR}/third_party/zlib)
+set(TinyTIFF_DIR        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/TinyTIFF/lib/cmake/TinyTIFF)
 
 # Search in the "cmake" directory for additional CMake modules.
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
@@ -323,7 +324,7 @@ if(REQUIRE_CURL)
   include_directories(${CURL_INCLUDE_DIRS})
 endif()
 
-find_package(TinyTIFF REQUIRED)
+find_package(TinyTIFF REQUIRED PATHS TINYTIFF_DIR)
 
 # simpleini
 include_directories(${SIMPLEINI_DIR})

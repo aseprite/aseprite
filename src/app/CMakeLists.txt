@@ -638,6 +638,7 @@ add_library(app-lib
   ${data_recovery_files}
   ${scripting_files}
   ${generated_files})
+target_link_libraries(app-lib TinyTIFF)
 
 if(TARGET generated_version)
   add_dependencies(app-lib generated_version)
