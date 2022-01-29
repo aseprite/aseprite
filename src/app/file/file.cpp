@@ -200,11 +200,10 @@ FileOp* FileOp::createLoadDocumentOperation(Context* context,
   fop->m_format = FileFormatsManager::instance()->getFileFormat(
     dio::detect_format(filename));
 
-  // With added debug info (remove before pushing to main)
   if (!fop->m_format ||
       !fop->m_format->support(FILE_SUPPORT_LOAD)) {
-    fop->setError("%s can't load \"%s\" file (\"%s\") %s, %i\n", get_app_name(),
-                  filename.c_str(), base::get_file_extension(filename).c_str(), !fop->m_format?"null":fop->m_format->name(), !fop->m_format?-1:fop->m_format->support(FILE_SUPPORT_LOAD));
+    fop->setError("%s can't load \"%s\" file (\"%s\")\n", get_app_name(),
+                  filename.c_str(), base::get_file_extension(filename).c_str(), !fop->m_format?"null":fop->m_format->name());
     goto done;
   }
 

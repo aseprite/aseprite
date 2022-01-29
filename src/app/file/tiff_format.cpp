@@ -165,25 +165,6 @@ bool TiffFormat::onLoad(FileOp* fop)
   }
   TinyTIFFReader_close(tiffr);
 
-  /*Image* image = fop->sequenceImage(pixelFormat, imageWidth, imageHeight);
-  if (!image) {
-    fop->setError("file_sequence_image %dx%d\n", imageWidth, imageHeight);
-    return false;
-  }
-  for (int y = 0; y < imageHeight; y++) {
-    //uint8_t* src_address = rows_pointer[y];
-    uint32_t* dst_address = (uint32_t*)image->getPixelAddress(0, y);
-    unsigned int x, r, g, b, a;
-
-    for (x=0; x<imageWidth; x++) {
-      r = 255;
-      g = 0;
-      b = 0;
-      a = 255;
-      *(dst_address++) = rgba(r, g, b, a);
-    }
-  }*/
-
   return true;
 }
 
