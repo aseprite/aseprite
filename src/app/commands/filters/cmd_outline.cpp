@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -137,21 +137,26 @@ private:
   }
 
   void onColorChange(const app::Color& color) {
+    stopPreview();
     m_filter.color(color);
     restartPreview();
   }
 
   void onBgColorChange(const app::Color& color) {
+    stopPreview();
     m_filter.bgColor(color);
     restartPreview();
   }
 
   void onPlaceChange(OutlineFilter::Place place) {
+    stopPreview();
     m_filter.place(place);
     restartPreview();
   }
 
   void onMatrixTypeChange() {
+    stopPreview();
+
     OutlineFilter::Matrix matrix = OutlineFilter::Matrix::None;
     switch (m_panel.outlineType()->selectedItem()) {
       case CIRCLE: matrix = OutlineFilter::Matrix::Circle; break;
@@ -165,6 +170,8 @@ private:
   }
 
   void onMatrixPixelChange(const int index) {
+    stopPreview();
+
     int matrix = (int)m_filter.matrix();
     matrix ^= (1 << (8-index));
     m_filter.matrix((OutlineFilter::Matrix)matrix);

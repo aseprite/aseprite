@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This program is distributed under the terms of
@@ -65,6 +65,7 @@ public:
 private:
 
   void onChange() {
+    stopPreview();
     m_filter.setBrightness(m_brightness.getValue() / 100.0);
     m_filter.setContrast(m_contrast.getValue() / 100.0);
     restartPreview();

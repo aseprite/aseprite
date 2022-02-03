@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -135,6 +135,8 @@ private:
     Widget* selected = m_stockListBox->getSelectedChild();
     std::shared_ptr<ConvolutionMatrix> matrix = m_stock.getByName(selected->text().c_str());
     Target newTarget = matrix->getDefaultTarget();
+
+    stopPreview();
 
     m_filter.setMatrix(matrix);
 
