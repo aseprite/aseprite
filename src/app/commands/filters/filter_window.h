@@ -56,6 +56,7 @@ namespace app {
     void onShowPreview(ui::Event& ev);
     void onTargetButtonChange();
     void onTiledChange();
+    void requestPreviewStop() { stopPreview(); }
 
     // Derived classes WithTiledCheckBox should set its filter's tiled
     // mode overriding this method.
