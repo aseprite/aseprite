@@ -391,6 +391,8 @@ bool MovingPixelsState::onMouseMove(Editor* editor, MouseMessage* msg)
 void MovingPixelsState::onCommitMouseMove(Editor* editor,
                                           const gfx::PointF& spritePos)
 {
+  ASSERT(m_pixelsMovement);
+
   if (!m_pixelsMovement->isDragging())
     return;
 
@@ -823,6 +825,10 @@ void MovingPixelsState::removeAsEditorObserver()
 
 void MovingPixelsState::removePixelsMovement()
 {
+  // Avoid receiving a onCommitMouseMove() message when
+  // m_pixelsMovement is already nullptr.
+  m_delayedMouseMove.stopTimer();
+
   m_pixelsMovement.reset();
   m_ctxConn.disconnect();
   m_opaqueConn.disconnect();

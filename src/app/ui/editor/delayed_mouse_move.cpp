@@ -60,6 +60,12 @@ void DelayedMouseMove::onMouseUp(const ui::MouseMessage* msg)
   commitMouseMove();
 }
 
+void DelayedMouseMove::stopTimer()
+{
+  if (m_timer.isRunning())
+    m_timer.stop();
+}
+
 void DelayedMouseMove::commitMouseMove()
 {
   if (m_timer.isRunning())

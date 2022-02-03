@@ -50,6 +50,11 @@ namespace app {
     bool onMouseMove(const ui::MouseMessage* msg);
     void onMouseUp(const ui::MouseMessage* msg);
 
+    // Forces stopping the timer so we don't receive a Tick event in
+    // case that we've just removed/delete some structure that is
+    // needed in onCommitMouseMove().
+    void stopTimer();
+
     const gfx::PointF& spritePos() const;
 
   private:
