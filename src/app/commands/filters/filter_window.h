@@ -61,9 +61,9 @@ namespace app {
     // mode overriding this method.
     virtual void setupTiledMode(TiledMode tiledMode) { }
 
-  private:
     void stopPreview();
 
+  private:
     const char* m_cfgSection;
     FilterManagerImpl* m_filterMgr;
     ui::Box m_hbox;

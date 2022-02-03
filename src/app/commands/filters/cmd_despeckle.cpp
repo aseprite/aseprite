@@ -81,6 +81,12 @@ private:
     newSize.w = base::clamp(newSize.w, 1, 100);
     newSize.h = base::clamp(newSize.h, 1, 100);
 
+    // If we had a previous filter preview running in the background,
+    // we explicitly request it be stopped. Otherwise, changing the
+    // size of the filter would cause a race condition on
+    // MedianFilter::m_channel field.
+    stopPreview();
+
     m_filter.setSize(newSize.w, newSize.h);
     restartPreview();
   }
