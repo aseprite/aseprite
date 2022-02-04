@@ -295,7 +295,7 @@ int Color_get_gray(lua_State* L)
 int Color_get_index(lua_State* L)
 {
   auto color = get_obj<app::Color>(L, 1);
-  lua_pushnumber(L, color->getIndex());
+  lua_pushinteger(L, color->getIndex());
   return 1;
 }
 
