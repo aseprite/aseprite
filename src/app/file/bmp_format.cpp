@@ -30,6 +30,7 @@ class BmpFormat : public FileFormat {
   enum {
     BMP_OPTIONS_FORMAT_WINDOWS = 12,
     BMP_OPTIONS_FORMAT_OS2 = 40,
+    BMP_OPTIONS_FORMAT_V5 = 124,
     BMP_OPTIONS_COMPRESSION_RGB = 0,
     BMP_OPTIONS_COMPRESSION_RLE8 = 1,
     BMP_OPTIONS_COMPRESSION_RLE4 = 2,
@@ -46,6 +47,7 @@ class BmpFormat : public FileFormat {
     uint32_t red_mask;          // Mask for red channel.
     uint32_t green_mask;        // Mask for green channel.
     uint32_t blue_mask;         // Mask for blue channel.
+    uint32_t alpha_mask;        // Mask for alpha channel.
   };
 
   const char* onGetName() const override {
@@ -65,6 +67,7 @@ class BmpFormat : public FileFormat {
       FILE_SUPPORT_LOAD |
       FILE_SUPPORT_SAVE |
       FILE_SUPPORT_RGB |
+      FILE_SUPPORT_RGBA |
       FILE_SUPPORT_GRAY |
       FILE_SUPPORT_INDEXED |
       FILE_SUPPORT_SEQUENCES;
@@ -86,8 +89,16 @@ FileFormat* CreateBmpFormat()
 #define BI_RLE4         2
 #define BI_BITFIELDS    3
 
+#define FILEHEADERSIZE     14
 #define OS2INFOHEADERSIZE  12
 #define WININFOHEADERSIZE  40
+#define V5INFOHEADERSIZE  124
+
+#define LCS_sRGB                0x73524742 /* 's', 'R', 'G', 'B' */
+#define LCS_GM_ABS_COLORIMETRIC 0x8
+#define LCS_GM_BUSINESS         0x1
+#define LCS_GM_GRAPHICS         0x2
+#define LCS_GM_IMAGES           0x4
 
 typedef struct BITMAPFILEHEADER
 {
@@ -103,10 +114,43 @@ typedef struct BITMAPFILEHEADER
 typedef struct BITMAPINFOHEADER
 {
   uint32_t biWidth;
-  uint32_t biHeight;
+  int32_t biHeight;
   uint16_t biBitCount;
   uint32_t biCompression;
+  uint32_t biRedMask;
+  uint32_t biGreenMask;
+  uint32_t biBlueMask;
+  uint32_t biAlphaMask;
 } BITMAPINFOHEADER;
+
+typedef struct BITMAPV5INFOHEADER
+{
+  uint32_t bV5Width;
+  int32_t bV5Height; // Can be negative to indicate top-down.
+  uint16_t bV5Planes;
+  uint16_t bV5BitCount;
+  uint32_t bV5Compression;
+  uint32_t bV5SizeImage;
+  uint32_t bV5XPelsPerMeter;
+  uint32_t bV5YPelsPerMeter;
+  uint32_t bV5ClrUsed;
+  uint32_t bV5ClrImportant;
+  uint32_t bV5RedMask;
+  uint32_t bV5GreenMask;
+  uint32_t bV5BlueMask;
+  uint32_t bV5AlphaMask;
+  uint32_t bV5CSType;
+  uint32_t bV5Endpoints[9]; // This is normally a set of fixed point numbers
+                            // but they should be ignored by the spec if
+                            // bV5CSType isn't a calibrated mode.
+  uint32_t bV5GammaRed;
+  uint32_t bV5GammaGreen;
+  uint32_t bV5GammaBlue;
+  uint32_t bV5Intent;
+  uint32_t bV5ProfileData;
+  uint32_t bV5ProfileSize;
+  uint32_t bV5Reserved;
+} BITMAPV5INFOHEADER;
 
 typedef struct WINBMPINFOHEADER  // Size: 40.
 {
@@ -147,6 +191,65 @@ static int read_bmfileheader(FILE *f, BITMAPFILEHEADER *fileheader)
   return 0;
 }
 
+static int read_v5_bminfoheader(FILE *f, BITMAPINFOHEADER *infoheader)
+{
+  BITMAPV5INFOHEADER v5_infoheader;
+
+  v5_infoheader.bV5Width = fgetl(f);
+  v5_infoheader.bV5Height = fgetl(f);
+  v5_infoheader.bV5Planes = fgetw(f);
+  v5_infoheader.bV5BitCount = fgetw(f);
+  v5_infoheader.bV5Compression = fgetl(f);
+  v5_infoheader.bV5SizeImage = fgetl(f);
+  v5_infoheader.bV5XPelsPerMeter = fgetl(f);
+  v5_infoheader.bV5YPelsPerMeter = fgetl(f);
+  v5_infoheader.bV5ClrUsed = fgetl(f);
+  v5_infoheader.bV5ClrImportant = fgetl(f);
+  v5_infoheader.bV5RedMask = fgetl(f);
+  v5_infoheader.bV5GreenMask = fgetl(f);
+  v5_infoheader.bV5BlueMask = fgetl(f);
+  v5_infoheader.bV5AlphaMask = fgetl(f);
+  v5_infoheader.bV5CSType = fgetl(f);
+  v5_infoheader.bV5Endpoints[0] = fgetl(f);
+  v5_infoheader.bV5Endpoints[1] = fgetl(f);
+  v5_infoheader.bV5Endpoints[2] = fgetl(f);
+  v5_infoheader.bV5Endpoints[3] = fgetl(f);
+  v5_infoheader.bV5Endpoints[4] = fgetl(f);
+  v5_infoheader.bV5Endpoints[5] = fgetl(f);
+  v5_infoheader.bV5Endpoints[6] = fgetl(f);
+  v5_infoheader.bV5Endpoints[7] = fgetl(f);
+  v5_infoheader.bV5Endpoints[8] = fgetl(f);
+  v5_infoheader.bV5GammaRed = fgetl(f);
+  v5_infoheader.bV5GammaGreen = fgetl(f);
+  v5_infoheader.bV5GammaBlue = fgetl(f);
+  v5_infoheader.bV5Intent = fgetl(f);
+  v5_infoheader.bV5ProfileData = fgetl(f);
+  v5_infoheader.bV5ProfileSize = fgetl(f);
+  v5_infoheader.bV5Reserved = fgetl(f);
+
+  infoheader->biWidth = v5_infoheader.bV5Width;
+  infoheader->biHeight = v5_infoheader.bV5Height;
+  infoheader->biBitCount = v5_infoheader.bV5BitCount;
+  infoheader->biCompression = v5_infoheader.bV5Compression;
+
+  /* bitfields have the 'mask' for each component */
+  if (v5_infoheader.bV5Compression == BI_BITFIELDS) {
+    infoheader->biRedMask = v5_infoheader.bV5RedMask;
+    infoheader->biGreenMask = v5_infoheader.bV5GreenMask;
+    infoheader->biBlueMask = v5_infoheader.bV5BlueMask;
+    infoheader->biAlphaMask = v5_infoheader.bV5AlphaMask;
+  }
+  else
+  {
+    infoheader->biRedMask = 0;
+    infoheader->biGreenMask = 0;
+    infoheader->biBlueMask = 0;
+    infoheader->biAlphaMask = 0;
+  }
+
+  return 0;
+}
+
 /* read_win_bminfoheader:
  *  Reads information from a BMP file header.
  */
@@ -166,9 +269,24 @@ static int read_win_bminfoheader(FILE *f, BITMAPINFOHEADER *infoheader)
   win_infoheader.biClrImportant = fgetl(f);
 
   infoheader->biWidth = win_infoheader.biWidth;
-  infoheader->biHeight = win_infoheader.biHeight;
+  infoheader->biHeight = (uint32_t)win_infoheader.biHeight;
   infoheader->biBitCount = win_infoheader.biBitCount;
   infoheader->biCompression = win_infoheader.biCompression;
+
+  /* bitfields have the 'mask' for each component */
+  if (win_infoheader.biCompression == BI_BITFIELDS) {
+    infoheader->biRedMask = fgetl(f);
+    infoheader->biGreenMask = fgetl(f);
+    infoheader->biBlueMask = fgetl(f);
+  }
+  else
+  {
+    infoheader->biRedMask = 0;
+    infoheader->biGreenMask = 0;
+    infoheader->biBlueMask = 0;
+  }
+
+  infoheader->biAlphaMask = 0;
 
   return 0;
 }
@@ -186,9 +304,13 @@ static int read_os2_bminfoheader(FILE *f, BITMAPINFOHEADER *infoheader)
   os2_infoheader.biBitCount = fgetw(f);
 
   infoheader->biWidth = os2_infoheader.biWidth;
-  infoheader->biHeight = os2_infoheader.biHeight;
+  infoheader->biHeight = (uint32_t)os2_infoheader.biHeight;
   infoheader->biBitCount = os2_infoheader.biBitCount;
   infoheader->biCompression = 0;
+  infoheader->biRedMask = 0;
+  infoheader->biGreenMask = 0;
+  infoheader->biBlueMask = 0;
+  infoheader->biAlphaMask = 0;
 
   return 0;
 }
@@ -544,7 +666,7 @@ static void read_rle4_compressed_image(FILE *f, Image *image, const BITMAPINFOHE
 }
 
 static int read_bitfields_image(FILE *f, Image *image, BITMAPINFOHEADER *infoheader,
-                                unsigned long rmask, unsigned long gmask, unsigned long bmask)
+                                unsigned long rmask, unsigned long gmask, unsigned long bmask, unsigned long amask)
 {
 #define CALC_SHIFT(c)                           \
   mask = ~c##mask;                              \
@@ -560,11 +682,12 @@ static int read_bitfields_image(FILE *f, Image *image, BITMAPINFOHEADER *infohea
   else                                          \
     c##scale = NULL;
 
-  unsigned long buffer, mask, rshift, gshift, bshift;
-  int i, j, k, line, height, dir, r, g, b;
+  unsigned long buffer, mask, rshift, gshift, bshift, ashift;
+  int i, j, k, line, height, dir, r, g, b, a;
   int (*rscale)(int);
   int (*gscale)(int);
   int (*bscale)(int);
+  int (*ascale)(int);
   int bits_per_pixel;
   int bytes_per_pixel;
 
@@ -577,6 +700,7 @@ static int read_bitfields_image(FILE *f, Image *image, BITMAPINFOHEADER *infohea
   CALC_SHIFT(r);
   CALC_SHIFT(g);
   CALC_SHIFT(b);
+  CALC_SHIFT(a);
 
   /* calculate bits-per-pixel and bytes-per-pixel */
   bits_per_pixel = infoheader->biBitCount;
@@ -593,12 +717,18 @@ static int read_bitfields_image(FILE *f, Image *image, BITMAPINFOHEADER *infohea
       r = (buffer & rmask) >> rshift;
       g = (buffer & gmask) >> gshift;
       b = (buffer & bmask) >> bshift;
+      if(amask != 0)
+        a = (buffer & amask) >> ashift;
+      else
+        a = 255;
 
       r = rscale ? rscale(r): r;
       g = gscale ? gscale(g): g;
       b = bscale ? bscale(b): b;
+      if(amask != 0)
+        a = ascale ? ascale(a): a;
 
-      put_pixel_fast<RgbTraits>(image, j, line, rgba(r, g, b, 255));
+      put_pixel_fast<RgbTraits>(image, j, line, rgba(r, g, b, a));
     }
 
     j = (bytes_per_pixel*j) % 4;
@@ -612,7 +742,7 @@ static int read_bitfields_image(FILE *f, Image *image, BITMAPINFOHEADER *infohea
 
 bool BmpFormat::onLoad(FileOp *fop)
 {
-  unsigned long rmask, gmask, bmask;
+  unsigned long rmask, gmask, bmask, amask;
   BITMAPFILEHEADER fileheader;
   BITMAPINFOHEADER infoheader;
   unsigned long biSize;
@@ -634,7 +764,7 @@ bool BmpFormat::onLoad(FileOp *fop)
       return false;
     }
     if (infoheader.biCompression != BI_BITFIELDS)
-      read_bmicolors(fop, fileheader.bfOffBits - 54, f, true);
+      read_bmicolors(fop, fileheader.bfOffBits - (FILEHEADERSIZE + WININFOHEADERSIZE), f, true);
   }
   else if (biSize == OS2INFOHEADERSIZE) {
     format = BMP_OPTIONS_FORMAT_OS2;
@@ -644,7 +774,16 @@ bool BmpFormat::onLoad(FileOp *fop)
     }
     /* compute number of colors recorded */
     if (infoheader.biCompression != BI_BITFIELDS)
-      read_bmicolors(fop, fileheader.bfOffBits - 26, f, false);
+      read_bmicolors(fop, fileheader.bfOffBits - (FILEHEADERSIZE + OS2INFOHEADERSIZE), f, false);
+  }
+  else if (biSize == V5INFOHEADERSIZE) {
+    format = BMP_OPTIONS_FORMAT_V5;
+
+    if (read_v5_bminfoheader(f, &infoheader) != 0) {
+      return false;
+    }
+    if (infoheader.biCompression != BI_BITFIELDS)
+      read_bmicolors(fop, fileheader.bfOffBits - (FILEHEADERSIZE + V5INFOHEADERSIZE), f, true);
   }
   else {
     return false;
@@ -679,14 +818,10 @@ bool BmpFormat::onLoad(FileOp *fop)
   else
     pixelFormat = IMAGE_INDEXED;
 
-  /* bitfields have the 'mask' for each component */
-  if (infoheader.biCompression == BI_BITFIELDS) {
-    rmask = fgetl(f);
-    gmask = fgetl(f);
-    bmask = fgetl(f);
-  }
-  else
-    rmask = gmask = bmask = 0;
+  rmask = infoheader.biRedMask;
+  gmask = infoheader.biGreenMask;
+  bmask = infoheader.biBlueMask;
+  amask = infoheader.biAlphaMask;
 
   Image* image = fop->sequenceImage(pixelFormat,
                                     infoheader.biWidth,
@@ -715,7 +850,7 @@ bool BmpFormat::onLoad(FileOp *fop)
       break;
 
     case BI_BITFIELDS:
-      if (read_bitfields_image(f, image, &infoheader, rmask, gmask, bmask) < 0) {
+      if (read_bitfields_image(f, image, &infoheader, rmask, gmask, bmask, amask) < 0) {
         fop->setError("Unsupported bitfields in the BMP file.\n");
         return false;
       }
@@ -741,6 +876,7 @@ bool BmpFormat::onLoad(FileOp *fop)
     bmp_options->red_mask = rmask;
     bmp_options->green_mask = gmask;
     bmp_options->blue_mask = bmask;
+    bmp_options->alpha_mask = amask;
 
     fop->setLoadedFormatOptions(bmp_options);
   }
@@ -758,9 +894,15 @@ bool BmpFormat::onSave(FileOp *fop)
   int biSizeImage;
   int ncolors = fop->sequenceGetNColors();
   int bpp = 0;
+  int headersize = FILEHEADERSIZE + WININFOHEADERSIZE;
   switch (image->pixelFormat()) {
     case IMAGE_RGB:
-      bpp = 24;
+      if(fop->document()->sprite()->needAlpha()) {
+        bpp = 32;
+        headersize = FILEHEADERSIZE + V5INFOHEADERSIZE;
+      }
+      else
+        bpp = 24;
       break;
     case IMAGE_GRAYSCALE:
       bpp = 8;
@@ -787,13 +929,13 @@ bool BmpFormat::onSave(FileOp *fop)
 
   if (bpp <= 8) {
     biSizeImage = (w + filler)*bpp/8 * h;
-    bfSize = (54                      // header
+    bfSize = (headersize              // header
               + ncolors*4             // palette
               + biSizeImage);         // image data
   }
   else {
-    biSizeImage = (w*3 + filler) * h;
-    bfSize = 54 + biSizeImage;       // header + image data
+    biSizeImage = (w*(bpp / 8) + filler) * h;
+    bfSize = headersize + biSizeImage;       // header + image data
   }
 
   FileHandle handle(open_file_with_exception_sync_on_close(fop->filename(), "wb"));
@@ -806,17 +948,20 @@ bool BmpFormat::onSave(FileOp *fop)
   fputw(0, f);                   /* bfReserved2 */
 
   if (bpp <= 8)                 /* bfOffBits */
-    fputl(54+ncolors*4, f);
+    fputl(headersize+ncolors*4, f);
   else
-    fputl(54, f);
+    fputl(headersize, f);
 
   /* info_header */
-  fputl(40, f);                  /* biSize */
+  fputl(headersize - FILEHEADERSIZE, f); /* biSize */
   fputl(w, f);                   /* biWidth */
   fputl(h, f);                   /* biHeight */
   fputw(1, f);                   /* biPlanes */
   fputw(bpp, f);                 /* biBitCount */
-  fputl(0, f);                   /* biCompression */
+  if(bpp == 32)
+    fputl(BMP_OPTIONS_COMPRESSION_BITFIELDS, f); /* biCompression */
+  else
+    fputl(0, f);                 /* biCompression */
   fputl(biSizeImage, f);         /* biSizeImage */
   fputl(0xB12, f);               /* biXPelsPerMeter (0xB12 = 72 dpi) */
   fputl(0xB12, f);               /* biYPelsPerMeter */
@@ -839,6 +984,37 @@ bool BmpFormat::onSave(FileOp *fop)
     fputl(0, f);                /* biClrImportant */
   }
 
+  if(headersize == FILEHEADERSIZE + V5INFOHEADERSIZE) {
+    /* Specify BGRA format as this outputs in BGR format normally and
+     * imagemagick convert outputs this as well */
+    fputl(0xFF << 16, f);       /* bV5RedMask */
+    fputl(0xFF << 8, f);        /* bV5GreenMask */
+    fputl(0xFF, f);             /* bV5BlueMask */
+    fputl(0xFF << 24, f);       /* bV5AlphaMask */
+    fputl(LCS_sRGB, f);
+    /* just specify all 0s since these fields are ignored for sRGB */
+    /* bV5Endpoints x9 */
+    fputl(0, f);
+    fputl(0, f);
+    fputl(0, f);
+    fputl(0, f);
+    fputl(0, f);
+    fputl(0, f);
+    fputl(0, f);
+    fputl(0, f);
+    fputl(0, f);
+    /* specify all 0s here since these fields are also ignored for sRGB */
+    fputl(0, f);                /* bV5GammaRed */
+    fputl(0, f);                /* bV5GammaGreen */
+    fputl(0, f);                /* bV5GammaBlue */
+    /* I guess graphics is closest to what we're doing here?  imagemagick uses
+     * image though... it might not matter at all */
+    fputl(LCS_GM_GRAPHICS, f);  /* bV5Intent */
+    fputl(0, f);                /* bV5ProfileData */
+    fputl(0, f);                /* bV5ProfileSize */
+    fputl(0, f);                /* bV5Reserved */
+  }
+
   // Only used in indexed mode
   int colorsPerByte = std::max(1, 8/bpp);
   int colorMask;
@@ -853,11 +1029,21 @@ bool BmpFormat::onSave(FileOp *fop)
   for (i=h-1; i>=0; i--) {
     switch (image->pixelFormat()) {
       case IMAGE_RGB:
-        for (j=0; j<w; ++j) {
-          c = get_pixel_fast<RgbTraits>(image, j, i);
-          fputc(rgba_getb(c), f);
-          fputc(rgba_getg(c), f);
-          fputc(rgba_getr(c), f);
+        if(bpp == 32) {
+          for (j=0; j<w; ++j) {
+            c = get_pixel_fast<RgbTraits>(image, j, i);
+            fputc(rgba_getb(c), f);
+            fputc(rgba_getg(c), f);
+            fputc(rgba_getr(c), f);
+            fputc(rgba_geta(c), f);
+          }
+        } else {
+          for (j=0; j<w; ++j) {
+            c = get_pixel_fast<RgbTraits>(image, j, i);
+            fputc(rgba_getb(c), f);
+            fputc(rgba_getg(c), f);
+            fputc(rgba_getr(c), f);
+          }
         }
         break;
       case IMAGE_GRAYSCALE:
