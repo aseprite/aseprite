@@ -252,6 +252,18 @@ int App_useTool(lua_State* L)
   auto ctx = App::instance()->context();
   Site site = ctx->activeSite();
 
+  // In certain cases, we may have just pasted an item from clipboard or
+  // anywhere else, this puts the editor in a moving pixel state, we should
+  // cancel the selection state of the editor so we could use some drawing tools
+  if (auto docView = ctx->getFirstDocView(site.document())) {
+    auto editor = docView->editor();
+    if (editor && editor->isMovingPixels()) {
+      editor->dropMovingPixels();
+      Command* cmd = Commands::instance()->byId(CommandId::DeselectMask());
+      ctx->executeCommand(cmd);
+    }
+  }
+
   // Draw in a specific cel, layer, or frame
   int type = lua_getfield(L, 1, "layer");
   if (type != LUA_TNIL) {
