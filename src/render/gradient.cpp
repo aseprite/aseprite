@@ -144,17 +144,18 @@ void render_rgba_radial_gradient(
     return;
   }
 
-  // If there is no vector defining the gradient (just one point),
-  // the "gradient" will be just "c0"
-  if (p0 == p1) {
-    img->clear(c0);
-    return;
-  }
-
   base::Vector2d<double>
     u(p0.x, p0.y),
     v(p1.x, p1.y), w;
   w = (v - u) / 2;
+
+  // If there is no vector defining the gradient (just one point),
+  // the "gradient" will be just a solid color ("c1")
+  if (std::fabs(w.x) <= 0.000001 ||
+      std::fabs(w.y) <= 0.000001) {
+    img->clear(c1);
+    return;
+  }
 
   // As we use non-premultiplied RGB values, we need correct RGB
   // values on each stop. So in case that one color has alpha=0
