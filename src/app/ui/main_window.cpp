@@ -375,13 +375,22 @@ void MainWindow::onResize(ui::ResizeEvent& ev)
 {
   app::gen::MainWindow::onResize(ev);
 
-  ui::Display* display = this->display();
-  if ((display) &&
-      (display->scale()*ui::guiscale() > 2) &&
-      (!m_scalePanic) &&
-      (display->size().w / ui::guiscale() < 320 ||
-       display->size().h / ui::guiscale() < 260)) {
-    showNotification(m_scalePanic = new ScreenScalePanic);
+  os::Window* nativeWindow = (display() ? display()->nativeWindow(): nullptr);
+  if (nativeWindow && nativeWindow->screen()) {
+    const int scale = nativeWindow->scale()*ui::guiscale();
+
+    // We can check for the available workarea to know that the user
+    // can resize the window to its full size and there will be enough
+    // room to display some common dialogs like (for example) the
+    // Preferences dialog.
+    if ((scale > 2) &&
+        (!m_scalePanic)) {
+      const gfx::Size wa = nativeWindow->screen()->workarea().size();
+      if ((wa.w / scale < 256 ||
+           wa.h / scale < 256)) {
+        showNotification(m_scalePanic = new ScreenScalePanic);
+      }
+    }
   }
 }
 

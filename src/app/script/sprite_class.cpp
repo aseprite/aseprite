@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -376,6 +376,8 @@ int Sprite_deleteLayer(lua_State* L)
     }
   }
   if (layer) {
+    if (sprite != layer->sprite())
+      return luaL_error(L, "the layer doesn't belong to the sprite");
     Tx tx;
     tx(new cmd::RemoveLayer(layer));
     tx.commit();
@@ -502,11 +504,11 @@ int Sprite_newCel(lua_State* L)
 int Sprite_deleteCel(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
-  (void)sprite;                 // unused
-
   auto cel = may_get_docobj<doc::Cel>(L, 2);
   if (!cel) {
     if (auto layer = may_get_docobj<doc::Layer>(L, 2)) {
+      if (sprite != layer->sprite())
+        return luaL_error(L, "the layer doesn't belong to the sprite");
       doc::frame_t frame = get_frame_number_from_arg(L, 3);
       if (layer->isImage())
         cel = static_cast<doc::LayerImage*>(layer)->cel(frame);
@@ -549,6 +551,8 @@ int Sprite_deleteTag(lua_State* L)
       tag = sprite->tags().getByName(tagName);
   }
   if (tag) {
+    if (sprite != tag->owner()->sprite())
+      return luaL_error(L, "the tag doesn't belong to the sprite");
     Tx tx;
     tx(new cmd::RemoveTag(sprite, tag));
     tx.commit();
@@ -583,6 +587,8 @@ int Sprite_deleteSlice(lua_State* L)
       slice = sprite->slices().getByName(sliceName);
   }
   if (slice) {
+    if (sprite != slice->owner()->sprite())
+      return luaL_error(L, "the slice doesn't belong to the sprite");
     Tx tx;
     tx(new cmd::RemoveSlice(sprite, slice));
     tx.commit();

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -55,6 +55,8 @@ public:
 protected:
 
   void onCurveChange() {
+    stopPreview();
+
     // The color curve in the filter is the same refereced by the
     // editor. But anyway, we have to re-set the same curve in the
     // filter to regenerate the map used internally by the filter

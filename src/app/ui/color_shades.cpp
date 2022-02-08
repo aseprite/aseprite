@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -160,10 +160,12 @@ bool ColorShades::onProcessMessage(ui::Message* msg)
       break;
 
     case ui::kMouseUpMessage: {
+      auto button = static_cast<ui::MouseMessage*>(msg)->button();
+
       if (m_click == ClickWholeShade) {
         setSelected(true);
 
-        ClickEvent ev(static_cast<ui::MouseMessage*>(msg)->button());
+        ClickEvent ev(button);
         Click(ev);
 
         closeWindow();
@@ -180,9 +182,18 @@ bool ColorShades::onProcessMessage(ui::Message* msg)
         m_dragIndex = -1;
         invalidate();
 
+        ClickEvent ev(button);
+        Click(ev);
+
         // Relayout the context bar if we have removed an entry.
-        if (m_hotIndex < 0)
+        //
+        // TODO it looks like this should be handled in some kind of
+        //      Change() event in the ColorBar
+        if (m_hotIndex < 0 &&
+            parent() &&
+            parent()->parent()) {
           parent()->parent()->layout();
+        }
       }
 
       if (hasCapture())

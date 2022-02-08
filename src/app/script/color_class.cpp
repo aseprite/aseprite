@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -138,7 +138,8 @@ app::Color Color_new(lua_State* L, int index)
 
     // Convert { index } into a Color
     if (lua_getfield(L, index, "index") != LUA_TNIL) {
-      color = app::Color::fromIndex(lua_tonumber(L, -1));
+      int i = lua_tointeger(L, -1);
+      color = app::Color::fromIndex(i);
       lua_pop(L, 1);
       return color;
     }
@@ -296,7 +297,7 @@ int Color_get_gray(lua_State* L)
 int Color_get_index(lua_State* L)
 {
   auto color = get_obj<app::Color>(L, 1);
-  lua_pushnumber(L, color->getIndex());
+  lua_pushinteger(L, color->getIndex());
   return 1;
 }
 

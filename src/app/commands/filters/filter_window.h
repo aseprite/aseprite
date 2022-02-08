@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -40,7 +41,7 @@ namespace app {
     bool doModal();
 
     // Starts (or restart) the preview procedure. You should call this
-    // method each time the user modifies parameters of the Filter.
+    // method after the user modifies parameters of the Filter.
     void restartPreview();
 
   protected:
@@ -61,9 +62,11 @@ namespace app {
     // mode overriding this method.
     virtual void setupTiledMode(TiledMode tiledMode) { }
 
-  private:
+    // Stops the filter preview background thread, you should call
+    // this before you modify the parameters of the Filter.
     void stopPreview();
 
+  private:
     const char* m_cfgSection;
     FilterManagerImpl* m_filterMgr;
     ui::Box m_hbox;

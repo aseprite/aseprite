@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -101,16 +101,19 @@ public:
 private:
 
   void onFromChange(const app::Color& color) {
+    stopPreview();
     m_filter.setFrom(color);
     restartPreview();
   }
 
   void onToChange(const app::Color& color) {
+    stopPreview();
     m_filter.setTo(color);
     restartPreview();
   }
 
   void onToleranceChange() {
+    stopPreview();
     m_filter.setTolerance(m_toleranceSlider->getValue());
     restartPreview();
   }
