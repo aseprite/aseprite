@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -377,12 +377,21 @@ void MainWindow::onResize(ui::ResizeEvent& ev)
   app::gen::MainWindow::onResize(ev);
 
   os::Window* display = manager()->display();
-  if ((display) &&
-      (display->scale()*ui::guiscale() > 2) &&
-      (!m_scalePanic) &&
-      (ui::display_w()/ui::guiscale() < 320 ||
-       ui::display_h()/ui::guiscale() < 260)) {
-    showNotification(m_scalePanic = new ScreenScalePanic);
+  if (display && display->screen()) {
+    const int scale = display->scale()*ui::guiscale();
+
+    // We can check for the available workarea to know that the user
+    // can resize the window to its full size and there will be enough
+    // room to display some common dialogs like (for example) the
+    // Preferences dialog.
+    if ((scale > 2) &&
+        (!m_scalePanic)) {
+      const gfx::Size wa = display->screen()->workarea().size();
+      if ((wa.w / scale < 256 ||
+           wa.h / scale < 256)) {
+        showNotification(m_scalePanic = new ScreenScalePanic);
+      }
+    }
   }
 }
 
