@@ -8,6 +8,8 @@
 #define APP_INLINE_COMMAND_EXECUTION_H_INCLUDED
 #pragma once
 
+#include "app/commands/command.h"
+
 namespace app {
 
 // This class was created to simulate a Command Execution behavior.

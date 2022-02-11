@@ -16,6 +16,7 @@
 #include "app/doc.h"
 #include "app/doc_access.h"
 #include "app/i18n/strings.h"
+#include "app/inline_command_execution.h"
 #include "app/loop_tag.h"
 #include "app/modules/palettes.h"
 #include "app/pref/preferences.h"
@@ -432,6 +433,8 @@ int App_useTool(lua_State* L)
   // Do the tool loop
   type = lua_getfield(L, 1, "points");
   if (type == LUA_TTABLE) {
+    InlineCommandExecution inlineCmd(UIContext::instance());
+
     std::unique_ptr<tools::ToolLoop> loop(
       create_tool_loop_for_script(ctx, site, params));
     if (!loop)
