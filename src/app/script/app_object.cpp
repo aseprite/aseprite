@@ -433,7 +433,7 @@ int App_useTool(lua_State* L)
   // Do the tool loop
   type = lua_getfield(L, 1, "points");
   if (type == LUA_TTABLE) {
-    InlineCommandExecution inlineCmd(UIContext::instance());
+    InlineCommandExecution inlineCmd(ctx);
 
     std::unique_ptr<tools::ToolLoop> loop(
       create_tool_loop_for_script(ctx, site, params));
