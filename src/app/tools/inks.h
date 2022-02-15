@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -148,8 +148,12 @@ public:
                 // opaque if opacity == 255.
                 if (m_type == Simple)
                   opaque = true;
-                else if (color == loop->sprite()->transparentColor())
+                else if (color == loop->sprite()->transparentColor() &&
+                         loop->getLayer()->isTransparent()) {
+                  // This will be a 'do nothing' composition.
+                  color = 0;
                   opaque = false;
+                }
                 else {
                   color = get_current_palette()->getEntry(color);
                   opaque = (rgba_geta(color) == 255);
