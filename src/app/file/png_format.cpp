@@ -608,8 +608,24 @@ bool PngFormat::onSave(FileOp* fop)
   }
 
   if (fop->preserveColorProfile() &&
-      fop->document()->sprite()->colorSpace())
-    saveColorSpace(png, info, fop->document()->sprite()->colorSpace().get());
+      fop->document()->sprite()->colorSpace()) {
+    auto newCallback = +[](png_structp png, png_const_charp err) {
+      throw std::runtime_error(err);
+    };
+
+    // set a temporary callback that reports the color space error as warning
+    png_set_error_fn(png, (png_voidp)fop, newCallback, newCallback);
+    try {
+      saveColorSpace(png, info, fop->document()->sprite()->colorSpace().get());
+    }
+    catch (const std::exception& e) {
+      fop->setError("(SaveColorProfile) %s\n", e.what());
+      fop->setError("The color profile in the image may have been "
+                    "removed if it is found to be invalid for PNG files\n");
+    }
+    // restore the error callbacks so the execution continues
+    png_set_error_fn(png, (png_voidp)fop, report_png_error, report_png_error);
+  }
 
   if (color_type == PNG_COLOR_TYPE_PALETTE) {
     int c, r, g, b;
