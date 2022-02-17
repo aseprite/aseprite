@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -442,8 +442,17 @@ void FileList::onPaint(ui::PaintEvent& ev)
 
   // Paint main selected index (so if the filename label is bigger it
   // will appear over other items).
-  if (m_selected)
-    paintItem(g, m_selected, selectedIndex);
+  if (m_selected) {
+    ASSERT(selectedIndex >= 0);
+    if (selectedIndex >= 0)
+      paintItem(g, m_selected, selectedIndex);
+    else {
+      // Strange run-time state where the "m_selected" is not in the
+      // list. The previous assert should fail on Debug so this is
+      // here only for Release mode.
+      return;
+    }
+  }
 
   // Draw main thumbnail for the selected item when there are no
   // thumbnails per item.
@@ -776,6 +785,16 @@ FileList::ItemInfo FileList::calcFileItemInfo(int i) const
       info.bounds.w = bounds().w;
   }
   return info;
+}
+
+FileList::ItemInfo FileList::getFileItemInfo(int i) const
+{
+  ASSERT(i >= 0 && i < int(m_info.size()));
+
+  if (i >= 0 && i < int(m_info.size()))
+    return m_info[i];
+  else
+    return ItemInfo();
 }
 
 void FileList::makeSelectedFileitemVisible()
