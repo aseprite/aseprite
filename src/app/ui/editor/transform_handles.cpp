@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -55,7 +55,7 @@ static struct HandlesInfo {
 
 HandleType TransformHandles::getHandleAtPoint(Editor* editor, const gfx::Point& pt, const Transformation& transform)
 {
-  SkinTheme* theme = SkinTheme::instance();
+  auto theme = SkinTheme::get(editor);
   os::Surface* gfx = theme->parts.transformationHandle()->bitmap(0);
   double angle = transform.angle();
 
@@ -132,7 +132,7 @@ void TransformHandles::drawHandles(Editor* editor, ui::Graphics* g,
   }
   // Mouse active areas
   {
-    auto theme = SkinTheme::instance();
+    auto theme = SkinTheme::get(editor);
     auto gfx = theme->parts.transformationHandle()->bitmap(0);
 
     int handle_rs[2] = { gfx->width()*2, gfx->width()*3 };
@@ -153,7 +153,7 @@ void TransformHandles::drawHandles(Editor* editor, ui::Graphics* g,
   // Draw corner handle
   for (size_t c=0; c<HANDLES; ++c) {
     drawHandle(
-      g,
+      editor, g,
       (screenPoints[handles_info[c].i1].x+screenPoints[handles_info[c].i2].x)/2 - origin.x,
       (screenPoints[handles_info[c].i1].y+screenPoints[handles_info[c].i2].y)/2 - origin.y,
       angle + handles_info[c].angle);
@@ -162,7 +162,7 @@ void TransformHandles::drawHandles(Editor* editor, ui::Graphics* g,
   // Draw the pivot
   if (visiblePivot(angle)) {
     gfx::Rect pivotBounds = getPivotHandleBounds(editor, transform, corners);
-    SkinTheme* theme = SkinTheme::instance();
+    auto theme = SkinTheme::get(editor);
     os::Surface* part = theme->parts.pivotHandle()->bitmap(0);
 
     g->drawRgbaSurface(part,
@@ -173,7 +173,7 @@ void TransformHandles::drawHandles(Editor* editor, ui::Graphics* g,
 
 void TransformHandles::invalidateHandles(Editor* editor, const Transformation& transform)
 {
-  SkinTheme* theme = SkinTheme::instance();
+  auto theme = SkinTheme::get(editor);
   double angle = transform.angle();
 
   auto corners = transform.transformedCorners();
@@ -207,7 +207,7 @@ gfx::Rect TransformHandles::getPivotHandleBounds(Editor* editor,
                                                  const Transformation& transform,
                                                  const Transformation::Corners& corners)
 {
-  SkinTheme* theme = SkinTheme::instance();
+  auto theme = SkinTheme::get(editor);
   gfx::Size partSize = theme->parts.pivotHandle()->size();
   gfx::Point screenPivotPos = editor->editorToScreen(gfx::Point(transform.pivot()));
 
@@ -229,9 +229,9 @@ bool TransformHandles::inHandle(const gfx::Point& pt, int x, int y, int gfx_w, i
           pt.y >= y && pt.y < y+gfx_h);
 }
 
-void TransformHandles::drawHandle(Graphics* g, int x, int y, double angle)
+void TransformHandles::drawHandle(Editor* editor, Graphics* g, int x, int y, double angle)
 {
-  SkinTheme* theme = SkinTheme::instance();
+  auto theme = SkinTheme::get(editor);
   os::Surface* part = theme->parts.transformationHandle()->bitmap(0);
 
   adjustHandle(x, y, part->width(), part->height(), angle);

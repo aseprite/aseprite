@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2020  Igara Studio S.A.
+// Copyright (c) 2020-2022  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -52,7 +52,7 @@ bool SearchEntry::onProcessMessage(ui::Message* msg)
 
 void SearchEntry::onPaint(ui::PaintEvent& ev)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  auto theme = SkinTheme::get(this);
   theme->paintEntry(ev);
 
   os::Surface* icon = theme->parts.iconSearch()->bitmap(0);
@@ -76,7 +76,7 @@ void SearchEntry::onSizeHint(SizeHintEvent& ev)
   Entry::onSizeHint(ev);
   Size sz = ev.sizeHint();
 
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  auto theme = SkinTheme::get(this);
   auto icon = theme->parts.iconSearch()->bitmap(0);
   sz.h = std::max(sz.h, icon->height()+border().height());
 
@@ -85,7 +85,7 @@ void SearchEntry::onSizeHint(SizeHintEvent& ev)
 
 Rect SearchEntry::onGetEntryTextBounds() const
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  auto theme = SkinTheme::get(this);
   Rect bounds = Entry::onGetEntryTextBounds();
   auto icon1 = theme->parts.iconSearch()->bitmap(0);
   auto icon2 = theme->parts.iconClose()->bitmap(0);
@@ -96,7 +96,7 @@ Rect SearchEntry::onGetEntryTextBounds() const
 
 Rect SearchEntry::getCloseIconBounds() const
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  auto theme = SkinTheme::get(this);
   Rect bounds = clientBounds();
   auto icon = theme->parts.iconClose()->bitmap(0);
   bounds.x += bounds.w - border().right() - childSpacing() - icon->width();

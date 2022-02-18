@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -35,7 +36,7 @@ DropDownButton::DropDownButton(const char* text)
 
   InitTheme.connect(
     [this]{
-      SkinTheme* theme = SkinTheme::instance();
+      auto theme = SkinTheme::get(this);
       m_button->setStyle(theme->styles.dropDownButton());
       m_dropDown->setStyle(theme->styles.dropDownExpandButton());
       setChildSpacing(0);

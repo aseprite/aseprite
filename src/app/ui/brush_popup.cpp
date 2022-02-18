@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -150,7 +150,8 @@ public:
     : m_popup(popup)
     , m_brushes(App::instance()->brushes())
     , m_slot(slot) {
-    setIcon(SkinTheme::instance()->parts.iconArrowDown(), true);
+    auto theme = skin::SkinTheme::get(this);
+    setIcon(theme->parts.iconArrowDown(), true);
   }
 
 private:
@@ -277,7 +278,8 @@ private:
 class NewBrushOptionsItem : public ButtonSet::Item {
 public:
   NewBrushOptionsItem() {
-    setIcon(SkinTheme::instance()->parts.iconArrowDown(), true);
+    auto theme = skin::SkinTheme::get(this);
+    setIcon(theme->parts.iconArrowDown(), true);
   }
 
 private:

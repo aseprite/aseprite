@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -335,7 +335,8 @@ bool ColorSelector::onProcessMessage(ui::Message* msg)
       MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
       app::Color color = getColorByPosition(mouseMsg->position());
       if (color.getType() != app::Color::MaskType) {
-        ui::set_mouse_cursor(kCustomCursor, SkinTheme::instance()->cursors.eyedropper());
+        auto theme = skin::SkinTheme::get(this);
+        ui::set_mouse_cursor(kCustomCursor, theme->cursors.eyedropper());
         return true;
       }
       break;
@@ -386,7 +387,7 @@ bool ColorSelector::onProcessMessage(ui::Message* msg)
 
 void ColorSelector::onInitTheme(ui::InitThemeEvent& ev)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  auto theme = SkinTheme::get(this);
 
   Widget::onInitTheme(ev);
   setBorder(theme->calcBorder(this, theme->styles.editorView()));
@@ -404,7 +405,7 @@ void ColorSelector::onResize(ui::ResizeEvent& ev)
 void ColorSelector::onPaint(ui::PaintEvent& ev)
 {
   ui::Graphics* g = ev.graphics();
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  auto theme = SkinTheme::get(this);
 
   theme->drawRect(g, clientBounds(),
                   theme->parts.editorNormal().get(),
@@ -480,7 +481,7 @@ void ColorSelector::paintColorIndicator(ui::Graphics* g,
                                         const gfx::Point& pos,
                                         const bool white)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  auto theme = SkinTheme::get(this);
   os::Surface* icon = theme->parts.colorWheelIndicator()->bitmap(0);
 
   g->drawColoredRgbaSurface(
@@ -500,7 +501,7 @@ int ColorSelector::getCurrentAlphaForNewColor() const
 
 gfx::Rect ColorSelector::bottomBarBounds() const
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  auto theme = SkinTheme::get(this);
   const gfx::Rect rc = childrenBounds();
   const int size = theme->dimensions.colorSelectorBarSize();
   if (rc.h > 2*size) {
@@ -515,7 +516,7 @@ gfx::Rect ColorSelector::bottomBarBounds() const
 
 gfx::Rect ColorSelector::alphaBarBounds() const
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  auto theme = SkinTheme::get(this);
   const gfx::Rect rc = childrenBounds();
   const int size = theme->dimensions.colorSelectorBarSize();
   if (rc.h > 3*size)

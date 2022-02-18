@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -32,7 +33,9 @@ IconButton::IconButton(const SkinPartPtr& part)
 void IconButton::onInitTheme(InitThemeEvent& ev)
 {
   Button::onInitTheme(ev);
-  setBgColor(SkinTheme::instance()->colors.menuitemNormalFace());
+
+  auto theme = SkinTheme::get(this);
+  setBgColor(theme->colors.menuitemNormalFace());
 }
 
 void IconButton::onSizeHint(SizeHintEvent& ev)
@@ -45,7 +48,7 @@ void IconButton::onSizeHint(SizeHintEvent& ev)
 
 void IconButton::onPaint(PaintEvent& ev)
 {
-  SkinTheme* theme = SkinTheme::instance();
+  auto theme = SkinTheme::get(this);
   Graphics* g = ev.graphics();
   gfx::Color fg, bg;
 

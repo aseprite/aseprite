@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -46,7 +46,7 @@ EditorView::EditorView(EditorView::Type type)
 
   InitTheme.connect(
     [this]{
-      SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+      auto theme = SkinTheme::get(this);
       setBgColor(gfx::rgba(0, 0, 0)); // TODO Move this color to theme.xml
       setStyle(theme->styles.editorView());
       setupScrollbars();
@@ -148,7 +148,7 @@ void EditorView::setupScrollbars()
     hideScrollBars();
   }
   else {
-    SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+    auto theme = SkinTheme::get(this);
     int barsize = theme->dimensions.miniScrollbarSize();
 
     horizontalBar()->setBarWidth(barsize);

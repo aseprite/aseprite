@@ -1573,7 +1573,7 @@ void Timeline::onInitTheme(ui::InitThemeEvent& ev)
 {
   Widget::onInitTheme(ev);
 
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  auto theme = SkinTheme::get(this);
   int barsize = theme->dimensions.miniScrollbarSize();
   m_hbar.setBarWidth(barsize);
   m_vbar.setBarWidth(barsize);
@@ -4104,7 +4104,7 @@ DocumentPreferences& Timeline::docPref() const
 
 skin::SkinTheme* Timeline::skinTheme() const
 {
-  return static_cast<SkinTheme*>(theme());
+  return SkinTheme::get(this);
 }
 
 gfx::Size Timeline::celBoxSize() const

@@ -100,7 +100,7 @@ void ColorShades::onInitTheme(ui::InitThemeEvent& ev)
 {
   Widget::onInitTheme(ev);
 
-  auto theme = skin::SkinTheme::instance();
+  auto theme = skin::SkinTheme::get(this);
 
   switch (m_click) {
     case ClickEntries:
@@ -247,7 +247,7 @@ void ColorShades::onSizeHint(ui::SizeHintEvent& ev)
 
 void ColorShades::onPaint(ui::PaintEvent& ev)
 {
-  auto theme = skin::SkinTheme::instance();
+  auto theme = skin::SkinTheme::get(this);
   ui::Graphics* g = ev.graphics();
   gfx::Rect bounds = clientBounds();
 

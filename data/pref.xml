@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2018-2021  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-2022  Igara Studio S.A. -->
 <!-- Copyright (C) 2014-2018  David Capello -->
 <preferences>
 
@@ -218,7 +218,7 @@
       <option id="use_native_clipboard" type="bool" default="true" />
       <option id="use_native_file_dialog" type="bool" default="false" />
       <option id="one_finger_as_mouse_movement" type="bool" default="true" />
-      <option id="load_wintab_driver" type="bool" default="true" />
+      <option id="load_wintab_driver" type="bool" default="false" />
       <option id="flash_layer" type="bool" default="false" />
       <option id="nonactive_layers_opacity" type="int" default="255" />
     </section>

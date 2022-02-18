@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -217,7 +217,19 @@ static FontData* load_font(std::map<std::string, FontData*>& fonts,
 // static
 SkinTheme* SkinTheme::instance()
 {
-  return static_cast<SkinTheme*>(ui::Manager::getDefault()->theme());
+  if (auto mgr = ui::Manager::getDefault())
+    return SkinTheme::get(mgr);
+  else
+    return nullptr;
+}
+
+// static
+SkinTheme* SkinTheme::get(const ui::Widget* widget)
+{
+  ASSERT(widget);
+  ASSERT(widget->theme());
+  ASSERT(dynamic_cast<SkinTheme*>(widget->theme()));
+  return static_cast<SkinTheme*>(widget->theme());
 }
 
 SkinTheme::SkinTheme()
@@ -930,7 +942,7 @@ void SkinTheme::initWidget(Widget* widget)
       if (TipWindow* window = dynamic_cast<TipWindow*>(widget)) {
         window->setStyle(styles.tooltipWindow());
         window->setArrowStyle(styles.tooltipWindowArrow());
-        window->textBox()->setStyle(SkinTheme::instance()->styles.tooltipText());
+        window->textBox()->setStyle(styles.tooltipText());
       }
       else if (dynamic_cast<TransparentPopupWindow*>(widget)) {
         widget->setStyle(styles.transparentPopupWindow());
@@ -952,11 +964,11 @@ void SkinTheme::initWidget(Widget* widget)
       break;
 
     case kWindowTitleLabelWidget:
-      widget->setStyle(SkinTheme::instance()->styles.windowTitleLabel());
+      widget->setStyle(styles.windowTitleLabel());
       break;
 
     case kWindowCloseButtonWidget:
-      widget->setStyle(SkinTheme::instance()->styles.windowCloseButton());
+      widget->setStyle(styles.windowCloseButton());
       break;
 
     default:
@@ -1030,8 +1042,10 @@ public:
                       gfx::Color& fg,
                       gfx::Color& bg,
                       const gfx::Rect& charBounds) override {
+    auto theme = SkinTheme::get(m_widget);
+
     // Normal text
-    auto& colors = SkinTheme::instance()->colors;
+    auto& colors = theme->colors;
     bg = ColorNone;
     fg = colors.text();
 
@@ -1081,7 +1095,8 @@ public:
         m_index == m_caret &&
         m_widget->hasFocus() &&
         m_widget->isEnabled()) {
-      SkinTheme::instance()->drawEntryCaret(
+      auto theme = SkinTheme::get(m_widget);
+      theme->drawEntryCaret(
         m_graphics, m_widget,
         m_charStartX-m_widget->bounds().x, m_y);
       m_caretDrawn = true;

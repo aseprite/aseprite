@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -149,7 +149,7 @@ void Tabs::removeTab(TabView* tabView, bool with_animation)
 
 void Tabs::updateTabs()
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  auto theme = SkinTheme::get(this);
   double availWidth = bounds().w - m_border*ui::guiscale();
   double defTabWidth = theme->dimensions.tabsWidth();
   double tabWidth = defTabWidth;
@@ -465,7 +465,7 @@ bool Tabs::onProcessMessage(Message* msg)
 void Tabs::onInitTheme(ui::InitThemeEvent& ev)
 {
   Widget::onInitTheme(ev);
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  auto theme = SkinTheme::get(this);
 
   if (m_docked) {
     m_tabsHeight = theme->dimensions.dockedTabsHeight();
@@ -481,7 +481,7 @@ void Tabs::onInitTheme(ui::InitThemeEvent& ev)
 
 void Tabs::onPaint(PaintEvent& ev)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  auto theme = SkinTheme::get(this);
   Graphics* g = ev.graphics();
   gfx::Rect rect = clientBounds();
   gfx::Rect box(rect.x, rect.y, rect.w,
@@ -580,7 +580,7 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& _box,
   if (box.w < ui::guiscale()*8)
     box.w = ui::guiscale()*8;
 
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  auto theme = SkinTheme::get(this);
   int clipTextRightSide;
 
   gfx::Rect closeBox = getTabCloseButtonBounds(tab, box);
@@ -706,7 +706,7 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& _box,
 
 void Tabs::drawFiller(ui::Graphics* g, const gfx::Rect& box)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  auto theme = SkinTheme::get(this);
   gfx::Rect rect = clientBounds();
 
   theme->paintWidgetPart(
@@ -787,7 +787,7 @@ void Tabs::calculateHot()
 
 gfx::Rect Tabs::getTabCloseButtonBounds(Tab* tab, const gfx::Rect& box)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  auto theme = SkinTheme::get(this);
   int iconW = theme->dimensions.tabsCloseIconWidth();
   int iconH = theme->dimensions.tabsCloseIconHeight();
 

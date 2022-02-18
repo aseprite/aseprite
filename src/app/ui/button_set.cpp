@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -74,7 +74,7 @@ ButtonSet* ButtonSet::Item::buttonSet()
 
 void ButtonSet::Item::onPaint(ui::PaintEvent& ev)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  auto theme = SkinTheme::get(this);
   Graphics* g = ev.graphics();
   gfx::Rect rc = clientBounds();
   gfx::Color fg;

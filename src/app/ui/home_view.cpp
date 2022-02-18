@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -90,7 +90,7 @@ HomeView::HomeView()
 
   InitTheme.connect(
     [this]{
-      SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+      auto theme = SkinTheme::get(this);
       setBgColor(theme->colors.workspace());
       setChildSpacing(8 * guiscale());
     });
@@ -112,7 +112,7 @@ void HomeView::dataRecoverySessionsAreReady()
 #ifdef ENABLE_DATA_RECOVERY
   if (App::instance()->dataRecovery()->hasRecoverySessions()) {
     // We highlight the "Recover Files" options because we came from a crash
-    SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+    auto theme = SkinTheme::get(this);
     recoverSprites()->setStyle(theme->styles.workspaceUpdateLink());
     layout();
   }
@@ -231,7 +231,7 @@ void HomeView::onNewUpdate(const std::string& url, const std::string& version)
   checkUpdate()->setVisible(true);
   checkUpdate()->InitTheme.connect(
     [this]{
-      SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+      auto theme = SkinTheme::get(this);
       checkUpdate()->setStyle(theme->styles.workspaceUpdateLink());
     });
   checkUpdate()->initTheme();
@@ -257,7 +257,7 @@ void HomeView::onRecoverSprites()
     // it).
     m_dataRecoveryView->Empty.connect(
       [this]{
-        SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+        auto theme = SkinTheme::get(this);
         recoverSprites()->setStyle(theme->styles.workspaceLink());
         layout();
       });

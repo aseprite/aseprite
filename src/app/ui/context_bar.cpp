@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -204,7 +204,7 @@ protected:
   }
 
   void onSizeHint(SizeHintEvent& ev) override {
-    SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+    auto theme = SkinTheme::get(this);
     ev.setSizeHint(Size(theme->dimensions.brushTypeWidth(),
                         theme->dimensions.contextBarHeight()));
   }
@@ -362,7 +362,7 @@ public:
 protected:
   void onInitTheme(InitThemeEvent& ev) override {
     CheckBox::onInitTheme(ev);
-    setStyle(SkinTheme::instance()->styles.miniCheckBox());
+    setStyle(SkinTheme::get(this)->styles.miniCheckBox());
   }
 
   void onClick(Event& ev) override {
@@ -378,7 +378,7 @@ protected:
 class ContextBar::PaintBucketSettingsField : public ButtonSet {
 public:
   PaintBucketSettingsField() : ButtonSet(1) {
-    SkinTheme* theme = SkinTheme::instance();
+    auto theme = SkinTheme::get(this);
     addItem(theme->parts.timelineGear());
   }
 
@@ -464,7 +464,7 @@ class ContextBar::InkTypeField : public ButtonSet {
 public:
   InkTypeField(ContextBar* owner) : ButtonSet(1)
                                   , m_owner(owner) {
-    SkinTheme* theme = SkinTheme::instance();
+    auto theme = SkinTheme::get(this);
     addItem(theme->parts.inkSimple());
   }
 
@@ -484,7 +484,7 @@ public:
   }
 
   void setInkTypeIcon(InkType inkType) {
-    SkinTheme* theme = SkinTheme::instance();
+    auto theme = SkinTheme::get(this);
     SkinPartPtr part = theme->parts.inkSimple();
 
     switch (inkType) {
@@ -518,7 +518,7 @@ protected:
 class ContextBar::InkShadesField : public HBox {
 public:
   InkShadesField(ColorBar* colorBar)
-    : m_button(SkinTheme::instance()->parts.iconArrowDown())
+    : m_button(SkinTheme::get(this)->parts.iconArrowDown())
     , m_shade(Shade(), ColorShades::DragAndDropEntries)
     , m_loaded(false) {
     addChild(&m_button);
@@ -569,7 +569,7 @@ public:
 private:
   void onInitTheme(InitThemeEvent& ev) override {
     HBox::onInitTheme(ev);
-    SkinTheme* theme = SkinTheme::instance();
+    auto theme = SkinTheme::get(this);
     noBorderNoChildSpacing();
     m_shade.setStyle(theme->styles.topShadeView());
     m_button.setBgColor(theme->colors.workspace());
@@ -593,7 +593,7 @@ private:
     save.Click.connect([this]{ onSaveShade(); });
 
     if (!m_shades.empty()) {
-      SkinTheme* theme = SkinTheme::instance();
+      auto theme = SkinTheme::get(this);
 
       menu.addChild(new MenuSeparator);
 
@@ -610,7 +610,7 @@ private:
         close->InitTheme.connect(
           [close]{
             close->setBgColor(
-              SkinTheme::instance()->colors.menuitemNormalFace());
+              SkinTheme::get(close)->colors.menuitemNormalFace());
           });
         close->initTheme();
         close->Click.connect(
@@ -767,7 +767,7 @@ public:
     : m_icon(1)
     , m_maskColor(app::Color::fromMask(), IMAGE_RGB, ColorButtonOptions())
     , m_owner(owner) {
-    SkinTheme* theme = SkinTheme::instance();
+    auto theme = SkinTheme::get(this);
 
     addChild(&m_icon);
     addChild(&m_maskColor);
@@ -831,7 +831,7 @@ private:
   void onOpaqueChange() {
     bool opaque = Preferences::instance().selection.opaque();
 
-    SkinTheme* theme = SkinTheme::instance();
+    auto theme = SkinTheme::get(this);
     SkinPartPtr part = (opaque ? theme->parts.selectionOpaque():
                                  theme->parts.selectionMasked());
     m_icon.getItem(0)->setIcon(part);
@@ -860,7 +860,7 @@ class ContextBar::PivotField : public ButtonSet {
 public:
   PivotField()
     : ButtonSet(1) {
-    addItem(SkinTheme::instance()->parts.pivotCenter());
+    addItem(SkinTheme::get(this)->parts.pivotCenter());
 
     Preferences::instance().selection.pivotPosition.AfterChange.connect(
       [this]{ onPivotChange(); });
@@ -873,7 +873,7 @@ private:
   void onItemChange(Item* item) override {
     ButtonSet::onItemChange(item);
 
-    SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+    auto theme = SkinTheme::get(this);
     gfx::Rect bounds = this->bounds();
 
     Menu menu;
@@ -917,7 +917,7 @@ private:
   }
 
   void onPivotChange() {
-    SkinTheme* theme = SkinTheme::instance();
+    auto theme = SkinTheme::get(this);
     SkinPartPtr part;
     switch (Preferences::instance().selection.pivotPosition()) {
       case app::gen::PivotPosition::NORTHWEST: part = theme->parts.pivotNorthwest(); break;
@@ -1138,7 +1138,7 @@ public:
   DynamicsField(ContextBar* ctxBar)
     : ButtonSet(1)
     , m_ctxBar(ctxBar) {
-    addItem(SkinTheme::instance()->parts.dynamics());
+    addItem(SkinTheme::get(this)->parts.dynamics());
   }
 
   void switchPopup() {
@@ -1238,7 +1238,7 @@ public:
 protected:
   void onInitTheme(InitThemeEvent& ev) override {
     CheckBox::onInitTheme(ev);
-    setStyle(SkinTheme::instance()->styles.miniCheckBox());
+    setStyle(SkinTheme::get(this)->styles.miniCheckBox());
   }
 
   void onClick(Event& ev) override {
@@ -1266,7 +1266,7 @@ protected:
 class ContextBar::GradientTypeField : public ButtonSet {
 public:
   GradientTypeField() : ButtonSet(2) {
-    SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+    auto theme = SkinTheme::get(this);
 
     addItem(theme->parts.linearGradient());
     addItem(theme->parts.radialGradient());
@@ -1287,7 +1287,7 @@ public:
 class ContextBar::DropPixelsField : public ButtonSet {
 public:
   DropPixelsField() : ButtonSet(2) {
-    SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+    auto theme = SkinTheme::get(this);
 
     addItem(theme->parts.dropPixelsOk());
     addItem(theme->parts.dropPixelsCancel());
@@ -1371,7 +1371,7 @@ public:
 protected:
   void onInitTheme(InitThemeEvent& ev) override {
     CheckBox::onInitTheme(ev);
-    setStyle(SkinTheme::instance()->styles.miniCheckBox());
+    setStyle(SkinTheme::get(this)->styles.miniCheckBox());
   }
 
   void onClick(Event& ev) override {
@@ -1394,7 +1394,7 @@ class ContextBar::SymmetryField : public ButtonSet {
 public:
   SymmetryField() : ButtonSet(3) {
     setMultiMode(MultiMode::Set);
-    SkinTheme* theme = SkinTheme::instance();
+    auto theme = SkinTheme::get(this);
     addItem(theme->parts.horizontalSymmetry());
     addItem(theme->parts.verticalSymmetry());
     addItem("...");
@@ -1517,7 +1517,7 @@ public:
     , m_combobox(this)
     , m_action(2)
   {
-    SkinTheme* theme = SkinTheme::instance();
+    auto theme = SkinTheme::get(this);
 
     m_sel.addItem("All");
     m_sel.addItem("None");
@@ -1794,7 +1794,7 @@ void ContextBar::onInitTheme(ui::InitThemeEvent& ev)
 {
   Box::onInitTheme(ev);
 
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  auto theme = SkinTheme::get(this);
   gfx::Border border = this->border();
   border.bottom(2*guiscale());
   setBorder(border);
@@ -1806,7 +1806,7 @@ void ContextBar::onInitTheme(ui::InitThemeEvent& ev)
 
 void ContextBar::onSizeHint(SizeHintEvent& ev)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  auto theme = SkinTheme::get(this);
   ev.setSizeHint(gfx::Size(0, theme->dimensions.contextBarHeight()));
 }
 

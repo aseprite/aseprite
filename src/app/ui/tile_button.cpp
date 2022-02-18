@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2020-2021  Igara Studio S.A.
+// Copyright (c) 2020-2022  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -73,7 +73,7 @@ doc::tile_t TileButton::getTileByPosition(const gfx::Point& pos)
 void TileButton::onInitTheme(InitThemeEvent& ev)
 {
   ButtonBase::onInitTheme(ev);
-  setStyle(SkinTheme::instance()->styles.colorButton());
+  setStyle(SkinTheme::get(this)->styles.colorButton());
 }
 
 bool TileButton::onProcessMessage(Message* msg)
@@ -131,7 +131,8 @@ bool TileButton::onProcessMessage(Message* msg)
 
     case kSetCursorMessage:
       if (hasCapture()) {
-        ui::set_mouse_cursor(kCustomCursor, SkinTheme::instance()->cursors.eyedropper());
+        auto theme = SkinTheme::get(this);
+        ui::set_mouse_cursor(kCustomCursor, theme->cursors.eyedropper());
         return true;
       }
       break;

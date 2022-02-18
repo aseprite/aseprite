@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -84,7 +84,7 @@ namespace app {
     void onMonitoringTick();
     void recalcAllFileItemInfo();
     ItemInfo calcFileItemInfo(int i) const;
-    ItemInfo getFileItemInfo(int i) const { return m_info[i]; }
+    ItemInfo getFileItemInfo(int i) const;
     void makeSelectedFileitemVisible();
     void regenerateList();
     int selectedIndex() const;

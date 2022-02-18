@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -247,7 +247,7 @@ DataRecoveryView::DataRecoveryView(crash::DataRecovery* dataRecovery)
 
   InitTheme.connect(
     [this, hbox]{
-      SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+      auto theme = SkinTheme::get(this);
 
       m_openButton.mainButton()->resetSizeHint();
       gfx::Size hint = m_openButton.mainButton()->sizeHint();
@@ -330,7 +330,8 @@ void DataRecoveryView::fillListWith(const bool crashes)
                    Strings::recover_files_old_sessions()), HORIZONTAL);
       sep->InitTheme.connect(
         [sep]{
-          sep->setStyle(skin::SkinTheme::instance()->styles.separatorInViewReverse());
+          auto theme = skin::SkinTheme::get(sep);
+          sep->setStyle(theme->styles.separatorInViewReverse());
           sep->setBorder(sep->border() + gfx::Border(0, 8, 0, 8)*guiscale());
         });
       sep->initTheme();

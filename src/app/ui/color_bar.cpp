@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -105,7 +105,9 @@ public:
 protected:
   void onInitTheme(ui::InitThemeEvent& ev) {
     ui::Button::onInitTheme(ev);
-    setStyle(skin::SkinTheme::instance()->styles.warningBox());
+
+    auto theme = skin::SkinTheme::get(this);
+    setStyle(theme->styles.warningBox());
   }
 };
 
@@ -126,7 +128,8 @@ void ColorBar::ScrollableView::onInitTheme(InitThemeEvent& ev)
 
   View::onInitTheme(ev);
 
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  auto theme = SkinTheme::get(this);
+
   setStyle(theme->styles.colorbarView());
 
   hbar->setStyle(theme->styles.miniScrollbar());
@@ -183,7 +186,7 @@ ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
 {
   m_instance = this;
 
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  auto theme = SkinTheme::get(this);
 
   m_editPal.addItem(theme->parts.timelineOpenPadlockActive());
   m_buttons.addItem(theme->parts.palSort());
@@ -290,7 +293,7 @@ ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
 
   InitTheme.connect(
     [this, fgBox, bgBox]{
-      SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+      auto theme = SkinTheme::get(this);
 
       setBorder(gfx::Border(2*guiscale(), 0, 0, 0));
       setChildSpacing(2*guiscale());
@@ -514,7 +517,7 @@ bool ColorBar::inEditMode() const
 
 void ColorBar::setEditMode(bool state)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  auto theme = SkinTheme::get(this);
   ButtonSet::Item* item = m_editPal.getItem(0);
 
   m_editMode = state;

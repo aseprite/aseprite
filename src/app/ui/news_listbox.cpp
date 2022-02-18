@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -129,7 +129,7 @@ public:
 
 protected:
   void onSizeHint(SizeHintEvent& ev) override {
-    SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+    auto theme = SkinTheme::get(this);
     ui::Style* style = theme->styles.newsItem();
 
     setTextQuiet(m_title);
@@ -142,7 +142,7 @@ protected:
   }
 
   void onPaint(PaintEvent& ev) override {
-    SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+    auto theme = SkinTheme::get(this);
     Graphics* g = ev.graphics();
     gfx::Rect bounds = clientBounds();
     ui::Style* style = theme->styles.newsItem();

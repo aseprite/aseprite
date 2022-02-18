@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This program is distributed under the terms of
@@ -130,7 +130,7 @@ private:
 
   void onPaint(PaintEvent& ev) override {
     Graphics* g = ev.graphics();
-    skin::SkinTheme* theme = static_cast<skin::SkinTheme*>(this->theme());
+    auto theme = skin::SkinTheme::get(this);
 
     gfx::Color fg, bg;
     if (isSelected()) {

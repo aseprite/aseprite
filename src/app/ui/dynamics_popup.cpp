@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2021  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -67,7 +67,7 @@ public:
 private:
   void onInitTheme(InitThemeEvent& ev) override {
     Widget::onInitTheme(ev);
-    SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+    auto theme = SkinTheme::get(this);
     setBorder(
       gfx::Border(
         theme->parts.miniSliderEmpty()->bitmapW()->width(),
@@ -84,7 +84,7 @@ private:
 
   void onPaint(PaintEvent& ev) override {
     Graphics* g = ev.graphics();
-    SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+    auto theme = SkinTheme::get(this);
     gfx::Rect rc = clientBounds();
     gfx::Color bgcolor = bgColor();
     g->fillRect(bgcolor, rc);
@@ -309,7 +309,7 @@ tools::DynamicsOptions DynamicsPopup::getDynamics() const
 
 void DynamicsPopup::setCheck(int i, bool state)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  auto theme = SkinTheme::get(this);
   m_dynamics->values()
     ->getItem(i)
     ->setIcon(state ? theme->parts.dropPixelsOk(): nullptr);
@@ -317,7 +317,7 @@ void DynamicsPopup::setCheck(int i, bool state)
 
 bool DynamicsPopup::isCheck(int i) const
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  auto theme = SkinTheme::get(this);
   return (m_dynamics->values()
           ->getItem(i)
           ->icon() == theme->parts.dropPixelsOk());
@@ -325,7 +325,7 @@ bool DynamicsPopup::isCheck(int i) const
 
 void DynamicsPopup::onValuesChange(ButtonSet::Item* item)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  auto theme = SkinTheme::get(this);
   const skin::SkinPartPtr& ok = theme->parts.dropPixelsOk();
   const int i = (item ? m_dynamics->values()->getItemIndex(item): -1);
 
