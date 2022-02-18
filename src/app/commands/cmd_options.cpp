@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -1179,7 +1179,7 @@ private:
     if (themeList()->getItemsCount() > 0)
       return;
 
-    auto theme = skin::SkinTheme::instance();
+    auto theme = skin::SkinTheme::get(this);
     auto userFolder = userThemeFolder();
     auto folders = themeFolders();
     std::sort(folders.begin(), folders.end());
@@ -1310,7 +1310,7 @@ private:
                   const bool updateScaling) {
     try {
       if (themeName != m_pref.theme.selected()) {
-        auto theme = static_cast<skin::SkinTheme*>(ui::get_theme());
+        auto theme = skin::SkinTheme::get(this);
 
         // Change theme name from preferences
         m_pref.theme.selected(themeName);

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -475,7 +475,7 @@ bool PaletteView::onProcessMessage(Message* msg)
 
 void PaletteView::onPaint(ui::PaintEvent& ev)
 {
-  auto theme = static_cast<SkinTheme*>(this->theme());
+  auto theme = SkinTheme::get(this);
   const int outlineWidth = theme->dimensions.paletteOutlineWidth();
   ui::Graphics* g = ev.graphics();
   gfx::Rect bounds = clientBounds();
@@ -733,7 +733,7 @@ gfx::Rect PaletteView::getPaletteEntryBounds(int index) const
 
 PaletteView::Hit PaletteView::hitTest(const gfx::Point& pos)
 {
-  auto theme = static_cast<SkinTheme*>(this->theme());
+  auto theme = SkinTheme::get(this);
   const int outlineWidth = theme->dimensions.paletteOutlineWidth();
   Palette* palette = currentPalette();
 
@@ -1023,7 +1023,7 @@ void PaletteView::drawEntry(ui::Graphics* g,
     rgba_geta(palColor));
 
   if (m_withSeparator) {
-    auto theme = static_cast<SkinTheme*>(this->theme());
+    auto theme = SkinTheme::get(this);
     gfx::Color color = theme->colors.paletteEntriesSeparator();
     g->fillRect(color, gfx::Rect(box).enlarge(childSpacing()));
   }
@@ -1045,7 +1045,7 @@ int PaletteView::boxSizePx() const
 
 void PaletteView::updateBorderAndChildSpacing()
 {
-  auto theme = static_cast<SkinTheme*>(this->theme());
+  auto theme = SkinTheme::get(this);
   const int dim = theme->dimensions.paletteEntriesSeparator();
   setBorder(gfx::Border(dim));
   setChildSpacing(m_withSeparator ? dim: 0);

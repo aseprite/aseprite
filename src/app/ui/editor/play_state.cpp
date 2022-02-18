@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2021  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -170,8 +170,9 @@ bool PlayState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
   tools::Ink* ink = editor->getCurrentEditorInk();
   if (ink) {
     if (ink->isZoom()) {
+      auto theme = skin::SkinTheme::get(editor);
       editor->showMouseCursor(
-        kCustomCursor, skin::SkinTheme::instance()->cursors.magnifier());
+        kCustomCursor, theme->cursors.magnifier());
       return true;
     }
   }

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2021  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -115,7 +115,9 @@ app::Color ColorButton::getColorByPosition(const gfx::Point& pos)
 void ColorButton::onInitTheme(InitThemeEvent& ev)
 {
   ButtonBase::onInitTheme(ev);
-  setStyle(SkinTheme::instance()->styles.colorButton());
+
+  auto theme = SkinTheme::get(this);
+  setStyle(theme->styles.colorButton());
 
   if (m_window)
     m_window->initTheme();
@@ -167,7 +169,8 @@ bool ColorButton::onProcessMessage(Message* msg)
 
     case kSetCursorMessage:
       if (hasCapture()) {
-        ui::set_mouse_cursor(kCustomCursor, SkinTheme::instance()->cursors.eyedropper());
+        auto theme = SkinTheme::get(this);
+        ui::set_mouse_cursor(kCustomCursor, theme->cursors.eyedropper());
         return true;
       }
       break;
@@ -193,7 +196,7 @@ void ColorButton::onSizeHint(SizeHintEvent& ev)
 void ColorButton::onPaint(PaintEvent& ev)
 {
   Graphics* g = ev.graphics();
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  auto theme = SkinTheme::get(this);
   gfx::Rect rc = clientBounds();
 
   gfx::Color bg = bgColor();

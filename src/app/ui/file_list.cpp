@@ -423,7 +423,7 @@ bool FileList::onProcessMessage(Message* msg)
 void FileList::onPaint(ui::PaintEvent& ev)
 {
   Graphics* g = ev.graphics();
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  auto theme = SkinTheme::get(this);
   gfx::Rect bounds = clientBounds();
 
   g->fillRect(theme->colors.background(), bounds);
@@ -477,7 +477,7 @@ void FileList::paintItem(ui::Graphics* g, IFileItem* fi, const int i)
   if ((g->getClipBounds() & info.bounds).isEmpty())
     return;
 
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  auto theme = SkinTheme::get(this);
   const bool evenRow = ((i & 1) == 0);
   gfx::Rect tbounds = info.thumbnail;
 
@@ -754,7 +754,7 @@ FileList::ItemInfo FileList::calcFileItemInfo(int i) const
   int len = 0;
 
   if (fi->isFolder() && isListView()) {
-    SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+    auto theme = SkinTheme::get(this);
     len += theme->parts.folderIconSmall()->bitmap(0)->width() + 2*guiscale();
   }
 

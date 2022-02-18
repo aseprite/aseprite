@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -51,7 +51,7 @@ WorkspacePanel::WorkspacePanel(PanelType panelType)
   enableFlags(IGNORE_MOUSE);
   InitTheme.connect(
     [this]{
-      SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+      auto theme = SkinTheme::get(this);
       setBgColor(theme->colors.workspace());
     });
   initTheme();
@@ -282,7 +282,8 @@ DropViewAtResult WorkspacePanel::dropViewAt(const gfx::Point& pos, WorkspacePane
   splitter->setExpansive(true);
   splitter->InitTheme.connect(
     [splitter]{
-      splitter->setStyle(SkinTheme::instance()->styles.workspaceSplitter());
+      auto theme = SkinTheme::get(splitter);
+      splitter->setStyle(theme->styles.workspaceSplitter());
     });
   splitter->initTheme();
 

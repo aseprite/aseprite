@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -39,7 +40,7 @@ namespace app {
       const Transformation::Corners& corners);
 
     bool inHandle(const gfx::Point& pt, int x, int y, int gfx_w, int gfx_h, fixmath::fixed angle);
-    void drawHandle(ui::Graphics* g, int x, int y, fixmath::fixed angle);
+    void drawHandle(Editor* editor, ui::Graphics* g, int x, int y, fixmath::fixed angle);
     void adjustHandle(int& x, int& y, int handle_w, int handle_h, fixmath::fixed angle);
     bool visiblePivot(fixmath::fixed angle) const;
     void getScreenPoints(

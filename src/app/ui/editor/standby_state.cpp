@@ -418,12 +418,14 @@ bool StandbyState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
   if (m_decorator->onSetCursor(ink, editor, mouseScreenPos))
     return true;
 
+  auto theme = skin::SkinTheme::get(editor);
+
   if (ink) {
     // If the current tool change selection (e.g. rectangular marquee, etc.)
     if (ink->isSelection()) {
       if (overSelectionEdges(editor, mouseScreenPos)) {
         editor->showMouseCursor(
-          kCustomCursor, skin::SkinTheme::instance()->cursors.moveSelection());
+          kCustomCursor, theme->cursors.moveSelection());
         return true;
       }
 
@@ -442,12 +444,12 @@ bool StandbyState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
     }
     else if (ink->isEyedropper()) {
       editor->showMouseCursor(
-        kCustomCursor, skin::SkinTheme::instance()->cursors.eyedropper());
+        kCustomCursor, theme->cursors.eyedropper());
       return true;
     }
     else if (ink->isZoom()) {
       editor->showMouseCursor(
-        kCustomCursor, skin::SkinTheme::instance()->cursors.magnifier());
+        kCustomCursor, theme->cursors.magnifier());
       return true;
     }
     else if (ink->isScrollMovement()) {
@@ -880,7 +882,7 @@ bool StandbyState::Decorator::onSetCursor(tools::Ink* ink, Editor* editor, const
       editor->document()->isMaskVisible() &&
       (!Preferences::instance().selection.modifiersDisableHandles() ||
        os::instance()->keyModifiers() == kKeyNoneModifier)) {
-    auto theme = skin::SkinTheme::instance();
+    auto theme = skin::SkinTheme::get(editor);
     const Transformation transformation(m_standbyState->getTransformation(editor));
     TransformHandles* tr = getTransformHandles(editor);
     HandleType handle = tr->getHandleAtPoint(
@@ -929,7 +931,6 @@ bool StandbyState::Decorator::onSetCursor(tools::Ink* ink, Editor* editor, const
       newCursorType = rotated_size_cursors[(c+angle) % num];
     }
     else if (newCursor) {
-      auto theme = skin::SkinTheme::instance();
       const Cursor* rotated_rotate_cursors[8] = {
         theme->cursors.rotateE(),
         theme->cursors.rotateNe(),
@@ -1000,7 +1001,7 @@ void StandbyState::Decorator::postRenderDecorator(EditorPostRender* render)
   // Draw transformation handles (if the mask is visible and isn't frozen).
   Handles handles;
   if (StandbyState::Decorator::getSymmetryHandles(editor, handles)) {
-    skin::SkinTheme* theme = static_cast<skin::SkinTheme*>(ui::get_theme());
+    auto theme = skin::SkinTheme::get(editor);
     os::Surface* part = theme->parts.transformationHandle()->bitmap(0);
     ScreenGraphics g;
     for (const auto& handle : handles)
@@ -1031,7 +1032,7 @@ bool StandbyState::Decorator::getSymmetryHandles(Editor* editor, Handles& handle
       gfx::Rect canvasBounds(gfx::Point(0, 0),
                              editor->canvasSize());
       gfx::RectF editorViewport(View::getView(editor)->viewportBounds());
-      skin::SkinTheme* theme = static_cast<skin::SkinTheme*>(ui::get_theme());
+      auto theme = skin::SkinTheme::get(editor);
       os::Surface* part = theme->parts.transformationHandle()->bitmap(0);
 
       if (int(mode) & int(app::gen::SymmetryMode::HORIZONTAL)) {

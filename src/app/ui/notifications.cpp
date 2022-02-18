@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -41,7 +41,7 @@ private:
 
 Notifications::Notifications()
   : Button("")
-  , m_flagStyle(skin::SkinTheme::instance()->styles.flag())
+  , m_flagStyle(skin::SkinTheme::get(this)->styles.flag())
   , m_red(false)
 {
 }

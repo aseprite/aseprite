@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -60,7 +60,7 @@ class PalettesListItem : public ResourceListItem {
   class CommentButton : public IconButton {
   public:
     CommentButton(const std::string& comment)
-      : IconButton(SkinTheme::instance()->parts.iconUserData())
+      : IconButton(SkinTheme::get(this)->parts.iconUserData())
       , m_comment(comment) {
       setFocusStop(false);
       initTheme();
@@ -69,8 +69,9 @@ class PalettesListItem : public ResourceListItem {
   private:
     void onInitTheme(InitThemeEvent& ev) override {
       IconButton::onInitTheme(ev);
-      setBgColor(
-        SkinTheme::instance()->colors.listitemNormalFace());
+
+      auto theme = SkinTheme::get(this);
+      setBgColor(theme->colors.listitemNormalFace());
     }
 
     void onClick(Event& ev) override {
@@ -151,8 +152,9 @@ void PalettesListBox::onResourceChange(Resource* resource)
 
 void PalettesListBox::onPaintResource(Graphics* g, gfx::Rect& bounds, Resource* resource)
 {
+  auto theme = SkinTheme::get(this);
   doc::Palette* palette = static_cast<PaletteResource*>(resource)->palette();
-  os::Surface* tick = SkinTheme::instance()->parts.checkSelected()->bitmap(0);
+  os::Surface* tick = theme->parts.checkSelected()->bitmap(0);
 
   // Draw tick (to say "this palette matches the active sprite
   // palette").

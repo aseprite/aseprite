@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -83,7 +83,7 @@ public:
     , m_contextLabel("Context") {
     setBorder(gfx::Border(0));
 
-    auto theme = SkinTheme::instance();
+    auto theme = SkinTheme::get(this);
     m_actionLabel.setStyle(theme->styles.listHeaderLabel());
     m_keyLabel.setStyle(theme->styles.listHeaderLabel());
     m_contextLabel.setStyle(theme->styles.listHeaderLabel());
@@ -274,7 +274,7 @@ private:
 
   void onPaint(PaintEvent& ev) override {
     Graphics* g = ev.graphics();
-    SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+    auto theme = SkinTheme::get(this);
     gfx::Rect bounds = clientBounds();
     gfx::Color fg, bg;
 
@@ -356,6 +356,8 @@ private:
         int dh = textSize().h + 4*guiscale();
         int maxi = (accels && accels->size() > 1 ? accels->size(): 1);
 
+        auto theme = SkinTheme::get(this);
+
         for (int i=0; i<maxi; ++i, y += dh) {
           int w = Graphics::measureUITextLength(
             (accels && i < (int)accels->size() ? getAccelText((*accels)[i]).c_str(): ""),
@@ -376,13 +378,13 @@ private:
               m_changeConn = obs::connection();
               m_changeButton.reset(new Button(""));
               m_changeConn = m_changeButton->Click.connect([this, i]{ onChangeAccel(i); });
-              m_changeButton->setStyle(SkinTheme::instance()->styles.miniButton());
+              m_changeButton->setStyle(theme->styles.miniButton());
               addChild(m_changeButton.get());
 
               m_deleteConn = obs::connection();
               m_deleteButton.reset(new Button(""));
               m_deleteConn = m_deleteButton->Click.connect([this, i]{ onDeleteAccel(i); });
-              m_deleteButton->setStyle(SkinTheme::instance()->styles.miniButton());
+              m_deleteButton->setStyle(theme->styles.miniButton());
               addChild(m_deleteButton.get());
 
               m_changeButton->setBgColor(gfx::ColorNone);
@@ -409,7 +411,7 @@ private:
             m_addConn = obs::connection();
             m_addButton.reset(new Button(""));
             m_addConn = m_addButton->Click.connect([this]{ onAddAccel(); });
-            m_addButton->setStyle(SkinTheme::instance()->styles.miniButton());
+            m_addButton->setStyle(theme->styles.miniButton());
             addChild(m_addButton.get());
 
             itemBounds.w = 8*guiscale() + Graphics::measureUITextLength("Add", font());

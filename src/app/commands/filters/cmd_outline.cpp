@@ -125,7 +125,7 @@ private:
     }
     m_panel.outlineType()->setSelectedItem(commonMatrix, false);
 
-    auto theme = static_cast<SkinTheme*>(this->theme());
+    auto theme = SkinTheme::get(this);
     auto emptyIcon = theme->parts.outlineEmptyPixel();
     auto pixelIcon = theme->parts.outlineFullPixel();
 

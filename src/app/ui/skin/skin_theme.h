@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2021  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -42,6 +42,7 @@ namespace app {
       static const char* kThemesFolderName;
 
       static SkinTheme* instance();
+      static SkinTheme* get(const ui::Widget* widget);
 
       SkinTheme();
       ~SkinTheme();

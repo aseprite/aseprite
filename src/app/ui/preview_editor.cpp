@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -54,11 +54,13 @@ public:
 protected:
   void onInitTheme(ui::InitThemeEvent& ev) override {
     CheckBox::onInitTheme(ev);
-    setStyle(SkinTheme::instance()->styles.windowCenterButton());
+
+    auto theme = SkinTheme::get(this);
+    setStyle(theme->styles.windowCenterButton());
   }
 
   void onSetDecorativeWidgetBounds() override {
-    SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+    auto theme = SkinTheme::get(this);
     Widget* window = parent();
     gfx::Rect rect(0, 0, 0, 0);
     gfx::Size centerSize = this->sizeHint();
@@ -120,7 +122,7 @@ private:
   }
 
   void onSetDecorativeWidgetBounds() override {
-    SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+    auto theme = SkinTheme::get(this);
     Widget* window = parent();
     gfx::Rect rect(0, 0, 0, 0);
     gfx::Size playSize = this->sizeHint();
@@ -163,7 +165,7 @@ private:
   }
 
   void setupIcons() {
-    SkinTheme* theme = SkinTheme::instance();
+    auto theme = SkinTheme::get(this);
     if (m_isPlaying)
       setStyle(theme->styles.windowStopButton());
     else
@@ -221,7 +223,7 @@ bool PreviewEditorWindow::onProcessMessage(ui::Message* msg)
 
     case kOpenMessage:
       {
-        SkinTheme* theme = SkinTheme::instance();
+        auto theme = SkinTheme::get(this);
 
         // Default bounds
         int width = ui::display_w()/4;

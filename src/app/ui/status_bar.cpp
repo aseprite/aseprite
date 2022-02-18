@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -80,7 +80,7 @@ public:
 
     InitTheme.connect(
       [this]{
-        SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+        auto theme = SkinTheme::get(this);
         ui::Style* style = theme->styles.workspaceLink();
         noBorderNoChildSpacing();
         m_label.setStyle(style);
@@ -131,7 +131,7 @@ class StatusBar::Indicators : public HBox {
 
   private:
     void onPaint(ui::PaintEvent& ev) override {
-      SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+      auto theme = SkinTheme::get(this);
       gfx::Color textColor = theme->colors.statusBarText();
       Rect rc = clientBounds();
       Graphics* g = ev.graphics();
@@ -177,7 +177,7 @@ class StatusBar::Indicators : public HBox {
     }
 
     void onPaint(ui::PaintEvent& ev) override {
-      SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+      auto theme = SkinTheme::get(this);
       gfx::Color textColor = theme->colors.statusBarText();
       Rect rc = clientBounds();
       Graphics* g = ev.graphics();
@@ -319,10 +319,11 @@ public:
   void showBackupIcon(BackupIcon icon) {
     m_backupIcon = icon;
     if (m_backupIcon != BackupIcon::None) {
+      auto theme = SkinTheme::get(this);
       SkinPartPtr part =
         (m_backupIcon == BackupIcon::Normal ?
-         SkinTheme::instance()->parts.iconSave():
-         SkinTheme::instance()->parts.iconSaveSmall());
+         theme->parts.iconSave():
+         theme->parts.iconSaveSmall());
 
       m_rightArea.setVisible(true);
       if (m_rightArea.children().empty()) {
@@ -373,7 +374,7 @@ public:
   }
 
   IndicatorsGeneration& add(const char* text) {
-    auto theme = SkinTheme::instance();
+    auto theme = SkinTheme::get(m_indicators);
 
     for (auto i = text; *i; ) {
       // Icon
@@ -416,7 +417,7 @@ public:
   }
 
   IndicatorsGeneration& add(const app::Color& color) {
-    auto theme = SkinTheme::instance();
+    auto theme = SkinTheme::get(m_indicators);
 
     // Eyedropper icon
     add(theme->getToolPart("eyedropper"), false);
@@ -439,7 +440,7 @@ public:
   }
 
   IndicatorsGeneration& add(tools::Tool* tool) {
-    auto theme = SkinTheme::instance();
+    auto theme = SkinTheme::get(m_indicators);
 
     // Tool icon + text
     add(theme->getToolPart(tool->getId().c_str()), false);
@@ -795,7 +796,7 @@ void StatusBar::onInitTheme(ui::InitThemeEvent& ev)
 {
   HBox::onInitTheme(ev);
 
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  auto theme = SkinTheme::get(this);
   setBgColor(theme->colors.statusBarFace());
   setBorder(gfx::Border(6*guiscale(), 0, 6*guiscale(), 0));
   setMinSize(Size(0, textHeight()+8*guiscale()));

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -66,7 +66,7 @@ private:
 
 static Size getToolIconSize(Widget* widget)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(widget->theme());
+  auto theme = SkinTheme::get(widget);
   os::Surface* icon = theme->getToolIcon("configuration");
   if (icon)
     return Size(icon->width(), icon->height());
@@ -294,7 +294,7 @@ void ToolBar::onPaint(ui::PaintEvent& ev)
 {
   gfx::Rect bounds = clientBounds();
   Graphics* g = ev.graphics();
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  auto theme = SkinTheme::get(this);
   ToolBox* toolbox = App::instance()->toolBox();
   Tool* activeTool = App::instance()->activeTool();
   ToolGroupList::iterator it = toolbox->begin_group();
@@ -699,7 +699,7 @@ void ToolBar::ToolStrip::onSizeHint(SizeHintEvent& ev)
 void ToolBar::ToolStrip::onPaint(PaintEvent& ev)
 {
   Graphics* g = ev.graphics();
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  auto theme = SkinTheme::get(this);
   ToolBox* toolbox = App::instance()->toolBox();
   Tool* activeTool = App::instance()->activeTool();
   Rect toolrc;

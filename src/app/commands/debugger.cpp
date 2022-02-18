@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021  Igara Studio S.A.
+// Copyright (C) 2021-2022  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -193,7 +193,7 @@ protected:
   }
 
   void onPaint(PaintEvent& ev) override {
-    auto theme = static_cast<SkinTheme*>(this->theme());
+    auto theme = SkinTheme::get(this);
     Graphics* g = ev.graphics();
     View* view = View::getView(this);
     gfx::Color linesBg = theme->colors.textboxCodeFace();
@@ -496,7 +496,7 @@ public:
                       m_state == State::ProcessingCommand);
     bool canRunCommands = (m_state == State::WaitingNextCommand);
 
-    auto theme = static_cast<SkinTheme*>(this->theme());
+    auto theme = SkinTheme::get(this);
     control()->getItem(0)->setIcon(
       (isRunning ? theme->parts.debugPause() :
                    theme->parts.debugContinue()));

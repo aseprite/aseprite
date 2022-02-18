@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -94,7 +94,7 @@ void FilenameField::onInitTheme(ui::InitThemeEvent& ev)
   HBox::onInitTheme(ev);
   setChildSpacing(0);
 
-  auto theme = skin::SkinTheme::instance();
+  auto theme = skin::SkinTheme::get(this);
   ui::Style* style = theme->styles.miniButton();
   if (style)
     m_button.setStyle(style);

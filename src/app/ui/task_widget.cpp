@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -66,7 +66,7 @@ TaskWidget::TaskWidget(const Type type,
 
   InitTheme.connect(
     [this]{
-      auto theme = static_cast<SkinTheme*>(this->theme());
+      auto theme = SkinTheme::get(this);
       setTransparent(true);
       setBgColor(gfx::ColorNone);
       m_cancelButton.setTransparent(true);

@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2022  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This program is distributed under the terms of
@@ -20,7 +21,8 @@ public:
     : Separator(text, align) {
     InitTheme.connect(
       [this]{
-        setStyle(skin::SkinTheme::instance()->styles.separatorInView());
+        auto theme = skin::SkinTheme::get(this);
+        setStyle(theme->styles.separatorInView());
         if (this->text().empty())
           setBorder(border() + gfx::Border(0, 2, 0, 2)*ui::guiscale());
       });

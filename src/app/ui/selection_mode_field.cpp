@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -22,7 +22,7 @@ using namespace ui;
 SelectionModeField::SelectionModeField()
   : ButtonSet(4)
 {
-  auto theme = static_cast<SkinTheme*>(this->theme());
+  auto theme = SkinTheme::get(this);
 
   addItem(theme->parts.selectionReplace());
   addItem(theme->parts.selectionAdd());

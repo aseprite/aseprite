@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -655,7 +655,7 @@ void WidgetLoader::fillWidgetWithXmlElementAttributes(const TiXmlElement* elem, 
     std::string styleIdStr = styleid;
     widget->InitTheme.connect(
       [widget, styleIdStr]{
-        SkinTheme* theme = static_cast<SkinTheme*>(widget->theme());
+        auto theme = SkinTheme::get(widget);
         ui::Style* style = theme->getStyleById(styleIdStr);
         if (style)
           widget->setStyle(style);

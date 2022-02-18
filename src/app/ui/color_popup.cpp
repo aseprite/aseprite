@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -71,7 +71,7 @@ public:
 
     void onPaint(PaintEvent& ev) override {
       Graphics* g = ev.graphics();
-      skin::SkinTheme* theme = skin::SkinTheme::instance();
+      auto theme = skin::SkinTheme::get(this);
       gfx::Rect rc = clientBounds();
 
       Button::onPaint(ev);
@@ -96,8 +96,9 @@ public:
       Item* item = new Item(colorPopup, color);
       item->InitTheme.connect(
         [item]{
+          auto theme = skin::SkinTheme::get(item);
           item->setSizeHint(gfx::Size(16, 16)*ui::guiscale());
-          item->setStyle(skin::SkinTheme::instance()->styles.simpleColor());
+          item->setStyle(theme->styles.simpleColor());
         });
       item->initTheme();
       addChild(item);

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -42,7 +42,7 @@ enum AniAction {
 AniControls::AniControls(TooltipManager* tooltipManager)
   : ButtonSet(5)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  auto theme = SkinTheme::get(this);
 
   addItem(theme->parts.aniFirst());
   addItem(theme->parts.aniPrevious());
@@ -61,14 +61,14 @@ AniControls::AniControls(TooltipManager* tooltipManager)
 
   InitTheme.connect(
     [this]{
-      SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+      auto theme = SkinTheme::get(this);
       setBgColor(theme->colors.workspace());
     });
 }
 
 void AniControls::updateUsingEditor(Editor* editor)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  auto theme = SkinTheme::get(this);
   getItem(ACTION_PLAY)->setIcon(
     (editor && editor->isPlaying() ?
       theme->parts.aniStop():

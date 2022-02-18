@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -159,7 +159,11 @@ void draw_color_button(ui::Graphics* g,
                        const bool hot,
                        const bool drag)
 {
-  SkinTheme* theme = SkinTheme::instance();
+  auto theme = SkinTheme::instance();
+  ASSERT(theme);
+  if (!theme)
+    return;
+
   int scale = ui::guiscale();
 
   // Draw background (the color)

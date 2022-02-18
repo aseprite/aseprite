@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -360,6 +360,8 @@ void ColorSliders::addSlider(const Channel channel,
                              const int absMin, const int absMax,
                              const int relMin, const int relMax)
 {
+  auto theme = skin::SkinTheme::get(this);
+
   Item& item = m_items[channel];
   ASSERT(!item.label);
   item.label     = new Label(labelText);
@@ -387,7 +389,7 @@ void ColorSliders::addSlider(const Channel channel,
   item.relSlider->setVisible(false);
 
   gfx::Size sz(std::numeric_limits<int>::max(),
-               SkinTheme::instance()->dimensions.colorSliderHeight());
+               theme->dimensions.colorSliderHeight());
   item.label->setMaxSize(sz);
   item.box->setMaxSize(sz);
   item.entry->setMaxSize(sz);

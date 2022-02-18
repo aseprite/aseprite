@@ -778,7 +778,7 @@ void Editor::drawBackground(ui::Graphics* g)
   if (!(m_flags & kShowOutside))
     return;
 
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  auto theme = SkinTheme::get(this);
 
   gfx::Size canvas = canvasSize();
   gfx::Rect rc(0, 0, canvas.w, canvas.h);
@@ -1045,7 +1045,7 @@ void Editor::drawSlices(ui::Graphics* g)
   if (!isVisible() || !m_document)
     return;
 
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  auto theme = SkinTheme::get(this);
   gfx::Point mainOffset(mainTilePosition());
 
   for (auto slice : m_sprite->slices()) {
@@ -2037,7 +2037,7 @@ void Editor::onPaint(ui::PaintEvent& ev)
 
   Graphics* g = ev.graphics();
   gfx::Rect rc = clientBounds();
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  auto theme = SkinTheme::get(this);
 
   // Editor without sprite
   if (!m_sprite) {

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -1502,7 +1502,7 @@ void Timeline::onInitTheme(ui::InitThemeEvent& ev)
 {
   Widget::onInitTheme(ev);
 
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
+  auto theme = SkinTheme::get(this);
   int barsize = theme->dimensions.miniScrollbarSize();
   m_hbar.setBarWidth(barsize);
   m_vbar.setBarWidth(barsize);
@@ -3929,7 +3929,7 @@ DocumentPreferences& Timeline::docPref() const
 
 skin::SkinTheme* Timeline::skinTheme() const
 {
-  return static_cast<SkinTheme*>(theme());
+  return SkinTheme::get(this);
 }
 
 gfx::Size Timeline::celBoxSize() const
