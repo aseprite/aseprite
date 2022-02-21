@@ -1,5 +1,5 @@
 # Aseprite
-# Copyright (C) 2019-2020  Igara Studio S.A.
+# Copyright (C) 2019-2022  Igara Studio S.A.
 # Copyright (C) 2001-2018  David Capello
 
 ######################################################################
@@ -227,6 +227,7 @@ endif()
 
 if(ENABLE_BENCHMARKS)
   include(FindBenchmarks)
+  find_benchmarks(app app-lib)
   find_benchmarks(doc doc-lib)
   find_benchmarks(doc/algorithm doc-lib)
   find_benchmarks(render render-lib)
