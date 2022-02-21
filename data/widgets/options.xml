@@ -1,5 +1,5 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2018-2021  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-2022  Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2018  David Capello -->
 <gui>
   <window id="options" text="@.title">
@@ -230,6 +230,7 @@
                  pref="editor.auto_fit" />
           <check text="@.straight_line_preview" id="straight_line_preview" tooltip="@.straight_line_preview_tooltip" />
           <check text="@.discard_brush" id="discard_brush" />
+          <hbox id="sampling_placeholder" />
           <hbox>
             <label text="@.right_click" />
             <combobox id="right_click_behavior" expansive="true" />
@@ -498,7 +499,8 @@
         <vbox id="section_experimental">
           <separator text="@.user_interface" horizontal="true" />
           <hbox>
-            <check text="@.new_render_engine"
+            <check id="new_render_engine"
+                   text="@.new_render_engine"
                    pref="experimental.new_render_engine" />
             <link text="(#1671)" url="https://github.com/aseprite/aseprite/issues/1671" />
           </hbox>

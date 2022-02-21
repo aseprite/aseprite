@@ -29,6 +29,7 @@
 #include "app/ui/color_button.h"
 #include "app/ui/main_window.h"
 #include "app/ui/pref_widget.h"
+#include "app/ui/sampling_selector.h"
 #include "app/ui/separator_in_view.h"
 #include "app/ui/skin/skin_theme.h"
 #include "base/clamp.h"
@@ -449,8 +450,18 @@ public:
 
     showHome()->setSelected(m_pref.general.showHome());
 
-    // Right-click
+    // Editor sampling
+    samplingPlaceholder()->addChild(
+      m_samplingSelector = new SamplingSelector(
+        SamplingSelector::Behavior::ChangeOnSave));
 
+    m_samplingSelector->setEnabled(newRenderEngine()->isSelected());
+    newRenderEngine()->Click.connect(
+      [this]{
+        m_samplingSelector->setEnabled(newRenderEngine()->isSelected());
+      });
+
+    // Right-click
     static_assert(int(app::gen::RightClickMode::PAINT_BGCOLOR) == 0, "");
     static_assert(int(app::gen::RightClickMode::PICK_FGCOLOR) == 1, "");
     static_assert(int(app::gen::RightClickMode::ERASE) == 2, "");
@@ -618,6 +629,8 @@ public:
     m_pref.editor.straightLinePreview(straightLinePreview()->isSelected());
     m_pref.eyedropper.discardBrush(discardBrush()->isSelected());
     m_pref.editor.rightClickMode(static_cast<app::gen::RightClickMode>(rightClickBehavior()->getSelectedItemIndex()));
+    if (m_samplingSelector)
+      m_samplingSelector->save();
     m_pref.cursor.paintingCursorType(static_cast<app::gen::PaintingCursorType>(paintingCursorType()->getSelectedItemIndex()));
     m_pref.cursor.cursorColor(cursorColor()->getColor());
     m_pref.cursor.brushPreview(static_cast<app::gen::BrushPreview>(brushPreview()->getSelectedItemIndex()));
@@ -1628,6 +1641,7 @@ private:
   int m_restoreUIScaling;
   std::vector<os::ColorSpaceRef> m_colorSpaces;
   std::string m_templateTextForDisplayCS;
+  SamplingSelector* m_samplingSelector = nullptr;
 };
 
 class OptionsCommand : public Command {

@@ -53,6 +53,7 @@ namespace app {
   class ColorBar;
   class DitheringSelector;
   class GradientTypeSelector;
+  class SamplingSelector;
 
   class ContextBar : public DocObserverWidget<ui::HBox>
                    , public obs::observable<ContextBarObserver>
@@ -133,7 +134,6 @@ namespace app {
     bool needZoomButtons(tools::Tool* tool) const;
 
     class ZoomButtons;
-    class SamplingOptions;
     class BrushBackField;
     class BrushTypeField;
     class BrushAngleField;
@@ -161,7 +161,7 @@ namespace app {
     class SliceFields;
 
     ZoomButtons* m_zoomButtons;
-    SamplingOptions* m_samplingOptions;
+    SamplingSelector* m_samplingSelector;
     BrushBackField* m_brushBack;
     BrushTypeField* m_brushType;
     BrushAngleField* m_brushAngle;

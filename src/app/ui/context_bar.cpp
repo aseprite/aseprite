@@ -43,6 +43,7 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/icon_button.h"
 #include "app/ui/keyboard_shortcuts.h"
+#include "app/ui/sampling_selector.h"
 #include "app/ui/selection_mode_field.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui_context.h"
@@ -132,49 +133,6 @@ private:
     deselectItems();
     manager()->freeFocus();
   }
-};
-
-class ContextBar::SamplingOptions : public HBox {
-public:
-  class Item : public ListItem {
-  public:
-    Item(const char* label,
-         const gen::Downsampling sampling)
-      : ListItem(label)
-      , m_sampling(sampling) {
-    }
-    const gen::Downsampling& sampling() const { return m_sampling; }
-  private:
-    gen::Downsampling m_sampling;
-  };
-
-  SamplingOptions()
-    : m_downsamplingLabel("Downsampling:")
-  {
-    addChild(&m_downsamplingLabel);
-    addChild(&m_downsampling);
-
-    m_downsampling.addItem(new Item("Nearest", gen::Downsampling::NEAREST));
-    m_downsampling.addItem(new Item("Bilinear", gen::Downsampling::BILINEAR));
-    m_downsampling.addItem(new Item("Bilinear mipmapping", gen::Downsampling::BILINEAR_MIPMAP));
-    m_downsampling.addItem(new Item("Trilinear mipmapping", gen::Downsampling::TRILINEAR_MIPMAP));
-    m_downsampling.setSelectedItemIndex(
-      (int)Preferences::instance().editor.downsampling());
-
-    m_downsampling.Change.connect([this]{ onDownsamplingChange(); });
-  }
-
-private:
-
-  void onDownsamplingChange() {
-    if (auto item = dynamic_cast<Item*>(m_downsampling.getSelectedItem())) {
-      Preferences::instance().editor.downsampling(
-        item->sampling());
-    }
-  }
-
-  Label m_downsamplingLabel;
-  ComboBox m_downsampling;
 };
 
 class ContextBar::BrushBackField : public ButtonSet {
@@ -1581,7 +1539,7 @@ ContextBar::ContextBar(TooltipManager* tooltipManager,
   m_selectionOptionsBox->addChild(m_rotAlgo = new RotAlgorithmField());
 
   addChild(m_zoomButtons = new ZoomButtons);
-  addChild(m_samplingOptions = new SamplingOptions);
+  addChild(m_samplingSelector = new SamplingSelector);
 
   addChild(m_brushBack = new BrushBackField);
   addChild(m_brushType = new BrushTypeField(this));
@@ -2034,8 +1992,8 @@ bool ContextBar::updateSamplingVisibility(tools::Tool* tool)
      current_editor->projection().scaleY() < 1.0) &&
     current_editor->isUsingNewRenderEngine();
 
-  if (newVisibility == m_samplingOptions->hasFlags(HIDDEN)) {
-    m_samplingOptions->setVisible(newVisibility);
+  if (newVisibility == m_samplingSelector->hasFlags(HIDDEN)) {
+    m_samplingSelector->setVisible(newVisibility);
     layout();
     return true;
   }
