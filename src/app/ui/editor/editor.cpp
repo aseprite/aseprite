@@ -60,6 +60,7 @@
 #include "doc/mask_boundaries.h"
 #include "doc/slice.h"
 #include "os/color_space.h"
+#include "os/sampling.h"
 #include "os/surface.h"
 #include "os/system.h"
 #include "os/window.h"
@@ -174,6 +175,10 @@ Editor::Editor(Doc* document, EditorFlags flags)
     Preferences::instance().colorBar.fgColor.AfterChange.connect(
       [this]{ onFgColorChange(); });
 
+  m_samplingChangeConn =
+    Preferences::instance().editor.downsampling.AfterChange.connect(
+      [this]{ onSamplingChange(); });
+
   m_contextBarBrushChangeConn =
     App::instance()->contextBar()->BrushChange.connect(
       [this]{ onContextBarBrushChange(); });
@@ -237,6 +242,18 @@ void Editor::destroyEditorSharedInternals()
 bool Editor::isActive() const
 {
   return (current_editor == this);
+}
+
+bool Editor::isUsingNewRenderEngine() const
+{
+  ASSERT(m_sprite);
+  return
+    (Preferences::instance().experimental.newRenderEngine()
+     // Reference layers + zoom > 100% need the old render engine for
+     // sub-pixel rendering.
+     && (!m_sprite->hasVisibleReferenceLayers()
+         || (m_proj.scaleX() <= 1.0
+             && m_proj.scaleY() <= 1.0)));
 }
 
 // static
@@ -410,6 +427,9 @@ void Editor::setZoom(const render::Zoom& zoom)
   if (m_proj.zoom() != zoom) {
     m_proj.setZoom(zoom);
     notifyZoomChanged();
+
+    if (isActive())
+      App::instance()->contextBar()->updateSamplingVisibility();
   }
   else {
     // Just copy the zoom as the internal "Zoom::m_internalScale"
@@ -582,13 +602,8 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
     return;
 
   // rc2 is the rectangle used to create a temporal rendered image of the sprite
-  const bool newEngine =
-    (Preferences::instance().experimental.newRenderEngine()
-     // Reference layers + zoom > 100% need the old render engine for
-     // sub-pixel rendering.
-     && (!m_sprite->hasVisibleReferenceLayers()
-         || (m_proj.scaleX() <= 1.0
-             && m_proj.scaleY() <= 1.0)));
+  const auto& pref = Preferences::instance();
+  const bool newEngine = isUsingNewRenderEngine();
   gfx::Rect rc2;
   if (newEngine) {
     rc2 = expose;               // New engine, exposed rectangle (without zoom)
@@ -614,11 +629,11 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
     rendered.reset(Image::create(IMAGE_RGB, rc2.w, rc2.h,
                                  m_renderEngine->getRenderImageBuffer()));
 
-    m_renderEngine->setNewBlendMethod(Preferences::instance().experimental.newBlend());
+    m_renderEngine->setNewBlendMethod(pref.experimental.newBlend());
     m_renderEngine->setRefLayersVisiblity(true);
     m_renderEngine->setSelectedLayer(m_layer);
     if (m_flags & Editor::kUseNonactiveLayersOpacityWhenEnabled)
-      m_renderEngine->setNonactiveLayersOpacity(Preferences::instance().experimental.nonactiveLayersOpacity());
+      m_renderEngine->setNonactiveLayersOpacity(pref.experimental.nonactiveLayersOpacity());
     else
       m_renderEngine->setNonactiveLayersOpacity(255);
     m_renderEngine->setProjection(
@@ -710,7 +725,30 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
                                tmp.get(), 0, 0, 0, 0, rc2.w, rc2.h);
 
       if (newEngine) {
-        g->drawSurface(tmp.get(), gfx::Rect(0, 0, rc2.w, rc2.h), dest);
+        os::Sampling sampling;
+        if (m_proj.scaleX() < 1.0) {
+          switch (pref.editor.downsampling()) {
+            case gen::Downsampling::NEAREST:
+              sampling = os::Sampling(os::Sampling::Filter::Nearest);
+              break;
+            case gen::Downsampling::BILINEAR:
+              sampling = os::Sampling(os::Sampling::Filter::Linear);
+              break;
+            case gen::Downsampling::BILINEAR_MIPMAP:
+              sampling = os::Sampling(os::Sampling::Filter::Linear,
+                                      os::Sampling::Mipmap::Nearest);
+              break;
+            case gen::Downsampling::TRILINEAR_MIPMAP:
+              sampling = os::Sampling(os::Sampling::Filter::Linear,
+                                      os::Sampling::Mipmap::Linear);
+              break;
+          }
+        }
+
+        g->drawSurface(tmp.get(),
+                       gfx::Rect(0, 0, rc2.w, rc2.h),
+                       dest,
+                       sampling);
       }
       else {
         g->blit(tmp.get(), 0, 0, dest.x, dest.y, dest.w, dest.h);
@@ -2109,6 +2147,15 @@ void Editor::onActiveToolChange(tools::Tool* tool)
   if (hasMouse()) {
     updateStatusBar();
     setCursor(ui::get_mouse_position());
+  }
+}
+
+void Editor::onSamplingChange()
+{
+  if (m_proj.scaleX() < 1.0 &&
+      m_proj.scaleY() < 1.0 &&
+      isUsingNewRenderEngine()) {
+    invalidate();
   }
 }
 

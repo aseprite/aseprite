@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -30,6 +30,7 @@ namespace gfx {
 
 namespace os {
   class DrawTextDelegate;
+  class Sampling;
 }
 
 namespace ui {
@@ -89,6 +90,11 @@ namespace ui {
     void drawSurface(os::Surface* surface,
                      const gfx::Rect& srcRect,
                      const gfx::Rect& dstRect);
+    void drawSurface(os::Surface* surface,
+                     const gfx::Rect& srcRect,
+                     const gfx::Rect& dstRect,
+                     const os::Sampling& sampling,
+                     const ui::Paint* paint = nullptr);
     void drawRgbaSurface(os::Surface* surface, int x, int y);
     void drawRgbaSurface(os::Surface* surface, int srcx, int srcy, int dstx, int dsty, int w, int h);
     void drawRgbaSurface(os::Surface* surface,

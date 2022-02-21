@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -67,6 +67,7 @@ namespace app {
     void updateForMovingPixels();
     void updateForSelectingBox(const std::string& text);
     void updateToolLoopModifiersIndicators(tools::ToolLoopModifiers modifiers);
+    bool updateSamplingVisibility(tools::Tool* tool = nullptr);
     void updateAutoSelectLayer(bool state);
     bool isAutoSelectLayer() const;
 
@@ -129,8 +130,10 @@ namespace app {
     void registerCommands();
     void showBrushes();
     void showDynamics();
+    bool needZoomButtons(tools::Tool* tool) const;
 
     class ZoomButtons;
+    class SamplingOptions;
     class BrushBackField;
     class BrushTypeField;
     class BrushAngleField;
@@ -158,6 +161,7 @@ namespace app {
     class SliceFields;
 
     ZoomButtons* m_zoomButtons;
+    SamplingOptions* m_samplingOptions;
     BrushBackField* m_brushBack;
     BrushTypeField* m_brushType;
     BrushAngleField* m_brushAngle;

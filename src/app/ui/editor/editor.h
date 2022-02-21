@@ -108,6 +108,7 @@ namespace app {
     static void destroyEditorSharedInternals();
 
     bool isActive() const;
+    bool isUsingNewRenderEngine() const;
 
     DocView* getDocView() { return m_docView; }
     void setDocView(DocView* docView) { m_docView = docView; }
@@ -311,6 +312,7 @@ namespace app {
     void onResize(ui::ResizeEvent& ev) override;
     void onPaint(ui::PaintEvent& ev) override;
     void onInvalidateRegion(const gfx::Region& region) override;
+    void onSamplingChange();
     void onFgColorChange();
     void onContextBarBrushChange();
     void onTiledModeBeforeChange();
@@ -405,6 +407,7 @@ namespace app {
     ui::Timer m_antsTimer;
     int m_antsOffset;
 
+    obs::scoped_connection m_samplingChangeConn;
     obs::scoped_connection m_fgColorChangeConn;
     obs::scoped_connection m_contextBarBrushChangeConn;
     obs::scoped_connection m_showExtrasConn;
