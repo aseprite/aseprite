@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -178,6 +178,7 @@ FOR_ENUM(app::gen::BgType)
 FOR_ENUM(app::gen::BrushPreview)
 FOR_ENUM(app::gen::BrushType)
 FOR_ENUM(app::gen::ColorProfileBehavior)
+FOR_ENUM(app::gen::Downsampling)
 FOR_ENUM(app::gen::EyedropperChannel)
 FOR_ENUM(app::gen::EyedropperSample)
 FOR_ENUM(app::gen::FillReferTo)

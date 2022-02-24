@@ -127,6 +127,12 @@
       <value id="YES" value="1" />
       <value id="NO" value="2" />
     </enum>
+    <enum id="Downsampling">
+      <value id="NEAREST" value="0" />
+      <value id="BILINEAR" value="1" />
+      <value id="BILINEAR_MIPMAP" value="2" />
+      <value id="TRILINEAR_MIPMAP" value="3" />
+    </enum>
   </types>
 
   <global>
@@ -176,6 +182,7 @@
            some performance issue rendering huge sprites with small
            zoom levels -->
       <option id="auto_fit" type="bool" default="false" />
+      <option id="downsampling" type="Downsampling" default="Downsampling::BILINEAR_MIPMAP" />
     </section>
     <section id="cels">
       <option id="user_data_visibility" type="bool" default="false" />

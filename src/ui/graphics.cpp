@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -21,6 +21,7 @@
 #include "gfx/size.h"
 #include "os/draw_text.h"
 #include "os/font.h"
+#include "os/sampling.h"
 #include "os/surface.h"
 #include "os/system.h"
 #include "os/window.h"
@@ -269,6 +270,25 @@ void Graphics::drawSurface(os::Surface* surface,
     surface,
     srcRect,
     gfx::Rect(dstRect).offset(m_dx, m_dy));
+}
+
+void Graphics::drawSurface(os::Surface* surface,
+                           const gfx::Rect& srcRect,
+                           const gfx::Rect& dstRect,
+                           const os::Sampling& sampling,
+                           const ui::Paint* paint)
+{
+  dirty(gfx::Rect(m_dx+dstRect.x, m_dy+dstRect.y,
+                  dstRect.w, dstRect.h));
+
+  os::SurfaceLock lockSrc(surface);
+  os::SurfaceLock lockDst(m_surface.get());
+  m_surface->drawSurface(
+    surface,
+    srcRect,
+    gfx::Rect(dstRect).offset(m_dx, m_dy),
+    sampling,
+    paint);
 }
 
 void Graphics::drawRgbaSurface(os::Surface* surface, int x, int y)

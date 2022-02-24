@@ -44,6 +44,7 @@
 #include "app/ui/expr_entry.h"
 #include "app/ui/icon_button.h"
 #include "app/ui/keyboard_shortcuts.h"
+#include "app/ui/sampling_selector.h"
 #include "app/ui/selection_mode_field.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui_context.h"
@@ -59,6 +60,7 @@
 #include "doc/slice.h"
 #include "fmt/format.h"
 #include "obs/connection.h"
+#include "os/sampling.h"
 #include "os/surface.h"
 #include "os/system.h"
 #include "render/dithering.h"
@@ -1721,6 +1723,7 @@ ContextBar::ContextBar(TooltipManager* tooltipManager,
   m_selectionOptionsBox->addChild(m_rotAlgo = new RotAlgorithmField());
 
   addChild(m_zoomButtons = new ZoomButtons);
+  addChild(m_samplingSelector = new SamplingSelector);
 
   addChild(m_brushBack = new BrushBackField);
   addChild(m_brushType = new BrushTypeField(this));
@@ -2033,13 +2036,6 @@ void ContextBar::updateForTool(tools::Tool* tool)
      activeBrush()->type() == kLineBrushType);
 
   // True if the current tool is eyedropper.
-  const bool needZoomButtons = tool &&
-    (tool->getInk(0)->isZoom() ||
-     tool->getInk(1)->isZoom() ||
-     tool->getInk(0)->isScrollMovement() ||
-     tool->getInk(1)->isScrollMovement());
-
-  // True if the current tool is eyedropper.
   const bool isEyedropper = tool &&
     (tool->getInk(0)->isEyedropper() ||
      tool->getInk(1)->isEyedropper());
@@ -2091,7 +2087,7 @@ void ContextBar::updateForTool(tools::Tool* tool)
   const bool supportDynamics = (!hasImageBrush);
 
   // Show/Hide fields
-  m_zoomButtons->setVisible(needZoomButtons);
+  m_zoomButtons->setVisible(needZoomButtons(tool));
   m_brushBack->setVisible(supportOpacity && hasImageBrush && !withDithering);
   m_brushType->setVisible(supportOpacity && (!isFloodfill || (isFloodfill && hasImageBrush && !withDithering)));
   m_brushSize->setVisible(supportOpacity && !isFloodfill && !hasImageBrush);
@@ -2133,7 +2129,11 @@ void ContextBar::updateForTool(tools::Tool* tool)
   if (updateShade)
     m_inkShades->updateShadeFromColorBarPicks();
 
-  layout();
+  if (!updateSamplingVisibility(tool)) {
+    // updateSamplingVisibility() returns false if it doesn't layout()
+    // the ContextBar.
+    layout();
+  }
 }
 
 void ContextBar::updateForMovingPixels(const Transformation& t)
@@ -2173,6 +2173,26 @@ void ContextBar::updateToolLoopModifiersIndicators(tools::ToolLoopModifiers modi
     mode = gen::SelectionMode::INTERSECT;
 
   m_selectionMode->setSelectionMode(mode);
+}
+
+bool ContextBar::updateSamplingVisibility(tools::Tool* tool)
+{
+  if (!tool)
+    tool = App::instance()->activeTool();
+
+  const bool newVisibility =
+    needZoomButtons(tool) &&
+    current_editor &&
+    (current_editor->projection().scaleX() < 1.0 ||
+     current_editor->projection().scaleY() < 1.0) &&
+    current_editor->isUsingNewRenderEngine();
+
+  if (newVisibility == m_samplingSelector->hasFlags(HIDDEN)) {
+    m_samplingSelector->setVisible(newVisibility);
+    layout();
+    return true;
+  }
+  return false;
 }
 
 void ContextBar::updateAutoSelectLayer(bool state)
@@ -2478,6 +2498,15 @@ void ContextBar::showDynamics()
 {
   if (m_dynamics->isVisible())
     m_dynamics->switchPopup();
+}
+
+bool ContextBar::needZoomButtons(tools::Tool* tool) const
+{
+  return tool &&
+    (tool->getInk(0)->isZoom() ||
+     tool->getInk(1)->isZoom() ||
+     tool->getInk(0)->isScrollMovement() ||
+     tool->getInk(1)->isScrollMovement());
 }
 
 } // namespace app
