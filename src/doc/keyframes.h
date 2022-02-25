@@ -132,7 +132,12 @@ namespace doc {
       else if (it->frame() == frame)
         it->setValue(std::move(value));
       else {
-        ++it;
+        // We must insert keys in order. So if "frame" is less than
+        // the "it" frame, insert() will insert the new key before the
+        // iterator just as we want. In other case we have to use the
+        // next iterator (++it).
+        if (frame > it->frame())
+          ++it;
         m_keys.insert(it, Key(frame, std::move(value)));
       }
     }
