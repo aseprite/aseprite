@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -574,10 +574,8 @@ public:
   }
 
   void fillStroke(ToolLoop* loop, const Stroke& stroke) override {
-    if (stroke.size() < 3) {
-      joinStroke(loop, stroke);
+    if (stroke.empty())
       return;
-    }
 
     // Fill content
     auto v = m_pts.toXYInts();
