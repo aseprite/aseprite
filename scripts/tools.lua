@@ -619,3 +619,66 @@ function drawing_with_tiled_mode_and_image_brush()
   docPref.tiled.mode = 0 -- none (disable tiled mode)
 end
 drawing_with_tiled_mode_and_image_brush()
+
+----------------------------------------------------------------------
+-- countour with pixel perfect
+----------------------------------------------------------------------
+
+do
+  local s = Sprite(3, 3, ColorMode.INDEXED)
+  local i = app.activeImage
+  i:clear(1)
+  expect_img(i,
+             { 1, 1, 1,
+               1, 1, 1,
+               1, 1, 1 })
+  app.useTool{
+    tool='contour',
+    brush=Brush(1),
+    color=2,
+    freehandAlgorithm=1, -- 1=FreehandAlgorithm.PIXEL_PERFECT
+    points={ { 1, 1 }, { 2, 1 }, { 2, 2 }
+    }
+  }
+  expect_img(app.activeImage,
+             { 1, 1, 1,
+               1, 2, 1,
+               1, 1, 2 })
+
+  app.undo()
+
+  -- Test one pixel when using one point
+  app.useTool{
+    tool='contour',
+    brush=Brush(1),
+    color=2,
+    freehandAlgorithm=1, -- 1=FreehandAlgorithm.PIXEL_PERFECT
+    points={ { 1, 1 } }
+  }
+  expect_img(app.activeImage,
+             { 1, 1, 1,
+               1, 2, 1,
+               1, 1, 1 })
+  app.undo()
+
+  -- Test bug where one click doesn't draw with the contour tool with
+  -- pixel perfect algorith.
+  -- Report: https://community.aseprite.org/t/13149
+  expect_img(app.activeImage,
+             { 1, 1, 1,
+               1, 1, 1,
+               1, 1, 1 })
+  app.useTool{
+    tool='contour',
+    brush=Brush(1),
+    color=2,
+    freehandAlgorithm=1, -- 1=FreehandAlgorithm.PIXEL_PERFECT
+    -- Two points in the same spot, this happens in the UI, one
+    -- created in mouse down, other in mouse up.
+    points={ { 1, 1 }, { 1, 1 } }
+  }
+  expect_img(app.activeImage,
+             { 1, 1, 1,
+               1, 2, 1,
+               1, 1, 1 })
+end

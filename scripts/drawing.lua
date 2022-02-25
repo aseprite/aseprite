@@ -1,4 +1,4 @@
--- Copyright (C) 2018  Igara Studio S.A.
+-- Copyright (C) 2018-2022  Igara Studio S.A.
 --
 -- This file is released under the terms of the MIT license.
 -- Read LICENSE.txt for more information.
@@ -64,4 +64,20 @@ do
    assert(r:getPixel(0, 2) == pc.rgba(0, 0, 0, 0))
    assert(r:getPixel(1, 2) == pc.rgba(0, 0, 255, 255))
    assert(r:getPixel(2, 2) == pc.rgba(255, 255, 0, 255))
+end
+
+
+-- Image:drawPixel with indexed color
+do
+  local a = Sprite(32, 32, ColorMode.INDEXED)
+  local i = a.cels[1].image
+  assert(i:getPixel(0, 0) == 0)
+  assert(i:getPixel(1, 0) == 0)
+  assert(i:getPixel(2, 0) == 0)
+  i:drawPixel(0, 0, Color{ index=2 })
+  i:drawPixel(1, 0, Color{ index=3 }.index)
+  i:drawPixel(2, 0, Color(4))
+  assert(i:getPixel(0, 0) == 2)
+  assert(i:getPixel(1, 0) == 3)
+  assert(i:getPixel(2, 0) == 4)
 end
