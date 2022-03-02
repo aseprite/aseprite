@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2022  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -13,6 +14,8 @@ using namespace app;
 
 TEST(IniFile, Basic)
 {
+  ConfigModule cm;
+
   if (base::is_file("_test.ini"))
     base::delete_file("_test.ini");
 
@@ -36,6 +39,8 @@ TEST(IniFile, Basic)
 
 TEST(IniFile, PushPop)
 {
+  ConfigModule cm;
+
   if (base::is_file("_a.ini")) base::delete_file("_a.ini");
   if (base::is_file("_b.ini")) base::delete_file("_b.ini");
 

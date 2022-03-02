@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2018-2019 Igara Studio S.A.
+// Copyright (c) 2018-2022 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -17,11 +17,15 @@
 #include "doc/pixel_format.h"
 #include "doc/sprite.h"
 
+#include <memory>
+
 using namespace doc;
 
 TEST(Sprite, Layers)
 {
-  Sprite* spr = new Sprite(ImageSpec(ColorMode::RGB, 32, 32), 256);
+  std::shared_ptr<Sprite> sprPtr(std::make_shared<Sprite>(
+                                   ImageSpec(ColorMode::RGB, 32, 32), 256));
+  Sprite* spr = sprPtr.get();
 
   LayerImage* lay1 = new LayerImage(spr);
   LayerImage* lay2 = new LayerImage(spr);
@@ -90,7 +94,9 @@ TEST(Sprite, Layers)
 //   - lay3:  F G~H
 TEST(Sprite, CelsRange)
 {
-  Sprite* spr = new Sprite(ImageSpec(ColorMode::RGB, 32, 32), 256);
+  std::shared_ptr<Sprite> sprPtr(std::make_shared<Sprite>(
+                                   ImageSpec(ColorMode::RGB, 32, 32), 256));
+  Sprite* spr = sprPtr.get();
   spr->setTotalFrames(3);
 
   LayerImage* lay1 = new LayerImage(spr);

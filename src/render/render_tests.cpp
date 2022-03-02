@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019 Igara Studio S.A.
+// Copyright (c) 2019-2022 Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -66,7 +66,7 @@ TYPED_TEST_CASE(RenderAllModes, ImageAllTraits);
 
 TEST(Render, Basic)
 {
-  Document* doc = new Document;
+  std::shared_ptr<Document> doc = std::make_shared<Document>();
   doc->sprites().add(Sprite::MakeStdSprite(ImageSpec(ColorMode::INDEXED, 2, 2)));
 
   Image* src = doc->sprite()->root()->firstLayer()->cel(0)->image();
@@ -85,7 +85,7 @@ TYPED_TEST(RenderAllModes, CheckDefaultBackgroundMode)
 {
   typedef TypeParam ImageTraits;
 
-  Document* doc = new Document;
+  std::shared_ptr<Document> doc = std::make_shared<Document>();
   doc->sprites().add(Sprite::MakeStdSprite(ImageSpec(ImageTraits::color_mode, 2, 2)));
 
   EXPECT_TRUE(!doc->sprite()->root()->firstLayer()->isBackground());
@@ -105,7 +105,7 @@ TYPED_TEST(RenderAllModes, CheckDefaultBackgroundMode)
 
 TEST(Render, DefaultBackgroundModeWithNonzeroTransparentIndex)
 {
-  Document* doc = new Document;
+  std::shared_ptr<Document> doc = std::make_shared<Document>();
   doc->sprites().add(Sprite::MakeStdSprite(ImageSpec(ColorMode::INDEXED, 2, 2)));
   doc->sprite()->setTransparentColor(2); // Transparent color is index 2
 
@@ -133,7 +133,7 @@ TEST(Render, DefaultBackgroundModeWithNonzeroTransparentIndex)
 
 TEST(Render, CheckedBackground)
 {
-  Document* doc = new Document;
+  std::shared_ptr<Document> doc = std::make_shared<Document>();
   doc->sprites().add(Sprite::MakeStdSprite(ImageSpec(ColorMode::INDEXED, 4, 4)));
 
   std::unique_ptr<Image> dst(Image::create(IMAGE_INDEXED, 4, 4));
@@ -185,7 +185,7 @@ TEST(Render, ZoomAndDstBounds)
   // 0 0 0
   // 0 4 4
   // 0 4 4
-  Document* doc = new Document;
+  std::shared_ptr<Document> doc = std::make_shared<Document>();
   doc->sprites().add(Sprite::MakeStdSprite(ImageSpec(ColorMode::INDEXED, 3, 3)));
   Image* src = doc->sprite()->root()->firstLayer()->cel(0)->image();
   clear_image(src, 0);
@@ -213,7 +213,7 @@ TEST(Render, ZoomAndDstBounds)
 
 TEST(Render, BugWithMultiplesOf3ZoomFactors)
 {
-  Document* doc = new Document;
+  std::shared_ptr<Document> doc = std::make_shared<Document>();
   doc->sprites().add(Sprite::MakeStdSprite(ImageSpec(ColorMode::RGB, 4, 4)));
   Image* src = doc->sprite()->root()->firstLayer()->cel(0)->image();
   clear_image(src, 0);

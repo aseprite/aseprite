@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2020 Igara Studio S.A.
+// Copyright (c) 2020-2022 Igara Studio S.A.
 // Copyright (c) 2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -62,12 +62,12 @@ int Slice::getMemSize() const
 
 void Slice::insert(const frame_t frame, const SliceKey& key)
 {
-  m_keys.insert(frame, new SliceKey(key));
+  m_keys.insert(frame, std::make_unique<SliceKey>(key));
 }
 
 void Slice::remove(const frame_t frame)
 {
-  delete m_keys.remove(frame);
+  m_keys.remove(frame);
 }
 
 const SliceKey* Slice::getByFrame(const frame_t frame) const

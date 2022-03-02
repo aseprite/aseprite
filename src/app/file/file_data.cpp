@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -86,7 +86,7 @@ doc::color_t color_from_hex(const char* str)
 template<typename Container,
          typename ChildNameGetterFunc,
          typename UpdateXmlChildFunc>
-void update_xml_collection(Container& container,
+void update_xml_collection(const Container& container,
                            TiXmlElement* xmlParent,
                            const char* childElemName,
                            const char* idAttrName,
@@ -111,7 +111,7 @@ void update_xml_collection(Container& container,
       continue;
 
     bool found = false;
-    for (auto child : container) {
+    for (const auto& child : container) {
       std::string thisChildName = childNameGetter(child);
       if (thisChildName == xmlChildName) {
         existent.insert(thisChildName);
@@ -128,7 +128,7 @@ void update_xml_collection(Container& container,
   }
 
   // Add new children
-  for (auto child : container) {
+  for (const auto& child : container) {
     std::string thisChildName = childNameGetter(child);
     if (existent.find(thisChildName) == existent.end()) {
       TiXmlElement xmlChild(childElemName);

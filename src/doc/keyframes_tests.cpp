@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2022 Igara Studio S.A.
 // Copyright (c) 2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -21,7 +22,7 @@ TEST(Keyframes, Operations)
   EXPECT_TRUE(k.empty());
   EXPECT_EQ(0, k.size());
 
-  k.insert(0, new int(5));
+  k.insert(0, std::make_unique<int>(5));
   EXPECT_FALSE(k.empty());
   EXPECT_EQ(1, k.size());
   EXPECT_EQ(0, k.fromFrame());
@@ -31,7 +32,7 @@ TEST(Keyframes, Operations)
   EXPECT_EQ(5, *k[1]);
   EXPECT_EQ(5, *k[2]);
 
-  k.insert(2, new int(6));
+  k.insert(2, std::make_unique<int>(6));
   EXPECT_EQ(2, k.size());
   EXPECT_EQ(0, k.fromFrame());
   EXPECT_EQ(2, k.toFrame());
@@ -41,7 +42,7 @@ TEST(Keyframes, Operations)
   EXPECT_EQ(6, *k[2]);
   EXPECT_EQ(6, *k[3]);
 
-  k.insert(1, new int(3));
+  k.insert(1, std::make_unique<int>(3));
   EXPECT_EQ(3, k.size());
   EXPECT_EQ(0, k.fromFrame());
   EXPECT_EQ(2, k.toFrame());
@@ -72,10 +73,10 @@ TEST(Keyframes, Operations)
 TEST(Keyframes, Range)
 {
   Keyframes<int> k;
-  k.insert(0, new int(5));
+  k.insert(0, std::make_unique<int>(5));
   k.insert(2, nullptr);
-  k.insert(4, new int(8));
-  k.insert(6, new int(2));
+  k.insert(4, std::make_unique<int>(8));
+  k.insert(6, std::make_unique<int>(2));
 
   EXPECT_EQ(0, k.fromFrame());
   EXPECT_EQ(6, k.toFrame());
@@ -131,7 +132,7 @@ TEST(Keyframes, Range)
 TEST(Keyframes, BugEmptyCount)
 {
   Keyframes<int> k;
-  k.insert(7, new int(5));
+  k.insert(7, std::make_unique<int>(5));
   EXPECT_EQ(0, k.range(-1, 6).countKeys());
   EXPECT_EQ(1, k.range(0, 7).countKeys());
   EXPECT_EQ(1, k.range(8, 9).countKeys());
