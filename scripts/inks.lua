@@ -1,4 +1,4 @@
--- Copyright (C) 2020  Igara Studio S.A.
+-- Copyright (C) 2020-2022  Igara Studio S.A.
 --
 -- This file is released under the terms of the MIT license.
 -- Read LICENSE.txt for more information.
@@ -222,3 +222,60 @@ for i = 1,#colorModes do
   test_inks(colorModes[i])
 end
 test_alpha_compositing_on_indexed_with_full_opacity_and_repeated_colors_in_palette()
+
+----------------------------------------------------------------------
+-- Test painting with transparent color on indexed
+----------------------------------------------------------------------
+
+do
+  local s = Sprite(2, 2, ColorMode.INDEXED)
+  s.transparentColor = 0
+  app.bgColor = 0
+  app.command:BackgroundFromLayer()
+  expect_img(app.activeImage, { 0, 0,
+                                0, 0 })
+
+  app.useTool{ tool="pencil", color=Color{r=0,g=0,b=0},
+               points={ Point(0, 0) },
+               ink=Ink.SIMPLE }
+  expect_img(app.activeImage, { 0, 0,
+                                0, 0 })
+
+  -- Test that painting in the background layer with transparent color
+  -- with alpha compositing and all opacity=255, will use the transparent
+  -- index anyway. Reported here: https://github.com/aseprite/aseprite/issues/3047
+  app.useTool{ tool="pencil", color=0,
+               points={ Point(0, 0) },
+               ink=Ink.ALPHA_COMPOSITING,
+               opacity=255 }
+  expect_img(app.activeImage, { 0, 0,
+                                0, 0 })
+
+  -- Other cases should keep working
+  local p = s.palettes[1]
+
+  -- palette with only 3 colors: white, gray (50%), black
+  p:setColor(0, Color{ r=255, g=255, b=255 })
+  p:setColor(1, Color{ r=128, g=128, b=128 })
+  p:setColor(2, Color{ r=0, g=0, b=0 })
+  app.useTool{ tool="paint_bucket", color=2,
+               points={ Point(0, 0) },
+               ink=Ink.SIMPLE }
+
+  -- White over black w/opacity=50% => gray
+  app.useTool{ tool="pencil", color=0,
+               points={ Point(0, 0) },
+               ink=Ink.ALPHA_COMPOSITING,
+               opacity=128 }
+  expect_img(app.activeImage, { 1, 2,
+                                2, 2 })
+
+  -- White over gray w/opacity=51% => white
+  app.useTool{ tool="pencil", color=0,
+               points={ Point(0, 0) },
+               ink=Ink.ALPHA_COMPOSITING,
+               opacity=129 }
+  expect_img(app.activeImage, { 0, 2,
+                                2, 2 })
+
+end
