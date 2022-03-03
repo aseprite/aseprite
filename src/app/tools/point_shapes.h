@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -136,9 +136,9 @@ public:
             int maskIndex = (loop->getLayer()->isBackground() ? -1: loop->sprite()->transparentColor());
             // Convert index to RGBA
             if (a == maskIndex) a = 0;
-            else a = get_current_palette()->getEntry(a);
+            else a = loop->getPalette()->getEntry(a);
             if (b == maskIndex) b = 0;
-            else b = get_current_palette()->getEntry(b);
+            else b = loop->getPalette()->getEntry(b);
             // Same as in RGBA gradient
             if (rgba_geta(a) == 0) a = b;
             else if (rgba_geta(b) == 0) b = a;

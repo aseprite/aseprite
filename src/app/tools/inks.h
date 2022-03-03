@@ -153,7 +153,7 @@ public:
                   opaque = false;
                 }
                 else {
-                  color = get_current_palette()->getEntry(color);
+                  color = loop->getPalette()->getEntry(color);
                   opaque = (rgba_geta(color) == 255);
                 }
                 break;

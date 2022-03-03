@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -32,6 +32,7 @@ namespace doc {
   class Image;
   class Layer;
   class Mask;
+  class Palette;
   class Remap;
   class RgbMap;
   class Slice;
@@ -137,6 +138,9 @@ namespace app {
       // Copies the given region from the destination to the source
       // image, used by "overlap" tools like jumble or spray.
       virtual void copyValidDstToSrcImage(const gfx::Region& rgn) = 0;
+
+      // Returns the current Palette.
+      virtual Palette* getPalette() = 0;
 
       // Returns the RGB map used to convert RGB values to palette index.
       virtual RgbMap* getRgbMap() = 0;

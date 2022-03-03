@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -293,6 +293,7 @@ public:
   bool isTilemapMode() override { return m_tilesMode; };
   bool isManualTilesetMode() const override { return m_tilesetMode == TilesetMode::Manual; }
   frame_t getFrame() override { return m_frame; }
+  Palette* getPalette() override { return m_sprite->palette(m_frame); }
   RgbMap* getRgbMap() override {
     if (!m_rgbMap) {
       Sprite::RgbMapFor forLayer =
