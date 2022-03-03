@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -59,27 +59,6 @@ rgba_to_graya_func get_gray_func(gen::ToGrayAlgorithm toGray) {
   }
   return nullptr;
 }
-
-class ConversionItem : public ListItem {
-public:
-  ConversionItem(const doc::PixelFormat pixelFormat)
-    : m_pixelFormat(pixelFormat) {
-    switch (pixelFormat) {
-      case IMAGE_RGB:
-        setText("-> RGB");
-        break;
-      case IMAGE_GRAYSCALE:
-        setText("-> Grayscale");
-        break;
-      case IMAGE_INDEXED:
-        setText("-> Indexed");
-        break;
-    }
-  }
-  doc::PixelFormat pixelFormat() const { return m_pixelFormat; }
-private:
-  doc::PixelFormat m_pixelFormat;
-};
 
 class ConvertThread : public render::TaskDelegate {
 public:
@@ -177,6 +156,29 @@ private:
   bool m_stopFlag;
   double m_progress;
   base::thread m_thread;
+};
+
+#ifdef ENABLE_UI
+
+class ConversionItem : public ListItem {
+public:
+  ConversionItem(const doc::PixelFormat pixelFormat)
+    : m_pixelFormat(pixelFormat) {
+    switch (pixelFormat) {
+      case IMAGE_RGB:
+        setText("-> RGB");
+        break;
+      case IMAGE_GRAYSCALE:
+        setText("-> Grayscale");
+        break;
+      case IMAGE_INDEXED:
+        setText("-> Indexed");
+        break;
+    }
+  }
+  doc::PixelFormat pixelFormat() const { return m_pixelFormat; }
+private:
+  doc::PixelFormat m_pixelFormat;
 };
 
 class ColorModeWindow : public app::gen::ColorMode {
@@ -421,6 +423,8 @@ private:
   DitheringSelector* m_ditheringSelector;
   bool m_imageJustCreated;
 };
+
+#endif // ENABLE_UI
 
 } // anonymous namespace
 
