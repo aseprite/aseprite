@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -143,7 +143,7 @@ public:
                 else if (color == loop->sprite()->transparentColor())
                   opaque = false;
                 else {
-                  color = get_current_palette()->getEntry(color);
+                  color = loop->getPalette()->getEntry(color);
                   opaque = (rgba_geta(color) == 255);
                 }
                 break;

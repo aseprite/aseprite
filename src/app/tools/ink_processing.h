@@ -1,12 +1,11 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
 #include "app/color_utils.h"
-#include "app/modules/palettes.h"
 #include "app/util/wrap_point.h"
 #include "app/util/wrap_value.h"
 #include "base/clamp.h"
@@ -198,7 +197,7 @@ template<>
 class LockAlphaInkProcessing<IndexedTraits> : public DoubleInkProcessing<LockAlphaInkProcessing<IndexedTraits>, IndexedTraits> {
 public:
   LockAlphaInkProcessing(ToolLoop* loop)
-    : m_palette(get_current_palette())
+    : m_palette(loop->getPalette())
     , m_rgbmap(loop->getRgbMap())
     , m_opacity(loop->getOpacity())
     , m_maskIndex(loop->getLayer()->isBackground() ? -1: loop->sprite()->transparentColor()) {
@@ -270,7 +269,7 @@ template<>
 class TransparentInkProcessing<IndexedTraits> : public DoubleInkProcessing<TransparentInkProcessing<IndexedTraits>, IndexedTraits> {
 public:
   TransparentInkProcessing(ToolLoop* loop) :
-    m_palette(get_current_palette()),
+    m_palette(loop->getPalette()),
     m_rgbmap(loop->getRgbMap()),
     m_opacity(loop->getOpacity()),
     m_maskIndex(loop->getLayer()->isBackground() ? -1: loop->sprite()->transparentColor()),
@@ -345,7 +344,7 @@ template<>
 class MergeInkProcessing<IndexedTraits> : public DoubleInkProcessing<MergeInkProcessing<IndexedTraits>, IndexedTraits> {
 public:
   MergeInkProcessing(ToolLoop* loop) :
-    m_palette(get_current_palette()),
+    m_palette(loop->getPalette()),
     m_rgbmap(loop->getRgbMap()),
     m_opacity(loop->getOpacity()),
     m_maskIndex(loop->getLayer()->isBackground() ? -1: loop->sprite()->transparentColor()) {
@@ -496,12 +495,12 @@ template<>
 class BlurInkProcessing<IndexedTraits> : public DoubleInkProcessing<BlurInkProcessing<IndexedTraits>, IndexedTraits> {
 public:
   BlurInkProcessing(ToolLoop* loop) :
-    m_palette(get_current_palette()),
+    m_palette(loop->getPalette()),
     m_rgbmap(loop->getRgbMap()),
     m_opacity(loop->getOpacity()),
     m_tiledMode(loop->getTiledMode()),
     m_srcImage(loop->getSrcImage()),
-    m_area(get_current_palette(),
+    m_area(loop->getPalette(),
            loop->getLayer()->isBackground() ? -1: loop->sprite()->transparentColor()) {
   }
 
@@ -616,7 +615,7 @@ template<>
 class ReplaceInkProcessing<IndexedTraits> : public DoubleInkProcessing<ReplaceInkProcessing<IndexedTraits>, IndexedTraits> {
 public:
   ReplaceInkProcessing(ToolLoop* loop) {
-    m_palette = get_current_palette();
+    m_palette = loop->getPalette();
     m_rgbmap = loop->getRgbMap();
     m_color1 = loop->getPrimaryColor();
     m_color2 = loop->getSecondaryColor();
@@ -655,7 +654,7 @@ template<typename ImageTraits>
 class JumbleInkProcessing : public DoubleInkProcessing<JumbleInkProcessing<ImageTraits>, ImageTraits> {
 public:
   JumbleInkProcessing(ToolLoop* loop) :
-    m_palette(get_current_palette()),
+    m_palette(loop->getPalette()),
     m_rgbmap(loop->getRgbMap()),
     m_speed(loop->getSpeed() / 4),
     m_opacity(loop->getOpacity()),
@@ -851,7 +850,7 @@ public:
   using pixel_t = IndexedTraits::pixel_t;
 
   PixelShadingInkHelper(ToolLoop* loop) :
-    m_palette(get_current_palette()),
+    m_palette(loop->getPalette()),
     m_remap(loop->getShadingRemap()),
     m_left(loop->getMouseButton() == ToolLoop::Left) {
   }
@@ -968,7 +967,7 @@ public:
   GradientInkProcessing(ToolLoop* loop)
     : GradientRenderer(loop)
     , m_opacity(loop->getOpacity())
-    , m_palette(get_current_palette())
+    , m_palette(loop->getPalette())
     , m_rgbmap(loop->getRgbMap())
     , m_maskIndex(loop->getLayer()->isBackground() ? -1: loop->sprite()->transparentColor())
   {
@@ -1101,7 +1100,7 @@ template<>
 class XorInkProcessing<IndexedTraits> : public DoubleInkProcessing<XorInkProcessing<IndexedTraits>, IndexedTraits> {
 public:
   XorInkProcessing(ToolLoop* loop) :
-    m_palette(get_current_palette()),
+    m_palette(loop->getPalette()),
     m_rgbmap(loop->getRgbMap()),
     m_color(m_palette->getEntry(loop->getPrimaryColor())) {
   }
@@ -1138,7 +1137,7 @@ public:
   BrushInkProcessingBase(ToolLoop* loop) {
     m_fgColor = loop->getPrimaryColor();
     m_bgColor = loop->getSecondaryColor();
-    m_palette = get_current_palette();
+    m_palette = loop->getPalette();
     m_brush = loop->getBrush();
     m_brushImage = (m_brush->patternImage() ? m_brush->patternImage():
                                               m_brush->image());
