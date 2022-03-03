@@ -1,5 +1,5 @@
 #! /bin/bash
-# Copyright (C) 2019-2020 Igara Studio S.A.
+# Copyright (C) 2019-2022 Igara Studio S.A.
 
 # $1 = first sprite sheet json file
 # $2 = second sprite sheet json file
@@ -329,5 +329,74 @@ local sheet2 = json.decode(io.open('$d/sheet2.json'):read('a'))
 assert(#sheet1.meta.layers == 8)
 assert(#sheet2.meta.layers == 8)
 assert(json.encode(sheet1.meta.layers) == json.encode(sheet2.meta.layers))
+EOF
+$ASEPRITE -b -script "$d/check.lua" || exit 1
+
+# https://github.com/aseprite/aseprite/issues/2600
+# -merge-duplicates -split-layers -trim give incorrect 'frame' coordinates on linked cels
+d=$t/issue-2600
+$ASEPRITE -b -list-layers -format json-array -trim -merge-duplicates -split-layers -all-layers "sprites/link.aseprite" -data "$d/sheet.json" -sheet "$d/sheet.png"
+cat >$d/check.lua <<EOF
+local json = dofile('third_party/json/json.lua')
+local sheet = json.decode(io.open('$d/sheet.json'):read('a'))
+local restoredSprite = Sprite(sheet.frames[1].sourceSize.w, sheet.frames[1].sourceSize.h, ColorMode.RGB)
+local spriteSheet = Image{ fromFile="$d/sheet.png" }
+local lay = 1
+repeat
+  local layerName = sheet.meta.layers[lay].name
+  local layer = restoredSprite.layers[lay]
+  for i=1, #sheet.frames do
+    if string.find(sheet.frames[i].filename, layerName) ~= nil then
+      local sample = sheet.frames[i]
+      local dotAseIndex = string.find(sample.filename, ".ase")
+      local frame = (string.sub(sample.filename, dotAseIndex - 2, dotAseIndex - 1)) + 1
+      for f=#restoredSprite.frames, frame-1 do
+        restoredSprite:newEmptyFrame()
+      end
+      local image = Image(sample.frame.w, sample.frame.h)
+      for y=0,image.height-1 do
+        for x=0,image.width-1 do
+          image:drawPixel(x, y, spriteSheet:getPixel(sample.frame.x + x, sample.frame.y + y))
+        end
+      end
+      restoredSprite:newCel(layer, frame, image, Point(sample.spriteSourceSize.x, sample.spriteSourceSize.y))
+    end
+  end
+  if lay < #sheet.meta.layers then
+    restoredSprite:newLayer()
+  end
+  lay = lay + 1
+until(lay > #sheet.meta.layers)
+
+app.activeSprite = restoredSprite
+app.activeLayer = restoredSprite.layers[#restoredSprite.layers]
+for i=1,#restoredSprite.layers-1 do
+  app.command.MergeDownLayer()
+end
+
+local orig = app.open("sprites/link.aseprite")
+app.activeSprite = orig
+app.activeLayer = orig.layers[#orig.layers]
+for i=1,#orig.layers-1 do
+  app.command.MergeDownLayer()
+end
+
+assert(orig.width == restoredSprite.width)
+assert(orig.height == restoredSprite.height)
+assert(#orig.frames == #restoredSprite.frames)
+for fr=1,#restoredSprite.frames do
+  for celIndex1=1,#restoredSprite.cels do
+    if restoredSprite.cels[celIndex1].frameNumber == fr then
+      for celIndex2=1,#orig.cels do
+        if orig.cels[celIndex2].frameNumber == fr then
+          assert(orig.cels[celIndex2].position == restoredSprite.cels[celIndex1].position)
+          if orig.cels[celIndex2].image ~= nil and restoredSprite.cels[celIndex1].image ~= nil then
+            assert(orig.cels[celIndex2].image:isEqual(restoredSprite.cels[celIndex1].image))
+          end
+        end
+      end
+    end
+  end
+end
 EOF
 $ASEPRITE -b -script "$d/check.lua" || exit 1
