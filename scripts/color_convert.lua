@@ -1,4 +1,4 @@
--- Copyright (C) 2019-2021  Igara Studio S.A.
+-- Copyright (C) 2019-2022  Igara Studio S.A.
 --
 -- This file is released under the terms of the MIT license.
 -- Read LICENSE.txt for more information.
@@ -27,6 +27,7 @@ do
   image:drawPixel(1, 0, pal:getColor(4))
   image:drawPixel(1, 1, pal:getColor(5))
 
+  app.bgColor = Color{ index=0 }
   app.command.BackgroundFromLayer()
 
   local layer = sprite.layers[1]
