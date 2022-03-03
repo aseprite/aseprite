@@ -70,6 +70,7 @@ function test_inks(colorMode)
   end
 
   -- Convert to background layer
+  app.bgColor = Color{ index=0 }
   app.command.BackgroundFromLayer()
 
   app.useTool{ tool=pencil, color=d, points={ Point(0, 1), Point(2, 1) },
