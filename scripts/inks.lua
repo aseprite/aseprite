@@ -231,7 +231,8 @@ do
   local s = Sprite(2, 2, ColorMode.INDEXED)
   s.transparentColor = 0
   app.bgColor = 0
-  app.command:BackgroundFromLayer()
+  app.command.BackgroundFromLayer()
+  assert(app.activeLayer.isBackground)
   expect_img(app.activeImage, { 0, 0,
                                 0, 0 })
 
@@ -261,6 +262,8 @@ do
   app.useTool{ tool="paint_bucket", color=2,
                points={ Point(0, 0) },
                ink=Ink.SIMPLE }
+  expect_img(app.activeImage, { 2, 2,
+                                2, 2 })
 
   -- White over black w/opacity=50% => gray
   app.useTool{ tool="pencil", color=0,
