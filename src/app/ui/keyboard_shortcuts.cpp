@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -91,6 +91,8 @@ namespace {
     { "HScroll"      , "Scroll: Horizontally"     , app::WheelAction::HScroll },
     { "FgColor"      , "Color: Foreground Palette Entry" , app::WheelAction::FgColor },
     { "BgColor"      , "Color: Background Palette Entry" , app::WheelAction::BgColor },
+    { "FgTile"       , "Tile: Foreground Tile Entry" , app::WheelAction::FgTile },
+    { "BgTile"       , "Tile: Background Tile Entry" , app::WheelAction::BgTile },
     { "Frame"        , "Change Frame"             , app::WheelAction::Frame },
     { "BrushSize"    , "Change Brush Size"        , app::WheelAction::BrushSize },
     { "BrushAngle"   , "Change Brush Angle"       , app::WheelAction::BrushAngle },
