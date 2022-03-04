@@ -159,6 +159,15 @@ namespace app {
                             const double angle);
     CelList getEditableCels();
     void reproduceAllTransformationsWithInnerCmds();
+
+    void alignMasksAndTransformData(const Mask* initialMask0,
+                                    const Mask* initialMask,
+                                    const Mask* currentMask,
+                                    const Transformation* initialData,
+                                    const Transformation* currentData,
+                                    const doc::Grid& grid,
+                                    const gfx::SizeF& initialScaleRatio);
+
 #if _DEBUG
     void dumpInnerCmds();
 #endif
