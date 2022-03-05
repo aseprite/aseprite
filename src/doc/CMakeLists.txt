@@ -1,5 +1,5 @@
 # Aseprite Document Library
-# Copyright (C) 2019-2021 Igara Studio S.A.
+# Copyright (C) 2019-2022 Igara Studio S.A.
 # Copyright (C) 2001-2018 David Capello
 
 if(WIN32)
@@ -82,3 +82,6 @@ target_link_libraries(doc-lib
   laf-base
   fixmath-lib
   cityhash)
+
+target_include_directories(doc-lib
+  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
