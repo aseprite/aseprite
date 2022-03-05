@@ -6,3 +6,6 @@ add_library(fixmath-lib
 
 target_link_libraries(fixmath-lib
   laf-base)
+
+target_include_directories(fixmath-lib
+  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)

@@ -1,4 +1,5 @@
 # Aseprite Document IO Library
+# Copyright (c) 2022 Igara Studio S.A.
 # Copyright (c) 2016-2018 David Capello
 
 add_library(dio-lib
@@ -15,3 +16,6 @@ target_link_libraries(dio-lib
   laf-base
   fixmath-lib
   doc-lib)
+
+target_include_directories(dio-lib
+  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
