@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2018-2021  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-2022  Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2018  David Capello -->
 <gui>
   <!-- Keyboard shortcuts -->
@@ -638,6 +638,10 @@
       <key action="LeftMouseButton" />
       <key action="RightMouseButton" />
     </actions>
+
+    <drag>
+      <key action="BrushSize" vector="4.0,0.0" shortcut="Ctrl+Alt" />
+    </drag>
 
   </keyboard>
 

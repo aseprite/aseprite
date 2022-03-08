@@ -27,6 +27,7 @@
 #include "app/tools/tool.h"
 #include "app/ui/app_menuitem.h"
 #include "app/ui/doc_view.h"
+#include "app/ui/editor/dragging_value_state.h"
 #include "app/ui/editor/drawing_state.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_customization_delegate.h"
@@ -435,20 +436,6 @@ bool StandbyState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
         editor->showBrushPreview(mouseScreenPos);
       return true;
     }
-    else if (ink->isEyedropper()) {
-      editor->showMouseCursor(
-        kCustomCursor, theme->cursors.eyedropper());
-      return true;
-    }
-    else if (ink->isZoom()) {
-      editor->showMouseCursor(
-        kCustomCursor, theme->cursors.magnifier());
-      return true;
-    }
-    else if (ink->isScrollMovement()) {
-      editor->showMouseCursor(kScrollCursor);
-      return true;
-    }
     else if (ink->isCelMovement()) {
       if (resizeCelBounds(editor).contains(mouseScreenPos))
         editor->showMouseCursor(kSizeSECursor);
@@ -498,16 +485,7 @@ bool StandbyState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
     }
   }
 
-  // Draw
-  if (editor->canDraw()) {
-    editor->showBrushPreview(mouseScreenPos);
-  }
-  // Forbidden
-  else {
-    editor->showMouseCursor(kForbiddenCursor);
-  }
-
-  return true;
+  return StateWithWheelBehavior::onSetCursor(editor, mouseScreenPos);
 }
 
 bool StandbyState::onKeyDown(Editor* editor, KeyMessage* msg)
@@ -515,6 +493,15 @@ bool StandbyState::onKeyDown(Editor* editor, KeyMessage* msg)
   if (Preferences::instance().editor.straightLinePreview() &&
       checkStartDrawingStraightLine(editor, nullptr, nullptr))
     return false;
+
+  Keys keys = KeyboardShortcuts::instance()
+    ->getDragActionsFromKeyMessage(KeyContext::MouseWheel, msg);
+  if (!keys.empty()) {
+    EditorStatePtr newState(new DraggingValueState(editor, keys));
+    editor->setState(newState);
+    return true;
+  }
+
   return false;
 }
 

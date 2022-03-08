@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -51,6 +51,7 @@ namespace app {
     KeyPtr action(const KeyAction action,
                   const KeyContext keyContext = KeyContext::Any);
     KeyPtr wheelAction(const WheelAction action);
+    KeyPtr dragAction(const WheelAction action);
 
     void disableAccel(const ui::Accelerator& accel,
                       const KeyContext keyContext,
@@ -62,6 +63,8 @@ namespace app {
     KeyAction getCurrentActionModifiers(KeyContext context);
     WheelAction getWheelActionFromMouseMessage(const KeyContext context,
                                                const ui::Message* msg);
+    Keys getDragActionsFromKeyMessage(const KeyContext context,
+                                      const ui::Message* msg);
     bool hasMouseWheelCustomization() const;
     void clearMouseWheelKeys();
     void addMissingMouseWheelKeys();

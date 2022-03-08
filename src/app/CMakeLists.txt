@@ -343,6 +343,7 @@ if(ENABLE_UI)
     ui/dynamics_popup.cpp
     ui/editor/brush_preview.cpp
     ui/editor/delayed_mouse_move.cpp
+    ui/editor/dragging_value_state.cpp
     ui/editor/drawing_state.cpp
     ui/editor/editor.cpp
     ui/editor/editor_observers.cpp

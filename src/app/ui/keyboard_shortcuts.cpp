@@ -22,9 +22,11 @@
 #include "app/tools/ink.h"
 #include "app/tools/tool.h"
 #include "app/tools/tool_box.h"
+#include "app/ui/key.h"
 #include "app/ui_context.h"
 #include "app/xml_document.h"
 #include "app/xml_exception.h"
+#include "fmt/format.h"
 #include "ui/accelerator.h"
 #include "ui/message.h"
 
@@ -81,35 +83,37 @@ namespace {
     { NULL                   , app::KeyContext::Any }
   };
 
+  using Vec = app::DragVector;
+
   static struct {
     const char* name;
     const char* userfriendly;
-    app::WheelAction action;
+    Vec vector;
   } wheel_actions[] = {
-    { "Zoom"         , "Zoom"                     , app::WheelAction::Zoom },
-    { "VScroll"      , "Scroll: Vertically"       , app::WheelAction::VScroll },
-    { "HScroll"      , "Scroll: Horizontally"     , app::WheelAction::HScroll },
-    { "FgColor"      , "Color: Foreground Palette Entry" , app::WheelAction::FgColor },
-    { "BgColor"      , "Color: Background Palette Entry" , app::WheelAction::BgColor },
-    { "FgTile"       , "Tile: Foreground Tile Entry" , app::WheelAction::FgTile },
-    { "BgTile"       , "Tile: Background Tile Entry" , app::WheelAction::BgTile },
-    { "Frame"        , "Change Frame"             , app::WheelAction::Frame },
-    { "BrushSize"    , "Change Brush Size"        , app::WheelAction::BrushSize },
-    { "BrushAngle"   , "Change Brush Angle"       , app::WheelAction::BrushAngle },
-    { "ToolSameGroup"  , "Change Tool (same group)" , app::WheelAction::ToolSameGroup },
-    { "ToolOtherGroup" , "Change Tool"            , app::WheelAction::ToolOtherGroup },
-    { "Layer"        , "Change Layer"             , app::WheelAction::Layer },
-    { "InkOpacity"   , "Change Ink Opacity"       , app::WheelAction::InkOpacity },
-    { "LayerOpacity" , "Change Layer Opacity"     , app::WheelAction::LayerOpacity },
-    { "CelOpacity"   , "Change Cel Opacity"       , app::WheelAction::CelOpacity },
-    { "Alpha"        , "Color: Alpha"             , app::WheelAction::Alpha },
-    { "HslHue"       , "Color: HSL Hue"           , app::WheelAction::HslHue },
-    { "HslSaturation", "Color: HSL Saturation"    , app::WheelAction::HslSaturation },
-    { "HslLightness" , "Color: HSL Lightness"     , app::WheelAction::HslLightness },
-    { "HsvHue"       , "Color: HSV Hue"           , app::WheelAction::HsvHue },
-    { "HsvSaturation", "Color: HSV Saturation"    , app::WheelAction::HsvSaturation },
-    { "HsvValue"     , "Color: HSV Value"         , app::WheelAction::HsvValue },
-    { nullptr        , nullptr                    , app::WheelAction::None }
+    { ""             , ""                         , Vec(0.0, 0.0) },
+    { "Zoom"         , "Zoom"                     , Vec(8.0, 0.0) },
+    { "VScroll"      , "Scroll: Vertically"       , Vec(4.0, 0.0) },
+    { "HScroll"      , "Scroll: Horizontally"     , Vec(4.0, 0.0) },
+    { "FgColor"      , "Color: Foreground Palette Entry" , Vec(8.0, 0.0) },
+    { "BgColor"      , "Color: Background Palette Entry" , Vec(8.0, 0.0) },
+    { "FgTile"       , "Tile: Foreground Tile Entry" , Vec(8.0, 0.0) },
+    { "BgTile"       , "Tile: Background Tile Entry" , Vec(8.0, 0.0) },
+    { "Frame"        , "Change Frame"             , Vec(16.0, 0.0) },
+    { "BrushSize"    , "Change Brush Size"        , Vec(4.0, 0.0) },
+    { "BrushAngle"   , "Change Brush Angle"       , Vec(-4.0, 0.0) },
+    { "ToolSameGroup"  , "Change Tool (same group)" , Vec(8.0, 0.0) },
+    { "ToolOtherGroup" , "Change Tool"            , Vec(0.0, -8.0) },
+    { "Layer"        , "Change Layer"             , Vec(0.0, 8.0) },
+    { "InkOpacity"   , "Change Ink Opacity"       , Vec(0.0, 1.0) },
+    { "LayerOpacity" , "Change Layer Opacity"     , Vec(0.0, 1.0) },
+    { "CelOpacity"   , "Change Cel Opacity"       , Vec(0.0, 1.0) },
+    { "Alpha"        , "Color: Alpha"             , Vec(4.0, 0.0) },
+    { "HslHue"       , "Color: HSL Hue"           , Vec(1.0, 0.0) },
+    { "HslSaturation", "Color: HSL Saturation"    , Vec(4.0, 0.0) },
+    { "HslLightness" , "Color: HSL Lightness"     , Vec(0.0, 4.0) },
+    { "HsvHue"       , "Color: HSV Hue"           , Vec(1.0, 0.0) },
+    { "HsvSaturation", "Color: HSV Saturation"    , Vec(4.0, 0.0) },
+    { "HsvValue"     , "Color: HSV Value"         , Vec(0.0, 4.0) },
   };
 
   const char* get_shortcut(TiXmlElement* elem) {
@@ -140,11 +144,13 @@ namespace {
   }
 
   std::string get_user_friendly_string_for_wheelaction(app::WheelAction wheelAction) {
-    for (int c=0; wheel_actions[c].name; ++c) {
-      if (wheelAction == wheel_actions[c].action)
-        return wheel_actions[c].userfriendly;
+    int c = int(wheelAction);
+    if (c >= int(app::WheelAction::First) &&
+        c <= int(app::WheelAction::Last)) {
+      return wheel_actions[c].userfriendly;
     }
-    return std::string();
+    else
+      return std::string();
   }
 
 } // anonymous namespace
@@ -169,20 +175,22 @@ namespace base {
   }
 
   template<> app::WheelAction convert_to(const std::string& from) {
-    app::WheelAction action = app::WheelAction::None;
-    for (int c=0; wheel_actions[c].name; ++c) {
+    for (int c=int(app::WheelAction::First);
+            c<=int(app::WheelAction::Last); ++c) {
       if (from == wheel_actions[c].name)
-        return wheel_actions[c].action;
+        return (app::WheelAction)c;
     }
-    return action;
+    return app::WheelAction::None;
   }
 
   template<> std::string convert_to(const app::WheelAction& from) {
-    for (int c=0; wheel_actions[c].name; ++c) {
-      if (from == wheel_actions[c].action)
-        return wheel_actions[c].name;
+    int c = int(from);
+    if (c >= int(app::WheelAction::First) &&
+        c <= int(app::WheelAction::Last)) {
+      return wheel_actions[c].name;
     }
-    return "";
+    else
+      return std::string();
   }
 
   template<> app::KeyContext convert_to(const std::string& from) {
@@ -289,6 +297,16 @@ Key::Key(const WheelAction wheelAction)
   , m_action(KeyAction::None)
   , m_wheelAction(wheelAction)
 {
+}
+
+// static
+KeyPtr Key::MakeDragAction(WheelAction dragAction)
+{
+  KeyPtr k(new Key(dragAction));
+  k->m_type = KeyType::DragAction;
+  k->m_keycontext = KeyContext::Any;
+  k->m_dragVector = wheel_actions[(int)dragAction].vector;
+  return k;
 }
 
 void Key::add(const ui::Accelerator& accel,
@@ -411,6 +429,7 @@ std::string Key::triggerString() const
       return get_user_friendly_string_for_keyaction(m_action,
                                                     m_keycontext);
     case KeyType::WheelAction:
+    case KeyType::DragAction:
       return get_user_friendly_string_for_wheelaction(m_wheelAction);
   }
   return "Unknown";
@@ -633,6 +652,45 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
     }
     xmlKey = xmlKey->NextSiblingElement();
   }
+
+  // Load special keyboard shortcuts to simulate mouse wheel actions
+  // <keyboard><drag><key>
+  xmlKey = handle
+    .FirstChild("drag")
+    .FirstChild("key").ToElement();
+  while (xmlKey) {
+    const char* action_id = xmlKey->Attribute("action");
+    const char* action_key = get_shortcut(xmlKey);
+    bool removed = bool_attr(xmlKey, "removed", false);
+
+    if (action_id) {
+      WheelAction action = base::convert_to<WheelAction, std::string>(action_id);
+      if (action != WheelAction::None) {
+        KeyPtr key = this->dragAction(action);
+        if (key && action_key) {
+          if (auto vector_str = xmlKey->Attribute("vector")) {
+            double x, y = 0.0;
+            // Parse a string like "double,double"
+            x = std::strtod(vector_str, (char**)&vector_str);
+            if (vector_str && *vector_str == ',') {
+              ++vector_str;
+              y = std::strtod(vector_str, nullptr);
+            }
+            key->setDragVector(DragVector(x, y));
+          }
+
+          LOG(VERBOSE, "KEYS: Shortcut for drag action %s: %s\n", action_id, action_key);
+          Accelerator accel(action_key);
+
+          if (!removed)
+            key->add(accel, source, *this);
+          else
+            key->disableAccel(accel);
+        }
+      }
+    }
+    xmlKey = xmlKey->NextSiblingElement();
+  }
 }
 
 void KeyboardShortcuts::importFile(const std::string& filename, KeySource source)
@@ -654,6 +712,7 @@ void KeyboardShortcuts::exportFile(const std::string& filename)
   TiXmlElement quicktools("quicktools");
   TiXmlElement actions("actions");
   TiXmlElement wheel("wheel");
+  TiXmlElement drag("drag");
 
   keyboard.SetAttribute("version", XML_KEYBOARD_FILE_VERSION);
 
@@ -662,12 +721,14 @@ void KeyboardShortcuts::exportFile(const std::string& filename)
   exportKeys(quicktools, KeyType::Quicktool);
   exportKeys(actions, KeyType::Action);
   exportKeys(wheel, KeyType::WheelAction);
+  exportKeys(drag, KeyType::DragAction);
 
   keyboard.InsertEndChild(commands);
   keyboard.InsertEndChild(tools);
   keyboard.InsertEndChild(quicktools);
   keyboard.InsertEndChild(actions);
   keyboard.InsertEndChild(wheel);
+  keyboard.InsertEndChild(drag);
 
   TiXmlDeclaration declaration("1.0", "utf-8", "");
   doc->InsertEndChild(declaration);
@@ -731,7 +792,16 @@ void KeyboardShortcuts::exportAccel(TiXmlElement& parent, const Key* key, const 
 
     case KeyType::WheelAction:
       elem.SetAttribute("action",
-                        base::convert_to<std::string>(key->wheelAction()).c_str());
+                        base::convert_to<std::string>(key->wheelAction()));
+      break;
+
+    case KeyType::DragAction:
+      elem.SetAttribute("action",
+                        base::convert_to<std::string>(key->wheelAction()));
+      elem.SetAttribute("vector",
+                        fmt::format("{},{}",
+                                    key->dragVector().x,
+                                    key->dragVector().y));
       break;
   }
 
@@ -827,6 +897,20 @@ KeyPtr KeyboardShortcuts::wheelAction(WheelAction wheelAction)
   return key;
 }
 
+KeyPtr KeyboardShortcuts::dragAction(WheelAction dragAction)
+{
+  for (KeyPtr& key : m_keys) {
+    if (key->type() == KeyType::DragAction &&
+        key->wheelAction() == dragAction) {
+      return key;
+    }
+  }
+
+  KeyPtr key = Key::MakeDragAction(dragAction);
+  m_keys.push_back(key);
+  return key;
+}
+
 void KeyboardShortcuts::disableAccel(const ui::Accelerator& accel,
                                      const KeyContext keyContext,
                                      const Key* newKey)
@@ -837,7 +921,12 @@ void KeyboardShortcuts::disableAccel(const ui::Accelerator& accel,
         // Tools can contain the same keyboard shortcut
         (key->type() != KeyType::Tool ||
          newKey == nullptr ||
-         newKey->type() != KeyType::Tool)) {
+         newKey->type() != KeyType::Tool) &&
+        // DragActions can share the same keyboard shortcut (e.g. to
+        // change different values using different DragVectors)
+        (key->type() != KeyType::DragAction ||
+         newKey == nullptr ||
+         newKey->type() != KeyType::DragAction)) {
       key->disableAccel(accel);
     }
   }
@@ -921,7 +1010,6 @@ WheelAction KeyboardShortcuts::getWheelActionFromMouseMessage(const KeyContext c
 {
   WheelAction wheelAction = WheelAction::None;
   const ui::Accelerator* bestAccel = nullptr;
-  KeyPtr bestKey;
   for (const KeyPtr& key : m_keys) {
     if (key->type() == KeyType::WheelAction &&
         key->keycontext() == context) {
@@ -934,6 +1022,22 @@ WheelAction KeyboardShortcuts::getWheelActionFromMouseMessage(const KeyContext c
     }
   }
   return wheelAction;
+}
+
+Keys KeyboardShortcuts::getDragActionsFromKeyMessage(const KeyContext context,
+                                                     const ui::Message* msg)
+{
+  KeyPtr bestKey = nullptr;
+  Keys keys;
+  for (const KeyPtr& key : m_keys) {
+    if (key->type() == KeyType::DragAction) {
+      const ui::Accelerator* accel = key->isPressed(msg, *this);
+      if (accel) {
+        keys.push_back(key);
+      }
+    }
+  }
+  return keys;
 }
 
 bool KeyboardShortcuts::hasMouseWheelCustomization() const
@@ -958,15 +1062,31 @@ void KeyboardShortcuts::clearMouseWheelKeys()
 
 void KeyboardShortcuts::addMissingMouseWheelKeys()
 {
-  for (int wheelAction=int(WheelAction::First);
-       wheelAction<=int(WheelAction::Last); ++wheelAction) {
+  for (int action=int(WheelAction::First);
+          action<=int(WheelAction::Last); ++action) {
+    // Wheel actions
     auto it = std::find_if(
       m_keys.begin(), m_keys.end(),
-      [wheelAction](const KeyPtr& key) -> bool {
-        return key->wheelAction() == (WheelAction)wheelAction;
+      [action](const KeyPtr& key) -> bool {
+        return
+          key->type() == KeyType::WheelAction &&
+          key->wheelAction() == (WheelAction)action;
       });
     if (it == m_keys.end()) {
-      KeyPtr key = std::make_shared<Key>((WheelAction)wheelAction);
+      KeyPtr key = std::make_shared<Key>((WheelAction)action);
+      m_keys.push_back(key);
+    }
+
+    // Drag actions
+    it = std::find_if(
+      m_keys.begin(), m_keys.end(),
+      [action](const KeyPtr& key) -> bool {
+        return
+          key->type() == KeyType::DragAction &&
+          key->wheelAction() == (WheelAction)action;
+      });
+    if (it == m_keys.end()) {
+      KeyPtr key = Key::MakeDragAction((WheelAction)action);
       m_keys.push_back(key);
     }
   }

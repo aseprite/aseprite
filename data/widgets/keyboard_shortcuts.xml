@@ -1,5 +1,5 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2018  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-2022  Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2016  David Capello -->
 <gui>
   <window id="keyboard_shortcuts" text="@keyboard_shortcuts.title">
@@ -15,6 +15,7 @@
               <listitem text="@.section_tools" />
               <listitem text="@.section_action_modifiers" />
               <listitem text="@.section_mouse_wheel" />
+              <listitem text="@.section_drag_value" />
             </listbox>
           </view>
           <separator horizontal="true" />
@@ -52,6 +53,52 @@
             <view expansive="true">
               <listbox id="wheel_actions" />
             </view>
+          </vbox>
+          <vbox id="drag_section" expansive="true">
+            <view expansive="true">
+              <listbox id="drag_actions" />
+            </view>
+            <separator horizontal="true" />
+            <hbox>
+              <vbox>
+                <label text="@.drag_angle" />
+              </vbox>
+              <buttonset columns="3" id="drag_angle">
+                <item icon="canvas_nw"
+                      tooltip="@.drag_angle_tooltip"
+                      tooltip_dir="bottom" />
+                <item icon="canvas_n"
+                      tooltip="@.drag_angle_tooltip"
+                      tooltip_dir="bottom" />
+                <item icon="canvas_ne"
+                      tooltip="@.drag_angle_tooltip"
+                      tooltip_dir="bottom" />
+                <item icon="canvas_w"
+                      tooltip="@.drag_angle_tooltip"
+                      tooltip_dir="right" />
+                <item />
+                <item icon="canvas_e"
+                      tooltip="@.drag_angle_tooltip"
+                      tooltip_dir="left" />
+                <item icon="canvas_sw"
+                      tooltip="@.drag_angle_tooltip"
+                      tooltip_dir="top" />
+                <item icon="canvas_s"
+                      tooltip="@.drag_angle_tooltip"
+                      tooltip_dir="top" />
+                <item icon="canvas_se"
+                      tooltip="@.drag_angle_tooltip"
+                      tooltip_dir="top" />
+              </buttonset>
+              <vbox>
+                <label text="@.drag_distance" />
+              </vbox>
+              <vbox>
+                <slider min="1" max="100" id="drag_distance" cell_align="horizontal" width="128"
+                        tooltip="@.drag_distance_tooltip"
+                        tooltip_dir="bottom" />
+              </vbox>
+            </hbox>
           </vbox>
         </vbox>
       </splitter>

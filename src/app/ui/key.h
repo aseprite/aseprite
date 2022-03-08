@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -12,6 +12,7 @@
 #include "app/commands/params.h"
 #include "app/ui/key_context.h"
 #include "base/convert_to.h"
+#include "base/vector2d.h"
 #include "ui/accelerator.h"
 
 #include <memory>
@@ -40,6 +41,7 @@ namespace app {
     Quicktool,
     Action,
     WheelAction,
+    DragAction,
   };
 
   // TODO This should be called "KeyActionModifier" or something similar
@@ -101,6 +103,11 @@ namespace app {
     return KeyAction(int(a) & int(b));
   }
 
+  class Key;
+  using KeyPtr = std::shared_ptr<Key>;
+  using Keys = std::vector<KeyPtr>;
+  using DragVector = base::Vector2d<double>;
+
   class Key {
   public:
     Key(Command* command, const Params& params,
@@ -109,6 +116,7 @@ namespace app {
     explicit Key(const KeyAction action,
                  const KeyContext keyContext);
     explicit Key(const WheelAction action);
+    static KeyPtr MakeDragAction(WheelAction dragAction);
 
     KeyType type() const { return m_type; }
     const ui::Accelerators& accels() const {
@@ -142,8 +150,11 @@ namespace app {
     tools::Tool* tool() const { return m_tool; }
     // for KeyType::Action
     KeyAction action() const { return m_action; }
-    // for KeyType::WheelAction
+    // for KeyType::WheelAction / KeyType::DragAction
     WheelAction wheelAction() const { return m_wheelAction; }
+    // for KeyType::DragAction
+    DragVector dragVector() const { return m_dragVector; }
+    void setDragVector(const DragVector& v) { m_dragVector = v; }
 
     std::string triggerString() const;
 
@@ -158,16 +169,12 @@ namespace app {
     // for KeyType::Command
     Command* m_command;
     Params m_params;
-    // for KeyType::Tool or Quicktool
-    tools::Tool* m_tool;
-    // for KeyType::Action
-    KeyAction m_action;
-    // for KeyType::WheelAction
-    WheelAction m_wheelAction;
-  };
 
-  typedef std::shared_ptr<Key> KeyPtr;
-  typedef std::vector<KeyPtr> Keys;
+    tools::Tool* m_tool;        // for KeyType::Tool or Quicktool
+    KeyAction m_action;         // for KeyType::Action
+    WheelAction m_wheelAction;  // for KeyType::WheelAction / DragAction
+    DragVector m_dragVector;    // for KeyType::DragAction
+  };
 
   std::string convertKeyContextToUserFriendlyString(KeyContext keyContext);
 
