@@ -10,6 +10,7 @@
 #pragma once
 
 #include "app/color.h"
+#include "app/tools/ink_type.h"
 #include "app/ui/editor/editor_state.h"
 #include "app/ui/key.h"
 #include "doc/frame.h"
@@ -54,6 +55,7 @@ namespace app {
     virtual render::Zoom initialZoom(Editor* editor) const;
     virtual doc::frame_t initialFrame(Editor* editor) const;
     virtual doc::layer_t initialLayer(Editor* editor) const;
+    virtual tools::InkType initialInkType(Editor* editor) const;
     virtual int initialInkOpacity(Editor* editor) const;
     virtual int initialCelOpacity(Editor* editor) const;
     virtual int initialLayerOpacity(Editor* editor) const;

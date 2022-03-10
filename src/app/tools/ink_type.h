@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2022  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -20,6 +21,9 @@ namespace tools {
     COPY_COLOR = 2,
     LOCK_ALPHA = 3,
     SHADING = 4,
+
+    FIRST = DEFAULT,
+    LAST = SHADING,
   };
 
   inline bool inkHasOpacity(InkType inkType) {

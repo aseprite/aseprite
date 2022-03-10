@@ -104,6 +104,7 @@ namespace {
     { "ToolSameGroup"  , "Change Tool (same group)" , Vec(8.0, 0.0) },
     { "ToolOtherGroup" , "Change Tool"            , Vec(0.0, -8.0) },
     { "Layer"        , "Change Layer"             , Vec(0.0, 8.0) },
+    { "InkType"      , "Change Ink Type"          , Vec(0.0, -16.0) },
     { "InkOpacity"   , "Change Ink Opacity"       , Vec(0.0, 1.0) },
     { "LayerOpacity" , "Change Layer Opacity"     , Vec(0.0, 1.0) },
     { "CelOpacity"   , "Change Cel Opacity"       , Vec(0.0, 1.0) },

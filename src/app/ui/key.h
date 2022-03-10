@@ -83,6 +83,7 @@ namespace app {
     ToolSameGroup,
     ToolOtherGroup,
     Layer,
+    InkType,
     InkOpacity,
     LayerOpacity,
     CelOpacity,

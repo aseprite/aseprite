@@ -41,6 +41,7 @@ namespace app {
     render::Zoom initialZoom(Editor* editor) const override { return m_initialZoom; }
     doc::frame_t initialFrame(Editor* editor) const override { return m_initialFrame; }
     doc::layer_t initialLayer(Editor* editor) const override { return m_initialLayer; }
+    tools::InkType initialInkType(Editor* editor) const override { return m_initialInkType; }
     int initialInkOpacity(Editor* editor) const override { return m_initialInkOpacity; }
     int initialCelOpacity(Editor* editor) const override { return m_initialCelOpacity; }
     int initialLayerOpacity(Editor* editor) const override { return m_initialLayerOpacity; }
@@ -60,6 +61,7 @@ namespace app {
     render::Zoom m_initialZoom;
     doc::frame_t m_initialFrame;
     doc::layer_t m_initialLayer;
+    tools::InkType m_initialInkType;
     int m_initialInkOpacity;
     int m_initialCelOpacity;
     int m_initialLayerOpacity;

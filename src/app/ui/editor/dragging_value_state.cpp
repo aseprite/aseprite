@@ -35,6 +35,7 @@ DraggingValueState::DraggingValueState(Editor* editor, const Keys& keys)
   , m_initialScroll(StateWithWheelBehavior::initialScroll(editor))
   , m_initialZoom(StateWithWheelBehavior::initialZoom(editor))
   , m_initialFrame(StateWithWheelBehavior::initialFrame(editor))
+  , m_initialInkType(StateWithWheelBehavior::initialInkType(editor))
   , m_initialInkOpacity(StateWithWheelBehavior::initialInkOpacity(editor))
   , m_initialCelOpacity(StateWithWheelBehavior::initialCelOpacity(editor))
   , m_initialLayerOpacity(StateWithWheelBehavior::initialLayerOpacity(editor))
@@ -95,6 +96,9 @@ bool DraggingValueState::onMouseMove(Editor* editor, MouseMessage* msg)
 
         // TODO we should change the direction of the wheel
         //      information from the laf layer
+      }
+      else if (key->wheelAction() == WheelAction::InkType) {
+        preciseWheel = false;
       }
 
       processWheelAction(editor,

@@ -20,6 +20,7 @@
 #include "app/tools/active_tool.h"
 #include "app/tools/tool_box.h"
 #include "app/ui/color_bar.h"
+#include "app/ui/context_bar.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/toolbar.h"
@@ -375,6 +376,24 @@ void StateWithWheelBehavior::processWheelAction(
       break;
     }
 
+    case WheelAction::InkType: {
+      int ink = int(initialInkType(editor));
+      int deltaInk = int(dz);
+      if (preciseWheel) {
+        if (dz < 0.0)
+          deltaInk = +1;
+        else if (dz > 0.0)
+          deltaInk = -1;
+      }
+      ink += deltaInk;
+      ink = base::clamp(ink,
+                        int(tools::InkType::FIRST),
+                        int(tools::InkType::LAST));
+
+      App::instance()->contextBar()->setInkType(tools::InkType(ink));
+      break;
+    }
+
     case WheelAction::InkOpacity: {
       int opacity = initialInkOpacity(editor);
       adjust_value(preciseWheel, dz, opacity, 0, 255);
@@ -617,6 +636,13 @@ doc::frame_t StateWithWheelBehavior::initialFrame(Editor* editor) const
 doc::layer_t StateWithWheelBehavior::initialLayer(Editor* editor) const
 {
   return doc::find_layer_index(browsableLayers(editor), editor->layer());
+}
+
+tools::InkType StateWithWheelBehavior::initialInkType(Editor* editor) const
+{
+  tools::Tool* tool = getActiveTool();
+  auto& toolPref = Preferences::instance().tool(tool);
+  return toolPref.ink();
 }
 
 int StateWithWheelBehavior::initialInkOpacity(Editor* editor) const
