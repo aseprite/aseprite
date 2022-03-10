@@ -30,7 +30,7 @@ namespace gfx {
 
 namespace os {
   class DrawTextDelegate;
-  class Sampling;
+  struct Sampling;
 }
 
 namespace ui {
