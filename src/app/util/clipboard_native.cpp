@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2021  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -36,12 +36,28 @@ using namespace base::serialization::little_endian;
 
 namespace {
   clip::format custom_image_format = 0;
+  bool show_clip_errors = true;
+
+  class InhibitClipErrors {
+    bool m_saved;
+  public:
+    InhibitClipErrors() {
+      m_saved = show_clip_errors;
+      show_clip_errors = false;
+    }
+    ~InhibitClipErrors() {
+      show_clip_errors = m_saved;
+    }
+  };
 
   void* native_window_handle() {
     return os::instance()->defaultWindow()->nativeHandle();
   }
 
   void custom_error_handler(clip::ErrorCode code) {
+    if (!show_clip_errors)
+      return;
+
     switch (code) {
       case clip::ErrorCode::CannotLock:
         ui::Alert::show(Strings::alerts_clipboard_access_locked());
@@ -301,6 +317,10 @@ bool Clipboard::getNativeBitmap(doc::Image** image,
 
 bool Clipboard::getNativeBitmapSize(gfx::Size* size)
 {
+  // Don't show errors when we are trying to get the size of the image
+  // only. (E.g. don't show "invalid image format error")
+  InhibitClipErrors inhibitErrors;
+
   clip::image_spec spec;
   if (clip::get_image_spec(spec)) {
     size->w = spec.width;
