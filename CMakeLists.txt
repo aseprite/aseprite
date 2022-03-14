@@ -30,13 +30,6 @@ set(CMAKE_USER_MAKE_RULES_OVERRIDE_CXX ${CMAKE_CURRENT_SOURCE_DIR}/laf/cmake/cxx
 # Aseprite project
 project(aseprite C CXX)
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
-  # As we compile with CMAKE_OSX_DEPLOYMENT_TARGET=10.9, we have to
-  # explicitly say that we want to use libc++ instead of the GNU
-  # libstdc++
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-endif()
-
 # Check repository status
 if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/laf/CMakeLists.txt)
   message(FATAL_ERROR "Your Aseprite repository is incomplete, initialize submodules using:\n  git submodule update --init --recursive")
