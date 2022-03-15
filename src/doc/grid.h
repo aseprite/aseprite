@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2022  Igara Studio S.A.
+// Copyright (c) 2019-2020  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -14,8 +14,6 @@
 #include "gfx/size.h"
 
 namespace doc {
-
-  class Mask;
 
   class Grid {
   public:
@@ -66,18 +64,6 @@ namespace doc {
 
     // Returns an array of tile positions that are touching the given region in the canvas
     std::vector<gfx::Point> tilesInCanvasRegion(const gfx::Region& rgn) const;
-
-    // Returns a mask aligned to the current grid, starting from other not aligned mask
-    Mask makeAlignedMask(const Mask* mask) const;
-
-    inline bool operator!=(const Grid& gridB) const {
-      return (this->tileSize() != gridB.tileSize() ||
-              this->origin() != gridB.origin() ||
-              this->tileOffset() != gridB.tileOffset()  ||
-              this->oddColOffset() != gridB.oddColOffset() ||
-              this->oddRowOffset() != gridB.oddRowOffset() ||
-              this->tileCenter() != gridB.tileCenter());// Perhaps this last condition isn't needed.
-    }
 
   private:
     gfx::Size m_tileSize;
