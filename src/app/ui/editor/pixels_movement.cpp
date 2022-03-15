@@ -281,6 +281,8 @@ void PixelsMovement::setTransformationBase(const Transformation& t)
   }
 
   // If "fullBounds" is empty is because the cel was not moved
+  if (m_site.tilemapMode() == TilemapMode::Tiles)
+    fullBounds = m_site.grid().alignBounds(fullBounds);
   if (!fullBounds.isEmpty()) {
     // Notify the modified region.
     m_document->notifySpritePixelsModified(
@@ -375,7 +377,7 @@ void PixelsMovement::moveImage(const gfx::PointF& pos, MoveModifier moveModifier
 
   auto newTransformation = m_currentData;
 
-  gfx::Point initialDataOrigin;
+  gfx::PointF initialDataOrigin(bounds.origin());
 
   switch (m_handle) {
 
@@ -495,9 +497,12 @@ void PixelsMovement::moveImage(const gfx::PointF& pos, MoveModifier moveModifier
 
       // Snap to grid when resizing tilemaps
       if (m_site.tilemapMode() == TilemapMode::Tiles) {
-        gfx::Rect gridBounds = m_site.gridBounds();
-        a = gfx::PointF(snap_to_grid(gridBounds, gfx::Point(a), PreferSnapTo::BoxOrigin));
-        b = gfx::PointF(snap_to_grid(gridBounds, gfx::Point(b), PreferSnapTo::BoxOrigin));
+        b.x--;
+        b.y--;
+        gfx::RectF alignedRect(m_site.grid().alignBounds(gfx::RectF(a, gfx::SizeF(1, 1)) |
+                                                         gfx::RectF(b, gfx::SizeF(1, 1))));
+        a = alignedRect.origin();
+        b = gfx::PointF(alignedRect.x2(), alignedRect.y2());
       }
 
       // Do not use "gfx::Rect(a, b)" here because if a > b we want to
