@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -390,18 +390,13 @@ public:
         return;
       token.set_progress(0.2f + 0.2f * i / samples.size());
 
-      if (sample.isLinked()) {
-        ++i;
-        continue;
-      }
-
       if (sample.isEmpty()) {
         sample.setInTextureBounds(gfx::Rect(0, 0, 0, 0));
         ++i;
         continue;
       }
 
-      if (m_mergeDups) {
+      if (m_mergeDups || sample.isLinked()) {
         doc::ImageBufferPtr sampleBuf = std::make_shared<doc::ImageBuffer>();
         doc::ImageRef sampleRender(sample.createRender(sampleBuf));
         auto it = duplicates.find(sampleRender);
@@ -527,8 +522,7 @@ public:
       token.set_progress_range(0.2f, 0.3f);
       token.set_progress(float(i) / samples.size());
 
-      if (sample.isLinked() ||
-          sample.isEmpty()) {
+      if (sample.isEmpty()) {
         ++i;
         continue;
       }
@@ -912,6 +906,7 @@ void DocExporter::captureSamples(Samples& samples,
       }
 
       // Re-use linked samples
+      bool alreadyTrimmed = false;
       if (link && m_mergeDuplicates) {
         for (const Sample& other : samples) {
           if (token.canceled())
@@ -923,7 +918,9 @@ void DocExporter::captureSamples(Samples& samples,
             ASSERT(!other.isLinked());
 
             sample.setLinked();
+            sample.setTrimmedBounds(other.trimmedBounds());
             sample.setSharedBounds(other.sharedBounds());
+            alreadyTrimmed = true;
             done = true;
             break;
           }
@@ -933,7 +930,6 @@ void DocExporter::captureSamples(Samples& samples,
         ASSERT(done || (!done && tag));
       }
 
-      bool alreadyTrimmed = false;
       if (!done && (m_ignoreEmptyCels || m_trimCels)) {
         // Ignore empty cels
         if (layer && layer->isImage() && !cel && m_ignoreEmptyCels)
