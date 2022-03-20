@@ -115,6 +115,9 @@ void SaveFileBaseCommand::onLoadParams(const Params& params)
   const std::string useUI = params.get("useUI");
   m_useUI = (useUI.empty() || (useUI == "true"));
 
+  const std::string addToRecentFiles = params.get("addToRecentFiles");
+  m_addToRecentFiles = (addToRecentFiles == "true");
+
   m_ignoreEmpty = params.get_as<bool>("ignoreEmpty");
 }
 
@@ -172,7 +175,7 @@ std::string SaveFileBaseCommand::saveAsDialog(
 
   if (saveInBackground) {
     saveDocumentInBackground(
-      context, document, filename, markAsSaved, m_useUI);
+      context, document, filename, markAsSaved, m_addToRecentFiles, m_useUI);
 
     // Reset the "saveCopy" document preferences of the new document
     // (here "document" contains the new filename), because these
@@ -198,6 +201,7 @@ void SaveFileBaseCommand::saveDocumentInBackground(
   Doc* document,
   const std::string& filename,
   const bool markAsSaved,
+  const bool addToRecentFiles,
   const bool showAlertWindow)
 {
   if (!m_aniDir.empty()) {
@@ -240,7 +244,9 @@ void SaveFileBaseCommand::saveDocumentInBackground(
     document->impossibleToBackToSavedState();
   }
   else if (context->isUIAvailable()) {
-    App::instance()->recentFiles()->addRecentFile(filename);
+    if (addToRecentFiles) {
+      App::instance()->recentFiles()->addRecentFile(filename);
+    }
     if (markAsSaved) {
       document->markAsSaved();
       document->setFilename(filename);
@@ -283,7 +289,7 @@ void SaveFileCommand::onExecute(Context* context)
 
     saveDocumentInBackground(
       context, document,
-      documentReader->filename(), true, m_useUI);
+      documentReader->filename(), true, m_addToRecentFiles, m_useUI);
   }
   // If the document isn't associated to a file, we must to show the
   // save-as dialog to the user to select for first time the file-name
@@ -461,7 +467,7 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
     PngEncoderOneAlphaPixel fixPng(isForTwitter);
 
     saveDocumentInBackground(
-      context, doc, outputFilename, false, m_useUI);
+      context, doc, outputFilename, false, m_addToRecentFiles, m_useUI);
   }
 
   // Undo resize

@@ -218,6 +218,11 @@ int Sprite_saveAs_base(lua_State* L, std::string& absFn)
     Params params;
     params.set("filename", absFn.c_str());
     params.set("useUI", "false");
+
+    if (!lua_isnone(L, 2))
+      params.set("addToRecentFiles", lua_toboolean(L, -1) ? "true" : "false");
+    lua_pop(L, 1);
+
     appCtx->executeCommand(saveCommand, params);
 
     result = true;
