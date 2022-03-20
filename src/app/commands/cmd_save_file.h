@@ -35,7 +35,8 @@ namespace app {
       const Context* context,
       Doc* document,
       const std::string& filename,
-      const bool markAsSaved);
+      const bool markAsSaved,
+      const bool showAlertWindow = true);
 
     std::string m_filename;
     std::string m_filenameFormat;
