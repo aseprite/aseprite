@@ -55,13 +55,13 @@ public:
   MainWindow();
   ~MainWindow();
 
-  MainMenuBar* getMenuBar() { return m_menuBar; }
-  ContextBar* getContextBar() { return m_contextBar; }
-  StatusBar* statusBar() { return m_statusBar; }
-  WorkspaceTabs* getTabsBar() { return m_tabsBar; }
-  Timeline* getTimeline() { return m_timeline; }
-  Workspace* getWorkspace() { return m_workspace; }
-  PreviewEditorWindow* getPreviewEditor() { return m_previewEditor; }
+  MainMenuBar* getMenuBar() { return m_menuBar.get(); }
+  ContextBar* getContextBar() { return m_contextBar.get(); }
+  StatusBar* statusBar() { return m_statusBar.get(); }
+  WorkspaceTabs* getTabsBar() { return m_tabsBar.get(); }
+  Timeline* getTimeline() { return m_timeline.get(); }
+  Workspace* getWorkspace() { return m_workspace.get(); }
+  PreviewEditorWindow* getPreviewEditor() { return m_previewEditor.get(); }
 #ifdef ENABLE_UPDATER
   CheckUpdateDelegate* getCheckUpdateDelegate();
 #endif
@@ -130,23 +130,24 @@ private:
   ui::TooltipManager* m_tooltipManager;
   Dock* m_dock;
   Dock* m_customizableDock;
-  MainMenuBar* m_menuBar;
-  LayoutSelector* m_layoutSelector;
-  StatusBar* m_statusBar;
-  ColorBar* m_colorBar;
-  ContextBar* m_contextBar;
-  ToolBar* m_toolBar;
-  WorkspaceTabs* m_tabsBar;
+  std::unique_ptr<Widget> m_customizableDockPlaceholder;
+  std::unique_ptr<MainMenuBar> m_menuBar;
+  std::unique_ptr<LayoutSelector> m_layoutSelector;
+  std::unique_ptr<StatusBar> m_statusBar;
+  std::unique_ptr<ColorBar> m_colorBar;
+  std::unique_ptr<ContextBar> m_contextBar;
+  std::unique_ptr<ToolBar> m_toolBar;
+  std::unique_ptr<WorkspaceTabs> m_tabsBar;
   Mode m_mode;
-  Timeline* m_timeline;
-  Workspace* m_workspace;
-  PreviewEditorWindow* m_previewEditor;
-  HomeView* m_homeView;
-  Notifications* m_notifications;
-  INotificationDelegate* m_scalePanic;
-  BrowserView* m_browserView;
+  std::unique_ptr<Timeline> m_timeline;
+  std::unique_ptr<Workspace> m_workspace;
+  std::unique_ptr<PreviewEditorWindow> m_previewEditor;
+  std::unique_ptr<HomeView> m_homeView;
+  std::unique_ptr<Notifications> m_notifications;
+  std::unique_ptr<INotificationDelegate> m_scalePanic;
+  std::unique_ptr<BrowserView> m_browserView;
 #ifdef ENABLE_SCRIPTING
-  DevConsoleView* m_devConsoleView;
+  std::unique_ptr<DevConsoleView> m_devConsoleView;
 #endif
 };
 
