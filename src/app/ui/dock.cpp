@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021  Igara Studio S.A.
+// Copyright (C) 2021-2022  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -88,19 +88,24 @@ Dock::Dock()
   initTheme();
 }
 
-void Dock::reset()
+void Dock::resetDocks()
 {
   for (int i = 0; i < kSides; ++i) {
     auto child = m_sides[i];
     if (!child)
       continue;
     else if (auto subdock = dynamic_cast<Dock*>(child)) {
-      subdock->reset();
+      subdock->resetDocks();
+      if (subdock->m_autoDelete)
+        delete subdock;
     }
     else if (auto tabs = dynamic_cast<DockTabs*>(child)) {
       for (auto child2 : tabs->children()) {
-        if (auto subdock2 = dynamic_cast<Dock*>(child2))
-          subdock2->reset();
+        if (auto subdock2 = dynamic_cast<Dock*>(child2)) {
+          subdock2->resetDocks();
+          if (subdock2->m_autoDelete)
+            delete subdock2;
+        }
       }
     }
     m_sides[i] = nullptr;
@@ -149,6 +154,7 @@ void Dock::dockRelativeTo(ui::Widget* relative,
   ASSERT(parent);
 
   Dock* subdock = new Dock;
+  subdock->m_autoDelete = true;
   parent->replaceChild(relative, subdock);
   subdock->dock(CENTER, relative);
   subdock->dock(side, widget, prefSize);
@@ -204,6 +210,7 @@ Dock* Dock::subdock(int side)
 
   auto oldWidget = m_sides[i];
   auto newSubdock = new Dock;
+  newSubdock->m_autoDelete = true;
   setSide(i, newSubdock);
 
   if (oldWidget) {
