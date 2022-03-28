@@ -85,8 +85,11 @@ public:
 
 MainWindow::MainWindow()
   : ui::Window(ui::Window::DesktopWindow)
+  , m_tooltipManager(new TooltipManager)
   , m_dock(new Dock)
   , m_customizableDock(new Dock)
+  , m_menuBar(new MainMenuBar)
+  , m_layoutSelector(new LayoutSelector)
   , m_mode(NormalMode)
   , m_homeView(nullptr)
   , m_scalePanic(nullptr)
@@ -95,10 +98,6 @@ MainWindow::MainWindow()
   , m_devConsoleView(nullptr)
 #endif
 {
-  m_tooltipManager = new TooltipManager;
-  m_menuBar = new MainMenuBar;
-  m_layoutSelector = new LayoutSelector;
-
   // Register commands to load menus+shortcuts for these commands
   Editor::registerCommands();
 
@@ -108,20 +107,20 @@ MainWindow::MainWindow()
   // Setup the main menubar
   m_menuBar->setMenu(AppMenus::instance()->getRootMenu());
 
-  m_notifications = new Notifications();
-  m_statusBar = new StatusBar(m_tooltipManager);
-  m_colorBar = new ColorBar(m_tooltipManager);
-  m_contextBar = new ContextBar(m_tooltipManager, m_colorBar);
-  m_toolBar = new ToolBar();
-  m_tabsBar = new WorkspaceTabs(this);
-  m_workspace = new Workspace();
-  m_previewEditor = new PreviewEditorWindow();
+  m_notifications = std::make_unique<Notifications>();
+  m_statusBar = std::make_unique<StatusBar>(m_tooltipManager);
+  m_colorBar = std::make_unique<ColorBar>(m_tooltipManager);
+  m_contextBar = std::make_unique<ContextBar>(m_tooltipManager, m_colorBar.get());
+  m_toolBar = std::make_unique<ToolBar>();
+  m_tabsBar = std::make_unique<WorkspaceTabs>(this);
+  m_workspace = std::make_unique<Workspace>();
+  m_previewEditor = std::make_unique<PreviewEditorWindow>();
 
   // The timeline (AniControls) tooltips will use the keyboard
   // shortcuts loaded above.
-  m_timeline = new Timeline(m_tooltipManager);
+  m_timeline = std::make_unique<Timeline>(m_tooltipManager);
 
-  m_workspace->setTabsBar(m_tabsBar);
+  m_workspace->setTabsBar(m_tabsBar.get());
   m_workspace->ActiveViewChanged.connect(&MainWindow::onActiveViewChange, this);
 
   // configure all widgets to expansives
@@ -140,20 +139,20 @@ MainWindow::MainWindow()
   addChild(m_tooltipManager);
   addChild(m_dock);
 
-  auto customizableDockPlaceholder = new Widget;
-  customizableDockPlaceholder->addChild(m_customizableDock);
-  customizableDockPlaceholder->InitTheme.connect([this]{
+  m_customizableDockPlaceholder = std::make_unique<Widget>();
+  m_customizableDockPlaceholder->addChild(m_customizableDock);
+  m_customizableDockPlaceholder->InitTheme.connect([this]{
     auto theme = static_cast<skin::SkinTheme*>(this->theme());
     m_customizableDock->setBgColor(theme->colors.workspace());
   });
-  customizableDockPlaceholder->initTheme();
+  m_customizableDockPlaceholder->initTheme();
 
-  m_dock->top()->right()->dock(ui::RIGHT, m_notifications);
-  m_dock->top()->right()->dock(ui::CENTER, m_layoutSelector);
-  m_dock->top()->dock(ui::BOTTOM, m_tabsBar);
-  m_dock->top()->dock(ui::CENTER, m_menuBar);
-  m_dock->dock(ui::CENTER, customizableDockPlaceholder);
-  m_dock->dock(ui::BOTTOM, m_statusBar);
+  m_dock->top()->right()->dock(ui::RIGHT, m_notifications.get());
+  m_dock->top()->right()->dock(ui::CENTER, m_layoutSelector.get());
+  m_dock->top()->dock(ui::BOTTOM, m_tabsBar.get());
+  m_dock->top()->dock(ui::CENTER, m_menuBar.get());
+  m_dock->dock(ui::CENTER, m_customizableDockPlaceholder.get());
+  m_dock->dock(ui::BOTTOM, m_statusBar.get());
 
   setDefaultLayout();
 
@@ -179,41 +178,42 @@ MainWindow::MainWindow()
 
 MainWindow::~MainWindow()
 {
-  m_dock->reset();
-  m_customizableDock->reset();
+  m_dock->resetDocks();
+  m_customizableDock->resetDocks();
 
-  delete m_scalePanic;
+  m_layoutSelector.reset();
+  m_scalePanic.reset();
 
 #ifdef ENABLE_SCRIPTING
   if (m_devConsoleView) {
     if (m_devConsoleView->parent())
-      m_workspace->removeView(m_devConsoleView);
-    delete m_devConsoleView;
+      m_workspace->removeView(m_devConsoleView.get());
+    m_devConsoleView.reset();
   }
 #endif
 
   if (m_browserView) {
     if (m_browserView->parent())
-      m_workspace->removeView(m_browserView);
-    delete m_browserView;
+      m_workspace->removeView(m_browserView.get());
+    m_browserView.reset();
   }
 
   if (m_homeView) {
     if (m_homeView->parent())
-      m_workspace->removeView(m_homeView);
-    delete m_homeView;
+      m_workspace->removeView(m_homeView.get());
+    m_homeView.reset();
   }
-  delete m_contextBar;
-  delete m_previewEditor;
+  m_contextBar.reset();
+  m_previewEditor.reset();
 
   // Destroy the workspace first so ~Editor can dettach slots from
   // ColorBar. TODO this is a terrible hack for slot/signal stuff,
   // connections should be handle in a better/safer way.
-  delete m_workspace;
+  m_workspace.reset();
 
   // Remove the root-menu from the menu-bar (because the rootmenu
   // module should destroy it).
-  m_menuBar->setMenu(NULL);
+  m_menuBar->setMenu(nullptr);
 }
 
 DocView* MainWindow::getDocView()
@@ -224,8 +224,8 @@ DocView* MainWindow::getDocView()
 HomeView* MainWindow::getHomeView()
 {
   if (!m_homeView)
-    m_homeView = new HomeView;
-  return m_homeView;
+    m_homeView = std::make_unique<HomeView>();
+  return m_homeView.get();
 }
 
 #ifdef ENABLE_UPDATER
@@ -262,20 +262,20 @@ void MainWindow::showHomeOnOpen()
 
     // Show "Home" tab in the first position, and select it only if
     // there is no other view selected.
-    m_workspace->addView(m_homeView, 0);
+    m_workspace->addView(m_homeView.get(), 0);
     if (selectedTab)
       m_tabsBar->selectTab(selectedTab);
     else
-      m_tabsBar->selectTab(m_homeView);
+      m_tabsBar->selectTab(m_homeView.get());
   }
 }
 
 void MainWindow::showHome()
 {
   if (!getHomeView()->parent()) {
-    m_workspace->addView(m_homeView, 0);
+    m_workspace->addView(m_homeView.get(), 0);
   }
-  m_tabsBar->selectTab(m_homeView);
+  m_tabsBar->selectTab(m_homeView.get());
 }
 
 void MainWindow::showDefaultStatusBar()
@@ -290,20 +290,20 @@ void MainWindow::showDefaultStatusBar()
 
 bool MainWindow::isHomeSelected() const
 {
-  return (m_homeView && m_workspace->activeView() == m_homeView);
+  return (m_homeView && m_workspace->activeView() == m_homeView.get());
 }
 
 void MainWindow::showBrowser(const std::string& filename,
                              const std::string& section)
 {
   if (!m_browserView)
-    m_browserView = new BrowserView;
+    m_browserView = std::make_unique<BrowserView>();
 
   m_browserView->loadFile(filename, section);
 
   if (!m_browserView->parent()) {
-    m_workspace->addView(m_browserView);
-    m_tabsBar->selectTab(m_browserView);
+    m_workspace->addView(m_browserView.get());
+    m_tabsBar->selectTab(m_browserView.get());
   }
 }
 
@@ -311,11 +311,11 @@ void MainWindow::showDevConsole()
 {
 #ifdef ENABLE_SCRIPTING
   if (!m_devConsoleView)
-    m_devConsoleView = new DevConsoleView;
+    m_devConsoleView = std::make_unique<DevConsoleView>();
 
   if (!m_devConsoleView->parent()) {
-    m_workspace->addView(m_devConsoleView);
-    m_tabsBar->selectTab(m_devConsoleView);
+    m_workspace->addView(m_devConsoleView.get());
+    m_tabsBar->selectTab(m_devConsoleView.get());
   }
 #endif
 }
@@ -355,24 +355,24 @@ void MainWindow::popTimeline()
 
 void MainWindow::setDefaultLayout()
 {
-  m_customizableDock->reset();
-  m_customizableDock->dock(ui::LEFT, m_colorBar);
-  m_customizableDock->center()->dock(ui::TOP, m_contextBar);
-  m_customizableDock->center()->dock(ui::RIGHT, m_toolBar);
-  m_customizableDock->center()->center()->dock(ui::BOTTOM, m_timeline, gfx::Size(64*guiscale(), 64*guiscale()));
-  m_customizableDock->center()->center()->dock(ui::CENTER, m_workspace);
+  m_customizableDock->resetDocks();
+  m_customizableDock->dock(ui::LEFT, m_colorBar.get());
+  m_customizableDock->center()->dock(ui::TOP, m_contextBar.get());
+  m_customizableDock->center()->dock(ui::RIGHT, m_toolBar.get());
+  m_customizableDock->center()->center()->dock(ui::BOTTOM, m_timeline.get(), gfx::Size(64*guiscale(), 64*guiscale()));
+  m_customizableDock->center()->center()->dock(ui::CENTER, m_workspace.get());
 
   layout();
 }
 
 void MainWindow::setDefaultMirrorLayout()
 {
-  m_customizableDock->reset();
-  m_customizableDock->dock(ui::RIGHT, m_colorBar);
-  m_customizableDock->center()->dock(ui::TOP, m_contextBar);
-  m_customizableDock->center()->dock(ui::LEFT, m_toolBar);
-  m_customizableDock->center()->center()->dock(ui::BOTTOM, m_timeline, gfx::Size(64*guiscale(), 64*guiscale()));
-  m_customizableDock->center()->center()->dock(ui::CENTER, m_workspace);
+  m_customizableDock->resetDocks();
+  m_customizableDock->dock(ui::RIGHT, m_colorBar.get());
+  m_customizableDock->center()->dock(ui::TOP, m_contextBar.get());
+  m_customizableDock->center()->dock(ui::LEFT, m_toolBar.get());
+  m_customizableDock->center()->center()->dock(ui::BOTTOM, m_timeline.get(), gfx::Size(64*guiscale(), 64*guiscale()));
+  m_customizableDock->center()->center()->dock(ui::CENTER, m_workspace.get());
 
   layout();
 }
@@ -415,7 +415,8 @@ void MainWindow::onResize(ui::ResizeEvent& ev)
       const gfx::Size wa = nativeWindow->screen()->workarea().size();
       if ((wa.w / scale < 256 ||
            wa.h / scale < 256)) {
-        showNotification(m_scalePanic = new ScreenScalePanic);
+        m_scalePanic = std::make_unique<ScreenScalePanic>();
+        showNotification(m_scalePanic.get());
       }
     }
   }
@@ -498,7 +499,7 @@ void MainWindow::onContextMenuTab(Tabs* tabs, TabView* tabView)
   WorkspaceView* view = dynamic_cast<WorkspaceView*>(tabView);
   ASSERT(view);
   if (view)
-    view->onTabPopup(m_workspace);
+    view->onTabPopup(m_workspace.get());
 }
 
 void MainWindow::onTabsContainerDoubleClicked(Tabs* tabs)
@@ -590,11 +591,11 @@ void MainWindow::configureWorkspaceLayout()
   if (os::instance()->menus() == nullptr ||
       pref.general.showMenuBar()) {
     if (!m_menuBar->parent())
-      m_dock->top()->dock(CENTER, m_menuBar);
+      m_dock->top()->dock(CENTER, m_menuBar.get());
   }
   else {
     if (m_menuBar->parent())
-      m_dock->undock(m_menuBar);
+      m_dock->undock(m_menuBar.get());
   }
 
   m_menuBar->setVisible(normal);
@@ -616,7 +617,7 @@ void MainWindow::configureWorkspaceLayout()
     auto timelinePosition = pref.general.timelinePosition();
     int side = ui::BOTTOM;
 
-    m_customizableDock->undock(m_timeline);
+    m_customizableDock->undock(m_timeline.get());
 
     switch (timelinePosition) {
       case gen::TimelinePosition::LEFT:
@@ -630,7 +631,7 @@ void MainWindow::configureWorkspaceLayout()
         break;
     }
 
-    m_customizableDock->center()->center()->dock(side, m_timeline, gfx::Size(64*guiscale(), 64*guiscale()));
+    m_customizableDock->center()->center()->dock(side, m_timeline.get(), gfx::Size(64*guiscale(), 64*guiscale()));
 
     m_timeline->setVisible(
       isDoc &&
