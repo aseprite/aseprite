@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021  Igara Studio S.A.
+// Copyright (C) 2021-2022  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -33,7 +33,7 @@ public:
 
   Dock();
 
-  void reset();
+  void resetDocks();
 
   // side = ui::LEFT, or ui::RIGHT, etc.
   void dock(int side, ui::Widget* widget, const gfx::Size& prefSize = gfx::Size());
@@ -73,6 +73,7 @@ private:
   std::array<Widget*, kSides> m_sides;
   std::array<int, kSides> m_aligns;
   std::array<gfx::Size, kSides> m_sizes;
+  bool m_autoDelete = false;
 
   // Used to drag-and-drop sides.
   ui::Widget* m_capturedWidget = nullptr;
