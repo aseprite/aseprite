@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -609,7 +609,6 @@ void DocExporter::reset()
   m_listLayers = false;
   m_listSlices = false;
   m_documents.clear();
-  m_tagDelta.clear();
 }
 
 void DocExporter::setDocImageBuffer(const doc::ImageBufferPtr& docBuf)
@@ -965,15 +964,8 @@ void DocExporter::captureSamples(Samples& samples,
 
           // Should we ignore this empty frame? (i.e. don't include
           // the frame in the sprite sheet)
-          if (m_ignoreEmptyCels) {
-            for (Tag* tag : sprite->tags()) {
-              auto& delta = m_tagDelta[tag->id()];
-
-              if (frame < tag->fromFrame()) --delta.first;
-              if (frame <= tag->toFrame()) --delta.second;
-            }
+          if (m_ignoreEmptyCels)
             continue;
-          }
 
           // Create an entry with Size(1, 1) for this completely
           // trimmed frame anyway so we conserve the frame information
@@ -1344,13 +1336,9 @@ void DocExporter::createDataFile(const Samples& samples,
         else
           os << ",";
 
-        std::pair<int, int> delta(0, 0);
-        if (!m_tagDelta.empty())
-          delta = m_tagDelta[tag->id()];
-
         os << "\n   { \"name\": \"" << escape_for_json(tag->name()) << "\","
-           << " \"from\": " << (tag->fromFrame()+delta.first) << ","
-           << " \"to\": " << (tag->toFrame()+delta.second) << ","
+           << " \"from\": " << (tag->fromFrame()) << ","
+           << " \"to\": " << (tag->toFrame()) << ","
            << " \"direction\": \"" << escape_for_json(convert_anidir_to_string(tag->aniDir())) << "\" }";
       }
     }
