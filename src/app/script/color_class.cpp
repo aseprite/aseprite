@@ -115,7 +115,7 @@ app::Color Color_new(lua_State* L, int index)
       int a = 255;
       if (lua_getfield(L, index, "alpha") != LUA_TNIL)
         a = lua_tointeger(L, -1);
-      color = app::Color::fromHsv(lua_tonumber(L, -2),
+      color = app::Color::fromHsl(lua_tonumber(L, -2),
                                   lua_tonumber(L, -3),
                                   lua_tonumber(L, -4), a);
       lua_pop(L, 4);

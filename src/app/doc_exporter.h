@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -21,7 +21,6 @@
 #include "gfx/rect.h"
 
 #include <iosfwd>
-#include <map>
 #include <string>
 #include <utility>
 #include <vector>
@@ -162,11 +161,6 @@ namespace app {
     bool m_listLayers;
     bool m_listSlices;
     Items m_documents;
-
-    // Displacement for each tag from/to frames in case we export
-    // them. It's used in case we trim frames outside tags and they
-    // will not be exported at all in the final result.
-    std::map<doc::ObjectId, std::pair<int, int> > m_tagDelta;
 
     // Buffers used
     doc::ImageBufferPtr m_docBuf;
