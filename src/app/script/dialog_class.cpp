@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -201,6 +201,10 @@ void Dialog_connect_signal(lua_State* L,
 
 int Dialog_new(lua_State* L)
 {
+  // If we don't have UI, just return nil
+  if (!App::instance()->isGui())
+    return 0;
+
   auto dlg = push_new<Dialog>(L);
 
   // The uservalue of the dialog userdata will contain a table that
