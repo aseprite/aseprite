@@ -543,8 +543,16 @@ App::~App()
     ASSERT(m_instance == this);
 
 #ifdef ENABLE_SCRIPTING
-    // Destroy scripting engine
-    m_engine.reset(nullptr);
+    // Destroy scripting engine calling a method (instead of using
+    // reset()) because we need to keep the "m_engine" pointer valid
+    // until the very end, just in case that some Lua error happens
+    // now and we have to print that error using
+    // App::instance()->scriptEngine() in some way. E.g. if a Dialog
+    // onclose event handler fails with a Lua error when we are
+    // closing the app, a Lua error must be printed, and we need a
+    // valid m_engine pointer.
+    m_engine->destroy();
+    m_engine.reset();
 #endif
 
     // Delete file formats.
