@@ -380,16 +380,15 @@ namespace {
 #endif
 
   struct CloseAllDocs {
-    CloseAllDocs() { }
+    Context* m_ctx;
+    CloseAllDocs(Context* ctx) : m_ctx(ctx) { }
     ~CloseAllDocs() {
-      auto ctx = UIContext::instance();
-
       std::vector<Doc*> docs;
 #ifdef ENABLE_UI
-      for (Doc* doc : ctx->getAndRemoveAllClosedDocs())
+      for (Doc* doc : static_cast<UIContext*>(m_ctx)->getAndRemoveAllClosedDocs())
         docs.push_back(doc);
 #endif
-      for (Doc* doc : ctx->documents())
+      for (Doc* doc : m_ctx->documents())
         docs.push_back(doc);
       for (Doc* doc : docs) {
         // First we close the document. In this way we receive recent
@@ -416,7 +415,7 @@ void App::run()
 #ifdef ENABLE_UI
   CloseMainWindow closeMainWindow(m_mainWindow);
 #endif
-  CloseAllDocs closeAllDocsAtExit;
+  CloseAllDocs closeAllDocsAtExit(context());
 
 #ifdef ENABLE_UI
   // Run the GUI
