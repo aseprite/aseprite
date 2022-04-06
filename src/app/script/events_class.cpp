@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021  Igara Studio S.A.
+// Copyright (C) 2021-2022  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -20,6 +20,7 @@
 #include "app/script/luacpp.h"
 #include "doc/document.h"
 #include "doc/sprite.h"
+#include "ui/app_state.h"
 
 #include <cstring>
 #include <map>
@@ -201,7 +202,7 @@ public:
 
   ~SpriteEvents() {
     auto doc = this->doc();
-    ASSERT(doc);
+    ASSERT(doc || ui::get_app_state() == ui::AppState::kClosingWithException);
     if (doc) {
       disconnectFromUndoHistory(doc);
       doc->remove_observer(this);

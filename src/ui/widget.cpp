@@ -20,6 +20,7 @@
 #include "os/surface.h"
 #include "os/system.h"
 #include "os/window.h"
+#include "ui/app_state.h"
 #include "ui/init_theme_event.h"
 #include "ui/intern.h"
 #include "ui/layout_io.h"
@@ -720,6 +721,10 @@ gfx::Rect Widget::boundsOnScreen() const
 
 void Widget::setBounds(const Rect& rc)
 {
+  // Don't generate onResize() events if the app is being closed
+  if (is_app_state_closing())
+    return;
+
   ResizeEvent ev(this, rc);
   onResize(ev);
 }

@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -135,7 +135,8 @@ Window::Window(Type type, const std::string& text)
 
 Window::~Window()
 {
-  manager()->_closeWindow(this, isVisible());
+  if (auto man = manager())
+    man->_closeWindow(this, isVisible());
 }
 
 Display* Window::display() const
@@ -414,7 +415,8 @@ void Window::closeWindow(Widget* closer)
   if (m_ownDisplay)
     m_lastFrame = m_display->nativeWindow()->frame();
 
-  manager()->_closeWindow(this, true);
+  if (auto man = manager())
+    man->_closeWindow(this, true);
 
   onClose(ev);
 }
