@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -20,6 +20,7 @@
 #include "os/surface.h"
 #include "os/system.h"
 #include "os/window.h"
+#include "ui/app_state.h"
 #include "ui/init_theme_event.h"
 #include "ui/intern.h"
 #include "ui/layout_io.h"
@@ -687,6 +688,10 @@ Rect Widget::clientChildrenBounds() const
 
 void Widget::setBounds(const Rect& rc)
 {
+  // Don't generate onResize() events if the app is being closed
+  if (is_app_state_closing())
+    return;
+
   ResizeEvent ev(this, rc);
   onResize(ev);
 }

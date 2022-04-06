@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -161,7 +161,8 @@ public:
   }
 
   ~Modules() {
-    ASSERT(m_recovery == nullptr);
+    ASSERT(m_recovery == nullptr ||
+           ui::get_app_state() == ui::AppState::kClosingWithException);
   }
 
   app::crash::DataRecovery* recovery() {
@@ -368,14 +369,62 @@ int App::initialize(const AppOptions& options)
   return code;
 }
 
+namespace {
+
+#ifdef ENABLE_UI
+  struct CloseMainWindow {
+    std::unique_ptr<MainWindow>& m_win;
+    CloseMainWindow(std::unique_ptr<MainWindow>& win) : m_win(win) { }
+    ~CloseMainWindow() { m_win.reset(nullptr); }
+  };
+#endif
+
+  struct CloseAllDocs {
+    CloseAllDocs() { }
+    ~CloseAllDocs() {
+      auto ctx = UIContext::instance();
+
+      std::vector<Doc*> docs;
+#ifdef ENABLE_UI
+      for (Doc* doc : ctx->getAndRemoveAllClosedDocs())
+        docs.push_back(doc);
+#endif
+      for (Doc* doc : ctx->documents())
+        docs.push_back(doc);
+      for (Doc* doc : docs) {
+        // First we close the document. In this way we receive recent
+        // notifications related to the document as a app::Doc. If
+        // we delete the document directly, we destroy the app::Doc
+        // too early, and then doc::~Document() call
+        // DocsObserver::onRemoveDocument(). In this way, observers
+        // could think that they have a fully created app::Doc when
+        // in reality it's a doc::Document (in the middle of a
+        // destruction process).
+        //
+        // TODO: This problem is because we're extending doc::Document,
+        // in the future, we should remove app::Doc.
+        doc->close();
+        delete doc;
+      }
+    }
+  };
+
+} // anonymous namespace
+
 void App::run()
 {
 #ifdef ENABLE_UI
+  CloseMainWindow closeMainWindow(m_mainWindow);
+#endif
+  CloseAllDocs closeAllDocsAtExit;
+
+#ifdef ENABLE_UI
   // Run the GUI
   if (isGui()) {
+    auto manager = ui::Manager::getDefault();
 #if LAF_WINDOWS
     // How to interpret one finger on Windows tablets.
-    ui::Manager::getDefault()->display()
+    manager->display()
       ->setInterpretOneFingerGestureAsMouseMovement(
         preferences().experimental.oneFingerAsMouseMovement());
 #endif
@@ -442,7 +491,14 @@ void App::run()
 #endif
 
     // Run the GUI main message loop
-    ui::Manager::getDefault()->run();
+    try {
+      manager->run();
+      set_app_state(AppState::kClosing);
+    }
+    catch (...) {
+      set_app_state(AppState::kClosingWithException);
+      throw;
+    }
   }
 #endif  // ENABLE_UI
 
@@ -470,37 +526,6 @@ void App::run()
     // Delete backups (this is a normal shutdown, we are not handling
     // exceptions, and we are not in a destructor).
     m_modules->deleteDataRecovery();
-  }
-#endif
-
-  // Destroy all documents from the UIContext.
-  std::vector<Doc*> docs;
-#ifdef ENABLE_UI
-  for (Doc* doc : static_cast<UIContext*>(context())->getAndRemoveAllClosedDocs())
-    docs.push_back(doc);
-#endif
-  for (Doc* doc : context()->documents())
-    docs.push_back(doc);
-  for (Doc* doc : docs) {
-    // First we close the document. In this way we receive recent
-    // notifications related to the document as a app::Doc. If
-    // we delete the document directly, we destroy the app::Doc
-    // too early, and then doc::~Document() call
-    // DocsObserver::onRemoveDocument(). In this way, observers
-    // could think that they have a fully created app::Doc when
-    // in reality it's a doc::Document (in the middle of a
-    // destruction process).
-    //
-    // TODO: This problem is because we're extending doc::Document,
-    // in the future, we should remove app::Doc.
-    doc->close();
-    delete doc;
-  }
-
-#ifdef ENABLE_UI
-  if (isGui()) {
-    // Destroy the window.
-    m_mainWindow.reset(nullptr);
   }
 #endif
 }
