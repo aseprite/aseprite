@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -116,7 +116,7 @@ const Session::Backups& Session::backups()
     for (auto& item : base::list_files(m_path)) {
       std::string docDir = base::join_path(m_path, item);
       if (base::is_directory(docDir)) {
-        m_backups.push_back(new Backup(docDir));
+        m_backups.push_back(std::make_shared<Backup>(docDir));
       }
     }
   }
@@ -196,7 +196,7 @@ void Session::removeFromDisk()
   try {
     // Remove all backups from disk
     Backups baks = backups();
-    for (Backup* bak : baks)
+    for (const BackupPtr& bak : baks)
       deleteBackup(bak);
 
     if (base::is_file(pidFilename()))
@@ -285,7 +285,7 @@ Doc* Session::restoreBackupDoc(const std::string& backupDir,
   return nullptr;
 }
 
-Doc* Session::restoreBackupDoc(Backup* backup,
+Doc* Session::restoreBackupDoc(const BackupPtr& backup,
                                base::task_token* t)
 {
   return restoreBackupDoc(backup->dir(), t);
@@ -311,7 +311,7 @@ Doc* Session::restoreBackupDocById(const doc::ObjectId id,
   return restoreBackupDoc(docDir, t);
 }
 
-Doc* Session::restoreBackupRawImages(Backup* backup,
+Doc* Session::restoreBackupRawImages(const BackupPtr& backup,
                                      const RawImagesAs as,
                                      base::task_token* t)
 {
@@ -330,7 +330,7 @@ Doc* Session::restoreBackupRawImages(Backup* backup,
   return nullptr;
 }
 
-void Session::deleteBackup(Backup* backup)
+void Session::deleteBackup(const BackupPtr& backup)
 {
   auto it = std::find(m_backups.begin(), m_backups.end(), backup);
   ASSERT(it != m_backups.end());
