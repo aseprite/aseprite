@@ -80,7 +80,7 @@ It tries to replicate some pixel-art algorithms:
 Thanks to [third-party open source projects](docs/LICENSES.md), to
 [contributors](https://www.aseprite.org/contributors/), and all the
 people who have contributed ideas, patches, bugs report, feature
-requests, donations, and help me to develop Aseprite.
+requests, donations, or help me to develop Aseprite.
 
 ## License
 
