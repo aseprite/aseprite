@@ -973,6 +973,13 @@ static FileItem* get_fileitem_by_fullpidl(LPITEMIDLIST fullpidl, bool create_if_
 
     free_pidl(parent_fullpidl);
 
+    // The parent folder is sometimes deleted for some reasons. In
+    // that case, m_parent becomes nullptr, which can causes crash.
+    if (fileitem->m_parent == nullptr) {
+      throw std::runtime_error(
+        "Unexpected file system change. Please check the file.");
+    }
+
     // Get specific pidl attributes
     if (fileitem->m_pidl &&
         fileitem->m_parent) {
