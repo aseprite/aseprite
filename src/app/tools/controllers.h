@@ -491,7 +491,16 @@ public:
     if (m_controller == nullptr)
       m_controller = &m_twoPoints;
     else if (m_controller == &m_twoPoints) {
-      m_controller = &m_freehand;
+      if ((int(loop->getModifiers()) & int(ToolLoopModifiers::kSquareAspect))) {
+        // Don't switch to freehand, just continue with lines if we
+        // have the square aspect key pressed (e.g. Ctrl+Shift). In
+        // this way we avoid to paint two straight lines: 1) from the
+        // very beginning, and 2) from the end of the first straight
+        // line to the new "pt".
+      }
+      else {
+        m_controller = &m_freehand;
+      }
       return;                   // Don't send first pressButton() click to the freehand controller
     }
 
