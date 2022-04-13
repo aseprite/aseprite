@@ -252,6 +252,8 @@ namespace ui {
     const gfx::Size& maxSize() const { return m_maxSize; }
     void setMinSize(const gfx::Size& sz);
     void setMaxSize(const gfx::Size& sz);
+    void resetMinSize();
+    void resetMaxSize();
 
     const gfx::Border& border() const { return m_border; }
     void setBorder(const gfx::Border& border);

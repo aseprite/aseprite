@@ -975,6 +975,17 @@ void Widget::setMaxSize(const gfx::Size& sz)
   m_maxSize = sz;
 }
 
+void Widget::resetMinSize()
+{
+  m_minSize = gfx::Size(0, 0);
+}
+
+void Widget::resetMaxSize()
+{
+  m_maxSize = gfx::Size(std::numeric_limits<int>::max(),
+                        std::numeric_limits<int>::max());
+}
+
 void Widget::flushRedraw()
 {
   std::queue<Widget*> processing;
