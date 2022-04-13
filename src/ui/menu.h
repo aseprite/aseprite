@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2020-2021  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -29,7 +29,7 @@ namespace ui {
     ~Menu();
 
     void showPopup(const gfx::Point& pos);
-    Widget* findItemById(const char* id);
+    Widget* findItemById(const char* id) const;
 
     // Returns the MenuItem that has as submenu this menu.
     MenuItem* getOwnerMenuItem() {

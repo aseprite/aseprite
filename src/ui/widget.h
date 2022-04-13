@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -185,20 +185,20 @@ namespace ui {
                  const bool checkParentsVisibility = true) const;
     bool hasChild(Widget* child);
     bool hasAncestor(Widget* ancestor);
-    Widget* findChild(const char* id);
+    Widget* findChild(const char* id) const;
 
     // Returns a widget in the same window that is located "sibling".
-    Widget* findSibling(const char* id);
+    Widget* findSibling(const char* id) const;
 
     // Finds a child with the specified ID and dynamic-casts it to type
     // T.
     template<class T>
-    T* findChildT(const char* id) {
+    T* findChildT(const char* id) const {
       return dynamic_cast<T*>(findChild(id));
     }
 
     template<class T>
-    T* findFirstChildByType() {
+    T* findFirstChildByType() const {
       for (auto child : m_children) {
         if (T* specificChild = dynamic_cast<T*>(child))
           return specificChild;
