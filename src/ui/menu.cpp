@@ -193,8 +193,9 @@ MenuBox::~MenuBox()
 
 bool MenuBar::m_expandOnMouseover = false;
 
-MenuBar::MenuBar()
+MenuBar::MenuBar(ProcessTopLevelShortcuts processShortcuts)
   : MenuBox(kMenuBarWidget)
+  , m_processTopLevelShortcuts(processShortcuts == ProcessTopLevelShortcuts::kYes)
 {
   createBase();
 }
@@ -271,6 +272,12 @@ void MenuItem::setSubmenu(Menu* menu)
     ASSERT_VALID_WIDGET(m_submenu);
     m_submenu->setOwnerMenuItem(this);
   }
+}
+
+void MenuItem::openSubmenu()
+{
+  if (auto menu = static_cast<Menu*>(parent()))
+    menu->highlightItem(this, true, true, true);
 }
 
 bool MenuItem::isHighlighted() const
@@ -574,7 +581,8 @@ bool MenuBox::onProcessMessage(Message* msg)
         // Check for ALT+some underlined letter
         if (((this->type() == kMenuBoxWidget) && (msg->modifiers() == kKeyNoneModifier || // <-- Inside menu-boxes we can use letters without Alt modifier pressed
                                                   msg->modifiers() == kKeyAltModifier)) ||
-            ((this->type() == kMenuBarWidget) && (msg->modifiers() == kKeyAltModifier))) {
+            ((this->type() == kMenuBarWidget) && (msg->modifiers() == kKeyAltModifier) &&
+             static_cast<MenuBar*>(this)->processTopLevelShortcuts())) {
           auto keymsg = static_cast<KeyMessage*>(msg);
           selected = check_for_letter(menu, keymsg);
           if (selected) {

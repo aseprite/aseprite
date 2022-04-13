@@ -304,6 +304,7 @@ if(ENABLE_UI)
     commands/filters/filter_target_buttons.cpp
     commands/filters/filter_window.cpp
     commands/screenshot.cpp
+    commands/show_menu.cpp
     file_selector.cpp
     modules/editors.cpp
     modules/gfx.cpp

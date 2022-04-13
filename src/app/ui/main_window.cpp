@@ -546,12 +546,10 @@ void MainWindow::configureWorkspaceLayout()
 
   if (os::instance()->menus() == nullptr ||
       pref.general.showMenuBar()) {
-    if (!m_menuBar->parent())
-      menuBarPlaceholder()->insertChild(0, m_menuBar);
+    m_menuBar->resetMaxSize();
   }
   else {
-    if (m_menuBar->parent())
-      menuBarPlaceholder()->removeChild(m_menuBar);
+    m_menuBar->setMaxSize(gfx::Size(0, 0));
   }
 
   m_menuBar->setVisible(normal);

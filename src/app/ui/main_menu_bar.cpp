@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A
+// Copyright (C) 2020-2022  Igara Studio S.A
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -18,6 +18,9 @@
 namespace app {
 
 MainMenuBar::MainMenuBar()
+  // We process Alt+mnemonics with ShowMenu commands (instead of the
+  // integrated method in ui::MenuBox::onProcessMessage()).
+  : MenuBar(MenuBar::ProcessTopLevelShortcuts::kNo)
 {
   Extensions& extensions = App::instance()->extensions();
 
