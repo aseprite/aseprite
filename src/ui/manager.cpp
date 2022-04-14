@@ -1113,8 +1113,8 @@ void Manager::_openWindow(Window* window)
 
   // Broadcast the open message.
   {
-    std::unique_ptr<Message> msg(new Message(kOpenMessage));
-    window->sendMessage(msg.get());
+    Message msg(kOpenMessage);
+    window->sendMessage(&msg);
   }
 
   // Relayout
@@ -1179,8 +1179,8 @@ void Manager::_closeWindow(Window* window, bool redraw_background)
 
   // Close message.
   {
-    std::unique_ptr<Message> msg(new Message(kCloseMessage));
-    window->sendMessage(msg.get());
+    Message msg(kCloseMessage);
+    window->sendMessage(&msg);
   }
 
   // Update manager list stuff.
