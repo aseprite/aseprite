@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -16,6 +16,7 @@
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/console.h"
+#include "app/extensions.h"
 #include "app/gui_xml.h"
 #include "app/i18n/strings.h"
 #include "app/recent_files.h"
@@ -417,10 +418,22 @@ void AppMenus::reload()
     .FirstChild("gui")
     .FirstChild("keyboard").ToElement();
 
+  // From a fresh start, load the default keys
   KeyboardShortcuts::instance()->clear();
   KeyboardShortcuts::instance()->importFile(xmlKey, KeySource::Original);
 
-  // Load user settings
+  // Load extension-defined keys
+  for (const Extension* ext : App::instance()->extensions()) {
+    if (ext->isEnabled() &&
+        ext->hasKeys()) {
+      for (const auto& kv : ext->keys()) {
+        KeyboardShortcuts::instance()->importFile(
+          kv.second, KeySource::ExtensionDefined);
+      }
+    }
+  }
+
+  // Load user-defined keys
   {
     ResourceFinder rf;
     rf.includeUserDir("user.aseprite-keys");

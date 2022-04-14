@@ -24,9 +24,11 @@ MainMenuBar::MainMenuBar()
 {
   Extensions& extensions = App::instance()->extensions();
 
-  m_extScripts =
-    extensions.ScriptsChange.connect(
-      [this]{ reload(); });
+  // Reload the main menu if there are changes in keyboard shortcuts
+  // or scripts when extensions are installed/uninstalled or
+  // enabled/disabled.
+  m_extKeys = extensions.KeysChange.connect( [this]{ reload(); });
+  m_extScripts = extensions.ScriptsChange.connect( [this]{ reload(); });
 }
 
 void MainMenuBar::reload()
