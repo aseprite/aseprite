@@ -54,6 +54,7 @@ namespace app {
     KeyPtr dragAction(const WheelAction action);
 
     void disableAccel(const ui::Accelerator& accel,
+                      const KeySource source,
                       const KeyContext keyContext,
                       const Key* newKey);
 

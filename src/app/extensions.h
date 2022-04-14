@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2021  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 // Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -37,6 +37,7 @@ namespace app {
 
     enum class Category {
       None,
+      Keys,
       Languages,
       Themes,
       Scripts,
@@ -93,10 +94,12 @@ namespace app {
     const std::string& displayName() const { return m_displayName; }
     const Category category() const { return m_category; }
 
+    const ExtensionItems& keys() const { return m_keys; }
     const ExtensionItems& languages() const { return m_languages; }
     const Themes& themes() const { return m_themes; }
     const ExtensionItems& palettes() const { return m_palettes; }
 
+    void addKeys(const std::string& id, const std::string& path);
     void addLanguage(const std::string& id, const std::string& path);
     void addTheme(const std::string& id, const std::string& path, const std::string& variant);
     void addPalette(const std::string& id, const std::string& path);
@@ -113,6 +116,7 @@ namespace app {
     bool canBeDisabled() const;
     bool canBeUninstalled() const;
 
+    bool hasKeys() const { return !m_keys.empty(); }
     bool hasLanguages() const { return !m_languages.empty(); }
     bool hasThemes() const { return !m_themes.empty(); }
     bool hasPalettes() const { return !m_palettes.empty(); }
@@ -135,6 +139,7 @@ namespace app {
     void exitScripts();
 #endif
 
+    ExtensionItems m_keys;
     ExtensionItems m_languages;
     Themes m_themes;
     ExtensionItems m_palettes;
@@ -196,6 +201,7 @@ namespace app {
     std::vector<Extension::DitheringMatrixInfo> ditheringMatrices();
 
     obs::signal<void(Extension*)> NewExtension;
+    obs::signal<void(Extension*)> KeysChange;
     obs::signal<void(Extension*)> LanguagesChange;
     obs::signal<void(Extension*)> ThemesChange;
     obs::signal<void(Extension*)> PalettesChange;

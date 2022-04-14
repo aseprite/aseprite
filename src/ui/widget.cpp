@@ -522,7 +522,7 @@ bool Widget::hasAncestor(Widget* ancestor)
   return false;
 }
 
-Widget* Widget::findChild(const char* id)
+Widget* Widget::findChild(const char* id) const
 {
   for (auto child : m_children) {
     if (child->id() == id)
@@ -538,7 +538,7 @@ Widget* Widget::findChild(const char* id)
   return nullptr;
 }
 
-Widget* Widget::findSibling(const char* id)
+Widget* Widget::findSibling(const char* id) const
 {
   return window()->findChild(id);
 }
@@ -990,6 +990,17 @@ void Widget::setMinSize(const gfx::Size& sz)
 void Widget::setMaxSize(const gfx::Size& sz)
 {
   m_maxSize = sz;
+}
+
+void Widget::resetMinSize()
+{
+  m_minSize = gfx::Size(0, 0);
+}
+
+void Widget::resetMaxSize()
+{
+  m_maxSize = gfx::Size(std::numeric_limits<int>::max(),
+                        std::numeric_limits<int>::max());
 }
 
 void Widget::flushRedraw()

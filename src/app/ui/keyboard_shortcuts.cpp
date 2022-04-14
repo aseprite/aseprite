@@ -154,6 +154,32 @@ namespace {
       return std::string();
   }
 
+  void erase_accel(app::KeySourceAccelList& kvs,
+                   const app::KeySource source,
+                   const ui::Accelerator& accel) {
+    for (auto it=kvs.begin(); it!=kvs.end(); ) {
+      auto& kv = *it;
+      if (kv.first == source &&
+          kv.second == accel) {
+        it = kvs.erase(it);
+      }
+      else
+        ++it;
+    }
+  }
+
+  void erase_accels(app::KeySourceAccelList& kvs,
+                    const app::KeySource source) {
+    for (auto it=kvs.begin(); it!=kvs.end(); ) {
+      auto& kv = *it;
+      if (kv.first == source) {
+        it = kvs.erase(it);
+      }
+      else
+        ++it;
+    }
+  }
+
 } // anonymous namespace
 
 namespace base {
@@ -219,9 +245,38 @@ using namespace ui;
 //////////////////////////////////////////////////////////////////////
 // Key
 
+Key::Key(const Key& k)
+  : m_type(k.m_type)
+  , m_adds(k.m_adds)
+  , m_dels(k.m_dels)
+  , m_keycontext(k.m_keycontext)
+{
+  switch (m_type) {
+    case KeyType::Command:
+      m_command = k.m_command;
+      m_params = k.m_params;
+      break;
+    case KeyType::Tool:
+    case KeyType::Quicktool:
+      m_tool = k.m_tool;
+      break;
+    case KeyType::Action:
+      m_action = k.m_action;
+      break;
+    case KeyType::WheelAction:
+      m_action = k.m_action;
+      m_wheelAction = k.m_wheelAction;
+      break;
+    case KeyType::DragAction:
+      m_action = k.m_action;
+      m_wheelAction = k.m_wheelAction;
+      m_dragVector = k.m_dragVector;
+      break;
+  }
+}
+
 Key::Key(Command* command, const Params& params, const KeyContext keyContext)
   : m_type(KeyType::Command)
-  , m_useUsers(false)
   , m_keycontext(keyContext)
   , m_command(command)
   , m_params(params)
@@ -230,7 +285,6 @@ Key::Key(Command* command, const Params& params, const KeyContext keyContext)
 
 Key::Key(const KeyType type, tools::Tool* tool)
   : m_type(type)
-  , m_useUsers(false)
   , m_keycontext(KeyContext::Any)
   , m_tool(tool)
 {
@@ -239,7 +293,6 @@ Key::Key(const KeyType type, tools::Tool* tool)
 Key::Key(const KeyAction action,
          const KeyContext keyContext)
   : m_type(KeyType::Action)
-  , m_useUsers(false)
   , m_keycontext(keyContext)
   , m_action(action)
 {
@@ -293,7 +346,6 @@ Key::Key(const KeyAction action,
 
 Key::Key(const WheelAction wheelAction)
   : m_type(KeyType::WheelAction)
-  , m_useUsers(false)
   , m_keycontext(KeyContext::MouseWheel)
   , m_action(KeyAction::None)
   , m_wheelAction(wheelAction)
@@ -310,28 +362,57 @@ KeyPtr Key::MakeDragAction(WheelAction dragAction)
   return k;
 }
 
+const ui::Accelerators& Key::accels() const
+{
+  if (!m_accels) {
+    m_accels = std::make_unique<ui::Accelerators>();
+
+    // Add default keys
+    for (const auto& kv : m_adds) {
+      if (kv.first == KeySource::Original)
+        m_accels->add(kv.second);
+    }
+
+    // Delete/add extension-defined keys
+    for (const auto& kv : m_dels) {
+      if (kv.first == KeySource::ExtensionDefined)
+        m_accels->remove(kv.second);
+      else {
+        ASSERT(kv.first != KeySource::Original);
+      }
+    }
+    for (const auto& kv : m_adds) {
+      if (kv.first == KeySource::ExtensionDefined)
+        m_accels->add(kv.second);
+    }
+
+    // Delete/add user-defined keys
+    for (const auto& kv : m_dels) {
+      if (kv.first == KeySource::UserDefined)
+        m_accels->remove(kv.second);
+    }
+    for (const auto& kv : m_adds) {
+      if (kv.first == KeySource::UserDefined)
+        m_accels->add(kv.second);
+    }
+  }
+  return *m_accels;
+}
+
 void Key::add(const ui::Accelerator& accel,
               const KeySource source,
               KeyboardShortcuts& globalKeys)
 {
-  Accelerators* accels = &m_accels;
-
-  if (source == KeySource::UserDefined) {
-    if (!m_useUsers) {
-      m_useUsers = true;
-      m_users = m_accels;
-    }
-    accels = &m_users;
-  }
+  m_adds.emplace_back(source, accel);
+  m_accels.reset();
 
   // Remove the accelerator from other commands
-  if (source == KeySource::UserDefined) {
-    globalKeys.disableAccel(accel, m_keycontext, this);
-    m_userRemoved.remove(accel);
-  }
+  if (source == KeySource::ExtensionDefined ||
+      source == KeySource::UserDefined) {
+    erase_accel(m_dels, source, accel);
 
-  // Add the accelerator
-  accels->add(accel);
+    globalKeys.disableAccel(accel, source, m_keycontext, this);
+  }
 }
 
 const ui::Accelerator* Key::isPressed(const Message* msg,
@@ -386,31 +467,47 @@ bool Key::hasAccel(const ui::Accelerator& accel) const
   return accels().has(accel);
 }
 
-void Key::disableAccel(const ui::Accelerator& accel)
+bool Key::hasUserDefinedAccels() const
 {
-  if (!m_useUsers) {
-    m_useUsers = true;
-    m_users = m_accels;
+  for (const auto& kv : m_adds) {
+    if (kv.first == KeySource::UserDefined)
+      return true;
   }
+  return false;
+}
 
-  m_users.remove(accel);
+void Key::disableAccel(const ui::Accelerator& accel,
+                       const KeySource source)
+{
+  // It doesn't make sense that the default keyboard shortcuts file
+  // (gui.xml) removes some accelerator.
+  ASSERT(source != KeySource::Original);
 
-  if (m_accels.has(accel))
-    m_userRemoved.add(accel);
+  erase_accel(m_adds, source, accel);
+  erase_accel(m_dels, source, accel);
+
+  m_dels.emplace_back(source, accel);
+  m_accels.reset();
 }
 
 void Key::reset()
 {
-  m_users.clear();
-  m_userRemoved.clear();
-  m_useUsers = false;
+  erase_accels(m_adds, KeySource::UserDefined);
+  erase_accels(m_dels, KeySource::UserDefined);
+  m_accels.reset();
 }
 
 void Key::copyOriginalToUser()
 {
-  m_users = m_accels;
-  m_userRemoved.clear();
-  m_useUsers = true;
+  // Erase all user-defined keys
+  erase_accels(m_adds, KeySource::UserDefined);
+  erase_accels(m_dels, KeySource::UserDefined);
+
+  // Then copy all original & extension-defined keys as user-defined
+  auto copy = m_adds;
+  for (const auto& kv : copy)
+    m_adds.emplace_back(KeySource::UserDefined, kv.second);
+  m_accels.reset();
 }
 
 std::string Key::triggerString() const
@@ -527,7 +624,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
             }
           }
           else
-            key->disableAccel(accel);
+            key->disableAccel(accel, source);
         }
       }
     }
@@ -556,7 +653,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
           if (!removed)
             key->add(accel, source, *this);
           else
-            key->disableAccel(accel);
+            key->disableAccel(accel, source);
         }
       }
     }
@@ -584,7 +681,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
           if (!removed)
             key->add(accel, source, *this);
           else
-            key->disableAccel(accel);
+            key->disableAccel(accel, source);
         }
       }
     }
@@ -619,7 +716,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
           if (!removed)
             key->add(accel, source, *this);
           else
-            key->disableAccel(accel);
+            key->disableAccel(accel, source);
         }
       }
     }
@@ -647,7 +744,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
           if (!removed)
             key->add(accel, source, *this);
           else
-            key->disableAccel(accel);
+            key->disableAccel(accel, source);
         }
       }
     }
@@ -686,7 +783,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
           if (!removed)
             key->add(accel, source, *this);
           else
-            key->disableAccel(accel);
+            key->disableAccel(accel, source);
         }
       }
     }
@@ -744,11 +841,13 @@ void KeyboardShortcuts::exportKeys(TiXmlElement& parent, KeyType type)
     if (key->type() != type)
       continue;
 
-    for (const ui::Accelerator& accel : key->userRemovedAccels())
-      exportAccel(parent, key.get(), accel, true);
+    for (const auto& kv : key->delsKeys())
+      if (kv.first == KeySource::UserDefined)
+        exportAccel(parent, key.get(), kv.second, true);
 
-    for (const ui::Accelerator& accel : key->userAccels())
-      exportAccel(parent, key.get(), accel, false);
+    for (const auto& kv : key->addsKeys())
+      if (kv.first == KeySource::UserDefined)
+        exportAccel(parent, key.get(), kv.second, false);
   }
 }
 
@@ -913,11 +1012,13 @@ KeyPtr KeyboardShortcuts::dragAction(WheelAction dragAction)
 }
 
 void KeyboardShortcuts::disableAccel(const ui::Accelerator& accel,
+                                     const KeySource source,
                                      const KeyContext keyContext,
                                      const Key* newKey)
 {
   for (KeyPtr& key : m_keys) {
-    if (key->keycontext() == keyContext &&
+    if (key.get() != newKey &&
+        key->keycontext() == keyContext &&
         key->hasAccel(accel) &&
         // Tools can contain the same keyboard shortcut
         (key->type() != KeyType::Tool ||
@@ -928,7 +1029,7 @@ void KeyboardShortcuts::disableAccel(const ui::Accelerator& accel,
         (key->type() != KeyType::DragAction ||
          newKey == nullptr ||
          newKey->type() != KeyType::DragAction)) {
-      key->disableAccel(accel);
+      key->disableAccel(accel, source);
     }
   }
 }
@@ -1045,7 +1146,7 @@ bool KeyboardShortcuts::hasMouseWheelCustomization() const
 {
   for (const KeyPtr& key : m_keys) {
     if (key->type() == KeyType::WheelAction &&
-        !key->userAccels().empty())
+        key->hasUserDefinedAccels())
       return true;
   }
   return false;

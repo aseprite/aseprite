@@ -1375,6 +1375,10 @@ private:
       return;
 
     loadExtensionsByCategory(
+      Extension::Category::Keys,
+      Strings::options_keys_extensions());
+
+    loadExtensionsByCategory(
       Extension::Category::Languages,
       Strings::options_language_extensions());
 

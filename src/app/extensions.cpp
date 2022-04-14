@@ -257,6 +257,12 @@ void Extension::executeExitActions()
 #endif // ENABLE_SCRIPTING
 }
 
+void Extension::addKeys(const std::string& id, const std::string& path)
+{
+  m_keys[id] = path;
+  updateCategory(Category::Keys);
+}
+
 void Extension::addLanguage(const std::string& id, const std::string& path)
 {
   m_languages[id] = path;
@@ -456,8 +462,10 @@ bool Extension::isDefaultTheme() const
 
 void Extension::updateCategory(const Category newCategory)
 {
-  if (m_category == Category::None)
+  if (m_category == Category::None ||
+      m_category == Category::Keys) {
     m_category = newCategory;
+  }
   else if (m_category != newCategory)
     m_category = Category::Multiple;
 }
@@ -1016,6 +1024,24 @@ Extension* Extensions::loadExtension(const std::string& path,
 
   auto contributes = json["contributes"];
   if (contributes.is_object()) {
+    // Keys
+    auto keys = contributes["keys"];
+    if (keys.is_array()) {
+      for (const auto& key : keys.array_items()) {
+        std::string keyId = key["id"].string_value();
+        std::string keyPath = key["path"].string_value();
+
+        // The path must be always relative to the extension
+        keyPath = base::join_path(path, keyPath);
+
+        LOG("EXT: New keyboard shortcuts '%s' in '%s'\n",
+            keyId.c_str(),
+            keyPath.c_str());
+
+        extension->addKeys(keyId, keyPath);
+      }
+    }
+
     // Languages
     auto languages = contributes["languages"];
     if (languages.is_array()) {
@@ -1132,6 +1158,7 @@ Extension* Extensions::loadExtension(const std::string& path,
 
 void Extensions::generateExtensionSignals(Extension* extension)
 {
+  if (extension->hasKeys()) KeysChange(extension);
   if (extension->hasLanguages()) LanguagesChange(extension);
   if (extension->hasThemes()) ThemesChange(extension);
   if (extension->hasPalettes()) PalettesChange(extension);

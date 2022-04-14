@@ -55,7 +55,7 @@ namespace {
 
 class Item : public ListItem {
 public:
-  Item(crash::Session* session, crash::Session::Backup* backup)
+  Item(crash::Session* session, const crash::Session::BackupPtr& backup)
     : m_session(session)
     , m_backup(backup)
     , m_task(nullptr) {
@@ -63,7 +63,7 @@ public:
   }
 
   crash::Session* session() const { return m_session; }
-  crash::Session::Backup* backup() const { return m_backup; }
+  const crash::Session::BackupPtr& backup() const { return m_backup; }
 
   bool isTaskRunning() const { return m_task != nullptr; }
 
@@ -111,6 +111,7 @@ public:
         try {
           // Warning: This is executed from a worker thread
           m_session->deleteBackup(m_backup);
+          m_backup.reset();     // Delete the Backup instance
 
           ui::execute_from_ui_thread(
             [this]{
@@ -138,10 +139,15 @@ public:
   }
 
   void updateText() {
-    if (!m_task)
+    if (!m_task) {
+      ASSERT(m_backup);
+      if (!m_backup)
+        return;
+
       setText(
         m_backup->description(
           Preferences::instance().general.showFullPath()));
+    }
   }
 
 private:
@@ -220,7 +226,7 @@ private:
   }
 
   crash::Session* m_session;
-  crash::Session::Backup* m_backup;
+  crash::Session::BackupPtr m_backup;
   TaskWidget* m_task;
 };
 

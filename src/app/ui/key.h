@@ -16,6 +16,7 @@
 #include "ui/accelerator.h"
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 namespace ui {
@@ -32,6 +33,7 @@ namespace app {
 
   enum class KeySource {
     Original,
+    ExtensionDefined,
     UserDefined
   };
 
@@ -107,10 +109,12 @@ namespace app {
   class Key;
   using KeyPtr = std::shared_ptr<Key>;
   using Keys = std::vector<KeyPtr>;
+  using KeySourceAccelList = std::vector<std::pair<KeySource, ui::Accelerator>>;
   using DragVector = base::Vector2d<double>;
 
   class Key {
   public:
+    Key(const Key& key);
     Key(Command* command, const Params& params,
         const KeyContext keyContext);
     Key(const KeyType type, tools::Tool* tool);
@@ -120,12 +124,9 @@ namespace app {
     static KeyPtr MakeDragAction(WheelAction dragAction);
 
     KeyType type() const { return m_type; }
-    const ui::Accelerators& accels() const {
-      return (m_useUsers ? m_users: m_accels);
-    }
-    const ui::Accelerators& origAccels() const { return m_accels; }
-    const ui::Accelerators& userAccels() const { return m_users; }
-    const ui::Accelerators& userRemovedAccels() const { return m_userRemoved; }
+    const ui::Accelerators& accels() const;
+    const KeySourceAccelList addsKeys() const { return m_adds; }
+    const KeySourceAccelList delsKeys() const { return m_dels; }
 
     void add(const ui::Accelerator& accel,
              const KeySource source,
@@ -136,9 +137,15 @@ namespace app {
     bool isLooselyPressed() const;
 
     bool hasAccel(const ui::Accelerator& accel) const;
-    void disableAccel(const ui::Accelerator& accel);
+    bool hasUserDefinedAccels() const;
 
-    // Resets user accelerators to the original ones.
+    // The KeySource indicates from where the key was disabled
+    // (e.g. if it was removed from an extension-defined file, or from
+    // user-defined).
+    void disableAccel(const ui::Accelerator& accel,
+                      const KeySource source);
+
+    // Resets user accelerators to the original & extension-defined ones.
     void reset();
 
     void copyOriginalToUser();
@@ -161,10 +168,11 @@ namespace app {
 
   private:
     KeyType m_type;
-    ui::Accelerators m_accels;      // Default accelerators (from gui.xml)
-    ui::Accelerators m_users;       // User-defined accelerators
-    ui::Accelerators m_userRemoved; // Default accelerators removed by user
-    bool m_useUsers;
+    KeySourceAccelList m_adds;
+    KeySourceAccelList m_dels;
+    // Final list of accelerators after processing the
+    // addition/deletion of extension-defined & user-defined keys.
+    mutable std::unique_ptr<ui::Accelerators> m_accels;
     KeyContext m_keycontext;
 
     // for KeyType::Command

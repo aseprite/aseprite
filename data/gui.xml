@@ -8,6 +8,16 @@
 
     <!-- Keyboard shortcuts for commands (menu options) -->
     <commands>
+      <!-- Top-level menu access -->
+      <key command="ShowMenu" shortcut="Alt+F"><param name="menu" value="file_menu" /></key>
+      <key command="ShowMenu" shortcut="Alt+E"><param name="menu" value="edit_menu" /></key>
+      <key command="ShowMenu" shortcut="Alt+S"><param name="menu" value="sprite_menu" /></key>
+      <key command="ShowMenu" shortcut="Alt+L"><param name="menu" value="layer_menu" /></key>
+      <key command="ShowMenu" shortcut="Alt+R"><param name="menu" value="frame_menu" /></key>
+      <key command="ShowMenu" shortcut="Alt+T"><param name="menu" value="select_menu" /></key>
+      <key command="ShowMenu" shortcut="Alt+V"><param name="menu" value="view_menu" /></key>
+      <key command="ShowMenu" shortcut="Alt+H"><param name="menu" value="help_menu" /></key>
+
       <!-- File -->
       <key command="NewFile" shortcut="Ctrl+N" mac="Cmd+N" />
       <key command="OpenFile" shortcut="Ctrl+O" mac="Cmd+O" />
@@ -648,7 +658,7 @@
   <menus>
     <!-- main bar menu -->
     <menu id="main_menu">
-      <menu text="@.file">
+      <menu text="@.file" id="file_menu">
         <item command="NewFile" text="@.file_new" group="file_new" />
         <item command="OpenFile" text="@.file_open" group="file_open" />
         <menu text="@.file_open_recent" group="file_recent">
@@ -677,7 +687,7 @@
         <separator group="file_app" />
         <item command="Exit" text="@.file_exit" />
       </menu>
-      <menu text="@.edit">
+      <menu text="@.edit" id="edit_menu">
         <item command="Undo" text="@.edit_undo" />
         <item command="Redo" text="@.edit_redo" />
         <item command="UndoHistory" text="@.edit_undo_history" group="edit_undo" />
@@ -777,7 +787,7 @@
         <item command="KeyboardShortcuts" text="@.edit_keyboard_shortcuts" />
         <item command="Options" text="@.edit_preferences" />
       </menu>
-      <menu text="@.sprite">
+      <menu text="@.sprite" id="sprite_menu">
         <item command="SpriteProperties" text="@.sprite_properties" group="sprite_properties" />
         <menu text="@.sprite_color_mode" group="sprite_color">
           <item command="ChangePixelFormat" text="@.sprite_color_mode_rgb">
@@ -824,7 +834,7 @@
         <item command="CropSprite" text="@.sprite_crop" />
         <item command="AutocropSprite" text="@.sprite_trim" group="sprite_crop" />
       </menu>
-      <menu text="@.layer">
+      <menu text="@.layer" id="layer_menu">
         <item command="LayerProperties" text="@.layer_properties" />
         <item command="LayerVisibility" text="@.layer_visible" />
         <item command="LayerLock" text="@.layer_lock_layers" />
@@ -873,7 +883,7 @@
           <param name="visibleOnly" value="true" />
         </item>
       </menu>
-      <menu text="@.frame">
+      <menu text="@.frame" id="frame_menu">
         <item command="FrameProperties" text="@.frame_properties">
           <param name="frame" value="current" />
         </item>
@@ -915,7 +925,7 @@
         </item>
         <item command="ReverseFrames" text="@.frame_reverse_frames" group="cel_frames" />
       </menu>
-      <menu text="@.select">
+      <menu text="@.select" id="select_menu">
         <item command="MaskAll" text="@.select_all" />
         <item command="DeselectMask" text="@.select_deselect" />
         <item command="ReselectMask" text="@.select_reselect" />
@@ -937,7 +947,7 @@
         <item command="LoadMask" text="@.select_load_from_file" />
         <item command="SaveMask" text="@.select_save_to_file" group="select_files" />
       </menu>
-      <menu text="@.view">
+      <menu text="@.view" id="view_menu">
         <item command="DuplicateView" text="@.view_duplicate_view" group="view_new" />
         <separator />
         <item command="ShowExtras" text="@.view_show_extras" />
