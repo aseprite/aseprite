@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -23,18 +23,22 @@
 #include "ui/size_hint_event.h"
 #include "ui/system.h"
 #include "ui/theme.h"
+#include "ui/timer.h"
 #include "ui/widget.h"
 
 #include <algorithm>
 #include <cctype>
 #include <cstdarg>
 #include <cstdio>
+#include <memory>
 
 namespace ui {
 
+// Shared timer between all entries.
+static std::unique_ptr<Timer> s_timer;
+
 Entry::Entry(const int maxsize, const char* format, ...)
   : Widget(kEntryWidget)
-  , m_timer(500, this)
   , m_maxsize(maxsize)
   , m_caret(0)
   , m_scroll(0)
@@ -71,6 +75,7 @@ Entry::Entry(const int maxsize, const char* format, ...)
 
 Entry::~Entry()
 {
+  stopTimer();
 }
 
 void Entry::setMaxTextLength(const int maxsize)
@@ -92,14 +97,14 @@ void Entry::showCaret()
 {
   m_hidden = false;
   if (shouldStartTimer(hasFocus()))
-    m_timer.start();
+    startTimer();
   invalidate();
 }
 
 void Entry::hideCaret()
 {
   m_hidden = true;
-  m_timer.stop();
+  stopTimer();
   invalidate();
 }
 
@@ -135,7 +140,7 @@ void Entry::setCaretPos(int pos)
   }
 
   if (shouldStartTimer(hasFocus()))
-    m_timer.start();
+    startTimer();
   m_state = true;
 
   invalidate();
@@ -195,10 +200,18 @@ Entry::Range Entry::selectedRange() const
 
 void Entry::setSuffix(const std::string& suffix)
 {
-  if (m_suffix != suffix) {
-    m_suffix = suffix;
-    invalidate();
-  }
+  // No-op cases
+  if ((!m_suffix && suffix.empty()) ||
+      (m_suffix && *m_suffix == suffix))
+    return;
+
+  m_suffix = std::make_unique<std::string>(suffix);
+  invalidate();
+}
+
+std::string Entry::getSuffix()
+{
+  return (m_suffix ? *m_suffix: std::string());
 }
 
 void Entry::setTranslateDeadKeys(bool state)
@@ -224,16 +237,16 @@ bool Entry::onProcessMessage(Message* msg)
   switch (msg->type()) {
 
     case kTimerMessage:
-      if (hasFocus() && static_cast<TimerMessage*>(msg)->timer() == &m_timer) {
+      if (hasFocus() && static_cast<TimerMessage*>(msg)->timer() == s_timer.get()) {
         // Blinking caret
-        m_state = m_state ? false: true;
+        m_state = (m_state ? false: true);
         invalidate();
       }
       break;
 
     case kFocusEnterMessage:
       if (shouldStartTimer(true))
-        m_timer.start();
+        startTimer();
 
       m_state = true;
       invalidate();
@@ -254,7 +267,7 @@ bool Entry::onProcessMessage(Message* msg)
     case kFocusLeaveMessage:
       invalidate();
 
-      m_timer.stop();
+      stopTimer();
 
       if (!m_lock_selection)
         deselectText();
@@ -399,7 +412,7 @@ bool Entry::onProcessMessage(Message* msg)
         // Show the caret
         if (is_dirty) {
           if (shouldStartTimer(true))
-            m_timer.start();
+            startTimer();
           m_state = true;
         }
 
@@ -887,6 +900,22 @@ void Entry::deleteRange(const Range& range, std::string& text)
   text.erase(m_boxes[range.from].from,
              m_boxes[range.to-1].to - m_boxes[range.from].from);
   m_caret = range.from;
+}
+
+void Entry::startTimer()
+{
+  if (s_timer)
+    s_timer->stop();
+  s_timer = std::make_unique<Timer>(500, this);
+  s_timer->start();
+}
+
+void Entry::stopTimer()
+{
+  if (s_timer) {
+    s_timer->stop();
+    s_timer.reset();
+  }
 }
 
 } // namespace ui

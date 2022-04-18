@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -10,8 +10,9 @@
 #pragma once
 
 #include "obs/signal.h"
-#include "ui/timer.h"
 #include "ui/widget.h"
+
+#include <memory>
 
 namespace ui {
 
@@ -49,7 +50,7 @@ namespace ui {
     Range selectedRange() const;
 
     void setSuffix(const std::string& suffix);
-    const std::string& getSuffix() { return m_suffix; }
+    std::string getSuffix();
 
     void setTranslateDeadKeys(bool state);
 
@@ -103,6 +104,8 @@ namespace ui {
     void recalcCharBoxes(const std::string& text);
     bool shouldStartTimer(const bool hasFocus);
     void deleteRange(const Range& range, std::string& text);
+    void startTimer();
+    void stopTimer();
 
     class CalcBoxesTextDelegate;
 
@@ -113,21 +116,20 @@ namespace ui {
       CharBox() { codepoint = from = to = width = 0; }
     };
 
-    typedef std::vector<CharBox> CharBoxes;
+    using CharBoxes = std::vector<CharBox>;
 
     CharBoxes m_boxes;
-    Timer m_timer;
     int m_maxsize;
     int m_caret;
     int m_scroll;
     int m_select;
-    bool m_hidden;
-    bool m_state;             // show or not the text caret
-    bool m_readonly;
-    bool m_recent_focused;
-    bool m_lock_selection;
-    bool m_translate_dead_keys;
-    std::string m_suffix;
+    bool m_hidden : 1;
+    bool m_state : 1;             // show or not the text caret
+    bool m_readonly : 1;
+    bool m_recent_focused : 1;
+    bool m_lock_selection : 1;
+    bool m_translate_dead_keys : 1;
+    std::unique_ptr<std::string> m_suffix;
   };
 
 } // namespace ui
