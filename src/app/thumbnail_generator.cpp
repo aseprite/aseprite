@@ -250,10 +250,8 @@ bool ThumbnailGenerator::checkWorkers()
 
   for (WorkerList::iterator
          it=m_workers.begin(); it != m_workers.end(); ) {
-    Worker* worker = *it;
-    worker->updateProgress();
-    if (worker->isDone()) {
-      delete worker;
+    (*it)->updateProgress();
+    if ((*it)->isDone()) {
       it = m_workers.erase(it);
     }
     else {
@@ -334,7 +332,7 @@ void ThumbnailGenerator::stopAllWorkers()
   }
 
   base::scoped_lock hold(m_workersAccess);
-  for (auto worker : m_workers)
+  for (const auto& worker : m_workers)
     worker->stop();
 }
 
@@ -342,9 +340,7 @@ void ThumbnailGenerator::startWorker()
 {
   base::scoped_lock hold(m_workersAccess);
   if (m_workers.size() < m_maxWorkers) {
-    std::unique_ptr<Worker> worker(new Worker(m_remainingItems));
-    m_workers.push_back(worker.get());
-    worker.release();
+    m_workers.push_back(std::make_unique<Worker>(m_remainingItems));
   }
 }
 

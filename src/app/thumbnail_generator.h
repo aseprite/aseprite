@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -47,7 +47,8 @@ namespace app {
     void startWorker();
 
     class Worker;
-    typedef std::vector<Worker*> WorkerList;
+    using WorkerPtr = std::unique_ptr<Worker>;
+    using WorkerList = std::vector<WorkerPtr>;
 
     struct Item {
       IFileItem* fileitem;
