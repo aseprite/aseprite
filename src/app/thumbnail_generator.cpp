@@ -28,6 +28,7 @@
 #include "os/system.h"
 #include "render/projection.h"
 #include "render/render.h"
+#include "ui/system.h"
 
 #include <algorithm>
 #include <atomic>
@@ -221,19 +222,17 @@ private:
   base::thread m_thread;
 };
 
-static void delete_singleton(ThumbnailGenerator* singleton)
-{
-  delete singleton;
-}
-
 ThumbnailGenerator* ThumbnailGenerator::instance()
 {
-  static ThumbnailGenerator* singleton = nullptr;
-  if (singleton == NULL) {
-    singleton = new ThumbnailGenerator();
-    App::instance()->Exit.connect([&]{ delete_singleton(singleton); });
+  static std::unique_ptr<ThumbnailGenerator> singleton;
+  ui::assert_ui_thread();
+  if (!singleton) {
+    // We cannot use std::make_unique() because ThumbnailGenerator
+    // ctor is private.
+    singleton.reset(new ThumbnailGenerator);
+    App::instance()->Exit.connect([&]{ singleton.reset(); });
   }
-  return singleton;
+  return singleton.get();
 }
 
 ThumbnailGenerator::ThumbnailGenerator()
