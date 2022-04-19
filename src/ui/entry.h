@@ -22,8 +22,11 @@ namespace ui {
   public:
     struct Range {
       int from = -1, to = -1;
+      Range() { }
+      Range(int from, int to) : from(from), to(to) { }
       bool isEmpty() const { return from < 0; }
       int size() const { return to - from; }
+      void reset() { from = to = -1; }
     };
 
     Entry(const int maxsize, const char *format, ...);
@@ -99,6 +102,7 @@ namespace ui {
     void executeCmd(EntryCmd cmd, int ascii, bool shift_pressed);
     void forwardWord();
     void backwardWord();
+    Range wordRange(int pos);
     bool isPosInSelection(int pos);
     void showEditPopupMenu(const gfx::Point& pt);
     void recalcCharBoxes(const std::string& text);
@@ -129,6 +133,7 @@ namespace ui {
     bool m_recent_focused : 1;
     bool m_lock_selection : 1;
     bool m_translate_dead_keys : 1;
+    Range m_selecting_words;
     std::unique_ptr<std::string> m_suffix;
   };
 

@@ -37,6 +37,10 @@ namespace ui {
 // Shared timer between all entries.
 static std::unique_ptr<Timer> s_timer;
 
+static inline bool is_word_char(int ch) {
+  return (ch && !std::isspace(ch) && !std::ispunct(ch));
+}
+
 Entry::Entry(const int maxsize, const char* format, ...)
   : Widget(kEntryWidget)
   , m_maxsize(maxsize)
@@ -387,6 +391,11 @@ bool Entry::onProcessMessage(Message* msg)
     case kMouseDownMessage:
       captureMouse();
 
+      // Disable selecting words if we click again (only
+      // double-clicking enables selecting words again).
+      if (!m_selecting_words.isEmpty())
+        m_selecting_words.reset();
+
     case kMouseMoveMessage:
       if (hasCapture()) {
         bool is_dirty = false;
@@ -405,8 +414,22 @@ bool Entry::onProcessMessage(Message* msg)
             m_recent_focused = false;
             m_select = m_caret;
           }
-          else if (msg->type() == kMouseDownMessage)
+          // Deselect
+          else if (msg->type() == kMouseDownMessage) {
             m_select = m_caret;
+          }
+          // Continue selecting words
+          else if (!m_selecting_words.isEmpty()) {
+            Range toWord = wordRange(m_caret);
+            if (toWord.from < m_selecting_words.from) {
+              m_select = std::max(m_selecting_words.to, toWord.to);
+              setCaretPos(std::min(m_selecting_words.from, toWord.from));
+            }
+            else {
+              m_select = std::min(m_selecting_words.from, toWord.from);
+              setCaretPos(std::max(m_selecting_words.to, toWord.to));
+            }
+          }
         }
 
         // Show the caret
@@ -424,6 +447,9 @@ bool Entry::onProcessMessage(Message* msg)
       if (hasCapture()) {
         releaseMouse();
 
+        if (!m_selecting_words.isEmpty())
+          m_selecting_words.reset();
+
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
         if (mouseMsg->right()) {
           // This flag is disabled in kFocusEnterMessage message handler.
@@ -436,10 +462,11 @@ bool Entry::onProcessMessage(Message* msg)
       return true;
 
     case kDoubleClickMessage:
-      forwardWord();
-      m_select = m_caret;
-      backwardWord();
-      invalidate();
+      m_selecting_words = wordRange(m_caret);
+      selectText(m_selecting_words.from, m_selecting_words.to);
+
+      // Capture mouse to continue selecting words on kMouseMoveMessage
+      captureMouse();
       return true;
 
     case kMouseEnterMessage:
@@ -760,43 +787,30 @@ void Entry::executeCmd(EntryCmd cmd, int unicodeChar, bool shift_pressed)
   invalidate();
 }
 
-#define IS_WORD_CHAR(ch)                                \
-  (!((!ch) || (std::isspace(ch)) ||                     \
-    ((ch) == '/') || ((ch) == '\\')))
-
 void Entry::forwardWord()
 {
   int textlen = lastCaretPos();
-  int ch;
 
   for (; m_caret < textlen; ++m_caret) {
-    ch = m_boxes[m_caret].codepoint;
-    if (IS_WORD_CHAR(ch))
+    if (is_word_char(m_boxes[m_caret].codepoint))
       break;
   }
 
   for (; m_caret < textlen; ++m_caret) {
-    ch = m_boxes[m_caret].codepoint;
-    if (!IS_WORD_CHAR(ch)) {
-      ++m_caret;
+    if (!is_word_char(m_boxes[m_caret].codepoint))
       break;
-    }
   }
 }
 
 void Entry::backwardWord()
 {
-  int ch;
-
   for (--m_caret; m_caret >= 0; --m_caret) {
-    ch = m_boxes[m_caret].codepoint;
-    if (IS_WORD_CHAR(ch))
+    if (is_word_char(m_boxes[m_caret].codepoint))
       break;
   }
 
   for (; m_caret >= 0; --m_caret) {
-    ch = m_boxes[m_caret].codepoint;
-    if (!IS_WORD_CHAR(ch)) {
+    if (!is_word_char(m_boxes[m_caret].codepoint)) {
       ++m_caret;
       break;
     }
@@ -804,6 +818,41 @@ void Entry::backwardWord()
 
   if (m_caret < 0)
     m_caret = 0;
+}
+
+Entry::Range Entry::wordRange(int pos)
+{
+  const int last = lastCaretPos();
+  pos = base::clamp(pos, 0, last);
+
+  int i, j;
+  i = j = pos;
+
+  // Select word space
+  if (is_word_char(m_boxes[pos].codepoint)) {
+    for (; i>=0; --i) {
+      if (!is_word_char(m_boxes[i].codepoint))
+        break;
+    }
+    ++i;
+    for (; j<=last; ++j) {
+      if (!is_word_char(m_boxes[j].codepoint))
+        break;
+    }
+  }
+  // Select punctuation space
+  else {
+    for (; i>=0; --i) {
+      if (is_word_char(m_boxes[i].codepoint))
+        break;
+    }
+    ++i;
+    for (; j<=last; ++j) {
+      if (is_word_char(m_boxes[j].codepoint))
+        break;
+    }
+  }
+  return Range(i, j);
 }
 
 bool Entry::isPosInSelection(int pos)
