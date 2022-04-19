@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -199,8 +199,14 @@ private:
 
   void loadBgThread() {
     while (!m_queue.empty()) {
-      while (m_queue.try_pop(m_item)) {
-        loadItem();
+      bool success = true;
+      while (success) {
+        {
+          base::scoped_lock lock(m_mutex); // To access m_item
+          success = m_queue.try_pop(m_item);
+        }
+        if (success)
+          loadItem();
       }
       base::this_thread::yield();
     }
