@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2022 Igara Studo S.A.
 // Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -191,6 +192,9 @@ TEST(Remap, BetweenPalettesDontChangeMaskForced)
 
 TEST(Remap, BetweenPalettesNonInvertible)
 {
+  // create_remap_to_change_palette() uses findBestfit()
+  doc::Palette::initBestfit();
+
   Palette a(frame_t(0), 4);
   Palette b(frame_t(0), 3);
 

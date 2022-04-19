@@ -22,6 +22,8 @@ namespace doc {
 
   class Palette : public Object {
   public:
+    static void initBestfit();
+
     Palette(frame_t frame, int ncolors);
     Palette(const Palette& palette);
     Palette(const Palette& palette, const Remap& remap);
