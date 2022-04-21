@@ -16,6 +16,7 @@
 #include "base/clamp.h"
 #include "base/memory.h"
 #include "base/string.h"
+#include "base/utf8_decode.h"
 #include "os/font.h"
 #include "os/surface.h"
 #include "os/system.h"
@@ -1400,19 +1401,18 @@ void Widget::processMnemonicFromText(int escapeChar)
   if (!m_text.empty())
     newText.reserve(m_text.size());
 
-  for (base::utf8_const_iterator
-         it(m_text.begin()),
-         end(m_text.end()); it != end; ++it) {
-    if (*it == escapeChar) {
-      ++it;
-      if (it == end) {
+  base::utf8_decode decode(m_text);
+  while (int chr = decode.next()) {
+    if (chr == escapeChar) {
+      chr = decode.next();
+      if (!chr) {
         break;    // Ill-formed string (it ends with escape character)
       }
-      else if (*it != escapeChar) {
-        setMnemonic(*it);
+      else if (chr != escapeChar) {
+        setMnemonic(chr);
       }
     }
-    newText.push_back(*it);
+    newText.push_back(chr);
   }
 
   setText(base::to_utf8(newText));

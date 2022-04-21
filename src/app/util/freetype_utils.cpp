@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -47,52 +48,49 @@ doc::Image* render_text(const std::string& fontfile, int fontsize,
       image.reset(doc::Image::create(doc::IMAGE_RGB, bounds.w, bounds.h));
       doc::clear_image(image.get(), 0);
 
-      ft::ForEachGlyph<ft::Face> feg(face);
-      if (feg.initialize(base::utf8_const_iterator(text.begin()),
-                         base::utf8_const_iterator(text.end()))) {
-        do {
-          auto glyph = feg.glyph();
-          if (!glyph)
-            continue;
+      ft::ForEachGlyph<ft::Face> feg(face, text);
+      while (feg.next()) {
+        auto glyph = feg.glyph();
+        if (!glyph)
+          continue;
 
-          int t, yimg = - bounds.y + int(glyph->y);
+        int t, yimg = - bounds.y + int(glyph->y);
 
-          for (int v=0; v<int(glyph->bitmap->rows); ++v, ++yimg) {
-            const uint8_t* p = glyph->bitmap->buffer + v*glyph->bitmap->pitch;
-            int ximg = - bounds.x + int(glyph->x);
-            int bit = 0;
+        for (int v=0; v<int(glyph->bitmap->rows); ++v, ++yimg) {
+          const uint8_t* p = glyph->bitmap->buffer + v*glyph->bitmap->pitch;
+          int ximg = - bounds.x + int(glyph->x);
+          int bit = 0;
 
-            for (int u=0; u<int(glyph->bitmap->width); ++u, ++ximg) {
-              int alpha;
+          for (int u=0; u<int(glyph->bitmap->width); ++u, ++ximg) {
+            int alpha;
 
-              if (antialias) {
-                alpha = *(p++);
-              }
-              else {
-                alpha = ((*p) & (1 << (7 - (bit++))) ? 255: 0);
-                if (bit == 8) {
-                  bit = 0;
-                  ++p;
-                }
-              }
-
-              int output_alpha = MUL_UN8(doc::rgba_geta(color), alpha, t);
-              if (output_alpha) {
-                doc::color_t output_color =
-                  doc::rgba(doc::rgba_getr(color),
-                            doc::rgba_getg(color),
-                            doc::rgba_getb(color),
-                            output_alpha);
-
-                doc::put_pixel(
-                  image.get(), ximg, yimg,
-                  doc::rgba_blender_normal(
-                    doc::get_pixel(image.get(), ximg, yimg),
-                    output_color));
+            if (antialias) {
+              alpha = *(p++);
+            }
+            else {
+              alpha = ((*p) & (1 << (7 - (bit++))) ? 255: 0);
+              if (bit == 8) {
+                bit = 0;
+                ++p;
               }
             }
+
+            int output_alpha = MUL_UN8(doc::rgba_geta(color), alpha, t);
+            if (output_alpha) {
+              doc::color_t output_color =
+                doc::rgba(doc::rgba_getr(color),
+                          doc::rgba_getg(color),
+                          doc::rgba_getb(color),
+                          output_alpha);
+
+              doc::put_pixel(
+                image.get(), ximg, yimg,
+                doc::rgba_blender_normal(
+                  doc::get_pixel(image.get(), ximg, yimg),
+                  output_color));
+            }
           }
-        } while (feg.nextChar());
+        }
       }
     }
     else {

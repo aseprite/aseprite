@@ -922,9 +922,7 @@ void Entry::recalcCharBoxes(const std::string& text)
 {
   int lastTextIndex = int(text.size());
   CalcBoxesTextDelegate delegate(lastTextIndex);
-  os::draw_text(nullptr, font(),
-                 base::utf8_const_iterator(text.begin()),
-                 base::utf8_const_iterator(text.end()),
+  os::draw_text(nullptr, font(), text,
                  gfx::ColorNone, gfx::ColorNone, 0, 0, &delegate);
   m_boxes = delegate.boxes();
 

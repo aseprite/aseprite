@@ -29,6 +29,7 @@
 #include "base/fs.h"
 #include "base/log.h"
 #include "base/string.h"
+#include "base/utf8_decode.h"
 #include "gfx/border.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
@@ -1131,14 +1132,13 @@ void SkinTheme::drawEntryText(ui::Graphics* g, ui::Entry* widget)
   int scroll = delegate.index();
 
   const std::string& textString = widget->text();
-  base::utf8_const_iterator utf8_it((textString.begin()));
-  int textlen = base::utf8_length(textString);
-  scroll = std::min(scroll, textlen);
-  if (scroll)
-    utf8_it += scroll;
+  base::utf8_decode dec(textString);
+  auto pos = dec.pos();
+  for (int i=0; i<scroll && dec.next(); ++i)
+    pos = dec.pos();
 
-  g->drawText(utf8_it,
-              base::utf8_const_iterator(textString.end()),
+  // TODO use a string_view()
+  g->drawText(std::string(pos, textString.end()),
               colors.text(), ColorNone,
               bounds.origin(), &delegate);
 
