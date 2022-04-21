@@ -10,9 +10,9 @@
 #pragma once
 
 #include "base/concurrent_queue.h"
-#include "base/mutex.h"
 
 #include <memory>
+#include <mutex>
 #include <vector>
 
 namespace base {
@@ -62,8 +62,7 @@ namespace app {
 
     int m_maxWorkers;
     WorkerList m_workers;
-    base::mutex m_workersAccess;
-    std::unique_ptr<base::thread> m_stopThread;
+    std::mutex m_workersAccess;
     base::concurrent_queue<Item> m_remainingItems;
   };
 

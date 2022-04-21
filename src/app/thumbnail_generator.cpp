@@ -18,7 +18,6 @@
 #include "app/file_system.h"
 #include "app/util/conversion_to_surface.h"
 #include "base/clamp.h"
-#include "base/scoped_lock.h"
 #include "base/thread.h"
 #include "doc/algorithm/rotate.h"
 #include "doc/image.h"
@@ -51,7 +50,7 @@ public:
 
   ~Worker() {
     {
-      base::scoped_lock lock(m_mutex);
+      std::lock_guard<std::mutex> lock(m_mutex);
       if (m_fop)
         m_fop->stop();
     }
@@ -59,7 +58,7 @@ public:
   }
 
   void stop() const {
-    base::scoped_lock lock(m_mutex);
+    std::lock_guard<std::mutex> lock(m_mutex);
     if (m_fop)
       m_fop->stop();
   }
@@ -69,7 +68,7 @@ public:
   }
 
   void updateProgress() {
-    base::scoped_lock lock(m_mutex);
+    std::lock_guard<std::mutex> lock(m_mutex);
     if (m_item.fileitem && m_item.fop) {
       double progress = m_item.fop->progress();
       if (progress > m_item.fileitem->getThumbnailProgress())
@@ -82,7 +81,7 @@ private:
     ASSERT(!m_fop);
     try {
       {
-        base::scoped_lock lock(m_mutex);
+        std::lock_guard<std::mutex> lock(m_mutex);
         m_fop = m_item.fop;
         ASSERT(m_fop);
       }
@@ -169,7 +168,7 @@ private:
           0, 0, 0, 0, thumbnailImage->width(), thumbnailImage->height());
 
         {
-          base::scoped_lock lock(m_mutex);
+          std::lock_guard<std::mutex> lock(m_mutex);
           m_item.fileitem->setThumbnail(thumbnail);
         }
       }
@@ -181,7 +180,7 @@ private:
       // Reset the m_item (first the fileitem so this worker is not
       // associated to this fileitem anymore, and then the FileOp).
       {
-        base::scoped_lock lock(m_mutex);
+        std::lock_guard<std::mutex> lock(m_mutex);
         m_item.fileitem = nullptr;
       }
     }
@@ -190,7 +189,7 @@ private:
     }
     m_fop->done();
     {
-      base::scoped_lock lock(m_mutex);
+      std::lock_guard<std::mutex> lock(m_mutex);
       m_item.fop = nullptr;
       delete m_fop;
       m_fop = nullptr;
@@ -203,7 +202,7 @@ private:
       bool success = true;
       while (success) {
         {
-          base::scoped_lock lock(m_mutex); // To access m_item
+          std::lock_guard<std::mutex> lock(m_mutex); // To access m_item
           success = m_queue.try_pop(m_item);
         }
         if (success)
@@ -217,9 +216,9 @@ private:
   base::concurrent_queue<Item>& m_queue;
   app::ThumbnailGenerator::Item m_item;
   FileOp* m_fop;
-  mutable base::mutex m_mutex;
+  mutable std::mutex m_mutex;
   std::atomic<bool> m_isDone;
-  base::thread m_thread;
+  std::thread m_thread;
 };
 
 ThumbnailGenerator* ThumbnailGenerator::instance()
@@ -244,7 +243,7 @@ ThumbnailGenerator::ThumbnailGenerator()
 
 bool ThumbnailGenerator::checkWorkers()
 {
-  base::scoped_lock hold(m_workersAccess);
+  std::lock_guard<std::mutex> hold(m_workersAccess);
   bool doingWork = (!m_workers.empty());
 
   for (WorkerList::iterator
@@ -330,14 +329,14 @@ void ThumbnailGenerator::stopAllWorkers()
     }
   }
 
-  base::scoped_lock hold(m_workersAccess);
+  std::lock_guard<std::mutex> hold(m_workersAccess);
   for (const auto& worker : m_workers)
     worker->stop();
 }
 
 void ThumbnailGenerator::startWorker()
 {
-  base::scoped_lock hold(m_workersAccess);
+  std::lock_guard<std::mutex> hold(m_workersAccess);
   if (m_workers.size() < m_maxWorkers) {
     m_workers.push_back(std::make_unique<Worker>(m_remainingItems));
   }
