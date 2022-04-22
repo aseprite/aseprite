@@ -31,6 +31,8 @@ namespace app {
     std::string commonPath;
   };
 
+  enum DeletePluginPref { kNo, kYes };
+
   class Extension {
     friend class Extensions;
   public:
@@ -113,8 +115,9 @@ namespace app {
 
   private:
     void enable(const bool state);
-    void uninstall();
-    void uninstallFiles(const std::string& path);
+    void uninstall(const DeletePluginPref delPref);
+    void uninstallFiles(const std::string& path,
+                        const DeletePluginPref delPref);
     bool isCurrentTheme() const;
     bool isDefaultTheme() const;
     void updateCategory(const Category newCategory);
@@ -172,7 +175,8 @@ namespace app {
     iterator end() { return m_extensions.end(); }
 
     void enableExtension(Extension* extension, const bool state);
-    void uninstallExtension(Extension* extension);
+    void uninstallExtension(Extension* extension,
+                            const DeletePluginPref delPref);
     ExtensionInfo getCompressedExtensionInfo(const std::string& zipFn);
     Extension* installCompressedExtension(const std::string& zipFn,
                                           const ExtensionInfo& info);
