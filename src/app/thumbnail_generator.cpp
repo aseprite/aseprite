@@ -176,17 +176,26 @@ private:
       THUMB_TRACE("FOP done with thumbnail: %s %s\n",
                   m_item.fileitem->fileName().c_str(),
                   (m_fop->isStop() ? " (stop)": ""));
-
-      // Reset the m_item (first the fileitem so this worker is not
-      // associated to this fileitem anymore, and then the FileOp).
-      {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        m_item.fileitem = nullptr;
-      }
     }
     catch (const std::exception& e) {
       m_fop->setError("Error loading file:\n%s", e.what());
     }
+
+    if (!m_fop->isStop()) {
+      // Set a nullptr thumbnail if we failed loading the given file,
+      // in this way we're not going to re-try generating this same
+      // thumbnail.
+      if (m_item.fileitem->needThumbnail())
+        m_item.fileitem->setThumbnail(nullptr);
+    }
+
+    // Reset the m_item (first the fileitem so this worker is not
+    // associated to this fileitem anymore, and then the FileOp).
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_item.fileitem = nullptr;
+    }
+
     m_fop->done();
     {
       std::lock_guard<std::mutex> lock(m_mutex);
@@ -262,8 +271,7 @@ bool ThumbnailGenerator::checkWorkers()
 
 void ThumbnailGenerator::generateThumbnail(IFileItem* fileitem)
 {
-  if (fileitem->isBrowsable() ||
-      fileitem->getThumbnail())
+  if (!fileitem->needThumbnail())
     return;
 
   if (fileitem->getThumbnailProgress() > 0.0) {
@@ -302,11 +310,12 @@ void ThumbnailGenerator::generateThumbnail(IFileItem* fileitem)
       fileitem->fileName().c_str(),
       FILE_LOAD_SEQUENCE_NONE |
       FILE_LOAD_ONE_FRAME));
-  if (!fop)
+  if (!fop || fop->hasError()) {
+    // Set a nullptr thumbnail so we don't try to generate a thumbnail
+    // for this fileitem again.
+    fileitem->setThumbnail(nullptr);
     return;
-
-  if (fop->hasError())
-    return;
+  }
 
   m_remainingItems.push(Item(fileitem, fop.get()));
   fop.release();
