@@ -373,8 +373,7 @@ void Graphics::setFont(const os::FontRef& font)
   m_font = font;
 }
 
-void Graphics::drawText(base::utf8_const_iterator it,
-                        const base::utf8_const_iterator& end,
+void Graphics::drawText(const std::string& str,
                         gfx::Color fg, gfx::Color bg,
                         const gfx::Point& origPt,
                         os::DrawTextDelegate* delegate)
@@ -383,16 +382,9 @@ void Graphics::drawText(base::utf8_const_iterator it,
 
   os::SurfaceLock lock(m_surface.get());
   gfx::Rect textBounds =
-    os::draw_text(m_surface.get(), m_font.get(), it, end, fg, bg, pt.x, pt.y, delegate);
+    os::draw_text(m_surface.get(), m_font.get(), str, fg, bg, pt.x, pt.y, delegate);
 
   dirty(gfx::Rect(pt.x, pt.y, textBounds.w, textBounds.h));
-}
-
-void Graphics::drawText(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Point& pt)
-{
-  drawText(base::utf8_const_iterator(str.begin()),
-           base::utf8_const_iterator(str.end()),
-           fg, bg, pt, nullptr);
 }
 
 namespace {
@@ -468,10 +460,8 @@ void Graphics::drawUIText(const std::string& str, gfx::Color fg, gfx::Color bg,
   int y = m_dy+pt.y;
 
   DrawUITextDelegate delegate(m_surface.get(), m_font.get(), mnemonic);
-  os::draw_text(m_surface.get(), m_font.get(),
-                 base::utf8_const_iterator(str.begin()),
-                 base::utf8_const_iterator(str.end()),
-                 fg, bg, x, y, &delegate);
+  os::draw_text(m_surface.get(), m_font.get(), str,
+                fg, bg, x, y, &delegate);
 
   dirty(delegate.bounds());
 }
@@ -493,11 +483,9 @@ gfx::Size Graphics::measureUIText(const std::string& str)
 int Graphics::measureUITextLength(const std::string& str, os::Font* font)
 {
   DrawUITextDelegate delegate(nullptr, font, 0);
-  os::draw_text(nullptr, font,
-                 base::utf8_const_iterator(str.begin()),
-                 base::utf8_const_iterator(str.end()),
-                 gfx::ColorNone, gfx::ColorNone, 0, 0,
-                 &delegate);
+  os::draw_text(nullptr, font, str,
+                gfx::ColorNone, gfx::ColorNone, 0, 0,
+                &delegate);
   return delegate.bounds().w;
 }
 

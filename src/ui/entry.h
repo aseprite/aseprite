@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -10,8 +10,9 @@
 #pragma once
 
 #include "obs/signal.h"
-#include "ui/timer.h"
 #include "ui/widget.h"
+
+#include <memory>
 
 namespace ui {
 
@@ -21,8 +22,11 @@ namespace ui {
   public:
     struct Range {
       int from = -1, to = -1;
+      Range() { }
+      Range(int from, int to) : from(from), to(to) { }
       bool isEmpty() const { return from < 0; }
       int size() const { return to - from; }
+      void reset() { from = to = -1; }
     };
 
     Entry(const int maxsize, const char *format, ...);
@@ -49,7 +53,7 @@ namespace ui {
     Range selectedRange() const;
 
     void setSuffix(const std::string& suffix);
-    const std::string& getSuffix() { return m_suffix; }
+    std::string getSuffix();
 
     void setTranslateDeadKeys(bool state);
 
@@ -98,11 +102,14 @@ namespace ui {
     void executeCmd(EntryCmd cmd, int ascii, bool shift_pressed);
     void forwardWord();
     void backwardWord();
+    Range wordRange(int pos);
     bool isPosInSelection(int pos);
     void showEditPopupMenu(const gfx::Point& pt);
     void recalcCharBoxes(const std::string& text);
     bool shouldStartTimer(const bool hasFocus);
     void deleteRange(const Range& range, std::string& text);
+    void startTimer();
+    void stopTimer();
 
     class CalcBoxesTextDelegate;
 
@@ -113,21 +120,21 @@ namespace ui {
       CharBox() { codepoint = from = to = width = 0; }
     };
 
-    typedef std::vector<CharBox> CharBoxes;
+    using CharBoxes = std::vector<CharBox>;
 
     CharBoxes m_boxes;
-    Timer m_timer;
     int m_maxsize;
     int m_caret;
     int m_scroll;
     int m_select;
-    bool m_hidden;
-    bool m_state;             // show or not the text caret
-    bool m_readonly;
-    bool m_recent_focused;
-    bool m_lock_selection;
-    bool m_translate_dead_keys;
-    std::string m_suffix;
+    bool m_hidden : 1;
+    bool m_state : 1;             // show or not the text caret
+    bool m_readonly : 1;
+    bool m_recent_focused : 1;
+    bool m_lock_selection : 1;
+    bool m_translate_dead_keys : 1;
+    Range m_selecting_words;
+    std::unique_ptr<std::string> m_suffix;
   };
 
 } // namespace ui

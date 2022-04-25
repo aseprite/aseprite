@@ -209,7 +209,8 @@ class OptionsWindow : public app::gen::Options {
     void uninstall() {
       ASSERT(m_extension);
       ASSERT(canBeUninstalled());
-      App::instance()->extensions().uninstallExtension(m_extension);
+      App::instance()->extensions().uninstallExtension(m_extension,
+                                                       DeletePluginPref::kYes);
       m_extension = nullptr;
     }
 
@@ -1546,7 +1547,7 @@ private:
 
         // Uninstall old version
         if (ext->canBeUninstalled()) {
-          exts.uninstallExtension(ext);
+          exts.uninstallExtension(ext, DeletePluginPref::kNo);
 
           ExtensionItem* item = getItemByExtension(ext);
           if (item)

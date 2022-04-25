@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -71,7 +71,7 @@ unsigned int current_file_system_version = 0;
 #endif
 
 // a position in the file-system
-class FileItem : public IFileItem {
+class FileItem final : public IFileItem {
 public:
   // TODO make all these fields private
   std::string m_keyname;
@@ -121,6 +121,13 @@ public:
   double getThumbnailProgress() override { return m_thumbnailProgress; }
   void setThumbnailProgress(double progress) override {
     m_thumbnailProgress = progress;
+  }
+
+  bool needThumbnail() const override {
+    return
+      !isBrowsable() &&
+      m_thumbnail == nullptr &&
+      m_thumbnailProgress < 1.0;
   }
 
   os::SurfaceRef getThumbnail() override;
@@ -593,6 +600,8 @@ os::SurfaceRef FileItem::getThumbnail()
 
 void FileItem::setThumbnail(const os::SurfaceRef& newThumbnail)
 {
+  m_thumbnailProgress = 1.0;
+
   if (newThumbnail)
     newThumbnail->ref();
   auto old = m_thumbnail.exchange(newThumbnail.get());

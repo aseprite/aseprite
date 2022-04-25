@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2020-2021  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -24,6 +24,8 @@ namespace doc {
 
   class Palette : public Object {
   public:
+    static void initBestfit();
+
     Palette();
     Palette(frame_t frame, int ncolors);
     Palette(const Palette& palette);

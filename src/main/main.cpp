@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -17,6 +17,7 @@
 #include "base/exception.h"
 #include "base/memory.h"
 #include "base/system_console.h"
+#include "doc/palette.h"
 #include "os/error.h"
 #include "os/system.h"
 #include "ver/info.h"
@@ -93,6 +94,7 @@ int app_main(int argc, char* argv[])
     base::SystemConsole systemConsole;
     app::AppOptions options(argc, const_cast<const char**>(argv));
     os::SystemRef system(os::make_system());
+    doc::Palette::initBestfit();
     app::App app;
 
 #if ENABLE_SENTRY

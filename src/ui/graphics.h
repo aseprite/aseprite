@@ -120,11 +120,10 @@ namespace ui {
     os::Font* font() { return m_font.get(); }
     void setFont(const os::FontRef& font);
 
-    void drawText(base::utf8_const_iterator it,
-                  const base::utf8_const_iterator& end,
-                  gfx::Color fg, gfx::Color bg, const gfx::Point& pt,
-                  os::DrawTextDelegate* delegate);
-    void drawText(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Point& pt);
+    void drawText(const std::string& str,
+                  gfx::Color fg, gfx::Color bg,
+                  const gfx::Point& pt,
+                  os::DrawTextDelegate* delegate = nullptr);
     void drawUIText(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Point& pt, const int mnemonic);
     void drawAlignedUIText(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Rect& rc, const int align);
 

@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2020-2021  Igara Studio S.A.
+// Copyright (c) 2020-2022  Igara Studio S.A.
 // Copyright (c) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -304,7 +304,7 @@ static uint32_t* col_diff_r;
 static uint32_t* col_diff_b;
 static uint32_t* col_diff_a;
 
-static void initBestfit()
+void Palette::initBestfit()
 {
   col_diff.resize(4*128, 0);
   col_diff_g = &col_diff[128*0];
@@ -327,9 +327,7 @@ int Palette::findBestfit(int r, int g, int b, int a, int mask_index) const
   ASSERT(g >= 0 && g <= 255);
   ASSERT(b >= 0 && b <= 255);
   ASSERT(a >= 0 && a <= 255);
-
-  if (col_diff.empty())
-    initBestfit();
+  ASSERT(!col_diff.empty());
 
   r >>= 3;
   g >>= 3;

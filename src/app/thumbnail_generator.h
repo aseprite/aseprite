@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -10,9 +10,9 @@
 #pragma once
 
 #include "base/concurrent_queue.h"
-#include "base/mutex.h"
 
 #include <memory>
+#include <mutex>
 #include <vector>
 
 namespace base {
@@ -47,7 +47,8 @@ namespace app {
     void startWorker();
 
     class Worker;
-    typedef std::vector<Worker*> WorkerList;
+    using WorkerPtr = std::unique_ptr<Worker>;
+    using WorkerList = std::vector<WorkerPtr>;
 
     struct Item {
       IFileItem* fileitem;
@@ -61,8 +62,7 @@ namespace app {
 
     int m_maxWorkers;
     WorkerList m_workers;
-    base::mutex m_workersAccess;
-    std::unique_ptr<base::thread> m_stopThread;
+    std::mutex m_workersAccess;
     base::concurrent_queue<Item> m_remainingItems;
   };
 
