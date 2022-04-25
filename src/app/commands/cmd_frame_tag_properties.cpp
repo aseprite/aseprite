@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -21,11 +21,12 @@
 #include "app/loop_tag.h"
 #include "app/tx.h"
 #include "app/ui/tag_window.h"
+#include "app/ui/timeline/timeline.h"
 #include "base/convert_to.h"
 #include "doc/anidir.h"
 #include "doc/sprite.h"
-#include "doc/user_data.h"
 #include "doc/tag.h"
+#include "doc/user_data.h"
 
 namespace app {
 
@@ -109,8 +110,20 @@ void FrameTagPropertiesCommand::onExecute(Context* context)
 
   // Change user data
   doc::UserData userData = window.userDataValue();
-  if (tag->userData() != userData)
+  if (tag->userData() != userData) {
+    // TODO Don't invalidate the whole timeline when the tag color
+    //      change, and make this from the Timeline side listening
+    //      DocObserver::onUserDataChange event. Anyway this is done
+    //      in Cel properties and Layer properties dialog, so there is
+    //      some general refactoring needed.
+    auto app = App::instance();
+    if (app && app->timeline() &&
+        tag->userData().color() != userData.color()) {
+      App::instance()->timeline()->invalidate();
+    }
+
     tx(new cmd::SetUserData(tag, userData, static_cast<Doc*>(sprite->document())));
+  }
 
   tx.commit();
 }
