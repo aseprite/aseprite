@@ -1888,6 +1888,16 @@ void Timeline::onRemoveFrame(DocEvent& ev)
   invalidate();
 }
 
+void Timeline::onAddCel(DocEvent& ev)
+{
+  invalidateLayer(ev.layer());
+}
+
+void Timeline::onAfterRemoveCel(DocEvent& ev)
+{
+  invalidateLayer(ev.layer());
+}
+
 void Timeline::onLayerNameChange(DocEvent& ev)
 {
   invalidate();
