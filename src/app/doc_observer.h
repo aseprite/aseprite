@@ -77,8 +77,10 @@ namespace app {
     virtual void onSelectionChanged(DocEvent& ev) { }
     virtual void onSelectionBoundariesChanged(DocEvent& ev) { }
 
-    // Tags
+    // When the tag range changes
     virtual void onTagChange(DocEvent& ev) { }
+
+    // When the tag is renamed
     virtual void onTagRename(DocEvent& ev) { }
 
     // Slices

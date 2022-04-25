@@ -1917,6 +1917,11 @@ void Timeline::onRemoveTag(DocEvent& ev)
   onAddTag(ev);
 }
 
+void Timeline::onTagChange(DocEvent& ev)
+{
+  invalidateHit(Hit(PART_TAGS));
+}
+
 void Timeline::onTagRename(DocEvent& ev)
 {
   invalidateHit(Hit(PART_TAGS));
