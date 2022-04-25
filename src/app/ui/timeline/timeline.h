@@ -163,6 +163,7 @@ namespace app {
     void onLayerNameChange(DocEvent& ev) override;
     void onAddTag(DocEvent& ev) override;
     void onRemoveTag(DocEvent& ev) override;
+    void onTagRename(DocEvent& ev) override;
 
     // app::Context slots.
     void onBeforeCommandExecution(CommandExecutionEvent& ev);
