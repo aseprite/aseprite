@@ -71,6 +71,8 @@
 
 #if LAF_MACOS
   #include "os/osx/system.h"
+#elif LAF_LINUX
+  #include "os/x11/system.h"
 #endif
 
 #include <iostream>
@@ -236,6 +238,7 @@ int App::initialize(const AppOptions& options)
   m_coreModules = new CoreModules;
 
 #if LAF_WINDOWS
+
   if (options.disableWintab() ||
       !preferences().experimental.loadWintabDriver() ||
       preferences().tablet.api() == "pointer") {
@@ -245,11 +248,20 @@ int App::initialize(const AppOptions& options)
     system->setTabletAPI(os::TabletAPI::WintabPackets);
   else // preferences().tablet.api() == "wintab"
     system->setTabletAPI(os::TabletAPI::Wintab);
-#endif
 
-#if LAF_MACOS
+#elif LAF_MACOS
+
   if (!preferences().general.osxAsyncView())
     os::osx_set_async_view(false);
+
+#elif LAF_LINUX
+
+  {
+    const std::string& stylusId = preferences().general.x11StylusId();
+    if (!stylusId.empty())
+      os::x11_set_user_defined_string_to_detect_stylus(stylusId);
+  }
+
 #endif
 
   system->setAppName(get_app_name());
