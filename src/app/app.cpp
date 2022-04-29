@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -71,6 +71,8 @@
 
 #if LAF_MACOS
   #include "os/osx/system.h"
+#elif LAF_LINUX
+  #include "os/x11/system.h"
 #endif
 
 #include <iostream>
@@ -95,6 +97,7 @@ namespace {
 
 class ConsoleEngineDelegate : public script::EngineDelegate {
 public:
+  ConsoleEngineDelegate(Console& console) : m_console(console) { }
   void onConsoleError(const char* text) override {
     onConsolePrint(text);
   }
@@ -102,7 +105,7 @@ public:
     m_console.printf("%s\n", text);
   }
 private:
-  Console m_console;
+  Console& m_console;
 };
 
 } // anonymous namespace
@@ -161,7 +164,8 @@ public:
   }
 
   ~Modules() {
-    ASSERT(m_recovery == nullptr);
+    ASSERT(m_recovery == nullptr ||
+           ui::get_app_state() == ui::AppState::kClosingWithException);
   }
 
   app::crash::DataRecovery* recovery() {
@@ -235,6 +239,7 @@ int App::initialize(const AppOptions& options)
   m_coreModules = new CoreModules;
 
 #if LAF_WINDOWS
+
   if (options.disableWintab() ||
       !preferences().experimental.loadWintabDriver() ||
       preferences().tablet.api() == "pointer") {
@@ -244,11 +249,20 @@ int App::initialize(const AppOptions& options)
     system->setTabletAPI(os::TabletAPI::WintabPackets);
   else // preferences().tablet.api() == "wintab"
     system->setTabletAPI(os::TabletAPI::Wintab);
-#endif
 
-#if LAF_MACOS
+#elif LAF_MACOS
+
   if (!preferences().general.osxAsyncView())
     os::osx_set_async_view(false);
+
+#elif LAF_LINUX
+
+  {
+    const std::string& stylusId = preferences().general.x11StylusId();
+    if (!stylusId.empty())
+      os::x11_set_user_defined_string_to_detect_stylus(stylusId);
+  }
+
 #endif
 
   system->setAppName(get_app_name());
@@ -368,14 +382,61 @@ int App::initialize(const AppOptions& options)
   return code;
 }
 
+namespace {
+
+#ifdef ENABLE_UI
+  struct CloseMainWindow {
+    std::unique_ptr<MainWindow>& m_win;
+    CloseMainWindow(std::unique_ptr<MainWindow>& win) : m_win(win) { }
+    ~CloseMainWindow() { m_win.reset(nullptr); }
+  };
+#endif
+
+  struct CloseAllDocs {
+    Context* m_ctx;
+    CloseAllDocs(Context* ctx) : m_ctx(ctx) { }
+    ~CloseAllDocs() {
+      std::vector<Doc*> docs;
+#ifdef ENABLE_UI
+      for (Doc* doc : static_cast<UIContext*>(m_ctx)->getAndRemoveAllClosedDocs())
+        docs.push_back(doc);
+#endif
+      for (Doc* doc : m_ctx->documents())
+        docs.push_back(doc);
+      for (Doc* doc : docs) {
+        // First we close the document. In this way we receive recent
+        // notifications related to the document as a app::Doc. If
+        // we delete the document directly, we destroy the app::Doc
+        // too early, and then doc::~Document() call
+        // DocsObserver::onRemoveDocument(). In this way, observers
+        // could think that they have a fully created app::Doc when
+        // in reality it's a doc::Document (in the middle of a
+        // destruction process).
+        //
+        // TODO: This problem is because we're extending doc::Document,
+        // in the future, we should remove app::Doc.
+        doc->close();
+        delete doc;
+      }
+    }
+  };
+
+} // anonymous namespace
+
 void App::run()
 {
 #ifdef ENABLE_UI
+  CloseMainWindow closeMainWindow(m_mainWindow);
+#endif
+  CloseAllDocs closeAllDocsAtExit(context());
+
+#ifdef ENABLE_UI
   // Run the GUI
   if (isGui()) {
+    auto manager = ui::Manager::getDefault();
 #if LAF_WINDOWS
     // How to interpret one finger on Windows tablets.
-    ui::Manager::getDefault()->display()
+    manager->display()
       ->setInterpretOneFingerGestureAsMouseMovement(
         preferences().experimental.oneFingerAsMouseMovement());
 #endif
@@ -437,12 +498,19 @@ void App::run()
     Console console;
 #ifdef ENABLE_SCRIPTING
     // Use the app::Console() for script errors
-    ConsoleEngineDelegate delegate;
+    ConsoleEngineDelegate delegate(console);
     script::ScopedEngineDelegate setEngineDelegate(m_engine.get(), &delegate);
 #endif
 
     // Run the GUI main message loop
-    ui::Manager::getDefault()->run();
+    try {
+      manager->run();
+      set_app_state(AppState::kClosing);
+    }
+    catch (...) {
+      set_app_state(AppState::kClosingWithException);
+      throw;
+    }
   }
 #endif  // ENABLE_UI
 
@@ -472,37 +540,6 @@ void App::run()
     m_modules->deleteDataRecovery();
   }
 #endif
-
-  // Destroy all documents from the UIContext.
-  std::vector<Doc*> docs;
-#ifdef ENABLE_UI
-  for (Doc* doc : static_cast<UIContext*>(context())->getAndRemoveAllClosedDocs())
-    docs.push_back(doc);
-#endif
-  for (Doc* doc : context()->documents())
-    docs.push_back(doc);
-  for (Doc* doc : docs) {
-    // First we close the document. In this way we receive recent
-    // notifications related to the document as a app::Doc. If
-    // we delete the document directly, we destroy the app::Doc
-    // too early, and then doc::~Document() call
-    // DocsObserver::onRemoveDocument(). In this way, observers
-    // could think that they have a fully created app::Doc when
-    // in reality it's a doc::Document (in the middle of a
-    // destruction process).
-    //
-    // TODO: This problem is because we're extending doc::Document,
-    // in the future, we should remove app::Doc.
-    doc->close();
-    delete doc;
-  }
-
-#ifdef ENABLE_UI
-  if (isGui()) {
-    // Destroy the window.
-    m_mainWindow.reset(nullptr);
-  }
-#endif
 }
 
 // Finishes the Aseprite application.
@@ -513,8 +550,16 @@ App::~App()
     ASSERT(m_instance == this);
 
 #ifdef ENABLE_SCRIPTING
-    // Destroy scripting engine
-    m_engine.reset(nullptr);
+    // Destroy scripting engine calling a method (instead of using
+    // reset()) because we need to keep the "m_engine" pointer valid
+    // until the very end, just in case that some Lua error happens
+    // now and we have to print that error using
+    // App::instance()->scriptEngine() in some way. E.g. if a Dialog
+    // onclose event handler fails with a Lua error when we are
+    // closing the app, a Lua error must be printed, and we need a
+    // valid m_engine pointer.
+    m_engine->destroy();
+    m_engine.reset();
 #endif
 
     // Delete file formats.

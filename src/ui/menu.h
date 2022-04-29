@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2020-2021  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -29,7 +29,7 @@ namespace ui {
     ~Menu();
 
     void showPopup(const gfx::Point& pos);
-    Widget* findItemById(const char* id);
+    Widget* findItemById(const char* id) const;
 
     // Returns the MenuItem that has as submenu this menu.
     MenuItem* getOwnerMenuItem() {
@@ -93,12 +93,22 @@ namespace ui {
 
   class MenuBar : public MenuBox {
   public:
-    MenuBar();
+    enum class ProcessTopLevelShortcuts { kNo, kYes };
+
+    MenuBar(ProcessTopLevelShortcuts processShortcuts);
+
+    bool processTopLevelShortcuts() const {
+      return m_processTopLevelShortcuts;
+    }
 
     static bool expandOnMouseover();
     static void setExpandOnMouseover(bool state);
 
   private:
+    // True if we should open top-level menus with Alt+mnemonic (this
+    // flag is not used by Aseprite), top-level menus are opened with
+    // the ShowMenu command now.
+    bool m_processTopLevelShortcuts;
     static bool m_expandOnMouseover;
   };
 
@@ -109,6 +119,10 @@ namespace ui {
 
     Menu* getSubmenu();
     void setSubmenu(Menu* submenu);
+
+    // Open the submenu of this menu item (the menu item should be
+    // positioned in a correct position on the screen).
+    void openSubmenu();
 
     bool isHighlighted() const;
     void setHighlighted(bool state);

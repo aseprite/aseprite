@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -16,10 +16,12 @@
 #include "base/clamp.h"
 #include "base/memory.h"
 #include "base/string.h"
+#include "base/utf8_decode.h"
 #include "os/font.h"
 #include "os/surface.h"
 #include "os/system.h"
 #include "os/window.h"
+#include "ui/app_state.h"
 #include "ui/init_theme_event.h"
 #include "ui/intern.h"
 #include "ui/layout_io.h"
@@ -508,7 +510,7 @@ bool Widget::hasAncestor(Widget* ancestor)
   return false;
 }
 
-Widget* Widget::findChild(const char* id)
+Widget* Widget::findChild(const char* id) const
 {
   for (auto child : m_children) {
     if (child->id() == id)
@@ -524,7 +526,7 @@ Widget* Widget::findChild(const char* id)
   return nullptr;
 }
 
-Widget* Widget::findSibling(const char* id)
+Widget* Widget::findSibling(const char* id) const
 {
   return window()->findChild(id);
 }
@@ -687,6 +689,10 @@ Rect Widget::clientChildrenBounds() const
 
 void Widget::setBounds(const Rect& rc)
 {
+  // Don't generate onResize() events if the app is being closed
+  if (is_app_state_closing())
+    return;
+
   ResizeEvent ev(this, rc);
   onResize(ev);
 }
@@ -968,6 +974,17 @@ void Widget::setMinSize(const gfx::Size& sz)
 void Widget::setMaxSize(const gfx::Size& sz)
 {
   m_maxSize = sz;
+}
+
+void Widget::resetMinSize()
+{
+  m_minSize = gfx::Size(0, 0);
+}
+
+void Widget::resetMaxSize()
+{
+  m_maxSize = gfx::Size(std::numeric_limits<int>::max(),
+                        std::numeric_limits<int>::max());
 }
 
 void Widget::flushRedraw()
@@ -1384,19 +1401,18 @@ void Widget::processMnemonicFromText(int escapeChar)
   if (!m_text.empty())
     newText.reserve(m_text.size());
 
-  for (base::utf8_const_iterator
-         it(m_text.begin()),
-         end(m_text.end()); it != end; ++it) {
-    if (*it == escapeChar) {
-      ++it;
-      if (it == end) {
+  base::utf8_decode decode(m_text);
+  while (int chr = decode.next()) {
+    if (chr == escapeChar) {
+      chr = decode.next();
+      if (!chr) {
         break;    // Ill-formed string (it ends with escape character)
       }
-      else if (*it != escapeChar) {
-        setMnemonic(*it);
+      else if (chr != escapeChar) {
+        setMnemonic(chr);
       }
     }
-    newText.push_back(*it);
+    newText.push_back(chr);
   }
 
   setText(base::to_utf8(newText));

@@ -182,7 +182,8 @@ class OptionsWindow : public app::gen::Options {
     void uninstall() {
       ASSERT(m_extension);
       ASSERT(canBeUninstalled());
-      App::instance()->extensions().uninstallExtension(m_extension);
+      App::instance()->extensions().uninstallExtension(m_extension,
+                                                       DeletePluginPref::kYes);
       m_extension = nullptr;
     }
 
@@ -559,9 +560,9 @@ public:
   void saveConfig() {
     // Save preferences in widgets that are bound to options automatically
     {
-      Message* msg = new Message(kSavePreferencesMessage);
-      msg->setPropagateToChildren(msg);
-      sendMessage(msg);
+      Message msg(kSavePreferencesMessage);
+      msg.setPropagateToChildren(true);
+      sendMessage(&msg);
     }
 
     // Share crashdb
@@ -1278,6 +1279,10 @@ private:
       return;
 
     loadExtensionsByCategory(
+      Extension::Category::Keys,
+      Strings::options_keys_extensions());
+
+    loadExtensionsByCategory(
       Extension::Category::Languages,
       Strings::options_language_extensions());
 
@@ -1441,7 +1446,7 @@ private:
 
         // Uninstall old version
         if (ext->canBeUninstalled()) {
-          exts.uninstallExtension(ext);
+          exts.uninstallExtension(ext, DeletePluginPref::kNo);
 
           ExtensionItem* item = getItemByExtension(ext);
           if (item)

@@ -58,7 +58,7 @@ using namespace ui;
 
 namespace {
 
-typedef std::map<AppMenuItem*, KeyPtr> MenuKeys;
+using MenuKeys = std::map<AppMenuItem*, KeyPtr>;
 
 class HeaderSplitter : public Splitter {
 public:
@@ -195,7 +195,7 @@ private:
     window.openWindowInForeground();
 
     if (window.isModified()) {
-      m_key->disableAccel(origAccel);
+      m_key->disableAccel(origAccel, KeySource::UserDefined);
       if (!window.accel().isEmpty())
         m_key->add(window.accel(), KeySource::UserDefined, m_keys);
     }
@@ -215,7 +215,7 @@ private:
             accel.toString())) != 1)
       return;
 
-    m_key->disableAccel(accel);
+    m_key->disableAccel(accel, KeySource::UserDefined);
     window()->layout();
   }
 
@@ -897,9 +897,9 @@ void KeyboardShortcutsCommand::onExecute(Context* context)
 
     // Save preferences in widgets that are bound to options automatically
     {
-      Message* msg = new Message(kSavePreferencesMessage);
-      msg->setPropagateToChildren(msg);
-      window.sendMessage(msg);
+      Message msg(kSavePreferencesMessage);
+      msg.setPropagateToChildren(true);
+      window.sendMessage(&msg);
     }
 
     // Save keyboard shortcuts in configuration file

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 // Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -257,6 +257,12 @@ void Extension::executeExitActions()
 #endif // ENABLE_SCRIPTING
 }
 
+void Extension::addKeys(const std::string& id, const std::string& path)
+{
+  m_keys[id] = path;
+  updateCategory(Category::Keys);
+}
+
 void Extension::addLanguage(const std::string& id, const std::string& path)
 {
   m_languages[id] = path;
@@ -347,7 +353,7 @@ void Extension::enable(const bool state)
 #endif // ENABLE_SCRIPTING
 }
 
-void Extension::uninstall()
+void Extension::uninstall(const DeletePluginPref delPref)
 {
   if (!m_isInstalled)
     return;
@@ -360,14 +366,15 @@ void Extension::uninstall()
         m_name.c_str(), m_path.c_str());
 
   // Remove all files inside the extension path
-  uninstallFiles(m_path);
-  ASSERT(!base::is_directory(m_path));
+  uninstallFiles(m_path, delPref);
+  ASSERT(!base::is_directory(m_path) || delPref == DeletePluginPref::kNo);
 
   m_isEnabled = false;
   m_isInstalled = false;
 }
 
-void Extension::uninstallFiles(const std::string& path)
+void Extension::uninstallFiles(const std::string& path,
+                               const DeletePluginPref delPref)
 {
 #if 1 // Read the list of files to be uninstalled from __info.json file
 
@@ -392,11 +399,17 @@ void Extension::uninstallFiles(const std::string& path)
     }
   }
 
-  // Delete __pref.lua file
+  // Delete __pref.lua file (only if specified, e.g. if the user is
+  // updating the extension, the preferences should be kept).
+  bool hasPrefFile = false;
   {
     std::string fn = base::join_path(path, kPrefLua);
-    if (base::is_file(fn))
-      base::delete_file(fn);
+    if (base::is_file(fn)) {
+      if (delPref == DeletePluginPref::kYes)
+        base::delete_file(fn);
+      else
+        hasPrefFile = true;
+    }
   }
 
   std::sort(installedDirs.begin(),
@@ -421,7 +434,8 @@ void Extension::uninstallFiles(const std::string& path)
   }
 
   TRACE("EXT: Deleting extension directory '%s'\n", path.c_str());
-  base::remove_directory(path);
+  if (!hasPrefFile)
+    base::remove_directory(path);
 
 #else // The following code delete the whole "path",
       // we prefer the __info.json approach.
@@ -433,7 +447,7 @@ void Extension::uninstallFiles(const std::string& path)
       base::delete_file(fn);
     }
     else if (base::is_directory(fn)) {
-      uninstallFiles(fn);
+      uninstallFiles(fn, deleteUserPref);
     }
   }
 
@@ -456,8 +470,10 @@ bool Extension::isDefaultTheme() const
 
 void Extension::updateCategory(const Category newCategory)
 {
-  if (m_category == Category::None)
+  if (m_category == Category::None ||
+      m_category == Category::Keys) {
     m_category = newCategory;
+  }
   else if (m_category != newCategory)
     m_category = Category::Multiple;
 }
@@ -852,9 +868,10 @@ void Extensions::enableExtension(Extension* extension, const bool state)
   generateExtensionSignals(extension);
 }
 
-void Extensions::uninstallExtension(Extension* extension)
+void Extensions::uninstallExtension(Extension* extension,
+                                    const DeletePluginPref delPref)
 {
-  extension->uninstall();
+  extension->uninstall(delPref);
   generateExtensionSignals(extension);
 
   auto it = std::find(m_extensions.begin(),
@@ -1016,6 +1033,24 @@ Extension* Extensions::loadExtension(const std::string& path,
 
   auto contributes = json["contributes"];
   if (contributes.is_object()) {
+    // Keys
+    auto keys = contributes["keys"];
+    if (keys.is_array()) {
+      for (const auto& key : keys.array_items()) {
+        std::string keyId = key["id"].string_value();
+        std::string keyPath = key["path"].string_value();
+
+        // The path must be always relative to the extension
+        keyPath = base::join_path(path, keyPath);
+
+        LOG("EXT: New keyboard shortcuts '%s' in '%s'\n",
+            keyId.c_str(),
+            keyPath.c_str());
+
+        extension->addKeys(keyId, keyPath);
+      }
+    }
+
     // Languages
     auto languages = contributes["languages"];
     if (languages.is_array()) {
@@ -1130,6 +1165,7 @@ Extension* Extensions::loadExtension(const std::string& path,
 
 void Extensions::generateExtensionSignals(Extension* extension)
 {
+  if (extension->hasKeys()) KeysChange(extension);
   if (extension->hasLanguages()) LanguagesChange(extension);
   if (extension->hasThemes()) ThemesChange(extension);
   if (extension->hasPalettes()) PalettesChange(extension);

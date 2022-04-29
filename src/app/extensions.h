@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 // Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -31,11 +31,14 @@ namespace app {
     std::string commonPath;
   };
 
+  enum DeletePluginPref { kNo, kYes };
+
   class Extension {
     friend class Extensions;
   public:
     enum class Category {
       None,
+      Keys,
       Languages,
       Themes,
       Scripts,
@@ -78,10 +81,12 @@ namespace app {
     const std::string& displayName() const { return m_displayName; }
     const Category category() const { return m_category; }
 
+    const ExtensionItems& keys() const { return m_keys; }
     const ExtensionItems& languages() const { return m_languages; }
     const ExtensionItems& themes() const { return m_themes; }
     const ExtensionItems& palettes() const { return m_palettes; }
 
+    void addKeys(const std::string& id, const std::string& path);
     void addLanguage(const std::string& id, const std::string& path);
     void addTheme(const std::string& id, const std::string& path);
     void addPalette(const std::string& id, const std::string& path);
@@ -98,6 +103,7 @@ namespace app {
     bool canBeDisabled() const;
     bool canBeUninstalled() const;
 
+    bool hasKeys() const { return !m_keys.empty(); }
     bool hasLanguages() const { return !m_languages.empty(); }
     bool hasThemes() const { return !m_themes.empty(); }
     bool hasPalettes() const { return !m_palettes.empty(); }
@@ -109,8 +115,9 @@ namespace app {
 
   private:
     void enable(const bool state);
-    void uninstall();
-    void uninstallFiles(const std::string& path);
+    void uninstall(const DeletePluginPref delPref);
+    void uninstallFiles(const std::string& path,
+                        const DeletePluginPref delPref);
     bool isCurrentTheme() const;
     bool isDefaultTheme() const;
     void updateCategory(const Category newCategory);
@@ -119,6 +126,7 @@ namespace app {
     void exitScripts();
 #endif
 
+    ExtensionItems m_keys;
     ExtensionItems m_languages;
     ExtensionItems m_themes;
     ExtensionItems m_palettes;
@@ -167,7 +175,8 @@ namespace app {
     iterator end() { return m_extensions.end(); }
 
     void enableExtension(Extension* extension, const bool state);
-    void uninstallExtension(Extension* extension);
+    void uninstallExtension(Extension* extension,
+                            const DeletePluginPref delPref);
     ExtensionInfo getCompressedExtensionInfo(const std::string& zipFn);
     Extension* installCompressedExtension(const std::string& zipFn,
                                           const ExtensionInfo& info);
@@ -180,6 +189,7 @@ namespace app {
     std::vector<Extension::DitheringMatrixInfo> ditheringMatrices();
 
     obs::signal<void(Extension*)> NewExtension;
+    obs::signal<void(Extension*)> KeysChange;
     obs::signal<void(Extension*)> LanguagesChange;
     obs::signal<void(Extension*)> ThemesChange;
     obs::signal<void(Extension*)> PalettesChange;

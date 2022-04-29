@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -93,6 +93,14 @@ void NewFrameCommand::onExecute(Context* context)
   ContextWriter writer(context);
   Doc* document(writer.document());
   Sprite* sprite(writer.sprite());
+
+#if ENABLE_UI
+  // Show the tooltip feedback only if we are not inside a transaction
+  // (e.g. we can be already in a transaction if we are running in a
+  // Lua script app.transaction()).
+  const bool showTooltip = (document->transaction() == nullptr);
+#endif
+
   {
     Tx tx(writer.context(), friendlyName());
     DocApi api = document->getApi(tx);
@@ -169,7 +177,7 @@ void NewFrameCommand::onExecute(Context* context)
   }
 
 #ifdef ENABLE_UI
-  if (context->isUIAvailable()) {
+  if (context->isUIAvailable() && showTooltip) {
     update_screen_for_document(document);
 
     StatusBar::instance()->showTip(

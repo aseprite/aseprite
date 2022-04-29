@@ -216,20 +216,20 @@ Manager::~Manager()
     // No more cursor
     set_mouse_cursor(kNoCursor);
 
-    // Destroy timers
-    ASSERT(!Timer::haveTimers());
-
-    // Destroy filters
+    // Check timers & filters
 #ifdef _DEBUG
-    for (Filters& msg_filter : msg_filters)
-      ASSERT(msg_filter.empty());
+    if (get_app_state() != AppState::kClosingWithException) {
+      ASSERT(!Timer::haveTimers());
+      for (Filters& msg_filter : msg_filters)
+        ASSERT(msg_filter.empty());
+    }
+    ASSERT(msg_queue.empty());
 #endif
 
     // No more default manager
     m_defaultManager = nullptr;
 
     // Shutdown system
-    ASSERT(msg_queue.empty());
     mouse_widgets_list.clear();
   }
 }
@@ -1089,6 +1089,11 @@ void Manager::dirtyRect(const gfx::Rect& bounds)
   m_dirtyRegion.createUnion(m_dirtyRegion, gfx::Region(bounds));
 }
 
+void Manager::_closingAppWithException()
+{
+  redrawState = RedrawState::ClosingApp;
+}
+
 // Configures the window for begin the loop
 void Manager::_openWindow(Window* window)
 {
@@ -1108,8 +1113,8 @@ void Manager::_openWindow(Window* window)
 
   // Broadcast the open message.
   {
-    std::unique_ptr<Message> msg(new Message(kOpenMessage));
-    window->sendMessage(msg.get());
+    Message msg(kOpenMessage);
+    window->sendMessage(&msg);
   }
 
   // Relayout
@@ -1174,8 +1179,8 @@ void Manager::_closeWindow(Window* window, bool redraw_background)
 
   // Close message.
   {
-    std::unique_ptr<Message> msg(new Message(kCloseMessage));
-    window->sendMessage(msg.get());
+    Message msg(kCloseMessage);
+    window->sendMessage(&msg);
   }
 
   // Update manager list stuff.
@@ -1188,12 +1193,14 @@ void Manager::_closeWindow(Window* window, bool redraw_background)
   // recently closed window).
   updateMouseWidgets(ui::get_mouse_position());
 
-  if (children().empty()) {
-    // All windows were closed...
-    redrawState = RedrawState::ClosingApp;
-  }
-  else {
-    redrawState = RedrawState::AWindowHasJustBeenClosed;
+  if (redrawState != RedrawState::ClosingApp) {
+    if (children().empty()) {
+      // All windows were closed...
+      redrawState = RedrawState::ClosingApp;
+    }
+    else {
+      redrawState = RedrawState::AWindowHasJustBeenClosed;
+    }
   }
 }
 

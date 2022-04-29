@@ -885,7 +885,7 @@ void FileList::selectIndex(int index)
 
 void FileList::generateThumbnailForFileItem(IFileItem* fi)
 {
-  if (fi && animation() == ANI_NONE) {
+  if (fi && fi->needThumbnail() && animation() == ANI_NONE) {
     auto it = std::find(m_generateThumbnailsForTheseItems.begin(),
                         m_generateThumbnailsForTheseItems.end(), fi);
     if (it != m_generateThumbnailsForTheseItems.end())

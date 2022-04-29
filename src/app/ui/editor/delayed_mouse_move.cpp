@@ -56,8 +56,8 @@ bool DelayedMouseMove::onMouseMove(const ui::MouseMessage* msg)
 
 void DelayedMouseMove::onMouseUp(const ui::MouseMessage* msg)
 {
-  updateSpritePos(msg);
-  commitMouseMove();
+  if (updateSpritePos(msg))
+    commitMouseMove();
 }
 
 void DelayedMouseMove::stopTimer()

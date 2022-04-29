@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -105,6 +105,7 @@ namespace ui {
     void _openWindow(Window* window);
     void _closeWindow(Window* window, bool redraw_background);
     void _updateMouseWidgets();
+    void _closingAppWithException();
 
   protected:
     bool onProcessMessage(Message* msg) override;

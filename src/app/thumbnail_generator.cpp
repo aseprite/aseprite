@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -18,7 +18,6 @@
 #include "app/file_system.h"
 #include "app/util/conversion_to_surface.h"
 #include "base/clamp.h"
-#include "base/scoped_lock.h"
 #include "base/thread.h"
 #include "doc/algorithm/rotate.h"
 #include "doc/image.h"
@@ -28,6 +27,7 @@
 #include "os/system.h"
 #include "render/projection.h"
 #include "render/render.h"
+#include "ui/system.h"
 
 #include <algorithm>
 #include <atomic>
@@ -50,7 +50,7 @@ public:
 
   ~Worker() {
     {
-      base::scoped_lock lock(m_mutex);
+      std::lock_guard<std::mutex> lock(m_mutex);
       if (m_fop)
         m_fop->stop();
     }
@@ -58,7 +58,7 @@ public:
   }
 
   void stop() const {
-    base::scoped_lock lock(m_mutex);
+    std::lock_guard<std::mutex> lock(m_mutex);
     if (m_fop)
       m_fop->stop();
   }
@@ -68,7 +68,7 @@ public:
   }
 
   void updateProgress() {
-    base::scoped_lock lock(m_mutex);
+    std::lock_guard<std::mutex> lock(m_mutex);
     if (m_item.fileitem && m_item.fop) {
       double progress = m_item.fop->progress();
       if (progress > m_item.fileitem->getThumbnailProgress())
@@ -81,7 +81,7 @@ private:
     ASSERT(!m_fop);
     try {
       {
-        base::scoped_lock lock(m_mutex);
+        std::lock_guard<std::mutex> lock(m_mutex);
         m_fop = m_item.fop;
         ASSERT(m_fop);
       }
@@ -168,7 +168,7 @@ private:
           0, 0, 0, 0, thumbnailImage->width(), thumbnailImage->height());
 
         {
-          base::scoped_lock lock(m_mutex);
+          std::lock_guard<std::mutex> lock(m_mutex);
           m_item.fileitem->setThumbnail(thumbnail);
         }
       }
@@ -176,20 +176,29 @@ private:
       THUMB_TRACE("FOP done with thumbnail: %s %s\n",
                   m_item.fileitem->fileName().c_str(),
                   (m_fop->isStop() ? " (stop)": ""));
-
-      // Reset the m_item (first the fileitem so this worker is not
-      // associated to this fileitem anymore, and then the FileOp).
-      {
-        base::scoped_lock lock(m_mutex);
-        m_item.fileitem = nullptr;
-      }
     }
     catch (const std::exception& e) {
       m_fop->setError("Error loading file:\n%s", e.what());
     }
+
+    if (!m_fop->isStop()) {
+      // Set a nullptr thumbnail if we failed loading the given file,
+      // in this way we're not going to re-try generating this same
+      // thumbnail.
+      if (m_item.fileitem->needThumbnail())
+        m_item.fileitem->setThumbnail(nullptr);
+    }
+
+    // Reset the m_item (first the fileitem so this worker is not
+    // associated to this fileitem anymore, and then the FileOp).
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_item.fileitem = nullptr;
+    }
+
     m_fop->done();
     {
-      base::scoped_lock lock(m_mutex);
+      std::lock_guard<std::mutex> lock(m_mutex);
       m_item.fop = nullptr;
       delete m_fop;
       m_fop = nullptr;
@@ -199,8 +208,14 @@ private:
 
   void loadBgThread() {
     while (!m_queue.empty()) {
-      while (m_queue.try_pop(m_item)) {
-        loadItem();
+      bool success = true;
+      while (success) {
+        {
+          std::lock_guard<std::mutex> lock(m_mutex); // To access m_item
+          success = m_queue.try_pop(m_item);
+        }
+        if (success)
+          loadItem();
       }
       base::this_thread::yield();
     }
@@ -210,24 +225,22 @@ private:
   base::concurrent_queue<Item>& m_queue;
   app::ThumbnailGenerator::Item m_item;
   FileOp* m_fop;
-  mutable base::mutex m_mutex;
+  mutable std::mutex m_mutex;
   std::atomic<bool> m_isDone;
-  base::thread m_thread;
+  std::thread m_thread;
 };
-
-static void delete_singleton(ThumbnailGenerator* singleton)
-{
-  delete singleton;
-}
 
 ThumbnailGenerator* ThumbnailGenerator::instance()
 {
-  static ThumbnailGenerator* singleton = nullptr;
-  if (singleton == NULL) {
-    singleton = new ThumbnailGenerator();
-    App::instance()->Exit.connect([&]{ delete_singleton(singleton); });
+  static std::unique_ptr<ThumbnailGenerator> singleton;
+  ui::assert_ui_thread();
+  if (!singleton) {
+    // We cannot use std::make_unique() because ThumbnailGenerator
+    // ctor is private.
+    singleton.reset(new ThumbnailGenerator);
+    App::instance()->Exit.connect([&]{ singleton.reset(); });
   }
-  return singleton;
+  return singleton.get();
 }
 
 ThumbnailGenerator::ThumbnailGenerator()
@@ -239,15 +252,13 @@ ThumbnailGenerator::ThumbnailGenerator()
 
 bool ThumbnailGenerator::checkWorkers()
 {
-  base::scoped_lock hold(m_workersAccess);
+  std::lock_guard<std::mutex> hold(m_workersAccess);
   bool doingWork = (!m_workers.empty());
 
   for (WorkerList::iterator
          it=m_workers.begin(); it != m_workers.end(); ) {
-    Worker* worker = *it;
-    worker->updateProgress();
-    if (worker->isDone()) {
-      delete worker;
+    (*it)->updateProgress();
+    if ((*it)->isDone()) {
       it = m_workers.erase(it);
     }
     else {
@@ -260,8 +271,7 @@ bool ThumbnailGenerator::checkWorkers()
 
 void ThumbnailGenerator::generateThumbnail(IFileItem* fileitem)
 {
-  if (fileitem->isBrowsable() ||
-      fileitem->getThumbnail())
+  if (!fileitem->needThumbnail())
     return;
 
   if (fileitem->getThumbnailProgress() > 0.0) {
@@ -300,11 +310,12 @@ void ThumbnailGenerator::generateThumbnail(IFileItem* fileitem)
       fileitem->fileName().c_str(),
       FILE_LOAD_SEQUENCE_NONE |
       FILE_LOAD_ONE_FRAME));
-  if (!fop)
+  if (!fop || fop->hasError()) {
+    // Set a nullptr thumbnail so we don't try to generate a thumbnail
+    // for this fileitem again.
+    fileitem->setThumbnail(nullptr);
     return;
-
-  if (fop->hasError())
-    return;
+  }
 
   m_remainingItems.push(Item(fileitem, fop.get()));
   fop.release();
@@ -327,18 +338,16 @@ void ThumbnailGenerator::stopAllWorkers()
     }
   }
 
-  base::scoped_lock hold(m_workersAccess);
-  for (auto worker : m_workers)
+  std::lock_guard<std::mutex> hold(m_workersAccess);
+  for (const auto& worker : m_workers)
     worker->stop();
 }
 
 void ThumbnailGenerator::startWorker()
 {
-  base::scoped_lock hold(m_workersAccess);
+  std::lock_guard<std::mutex> hold(m_workersAccess);
   if (m_workers.size() < m_maxWorkers) {
-    std::unique_ptr<Worker> worker(new Worker(m_remainingItems));
-    m_workers.push_back(worker.get());
-    worker.release();
+    m_workers.push_back(std::make_unique<Worker>(m_remainingItems));
   }
 }
 

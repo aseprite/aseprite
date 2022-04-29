@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -61,9 +61,6 @@ namespace app {
     // Returns false cancelled the operation.
     bool postLoad(FileOp* fop);
 
-    // Destroys the custom data stored in "fop->format_data" field.
-    void destroyData(FileOp* fop);
-
     // Returns extra options for this format. It can return != NULL
     // only if flags() returns FILE_SUPPORT_GET_FORMAT_OPTIONS.
     FormatOptionsPtr askUserForFormatOptions(FileOp* fop) {
@@ -86,7 +83,6 @@ namespace app {
 #ifdef ENABLE_SAVE
     virtual bool onSave(FileOp* fop) = 0;
 #endif
-    virtual void onDestroyData(FileOp* fop) { }
 
     virtual FormatOptionsPtr onAskUserForFormatOptions(FileOp* fop) {
       return FormatOptionsPtr(nullptr);

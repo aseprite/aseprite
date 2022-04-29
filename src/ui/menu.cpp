@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -193,8 +193,9 @@ MenuBox::~MenuBox()
 
 bool MenuBar::m_expandOnMouseover = false;
 
-MenuBar::MenuBar()
+MenuBar::MenuBar(ProcessTopLevelShortcuts processShortcuts)
   : MenuBox(kMenuBarWidget)
+  , m_processTopLevelShortcuts(processShortcuts == ProcessTopLevelShortcuts::kYes)
 {
   createBase();
 }
@@ -273,6 +274,12 @@ void MenuItem::setSubmenu(Menu* menu)
   }
 }
 
+void MenuItem::openSubmenu()
+{
+  if (auto menu = static_cast<Menu*>(parent()))
+    menu->highlightItem(this, true, true, true);
+}
+
 bool MenuItem::isHighlighted() const
 {
   return m_highlighted;
@@ -344,7 +351,7 @@ void Menu::showPopup(const gfx::Point& pos)
   menubox->stopFilteringMouseDown();
 }
 
-Widget* Menu::findItemById(const char* id)
+Widget* Menu::findItemById(const char* id) const
 {
   Widget* result = findChild(id);
   if (result)
@@ -574,7 +581,8 @@ bool MenuBox::onProcessMessage(Message* msg)
         // Check for ALT+some underlined letter
         if (((this->type() == kMenuBoxWidget) && (msg->modifiers() == kKeyNoneModifier || // <-- Inside menu-boxes we can use letters without Alt modifier pressed
                                                   msg->modifiers() == kKeyAltModifier)) ||
-            ((this->type() == kMenuBarWidget) && (msg->modifiers() == kKeyAltModifier))) {
+            ((this->type() == kMenuBarWidget) && (msg->modifiers() == kKeyAltModifier) &&
+             static_cast<MenuBar*>(this)->processTopLevelShortcuts())) {
           auto keymsg = static_cast<KeyMessage*>(msg);
           selected = check_for_letter(menu, keymsg);
           if (selected) {
