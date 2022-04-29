@@ -97,6 +97,7 @@ namespace {
 
 class ConsoleEngineDelegate : public script::EngineDelegate {
 public:
+  ConsoleEngineDelegate(Console& console) : m_console(console) { }
   void onConsoleError(const char* text) override {
     onConsolePrint(text);
   }
@@ -104,7 +105,7 @@ public:
     m_console.printf("%s\n", text);
   }
 private:
-  Console m_console;
+  Console& m_console;
 };
 
 } // anonymous namespace
@@ -497,7 +498,7 @@ void App::run()
     Console console;
 #ifdef ENABLE_SCRIPTING
     // Use the app::Console() for script errors
-    ConsoleEngineDelegate delegate;
+    ConsoleEngineDelegate delegate(console);
     script::ScopedEngineDelegate setEngineDelegate(m_engine.get(), &delegate);
 #endif
 

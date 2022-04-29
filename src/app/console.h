@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -10,7 +10,6 @@
 #pragma once
 
 #include <exception>
-#include <memory>
 
 namespace app {
   class Context;
@@ -29,8 +28,7 @@ namespace app {
     class ConsoleWindow;
 
     bool m_withUI;
-    static int m_consoleCounter;
-    static std::unique_ptr<Console::ConsoleWindow> m_console;
+    static ConsoleWindow* m_console;
   };
 
 } // namespace app
