@@ -131,6 +131,12 @@
                tooltip="@.data_filename_format_tooltip" />
         <link text="(?)" url="https://www.aseprite.org/docs/cli/#filename-format" />
       </hbox>
+      <hbox id="data_tagname_format_placeholder" cell_hspan="3" cell_align="horizontal">
+        <label text="@.data_tagname_format" />
+        <entry id="data_tagname_format" maxsize="1024" maxwidth="256" expansive="true"
+               tooltip="@.data_tagname_format_tooltip" />
+        <link text="(?)" url="https://www.aseprite.org/docs/cli/#filename-format" />
+      </hbox>
     </grid>
 
     </panel>

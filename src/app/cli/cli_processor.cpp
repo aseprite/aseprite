@@ -382,6 +382,12 @@ int CliProcessor::process(Context* ctx)
           if (m_exporter)
             m_exporter->setFilenameFormat(cof.filenameFormat);
         }
+        // --tagname-format
+        else if (opt == &m_options.tagnameFormat()) {
+          cof.tagnameFormat = value.value();
+          if (m_exporter)
+            m_exporter->setTagnameFormat(cof.tagnameFormat);
+        }
         // --save-as <filename>
         else if (opt == &m_options.saveAs()) {
           if (lastDoc) {

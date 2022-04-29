@@ -66,6 +66,7 @@ struct ExportSpriteSheetParams : public NewParams {
   Param<std::string> dataFilename { this, std::string(), "dataFilename" };
   Param<SpriteSheetDataFormat> dataFormat { this, SpriteSheetDataFormat::Default, "dataFormat" };
   Param<std::string> filenameFormat { this, std::string(), "filenameFormat" };
+  Param<std::string> tagnameFormat { this, std::string(), "tagnameFormat" };
   Param<int> borderPadding { this, 0, "borderPadding" };
   Param<int> shapePadding { this, 0, "shapePadding" };
   Param<int> innerPadding { this, 0, "innerPadding" };
@@ -182,6 +183,7 @@ Doc* generate_sprite_sheet_from_params(
   const std::string dataFilename = params.dataFilename();
   const SpriteSheetDataFormat dataFormat = params.dataFormat();
   const std::string filenameFormat = params.filenameFormat();
+  const std::string tagnameFormat = params.tagnameFormat();
   const std::string layerName = params.layer();
   const std::string tagName = params.tag();
   const int borderPadding = base::clamp(params.borderPadding(), 0, 100);
@@ -242,6 +244,9 @@ Doc* generate_sprite_sheet_from_params(
   }
   if (!filenameFormat.empty())
     exporter.setFilenameFormat(filenameFormat);
+  
+  if (!tagnameFormat.empty())
+    exporter.setTagnameFormat(tagnameFormat);
 
   exporter.setTextureWidth(width);
   exporter.setTextureHeight(height);
@@ -316,6 +321,7 @@ public:
     , m_genTimer(100, nullptr)
     , m_executionID(0)
     , m_filenameFormat(params.filenameFormat())
+    , m_tagnameFormat(params.tagnameFormat())
   {
     sectionTabs()->ItemChange.connect([this]{ onChangeSection(); });
     expandSections()->Click.connect([this]{ onExpandSections(); });
@@ -410,6 +416,7 @@ public:
     listSlices()->setSelected(params.listSlices());
 
     updateDefaultDataFilenameFormat();
+    updateDefaultDataTagnameFormat();
     updateDataFields();
 
     std::string base = site.document()->filename();
@@ -452,6 +459,7 @@ public:
     splitTags()->Click.connect([this]{ onSplitLayersOrFrames(); });
     frames()->Change.connect([this]{ generatePreview(); });
     dataFilenameFormat()->Change.connect([this]{ onDataFilenameFormatChange(); });
+    dataTagnameFormat()->Change.connect([this]{ onDataTagnameFormatChange(); });
     openGenerated()->Click.connect([this]{ onOpenGeneratedChange(); });
     preview()->Click.connect([this]{ generatePreview(); });
     m_genTimer.Tick.connect([this]{ onGenTimerTick(); });
@@ -520,6 +528,7 @@ public:
     params.dataFilename    (dataFilenameValue());
     params.dataFormat      (dataFormatValue());
     params.filenameFormat  (filenameFormatValue());
+    params.tagnameFormat   (tagnameFormatValue());
     params.borderPadding   (borderPaddingValue());
     params.shapePadding    (shapePaddingValue());
     params.innerPadding    (innerPaddingValue());
@@ -653,6 +662,14 @@ private:
     if (!m_filenameFormat.empty() &&
         m_filenameFormat != m_filenameFormatDefault)
       return m_filenameFormat;
+    else
+      return std::string();
+  }
+
+  std::string tagnameFormatValue() const {
+    if (!m_tagnameFormat.empty() &&
+        m_tagnameFormat != m_tagnameFormatDefault)
+      return m_tagnameFormat;
     else
       return std::string();
   }
@@ -889,6 +906,7 @@ private:
 
   void onSplitLayersOrFrames() {
     updateDefaultDataFilenameFormat();
+    updateDefaultDataTagnameFormat();
     generatePreview();
   }
 
@@ -896,6 +914,12 @@ private:
     m_filenameFormat = dataFilenameFormat()->text();
     if (m_filenameFormat.empty())
       updateDefaultDataFilenameFormat();
+  }
+
+  void onDataTagnameFormatChange() {
+    m_tagnameFormat = dataTagnameFormat()->text();
+    if (m_tagnameFormat.empty())
+      updateDefaultDataTagnameFormat();
   }
 
   void onOpenGeneratedChange() {
@@ -932,11 +956,16 @@ private:
     }
   }
 
+  void updateDefaultDataTagnameFormat() {
+    m_tagnameFormatDefault = "{tag}";
+  }
+
   void updateDataFields() {
     bool state = dataEnabled()->isSelected();
     dataFilename()->setVisible(state);
     dataMeta()->setVisible(state);
     dataFilenameFormatPlaceholder()->setVisible(state);
+    dataTagnameFormatPlaceholder()->setVisible(state);
   }
 
   void onGenTimerTick() {
@@ -1124,6 +1153,8 @@ private:
   int m_executionID;
   std::string m_filenameFormat;
   std::string m_filenameFormatDefault;
+  std::string m_tagnameFormat;
+  std::string m_tagnameFormatDefault;
 };
 
 class ExportSpriteSheetJob : public Job {
@@ -1225,6 +1256,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
       if (!params.dataFilename.isSet())     params.dataFilename(    defPref.spriteSheet.dataFilename());
       if (!params.dataFormat.isSet())       params.dataFormat(      defPref.spriteSheet.dataFormat());
       if (!params.filenameFormat.isSet())   params.filenameFormat(  defPref.spriteSheet.filenameFormat());
+      if (!params.tagnameFormat.isSet())    params.tagnameFormat(   defPref.spriteSheet.tagnameFormat());
       if (!params.borderPadding.isSet())    params.borderPadding(   defPref.spriteSheet.borderPadding());
       if (!params.shapePadding.isSet())     params.shapePadding(    defPref.spriteSheet.shapePadding());
       if (!params.innerPadding.isSet())     params.innerPadding(    defPref.spriteSheet.innerPadding());
@@ -1271,6 +1303,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     docPref.spriteSheet.dataFilename    (params.dataFilename());
     docPref.spriteSheet.dataFormat      (params.dataFormat());
     docPref.spriteSheet.filenameFormat  (params.filenameFormat());
+    docPref.spriteSheet.tagnameFormat   (params.tagnameFormat());
     docPref.spriteSheet.borderPadding   (params.borderPadding());
     docPref.spriteSheet.shapePadding    (params.shapePadding());
     docPref.spriteSheet.innerPadding    (params.innerPadding());
