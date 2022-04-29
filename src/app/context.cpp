@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -143,6 +143,8 @@ void Context::executeCommand(Command* command, const Params& params)
   if (!command)
     return;
 
+  m_result.reset();
+
   Console console;
   LOG(VERBOSE, "CTXT: Executing command %s\n", command->id().c_str());
   try {
@@ -177,17 +179,23 @@ void Context::executeCommand(Command* command, const Params& params)
       app_rebuild_documents_tabs();
   }
   catch (base::Exception& e) {
+    m_result = CommandResult(CommandResult::kError);
+
     LOG(ERROR, "CTXT: Exception caught executing %s command\n%s\n",
         command->id().c_str(), e.what());
     Console::showException(e);
   }
   catch (std::exception& e) {
+    m_result = CommandResult(CommandResult::kError);
+
     LOG(ERROR, "CTXT: std::exception caught executing %s command\n%s\n",
         command->id().c_str(), e.what());
     console.printf("An error ocurred executing the command.\n\nDetails:\n%s", e.what());
   }
 #ifdef NDEBUG
   catch (...) {
+    m_result = CommandResult(CommandResult::kError);
+
     LOG(ERROR, "CTXT: Unknown exception executing %s command\n",
         command->id().c_str());
 
@@ -198,6 +206,11 @@ void Context::executeCommand(Command* command, const Params& params)
                    "memory access, divison by zero, etc.");
   }
 #endif
+}
+
+void Context::setCommandResult(const CommandResult& result)
+{
+  m_result = result;
 }
 
 void Context::onAddDocument(Doc* doc)

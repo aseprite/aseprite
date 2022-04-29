@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -52,6 +52,15 @@ int Command_call(lua_State* L)
   }
 
   ctx->executeCommand(command, params);
+
+  if (ctx->commandResult().type() == CommandResult::kOk) {
+    lua_pushboolean(L, true);
+  }
+  else {
+    // TODO rollback/cancel the whole current transaction?
+    //      or just throw an luaL_error()?
+    lua_pushboolean(L, false);
+  }
   return 1;
 }
 

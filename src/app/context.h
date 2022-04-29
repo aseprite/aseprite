@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -35,6 +35,24 @@ namespace app {
   class DocRange;
   class DocView;
   class Preferences;
+
+  class CommandResult {
+  public:
+    enum Type {
+      kOk,
+      // Exception throw (e.g. cannot lock sprite)
+      kError,
+      // Canceled by user.
+      kCanceled,
+    };
+
+    CommandResult(Type type = Type::kOk) : m_type(type) { }
+    Type type() const { return m_type; }
+    void reset() { m_type = Type::kOk; }
+
+  private:
+    Type m_type;
+  };
 
   class CommandPreconditionException : public base::Exception {
   public:
@@ -97,6 +115,9 @@ namespace app {
     void executeCommandFromMenuOrShortcut(Command* command, const Params& params = Params());
     virtual void executeCommand(Command* command, const Params& params = Params());
 
+    void setCommandResult(const CommandResult& result);
+    const CommandResult& commandResult() { return m_result; }
+
     virtual DocView* getFirstDocView(Doc* document) const {
       return nullptr;
     }
@@ -129,6 +150,9 @@ namespace app {
     ContextFlags m_flags;       // Last updated flags.
     Doc* m_lastSelectedDoc;
     mutable std::unique_ptr<Preferences> m_preferences;
+
+    // Result of the execution of a command.
+    CommandResult m_result;
 
     DISABLE_COPYING(Context);
   };
