@@ -24,6 +24,7 @@ namespace app {
     Doc* document = nullptr;
     std::string filename;
     std::string filenameFormat;
+    std::string tagnameFormat;
     std::string tag;
     std::string slice;
     std::vector<std::string> includeLayers;

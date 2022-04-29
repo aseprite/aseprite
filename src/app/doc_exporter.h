@@ -52,6 +52,7 @@ namespace app {
     const std::string& textureFilename() { return m_textureFilename; }
     SpriteSheetType spriteSheetType() { return m_sheetType; }
     const std::string& filenameFormat() const { return m_filenameFormat; }
+    const std::string& tagnameFormat() const { return m_tagnameFormat; }
 
     void setDataFormat(SpriteSheetDataFormat format) { m_dataFormat = format; }
     void setDataFilename(const std::string& filename) { m_dataFilename = filename; }
@@ -71,6 +72,7 @@ namespace app {
     void setTrimByGrid(bool trimByGrid) { m_trimByGrid = trimByGrid; }
     void setExtrude(bool extrude) { m_extrude = extrude; }
     void setFilenameFormat(const std::string& format) { m_filenameFormat = format; }
+    void setTagnameFormat(const std::string& format) { m_tagnameFormat = format; }
     void setSplitLayers(bool splitLayers) { m_splitLayers = splitLayers; }
     void setSplitTags(bool splitTags) { m_splitTags = splitTags; }
     void setListTags(bool value) { m_listTags = value; }
@@ -160,6 +162,7 @@ namespace app {
     std::string m_dataFilename;
     std::string m_textureFilename;
     std::string m_filenameFormat;
+    std::string m_tagnameFormat;
     int m_textureWidth;
     int m_textureHeight;
     int m_textureColumns;

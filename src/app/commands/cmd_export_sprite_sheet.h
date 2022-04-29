@@ -29,6 +29,7 @@ struct ExportSpriteSheetParams : public NewParams {
   Param<std::string> dataFilename { this, std::string(), "dataFilename" };
   Param<SpriteSheetDataFormat> dataFormat { this, SpriteSheetDataFormat::Default, "dataFormat" };
   Param<std::string> filenameFormat { this, std::string(), "filenameFormat" };
+  Param<std::string> tagnameFormat { this, std::string(), "tagnameFormat" };
   Param<int> borderPadding { this, 0, "borderPadding" };
   Param<int> shapePadding { this, 0, "shapePadding" };
   Param<int> innerPadding { this, 0, "innerPadding" };

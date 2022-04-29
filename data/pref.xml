@@ -529,6 +529,7 @@
       <option id="data_filename" type="std::string" />
       <option id="data_format" type="SpriteSheetDataFormat" default="SpriteSheetDataFormat::Default" />
       <option id="filename_format" type="std::string" />
+      <option id="tagname_format" type="std::string" />
       <option id="border_padding" type="int" default="0" />
       <option id="shape_padding" type="int" default="0" />
       <option id="inner_padding" type="int" default="0" />

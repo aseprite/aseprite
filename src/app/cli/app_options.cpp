@@ -67,6 +67,7 @@ AppOptions::AppOptions(int argc, const char* argv[])
   , m_crop(m_po.add("crop").requiresValue("x,y,width,height").description("Crop all the images to the given rectangle"))
   , m_slice(m_po.add("slice").requiresValue("<name>").description("Crop the sprite to the given slice area"))
   , m_filenameFormat(m_po.add("filename-format").requiresValue("<fmt>").description("Special format to generate filenames"))
+  , m_tagnameFormat(m_po.add("tagname-format").requiresValue("<fmt>").description("Special format to generate tagnames"))
 #ifdef ENABLE_SCRIPTING
   , m_script(m_po.add("script").requiresValue("<filename>").description("Execute a specific script"))
   , m_scriptParam(m_po.add("script-param").requiresValue("name=value").description("Parameter for a script executed from the\nCLI that you can access with app.params"))

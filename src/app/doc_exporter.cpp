@@ -604,6 +604,7 @@ void DocExporter::reset()
   m_dataFilename.clear();
   m_textureFilename.clear();
   m_filenameFormat.clear();
+  m_tagnameFormat.clear();
   m_textureWidth = 0;
   m_textureHeight = 0;
   m_textureColumns = 0;
@@ -1431,7 +1432,17 @@ void DocExporter::createDataFile(const Samples& samples,
         else
           os << ",";
 
-        os << "\n   { \"name\": \"" << escape_for_json(tag->name()) << "\","
+        std::string format = m_tagnameFormat;
+        if (format.empty()) {
+          format = "{tag}";
+        }
+
+        FilenameInfo fnInfo;
+        fnInfo
+          .filename(doc->filename())
+          .innerTagName(tag->name());
+        std::string tagname = filename_formatter(format, fnInfo);
+        os << "\n   { \"name\": \"" << escape_for_json(tagname) << "\","
            << " \"from\": " << (tag->fromFrame()) << ","
            << " \"to\": " << (tag->toFrame()) << ","
            " \"direction\": \"" << escape_for_json(convert_anidir_to_string(tag->aniDir())) << "\"";
