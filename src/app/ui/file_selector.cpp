@@ -880,7 +880,7 @@ void FileSelector::onGoUp()
 void FileSelector::onRefreshFolder()
 {
   refresh();
-  m_fileList->setCurrentFolder(*navigation_position.get());
+  m_fileList->setCurrentFolder(m_fileList->currentFolder());
 }
 
 void FileSelector::onNewFolder()
