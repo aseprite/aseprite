@@ -1030,7 +1030,6 @@ std::string FileSelector::getSelectedExtension() const
 void FileSelector::refresh()
 {
   FileSystemModule *fs = FileSystemModule::instance();
-  LockFS lock(fs);
   fs->refresh();
 }
 
