@@ -13,6 +13,8 @@
       </hbox>
       <button text="" id="go_up_button" style="go_up_button"
               tooltip="@.go_up_button_tooltip" tooltip_dir="bottom" />
+      <button text="" id="refresh_button" style="refresh_button"
+                tooltip="@.refresh_button_tooltip" tooltip_dir="bottom" />
       <button text="" id="new_folder_button" style="new_folder_button"
               tooltip="@.new_folder_button_tooltip" tooltip_dir="bottom" />
       <buttonset id="view_type" columns="3">
