@@ -1,5 +1,5 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2019  Igara Studio S.A. -->
+<!-- Copyright (C) 2019-2022  Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2018  David Capello -->
 <gui>
   <window id="file_selector" text="">
@@ -13,8 +13,6 @@
       </hbox>
       <button text="" id="go_up_button" style="go_up_button"
               tooltip="@.go_up_button_tooltip" tooltip_dir="bottom" />
-      <button text="" id="refresh_button" style="refresh_button"
-                tooltip="@.refresh_button_tooltip" tooltip_dir="bottom" />
       <button text="" id="new_folder_button" style="new_folder_button"
               tooltip="@.new_folder_button_tooltip" tooltip_dir="bottom" />
       <buttonset id="view_type" columns="3">
@@ -23,6 +21,8 @@
         <item icon="big_icon_view" tooltip="@.big_icon_view_button_tooltip" tooltip_dir="bottom" />
       </buttonset>
       <combobox id="location" expansive="true" />
+      <button text="" id="refresh_button" style="refresh_button"
+                tooltip="@.refresh_button_tooltip" tooltip_dir="bottom" />
     </box>
     <vbox id="file_view_placeholder" expansive="true" />
     <grid columns="2">
