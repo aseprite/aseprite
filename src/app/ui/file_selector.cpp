@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -279,8 +279,10 @@ protected:
         bool enter = (msg->altPressed() && scancode == kKeyDown);
         bool back = (msg->altPressed() && scancode == kKeyLeft);
         bool forward = (msg->altPressed() && scancode == kKeyRight);
-        bool refresh = (scancode == kKeyF5 || (msg->ctrlPressed() && scancode == kKeyR));
 #endif
+        bool refresh = (scancode == kKeyF5 ||
+                        (msg->ctrlPressed() && scancode == kKeyR) ||
+                        (msg->cmdPressed() && scancode == kKeyR));
 
         if (up) {
           m_filesel->goUp();
