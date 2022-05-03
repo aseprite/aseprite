@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -280,6 +280,9 @@ protected:
         bool back = (msg->altPressed() && scancode == kKeyLeft);
         bool forward = (msg->altPressed() && scancode == kKeyRight);
 #endif
+        bool refresh = (scancode == kKeyF5 ||
+                        (msg->ctrlPressed() && scancode == kKeyR) ||
+                        (msg->cmdPressed() && scancode == kKeyR));
 
         if (up) {
           m_filesel->goUp();
@@ -296,6 +299,9 @@ protected:
         if (forward) {
           m_filesel->goForward();
           return true;
+        }
+        if (refresh) {
+          m_filesel->refreshCurrentFolder();
         }
         return false;
       }
@@ -320,6 +326,7 @@ FileSelector::FileSelector(FileSelectorType type)
   goBackButton()->setFocusStop(false);
   goForwardButton()->setFocusStop(false);
   goUpButton()->setFocusStop(false);
+  refreshButton()->setFocusStop(false);
   newFolderButton()->setFocusStop(false);
   viewType()->setFocusStop(false);
   for (auto child : viewType()->children())
@@ -338,6 +345,7 @@ FileSelector::FileSelector(FileSelectorType type)
   goBackButton()->Click.connect([this]{ onGoBack(); });
   goForwardButton()->Click.connect([this]{ onGoForward(); });
   goUpButton()->Click.connect([this]{ onGoUp(); });
+  refreshButton()->Click.connect([this] { onRefreshFolder(); });
   newFolderButton()->Click.connect([this]{ onNewFolder(); });
   viewType()->ItemChange.connect([this]{ onChangeViewType(); });
   location()->CloseListBox.connect([this]{ onLocationCloseListBox(); });
@@ -378,6 +386,11 @@ void FileSelector::goInsideFolder()
     m_fileList->setCurrentFolder(
       m_fileList->selectedFileItem());
   }
+}
+
+void FileSelector::refreshCurrentFolder()
+{
+  onRefreshFolder();
 }
 
 bool FileSelector::show(
@@ -857,6 +870,14 @@ void FileSelector::onGoForward()
 void FileSelector::onGoUp()
 {
   m_fileList->goUp();
+}
+
+void FileSelector::onRefreshFolder()
+{
+  auto fs = FileSystemModule::instance();
+  fs->refresh();
+
+  m_fileList->setCurrentFolder(m_fileList->currentFolder());
 }
 
 void FileSelector::onNewFolder()
