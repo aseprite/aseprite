@@ -381,8 +381,6 @@ void FileSelector::goUp()
 
 void FileSelector::goInsideFolder()
 {
-  refresh();
-
   if (m_fileList->selectedFileItem() &&
       m_fileList->selectedFileItem()->isBrowsable()) {
     m_fileList->setCurrentFolder(
@@ -816,7 +814,6 @@ void FileSelector::addInNavigationHistory(IFileItem* folder)
 
 void FileSelector::onGoBack()
 {
-  refresh();
   if (navigation_history.size() > 1) {
     // The default navigation position is at the end of the history
     if (navigation_position.is_null())
@@ -843,7 +840,6 @@ void FileSelector::onGoBack()
 
 void FileSelector::onGoForward()
 {
-  refresh();
   if (navigation_history.size() > 1) {
     // This should not happen, because the forward button should be
     // disabled when the navigation position is null.
@@ -873,13 +869,14 @@ void FileSelector::onGoForward()
 
 void FileSelector::onGoUp()
 {
-  refresh();
   m_fileList->goUp();
 }
 
 void FileSelector::onRefreshFolder()
 {
-  refresh();
+  auto fs = FileSystemModule::instance();
+  fs->refresh();
+
   m_fileList->setCurrentFolder(m_fileList->currentFolder());
 }
 
@@ -914,7 +911,6 @@ void FileSelector::onNewFolder()
 
 void FileSelector::onChangeViewType()
 {
-  onRefreshFolder();
   double newZoom = m_fileList->zoom();
   switch (viewType()->selectedItem()) {
     case 0: newZoom = 1.0; break;
@@ -956,7 +952,6 @@ void FileSelector::onLocationCloseListBox()
 // change the file-extension in the 'filename' entry widget
 void FileSelector::onFileTypeChange()
 {
-  refresh();
   base::paths exts;
   auto* selExtItem = dynamic_cast<CustomFileExtensionItem*>(fileType()->getSelectedItem());
   if (selExtItem)
@@ -1025,12 +1020,6 @@ std::string FileSelector::getSelectedExtension() const
     return selExtItem->extensions().front();
   else
     return m_defExtension;
-}
-
-void FileSelector::refresh()
-{
-  FileSystemModule *fs = FileSystemModule::instance();
-  fs->refresh();
 }
 
 } // namespace app

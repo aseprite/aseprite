@@ -61,7 +61,6 @@ namespace app {
     void onFileListCurrentFolderChanged();
     void onRefreshFolder();
     std::string getSelectedExtension() const;
-    void refresh();
 
     class ArrowNavigator;
     class CustomFileNameItem;
