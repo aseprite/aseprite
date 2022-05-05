@@ -71,7 +71,7 @@
 	url = https://github.com/aseprite/curl.git
 [submodule "third_party/IXWebSocket"]
 	path = third_party/IXWebSocket
-	url = https://github.com/machinezone/IXWebSocket
+	url = https://github.com/aseprite/IXWebSocket.git
 [submodule "third_party/cityhash"]
 	path = third_party/cityhash
 	url = https://github.com/aseprite/cityhash.git

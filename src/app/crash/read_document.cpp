@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -333,9 +333,10 @@ private:
           return nullptr;
 
         ObjectId palId = read32(s);
-        Palette* pal = loadObject<Palette*>("pal", palId, &Reader::readPalette);
+        std::unique_ptr<Palette> pal(
+          loadObject<Palette*>("pal", palId, &Reader::readPalette));
         if (pal)
-          spr->setPalette(pal, true);
+          spr->setPalette(pal.get(), true);
       }
     }
 

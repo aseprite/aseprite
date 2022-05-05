@@ -12,7 +12,6 @@
 #include "app/app.h"
 #include "app/commands/filters/filter_manager_impl.h"
 #include "app/console.h"
-#include "app/context_access.h"
 #include "app/i18n/strings.h"
 #include "app/ini_file.h"
 #include "app/modules/editors.h"

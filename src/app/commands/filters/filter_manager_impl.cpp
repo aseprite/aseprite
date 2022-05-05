@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -206,6 +206,7 @@ bool FilterManagerImpl::applyStep()
 
 void FilterManagerImpl::apply()
 {
+  CommandResult result;
   bool cancelled = false;
 
   begin();
@@ -257,7 +258,15 @@ void FilterManagerImpl::apply()
             position()));
       }
     }
+
+    result = CommandResult(CommandResult::kOk);
   }
+  else {
+    result = CommandResult(CommandResult::kCanceled);
+  }
+
+  ASSERT(m_reader.context());
+  m_reader.context()->setCommandResult(result);
 }
 
 void FilterManagerImpl::applyToTarget()

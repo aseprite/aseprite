@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -72,11 +72,20 @@ namespace ui {
     gfx::Rect lastNativeFrame() const { return m_lastFrame; }
     void loadNativeFrame(const gfx::Rect& frame);
 
+    // Esc key closes the current window (presses the little close
+    // button decorator) only on foreground windows, but you can
+    // override this to allow this behavior in other kind of windows.
+    virtual bool shouldProcessEscKeyToCloseWindow() const {
+      return isForeground();
+    }
+
     // Signals
     obs::signal<void (Event&)> Open;
     obs::signal<void (CloseEvent&)> Close;
 
   protected:
+    ButtonBase* closeButton() { return m_closeButton; }
+
     virtual bool onProcessMessage(Message* msg) override;
     virtual void onInvalidateRegion(const gfx::Region& region) override;
     virtual void onResize(ResizeEvent& ev) override;
