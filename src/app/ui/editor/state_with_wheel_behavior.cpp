@@ -191,18 +191,20 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
         Preferences::instance().tool(tool).brush;
 
 #if defined(_WIN32) || defined(__linux__)
+      // By default on macOS the mouse wheel is correct, up increase
+      // brush size, and down decrease it. But on Windows and Linux
+      // it's inverted.
       dz = -dz;
 #endif
 
-      int newBrushSize;
+      // We can configure the mouse wheel for brush size to behave as
+      // in previous versions.
       if (Preferences::instance().editor.invertBrushSizeScroll())
-        newBrushSize = int(brush.size()-dz);
-      else
-        newBrushSize = int(brush.size()+dz);
+        dz = -dz;
 
       brush.size(
         base::clamp(
-          newBrushSize,
+          int(brush.size()+dz),
           // If we use the "static const int" member directly here,
           // we'll get a linker error (when compiling without
           // optimizations) because we should need to define the
