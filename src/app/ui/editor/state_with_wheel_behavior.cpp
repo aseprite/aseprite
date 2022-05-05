@@ -190,7 +190,7 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
       ToolPreferences::Brush& brush =
         Preferences::instance().tool(tool).brush;
 
-#if defined(_WIN32) || defined(__linux__)
+#if LAF_WINDOWS || LAF_LINUX
       // By default on macOS the mouse wheel is correct, up increase
       // brush size, and down decrease it. But on Windows and Linux
       // it's inverted.
