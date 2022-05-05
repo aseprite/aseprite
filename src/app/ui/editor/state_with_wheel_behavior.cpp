@@ -199,7 +199,7 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
 
       // We can configure the mouse wheel for brush size to behave as
       // in previous versions.
-      if (Preferences::instance().editor.invertBrushSizeScroll())
+      if (Preferences::instance().editor.invertBrushSizeWheel())
         dz = -dz;
 
       brush.size(
