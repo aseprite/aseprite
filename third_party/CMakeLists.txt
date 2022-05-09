@@ -1,5 +1,5 @@
 # Aseprite
-# Copyright (C) 2021  Igara Studio S.A.
+# Copyright (C) 2021-2022  Igara Studio S.A.
 # Copyright (C) 2001-2018  David Capello
 
 include_directories(.)
@@ -84,6 +84,11 @@ if(NOT USE_SHARED_FREETYPE AND NOT LAF_BACKEND STREQUAL "skia")
   set(WITH_BZip2 OFF CACHE BOOL "")
 
   add_subdirectory(freetype2)
+
+  if(UNIX)
+    target_include_directories(freetype BEFORE PUBLIC
+      ${CMAKE_CURRENT_BINARY_DIR}/freetype2/include)
+  endif()
 
   if(NOT USE_SHARED_LIBPNG)
     add_dependencies(freetype ${PNG_LIBRARIES})
