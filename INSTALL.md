@@ -19,9 +19,9 @@
 You should be able to compile Aseprite successfully on the following
 platforms:
 
-* Windows 10 + [Visual Studio Community 2019 + Windows 10.0 SDK (the latest version available)](https://imgur.com/a/7zs51IT) (we don't support [MinGW](#mingw))
-* macOS 10.15.3 Catalina + Xcode 11.2.1 + macOS 10.15 SDK (older version might work)
-* Linux + gcc 9.2 or clang 9.0
+* Windows 10 + [Visual Studio Community 2022 + Windows 10.0 SDK (the latest version available)](https://imgur.com/a/7zs51IT) (we don't support [MinGW](#mingw))
+* macOS 12.3.1 Monterey + Xcode 13.1 + macOS 11.3 SDK (older version might work)
+* Linux Ubuntu Xenial 16.04 + clang 10.0
 
 # Get the source code
 
@@ -49,9 +49,9 @@ clone the repository on Windows.
 
 To compile Aseprite you will need:
 
-* The latest version of [CMake](https://cmake.org) (3.14 or greater)
+* The latest version of [CMake](https://cmake.org) (3.16 or greater)
 * [Ninja](https://ninja-build.org) build system
-* And a compiled version of the `aseprite-m96` branch of
+* And a compiled version of the `aseprite-m102` branch of
   the [Skia library](https://github.com/aseprite/skia#readme).
   There are [pre-built packages available](https://github.com/aseprite/skia/releases).
   You can get some extra information in
@@ -60,28 +60,28 @@ To compile Aseprite you will need:
 ## Windows dependencies
 
 * Windows 10 (we don't support cross-compiling)
-* [Visual Studio Community 2019](https://visualstudio.microsoft.com/downloads/) (we don't support [MinGW](#mingw))
+* [Visual Studio Community 2022](https://visualstudio.microsoft.com/downloads/) (we don't support [MinGW](#mingw))
 * The [Desktop development with C++ item + Windows 10.0.18362.0 SDK](https://imgur.com/a/7zs51IT)
   from the Visual Studio installer
 
 ## macOS dependencies
 
-On macOS you will need macOS 10.15 SDK and Xcode 11.2.1 (older
-versions might work).
+On macOS you will need macOS 11.3 SDK and Xcode 13.1 (older versions
+might work).
 
 ## Linux dependencies
 
 You will need the following dependencies on Ubuntu/Debian:
 
-    sudo apt-get install -y g++ cmake ninja-build libx11-dev libxcursor-dev libxi-dev libgl1-mesa-dev libfontconfig1-dev
+    sudo apt-get install -y g++ clang-10 libc++-10-dev cmake ninja-build libx11-dev libxcursor-dev libxi-dev libgl1-mesa-dev libfontconfig1-dev
 
 On Fedora:
 
-    sudo dnf install -y gcc-c++ cmake ninja-build libX11-devel libXcursor-devel libXi-devel mesa-libGL-devel fontconfig-devel
+    sudo dnf install -y gcc-c++ clang libcxx cmake ninja-build libX11-devel libXcursor-devel libXi-devel mesa-libGL-devel fontconfig-devel
 
 On Arch:
 
-    sudo pacman -S gcc cmake ninja libx11 libxcursor mesa-libgl fontconfig
+    sudo pacman -S gcc clang libc++ cmake ninja libx11 libxcursor mesa-libgl fontconfig
 
 # Compiling
 
@@ -122,7 +122,7 @@ On Arch:
 Open a [developer command prompt](https://docs.microsoft.com/en-us/dotnet/framework/tools/developer-command-prompt-for-vs)
 or in the command line (`cmd.exe`) call:
 
-    call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat" -arch=x64
+    call "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\VsDevCmd.bat" -arch=x64
 
 And then
 
@@ -205,13 +205,17 @@ If you have a Retina display, check the following issue:
 
 ## Linux details
 
-Run `cmake` with the following parameters and then `ninja`:
+You need to use clang and libc++ to compile Aseprite:
 
     cd aseprite
     mkdir build
     cd build
+    export CC=clang
+    export CXX=clang++
     cmake \
       -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+      -DCMAKE_CXX_FLAGS:STRING=-stdlib=libc++ \
+      -DCMAKE_EXE_LINKER_FLAGS:STRING=-stdlib=libc++ \
       -DLAF_BACKEND=skia \
       -DSKIA_DIR=$HOME/deps/skia \
       -DSKIA_LIBRARY_DIR=$HOME/deps/skia/out/Release-x64 \
@@ -225,9 +229,10 @@ compiled or uncompressed.
 
 ### GCC compiler
 
-In case that you are using the pre-compiled Skia version, you will
-need to use the Clang compiler to compile Aseprite. Only if you
-compile Skia with GCC, you will be able to compile Aseprite with GCC.
+In case that you are using the pre-compiled Skia version, you must use
+the clang compiler and libc++ to compile Aseprite. Only if you compile
+Skia with GCC, you will be able to compile Aseprite with GCC, and this
+is not recommended as you will have a performance penalty doing so.
 
 # Using shared third party libraries
 
