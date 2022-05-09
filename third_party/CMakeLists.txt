@@ -85,6 +85,8 @@ if(NOT USE_SHARED_FREETYPE AND NOT LAF_BACKEND STREQUAL "skia")
 
   add_subdirectory(freetype2)
 
+  target_compile_definitions(freetype PUBLIC
+    FT_CONFIG_OPTION_SYSTEM_ZLIB)
   if(UNIX)
     target_include_directories(freetype BEFORE PUBLIC
       ${CMAKE_CURRENT_BINARY_DIR}/freetype2/include)
