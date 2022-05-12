@@ -83,25 +83,72 @@ void AsepriteUpdate::onDownloadFinished(drm::Package& package)
     m_installation->InstallationFailed.connect([this](drm::LicenseManager::InstallationException& e) {
       onInstallationFailed(e);
     });
-    m_installation->InstallationPhaseChanged.connect([this](drm::InstallationPhase oldPhase, drm::InstallationPhase phase) {
-      onInstallationPhaseChanged(oldPhase, phase);
+    m_installation->InstallationStarted.connect([this](drm::Package& package) {
+      onInstallationStarted(package);
+    });
+    m_installation->InstallationPhaseStarted.connect([this](drm::InstallationPhase phase) {
+      onInstallationPhaseStarted(phase);
+    });
+    m_installation->InstallationPhaseSkipped.connect([this](drm::InstallationPhase phase) {
+      onInstallationPhaseSkipped(phase);
+    });
+    m_installation->InstallationPhaseFinished.connect([this](drm::InstallationPhase phase) {
+      onInstallationPhaseFinished(phase);
+    });
+    m_installation->InstallationProgress.connect([this](drm::InstallationPhase phase, int pctCompleted) {
+      onInstallationProgress(pctCompleted);
+    });
+    m_installation->InstallationFinished.connect([this](drm::Package& package) {
+      onInstallationFinished(package);
     });
     m_installation->start();
   });
 }
 
-void AsepriteUpdate::onInstallationPhaseChanged(drm::InstallationPhase oldPhase, drm::InstallationPhase phase)
+void AsepriteUpdate::onInstallationPhaseStarted(drm::InstallationPhase phase)
 {
-  ui::execute_from_ui_thread([this, oldPhase, phase] {
+  ui::execute_from_ui_thread([this, phase] {
+    std::string msg = "";
+    switch (phase) {
+    case drm::InstallationPhase::CREATING_BACKUP:
+      msg = "Creating backup...";
+      break;
+    case drm::InstallationPhase::UNPACKING_PACKAGE:
+      msg = "Unpacking package...";
+      break;
+    case drm::InstallationPhase::INSTALLING_FILES:
+      msg = "Installing files...";
+      break;
+    }
+    if (!msg.empty()) log(msg);
+  });
+}
+
+void AsepriteUpdate::onInstallationPhaseSkipped(drm::InstallationPhase phase)
+{
+  ui::execute_from_ui_thread([this, phase] {
+    std::string msg = "";
+    switch (phase) {
+    case drm::InstallationPhase::CREATING_BACKUP:
+      msg = "Creating backup skipped.";
+      break;
+    case drm::InstallationPhase::UNPACKING_PACKAGE:
+      msg = "Unpacking package skipped.";
+      break;
+    case drm::InstallationPhase::INSTALLING_FILES:
+      msg = "Installing files skipped.";
+      break;
+    }
+    if (!msg.empty()) log(msg);
+  });
+}
+
+void AsepriteUpdate::onInstallationPhaseFinished(drm::InstallationPhase phase)
+{
+  ui::execute_from_ui_thread([this, phase] {
     std::string msg;
 
-    switch (oldPhase) {
-    case drm::InstallationPhase::UNSPECIFIED:
-      msg = "Installation process started...";
-      break;
-    case drm::InstallationPhase::SAVING_PACKAGE:
-      msg = "Package saved!";
-      break;
+    switch (phase) {
     case drm::InstallationPhase::CREATING_BACKUP:
       msg = "Backup created!";
       break;
@@ -113,26 +160,27 @@ void AsepriteUpdate::onInstallationPhaseChanged(drm::InstallationPhase oldPhase,
       break;
     }
     if (!msg.empty()) log(msg);
+  });
+}
 
-    msg = "";
-    switch (phase) {
-    case drm::InstallationPhase::SAVING_PACKAGE:
-      msg = "Saving package...";
-      break;
-    case drm::InstallationPhase::CREATING_BACKUP:
-      msg = "Creating backup...";
-      break;
-    case drm::InstallationPhase::UNPACKING_PACKAGE:
-      msg = "Unpacking package...";
-      break;
-    case drm::InstallationPhase::INSTALLING_FILES:
-      msg = "Installing files...";
-      break;
-    case drm::InstallationPhase::DONE:
-      msg = "Installation process finished!";
-      break;
-    }
-    if (!msg.empty()) log(msg);
+void AsepriteUpdate::onInstallationStarted(drm::Package& package)
+{
+  ui::execute_from_ui_thread([this] {
+    log("Installation process started...");
+  });
+}
+
+void AsepriteUpdate::onInstallationProgress(int pctCompleted)
+{
+  ui::execute_from_ui_thread([this, pctCompleted] {
+    progress()->setValue(pctCompleted);
+  });
+}
+
+void AsepriteUpdate::onInstallationFinished(drm::Package& package)
+{
+  ui::execute_from_ui_thread([this] {
+    log("Installation process finished!");
   });
 }
 

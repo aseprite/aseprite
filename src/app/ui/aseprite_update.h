@@ -25,7 +25,13 @@ protected:
   void onDataReceived(long total, long now);
   void onDownloadFailed(drm::LicenseManager::DownloadException& e);
   void onDownloadFinished(drm::Package& package);
-  void onInstallationPhaseChanged(drm::InstallationPhase oldPhase, drm::InstallationPhase phase);
+  void onInstallationPhaseChanged(drm::InstallationPhase oldPhase, drm::InstallationPhase phase, bool skipped);
+  void onInstallationStarted(drm::Package& package);
+  void onInstallationPhaseStarted(drm::InstallationPhase phase);
+  void onInstallationPhaseSkipped(drm::InstallationPhase phase);
+  void onInstallationPhaseFinished(drm::InstallationPhase phase);
+  void onInstallationProgress(int pctCompleted);
+  void onInstallationFinished(drm::Package& package);
   void onInstallationFailed(drm::LicenseManager::InstallationException& e);
   void onTimerTick();
 
