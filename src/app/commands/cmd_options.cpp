@@ -434,11 +434,14 @@ public:
 
     selectScalingItems();
 
-    if ((int(os::instance()->capabilities()) &
-         int(os::Capabilities::GpuAccelerationSwitch)) == int(os::Capabilities::GpuAccelerationSwitch)) {
+#ifdef _DEBUG // TODO enable this on Release when Aseprite supports
+              //      GPU-acceleration properly
+    if (os::instance()->hasCapability(os::Capabilities::GpuAccelerationSwitch)) {
       gpuAcceleration()->setSelected(m_pref.general.gpuAcceleration());
     }
-    else {
+    else
+#endif
+    {
       gpuAcceleration()->setVisible(false);
     }
 

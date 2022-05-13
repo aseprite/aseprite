@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -181,8 +181,7 @@ int init_module_gui()
     // If we've created the display with hardware acceleration,
     // now we try to do it without hardware acceleration.
     if (gpuAccel &&
-        (int(os::instance()->capabilities()) &
-         int(os::Capabilities::GpuAccelerationSwitch)) == int(os::Capabilities::GpuAccelerationSwitch)) {
+        os::instance()->hasCapability(os::Capabilities::GpuAccelerationSwitch)) {
       if (create_main_window(false, maximized, lastError)) {
         // Disable hardware acceleration
         pref.general.gpuAcceleration(false);

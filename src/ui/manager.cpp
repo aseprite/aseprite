@@ -275,6 +275,8 @@ void Manager::flipDisplay()
 
     m_dirtyRegion.clear();
   }
+
+  m_display->swapBuffers();
 }
 
 void Manager::updateAllDisplaysWithNewScale(int scale)
