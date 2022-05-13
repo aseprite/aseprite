@@ -317,6 +317,12 @@ bool PaletteView::onProcessMessage(Message* msg)
       switch (m_hot.part) {
 
         case Hit::COLOR:
+          // Clicking outside the palette range will deselect
+          if (m_hot.color >= currentPalette()->size()) {
+            deselect();
+            break;
+          }
+
           m_state = State::SELECTING_COLOR;
 
           // As we can ctrl+click color bar + timeline, now we have to
