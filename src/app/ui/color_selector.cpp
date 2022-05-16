@@ -117,8 +117,14 @@ public:
       paint.color(bgColor);
       paint.style(os::Paint::Fill);
       m_canvas->drawRect(gfx::Rect(0, 0, w, h), paint);
-      if (oldCanvas)
-        m_canvas->drawSurface(oldCanvas.get(), 0, 0);
+      if (oldCanvas) {
+        m_canvas->drawSurface(
+          oldCanvas.get(),
+          gfx::Rect(0, 0, oldCanvas->width(), oldCanvas->height()),
+          gfx::Rect(0, 0, w, h),
+          os::Sampling(),
+          nullptr);
+      }
     }
     return m_canvas.get();
   }
