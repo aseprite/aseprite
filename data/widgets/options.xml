@@ -63,7 +63,7 @@
 		 text="@.show_home" />
           <check id="expand_menubar_on_mouseover"
                  text="@.expand_menu_bar_items_on_mouseover"
-                 tooltip="@.expand_menu_bar_items_on_mouseover" />
+                 tooltip="@.expand_menu_bar_items_on_mouseover_tooltip" />
           <check id="color_bar_entries_separator"
                  text="@.color_bar_entries_separator"
                  tooltip="@.color_bar_entries_separator"
