@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2022 Igara Studio S.A.
 // Copyright (c) 2016-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -11,7 +12,6 @@
 #include "doc/frame_range.h"
 
 #include <iosfwd>
-#include <iterator>
 #include <vector>
 
 namespace doc {
@@ -20,9 +20,15 @@ namespace doc {
     typedef std::vector<FrameRange> Ranges;
 
   public:
-    class const_iterator : public std::iterator<std::forward_iterator_tag, frame_t> {
+    class const_iterator {
       static const int kNullFrame = -2;
     public:
+      using iterator_category = std::forward_iterator_tag;
+      using value_type = frame_t;
+      using difference_type = std::ptrdiff_t;
+      using pointer = frame_t*;
+      using reference = frame_t&;
+
       const_iterator(const Ranges::const_iterator& it)
         : m_it(it), m_frame(kNullFrame) {
       }
@@ -70,8 +76,14 @@ namespace doc {
       mutable frame_t m_frame;
     };
 
-    class const_reverse_iterator : public std::iterator<std::forward_iterator_tag, frame_t> {
+    class const_reverse_iterator {
     public:
+      using iterator_category = std::forward_iterator_tag;
+      using value_type = frame_t;
+      using difference_type = std::ptrdiff_t;
+      using pointer = frame_t*;
+      using reference = frame_t&;
+
       const_reverse_iterator(const Ranges::const_reverse_iterator& it)
         : m_it(it), m_frame(-1) {
       }

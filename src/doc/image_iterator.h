@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2022 Igara Studio S.A.
 // Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -14,7 +15,6 @@
 #include "gfx/rect.h"
 
 #include <cstdlib>
-#include <iterator>
 
 #include <iostream>
 
@@ -25,18 +25,15 @@ namespace doc {
   template<typename ImageTraits,
            typename PointerType,
            typename ReferenceType>
-  class ImageIteratorT : public std::iterator<std::forward_iterator_tag,
-                                              typename ImageTraits::pixel_t,
-                                              ptrdiff_t,
-                                              PointerType,
-                                              ReferenceType> {
+  class ImageIteratorT {
   public:
-    // GCC 4.6 needs these re-definitions here.
-    typedef ptrdiff_t difference_type;
-    typedef PointerType pointer;
-    typedef ReferenceType reference;
+    using iterator_category = std::forward_iterator_tag;
+    using value_type = typename ImageTraits::pixel_t;
+    using difference_type = std::ptrdiff_t;
+    using pointer = PointerType;
+    using reference = ReferenceType;
 
-    ImageIteratorT() : m_ptr(NULL) {
+    ImageIteratorT() : m_ptr(nullptr) {
     }
 
     ImageIteratorT(const ImageIteratorT& other) :
@@ -141,17 +138,13 @@ namespace doc {
                                               typename ImageTraits::pixel_t *,
                                               typename ImageTraits::pixel_t&> {
   public:
-    // GCC 4.6 needs these re-definitions here.
-    typedef typename ImageTraits::pixel_t* pointer;
-    typedef typename ImageTraits::pixel_t& reference;
-
     ImageIterator() {
     }
 
     ImageIterator(const Image* image, const gfx::Rect& bounds, int x, int y) :
       ImageIteratorT<ImageTraits,
-                     pointer,
-                     reference>(image, bounds, x, y) {
+                     typename ImageIterator::pointer,
+                     typename ImageIterator::reference>(image, bounds, x, y) {
     }
   };
 
@@ -160,17 +153,13 @@ namespace doc {
                                                    typename ImageTraits::pixel_t const *,
                                                    typename ImageTraits::pixel_t const &> {
   public:
-    // GCC 4.6 needs these re-definitions here.
-    typedef typename ImageTraits::pixel_t const* pointer;
-    typedef typename ImageTraits::pixel_t const& reference;
-
     ImageConstIterator() {
     }
 
     ImageConstIterator(const Image* image, const gfx::Rect& bounds, int x, int y) :
       ImageIteratorT<ImageTraits,
-                     pointer,
-                     reference>(image, bounds, x, y) {
+                     typename ImageConstIterator::pointer,
+                     typename ImageConstIterator::reference>(image, bounds, x, y) {
     }
   };
 
@@ -180,7 +169,7 @@ namespace doc {
   class BitPixelAccess {
   public:
     BitPixelAccess() :
-      m_ptr(NULL),
+      m_ptr(nullptr),
       m_bit(0) {
     }
 
@@ -262,20 +251,17 @@ namespace doc {
 
   template<typename PointerType,
            typename ReferenceType>
-  class ImageIteratorT<BitmapTraits, PointerType, ReferenceType>
-    : public std::iterator<std::forward_iterator_tag,
-                           BitmapTraits::pixel_t,
-                           ptrdiff_t,
-                           PointerType,
-                           ReferenceType> {
+  class ImageIteratorT<BitmapTraits, PointerType, ReferenceType> {
   public:
-    // GCC 4.6 needs these re-definitions here.
-    typedef ptrdiff_t difference_type;
-    typedef PointerType pointer;
-    typedef ReferenceType reference;
+    using iterator_category = std::forward_iterator_tag;
+    using value_type = BitmapTraits::pixel_t;
+    using difference_type = std::ptrdiff_t;
+    using pointer = PointerType;
+    using reference = ReferenceType;
+
     enum { pixels_per_byte = BitmapTraits::pixels_per_byte };
 
-    ImageIteratorT() : m_ptr(NULL) {
+    ImageIteratorT() : m_ptr(nullptr) {
     }
 
     ImageIteratorT(const ImageIteratorT& other) :
