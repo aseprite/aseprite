@@ -748,7 +748,8 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
         g->drawSurface(tmp.get(),
                        gfx::Rect(0, 0, rc2.w, rc2.h),
                        dest,
-                       sampling);
+                       sampling,
+                       nullptr);
       }
       else {
         g->blit(tmp.get(), 0, 0, dest.x, dest.y, dest.w, dest.h);

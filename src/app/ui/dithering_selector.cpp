@@ -149,14 +149,20 @@ private:
     g->drawText(text(), fg, bg,
                 gfx::Point(rc.x+2*guiscale(),
                            rc.y+2*guiscale()));
-    g->drawRgbaSurface(
+
+    ui::Paint paint;
+    paint.blendMode(os::BlendMode::SrcOver);
+
+    g->drawSurface(
       preview(),
       preview()->bounds(),
       gfx::Rect(
         rc.x+2*guiscale(),
         rc.y+4*guiscale()+textsz.h,
         preview()->width()*guiscale(),
-        preview()->height()*guiscale()));
+        preview()->height()*guiscale()),
+      os::Sampling(),
+      &paint);
   }
 
   bool m_matrixOnly;

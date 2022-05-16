@@ -248,21 +248,6 @@ void Graphics::drawSurface(os::Surface* surface, int x, int y)
 
 void Graphics::drawSurface(os::Surface* surface,
                            const gfx::Rect& srcRect,
-                           const gfx::Rect& dstRect)
-{
-  dirty(gfx::Rect(m_dx+dstRect.x, m_dy+dstRect.y,
-                  dstRect.w, dstRect.h));
-
-  os::SurfaceLock lockSrc(surface);
-  os::SurfaceLock lockDst(m_surface.get());
-  m_surface->drawSurface(
-    surface,
-    srcRect,
-    gfx::Rect(dstRect).offset(m_dx, m_dy));
-}
-
-void Graphics::drawSurface(os::Surface* surface,
-                           const gfx::Rect& srcRect,
                            const gfx::Rect& dstRect,
                            const os::Sampling& sampling,
                            const ui::Paint* paint)
@@ -296,21 +281,6 @@ void Graphics::drawRgbaSurface(os::Surface* surface, int srcx, int srcy, int dst
   os::SurfaceLock lockSrc(surface);
   os::SurfaceLock lockDst(m_surface.get());
   m_surface->drawRgbaSurface(surface, srcx, srcy, m_dx+dstx, m_dy+dsty, w, h);
-}
-
-void Graphics::drawRgbaSurface(os::Surface* surface,
-                               const gfx::Rect& srcRect,
-                               const gfx::Rect& dstRect)
-{
-  dirty(gfx::Rect(m_dx+dstRect.x, m_dy+dstRect.y,
-                  dstRect.w, dstRect.h));
-
-  os::SurfaceLock lockSrc(surface);
-  os::SurfaceLock lockDst(m_surface.get());
-  m_surface->drawRgbaSurface(
-    surface,
-    srcRect,
-    gfx::Rect(dstRect).offset(m_dx, m_dy));
 }
 
 void Graphics::drawColoredRgbaSurface(os::Surface* surface, gfx::Color color, int x, int y)

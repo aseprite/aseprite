@@ -465,9 +465,22 @@ void FileList::onPaint(ui::PaintEvent& ev)
     tbounds.shrink(1);
 
     os::SurfaceRef thumbnail = m_selected->getThumbnail();
-    g->drawRgbaSurface(thumbnail.get(),
-                       gfx::Rect(0, 0, thumbnail->width(), thumbnail->height()),
-                       tbounds);
+
+    ui::Paint paint;
+    paint.blendMode(os::BlendMode::SrcOver);
+
+    os::Sampling sampling;
+    if (thumbnail->width() > tbounds.w &&
+        thumbnail->height() > tbounds.h) {
+      sampling = os::Sampling(os::Sampling::Filter::Linear,
+                              os::Sampling::Mipmap::Nearest);
+    }
+
+    g->drawSurface(thumbnail.get(),
+                   gfx::Rect(0, 0, thumbnail->width(), thumbnail->height()),
+                   tbounds,
+                   sampling,
+                   &paint);
   }
 }
 
@@ -561,9 +574,21 @@ void FileList::paintItem(ui::Graphics* g, IFileItem* fi, const int i)
         tbounds.shrink(1);
       }
 
-      g->drawRgbaSurface(thumbnail.get(),
-                         gfx::Rect(0, 0, thumbnail->width(), thumbnail->height()),
-                         tbounds);
+      ui::Paint paint;
+      paint.blendMode(os::BlendMode::SrcOver);
+
+      os::Sampling sampling;
+      if (thumbnail->width() > tbounds.w &&
+          thumbnail->height() > tbounds.h) {
+        sampling = os::Sampling(os::Sampling::Filter::Linear,
+                                os::Sampling::Mipmap::Nearest);
+      }
+
+      g->drawSurface(thumbnail.get(),
+                     gfx::Rect(0, 0, thumbnail->width(), thumbnail->height()),
+                     tbounds,
+                     sampling,
+                     &paint);
     }
     else {
       tbounds = gfx::Rect(0, 0, 20*guiscale(), 2+4*(8.0-m_zoom)/8.0*guiscale())
