@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -26,6 +26,9 @@ namespace ui {
 }
 
 namespace app {
+
+  gfx::Color grid_color1();
+  gfx::Color grid_color2();
 
   void draw_checked_grid(ui::Graphics* g,
                          const gfx::Rect& rc,
