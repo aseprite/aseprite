@@ -61,11 +61,13 @@ const char* ColorTintShadeTone::getBottomBarShader()
                       "uniform half4 iColor;";
     m_bottomShader += kRGB_to_HSV_sksl;
     m_bottomShader += kHSV_to_RGB_sksl;
+    // TODO should we display the hue bar with the current sat/value?
     m_bottomShader += R"(
 half4 main(vec2 fragcoord) {
  half h = (fragcoord.x / iRes.x);
- half3 hsv = rgb_to_hsv(iColor.rgb);
- return hsv_to_rgb(half3(h, hsv.y, hsv.z)).rgb1;
+ // half3 hsv = rgb_to_hsv(iColor.rgb);
+ // return hsv_to_rgb(half3(h, hsv.y, hsv.z)).rgb1;
+ return hsv_to_rgb(half3(h, 1.0, 1.0)).rgb1;
 }
 )";
   }
