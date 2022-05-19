@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This program is distributed under the terms of
@@ -26,7 +26,7 @@ SliceWindow::SliceWindow(const doc::Sprite* sprite,
                          const doc::SelectedObjects& slices,
                          const doc::frame_t frame)
   : m_mods(kNone)
-  , m_userDataView(new gen::UserData(), &Preferences::instance().slices.userDataVisibility)
+  , m_userDataView(Preferences::instance().slices.userDataVisibility)
 {
   ASSERT(!slices.empty());
 

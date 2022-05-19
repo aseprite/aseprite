@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -78,7 +78,7 @@ public:
     , m_document(nullptr)
     , m_layer(nullptr)
     , m_selfUpdate(false)
-    , m_userDataView(new gen::UserData(), &Preferences::instance().layers.userDataVisibility) {
+    , m_userDataView(Preferences::instance().layers.userDataVisibility) {
     name()->setMinSize(gfx::Size(128, 0));
     name()->setExpansive(true);
 

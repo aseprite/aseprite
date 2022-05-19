@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -27,7 +27,7 @@ TagWindow::TagWindow(const doc::Sprite* sprite, const doc::Tag* tag)
   , m_base(Preferences::instance().document(
      static_cast<Doc*>(sprite->document())).timeline.firstFrame())
   , m_userData(tag->userData())
-  , m_userDataView(new gen::UserData(), &Preferences::instance().tags.userDataVisibility)
+  , m_userDataView(Preferences::instance().tags.userDataVisibility)
 {
   auto mainGrid = findChildT<ui::Grid>("properties_grid");
   m_userDataView.configureAndSet(m_userData, mainGrid);

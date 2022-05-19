@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2021  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -22,16 +22,14 @@
 
 namespace app {
 
-UserDataView::UserDataView(gen::UserData* userDataWidgetsContainer, Option<bool>* visibility)
+UserDataView::UserDataView(Option<bool>& visibility)
   : m_visibility(visibility)
-  , m_userDataWidgetsContainer(userDataWidgetsContainer)
-  , m_isConfigured(false)
 {
 }
 
 void UserDataView::configureAndSet(const doc::UserData& userData, ui::Grid* parent)
 {
-  if (!isConfigured()) {
+  if (!m_isConfigured) {
     // Find the correct hspan to add to an arbitrary grid column count:
     // Example with grid columns count = 4:
     //
@@ -81,7 +79,7 @@ void UserDataView::setVisible(bool state, bool saveAsDefault)
   entryLabel()->setVisible(state);
   entry()->setVisible(state);
   if (saveAsDefault)
-    m_visibility->setValue(state);
+    m_visibility.setValue(state);
 }
 
 void UserDataView::onUserDataChange()

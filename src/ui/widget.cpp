@@ -549,6 +549,10 @@ void Widget::addChild(Widget* child)
   ASSERT_VALID_WIDGET(this);
   ASSERT_VALID_WIDGET(child);
 
+  // Remove the widget from its current parent
+  if (child->m_parent)
+    child->m_parent->removeChild(child);
+
   m_children.push_back(child);
   child->m_parent = this;
 }

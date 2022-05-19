@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2021  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -22,29 +22,27 @@ namespace app {
 
   class UserDataView {
   public:
-    UserDataView(gen::UserData* userDataWidgetsContainer, Option<bool>* visibility);
+    UserDataView(Option<bool>& visibility);
 
     void configureAndSet(const doc::UserData& userData, ui::Grid* parent);
     void toggleVisibility();
     void setVisible(bool state, bool saveAsDefault = true);
-    void freeUserDataWidgets(ui::Grid* parent);
 
     const doc::UserData& userData() const { return m_userData; }
-    ColorButton* color() { return m_userDataWidgetsContainer->color(); }
-    ui::Entry* entry() { return m_userDataWidgetsContainer->entry();}
-    ui::Label* colorLabel() { return m_userDataWidgetsContainer->colorLabel(); }
-    ui::Label* entryLabel() { return m_userDataWidgetsContainer->entryLabel(); }
+    ColorButton* color() { return m_container.color(); }
+    ui::Entry* entry() { return m_container.entry();}
+    ui::Label* colorLabel() { return m_container.colorLabel(); }
+    ui::Label* entryLabel() { return m_container.entryLabel(); }
 
   private:
-    bool isVisible() const { return (*m_visibility)(); }
+    bool isVisible() const { return m_visibility(); }
     void onUserDataChange();
     void onColorChange();
-    bool isConfigured() const { return m_isConfigured; }
 
+    gen::UserData m_container;
     doc::UserData m_userData;
-    Option<bool>* m_visibility;
-    gen::UserData* m_userDataWidgetsContainer;
-    bool m_isConfigured;
+    Option<bool>& m_visibility;
+    bool m_isConfigured = false;
   };
 
 } // namespace app

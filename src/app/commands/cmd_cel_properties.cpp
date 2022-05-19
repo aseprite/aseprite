@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2021  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -49,7 +49,7 @@ public:
     , m_document(nullptr)
     , m_cel(nullptr)
     , m_selfUpdate(false)
-    , m_userDataView(new gen::UserData(), &Preferences::instance().cels.userDataVisibility)
+    , m_userDataView(Preferences::instance().cels.userDataVisibility)
   {
     opacity()->Change.connect([this]{ onStartTimer(); });
     userData()->Click.connect([this]{ onToggleUserData(); });
