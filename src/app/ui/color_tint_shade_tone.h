@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2022  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -18,6 +19,8 @@ namespace app {
     ColorTintShadeTone();
 
   protected:
+    const char* getMainAreaShader() override;
+    const char* getBottomBarShader() override;
     app::Color getMainAreaColor(const int u, const int umax,
                                 const int v, const int vmax) override;
     app::Color getBottomBarColor(const int u, const int umax) override;
@@ -29,6 +32,10 @@ namespace app {
                                   const gfx::Rect& alpha,
                                   bool& stop) override;
     int onNeedsSurfaceRepaint(const app::Color& newColor) override;
+
+  private:
+    std::string m_mainShader;
+    std::string m_bottomShader;
   };
 
 } // namespace app

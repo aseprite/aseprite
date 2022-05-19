@@ -309,6 +309,8 @@ void Manager::flipAllDisplays()
         window->display()->flipDisplay();
     }
   }
+
+  m_display.nativeWindow()->swapBuffers();
 }
 
 void Manager::updateAllDisplaysWithNewScale(int scale)

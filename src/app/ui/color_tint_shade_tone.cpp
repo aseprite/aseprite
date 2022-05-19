@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -13,6 +13,7 @@
 
 #include "app/color_utils.h"
 #include "app/ui/skin/skin_theme.h"
+#include "app/util/shader_helpers.h"
 #include "base/clamp.h"
 #include "ui/graphics.h"
 
@@ -26,6 +27,54 @@ using namespace ui;
 
 ColorTintShadeTone::ColorTintShadeTone()
 {
+}
+
+const char* ColorTintShadeTone::getMainAreaShader()
+{
+#if SK_ENABLE_SKSL
+  if (m_mainShader.empty()) {
+    m_mainShader += "uniform half3 iRes;"
+                    "uniform half4 iColor;";
+    m_mainShader += kRGB_to_HSV_sksl;
+    m_mainShader += kHSV_to_RGB_sksl;
+    m_mainShader += R"(
+half4 main(vec2 fragcoord) {
+ vec2 d = fragcoord.xy / iRes.xy;
+ half hue = rgb_to_hsv(iColor.rgb).x;
+ half sat = d.x;
+ half val = 1.0 - d.y;
+ return hsv_to_rgb(vec3(hue, sat, val)).rgb1;
+}
+)";
+  }
+  return m_mainShader.c_str();
+#else
+  return nullptr;
+#endif
+}
+
+const char* ColorTintShadeTone::getBottomBarShader()
+{
+#if SK_ENABLE_SKSL
+  if (m_bottomShader.empty()) {
+    m_bottomShader += "uniform half3 iRes;"
+                      "uniform half4 iColor;";
+    m_bottomShader += kRGB_to_HSV_sksl;
+    m_bottomShader += kHSV_to_RGB_sksl;
+    // TODO should we display the hue bar with the current sat/value?
+    m_bottomShader += R"(
+half4 main(vec2 fragcoord) {
+ half h = (fragcoord.x / iRes.x);
+ // half3 hsv = rgb_to_hsv(iColor.rgb);
+ // return hsv_to_rgb(half3(h, hsv.y, hsv.z)).rgb1;
+ return hsv_to_rgb(half3(h, 1.0, 1.0)).rgb1;
+}
+)";
+  }
+  return m_bottomShader.c_str();
+#else
+  return nullptr;
+#endif
 }
 
 app::Color ColorTintShadeTone::getMainAreaColor(const int u, const int umax,

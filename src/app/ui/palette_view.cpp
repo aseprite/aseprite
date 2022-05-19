@@ -316,7 +316,18 @@ public:
       os::SurfaceRef surface = os::instance()->makeRgbaSurface(w, h);
       convert_image_to_surface(tileImage.get(), get_current_palette(),
                                surface.get(), 0, 0, 0, 0, w, h);
-      g->drawRgbaSurface(surface.get(), gfx::Rect(0, 0, w, h), box);
+
+      ui::Paint paint;
+      paint.blendMode(os::BlendMode::SrcOver);
+
+      os::Sampling sampling;
+      if (w > box.w && h > box.h) {
+        sampling = os::Sampling(os::Sampling::Filter::Linear,
+                                os::Sampling::Mipmap::Nearest);
+      }
+
+      g->drawSurface(surface.get(), gfx::Rect(0, 0, w, h), box,
+                     sampling, &paint);
     }
     negColor = gfx::rgba(255, 255, 255);
   }
@@ -626,6 +637,12 @@ bool PaletteView::onProcessMessage(Message* msg)
       switch (m_hot.part) {
 
         case Hit::COLOR:
+          // Clicking outside the palette range will deselect
+          if (m_hot.color >= currentPalette()->size()) {
+            deselect();
+            break;
+          }
+
           m_state = State::SELECTING_COLOR;
 
           // As we can ctrl+click color bar + timeline, now we have to

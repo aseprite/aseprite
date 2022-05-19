@@ -43,22 +43,6 @@ using namespace gfx;
 
 namespace {
 
-gfx::Color gridColor1()
-{
-  if (ui::is_ui_thread() && current_editor)
-    return color_utils::color_for_ui(current_editor->docPref().bg.color1());
-  else
-    return gfx::rgba(128, 128, 128);
-}
-
-gfx::Color gridColor2()
-{
-  if (ui::is_ui_thread() && current_editor)
-    return color_utils::color_for_ui(current_editor->docPref().bg.color2());
-  else
-    return gfx::rgba(192, 192, 192);
-}
-
 void draw_checked_grid(ui::Graphics* g,
                        const gfx::Rect& rc,
                        const gfx::Size& tile,
@@ -93,11 +77,27 @@ void draw_checked_grid(ui::Graphics* g,
 
 } // anonymous namespace
 
+gfx::Color grid_color1()
+{
+  if (ui::is_ui_thread() && current_editor)
+    return color_utils::color_for_ui(current_editor->docPref().bg.color1());
+  else
+    return gfx::rgba(128, 128, 128);
+}
+
+gfx::Color grid_color2()
+{
+  if (ui::is_ui_thread() && current_editor)
+    return color_utils::color_for_ui(current_editor->docPref().bg.color2());
+  else
+    return gfx::rgba(192, 192, 192);
+}
+
 void draw_checked_grid(ui::Graphics* g,
                        const gfx::Rect& rc,
                        const gfx::Size& tile)
 {
-  draw_checked_grid(g, rc, tile, gridColor1(), gridColor2());
+  draw_checked_grid(g, rc, tile, grid_color1(), grid_color2());
 }
 
 void draw_checked_grid(ui::Graphics* g,
@@ -105,7 +105,7 @@ void draw_checked_grid(ui::Graphics* g,
                        const gfx::Size& tile,
                        DocumentPreferences& docPref)
 {
-  draw_checked_grid(g, rc, tile, gridColor1(), gridColor2());
+  draw_checked_grid(g, rc, tile, grid_color1(), grid_color2());
 }
 
 void draw_color(ui::Graphics* g,
@@ -228,7 +228,18 @@ void draw_tile(ui::Graphics* g,
   os::SurfaceRef surface = os::instance()->makeRgbaSurface(w, h);
   convert_image_to_surface(tileImage.get(), get_current_palette(),
                            surface.get(), 0, 0, 0, 0, w, h);
-  g->drawRgbaSurface(surface.get(), gfx::Rect(0, 0, w, h), rc);
+
+  ui::Paint paint;
+  paint.blendMode(os::BlendMode::SrcOver);
+
+  os::Sampling sampling;
+  if (w > rc.w && h > rc.h) {
+    sampling = os::Sampling(os::Sampling::Filter::Linear,
+                            os::Sampling::Mipmap::Nearest);
+  }
+
+  g->drawSurface(surface.get(), gfx::Rect(0, 0, w, h), rc,
+                 os::Sampling(), &paint);
 }
 
 void draw_tile_button(ui::Graphics* g,
@@ -286,8 +297,8 @@ void draw_alpha_slider(ui::Graphics* g,
 
   for (int x=0; x<rc.w; ++x) {
     const int a = (255 * x / xmax);
-    const doc::color_t c1 = doc::rgba_blender_normal(gridColor1(), c, a);
-    const doc::color_t c2 = doc::rgba_blender_normal(gridColor2(), c, a);
+    const doc::color_t c1 = doc::rgba_blender_normal(grid_color1(), c, a);
+    const doc::color_t c2 = doc::rgba_blender_normal(grid_color2(), c, a);
     const int mid = rc.h/2;
     const int odd = (x / rc.h) & 1;
     g->drawVLine(
@@ -314,8 +325,8 @@ void draw_alpha_slider(os::Surface* s,
   os::Paint paint;
   for (int x=0; x<rc.w; ++x) {
     const int a = (255 * x / xmax);
-    const doc::color_t c1 = doc::rgba_blender_normal(gridColor1(), c, a);
-    const doc::color_t c2 = doc::rgba_blender_normal(gridColor2(), c, a);
+    const doc::color_t c1 = doc::rgba_blender_normal(grid_color1(), c, a);
+    const doc::color_t c2 = doc::rgba_blender_normal(grid_color2(), c, a);
     const int mid = rc.h/2;
     const int odd = (x / rc.h) & 1;
 

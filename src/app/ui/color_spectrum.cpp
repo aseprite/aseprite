@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -14,6 +14,7 @@
 #include "app/color_utils.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
+#include "app/util/shader_helpers.h"
 #include "base/clamp.h"
 #include "os/surface.h"
 #include "ui/graphics.h"
@@ -33,6 +34,52 @@ using namespace ui;
 
 ColorSpectrum::ColorSpectrum()
 {
+}
+
+const char* ColorSpectrum::getMainAreaShader()
+{
+#if SK_ENABLE_SKSL
+  if (m_mainShader.empty()) {
+    m_mainShader += "uniform half3 iRes;"
+                    "uniform half4 iColor;";
+    m_mainShader += kRGB_to_HSL_sksl;
+    m_mainShader += kHSL_to_RGB_sksl;
+    m_mainShader += R"(
+half4 main(vec2 fragcoord) {
+ vec2 d = fragcoord.xy / iRes.xy;
+ half hue = d.x;
+ half sat = rgb_to_hsl(iColor.rgb).y;
+ half lit = 1.0 - d.y;
+ return hsl_to_rgb(half3(hue, sat, lit)).rgb1;
+}
+)";
+  }
+  return m_mainShader.c_str();
+#else
+  return nullptr;
+#endif
+}
+
+const char* ColorSpectrum::getBottomBarShader()
+{
+#if SK_ENABLE_SKSL
+  if (m_bottomShader.empty()) {
+    m_bottomShader += "uniform half3 iRes;"
+                      "uniform half4 iColor;";
+    m_bottomShader += kRGB_to_HSL_sksl;
+    m_bottomShader += kHSL_to_RGB_sksl;
+    m_bottomShader += R"(
+half4 main(vec2 fragcoord) {
+ half s = (fragcoord.x / iRes.x);
+ half3 hsl = rgb_to_hsl(iColor.rgb);
+ return hsl_to_rgb(half3(hsl.x, s, hsl.z)).rgb1;
+}
+)";
+  }
+  return m_bottomShader.c_str();
+#else
+  return nullptr;
+#endif
 }
 
 app::Color ColorSpectrum::getMainAreaColor(const int u, const int umax,
