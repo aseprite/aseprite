@@ -46,17 +46,13 @@ class CelPropertiesWindow : public app::gen::CelProperties,
 public:
   CelPropertiesWindow()
     : m_timer(250, this)
-    , m_document(nullptr)
-    , m_cel(nullptr)
-    , m_selfUpdate(false)
     , m_userDataView(Preferences::instance().cels.userDataVisibility)
   {
     opacity()->Change.connect([this]{ onStartTimer(); });
     userData()->Click.connect([this]{ onToggleUserData(); });
     m_timer.Tick.connect([this]{ onCommitChange(); });
 
-    m_userDataView.entry()->Change.connect([this]{ onStartTimer(); });
-    m_userDataView.color()->Change.connect([this]{ onStartTimer(); });
+    m_userDataView.UserDataChange.connect([this]{ onStartTimer(); });
 
     remapWindow();
     centerWindow();
@@ -166,9 +162,14 @@ private:
       return;
 
     m_timer.start();
+    m_pendingChanges = true;
   }
 
   void onCommitChange() {
+    // Nothing to change
+    if (!m_pendingChanges)
+      return;
+
     base::ScopedValue<bool> switchSelf(m_selfUpdate, true, false);
 
     m_timer.stop();
@@ -219,6 +220,8 @@ private:
 
       update_screen_for_document(m_document);
     }
+
+    m_pendingChanges = false;
   }
 
   void onToggleUserData() {
@@ -282,10 +285,11 @@ private:
   }
 
   Timer m_timer;
-  Doc* m_document;
-  Cel* m_cel;
+  bool m_pendingChanges = false;
+  Doc* m_document = nullptr;
+  Cel* m_cel = nullptr;
   DocRange m_range;
-  bool m_selfUpdate;
+  bool m_selfUpdate = false;
   UserDataView m_userDataView;
 };
 

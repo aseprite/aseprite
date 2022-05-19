@@ -75,9 +75,6 @@ public:
 
   LayerPropertiesWindow()
     : m_timer(250, this)
-    , m_document(nullptr)
-    , m_layer(nullptr)
-    , m_selfUpdate(false)
     , m_userDataView(Preferences::instance().layers.userDataVisibility) {
     name()->setMinSize(gfx::Size(128, 0));
     name()->setExpansive(true);
@@ -115,8 +112,7 @@ public:
     tileset()->Click.connect([this]{ onTileset(); });
     tileset()->setVisible(false);
 
-    m_userDataView.entry()->Change.connect([this]{ onStartTimer(); });
-    m_userDataView.color()->Change.connect([this]{ onStartTimer(); });
+    m_userDataView.UserDataChange.connect([this]{ onStartTimer(); });
 
     remapWindow();
     centerWindow();
@@ -215,9 +211,14 @@ private:
       return;
 
     m_timer.start();
+    m_pendingChanges = true;
   }
 
   void onCommitChange() {
+    // Nothing to change
+    if (!m_pendingChanges)
+      return;
+
     // Nothing to do here, as there is no layer selected.
     if (!m_layer)
       return;
@@ -420,10 +421,11 @@ private:
   }
 
   Timer m_timer;
-  Doc* m_document;
-  Layer* m_layer;
+  bool m_pendingChanges = false;
+  Doc* m_document = nullptr;
+  Layer* m_layer = nullptr;
   DocRange m_range;
-  bool m_selfUpdate;
+  bool m_selfUpdate = false;
   UserDataView m_userDataView;
 };
 

@@ -13,6 +13,7 @@
 #include "app/color.h"
 #include "app/pref/preferences.h"
 #include "app/ui/color_button.h"
+#include "base/scoped_value.h"
 #include "doc/user_data.h"
 #include "ui/base.h"
 #include "ui/entry.h"
@@ -29,6 +30,8 @@ UserDataView::UserDataView(Option<bool>& visibility)
 
 void UserDataView::configureAndSet(const doc::UserData& userData, ui::Grid* parent)
 {
+  base::ScopedValue<bool> switchSelf(m_selfUpdate, true, m_selfUpdate);
+
   if (!m_isConfigured) {
     // Find the correct hspan to add to an arbitrary grid column count:
     // Example with grid columns count = 4:
@@ -57,7 +60,7 @@ void UserDataView::configureAndSet(const doc::UserData& userData, ui::Grid* pare
     parent->addChildInCell(entryLabel(), hspan1, vspan, ui::LEFT);
     parent->addChildInCell(entry(), hspan2, vspan, ui::HORIZONTAL);
     color()->Change.connect([this]{ onColorChange(); });
-    entry()->Change.connect([this]{ onUserDataChange(); });
+    entry()->Change.connect([this]{ onEntryChange(); });
     m_isConfigured = true;
   }
   m_userData = userData;
@@ -82,10 +85,13 @@ void UserDataView::setVisible(bool state, bool saveAsDefault)
     m_visibility.setValue(state);
 }
 
-void UserDataView::onUserDataChange()
+void UserDataView::onEntryChange()
 {
-  if (entry()->text() != m_userData.text())
+  if (entry()->text() != m_userData.text()) {
     m_userData.setText(entry()->text());
+    if (!m_selfUpdate)
+      UserDataChange();
+  }
 }
 
 void UserDataView::onColorChange()
@@ -98,6 +104,8 @@ void UserDataView::onColorChange()
                              newColor.getGreen(),
                              newColor.getBlue(),
                              newColor.getAlpha()));
+    if (!m_selfUpdate)
+      UserDataChange();
   }
 }
 
