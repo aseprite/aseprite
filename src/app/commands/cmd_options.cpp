@@ -1185,8 +1185,8 @@ private:
   }
 
   void reloadThemes() {
-    while (themeList()->firstChild())
-      delete themeList()->lastChild();
+    while (auto child = themeList()->lastChild())
+      delete child;
 
     loadThemes();
   }

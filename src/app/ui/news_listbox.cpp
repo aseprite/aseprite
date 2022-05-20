@@ -204,8 +204,8 @@ void NewsListBox::reload()
   if (m_loader || m_timer.isRunning())
     return;
 
-  while (lastChild())
-    removeChild(lastChild());
+  while (auto child = lastChild())
+    removeChild(child);
 
   View* view = View::getView(this);
   if (view)

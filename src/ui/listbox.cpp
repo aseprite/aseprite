@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -70,25 +70,6 @@ int ListBox::getSelectedIndex()
   return -1;
 }
 
-int ListBox::getChildIndex(Widget* item)
-{
-  const WidgetsList& children = this->children();
-  auto it = std::find(children.begin(), children.end(), item);
-  if (it != children.end())
-    return it - children.begin();
-  else
-    return -1;
-}
-
-Widget* ListBox::getChildByIndex(int index)
-{
-  const WidgetsList& children = this->children();
-  if (index >= 0 && index < int(children.size()))
-    return children[index];
-  else
-    return nullptr;
-}
-
 void ListBox::selectChild(Widget* item, Message* msg)
 {
   bool didChange = false;
@@ -152,7 +133,10 @@ void ListBox::selectChild(Widget* item, Message* msg)
 
 void ListBox::selectIndex(int index, Message* msg)
 {
-  Widget* child = getChildByIndex(index);
+  if (index < 0 || index >= int(children().size()))
+    return;
+
+  Widget* child = at(index);
   if (child)
     selectChild(child, msg);
 }
@@ -456,8 +440,8 @@ int ListBox::advanceIndexThroughVisibleItems(
       index = 0-sgn;
       cycle = true;
     }
-    else {
-      Widget* item = getChildByIndex(index);
+    else if (index >= 0 && index < children().size()) {
+      Widget* item = at(index);
       if (item &&
           !item->hasFlags(HIDDEN) &&
           // We can completely ignore separators from navigation

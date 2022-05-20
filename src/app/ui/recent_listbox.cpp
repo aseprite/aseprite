@@ -242,8 +242,7 @@ RecentListBox::RecentListBox()
 
 void RecentListBox::rebuildList()
 {
-  while (lastChild()) {
-    auto child = lastChild();
+  while (auto child = lastChild()) {
     removeChild(child);
     child->deferDelete();
   }

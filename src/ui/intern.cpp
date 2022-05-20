@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -15,32 +15,31 @@
 #include "ui/widget.h"
 #include "ui/window.h"
 
-#include <list>
+#include <memory>
+#include <set>
 
 namespace ui {
 namespace details {
 
-static std::list<Widget*>* widgets;
+static std::unique_ptr<std::set<Widget*>> widgets;
 
 void initWidgets()
 {
   assert_ui_thread();
-
-  widgets = new std::list<Widget*>;
+  widgets = std::make_unique<std::set<Widget*>>();
 }
 
 void exitWidgets()
 {
   assert_ui_thread();
-
-  delete widgets;
+  widgets.reset();
 }
 
 void addWidget(Widget* widget)
 {
   assert_ui_thread();
 
-  widgets->push_back(widget);
+  widgets->insert(widget);
 }
 
 void removeWidget(Widget* widget)
@@ -49,11 +48,12 @@ void removeWidget(Widget* widget)
 
   ASSERT(!Manager::widgetAssociatedToManager(widget));
 
-  auto it = std::find(widgets->begin(), widgets->end(), widget);
-  if (it != widgets->end())
-    widgets->erase(it);
+  widgets->erase(widget);
 }
 
+// TODO we should be able to re-initialize all widgets without using
+//      this global "widgets" set, so we don't have to keep track of
+//      all widgets globally
 void reinitThemeForAllWidgets()
 {
   assert_ui_thread();

@@ -273,8 +273,8 @@ private:
 
   void clear() {
     // Delete all children
-    while (firstChild())
-      delete firstChild();
+    while (auto child = lastChild())
+      delete child;
   }
 
   void processNode(cmark_node* root,

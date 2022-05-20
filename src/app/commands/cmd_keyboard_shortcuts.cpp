@@ -607,8 +607,7 @@ private:
     if (m_headerItem.parent() == listbox)
       listbox->removeChild(&m_headerItem);
 
-    while (listbox->lastChild()) {
-      Widget* item = listbox->lastChild();
+    while (auto item = listbox->lastChild()) {
       listbox->removeChild(item);
       delete item;
     }
