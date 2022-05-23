@@ -161,6 +161,7 @@ namespace ui {
 
     Window* window() const;
     Widget* parent() const { return m_parent; }
+    int parentIndex() const { return m_parentIndex; }
     Manager* manager() const;
     Display* display() const;
 
@@ -413,7 +414,7 @@ namespace ui {
     virtual double onGetTextDouble() const;
 
   private:
-    void removeChild(WidgetsList::iterator& it);
+    void removeChild(const WidgetsList::iterator& it);
     void paint(Graphics* graphics,
                const gfx::Region& drawRegion,
                const bool isBg);
@@ -433,6 +434,7 @@ namespace ui {
     gfx::Region m_updateRegion;   // Region to be redrawed.
     WidgetsList m_children;       // Sub-widgets
     Widget* m_parent;             // Who is the parent?
+    int m_parentIndex;            // Location/index of this widget in the parent's Widget::m_children vector
     gfx::Size* m_sizeHint;
     int m_mnemonic;               // Keyboard shortcut to access this widget like Alt+mnemonic
 

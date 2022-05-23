@@ -1,4 +1,5 @@
 // Aseprite UI Library
+// Copyright (C) 2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -26,9 +27,12 @@ namespace ui {
     bool onProcessMessage(Message* msg) override;
     void onResize(ResizeEvent& ev) override;
     void onSizeHint(SizeHintEvent& ev) override;
+    void onInitTheme(InitThemeEvent& ev) override;
+    void onSetText() override;
 
   private:
     std::string m_value;
+    int m_textLength = -1;
   };
 
 } // namespace ui

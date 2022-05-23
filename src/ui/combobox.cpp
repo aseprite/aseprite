@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -203,8 +203,12 @@ void ComboBox::deleteItem(int itemIndex)
 
 void ComboBox::deleteAllItems()
 {
-  for (Widget* item : m_items)
-    delete item;                // widget
+  // Delete all items back to front, in this way Widget::removeChild()
+  // doesn't have to use linear search to update m_parentIndex of all
+  // other children.
+  auto end = m_items.rend();
+  for (auto it=m_items.rbegin(); it != end; ++it)
+    delete *it;                // widget
 
   m_items.clear();
   m_selected = -1;

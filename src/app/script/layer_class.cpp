@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -33,9 +33,9 @@ namespace {
 
 int Layer_eq(lua_State* L)
 {
-  const auto a = get_docobj<Layer>(L, 1);
-  const auto b = get_docobj<Layer>(L, 2);
-  lua_pushboolean(L, a->id() == b->id());
+  const auto a = may_get_docobj<Layer>(L, 1);
+  const auto b = may_get_docobj<Layer>(L, 2);
+  lua_pushboolean(L, (!a && !b) || (a && b && a->id() == b->id()));
   return 1;
 }
 

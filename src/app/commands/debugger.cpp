@@ -310,7 +310,7 @@ public:
   }
 
   void clear() {
-    while (auto item = firstChild()) {
+    while (auto item = lastChild()) {
       removeChild(item);
       item->deferDelete();
     }
@@ -730,7 +730,7 @@ private:
   }
 
   void clearLocals() {
-    while (auto item = locals()->firstChild()) {
+    while (auto item = locals()->lastChild()) {
       locals()->removeChild(item);
       item->deferDelete();
     }

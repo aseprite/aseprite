@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -60,8 +60,16 @@ void ListItem::onSizeHint(SizeHintEvent& ev)
   int w = 0, h = 0;
   Size maxSize;
 
-  if (hasText())
-    maxSize = textSize();
+  if (hasText()) {
+    if (m_textLength >= 0) {
+      maxSize.w = m_textLength;
+      maxSize.h = textHeight();
+    }
+    else {
+      maxSize = textSize();
+      m_textLength = maxSize.w;
+    }
+  }
   else
     maxSize.w = maxSize.h = 0;
 
@@ -76,6 +84,18 @@ void ListItem::onSizeHint(SizeHintEvent& ev)
   h = maxSize.h + border().height();
 
   ev.setSizeHint(Size(w, h));
+}
+
+void ListItem::onInitTheme(InitThemeEvent& ev)
+{
+  Widget::onInitTheme(ev);
+  m_textLength = -1;
+}
+
+void ListItem::onSetText()
+{
+  Widget::onSetText();
+  m_textLength = -1;
 }
 
 } // namespace ui
