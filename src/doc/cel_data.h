@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -53,6 +53,10 @@ namespace doc {
       if (!m_boundsF)
         m_boundsF = new gfx::RectF(m_bounds);
       return *m_boundsF;
+    }
+
+    bool hasBoundsF() const {
+      return m_boundsF != nullptr;
     }
 
     virtual int getMemSize() const override {
