@@ -1,4 +1,4 @@
--- Copyright (C) 2019  Igara Studio S.A.
+-- Copyright (C) 2019-2022  Igara Studio S.A.
 -- Copyright (C) 2018  David Capello
 --
 -- This file is released under the terms of the MIT license.
@@ -203,4 +203,13 @@ do
     assert(layer.name == layerNames[i])
     i = i + 1
   end
+end
+
+-- Compare layers vs sprites (just return false)
+
+do
+  local s = Sprite(2, 2)
+  assert(s.layers[1].parent == s)
+  assert(s.layers[1] ~= s) -- Uses Layer_eq() to compare
+  assert(s ~= s.layers[1]) -- Uses Sprite_eq() to compare
 end

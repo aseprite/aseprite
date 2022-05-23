@@ -1,3 +1,4 @@
+-- Copyright (C) 2022  Igara Studio S.A.
 -- Copyright (C) 2018  David Capello
 --
 -- This file is released under the terms of the MIT license.
@@ -41,3 +42,4 @@ assert(b.saturation == 0.4)
 assert(b.value == 0.5)
 assert(b.alpha == 200)
 assert(a == b)
+assert(a ~= 1) -- Comparing with other type fails
