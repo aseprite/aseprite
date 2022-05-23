@@ -139,9 +139,9 @@ int Sprite_new(lua_State* L)
 
 int Sprite_eq(lua_State* L)
 {
-  const auto a = get_docobj<Sprite>(L, 1);
-  const auto b = get_docobj<Sprite>(L, 2);
-  lua_pushboolean(L, a->id() == b->id());
+  const auto a = may_get_docobj<Sprite>(L, 1);
+  const auto b = may_get_docobj<Sprite>(L, 2);
+  lua_pushboolean(L, (!a && !b) || (a && b && a->id() == b->id()));
   return 1;
 }
 
