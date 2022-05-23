@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -131,6 +132,10 @@ void DocUndo::redo()
 
 void DocUndo::clearRedo()
 {
+  // Do nothing
+  if (currentState() == lastState())
+    return;
+
   m_undoHistory.clearRedo();
   notify_observers(&DocUndoObserver::onClearRedo, this);
 }
