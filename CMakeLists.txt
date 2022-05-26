@@ -2,11 +2,12 @@
 # Copyright (C) 2018-2022  Igara Studio S.A.
 # Copyright (C) 2001-2018  David Capello
 
-cmake_minimum_required(VERSION 3.4)
+cmake_minimum_required(VERSION 3.16)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF) # We use -std=c++17 instead of -std=gnu++17 in macOS
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 if(COMMAND cmake_policy)
   # CMP0003: Libraries linked via full path no longer produce linker search paths.
