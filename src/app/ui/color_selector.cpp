@@ -471,6 +471,7 @@ void ColorSelector::onPaint(ui::PaintEvent& ev)
       SkRuntimeShaderBuilder builder1(m_mainEffect);
       builder1.uniform("iRes") = SkV3{float(rc2.w), float(rc2.h), 0.0f};
       builder1.uniform("iColor") = appColor_to_SkV4(m_color);
+      setShaderMainAreaParams(builder1);
       p.setShader(builder1.makeShader());
 
       if (isSRGB)
@@ -677,6 +678,6 @@ sk_sp<SkRuntimeEffect> ColorSelector::buildEffect(const char* code)
     return result.effect;
   }
 }
-#endif
+#endif  // SK_ENABLE_SKSL
 
 } // namespace app
