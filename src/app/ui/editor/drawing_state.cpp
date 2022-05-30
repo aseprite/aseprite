@@ -352,8 +352,8 @@ bool DrawingState::onScrollChange(Editor* editor)
     m_lastPointer = tools::Pointer(editor->screenToEditor(mousePos),
                                    m_velocity.velocity(),
                                    m_lastPointer.button(),
-                                   tools::Pointer::Type::Unknown,
-                                   0.0f);
+                                   m_lastPointer.type(),
+                                   m_lastPointer.pressure());
     handleMouseMovement();
   }
   return true;

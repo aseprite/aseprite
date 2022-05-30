@@ -70,6 +70,9 @@ namespace app {
 
     virtual const char* getMainAreaShader() { return nullptr; }
     virtual const char* getBottomBarShader() { return nullptr; }
+#if SK_ENABLE_SKSL
+    virtual void setShaderMainAreaParams(SkRuntimeShaderBuilder& builder) { }
+#endif
     virtual app::Color getMainAreaColor(const int u, const int umax,
                                         const int v, const int vmax) = 0;
     virtual app::Color getBottomBarColor(const int u, const int umax) = 0;
@@ -112,7 +115,7 @@ namespace app {
 
 #if SK_ENABLE_SKSL
     static const char* getAlphaBarShader();
-    void buildEffects();
+    bool buildEffects();
     sk_sp<SkRuntimeEffect> buildEffect(const char* code);
 #endif
 

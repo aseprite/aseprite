@@ -17,6 +17,7 @@
 #include "app/color_spaces.h"
 #include "app/color_utils.h"
 #include "app/modules/gfx.h"
+#include "app/pref/preferences.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
 #include "app/util/shader_helpers.h"
@@ -441,8 +442,7 @@ void ColorSelector::onPaint(ui::PaintEvent& ev)
   os::Surface* painterSurface = nullptr;
 
 #if SK_ENABLE_SKSL              // Paint with shaders
-  buildEffects();
-  if (m_mainEffect && m_bottomEffect && m_alphaEffect) {
+  if (buildEffects()) {
     SkCanvas* canvas;
     bool isSRGB;
     // TODO compare both color spaces
@@ -471,6 +471,7 @@ void ColorSelector::onPaint(ui::PaintEvent& ev)
       SkRuntimeShaderBuilder builder1(m_mainEffect);
       builder1.uniform("iRes") = SkV3{float(rc2.w), float(rc2.h), 0.0f};
       builder1.uniform("iColor") = appColor_to_SkV4(m_color);
+      setShaderMainAreaParams(builder1);
       p.setShader(builder1.makeShader());
 
       if (isSRGB)
@@ -647,8 +648,11 @@ half4 main(vec2 fragcoord) {
 )";
 }
 
-void ColorSelector::buildEffects()
+bool ColorSelector::buildEffects()
 {
+  if (!Preferences::instance().experimental.useShadersForColorSelectors())
+    return false;
+
   if (!m_mainEffect) {
     if (const char* code = getMainAreaShader())
       m_mainEffect = buildEffect(code);
@@ -663,6 +667,8 @@ void ColorSelector::buildEffects()
     if (const char* code = getAlphaBarShader())
       m_alphaEffect = buildEffect(code);
   }
+
+  return (m_mainEffect && m_bottomEffect && m_alphaEffect);
 }
 
 sk_sp<SkRuntimeEffect> ColorSelector::buildEffect(const char* code)
@@ -677,6 +683,6 @@ sk_sp<SkRuntimeEffect> ColorSelector::buildEffect(const char* code)
     return result.effect;
   }
 }
-#endif
+#endif  // SK_ENABLE_SKSL
 
 } // namespace app

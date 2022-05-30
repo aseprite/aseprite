@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2022  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -9,6 +10,8 @@
 #pragma once
 
 #include "base/thread.h"
+
+#include <atomic>
 #include <string>
 
 namespace net {
@@ -30,7 +33,7 @@ namespace app {
     void threadHttpRequest();
 
     std::string m_url;
-    bool m_done;
+    std::atomic<bool> m_done;
     net::HttpRequest* m_request;
     base::thread m_thread;
     std::string m_filename;

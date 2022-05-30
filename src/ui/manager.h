@@ -129,7 +129,8 @@ namespace ui {
                          const gfx::Point& mousePos,
                          MouseButton mouseButton,
                          KeyModifiers modifiers,
-                         PointerType pointerType);
+                         PointerType pointerType,
+                         const float pressure);
     void handleMouseUp(Display* display,
                        const gfx::Point& mousePos,
                        MouseButton mouseButton,
@@ -139,7 +140,8 @@ namespace ui {
                                 const gfx::Point& mousePos,
                                 MouseButton mouseButton,
                                 KeyModifiers modifiers,
-                                PointerType pointerType);
+                                PointerType pointerType,
+                                const float pressure);
     void handleMouseWheel(Display* display,
                           const gfx::Point& mousePos,
                           KeyModifiers modifiers,

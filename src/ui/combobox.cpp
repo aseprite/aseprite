@@ -536,9 +536,7 @@ bool ComboBoxEntry::onProcessMessage(Message* msg)
 
           MouseMessage mouseMsg2(
             kMouseDownMessage,
-            mouseMsg->pointerType(),
-            mouseMsg->button(),
-            mouseMsg->modifiers(),
+            *mouseMsg,
             mouseMsg->positionForDisplay(pick->display()));
           mouseMsg2.setDisplay(pick->display());
           pick->sendMessage(&mouseMsg2);

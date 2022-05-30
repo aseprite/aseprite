@@ -540,7 +540,8 @@ void Manager::generateMessagesFromOSEvents()
           osEvent.position(),
           m_mouseButton = mouse_button_from_os_to_ui(osEvent),
           osEvent.modifiers(),
-          osEvent.pointerType());
+          osEvent.pointerType(),
+          osEvent.pressure());
         break;
       }
 
@@ -561,7 +562,8 @@ void Manager::generateMessagesFromOSEvents()
           osEvent.position(),
           m_mouseButton = mouse_button_from_os_to_ui(osEvent),
           osEvent.modifiers(),
-          osEvent.pointerType());
+          osEvent.pointerType(),
+          osEvent.pressure());
         break;
       }
 
@@ -634,7 +636,8 @@ void Manager::handleMouseDown(Display* display,
                               const gfx::Point& mousePos,
                               MouseButton mouseButton,
                               KeyModifiers modifiers,
-                              PointerType pointerType)
+                              PointerType pointerType,
+                              const float pressure)
 {
   handleWindowZOrder();
 
@@ -646,7 +649,10 @@ void Manager::handleMouseDown(Display* display,
       mousePos,
       pointerType,
       mouseButton,
-      modifiers));
+      modifiers,
+      gfx::Point(0, 0),
+      false,
+      pressure));
 }
 
 void Manager::handleMouseUp(Display* display,
@@ -670,7 +676,8 @@ void Manager::handleMouseDoubleClick(Display* display,
                                      const gfx::Point& mousePos,
                                      MouseButton mouseButton,
                                      KeyModifiers modifiers,
-                                     PointerType pointerType)
+                                     PointerType pointerType,
+                                     const float pressure)
 {
   Widget* dst = (capture_widget ? capture_widget: mouse_widget);
   if (dst) {
@@ -678,7 +685,9 @@ void Manager::handleMouseDoubleClick(Display* display,
       newMouseMessage(
         kDoubleClickMessage,
         display, dst, mousePos, pointerType,
-        mouseButton, modifiers));
+        mouseButton, modifiers,
+        gfx::Point(0, 0), false,
+        pressure));
   }
 }
 

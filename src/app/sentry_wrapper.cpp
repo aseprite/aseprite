@@ -12,6 +12,7 @@
 
 #include "app/resource_finder.h"
 #include "base/fs.h"
+#include "base/log.h"
 #include "base/string.h"
 #include "ver/info.h"
 
@@ -108,6 +109,33 @@ bool Sentry::areThereCrashesToReport()
       return true;
   }
   return false;
+}
+
+// static
+void Sentry::addBreadcrumb(const std::string& message)
+{
+  LOG(VERBOSE, "BC: %s\n", message.c_str());
+
+  sentry_value_t c = sentry_value_new_breadcrumb(nullptr, message.c_str());
+  sentry_add_breadcrumb(c);
+}
+
+// static
+void Sentry::addBreadcrumb(const std::string& message,
+                           const std::map<std::string, std::string>& data)
+{
+  LOG(VERBOSE, "BC: %s\n", message.c_str());
+
+  sentry_value_t c = sentry_value_new_breadcrumb(nullptr, message.c_str());
+  sentry_value_t d = sentry_value_new_object();
+  for (const auto& kv : data) {
+    LOG(VERBOSE, " - [%s]=%s\n", kv.first.c_str(), kv.second.c_str());
+    sentry_value_set_by_key(d,
+                            kv.first.c_str(),
+                            sentry_value_new_string(kv.second.c_str()));
+  }
+  sentry_value_set_by_key(c, "data", d);
+  sentry_add_breadcrumb(c);
 }
 
 void Sentry::setupDirs(sentry_options_t* options)

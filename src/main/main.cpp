@@ -24,6 +24,10 @@
 
 #if ENABLE_SENTRY
   #include "app/sentry_wrapper.h"
+  #if LAF_WINDOWS
+    #define USE_SENTRY_BREADCRUMB_FOR_WINTAB 1
+    #include "os/win/wintab.h"
+  #endif
 #else
   #include "base/memory_dump.h"
 #endif
@@ -64,7 +68,31 @@ namespace {
         CoUninitialize();
     }
   };
-#endif
+#endif // LAF_WINDOWS
+
+#if USE_SENTRY_BREADCRUMB_FOR_WINTAB
+  // Delegate to write Wintab information as a Sentry breadcrumb (to
+  // know if there is a specific Wintab driver giving problems)
+  class WintabApiDelegate : public os::WintabAPI::Delegate {
+    bool m_done = false;
+  public:
+    WintabApiDelegate() {
+      os::instance()->setWintabDelegate(this);
+    }
+    ~WintabApiDelegate() {
+      os::instance()->setWintabDelegate(nullptr);
+    }
+    void onWintabID(const std::string& id) override {
+      if (!m_done) {
+        m_done = true;
+        app::Sentry::addBreadcrumb("Wintab ID=" + id);
+      }
+    }
+    void onWintabFields(const std::map<std::string, std::string>& fields) override {
+      app::Sentry::addBreadcrumb("Wintab DLL", fields);
+    }
+  };
+#endif // USE_SENTRY_BREADCRUMB_FOR_WINTAB
 
 }
 
@@ -99,6 +127,9 @@ int app_main(int argc, char* argv[])
 
 #if ENABLE_SENTRY
     sentry.init();
+  #if USE_SENTRY_BREADCRUMB_FOR_WINTAB
+    WintabApiDelegate wintabDelegate;
+  #endif
 #else
     // Change the memory dump filename to save on disk (.dmp
     // file). Note: Only useful on Windows.

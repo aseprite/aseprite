@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021  Igara Studio S.A.
+// Copyright (C) 2021-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -43,9 +43,14 @@ namespace app {
     void setHarmony(Harmony harmony);
 
   protected:
+    const char* getMainAreaShader() override;
+    const char* getBottomBarShader() override;
     app::Color getMainAreaColor(const int u, const int umax,
                                 const int v, const int vmax) override;
     app::Color getBottomBarColor(const int u, const int umax) override;
+#if SK_ENABLE_SKSL
+    void setShaderMainAreaParams(SkRuntimeShaderBuilder& builder) override;
+#endif
     void onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc) override;
     void onPaintBottomBar(ui::Graphics* g, const gfx::Rect& rc) override;
     void onPaintSurfaceInBgThread(os::Surface* s,
@@ -65,8 +70,10 @@ namespace app {
     // Converts an hue angle from HSV <-> current color model hue.
     // With dir == +1, the angle is from the color model and it's converted to HSV hue.
     // With dir == -1, the angle came from HSV and is converted to the current color model.
-    int convertHueAngle(int angle, int dir) const;
+    float convertHueAngle(float angle, int dir) const;
 
+    std::string m_mainShader;
+    std::string m_bottomShader;
     gfx::Rect m_wheelBounds;
     gfx::Color m_bgColor;
     double m_wheelRadius;

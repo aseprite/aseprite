@@ -1462,9 +1462,7 @@ bool Widget::offerCapture(ui::MouseMessage* mouseMsg, int widget_type)
 
       MouseMessage* mouseMsg2 = new MouseMessage(
         kMouseDownMessage,
-        mouseMsg->pointerType(),
-        mouseMsg->button(),
-        mouseMsg->modifiers(),
+        *mouseMsg,
         mouseMsg->positionForDisplay(pick->display()));
       mouseMsg2->setDisplay(pick->display());
       mouseMsg2->setRecipient(pick);
@@ -1554,11 +1552,8 @@ bool Widget::onProcessMessage(Message* msg)
       // Convert double clicks into mouse down
       MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
       MouseMessage mouseMsg2(kMouseDownMessage,
-                             mouseMsg->pointerType(),
-                             mouseMsg->button(),
-                             mouseMsg->modifiers(),
-                             mouseMsg->position(),
-                             mouseMsg->wheelDelta());
+                             *mouseMsg,
+                             mouseMsg->position());
       mouseMsg2.setDisplay(mouseMsg->display());
       sendMessage(&mouseMsg2);
       break;

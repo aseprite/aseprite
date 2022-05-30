@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -97,9 +97,7 @@ bool IntEntry::onProcessMessage(Message* msg)
           releaseMouse();
 
           MouseMessage mouseMsg2(kMouseDownMessage,
-                                 mouseMsg->pointerType(),
-                                 mouseMsg->button(),
-                                 mouseMsg->modifiers(),
+                                 *mouseMsg,
                                  mouseMsg->positionForDisplay(pick->display()));
           mouseMsg2.setDisplay(pick->display());
           pick->sendMessage(&mouseMsg2);
