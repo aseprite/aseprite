@@ -1403,12 +1403,8 @@ bool Widget::offerCapture(ui::MouseMessage* mouseMsg, int widget_type)
     if (pick && pick != this && pick->type() == widget_type) {
       releaseMouse();
 
-      MouseMessage* mouseMsg2 = new MouseMessage(
-        kMouseDownMessage,
-        mouseMsg->pointerType(),
-        mouseMsg->button(),
-        mouseMsg->modifiers(),
-        mouseMsg->position());
+      MouseMessage* mouseMsg2 = new MouseMessage(kMouseDownMessage,
+                                                 *mouseMsg);
       mouseMsg2->setRecipient(pick);
       man->enqueueMessage(mouseMsg2);
       return true;
@@ -1490,13 +1486,7 @@ bool Widget::onProcessMessage(Message* msg)
     case kDoubleClickMessage: {
       // Convert double clicks into mouse down
       MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
-      MouseMessage mouseMsg2(kMouseDownMessage,
-                             mouseMsg->pointerType(),
-                             mouseMsg->button(),
-                             mouseMsg->modifiers(),
-                             mouseMsg->position(),
-                             mouseMsg->wheelDelta());
-
+      MouseMessage mouseMsg2(kMouseDownMessage, *mouseMsg);
       sendMessage(&mouseMsg2);
       break;
     }

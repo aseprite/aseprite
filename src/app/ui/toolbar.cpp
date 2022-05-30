@@ -226,10 +226,7 @@ bool ToolBar::onProcessMessage(Message* msg)
 
           MouseMessage* mouseMsg2 = new MouseMessage(
             kMouseDownMessage,
-            mouseMsg->pointerType(),
-            mouseMsg->button(),
-            mouseMsg->modifiers(),
-            mouseMsg->position());
+            *mouseMsg);
           mouseMsg2->setRecipient(strip);
           manager()->enqueueMessage(mouseMsg2);
         }
@@ -658,10 +655,7 @@ bool ToolBar::ToolStrip::onProcessMessage(Message* msg)
 
           MouseMessage* mouseMsg2 = new MouseMessage(
             kMouseDownMessage,
-            mouseMsg->pointerType(),
-            mouseMsg->button(),
-            mouseMsg->modifiers(),
-            mouseMsg->position());
+            *mouseMsg);
           mouseMsg2->setRecipient(bar);
           manager()->enqueueMessage(mouseMsg2);
         }

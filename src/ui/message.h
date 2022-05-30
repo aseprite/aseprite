@@ -131,6 +131,18 @@ namespace ui {
         m_pressure(pressure) {
     }
 
+    // Copy other MouseMessage converting its type
+    MouseMessage(MessageType type,
+                 const MouseMessage& other)
+      : Message(type, other.modifiers()),
+        m_pointerType(other.pointerType()),
+        m_button(other.button()),
+        m_pos(other.position()),
+        m_wheelDelta(other.wheelDelta()),
+        m_preciseWheel(other.preciseWheel()),
+        m_pressure(other.pressure()) {
+    }
+
     PointerType pointerType() const { return m_pointerType; }
     MouseButton button() const { return m_button; }
     bool left() const { return (m_button == kButtonLeft); }
