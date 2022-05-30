@@ -115,7 +115,7 @@ namespace app {
 
 #if SK_ENABLE_SKSL
     static const char* getAlphaBarShader();
-    void buildEffects();
+    bool buildEffects();
     sk_sp<SkRuntimeEffect> buildEffect(const char* code);
 #endif
 

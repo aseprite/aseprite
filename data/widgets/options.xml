@@ -511,6 +511,12 @@
           </hbox>
           <check id="native_clipboard" text="@.native_clipboard" />
           <check id="native_file_dialog" text="@.native_file_dialog" />
+          <hbox>
+            <check id="shaders_for_color_selectors"
+                   text="@.shaders_for_color_selectors"
+                   pref="experimental.use_shaders_for_color_selectors" />
+            <link text="(#960)" url="https://github.com/aseprite/aseprite/issues/960" />
+          </hbox>
 	  <hbox id="load_wintab_driver_box">
             <check id="load_wintab_driver2"
                    text="@.load_wintab_driver"
