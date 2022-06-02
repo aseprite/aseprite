@@ -667,8 +667,9 @@ bool PaletteView::onProcessMessage(Message* msg)
     case kMouseMoveMessage: {
       MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
 
-      if (m_state == State::SELECTING_COLOR &&
-          m_hot.part == Hit::COLOR) {
+      if ((m_state == State::SELECTING_COLOR) &&
+          (m_hot.part == Hit::COLOR ||
+           m_hot.part == Hit::POSSIBLE_COLOR)) {
         int idx = m_hot.color;
         idx = base::clamp(idx, 0, std::max(0, m_adapter->size()-1));
 
