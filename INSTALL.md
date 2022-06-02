@@ -77,7 +77,7 @@ You will need the following dependencies on Ubuntu/Debian:
 
 On Fedora:
 
-    sudo dnf install -y gcc-c++ clang libcxx cmake ninja-build libX11-devel libXcursor-devel libXi-devel mesa-libGL-devel fontconfig-devel
+    sudo dnf install -y gcc-c++ clang libcxx-devel cmake ninja-build libX11-devel libXcursor-devel libXi-devel mesa-libGL-devel fontconfig-devel
 
 On Arch:
 
