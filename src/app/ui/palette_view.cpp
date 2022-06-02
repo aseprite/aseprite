@@ -637,8 +637,9 @@ bool PaletteView::onProcessMessage(Message* msg)
       switch (m_hot.part) {
 
         case Hit::COLOR:
+        case Hit::POSSIBLE_COLOR:
           // Clicking outside the palette range will deselect
-          if (m_hot.color >= currentPalette()->size()) {
+          if (m_hot.color >= m_adapter->size()) {
             deselect();
             break;
           }
