@@ -31,6 +31,7 @@
 #include "app/ui/status_bar.h"
 #include "base/fs.h"
 #include "base/mutex.h"
+#include "base/replace_string.h"
 #include "base/scoped_lock.h"
 #include "base/string.h"
 #include "dio/detect_format.h"
@@ -528,6 +529,10 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
 
     Sprite* spr = fop->m_document->sprite();
     frame_t outputFrame = 0;
+
+    std::string newfn = base::get_file_name(fn);
+    base::replace_string(newfn, "{title}", base::get_file_title(fop->m_document->name()));
+    fn = base::get_file_path(fn) + base::path_separator + newfn;
 
     for (frame_t frame : fop->m_roi.selectedFrames()) {
       Tag* innerTag = (fop->m_roi.tag() ? fop->m_roi.tag(): spr->tags().innerTag(frame));
