@@ -10,6 +10,7 @@
 
 #include "drm/license_manager.h"
 #include "enter_license.xml.h"
+#include "ui/timer.h"
 
 namespace app {
 
