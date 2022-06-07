@@ -852,7 +852,7 @@ void app_configure_drm() {
   std::map<std::string, std::string> config = {
     {"data", dataDirRf.getFirstOrCreateDefault()}
   };
-  DRM_CONFIGURE(get_app_name(), get_app_version(), userDirRf.getFirstOrCreateDefault(), updater::getUserAgent(), config);
+  DRM_CONFIGURE(get_app_url(), get_app_name(), get_app_version(), userDirRf.getFirstOrCreateDefault(), updater::getUserAgent(), config);
 }
 #endif
 
