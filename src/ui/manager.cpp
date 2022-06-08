@@ -1504,14 +1504,23 @@ void Manager::_closeWindow(Window* window, bool redraw_background)
     ASSERT(windowDisplay);
     ASSERT(windowDisplay != this->display());
 
+    // We are receiving several crashes from Windows users where
+    // parentDisplay != nullptr and parentDisplay->nativeWindow() ==
+    // nullptr, so we have to do some extra checks in these places
+    // (anyway this might produce some crashes in other places)
+    os::Window* nativeWindow = (windowDisplay ? windowDisplay->nativeWindow(): nullptr);
+    os::Window* parentNativeWindow = (parentDisplay ? parentDisplay->nativeWindow(): nullptr);
+    ASSERT(nativeWindow);
+    ASSERT(parentNativeWindow);
+
     // Just as we've set the origin of the window bounds to (0, 0)
     // when we created the native window, we have to restore the
     // ui::Window bounds' origin now that we are going to remove/close
     // the native window.
-    if (parentDisplay && windowDisplay) {
-      const int scale = parentDisplay->nativeWindow()->scale();
-      const gfx::Point parentOrigin = parentDisplay->nativeWindow()->contentRect().origin();
-      const gfx::Point origin = windowDisplay->nativeWindow()->contentRect().origin();
+    if (parentNativeWindow && nativeWindow) {
+      const int scale = parentNativeWindow->scale();
+      const gfx::Point parentOrigin = parentNativeWindow->contentRect().origin();
+      const gfx::Point origin = nativeWindow->contentRect().origin();
       const gfx::Rect newBounds((origin - parentOrigin) / scale,
                                 window->bounds().size());
       window->setBounds(newBounds);
@@ -1520,7 +1529,8 @@ void Manager::_closeWindow(Window* window, bool redraw_background)
     // Set the native window user data to nullptr so any other queued
     // native message is not processed.
     window->setDisplay(nullptr, false);
-    windowDisplay->nativeWindow()->setUserData<void*>(nullptr);
+    if (nativeWindow)
+      nativeWindow->setUserData<void*>(nullptr);
 
     // Remove all messages for this display.
     removeMessagesForDisplay(windowDisplay);
@@ -1533,7 +1543,8 @@ void Manager::_closeWindow(Window* window, bool redraw_background)
     delete windowDisplay;
 
     // Activate main windows
-    parentDisplay->nativeWindow()->activate();
+    if (parentNativeWindow)
+      parentNativeWindow->activate();
   }
   else {
     parentDisplay = windowDisplay;
