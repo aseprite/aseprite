@@ -854,7 +854,7 @@ public:
     : ButtonSet(1) {
     addItem(SkinTheme::get(this)->parts.pivotCenter());
 
-    Preferences::instance().selection.pivotPosition.AfterChange.connect(
+    m_pivotConn = Preferences::instance().selection.pivotPosition.AfterChange.connect(
       [this]{ onPivotChange(); });
 
     onPivotChange();
@@ -925,6 +925,7 @@ private:
       getItem(0)->setIcon(part);
   }
 
+  obs::scoped_connection m_pivotConn;
 };
 
 class ContextBar::RotAlgorithmField : public ComboBox {
@@ -1586,17 +1587,16 @@ ContextBar::ContextBar(TooltipManager* tooltipManager,
   UIContext::instance()->add_observer(this);
 
   auto& pref = Preferences::instance();
-  pref.symmetryMode.enabled.AfterChange.connect(
+
+  m_symmModeConn = pref.symmetryMode.enabled.AfterChange.connect(
     [this]{ onSymmetryModeChange(); });
-  pref.colorBar.fgColor.AfterChange.connect(
+  m_fgColorConn = pref.colorBar.fgColor.AfterChange.connect(
     [this]{ onFgOrBgColorChange(doc::Brush::ImageColor::MainColor); });
-  pref.colorBar.bgColor.AfterChange.connect(
+  m_bgColorConn = pref.colorBar.bgColor.AfterChange.connect(
     [this]{ onFgOrBgColorChange(doc::Brush::ImageColor::BackgroundColor); });
-
-  KeyboardShortcuts::instance()->UserChange.connect(
+  m_keysConn = KeyboardShortcuts::instance()->UserChange.connect(
     [this, tooltipManager]{ setupTooltips(tooltipManager); });
-
-  m_dropPixels->DropPixels.connect(&ContextBar::onDropPixels, this);
+  m_dropPixelsConn = m_dropPixels->DropPixels.connect(&ContextBar::onDropPixels, this);
 
   setActiveBrush(createBrushFromPreferences());
 
