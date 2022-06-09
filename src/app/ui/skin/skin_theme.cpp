@@ -25,7 +25,6 @@
 #include "app/ui/skin/skin_slider_property.h"
 #include "app/xml_document.h"
 #include "app/xml_exception.h"
-#include "base/clamp.h"
 #include "base/fs.h"
 #include "base/log.h"
 #include "base/string.h"
@@ -1694,7 +1693,7 @@ void SkinTheme::paintProgressBar(ui::Graphics* g, const gfx::Rect& rc0, double p
   rc.shrink(1);
 
   int u = (int)((double)rc.w*progress);
-  u = base::clamp(u, 0, rc.w);
+  u = std::clamp(u, 0, rc.w);
 
   if (u > 0)
     g->fillRect(colors.selected(), gfx::Rect(rc.x, rc.y, u, rc.h));

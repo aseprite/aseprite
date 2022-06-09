@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -9,7 +9,6 @@
 #include "config.h"
 #endif
 
-#include "base/clamp.h"
 #include "gfx/size.h"
 #include "ui/box.h"
 #include "ui/message.h"
@@ -117,8 +116,8 @@ void Box::onResize(ResizeEvent& ev)
       }                                                                 \
                                                                         \
       Rect childPos = defChildPos;                                      \
-      childPos.w = size = base::clamp(size, child->minSize().w, child->maxSize().w); \
-      childPos.h = base::clamp(childPos.h, child->minSize().h, child->maxSize().h); \
+      childPos.w = size = std::clamp(size, child->minSize().w, child->maxSize().w); \
+      childPos.h = std::clamp(childPos.h, child->minSize().h, child->maxSize().h); \
       child->setBounds(childPos);                                       \
                                                                         \
       defChildPos.x += size + childSpacing();                           \

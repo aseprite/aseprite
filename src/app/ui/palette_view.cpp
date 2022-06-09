@@ -23,7 +23,6 @@
 #include "app/ui/status_bar.h"
 #include "app/util/clipboard.h"
 #include "app/util/pal_ops.h"
-#include "base/clamp.h"
 #include "base/convert_to.h"
 #include "doc/image.h"
 #include "doc/palette.h"
@@ -221,7 +220,7 @@ int PaletteView::getBoxSize() const
 
 void PaletteView::setBoxSize(double boxsize)
 {
-  m_boxsize = base::clamp(boxsize, 4.0, 32.0);
+  m_boxsize = std::clamp(boxsize, 4.0, 32.0);
 
   if (m_delegate)
     m_delegate->onPaletteViewChangeSize(int(m_boxsize));
@@ -349,7 +348,7 @@ bool PaletteView::onProcessMessage(Message* msg)
       if (m_state == State::SELECTING_COLOR &&
           m_hot.part == Hit::COLOR) {
         int idx = m_hot.color;
-        idx = base::clamp(idx, 0, currentPalette()->size()-1);
+        idx = std::clamp(idx, 0, currentPalette()->size()-1);
 
         const MouseButton button = mouseMsg->button();
 
@@ -790,7 +789,7 @@ PaletteView::Hit PaletteView::hitTest(const gfx::Point& pos)
   int colsLimit = m_columns;
   if (m_state == State::DRAGGING_OUTLINE)
     --colsLimit;
-  int i = base::clamp((pos.x-vp.x)/box.w, 0, colsLimit)
+  int i = std::clamp((pos.x-vp.x)/box.w, 0, colsLimit)
     + std::max(0, pos.y/box.h)*m_columns;
   return Hit(Hit::POSSIBLE_COLOR, i);
 }

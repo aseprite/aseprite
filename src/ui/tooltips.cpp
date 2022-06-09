@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -11,7 +11,6 @@
 
 #include "ui/tooltips.h"
 
-#include "base/clamp.h"
 #include "gfx/size.h"
 #include "ui/graphics.h"
 #include "ui/intern.h"
@@ -212,8 +211,8 @@ bool TipWindow::pointAt(int arrowAlign, const gfx::Rect& target)
         break;
     }
 
-    x = base::clamp(x, 0, ui::display_w()-w);
-    y = base::clamp(y, 0, ui::display_h()-h);
+    x = std::clamp(x, 0, ui::display_w()-w);
+    y = std::clamp(y, 0, ui::display_h()-h);
 
     if (m_target.intersects(gfx::Rect(x, y, w, h))) {
       switch (trycount) {

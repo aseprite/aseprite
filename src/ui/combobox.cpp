@@ -11,7 +11,6 @@
 
 #include "ui/combobox.h"
 
-#include "base/clamp.h"
 #include "gfx/size.h"
 #include "os/font.h"
 #include "ui/button.h"
@@ -628,7 +627,7 @@ void ComboBox::openListBox()
         size.h += item->sizeHint().h;
 
     int max = std::max(entryBounds.y, ui::display_h() - entryBounds.y2()) - 8*guiscale();
-    size.h = base::clamp(size.h, textHeight(), max);
+    size.h = std::clamp(size.h, textHeight(), max);
     viewport->setMinSize(size);
   }
 

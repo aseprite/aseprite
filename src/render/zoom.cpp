@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (c) 2020  Igara Studio S.A.
+// Copyright (c) 2020-2022  Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -9,9 +9,10 @@
 #include "config.h"
 #endif
 
-#include "base/clamp.h"
 #include "base/debug.h"
 #include "render/zoom.h"
+
+#include <algorithm>
 
 namespace render {
 
@@ -105,7 +106,7 @@ Zoom Zoom::fromScale(double scale)
 // static
 Zoom Zoom::fromLinearScale(int i)
 {
-  i = base::clamp(i, 0, scales_size-1);
+  i = std::clamp(i, 0, scales_size-1);
   return Zoom(scales[i][0], scales[i][1]);
 }
 

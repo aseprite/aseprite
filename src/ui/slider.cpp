@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -11,7 +11,6 @@
 
 #include "ui/slider.h"
 
-#include "base/clamp.h"
 #include "os/font.h"
 #include "ui/manager.h"
 #include "ui/message.h"
@@ -34,7 +33,7 @@ Slider::Slider(int min, int max, int value, SliderDelegate* delegate)
   : Widget(kSliderWidget)
   , m_min(min)
   , m_max(max)
-  , m_value(base::clamp(value, min, max))
+  , m_value(std::clamp(value, min, max))
   , m_readOnly(false)
   , m_delegate(delegate)
 {
@@ -46,7 +45,7 @@ void Slider::setRange(int min, int max)
 {
   m_min = min;
   m_max = max;
-  m_value = base::clamp(m_value, min, max);
+  m_value = std::clamp(m_value, min, max);
 
   invalidate();
 }
@@ -55,7 +54,7 @@ void Slider::setValue(int value)
 {
   int old_value = m_value;
 
-  m_value = base::clamp(value, m_min, m_max);
+  m_value = std::clamp(value, m_min, m_max);
 
   if (m_value != old_value)
     invalidate();
@@ -132,13 +131,13 @@ bool Slider::onProcessMessage(Message* msg)
         }
         // With right click
         else {
-          accuracy = base::clamp(rc.w / range, 1, rc.w);
+          accuracy = std::clamp(rc.w / range, 1, rc.w);
 
           value = slider_press_value +
             (mousePos.x - slider_press_x) / accuracy;
         }
 
-        value = base::clamp(value, m_min, m_max);
+        value = std::clamp(value, m_min, m_max);
         if (m_value != value) {
           setValue(value);
           onChange();
@@ -180,7 +179,7 @@ bool Slider::onProcessMessage(Message* msg)
             goto not_used;
         }
 
-        value = base::clamp(value, m_min, m_max);
+        value = std::clamp(value, m_min, m_max);
         if (m_value != value) {
           setValue(value);
           onChange();
@@ -196,7 +195,7 @@ bool Slider::onProcessMessage(Message* msg)
           + static_cast<MouseMessage*>(msg)->wheelDelta().x
           - static_cast<MouseMessage*>(msg)->wheelDelta().y;
 
-        value = base::clamp(value, m_min, m_max);
+        value = std::clamp(value, m_min, m_max);
 
         if (m_value != value) {
           this->setValue(value);

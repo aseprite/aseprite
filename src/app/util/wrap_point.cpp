@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This program is distributed under the terms of
@@ -12,7 +12,8 @@
 #include "app/util/wrap_point.h"
 
 #include "app/util/wrap_value.h"
-#include "base/clamp.h"
+
+#include <algorithm>
 
 namespace app {
 
@@ -26,14 +27,14 @@ gfx::Point wrap_point(const filters::TiledMode tiledMode,
   if (int(tiledMode) & int(filters::TiledMode::X_AXIS))
     out.x = wrap_value(pt.x, spriteSize.w);
   else if (clamp)
-    out.x = base::clamp(pt.x, 0, spriteSize.w-1);
+    out.x = std::clamp(pt.x, 0, spriteSize.w-1);
   else
     out.x = pt.x;
 
   if (int(tiledMode) & int(filters::TiledMode::Y_AXIS))
     out.y = wrap_value(pt.y, spriteSize.h);
   else if (clamp)
-    out.y = base::clamp(pt.y, 0, spriteSize.h-1);
+    out.y = std::clamp(pt.y, 0, spriteSize.h-1);
   else
     out.y = pt.y;
 

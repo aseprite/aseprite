@@ -130,9 +130,9 @@ protected:
 
 * [NL.26: Use conventional const notation](https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#nl26-use-conventional-const-notation)
 
-## C++11
+## C++17
 
-We are using some modern C++ (C++11, C++14, etc.) features, mainly:
+We are using C++17 standard. You can safely use:
 
 * Use `nullptr` instead of `NULL` macro
 * Use `auto` for complex types, iterators, or when the variable type
@@ -141,7 +141,8 @@ We are using some modern C++ (C++11, C++14, etc.) features, mainly:
 * Use template alias (`template<typename T> alias = orig<T>;`)
 * Use non-generic lambda functions
 * Use `std::shared_ptr`, `std::unique_ptr`, or `base::Ref`
-* Use `base::clamp` (no `std::clamp` yet)
+* Use `std::clamp`
+* Use `std::optional`
 * Use `static constexpr T v = ...;`
 * You can use `<atomic>`, `<thread>`, `<mutex>`, and `<condition_variable>`
 * Prefer `using T = ...;` instead of `typedef ... T`

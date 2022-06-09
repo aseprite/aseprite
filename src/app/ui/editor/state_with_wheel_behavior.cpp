@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -24,7 +24,6 @@
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/toolbar.h"
 #include "app/ui_context.h"
-#include "base/clamp.h"
 #include "base/string.h"
 #include "doc/brush.h"
 #include "doc/layer.h"
@@ -117,7 +116,7 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
     case WheelAction::FgColor: {
       int lastIndex = get_current_palette()->size()-1;
       int newIndex = ColorBar::instance()->getFgColor().getIndex() + int(dz);
-      newIndex = base::clamp(newIndex, 0, lastIndex);
+      newIndex = std::clamp(newIndex, 0, lastIndex);
       ColorBar::instance()->setFgColor(app::Color::fromIndex(newIndex));
       break;
     }
@@ -125,7 +124,7 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
     case WheelAction::BgColor: {
       int lastIndex = get_current_palette()->size()-1;
       int newIndex = ColorBar::instance()->getBgColor().getIndex() + int(dz);
-      newIndex = base::clamp(newIndex, 0, lastIndex);
+      newIndex = std::clamp(newIndex, 0, lastIndex);
       ColorBar::instance()->setBgColor(app::Color::fromIndex(newIndex));
       break;
     }
@@ -203,7 +202,7 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
         dz = -dz;
 
       brush.size(
-        base::clamp(
+        std::clamp(
           int(brush.size()+dz),
           // If we use the "static const int" member directly here,
           // we'll get a linker error (when compiling without
@@ -224,7 +223,7 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
         angle += 180;
       angle %= 181;
 
-      brush.angle(base::clamp(angle, 0, 180));
+      brush.angle(std::clamp(angle, 0, 180));
       break;
     }
 
@@ -295,7 +294,7 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
       tools::Tool* tool = getActiveTool();
       auto& toolPref = Preferences::instance().tool(tool);
       int opacity = toolPref.opacity();
-      opacity = base::clamp(int(opacity+dz*255/10), 0, 255);
+      opacity = std::clamp(int(opacity+dz*255/10), 0, 255);
       toolPref.opacity(opacity);
       break;
     }
@@ -308,7 +307,7 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
         Command* command = Commands::instance()->byId(CommandId::LayerOpacity());
         if (command) {
           int opacity = static_cast<doc::LayerImage*>(site.layer())->opacity();
-          opacity = base::clamp(int(opacity+dz*255/10), 0, 255);
+          opacity = std::clamp(int(opacity+dz*255/10), 0, 255);
 
           Params params;
           params.set("opacity",
@@ -328,7 +327,7 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
         Command* command = Commands::instance()->byId(CommandId::CelOpacity());
         if (command) {
           int opacity = site.cel()->opacity();
-          opacity = base::clamp(int(opacity+dz*255/10), 0, 255);
+          opacity = std::clamp(int(opacity+dz*255/10), 0, 255);
           Params params;
           params.set("opacity",
                      base::convert_to<std::string>(opacity).c_str());
@@ -344,7 +343,7 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
       ColorBar* colorBar = ColorBar::instance();
       Color c = colorBar->getFgColor();
       int a = c.getAlpha();
-      a = base::clamp(int(a+dz*255/10), 0, 255);
+      a = std::clamp(int(a+dz*255/10), 0, 255);
       c.setAlpha(a);
       colorBar->setFgColor(c);
       break;
@@ -366,9 +365,9 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
         case WheelAction::HslSaturation: s = s+dz/10.0; break;
         case WheelAction::HslLightness:  l = l+dz/10.0; break;
       }
-      colorBar->setFgColor(Color::fromHsl(base::clamp(h, 0.0, 360.0),
-                                          base::clamp(s, 0.0, 1.0),
-                                          base::clamp(l, 0.0, 1.0)));
+      colorBar->setFgColor(Color::fromHsl(std::clamp(h, 0.0, 360.0),
+                                          std::clamp(s, 0.0, 1.0),
+                                          std::clamp(l, 0.0, 1.0)));
       break;
     }
 
@@ -388,9 +387,9 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
         case WheelAction::HsvSaturation: s = s+dz/10.0; break;
         case WheelAction::HsvValue:      v = v+dz/10.0; break;
       }
-      colorBar->setFgColor(Color::fromHsv(base::clamp(h, 0.0, 360.0),
-                                          base::clamp(s, 0.0, 1.0),
-                                          base::clamp(v, 0.0, 1.0)));
+      colorBar->setFgColor(Color::fromHsv(std::clamp(h, 0.0, 360.0),
+                                          std::clamp(s, 0.0, 1.0),
+                                          std::clamp(v, 0.0, 1.0)));
       break;
     }
 

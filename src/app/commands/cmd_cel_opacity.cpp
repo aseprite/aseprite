@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -19,7 +19,6 @@
 #include "app/modules/gui.h"
 #include "app/tx.h"
 #include "app/ui/timeline/timeline.h"
-#include "base/clamp.h"
 #include "doc/cel.h"
 #include "doc/cels_range.h"
 #include "doc/sprite.h"
@@ -53,7 +52,7 @@ CelOpacityCommand::CelOpacityCommand()
 void CelOpacityCommand::onLoadParams(const Params& params)
 {
   m_opacity = params.get_as<int>("opacity");
-  m_opacity = base::clamp(m_opacity, 0, 255);
+  m_opacity = std::clamp(m_opacity, 0, 255);
 }
 
 bool CelOpacityCommand::onEnabled(Context* context)

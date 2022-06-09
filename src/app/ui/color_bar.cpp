@@ -50,7 +50,6 @@
 #include "app/ui_context.h"
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
-#include "base/clamp.h"
 #include "base/scoped_value.h"
 #include "doc/cel.h"
 #include "doc/cels_range.h"
@@ -1232,7 +1231,7 @@ void ColorBar::fixColorIndex(ColorButton& colorButton)
 
   if (color.getType() == Color::IndexType) {
     int oldIndex = color.getIndex();
-    int newIndex = base::clamp(oldIndex, 0, get_current_palette()->size()-1);
+    int newIndex = std::clamp(oldIndex, 0, get_current_palette()->size()-1);
     if (oldIndex != newIndex) {
       color = Color::fromIndex(newIndex);
       colorButton.setColor(color);

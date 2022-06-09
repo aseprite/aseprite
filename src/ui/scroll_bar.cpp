@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -9,7 +9,6 @@
 #include "config.h"
 #endif
 
-#include "base/clamp.h"
 #include "gfx/size.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"
@@ -148,13 +147,13 @@ bool ScrollBar::onProcessMessage(Message* msg)
 
           if (align() & HORIZONTAL) {
             pos = (m_wherepos + mousePos.x - m_whereclick);
-            pos = base::clamp(pos, 0, bar_size - len);
+            pos = std::clamp(pos, 0, bar_size - len);
 
             scroll.x = (m_size - viewport_size) * pos / (bar_size - len);
           }
           else {
             pos = (m_wherepos + mousePos.y - m_whereclick);
-            pos = base::clamp(pos, 0, bar_size - len);
+            pos = std::clamp(pos, 0, bar_size - len);
 
             scroll.y = (m_size - viewport_size) * pos / (bar_size - len);
           }
@@ -222,9 +221,9 @@ void ScrollBar::getScrollBarInfo(int *_pos, int *_len, int *_bar_size, int *_vie
   }
   else if (m_size > 0) {
     len = bar_size * viewport_size / m_size;
-    len = base::clamp(len, theme()->getScrollbarSize()*2-border_width, bar_size);
+    len = std::clamp(len, theme()->getScrollbarSize()*2-border_width, bar_size);
     pos = (bar_size-len) * m_pos / (m_size-viewport_size);
-    pos = base::clamp(pos, 0, bar_size-len);
+    pos = std::clamp(pos, 0, bar_size-len);
   }
   else {
     len = pos = 0;

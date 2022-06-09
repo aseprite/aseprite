@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -16,7 +16,6 @@
 #include "app/file/format_options.h"
 #include "app/file/png_format.h"
 #include "app/file/png_options.h"
-#include "base/clamp.h"
 #include "base/file_handle.h"
 #include "doc/doc.h"
 #include "gfx/color_space.h"
@@ -614,7 +613,7 @@ bool PngFormat::onSave(FileOp* fop)
   if (color_type == PNG_COLOR_TYPE_PALETTE) {
     int c, r, g, b;
     int pal_size = fop->sequenceGetNColors();
-    pal_size = base::clamp(pal_size, 1, PNG_MAX_PALETTE_LENGTH);
+    pal_size = std::clamp(pal_size, 1, PNG_MAX_PALETTE_LENGTH);
 
 #if PNG_MAX_PALETTE_LENGTH != 256
 #error PNG_MAX_PALETTE_LENGTH should be 256

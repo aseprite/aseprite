@@ -11,7 +11,6 @@
 
 #include "ui/entry.h"
 
-#include "base/clamp.h"
 #include "base/string.h"
 #include "os/draw_text.h"
 #include "os/font.h"
@@ -121,8 +120,8 @@ void Entry::setCaretPos(int pos)
 {
   gfx::Size caretSize = theme()->getEntryCaretSize(this);
   int textlen = lastCaretPos();
-  m_caret = base::clamp(pos, 0, textlen);
-  m_scroll = base::clamp(m_scroll, 0, textlen);
+  m_caret = std::clamp(pos, 0, textlen);
+  m_scroll = std::clamp(m_scroll, 0, textlen);
 
   // Backward scroll
   if (m_caret < m_scroll)
@@ -577,7 +576,7 @@ int Entry::getCaretFromMouse(MouseMessage* mousemsg)
       break;
   }
 
-  return base::clamp(i, 0, lastPos);
+  return std::clamp(i, 0, lastPos);
 }
 
 void Entry::executeCmd(EntryCmd cmd, int unicodeChar, bool shift_pressed)
@@ -823,7 +822,7 @@ void Entry::backwardWord()
 Entry::Range Entry::wordRange(int pos)
 {
   const int last = lastCaretPos();
-  pos = base::clamp(pos, 0, last);
+  pos = std::clamp(pos, 0, last);
 
   int i, j;
   i = j = pos;

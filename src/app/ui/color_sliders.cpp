@@ -185,7 +185,7 @@ namespace {
                 else
                   ++value;
 
-                setTextf("%d", base::clamp(value, minValue(), maxValue()));
+                setTextf("%d", std::clamp(value, minValue(), maxValue()));
                 selectAllText();
 
                 onChange();
@@ -461,7 +461,7 @@ void ColorSliders::onEntryChange(const Channel i)
   Slider* slider = (m_mode == Mode::Absolute ?
                     m_items[i].absSlider:
                     m_items[i].relSlider);
-  value = base::clamp(value, slider->getMinValue(), slider->getMaxValue());
+  value = std::clamp(value, slider->getMinValue(), slider->getMaxValue());
   slider->setValue(value);
 
   onControlChange(i);

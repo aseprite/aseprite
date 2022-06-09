@@ -23,7 +23,6 @@
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
-#include "base/clamp.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
 #include "gfx/rect_io.h"
@@ -312,7 +311,7 @@ void ColorButton::openPopup(const bool forcePinned)
   if (!pinned || (forcePinned && m_hiddenPopupBounds.isEmpty())) {
     winBounds = gfx::Rect(m_window->bounds().origin(),
                           m_window->sizeHint());
-    winBounds.x = base::clamp(bounds().x, 0, ui::display_w()-winBounds.w);
+    winBounds.x = std::clamp(bounds().x, 0, ui::display_w()-winBounds.w);
     if (bounds().y2() <= ui::display_h()-winBounds.h)
       winBounds.y = std::max(0, bounds().y2());
     else
@@ -324,8 +323,8 @@ void ColorButton::openPopup(const bool forcePinned)
   else {
     winBounds = m_windowDefaultBounds;
   }
-  winBounds.x = base::clamp(winBounds.x, 0, ui::display_w()-winBounds.w);
-  winBounds.y = base::clamp(winBounds.y, 0, ui::display_h()-winBounds.h);
+  winBounds.x = std::clamp(winBounds.x, 0, ui::display_w()-winBounds.w);
+  winBounds.y = std::clamp(winBounds.y, 0, ui::display_h()-winBounds.h);
   m_window->setBounds(winBounds);
 
   m_window->manager()->dispatchMessages();
