@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -11,6 +11,7 @@
 
 #include "app/xml_document.h"
 
+#include <memory>
 #include <string>
 
 namespace app {
@@ -22,6 +23,9 @@ namespace app {
     // gui.xml file will be loaded by the first time, which could
     // generated an exception if there are errors in the XML file.
     static GuiXml* instance();
+    static void destroyInstance();
+
+    GuiXml();
 
     // Returns the tinyxml document instance.
     XmlDocumentRef doc() {
@@ -34,9 +38,8 @@ namespace app {
     }
 
   private:
-    GuiXml();
-
     XmlDocumentRef m_doc;
+    friend class std::unique_ptr<GuiXml>;
   };
 
 } // namespace app

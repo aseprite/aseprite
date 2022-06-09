@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -135,16 +135,16 @@ namespace app {
 
     AppMod* m_mod;
     std::unique_ptr<ui::UISystem> m_uiSystem;
-    CoreModules* m_coreModules;
-    Modules* m_modules;
-    LegacyModules* m_legacy;
+    std::unique_ptr<CoreModules> m_coreModules;
+    std::unique_ptr<Modules> m_modules;
+    std::unique_ptr<LegacyModules> m_legacy;
     bool m_isGui;
     bool m_isShell;
     std::unique_ptr<MainWindow> m_mainWindow;
     base::paths m_files;
 #ifdef ENABLE_UI
     std::unique_ptr<AppBrushes> m_brushes;
-    BackupIndicator* m_backupIndicator;
+    std::unique_ptr<BackupIndicator> m_backupIndicator;
 #endif // ENABLE_UI
 #ifdef ENABLE_SCRIPTING
     std::unique_ptr<script::Engine> m_engine;
