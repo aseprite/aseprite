@@ -369,6 +369,19 @@ void push_app_events(lua_State* L)
 
 void push_sprite_events(lua_State* L, Sprite* sprite)
 {
+  // Clear the g_spriteEvents map on Exit() signal because if the dtor
+  // is called in the normal C++ order destruction sequence by
+  // compilation units, it could crash because each ~SpriteEvents()
+  // needs the doc::get() function, which uses the "objects"
+  // collection from "src/doc/objects.cpp" (so we cannot garantize
+  // that that "objects" collection will be destroyed after
+  // "g_spriteEvents")
+  static bool atExit = false;
+  if (!atExit) {
+    atExit = true;
+    App::instance()->Exit.connect([]{ g_spriteEvents.clear(); });
+  }
+
   ASSERT(sprite);
 
   SpriteEvents* spriteEvents;
