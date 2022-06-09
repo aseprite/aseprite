@@ -143,6 +143,8 @@ We are using C++17 standard. You can safely use:
 * Use `std::shared_ptr`, `std::unique_ptr`, or `base::Ref`
 * Use `std::clamp`
 * Use `std::optional`
+  * Use `std::optional::operator*` (because `std::optional::value` isn't
+    available on macOS 10.9, only since 10.13)
 * Use `static constexpr T v = ...;`
 * You can use `<atomic>`, `<thread>`, `<mutex>`, and `<condition_variable>`
 * Prefer `using T = ...;` instead of `typedef ... T`

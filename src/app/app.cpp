@@ -636,7 +636,7 @@ bool App::isPortable()
                       base::get_file_path(base::get_app_path()),
                       "aseprite.ini"));
   }
-  return is_portable.value();
+  return *is_portable;
 }
 
 tools::ToolBox* App::toolBox() const
