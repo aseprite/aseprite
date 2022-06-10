@@ -23,7 +23,7 @@ namespace app {
   public:
     static int runningJobs();
 
-    Job(const char* jobName);
+    Job(const char* jobName, bool showAlertWindow = true);
     virtual ~Job();
 
     // Starts the job calling onJob() event in another thread and

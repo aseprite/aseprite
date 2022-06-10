@@ -35,13 +35,13 @@ int Job::runningJobs()
   return g_runningJobs;
 }
 
-Job::Job(const char* jobName)
+Job::Job(const char* jobName, bool showAlertWindow)
 {
   m_last_progress = 0.0;
   m_done_flag = false;
   m_canceled_flag = false;
 
-  if (App::instance()->isGui()) {
+  if (App::instance()->isGui() && showAlertWindow) {
     m_alert_window = ui::Alert::create(
       fmt::format(Strings::alerts_job_working(), jobName));
     m_alert_window->addProgress();

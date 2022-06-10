@@ -35,7 +35,9 @@ namespace app {
       const Context* context,
       Doc* document,
       const std::string& filename,
-      const bool markAsSaved);
+      const bool markAsSaved,
+      const bool addToRecentFiles = true,
+      const bool showAlertWindow = true);
 
     std::string m_filename;
     std::string m_filenameFormat;
@@ -44,6 +46,7 @@ namespace app {
     std::string m_slice;
     doc::SelectedFrames m_selFrames;
     bool m_adjustFramesByTag;
+    bool m_addToRecentFiles;
     bool m_useUI;
     bool m_ignoreEmpty;
   };

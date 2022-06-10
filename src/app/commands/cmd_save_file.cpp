@@ -47,13 +47,13 @@ namespace app {
 
 class SaveFileJob : public Job, public IFileOpProgress {
 public:
-  SaveFileJob(FileOp* fop)
-    : Job("Saving file")
+  SaveFileJob(FileOp* fop, const bool showAlertWindow = true)
+    : Job("Saving file", showAlertWindow)
     , m_fop(fop)
   {
   }
 
-  void showProgressWindow() {
+  void run() {
     startJob();
 
     if (isCanceled()) {
@@ -112,8 +112,11 @@ void SaveFileBaseCommand::onLoadParams(const Params& params)
     m_adjustFramesByTag = false;
   }
 
-  std::string useUI = params.get("useUI");
+  const std::string useUI = params.get("useUI");
   m_useUI = (useUI.empty() || (useUI == "true"));
+
+  const std::string addToRecentFiles = params.get("addToRecentFiles");
+  m_addToRecentFiles = (addToRecentFiles == "true");
 
   m_ignoreEmpty = params.get_as<bool>("ignoreEmpty");
 }
@@ -172,8 +175,7 @@ std::string SaveFileBaseCommand::saveAsDialog(
 
   if (saveInBackground) {
     saveDocumentInBackground(
-      context, document,
-      filename, markAsSaved);
+      context, document, filename, markAsSaved, m_addToRecentFiles, m_useUI);
 
     // Reset the "saveCopy" document preferences of the new document
     // (here "document" contains the new filename), because these
@@ -198,7 +200,9 @@ void SaveFileBaseCommand::saveDocumentInBackground(
   const Context* context,
   Doc* document,
   const std::string& filename,
-  const bool markAsSaved)
+  const bool markAsSaved,
+  const bool addToRecentFiles,
+  const bool showAlertWindow)
 {
   if (!m_aniDir.empty()) {
     switch (convert_string_to_anidir(m_aniDir)) {
@@ -224,8 +228,8 @@ void SaveFileBaseCommand::saveDocumentInBackground(
   if (!fop)
     return;
 
-  SaveFileJob job(fop.get());
-  job.showProgressWindow();
+  SaveFileJob job(fop.get(), showAlertWindow);
+  job.run();
 
   if (fop->hasError()) {
     Console console;
@@ -240,7 +244,9 @@ void SaveFileBaseCommand::saveDocumentInBackground(
     document->impossibleToBackToSavedState();
   }
   else if (context->isUIAvailable()) {
-    App::instance()->recentFiles()->addRecentFile(filename);
+    if (addToRecentFiles) {
+      App::instance()->recentFiles()->addRecentFile(filename);
+    }
     if (markAsSaved) {
       document->markAsSaved();
       document->setFilename(filename);
@@ -283,7 +289,7 @@ void SaveFileCommand::onExecute(Context* context)
 
     saveDocumentInBackground(
       context, document,
-      documentReader->filename(), true);
+      documentReader->filename(), true, m_addToRecentFiles, m_useUI);
   }
   // If the document isn't associated to a file, we must to show the
   // save-as dialog to the user to select for first time the file-name
@@ -461,7 +467,7 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
     PngEncoderOneAlphaPixel fixPng(isForTwitter);
 
     saveDocumentInBackground(
-      context, doc, outputFilename, false);
+      context, doc, outputFilename, false, m_addToRecentFiles, m_useUI);
   }
 
   // Undo resize
