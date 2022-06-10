@@ -1,4 +1,4 @@
--- Copyright (C) 2019-2021  Igara Studio S.A.
+-- Copyright (C) 2019-2022  Igara Studio S.A.
 -- Copyright (C) 2018  David Capello
 --
 -- This file is released under the terms of the MIT license.
@@ -196,4 +196,13 @@ do
 
   assert(s.cels[1].image:getPixel(0, 0) == 2)
   assert(s.cels[1].image:getPixel(1, 0) == 1) -- Get the color of the first layer
+end
+
+-- Compare sprite IDs
+
+do
+  local a = Sprite(1, 1)
+  local b = Sprite(1, 1)
+  assert(a == a)
+  assert(a ~= b) -- Compares IDs, not sprite size
 end
