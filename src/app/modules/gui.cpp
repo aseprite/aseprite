@@ -37,7 +37,6 @@
 #include "app/ui/toolbar.h"
 #include "app/ui_context.h"
 #include "app/util/open_batch.h"
-#include "base/clamp.h"
 #include "base/fs.h"
 #include "base/memory.h"
 #include "base/string.h"
@@ -132,7 +131,7 @@ static bool create_main_window(bool gpuAccel,
   try {
     if (!spec.frame().isEmpty() ||
         !spec.contentRect().isEmpty()) {
-      spec.scale(scale == 0 ? 2: base::clamp(scale, 1, 4));
+      spec.scale(scale == 0 ? 2: std::clamp(scale, 1, 4));
       main_window = os::instance()->makeWindow(spec);
     }
   }
@@ -418,16 +417,16 @@ void load_window_pos(Window* window, const char* section,
   Rect pos = get_config_rect(section, "WindowPos", origPos);
 
   if (limitMinSize) {
-    pos.w = base::clamp(pos.w, origPos.w, workarea.w);
-    pos.h = base::clamp(pos.h, origPos.h, workarea.h);
+    pos.w = std::clamp(pos.w, origPos.w, workarea.w);
+    pos.h = std::clamp(pos.h, origPos.h, workarea.h);
   }
   else {
     pos.w = std::min(pos.w, workarea.w);
     pos.h = std::min(pos.h, workarea.h);
   }
 
-  pos.setOrigin(Point(base::clamp(pos.x, workarea.x, workarea.x2()-pos.w),
-                      base::clamp(pos.y, workarea.y, workarea.y2()-pos.h)));
+  pos.setOrigin(Point(std::clamp(pos.x, workarea.x, workarea.x2()-pos.w),
+                      std::clamp(pos.y, workarea.y, workarea.y2()-pos.h)));
 
   window->setBounds(pos);
 

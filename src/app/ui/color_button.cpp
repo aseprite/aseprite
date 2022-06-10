@@ -23,7 +23,6 @@
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
-#include "base/clamp.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
 #include "gfx/rect_io.h"
@@ -381,7 +380,7 @@ void ColorButton::openPopup(const bool forcePinned)
       if (!pinned || (forcePinned && m_hiddenPopupBounds.isEmpty())) {
         gfx::Rect bounds = getWidgetBounds(this);
 
-        winBounds.x = base::clamp(bounds.x, workarea.x, workarea.x2()-winBounds.w);
+        winBounds.x = std::clamp(bounds.x, workarea.x, workarea.x2()-winBounds.w);
         if (bounds.y2()+winBounds.h <= workarea.y2())
           winBounds.y = std::max(workarea.y, bounds.y2());
         else

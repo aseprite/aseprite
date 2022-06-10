@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2021  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -10,7 +10,7 @@
 
 #include "app/tools/velocity.h"
 
-#include "base/clamp.h"
+#include <algorithm>
 
 namespace app {
 namespace tools {
@@ -39,7 +39,7 @@ void VelocitySensor::updateWithDisplayPoint(const gfx::Point& screenPoint)
   else {
     gfx::PointF newVelocity(screenPoint - m_lastPoint);
 
-    const float a = base::clamp(float(dt) / kFullUpdateMSecs, 0.0f, 1.0f);
+    const float a = std::clamp(float(dt) / kFullUpdateMSecs, 0.0f, 1.0f);
     m_velocity.x = (1.0f-a)*m_velocity.x + a*newVelocity.x;
     m_velocity.y = (1.0f-a)*m_velocity.y + a*newVelocity.y;
   }

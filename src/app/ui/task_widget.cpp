@@ -13,7 +13,6 @@
 #include "app/i18n/strings.h"
 #include "app/modules/gui.h"
 #include "app/ui/skin/skin_theme.h"
-#include "base/clamp.h"
 #include "ui/scale.h"
 
 #include <limits>
@@ -56,9 +55,9 @@ TaskWidget::TaskWidget(const Type type,
         float v = m_task.progress();
         if (v > 0.0f) {
           TRACEARGS("progressBar setValue",
-                    int(base::clamp(v*100.0f, 0.0f, 100.0f)));
+                    int(std::clamp(v*100.0f, 0.0f, 100.0f)));
           m_progressBar.setValue(
-            int(base::clamp(v*100.0f, 0.0f, 100.0f)));
+            int(std::clamp(v*100.0f, 0.0f, 100.0f)));
         }
       }
     });

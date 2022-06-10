@@ -158,8 +158,8 @@ public:
       }
 
       // Dynamic size and angle
-      int size = base::clamp(int(pt.size), int(Brush::kMinBrushSize), int(Brush::kMaxBrushSize));
-      int angle = base::clamp(int(pt.angle), -180, 180);
+      int size = std::clamp(int(pt.size), int(Brush::kMinBrushSize), int(Brush::kMaxBrushSize));
+      int angle = std::clamp(int(pt.angle), -180, 180);
       if ((brush->size() != size) ||
           (brush->angle() != angle && m_origBrushType != kCircleBrushType) ||
           (m_hasDynamicGradient && pt.gradient != m_lastGradientValue)) {

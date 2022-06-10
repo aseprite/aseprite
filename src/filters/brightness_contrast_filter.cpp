@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This program is distributed under the terms of
@@ -11,7 +11,6 @@
 
 #include "filters/brightness_contrast_filter.h"
 
-#include "base/clamp.h"
 #include "doc/image.h"
 #include "doc/palette.h"
 #include "doc/rgbmap.h"
@@ -186,7 +185,7 @@ void BrightnessContrastFilter::updateMap()
     double x = double(u) / double(max-1);
     double y = (m_contrast+1.0) * (x - 0.5) + 0.5;
     y = y*(1.0+m_brightness);
-    y = base::clamp(y, 0.0, 1.0);
+    y = std::clamp(y, 0.0, 1.0);
     m_cmap[u] = int(255.5 * y);
   }
 }

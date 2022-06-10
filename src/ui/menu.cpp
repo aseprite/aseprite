@@ -11,7 +11,6 @@
 
 #include "ui/menu.h"
 
-#include "base/clamp.h"
 #include "gfx/size.h"
 #include "os/font.h"
 #include "ui/display.h"
@@ -114,9 +113,9 @@ static void choose_side(gfx::Rect& bounds,
   Rect r1(0, 0, bounds.w, bounds.h);
   Rect r2(0, 0, bounds.w, bounds.h);
 
-  r1.x = x_left = base::clamp(x_left, workarea.x, workarea.x2()-bounds.w);
-  r2.x = x_right = base::clamp(x_right, workarea.x, workarea.x2()-bounds.w);
-  r1.y = r2.y = y = base::clamp(y, workarea.y, workarea.y2()-bounds.h);
+  r1.x = x_left = std::clamp(x_left, workarea.x, workarea.x2()-bounds.w);
+  r2.x = x_right = std::clamp(x_right, workarea.x, workarea.x2()-bounds.w);
+  r1.y = r2.y = y = std::clamp(y, workarea.y, workarea.y2()-bounds.h);
 
   // Calculate both intersections
   const gfx::Rect s1 = r1.createIntersection(parentBounds);
@@ -914,7 +913,7 @@ bool MenuItem::onProcessMessage(Message* msg)
                          std::function<gfx::Rect(Widget*)> getWidgetBounds){
             const gfx::Rect itemBounds = getWidgetBounds(this);
             if (inBar()) {
-              bounds.x = base::clamp(itemBounds.x, workarea.x, workarea.x2()-bounds.w);
+              bounds.x = std::clamp(itemBounds.x, workarea.x, workarea.x2()-bounds.w);
               bounds.y = std::max(workarea.y, itemBounds.y2());
             }
             else {

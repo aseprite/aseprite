@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -11,7 +11,6 @@
 
 #include "filters/hue_saturation_filter.h"
 
-#include "base/clamp.h"
 #include "doc/image.h"
 #include "doc/palette.h"
 #include "doc/palette_picks.h"
@@ -125,7 +124,7 @@ void HueSaturationFilter::applyToGrayscale(FilterManager* filterMgr)
       gfx::Hsl hsl(gfx::Rgb(k, k, k));
 
       double l = hsl.lightness()*(1.0+m_l);
-      l = base::clamp(l, 0.0, 1.0);
+      l = std::clamp(l, 0.0, 1.0);
 
       hsl.lightness(l);
       gfx::Rgb rgb(hsl);
@@ -134,7 +133,7 @@ void HueSaturationFilter::applyToGrayscale(FilterManager* filterMgr)
 
       if (a && (target & TARGET_ALPHA_CHANNEL)) {
         a = a*(1.0+m_a);
-        a = base::clamp(a, 0, 255);
+        a = std::clamp(a, 0, 255);
       }
     }
 
@@ -214,11 +213,11 @@ void HueSaturationFilter::applyFilterToRgbT(const Target target,
 
   double s = (multiply ? hsl.saturation()*(1.0+m_s):
                          hsl.saturation() + m_s);
-  s = base::clamp(s, 0.0, 1.0);
+  s = std::clamp(s, 0.0, 1.0);
 
   double l = (multiply ? (hsl.*get_lightness)()*(1.0+m_l):
                          (hsl.*get_lightness)() + m_l);
-  l = base::clamp(l, 0.0, 1.0);
+  l = std::clamp(l, 0.0, 1.0);
 
   hsl.hue(h);
   hsl.saturation(s);
@@ -230,7 +229,7 @@ void HueSaturationFilter::applyFilterToRgbT(const Target target,
   if (target & TARGET_BLUE_CHANNEL ) b = rgb.blue();
   if (a && (target & TARGET_ALPHA_CHANNEL)) {
     a = a*(1.0+m_a);
-    a = base::clamp(a, 0, 255);
+    a = std::clamp(a, 0, 255);
   }
 
   c = rgba(r, g, b, a);

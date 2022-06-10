@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -11,7 +11,6 @@
 
 #include "app/commands/filters/color_curve_editor.h"
 
-#include "base/clamp.h"
 #include "filters/color_curve.h"
 #include "ui/alert.h"
 #include "ui/entry.h"
@@ -140,8 +139,8 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
           if (m_editPoint) {
             gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
             *m_editPoint = screenToView(mousePos);
-            m_editPoint->x = base::clamp(m_editPoint->x, m_viewBounds.x, m_viewBounds.x2()-1);
-            m_editPoint->y = base::clamp(m_editPoint->y, m_viewBounds.y, m_viewBounds.y2()-1);
+            m_editPoint->x = std::clamp(m_editPoint->x, m_viewBounds.x, m_viewBounds.x2()-1);
+            m_editPoint->y = std::clamp(m_editPoint->y, m_viewBounds.y, m_viewBounds.y2()-1);
 
             // TODO this should be optional
             CurveEditorChange();
@@ -209,9 +208,9 @@ void ColorCurveEditor::onPaint(ui::PaintEvent& ev)
   // Draw curve
   for (c = client.x; c < client.x+client.w; ++c) {
     pt = clientToView(gfx::Point(c, 0));
-    pt.x = base::clamp(pt.x, m_viewBounds.x, m_viewBounds.x2()-1);
+    pt.x = std::clamp(pt.x, m_viewBounds.x, m_viewBounds.x2()-1);
     pt.y = values[pt.x - m_viewBounds.x];
-    pt.y = base::clamp(pt.y, m_viewBounds.y, m_viewBounds.y2()-1);
+    pt.y = std::clamp(pt.y, m_viewBounds.y, m_viewBounds.y2()-1);
     pt = viewToClient(pt);
 
     g->putPixel(gfx::rgba(255, 255, 255), c, pt.y);
@@ -270,8 +269,8 @@ bool ColorCurveEditor::editNodeManually(gfx::Point& viewPt)
   if (window.closer() == window.ok()) {
     viewPt.x = window.x()->textInt();
     viewPt.y = window.y()->textInt();
-    viewPt.x = base::clamp(viewPt.x, 0, 255);
-    viewPt.y = base::clamp(viewPt.y, 0, 255);
+    viewPt.x = std::clamp(viewPt.x, 0, 255);
+    viewPt.y = std::clamp(viewPt.y, 0, 255);
     return true;
   }
   else if (window.closer() == window.deleteButton()) {

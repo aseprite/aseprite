@@ -332,14 +332,12 @@ bool Extension::canBeUninstalled() const
 
 void Extension::enable(const bool state)
 {
-  // Do nothing
-  if (m_isEnabled == state)
-    return;
+  if (m_isEnabled != state) {
+    set_config_bool("extensions", m_name.c_str(), state);
+    flush_config_file();
 
-  set_config_bool("extensions", m_name.c_str(), state);
-  flush_config_file();
-
-  m_isEnabled = state;
+    m_isEnabled = state;
+  }
 
 #ifdef ENABLE_SCRIPTING
   if (hasScripts()) {
@@ -364,6 +362,9 @@ void Extension::uninstall(const DeletePluginPref delPref)
 
   TRACE("EXT: Uninstall extension '%s' from '%s'...\n",
         m_name.c_str(), m_path.c_str());
+
+  // Execute exit actions of scripts
+  executeExitActions();
 
   // Remove all files inside the extension path
   uninstallFiles(m_path, delPref);

@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -11,7 +11,6 @@
 
 #include "doc/mask.h"
 
-#include "base/clamp.h"
 #include "base/memory.h"
 #include "doc/image_impl.h"
 
@@ -392,10 +391,10 @@ void Mask::crop(const Image *image)
   beg_x2 = beg_x1 + m_bounds.w - 1;
   beg_y2 = beg_y1 + m_bounds.h - 1;
 
-  beg_x1 = base::clamp(beg_x1, 0, m_bounds.w-1);
-  beg_y1 = base::clamp(beg_y1, 0, m_bounds.h-1);
-  beg_x2 = base::clamp(beg_x2, beg_x1, m_bounds.w-1);
-  beg_y2 = base::clamp(beg_y2, beg_y1, m_bounds.h-1);
+  beg_x1 = std::clamp(beg_x1, 0, m_bounds.w-1);
+  beg_y1 = std::clamp(beg_y1, 0, m_bounds.h-1);
+  beg_x2 = std::clamp(beg_x2, beg_x1, m_bounds.w-1);
+  beg_y2 = std::clamp(beg_y2, beg_y1, m_bounds.h-1);
 
   /* left */
   ADVANCE(x1, x2, y2, <=, ++,

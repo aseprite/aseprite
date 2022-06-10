@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -26,7 +26,6 @@
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
 #include "app/util/pixel_ratio.h"
-#include "base/clamp.h"
 #include "doc/cel.h"
 #include "doc/image.h"
 #include "doc/layer.h"
@@ -127,7 +126,7 @@ void NewFileCommand::onExecute(Context* ctx)
     int w = pref.newFile.width();
     int h = pref.newFile.height();
     int bg = pref.newFile.backgroundColor();
-    bg = base::clamp(bg, 0, 2);
+    bg = std::clamp(bg, 0, 2);
 
     // If the clipboard contains an image, we can show the size of the
     // clipboard as default image size.
@@ -184,10 +183,10 @@ void NewFileCommand::onExecute(Context* ctx)
     static_assert(int(ColorMode::RGB) == 0, "RGB pixel format should be 0");
     static_assert(int(ColorMode::INDEXED) == 2, "Indexed pixel format should be 2");
 
-    colorMode = base::clamp(colorMode, ColorMode::RGB, ColorMode::INDEXED);
-    w = base::clamp(w, 1, DOC_SPRITE_MAX_WIDTH);
-    h = base::clamp(h, 1, DOC_SPRITE_MAX_HEIGHT);
-    bg = base::clamp(bg, 0, 2);
+    colorMode = std::clamp(colorMode, ColorMode::RGB, ColorMode::INDEXED);
+    w = std::clamp(w, 1, DOC_SPRITE_MAX_WIDTH);
+    h = std::clamp(h, 1, DOC_SPRITE_MAX_HEIGHT);
+    bg = std::clamp(bg, 0, 2);
 
     // Select the background color
     if (bg >= 0 && bg <= 3) {

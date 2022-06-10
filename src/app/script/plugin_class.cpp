@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -167,7 +167,7 @@ int Plugin_newCommand(lua_State* L)
       if (!group.empty() &&
           App::instance()->isGui()) { // On CLI menus do not make sense
         if (auto appMenus = AppMenus::instance()) {
-          std::unique_ptr<MenuItem> menuItem(new AppMenuItem(title, cmd));
+          std::unique_ptr<MenuItem> menuItem(new AppMenuItem(title, id));
           appMenus->addMenuItemIntoGroup(group, std::move(menuItem));
         }
       }

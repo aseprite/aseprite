@@ -15,7 +15,6 @@
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
 #include "app/util/shader_helpers.h"
-#include "base/clamp.h"
 #include "os/surface.h"
 #include "ui/graphics.h"
 #include "ui/message.h"
@@ -88,9 +87,9 @@ app::Color ColorSpectrum::getMainAreaColor(const int u, const int umax,
   double hue = 360.0 * u / umax;
   double lit = 1.0 - (double(v)/double(vmax));
   return app::Color::fromHsl(
-    base::clamp(hue, 0.0, 360.0),
+    std::clamp(hue, 0.0, 360.0),
     m_color.getHslSaturation(),
-    base::clamp(lit, 0.0, 1.0),
+    std::clamp(lit, 0.0, 1.0),
     getCurrentAlphaForNewColor());
 }
 
@@ -99,7 +98,7 @@ app::Color ColorSpectrum::getBottomBarColor(const int u, const int umax)
   double sat = double(u) / double(umax);
   return app::Color::fromHsl(
     m_color.getHslHue(),
-    base::clamp(sat, 0.0, 1.0),
+    std::clamp(sat, 0.0, 1.0),
     m_color.getHslLightness(),
     getCurrentAlphaForNewColor());
 }
@@ -147,9 +146,9 @@ void ColorSpectrum::onPaintSurfaceInBgThread(
 
         gfx::Color color = color_utils::color_for_ui(
           app::Color::fromHsl(
-            base::clamp(hue, 0.0, 360.0),
+            std::clamp(hue, 0.0, 360.0),
             sat,
-            base::clamp(lit, 0.0, 1.0)));
+            std::clamp(lit, 0.0, 1.0)));
 
         s->putPixel(color, main.x+x, main.y+y);
       }

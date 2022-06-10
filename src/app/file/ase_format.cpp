@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -16,7 +16,6 @@
 #include "app/file/format_options.h"
 #include "app/pref/preferences.h"
 #include "base/cfile.h"
-#include "base/clamp.h"
 #include "base/exception.h"
 #include "base/file_handle.h"
 #include "base/fs.h"
@@ -1103,8 +1102,8 @@ static void ase_file_write_tags_chunk(FILE* f,
         tag->toFrame() < fromFrame)
       continue;
 
-    frame_t from = base::clamp(tag->fromFrame()-fromFrame, 0, toFrame-fromFrame);
-    frame_t to = base::clamp(tag->toFrame()-fromFrame, from, toFrame-fromFrame);
+    frame_t from = std::clamp(tag->fromFrame()-fromFrame, 0, toFrame-fromFrame);
+    frame_t to = std::clamp(tag->toFrame()-fromFrame, from, toFrame-fromFrame);
 
     fputw(from, f);
     fputw(to, f);

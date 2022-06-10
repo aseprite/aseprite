@@ -55,7 +55,7 @@
 #include "app/util/conversion_to_surface.h"
 #include "app/util/layer_utils.h"
 #include "base/chrono.h"
-#include "base/clamp.h"
+#include "base/convert_to.h"
 #include "doc/doc.h"
 #include "doc/mask_boundaries.h"
 #include "doc/slice.h"
@@ -640,8 +640,8 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
 
   const int maxw = std::max(0, m_sprite->width()-expose.x);
   const int maxh = std::max(0, m_sprite->height()-expose.y);
-  expose.w = base::clamp(expose.w, 0, maxw);
-  expose.h = base::clamp(expose.h, 0, maxh);
+  expose.w = std::clamp(expose.w, 0, maxw);
+  expose.h = std::clamp(expose.h, 0, maxh);
   if (expose.isEmpty())
     return;
 
@@ -818,7 +818,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
 
         if (m_docPref.pixelGrid.autoOpacity()) {
           alpha = int(alpha * (m_proj.zoom().scale()-2.) / (16.-2.));
-          alpha = base::clamp(alpha, 0, 255);
+          alpha = std::clamp(alpha, 0, 255);
         }
 
         drawGrid(g, enclosingRect, Rect(0, 0, 1, 1),
@@ -843,7 +843,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
             double len = (m_proj.applyX(gridrc.w) +
                           m_proj.applyY(gridrc.h)) / 2.;
             alpha = int(alpha * len / 32.);
-            alpha = base::clamp(alpha, 0, 255);
+            alpha = std::clamp(alpha, 0, 255);
           }
 
           if (alpha > 8) {
@@ -1461,8 +1461,8 @@ gfx::Point Editor::autoScroll(const ui::MouseMessage* msg,
 
     m_oldPos = mousePos;
     mousePos = gfx::Point(
-      base::clamp(mousePos.x, vp.x, vp.x2()-1),
-      base::clamp(mousePos.y, vp.y, vp.y2()-1));
+      std::clamp(mousePos.x, vp.x, vp.x2()-1),
+      std::clamp(mousePos.y, vp.y, vp.y2()-1));
   }
   else
     m_oldPos = mousePos;
@@ -2528,8 +2528,8 @@ void Editor::setZoomAndCenterInMouse(const Zoom& zoom,
   // extra space for the zoom)
   gfx::Rect visibleBounds = editorToScreen(
     getViewportBounds().createIntersection(gfx::Rect(gfx::Point(0, 0), canvasSize())));
-  screenPos.x = base::clamp(screenPos.x, visibleBounds.x, visibleBounds.x2()-1);
-  screenPos.y = base::clamp(screenPos.y, visibleBounds.y, visibleBounds.y2()-1);
+  screenPos.x = std::clamp(screenPos.x, visibleBounds.x, visibleBounds.x2()-1);
+  screenPos.y = std::clamp(screenPos.y, visibleBounds.y, visibleBounds.y2()-1);
 
   spritePos = screenToEditor(screenPos);
 
@@ -2615,7 +2615,7 @@ void Editor::pasteImage(const Image* image, const Mask* mask)
     // In other case, if the center is visible, we put the pasted
     // image in its original location.
     else {
-      x = base::clamp(x, visibleBounds.x-image->width(), visibleBounds.x2()-1);
+      x = std::clamp(x, visibleBounds.x-image->width(), visibleBounds.x2()-1);
     }
 
     if (maskCenter.y < visibleBounds.y ||
@@ -2623,7 +2623,7 @@ void Editor::pasteImage(const Image* image, const Mask* mask)
       y = visibleBounds.y + visibleBounds.h/2 - image->height()/2;
     }
     else {
-      y = base::clamp(y, visibleBounds.y-image->height(), visibleBounds.y2()-1);
+      y = std::clamp(y, visibleBounds.y-image->height(), visibleBounds.y2()-1);
     }
 
     // Limit the image inside the sprite's bounds.
@@ -2631,13 +2631,13 @@ void Editor::pasteImage(const Image* image, const Mask* mask)
         sprite->height() <= image->height()) {
       // TODO review this (I think limits are wrong and high limit can
       //      be negative here)
-      x = base::clamp(x, 0, sprite->width() - image->width());
-      y = base::clamp(y, 0, sprite->height() - image->height());
+      x = std::clamp(x, 0, sprite->width() - image->width());
+      y = std::clamp(y, 0, sprite->height() - image->height());
     }
     else {
       // Also we always limit the 1 image pixel inside the sprite's bounds.
-      x = base::clamp(x, -image->width()+1, sprite->width()-1);
-      y = base::clamp(y, -image->height()+1, sprite->height()-1);
+      x = std::clamp(x, -image->width()+1, sprite->width()-1);
+      y = std::clamp(y, -image->height()+1, sprite->height()-1);
     }
   }
 

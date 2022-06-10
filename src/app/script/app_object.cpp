@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -38,7 +38,6 @@
 #include "app/ui/editor/tool_loop_impl.h"
 #include "app/ui/timeline/timeline.h"
 #include "app/ui_context.h"
-#include "base/clamp.h"
 #include "base/fs.h"
 #include "base/replace_string.h"
 #include "base/version.h"
@@ -371,14 +370,14 @@ int App_useTool(lua_State* L)
   type = lua_getfield(L, 1, "opacity");
   if (type != LUA_TNIL) {
     params.opacity = lua_tointeger(L, -1);
-    params.opacity = base::clamp(params.opacity, 0, 255);
+    params.opacity = std::clamp(params.opacity, 0, 255);
   }
   lua_pop(L, 1);
 
   type = lua_getfield(L, 1, "tolerance");
   if (type != LUA_TNIL) {
     params.tolerance = lua_tointeger(L, -1);
-    params.tolerance = base::clamp(params.tolerance, 0, 255);
+    params.tolerance = std::clamp(params.tolerance, 0, 255);
   }
   lua_pop(L, 1);
 

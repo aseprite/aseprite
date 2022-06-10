@@ -16,7 +16,6 @@
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
 #include "app/util/shader_helpers.h"
-#include "base/clamp.h"
 #include "base/pi.h"
 #include "os/surface.h"
 #include "ui/graphics.h"
@@ -236,9 +235,9 @@ app::Color ColorWheel::getMainAreaColor(const int _u, const int umax,
     int b = 255 - di;
     if (d <= m_wheelRadius) {
       return app::Color::fromRgb(
-        base::clamp(r, 0, 255),
-        base::clamp(g, 0, 255),
-        base::clamp(b, 128, 255));
+        std::clamp(r, 0, 255),
+        std::clamp(g, 0, 255),
+        std::clamp(b, 128, 255));
     }
     else {
       return app::Color::fromRgb(128, 128, 255);
@@ -272,8 +271,8 @@ app::Color ColorWheel::getMainAreaColor(const int _u, const int umax,
     }
 
     return app::Color::fromHsv(
-      base::clamp(hue, 0, 360),
-      base::clamp(sat / 100.0, 0.0, 1.0),
+      std::clamp(hue, 0, 360),
+      std::clamp(sat / 100.0, 0.0, 1.0),
       (m_color.getType() != Color::MaskType ? m_color.getHsvValue(): 1.0),
       getCurrentAlphaForNewColor());
   }
@@ -287,7 +286,7 @@ app::Color ColorWheel::getBottomBarColor(const int u, const int umax)
   return app::Color::fromHsv(
     m_color.getHsvHue(),
     m_color.getHsvSaturation(),
-    base::clamp(val, 0.0, 1.0),
+    std::clamp(val, 0.0, 1.0),
     getCurrentAlphaForNewColor());
 }
 
@@ -306,7 +305,7 @@ void ColorWheel::onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc)
       double angle = std::atan2(m_color.getGreen()-128,
                                 m_color.getRed()-128);
       double dist = (255-m_color.getBlue()) / 128.0;
-      dist = base::clamp(dist, 0.0, 1.0);
+      dist = std::clamp(dist, 0.0, 1.0);
 
       gfx::Point pos =
         m_wheelBounds.center() +
@@ -450,18 +449,18 @@ void ColorWheel::setHarmony(Harmony harmony)
 
 int ColorWheel::getHarmonies() const
 {
-  int i = base::clamp((int)m_harmony, 0, (int)Harmony::LAST);
+  int i = std::clamp((int)m_harmony, 0, (int)Harmony::LAST);
   return harmonies[i].n;
 }
 
 app::Color ColorWheel::getColorInHarmony(int j) const
 {
-  int i = base::clamp((int)m_harmony, 0, (int)Harmony::LAST);
-  j = base::clamp(j, 0, harmonies[i].n-1);
+  int i = std::clamp((int)m_harmony, 0, (int)Harmony::LAST);
+  j = std::clamp(j, 0, harmonies[i].n-1);
   double hue = convertHueAngle(m_color.getHsvHue(), -1) + harmonies[i].hues[j];
   double sat = m_color.getHsvSaturation() * harmonies[i].sats[j] / 100.0;
   return app::Color::fromHsv(std::fmod(hue, 360),
-                             base::clamp(sat, 0.0, 1.0),
+                             std::clamp(sat, 0.0, 1.0),
                              m_color.getHsvValue());
 }
 

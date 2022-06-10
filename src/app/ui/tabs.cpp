@@ -16,7 +16,6 @@
 #include "app/modules/gui.h"
 #include "app/ui/editor/editor_view.h"
 #include "app/ui/skin/skin_theme.h"
-#include "base/clamp.h"
 #include "os/font.h"
 #include "os/surface.h"
 #include "os/system.h"
@@ -261,7 +260,7 @@ void Tabs::setDropViewPreview(const gfx::Point& pos, TabView* view)
 
   if (!m_list.empty()) {
     newIndex = (pos.x - bounds().x) / m_list[0]->width;
-    newIndex = base::clamp(newIndex, 0, (int)m_list.size());
+    newIndex = std::clamp(newIndex, 0, (int)m_list.size());
   }
   else
     newIndex = 0;
@@ -432,7 +431,7 @@ bool Tabs::onProcessMessage(Message* msg)
         if (it != m_list.end()) {
           int index = (it - m_list.begin());
           int newIndex = index + dz;
-          newIndex = base::clamp(newIndex, 0, int(m_list.size())-1);
+          newIndex = std::clamp(newIndex, 0, int(m_list.size())-1);
           if (newIndex != index) {
             selectTabInternal(m_list[newIndex]);
           }
@@ -1033,14 +1032,14 @@ void Tabs::updateDragTabIndexes(int mouseX, bool startAni)
     int i = (mouseX - m_border*guiscale() - bounds().x) / m_dragTab->width;
 
     if (m_dragCopy) {
-      i = base::clamp(i, 0, int(m_list.size()));
+      i = std::clamp(i, 0, int(m_list.size()));
       if (i != m_dragCopyIndex) {
         m_dragCopyIndex = i;
         startAni = true;
       }
     }
     else if (hasMouseOver()) {
-      i = base::clamp(i, 0, int(m_list.size())-1);
+      i = std::clamp(i, 0, int(m_list.size())-1);
       if (i != m_dragTabIndex) {
         m_list.erase(m_list.begin()+m_dragTabIndex);
         m_list.insert(m_list.begin()+i, m_selected);

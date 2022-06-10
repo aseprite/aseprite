@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -11,7 +11,6 @@
 
 #include "ui/splitter.h"
 
-#include "base/clamp.h"
 #include "ui/load_layout_event.h"
 #include "ui/manager.h"
 #include "ui/message.h"
@@ -225,7 +224,7 @@ void Splitter::onResize(ResizeEvent& ev)
     }                                                                   \
                                                                         \
     /* TODO uncomment this to make a restricted splitter */             \
-    /* pos.w = base::clamp(pos.w, reqSize1.w, avail-reqSize2.w); */     \
+    /* pos.w = std::clamp(pos.w, reqSize1.w, avail-reqSize2.w); */      \
     pos.h = rc.h;                                                       \
                                                                         \
     child1->setBounds(pos);                                             \
@@ -359,22 +358,22 @@ void Splitter::calcPos()
   if (align() & HORIZONTAL) {
     switch (m_type) {
       case ByPercentage:
-        m_pos = base::clamp<double>(m_userPos, 0, 100);
+        m_pos = std::clamp<double>(m_userPos, 0, 100);
         break;
       case ByPixel:
         if (isVisible())
-          m_pos = base::clamp<double>(m_userPos, 0, bounds().w);
+          m_pos = std::clamp<double>(m_userPos, 0, bounds().w);
         break;
     }
   }
   else {
     switch (m_type) {
       case ByPercentage:
-        m_pos = base::clamp<double>(m_userPos, 0, 100);
+        m_pos = std::clamp<double>(m_userPos, 0, 100);
         break;
       case ByPixel:
         if (isVisible())
-          m_pos = base::clamp<double>(m_userPos, 0, bounds().h);
+          m_pos = std::clamp<double>(m_userPos, 0, bounds().h);
         break;
     }
   }

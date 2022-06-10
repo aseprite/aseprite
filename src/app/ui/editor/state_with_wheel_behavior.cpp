@@ -25,7 +25,6 @@
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/toolbar.h"
 #include "app/ui_context.h"
-#include "base/clamp.h"
 #include "base/string.h"
 #include "doc/brush.h"
 #include "doc/layer.h"
@@ -45,23 +44,23 @@ template<typename T>
 static inline void adjust_value(bool preciseWheel, double dz, T& v, T min, T max)
 {
   if (preciseWheel)
-    v = base::clamp<T>(T(v+dz), min, max);
+    v = std::clamp<T>(T(v+dz), min, max);
   else
-    v = base::clamp<T>(T(v+dz*max/T(10)), min, max);
+    v = std::clamp<T>(T(v+dz*max/T(10)), min, max);
 }
 
 template<typename T>
 static inline void adjust_hue(bool preciseWheel, double dz, T& v, T min, T max)
 {
   if (preciseWheel)
-    v = base::clamp<T>(T(v+dz), min, max);
+    v = std::clamp<T>(T(v+dz), min, max);
   else
-    v = base::clamp<T>(T(v+dz*T(10)), min, max);
+    v = std::clamp<T>(T(v+dz*T(10)), min, max);
 }
 
 static inline void adjust_unit(bool preciseWheel, double dz, double& v)
 {
-  v = base::clamp<double>(v+(preciseWheel ? dz/100.0: dz/25.0), 0.0, 1.0);
+  v = std::clamp<double>(v+(preciseWheel ? dz/100.0: dz/25.0), 0.0, 1.0);
 }
 
 StateWithWheelBehavior::StateWithWheelBehavior()
@@ -169,7 +168,7 @@ void StateWithWheelBehavior::processWheelAction(
     case WheelAction::FgColor: {
       int lastIndex = get_current_palette()->size()-1;
       int newIndex = initialFgColor().getIndex() + int(dz);
-      newIndex = base::clamp(newIndex, 0, lastIndex);
+      newIndex = std::clamp(newIndex, 0, lastIndex);
       changeFgColor(app::Color::fromIndex(newIndex));
       break;
     }
@@ -177,7 +176,7 @@ void StateWithWheelBehavior::processWheelAction(
     case WheelAction::BgColor: {
       int lastIndex = get_current_palette()->size()-1;
       int newIndex = initialBgColor().getIndex() + int(dz);
-      newIndex = base::clamp(newIndex, 0, lastIndex);
+      newIndex = std::clamp(newIndex, 0, lastIndex);
       ColorBar::instance()->setBgColor(app::Color::fromIndex(newIndex));
       break;
     }
@@ -186,7 +185,7 @@ void StateWithWheelBehavior::processWheelAction(
       auto tilesView = ColorBar::instance()->getTilesView();
       int lastIndex = tilesView->tileset()->size()-1;
       int newIndex = initialFgTileIndex() + int(dz);
-      newIndex = base::clamp(newIndex, 0, lastIndex);
+      newIndex = std::clamp(newIndex, 0, lastIndex);
       ColorBar::instance()->setFgTile(newIndex);
       break;
     }
@@ -195,7 +194,7 @@ void StateWithWheelBehavior::processWheelAction(
       auto tilesView = ColorBar::instance()->getTilesView();
       int lastIndex = tilesView->tileset()->size()-1;
       int newIndex = initialBgTileIndex() + int(dz);
-      newIndex = base::clamp(newIndex, 0, lastIndex);
+      newIndex = std::clamp(newIndex, 0, lastIndex);
       ColorBar::instance()->setBgTile(newIndex);
       break;
     }
@@ -283,7 +282,7 @@ void StateWithWheelBehavior::processWheelAction(
         dz = -dz;
 
       brush.size(
-        base::clamp(
+        std::clamp(
           int(initialBrushSize()+dz),
           // If we use the "static const int" member directly here,
           // we'll get a linker error (when compiling without
@@ -304,7 +303,7 @@ void StateWithWheelBehavior::processWheelAction(
         angle += 180;
       angle %= 181;
 
-      brush.angle(base::clamp(angle, 0, 180));
+      brush.angle(std::clamp(angle, 0, 180));
       break;
     }
 
@@ -398,9 +397,9 @@ void StateWithWheelBehavior::processWheelAction(
           deltaInk = -1;
       }
       ink += deltaInk;
-      ink = base::clamp(ink,
-                        int(tools::InkType::FIRST),
-                        int(tools::InkType::LAST));
+      ink = std::clamp(ink,
+                       int(tools::InkType::FIRST),
+                       int(tools::InkType::LAST));
 
       App::instance()->contextBar()->setInkType(tools::InkType(ink));
       break;
@@ -489,9 +488,9 @@ void StateWithWheelBehavior::processWheelAction(
           break;
       }
 
-      changeFgColor(Color::fromHsl(base::clamp(h, 0.0, 360.0),
-                                   base::clamp(s, 0.0, 1.0),
-                                   base::clamp(l, 0.0, 1.0)));
+      changeFgColor(Color::fromHsl(std::clamp(h, 0.0, 360.0),
+                                   std::clamp(s, 0.0, 1.0),
+                                   std::clamp(l, 0.0, 1.0)));
       break;
     }
 
@@ -517,9 +516,9 @@ void StateWithWheelBehavior::processWheelAction(
           break;
       }
 
-      changeFgColor(Color::fromHsv(base::clamp(h, 0.0, 360.0),
-                                   base::clamp(s, 0.0, 1.0),
-                                   base::clamp(v, 0.0, 1.0)));
+      changeFgColor(Color::fromHsv(std::clamp(h, 0.0, 360.0),
+                                   std::clamp(s, 0.0, 1.0),
+                                   std::clamp(v, 0.0, 1.0)));
       break;
     }
 

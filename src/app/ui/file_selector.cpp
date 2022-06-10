@@ -24,7 +24,6 @@
 #include "app/ui/separator_in_view.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/widget_loader.h"
-#include "base/clamp.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
 #include "base/paths.h"
@@ -130,7 +129,7 @@ void adjust_navigation_history(IFileItem* item)
   }
 
   if (valid && !navigation_history.empty()) {
-    pos = base::clamp(pos, 0, (int)navigation_history.size()-1);
+    pos = std::clamp(pos, 0, (int)navigation_history.size()-1);
     navigation_position.set(navigation_history.begin() + pos);
 
     FILESEL_TRACE("FILESEL: New navigation pos [%d] = %s\n",

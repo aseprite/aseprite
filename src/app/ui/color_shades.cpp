@@ -17,7 +17,6 @@
 #include "app/shade.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/skin/skin_theme.h"
-#include "base/clamp.h"
 #include "doc/color_mode.h"
 #include "doc/palette.h"
 #include "doc/palette_picks.h"
@@ -27,8 +26,8 @@
 #include "ui/paint_event.h"
 #include "ui/size_hint_event.h"
 #include "ui/system.h"
-#include <algorithm>
 
+#include <algorithm>
 
 namespace app {
 
@@ -213,7 +212,7 @@ bool ColorShades::onProcessMessage(ui::Message* msg)
         int count = std::max(1, size());
         int boxWidth = std::max(1, bounds.w / count);
         hot = (mousePos.x - bounds.x) / boxWidth;
-        hot = base::clamp(hot, 0, count-1);
+        hot = std::clamp(hot, 0, count-1);
       }
 
       if (m_hotIndex != hot) {

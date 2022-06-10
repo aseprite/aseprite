@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -21,7 +21,6 @@
 #include "app/ui/font_popup.h"
 #include "app/ui/timeline/timeline.h"
 #include "app/util/freetype_utils.h"
-#include "base/clamp.h"
 #include "base/fs.h"
 #include "base/string.h"
 #include "doc/image.h"
@@ -80,7 +79,7 @@ public:
 
   int sizeValue() const {
     int size = fontSize()->textInt();
-    size = base::clamp(size, 1, 5000);
+    size = std::clamp(size, 1, 5000);
     return size;
   }
 
@@ -162,7 +161,7 @@ void PasteTextCommand::onExecute(Context* ctx)
   bool antialias = window.antialias()->isSelected();
   std::string faceName = window.faceValue();
   int size = window.sizeValue();
-  size = base::clamp(size, 1, 999);
+  size = std::clamp(size, 1, 999);
   pref.textTool.fontFace(faceName);
   pref.textTool.fontSize(size);
   pref.textTool.antialias(antialias);

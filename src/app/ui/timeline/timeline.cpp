@@ -47,7 +47,6 @@
 #include "app/util/layer_boundaries.h"
 #include "app/util/layer_utils.h"
 #include "app/util/readable_time.h"
-#include "base/clamp.h"
 #include "base/convert_to.h"
 #include "base/memory.h"
 #include "base/scoped_value.h"
@@ -292,7 +291,7 @@ Timeline::~Timeline()
 
 void Timeline::setZoom(const double zoom)
 {
-  m_zoom = base::clamp(zoom, 1.0, 10.0);
+  m_zoom = std::clamp(zoom, 1.0, 10.0);
   m_thumbnailsOverlayDirection = gfx::Point(int(frameBoxWidth()*1.0), int(frameBoxWidth()*0.5));
   m_thumbnailsOverlayVisible = false;
 }
@@ -964,7 +963,7 @@ bool Timeline::onProcessMessage(Message* msg)
               if (selectedLayersBounds(selectedLayers(),
                                        &layerFirst, &layerLast)) {
                 layer_t layerIdx = m_clk.layer;
-                layerIdx = base::clamp(layerIdx, layerFirst, layerLast);
+                layerIdx = std::clamp(layerIdx, layerFirst, layerLast);
                 m_clk.layer = layerIdx;
               }
             }
@@ -1198,10 +1197,10 @@ bool Timeline::onProcessMessage(Message* msg)
             if (tag) {
               switch (m_state) {
                 case STATE_RESIZING_TAG_LEFT:
-                  m_resizeTagData.from = base::clamp(hit.frame, 0, tag->toFrame());
+                  m_resizeTagData.from = std::clamp(hit.frame, 0, tag->toFrame());
                   break;
                 case STATE_RESIZING_TAG_RIGHT:
-                  m_resizeTagData.to = base::clamp(hit.frame, tag->fromFrame(), m_sprite->lastFrame());
+                  m_resizeTagData.to = std::clamp(hit.frame, tag->fromFrame(), m_sprite->lastFrame());
                   break;
               }
               invalidate();
@@ -2013,11 +2012,11 @@ void Timeline::getDrawableLayers(layer_t* firstDrawableLayer,
 {
   layer_t i = lastLayer()
             - ((viewScroll().y + getCelsBounds().h) / layerBoxHeight());
-  i = base::clamp(i, firstLayer(), lastLayer());
+  i = std::clamp(i, firstLayer(), lastLayer());
 
   layer_t j = lastLayer() - viewScroll().y / layerBoxHeight();;
   if (!m_rows.empty())
-    j = base::clamp(j, firstLayer(), lastLayer());
+    j = std::clamp(j, firstLayer(), lastLayer());
   else
     j = -1;
 
@@ -2374,7 +2373,7 @@ void Timeline::drawCel(ui::Graphics* g, layer_t layerIndex, frame_t frame, Cel* 
 
     if (!thumb_bounds.isEmpty()) {
       if (os::SurfaceRef surface = thumb::get_cel_thumbnail(cel, thumb_bounds.size())) {
-        const int t = base::clamp(thumb_bounds.w/8, 4, 16);
+        const int t = std::clamp(thumb_bounds.w/8, 4, 16);
         draw_checked_grid(g, thumb_bounds, gfx::Size(t, t), docPref());
 
         g->drawRgbaSurface(surface.get(),
@@ -3252,11 +3251,11 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
       hit.veryBottom = true;
 
     if (hasCapture()) {
-      hit.layer = base::clamp(hit.layer, firstLayer(), lastLayer());
+      hit.layer = std::clamp(hit.layer, firstLayer(), lastLayer());
       if (isMovingCel())
         hit.frame = std::max(firstFrame(), hit.frame);
       else
-        hit.frame = base::clamp(hit.frame, firstFrame(), lastFrame());
+        hit.frame = std::clamp(hit.frame, firstFrame(), lastFrame());
     }
     else {
       if (hit.layer > lastLayer()) hit.layer = -1;
@@ -3462,7 +3461,7 @@ Timeline::Hit Timeline::hitTestCel(const gfx::Point& mousePos)
                        - m_separator_w
                        + scroll.x) / frameBoxWidth());
 
-  hit.layer = base::clamp(hit.layer, firstLayer(), lastLayer());
+  hit.layer = std::clamp(hit.layer, firstLayer(), lastLayer());
   hit.frame = std::max(firstFrame(), hit.frame);
 
   return hit;
@@ -3983,8 +3982,8 @@ void Timeline::setViewScroll(const gfx::Point& pt)
   const gfx::Point oldScroll = viewScroll();
   const gfx::Point maxPos = getMaxScrollablePos();
   gfx::Point newScroll = pt;
-  newScroll.x = base::clamp(newScroll.x, 0, maxPos.x);
-  newScroll.y = base::clamp(newScroll.y, 0, maxPos.y);
+  newScroll.x = std::clamp(newScroll.x, 0, maxPos.x);
+  newScroll.y = std::clamp(newScroll.y, 0, maxPos.y);
 
   if (newScroll.y != oldScroll.y) {
     gfx::Rect rc;
@@ -4450,7 +4449,7 @@ void Timeline::setLayerCollapsedFlag(const layer_t l, const bool state)
 
 int Timeline::separatorX() const
 {
-  return base::clamp(m_separator_x, headerBoxWidth(), bounds().w-guiscale());
+  return std::clamp(m_separator_x, headerBoxWidth(), bounds().w-guiscale());
 }
 
 void Timeline::setSeparatorX(int newValue)
@@ -4465,9 +4464,9 @@ gfx::Color Timeline::highlightColor(const gfx::Color color)
   r = gfx::getr(color)+64; // TODO make this customizable in the theme XML?
   g = gfx::getg(color)+64;
   b = gfx::getb(color)+64;
-  r = base::clamp(r, 0, 255);
-  g = base::clamp(g, 0, 255);
-  b = base::clamp(b, 0, 255);
+  r = std::clamp(r, 0, 255);
+  g = std::clamp(g, 0, 255);
+  b = std::clamp(b, 0, 255);
   return gfx::rgba(r, g, b, gfx::geta(color));
 }
 

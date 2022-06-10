@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2021  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -14,10 +14,11 @@
 #include "app/tools/ink.h"
 #include "app/tools/tool_loop.h"
 #include "app/util/wrap_value.h"
-#include "base/clamp.h"
 #include "doc/brush.h"
 #include "doc/image.h"
 #include "doc/sprite.h"
+
+#include <algorithm>
 
 namespace app {
 namespace tools {
@@ -84,8 +85,8 @@ void PointShape::doInkHline(int x1, int y, int x2, ToolLoop* loop)
     if (x2 < 0 || x1 >= dstw || x2-x1+1 < 1)
       return;
 
-    x1 = base::clamp(x1, 0, dstw-1);
-    x2 = base::clamp(x2, 0, dstw-1);
+    x1 = std::clamp(x1, 0, dstw-1);
+    x2 = std::clamp(x2, 0, dstw-1);
     ink->inkHline(x1, y, x2, loop);
   }
 }

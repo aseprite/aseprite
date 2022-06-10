@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -21,7 +21,6 @@
 #include "app/modules/palettes.h"
 #include "app/sprite_job.h"
 #include "app/util/resize_image.h"
-#include "base/clamp.h"
 #include "base/convert_to.h"
 #include "doc/algorithm/resize_image.h"
 #include "doc/cel.h"
@@ -452,8 +451,8 @@ void SpriteSizeCommand::onExecute(Context* context)
   }
 #endif // ENABLE_UI
 
-  new_width = base::clamp(new_width, 1, DOC_SPRITE_MAX_WIDTH);
-  new_height = base::clamp(new_height, 1, DOC_SPRITE_MAX_HEIGHT);
+  new_width = std::clamp(new_width, 1, DOC_SPRITE_MAX_WIDTH);
+  new_height = std::clamp(new_height, 1, DOC_SPRITE_MAX_HEIGHT);
 
   {
     SpriteSizeJob job(reader, new_width, new_height, resize_method);

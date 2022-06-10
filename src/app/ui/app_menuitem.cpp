@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -13,6 +13,7 @@
 
 #include "app/app_menus.h"
 #include "app/commands/command.h"
+#include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/modules/gui.h"
 #include "app/ui/keyboard_shortcuts.h"
@@ -35,15 +36,23 @@ using namespace ui;
 Params AppMenuItem::s_contextParams;
 
 AppMenuItem::AppMenuItem(const std::string& text,
-                         Command* command,
+                         const std::string& commandId,
                          const Params& params)
  : MenuItem(text)
  , m_key(nullptr)
- , m_command(command)
+ , m_commandId(commandId)
  , m_params(params)
  , m_isRecentFileItem(false)
  , m_native(nullptr)
 {
+}
+
+Command* AppMenuItem::getCommand() const
+{
+  if (!m_commandId.empty())
+    return Commands::instance()->byId(m_commandId.c_str());
+  else
+    return nullptr;
 }
 
 void AppMenuItem::setKey(const KeyPtr& key)
@@ -126,18 +135,22 @@ void AppMenuItem::onClick()
 {
   MenuItem::onClick();
 
-  if (m_command) {
+  if (!m_commandId.empty()) {
     Params params = m_params;
     if (!s_contextParams.empty())
       params |= s_contextParams;
 
     // Load parameters to call Command::isEnabled, so we can check if
     // the command is enabled with this parameters.
-    m_command->loadParams(params);
+    if (auto command = getCommand()) {
+      command->loadParams(params);
 
-    UIContext* context = UIContext::instance();
-    if (m_command->isEnabled(context)) {
-      context->executeCommandFromMenuOrShortcut(m_command, params);
+      UIContext* context = UIContext::instance();
+      if (command->isEnabled(context))
+        context->executeCommandFromMenuOrShortcut(command, params);
+
+      // TODO At this point, the "this" pointer might be deleted if
+      //      the command reloaded the App main menu
     }
   }
 }
@@ -150,15 +163,15 @@ void AppMenuItem::onValidate()
   Context* context = UIContext::instance();
   context->updateFlags();
 
-  if (m_command) {
+  if (auto command = getCommand()) {
     Params params = m_params;
     if (!s_contextParams.empty())
       params |= s_contextParams;
 
-    m_command->loadParams(params);
+    command->loadParams(params);
 
-    setEnabled(m_command->isEnabled(context));
-    setSelected(m_command->isChecked(context));
+    setEnabled(command->isEnabled(context));
+    setSelected(command->isChecked(context));
   }
 }
 

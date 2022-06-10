@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -11,7 +11,6 @@
 
 #include "ui/tooltips.h"
 
-#include "base/clamp.h"
 #include "gfx/size.h"
 #include "ui/fit_bounds.h"
 #include "ui/graphics.h"
@@ -225,16 +224,16 @@ bool TipWindow::pointAt(int arrowAlign,
     if (get_multiple_displays()) {
       const gfx::Rect waBounds = nativeParentWindow->screen()->workarea();
       gfx::Point pt = nativeParentWindow->pointToScreen(gfx::Point(x, y));
-      pt.x = base::clamp(pt.x, waBounds.x, waBounds.x2()-w);
-      pt.y = base::clamp(pt.y, waBounds.y, waBounds.y2()-h);
+      pt.x = std::clamp(pt.x, waBounds.x, waBounds.x2()-w);
+      pt.y = std::clamp(pt.y, waBounds.y, waBounds.y2()-h);
       pt = nativeParentWindow->pointFromScreen(pt);
       x = pt.x;
       y = pt.y;
     }
     else {
       const gfx::Rect displayBounds = display->bounds();
-      x = base::clamp(x, displayBounds.x, displayBounds.x2()-w);
-      y = base::clamp(y, displayBounds.y, displayBounds.y2()-h);
+      x = std::clamp(x, displayBounds.x, displayBounds.x2()-w);
+      y = std::clamp(y, displayBounds.y, displayBounds.y2()-h);
     }
 
     if (m_target.intersects(gfx::Rect(x, y, w, h))) {

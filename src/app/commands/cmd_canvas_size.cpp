@@ -23,7 +23,6 @@
 #include "app/ui/editor/select_box_state.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui_context.h"
-#include "base/clamp.h"
 #include "doc/image.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"

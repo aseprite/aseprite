@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -32,7 +32,6 @@
 #include "app/ui/optional_alert.h"
 #include "app/ui/status_bar.h"
 #include "app/ui/timeline/timeline.h"
-#include "base/clamp.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
 #include "base/string.h"
@@ -184,9 +183,9 @@ Doc* generate_sprite_sheet_from_params(
   const std::string filenameFormat = params.filenameFormat();
   const std::string layerName = params.layer();
   const std::string tagName = params.tag();
-  const int borderPadding = base::clamp(params.borderPadding(), 0, 100);
-  const int shapePadding = base::clamp(params.shapePadding(), 0, 100);
-  const int innerPadding = base::clamp(params.innerPadding(), 0, 100);
+  const int borderPadding = std::clamp(params.borderPadding(), 0, 100);
+  const int shapePadding = std::clamp(params.shapePadding(), 0, 100);
+  const int innerPadding = std::clamp(params.innerPadding(), 0, 100);
   const bool trimSprite = params.trimSprite();
   const bool trimCels = params.trim();
   const bool trimByGrid = params.trimByGrid();
@@ -667,17 +666,17 @@ private:
 
   int borderPaddingValue() const {
     int value = borderPadding()->textInt();
-    return base::clamp(value, 0, 100);
+    return std::clamp(value, 0, 100);
   }
 
   int shapePaddingValue() const {
     int value = shapePadding()->textInt();
-    return base::clamp(value, 0, 100);
+    return std::clamp(value, 0, 100);
   }
 
   int innerPaddingValue() const {
     int value = innerPadding()->textInt();
-    return base::clamp(value, 0, 100);
+    return std::clamp(value, 0, 100);
   }
 
   bool trimSpriteValue() const {

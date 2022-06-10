@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -20,7 +20,6 @@
 #include "app/tools/symmetry.h"
 #include "app/tools/tool_loop.h"
 #include "app/tools/velocity.h"
-#include "base/clamp.h"
 #include "doc/brush.h"
 #include "doc/image.h"
 #include "doc/primitives.h"
@@ -29,6 +28,7 @@
 #include "gfx/rect_io.h"
 #include "gfx/region.h"
 
+#include <algorithm>
 #include <climits>
 #include <cmath>
 
@@ -410,11 +410,11 @@ void ToolLoopManager::adjustPointWithDynamics(const Pointer& pointer,
     }
   }
   ASSERT(p >= 0.0f && p <= 1.0f);
-  p = base::clamp(p, 0.0f, 1.0f);
+  p = std::clamp(p, 0.0f, 1.0f);
 
   // Velocity
   float v = pointer.velocity().magnitude() / VelocitySensor::kScreenPixelsForFullVelocity;
-  v = base::clamp(v, 0.0f, 1.0f);
+  v = std::clamp(v, 0.0f, 1.0f);
   if (v < m_dynamics.minVelocityThreshold) {
     v = 0.0f;
   }
@@ -429,7 +429,7 @@ void ToolLoopManager::adjustPointWithDynamics(const Pointer& pointer,
       (m_dynamics.maxVelocityThreshold - m_dynamics.minVelocityThreshold);
   }
   ASSERT(v >= 0.0f && v <= 1.0f);
-  v = base::clamp(v, 0.0f, 1.0f);
+  v = std::clamp(v, 0.0f, 1.0f);
 
   switch (m_dynamics.size) {
     case DynamicSensor::Pressure:
@@ -458,8 +458,8 @@ void ToolLoopManager::adjustPointWithDynamics(const Pointer& pointer,
       break;
   }
 
-  pt.size = base::clamp(size, int(Brush::kMinBrushSize), int(Brush::kMaxBrushSize));
-  pt.angle = base::clamp(angle, -180, 180);
+  pt.size = std::clamp(size, int(Brush::kMinBrushSize), int(Brush::kMaxBrushSize));
+  pt.angle = std::clamp(angle, -180, 180);
 }
 
 } // namespace tools

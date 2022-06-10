@@ -14,9 +14,10 @@
 #include "app/pref/preferences.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/skin/skin_theme.h"
-#include "base/clamp.h"
 #include "base/pi.h"
 #include "os/surface.h"
+
+#include <algorithm>
 
 namespace app {
 
@@ -242,7 +243,7 @@ void TransformHandles::drawHandle(Editor* editor, Graphics* g, int x, int y, dou
 void TransformHandles::adjustHandle(int& x, int& y, int handle_w, int handle_h, double angle)
 {
   angle = base::fmod_radians(angle + PI) + PI;
-  const int angleInt = base::clamp<int>(std::floor(8.0 * angle / (2.0*PI) + 0.5), 0, 8) % 8;
+  const int angleInt = std::clamp<int>(std::floor(8.0 * angle / (2.0*PI) + 0.5), 0, 8) % 8;
 
   // Adjust x,y position depending the angle of the handle
   switch (angleInt) {

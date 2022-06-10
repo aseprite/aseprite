@@ -200,6 +200,11 @@ namespace app {
     ui::Label* m_selectBoxHelp;
     SymmetryField* m_symmetry;
     SliceFields* m_sliceFields;
+    obs::scoped_connection m_symmModeConn;
+    obs::scoped_connection m_fgColorConn;
+    obs::scoped_connection m_bgColorConn;
+    obs::scoped_connection m_keysConn;
+    obs::scoped_connection m_dropPixelsConn;
     obs::scoped_connection m_sizeConn;
     obs::scoped_connection m_angleConn;
     obs::scoped_connection m_opacityConn;

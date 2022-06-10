@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -11,7 +11,6 @@
 
 #include "filters/color_curve_filter.h"
 
-#include "base/clamp.h"
 #include "filters/color_curve.h"
 #include "filters/filter_indexed_data.h"
 #include "filters/filter_manager.h"
@@ -42,7 +41,7 @@ void ColorCurveFilter::generateMap()
   // Generate the color convertion map
   m_curve.getValues(0, 255, m_cmap);
   for (int c=0; c<256; c++)
-    m_cmap[c] = base::clamp(m_cmap[c], 0, 255);
+    m_cmap[c] = std::clamp(m_cmap[c], 0, 255);
 }
 
 const char* ColorCurveFilter::getName()
@@ -145,7 +144,7 @@ void ColorCurveFilter::applyToIndexed(FilterManager* filterMgr)
       c = rgbmap->mapColor(r, g, b, a);
     }
 
-    *(dst_address++) = base::clamp(c, 0, pal->size()-1);
+    *(dst_address++) = std::clamp(c, 0, pal->size()-1);
   }
 }
 

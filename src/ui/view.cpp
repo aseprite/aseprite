@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -11,7 +11,6 @@
 #include "config.h"
 #endif
 
-#include "base/clamp.h"
 #include "gfx/size.h"
 #include "ui/display.h"
 #include "ui/intern.h"
@@ -388,8 +387,8 @@ gfx::Point View::limitScrollPosToViewport(const gfx::Point& pt) const
 {
   const Size maxSize = getScrollableSize();
   const Size visible = visibleSize();
-  return Point(base::clamp(pt.x, 0, std::max(0, maxSize.w - visible.w)),
-               base::clamp(pt.y, 0, std::max(0, maxSize.h - visible.h)));
+  return Point(std::clamp(pt.x, 0, std::max(0, maxSize.w - visible.w)),
+               std::clamp(pt.y, 0, std::max(0, maxSize.h - visible.h)));
 }
 
 } // namespace ui

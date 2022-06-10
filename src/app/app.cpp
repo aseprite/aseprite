@@ -87,6 +87,9 @@
   #include "steam/steam.h"
 #endif
 
+#include <memory>
+#include <optional>
+
 namespace app {
 
 using namespace ui;
@@ -147,10 +150,12 @@ public:
   InputChain m_inputChain;
   Clipboard m_clipboard;
 #endif
+#ifdef ENABLE_DATA_RECOVERY
   // This is a raw pointer because we want to delete it explicitly.
   // (e.g. if an exception occurs, the ~Modules() doesn't have to
   // delete m_recovery)
-  app::crash::DataRecovery* m_recovery;
+  std::unique_ptr<app::crash::DataRecovery> m_recovery;
+#endif
 
   Modules(const bool createLogInDesktop,
           Preferences& pref)
@@ -160,21 +165,30 @@ public:
 #ifdef ENABLE_UI
     , m_recent_files(pref.general.recentItems())
 #endif
-    , m_recovery(nullptr) {
+#ifdef ENABLE_DATA_RECOVERY
+    , m_recovery(nullptr)
+#endif
+  {
   }
 
   ~Modules() {
+#ifdef ENABLE_DATA_RECOVERY
     ASSERT(m_recovery == nullptr ||
            ui::get_app_state() == ui::AppState::kClosingWithException);
+#endif
   }
 
   app::crash::DataRecovery* recovery() {
-    return m_recovery;
+#ifdef ENABLE_DATA_RECOVERY
+    return m_recovery.get();
+#else
+    return nullptr;
+#endif
   }
 
   void createDataRecovery(Context* ctx) {
 #ifdef ENABLE_DATA_RECOVERY
-    m_recovery = new app::crash::DataRecovery(ctx);
+    m_recovery = std::make_unique<app::crash::DataRecovery>(ctx);
     m_recovery->SessionsListIsReady.connect(
       [] {
         ui::assert_ui_thread();
@@ -197,10 +211,7 @@ public:
 
   void deleteDataRecovery() {
 #ifdef ENABLE_DATA_RECOVERY
-    if (m_recovery) {
-      delete m_recovery;
-      m_recovery = nullptr;
-    }
+    m_recovery.reset();
 #endif
   }
 
@@ -222,7 +233,7 @@ App::App(AppMod* mod)
   , m_engine(new script::Engine)
 #endif
 {
-  ASSERT(m_instance == NULL);
+  ASSERT(m_instance == nullptr);
   m_instance = this;
 }
 
@@ -236,7 +247,7 @@ int App::initialize(const AppOptions& options)
   m_isGui = false;
 #endif
   m_isShell = options.startShell();
-  m_coreModules = new CoreModules;
+  m_coreModules = std::make_unique<CoreModules>();
 
 #if LAF_WINDOWS
 
@@ -289,10 +300,10 @@ int App::initialize(const AppOptions& options)
   initialize_color_spaces(preferences());
 
   // Load modules
-  m_modules = new Modules(createLogInDesktop, preferences());
-  m_legacy = new LegacyModules(isGui() ? REQUIRE_INTERFACE: 0);
+  m_modules = std::make_unique<Modules>(createLogInDesktop, preferences());
+  m_legacy = std::make_unique<LegacyModules>(isGui() ? REQUIRE_INTERFACE: 0);
 #ifdef ENABLE_UI
-  m_brushes.reset(new AppBrushes);
+  m_brushes = std::make_unique<AppBrushes>();
 #endif
 
   // Data recovery is enabled only in GUI mode
@@ -577,17 +588,14 @@ App::~App()
     // Finalize modules, configuration and core.
     Editor::destroyEditorSharedInternals();
 
-    if (m_backupIndicator) {
-      delete m_backupIndicator;
-      m_backupIndicator = nullptr;
-    }
+    m_backupIndicator.reset();
 
     // Save brushes
-    m_brushes.reset(nullptr);
+    m_brushes.reset();
 #endif
 
-    delete m_legacy;
-    delete m_modules;
+    m_legacy.reset();
+    m_modules.reset();
 
     // Save preferences only if we are running in GUI mode.  when we
     // run in batch mode we might want to reset some preferences so
@@ -596,15 +604,13 @@ App::~App()
     if (isGui())
       preferences().save();
 
-    delete m_coreModules;
+    m_coreModules.reset();
 
 #ifdef ENABLE_UI
     // Destroy the loaded gui.xml data.
-    delete KeyboardShortcuts::instance();
-    delete GuiXml::instance();
+    KeyboardShortcuts::destroyInstance();
+    GuiXml::destroyInstance();
 #endif
-
-    m_instance = NULL;
   }
   catch (const std::exception& e) {
     LOG(ERROR, "APP: Error: %s\n", e.what());
@@ -617,6 +623,8 @@ App::~App()
 
     // no re-throw
   }
+
+  m_instance = nullptr;
 }
 
 Context* App::context()
@@ -626,13 +634,12 @@ Context* App::context()
 
 bool App::isPortable()
 {
-  static bool* is_portable = NULL;
+  static std::optional<bool> is_portable;
   if (!is_portable) {
     is_portable =
-      new bool(
-        base::is_file(base::join_path(
-            base::get_file_path(base::get_app_path()),
-            "aseprite.ini")));
+      base::is_file(base::join_path(
+                      base::get_file_path(base::get_app_path()),
+                      "aseprite.ini"));
   }
   return *is_portable;
 }
@@ -714,7 +721,7 @@ void App::showBackupNotification(bool state)
   assert_ui_thread();
   if (state) {
     if (!m_backupIndicator)
-      m_backupIndicator = new BackupIndicator;
+      m_backupIndicator = std::make_unique<BackupIndicator>();
     m_backupIndicator->start();
   }
   else {

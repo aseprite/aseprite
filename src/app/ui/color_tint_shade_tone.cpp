@@ -14,7 +14,6 @@
 #include "app/color_utils.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/util/shader_helpers.h"
-#include "base/clamp.h"
 #include "ui/graphics.h"
 
 #include <algorithm>
@@ -84,8 +83,8 @@ app::Color ColorTintShadeTone::getMainAreaColor(const int u, const int umax,
   double val = (1.0 - double(v) / double(vmax));
   return app::Color::fromHsv(
     m_color.getHsvHue(),
-    base::clamp(sat, 0.0, 1.0),
-    base::clamp(val, 0.0, 1.0),
+    std::clamp(sat, 0.0, 1.0),
+    std::clamp(val, 0.0, 1.0),
     getCurrentAlphaForNewColor());
 }
 
@@ -93,7 +92,7 @@ app::Color ColorTintShadeTone::getBottomBarColor(const int u, const int umax)
 {
   double hue = (360.0 * u / umax);
   return app::Color::fromHsv(
-    base::clamp(hue, 0.0, 360.0),
+    std::clamp(hue, 0.0, 360.0),
     m_color.getHsvSaturation(),
     m_color.getHsvValue(),
     getCurrentAlphaForNewColor());
@@ -141,8 +140,8 @@ void ColorTintShadeTone::onPaintSurfaceInBgThread(
         gfx::Color color = color_utils::color_for_ui(
           app::Color::fromHsv(
             hue,
-            base::clamp(sat, 0.0, 1.0),
-            base::clamp(val, 0.0, 1.0)));
+            std::clamp(sat, 0.0, 1.0),
+            std::clamp(val, 0.0, 1.0)));
 
         s->putPixel(color, main.x+x, main.y+y);
       }

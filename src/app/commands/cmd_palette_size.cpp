@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -14,7 +14,6 @@
 #include "app/commands/params.h"
 #include "app/context_access.h"
 #include "app/tx.h"
-#include "base/clamp.h"
 #include "doc/palette.h"
 #include "doc/sprite.h"
 
@@ -76,7 +75,7 @@ void PaletteSizeCommand::onExecute(Context* context)
   if (ncolors == palette.size())
     return;
 
-  palette.resize(base::clamp(ncolors, 1, std::numeric_limits<int>::max()));
+  palette.resize(std::clamp(ncolors, 1, std::numeric_limits<int>::max()));
 
   ContextWriter writer(reader);
   Tx tx(context, "Palette Size", ModifyDocument);

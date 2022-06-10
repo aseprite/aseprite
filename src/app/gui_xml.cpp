@@ -18,13 +18,20 @@
 
 namespace app {
 
+static std::unique_ptr<GuiXml> g_singleton;
+
 // static
 GuiXml* GuiXml::instance()
 {
-  static GuiXml* singleton = 0;
-  if (!singleton)
-    singleton = new GuiXml();
-  return singleton;
+  if (!g_singleton)
+    g_singleton = std::make_unique<GuiXml>();
+  return g_singleton.get();
+}
+
+// static
+void GuiXml::destroyInstance()
+{
+  g_singleton.reset();
 }
 
 GuiXml::GuiXml()

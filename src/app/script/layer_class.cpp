@@ -19,7 +19,6 @@
 #include "app/script/luacpp.h"
 #include "app/script/userdata.h"
 #include "app/tx.h"
-#include "base/clamp.h"
 #include "doc/layer.h"
 #include "doc/layer_tilemap.h"
 #include "doc/sprite.h"
@@ -290,7 +289,7 @@ int Layer_set_stackIndex(lua_State* L)
   }
 
   if (newStackIndex-1 < int(parent->layers().size())) {
-    beforeThis = parent->layers()[base::clamp(newStackIndex-1, 0, (int)parent->layers().size())];
+    beforeThis = parent->layers()[std::clamp(newStackIndex-1, 0, (int)parent->layers().size())];
   }
   else {
     beforeThis = nullptr;

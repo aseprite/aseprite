@@ -267,7 +267,7 @@ private:
         ASSERT(m_menuitem->getCommand());
 
         m_key = m_keys.command(
-          m_menuitem->getCommand()->id().c_str(),
+          m_menuitem->getCommandId().c_str(),
           m_menuitem->getParams());
 
         m_menuKeys[m_menuitem] = m_key;
@@ -1072,7 +1072,7 @@ void KeyboardShortcutsCommand::fillMenusKeys(app::KeyboardShortcuts& keys,
 
       if (menuItem->getCommand()) {
         menuKeys[menuItem] =
-          keys.command(menuItem->getCommand()->id().c_str(),
+          keys.command(menuItem->getCommandId().c_str(),
                        menuItem->getParams());
       }
 

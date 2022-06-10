@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -11,7 +11,6 @@
 
 #include "doc/handle_anidir.h"
 
-#include "base/clamp.h"
 #include "doc/frame.h"
 #include "doc/sprite.h"
 #include "doc/tag.h"
@@ -37,8 +36,8 @@ frame_t calculate_next_frame(
 
     loopFrom = tag->fromFrame();
     loopTo   = tag->toFrame();
-    loopFrom = base::clamp(loopFrom, first, last);
-    loopTo   = base::clamp(loopTo, first, last);
+    loopFrom = std::clamp(loopFrom, first, last);
+    loopTo   = std::clamp(loopTo, first, last);
 
     first  = loopFrom;
     last   = loopTo;

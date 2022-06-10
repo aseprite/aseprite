@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -23,7 +23,6 @@
 #include "app/filename_formatter.h"
 #include "app/restore_visible_layers.h"
 #include "app/ui_context.h"
-#include "base/clamp.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
 #include "base/split_string.h"
@@ -665,8 +664,8 @@ bool CliProcessor::openFile(Context* ctx, CliOpenFile& cof)
         // --frame-range with --frame-tag
         if (tag) {
           selFrames.insert(
-            tag->fromFrame()+base::clamp(cof.fromFrame, 0, tag->frames()-1),
-            tag->fromFrame()+base::clamp(cof.toFrame, 0, tag->frames()-1));
+            tag->fromFrame()+std::clamp(cof.fromFrame, 0, tag->frames()-1),
+            tag->fromFrame()+std::clamp(cof.toFrame, 0, tag->frames()-1));
         }
         // --frame-range without --frame-tag
         else {

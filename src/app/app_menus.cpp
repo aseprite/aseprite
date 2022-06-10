@@ -460,9 +460,6 @@ void AppMenus::loadScriptsSubmenu(ui::Menu* menu,
                                   const std::string& dir,
                                   const bool rootLevel)
 {
-  Command* cmd_run_script =
-    Commands::instance()->byId(CommandId::RunScript());
-
   auto files = base::list_files(dir);
   std::sort(files.begin(), files.end(),
             [](const std::string& a, const std::string& b) {
@@ -482,7 +479,7 @@ void AppMenus::loadScriptsSubmenu(ui::Menu* menu,
         params.set("filename", fullFn.c_str());
         menuitem = new AppMenuItem(
           base::get_file_title(fn).c_str(),
-          cmd_run_script,
+          CommandId::RunScript(),
           params);
       }
     }
@@ -531,8 +528,6 @@ bool AppMenus::rebuildRecentList()
     removeMenuItemFromGroup(item);
   m_recentMenuItems.clear();
 
-  Command* openFile = Commands::instance()->byId(CommandId::OpenFile());
-
   auto recent = App::instance()->recentFiles();
   base::paths files;
   files.insert(files.end(),
@@ -548,7 +543,8 @@ bool AppMenus::rebuildRecentList()
 
       std::unique_ptr<AppMenuItem> menuitem(
         new AppMenuItem(base::get_file_name(fn).c_str(),
-                        openFile, params));
+                        CommandId::OpenFile(),
+                        params));
       menuitem->setIsRecentFileItem(true);
 
       m_recentMenuItems.push_back(menuitem.get());
@@ -725,7 +721,8 @@ Widget* AppMenus::convertXmlelemToMenuitem(TiXmlElement* elem)
 
   // Create the item
   AppMenuItem* menuitem = new AppMenuItem(m_xmlTranslator(elem, "text"),
-                                          command, params);
+                                          (command ? command->id(): ""),
+                                          params);
   if (!menuitem)
     return nullptr;
 
@@ -775,11 +772,10 @@ void AppMenus::applyShortcutToMenuitemsWithCommand(Menu* menu,
       if (!menuitem)
         continue;
 
-      Command* mi_command = menuitem->getCommand();
+      const std::string& mi_commandId = menuitem->getCommandId();
       const Params& mi_params = menuitem->getParams();
 
-      if ((mi_command) &&
-          (base::utf8_icmp(mi_command->id(), command->id()) == 0) &&
+      if ((base::utf8_icmp(mi_commandId, command->id()) == 0) &&
           (mi_params == params)) {
         // Set the keyboard shortcut to be shown in this menu-item
         menuitem->setKey(key);
@@ -941,7 +937,7 @@ void AppMenus::createNativeSubmenus(os::Menu* osMenu,
       if (appMenuItem &&
           appMenuItem->getCommand()) {
         native = get_native_shortcut_for_command(
-          appMenuItem->getCommand()->id().c_str(),
+          appMenuItem->getCommandId().c_str(),
           appMenuItem->getParams());
       }
 

@@ -11,7 +11,6 @@
 #include "app/ui/editor/dragging_value_state.h"
 
 #include "app/ui/editor/editor.h"
-#include "base/clamp.h"
 #include "ui/display.h"
 #include "ui/message.h"
 #include "ui/scale.h"

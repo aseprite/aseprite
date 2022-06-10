@@ -37,6 +37,7 @@ jobs:
       shell: bash
       run: |
         cmake -S . -B build -G Ninja \
+          -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 \
           -DENABLE_TESTS=ON \
           -DENABLE_UI=${{ matrix.enable_ui }}
     - name: Compiling

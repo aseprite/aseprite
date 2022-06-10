@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (c) 2019-2020  Igara Studio S.A
+// Copyright (c) 2019-2022  Igara Studio S.A
 // Copyright (c) 2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -68,7 +68,7 @@ doc::color_t ErrorDiffusionDither::ditherRgbToIndex2D(
   };
   for (int i=0; i<kChannels; ++i) {
     v[i] += m_err[i][x+1];
-    v[i] = base::clamp(v[i], 0, 255);
+    v[i] = std::clamp(v[i], 0, 255);
   }
 
   const doc::color_t index =

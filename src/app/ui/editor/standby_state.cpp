@@ -53,7 +53,6 @@
 #include "app/util/layer_utils.h"
 #include "app/util/new_image_from_mask.h"
 #include "app/util/readable_time.h"
-#include "base/clamp.h"
 #include "base/pi.h"
 #include "base/vector2d.h"
 #include "doc/grid.h"
@@ -69,6 +68,7 @@
 #include "ui/message.h"
 #include "ui/view.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstring>
 
@@ -946,7 +946,7 @@ bool StandbyState::Decorator::onSetCursor(tools::Ink* ink, Editor* editor, const
     double angle = v.angle();
     angle = base::fmod_radians(angle) + PI;
     ASSERT(angle >= 0.0 && angle <= 2*PI);
-    const int angleInt = base::clamp<int>(std::floor(8.0 * angle / (2.0*PI) + 0.5), 0, 8) % 8;
+    const int angleInt = std::clamp<int>(std::floor(8.0 * angle / (2.0*PI) + 0.5), 0, 8) % 8;
 
     if (handle == PivotHandle) {
       newCursorType = kHandCursor;

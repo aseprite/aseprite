@@ -18,7 +18,6 @@
 #include "app/context.h"
 #include "app/script/engine.h"
 #include "app/ui/skin/skin_theme.h"
-#include "base/clamp.h"
 #include "base/convert_to.h"
 #include "base/file_content.h"
 #include "base/fs.h"

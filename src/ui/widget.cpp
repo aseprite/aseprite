@@ -13,7 +13,6 @@
 
 #include "ui/widget.h"
 
-#include "base/clamp.h"
 #include "base/memory.h"
 #include "base/string.h"
 #include "base/utf8_decode.h"
@@ -639,7 +638,7 @@ void Widget::insertChild(int index, Widget* child)
   ASSERT_VALID_WIDGET(this);
   ASSERT_VALID_WIDGET(child);
 
-  index = base::clamp(index, 0, int(m_children.size()));
+  index = std::clamp(index, 0, int(m_children.size()));
 
   auto it = m_children.begin() + index;
   it = m_children.insert(it, child);
@@ -1354,8 +1353,8 @@ Size Widget::sizeHint()
     onSizeHint(ev);
 
     Size sz(ev.sizeHint());
-    sz.w = base::clamp(sz.w, m_minSize.w, m_maxSize.w);
-    sz.h = base::clamp(sz.h, m_minSize.h, m_maxSize.h);
+    sz.w = std::clamp(sz.w, m_minSize.w, m_maxSize.w);
+    sz.h = std::clamp(sz.h, m_minSize.h, m_maxSize.h);
     return sz;
   }
 }
@@ -1383,8 +1382,8 @@ Size Widget::sizeHint(const Size& fitIn)
     onSizeHint(ev);
 
     Size sz(ev.sizeHint());
-    sz.w = base::clamp(sz.w, m_minSize.w, m_maxSize.w);
-    sz.h = base::clamp(sz.h, m_minSize.h, m_maxSize.h);
+    sz.w = std::clamp(sz.w, m_minSize.w, m_maxSize.w);
+    sz.h = std::clamp(sz.h, m_minSize.h, m_maxSize.h);
     return sz;
   }
 }

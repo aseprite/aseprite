@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2018-2020  Igara Studio S.A.
+// Copyright (c) 2018-2022  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -17,7 +17,6 @@
 #include "app/file/format_options.h"
 #include "app/pref/preferences.h"
 #include "base/cfile.h"
-#include "base/clamp.h"
 #include "base/file_handle.h"
 #include "doc/doc.h"
 #include "ui/window.h"
@@ -85,7 +84,7 @@ bool SvgFormat::onSave(FileOp* fop)
   const Image* image = fop->sequenceImage();
   int x, y, c, r, g, b, a, alpha;
   const auto svg_options = std::static_pointer_cast<SvgOptions>(fop->formatOptions());
-  const int pixelScaleValue = base::clamp(svg_options->pixelScale, 0, 10000);
+  const int pixelScaleValue = std::clamp(svg_options->pixelScale, 0, 10000);
   FileHandle handle(open_file_with_exception_sync_on_close(fop->filename(), "wb"));
   FILE* f = handle.get();
   auto printcol = [f](int x, int y,int r, int g, int b, int a, int pxScale) {

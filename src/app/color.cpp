@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -13,7 +13,6 @@
 
 #include "app/color_utils.h"
 #include "app/modules/palettes.h"
-#include "base/clamp.h"
 #include "base/debug.h"
 #include "doc/image.h"
 #include "doc/palette.h"
@@ -206,8 +205,8 @@ std::string Color::toString() const
              << std::setprecision(2)
              << std::fixed
              << m_value.hsv.h << ","
-             << base::clamp(m_value.hsv.s*100.0, 0.0, 100.0) << ","
-             << base::clamp(m_value.hsv.v*100.0, 0.0, 100.0) << ","
+             << std::clamp(m_value.hsv.s*100.0, 0.0, 100.0) << ","
+             << std::clamp(m_value.hsv.v*100.0, 0.0, 100.0) << ","
              << m_value.hsv.a << "}";
       break;
 
@@ -216,8 +215,8 @@ std::string Color::toString() const
              << std::setprecision(2)
              << std::fixed
              << m_value.hsl.h << ","
-             << base::clamp(m_value.hsl.s*100.0, 0.0, 100.0) << ","
-             << base::clamp(m_value.hsl.l*100.0, 0.0, 100.0) << ","
+             << std::clamp(m_value.hsl.s*100.0, 0.0, 100.0) << ","
+             << std::clamp(m_value.hsl.l*100.0, 0.0, 100.0) << ","
              << m_value.hsl.a << "}";
       break;
 
@@ -270,8 +269,8 @@ std::string Color::toHumanReadableString(PixelFormat pixelFormat, HumanReadableS
         else {
           result << "HSV "
                  << int(m_value.hsv.h) << "\xc2\xb0 "
-                 << base::clamp(int(m_value.hsv.s*100.0), 0, 100) << "% "
-                 << base::clamp(int(m_value.hsv.v*100.0), 0, 100) << "%";
+                 << std::clamp(int(m_value.hsv.s*100.0), 0, 100) << "% "
+                 << std::clamp(int(m_value.hsv.v*100.0), 0, 100) << "%";
 
           if (pixelFormat == IMAGE_INDEXED)
             result << " Index " << color_utils::color_for_image(*this, IMAGE_INDEXED);
@@ -290,8 +289,8 @@ std::string Color::toHumanReadableString(PixelFormat pixelFormat, HumanReadableS
         else {
           result << "HSL "
                  << int(m_value.hsl.h) << "\xc2\xb0 "
-                 << base::clamp(int(m_value.hsl.s*100.0), 0, 100) << "% "
-                 << base::clamp(int(m_value.hsl.l*100.0), 0, 100) << "%";
+                 << std::clamp(int(m_value.hsl.s*100.0), 0, 100) << "% "
+                 << std::clamp(int(m_value.hsl.l*100.0), 0, 100) << "%";
 
           if (pixelFormat == IMAGE_INDEXED)
             result << " Index " << color_utils::color_for_image(*this, IMAGE_INDEXED);
@@ -360,8 +359,8 @@ std::string Color::toHumanReadableString(PixelFormat pixelFormat, HumanReadableS
         }
         else {
           result << int(m_value.hsv.h) << "\xc2\xb0"
-                 << base::clamp(int(m_value.hsv.s*100.0), 0, 100) << ","
-                 << base::clamp(int(m_value.hsv.v*100.0), 0, 100);
+                 << std::clamp(int(m_value.hsv.s*100.0), 0, 100) << ","
+                 << std::clamp(int(m_value.hsv.v*100.0), 0, 100);
         }
         break;
 
@@ -371,8 +370,8 @@ std::string Color::toHumanReadableString(PixelFormat pixelFormat, HumanReadableS
         }
         else {
           result << int(m_value.hsl.h) << "\xc2\xb0"
-                 << base::clamp(int(m_value.hsl.s*100.0), 0, 100) << ","
-                 << base::clamp(int(m_value.hsl.l*100.0), 0, 100);
+                 << std::clamp(int(m_value.hsl.s*100.0), 0, 100) << ","
+                 << std::clamp(int(m_value.hsl.l*100.0), 0, 100);
         }
         break;
 
@@ -910,7 +909,7 @@ int Color::getAlpha() const
 
 void Color::setAlpha(int alpha)
 {
-  alpha = base::clamp(alpha, 0, 255);
+  alpha = std::clamp(alpha, 0, 255);
 
   switch (getType()) {
 

@@ -11,7 +11,6 @@
 
 #include "ui/fit_bounds.h"
 
-#include "base/clamp.h"
 #include "gfx/rect.h"
 #include "os/screen.h"
 #include "os/system.h"
@@ -19,6 +18,8 @@
 #include "ui/display.h"
 #include "ui/system.h"
 #include "ui/window.h"
+
+#include <algorithm>
 
 namespace ui {
 
@@ -78,8 +79,8 @@ int fit_bounds(Display* display, int arrowAlign, const gfx::Rect& target, gfx::R
     }
 
     gfx::Size displaySize = display->size();
-    bounds.x = base::clamp(bounds.x, 0, displaySize.w-bounds.w);
-    bounds.y = base::clamp(bounds.y, 0, displaySize.h-bounds.h);
+    bounds.x = std::clamp(bounds.x, 0, displaySize.w-bounds.w);
+    bounds.y = std::clamp(bounds.y, 0, displaySize.h-bounds.h);
 
     if (target.intersects(bounds)) {
       switch (trycount) {
@@ -127,8 +128,8 @@ void fit_bounds(const Display* parentDisplay,
     if (fitLogic)
       fitLogic(workarea, frame, [](Widget* widget){ return widget->boundsOnScreen(); });
 
-    frame.x = base::clamp(frame.x, workarea.x, workarea.x2() - frame.w);
-    frame.y = base::clamp(frame.y, workarea.y, workarea.y2() - frame.h);
+    frame.x = std::clamp(frame.x, workarea.x, workarea.x2() - frame.w);
+    frame.y = std::clamp(frame.y, workarea.y, workarea.y2() - frame.h);
 
     // Set frame bounds directly
     window->setBounds(gfx::Rect(0, 0, frame.w / scale, frame.h / scale));
@@ -146,8 +147,8 @@ void fit_bounds(const Display* parentDisplay,
     if (fitLogic)
       fitLogic(displayBounds, frame, [](Widget* widget){ return widget->bounds(); });
 
-    frame.x = base::clamp(frame.x, 0, displayBounds.w - frame.w);
-    frame.y = base::clamp(frame.y, 0, displayBounds.h - frame.h);
+    frame.x = std::clamp(frame.x, 0, displayBounds.w - frame.w);
+    frame.y = std::clamp(frame.y, 0, displayBounds.h - frame.h);
 
     window->setBounds(frame);
   }

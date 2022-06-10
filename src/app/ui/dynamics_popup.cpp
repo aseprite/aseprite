@@ -12,7 +12,6 @@
 
 #include "app/ui/dithering_selector.h"
 #include "app/ui/skin/skin_theme.h"
-#include "base/clamp.h"
 #include "os/font.h"
 #include "os/surface.h"
 #include "ui/message.h"
@@ -163,7 +162,7 @@ private:
         auto mouseMsg = static_cast<MouseMessage*>(msg);
         const gfx::Rect rc = bounds();
         float u = (mouseMsg->position().x - rc.x) / float(rc.w);
-        u = base::clamp(u, 0.0f, 1.0f);
+        u = std::clamp(u, 0.0f, 1.0f);
         switch (capture) {
           case Capture::Min:
             m_minThreshold = u;
@@ -464,7 +463,7 @@ bool DynamicsPopup::onProcessMessage(Message* msg)
 
         float v = m_velocity.velocity().magnitude()
           / tools::VelocitySensor::kScreenPixelsForFullVelocity;
-        v = base::clamp(v, 0.0f, 1.0f);
+        v = std::clamp(v, 0.0f, 1.0f);
 
         m_velocityThreshold->setSensorValue(v);
       }

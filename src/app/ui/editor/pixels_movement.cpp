@@ -31,7 +31,6 @@
 #include "app/util/expand_cel_canvas.h"
 #include "app/util/new_image_from_mask.h"
 #include "app/util/range_utils.h"
-#include "base/clamp.h"
 #include "base/pi.h"
 #include "doc/algorithm/flip_image.h"
 #include "doc/algorithm/rotate.h"
@@ -692,7 +691,7 @@ void PixelsMovement::moveImage(const gfx::PointF& pos, MoveModifier moveModifier
 
       // Calculate angle between AC and AC0
       double newSkew = std::atan2(AC.x*AC0.y - AC.y*AC0.x, AC * AC0);
-      newSkew = base::clamp(newSkew, -PI*85.0/180.0, PI*85.0/180.0);
+      newSkew = std::clamp(newSkew, -PI*85.0/180.0, PI*85.0/180.0);
       newTransformation.skew(newSkew);
       break;
     }

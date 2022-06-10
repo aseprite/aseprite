@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -12,7 +12,6 @@
 #include "app/site.h"
 
 #include "app/pref/preferences.h"
-#include "base/clamp.h"
 #include "doc/cel.h"
 #include "doc/grid.h"
 #include "doc/layer.h"
@@ -52,7 +51,7 @@ Image* Site::image(int* x, int* y, int* opacity) const
       image = cel->image();
       if (x) *x = cel->x();
       if (y) *y = cel->y();
-      if (opacity) *opacity = base::clamp(cel->opacity(), 0, 255);
+      if (opacity) *opacity = std::clamp(cel->opacity(), 0, 255);
     }
   }
 

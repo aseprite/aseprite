@@ -15,7 +15,6 @@
 #include "app/crash/doc_format.h"
 #include "app/crash/internals.h"
 #include "app/doc.h"
-#include "base/clamp.h"
 #include "base/convert_to.h"
 #include "base/exception.h"
 #include "base/fs.h"
@@ -628,8 +627,8 @@ Doc* read_document_with_raw_images(const std::string& dir,
     info.height = 256;
     info.filename = "Unknown";
   }
-  info.width = base::clamp(info.width, 1, 99999);
-  info.height = base::clamp(info.height, 1, 99999);
+  info.width = std::clamp(info.width, 1, 99999);
+  info.height = std::clamp(info.height, 1, 99999);
   Sprite* spr = new Sprite(ImageSpec(info.mode, info.width, info.height), 256);
 
   // Load each image as a new frame

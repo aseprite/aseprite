@@ -22,6 +22,7 @@ namespace app {
     typedef Keys::const_iterator const_iterator;
 
     static KeyboardShortcuts* instance();
+    static void destroyInstance();
 
     KeyboardShortcuts();
     KeyboardShortcuts(const KeyboardShortcuts&) = delete;

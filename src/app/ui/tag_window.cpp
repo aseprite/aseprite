@@ -15,10 +15,11 @@
 #include "app/pref/preferences.h"
 #include "app/ui/layer_frame_comboboxes.h"
 #include "app/ui/user_data_view.h"
-#include "base/clamp.h"
 #include "doc/sprite.h"
 #include "doc/tag.h"
 #include "ui/manager.h"
+
+#include <algorithm>
 
 namespace app {
 
@@ -58,8 +59,8 @@ void TagWindow::rangeValue(doc::frame_t& from, doc::frame_t& to)
 
   from = this->from()->textInt()-m_base;
   to   = this->to()->textInt()-m_base;
-  from = base::clamp(from, first, last);
-  to   = base::clamp(to, from, last);
+  from = std::clamp(from, first, last);
+  to   = std::clamp(to, from, last);
 }
 
 doc::AniDir TagWindow::aniDirValue()

@@ -536,12 +536,20 @@ std::string Key::triggerString() const
 //////////////////////////////////////////////////////////////////////
 // KeyboardShortcuts
 
+static std::unique_ptr<KeyboardShortcuts> g_singleton;
+
+// static
 KeyboardShortcuts* KeyboardShortcuts::instance()
 {
-  static KeyboardShortcuts* singleton = NULL;
-  if (!singleton)
-    singleton = new KeyboardShortcuts();
-  return singleton;
+  if (!g_singleton)
+    g_singleton = std::make_unique<KeyboardShortcuts>();
+  return g_singleton.get();
+}
+
+// static
+void KeyboardShortcuts::destroyInstance()
+{
+  g_singleton.reset();
 }
 
 KeyboardShortcuts::KeyboardShortcuts()
