@@ -10,6 +10,8 @@
 #pragma once
 
 #include "app/commands/command.h"
+#include "app/commands/new_params.h"
+#include "doc/anidir.h"
 #include "doc/selected_frames.h"
 
 #include <string>
@@ -17,7 +19,19 @@
 namespace app {
   class Doc;
 
-  class SaveFileBaseCommand : public Command {
+  struct SaveFileParams : public NewParams {
+    Param<bool> ui { this, true, { "ui", "useUI" } };
+    Param<std::string> filename { this, std::string(), "filename" };
+    Param<std::string> filenameFormat { this, std::string(), { "filenameFormat", "filename-format" } };
+    Param<std::string> tag { this, std::string(), { "tag", "frame-tag" } };
+    Param<doc::AniDir> aniDir { this, doc::AniDir::FORWARD, { "aniDir", "ani-dir" } };
+    Param<std::string> slice { this, std::string(), "slice" };
+    Param<doc::frame_t> fromFrame { this, 0, { "fromFrame", "from-frame" } };
+    Param<doc::frame_t> toFrame { this, 0, { "toFrame", "to-frame" } };
+    Param<bool> ignoreEmpty { this, false, "ignoreEmpty" };
+  };
+
+  class SaveFileBaseCommand : public CommandWithNewParams<SaveFileParams> {
   public:
     enum class MarkAsSaved { Off, On };
     enum class SaveInBackground { Off, On };
@@ -41,15 +55,8 @@ namespace app {
       const std::string& filename,
       const MarkAsSaved markAsSaved);
 
-    std::string m_filename;
-    std::string m_filenameFormat;
-    std::string m_tag;
-    std::string m_aniDir;
-    std::string m_slice;
     doc::SelectedFrames m_selFrames;
     bool m_adjustFramesByTag;
-    bool m_useUI;
-    bool m_ignoreEmpty;
   };
 
 } // namespace app

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -139,6 +139,11 @@ bool ExportFileWindow::applyPixelRatio() const
 bool ExportFileWindow::isForTwitter() const
 {
   return forTwitter()->isSelected();
+}
+
+void ExportFileWindow::setAniDir(const doc::AniDir aniDir)
+{
+  anidir()->setSelectedItemIndex(int(aniDir));
 }
 
 void ExportFileWindow::setOutputFilename(const std::string& pathAndFilename)
