@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -18,6 +19,9 @@ namespace app {
 
   class SaveFileBaseCommand : public Command {
   public:
+    enum class MarkAsSaved { Off, On };
+    enum class SaveInBackground { Off, On };
+
     SaveFileBaseCommand(const char* id, CommandFlags flags);
 
   protected:
@@ -28,14 +32,14 @@ namespace app {
       Context* context,
       const std::string& dlgTitle,
       const std::string& filename,
-      const bool markAsSaved,
-      const bool saveInBackground = true,
+      const MarkAsSaved markAsSaved,
+      const SaveInBackground saveInBackground = SaveInBackground::On,
       const std::string& forbiddenFilename = std::string());
     void saveDocumentInBackground(
       const Context* context,
       Doc* document,
       const std::string& filename,
-      const bool markAsSaved);
+      const MarkAsSaved markAsSaved);
 
     std::string m_filename;
     std::string m_filenameFormat;

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -129,8 +129,8 @@ std::string SaveFileBaseCommand::saveAsDialog(
   Context* context,
   const std::string& dlgTitle,
   const std::string& initialFilename,
-  const bool markAsSaved,
-  const bool saveInBackground,
+  const MarkAsSaved markAsSaved,
+  const SaveInBackground saveInBackground,
   const std::string& forbiddenFilename)
 {
   Doc* document = context->activeDocument();
@@ -170,7 +170,7 @@ std::string SaveFileBaseCommand::saveAsDialog(
 #endif // ENABLE_UI
   }
 
-  if (saveInBackground) {
+  if (saveInBackground == SaveInBackground::On) {
     saveDocumentInBackground(
       context, document,
       filename, markAsSaved);
@@ -198,7 +198,7 @@ void SaveFileBaseCommand::saveDocumentInBackground(
   const Context* context,
   Doc* document,
   const std::string& filename,
-  const bool markAsSaved)
+  const MarkAsSaved markAsSaved)
 {
   if (!m_aniDir.empty()) {
     switch (convert_string_to_anidir(m_aniDir)) {
@@ -241,7 +241,7 @@ void SaveFileBaseCommand::saveDocumentInBackground(
   }
   else if (context->isUIAvailable()) {
     App::instance()->recentFiles()->addRecentFile(filename);
-    if (markAsSaved) {
+    if (markAsSaved == MarkAsSaved::On) {
       document->markAsSaved();
       document->setFilename(filename);
       document->incrementVersion();
@@ -283,14 +283,16 @@ void SaveFileCommand::onExecute(Context* context)
 
     saveDocumentInBackground(
       context, document,
-      documentReader->filename(), true);
+      documentReader->filename(),
+      MarkAsSaved::On);
   }
   // If the document isn't associated to a file, we must to show the
   // save-as dialog to the user to select for first time the file-name
   // for this document.
   else {
     saveAsDialog(context, "Save File",
-                 document->filename(), true);
+                 document->filename(),
+                 MarkAsSaved::On);
   }
 }
 
@@ -311,7 +313,8 @@ void SaveFileAsCommand::onExecute(Context* context)
 {
   Doc* document = context->activeDocument();
   saveAsDialog(context, "Save As",
-               document->filename(), true);
+               document->filename(),
+               MarkAsSaved::On);
 }
 
 class SaveFileCopyAsCommand : public SaveFileBaseCommand {
@@ -353,7 +356,9 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
         std::string result =
           saveAsDialog(
             context, "Export",
-            win.outputFilenameValue(), false, false,
+            win.outputFilenameValue(),
+            MarkAsSaved::Off,
+            SaveInBackground::Off,
             (doc->isAssociatedToFile() ? doc->filename():
                                          std::string()));
         if (!result.empty())
@@ -461,7 +466,8 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
     PngEncoderOneAlphaPixel fixPng(isForTwitter);
 
     saveDocumentInBackground(
-      context, doc, outputFilename, false);
+      context, doc, outputFilename,
+      MarkAsSaved::Off);
   }
 
   // Undo resize
