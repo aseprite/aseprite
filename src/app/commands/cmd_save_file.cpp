@@ -136,24 +136,30 @@ std::string SaveFileBaseCommand::saveAsDialog(
     filename = initialFilename;
 
 #ifdef ENABLE_UI
-  again:;
-    base::paths newfilename;
-    if (!params().ui() ||
-        !app::show_file_selector(
-          dlgTitle, filename, exts,
-          FileSelectorType::Save,
-          newfilename))
-      return std::string();
+    if (context->isUIAvailable()) {
+    again:;
+      base::paths newfilename;
+      if (!params().ui() ||
+          !app::show_file_selector(
+            dlgTitle, filename, exts,
+            FileSelectorType::Save,
+            newfilename)) {
+        return std::string();
+      }
 
-    filename = newfilename.front();
-    if (!forbiddenFilename.empty() &&
-        base::normalize_path(forbiddenFilename) ==
-        base::normalize_path(filename)) {
-      ui::Alert::show(Strings::alerts_cannot_file_overwrite_on_export());
-      goto again;
+      filename = newfilename.front();
+      if (!forbiddenFilename.empty() &&
+          base::normalize_path(forbiddenFilename) ==
+          base::normalize_path(filename)) {
+        ui::Alert::show(Strings::alerts_cannot_file_overwrite_on_export());
+        goto again;
+      }
     }
 #endif // ENABLE_UI
   }
+
+  if (filename.empty())
+    return std::string();
 
   if (saveInBackground == SaveInBackground::On) {
     saveDocumentInBackground(
@@ -224,17 +230,22 @@ void SaveFileBaseCommand::saveDocumentInBackground(
   else if (fop->isStop()) {
     document->impossibleToBackToSavedState();
   }
-  else if (context->isUIAvailable()) {
-    App::instance()->recentFiles()->addRecentFile(filename);
+  else {
+    if (context->isUIAvailable() && params().ui())
+      App::instance()->recentFiles()->addRecentFile(filename);
+
     if (markAsSaved == MarkAsSaved::On) {
       document->markAsSaved();
       document->setFilename(filename);
       document->incrementVersion();
     }
+
 #ifdef ENABLE_UI
-    StatusBar::instance()->setStatusText(
-      2000, fmt::format("File <{}> saved.",
-                        base::get_file_name(filename)));
+    if (context->isUIAvailable() && params().ui()) {
+      StatusBar::instance()->setStatusText(
+        2000, fmt::format("File <{}> saved.",
+                          base::get_file_name(filename)));
+    }
 #endif
   }
 }
