@@ -345,7 +345,7 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
   std::string layers = kAllLayers;
   std::string frames = kAllFrames;
   bool applyPixelRatio = false;
-  gfx::PointF scale(params().scale(), params().scale());
+  double scale = params().scale();
   doc::AniDir aniDirValue = params().aniDir();
   bool isForTwitter = false;
 
@@ -409,18 +409,20 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
 
     layers = win.layersValue();
     frames = win.framesValue();
-    scale.x = scale.y = win.resizeValue();
+    scale = win.resizeValue();
     applyPixelRatio = win.applyPixelRatio();
     aniDirValue = win.aniDirValue();
     isForTwitter = win.isForTwitter();
   }
 #endif
 
+  gfx::PointF scaleXY(scale, scale);
+
   // Pixel ratio
   if (applyPixelRatio) {
     doc::PixelRatio pr = doc->sprite()->pixelRatio();
-    scale.x *= pr.w;
-    scale.y *= pr.h;
+    scaleXY.x *= pr.w;
+    scaleXY.y *= pr.h;
   }
 
   // First of all we'll try to use the "on the fly" scaling, to avoid
@@ -428,14 +430,15 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
   const undo::UndoState* undoState = nullptr;
   bool undoResize = false;
   const bool resizeOnTheFly = FileOp::checkIfFormatSupportResizeOnTheFly(outputFilename);
-  if (!resizeOnTheFly && (scale.x != 1.0 || scale.y != 1.0)) {
+  if (!resizeOnTheFly && (scaleXY.x != 1.0 ||
+                          scaleXY.y != 1.0)) {
     Command* resizeCmd = Commands::instance()->byId(CommandId::SpriteSize());
     ASSERT(resizeCmd);
     if (resizeCmd) {
       int width = doc->sprite()->width();
       int height = doc->sprite()->height();
-      int newWidth = int(double(width) * scale.x);
-      int newHeight = int(double(height) * scale.y);
+      int newWidth = int(double(width) * scaleXY.x);
+      int newHeight = int(double(height) * scaleXY.y);
       if (newWidth < 1) newWidth = 1;
       if (newHeight < 1) newHeight = 1;
       if (width != newWidth || height != newHeight) {
@@ -489,7 +492,7 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
       MarkAsSaved::Off,
       (resizeOnTheFly ? ResizeOnTheFly::On:
                         ResizeOnTheFly::Off),
-      scale);
+      scaleXY);
   }
 
   // Undo resize

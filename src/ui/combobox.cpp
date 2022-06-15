@@ -327,7 +327,8 @@ void ComboBox::setValue(const std::string& value)
 {
   if (isEditable()) {
     m_entry->setText(value);
-    m_entry->selectAllText();
+    if (hasFocus())
+      m_entry->selectAllText();
   }
   else {
     int index = findItemIndexByValue(value);
@@ -535,6 +536,14 @@ bool ComboBoxEntry::onProcessMessage(Message* msg)
       }
       return result;
     }
+
+    case kFocusLeaveMessage:
+      if (m_comboBox->isEditable() &&
+          m_comboBox->m_window &&
+          !View::getView(m_comboBox->m_listbox)->hasMouse()) {
+        m_comboBox->closeListBox();
+      }
+      break;
 
   }
 

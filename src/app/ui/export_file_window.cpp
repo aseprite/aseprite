@@ -51,8 +51,7 @@ ExportFileWindow::ExportFileWindow(const Doc* doc)
   }
 
   // Default export configuration
-  resize()->setValue(
-    base::convert_to<std::string>(m_docPref.saveCopy.resizeScale()));
+  setResizeScale(m_docPref.saveCopy.resizeScale());
   fill_layers_combobox(m_doc->sprite(), layers(), m_docPref.saveCopy.layer());
   fill_frames_combobox(m_doc->sprite(), frames(), m_docPref.saveCopy.frameTag());
   fill_anidir_combobox(anidir(), m_docPref.saveCopy.aniDir());
@@ -113,7 +112,8 @@ std::string ExportFileWindow::outputFilenameValue() const
 
 double ExportFileWindow::resizeValue() const
 {
-  return base::convert_to<double>(resize()->getValue());
+  double value = resize()->getEntryWidget()->textDouble() / 100.0;
+  return std::clamp(value, 0.001, 100000000.0);
 }
 
 std::string ExportFileWindow::layersValue() const
@@ -141,10 +141,9 @@ bool ExportFileWindow::isForTwitter() const
   return forTwitter()->isSelected();
 }
 
-void ExportFileWindow::setResizeScale(const gfx::PointF& scale)
+void ExportFileWindow::setResizeScale(double scale)
 {
-  resize()->setValue(
-    base::convert_to<std::string>(scale.x)); // TODO support x & y
+  resize()->setValue(fmt::format("{:.2f}", 100.0 * scale));
 }
 
 void ExportFileWindow::setAniDir(const doc::AniDir aniDir)

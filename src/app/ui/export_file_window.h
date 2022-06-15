@@ -35,7 +35,7 @@ namespace app {
     bool isForTwitter() const;
 
     void setOutputFilename(const std::string& pathAndFilename);
-    void setResizeScale(const gfx::PointF& scale);
+    void setResizeScale(const double scale);
     void setAniDir(const doc::AniDir aniDir);
 
     obs::signal<std::string()> SelectOutputFile;
