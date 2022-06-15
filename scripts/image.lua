@@ -1,4 +1,4 @@
--- Copyright (C) 2019-2021  Igara Studio S.A.
+-- Copyright (C) 2019-2022  Igara Studio S.A.
 -- Copyright (C) 2018  David Capello
 --
 -- This file is released under the terms of the MIT license.
@@ -59,6 +59,16 @@ do
       assert(d:getPixel(x, y) == expectedColor)
     end
   end
+
+  -- Clone a rectangle
+  local e = Image(c, Rectangle(1, 1, 4, 5))
+  print(e.width)
+  print(e.height)
+  assert(e.width == 4)
+  assert(e.height == 5)
+
+  -- Empty clone
+  assert(nil == Image(c, Rectangle(1, 1, 0, 0)))
 end
 
 -- Patch
