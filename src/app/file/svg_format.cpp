@@ -81,7 +81,7 @@ bool SvgFormat::onLoad(FileOp* fop)
 
 bool SvgFormat::onSave(FileOp* fop)
 {
-  const Image* image = fop->sequenceImage();
+  const ImageRef image = fop->sequenceImage();
   int x, y, c, r, g, b, a, alpha;
   const auto svg_options = std::static_pointer_cast<SvgOptions>(fop->formatOptions());
   const int pixelScaleValue = std::clamp(svg_options->pixelScale, 0, 10000);
@@ -103,7 +103,7 @@ bool SvgFormat::onSave(FileOp* fop)
     case IMAGE_RGB: {
       for (y=0; y<image->height(); y++) {
         for (x=0; x<image->width(); x++) {
-          c = get_pixel_fast<RgbTraits>(image, x, y);
+          c = get_pixel_fast<RgbTraits>(image.get(), x, y);
           alpha = rgba_geta(c);
           if (alpha != 0x00)
             printcol(x, y, rgba_getr(c), rgba_getg(c), rgba_getb(c), alpha, pixelScaleValue);
@@ -115,7 +115,7 @@ bool SvgFormat::onSave(FileOp* fop)
     case IMAGE_GRAYSCALE: {
       for (y=0; y<image->height(); y++) {
         for (x=0; x<image->width(); x++) {
-          c = get_pixel_fast<GrayscaleTraits>(image, x, y);
+          c = get_pixel_fast<GrayscaleTraits>(image.get(), x, y);
           auto v = graya_getv(c);
           alpha = graya_geta(c);
           if (alpha != 0x00)
@@ -142,7 +142,7 @@ bool SvgFormat::onSave(FileOp* fop)
       }
       for (y=0; y<image->height(); y++) {
         for (x=0; x<image->width(); x++) {
-          c = get_pixel_fast<IndexedTraits>(image, x, y);
+          c = get_pixel_fast<IndexedTraits>(image.get(), x, y);
           if (c != mask_color)
             printcol(x, y, image_palette[c][0] & 0xff,
                      image_palette[c][1] & 0xff,

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -53,7 +53,8 @@ class TgaFormat : public FileFormat {
       FILE_SUPPORT_INDEXED |
       FILE_SUPPORT_SEQUENCES |
       FILE_SUPPORT_GET_FORMAT_OPTIONS |
-      FILE_SUPPORT_PALETTE_WITH_ALPHA;
+      FILE_SUPPORT_PALETTE_WITH_ALPHA |
+      FILE_ENCODE_ABSTRACT_IMAGE;
   }
 
   bool onLoad(FileOp* fop) override;
@@ -164,9 +165,9 @@ bool TgaFormat::onLoad(FileOp* fop)
   if (decoder.hasAlpha())
     fop->sequenceSetHasAlpha(true);
 
-  Image* image = fop->sequenceImage((doc::PixelFormat)spec.colorMode(),
-                                    spec.width(),
-                                    spec.height());
+  ImageRef image = fop->sequenceImage((doc::PixelFormat)spec.colorMode(),
+                                      spec.width(),
+                                      spec.height());
   if (!image)
     return false;
 
@@ -188,7 +189,7 @@ bool TgaFormat::onLoad(FileOp* fop)
   // Post process gray image pixels (because we use grayscale images
   // with alpha).
   if (header.isGray()) {
-    doc::LockImageBits<GrayscaleTraits> bits(image);
+    doc::LockImageBits<GrayscaleTraits> bits(image.get());
     for (auto it=bits.begin(), end=bits.end(); it != end; ++it) {
       *it = doc::graya(*it, 255);
     }
@@ -217,7 +218,7 @@ bool TgaFormat::onLoad(FileOp* fop)
 namespace {
 
 void prepare_header(tga::Header& header,
-                    const doc::Image* image,
+                    const doc::ImageSpec& spec,
                     const doc::Palette* palette,
                     const bool isOpaque,
                     const bool compressed,
@@ -231,13 +232,13 @@ void prepare_header(tga::Header& header,
   header.colormapDepth = 0;
   header.xOrigin = 0;
   header.yOrigin = 0;
-  header.width = image->width();
-  header.height = image->height();
+  header.width = spec.width();
+  header.height = spec.height();
   header.bitsPerPixel = 0;
   // TODO make this option configurable
   header.imageDescriptor = 0x20; // Top-to-bottom
 
-  switch (image->colorMode()) {
+  switch (spec.colorMode()) {
     case ColorMode::RGB:
       header.imageType = (compressed ? tga::RleRgb: tga::UncompressedRgb);
       header.bitsPerPixel = (bitsPerPixel > 8 ?
@@ -287,7 +288,7 @@ void prepare_header(tga::Header& header,
 
 bool TgaFormat::onSave(FileOp* fop)
 {
-  const Image* image = fop->sequenceImage();
+  const FileAbstractImage* img = fop->abstractImage();
   const Palette* palette = fop->sequenceGetPalette();
 
   FileHandle handle(open_file_with_exception_sync_on_close(fop->filename(), "wb"));
@@ -297,7 +298,7 @@ bool TgaFormat::onSave(FileOp* fop)
 
   const auto tgaOptions = std::static_pointer_cast<TgaOptions>(fop->formatOptions());
   prepare_header(
-    header, image, palette,
+    header, img->spec(), palette,
     // Is alpha channel required?
     fop->document()->sprite()->isOpaque(),
     // Compressed by default
@@ -307,6 +308,7 @@ bool TgaFormat::onSave(FileOp* fop)
 
   encoder.writeHeader(header);
 
+  doc::ImageRef image = img->getScaledImage();
   tga::Image tgaImage;
   tgaImage.pixels = image->getPixelAddress(0, 0);
   tgaImage.rowstride = image->getRowStrideSize();

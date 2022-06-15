@@ -189,7 +189,9 @@ void SaveFileBaseCommand::saveDocumentInBackground(
   const Context* context,
   Doc* document,
   const std::string& filename,
-  const MarkAsSaved markAsSaved)
+  const MarkAsSaved markAsSaved,
+  const ResizeOnTheFly resizeOnTheFly,
+  const gfx::PointF& scale)
 {
   if (params().aniDir.isSet()) {
     switch (params().aniDir()) {
@@ -214,6 +216,9 @@ void SaveFileBaseCommand::saveDocumentInBackground(
       params().ignoreEmpty()));
   if (!fop)
     return;
+
+  if (resizeOnTheFly == ResizeOnTheFly::On)
+    fop->setOnTheFlyScale(scale);
 
   SaveFileJob job(fop.get());
   job.showProgressWindow();
@@ -339,9 +344,8 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
   std::string outputFilename = params().filename();
   std::string layers = kAllLayers;
   std::string frames = kAllFrames;
-  double xscale = 1.0;
-  double yscale = 1.0;
   bool applyPixelRatio = false;
+  gfx::PointF scale(params().scale(), params().scale());
   doc::AniDir aniDirValue = params().aniDir();
   bool isForTwitter = false;
 
@@ -366,7 +370,17 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
         return result;
       });
 
-    win.setAniDir(aniDirValue);
+    if (params().filename.isSet()) {
+      std::string outputPath = base::get_file_path(outputFilename);
+      if (outputPath.empty()) {
+        outputPath = base::get_file_path(doc->filename());
+        outputFilename = base::join_path(outputPath, outputFilename);
+      }
+      win.setOutputFilename(outputFilename);
+    }
+
+    if (params().scale.isSet()) win.setResizeScale(scale);
+    if (params().aniDir.isSet()) win.setAniDir(aniDirValue);
 
     win.remapWindow();
     load_window_pos(&win, "ExportFile");
@@ -395,7 +409,7 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
 
     layers = win.layersValue();
     frames = win.framesValue();
-    xscale = yscale = win.resizeValue();
+    scale.x = scale.y = win.resizeValue();
     applyPixelRatio = win.applyPixelRatio();
     aniDirValue = win.aniDirValue();
     isForTwitter = win.isForTwitter();
@@ -405,21 +419,23 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
   // Pixel ratio
   if (applyPixelRatio) {
     doc::PixelRatio pr = doc->sprite()->pixelRatio();
-    xscale *= pr.w;
-    yscale *= pr.h;
+    scale.x *= pr.w;
+    scale.y *= pr.h;
   }
 
-  // Apply scale
+  // First of all we'll try to use the "on the fly" scaling, to avoid
+  // using a resize command to apply the export scale.
   const undo::UndoState* undoState = nullptr;
   bool undoResize = false;
-  if (xscale != 1.0 || yscale != 1.0) {
+  const bool resizeOnTheFly = FileOp::checkIfFormatSupportResizeOnTheFly(outputFilename);
+  if (!resizeOnTheFly && (scale.x != 1.0 || scale.y != 1.0)) {
     Command* resizeCmd = Commands::instance()->byId(CommandId::SpriteSize());
     ASSERT(resizeCmd);
     if (resizeCmd) {
       int width = doc->sprite()->width();
       int height = doc->sprite()->height();
-      int newWidth = int(double(width) * xscale);
-      int newHeight = int(double(height) * yscale);
+      int newWidth = int(double(width) * scale.x);
+      int newHeight = int(double(height) * scale.y);
       if (newWidth < 1) newWidth = 1;
       if (newHeight < 1) newHeight = 1;
       if (width != newWidth || height != newHeight) {
@@ -470,7 +486,10 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
 
     saveDocumentInBackground(
       context, doc, outputFilename,
-      MarkAsSaved::Off);
+      MarkAsSaved::Off,
+      (resizeOnTheFly ? ResizeOnTheFly::On:
+                        ResizeOnTheFly::Off),
+      scale);
   }
 
   // Undo resize

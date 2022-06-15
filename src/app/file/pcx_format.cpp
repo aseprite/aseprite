@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -43,7 +44,8 @@ class PcxFormat : public FileFormat {
       FILE_SUPPORT_RGB |
       FILE_SUPPORT_GRAY |
       FILE_SUPPORT_INDEXED |
-      FILE_SUPPORT_SEQUENCES;
+      FILE_SUPPORT_SEQUENCES |
+      FILE_ENCODE_ABSTRACT_IMAGE;
   }
 
   bool onLoad(FileOp* fop) override;
@@ -104,16 +106,16 @@ bool PcxFormat::onLoad(FileOp* fop)
   for (c=0; c<60; c++)             /* skip some more junk */
     fgetc(f);
 
-  Image* image = fop->sequenceImage(bpp == 8 ?
-                                    IMAGE_INDEXED:
-                                    IMAGE_RGB,
-                                    width, height);
+  ImageRef image = fop->sequenceImage(bpp == 8 ?
+                                      IMAGE_INDEXED:
+                                      IMAGE_RGB,
+                                      width, height);
   if (!image) {
     return false;
   }
 
   if (bpp == 24)
-    clear_image(image, rgba(0, 0, 0, 255));
+    clear_image(image.get(), rgba(0, 0, 0, 255));
 
   for (y=0; y<height; y++) {       /* read RLE encoded PCX data */
     x = xx = 0;
@@ -131,7 +133,7 @@ bool PcxFormat::onLoad(FileOp* fop)
       if (bpp == 8) {
         while (c--) {
           if (x < image->width())
-            put_pixel_fast<IndexedTraits>(image, x, y, ch);
+            put_pixel_fast<IndexedTraits>(image.get(), x, y, ch);
 
           x++;
         }
@@ -139,8 +141,8 @@ bool PcxFormat::onLoad(FileOp* fop)
       else {
         while (c--) {
           if (xx < image->width())
-            put_pixel_fast<RgbTraits>(image, xx, y,
-                                      get_pixel_fast<RgbTraits>(image, xx, y) | ((ch & 0xff) << po));
+            put_pixel_fast<RgbTraits>(image.get(), xx, y,
+                                      get_pixel_fast<RgbTraits>(image.get(), xx, y) | ((ch & 0xff) << po));
 
           x++;
           if (x == bytes_per_line) {
@@ -190,7 +192,8 @@ bool PcxFormat::onLoad(FileOp* fop)
 #ifdef ENABLE_SAVE
 bool PcxFormat::onSave(FileOp* fop)
 {
-  const Image* image = fop->sequenceImage();
+  const FileAbstractImage* img = fop->abstractImage();
+  const ImageSpec spec = img->spec();
   int c, r, g, b;
   int x, y;
   int runcount;
@@ -201,7 +204,7 @@ bool PcxFormat::onSave(FileOp* fop)
   FileHandle handle(open_file_with_exception_sync_on_close(fop->filename(), "wb"));
   FILE* f = handle.get();
 
-  if (image->pixelFormat() == IMAGE_RGB) {
+  if (spec.colorMode() == ColorMode::RGB) {
     depth = 24;
     planes = 3;
   }
@@ -216,8 +219,8 @@ bool PcxFormat::onSave(FileOp* fop)
   fputc(8, f);                       /* 8 bits per pixel */
   fputw(0, f);                       /* xmin */
   fputw(0, f);                       /* ymin */
-  fputw(image->width()-1, f);     /* xmax */
-  fputw(image->height()-1, f);    /* ymax */
+  fputw(spec.width()-1, f);          /* xmax */
+  fputw(spec.height()-1, f);         /* ymax */
   fputw(320, f);                     /* HDpi */
   fputw(200, f);                     /* VDpi */
 
@@ -230,36 +233,39 @@ bool PcxFormat::onSave(FileOp* fop)
 
   fputc(0, f);                      /* reserved */
   fputc(planes, f);                 /* one or three color planes */
-  fputw(image->width(), f);      /* number of bytes per scanline */
+  fputw(spec.width(), f);           /* number of bytes per scanline */
   fputw(1, f);                      /* color palette */
-  fputw(image->width(), f);      /* hscreen size */
-  fputw(image->height(), f);     /* vscreen size */
+  fputw(spec.width(), f);           /* hscreen size */
+  fputw(spec.height(), f);          /* vscreen size */
   for (c=0; c<54; c++)              /* filler */
     fputc(0, f);
 
-  for (y=0; y<image->height(); y++) {           /* for each scanline... */
+  for (y=0; y<spec.height(); y++) {           /* for each scanline... */
     runcount = 0;
     runchar = 0;
-    for (x=0; x<image->width()*planes; x++) {  /* for each pixel... */
+
+    const uint8_t* scanline = img->getScanline(y);
+
+    for (x=0; x<spec.width()*planes; x++) {  /* for each pixel... */
       if (depth == 8) {
-        if (image->pixelFormat() == IMAGE_INDEXED)
-          ch = get_pixel_fast<IndexedTraits>(image, x, y);
-        else if (image->pixelFormat() == IMAGE_GRAYSCALE) {
-          c = get_pixel_fast<GrayscaleTraits>(image, x, y);
+        if (spec.colorMode() == ColorMode::INDEXED)
+          ch = scanline[x];
+        else if (spec.colorMode() == ColorMode::GRAYSCALE) {
+          c = ((const uint16_t*)scanline)[x];
           ch = graya_getv(c);
         }
       }
       else {
-        if (x < image->width()) {
-          c = get_pixel_fast<RgbTraits>(image, x, y);
+        if (x < spec.width()) {
+          c = ((const uint32_t*)scanline)[x];
           ch = rgba_getr(c);
         }
-        else if (x<image->width()*2) {
-          c = get_pixel_fast<RgbTraits>(image, x-image->width(), y);
+        else if (x<spec.width()*2) {
+          c = ((const uint32_t*)scanline)[x-spec.width()];
           ch = rgba_getg(c);
         }
         else {
-          c = get_pixel_fast<RgbTraits>(image, x-image->width()*2, y);
+          c = ((const uint32_t*)scanline)[x-spec.width()*2];
           ch = rgba_getb(c);
         }
       }
@@ -285,7 +291,7 @@ bool PcxFormat::onSave(FileOp* fop)
 
     fputc(runchar, f);
 
-    fop->setProgress((float)(y+1) / (float)(image->height()));
+    fop->setProgress((float)(y+1) / (float)(spec.height()));
   }
 
   if (depth == 8) {                      /* 256 color palette */

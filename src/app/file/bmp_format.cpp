@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -67,7 +67,8 @@ class BmpFormat : public FileFormat {
       FILE_SUPPORT_RGB |
       FILE_SUPPORT_GRAY |
       FILE_SUPPORT_INDEXED |
-      FILE_SUPPORT_SEQUENCES;
+      FILE_SUPPORT_SEQUENCES |
+      FILE_ENCODE_ABSTRACT_IMAGE;
   }
 
   bool onLoad(FileOp* fop) override;
@@ -688,34 +689,34 @@ bool BmpFormat::onLoad(FileOp *fop)
   else
     rmask = gmask = bmask = 0;
 
-  Image* image = fop->sequenceImage(pixelFormat,
-                                    infoheader.biWidth,
-                                    ABS((int)infoheader.biHeight));
+  ImageRef image = fop->sequenceImage(pixelFormat,
+                                      infoheader.biWidth,
+                                      ABS((int)infoheader.biHeight));
   if (!image) {
     return false;
   }
 
   if (pixelFormat == IMAGE_RGB)
-    clear_image(image, rgba(0, 0, 0, 255));
+    clear_image(image.get(), rgba(0, 0, 0, 255));
   else
-    clear_image(image, 0);
+    clear_image(image.get(), 0);
 
   switch (infoheader.biCompression) {
 
     case BI_RGB:
-      read_image(f, image, &infoheader, fop);
+      read_image(f, image.get(), &infoheader, fop);
       break;
 
     case BI_RLE8:
-      read_rle8_compressed_image(f, image, &infoheader);
+      read_rle8_compressed_image(f, image.get(), &infoheader);
       break;
 
     case BI_RLE4:
-      read_rle4_compressed_image(f, image, &infoheader);
+      read_rle4_compressed_image(f, image.get(), &infoheader);
       break;
 
     case BI_BITFIELDS:
-      if (read_bitfields_image(f, image, &infoheader, rmask, gmask, bmask) < 0) {
+      if (read_bitfields_image(f, image.get(), &infoheader, rmask, gmask, bmask) < 0) {
         fop->setError("Unsupported bitfields in the BMP file.\n");
         return false;
       }
@@ -751,21 +752,22 @@ bool BmpFormat::onLoad(FileOp *fop)
 #ifdef ENABLE_SAVE
 bool BmpFormat::onSave(FileOp *fop)
 {
-  const Image* image = fop->sequenceImage();
-  const int w = image->width();
-  const int h = image->height();
+  const FileAbstractImage* img = fop->abstractImage();
+  const ImageSpec spec = img->spec();
+  const int w = spec.width();
+  const int h = spec.height();
   int bfSize;
   int biSizeImage;
   int ncolors = fop->sequenceGetNColors();
   int bpp = 0;
-  switch (image->pixelFormat()) {
-    case IMAGE_RGB:
+  switch (spec.colorMode()) {
+    case ColorMode::RGB:
       bpp = 24;
       break;
-    case IMAGE_GRAYSCALE:
+    case ColorMode::GRAYSCALE:
       bpp = 8;
       break;
-    case IMAGE_INDEXED: {
+    case ColorMode::INDEXED: {
       if (ncolors > 16)
         bpp = 8;
       else if (ncolors > 2)
@@ -776,7 +778,7 @@ bool BmpFormat::onSave(FileOp *fop)
       break;
     }
     default:
-      // TODO save IMAGE_BITMAP as 1bpp bmp?
+      // TODO save ColorMode::BITMAP as 1bpp bmp?
       // Invalid image format
       fop->setError("Unsupported color mode.\n");
       return false;
@@ -851,31 +853,37 @@ bool BmpFormat::onSave(FileOp *fop)
 
   // Save image pixels (from bottom to top)
   for (i=h-1; i>=0; i--) {
-    switch (image->pixelFormat()) {
-      case IMAGE_RGB:
+    switch (spec.colorMode()) {
+      case ColorMode::RGB: {
+        auto scanline = (const uint32_t*)img->getScanline(i);
         for (j=0; j<w; ++j) {
-          c = get_pixel_fast<RgbTraits>(image, j, i);
+          c = scanline[j];
           fputc(rgba_getb(c), f);
           fputc(rgba_getg(c), f);
           fputc(rgba_getr(c), f);
         }
         break;
-      case IMAGE_GRAYSCALE:
+      }
+      case ColorMode::GRAYSCALE: {
+        auto scanline = (const uint16_t*)img->getScanline(i);
         for (j=0; j<w; ++j) {
-          c = get_pixel_fast<GrayscaleTraits>(image, j, i);
+          c = scanline[j];
           fputc(graya_getv(c), f);
         }
         break;
-      case IMAGE_INDEXED:
+      }
+      case ColorMode::INDEXED: {
+        auto scanline = (const uint8_t*)img->getScanline(i);
         for (j=0; j<w; ) {
           uint8_t value = 0;
           for (int k=colorsPerByte-1; k>=0 && j<w; --k, ++j) {
-            c = get_pixel_fast<IndexedTraits>(image, j, i);
+            c = scanline[j];
             value |= (c & colorMask) << (bpp*k);
           }
           fputc(value, f);
         }
         break;
+      }
     }
 
     for (j=0; j<filler; j++)

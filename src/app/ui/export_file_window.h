@@ -34,12 +34,13 @@ namespace app {
     bool applyPixelRatio() const;
     bool isForTwitter() const;
 
+    void setOutputFilename(const std::string& pathAndFilename);
+    void setResizeScale(const gfx::PointF& scale);
     void setAniDir(const doc::AniDir aniDir);
 
     obs::signal<std::string()> SelectOutputFile;
 
   private:
-    void setOutputFilename(const std::string& pathAndFilename);
     void updateOutputFilenameEntry();
     void onOutputFilenameEntryChange();
     void updateAniDir();

@@ -141,6 +141,12 @@ bool ExportFileWindow::isForTwitter() const
   return forTwitter()->isSelected();
 }
 
+void ExportFileWindow::setResizeScale(const gfx::PointF& scale)
+{
+  resize()->setValue(
+    base::convert_to<std::string>(scale.x)); // TODO support x & y
+}
+
 void ExportFileWindow::setAniDir(const doc::AniDir aniDir)
 {
   anidir()->setSelectedItemIndex(int(aniDir));
