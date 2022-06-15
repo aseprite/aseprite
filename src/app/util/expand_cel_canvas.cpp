@@ -182,6 +182,11 @@ void ExpandCelCanvas::commit()
         // And finally we add the cel again in the layer.
         m_transaction.execute(new cmd::AddCel(m_layer, m_cel));
       }
+      else {
+        // Delete unused cel
+        delete m_cel;
+        m_cel = nullptr;
+      }
     }
     // We are selecting inside a layer group...
     else {
