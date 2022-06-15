@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -86,8 +86,8 @@ void OverlayManager::drawOverlays()
   if (!manager)
     return;
 
-  os::Surface* displaySurface = manager->display()->surface();
-  os::SurfaceLock lock(displaySurface);
+  os::SurfaceRef displaySurface(base::AddRef(manager->display()->surface()));
+  os::SurfaceLock lock(displaySurface.get());
 
   for (auto& overlay : *this)
     overlay->captureOverlappedArea(displaySurface);
