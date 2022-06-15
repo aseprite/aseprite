@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2021-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -9,15 +10,35 @@
 #pragma once
 
 #include "app/commands/command.h"
+#include "app/commands/new_params.h"
+#include "doc/anidir.h"
 #include "doc/selected_frames.h"
+#include "gfx/point.h"
 
 #include <string>
 
 namespace app {
   class Doc;
 
-  class SaveFileBaseCommand : public Command {
+  struct SaveFileParams : public NewParams {
+    Param<bool> ui { this, true, { "ui", "useUI" } };
+    Param<std::string> filename { this, std::string(), "filename" };
+    Param<std::string> filenameFormat { this, std::string(), { "filenameFormat", "filename-format" } };
+    Param<std::string> tag { this, std::string(), { "tag", "frame-tag" } };
+    Param<doc::AniDir> aniDir { this, doc::AniDir::FORWARD, { "aniDir", "ani-dir" } };
+    Param<std::string> slice { this, std::string(), "slice" };
+    Param<doc::frame_t> fromFrame { this, 0, { "fromFrame", "from-frame" } };
+    Param<doc::frame_t> toFrame { this, 0, { "toFrame", "to-frame" } };
+    Param<bool> ignoreEmpty { this, false, "ignoreEmpty" };
+    Param<double> scale { this, 1.0, "scale" };
+  };
+
+  class SaveFileBaseCommand : public CommandWithNewParams<SaveFileParams> {
   public:
+    enum class MarkAsSaved { Off, On };
+    enum class SaveInBackground { Off, On };
+    enum class ResizeOnTheFly { Off, On };
+
     SaveFileBaseCommand(const char* id, CommandFlags flags);
 
   protected:
@@ -28,24 +49,19 @@ namespace app {
       Context* context,
       const std::string& dlgTitle,
       const std::string& filename,
-      const bool markAsSaved,
-      const bool saveInBackground = true,
+      const MarkAsSaved markAsSaved,
+      const SaveInBackground saveInBackground = SaveInBackground::On,
       const std::string& forbiddenFilename = std::string());
     void saveDocumentInBackground(
       const Context* context,
       Doc* document,
       const std::string& filename,
-      const bool markAsSaved);
+      const MarkAsSaved markAsSaved,
+      const ResizeOnTheFly resizeOnTheFly = ResizeOnTheFly::Off,
+      const gfx::PointF& scale = gfx::PointF(1.0, 1.0));
 
-    std::string m_filename;
-    std::string m_filenameFormat;
-    std::string m_tag;
-    std::string m_aniDir;
-    std::string m_slice;
     doc::SelectedFrames m_selFrames;
     bool m_adjustFramesByTag;
-    bool m_useUI;
-    bool m_ignoreEmpty;
   };
 
 } // namespace app

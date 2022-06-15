@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -112,7 +112,10 @@ void Preferences::load()
 
 void Preferences::save()
 {
-  ui::assert_ui_thread();
+#ifdef _DEBUG
+  if (ui::UISystem::instance())
+    ui::assert_ui_thread();
+#endif
   app::gen::GlobalPref::save();
 
   for (auto& pair : m_tools)

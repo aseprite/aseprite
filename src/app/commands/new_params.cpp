@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -18,6 +18,7 @@
 #include "base/split_string.h"
 #include "base/string.h"
 #include "doc/algorithm/resize_image.h"
+#include "doc/anidir.h"
 #include "doc/color_mode.h"
 #include "doc/rgbmap_algorithm.h"
 #include "filters/color_curve.h"
@@ -143,6 +144,12 @@ void Param<doc::ColorMode>::fromString(const std::string& value)
     setValue(doc::ColorMode::INDEXED);
   else
     setValue(doc::ColorMode::RGB);
+}
+
+template<>
+void Param<doc::AniDir>::fromString(const std::string& value)
+{
+  setValue(convert_string_to_anidir(value));
 }
 
 template<>
@@ -313,6 +320,15 @@ void Param<doc::ColorMode>::fromLua(lua_State* L, int index)
     fromString(lua_tostring(L, index));
   else
     setValue((doc::ColorMode)lua_tointeger(L, index));
+}
+
+template<>
+void Param<doc::AniDir>::fromLua(lua_State* L, int index)
+{
+  if (lua_type(L, index) == LUA_TSTRING)
+    fromString(lua_tostring(L, index));
+  else
+    setValue((doc::AniDir)lua_tointeger(L, index));
 }
 
 template<>

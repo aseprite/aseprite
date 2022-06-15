@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -86,24 +86,18 @@ private:
 //////////////////////////////////////////////////////////////////////
 
 SaveFileBaseCommand::SaveFileBaseCommand(const char* id, CommandFlags flags)
-  : Command(id, flags)
+  : CommandWithNewParams<SaveFileParams>(id, flags)
 {
-  m_useUI = true;
-  m_ignoreEmpty = false;
 }
 
 void SaveFileBaseCommand::onLoadParams(const Params& params)
 {
-  m_filename = params.get("filename");
-  m_filenameFormat = params.get("filename-format");
-  m_tag = params.get("frame-tag");
-  m_aniDir = params.get("ani-dir");
-  m_slice = params.get("slice");
+  CommandWithNewParams<SaveFileParams>::onLoadParams(params);
 
-  if (params.has_param("from-frame") ||
-      params.has_param("to-frame")) {
-    doc::frame_t fromFrame = params.get_as<doc::frame_t>("from-frame");
-    doc::frame_t toFrame = params.get_as<doc::frame_t>("to-frame");
+  if (this->params().fromFrame.isSet() ||
+      this->params().toFrame.isSet()) {
+    doc::frame_t fromFrame = this->params().fromFrame();
+    doc::frame_t toFrame = this->params().toFrame();
     m_selFrames.insert(fromFrame, toFrame);
     m_adjustFramesByTag = true;
   }
@@ -111,11 +105,6 @@ void SaveFileBaseCommand::onLoadParams(const Params& params)
     m_selFrames.clear();
     m_adjustFramesByTag = false;
   }
-
-  std::string useUI = params.get("useUI");
-  m_useUI = (useUI.empty() || (useUI == "true"));
-
-  m_ignoreEmpty = params.get_as<bool>("ignoreEmpty");
 }
 
 // Returns true if there is a current sprite to save.
@@ -129,8 +118,8 @@ std::string SaveFileBaseCommand::saveAsDialog(
   Context* context,
   const std::string& dlgTitle,
   const std::string& initialFilename,
-  const bool markAsSaved,
-  const bool saveInBackground,
+  const MarkAsSaved markAsSaved,
+  const SaveInBackground saveInBackground,
   const std::string& forbiddenFilename)
 {
   Doc* document = context->activeDocument();
@@ -141,36 +130,38 @@ std::string SaveFileBaseCommand::saveAsDialog(
   // preferences.
   Preferences::instance().save();
 
-  std::string filename;
-
-  if (!m_filename.empty()) {
-    filename = m_filename;
-  }
-  else {
+  std::string filename = params().filename();
+  if (filename.empty() || params().ui()) {
     base::paths exts = get_writable_extensions();
     filename = initialFilename;
 
 #ifdef ENABLE_UI
-  again:;
-    base::paths newfilename;
-    if (!m_useUI ||
-        !app::show_file_selector(
-          dlgTitle, filename, exts,
-          FileSelectorType::Save,
-          newfilename))
-      return std::string();
+    if (context->isUIAvailable()) {
+    again:;
+      base::paths newfilename;
+      if (!params().ui() ||
+          !app::show_file_selector(
+            dlgTitle, filename, exts,
+            FileSelectorType::Save,
+            newfilename)) {
+        return std::string();
+      }
 
-    filename = newfilename.front();
-    if (!forbiddenFilename.empty() &&
-        base::normalize_path(forbiddenFilename) ==
-        base::normalize_path(filename)) {
-      ui::Alert::show(Strings::alerts_cannot_file_overwrite_on_export());
-      goto again;
+      filename = newfilename.front();
+      if (!forbiddenFilename.empty() &&
+          base::normalize_path(forbiddenFilename) ==
+          base::normalize_path(filename)) {
+        ui::Alert::show(Strings::alerts_cannot_file_overwrite_on_export());
+        goto again;
+      }
     }
 #endif // ENABLE_UI
   }
 
-  if (saveInBackground) {
+  if (filename.empty())
+    return std::string();
+
+  if (saveInBackground == SaveInBackground::On) {
     saveDocumentInBackground(
       context, document,
       filename, markAsSaved);
@@ -198,10 +189,12 @@ void SaveFileBaseCommand::saveDocumentInBackground(
   const Context* context,
   Doc* document,
   const std::string& filename,
-  const bool markAsSaved)
+  const MarkAsSaved markAsSaved,
+  const ResizeOnTheFly resizeOnTheFly,
+  const gfx::PointF& scale)
 {
-  if (!m_aniDir.empty()) {
-    switch (convert_string_to_anidir(m_aniDir)) {
+  if (params().aniDir.isSet()) {
+    switch (params().aniDir()) {
       case AniDir::REVERSE:
         m_selFrames = m_selFrames.makeReverse();
         break;
@@ -211,7 +204,7 @@ void SaveFileBaseCommand::saveDocumentInBackground(
     }
   }
 
-  FileOpROI roi(document, m_slice, m_tag,
+  FileOpROI roi(document, params().slice(), params().tag(),
                 m_selFrames, m_adjustFramesByTag);
 
   std::unique_ptr<FileOp> fop(
@@ -219,10 +212,13 @@ void SaveFileBaseCommand::saveDocumentInBackground(
       context,
       roi,
       filename,
-      m_filenameFormat,
-      m_ignoreEmpty));
+      params().filenameFormat(),
+      params().ignoreEmpty()));
   if (!fop)
     return;
+
+  if (resizeOnTheFly == ResizeOnTheFly::On)
+    fop->setOnTheFlyScale(scale);
 
   SaveFileJob job(fop.get());
   job.showProgressWindow();
@@ -239,17 +235,22 @@ void SaveFileBaseCommand::saveDocumentInBackground(
   else if (fop->isStop()) {
     document->impossibleToBackToSavedState();
   }
-  else if (context->isUIAvailable()) {
-    App::instance()->recentFiles()->addRecentFile(filename);
-    if (markAsSaved) {
+  else {
+    if (context->isUIAvailable() && params().ui())
+      App::instance()->recentFiles()->addRecentFile(filename);
+
+    if (markAsSaved == MarkAsSaved::On) {
       document->markAsSaved();
       document->setFilename(filename);
       document->incrementVersion();
     }
+
 #ifdef ENABLE_UI
-    StatusBar::instance()->setStatusText(
-      2000, fmt::format("File <{}> saved.",
-                        base::get_file_name(filename)));
+    if (context->isUIAvailable() && params().ui()) {
+      StatusBar::instance()->setStatusText(
+        2000, fmt::format("File <{}> saved.",
+                          base::get_file_name(filename)));
+    }
 #endif
   }
 }
@@ -283,14 +284,18 @@ void SaveFileCommand::onExecute(Context* context)
 
     saveDocumentInBackground(
       context, document,
-      documentReader->filename(), true);
+      (params().filename.isSet() ? params().filename():
+                                   documentReader->filename()),
+      MarkAsSaved::On);
   }
   // If the document isn't associated to a file, we must to show the
   // save-as dialog to the user to select for first time the file-name
   // for this document.
   else {
     saveAsDialog(context, "Save File",
-                 document->filename(), true);
+                 (params().filename.isSet() ? params().filename():
+                                              document->filename()),
+                 MarkAsSaved::On);
   }
 }
 
@@ -311,7 +316,9 @@ void SaveFileAsCommand::onExecute(Context* context)
 {
   Doc* document = context->activeDocument();
   saveAsDialog(context, "Save As",
-               document->filename(), true);
+               (params().filename.isSet() ? params().filename():
+                                            document->filename()),
+               MarkAsSaved::On);
 }
 
 class SaveFileCopyAsCommand : public SaveFileBaseCommand {
@@ -334,17 +341,16 @@ SaveFileCopyAsCommand::SaveFileCopyAsCommand()
 void SaveFileCopyAsCommand::onExecute(Context* context)
 {
   Doc* doc = context->activeDocument();
-  std::string outputFilename = m_filename;
+  std::string outputFilename = params().filename();
   std::string layers = kAllLayers;
   std::string frames = kAllFrames;
-  double xscale = 1.0;
-  double yscale = 1.0;
   bool applyPixelRatio = false;
-  doc::AniDir aniDirValue = convert_string_to_anidir(m_aniDir);
+  double scale = params().scale();
+  doc::AniDir aniDirValue = params().aniDir();
   bool isForTwitter = false;
 
 #if ENABLE_UI
-  if (m_useUI && context->isUIAvailable()) {
+  if (params().ui() && context->isUIAvailable()) {
     ExportFileWindow win(doc);
     bool askOverwrite = true;
 
@@ -353,7 +359,9 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
         std::string result =
           saveAsDialog(
             context, "Export",
-            win.outputFilenameValue(), false, false,
+            win.outputFilenameValue(),
+            MarkAsSaved::Off,
+            SaveInBackground::Off,
             (doc->isAssociatedToFile() ? doc->filename():
                                          std::string()));
         if (!result.empty())
@@ -361,6 +369,18 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
 
         return result;
       });
+
+    if (params().filename.isSet()) {
+      std::string outputPath = base::get_file_path(outputFilename);
+      if (outputPath.empty()) {
+        outputPath = base::get_file_path(doc->filename());
+        outputFilename = base::join_path(outputPath, outputFilename);
+      }
+      win.setOutputFilename(outputFilename);
+    }
+
+    if (params().scale.isSet()) win.setResizeScale(scale);
+    if (params().aniDir.isSet()) win.setAniDir(aniDirValue);
 
     win.remapWindow();
     load_window_pos(&win, "ExportFile");
@@ -389,31 +409,36 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
 
     layers = win.layersValue();
     frames = win.framesValue();
-    xscale = yscale = win.resizeValue();
+    scale = win.resizeValue();
     applyPixelRatio = win.applyPixelRatio();
     aniDirValue = win.aniDirValue();
     isForTwitter = win.isForTwitter();
   }
 #endif
 
+  gfx::PointF scaleXY(scale, scale);
+
   // Pixel ratio
   if (applyPixelRatio) {
     doc::PixelRatio pr = doc->sprite()->pixelRatio();
-    xscale *= pr.w;
-    yscale *= pr.h;
+    scaleXY.x *= pr.w;
+    scaleXY.y *= pr.h;
   }
 
-  // Apply scale
+  // First of all we'll try to use the "on the fly" scaling, to avoid
+  // using a resize command to apply the export scale.
   const undo::UndoState* undoState = nullptr;
   bool undoResize = false;
-  if (xscale != 1.0 || yscale != 1.0) {
+  const bool resizeOnTheFly = FileOp::checkIfFormatSupportResizeOnTheFly(outputFilename);
+  if (!resizeOnTheFly && (scaleXY.x != 1.0 ||
+                          scaleXY.y != 1.0)) {
     Command* resizeCmd = Commands::instance()->byId(CommandId::SpriteSize());
     ASSERT(resizeCmd);
     if (resizeCmd) {
       int width = doc->sprite()->width();
       int height = doc->sprite()->height();
-      int newWidth = int(double(width) * xscale);
-      int newHeight = int(double(height) * yscale);
+      int newWidth = int(double(width) * scaleXY.x);
+      int newHeight = int(double(height) * scaleXY.y);
       if (newWidth < 1) newWidth = 1;
       if (newHeight < 1) newHeight = 1;
       if (width != newWidth || height != newHeight) {
@@ -441,27 +466,33 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
                                layers,
                                layersVisibility);
 
-      // Selected frames to export
-      SelectedFrames selFrames;
-      Tag* tag = calculate_selected_frames(
-        site, frames, selFrames);
-      if (tag)
-        m_tag = tag->name();
-      m_selFrames = selFrames;
+      // m_selFrames is not empty if fromFrame/toFrame parameters are
+      // specified.
+      if (m_selFrames.empty()) {
+        // Selected frames to export
+        SelectedFrames selFrames;
+        Tag* tag = calculate_selected_frames(
+          site, frames, selFrames);
+        if (tag)
+          params().tag(tag->name());
+        m_selFrames = selFrames;
+      }
       m_adjustFramesByTag = false;
     }
 
-    base::ScopedValue<std::string> restoreAniDir(
-      m_aniDir,
-      convert_anidir_to_string(aniDirValue), // New value
-      m_aniDir);                             // Restore old value
+    // Set ani dir
+    params().aniDir(aniDirValue);
 
     // TODO This should be set as options for the specific encoder
     GifEncoderDurationFix fixGif(isForTwitter);
     PngEncoderOneAlphaPixel fixPng(isForTwitter);
 
     saveDocumentInBackground(
-      context, doc, outputFilename, false);
+      context, doc, outputFilename,
+      MarkAsSaved::Off,
+      (resizeOnTheFly ? ResizeOnTheFly::On:
+                        ResizeOnTheFly::Off),
+      scaleXY);
   }
 
   // Undo resize

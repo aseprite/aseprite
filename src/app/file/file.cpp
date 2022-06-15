@@ -34,6 +34,7 @@
 #include "base/scoped_lock.h"
 #include "base/string.h"
 #include "dio/detect_format.h"
+#include "doc/algorithm/resize_image.h"
 #include "doc/doc.h"
 #include "fmt/format.h"
 #include "render/quantization.h"
@@ -52,6 +53,130 @@
 namespace app {
 
 using namespace base;
+
+class FileOp::FileAbstractImageImpl : public FileAbstractImage {
+public:
+  FileAbstractImageImpl(FileOp* fop)
+    : m_doc(fop->document())
+    , m_sprite(m_doc->sprite())
+    , m_spec(m_sprite->spec())
+    , m_newBlend(fop->newBlend()) {
+    ASSERT(m_doc && m_sprite);
+  }
+
+  void setSliceBounds(const gfx::Rect& sliceBounds) {
+    m_spec.setWidth(sliceBounds.w * m_scale.x);
+    m_spec.setHeight(sliceBounds.h * m_scale.y);
+  }
+
+  void setUnscaledImage(const doc::frame_t frame,
+                        const doc::ImageRef& image) {
+    if (m_spec.width() == image->width() &&
+        m_spec.height() == image->height()) {
+      m_tmpScaledImage = image;
+    }
+    else {
+      if (!m_tmpScaledImage)
+        m_tmpScaledImage.reset(doc::Image::create(m_spec));
+
+      doc::algorithm::resize_image(
+        image.get(),
+        m_tmpScaledImage.get(),
+        doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR,
+        palette(frame),
+        m_sprite->rgbMap(frame),
+        image->maskColor());
+    }
+  }
+
+  // FileAbstractImage impl
+  doc::ImageSpec spec() const override {
+    return m_spec;
+  }
+
+  os::ColorSpaceRef osColorSpace() const override {
+    return m_doc->osColorSpace();
+  }
+
+  bool needAlpha() const override {
+    return m_sprite->needAlpha();
+  }
+
+  bool isOpaque() const override {
+    return m_sprite->isOpaque();
+  }
+
+  int frames() const override {
+    return m_sprite->totalFrames();
+  }
+
+  int frameDuration(doc::frame_t frame) const override {
+    return m_sprite->frameDuration(frame);
+  }
+
+  const doc::Palette* palette(doc::frame_t frame) const override {
+    ASSERT(m_sprite);
+    return m_sprite->palette(frame);
+  }
+
+  doc::PalettesList palettes() const override {
+    ASSERT(m_sprite);
+    return m_sprite->getPalettes();
+  }
+
+  const doc::ImageRef getScaledImage() const override {
+    return m_tmpScaledImage;
+  }
+
+  const uint8_t* getScanline(int y) const override {
+    return m_tmpScaledImage->getPixelAddress(0, y);
+  }
+
+  void renderFrame(const doc::frame_t frame, doc::Image* dst) const override {
+    const bool needResize =
+      (dst->width() != m_sprite->width() ||
+       dst->height() != m_sprite->height());
+
+    if (needResize && !m_tmpUnscaledRender) {
+      auto spec = m_sprite->spec();
+      spec.setColorMode(dst->colorMode());
+      m_tmpUnscaledRender.reset(doc::Image::create(spec));
+    }
+
+    render::Render render;
+    render.setNewBlend(m_newBlend);
+    render.setBgType(render::BgType::NONE);
+
+    render.renderSprite(
+      (needResize ? m_tmpUnscaledRender.get(): dst),
+      m_sprite, frame);
+
+    if (needResize) {
+      doc::algorithm::resize_image(
+        m_tmpUnscaledRender.get(),
+        dst,
+        doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR,
+        palette(frame),
+        m_sprite->rgbMap(frame),
+        m_tmpUnscaledRender->maskColor());
+    }
+  }
+
+  void setScale(const gfx::PointF& scale) {
+    m_scale = scale;
+    m_spec.setWidth(m_spec.width() * m_scale.x);
+    m_spec.setHeight(m_spec.height() * m_scale.y);
+  }
+
+private:
+  const Doc* m_doc;
+  const doc::Sprite* m_sprite;
+  doc::ImageSpec m_spec;
+  bool m_newBlend;
+  doc::ImageRef m_tmpScaledImage = nullptr;
+  mutable doc::ImageRef m_tmpUnscaledRender = nullptr;
+  gfx::PointF m_scale = gfx::PointF(1.0, 1.0);
+};
 
 base::paths get_readable_extensions()
 {
@@ -586,6 +711,18 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
   return fop.release();
 }
 
+// static
+bool FileOp::checkIfFormatSupportResizeOnTheFly(const std::string& filename)
+{
+  // Get the format through the extension of the filename
+  FileFormat* fileFormat =
+    FileFormatsManager::instance()->getFileFormat(
+      dio::detect_format_by_file_extension(filename));
+
+  return (fileFormat &&
+          fileFormat->support(FILE_ENCODE_ABSTRACT_IMAGE));
+}
+
 // Executes the file operation: loads or saves the sprite.
 //
 // It can be called from a different thread of the one used
@@ -774,6 +911,9 @@ void FileOp::operate(IFileOpProgress* progress)
           const SliceKey* key = m_roi.slice()->getByFrame(frame);
           if (!key || key->isEmpty())
             continue;           // Skip frame because there is no slice key
+
+          if (m_abstractImage)
+            m_abstractImage->setSliceBounds(key->bounds());
 
           m_seq.image.reset(
             Image::create(sprite->pixelFormat(),
@@ -1082,7 +1222,7 @@ void FileOp::sequenceGetAlpha(int index, int* a) const
     *a = 0;
 }
 
-Image* FileOp::sequenceImage(PixelFormat pixelFormat, int w, int h)
+ImageRef FileOp::sequenceImage(PixelFormat pixelFormat, int w, int h)
 {
   Sprite* sprite;
 
@@ -1120,7 +1260,33 @@ Image* FileOp::sequenceImage(PixelFormat pixelFormat, int w, int h)
   m_seq.image.reset(Image::create(pixelFormat, w, h));
   m_seq.last_cel = new Cel(m_seq.frame++, ImageRef(nullptr));
 
-  return m_seq.image.get();
+  return m_seq.image;
+}
+
+void FileOp::makeAbstractImage()
+{
+  ASSERT(m_format->support(FILE_ENCODE_ABSTRACT_IMAGE));
+  if (!m_abstractImage)
+    m_abstractImage = std::make_unique<FileAbstractImageImpl>(this);
+}
+
+FileAbstractImage* FileOp::abstractImage()
+{
+  ASSERT(m_format->support(FILE_ENCODE_ABSTRACT_IMAGE));
+
+  makeAbstractImage();
+
+  // Use sequenceImage() to fill the current image
+  if (m_format->support(FILE_SUPPORT_SEQUENCES))
+    m_abstractImage->setUnscaledImage(m_seq.frame, sequenceImage());
+
+  return m_abstractImage.get();
+}
+
+void FileOp::setOnTheFlyScale(const gfx::PointF& scale)
+{
+  makeAbstractImage();
+  m_abstractImage->setScale(scale);
 }
 
 void FileOp::setError(const char *format, ...)

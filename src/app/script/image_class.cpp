@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -105,8 +105,29 @@ int Image_new(lua_State* L)
   if (auto spec2 = may_get_obj<doc::ImageSpec>(L, 1)) {
     spec = *spec2;
   }
-  else if (may_get_obj<ImageObj>(L, 1)) {
-    return Image_clone(L);
+  else if (auto imgObj = may_get_obj<ImageObj>(L, 1)) {
+    // Copy a region of the image
+    if (auto rc = may_get_obj<gfx::Rect>(L, 2)) {
+      doc::Image* crop = nullptr;
+      try {
+        auto docImg = imgObj->image(L);
+        crop = doc::crop_image(docImg, *rc, docImg->maskColor());
+      }
+      catch (const std::invalid_argument&) {
+        // Do nothing (will return nil)
+      }
+      if (crop) {
+        push_new<ImageObj>(L, crop);
+        return 1;
+      }
+      else {
+        return 0;
+      }
+    }
+    // Copy the whole image
+    else {
+      return Image_clone(L);
+    }
   }
   else if (auto spr = may_get_docobj<doc::Sprite>(L, 1)) {
     image = doc::Image::create(spr->spec());

@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -103,7 +103,7 @@ void Overlay::captureOverlappedArea()
                          m_overlap->width(), m_overlap->height());
   m_overlap->setImmutable();
 
-  m_captured = displaySurface;
+  m_captured = base::AddRef(displaySurface);
 }
 
 void Overlay::restoreOverlappedArea(const gfx::Rect& restoreBounds)
@@ -118,7 +118,7 @@ void Overlay::restoreOverlappedArea(const gfx::Rect& restoreBounds)
     return;
 
   os::SurfaceLock lock(m_overlap.get());
-  m_overlap->blitTo(m_captured, 0, 0, m_pos.x, m_pos.y,
+  m_overlap->blitTo(m_captured.get(), 0, 0, m_pos.x, m_pos.y,
                     m_overlap->width(), m_overlap->height());
 
   m_display->dirtyRect(bounds());

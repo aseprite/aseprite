@@ -231,6 +231,10 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
     bool editable = bool_attr(elem, "editable", false);
     if (editable)
       ((ComboBox*)widget)->setEditable(true);
+
+    const char* suffix = elem->Attribute("suffix");
+    if (suffix)
+      ((ComboBox*)widget)->getEntryWidget()->setSuffix(suffix);
   }
   else if (elem_name == "entry" ||
            elem_name == "expr") {

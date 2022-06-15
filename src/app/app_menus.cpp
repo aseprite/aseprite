@@ -554,7 +554,7 @@ bool AppMenus::rebuildRecentList()
   else {
       std::unique_ptr<AppMenuItem> menuitem(
         new AppMenuItem(
-          Strings::main_menu_file_no_recent_file(), nullptr));
+          Strings::main_menu_file_no_recent_file()));
     menuitem->setIsRecentFileItem(true);
     menuitem->setEnabled(false);
 

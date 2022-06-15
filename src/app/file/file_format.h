@@ -30,6 +30,7 @@
 #define FILE_SUPPORT_TAGS               0x00001000
 #define FILE_SUPPORT_BIG_PALETTES       0x00002000 // Palettes w/more than 256 colors
 #define FILE_SUPPORT_PALETTE_WITH_ALPHA 0x00004000
+#define FILE_ENCODE_ABSTRACT_IMAGE      0x00008000 // Use the new FileAbstractImage
 
 namespace app {
 

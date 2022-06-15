@@ -35,6 +35,7 @@ namespace app {
     AppMenuItem(const std::string& text,
                 const std::string& commandId = std::string(),
                 const Params& params = Params());
+    AppMenuItem(const std::string& text, std::nullptr_t) = delete;
 
     KeyPtr key() { return m_key; }
     void setKey(const KeyPtr& key);

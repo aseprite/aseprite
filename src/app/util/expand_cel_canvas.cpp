@@ -267,6 +267,11 @@ void ExpandCelCanvas::commit()
         // And add the cel again in the layer.
         m_cmds->executeAndAdd(new cmd::AddCel(m_layer, m_cel));
       }
+      else {
+        // Delete unused cel
+        delete m_cel;
+        m_cel = nullptr;
+      }
     }
     // We are selecting...
     else {

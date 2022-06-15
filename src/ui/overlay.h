@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -60,7 +60,7 @@ namespace ui {
 
     // Surface where we captured the overlapped (m_overlap)
     // region. It's nullptr if the overlay wasn't drawn yet.
-    os::Surface* m_captured;
+    os::SurfaceRef m_captured;
 
     gfx::Point m_pos;
     ZOrder m_zorder;

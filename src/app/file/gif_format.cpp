@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -93,7 +93,8 @@ class GifFormat : public FileFormat {
       FILE_SUPPORT_INDEXED |
       FILE_SUPPORT_FRAMES |
       FILE_SUPPORT_PALETTES |
-      FILE_SUPPORT_GET_FORMAT_OPTIONS;
+      FILE_SUPPORT_GET_FORMAT_OPTIONS |
+      FILE_ENCODE_ABSTRACT_IMAGE;
   }
 
   bool onLoad(FileOp* fop) override;
@@ -954,10 +955,11 @@ public:
   GifEncoder(FileOp* fop, GifFileType* gifFile)
     : m_fop(fop)
     , m_gifFile(gifFile)
-    , m_document(fop->document())
     , m_sprite(fop->document()->sprite())
-    , m_spriteBounds(m_sprite->bounds())
-    , m_hasBackground(m_sprite->isOpaque())
+    , m_img(fop->abstractImage())
+    , m_spec(m_img->spec())
+    , m_spriteBounds(m_spec.bounds())
+    , m_hasBackground(m_img->isOpaque())
     , m_bitsPerPixel(1)
     , m_globalColormap(nullptr)
     , m_globalColormapPalette(*m_sprite->palette(0))
@@ -973,7 +975,7 @@ public:
     m_lastFrameBounds = m_spriteBounds;
     m_lastDisposal = DisposalMethod::NONE;
 
-    if (m_sprite->pixelFormat() == IMAGE_INDEXED) {
+    if (m_spec.colorMode() == ColorMode::INDEXED) {
       for (Palette* palette : m_sprite->getPalettes()) {
         int bpp = GifBitSizeLimited(palette->size());
         m_bitsPerPixel = std::max(m_bitsPerPixel, bpp);
@@ -983,8 +985,8 @@ public:
       m_bitsPerPixel = 8;
     }
 
-    if (m_sprite->pixelFormat() == IMAGE_INDEXED &&
-        m_sprite->getPalettes().size() == 1) {
+    if (m_spec.colorMode() == ColorMode::INDEXED &&
+        m_img->palettes().size() == 1) {
       // If some layer has opacity < 255 or a different blend mode, we
       // need to create color palettes.
       bool quantizeColormaps = false;
@@ -1001,7 +1003,7 @@ public:
 
       if (!quantizeColormaps) {
         m_globalColormap = createColorMap(&m_globalColormapPalette);
-        m_bgIndex = m_sprite->transparentColor();
+        m_bgIndex = m_spec.maskColor();
         // For indexed and opaque sprite, we can preserve the exact
         // palette order without lossing compression rate.
         if (m_hasBackground)
@@ -1025,7 +1027,7 @@ public:
     m_transparentIndex = (m_hasBackground ? -1: m_bgIndex);
     if (m_globalColormap) {
       // The variable m_globalColormap is != nullptr only on indexed images
-      ASSERT(m_sprite->pixelFormat() == IMAGE_INDEXED);
+      ASSERT(m_spec.colorMode() == ColorMode::INDEXED);
 
       const Palette* pal = m_sprite->palette(0);
       bool maskColorFounded = false;
@@ -1331,7 +1333,7 @@ private:
                       const DisposalMethod disposalMethod,
                       const bool fixDuration) {
     unsigned char extension_bytes[5];
-    int frameDelay = m_sprite->frameDuration(frame) / 10;
+    int frameDelay = m_img->frameDuration(frame) / 10;
 
     // Fix duration for Twitter. It looks like the last frame must be
     // 1/4 of its duration for some strange reason in the Twitter
@@ -1550,15 +1552,11 @@ private:
   }
 
   void renderFrame(frame_t frame, Image* dst) {
-    render::Render render;
-    render.setNewBlend(m_fop->newBlend());
-
-    render.setBgType(render::BgType::NONE);
     if (m_preservePaletteOrder)
       clear_image(dst, m_bgIndex);
     else
       clear_image(dst, 0);
-    render.renderSprite(dst, m_sprite, frame);
+    m_img->renderFrame(frame, dst);
   }
 
 private:
@@ -1568,8 +1566,7 @@ private:
     ColorMapObject* colormap = GifMakeMapObject(n, nullptr);
 
     // Color space conversions
-    ConvertCS convert = convert_from_custom_to_srgb(
-      m_document->osColorSpace());
+    ConvertCS convert = convert_from_custom_to_srgb(m_img->osColorSpace());
 
     for (int i=0; i<n; ++i) {
       color_t color;
@@ -1590,8 +1587,9 @@ private:
 
   FileOp* m_fop;
   GifFileType* m_gifFile;
-  const Doc* m_document;
   const Sprite* m_sprite;
+  const FileAbstractImage* m_img;
+  const ImageSpec m_spec;
   gfx::Rect m_spriteBounds;
   bool m_hasBackground;
   int m_bgIndex;
