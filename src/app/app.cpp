@@ -191,7 +191,7 @@ public:
   void createDataRecovery(Context* ctx) {
 #ifdef ENABLE_DATA_RECOVERY
 
-#ifdef ENABLE_TRIAL_VERSION
+#ifdef ENABLE_TRIAL_MODE
     DRM_INVALID{
       return;
     }
@@ -213,7 +213,7 @@ public:
   void searchDataRecoverySessions() {
 #ifdef ENABLE_DATA_RECOVERY
 
-#ifdef ENABLE_TRIAL_VERSION
+#ifdef ENABLE_TRIAL_MODE
     DRM_INVALID{
       return;
     }
@@ -228,7 +228,7 @@ public:
   void deleteDataRecovery() {
 #ifdef ENABLE_DATA_RECOVERY
 
-#ifdef ENABLE_TRIAL_VERSION
+#ifdef ENABLE_TRIAL_MODE
     DRM_INVALID{
       return;
     }

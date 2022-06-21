@@ -116,7 +116,7 @@ void HomeView::dataRecoverySessionsAreReady()
 {
 #ifdef ENABLE_DATA_RECOVERY
 
-#ifdef ENABLE_TRIAL_VERSION
+#ifdef ENABLE_TRIAL_MODE
   DRM_INVALID{
     return;
   }
@@ -270,7 +270,7 @@ void HomeView::onRecoverSprites()
 {
 #ifdef ENABLE_DATA_RECOVERY
 
-#ifdef ENABLE_TRIAL_VERSION
+#ifdef ENABLE_TRIAL_MODE
   DRM_INVALID{
     return;
   }
