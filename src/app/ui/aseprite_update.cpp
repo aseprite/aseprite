@@ -79,7 +79,7 @@ void AsepriteUpdate::onDownloadFinished(drm::Package& package)
 {
   ui::execute_from_ui_thread([this, package] {
     log("Download finished!");
-    m_installation.reset(new drm::InstallationThread(package));
+    m_installation = std::make_unique<drm::InstallationThread>(package);
     m_installation->InstallationFailed.connect([this](drm::LicenseManager::InstallationException& e) {
       onInstallationFailed(e);
     });
