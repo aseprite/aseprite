@@ -1146,7 +1146,7 @@ void DocExporter::renderTexture(Context* ctx,
                                 Image* textureImage,
                                 base::task_token& token) const
 {
-  textureImage->clear(0);
+  textureImage->clear(textureImage->maskColor());
 
   int i = 0;
   for (const auto& sample : samples) {
