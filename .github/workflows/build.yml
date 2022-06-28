@@ -36,10 +36,16 @@ jobs:
     - name: Generating Makefiles
       shell: bash
       run: |
+        if [[ "${{ runner.os }}" == "Windows" ]] ; then
+          export enable_ccache=off
+        else
+          export enable_ccache=on
+        fi
         cmake -S . -B build -G Ninja \
           -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 \
           -DENABLE_TESTS=ON \
-          -DENABLE_UI=${{ matrix.enable_ui }}
+          -DENABLE_UI=${{ matrix.enable_ui }} \
+          -DENABLE_CCACHE=$enable_ccache
     - name: Compiling
       shell: bash
       run: |
