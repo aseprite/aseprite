@@ -4253,7 +4253,10 @@ void Timeline::setLayerCollapsedFlag(const layer_t l, const bool state)
 
 int Timeline::separatorX() const
 {
-  return std::clamp(m_separator_x, headerBoxWidth(), bounds().w-guiscale());
+  return std::clamp(m_separator_x,
+                    headerBoxWidth(),
+                    std::max(bounds().w-guiscale(),
+                             headerBoxWidth()));
 }
 
 void Timeline::setSeparatorX(int newValue)
