@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2019-2020  Igara Studio S.A.
+// Copyright (c) 2019-2022  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -27,8 +27,8 @@ void move_or_copy_palette_colors(
   if (beforeIndex >= palette.size()) {
     palette.resize(beforeIndex); // TODO is need to resize the
                                  // palette? why not "const Palette& palette"
-    picks.resize(palette.size());
   }
+  picks.resize(palette.size());
 
   palette.copyColorsTo(&newPalette);
 

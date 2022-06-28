@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2021 Igara Studio S.A.
+// Copyright (c) 2019-2022 Igara Studio S.A.
 // Copyright (c) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -9,6 +9,7 @@
 #define DOC_PALETTE_PICKS_H_INCLUDED
 #pragma once
 
+#include "base/debug.h"
 #include "doc/color.h"
 
 #include <algorithm>
@@ -36,8 +37,15 @@ namespace doc {
     const_iterator begin() const { return m_items.begin(); }
     const_iterator end() const { return m_items.end(); }
 
-    const_reference operator[](int idx) const { return m_items[idx]; }
-    reference operator[](int idx) { return m_items[idx]; }
+    const_reference operator[](int idx) const {
+      ASSERT(idx >= 0 && idx < int(m_items.size()));
+      return m_items[idx];
+    }
+
+    reference operator[](int idx) {
+      ASSERT(idx >= 0 && idx < int(m_items.size()));
+      return m_items[idx];
+    }
 
     void resize(int n) {
       m_items.resize(n, false);
