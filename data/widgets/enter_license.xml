@@ -1,6 +1,6 @@
 <!-- Aseprite -->
 <!-- Copyright (c) 2021  Igara Studio S.A. -->
-<gui>
+<gui i18nwarnings="false">
   <window id="enter_license" text="@.title" expansive="true">
     <box vertical="true">
       <hbox>
