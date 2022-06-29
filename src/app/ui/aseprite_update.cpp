@@ -48,10 +48,10 @@ AsepriteUpdate::AsepriteUpdate(std::string version)
 
 void AsepriteUpdate::onBeforeClose(ui::CloseEvent& ev)
 {
-  if (m_download.status() != drm::Thread::Status::FINISHED ||
-      m_installation && m_installation->status() != drm::Thread::Status::FINISHED) {
-      log("Stopping, please wait...");
-      ev.cancel();
+  if ((m_download.status() != drm::Thread::Status::FINISHED) ||
+      (m_installation && m_installation->status() != drm::Thread::Status::FINISHED)) {
+    log("Stopping, please wait...");
+    ev.cancel();
   }
   if (!m_closing) {
     m_download.shutdown();
