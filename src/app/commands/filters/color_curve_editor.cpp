@@ -120,7 +120,8 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
 
       captureMouse();
 
-      // continue in motion message...
+      // Continue in motion message...
+      [[fallthrough]];
     }
 
     case kMouseMoveMessage: {

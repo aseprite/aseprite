@@ -339,8 +339,7 @@ bool PaletteView::onProcessMessage(Message* msg)
       }
 
       captureMouse();
-
-      // Continue...
+      [[fallthrough]];
 
     case kMouseMoveMessage: {
       MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);

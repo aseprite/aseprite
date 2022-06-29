@@ -1858,11 +1858,10 @@ bool Manager::processFocusMovementMessage(Message* msg)
         break;
 
       // Arrow keys
-      case kKeyLeft:  if (!cmp) cmp = cmp_left;
-      case kKeyRight: if (!cmp) cmp = cmp_right;
-      case kKeyUp:    if (!cmp) cmp = cmp_up;
+      case kKeyLeft:  if (!cmp) cmp = cmp_left;  [[fallthrough]];
+      case kKeyRight: if (!cmp) cmp = cmp_right; [[fallthrough]];
+      case kKeyUp:    if (!cmp) cmp = cmp_up;    [[fallthrough]];
       case kKeyDown:  if (!cmp) cmp = cmp_down;
-
         // More than one widget
         if (count > 1) {
           // Position where the focus come

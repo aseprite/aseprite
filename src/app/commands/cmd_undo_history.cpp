@@ -110,6 +110,7 @@ public:
 
         case ui::kMouseDownMessage:
           captureMouse();
+          [[fallthrough]];
 
         case ui::kMouseMoveMessage:
           if (hasCapture()) {

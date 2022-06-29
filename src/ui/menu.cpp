@@ -443,7 +443,7 @@ bool MenuBox::onProcessMessage(Message* msg)
       if (!base->was_clicked)
         break;
 
-      //[[fallthrough]];
+      [[fallthrough]];
     }
 
     case kMouseDownMessage:

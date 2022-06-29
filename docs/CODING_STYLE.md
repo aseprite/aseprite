@@ -148,5 +148,6 @@ We are using C++17 standard. You can safely use:
 * Use `static constexpr T v = ...;`
 * You can use `<atomic>`, `<thread>`, `<mutex>`, and `<condition_variable>`
 * Prefer `using T = ...;` instead of `typedef ... T`
+* Use `[[fallthrough]]` if needed
 * We use gcc 9.2 or clang 9.0 on Linux, so check the features available in
   https://en.cppreference.com/w/cpp/compiler_support

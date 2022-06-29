@@ -417,6 +417,7 @@ private:
             inImage = true;
           else if (ev_type == CMARK_EVENT_EXIT)
             inImage = false;
+          break;
         }
 
         case CMARK_NODE_LINK: {
@@ -434,6 +435,7 @@ private:
             }
             inLink = nullptr;
           }
+          break;
         }
 
       }

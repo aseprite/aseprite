@@ -132,7 +132,8 @@ bool ScrollBar::onProcessMessage(Message* msg)
       setSelected(true);
       captureMouse();
 
-      // continue to kMouseMoveMessage handler...
+      // Continue to kMouseMoveMessage handler...
+      [[fallthrough]];
     }
 
     case kMouseMoveMessage:

@@ -1,5 +1,5 @@
 # Aseprite
-# Copyright (C) 2019-2020  Igara Studio S.A.
+# Copyright (C) 2019-2022  Igara Studio S.A.
 # Copyright (C) 2001-2018  David Capello
 
 ######################################################################
@@ -8,6 +8,9 @@
 if(UNIX)
   # All warnings except for switch cases with missing enum items
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-switch")
+
+  # Prefer C++17 [[fallthrough]] attribute
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wimplicit-fallthrough")
 endif()
 
 if(MSVC)

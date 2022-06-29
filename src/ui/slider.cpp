@@ -115,7 +115,7 @@ bool Slider::onProcessMessage(Message* msg)
 
       setupSliderCursor();
 
-      // Fall through
+      [[fallthrough]];
 
     case kMouseMoveMessage:
       if (hasCapture()) {
