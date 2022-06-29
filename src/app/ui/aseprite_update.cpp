@@ -17,7 +17,9 @@
 
 namespace app {
 
-AsepriteUpdate::AsepriteUpdate(std::string version) : m_timer(500, this), m_download(get_app_name(), version)
+AsepriteUpdate::AsepriteUpdate(std::string version)
+  : m_download(get_app_name(), version)
+  , m_timer(500, this)
 {
   okButton()->setEnabled(false);
   okButton()->Click.connect([this](ui::Event&) {
