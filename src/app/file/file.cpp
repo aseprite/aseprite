@@ -16,6 +16,7 @@
 #include "app/console.h"
 #include "app/context.h"
 #include "app/doc.h"
+#include "app/drm.h"
 #include "app/file/file_data.h"
 #include "app/file/file_format.h"
 #include "app/file/file_formats_manager.h"
@@ -886,6 +887,16 @@ void FileOp::operate(IFileOpProgress* progress)
            m_format != NULL &&
            m_format->support(FILE_SUPPORT_SAVE)) {
 #ifdef ENABLE_SAVE
+
+#if defined(ENABLE_TRIAL_MODE)
+    DRM_INVALID{
+      setError(
+        fmt::format("Save operation is not supported in trial version, activate this Aseprite first.\n"
+                    "Go to {} and get a license key to upgrade.",
+                    get_app_download_url()).c_str());
+    }
+#endif
+
     // Save a sequence
     if (isSequence()) {
       ASSERT(m_format->support(FILE_SUPPORT_SEQUENCES));

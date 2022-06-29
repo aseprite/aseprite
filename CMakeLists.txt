@@ -65,6 +65,7 @@ option(ENABLE_WEBSOCKET    "Compile with websocket support" on)
 option(ENABLE_TESTS        "Compile unit tests" off)
 option(ENABLE_BENCHMARKS   "Compile benchmarks" off)
 option(ENABLE_TRIAL_MODE   "Compile the trial version" off)
+option(ENABLE_DRM          "Compile the DRM-enabled version (e.g. for automatic updates)" off)
 option(ENABLE_STEAM        "Compile with Steam library" off)
 option(ENABLE_DEVMODE      "Compile vesion for developers" off)
 option(ENABLE_UI           "Compile UI (turn off to compile CLI-only version)" on)
@@ -83,10 +84,20 @@ if(ENABLE_SENTRY)
   set(SENTRY_DNS "" CACHE STRING "Sentry DNS URL")
 endif()
 
-if(ENABLE_NEWS OR ENABLE_UPDATER)
+if(ENABLE_NEWS OR ENABLE_UPDATER OR ENABLE_DRM)
   set(REQUIRE_CURL ON)
 else()
   set(REQUIRE_CURL OFF)
+endif()
+
+# Select libcurl's TLS backend according to target platform
+if(REQUIRE_CURL AND ENABLE_DRM)
+  if(APPLE)
+    option(CMAKE_USE_SECTRANSP "enable Apple OS native SSL/TLS" ON)
+  endif()
+  if(WIN32)
+    set(CMAKE_USE_SCHANNEL "enable Windows native SSL/TLS" ON)
+  endif()
 endif()
 
 if(NOT LAF_OS_BACKEND)
@@ -105,6 +116,10 @@ if(LAF_OS_WITH_GTK)
   if(NOT USE_SHARED_HARFBUZZ)
     message(FATAL_ERROR "Cannot compile with gtk and static HarfBuzz, set USE_SHARED_HARFBUZZ=ON")
   endif()
+endif()
+
+if(ENABLE_DRM AND NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/drm/CMakeLists.txt)
+  message(FATAL_ERROR "Your Aseprite repository is incomplete, clone the drm repository")
 endif()
 
 ######################################################################
@@ -331,6 +346,9 @@ endif()
 set(LAF_WITH_TESTS ${ENABLE_TESTS} CACHE BOOL "Enable LAF tests")
 set(UNDO_TESTS     ${ENABLE_TESTS} CACHE BOOL "Enable undo tests")
 
+if(ENABLE_DRM)
+  add_subdirectory(drm)
+endif()
 add_subdirectory(laf)
 
 # LAF libraries + Aseprite are compiled with config.h

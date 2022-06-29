@@ -42,6 +42,11 @@
 #include "app/sentry_wrapper.h"
 #endif
 
+#ifdef ENABLE_DRM
+#include "drm/drm.h"
+#include "aseprite_update.h"
+#endif
+
 namespace app {
 
 using namespace ui;
@@ -110,6 +115,13 @@ HomeView::~HomeView()
 void HomeView::dataRecoverySessionsAreReady()
 {
 #ifdef ENABLE_DATA_RECOVERY
+
+#ifdef ENABLE_TRIAL_MODE
+  DRM_INVALID{
+    return;
+  }
+#endif
+
   if (App::instance()->dataRecovery()->hasRecoverySessions()) {
     // We highlight the "Recover Files" options because we came from a crash
     auto theme = SkinTheme::get(this);
@@ -227,7 +239,20 @@ void HomeView::onNewUpdate(const std::string& url, const std::string& version)
   checkUpdate()->setText(
     fmt::format(Strings::home_view_new_version_available(),
                 get_app_name(), version));
+#ifdef ENABLE_DRM
+  DRM_INVALID {
+    checkUpdate()->setUrl(url);
+  }
+  else {
+    checkUpdate()->setUrl("");
+    checkUpdate()->Click.connect([version] {
+      app::AsepriteUpdate dlg(version);
+      dlg.openWindowInForeground();
+    });
+  }
+#else
   checkUpdate()->setUrl(url);
+#endif
   checkUpdate()->setVisible(true);
   checkUpdate()->InitTheme.connect(
     [this]{
@@ -244,6 +269,13 @@ void HomeView::onNewUpdate(const std::string& url, const std::string& version)
 void HomeView::onRecoverSprites()
 {
 #ifdef ENABLE_DATA_RECOVERY
+
+#ifdef ENABLE_TRIAL_MODE
+  DRM_INVALID{
+    return;
+  }
+#endif
+
   ASSERT(m_dataRecovery); // "Recover Files" button is hidden when
                           // data recovery is disabled (m_dataRecovery == nullptr)
   if (!m_dataRecovery)
