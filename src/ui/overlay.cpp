@@ -99,7 +99,8 @@ void Overlay::captureOverlappedArea(const os::SurfaceRef& screen)
   os::SurfaceLock lock(m_overlap.get());
   screen->blitTo(m_overlap.get(), m_pos.x, m_pos.y, 0, 0,
                  m_overlap->width(), m_overlap->height());
-  m_overlap->setImmutable();
+  // TODO uncomment and test this when GPU support is added
+  //m_overlap->setImmutable();
 
   m_captured = screen;
 }
