@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2020-2021 Igara Studio S.A.
+// Copyright (c) 2020-2022 Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -93,13 +93,7 @@ public:
   void addColor(color_t c, int level, OctreeNode* parent,
                 int paletteIndex = 0, int levelDeep = 7);
 
-  void fillOrphansNodes(const Palette* palette,
-                        const color_t upstreamBranchColor,
-                        const int level);
-
-  void fillMostSignificantNodes(int level);
-
-  int mapColor(int r, int g, int b, int a, int level) const;
+  int mapColor(int  r, int g, int b, int a, int mask_index, const Palette* palette, int level) const;
 
   void collectLeafNodes(OctreeNodes& leavesVector, int& paletteIndex);
 
@@ -114,11 +108,12 @@ private:
   void paletteIndex(int index) { m_paletteIndex = index; }
 
   static int getHextet(color_t c, int level);
+  static int getHextet(int r, int g, int b, int a, int level);
   static color_t hextetToBranchColor(int hextet, int level);
 
   LeafColor m_leafColor;
-  int m_paletteIndex = 0;
-  std::unique_ptr<std::array<OctreeNode, 16>> m_children;
+  mutable int m_paletteIndex = -1;
+  mutable std::unique_ptr<std::array<OctreeNode, 16>> m_children;
   OctreeNode* m_parent = nullptr;
 };
 
@@ -142,12 +137,20 @@ public:
   // RgbMap impl
   void regenerateMap(const Palette* palette, const int maskIndex) override;
   int mapColor(color_t rgba) const override;
+  int maskIndex() const override { return m_maskIndex; }
+  int mapColor(const int r, const int g,
+               const int b, const int a) const
+  {
+    ASSERT(r >= 0 && r < 256);
+    ASSERT(g >= 0 && g < 256);
+    ASSERT(b >= 0 && b < 256);
+    ASSERT(a >= 0 && a < 256);
+    return mapColor(rgba(r, g, b, a));
+  }
 
   int moodifications() const { return m_modifications; };
 
 private:
-  void fillOrphansNodes(const Palette* palette);
-
   OctreeNode m_root;
   OctreeNodes m_leavesVector;
   const Palette* m_palette = nullptr;

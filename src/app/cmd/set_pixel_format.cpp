@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -22,6 +22,7 @@
 #include "doc/document.h"
 #include "doc/layer.h"
 #include "doc/palette.h"
+#include "doc/rgbmap.h"
 #include "doc/sprite.h"
 #include "doc/tilesets.h"
 #include "render/quantization.h"
@@ -177,6 +178,12 @@ void SetPixelFormat::setFormat(PixelFormat format)
   Sprite* sprite = this->sprite();
 
   sprite->setPixelFormat(format);
+  if (format == IMAGE_INDEXED) {
+    int maskIndex = sprite->palette(0)->findMaskColor();
+    sprite->setTransparentColor(maskIndex == -1 ? 0 : maskIndex);
+  }
+  else
+    sprite->setTransparentColor(0);
   sprite->incrementVersion();
 
   // Regenerate extras
@@ -201,14 +208,25 @@ void SetPixelFormat::convertImage(doc::Sprite* sprite,
   ASSERT(oldImage);
   ASSERT(oldImage->pixelFormat() != IMAGE_TILEMAP);
 
+  // Making the RGBMap for Image->INDEXDED conversion.
+  // TODO: this is needed only when newImage
+  RgbMap* rgbmap;
+  int newMaskIndex = (isBackground ? -1 : 0);
+  if (m_newFormat == IMAGE_INDEXED) {
+    rgbmap = sprite->rgbMap(frame, sprite->rgbMapForSprite(), mapAlgorithm);
+    if (m_oldFormat == IMAGE_INDEXED)
+      newMaskIndex = sprite->transparentColor();
+    else
+      newMaskIndex = rgbmap->maskIndex();
+  }
   ImageRef newImage(
     render::convert_pixel_format
     (oldImage.get(), nullptr, m_newFormat,
      dithering,
-     sprite->rgbMap(frame, sprite->rgbMapForSprite(), mapAlgorithm),
+     rgbmap,
      sprite->palette(frame),
      isBackground,
-     oldImage->maskColor(),
+     newMaskIndex,
      toGray,
      delegate));
 

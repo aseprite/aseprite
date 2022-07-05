@@ -395,9 +395,6 @@ RgbMap* Sprite::rgbMap(const frame_t frame,
                        const RgbMapFor forLayer,
                        RgbMapAlgorithm mapAlgo) const
 {
-  int maskIndex = (forLayer == RgbMapFor::OpaqueLayer ?
-                   -1: transparentColor());
-
   if (!m_rgbMap || m_rgbMapAlgorithm != mapAlgo) {
     m_rgbMapAlgorithm = mapAlgo;
     switch (m_rgbMapAlgorithm) {
@@ -410,7 +407,14 @@ RgbMap* Sprite::rgbMap(const frame_t frame,
         return nullptr;
     }
   }
-
+  int maskIndex;
+  if (forLayer == RgbMapFor::OpaqueLayer)
+    maskIndex = -1;
+  else {
+    maskIndex = palette(frame)->findMaskColor();
+    if (maskIndex == -1)
+      maskIndex = 0;
+  }
   m_rgbMap->regenerateMap(palette(frame), maskIndex);
   return m_rgbMap.get();
 }

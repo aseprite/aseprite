@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2020 Igara Studio S.A.
+// Copyright (c) 2020-2022 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -41,7 +41,7 @@ namespace doc {
       return (v & INVALID) ? generateEntry(i, r, g, b, a): v;
     }
 
-    int maskIndex() const { return m_maskIndex; }
+    int maskIndex() const override { return m_maskIndex; }
 
   private:
     int generateEntry(int i, int r, int g, int b, int a) const;
