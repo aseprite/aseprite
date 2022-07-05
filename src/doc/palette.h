@@ -101,7 +101,7 @@ namespace doc {
     int findExactMatch(int r, int g, int b, int a, int mask_index) const;
     bool findExactMatch(color_t color) const;
     int findBestfit(int r, int g, int b, int a, int mask_index) const;
-    int findBestfit2(int r, int g, int b, int a) const;
+    int findMaskColor() const;
 
     void applyRemap(const Remap& remap);
 

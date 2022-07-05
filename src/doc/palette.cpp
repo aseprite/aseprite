@@ -483,37 +483,14 @@ int Palette::findBestfit(int r, int g, int b, int a, int mask_index) const
   return bestfit;
 }
 
-int Palette::findBestfit2(int r, int g, int b, int a) const
+int Palette::findMaskColor() const
 {
-  ASSERT(r >= 0 && r <= 255);
-  ASSERT(g >= 0 && g <= 255);
-  ASSERT(b >= 0 && b <= 255);
-  ASSERT(a >= 0 && a <= 255);
-
-  int bestfit = 0;
-  int lowest = std::numeric_limits<int>::max();
   int size = m_colors.size();
-
-  for (int i=0; i<size; ++i) {
-    color_t rgb = m_colors[i];
-    int rDiff = r - rgba_getr(rgb);
-    int gDiff = g - rgba_getg(rgb);
-    int bDiff = b - rgba_getb(rgb);
-    int aDiff = a - rgba_geta(rgb);
-
-    // TODO We should have two different ways to calculate the
-    // distance between colors, like "Perceptual" and "Linear", or a
-    // way to configure these coefficients.
-    int diff = rDiff * rDiff * 900  +
-               gDiff * gDiff * 3481 +
-               bDiff * bDiff * 121  +
-               aDiff * aDiff * 900; // there is no scientific reason to choose this value.
-    if (diff < lowest) {
-      lowest = diff;
-      bestfit = i;
-    }
+  for (int i = 0; i < size; ++i) {
+    if (m_colors[i] == 0)
+      return i;
   }
-  return bestfit;
+  return -1;
 }
 
 void Palette::applyRemap(const Remap& remap)

@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (c) 2019-2021  Igara Studio S.A.
+// Copyright (c) 2019-2022  Igara Studio S.A.
 // Copyright (c) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -237,7 +237,7 @@ Image* convert_pixel_format(
             a = rgba_geta(c);
 
             if (a == 0)
-              *dst_it = new_mask_color;
+              *dst_it = (new_mask_color == -1? 0 : new_mask_color);
             else if (rgbmap)
               *dst_it = rgbmap->mapColor(c);
             else
@@ -296,7 +296,7 @@ Image* convert_pixel_format(
             c = graya_getv(c);
 
             if (a == 0)
-              *dst_it = new_mask_color;
+              *dst_it = (new_mask_color == -1? 0 : new_mask_color);
             else if (rgbmap)
               *dst_it = rgbmap->mapColor(c, c, c, a);
             else

@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2020 Igara Studio S.A.
+// Copyright (c) 2020-2022 Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -24,6 +24,8 @@ namespace doc {
 
     // Should return the best index in a palette that matches the given RGBA values.
     virtual int mapColor(const color_t rgba) const = 0;
+
+    virtual int maskIndex() const = 0;
 
     int mapColor(const int r,
                  const int g,
