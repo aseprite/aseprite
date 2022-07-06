@@ -1,4 +1,4 @@
--- Copyright (C) 2019-2021  Igara Studio S.A.
+-- Copyright (C) 2019-2022  Igara Studio S.A.
 --
 -- This file is released under the terms of the MIT license.
 -- Read LICENSE.txt for more information.
@@ -144,4 +144,58 @@ do
   expect_img(bg, { 0, 1,
                    2, 0 })
 
+end
+
+----------------------------------------------------------------------
+-- Tests for issue aseprite/aseprite#3207
+-- Conversion RGB to INDEXED color mode, in transparent layers, always
+-- picks index 0 as transparent color, even if the mask color is present
+-- in the palette.
+
+do
+  local s = Sprite(2, 3, ColorMode.RGB)
+  local p = Palette(4)
+  p:setColor(0, Color(0, 0, 0))
+  p:setColor(1, Color(255, 0, 0))
+  p:setColor(2, Color(0, 0, 0, 0))
+  p:setColor(3, Color(0, 255, 0))
+  s:setPalette(p)
+
+  local bg = s.cels[1].image
+  array_to_pixels({ rgba(0, 0, 0),rgba(255, 0, 0),
+                    rgba(255, 0, 0), rgba(0, 0, 0, 0),
+                    rgba(0, 0, 0, 0), rgba(0, 0, 0, 0), }, bg)
+
+  app.command.ChangePixelFormat{ format="indexed", rgbmap="rgb5a3" }
+  -- Using the 5-bit precision of RGB5A3 will match everything with
+  -- the first palette entry.
+  bg = s.cels[1].image
+  expect_img(bg, { 0, 1,
+                   1, 2,
+                   2, 2 })
+  app.undo()
+
+  app.command.ChangePixelFormat{ format="indexed", rgbmap="octree" }
+  bg = s.cels[1].image
+  expect_img(bg, { 0, 1,
+                   1, 2,
+                   2, 2 })
+  app.undo()
+
+  p:setColor(2, Color(0, 0, 255))
+  s:setPalette(p)
+  bg = s.cels[1].image
+
+  app.command.ChangePixelFormat{ format="indexed", rgbmap="rgb5a3" }
+  bg = s.cels[1].image
+  expect_img(bg, { 2, 1,
+                   1, 0,
+                   0, 0 })
+  app.undo()
+
+  app.command.ChangePixelFormat{ format="indexed", rgbmap="octree" }
+  bg = s.cels[1].image
+  expect_img(bg, { 2, 1,
+                   1, 0,
+                   0, 0 })
 end
