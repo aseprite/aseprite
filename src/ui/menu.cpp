@@ -872,9 +872,9 @@ bool MenuItem::onProcessMessage(Message* msg)
           int x, y = bounds().y-3*guiscale();
           Rect r1(0, 0, pos.w, pos.h), r2(0, 0, pos.w, pos.h);
 
-          r1.x = x_left = std::clamp(x_left, 0, ui::display_w()-pos.w);
-          r2.x = x_right = std::clamp(x_right, 0, ui::display_w()-pos.w);
-          r1.y = r2.y = y = std::clamp(y, 0, ui::display_h()-pos.h);
+          r1.x = x_left = std::clamp(x_left, 0, std::max(0, ui::display_w()-pos.w));
+          r2.x = x_right = std::clamp(x_right, 0, std::max(0, ui::display_w()-pos.w));
+          r1.y = r2.y = y = std::clamp(y, 0, std::max(0, ui::display_h()-pos.h));
 
           // Calculate both intersections
           gfx::Rect s1 = r1.createIntersection(old_pos);
