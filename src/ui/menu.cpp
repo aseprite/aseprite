@@ -461,12 +461,17 @@ bool MenuBox::onProcessMessage(Message* msg)
 
         gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
 
+        // Get the widget below the mouse cursor
+        auto mgr = manager();
+        if (!mgr)
+          break;
+
+        Widget* picked = mgr->pick(mousePos);
+
         // Here we catch the filtered messages (menu-bar or the
         // popuped menu-box) to detect if the user press outside of
         // the widget
         if (msg->type() == kMouseDownMessage && m_base != nullptr) {
-          Widget* picked = manager()->pick(mousePos);
-
           // If one of these conditions are accomplished we have to
           // close all menus (back to menu-bar or close the popuped
           // menubox), this is the place where we control if...
@@ -483,8 +488,6 @@ bool MenuBox::onProcessMessage(Message* msg)
           }
         }
 
-        // Get the widget below the mouse cursor
-        Widget* picked = menu->pick(mousePos);
         if (picked) {
           if ((picked->type() == kMenuItemWidget) &&
               !(picked->hasFlags(DISABLED))) {
