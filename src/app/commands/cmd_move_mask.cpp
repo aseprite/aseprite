@@ -66,7 +66,10 @@ bool MoveMaskCommand::onEnabled(Context* context)
                                    ContextFlags::HasActiveImage |
                                    ContextFlags::ActiveLayerIsEditable);
       else
-        return (current_editor ? true: false);
+        return (current_editor != nullptr) &&
+          context->checkFlags(ContextFlags::HasActiveDocument |
+                              ContextFlags::HasVisibleMask |
+                              ContextFlags::HasActiveImage);
 
   }
 
