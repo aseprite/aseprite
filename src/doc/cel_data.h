@@ -34,6 +34,8 @@ namespace doc {
 
     void setPosition(const gfx::Point& pos) {
       m_bounds.setOrigin(pos);
+      if (m_boundsF)
+        m_boundsF->setOrigin(gfx::PointF(pos));
     }
 
     void setOpacity(int opacity) {
