@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020 Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -69,7 +69,8 @@ void FlattenLayers::onExecute()
   ImageRef image(Image::create(sprite->spec()));
 
   LayerImage* flatLayer;  // The layer onto which everything will be flattened.
-  color_t     bgcolor;    // The background color to use for flatLayer.
+  color_t bgcolor;        // The background color to use for flatLayer.
+  bool newFlatLayer = false;
 
   flatLayer = sprite->backgroundLayer();
   if (backgroundIsSel && flatLayer && flatLayer->isVisible()) {
@@ -80,14 +81,9 @@ void FlattenLayers::onExecute()
     // Create a new transparent layer to flatten everything onto it.
     flatLayer = new LayerImage(sprite);
     ASSERT(flatLayer->isVisible());
-    executeAndAdd(new cmd::AddLayer(sprite->root(), flatLayer, nullptr));
-    executeAndAdd(new cmd::SetLayerName(flatLayer, "Flattened"));
+    flatLayer->setName("Flattened");
+    newFlatLayer = true;
     bgcolor = sprite->transparentColor();
-
-    if (list.front())
-      executeAndAdd(new cmd::MoveLayer(flatLayer,
-                                       list.front()->parent(),
-                                       list.front()));
   }
 
   render::Render render;
@@ -134,6 +130,10 @@ void FlattenLayers::onExecute()
       }
     }
   }
+
+  // Add new flatten layer
+  if (newFlatLayer)
+    executeAndAdd(new cmd::AddLayer(list.front()->parent(), flatLayer, list.front()));
 
   // Delete flattened layers.
   for (Layer* layer : layers) {
