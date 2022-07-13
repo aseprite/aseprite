@@ -24,6 +24,7 @@
 #include "app/i18n/strings.h"
 #include "app/load_widget.h"
 #include "app/modules/gui.h"
+#include "app/pref/preferences.h"
 #include "app/restore_visible_layers.h"
 #include "app/tx.h"
 #include "app/ui/main_window.h"
@@ -208,6 +209,9 @@ void NewLayerCommand::onExecute(Context* context)
 #ifdef ENABLE_UI
   // If params specify to ask the user about the name...
   if (params().ask() && context->isUIAvailable()) {
+    auto& pref = Preferences::instance();
+    tilesetInfo.baseIndex = pref.tileset.baseIndex();
+
     // We open the window to ask the name
     app::gen::NewLayer window;
     TilesetSelector* tilesetSelector = nullptr;
@@ -226,6 +230,8 @@ void NewLayerCommand::onExecute(Context* context)
     window.openWindowInForeground();
     if (window.closer() != window.ok())
       return;
+
+    pref.tileset.baseIndex(tilesetSelector->getInfo().baseIndex);
 
     name = window.name()->text();
     if (tilesetSelector)

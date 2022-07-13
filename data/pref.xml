@@ -423,6 +423,9 @@
     <section id="canvas_size">
       <option id="trim_outside" type="bool" default="false" />
     </section>
+    <section id="tileset">
+      <option id="base_index" type="int" default="1" />
+    </section>
   </global>
 
   <tool>
