@@ -222,7 +222,7 @@ void ScrollBar::getScrollBarInfo(int *_pos, int *_len, int *_bar_size, int *_vie
   }
   else if (m_size > 0) {
     len = bar_size * viewport_size / m_size;
-    len = std::clamp(len, theme()->getScrollbarSize()*2-border_width, bar_size);
+    len = std::clamp(len, std::min(theme()->getScrollbarSize()*2-border_width, bar_size), bar_size);
     pos = (bar_size-len) * m_pos / (m_size-viewport_size);
     pos = std::clamp(pos, 0, bar_size-len);
   }
