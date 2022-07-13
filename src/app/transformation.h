@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2021  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -63,7 +63,7 @@ public:
         gfx::RectF bounds;
         for (int i=0; i<Corners::NUM_OF_CORNERS; ++i)
           bounds |= gfx::RectF(m_corners[i].x, m_corners[i].y, cornerThick, cornerThick);
-        return bounds;
+        return bounds.floor();
       }
 
     private:
