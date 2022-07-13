@@ -24,6 +24,7 @@
 #include "app/i18n/strings.h"
 #include "app/load_widget.h"
 #include "app/modules/gui.h"
+#include "app/pref/preferences.h"
 #include "app/restore_visible_layers.h"
 #include "app/tx.h"
 #include "app/ui/main_window.h"
@@ -206,6 +207,10 @@ void NewLayerCommand::onExecute(Context* context)
   tilesetInfo.baseIndex = 1;
 
 #ifdef ENABLE_UI
+  auto& pref = Preferences::instance();
+  tilesetInfo.grid = doc::Grid(gfx::Size(pref.tileset.gridWidth(),
+                                         pref.tileset.gridHeight()));
+  tilesetInfo.baseIndex = pref.tileset.baseIndex();
   // If params specify to ask the user about the name...
   if (params().ask() && context->isUIAvailable()) {
     // We open the window to ask the name
@@ -226,6 +231,11 @@ void NewLayerCommand::onExecute(Context* context)
     window.openWindowInForeground();
     if (window.closer() != window.ok())
       return;
+
+    pref.tileset.gridWidth(tilesetSelector->getInfo().grid.tileSize().w);
+    pref.tileset.gridHeight(tilesetSelector->getInfo().grid.tileSize().h);
+    pref.tileset.baseIndex(tilesetSelector->getInfo().baseIndex);
+    pref.tileset.save();
 
     name = window.name()->text();
     if (tilesetSelector)

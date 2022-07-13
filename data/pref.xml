@@ -422,6 +422,11 @@
     <section id="canvas_size">
       <option id="trim_outside" type="bool" default="false" />
     </section>
+    <section id="tileset">
+      <option id="grid_width" type="int" default="16" />
+      <option id="grid_height" type="int" default="16" />
+      <option id="base_index" type="int" default="1" />
+    </section>
   </global>
 
   <tool>
