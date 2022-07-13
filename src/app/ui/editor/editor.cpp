@@ -2676,6 +2676,7 @@ void Editor::startSelectionTransformation(const gfx::Point& move, double angle)
       movingPixels->rotate(angle);
   }
   else if (auto standby = dynamic_cast<StandbyState*>(m_state.get())) {
+    ASSERT(m_document->isMaskVisible());
     standby->startSelectionTransformation(this, move, angle);
   }
 }

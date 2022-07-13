@@ -248,7 +248,7 @@ bool ToolBar::onProcessMessage(Message* msg)
       m_openedRecently = false;
 
       releaseMouse();
-      // fallthrough
+      [[fallthrough]];
 
     case kMouseLeaveMessage:
       if (hasCapture())
@@ -612,7 +612,7 @@ bool ToolBar::ToolStrip::onProcessMessage(Message* msg)
 
     case kMouseDownMessage:
       captureMouse();
-      // fallthrough
+      [[fallthrough]];
 
     case kMouseMoveMessage: {
       auto mouseMsg = static_cast<const MouseMessage*>(msg);

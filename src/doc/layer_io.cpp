@@ -60,7 +60,7 @@ void write_layer(std::ostream& os, const Layer* layer)
       int images = 0;
       int celdatas = 0;
       for (it=begin; it != end; ++it) {
-        Cel* cel = *it;
+        const Cel* cel = *it;
         if (!cel->link()) {
           ++images;
           ++celdatas;
@@ -69,14 +69,14 @@ void write_layer(std::ostream& os, const Layer* layer)
 
       write16(os, images);
       for (it=begin; it != end; ++it) {
-        Cel* cel = *it;
+        const Cel* cel = *it;
         if (!cel->link())
           write_image(os, cel->image());
       }
 
       write16(os, celdatas);
       for (it=begin; it != end; ++it) {
-        Cel* cel = *it;
+        const Cel* cel = *it;
         if (!cel->link())
           write_celdata(os, cel->dataRef().get());
       }

@@ -207,6 +207,7 @@ bool ListBox::onProcessMessage(Message* msg)
 
     case kMouseDownMessage:
       captureMouse();
+      [[fallthrough]];
 
     case kMouseMoveMessage:
       if (hasCapture()) {

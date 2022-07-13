@@ -129,7 +129,7 @@ public:
   AppEvents() {
   }
 
-  EventType eventType(const char* eventName) const {
+  EventType eventType(const char* eventName) const override {
     if (std::strcmp(eventName, "sitechange") == 0)
       return SiteChange;
     else if (std::strcmp(eventName, "fgcolorchange") == 0)
@@ -209,7 +209,7 @@ public:
     }
   }
 
-  EventType eventType(const char* eventName) const {
+  EventType eventType(const char* eventName) const override {
     if (std::strcmp(eventName, "change") == 0)
       return Change;
     else if (std::strcmp(eventName, "filenamechange") == 0)

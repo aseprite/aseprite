@@ -100,6 +100,7 @@ bool Splitter::onProcessMessage(Message* msg)
         captureMouse();
 
         // Continue with motion message...
+        [[fallthrough]];
       }
       else
         break;

@@ -395,6 +395,8 @@ bool Entry::onProcessMessage(Message* msg)
       if (!m_selecting_words.isEmpty())
         m_selecting_words.reset();
 
+      [[fallthrough]];
+
     case kMouseMoveMessage:
       if (hasCapture()) {
         bool is_dirty = false;

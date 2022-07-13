@@ -255,12 +255,14 @@ bool PngFormat::onLoad(FileOp* fop)
 
     case PNG_COLOR_TYPE_RGB_ALPHA:
       fop->sequenceSetHasAlpha(true);
+      [[fallthrough]];
     case PNG_COLOR_TYPE_RGB:
       pixelFormat = IMAGE_RGB;
       break;
 
     case PNG_COLOR_TYPE_GRAY_ALPHA:
       fop->sequenceSetHasAlpha(true);
+      [[fallthrough]];
     case PNG_COLOR_TYPE_GRAY:
       pixelFormat = IMAGE_GRAYSCALE;
       break;
@@ -799,6 +801,7 @@ void PngFormat::saveColorSpace(png_structp png_ptr, png_infop info_ptr,
       }
 
       // Continue to RGB case...
+      [[fallthrough]];
 
     case gfx::ColorSpace::RGB: {
       if (colorSpace->hasPrimaries()) {

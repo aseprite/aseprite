@@ -50,6 +50,7 @@ frame_t calculate_next_frame(
 
     case AniDir::REVERSE:
       frameDelta = -frameDelta;
+      [[fallthrough]];
 
     case AniDir::FORWARD:
       frame += frameDelta;

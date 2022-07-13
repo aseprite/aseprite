@@ -73,7 +73,7 @@ might work).
 
 You will need the following dependencies on Ubuntu/Debian:
 
-    sudo apt-get install -y g++ clang-10 libc++-10-dev cmake ninja-build libx11-dev libxcursor-dev libxi-dev libgl1-mesa-dev libfontconfig1-dev
+    sudo apt-get install -y g++ clang-10 libc++-10-dev libc++abi-10-dev cmake ninja-build libx11-dev libxcursor-dev libxi-dev libgl1-mesa-dev libfontconfig1-dev
 
 On Fedora:
 

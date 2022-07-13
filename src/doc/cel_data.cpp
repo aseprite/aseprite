@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019 Igara Studio S.A.
+// Copyright (c) 2019-2022 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -36,14 +36,13 @@ CelData::CelData(const CelData& celData)
   , m_image(celData.m_image)
   , m_opacity(celData.m_opacity)
   , m_bounds(celData.m_bounds)
-  , m_boundsF(celData.m_boundsF ? new gfx::RectF(*celData.m_boundsF):
+  , m_boundsF(celData.m_boundsF ? std::make_unique<gfx::RectF>(*celData.m_boundsF):
                                   nullptr)
 {
 }
 
 CelData::~CelData()
 {
-  delete m_boundsF;
 }
 
 void CelData::setImage(const ImageRef& image, Layer* layer)
@@ -57,6 +56,8 @@ void CelData::setImage(const ImageRef& image, Layer* layer)
 void CelData::setPosition(const gfx::Point& pos)
 {
   m_bounds.setOrigin(pos);
+  if (m_boundsF)
+    m_boundsF->setOrigin(gfx::PointF(pos));
 }
 
 void CelData::adjustBounds(Layer* layer)

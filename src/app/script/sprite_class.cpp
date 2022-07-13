@@ -11,6 +11,7 @@
 
 #include "app/app.h"
 #include "app/cmd/add_layer.h"
+#include "app/cmd/add_slice.h"
 #include "app/cmd/assign_color_profile.h"
 #include "app/cmd/clear_cel.h"
 #include "app/cmd/convert_color_profile.h"
@@ -572,7 +573,10 @@ int Sprite_newSlice(lua_State* L)
   if (!bounds.isEmpty())
     slice->insert(0, doc::SliceKey(bounds));
 
-  sprite->slices().add(slice);
+  Tx tx;
+  tx(new cmd::AddSlice(sprite, slice));
+  tx.commit();
+
   push_docobj(L, slice);
   return 1;
 }

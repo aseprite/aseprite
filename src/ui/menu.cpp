@@ -113,9 +113,9 @@ static void choose_side(gfx::Rect& bounds,
   Rect r1(0, 0, bounds.w, bounds.h);
   Rect r2(0, 0, bounds.w, bounds.h);
 
-  r1.x = x_left = std::clamp(x_left, workarea.x, workarea.x2()-bounds.w);
-  r2.x = x_right = std::clamp(x_right, workarea.x, workarea.x2()-bounds.w);
-  r1.y = r2.y = y = std::clamp(y, workarea.y, workarea.y2()-bounds.h);
+  r1.x = x_left = std::clamp(x_left, workarea.x, std::max(workarea.x, workarea.x2()-bounds.w));
+  r2.x = x_right = std::clamp(x_right, workarea.x, std::max(workarea.x, workarea.x2()-bounds.w));
+  r1.y = r2.y = y = std::clamp(y, workarea.y, std::max(workarea.y, workarea.y2()-bounds.h));
 
   // Calculate both intersections
   const gfx::Rect s1 = r1.createIntersection(parentBounds);
@@ -490,7 +490,7 @@ bool MenuBox::onProcessMessage(Message* msg)
       if (!base->was_clicked)
         break;
 
-      //[[fallthrough]];
+      [[fallthrough]];
     }
 
     case kMouseDownMessage:
@@ -509,12 +509,17 @@ bool MenuBox::onProcessMessage(Message* msg)
         const gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
         const gfx::Point screenPos = msg->display()->nativeWindow()->pointToScreen(mousePos);
 
+        // Get the widget below the mouse cursor
+        auto mgr = manager();
+        if (!mgr)
+          break;
+
+        Widget* picked = mgr->pickFromScreenPos(screenPos);
+
         // Here we catch the filtered messages (menu-bar or the
         // popuped menu-box) to detect if the user press outside of
         // the widget
         if (msg->type() == kMouseDownMessage && m_base != nullptr) {
-          Widget* picked = manager()->pickFromScreenPos(screenPos);
-
           // If one of these conditions are accomplished we have to
           // close all menus (back to menu-bar or close the popuped
           // menubox), this is the place where we control if...
@@ -533,8 +538,7 @@ bool MenuBox::onProcessMessage(Message* msg)
           }
         }
 
-        // Get the widget below the mouse cursor
-        if (Widget* picked = menu->pickFromScreenPos(screenPos)) {
+        if (picked) {
           if ((picked->type() == kMenuItemWidget) &&
               !(picked->hasFlags(DISABLED))) {
             MenuItem* pickedItem = static_cast<MenuItem*>(picked);
@@ -913,7 +917,7 @@ bool MenuItem::onProcessMessage(Message* msg)
                          std::function<gfx::Rect(Widget*)> getWidgetBounds){
             const gfx::Rect itemBounds = getWidgetBounds(this);
             if (inBar()) {
-              bounds.x = std::clamp(itemBounds.x, workarea.x, workarea.x2()-bounds.w);
+              bounds.x = std::clamp(itemBounds.x, workarea.x, std::max(workarea.x, workarea.x2()-bounds.w));
               bounds.y = std::max(workarea.y, itemBounds.y2());
             }
             else {

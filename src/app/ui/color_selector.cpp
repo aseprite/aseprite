@@ -316,8 +316,7 @@ bool ColorSelector::onProcessMessage(ui::Message* msg)
         break;
 
       captureMouse();
-
-      // Continue...
+      [[fallthrough]];
 
     case kMouseMoveMessage: {
       MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
