@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2021  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -89,7 +89,7 @@ RectF Transformation::transformedBounds() const
   for (int i=0; i<Corners::NUM_OF_CORNERS; ++i)
     bounds = bounds.createUnion(RectF(corners[i].x, corners[i].y, m_cornerThick, m_cornerThick));
 
-  return bounds;
+  return bounds.floor();
 }
 
 } // namespace app
