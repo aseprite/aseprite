@@ -23,3 +23,5 @@
   content as in `point4frames.aseprite`. Useful to test if
   `"sourceSize"` is different when two cels from different sprites are
   merged in the same texture atlas.
+* `2f-index-3x3.aseprite`: Indexed, 2 frames, 1 layer, mask color set
+  to index 21.

@@ -1,3 +1,4 @@
+-- Copyright (C) 2022  Igara Studio S.A.
 -- Copyright (C) 2018  David Capello
 --
 -- This file is released under the terms of the MIT license.
@@ -13,14 +14,27 @@ do
   assert(b.bounds == Rectangle(0, 2, 8, 10))
   assert(c.bounds == Rectangle(0, 0, 32, 32))
 
+  local bounds = { nil, Rectangle(0, 2, 8, 10), Rectangle(0, 0, 32, 32) }
+
   local i = 1
   for k,v in ipairs(s.slices) do
     assert(i == k)
     assert(v == s.slices[k])
+    assert(bounds[i] == s.slices[k].bounds)
     i = i+1
   end
 
   s:deleteSlice(b)
   assert(a == s.slices[1])
   assert(c == s.slices[2])
+
+  assert(2 == #s.slices)
+  app.undo()
+  assert(3 == #s.slices)
+  app.undo()
+  assert(2 == #s.slices)
+  app.undo()
+  assert(1 == #s.slices)
+  app.undo()
+  assert(0 == #s.slices)
 end

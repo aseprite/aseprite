@@ -41,6 +41,21 @@ do -- NewSprite
   assert(s2.colorMode == ColorMode.INDEXED)
 end
 
+do -- ExportSpriteSheet
+  local s = Sprite{ fromFile="sprites/2f-index-3x3.aseprite" }
+  app.command.ExportSpriteSheet {
+    type="horizontal",
+    textureFilename="_test_export_spritesheet1.png",
+    shapePadding=1
+  }
+  local i = Image{ fromFile="_test_export_spritesheet1.png" }
+  expect_img(i,  {
+    11,8,11,21,8,11,11,
+    11,8,11,21,11,8,11,
+    11,8,11,21,11,11,8,
+  })
+end
+
 do -- NewLayer/RemoveLayer
   local s = Sprite(32, 32)
   assert(#s.layers == 1)
