@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2021  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -437,9 +437,9 @@ void AppBrushes::save(const std::string& filename) const
         }
 
         if (slot.brush()->type() == kImageBrushType &&
-            slot.brush()->image()) {
+            slot.brush()->originalImage()) {
           TiXmlElement elem("image");
-          save_xml_image(&elem, slot.brush()->image());
+          save_xml_image(&elem, slot.brush()->originalImage());
           brushElem.InsertEndChild(elem);
 
           if (slot.brush()->maskBitmap()) {

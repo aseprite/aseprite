@@ -2220,6 +2220,11 @@ void ContextBar::setActiveBrushBySlot(tools::Tool* tool, int slot)
 
     if (brush.brush()) {
       if (brush.brush()->type() == doc::kImageBrushType) {
+        // Reset the colors of the image when we select the brush from
+        // the slot.
+        if (brush.hasFlag(BrushSlot::Flags::ImageColor))
+          brush.brush()->resetImageColors();
+
         setActiveBrush(brush.brush());
       }
       else {

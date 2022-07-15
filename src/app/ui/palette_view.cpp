@@ -150,7 +150,7 @@ public:
                                PaletteViewModification::DRAGANDDROP);
   }
   void showEntryInStatusBar(StatusBar* statusBar, int index) override {
-    statusBar->showColor(0, "", app::Color::fromIndex(index));
+    statusBar->showColor(0, app::Color::fromIndex(index));
   }
   void showDragInfoInStatusBar(StatusBar* statusBar, bool copy, int destIndex, int newSize) override {
     statusBar->setStatusText(
@@ -281,7 +281,7 @@ public:
     picks = newPicks;
   }
   void showEntryInStatusBar(StatusBar* statusBar, int index) override {
-    statusBar->showTile(0, "", doc::tile(index, 0));
+    statusBar->showTile(0, doc::tile(index, 0));
   }
   void showDragInfoInStatusBar(StatusBar* statusBar, bool copy, int destIndex, int newSize) override {
     statusBar->setStatusText(

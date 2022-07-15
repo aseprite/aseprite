@@ -334,7 +334,7 @@ bool ColorSelector::onProcessMessage(ui::Message* msg)
       if (color != app::Color::fromMask()) {
         base::ScopedValue<bool> switcher(m_lockColor, subColorPicked(), false);
 
-        StatusBar::instance()->showColor(0, "", color);
+        StatusBar::instance()->showColor(0, color);
         if (hasCapture())
           ColorChange(color, mouseMsg->button());
       }

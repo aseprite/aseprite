@@ -2971,6 +2971,7 @@ void Editor::updateAutoCelGuides(ui::Message* msg)
   if (m_showGuidesThisCel != oldShowGuidesThisCel ||
       m_showAutoCelGuides != oldShowAutoCelGuides) {
     invalidate();
+    updateStatusBar();
   }
 }
 

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -94,7 +94,7 @@ public:
 
     gfx::Point offset = loop->statusBarPositionOffset();
     char buf[1024];
-    sprintf(buf, ":start: %3d %3d :end: %3d %3d",
+    sprintf(buf, ":start: %d %d :end: %d %d",
             stroke.firstPoint().x+offset.x,
             stroke.firstPoint().y+offset.y,
             stroke.lastPoint().x+offset.x,
@@ -259,7 +259,7 @@ public:
     gfx::Point offset = loop->statusBarPositionOffset();
     char buf[1024];
     int gcd = base::gcd(w, h);
-    sprintf(buf, ":start: %3d %3d :end: %3d %3d :size: %3d %3d :distance: %.1f",
+    sprintf(buf, ":start: %d %d :end: %d %d :size: %d %d :distance: %.1f",
             stroke[0].x+offset.x, stroke[0].y+offset.y,
             stroke[1].x+offset.x, stroke[1].y+offset.y,
             w, h, std::sqrt(w*w + h*h));
@@ -362,7 +362,7 @@ public:
 
     gfx::Point offset = loop->statusBarPositionOffset();
     char buf[1024];
-    sprintf(buf, ":start: %3d %3d :end: %3d %3d",
+    sprintf(buf, ":start: %d %d :end: %d %d",
             stroke.firstPoint().x+offset.x,
             stroke.firstPoint().y+offset.y,
             stroke.lastPoint().x+offset.x,
@@ -402,7 +402,7 @@ public:
 
     gfx::Point offset = loop->statusBarPositionOffset();
     char buf[1024];
-    sprintf(buf, ":pos: %3d %3d",
+    sprintf(buf, ":pos: %d %d",
             stroke[0].x+offset.x,
             stroke[0].y+offset.y);
     text = buf;
@@ -460,7 +460,7 @@ public:
 
     gfx::Point offset = loop->statusBarPositionOffset();
     char buf[1024];
-    sprintf(buf, ":start: %3d %3d :end: %3d %3d (%3d %3d - %3d %3d)",
+    sprintf(buf, ":start: %d %d :end: %d %d (%d %d - %d %d)",
             stroke[0].x+offset.x, stroke[0].y+offset.y,
             stroke[3].x+offset.x, stroke[3].y+offset.y,
             stroke[1].x+offset.x, stroke[1].y+offset.y,

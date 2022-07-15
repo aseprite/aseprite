@@ -81,7 +81,9 @@ public:
     , m_slot(slot) {
     if (m_brush.hasBrush()) {
       SkinPartPtr icon(new SkinPart);
-      icon->setBitmap(0, BrushPopup::createSurfaceForBrush(m_brush.brush()));
+      icon->setBitmap(0, BrushPopup::createSurfaceForBrush(
+                           m_brush.brush(),
+                           m_brush.hasFlag(BrushSlot::Flags::ImageColor)));
       setIcon(icon);
     }
   }
@@ -453,7 +455,8 @@ void BrushPopup::onBrushChanges()
 }
 
 // static
-os::SurfaceRef BrushPopup::createSurfaceForBrush(const BrushRef& origBrush)
+os::SurfaceRef BrushPopup::createSurfaceForBrush(const BrushRef& origBrush,
+                                                 const bool useOriginalImage)
 {
   Image* image = nullptr;
   BrushRef brush = origBrush;
@@ -462,7 +465,12 @@ os::SurfaceRef BrushPopup::createSurfaceForBrush(const BrushRef& origBrush)
       brush.reset(new Brush(*brush));
       brush->setSize(10);
     }
-    image = brush->image();
+    // Show the original image in the popup (without the image colors
+    // modified if there were some modification).
+    if (useOriginalImage)
+      image = brush->originalImage();
+    else
+      image = brush->image();
   }
 
   os::SurfaceRef surface = os::instance()->makeRgbaSurface(

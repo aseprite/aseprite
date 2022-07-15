@@ -81,7 +81,7 @@ bool TileButton::onProcessMessage(Message* msg)
   switch (msg->type()) {
 
     case kMouseEnterMessage:
-      StatusBar::instance()->showTile(0, "", m_tile);
+      StatusBar::instance()->showTile(0, m_tile);
       break;
 
     case kMouseLeaveMessage:

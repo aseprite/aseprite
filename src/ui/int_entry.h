@@ -1,4 +1,5 @@
 // Aseprite UI Library
+// Copyright (C) 2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -10,6 +11,8 @@
 
 #include "ui/entry.h"
 #include "ui/slider.h"
+
+#include <memory>
 
 namespace ui {
 
@@ -43,7 +46,7 @@ namespace ui {
     int m_min;
     int m_max;
     Slider m_slider;
-    PopupWindow* m_popupWindow;
+    std::unique_ptr<PopupWindow> m_popupWindow;
     bool m_changeFromSlider;
   };
 

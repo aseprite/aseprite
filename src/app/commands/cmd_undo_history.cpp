@@ -113,7 +113,7 @@ public:
           [[fallthrough]];
 
         case ui::kMouseMoveMessage:
-          if (hasCapture()) {
+          if (hasCapture() && m_undoHistory) {
             auto mouseMsg = static_cast<ui::MouseMessage*>(msg);
             const gfx::Rect bounds = this->bounds();
 

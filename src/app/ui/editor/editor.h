@@ -317,6 +317,9 @@ namespace app {
     // key is pressed to cancel the active selection.
     void cancelSelections();
 
+    // Properties to show information in the status bar
+    bool showAutoCelGuides() const { return m_showAutoCelGuides; }
+
     static void registerCommands();
 
   protected:
@@ -389,7 +392,6 @@ namespace app {
 
     void invalidateCanvas();
     void invalidateIfActive();
-    bool showAutoCelGuides();
     void updateAutoCelGuides(ui::Message* msg);
 
     // Stack of states. The top element in the stack is the current state (m_state).

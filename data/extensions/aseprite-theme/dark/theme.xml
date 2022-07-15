@@ -386,6 +386,8 @@
         <part id="icon_save" x="232" y="264" w="8" h="8" />
         <part id="icon_save_small" x="240" y="264" w="8" h="8" />
         <part id="icon_slice" x="248" y="264" w="8" h="8" />
+        <part id="icon_aspect_ratio" x="256" y="264" w="10" h="8" />
+        <part id="icon_delta" x="266" y="264" w="6" h="8" />
         <part id="tool_rectangular_marquee" x="144" y="0" w="16" h="16" />
         <part id="tool_elliptical_marquee" x="160" y="0" w="16" h="16" />
         <part id="tool_lasso" x="176" y="0" w="16" h="16" />
@@ -418,7 +420,6 @@
         <part id="aseprite_face" x="0" y="272" w="28" h="30" />
         <part id="aseprite_face_mouse" x="28" y="272" w="28" h="30" />
         <part id="aseprite_face_pushed" x="56" y="272" w="28" h="30" />
-        <part id="icon_aspect_ratio" x="256" y="264" w="10" h="8" />
         <part id="linear_gradient" x="176" y="208" w="8" h="8" />
         <part id="radial_gradient" x="184" y="208" w="8" h="8" />
         <part id="folder_icon_small" x="144" y="272" w="10" h="8" />

@@ -142,7 +142,7 @@ bool ColorButton::onProcessMessage(Message* msg)
       break;
 
     case kMouseEnterMessage:
-      StatusBar::instance()->showColor(0, "", m_color);
+      StatusBar::instance()->showColor(0, m_color);
       break;
 
     case kMouseLeaveMessage:

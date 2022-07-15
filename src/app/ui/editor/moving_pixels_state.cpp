@@ -554,7 +554,11 @@ bool MovingPixelsState::onUpdateStatusBar(Editor* editor)
   StatusBar::instance()->setStatusText(
     100,
     fmt::format(
-      ":pos: {} {} :size: {:3d} {:3d} :selsize: {} {} [{:.02f}% {:.02f}%] :angle: {:.1f} :aspect_ratio: {}:{}",
+      ":pos: {} {}"
+      " :size: {} {}"
+      " :selsize: {} {} [{:.02f}% {:.02f}%]"
+      " :angle: {:.1f}"
+      " :aspect_ratio: {}:{}",
       int(transform.bounds().x),
       int(transform.bounds().y),
       imageSize.w,
