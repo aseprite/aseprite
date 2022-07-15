@@ -171,7 +171,7 @@ void IntEntry::openPopup()
 {
   m_slider.setValue(getValue());
 
-  m_popupWindow = new TransparentPopupWindow(PopupWindow::ClickBehavior::CloseOnClickInOtherWindow);
+  m_popupWindow = std::make_unique<TransparentPopupWindow>(PopupWindow::ClickBehavior::CloseOnClickInOtherWindow);
   m_popupWindow->setAutoRemap(false);
   m_popupWindow->addChild(&m_slider);
   m_popupWindow->Close.connect(&IntEntry::onPopupClose, this);
@@ -200,8 +200,7 @@ void IntEntry::closePopup()
     removeSlider();
 
     m_popupWindow->closeWindow(nullptr);
-    delete m_popupWindow;
-    m_popupWindow = nullptr;
+    m_popupWindow.reset();
   }
 }
 
@@ -223,7 +222,7 @@ void IntEntry::onPopupClose(CloseEvent& ev)
 void IntEntry::removeSlider()
 {
   if (m_popupWindow &&
-      m_slider.parent() == m_popupWindow) {
+      m_slider.parent() == m_popupWindow.get()) {
     m_popupWindow->removeChild(&m_slider);
   }
 }
