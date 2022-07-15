@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -23,7 +23,8 @@ namespace app {
     void setBrush(doc::Brush* brush);
     void regenerate(const gfx::Rect& box);
 
-    static os::SurfaceRef createSurfaceForBrush(const doc::BrushRef& brush);
+    static os::SurfaceRef createSurfaceForBrush(const doc::BrushRef& brush,
+                                                const bool useOriginalImage = false);
 
   private:
     void onStandardBrush();
