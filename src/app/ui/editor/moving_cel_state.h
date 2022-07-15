@@ -57,6 +57,7 @@ namespace app {
 
   private:
     gfx::Point intCelOffset() const;
+    gfx::RectF calcFullBounds() const;
     bool restoreCelStartPosition() const;
     // ContextObserver
     void onBeforeCommandExecution(CommandExecutionEvent& ev);

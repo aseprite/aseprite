@@ -157,7 +157,9 @@ bool MovingSelectionState::onUpdateStatusBar(Editor* editor)
   StatusBar::instance()->setStatusText(
     100,
     fmt::format(
-      ":pos: {} {} :size: {:3d} {:3d} :offset: {} {}",
+      ":pos: {} {}"
+      " :size: {} {}"
+      " :delta: {} {}",
       bounds.x, bounds.y,
       bounds.w, bounds.h,
       m_delta.x, m_delta.y));

@@ -563,11 +563,27 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
        editor->document()->mask(): NULL);
 
     std::string buf = fmt::format(
-      ":pos: {} {} :size: {} {}",
+      ":pos: {} {}",
       int(std::floor(spritePos.x)),
-      int(std::floor(spritePos.y)),
-      sprite->width(),
-      sprite->height());
+      int(std::floor(spritePos.y)));
+
+    Cel* cel = nullptr;
+    if (editor->showAutoCelGuides()) {
+      cel = editor->getSite().cel();
+    }
+
+    if (cel) {
+      buf += fmt::format(
+        " :start: {} {} :size: {} {}",
+        cel->bounds().x, cel->bounds().y,
+        cel->bounds().w, cel->bounds().h);
+    }
+    else {
+      buf += fmt::format(
+        " :size: {} {}",
+        sprite->width(),
+        sprite->height());
+    }
 
     if (mask)
       buf += fmt::format(" :selsize: {} {}",
