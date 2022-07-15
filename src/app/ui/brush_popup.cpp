@@ -454,7 +454,9 @@ os::SurfaceRef BrushPopup::createSurfaceForBrush(const BrushRef& origBrush)
       brush.reset(new Brush(*brush));
       brush->setSize(10);
     }
-    image = brush->image();
+    // Show the original image in the popup (without the image colors
+    // modified if there were some modification).
+    image = brush->originalImage();
   }
 
   os::SurfaceRef surface = os::instance()->makeRgbaSurface(
