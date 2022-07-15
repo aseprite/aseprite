@@ -921,8 +921,7 @@ void PaletteView::setStatusBar()
           (m_hot.color < currentPalette()->size())) {
         int i = std::max(0, m_hot.color);
 
-        statusBar->showColor(
-          0, "", app::Color::fromIndex(i));
+        statusBar->showColor(0, app::Color::fromIndex(i));
       }
       else {
         statusBar->showDefaultText();

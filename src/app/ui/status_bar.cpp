@@ -740,14 +740,15 @@ void StatusBar::showTip(int msecs, const std::string& msg)
   m_timeout = base::current_tick();
 }
 
-void StatusBar::showColor(int msecs, const char* text, const app::Color& color)
+void StatusBar::showColor(int msecs, const app::Color& color,
+                          const std::string& text)
 {
   if ((base::current_tick() > m_timeout) || (msecs > 0)) {
     showIndicators();
     IndicatorsGeneration gen(m_indicators);
     gen.add(color);
-    if (text)
-      gen.add(text);
+    if (!text.empty())
+      gen.add(text.c_str());
 
     m_timeout = base::current_tick() + msecs;
   }

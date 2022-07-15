@@ -550,37 +550,36 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
                    editor->projection(),
                    color);
 
-    char buf[256];
-    sprintf(buf, " :pos: %d %d",
-            int(std::floor(spritePos.x)),
-            int(std::floor(spritePos.y)));
+    std::string buf =
+      fmt::format(" :pos: {} {}",
+                  int(std::floor(spritePos.x)),
+                  int(std::floor(spritePos.y)));
 
-    StatusBar::instance()->showColor(0, buf, color);
+    StatusBar::instance()->showColor(0, color, buf);
   }
   else {
     Mask* mask =
       (editor->document()->isMaskVisible() ?
        editor->document()->mask(): NULL);
 
-    char buf[1024];
-    sprintf(
-            buf, ":pos: %d %d :size: %d %d",
-            int(std::floor(spritePos.x)),
-            int(std::floor(spritePos.y)),
-            sprite->width(),
-            sprite->height());
+    std::string buf = fmt::format(
+      ":pos: {} {} :size: {} {}",
+      int(std::floor(spritePos.x)),
+      int(std::floor(spritePos.y)),
+      sprite->width(),
+      sprite->height());
 
     if (mask)
-      sprintf(buf+std::strlen(buf), " :selsize: %d %d",
-              mask->bounds().w,
-              mask->bounds().h);
+      buf += fmt::format(" :selsize: {} {}",
+                         mask->bounds().w,
+                         mask->bounds().h);
 
     if (sprite->totalFrames() > 1) {
-      sprintf(
-        buf+std::strlen(buf), " :frame: %d :clock: %s/%s",
+      buf += fmt::format(
+        " :frame: {} :clock: {}/{}",
         editor->frame()+editor->docPref().timeline.firstFrame(),
-        human_readable_time(sprite->frameDuration(editor->frame())).c_str(),
-        human_readable_time(sprite->totalAnimationDuration()).c_str());
+        human_readable_time(sprite->frameDuration(editor->frame())),
+        human_readable_time(sprite->totalAnimationDuration()));
     }
 
     if (editor->docPref().show.grid()) {
@@ -588,7 +587,7 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
       if (!gb.isEmpty()) {
         int col = int((std::floor(spritePos.x) - (gb.x % gb.w)) / gb.w);
         int row = int((std::floor(spritePos.y) - (gb.y % gb.h)) / gb.h);
-        sprintf(buf+std::strlen(buf), " :grid: %d %d", col, row);
+        buf += fmt::format(" :grid: {} {}", col, row);
       }
     }
 
@@ -601,14 +600,11 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
               int(std::floor(spritePos.x)),
               int(std::floor(spritePos.y)))) {
           if (++count == 3) {
-            sprintf(
-              buf+std::strlen(buf), " :slice: ...");
+            buf += fmt::format(" :slice: ...");
             break;
           }
 
-          sprintf(
-            buf+std::strlen(buf), " :slice: %s",
-            slice->name().c_str());
+          buf += fmt::format(" :slice: {}", slice->name());
         }
       }
     }
