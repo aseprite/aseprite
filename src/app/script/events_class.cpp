@@ -202,7 +202,12 @@ public:
 
   ~SpriteEvents() {
     auto doc = this->doc();
-    ASSERT(doc || ui::get_app_state() == ui::AppState::kClosingWithException);
+    // The document can be nullptr in some cases like:
+    // - When closing the App with an exception
+    //   (ui::get_app_state() == ui::AppState::kClosingWithException)
+    // - When Sprite.events property was accessed in a app
+    //   "sitechange" event just when this same sprite was closed
+    //   (so the SpriteEvents is created/destroyed for second time)
     if (doc) {
       disconnectFromUndoHistory(doc);
       doc->remove_observer(this);
