@@ -219,6 +219,9 @@ void SetPixelFormat::convertImage(doc::Sprite* sprite,
     else
       newMaskIndex = rgbmap->maskIndex();
   }
+  else {
+    rgbmap = nullptr;
+  }
   ImageRef newImage(
     render::convert_pixel_format
     (oldImage.get(), nullptr, m_newFormat,
