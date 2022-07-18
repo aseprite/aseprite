@@ -28,18 +28,18 @@ ColorTintShadeTone::ColorTintShadeTone()
 {
 }
 
+#if SK_ENABLE_SKSL
+
 const char* ColorTintShadeTone::getMainAreaShader()
 {
-#if SK_ENABLE_SKSL
   if (m_mainShader.empty()) {
     m_mainShader += "uniform half3 iRes;"
-                    "uniform half4 iColor;";
-    m_mainShader += kRGB_to_HSV_sksl;
+                    "uniform half4 iHsv;";
     m_mainShader += kHSV_to_RGB_sksl;
     m_mainShader += R"(
 half4 main(vec2 fragcoord) {
  vec2 d = fragcoord.xy / iRes.xy;
- half hue = rgb_to_hsv(iColor.rgb).x;
+ half hue = iHsv.x;
  half sat = d.x;
  half val = 1.0 - d.y;
  return hsv_to_rgb(vec3(hue, sat, val)).rgb1;
@@ -47,34 +47,31 @@ half4 main(vec2 fragcoord) {
 )";
   }
   return m_mainShader.c_str();
-#else
-  return nullptr;
-#endif
 }
 
 const char* ColorTintShadeTone::getBottomBarShader()
 {
-#if SK_ENABLE_SKSL
   if (m_bottomShader.empty()) {
     m_bottomShader += "uniform half3 iRes;"
-                      "uniform half4 iColor;";
-    m_bottomShader += kRGB_to_HSV_sksl;
+                      "uniform half4 iHsv;";
     m_bottomShader += kHSV_to_RGB_sksl;
     // TODO should we display the hue bar with the current sat/value?
     m_bottomShader += R"(
 half4 main(vec2 fragcoord) {
  half h = (fragcoord.x / iRes.x);
- // half3 hsv = rgb_to_hsv(iColor.rgb);
- // return hsv_to_rgb(half3(h, hsv.y, hsv.z)).rgb1;
- return hsv_to_rgb(half3(h, 1.0, 1.0)).rgb1;
+ return hsv_to_rgb(half3(h, iHsv.y, iHsv.z)).rgb1;
 }
 )";
   }
   return m_bottomShader.c_str();
-#else
-  return nullptr;
-#endif
 }
+
+void ColorTintShadeTone::setShaderParams(SkRuntimeShaderBuilder& builder, bool main)
+{
+  builder.uniform("iHsv") = appColorHsv_to_SkV4(m_color);
+}
+
+#endif // SK_ENABLE_SKSL
 
 app::Color ColorTintShadeTone::getMainAreaColor(const int u, const int umax,
                                                 const int v, const int vmax)
@@ -114,9 +111,10 @@ void ColorTintShadeTone::onPaintBottomBar(ui::Graphics* g, const gfx::Rect& rc)
 {
   if (m_color.getType() != app::Color::MaskType) {
     double hue = m_color.getHsvHue();
+    double val = m_color.getHsvValue();
     gfx::Point pos(rc.x + int(rc.w * hue / 360.0),
                    rc.y + rc.h/2);
-    paintColorIndicator(g, pos, false);
+    paintColorIndicator(g, pos, val < 0.5);
   }
 }
 
@@ -153,11 +151,15 @@ void ColorTintShadeTone::onPaintSurfaceInBgThread(
 
   if (m_paintFlags & BottomBarFlag) {
     os::Paint paint;
+
+    const double sat = m_color.getHsvSaturation();
+    const double val = m_color.getHsvValue();
+
     for (int x=0; x<bottom.w && !stop; ++x) {
       paint.color(
         color_utils::color_for_ui(
           app::Color::fromHsv(
-            (360.0 * x / bottom.w), 1.0, 1.0)));
+            (360.0 * x / bottom.w), sat, val)));
 
       s->drawRect(gfx::Rect(bottom.x+x, bottom.y, 1, bottom.h), paint);
     }
@@ -175,6 +177,8 @@ int ColorTintShadeTone::onNeedsSurfaceRepaint(const app::Color& newColor)
   return
     // Only if the hue changes we have to redraw the main surface.
     (cs_double_diff(m_color.getHsvHue(), newColor.getHsvHue()) ? MainAreaFlag: 0) |
+    (cs_double_diff(m_color.getHsvSaturation(), newColor.getHsvSaturation()) ||
+     cs_double_diff(m_color.getHsvValue(), newColor.getHsvValue()) ? BottomBarFlag: 0) |
     ColorSelector::onNeedsSurfaceRepaint(newColor);
 }
 

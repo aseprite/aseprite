@@ -18,8 +18,11 @@ namespace app {
     ColorSpectrum();
 
   protected:
+#if SK_ENABLE_SKSL
     const char* getMainAreaShader() override;
     const char* getBottomBarShader() override;
+    void setShaderParams(SkRuntimeShaderBuilder& builder, bool main) override;
+#endif
     app::Color getMainAreaColor(const int u, const int umax,
                                 const int v, const int vmax) override;
     app::Color getBottomBarColor(const int u, const int umax) override;
