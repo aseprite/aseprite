@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -292,6 +292,28 @@ void Theme::paintTooltip(Graphics* g,
     if (intClip)
       paintWidget(g, widget, arrowStyle, rc);
   }
+}
+
+gfx::Size Theme::paintTextBoxWithStyle(Graphics* g,
+                                       const Widget* widget)
+{
+  gfx::Size size;
+  gfx::Color bg = gfx::ColorNone, fg = gfx::ColorNone;
+
+  for_each_layer(
+    PaintWidgetPartInfo::getStyleFlagsForWidget(widget),
+    widget->style(),
+    [&fg, &bg](const Style::Layer& layer) {
+      switch (layer.type()) {
+        case Style::Layer::Type::kBackground: bg = layer.color(); break;
+        case Style::Layer::Type::kText:       fg = layer.color(); break;
+      }
+    });
+
+  if (fg != gfx::ColorNone)
+    Theme::drawTextBox(g, widget, &size.w, &size.h, bg, fg);
+
+  return size;
 }
 
 void Theme::paintLayer(Graphics* g,
@@ -744,7 +766,7 @@ void Theme::drawSlices(Graphics* g, os::Surface* sheet,
 }
 
 // static
-void Theme::drawTextBox(Graphics* g, Widget* widget,
+void Theme::drawTextBox(Graphics* g, const Widget* widget,
                         int* w, int* h, gfx::Color bg, gfx::Color fg)
 {
   View* view = (g ? View::getView(widget): nullptr);

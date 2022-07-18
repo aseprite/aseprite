@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2020-2021  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -101,6 +101,9 @@ namespace ui {
                               const int arrowAlign,
                               const gfx::Rect& target);
 
+    gfx::Size paintTextBoxWithStyle(Graphics* g,
+                                    const Widget* widget);
+
     virtual gfx::Size calcSizeHint(const Widget* widget,
                                    const Style* style);
     virtual gfx::Border calcBorder(const Widget* widget,
@@ -125,8 +128,8 @@ namespace ui {
                            const gfx::Color color,
                            const bool drawCenter = true);
 
-    static  void drawTextBox(Graphics* g, Widget* textbox,
-                             int* w, int* h, gfx::Color bg, gfx::Color fg);
+    static void drawTextBox(Graphics* g, const Widget* textbox,
+                            int* w, int* h, gfx::Color bg, gfx::Color fg);
 
   protected:
     virtual void onRegenerateTheme() = 0;
