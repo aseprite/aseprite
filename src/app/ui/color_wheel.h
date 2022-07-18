@@ -43,14 +43,14 @@ namespace app {
     void setHarmony(Harmony harmony);
 
   protected:
+#if SK_ENABLE_SKSL
     const char* getMainAreaShader() override;
     const char* getBottomBarShader() override;
+    void setShaderParams(SkRuntimeShaderBuilder& builder, bool main) override;
+#endif
     app::Color getMainAreaColor(const int u, const int umax,
                                 const int v, const int vmax) override;
     app::Color getBottomBarColor(const int u, const int umax) override;
-#if SK_ENABLE_SKSL
-    void setShaderMainAreaParams(SkRuntimeShaderBuilder& builder) override;
-#endif
     void onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc) override;
     void onPaintBottomBar(ui::Graphics* g, const gfx::Rect& rc) override;
     void onPaintSurfaceInBgThread(os::Surface* s,

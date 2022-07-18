@@ -66,13 +66,14 @@ ColorWheel::ColorWheel()
   initTheme();
 }
 
+#if SK_ENABLE_SKSL
+
 const char* ColorWheel::getMainAreaShader()
 {
-#if SK_ENABLE_SKSL
   // TODO create one shader for each wheel mode (RGB, RYB, normal)
   if (m_mainShader.empty()) {
     m_mainShader += "uniform half3 iRes;"
-                    "uniform half4 iColor;"
+                    "uniform half4 iHsv;"
                     "uniform half4 iBack;"
                     "uniform int iDiscrete;"
                     "uniform int iMode;";
@@ -128,8 +129,7 @@ half4 main(vec2 fragcoord) {
    sat /= 100.0;
    sat = clamp(sat, 0.0, 1.0);
   }
-  vec3 hsv = rgb_to_hsv(iColor.rgb);
-  return hsv_to_rgb(vec3(hue, sat, iColor.w > 0 ? hsv.z: 1.0)).rgb1;
+  return hsv_to_rgb(vec3(hue, sat, iHsv.w > 0 ? iHsv.z: 1.0)).rgb1;
  }
  else {
   if (iMode == 2) // Normal map mode
@@ -140,42 +140,36 @@ half4 main(vec2 fragcoord) {
 )";
   }
   return m_mainShader.c_str();
-#else
-  return nullptr;
-#endif
 }
 
 const char* ColorWheel::getBottomBarShader()
 {
-#if SK_ENABLE_SKSL
   if (m_bottomShader.empty()) {
     m_bottomShader += "uniform half3 iRes;"
-                      "uniform half4 iColor;";
-    m_bottomShader += kRGB_to_HSV_sksl;
+                      "uniform half4 iHsv;";
     m_bottomShader += kHSV_to_RGB_sksl;
     // TODO should we display the hue bar with the current sat/value?
     m_bottomShader += R"(
 half4 main(vec2 fragcoord) {
  half v = (fragcoord.x / iRes.x);
- half3 hsv = rgb_to_hsv(iColor.rgb);
- return hsv_to_rgb(half3(hsv.x, hsv.y, v)).rgb1;
+ return hsv_to_rgb(half3(iHsv.x, iHsv.y, v)).rgb1;
 }
 )";
   }
   return m_bottomShader.c_str();
-#else
-  return nullptr;
-#endif
 }
 
-#if SK_ENABLE_SKSL
-void ColorWheel::setShaderMainAreaParams(SkRuntimeShaderBuilder& builder)
+void ColorWheel::setShaderParams(SkRuntimeShaderBuilder& builder, bool main)
 {
-  builder.uniform("iBack") = gfxColor_to_SkV4(m_bgColor);
-  builder.uniform("iDiscrete") = (m_discrete ? 1: 0);
-  builder.uniform("iMode") = int(m_colorModel);
+  builder.uniform("iHsv") = appColorHsv_to_SkV4(m_color);
+  if (main) {
+    builder.uniform("iBack") = gfxColor_to_SkV4(m_bgColor);
+    builder.uniform("iDiscrete") = (m_discrete ? 1: 0);
+    builder.uniform("iMode") = int(m_colorModel);
+  }
 }
-#endif
+
+#endif // SK_ENABLE_SKSL
 
 app::Color ColorWheel::getMainAreaColor(const int _u, const int umax,
                                         const int _v, const int vmax)

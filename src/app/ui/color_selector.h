@@ -71,7 +71,7 @@ namespace app {
     virtual const char* getMainAreaShader() { return nullptr; }
     virtual const char* getBottomBarShader() { return nullptr; }
 #if SK_ENABLE_SKSL
-    virtual void setShaderMainAreaParams(SkRuntimeShaderBuilder& builder) { }
+    virtual void setShaderParams(SkRuntimeShaderBuilder& builder, bool main) { }
 #endif
     virtual app::Color getMainAreaColor(const int u, const int umax,
                                         const int v, const int vmax) = 0;

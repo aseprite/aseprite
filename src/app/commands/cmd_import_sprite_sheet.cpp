@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -284,8 +284,12 @@ private:
         sheetType()->setSelectedItemIndex((int)app::SpriteSheetType::Rows-1);
 
       gfx::Rect defBounds = m_docPref->importSpriteSheet.bounds();
-      if (defBounds.isEmpty())
-        defBounds = m_document->sprite()->gridBounds();
+      if (defBounds.isEmpty()) {
+        if (m_document->isMaskVisible())
+          defBounds = m_document->mask()->bounds();
+        else
+          defBounds = m_document->sprite()->gridBounds();
+      }
       onChangeRectangle(defBounds);
 
       gfx::Size defPaddingBounds = m_docPref->importSpriteSheet.paddingBounds();

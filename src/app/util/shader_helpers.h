@@ -60,6 +60,20 @@ inline SkV4 appColor_to_SkV4(const app::Color& color) {
               float(color.getAlpha() / 255.0)};
 }
 
+inline SkV4 appColorHsv_to_SkV4(const app::Color& color) {
+  return SkV4{float(color.getHsvHue() / 360.0),
+              float(color.getHsvSaturation()),
+              float(color.getHsvValue()),
+              float(color.getAlpha() / 255.0)};
+}
+
+inline SkV4 appColorHsl_to_SkV4(const app::Color& color) {
+  return SkV4{float(color.getHslHue() / 360.0),
+              float(color.getHslSaturation()),
+              float(color.getHslLightness()),
+              float(color.getAlpha() / 255.0)};
+}
+
 } // namespace app
 
 #endif

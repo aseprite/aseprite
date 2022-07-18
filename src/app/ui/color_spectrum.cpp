@@ -35,51 +35,49 @@ ColorSpectrum::ColorSpectrum()
 {
 }
 
+#if SK_ENABLE_SKSL
+
 const char* ColorSpectrum::getMainAreaShader()
 {
-#if SK_ENABLE_SKSL
   if (m_mainShader.empty()) {
     m_mainShader += "uniform half3 iRes;"
-                    "uniform half4 iColor;";
-    m_mainShader += kRGB_to_HSL_sksl;
+                    "uniform half4 iHsl;";
     m_mainShader += kHSL_to_RGB_sksl;
     m_mainShader += R"(
 half4 main(vec2 fragcoord) {
  vec2 d = fragcoord.xy / iRes.xy;
  half hue = d.x;
- half sat = rgb_to_hsl(iColor.rgb).y;
+ half sat = iHsl.y;
  half lit = 1.0 - d.y;
  return hsl_to_rgb(half3(hue, sat, lit)).rgb1;
 }
 )";
   }
   return m_mainShader.c_str();
-#else
-  return nullptr;
-#endif
 }
 
 const char* ColorSpectrum::getBottomBarShader()
 {
-#if SK_ENABLE_SKSL
   if (m_bottomShader.empty()) {
     m_bottomShader += "uniform half3 iRes;"
-                      "uniform half4 iColor;";
-    m_bottomShader += kRGB_to_HSL_sksl;
+                      "uniform half4 iHsl;";
     m_bottomShader += kHSL_to_RGB_sksl;
     m_bottomShader += R"(
 half4 main(vec2 fragcoord) {
  half s = (fragcoord.x / iRes.x);
- half3 hsl = rgb_to_hsl(iColor.rgb);
- return hsl_to_rgb(half3(hsl.x, s, hsl.z)).rgb1;
+ return hsl_to_rgb(half3(iHsl.x, s, iHsl.z)).rgb1;
 }
 )";
   }
   return m_bottomShader.c_str();
-#else
-  return nullptr;
-#endif
 }
+
+void ColorSpectrum::setShaderParams(SkRuntimeShaderBuilder& builder, bool main)
+{
+  builder.uniform("iHsl") = appColorHsl_to_SkV4(m_color);
+}
+
+#endif // SK_ENABLE_SKSL
 
 app::Color ColorSpectrum::getMainAreaColor(const int u, const int umax,
                                            const int v, const int vmax)

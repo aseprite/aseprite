@@ -468,8 +468,7 @@ void ColorSelector::onPaint(ui::PaintEvent& ev)
 
       SkRuntimeShaderBuilder builder1(m_mainEffect);
       builder1.uniform("iRes") = SkV3{float(rc2.w), float(rc2.h), 0.0f};
-      builder1.uniform("iColor") = appColor_to_SkV4(m_color);
-      setShaderMainAreaParams(builder1);
+      setShaderParams(builder1, true);
       p.setShader(builder1.makeShader());
 
       if (isSRGB)
@@ -484,7 +483,7 @@ void ColorSelector::onPaint(ui::PaintEvent& ev)
 
       SkRuntimeShaderBuilder builder2(m_bottomEffect);
       builder2.uniform("iRes") = SkV3{float(rc2.w), float(rc2.h), 0.0f};
-      builder2.uniform("iColor") = appColor_to_SkV4(m_color);
+      setShaderParams(builder2, false);
       p.setShader(builder2.makeShader());
 
       canvas->drawRect(SkRect::MakeXYWH(0, 0, rc2.w, rc2.h), p);
@@ -632,9 +631,7 @@ const char* ColorSelector::getAlphaBarShader()
 {
   return R"(
 uniform half3 iRes;
-uniform half4 iColor;
-uniform half4 iBg1;
-uniform half4 iBg2;
+uniform half4 iColor, iBg1, iBg2;
 
 half4 main(vec2 fragcoord) {
  vec2 d = (fragcoord.xy / iRes.xy);
