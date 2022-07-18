@@ -49,7 +49,7 @@ You can ask for help in:
 
 ## Authors
 
-Aseprite is being developed by [Igara Studio](https://www.igarastudio.com/):
+Aseprite is being developed by [Igara Studio](https://igara.com/):
 
 * [David Capello](https://davidcapello.com/)
 * [Gaspar Capello](https://github.com/Gasparoken)
