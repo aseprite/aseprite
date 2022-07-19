@@ -393,6 +393,28 @@ void AppMenus::reload()
 #endif
   }
 
+  // Remove the "Enter license" menu item when DRM is not enabled.
+#ifndef ENABLE_DRM
+  {
+    Menu* helpMenu =
+      dynamic_cast<MenuItem*>(m_rootMenu->findItemById("help_menu"))->getSubmenu();
+
+    auto item = helpMenu->findChild("enter_license_separator");
+    if (item)
+      delete item;
+
+    item = helpMenu->findChild("enter_license");
+    if (item)
+      delete item;
+
+    auto it = m_groups.find("help_enter_license");
+    if (it != m_groups.end())
+      m_groups.erase(it);
+  }
+#endif
+
+
+
   ////////////////////////////////////////
   // Re-add menu items in groups (recent files & scripts)
 
