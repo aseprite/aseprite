@@ -689,11 +689,6 @@ Doc* DocExporter::exportSheet(Context* ctx, base::task_token& token)
   // Save the image files.
   if (!m_textureFilename.empty()) {
     DX_TRACE("DocExporter::exportSheet", m_textureFilename);
-    // filename_formatter usage to include {title} key word on CLI.
-    FilenameInfo fnInfo;
-    fnInfo.filename(ctx->activeDocument()->name());
-    m_textureFilename = filename_formatter(m_textureFilename.c_str(), fnInfo);
-
     textureDocument->setFilename(m_textureFilename.c_str());
     int ret = save_document(ctx, textureDocument.get());
     if (ret == 0)
