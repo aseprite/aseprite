@@ -23,7 +23,6 @@
 #include "app/file/gif_format.h"
 #include "app/file/png_format.h"
 #include "app/file_selector.h"
-#include "app/filename_formatter.h"
 #include "app/i18n/strings.h"
 #include "app/job.h"
 #include "app/modules/gui.h"
@@ -391,11 +390,7 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
     if (!result)
       return;
 
-    FilenameInfo fnInfo;
-    fnInfo
-      .filename(context->activeDocument()->name())
-      .layerName(win.layersValue());
-    outputFilename = filename_formatter(win.outputFilenameValue(), fnInfo);
+    outputFilename = win.outputFilenameValue();
 
     if (askOverwrite &&
         base::is_file(outputFilename)) {
