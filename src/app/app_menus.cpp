@@ -413,8 +413,6 @@ void AppMenus::reload()
   }
 #endif
 
-
-
   ////////////////////////////////////////
   // Re-add menu items in groups (recent files & scripts)
 
