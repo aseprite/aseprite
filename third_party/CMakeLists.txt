@@ -33,7 +33,7 @@ if(NOT USE_SHARED_GIFLIB)
   add_subdirectory(giflib)
 endif()
 
-if(ENABLE_WEBP)
+if(ENABLE_WEBP AND NOT LAF_BACKEND STREQUAL "skia")
   set(WEBP_BUILD_EXTRAS OFF CACHE BOOL "Build extras.")
   set(WEBP_BUILD_ANIM_UTILS OFF CACHE BOOL "Build animation utilities.")
   set(WEBP_BUILD_CWEBP OFF CACHE BOOL "Build the cwebp command line tool.")
