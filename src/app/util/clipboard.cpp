@@ -28,6 +28,8 @@
 #include "app/ui/color_bar.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/skin/skin_theme.h"
+#include "app/ui/main_window.h"
+#include "app/ui/preview_editor.h"
 #include "app/ui/timeline/timeline.h"
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
@@ -469,8 +471,10 @@ void paste(Context* ctx, const bool interactive)
             // This is the app::copy_range (not clipboard::copy_range()).
             if (srcRange.layers() == dstRange.layers())
               app::copy_range(srcDoc, srcRange, dstRange, kDocRangeBefore);
-            if (current_editor)
+            if (current_editor) {
               current_editor->invalidate(); // TODO check if this is necessary
+              App::instance()->mainWindow()->getPreviewEditor()->invalidate();
+            }
             return;
           }
 
@@ -516,8 +520,10 @@ void paste(Context* ctx, const bool interactive)
           }
 
           tx.commit();
-          if (current_editor)
+          if (current_editor) {
             current_editor->invalidate(); // TODO check if this is necessary
+            App::instance()->mainWindow()->getPreviewEditor()->invalidate();
+          }
           break;
         }
 
