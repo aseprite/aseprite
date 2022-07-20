@@ -104,6 +104,11 @@ namespace app {
     // atomic because we need atomic bitwise operations.
     std::atomic<int> m_paintFlags;
 
+  protected:
+#if SK_ENABLE_SKSL
+    void resetBottomEffect();
+#endif
+
   private:
     app::Color getAlphaBarColor(const int u, const int umax);
     void onPaintAlphaBar(ui::Graphics* g, const gfx::Rect& rc);
