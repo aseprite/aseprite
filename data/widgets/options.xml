@@ -519,7 +519,10 @@
                    pref="experimental.use_shaders_for_color_selectors" />
             <link text="(#960)" url="https://github.com/aseprite/aseprite/issues/960" />
           </hbox>
-	  <hbox id="load_wintab_driver_box">
+          <check id="tint_shade_tone_hue_with_sat_value"
+                 text="@.hue_with_sat_value"
+                 pref="experimental.hue_with_sat_value_for_color_selector" />
+          <hbox id="load_wintab_driver_box">
             <check id="load_wintab_driver2"
                    text="@.load_wintab_driver"
                    tooltip="@.load_wintab_driver_tooltip" />

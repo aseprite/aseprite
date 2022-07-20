@@ -626,6 +626,7 @@ void ColorSelector::updateColorSpace()
 }
 
 #if SK_ENABLE_SKSL
+
 // static
 const char* ColorSelector::getAlphaBarShader()
 {
@@ -678,6 +679,12 @@ sk_sp<SkRuntimeEffect> ColorSelector::buildEffect(const char* code)
     return result.effect;
   }
 }
+
+void ColorSelector::resetBottomEffect()
+{
+  m_bottomEffect.reset();
+}
+
 #endif  // SK_ENABLE_SKSL
 
 } // namespace app
