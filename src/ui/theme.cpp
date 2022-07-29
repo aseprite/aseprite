@@ -294,10 +294,9 @@ void Theme::paintTooltip(Graphics* g,
   }
 }
 
-gfx::Size Theme::paintTextBoxWithStyle(Graphics* g,
-                                       const Widget* widget)
+void Theme::paintTextBoxWithStyle(Graphics* g,
+                                  const Widget* widget)
 {
-  gfx::Size size;
   gfx::Color bg = gfx::ColorNone, fg = gfx::ColorNone;
 
   for_each_layer(
@@ -311,9 +310,7 @@ gfx::Size Theme::paintTextBoxWithStyle(Graphics* g,
     });
 
   if (fg != gfx::ColorNone)
-    Theme::drawTextBox(g, widget, &size.w, &size.h, bg, fg);
-
-  return size;
+    Theme::drawTextBox(g, widget, nullptr, nullptr, bg, fg);
 }
 
 void Theme::paintLayer(Graphics* g,

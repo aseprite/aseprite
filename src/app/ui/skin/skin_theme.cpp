@@ -913,9 +913,8 @@ void SkinTheme::initWidget(Widget* widget)
       break;
 
     case kTextBoxWidget:
-      BORDER(4*guiscale());
       widget->setChildSpacing(0);
-      widget->setBgColor(colors.textboxFace());
+      widget->setStyle(styles.textboxText());
       break;
 
     case kViewWidget:

@@ -503,6 +503,10 @@
             <background color="tooltip_face" />
             <text color="tooltip_text" align="left" />
         </style>
+        <style id="textbox_text" align="left top wordwrap" border="4">
+            <background color="textbox_face" />
+            <text color="textbox_text" align="left" />
+        </style>
         <style id="label" padding="1">
             <text color="text" align="left" />
             <text color="disabled" align="left" state="disabled" />
