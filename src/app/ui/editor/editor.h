@@ -107,7 +107,9 @@ namespace app {
 
     static ui::WidgetType Type();
 
-    Editor(Doc* document, EditorFlags flags = kDefaultEditorFlags);
+    Editor(Doc* document,
+           EditorFlags flags = kDefaultEditorFlags,
+           EditorStatePtr state = nullptr);
     ~Editor();
 
     static void destroyEditorSharedInternals();

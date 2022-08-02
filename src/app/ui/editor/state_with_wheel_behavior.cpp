@@ -63,8 +63,8 @@ static inline void adjust_unit(bool preciseWheel, double dz, double& v)
   v = std::clamp<double>(v+(preciseWheel ? dz/100.0: dz/25.0), 0.0, 1.0);
 }
 
-StateWithWheelBehavior::StateWithWheelBehavior()
-  : m_groupTool(initialTool())
+StateWithWheelBehavior::StateWithWheelBehavior(bool disableQuickTool)
+  : m_groupTool(initialTool(disableQuickTool))
 {
 }
 
@@ -687,9 +687,9 @@ int StateWithWheelBehavior::initialLayerOpacity(Editor* editor) const
     return 0;
 }
 
-tools::Tool* StateWithWheelBehavior::initialTool() const
+tools::Tool* StateWithWheelBehavior::initialTool(bool disableQuickTool) const
 {
-  return getActiveTool();
+  return getActiveTool(disableQuickTool);
 }
 
 void StateWithWheelBehavior::changeFgColor(Color c)
@@ -697,9 +697,12 @@ void StateWithWheelBehavior::changeFgColor(Color c)
   ColorBar::instance()->setFgColor(c);
 }
 
-tools::Tool* StateWithWheelBehavior::getActiveTool() const
+tools::Tool* StateWithWheelBehavior::getActiveTool(
+  bool disableQuickTool) const
 {
-  disableQuickTool();
+  if (disableQuickTool) {
+    this->disableQuickTool();
+  }
   return App::instance()->activeToolManager()->activeTool();
 }
 

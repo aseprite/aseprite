@@ -14,7 +14,7 @@ namespace app {
 
   class NavigateState : public StateWithWheelBehavior {
   public:
-    NavigateState();
+    NavigateState(bool disableQuickTool = true);
     virtual bool onMouseDown(Editor* editor, ui::MouseMessage* msg) override;
     virtual bool onMouseUp(Editor* editor, ui::MouseMessage* msg) override;
     virtual bool onMouseMove(Editor* editor, ui::MouseMessage* msg) override;

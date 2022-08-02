@@ -380,7 +380,7 @@ void PreviewEditorWindow::updateUsingEditor(Editor* editor)
     miniEditor->setZoom(render::Zoom::fromScale(docPref.preview.zoom()));
     miniEditor->setLayer(editor->layer());
     miniEditor->setFrame(editor->frame());
-    miniEditor->setState(EditorStatePtr(new NavigateState));
+    miniEditor->setState(EditorStatePtr(new NavigateState(false)));
     miniEditor->setAnimationSpeedMultiplier(m_aniSpeed);
     miniEditor->add_observer(this);
     layout();

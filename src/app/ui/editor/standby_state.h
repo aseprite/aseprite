@@ -29,7 +29,7 @@ namespace app {
   public:
     enum class DrawingType { Regular, LineFreehand, SelectTiles };
 
-    StandbyState();
+    StandbyState(bool disableQuickTool = true);
     virtual ~StandbyState();
     virtual void onEnterState(Editor* editor) override;
     virtual void onActiveToolChange(Editor* editor, tools::Tool* tool) override;

@@ -29,7 +29,7 @@ namespace app {
 
   class StateWithWheelBehavior : public EditorState {
   public:
-    StateWithWheelBehavior();
+    StateWithWheelBehavior(bool disableQuickTool = true);
 
     bool onMouseWheel(Editor* editor, ui::MouseMessage* msg) override;
     bool onTouchMagnify(Editor* editor, ui::TouchMessage* msg) override;
@@ -59,12 +59,12 @@ namespace app {
     virtual int initialInkOpacity(Editor* editor) const;
     virtual int initialCelOpacity(Editor* editor) const;
     virtual int initialLayerOpacity(Editor* editor) const;
-    virtual tools::Tool* initialTool() const;
+    virtual tools::Tool* initialTool(bool disableQuickTool = true) const;
     virtual void changeFgColor(Color c);
 
   private:
     void setZoom(Editor* editor, const render::Zoom& zoom, const gfx::Point& mousePos);
-    tools::Tool* getActiveTool() const;
+    tools::Tool* getActiveTool(bool disableQuickTool = true) const;
     void disableQuickTool() const;
 
     mutable doc::LayerList m_browsableLayers;

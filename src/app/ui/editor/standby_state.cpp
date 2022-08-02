@@ -80,8 +80,9 @@ using namespace ui;
 #pragma warning(disable:4355) // warning C4355: 'this' : used in base member initializer list
 #endif
 
-StandbyState::StandbyState()
-  : m_decorator(new Decorator(this))
+StandbyState::StandbyState(bool disableQuickTool)
+  : StateWithWheelBehavior(disableQuickTool),
+    m_decorator(new Decorator(this))
   , m_transformSelectionHandlesAreVisible(false)
 {
 }

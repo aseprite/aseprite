@@ -45,7 +45,10 @@ namespace app {
     int initialInkOpacity(Editor* editor) const override { return m_initialInkOpacity; }
     int initialCelOpacity(Editor* editor) const override { return m_initialCelOpacity; }
     int initialLayerOpacity(Editor* editor) const override { return m_initialLayerOpacity; }
-    tools::Tool* initialTool() const override { return m_initialTool; }
+    tools::Tool* initialTool(bool disableQuickTool = true) const override
+    {
+      return m_initialTool;
+    }
     void changeFgColor(Color c) override;
 
     Keys m_keys;

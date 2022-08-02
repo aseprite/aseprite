@@ -18,7 +18,8 @@ namespace app {
 
 using namespace ui;
 
-NavigateState::NavigateState()
+NavigateState::NavigateState(bool disableQuickTool)
+  : StateWithWheelBehavior(disableQuickTool)
 {
 }
 
