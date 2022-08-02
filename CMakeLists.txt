@@ -227,20 +227,6 @@ endif()
 include_directories(${PNG_INCLUDE_DIRS})
 add_definitions(-DPNG_NO_MMX_CODE) # Do not use MMX optimizations in PNG code
 
-# libwebp
-if(ENABLE_WEBP)
-  # Use libwebp from Skia
-  if(LAF_BACKEND STREQUAL "skia")
-    find_library(WEBP_LIBRARIES webp
-      PATH "${SKIA_LIBRARY_DIR}" NO_DEFAULT_PATH)
-    set(WEBP_INCLUDE_DIR "${SKIA_DIR}/third_party/externals/libwebp/src")
-  else()
-    set(WEBP_LIBRARIES webp webpdemux libwebpmux)
-    set(WEBP_INCLUDE_DIR ${LIBWEBP_DIR}/src)
-  endif()
-  include_directories(${WEBP_INCLUDE_DIR})
-endif()
-
 # tinyxml
 if(USE_SHARED_TINYXML)
   find_library(TINYXML_LIBRARY NAMES tinyxml)
@@ -339,6 +325,20 @@ set(UNDO_TESTS     ${ENABLE_TESTS} CACHE BOOL "Enable undo tests")
 
 add_subdirectory(laf)
 
+# libwebp
+if(ENABLE_WEBP)
+  # Use libwebp from Skia
+  if(LAF_BACKEND STREQUAL "skia")
+    find_library(WEBP_LIBRARIES webp
+      NAMES libwebp # required for Windows
+      PATHS "${SKIA_LIBRARY_DIR}" NO_DEFAULT_PATH)
+    set(WEBP_INCLUDE_DIR "${SKIA_DIR}/third_party/externals/libwebp/src")
+  else()
+    set(WEBP_LIBRARIES webp webpdemux libwebpmux)
+    set(WEBP_INCLUDE_DIR ${LIBWEBP_DIR}/src)
+  endif()
+  include_directories(${WEBP_INCLUDE_DIR})
+endif()
 message(STATUS "aseprite libwebp: ${WEBP_LIBRARIES}")
 
 # LAF libraries + Aseprite are compiled with config.h
