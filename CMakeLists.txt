@@ -245,8 +245,15 @@ add_definitions(-DPNG_NO_MMX_CODE) # Do not use MMX optimizations in PNG code
 
 # libwebp
 if(ENABLE_WEBP)
-  set(WEBP_LIBRARIES webp webpdemux libwebpmux)
-  set(WEBP_INCLUDE_DIR ${LIBWEBP_DIR}/src)
+  # Use libwebp from Skia
+  if(LAF_BACKEND STREQUAL "skia")
+    find_library(WEBP_LIBRARIES webp
+      PATH "${SKIA_LIBRARY_DIR}" NO_DEFAULT_PATH)
+    set(WEBP_INCLUDE_DIR "${SKIA_DIR}/third_party/externals/libwebp/src")
+  else()
+    set(WEBP_LIBRARIES webp webpdemux libwebpmux)
+    set(WEBP_INCLUDE_DIR ${LIBWEBP_DIR}/src)
+  endif()
   include_directories(${WEBP_INCLUDE_DIR})
 endif()
 
@@ -350,6 +357,8 @@ if(ENABLE_DRM)
   add_subdirectory(drm)
 endif()
 add_subdirectory(laf)
+
+message(STATUS "aseprite libwebp: ${WEBP_LIBRARIES}")
 
 # LAF libraries + Aseprite are compiled with config.h
 target_include_directories(laf-base PUBLIC src)
