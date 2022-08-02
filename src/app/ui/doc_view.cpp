@@ -29,6 +29,7 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_customization_delegate.h"
 #include "app/ui/editor/editor_view.h"
+#include "app/ui/editor/navigate_state.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/main_window.h"
 #include "app/ui/status_bar.h"
@@ -188,7 +189,10 @@ class PreviewEditor : public Editor,
                       public EditorCustomizationDelegate {
 public:
   PreviewEditor(Doc* document)
-    : Editor(document, Editor::kShowOutside) { // Don't show grid/mask in preview preview
+    : Editor(document,
+             Editor::kShowOutside, // Don't show grid/mask in preview preview
+             std::make_shared<NavigateState>())
+  {
     setCustomizationDelegate(this);
   }
 

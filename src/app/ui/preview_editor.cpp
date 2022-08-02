@@ -22,7 +22,6 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_customization_delegate.h"
 #include "app/ui/editor/editor_view.h"
-#include "app/ui/editor/navigate_state.h"
 #include "app/ui/editor/play_state.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
@@ -380,7 +379,6 @@ void PreviewEditorWindow::updateUsingEditor(Editor* editor)
     miniEditor->setZoom(render::Zoom::fromScale(docPref.preview.zoom()));
     miniEditor->setLayer(editor->layer());
     miniEditor->setFrame(editor->frame());
-    miniEditor->setState(EditorStatePtr(new NavigateState));
     miniEditor->setAnimationSpeedMultiplier(m_aniSpeed);
     miniEditor->add_observer(this);
     layout();

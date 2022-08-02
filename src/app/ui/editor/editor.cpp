@@ -139,9 +139,9 @@ private:
 // static
 EditorRender* Editor::m_renderEngine = nullptr;
 
-Editor::Editor(Doc* document, EditorFlags flags)
+Editor::Editor(Doc* document, EditorFlags flags, EditorStatePtr state)
   : Widget(Editor::Type())
-  , m_state(new StandbyState())
+  , m_state(state == nullptr ? std::make_shared<StandbyState>(): state)
   , m_decorator(NULL)
   , m_document(document)
   , m_sprite(m_document->sprite())

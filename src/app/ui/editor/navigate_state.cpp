@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2022  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -58,6 +59,14 @@ bool NavigateState::onKeyDown(Editor* editor, KeyMessage* msg)
 bool NavigateState::onKeyUp(Editor* editor, KeyMessage* msg)
 {
   return false;
+}
+
+void NavigateState::disableQuickTool() const
+{
+  // Do nothing, as this state is used for the preview, creating a new
+  // navigate state disabling the quick tool here will break the
+  // Alt+click to use the eyedropper between editors when the Preview
+  // window is visible.
 }
 
 } // namespace app

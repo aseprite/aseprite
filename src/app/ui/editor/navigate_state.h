@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2022  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -20,6 +21,8 @@ namespace app {
     virtual bool onMouseMove(Editor* editor, ui::MouseMessage* msg) override;
     virtual bool onKeyDown(Editor* editor, ui::KeyMessage* msg) override;
     virtual bool onKeyUp(Editor* editor, ui::KeyMessage* msg) override;
+  protected:
+    void disableQuickTool() const override;
   };
 
 } // namespace app

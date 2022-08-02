@@ -62,6 +62,7 @@ namespace app {
     virtual int initialLayerOpacity(Editor* editor) const;
     virtual tools::Tool* initialTool() const;
     virtual void changeFgColor(Color c);
+    virtual void disableQuickTool() const;
 
     virtual tools::Tool* getInitialToolInActiveGroup();
     virtual void onToolChange(tools::Tool* tool);
@@ -72,7 +73,6 @@ namespace app {
 
   private:
     void setZoom(Editor* editor, const render::Zoom& zoom, const gfx::Point& mousePos);
-    void disableQuickTool() const;
 
     mutable doc::LayerList m_browsableLayers;
     tools::Tool* m_tool = nullptr;
