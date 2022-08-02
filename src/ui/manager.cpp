@@ -1931,7 +1931,7 @@ bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
     // Restore overlays in the region that we're going to paint.
     OverlayManager::instance()->restoreOverlappedAreas(paintMsg->rect());
 
-    os::Surface* surface = display->surface();
+    os::SurfaceRef surface(base::AddRef(display->surface()));
     surface->saveClip();
 
     if (surface->clipRect(paintMsg->rect())) {

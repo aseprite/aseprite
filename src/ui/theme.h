@@ -101,8 +101,8 @@ namespace ui {
                               const int arrowAlign,
                               const gfx::Rect& target);
 
-    gfx::Size paintTextBoxWithStyle(Graphics* g,
-                                    const Widget* widget);
+    void paintTextBoxWithStyle(Graphics* g,
+                               const Widget* widget);
 
     virtual gfx::Size calcSizeHint(const Widget* widget,
                                    const Style* style);
