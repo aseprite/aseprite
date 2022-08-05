@@ -222,6 +222,18 @@ void composite_image_scale_up(
   int px_x, px_y;
   int px_w = int(sx);
   int px_h = int(sy);
+
+  // We've received crash reports about these values being 0 when it's
+  // called from Render::renderImage() when the projection is scaled
+  // to the cel bounds (this can happen only when a reference layer is
+  // scaled, but when a reference layer is visible we shouldn't be
+  // here, we should be using the composite_image_general(), see the
+  // "finegrain" var in Render::getImageComposition()).
+  ASSERT(px_w > 0);
+  ASSERT(px_h > 0);
+  if (px_w <= 0 || px_h <= 0)
+    return;
+
   int first_px_w = px_w - (area.src.x % px_w);
   int first_px_h = px_h - (area.src.y % px_h);
 
