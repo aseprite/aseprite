@@ -176,14 +176,16 @@ void Workspace::onResize(ui::ResizeEvent& ev)
     child->setBounds(rc);
 }
 
-DropViewPreviewResult Workspace::setDropViewPreview(const gfx::Point& pos,
-  WorkspaceView* view, WorkspaceTabs* tabs)
+DropViewPreviewResult Workspace::setDropViewPreview(
+  const gfx::Point& screenPos,
+  WorkspaceView* view,
+  WorkspaceTabs* tabs)
 {
   TabView* tabView = dynamic_cast<TabView*>(view);
   WorkspaceTabs* newTabs = nullptr;
-  WorkspacePanel* panel = getPanelAt(pos);
+  WorkspacePanel* panel = getPanelAt(screenPos);
   if (!newTabs) {
-    newTabs = getTabsAt(pos);
+    newTabs = getTabsAt(screenPos);
     // Drop preview is only to drop tabs from a different WorkspaceTabs.
     if (newTabs == tabs)
       newTabs = nullptr;
@@ -198,9 +200,9 @@ DropViewPreviewResult Workspace::setDropViewPreview(const gfx::Point& pos,
   m_dropPreviewTabs = newTabs;
 
   if (m_dropPreviewPanel)
-    m_dropPreviewPanel->setDropViewPreview(pos, view);
+    m_dropPreviewPanel->setDropViewPreview(screenPos, view);
   if (m_dropPreviewTabs)
-    m_dropPreviewTabs->setDropViewPreview(pos, tabView);
+    m_dropPreviewTabs->setDropViewPreview(screenPos, tabView);
 
   if (panel)
     return DropViewPreviewResult::DROP_IN_PANEL;
@@ -223,14 +225,16 @@ void Workspace::removeDropViewPreview()
   }
 }
 
-DropViewAtResult Workspace::dropViewAt(const gfx::Point& pos, WorkspaceView* view, bool clone)
+DropViewAtResult Workspace::dropViewAt(const gfx::Point& screenPos,
+                                       WorkspaceView* view,
+                                       const bool clone)
 {
-  WorkspaceTabs* tabs = getTabsAt(pos);
-  WorkspacePanel* panel = getPanelAt(pos);
+  WorkspaceTabs* tabs = getTabsAt(screenPos);
+  WorkspacePanel* panel = getPanelAt(screenPos);
 
   if (panel) {
     // Create new panel
-    return panel->dropViewAt(pos, getViewPanel(view), view, clone);
+    return panel->dropViewAt(screenPos, getViewPanel(view), view, clone);
   }
   else if (tabs && tabs != getViewPanel(view)->tabs()) {
     // Dock tab in other tabs
@@ -284,9 +288,9 @@ WorkspacePanel* Workspace::getViewPanel(WorkspaceView* view)
   return nullptr;
 }
 
-WorkspacePanel* Workspace::getPanelAt(const gfx::Point& pos)
+WorkspacePanel* Workspace::getPanelAt(const gfx::Point& screenPos)
 {
-  Widget* widget = manager()->pick(pos);
+  Widget* widget = manager()->pickFromScreenPos(screenPos);
   while (widget) {
     if (widget->type() == WorkspacePanel::Type())
       return static_cast<WorkspacePanel*>(widget);
@@ -296,9 +300,9 @@ WorkspacePanel* Workspace::getPanelAt(const gfx::Point& pos)
   return nullptr;
 }
 
-WorkspaceTabs* Workspace::getTabsAt(const gfx::Point& pos)
+WorkspaceTabs* Workspace::getTabsAt(const gfx::Point& screenPos)
 {
-  Widget* widget = manager()->pick(pos);
+  Widget* widget = manager()->pickFromScreenPos(screenPos);
   while (widget) {
     if (widget->type() == Tabs::Type())
       return static_cast<WorkspaceTabs*>(widget);

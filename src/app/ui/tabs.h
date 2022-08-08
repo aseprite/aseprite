@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -11,7 +11,6 @@
 
 #include "base/ref.h"
 #include "ui/animated_widget.h"
-#include "ui/timer.h"
 #include "ui/widget.h"
 
 #include <memory>
@@ -104,12 +103,17 @@ namespace app {
 
     // Called when the user is dragging a tab outside the Tabs
     // bar.
-    virtual DropViewPreviewResult onFloatingTab(Tabs* tabs, TabView* tabView, const gfx::Point& pos) = 0;
+    virtual DropViewPreviewResult onFloatingTab(Tabs* tabs,
+                                                TabView* tabView,
+                                                const gfx::Point& screenPos) = 0;
 
     // Called when the user is dragging a tab inside the Tabs bar.
     virtual void onDockingTab(Tabs* tabs, TabView* tabView) = 0;
 
-    virtual DropTabResult onDropTab(Tabs* tabs, TabView* tabView, const gfx::Point& pos, bool clone) = 0;
+    virtual DropTabResult onDropTab(Tabs* tabs,
+                                    TabView* tabView,
+                                    const gfx::Point& screenPos,
+                                    bool clone) = 0;
   };
 
   // Tabs control. Used to show opened documents.
@@ -176,7 +180,8 @@ namespace app {
     void setDockedStyle();
 
     // Drop TabViews into this Tabs widget
-    void setDropViewPreview(const gfx::Point& pos, TabView* view);
+    void setDropViewPreview(const gfx::Point& screenPos,
+                            TabView* view);
     void removeDropViewPreview();
     int getDropTabIndex() const { return m_dropNewIndex; }
 

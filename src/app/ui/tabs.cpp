@@ -254,12 +254,14 @@ void Tabs::setDockedStyle()
   initTheme();
 }
 
-void Tabs::setDropViewPreview(const gfx::Point& pos, TabView* view)
+void Tabs::setDropViewPreview(const gfx::Point& screenPos,
+                              TabView* view)
 {
+  int x0 = (display()->nativeWindow()->pointFromScreen(screenPos).x - bounds().x);
   int newIndex = -1;
 
   if (!m_list.empty()) {
-    newIndex = (pos.x - bounds().x) / m_list[0]->width;
+    newIndex = x0 / m_list[0]->width;
     newIndex = std::clamp(newIndex, 0, (int)m_list.size());
   }
   else
@@ -269,7 +271,7 @@ void Tabs::setDropViewPreview(const gfx::Point& pos, TabView* view)
                    m_dropNewTab != view);
 
   m_dropNewIndex = newIndex;
-  m_dropNewPosX = (pos.x - bounds().x);
+  m_dropNewPosX = x0;
   m_dropNewTab = view;
 
   if (startAni)
@@ -299,8 +301,9 @@ bool Tabs::onProcessMessage(Message* msg)
 
       if (hasCapture() && m_selected) {
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
-        gfx::Point mousePos = mouseMsg->position();
-        gfx::Point delta = mousePos - m_dragMousePos;
+        const gfx::Point mousePos = mouseMsg->position();
+        const gfx::Point screenPos = mouseMsg->screenPosition();
+        const gfx::Point delta = mousePos - m_dragMousePos;
 
         if (!m_isDragging) {
           if (!m_clickedCloseButton && mouseMsg->left()) {
@@ -325,7 +328,8 @@ bool Tabs::onProcessMessage(Message* msg)
             }
 
             if (m_delegate)
-              result = m_delegate->onFloatingTab(this, m_selected->view, mousePos);
+              result = m_delegate->onFloatingTab(
+                this, m_selected->view, screenPos);
 
             if (result != DropViewPreviewResult::DROP_IN_TABS) {
               if (!m_floatingOverlay)
@@ -413,7 +417,7 @@ bool Tabs::onProcessMessage(Message* msg)
             ASSERT(m_selected);
             result = m_delegate->onDropTab(
               this, m_selected->view,
-              mouseMsg->position(), m_dragCopy);
+              mouseMsg->screenPosition(), m_dragCopy);
           }
 
           stopDrag(result);

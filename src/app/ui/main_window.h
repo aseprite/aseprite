@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -101,9 +101,14 @@ namespace app {
     void onTabsContainerDoubleClicked(Tabs* tabs) override;
     void onMouseOverTab(Tabs* tabs, TabView* tabView) override;
     void onMouseLeaveTab() override;
-    DropViewPreviewResult onFloatingTab(Tabs* tabs, TabView* tabView, const gfx::Point& pos) override;
+    DropViewPreviewResult onFloatingTab(Tabs* tabs,
+                                        TabView* tabView,
+                                        const gfx::Point& screenPos) override;
     void onDockingTab(Tabs* tabs, TabView* tabView) override;
-    DropTabResult onDropTab(Tabs* tabs, TabView* tabView, const gfx::Point& pos, bool clone) override;
+    DropTabResult onDropTab(Tabs* tabs,
+                            TabView* tabView,
+                            const gfx::Point& screenPos,
+                            const bool clone) override;
 
   protected:
     bool onProcessMessage(ui::Message* msg) override;

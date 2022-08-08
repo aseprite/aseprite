@@ -518,9 +518,13 @@ void MainWindow::onMouseLeaveTab()
   m_statusBar->showDefaultText();
 }
 
-DropViewPreviewResult MainWindow::onFloatingTab(Tabs* tabs, TabView* tabView, const gfx::Point& pos)
+DropViewPreviewResult MainWindow::onFloatingTab(
+  Tabs* tabs,
+  TabView* tabView,
+  const gfx::Point& screenPos)
 {
-  return m_workspace->setDropViewPreview(pos,
+  return m_workspace->setDropViewPreview(
+    screenPos,
     dynamic_cast<WorkspaceView*>(tabView),
     static_cast<WorkspaceTabs*>(tabs));
 }
@@ -530,12 +534,17 @@ void MainWindow::onDockingTab(Tabs* tabs, TabView* tabView)
   m_workspace->removeDropViewPreview();
 }
 
-DropTabResult MainWindow::onDropTab(Tabs* tabs, TabView* tabView, const gfx::Point& pos, bool clone)
+DropTabResult MainWindow::onDropTab(Tabs* tabs,
+                                    TabView* tabView,
+                                    const gfx::Point& screenPos,
+                                    const bool clone)
 {
   m_workspace->removeDropViewPreview();
 
   DropViewAtResult result =
-    m_workspace->dropViewAt(pos, dynamic_cast<WorkspaceView*>(tabView), clone);
+    m_workspace->dropViewAt(screenPos,
+                            dynamic_cast<WorkspaceView*>(tabView),
+                            clone);
 
   if (result == DropViewAtResult::MOVED_TO_OTHER_PANEL)
     return DropTabResult::REMOVE;

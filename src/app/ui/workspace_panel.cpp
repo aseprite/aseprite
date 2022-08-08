@@ -189,9 +189,10 @@ void WorkspacePanel::adjustActiveViewBounds()
       child->setBounds(rc);
 }
 
-void WorkspacePanel::setDropViewPreview(const gfx::Point& pos, WorkspaceView* view)
+void WorkspacePanel::setDropViewPreview(const gfx::Point& screenPos,
+                                        WorkspaceView* view)
 {
-  int newDropArea = calculateDropArea(pos);
+  int newDropArea = calculateDropArea(screenPos);
   if (newDropArea != m_dropArea) {
     m_dropArea = newDropArea;
     startAnimation(ANI_DROPAREA, ANI_DROPAREA_TICKS);
@@ -233,9 +234,12 @@ void WorkspacePanel::adjustTime(int& time, int flag)
     --time;
 }
 
-DropViewAtResult WorkspacePanel::dropViewAt(const gfx::Point& pos, WorkspacePanel* from, WorkspaceView* view, bool clone)
+DropViewAtResult WorkspacePanel::dropViewAt(const gfx::Point& screenPos,
+                                            WorkspacePanel* from,
+                                            WorkspaceView* view,
+                                            const bool clone)
 {
-  int dropArea = calculateDropArea(pos);
+  int dropArea = calculateDropArea(screenPos);
   if (!dropArea)
     return DropViewAtResult::NOTHING;
 
@@ -331,9 +335,10 @@ DropViewAtResult WorkspacePanel::dropViewAt(const gfx::Point& pos, WorkspacePane
   return result;
 }
 
-int WorkspacePanel::calculateDropArea(const gfx::Point& pos) const
+int WorkspacePanel::calculateDropArea(const gfx::Point& screenPos) const
 {
-  gfx::Rect rc = childrenBounds();
+  const gfx::Point pos = display()->nativeWindow()->pointFromScreen(screenPos);
+  const gfx::Rect rc = childrenBounds();
   if (rc.contains(pos)) {
     int left = ABS(rc.x - pos.x);
     int top = ABS(rc.y - pos.y);
@@ -354,7 +359,6 @@ int WorkspacePanel::calculateDropArea(const gfx::Point& pos) const
       return BOTTOM;
     }
   }
-
   return 0;
 }
 
