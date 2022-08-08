@@ -48,8 +48,14 @@ namespace app {
     tools::Tool* initialTool() const override { return m_initialTool; }
     void changeFgColor(Color c) override;
 
+    tools::Tool* getInitialToolInActiveGroup() override;
+    void onToolChange(tools::Tool* tool) override;
+    void onToolGroupChange(Editor* editor,
+                           tools::ToolGroup* group) override;
+
     Keys m_keys;
     gfx::Point m_initialPos;
+    gfx::Point m_initialPosSameGroup;
 
     Color m_initialFgColor;
     Color m_initialBgColor;

@@ -10,7 +10,9 @@
 
 #include "app/ui/editor/dragging_value_state.h"
 
+#include "app/tools/tool.h"
 #include "app/ui/editor/editor.h"
+#include "app/ui/toolbar.h"
 #include "ui/display.h"
 #include "ui/message.h"
 #include "ui/scale.h"
@@ -25,6 +27,7 @@ using namespace ui;
 DraggingValueState::DraggingValueState(Editor* editor, const Keys& keys)
   : m_keys(keys)
   , m_initialPos(editor->display()->nativeWindow()->pointFromScreen(ui::get_mouse_position()))
+  , m_initialPosSameGroup(m_initialPos)
   , m_initialFgColor(StateWithWheelBehavior::initialFgColor())
   , m_initialBgColor(StateWithWheelBehavior::initialBgColor())
   , m_initialFgTileIndex(StateWithWheelBehavior::initialFgTileIndex())
@@ -71,7 +74,13 @@ bool DraggingValueState::onMouseMove(Editor* editor, MouseMessage* msg)
   m_fgColor = m_initialFgColor;
 
   for (const KeyPtr& key : m_keys) {
-    const gfx::Point delta = (msg->position() - m_initialPos);
+    gfx::Point initialPos;
+    if (key->wheelAction() == WheelAction::ToolSameGroup)
+      initialPos = m_initialPosSameGroup;
+    else
+      initialPos = m_initialPos;
+
+    const gfx::Point delta = (msg->position() - initialPos);
     const DragVector deltaV(delta.x, delta.y);
     const DragVector invDragVector(key->dragVector().x,
                                    -key->dragVector().y);
@@ -142,6 +151,33 @@ bool DraggingValueState::onUpdateStatusBar(Editor* editor)
 void DraggingValueState::changeFgColor(Color c)
 {
   m_fgColor = c;
+}
+
+tools::Tool* DraggingValueState::getInitialToolInActiveGroup()
+{
+  return StateWithWheelBehavior::getInitialToolInActiveGroup();
+}
+
+void DraggingValueState::onToolChange(tools::Tool* tool)
+{
+  ToolBar::instance()->selectTool(tool);
+}
+
+void DraggingValueState::onToolGroupChange(Editor* editor,
+                                           tools::ToolGroup* group)
+{
+  if (getActiveTool()->getGroup() != group) {
+    StateWithWheelBehavior::onToolGroupChange(editor, group);
+
+    // Update reference initial position to change tools in the same
+    // group. Useful when the same key modifiers are associated to
+    // WheelAction::ToolSameGroup and WheelAction::ToolOtherGroup at
+    // the same time. This special position is needed to avoid jumping
+    // "randomly" to other tools when we change to another group (as
+    // the delta from the m_initialPos is accumulated).
+    m_initialPosSameGroup = editor->display()->nativeWindow()
+      ->pointFromScreen(ui::get_mouse_position());
+  }
 }
 
 } // namespace app

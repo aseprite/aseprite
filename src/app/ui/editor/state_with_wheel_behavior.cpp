@@ -64,7 +64,6 @@ static inline void adjust_unit(bool preciseWheel, double dz, double& v)
 }
 
 StateWithWheelBehavior::StateWithWheelBehavior()
-  : m_groupTool(initialTool())
 {
 }
 
@@ -308,7 +307,7 @@ void StateWithWheelBehavior::processWheelAction(
     }
 
     case WheelAction::ToolSameGroup: {
-      const tools::Tool* tool = m_groupTool;
+      const tools::Tool* tool = getInitialToolInActiveGroup();
 
       auto toolBox = App::instance()->toolBox();
       std::vector<tools::Tool*> tools;
@@ -322,24 +321,25 @@ void StateWithWheelBehavior::processWheelAction(
       auto it = std::find(begin, end, tool);
       if (it != end) {
         int i = std::round(dz);
-        while (i++ < 0) {
+        while (i < 0) {
+          ++i;
           if (it == begin)
             it = end;
           --it;
         }
-        while (i-- > 0) {
+        while (i > 0) {
+          --i;
           ++it;
           if (it == end)
             it = begin;
         }
-        if (tool != *it)
-          ToolBar::instance()->selectTool(*it);
+        onToolChange(*it);
       }
       break;
     }
 
     case WheelAction::ToolOtherGroup: {
-      tools::Tool* tool = initialTool();
+      const tools::Tool* tool = initialTool();
 
       auto toolBox = App::instance()->toolBox();
       auto begin = toolBox->begin_group();
@@ -347,18 +347,19 @@ void StateWithWheelBehavior::processWheelAction(
       auto it = std::find(begin, end, tool->getGroup());
       if (it != end) {
         int i = std::round(dz);
-        while (i++ < 0) {
+        while (i < 0) {
+          ++i;
           if (it == begin)
             it = end;
           --it;
         }
-        while (i-- > 0) {
+        while (i > 0) {
+          --i;
           ++it;
           if (it == end)
             it = begin;
         }
-        ToolBar::instance()->selectToolGroup(*it);
-        m_groupTool = getActiveTool();
+        onToolGroupChange(editor, *it);
       }
       break;
     }
@@ -719,6 +720,31 @@ void StateWithWheelBehavior::disableQuickTool() const
     // the effect is for the selected tool.
     atm->newQuickToolSelectedFromEditor(nullptr);
   }
+}
+
+tools::Tool* StateWithWheelBehavior::getInitialToolInActiveGroup()
+{
+  if (!m_tool)
+    m_tool = initialTool();
+  return m_tool;
+}
+
+void StateWithWheelBehavior::onToolChange(tools::Tool* tool)
+{
+  ToolBar::instance()->selectTool(tool);
+  m_tool = tool;
+}
+
+void StateWithWheelBehavior::onToolGroupChange(Editor* editor,
+                                               tools::ToolGroup* group)
+{
+  ToolBar::instance()->selectToolGroup(group);
+
+  // Update initial tool in active group as the group has just
+  // changed. Useful when the same key modifiers are associated to
+  // WheelAction::ToolSameGroup and WheelAction::ToolOtherGroup at the
+  // same time.
+  m_tool = getActiveTool();
 }
 
 } // namespace app

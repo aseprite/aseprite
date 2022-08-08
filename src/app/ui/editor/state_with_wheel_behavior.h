@@ -21,11 +21,12 @@ namespace render {
   class Zoom;
 }
 
-namespace tools {
-  class Tool;
-}
-
 namespace app {
+
+  namespace tools {
+    class Tool;
+    class ToolGroup;
+  }
 
   class StateWithWheelBehavior : public EditorState {
   public:
@@ -62,13 +63,19 @@ namespace app {
     virtual tools::Tool* initialTool() const;
     virtual void changeFgColor(Color c);
 
+    virtual tools::Tool* getInitialToolInActiveGroup();
+    virtual void onToolChange(tools::Tool* tool);
+    virtual void onToolGroupChange(Editor* editor,
+                                   tools::ToolGroup* group);
+
+    tools::Tool* getActiveTool() const;
+
   private:
     void setZoom(Editor* editor, const render::Zoom& zoom, const gfx::Point& mousePos);
-    tools::Tool* getActiveTool() const;
     void disableQuickTool() const;
 
     mutable doc::LayerList m_browsableLayers;
-    tools::Tool* m_groupTool;
+    tools::Tool* m_tool = nullptr;
   };
 
 } // namespace app
