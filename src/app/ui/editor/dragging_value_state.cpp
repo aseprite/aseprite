@@ -23,7 +23,8 @@ namespace app {
 using namespace ui;
 
 DraggingValueState::DraggingValueState(Editor* editor, const Keys& keys)
-  : m_keys(keys)
+  : m_editor(editor)
+  , m_keys(keys)
   , m_initialPos(editor->display()->nativeWindow()->pointFromScreen(ui::get_mouse_position()))
   , m_initialFgColor(StateWithWheelBehavior::initialFgColor())
   , m_initialBgColor(StateWithWheelBehavior::initialBgColor())
@@ -52,6 +53,15 @@ DraggingValueState::DraggingValueState(Editor* editor, const Keys& keys)
       break;
     }
   }
+  m_beforeCmdConn =
+    UIContext::instance()->BeforeCommandExecution.connect(
+      &DraggingValueState::onBeforeCommandExecution, this);
+}
+
+void DraggingValueState::onBeforePopState(Editor* editor)
+{
+  m_beforeCmdConn.disconnect();
+  StateWithWheelBehavior::onBeforePopState(editor);
 }
 
 bool DraggingValueState::onMouseDown(Editor* editor, MouseMessage* msg)
@@ -137,6 +147,11 @@ bool DraggingValueState::onKeyUp(Editor* editor, KeyMessage* msg)
 bool DraggingValueState::onUpdateStatusBar(Editor* editor)
 {
   return false;
+}
+
+void DraggingValueState::onBeforeCommandExecution(CommandExecutionEvent& ev)
+{
+  m_editor->backToPreviousState();
 }
 
 void DraggingValueState::changeFgColor(Color c)

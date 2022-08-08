@@ -8,6 +8,7 @@
 #define APP_UI_EDITOR_DRAGGING_VALUE_STATE_H_INCLUDED
 #pragma once
 
+#include "app/ui_context.h"
 #include "app/ui/editor/state_with_wheel_behavior.h"
 #include "app/ui/key.h"
 #include "gfx/point.h"
@@ -18,7 +19,7 @@ namespace app {
   class DraggingValueState : public StateWithWheelBehavior {
   public:
     DraggingValueState(Editor* editor, const Keys& keys);
-
+    void onBeforePopState(Editor* editor);
     bool isTemporalState() const override { return true; }
     bool onMouseDown(Editor* editor, ui::MouseMessage* msg) override;
     bool onMouseUp(Editor* editor, ui::MouseMessage* msg) override;
@@ -31,6 +32,7 @@ namespace app {
     bool requireBrushPreview() override { return true; }
 
   private:
+    void onBeforeCommandExecution(CommandExecutionEvent& ev);
     Color initialFgColor() const override { return m_fgColor; }
     Color initialBgColor() const override { return m_initialBgColor; }
     int initialFgTileIndex() const override { return m_initialFgTileIndex; }
@@ -48,6 +50,7 @@ namespace app {
     tools::Tool* initialTool() const override { return m_initialTool; }
     void changeFgColor(Color c) override;
 
+    Editor* m_editor;
     Keys m_keys;
     gfx::Point m_initialPos;
 
@@ -72,6 +75,8 @@ namespace app {
     // different elements of the color (e.g. Value and Saturation) at
     // the same time with different DragVectors/axes.
     Color m_fgColor;
+
+    obs::scoped_connection m_beforeCmdConn;
   };
 
 } // namespace app
