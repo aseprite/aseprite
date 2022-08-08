@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2019-2020  Igara Studio S.A.
+// Copyright (c) 2019-2022  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -66,7 +66,9 @@ void resize_cel_image(
       gfx::RectF newBounds = cel->boundsF();
       newBounds.offset(-pivot);
       newBounds *= scale;
-      newBounds.offset(pivot);
+      newBounds.setOrigin(
+        cel->data()->boundsF().origin() +
+        pivot - gfx::PointF(scale.w * pivot.x, scale.h * pivot.y));
       tx(new cmd::SetCelBoundsF(cel, newBounds));
     }
     else {
