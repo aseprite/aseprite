@@ -211,7 +211,7 @@ void ExportFileWindow::updateAdjustResizeButton()
 
 void ExportFileWindow::onAdjustResize()
 {
-  resize()->setValue(base::convert_to<std::string>(m_preferredResize));
+  resize()->setValue(fmt::format("{:.2f}", 100.0 * m_preferredResize));
 
   adjustResize()->setVisible(false);
   adjustResize()->parent()->layout();
