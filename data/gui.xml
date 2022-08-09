@@ -669,14 +669,19 @@
 	</menu>
         <separator />
         <item command="SaveFile" text="@.file_save" />
-        <item command="SaveFileAs" text="@.file_save_as" />
-        <item command="SaveFileCopyAs" text="@.file_export" group="file_save" />
+        <item command="SaveFileAs" text="@.file_save_as" group="file_save" />
         <item command="CloseFile" text="@.file_close" />
         <item command="CloseAllFiles" text="@.file_close_all" group="file_close" />
         <separator />
-        <item command="ImportSpriteSheet" text="@.file_import_sprite_sheet" group="file_import" />
-        <item command="ExportSpriteSheet" text="@.file_export_sprite_sheet" group="file_export" />
-        <item command="RepeatLastExport" text="@.file_repeat_last_export" />
+        <menu text="@.file_export" group="file_export">
+          <item command="SaveFileCopyAs" text="@.file_export_as" />
+          <item command="ExportSpriteSheet" text="@.file_export_sprite_sheet" group="file_export_sub" />
+          <separator />
+          <item command="RepeatLastExport" text="@.file_repeat_last_export" />
+        </menu>
+        <menu text="@.file_import" group="file_import">
+          <item command="ImportSpriteSheet" text="@.file_import_sprite_sheet" group="file_import_sub" />
+        </menu>
         <separator id="scripts_menu_separator" />
         <menu id="scripts_menu" text="@.file_scripts" group="file_scripts">
           <item command="OpenScriptFolder" text="@.file_open_script_folder" />
