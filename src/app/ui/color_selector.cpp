@@ -444,8 +444,10 @@ void ColorSelector::onPaint(ui::PaintEvent& ev)
     SkCanvas* canvas;
     bool isSRGB;
     // TODO compare both color spaces
-    if (get_current_color_space()->isSRGB() &&
-        g->getInternalSurface()->colorSpace()->isSRGB()) {
+    if ((!get_current_color_space() ||
+         get_current_color_space()->isSRGB()) &&
+        (!g->getInternalSurface()->colorSpace() ||
+         g->getInternalSurface()->colorSpace()->isSRGB())) {
       // We can render directly in the ui::Graphics surface
       canvas = &static_cast<os::SkiaSurface*>(g->getInternalSurface())->canvas();
       isSRGB = true;
