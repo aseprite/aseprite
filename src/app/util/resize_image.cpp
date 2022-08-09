@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2019-2021  Igara Studio S.A.
+// Copyright (c) 2019-2022  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -64,9 +64,9 @@ void resize_cel_image(
     // Resize the cel bounds only if it's from a reference layer
     if (cel->layer()->isReference()) {
       gfx::RectF newBounds = cel->boundsF();
-      newBounds.offset(-pivot);
-      newBounds *= scale;
-      newBounds.offset(pivot);
+      newBounds.offset(pivot - gfx::PointF(scale.w*pivot.x, scale.h*pivot.y));
+      newBounds.w *= scale.w;
+      newBounds.h *= scale.h;
       tx(new cmd::SetCelBoundsF(cel, newBounds));
     }
     else {
