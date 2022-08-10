@@ -907,7 +907,6 @@ private:
     if (!item)
       return;
 
-    panel()->showChild(findChild(item->getValue().c_str()));
     m_curSection = sectionListbox()->getSelectedIndex();
 
     // General section
@@ -925,6 +924,8 @@ private:
     // Load extension
     else if (item->getValue() == kSectionExtensionsId)
       loadExtensions();
+
+    panel()->showChild(findChild(item->getValue().c_str()));
   }
 
   void onClearRecentFiles() {
