@@ -28,6 +28,7 @@ namespace app {
 
     std::string outputFilenameValue() const;
     double resizeValue() const;
+    std::string areaValue() const;
     std::string layersValue() const;
     std::string framesValue() const;
     doc::AniDir aniDirValue() const;

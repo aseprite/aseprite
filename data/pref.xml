@@ -508,6 +508,7 @@
     <section id="save_copy" canclear="true">
       <option id="filename" type="std::string" />
       <option id="resize_scale" type="double" default="1" />
+      <option id="area" type="std::string" />
       <option id="layer" type="std::string" />
       <option id="frame_tag" type="std::string" />
       <option id="ani_dir" type="doc::AniDir" default="doc::AniDir::FORWARD" />
