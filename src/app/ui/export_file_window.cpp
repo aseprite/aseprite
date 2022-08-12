@@ -153,6 +153,11 @@ void ExportFileWindow::setResizeScale(double scale)
   resize()->setValue(fmt::format("{:.2f}", 100.0 * scale));
 }
 
+void ExportFileWindow::setArea(const std::string& areaValue)
+{
+  area()->setValue(areaValue);
+}
+
 void ExportFileWindow::setAniDir(const doc::AniDir aniDir)
 {
   anidir()->setSelectedItemIndex(int(aniDir));

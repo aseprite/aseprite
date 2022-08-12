@@ -65,9 +65,9 @@ public:
     ASSERT(m_doc && m_sprite);
   }
 
-  void setSliceBounds(const gfx::Rect& sliceBounds) {
-    m_spec.setWidth(sliceBounds.w * m_scale.x);
-    m_spec.setHeight(sliceBounds.h * m_scale.y);
+  void setSpecSize(const gfx::Size& size) {
+    m_spec.setWidth(size.w * m_scale.x);
+    m_spec.setHeight(size.h * m_scale.y);
   }
 
   void setUnscaledImage(const doc::frame_t frame,
@@ -234,7 +234,7 @@ int save_document(Context* context, Doc* document)
   std::unique_ptr<FileOp> fop(
     FileOp::createSaveDocumentOperation(
       context,
-      FileOpROI(document, "", "", SelectedFrames(), false),
+      FileOpROI(document, gfx::Rect(), "", "", SelectedFrames(), false),
       document->filename(), "",
       false));
   if (!fop)
@@ -270,11 +270,13 @@ FileOpROI::FileOpROI()
 }
 
 FileOpROI::FileOpROI(const Doc* doc,
+                     const gfx::Rect& bounds,
                      const std::string& sliceName,
                      const std::string& tagName,
                      const doc::SelectedFrames& selFrames,
                      const bool adjustByTag)
   : m_document(doc)
+  , m_bounds(bounds)
   , m_slice(nullptr)
   , m_tag(nullptr)
   , m_selFrames(selFrames)
@@ -917,23 +919,35 @@ void FileOp::operate(IFileOpProgress* progress)
 
       frame_t outputFrame = 0;
       for (frame_t frame : m_roi.selectedFrames()) {
-        // Draw the "frame" in "m_seq.image"
+        gfx::Rect bounds;
+
+        // Export bounds of specific slice
         if (m_roi.slice()) {
           const SliceKey* key = m_roi.slice()->getByFrame(frame);
           if (!key || key->isEmpty())
             continue;           // Skip frame because there is no slice key
 
+          bounds = key->bounds();
+        }
+        // Export specific bounds
+        else if (!m_roi.bounds().isEmpty()) {
+          bounds = m_roi.bounds();
+        }
+
+        // Draw the "frame" in "m_seq.image" with the given bounds
+        // (bounds can be the selection bounds or a slice key bounds)
+        if (!bounds.isEmpty()) {
           if (m_abstractImage)
-            m_abstractImage->setSliceBounds(key->bounds());
+            m_abstractImage->setSpecSize(bounds.size());
 
           m_seq.image.reset(
             Image::create(sprite->pixelFormat(),
-                          key->bounds().w,
-                          key->bounds().h));
+                          bounds.w,
+                          bounds.h));
 
           render.renderSprite(
             m_seq.image.get(), sprite, frame,
-            gfx::Clip(gfx::Point(0, 0), key->bounds()));
+            gfx::Clip(gfx::Point(0, 0), bounds));
         }
         else {
           render.renderSprite(m_seq.image.get(), sprite, frame);

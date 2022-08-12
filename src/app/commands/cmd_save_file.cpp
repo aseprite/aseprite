@@ -37,6 +37,7 @@
 #include "base/fs.h"
 #include "base/scoped_value.h"
 #include "base/thread.h"
+#include "doc/mask.h"
 #include "doc/sprite.h"
 #include "doc/tag.h"
 #include "fmt/format.h"
@@ -204,7 +205,12 @@ void SaveFileBaseCommand::saveDocumentInBackground(
     }
   }
 
-  FileOpROI roi(document, params().slice(), params().tag(),
+  gfx::Rect bounds;
+  if (params().bounds.isSet())
+    bounds = params().bounds();
+
+  FileOpROI roi(document, bounds,
+                params().slice(), params().tag(),
                 m_selFrames, m_adjustFramesByTag);
 
   std::unique_ptr<FileOp> fop(
@@ -346,6 +352,7 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
   std::string frames = kAllFrames;
   bool applyPixelRatio = false;
   double scale = params().scale();
+  gfx::Rect bounds = params().bounds();
   doc::AniDir aniDirValue = params().aniDir();
   bool isForTwitter = false;
 
@@ -382,6 +389,13 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
     if (params().scale.isSet()) win.setResizeScale(scale);
     if (params().aniDir.isSet()) win.setAniDir(aniDirValue);
 
+    if (params().slice.isSet()) win.setArea(params().slice());
+    else if (params().bounds.isSet() &&
+             doc->isMaskVisible() &&
+             doc->mask()->bounds() == params().bounds()) {
+      win.setArea(kSelectedCanvas);
+    }
+
     win.remapWindow();
     load_window_pos(&win, "ExportFile");
   again:;
@@ -410,6 +424,9 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
     layers = win.layersValue();
     frames = win.framesValue();
     scale = win.resizeValue();
+    params().slice(win.areaValue()); // Set slice
+    if (win.areaValue() == kSelectedCanvas && doc->isMaskVisible())
+      bounds = doc->mask()->bounds();
     applyPixelRatio = win.applyPixelRatio();
     aniDirValue = win.aniDirValue();
     isForTwitter = win.isForTwitter();
@@ -480,8 +497,10 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
       m_adjustFramesByTag = false;
     }
 
-    // Set ani dir
+    // Set other parameters
     params().aniDir(aniDirValue);
+    if (!bounds.isEmpty())
+      params().bounds(bounds);
 
     // TODO This should be set as options for the specific encoder
     GifEncoderDurationFix fixGif(isForTwitter);
