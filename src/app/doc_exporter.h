@@ -21,6 +21,7 @@
 #include "gfx/rect.h"
 
 #include <iosfwd>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -116,10 +117,10 @@ namespace app {
 
     class Item {
     public:
-      Doc* doc;
-      const doc::Tag* tag;
-      doc::SelectedLayers* selLayers;
-      doc::SelectedFrames* selFrames;
+      Doc* doc = nullptr;
+      const doc::Tag* tag = nullptr;
+      std::unique_ptr<doc::SelectedLayers> selLayers;
+      std::unique_ptr<doc::SelectedFrames> selFrames;
 
       Item(Doc* doc,
            const doc::Tag* tag,

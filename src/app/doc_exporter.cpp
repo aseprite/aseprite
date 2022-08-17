@@ -99,26 +99,13 @@ DocExporter::Item::Item(Doc* doc,
                         const doc::SelectedFrames* selFrames)
   : doc(doc)
   , tag(tag)
-  , selLayers(selLayers ? new doc::SelectedLayers(*selLayers): nullptr)
-  , selFrames(selFrames ? new doc::SelectedFrames(*selFrames): nullptr)
+  , selLayers(selLayers ? std::make_unique<doc::SelectedLayers>(*selLayers): nullptr)
+  , selFrames(selFrames ? std::make_unique<doc::SelectedFrames>(*selFrames): nullptr)
 {
 }
 
-DocExporter::Item::Item(Item&& other)
-  : doc(other.doc)
-  , tag(other.tag)
-  , selLayers(other.selLayers)
-  , selFrames(other.selFrames)
-{
-  other.selLayers = nullptr;
-  other.selFrames = nullptr;
-}
-
-DocExporter::Item::~Item()
-{
-  delete selLayers;
-  delete selFrames;
-}
+DocExporter::Item::Item(Item&& other) = default;
+DocExporter::Item::~Item() = default;
 
 int DocExporter::Item::frames() const
 {
@@ -891,7 +878,7 @@ void DocExporter::captureSamples(Samples& samples,
       std::string filename = filename_formatter(format, fnInfo);
 
       Sample sample(
-        doc, sprite, item.selLayers, frame, innerTag,
+        doc, sprite, item.selLayers.get(), frame, innerTag,
         filename, m_innerPadding, m_extrude);
       Cel* cel = nullptr;
       Cel* link = nullptr;
