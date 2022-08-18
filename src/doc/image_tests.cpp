@@ -26,7 +26,7 @@ protected:
 };
 
 typedef testing::Types<RgbTraits, GrayscaleTraits, IndexedTraits, BitmapTraits> ImageAllTraits;
-TYPED_TEST_CASE(ImageAllTypes, ImageAllTraits);
+TYPED_TEST_SUITE(ImageAllTypes, ImageAllTraits);
 
 TYPED_TEST(ImageAllTypes, PutGetAndIterators)
 {

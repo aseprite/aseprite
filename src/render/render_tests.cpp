@@ -32,7 +32,7 @@ protected:
 };
 
 typedef testing::Types<RgbTraits, GrayscaleTraits, IndexedTraits> ImageAllTraits;
-TYPED_TEST_CASE(RenderAllModes, ImageAllTraits);
+TYPED_TEST_SUITE(RenderAllModes, ImageAllTraits);
 
 // a b
 // c d
