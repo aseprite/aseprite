@@ -1,5 +1,5 @@
 // Desktop Integration
-// Copyright (C) 2021  Igara Studio S.A.
+// Copyright (C) 2021-2022  Igara Studio S.A.
 // Copyright (C) 2017-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -203,7 +203,7 @@ HRESULT ThumbnailHandler::GetThumbnail(UINT cx, HBITMAP* phbmp, WTS_ALPHATYPE* p
 
 #undef TRANSPARENT              // Windows defines TRANSPARENT macro
     render::Render render;
-    render.setBgType(render::BgType::TRANSPARENT);
+    render.setBgOptions(render::BgOptions::MakeTransparent());
     render.setProjection(render::Projection(doc::PixelRatio(1, 1),
                                             render::Zoom(cx, wh)));
     render.renderSprite(image.get(), spr, 0,
