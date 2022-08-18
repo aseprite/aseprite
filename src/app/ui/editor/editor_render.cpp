@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -57,28 +57,28 @@ void EditorRender::setupBackground(Doc* doc, doc::PixelFormat pixelFormat)
 
   gfx::Size tile;
   switch (docPref.bg.type()) {
-    case app::gen::BgType::CHECKED_16x16:
-      bgType = render::BgType::CHECKED;
+    case app::gen::BgType::CHECKERED_16x16:
+      bgType = render::BgType::CHECKERED;
       tile = gfx::Size(16, 16);
       break;
-    case app::gen::BgType::CHECKED_8x8:
-      bgType = render::BgType::CHECKED;
+    case app::gen::BgType::CHECKERED_8x8:
+      bgType = render::BgType::CHECKERED;
       tile = gfx::Size(8, 8);
       break;
-    case app::gen::BgType::CHECKED_4x4:
-      bgType = render::BgType::CHECKED;
+    case app::gen::BgType::CHECKERED_4x4:
+      bgType = render::BgType::CHECKERED;
       tile = gfx::Size(4, 4);
       break;
-    case app::gen::BgType::CHECKED_2x2:
-      bgType = render::BgType::CHECKED;
+    case app::gen::BgType::CHECKERED_2x2:
+      bgType = render::BgType::CHECKERED;
       tile = gfx::Size(2, 2);
       break;
-    case app::gen::BgType::CHECKED_1x1:
-      bgType = render::BgType::CHECKED;
+    case app::gen::BgType::CHECKERED_1x1:
+      bgType = render::BgType::CHECKERED;
       tile = gfx::Size(1, 1);
       break;
-    case app::gen::BgType::CHECKED_CUSTOM:
-      bgType = render::BgType::CHECKED;
+    case app::gen::BgType::CHECKERED_CUSTOM:
+      bgType = render::BgType::CHECKERED;
       tile = docPref.bg.size();
       break;
     default:
@@ -86,16 +86,18 @@ void EditorRender::setupBackground(Doc* doc, doc::PixelFormat pixelFormat)
       break;
   }
 
-  m_render->setBgType(bgType);
-  m_render->setBgZoom(docPref.bg.zoom());
-  m_render->setBgColor1(color_utils::color_for_image_without_alpha(docPref.bg.color1(), pixelFormat));
-  m_render->setBgColor2(color_utils::color_for_image_without_alpha(docPref.bg.color2(), pixelFormat));
-  m_render->setBgCheckedSize(tile);
+  render::BgOptions bg;
+  bg.type = bgType;
+  bg.zoom = docPref.bg.zoom();
+  bg.color1 = color_utils::color_for_image_without_alpha(docPref.bg.color1(), pixelFormat);
+  bg.color2 = color_utils::color_for_image_without_alpha(docPref.bg.color2(), pixelFormat);
+  bg.stripeSize = tile;
+  m_render->setBgOptions(bg);
 }
 
 void EditorRender::setTransparentBackground()
 {
-  m_render->setBgType(render::BgType::TRANSPARENT);
+  m_render->setBgOptions(render::BgOptions::MakeTransparent());
 }
 
 void EditorRender::setSelectedLayer(const doc::Layer* layer)
@@ -163,11 +165,11 @@ void EditorRender::renderSprite(
   m_render->renderSprite(dstImage, sprite, frame, area);
 }
 
-void EditorRender::renderCheckedBackground(
+void EditorRender::renderCheckeredBackground(
   doc::Image* image,
   const gfx::Clip& area)
 {
-  m_render->renderCheckedBackground(image, area);
+  m_render->renderCheckeredBackground(image, area);
 }
 
 void EditorRender::renderImage(

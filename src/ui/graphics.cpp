@@ -127,8 +127,8 @@ void Graphics::setDrawMode(DrawMode mode, int param,
     case DrawMode::Xor:
       m_surface->setDrawMode(os::DrawMode::Xor);
       break;
-    case DrawMode::Checked:
-      m_surface->setDrawMode(os::DrawMode::Checked, param, a, b);
+    case DrawMode::Checkered:
+      m_surface->setDrawMode(os::DrawMode::Checkered, param, a, b);
       break;
   }
 }

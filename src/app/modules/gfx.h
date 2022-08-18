@@ -31,14 +31,14 @@ namespace app {
   gfx::Color grid_color1();
   gfx::Color grid_color2();
 
-  void draw_checked_grid(ui::Graphics* g,
-                         const gfx::Rect& rc,
-                         const gfx::Size& tile);
+  void draw_checkered_grid(ui::Graphics* g,
+                           const gfx::Rect& rc,
+                           const gfx::Size& tile);
 
-  void draw_checked_grid(ui::Graphics* g,
-                         const gfx::Rect& rc,
-                         const gfx::Size& tile,
-                         DocumentPreferences& docPref);
+  void draw_checkered_grid(ui::Graphics* g,
+                           const gfx::Rect& rc,
+                           const gfx::Size& tile,
+                           DocumentPreferences& docPref);
 
   void draw_color(ui::Graphics* g,
                   const gfx::Rect& rc,

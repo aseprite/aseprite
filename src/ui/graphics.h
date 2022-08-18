@@ -44,7 +44,7 @@ namespace ui {
     enum class DrawMode {
       Solid,
       Xor,
-      Checked,
+      Checkered,
     };
 
     Graphics(Display* display, const os::SurfaceRef& surface, int dx, int dy);
@@ -195,22 +195,22 @@ namespace ui {
     DISABLE_COPYING(IntersectClip);
   };
 
-  class CheckedDrawMode {
+  class CheckeredDrawMode {
   public:
-    CheckedDrawMode(Graphics* g, int param,
-                    const gfx::Color a,
-                    const gfx::Color b) : m_graphics(g) {
-      m_graphics->setDrawMode(Graphics::DrawMode::Checked, param, a, b);
+    CheckeredDrawMode(Graphics* g, int param,
+                      const gfx::Color a,
+                      const gfx::Color b) : m_graphics(g) {
+      m_graphics->setDrawMode(Graphics::DrawMode::Checkered, param, a, b);
     }
 
-    ~CheckedDrawMode() {
+    ~CheckeredDrawMode() {
       m_graphics->setDrawMode(Graphics::DrawMode::Solid);
     }
 
   private:
     Graphics* m_graphics;
 
-    DISABLE_COPYING(CheckedDrawMode);
+    DISABLE_COPYING(CheckeredDrawMode);
   };
 
   typedef std::shared_ptr<Graphics> GraphicsPtr;

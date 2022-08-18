@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -154,7 +154,7 @@ protected:
         else if (keyMsg->scancode() == kKeyMinusPad ||
                  keyMsg->unicodeChar() == '-') {
           if (m_index_bg_color >= 0) {
-            --m_index_bg_color;     // can be -1 which is the checked background
+            --m_index_bg_color;     // can be -1 which is the checkered background
 
             invalidate();
           }
@@ -205,9 +205,10 @@ protected:
     render.setProjection(m_proj);
     if (m_index_bg_color == -1) {
       render.setupBackground(m_doc, m_doublebuf->pixelFormat());
-      render.renderCheckedBackground(m_doublebuf.get(),
+      render.renderCheckeredBackground(
+        m_doublebuf.get(),
         gfx::Clip(0, 0, -m_pos.x, -m_pos.y,
-          m_doublebuf->width(), m_doublebuf->height()));
+                  m_doublebuf->width(), m_doublebuf->height()));
     }
     else {
       doc::clear_image(m_doublebuf.get(), m_pal->getEntry(m_index_bg_color));

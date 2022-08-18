@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019 Igara Studio S.A.
+// Copyright (c) 2019-2022 Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -58,11 +58,13 @@ static void Bm_Render(benchmark::State& state)
     clear_image(dst.get(), 0);
 
     Render render;
-    render.setBgType(BgType::CHECKED);
-    render.setBgZoom(true);
-    render.setBgColor1(rgba(100, 100, 100, 255));
-    render.setBgColor2(rgba(200, 200, 200, 255));
-    render.setBgCheckedSize(gfx::Size(16, 16));
+    BgOptions bg;
+    bg.type = BgType::CHECKERED;
+    bg.zoom = true;
+    bg.color1 = rgba(100, 100, 100, 255);
+    bg.color2 = rgba(200, 200, 200, 255);
+    bg.stripeSize = gfx::Size(16, 16);
+    render.setBgOptions(bg);
     render.renderSprite(
       dst.get(), spr, frame_t(0),
       gfx::Clip(0, 0, 0, 0, w, h));

@@ -43,11 +43,11 @@ using namespace gfx;
 
 namespace {
 
-void draw_checked_grid(ui::Graphics* g,
-                       const gfx::Rect& rc,
-                       const gfx::Size& tile,
-                       const gfx::Color c1,
-                       const gfx::Color c2)
+void draw_checkered_grid(ui::Graphics* g,
+                         const gfx::Rect& rc,
+                         const gfx::Size& tile,
+                         const gfx::Color c1,
+                         const gfx::Color c2)
 {
   if (tile.w < 1 || tile.h < 1)
     return;
@@ -93,19 +93,19 @@ gfx::Color grid_color2()
     return gfx::rgba(192, 192, 192);
 }
 
-void draw_checked_grid(ui::Graphics* g,
-                       const gfx::Rect& rc,
-                       const gfx::Size& tile)
+void draw_checkered_grid(ui::Graphics* g,
+                         const gfx::Rect& rc,
+                         const gfx::Size& tile)
 {
-  draw_checked_grid(g, rc, tile, grid_color1(), grid_color2());
+  draw_checkered_grid(g, rc, tile, grid_color1(), grid_color2());
 }
 
-void draw_checked_grid(ui::Graphics* g,
-                       const gfx::Rect& rc,
-                       const gfx::Size& tile,
-                       DocumentPreferences& docPref)
+void draw_checkered_grid(ui::Graphics* g,
+                         const gfx::Rect& rc,
+                         const gfx::Size& tile,
+                         DocumentPreferences& docPref)
 {
-  draw_checked_grid(g, rc, tile, grid_color1(), grid_color2());
+  draw_checkered_grid(g, rc, tile, grid_color1(), grid_color2());
 }
 
 void draw_color(ui::Graphics* g,
@@ -124,9 +124,9 @@ void draw_color(ui::Graphics* g,
 
   if (alpha < 255) {
     if (rc.w == rc.h)
-      draw_checked_grid(g, rc, gfx::Size(rc.w/2, rc.h/2));
+      draw_checkered_grid(g, rc, gfx::Size(rc.w/2, rc.h/2));
     else
-      draw_checked_grid(g, rc, gfx::Size(rc.w/4, rc.h/2));
+      draw_checkered_grid(g, rc, gfx::Size(rc.w/4, rc.h/2));
   }
 
   if (alpha > 0) {
@@ -206,7 +206,7 @@ void draw_tile(ui::Graphics* g,
   if (rc.w < 1 || rc.h < 1)
     return;
 
-  draw_checked_grid(g, rc, gfx::Size(rc.w/2, rc.h/2));
+  draw_checkered_grid(g, rc, gfx::Size(rc.w/2, rc.h/2));
 
   if (tile == doc::notile)
     return;
