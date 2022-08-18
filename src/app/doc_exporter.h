@@ -14,6 +14,7 @@
 #include "base/disable_copying.h"
 #include "base/task.h"
 #include "doc/frame.h"
+#include "doc/image_ref.h"
 #include "doc/image_buffer.h"
 #include "doc/object_id.h"
 #include "doc/object_version.h"
@@ -82,6 +83,10 @@ namespace app {
       const doc::SelectedLayers* selLayers,
       const doc::SelectedFrames* selFrames);
 
+    void addImage(
+      Doc* doc,
+      const doc::ImageRef& image);
+
     int addDocumentSamples(
       Doc* doc,
       const doc::Tag* tag,
@@ -89,6 +94,10 @@ namespace app {
       const bool splitTags,
       const doc::SelectedLayers* selLayers,
       const doc::SelectedFrames* selFrames);
+
+    int addTilesetsSamples(
+      Doc* doc,
+      const doc::SelectedLayers* selLayers);
 
     Doc* exportSheet(Context* ctx, base::task_token& token);
     gfx::Size calculateSheetSize();
@@ -121,11 +130,14 @@ namespace app {
       const doc::Tag* tag = nullptr;
       std::unique_ptr<doc::SelectedLayers> selLayers;
       std::unique_ptr<doc::SelectedFrames> selFrames;
+      doc::ImageRef image;
 
       Item(Doc* doc,
            const doc::Tag* tag,
            const doc::SelectedLayers* selLayers,
            const doc::SelectedFrames* selFrames);
+      Item(Doc* doc,
+           const doc::ImageRef& image);
       Item(Item&& other);
       ~Item();
 
@@ -135,6 +147,8 @@ namespace app {
 
       int frames() const;
       doc::SelectedFrames getSelectedFrames() const;
+
+      bool isOneImageOnly() const { return image != nullptr; }
     };
     typedef std::vector<Item> Items;
 

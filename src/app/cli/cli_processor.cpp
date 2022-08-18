@@ -578,6 +578,10 @@ int CliProcessor::process(Context* ctx)
         else if (opt == &m_options.oneFrame()) {
           cof.oneFrame = true;
         }
+        // --export-tileset
+        else if (opt == &m_options.exportTileset()) {
+          cof.exportTileset = true;
+        }
       }
       // File names aren't associated to any option
       else {
@@ -677,12 +681,19 @@ bool CliProcessor::openFile(Context* ctx, CliOpenFile& cof)
       if (cof.hasLayersFilter())
         filterLayers(doc->sprite(), cof, filteredLayers);
 
-      m_exporter->addDocumentSamples(
-        doc, tag,
-        cof.splitLayers,
-        cof.splitTags,
-        (cof.hasLayersFilter() ? &filteredLayers: nullptr),
-        (!selFrames.empty() ? &selFrames: nullptr));
+      if (cof.exportTileset) {
+        m_exporter->addTilesetsSamples(
+          doc,
+          (cof.hasLayersFilter() ? &filteredLayers: nullptr));
+      }
+      else {
+        m_exporter->addDocumentSamples(
+          doc, tag,
+          cof.splitLayers,
+          cof.splitTags,
+          (cof.hasLayersFilter() ? &filteredLayers: nullptr),
+          (!selFrames.empty() ? &selFrames: nullptr));
+      }
     }
   }
 

@@ -19,25 +19,6 @@
 
 namespace app {
 
-CliOpenFile::CliOpenFile()
-{
-  document = nullptr;
-  fromFrame = -1;
-  toFrame = -1;
-  splitLayers = false;
-  splitTags = false;
-  splitSlices = false;
-  allLayers = false;
-  listLayers = false;
-  listTags = false;
-  listSlices = false;
-  ignoreEmpty = false;
-  trim = false;
-  trimByGrid = false;
-  oneFrame = false;
-  crop = gfx::Rect();
-}
-
 FileOpROI CliOpenFile::roi() const
 {
   ASSERT(document);

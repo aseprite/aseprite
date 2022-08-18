@@ -10,7 +10,7 @@
 #endif
 
 #include "app/app.h"
-#include "app/commands/new_params.h"
+#include "app/commands/cmd_export_sprite_sheet.h"
 #include "app/context.h"
 #include "app/context_access.h"
 #include "app/doc.h"
@@ -37,7 +37,10 @@
 #include "base/string.h"
 #include "base/thread.h"
 #include "doc/layer.h"
+#include "doc/layer_tilemap.h"
 #include "doc/tag.h"
+#include "doc/tileset.h"
+#include "doc/tilesets.h"
 #include "fmt/format.h"
 #include "ui/message.h"
 #include "ui/system.h"
@@ -53,37 +56,6 @@ using namespace ui;
 
 namespace {
 
-struct ExportSpriteSheetParams : public NewParams {
-  Param<bool> ui { this, true, "ui" };
-  Param<bool> askOverwrite { this, true, { "askOverwrite", "ask-overwrite" } };
-  Param<app::SpriteSheetType> type { this, app::SpriteSheetType::None, "type" };
-  Param<int> columns { this, 0, "columns" };
-  Param<int> rows { this, 0, "rows" };
-  Param<int> width { this, 0, "width" };
-  Param<int> height { this, 0, "height" };
-  Param<std::string> textureFilename { this, std::string(), "textureFilename" };
-  Param<std::string> dataFilename { this, std::string(), "dataFilename" };
-  Param<SpriteSheetDataFormat> dataFormat { this, SpriteSheetDataFormat::Default, "dataFormat" };
-  Param<std::string> filenameFormat { this, std::string(), "filenameFormat" };
-  Param<int> borderPadding { this, 0, "borderPadding" };
-  Param<int> shapePadding { this, 0, "shapePadding" };
-  Param<int> innerPadding { this, 0, "innerPadding" };
-  Param<bool> trimSprite { this, false, "trimSprite" };
-  Param<bool> trim { this, false, "trim" };
-  Param<bool> trimByGrid { this, false, "trimByGrid" };
-  Param<bool> extrude { this, false, "extrude" };
-  Param<bool> ignoreEmpty { this, false, "ignoreEmpty" };
-  Param<bool> mergeDuplicates { this, false, "mergeDuplicates" };
-  Param<bool> openGenerated { this, false, "openGenerated" };
-  Param<std::string> layer { this, std::string(), "layer" };
-  Param<std::string> tag { this, std::string(), "tag" };
-  Param<bool> splitLayers { this, false, "splitLayers" };
-  Param<bool> splitTags { this, false, "splitTags" };
-  Param<bool> listLayers { this, true, "listLayers" };
-  Param<bool> listTags { this, true, "listTags" };
-  Param<bool> listSlices { this, true, "listSlices" };
-};
-
 #ifdef ENABLE_UI
 
 enum Section {
@@ -91,6 +63,11 @@ enum Section {
   kSectionSprite,
   kSectionBorders,
   kSectionOutput,
+};
+
+enum Source {
+  kSource_Sprite,
+  kSource_Tilesets,
 };
 
 enum ConstraintType {
@@ -197,6 +174,7 @@ Doc* generate_sprite_sheet_from_params(
   const bool listLayers = params.listLayers();
   const bool listTags = params.listTags();
   const bool listSlices = params.listSlices();
+  const bool fromTilesets = params.fromTilesets();
 
   SelectedFrames selFrames;
   Tag* tag = calculate_selected_frames(site, tagName, selFrames);
@@ -226,10 +204,16 @@ Doc* generate_sprite_sheet_from_params(
   }
 
   exporter.reset();
-  exporter.addDocumentSamples(
-    doc, tag, splitLayers, splitTags,
-    !selLayers.empty() ? &selLayers: nullptr,
-    !selFrames.empty() ? &selFrames: nullptr);
+  if (fromTilesets)
+    exporter.addTilesetsSamples(
+      doc,
+      !selLayers.empty() ? &selLayers: nullptr);
+  else {
+    exporter.addDocumentSamples(
+      doc, tag, splitLayers, splitTags,
+      !selLayers.empty() ? &selLayers: nullptr,
+      !selFrames.empty() ? &selFrames: nullptr);
+  }
 
   if (saveData) {
     if (!filename.empty())
@@ -373,6 +357,14 @@ public:
         break;
     }
 
+    static_assert(kSource_Sprite == 0 &&
+                  kSource_Tilesets == 1,
+                  "Source enum has changed");
+    source()->addItem(new ListItem("Sprite"));
+    source()->addItem(new ListItem("Tilesets"));
+    if (params.fromTilesets())
+      source()->setSelectedItemIndex(int(kSource_Tilesets));
+
     fill_layers_combobox(
       m_sprite, layers(), params.layer());
 
@@ -446,6 +438,7 @@ public:
     trimSpriteEnabled()->Click.connect([this]{ onTrimEnabledChange(); });
     trimEnabled()->Click.connect([this]{ onTrimEnabledChange(); });
     gridTrimEnabled()->Click.connect([this]{ generatePreview(); });
+    source()->Change.connect([this]{ generatePreview(); });
     layers()->Change.connect([this]{ generatePreview(); });
     splitLayers()->Click.connect([this]{ onSplitLayersOrFrames(); });
     splitTags()->Click.connect([this]{ onSplitLayersOrFrames(); });
@@ -536,6 +529,7 @@ public:
     params.listLayers      (listLayersValue());
     params.listTags        (listTagsValue());
     params.listSlices      (listSlicesValue());
+    params.fromTilesets    (source()->getSelectedItemIndex() == int(kSource_Tilesets));
   }
 
 private:
@@ -1169,16 +1163,8 @@ private:
 
 } // anonymous namespace
 
-class ExportSpriteSheetCommand : public CommandWithNewParams<ExportSpriteSheetParams> {
-public:
-  ExportSpriteSheetCommand();
-protected:
-  bool onEnabled(Context* context) override;
-  void onExecute(Context* context) override;
-};
-
-ExportSpriteSheetCommand::ExportSpriteSheetCommand()
-  : CommandWithNewParams(CommandId::ExportSpriteSheet(), CmdRecordableFlag)
+ExportSpriteSheetCommand::ExportSpriteSheetCommand(const char* id)
+  : CommandWithNewParams(id, CmdRecordableFlag)
 {
 }
 

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -89,6 +89,7 @@ public:
   const Option& listTags() const { return m_listTags; }
   const Option& listSlices() const { return m_listSlices; }
   const Option& oneFrame() const { return m_oneFrame; }
+  const Option& exportTileset() const { return m_exportTileset; }
 
   bool hasExporterParams() const;
 #ifdef _WIN32
@@ -155,6 +156,7 @@ private:
   Option& m_listTags;
   Option& m_listSlices;
   Option& m_oneFrame;
+  Option& m_exportTileset;
 
   Option& m_verbose;
   Option& m_debug;
