@@ -542,8 +542,6 @@ Render::Render()
   , m_extraCel(NULL)
   , m_extraImage(NULL)
   , m_newBlendMethod(true)
-  , m_bgType(BgType::TRANSPARENT)
-  , m_bgStripeSize(16, 16)
   , m_globalOpacity(255)
   , m_selectedLayerForOpacity(nullptr)
   , m_selectedLayer(nullptr)
@@ -577,29 +575,9 @@ void Render::setProjection(const Projection& projection)
   m_proj = projection;
 }
 
-void Render::setBgType(BgType type)
+void Render::setBgOptions(const BgOptions& bg)
 {
-  m_bgType = type;
-}
-
-void Render::setBgZoom(bool state)
-{
-  m_bgZoom = state;
-}
-
-void Render::setBgColor1(color_t color)
-{
-  m_bgColor1 = color;
-}
-
-void Render::setBgColor2(color_t color)
-{
-  m_bgColor2 = color;
-}
-
-void Render::setBgStripeSize(const gfx::Size& size)
-{
-  m_bgStripeSize = size;
+  m_bg = bg;
 }
 
 void Render::setSelectedLayer(const Layer* layer)
@@ -818,7 +796,7 @@ void Render::renderBackground(Image* image,
     fill_rect(image, area.dstBounds(), bg_color);
   }
   else {
-    switch (m_bgType) {
+    switch (m_bg.type) {
       case BgType::CHECKERED:
         renderCheckeredBackground(image, area);
         if (bgLayer && bgLayer->isVisible() &&
@@ -846,7 +824,7 @@ bool Render::isSolidBackground(
   const color_t bg_color) const
 {
   return
-    ((m_bgType != BgType::CHECKERED) ||
+    ((m_bg.type != BgType::CHECKERED) ||
      (bgLayer && bgLayer->isVisible() &&
       // TODO Review this: bg_color can be an index (not an rgba())
       //      when sprite and dstImage are indexed
@@ -920,10 +898,10 @@ void Render::renderCheckeredBackground(
   const gfx::Clip& area)
 {
   int x, y, u, v;
-  int tile_w = m_bgStripeSize.w;
-  int tile_h = m_bgStripeSize.h;
+  int tile_w = m_bg.stripeSize.w;
+  int tile_h = m_bg.stripeSize.h;
 
-  if (m_bgZoom) {
+  if (m_bg.zoom) {
     tile_w = m_proj.zoom().apply(tile_w);
     tile_h = m_proj.zoom().apply(tile_h);
   }
@@ -945,12 +923,12 @@ void Render::renderCheckeredBackground(
   // Fix background color (make them opaque)
   switch (image->pixelFormat()) {
     case IMAGE_RGB:
-      m_bgColor1 |= doc::rgba_a_mask;
-      m_bgColor2 |= doc::rgba_a_mask;
+      m_bg.color1 |= doc::rgba_a_mask;
+      m_bg.color2 |= doc::rgba_a_mask;
       break;
     case IMAGE_GRAYSCALE:
-      m_bgColor1 |= doc::graya_a_mask;
-      m_bgColor2 |= doc::graya_a_mask;
+      m_bg.color1 |= doc::graya_a_mask;
+      m_bg.color2 |= doc::graya_a_mask;
       break;
   }
 
@@ -962,7 +940,7 @@ void Render::renderCheckeredBackground(
       if (!fillRc.isEmpty())
         fill_rect(
           image, fillRc.x, fillRc.y, fillRc.x+fillRc.w-1, fillRc.y+fillRc.h-1,
-          (((u+v))&1)? m_bgColor2: m_bgColor1);
+          (((u+v))&1)? m_bg.color2: m_bg.color1);
       ++u;
     }
     u = u_start;
@@ -1281,10 +1259,10 @@ CompositeImageFunc Render::getImageComposition(
   // image n-times (where n is the zoom scale).
   double intpart;
   const bool finegrain =
-    (!m_bgZoom && (m_bgStripeSize.w < m_proj.applyX(1) ||
-                   m_bgStripeSize.h < m_proj.applyY(1) ||
-                   std::modf(double(m_bgStripeSize.w) / m_proj.applyX(1.0), &intpart) != 0.0 ||
-                   std::modf(double(m_bgStripeSize.h) / m_proj.applyY(1.0), &intpart) != 0.0)) ||
+    (!m_bg.zoom && (m_bg.stripeSize.w < m_proj.applyX(1) ||
+                    m_bg.stripeSize.h < m_proj.applyY(1) ||
+                    std::modf(double(m_bg.stripeSize.w) / m_proj.applyX(1.0), &intpart) != 0.0 ||
+                    std::modf(double(m_bg.stripeSize.h) / m_proj.applyY(1.0), &intpart) != 0.0)) ||
     (layer &&
      layer->isGroup() &&
      has_visible_reference_layers(static_cast<const LayerGroup*>(layer)));

@@ -295,7 +295,7 @@ void NewLayerCommand::onExecute(Context* context)
       Sprite* pasteSpr = pasteDoc->sprite();
       render::Render render;
       render.setNewBlend(true);
-      render.setBgType(render::BgType::NONE);
+      render.setBgOptions(render::BgOptions::MakeNone());
 
       // Add more frames at the end
       if (writer.frame()+pasteSpr->lastFrame() > sprite->lastFrame())

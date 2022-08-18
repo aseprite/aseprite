@@ -86,16 +86,18 @@ void EditorRender::setupBackground(Doc* doc, doc::PixelFormat pixelFormat)
       break;
   }
 
-  m_render->setBgType(bgType);
-  m_render->setBgZoom(docPref.bg.zoom());
-  m_render->setBgColor1(color_utils::color_for_image_without_alpha(docPref.bg.color1(), pixelFormat));
-  m_render->setBgColor2(color_utils::color_for_image_without_alpha(docPref.bg.color2(), pixelFormat));
-  m_render->setBgStripeSize(tile);
+  render::BgOptions bg;
+  bg.type = bgType;
+  bg.zoom = docPref.bg.zoom();
+  bg.color1 = color_utils::color_for_image_without_alpha(docPref.bg.color1(), pixelFormat);
+  bg.color2 = color_utils::color_for_image_without_alpha(docPref.bg.color2(), pixelFormat);
+  bg.stripeSize = tile;
+  m_render->setBgOptions(bg);
 }
 
 void EditorRender::setTransparentBackground()
 {
-  m_render->setBgType(render::BgType::TRANSPARENT);
+  m_render->setBgOptions(render::BgOptions::MakeTransparent());
 }
 
 void EditorRender::setSelectedLayer(const doc::Layer* layer)

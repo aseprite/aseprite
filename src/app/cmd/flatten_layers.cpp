@@ -88,7 +88,7 @@ void FlattenLayers::onExecute()
 
   render::Render render;
   render.setNewBlend(m_newBlendMethod);
-  render.setBgType(render::BgType::NONE);
+  render.setBgOptions(render::BgOptions::MakeNone());
 
   {
     // Show only the layers to be flattened so other layers are hidden

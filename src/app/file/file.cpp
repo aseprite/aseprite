@@ -145,8 +145,7 @@ public:
 
     render::Render render;
     render.setNewBlend(m_newBlend);
-    render.setBgType(render::BgType::NONE);
-
+    render.setBgOptions(render::BgOptions::MakeNone());
     render.renderSprite(
       (needResize ? m_tmpUnscaledRender.get(): dst),
       m_sprite, frame);

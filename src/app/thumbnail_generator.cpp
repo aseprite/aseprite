@@ -136,7 +136,7 @@ private:
         render::Projection proj(sprite->pixelRatio(),
                                 render::Zoom(thumb_w, w));
         render::Render render;
-        render.setBgType(render::BgType::TRANSPARENT);
+        render.setBgOptions(render::BgOptions::MakeTransparent());
         render.setProjection(proj);
         render.renderSprite(
           thumbnailImage.get(), sprite, frame_t(0),
