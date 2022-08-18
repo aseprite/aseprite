@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -65,7 +65,7 @@ namespace render {
     void setBgZoom(bool state);
     void setBgColor1(color_t color);
     void setBgColor2(color_t color);
-    void setBgCheckedSize(const gfx::Size& size);
+    void setBgStripeSize(const gfx::Size& size);
 
     void setSelectedLayer(const Layer* layer);
 
@@ -117,7 +117,7 @@ namespace render {
       const gfx::ClipF& area);
 
     // Extra functions
-    void renderCheckedBackground(
+    void renderCheckeredBackground(
       Image* image,
       const gfx::Clip& area);
 
@@ -215,7 +215,7 @@ namespace render {
     bool m_bgZoom;
     color_t m_bgColor1;
     color_t m_bgColor2;
-    gfx::Size m_bgCheckedSize;
+    gfx::Size m_bgStripeSize;
     int m_globalOpacity;
     const Layer* m_selectedLayerForOpacity;
     const Layer* m_selectedLayer;

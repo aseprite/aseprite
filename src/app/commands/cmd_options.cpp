@@ -486,17 +486,17 @@ public:
     slideZoom()->setVisible(false);
 #endif
 
-    // Checked background size
-    static_assert(int(app::gen::BgType::CHECKED_16x16) == 0, "");
-    static_assert(int(app::gen::BgType::CHECKED_1x1) == 4, "");
-    static_assert(int(app::gen::BgType::CHECKED_CUSTOM) == 5, "");
-    checkedBgSize()->addItem("16x16");
-    checkedBgSize()->addItem("8x8");
-    checkedBgSize()->addItem("4x4");
-    checkedBgSize()->addItem("2x2");
-    checkedBgSize()->addItem("1x1");
-    checkedBgSize()->addItem("Custom");
-    checkedBgSize()->Change.connect([this]{ onCheckedBgSizeChange(); });
+    // Checkered background size
+    static_assert(int(app::gen::BgType::CHECKERED_16x16) == 0, "");
+    static_assert(int(app::gen::BgType::CHECKERED_1x1) == 4, "");
+    static_assert(int(app::gen::BgType::CHECKERED_CUSTOM) == 5, "");
+    checkeredBgSize()->addItem("16x16");
+    checkeredBgSize()->addItem("8x8");
+    checkeredBgSize()->addItem("4x4");
+    checkeredBgSize()->addItem("2x2");
+    checkeredBgSize()->addItem("1x1");
+    checkeredBgSize()->addItem("Custom");
+    checkeredBgSize()->Change.connect([this]{ onCheckeredBgSizeChange(); });
 
     // Reset buttons
     resetBg()->Click.connect([this]{ onResetBg(); });
@@ -708,15 +708,15 @@ public:
     m_curPref->pixelGrid.opacity(pixelGridOpacity()->getValue());
     m_curPref->pixelGrid.autoOpacity(pixelGridAutoOpacity()->isSelected());
 
-    m_curPref->bg.type(app::gen::BgType(checkedBgSize()->getSelectedItemIndex()));
-    if (m_curPref->bg.type() == app::gen::BgType::CHECKED_CUSTOM) {
+    m_curPref->bg.type(app::gen::BgType(checkeredBgSize()->getSelectedItemIndex()));
+    if (m_curPref->bg.type() == app::gen::BgType::CHECKERED_CUSTOM) {
       m_curPref->bg.size(gfx::Size(
-        checkedBgCustomW()->textInt(),
-        checkedBgCustomH()->textInt()));
+        checkeredBgCustomW()->textInt(),
+        checkeredBgCustomH()->textInt()));
     }
-    m_curPref->bg.zoom(checkedBgZoom()->isSelected());
-    m_curPref->bg.color1(checkedBgColor1()->getColor());
-    m_curPref->bg.color2(checkedBgColor2()->getColor());
+    m_curPref->bg.zoom(checkeredBgZoom()->isSelected());
+    m_curPref->bg.color1(checkeredBgColor1()->getColor());
+    m_curPref->bg.color2(checkeredBgColor2()->getColor());
 
     // Alerts preferences
     m_pref.openFile.openSequence(gen::SequenceDecision(openSequence()->getSelectedItemIndex()));
@@ -1039,24 +1039,24 @@ private:
       case 1: m_curPref = &m_docPref; break;
     }
 
-    checkedBgSize()->setSelectedItemIndex(int(m_curPref->bg.type()));
-    checkedBgZoom()->setSelected(m_curPref->bg.zoom());
-    checkedBgColor1()->setColor(m_curPref->bg.color1());
-    checkedBgColor2()->setColor(m_curPref->bg.color2());
+    checkeredBgSize()->setSelectedItemIndex(int(m_curPref->bg.type()));
+    checkeredBgZoom()->setSelected(m_curPref->bg.zoom());
+    checkeredBgColor1()->setColor(m_curPref->bg.color1());
+    checkeredBgColor2()->setColor(m_curPref->bg.color2());
 
-    onCheckedBgSizeChange();
+    onCheckeredBgSizeChange();
   }
 
-  void onCheckedBgSizeChange() {
-    if (checkedBgSize()->getSelectedItemIndex() == int(app::gen::BgType::CHECKED_CUSTOM)) {
-      checkedBgCustomW()->setTextf("%d", m_curPref->bg.size().w);
-      checkedBgCustomH()->setTextf("%d", m_curPref->bg.size().h);
-      checkedBgCustomW()->setVisible(true);
-      checkedBgCustomH()->setVisible(true);
+  void onCheckeredBgSizeChange() {
+    if (checkeredBgSize()->getSelectedItemIndex() == int(app::gen::BgType::CHECKERED_CUSTOM)) {
+      checkeredBgCustomW()->setTextf("%d", m_curPref->bg.size().w);
+      checkeredBgCustomH()->setTextf("%d", m_curPref->bg.size().h);
+      checkeredBgCustomW()->setVisible(true);
+      checkeredBgCustomH()->setVisible(true);
     }
     else {
-      checkedBgCustomW()->setVisible(false);
-      checkedBgCustomH()->setVisible(false);
+      checkeredBgCustomW()->setVisible(false);
+      checkeredBgCustomH()->setVisible(false);
     }
     sectionBg()->layout();
   }
@@ -1090,19 +1090,19 @@ private:
 
     // Reset global preferences (use default values specified in pref.xml)
     if (m_curPref == &m_globPref) {
-      checkedBgSize()->setSelectedItemIndex(int(pref.bg.type.defaultValue()));
-      checkedBgCustomW()->setVisible(false);
-      checkedBgCustomH()->setVisible(false);
-      checkedBgZoom()->setSelected(pref.bg.zoom.defaultValue());
-      checkedBgColor1()->setColor(pref.bg.color1.defaultValue());
-      checkedBgColor2()->setColor(pref.bg.color2.defaultValue());
+      checkeredBgSize()->setSelectedItemIndex(int(pref.bg.type.defaultValue()));
+      checkeredBgCustomW()->setVisible(false);
+      checkeredBgCustomH()->setVisible(false);
+      checkeredBgZoom()->setSelected(pref.bg.zoom.defaultValue());
+      checkeredBgColor1()->setColor(pref.bg.color1.defaultValue());
+      checkeredBgColor2()->setColor(pref.bg.color2.defaultValue());
     }
     // Reset document preferences with global settings
     else {
-      checkedBgSize()->setSelectedItemIndex(int(pref.bg.type()));
-      checkedBgZoom()->setSelected(pref.bg.zoom());
-      checkedBgColor1()->setColor(pref.bg.color1());
-      checkedBgColor2()->setColor(pref.bg.color2());
+      checkeredBgSize()->setSelectedItemIndex(int(pref.bg.type()));
+      checkeredBgZoom()->setSelected(pref.bg.zoom());
+      checkeredBgColor1()->setColor(pref.bg.color1());
+      checkeredBgColor2()->setColor(pref.bg.color2());
     }
   }
 

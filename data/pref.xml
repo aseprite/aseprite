@@ -32,12 +32,12 @@
       <value id="FULLNEDGES" value="4" />
     </enum>
     <enum id="BgType">
-      <value id="CHECKED_16x16" value="0" />
-      <value id="CHECKED_8x8" value="1" />
-      <value id="CHECKED_4x4" value="2" />
-      <value id="CHECKED_2x2" value="3" />
-      <value id="CHECKED_1x1" value="4" />
-      <value id="CHECKED_CUSTOM" value="5" />
+      <value id="CHECKERED_16x16" value="0" />
+      <value id="CHECKERED_8x8" value="1" />
+      <value id="CHECKERED_4x4" value="2" />
+      <value id="CHECKERED_2x2" value="3" />
+      <value id="CHECKERED_1x1" value="4" />
+      <value id="CHECKERED_CUSTOM" value="5" />
     </enum>
     <enum id="StopAtGrid">
       <value id="NEVER" value="0" />
@@ -455,7 +455,7 @@
       <option id="auto_opacity" type="bool" default="true" />
     </section>
     <section id="bg" canforce="true">
-      <option id="type" type="BgType" default="BgType::CHECKED_16x16" />
+      <option id="type" type="BgType" default="BgType::CHECKERED_16x16" />
       <option id="size" type="gfx::Size" default="gfx::Size(16, 16)" />
       <option id="zoom" type="bool" default="true" />
       <option id="color1" type="app::Color" default="app::Color::fromRgb(128, 128, 128)" />

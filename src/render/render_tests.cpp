@@ -131,7 +131,7 @@ TEST(Render, DefaultBackgroundModeWithNonzeroTransparentIndex)
   EXPECT_2X2_PIXELS(dst.get(), 0, 0, 0, c1); // RGB transparent
 }
 
-TEST(Render, CheckedBackground)
+TEST(Render, CheckeredBackground)
 {
   std::shared_ptr<Document> doc = std::make_shared<Document>();
   doc->sprites().add(Sprite::MakeStdSprite(ImageSpec(ColorMode::INDEXED, 4, 4)));
@@ -140,12 +140,12 @@ TEST(Render, CheckedBackground)
   clear_image(dst.get(), 0);
 
   Render render;
-  render.setBgType(BgType::CHECKED);
+  render.setBgType(BgType::CHECKERED);
   render.setBgZoom(true);
   render.setBgColor1(1);
   render.setBgColor2(2);
 
-  render.setBgCheckedSize(gfx::Size(1, 1));
+  render.setBgStripeSize(gfx::Size(1, 1));
   render.renderSprite(dst.get(), doc->sprite(), frame_t(0));
   EXPECT_4X4_PIXELS(dst.get(),
     1, 2, 1, 2,
@@ -153,7 +153,7 @@ TEST(Render, CheckedBackground)
     1, 2, 1, 2,
     2, 1, 2, 1);
 
-  render.setBgCheckedSize(gfx::Size(2, 2));
+  render.setBgStripeSize(gfx::Size(2, 2));
   render.renderSprite(dst.get(), doc->sprite(), frame_t(0));
   EXPECT_4X4_PIXELS(dst.get(),
     1, 1, 2, 2,
@@ -161,7 +161,7 @@ TEST(Render, CheckedBackground)
     2, 2, 1, 1,
     2, 2, 1, 1);
 
-  render.setBgCheckedSize(gfx::Size(3, 3));
+  render.setBgStripeSize(gfx::Size(3, 3));
   render.renderSprite(dst.get(), doc->sprite(), frame_t(0));
   EXPECT_4X4_PIXELS(dst.get(),
     1, 1, 1, 2,
@@ -170,7 +170,7 @@ TEST(Render, CheckedBackground)
     2, 2, 2, 1);
 
   render.setProjection(Projection(PixelRatio(1, 1), Zoom(2, 1)));
-  render.setBgCheckedSize(gfx::Size(1, 1));
+  render.setBgStripeSize(gfx::Size(1, 1));
   render.renderSprite(dst.get(), doc->sprite(), frame_t(0));
   EXPECT_4X4_PIXELS(dst.get(),
     1, 1, 2, 2,
@@ -195,11 +195,11 @@ TEST(Render, ZoomAndDstBounds)
   clear_image(dst.get(), 0);
 
   Render render;
-  render.setBgType(BgType::CHECKED);
+  render.setBgType(BgType::CHECKERED);
   render.setBgZoom(true);
   render.setBgColor1(1);
   render.setBgColor2(2);
-  render.setBgCheckedSize(gfx::Size(1, 1));
+  render.setBgStripeSize(gfx::Size(1, 1));
 
   render.renderSprite(
     dst.get(), doc->sprite(), frame_t(0),
@@ -228,11 +228,11 @@ TEST(Render, BugWithMultiplesOf3ZoomFactors)
     clear_image(dst.get(), 0);
 
     Render render;
-    render.setBgType(BgType::CHECKED);
+    render.setBgType(BgType::CHECKERED);
     render.setBgZoom(false);
     render.setBgColor1(rgba(128, 128, 128, 255));
     render.setBgColor2(rgba(64, 64, 64, 255));
-    render.setBgCheckedSize(gfx::Size(2, 2));
+    render.setBgStripeSize(gfx::Size(2, 2));
     render.setProjection(Projection(PixelRatio(1, 1), Zoom(zoom, 1)));
     render.renderSprite(
       dst.get(), doc->sprite(), frame_t(0),

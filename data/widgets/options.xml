@@ -317,20 +317,20 @@
         <vbox id="section_bg">
           <combobox id="bg_scope" />
 
-          <separator text="@.bg_checked" horizontal="true" />
+          <separator text="@.bg_checkered" horizontal="true" />
           <grid columns="2">
             <label text="@.bg_size" />
 	    <hbox>
-              <combobox id="checked_bg_size" />
-              <expr id="checked_bg_custom_w" />
-              <expr id="checked_bg_custom_h" />
-              <check text="@.bg_apply_zoom" id="checked_bg_zoom" />
+              <combobox id="checkered_bg_size" />
+              <expr id="checkered_bg_custom_w" />
+              <expr id="checkered_bg_custom_h" />
+              <check text="@.bg_apply_zoom" id="checkered_bg_zoom" />
 	    </hbox>
 
             <label text="@.bg_colors" />
 	    <hbox>
-              <colorpicker id="checked_bg_color1" rgba="true" />
-              <colorpicker id="checked_bg_color2" rgba="true" />
+              <colorpicker id="checkered_bg_color1" rgba="true" />
+              <colorpicker id="checkered_bg_color2" rgba="true" />
 	    </hbox>
           </grid>
 

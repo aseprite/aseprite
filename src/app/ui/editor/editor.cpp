@@ -680,7 +680,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
 
     m_renderEngine->removeExtraImage();
 
-    // If the checked background is visible in this sprite, we save
+    // If the checkered background is visible in this sprite, we save
     // all settings of the background for this document.
     if (!m_sprite->isOpaque())
       m_docPref.bg.forceSection();
@@ -981,15 +981,15 @@ void Editor::drawMask(Graphics* g)
   auto& segs = m_document->maskBoundaries();
   segs.createPathIfNeeeded();
 
-  CheckedDrawMode checked(g, m_antsOffset,
-                          gfx::rgba(0, 0, 0, 255),
-                          gfx::rgba(255, 255, 255, 255));
+  CheckeredDrawMode checkered(g, m_antsOffset,
+                              gfx::rgba(0, 0, 0, 255),
+                              gfx::rgba(255, 255, 255, 255));
   os::Paint paint;
   paint.style(os::Paint::Stroke);
   paint.color(gfx::rgba(0, 0, 0));
 
   // We translate the path instead of applying a matrix to the
-  // ui::Graphics so the "checked" pattern is not scaled too.
+  // ui::Graphics so the "checkered" pattern is not scaled too.
   gfx::Path path;
   segs.path().transform(m_proj.scaleMatrix(), &path);
   path.offset(pt.x, pt.y);
@@ -1247,7 +1247,7 @@ void Editor::drawCelHGuide(ui::Graphics* g,
 
   // Vertical guide to touch the horizontal line
   {
-    CheckedDrawMode checked(g, 0, color, gfx::ColorNone);
+    CheckeredDrawMode checkered(g, 0, color, gfx::ColorNone);
 
     if (scrY < scrCmpBounds.y)
       g->drawVLine(color, dottedX, scrCelBounds.y, scrCmpBounds.y - scrCelBounds.y);
@@ -1273,7 +1273,7 @@ void Editor::drawCelVGuide(ui::Graphics* g,
 
   // Horizontal guide to touch the vertical line
   {
-    CheckedDrawMode checked(g, 0, color, gfx::ColorNone);
+    CheckeredDrawMode checkered(g, 0, color, gfx::ColorNone);
 
     if (scrX < scrCmpBounds.x)
       g->drawHLine(color, scrCelBounds.x, dottedY, scrCmpBounds.x - scrCelBounds.x);

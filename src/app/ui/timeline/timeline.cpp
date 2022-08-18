@@ -1961,9 +1961,9 @@ void Timeline::drawClipboardRange(ui::Graphics* g)
 
   IntersectClip clip(g, getRangeClipBounds(clipboard_range));
   if (clip) {
-    CheckedDrawMode checked(g, m_offset_count,
-                            gfx::rgba(0, 0, 0, 255),
-                            gfx::rgba(255, 255, 255, 255));
+    CheckeredDrawMode checkered(g, m_offset_count,
+                                gfx::rgba(0, 0, 0, 255),
+                                gfx::rgba(255, 255, 255, 255));
     g->drawRect(gfx::rgba(0, 0, 0),
                 getRangeBounds(clipboard_range));
   }
@@ -2254,7 +2254,7 @@ void Timeline::drawCel(ui::Graphics* g, layer_t layerIndex, frame_t frame, Cel* 
     if (!thumb_bounds.isEmpty()) {
       if (os::SurfaceRef surface = thumb::get_cel_thumbnail(cel, thumb_bounds.size())) {
         const int t = std::clamp(thumb_bounds.w/8, 4, 16);
-        draw_checked_grid(g, thumb_bounds, gfx::Size(t, t), docPref());
+        draw_checkered_grid(g, thumb_bounds, gfx::Size(t, t), docPref());
 
         g->drawRgbaSurface(surface.get(),
                            thumb_bounds.center().x-surface->width()/2,
@@ -2342,7 +2342,7 @@ void Timeline::drawCelOverlay(ui::Graphics* g)
   gfx::Rect rc = m_sprite->bounds().fitIn(
     gfx::Rect(m_thumbnailsOverlayBounds).shrink(1));
   if (os::SurfaceRef surface = thumb::get_cel_thumbnail(cel, rc.size())) {
-    draw_checked_grid(g, rc, gfx::Size(8, 8)*ui::guiscale(), docPref());
+    draw_checkered_grid(g, rc, gfx::Size(8, 8)*ui::guiscale(), docPref());
 
     g->drawRgbaSurface(surface.get(),
                        rc.center().x-surface->width()/2,

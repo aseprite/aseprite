@@ -543,7 +543,7 @@ Render::Render()
   , m_extraImage(NULL)
   , m_newBlendMethod(true)
   , m_bgType(BgType::TRANSPARENT)
-  , m_bgCheckedSize(16, 16)
+  , m_bgStripeSize(16, 16)
   , m_globalOpacity(255)
   , m_selectedLayerForOpacity(nullptr)
   , m_selectedLayer(nullptr)
@@ -597,9 +597,9 @@ void Render::setBgColor2(color_t color)
   m_bgColor2 = color;
 }
 
-void Render::setBgCheckedSize(const gfx::Size& size)
+void Render::setBgStripeSize(const gfx::Size& size)
 {
-  m_bgCheckedSize = size;
+  m_bgStripeSize = size;
 }
 
 void Render::setSelectedLayer(const Layer* layer)
@@ -730,15 +730,15 @@ void Render::renderSprite(
   // New Blending Method:
   if (m_newBlendMethod) {
     // Clear dstImage with the bg_color (if the background is not a
-    // special background pattern like the checked background, this is
-    // enough as a base color).
+    // special background pattern like the checkered background, this
+    // is enough as a base color).
     fill_rect(dstImage, area.dstBounds(), bg_color);
 
     // Draw the Background layer - Onion skin behind the sprite - Transparent Layers
     renderSpriteLayers(dstImage, area, frame, compositeImage);
 
     // In case that we need a special background (e.g. like the
-    // checked pattern), we can draw the background in a temporal
+    // checkered pattern), we can draw the background in a temporal
     // image and then merge this temporal image with the dstImage.
     if (!isSolidBackground(bgLayer, bg_color)) {
       if (!m_tmpBuf)
@@ -819,8 +819,8 @@ void Render::renderBackground(Image* image,
   }
   else {
     switch (m_bgType) {
-      case BgType::CHECKED:
-        renderCheckedBackground(image, area);
+      case BgType::CHECKERED:
+        renderCheckeredBackground(image, area);
         if (bgLayer && bgLayer->isVisible() &&
             // TODO Review this: bg_color can be an index (not an rgba())
             //      when sprite and dstImage are indexed
@@ -846,7 +846,7 @@ bool Render::isSolidBackground(
   const color_t bg_color) const
 {
   return
-    ((m_bgType != BgType::CHECKED) ||
+    ((m_bgType != BgType::CHECKERED) ||
      (bgLayer && bgLayer->isVisible() &&
       // TODO Review this: bg_color can be an index (not an rgba())
       //      when sprite and dstImage are indexed
@@ -915,13 +915,13 @@ void Render::renderOnionskin(
   }
 }
 
-void Render::renderCheckedBackground(
+void Render::renderCheckeredBackground(
   Image* image,
   const gfx::Clip& area)
 {
   int x, y, u, v;
-  int tile_w = m_bgCheckedSize.w;
-  int tile_h = m_bgCheckedSize.h;
+  int tile_w = m_bgStripeSize.w;
+  int tile_h = m_bgStripeSize.h;
 
   if (m_bgZoom) {
     tile_w = m_proj.zoom().apply(tile_w);
@@ -954,7 +954,7 @@ void Render::renderCheckedBackground(
       break;
   }
 
-  // Draw checked background (tile by tile)
+  // Draw checkered background (tile by tile)
   int u_start = u;
   for (y=y_start-tile_h; y<image->height()+tile_h; y+=tile_h) {
     for (x=x_start-tile_w; x<image->width()+tile_w; x+=tile_w) {
@@ -1281,10 +1281,10 @@ CompositeImageFunc Render::getImageComposition(
   // image n-times (where n is the zoom scale).
   double intpart;
   const bool finegrain =
-    (!m_bgZoom && (m_bgCheckedSize.w < m_proj.applyX(1) ||
-                   m_bgCheckedSize.h < m_proj.applyY(1) ||
-                   std::modf(double(m_bgCheckedSize.w) / m_proj.applyX(1.0), &intpart) != 0.0 ||
-                   std::modf(double(m_bgCheckedSize.h) / m_proj.applyY(1.0), &intpart) != 0.0)) ||
+    (!m_bgZoom && (m_bgStripeSize.w < m_proj.applyX(1) ||
+                   m_bgStripeSize.h < m_proj.applyY(1) ||
+                   std::modf(double(m_bgStripeSize.w) / m_proj.applyX(1.0), &intpart) != 0.0 ||
+                   std::modf(double(m_bgStripeSize.h) / m_proj.applyY(1.0), &intpart) != 0.0)) ||
     (layer &&
      layer->isGroup() &&
      has_visible_reference_layers(static_cast<const LayerGroup*>(layer)));
