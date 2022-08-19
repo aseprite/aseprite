@@ -96,11 +96,13 @@ typedef std::shared_ptr<gfx::Rect> SharedRectPtr;
 DocExporter::Item::Item(Doc* doc,
                         const doc::Tag* tag,
                         const doc::SelectedLayers* selLayers,
-                        const doc::SelectedFrames* selFrames)
+                        const doc::SelectedFrames* selFrames,
+                        const bool splitGrid)
   : doc(doc)
   , tag(tag)
   , selLayers(selLayers ? std::make_unique<doc::SelectedLayers>(*selLayers): nullptr)
   , selFrames(selFrames ? std::make_unique<doc::SelectedFrames>(*selFrames): nullptr)
+  , splitGrid(splitGrid)
 {
 }
 
@@ -146,7 +148,8 @@ doc::SelectedFrames DocExporter::Item::getSelectedFrames() const
 
 class DocExporter::Sample {
 public:
-  Sample(Doc* document,
+  Sample(const gfx::Size& size,
+         Doc* document,
          Sprite* sprite,
          const ImageRef& image,
          SelectedLayers* selLayers,
@@ -166,10 +169,9 @@ public:
     m_extrude(extrude),
     m_isLinked(false),
     m_isDuplicated(false),
-    m_originalSize(image ? image->width(): sprite->width(),
-                   image ? image->height(): sprite->height()),
-    m_trimmedBounds(m_originalSize),
-    m_inTextureBounds(std::make_shared<gfx::Rect>(m_trimmedBounds)) {
+    m_originalSize(size),
+    m_trimmedBounds(size),
+    m_inTextureBounds(std::make_shared<gfx::Rect>(size)) {
   }
 
   Doc* document() const { return m_document; }
@@ -732,10 +734,11 @@ void DocExporter::addDocument(
   Doc* doc,
   const doc::Tag* tag,
   const doc::SelectedLayers* selLayers,
-  const doc::SelectedFrames* selFrames)
+  const doc::SelectedFrames* selFrames,
+  const bool splitGrid)
 {
   DX_TRACE("DX: addDocument doc=", doc, "tag=", tag);
-  m_documents.push_back(Item(doc, tag, selLayers, selFrames));
+  m_documents.push_back(Item(doc, tag, selLayers, selFrames, splitGrid));
 }
 
 void DocExporter::addImage(
@@ -751,6 +754,7 @@ int DocExporter::addDocumentSamples(
   const doc::Tag* thisTag,
   const bool splitLayers,
   const bool splitTags,
+  const bool splitGrid,
   const doc::SelectedLayers* selLayers,
   const doc::SelectedFrames* selFrames)
 {
@@ -819,7 +823,7 @@ int DocExporter::addDocumentSamples(
 
           SelectedLayers oneLayer;
           oneLayer.insert(layer);
-          addDocument(doc, tag, &oneLayer, thisSelFrames);
+          addDocument(doc, tag, &oneLayer, thisSelFrames, splitGrid);
           ++items;
         }
       }
@@ -830,13 +834,13 @@ int DocExporter::addDocumentSamples(
 
           SelectedLayers oneLayer;
           oneLayer.insert(layer);
-          addDocument(doc, tag, &oneLayer, thisSelFrames);
+          addDocument(doc, tag, &oneLayer, thisSelFrames, splitGrid);
           ++items;
         }
       }
     }
     else {
-      addDocument(doc, tag, selLayers, thisSelFrames);
+      addDocument(doc, tag, selLayers, thisSelFrames, splitGrid);
       ++items;
     }
   }
@@ -957,6 +961,9 @@ void DocExporter::captureSamples(Samples& samples,
       std::string filename = filename_formatter(format, fnInfo);
 
       Sample sample(
+        (item.image ? item.image->size():
+         item.splitGrid ? sprite->gridBounds().size():
+                          sprite->size()),
         doc, sprite, item.image, item.selLayers.get(),
         frame, innerTag, filename,
         m_innerPadding, m_extrude);
@@ -1063,7 +1070,23 @@ void DocExporter::captureSamples(Samples& samples,
       if (!alreadyTrimmed && m_trimSprite)
         sample.setTrimmedBounds(spriteBounds);
 
-      samples.addSample(sample);
+      if (item.splitGrid) {
+        const gfx::Rect& gridBounds = sprite->gridBounds();
+        gfx::Point initPos(0, 0), pos;
+        initPos = pos = snap_to_grid(gridBounds, initPos, PreferSnapTo::BoxOrigin);
+
+        for (; pos.y+gridBounds.h <= spriteBounds.h; pos.y+=gridBounds.h) {
+          for (pos.x=initPos.x; pos.x+gridBounds.w <= spriteBounds.w; pos.x+=gridBounds.w) {
+            const gfx::Rect cellBounds(pos, gridBounds.size());
+            sample.setTrimmedBounds(cellBounds);
+            sample.setSharedBounds(std::make_shared<gfx::Rect>(sample.inTextureBounds()));
+            samples.addSample(sample);
+          }
+        }
+      }
+      else {
+        samples.addSample(sample);
+      }
 
       DX_TRACE("DX:   - Sample:",
                sample.document()->filename(),

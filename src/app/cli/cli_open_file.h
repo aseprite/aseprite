@@ -33,6 +33,7 @@ namespace app {
     bool splitLayers = false;
     bool splitTags = false;
     bool splitSlices = false;
+    bool splitGrid = false;
     bool allLayers = false;
     bool listLayers = false;
     bool listTags = false;

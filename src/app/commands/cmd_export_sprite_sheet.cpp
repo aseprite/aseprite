@@ -67,6 +67,7 @@ enum Section {
 
 enum Source {
   kSource_Sprite,
+  kSource_SpriteGrid,
   kSource_Tilesets,
 };
 
@@ -171,6 +172,7 @@ Doc* generate_sprite_sheet_from_params(
   const bool mergeDuplicates = params.mergeDuplicates();
   const bool splitLayers = params.splitLayers();
   const bool splitTags = params.splitTags();
+  const bool splitGrid = params.splitGrid();
   const bool listLayers = params.listLayers();
   const bool listTags = params.listTags();
   const bool listSlices = params.listSlices();
@@ -204,13 +206,17 @@ Doc* generate_sprite_sheet_from_params(
   }
 
   exporter.reset();
-  if (fromTilesets)
+
+  // Use each tileset from tilemap layers as a sprite
+  if (fromTilesets) {
     exporter.addTilesetsSamples(
       doc,
       !selLayers.empty() ? &selLayers: nullptr);
+  }
+  // Use the whole canvas as a sprite
   else {
     exporter.addDocumentSamples(
-      doc, tag, splitLayers, splitTags,
+      doc, tag, splitLayers, splitTags, splitGrid,
       !selLayers.empty() ? &selLayers: nullptr,
       !selFrames.empty() ? &selFrames: nullptr);
   }
@@ -358,11 +364,15 @@ public:
     }
 
     static_assert(kSource_Sprite == 0 &&
-                  kSource_Tilesets == 1,
+                  kSource_SpriteGrid == 1 &&
+                  kSource_Tilesets == 2,
                   "Source enum has changed");
     source()->addItem(new ListItem("Sprite"));
+    source()->addItem(new ListItem("Sprite Grid"));
     source()->addItem(new ListItem("Tilesets"));
-    if (params.fromTilesets())
+    if (params.splitGrid())
+      source()->setSelectedItemIndex(int(kSource_SpriteGrid));
+    else if (params.fromTilesets())
       source()->setSelectedItemIndex(int(kSource_Tilesets));
 
     fill_layers_combobox(
@@ -529,6 +539,7 @@ public:
     params.listLayers      (listLayersValue());
     params.listTags        (listTagsValue());
     params.listSlices      (listSlicesValue());
+    params.splitGrid       (source()->getSelectedItemIndex() == int(kSource_SpriteGrid));
     params.fromTilesets    (source()->getSelectedItemIndex() == int(kSource_Tilesets));
   }
 
@@ -719,6 +730,10 @@ private:
 
   bool splitTagsValue() const {
     return splitTags()->isSelected();
+  }
+
+  bool splitGridValue() const {
+    return (source()->getSelectedItemIndex() == int(kSource_SpriteGrid));
   }
 
   bool listLayersValue() const {
@@ -1222,6 +1237,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
       if (!params.tag.isSet())              params.tag(             defPref.spriteSheet.frameTag());
       if (!params.splitLayers.isSet())      params.splitLayers(     defPref.spriteSheet.splitLayers());
       if (!params.splitTags.isSet())        params.splitTags(       defPref.spriteSheet.splitTags());
+      if (!params.splitGrid.isSet())        params.splitGrid(       defPref.spriteSheet.splitGrid());
       if (!params.listLayers.isSet())       params.listLayers(      defPref.spriteSheet.listLayers());
       if (!params.listTags.isSet())         params.listTags(        defPref.spriteSheet.listFrameTags());
       if (!params.listSlices.isSet())       params.listSlices(      defPref.spriteSheet.listSlices());
@@ -1268,6 +1284,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     docPref.spriteSheet.frameTag        (params.tag());
     docPref.spriteSheet.splitLayers     (params.splitLayers());
     docPref.spriteSheet.splitTags       (params.splitTags());
+    docPref.spriteSheet.splitGrid       (params.splitGrid());
     docPref.spriteSheet.listLayers      (params.listLayers());
     docPref.spriteSheet.listFrameTags   (params.listTags());
     docPref.spriteSheet.listSlices      (params.listSlices());

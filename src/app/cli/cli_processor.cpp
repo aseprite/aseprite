@@ -283,6 +283,10 @@ int CliProcessor::process(Context* ctx)
         else if (opt == &m_options.splitSlices()) {
           cof.splitSlices = true;
         }
+        // --split-grid
+        else if (opt == &m_options.splitGrid()) {
+          cof.splitGrid = true;
+        }
         // --layer <layer-name>
         else if (opt == &m_options.layer()) {
           cof.includeLayers.push_back(value.value());
@@ -691,6 +695,7 @@ bool CliProcessor::openFile(Context* ctx, CliOpenFile& cof)
           doc, tag,
           cof.splitLayers,
           cof.splitTags,
+          cof.splitGrid,
           (cof.hasLayersFilter() ? &filteredLayers: nullptr),
           (!selFrames.empty() ? &selFrames: nullptr));
       }

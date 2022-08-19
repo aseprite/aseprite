@@ -43,6 +43,7 @@ struct ExportSpriteSheetParams : public NewParams {
   Param<std::string> tag { this, std::string(), "tag" };
   Param<bool> splitLayers { this, false, "splitLayers" };
   Param<bool> splitTags { this, false, "splitTags" };
+  Param<bool> splitGrid { this, false, "splitGrid" };
   Param<bool> listLayers { this, true, "listLayers" };
   Param<bool> listTags { this, true, "listTags" };
   Param<bool> listSlices { this, true, "listSlices" };

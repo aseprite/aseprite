@@ -65,6 +65,7 @@ public:
   const Option& splitLayers() const { return m_splitLayers; }
   const Option& splitTags() const { return m_splitTags; }
   const Option& splitSlices() const { return m_splitSlices; }
+  const Option& splitGrid() const { return m_splitGrid; }
   const Option& layer() const { return m_layer; }
   const Option& allLayers() const { return m_allLayers; }
   const Option& ignoreLayer() const { return m_ignoreLayer; }
@@ -132,6 +133,7 @@ private:
   Option& m_splitLayers;
   Option& m_splitTags;
   Option& m_splitSlices;
+  Option& m_splitGrid;
   Option& m_layer;
   Option& m_allLayers;
   Option& m_ignoreLayer;

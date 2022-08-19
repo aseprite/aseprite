@@ -77,12 +77,6 @@ namespace app {
     void setListLayers(bool value) { m_listLayers = value; }
     void setListSlices(bool value) { m_listSlices = value; }
 
-    void addDocument(
-      Doc* doc,
-      const doc::Tag* tag,
-      const doc::SelectedLayers* selLayers,
-      const doc::SelectedFrames* selFrames);
-
     void addImage(
       Doc* doc,
       const doc::ImageRef& image);
@@ -92,6 +86,7 @@ namespace app {
       const doc::Tag* tag,
       const bool splitLayers,
       const bool splitTags,
+      const bool splitGrid,
       const doc::SelectedLayers* selLayers,
       const doc::SelectedFrames* selFrames);
 
@@ -109,6 +104,12 @@ namespace app {
     class SimpleLayoutSamples;
     class BestFitLayoutSamples;
 
+    void addDocument(
+      Doc* doc,
+      const doc::Tag* tag,
+      const doc::SelectedLayers* selLayers,
+      const doc::SelectedFrames* selFrames,
+      const bool splitGrid);
     void captureSamples(Samples& samples,
                         base::task_token& token);
     void layoutSamples(Samples& samples,
@@ -130,12 +131,14 @@ namespace app {
       const doc::Tag* tag = nullptr;
       std::unique_ptr<doc::SelectedLayers> selLayers;
       std::unique_ptr<doc::SelectedFrames> selFrames;
+      bool splitGrid = false;
       doc::ImageRef image;
 
       Item(Doc* doc,
            const doc::Tag* tag,
            const doc::SelectedLayers* selLayers,
-           const doc::SelectedFrames* selFrames);
+           const doc::SelectedFrames* selFrames,
+           const bool splitGrid);
       Item(Doc* doc,
            const doc::ImageRef& image);
       Item(Item&& other);
