@@ -79,6 +79,7 @@ public:
   const Option& trim() const { return m_trim; }
   const Option& trimSprite() const { return m_trimSprite; }
   const Option& trimByGrid() const { return m_trimByGrid; }
+  const Option& extrude() const { return m_extrude; }
   const Option& crop() const { return m_crop; }
   const Option& slice() const { return m_slice; }
   const Option& filenameFormat() const { return m_filenameFormat; }
@@ -147,6 +148,7 @@ private:
   Option& m_trim;
   Option& m_trimSprite;
   Option& m_trimByGrid;
+  Option& m_extrude;
   Option& m_crop;
   Option& m_slice;
   Option& m_filenameFormat;

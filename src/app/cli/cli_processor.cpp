@@ -361,6 +361,11 @@ int CliProcessor::process(Context* ctx)
             m_exporter->setTrimByGrid(true);
           }
         }
+        // --extrude
+        else if (opt == &m_options.extrude()) {
+          if (m_exporter)
+            m_exporter->setExtrude(true);
+        }
         // --crop x,y,width,height
         else if (opt == &m_options.crop()) {
           std::vector<std::string> parts;
