@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -65,6 +65,7 @@ public:
   const Option& splitLayers() const { return m_splitLayers; }
   const Option& splitTags() const { return m_splitTags; }
   const Option& splitSlices() const { return m_splitSlices; }
+  const Option& splitGrid() const { return m_splitGrid; }
   const Option& layer() const { return m_layer; }
   const Option& allLayers() const { return m_allLayers; }
   const Option& ignoreLayer() const { return m_ignoreLayer; }
@@ -78,6 +79,7 @@ public:
   const Option& trim() const { return m_trim; }
   const Option& trimSprite() const { return m_trimSprite; }
   const Option& trimByGrid() const { return m_trimByGrid; }
+  const Option& extrude() const { return m_extrude; }
   const Option& crop() const { return m_crop; }
   const Option& slice() const { return m_slice; }
   const Option& filenameFormat() const { return m_filenameFormat; }
@@ -89,6 +91,7 @@ public:
   const Option& listTags() const { return m_listTags; }
   const Option& listSlices() const { return m_listSlices; }
   const Option& oneFrame() const { return m_oneFrame; }
+  const Option& exportTileset() const { return m_exportTileset; }
 
   bool hasExporterParams() const;
 #ifdef _WIN32
@@ -131,6 +134,7 @@ private:
   Option& m_splitLayers;
   Option& m_splitTags;
   Option& m_splitSlices;
+  Option& m_splitGrid;
   Option& m_layer;
   Option& m_allLayers;
   Option& m_ignoreLayer;
@@ -144,6 +148,7 @@ private:
   Option& m_trim;
   Option& m_trimSprite;
   Option& m_trimByGrid;
+  Option& m_extrude;
   Option& m_crop;
   Option& m_slice;
   Option& m_filenameFormat;
@@ -155,6 +160,7 @@ private:
   Option& m_listTags;
   Option& m_listSlices;
   Option& m_oneFrame;
+  Option& m_exportTileset;
 
   Option& m_verbose;
   Option& m_debug;

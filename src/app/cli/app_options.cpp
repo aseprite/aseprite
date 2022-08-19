@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -49,6 +49,7 @@ AppOptions::AppOptions(int argc, const char* argv[])
   , m_splitLayers(m_po.add("split-layers").description("Save each visible layer of sprites\nas separated images in the sheet\n"))
   , m_splitTags(m_po.add("split-tags").description("Save each tag as a separated file"))
   , m_splitSlices(m_po.add("split-slices").description("Save each slice as a separated file"))
+  , m_splitGrid(m_po.add("split-grid").description("Save each grid tile as a separated file"))
   , m_layer(m_po.add("layer").alias("import-layer").requiresValue("<name>").description("Include just the given layer in the sheet\nor save as operation"))
   , m_allLayers(m_po.add("all-layers").description("Make all layers visible\nBy default hidden layers will be ignored"))
   , m_ignoreLayer(m_po.add("ignore-layer").requiresValue("<name>").description("Exclude the given layer in the sheet\nor save as operation"))
@@ -62,6 +63,7 @@ AppOptions::AppOptions(int argc, const char* argv[])
   , m_trim(m_po.add("trim").description("Trim whole sprite for --save-as\nor individual frames for --sheet"))
   , m_trimSprite(m_po.add("trim-sprite").description("Trim the whole sprite (for --save-as and --sheet)"))
   , m_trimByGrid(m_po.add("trim-by-grid").description("Trim all images by its correspondent grid boundaries before exporting"))
+  , m_extrude(m_po.add("extrude").description("Extrude all images duplicating all edges one pixel"))
   , m_crop(m_po.add("crop").requiresValue("x,y,width,height").description("Crop all the images to the given rectangle"))
   , m_slice(m_po.add("slice").requiresValue("<name>").description("Crop the sprite to the given slice area"))
   , m_filenameFormat(m_po.add("filename-format").requiresValue("<fmt>").description("Special format to generate filenames"))
@@ -73,6 +75,7 @@ AppOptions::AppOptions(int argc, const char* argv[])
   , m_listTags(m_po.add("list-tags").description("List tags of the next given sprite\nor include frame tags in JSON data"))
   , m_listSlices(m_po.add("list-slices").description("List slices of the next given sprite\nor include slices in JSON data"))
   , m_oneFrame(m_po.add("oneframe").description("Load just the first frame"))
+  , m_exportTileset(m_po.add("export-tileset").description("Export only tilesets from visible tilemap layers"))
   , m_verbose(m_po.add("verbose").mnemonic('v').description("Explain what is being done"))
   , m_debug(m_po.add("debug").description("Extreme verbose mode and\ncopy log to desktop"))
 #ifdef _WIN32

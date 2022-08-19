@@ -72,12 +72,14 @@ namespace app {
   public:
     FileOpROI();
     FileOpROI(const Doc* doc,
+              const gfx::Rect& bounds,
               const std::string& sliceName,
               const std::string& tagName,
               const doc::SelectedFrames& selFrames,
               const bool adjustByTag);
 
     const Doc* document() const { return m_document; }
+    const gfx::Rect& bounds() const { return m_bounds; }
     doc::Slice* slice() const { return m_slice; }
     doc::Tag* tag() const { return m_tag; }
     doc::frame_t fromFrame() const { return m_selFrames.firstFrame(); }
@@ -90,6 +92,7 @@ namespace app {
 
   private:
     const Doc* m_document;
+    gfx::Rect m_bounds;
     doc::Slice* m_slice;
     doc::Tag* m_tag;
     doc::SelectedFrames m_selFrames;

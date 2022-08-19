@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -17,16 +17,26 @@
 #include "doc/layer.h"
 #include "doc/selected_frames.h"
 #include "doc/selected_layers.h"
+#include "doc/slice.h"
 #include "doc/sprite.h"
 #include "doc/tag.h"
 #include "ui/combobox.h"
 
 namespace app {
 
+const char* kWholeCanvas = "";
 const char* kAllLayers = "";
 const char* kAllFrames = "";
+const char* kSelectedCanvas = "**selected-canvas**";
 const char* kSelectedLayers = "**selected-layers**";
 const char* kSelectedFrames = "**selected-frames**";
+
+SliceListItem::SliceListItem(doc::Slice* slice)
+  : ListItem("Slice: " + slice->name())
+  , m_slice(slice)
+{
+  setValue(m_slice->name());
+}
 
 LayerListItem::LayerListItem(doc::Layer* layer)
   : ListItem(buildName(layer))
@@ -55,6 +65,26 @@ FrameListItem::FrameListItem(doc::Tag* tag)
   , m_tag(tag)
 {
   setValue(m_tag->name());
+}
+
+void fill_area_combobox(const doc::Sprite* sprite, ui::ComboBox* area, const std::string& defArea)
+{
+  int i = area->addItem("Canvas");
+  dynamic_cast<ui::ListItem*>(area->getItem(i))->setValue(kWholeCanvas);
+
+  i = area->addItem("Selection");
+  dynamic_cast<ui::ListItem*>(area->getItem(i))->setValue(kSelectedCanvas);
+  if (defArea == kSelectedCanvas)
+    area->setSelectedItemIndex(i);
+
+  for (auto slice : sprite->slices()) {
+    if (slice->name().empty())
+      continue;
+
+    i = area->addItem(new SliceListItem(slice));
+    if (defArea == slice->name())
+      area->setSelectedItemIndex(i);
+  }
 }
 
 void fill_layers_combobox(const doc::Sprite* sprite, ui::ComboBox* layers, const std::string& defLayer)

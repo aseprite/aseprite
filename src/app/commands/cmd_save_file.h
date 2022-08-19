@@ -14,6 +14,7 @@
 #include "doc/anidir.h"
 #include "doc/selected_frames.h"
 #include "gfx/point.h"
+#include "gfx/rect.h"
 
 #include <string>
 
@@ -31,6 +32,7 @@ namespace app {
     Param<doc::frame_t> toFrame { this, 0, { "toFrame", "to-frame" } };
     Param<bool> ignoreEmpty { this, false, "ignoreEmpty" };
     Param<double> scale { this, 1.0, "scale" };
+    Param<gfx::Rect> bounds { this, gfx::Rect(), "bounds" };
   };
 
   class SaveFileBaseCommand : public CommandWithNewParams<SaveFileParams> {
