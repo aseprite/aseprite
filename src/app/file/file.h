@@ -307,6 +307,7 @@ namespace app {
       bool has_alpha;
       LayerImage* layer;
       Cel* last_cel;
+      int duration;
       // Flags after the user choose what to do with the sequence.
       int flags;
     } m_seq;
