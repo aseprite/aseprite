@@ -385,6 +385,10 @@ FileOp* FileOp::createLoadDocumentOperation(Context* context,
               window.files()->getSelectedChild() != nullptr);
           });
 
+        window.duration()->setTextf("%d", fop->m_seq.duration);
+        window.duration()->Change.connect(
+          [&]() { fop->m_seq.duration = window.duration()->textInt(); });
+
         window.openWindowInForeground();
 
         // Don't show this alert again.
@@ -831,6 +835,8 @@ void FileOp::operate(IFileOpProgress* progress)
           add_image();
 #endif
         }
+
+        m_document->sprite()->setFrameDuration(frame, m_seq.duration);
 
         ++frame;
         m_seq.progress_offset += m_seq.progress_fraction;
@@ -1395,6 +1401,7 @@ FileOp::FileOp(FileOpType type,
   m_seq.frame = frame_t(0);
   m_seq.layer = nullptr;
   m_seq.last_cel = nullptr;
+  m_seq.duration = 100;
   m_seq.flags = 0;
 }
 
