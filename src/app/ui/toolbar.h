@@ -18,6 +18,7 @@
 #include "ui/widget.h"
 
 #include <map>
+#include <memory>
 
 namespace ui {
 class CloseEvent;
@@ -105,12 +106,12 @@ private:
   bool m_openedRecently;
 
   // Window displayed to show a tool-group
-  ui::PopupWindow* m_popupWindow;
+  std::unique_ptr<ui::PopupWindow> m_popupWindow;
   class ToolStrip;
-  ToolStrip* m_currentStrip;
+  ToolStrip* m_currentStrip = nullptr;
 
   // Tool-tip window
-  ui::TipWindow* m_tipWindow;
+  std::unique_ptr<ui::TipWindow> m_tipWindow;
 
   ui::Timer m_tipTimer;
   bool m_tipOpened;

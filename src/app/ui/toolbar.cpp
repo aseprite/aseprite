@@ -94,9 +94,6 @@ ToolBar::ToolBar() : Widget(kGenericWidget), m_openedRecently(false), m_tipTimer
   m_hotTool = NULL;
   m_hotIndex = NoneIndex;
   m_openOnHot = false;
-  m_popupWindow = NULL;
-  m_currentStrip = NULL;
-  m_tipWindow = NULL;
   m_tipOpened = false;
   m_minHeight = 0;
 
@@ -112,9 +109,6 @@ ToolBar::ToolBar() : Widget(kGenericWidget), m_openedRecently(false), m_tipTimer
 ToolBar::~ToolBar()
 {
   App::instance()->activeToolManager()->remove_observer(this);
-
-  delete m_popupWindow;
-  delete m_tipWindow;
 }
 
 bool ToolBar::isToolVisible(Tool* tool)
@@ -465,7 +459,7 @@ void ToolBar::openPopupWindow(GroupType group_type, int group_index, tools::Tool
 
   // In case this tool contains more than just one tool, show the popup window
   m_openOnHot = true;
-  m_popupWindow = new TransparentPopupWindow(
+  m_popupWindow = std::make_unique<TransparentPopupWindow>(
     PopupWindow::ClickBehavior::CloseOnClickOutsideHotRegion);
   m_closeConn = m_popupWindow->Close.connect([this] { onClosePopup(); });
   m_openedRecently = true;
@@ -486,7 +480,7 @@ void ToolBar::openPopupWindow(GroupType group_type, int group_index, tools::Tool
 
   // Set hotregion of popup window
   m_popupWindow->setAutoRemap(false);
-  ui::fit_bounds(display(), m_popupWindow, rc);
+  ui::fit_bounds(display(), m_popupWindow.get(), rc);
   m_popupWindow->setBounds(rc);
 
   Region rgn(m_popupWindow->boundsOnScreen().enlarge(16 * guiscale()));
@@ -500,8 +494,7 @@ void ToolBar::closePopupWindow()
 {
   if (m_popupWindow) {
     m_popupWindow->closeWindow(nullptr);
-    delete m_popupWindow;
-    m_popupWindow = nullptr;
+    m_popupWindow.reset();
   }
 }
 
@@ -591,7 +584,7 @@ void ToolBar::openTipWindow(int group_index, Tool* tool)
   else
     return;
 
-  m_tipWindow = new TipWindow(tooltip);
+  m_tipWindow = std::make_unique<TipWindow>(tooltip);
   m_tipWindow->remapWindow();
 
   Rect toolrc = getToolGroupBounds(group_index);
@@ -613,8 +606,7 @@ void ToolBar::closeTipWindow()
 
   if (m_tipWindow) {
     m_tipWindow->closeWindow(NULL);
-    delete m_tipWindow;
-    m_tipWindow = NULL;
+    m_tipWindow.reset();
   }
 }
 
@@ -651,7 +643,7 @@ void ToolBar::onClosePopup()
   m_openOnHot = false;
   m_hotTool = NULL;
   m_hotIndex = NoneIndex;
-  m_currentStrip = NULL;
+  m_currentStrip = nullptr;
 
   invalidate();
 }
