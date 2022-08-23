@@ -22,9 +22,9 @@ namespace app {
   public:
     PalettesListBox();
 
-    doc::Palette* selectedPalette();
+    const doc::Palette* selectedPalette();
 
-    obs::signal<void(doc::Palette*)> PalChange;
+    obs::signal<void(const doc::Palette*)> PalChange;
 
   protected:
     virtual ResourceListItem* onCreateResourceItem(Resource* resource) override;

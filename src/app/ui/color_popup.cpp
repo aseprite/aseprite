@@ -189,7 +189,7 @@ ColorPopup::ColorPopup(const ColorButtonOptions& options)
       ResourceFinder rf;
       rf.includeDataDir("palettes/tags.gpl");
       if (rf.findFirst())
-        g_simplePal.reset(load_palette(rf.filename().c_str()));
+        g_simplePal = load_palette(rf.filename().c_str());
     }
 
     if (g_simplePal)

@@ -118,7 +118,9 @@ private:
 };
 
 PalettesListBox::PalettesListBox()
-  : ResourcesListBox(new ResourcesLoader(new PalettesLoaderDelegate))
+  : ResourcesListBox(
+    new ResourcesLoader(
+      std::make_unique<PalettesLoaderDelegate>()))
 {
   addChild(&m_tooltips);
 
@@ -130,7 +132,7 @@ PalettesListBox::PalettesListBox()
       [this]{ reload(); });
 }
 
-doc::Palette* PalettesListBox::selectedPalette()
+const doc::Palette* PalettesListBox::selectedPalette()
 {
   Resource* resource = selectedResource();
   if (!resource)
@@ -146,14 +148,14 @@ ResourceListItem* PalettesListBox::onCreateResourceItem(Resource* resource)
 
 void PalettesListBox::onResourceChange(Resource* resource)
 {
-  doc::Palette* palette = static_cast<PaletteResource*>(resource)->palette();
+  const doc::Palette* palette = static_cast<PaletteResource*>(resource)->palette();
   PalChange(palette);
 }
 
 void PalettesListBox::onPaintResource(Graphics* g, gfx::Rect& bounds, Resource* resource)
 {
   auto theme = SkinTheme::get(this);
-  doc::Palette* palette = static_cast<PaletteResource*>(resource)->palette();
+  const doc::Palette* palette = static_cast<PaletteResource*>(resource)->palette();
   os::Surface* tick = theme->parts.checkSelected()->bitmap(0);
 
   // Draw tick (to say "this palette matches the active sprite

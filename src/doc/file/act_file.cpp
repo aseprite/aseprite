@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2020  Igara Studio S.A.
+// Copyright (c) 2020-2022 Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -25,7 +25,7 @@ using namespace base::serialization::big_endian;
 
 const int ActMaxColors = 256;
 
-Palette* load_act_file(const char *filename)
+std::unique_ptr<Palette> load_act_file(const char *filename)
 {
   std::ifstream f(FSTREAM_PATH(filename), std::ios::binary);
   if (f.bad())
@@ -52,7 +52,7 @@ Palette* load_act_file(const char *filename)
     pal->setEntry(i, rgba(r, g, b, 255));
   }
 
-  return pal.release();
+  return pal;
 }
 
 bool save_act_file(const Palette *pal, const char *filename)

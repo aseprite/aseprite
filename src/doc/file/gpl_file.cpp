@@ -26,7 +26,7 @@
 namespace doc {
 namespace file {
 
-Palette* load_gpl_file(const char* filename)
+std::unique_ptr<Palette> load_gpl_file(const char* filename)
 {
   std::ifstream f(FSTREAM_PATH(filename));
   if (f.bad()) return NULL;
@@ -98,7 +98,7 @@ Palette* load_gpl_file(const char* filename)
     pal->setComment(comment);
   }
 
-  return pal.release();
+  return pal;
 }
 
 bool save_gpl_file(const Palette* pal, const char* filename)

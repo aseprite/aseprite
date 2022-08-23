@@ -80,9 +80,9 @@ int Palette_new(lua_State* L)
           return luaL_error(L, "script doesn't have access to open file %s",
                             absFn.c_str());
 
-        Palette* pal = load_palette(absFn.c_str());
+        auto pal = load_palette(absFn.c_str());
         if (pal)
-          push_new<PaletteObj>(L, nullptr, pal);
+          push_new<PaletteObj>(L, nullptr, pal.release());
         else
           lua_pushnil(L);
         return 1;
@@ -109,9 +109,9 @@ int Palette_new(lua_State* L)
             return luaL_error(L, "script doesn't have access to open file %s",
                               absFn.c_str());
 
-          Palette* pal = load_palette(absFn.c_str());
+          auto pal = load_palette(absFn.c_str());
           if (pal)
-            push_new<PaletteObj>(L, nullptr, pal);
+            push_new<PaletteObj>(L, nullptr, pal.release());
           else
             lua_pushnil(L);
           return 1;

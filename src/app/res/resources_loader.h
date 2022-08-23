@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -20,7 +21,7 @@ namespace app {
 
   class ResourcesLoader {
   public:
-    ResourcesLoader(ResourcesLoaderDelegate* delegate);
+    ResourcesLoader(std::unique_ptr<ResourcesLoaderDelegate>&& delegate);
     ~ResourcesLoader();
 
     void cancel();
@@ -34,7 +35,7 @@ namespace app {
 
     typedef base::concurrent_queue<Resource*> Queue;
 
-    ResourcesLoaderDelegate* m_delegate;
+    std::unique_ptr<ResourcesLoaderDelegate> m_delegate;
     bool m_done;
     bool m_cancel;
     Queue m_queue;

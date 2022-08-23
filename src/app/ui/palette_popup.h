@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -29,7 +30,7 @@ namespace app {
     void showPopup(const gfx::Rect& bounds);
 
   protected:
-    void onPalChange(doc::Palette* palette);
+    void onPalChange(const doc::Palette* palette);
     void onSearchChange();
     void onLoadPal();
     void onOpenFolder();
