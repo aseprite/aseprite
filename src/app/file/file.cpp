@@ -90,7 +90,7 @@ public:
   }
 
   // FileAbstractImage impl
-  doc::ImageSpec spec() const override {
+  const doc::ImageSpec& spec() const override {
     return m_spec;
   }
 
