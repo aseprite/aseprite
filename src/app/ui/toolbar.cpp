@@ -353,6 +353,11 @@ void ToolBar::onVisible(bool visible)
   }
 }
 
+bool ToolBar::isDockedAtLeftSide() const
+{
+  return bounds().center().x < window()->bounds().center().x;
+}
+
 int ToolBar::getToolGroupIndex(ToolGroup* group)
 {
   ToolBox* toolbox = App::instance()->toolBox();
@@ -405,15 +410,18 @@ void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
   m_currentStrip = toolstrip;
   m_popupWindow->addChild(toolstrip);
 
+  const int borderWidth = border().width();
   Rect rc = getToolGroupBounds(group_index);
-  int w = 0;
-
+  int w = borderWidth;
   for (Tool* tool : *toolbox) {
     if (tool->getGroup() == tool_group)
-      w += bounds().w-border().width()-1;
+      w += bounds().w-borderWidth-1;
   }
 
-  rc.x -= w;
+  if (isDockedAtLeftSide())
+    rc.x = bounds().x2()-borderWidth;
+  else
+    rc.x -= w-borderWidth;
   rc.w = w;
 
   // Set hotregion of popup window
@@ -461,22 +469,23 @@ Rect ToolBar::getToolGroupBounds(int group_index)
   return rc;
 }
 
-Point ToolBar::getToolPositionInGroup(int group_index, Tool* tool)
+Point ToolBar::getToolPositionInGroup(const Tool* tool)
 {
   ToolBox* toolbox = App::instance()->toolBox();
   Size iconsize = getToolIconSize(this);
   int nth = 0;
 
-  for (ToolIterator it = toolbox->begin(); it != toolbox->end(); ++it) {
-    if (tool == *it)
+  for (auto t : *toolbox) {
+    if (tool == t)
       break;
 
-    if ((*it)->getGroup() == tool->getGroup()) {
+    if (t->getGroup() == tool->getGroup())
       ++nth;
-    }
   }
 
-  return Point(iconsize.w/2+iconsize.w*nth, iconsize.h);
+  return Point(
+    (iconsize.w-border().right())*nth,
+    iconsize.h);
 }
 
 void ToolBar::openTipWindow(ToolGroup* tool_group, Tool* tool)
@@ -518,11 +527,27 @@ void ToolBar::openTipWindow(int group_index, Tool* tool)
   m_tipWindow->remapWindow();
 
   Rect toolrc = getToolGroupBounds(group_index);
-  Point arrow = (tool ? getToolPositionInGroup(group_index, tool): Point(0, 0));
-  if (tool && m_popupWindow && m_popupWindow->isVisible())
-    toolrc.x += arrow.x - m_popupWindow->bounds().w;
+  Point arrow = (tool ? getToolPositionInGroup(tool): Point(0, 0));
 
-  m_tipWindow->pointAt(TOP | RIGHT, toolrc,
+  int pointAt = TOP;
+  if (isDockedAtLeftSide()) {
+    pointAt |= LEFT;
+    toolrc.x -= border().width();
+  }
+  else {
+    pointAt |= RIGHT;
+    toolrc.x += border().width();
+  }
+
+  // Tooltip for subtools (tools inside groups)
+  if (tool && m_popupWindow && m_popupWindow->isVisible()) {
+    if (isDockedAtLeftSide())
+      toolrc.x += arrow.x + bounds().w - border().width();
+    else
+      toolrc.x += arrow.x - m_popupWindow->bounds().w + border().width();
+  }
+
+  m_tipWindow->pointAt(pointAt, toolrc,
                        ui::Manager::getDefault()->display());
 
   if (m_tipOpened)
