@@ -68,11 +68,12 @@ namespace app {
     void onVisible(bool visible) override;
 
   private:
+    bool isDockedAtLeftSide() const;
     int getToolGroupIndex(tools::ToolGroup* group);
     void openPopupWindow(int group_index, tools::ToolGroup* group);
     void closePopupWindow();
     gfx::Rect getToolGroupBounds(int group_index);
-    gfx::Point getToolPositionInGroup(int group_index, tools::Tool* tool);
+    gfx::Point getToolPositionInGroup(const tools::Tool* tool);
     void openTipWindow(int group_index, tools::Tool* tool);
     void onClosePopup();
     void drawToolIcon(ui::Graphics* g, int group_index, skin::SkinPartPtr skin, os::Surface* icon);
