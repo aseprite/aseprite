@@ -73,6 +73,7 @@ protected:
 private:
   enum class GroupType { Regular, Overflow };
 
+  bool isDockedAtLeftSide() const;
   int getToolGroupIndex(tools::ToolGroup* group);
   void openPopupWindow(GroupType group_type,
                        int group_index = 0,
