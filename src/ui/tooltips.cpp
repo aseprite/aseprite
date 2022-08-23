@@ -218,16 +218,16 @@ bool TipWindow::pointAt(int arrowAlign, const gfx::Rect& target, const ui::Displ
     if (get_multiple_displays()) {
       const gfx::Rect waBounds = nativeParentWindow->screen()->workarea();
       gfx::Point pt = nativeParentWindow->pointToScreen(gfx::Point(x, y));
-      pt.x = std::clamp(pt.x, waBounds.x, waBounds.x2() - w);
-      pt.y = std::clamp(pt.y, waBounds.y, waBounds.y2() - h);
+      pt.x = std::clamp(pt.x, waBounds.x, std::max(waBounds.x, waBounds.x2() - w));
+      pt.y = std::clamp(pt.y, waBounds.y, std::max(waBounds.y, waBounds.y2() - h));
       pt = nativeParentWindow->pointFromScreen(pt);
       x = pt.x;
       y = pt.y;
     }
     else {
       const gfx::Rect displayBounds = display->bounds();
-      x = std::clamp(x, displayBounds.x, displayBounds.x2() - w);
-      y = std::clamp(y, displayBounds.y, displayBounds.y2() - h);
+      x = std::clamp(x, displayBounds.x, std::max(displayBounds.x, displayBounds.x2() - w));
+      y = std::clamp(y, displayBounds.y, std::max(displayBounds.y, displayBounds.y2() - h));
     }
 
     if (m_target.intersects(gfx::Rect(x, y, w, h))) {
