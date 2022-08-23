@@ -20,8 +20,8 @@
 
 namespace app {
 
-ResourcesLoader::ResourcesLoader(ResourcesLoaderDelegate* delegate)
-  : m_delegate(delegate)
+ResourcesLoader::ResourcesLoader(std::unique_ptr<ResourcesLoaderDelegate>&& delegate)
+  : m_delegate(std::move(delegate))
   , m_done(false)
   , m_cancel(false)
   , m_thread(new base::thread([this]{ threadLoadResources(); }))

@@ -104,7 +104,11 @@ namespace app {
   class FileAbstractImage {
   public:
     virtual ~FileAbstractImage() { }
-    virtual doc::ImageSpec spec() const = 0;
+
+    virtual int width() const { return spec().width(); }
+    virtual int height() const { return spec().height(); }
+
+    virtual const doc::ImageSpec& spec() const = 0;
     virtual os::ColorSpaceRef osColorSpace() const = 0;
     virtual bool needAlpha() const = 0;
     virtual bool isOpaque() const = 0;

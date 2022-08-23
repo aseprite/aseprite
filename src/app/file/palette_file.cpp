@@ -52,11 +52,12 @@ base::paths get_writable_palette_extensions()
   return paths;
 }
 
-Palette* load_palette(const char* filename,
-                      const FileOpConfig* config)
+std::unique_ptr<doc::Palette> load_palette(
+  const char* filename,
+  const FileOpConfig* config)
 {
   dio::FileFormat dioFormat = dio::detect_format(filename);
-  Palette* pal = nullptr;
+  std::unique_ptr<Palette> pal = nullptr;
 
   switch (dioFormat) {
 
@@ -100,7 +101,7 @@ Palette* load_palette(const char* filename,
         if (fop->document() &&
             fop->document()->sprite() &&
             fop->document()->sprite()->palette(frame_t(0))) {
-          pal = new Palette(
+          pal = std::make_unique<Palette>(
             *fop->document()->sprite()->palette(frame_t(0)));
         }
 

@@ -63,9 +63,9 @@ void PalettesLoaderDelegate::getResourcesPaths(std::map<std::string, std::string
 Resource* PalettesLoaderDelegate::loadResource(const std::string& id,
                                                const std::string& path)
 {
-  doc::Palette* palette = load_palette(path.c_str(), &m_config);
+  auto palette = load_palette(path.c_str(), &m_config);
   if (palette)
-    return new PaletteResource(id, path, palette);
+    return new PaletteResource(id, path, std::move(palette));
   else
     return nullptr;
 }

@@ -23,7 +23,6 @@
 #include "base/convert_to.h"
 #include "base/file_handle.h"
 #include "doc/doc.h"
-#include "render/render.h"
 #include "ui/manager.h"
 
 #include "webp_options.xml.h"
@@ -61,7 +60,8 @@ class WebPFormat : public FileFormat {
       FILE_SUPPORT_RGB |
       FILE_SUPPORT_RGBA |
       FILE_SUPPORT_FRAMES |
-      FILE_SUPPORT_GET_FORMAT_OPTIONS;
+      FILE_SUPPORT_GET_FORMAT_OPTIONS |
+      FILE_ENCODE_ABSTRACT_IMAGE;
   }
 
   bool onLoad(FileOp* fop) override;
@@ -256,7 +256,8 @@ bool WebPFormat::onSave(FileOp* fop)
   FileHandle handle(open_file_with_exception_sync_on_close(fop->filename(), "wb"));
   FILE* fp = handle.get();
 
-  const Sprite* sprite = fop->document()->sprite();
+  const FileAbstractImage* sprite = fop->abstractImage();
+  const doc::frame_t totalFrames = sprite->frames();
   const int w = sprite->width();
   const int h = sprite->height();
 
@@ -300,9 +301,8 @@ bool WebPFormat::onSave(FileOp* fop)
                     1); // 1 = loop once
 
   ImageRef image(Image::create(IMAGE_RGB, w, h));
-  render::Render render;
 
-  WriterData wd(fp, fop, 0, sprite->totalFrames(), 0.0);
+  WriterData wd(fp, fop, 0, totalFrames, 0.0);
   WebPPicture pic;
   WebPPictureInit(&pic);
   pic.width = w;
@@ -313,13 +313,12 @@ bool WebPFormat::onSave(FileOp* fop)
   pic.user_data = &wd;
   pic.progress_hook = progress_report;
 
-  WebPAnimEncoder* enc = WebPAnimEncoderNew(sprite->width(),
-                                            sprite->height(),
-                                            &enc_options);
+  WebPAnimEncoder* enc = WebPAnimEncoderNew(w, h, &enc_options);
   int timestamp_ms = 0;
-  for (frame_t f=0; f<sprite->totalFrames(); ++f) {
+  for (frame_t f=0; f<totalFrames; ++f) {
     // Render the frame in the bitmap
-    render.renderSprite(image.get(), sprite, f);
+    clear_image(image.get(), image->maskColor());
+    sprite->renderFrame(f, image.get());
 
     // Switch R <-> B channels because WebPAnimEncoderAssemble()
     // expects MODE_BGRA pictures.

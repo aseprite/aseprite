@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2021  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -78,7 +78,7 @@ void PalettePopup::showPopup(ui::Display* display,
   openWindowInForeground();
 }
 
-void PalettePopup::onPalChange(doc::Palette* palette)
+void PalettePopup::onPalChange(const doc::Palette* palette)
 {
   const bool state =
     (UIContext::instance()->activeDocument() &&
@@ -114,7 +114,7 @@ void PalettePopup::onSearchChange()
 
 void PalettePopup::onLoadPal()
 {
-  doc::Palette* palette = m_paletteListBox.selectedPalette();
+  const doc::Palette* palette = m_paletteListBox.selectedPalette();
   if (!palette)
     return;
 

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -48,7 +48,8 @@ class FliFormat : public FileFormat {
       FILE_SUPPORT_SAVE |
       FILE_SUPPORT_INDEXED |
       FILE_SUPPORT_FRAMES |
-      FILE_SUPPORT_PALETTES;
+      FILE_SUPPORT_PALETTES |
+      FILE_ENCODE_ABSTRACT_IMAGE;
   }
 
   bool onLoad(FileOp* fop) override;
@@ -174,7 +175,7 @@ bool FliFormat::onLoad(FileOp* fop)
 
 #ifdef ENABLE_SAVE
 
-static int get_time_precision(const Sprite* sprite,
+static int get_time_precision(const FileAbstractImage* sprite,
                               const doc::SelectedFrames& selFrames)
 {
   // Check if all frames have the same duration
@@ -205,7 +206,7 @@ static int get_time_precision(const Sprite* sprite,
 
 bool FliFormat::onSave(FileOp* fop)
 {
-  const Sprite* sprite = fop->document()->sprite();
+  const FileAbstractImage* sprite = fop->abstractImage();
 
   // Open the file to write in binary mode
   FileHandle handle(open_file_with_exception_sync_on_close(fop->filename(), "wb"));
@@ -250,7 +251,7 @@ bool FliFormat::onSave(FileOp* fop)
     }
 
     // Render the frame in the bitmap
-    render.renderSprite(bmp.get(), sprite, frame);
+    sprite->renderFrame(frame, bmp.get());
 
     // How many times this frame should be written to get the same
     // time that it has in the sprite
