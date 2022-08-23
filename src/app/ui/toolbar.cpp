@@ -402,6 +402,11 @@ void ToolBar::onVisible(bool visible)
   }
 }
 
+bool ToolBar::isDockedAtLeftSide() const
+{
+  return bounds().center().x < window()->bounds().center().x;
+}
+
 int ToolBar::getToolGroupIndex(ToolGroup* group)
 {
   ToolBox* toolbox = App::instance()->toolBox();
@@ -475,14 +480,18 @@ void ToolBar::openPopupWindow(GroupType group_type, int group_index, tools::Tool
   m_currentStrip = toolstrip;
   m_popupWindow->addChild(toolstrip);
 
+  const int borderWidth = border().width();
   Rect rc = getToolGroupBounds(group_index);
-  int w = 0;
+  int w = borderWidth;
   for (const auto* tool : tools) {
     (void)tool;
-    w += bounds().w - border().width() - 1 * guiscale();
+    w += bounds().w - borderWidth - 1 * guiscale();
   }
 
-  rc.x -= w;
+  if (isDockedAtLeftSide())
+    rc.x = bounds().x2() - borderWidth;
+  else
+    rc.x -= w - borderWidth;
   rc.w = w;
 
   // Set hotregion of popup window
@@ -542,7 +551,7 @@ Point ToolBar::getToolPositionInGroup(const Tool* tool) const
   const auto& tools = m_currentStrip->tools();
   const int nth = std::find(tools.begin(), tools.end(), tool) - tools.begin();
 
-  return Point(iconsize.w / 2 + nth * (iconsize.w - 1 * guiscale()), iconsize.h);
+  return Point(iconsize.w / 2 + nth * (iconsize.w - border().right()), iconsize.h);
 }
 
 void ToolBar::openTipWindow(ToolGroup* tool_group, Tool* tool)
@@ -596,10 +605,26 @@ void ToolBar::openTipWindow(int group_index, Tool* tool)
 
   Rect toolrc = getToolGroupBounds(group_index);
   Point arrow = (tool ? getToolPositionInGroup(tool) : Point(0, 0));
-  if (tool && m_popupWindow && m_popupWindow->isVisible())
-    toolrc.x += arrow.x - m_popupWindow->bounds().w;
 
-  m_tipWindow->pointAt(TOP | RIGHT, toolrc, ui::Manager::getDefault()->display());
+  int pointAt = TOP;
+  if (isDockedAtLeftSide()) {
+    pointAt |= LEFT;
+    toolrc.x -= border().width();
+  }
+  else {
+    pointAt |= RIGHT;
+    toolrc.x += border().width();
+  }
+
+  // Tooltip for subtools (tools inside groups)
+  if (tool && m_popupWindow && m_popupWindow->isVisible()) {
+    if (isDockedAtLeftSide())
+      toolrc.x += arrow.x + bounds().w - border().width();
+    else
+      toolrc.x += arrow.x - m_popupWindow->bounds().w + border().width();
+  }
+
+  m_tipWindow->pointAt(pointAt, toolrc, ui::Manager::getDefault()->display());
 
   if (m_tipOpened)
     m_tipWindow->openWindow();
