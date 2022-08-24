@@ -130,6 +130,7 @@ namespace app {
     HomeView* getHomeView();
     void configureWorkspaceLayout();
     void saveTimelineConfiguration();
+    void saveColorBarConfiguration();
 
     ui::TooltipManager* m_tooltipManager;
     Dock* m_dock;
@@ -154,6 +155,7 @@ namespace app {
     std::unique_ptr<DevConsoleView> m_devConsoleView;
 #endif
     obs::scoped_connection m_timelineResizeConn;
+    obs::scoped_connection m_colorBarResizeConn;
   };
 
 }
