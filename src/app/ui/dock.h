@@ -53,6 +53,8 @@ public:
   Dock* right() { return subdock(ui::RIGHT); }
   Dock* center() { return subdock(ui::CENTER); }
 
+  obs::signal<void()> Resize;
+
 protected:
   void onSizeHint(ui::SizeHintEvent& ev) override;
   void onResize(ui::ResizeEvent& ev) override;
