@@ -311,6 +311,7 @@ bool Dock::onProcessMessage(ui::Message* msg)
           }
 
           layout();
+          Resize();
         }
       }
       break;

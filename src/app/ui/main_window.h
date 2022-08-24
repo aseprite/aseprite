@@ -10,6 +10,7 @@
 #pragma once
 
 #include "app/ui/tabs.h"
+#include "obs/connection.h"
 #include "ui/window.h"
 
 #include <memory>
@@ -126,6 +127,7 @@ private:
   DocView* getDocView();
   HomeView* getHomeView();
   void configureWorkspaceLayout();
+  void saveTimelineConfiguration();
 
   ui::TooltipManager* m_tooltipManager;
   Dock* m_dock;
@@ -149,6 +151,7 @@ private:
 #ifdef ENABLE_SCRIPTING
   std::unique_ptr<DevConsoleView> m_devConsoleView;
 #endif
+  obs::scoped_connection m_timelineResizeConn;
 };
 
 } // namespace app
