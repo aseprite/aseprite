@@ -59,6 +59,9 @@ namespace app {
 
 using namespace ui;
 
+static const char* kLegacyLayoutMainWindowSection = "layout:main_window";
+static const char* kLegacyLayoutTimelineSplitter = "timeline_splitter";
+
 class ScreenScalePanic : public INotificationDelegate {
 public:
   std::string notificationText() override { return "Reset Scale!"; }
@@ -191,6 +194,8 @@ void MainWindow::initialize()
 
 MainWindow::~MainWindow()
 {
+  m_timelineResizeConn.disconnect();
+
   m_dock->resetDocks();
   m_customizableDock->resetDocks();
 
@@ -375,6 +380,8 @@ void MainWindow::popTimeline()
 
 void MainWindow::setDefaultLayout()
 {
+  m_timelineResizeConn.disconnect();
+
   m_customizableDock->resetDocks();
   m_customizableDock->dock(ui::LEFT, m_colorBar.get());
   m_customizableDock->center()->dock(ui::TOP, m_contextBar.get());
@@ -383,12 +390,13 @@ void MainWindow::setDefaultLayout()
                                                m_timeline.get(),
                                                gfx::Size(64 * guiscale(), 64 * guiscale()));
   m_customizableDock->center()->center()->dock(ui::CENTER, m_workspace.get());
-
-  layout();
+  configureWorkspaceLayout();
 }
 
 void MainWindow::setDefaultMirrorLayout()
 {
+  m_timelineResizeConn.disconnect();
+
   m_customizableDock->resetDocks();
   m_customizableDock->dock(ui::RIGHT, m_colorBar.get());
   m_customizableDock->center()->dock(ui::TOP, m_contextBar.get());
@@ -397,8 +405,7 @@ void MainWindow::setDefaultMirrorLayout()
                                                m_timeline.get(),
                                                gfx::Size(64 * guiscale(), 64 * guiscale()));
   m_customizableDock->center()->center()->dock(ui::CENTER, m_workspace.get());
-
-  layout();
+  configureWorkspaceLayout();
 }
 
 void MainWindow::dataRecoverySessionsAreReady()
@@ -621,6 +628,9 @@ DropTabResult MainWindow::onDropTab(Tabs* tabs,
 
 void MainWindow::configureWorkspaceLayout()
 {
+  // First layout to get the bounds of some widgets
+  layout();
+
   const auto& pref = Preferences::instance();
   bool normal = (m_mode == NormalMode);
   bool isDoc = (getDocView() != nullptr);
@@ -647,20 +657,42 @@ void MainWindow::configureWorkspaceLayout()
 
   // Configure timeline
   {
+    const gfx::Rect workspaceBounds = m_customizableDock->center()->center()->bounds();
+    // Get legacy timeline position and splitter position
     auto timelinePosition = pref.general.timelinePosition();
+    auto timelineSplitterPos =
+      get_config_double(kLegacyLayoutMainWindowSection, kLegacyLayoutTimelineSplitter, 75.0) /
+      100.0;
     int side = ui::BOTTOM;
 
     m_customizableDock->undock(m_timeline.get());
 
+    int w, h;
+    w = h = 64;
+
     switch (timelinePosition) {
-      case gen::TimelinePosition::LEFT:   side = ui::LEFT; break;
-      case gen::TimelinePosition::RIGHT:  side = ui::RIGHT; break;
-      case gen::TimelinePosition::BOTTOM: side = ui::BOTTOM; break;
+      case gen::TimelinePosition::LEFT:
+        side = ui::LEFT;
+        w = (workspaceBounds.w * (1.0 - timelineSplitterPos)) / guiscale();
+        break;
+      case gen::TimelinePosition::RIGHT:
+        side = ui::RIGHT;
+        w = (workspaceBounds.w * (1.0 - timelineSplitterPos)) / guiscale();
+        break;
+      case gen::TimelinePosition::BOTTOM:
+        side = ui::BOTTOM;
+        h = (workspaceBounds.h * (1.0 - timelineSplitterPos)) / guiscale();
+        break;
     }
+
+    // Listen to resizing changes in the dock that contains the
+    // timeline (so we save the new splitter position)
+    m_timelineResizeConn = m_customizableDock->center()->center()->Resize.connect(
+      [this] { saveTimelineConfiguration(); });
 
     m_customizableDock->center()->center()->dock(side,
                                                  m_timeline.get(),
-                                                 gfx::Size(64 * guiscale(), 64 * guiscale()));
+                                                 gfx::Size(w * guiscale(), h * guiscale()));
 
     m_timeline->setVisible(isDoc && (m_mode == NormalMode || m_mode == ContextBarAndTimelineMode) &&
                            pref.general.visibleTimeline());
@@ -671,6 +703,29 @@ void MainWindow::configureWorkspaceLayout()
   }
 
   layout();
+}
+
+void MainWindow::saveTimelineConfiguration()
+{
+  const auto& pref = Preferences::instance();
+  const gfx::Rect timelineBounds = m_timeline->bounds();
+  const gfx::Rect workspaceBounds = m_customizableDock->center()->center()->bounds();
+  auto timelinePosition = pref.general.timelinePosition();
+  double timelineSplitterPos = 0.75;
+
+  switch (timelinePosition) {
+    case gen::TimelinePosition::LEFT:
+    case gen::TimelinePosition::RIGHT:
+      timelineSplitterPos = 1.0 - double(timelineBounds.w) / workspaceBounds.w;
+      break;
+    case gen::TimelinePosition::BOTTOM:
+      timelineSplitterPos = 1.0 - double(timelineBounds.h) / workspaceBounds.h;
+      break;
+  }
+
+  set_config_double(kLegacyLayoutMainWindowSection,
+                    kLegacyLayoutTimelineSplitter,
+                    std::clamp(timelineSplitterPos * 100.0, 1.0, 99.0));
 }
 
 } // namespace app
