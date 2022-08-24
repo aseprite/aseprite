@@ -6,8 +6,7 @@
 function fix_test_img(testImg, scale, fileExt, cm, c1)
   -- With file formats that don't support alpha channel, we
   -- compare totally transparent pixels (alpha=0) with black.
-  if fileExt == "bmp" or (fileExt == "tga" and
-			  cm == ColorMode.GRAYSCALE) then
+  if fileExt == "tga" and cm == ColorMode.GRAYSCALE then
     local pixel
     if cm == ColorMode.RGB then
       pixel = c1.rgbaPixel
