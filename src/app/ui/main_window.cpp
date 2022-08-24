@@ -58,6 +58,7 @@ using namespace ui;
 
 static const char* kLegacyLayoutMainWindowSection = "layout:main_window";
 static const char* kLegacyLayoutTimelineSplitter = "timeline_splitter";
+static const char* kLegacyLayoutColorBarSplitter = "color_bar_splitter";
 
 class ScreenScalePanic : public INotificationDelegate {
 public:
@@ -191,6 +192,7 @@ void MainWindow::initialize()
 MainWindow::~MainWindow()
 {
   m_timelineResizeConn.disconnect();
+  m_colorBarResizeConn.disconnect();
 
   m_dock->resetDocks();
   m_customizableDock->resetDocks();
@@ -387,9 +389,14 @@ void MainWindow::popTimeline()
 void MainWindow::setDefaultLayout()
 {
   m_timelineResizeConn.disconnect();
+  m_colorBarResizeConn.disconnect();
+
+  auto colorBarWidth = get_config_double(kLegacyLayoutMainWindowSection,
+                                         kLegacyLayoutColorBarSplitter,
+                                         m_colorBar->sizeHint().w);
 
   m_customizableDock->resetDocks();
-  m_customizableDock->dock(ui::LEFT, m_colorBar.get());
+  m_customizableDock->dock(ui::LEFT, m_colorBar.get(), gfx::Size(colorBarWidth, 0));
   m_customizableDock->center()->dock(ui::TOP, m_contextBar.get());
   m_customizableDock->center()->dock(ui::RIGHT, m_toolBar.get());
   m_customizableDock->center()->center()->dock(ui::BOTTOM, m_timeline.get(), gfx::Size(64*guiscale(), 64*guiscale()));
@@ -400,9 +407,14 @@ void MainWindow::setDefaultLayout()
 void MainWindow::setDefaultMirrorLayout()
 {
   m_timelineResizeConn.disconnect();
+  m_colorBarResizeConn.disconnect();
+
+  auto colorBarWidth = get_config_double(kLegacyLayoutMainWindowSection,
+                                         kLegacyLayoutColorBarSplitter,
+                                         m_colorBar->sizeHint().w);
 
   m_customizableDock->resetDocks();
-  m_customizableDock->dock(ui::RIGHT, m_colorBar.get());
+  m_customizableDock->dock(ui::RIGHT, m_colorBar.get(), gfx::Size(colorBarWidth, 0));
   m_customizableDock->center()->dock(ui::TOP, m_contextBar.get());
   m_customizableDock->center()->dock(ui::LEFT, m_toolBar.get());
   m_customizableDock->center()->center()->dock(ui::BOTTOM, m_timeline.get(), gfx::Size(64*guiscale(), 64*guiscale()));
@@ -640,6 +652,10 @@ void MainWindow::configureWorkspaceLayout()
 
   // TODO set visibility of color bar widgets
   m_colorBar->setVisible(normal && isDoc);
+  m_colorBarResizeConn = m_customizableDock->Resize.connect(
+    [this]{
+      saveColorBarConfiguration();
+    });
 
   m_toolBar->setVisible(normal && isDoc);
   m_statusBar->setVisible(normal);
@@ -725,6 +741,13 @@ void MainWindow::saveTimelineConfiguration()
   set_config_double(kLegacyLayoutMainWindowSection,
                     kLegacyLayoutTimelineSplitter,
                     std::clamp(timelineSplitterPos * 100.0, 1.0, 99.0));
+}
+
+void MainWindow::saveColorBarConfiguration()
+{
+  set_config_double(kLegacyLayoutMainWindowSection,
+                    kLegacyLayoutColorBarSplitter,
+                    m_colorBar->bounds().w);
 }
 
 } // namespace app
