@@ -41,6 +41,17 @@ int side_index(int side)
   return kCenterIndex; // ui::CENTER
 }
 
+int side_from_index(int index)
+{
+  switch (index) {
+    case kTopIndex:    return ui::TOP;
+    case kBottomIndex: return ui::BOTTOM;
+    case kLeftIndex:   return ui::LEFT;
+    case kRightIndex:  return ui::RIGHT;
+  }
+  return ui::CENTER; // kCenterIndex
+}
+
 } // anonymous namespace
 
 void DockTabs::onSizeHint(ui::SizeHintEvent& ev)
@@ -200,6 +211,25 @@ void Dock::undock(Widget* widget)
   else {
     parent->removeChild(widget);
   }
+}
+
+int Dock::whichSideChildIsDocked(const ui::Widget* widget) const
+{
+  for (int i = 0; i < kSides; ++i)
+    if (m_sides[i] == widget)
+      return side_from_index(i);
+  return 0;
+}
+
+gfx::Size Dock::getUserDefinedSizeAtSide(int side) const
+{
+  int i = side_index(side);
+  // Only EXPANSIVE sides can be user-defined (has a splitter so the
+  // user can expand or shrink it)
+  if (m_aligns[i] & EXPANSIVE)
+    return m_sizes[i];
+  else
+    return gfx::Size();
 }
 
 Dock* Dock::subdock(int side)
@@ -431,6 +461,7 @@ void Dock::forEachSide(gfx::Rect bounds,
     int spacing = (m_aligns[i] & EXPANSIVE ? childSpacing() : 0);
 
     const gfx::Size sz = (m_aligns[i] & EXPANSIVE ? m_sizes[i] : widget->sizeHint());
+
     gfx::Rect rc, separator;
     switch (i) {
       case kTopIndex:
