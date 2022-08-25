@@ -15,6 +15,7 @@
 #include "app/ui/context_bar.h"
 #include "app/ui/dock.h"
 #include "app/ui/main_window.h"
+#include "app/ui/status_bar.h"
 #include "app/ui/timeline/timeline.h"
 #include "app/ui/toolbar.h"
 #include "app/ui/workspace.h"
@@ -119,6 +120,9 @@ static void load_dock_layout(const TiXmlElement* elem, Dock* dock)
   }
   else if (elemName == "workspace") {
     widget = win->getWorkspace();
+  }
+  else if (elemName == "statusbar") {
+    widget = win->statusBar();
   }
   else if (elemName == "dock") {
     subdock = dock->subdock(side);
