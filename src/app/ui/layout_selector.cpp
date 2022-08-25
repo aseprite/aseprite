@@ -85,6 +85,10 @@ private:
   {
     ButtonSet::onItemChange(item);
     ConfigureTimelinePopup::onChangeTimelinePosition(selectedItem());
+
+    // Show the timeline
+    App::instance()->mainWindow()
+      ->setTimelineVisibility(true);
   }
 };
 
