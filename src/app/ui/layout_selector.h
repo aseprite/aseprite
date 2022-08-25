@@ -11,6 +11,7 @@
 #include "app/ui/dockable.h"
 #include "app/ui/icon_button.h"
 #include "app/ui/layout.h"
+#include "app/ui/layouts.h"
 #include "ui/animated_widget.h"
 #include "ui/box.h"
 #include "ui/combobox.h"
@@ -63,7 +64,7 @@ namespace app {
     IconButton m_button;
     gfx::Size m_startSize;
     gfx::Size m_endSize;
-    std::vector<LayoutPtr> m_layouts;
+    Layouts m_layouts;
   };
 
 } // namespace app
