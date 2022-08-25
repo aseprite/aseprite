@@ -23,6 +23,7 @@
 #include "base/convert_to.h"
 #include "ui/widget.h"
 
+#include <cstring>
 #include <sstream>
 
 namespace app {
