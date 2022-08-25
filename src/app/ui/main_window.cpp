@@ -156,6 +156,7 @@ void MainWindow::initialize()
   // constructor).
   m_colorBar->setId("colorbar");
   m_contextBar->setId("contextbar");
+  m_statusBar->setId("statusbar");
   m_timeline->setId("timeline");
   m_toolBar->setId("toolbar");
   m_workspace->setId("workspace");
@@ -177,7 +178,6 @@ void MainWindow::initialize()
   m_dock->top()->dock(ui::BOTTOM, m_tabsBar.get());
   m_dock->top()->dock(ui::CENTER, m_menuBar.get());
   m_dock->dock(ui::CENTER, m_customizableDockPlaceholder.get());
-  m_dock->dock(ui::BOTTOM, m_statusBar.get());
 
   setDefaultLayout();
 
@@ -404,6 +404,7 @@ void MainWindow::setDefaultLayout()
 
   m_customizableDock->resetDocks();
   m_customizableDock->dock(ui::LEFT, m_colorBar.get(), gfx::Size(colorBarWidth, 0));
+  m_customizableDock->dock(ui::BOTTOM, m_statusBar.get());
   m_customizableDock->center()->dock(ui::TOP, m_contextBar.get());
   m_customizableDock->center()->dock(ui::RIGHT, m_toolBar.get());
   m_customizableDock->center()->center()->dock(ui::BOTTOM, m_timeline.get(), gfx::Size(64*guiscale(), 64*guiscale()));
@@ -422,6 +423,7 @@ void MainWindow::setDefaultMirrorLayout()
 
   m_customizableDock->resetDocks();
   m_customizableDock->dock(ui::RIGHT, m_colorBar.get(), gfx::Size(colorBarWidth, 0));
+  m_customizableDock->dock(ui::BOTTOM, m_statusBar.get());
   m_customizableDock->center()->dock(ui::TOP, m_contextBar.get());
   m_customizableDock->center()->dock(ui::LEFT, m_toolBar.get());
   m_customizableDock->center()->center()->dock(ui::BOTTOM, m_timeline.get(), gfx::Size(64*guiscale(), 64*guiscale()));
