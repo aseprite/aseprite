@@ -391,6 +391,7 @@ if(ENABLE_UI)
     ui/input_chain.cpp
     ui/keyboard_shortcuts.cpp
     ui/layout.cpp
+    ui/layouts.cpp
     ui/layout_selector.cpp
     ui/main_menu_bar.cpp
     ui/main_window.cpp

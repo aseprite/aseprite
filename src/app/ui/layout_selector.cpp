@@ -134,14 +134,14 @@ public:
         window.name()->setText(
           fmt::format("{} ({})",
                       window.name()->text(),
-                      m_selector->m_layouts.size()));
+                      m_selector->m_layouts.size()+1));
 
         window.openWindowInForeground();
         if (window.closer() == window.ok()) {
-          auto layout = std::make_shared<Layout>(window.name()->text(),
-                                                 win->customizableDock());
+          auto layout = Layout::MakeFromDock(window.name()->text(),
+                                             win->customizableDock());
 
-          m_selector->addLayout(std::move(layout));
+          m_selector->addLayout(layout);
         }
         break;
       }
@@ -209,7 +209,7 @@ void LayoutSelector::addLayout(const LayoutPtr& layout)
                      layout->name(),
                      layout));
 
-  m_layouts.push_back(layout);
+  m_layouts.addLayout(layout);
 
   m_comboBox.setSelectedItemIndex(item);
 }
