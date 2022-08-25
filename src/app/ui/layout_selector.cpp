@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021  Igara Studio S.A.
+// Copyright (C) 2021-2022  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -11,10 +11,14 @@
 #include "app/ui/layout_selector.h"
 
 #include "app/app.h"
+#include "app/i18n/strings.h"
+#include "app/ui/button_set.h"
+#include "app/ui/configure_timeline_popup.h"
 #include "app/ui/main_window.h"
 #include "app/ui/separator_in_view.h"
 #include "app/ui/skin/skin_theme.h"
 #include "ui/listitem.h"
+#include "ui/tooltips.h"
 #include "ui/window.h"
 
 #define ANI_TICKS 5
@@ -49,6 +53,41 @@ private:
   LayoutId m_id;
 };
 
+// TODO Similar ButtonSet to the one in timeline_conf.xml
+class TimelineButtons : public ButtonSet {
+public:
+  TimelineButtons() : ButtonSet(2)
+  {
+    addItem(Strings::timeline_conf_left())->processMnemonicFromText();
+    addItem(Strings::timeline_conf_right())->processMnemonicFromText();
+    addItem(Strings::timeline_conf_bottom(), 2)->processMnemonicFromText();
+
+    Preferences::instance().general.timelinePosition.AfterChange.connect(
+      [this](gen::TimelinePosition position) {
+        int selItem = 0;
+        switch (position) {
+          case gen::TimelinePosition::LEFT:   selItem = 0; break;
+          case gen::TimelinePosition::RIGHT:  selItem = 1; break;
+          case gen::TimelinePosition::BOTTOM: selItem = 2; break;
+        }
+        setSelectedItem(selItem, false);
+      });
+
+    InitTheme.connect([this] {
+      auto theme = skin::SkinTheme::get(this);
+      setStyle(theme->styles.separatorInView());
+    });
+    initTheme();
+  }
+
+private:
+  void onItemChange(Item* item) override
+  {
+    ButtonSet::onItemChange(item);
+    ConfigureTimelinePopup::onChangeTimelinePosition(selectedItem());
+  }
+};
+
 }; // namespace
 
 void LayoutSelector::LayoutComboBox::onChange()
@@ -58,7 +97,8 @@ void LayoutSelector::LayoutComboBox::onChange()
   }
 }
 
-LayoutSelector::LayoutSelector() : m_button("", "\xc3\xb7")
+LayoutSelector::LayoutSelector(TooltipManager* tooltipManager)
+  : m_button(SkinTheme::instance()->parts.iconUserData())
 {
   m_button.Click.connect([this]() { switchSelector(); });
 
@@ -66,6 +106,15 @@ LayoutSelector::LayoutSelector() : m_button("", "\xc3\xb7")
 
   addChild(&m_comboBox);
   addChild(&m_button);
+
+  setupTooltips(tooltipManager);
+
+  InitTheme.connect([this] {
+    noBorderNoChildSpacing();
+    m_comboBox.noBorderNoChildSpacing();
+    m_button.noBorderNoChildSpacing();
+  });
+  initTheme();
 }
 
 LayoutSelector::~LayoutSelector()
@@ -80,8 +129,8 @@ void LayoutSelector::onAnimationFrame()
     case ANI_EXPANDING:
     case ANI_COLLAPSING: {
       const double t = animationTime();
-      m_comboBox.setSizeHint(gfx::Size((1.0 - t) * m_startSize.w + t * m_endSize.w,
-                                       (1.0 - t) * m_startSize.h + t * m_endSize.h));
+      m_comboBox.setSizeHint(gfx::Size(int(inbetween(m_startSize.w, m_endSize.w, t)),
+                                       int(inbetween(m_startSize.h, m_endSize.h, t))));
       break;
     }
   }
@@ -112,8 +161,11 @@ void LayoutSelector::switchSelector()
 
     // Create the combobox for first time
     if (m_comboBox.getItemCount() == 0) {
+      m_comboBox.addItem(new SeparatorInView("Layout", HORIZONTAL));
       m_comboBox.addItem(new LayoutItem(LayoutId::DEFAULT, "Default"));
       m_comboBox.addItem(new LayoutItem(LayoutId::DEFAULT_MIRROR, "Default / Mirror"));
+      m_comboBox.addItem(new SeparatorInView("Timeline", HORIZONTAL));
+      m_comboBox.addItem(new TimelineButtons());
     }
 
     m_comboBox.setVisible(true);
@@ -129,6 +181,11 @@ void LayoutSelector::switchSelector()
 
   m_comboBox.setSizeHint(m_startSize);
   startAnimation((expand ? ANI_EXPANDING : ANI_COLLAPSING), ANI_TICKS);
+}
+
+void LayoutSelector::setupTooltips(TooltipManager* tooltipManager)
+{
+  tooltipManager->addTooltipFor(&m_button, Strings::main_window_layout(), TOP);
 }
 
 } // namespace app
