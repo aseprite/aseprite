@@ -62,16 +62,11 @@ public:
     addItem(Strings::timeline_conf_right())->processMnemonicFromText();
     addItem(Strings::timeline_conf_bottom(), 2)->processMnemonicFromText();
 
-    Preferences::instance().general.timelinePosition.AfterChange.connect(
-      [this](gen::TimelinePosition position) {
-        int selItem = 0;
-        switch (position) {
-          case gen::TimelinePosition::LEFT:   selItem = 0; break;
-          case gen::TimelinePosition::RIGHT:  selItem = 1; break;
-          case gen::TimelinePosition::BOTTOM: selItem = 2; break;
-        }
-        setSelectedItem(selItem, false);
-      });
+    auto& timelinePosOption = Preferences::instance().general.timelinePosition;
+
+    setSelectedButtonFromTimelinePosition(timelinePosOption());
+    timelinePosOption.AfterChange.connect(
+      [this](gen::TimelinePosition position) { setSelectedButtonFromTimelinePosition(position); });
 
     InitTheme.connect([this] {
       auto theme = skin::SkinTheme::get(this);
@@ -81,14 +76,24 @@ public:
   }
 
 private:
+  void setSelectedButtonFromTimelinePosition(gen::TimelinePosition pos)
+  {
+    int selItem = 0;
+    switch (pos) {
+      case gen::TimelinePosition::LEFT:   selItem = 0; break;
+      case gen::TimelinePosition::RIGHT:  selItem = 1; break;
+      case gen::TimelinePosition::BOTTOM: selItem = 2; break;
+    }
+    setSelectedItem(selItem, false);
+  }
+
   void onItemChange(Item* item) override
   {
     ButtonSet::onItemChange(item);
     ConfigureTimelinePopup::onChangeTimelinePosition(selectedItem());
 
     // Show the timeline
-    App::instance()->mainWindow()
-      ->setTimelineVisibility(true);
+    App::instance()->mainWindow()->setTimelineVisibility(true);
   }
 };
 
