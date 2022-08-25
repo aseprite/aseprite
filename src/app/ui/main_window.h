@@ -34,8 +34,9 @@ class DocView;
 class Dock;
 class HomeView;
 class INotificationDelegate;
-class MainMenuBar;
+class Layout;
 class LayoutSelector;
+class MainMenuBar;
 class Notifications;
 class PreviewEditorWindow;
 class StatusBar;
@@ -56,12 +57,15 @@ public:
   MainWindow();
   ~MainWindow();
 
+  // TODO refactor: remove the get prefix from these functions
   MainMenuBar* getMenuBar() { return m_menuBar.get(); }
   ContextBar* getContextBar() { return m_contextBar.get(); }
   StatusBar* statusBar() { return m_statusBar.get(); }
   WorkspaceTabs* getTabsBar() { return m_tabsBar.get(); }
   Timeline* getTimeline() { return m_timeline.get(); }
   Workspace* getWorkspace() { return m_workspace.get(); }
+  ColorBar* colorBar() { return m_colorBar.get(); }
+  ToolBar* toolBar() { return m_toolBar.get(); }
   PreviewEditorWindow* getPreviewEditor() { return m_previewEditor.get(); }
 #ifdef ENABLE_UPDATER
   CheckUpdateDelegate* getCheckUpdateDelegate();
@@ -89,6 +93,8 @@ public:
 
   void setDefaultLayout();
   void setDefaultMirrorLayout();
+  void loadUserLayout(const Layout* layout);
+  const Dock* customizableDock() const { return m_customizableDock; }
 
   // When crash::DataRecovery finish to search for sessions, this
   // function is called.
