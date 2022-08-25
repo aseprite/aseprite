@@ -227,17 +227,16 @@ void Dock::onSizeHint(ui::SizeHintEvent& ev)
 {
   gfx::Size sz = border().size();
 
-  if (m_sides[kLeftIndex])
+  if (hasVisibleSide(kLeftIndex))
     sz.w += m_sides[kLeftIndex]->sizeHint().w + childSpacing();
-  if (m_sides[kRightIndex])
+  if (hasVisibleSide(kRightIndex))
     sz.w += m_sides[kRightIndex]->sizeHint().w + childSpacing();
-  if (m_sides[kTopIndex])
+  if (hasVisibleSide(kTopIndex))
     sz.h += m_sides[kTopIndex]->sizeHint().h + childSpacing();
-  if (m_sides[kBottomIndex])
+  if (hasVisibleSide(kBottomIndex))
     sz.h += m_sides[kBottomIndex]->sizeHint().h + childSpacing();
-  if (m_sides[kCenterIndex]) {
+  if (hasVisibleSide(kCenterIndex))
     sz += m_sides[kCenterIndex]->sizeHint();
-  }
 
   ev.setSizeHint(sz);
 }

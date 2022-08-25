@@ -72,6 +72,8 @@ private:
                                       const gfx::Rect& separator,
                                       const int index)> f);
 
+  bool hasVisibleSide(const int i) const { return (m_sides[i] && m_sides[i]->isVisible()); }
+
   std::array<Widget*, kSides> m_sides;
   std::array<int, kSides> m_aligns;
   std::array<gfx::Size, kSides> m_sizes;
