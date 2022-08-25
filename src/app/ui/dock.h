@@ -53,6 +53,10 @@ public:
   Dock* right() { return subdock(ui::RIGHT); }
   Dock* center() { return subdock(ui::CENTER); }
 
+  // Functions useful to query/save the dock layout.
+  int whichSideChildIsDocked(const ui::Widget* widget) const;
+  gfx::Size getUserDefinedSizeAtSide(int side) const;
+
   obs::signal<void()> Resize;
 
 protected:
