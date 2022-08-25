@@ -396,6 +396,7 @@ if(ENABLE_UI)
     ui/incompat_file_window.cpp
     ui/input_chain.cpp
     ui/keyboard_shortcuts.cpp
+    ui/layout.cpp
     ui/layout_selector.cpp
     ui/main_menu_bar.cpp
     ui/main_window.cpp
