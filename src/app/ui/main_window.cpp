@@ -156,6 +156,14 @@ void MainWindow::initialize()
   m_workspace->setExpansive(true);
   m_notifications->setVisible(false);
 
+  // IDs to create UI layouts from a Dock (see app::Layout
+  // constructor).
+  m_colorBar->setId("colorbar");
+  m_contextBar->setId("contextbar");
+  m_timeline->setId("timeline");
+  m_toolBar->setId("toolbar");
+  m_workspace->setId("workspace");
+
   // Add the widgets in the boxes
   addChild(m_tooltipManager);
   addChild(m_dock);
@@ -417,6 +425,19 @@ void MainWindow::setDefaultMirrorLayout()
                                                gfx::Size(64 * guiscale(), 64 * guiscale()));
   m_customizableDock->center()->center()->dock(ui::CENTER, m_workspace.get());
   configureWorkspaceLayout();
+}
+
+void MainWindow::loadUserLayout(const Layout* layout)
+{
+  m_timelineResizeConn.disconnect();
+  m_colorBarResizeConn.disconnect();
+
+  m_customizableDock->resetDocks();
+
+  if (!layout->loadLayout(m_customizableDock))
+    setDefaultLayout();
+
+  this->layout();
 }
 
 void MainWindow::dataRecoverySessionsAreReady()

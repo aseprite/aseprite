@@ -10,11 +10,13 @@
 
 #include "app/ui/dockable.h"
 #include "app/ui/icon_button.h"
+#include "app/ui/layout.h"
 #include "ui/animated_widget.h"
 #include "ui/box.h"
 #include "ui/combobox.h"
 
 #include <memory>
+#include <vector>
 
 namespace ui {
 class TooltipManager;
@@ -31,13 +33,20 @@ class LayoutSelector : public ui::HBox,
     ANI_COLLAPSING,
   };
 
+  class LayoutItem;
+
   class LayoutComboBox : public ui::ComboBox {
+  private:
     void onChange() override;
+    void onCloseListBox() override;
+    LayoutItem* m_selected = nullptr;
   };
 
 public:
   LayoutSelector(ui::TooltipManager* tooltipManager);
   ~LayoutSelector();
+
+  void addLayout(const LayoutPtr& layout);
 
   // Dockable impl
   int dockableAt() const override { return ui::TOP | ui::BOTTOM; }
@@ -52,6 +61,7 @@ private:
   IconButton m_button;
   gfx::Size m_startSize;
   gfx::Size m_endSize;
+  std::vector<LayoutPtr> m_layouts;
 };
 
 } // namespace app
