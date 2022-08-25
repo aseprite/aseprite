@@ -11,24 +11,28 @@
 #include <memory>
 #include <string>
 
+class TiXmlElement;
+
 namespace app {
 class Dock;
 
-class Layout {
+class Layout;
+using LayoutPtr = std::shared_ptr<Layout>;
+
+class Layout final {
 public:
-  Layout(const std::string& name, const Dock* dock);
+  static LayoutPtr MakeFromXmlElement(const TiXmlElement* layoutElem);
+  static LayoutPtr MakeFromDock(const std::string& name, const Dock* dock);
 
   const std::string& name() const { return m_name; }
-  const std::string& data() const { return m_data; }
+  const TiXmlElement* xmlElement() const { return m_elem.get(); }
 
   bool loadLayout(Dock* dock) const;
 
 private:
   std::string m_name;
-  std::string m_data;
+  std::unique_ptr<TiXmlElement> m_elem;
 };
-
-using LayoutPtr = std::shared_ptr<Layout>;
 
 } // namespace app
 

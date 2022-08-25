@@ -28,7 +28,7 @@
 
 namespace app {
 
-static void save_dock_layout(TiXmlElement& elem, const Dock* dock)
+static void save_dock_layout(TiXmlElement* elem, const Dock* dock)
 {
   for (const auto child : dock->children()) {
     const int side = dock->whichSideChildIsDocked(child);
@@ -52,7 +52,7 @@ static void save_dock_layout(TiXmlElement& elem, const Dock* dock)
       if (!sideStr.empty())
         childElem.SetAttribute("side", sideStr);
 
-      save_dock_layout(childElem, subdock);
+      save_dock_layout(&childElem, subdock);
     }
     else {
       // Set the widget ID as the element name, e.g. <timeline />,
@@ -66,7 +66,7 @@ static void save_dock_layout(TiXmlElement& elem, const Dock* dock)
         childElem.SetAttribute("height", size.h);
     }
 
-    elem.InsertEndChild(childElem);
+    elem->InsertEndChild(childElem);
   }
 }
 
@@ -136,40 +136,36 @@ static void load_dock_layout(const TiXmlElement* elem, Dock* dock)
   }
 }
 
-Layout::Layout(const std::string& name, const Dock* dock) : m_name(name)
+// static
+LayoutPtr Layout::MakeFromXmlElement(const TiXmlElement* layoutElem)
 {
-  XmlDocumentRef doc(new TiXmlDocument());
-  TiXmlElement layoutsElem("layouts");
-  {
-    TiXmlElement layoutElem("layout");
-    layoutElem.SetAttribute("name", name);
+  auto layout = std::make_shared<Layout>();
+  if (auto name = layoutElem->Attribute("name"))
+    layout->m_name = name;
 
-    save_dock_layout(layoutElem, dock);
+  layout->m_elem.reset(layoutElem->Clone()->ToElement());
+  return layout;
+}
 
-    layoutsElem.InsertEndChild(layoutElem);
-  }
+// static
+LayoutPtr Layout::MakeFromDock(const std::string& name, const Dock* dock)
+{
+  auto layout = std::make_shared<Layout>();
+  layout->m_name = name;
 
-  TiXmlDeclaration declaration("1.0", "utf-8", "");
-  doc->InsertEndChild(declaration);
-  doc->InsertEndChild(layoutsElem);
+  layout->m_elem = std::make_unique<TiXmlElement>("layout");
+  layout->m_elem->SetAttribute("name", name);
+  save_dock_layout(layout->m_elem.get(), dock);
 
-  std::stringstream s;
-  s << *doc;
-  m_data = s.str();
+  return layout;
 }
 
 bool Layout::loadLayout(Dock* dock) const
 {
-  XmlDocumentRef doc(new TiXmlDocument);
-  doc->Parse(m_data.c_str(), 0, TIXML_DEFAULT_ENCODING);
-  TiXmlHandle handle(doc.get());
-
-  TiXmlElement* layoutElem = handle.FirstChild("layouts").FirstChild("layout").ToElement();
-
-  if (!layoutElem)
+  if (!m_elem)
     return false;
 
-  TiXmlElement* elem = layoutElem->FirstChildElement();
+  TiXmlElement* elem = m_elem->FirstChildElement();
   while (elem) {
     load_dock_layout(elem, dock);
     elem = elem->NextSiblingElement();
