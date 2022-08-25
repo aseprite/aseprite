@@ -93,7 +93,6 @@ MainWindow::MainWindow()
   , m_tooltipManager(new TooltipManager)
   , m_dock(new Dock)
   , m_customizableDock(new Dock)
-  , m_layoutSelector(new LayoutSelector)
   , m_mode(NormalMode)
   , m_homeView(nullptr)
   , m_scalePanic(nullptr)
@@ -117,7 +116,7 @@ MainWindow::MainWindow()
 void MainWindow::initialize()
 {
   m_menuBar = std::make_unique<MainMenuBar>();
-  m_layoutSelector = std::make_unique<LayoutSelector>();
+  m_layoutSelector = std::make_unique<LayoutSelector>(m_tooltipManager);
 
   // Register commands to load menus+shortcuts for these commands
   Editor::registerCommands();

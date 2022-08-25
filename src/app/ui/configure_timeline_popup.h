@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2025  Igara Studio S.A.
+// Copyright (C) 2022-2025  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -31,9 +31,10 @@ class ConfigureTimelinePopup : public ui::PopupWindow {
 public:
   ConfigureTimelinePopup();
 
+  static void onChangeTimelinePosition(int option);
+
 protected:
   bool onProcessMessage(ui::Message* msg) override;
-  void onChangePosition();
   void onChangeFirstFrame();
   void onChangeType();
   void onOpacity();
