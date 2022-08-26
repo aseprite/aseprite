@@ -12,12 +12,14 @@
 
 #include "app/app.h"
 #include "app/i18n/strings.h"
+#include "app/match_words.h"
 #include "app/ui/button_set.h"
 #include "app/ui/configure_timeline_popup.h"
 #include "app/ui/main_window.h"
 #include "app/ui/separator_in_view.h"
 #include "app/ui/skin/skin_theme.h"
 #include "fmt/format.h"
+#include "ui/entry.h"
 #include "ui/listitem.h"
 #include "ui/tooltips.h"
 #include "ui/window.h"
@@ -79,6 +81,48 @@ private:
   obs::scoped_connection m_timelinePosConn;
 };
 
+// TODO this combobox is similar to FileSelector::CustomFileNameEntry
+//      and GotoFrameCommand::TagsEntry
+class LayoutsEntry : public ComboBox {
+public:
+  LayoutsEntry(Layouts& layouts) : m_layouts(layouts)
+  {
+    setEditable(true);
+    getEntryWidget()->Change.connect(&LayoutsEntry::onEntryChange, this);
+    fill(true);
+  }
+
+private:
+  void fill(bool all)
+  {
+    deleteAllItems();
+
+    MatchWords match(getEntryWidget()->text());
+
+    bool matchAny = false;
+    for (auto& layout : m_layouts) {
+      if (match(layout->name())) {
+        matchAny = true;
+        break;
+      }
+    }
+    for (auto& layout : m_layouts) {
+      if (all || !matchAny || match(layout->name()))
+        addItem(layout->name());
+    }
+  }
+
+  void onEntryChange()
+  {
+    closeListBox();
+    fill(false);
+    if (getItemCount() > 0)
+      openListBox();
+  }
+
+  Layouts& m_layouts;
+};
+
 }; // namespace
 
 class LayoutSelector::LayoutItem : public ListItem {
@@ -95,12 +139,16 @@ public:
              const std::string& text,
              const LayoutPtr layout = nullptr)
     : ListItem(text)
-    , m_selector(selector)
     , m_id(id)
+    , m_selector(selector)
     , m_layout(layout)
   {
     ASSERT((id != USER_DEFINED && layout == nullptr) || (id == USER_DEFINED && layout != nullptr));
   }
+
+  Layout* layout() const { return m_layout.get(); }
+
+  void setLayout(const LayoutPtr& layout) { m_layout = layout; }
 
   void selectImmediately()
   {
@@ -126,13 +174,23 @@ public:
 
     switch (m_id) {
       case LayoutId::SAVE_LAYOUT: {
-        gen::NewLayout window;
-        window.name()->setText(
-          fmt::format("{} ({})", window.name()->text(), m_selector->m_layouts.size() + 1));
+        // Select the "Layout" separator (it's like selecting nothing)
+        // TODO improve the ComboBox to select a real "nothing" (with
+        //      a placeholder text)
+        m_selector->m_comboBox.setSelectedItemIndex(0);
 
+        gen::NewLayout window;
+        LayoutsEntry name(m_selector->m_layouts);
+        name.getEntryWidget()->setMaxTextLength(128);
+        name.setFocusMagnet(true);
+        name.setValue(fmt::format("{} ({})",
+                                  Strings::new_layout_default_name(),
+                                  m_selector->m_layouts.size() + 1));
+
+        window.namePlaceholder()->addChild(&name);
         window.openWindowInForeground();
         if (window.closer() == window.ok()) {
-          auto layout = Layout::MakeFromDock(window.name()->text(), win->customizableDock());
+          auto layout = Layout::MakeFromDock(name.getValue(), win->customizableDock());
 
           m_selector->addLayout(layout);
         }
@@ -195,12 +253,23 @@ LayoutSelector::~LayoutSelector()
 
 void LayoutSelector::addLayout(const LayoutPtr& layout)
 {
-  auto item = m_comboBox.addItem(
-    new LayoutItem(this, LayoutItem::USER_DEFINED, layout->name(), layout));
-
-  m_layouts.addLayout(layout);
-
-  m_comboBox.setSelectedItemIndex(item);
+  bool added = m_layouts.addLayout(layout);
+  if (added) {
+    auto item = m_comboBox.addItem(
+      new LayoutItem(this, LayoutItem::USER_DEFINED, layout->name(), layout));
+    m_comboBox.setSelectedItemIndex(item);
+  }
+  else {
+    for (auto item : m_comboBox) {
+      if (auto layoutItem = dynamic_cast<LayoutItem*>(item)) {
+        if (layoutItem->layout() && layoutItem->layout()->name() == layout->name()) {
+          layoutItem->setLayout(layout);
+          m_comboBox.setSelectedItem(item);
+          break;
+        }
+      }
+    }
+  }
 }
 
 void LayoutSelector::onAnimationFrame()

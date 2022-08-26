@@ -5,9 +5,7 @@
   <vbox>
     <hbox>
       <label text="@.name" />
-      <entry id="name" text="@.default_name"
-             maxsize="128" expansive="true"
-             magnet="true" />
+      <vbox id="name_placeholder" expansive="true" />
     </hbox>
 
     <separator horizontal="true" />
