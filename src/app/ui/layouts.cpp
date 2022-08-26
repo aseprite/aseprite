@@ -15,6 +15,7 @@
 #include "app/xml_exception.h"
 #include "base/fs.h"
 
+#include <algorithm>
 #include <fstream>
 
 namespace app {
