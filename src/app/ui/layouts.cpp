@@ -15,6 +15,7 @@
 #include "app/xml_exception.h"
 #include "base/fs.h"
 
+#include <algorithm>
 #include <fstream>
 
 namespace app {
@@ -37,9 +38,19 @@ Layouts::~Layouts()
     save(m_userLayoutsFilename);
 }
 
-void Layouts::addLayout(const LayoutPtr& layout)
+bool Layouts::addLayout(const LayoutPtr& layout)
 {
-  m_layouts.push_back(layout);
+  auto it = std::find_if(m_layouts.begin(), m_layouts.end(), [layout](const LayoutPtr& l) {
+    return l->name() == layout->name();
+  });
+  if (it != m_layouts.end()) {
+    *it = layout; // Replace existent layout
+    return false;
+  }
+  else {
+    m_layouts.push_back(layout);
+    return true;
+  }
 }
 
 void Layouts::load(const std::string& fn)
