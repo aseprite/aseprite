@@ -22,7 +22,9 @@ public:
 
   size_t size() const { return m_layouts.size(); }
 
-  void addLayout(const LayoutPtr& layout);
+  // Returns true if the layout is added, or false if it was
+  // replaced.
+  bool addLayout(const LayoutPtr& layout);
 
   // To iterate layouts
   using List = std::vector<LayoutPtr>;
