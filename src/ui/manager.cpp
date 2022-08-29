@@ -1498,7 +1498,7 @@ void Manager::_closeWindow(Window* window, bool redraw_background)
   if (// The display can be nullptr if the window was not opened or
       // was closed before.
       window->ownDisplay()) {
-    parentDisplay = windowDisplay->parentDisplay();
+    parentDisplay = (windowDisplay ? windowDisplay->parentDisplay(): nullptr);
     ASSERT(parentDisplay);
     ASSERT(windowDisplay);
     ASSERT(windowDisplay != this->display());
@@ -1537,6 +1537,18 @@ void Manager::_closeWindow(Window* window, bool redraw_background)
     // Remove the mouse cursor from the display that we are going to
     // delete.
     _internal_set_mouse_display(parentDisplay);
+
+    // Remove the display that we're going to delete (windowDisplay)
+    // as parent of any other existent display.
+    for (auto otherChild : children()) {
+      if (auto otherWindow = static_cast<Window*>(otherChild)) {
+        if (otherWindow != window &&
+            otherWindow->display() &&
+            otherWindow->display()->parentDisplay() == windowDisplay) {
+          otherWindow->display()->_setParentDisplay(parentDisplay);
+        }
+      }
+    }
 
     // The ui::Display should destroy the os::Window
     delete windowDisplay;
