@@ -874,32 +874,36 @@ static void read_rle4_compressed_image(FILE *f, Image *image, const BITMAPINFOHE
   }
 }
 
+static uint32_t calc_shift(const uint32_t channelMask, int& channelBits)
+{
+  uint32_t channelShift = 0;
+  uint32_t mask = 0;
+  if (channelMask) {
+    mask = ~channelMask;
+    while (mask & 1) {
+      ++channelShift;
+      mask >>= 1;
+    }
+    if (mask) {
+      mask = ~mask;
+      while (mask & 1) {
+        channelBits++;
+        mask >>= 1;
+      }
+    }
+    else
+      channelBits = 32 - channelShift;
+  }
+  else
+    channelBits = 8;
+  return channelShift;
+}
+
 static int read_bitfields_image(FILE *f, Image *image, BITMAPINFOHEADER *infoheader,
                                 uint32_t rmask, uint32_t gmask, uint32_t bmask,
                                 uint32_t amask, bool& withAlpha)
 {
-#define CALC_SHIFT(c)      \
-  c##shift = 0;                     \
-  if (c##mask) {                    \
-    mask = ~c##mask;                \
-    while (mask & 1) {              \
-      ++c##shift;                   \
-      mask >>= 1;                   \
-    }                               \
-    if (mask) {                     \
-      mask = ~mask;                 \
-      while (mask & 1) {            \
-        c##bits++;                  \
-        mask >>= 1;                 \
-      }                             \
-    }                               \
-    else                            \
-      c##bits = 32 - c##shift;      \
-  }                                 \
-  else                              \
-    c##bits = 8;                    \
-
-  uint32_t buffer, mask, rshift, gshift, bshift, ashift;
+  uint32_t buffer, rshift, gshift, bshift, ashift;
   int rbits = 0, gbits = 0, bbits = 0, abits = 0;
   int i, j, k, line, height, dir, r, g, b, a;
   int bits_per_pixel;
@@ -911,10 +915,10 @@ static int read_bitfields_image(FILE *f, Image *image, BITMAPINFOHEADER *infohea
   height = ABS(height);
 
   /* calculate shifts */
-  CALC_SHIFT(r);
-  CALC_SHIFT(g);
-  CALC_SHIFT(b);
-  CALC_SHIFT(a);
+  rshift = calc_shift(rmask, rbits);
+  gshift = calc_shift(gmask, gbits);
+  bshift = calc_shift(bmask, bbits);
+  ashift = calc_shift(amask, abits);
 
   /* calculate bits-per-pixel and bytes-per-pixel */
   bits_per_pixel = infoheader->biBitCount;
