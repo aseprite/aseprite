@@ -52,7 +52,7 @@ ExportFileWindow::ExportFileWindow(const Doc* doc)
 
   // Default export configuration
   setResizeScale(m_docPref.saveCopy.resizeScale());
-  fill_layers_combobox(m_doc->sprite(), layers(), m_docPref.saveCopy.layer());
+  fill_layers_combobox(m_doc->sprite(), layers(), m_docPref.saveCopy.layer(), -1);
   fill_frames_combobox(m_doc->sprite(), frames(), m_docPref.saveCopy.frameTag());
   fill_anidir_combobox(anidir(), m_docPref.saveCopy.aniDir());
   pixelRatio()->setSelected(m_docPref.saveCopy.applyPixelRatio());
@@ -119,6 +119,12 @@ double ExportFileWindow::resizeValue() const
 std::string ExportFileWindow::layersValue() const
 {
   return layers()->getValue();
+}
+
+int ExportFileWindow::layersIndex() const
+{
+  int i = layers()->getSelectedItemIndex() - 2;
+  return i < 0 ? -1 : i;
 }
 
 std::string ExportFileWindow::framesValue() const
