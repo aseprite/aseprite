@@ -721,7 +721,7 @@ private:
   }
 
   int layerIndex() const {
-    int i = layers()->getSelectedItemIndex() - 2;
+    int i = layers()->getSelectedItemIndex() - kLayersComboboxExtraInitialItems;
     return i < 0 ? -1 : i;
   }
 

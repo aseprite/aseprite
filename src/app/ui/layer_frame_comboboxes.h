@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -34,6 +34,8 @@ namespace app {
   extern const char* kAllFrames;
   extern const char* kSelectedLayers;
   extern const char* kSelectedFrames;
+
+  constexpr const int kLayersComboboxExtraInitialItems = 2;
 
   class LayerListItem : public ui::ListItem {
   public:

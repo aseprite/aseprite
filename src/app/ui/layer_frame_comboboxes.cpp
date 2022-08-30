@@ -67,12 +67,16 @@ void fill_layers_combobox(const doc::Sprite* sprite, ui::ComboBox* layers, const
   if (defLayer == kSelectedLayers)
     layers->setSelectedItemIndex(i);
 
+  assert(layers->getItemCount() == kLayersComboboxExtraInitialItems);
+  static_assert(kLayersComboboxExtraInitialItems == 2,
+                "Update kLayersComboboxExtraInitialItems value to match the number of initial items in layers combobox");
+
   doc::LayerList layersList = sprite->allLayers();
   for (auto it=layersList.rbegin(), end=layersList.rend(); it!=end; ++it) {
     doc::Layer* layer = *it;
     i = layers->addItem(new LayerListItem(layer));
     if (defLayer == layer->name() && defLayerIndex == -1 ||
-        defLayer == layer->name() && defLayerIndex == i-2)
+        defLayer == layer->name() && defLayerIndex == i-kLayersComboboxExtraInitialItems)
       layers->setSelectedItemIndex(i);
   }
 }
