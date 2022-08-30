@@ -109,3 +109,28 @@ do
   -- listener instead of doing nothing.
   expect_eq(2, i)
 end
+
+-- Accessing Sprite.events when closing the same sprite will call
+-- push_sprite_events() creating a new app::script::SpriteEvents
+-- instance again even when we've just destroyed the old one (because
+-- we're just closing the sprite).
+do
+  local s = Sprite(32, 32)
+  function onSpriteChange()
+    -- Do nothing
+  end
+  -- Here we access s.events for first time, creating the
+  -- app::script::SpriteEvents for this sprite.
+  s.events:on('change', onSpriteChange)
+  function onSiteChange()
+    -- Accessing s.events again on 'sitechange' when we're just
+    -- closing the sprite, re-generating its SpriteEvents instance.
+    -- We've to have special care of this case.
+    s.events:off(onSpriteChange)
+  end
+  app.events:on('sitechange', onSiteChange)
+  -- Closing the sprite will create a 'sitechange' event calling
+  -- onSiteChange() function.
+  s:close()
+  app.events:off(onSiteChange)
+end
