@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -11,14 +11,18 @@
 #include "app/app.h"
 #include "app/context.h"
 #include "app/doc_range.h"
+#include "app/modules/editors.h"
 #include "app/script/docobj.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
 #include "app/site.h"
+#include "app/ui/editor/editor.h"
 #include "app/util/range_utils.h"
 #include "doc/cel.h"
 #include "doc/layer.h"
 #include "doc/object_ids.h"
+#include "doc/slice.h"
+#include "doc/slices.h"
 #include "doc/sprite.h"
 
 #include <set>
@@ -32,9 +36,10 @@ namespace {
 struct RangeObj { // This is like DocRange but referencing objects with IDs
   DocRange::Type type;
   ObjectId spriteId;
-  std::set<ObjectId> layers;
+  doc::SelectedObjects layers;
   std::vector<frame_t> frames;
-  std::set<ObjectId> cels;
+  doc::SelectedObjects cels;
+  doc::SelectedObjects slices;
   std::vector<color_t> colors;
 
   RangeObj(Site& site) {
@@ -83,18 +88,23 @@ struct RangeObj { // This is like DocRange but referencing objects with IDs
 
     if (site.selectedColors().picks() > 0)
       colors = site.selectedColors().toVectorOfIndexes();
+
+    slices = site.selectedSlices();
   }
 
   Sprite* sprite(lua_State* L) { return check_docobj(L, doc::get<Sprite>(spriteId)); }
 
   bool contains(const Layer* layer) const {
-    return layers.find(layer->id()) != layers.end();
+    return layers.contains(layer->id());
   }
   bool contains(const frame_t frame) const {
     return std::find(frames.begin(), frames.end(), frame) != frames.end();
   }
   bool contains(const Cel* cel) const {
-    return cels.find(cel->id()) != cels.end();
+    return cels.contains(cel->id());
+  }
+  bool contains(const Slice* slice) const {
+    return slices.contains(slice->id());
   }
   bool containsColor(const color_t color) const {
     return (std::find(colors.begin(), colors.end(), color) != colors.end());
@@ -130,6 +140,9 @@ int Range_contains(lua_State* L)
   }
   else if (Cel* cel = may_get_docobj<Cel>(L, 2)) {
     result = obj->contains(cel);
+  }
+  else if (Slice* slice = may_get_docobj<Slice>(L, 2)) {
+    result = obj->contains(slice);
   }
   else {
     frame_t frame = get_frame_number_from_arg(L, 2);
@@ -247,6 +260,18 @@ int Range_get_colors(lua_State* L)
   return 1;
 }
 
+int Range_get_slices(lua_State* L)
+{
+  auto obj = get_obj<RangeObj>(L, 1);
+  lua_newtable(L);
+  int j = 1;
+  for (auto sliceId : obj->slices) {
+    push_docobj<Slice>(L, sliceId);
+    lua_rawseti(L, -2, j++);
+  }
+  return 1;
+}
+
 int Range_set_layers(lua_State* L)
 {
   auto obj = get_obj<RangeObj>(L, 1);
@@ -312,6 +337,28 @@ int Range_set_colors(lua_State* L)
   return 0;
 }
 
+int Range_set_slices(lua_State* L)
+{
+  auto obj = get_obj<RangeObj>(L, 1);
+  app::Context* ctx = App::instance()->context();
+  Site site = ctx->activeSite();
+
+  // TODO we should add support to CLI scripts
+
+  if (lua_istable(L, -1) && site.sprite() && current_editor) {
+    current_editor->clearSlicesSelection();
+    int len = luaL_len(L, -1);
+    for (int i = 1; i <= len; i++) {
+      lua_pushnumber(L, i);
+      if (lua_gettable(L, -2) != LUA_TNIL)
+        current_editor->selectSlice(get_docobj<Slice>(L, -1));
+      lua_pop(L, 1);
+    }
+  }
+  obj->updateFromSite(ctx->activeSite());
+  return 0;
+}
+
 const luaL_Reg Range_methods[] = {
   { "__gc", Range_gc },
   { "contains", Range_contains },
@@ -330,6 +377,7 @@ const Property Range_properties[] = {
   { "images", Range_get_images, nullptr },
   { "editableImages", Range_get_editableImages, nullptr },
   { "colors", Range_get_colors, Range_set_colors },
+  { "slices", Range_get_slices, Range_set_slices },
   { nullptr, nullptr, nullptr }
 };
 
