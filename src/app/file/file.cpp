@@ -387,7 +387,15 @@ FileOp* FileOp::createLoadDocumentOperation(Context* context,
 
         window.duration()->setTextf("%d", fop->m_seq.duration);
         window.duration()->Change.connect(
-          [&]() { fop->m_seq.duration = window.duration()->textInt(); });
+          [&]() {
+            fop->m_seq.duration = window.duration()->textInt();
+            // If the animation duration is changed we'll prefer to
+            // agree on loading the sequence if the user press Enter.
+            //
+            // TODO maybe the "Agree" button should be the default
+            //      focus magnet in this dialog
+            window.agree()->setFocusMagnet(true);
+          });
 
         window.openWindowInForeground();
 
