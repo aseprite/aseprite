@@ -968,7 +968,6 @@ bool BmpFormat::onLoad(FileOp *fop)
   uint32_t rmask, gmask, bmask, amask;
   BITMAPFILEHEADER fileheader;
   BITMAPINFOHEADER infoheader;
-  unsigned long biSize;
   PixelFormat pixelFormat;
   int format;
 
