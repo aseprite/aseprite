@@ -173,6 +173,11 @@ int Range_clear(lua_State* L)
   doc::PalettePicks picks;
   ctx->setSelectedColors(picks);
 
+  // Empty selected slices in the current editor
+  // TODO add a new function to Context class for this
+  if (current_editor)
+    current_editor->clearSlicesSelection();
+
   obj->updateFromSite(ctx->activeSite());
   return 0;
 }
