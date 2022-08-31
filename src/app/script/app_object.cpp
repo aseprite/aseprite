@@ -17,6 +17,7 @@
 #include "app/doc_access.h"
 #include "app/i18n/strings.h"
 #include "app/loop_tag.h"
+#include "app/modules/editors.h"
 #include "app/modules/palettes.h"
 #include "app/pref/preferences.h"
 #include "app/script/api_version.h"
@@ -543,6 +544,49 @@ int App_get_activeTag(lua_State* L)
   return 1;
 }
 
+int App_get_selectedSlices(lua_State* L)
+{
+  app::Context* ctx = App::instance()->context();
+  Site site = ctx->activeSite();
+
+  lua_newtable(L);
+  int len = 1;
+
+  if (site.sprite())
+  {
+    SelectedObjects selected = site.selectedSlices();
+    for (auto slice : site.sprite()->slices())
+    {
+      if (selected.contains(slice->id()))
+      {
+        lua_pushnumber(L, len);
+        push_docobj<Slice>(L, slice);
+        lua_settable(L, -3);
+        len++;
+      }
+    }
+  }
+  return 1;
+}
+
+int App_set_selectedSlices(lua_State* L)
+{
+  app::Context* ctx = App::instance()->context();
+  Site site = ctx->activeSite();
+
+  if (lua_istable(L, -1) && site.sprite() && app::current_editor) {
+    app::current_editor->clearSlicesSelection();
+    int len = luaL_len(L, -1);
+    for (int i = 1; i <= len; i++) {
+      lua_pushnumber(L, i);
+      if (lua_gettable(L, -2) != LUA_TNIL)
+        app::current_editor->selectSlice(get_docobj<Slice>(L, -1));
+      lua_pop(L, 1);
+    }
+  }
+  return 0;
+}
+
 int App_get_sprites(lua_State* L)
 {
   push_sprites(L);
@@ -734,6 +778,7 @@ const Property App_properties[] = {
   { "activeTag", App_get_activeTag, nullptr },
   { "activeTool", App_get_activeTool, App_set_activeTool },
   { "activeBrush", App_get_activeBrush, App_set_activeBrush },
+  { "selectedSlices", App_get_selectedSlices, App_set_selectedSlices },
   { "sprites", App_get_sprites, nullptr },
   { "fgColor", App_get_fgColor, App_set_fgColor },
   { "bgColor", App_get_bgColor, App_set_bgColor },
