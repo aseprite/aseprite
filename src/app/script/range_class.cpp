@@ -341,16 +341,14 @@ int Range_set_slices(lua_State* L)
 {
   auto obj = get_obj<RangeObj>(L, 1);
   app::Context* ctx = App::instance()->context();
-  Site site = ctx->activeSite();
 
   // TODO we should add support to CLI scripts
 
-  if (lua_istable(L, -1) && site.sprite() && current_editor) {
+  if (current_editor) {
     current_editor->clearSlicesSelection();
-    int len = luaL_len(L, -1);
+    const int len = luaL_len(L, 2);
     for (int i = 1; i <= len; i++) {
-      lua_pushnumber(L, i);
-      if (lua_gettable(L, -2) != LUA_TNIL)
+      if (lua_geti(L, 2, i) != LUA_TNIL)
         current_editor->selectSlice(get_docobj<Slice>(L, -1));
       lua_pop(L, 1);
     }
