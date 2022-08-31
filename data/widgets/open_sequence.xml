@@ -8,6 +8,10 @@
     <view expansive="true" id="view" minwidth="128" minheight="64">
       <listbox id="files" multiselect="true" />
     </view>
+    <hbox>
+      <label text="@.duration" />
+      <expr text="0" id="duration" suffix="ms" />
+    </hbox>
     <separator horizontal="true" />
     <check id="repeat" text="@.repeat" />
     <check id="dont_show" text="@general.dont_show" />
