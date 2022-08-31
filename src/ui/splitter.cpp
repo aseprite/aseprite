@@ -53,7 +53,9 @@ bool Splitter::onProcessMessage(Message* msg)
   switch (msg->type()) {
 
     case kMouseDownMessage:
-      if (isEnabled()) {
+      if (!isEnabled())
+        break;
+      else {
         Widget* c1, *c2;
         int x1, y1, x2, y2;
         int bar, click_bar;
@@ -102,8 +104,6 @@ bool Splitter::onProcessMessage(Message* msg)
         // Continue with motion message...
         [[fallthrough]];
       }
-      else
-        break;
 
     case kMouseMoveMessage:
       if (hasCapture()) {
