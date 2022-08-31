@@ -374,6 +374,7 @@ int Range_set_colors(lua_State* L)
 
 int Range_set_tiles(lua_State* L)
 {
+  auto obj = get_obj<RangeObj>(L, 1);
   app::Context* ctx = App::instance()->context();
   doc::PalettePicks picks;
   if (lua_istable(L, 2)) {
