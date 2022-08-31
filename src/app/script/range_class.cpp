@@ -173,10 +173,12 @@ int Range_clear(lua_State* L)
   doc::PalettePicks picks;
   ctx->setSelectedColors(picks);
 
+#ifdef ENABLE_UI
   // Empty selected slices in the current editor
   // TODO add a new function to Context class for this
   if (current_editor)
     current_editor->clearSlicesSelection();
+#endif
 
   obj->updateFromSite(ctx->activeSite());
   return 0;
@@ -348,7 +350,7 @@ int Range_set_slices(lua_State* L)
   app::Context* ctx = App::instance()->context();
 
   // TODO we should add support to CLI scripts
-
+#ifdef ENABLE_UI
   if (current_editor) {
     current_editor->clearSlicesSelection();
     const int len = luaL_len(L, 2);
@@ -358,6 +360,8 @@ int Range_set_slices(lua_State* L)
       lua_pop(L, 1);
     }
   }
+#endif
+
   obj->updateFromSite(ctx->activeSite());
   return 0;
 }
