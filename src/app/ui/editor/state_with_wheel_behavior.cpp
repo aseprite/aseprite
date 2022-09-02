@@ -151,7 +151,8 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
                      ScrollBigSteps::Off,
                      (msg->preciseWheel() ?
                       PreciseWheel::On:
-                      PreciseWheel::Off));
+                      PreciseWheel::Off),
+                     FromMouseWheel::On);
   return true;
 }
 
@@ -162,7 +163,8 @@ void StateWithWheelBehavior::processWheelAction(
   gfx::Point delta,
   double dz,
   const ScrollBigSteps scrollBigSteps,
-  const PreciseWheel preciseWheel)
+  const PreciseWheel preciseWheel,
+  const FromMouseWheel fromMouseWheel)
 {
   switch (wheelAction) {
 
@@ -274,17 +276,19 @@ void StateWithWheelBehavior::processWheelAction(
       ToolPreferences::Brush& brush =
         Preferences::instance().tool(tool).brush;
 
+      if (fromMouseWheel == FromMouseWheel::On) {
 #if LAF_WINDOWS || LAF_LINUX
-      // By default on macOS the mouse wheel is correct, up increase
-      // brush size, and down decrease it. But on Windows and Linux
-      // it's inverted.
-      dz = -dz;
+        // By default on macOS the mouse wheel is correct, up increase
+        // brush size, and down decrease it. But on Windows and Linux
+        // it's inverted.
+        dz = -dz;
 #endif
 
-      // We can configure the mouse wheel for brush size to behave as
-      // in previous versions.
-      if (Preferences::instance().editor.invertBrushSizeWheel())
-        dz = -dz;
+        // We can configure the mouse wheel for brush size to behave as
+        // in previous versions.
+        if (Preferences::instance().editor.invertBrushSizeWheel())
+          dz = -dz;
+      }
 
       brush.size(
         std::clamp(

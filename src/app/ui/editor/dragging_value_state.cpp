@@ -126,7 +126,8 @@ bool DraggingValueState::onMouseMove(Editor* editor, MouseMessage* msg)
                          delta,
                          dz,
                          ScrollBigSteps::Off,
-                         preciseWheel);
+                         preciseWheel,
+                         FromMouseWheel::Off);
     }
   }
 

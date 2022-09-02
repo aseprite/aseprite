@@ -33,6 +33,11 @@ namespace app {
     enum class ScrollBigSteps { Off, On };
     enum class PreciseWheel { Off, On };
 
+    // Indicates that the message comes from a real mouse wheel (which
+    // might have special handling inverting the direction of the
+    // wheel action depending on the operating system, etc.)
+    enum class FromMouseWheel { Off, On };
+
     StateWithWheelBehavior();
 
     bool onMouseWheel(Editor* editor, ui::MouseMessage* msg) override;
@@ -46,7 +51,8 @@ namespace app {
                             gfx::Point delta,
                             double dz,
                             const ScrollBigSteps scrollBigSteps,
-                            const PreciseWheel preciseWheel);
+                            const PreciseWheel preciseWheel,
+                            const FromMouseWheel fromMouseWheel);
     const doc::LayerList& browsableLayers(Editor* editor) const;
 
     virtual Color initialFgColor() const;
