@@ -39,28 +39,29 @@
 namespace app {
 
 using namespace ui;
+using PreciseWheel = StateWithWheelBehavior::PreciseWheel;
 
 template<typename T>
-static inline void adjust_value(bool preciseWheel, double dz, T& v, T min, T max)
+static inline void adjust_value(PreciseWheel preciseWheel, double dz, T& v, T min, T max)
 {
-  if (preciseWheel)
+  if (preciseWheel == PreciseWheel::On)
     v = std::clamp<T>(T(v+dz), min, max);
   else
     v = std::clamp<T>(T(v+dz*max/T(10)), min, max);
 }
 
 template<typename T>
-static inline void adjust_hue(bool preciseWheel, double dz, T& v, T min, T max)
+static inline void adjust_hue(PreciseWheel preciseWheel, double dz, T& v, T min, T max)
 {
-  if (preciseWheel)
+  if (preciseWheel == PreciseWheel::On)
     v = std::clamp<T>(T(v+dz), min, max);
   else
     v = std::clamp<T>(T(v+dz*T(10)), min, max);
 }
 
-static inline void adjust_unit(bool preciseWheel, double dz, double& v)
+static inline void adjust_unit(PreciseWheel preciseWheel, double dz, double& v)
 {
-  v = std::clamp<double>(v+(preciseWheel ? dz/100.0: dz/25.0), 0.0, 1.0);
+  v = std::clamp<double>(v+(preciseWheel == PreciseWheel::On ? dz/100.0: dz/25.0), 0.0, 1.0);
 }
 
 StateWithWheelBehavior::StateWithWheelBehavior()
@@ -72,7 +73,6 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
   gfx::Point delta = msg->wheelDelta();
   double dz = delta.x + delta.y;
   WheelAction wheelAction = WheelAction::None;
-  bool scrollBigSteps = false;
 
   if (KeyboardShortcuts::instance()->hasMouseWheelCustomization()) {
     if (!Preferences::instance().editor.zoomWithSlide() && msg->preciseWheel())
@@ -144,8 +144,14 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
                      msg->position(),
                      delta,
                      dz,
-                     scrollBigSteps,
-                     msg->preciseWheel());
+                     // The possibility for big scroll steps was lost
+                     // in history (it was possible using Shift key in
+                     // very old versions, now Shift is used for
+                     // horizontal scroll).
+                     ScrollBigSteps::Off,
+                     (msg->preciseWheel() ?
+                      PreciseWheel::On:
+                      PreciseWheel::Off));
   return true;
 }
 
@@ -155,8 +161,8 @@ void StateWithWheelBehavior::processWheelAction(
   const gfx::Point& position,
   gfx::Point delta,
   double dz,
-  bool scrollBigSteps,
-  bool preciseWheel)
+  const ScrollBigSteps scrollBigSteps,
+  const PreciseWheel preciseWheel)
 {
   switch (wheelAction) {
 
@@ -200,7 +206,7 @@ void StateWithWheelBehavior::processWheelAction(
 
     case WheelAction::Frame: {
       frame_t deltaFrame = 0;
-      if (preciseWheel) {
+      if (preciseWheel == PreciseWheel::On) {
         if (dz < 0.0)
           deltaFrame = +1;
         else if (dz > 0.0)
@@ -224,7 +230,7 @@ void StateWithWheelBehavior::processWheelAction(
     case WheelAction::Zoom: {
       render::Zoom zoom = initialZoom(editor);
 
-      if (preciseWheel) {
+      if (preciseWheel == PreciseWheel::On) {
         dz /= 1.5;
         if (dz < -1.0) dz = -1.0;
         else if (dz > 1.0) dz = 1.0;
@@ -241,7 +247,7 @@ void StateWithWheelBehavior::processWheelAction(
       View* view = View::getView(editor);
       gfx::Point scroll = initialScroll(editor);
 
-      if (!preciseWheel) {
+      if (preciseWheel == PreciseWheel::Off) {
         gfx::Rect vp = view->viewportBounds();
 
         if (wheelAction == WheelAction::HScroll) {
@@ -251,7 +257,7 @@ void StateWithWheelBehavior::processWheelAction(
           delta.y = int(dz * vp.h);
         }
 
-        if (scrollBigSteps) {
+        if (scrollBigSteps == ScrollBigSteps::On) {
           delta /= 2;
         }
         else {
@@ -366,7 +372,7 @@ void StateWithWheelBehavior::processWheelAction(
 
     case WheelAction::Layer: {
       int deltaLayer = 0;
-      if (preciseWheel) {
+      if (preciseWheel == PreciseWheel::On) {
         if (dz < 0.0)
           deltaLayer = +1;
         else if (dz > 0.0)
@@ -391,7 +397,7 @@ void StateWithWheelBehavior::processWheelAction(
     case WheelAction::InkType: {
       int ink = int(initialInkType(editor));
       int deltaInk = int(dz);
-      if (preciseWheel) {
+      if (preciseWheel == PreciseWheel::On) {
         if (dz < 0.0)
           deltaInk = +1;
         else if (dz > 0.0)

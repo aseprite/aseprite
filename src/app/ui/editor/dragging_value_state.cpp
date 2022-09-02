@@ -105,11 +105,11 @@ bool DraggingValueState::onMouseMove(Editor* editor, MouseMessage* msg)
       auto dot = invDragVector * v;
       dz *= SGN(dot);
 
-      bool preciseWheel = true;
+      PreciseWheel preciseWheel = PreciseWheel::On;
       if (key->wheelAction() == WheelAction::Zoom ||
           key->wheelAction() == WheelAction::Frame ||
           key->wheelAction() == WheelAction::Layer) {
-        preciseWheel = false;
+        preciseWheel = PreciseWheel::Off;
         dz = -dz; // Invert value for zoom only so the vector is
                   // pointing to the direction to increase zoom
 
@@ -117,7 +117,7 @@ bool DraggingValueState::onMouseMove(Editor* editor, MouseMessage* msg)
         //      information from the laf layer
       }
       else if (key->wheelAction() == WheelAction::InkType) {
-        preciseWheel = false;
+        preciseWheel = PreciseWheel::Off;
       }
 
       processWheelAction(editor,
@@ -125,7 +125,7 @@ bool DraggingValueState::onMouseMove(Editor* editor, MouseMessage* msg)
                          msg->position(),
                          delta,
                          dz,
-                         false, // scrollBigSteps=false
+                         ScrollBigSteps::Off,
                          preciseWheel);
     }
   }

@@ -30,6 +30,9 @@ namespace app {
 
   class StateWithWheelBehavior : public EditorState {
   public:
+    enum class ScrollBigSteps { Off, On };
+    enum class PreciseWheel { Off, On };
+
     StateWithWheelBehavior();
 
     bool onMouseWheel(Editor* editor, ui::MouseMessage* msg) override;
@@ -42,8 +45,8 @@ namespace app {
                             const gfx::Point& position,
                             gfx::Point delta,
                             double dz,
-                            bool scrollBigSteps,
-                            bool preciseWheel);
+                            const ScrollBigSteps scrollBigSteps,
+                            const PreciseWheel preciseWheel);
     const doc::LayerList& browsableLayers(Editor* editor) const;
 
     virtual Color initialFgColor() const;
