@@ -80,6 +80,7 @@ set(CUSTOM_WEBSITE_URL "" CACHE STRING "Enable custom local webserver to check u
 if(ENABLE_SENTRY)
   set(SENTRY_DIR "" CACHE STRING "Sentry native location")
   set(SENTRY_DSN "" CACHE STRING "Sentry Data Source Name URL")
+  set(SENTRY_ENV "development" CACHE STRING "Sentry environment (production, testing, development, etc.)")
 endif()
 
 if(ENABLE_NEWS OR ENABLE_UPDATER)
