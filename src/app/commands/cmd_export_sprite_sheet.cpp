@@ -1251,6 +1251,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
       if (!params.ignoreEmpty.isSet())      params.ignoreEmpty(     defPref.spriteSheet.ignoreEmpty());
       if (!params.openGenerated.isSet())    params.openGenerated(   defPref.spriteSheet.openGenerated());
       if (!params.layer.isSet())            params.layer(           defPref.spriteSheet.layer());
+      if (!params.layerIndex.isSet())       params.layerIndex(      defPref.spriteSheet.layerIndex());
       if (!params.tag.isSet())              params.tag(             defPref.spriteSheet.frameTag());
       if (!params.splitLayers.isSet())      params.splitLayers(     defPref.spriteSheet.splitLayers());
       if (!params.splitTags.isSet())        params.splitTags(       defPref.spriteSheet.splitTags());
@@ -1297,6 +1298,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     docPref.spriteSheet.ignoreEmpty     (params.ignoreEmpty());
     docPref.spriteSheet.openGenerated   (params.openGenerated());
     docPref.spriteSheet.layer           (params.layer());
+    docPref.spriteSheet.layerIndex      (params.layerIndex());
     docPref.spriteSheet.frameTag        (params.tag());
     docPref.spriteSheet.splitLayers     (params.splitLayers());
     docPref.spriteSheet.splitTags       (params.splitTags());
