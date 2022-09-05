@@ -703,7 +703,7 @@ if(ENABLE_SENTRY)
   target_compile_definitions(app-lib PUBLIC
     -DENABLE_SENTRY
     -DSENTRY_BUILD_STATIC=1
-    -DSENTRY_DNS="${SENTRY_DNS}")
+    -DSENTRY_DSN="${SENTRY_DSN}")
   add_subdirectory(${SENTRY_DIR} sentry)
   target_link_libraries(app-lib sentry)
 endif()
