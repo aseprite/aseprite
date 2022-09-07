@@ -1058,7 +1058,7 @@
     </menu>
 
     <menu id="slice_popup_menu">
-      <item command="SliceProperties" text="@.properties" grou="slice_popup_properties" />
+      <item command="SliceProperties" text="@.properties" group="slice_popup_properties" />
       <item command="RemoveSlice" text="@.delete" group="slice_popup_delete" />
     </menu>
 
