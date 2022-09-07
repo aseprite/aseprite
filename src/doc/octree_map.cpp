@@ -232,22 +232,20 @@ void OctreeMap::feedWithImage(const Image* image,
   ASSERT(image);
   ASSERT(image->pixelFormat() == IMAGE_RGB || image->pixelFormat() == IMAGE_GRAYSCALE);
   color_t forceFullOpacity;
-  color_t alpha = 0;
+  int alpha = 0;
   const bool imageIsRGBA = image->pixelFormat() == IMAGE_RGB;
 
   auto add_color_to_octree =
-    [this, &forceFullOpacity, &maskColor, &alpha, &levelDeep, &imageIsRGBA](color_t color) {
-      if (color != maskColor) {
+    [this, &forceFullOpacity, &alpha, &levelDeep, &imageIsRGBA](color_t color) {
+      alpha = (imageIsRGBA ? rgba_geta(color) : graya_geta(color));
+      if (alpha >= MIN_ALPHA_THRESHOLD) { // Colors which alpha is less than
+                                          // MIN_ALPHA_THRESHOLD will not registered
         color |= forceFullOpacity;
-        alpha = (imageIsRGBA ? rgba_geta(color) : graya_geta(color));
-        if (alpha >= MIN_ALPHA_THRESHOLD) { // Colors which alpha is less than
-                                            // MIN_ALPHA_THRESHOLD will not registered
-          color = (imageIsRGBA ? color : rgba(graya_getv(color),
-                                              graya_getv(color),
-                                              graya_getv(color),
-                                              graya_geta(color)));
-          addColor(color, levelDeep);
-        }
+        color = (imageIsRGBA ? color : rgba(graya_getv(color),
+                                            graya_getv(color),
+                                            graya_getv(color),
+                                            alpha));
+        addColor(color, levelDeep);
       }
     };
 
