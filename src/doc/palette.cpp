@@ -270,6 +270,16 @@ int Palette::findBestfit(int r, int g, int b, int a, int mask_index) const
   return bestfit;
 }
 
+int Palette::findMaskColor() const
+{
+  int size = m_colors.size();
+  for (int i = 0; i < size; ++i) {
+    if (m_colors[i] == 0)
+      return i;
+  }
+  return -1;
+}
+
 void Palette::applyRemap(const Remap& remap)
 {
   Palette original(*this);
