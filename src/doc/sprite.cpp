@@ -400,7 +400,7 @@ RgbMap* Sprite::rgbMap(const frame_t frame,
     switch (m_rgbMapAlgorithm) {
       case RgbMapAlgorithm::RGB5A3: m_rgbMap.reset(new RgbMapRGB5A3); break;
       case RgbMapAlgorithm::DEFAULT:
-      case RgbMapAlgorithm::OCTREE: m_rgbMap.reset(new OctreeMap); break;
+      case RgbMapAlgorithm::OCTREE: m_rgbMap.reset(new OctreeMap(this)); break;
       default:
         m_rgbMap.reset(nullptr);
         ASSERT(false);

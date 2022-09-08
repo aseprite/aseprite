@@ -118,6 +118,29 @@ color_t OctreeNode::hextetToBranchColor(int hextet, int level)
 //////////////////////////////////////////////////////////////////////
 // OctreeMap
 
+OctreeMap::OctreeMap() {};
+
+// This constructor initializes 'm_naskIndex' and
+// 'm_includeMaskColorInPalette' according to sprite's pixel format and
+// background existence.
+// This variables are needed previous of makePalette() execution and
+// mapColor().
+OctreeMap::OctreeMap(const doc::Sprite* sprite)
+{
+  m_maskIndex = -1;
+  if (sprite) {
+    if (sprite->pixelFormat() == IMAGE_INDEXED) {
+      m_maskIndex = sprite->transparentColor();
+      m_includeMaskColorInPalette = false;
+    }
+    else if (sprite->backgroundLayer() &&
+             sprite->allLayersCount() == 1)
+      m_includeMaskColorInPalette = false;
+    m_palette = sprite->palette(0);
+    m_modifications = sprite->palette(0)->getModifications();
+  }
+};
+
 bool OctreeMap::makePalette(Palette* palette,
                             int colorCount,
                             const int levelDeep)
@@ -130,7 +153,7 @@ bool OctreeMap::makePalette(Palette* palette,
     m_root.collectLeafNodes(m_leavesVector, paletteIndex);
   }
 
-  if (m_maskColor != DOC_OCTREE_IS_OPAQUE)
+  if (m_includeMaskColorInPalette)
     colorCount--;
 
   // If we can improve the octree accuracy, makePalette returns false, then
@@ -209,13 +232,13 @@ bool OctreeMap::makePalette(Palette* palette,
   }
   int leafCount = m_leavesVector.size();
   int aux = 0;
-  if (m_maskColor == DOC_OCTREE_IS_OPAQUE)
-    palette->resize(leafCount);
-  else {
+  if (m_includeMaskColorInPalette) {
     palette->resize(leafCount + 1);
-    palette->setEntry(0, m_maskColor);
+    palette->setEntry(0, 0);
     aux = 1;
   }
+  else
+    palette->resize(leafCount);
 
   for (int i=0; i<leafCount; i++)
     palette->setEntry(i+aux,
@@ -226,7 +249,6 @@ bool OctreeMap::makePalette(Palette* palette,
 
 void OctreeMap::feedWithImage(const Image* image,
                               const bool withAlpha,
-                              const color_t maskColor,
                               const int levelDeep)
 {
   ASSERT(image);
@@ -261,7 +283,6 @@ void OctreeMap::feedWithImage(const Image* image,
       break;
     }
   }
-  m_maskColor = maskColor;
 }
 
 int OctreeMap::mapColor(color_t rgba) const
@@ -289,26 +310,9 @@ void OctreeMap::regenerateMap(const Palette* palette, const int maskIndex)
   m_root = OctreeNode();
   m_leavesVector.clear();
   m_maskIndex = maskIndex;
-  int maskColorBestFitIndex;
-  if (maskIndex < 0) {
-    m_maskColor = DOC_OCTREE_IS_OPAQUE;
-    maskColorBestFitIndex = -1;
-  }
-  else {
-    m_maskColor = palette->getEntry(maskIndex);
-    maskColorBestFitIndex = palette->findBestfit(rgba_getr(m_maskColor),
-                                                 rgba_getg(m_maskColor),
-                                                 rgba_getb(m_maskColor),
-                                                 rgba_geta(m_maskColor), maskIndex);
-  }
 
-  for (int i=0; i<palette->size(); i++) {
-    if (i == maskIndex) {
-      m_root.addColor(palette->entry(i), 0, &m_root, maskColorBestFitIndex, 8);
-      continue;
-    }
+  for (int i=0; i<palette->size(); i++)
     m_root.addColor(palette->entry(i), 0, &m_root, i, 8);
-  }
 
   m_palette = palette;
   m_modifications = palette->getModifications();

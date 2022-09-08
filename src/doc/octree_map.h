@@ -12,16 +12,11 @@
 #include "doc/image_impl.h"
 #include "doc/palette.h"
 #include "doc/rgbmap.h"
+#include "doc/sprite.h"
 
 #include <array>
 #include <memory>
 #include <vector>
-
-// When this DOC_OCTREE_IS_OPAQUE 'color' is asociated with
-// some variable which represents a mask color, it tells us that
-// there isn't any transparent color in the sprite, i.e.
-// there is a background layer in the sprite.
-#define DOC_OCTREE_IS_OPAQUE 0x00FFFFFF
 
 namespace doc {
 
@@ -119,6 +114,10 @@ private:
 
 class OctreeMap : public RgbMap {
 public:
+  OctreeMap();
+
+  OctreeMap(const doc::Sprite* sprite);
+
   void addColor(color_t color, int levelDeep = 7) {
     m_root.addColor(color, 0, &m_root, 0, levelDeep);
   }
@@ -131,7 +130,6 @@ public:
 
   void feedWithImage(const Image* image,
                      const bool withAlpha,
-                     const color_t maskColor,
                      const int levelDeep = 7);
 
   // RgbMap impl
@@ -155,8 +153,16 @@ private:
   OctreeNodes m_leavesVector;
   const Palette* m_palette = nullptr;
   int m_modifications = 0;
-  int m_maskIndex = 0;
-  color_t m_maskColor = 0;
+
+  // Used only in makePalette() function.
+  // Mask color will be included in an output palette according to
+  // sprite characteristics.
+  // These conditions are expressed in the Octreemap constructor.
+  bool m_includeMaskColorInPalette = true;
+
+  // Used in bestfit() inside mapColor() function to discard
+  // the color entry defined as transparent in the sprite source.
+  int m_maskIndex = -1;
 };
 
 } // namespace doc
