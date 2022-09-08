@@ -1310,8 +1310,11 @@ int PaletteView::findExactIndex(const app::Color& color) const
 {
   switch (color.getType()) {
 
-    case Color::MaskType:
-      return (current_editor ? current_editor->sprite()->transparentColor(): -1);
+    case Color::MaskType: {
+      if (current_editor && current_editor->sprite()->pixelFormat() == IMAGE_INDEXED)
+        return current_editor->sprite()->transparentColor();
+      return currentPalette()->findMaskColor();
+    }
 
     case Color::RgbType:
     case Color::HsvType:
