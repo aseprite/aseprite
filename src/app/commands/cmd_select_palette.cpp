@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021  Igara Studio SA
+// Copyright (C) 2021-2022  Igara Studio SA
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -129,16 +129,16 @@ void SelectPaletteColorsCommand::onExecute(Context* context)
 
   if (m_modifier == Modifier::UsedColors ||
       m_modifier == Modifier::UnusedColors) {
-    doc::OctreeMap octreemap;
+    doc::OctreeMap octreemap(sprite);
     const doc::Palette* currentPalette = get_current_palette();
     PalettePicks usedEntries(currentPalette->size());
 
-    auto countImage = [&octreemap, &usedEntries](const Image* image){
+    auto countImage = [&octreemap, &usedEntries](const Image* image) {
       switch (image->pixelFormat()) {
 
         case IMAGE_RGB:
         case IMAGE_GRAYSCALE:
-          octreemap.feedWithImage(image, true, image->maskColor(), 8);
+          octreemap.feedWithImage(image, true, 8);
           break;
 
         case IMAGE_INDEXED:
