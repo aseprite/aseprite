@@ -114,9 +114,7 @@ private:
 
 class OctreeMap : public RgbMap {
 public:
-  OctreeMap();
-
-  OctreeMap(const doc::Sprite* sprite);
+  OctreeMap(const doc::Sprite* sprite = nullptr);
 
   void addColor(color_t color, int levelDeep = 7) {
     m_root.addColor(color, 0, &m_root, 0, levelDeep);

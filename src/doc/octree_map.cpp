@@ -118,13 +118,11 @@ color_t OctreeNode::hextetToBranchColor(int hextet, int level)
 //////////////////////////////////////////////////////////////////////
 // OctreeMap
 
-OctreeMap::OctreeMap() {};
-
-// This constructor initializes 'm_naskIndex' and
+// This constructor initializes 'm_maskIndex' and
 // 'm_includeMaskColorInPalette' according to sprite's pixel format and
 // background existence.
-// This variables are needed previous of makePalette() execution and
-// mapColor().
+// These variables are needed before makePalette() and mapColor()
+// execution.
 OctreeMap::OctreeMap(const doc::Sprite* sprite)
 {
   m_maskIndex = -1;
