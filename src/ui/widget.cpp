@@ -1003,11 +1003,15 @@ void Widget::getTextIconInfo(
 
 void Widget::setMinSize(const gfx::Size& sz)
 {
+  ASSERT(sz.w <= m_maxSize.w);
+  ASSERT(sz.h <= m_maxSize.h);
   m_minSize = sz;
 }
 
 void Widget::setMaxSize(const gfx::Size& sz)
 {
+  ASSERT(sz.w >= m_minSize.w);
+  ASSERT(sz.h >= m_minSize.h);
   m_maxSize = sz;
 }
 
