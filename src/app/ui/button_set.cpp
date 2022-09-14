@@ -96,6 +96,7 @@ void ButtonSet::Item::onPaint(ui::PaintEvent& ev)
   if (m_icon || isLastRow) {
     textRc.y -= 2*guiscale();
     iconRc.y -= 1*guiscale();
+    if (isLastRow && info.row > 0) iconRc.y -= 2*guiscale();
   }
 
   if (!gfx::is_transparent(bgColor()))
