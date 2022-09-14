@@ -94,7 +94,7 @@ void ButtonSet::Item::onPaint(ui::PaintEvent& ev)
   bool isLastRow = (info.row+info.vspan >= info.grid_rows);
 
   if (m_icon || isLastRow) {
-    textRc.y -= 1*guiscale();
+    textRc.y -= 2*guiscale();
     iconRc.y -= 1*guiscale();
   }
 
