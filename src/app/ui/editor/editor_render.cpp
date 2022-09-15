@@ -13,41 +13,41 @@
 
 #include "app/color_utils.h"
 #include "app/pref/preferences.h"
-#include "render/render.h"
+#include "app/render/simple_renderer.h"
 
 namespace app {
 
 static doc::ImageBufferPtr g_renderBuffer;
 
 EditorRender::EditorRender()
-  : m_render(new render::Render)
+  : m_renderer(std::make_unique<SimpleRenderer>())
 {
-  m_render->setNewBlend(Preferences::instance().experimental.newBlend());
+  m_renderer->setNewBlendMethod(
+    Preferences::instance().experimental.newBlend());
 }
 
 EditorRender::~EditorRender()
 {
-  delete m_render;
 }
 
 void EditorRender::setRefLayersVisiblity(const bool visible)
 {
-  m_render->setRefLayersVisiblity(visible);
+  m_renderer->setRefLayersVisiblity(visible);
 }
 
 void EditorRender::setNonactiveLayersOpacity(const int opacity)
 {
-  m_render->setNonactiveLayersOpacity(opacity);
+  m_renderer->setNonactiveLayersOpacity(opacity);
 }
 
 void EditorRender::setNewBlendMethod(const bool newBlend)
 {
-  m_render->setNewBlend(newBlend);
+  m_renderer->setNewBlendMethod(newBlend);
 }
 
 void EditorRender::setProjection(const render::Projection& projection)
 {
-  m_render->setProjection(projection);
+  m_renderer->setProjection(projection);
 }
 
 void EditorRender::setupBackground(Doc* doc, doc::PixelFormat pixelFormat)
@@ -92,17 +92,17 @@ void EditorRender::setupBackground(Doc* doc, doc::PixelFormat pixelFormat)
   bg.color1 = color_utils::color_for_image_without_alpha(docPref.bg.color1(), pixelFormat);
   bg.color2 = color_utils::color_for_image_without_alpha(docPref.bg.color2(), pixelFormat);
   bg.stripeSize = tile;
-  m_render->setBgOptions(bg);
+  m_renderer->setBgOptions(bg);
 }
 
 void EditorRender::setTransparentBackground()
 {
-  m_render->setBgOptions(render::BgOptions::MakeTransparent());
+  m_renderer->setBgOptions(render::BgOptions::MakeTransparent());
 }
 
 void EditorRender::setSelectedLayer(const doc::Layer* layer)
 {
-  m_render->setSelectedLayer(layer);
+  m_renderer->setSelectedLayer(layer);
 }
 
 void EditorRender::setPreviewImage(const doc::Layer* layer,
@@ -112,13 +112,13 @@ void EditorRender::setPreviewImage(const doc::Layer* layer,
                                    const gfx::Point& pos,
                                    const doc::BlendMode blendMode)
 {
-  m_render->setPreviewImage(layer, frame, image, tileset,
-                            pos, blendMode);
+  m_renderer->setPreviewImage(layer, frame, image, tileset,
+                              pos, blendMode);
 }
 
 void EditorRender::removePreviewImage()
 {
-  m_render->removePreviewImage();
+  m_renderer->removePreviewImage();
 }
 
 void EditorRender::setExtraImage(
@@ -129,23 +129,23 @@ void EditorRender::setExtraImage(
   const doc::Layer* currentLayer,
   doc::frame_t currentFrame)
 {
-  m_render->setExtraImage(type, cel, image, blendMode,
+  m_renderer->setExtraImage(type, cel, image, blendMode,
                           currentLayer, currentFrame);
 }
 
 void EditorRender::removeExtraImage()
 {
-  m_render->removeExtraImage();
+  m_renderer->removeExtraImage();
 }
 
 void EditorRender::setOnionskin(const render::OnionskinOptions& options)
 {
-  m_render->setOnionskin(options);
+  m_renderer->setOnionskin(options);
 }
 
 void EditorRender::disableOnionskin()
 {
-  m_render->disableOnionskin();
+  m_renderer->disableOnionskin();
 }
 
 void EditorRender::renderSprite(
@@ -153,7 +153,7 @@ void EditorRender::renderSprite(
   const doc::Sprite* sprite,
   doc::frame_t frame)
 {
-  m_render->renderSprite(dstImage, sprite, frame);
+  m_renderer->renderSprite(dstImage, sprite, frame);
 }
 
 void EditorRender::renderSprite(
@@ -162,14 +162,14 @@ void EditorRender::renderSprite(
   doc::frame_t frame,
   const gfx::ClipF& area)
 {
-  m_render->renderSprite(dstImage, sprite, frame, area);
+  m_renderer->renderSprite(dstImage, sprite, frame, area);
 }
 
 void EditorRender::renderCheckeredBackground(
   doc::Image* image,
   const gfx::Clip& area)
 {
-  m_render->renderCheckeredBackground(image, area);
+  m_renderer->renderCheckeredBackground(image, area);
 }
 
 void EditorRender::renderImage(
@@ -181,8 +181,8 @@ void EditorRender::renderImage(
   const int opacity,
   const doc::BlendMode blendMode)
 {
-  m_render->renderImage(dst_image, src_image, pal,
-                        x, y, opacity, blendMode);
+  m_renderer->renderImage(dst_image, src_image, pal,
+                          x, y, opacity, blendMode);
 }
 
 doc::ImageBufferPtr EditorRender::getRenderImageBuffer()

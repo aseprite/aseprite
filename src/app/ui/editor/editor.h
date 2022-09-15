@@ -39,6 +39,7 @@
 #include "ui/timer.h"
 #include "ui/widget.h"
 
+#include <memory>
 #include <set>
 
 namespace doc {
@@ -486,7 +487,7 @@ namespace app {
     // DrawingState is being used in one editor, other editors for the
     // same document can show the same preview image/stroke being drawn
     // (search for Render::setPreviewImage()).
-    static EditorRender* m_renderEngine;
+    static std::unique_ptr<EditorRender> m_renderEngine;
   };
 
 } // namespace app

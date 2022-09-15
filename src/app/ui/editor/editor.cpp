@@ -137,7 +137,7 @@ private:
 };
 
 // static
-EditorRender* Editor::m_renderEngine = nullptr;
+std::unique_ptr<EditorRender> Editor::m_renderEngine = nullptr;
 
 Editor::Editor(Doc* document, EditorFlags flags, EditorStatePtr state)
   : Widget(Editor::Type())
@@ -166,7 +166,7 @@ Editor::Editor(Doc* document, EditorFlags flags, EditorStatePtr state)
   , m_tagFocusBand(-1)
 {
   if (!m_renderEngine)
-    m_renderEngine = new EditorRender;
+    m_renderEngine = std::make_unique<EditorRender>();
 
   m_proj.setPixelRatio(m_sprite->pixelRatio());
 
@@ -239,10 +239,8 @@ Editor::~Editor()
 void Editor::destroyEditorSharedInternals()
 {
   BrushPreview::destroyInternals();
-  if (m_renderEngine) {
-    delete m_renderEngine;
-    m_renderEngine = nullptr;
-  }
+  if (m_renderEngine)
+    m_renderEngine.reset();
 }
 
 bool Editor::isActive() const

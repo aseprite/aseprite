@@ -625,6 +625,7 @@ add_library(app-lib
   modules/palettes.cpp
   pref/preferences.cpp
   recent_files.cpp
+  render/simple_renderer.cpp
   res/palettes_loader_delegate.cpp
   res/resources_loader.cpp
   resource_finder.cpp

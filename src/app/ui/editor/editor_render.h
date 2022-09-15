@@ -29,12 +29,9 @@ namespace doc {
   class Tileset;
 }
 
-namespace render {
-  class Render;
-}
-
 namespace app {
   class Doc;
+  class Renderer;
 
   class EditorRender {
   public:
@@ -96,7 +93,7 @@ namespace app {
     doc::ImageBufferPtr getRenderImageBuffer();
 
   private:
-    render::Render* m_render;
+    std::unique_ptr<Renderer> m_renderer;
   };
 
 } // namespace app
