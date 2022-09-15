@@ -235,7 +235,7 @@ void OctreeMap::feedWithImage(const Image* image,
   const bool imageIsRGBA = image->pixelFormat() == IMAGE_RGB;
 
   auto add_color_to_octree =
-    [this, &forceFullOpacity, &levelDeep, &imageIsRGBA](color_t color) {
+    [this, &forceFullOpacity, levelDeep, imageIsRGBA](color_t color) {
       const int alpha = (imageIsRGBA ? rgba_geta(color) : graya_geta(color));
       if (alpha >= MIN_ALPHA_THRESHOLD) { // Colors which alpha is less than
                                           // MIN_ALPHA_THRESHOLD will not registered
