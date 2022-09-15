@@ -232,7 +232,7 @@ void OctreeMap::feedWithImage(const Image* image,
   ASSERT(image);
   ASSERT(image->pixelFormat() == IMAGE_RGB || image->pixelFormat() == IMAGE_GRAYSCALE);
   color_t forceFullOpacity;
-  const bool imageIsRGBA = image->pixelFormat() == IMAGE_RGB;
+  const bool imageIsRGBA = (image->pixelFormat() == IMAGE_RGB);
 
   auto add_color_to_octree =
     [this, &forceFullOpacity, levelDeep, imageIsRGBA](color_t color) {
@@ -250,12 +250,12 @@ void OctreeMap::feedWithImage(const Image* image,
 
   switch (image->pixelFormat()) {
     case IMAGE_RGB: {
-      forceFullOpacity = (withAlpha) ? 0 : rgba_a_mask;
+      forceFullOpacity = (withAlpha ? 0 : rgba_a_mask);
       doc::for_each_pixel<RgbTraits>(image, add_color_to_octree);
       break;
     }
     case IMAGE_GRAYSCALE: {
-      forceFullOpacity = (withAlpha) ? 0 : graya_a_mask;
+      forceFullOpacity = (withAlpha ? 0 : graya_a_mask);
       doc::for_each_pixel<GrayscaleTraits>(image, add_color_to_octree);
       break;
     }
