@@ -10,7 +10,12 @@
 
 #include "app/render/simple_renderer.h"
 
+#include "app/ui/editor/editor_render.h"
+#include "app/util/conversion_to_surface.h"
+
 namespace app {
+
+using namespace doc;
 
 void SimpleRenderer::setRefLayersVisiblity(const bool visible)
 {
@@ -91,12 +96,18 @@ void SimpleRenderer::renderSprite(doc::Image* dstImage,
   m_render.renderSprite(dstImage, sprite, frame);
 }
 
-void SimpleRenderer::renderSprite(doc::Image* dstImage,
+void SimpleRenderer::renderSprite(os::Surface* dstSurface,
                                   const doc::Sprite* sprite,
                                   const doc::frame_t frame,
                                   const gfx::ClipF& area)
 {
-  m_render.renderSprite(dstImage, sprite, frame, area);
+  ImageRef dstImage(Image::create(
+                      IMAGE_RGB, area.size.w, area.size.h,
+                      EditorRender::getRenderImageBuffer()));
+  m_render.renderSprite(dstImage.get(), sprite, frame, area);
+
+  convert_image_to_surface(dstImage.get(), sprite->palette(frame),
+                           dstSurface, 0, 0, 0, 0, area.size.w, area.size.h);
 }
 
 void SimpleRenderer::renderCheckeredBackground(doc::Image* dstImage,

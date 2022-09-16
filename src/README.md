@@ -57,7 +57,7 @@ When Aseprite is compiled with `ENABLE_DEVMODE`, you have the
 following extra commands/features available:
 
 * `F5`: On Windows shows the amount of used memory.
-* `F1`: Switch new/old render engine.
+* `F1`: Switch between new/old/shader renderers.
 * `Ctrl+F1`: Switch/test Screen/UI Scaling values.
 * `Ctrl+Alt+Shift+Q`: crashes the application in case that you want to
   test the anticrash feature or your need a memory dump file.

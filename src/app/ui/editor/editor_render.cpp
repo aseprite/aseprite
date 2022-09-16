@@ -13,6 +13,7 @@
 
 #include "app/color_utils.h"
 #include "app/pref/preferences.h"
+#include "app/render/shader_renderer.h"
 #include "app/render/simple_renderer.h"
 
 namespace app {
@@ -20,6 +21,7 @@ namespace app {
 static doc::ImageBufferPtr g_renderBuffer;
 
 EditorRender::EditorRender()
+  // TODO create a switch in the preferences
   : m_renderer(std::make_unique<SimpleRenderer>())
 {
   m_renderer->setNewBlendMethod(
@@ -28,6 +30,31 @@ EditorRender::EditorRender()
 
 EditorRender::~EditorRender()
 {
+}
+
+EditorRender::Type EditorRender::type() const
+{
+#if SK_ENABLE_SKSL
+  if (dynamic_cast<ShaderRenderer*>(m_renderer.get()))
+    return Type::kShaderRenderer;
+#endif
+  return Type::kSimpleRenderer;
+}
+
+void EditorRender::setType(const Type type)
+{
+#if SK_ENABLE_SKSL
+  if (type == Type::kShaderRenderer) {
+    m_renderer = std::make_unique<ShaderRenderer>();
+  }
+  else
+#endif
+  {
+    m_renderer = std::make_unique<SimpleRenderer>();
+  }
+
+  m_renderer->setNewBlendMethod(
+    Preferences::instance().experimental.newBlend());
 }
 
 void EditorRender::setRefLayersVisiblity(const bool visible)
@@ -157,12 +184,12 @@ void EditorRender::renderSprite(
 }
 
 void EditorRender::renderSprite(
-  doc::Image* dstImage,
+  os::Surface* dstSurface,
   const doc::Sprite* sprite,
   doc::frame_t frame,
   const gfx::ClipF& area)
 {
-  m_renderer->renderSprite(dstImage, sprite, frame, area);
+  m_renderer->renderSprite(dstSurface, sprite, frame, area);
 }
 
 void EditorRender::renderCheckeredBackground(
@@ -184,7 +211,7 @@ void EditorRender::renderImage(
   m_renderer->renderImage(dst_image, src_image, pal,
                           x, y, opacity, blendMode);
 }
-
+// static
 doc::ImageBufferPtr EditorRender::getRenderImageBuffer()
 {
   if (!g_renderBuffer)

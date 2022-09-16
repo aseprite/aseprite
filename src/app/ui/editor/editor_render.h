@@ -29,14 +29,26 @@ namespace doc {
   class Tileset;
 }
 
+namespace os {
+  class Surface;
+}
+
 namespace app {
   class Doc;
   class Renderer;
 
   class EditorRender {
   public:
+    enum Type {
+      kSimpleRenderer,
+      kShaderRenderer,
+    };
+
     EditorRender();
     ~EditorRender();
+
+    Type type() const;
+    void setType(const Type type);
 
     void setRefLayersVisiblity(const bool visible);
     void setNonactiveLayersOpacity(const int opacity);
@@ -74,7 +86,7 @@ namespace app {
       const doc::Sprite* sprite,
       doc::frame_t frame);
     void renderSprite(
-      doc::Image* dstImage,
+      os::Surface* dstSurface,
       const doc::Sprite* sprite,
       doc::frame_t frame,
       const gfx::ClipF& area);
@@ -90,7 +102,7 @@ namespace app {
       const int opacity,
       const doc::BlendMode blendMode);
 
-    doc::ImageBufferPtr getRenderImageBuffer();
+    static doc::ImageBufferPtr getRenderImageBuffer();
 
   private:
     std::unique_ptr<Renderer> m_renderer;

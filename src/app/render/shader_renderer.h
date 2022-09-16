@@ -4,19 +4,27 @@
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
-#ifndef APP_RENDER_SIMPLE_RENDERER_H_INCLUDED
-#define APP_RENDER_SIMPLE_RENDERER_H_INCLUDED
+#ifndef APP_RENDER_SHADER_RENDERER_H_INCLUDED
+#define APP_RENDER_SHADER_RENDERER_H_INCLUDED
 #pragma once
+
+#if SK_ENABLE_SKSL
 
 #include "app/render/renderer.h"
 
+#include "include/core/SkRefCnt.h"
+
+class SkRuntimeEffect;
+
 namespace app {
 
-  // Represents the way to render sprites on Aseprite (Old and "New")
-  // which use the render::Render class to render sprites with the
-  // CPU-only.
-  class SimpleRenderer : public Renderer {
+  // Use SkSL to compose images with Skia shaders on the CPU (with the
+  // SkSL VM) or GPU-accelerated (with native OpenGL/Metal/etc. shaders).
+  class ShaderRenderer : public Renderer {
   public:
+    ShaderRenderer();
+    ~ShaderRenderer();
+
     void setRefLayersVisiblity(const bool visible) override;
     void setNonactiveLayersOpacity(const int opacity) override;
     void setNewBlendMethod(const bool newBlend) override;
@@ -57,10 +65,14 @@ namespace app {
                      const int y,
                      const int opacity,
                      const doc::BlendMode blendMode) override;
+
   private:
-    render::Render m_render;
+    render::BgOptions m_bgOptions;
+    sk_sp<SkRuntimeEffect> m_bgEffect;
   };
 
 } // namespace app
+
+#endif // SK_ENABLE_SKSL
 
 #endif

@@ -15,6 +15,10 @@ namespace doc {
   class Sprite;
 }
 
+namespace os {
+  class Surface;
+}
+
 namespace app {
 
   // Abstract class to render images from any editor to be displayed
@@ -54,7 +58,7 @@ namespace app {
     virtual void renderSprite(doc::Image* dstImage,
                               const doc::Sprite* sprite,
                               const doc::frame_t frame) = 0;
-    virtual void renderSprite(doc::Image* dstImage,
+    virtual void renderSprite(os::Surface* dstSurface,
                               const doc::Sprite* sprite,
                               const doc::frame_t frame,
                               const gfx::ClipF& area) = 0;
