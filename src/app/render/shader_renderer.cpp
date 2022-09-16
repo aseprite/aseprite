@@ -151,8 +151,70 @@ void ShaderRenderer::renderSprite(os::Surface* dstSurface,
     p.setShader(builder.makeShader());
 
     canvas->drawRect(SkRect::MakeXYWH(area.dst.x, area.dst.y, area.size.w, area.size.h), p);
+
+    // Draw cels
+    drawLayerGroup(canvas, sprite, sprite->root(), frame, area);
   }
   canvas->restore();
+}
+
+void ShaderRenderer::drawLayerGroup(SkCanvas* canvas,
+                                    const doc::Sprite* sprite,
+                                    const doc::LayerGroup* group,
+                                    const doc::frame_t frame,
+                                    const gfx::ClipF& area)
+{
+  for (auto layer : group->layers()) {
+    switch (layer->type()) {
+
+      case doc::ObjectType::LayerImage: {
+        auto imageLayer = static_cast<const LayerImage*>(layer);
+
+        if (doc::Cel* cel = imageLayer->cel(frame)) {
+          doc::Image* image = cel->image();
+
+          auto skData = SkData::MakeWithoutCopy(
+            (const void*)image->getPixelAddress(0, 0),
+            image->getMemSize());
+
+          // TODO support other color modes
+          ASSERT(image->colorMode() == doc::ColorMode::RGB);
+
+          auto skImg = SkImage::MakeRasterData(
+            SkImageInfo::Make(image->width(),
+                              image->height(),
+                              kRGBA_8888_SkColorType,
+                              kUnpremul_SkAlphaType),
+            skData,
+            image->getRowStrideSize());
+
+          sk_sp<SkShader> imgShader = skImg->makeShader(SkSamplingOptions(SkFilterMode::kLinear));
+
+          SkPaint p;
+          p.setStyle(SkPaint::kFill_Style);
+          p.setShader(imgShader);
+
+          canvas->save();
+          canvas->translate(SkIntToScalar(area.dst.x + cel->x() - area.src.x),
+                            SkIntToScalar(area.dst.y + cel->y() - area.src.y));
+          canvas->drawRect(SkRect::MakeXYWH(0, 0, image->width(), image->height()), p);
+          canvas->restore();
+        }
+        break;
+      }
+
+      case doc::ObjectType::LayerTilemap:
+        // TODO impl
+        break;
+
+      case doc::ObjectType::LayerGroup:
+        // TODO draw a group in a sub-surface and then compose that surface
+        drawLayerGroup(canvas, sprite,
+                       static_cast<const doc::LayerGroup*>(layer),
+                       frame, area);
+        break;
+    }
+  }
 }
 
 void ShaderRenderer::renderCheckeredBackground(doc::Image* dstImage,

@@ -14,6 +14,7 @@
 
 #include "include/core/SkRefCnt.h"
 
+class SkCanvas;
 class SkRuntimeEffect;
 
 namespace app {
@@ -67,6 +68,12 @@ namespace app {
                      const doc::BlendMode blendMode) override;
 
   private:
+    void drawLayerGroup(SkCanvas* canvas,
+                        const doc::Sprite* sprite,
+                        const doc::LayerGroup* group,
+                        const doc::frame_t frame,
+                        const gfx::ClipF& area);
+
     render::BgOptions m_bgOptions;
     sk_sp<SkRuntimeEffect> m_bgEffect;
   };
