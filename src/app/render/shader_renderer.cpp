@@ -21,7 +21,9 @@
 
 namespace app {
 
-static const char* kBgShaderCode = R"(
+namespace {
+
+const char* kBgShaderCode = R"(
 uniform half3 iRes, iCanvas, iSrcPos;
 uniform half4 iBg1, iBg2;
 uniform half2 iStripeSize;
@@ -31,6 +33,33 @@ half4 main(vec2 fragcoord) {
  return (mod(mod(floor(u.x), 2) + mod(floor(u.y), 2), 2) != 0.0 ? iBg2: iBg1);
 }
 )";
+
+inline SkBlendMode to_skia(const doc::BlendMode bm) {
+  switch (bm) {
+    case doc::BlendMode::NORMAL: return SkBlendMode::kSrcOver;
+    case doc::BlendMode::MULTIPLY: return SkBlendMode::kMultiply;
+    case doc::BlendMode::SCREEN: return SkBlendMode::kScreen;
+    case doc::BlendMode::OVERLAY: return SkBlendMode::kOverlay;
+    case doc::BlendMode::DARKEN: return SkBlendMode::kDarken;
+    case doc::BlendMode::LIGHTEN: return SkBlendMode::kLighten;
+    case doc::BlendMode::COLOR_DODGE: return SkBlendMode::kColorDodge;
+    case doc::BlendMode::COLOR_BURN: return SkBlendMode::kColorBurn;
+    case doc::BlendMode::HARD_LIGHT: return SkBlendMode::kHardLight;
+    case doc::BlendMode::SOFT_LIGHT: return SkBlendMode::kSoftLight;
+    case doc::BlendMode::DIFFERENCE: return SkBlendMode::kDifference;
+    case doc::BlendMode::EXCLUSION: return SkBlendMode::kExclusion;
+    case doc::BlendMode::HSL_HUE: return SkBlendMode::kHue;
+    case doc::BlendMode::HSL_SATURATION: return SkBlendMode::kSaturation;
+    case doc::BlendMode::HSL_COLOR: return SkBlendMode::kColor;
+    case doc::BlendMode::HSL_LUMINOSITY: return SkBlendMode::kLuminosity;
+    case doc::BlendMode::ADDITION: return SkBlendMode::kPlus;
+    case doc::BlendMode::SUBTRACT: break; // TODO
+    case doc::BlendMode::DIVIDE: break; // TODO
+  }
+  return SkBlendMode::kSrc;
+}
+
+} // anonymous namespace
 
 ShaderRenderer::ShaderRenderer()
 {
@@ -168,9 +197,9 @@ void ShaderRenderer::drawLayerGroup(SkCanvas* canvas,
     switch (layer->type()) {
 
       case doc::ObjectType::LayerImage: {
-        auto imageLayer = static_cast<const LayerImage*>(layer);
+        auto imgLayer = static_cast<const LayerImage*>(layer);
 
-        if (doc::Cel* cel = imageLayer->cel(frame)) {
+        if (doc::Cel* cel = imgLayer->cel(frame)) {
           doc::Image* image = cel->image();
 
           auto skData = SkData::MakeWithoutCopy(
@@ -188,17 +217,18 @@ void ShaderRenderer::drawLayerGroup(SkCanvas* canvas,
             skData,
             image->getRowStrideSize());
 
-          sk_sp<SkShader> imgShader = skImg->makeShader(SkSamplingOptions(SkFilterMode::kLinear));
+          int t;
+          int opacity = cel->opacity();
+          opacity = MUL_UN8(opacity, imgLayer->opacity(), t);
 
           SkPaint p;
-          p.setStyle(SkPaint::kFill_Style);
-          p.setShader(imgShader);
-
-          canvas->save();
-          canvas->translate(SkIntToScalar(area.dst.x + cel->x() - area.src.x),
-                            SkIntToScalar(area.dst.y + cel->y() - area.src.y));
-          canvas->drawRect(SkRect::MakeXYWH(0, 0, image->width(), image->height()), p);
-          canvas->restore();
+          p.setAlpha(opacity);
+          p.setBlendMode(to_skia(imgLayer->blendMode()));
+          canvas->drawImage(skImg.get(),
+                            SkIntToScalar(area.dst.x + cel->x() - area.src.x),
+                            SkIntToScalar(area.dst.y + cel->y() - area.src.y),
+                            SkSamplingOptions(),
+                            &p);
         }
         break;
       }
