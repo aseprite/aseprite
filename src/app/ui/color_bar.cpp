@@ -532,8 +532,7 @@ void ColorBar::setEditMode(bool state)
 TilemapMode ColorBar::tilemapMode() const
 {
   return
-    (m_tilesHBox.isVisible() &&
-     m_lastDocument &&
+    (m_lastDocument &&
      m_lastDocument->sprite()) ? m_tilemapMode:
                                  TilemapMode::Pixels;
 }
@@ -603,8 +602,7 @@ void ColorBar::updateFromTilemapMode()
 
 TilesetMode ColorBar::tilesetMode() const
 {
-  if (m_tilesHBox.isVisible() &&
-      m_lastDocument &&
+  if (m_lastDocument &&
       m_lastDocument->sprite()) {
     return m_tilesetMode;
   }
