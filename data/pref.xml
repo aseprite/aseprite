@@ -485,6 +485,7 @@
       <option id="filename" type="std::string" />
       <option id="resize_scale" type="double" default="1" />
       <option id="layer" type="std::string" />
+      <option id="layer_index" type="int" default ="-1" />
       <option id="frame_tag" type="std::string" />
       <option id="ani_dir" type="doc::AniDir" default="doc::AniDir::FORWARD" />
       <option id="apply_pixel_ratio" type="bool" default="false" />
@@ -512,6 +513,7 @@
       <option id="ignore_empty" type="bool" default="false" />
       <option id="open_generated" type="bool" default="false" />
       <option id="layer" type="std::string" />
+      <option id="layer_index" type="int" default ="-1" />
       <option id="frame_tag" type="std::string" />
       <option id="split_layers" type="bool" default="false" />
       <option id="split_tags" type="bool" default="false" />

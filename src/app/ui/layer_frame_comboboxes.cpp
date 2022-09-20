@@ -57,7 +57,7 @@ FrameListItem::FrameListItem(doc::Tag* tag)
   setValue(m_tag->name());
 }
 
-void fill_layers_combobox(const doc::Sprite* sprite, ui::ComboBox* layers, const std::string& defLayer)
+void fill_layers_combobox(const doc::Sprite* sprite, ui::ComboBox* layers, const std::string& defLayer, const int defLayerIndex)
 {
   int i = layers->addItem("Visible layers");
   dynamic_cast<ui::ListItem*>(layers->getItem(i))->setValue(kAllLayers);
@@ -67,11 +67,16 @@ void fill_layers_combobox(const doc::Sprite* sprite, ui::ComboBox* layers, const
   if (defLayer == kSelectedLayers)
     layers->setSelectedItemIndex(i);
 
+  assert(layers->getItemCount() == kLayersComboboxExtraInitialItems);
+  static_assert(kLayersComboboxExtraInitialItems == 2,
+                "Update kLayersComboboxExtraInitialItems value to match the number of initial items in layers combobox");
+
   doc::LayerList layersList = sprite->allLayers();
   for (auto it=layersList.rbegin(), end=layersList.rend(); it!=end; ++it) {
     doc::Layer* layer = *it;
     i = layers->addItem(new LayerListItem(layer));
-    if (defLayer == layer->name())
+    if (defLayer == layer->name() && defLayerIndex == -1 ||
+        defLayer == layer->name() && defLayerIndex == i-kLayersComboboxExtraInitialItems)
       layers->setSelectedItemIndex(i);
   }
 }
@@ -112,6 +117,7 @@ void fill_anidir_combobox(ui::ComboBox* anidir, doc::AniDir defAnidir)
 
 void calculate_visible_layers(const Site& site,
                               const std::string& layersValue,
+                              const int layersIndex,
                               RestoreVisibleLayers& layersVisibility)
 {
   if (layersValue == kSelectedLayers) {
@@ -124,10 +130,13 @@ void calculate_visible_layers(const Site& site,
       layersVisibility.showLayer(const_cast<Layer*>(site.layer()));
     }
   }
-  else if (layersValue != kAllFrames) {
+  else if (layersValue != kAllLayers) {
+    int i = site.sprite()->allLayersCount();
     // TODO add a getLayerByName
     for (doc::Layer* layer : site.sprite()->allLayers()) {
-      if (layer->name() == layersValue) {
+      i--;
+      if (layer->name() == layersValue && layersIndex == -1 ||
+          layer->name() == layersValue && layersIndex == i) {
         layersVisibility.showLayer(layer);
         break;
       }
