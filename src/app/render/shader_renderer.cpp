@@ -177,6 +177,10 @@ void ShaderRenderer::drawLayerGroup(SkCanvas* canvas,
                                     const gfx::ClipF& area)
 {
   for (auto layer : group->layers()) {
+    // Ignore hidden layers
+    if (!layer->isVisible())
+      continue;
+
     switch (layer->type()) {
 
       case doc::ObjectType::LayerImage: {
