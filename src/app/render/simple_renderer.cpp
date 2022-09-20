@@ -89,13 +89,6 @@ void SimpleRenderer::disableOnionskin()
   m_render.disableOnionskin();
 }
 
-void SimpleRenderer::renderSprite(doc::Image* dstImage,
-                                  const doc::Sprite* sprite,
-                                  const doc::frame_t frame)
-{
-  m_render.renderSprite(dstImage, sprite, frame);
-}
-
 void SimpleRenderer::renderSprite(os::Surface* dstSurface,
                                   const doc::Sprite* sprite,
                                   const doc::frame_t frame,
@@ -110,10 +103,18 @@ void SimpleRenderer::renderSprite(os::Surface* dstSurface,
                            dstSurface, 0, 0, 0, 0, area.size.w, area.size.h);
 }
 
-void SimpleRenderer::renderCheckeredBackground(doc::Image* dstImage,
+void SimpleRenderer::renderCheckeredBackground(os::Surface* dstSurface,
+                                               const doc::Sprite* sprite,
                                                const gfx::Clip& area)
 {
-  m_render.renderCheckeredBackground(dstImage, area);
+  ImageRef dstImage(Image::create(
+                      IMAGE_RGB, area.size.w, area.size.h,
+                      EditorRender::getRenderImageBuffer()));
+
+  m_render.renderCheckeredBackground(dstImage.get(), area);
+
+  convert_image_to_surface(dstImage.get(), sprite->palette(0),
+                           dstSurface, 0, 0, 0, 0, area.size.w, area.size.h);
 }
 
 void SimpleRenderer::renderImage(doc::Image* dstImage,

@@ -24,12 +24,11 @@ namespace app {
 namespace {
 
 const char* kBgShaderCode = R"(
-uniform half3 iRes, iCanvas, iSrcPos;
 uniform half4 iBg1, iBg2;
 uniform half2 iStripeSize;
 
 half4 main(vec2 fragcoord) {
- vec2 u = (iSrcPos.xy+fragcoord.xy) / iStripeSize.xy;
+ vec2 u = fragcoord.xy / iStripeSize.xy;
  return (mod(mod(floor(u.x), 2) + mod(floor(u.y), 2), 2) != 0.0 ? iBg2: iBg1);
 }
 )";
@@ -63,6 +62,9 @@ inline SkBlendMode to_skia(const doc::BlendMode bm) {
 
 ShaderRenderer::ShaderRenderer()
 {
+  m_properties.renderBgOnScreen = true;
+  m_properties.requiresRgbaBackbuffer = true;
+
   auto result = SkRuntimeEffect::MakeForShader(SkString(kBgShaderCode));
   if (!result.errorText.isEmpty()) {
     LOG(ERROR, "Shader error: %s\n", result.errorText.c_str());
@@ -96,7 +98,7 @@ void ShaderRenderer::setBgOptions(const render::BgOptions& bg)
 
 void ShaderRenderer::setProjection(const render::Projection& projection)
 {
-  // TODO impl
+  m_proj = projection;
 }
 
 void ShaderRenderer::setSelectedLayer(const doc::Layer* layer)
@@ -144,44 +146,25 @@ void ShaderRenderer::disableOnionskin()
   // TODO impl
 }
 
-void ShaderRenderer::renderSprite(doc::Image* dstImage,
-                                  const doc::Sprite* sprite,
-                                  const doc::frame_t frame)
-{
-  // TODO impl
-}
-
 void ShaderRenderer::renderSprite(os::Surface* dstSurface,
                                   const doc::Sprite* sprite,
                                   const doc::frame_t frame,
                                   const gfx::ClipF& area)
 {
-  SkRuntimeShaderBuilder builder(m_bgEffect);
-  builder.uniform("iRes") = SkV3{float(area.size.w), float(area.size.h), 0.0f};
-  builder.uniform("iCanvas") = SkV3{float(sprite->width()), float(sprite->height()), 0.0f};
-  builder.uniform("iSrcPos") = SkV3{float(area.src.x), float(area.src.y), 0.0f};
-  builder.uniform("iBg1") = gfxColor_to_SkV4(
-    color_utils::color_for_ui(
-      app::Color::fromImage(sprite->pixelFormat(),
-                            m_bgOptions.color1)));
-  builder.uniform("iBg2") = gfxColor_to_SkV4(
-    color_utils::color_for_ui(
-      app::Color::fromImage(sprite->pixelFormat(),
-                            m_bgOptions.color2)));
-  builder.uniform("iStripeSize") = SkV2{
-    float(m_bgOptions.stripeSize.w),
-    float(m_bgOptions.stripeSize.h)};
-
   SkCanvas* canvas = &static_cast<os::SkiaSurface*>(dstSurface)->canvas();
   canvas->save();
   {
     SkPaint p;
     p.setStyle(SkPaint::kFill_Style);
-    p.setShader(builder.makeShader());
-
+    p.setColor(SK_ColorTRANSPARENT);
+    p.setBlendMode(SkBlendMode::kSrc);
     canvas->drawRect(SkRect::MakeXYWH(area.dst.x, area.dst.y, area.size.w, area.size.h), p);
 
     // Draw cels
+    canvas->translate(area.dst.x - area.src.x,
+                      area.dst.y - area.src.y);
+    canvas->scale(m_proj.scaleX(), m_proj.scaleY());
+
     drawLayerGroup(canvas, sprite, sprite->root(), frame, area);
   }
   canvas->restore();
@@ -225,8 +208,8 @@ void ShaderRenderer::drawLayerGroup(SkCanvas* canvas,
           p.setAlpha(opacity);
           p.setBlendMode(to_skia(imgLayer->blendMode()));
           canvas->drawImage(skImg.get(),
-                            SkIntToScalar(area.dst.x + cel->x() - area.src.x),
-                            SkIntToScalar(area.dst.y + cel->y() - area.src.y),
+                            SkIntToScalar(cel->x()),
+                            SkIntToScalar(cel->y()),
                             SkSamplingOptions(),
                             &p);
         }
@@ -247,10 +230,41 @@ void ShaderRenderer::drawLayerGroup(SkCanvas* canvas,
   }
 }
 
-void ShaderRenderer::renderCheckeredBackground(doc::Image* dstImage,
+void ShaderRenderer::renderCheckeredBackground(os::Surface* dstSurface,
+                                               const doc::Sprite* sprite,
                                                const gfx::Clip& area)
 {
-  // TODO impl
+  SkRuntimeShaderBuilder builder(m_bgEffect);
+  builder.uniform("iBg1") = gfxColor_to_SkV4(
+    color_utils::color_for_ui(
+      app::Color::fromImage(sprite->pixelFormat(),
+                            m_bgOptions.color1)));
+  builder.uniform("iBg2") = gfxColor_to_SkV4(
+    color_utils::color_for_ui(
+      app::Color::fromImage(sprite->pixelFormat(),
+                            m_bgOptions.color2)));
+
+  float sx = (m_bgOptions.zoom ? m_proj.scaleX(): 1.0);
+  float sy = (m_bgOptions.zoom ? m_proj.scaleY(): 1.0);
+
+  builder.uniform("iStripeSize") = SkV2{
+    float(m_bgOptions.stripeSize.w) * sx,
+    float(m_bgOptions.stripeSize.h) * sy};
+
+  SkCanvas* canvas = &static_cast<os::SkiaSurface*>(dstSurface)->canvas();
+  canvas->save();
+  {
+    SkPaint p;
+    p.setStyle(SkPaint::kFill_Style);
+    p.setShader(builder.makeShader());
+
+    canvas->translate(
+      SkIntToScalar(area.dst.x - area.src.x),
+      SkIntToScalar(area.dst.y - area.src.y));
+    canvas->drawRect(
+      SkRect::MakeXYWH(area.src.x, area.src.y, area.size.w, area.size.h), p);
+  }
+  canvas->restore();
 }
 
 void ShaderRenderer::renderImage(doc::Image* dstImage,

@@ -662,22 +662,12 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
 
   // Convert the render to a os::Surface
   static os::SurfaceRef rendered = nullptr; // TODO move this to other centralized place
+  const auto& renderProperties = m_renderEngine->properties();
   try {
     // Generate a "expose sprite pixels" notification. This is used by
     // tool managers that need to validate this region (copy pixels from
     // the original cel) before it can be used by the RenderEngine.
     m_document->notifyExposeSpritePixels(m_sprite, gfx::Region(expose));
-
-    // Create a temporary surface to draw the sprite on it
-    if (!rendered ||
-        rendered->width() < rc2.w ||
-        rendered->height() < rc2.h ||
-        rendered->colorSpace() != m_document->osColorSpace()) {
-      const int maxw = std::max(rc2.w, rendered ? rendered->width(): 0);
-      const int maxh = std::max(rc2.h, rendered ? rendered->height(): 0);
-      rendered = os::instance()->makeSurface(
-        maxw, maxh, m_document->osColorSpace());
-    }
 
     m_renderEngine->setNewBlendMethod(pref.experimental.newBlend());
     m_renderEngine->setRefLayersVisiblity(true);
@@ -686,8 +676,6 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
       m_renderEngine->setNonactiveLayersOpacity(pref.experimental.nonactiveLayersOpacity());
     else
       m_renderEngine->setNonactiveLayersOpacity(255);
-    m_renderEngine->setProjection(
-      newEngine ? render::Projection(): m_proj);
     m_renderEngine->setupBackground(m_document, IMAGE_RGB);
     m_renderEngine->disableOnionskin();
 
@@ -727,6 +715,32 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
         m_layer, m_frame);
     }
 
+    // Render background first (e.g. new ShaderRenderer will paint the
+    // background on the screen first and then composite the rendered
+    // sprite on it.)
+    if (renderProperties.renderBgOnScreen) {
+      m_renderEngine->setProjection(m_proj);
+      m_renderEngine->renderCheckeredBackground(
+        g->getInternalSurface(),
+        m_sprite,
+        gfx::Clip(dest.x + g->getInternalDeltaX(),
+                  dest.y + g->getInternalDeltaY(),
+                  m_proj.apply(rc2)));
+    }
+
+    // Create a temporary surface to draw the sprite on it
+    if (!rendered ||
+        rendered->width() < rc2.w ||
+        rendered->height() < rc2.h ||
+        rendered->colorSpace() != m_document->osColorSpace()) {
+      const int maxw = std::max(rc2.w, rendered ? rendered->width(): 0);
+      const int maxh = std::max(rc2.h, rendered ? rendered->height(): 0);
+      rendered = os::instance()->makeRgbaSurface(
+        maxw, maxh, m_document->osColorSpace());
+    }
+
+    m_renderEngine->setProjection(
+      newEngine ? render::Projection(): m_proj);
     m_renderEngine->renderSprite(
       rendered.get(), m_sprite, m_frame, gfx::Clip(0, 0, rc2));
 
@@ -763,11 +777,17 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
         }
       }
 
+      os::Paint p;
+      if (renderProperties.requiresRgbaBackbuffer)
+        p.blendMode(os::BlendMode::SrcOver);
+      else
+        p.blendMode(os::BlendMode::Src);
+
       g->drawSurface(rendered.get(),
                      gfx::Rect(0, 0, rc2.w, rc2.h),
                      dest,
                      sampling,
-                     nullptr);
+                     &p);
     }
     else {
       g->blit(rendered.get(), 0, 0, dest.x, dest.y, dest.w, dest.h);

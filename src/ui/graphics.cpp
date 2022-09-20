@@ -589,6 +589,11 @@ gfx::Size Graphics::doUIStringAlgorithm(const std::string& str, gfx::Color fg, g
   return calculatedSize;
 }
 
+void Graphics::invalidate(const gfx::Rect& bounds)
+{
+  dirty(gfx::Rect(bounds).offset(m_dx, m_dy));
+}
+
 void Graphics::dirty(const gfx::Rect& bounds)
 {
   gfx::Rect rc = m_surface->getClipBounds();

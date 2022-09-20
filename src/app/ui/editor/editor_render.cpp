@@ -176,14 +176,6 @@ void EditorRender::disableOnionskin()
 }
 
 void EditorRender::renderSprite(
-  doc::Image* dstImage,
-  const doc::Sprite* sprite,
-  doc::frame_t frame)
-{
-  m_renderer->renderSprite(dstImage, sprite, frame);
-}
-
-void EditorRender::renderSprite(
   os::Surface* dstSurface,
   const doc::Sprite* sprite,
   doc::frame_t frame,
@@ -193,10 +185,11 @@ void EditorRender::renderSprite(
 }
 
 void EditorRender::renderCheckeredBackground(
-  doc::Image* image,
+  os::Surface* dstSurface,
+  const doc::Sprite* sprite,
   const gfx::Clip& area)
 {
-  m_renderer->renderCheckeredBackground(image, area);
+  m_renderer->renderCheckeredBackground(dstSurface, sprite, area);
 }
 
 void EditorRender::renderImage(

@@ -26,6 +26,8 @@ namespace app {
     ShaderRenderer();
     ~ShaderRenderer();
 
+    const Properties& properties() const override { return m_properties; }
+
     void setRefLayersVisiblity(const bool visible) override;
     void setNonactiveLayersOpacity(const int opacity) override;
     void setNewBlendMethod(const bool newBlend) override;
@@ -50,14 +52,12 @@ namespace app {
     void setOnionskin(const render::OnionskinOptions& options) override;
     void disableOnionskin() override;
 
-    void renderSprite(doc::Image* dstImage,
-                      const doc::Sprite* sprite,
-                      const doc::frame_t frame) override;
     void renderSprite(os::Surface* dstSurface,
                       const doc::Sprite* sprite,
                       const doc::frame_t frame,
                       const gfx::ClipF& area) override;
-    void renderCheckeredBackground(doc::Image* dstImage,
+    void renderCheckeredBackground(os::Surface* dstSurface,
+                                   const doc::Sprite* sprite,
                                    const gfx::Clip& area) override;
     void renderImage(doc::Image* dstImage,
                      const doc::Image* srcImage,
@@ -74,7 +74,9 @@ namespace app {
                         const doc::frame_t frame,
                         const gfx::ClipF& area);
 
+    Properties m_properties;
     render::BgOptions m_bgOptions;
+    render::Projection m_proj;
     sk_sp<SkRuntimeEffect> m_bgEffect;
   };
 
