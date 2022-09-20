@@ -74,10 +74,21 @@ namespace app {
                         const doc::frame_t frame,
                         const gfx::ClipF& area);
 
+    bool checkIfWeShouldUsePreview(const doc::Cel* cel) const;
+
     Properties m_properties;
     render::BgOptions m_bgOptions;
     render::Projection m_proj;
     sk_sp<SkRuntimeEffect> m_bgEffect;
+    // TODO these members are the same as in render::Render, we should
+    //      see a way to merge both
+    const doc::Layer* m_selectedLayerForOpacity = nullptr;
+    const doc::Layer* m_selectedLayer = nullptr;
+    doc::frame_t m_selectedFrame = -1;
+    const doc::Image* m_previewImage = nullptr;
+    const doc::Tileset* m_previewTileset = nullptr;
+    gfx::Point m_previewPos;
+    doc::BlendMode m_previewBlendMode = doc::BlendMode::NORMAL;
   };
 
 } // namespace app

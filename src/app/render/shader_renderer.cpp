@@ -113,12 +113,18 @@ void ShaderRenderer::setPreviewImage(const doc::Layer* layer,
                                      const gfx::Point& pos,
                                      const doc::BlendMode blendMode)
 {
-  // TODO impl
+  m_selectedLayer = layer;
+  m_selectedFrame = frame;
+  m_previewImage = image;
+  m_previewTileset = tileset;
+  m_previewPos = pos;
+  m_previewBlendMode = blendMode;
 }
 
 void ShaderRenderer::removePreviewImage()
 {
-  // TODO impl
+  m_previewImage = nullptr;
+  m_previewTileset = nullptr;
 }
 
 void ShaderRenderer::setExtraImage(render::ExtraType type,
@@ -187,22 +193,41 @@ void ShaderRenderer::drawLayerGroup(SkCanvas* canvas,
         auto imgLayer = static_cast<const LayerImage*>(layer);
 
         if (doc::Cel* cel = imgLayer->cel(frame)) {
-          doc::Image* image = cel->image();
+          const doc::Image* celImage = nullptr;
+          gfx::RectF celBounds;
+
+          // Is the 'm_previewImage' set to be used with this layer?
+          if (m_previewImage &&
+              checkIfWeShouldUsePreview(cel)) {
+            celImage = m_previewImage;
+            celBounds = gfx::RectF(m_previewPos.x,
+                                   m_previewPos.y,
+                                   m_previewImage->width(),
+                                   m_previewImage->height());
+          }
+          // If not, we use the original cel-image from the images' stock
+          else {
+            celImage = cel->image();
+            if (cel->layer()->isReference())
+              celBounds = cel->boundsF();
+            else
+              celBounds = cel->bounds();
+          }
 
           auto skData = SkData::MakeWithoutCopy(
-            (const void*)image->getPixelAddress(0, 0),
-            image->getMemSize());
+            (const void*)celImage->getPixelAddress(0, 0),
+            celImage->getMemSize());
 
           // TODO support other color modes
-          ASSERT(image->colorMode() == doc::ColorMode::RGB);
+          ASSERT(celImage->colorMode() == doc::ColorMode::RGB);
 
           auto skImg = SkImage::MakeRasterData(
-            SkImageInfo::Make(image->width(),
-                              image->height(),
+            SkImageInfo::Make(celImage->width(),
+                              celImage->height(),
                               kRGBA_8888_SkColorType,
                               kUnpremul_SkAlphaType),
             skData,
-            image->getRowStrideSize());
+            celImage->getRowStrideSize());
 
           int t;
           int opacity = cel->opacity();
@@ -212,8 +237,8 @@ void ShaderRenderer::drawLayerGroup(SkCanvas* canvas,
           p.setAlpha(opacity);
           p.setBlendMode(to_skia(imgLayer->blendMode()));
           canvas->drawImage(skImg.get(),
-                            SkIntToScalar(cel->x()),
-                            SkIntToScalar(cel->y()),
+                            SkIntToScalar(celBounds.x),
+                            SkIntToScalar(celBounds.y),
                             SkSamplingOptions(),
                             &p);
         }
@@ -280,6 +305,25 @@ void ShaderRenderer::renderImage(doc::Image* dstImage,
                                  const doc::BlendMode blendMode)
 {
   // TODO impl
+}
+
+// TODO this is equal to Render::checkIfWeShouldUsePreview(const Cel*),
+//      we might think in a way to merge both functions
+bool ShaderRenderer::checkIfWeShouldUsePreview(const doc::Cel* cel) const
+{
+  if ((m_selectedLayer == cel->layer())) {
+    if (m_selectedFrame == cel->frame()) {
+      return true;
+    }
+    else if (cel->layer()) {
+      // This preview might be useful if we are rendering a linked
+      // frame to preview.
+      Cel* cel2 = cel->layer()->cel(m_selectedFrame);
+      if (cel2 && cel2->data() == cel->data())
+        return true;
+    }
+  }
+  return false;
 }
 
 } // namespace app
