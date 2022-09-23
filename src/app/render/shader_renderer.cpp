@@ -214,40 +214,92 @@ void ShaderRenderer::drawLayerGroup(SkCanvas* canvas,
               celBounds = cel->bounds();
           }
 
-          auto skData = SkData::MakeWithoutCopy(
-            (const void*)celImage->getPixelAddress(0, 0),
-            celImage->getMemSize());
-
-          // TODO support other color modes
-          ASSERT(celImage->colorMode() == doc::ColorMode::RGB);
-
-          auto skImg = SkImage::MakeRasterData(
-            SkImageInfo::Make(celImage->width(),
-                              celImage->height(),
-                              kRGBA_8888_SkColorType,
-                              kUnpremul_SkAlphaType),
-            skData,
-            celImage->getRowStrideSize());
-
           int t;
           int opacity = cel->opacity();
           opacity = MUL_UN8(opacity, imgLayer->opacity(), t);
 
-          SkPaint p;
-          p.setAlpha(opacity);
-          p.setBlendMode(to_skia(imgLayer->blendMode()));
-          canvas->drawImage(skImg.get(),
-                            SkIntToScalar(celBounds.x),
-                            SkIntToScalar(celBounds.y),
-                            SkSamplingOptions(),
-                            &p);
+          drawImage(canvas,
+                    celImage,
+                    celBounds.x,
+                    celBounds.y,
+                    opacity,
+                    imgLayer->blendMode());
         }
         break;
       }
 
-      case doc::ObjectType::LayerTilemap:
-        // TODO impl
+      case doc::ObjectType::LayerTilemap: {
+        auto tilemapLayer = static_cast<const LayerTilemap*>(layer);
+        doc::Cel* cel = tilemapLayer->cel(frame);
+        if (!cel)
+          break;
+
+        const gfx::RectF celBounds = cel->bounds();
+        const doc::Image* celImage = cel->image();
+
+        doc::Grid grid = tilemapLayer->tileset()->grid();
+        grid.origin(grid.origin() + gfx::Point(celBounds.origin()));
+
+        // Is the 'm_previewTileset' set to be used with this layer?
+        const Tileset* tileset;
+        if (m_previewTileset && cel &&
+            checkIfWeShouldUsePreview(cel)) {
+          tileset = m_previewTileset;
+        }
+        else {
+          tileset = tilemapLayer->tileset();
+          ASSERT(tileset);
+          if (!tileset)
+            return;
+        }
+
+        const gfx::Clip iarea(area);
+        gfx::Rect tilesToDraw = grid.canvasToTile(
+          m_proj.remove(gfx::Rect(iarea.src, iarea.size)));
+
+        int yPixelsPerTile = m_proj.applyY(grid.tileSize().h);
+        if (yPixelsPerTile > 0 && (iarea.size.h + iarea.src.y) % yPixelsPerTile > 0)
+          tilesToDraw.h += 1;
+        int xPixelsPerTile = m_proj.applyX(grid.tileSize().w);
+        if (xPixelsPerTile > 0 && (iarea.size.w + iarea.src.x) % xPixelsPerTile > 0)
+          tilesToDraw.w += 1;
+
+        // As area.size is not empty at this point, we have to draw at
+        // least one tile (and the clipping will be performed for the
+        // tile pixels later).
+        if (tilesToDraw.w < 1) tilesToDraw.w = 1;
+        if (tilesToDraw.h < 1) tilesToDraw.h = 1;
+
+        tilesToDraw &= celImage->bounds();
+
+        for (int v=tilesToDraw.y; v<tilesToDraw.y2(); ++v) {
+          for (int u=tilesToDraw.x; u<tilesToDraw.x2(); ++u) {
+            auto tileBoundsOnCanvas = grid.tileToCanvas(gfx::Rect(u, v, 1, 1));
+            if (!celImage->bounds().contains(u, v))
+              continue;
+
+            const tile_t t = celImage->getPixel(u, v);
+            if (t != doc::notile) {
+              const tile_index i = tile_geti(t);
+              const ImageRef tileImage = tileset->get(i);
+              if (!tileImage)
+                continue;
+
+              int t;
+              int opacity = cel->opacity();
+              opacity = MUL_UN8(opacity, tilemapLayer->opacity(), t);
+
+              drawImage(canvas,
+                        tileImage.get(),
+                        tileBoundsOnCanvas.x,
+                        tileBoundsOnCanvas.y,
+                        opacity,
+                        tilemapLayer->blendMode());
+            }
+          }
+        }
         break;
+      }
 
       case doc::ObjectType::LayerGroup:
         // TODO draw a group in a sub-surface and then compose that surface
@@ -305,6 +357,38 @@ void ShaderRenderer::renderImage(doc::Image* dstImage,
                                  const doc::BlendMode blendMode)
 {
   // TODO impl
+}
+
+void ShaderRenderer::drawImage(SkCanvas* canvas,
+                               const doc::Image* srcImage,
+                               const int x,
+                               const int y,
+                               const int opacity,
+                               const doc::BlendMode blendMode)
+{
+  auto skData = SkData::MakeWithoutCopy(
+    (const void*)srcImage->getPixelAddress(0, 0),
+    srcImage->getMemSize());
+
+  // TODO support other color modes
+  ASSERT(srcImage->colorMode() == doc::ColorMode::RGB);
+
+  auto skImg = SkImage::MakeRasterData(
+    SkImageInfo::Make(srcImage->width(),
+                      srcImage->height(),
+                      kRGBA_8888_SkColorType,
+                      kUnpremul_SkAlphaType),
+    skData,
+    srcImage->getRowStrideSize());
+
+  SkPaint p;
+  p.setAlpha(opacity);
+  p.setBlendMode(to_skia(blendMode));
+  canvas->drawImage(skImg.get(),
+                    SkIntToScalar(x),
+                    SkIntToScalar(y),
+                    SkSamplingOptions(),
+                    &p);
 }
 
 // TODO this is equal to Render::checkIfWeShouldUsePreview(const Cel*),

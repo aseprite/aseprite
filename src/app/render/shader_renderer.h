@@ -73,6 +73,12 @@ namespace app {
                         const doc::LayerGroup* group,
                         const doc::frame_t frame,
                         const gfx::ClipF& area);
+    void drawImage(SkCanvas* canvas,
+                   const doc::Image* srcImage,
+                   const int x,
+                   const int y,
+                   const int opacity,
+                   const doc::BlendMode blendMode);
 
     bool checkIfWeShouldUsePreview(const doc::Cel* cel) const;
 
