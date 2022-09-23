@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021  Igara Studio S.A.
+// Copyright (C) 2021-2022  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -149,6 +149,7 @@ void ConvertLayerCommand::onExecute(Context* ctx)
           newLayer->configureAsBackground();
           newLayer->setName(Strings::commands_NewFile_BackgroundLayer());
           newLayer->setContinuous(srcLayer->isContinuous());
+          newLayer->setUserData(srcLayer->userData());
           tx(new cmd::AddLayer(srcLayer->parent(), newLayer, srcLayer));
 
           CelList srcCels;
@@ -170,6 +171,9 @@ void ConvertLayerCommand::onExecute(Context* ctx)
           auto newLayer = new LayerImage(sprite);
           newLayer->setName(srcLayer->name());
           newLayer->setContinuous(srcLayer->isContinuous());
+          newLayer->setBlendMode(static_cast<LayerImage*>(srcLayer)->blendMode());
+          newLayer->setOpacity(static_cast<LayerImage*>(srcLayer)->opacity());
+          newLayer->setUserData(srcLayer->userData());
           tx(new cmd::AddLayer(srcLayer->parent(), newLayer, srcLayer));
 
           copyCels(tx, srcLayer, newLayer);
@@ -194,6 +198,9 @@ void ConvertLayerCommand::onExecute(Context* ctx)
           auto newLayer = new LayerTilemap(sprite, tsi);
           newLayer->setName(srcLayer->name());
           newLayer->setContinuous(srcLayer->isContinuous());
+          newLayer->setBlendMode(static_cast<LayerImage*>(srcLayer)->blendMode());
+          newLayer->setOpacity(static_cast<LayerImage*>(srcLayer)->opacity());
+          newLayer->setUserData(srcLayer->userData());
           tx(new cmd::AddLayer(srcLayer->parent(), newLayer, srcLayer));
 
           copyCels(tx, srcLayer, newLayer);
