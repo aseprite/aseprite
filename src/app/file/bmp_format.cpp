@@ -1213,7 +1213,7 @@ bool BmpFormat::onSave(FileOp *fop)
               + biSizeImage);                        // image data
   }
   else {
-    biSizeImage = (w*3 + filler) * h;
+    biSizeImage = (w*bpp/8 + filler) * h;
     if (withAlpha)
       bfSize = BV3INFOHEADERSIZE +
                OS2FILEHEADERSIZE + biSizeImage;  // header + image data
