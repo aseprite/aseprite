@@ -676,7 +676,8 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
         .outerTagName(outerTag ? outerTag->name(): "")
         .frame(outputFrame)
         .tagFrame(innerTag ? frame - innerTag->fromFrame():
-                             outputFrame);
+                             outputFrame)
+        .duration(spr->frameDuration(frame));
 
       fop->m_seq.filename_list.push_back(
         filename_formatter(fn_format, fnInfo));

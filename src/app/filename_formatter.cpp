@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -112,12 +113,12 @@ std::string filename_formatter(
   base::replace_string(output, "{layer}", info.layerName());
   base::replace_string(output, "{group}", info.groupName());
   base::replace_string(output, "{slice}", info.sliceName());
-  base::replace_string(output, "{duration}", std::to_string(info.duration()));
 
   if (replaceFrame) {
     base::replace_string(output, "{tag}", info.innerTagName());
     base::replace_string(output, "{innertag}", info.innerTagName());
     base::replace_string(output, "{outertag}", info.outerTagName());
+    base::replace_string(output, "{duration}", std::to_string(info.duration()));
     replace_frame("{frame", info.frame(), output);
     replace_frame("{tagframe", info.tagFrame(), output);
   }
