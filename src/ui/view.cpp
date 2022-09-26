@@ -179,6 +179,7 @@ void View::updateView(const bool restoreScrollPos)
   }
 
   if (Widget* child = attachedWidget()) {
+    (void)child;
     updateAttachedWidgetBounds(viewScroll());
     ASSERT(child->bounds().w >= viewportBounds().w);
     ASSERT(child->bounds().h >= viewportBounds().h);
