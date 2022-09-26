@@ -115,41 +115,60 @@ public:
     else {
       switch (m_type) {
         case Simple:
-        case AlphaCompositing: {
+        case AlphaCompositing:
+        case Copy: {
           bool opaque = false;
+          color_t fgColor = loop->getPrimaryColor();
+          color_t bgColor = loop->getSecondaryColor();
 
           // Opacity is set to 255 when InkType=Simple in ToolLoopBase()
-          if (loop->getOpacity() == 255 &&
-              // The trace policy is "overlap" when the dynamics has
-              // a gradient between FG <-> BG
-              //
-              // TODO this trace policy is configured in
-              //      ToolLoopBase() ctor, is there a better place?
-              loop->getTracePolicy() != TracePolicy::Overlap) {
-            color_t color = loop->getPrimaryColor();
-
-            switch (loop->sprite()->pixelFormat()) {
-              case IMAGE_RGB:
-                opaque = (rgba_geta(color) == 255);
-                break;
-              case IMAGE_GRAYSCALE:
-                opaque = (graya_geta(color) == 255);
-                break;
-              case IMAGE_INDEXED:
-                // Simple ink for indexed is better to use always
-                // opaque if opacity == 255.
-                if (m_type == Simple)
-                  opaque = true;
-                else if (color == loop->sprite()->transparentColor())
-                  opaque = false;
-                else {
-                  color = loop->getPalette()->getEntry(color);
-                  opaque = (rgba_geta(color) == 255);
+          if (loop->getOpacity() == 255) {
+            if (loop->getDynamics().gradient == DynamicSensor::Static) {
+              if (m_type == Copy)
+                opaque = true;
+              else {
+                switch (loop->sprite()->pixelFormat()) {
+                  case IMAGE_RGB:
+                    opaque = rgba_geta(fgColor) == 255;
+                    break;
+                  case IMAGE_GRAYSCALE:
+                    opaque = graya_geta(fgColor) == 255;
+                    break;
+                  case IMAGE_INDEXED:
+                    // Simple ink for indexed is better to use always
+                    // opaque if opacity == 255.
+                    if (m_type == Simple)
+                      opaque = true;
+                    else if (fgColor == loop->sprite()->transparentColor())
+                      opaque = false;
+                    else {
+                      color_t fgColorRgba = loop->getPalette()->getEntry(fgColor);
+                      opaque = (rgba_geta(fgColorRgba) == 255 && fgColor != loop->sprite()->transparentColor());
+                    }
+                    break;
                 }
-                break;
+              }
+            }
+            // Special case when dynamics gradient active + Copy ink (set on active_tool.cpp when
+            // primary color is maskColor)
+            else if (m_type == Copy || m_type == Simple) {
+              switch (loop->sprite()->pixelFormat()) {
+                case IMAGE_RGB:
+                  opaque = rgba_geta(fgColor) == 0 || rgba_geta(bgColor) == 0;
+                  break;
+                case IMAGE_GRAYSCALE:
+                  opaque = graya_geta(fgColor) == 0 || graya_geta(bgColor) == 0;
+                  break;
+                case IMAGE_INDEXED:
+                  // TO DO: Indexed images aren't thinked to work with alpha gradients
+                  // Any change will be evaluated in the future.
+                  opaque = true;
+                  break;
+              }
             }
           }
-
+          else if (m_type == Copy)
+            opaque = true;
           // Use a faster ink, direct copy
           if (opaque)
             setProc(get_ink_proc<CopyInkProcessing>(loop));
@@ -157,9 +176,6 @@ public:
             setProc(get_ink_proc<TransparentInkProcessing>(loop));
           break;
         }
-        case Copy:
-          setProc(get_ink_proc<CopyInkProcessing>(loop));
-          break;
         case LockAlpha:
           setProc(get_ink_proc<LockAlphaInkProcessing>(loop));
           break;
