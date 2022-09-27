@@ -75,8 +75,7 @@ void fill_layers_combobox(const doc::Sprite* sprite, ui::ComboBox* layers, const
   for (auto it=layersList.rbegin(), end=layersList.rend(); it!=end; ++it) {
     doc::Layer* layer = *it;
     i = layers->addItem(new LayerListItem(layer));
-    if (defLayer == layer->name() && defLayerIndex == -1 ||
-        defLayer == layer->name() && defLayerIndex == i-kLayersComboboxExtraInitialItems)
+    if (defLayer == layer->name() && (defLayerIndex == -1 || defLayerIndex == i-kLayersComboboxExtraInitialItems))
       layers->setSelectedItemIndex(i);
   }
 }
@@ -135,8 +134,7 @@ void calculate_visible_layers(const Site& site,
     // TODO add a getLayerByName
     for (doc::Layer* layer : site.sprite()->allLayers()) {
       i--;
-      if (layer->name() == layersValue && layersIndex == -1 ||
-          layer->name() == layersValue && layersIndex == i) {
+      if (layer->name() == layersValue && (layersIndex == -1 || layersIndex == i)) {
         layersVisibility.showLayer(layer);
         break;
       }
