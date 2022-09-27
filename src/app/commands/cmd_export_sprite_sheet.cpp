@@ -227,8 +227,8 @@ Doc* generate_sprite_sheet_from_params(
     int i = sprite->allLayersCount();
     for (const Layer* layer : sprite->allLayers()) {
       i--;
-      if (layer->name() == layerName && layerIndex == -1 ||
-          layer->name() == layerName && layerIndex == i) {
+      if (layer->name() == layerName && (layerIndex == -1 ||
+                                         layerIndex == i)) {
         selLayers.insert(const_cast<Layer*>(layer));
         break;
       }
