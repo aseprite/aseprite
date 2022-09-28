@@ -173,7 +173,7 @@ static void set_clipboard_image(Image* image,
 
   // Copy image to the native clipboard
   if (set_system_clipboard) {
-    color_t oldMask;
+    color_t oldMask = 0;
     if (image) {
       oldMask = image->maskColor();
       if (!image_source_is_transparent)
