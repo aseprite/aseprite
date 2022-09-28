@@ -2069,11 +2069,12 @@ void Timeline::drawClipboardRange(ui::Graphics* g)
 
   IntersectClip clip(g, getRangeClipBounds(clipboard_range));
   if (clip) {
-    CheckeredDrawMode checkered(g, m_offset_count,
-                                gfx::rgba(0, 0, 0, 255),
-                                gfx::rgba(255, 255, 255, 255));
-    g->drawRect(gfx::rgba(0, 0, 0),
-                getRangeBounds(clipboard_range));
+    ui::Paint paint;
+    paint.style(ui::Paint::Stroke);
+    ui::set_checkered_paint_mode(paint, m_offset_count,
+                                 gfx::rgba(0, 0, 0, 255),
+                                 gfx::rgba(255, 255, 255, 255));
+    g->drawRect(getRangeBounds(clipboard_range), paint);
   }
 }
 

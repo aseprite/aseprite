@@ -1,5 +1,5 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2020-2021  Igara Studio S.A. -->
+<!-- Copyright (C) 2020-2022  Igara Studio S.A. -->
 <gui>
   <vbox id="dynamics">
     <hbox>
@@ -16,16 +16,16 @@
       <item text="@.velocity" tooltip="@.velocity_tooltip" tooltip_dir="bottom" />
 
       <item text="@.size" tooltip="@.size_tooltip" tooltip_dir="right" />
-      <item text="" maxheight="1" />
-      <item text="" maxheight="1" />
+      <item text="" minheight="1" maxheight="1" />
+      <item text="" minheight="1" maxheight="1" />
 
       <item text="@.angle" tooltip="@.angle_tooltip" tooltip_dir="right" />
-      <item text="" maxheight="1" />
-      <item text="" maxheight="1" />
+      <item text="" minheight="1" maxheight="1" />
+      <item text="" minheight="1" maxheight="1" />
 
       <item text="@.gradient" tooltip="@.gradient_tooltip" tooltip_dir="right" />
-      <item text="" maxheight="1" />
-      <item text="" maxheight="1" />
+      <item text="" minheight="1" maxheight="1" />
+      <item text="" minheight="1" maxheight="1" />
     </buttonset>
     </hbox>
 

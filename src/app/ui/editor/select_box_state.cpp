@@ -566,7 +566,7 @@ void SelectBoxState::postRenderDecorator(EditorPostRender* render)
   }
 
   if (hasFlag(Flags::QuickBox)) {
-    render->drawRectXor(rc);
+    render->drawRect(gfx::rgba(255, 255, 255), rc);
   }
 }
 

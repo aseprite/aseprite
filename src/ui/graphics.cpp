@@ -116,23 +116,6 @@ gfx::Matrix Graphics::matrix() const
   return m_surface->matrix();
 }
 
-void Graphics::setDrawMode(DrawMode mode, int param,
-                           const gfx::Color a,
-                           const gfx::Color b)
-{
-  switch (mode) {
-    case DrawMode::Solid:
-      m_surface->setDrawMode(os::DrawMode::Solid);
-      break;
-    case DrawMode::Xor:
-      m_surface->setDrawMode(os::DrawMode::Xor);
-      break;
-    case DrawMode::Checkered:
-      m_surface->setDrawMode(os::DrawMode::Checkered, param, a, b);
-      break;
-  }
-}
-
 gfx::Color Graphics::getPixel(int x, int y)
 {
   os::SurfaceLock lock(m_surface.get());
@@ -147,6 +130,14 @@ void Graphics::putPixel(gfx::Color color, int x, int y)
   m_surface->putPixel(color, m_dx+x, m_dy+y);
 }
 
+void Graphics::drawHLine(int x, int y, int w, const Paint& paint)
+{
+  dirty(gfx::Rect(m_dx+x, m_dy+y, w, 1));
+
+  os::SurfaceLock lock(m_surface.get());
+  m_surface->drawRect(gfx::Rect(m_dx+x, m_dy+y, w, 1), paint);
+}
+
 void Graphics::drawHLine(gfx::Color color, int x, int y, int w)
 {
   dirty(gfx::Rect(m_dx+x, m_dy+y, w, 1));
@@ -155,6 +146,14 @@ void Graphics::drawHLine(gfx::Color color, int x, int y, int w)
   os::Paint paint;
   paint.color(color);
   m_surface->drawRect(gfx::Rect(m_dx+x, m_dy+y, w, 1), paint);
+}
+
+void Graphics::drawVLine(int x, int y, int h, const Paint& paint)
+{
+  dirty(gfx::Rect(m_dx+x, m_dy+y, 1, h));
+
+  os::SurfaceLock lock(m_surface.get());
+  m_surface->drawRect(gfx::Rect(m_dx+x, m_dy+y, 1, h), paint);
 }
 
 void Graphics::drawVLine(gfx::Color color, int x, int y, int h)
@@ -319,6 +318,7 @@ void Graphics::drawSurfaceNine(os::Surface* surface,
                                const gfx::Rect& src,
                                const gfx::Rect& center,
                                const gfx::Rect& dst,
+                               const bool drawCenter,
                                const ui::Paint* paint)
 {
   gfx::Rect displacedDst(m_dx+dst.x, m_dy+dst.y, dst.w, dst.h);
@@ -326,7 +326,7 @@ void Graphics::drawSurfaceNine(os::Surface* surface,
 
   os::SurfaceLock lockSrc(surface);
   os::SurfaceLock lockDst(m_surface.get());
-  m_surface->drawSurfaceNine(surface, src, center, displacedDst, paint);
+  m_surface->drawSurfaceNine(surface, src, center, displacedDst, drawCenter, paint);
 }
 
 void Graphics::blit(os::Surface* srcSurface, int srcx, int srcy, int dstx, int dsty, int w, int h)

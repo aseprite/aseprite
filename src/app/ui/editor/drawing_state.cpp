@@ -110,7 +110,7 @@ void DrawingState::initToolLoop(Editor* editor,
     (previewLayer &&
      previewLayer->isImage() ?
      static_cast<LayerImage*>(m_toolLoop->getLayer())->blendMode():
-     BlendMode::NEG_BW)); // To preview the selection ink we use the negative black & white blender
+     doc::BlendMode::NEG_BW)); // To preview the selection ink we use the negative black & white blender
 
   ASSERT(!m_toolLoopManager->isCanceled());
 

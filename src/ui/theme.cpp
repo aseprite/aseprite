@@ -757,9 +757,7 @@ void Theme::drawSlices(Graphics* g, os::Surface* sheet,
 {
   Paint paint;
   paint.color(color);
-  if (!drawCenter)
-    paint.setFlags(Paint::kNineWithoutCenter);
-  g->drawSurfaceNine(sheet, sprite, slices, rc, &paint);
+  g->drawSurfaceNine(sheet, sprite, slices, rc, drawCenter, &paint);
 }
 
 // static

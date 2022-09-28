@@ -83,6 +83,10 @@ On Arch:
 
     sudo pacman -S gcc clang libc++ cmake ninja libx11 libxcursor mesa-libgl fontconfig
 
+On SUSE:
+
+    sudo zypper install gcc-c++ clang libc++-devel libc++abi-devel cmake ninja libX11-devel libXcursor-devel libXi-devel Mesa-libGL-devel fontconfig-devel
+
 # Compiling
 
 1. [Get Aseprite code](#get-the-source-code), put it in a folder like

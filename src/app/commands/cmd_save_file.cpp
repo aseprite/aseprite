@@ -349,6 +349,7 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
   Doc* doc = context->activeDocument();
   std::string outputFilename = params().filename();
   std::string layers = kAllLayers;
+  int layersIndex = -1;
   std::string frames = kAllFrames;
   bool applyPixelRatio = false;
   double scale = params().scale();
@@ -422,6 +423,7 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
     win.savePref();
 
     layers = win.layersValue();
+    layersIndex = win.layersIndex();
     frames = win.framesValue();
     scale = win.resizeValue();
     params().slice(win.areaValue()); // Set slice
@@ -481,6 +483,7 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
       // Selected layers to export
       calculate_visible_layers(site,
                                layers,
+                               layersIndex,
                                layersVisibility);
 
       // m_selFrames is not empty if fromFrame/toFrame parameters are

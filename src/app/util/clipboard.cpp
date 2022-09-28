@@ -232,7 +232,7 @@ void Clipboard::setData(Image* image,
     }
     // Copy non-tilemap images to the native clipboard
     else {
-      color_t oldMask;
+      color_t oldMask = 0;
       if (image) {
         oldMask = image->maskColor();
         if (!image_source_is_transparent)

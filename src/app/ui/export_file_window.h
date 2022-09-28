@@ -30,6 +30,7 @@ namespace app {
     double resizeValue() const;
     std::string areaValue() const;
     std::string layersValue() const;
+    int layersIndex() const;
     std::string framesValue() const;
     doc::AniDir aniDirValue() const;
     bool applyPixelRatio() const;

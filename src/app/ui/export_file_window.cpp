@@ -53,7 +53,7 @@ ExportFileWindow::ExportFileWindow(const Doc* doc)
   // Default export configuration
   setResizeScale(m_docPref.saveCopy.resizeScale());
   fill_area_combobox(m_doc->sprite(), area(), m_docPref.saveCopy.area());
-  fill_layers_combobox(m_doc->sprite(), layers(), m_docPref.saveCopy.layer());
+  fill_layers_combobox(m_doc->sprite(), layers(), m_docPref.saveCopy.layer(), m_docPref.saveCopy.layerIndex());
   fill_frames_combobox(m_doc->sprite(), frames(), m_docPref.saveCopy.frameTag());
   fill_anidir_combobox(anidir(), m_docPref.saveCopy.aniDir());
   pixelRatio()->setSelected(m_docPref.saveCopy.applyPixelRatio());
@@ -100,6 +100,7 @@ void ExportFileWindow::savePref()
   m_docPref.saveCopy.resizeScale(resizeValue());
   m_docPref.saveCopy.area(areaValue());
   m_docPref.saveCopy.layer(layersValue());
+  m_docPref.saveCopy.layerIndex(layersIndex());
   m_docPref.saveCopy.aniDir(aniDirValue());
   m_docPref.saveCopy.frameTag(framesValue());
   m_docPref.saveCopy.applyPixelRatio(applyPixelRatio());
@@ -126,6 +127,12 @@ std::string ExportFileWindow::areaValue() const
 std::string ExportFileWindow::layersValue() const
 {
   return layers()->getValue();
+}
+
+int ExportFileWindow::layersIndex() const
+{
+  int i = layers()->getSelectedItemIndex() - kLayersComboboxExtraInitialItems;
+  return i < 0 ? -1 : i;
 }
 
 std::string ExportFileWindow::framesValue() const

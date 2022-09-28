@@ -128,12 +128,7 @@ public:
 
           // Opacity is set to 255 when InkType=Simple in ToolLoopBase()
           if (loop->getOpacity() == 255 &&
-              // The trace policy is "overlap" when the dynamics has
-              // a gradient between FG <-> BG
-              //
-              // TODO this trace policy is configured in
-              //      ToolLoopBase() ctor, is there a better place?
-              loop->getTracePolicy() != TracePolicy::Overlap) {
+              loop->getDynamics().gradient == DynamicSensor::Static) {
             color_t color = loop->getPrimaryColor();
 
             switch (loop->sprite()->pixelFormat()) {

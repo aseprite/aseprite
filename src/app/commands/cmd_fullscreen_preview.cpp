@@ -217,23 +217,23 @@ protected:
     switch (m_tiled) {
       case TiledMode::NONE:
         render.renderImage(m_doublebuf.get(), m_render.get(), m_pal, x, y,
-                           255, BlendMode::NORMAL);
+                           255, doc::BlendMode::NORMAL);
         break;
       case TiledMode::X_AXIS:
         for (u=x-w; u<displaySize.w+w; u+=w)
           render.renderImage(m_doublebuf.get(), m_render.get(), m_pal, u, y,
-                             255, BlendMode::NORMAL);
+                             255, doc::BlendMode::NORMAL);
         break;
       case TiledMode::Y_AXIS:
         for (v=y-h; v<displaySize.h+h; v+=h)
           render.renderImage(m_doublebuf.get(), m_render.get(), m_pal, x, v,
-                             255, BlendMode::NORMAL);
+                             255, doc::BlendMode::NORMAL);
         break;
       case TiledMode::BOTH:
         for (v=y-h; v<displaySize.h+h; v+=h)
           for (u=x-w; u<displaySize.w+w; u+=w)
             render.renderImage(m_doublebuf.get(), m_render.get(), m_pal, u, v,
-                               255, BlendMode::NORMAL);
+                               255, doc::BlendMode::NORMAL);
         break;
     }
 

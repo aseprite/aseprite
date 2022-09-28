@@ -160,6 +160,7 @@ Doc* generate_sprite_sheet_from_params(
   const SpriteSheetDataFormat dataFormat = params.dataFormat();
   const std::string filenameFormat = params.filenameFormat();
   const std::string layerName = params.layer();
+  const int layerIndex = params.layerIndex();
   const std::string tagName = params.tag();
   const int borderPadding = std::clamp(params.borderPadding(), 0, 100);
   const int shapePadding = std::clamp(params.shapePadding(), 0, 100);
@@ -192,13 +193,16 @@ Doc* generate_sprite_sheet_from_params(
   // If the user choose to render selected layers only, we can
   // temporaly make them visible and hide the other ones.
   RestoreVisibleLayers layersVisibility;
-  calculate_visible_layers(site, layerName, layersVisibility);
+  calculate_visible_layers(site, layerName, layerIndex, layersVisibility);
 
   SelectedLayers selLayers;
   if (layerName != kSelectedLayers) {
     // TODO add a getLayerByName
+    int i = sprite->allLayersCount();
     for (const Layer* layer : sprite->allLayers()) {
-      if (layer->name() == layerName) {
+      i--;
+      if (layer->name() == layerName && layerIndex == -1 ||
+          layer->name() == layerName && layerIndex == i) {
         selLayers.insert(const_cast<Layer*>(layer));
         break;
       }
@@ -376,7 +380,7 @@ public:
       source()->setSelectedItemIndex(int(kSource_Tilesets));
 
     fill_layers_combobox(
-      m_sprite, layers(), params.layer());
+      m_sprite, layers(), params.layer(), params.layerIndex());
 
     fill_frames_combobox(
       m_sprite, frames(), params.tag());
@@ -533,6 +537,7 @@ public:
     params.ignoreEmpty     (ignoreEmptyValue());
     params.openGenerated   (openGeneratedValue());
     params.layer           (layerValue());
+    params.layerIndex      (layerIndex());
     params.tag             (tagValue());
     params.splitLayers     (splitLayersValue());
     params.splitTags       (splitTagsValue());
@@ -718,6 +723,11 @@ private:
 
   std::string layerValue() const {
     return layers()->getValue();
+  }
+
+  int layerIndex() const {
+    int i = layers()->getSelectedItemIndex() - kLayersComboboxExtraInitialItems;
+    return i < 0 ? -1 : i;
   }
 
   std::string tagValue() const {
@@ -1234,6 +1244,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
       if (!params.ignoreEmpty.isSet())      params.ignoreEmpty(     defPref.spriteSheet.ignoreEmpty());
       if (!params.openGenerated.isSet())    params.openGenerated(   defPref.spriteSheet.openGenerated());
       if (!params.layer.isSet())            params.layer(           defPref.spriteSheet.layer());
+      if (!params.layerIndex.isSet())       params.layerIndex(      defPref.spriteSheet.layerIndex());
       if (!params.tag.isSet())              params.tag(             defPref.spriteSheet.frameTag());
       if (!params.splitLayers.isSet())      params.splitLayers(     defPref.spriteSheet.splitLayers());
       if (!params.splitTags.isSet())        params.splitTags(       defPref.spriteSheet.splitTags());
@@ -1281,6 +1292,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     docPref.spriteSheet.ignoreEmpty     (params.ignoreEmpty());
     docPref.spriteSheet.openGenerated   (params.openGenerated());
     docPref.spriteSheet.layer           (params.layer());
+    docPref.spriteSheet.layerIndex      (params.layerIndex());
     docPref.spriteSheet.frameTag        (params.tag());
     docPref.spriteSheet.splitLayers     (params.splitLayers());
     docPref.spriteSheet.splitTags       (params.splitTags());
