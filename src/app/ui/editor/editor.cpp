@@ -106,15 +106,12 @@ public:
     m_g->drawLine(color, a, b);
   }
 
-  void drawRectXor(const gfx::Rect& rc) override {
+  void drawRect(gfx::Color color, const gfx::Rect& rc) override {
     gfx::Rect rc2 = m_editor->editorToScreen(rc);
     gfx::Rect bounds = m_editor->bounds();
     rc2.x -= bounds.x;
     rc2.y -= bounds.y;
-
-    m_g->setDrawMode(Graphics::DrawMode::Xor);
-    m_g->drawRect(gfx::rgba(255, 255, 255), rc2);
-    m_g->setDrawMode(Graphics::DrawMode::Solid);
+    m_g->drawRect(color, rc2);
   }
 
   void fillRect(gfx::Color color, const gfx::Rect& rc) override {
@@ -981,12 +978,11 @@ void Editor::drawMask(Graphics* g)
   auto& segs = m_document->maskBoundaries();
   segs.createPathIfNeeeded();
 
-  CheckeredDrawMode checkered(g, m_antsOffset,
-                              gfx::rgba(0, 0, 0, 255),
-                              gfx::rgba(255, 255, 255, 255));
-  os::Paint paint;
-  paint.style(os::Paint::Stroke);
-  paint.color(gfx::rgba(0, 0, 0));
+  ui::Paint paint;
+  paint.style(ui::Paint::Stroke);
+  set_checkered_paint_mode(paint, m_antsOffset,
+                           gfx::rgba(0, 0, 0, 255),
+                           gfx::rgba(255, 255, 255, 255));
 
   // We translate the path instead of applying a matrix to the
   // ui::Graphics so the "checkered" pattern is not scaled too.
@@ -1247,12 +1243,14 @@ void Editor::drawCelHGuide(ui::Graphics* g,
 
   // Vertical guide to touch the horizontal line
   {
-    CheckeredDrawMode checkered(g, 0, color, gfx::ColorNone);
+    ui::Paint paint;
+    ui::set_checkered_paint_mode(paint, 0, color, gfx::ColorNone);
+    paint.color(color);
 
     if (scrY < scrCmpBounds.y)
-      g->drawVLine(color, dottedX, scrCelBounds.y, scrCmpBounds.y - scrCelBounds.y);
+      g->drawVLine(dottedX, scrCelBounds.y, scrCmpBounds.y - scrCelBounds.y, paint);
     else if (scrY > scrCmpBounds.y2())
-      g->drawVLine(color, dottedX, scrCmpBounds.y2(), scrCelBounds.y2() - scrCmpBounds.y2());
+      g->drawVLine(dottedX, scrCmpBounds.y2(), scrCelBounds.y2() - scrCmpBounds.y2(), paint);
   }
 
   auto text = base::convert_to<std::string>(ABS(sprX2 - sprX1)) + "px";
@@ -1273,12 +1271,14 @@ void Editor::drawCelVGuide(ui::Graphics* g,
 
   // Horizontal guide to touch the vertical line
   {
-    CheckeredDrawMode checkered(g, 0, color, gfx::ColorNone);
+    ui::Paint paint;
+    ui::set_checkered_paint_mode(paint, 0, color, gfx::ColorNone);
+    paint.color(color);
 
     if (scrX < scrCmpBounds.x)
-      g->drawHLine(color, scrCelBounds.x, dottedY, scrCmpBounds.x - scrCelBounds.x);
+      g->drawHLine(scrCelBounds.x, dottedY, scrCmpBounds.x - scrCelBounds.x, paint);
     else if (scrX > scrCmpBounds.x2())
-      g->drawHLine(color, scrCmpBounds.x2(), dottedY, scrCelBounds.x2() - scrCmpBounds.x2());
+      g->drawHLine(scrCmpBounds.x2(), dottedY, scrCelBounds.x2() - scrCmpBounds.x2(), paint);
   }
 
   auto text = base::convert_to<std::string>(ABS(sprY2 - sprY1)) + "px";
@@ -1324,7 +1324,7 @@ void Editor::flashCurrentLayer()
     ExtraCelRef extraCel(new ExtraCel);
     extraCel->create(m_sprite, src_cel->bounds(), m_frame, 255);
     extraCel->setType(render::ExtraType::COMPOSITE);
-    extraCel->setBlendMode(BlendMode::NEG_BW);
+    extraCel->setBlendMode(doc::BlendMode::NEG_BW);
 
     Image* flash_image = extraCel->image();
     clear_image(flash_image, flash_image->maskColor());

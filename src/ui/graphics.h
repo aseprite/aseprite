@@ -16,8 +16,8 @@
 #include "gfx/rect.h"
 #include "gfx/size.h"
 #include "os/font.h"
-#include "os/paint.h"
 #include "os/surface.h"
+#include "ui/paint.h"
 
 #include <memory>
 #include <string>
@@ -34,17 +34,10 @@ namespace os {
 }
 
 namespace ui {
-  using os::Paint;
 
   // Class to render a widget in the screen.
   class Graphics {
   public:
-    enum class DrawMode {
-      Solid,
-      Xor,
-      Checkered,
-    };
-
     Graphics(const os::SurfaceRef& surface, int dx, int dy);
     ~Graphics();
 
@@ -68,18 +61,17 @@ namespace ui {
     void restore();
     gfx::Matrix matrix() const;
 
-    void setDrawMode(DrawMode mode, int param = 0,
-                     const gfx::Color a = gfx::ColorNone,
-                     const gfx::Color b = gfx::ColorNone);
-
     gfx::Color getPixel(int x, int y);
     void putPixel(gfx::Color color, int x, int y);
 
+    void drawHLine(int x, int y, int w, const Paint& paint);
     void drawHLine(gfx::Color color, int x, int y, int w);
+    void drawVLine(int x, int y, int h, const Paint& paint);
     void drawVLine(gfx::Color color, int x, int y, int h);
     void drawLine(gfx::Color color, const gfx::Point& a, const gfx::Point& b);
     void drawPath(gfx::Path& path, const Paint& paint);
 
+    void drawRect(const gfx::Rect& rc, const Paint& paint);
     void drawRect(gfx::Color color, const gfx::Rect& rc);
     void fillRect(gfx::Color color, const gfx::Rect& rc);
     void fillRegion(gfx::Color color, const gfx::Region& rgn);
@@ -91,7 +83,7 @@ namespace ui {
                      const gfx::Rect& srcRect,
                      const gfx::Rect& dstRect,
                      const os::Sampling& sampling,
-                     const ui::Paint* paint);
+                     const Paint* paint);
     void drawRgbaSurface(os::Surface* surface, int x, int y);
     void drawRgbaSurface(os::Surface* surface, int srcx, int srcy, int dstx, int dsty, int w, int h);
     void drawColoredRgbaSurface(os::Surface* surface, gfx::Color color, int x, int y);
@@ -100,6 +92,7 @@ namespace ui {
                          const gfx::Rect& src,
                          const gfx::Rect& center,
                          const gfx::Rect& dst,
+                         const bool drawCenter,
                          const Paint* paint = nullptr);
 
     void blit(os::Surface* src, int srcx, int srcy, int dstx, int dsty, int w, int h);
@@ -189,24 +182,6 @@ namespace ui {
     bool m_notEmpty;
 
     DISABLE_COPYING(IntersectClip);
-  };
-
-  class CheckeredDrawMode {
-  public:
-    CheckeredDrawMode(Graphics* g, int param,
-                      const gfx::Color a,
-                      const gfx::Color b) : m_graphics(g) {
-      m_graphics->setDrawMode(Graphics::DrawMode::Checkered, param, a, b);
-    }
-
-    ~CheckeredDrawMode() {
-      m_graphics->setDrawMode(Graphics::DrawMode::Solid);
-    }
-
-  private:
-    Graphics* m_graphics;
-
-    DISABLE_COPYING(CheckeredDrawMode);
   };
 
   typedef std::shared_ptr<Graphics> GraphicsPtr;

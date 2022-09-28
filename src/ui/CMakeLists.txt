@@ -34,6 +34,7 @@ add_library(ui-lib
   move_region.cpp
   overlay.cpp
   overlay_manager.cpp
+  paint.cpp
   paint_event.cpp
   panel.cpp
   popup_window.cpp

@@ -139,7 +139,7 @@ private:
     return name()->text();
   }
 
-  BlendMode blendModeValue() const {
+  doc::BlendMode blendModeValue() const {
     BlendModeItem* item = dynamic_cast<BlendModeItem*>(mode()->getSelectedItem());
     if (item)
       return item->mode();
@@ -212,7 +212,7 @@ private:
 
     std::string newName = nameValue();
     int newOpacity = opacityValue();
-    BlendMode newBlendMode = blendModeValue();
+    doc::BlendMode newBlendMode = blendModeValue();
 
     if ((count > 1) ||
         (count == 1 && m_layer && (newName != m_layer->name() ||

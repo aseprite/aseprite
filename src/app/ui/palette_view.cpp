@@ -627,10 +627,12 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
 
         IntersectClip clip(g, clipR);
         if (clip) {
-          CheckeredDrawMode checkered(g, getMarchingAntsOffset(),
-                                      gfx::rgba(0, 0, 0, 255),
-                                      gfx::rgba(255, 255, 255, 255));
-          g->drawRect(gfx::rgba(0, 0, 0), box);
+          ui::Paint paint;
+          paint.style(ui::Paint::Stroke);
+          ui::set_checkered_paint_mode(paint, getMarchingAntsOffset(),
+                                       gfx::rgba(0, 0, 0, 255),
+                                       gfx::rgba(255, 255, 255, 255));
+          g->drawRect(box, paint);
         }
       }
     }

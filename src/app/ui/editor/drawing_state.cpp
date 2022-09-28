@@ -101,7 +101,7 @@ void DrawingState::initToolLoop(Editor* editor,
     (m_toolLoop->getLayer() &&
      m_toolLoop->getLayer()->isImage() ?
      static_cast<LayerImage*>(m_toolLoop->getLayer())->blendMode():
-     BlendMode::NEG_BW));
+     doc::BlendMode::NEG_BW));
 
   ASSERT(!m_toolLoopManager->isCanceled());
 

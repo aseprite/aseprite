@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -37,7 +38,7 @@ namespace app {
     virtual ~EditorPostRender() { }
     virtual Editor* getEditor() = 0;
     virtual void drawLine(gfx::Color color, int x1, int y1, int x2, int y2) = 0;
-    virtual void drawRectXor(const gfx::Rect& rc) = 0;
+    virtual void drawRect(gfx::Color color, const gfx::Rect& rc) = 0;
     virtual void fillRect(gfx::Color color, const gfx::Rect& rc) = 0;
   };
 
