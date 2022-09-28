@@ -22,7 +22,9 @@ namespace tools {
 class BaseInk : public Ink {
 public:
   BaseInk() { }
-  BaseInk(const BaseInk& other) { }
+  BaseInk(const BaseInk& other) {
+    m_forcedCopyInk = other.wasForcedCopyInk();
+  }
 
   void inkHline(int x1, int y, int x2, ToolLoop* loop) override {
     ASSERT(m_proc);
@@ -49,6 +51,9 @@ public:
     m_proc->prepareUForPointShapeSlicedScanline(loop, leftSlice, x1);
   }
 
+  bool wasForcedCopyInk() const override { return m_forcedCopyInk; }
+  void setForcedCopyInk(const bool value) override { m_forcedCopyInk = value; }
+
 protected:
   void setProc(BaseInkProcessing* proc) {
     m_proc.reset(proc);
@@ -60,6 +65,7 @@ protected:
 
 private:
   InkProcessingPtr m_proc;
+  bool m_forcedCopyInk = false;
 };
 
 // Ink used for tools which paint with primary/secondary
@@ -113,59 +119,110 @@ public:
       }
     }
     else {
-      switch (m_type) {
-        case Simple:
-        case AlphaCompositing: {
-          bool opaque = false;
-
-          // Opacity is set to 255 when InkType=Simple in ToolLoopBase()
-          if (loop->getOpacity() == 255 &&
-              // The trace policy is "overlap" when the dynamics has
-              // a gradient between FG <-> BG
-              //
-              // TODO this trace policy is configured in
-              //      ToolLoopBase() ctor, is there a better place?
-              loop->getTracePolicy() != TracePolicy::Overlap) {
-            color_t color = loop->getPrimaryColor();
-
-            switch (loop->sprite()->pixelFormat()) {
-              case IMAGE_RGB:
-                opaque = (rgba_geta(color) == 255);
-                break;
-              case IMAGE_GRAYSCALE:
-                opaque = (graya_geta(color) == 255);
-                break;
-              case IMAGE_INDEXED:
-                // Simple ink for indexed is better to use always
-                // opaque if opacity == 255.
-                if (m_type == Simple)
-                  opaque = true;
-                else if (color == loop->sprite()->transparentColor())
-                  opaque = false;
-                else {
-                  color = loop->getPalette()->getEntry(color);
-                  opaque = (rgba_geta(color) == 255);
-                }
-                break;
+      // When Dynamics + Gradient + Simple Ink (modified to 'Copy' because
+      // alpha(fg) == 0) is a special case that will be arranged to proceed as follows:
+      // - alpha(fg) == alpha(bg) == 0   -->  Copy Ink
+      // - alpha(fg) == alpha(bg) == 255 -->  Copy Ink
+      // - Otherwise  -->  Transparent Ink
+      if (loop->getDynamics().gradient != DynamicSensor::Static) {
+        switch (m_type) {
+          case Copy: {
+            if (wasForcedCopyInk()) {
+              bool copyInk = false;
+              color_t fgColor = loop->getPrimaryColor();
+              color_t bgColor = loop->getSecondaryColor();
+              switch (loop->sprite()->pixelFormat()) {
+                case IMAGE_RGB:
+                  copyInk = (rgba_geta(fgColor) == 0 && rgba_geta(bgColor) == 0) ||
+                            (rgba_geta(fgColor) == 255 && rgba_geta(bgColor) == 255);
+                  break;
+                case IMAGE_GRAYSCALE:
+                  copyInk = (graya_geta(fgColor) == 0 && graya_geta(bgColor) == 0) ||
+                            (graya_geta(fgColor) == 255 && graya_geta(bgColor) == 255);
+                  break;
+                case IMAGE_INDEXED:
+                  int transparentColor = loop->sprite()->transparentColor();
+                  copyInk = (fgColor == transparentColor && bgColor == transparentColor) ||
+                            (rgba_geta(loop->getPalette()->getEntry(fgColor)) == 255 &&
+                              rgba_geta(loop->getPalette()->getEntry(bgColor)) == 255);
+                  break;
+              }
+              if (copyInk)
+                setProc(get_ink_proc<CopyInkProcessing>(loop));
+              else
+                setProc(get_ink_proc<TransparentInkProcessing>(loop));
             }
+            else
+              setProc(get_ink_proc<CopyInkProcessing>(loop));
+            break;
           }
-
-          // Use a faster ink, direct copy
-          if (opaque)
-            setProc(get_ink_proc<CopyInkProcessing>(loop));
-          else
-            setProc(get_ink_proc<TransparentInkProcessing>(loop));
-          break;
+          case LockAlpha:
+            setProc(get_ink_proc<LockAlphaInkProcessing>(loop));
+            break;
+          default: // Simple or AlphaCompositing
+            bool copyInk = false;
+            if (loop->sprite()->pixelFormat() == IMAGE_INDEXED && m_type == Simple) {
+              int transparentColor = loop->sprite()->transparentColor();
+              copyInk = loop->getPrimaryColor() == transparentColor &&
+                        loop->getSecondaryColor() == transparentColor;
+            }
+            if (copyInk)
+              setProc(get_ink_proc<CopyInkProcessing>(loop));
+            else
+              setProc(get_ink_proc<TransparentInkProcessing>(loop));
+            break;
         }
-        case Copy:
-          setProc(get_ink_proc<CopyInkProcessing>(loop));
-          break;
-        case LockAlpha:
-          setProc(get_ink_proc<LockAlphaInkProcessing>(loop));
-          break;
-        default:
-          setProc(get_ink_proc<TransparentInkProcessing>(loop));
-          break;
+      }
+      else {
+        // Inks without gradient dynamics
+        switch (m_type) {
+          case Simple:
+          case AlphaCompositing: {
+            bool opaque = false;
+
+            // Opacity is set to 255 when InkType=Simple in ToolLoopBase()
+            if (loop->getOpacity() == 255) {
+              color_t color = loop->getPrimaryColor();
+
+              switch (loop->sprite()->pixelFormat()) {
+                case IMAGE_RGB:
+                  opaque = (rgba_geta(color) == 255);
+                  break;
+                case IMAGE_GRAYSCALE:
+                  opaque = (graya_geta(color) == 255);
+                  break;
+                case IMAGE_INDEXED:
+                  // Simple ink for indexed is better to use always
+                  // opaque if opacity == 255.
+                  if (m_type == Simple)
+                    opaque = true;
+                  else if (color == loop->sprite()->transparentColor())
+                    opaque = false;
+                  else {
+                    color = loop->getPalette()->getEntry(color);
+                    opaque = (rgba_geta(color) == 255);
+                  }
+                  break;
+              }
+            }
+
+            // Use a faster ink, direct copy
+            if (opaque)
+              setProc(get_ink_proc<CopyInkProcessing>(loop));
+            else
+              setProc(get_ink_proc<TransparentInkProcessing>(loop));
+            break;
+          }
+          case Copy:
+            setProc(get_ink_proc<CopyInkProcessing>(loop));
+            break;
+          case LockAlpha:
+            setProc(get_ink_proc<LockAlphaInkProcessing>(loop));
+            break;
+          default:
+            setProc(get_ink_proc<TransparentInkProcessing>(loop));
+            break;
+        }
       }
     }
   }
@@ -232,6 +289,10 @@ public:
     // Do nothing
   }
 
+  void setForcedCopyInk(const bool value) override {
+    // Do nothing
+  }
+
 };
 
 
@@ -242,6 +303,7 @@ public:
   bool isZoom() const override { return true; }
   void prepareInk(ToolLoop* loop) override { }
   void inkHline(int x1, int y, int x2, ToolLoop* loop) override { }
+  void setForcedCopyInk(const bool value) override { }
 };
 
 
@@ -256,6 +318,7 @@ public:
   bool isAutoSelectLayer() const override { return m_autoSelect; }
   void prepareInk(ToolLoop* loop) override { }
   void inkHline(int x1, int y, int x2, ToolLoop* loop) override { }
+  void setForcedCopyInk(const bool value) override { }
 };
 
 
@@ -266,6 +329,7 @@ public:
   bool isCelMovement() const override { return true; }
   void prepareInk(ToolLoop* loop) override { }
   void inkHline(int x1, int y, int x2, ToolLoop* loop) override { }
+  void setForcedCopyInk(const bool value) override { }
 };
 
 

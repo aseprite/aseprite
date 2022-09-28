@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2022  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -26,6 +27,7 @@ namespace app {
       bool isEyedropper() const override;
       void prepareInk(ToolLoop* loop) override;
       void inkHline(int x1, int y, int x2, ToolLoop* loop) override;
+      void setForcedCopyInk(const bool value) override { }
 
     private:
       Target m_target;

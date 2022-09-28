@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -106,6 +106,14 @@ namespace app {
       virtual void prepareUForPointShapeWholeScanline(ToolLoop* loop, int x1) { }
       virtual void prepareUForPointShapeSlicedScanline(ToolLoop* loop, bool leftSlice, int x1) { }
 
+      // Called when we have to identify if 'Simple Ink' became 'Copy Ink' because of
+      // alpha == 0 of the foreground color in external functions. Used in function
+      // 'prepareInk()' in 'inks.h'
+      virtual bool wasForcedCopyInk() const { return false; }
+      // Called to mark when 'Simple Ink' became 'Copy Ink' due of
+      // alpha == 0 of the foreground color. Used in function
+      // 'adjustToolInkDependingOnSelectedInkType()' in 'active_tool.cpp'
+      virtual void setForcedCopyInk(const bool value) = 0;
     };
 
   } // namespace tools

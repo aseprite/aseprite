@@ -272,15 +272,19 @@ public:
     m_rgbmap(loop->getRgbMap()),
     m_opacity(loop->getOpacity()),
     m_maskIndex(loop->getLayer()->isBackground() ? -1: loop->sprite()->transparentColor()),
-    m_colorIndex(loop->getFgColor()) {
+    m_colorIndex(loop->getFgColor()),
+    m_dynamicGradient(loop->getDynamics().gradient != DynamicSensor::Static) {
   }
 
   void prepareForPointShape(ToolLoop* loop, bool firstPoint, int x, int y) override {
-    m_color = m_palette->getEntry(loop->getPrimaryColor());
+    if (loop->getPrimaryColor() == m_maskIndex)
+      m_color = 0;
+    else
+      m_color = m_palette->getEntry(loop->getPrimaryColor());
   }
 
   void processPixel(int x, int y) {
-    if (m_colorIndex == m_maskIndex)
+    if (m_colorIndex == m_maskIndex && !m_dynamicGradient)
       return;
 
     color_t c = *m_srcAddress;
@@ -303,6 +307,7 @@ private:
   color_t m_color;
   const int m_maskIndex;
   int m_colorIndex;
+  const bool m_dynamicGradient;
 };
 
 //////////////////////////////////////////////////////////////////////

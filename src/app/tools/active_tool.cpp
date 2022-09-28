@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2016  David Capello
 //
 // This program is distributed under the terms of
@@ -95,13 +95,16 @@ Ink* ActiveToolManager::adjustToolInkDependingOnSelectedInkType(
   const InkType inkType,
   const app::Color& color) const
 {
+  bool simpleTurnsCopyColor = false;
   if (ink->isPaint() && !ink->isEffect()) {
     const char* id = nullptr;
     switch (inkType) {
       case tools::InkType::SIMPLE:
         id = tools::WellKnownInks::Paint;
-        if (color.getAlpha() == 0)
+        if (color.getAlpha() == 0) {
           id = tools::WellKnownInks::PaintCopy;
+          simpleTurnsCopyColor = true;
+        }
         break;
       case tools::InkType::ALPHA_COMPOSITING:
         id = tools::WellKnownInks::PaintAlphaCompositing;
@@ -116,8 +119,10 @@ Ink* ActiveToolManager::adjustToolInkDependingOnSelectedInkType(
         id = tools::WellKnownInks::Shading;
         break;
     }
-    if (id)
+    if (id) {
       ink = m_toolbox->getInkById(id);
+      ink->setForcedCopyInk(simpleTurnsCopyColor);
+    }
   }
   return ink;
 }
