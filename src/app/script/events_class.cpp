@@ -18,11 +18,14 @@
 #include "app/script/docobj.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
+#include "app/script/values.h"
 #include "doc/document.h"
 #include "doc/sprite.h"
 #include "ui/app_state.h"
 
+#include <any>
 #include <cstring>
+#include <initializer_list>
 #include <map>
 #include <memory>
 
@@ -92,7 +95,8 @@ public:
   }
 
 protected:
-  void call(EventType eventType) {
+  void call(EventType eventType,
+            const std::initializer_list<std::pair<const std::string, std::any>>& args = {}) {
     if (eventType >= m_listeners.size())
       return;
 
@@ -101,8 +105,20 @@ protected:
 
     try {
       for (EventListener callbackRef : m_listeners[eventType]) {
+        // Get user-defined callback function
         lua_rawgeti(L, LUA_REGISTRYINDEX, callbackRef);
-        if (lua_pcall(L, 0, 0, 0)) {
+
+        int callbackArgs = 0;
+        if (args.size() > 0) {
+          ++callbackArgs;
+          lua_newtable(L);       // Create "ev" argument with fields about the event
+          for (const auto& kv : args) {
+            push_value_to_lua(L, kv.second);
+            lua_setfield(L, -2, kv.first.c_str());
+          }
+        }
+
+        if (lua_pcall(L, callbackArgs, 0, 0)) {
           if (const char* s = lua_tostring(L, -1))
             engine->consolePrint(s);
         }
@@ -233,11 +249,17 @@ public:
     }
   }
 
-  void onFileNameChanged(Doc* doc) override { call(FilenameChange); }
+  void onFileNameChanged(Doc* doc) override {
+    call(FilenameChange);
+  }
 
   // DocUndoObserver impl
-  void onAddUndoState(DocUndo* history) override { call(Change);  }
-  void onCurrentUndoStateChange(DocUndo* history) override { call(Change); }
+  void onAddUndoState(DocUndo* history) override {
+    call(Change);
+  }
+  void onCurrentUndoStateChange(DocUndo* history) override {
+    call(Change, { { "fromUndo", true } });
+  }
 
 private:
 
