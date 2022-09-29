@@ -100,32 +100,36 @@ bool DocUndo::canRedo() const
 
 void DocUndo::undo()
 {
-  const undo::UndoState* state = nextUndo();
-  ASSERT(state);
-  const Cmd* cmd = STATE_CMD(state);
-  size_t oldSize = m_totalUndoSize;
-  m_totalUndoSize -= cmd->memSize();
+  const size_t oldSize = m_totalUndoSize;
   {
+    const undo::UndoState* state = nextUndo();
+    ASSERT(state);
+    const Cmd* cmd = STATE_CMD(state);
+    m_totalUndoSize -= cmd->memSize();
     m_undoHistory.undo();
-    notify_observers(&DocUndoObserver::onCurrentUndoStateChange, this);
+    m_totalUndoSize += cmd->memSize();
   }
-  m_totalUndoSize += cmd->memSize();
+  // This notification could execute a script that modifies the sprite
+  // again (e.g. a script that is listening the "change" event, check
+  // the SpriteEvents class). If the sprite is modified, the "cmd" is
+  // not valid anymore.
+  notify_observers(&DocUndoObserver::onCurrentUndoStateChange, this);
   if (m_totalUndoSize != oldSize)
     notify_observers(&DocUndoObserver::onTotalUndoSizeChange, this);
 }
 
 void DocUndo::redo()
 {
-  const undo::UndoState* state = nextRedo();
-  ASSERT(state);
-  const Cmd* cmd = STATE_CMD(state);
-  size_t oldSize = m_totalUndoSize;
-  m_totalUndoSize -= cmd->memSize();
+  const size_t oldSize = m_totalUndoSize;
   {
+    const undo::UndoState* state = nextRedo();
+    ASSERT(state);
+    const Cmd* cmd = STATE_CMD(state);
+    m_totalUndoSize -= cmd->memSize();
     m_undoHistory.redo();
-    notify_observers(&DocUndoObserver::onCurrentUndoStateChange, this);
+    m_totalUndoSize += cmd->memSize();
   }
-  m_totalUndoSize += cmd->memSize();
+  notify_observers(&DocUndoObserver::onCurrentUndoStateChange, this);
   if (m_totalUndoSize != oldSize)
     notify_observers(&DocUndoObserver::onTotalUndoSizeChange, this);
 }
@@ -222,6 +226,10 @@ Cmd* DocUndo::lastExecutedCmd() const
 void DocUndo::moveToState(const undo::UndoState* state)
 {
   m_undoHistory.moveTo(state);
+
+  // After onCurrentUndoStateChange don't use the "state" argument, it
+  // might be deleted because some script might have modified the
+  // sprite on its "change" event.
   notify_observers(&DocUndoObserver::onCurrentUndoStateChange, this);
 
   // Recalculate the total undo size

@@ -117,20 +117,39 @@ public:
         color_t b = m_primaryColor;
         const float t = pt.gradient;
         const float ti = 1.0f - pt.gradient;
+
+        auto rgbaGradient = [t, ti](color_t a, color_t b) -> color_t {
+          if (rgba_geta(a) == 0)
+            return doc::rgba(rgba_getr(b),
+                             rgba_getg(b),
+                             rgba_getb(b),
+                             int(t*rgba_geta(b)));
+          else if (rgba_geta(b) == 0)
+            return doc::rgba(rgba_getr(a),
+                             rgba_getg(a),
+                             rgba_getb(a),
+                             int(ti*rgba_geta(a)));
+          else
+            return doc::rgba(int(ti*rgba_getr(a) + t*rgba_getr(b)),
+                             int(ti*rgba_getg(a) + t*rgba_getg(b)),
+                             int(ti*rgba_getb(a) + t*rgba_getb(b)),
+                             int(ti*rgba_geta(a) + t*rgba_geta(b)));
+        };
+
         switch (loop->sprite()->pixelFormat()) {
           case IMAGE_RGB:
-            if (rgba_geta(a) == 0) a = b;
-            else if (rgba_geta(b) == 0) b = a;
-            a = doc::rgba(int(ti*rgba_getr(a) + t*rgba_getr(b)),
-                          int(ti*rgba_getg(a) + t*rgba_getg(b)),
-                          int(ti*rgba_getb(a) + t*rgba_getb(b)),
-                          int(ti*rgba_geta(a) + t*rgba_geta(b)));
+            a = rgbaGradient(a, b);
             break;
           case IMAGE_GRAYSCALE:
-            if (graya_geta(a) == 0) a = b;
-            else if (graya_geta(b) == 0) b = a;
-            a = doc::graya(int(ti*graya_getv(a) + t*graya_getv(b)),
-                           int(ti*graya_geta(a) + t*graya_geta(b)));
+            if (graya_geta(a) == 0)
+              a = doc::graya(graya_getv(b),
+                             int(t*graya_geta(b)));
+            else if (graya_geta(b) == 0)
+              a = doc::graya(graya_getv(a),
+                             int(ti*graya_geta(a)));
+            else
+              a = doc::graya(int(ti*graya_getv(a) + t*graya_getv(b)),
+                             int(ti*graya_geta(a) + t*graya_geta(b)));
             break;
           case IMAGE_INDEXED: {
             int maskIndex = (loop->getLayer()->isBackground() ? -1: loop->sprite()->transparentColor());
@@ -140,12 +159,7 @@ public:
             if (b == maskIndex) b = 0;
             else b = loop->getPalette()->getEntry(b);
             // Same as in RGBA gradient
-            if (rgba_geta(a) == 0) a = b;
-            else if (rgba_geta(b) == 0) b = a;
-            a = doc::rgba(int(ti*rgba_getr(a) + t*rgba_getr(b)),
-                          int(ti*rgba_getg(a) + t*rgba_getg(b)),
-                          int(ti*rgba_getb(a) + t*rgba_getb(b)),
-                          int(ti*rgba_geta(a) + t*rgba_geta(b)));
+            a = rgbaGradient(a, b);
             // Convert RGBA to index
             a = loop->getRgbMap()->mapColor(rgba_getr(a),
                                             rgba_getg(a),

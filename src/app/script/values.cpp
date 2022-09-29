@@ -14,6 +14,8 @@
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
 
+#include <any>
+
 namespace app {
 namespace script {
 
@@ -72,6 +74,25 @@ std::string get_value_from_lua(lua_State* L, int index) {
     return std::string(v);
   else
     return std::string();
+}
+
+// ----------------------------------------------------------------------
+// std::any
+
+template<>
+void push_value_to_lua(lua_State* L, const std::any& value) {
+  if (!value.has_value())
+    lua_pushnil(L);
+  else if (const bool* v = std::any_cast<bool>(&value))
+    push_value_to_lua(L, *v);
+  else if (const int* v = std::any_cast<int>(&value))
+    push_value_to_lua(L, *v);
+  else if (const std::string* v = std::any_cast<std::string>(&value))
+    push_value_to_lua(L, *v);
+  else {
+    ASSERT(false);
+    throw std::runtime_error("Cannot convert type inside std::any");
+  }
 }
 
 // ----------------------------------------------------------------------
