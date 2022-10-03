@@ -2033,11 +2033,23 @@ void Timeline::drawHeaderFrame(ui::Graphics* g, frame_t frame)
     return;
 
   // Draw the header for the layers.
-  const int n = (docPref().timeline.firstFrame()+frame);
-  std::string text = base::convert_to<std::string, int>(n % 100);
-  if (n >= 100 && (n % 100) < 10)
-    text.insert(0, 1, '0');
+  const int n = (docPref().timeline.firstFrame() + frame);
 
+  std::string text;
+
+  if (m_zoom < 1.4) {
+    // truncates frame numbers > 100 to their modulus 100 if the zoom is too small
+    text = base::convert_to<std::string, int>(n % 100);
+
+    // adds a 0 in front of truncated numbers that would result in a single digit
+    // to differentiate between truncated and non-truncated
+    if (n >= 100 && (n % 100) < 10)
+      text.insert(0, 1, '0');
+  } else {
+    // keeps original frame numbers if zoom is sufficient
+    text = base::convert_to<std::string, int>(n);
+  }
+  
   drawPart(g, bounds, &text,
            skinTheme()->styles.timelineHeaderFrame(),
            is_active, is_hover, is_clicked);
