@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -17,8 +18,7 @@ namespace app {
 
 void set_pivot_from_preferences(Transformation& t)
 {
-  Transformation::Corners corners;
-  t.transformBox(corners);
+  auto corners = t.transformedCorners();
   gfx::PointT<double> nw(corners[Transformation::Corners::LEFT_TOP]);
   gfx::PointT<double> ne(corners[Transformation::Corners::RIGHT_TOP]);
   gfx::PointT<double> sw(corners[Transformation::Corners::LEFT_BOTTOM]);

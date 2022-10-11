@@ -12,7 +12,10 @@
 #include "app/cmd/with_sprite.h"
 #include "app/cmd_sequence.h"
 #include "doc/color.h"
+#include "doc/frame.h"
+#include "doc/image_ref.h"
 #include "doc/pixel_format.h"
+#include "doc/rgbmap_algorithm.h"
 
 namespace doc {
   class Sprite;
@@ -32,6 +35,7 @@ namespace cmd {
     SetPixelFormat(doc::Sprite* sprite,
                    const doc::PixelFormat newFormat,
                    const render::Dithering& dithering,
+                   const doc::RgbMapAlgorithm mapAlgorithm,
                    doc::rgba_to_graya_func toGray,
                    render::TaskDelegate* delegate);
 
@@ -45,6 +49,14 @@ namespace cmd {
 
   private:
     void setFormat(doc::PixelFormat format);
+    void convertImage(doc::Sprite* sprite,
+                      const render::Dithering& dithering,
+                      const doc::ImageRef& oldImage,
+                      const doc::frame_t frame,
+                      const bool isBackground,
+                      const doc::RgbMapAlgorithm mapAlgorithm,
+                      doc::rgba_to_graya_func toGray,
+                      render::TaskDelegate* delegate);
 
     doc::PixelFormat m_oldFormat;
     doc::PixelFormat m_newFormat;

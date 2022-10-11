@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <theme name="Default" screenscaling="2" uiscaling="1">
     <authors>
-        <author name="David Capello" url="http://davidcapello.com/" />
-        <author name="Ilija Melentijevic" url="http://ilkke.blogspot.com/" />
+        <author name="David Capello" url="https://davidcapello.com/" />
+        <author name="Ilija Melentijevic" url="https://ilkke.net/" />
     </authors>
     <fonts>
         <font id="default" font="Aseprite" />
@@ -428,6 +428,18 @@
         <part id="outline_empty_pixel" x="208" y="224" w="5" h="5" />
         <part id="outline_full_pixel" x="214" y="224" w="5" h="5" />
         <part id="dynamics" x="176" y="144" w="16" h="16" />
+        <part id="tiles" x="144" y="208" w="6" h="6" />
+        <part id="tiles_manual" x="150" y="208" w="6" h="6" />
+        <part id="tiles_auto" x="156" y="208" w="6" h="6" />
+        <part id="tiles_stack" x="162" y="208" w="6" h="6" />
+        <part id="cursor_skew_n" x="272" y="192" w="16" h="16" focusx="8" focusy="8" />
+        <part id="cursor_skew_s" x="288" y="192" w="16" h="16" focusx="8" focusy="8" />
+        <part id="cursor_skew_sw" x="272" y="208" w="16" h="16" focusx="8" focusy="8" />
+        <part id="cursor_skew_se" x="288" y="208" w="16" h="16" focusx="8" focusy="8" />
+        <part id="cursor_skew_w" x="272" y="176" w="16" h="16" focusx="8" focusy="8" />
+        <part id="cursor_skew_e" x="288" y="176" w="16" h="16" focusx="8" focusy="8" />
+        <part id="cursor_skew_nw" x="272" y="160" w="16" h="16" focusx="8" focusy="8" />
+        <part id="cursor_skew_ne" x="288" y="160" w="16" h="16" focusx="8" focusy="8" />
     </parts>
     <styles>
         <style id="box" />
@@ -495,9 +507,6 @@
         </style>
         <style id="tooltip_window_arrow">
             <background part="tooltip_arrow" />
-        </style>
-        <style id="tooltip_face">
-            <background color="tooltip_face" />
         </style>
         <style id="tooltip_text">
             <background color="tooltip_face" />
@@ -862,6 +871,11 @@
             <background-border part="timeline_none" state="focus mouse" />
             <background-border part="timeline_none" state="selected" />
         </style>
+        <style id="timeline_tilemap_layer">
+            <icon part="tiles" color="timeline_normal_text" align="left middle" x="4" />
+            <icon part="tiles" color="timeline_active_text" align="left middle" x="4" state="focus" />
+            <icon part="tiles" color="timeline_clicked_text" align="left middle" x="4" state="selected" />
+        </style>
         <style id="timeline_header_frame" extends="timeline_box" font="mini">
             <text color="timeline_normal_text" />
             <text color="timeline_hover_text" state="mouse" />
@@ -979,15 +993,15 @@
             <icon part="aseprite_face_pushed" state="mouse selected" />
         </style>
         <style id="slider" border-top="4" border-bottom="5">
-          <background part="slider_empty" />
-          <background part="slider_empty_focused" state="focus" />
-          <text color="slider_empty_text" align="center middle" />
-          <text color="slider_empty_text" align="center middle" state="focus" y="1" />
+            <background part="slider_empty" />
+            <background part="slider_empty_focused" state="focus" />
+            <text color="slider_empty_text" align="center middle" />
+            <text color="slider_empty_text" align="center middle" state="focus" y="1" />
         </style>
         <style id="mini_slider" extends="slider" font="mini" padding-top="1" padding-bottom="3">
-          <background part="mini_slider_empty" />
-          <text color="slider_empty_text" align="center middle" />
-          <text color="slider_empty_text" align="center middle" state="focus" />
+            <background part="mini_slider_empty" />
+            <text color="slider_empty_text" align="center middle" />
+            <text color="slider_empty_text" align="center middle" state="focus" />
         </style>
     </styles>
 </theme>

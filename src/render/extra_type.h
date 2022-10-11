@@ -1,5 +1,6 @@
 // Aseprite Render Library
-// Copyright (c) 2001-2015 David Capello
+// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2001-2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -20,6 +21,10 @@ namespace render {
     // The extra cel indicates an extra composition for the current
     // layer/frame.
     COMPOSITE,
+
+    // Composite the current cel two times (don't use the extral cel),
+    // but the second time using the extral blend mode.
+    OVER_COMPOSITE,
   };
 
 } // namespace render

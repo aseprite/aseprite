@@ -41,6 +41,7 @@ namespace app {
     void setActiveFrameInDoc(Doc* doc, doc::frame_t frame);
     void setRangeInDoc(Doc* doc, const DocRange& range);
     void setSelectedColorsInDoc(Doc* doc, const doc::PalettePicks& picks);
+    void setSelectedTilesInDoc(Doc* doc, const doc::PalettePicks& picks);
 
   private:
     // DocObserver impl
@@ -55,6 +56,7 @@ namespace app {
       doc::frame_t frame;
       DocRange range;
       doc::PalettePicks selectedColors;
+      doc::PalettePicks selectedTiles;
     };
 
     Data& getData(Doc* doc);

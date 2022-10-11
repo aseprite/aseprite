@@ -150,6 +150,8 @@ app::Color Color_new(lua_State* L, int index)
   else if (!lua_isnone(L, index)) {
     if (lua_isinteger(L, index) && (index < 0 || lua_isnone(L, index+1))) {
       doc::color_t docColor = lua_tointeger(L, index);
+
+      // TODO depending on current pixel format?
       switch (app_get_current_pixel_format()) {
         case IMAGE_RGB:
           color = app::Color::fromRgb(doc::rgba_getr(docColor),

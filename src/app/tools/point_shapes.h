@@ -42,6 +42,25 @@ public:
   }
 };
 
+class TilePointShape : public PointShape {
+public:
+  bool isPixel() override { return true; }
+  bool isTile() override { return true; }
+
+  void transformPoint(ToolLoop* loop, const Stroke::Pt& pt) override {
+    const doc::Grid& grid = loop->getGrid();
+    gfx::Point newPos = grid.canvasToTile(pt.toPoint());
+
+    loop->getInk()->prepareForPointShape(loop, true, newPos.x, newPos.y);
+    doInkHline(newPos.x, newPos.y, newPos.x, loop);
+  }
+
+  void getModifiedArea(ToolLoop* loop, int x, int y, Rect& area) override {
+    const doc::Grid& grid = loop->getGrid();
+    area = grid.alignBounds(Rect(x, y, 1, 1));
+  }
+};
+
 class BrushPointShape : public PointShape {
   bool m_firstPoint;
   Brush* m_lastBrush;
@@ -287,10 +306,18 @@ public:
 
   void transformPoint(ToolLoop* loop, const Stroke::Pt& pt) override {
     const doc::Image* srcImage = loop->getFloodFillSrcImage();
-    gfx::Point wpt = wrap_point(loop->getTiledMode(),
-                                gfx::Size(srcImage->width(),
-                                          srcImage->height()),
-                                pt.toPoint(), true);
+    const bool tilesMode = (srcImage->pixelFormat() == IMAGE_TILEMAP);
+    gfx::Point wpt = pt.toPoint();
+    if (tilesMode) { // Tiles mode
+      const doc::Grid& grid = loop->getGrid();
+      wpt = grid.canvasToTile(wpt);
+    }
+    else {
+      wpt = wrap_point(loop->getTiledMode(),
+                       gfx::Size(srcImage->width(),
+                                 srcImage->height()),
+                       wpt, true);
+    }
 
     loop->getInk()->prepareForPointShape(loop, true, wpt.x, wpt.y);
 
@@ -298,7 +325,8 @@ public:
       srcImage,
       (loop->useMask() ? loop->getMask(): nullptr),
       wpt.x, wpt.y,
-      floodfillBounds(loop, wpt.x, wpt.y),
+      (tilesMode ? srcImage->bounds():
+                   floodfillBounds(loop, wpt.x, wpt.y)),
       get_pixel(srcImage, wpt.x, wpt.y),
       loop->getTolerance(),
       loop->getContiguous(),
@@ -312,11 +340,16 @@ public:
 
 private:
   gfx::Rect floodfillBounds(ToolLoop* loop, int x, int y) const {
+    const doc::Image* srcImage = loop->getFloodFillSrcImage();
     gfx::Rect bounds = loop->sprite()->bounds();
-    bounds &= loop->getFloodFillSrcImage()->bounds();
+    bounds &= srcImage->bounds();
 
+    if (srcImage->pixelFormat() == IMAGE_TILEMAP) { // Tiles mode
+      const doc::Grid& grid = loop->getGrid();
+      bounds = grid.tileToCanvas(bounds);
+    }
     // Limit the flood-fill to the current tile if the grid is visible.
-    if (loop->getStopAtGrid()) {
+    else if (loop->getStopAtGrid()) {
       gfx::Rect grid = loop->getGridBounds();
       if (!grid.isEmpty()) {
         div_t d, dx, dy;
@@ -372,22 +405,15 @@ public:
     m_pointRemainder = points_to_spray - integral_points;
     ASSERT(m_pointRemainder >= 0 && m_pointRemainder < 1.0f);
 
-    fixmath::fixed angle, radius;
+    double angle, radius;
 
     for (int c=0; c<integral_points; c++) {
-
-#if RAND_MAX <= 0xffff
-      // In Windows, rand() has a RAND_MAX too small
-      angle = fixmath::itofix(rand() * 255 / RAND_MAX);
-      radius = fixmath::itofix(rand() * spray_width / RAND_MAX);
-#else
-      angle = rand();
-      radius = rand() % fixmath::itofix(spray_width);
-#endif
+      angle = 360.0 * rand() / RAND_MAX;
+      radius = double(spray_width) * rand() / RAND_MAX;
 
       Stroke::Pt pt2(pt);
-      pt2.x += fixmath::fixtoi(fixmath::fixmul(radius, fixmath::fixcos(angle)));
-      pt2.y += fixmath::fixtoi(fixmath::fixmul(radius, fixmath::fixsin(angle)));
+      pt2.x += double(radius * std::cos(angle));
+      pt2.y += double(radius * std::sin(angle));
       m_subPointShape.transformPoint(loop, pt2);
     }
   }

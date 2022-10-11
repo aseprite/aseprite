@@ -12,7 +12,6 @@
 #include "ui/slider.h"
 
 #include "os/font.h"
-#include "ui/manager.h"
 #include "ui/message.h"
 #include "ui/size_hint_event.h"
 #include "ui/system.h"
@@ -121,7 +120,7 @@ bool Slider::onProcessMessage(Message* msg)
       if (hasCapture()) {
         int value, accuracy, range;
         gfx::Rect rc = childrenBounds();
-        gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
+        gfx::Point mousePos = static_cast<MouseMessage*>(msg)->positionForDisplay(display());
 
         range = m_max - m_min + 1;
 

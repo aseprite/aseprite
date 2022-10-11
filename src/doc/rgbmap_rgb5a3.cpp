@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2020 Igara Studio S.A.
 // Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -8,7 +9,7 @@
 #include "config.h"
 #endif
 
-#include "doc/rgbmap.h"
+#include "doc/rgbmap_rgb5a3.h"
 
 #include "doc/color_scales.h"
 #include "doc/palette.h"
@@ -21,33 +22,32 @@ namespace doc {
 #define ASIZE   8
 #define MAPSIZE (RSIZE*GSIZE*BSIZE*ASIZE)
 
-RgbMap::RgbMap()
-  : Object(ObjectType::RgbMap)
-  , m_map(MAPSIZE)
-  , m_palette(NULL)
+RgbMapRGB5A3::RgbMapRGB5A3()
+  : m_map(MAPSIZE)
+  , m_palette(nullptr)
   , m_modifications(0)
   , m_maskIndex(0)
 {
 }
 
-bool RgbMap::match(const Palette* palette) const
+void RgbMapRGB5A3::regenerateMap(const Palette* palette, int maskIndex)
 {
-  return (m_palette == palette &&
-    m_modifications == palette->getModifications());
-}
+  // Skip useless regenerations
+  if (m_palette == palette &&
+      m_modifications == palette->getModifications() &&
+      m_maskIndex == maskIndex)
+    return;
 
-void RgbMap::regenerate(const Palette* palette, int mask_index)
-{
   m_palette = palette;
   m_modifications = palette->getModifications();
-  m_maskIndex = mask_index;
+  m_maskIndex = maskIndex;
 
   // Mark all entries as invalid (need to be regenerated)
   for (uint16_t& entry : m_map)
     entry |= INVALID;
 }
 
-int RgbMap::generateEntry(int i, int r, int g, int b, int a) const
+int RgbMapRGB5A3::generateEntry(int i, int r, int g, int b, int a) const
 {
   return m_map[i] =
     m_palette->findBestfit(

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -10,6 +10,7 @@
 #pragma once
 
 #include "base/disable_copying.h"
+#include "gfx/fwd.h"
 #include "gfx/point.h"
 
 #include <memory>
@@ -123,6 +124,9 @@ namespace app {
     // drawing cursor.
     virtual bool requireBrushPreview() { return false; }
 
+    // Returns true if this state allow layer edges and cel guides
+    virtual bool allowLayerEdges() { return false; }
+
     // Returns true if this state accept the given quicktool.
     virtual bool acceptQuickTool(tools::Tool* tool) { return true; }
 
@@ -132,11 +136,15 @@ namespace app {
     // Called when a tag is deleted.
     virtual void onRemoveTag(Editor* editor, doc::Tag* tag) { }
 
+    // Used to adjust the grid origin point for temporal cels created
+    // by states like DrawingState + ExpandCelCanvas.
+    virtual bool getGridBounds(Editor* editor, gfx::Rect& gridBounds) { return false; }
+
   private:
     DISABLE_COPYING(EditorState);
   };
 
-  typedef std::shared_ptr<EditorState> EditorStatePtr;
+  using EditorStatePtr = std::shared_ptr<EditorState>;
 
 } // namespace app
 

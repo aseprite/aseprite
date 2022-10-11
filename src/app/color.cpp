@@ -17,6 +17,7 @@
 #include "doc/image.h"
 #include "doc/palette.h"
 #include "doc/primitives.h"
+#include "doc/tile.h"
 #include "gfx/hsl.h"
 #include "gfx/hsv.h"
 #include "gfx/rgb.h"
@@ -82,7 +83,7 @@ Color Color::fromGray(int g, int a)
 // static
 Color Color::fromIndex(int index)
 {
-  ASSERT(index >= 0);
+  ASSERT(index >= 0 || index == doc::notile);
 
   Color color(Color::IndexType);
   color.m_value.index = index;
@@ -113,6 +114,7 @@ Color Color::fromImage(PixelFormat pixelFormat, color_t c)
       break;
 
     case IMAGE_INDEXED:
+    case IMAGE_TILEMAP:
       color = Color::fromIndex(c);
       break;
   }

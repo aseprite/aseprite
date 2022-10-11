@@ -25,7 +25,6 @@
 #include "app/ui/workspace.h"
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
-#include "app/util/clipboard.h"
 #include "app/util/pixel_ratio.h"
 #include "doc/cel.h"
 #include "doc/image.h"
@@ -71,12 +70,12 @@ NewFileCommand::NewFileCommand()
 {
 }
 
-bool NewFileCommand::onEnabled(Context* context)
+bool NewFileCommand::onEnabled(Context* ctx)
 {
   return
     (!params().fromClipboard()
 #ifdef ENABLE_UI
-     || (clipboard::get_current_format() == clipboard::ClipboardImage)
+     || (ctx->clipboard()->format() == ClipboardFormat::Image)
 #endif
      );
 }
@@ -96,7 +95,7 @@ void NewFileCommand::onExecute(Context* ctx)
 
 #ifdef ENABLE_UI
   if (params().fromClipboard()) {
-    clipboardImage = clipboard::get_image(&clipboardPalette);
+    clipboardImage = ctx->clipboard()->getImage(&clipboardPalette);
     if (!clipboardImage)
       return;
 
@@ -132,7 +131,7 @@ void NewFileCommand::onExecute(Context* ctx)
     // If the clipboard contains an image, we can show the size of the
     // clipboard as default image size.
     gfx::Size clipboardSize;
-    if (clipboard::get_image_size(clipboardSize)) {
+    if (ctx->clipboard()->getImageSize(clipboardSize)) {
       w = clipboardSize.w;
       h = clipboardSize.h;
     }
@@ -154,13 +153,8 @@ void NewFileCommand::onExecute(Context* ctx)
     window.advancedCheck()->setSelected(advanced);
     window.advancedCheck()->Click.connect(
       [&]{
-        gfx::Rect bounds = window.bounds();
         window.advanced()->setVisible(window.advancedCheck()->isSelected());
-        window.setBounds(gfx::Rect(window.bounds().origin(),
-                                   window.sizeHint()));
-        window.layout();
-
-        window.manager()->invalidateRect(bounds);
+        window.expandWindow(window.sizeHint());
       });
     window.advanced()->setVisible(advanced);
     if (advanced)
@@ -268,7 +262,8 @@ void NewFileCommand::onExecute(Context* ctx)
       if (clipboardPalette.isBlack()) {
         render::create_palette_from_sprite(
           sprite.get(), 0, sprite->lastFrame(), true,
-          &clipboardPalette, nullptr, true);
+          &clipboardPalette, nullptr, true,
+          Preferences::instance().quantization.rgbmapAlgorithm());
       }
       sprite->setPalette(&clipboardPalette, false);
     }

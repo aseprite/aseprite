@@ -54,26 +54,38 @@ int UserData_get_color(lua_State* L) {
 template<typename T>
 int UserData_set_text(lua_State* L) {
   auto obj = get_docobj<T>(L, 1);
+  auto spr = obj->sprite();
   const char* text = lua_tostring(L, 2);
   auto wud = get_WithUserData<T>(obj);
   UserData ud = wud->userData();
   ud.setText(text);
-  Tx tx;
-  tx(new cmd::SetUserData(wud, ud));
-  tx.commit();
+  if (spr) {
+    Tx tx;
+    tx(new cmd::SetUserData(wud, ud, static_cast<Doc*>(spr->document())));
+    tx.commit();
+  }
+  else {
+    wud->setUserData(ud);
+  }
   return 0;
 }
 
 template<typename T>
 int UserData_set_color(lua_State* L) {
   auto obj = get_docobj<T>(L, 1);
+  auto spr = obj->sprite();
   doc::color_t docColor = convert_args_into_pixel_color(L, 2, doc::IMAGE_RGB);
   auto wud = get_WithUserData<T>(obj);
   UserData ud = wud->userData();
   ud.setColor(docColor);
-  Tx tx;
-  tx(new cmd::SetUserData(wud, ud));
-  tx.commit();
+  if (spr) {
+    Tx tx;
+    tx(new cmd::SetUserData(wud, ud, static_cast<Doc*>(spr->document())));
+    tx.commit();
+  }
+  else {
+    wud->setUserData(ud);
+  }
   return 0;
 }
 

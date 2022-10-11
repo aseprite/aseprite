@@ -214,8 +214,9 @@ protected:
     return Window::onProcessMessage(msg);
   }
 
-  void onBroadcastMouseMessage(WidgetsList& targets) override {
-    Window::onBroadcastMouseMessage(targets);
+  void onBroadcastMouseMessage(const gfx::Point& screenPos,
+                               WidgetsList& targets) override {
+    Window::onBroadcastMouseMessage(screenPos, targets);
 
     // Add the editor as receptor of mouse events too.
     if (m_editor)
@@ -375,10 +376,7 @@ private:
   }
 
   void resize() {
-    gfx::Size reqSize = sizeHint();
-    moveWindow(gfx::Rect(origin(), reqSize));
-    layout();
-    invalidate();
+    expandWindow(sizeHint());
   }
 
   Context* m_context;

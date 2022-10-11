@@ -22,9 +22,13 @@ namespace ui {
 
 using namespace gfx;
 
-void move_region(Manager* manager, const Region& region, int dx, int dy)
+void move_region(Display* display, const Region& region, int dx, int dy)
 {
-  os::Window* window = manager->display();
+  ASSERT(display);
+  if (!display)
+    return;
+
+  os::Window* window = display->nativeWindow();
   ASSERT(window);
   if (!window)
     return;
@@ -43,7 +47,7 @@ void move_region(Manager* manager, const Region& region, int dx, int dy)
     surface->scrollTo(rc, dx, dy);
 
     rc.offset(dx, dy);
-    manager->dirtyRect(rc);
+    display->dirtyRect(rc);
   }
   // As rectangles in the region internals are separated by bands
   // through the y-axis, we can sort the rectangles by y-axis and then
@@ -87,7 +91,7 @@ void move_region(Manager* manager, const Region& region, int dx, int dy)
       surface->scrollTo(rc, dx, dy);
 
       rc.offset(dx, dy);
-      manager->dirtyRect(rc);
+      display->dirtyRect(rc);
     }
   }
 

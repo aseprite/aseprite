@@ -20,7 +20,6 @@ namespace app {
   namespace tools {
     class Ink;
     class Pointer;
-    class Command;
   }
 
   class DrawingState;
@@ -47,6 +46,9 @@ namespace app {
     // the brush-preview.
     virtual bool requireBrushPreview() override { return true; }
 
+    // Layer edges and cel guides are allowed to be drawn.
+    virtual bool allowLayerEdges() override { return true; }
+
     virtual Transformation getTransformation(Editor* editor);
 
     void startSelectionTransformation(Editor* editor, const gfx::Point& move, double angle);
@@ -55,7 +57,9 @@ namespace app {
 
   protected:
     void callEyedropper(Editor* editor, const ui::MouseMessage* msg);
-    bool checkStartDrawingStraightLine(Editor* editor, const ui::MouseMessage* msg);
+    bool checkStartDrawingStraightLine(Editor* editor,
+                                       const ui::MouseMessage* msg,
+                                       const tools::Pointer* pointer);
     virtual bool canCheckStartDrawingStraightLine() { return true; }
 
     class Decorator : public EditorDecorator {

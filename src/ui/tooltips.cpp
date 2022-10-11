@@ -12,6 +12,7 @@
 #include "ui/tooltips.h"
 
 #include "gfx/size.h"
+#include "ui/fit_bounds.h"
 #include "ui/graphics.h"
 #include "ui/intern.h"
 #include "ui/manager.h"
@@ -119,10 +120,15 @@ void TooltipManager::onTick()
     int arrowAlign = m_target.tipInfo.arrowAlign;
     gfx::Rect target = m_target.widget->bounds();
     if (!arrowAlign)
-      target.setOrigin(ui::get_mouse_position()+12*guiscale());
+      target.setOrigin(m_target.widget->mousePosInDisplay()+12*guiscale());
 
-    if (m_tipWindow->pointAt(arrowAlign, target)) {
+    ui::Display* targetDisplay = m_target.widget->display();
+
+    if (m_tipWindow->pointAt(arrowAlign,
+                             target,
+                             targetDisplay)) {
       m_tipWindow->openWindow();
+      m_tipWindow->adjustTargetFrom(targetDisplay);
     }
     else {
       // No enough room for the tooltip
@@ -160,7 +166,9 @@ void TipWindow::setCloseOnKeyDown(bool state)
   m_closeOnKeyDown = state;
 }
 
-bool TipWindow::pointAt(int arrowAlign, const gfx::Rect& target)
+bool TipWindow::pointAt(int arrowAlign,
+                        const gfx::Rect& target,
+                        const ui::Display* display)
 {
   // TODO merge this code with the new ui::fit_bounds() algorithm
 
@@ -173,6 +181,8 @@ bool TipWindow::pointAt(int arrowAlign, const gfx::Rect& target)
   int y = target.y;
   int w = bounds().w;
   int h = bounds().h;
+
+  os::Window* nativeParentWindow = display->nativeWindow();
 
   int trycount = 0;
   for (; trycount < 4; ++trycount) {
@@ -211,8 +221,20 @@ bool TipWindow::pointAt(int arrowAlign, const gfx::Rect& target)
         break;
     }
 
-    x = std::clamp(x, 0, ui::display_w()-w);
-    y = std::clamp(y, 0, ui::display_h()-h);
+    if (get_multiple_displays()) {
+      const gfx::Rect waBounds = nativeParentWindow->screen()->workarea();
+      gfx::Point pt = nativeParentWindow->pointToScreen(gfx::Point(x, y));
+      pt.x = std::clamp(pt.x, waBounds.x, waBounds.x2()-w);
+      pt.y = std::clamp(pt.y, waBounds.y, waBounds.y2()-h);
+      pt = nativeParentWindow->pointFromScreen(pt);
+      x = pt.x;
+      y = pt.y;
+    }
+    else {
+      const gfx::Rect displayBounds = display->bounds();
+      x = std::clamp(x, displayBounds.x, displayBounds.x2()-w);
+      y = std::clamp(y, displayBounds.y, displayBounds.y2()-h);
+    }
 
     if (m_target.intersects(gfx::Rect(x, y, w, h))) {
       switch (trycount) {
@@ -231,12 +253,26 @@ bool TipWindow::pointAt(int arrowAlign, const gfx::Rect& target)
     }
     else {
       m_arrowAlign = arrowAlign;
-      positionWindow(x, y);
+      ui::fit_bounds(display, this, gfx::Rect(x, y, w, h));
       break;
     }
   }
 
   return (trycount < 4);
+}
+
+void TipWindow::adjustTargetFrom(const ui::Display* targetDisplay)
+{
+  // Convert the target relative to this window coordinates
+  if (get_multiple_displays()) {
+    gfx::Point pt = m_target.origin();
+    pt = targetDisplay->nativeWindow()->pointToScreen(pt);
+    pt = display()->nativeWindow()->pointFromScreen(pt);
+    m_target.setOrigin(pt);
+  }
+  else {
+    m_target.offset(-bounds().origin());
+  }
 }
 
 bool TipWindow::onProcessMessage(Message* msg)
@@ -259,7 +295,7 @@ void TipWindow::onPaint(PaintEvent& ev)
   theme()->paintTooltip(
     ev.graphics(), this, style(), arrowStyle(),
     clientBounds(), arrowAlign(),
-    gfx::Rect(target()).offset(-bounds().origin()));
+    target());
 }
 
 void TipWindow::onBuildTitleLabel()

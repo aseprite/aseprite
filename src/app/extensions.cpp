@@ -271,9 +271,9 @@ void Extension::addLanguage(const std::string& id, const std::string& path)
   updateCategory(Category::Languages);
 }
 
-void Extension::addTheme(const std::string& id, const std::string& path)
+void Extension::addTheme(const std::string& id, const std::string& path, const std::string& variant)
 {
-  m_themes[id] = path;
+  m_themes[id] = ThemeInfo(path, variant);
   updateCategory(Category::Themes);
 }
 
@@ -820,7 +820,7 @@ std::string Extensions::themePath(const std::string& themeId)
 
     auto it = ext->themes().find(themeId);
     if (it != ext->themes().end())
-      return it->second;
+      return it->second.path;
   }
   return std::string();
 }
@@ -1076,7 +1076,7 @@ Extension* Extensions::loadExtension(const std::string& path,
         // The path must be always relative to the extension
         langPath = base::join_path(path, langPath);
 
-        LOG("EXT: New language '%s' in '%s'\n",
+        LOG("EXT: New language id=%s path=%s\n",
             langId.c_str(),
             langPath.c_str());
 
@@ -1090,15 +1090,17 @@ Extension* Extensions::loadExtension(const std::string& path,
       for (const auto& theme : themes.array_items()) {
         std::string themeId = theme["id"].string_value();
         std::string themePath = theme["path"].string_value();
+        std::string themeVariant = theme["variant"].string_value();
 
         // The path must be always relative to the extension
         themePath = base::join_path(path, themePath);
 
-        LOG("EXT: New theme '%s' in '%s'\n",
+        LOG("EXT: New theme id=%s path=%s variant=%s\n",
             themeId.c_str(),
-            themePath.c_str());
+            themePath.c_str(),
+            themeVariant.c_str());
 
-        extension->addTheme(themeId, themePath);
+        extension->addTheme(themeId, themePath, themeVariant);
       }
     }
 
@@ -1112,7 +1114,7 @@ Extension* Extensions::loadExtension(const std::string& path,
         // The path must be always relative to the extension
         palPath = base::join_path(path, palPath);
 
-        LOG("EXT: New palette '%s' in '%s'\n",
+        LOG("EXT: New palette id=%s path=%s\n",
             palId.c_str(),
             palPath.c_str());
 
@@ -1133,7 +1135,7 @@ Extension* Extensions::loadExtension(const std::string& path,
         // The path must be always relative to the extension
         matPath = base::join_path(path, matPath);
 
-        LOG("EXT: New dithering matrix '%s' in '%s'\n",
+        LOG("EXT: New dithering matrix id=%s path=%s\n",
             matId.c_str(),
             matPath.c_str());
 
@@ -1153,7 +1155,7 @@ Extension* Extensions::loadExtension(const std::string& path,
         // The path must be always relative to the extension
         scriptPath = base::join_path(path, scriptPath);
 
-        LOG("EXT: New script '%s'\n", scriptPath.c_str());
+        LOG("EXT: New script path=%s\n", scriptPath.c_str());
 
         extension->addScript(scriptPath);
       }
@@ -1166,7 +1168,7 @@ Extension* Extensions::loadExtension(const std::string& path,
       // The path must be always relative to the extension
       scriptPath = base::join_path(path, scriptPath);
 
-      LOG("EXT: New script '%s'\n", scriptPath.c_str());
+      LOG("EXT: New script path=%s\n", scriptPath.c_str());
 
       extension->addScript(scriptPath);
     }

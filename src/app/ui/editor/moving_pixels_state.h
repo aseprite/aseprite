@@ -33,6 +33,7 @@ namespace app {
     , EditorObserver
     , TimelineObserver
     , ContextBarObserver
+    , PixelsMovementDelegate
     , DelayedMouseMoveDelegate {
   public:
     MovingPixelsState(Editor* editor,
@@ -45,10 +46,12 @@ namespace app {
       return m_pixelsMovement->canHandleFrameChange();
     }
 
-    void translate(const gfx::Point& delta);
+    void translate(const gfx::PointF& delta);
     void rotate(double angle);
     void flip(doc::algorithm::FlipType flipType);
     void shift(int dx, int dy);
+
+    void updateTransformation(const Transformation& t);
 
     // EditorState
     virtual void onEnterState(Editor* editor) override;
@@ -75,6 +78,9 @@ namespace app {
 
     // ContextBarObserver
     virtual void onDropPixels(ContextBarObserver::DropAction action) override;
+
+    // PixelsMovementDelegate
+    virtual void onPivotChange() override;
 
     virtual Transformation getTransformation(Editor* editor) override;
 

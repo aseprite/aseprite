@@ -14,6 +14,7 @@
 #include "app/tools/active_tool_observer.h"
 #include "app/ui/doc_observer_widget.h"
 #include "base/time.h"
+#include "doc/tile.h"
 #include "ui/base.h"
 #include "ui/box.h"
 
@@ -62,6 +63,8 @@ namespace app {
     void showTip(int msecs, const std::string& msg);
     void showColor(int msecs, const Color& color,
                    const std::string& text = std::string());
+    void showTile(int msecs, doc::tile_t tile,
+                  const std::string& text = std::string());
     void showTool(int msecs, tools::Tool* tool);
     void showSnapToGridWarning(bool state);
 

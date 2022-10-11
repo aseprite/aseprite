@@ -47,6 +47,8 @@ namespace doc {
   class Palette;
   class Sprite;
   class Tag;
+  class Tileset;
+  class Tilesets;
   class WithUserData;
 }
 
@@ -159,6 +161,9 @@ namespace app {
   void push_sprite_slices(lua_State* L, doc::Sprite* sprite);
   void push_sprite_tags(lua_State* L, doc::Sprite* sprite);
   void push_sprites(lua_State* L);
+  void push_tileset(lua_State* L, doc::Tileset* tileset);
+  void push_tileset_image(lua_State* L, doc::Tileset* tileset, doc::Image* image);
+  void push_tilesets(lua_State* L, doc::Tilesets* tilesets);
   void push_tool(lua_State* L, app::tools::Tool* tool);
   void push_userdata(lua_State* L, doc::WithUserData* userData);
   void push_version(lua_State* L, const base::Version& ver);

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -20,7 +20,7 @@
 #include "app/modules/gui.h"
 #include "app/tx.h"
 #include "app/ui/timeline/timeline.h"
-#include "app/ui/user_data_popup.h"
+#include "app/ui/user_data_view.h"
 #include "app/ui_context.h"
 #include "base/mem_utils.h"
 #include "base/scoped_value.h"
@@ -46,13 +46,13 @@ class CelPropertiesWindow : public app::gen::CelProperties,
 public:
   CelPropertiesWindow()
     : m_timer(250, this)
-    , m_document(nullptr)
-    , m_cel(nullptr)
-    , m_selfUpdate(false)
-    , m_newUserData(false) {
+    , m_userDataView(Preferences::instance().cels.userDataVisibility)
+  {
     opacity()->Change.connect([this]{ onStartTimer(); });
-    userData()->Click.connect([this]{ onPopupUserData(); });
+    userData()->Click.connect([this]{ onToggleUserData(); });
     m_timer.Tick.connect([this]{ onCommitChange(); });
+
+    m_userDataView.UserDataChange.connect([this]{ onStartTimer(); });
 
     remapWindow();
     centerWindow();
@@ -80,6 +80,16 @@ public:
     if (m_document)
       m_document->add_observer(this);
 
+    if (countCels() > 0) {
+      ui::Grid* mainGrid = g_window->propertiesGrid();
+      m_userDataView.configureAndSet(
+        (m_cel ? m_cel->data()->userData(): UserData()), mainGrid);
+    }
+    else if (!m_cel)
+      m_userDataView.setVisible(false, false);
+
+    g_window->expandWindow(gfx::Size(g_window->bounds().w,
+                                     g_window->sizeHint().h));
     updateFromCel();
   }
 
@@ -136,9 +146,9 @@ private:
 
       case kCloseMessage:
         // Save changes before we close the window
+        if (m_cel)
+          save_window_pos(this, "CelProperties");
         setCel(nullptr, nullptr);
-        save_window_pos(this, "CelProperties");
-
         deferDelete();
         g_window = nullptr;
         break;
@@ -152,19 +162,25 @@ private:
       return;
 
     m_timer.start();
+    m_pendingChanges = true;
   }
 
   void onCommitChange() {
+    // Nothing to change
+    if (!m_pendingChanges)
+      return;
+
     base::ScopedValue<bool> switchSelf(m_selfUpdate, true, false);
 
     m_timer.stop();
 
     const int newOpacity = opacityValue();
+    const UserData newUserData= m_userDataView.userData();
     const int count = countCels();
 
     if ((count > 1) ||
         (count == 1 && m_cel && (newOpacity != m_cel->opacity() ||
-                                 m_userData != m_cel->data()->userData()))) {
+                                 newUserData != m_cel->data()->userData()))) {
       try {
         ContextWriter writer(UIContext::instance());
         Tx tx(writer.context(), "Set Cel Properties");
@@ -184,13 +200,14 @@ private:
               tx(new cmd::SetCelOpacity(cel, newOpacity));
             }
 
-            if (m_newUserData &&
-                m_userData != cel->data()->userData()) {
-              tx(new cmd::SetUserData(cel->data(), m_userData));
+            if (newUserData != cel->data()->userData()) {
+              tx(new cmd::SetUserData(cel->data(), newUserData, m_document));
 
               // Redraw timeline because the cel's user data/color
               // might have changed.
-              App::instance()->timeline()->invalidate();
+              if (newUserData.color() != cel->data()->userData().color()) {
+                App::instance()->timeline()->invalidate();
+              }
             }
           }
         }
@@ -203,25 +220,21 @@ private:
 
       update_screen_for_document(m_document);
     }
+
+    m_pendingChanges = false;
   }
 
-  void onPopupUserData() {
+  void onToggleUserData() {
     if (countCels() > 0) {
-      m_newUserData = false;
-      if (m_cel)
-        m_userData = m_cel->data()->userData();
-      else
-        m_userData = UserData();
-
-      if (show_user_data_popup(userData()->bounds(), m_userData)) {
-        m_newUserData = true;
-        onCommitChange();
-      }
+      m_userDataView.toggleVisibility();
+      g_window->expandWindow(gfx::Size(g_window->bounds().w,
+                                       g_window->sizeHint().h));
     }
   }
 
   // ContextObserver impl
   void onActiveSiteChange(const Site& site) override {
+    onCommitChange();
     if (isVisible())
       setCel(const_cast<Doc*>(site.document()),
              const_cast<Cel*>(site.cel()));
@@ -240,6 +253,11 @@ private:
       updateFromCel();
   }
 
+  void onUserDataChange(DocEvent& ev) override {
+     if (m_cel && m_cel->data() == ev.withUserData())
+      updateFromCel();
+  }
+
   void updateFromCel() {
     if (m_selfUpdate)
       return;
@@ -251,28 +269,28 @@ private:
     int bgCount = 0;
     int count = countCels(&bgCount);
 
-    m_userData = UserData();
-    m_newUserData = false;
-
     if (count > 0) {
       if (m_cel) {
         opacity()->setValue(m_cel->opacity());
-        m_userData = m_cel->data()->userData();
+        color_t c = m_cel->data()->userData().color();
+        m_userDataView.color()->setColor(Color::fromRgb(rgba_getr(c), rgba_getg(c), rgba_getb(c), rgba_geta(c)));
+        m_userDataView.entry()->setText(m_cel->data()->userData().text());
       }
       opacity()->setEnabled(bgCount < count);
     }
     else {
       opacity()->setEnabled(false);
+      m_userDataView.setVisible(false, false);
     }
   }
 
   Timer m_timer;
-  Doc* m_document;
-  Cel* m_cel;
+  bool m_pendingChanges = false;
+  Doc* m_document = nullptr;
+  Cel* m_cel = nullptr;
   DocRange m_range;
-  bool m_selfUpdate;
-  UserData m_userData;
-  bool m_newUserData;
+  bool m_selfUpdate = false;
+  UserDataView m_userDataView;
 };
 
 class CelPropertiesCommand : public Command {

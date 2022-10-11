@@ -102,7 +102,8 @@ class StatusBar::Indicators : public HBox {
     enum IndicatorType {
       kText,
       kIcon,
-      kColor
+      kColor,
+      kTile
     };
     Indicator(IndicatorType type) : m_type(type) { }
     IndicatorType indicatorType() const { return m_type; }
@@ -229,6 +230,41 @@ class StatusBar::Indicators : public HBox {
     app::Color m_color;
   };
 
+  class TileIndicator : public Indicator {
+  public:
+    TileIndicator(doc::tile_t tile)
+      : Indicator(kTile)
+      , m_tile(doc::notile) {
+      updateIndicator(tile, true);
+    }
+
+    bool updateIndicator(doc::tile_t tile, bool first = false) {
+      if (m_tile == tile && !first)
+        return false;
+
+      m_tile = tile;
+      setMinSize(minSize().createUnion(Size(32*guiscale(), 1)));
+      return true;
+    }
+
+  private:
+    void onPaint(ui::PaintEvent& ev) override {
+      Rect rc = clientBounds();
+      Graphics* g = ev.graphics();
+
+      // TODO could the site came from the Indicators or StatusBar itself
+      Site site = UIContext::instance()->activeSite();
+
+      g->fillRect(bgColor(), rc);
+      draw_tile_button(
+        g, Rect(rc.x, rc.y, 32*guiscale(), rc.h),
+        site, m_tile,
+        false, false);
+    }
+
+    doc::tile_t m_tile;
+  };
+
 public:
 
   Indicators()
@@ -310,6 +346,25 @@ public:
     }
 
     auto indicator = new ColorIndicator(color);
+    m_indicators.push_back(indicator);
+    m_iterator = m_indicators.end();
+    m_leftArea.addChild(indicator);
+    m_redraw = true;
+  }
+
+  void addTileIndicator(doc::tile_t tile) {
+    if (m_iterator != m_indicators.end()) {
+      if ((*m_iterator)->indicatorType() == Indicator::kTile) {
+        m_redraw |= static_cast<TileIndicator*>(*m_iterator)
+          ->updateIndicator(tile);
+        ++m_iterator;
+        return;
+      }
+      else
+        removeAllNextIndicators();
+    }
+
+    auto indicator = new TileIndicator(tile);
     m_indicators.push_back(indicator);
     m_iterator = m_indicators.end();
     m_leftArea.addChild(indicator);
@@ -429,10 +484,45 @@ public:
     std::string str = color.toHumanReadableString(
       app_get_current_pixel_format(),
       app::Color::LongHumanReadableString);
-    if (color.getAlpha() < 255) {
-      char buf[256];
-      sprintf(buf, " A%d", color.getAlpha());
-      str += buf;
+    if (color.getAlpha() < 255)
+      str += fmt::format(" A{}", color.getAlpha());
+    m_indicators->addTextIndicator(str.c_str());
+
+    return *this;
+  }
+
+  IndicatorsGeneration& add(doc::tile_t tile) {
+    auto theme = SkinTheme::get(m_indicators);
+
+    // Eyedropper icon
+    add(theme->getToolPart("eyedropper"), false);
+
+    // Color
+    m_indicators->addTileIndicator(tile);
+
+    // Color description
+    std::string str;
+    if (tile == doc::notile) {
+      str += "Empty";
+    }
+    else {
+      // TODO could the site came from the Indicators or StatusBar itself
+      int baseIndex = 1;
+      Site site = UIContext::instance()->activeSite();
+      if (site.tileset())
+        baseIndex = site.tileset()->baseIndex();
+
+      doc::tile_index ti = doc::tile_geti(tile);
+      doc::tile_flags tf = doc::tile_getf(tile);
+      if (baseIndex < 0)
+        str += fmt::format("{}", ((int)ti) + baseIndex - 1);
+      else
+        str += fmt::format("{}", ti + baseIndex - 1);
+      if (tf) {
+        if (tf & doc::tile_f_flipx) str += " FlipX";
+        if (tf & doc::tile_f_flipy) str += " FlipY";
+        if (tf & doc::tile_f_90cw) str += " Rot90CW";
+      }
     }
     m_indicators->addTextIndicator(str.c_str());
 
@@ -714,6 +804,8 @@ bool StatusBar::setStatusText(int msecs, const std::string& msg)
 
 void StatusBar::showTip(int msecs, const std::string& msg)
 {
+  ASSERT(msecs > 0);
+
   if (m_tipwindow == NULL) {
     m_tipwindow = new CustomizedTipWindow(msg);
   }
@@ -724,15 +816,16 @@ void StatusBar::showTip(int msecs, const std::string& msg)
   m_tipwindow->setInterval(msecs);
 
   if (m_tipwindow->isVisible())
-    m_tipwindow->closeWindow(NULL);
+    m_tipwindow->closeWindow(nullptr);
 
-  m_tipwindow->openWindow();
   m_tipwindow->remapWindow();
 
-  int x = bounds().x2() - m_tipwindow->bounds().w;
-  int y = bounds().y - m_tipwindow->bounds().h;
-  m_tipwindow->positionWindow(x, y);
+  gfx::Rect rc = m_tipwindow->bounds();
+  rc.x = bounds().x2() - rc.w;
+  rc.y = bounds().y - rc.h;
+  ui::fit_bounds(display(), m_tipwindow, rc);
 
+  m_tipwindow->openWindow();
   m_tipwindow->startTimer();
 
   // Set the text in status-bar (with inmediate timeout)
@@ -747,6 +840,19 @@ void StatusBar::showColor(int msecs, const app::Color& color,
     showIndicators();
     IndicatorsGeneration gen(m_indicators);
     gen.add(color);
+    if (!text.empty())
+      gen.add(text.c_str());
+
+    m_timeout = base::current_tick() + msecs;
+  }
+}
+
+void StatusBar::showTile(int msecs, doc::tile_t tile,
+                         const std::string& text)
+{
+  if ((base::current_tick() > m_timeout) || (msecs > 0)) {
+    IndicatorsGeneration gen(m_indicators);
+    gen.add(tile);
     if (!text.empty())
       gen.add(text.c_str());
 
@@ -775,6 +881,8 @@ void StatusBar::showSnapToGridWarning(bool state)
 
     if (!m_snapToGridWindow)
       m_snapToGridWindow = new SnapToGridWindow;
+
+    m_snapToGridWindow->setDisplay(display(), false);
 
     if (!m_snapToGridWindow->isVisible()) {
       m_snapToGridWindow->openWindow();
@@ -830,6 +938,8 @@ void StatusBar::onActiveSiteChange(const Site& site)
 {
   DocObserverWidget<ui::HBox>::onActiveSiteChange(site);
 
+  const bool controlsWereVisible = m_docControls->isVisible();
+
   if (doc()) {
     auto& docPref = Preferences::instance().document(doc());
 
@@ -837,8 +947,12 @@ void StatusBar::onActiveSiteChange(const Site& site)
     showSnapToGridWarning(docPref.grid.snap());
 
     // Current frame
-    m_currentFrame->setTextf(
-      "%d", site.frame()+docPref.timeline.firstFrame());
+    {
+      std::string newText =
+        fmt::format("{}", site.frame()+docPref.timeline.firstFrame());
+      if (m_currentFrame->text() != newText)
+        m_currentFrame->setText(newText);
+    }
 
     // Zoom level
     if (current_editor)
@@ -848,7 +962,11 @@ void StatusBar::onActiveSiteChange(const Site& site)
     m_docControls->setVisible(false);
     showSnapToGridWarning(false);
   }
-  layout();
+
+  // Relayout the StatusBar so we can put the m_docControls widget in
+  // the right place now that it's visibility changed.
+  if (m_docControls->isVisible() != controlsWereVisible)
+    layout();
 }
 
 void StatusBar::onPixelFormatChanged(DocEvent& ev)
@@ -881,9 +999,11 @@ void StatusBar::updateSnapToGridWindowPosition()
 
   Rect rc = bounds();
   int toolBarWidth = ToolBar::instance()->sizeHint().w;
-  m_snapToGridWindow->positionWindow(
-    rc.x+rc.w-toolBarWidth-m_snapToGridWindow->bounds().w,
-    rc.y-m_snapToGridWindow->bounds().h);
+
+  gfx::Rect snapRc = m_snapToGridWindow->bounds();
+  snapRc.x = rc.x+rc.w-toolBarWidth-snapRc.w;
+  snapRc.y = rc.y-snapRc.h;
+  m_snapToGridWindow->setBounds(snapRc);
 }
 
 void StatusBar::showAbout()

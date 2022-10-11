@@ -26,6 +26,8 @@
 #include "doc/layer.h"
 #include "doc/sprite.h"
 #include "gfx/rect_io.h"
+#include "os/system.h"
+#include "os/window.h"
 #include "ui/ui.h"
 
 #include <algorithm>
@@ -50,6 +52,7 @@ ColorButton::ColorButton(const app::Color& color,
   , m_color(color)
   , m_pixelFormat(pixelFormat)
   , m_window(nullptr)
+  , m_desktopCoords(false)
   , m_dependOnLayer(false)
   , m_options(options)
 {
@@ -147,16 +150,55 @@ bool ColorButton::onProcessMessage(Message* msg)
       break;
 
     case kMouseMoveMessage:
+      // TODO code similar to TileButton::onProcessMessage()
       if (hasCapture()) {
         gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
-        Widget* picked = manager()->pick(mousePos);
         app::Color color = m_color;
 
-        if (picked && picked != this) {
-          // Pick a color from a IColorSource
-          if (IColorSource* colorSource = dynamic_cast<IColorSource*>(picked)) {
-            color = colorSource->getColorByPosition(mousePos);
+        // Try to pick a color from a IColorSource, then get the color
+        // from the display surface, and finally from the desktop. The
+        // desktop must be a last resource method, because in macOS it
+        // will ask for permissions to record the screen.
+        os::Window* nativeWindow = msg->display()->nativeWindow();
+        gfx::Point screenPos = nativeWindow->pointToScreen(mousePos);
+
+        Widget* picked = manager()->pickFromScreenPos(screenPos);
+        if (picked == this) {
+          setColor(m_startDragColor);
+          break;
+        }
+        else {
+          m_mouseLeft = true;
+        }
+
+        IColorSource* colorSource = dynamic_cast<IColorSource*>(picked);
+        if (colorSource) {
+          nativeWindow = picked->display()->nativeWindow();
+          mousePos = nativeWindow->pointFromScreen(screenPos);
+        }
+        else {
+          gfx::Color gfxColor = gfx::ColorNone;
+
+          // Get color from native window surface
+          if (nativeWindow->contentRect().contains(screenPos)) {
+            mousePos = nativeWindow->pointFromScreen(screenPos);
+            if (nativeWindow->surface()->bounds().contains(mousePos))
+              gfxColor = nativeWindow->surface()->getPixel(mousePos.x, mousePos.y);
           }
+
+          // Or get the color from the screen
+          if (gfxColor == gfx::ColorNone) {
+            gfxColor = os::instance()->getColorFromScreen(screenPos);
+          }
+
+          color = app::Color::fromRgb(gfx::getr(gfxColor),
+                                      gfx::getg(gfxColor),
+                                      gfx::getb(gfxColor),
+                                      gfx::geta(gfxColor));
+        }
+
+        if (colorSource) {
+          color = colorSource->getColorByPosition(mousePos);
         }
 
         // Did the color change?
@@ -268,13 +310,30 @@ void ColorButton::onClick(Event& ev)
   }
 }
 
+void ColorButton::onStartDrag()
+{
+  m_startDragColor = m_color;
+  m_mouseLeft = false;
+}
+
+void ColorButton::onSelectWhenDragging()
+{
+  if (m_mouseLeft)
+    setSelected(false);
+  else
+    ButtonBase::onSelectWhenDragging();
+}
+
 void ColorButton::onLoadLayout(ui::LoadLayoutEvent& ev)
 {
   if (canPin()) {
     bool pinned = false;
+
+    m_desktopCoords = false;
     ev.stream() >> pinned;
     if (ev.stream() && pinned)
-      ev.stream() >> m_windowDefaultBounds;
+      ev.stream() >> m_windowDefaultBounds
+                  >> m_desktopCoords;
 
     m_hiddenPopupBounds = m_windowDefaultBounds;
   }
@@ -282,8 +341,12 @@ void ColorButton::onLoadLayout(ui::LoadLayoutEvent& ev)
 
 void ColorButton::onSaveLayout(ui::SaveLayoutEvent& ev)
 {
-  if (canPin() && m_window && m_window->isPinned())
-    ev.stream() << 1 << ' ' << m_window->bounds();
+  if (canPin() && m_window && m_window->isPinned()) {
+    if (m_desktopCoords)
+      ev.stream() << 1 << ' ' << m_window->lastNativeFrame() << ' ' << 1;
+    else
+      ev.stream() << 1 << ' ' << m_window->bounds() << ' ' << 0;
+  }
   else
     ev.stream() << 0;
 }
@@ -305,36 +368,39 @@ void ColorButton::openPopup(const bool forcePinned)
   }
 
   m_window->setColor(m_color, ColorPopup::ChangeType);
+  m_window->remapWindow();
+
+  fit_bounds(
+    display(),
+    m_window,
+    gfx::Rect(m_window->sizeHint()),
+    [this, pinned, forcePinned](const gfx::Rect& workarea,
+                                gfx::Rect& winBounds,
+                                std::function<gfx::Rect(Widget*)> getWidgetBounds) {
+      if (!pinned || (forcePinned && m_hiddenPopupBounds.isEmpty())) {
+        gfx::Rect bounds = getWidgetBounds(this);
+
+        winBounds.x = std::clamp(bounds.x, workarea.x, workarea.x2()-winBounds.w);
+        if (bounds.y2()+winBounds.h <= workarea.y2())
+          winBounds.y = std::max(workarea.y, bounds.y2());
+        else
+          winBounds.y = std::max(workarea.y, bounds.y-winBounds.h);
+      }
+      else if (forcePinned) {
+        winBounds = convertBounds(m_hiddenPopupBounds);
+      }
+      else {
+        winBounds = convertBounds(m_windowDefaultBounds);
+      }
+    });
+
   m_window->openWindow();
-
-  gfx::Rect winBounds;
-  if (!pinned || (forcePinned && m_hiddenPopupBounds.isEmpty())) {
-    winBounds = gfx::Rect(m_window->bounds().origin(),
-                          m_window->sizeHint());
-    winBounds.x = std::clamp(bounds().x, 0, ui::display_w()-winBounds.w);
-    if (bounds().y2() <= ui::display_h()-winBounds.h)
-      winBounds.y = std::max(0, bounds().y2());
-    else
-      winBounds.y = std::max(0, bounds().y-winBounds.h);
-  }
-  else if (forcePinned) {
-    winBounds = m_hiddenPopupBounds;
-  }
-  else {
-    winBounds = m_windowDefaultBounds;
-  }
-  winBounds.x = std::clamp(winBounds.x, 0, ui::display_w()-winBounds.w);
-  winBounds.y = std::clamp(winBounds.y, 0, ui::display_h()-winBounds.h);
-  m_window->setBounds(winBounds);
-
-  m_window->manager()->dispatchMessages();
-  m_window->layout();
 
   m_window->setPinned(pinned);
 
   // Add the ColorButton area to the ColorPopup hot-region
   if (!pinned) {
-    gfx::Rect rc = bounds().createUnion(m_window->bounds());
+    gfx::Rect rc = boundsOnScreen().createUnion(m_window->boundsOnScreen());
     rc.enlarge(8);
     gfx::Region rgn(rc);
     static_cast<PopupWindow*>(m_window)->setHotRegion(rgn);
@@ -351,7 +417,14 @@ void ColorButton::closePopup()
 
 void ColorButton::onWindowClose(ui::CloseEvent& ev)
 {
-  m_hiddenPopupBounds = m_window->bounds();
+  if (get_multiple_displays()) {
+    m_desktopCoords = true;
+    m_hiddenPopupBounds = m_window->lastNativeFrame();
+  }
+  else {
+    m_desktopCoords = false;
+    m_hiddenPopupBounds = m_window->bounds();
+  }
 }
 
 void ColorButton::onWindowColorChange(const app::Color& color)
@@ -381,6 +454,25 @@ void ColorButton::onActiveSiteChange(const Site& site)
         m_window->setVisible(true);
     }
   }
+}
+
+gfx::Rect ColorButton::convertBounds(const gfx::Rect& bounds) const
+{
+  // Convert to desktop
+  if (get_multiple_displays() && !m_desktopCoords) {
+    auto nativeWindow = display()->nativeWindow();
+    return gfx::Rect(nativeWindow->pointToScreen(bounds.origin()),
+                     nativeWindow->pointToScreen(bounds.point2()));
+  }
+  // Convert to display
+  else if (!get_multiple_displays() && m_desktopCoords) {
+    auto nativeWindow = display()->nativeWindow();
+    return gfx::Rect(nativeWindow->pointFromScreen(bounds.origin()),
+                     nativeWindow->pointFromScreen(bounds.point2()));
+  }
+  // No conversion is required
+  else
+    return bounds;
 }
 
 } // namespace app

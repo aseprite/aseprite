@@ -54,6 +54,7 @@ namespace app {
   class DitheringSelector;
   class GradientTypeSelector;
   class SamplingSelector;
+  class Transformation;
 
   class ContextBar : public DocObserverWidget<ui::HBox>
                    , public obs::observable<ContextBarObserver>
@@ -65,7 +66,7 @@ namespace app {
 
     void updateForActiveTool();
     void updateForTool(tools::Tool* tool);
-    void updateForMovingPixels();
+    void updateForMovingPixels(const Transformation& t);
     void updateForSelectingBox(const std::string& text);
     void updateToolLoopModifiersIndicators(tools::ToolLoopModifiers modifiers);
     bool updateSamplingVisibility(tools::Tool* tool = nullptr);
@@ -123,6 +124,7 @@ namespace app {
     void onSymmetryModeChange();
     void onFgOrBgColorChange(doc::Brush::ImageColor imageColor);
     void onDropPixels(ContextBarObserver::DropAction action);
+    void updateSliceFields(const Site& site);
 
     // ActiveToolObserver impl
     void onActiveToolChange(tools::Tool* tool) override;
@@ -151,6 +153,7 @@ namespace app {
     class TransparentColorField;
     class PivotField;
     class RotAlgorithmField;
+    class TransformationFields;
     class DynamicsField;
     class FreehandAlgorithmField;
     class BrushPatternField;
@@ -191,6 +194,7 @@ namespace app {
     TransparentColorField* m_transparentColor;
     PivotField* m_pivot;
     RotAlgorithmField* m_rotAlgo;
+    TransformationFields* m_transformation = nullptr;
     DropPixelsField* m_dropPixels;
     doc::BrushRef m_activeBrush;
     ui::Label* m_selectBoxHelp;

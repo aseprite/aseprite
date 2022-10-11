@@ -1,6 +1,6 @@
 // Aseprite Document Library
 // Copyright (C) 2019-2022  Igara Studio S.A.
-// Copyright (c) 2001-2016  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -18,6 +18,9 @@
 
 namespace doc {
 
+  class Layer;
+  class Tileset;
+
   class CelData : public WithUserData {
   public:
     CelData(const ImageRef& image);
@@ -30,13 +33,19 @@ namespace doc {
     Image* image() const { return const_cast<Image*>(m_image.get()); };
     ImageRef imageRef() const { return m_image; }
 
-    void setImage(const ImageRef& image);
-
-    void setPosition(const gfx::Point& pos) {
-      m_bounds.setOrigin(pos);
-      if (m_boundsF)
-        m_boundsF->setOrigin(gfx::PointF(pos));
+    // Returns a rectangle with the bounds of the image (width/height
+    // of the image) in the position of the cel (useful to compare
+    // active tilemap bounds when we have to change the tilemap cel
+    // bounds).
+    gfx::Rect imageBounds() const {
+      return gfx::Rect(m_bounds.x,
+                       m_bounds.y,
+                       m_image->width(),
+                       m_image->height());
     }
+
+    void setImage(const ImageRef& image, Layer* layer);
+    void setPosition(const gfx::Point& pos);
 
     void setOpacity(int opacity) {
       m_opacity = opacity;
@@ -75,6 +84,8 @@ namespace doc {
       ASSERT(m_image);
       return sizeof(CelData) + m_image->getMemSize();
     }
+
+    void adjustBounds(Layer* layer);
 
   private:
     ImageRef m_image;

@@ -9,21 +9,24 @@
       <button id="output_filename_browse" text="..." style="mini_button" />
 
       <label id="resize_label" text="@.resize" />
-      <combobox id="resize" editable="true" suffix="%"
-                cell_align="horizontal" cell_hspan="2">
-        <listitem text="25" />
-        <listitem text="50" />
-        <listitem text="100" />
-        <listitem text="200" />
-        <listitem text="300" />
-        <listitem text="400" />
-        <listitem text="500" />
-        <listitem text="600" />
-        <listitem text="700" />
-        <listitem text="800" />
-        <listitem text="900" />
-        <listitem text="1000" />
-      </combobox>
+      <hbox cell_hspan="2" cell_align="horizontal">
+        <combobox id="resize" editable="true" suffix="%" expansive="true">
+          <listitem text="25" />
+          <listitem text="50" />
+          <listitem text="100" />
+          <listitem text="200" />
+          <listitem text="300" />
+          <listitem text="400" />
+          <listitem text="500" />
+          <listitem text="600" />
+          <listitem text="700" />
+          <listitem text="800" />
+          <listitem text="900" />
+          <listitem text="1000" />
+        </combobox>
+        <label id="area_label" text="@.area" />
+        <combobox id="area" text="" cell_align="horizontal" cell_hspan="2" expansive="true" />
+      </hbox>
 
       <label id="layers_label" text="@.layers" />
       <combobox id="layers" text="" cell_align="horizontal" cell_hspan="2" />

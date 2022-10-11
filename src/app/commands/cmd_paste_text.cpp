@@ -28,7 +28,7 @@
 #include "render/dithering.h"
 #include "render/ordered_dither.h"
 #include "render/quantization.h"
-#include "ui/system.h"
+#include "ui/manager.h"
 
 #include "paste_text.xml.h"
 
@@ -123,10 +123,7 @@ private:
     }
 
     if (!m_fontPopup->isVisible()) {
-      gfx::Rect bounds = fontFace()->bounds();
-      m_fontPopup->showPopup(
-        gfx::Rect(bounds.x, bounds.y+bounds.h,
-                  ui::display_w()/2, ui::display_h()/2));
+      m_fontPopup->showPopup(display(), fontFace()->bounds());
     }
     else {
       m_fontPopup->closeWindow(NULL);

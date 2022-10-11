@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2016-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -19,25 +19,6 @@
 
 namespace app {
 
-CliOpenFile::CliOpenFile()
-{
-  document = nullptr;
-  fromFrame = -1;
-  toFrame = -1;
-  splitLayers = false;
-  splitTags = false;
-  splitSlices = false;
-  allLayers = false;
-  listLayers = false;
-  listTags = false;
-  listSlices = false;
-  ignoreEmpty = false;
-  trim = false;
-  trimByGrid = false;
-  oneFrame = false;
-  crop = gfx::Rect();
-}
-
 FileOpROI CliOpenFile::roi() const
 {
   ASSERT(document);
@@ -47,6 +28,7 @@ FileOpROI CliOpenFile::roi() const
     selFrames.insert(fromFrame, toFrame);
 
   return FileOpROI(document,
+                   gfx::Rect(),
                    slice,
                    tag,
                    selFrames,

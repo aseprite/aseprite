@@ -9,6 +9,7 @@
 #define APP_TRANSACTION_H_INCLUDED
 #pragma once
 
+#include "app/cmd_transaction.h"
 #include "app/doc_observer.h"
 
 #include <string>
@@ -16,7 +17,6 @@
 namespace app {
 
   class Cmd;
-  class CmdTransaction;
   class Context;
   class DocRange;
   class DocUndo;
@@ -89,6 +89,8 @@ namespace app {
     // TODO In the future we should refactor this using unique
     //      pointers-like structure only
     void execute(Cmd* cmd);
+
+    CmdTransaction* cmds() { return m_cmds; }
 
   private:
     // List of changes during the execution of this transaction

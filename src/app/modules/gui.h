@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -38,9 +38,9 @@ namespace app {
   void update_windows_color_profile_from_preferences();
   void update_screen_for_document(const Doc* document);
 
-  void load_window_pos(ui::Widget* window, const char* section,
+  void load_window_pos(ui::Window* window, const char* section,
                        const bool limitMinSize = true);
-  void save_window_pos(ui::Widget* window, const char* section);
+  void save_window_pos(ui::Window* window, const char* section);
 
   ui::Widget* setup_mini_font(ui::Widget* widget);
   ui::Widget* setup_mini_look(ui::Widget* widget);

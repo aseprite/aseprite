@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019 Igara Studio S.A.
+// Copyright (c) 2019-2020 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -20,6 +20,7 @@
 namespace doc {
 
   class Document;
+  class Grid;
   class LayerImage;
   class Sprite;
 
@@ -38,6 +39,8 @@ namespace doc {
     const gfx::Rect& bounds() const { return m_data->bounds(); }
     const gfx::RectF& boundsF() const { return m_data->boundsF(); }
     int opacity() const { return m_data->opacity(); }
+
+    gfx::Rect imageBounds() const { return m_data->imageBounds(); }
 
     LayerImage* layer() const { return m_layer; }
     Image* image() const { return m_data->image(); }
@@ -65,6 +68,7 @@ namespace doc {
     }
 
     void setParentLayer(LayerImage* layer);
+    Grid grid() const;
 
   private:
     void fixupImage();

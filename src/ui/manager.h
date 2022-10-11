@@ -10,7 +10,7 @@
 #pragma once
 
 #include "gfx/region.h"
-#include "os/window.h"
+#include "ui/display.h"
 #include "ui/keys.h"
 #include "ui/message_type.h"
 #include "ui/mouse_button.h"
@@ -19,6 +19,7 @@
 
 namespace os {
   class EventQueue;
+  class Window;
 }
 
 namespace ui {
@@ -35,13 +36,15 @@ namespace ui {
     Manager(const os::WindowRef& nativeWindow);
     ~Manager();
 
-    os::Window* display() const { return m_display.get(); }
+    Display* display() const { return &const_cast<Manager*>(this)->m_display; }
+
+    static Display* getDisplayFromNativeWindow(os::Window* window);
 
     // Executes the main message loop.
     void run();
 
-    // Refreshes the real display with the UI content.
-    void flipDisplay();
+    // Refreshes all real displays with the UI content.
+    void flipAllDisplays();
 
     void updateAllDisplaysWithNewScale(int scale);
 
@@ -59,7 +62,9 @@ namespace ui {
     void collectGarbage();
 
     Window* getTopWindow();
+    Window* getDesktopWindow();
     Window* getForegroundWindow();
+    Display* getForegroundDisplay();
 
     Widget* getFocus();
     Widget* getMouse();
@@ -77,6 +82,8 @@ namespace ui {
     void removeMessagesFor(Widget* widget);
     void removeMessagesFor(Widget* widget, MessageType type);
     void removeMessagesForTimer(Timer* timer);
+    void removeMessagesForDisplay(Display* display);
+    void removePaintMessagesForDisplay(Display* display);
 
     void addMessageFilter(int message, Widget* widget);
     void removeMessageFilter(int message, Widget* widget);
@@ -87,23 +94,11 @@ namespace ui {
     bool isFocusMovementMessage(Message* msg);
     bool processFocusMovementMessage(Message* msg);
 
-    // Returns the invalid region in the screen to being updated with
-    // PaintMessages. This region is cleared when each widget receives
-    // a paint message.
-    const gfx::Region& getInvalidRegion() const {
-      return m_invalidRegion;
-    }
+    Widget* pickFromScreenPos(const gfx::Point& screenPos) const override;
 
-    void addInvalidRegion(const gfx::Region& b) {
-      m_invalidRegion |= b;
-    }
-
-    // Mark the given rectangle as a area to be flipped to the real
-    // screen
-    void dirtyRect(const gfx::Rect& bounds);
-
-    void _openWindow(Window* window);
+    void _openWindow(Window* window, bool center);
     void _closeWindow(Window* window, bool redraw_background);
+    void _runModalWindow(Window* window);
     void _updateMouseWidgets();
     void _closingAppWithException();
 
@@ -112,44 +107,54 @@ namespace ui {
     void onInvalidateRegion(const gfx::Region& region) override;
     void onResize(ResizeEvent& ev) override;
     void onSizeHint(SizeHintEvent& ev) override;
-    void onBroadcastMouseMessage(WidgetsList& targets) override;
+    void onBroadcastMouseMessage(const gfx::Point& screenPos,
+                                 WidgetsList& targets) override;
     void onInitTheme(InitThemeEvent& ev) override;
     virtual LayoutIO* onGetLayoutIO();
-    virtual void onNewDisplayConfiguration();
+    virtual void onNewDisplayConfiguration(Display* display);
 
   private:
-    void generateSetCursorMessage(const gfx::Point& mousePos,
+    void generateSetCursorMessage(Display* display,
+                                  const gfx::Point& mousePos,
                                   KeyModifiers modifiers,
                                   PointerType pointerType);
     void generateMessagesFromOSEvents();
-    void handleMouseMove(const gfx::Point& mousePos,
+
+    void handleMouseMove(Display* display,
+                         const gfx::Point& mousePos,
                          const KeyModifiers modifiers,
                          const PointerType pointerType,
                          const float pressure);
-    void handleMouseDown(const gfx::Point& mousePos,
+    void handleMouseDown(Display* display,
+                         const gfx::Point& mousePos,
                          MouseButton mouseButton,
                          KeyModifiers modifiers,
                          PointerType pointerType,
                          const float pressure);
-    void handleMouseUp(const gfx::Point& mousePos,
+    void handleMouseUp(Display* display,
+                       const gfx::Point& mousePos,
                        MouseButton mouseButton,
                        KeyModifiers modifiers,
                        PointerType pointerType);
-    void handleMouseDoubleClick(const gfx::Point& mousePos,
+    void handleMouseDoubleClick(Display* display,
+                                const gfx::Point& mousePos,
                                 MouseButton mouseButton,
                                 KeyModifiers modifiers,
                                 PointerType pointerType,
                                 const float pressure);
-    void handleMouseWheel(const gfx::Point& mousePos,
+    void handleMouseWheel(Display* display,
+                          const gfx::Point& mousePos,
                           KeyModifiers modifiers,
                           PointerType pointerType,
                           const gfx::Point& wheelDelta,
                           bool preciseWheel);
-    void handleTouchMagnify(const gfx::Point& mousePos,
+    void handleTouchMagnify(Display* display,
+                            const gfx::Point& mousePos,
                             const KeyModifiers modifiers,
                             const double magnification);
     void handleWindowZOrder();
-    void updateMouseWidgets(const gfx::Point& mousePos);
+    void updateMouseWidgets(const gfx::Point& mousePos,
+                            Display* display);
 
     int pumpQueue();
     bool sendMessageToWidget(Message* msg, Widget* widget);
@@ -159,7 +164,9 @@ namespace ui {
     static Widget* findMagneticWidget(Widget* widget);
     static Message* newMouseMessage(
       MessageType type,
-      Widget* widget, const gfx::Point& mousePos,
+      Display* display,
+      Widget* widget,
+      const gfx::Point& mousePos,
       PointerType pointerType,
       MouseButton button,
       KeyModifiers modifiers,
@@ -169,12 +176,10 @@ namespace ui {
     void broadcastKeyMsg(Message* msg);
 
     static Manager* m_defaultManager;
-    static gfx::Region m_dirtyRegion;
 
     WidgetsList m_garbage;
-    os::WindowRef m_display;
+    Display m_display;
     os::EventQueue* m_eventQueue;
-    gfx::Region m_invalidRegion;  // Invalid region (we didn't receive paint messages yet for this).
 
     // This member is used to make freeWidget() a no-op when we
     // restack a window if the user clicks on it.

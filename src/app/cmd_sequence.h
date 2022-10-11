@@ -21,15 +21,15 @@ namespace app {
 
     void add(Cmd* cmd);
 
+    // Helper to create a CmdSequence in the same onExecute() member
+    // function.
+    void executeAndAdd(Cmd* cmd);
+
   protected:
     void onExecute() override;
     void onUndo() override;
     void onRedo() override;
     size_t onMemSize() const override;
-
-    // Helper to create a CmdSequence in the same onExecute() member
-    // function.
-    void executeAndAdd(Cmd* cmd);
 
   private:
     std::vector<Cmd*> m_cmds;

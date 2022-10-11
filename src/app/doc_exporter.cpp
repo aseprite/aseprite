@@ -96,29 +96,25 @@ typedef std::shared_ptr<gfx::Rect> SharedRectPtr;
 DocExporter::Item::Item(Doc* doc,
                         const doc::Tag* tag,
                         const doc::SelectedLayers* selLayers,
-                        const doc::SelectedFrames* selFrames)
+                        const doc::SelectedFrames* selFrames,
+                        const bool splitGrid)
   : doc(doc)
   , tag(tag)
-  , selLayers(selLayers ? new doc::SelectedLayers(*selLayers): nullptr)
-  , selFrames(selFrames ? new doc::SelectedFrames(*selFrames): nullptr)
+  , selLayers(selLayers ? std::make_unique<doc::SelectedLayers>(*selLayers): nullptr)
+  , selFrames(selFrames ? std::make_unique<doc::SelectedFrames>(*selFrames): nullptr)
+  , splitGrid(splitGrid)
 {
 }
 
-DocExporter::Item::Item(Item&& other)
-  : doc(other.doc)
-  , tag(other.tag)
-  , selLayers(other.selLayers)
-  , selFrames(other.selFrames)
+DocExporter::Item::Item(Doc* doc,
+                        const doc::ImageRef& image)
+  : doc(doc)
+  , image(image)
 {
-  other.selLayers = nullptr;
-  other.selFrames = nullptr;
 }
 
-DocExporter::Item::~Item()
-{
-  delete selLayers;
-  delete selFrames;
-}
+DocExporter::Item::Item(Item&& other) = default;
+DocExporter::Item::~Item() = default;
 
 int DocExporter::Item::frames() const
 {
@@ -142,6 +138,8 @@ doc::SelectedFrames DocExporter::Item::getSelectedFrames() const
     frames.insert(std::clamp(tag->fromFrame(), 0, doc->sprite()->lastFrame()),
                   std::clamp(tag->toFrame(), 0, doc->sprite()->lastFrame()));
   }
+  else if (isOneImageOnly())
+    frames.insert(0);
   else {
     frames.insert(0, doc->sprite()->lastFrame());
   }
@@ -150,7 +148,11 @@ doc::SelectedFrames DocExporter::Item::getSelectedFrames() const
 
 class DocExporter::Sample {
 public:
-  Sample(Doc* document, Sprite* sprite, SelectedLayers* selLayers,
+  Sample(const gfx::Size& size,
+         Doc* document,
+         Sprite* sprite,
+         const ImageRef& image,
+         SelectedLayers* selLayers,
          frame_t frame,
          const Tag* tag,
          const std::string& filename,
@@ -158,6 +160,7 @@ public:
          const bool extrude) :
     m_document(document),
     m_sprite(sprite),
+    m_image(image),
     m_selLayers(selLayers),
     m_frame(frame),
     m_tag(tag),
@@ -166,9 +169,9 @@ public:
     m_extrude(extrude),
     m_isLinked(false),
     m_isDuplicated(false),
-    m_originalSize(sprite->width(), sprite->height()),
-    m_trimmedBounds(0, 0, sprite->width(), sprite->height()),
-    m_inTextureBounds(std::make_shared<gfx::Rect>(0, 0, sprite->width(), sprite->height())) {
+    m_originalSize(size),
+    m_trimmedBounds(size),
+    m_inTextureBounds(std::make_shared<gfx::Rect>(size)) {
   }
 
   Doc* document() const { return m_document; }
@@ -234,6 +237,11 @@ public:
   ImageRef createRender(ImageBufferPtr& imageBuf) {
     ASSERT(m_sprite);
 
+    // We use the m_image as it is, it doesn't require a special
+    // render.
+    if (m_image)
+      return m_image;
+
     ImageRef render(
       Image::create(m_sprite->pixelFormat(),
                     m_trimmedBounds.w,
@@ -279,19 +287,32 @@ public:
       for (int j=0; j<3; ++j) {
         for (int i=0; i<3; ++i) {
           gfx::Clip clip(x+dx[i], y+dy[j], gfx::RectT<int>(srcx[i], srcy[j], szx[i], szy[j]));
-          render.renderSprite(dst, m_sprite, m_frame, clip);
+          if (m_image) {
+            dst->copy(m_image.get(), clip);
+          }
+          else {
+            render.renderSprite(dst, m_sprite, m_frame, clip);
+          }
         }
       }
     }
     else {
       gfx::Clip clip(x, y, m_trimmedBounds);
-      render.renderSprite(dst, m_sprite, m_frame, clip);
+      if (m_image) {
+        dst->copy(m_image.get(), clip);
+      }
+      else {
+        render.renderSprite(dst, m_sprite, m_frame, clip);
+      }
     }
   }
 
 private:
   Doc* m_document;
   Sprite* m_sprite;
+  // In case that this Sample references just one image to export
+  // (e.g. like a Tileset tile image) this can be != nullptr.
+  ImageRef m_image;
   SelectedLayers* m_selLayers;
   frame_t m_frame;
   const Tag* m_tag;
@@ -360,7 +381,7 @@ public:
                      int shapePadding,
                      int& width, int& height,
                      base::task_token& token) override {
-    DX_TRACE("SimpleLayoutSamples type", (int)m_type, width, height);
+    DX_TRACE("DX: SimpleLayoutSamples type", (int)m_type, width, height);
 
     const bool breakBands =
       (m_type == SpriteSheetType::Columns ||
@@ -492,7 +513,7 @@ public:
       ++i;
     }
 
-    DX_TRACE("-> SimpleLayoutSamples", width, height);
+    DX_TRACE("DX: -> SimpleLayoutSamples", width, height);
   }
 
 private:
@@ -688,7 +709,7 @@ Doc* DocExporter::exportSheet(Context* ctx, base::task_token& token)
 
   // Save the image files.
   if (!m_textureFilename.empty()) {
-    DX_TRACE("DocExporter::exportSheet", m_textureFilename);
+    DX_TRACE("DX: exportSheet", m_textureFilename);
     textureDocument->setFilename(m_textureFilename.c_str());
     int ret = save_document(ctx, textureDocument.get());
     if (ret == 0)
@@ -713,11 +734,19 @@ void DocExporter::addDocument(
   Doc* doc,
   const doc::Tag* tag,
   const doc::SelectedLayers* selLayers,
-  const doc::SelectedFrames* selFrames)
+  const doc::SelectedFrames* selFrames,
+  const bool splitGrid)
 {
-  DX_TRACE("DocExporter::addDocument doc=", doc, "tag=", tag);
+  DX_TRACE("DX: addDocument doc=", doc, "tag=", tag);
+  m_documents.push_back(Item(doc, tag, selLayers, selFrames, splitGrid));
+}
 
-  m_documents.push_back(Item(doc, tag, selLayers, selFrames));
+void DocExporter::addImage(
+  Doc* doc,
+  const doc::ImageRef& image)
+{
+  DX_TRACE("DX: addImage doc=", doc, "image=", image.get());
+  m_documents.push_back(Item(doc, image));
 }
 
 int DocExporter::addDocumentSamples(
@@ -725,10 +754,11 @@ int DocExporter::addDocumentSamples(
   const doc::Tag* thisTag,
   const bool splitLayers,
   const bool splitTags,
+  const bool splitGrid,
   const doc::SelectedLayers* selLayers,
   const doc::SelectedFrames* selFrames)
 {
-  DX_TRACE("DocExporter::addDocumentSamples");
+  DX_TRACE("DX: addDocumentSamples");
 
   std::vector<const Tag*> tags;
 
@@ -793,7 +823,7 @@ int DocExporter::addDocumentSamples(
 
           SelectedLayers oneLayer;
           oneLayer.insert(layer);
-          addDocument(doc, tag, &oneLayer, thisSelFrames);
+          addDocument(doc, tag, &oneLayer, thisSelFrames, splitGrid);
           ++items;
         }
       }
@@ -804,17 +834,47 @@ int DocExporter::addDocumentSamples(
 
           SelectedLayers oneLayer;
           oneLayer.insert(layer);
-          addDocument(doc, tag, &oneLayer, thisSelFrames);
+          addDocument(doc, tag, &oneLayer, thisSelFrames, splitGrid);
           ++items;
         }
       }
     }
     else {
-      addDocument(doc, tag, selLayers, thisSelFrames);
+      addDocument(doc, tag, selLayers, thisSelFrames, splitGrid);
       ++items;
     }
   }
   return std::max(1, items);
+}
+
+int DocExporter::addTilesetsSamples(
+  Doc* doc,
+  const doc::SelectedLayers* selLayers)
+{
+  LayerList layers;
+  if (selLayers)
+    layers = selLayers->toAllLayersList();
+  else
+    layers = doc->sprite()->allVisibleLayers();
+
+  std::set<doc::ObjectId> alreadyExported;
+  int items = 0;
+  for (auto& layer : layers) {
+    if (layer->isTilemap()) {
+      Tileset* ts = dynamic_cast<LayerTilemap*>(layer)->tileset();
+
+      if (alreadyExported.find(ts->id()) == alreadyExported.end()) {
+        for (const ImageRef& image : *ts) {
+          addImage(doc, image);
+          ++items;
+        }
+        alreadyExported.insert(ts->id());
+      }
+    }
+  }
+
+  DX_TRACE("DX: addTilesetsSamples items=", items);
+  return items;
 }
 
 void DocExporter::captureSamples(Samples& samples,
@@ -847,24 +907,34 @@ void DocExporter::captureSamples(Samples& samples,
         (tag != nullptr));              // Has tag
     }
 
-    gfx::Rect spriteBounds = sprite->bounds();
-    if (m_trimSprite) {
-      if (m_cache.spriteId == sprite->id() &&
-          m_cache.spriteVer == sprite->version() &&
-          m_cache.trimmedByGrid == m_trimByGrid) {
-        spriteBounds = m_cache.trimmedBounds;
-      }
-      else {
-        spriteBounds = get_trimmed_bounds(sprite, m_trimByGrid);
-        if (spriteBounds.isEmpty())
-          spriteBounds = gfx::Rect(0, 0, 1, 1);
+    gfx::Rect spriteBounds;
 
-        // Cache trimmed bounds so we don't have to recalculate them
-        // in the next iteration/preview.
-        m_cache.spriteId = sprite->id();
-        m_cache.spriteVer = sprite->version();
-        m_cache.trimmedByGrid = m_trimByGrid;
-        m_cache.trimmedBounds = spriteBounds;
+    // This item is only one image (e.g. a tileset tile)
+    if (item.isOneImageOnly()) {
+      ASSERT(item.image);
+      spriteBounds = item.image->bounds();
+    }
+    // This item comes from the sprite canvas
+    else {
+      spriteBounds = sprite->bounds();
+      if (m_trimSprite) {
+        if (m_cache.spriteId == sprite->id() &&
+            m_cache.spriteVer == sprite->version() &&
+            m_cache.trimmedByGrid == m_trimByGrid) {
+          spriteBounds = m_cache.trimmedBounds;
+        }
+        else {
+          spriteBounds = get_trimmed_bounds(sprite, m_trimByGrid);
+          if (spriteBounds.isEmpty())
+            spriteBounds = gfx::Rect(0, 0, 1, 1);
+
+          // Cache trimmed bounds so we don't have to recalculate them
+          // in the next iteration/preview.
+          m_cache.spriteId = sprite->id();
+          m_cache.spriteVer = sprite->version();
+          m_cache.trimmedByGrid = m_trimByGrid;
+          m_cache.trimmedBounds = spriteBounds;
+        }
       }
     }
 
@@ -891,8 +961,12 @@ void DocExporter::captureSamples(Samples& samples,
       std::string filename = filename_formatter(format, fnInfo);
 
       Sample sample(
-        doc, sprite, item.selLayers, frame, innerTag,
-        filename, m_innerPadding, m_extrude);
+        (item.image ? item.image->size():
+         item.splitGrid ? sprite->gridBounds().size():
+                          sprite->size()),
+        doc, sprite, item.image, item.selLayers.get(),
+        frame, innerTag, filename,
+        m_innerPadding, m_extrude);
       Cel* cel = nullptr;
       Cel* link = nullptr;
       bool done = false;
@@ -905,7 +979,8 @@ void DocExporter::captureSamples(Samples& samples,
 
       // Re-use linked samples
       bool alreadyTrimmed = false;
-      if (link && m_mergeDuplicates) {
+      if (link && m_mergeDuplicates &&
+          !item.isOneImageOnly()) {
         for (const Sample& other : samples) {
           if (token.canceled())
             return;
@@ -928,7 +1003,8 @@ void DocExporter::captureSamples(Samples& samples,
         ASSERT(done || (!done && tag));
       }
 
-      if (!done && (m_ignoreEmptyCels || m_trimCels)) {
+      if (!done && (m_ignoreEmptyCels || m_trimCels) &&
+          !item.isOneImageOnly()) {
         // Ignore empty cels
         if (layer && layer->isImage() && !cel && m_ignoreEmptyCels)
           continue;
@@ -953,7 +1029,11 @@ void DocExporter::captureSamples(Samples& samples,
         else if (m_ignoreEmptyCels)
           refColor = sprite->transparentColor();
 
-        if (!algorithm::shrink_bounds(sampleRender.get(), spriteBounds, frameBounds, refColor)) {
+        if (!algorithm::shrink_bounds(sampleRender.get(),
+                                      refColor,
+                                      nullptr,        // layer
+                                      spriteBounds,   // startBounds
+                                      frameBounds)) { // output bounds
           // If shrink_bounds() returns false, it's because the whole
           // image is transparent (equal to the mask color).
 
@@ -990,7 +1070,23 @@ void DocExporter::captureSamples(Samples& samples,
       if (!alreadyTrimmed && m_trimSprite)
         sample.setTrimmedBounds(spriteBounds);
 
-      samples.addSample(sample);
+      if (item.splitGrid) {
+        const gfx::Rect& gridBounds = sprite->gridBounds();
+        gfx::Point initPos(0, 0), pos;
+        initPos = pos = snap_to_grid(gridBounds, initPos, PreferSnapTo::BoxOrigin);
+
+        for (; pos.y+gridBounds.h <= spriteBounds.h; pos.y+=gridBounds.h) {
+          for (pos.x=initPos.x; pos.x+gridBounds.w <= spriteBounds.w; pos.x+=gridBounds.w) {
+            const gfx::Rect cellBounds(pos, gridBounds.size());
+            sample.setTrimmedBounds(cellBounds);
+            sample.setSharedBounds(std::make_shared<gfx::Rect>(sample.inTextureBounds()));
+            samples.addSample(sample);
+          }
+        }
+      }
+      else {
+        samples.addSample(sample);
+      }
 
       DX_TRACE("DX:   - Sample:",
                sample.document()->filename(),
@@ -1168,6 +1264,7 @@ void DocExporter::renderTexture(Context* ctx,
         sample.sprite(),
         textureImage->pixelFormat(),
         render::Dithering(),
+        Sprite::DefaultRgbMapAlgorithm(), // TODO add rgbmap algorithm preference
         nullptr, // toGray is not needed because the texture is Indexed or RGB
         nullptr) // TODO add a delegate to show progress
         .execute(ctx);
@@ -1314,6 +1411,9 @@ void DocExporter::createDataFile(const Samples& samples,
 
     bool firstTag = true;
     for (auto& item : m_documents) {
+      if (item.isOneImageOnly())
+        continue;
+
       Doc* doc = item.doc;
       Sprite* sprite = doc->sprite();
 
@@ -1334,7 +1434,8 @@ void DocExporter::createDataFile(const Samples& samples,
         os << "\n   { \"name\": \"" << escape_for_json(tag->name()) << "\","
            << " \"from\": " << (tag->fromFrame()) << ","
            << " \"to\": " << (tag->toFrame()) << ","
-           << " \"direction\": \"" << escape_for_json(convert_anidir_to_string(tag->aniDir())) << "\" }";
+           " \"direction\": \"" << escape_for_json(convert_anidir_to_string(tag->aniDir())) << "\"";
+        os << tag->userData() << " }";
       }
     }
     os << "\n  ]";
@@ -1344,6 +1445,9 @@ void DocExporter::createDataFile(const Samples& samples,
   if (m_listLayers) {
     LayerList metaLayers;
     for (auto& item : m_documents) {
+      if (item.isOneImageOnly())
+        continue;
+
       Doc* doc = item.doc;
       Sprite* sprite = doc->sprite();
       Layer* root = sprite->root();
@@ -1439,6 +1543,9 @@ void DocExporter::createDataFile(const Samples& samples,
 
     bool firstSlice = true;
     for (auto& item : m_documents) {
+      if (item.isOneImageOnly())
+        continue;
+
       Doc* doc = item.doc;
       Sprite* sprite = doc->sprite();
 

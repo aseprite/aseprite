@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This program is distributed under the terms of
@@ -12,9 +12,11 @@
 #include "app/ui/slice_window.h"
 
 #include "app/doc.h"
-#include "app/ui/user_data_popup.h"
+#include "app/pref/preferences.h"
+#include "app/ui/user_data_view.h"
 #include "doc/slice.h"
 #include "doc/sprite.h"
+#include "ui/manager.h"
 
 #include <algorithm>
 
@@ -24,12 +26,14 @@ SliceWindow::SliceWindow(const doc::Sprite* sprite,
                          const doc::SelectedObjects& slices,
                          const doc::frame_t frame)
   : m_mods(kNone)
+  , m_userDataView(Preferences::instance().slices.userDataVisibility)
 {
   ASSERT(!slices.empty());
 
   Slice* slice = slices.frontAs<Slice>();
-  m_userData = slice->userData();
-  userData()->Click.connect([this]{ onPopupUserData(); });
+  auto mainGrid = findChildT<ui::Grid>("properties_grid");
+  m_userDataView.configureAndSet(slice->userData(), mainGrid);
+  userData()->Click.connect([this]{ onToggleUserData(); });
 
   if (slices.size() == 1) {
     // If we are going to edit just one slice, we indicate like all
@@ -95,6 +99,14 @@ SliceWindow::SliceWindow(const doc::Sprite* sprite,
           onModifyField(entry, mod);
         });
     }
+
+    ui::Entry* userDataEntry = m_userDataView.entry();
+    userDataEntry->setSuffix("*");
+    userDataEntry->Change.connect(
+      [this, userDataEntry]{ onModifyField(userDataEntry, kUserData); });
+
+    ColorButton* colorButton = m_userDataView.color();
+    colorButton->Click.connect([this]{ onPossibleColorChange(); });
   }
 }
 
@@ -173,10 +185,11 @@ void SliceWindow::onPivotChange()
   }
 }
 
-void SliceWindow::onPopupUserData()
+void SliceWindow::onToggleUserData()
 {
-  if (show_user_data_popup(userData()->bounds(), m_userData))
-    m_mods = Mods(int(m_mods) | int(kUserData));
+  m_userDataView.toggleVisibility();
+  remapWindow();
+  manager()->invalidate();
 }
 
 void SliceWindow::onModifyField(ui::Entry* entry,
@@ -185,6 +198,11 @@ void SliceWindow::onModifyField(ui::Entry* entry,
   if (entry)
     entry->setSuffix(std::string());
   m_mods = Mods(int(m_mods) | int(mods));
+}
+
+void SliceWindow::onPossibleColorChange()
+{
+  m_mods = Mods(int(m_mods) | int(kUserData));
 }
 
 } // namespace app

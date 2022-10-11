@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -17,22 +17,22 @@
 namespace doc {
 
 Tag::Tag(frame_t from, frame_t to)
-  : Object(ObjectType::Tag)
+  : WithUserData(ObjectType::Tag)
   , m_owner(nullptr)
   , m_from(from)
   , m_to(to)
-  , m_color(rgba(0, 0, 0, 255))
   , m_name("Tag")
   , m_aniDir(AniDir::FORWARD)
 {
+  color_t defaultColor = rgba_a_mask;// black color with full opacity.
+  userData().setColor(defaultColor);
 }
 
 Tag::Tag(const Tag& other)
-  : Object(ObjectType::Tag)
+  : WithUserData(ObjectType::Tag)
   , m_owner(nullptr)
   , m_from(other.m_from)
   , m_to(other.m_to)
-  , m_color(other.m_color)
   , m_name(other.m_name)
   , m_aniDir(other.m_aniDir)
 {
@@ -41,6 +41,14 @@ Tag::Tag(const Tag& other)
 Tag::~Tag()
 {
   ASSERT(!m_owner);
+}
+
+Sprite* Tag::sprite() const
+{
+  if (m_owner)
+    return m_owner->sprite();
+  else
+    return nullptr;
 }
 
 void Tag::setOwner(Tags* owner)
@@ -68,7 +76,7 @@ void Tag::setName(const std::string& name)
 
 void Tag::setColor(color_t color)
 {
-  m_color = color;
+  userData().setColor(color);
 }
 
 void Tag::setAniDir(AniDir aniDir)

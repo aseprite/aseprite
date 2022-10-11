@@ -1,31 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2019  Igara Studio S.A. -->
+<!-- Copyright (C) 2019-2021  Igara Studio S.A. -->
 <!-- Copyright (C) 2015-2018  David Capello -->
 <gui>
 <window id="tag_properties" text="@.title">
-  <grid columns="2">
-    <label text="@.name" />
-    <entry maxsize="256" id="name" magnet="true" />
+  <vbox>
+    <grid id="properties_grid" columns="3">
+      <label text="@.name" />
+      <entry maxsize="256" id="name" magnet="true" cell_align="horizontal" expansive="true" />
+      <button id="user_data" icon="icon_user_data" maxsize="32" tooltip="@general.user_data" />
+      <label text="@.from" />
+      <expr id="from" cell_hspan="2" />
 
-    <label text="@.from" />
-    <expr id="from" />
+      <label text="@.to" />
+      <expr id="to" cell_hspan="2" />
+      <label text="@.ani_dir" />
+      <combobox id="anidir" cell_hspan="2" />
 
-    <label text="@.to" />
-    <expr id="to" />
+    </grid>
+    <grid columns="2">
+      <separator horizontal="true" cell_hspan="2" minwidth="180" />
 
-    <label text="@.color" />
-    <colorpicker id="color" simple="true" />
-
-    <label text="@.ani_dir" />
-    <combobox id="anidir" />
-
-    <separator horizontal="true" cell_hspan="2" />
-
-    <box horizontal="true" homogeneous="true" cell_hspan="2" cell_align="right">
-      <button text="@general.ok" closewindow="true" id="ok" magnet="true" minwidth="60" />
-      <button text="@general.cancel" closewindow="true" />
-    </box>
-  </grid>
+      <box horizontal="true" homogeneous="true" cell_hspan="2" cell_align="right">
+        <button text="@general.ok" closewindow="true" id="ok" magnet="true" minwidth="60" />
+        <button text="@general.cancel" closewindow="true" />
+      </box>
+    </grid>
+  </vbox>
 </window>
 </gui>

@@ -17,6 +17,10 @@
 #include "doc/palette.h"
 #include "doc/remap.h"
 #include "doc/rgbmap.h"
+#include "doc/tile.h"
+#include "gfx/region.h"
+
+#include <city.h>
 
 #include <stdexcept>
 
@@ -61,6 +65,12 @@ void copy_image(Image* dst, const Image* src, int x, int y)
   ASSERT(src);
 
   dst->copy(src, gfx::Clip(x, y, 0, 0, src->width(), src->height()));
+}
+
+void copy_image(Image* dst, const Image* src, const gfx::Region& rgn)
+{
+  for (const gfx::Rect& rc : rgn)
+    dst->copy(src, gfx::Clip(rc));
 }
 
 Image* crop_image(const Image* image, int x, int y, int w, int h, color_t bg, const ImageBufferPtr& buffer)
@@ -302,7 +312,7 @@ bool is_plain_image_templ(const Image* img, const color_t color)
   const LockImageBits<ImageTraits> bits(img);
   typename LockImageBits<ImageTraits>::const_iterator it, end;
   for (it=bits.begin(), end=bits.end(); it!=end; ++it) {
-    if (*it != color)
+    if (!ImageTraits::same_color(*it, color))
       return false;
   }
   ASSERT(it == end);
@@ -353,6 +363,7 @@ bool is_plain_image(const Image* img, color_t c)
     case IMAGE_GRAYSCALE: return is_plain_image_templ<GrayscaleTraits>(img, c);
     case IMAGE_INDEXED:   return is_plain_image_templ<IndexedTraits>(img, c);
     case IMAGE_BITMAP:    return is_plain_image_templ<BitmapTraits>(img, c);
+    case IMAGE_TILEMAP:   return is_plain_image_templ<TilemapTraits>(img, c);
   }
   return false;
 }
@@ -377,6 +388,7 @@ int count_diff_between_images(const Image* i1, const Image* i2)
     case IMAGE_GRAYSCALE: return count_diff_between_images_templ<GrayscaleTraits>(i1, i2);
     case IMAGE_INDEXED:   return count_diff_between_images_templ<IndexedTraits>(i1, i2);
     case IMAGE_BITMAP:    return count_diff_between_images_templ<BitmapTraits>(i1, i2);
+    case IMAGE_TILEMAP:   return count_diff_between_images_templ<TilemapTraits>(i1, i2);
   }
 
   ASSERT(false);
@@ -395,6 +407,7 @@ bool is_same_image(const Image* i1, const Image* i2)
     case IMAGE_GRAYSCALE: return is_same_image_templ<GrayscaleTraits>(i1, i2);
     case IMAGE_INDEXED:   return is_same_image_templ<IndexedTraits>(i1, i2);
     case IMAGE_BITMAP:    return is_same_image_templ<BitmapTraits>(i1, i2);
+    case IMAGE_TILEMAP:   return is_same_image_templ<TilemapTraits>(i1, i2);
   }
 
   ASSERT(false);
@@ -403,14 +416,32 @@ bool is_same_image(const Image* i1, const Image* i2)
 
 void remap_image(Image* image, const Remap& remap)
 {
-  ASSERT(image->pixelFormat() == IMAGE_INDEXED);
-  if (image->pixelFormat() != IMAGE_INDEXED)
-    return;
+  ASSERT(image->pixelFormat() == IMAGE_INDEXED ||
+         image->pixelFormat() == IMAGE_TILEMAP);
 
-  for (auto& pixel : LockImageBits<IndexedTraits>(image)) {
-    auto to = remap[pixel];
-    if (to != Remap::kUnused)
-      pixel = to;
+  switch (image->pixelFormat()) {
+    case IMAGE_INDEXED:
+      transform_image<IndexedTraits>(
+        image, [&remap](color_t c) -> color_t {
+          auto to = remap[c];
+          if (to != Remap::kUnused)
+            return to;
+          else
+            return c;
+        });
+      break;
+    case IMAGE_TILEMAP:
+      transform_image<TilemapTraits>(
+        image, [&remap](color_t c) -> color_t {
+          auto to = remap[c];
+          if (c == notile || to == Remap::kNoTile)
+            return notile;
+          else if (to != Remap::kUnused)
+            return to;
+          else
+            return c;
+        });
+      break;
   }
 }
 
@@ -420,21 +451,30 @@ template <typename ImageTraits, uint32_t Mask>
 static uint32_t calculate_image_hash_templ(const Image* image,
                                            const gfx::Rect& bounds)
 {
-  uint32_t hash = 0;
-  for (int y=0; y<bounds.h; ++y) {
-    auto p = (typename ImageTraits::address_t)image->getPixelAddress(bounds.x, bounds.y+y);
-    for (int x=0; x<bounds.w; ++x, ++p) {
-      uint32_t value = *p;
-      uint32_t mask = Mask;
-      while (mask) {
-        hash += value & mask & 0xff;
-        hash <<= 1;
-        value >>= 8;
-        mask >>= 8;
-      }
-    }
+#if defined(__LP64__) || defined(__x86_64__) || defined(_WIN64)
+  #define CITYHASH(buf, len) (CityHash64(buf, len) & 0xffffffff)
+  static_assert(sizeof(void*) == 8, "This CPU is not 64-bit");
+#else
+  #define CITYHASH(buf, len) CityHash32(buf, len)
+  static_assert(sizeof(void*) == 4, "This CPU is not 32-bit");
+#endif
+
+  const uint32_t rowlen = ImageTraits::getRowStrideBytes(bounds.w);
+  const uint32_t len = rowlen * bounds.h;
+  if (bounds == image->bounds()) {
+    return CITYHASH((const char*)image->getPixelAddress(0, 0), len);
   }
-  return hash;
+  else {
+    ASSERT(false);              // TODO not used at this moment
+
+    std::vector<uint8_t> buf(len);
+    uint8_t* dst = &buf[0];
+    for (int y=0; y<bounds.h; ++y, dst+=rowlen) {
+      auto src = image->getPixelAddress(bounds.x, bounds.y+y);
+      std::copy(dst, dst+rowlen, src);
+    }
+    return CITYHASH((const char*)&buf[0], buf.size());
+  }
 }
 
 uint32_t calculate_image_hash(const Image* img, const gfx::Rect& bounds)
@@ -445,18 +485,35 @@ uint32_t calculate_image_hash(const Image* img, const gfx::Rect& bounds)
     case IMAGE_INDEXED:   return calculate_image_hash_templ<IndexedTraits, 0xff>(img, bounds);
     case IMAGE_BITMAP:    return calculate_image_hash_templ<BitmapTraits, 1>(img, bounds);
   }
+  ASSERT(false);
+  return 0;
+}
 
-  uint32_t hash = 0;
-  for (int y=0; y<bounds.h; ++y) {
-    int bytes = img->getRowStrideSize(bounds.w);
-    uint8_t* p = img->getPixelAddress(bounds.x, bounds.y+y);
-    while (bytes-- > 0) {
-      hash += *p;
-      hash <<= 1;
-      ++p;
+void preprocess_transparent_pixels(Image* image)
+{
+  switch (image->pixelFormat()) {
+
+    case IMAGE_RGB: {
+      LockImageBits<RgbTraits> bits(image);
+      auto it = bits.begin(), end = bits.end();
+      for (; it != end; ++it) {
+        if (rgba_geta(*it) == 0)
+          *it = 0;
+      }
+      break;
     }
+
+    case IMAGE_GRAYSCALE: {
+      LockImageBits<GrayscaleTraits> bits(image);
+      auto it = bits.begin(), end = bits.end();
+      for (; it != end; ++it) {
+        if (graya_geta(*it) == 0)
+          *it = 0;
+      }
+      break;
+    }
+
   }
-  return hash;
 }
 
 } // namespace doc

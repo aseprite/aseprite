@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -36,6 +36,12 @@ namespace app {
     class SetMask;
   }
 
+  class PixelsMovementDelegate {
+  public:
+    virtual ~PixelsMovementDelegate() { }
+    virtual void onPivotChange() = 0;
+  };
+
   // Helper class to move pixels interactively and control undo history
   // correctly.  The extra cel of the sprite is temporally used to show
   // feedback, drag, and drop the specified image in the constructor
@@ -50,6 +56,7 @@ namespace app {
       MaintainAspectRatioMovement = 8,
       LockAxisMovement = 16,
       ScaleFromPivot = 32,
+      FineControl = 64,
     };
 
     enum CommitChangesOption {
@@ -71,17 +78,18 @@ namespace app {
     HandleType handle() const { return m_handle; }
     bool canHandleFrameChange() const { return m_canHandleFrameChange; }
 
+    void setDelegate(PixelsMovementDelegate* delegate);
     void setFastMode(const bool fastMode);
 
     void trim();
     void cutMask();
     void copyMask();
-    void catchImage(const gfx::Point& pos, HandleType handle);
-    void catchImageAgain(const gfx::Point& pos, HandleType handle);
+    void catchImage(const gfx::PointF& pos, HandleType handle);
+    void catchImageAgain(const gfx::PointF& pos, HandleType handle);
 
     // Moves the image to the new position (relative to the start
     // position given in the ctor).
-    void moveImage(const gfx::Point& pos, MoveModifier moveModifier);
+    void moveImage(const gfx::PointF& pos, MoveModifier moveModifier);
 
     // Returns a copy of the current image being dragged with the
     // current transformation.
@@ -118,8 +126,11 @@ namespace app {
     bool gotoFrame(const doc::frame_t deltaFrame);
 
     const Transformation& getTransformation() const { return m_currentData; }
+    void setTransformation(const Transformation& t);
 
   private:
+    void setTransformationBase(const Transformation& t);
+    void adjustPivot();
     bool editMultipleCels() const;
     void stampImage(bool finalStamp);
     void stampExtraCelImage();
@@ -129,14 +140,17 @@ namespace app {
     void redrawCurrentMask();
     void drawImage(
       const Transformation& transformation,
-      doc::Image* dst, const gfx::Point& pos,
+      doc::Image* dst, const gfx::PointF& pt,
       const bool renderOriginalLayer);
     void drawMask(doc::Mask* dst, bool shrink);
     void drawParallelogram(
       const Transformation& transformation,
       doc::Image* dst, const doc::Image* src, const doc::Mask* mask,
       const Transformation::Corners& corners,
-      const gfx::Point& leftTop);
+      const gfx::PointF& leftTop);
+    void drawTransformedTilemap(
+      const Transformation& transformation,
+      doc::Image* dst, const doc::Image* src, const doc::Mask* mask);
     void updateDocumentMask();
     void hideDocumentMask();
 
@@ -149,6 +163,7 @@ namespace app {
     void dumpInnerCmds();
 #endif
 
+    PixelsMovementDelegate* m_delegate = nullptr;
     const ContextReader m_reader;
     Site m_site;
     Doc* m_document;
@@ -157,7 +172,7 @@ namespace app {
     bool m_adjustPivot;
     HandleType m_handle;
     doc::ImageRef m_originalImage;
-    gfx::Point m_catchPos;
+    gfx::PointF m_catchPos;
     Transformation m_initialData;
     Transformation m_currentData;
     std::unique_ptr<Mask> m_initialMask, m_initialMask0;

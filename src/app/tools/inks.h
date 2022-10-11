@@ -13,7 +13,9 @@
 #include "app/doc.h"
 #include "app/doc_undo.h"
 #include "app/tools/pick_ink.h"
+#include "app/transformation.h"
 #include "doc/mask.h"
+#include "doc/tile.h"
 #include "gfx/region.h"
 
 namespace app {
@@ -96,7 +98,13 @@ public:
         break;
     }
 
-    if (loop->getBrush()->type() == doc::kImageBrushType) {
+    // TODO support different ink types for tilemaps (even custom brushes,
+    //      and custom inks script-driven)
+    if (loop->getDstImage()->pixelFormat() == IMAGE_TILEMAP) {
+      setProc(new CopyInkProcessing<TilemapTraits>(loop));
+    }
+    // Custom brushes
+    else if (loop->getBrush()->type() == doc::kImageBrushType) {
       switch (m_type) {
         case Simple:
           setProc(get_ink_proc<BrushSimpleInkProcessing>(loop));
@@ -135,8 +143,10 @@ public:
                 // opaque if opacity == 255.
                 if (m_type == Simple)
                   opaque = true;
-                else if (color == loop->sprite()->transparentColor())
+                else if (color == loop->sprite()->transparentColor() &&
+                         loop->getLayer()->isTransparent()) {
                   opaque = false;
+                }
                 else {
                   color = loop->getPalette()->getEntry(color);
                   opaque = (rgba_geta(color) == 255);
@@ -323,6 +333,12 @@ public:
         if (loop->getBrush()->type() == doc::kImageBrushType) {
           setProc(get_ink_proc<BrushEraserInkProcessing>(loop));
         }
+        else if (loop->getDstImage()->pixelFormat() == IMAGE_TILEMAP) {
+          color_t clearColor = doc::notile;
+          loop->setPrimaryColor(clearColor);
+          loop->setSecondaryColor(clearColor);
+          setProc(new CopyInkProcessing<TilemapTraits>(loop));
+        }
         else {
           // TODO app_get_color_to_clear_layer should receive the context as parameter
           color_t clearColor = app_get_color_to_clear_layer(loop->getLayer());
@@ -351,13 +367,13 @@ public:
       case ReplaceFgWithBg:
         loop->setPrimaryColor(loop->getFgColor());
         loop->setSecondaryColor(loop->getBgColor());
-        setProc(get_ink_proc<ReplaceInkProcessing>(loop));
+        setProc(get_ink_proc2<ReplaceInkProcessing>(loop));
         break;
 
       case ReplaceBgWithFg:
         loop->setPrimaryColor(loop->getBgColor());
         loop->setSecondaryColor(loop->getFgColor());
-        setProc(get_ink_proc<ReplaceInkProcessing>(loop));
+        setProc(get_ink_proc2<ReplaceInkProcessing>(loop));
         break;
     }
   }
@@ -432,24 +448,42 @@ public:
   }
 
   void inkHline(int x1, int y, int x2, ToolLoop* loop) override {
+    gfx::Rect rc(x1, y, x2-x1+1, 1);
+
+    // For tile point shape, the point shape is done in "tiles"
+    // coordinates, but we want the selection in canvas/pixels
+    // coordinates.
+    if (loop->getPointShape()->isTile()) {
+      const Grid& grid = loop->getGrid();
+      rc = grid.tileToCanvas(rc);
+      if (!m_modify_selection) {
+        // For feedback purposes, the coordinates must be relative to
+        // the getDstImage() and not in absolute sprite canvas
+        // coordinates.
+        rc.offset(-grid.origin());
+      }
+    }
+
     if (m_modify_selection) {
       int modifiers = int(loop->getModifiers());
 
       if ((modifiers & (int(ToolLoopModifiers::kReplaceSelection) |
                         int(ToolLoopModifiers::kAddSelection))) != 0) {
-        m_mask.add(gfx::Rect(x1, y, x2-x1+1, 1));
+        m_mask.add(rc);
       }
       else if ((modifiers & int(ToolLoopModifiers::kSubtractSelection)) != 0) {
-        m_mask.subtract(gfx::Rect(x1, y, x2-x1+1, 1));
+        m_mask.subtract(rc);
       }
       else if ((modifiers & int(ToolLoopModifiers::kIntersectSelection)) != 0) {
-        m_intersectMask.add(gfx::Rect(x1, y, x2-x1+1, 1));
+        m_intersectMask.add(rc);
       }
 
-      m_maxBounds |= gfx::Rect(x1, y, x2-x1+1, 1);
+      m_maxBounds |= rc;
     }
     else {
-      BaseInk::inkHline(x1, y, x2, loop);
+      rc &= loop->getDstImage()->bounds();
+      for (int v=rc.y; v<rc.y2(); ++v)
+        BaseInk::inkHline(rc.x, v, rc.x2()-1, loop);
     }
   }
 
@@ -482,8 +516,11 @@ public:
       m_mask.unfreeze();
 
       loop->setMask(&m_mask);
+      double cornerThick = (loop->isTilemapMode()) ? 
+                              CORNER_THICK_FOR_TILEMAP_MODE :
+                              CORNER_THICK_FOR_PIXELS_MODE;
       loop->getDocument()->setTransformation(
-        Transformation(RectF(m_mask.bounds())));
+        Transformation(RectF(m_mask.bounds()), cornerThick));
 
       m_mask.clear();
     }

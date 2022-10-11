@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -28,7 +29,8 @@ namespace app {
     void pickSample(const Site& site,
                     const gfx::PointF& pixelPos,
                     const render::Projection& proj,
-                    app::Color& color);
+                    app::Color& color,
+                    doc::tile_t& tile);
 
     void executeOnMousePos(Context* context,
                            Editor* editor,

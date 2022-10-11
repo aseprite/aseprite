@@ -69,8 +69,8 @@ void ScreenshotCommand::onExecute(Context* ctx)
   app::ResourceFinder rf(false);
   rf.includeDesktopDir("");
 
-  os::Window* display = ui::Manager::getDefault()->display();
-  os::Surface* surface = display->surface();
+  os::Window* window = ui::Manager::getDefault()->display()->nativeWindow();
+  os::Surface* surface = window->surface();
   std::string fn;
 
   if (params().save()) {
@@ -89,7 +89,7 @@ void ScreenshotCommand::onExecute(Context* ctx)
                       surface->width(),
                       surface->height(),
                       0,    // Mask color
-                      display->colorSpace()->gfxColorSpace());
+                      window->colorSpace()->gfxColorSpace());
 
   doc::Sprite* spr = doc::Sprite::MakeStdSprite(spec);
   static_cast<doc::LayerImage*>(spr->firstLayer())->configureAsBackground();
@@ -122,7 +122,7 @@ void ScreenshotCommand::onExecute(Context* ctx)
       // Get image again (cmd::convert_color_profile() might have changed it)
       img = cel->image();
 
-      const int scale = display->scale();
+      const int scale = window->scale();
       base::buffer rgbBuffer(3*w*h*scale*scale);
       int c = 0;
       doc::LockImageBits<RgbTraits> bits(img);

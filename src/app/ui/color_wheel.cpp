@@ -522,7 +522,7 @@ void ColorWheel::onOptions()
   }
 
   gfx::Rect rc = m_options.bounds();
-  menu.showPopup(gfx::Point(rc.x+rc.w, rc.y));
+  menu.showPopup(gfx::Point(rc.x2(), rc.y), display());
 }
 
 float ColorWheel::convertHueAngle(float h, int dir) const

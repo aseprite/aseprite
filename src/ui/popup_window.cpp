@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2021  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -27,8 +27,6 @@ PopupWindow::PopupWindow(const std::string& text,
   : Window(text.empty() ? WithoutTitleBar: WithTitleBar, text)
   , m_clickBehavior(clickBehavior)
   , m_enterBehavior(enterBehavior)
-  , m_filtering(false)
-  , m_fixed(false)
 {
   setSizeable(false);
   setMoveable(false);
@@ -53,11 +51,11 @@ PopupWindow::~PopupWindow()
   stopFilteringMessages();
 }
 
-void PopupWindow::setHotRegion(const gfx::Region& region)
+void PopupWindow::setHotRegion(const gfx::Region& screenRegion)
 {
   startFilteringMessages();
 
-  m_hotRegion = region;
+  m_hotRegion = screenRegion;
 }
 
 void PopupWindow::setClickBehavior(ClickBehavior behavior)
@@ -136,27 +134,29 @@ bool PopupWindow::onProcessMessage(Message* msg)
       break;
 
     case kMouseDownMessage:
-      if (m_filtering &&
-          manager()->getTopWindow() == this) {
-        gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
+      if (m_filtering && msg->display()) {
+        auto mouseMsg = static_cast<const MouseMessage*>(msg);
+        gfx::Point screenPos = mouseMsg->screenPosition();
 
         switch (m_clickBehavior) {
 
           // If the user click outside the window, we have to close
           // the tooltip window.
           case ClickBehavior::CloseOnClickInOtherWindow: {
-            Widget* picked = pick(mousePos);
+            Widget* picked = pickFromScreenPos(screenPos);
             if (!picked || picked->window() != this) {
               closeWindow(nullptr);
             }
             break;
           }
 
-          case ClickBehavior::CloseOnClickOutsideHotRegion:
-            if (!m_hotRegion.contains(mousePos)) {
+          case ClickBehavior::CloseOnClickOutsideHotRegion: {
+            // Convert the mousePos from display() coordinates to screen
+            if (!m_hotRegion.contains(screenPos)) {
               closeWindow(nullptr);
             }
             break;
+          }
         }
       }
       break;
@@ -164,12 +164,14 @@ bool PopupWindow::onProcessMessage(Message* msg)
     case kMouseMoveMessage:
       if (m_fixed &&
           !m_hotRegion.isEmpty() &&
-          manager()->getCapture() == nullptr) {
+          manager()->getCapture() == nullptr &&
+          msg->display()) {
         gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
+        gfx::Point screenPos = msg->display()->nativeWindow()->pointToScreen(mousePos);
 
         // If the mouse is outside the hot-region we have to close the
         // window.
-        if (!m_hotRegion.contains(mousePos))
+        if (!m_hotRegion.contains(screenPos))
           closeWindow(nullptr);
       }
       break;

@@ -158,6 +158,38 @@ namespace doc {
     }
   };
 
+  struct TilemapTraits {
+    static const ColorMode color_mode = ColorMode::TILEMAP;
+    static const PixelFormat pixel_format = IMAGE_TILEMAP;
+
+    enum {
+      bits_per_pixel = 32,
+      bytes_per_pixel = 4,
+      pixels_per_byte = 0,
+      channels = 3,             // Tile Index + Tile Set + Flags
+      has_alpha = false,
+    };
+
+    typedef uint32_t pixel_t;
+    typedef pixel_t* address_t;
+    typedef const pixel_t* const_address_t;
+
+    static const pixel_t min_value = 0x00000000l;
+    static const pixel_t max_value = 0xffffffffl;
+
+    static inline int getRowStrideBytes(int pixels_per_row) {
+      return bytes_per_pixel * pixels_per_row;
+    }
+
+    static inline BlendFunc get_blender(BlendMode blend_mode, bool newBlend) {
+      return get_indexed_blender(blend_mode, newBlend);
+    }
+
+    static inline bool same_color(const pixel_t a, const pixel_t b) {
+      return a == b;
+    }
+  };
+
 } // namespace doc
 
 #endif

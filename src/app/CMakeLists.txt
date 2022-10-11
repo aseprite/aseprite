@@ -91,6 +91,10 @@ if(ENABLE_WEBP)
   add_definitions(-DENABLE_WEBP)
 endif()
 
+if(ENABLE_PSD)
+  add_definitions(-DENABLE_PSD)
+endif()
+
 # libarchive definitions
 add_definitions(-DLIBARCHIVE_STATIC)
 
@@ -137,6 +141,9 @@ set(file_formats
 if(ENABLE_WEBP)
   list(APPEND file_formats file/webp_format.cpp)
 endif()
+if(ENABLE_PSD)
+  list(APPEND file_formats file/psd_format.cpp)
+endif()
 
 set(scripting_files)
 if(ENABLE_SCRIPTING)
@@ -167,6 +174,7 @@ if(ENABLE_SCRIPTING)
     script/events_class.cpp
     script/frame_class.cpp
     script/frames_class.cpp
+    script/grid_class.cpp
     script/image_class.cpp
     script/image_iterator_class.cpp
     script/image_spec_class.cpp
@@ -192,6 +200,8 @@ if(ENABLE_SCRIPTING)
     script/sprites_class.cpp
     script/tag_class.cpp
     script/tags_class.cpp
+    script/tileset_class.cpp
+    script/tilesets_class.cpp
     script/tool_class.cpp
     script/values.cpp
     script/version_class.cpp
@@ -268,6 +278,7 @@ if(ENABLE_UI)
     commands/cmd_pixel_perfect_mode.cpp
     commands/cmd_play_animation.cpp
     commands/cmd_refresh.cpp
+    commands/cmd_enter_license.cpp
     commands/cmd_remove_frame.cpp
     commands/cmd_remove_frame_tag.cpp
     commands/cmd_remove_slice.cpp
@@ -278,6 +289,7 @@ if(ENABLE_UI)
     commands/cmd_rotate.cpp
     commands/cmd_save_mask.cpp
     commands/cmd_save_palette.cpp
+    commands/cmd_select_palette.cpp
     commands/cmd_scroll.cpp
     commands/cmd_scroll_center.cpp
     commands/cmd_select_tile.cpp
@@ -296,6 +308,7 @@ if(ENABLE_UI)
     commands/cmd_tiled_mode.cpp
     commands/cmd_timeline.cpp
     commands/cmd_toggle_preview.cpp
+    commands/cmd_toggle_tiles_mode.cpp
     commands/cmd_toggle_timeline_thumbnails.cpp
     commands/cmd_undo_history.cpp
     commands/cmd_unlink_cel.cpp
@@ -305,6 +318,7 @@ if(ENABLE_UI)
     commands/filters/filter_window.cpp
     commands/screenshot.cpp
     commands/show_menu.cpp
+    commands/tileset_mode.cpp
     file_selector.cpp
     modules/editors.cpp
     modules/gfx.cpp
@@ -331,6 +345,7 @@ if(ENABLE_UI)
     ui/dynamics_popup.cpp
     ui/editor/brush_preview.cpp
     ui/editor/delayed_mouse_move.cpp
+    ui/editor/dragging_value_state.cpp
     ui/editor/drawing_state.cpp
     ui/editor/editor.cpp
     ui/editor/editor_observers.cpp
@@ -376,6 +391,7 @@ if(ENABLE_UI)
     ui/preview_editor.cpp
     ui/recent_listbox.cpp
     ui/resources_listbox.cpp
+    ui/rgbmap_algorithm_selector.cpp
     ui/sampling_selector.cpp
     ui/search_entry.cpp
     ui/select_accelerator.cpp
@@ -391,10 +407,12 @@ if(ENABLE_UI)
     ui/tabs.cpp
     ui/tag_window.cpp
     ui/task_widget.cpp
+    ui/tile_button.cpp
+    ui/tileset_selector.cpp
     ui/timeline/ani_controls.cpp
     ui/timeline/timeline.cpp
     ui/toolbar.cpp
-    ui/user_data_popup.cpp
+    ui/user_data_view.cpp
     ui/workspace.cpp
     ui/workspace_panel.cpp
     ui/workspace_tabs.cpp
@@ -408,6 +426,12 @@ if(ENABLE_UI)
       res/http_loader.cpp
       ui/news_listbox.cpp
       ${ui_app_files})
+  endif()
+  if(ENABLE_DRM)
+    set(ui_app_files
+      ui/enter_license.cpp
+      ui/aseprite_update.cpp
+    ${ui_app_files})
   endif()
 endif()
 
@@ -435,6 +459,8 @@ add_library(app-lib
   cmd/add_palette.cpp
   cmd/add_slice.cpp
   cmd/add_tag.cpp
+  cmd/add_tile.cpp
+  cmd/add_tileset.cpp
   cmd/assign_color_profile.cpp
   cmd/background_from_layer.cpp
   cmd/clear_cel.cpp
@@ -458,13 +484,18 @@ add_library(app-lib
   cmd/move_layer.cpp
   cmd/patch_cel.cpp
   cmd/remap_colors.cpp
+  cmd/remap_tilemaps.cpp
+  cmd/remap_tileset.cpp
   cmd/remove_cel.cpp
   cmd/remove_frame.cpp
   cmd/remove_layer.cpp
   cmd/remove_palette.cpp
   cmd/remove_slice.cpp
   cmd/remove_tag.cpp
+  cmd/remove_tile.cpp
+  cmd/remove_tileset.cpp
   cmd/replace_image.cpp
+  cmd/replace_tileset.cpp
   cmd/reselect_mask.cpp
   cmd/set_cel_bounds.cpp
   cmd/set_cel_data.cpp
@@ -490,6 +521,8 @@ add_library(app-lib
   cmd/set_tag_color.cpp
   cmd/set_tag_name.cpp
   cmd/set_tag_range.cpp
+  cmd/set_tileset_base_index.cpp
+  cmd/set_tileset_name.cpp
   cmd/set_total_frames.cpp
   cmd/set_transparent_color.cpp
   cmd/set_user_data.cpp
@@ -503,6 +536,7 @@ add_library(app-lib
   cmd/with_slice.cpp
   cmd/with_sprite.cpp
   cmd/with_tag.cpp
+  cmd/with_tileset.cpp
   cmd_sequence.cpp
   cmd_transaction.cpp
   color.cpp
@@ -535,6 +569,8 @@ add_library(app-lib
   commands/cmd_undo.cpp
   commands/command.cpp
   commands/commands.cpp
+  commands/convert_layer.cpp
+  commands/export_tileset.cpp
   commands/filters/cmd_brightness_contrast.cpp
   commands/filters/cmd_color_curve.cpp
   commands/filters/cmd_convolution_matrix.cpp
@@ -549,6 +585,7 @@ add_library(app-lib
   commands/filters/filter_worker.cpp
   commands/move_colors_command.cpp
   commands/move_thing.cpp
+  commands/move_tiles_command.cpp
   commands/new_params.cpp
   commands/quick_command.cpp
   console.cpp
@@ -588,6 +625,7 @@ add_library(app-lib
   modules/palettes.cpp
   pref/preferences.cpp
   recent_files.cpp
+  render/simple_renderer.cpp
   res/palettes_loader_delegate.cpp
   res/resources_loader.cpp
   resource_finder.cpp
@@ -615,8 +653,8 @@ add_library(app-lib
   ui/layer_frame_comboboxes.cpp
   util/autocrop.cpp
   util/buffer_region.cpp
+  util/cel_ops.cpp
   util/conversion_to_surface.cpp
-  util/create_cel_copy.cpp
   util/expand_cel_canvas.cpp
   util/filetoks.cpp
   util/freetype_utils.cpp
@@ -674,6 +712,14 @@ target_link_libraries(app-lib
   archive_static
   fmt
   tinyexpr)
+
+if(ENABLE_PSD)
+  target_link_libraries(app-lib psd)
+endif()
+
+if(ENABLE_DRM)
+  target_link_libraries(app-lib drm-lib)
+endif()
 
 # Directory where generated files by "gen" utility will stay.
 target_include_directories(app-lib PUBLIC ${CMAKE_CURRENT_BINARY_DIR})

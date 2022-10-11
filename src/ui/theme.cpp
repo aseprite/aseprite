@@ -245,7 +245,7 @@ void Theme::paintTooltip(Graphics* g,
     paintWidget(g, widget, style, bounds);
 
   // Draw arrow
-  if (arrowStyle) {
+  if (arrowStyle && arrowAlign) {
     gfx::Size topLeft;
     gfx::Size center;
     gfx::Size bottomRight;

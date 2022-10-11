@@ -70,12 +70,12 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
       switch (static_cast<KeyMessage*>(msg)->scancode()) {
 
         case kKeyInsert: {
-          addPoint(screenToView(get_mouse_position()));
+          addPoint(screenToView(mousePosInDisplay()));
           break;
         }
 
         case kKeyDel: {
-          if (gfx::Point* point = getClosestPoint(screenToView(get_mouse_position())))
+          if (gfx::Point* point = getClosestPoint(screenToView(mousePosInDisplay())))
             removePoint(*point);
           break;
         }

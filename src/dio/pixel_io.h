@@ -46,22 +46,21 @@ public:
   }
   void read_scanline(doc::RgbTraits::address_t address,
                      int w, uint8_t* buffer) {
-    for (int x=0; x<w; ++x) {
+    for (int x=0; x<w; ++x, ++address) {
       r = *(buffer++);
       g = *(buffer++);
       b = *(buffer++);
       a = *(buffer++);
-      *(address++) = doc::rgba(r, g, b, a);
+      *address = doc::rgba(r, g, b, a);
     }
   }
   void write_scanline(doc::RgbTraits::address_t address,
                       int w, uint8_t* buffer) {
-    for (int x=0; x<w; ++x) {
+    for (int x=0; x<w; ++x, ++address) {
       *(buffer++) = doc::rgba_getr(*address);
       *(buffer++) = doc::rgba_getg(*address);
       *(buffer++) = doc::rgba_getb(*address);
       *(buffer++) = doc::rgba_geta(*address);
-      ++address;
     }
   }
 };
@@ -82,19 +81,18 @@ public:
   void read_scanline(doc::GrayscaleTraits::address_t address,
                      int w, uint8_t* buffer)
   {
-    for (int x=0; x<w; ++x) {
+    for (int x=0; x<w; ++x, ++address) {
       k = *(buffer++);
       a = *(buffer++);
-      *(address++) = doc::graya(k, a);
+      *address = doc::graya(k, a);
     }
   }
   void write_scanline(doc::GrayscaleTraits::address_t address,
                       int w, uint8_t* buffer)
   {
-    for (int x=0; x<w; ++x) {
+    for (int x=0; x<w; ++x, ++address) {
       *(buffer++) = doc::graya_getv(*address);
       *(buffer++) = doc::graya_geta(*address);
-      ++address;
     }
   }
 };
@@ -115,6 +113,35 @@ public:
   void write_scanline(doc::IndexedTraits::address_t address,
                       int w, uint8_t* buffer) {
     std::memcpy(buffer, address, w);
+  }
+};
+
+template<>
+class PixelIO<doc::TilemapTraits> {
+  int b1, b2, b3, b4;
+public:
+  doc::TilemapTraits::pixel_t read_pixel(FileInterface* f) {
+    int b1 = f->read8();
+    int b2 = f->read8();
+    int b3 = f->read8();
+    int b4 = f->read8();
+
+    if (f->ok()) {
+      // Little endian
+      return ((b4 << 24) | (b3 << 16) | (b2 << 8) | b1);
+    }
+    else
+      return 0;
+  }
+  void read_scanline(doc::TilemapTraits::address_t address,
+                     int w, uint8_t* buffer) {
+    for (int x=0; x<w; ++x, ++address) {
+      b1 = *(buffer++);
+      b2 = *(buffer++);
+      b3 = *(buffer++);
+      b4 = *(buffer++);
+      *address = ((b4 << 24) | (b3 << 16) | (b2 << 8) | b1);
+    }
   }
 };
 

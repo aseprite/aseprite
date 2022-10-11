@@ -58,10 +58,22 @@ void reinitThemeForAllWidgets()
 {
   assert_ui_thread();
 
-  // Reinitialize the theme of each widget
+  // Reinitialize the theme in this order:
+  // 1. From the manager to children (windows and children widgets in
+  //    the window etc.)
   auto theme = get_theme();
-  for (auto widget : *widgets)
-    widget->setTheme(theme);
+  if (auto man = Manager::getDefault()) {
+    man->setTheme(theme);
+  }
+
+  // 2. If some other widget wasn't updated (e.g. is outside the
+  // hierarchy of widgets), we update the theme for that one too.
+  //
+  // TODO Is this really needed?
+  for (auto widget : *widgets) {
+    if (theme != widget->theme())
+      widget->setTheme(theme);
+  }
 }
 
 } // namespace details

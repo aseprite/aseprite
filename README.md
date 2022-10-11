@@ -61,6 +61,11 @@ The default Aseprite theme was introduced in v0.8, created by:
 
 * [Ilija Melentijevic](https://ilkke.net/)
 
+A modified dark version of this theme introduced in v1.3-beta1 was created by:
+
+* [Nicolas Desilets](https://twitter.com/MapleGecko)
+* [David Capello](https://twitter.com/davidcapello)
+
 Aseprite includes color palettes created by:
 
 * [Richard "DawnBringer" Fhager](http://pixeljoint.com/p/23821.htm), [16 colors](http://pixeljoint.com/forum/forum_posts.asp?TID=12795),  [32 colors](http://pixeljoint.com/forum/forum_posts.asp?TID=16247).

@@ -21,7 +21,8 @@ namespace app {
     BrushPopup();
 
     void setBrush(doc::Brush* brush);
-    void regenerate(const gfx::Rect& box);
+    void regenerate(ui::Display* display,
+                    const gfx::Point& pos);
 
     static os::SurfaceRef createSurfaceForBrush(const doc::BrushRef& brush,
                                                 const bool useOriginalImage = false);

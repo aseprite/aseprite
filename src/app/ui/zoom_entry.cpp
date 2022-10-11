@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2021  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -47,7 +48,9 @@ void ZoomEntry::setZoom(const render::Zoom& zoom)
   if (m_locked)
     return;
 
-  setText(onGetTextFromValue(zoom.linearScale()));
+  std::string newText = onGetTextFromValue(zoom.linearScale());
+  if (newText != text())
+    setText(newText);
 }
 
 void ZoomEntry::onValueChange()

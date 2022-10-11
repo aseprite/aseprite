@@ -1,5 +1,5 @@
 # Aseprite Document Library
-# Copyright (C) 2020-2022 Igara Studio S.A.
+# Copyright (C) 2019-2022 Igara Studio S.A.
 # Copyright (C) 2001-2018 David Capello
 
 if(WIN32)
@@ -37,6 +37,8 @@ add_library(doc-lib
   file/gpl_file.cpp
   file/hex_file.cpp
   file/pal_file.cpp
+  grid.cpp
+  grid_io.cpp
   handle_anidir.cpp
   image.cpp
   image_impl.cpp
@@ -44,16 +46,18 @@ add_library(doc-lib
   layer.cpp
   layer_io.cpp
   layer_list.cpp
+  layer_tilemap.cpp
   mask.cpp
   mask_boundaries.cpp
   mask_io.cpp
   object.cpp
   object.cpp
+  octree_map.cpp
   palette.cpp
   palette_io.cpp
   primitives.cpp
   remap.cpp
-  rgbmap.cpp
+  rgbmap_rgb5a3.cpp
   selected_frames.cpp
   selected_layers.cpp
   slice.cpp
@@ -67,12 +71,17 @@ add_library(doc-lib
   tag.cpp
   tag_io.cpp
   tags.cpp
-  user_data_io.cpp)
+  tileset.cpp
+  tileset_io.cpp
+  tilesets.cpp
+  user_data_io.cpp
+  util.cpp)
 
 target_link_libraries(doc-lib
   laf-gfx
   laf-base
-  fixmath-lib)
+  fixmath-lib
+  cityhash)
 
 target_include_directories(doc-lib
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)

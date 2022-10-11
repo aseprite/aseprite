@@ -19,6 +19,7 @@
 
 namespace ui {
 
+  class MenuBoxWindow;
   class MenuItem;
   class Timer;
   struct MenuBaseData;
@@ -28,7 +29,8 @@ namespace ui {
     Menu();
     ~Menu();
 
-    void showPopup(const gfx::Point& pos);
+    void showPopup(const gfx::Point& pos,
+                   Display* parentDisplay);
     Widget* findItemById(const char* id) const;
 
     // Returns the MenuItem that has as submenu this menu.
@@ -36,10 +38,13 @@ namespace ui {
       return m_menuitem;
     }
 
+    obs::signal<void()> OpenPopup;
+
   protected:
     virtual void onPaint(PaintEvent& ev) override;
     virtual void onResize(ResizeEvent& ev) override;
     virtual void onSizeHint(SizeHintEvent& ev) override;
+    virtual void onOpenPopup();
 
   private:
     void setOwnerMenuItem(MenuItem* ownerMenuItem) {
@@ -155,7 +160,7 @@ namespace ui {
     virtual void onClick();
     virtual void onValidate();
 
-    bool inBar();
+    bool inBar() const;
 
   private:
     void openSubmenu(bool select_first);
@@ -170,6 +175,7 @@ namespace ui {
 
     friend class Menu;
     friend class MenuBox;
+    friend class MenuBoxWindow;
   };
 
   class MenuSeparator : public Separator {
@@ -180,9 +186,14 @@ namespace ui {
 
   class MenuBoxWindow : public Window {
   public:
-    MenuBoxWindow(MenuBox* menubox);
+    MenuBoxWindow(MenuItem* menuitem = nullptr);
+    ~MenuBoxWindow();
+    MenuBox* menubox() { return &m_menubox; }
   protected:
     bool onProcessMessage(Message* msg) override;
+  private:
+    MenuBox m_menubox;
+    MenuItem* m_menuitem;
   };
 
   extern RegisterMessage kOpenMenuItemMessage;

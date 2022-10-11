@@ -1,0 +1,23 @@
+<!-- Aseprite -->
+<!-- Copyright (C) 2019-2020  Igara Studio S.A. -->
+<gui>
+<vbox id="tileset_selector">
+  <combobox id="tilesets">
+    <listitem text="@.new_tileset" value="-1" />
+  </combobox>
+
+  <grid columns="4" expansive="true">
+    <label text="@.name" />
+    <entry maxsize="256" id="name" text="" cell_hspan="3" />
+
+    <label text="@.grid_width" />
+    <expr id="grid_width" text="" />
+    <label text="@.grid_height" />
+    <expr id="grid_height" text="" />
+
+    <label text="@.base_index" />
+    <expr id="base_index" text="1" tooltip="@.base_tooltip" />
+    <boxfiller cell_hspan="2" />
+  </grid>
+</vbox>
+</gui>

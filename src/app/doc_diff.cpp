@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -15,10 +15,13 @@
 #include "doc/cel.h"
 #include "doc/image.h"
 #include "doc/layer.h"
+#include "doc/layer_tilemap.h"
 #include "doc/palette.h"
 #include "doc/primitives.h"
 #include "doc/sprite.h"
 #include "doc/tag.h"
+#include "doc/tileset.h"
+#include "doc/tilesets.h"
 
 namespace app {
 
@@ -70,7 +73,7 @@ DocDiff compare_docs(const Doc* a,
     }
   }
 
-  // Palettes layers
+  // Palettes
   if (a->sprite()->getPalettes().size() != b->sprite()->getPalettes().size()) {
     const PalettesList& aPals = a->sprite()->getPalettes();
     const PalettesList& bPals = b->sprite()->getPalettes();
@@ -86,6 +89,35 @@ DocDiff compare_docs(const Doc* a,
         break;
       }
     }
+  }
+
+  // Compare tilesets
+  const tile_index aTilesetSize = (a->sprite()->hasTilesets() ? a->sprite()->tilesets()->size(): 0);
+  const tile_index bTilesetSize = (b->sprite()->hasTilesets() ? b->sprite()->tilesets()->size(): 0);
+  if (aTilesetSize != bTilesetSize) {
+    diff.anything = diff.tilesets = true;
+  }
+  else {
+    for (int i=0; i<aTilesetSize; ++i) {
+      Tileset* aTileset = a->sprite()->tilesets()->get(i);
+      Tileset* bTileset = b->sprite()->tilesets()->get(i);
+
+      if (aTileset->grid().tileSize() != bTileset->grid().tileSize() ||
+          aTileset->size() != bTileset->size()) {
+        diff.anything = diff.tilesets = true;
+        break;
+      }
+      else {
+        for (tile_index ti=0; ti<aTileset->size(); ++ti) {
+          if (!is_same_image(aTileset->get(ti).get(),
+                             bTileset->get(ti).get())) {
+            diff.anything = diff.tilesets = true;
+            goto done;
+          }
+        }
+      }
+    }
+  done:;
   }
 
   // Compare layers
@@ -104,9 +136,12 @@ DocDiff compare_docs(const Doc* a,
 
       if (aLay->type() != bLay->type() ||
           aLay->name() != bLay->name() ||
-          aLay->flags() != bLay->flags() ||
+          ((int(aLay->flags()) & int(LayerFlags::PersistentFlagsMask)) !=
+           (int(bLay->flags()) & int(LayerFlags::PersistentFlagsMask))) ||
           (aLay->isImage() && bLay->isImage() &&
-           (((const LayerImage*)aLay)->opacity() != ((const LayerImage*)bLay)->opacity()))) {
+           (((const LayerImage*)aLay)->opacity() != ((const LayerImage*)bLay)->opacity())) ||
+          (aLay->isTilemap() && bLay->isTilemap() &&
+           (((const LayerTilemap*)aLay)->tilesetIndex() != ((const LayerTilemap*)bLay)->tilesetIndex()))) {
         diff.anything = diff.layers = true;
         break;
       }
@@ -128,7 +163,7 @@ DocDiff compare_docs(const Doc* a,
             }
             if (aCel->image() && bCel->image()) {
               if (aCel->image()->bounds() != bCel->image()->bounds() ||
-                  count_diff_between_images(aCel->image(), bCel->image()))
+                  !is_same_image(aCel->image(), bCel->image()))
                 diff.anything = diff.images = true;
             }
             else if (aCel->image() != bCel->image())

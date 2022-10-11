@@ -47,6 +47,15 @@ namespace app {
     // already drawing (viewing the real trace).
     virtual bool requireBrushPreview() override { return false; }
 
+    // Don't show layer edges when we're drawing as the cel
+    // position/bounds is modified and the feedback is
+    // confusing. (This is the original behavior, maybe in the future
+    // we could fix this in other way and show how the edge of the cel
+    // is expanded dynamically while we paint.)
+    virtual bool allowLayerEdges() override { return false; }
+
+    virtual bool getGridBounds(Editor* editor, gfx::Rect& gridBounds) override;
+
     void initToolLoop(Editor* editor,
                       const ui::MouseMessage* msg,
                       const tools::Pointer& pointer);

@@ -43,7 +43,7 @@ void FullscreenModeCommand::onExecute(Context* ctx)
   if (!manager)
     return;
 
-  os::Window* window = manager->display();
+  os::Window* window = manager->display()->nativeWindow();
   ASSERT(window);
   if (!window)
     return;

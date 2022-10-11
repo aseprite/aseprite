@@ -24,6 +24,7 @@
 #include "doc/slice.h"
 #include "doc/slices.h"
 #include "doc/sprite.h"
+#include "doc/tile.h"
 
 #include <set>
 #include <vector>
@@ -41,6 +42,7 @@ struct RangeObj { // This is like DocRange but referencing objects with IDs
   doc::SelectedObjects cels;
   doc::SelectedObjects slices;
   std::vector<color_t> colors;
+  std::vector<tile_index> tiles;
 
   RangeObj(Site& site) {
     updateFromSite(site);
@@ -89,6 +91,9 @@ struct RangeObj { // This is like DocRange but referencing objects with IDs
     if (site.selectedColors().picks() > 0)
       colors = site.selectedColors().toVectorOfIndexes();
 
+    if (site.selectedTiles().picks() > 0)
+      tiles = site.selectedTiles().toVectorOfIndexes();
+
     slices = site.selectedSlices();
   }
 
@@ -108,6 +113,9 @@ struct RangeObj { // This is like DocRange but referencing objects with IDs
   }
   bool containsColor(const color_t color) const {
     return (std::find(colors.begin(), colors.end(), color) != colors.end());
+  }
+  bool containsTile(const tile_t tile) const {
+    return (std::find(tiles.begin(), tiles.end(), tile) != tiles.end());
   }
 };
 
@@ -155,8 +163,16 @@ int Range_contains(lua_State* L)
 int Range_containsColor(lua_State* L)
 {
   auto obj = get_obj<RangeObj>(L, 1);
-  color_t color = lua_tointeger(L, 2);
+  const color_t color = lua_tointeger(L, 2);
   lua_pushboolean(L, obj->containsColor(color));
+  return 1;
+}
+
+int Range_containsTile(lua_State* L)
+{
+  auto obj = get_obj<RangeObj>(L, 1);
+  const tile_index tile = lua_tointeger(L, 2);
+  lua_pushboolean(L, obj->containsTile(tile));
   return 1;
 }
 
@@ -267,6 +283,18 @@ int Range_get_colors(lua_State* L)
   return 1;
 }
 
+int Range_get_tiles(lua_State* L)
+{
+  auto obj = get_obj<RangeObj>(L, 1);
+  lua_newtable(L);
+  int j = 1;
+  for (tile_index i : obj->tiles) {
+    lua_pushinteger(L, i);
+    lua_rawseti(L, -2, j++);
+  }
+  return 1;
+}
+
 int Range_get_slices(lua_State* L)
 {
   auto obj = get_obj<RangeObj>(L, 1);
@@ -344,6 +372,26 @@ int Range_set_colors(lua_State* L)
   return 0;
 }
 
+int Range_set_tiles(lua_State* L)
+{
+  auto obj = get_obj<RangeObj>(L, 1);
+  app::Context* ctx = App::instance()->context();
+  doc::PalettePicks picks;
+  if (lua_istable(L, 2)) {
+    lua_pushnil(L);
+    while (lua_next(L, 2) != 0) {
+      int i = lua_tointeger(L, -1);
+      if (i >= picks.size())
+        picks.resize(i+1);
+      picks[i] = true;
+      lua_pop(L, 1);
+    }
+  }
+  ctx->setSelectedTiles(picks);
+  obj->updateFromSite(ctx->activeSite());
+  return 0;
+}
+
 int Range_set_slices(lua_State* L)
 {
   auto obj = get_obj<RangeObj>(L, 1);
@@ -370,6 +418,7 @@ const luaL_Reg Range_methods[] = {
   { "__gc", Range_gc },
   { "contains", Range_contains },
   { "containsColor", Range_containsColor },
+  { "containsTile", Range_containsTile },
   { "clear", Range_clear },
   { nullptr, nullptr }
 };
@@ -384,6 +433,7 @@ const Property Range_properties[] = {
   { "images", Range_get_images, nullptr },
   { "editableImages", Range_get_editableImages, nullptr },
   { "colors", Range_get_colors, Range_set_colors },
+  { "tiles", Range_get_tiles, Range_set_tiles },
   { "slices", Range_get_slices, Range_set_slices },
   { nullptr, nullptr, nullptr }
 };

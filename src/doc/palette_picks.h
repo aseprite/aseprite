@@ -88,6 +88,11 @@ namespace doc {
       return result;
     }
 
+    void invert() {
+      for (int i=0; i<size(); ++i)
+        m_items[i] = !m_items[i];
+    }
+
   private:
     list_type m_items;
   };

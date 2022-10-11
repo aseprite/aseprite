@@ -1,6 +1,6 @@
 // Aseprite Document Library
-// Copyright (C) 2020-2021  Igara Studio S.A.
-// Copyright (C) 2001-2018 David Capello
+// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -12,6 +12,7 @@
 #include "doc/layer.h"
 
 #include "doc/cel.h"
+#include "doc/grid.h"
 #include "doc/image.h"
 #include "doc/primitives.h"
 #include "doc/sprite.h"
@@ -29,7 +30,9 @@ Layer::Layer(ObjectType type, Sprite* sprite)
       int(LayerFlags::Visible) |
       int(LayerFlags::Editable)))
 {
-  ASSERT(type == ObjectType::LayerImage || type == ObjectType::LayerGroup);
+  ASSERT(type == ObjectType::LayerImage ||
+         type == ObjectType::LayerGroup ||
+         type == ObjectType::LayerTilemap);
 
   setName("Layer");
 }
@@ -206,6 +209,15 @@ bool Layer::hasAncestor(const Layer* ancestor) const
   return false;
 }
 
+Grid Layer::grid() const
+{
+  gfx::Rect rc = (m_sprite ? m_sprite->gridBounds():
+                             doc::Sprite::DefaultGridBounds());
+  doc::Grid grid = Grid(rc.size());
+  grid.origin(gfx::Point(rc.x % rc.w, rc.y % rc.h));
+  return grid;
+}
+
 Cel* Layer::cel(frame_t frame) const
 {
   return nullptr;
@@ -214,10 +226,15 @@ Cel* Layer::cel(frame_t frame) const
 //////////////////////////////////////////////////////////////////////
 // LayerImage class
 
-LayerImage::LayerImage(Sprite* sprite)
-  : Layer(ObjectType::LayerImage, sprite)
+LayerImage::LayerImage(ObjectType type, Sprite* sprite)
+  : Layer(type, sprite)
   , m_blendmode(BlendMode::NORMAL)
   , m_opacity(255)
+{
+}
+
+LayerImage::LayerImage(Sprite* sprite)
+  : LayerImage(ObjectType::LayerImage, sprite)
 {
 }
 
@@ -327,7 +344,8 @@ void LayerImage::addCel(Cel* cel)
   ASSERT(cel->data() && "The cel doesn't contain CelData");
   ASSERT(cel->image());
   ASSERT(sprite());
-  ASSERT(cel->image()->pixelFormat() == sprite()->pixelFormat());
+  ASSERT(cel->image()->pixelFormat() == sprite()->pixelFormat() ||
+         cel->image()->pixelFormat() == IMAGE_TILEMAP);
 
   CelIterator it = findFirstCelIteratorAfter(cel->frame());
   m_cels.insert(it, cel);

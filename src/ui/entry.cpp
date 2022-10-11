@@ -15,7 +15,7 @@
 #include "os/draw_text.h"
 #include "os/font.h"
 #include "os/system.h"
-#include "ui/manager.h"
+#include "ui/display.h"
 #include "ui/menu.h"
 #include "ui/message.h"
 #include "ui/scale.h"
@@ -463,6 +463,9 @@ bool Entry::onProcessMessage(Message* msg)
       return true;
 
     case kDoubleClickMessage:
+      if (!hasFocus())
+        requestFocus();
+
       m_selecting_words = wordRange(m_caret);
       selectText(m_selecting_words.from, m_selecting_words.to);
 
@@ -490,7 +493,7 @@ gfx::Size Entry::sizeHintWithText(Entry* entry,
     + 2*entry->theme()->getEntryCaretSize(entry).w
     + entry->border().width();
 
-  w = std::min(w, ui::display_w()/2);
+  w = std::min(w, entry->display()->workareaSizeUIScale().w/2);
 
   int h =
     + entry->font()->height()
@@ -509,7 +512,7 @@ void Entry::onSizeHint(SizeHintEvent& ev)
     + trailing
     + border().width();
 
-  w = std::min(w, ui::display_w()/2);
+  w = std::min(w, display()->workareaSizeUIScale().w/2);
 
   int h =
     + font()->height()
@@ -880,7 +883,7 @@ void Entry::showEditPopupMenu(const gfx::Point& pt)
     paste.setEnabled(false);
   }
 
-  menu.showPopup(pt);
+  menu.showPopup(pt, display());
 }
 
 class Entry::CalcBoxesTextDelegate : public os::DrawTextDelegate {

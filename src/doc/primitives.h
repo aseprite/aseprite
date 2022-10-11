@@ -27,6 +27,7 @@ namespace doc {
 
   void copy_image(Image* dst, const Image* src);
   void copy_image(Image* dst, const Image* src, int x, int y);
+  void copy_image(Image* dst, const Image* src, const gfx::Region& rgn);
   Image* crop_image(const Image* image, int x, int y, int w, int h, color_t bg, const ImageBufferPtr& buffer = ImageBufferPtr());
   Image* crop_image(const Image* image, const gfx::Rect& bounds, color_t bg, const ImageBufferPtr& buffer = ImageBufferPtr());
   void rotate_image(const Image* src, Image* dst, int angle);
@@ -51,6 +52,10 @@ namespace doc {
 
   uint32_t calculate_image_hash(const Image* image,
                                 const gfx::Rect& bounds);
+
+  // Sets RGB values to 0 when alpha=0 (to match images with alpha=0
+  // in tilesets/calculate_image_hash)
+  void preprocess_transparent_pixels(Image* image);
 
 } // namespace doc
 

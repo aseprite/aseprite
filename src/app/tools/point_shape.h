@@ -21,6 +21,7 @@ namespace app {
     public:
       virtual ~PointShape() { }
       virtual bool isPixel() { return false; }
+      virtual bool isTile() { return false; }
       virtual bool isFloodFill() { return false; }
       virtual bool isSpray() { return false; }
       virtual void preparePointShape(ToolLoop* loop) { }

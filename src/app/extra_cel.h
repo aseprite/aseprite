@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -9,6 +9,7 @@
 #define APP_EXTRA_CEL_H_INCLUDED
 #pragma once
 
+#include "app/tilemap_mode.h"
 #include "base/disable_copying.h"
 #include "doc/blend_mode.h"
 #include "doc/cel.h"
@@ -30,7 +31,13 @@ namespace app {
   public:
     ExtraCel();
 
-    void create(doc::Sprite* sprite, const gfx::Rect& bounds, doc::frame_t frame, int opacity);
+    void create(const TilemapMode tilemapMode,
+                doc::Sprite* sprite,
+                const gfx::Rect& bounds,
+                const gfx::Size& imageSize,
+                const doc::frame_t frame,
+                const int opacity);
+    void reset();
 
     render::ExtraType type() const { return m_type; }
     void setType(render::ExtraType type) { m_type = type; }

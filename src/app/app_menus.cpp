@@ -289,6 +289,14 @@ os::Shortcut get_os_shortcut_from_key(const Key* key)
 {
   if (key && !key->accels().empty()) {
     const ui::Accelerator& accel = key->accels().front();
+
+#ifdef __APPLE__
+    // Shortcuts with spacebar as modifier do not work well in macOS
+    // (they will be called when the space bar is unpressed too).
+    if ((accel.modifiers() & ui::kKeySpaceModifier) == ui::kKeySpaceModifier)
+      return os::Shortcut();
+#endif
+
     return os::Shortcut(
       (accel.unicodeChar() ? accel.unicodeChar():
                              from_scancode_to_unicode(accel.scancode())),
@@ -384,6 +392,20 @@ void AppMenus::reload()
     }
 #endif
   }
+
+  // Remove the "Enter license" menu item when DRM is not enabled.
+#ifndef ENABLE_DRM
+  if (auto helpMenuItem = m_rootMenu->findItemById("help_menu")) {
+    if (Menu* helpMenu = dynamic_cast<MenuItem*>(helpMenuItem)->getSubmenu()) {
+      delete helpMenu->findChild("enter_license_separator");
+      delete helpMenu->findChild("enter_license");
+    }
+
+    auto it = m_groups.find("help_enter_license");
+    if (it != m_groups.end())
+      m_groups.erase(it);
+  }
+#endif
 
   ////////////////////////////////////////
   // Re-add menu items in groups (recent files & scripts)
@@ -653,6 +675,7 @@ Menu* AppMenus::loadMenuById(TiXmlHandle& handle, const char* id)
 Menu* AppMenus::convertXmlelemToMenu(TiXmlElement* elem)
 {
   Menu* menu = new Menu();
+  menu->setText(m_xmlTranslator(elem, "text"));
 
   TiXmlElement* child = elem->FirstChildElement();
   while (child) {

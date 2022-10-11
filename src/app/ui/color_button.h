@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -57,21 +58,33 @@ namespace app {
     void onSizeHint(ui::SizeHintEvent& ev) override;
     void onPaint(ui::PaintEvent& ev) override;
     void onClick(ui::Event& ev) override;
+    void onStartDrag() override;
+    void onSelectWhenDragging() override;
     void onLoadLayout(ui::LoadLayoutEvent& ev) override;
     void onSaveLayout(ui::SaveLayoutEvent& ev) override;
 
   private:
+    // ContextObserver impl
+    void onActiveSiteChange(const Site& site) override;
+
     void onWindowClose(ui::CloseEvent& ev);
     void onWindowColorChange(const app::Color& color);
-    void onActiveSiteChange(const Site& site) override;
     bool canPin() const { return m_options.canPinSelector; }
 
+    // Used to convert saved bounds (m_window/hiddenDefaultBounds,
+    // which can be relative to the display or relative to the screen)
+    // to the current system of coordinates.
+    gfx::Rect convertBounds(const gfx::Rect& bounds) const;
+
     app::Color m_color;
+    app::Color m_startDragColor;
     PixelFormat m_pixelFormat;
     ColorPopup* m_window;
     gfx::Rect m_windowDefaultBounds;
     gfx::Rect m_hiddenPopupBounds;
+    bool m_desktopCoords;       // True if m_windowDefault/hiddenPopupBounds are screen coordinates
     bool m_dependOnLayer;
+    bool m_mouseLeft;
     ColorButtonOptions m_options;
   };
 

@@ -12,12 +12,13 @@
 #include "doc/algorithm/shift_image.h"
 
 #include "base/pi.h"
-#include "gfx/rect.h"
 #include "doc/algorithm/shrink_bounds.h"
 #include "doc/cel.h"
 #include "doc/image.h"
+#include "doc/layer.h"
 #include "doc/mask.h"
 #include "doc/primitives.h"
+#include "gfx/rect.h"
 
 #include <vector>
 
@@ -114,7 +115,14 @@ ImageRef shift_image_with_mask(const Cel* cel,
 
   // Bounds and Image shrinking (we have to fit compound image (compImage) and bounds (compCelBounds))
   gfx::Rect newBounds = compImage->bounds();
-  if (algorithm::shrink_bounds(compImage.get(), newBounds, compImage->maskColor())) {
+  if (algorithm::shrink_bounds(
+        compImage.get(),
+        compImage->maskColor(),
+        // TODO adding the layer for tilemaps (so the program doesn't
+        //      crash), but anyway it the Shift algorithm is not
+        //      working yet for tilemaps
+        cel->layer(),
+        newBounds)) {
     compCelBounds.offset(newBounds.x, newBounds.y);
     compCelBounds.setSize(newBounds.size());
   }

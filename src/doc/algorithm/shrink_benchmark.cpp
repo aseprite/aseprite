@@ -27,7 +27,7 @@ void BM_ShrinkBounds(benchmark::State& state) {
   img->putPixel(w/2, h/2, rgba(1, 2, 3, 4));
   gfx::Rect rc;
   while (state.KeepRunning()) {
-    doc::algorithm::shrink_bounds(img.get(), rc, 0);
+    doc::algorithm::shrink_bounds(img.get(), 0, nullptr, rc);
   }
 }
 

@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -36,7 +36,12 @@ void Viewport::onResize(ResizeEvent& ev)
   Rect rect = ev.bounds();
   setBoundsQuietly(rect);
 
-  Point scroll = static_cast<View*>(parent())->viewScroll();
+  auto view = static_cast<View*>(parent());
+  ASSERT(view);
+  if (!view)
+    return;
+
+  Point scroll = view->viewScroll();
 
   Rect cpos(0, 0, 0, 0);
   cpos.x = rect.x + border().left() - scroll.x;

@@ -13,12 +13,21 @@
       <slider min="0" max="100" id="factor" minwidth="100" />
       <label text="%" />
     </hbox>
+
     <combobox id="to_gray_combobox">
       <listitem text="!Luminance" />
       <listitem text="!HSV" />
       <listitem text="!HSL" />
     </combobox>
+
     <check text="@.flatten" id="flatten" />
+
+    <check id="advanced_check" text="@general.advanced_options" cell_hspan="2" />
+    <hbox id="advanced" cell_hspan="2">
+      <label text="@rgbmap_algorithm_selector.label" />
+      <hbox id="rgbmap_algorithm_placeholder" />
+    </hbox>
+
     <separator horizontal="true" />
     <hbox>
       <slider min="0" max="100" id="progress" minwidth="100" />

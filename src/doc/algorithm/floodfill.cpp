@@ -48,6 +48,11 @@ static int flood_count;          /* number of flooded segments */
 
 #define FLOOD_LINE(c)            (&flood_buf[c])
 
+static inline bool color_equal_32_raw(color_t c1, color_t c2)
+{
+  return (c1 == c2);
+}
+
 static inline bool color_equal_32(color_t c1, color_t c2, int tolerance)
 {
   if (tolerance == 0)
@@ -121,6 +126,12 @@ template<>
 inline bool color_equal<IndexedTraits>(color_t c1, color_t c2, int tolerance)
 {
   return color_equal_8(c1, c2, tolerance);
+}
+
+template<>
+inline bool color_equal<TilemapTraits>(color_t c1, color_t c2, int tolerance)
+{
+  return color_equal_32_raw(c1, c2);
 }
 
 
@@ -211,6 +222,30 @@ static int flooder(const Image* image,
         // Work right from starting point
         for (right=x+1; right<bounds.x2(); right++) {
           if (!color_equal_8((int)*(address+right), src_color, tolerance) || MASKED(right, y))
+            break;
+        }
+      }
+      break;
+
+    case IMAGE_TILEMAP:
+      {
+        // TODO add support for mask
+
+        uint32_t* address = reinterpret_cast<uint32_t*>(image->getPixelAddress(0, y));
+
+        // Check start pixel
+        if (!color_equal_32_raw((int)*(address+x), src_color))
+          return x+1;
+
+        // Work left from starting point
+        for (left=x-1; left>=bounds.x; left--) {
+          if (!color_equal_32_raw((int)*(address+left), src_color))
+            break;
+        }
+
+        // Work right from starting point
+        for (right=x+1; right<bounds.x2(); right++) {
+          if (!color_equal_32_raw((int)*(address+right), src_color))
             break;
         }
       }
@@ -366,6 +401,9 @@ void floodfill(const Image* image,
         break;
       case IMAGE_INDEXED:
         replace_color<IndexedTraits>(image, bounds, src_color, tolerance, data, proc);
+        break;
+      case IMAGE_TILEMAP:
+        replace_color<TilemapTraits>(image, bounds, src_color, tolerance, data, proc);
         break;
     }
     return;

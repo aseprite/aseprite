@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2022 Igara Studio S.A.
+// Copyright (c) 2020-2022 Igara Studio S.A.
 // Copyright (c) 2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -82,6 +82,14 @@ const SliceKey* Slice::getByFrame(const frame_t frame) const
 Slice::iterator Slice::getIteratorByFrame(const frame_t frame) const
 {
   return const_cast<Slice*>(this)->m_keys.getIterator(frame);
+}
+
+Sprite* Slice::sprite() const
+{
+  if (m_owner)
+    return m_owner->sprite();
+  else
+    return nullptr;
 }
 
 void Slice::setOwner(Slices* owner)

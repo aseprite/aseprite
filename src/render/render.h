@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (c) 2019-2022 Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -29,6 +29,7 @@ namespace doc {
   class Layer;
   class Palette;
   class Sprite;
+  class Tileset;
 }
 
 namespace render {
@@ -65,6 +66,7 @@ namespace render {
     void setPreviewImage(const Layer* layer,
                          const frame_t frame,
                          const Image* image,
+                         const Tileset* tileset,
                          const gfx::Point& pos,
                          const BlendMode blendMode);
     void removePreviewImage();
@@ -123,6 +125,7 @@ namespace render {
 
     void renderCel(
       Image* dst_image,
+      const Cel* cel,
       const Sprite* sprite,
       const Image* cel_image,
       const Layer* cel_layer,
@@ -168,7 +171,9 @@ namespace render {
 
     void renderCel(
       Image* dst_image,
+      const Cel* cel,
       const Image* cel_image,
+      const Layer* cel_layer,
       const Palette* pal,
       const gfx::RectF& celBounds,
       const gfx::Clip& area,
@@ -191,6 +196,8 @@ namespace render {
       const PixelFormat srcFormat,
       const Layer* layer);
 
+    bool checkIfWeShouldUsePreview(const Cel* cel) const;
+
     int m_flags;
     int m_nonactiveLayersOpacity;
     const Sprite* m_sprite;
@@ -208,6 +215,7 @@ namespace render {
     const Layer* m_selectedLayer;
     frame_t m_selectedFrame;
     const Image* m_previewImage;
+    const Tileset* m_previewTileset;
     gfx::Point m_previewPos;
     BlendMode m_previewBlendMode;
     OnionskinOptions m_onionskin;

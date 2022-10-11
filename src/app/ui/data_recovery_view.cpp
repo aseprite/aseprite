@@ -398,6 +398,11 @@ TabIcon DataRecoveryView::getTabIcon()
   return TabIcon::NONE;
 }
 
+gfx::Color DataRecoveryView::getTabColor()
+{
+  return gfx::ColorNone;
+}
+
 void DataRecoveryView::onWorkspaceViewSelected()
 {
   // Do nothing
@@ -415,7 +420,7 @@ void DataRecoveryView::onTabPopup(Workspace* workspace)
   if (!menu)
     return;
 
-  menu->showPopup(ui::get_mouse_position());
+  menu->showPopup(mousePosInDisplay(), display());
 }
 
 void DataRecoveryView::onOpen()
@@ -463,7 +468,7 @@ void DataRecoveryView::onOpenMenu()
   rawFrames.Click.connect([this]{ onOpenRaw(crash::RawImagesAs::kFrames); });
   rawLayers.Click.connect([this]{ onOpenRaw(crash::RawImagesAs::kLayers); });
 
-  menu.showPopup(gfx::Point(bounds.x, bounds.y+bounds.h));
+  menu.showPopup(gfx::Point(bounds.x, bounds.y+bounds.h), display());
 }
 
 void DataRecoveryView::onDelete()

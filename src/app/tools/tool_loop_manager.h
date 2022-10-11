@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -47,7 +47,16 @@ public:
   ToolLoopManager(ToolLoop* toolLoop);
   virtual ~ToolLoopManager();
 
+  // Returns true if the loop was canceled by the user
   bool isCanceled() const;
+
+  // Called when the tool loop must be canceled because another
+  // command was executed or the Esc key pressed.
+  void cancel();
+
+  // Called when the tool loop ends (this will commit or rollback the
+  // tool loop).
+  void end();
 
   // Should be called when the user start a tool-trace (pressing the
   // left or right button for first time in the editor).
@@ -67,7 +76,7 @@ public:
   bool releaseButton(const Pointer& pointer);
 
   // Should be called each time the user moves the mouse inside the editor.
-  void movement(const Pointer& pointer);
+  void movement(Pointer pointer);
 
   const Pointer& lastPointer() const { return m_lastPointer; }
 
@@ -81,12 +90,14 @@ private:
   void calculateDirtyArea(const Strokes& strokes);
 
   ToolLoop* m_toolLoop;
+  bool m_canceled;
   Stroke m_stroke;
   Pointer m_lastPointer;
   gfx::Region m_dirtyArea;
   gfx::Region m_nextDirtyArea;
   doc::Brush m_brush0;
   DynamicsOptions m_dynamics;
+  gfx::PointF m_stabilizerCenter;
 };
 
 } // namespace tools

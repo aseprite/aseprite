@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -142,10 +142,7 @@ void ConfigureTimelinePopup::updateWidgetsFromCurrentSettings()
   m_box->thumbOverlayEnabled()->setSelected(docPref.thumbnails.overlayEnabled());
   m_box->thumbOverlaySize()->setValue(docPref.thumbnails.overlaySize());
 
-  gfx::Rect prevBounds = bounds();
-  setBounds(gfx::Rect(gfx::Point(bounds().x, bounds().y), sizeHint()));
-  manager()->invalidateRect(prevBounds);
-  invalidate();
+  expandWindow(sizeHint());
 }
 
 bool ConfigureTimelinePopup::onProcessMessage(ui::Message* msg)

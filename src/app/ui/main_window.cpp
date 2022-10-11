@@ -40,7 +40,6 @@
 #include "app/ui_context.h"
 #include "base/fs.h"
 #include "os/system.h"
-#include "os/window.h"
 #include "ui/message.h"
 #include "ui/splitter.h"
 #include "ui/system.h"
@@ -376,9 +375,9 @@ void MainWindow::onResize(ui::ResizeEvent& ev)
 {
   app::gen::MainWindow::onResize(ev);
 
-  os::Window* display = manager()->display();
-  if (display && display->screen()) {
-    const int scale = display->scale()*ui::guiscale();
+  os::Window* nativeWindow = (display() ? display()->nativeWindow(): nullptr);
+  if (nativeWindow && nativeWindow->screen()) {
+    const int scale = nativeWindow->scale()*ui::guiscale();
 
     // We can check for the available workarea to know that the user
     // can resize the window to its full size and there will be enough
@@ -386,7 +385,7 @@ void MainWindow::onResize(ui::ResizeEvent& ev)
     // Preferences dialog.
     if ((scale > 2) &&
         (!m_scalePanic)) {
-      const gfx::Size wa = display->screen()->workarea().size();
+      const gfx::Size wa = nativeWindow->screen()->workarea().size();
       if ((wa.w / scale < 256 ||
            wa.h / scale < 256)) {
         showNotification(m_scalePanic = new ScreenScalePanic);
@@ -400,12 +399,20 @@ void MainWindow::onResize(ui::ResizeEvent& ev)
 // inform to the UIContext that the current view has changed.
 void MainWindow::onActiveViewChange()
 {
+  // First we have to configure the MainWindow layout (e.g. show
+  // Timeline if needed) as UIContext::setActiveView() will configure
+  // several widgets (calling updateUsingEditor() functions) using the
+  // active document, and we need to know the available space on
+  // screen for each widget (e.g. the Timeline will configure its
+  // scrollable area/position depending on the number of
+  // layers/frames, but it needs to know its position on screen
+  // first).
+  configureWorkspaceLayout();
+
   if (DocView* docView = getDocView())
     UIContext::instance()->setActiveView(docView);
   else
     UIContext::instance()->setActiveView(nullptr);
-
-  configureWorkspaceLayout();
 }
 
 bool MainWindow::isTabModified(Tabs* tabs, TabView* tabView)
@@ -511,9 +518,13 @@ void MainWindow::onMouseLeaveTab()
   m_statusBar->showDefaultText();
 }
 
-DropViewPreviewResult MainWindow::onFloatingTab(Tabs* tabs, TabView* tabView, const gfx::Point& pos)
+DropViewPreviewResult MainWindow::onFloatingTab(
+  Tabs* tabs,
+  TabView* tabView,
+  const gfx::Point& screenPos)
 {
-  return m_workspace->setDropViewPreview(pos,
+  return m_workspace->setDropViewPreview(
+    screenPos,
     dynamic_cast<WorkspaceView*>(tabView),
     static_cast<WorkspaceTabs*>(tabs));
 }
@@ -523,12 +534,17 @@ void MainWindow::onDockingTab(Tabs* tabs, TabView* tabView)
   m_workspace->removeDropViewPreview();
 }
 
-DropTabResult MainWindow::onDropTab(Tabs* tabs, TabView* tabView, const gfx::Point& pos, bool clone)
+DropTabResult MainWindow::onDropTab(Tabs* tabs,
+                                    TabView* tabView,
+                                    const gfx::Point& screenPos,
+                                    const bool clone)
 {
   m_workspace->removeDropViewPreview();
 
   DropViewAtResult result =
-    m_workspace->dropViewAt(pos, dynamic_cast<WorkspaceView*>(tabView), clone);
+    m_workspace->dropViewAt(screenPos,
+                            dynamic_cast<WorkspaceView*>(tabView),
+                            clone);
 
   if (result == DropViewAtResult::MOVED_TO_OTHER_PANEL)
     return DropTabResult::REMOVE;

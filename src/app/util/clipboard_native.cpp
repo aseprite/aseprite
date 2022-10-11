@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021-2022  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -9,7 +9,7 @@
 #include "config.h"
 #endif
 
-#include "app/util/clipboard_native.h"
+#include "app/util/clipboard.h"
 
 #include "app/i18n/strings.h"
 #include "base/serialization.h"
@@ -20,16 +20,16 @@
 #include "doc/image_io.h"
 #include "doc/mask_io.h"
 #include "doc/palette_io.h"
+#include "doc/tileset_io.h"
 #include "gfx/size.h"
-#include "os/window.h"
 #include "os/system.h"
+#include "os/window.h"
 #include "ui/alert.h"
 
 #include <sstream>
 #include <vector>
 
 namespace app {
-namespace clipboard {
 
 using namespace base::serialization;
 using namespace base::serialization::little_endian;
@@ -50,7 +50,7 @@ namespace {
     }
   };
 
-  void* native_display_handle() {
+  void* native_window_handle() {
     return os::instance()->defaultWindow()->nativeHandle();
   }
 
@@ -70,22 +70,29 @@ namespace {
 
 }
 
-void register_native_clipboard_formats()
+void Clipboard::clearNativeContent()
+{
+  clip::lock l(native_window_handle());
+  l.clear();
+}
+
+void Clipboard::registerNativeFormats()
 {
   clip::set_error_handler(custom_error_handler);
   custom_image_format = clip::register_format("org.aseprite.Image");
 }
 
-bool has_native_clipboard_bitmap()
+bool Clipboard::hasNativeBitmap() const
 {
   return clip::has(clip::image_format());
 }
 
-bool set_native_clipboard_bitmap(const doc::Image* image,
-                                 const doc::Mask* mask,
-                                 const doc::Palette* palette)
+bool Clipboard::setNativeBitmap(const doc::Image* image,
+                                const doc::Mask* mask,
+                                const doc::Palette* palette,
+                                const doc::Tileset* tileset)
 {
-  clip::lock l(native_display_handle());
+  clip::lock l(native_window_handle());
   if (!l.locked())
     return false;
 
@@ -100,10 +107,12 @@ bool set_native_clipboard_bitmap(const doc::Image* image,
     write32(os,
             (image   ? 1: 0) |
             (mask    ? 2: 0) |
-            (palette ? 4: 0));
+            (palette ? 4: 0) |
+            (tileset ? 8: 0));
     if (image) doc::write_image(os, image);
     if (mask) doc::write_mask(os, mask);
     if (palette) doc::write_palette(os, palette);
+    if (tileset) doc::write_tileset(os, tileset);
 
     if (os.good()) {
       size_t size = (size_t)os.tellp();
@@ -180,15 +189,17 @@ bool set_native_clipboard_bitmap(const doc::Image* image,
   return true;
 }
 
-bool get_native_clipboard_bitmap(doc::Image** image,
-                                 doc::Mask** mask,
-                                 doc::Palette** palette)
+bool Clipboard::getNativeBitmap(doc::Image** image,
+                                doc::Mask** mask,
+                                doc::Palette** palette,
+                                doc::Tileset** tileset)
 {
   *image = nullptr;
   *mask = nullptr;
   *palette = nullptr;
+  *tileset = nullptr;
 
-  clip::lock l(native_display_handle());
+  clip::lock l(native_window_handle());
   if (!l.locked())
     return false;
 
@@ -206,6 +217,7 @@ bool get_native_clipboard_bitmap(doc::Image** image,
         if (bits & 1) *image   = doc::read_image(is, false);
         if (bits & 2) *mask    = doc::read_mask(is);
         if (bits & 4) *palette = doc::read_palette(is);
+        if (bits & 8) *tileset = doc::read_tileset(is, nullptr);
         if (image)
           return true;
       }
@@ -303,7 +315,7 @@ bool get_native_clipboard_bitmap(doc::Image** image,
   return true;
 }
 
-bool get_native_clipboard_bitmap_size(gfx::Size* size)
+bool Clipboard::getNativeBitmapSize(gfx::Size* size)
 {
   // Don't show errors when we are trying to get the size of the image
   // only. (E.g. don't show "invalid image format error")
@@ -319,5 +331,4 @@ bool get_native_clipboard_bitmap_size(gfx::Size* size)
     return false;
 }
 
-} // namespace clipboard
 } // namespace app

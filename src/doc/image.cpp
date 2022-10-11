@@ -65,6 +65,7 @@ Image* Image::create(const ImageSpec& spec,
     case ColorMode::GRAYSCALE: return new ImageImpl<GrayscaleTraits>(spec, buffer);
     case ColorMode::INDEXED:   return new ImageImpl<IndexedTraits>(spec, buffer);
     case ColorMode::BITMAP:    return new ImageImpl<BitmapTraits>(spec, buffer);
+    case ColorMode::TILEMAP:   return new ImageImpl<TilemapTraits>(spec, buffer);
   }
   return nullptr;
 }

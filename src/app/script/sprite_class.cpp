@@ -41,6 +41,7 @@
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
 #include "app/script/security.h"
+#include "app/script/userdata.h"
 #include "app/site.h"
 #include "app/transaction.h"
 #include "app/tx.h"
@@ -704,6 +705,13 @@ int Sprite_get_slices(lua_State* L)
   return 1;
 }
 
+int Sprite_get_tilesets(lua_State* L)
+{
+  auto sprite = get_docobj<Sprite>(L, 1);
+  push_tilesets(L, sprite->tilesets());
+  return 1;
+}
+
 int Sprite_get_backgroundLayer(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
@@ -858,10 +866,13 @@ const Property Sprite_properties[] = {
   { "cels", Sprite_get_cels, nullptr },
   { "tags", Sprite_get_tags, nullptr },
   { "slices", Sprite_get_slices, nullptr },
+  { "tilesets", Sprite_get_tilesets, nullptr },
   { "backgroundLayer", Sprite_get_backgroundLayer, nullptr },
   { "transparentColor", Sprite_get_transparentColor, Sprite_set_transparentColor },
   { "bounds", Sprite_get_bounds, nullptr },
   { "gridBounds", Sprite_get_gridBounds, Sprite_set_gridBounds },
+  { "color", UserData_get_color<Sprite>, UserData_set_color<Sprite> },
+  { "data", UserData_get_text<Sprite>, UserData_set_text<Sprite> },
   { "pixelRatio", Sprite_get_pixelRatio, Sprite_set_pixelRatio },
   { "events", Sprite_get_events, nullptr },
   { nullptr, nullptr, nullptr }

@@ -1,5 +1,6 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2001-2018 by David Capello -->
+<!-- Copyright (c) 2020  Igara Studio S.A. -->
+<!-- Copyright (c) 2001-2018  David Capello -->
 <gui>
   <window id="new_sprite" text="@.title">
     <box vertical="true">
@@ -26,7 +27,7 @@
         <item text="@.black" icon="icon_black" />
       </buttonset>
 
-      <check id="advanced_check" text="@.advanced_options" />
+      <check id="advanced_check" text="@general.advanced_options" />
       <vbox id="advanced">
         <label text="@.pixel_ratio" />
         <combobox id="pixel_ratio" cell_align="horizontal">

@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2022  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -64,7 +65,10 @@ namespace app {
     void removeDropViewPreview();
 
     // Returns true if the view was docked inside the panel.
-    DropViewAtResult dropViewAt(const gfx::Point& pos, WorkspacePanel* from, WorkspaceView* view, bool clone);
+    DropViewAtResult dropViewAt(const gfx::Point& screenPos,
+                                WorkspacePanel* from,
+                                WorkspaceView* view,
+                                const bool clone);
 
   protected:
     void onPaint(ui::PaintEvent& ev) override;

@@ -25,7 +25,7 @@
 #include "os/surface.h"
 #include "os/system.h"
 #include "os/window.h"
-#include "ui/manager.h"
+#include "ui/display.h"
 #include "ui/scale.h"
 #include "ui/theme.h"
 
@@ -35,8 +35,9 @@
 
 namespace ui {
 
-Graphics::Graphics(const os::SurfaceRef& surface, int dx, int dy)
-  : m_surface(surface)
+Graphics::Graphics(Display* display, const os::SurfaceRef& surface, int dx, int dy)
+  : m_display(display)
+  , m_surface(surface)
   , m_dx(dx)
   , m_dy(dy)
 {
@@ -46,8 +47,8 @@ Graphics::~Graphics()
 {
   // If we were drawing in the screen surface, we mark these regions
   // as dirty for the final flip.
-  if (m_surface == os::instance()->defaultWindow()->surface())
-    Manager::getDefault()->dirtyRect(m_dirtyBounds);
+  if (m_display)
+    m_display->dirtyRect(m_dirtyBounds);
 }
 
 int Graphics::width() const
@@ -599,8 +600,8 @@ void Graphics::dirty(const gfx::Rect& bounds)
 //////////////////////////////////////////////////////////////////////
 // ScreenGraphics
 
-ScreenGraphics::ScreenGraphics()
-  : Graphics(AddRef(os::instance()->defaultWindow()->surface()), 0, 0)
+ScreenGraphics::ScreenGraphics(Display* display)
+  : Graphics(display, AddRef(display->surface()), 0, 0)
 {
   setFont(AddRef(get_theme()->getDefaultFont()));
 }

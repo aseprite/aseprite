@@ -200,7 +200,9 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
       // user leaves the ButtonSet without releasing the mouse button
       // and the mouse capture if offered to other ButtonSet.
       if (buttonSet()->m_triggerOnMouseUp) {
-        ASSERT(g_itemBeforeCapture < 0);
+        // g_itemBeforeCapture can be >= 0 if we clicked other button
+        // without releasing the first button.
+        //ASSERT(g_itemBeforeCapture < 0);
         g_itemBeforeCapture = buttonSet()->selectedItem();
       }
 

@@ -28,10 +28,6 @@ namespace doc {
   class Sprite;
 }
 
-namespace os {
-  class Surface;
-}
-
 namespace ui {
   class Graphics;
 }

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020 Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -20,10 +20,12 @@
 #include "app/sprite_job.h"
 #include "app/transaction.h"
 #include "app/ui/color_bar.h"
+#include "app/ui/rgbmap_algorithm_selector.h"
 #include "app/ui_context.h"
 #include "doc/palette.h"
 #include "doc/sprite.h"
 #include "render/quantization.h"
+#include "ui/manager.h"
 
 #include "palette_from_sprite.xml.h"
 
@@ -36,7 +38,37 @@ struct ColorQuantizationParams : public NewParams {
   Param<bool> withAlpha { this, true, "withAlpha" };
   Param<int> maxColors { this, 256, "maxColors" };
   Param<bool> useRange { this, false, "useRange" };
+  Param<RgbMapAlgorithm> algorithm { this, RgbMapAlgorithm::DEFAULT, "algorithm" };
 };
+
+#if ENABLE_UI
+
+class PaletteFromSpriteWindow : public app::gen::PaletteFromSprite {
+public:
+  PaletteFromSpriteWindow() {
+    rgbmapAlgorithmPlaceholder()->addChild(&m_algoSelector);
+
+    advancedCheck()->Click.connect(
+      [this](ui::Event&){
+        advanced()->setVisible(advancedCheck()->isSelected());
+        expandWindow(sizeHint());
+      });
+
+  }
+
+  doc::RgbMapAlgorithm algorithm() {
+    return m_algoSelector.algorithm();
+  }
+
+  void algorithm(const doc::RgbMapAlgorithm mapAlgo) {
+    m_algoSelector.algorithm(mapAlgo);
+  }
+
+private:
+  RgbMapAlgorithmSelector m_algoSelector;
+};
+
+#endif
 
 class ColorQuantizationCommand : public CommandWithNewParams<ColorQuantizationParams> {
 public:
@@ -65,8 +97,10 @@ void ColorQuantizationCommand::onExecute(Context* ctx)
   const bool ui = (params().ui() && ctx->isUIAvailable());
 #endif
 
+  auto& pref = Preferences::instance();
   bool withAlpha = params().withAlpha();
   int maxColors = params().maxColors();
+  RgbMapAlgorithm algorithm = params().algorithm();
   bool createPal;
 
   Site site = ctx->activeSite();
@@ -74,16 +108,22 @@ void ColorQuantizationCommand::onExecute(Context* ctx)
 
 #ifdef ENABLE_UI
   if (ui) {
-    app::gen::PaletteFromSprite window;
+    PaletteFromSpriteWindow window;
     {
       ContextReader reader(ctx);
       const Palette* curPalette = site.sprite()->palette(site.frame());
 
+      if (!params().algorithm.isSet())
+        algorithm = pref.quantization.rgbmapAlgorithm();
       if (!params().withAlpha.isSet())
-        withAlpha = App::instance()->preferences().quantization.withAlpha();
+        withAlpha = pref.quantization.withAlpha();
 
+      const bool advanced = pref.quantization.advanced();
+      window.advancedCheck()->setSelected(advanced);
+      window.advanced()->setVisible(advanced);
+
+      window.algorithm(algorithm);
       window.newPalette()->setSelected(true);
-      window.alphaChannel()->setSelected(withAlpha);
       window.ncolors()->setTextf("%d", maxColors);
 
       if (entries.picks() > 1) {
@@ -107,7 +147,10 @@ void ColorQuantizationCommand::onExecute(Context* ctx)
 
     maxColors = window.ncolors()->textInt();
     withAlpha = window.alphaChannel()->isSelected();
-    App::instance()->preferences().quantization.withAlpha(withAlpha);
+    algorithm = window.algorithm();
+
+    pref.quantization.withAlpha(withAlpha);
+    pref.quantization.advanced(window.advancedCheck()->isSelected());
 
     if (window.newPalette()->isSelected()) {
       createPal = true;
@@ -141,14 +184,15 @@ void ColorQuantizationCommand::onExecute(Context* ctx)
     Palette tmpPalette(frame, entries.picks());
 
     SpriteJob job(reader, "Color Quantization");
-    const bool newBlend = Preferences::instance().experimental.newBlend();
+    const bool newBlend = pref.experimental.newBlend();
     job.startJobWithCallback(
-      [sprite, withAlpha, &tmpPalette, &job, newBlend]{
+      [sprite, withAlpha, &tmpPalette, &job, newBlend, algorithm]{
         render::create_palette_from_sprite(
           sprite, 0, sprite->lastFrame(),
           withAlpha, &tmpPalette,
-          &job,
-          newBlend);     // SpriteJob is a render::TaskDelegate
+          &job,                 // SpriteJob is a render::TaskDelegate
+          newBlend,
+          algorithm);
       });
     job.waitJob();
     if (job.isCanceled())

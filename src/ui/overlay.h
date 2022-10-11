@@ -20,6 +20,7 @@ namespace os {
 }
 
 namespace ui {
+  class Display;
 
   class Overlay;
   using OverlayRef = base::Ref<Overlay>;
@@ -31,7 +32,8 @@ namespace ui {
       MouseZOrder = 5000
     };
 
-    Overlay(const os::SurfaceRef& overlaySurface,
+    Overlay(Display* display,
+            const os::SurfaceRef& overlaySurface,
             const gfx::Point& pos,
             ZOrder zorder = NormalZOrder);
     ~Overlay();
@@ -41,7 +43,7 @@ namespace ui {
     const gfx::Point& position() const { return m_pos; }
     gfx::Rect bounds() const;
 
-    void captureOverlappedArea(const os::SurfaceRef& screen);
+    void captureOverlappedArea();
     void restoreOverlappedArea(const gfx::Rect& restoreBounds);
 
     void drawOverlay();
@@ -52,6 +54,7 @@ namespace ui {
     }
 
   private:
+    Display* m_display;
     os::SurfaceRef m_surface;
     os::SurfaceRef m_overlap;
 

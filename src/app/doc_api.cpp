@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -263,29 +263,46 @@ bool DocApi::cropCel(LayerImage* layer,
       gfx::Point paintPos(newCelBounds.x - newCelPos.x,
                           newCelBounds.y - newCelPos.y);
 
+      const color_t bg = image->pixelFormat() == IMAGE_TILEMAP ?
+                           notile :
+                           m_document->bgColor(layer);
       newCelPos = newCelBounds.origin();
 
-      // Crop the image
+      doc::Grid grid;
+      if (layer->isTilemap()) {
+        const Tileset* tileset = static_cast<LayerTilemap*>(layer)->tileset();
+        grid = tileset->grid();
+        grid.origin(cel->position());
+
+        newCelBounds.setOrigin(bounds.origin() + newCelPos);
+        newCelBounds = grid.canvasToTile(newCelBounds);
+        paintPos = newCelBounds.origin();
+        newCelPos = grid.tileToCanvas(paintPos) - bounds.origin();
+      }
+
+      // crop the image
       ImageRef newImage(
         crop_image(image,
                    paintPos.x, paintPos.y,
                    newCelBounds.w, newCelBounds.h,
-                   m_document->bgColor(layer)));
+                   bg));
 
       // Try to shrink the image ignoring transparent borders
       gfx::Rect frameBounds;
       if (doc::algorithm::shrink_bounds(newImage.get(),
-                                        frameBounds,
-                                        newImage->maskColor())) {
+                                        newImage->maskColor(),
+                                        layer, frameBounds)) {
         // In this case the new cel image can be even smaller
         if (frameBounds != newImage->bounds()) {
           newImage = ImageRef(
             crop_image(newImage.get(),
                        frameBounds.x, frameBounds.y,
                        frameBounds.w, frameBounds.h,
-                       m_document->bgColor(layer)));
-
-          newCelPos += frameBounds.origin();
+                       bg));
+          if (layer->isTilemap())
+            newCelPos += grid.tileToCanvas(frameBounds.origin()) - grid.origin();
+          else
+            newCelPos += frameBounds.origin();
         }
       }
       else {
@@ -293,7 +310,7 @@ bool DocApi::cropCel(LayerImage* layer,
         return false;
       }
 
-      // If it's the same iamge, we can re-use the cel image and just
+      // If it's the same image, we can re-use the cel image and just
       // move the cel position.
       if (!is_same_image(cel->image(), newImage.get())) {
         replaceImage(cel->sprite(),
@@ -450,7 +467,8 @@ void DocApi::moveFrameLayer(Layer* layer, frame_t frame, frame_t beforeFrame)
 
   switch (layer->type()) {
 
-    case ObjectType::LayerImage: {
+    case ObjectType::LayerImage:
+    case ObjectType::LayerTilemap: {
       LayerImage* imglayer = static_cast<LayerImage*>(layer);
 
       CelList cels;
@@ -532,8 +550,9 @@ void DocApi::setCelOpacity(Sprite* sprite, Cel* cel, int newOpacity)
   m_transaction.execute(new cmd::SetCelOpacity(cel, newOpacity));
 }
 
-void DocApi::clearCel(LayerImage* layer, frame_t frame)
+void DocApi::clearCel(Layer* layer, frame_t frame)
 {
+  ASSERT(layer->isImage());
   if (Cel* cel = layer->cel(frame))
     clearCel(cel);
 }
@@ -680,7 +699,11 @@ Layer* DocApi::duplicateLayerAfter(Layer* sourceLayer, LayerGroup* parent, Layer
   ASSERT(parent);
   std::unique_ptr<Layer> newLayerPtr;
 
-  if (sourceLayer->isImage())
+  if (sourceLayer->isTilemap()) {
+    newLayerPtr.reset(new LayerTilemap(sourceLayer->sprite(),
+                                       static_cast<LayerTilemap*>(sourceLayer)->tilesetIndex()));
+  }
+  else if (sourceLayer->isImage())
     newLayerPtr.reset(new LayerImage(sourceLayer->sprite()));
   else if (sourceLayer->isGroup())
     newLayerPtr.reset(new LayerGroup(sourceLayer->sprite()));

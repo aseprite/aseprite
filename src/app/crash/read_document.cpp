@@ -12,6 +12,7 @@
 #include "app/crash/read_document.h"
 
 #include "app/console.h"
+#include "app/crash/doc_format.h"
 #include "app/crash/internals.h"
 #include "app/doc.h"
 #include "base/convert_to.h"
@@ -27,6 +28,7 @@
 #include "doc/frame.h"
 #include "doc/image_io.h"
 #include "doc/layer.h"
+#include "doc/layer_tilemap.h"
 #include "doc/palette.h"
 #include "doc/palette_io.h"
 #include "doc/slice.h"
@@ -36,7 +38,11 @@
 #include "doc/subobjects_io.h"
 #include "doc/tag.h"
 #include "doc/tag_io.h"
+#include "doc/tileset.h"
+#include "doc/tileset_io.h"
+#include "doc/tilesets.h"
 #include "doc/user_data_io.h"
+#include "doc/util.h"
 #include "fixmath/fixmath.h"
 
 #include <fstream>
@@ -55,7 +61,8 @@ class Reader : public SubObjectsIO {
 public:
   Reader(const std::string& dir,
          base::task_token* t)
-    : m_sprite(nullptr)
+    : m_docFormatVer(DOC_FORMAT_VERSION_0)
+    , m_sprite(nullptr)
     , m_dir(dir)
     , m_docId(0)
     , m_docVersions(nullptr)
@@ -177,6 +184,10 @@ private:
   Doc* readDocument(std::ifstream& s) {
     ObjectId sprId = read32(s);
     std::string filename = read_string(s);
+    m_docFormatVer = read16(s);
+    if (s.eof()) m_docFormatVer = DOC_FORMAT_VERSION_0;
+
+    TRACE("RECO: internal format version=%d\n", m_docFormatVer);
 
     // Load DocumentInfo only
     if (m_loadInfo) {
@@ -198,6 +209,7 @@ private:
   }
 
   Sprite* readSprite(std::ifstream& s) {
+    // Header
     ColorMode mode = (ColorMode)read8(s);
     int w = read16(s);
     int h = read16(s);
@@ -239,6 +251,19 @@ private:
     }
     else {
       Console().printf("Invalid number of frames #%d\n", nframes);
+    }
+
+    // IDs of all tilesets
+    if (m_docFormatVer >= DOC_FORMAT_VERSION_1) {
+      int ntilesets = read32(s);
+      if (ntilesets > 0 && ntilesets < 0xffffff) {
+        for (int i=0; i<ntilesets; ++i) {
+          ObjectId tilesetId = read32(s);
+          Tileset* tileset = loadObject<Tileset*>("tset", tilesetId, &Reader::readTileset);
+          if (tileset)
+            spr->tilesets()->add(tileset);
+        }
+      }
     }
 
     // Read layers
@@ -356,7 +381,28 @@ private:
         spr->setGridBounds(gridBounds);
     }
 
+    // Read Sprite User Data
+    if (!s.eof()) {
+      UserData userData = readUserData(s);
+      if (!userData.isEmpty())
+        spr->setUserData(userData);
+    }
+
     return spr.release();
+  }
+
+  UserData readUserData(std::ifstream& s) {
+    UserData userData;
+    userData.setText(read_string(s));
+    // This check is here because we've been restoring sprites from
+    // old sessions where the color is restored incorrectly if we
+    // don't check if there is enough space to read from the file
+    // (e.g. reading a random color or just white, maybe -1 which is
+    // 0xffffffff in 32-bit).
+    if (!s.eof()) {
+      userData.setColor(read32(s));
+    }
+    return userData;
   }
 
   gfx::ColorSpaceRef readColorSpace(std::ifstream& s) {
@@ -395,14 +441,27 @@ private:
     LayerFlags flags = (LayerFlags)read32(s);
     ObjectType type = (ObjectType)read16(s);
     ASSERT(type == ObjectType::LayerImage ||
-           type == ObjectType::LayerGroup);
+           type == ObjectType::LayerGroup ||
+           type == ObjectType::LayerTilemap);
 
     std::string name = read_string(s);
     std::unique_ptr<Layer> lay;
 
     switch (type) {
-      case ObjectType::LayerImage: {
-        lay.reset(new LayerImage(m_sprite));
+
+      case ObjectType::LayerImage:
+      case ObjectType::LayerTilemap: {
+        switch (type) {
+          case ObjectType::LayerImage:
+            lay.reset(new LayerImage(m_sprite));
+            break;
+          case ObjectType::LayerTilemap: {
+            tileset_index tilesetIndex = read32(s);
+            lay.reset(new LayerTilemap(m_sprite, tilesetIndex));
+            break;
+          }
+        }
+
         lay->setName(name);
         lay->setFlags(flags);
 
@@ -460,8 +519,17 @@ private:
     return read_palette(s);
   }
 
+  Tileset* readTileset(std::ifstream& s) {
+    bool isOldVersion = false;
+    Tileset* tileset = read_tileset(s, m_sprite, false, &isOldVersion);
+    if (tileset && isOldVersion)
+      m_updateOldTilemapWithTileset.insert(tileset->id());
+    return tileset;
+  }
+
   Tag* readTag(std::ifstream& s) {
-    return read_tag(s, false);
+    const bool oldVersion = (m_docFormatVer < DOC_FORMAT_VERSION_1);
+    return read_tag(s, false, oldVersion);
   }
 
   Slice* readSlice(std::ifstream& s) {
@@ -489,6 +557,22 @@ private:
         }
       }
     }
+
+    // Fix tilemaps using old tilesets
+    if (!m_updateOldTilemapWithTileset.empty()) {
+      for (Tileset* tileset : *spr->tilesets()) {
+        if (m_updateOldTilemapWithTileset.find(tileset->id()) == m_updateOldTilemapWithTileset.end())
+          continue;
+
+        for (Cel* cel : spr->uniqueCels()) {
+          if (cel->image()->pixelFormat() == IMAGE_TILEMAP &&
+              static_cast<LayerTilemap*>(cel->layer())->tileset() == tileset) {
+            doc::fix_old_tilemap(cel->image(), tileset,
+                                 tile_i_mask, tile_f_mask);
+          }
+        }
+      }
+    }
   }
 
   bool canceled() const {
@@ -498,6 +582,7 @@ private:
       return false;
   }
 
+  int m_docFormatVer;
   Sprite* m_sprite;    // Used to pass the sprite in LayerImage() ctor
   std::string m_dir;
   ObjectVersion m_docId;
@@ -507,6 +592,9 @@ private:
   std::vector<std::pair<ObjectId, ObjectId> > m_celsToLoad;
   std::map<ObjectId, ImageRef> m_images;
   std::map<ObjectId, CelDataRef> m_celdatas;
+  // Each ObjectId is a tileset ID that didn't contain the empty tile
+  // as the first tile (this was an old format used in internal betas)
+  std::set<ObjectId> m_updateOldTilemapWithTileset;
   base::task_token* m_taskToken;
 };
 

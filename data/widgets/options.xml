@@ -39,7 +39,7 @@
               <listitem text="300%" value="3" />
               <listitem text="400%" value="4" />
             </combobox>
-	    <boxfiller />
+	    <hbox id="theme_variants" />
 
             <label text="@.ui_scaling" />
             <combobox id="ui_scale">
@@ -498,6 +498,8 @@
         <!-- Experimental -->
         <vbox id="section_experimental">
           <separator text="@.user_interface" horizontal="true" />
+          <check id="multiple_windows" text="@.multiple_windows"
+                 pref="experimental.multiple_windows" />
           <hbox>
             <check id="new_render_engine"
                    text="@.new_render_engine"
@@ -530,6 +532,10 @@
           <hbox>
             <label text="@.non_active_layer_opacity" />
             <slider id="nonactive_layers_opacity" min="0" max="255" width="128" />
+          </hbox>
+          <hbox>
+            <label text="@rgbmap_algorithm_selector.label" />
+            <hbox id="rgbmap_algorithm_placeholder" />
           </hbox>
         </vbox>
 

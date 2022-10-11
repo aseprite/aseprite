@@ -100,6 +100,9 @@ doc::color_t color_utils::color_for_image(const app::Color& color, PixelFormat f
     case IMAGE_INDEXED:
       c = color.getIndex();
       break;
+    case IMAGE_TILEMAP:
+      c = color.getIndex(); // TODO Add app::Color::getTile() ?
+      break;
   }
 
   return c;
@@ -121,6 +124,9 @@ doc::color_t color_utils::color_for_image_without_alpha(const app::Color& color,
       break;
     case IMAGE_INDEXED:
       c = color.getIndex();
+      break;
+    case IMAGE_TILEMAP:
+      c = color.getIndex(); // TODO Add app::Color::getTile() ?
       break;
   }
 
@@ -164,6 +170,9 @@ doc::color_t color_utils::color_for_target_mask(const app::Color& color, const C
           if (c < 0)
             c = get_current_palette()->findBestfit(r, g, b, a, mask);
         }
+        break;
+      case IMAGE_TILEMAP:
+        c = color.getIndex(); // TODO Add app::Color::getTile() ?
         break;
     }
   }

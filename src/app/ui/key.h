@@ -12,6 +12,7 @@
 #include "app/commands/params.h"
 #include "app/ui/key_context.h"
 #include "base/convert_to.h"
+#include "base/vector2d.h"
 #include "ui/accelerator.h"
 
 #include <memory>
@@ -42,6 +43,7 @@ namespace app {
     Quicktool,
     Action,
     WheelAction,
+    DragAction,
   };
 
   // TODO This should be called "KeyActionModifier" or something similar
@@ -65,6 +67,7 @@ namespace app {
     ScaleFromCenter           = 0x00008000,
     AngleSnapFromLastPoint    = 0x00010000,
     RotateShape               = 0x00020000,
+    FineControl               = 0x00040000,
   };
 
   enum class WheelAction {
@@ -74,12 +77,15 @@ namespace app {
     HScroll,
     FgColor,
     BgColor,
+    FgTile,
+    BgTile,
     Frame,
     BrushSize,
     BrushAngle,
     ToolSameGroup,
     ToolOtherGroup,
     Layer,
+    InkType,
     InkOpacity,
     LayerOpacity,
     CelOpacity,
@@ -100,15 +106,22 @@ namespace app {
     return KeyAction(int(a) & int(b));
   }
 
+  class Key;
+  using KeyPtr = std::shared_ptr<Key>;
+  using Keys = std::vector<KeyPtr>;
   using KeySourceAccelList = std::vector<std::pair<KeySource, ui::Accelerator>>;
+  using DragVector = base::Vector2d<double>;
 
   class Key {
   public:
     Key(const Key& key);
-    Key(Command* command, const Params& params, KeyContext keyContext);
-    Key(KeyType type, tools::Tool* tool);
-    explicit Key(KeyAction action);
-    explicit Key(WheelAction action);
+    Key(Command* command, const Params& params,
+        const KeyContext keyContext);
+    Key(const KeyType type, tools::Tool* tool);
+    explicit Key(const KeyAction action,
+                 const KeyContext keyContext);
+    explicit Key(const WheelAction action);
+    static KeyPtr MakeDragAction(WheelAction dragAction);
 
     KeyType type() const { return m_type; }
     const ui::Accelerators& accels() const;
@@ -145,8 +158,11 @@ namespace app {
     tools::Tool* tool() const { return m_tool; }
     // for KeyType::Action
     KeyAction action() const { return m_action; }
-    // for KeyType::WheelAction
+    // for KeyType::WheelAction / KeyType::DragAction
     WheelAction wheelAction() const { return m_wheelAction; }
+    // for KeyType::DragAction
+    DragVector dragVector() const { return m_dragVector; }
+    void setDragVector(const DragVector& v) { m_dragVector = v; }
 
     std::string triggerString() const;
 
@@ -162,18 +178,13 @@ namespace app {
     // for KeyType::Command
     Command* m_command;
     Params m_params;
-    // for KeyType::Tool or Quicktool
-    tools::Tool* m_tool;
-    // for KeyType::Action
-    KeyAction m_action;
-    // for KeyType::WheelAction
-    WheelAction m_wheelAction;
+
+    tools::Tool* m_tool;        // for KeyType::Tool or Quicktool
+    KeyAction m_action;         // for KeyType::Action
+    WheelAction m_wheelAction;  // for KeyType::WheelAction / DragAction
+    DragVector m_dragVector;    // for KeyType::DragAction
   };
 
-  using KeyPtr = std::shared_ptr<Key> ;
-  using Keys = std::vector<KeyPtr>;
-
-  std::string convertKeyContextToString(KeyContext keyContext);
   std::string convertKeyContextToUserFriendlyString(KeyContext keyContext);
 
 } // namespace app

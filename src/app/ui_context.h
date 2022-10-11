@@ -58,6 +58,7 @@ namespace app {
     void onSetActiveFrame(const doc::frame_t frame) override;
     void onSetRange(const DocRange& range) override;
     void onSetSelectedColors(const doc::PalettePicks& picks) override;
+    void onSetSelectedTiles(const doc::PalettePicks& picks) override;
     void onCloseDocument(Doc* doc) override;
 
   private:

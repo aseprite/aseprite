@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -8,22 +9,18 @@
 #include "config.h"
 #endif
 
-#include "app/app.h"
 #include "app/color.h"
 #include "app/color_picker.h"
 #include "app/commands/cmd_eyedropper.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
-#include "app/modules/editors.h"
+#include "app/context.h"
 #include "app/pref/preferences.h"
 #include "app/site.h"
 #include "app/tools/tool.h"
 #include "app/tools/tool_box.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/editor/editor.h"
-#include "app/ui_context.h"
-#include "doc/image.h"
-#include "doc/sprite.h"
 #include "ui/manager.h"
 #include "ui/system.h"
 
@@ -40,7 +37,8 @@ EyedropperCommand::EyedropperCommand()
 void EyedropperCommand::pickSample(const Site& site,
                                    const gfx::PointF& pixelPos,
                                    const render::Projection& proj,
-                                   app::Color& color)
+                                   app::Color& color,
+                                   doc::tile_t& tile)
 {
   // Check if we've to grab alpha channel or the merged color.
   Preferences& pref = Preferences::instance();
@@ -63,8 +61,12 @@ void EyedropperCommand::pickSample(const Site& site,
   app::gen::EyedropperChannel channel =
     pref.eyedropper.channel();
 
-  app::Color picked = picker.color();
+  if (site.tilemapMode() == TilemapMode::Tiles) {
+    tile = picker.tile();
+    return;
+  }
 
+  app::Color picked = picker.color();
   switch (channel) {
     case app::gen::EyedropperChannel::COLOR_ALPHA:
       color = picked;
@@ -184,12 +186,16 @@ void EyedropperCommand::onLoadParams(const Params& params)
 void EyedropperCommand::onExecute(Context* context)
 {
   gfx::Point mousePos = ui::get_mouse_position();
-  Widget* widget = ui::Manager::getDefault()->pick(mousePos);
+  Widget* widget = ui::Manager::getDefault()->pickFromScreenPos(mousePos);
   if (!widget || widget->type() != Editor::Type())
     return;
 
   Editor* editor = static_cast<Editor*>(widget);
-  executeOnMousePos(context, editor, mousePos, !m_background);
+  executeOnMousePos(
+    context,
+    editor,
+    editor->display()->nativeWindow()->pointFromScreen(mousePos),
+    !m_background);
 }
 
 void EyedropperCommand::executeOnMousePos(Context* context,
@@ -216,18 +222,30 @@ void EyedropperCommand::executeOnMousePos(Context* context,
   DisableColorBarEditMode disable;
   Preferences& pref = Preferences::instance();
   app::Color color =
-    foreground ? pref.colorBar.fgColor():
-                 pref.colorBar.bgColor();
+    (foreground ? pref.colorBar.fgColor():
+                  pref.colorBar.bgColor());
+  doc::tile_t tile =
+    (foreground ? pref.colorBar.fgTile():
+                  pref.colorBar.bgTile());
 
-  pickSample(editor->getSite(),
+  Site site = editor->getSite();
+  pickSample(site,
              pixelPos,
              editor->projection(),
-             color);
+             color, tile);
 
-  if (foreground)
-    pref.colorBar.fgColor(color);
-  else
-    pref.colorBar.bgColor(color);
+  if (site.tilemapMode() == TilemapMode::Tiles) {
+    if (foreground)
+      pref.colorBar.fgTile(tile);
+    else
+      pref.colorBar.bgTile(tile);
+  }
+  else {
+    if (foreground)
+      pref.colorBar.fgColor(color);
+    else
+      pref.colorBar.bgColor(color);
+  }
 }
 
 Command* CommandFactory::createEyedropperCommand()

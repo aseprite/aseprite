@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2021  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -83,7 +84,7 @@ void ZoomCommand::onExecute(Context* context)
   gfx::Point mousePos = ui::get_mouse_position();
 
   // Try to use the editor above the mouse.
-  ui::Widget* pick = ui::Manager::getDefault()->pick(mousePos);
+  ui::Widget* pick = ui::Manager::getDefault()->pickFromScreenPos(mousePos);
   if (pick && pick->type() == Editor::Type())
     editor = static_cast<Editor*>(pick);
 
@@ -112,7 +113,8 @@ void ZoomCommand::onExecute(Context* context)
   }
 
   editor->setZoomAndCenterInMouse(
-    zoom, mousePos,
+    zoom,
+    editor->display()->nativeWindow()->pointFromScreen(mousePos),
     (focus == Focus::Center ? Editor::ZoomBehavior::CENTER:
                               Editor::ZoomBehavior::MOUSE));
 }

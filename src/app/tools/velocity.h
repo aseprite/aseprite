@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2021  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -34,7 +34,7 @@ public:
 
   const Vec2& velocity() const { return m_velocity; }
 
-  void updateWithScreenPoint(const gfx::Point& screenPoint);
+  void updateWithDisplayPoint(const gfx::Point& screenPoint);
 
 private:
   bool m_firstPoint;

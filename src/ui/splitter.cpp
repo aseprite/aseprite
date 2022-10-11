@@ -225,7 +225,7 @@ void Splitter::onResize(ResizeEvent& ev)
     }                                                                   \
                                                                         \
     /* TODO uncomment this to make a restricted splitter */             \
-    /* pos.w = base::clamp(pos.w, reqSize1.w, avail-reqSize2.w); */     \
+    /* pos.w = std::clamp(pos.w, reqSize1.w, avail-reqSize2.w); */      \
     pos.h = rc.h;                                                       \
                                                                         \
     child1->setBounds(pos);                                             \

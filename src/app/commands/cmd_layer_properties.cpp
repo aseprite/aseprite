@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -13,6 +13,8 @@
 #include "app/cmd/set_layer_blend_mode.h"
 #include "app/cmd/set_layer_name.h"
 #include "app/cmd/set_layer_opacity.h"
+#include "app/cmd/set_tileset_base_index.h"
+#include "app/cmd/set_tileset_name.h"
 #include "app/cmd/set_user_data.h"
 #include "app/commands/command.h"
 #include "app/console.h"
@@ -21,18 +23,23 @@
 #include "app/doc_event.h"
 #include "app/modules/gui.h"
 #include "app/tx.h"
+#include "app/ui/main_window.h"
 #include "app/ui/separator_in_view.h"
+#include "app/ui/tileset_selector.h"
 #include "app/ui/timeline/timeline.h"
-#include "app/ui/user_data_popup.h"
+#include "app/ui/user_data_view.h"
 #include "app/ui_context.h"
 #include "base/scoped_value.h"
 #include "doc/image.h"
 #include "doc/layer.h"
+#include "doc/layer_tilemap.h"
 #include "doc/sprite.h"
+#include "doc/tileset.h"
 #include "doc/user_data.h"
 #include "ui/ui.h"
 
 #include "layer_properties.xml.h"
+#include "tileset_selector_window.xml.h"
 
 namespace app {
 
@@ -68,9 +75,7 @@ public:
 
   LayerPropertiesWindow()
     : m_timer(250, this)
-    , m_document(nullptr)
-    , m_layer(nullptr)
-    , m_selfUpdate(false) {
+    , m_userDataView(Preferences::instance().layers.userDataVisibility) {
     name()->setMinSize(gfx::Size(128, 0));
     name()->setExpansive(true);
 
@@ -103,7 +108,11 @@ public:
     mode()->Change.connect([this]{ onStartTimer(); });
     opacity()->Change.connect([this]{ onStartTimer(); });
     m_timer.Tick.connect([this]{ onCommitChange(); });
-    userData()->Click.connect([this]{ onPopupUserData(); });
+    userData()->Click.connect([this]{ onToggleUserData(); });
+    tileset()->Click.connect([this]{ onTileset(); });
+    tileset()->setVisible(false);
+
+    m_userDataView.UserDataChange.connect([this]{ onStartTimer(); });
 
     remapWindow();
     centerWindow();
@@ -129,6 +138,11 @@ public:
 
     if (m_document)
       m_document->add_observer(this);
+
+    if (countLayers() > 0) {
+      ui::Grid* mainGrid = g_window->propertiesGrid();
+      m_userDataView.configureAndSet(m_layer->userData(), mainGrid);
+    }
 
     updateFromLayer();
   }
@@ -197,9 +211,14 @@ private:
       return;
 
     m_timer.start();
+    m_pendingChanges = true;
   }
 
   void onCommitChange() {
+    // Nothing to change
+    if (!m_pendingChanges)
+      return;
+
     // Nothing to do here, as there is no layer selected.
     if (!m_layer)
       return;
@@ -212,11 +231,12 @@ private:
 
     std::string newName = nameValue();
     int newOpacity = opacityValue();
+    const doc::UserData newUserData = m_userDataView.userData();
     doc::BlendMode newBlendMode = blendModeValue();
 
     if ((count > 1) ||
         (count == 1 && m_layer && (newName != m_layer->name() ||
-                                   m_userData != m_layer->userData() ||
+                                   newUserData != m_layer->userData() ||
                                    (m_layer->isImage() &&
                                     (newOpacity != static_cast<LayerImage*>(m_layer)->opacity() ||
                                      newBlendMode != static_cast<LayerImage*>(m_layer)->blendMode()))))) {
@@ -233,7 +253,7 @@ private:
         }
 
         const bool nameChanged = (newName != m_layer->name());
-        const bool userDataChanged = (m_userData != m_layer->userData());
+        const bool userDataChanged = (newUserData != m_layer->userData());
         const bool opacityChanged = (m_layer->isImage() && newOpacity != static_cast<LayerImage*>(m_layer)->opacity());
         const bool blendModeChanged = (m_layer->isImage() && newBlendMode != static_cast<LayerImage*>(m_layer)->blendMode());
 
@@ -241,8 +261,8 @@ private:
           if (nameChanged && newName != layer->name())
             tx(new cmd::SetLayerName(layer, newName));
 
-          if (userDataChanged && m_userData != layer->userData())
-            tx(new cmd::SetUserData(layer, m_userData));
+          if (userDataChanged && newUserData != layer->userData())
+            tx(new cmd::SetUserData(layer, newUserData, m_document));
 
           if (layer->isImage()) {
             if (opacityChanged && newOpacity != static_cast<LayerImage*>(layer)->opacity())
@@ -269,6 +289,7 @@ private:
 
   // ContextObserver impl
   void onActiveSiteChange(const Site& site) override {
+    onCommitChange();
     if (isVisible())
       setLayer(const_cast<Doc*>(site.document()),
                const_cast<Layer*>(site.layer()));
@@ -292,12 +313,60 @@ private:
       updateFromLayer();
   }
 
-  void onPopupUserData() {
+  void onUserDataChange(DocEvent& ev) override {
+    if (m_layer == ev.withUserData())
+      updateFromLayer();
+  }
+
+  void onToggleUserData() {
     if (m_layer) {
-      m_userData = m_layer->userData();
-      if (show_user_data_popup(userData()->bounds(), m_userData)) {
-        onCommitChange();
+      m_userDataView.toggleVisibility();
+      g_window->remapWindow();
+      manager()->invalidate();
+    }
+  }
+
+  void onTileset() {
+    if (!m_layer || !m_layer->isTilemap())
+      return;
+
+    auto tilemap = static_cast<LayerTilemap*>(m_layer);
+    auto tileset = tilemap->tileset();
+
+    // Information about the tileset to be used for new tilemaps
+    TilesetSelector::Info tilesetInfo;
+    tilesetInfo.enabled = false;
+    tilesetInfo.newTileset = false;
+    tilesetInfo.grid = tileset->grid();
+    tilesetInfo.name = tileset->name();
+    tilesetInfo.baseIndex = tileset->baseIndex();
+    tilesetInfo.tsi = tilemap->tilesetIndex();
+
+    try {
+      gen::TilesetSelectorWindow window;
+      TilesetSelector tilesetSel(tilemap->sprite(), tilesetInfo);
+      window.tilesetOptions()->addChild(&tilesetSel);
+      window.openWindowInForeground();
+      if (window.closer() != window.ok())
+        return;
+
+      tilesetInfo = tilesetSel.getInfo();
+
+      if (tileset->name() != tilesetInfo.name ||
+          tileset->baseIndex() != tilesetInfo.baseIndex) {
+        ContextWriter writer(UIContext::instance());
+        Tx tx(writer.context(), "Set Tileset Properties");
+        if (tileset->name() != tilesetInfo.name)
+          tx(new cmd::SetTilesetName(tileset, tilesetInfo.name));
+        if (tileset->baseIndex() != tilesetInfo.baseIndex)
+          tx(new cmd::SetTilesetBaseIndex(tileset, tilesetInfo.baseIndex));
+        // TODO catch the tileset base index modification from the editor
+        App::instance()->mainWindow()->invalidate();
+        tx.commit();
       }
+    }
+    catch (const std::exception& e) {
+      Console::showException(e);
     }
   }
 
@@ -309,6 +378,7 @@ private:
 
     base::ScopedValue<bool> switchSelf(m_selfUpdate, true, false);
 
+    const bool tilemapVisibility = (m_layer && m_layer->isTilemap());
     if (m_layer) {
       name()->setText(m_layer->name().c_str());
       name()->setEnabled(true);
@@ -332,23 +402,31 @@ private:
         opacity()->setEnabled(false);
       }
 
-      m_userData = m_layer->userData();
+      color_t c = m_layer->userData().color();
+      m_userDataView.color()->setColor(Color::fromRgb(rgba_getr(c), rgba_getg(c), rgba_getb(c), rgba_geta(c)));
+      m_userDataView.entry()->setText(m_layer->userData().text());
     }
     else {
       name()->setText("No Layer");
       name()->setEnabled(false);
       mode()->setEnabled(false);
       opacity()->setEnabled(false);
-      m_userData = UserData();
+      m_userDataView.setVisible(false, false);
+    }
+
+    if (tileset()->isVisible() != tilemapVisibility) {
+      tileset()->setVisible(tilemapVisibility);
+      tileset()->parent()->layout();
     }
   }
 
   Timer m_timer;
-  Doc* m_document;
-  Layer* m_layer;
+  bool m_pendingChanges = false;
+  Doc* m_document = nullptr;
+  Layer* m_layer = nullptr;
   DocRange m_range;
-  bool m_selfUpdate;
-  UserData m_userData;
+  bool m_selfUpdate = false;
+  UserDataView m_userDataView;
 };
 
 LayerPropertiesCommand::LayerPropertiesCommand()

@@ -27,6 +27,7 @@
 #include "app/ui/palette_view.h"
 #include "app/ui/timeline/timeline.h"
 #include "app/ui_context.h"
+#include "app/util/cel_ops.h"
 #include "app/util/range_utils.h"
 #include "doc/algorithm/shrink_bounds.h"
 #include "doc/cel.h"
@@ -223,7 +224,24 @@ void FilterManagerImpl::apply()
     gfx::Rect output;
     if (algorithm::shrink_bounds2(m_src.get(), m_dst.get(),
                                   m_bounds, output)) {
-      if (m_cel->layer()->isBackground()) {
+      if (m_cel->layer()->isTilemap()) {
+        modify_tilemap_cel_region(
+          *m_tx,
+          m_cel, nullptr,
+          gfx::Region(output),
+          m_site.tilesetMode(),
+          [this](const doc::ImageRef& origTile,
+                 const gfx::Rect& tileBoundsInCanvas) -> doc::ImageRef {
+            return ImageRef(
+              crop_image(m_dst.get(),
+                         tileBoundsInCanvas.x,
+                         tileBoundsInCanvas.y,
+                         tileBoundsInCanvas.w,
+                         tileBoundsInCanvas.h,
+                         m_dst->maskColor()));
+          });
+      }
+      else if (m_cel->layer()->isBackground()) {
         (*m_tx)(
           new cmd::CopyRegion(
             m_cel->image(),
@@ -464,10 +482,7 @@ void FilterManagerImpl::init(Cel* cel)
     throw InvalidAreaException();
 
   m_cel = cel;
-  m_src.reset(
-    crop_image(
-      cel->image(),
-      gfx::Rect(m_site.sprite()->bounds()).offset(-cel->position()), 0));
+  m_src = crop_cel_image(cel, 0);
   m_dst.reset(Image::createCopy(m_src.get()));
 
   m_row = -1;

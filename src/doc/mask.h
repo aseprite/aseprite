@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2020 Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -50,6 +51,7 @@ namespace doc {
               get_pixel(m_bitmap.get(), u-m_bounds.x, v-m_bounds.y));
     }
 
+    gfx::Point origin() const { return m_bounds.origin(); }
     const gfx::Rect& bounds() const { return m_bounds; }
 
     void setOrigin(int x, int y) {

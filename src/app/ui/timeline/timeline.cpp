@@ -13,6 +13,7 @@
 
 #include "app/app.h"
 #include "app/app_menus.h"
+#include "app/cmd/set_tag_range.h"
 #include "app/cmd_transaction.h"
 #include "app/color_utils.h"
 #include "app/commands/command.h"
@@ -25,12 +26,14 @@
 #include "app/doc_event.h"
 #include "app/doc_range_ops.h"
 #include "app/doc_undo.h"
+#include "app/i18n/strings.h"
 #include "app/loop_tag.h"
 #include "app/modules/editors.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
 #include "app/thumbnails.h"
 #include "app/transaction.h"
+#include "app/tx.h"
 #include "app/ui/app_menuitem.h"
 #include "app/ui/configure_timeline_popup.h"
 #include "app/ui/doc_view.h"
@@ -88,6 +91,8 @@ enum {
   PART_CEL,
   PART_RANGE_OUTLINE,
   PART_TAG,
+  PART_TAG_LEFT,
+  PART_TAG_RIGHT,
   PART_TAGS,
   PART_TAG_BAND,
   PART_TAG_SWITCH_BUTTONS,
@@ -244,7 +249,7 @@ Timeline::Timeline(TooltipManager* tooltipManager)
   , m_separator_x(
       Preferences::instance().general.timelineLayerPanelWidth() * guiscale())
   , m_separator_w(1)
-  , m_confPopup(NULL)
+  , m_confPopup(nullptr)
   , m_clipboard_timer(100, this)
   , m_offset_count(0)
   , m_redrawMarchingAntsOnly(false)
@@ -254,7 +259,9 @@ Timeline::Timeline(TooltipManager* tooltipManager)
 {
   enableFlags(CTRL_RIGHT_CLICK);
 
-  m_ctxConn = m_context->AfterCommandExecution.connect(
+  m_ctxConn1 = m_context->BeforeCommandExecution.connect(
+    &Timeline::onBeforeCommandExecution, this);
+  m_ctxConn2 = m_context->AfterCommandExecution.connect(
     &Timeline::onAfterCommandExecution, this);
   m_context->documents().add_observer(this);
   m_context->add_observer(this);
@@ -279,7 +286,7 @@ Timeline::~Timeline()
   detachDocument();
   m_context->documents().remove_observer(this);
   m_context->remove_observer(this);
-  delete m_confPopup;
+  m_confPopup.reset();
 }
 
 void Timeline::setZoom(const double zoom)
@@ -296,7 +303,6 @@ void Timeline::setZoomAndUpdate(const double zoom,
     setZoom(zoom);
     regenerateTagBands();
     updateScrollBars();
-    setViewScroll(viewScroll());
     invalidate();
   }
   if (updatePref && zoom != docPref().thumbnails.zoom()) {
@@ -613,7 +619,7 @@ bool Timeline::onProcessMessage(Message* msg)
       if (static_cast<TimerMessage*>(msg)->timer() == &m_clipboard_timer) {
         Doc* clipboard_document;
         DocRange clipboard_range;
-        clipboard::get_document_range_info(
+        Clipboard::instance()->getDocumentRangeInfo(
           &clipboard_document,
           &clipboard_range);
 
@@ -888,7 +894,7 @@ bool Timeline::onProcessMessage(Message* msg)
                 m_state = STATE_COLLAPSING_LAYERS;
 
               setLayerCollapsedFlag(m_clk.layer, m_state == STATE_COLLAPSING_LAYERS);
-              updateByMousePos(msg, ui::get_mouse_position() - bounds().origin());
+              updateByMousePos(msg, mousePosInClientBounds());
 
               // The m_clk might have changed because we've
               // expanded/collapsed a group just right now (i.e. we've
@@ -968,6 +974,23 @@ bool Timeline::onProcessMessage(Message* msg)
               m_clk.frame = m_range.lastFrame();
           }
           break;
+
+        case PART_TAG:
+          m_state = STATE_MOVING_TAG;
+          m_resizeTagData.reset(m_clk.tag);
+          break;
+        case PART_TAG_LEFT:
+          m_state = STATE_RESIZING_TAG_LEFT;
+          m_resizeTagData.reset(m_clk.tag);
+          // TODO reduce the scope of the invalidation
+          invalidate();
+          break;
+        case PART_TAG_RIGHT:
+          m_state = STATE_RESIZING_TAG_RIGHT;
+          m_resizeTagData.reset(m_clk.tag);
+          invalidate();
+          break;
+
       }
 
       // Redraw the new clicked part (header, layer or cel).
@@ -1058,7 +1081,7 @@ bool Timeline::onProcessMessage(Message* msg)
             m_clk = hit;
             if (hit.part == PART_ROW_CONTINUOUS_ICON) {
               setLayerCollapsedFlag(hit.layer, m_state == STATE_COLLAPSING_LAYERS);
-              updateByMousePos(msg, ui::get_mouse_position() - bounds().origin());
+              updateByMousePos(msg, mousePosInClientBounds());
             }
             break;
 
@@ -1150,7 +1173,7 @@ bool Timeline::onProcessMessage(Message* msg)
             break;
           }
 
-          case STATE_SELECTING_CELS:
+          case STATE_SELECTING_CELS: {
             Layer* hitLayer = m_rows[hit.layer].layer();
             if ((m_layer != hitLayer) || (m_frame != hit.frame)) {
               m_clk.layer = hit.layer;
@@ -1162,6 +1185,29 @@ bool Timeline::onProcessMessage(Message* msg)
               setFrame(m_clk.frame = hit.frame, true);
             }
             break;
+          }
+
+          case STATE_MOVING_TAG:
+            // TODO
+            break;
+
+          case STATE_RESIZING_TAG_LEFT:
+          case STATE_RESIZING_TAG_RIGHT: {
+            auto tag = doc::get<doc::Tag>(m_resizeTagData.tag);
+            if (tag) {
+              switch (m_state) {
+                case STATE_RESIZING_TAG_LEFT:
+                  m_resizeTagData.from = std::clamp(hit.frame, 0, tag->toFrame());
+                  break;
+                case STATE_RESIZING_TAG_RIGHT:
+                  m_resizeTagData.to = std::clamp(hit.frame, tag->fromFrame(), m_sprite->lastFrame());
+                  break;
+              }
+              invalidate();
+            }
+            break;
+          }
+
         }
       }
 
@@ -1193,22 +1239,19 @@ bool Timeline::onProcessMessage(Message* msg)
               getPartBounds(Hit(PART_HEADER_GEAR)).offset(bounds().origin());
 
             if (!m_confPopup) {
-              ConfigureTimelinePopup* popup =
-                new ConfigureTimelinePopup();
-
-              popup->remapWindow();
-              m_confPopup = popup;
+              m_confPopup.reset(new ConfigureTimelinePopup);
+              m_confPopup->remapWindow();
             }
 
             if (!m_confPopup->isVisible()) {
               gfx::Rect bounds = m_confPopup->bounds();
-              ui::fit_bounds(BOTTOM, gearBounds, bounds);
-
-              m_confPopup->moveWindow(bounds);
+              ui::fit_bounds(display(), BOTTOM, gearBounds, bounds);
+              ui::fit_bounds(display(), m_confPopup.get(), bounds);
               m_confPopup->openWindow();
             }
-            else
-              m_confPopup->closeWindow(NULL);
+            else {
+              m_confPopup->closeWindow(nullptr);
+            }
             break;
           }
 
@@ -1218,7 +1261,7 @@ bool Timeline::onProcessMessage(Message* msg)
               if (m_clk.frame == m_hot.frame) {
                 Menu* popupMenu = AppMenus::instance()->getFramePopupMenu();
                 if (popupMenu) {
-                  popupMenu->showPopup(mouseMsg->position());
+                  popupMenu->showPopup(mouseMsg->position(), display());
 
                   m_state = STATE_STANDBY;
                   invalidate();
@@ -1233,7 +1276,7 @@ bool Timeline::onProcessMessage(Message* msg)
               if (m_clk.layer == m_hot.layer) {
                 Menu* popupMenu = AppMenus::instance()->getLayerPopupMenu();
                 if (popupMenu) {
-                  popupMenu->showPopup(mouseMsg->position());
+                  popupMenu->showPopup(mouseMsg->position(), display());
 
                   m_state = STATE_STANDBY;
                   invalidate();
@@ -1253,7 +1296,7 @@ bool Timeline::onProcessMessage(Message* msg)
                   AppMenus::instance()->getCelMovementPopupMenu():
                   AppMenus::instance()->getCelPopupMenu();
               if (popupMenu) {
-                popupMenu->showPopup(mouseMsg->position());
+                popupMenu->showPopup(mouseMsg->position(), display());
 
                 // Do not drop in this function, the drop is done from
                 // the menu in case we've used the
@@ -1281,7 +1324,7 @@ bool Timeline::onProcessMessage(Message* msg)
                 Menu* popupMenu = AppMenus::instance()->getTagPopupMenu();
                 if (popupMenu) {
                   AppMenuItem::setContextParams(params);
-                  popupMenu->showPopup(mouseMsg->position());
+                  popupMenu->showPopup(mouseMsg->position(), display());
                   AppMenuItem::setContextParams(Params());
 
                   m_state = STATE_STANDBY;
@@ -1314,11 +1357,39 @@ bool Timeline::onProcessMessage(Message* msg)
         if (relayout)
           layout();
 
-        if (m_state == STATE_MOVING_RANGE &&
-            m_dropRange.type() != Range::kNone) {
-          dropRange(is_copy_key_pressed(mouseMsg) ?
-            Timeline::kCopy:
-            Timeline::kMove);
+        switch (m_state) {
+          case STATE_MOVING_RANGE:
+            if (m_dropRange.type() != Range::kNone) {
+              dropRange(is_copy_key_pressed(mouseMsg) ?
+                        Timeline::kCopy:
+                        Timeline::kMove);
+            }
+            break;
+
+          case STATE_MOVING_TAG:
+            m_resizeTagData.reset();
+            break;
+
+          case STATE_RESIZING_TAG_LEFT:
+          case STATE_RESIZING_TAG_RIGHT: {
+            auto tag = doc::get<doc::Tag>(m_resizeTagData.tag);
+            if (tag) {
+              if ((m_state == STATE_RESIZING_TAG_LEFT && tag->fromFrame() != m_resizeTagData.from) ||
+                  (m_state == STATE_RESIZING_TAG_RIGHT && tag->toFrame() != m_resizeTagData.to)) {
+                Tx tx(UIContext::instance(), Strings::commands_FrameTagProperties());
+                tx(new cmd::SetTagRange(
+                     tag,
+                     (m_state == STATE_RESIZING_TAG_LEFT ? m_resizeTagData.from: tag->fromFrame()),
+                     (m_state == STATE_RESIZING_TAG_RIGHT ? m_resizeTagData.to: tag->toFrame())));
+                tx.commit();
+
+                regenerateRows();
+              }
+            }
+            m_resizeTagData.reset();
+            break;
+          }
+
         }
 
         // Clean the clicked-part & redraw the hot-part.
@@ -1415,7 +1486,7 @@ bool Timeline::onProcessMessage(Message* msg)
         }
       }
 
-      updateByMousePos(msg, ui::get_mouse_position() - bounds().origin());
+      updateByMousePos(msg, mousePosInClientBounds());
       if (used)
         return true;
 
@@ -1434,7 +1505,7 @@ bool Timeline::onProcessMessage(Message* msg)
         }
       }
 
-      updateByMousePos(msg, ui::get_mouse_position() - bounds().origin());
+      updateByMousePos(msg, mousePosInClientBounds());
       if (used)
         return true;
 
@@ -1509,6 +1580,9 @@ void Timeline::onInitTheme(ui::InitThemeEvent& ev)
   m_vbar.setStyle(theme->styles.transparentScrollbar());
   m_hbar.setThumbStyle(theme->styles.transparentScrollbarThumb());
   m_vbar.setThumbStyle(theme->styles.transparentScrollbarThumb());
+
+  if (m_confPopup)
+    m_confPopup->initTheme();
 }
 
 void Timeline::onInvalidateRegion(const gfx::Region& region)
@@ -1703,15 +1777,23 @@ paintNoDoc:;
       skinTheme()->styles.timelinePadding());
 }
 
+void Timeline::onBeforeCommandExecution(CommandExecutionEvent& ev)
+{
+  m_savedVersion = (m_document ? m_document->sprite()->version(): 0);
+}
+
 void Timeline::onAfterCommandExecution(CommandExecutionEvent& ev)
 {
   if (!m_document)
     return;
 
-  // TODO improve this: no need to regenerate everything after each command
-  regenerateRows();
-  showCurrentCel();
-  invalidate();
+  // TODO Improve this: check if the structure of layers/frames has changed
+  const doc::ObjectVersion currentVersion = m_document->sprite()->version();
+  if (m_savedVersion != currentVersion) {
+    regenerateRows();
+    showCurrentCel();
+    invalidate();
+  }
 }
 
 void Timeline::onActiveSiteChange(const Site& site)
@@ -1805,6 +1887,16 @@ void Timeline::onRemoveFrame(DocEvent& ev)
   invalidate();
 }
 
+void Timeline::onAddCel(DocEvent& ev)
+{
+  invalidateLayer(ev.layer());
+}
+
+void Timeline::onAfterRemoveCel(DocEvent& ev)
+{
+  invalidateLayer(ev.layer());
+}
+
 void Timeline::onLayerNameChange(DocEvent& ev)
 {
   invalidate();
@@ -1822,6 +1914,16 @@ void Timeline::onAddTag(DocEvent& ev)
 void Timeline::onRemoveTag(DocEvent& ev)
 {
   onAddTag(ev);
+}
+
+void Timeline::onTagChange(DocEvent& ev)
+{
+  invalidateHit(Hit(PART_TAGS));
+}
+
+void Timeline::onTagRename(DocEvent& ev)
+{
+  invalidateHit(Hit(PART_TAGS));
 }
 
 void Timeline::onStateChanged(Editor* editor)
@@ -1894,6 +1996,12 @@ void Timeline::setCursor(ui::Message* msg, const Hit& hit)
   else if (hit.part == PART_TAG) {
     ui::set_mouse_cursor(kHandCursor);
   }
+  else if (hit.part == PART_TAG_RIGHT) {
+    ui::set_mouse_cursor(kSizeECursor);
+  }
+  else if (hit.part == PART_TAG_LEFT) {
+    ui::set_mouse_cursor(kSizeWCursor);
+  }
   else {
     ui::set_mouse_cursor(kArrowCursor);
   }
@@ -1949,7 +2057,7 @@ void Timeline::drawClipboardRange(ui::Graphics* g)
 {
   Doc* clipboard_document;
   DocRange clipboard_range;
-  clipboard::get_document_range_info(
+  Clipboard::instance()->getDocumentRangeInfo(
     &clipboard_document,
     &clipboard_range);
 
@@ -2045,6 +2153,10 @@ void Timeline::drawHeaderFrame(ui::Graphics* g, frame_t frame)
 
 void Timeline::drawLayer(ui::Graphics* g, int layerIdx)
 {
+  ASSERT(layerIdx >= 0 && layerIdx < int(m_rows.size()));
+  if (layerIdx < 0 || layerIdx >= m_rows.size())
+    return;
+
   auto& styles = skinTheme()->styles;
   Layer* layer = m_rows[layerIdx].layer();
   bool is_active = isLayerActive(layerIdx);
@@ -2110,15 +2222,9 @@ void Timeline::drawLayer(ui::Graphics* g, int layerIdx)
     textBounds.w -= w;
   }
 
+  // Layer name background
   drawPart(g, bounds, nullptr, styles.timelineLayer(),
            is_active || (clklayer && m_clk.part == PART_ROW_TEXT),
-           (hotlayer && m_hot.part == PART_ROW_TEXT),
-           (clklayer && m_clk.part == PART_ROW_TEXT));
-
-  drawPart(g, textBounds,
-           &layer->name(),
-           styles.timelineLayer(),
-           is_active,
            (hotlayer && m_hot.part == PART_ROW_TEXT),
            (clklayer && m_clk.part == PART_ROW_TEXT));
 
@@ -2131,14 +2237,28 @@ void Timeline::drawLayer(ui::Graphics* g, int layerIdx)
                           doc::rgba_getb(layerColor),
                           doc::rgba_geta(layerColor)),
                 b2);
+  }
 
-    drawPart(g, textBounds,
-             &layer->name(),
-             styles.timelineLayerTextOnly(),
-             is_active,
+  // Tilemap icon
+  if (layer->isTilemap()) {
+    drawPart(g, textBounds, nullptr, styles.timelineTilemapLayer(),
+             is_active || (clklayer && m_clk.part == PART_ROW_TEXT),
              (hotlayer && m_hot.part == PART_ROW_TEXT),
              (clklayer && m_clk.part == PART_ROW_TEXT));
+
+    gfx::Size sz = skinTheme()->calcSizeHint(
+      this, skinTheme()->styles.timelineTilemapLayer());
+    textBounds.x += sz.w;
+    textBounds.w -= sz.w;
   }
+
+  // Layer text
+  drawPart(g, textBounds,
+           &layer->name(),
+           styles.timelineLayerTextOnly(),
+           is_active,
+           (hotlayer && m_hot.part == PART_ROW_TEXT),
+           (clklayer && m_clk.part == PART_ROW_TEXT));
 
   if (layer->isBackground()) {
     int s = ui::guiscale();
@@ -2426,8 +2546,15 @@ void Timeline::drawTags(ui::Graphics* g)
         }
       }
 
-      gfx::Rect bounds1 = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), tag->fromFrame()));
-      gfx::Rect bounds2 = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), tag->toFrame()));
+      doc::frame_t fromFrame = tag->fromFrame();
+      doc::frame_t toFrame = tag->toFrame();
+      if (m_resizeTagData.tag == tag->id()) {
+        fromFrame = m_resizeTagData.from;
+        toFrame = m_resizeTagData.to;
+      }
+
+      gfx::Rect bounds1 = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), fromFrame));
+      gfx::Rect bounds2 = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), toFrame));
       gfx::Rect bounds = bounds1.createUnion(bounds2);
       gfx::Rect tagBounds = getPartBounds(Hit(PART_TAG, 0, 0, tag->id()));
       bounds.h = bounds.y2() - tagBounds.y2();
@@ -2462,39 +2589,45 @@ void Timeline::drawTags(ui::Graphics* g)
       bounds.w += dw;
       tagBounds.x += dx;
 
-      gfx::Color bg =
+      const gfx::Color tagColor =
         (m_tagFocusBand < 0 || pass == 1) ?
         tag->color(): theme->colors.timelineBandBg();
-      {
-        IntersectClip clip(g, bounds);
-        if (clip) {
-          for (auto& layer : styles.timelineLoopRange()->layers()) {
-            if (layer.type() == Style::Layer::Type::kBackground ||
-                layer.type() == Style::Layer::Type::kBackgroundBorder ||
-                layer.type() == Style::Layer::Type::kBorder) {
-              const_cast<Style::Layer*>(&layer)->setColor(bg);
-            }
-          }
-          drawPart(g, bounds, nullptr, styles.timelineLoopRange());
-        }
+      gfx::Color bg = tagColor;
+
+      // Draw the tag braces
+      drawTagBraces(g, bg, bounds, bounds);
+      if ((m_clk.part == PART_TAG_LEFT && m_clk.tag == tag->id()) ||
+          (m_clk.part != PART_TAG_LEFT &&
+           m_hot.part == PART_TAG_LEFT && m_hot.tag == tag->id())) {
+        if (m_clk.part == PART_TAG_LEFT)
+          bg = color_utils::blackandwhite_neg(tagColor);
+        else
+          bg = Timeline::highlightColor(tagColor);
+        drawTagBraces(g, bg, bounds, gfx::Rect(bounds.x, bounds.y,
+                                               frameBoxWidth()/2, bounds.h));
+      }
+      else if ((m_clk.part == PART_TAG_RIGHT && m_clk.tag == tag->id()) ||
+               (m_clk.part != PART_TAG_RIGHT &&
+                m_hot.part == PART_TAG_RIGHT && m_hot.tag == tag->id())) {
+        if (m_clk.part == PART_TAG_RIGHT)
+          bg = color_utils::blackandwhite_neg(tagColor);
+        else
+          bg = Timeline::highlightColor(tagColor);
+        drawTagBraces(g, bg, bounds,
+                      gfx::Rect(bounds.x2()-frameBoxWidth()/2, bounds.y,
+                                frameBoxWidth()/2, bounds.h));
       }
 
+      // Draw tag text
       if (m_tagFocusBand < 0 || pass == 1) {
         bounds = tagBounds;
 
-        if (m_clk.part == PART_TAG && m_clk.tag == tag->id()) {
-          bg = color_utils::blackandwhite_neg(bg);
-        }
-        else if (m_hot.part == PART_TAG && m_hot.tag == tag->id()) {
-          int r, g, b;
-          r = gfx::getr(bg)+32;
-          g = gfx::getg(bg)+32;
-          b = gfx::getb(bg)+32;
-          r = std::clamp(r, 0, 255);
-          g = std::clamp(g, 0, 255);
-          b = std::clamp(b, 0, 255);
-          bg = gfx::rgba(r, g, b, gfx::geta(bg));
-        }
+        if (m_clk.part == PART_TAG && m_clk.tag == tag->id())
+          bg = color_utils::blackandwhite_neg(tagColor);
+        else if (m_hot.part == PART_TAG && m_hot.tag == tag->id())
+          bg = Timeline::highlightColor(tagColor);
+        else
+          bg = tagColor;
         g->fillRect(bg, bounds);
 
         bounds.y += 2*ui::guiscale();
@@ -2521,6 +2654,26 @@ void Timeline::drawTags(ui::Graphics* g)
     }
     theme->paintWidgetPart(g, styles.timelineSwitchBandButton(),
                            butBounds, info);
+  }
+}
+
+void Timeline::drawTagBraces(ui::Graphics* g,
+                             gfx::Color tagColor,
+                             const gfx::Rect& bounds,
+                             const gfx::Rect& clipBounds)
+{
+  IntersectClip clip(g, clipBounds);
+  if (clip) {
+    SkinTheme* theme = skinTheme();
+    auto& styles = theme->styles;
+    for (auto& layer : styles.timelineLoopRange()->layers()) {
+      if (layer.type() == Style::Layer::Type::kBackground ||
+          layer.type() == Style::Layer::Type::kBackgroundBorder ||
+          layer.type() == Style::Layer::Type::kBorder) {
+        const_cast<Style::Layer*>(&layer)->setColor(tagColor);
+      }
+    }
+    drawPart(g, bounds, nullptr, styles.timelineLoopRange());
   }
 }
 
@@ -2776,7 +2929,7 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
     case PART_RANGE_OUTLINE: {
       gfx::Rect rc = getRangeBounds(m_range);
       int s = outlineWidth();
-      rc.enlarge(s);
+      rc.enlarge(gfx::Border(s-1, s-1, s, s));
       if (rc.x < bounds.x) rc.offset(s, 0).inflate(-s, 0);
       if (rc.y < bounds.y) rc.offset(0, s).inflate(0, -s);
       return rc;
@@ -2785,8 +2938,15 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
     case PART_TAG: {
       Tag* tag = hit.getTag();
       if (tag) {
-        gfx::Rect bounds1 = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), tag->fromFrame()));
-        gfx::Rect bounds2 = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), tag->toFrame()));
+        doc::frame_t fromFrame = tag->fromFrame();
+        doc::frame_t toFrame = tag->toFrame();
+        if (m_resizeTagData.tag == tag->id()) {
+          fromFrame = m_resizeTagData.from;
+          toFrame = m_resizeTagData.to;
+        }
+
+        gfx::Rect bounds1 = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), fromFrame));
+        gfx::Rect bounds2 = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), toFrame));
         gfx::Rect bounds = bounds1.createUnion(bounds2);
         bounds.y -= skinTheme()->dimensions.timelineTagsAreaHeight();
 
@@ -3051,6 +3211,8 @@ void Timeline::updateScrollBars()
                        m_viewportArea, *this,
                        m_hbar,
                        m_vbar);
+
+  setViewScroll(viewScroll());
 }
 
 void Timeline::updateByMousePos(ui::Message* msg, const gfx::Point& mousePos)
@@ -3109,11 +3271,6 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
     else if (!bounds.isEmpty() && gfx::Rect(bounds.x+bounds.w-3, bounds.y, 3, bounds.h).contains(mousePos)) {
       hit.part = PART_HEADER_ONIONSKIN_RANGE_RIGHT;
     }
-    // Is the mouse on the separator.
-    else if (mousePos.x > separatorX()-4
-          && mousePos.x <= separatorX())  {
-      hit.part = PART_SEPARATOR;
-    }
     // Is the mouse on the frame tags area?
     else if (getPartBounds(Hit(PART_TAGS)).contains(mousePos)) {
       // Mouse in switch band button
@@ -3144,17 +3301,49 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
       // Mouse in frame tags
       if (hit.part == PART_NOTHING) {
         for (Tag* tag : m_sprite->tags()) {
-          gfx::Rect bounds = getPartBounds(Hit(PART_TAG, 0, 0, tag->id()));
-          if (bounds.contains(mousePos)) {
-            const int band = m_tagBand[tag];
-            if (m_tagFocusBand >= 0 &&
-                m_tagFocusBand != band)
-              continue;
+          const int band = m_tagBand[tag];
 
+          // Skip unfocused bands
+          if (m_tagFocusBand >= 0 &&
+              m_tagFocusBand != band) {
+            continue;
+          }
+
+          gfx::Rect tagBounds = getPartBounds(Hit(PART_TAG, 0, 0, tag->id()));
+          if (tagBounds.contains(mousePos)) {
             hit.part = PART_TAG;
             hit.tag = tag->id();
             hit.band = band;
             break;
+          }
+          // Check if we are in the left/right handles to resize the tag
+          else {
+            gfx::Rect bounds1 = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), tag->fromFrame()));
+            gfx::Rect bounds2 = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), tag->toFrame()));
+            gfx::Rect bounds = bounds1.createUnion(bounds2);
+            bounds.h = bounds.y2() - tagBounds.y2();
+            bounds.y = tagBounds.y2();
+
+            gfx::Rect bandBounds = getPartBounds(Hit(PART_TAG_BAND, 0, 0, doc::NullId, band));
+
+            const int fw = frameBoxWidth()/2;
+            if (gfx::Rect(bounds.x2()-fw, bounds.y, fw, bounds.h).contains(mousePos)) {
+              hit.part = PART_TAG_RIGHT;
+              hit.tag = tag->id();
+              hit.band = band;
+              // If we are in the band, we hit this tag, in other
+              // case, we can try to hit other tag that might be a
+              // better match.
+              if (bandBounds.contains(mousePos))
+                break;
+            }
+            else if (gfx::Rect(bounds.x, bounds.y, fw, bounds.h).contains(mousePos)) {
+              hit.part = PART_TAG_LEFT;
+              hit.tag = tag->id();
+              hit.band = band;
+              if (bandBounds.contains(mousePos))
+                break;
+            }
           }
         }
       }
@@ -3183,6 +3372,11 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
           }
         }
       }
+    }
+    // Is the mouse on the separator.
+    else if (mousePos.x > separatorX()-4 &&
+             mousePos.x <= separatorX()) {
+      hit.part = PART_SEPARATOR;
     }
     // Is the mouse on the headers?
     else if (mousePos.y >= top && mousePos.y < top+headerBoxHeight()) {
@@ -3889,14 +4083,15 @@ void Timeline::clearClipboardRange()
 {
   Doc* clipboard_document;
   DocRange clipboard_range;
-  clipboard::get_document_range_info(
+  auto clipboard = Clipboard::instance();
+  clipboard->getDocumentRangeInfo(
     &clipboard_document,
     &clipboard_range);
 
   if (!m_document || clipboard_document != m_document)
     return;
 
-  clipboard::clear_content();
+  clipboard->clearContent();
   m_clipboard_timer.stop();
 }
 
@@ -4040,7 +4235,7 @@ bool Timeline::onCanCopy(Context* ctx)
 bool Timeline::onCanPaste(Context* ctx)
 {
   return
-    (clipboard::get_current_format() == clipboard::ClipboardDocRange &&
+    (ctx->clipboard()->format() == ClipboardFormat::DocRange &&
      ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable));
 }
 
@@ -4059,7 +4254,7 @@ bool Timeline::onCopy(Context* ctx)
   if (m_range.enabled()) {
     const ContextReader reader(ctx);
     if (reader.document()) {
-      clipboard::copy_range(reader, m_range);
+      ctx->clipboard()->copyRange(reader, m_range);
       return true;
     }
   }
@@ -4068,8 +4263,9 @@ bool Timeline::onCopy(Context* ctx)
 
 bool Timeline::onPaste(Context* ctx)
 {
-  if (clipboard::get_current_format() == clipboard::ClipboardDocRange) {
-    clipboard::paste(ctx, true);
+  auto clipboard = ctx->clipboard();
+  if (clipboard->format() == ClipboardFormat::DocRange) {
+    clipboard->paste(ctx, true);
     return true;
   }
   else
@@ -4263,6 +4459,19 @@ int Timeline::separatorX() const
 void Timeline::setSeparatorX(int newValue)
 {
   m_separator_x = std::max(0, newValue);
+}
+
+//static
+gfx::Color Timeline::highlightColor(const gfx::Color color)
+{
+  int r, g, b;
+  r = gfx::getr(color)+64; // TODO make this customizable in the theme XML?
+  g = gfx::getg(color)+64;
+  b = gfx::getb(color)+64;
+  r = std::clamp(r, 0, 255);
+  g = std::clamp(g, 0, 255);
+  b = std::clamp(b, 0, 255);
+  return gfx::rgba(r, g, b, gfx::geta(color));
 }
 
 } // namespace app

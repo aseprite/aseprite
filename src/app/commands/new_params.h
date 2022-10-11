@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -139,7 +139,7 @@ namespace app {
     T& params() { return m_params; }
     const T& params() const { return m_params; }
 
-  private:
+  protected:
     void onResetValues() override {
       m_params.resetValues();
     }
@@ -148,6 +148,7 @@ namespace app {
       return m_params.getParam(k);
     }
 
+  private:
     T m_params;
   };
 

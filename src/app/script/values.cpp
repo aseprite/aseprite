@@ -165,6 +165,19 @@ app::tools::InkType get_value_from_lua(lua_State* L, int index) {
 }
 
 // ----------------------------------------------------------------------
+// doc::tile_t
+
+template<>
+void push_value_to_lua(lua_State* L, const doc::tile_t& value) {
+  lua_pushinteger(L, value);
+}
+
+template<>
+doc::tile_t get_value_from_lua(lua_State* L, int index) {
+  return lua_tointeger(L, index);
+}
+
+// ----------------------------------------------------------------------
 // enums
 
 #define FOR_ENUM(T)                                             \
@@ -207,6 +220,7 @@ FOR_ENUM(app::tools::RotationAlgorithm)
 FOR_ENUM(doc::AniDir)
 FOR_ENUM(doc::BrushPattern)
 FOR_ENUM(doc::ColorMode)
+FOR_ENUM(doc::RgbMapAlgorithm)
 FOR_ENUM(filters::HueSaturationFilter::Mode)
 FOR_ENUM(filters::TiledMode)
 FOR_ENUM(render::OnionskinPosition)

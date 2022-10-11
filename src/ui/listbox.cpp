@@ -12,6 +12,7 @@
 #include "ui/listbox.h"
 
 #include "base/fs.h"
+#include "ui/display.h"
 #include "ui/listitem.h"
 #include "ui/message.h"
 #include "ui/resize_event.h"
@@ -210,7 +211,8 @@ bool ListBox::onProcessMessage(Message* msg)
 
     case kMouseMoveMessage:
       if (hasCapture()) {
-        gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
+        gfx::Point screenPos = msg->display()->nativeWindow()->pointToScreen(static_cast<MouseMessage*>(msg)->position());
+        gfx::Point mousePos = display()->nativeWindow()->pointFromScreen(screenPos);
         View* view = View::getView(this);
         bool pick_item = true;
 
@@ -243,18 +245,20 @@ bool ListBox::onProcessMessage(Message* msg)
             picked = pick(mousePos);
           }
 
+          if (dynamic_cast<ui::Separator*>(picked))
+            picked = nullptr;
+
           // If the picked widget is a child of the list, select it
           if (picked && hasChild(picked))
             selectChild(picked, msg);
         }
-
-        return true;
       }
-      break;
+      return true;
 
     case kMouseUpMessage:
-      releaseMouse();
-      break;
+      if (hasCapture())
+        releaseMouse();
+      return true;
 
     case kMouseWheelMessage: {
       View* view = View::getView(this);

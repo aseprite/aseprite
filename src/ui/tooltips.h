@@ -1,4 +1,5 @@
 // Aseprite UI Library
+// Copyright (C) 2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -18,6 +19,7 @@
 
 namespace ui {
 
+  class Display;
   class TextBox;
   class TipWindow;
 
@@ -70,7 +72,11 @@ namespace ui {
 
     // Returns false there is no enough screen space to show the
     // window.
-    bool pointAt(int arrowAlign, const gfx::Rect& target);
+    bool pointAt(int arrowAlign,
+                 const gfx::Rect& target,
+                 const ui::Display* display);
+
+    void adjustTargetFrom(const ui::Display* targetDisplay);
 
     TextBox* textBox() const { return m_textBox; }
 

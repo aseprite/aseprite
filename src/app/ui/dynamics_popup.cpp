@@ -214,6 +214,19 @@ DynamicsPopup::DynamicsPopup(Delegate* delegate)
   , m_ditheringSel(new DitheringSelector(DitheringSelector::SelectMatrix))
   , m_fromTo(tools::ColorFromTo::BgToFg)
 {
+  m_dynamics->stabilizer()->Click.connect(
+    [this](){
+      if (m_dynamics->stabilizer()->isSelected() &&
+          m_dynamics->stabilizerFactor()->getValue() == 0) {
+        // TODO default value when we enable stabilizer when it's zero
+        m_dynamics->stabilizerFactor()->setValue(16);
+      }
+    });
+  m_dynamics->stabilizerFactor()->Change.connect(
+    [this](){
+      m_dynamics->stabilizer()->setSelected(m_dynamics->stabilizerFactor()->getValue() > 0);
+    });
+
   m_dynamics->values()->ItemChange.connect(
     [this](ButtonSet::Item* item){
       onValuesChange(item);
@@ -234,6 +247,13 @@ DynamicsPopup::DynamicsPopup(Delegate* delegate)
         m_fromTo = tools::ColorFromTo::BgToFg;
       updateFromToText();
     });
+  m_ditheringSel->OpenListBox.connect(
+    [this]{
+      if (auto comboboxWindow = m_ditheringSel->getWindowWidget()) {
+        m_hotRegion |= gfx::Region(comboboxWindow->boundsOnScreen());
+        setHotRegion(m_hotRegion);
+      }
+    });
 
   m_dynamics->gradientPlaceholder()->addChild(m_ditheringSel);
   m_dynamics->pressurePlaceholder()->addChild(m_pressureThreshold = new ThresholdSlider);
@@ -243,9 +263,24 @@ DynamicsPopup::DynamicsPopup(Delegate* delegate)
   onValuesChange(nullptr);
 }
 
+void DynamicsPopup::setOptionsGridVisibility(bool state)
+{
+  m_dynamics->grid()->setVisible(state);
+  if (isVisible())
+    expandWindow(sizeHint());
+}
+
 tools::DynamicsOptions DynamicsPopup::getDynamics() const
 {
   tools::DynamicsOptions opts;
+
+  if (m_dynamics->stabilizer()->isSelected()) {
+    opts.stabilizerFactor = m_dynamics->stabilizerFactor()->getValue();
+  }
+  else {
+    opts.stabilizerFactor = 0;
+  }
+
   opts.size =
     (isCheck(SIZE_WITH_PRESSURE) ? tools::DynamicSensor::Pressure:
      isCheck(SIZE_WITH_VELOCITY) ? tools::DynamicSensor::Velocity:
@@ -369,15 +404,10 @@ void DynamicsPopup::onValuesChange(ButtonSet::Item* item)
   m_dynamics->velocityLabel()->setVisible(hasVelocity);
   m_dynamics->velocityPlaceholder()->setVisible(hasVelocity);
 
-  auto oldBounds = bounds();
-  layout();
-  setBounds(gfx::Rect(origin(), sizeHint()));
+  expandWindow(sizeHint());
 
-  m_hotRegion |= gfx::Region(bounds());
+  m_hotRegion |= gfx::Region(boundsOnScreen());
   setHotRegion(m_hotRegion);
-
-  if (isVisible())
-    manager()->invalidateRect(oldBounds);
 }
 
 void DynamicsPopup::updateFromToText()
@@ -399,7 +429,7 @@ bool DynamicsPopup::onProcessMessage(Message* msg)
   switch (msg->type()) {
 
     case kOpenMessage:
-      m_hotRegion = gfx::Region(bounds());
+      m_hotRegion = gfx::Region(boundsOnScreen());
       setHotRegion(m_hotRegion);
       manager()->addMessageFilter(kMouseMoveMessage, this);
       manager()->addMessageFilter(kMouseDownMessage, this);
@@ -429,7 +459,7 @@ bool DynamicsPopup::onProcessMessage(Message* msg)
       }
 
       if (m_dynamics->velocityPlaceholder()->isVisible()) {
-        m_velocity.updateWithScreenPoint(mouseMsg->position());
+        m_velocity.updateWithDisplayPoint(mouseMsg->position());
 
         float v = m_velocity.velocity().magnitude()
           / tools::VelocitySensor::kScreenPixelsForFullVelocity;
@@ -441,8 +471,12 @@ bool DynamicsPopup::onProcessMessage(Message* msg)
     }
 
     case kMouseDownMessage: {
-      auto mouseMsg = static_cast<MouseMessage*>(msg);
-      auto picked = manager()->pick(mouseMsg->position());
+      if (!msg->display())
+        break;
+
+      auto mouseMsg = static_cast<const MouseMessage*>(msg);
+      auto screenPos = mouseMsg->screenPosition();
+      auto picked = manager()->pickFromScreenPos(screenPos);
       if ((picked == nullptr) ||
           (picked->window() != this &&
            picked->window() != m_ditheringSel->getWindowWidget())) {
@@ -450,6 +484,7 @@ bool DynamicsPopup::onProcessMessage(Message* msg)
       }
       break;
     }
+
   }
   return PopupWindow::onProcessMessage(msg);
 }

@@ -192,6 +192,16 @@ void UIContext::onSetSelectedColors(const doc::PalettePicks& picks)
     Context::onSetSelectedColors(picks);
 }
 
+void UIContext::onSetSelectedTiles(const doc::PalettePicks& picks)
+{
+  if (activeView()) {
+    if (ColorBar* colorBar = ColorBar::instance())
+      colorBar->getTilesView()->setSelectedEntries(picks);
+  }
+  else if (!isUIAvailable())
+    Context::onSetSelectedTiles(picks);
+}
+
 DocView* UIContext::getFirstDocView(Doc* document) const
 {
   Workspace* workspace = App::instance()->workspace();

@@ -14,8 +14,12 @@
 #include "app/doc.h"
 #include "app/pref/preferences.h"
 #include "app/ui/layer_frame_comboboxes.h"
+#include "app/ui/user_data_view.h"
 #include "doc/sprite.h"
 #include "doc/tag.h"
+#include "ui/manager.h"
+
+#include <algorithm>
 
 namespace app {
 
@@ -23,16 +27,18 @@ TagWindow::TagWindow(const doc::Sprite* sprite, const doc::Tag* tag)
   : m_sprite(sprite)
   , m_base(Preferences::instance().document(
      static_cast<Doc*>(sprite->document())).timeline.firstFrame())
+  , m_userData(tag->userData())
+  , m_userDataView(Preferences::instance().tags.userDataVisibility)
 {
+  auto mainGrid = findChildT<ui::Grid>("properties_grid");
+  m_userDataView.configureAndSet(m_userData, mainGrid);
+
   name()->setText(tag->name());
   from()->setTextf("%d", tag->fromFrame()+m_base);
   to()->setTextf("%d", tag->toFrame()+m_base);
-  color()->setColor(app::Color::fromRgb(
-      doc::rgba_getr(tag->color()),
-      doc::rgba_getg(tag->color()),
-      doc::rgba_getb(tag->color())));
 
   fill_anidir_combobox(anidir(), tag->aniDir());
+  userData()->Click.connect([this]{ onToggleUserData(); });
 }
 
 bool TagWindow::show()
@@ -57,15 +63,16 @@ void TagWindow::rangeValue(doc::frame_t& from, doc::frame_t& to)
   to   = std::clamp(to, from, last);
 }
 
-doc::color_t TagWindow::colorValue()
-{
-  app::Color color = this->color()->getColor();
-  return doc::rgba(color.getRed(), color.getGreen(), color.getBlue(), 255);
-}
-
 doc::AniDir TagWindow::aniDirValue()
 {
   return (doc::AniDir)anidir()->getSelectedItemIndex();
+}
+
+void TagWindow::onToggleUserData()
+{
+  m_userDataView.toggleVisibility();
+  remapWindow();
+  manager()->invalidate();
 }
 
 } // namespace app

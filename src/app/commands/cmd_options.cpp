@@ -29,6 +29,7 @@
 #include "app/ui/color_button.h"
 #include "app/ui/main_window.h"
 #include "app/ui/pref_widget.h"
+#include "app/ui/rgbmap_algorithm_selector.h"
 #include "app/ui/sampling_selector.h"
 #include "app/ui/separator_in_view.h"
 #include "app/ui/skin/skin_theme.h"
@@ -114,11 +115,13 @@ class OptionsWindow : public app::gen::Options {
 
   class ThemeItem : public ListItem {
   public:
-    ThemeItem(const std::string& path,
-              const std::string& name)
-      : ListItem(name.empty() ? "-- " + path + " --": name),
+    ThemeItem(const std::string& id,
+              const std::string& path,
+              const std::string& displayName = std::string(),
+              const std::string& variant = std::string())
+      : ListItem(createLabel(path, id, displayName, variant)),
         m_path(path),
-        m_name(name) {
+        m_name(id) {
     }
 
     const std::string& themePath() const { return m_path; }
@@ -133,6 +136,30 @@ class OptionsWindow : public app::gen::Options {
     }
 
   private:
+    static std::string createLabel(const std::string& path,
+                                   const std::string& id,
+                                   const std::string& displayName,
+                                   const std::string& variant) {
+      if (displayName.empty()) {
+        if (id.empty())
+          return fmt::format("-- {} --", path);
+        else
+          return id;
+      }
+      else if (id == displayName) {
+        if (variant.empty())
+          return id;
+        else
+          return fmt::format("{} - {}", id, variant);
+      }
+      else {
+        if (variant.empty())
+          return displayName;
+        else
+          return fmt::format("{} - {}", displayName, variant);
+      }
+    }
+
     std::string m_path;
     std::string m_name;
   };
@@ -195,6 +222,25 @@ class OptionsWindow : public app::gen::Options {
     Extension* m_extension;
   };
 
+  class ThemeVariantItem : public ButtonSet::Item {
+  public:
+    ThemeVariantItem(OptionsWindow* options,
+                     const std::string& id,
+                     const std::string& variant)
+      : m_options(options)
+      , m_themeId(id) {
+      setText(variant);
+    }
+  private:
+    void onClick() override {
+      m_options->setUITheme(m_themeId,
+                            false,  // Don't adjust scale
+                            false); // Don't recreate variants
+    }
+    OptionsWindow* m_options;
+    std::string m_themeId;
+  };
+
 public:
   OptionsWindow(Context* context, int& curSection)
     : m_context(context)
@@ -208,6 +254,9 @@ public:
     , m_restoreUIScaling(m_pref.general.uiScale())
   {
     sectionListbox()->Change.connect([this]{ onChangeSection(); });
+
+    // Theme variants
+    fillThemeVariants();
 
     // Default extension to save files
     fillExtensionsCombobox(defaultExtension(), m_pref.saveFile.defaultExtension());
@@ -405,6 +454,10 @@ public:
       flashLayer()->setSelected(true);
 
     nonactiveLayersOpacity()->setValue(m_pref.experimental.nonactiveLayersOpacity());
+
+    rgbmapAlgorithmPlaceholder()->addChild(&m_rgbmapAlgorithmSelector);
+    m_rgbmapAlgorithmSelector.setExpansive(true);
+    m_rgbmapAlgorithmSelector.algorithm(m_pref.quantization.rgbmapAlgorithm());
 
     if (m_pref.editor.showScrollbars())
       showScrollbars()->setSelected(true);
@@ -734,6 +787,7 @@ public:
     m_pref.experimental.useNativeFileDialog(nativeFileDialog()->isSelected());
     m_pref.experimental.flashLayer(flashLayer()->isSelected());
     m_pref.experimental.nonactiveLayersOpacity(nonactiveLayersOpacity()->getValue());
+    m_pref.quantization.rgbmapAlgorithm(m_rgbmapAlgorithmSelector.algorithm());
 
 #ifdef _WIN32
     {
@@ -759,7 +813,7 @@ public:
       m_pref.tablet.api(tabletStr);
       m_pref.experimental.loadWintabDriver(wintabState);
 
-      manager()->display()
+      manager()->display()->nativeWindow()
         ->setInterpretOneFingerGestureAsMouseMovement(
           oneFingerAsMouseMovement()->isSelected());
 
@@ -808,6 +862,10 @@ public:
                     warnings));
     }
 
+    // Probably it's safe to switch this flag in runtime
+    if (m_pref.experimental.multipleWindows() != ui::get_multiple_displays())
+      ui::set_multiple_displays(m_pref.experimental.multipleWindows());
+
     if (reset_screen)
       updateScreenScaling();
   }
@@ -849,6 +907,42 @@ public:
   }
 
 private:
+
+  void fillThemeVariants() {
+    ButtonSet* list = nullptr;
+    for (Extension* ext : App::instance()->extensions()) {
+      if (ext->isCurrentTheme()) {
+        // Number of variants
+        int c = 0;
+        for (auto it : ext->themes()) {
+          if (!it.second.variant.empty())
+            ++c;
+        }
+
+        if (c >= 2) {
+          list = new ButtonSet(c);
+          for (auto it : ext->themes()) {
+            if (!it.second.variant.empty()) {
+              auto item = list->addItem(
+                new ThemeVariantItem(this, it.first, it.second.variant));
+
+              if (it.first == Preferences::instance().theme.selected())
+                list->setSelectedItem(item, false);
+            }
+          }
+        }
+        break;
+      }
+    }
+    if (list) {
+      themeVariants()->addChild(list);
+    }
+    if (m_themeVars) {
+      themeVariants()->removeChild(m_themeVars);
+      m_themeVars->deferDelete();
+    }
+    m_themeVars = list;
+  }
 
   void fillExtensionsCombobox(ui::ComboBox* combobox,
                               const std::string& defExt) {
@@ -1224,7 +1318,7 @@ private:
             new SeparatorInView(base::normalize_path(path), HORIZONTAL));
         }
 
-        ThemeItem* item = new ThemeItem(fullPath, fn);
+        ThemeItem* item = new ThemeItem(fn, fullPath);
         themeList()->addChild(item);
 
         // Selected theme
@@ -1249,11 +1343,14 @@ private:
       }
 
       for (auto it : ext->themes()) {
-        ThemeItem* item = new ThemeItem(it.second, it.first);
+        ThemeItem* item = new ThemeItem(it.first,
+                                        it.second.path,
+                                        ext->displayName(),
+                                        it.second.variant);
         themeList()->addChild(item);
 
         // Selected theme
-        if (it.second == selectedPath)
+        if (it.second.path == selectedPath)
           themeList()->selectChild(item);
       }
     }
@@ -1328,7 +1425,8 @@ private:
   }
 
   void setUITheme(const std::string& themeName,
-                  const bool updateScaling) {
+                  const bool updateScaling,
+                  const bool recreateVariantsFields = true) {
     try {
       if (themeName != m_pref.theme.selected()) {
         auto theme = skin::SkinTheme::get(this);
@@ -1375,6 +1473,9 @@ private:
             selectScalingItems();
           }
         }
+
+        if (recreateVariantsFields)
+          fillThemeVariants();
       }
     }
     catch (const std::exception& ex) {
@@ -1649,6 +1750,8 @@ private:
   int m_restoreUIScaling;
   std::vector<os::ColorSpaceRef> m_colorSpaces;
   std::string m_templateTextForDisplayCS;
+  RgbMapAlgorithmSelector m_rgbmapAlgorithmSelector;
+  ButtonSet* m_themeVars = nullptr;
   SamplingSelector* m_samplingSelector = nullptr;
 };
 
@@ -1683,12 +1786,20 @@ void OptionsCommand::onExecute(Context* context)
   static int curSection = 0;
 
   OptionsWindow window(context, curSection);
-  window.openWindow();
 
-  if (!m_installExtensionFilename.empty()) {
-    if (!window.showDialogToInstallExtension(m_installExtensionFilename))
-      return;
-  }
+  // As showDialogToInstallExtension() will show an ui::Alert, we need
+  // to call this function after window.openWindowInForeground(), so
+  // the parent window of the alert will be our OptionsWindow (and not
+  // the main window).
+  window.Open.connect(
+    [&]() {
+      if (!m_installExtensionFilename.empty()) {
+        if (!window.showDialogToInstallExtension(this->m_installExtensionFilename)) {
+          window.closeWindow(&window);
+          return;
+        }
+      }
+    });
 
   window.openWindowInForeground();
   if (window.ok())

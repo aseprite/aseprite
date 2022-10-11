@@ -186,6 +186,18 @@
       <option id="auto_fit" type="bool" default="false" />
       <option id="downsampling" type="Downsampling" default="Downsampling::BILINEAR_MIPMAP" />
     </section>
+    <section id="cels">
+      <option id="user_data_visibility" type="bool" default="false" />
+    </section>
+    <section id="layers">
+      <option id="user_data_visibility" type="bool" default="false" />
+    </section>
+    <section id="sprite">
+      <option id="user_data_visibility" type="bool" default="false" />
+    </section>
+    <section id="tags">
+      <option id="user_data_visibility" type="bool" default="false" />
+    </section>
     <section id="timeline">
       <option id="keep_selection" type="bool" default="false" />
     </section>
@@ -209,6 +221,7 @@
       <option id="api" type="std::string" />
     </section>
     <section id="experimental" text="Experimental">
+      <option id="multiple_windows" type="bool" default="false" />
       <option id="new_render_engine" type="bool" default="true" />
       <option id="new_blend" type="bool" default="true" />
       <option id="use_native_clipboard" type="bool" default="true" />
@@ -228,14 +241,18 @@
     </section>
     <section id="color_bar">
       <option id="box_size" type="int" default="11" />
+      <option id="tiles_box_size" type="int" default="16" />
       <option id="fg_color" type="app::Color" default="app::Color::fromRgb(255, 255, 255)" />
       <option id="bg_color" type="app::Color" default="app::Color::fromRgb(0, 0, 0)" />
+      <option id="fg_tile" type="doc::tile_t" default="doc::notile" />
+      <option id="bg_tile" type="doc::tile_t" default="doc::notile" />
       <option id="selector" type="app::ColorBar::ColorSelector" default="app::ColorBar::ColorSelector::TINT_SHADE_TONE" />
       <option id="discrete_wheel" type="bool" default="false" />
       <option id="wheel_model" type="int" default="0" />
       <option id="harmony" type="int" default="0" />
       <option id="show_invalid_fg_bg_color_alert" type="bool" default="true" />
       <option id="entries_separator" type="bool" default="true" />
+      <option id="show_color_and_tiles" type="bool" default="true" />
     </section>
     <section id="updater">
       <option id="inits" type="int" default="0" />
@@ -287,6 +304,8 @@
       <option id="dithering_algorithm" type="std::string" />
       <option id="dithering_factor" type="int" default="100" />
       <option id="to_gray" type="ToGrayAlgorithm" default="ToGrayAlgorithm::DEFAULT" />
+      <option id="advanced" type="bool" default="false" />
+      <option id="rgbmap_algorithm" type="doc::RgbMapAlgorithm" default="doc::RgbMapAlgorithm::DEFAULT" />
     </section>
     <section id="eyedropper" text="Editor">
       <option id="channel" type="EyedropperChannel" default="EyedropperChannel::COLOR_ALPHA" />
@@ -326,6 +345,7 @@
     </section>
     <section id="slices">
       <option id="default_color" type="app::Color" default="app::Color::fromRgb(0, 0, 255)" />
+      <option id="user_data_visibility" type="bool" default="false" />
     </section>
     <section id="advanced_mode">
       <option id="show_alert" type="bool" default="true" />
@@ -353,6 +373,7 @@
       <option id="show_alert" type="bool" default="true" />
       <option id="interlaced" type="bool" default="false" />
       <option id="loop" type="bool" default="true" />
+      <option id="preserve_palette_order" type="bool" default="true" />
     </section>
     <section id="jpeg">
       <option id="show_alert" type="bool" default="true" />
@@ -401,6 +422,9 @@
     </section>
     <section id="canvas_size">
       <option id="trim_outside" type="bool" default="false" />
+    </section>
+    <section id="tileset">
+      <option id="base_index" type="int" default="1" />
     </section>
   </global>
 
@@ -484,6 +508,7 @@
     <section id="save_copy" canclear="true">
       <option id="filename" type="std::string" />
       <option id="resize_scale" type="double" default="1" />
+      <option id="area" type="std::string" />
       <option id="layer" type="std::string" />
       <option id="layer_index" type="int" default ="-1" />
       <option id="frame_tag" type="std::string" />
@@ -517,6 +542,7 @@
       <option id="frame_tag" type="std::string" />
       <option id="split_layers" type="bool" default="false" />
       <option id="split_tags" type="bool" default="false" />
+      <option id="split_grid" type="bool" default="false" />
       <option id="list_layers" type="bool" default="true" />
       <option id="list_frame_tags" type="bool" default="true" />
       <option id="list_slices" type="bool" default="true" />
@@ -541,6 +567,7 @@
       <option id="brush_preview" type="bool" default="true" />
       <option id="slices" type="bool" default="true" />
       <option id="auto_guides" type="bool" default="true" />
+      <option id="tile_numbers" type="bool" default="true" />
     </section>
   </document>
 

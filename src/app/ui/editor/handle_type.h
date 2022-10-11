@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -22,10 +23,12 @@ namespace app {
     ScaleNWHandle, ScaleNHandle, ScaleNEHandle,
     ScaleWHandle,                ScaleEHandle,
     ScaleSWHandle, ScaleSHandle, ScaleSEHandle,
-    // One of the region's corders to rotate.
-    RotateNWHandle, RotateNHandle, RotateNEHandle,
-    RotateWHandle,                 RotateEHandle,
-    RotateSWHandle, RotateSHandle, RotateSEHandle,
+    // Rotate from corners
+    RotateNWHandle, RotateNEHandle,
+    RotateSWHandle, RotateSEHandle,
+    // Skew from sides
+    SkewNHandle, SkewWHandle,
+    SkewEHandle, SkewSHandle,
     // Handle used to move the pivot
     PivotHandle,
   };

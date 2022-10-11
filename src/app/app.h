@@ -86,6 +86,7 @@ namespace app {
     // scripts.
     int initialize(const AppOptions& options);
     void run();
+    void close();
 
     AppMod* mod() const { return m_mod; }
     tools::ToolBox* toolBox() const;
@@ -159,6 +160,7 @@ namespace app {
   void app_rebuild_documents_tabs();
   PixelFormat app_get_current_pixel_format();
   int app_get_color_to_clear_layer(doc::Layer* layer);
+  void app_configure_drm();
 
 } // namespace app
 

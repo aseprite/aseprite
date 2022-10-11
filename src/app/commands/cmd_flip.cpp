@@ -154,7 +154,7 @@ void FlipCommand::onExecute(Context* ctx)
         else
           api.flipImage(image, flipBounds, m_flipType);
 
-        if (cel->layer()->isTransparent())
+        if (site.shouldTrimCel(cel))
           tx(new cmd::TrimCel(cel));
       }
       // When the mask is bigger than the cel bounds, we have to

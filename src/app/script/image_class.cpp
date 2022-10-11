@@ -44,12 +44,17 @@ namespace {
 struct ImageObj {
   doc::ObjectId imageId = 0;
   doc::ObjectId celId = 0;
+  doc::ObjectId tilesetId = 0;
   ImageObj(doc::Image* image)
     : imageId(image->id()) {
   }
   ImageObj(doc::Cel* cel)
     : imageId(cel->image()->id())
     , celId(cel->id()) {
+  }
+  ImageObj(doc::Tileset* tileset, doc::Image* image)
+    : imageId(image->id())
+    , tilesetId(tileset->id()) {
   }
   ImageObj(const ImageObj&) = delete;
   ImageObj& operator=(const ImageObj&) = delete;
@@ -59,7 +64,7 @@ struct ImageObj {
   }
 
   void gc(lua_State* L) {
-    if (!celId)
+    if (!celId && !tilesetId)
       delete this->image(L);
     imageId = 0;
   }
@@ -395,11 +400,11 @@ int Image_saveAs(lua_State* L)
 
   std::unique_ptr<Sprite> sprite(Sprite::MakeStdSprite(img->spec(), 256));
 
-  std::vector<Image*> oneImage;
+  std::vector<ImageRef> oneImage;
   sprite->getImages(oneImage);
   ASSERT(oneImage.size() == 1);
   if (!oneImage.empty())
-    copy_image(oneImage.front(), img);
+    copy_image(oneImage.front().get(), img);
 
   if (pal)
     sprite->setPalette(pal, false);
@@ -622,6 +627,11 @@ void push_cel_image(lua_State* L, doc::Cel* cel)
 void push_image(lua_State* L, doc::Image* image)
 {
   push_new<ImageObj>(L, image);
+}
+
+void push_tileset_image(lua_State* L, doc::Tileset* tileset, doc::Image* image)
+{
+  push_new<ImageObj>(L, tileset, image);
 }
 
 doc::Image* may_get_image_from_arg(lua_State* L, int index)

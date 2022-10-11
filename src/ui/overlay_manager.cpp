@@ -11,8 +11,6 @@
 
 #include "ui/overlay_manager.h"
 
-#include "os/surface.h"
-#include "os/window.h"
 #include "ui/manager.h"
 #include "ui/overlay.h"
 
@@ -68,11 +66,6 @@ void OverlayManager::restoreOverlappedAreas(const gfx::Rect& restoreBounds)
   if (m_overlays.empty())
     return;
 
-  // TODO can we remove this?
-  Manager* manager = Manager::getDefault();
-  if (!manager)
-    return;
-
   for (auto& overlay : *this)
     overlay->restoreOverlappedArea(restoreBounds);
 }
@@ -82,15 +75,8 @@ void OverlayManager::drawOverlays()
   if (m_overlays.empty())
     return;
 
-  Manager* manager = Manager::getDefault();
-  if (!manager)
-    return;
-
-  os::SurfaceRef displaySurface(base::AddRef(manager->display()->surface()));
-  os::SurfaceLock lock(displaySurface.get());
-
   for (auto& overlay : *this)
-    overlay->captureOverlappedArea(displaySurface);
+    overlay->captureOverlappedArea();
 
   for (auto& overlay : *this)
     overlay->drawOverlay();

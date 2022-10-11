@@ -26,6 +26,7 @@
 #include "app/pref/preferences.h"
 #include "app/tools/ink.h"
 #include "app/tools/tool.h"
+#include "app/transformation.h"
 #include "app/ui/context_bar.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_customization_delegate.h"
@@ -68,6 +69,8 @@ MovingPixelsState::MovingPixelsState(Editor* editor,
   , m_discarded(false)
   , m_renderTimer(50)
 {
+  m_pixelsMovement->setDelegate(this);
+
   // MovingPixelsState needs a selection tool to avoid problems
   // sharing the extra cel between the drawing cursor preview and the
   // pixels movement/transformation preview.
@@ -77,7 +80,7 @@ MovingPixelsState::MovingPixelsState(Editor* editor,
 
   if (handle != NoHandle) {
     gfx::Point pt = editor->screenToEditor(msg->position());
-    m_pixelsMovement->catchImage(pt, handle);
+    m_pixelsMovement->catchImage(gfx::PointF(pt), handle);
 
     editor->captureMouse();
   }
@@ -113,7 +116,7 @@ MovingPixelsState::MovingPixelsState(Editor* editor,
   m_observingEditor = true;
 
   ContextBar* contextBar = App::instance()->contextBar();
-  contextBar->updateForMovingPixels();
+  contextBar->updateForMovingPixels(getTransformation(editor));
   contextBar->add_observer(this);
 
   App::instance()->mainWindow()->getTimeline()->add_observer(this);
@@ -137,12 +140,12 @@ MovingPixelsState::~MovingPixelsState()
   m_editor->document()->generateMaskBoundaries();
 }
 
-void MovingPixelsState::translate(const gfx::Point& delta)
+void MovingPixelsState::translate(const gfx::PointF& delta)
 {
   if (m_pixelsMovement->isDragging())
     m_pixelsMovement->dropImageTemporarily();
 
-  m_pixelsMovement->catchImageAgain(gfx::Point(0, 0), MovePixelsHandle);
+  m_pixelsMovement->catchImageAgain(gfx::PointF(0, 0), MovePixelsHandle);
   m_pixelsMovement->moveImage(delta, PixelsMovement::NormalMovement);
   m_pixelsMovement->dropImageTemporarily();
   m_editor->updateStatusBar();
@@ -166,6 +169,12 @@ void MovingPixelsState::shift(int dx, int dy)
   m_editor->updateStatusBar();
 }
 
+void MovingPixelsState::updateTransformation(const Transformation& t)
+{
+  m_pixelsMovement->setTransformation(t);
+  m_editor->updateStatusBar();
+}
+
 void MovingPixelsState::onEnterState(Editor* editor)
 {
   StandbyState::onEnterState(editor);
@@ -180,7 +189,7 @@ void MovingPixelsState::onEditorGotFocus(Editor* editor)
   // when we are back to an editor in MovingPixelsState. Without this
   // we would see the SelectionModeField instead which doesn't make
   // sense on MovingPixelsState).
-  contextBar->updateForMovingPixels();
+  contextBar->updateForMovingPixels(getTransformation(editor));
 }
 
 EditorState::LeaveAction MovingPixelsState::onLeaveState(Editor* editor, EditorState* newState)
@@ -261,7 +270,7 @@ void MovingPixelsState::onActiveToolChange(Editor* editor, tools::Tool* tool)
     else if (tool->getInk(0)->isSelection() ||
              tool->getInk(1)->isSelection()) {
       ContextBar* contextBar = App::instance()->contextBar();
-      contextBar->updateForMovingPixels();
+      contextBar->updateForMovingPixels(getTransformation(editor));
     }
   }
 }
@@ -281,7 +290,7 @@ bool MovingPixelsState::onMouseDown(Editor* editor, MouseMessage* msg)
   ctx->setActiveView(editor->getDocView());
 
   ContextBar* contextBar = App::instance()->contextBar();
-  contextBar->updateForMovingPixels();
+  contextBar->updateForMovingPixels(getTransformation(editor));
 
   // Start scroll loop
   if (editor->checkForScroll(msg) ||
@@ -315,8 +324,8 @@ bool MovingPixelsState::onMouseDown(Editor* editor, MouseMessage* msg)
         return true;
 
       // Re-catch the image
-      m_pixelsMovement->catchImageAgain(
-        editor->screenToEditor(msg->position()), handle);
+      gfx::Point pt = editor->screenToEditor(msg->position());
+      m_pixelsMovement->catchImageAgain(gfx::PointF(pt), handle);
 
       editor->captureMouse();
       return true;
@@ -340,7 +349,7 @@ bool MovingPixelsState::onMouseDown(Editor* editor, MouseMessage* msg)
 
     // Re-catch the image
     m_pixelsMovement->catchImageAgain(
-      editor->screenToEditor(msg->position()), MovePixelsHandle);
+      editor->screenToEditorF(msg->position()), MovePixelsHandle);
 
     editor->captureMouse();
     return true;
@@ -415,14 +424,16 @@ void MovingPixelsState::onCommitMouseMove(Editor* editor,
       keyContext = KeyContext::ScalingSelection;
       break;
     case RotateNWHandle:
-    case RotateNHandle:
     case RotateNEHandle:
-    case RotateWHandle:
-    case RotateEHandle:
     case RotateSWHandle:
-    case RotateSHandle:
     case RotateSEHandle:
       keyContext = KeyContext::RotatingSelection;
+      break;
+    case SkewNHandle:
+    case SkewWHandle:
+    case SkewEHandle:
+    case SkewSHandle:
+      keyContext = KeyContext::ScalingSelection;
       break;
   }
 
@@ -445,13 +456,21 @@ void MovingPixelsState::onCommitMouseMove(Editor* editor,
   if (int(action & KeyAction::LockAxis))
     moveModifier |= PixelsMovement::LockAxisMovement;
 
+  if (int(action & KeyAction::FineControl))
+    moveModifier |= PixelsMovement::FineControl;
+
   // Invalidate handles
   Decorator* decorator = static_cast<Decorator*>(m_editor->decorator());
   TransformHandles* transfHandles = decorator->getTransformHandles(m_editor);
-  transfHandles->invalidateHandles(m_editor, m_pixelsMovement->getTransformation());
+  const Transformation& transformation = m_pixelsMovement->getTransformation();
+  transfHandles->invalidateHandles(m_editor, transformation);
 
   // Drag the image to that position
-  m_pixelsMovement->moveImage(gfx::Point(spritePos), moveModifier);
+  m_pixelsMovement->moveImage(spritePos, moveModifier);
+
+  // Update context bar and status bar
+  ContextBar* contextBar = App::instance()->contextBar();
+  contextBar->updateForMovingPixels(transformation);
 
   m_editor->updateStatusBar();
 }
@@ -586,7 +605,7 @@ void MovingPixelsState::onBeforeCommandExecution(CommandExecutionEvent& ev)
   }
 
   // We don't need to drop the pixels if a MoveMaskCommand of Content is executed.
-  if (MoveMaskCommand* moveMaskCmd = dynamic_cast<MoveMaskCommand*>(command)) {
+  if (auto moveMaskCmd = dynamic_cast<MoveMaskCommand*>(command)) {
     if (moveMaskCmd->getTarget() == MoveMaskCommand::Content) {
       if (layer_is_locked(m_editor)) {
         ev.cancel();
@@ -598,7 +617,7 @@ void MovingPixelsState::onBeforeCommandExecution(CommandExecutionEvent& ev)
         m_pixelsMovement->shift(delta.x, delta.y);
       }
       else {
-        translate(delta);
+        translate(gfx::PointF(delta));
       }
       // We've processed the selection content movement right here.
       ev.cancel();
@@ -627,9 +646,21 @@ void MovingPixelsState::onBeforeCommandExecution(CommandExecutionEvent& ev)
       std::unique_ptr<Mask> floatingMask;
       m_pixelsMovement->getDraggedImageCopy(floatingImage, floatingMask);
 
-      clipboard::copy_image(floatingImage.get(),
-                            floatingMask.get(),
-                            document->sprite()->palette(m_editor->frame()));
+      if (floatingImage->isTilemap()) {
+        Site site = m_editor->getSite();
+        ASSERT(site.tileset());
+        Clipboard::instance()->
+          copyTilemap(floatingImage.get(),
+                      floatingMask.get(),
+                      document->sprite()->palette(m_editor->frame()),
+                      site.tileset());
+      }
+      else {
+        Clipboard::instance()->
+          copyImage(floatingImage.get(),
+                    floatingMask.get(),
+                    document->sprite()->palette(m_editor->frame()));
+      }
     }
 
     // Clear floating pixels on Cut/Clear.
@@ -658,7 +689,7 @@ void MovingPixelsState::onBeforeCommandExecution(CommandExecutionEvent& ev)
   // Flip Horizontally/Vertically commands are handled manually to
   // avoid dropping the floating region of pixels.
   else if (command->id() == CommandId::Flip()) {
-    if (FlipCommand* flipCommand = dynamic_cast<FlipCommand*>(command)) {
+    if (auto flipCommand = dynamic_cast<FlipCommand*>(command)) {
       this->flip(flipCommand->getFlipType());
 
       ev.cancel();
@@ -667,7 +698,7 @@ void MovingPixelsState::onBeforeCommandExecution(CommandExecutionEvent& ev)
   }
   // Rotate is quite simple, we can add the angle to the current transformation.
   else if (command->id() == CommandId::Rotate()) {
-    if (RotateCommand* rotate = dynamic_cast<RotateCommand*>(command)) {
+    if (auto rotate = dynamic_cast<RotateCommand*>(command)) {
       if (rotate->flipMask()) {
         this->rotate(rotate->angle());
 
@@ -770,6 +801,12 @@ void MovingPixelsState::onDropPixels(ContextBarObserver::DropAction action)
       m_editor->backToPreviousState();
       break;
   }
+}
+
+void MovingPixelsState::onPivotChange()
+{
+  ContextBar* contextBar = App::instance()->contextBar();
+  contextBar->updateForMovingPixels(getTransformation(m_editor));
 }
 
 void MovingPixelsState::setTransparentColor(bool opaque, const app::Color& color)

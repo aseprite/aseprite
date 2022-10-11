@@ -27,7 +27,7 @@ void VelocitySensor::reset()
   m_velocity = Vec2(0.0f, 0.0f);
 }
 
-void VelocitySensor::updateWithScreenPoint(const gfx::Point& screenPoint)
+void VelocitySensor::updateWithDisplayPoint(const gfx::Point& screenPoint)
 {
   const base::tick_t t = base::current_tick();
   const base::tick_t dt = t - m_lastUpdate;

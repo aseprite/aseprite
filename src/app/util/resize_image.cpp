@@ -26,7 +26,7 @@
 namespace app {
 
 doc::Image* resize_image(
-  doc::Image* image,
+  const doc::Image* image,
   const gfx::SizeF& scale,
   const doc::algorithm::ResizeMethod method,
   const Palette* pal,

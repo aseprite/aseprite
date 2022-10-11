@@ -1,5 +1,5 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2019  Igara Studio S.A. -->
+<!-- Copyright (C) 2019-2022  Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2018  David Capello -->
 <gui>
   <window id="export_sprite_sheet" text="@.title">
@@ -50,6 +50,10 @@
       <button id="close_sprite_section" icon="window_close_icon" />
     </hbox>
     <grid id="section_sprite" columns="4" expansive="true">
+      <label text="@.source" />
+      <combobox id="source" text="" cell_hspan="2" cell_align="horizontal" />
+      <boxfiller />
+
       <label text="@.layers" />
       <combobox id="layers" text="" cell_hspan="2" cell_align="horizontal" />
       <check id="split_layers" text="@.split_layers" tooltip="@.split_layers_tooltip" tooltip_dir="bottom" />

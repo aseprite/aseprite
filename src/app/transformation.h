@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020-2022  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -11,6 +12,9 @@
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include <vector>
+
+#define CORNER_THICK_FOR_TILEMAP_MODE 0.001
+#define CORNER_THICK_FOR_PIXELS_MODE 1.0
 
 namespace app {
 
@@ -29,6 +33,16 @@ public:
       };
 
       Corners() : m_corners(NUM_OF_CORNERS) { }
+      Corners(const gfx::RectF bounds) : m_corners(NUM_OF_CORNERS) {
+        m_corners[LEFT_TOP].x = bounds.x;
+        m_corners[LEFT_TOP].y = bounds.y;
+        m_corners[RIGHT_TOP].x = bounds.x2();
+        m_corners[RIGHT_TOP].y = bounds.y;
+        m_corners[RIGHT_BOTTOM].x = bounds.x2();
+        m_corners[RIGHT_BOTTOM].y = bounds.y2();
+        m_corners[LEFT_BOTTOM].x = bounds.x;
+        m_corners[LEFT_BOTTOM].y = bounds.y2();
+      }
 
       std::size_t size() const { return m_corners.size(); }
 
@@ -45,23 +59,11 @@ public:
       void rightBottom(const gfx::PointF& pt) { m_corners[RIGHT_BOTTOM] = pt; }
       void leftBottom(const gfx::PointF& pt) { m_corners[LEFT_BOTTOM] = pt; }
 
-      Corners& operator=(const gfx::RectF bounds) {
-        m_corners[LEFT_TOP].x = bounds.x;
-        m_corners[LEFT_TOP].y = bounds.y;
-        m_corners[RIGHT_TOP].x = bounds.x + bounds.w;
-        m_corners[RIGHT_TOP].y = bounds.y;
-        m_corners[RIGHT_BOTTOM].x = bounds.x + bounds.w;
-        m_corners[RIGHT_BOTTOM].y = bounds.y + bounds.h;
-        m_corners[LEFT_BOTTOM].x = bounds.x;
-        m_corners[LEFT_BOTTOM].y = bounds.y + bounds.h;
-        return *this;
-      }
-
-      gfx::RectF bounds() const {
+      gfx::RectF bounds(double cornerThick) const {
         gfx::RectF bounds;
         for (int i=0; i<Corners::NUM_OF_CORNERS; ++i)
-          bounds |= gfx::RectF(m_corners[i].x, m_corners[i].y, 1, 1);
-        return bounds;
+          bounds |= gfx::RectF(m_corners[i].x, m_corners[i].y, cornerThick, cornerThick);
+        return bounds.floor();
       }
 
     private:
@@ -69,21 +71,24 @@ public:
   };
 
   Transformation();
-  Transformation(const gfx::RectF& bounds);
+  Transformation(const gfx::RectF& bounds, double cornerThick);
 
   // Simple getters and setters. The angle is in radians.
 
   const gfx::RectF& bounds() const { return m_bounds; }
   const gfx::PointF& pivot() const { return m_pivot; }
+  double cornerThick() const { return m_cornerThick; }
   double angle() const { return m_angle; }
+  double skew() const { return m_skew; }
 
   void bounds(const gfx::RectF& bounds) { m_bounds = bounds; }
   void pivot(const gfx::PointF& pivot) { m_pivot = pivot; }
   void angle(double angle) { m_angle = angle; }
+  void skew(double angle) { m_skew = angle; }
 
   // Applies the transformation (rotation with angle/pivot) to the
   // current bounds (m_bounds).
-  void transformBox(Corners& corners) const;
+  Corners transformedCorners() const;
 
   // Changes the pivot to another location, adjusting the bounds to
   // keep the current rotated-corners in the same location.
@@ -94,12 +99,15 @@ public:
   // Static helper method to rotate points.
   static gfx::PointF rotatePoint(const gfx::PointF& point,
                                  const gfx::PointF& pivot,
-                                 double angle);
+                                 const double angle,
+                                 const double skew);
 
 private:
-  gfx::RectF m_bounds;
-  gfx::PointF m_pivot;
-  double m_angle;
+  gfx::RectF m_bounds = gfx::RectF(0.0, 0.0, 0.0, 0.0);
+  gfx::PointF m_pivot = gfx::PointF(0.0, 0.0);
+  double m_angle = 0.0;
+  double m_skew = 0.0;
+  double m_cornerThick = CORNER_THICK_FOR_PIXELS_MODE;
 };
 
 } // namespace app

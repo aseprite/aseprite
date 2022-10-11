@@ -78,6 +78,7 @@ namespace app {
     namespace WellKnownPointShapes {
       extern const char* None;
       extern const char* Pixel;
+      extern const char* Tile;
       extern const char* Brush;
       extern const char* FloodFill;
       extern const char* Spray;

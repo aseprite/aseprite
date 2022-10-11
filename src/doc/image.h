@@ -46,6 +46,7 @@ namespace doc {
     const ImageSpec& spec() const { return m_spec; }
     ColorMode colorMode() const { return m_spec.colorMode(); }
     PixelFormat pixelFormat() const { return (PixelFormat)colorMode(); }
+    bool isTilemap() const { return m_spec.colorMode() == ColorMode::TILEMAP; }
     int width() const { return m_spec.width(); }
     int height() const { return m_spec.height(); }
     gfx::Size size() const { return m_spec.size(); }
@@ -107,6 +108,7 @@ namespace doc {
       case IMAGE_GRAYSCALE: return GrayscaleTraits::getRowStrideBytes(pixels_per_row);
       case IMAGE_INDEXED:   return IndexedTraits::getRowStrideBytes(pixels_per_row);
       case IMAGE_BITMAP:    return BitmapTraits::getRowStrideBytes(pixels_per_row);
+      case IMAGE_TILEMAP:   return TilemapTraits::getRowStrideBytes(pixels_per_row);
     }
     return 0;
   }

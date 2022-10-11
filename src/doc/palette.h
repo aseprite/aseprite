@@ -1,6 +1,6 @@
 // Aseprite Document Library
-// Copyright (c) 2022 Igara Studio SA
-// Copyright (c) 2001-2018 David Capello
+// Copyright (C) 2020-2022  Igara Studio S.A.
+// Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -13,6 +13,7 @@
 #include "doc/color.h"
 #include "doc/frame.h"
 #include "doc/object.h"
+#include "doc/palette_gradient_type.h"
 
 #include <vector>
 #include <string>
@@ -25,10 +26,13 @@ namespace doc {
   public:
     static void initBestfit();
 
+    Palette();
     Palette(frame_t frame, int ncolors);
     Palette(const Palette& palette);
     Palette(const Palette& palette, const Remap& remap);
     ~Palette();
+
+    Palette& operator=(const Palette& that);
 
     static Palette* createGrayscale();
 
@@ -50,6 +54,9 @@ namespace doc {
 
     // Return true if the palette has alpha != 255 in some entry
     bool hasAlpha() const;
+
+    // Return true if the palette has an alpha value between > 0 and < 255.
+    bool hasSemiAlpha() const;
 
     frame_t frame() const { return m_frame; }
     void setFrame(frame_t frame);
@@ -89,8 +96,10 @@ namespace doc {
     void makeBlack();
 
     void makeGradient(int from, int to);
+    void makeHueGradient(int from, int to);
 
     int findExactMatch(int r, int g, int b, int a, int mask_index) const;
+    bool findExactMatch(color_t color) const;
     int findBestfit(int r, int g, int b, int a, int mask_index) const;
     int findMaskColor() const;
 

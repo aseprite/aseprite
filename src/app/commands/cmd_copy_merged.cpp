@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2016-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -37,7 +38,7 @@ bool CopyMergedCommand::onEnabled(Context* ctx)
 void CopyMergedCommand::onExecute(Context* ctx)
 {
   ContextReader reader(ctx);
-  clipboard::copy_merged(reader);
+  ctx->clipboard()->copyMerged(reader);
 }
 
 Command* CommandFactory::createCopyMergedCommand()

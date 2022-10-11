@@ -1,14 +1,11 @@
 <!-- Aseprite -->
+<!-- Copyright (C) 2020-2021 by Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2017 by David Capello -->
 <gui>
-  <tipwindow id="user_data">
-    <vbox style="tooltip_face">
-      <label text="@.user_data" style="tooltip_text" />
-      <entry id="text" magnet="true" maxsize="65535" minwidth="128" expansive="true" />
-      <hbox>
-        <label text="@.color" style="tooltip_text" />
-        <colorpicker id="color" simple="true" expansive="true" />
-      </hbox>
-    </vbox>
-  </tipwindow>
+  <hbox id="user_data">
+    <label id="color_label" text="@.color" />
+    <label id="entry_label" text="@.user_data" />
+    <colorpicker id="color" simple="true" expansive="true" />
+    <entry id="entry" maxsize="65535" minwidth="128" expansive="true" />
+  </hbox>
 </gui>

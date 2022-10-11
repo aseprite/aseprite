@@ -13,8 +13,11 @@
 
 #include "app/pref/preferences.h"
 #include "doc/cel.h"
+#include "doc/grid.h"
 #include "doc/layer.h"
+#include "doc/layer_tilemap.h"
 #include "doc/sprite.h"
+#include "doc/tileset.h"
 #include "ui/system.h"
 
 namespace app {
@@ -31,15 +34,7 @@ RgbMap* Site::rgbMap() const
   return (m_sprite ? m_sprite->rgbMap(m_frame): nullptr);
 }
 
-const Cel* Site::cel() const
-{
-  if (m_layer)
-    return m_layer->cel(m_frame);
-  else
-    return nullptr;
-}
-
-Cel* Site::cel()
+Cel* Site::cel() const
 {
   if (m_layer)
     return m_layer->cel(m_frame);
@@ -78,8 +73,39 @@ void Site::range(const DocRange& range)
   }
 }
 
+doc::Tileset* Site::tileset() const
+{
+  if (m_layer && m_layer->isTilemap())
+    return static_cast<LayerTilemap*>(m_layer)->tileset();
+  else
+    return nullptr;
+}
+
+Grid Site::grid() const
+{
+  if (m_layer && m_layer->isTilemap()) {
+    doc::Grid grid = static_cast<LayerTilemap*>(m_layer)->tileset()->grid();
+    if (const Cel* cel = m_layer->cel(m_frame))
+      grid.origin(grid.origin() + cel->position());
+    return grid;
+  }
+
+  gfx::Rect rc = gridBounds();
+  doc::Grid grid = Grid(rc.size());
+  grid.origin(gfx::Point(rc.x % rc.w, rc.y % rc.h));
+  return grid;
+}
+
 gfx::Rect Site::gridBounds() const
 {
+  if (m_layer && m_layer->isTilemap()) {
+    const Grid& grid = static_cast<LayerTilemap*>(m_layer)->tileset()->grid();
+    gfx::Point offset = grid.tileOffset();
+    if (const Cel* cel = m_layer->cel(m_frame))
+      offset += cel->bounds().origin();
+    return gfx::Rect(offset, grid.tileSize());
+  }
+
   gfx::Rect bounds;
   if (m_sprite) {
     bounds = m_sprite->gridBounds();
@@ -92,6 +118,17 @@ gfx::Rect Site::gridBounds() const
       return bounds;
   }
   return doc::Sprite::DefaultGridBounds();
+}
+
+bool Site::shouldTrimCel(Cel* cel) const
+{
+  return (cel &&
+          cel->layer() &&
+          cel->layer()->isTransparent() &&
+          // Don't trim tiles in manual mode
+          !(m_tilemapMode == TilemapMode::Pixels &&
+            m_tilesetMode == TilesetMode::Manual &&
+            cel->layer()->isTilemap()));
 }
 
 } // namespace app

@@ -22,6 +22,7 @@
 #include "app/commands/commands.h"
 #include "app/console.h"
 #include "app/crash/data_recovery.h"
+#include "app/drm.h"
 #include "app/extensions.h"
 #include "app/file/file.h"
 #include "app/file/file_formats_manager.h"
@@ -67,6 +68,7 @@
 #include "render/render.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
+#include "updater/user_agent.h"
 #include "ver/info.h"
 
 #if LAF_MACOS
@@ -148,7 +150,7 @@ public:
 #ifdef ENABLE_UI
   RecentFiles m_recent_files;
   InputChain m_inputChain;
-  clipboard::ClipboardManager m_clipboardManager;
+  Clipboard m_clipboard;
 #endif
 #ifdef ENABLE_DATA_RECOVERY
   // This is a raw pointer because we want to delete it explicitly.
@@ -188,6 +190,13 @@ public:
 
   void createDataRecovery(Context* ctx) {
 #ifdef ENABLE_DATA_RECOVERY
+
+#ifdef ENABLE_TRIAL_MODE
+    DRM_INVALID{
+      return;
+    }
+#endif
+
     m_recovery = std::make_unique<app::crash::DataRecovery>(ctx);
     m_recovery->SessionsListIsReady.connect(
       [] {
@@ -203,6 +212,13 @@ public:
 
   void searchDataRecoverySessions() {
 #ifdef ENABLE_DATA_RECOVERY
+
+#ifdef ENABLE_TRIAL_MODE
+    DRM_INVALID{
+      return;
+    }
+#endif
+
     ASSERT(m_recovery);
     if (m_recovery)
       m_recovery->launchSearch();
@@ -211,6 +227,13 @@ public:
 
   void deleteDataRecovery() {
 #ifdef ENABLE_DATA_RECOVERY
+
+#ifdef ENABLE_TRIAL_MODE
+    DRM_INVALID{
+      return;
+    }
+#endif
+
     m_recovery.reset();
 #endif
   }
@@ -299,6 +322,11 @@ int App::initialize(const AppOptions& options)
 
   initialize_color_spaces(preferences());
 
+#ifdef ENABLE_DRM
+  LOG("APP: Initializing DRM...\n");
+  app_configure_drm();
+#endif
+
   // Load modules
   m_modules = std::make_unique<Modules>(createLogInDesktop, preferences());
   m_legacy = std::make_unique<LegacyModules>(isGui() ? REQUIRE_INTERFACE: 0);
@@ -324,7 +352,7 @@ int App::initialize(const AppOptions& options)
 
     // Set the ClipboardDelegate impl to copy/paste text in the native
     // clipboard from the ui::Entry control.
-    m_uiSystem->setClipboardDelegate(&m_modules->m_clipboardManager);
+    m_uiSystem->setClipboardDelegate(&m_modules->m_clipboard);
 
     // Setup the GUI cursor and redraw screen
     ui::set_use_native_cursors(preferences().cursor.useNativeCursor());
@@ -447,7 +475,7 @@ void App::run()
     auto manager = ui::Manager::getDefault();
 #if LAF_WINDOWS
     // How to interpret one finger on Windows tablets.
-    manager->display()
+    manager->display()->nativeWindow()
       ->setInterpretOneFingerGestureAsMouseMovement(
         preferences().experimental.oneFingerAsMouseMovement());
 #endif
@@ -455,7 +483,7 @@ void App::run()
 #if LAF_LINUX
     // Setup app icon for Linux window managers
     try {
-      os::Window* display = os::instance()->defaultWindow();
+      os::Window* window = os::instance()->defaultWindow();
       os::SurfaceList icons;
 
       for (const int size : { 32, 64, 128 }) {
@@ -470,7 +498,7 @@ void App::run()
         }
       }
 
-      display->setIcons(icons);
+      window->setIcons(icons);
     }
     catch (const std::exception&) {
       // Just ignore the exception, we couldn't change the app icon, no
@@ -541,6 +569,11 @@ void App::run()
   extensions().executeExitActions();
 #endif
 
+  close();
+}
+
+void App::close()
+{
 #ifdef ENABLE_UI
   if (isGui()) {
     // Select no document
@@ -810,5 +843,17 @@ int app_get_color_to_clear_layer(Layer* layer)
 
   return color_utils::color_for_layer(color, layer);
 }
+
+#ifdef ENABLE_DRM
+void app_configure_drm() {
+  ResourceFinder userDirRf, dataDirRf;
+  userDirRf.includeUserDir("");
+  dataDirRf.includeDataDir("");
+  std::map<std::string, std::string> config = {
+    {"data", dataDirRf.getFirstOrCreateDefault()}
+  };
+  DRM_CONFIGURE(get_app_url(), get_app_name(), get_app_version(), userDirRf.getFirstOrCreateDefault(), updater::getUserAgent(), config);
+}
+#endif
 
 } // namespace app

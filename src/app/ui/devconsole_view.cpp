@@ -113,6 +113,11 @@ TabIcon DevConsoleView::getTabIcon()
   return TabIcon::NONE;
 }
 
+gfx::Color DevConsoleView::getTabColor()
+{
+  return gfx::ColorNone;
+}
+
 WorkspaceView* DevConsoleView::cloneWorkspaceView()
 {
   return new DevConsoleView();
@@ -135,7 +140,7 @@ void DevConsoleView::onTabPopup(Workspace* workspace)
   if (!menu)
     return;
 
-  menu->showPopup(ui::get_mouse_position());
+  menu->showPopup(mousePosInDisplay(), display());
 }
 
 bool DevConsoleView::onProcessMessage(Message* msg)

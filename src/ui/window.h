@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2022  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -28,6 +28,11 @@ namespace ui {
     explicit Window(Type type, const std::string& text = "");
     ~Window();
 
+    bool ownDisplay() const { return m_ownDisplay; }
+    Display* display() const;
+    void setDisplay(Display* display, const bool own);
+    bool hasDisplaySet() const { return m_display != nullptr; }
+
     Widget* closer() const { return m_closer; }
 
     void setAutoRemap(bool state);
@@ -37,9 +42,11 @@ namespace ui {
     void setWantFocus(bool state);
 
     void remapWindow();
-    void centerWindow();
-    void positionWindow(int x, int y);
+    void centerWindow(Display* parentDisplay = nullptr);
     void moveWindow(const gfx::Rect& rect);
+
+    // Expands or shrink the window to the given side (generally sizeHint())
+    void expandWindow(const gfx::Size& size);
 
     void openWindow();
     void openWindowInForeground();
@@ -53,7 +60,17 @@ namespace ui {
     bool isSizeable() const { return m_isSizeable; }
     bool isMoveable() const { return m_isMoveable; }
 
+    bool shouldCreateNativeWindow() const {
+      return !isDesktop();
+    }
+
     HitTest hitTest(const gfx::Point& point);
+
+    // Last native window frame bounds. Saved just before we close the
+    // native window so we can save this information in the
+    // configuration file.
+    gfx::Rect lastNativeFrame() const { return m_lastFrame; }
+    void loadNativeFrame(const gfx::Rect& frame);
 
     // Esc key closes the current window (presses the little close
     // button decorator) only on foreground windows, but you can
@@ -63,18 +80,22 @@ namespace ui {
     }
 
     // Signals
+    obs::signal<void (Event&)> Open;
     obs::signal<void (CloseEvent&)> Close;
 
   protected:
     ButtonBase* closeButton() { return m_closeButton; }
 
     virtual bool onProcessMessage(Message* msg) override;
+    virtual void onInvalidateRegion(const gfx::Region& region) override;
     virtual void onResize(ResizeEvent& ev) override;
     virtual void onSizeHint(SizeHintEvent& ev) override;
-    virtual void onBroadcastMouseMessage(WidgetsList& targets) override;
+    virtual void onBroadcastMouseMessage(const gfx::Point& screenPos,
+                                         WidgetsList& targets) override;
     virtual void onSetText() override;
 
     // New events
+    virtual void onOpen(Event& ev);
     virtual void onBeforeClose(CloseEvent& ev) {}
     virtual void onClose(CloseEvent& ev);
     virtual void onHitTest(HitTestEvent& ev);
@@ -88,9 +109,11 @@ namespace ui {
     void limitSize(int* w, int* h);
     void moveWindow(const gfx::Rect& rect, bool use_blit);
 
+    Display* m_display;
     Widget* m_closer;
     Label* m_titleLabel;
     ButtonBase* m_closeButton;
+    bool m_ownDisplay : 1;
     bool m_isDesktop : 1;
     bool m_isMoveable : 1;
     bool m_isSizeable : 1;
@@ -99,6 +122,7 @@ namespace ui {
     bool m_isForeground : 1;
     bool m_isAutoRemap : 1;
     int m_hitTest;
+    gfx::Rect m_lastFrame;
   };
 
 } // namespace ui

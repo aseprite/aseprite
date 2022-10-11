@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2022 Igara Studio S.A.
+// Copyright (c) 2019-2022 Igara Studio S.A.
 // Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -364,6 +364,9 @@ namespace doc {
       m_access.reset(m_ptr, 1 << m_subPixel);
       return m_access;
     }
+
+    int x() const { return m_x; }
+    int y() const { return m_y; }
 
   private:
     Image* m_image;

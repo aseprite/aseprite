@@ -16,14 +16,11 @@
 #include <functional>
 #include <string>
 
-namespace os {
-  class Window;
-}
-
 namespace ui {
 
   class ClipboardDelegate;
   class Cursor;
+  class Display;
   class Widget;
 
   class UISystem {
@@ -43,8 +40,8 @@ namespace ui {
     ClipboardDelegate* m_clipboardDelegate;
   };
 
-  int display_w();
-  int display_h();
+  void set_multiple_displays(bool multi);
+  bool get_multiple_displays();
 
   void set_clipboard_text(const std::string& text);
   bool get_clipboard_text(std::string& text);
@@ -64,12 +61,16 @@ namespace ui {
   void hide_mouse_cursor();
   void show_mouse_cursor();
 
-  void _internal_set_mouse_display(os::Window* display);
+  void _internal_set_mouse_display(Display* display);
   void _internal_no_mouse_position();
-  void _internal_set_mouse_position(const gfx::Point& newPos);
 
-  const gfx::Point& get_mouse_position();
-  void set_mouse_position(const gfx::Point& newPos);
+  // Returns desktop/screen mouse position (relative to no-display)
+  gfx::Point get_mouse_position();
+
+  // Sets the mouse position relative to a specific display (or
+  // relative to the desktop if it's nullptr)
+  void set_mouse_position(const gfx::Point& newPos,
+                          Display* display);
 
   void execute_from_ui_thread(std::function<void()>&& func);
   bool is_ui_thread();

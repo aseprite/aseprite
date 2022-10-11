@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -21,10 +21,14 @@
 #include "doc/object.h"
 #include "doc/pixel_format.h"
 #include "doc/pixel_ratio.h"
+#include "doc/rgbmap_algorithm.h"
 #include "doc/slices.h"
 #include "doc/tags.h"
+#include "doc/tile.h"
+#include "doc/with_user_data.h"
 #include "gfx/rect.h"
 
+#include <memory>
 #include <vector>
 
 #define DOC_SPRITE_MAX_WIDTH  65535
@@ -42,12 +46,15 @@ namespace doc {
   class Palette;
   class Remap;
   class RgbMap;
+  class RgbMapRGB5A3;
   class SelectedFrames;
+  class Tileset;
+  class Tilesets;
 
   typedef std::vector<Palette*> PalettesList;
 
   // The main structure used in the whole program to handle a sprite.
-  class Sprite : public Object {
+  class Sprite : public WithUserData {
   public:
     enum class RgbMapFor {
       OpaqueLayer,
@@ -88,6 +95,9 @@ namespace doc {
     void setSize(int width, int height);
     void setColorSpace(const gfx::ColorSpaceRef& colorSpace);
 
+    // This method is only required/used for the template functions app::script::UserData_set_text/color.
+    const Sprite* sprite() const { return this; }
+
     // Returns true if the sprite has a background layer and it's visible
     bool isOpaque() const;
 
@@ -100,8 +110,11 @@ namespace doc {
     color_t transparentColor() const { return m_spec.maskColor(); }
     void setTransparentColor(color_t color);
 
+    // Defaults
     static gfx::Rect DefaultGridBounds();
     static void SetDefaultGridBounds(const gfx::Rect& defGridBounds);
+    static RgbMapAlgorithm DefaultRgbMapAlgorithm();
+    static void SetDefaultRgbMapAlgorithm(const RgbMapAlgorithm mapAlgo);
 
     const gfx::Rect& gridBounds() const { return m_gridBounds; }
     void setGridBounds(const gfx::Rect& rc) { m_gridBounds = rc; }
@@ -131,8 +144,13 @@ namespace doc {
 
     void deletePalette(frame_t frame);
 
-    RgbMap* rgbMap(frame_t frame) const;
-    RgbMap* rgbMap(frame_t frame, RgbMapFor forLayer) const;
+    RgbMapFor rgbMapForSprite() const;
+    RgbMap* rgbMap(const frame_t frame) const;
+    RgbMap* rgbMap(const frame_t frame,
+                   const RgbMapFor forLayer) const;
+    RgbMap* rgbMap(const frame_t frame,
+                   const RgbMapFor forLayer,
+                   RgbMapAlgorithm mapAlgo) const;
 
     ////////////////////////////////////////
     // Frames
@@ -166,8 +184,18 @@ namespace doc {
     // Images
 
     void replaceImage(ObjectId curImageId, const ImageRef& newImage);
-    void getImages(std::vector<Image*>& images) const;
-    void remapImages(frame_t frameFrom, frame_t frameTo, const Remap& remap);
+    void replaceTileset(tileset_index tsi, Tileset* newTileset);
+
+    // Returns all sprite images (cel + tiles) that aren't tilemaps
+    void getImages(std::vector<ImageRef>& images) const;
+
+    // TODO replace this with a co-routine when we start using C++20 (std::generator<ImageRef>)
+    void getTilemapsByTileset(const Tileset* tileset,
+                              std::vector<ImageRef>& images) const;
+
+    void remapImages(const Remap& remap);
+    void remapTilemaps(const Tileset* tileset,
+                       const Remap& remap);
     void pickCels(const double x,
                   const double y,
                   const frame_t frame,
@@ -188,6 +216,12 @@ namespace doc {
     CelsRange uniqueCels() const;
     CelsRange uniqueCels(const SelectedFrames& selFrames) const;
 
+    ////////////////////////////////////////
+    // Tilesets
+
+    bool hasTilesets() const { return m_tilesets != nullptr; }
+    Tilesets* tilesets() const;
+
   private:
     Document* m_document;
     ImageSpec m_spec;
@@ -199,10 +233,14 @@ namespace doc {
     gfx::Rect m_gridBounds;                // grid settings
 
     // Current rgb map
-    mutable RgbMap* m_rgbMap;
+    mutable RgbMapAlgorithm m_rgbMapAlgorithm;
+    mutable std::unique_ptr<RgbMap> m_rgbMap;
 
     Tags m_tags;
     Slices m_slices;
+
+    // Tilesets
+    mutable Tilesets* m_tilesets;
 
     // Disable default constructor and copying
     Sprite();

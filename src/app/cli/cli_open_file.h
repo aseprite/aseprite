@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2016-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -21,28 +21,29 @@ namespace app {
   class FileOpROI;
 
   struct CliOpenFile {
-    Doc* document;
+    Doc* document = nullptr;
     std::string filename;
     std::string filenameFormat;
     std::string tag;
     std::string slice;
     std::vector<std::string> includeLayers;
     std::vector<std::string> excludeLayers;
-    doc::frame_t fromFrame, toFrame;
-    bool splitLayers;
-    bool splitTags;
-    bool splitSlices;
-    bool allLayers;
-    bool listLayers;
-    bool listTags;
-    bool listSlices;
-    bool ignoreEmpty;
-    bool trim;
-    bool trimByGrid;
-    bool oneFrame;
+    doc::frame_t fromFrame = -1;
+    doc::frame_t toFrame = -1;
+    bool splitLayers = false;
+    bool splitTags = false;
+    bool splitSlices = false;
+    bool splitGrid = false;
+    bool allLayers = false;
+    bool listLayers = false;
+    bool listTags = false;
+    bool listSlices = false;
+    bool ignoreEmpty = false;
+    bool trim = false;
+    bool trimByGrid = false;
+    bool oneFrame = false;
+    bool exportTileset = false;
     gfx::Rect crop;
-
-    CliOpenFile();
 
     bool hasTag() const {
       return (!tag.empty());

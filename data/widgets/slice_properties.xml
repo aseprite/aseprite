@@ -1,57 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2019  Igara Studio S.A. -->
+<!-- Copyright (C) 2019-2021  Igara Studio S.A. -->
 <!-- Copyright (C) 2017-2018  David Capello -->
 <gui>
 <window id="slice_properties" text="@.title">
-  <grid columns="2">
-    <label text="@.name" />
-    <hbox>
-      <entry maxsize="256" id="name" magnet="true" expansive="true" />
-      <button id="user_data" icon="icon_user_data" tooltip="@.user_data_tooltip" />
-    </hbox>
+  <vbox>
+    <grid id="properties_grid" columns="3">
+      <label id="label1" text="@.name" />
+      <entry id="name" maxsize="256" magnet="true" cell_align="horizontal" expansive="true" />
+      <button id="user_data" icon="icon_user_data" maxsize="32" tooltip="@.user_data_tooltip" />
+    </grid>
+    <grid columns="2">
+      <separator horizontal="true" cell_hspan="2" />
 
-    <separator horizontal="true" cell_hspan="2" />
-
-    <box />
-    <hbox homogeneous="true">
-      <label text="@.x" />
-      <label text="@.y" />
-      <label text="@.width" />
-      <label text="@.height" />
-    </hbox>
-
-    <label text="@.bounds" />
-    <hbox homogeneous="true">
-      <expr id="bounds_x" />
-      <expr id="bounds_y" />
-      <expr id="bounds_w" />
-      <expr id="bounds_h" />
-    </hbox>
-
-    <check text="@.center" id="center" />
-    <hbox homogeneous="true">
-      <expr id="center_x" />
-      <expr id="center_y" />
-      <expr id="center_w" />
-      <expr id="center_h" />
-    </hbox>
-
-    <check text="@.pivot" id="pivot" />
-    <hbox>
-      <expr id="pivot_x" />
-      <expr id="pivot_y" />
-    </hbox>
-
-    <separator horizontal="true" cell_hspan="2" />
-
-    <hbox cell_hspan="2">
-      <boxfiller />
+      <box />
       <hbox homogeneous="true">
-        <button text="@general.ok" closewindow="true" id="ok" magnet="true" minwidth="60" />
-        <button text="@general.cancel" closewindow="true" />
+        <label text="@.x" />
+        <label text="@.y" />
+        <label text="@.width" />
+        <label text="@.height" />
       </hbox>
-    </hbox>
-  </grid>
+
+      <label text="@.bounds" />
+      <hbox homogeneous="true">
+        <expr id="bounds_x" />
+        <expr id="bounds_y" />
+        <expr id="bounds_w" />
+        <expr id="bounds_h" />
+      </hbox>
+
+      <check text="@.center" id="center" />
+      <hbox homogeneous="true">
+        <expr id="center_x" />
+        <expr id="center_y" />
+        <expr id="center_w" />
+        <expr id="center_h" />
+      </hbox>
+
+      <check text="@.pivot" id="pivot" />
+      <hbox>
+        <expr id="pivot_x" />
+        <expr id="pivot_y" />
+      </hbox>
+
+      <separator horizontal="true" cell_hspan="2" />
+
+      <hbox cell_hspan="2">
+        <boxfiller />
+        <hbox homogeneous="true">
+          <button text="@general.ok" closewindow="true" id="ok" magnet="true" minwidth="60" />
+          <button text="@general.cancel" closewindow="true" />
+        </hbox>
+      </hbox>
+    </grid>
+  </vbox>
 </window>
 </gui>

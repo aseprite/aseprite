@@ -1,5 +1,5 @@
 // Aseprite Document IO Library
-// Copyright (c) 2018 Igara Studio S.A.
+// Copyright (c) 2018-2020 Igara Studio S.A.
 // Copyright (c) 2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -17,6 +17,7 @@
 #include "doc/tags.h"
 
 #include <string>
+#include <vector>
 
 namespace doc {
   class Cel;
@@ -32,6 +33,7 @@ namespace dio {
 
 struct AsepriteHeader;
 struct AsepriteFrameHeader;
+struct AsepriteExternalFiles;
 
 class AsepriteDecoder : public Decoder {
 public:
@@ -47,18 +49,24 @@ private:
   doc::Palette* readPaletteChunk(doc::Palette* prevPal, doc::frame_t frame);
   doc::Layer* readLayerChunk(AsepriteHeader* header, doc::Sprite* sprite, doc::Layer** previous_layer, int* current_level);
   doc::Cel* readCelChunk(doc::Sprite* sprite,
-                         doc::LayerList& allLayers,
                          doc::frame_t frame,
                          doc::PixelFormat pixelFormat,
-                         AsepriteHeader* header,
-                         size_t chunk_end);
+                         const AsepriteHeader* header,
+                         const size_t chunk_end);
   void readCelExtraChunk(doc::Cel* cel);
   void readColorProfile(doc::Sprite* sprite);
+  void readExternalFiles(AsepriteExternalFiles& extFiles);
   doc::Mask* readMaskChunk();
   void readTagsChunk(doc::Tags* tags);
   void readSlicesChunk(doc::Slices& slices);
   doc::Slice* readSliceChunk(doc::Slices& slices);
   void readUserDataChunk(doc::UserData* userData);
+  void readTilesetChunk(doc::Sprite* sprite,
+                        const AsepriteHeader* header,
+                        const AsepriteExternalFiles& extFiles);
+
+  doc::LayerList m_allLayers;
+  std::vector<uint32_t> m_tilesetFlags;
 };
 
 } // namespace dio

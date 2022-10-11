@@ -42,6 +42,7 @@ struct ImageIteratorObj {
 using RgbImageIterator = ImageIteratorObj<RgbTraits>;
 using GrayscaleImageIterator = ImageIteratorObj<GrayscaleTraits>;
 using IndexedImageIterator = ImageIteratorObj<IndexedTraits>;
+using TilemapImageIterator = ImageIteratorObj<TilemapTraits>;
 
 template<typename ImageTraits>
 int ImageIterator_gc(lua_State* L)
@@ -95,18 +96,21 @@ int ImageIterator_index(lua_State* L)
 DEFINE_METHODS(Rgb);
 DEFINE_METHODS(Grayscale);
 DEFINE_METHODS(Indexed);
+DEFINE_METHODS(Tilemap);
 
 } // anonymous namespace
 
 DEF_MTNAME(ImageIteratorObj<RgbTraits>);
 DEF_MTNAME(ImageIteratorObj<GrayscaleTraits>);
 DEF_MTNAME(ImageIteratorObj<IndexedTraits>);
+DEF_MTNAME(ImageIteratorObj<TilemapTraits>);
 
 void register_image_iterator_class(lua_State* L)
 {
   REG_CLASS(L, RgbImageIterator);
   REG_CLASS(L, GrayscaleImageIterator);
   REG_CLASS(L, IndexedImageIterator);
+  REG_CLASS(L, TilemapImageIterator);
 }
 
 template<typename ImageTrais>
@@ -160,6 +164,10 @@ int push_image_iterator_function(lua_State* L, const doc::Image* image, int extr
     case IMAGE_INDEXED:
       push_new<IndexedImageIterator>(L, image, bounds);
       lua_pushcclosure(L, image_iterator_step_closure<doc::IndexedTraits>, 1);
+      return 1;
+    case IMAGE_TILEMAP:
+      push_new<TilemapImageIterator>(L, image, bounds);
+      lua_pushcclosure(L, image_iterator_step_closure<doc::TilemapTraits>, 1);
       return 1;
     default:
       return 0;

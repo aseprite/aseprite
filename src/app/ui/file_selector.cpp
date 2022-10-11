@@ -55,6 +55,8 @@ using namespace ui;
 
 namespace {
 
+const char* kConfigSection = "FileSelector";
+
 template<class Container>
 class NullableIterator {
 public:
@@ -433,9 +435,14 @@ bool FileSelector::show(
 
   FILESEL_TRACE("FILESEL: Start folder '%s' (%p)\n", start_folder_path.c_str(), start_folder);
 
-  setMinSize(gfx::Size(ui::display_w()*9/10, ui::display_h()*9/10));
+  {
+    const gfx::Size workareaSize = ui::Manager::getDefault()->display()->workareaSizeUIScale();
+    setMinSize(workareaSize*9/10);
+  }
+
   remapWindow();
   centerWindow();
+  load_window_pos(this, kConfigSection);
 
   // Change the file formats/extensions to be shown
   std::string initialExtension = base::get_file_extension(initialPath);
@@ -700,6 +707,16 @@ again:
   Preferences::instance().fileSelector.zoom(m_fileList->zoom());
 
   return (!output.empty());
+}
+
+bool FileSelector::onProcessMessage(ui::Message* msg)
+{
+  switch (msg->type()) {
+    case kCloseMessage:
+      save_window_pos(this, kConfigSection);
+      break;
+  }
+  return app::gen::FileSelector::onProcessMessage(msg);
 }
 
 // Updates the content of the combo-box that shows the current

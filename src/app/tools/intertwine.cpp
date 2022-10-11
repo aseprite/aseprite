@@ -18,6 +18,7 @@
 #include "app/tools/tool_loop.h"
 #include "base/pi.h"
 #include "doc/algo.h"
+#include "doc/layer.h"
 
 #include <cmath>
 
@@ -58,7 +59,11 @@ gfx::Rect Intertwine::getStrokeBounds(ToolLoop* loop, const Stroke& stroke)
   return stroke.bounds();
 }
 
-// static
+void Intertwine::doTransformPoint(const Stroke::Pt& pt, ToolLoop* loop)
+{
+  loop->getPointShape()->transformPoint(loop, pt);
+}
+
 void Intertwine::doPointshapeStrokePt(const Stroke::Pt& pt, ToolLoop* loop)
 {
   Symmetry* symmetry = loop->getSymmetry();
@@ -73,11 +78,11 @@ void Intertwine::doPointshapeStrokePt(const Stroke::Pt& pt, ToolLoop* loop)
     for (const auto& stroke : strokes) {
       // We call transformPoint() moving back each point to the cel
       // origin.
-      loop->getPointShape()->transformPoint(loop, stroke[0]);
+      doTransformPoint(stroke[0], loop);
     }
   }
   else {
-    loop->getPointShape()->transformPoint(loop, pt);
+    doTransformPoint(pt, loop);
   }
 }
 
@@ -87,14 +92,14 @@ void Intertwine::doPointshapePoint(int x, int y, ToolLoop* loop)
   Stroke::Pt pt(x, y);
   pt.size = loop->getBrush()->size();
   pt.angle = loop->getBrush()->angle();
-  doPointshapeStrokePt(pt, loop);
+  loop->getIntertwine()->doPointshapeStrokePt(pt, loop);
 }
 
 // static
 void Intertwine::doPointshapePointDynamics(int x, int y, Intertwine::LineData* data)
 {
   data->doStep(x, y);
-  doPointshapeStrokePt(data->pt, data->loop);
+  data->loop->getIntertwine()->doPointshapeStrokePt(data->pt, data->loop);
 }
 
 // static

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2021  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -81,8 +81,8 @@ void SelectTileCommand::onExecute(Context* ctx)
     mask->copyFrom(doc->mask());
 
   {
-    gfx::Rect gridBounds = doc->sprite()->gridBounds();
-    gfx::Point pos = current_editor->screenToEditor(ui::get_mouse_position());
+    gfx::Rect gridBounds = writer.site()->gridBounds();
+    gfx::Point pos = current_editor->screenToEditor(current_editor->mousePosInDisplay());
     pos = snap_to_grid(gridBounds, pos, PreferSnapTo::BoxOrigin);
     gridBounds.setOrigin(pos);
 

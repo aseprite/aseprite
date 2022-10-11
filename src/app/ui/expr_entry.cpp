@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -12,6 +13,7 @@
 
 #include "ui/message.h"
 
+#include "fmt/format.h"
 #include "tinyexpr.h"
 
 #include <cmath>
@@ -29,14 +31,8 @@ bool ExprEntry::onProcessMessage(ui::Message* msg)
 {
   switch (msg->type()) {
     case ui::kFocusLeaveMessage: {
-      char buf[256];
-      if (m_decimals == 0) {
-        std::snprintf(buf, sizeof(buf), "%d", onGetTextInt());
-      }
-      else {
-        std::snprintf(buf, sizeof(buf), "%.*g",
-                      m_decimals, onGetTextDouble());
-      }
+      std::string buf;
+      onFormatExprFocusLeave(buf);
       if (text() != buf)
         setText(buf);
       break;
@@ -69,6 +65,14 @@ double ExprEntry::onGetTextDouble() const
     return Entry::onGetTextDouble();
   else
     return v;
+}
+
+void ExprEntry::onFormatExprFocusLeave(std::string& buf)
+{
+  if (m_decimals == 0)
+    buf = fmt::format("{}", onGetTextInt());
+  else
+    buf = fmt::format("{:.{}f}", onGetTextDouble(), m_decimals);
 }
 
 } // namespace app

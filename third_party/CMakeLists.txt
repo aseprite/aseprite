@@ -155,6 +155,9 @@ endif()
 add_library(tinyexpr tinyexpr/tinyexpr.c)
 target_include_directories(tinyexpr PUBLIC tinyexpr)
 
+# cityhash
+add_subdirectory(cityhash)
+
 # lua
 if(ENABLE_SCRIPTING)
   add_library(lua

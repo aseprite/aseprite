@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -14,6 +14,7 @@
 #include "base/serialization.h"
 #include "doc/string_io.h"
 #include "doc/tag.h"
+#include "doc/user_data_io.h"
 
 #include <iostream>
 #include <memory>
@@ -30,24 +31,39 @@ void write_tag(std::ostream& os, const Tag* tag)
   write32(os, tag->id());
   write32(os, tag->fromFrame());
   write32(os, tag->toFrame());
-  write32(os, tag->color());
   write8(os, (int)tag->aniDir());
   write_string(os, tag->name());
+  write_user_data(os, tag->userData());
 }
 
-Tag* read_tag(std::istream& is, bool setId)
+Tag* read_tag(std::istream& is,
+              const bool setId,
+              const bool oldVersion)
 {
   ObjectId id = read32(is);
   frame_t from = read32(is);
   frame_t to = read32(is);
-  color_t color = read32(is);
+
+  // If we are reading a session from v1.2.x, there is a color field
+  color_t color;
+  if (oldVersion)
+    color = read32(is);
+
   AniDir aniDir = (AniDir)read8(is);
   std::string name = read_string(is);
+  UserData userData;
+
+  // If we are reading the new v1.3.x version, there is a user data with the color + text
+  if (!oldVersion)
+    userData = read_user_data(is);
 
   std::unique_ptr<Tag> tag(new Tag(from, to));
-  tag->setColor(color);
   tag->setAniDir(aniDir);
   tag->setName(name);
+  if (oldVersion)
+    tag->setColor(color);
+  else
+    tag->setUserData(userData);
   if (setId)
     tag->setId(id);
   return tag.release();

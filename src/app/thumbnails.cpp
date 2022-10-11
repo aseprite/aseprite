@@ -43,12 +43,13 @@ os::SurfaceRef get_cel_thumbnail(const doc::Cel* cel,
 
   render::Render render;
   render::Projection proj(cel->sprite()->pixelRatio(),
-                          render::Zoom(newSize.w, cel->image()->width()));
+                          render::Zoom(newSize.w, cel->bounds().w));
   render.setProjection(proj);
 
   const doc::Palette* palette = cel->sprite()->palette(cel->frame());
   render.renderCel(
     thumbnailImage.get(),
+    cel,
     cel->sprite(),
     cel->image(),
     cel->layer(),

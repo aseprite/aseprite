@@ -72,6 +72,7 @@
       <key command="KeyboardShortcuts" shortcut="Ctrl+Alt+Shift+K" mac="Cmd+Alt+Shift+K" />
       <!-- Sprite -->
       <key command="SpriteProperties" shortcut="Ctrl+P" mac="Cmd+P" />
+      <key command="SpriteSize" shortcut="Ctrl+Alt+I" mac="Cmd+Alt+I" />
       <key command="CanvasSize" shortcut="C" />
       <!-- Layer -->
       <key command="LayerProperties" shortcut="Shift+P" />
@@ -92,6 +93,10 @@
       </key>
       <key command="NewLayer" shortcut="Ctrl+Shift+J" mac="Cmd+Shift+J">
         <param name="viaCut" value="true" />
+      </key>
+      <key command="NewLayer" shortcut="Space+N">
+        <param name="ask" value="true" />
+        <param name="tilemap" value="true" />
       </key>
       <key command="GotoPreviousLayer" shortcut="Down" context="Normal" />
       <key command="GotoNextLayer" shortcut="Up" context="Normal" />
@@ -147,6 +152,16 @@
       <key command="ToggleTimelineThumbnails" shortcut="F6" />
       <key command="Timeline" shortcut="Tab">
         <param name="switch" value="true" />
+      </key>
+      <key command="ToggleTilesMode" shortcut="Space+Tab" />
+      <key command="TilesetMode" shortcut="Space+1">
+        <param name="mode" value="manual" />
+      </key>
+      <key command="TilesetMode" shortcut="Space+2">
+        <param name="mode" value="auto" />
+      </key>
+      <key command="TilesetMode" shortcut="Space+3">
+        <param name="mode" value="stack" />
       </key>
       <key command="PaletteEditor" shortcut="A" />
       <key command="PaletteEditor" shortcut="F4">
@@ -252,9 +267,15 @@
       <key command="Zoom" shortcut="`"><param name="percentage" value="50" /></key> <!-- US Mac -->
       <key command="Zoom" shortcut="1"><param name="percentage" value="100" /></key>
       <key command="Zoom" shortcut="2"><param name="percentage" value="200" /></key>
+      <key command="Zoom"><param name="percentage" value="300" /></key>
       <key command="Zoom" shortcut="3"><param name="percentage" value="400" /></key>
+      <key command="Zoom"><param name="percentage" value="500" /></key>
+      <key command="Zoom"><param name="percentage" value="600" /></key>
+      <key command="Zoom"><param name="percentage" value="700" /></key>
       <key command="Zoom" shortcut="4"><param name="percentage" value="800" /></key>
+      <key command="Zoom"><param name="percentage" value="1000" /></key>
       <key command="Zoom" shortcut="5"><param name="percentage" value="1600" /></key>
+      <key command="Zoom"><param name="percentage" value="2000" /></key>
       <key command="Zoom" shortcut="6"><param name="percentage" value="3200" /></key>
       <key command="Zoom" shortcut="Ctrl++" mac="Cmd++">
         <param name="action" value="in" />
@@ -434,6 +455,12 @@
       <key command="NewSpriteFromSelection" shortcut="Ctrl+Alt+N" mac="Cmd+Alt+N" />
 
       <!-- Commands not associated to menu items and without shortcuts by default -->
+      <key command="ExportSpriteSheet">
+        <param name="source" value="tileset" />
+      </key>
+      <key command="NewLayer">
+        <param name="tilemap" value="true" />
+      </key>
       <key command="PixelPerfectMode" />
       <key command="ContiguousFill" />
       <key command="SetInkType"><param name="type" value="simple" /></key>
@@ -571,17 +598,23 @@
 
     <!-- Special keyboard shortcuts for specific actions -->
     <actions>
-      <!-- When you drag-and-drop the selection, pressing this
-           keyboard shortcut you can copy instead of move -->
+      <!-- When we are going to drag the selection, pressing this
+           shortcut starts a copy instead of move -->
       <key action="CopySelection" shortcut="Ctrl" />
 
-      <!-- When you move the selection, pressing this
-           keyboard shortcut you can snap to grid -->
+      <!-- When we are moving the selection, pressing this shortcut
+           snaps the selection origin to the grid -->
       <key action="SnapToGrid" shortcut="Alt" />
 
-      <!-- When you move the selection, pressing this keyboard
-           shortcut so you lock the movement to one axis -->
+      <!-- When we are moving the selection, pressing this shortcut
+           locks the movement to one axis (X or Y) -->
       <key action="LockAxis" shortcut="Shift" />
+
+      <!-- When we are moving the selection, pressing this shortcut
+           moves the selection to a subpixel level (floating point
+           coordinates). Useful for anti-aliasing effects. -->
+      <key action="FineControl" shortcut="Ctrl" context="TranslatingSelection" />
+      <key action="FineControl" shortcut="Ctrl" context="ScalingSelection" />
 
       <!-- When you rotate the selection, pressing this
            keyboard shortcut you activate angle snap -->
@@ -619,6 +652,10 @@
       <key action="RightMouseButton" />
     </actions>
 
+    <drag>
+      <key action="BrushSize" vector="4.0,0.0" shortcut="Ctrl+Alt" />
+    </drag>
+
   </keyboard>
 
   <menus>
@@ -635,14 +672,21 @@
 	</menu>
         <separator />
         <item command="SaveFile" text="@.file_save" />
-        <item command="SaveFileAs" text="@.file_save_as" />
-        <item command="SaveFileCopyAs" text="@.file_export" group="file_save" />
+        <item command="SaveFileAs" text="@.file_save_as" group="file_save" />
         <item command="CloseFile" text="@.file_close" />
         <item command="CloseAllFiles" text="@.file_close_all" group="file_close" />
         <separator />
-        <item command="ImportSpriteSheet" text="@.file_import_sprite_sheet" group="file_import" />
-        <item command="ExportSpriteSheet" text="@.file_export_sprite_sheet" group="file_export" />
-        <item command="RepeatLastExport" text="@.file_repeat_last_export" />
+        <menu text="@.file_export" group="file_export">
+          <item command="SaveFileCopyAs" text="@.file_export_as" />
+          <item command="ExportSpriteSheet" text="@.file_export_sprite_sheet" group="file_export_1" />
+          <separator />
+          <item command="ExportTileset" text="@.file_export_tileset" group="file_export_2" />
+          <separator />
+          <item command="RepeatLastExport" text="@.file_repeat_last_export" group="file_export_last" />
+        </menu>
+        <menu text="@.file_import" group="file_import">
+          <item command="ImportSpriteSheet" text="@.file_import_sprite_sheet" group="file_import_1" />
+        </menu>
         <separator id="scripts_menu_separator" />
         <menu id="scripts_menu" text="@.file_scripts" group="file_scripts">
           <item command="OpenScriptFolder" text="@.file_open_script_folder" />
@@ -823,10 +867,24 @@
             <param name="reference" value="true" />
             <param name="fromFile" value="true" />
           </item>
+          <item command="NewLayer" text="@.layer_new_tilemap_layer">
+            <param name="tilemap" value="true" />
+            <param name="ask" value="true" />
+          </item>
         </menu>
         <item command="RemoveLayer" text="@.layer_delete_layer" group="layer_remove" />
-        <item command="BackgroundFromLayer" text="@.layer_background_from_layer" />
-        <item command="LayerFromBackground" text="@.layer_layer_from_background" group="layer_background" />
+        <menu text="@.layer_convert_to">
+          <item command="ConvertLayer" text="@.layer_convert_to_background">
+            <param name="to" value="background" />
+          </item>
+          <item command="ConvertLayer" text="@.layer_convert_to_layer">
+            <param name="to" value="layer" />
+          </item>
+          <separator />
+          <item command="ConvertLayer" text="@.layer_convert_to_tilemap">
+            <param name="to" value="tilemap" />
+          </item>
+        </menu>
         <separator />
         <item command="DuplicateLayer" text="@.layer_duplicate" group="layer_duplicate" />
         <item command="MergeDownLayer" text="@.layer_merge_down" />
@@ -910,6 +968,7 @@
           <item command="ShowAutoGuides" text="@.view_show_auto_guides" />
           <item command="ShowSlices" text="@.view_show_slices" />
           <item command="ShowPixelGrid" text="@.view_show_pixel_grid" />
+          <item command="ShowTileNumbers" text="@.view_show_tile_numbers" />
           <separator />
           <item command="ShowBrushPreview" text="@.view_show_brush_preview" />
         </menu>
@@ -975,6 +1034,8 @@
           <param name="type" value="url" />
           <param name="path" value="http://twitter.com/aseprite" />
         </item>
+        <separator id="enter_license_separator" />
+        <item command="EnterLicense" id="enter_license" text="@.help_enter_license" group="help_enter_license" />
         <separator />
         <item command="About" text="@.help_about" group="help_about" />
       </menu>
@@ -995,13 +1056,30 @@
     <menu id="layer_popup_menu">
       <item command="LayerProperties" text="@main_menu.layer_properties" group="layer_popup_properties" />
       <separator />
-      <item command="NewLayer" text="@main_menu.layer_new_layer" />
-      <item command="NewLayer" text="@main_menu.layer_new_group" group="layer_popup_new">
-        <param name="group" value="true" />
-      </item>
+      <menu text="@main_menu.layer_new">
+        <item command="NewLayer" text="@main_menu.layer_new_layer" />
+        <item command="NewLayer" text="@main_menu.layer_new_group">
+          <param name="group" value="true" />
+        </item>
+        <separator />
+        <item command="NewLayer" text="@main_menu.layer_new_tilemap_layer" group="layer_popup_new">
+          <param name="tilemap" value="true" />
+          <param name="ask" value="true" />
+        </item>
+      </menu>
       <item command="RemoveLayer" text="@main_menu.layer_delete_layer" />
-      <item command="BackgroundFromLayer" text="@main_menu.layer_background_from_layer" />
-      <item command="LayerFromBackground" text="@main_menu.layer_layer_from_background" group="layer_popup_background" />
+      <menu text="@main_menu.layer_convert_to">
+        <item command="ConvertLayer" text="@main_menu.layer_convert_to_background">
+          <param name="to" value="background" />
+        </item>
+        <item command="ConvertLayer" text="@main_menu.layer_convert_to_layer">
+          <param name="to" value="layer" />
+        </item>
+        <separator />
+        <item command="ConvertLayer" text="@main_menu.layer_convert_to_tilemap">
+          <param name="to" value="tilemap" />
+        </item>
+      </menu>
       <separator />
       <item command="DuplicateLayer" text="@main_menu.layer_duplicate" />
       <item command="MergeDownLayer" text="@main_menu.layer_merge_down" />
@@ -1062,9 +1140,25 @@
       <item command="RemoveSlice" text="@.delete" group="slice_popup_delete" />
     </menu>
 
-    <menu id="palette_popup_menu">
+    <menu id="palette_popup_menu" text="@.title">
       <item command="PaletteEditor" text="@.edit_palette" />
       <item command="PaletteSize" text="@.palette_size" group="palette_main" />
+      <separator />
+      <menu id="select_palette_colors" text="@.select_palette_colors">
+        <item command="SelectPaletteColors" text="@.used_colors">
+          <param name="modifier" value="used_colors" />
+        </item>
+        <item command="SelectPaletteColors" text="@.unused_colors">
+          <param name="modifier" value="unused_colors" />
+        </item>
+        <separator />
+        <item command="SelectPaletteColors" text="@.used_tiles">
+          <param name="modifier" value="used_tiles" />
+        </item>
+        <item command="SelectPaletteColors" text="@.unused_tiles">
+          <param name="modifier" value="unused_tiles" />
+        </item>
+      </menu>
       <separator />
       <item command="SetPaletteEntrySize" text="@.small_size">
         <param name="size" value="7" />

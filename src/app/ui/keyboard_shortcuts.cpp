@@ -22,9 +22,11 @@
 #include "app/tools/ink.h"
 #include "app/tools/tool.h"
 #include "app/tools/tool_box.h"
+#include "app/ui/key.h"
 #include "app/ui_context.h"
 #include "app/xml_document.h"
 #include "app/xml_exception.h"
+#include "fmt/format.h"
 #include "ui/accelerator.h"
 #include "ui/message.h"
 
@@ -40,55 +42,79 @@ namespace {
     const char* name;
     const char* userfriendly;
     app::KeyAction action;
+    app::KeyContext context;
   } actions[] = {
-    { "CopySelection"       , "Copy Selection"     , app::KeyAction::CopySelection },
-    { "SnapToGrid"          , "Snap To Grid"       , app::KeyAction::SnapToGrid },
-    { "AngleSnap"           , "Angle Snap"         , app::KeyAction::AngleSnap },
-    { "MaintainAspectRatio" , "Maintain Aspect Ratio", app::KeyAction::MaintainAspectRatio },
-    { "ScaleFromCenter"     , "Scale From Center"  , app::KeyAction::ScaleFromCenter },
-    { "LockAxis"            , "Lock Axis"          , app::KeyAction::LockAxis },
-    { "AddSelection"        , "Add Selection"      , app::KeyAction::AddSelection },
-    { "SubtractSelection"   , "Subtract Selection" , app::KeyAction::SubtractSelection },
-    { "IntersectSelection"  , "Intersect Selection" , app::KeyAction::IntersectSelection },
-    { "AutoSelectLayer"     , "Auto Select Layer"  , app::KeyAction::AutoSelectLayer },
-    { "StraightLineFromLastPoint", "Straight Line from Last Point", app::KeyAction::StraightLineFromLastPoint },
-    { "AngleSnapFromLastPoint", "Angle Snap from Last Point", app::KeyAction::AngleSnapFromLastPoint },
-    { "MoveOrigin"          , "Move Origin"        , app::KeyAction::MoveOrigin },
-    { "SquareAspect"        , "Square Aspect"      , app::KeyAction::SquareAspect },
-    { "DrawFromCenter"      , "Draw From Center"   , app::KeyAction::DrawFromCenter },
-    { "RotateShape"         , "Rotate Shape"       , app::KeyAction::RotateShape },
-    { "LeftMouseButton"     , "Trigger Left Mouse Button" , app::KeyAction::LeftMouseButton },
-    { "RightMouseButton"    , "Trigger Right Mouse Button" , app::KeyAction::RightMouseButton },
-    { NULL                  , NULL                 , app::KeyAction::None }
+    { "CopySelection"       , "Copy Selection"     , app::KeyAction::CopySelection, app::KeyContext::TranslatingSelection },
+    { "SnapToGrid"          , "Snap To Grid"       , app::KeyAction::SnapToGrid, app::KeyContext::TranslatingSelection },
+    { "LockAxis"            , "Lock Axis"          , app::KeyAction::LockAxis, app::KeyContext::TranslatingSelection },
+    { "FineControl"         , "Fine Translating"   , app::KeyAction::FineControl , app::KeyContext::TranslatingSelection },
+    { "MaintainAspectRatio" , "Maintain Aspect Ratio", app::KeyAction::MaintainAspectRatio, app::KeyContext::ScalingSelection },
+    { "ScaleFromCenter"     , "Scale From Center"  , app::KeyAction::ScaleFromCenter, app::KeyContext::ScalingSelection },
+    { "FineControl"         , "Fine Scaling"       , app::KeyAction::FineControl , app::KeyContext::ScalingSelection },
+    { "AngleSnap"           , "Angle Snap"         , app::KeyAction::AngleSnap, app::KeyContext::RotatingSelection },
+    { "AddSelection"        , "Add Selection"      , app::KeyAction::AddSelection, app::KeyContext::SelectionTool },
+    { "SubtractSelection"   , "Subtract Selection" , app::KeyAction::SubtractSelection, app::KeyContext::SelectionTool },
+    { "IntersectSelection"  , "Intersect Selection" , app::KeyAction::IntersectSelection, app::KeyContext::SelectionTool },
+    { "AutoSelectLayer"     , "Auto Select Layer"  , app::KeyAction::AutoSelectLayer, app::KeyContext::MoveTool },
+    { "StraightLineFromLastPoint", "Straight Line from Last Point", app::KeyAction::StraightLineFromLastPoint, app::KeyContext::FreehandTool },
+    { "AngleSnapFromLastPoint", "Angle Snap from Last Point", app::KeyAction::AngleSnapFromLastPoint, app::KeyContext::FreehandTool },
+    { "MoveOrigin"          , "Move Origin"        , app::KeyAction::MoveOrigin, app::KeyContext::ShapeTool },
+    { "SquareAspect"        , "Square Aspect"      , app::KeyAction::SquareAspect, app::KeyContext::ShapeTool },
+    { "DrawFromCenter"      , "Draw From Center"   , app::KeyAction::DrawFromCenter, app::KeyContext::ShapeTool },
+    { "RotateShape"         , "Rotate Shape"       , app::KeyAction::RotateShape, app::KeyContext::ShapeTool },
+    { "LeftMouseButton"     , "Trigger Left Mouse Button" , app::KeyAction::LeftMouseButton, app::KeyContext::Any },
+    { "RightMouseButton"    , "Trigger Right Mouse Button" , app::KeyAction::RightMouseButton, app::KeyContext::Any },
+    { NULL                  , NULL                 , app::KeyAction::None, app::KeyContext::Any }
   };
 
   static struct {
     const char* name;
+    app::KeyContext context;
+  } contexts[] = {
+    { ""                     , app::KeyContext::Any },
+    { "Normal"               , app::KeyContext::Normal },
+    { "Selection"            , app::KeyContext::SelectionTool },
+    { "TranslatingSelection" , app::KeyContext::TranslatingSelection },
+    { "ScalingSelection"     , app::KeyContext::ScalingSelection },
+    { "RotatingSelection"    , app::KeyContext::RotatingSelection },
+    { "MoveTool"             , app::KeyContext::MoveTool },
+    { "FreehandTool"         , app::KeyContext::FreehandTool },
+    { "ShapeTool"            , app::KeyContext::ShapeTool },
+    { NULL                   , app::KeyContext::Any }
+  };
+
+  using Vec = app::DragVector;
+
+  static struct {
+    const char* name;
     const char* userfriendly;
-    app::WheelAction action;
+    Vec vector;
   } wheel_actions[] = {
-    { "Zoom"         , "Zoom"                     , app::WheelAction::Zoom },
-    { "VScroll"      , "Scroll: Vertically"       , app::WheelAction::VScroll },
-    { "HScroll"      , "Scroll: Horizontally"     , app::WheelAction::HScroll },
-    { "FgColor"      , "Color: Foreground Palette Entry" , app::WheelAction::FgColor },
-    { "BgColor"      , "Color: Background Palette Entry" , app::WheelAction::BgColor },
-    { "Frame"        , "Change Frame"             , app::WheelAction::Frame },
-    { "BrushSize"    , "Change Brush Size"        , app::WheelAction::BrushSize },
-    { "BrushAngle"   , "Change Brush Angle"       , app::WheelAction::BrushAngle },
-    { "ToolSameGroup"  , "Change Tool (same group)" , app::WheelAction::ToolSameGroup },
-    { "ToolOtherGroup" , "Change Tool"            , app::WheelAction::ToolOtherGroup },
-    { "Layer"        , "Change Layer"             , app::WheelAction::Layer },
-    { "InkOpacity"   , "Change Ink Opacity"       , app::WheelAction::InkOpacity },
-    { "LayerOpacity" , "Change Layer Opacity"     , app::WheelAction::LayerOpacity },
-    { "CelOpacity"   , "Change Cel Opacity"       , app::WheelAction::CelOpacity },
-    { "Alpha"        , "Color: Alpha"             , app::WheelAction::Alpha },
-    { "HslHue"       , "Color: HSL Hue"           , app::WheelAction::HslHue },
-    { "HslSaturation", "Color: HSL Saturation"    , app::WheelAction::HslSaturation },
-    { "HslLightness" , "Color: HSL Lightness"     , app::WheelAction::HslLightness },
-    { "HsvHue"       , "Color: HSV Hue"           , app::WheelAction::HsvHue },
-    { "HsvSaturation", "Color: HSV Saturation"    , app::WheelAction::HsvSaturation },
-    { "HsvValue"     , "Color: HSV Value"         , app::WheelAction::HsvValue },
-    { nullptr        , nullptr                    , app::WheelAction::None }
+    { ""             , ""                         , Vec(0.0, 0.0) },
+    { "Zoom"         , "Zoom"                     , Vec(8.0, 0.0) },
+    { "VScroll"      , "Scroll: Vertically"       , Vec(4.0, 0.0) },
+    { "HScroll"      , "Scroll: Horizontally"     , Vec(4.0, 0.0) },
+    { "FgColor"      , "Color: Foreground Palette Entry" , Vec(8.0, 0.0) },
+    { "BgColor"      , "Color: Background Palette Entry" , Vec(8.0, 0.0) },
+    { "FgTile"       , "Tile: Foreground Tile Entry" , Vec(8.0, 0.0) },
+    { "BgTile"       , "Tile: Background Tile Entry" , Vec(8.0, 0.0) },
+    { "Frame"        , "Change Frame"             , Vec(16.0, 0.0) },
+    { "BrushSize"    , "Change Brush Size"        , Vec(4.0, 0.0) },
+    { "BrushAngle"   , "Change Brush Angle"       , Vec(-4.0, 0.0) },
+    { "ToolSameGroup"  , "Change Tool (same group)" , Vec(8.0, 0.0) },
+    { "ToolOtherGroup" , "Change Tool"            , Vec(0.0, -8.0) },
+    { "Layer"        , "Change Layer"             , Vec(0.0, 8.0) },
+    { "InkType"      , "Change Ink Type"          , Vec(0.0, -16.0) },
+    { "InkOpacity"   , "Change Ink Opacity"       , Vec(0.0, 1.0) },
+    { "LayerOpacity" , "Change Layer Opacity"     , Vec(0.0, 1.0) },
+    { "CelOpacity"   , "Change Cel Opacity"       , Vec(0.0, 1.0) },
+    { "Alpha"        , "Color: Alpha"             , Vec(4.0, 0.0) },
+    { "HslHue"       , "Color: HSL Hue"           , Vec(1.0, 0.0) },
+    { "HslSaturation", "Color: HSL Saturation"    , Vec(4.0, 0.0) },
+    { "HslLightness" , "Color: HSL Lightness"     , Vec(0.0, 4.0) },
+    { "HsvHue"       , "Color: HSV Hue"           , Vec(1.0, 0.0) },
+    { "HsvSaturation", "Color: HSV Saturation"    , Vec(4.0, 0.0) },
+    { "HsvValue"     , "Color: HSV Value"         , Vec(0.0, 4.0) },
   };
 
   const char* get_shortcut(TiXmlElement* elem) {
@@ -108,20 +134,24 @@ namespace {
     return shortcut;
   }
 
-  std::string get_user_friendly_string_for_keyaction(app::KeyAction action) {
+  std::string get_user_friendly_string_for_keyaction(app::KeyAction action,
+                                                     app::KeyContext context) {
     for (int c=0; actions[c].name; ++c) {
-      if (action == actions[c].action)
+      if (action == actions[c].action &&
+          context == actions[c].context)
         return actions[c].userfriendly;
     }
     return std::string();
   }
 
   std::string get_user_friendly_string_for_wheelaction(app::WheelAction wheelAction) {
-    for (int c=0; wheel_actions[c].name; ++c) {
-      if (wheelAction == wheel_actions[c].action)
-        return wheel_actions[c].userfriendly;
+    int c = int(wheelAction);
+    if (c >= int(app::WheelAction::First) &&
+        c <= int(app::WheelAction::Last)) {
+      return wheel_actions[c].userfriendly;
     }
-    return std::string();
+    else
+      return std::string();
   }
 
   void erase_accel(app::KeySourceAccelList& kvs,
@@ -172,20 +202,38 @@ namespace base {
   }
 
   template<> app::WheelAction convert_to(const std::string& from) {
-    app::WheelAction action = app::WheelAction::None;
-    for (int c=0; wheel_actions[c].name; ++c) {
+    for (int c=int(app::WheelAction::First);
+            c<=int(app::WheelAction::Last); ++c) {
       if (from == wheel_actions[c].name)
-        return wheel_actions[c].action;
+        return (app::WheelAction)c;
     }
-    return action;
+    return app::WheelAction::None;
   }
 
   template<> std::string convert_to(const app::WheelAction& from) {
-    for (int c=0; wheel_actions[c].name; ++c) {
-      if (from == wheel_actions[c].action)
-        return wheel_actions[c].name;
+    int c = int(from);
+    if (c >= int(app::WheelAction::First) &&
+        c <= int(app::WheelAction::Last)) {
+      return wheel_actions[c].name;
     }
-    return "";
+    else
+      return std::string();
+  }
+
+  template<> app::KeyContext convert_to(const std::string& from) {
+    for (int c=0; contexts[c].name; ++c) {
+      if (from == contexts[c].name)
+        return contexts[c].context;
+    }
+    return app::KeyContext::Any;
+  }
+
+  template<> std::string convert_to(const app::KeyContext& from) {
+    for (int c=0; contexts[c].name; ++c) {
+      if (from == contexts[c].context)
+        return contexts[c].name;
+    }
+    return std::string();
   }
 
 } // namespace base
@@ -219,10 +267,15 @@ Key::Key(const Key& k)
       m_action = k.m_action;
       m_wheelAction = k.m_wheelAction;
       break;
+    case KeyType::DragAction:
+      m_action = k.m_action;
+      m_wheelAction = k.m_wheelAction;
+      m_dragVector = k.m_dragVector;
+      break;
   }
 }
 
-Key::Key(Command* command, const Params& params, KeyContext keyContext)
+Key::Key(Command* command, const Params& params, const KeyContext keyContext)
   : m_type(KeyType::Command)
   , m_keycontext(keyContext)
   , m_command(command)
@@ -230,18 +283,23 @@ Key::Key(Command* command, const Params& params, KeyContext keyContext)
 {
 }
 
-Key::Key(KeyType type, tools::Tool* tool)
+Key::Key(const KeyType type, tools::Tool* tool)
   : m_type(type)
   , m_keycontext(KeyContext::Any)
   , m_tool(tool)
 {
 }
 
-Key::Key(KeyAction action)
+Key::Key(const KeyAction action,
+         const KeyContext keyContext)
   : m_type(KeyType::Action)
-  , m_keycontext(KeyContext::Any)
+  , m_keycontext(keyContext)
   , m_action(action)
 {
+  if (m_keycontext != KeyContext::Any)
+    return;
+
+  // Automatic key context
   switch (action) {
     case KeyAction::None:
       m_keycontext = KeyContext::Any;
@@ -249,6 +307,7 @@ Key::Key(KeyAction action)
     case KeyAction::CopySelection:
     case KeyAction::SnapToGrid:
     case KeyAction::LockAxis:
+    case KeyAction::FineControl:
       m_keycontext = KeyContext::TranslatingSelection;
       break;
     case KeyAction::AngleSnap:
@@ -285,12 +344,22 @@ Key::Key(KeyAction action)
   }
 }
 
-Key::Key(WheelAction wheelAction)
+Key::Key(const WheelAction wheelAction)
   : m_type(KeyType::WheelAction)
   , m_keycontext(KeyContext::MouseWheel)
   , m_action(KeyAction::None)
   , m_wheelAction(wheelAction)
 {
+}
+
+// static
+KeyPtr Key::MakeDragAction(WheelAction dragAction)
+{
+  KeyPtr k(new Key(dragAction));
+  k->m_type = KeyType::DragAction;
+  k->m_keycontext = KeyContext::Any;
+  k->m_dragVector = wheel_actions[(int)dragAction].vector;
+  return k;
 }
 
 const ui::Accelerators& Key::accels() const
@@ -455,8 +524,10 @@ std::string Key::triggerString() const
       return text;
     }
     case KeyType::Action:
-      return get_user_friendly_string_for_keyaction(m_action);
+      return get_user_friendly_string_for_keyaction(m_action,
+                                                    m_keycontext);
     case KeyType::WheelAction:
+    case KeyType::DragAction:
       return get_user_friendly_string_for_wheelaction(m_wheelAction);
   }
   return "Unknown";
@@ -526,12 +597,8 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
         // Read context
         KeyContext keycontext = KeyContext::Any;
         const char* keycontextstr = xmlKey->Attribute("context");
-        if (keycontextstr) {
-          if (strcmp(keycontextstr, "Selection") == 0)
-            keycontext = KeyContext::SelectionTool;
-          else if (strcmp(keycontextstr, "Normal") == 0)
-            keycontext = KeyContext::Normal;
-        }
+        if (keycontextstr)
+          keycontext = base::convert_to<KeyContext>(std::string(keycontextstr));
 
         // Read params
         Params params;
@@ -642,9 +709,16 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
     if (action_id) {
       KeyAction action = base::convert_to<KeyAction, std::string>(action_id);
       if (action != KeyAction::None) {
-        KeyPtr key = this->action(action);
+        // Read context
+        KeyContext keycontext = KeyContext::Any;
+        const char* keycontextstr = xmlKey->Attribute("context");
+        if (keycontextstr)
+          keycontext = base::convert_to<KeyContext>(std::string(keycontextstr));
+
+        KeyPtr key = this->action(action, keycontext);
         if (key && action_key) {
-          LOG(VERBOSE, "KEYS: Shortcut for action %s: %s\n", action_id, action_key);
+          LOG(VERBOSE, "KEYS: Shortcut for action %s/%s: %s\n", action_id,
+              (keycontextstr ? keycontextstr: "Any"), action_key);
           Accelerator accel(action_key);
 
           if (!removed)
@@ -684,6 +758,45 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
     }
     xmlKey = xmlKey->NextSiblingElement();
   }
+
+  // Load special keyboard shortcuts to simulate mouse wheel actions
+  // <keyboard><drag><key>
+  xmlKey = handle
+    .FirstChild("drag")
+    .FirstChild("key").ToElement();
+  while (xmlKey) {
+    const char* action_id = xmlKey->Attribute("action");
+    const char* action_key = get_shortcut(xmlKey);
+    bool removed = bool_attr(xmlKey, "removed", false);
+
+    if (action_id) {
+      WheelAction action = base::convert_to<WheelAction, std::string>(action_id);
+      if (action != WheelAction::None) {
+        KeyPtr key = this->dragAction(action);
+        if (key && action_key) {
+          if (auto vector_str = xmlKey->Attribute("vector")) {
+            double x, y = 0.0;
+            // Parse a string like "double,double"
+            x = std::strtod(vector_str, (char**)&vector_str);
+            if (vector_str && *vector_str == ',') {
+              ++vector_str;
+              y = std::strtod(vector_str, nullptr);
+            }
+            key->setDragVector(DragVector(x, y));
+          }
+
+          LOG(VERBOSE, "KEYS: Shortcut for drag action %s: %s\n", action_id, action_key);
+          Accelerator accel(action_key);
+
+          if (!removed)
+            key->add(accel, source, *this);
+          else
+            key->disableAccel(accel, source);
+        }
+      }
+    }
+    xmlKey = xmlKey->NextSiblingElement();
+  }
 }
 
 void KeyboardShortcuts::importFile(const std::string& filename, KeySource source)
@@ -705,6 +818,7 @@ void KeyboardShortcuts::exportFile(const std::string& filename)
   TiXmlElement quicktools("quicktools");
   TiXmlElement actions("actions");
   TiXmlElement wheel("wheel");
+  TiXmlElement drag("drag");
 
   keyboard.SetAttribute("version", XML_KEYBOARD_FILE_VERSION);
 
@@ -713,12 +827,14 @@ void KeyboardShortcuts::exportFile(const std::string& filename)
   exportKeys(quicktools, KeyType::Quicktool);
   exportKeys(actions, KeyType::Action);
   exportKeys(wheel, KeyType::WheelAction);
+  exportKeys(drag, KeyType::DragAction);
 
   keyboard.InsertEndChild(commands);
   keyboard.InsertEndChild(tools);
   keyboard.InsertEndChild(quicktools);
   keyboard.InsertEndChild(actions);
   keyboard.InsertEndChild(wheel);
+  keyboard.InsertEndChild(drag);
 
   TiXmlDeclaration declaration("1.0", "utf-8", "");
   doc->InsertEndChild(declaration);
@@ -752,9 +868,10 @@ void KeyboardShortcuts::exportAccel(TiXmlElement& parent, const Key* key, const 
     case KeyType::Command: {
       elem.SetAttribute("command", key->command()->id().c_str());
 
-      if (key->keycontext() != KeyContext::Any)
-        elem.SetAttribute(
-          "context", convertKeyContextToString(key->keycontext()).c_str());
+      if (key->keycontext() != KeyContext::Any) {
+        elem.SetAttribute("context",
+                          base::convert_to<std::string>(key->keycontext()).c_str());
+      }
 
       for (const auto& param : key->params()) {
         if (param.second.empty())
@@ -775,12 +892,24 @@ void KeyboardShortcuts::exportAccel(TiXmlElement& parent, const Key* key, const 
 
     case KeyType::Action:
       elem.SetAttribute("action",
-        base::convert_to<std::string>(key->action()).c_str());
+                        base::convert_to<std::string>(key->action()).c_str());
+      if (key->keycontext() != KeyContext::Any)
+        elem.SetAttribute("context",
+                          base::convert_to<std::string>(key->keycontext()).c_str());
       break;
 
     case KeyType::WheelAction:
       elem.SetAttribute("action",
-        base::convert_to<std::string>(key->wheelAction()).c_str());
+                        base::convert_to<std::string>(key->wheelAction()));
+      break;
+
+    case KeyType::DragAction:
+      elem.SetAttribute("action",
+                        base::convert_to<std::string>(key->wheelAction()));
+      elem.SetAttribute("vector",
+                        fmt::format("{},{}",
+                                    key->dragVector().x,
+                                    key->dragVector().y));
       break;
   }
 
@@ -846,16 +975,18 @@ KeyPtr KeyboardShortcuts::quicktool(tools::Tool* tool)
   return key;
 }
 
-KeyPtr KeyboardShortcuts::action(KeyAction action)
+KeyPtr KeyboardShortcuts::action(KeyAction action,
+                                 KeyContext keyContext)
 {
   for (KeyPtr& key : m_keys) {
     if (key->type() == KeyType::Action &&
-        key->action() == action) {
+        key->action() == action &&
+        key->keycontext() == keyContext) {
       return key;
     }
   }
 
-  KeyPtr key = std::make_shared<Key>(action);
+  KeyPtr key = std::make_shared<Key>(action, keyContext);
   m_keys.push_back(key);
   return key;
 }
@@ -874,6 +1005,20 @@ KeyPtr KeyboardShortcuts::wheelAction(WheelAction wheelAction)
   return key;
 }
 
+KeyPtr KeyboardShortcuts::dragAction(WheelAction dragAction)
+{
+  for (KeyPtr& key : m_keys) {
+    if (key->type() == KeyType::DragAction &&
+        key->wheelAction() == dragAction) {
+      return key;
+    }
+  }
+
+  KeyPtr key = Key::MakeDragAction(dragAction);
+  m_keys.push_back(key);
+  return key;
+}
+
 void KeyboardShortcuts::disableAccel(const ui::Accelerator& accel,
                                      const KeySource source,
                                      const KeyContext keyContext,
@@ -886,7 +1031,12 @@ void KeyboardShortcuts::disableAccel(const ui::Accelerator& accel,
         // Tools can contain the same keyboard shortcut
         (key->type() != KeyType::Tool ||
          newKey == nullptr ||
-         newKey->type() != KeyType::Tool)) {
+         newKey->type() != KeyType::Tool) &&
+        // DragActions can share the same keyboard shortcut (e.g. to
+        // change different values using different DragVectors)
+        (key->type() != KeyType::DragAction ||
+         newKey == nullptr ||
+         newKey->type() != KeyType::DragAction)) {
       key->disableAccel(accel, source);
     }
   }
@@ -930,7 +1080,7 @@ bool KeyboardShortcuts::getCommandFromKeyMessage(const Message* msg, Command** c
 tools::Tool* KeyboardShortcuts::getCurrentQuicktool(tools::Tool* currentTool)
 {
   if (currentTool && currentTool->getInk(0)->isSelection()) {
-    KeyPtr key = action(KeyAction::CopySelection);
+    KeyPtr key = action(KeyAction::CopySelection, KeyContext::TranslatingSelection);
     if (key && key->isPressed())
       return NULL;
   }
@@ -970,7 +1120,6 @@ WheelAction KeyboardShortcuts::getWheelActionFromMouseMessage(const KeyContext c
 {
   WheelAction wheelAction = WheelAction::None;
   const ui::Accelerator* bestAccel = nullptr;
-  KeyPtr bestKey;
   for (const KeyPtr& key : m_keys) {
     if (key->type() == KeyType::WheelAction &&
         key->keycontext() == context) {
@@ -983,6 +1132,22 @@ WheelAction KeyboardShortcuts::getWheelActionFromMouseMessage(const KeyContext c
     }
   }
   return wheelAction;
+}
+
+Keys KeyboardShortcuts::getDragActionsFromKeyMessage(const KeyContext context,
+                                                     const ui::Message* msg)
+{
+  KeyPtr bestKey = nullptr;
+  Keys keys;
+  for (const KeyPtr& key : m_keys) {
+    if (key->type() == KeyType::DragAction) {
+      const ui::Accelerator* accel = key->isPressed(msg, *this);
+      if (accel) {
+        keys.push_back(key);
+      }
+    }
+  }
+  return keys;
 }
 
 bool KeyboardShortcuts::hasMouseWheelCustomization() const
@@ -1007,15 +1172,31 @@ void KeyboardShortcuts::clearMouseWheelKeys()
 
 void KeyboardShortcuts::addMissingMouseWheelKeys()
 {
-  for (int wheelAction=int(WheelAction::First);
-       wheelAction<=int(WheelAction::Last); ++wheelAction) {
+  for (int action=int(WheelAction::First);
+          action<=int(WheelAction::Last); ++action) {
+    // Wheel actions
     auto it = std::find_if(
       m_keys.begin(), m_keys.end(),
-      [wheelAction](const KeyPtr& key) -> bool {
-        return key->wheelAction() == (WheelAction)wheelAction;
+      [action](const KeyPtr& key) -> bool {
+        return
+          key->type() == KeyType::WheelAction &&
+          key->wheelAction() == (WheelAction)action;
       });
     if (it == m_keys.end()) {
-      KeyPtr key = std::make_shared<Key>((WheelAction)wheelAction);
+      KeyPtr key = std::make_shared<Key>((WheelAction)action);
+      m_keys.push_back(key);
+    }
+
+    // Drag actions
+    it = std::find_if(
+      m_keys.begin(), m_keys.end(),
+      [action](const KeyPtr& key) -> bool {
+        return
+          key->type() == KeyType::DragAction &&
+          key->wheelAction() == (WheelAction)action;
+      });
+    if (it == m_keys.end()) {
+      KeyPtr key = Key::MakeDragAction((WheelAction)action);
       m_keys.push_back(key);
     }
   }
@@ -1111,31 +1292,6 @@ std::string key_tooltip(const char* str, const app::Key* key)
     res += ")";
   }
   return res;
-}
-
-std::string convertKeyContextToString(KeyContext keyContext)
-{
-  switch (keyContext) {
-    case KeyContext::Any:
-      return std::string();
-    case KeyContext::Normal:
-      return "Normal";
-    case KeyContext::SelectionTool:
-      return "Selection";
-    case KeyContext::TranslatingSelection:
-      return "TranslatingSelection";
-    case KeyContext::ScalingSelection:
-      return "ScalingSelection";
-    case KeyContext::RotatingSelection:
-      return "RotatingSelection";
-    case KeyContext::MoveTool:
-      return "MoveTool";
-    case KeyContext::FreehandTool:
-      return "FreehandTool";
-    case KeyContext::ShapeTool:
-      return "ShapeTool";
-  }
-  return std::string();
 }
 
 std::string convertKeyContextToUserFriendlyString(KeyContext keyContext)

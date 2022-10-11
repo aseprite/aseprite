@@ -587,6 +587,11 @@ TabIcon BrowserView::getTabIcon()
   return TabIcon::NONE;
 }
 
+gfx::Color BrowserView::getTabColor()
+{
+  return gfx::ColorNone;
+}
+
 WorkspaceView* BrowserView::cloneWorkspaceView()
 {
   return new BrowserView();
@@ -613,7 +618,7 @@ void BrowserView::onTabPopup(Workspace* workspace)
   if (!menu)
     return;
 
-  menu->showPopup(ui::get_mouse_position());
+  menu->showPopup(mousePosInDisplay(), display());
 }
 
 } // namespace app

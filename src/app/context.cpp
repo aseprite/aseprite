@@ -19,9 +19,16 @@
 #include "app/doc.h"
 #include "app/pref/preferences.h"
 #include "app/site.h"
+#include "app/util/clipboard.h"
 #include "base/scoped_value.h"
 #include "doc/layer.h"
 #include "ui/system.h"
+
+#ifdef _DEBUG
+#include "doc/layer_tilemap.h"
+#include "doc/tileset.h"
+#include "doc/tilesets.h"
+#endif
 
 #include <algorithm>
 #include <stdexcept>
@@ -51,6 +58,16 @@ Preferences& Context::preferences() const
     m_docs.add_observer(m_preferences.get());
   }
   return *m_preferences;
+}
+
+Clipboard* Context::clipboard() const
+{
+#ifdef ENABLE_UI
+  return Clipboard::instance();
+#else
+  // TODO support clipboard when !ENABLE_UI
+  throw std::runtime_error("Clipboard not supported");
+#endif
 }
 
 void Context::sendDocumentToTop(Doc* document)
@@ -102,6 +119,11 @@ void Context::setRange(const DocRange& range)
 void Context::setSelectedColors(const doc::PalettePicks& picks)
 {
   onSetSelectedColors(picks);
+}
+
+void Context::setSelectedTiles(const doc::PalettePicks& picks)
+{
+  onSetSelectedTiles(picks);
 }
 
 bool Context::hasModifiedDocuments() const
@@ -177,6 +199,20 @@ void Context::executeCommand(Command* command, const Params& params)
     // TODO move this code to another place (e.g. a Workplace/Tabs widget)
     if (isUIAvailable())
       app_rebuild_documents_tabs();
+
+#ifdef _DEBUG // Special checks for debugging purposes
+    {
+      Site site = activeSite();
+      // Check that all tileset hash tables are valid
+      if (site.sprite() &&
+          site.sprite()->hasTilesets()) {
+        for (Tileset* tileset : *site.sprite()->tilesets()) {
+          if (tileset)
+            tileset->assertValidHashTable();
+        }
+      }
+    }
+#endif
   }
   catch (base::Exception& e) {
     m_result = CommandResult(CommandResult::kError);
@@ -280,6 +316,12 @@ void Context::onSetSelectedColors(const doc::PalettePicks& picks)
 {
   if (m_lastSelectedDoc)
     activeSiteHandler()->setSelectedColorsInDoc(m_lastSelectedDoc, picks);
+}
+
+void Context::onSetSelectedTiles(const doc::PalettePicks& picks)
+{
+  if (m_lastSelectedDoc)
+    activeSiteHandler()->setSelectedTilesInDoc(m_lastSelectedDoc, picks);
 }
 
 ActiveSiteHandler* Context::activeSiteHandler() const

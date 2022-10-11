@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2021  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -40,8 +40,8 @@ void PopupWindowPin::setPinned(const bool pinned)
   if (m_pinned)
     makeFloating();
   else {
-    gfx::Rect rc = bounds();
-    rc.enlarge(8);
+    gfx::Rect rc = boundsOnScreen();
+    rc.enlarge(8 * guiscale());
     setHotRegion(gfx::Region(rc));
     makeFixed();
   }

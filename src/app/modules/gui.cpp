@@ -42,6 +42,7 @@
 #include "base/string.h"
 #include "doc/sprite.h"
 #include "os/error.h"
+#include "os/screen.h"
 #include "os/surface.h"
 #include "os/system.h"
 #include "os/window.h"
@@ -53,6 +54,7 @@
 #endif
 
 #include <algorithm>
+#include <cstdio>
 #include <list>
 #include <vector>
 
@@ -80,8 +82,8 @@ static struct {
 
 //////////////////////////////////////////////////////////////////////
 
-class CustomizedGuiManager : public Manager
-                           , public LayoutIO {
+class CustomizedGuiManager : public ui::Manager
+                           , public ui::LayoutIO {
 public:
   CustomizedGuiManager(const os::WindowRef& nativeWindow)
     : ui::Manager(nativeWindow) {
@@ -94,7 +96,7 @@ protected:
 #endif
   void onInitTheme(InitThemeEvent& ev) override;
   LayoutIO* onGetLayoutIO() override { return this; }
-  void onNewDisplayConfiguration() override;
+  void onNewDisplayConfiguration(Display* display) override;
 
   // LayoutIO implementation
   std::string loadLayout(Widget* widget) override;
@@ -177,7 +179,7 @@ int init_module_gui()
   bool gpuAccel = pref.general.gpuAcceleration();
 
   if (!create_main_window(gpuAccel, maximized, lastError)) {
-    // If we've created the display with hardware acceleration,
+    // If we've created the native window with hardware acceleration,
     // now we try to do it without hardware acceleration.
     if (gpuAccel &&
         os::instance()->hasCapability(os::Capabilities::GpuAccelerationSwitch)) {
@@ -190,7 +192,7 @@ int init_module_gui()
 
   if (!main_window) {
     os::error_message(
-      ("Unable to create a user-interface display.\nDetails: "+lastError+"\n").c_str());
+      ("Unable to create a user-interface window.\nDetails: "+lastError+"\n").c_str());
     return -1;
   }
 
@@ -208,7 +210,13 @@ int init_module_gui()
   // messages, and flip the window.
   os::instance()->handleWindowResize =
     [](os::Window* window) {
+      Display* display = Manager::getDisplayFromNativeWindow(window);
+      if (!display)
+        display = manager->display();
+      ASSERT(display);
+
       Message* msg = new Message(kResizeDisplayMessage);
+      msg->setDisplay(display);
       msg->setRecipient(manager);
       msg->setPropagateToChildren(false);
 
@@ -281,9 +289,15 @@ void update_windows_color_profile_from_preferences()
   // which means that each window should use its monitor color space)
   system->setWindowsColorSpace(osCS);
 
-  // Set the color space of the main window
-  if (manager && manager->display())
-    manager->display()->setColorSpace(osCS);
+  // Set the color space of all windows
+  for (ui::Widget* widget : manager->children()) {
+    ASSERT(widget->type() == ui::kWindowWidget);
+    auto window = static_cast<ui::Window*>(widget);
+    if (window->ownDisplay()) {
+      if (auto display = window->display())
+        display->nativeWindow()->setColorSpace(osCS);
+    }
+  }
 }
 
 static bool load_gui_config(os::WindowSpec& spec, bool& maximized)
@@ -346,12 +360,14 @@ static bool load_gui_config(os::WindowSpec& spec, bool& maximized)
   spec.frame(frame);
 
   maximized = get_config_bool("GfxMode", "Maximized", true);
+
+  ui::set_multiple_displays(Preferences::instance().experimental.multipleWindows());
   return true;
 }
 
 static void save_gui_config()
 {
-  os::Window* window = manager->display();
+  os::Window* window = manager->display()->nativeWindow();
   if (window) {
     const bool maximized = (window->isMaximized() ||
                             window->isFullscreen());
@@ -383,34 +399,66 @@ void update_screen_for_document(const Doc* document)
   }
 }
 
-void load_window_pos(Widget* window, const char* section,
+void load_window_pos(Window* window, const char* section,
                      const bool limitMinSize)
 {
+  Display* parentDisplay =
+    (window->display() ? window->display():
+                         window->manager()->display());
+  Rect workarea =
+    (get_multiple_displays() ?
+     parentDisplay->nativeWindow()->screen()->workarea():
+     parentDisplay->bounds());
+
   // Default position
-  Rect orig_pos = window->bounds();
-  Rect pos = orig_pos;
+  Rect origPos = window->bounds();
 
   // Load configurated position
-  pos = get_config_rect(section, "WindowPos", pos);
+  Rect pos = get_config_rect(section, "WindowPos", origPos);
 
   if (limitMinSize) {
-    pos.w = std::clamp(pos.w, orig_pos.w, ui::display_w());
-    pos.h = std::clamp(pos.h, orig_pos.h, ui::display_h());
+    pos.w = std::clamp(pos.w, origPos.w, workarea.w);
+    pos.h = std::clamp(pos.h, origPos.h, workarea.h);
   }
   else {
-    pos.w = std::min(pos.w, ui::display_w());
-    pos.h = std::min(pos.h, ui::display_h());
+    pos.w = std::min(pos.w, workarea.w);
+    pos.h = std::min(pos.h, workarea.h);
   }
 
-  pos.setOrigin(Point(std::clamp(pos.x, 0, ui::display_w()-pos.w),
-                      std::clamp(pos.y, 0, ui::display_h()-pos.h)));
+  pos.setOrigin(Point(std::clamp(pos.x, workarea.x, workarea.x2()-pos.w),
+                      std::clamp(pos.y, workarea.y, workarea.y2()-pos.h)));
 
   window->setBounds(pos);
+
+  if (get_multiple_displays()) {
+    Rect frame = get_config_rect(section, "WindowFrame", gfx::Rect());
+    if (!frame.isEmpty()) {
+      limit_with_workarea(parentDisplay, frame);
+      window->loadNativeFrame(frame);
+    }
+  }
+  else {
+    del_config_value(section, "WindowFrame");
+  }
 }
 
-void save_window_pos(Widget* window, const char *section)
+void save_window_pos(Window* window, const char* section)
 {
-  set_config_rect(section, "WindowPos", window->bounds());
+  gfx::Rect rc;
+
+  if (!window->lastNativeFrame().isEmpty()) {
+    const os::Window* mainNativeWindow = manager->display()->nativeWindow();
+    rc = window->lastNativeFrame();
+    set_config_rect(section, "WindowFrame", rc);
+    rc.offset(-mainNativeWindow->frame().origin());
+    rc /= mainNativeWindow->scale();
+  }
+  else {
+    del_config_value(section, "WindowFrame");
+    rc = window->bounds();
+  }
+
+  set_config_rect(section, "WindowPos", rc);
 }
 
 // TODO Replace this with new theme styles
@@ -455,16 +503,18 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
 
   switch (msg->type()) {
 
-    case kCloseDisplayMessage: {
-      // Exit command is only allowed when the main window is the current
-      // window running.
-      if (getForegroundWindow() == App::instance()->mainWindow()) {
+    case kCloseDisplayMessage:
+      // Only call the exit command/close the app when the the main
+      // display is the closed window in this kCloseDisplayMessage
+      // message and it's the current running foreground window.
+      if (msg->display() == this->display() &&
+          getForegroundWindow() == App::instance()->mainWindow()) {
         // Execute the "Exit" command.
         Command* command = Commands::instance()->byId(CommandId::Exit());
         UIContext::instance()->executeCommandFromMenuOrShortcut(command);
+        return true;
       }
       break;
-    }
 
     case kDropFilesMessage:
       // Files are processed only when the main window is the current
@@ -634,11 +684,11 @@ bool CustomizedGuiManager::onProcessDevModeKeyDown(KeyMessage* msg)
     return true; // This line should not be executed anyway
   }
 
-  // F1 switches screen/UI scaling
+  // Ctrl+F1 switches screen/UI scaling
   if (msg->ctrlPressed() &&
       msg->scancode() == kKeyF1) {
     try {
-      os::Window* window = display();
+      os::Window* window = display()->nativeWindow();
       int screenScale = window->scale();
       int uiScale = ui::guiscale();
 
@@ -715,14 +765,18 @@ void CustomizedGuiManager::onInitTheme(InitThemeEvent& ev)
   AppMenus::instance()->initTheme();
 }
 
-void CustomizedGuiManager::onNewDisplayConfiguration()
+void CustomizedGuiManager::onNewDisplayConfiguration(Display* display)
 {
-  Manager::onNewDisplayConfiguration();
-  save_gui_config();
+  Manager::onNewDisplayConfiguration(display);
 
-  // TODO Should we provide a more generic way for all ui::Window to
-  //      detect the ui::Display (or UI Screen Scaling) change?
-  Console::notifyNewDisplayConfiguration();
+  // Only whne the main display/window is modified
+  if (display == this->display()) {
+    save_gui_config();
+
+    // TODO Should we provide a more generic way for all ui::Window to
+    //      detect the os::Window (or UI Screen Scaling) change?
+    Console::notifyNewDisplayConfiguration();
+  }
 }
 
 std::string CustomizedGuiManager::loadLayout(Widget* widget)

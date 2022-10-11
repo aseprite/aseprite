@@ -28,7 +28,6 @@
 #include "doc/compressed_image.h"
 #include "doc/image_impl.h"
 #include "doc/mask.h"
-#include "fixmath/fixmath.h"
 
 #include <algorithm>
 #include <cstdlib>
@@ -91,6 +90,7 @@ const char* WellKnownIntertwiners::AsPixelPerfect = "as_pixel_perfect";
 
 const char* WellKnownPointShapes::None = "none";
 const char* WellKnownPointShapes::Pixel = "pixel";
+const char* WellKnownPointShapes::Tile = "tile";
 const char* WellKnownPointShapes::Brush = "brush";
 const char* WellKnownPointShapes::FloodFill = "floodfill";
 const char* WellKnownPointShapes::Spray = "spray";
@@ -142,6 +142,7 @@ ToolBox::ToolBox()
 
   m_pointshapers[WellKnownPointShapes::None] = new NonePointShape();
   m_pointshapers[WellKnownPointShapes::Pixel] = new PixelPointShape();
+  m_pointshapers[WellKnownPointShapes::Tile] = new TilePointShape();
   m_pointshapers[WellKnownPointShapes::Brush] = new BrushPointShape();
   m_pointshapers[WellKnownPointShapes::FloodFill] = new FloodFillPointShape();
   m_pointshapers[WellKnownPointShapes::Spray] = new SprayPointShape();

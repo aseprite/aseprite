@@ -72,3 +72,9 @@
 [submodule "third_party/IXWebSocket"]
 	path = third_party/IXWebSocket
 	url = https://github.com/aseprite/IXWebSocket.git
+[submodule "third_party/cityhash"]
+	path = third_party/cityhash
+	url = https://github.com/aseprite/cityhash.git
+[submodule "src/psd"]
+	path = src/psd
+	url = https://github.com/aseprite/psd.git

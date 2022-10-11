@@ -27,6 +27,7 @@
 #include "app/tools/tool.h"
 #include "app/ui/app_menuitem.h"
 #include "app/ui/doc_view.h"
+#include "app/ui/editor/dragging_value_state.h"
 #include "app/ui/editor/drawing_state.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_customization_delegate.h"
@@ -42,6 +43,7 @@
 #include "app/ui/editor/scrolling_state.h"
 #include "app/ui/editor/tool_loop_impl.h"
 #include "app/ui/editor/transform_handles.h"
+#include "app/ui/editor/vec2.h"
 #include "app/ui/editor/zooming_state.h"
 #include "app/ui/main_window.h"
 #include "app/ui/skin/skin_theme.h"
@@ -52,37 +54,27 @@
 #include "app/util/new_image_from_mask.h"
 #include "app/util/readable_time.h"
 #include "base/pi.h"
+#include "base/vector2d.h"
+#include "doc/grid.h"
 #include "doc/layer.h"
 #include "doc/mask.h"
 #include "doc/slice.h"
 #include "doc/sprite.h"
-#include "fixmath/fixmath.h"
 #include "fmt/format.h"
 #include "gfx/rect.h"
 #include "os/surface.h"
 #include "os/system.h"
 #include "ui/alert.h"
 #include "ui/message.h"
-#include "ui/system.h"
 #include "ui/view.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstring>
 
 namespace app {
 
 using namespace ui;
-
-static CursorType rotated_size_cursors[8] = {
-  kSizeECursor,
-  kSizeNECursor,
-  kSizeNCursor,
-  kSizeNWCursor,
-  kSizeWCursor,
-  kSizeSWCursor,
-  kSizeSCursor,
-  kSizeSECursor
-};
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355) // warning C4355: 'this' : used in base member initializer list
@@ -265,7 +257,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
             if (!editor->hasSelectedSlices())
               params.set("id", base::convert_to<std::string>(hit.slice()->id()).c_str());
             AppMenuItem::setContextParams(params);
-            popupMenu->showPopup(msg->position());
+            popupMenu->showPopup(msg->position(), editor->display());
             AppMenuItem::setContextParams(Params());
           }
         }
@@ -323,10 +315,12 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
 
   // Start the Tool-Loop
   if (layer && (layer->isImage() || clickedInk->isSelection())) {
+    tools::Pointer pointer = pointer_from_msg(editor, msg);
+
     // Shift+click on Pencil tool starts a line onMouseDown() when the
     // preview (onKeyDown) is disabled.
     if (!Preferences::instance().editor.straightLinePreview() &&
-        checkStartDrawingStraightLine(editor, msg)) {
+        checkStartDrawingStraightLine(editor, msg, &pointer)) {
       // Send first mouse down to draw the straight line and start the
       // freehand mode.
       editor->getState()->onMouseDown(editor, msg);
@@ -343,7 +337,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
 
     startDrawingState(editor, msg,
                       DrawingType::Regular,
-                      pointer_from_msg(editor, msg));
+                      pointer);
 
     // Restore layer edges
     if (layerEdges)
@@ -442,20 +436,6 @@ bool StandbyState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
         editor->showBrushPreview(mouseScreenPos);
       return true;
     }
-    else if (ink->isEyedropper()) {
-      editor->showMouseCursor(
-        kCustomCursor, theme->cursors.eyedropper());
-      return true;
-    }
-    else if (ink->isZoom()) {
-      editor->showMouseCursor(
-        kCustomCursor, theme->cursors.magnifier());
-      return true;
-    }
-    else if (ink->isScrollMovement()) {
-      editor->showMouseCursor(kScrollCursor);
-      return true;
-    }
     else if (ink->isCelMovement()) {
       if (resizeCelBounds(editor).contains(mouseScreenPos))
         editor->showMouseCursor(kSizeSECursor);
@@ -505,23 +485,31 @@ bool StandbyState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
     }
   }
 
-  // Draw
-  if (editor->canDraw()) {
-    editor->showBrushPreview(mouseScreenPos);
-  }
-  // Forbidden
-  else {
-    editor->showMouseCursor(kForbiddenCursor);
-  }
-
-  return true;
+  return StateWithWheelBehavior::onSetCursor(editor, mouseScreenPos);
 }
 
 bool StandbyState::onKeyDown(Editor* editor, KeyMessage* msg)
 {
   if (Preferences::instance().editor.straightLinePreview() &&
-      checkStartDrawingStraightLine(editor, nullptr))
+      checkStartDrawingStraightLine(editor, nullptr, nullptr))
     return false;
+
+  Keys keys = KeyboardShortcuts::instance()
+    ->getDragActionsFromKeyMessage(KeyContext::MouseWheel, msg);
+  if (!keys.empty()) {
+    // Don't enter DraggingValueState to change brush size if we are
+    // in a selection-like tool
+    if (keys.size() == 1 &&
+        keys[0]->wheelAction() == WheelAction::BrushSize &&
+        editor->getCurrentEditorInk()->isSelection()) {
+      return false;
+    }
+
+    EditorStatePtr newState(new DraggingValueState(editor, keys));
+    editor->setState(newState);
+    return true;
+  }
+
   return false;
 }
 
@@ -535,7 +523,7 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
   tools::Ink* ink = editor->getCurrentEditorInk();
   const Sprite* sprite = editor->sprite();
   gfx::PointF spritePos =
-    editor->screenToEditorF(ui::get_mouse_position())
+    editor->screenToEditorF(editor->mousePosInDisplay())
     - gfx::PointF(editor->mainTilePosition());
 
   if (!sprite) {
@@ -543,21 +531,27 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
   }
   // For eye-dropper
   else if (ink->isEyedropper()) {
+    Site site = editor->getSite();
     EyedropperCommand cmd;
     app::Color color = Preferences::instance().colorBar.fgColor();
-    cmd.pickSample(editor->getSite(),
+    doc::tile_t tile = Preferences::instance().colorBar.fgTile();
+    cmd.pickSample(site,
                    spritePos,
                    editor->projection(),
-                   color);
+                   color, tile);
 
     std::string buf =
       fmt::format(" :pos: {} {}",
                   int(std::floor(spritePos.x)),
                   int(std::floor(spritePos.y)));
 
-    StatusBar::instance()->showColor(0, color, buf);
+    if (site.tilemapMode() == TilemapMode::Tiles)
+      StatusBar::instance()->showTile(0, tile, buf);
+    else
+      StatusBar::instance()->showColor(0, color, buf);
   }
   else {
+    Site site = editor->getSite();
     Mask* mask =
       (editor->document()->isMaskVisible() ?
        editor->document()->mask(): NULL);
@@ -593,17 +587,26 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
     if (sprite->totalFrames() > 1) {
       buf += fmt::format(
         " :frame: {} :clock: {}/{}",
-        editor->frame()+editor->docPref().timeline.firstFrame(),
-        human_readable_time(sprite->frameDuration(editor->frame())),
-        human_readable_time(sprite->totalAnimationDuration()));
+        site.frame()+editor->docPref().timeline.firstFrame(),
+        human_readable_time(sprite->frameDuration(site.frame())).c_str(),
+        human_readable_time(sprite->totalAnimationDuration()).c_str());
     }
 
-    if (editor->docPref().show.grid()) {
-      auto gb = sprite->gridBounds();
-      if (!gb.isEmpty()) {
-        int col = int((std::floor(spritePos.x) - (gb.x % gb.w)) / gb.w);
-        int row = int((std::floor(spritePos.y) - (gb.y % gb.h)) / gb.h);
-        buf += fmt::format(" :grid: {} {}", col, row);
+    if ((editor->docPref().show.grid()) ||
+        (site.layer() && site.layer()->isTilemap())) {
+      doc::Grid grid = site.grid();
+      if (!grid.isEmpty()) {
+        gfx::Point pt = grid.canvasToTile(gfx::Point(spritePos));
+        buf += fmt::format(" :grid: {} {}", pt.x, pt.y);
+
+        // Show the tile index of this specific tile
+        if (site.layer() &&
+            site.layer()->isTilemap() &&
+            site.image()) {
+          if (site.image()->bounds().contains(pt)) {
+            buf += fmt::format(" [{}]", site.image()->getPixel(pt.x, pt.y));
+          }
+        }
       }
     }
 
@@ -665,13 +668,14 @@ DrawingState* StandbyState::startDrawingState(
 }
 
 bool StandbyState::checkStartDrawingStraightLine(Editor* editor,
-                                                 const ui::MouseMessage* msg)
+                                                 const ui::MouseMessage* msg,
+                                                 const tools::Pointer* pointer)
 {
   // Start line preview with shift key
   if (canCheckStartDrawingStraightLine() &&
-      editor->startStraightLineWithFreehandTool(msg)) {
+      editor->startStraightLineWithFreehandTool(pointer)) {
     tools::Pointer::Button pointerButton =
-      (msg ? button_from_msg(msg): tools::Pointer::Left);
+      (pointer ? pointer->button(): tools::Pointer::Left);
 
     DrawingState* drawingState =
       startDrawingState(editor, msg,
@@ -680,17 +684,16 @@ bool StandbyState::checkStartDrawingStraightLine(Editor* editor,
                           editor->document()->lastDrawingPoint(),
                           tools::Vec2(0.0f, 0.0f),
                           pointerButton,
-                          msg ? msg->pointerType(): PointerType::Unknown,
-                          msg ? msg->pressure(): 0.0f));
+                          pointer ? pointer->type(): PointerType::Unknown,
+                          pointer ? pointer->pressure(): 0.0f));
     if (drawingState) {
       drawingState->sendMovementToToolLoop(
         tools::Pointer(
-          editor->screenToEditor(msg ? msg->position():
-                                       ui::get_mouse_position()),
+          pointer ? pointer->point(): editor->screenToEditor(editor->mousePosInDisplay()),
           tools::Vec2(0.0f, 0.0f),
           pointerButton,
-          msg ? msg->pointerType(): tools::Pointer::Type::Unknown,
-          msg ? msg->pressure(): 0.0f));
+          pointer ? pointer->type(): tools::Pointer::Type::Unknown,
+          pointer ? pointer->pressure(): 0.0f));
       return true;
     }
   }
@@ -710,8 +713,8 @@ void StandbyState::startSelectionTransformation(Editor* editor,
 {
   transformSelection(editor, NULL, NoHandle);
 
-  if (MovingPixelsState* movingPixels = dynamic_cast<MovingPixelsState*>(editor->getState().get())) {
-    movingPixels->translate(move);
+  if (auto movingPixels = dynamic_cast<MovingPixelsState*>(editor->getState().get())) {
+    movingPixels->translate(gfx::PointF(move));
     if (std::fabs(angle) > 1e-5)
       movingPixels->rotate(angle);
   }
@@ -721,7 +724,7 @@ void StandbyState::startFlipTransformation(Editor* editor, doc::algorithm::FlipT
 {
   transformSelection(editor, NULL, NoHandle);
 
-  if (MovingPixelsState* movingPixels = dynamic_cast<MovingPixelsState*>(editor->getState().get()))
+  if (auto movingPixels = dynamic_cast<MovingPixelsState*>(editor->getState().get()))
     movingPixels->flip(flipType);
 }
 
@@ -754,22 +757,40 @@ void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleT
     return;
 
   try {
+    Site site = editor->getSite();
+    ImageRef tmpImage;
+
+    if (site.layer() &&
+        site.layer()->isTilemap() &&
+        site.tilemapMode() == TilemapMode::Tiles) {
+      tmpImage.reset(new_tilemap_from_mask(site, site.document()->mask()));
+    }
+    else {
+      tmpImage.reset(new_image_from_mask(site,
+                                         Preferences::instance().experimental.newBlend()));
+    }
+
+    ASSERT(tmpImage);
+    if (!tmpImage) {
+      // We've received a bug report with this case, we're not sure
+      // yet how to reproduce it. Probably new_tilemap_from_mask() can
+      // return nullptr (e.g. when site.cel() is nullptr?)
+      return;
+    }
+
     // Clear brush preview, as the extra cel will be replaced with the
     // transformed image.
     editor->brushPreview().hide();
 
-    EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
-    std::unique_ptr<Image> tmpImage(new_image_from_mask(editor->getSite(),
-                                                        Preferences::instance().experimental.newBlend()));
-
     PixelsMovementPtr pixelsMovement(
       new PixelsMovement(UIContext::instance(),
-                         editor->getSite(),
+                         site,
                          tmpImage.get(),
                          document->mask(),
                          "Transformation"));
 
     // If the Ctrl key is pressed start dragging a copy of the selection
+    EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
     if ((customization) &&
         int(customization->getPressedKeyAction(KeyContext::TranslatingSelection) & KeyAction::CopySelection))
       pixelsMovement->copyMask();
@@ -903,63 +924,77 @@ bool StandbyState::Decorator::onSetCursor(tools::Ink* ink, Editor* editor, const
     CursorType newCursorType = kArrowCursor;
     const Cursor* newCursor = nullptr;
 
+    auto corners = transformation.transformedCorners();
+    auto A = corners[Transformation::Corners::LEFT_TOP];
+    auto B = corners[Transformation::Corners::RIGHT_TOP];
+    auto C = corners[Transformation::Corners::LEFT_BOTTOM];
+    auto D = corners[Transformation::Corners::RIGHT_BOTTOM];
+    vec2 v;
+
     switch (handle) {
-      case ScaleNWHandle:         newCursorType = kSizeNWCursor; break;
-      case ScaleNHandle:          newCursorType = kSizeNCursor; break;
-      case ScaleNEHandle:         newCursorType = kSizeNECursor; break;
-      case ScaleWHandle:          newCursorType = kSizeWCursor; break;
-      case ScaleEHandle:          newCursorType = kSizeECursor; break;
-      case ScaleSWHandle:         newCursorType = kSizeSWCursor; break;
-      case ScaleSHandle:          newCursorType = kSizeSCursor; break;
-      case ScaleSEHandle:         newCursorType = kSizeSECursor; break;
-      case RotateNWHandle:        newCursor = theme->cursors.rotateNw(); break;
-      case RotateNHandle:         newCursor = theme->cursors.rotateN(); break;
-      case RotateNEHandle:        newCursor = theme->cursors.rotateNe(); break;
-      case RotateWHandle:         newCursor = theme->cursors.rotateW(); break;
-      case RotateEHandle:         newCursor = theme->cursors.rotateE(); break;
-      case RotateSWHandle:        newCursor = theme->cursors.rotateSw(); break;
-      case RotateSHandle:         newCursor = theme->cursors.rotateS(); break;
-      case RotateSEHandle:        newCursor = theme->cursors.rotateSe(); break;
-      case PivotHandle:           newCursorType = kHandCursor; break;
+      case ScaleNWHandle: case RotateNWHandle: v = to_vec2(A - D); break;
+      case ScaleNEHandle: case RotateNEHandle: v = to_vec2(B - C); break;
+      case ScaleSWHandle: case RotateSWHandle: v = to_vec2(C - B); break;
+      case ScaleSEHandle: case RotateSEHandle: v = to_vec2(D - A); break;
+      case ScaleNHandle: v = to_vec2(A - C); break;
+      case ScaleEHandle: v = to_vec2(B - A); break;
+      case ScaleSHandle: v = to_vec2(C - A); break;
+      case ScaleWHandle: v = to_vec2(A - B); break;
+      case SkewNHandle:
+        v = to_vec2(B - A);
+        v = vec2(v.y, -v.x);
+        break;
+      case SkewEHandle:
+        v = to_vec2(D - B);
+        v = vec2(v.y, -v.x);
+        break;
+      case SkewSHandle:
+        v = to_vec2(C - D);
+        v = vec2(v.y, -v.x);
+        break;
+      case SkewWHandle:
+        v = to_vec2(A - C);
+        v = vec2(v.y, -v.x);
+        break;
+      case PivotHandle:
+        break;
       default:
+        // The cursor will be set by Editor::onSetCursor()
         return false;
     }
 
-    // Adjust the cursor depending the current transformation angle.
-    fixmath::fixed angle = fixmath::ftofix(128.0 * transformation.angle() / PI);
-    angle = fixmath::fixadd(angle, fixmath::itofix(16));
-    angle &= (255<<16);
-    angle >>= 16;
-    angle /= 32;
+    double angle = v.angle();
+    angle = base::fmod_radians(angle) + PI;
+    ASSERT(angle >= 0.0 && angle <= 2*PI);
+    const int angleInt = std::clamp<int>(std::floor(8.0 * angle / (2.0*PI) + 0.5), 0, 8) % 8;
 
-    if (newCursorType >= kSizeNCursor &&
-        newCursorType <= kSizeNWCursor) {
-      size_t num = sizeof(rotated_size_cursors) / sizeof(rotated_size_cursors[0]);
-      size_t c;
-      for (c=num-1; c>0; --c)
-        if (rotated_size_cursors[c] == newCursorType)
-          break;
-
-      newCursorType = rotated_size_cursors[(c+angle) % num];
+    if (handle == PivotHandle) {
+      newCursorType = kHandCursor;
     }
-    else if (newCursor) {
-      const Cursor* rotated_rotate_cursors[8] = {
-        theme->cursors.rotateE(),
-        theme->cursors.rotateNe(),
-        theme->cursors.rotateN(),
-        theme->cursors.rotateNw(),
-        theme->cursors.rotateW(),
-        theme->cursors.rotateSw(),
-        theme->cursors.rotateS(),
-        theme->cursors.rotateSe()
+    else if (handle >= ScaleNWHandle &&
+             handle <= ScaleSEHandle) {
+      const CursorType rotated_size_cursors[8] = {
+        kSizeWCursor, kSizeNWCursor, kSizeNCursor, kSizeNECursor,
+        kSizeECursor, kSizeSECursor, kSizeSCursor, kSizeSWCursor
       };
-      size_t num = sizeof(rotated_rotate_cursors) / sizeof(rotated_rotate_cursors[0]);
-      size_t c;
-      for (c=num-1; c>0; --c)
-        if (rotated_rotate_cursors[c] == newCursor)
-          break;
-
-      newCursor = rotated_rotate_cursors[(c+angle) % num];
+      newCursorType = rotated_size_cursors[angleInt];
+    }
+    else if (handle >= RotateNWHandle &&
+             handle <= RotateSEHandle) {
+      const Cursor* rotated_rotate_cursors[8] = {
+        theme->cursors.rotateW(), theme->cursors.rotateNw(), theme->cursors.rotateN(), theme->cursors.rotateNe(),
+        theme->cursors.rotateE(), theme->cursors.rotateSe(), theme->cursors.rotateS(), theme->cursors.rotateSw()
+      };
+      newCursor = rotated_rotate_cursors[angleInt];
+      newCursorType = kCustomCursor;
+    }
+    else if (handle >= SkewNHandle &&
+             handle <= SkewSHandle) {
+      const Cursor* rotated_skew_cursors[8] = {
+        theme->cursors.skewW(), theme->cursors.skewNw(), theme->cursors.skewN(), theme->cursors.skewNe(),
+        theme->cursors.skewE(), theme->cursors.skewSe(), theme->cursors.skewS(), theme->cursors.skewSw()
+      };
+      newCursor = rotated_skew_cursors[angleInt];
       newCursorType = kCustomCursor;
     }
 
@@ -1003,8 +1038,9 @@ void StandbyState::Decorator::postRenderDecorator(EditorPostRender* render)
     tools::Ink* ink = editor->getCurrentEditorInk();
 
     if (ink->isSelection()) {
-      getTransformHandles(editor)->drawHandles(editor,
-        m_standbyState->getTransformation(editor));
+      getTransformHandles(editor)
+        ->drawHandles(editor, render->getGraphics(),
+                      m_standbyState->getTransformation(editor));
 
       m_standbyState->m_transformSelectionHandlesAreVisible = true;
     }
@@ -1015,7 +1051,7 @@ void StandbyState::Decorator::postRenderDecorator(EditorPostRender* render)
   if (StandbyState::Decorator::getSymmetryHandles(editor, handles)) {
     auto theme = skin::SkinTheme::get(editor);
     os::Surface* part = theme->parts.transformationHandle()->bitmap(0);
-    ScreenGraphics g;
+    ScreenGraphics g(editor->display());
     for (const auto& handle : handles)
       g.drawRgbaSurface(part, handle.bounds.x, handle.bounds.y);
   }

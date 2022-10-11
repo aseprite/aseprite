@@ -13,6 +13,7 @@
 
 #include "gfx/size.h"
 #include "os/font.h"
+#include "ui/display.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
 
@@ -98,50 +99,91 @@ static MenuItem* check_for_letter(Menu* menu, const KeyMessage* keymsg);
 static MenuItem* find_nextitem(Menu* menu, MenuItem* menuitem);
 static MenuItem* find_previtem(Menu* menu, MenuItem* menuitem);
 
-static void add_scrollbars_if_needed(Window* window)
+static void choose_side(gfx::Rect& bounds,
+                        const gfx::Rect& workarea,
+                        const gfx::Rect& parentBounds)
 {
-  const gfx::Rect rc0 = window->bounds();
-  gfx::Rect rc = rc0;
+  int scale = guiscale();
+  if (get_multiple_displays())
+    scale = Manager::getDefault()->display()->scale();
 
-  if (rc.x < 0) {
-    rc.w += rc.x;
-    rc.x = 0;
+  int x_left = parentBounds.x - bounds.w + 1*scale;
+  int x_right = parentBounds.x2() - 1*scale;
+  int x, y = bounds.y;
+  Rect r1(0, 0, bounds.w, bounds.h);
+  Rect r2(0, 0, bounds.w, bounds.h);
+
+  r1.x = x_left = std::clamp(x_left, workarea.x, std::max(workarea.x, workarea.x2()-bounds.w));
+  r2.x = x_right = std::clamp(x_right, workarea.x, std::max(workarea.x, workarea.x2()-bounds.w));
+  r1.y = r2.y = y = std::clamp(y, workarea.y, std::max(workarea.y, workarea.y2()-bounds.h));
+
+  // Calculate both intersections
+  const gfx::Rect s1 = r1.createIntersection(parentBounds);
+  const gfx::Rect s2 = r2.createIntersection(parentBounds);
+
+  if (s2.isEmpty())
+    x = x_right;        // Use the right because there aren't intersection with it
+  else if (s1.isEmpty())
+    x = x_left;         // Use the left because there are not intersection
+  else if (s2.w*s2.h <= s1.w*s1.h)
+    x = x_right;        // Use the right because there are less intersection area
+  else
+    x = x_left;         // Use the left because there are less intersection area
+
+  bounds.x = x;
+  bounds.y = y;
+}
+
+static void add_scrollbars_if_needed(MenuBoxWindow* window,
+                                     const gfx::Rect& workarea,
+                                     gfx::Rect& bounds)
+{
+  gfx::Rect rc = bounds;
+
+  if (rc.x < workarea.x) {
+    rc.w -= (workarea.x - rc.x);
+    rc.x = workarea.x;
   }
-  if (rc.x2() > ui::display_w()) {
-    rc.w = ui::display_w() - rc.x;
+  if (rc.x2() > workarea.x2()) {
+    rc.w = workarea.x2() - rc.x;
   }
 
   bool vscrollbarsAdded = false;
-  if (rc.y < 0) {
-    rc.h += rc.y;
-    rc.y = 0;
+  if (rc.y < workarea.y) {
+    rc.h -= (workarea.y - rc.y);
+    rc.y = workarea.y;
     vscrollbarsAdded = true;
   }
-  if (rc.y2() > ui::display_h()) {
-    rc.h = ui::display_h() - rc.y;
+  if (rc.y2() > workarea.y2()) {
+    rc.h = workarea.y2() - rc.y;
     vscrollbarsAdded = true;
   }
 
-  if (rc == rc0)
+  if (rc == bounds)
     return;
 
-  Widget* menubox = window->firstChild();
+  MenuBox* menubox = window->menubox();
   View* view = new View;
   view->InitTheme.connect([view]{ view->noBorderNoChildSpacing(); });
   view->initTheme();
 
   if (vscrollbarsAdded) {
-    rc.w += 2*view->verticalBar()->getBarWidth();
-    if (rc.x2() > ui::display_w()) {
-      rc.x = ui::display_w() - rc.w;
-      if (rc.x < 0) {
-        rc.x = 0;
-        rc.w = ui::display_w();
+    int barWidth = view->verticalBar()->getBarWidth();;
+    if (get_multiple_displays())
+      barWidth *= window->display()->scale();
+
+    rc.w += 2*barWidth;
+    if (rc.x2() > workarea.x2()) {
+      rc.x = workarea.x2() - rc.w;
+      if (rc.x < workarea.x) {
+        rc.x = workarea.x;
+        rc.w = workarea.w;
       }
     }
   }
 
-  window->setBounds(rc);
+  // New bounds
+  bounds = rc;
 
   window->removeChild(menubox);
   view->attachToView(menubox);
@@ -169,6 +211,11 @@ Menu::~Menu()
       ASSERT(m_menuitem->getSubmenu() == nullptr);
     }
   }
+}
+
+void Menu::onOpenPopup()
+{
+  OpenPopup();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -294,7 +341,8 @@ bool MenuItem::hasSubmenu() const
   return (m_submenu && !m_submenu->children().empty());
 }
 
-void Menu::showPopup(const gfx::Point& pos)
+void Menu::showPopup(const gfx::Point& pos,
+                     Display* parentDisplay)
 {
   // Generally, when we call showPopup() the menu shouldn't contain a
   // parent menu-box, because we're filtering kMouseDownMessage to
@@ -310,43 +358,42 @@ void Menu::showPopup(const gfx::Point& pos)
   }
 
   // New window and new menu-box
-  std::unique_ptr<Window> window(new Window(Window::WithoutTitleBar));
-  MenuBox* menubox = new MenuBox();
+  MenuBoxWindow window;
+  window.Open.connect([this]{ this->onOpenPopup(); });
+
+  MenuBox* menubox = window.menubox();
   MenuBaseData* base = menubox->createBase();
   base->was_clicked = true;
-  window->setMoveable(false);   // Can't move the window
 
   // Set children
   menubox->setMenu(this);
   menubox->startFilteringMouseDown();
-  window->addChild(menubox);
 
-  window->remapWindow();
-
-  // Menubox position
-  window->positionWindow(
-    std::clamp(pos.x, 0, ui::display_w() - window->bounds().w),
-    std::clamp(pos.y, 0, ui::display_h() - window->bounds().h));
-
-  add_scrollbars_if_needed(window.get());
+  window.remapWindow();
+  fit_bounds(parentDisplay,
+             &window,
+             gfx::Rect(pos, window.size()),
+             [&window, pos](const gfx::Rect& workarea,
+                            gfx::Rect& bounds,
+                            std::function<gfx::Rect(Widget*)> getWidgetBounds) {
+               choose_side(bounds, workarea, gfx::Rect(bounds.x-1, bounds.y, 1, 1));
+               add_scrollbars_if_needed(&window, workarea, bounds);
+             });
 
   // Set the focus to the new menubox
   Manager* manager = Manager::getDefault();
   manager->setFocus(menubox);
-  menubox->setFocusMagnet(true);
 
   // Open the window
-  window->openWindowInForeground();
+  window.openWindowInForeground();
 
   // Free the keyboard focus if it's in the menu popup, in other case
   // it means that the user set the focus to other specific widget
   // before we closed the popup.
   Widget* focus = manager->getFocus();
-  if (focus && focus->window() == window.get())
+  if (focus && focus->window() == &window)
     focus->releaseFocus();
 
-  // Fetch the "menu" so it isn't destroyed
-  menubox->setMenu(nullptr);
   menubox->stopFilteringMouseDown();
 }
 
@@ -448,7 +495,7 @@ bool MenuBox::onProcessMessage(Message* msg)
 
     case kMouseDownMessage:
     case kDoubleClickMessage:
-      if (menu) {
+      if (menu && msg->display()) {
         ASSERT(menu->parent() == this);
 
         MenuBaseData* base = get_base(this);
@@ -459,14 +506,15 @@ bool MenuBox::onProcessMessage(Message* msg)
         if (base->is_processing)
           break;
 
-        gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
+        const gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
+        const gfx::Point screenPos = msg->display()->nativeWindow()->pointToScreen(mousePos);
 
         // Get the widget below the mouse cursor
         auto mgr = manager();
         if (!mgr)
           break;
 
-        Widget* picked = mgr->pick(mousePos);
+        Widget* picked = mgr->pickFromScreenPos(screenPos);
 
         // Here we catch the filtered messages (menu-bar or the
         // popuped menu-box) to detect if the user press outside of
@@ -481,9 +529,11 @@ bool MenuBox::onProcessMessage(Message* msg)
               (get_base_menubox(picked) != this ||
                (this->type() == kMenuBarWidget &&
                 picked->type() == kMenuWidget))) {
-
             // The user click outside all the menu-box/menu-items, close all
             menu->closeAll();
+
+            // Change to "return false" if you want to send the click
+            // to the window after closing all menus.
             return true;
           }
         }
@@ -849,55 +899,39 @@ bool MenuItem::onProcessMessage(Message* msg)
         ASSERT(base->is_processing);
         ASSERT(hasSubmenu());
 
-        Rect old_pos = window()->bounds();
-        old_pos.w -= 1*guiscale();
+        // New window that will be automatically deleted
+        auto window = new MenuBoxWindow(this);
+        window->Close.connect([window]{
+          window->deferDelete();
+        });
 
-        MenuBox* menubox = new MenuBox();
+        MenuBox* menubox = window->menubox();
         m_submenu_menubox = menubox;
         menubox->setMenu(m_submenu);
 
-        // New window and new menu-box
-        auto window = new MenuBoxWindow(menubox);
+        window->remapWindow();
+        fit_bounds(
+          display(), window, window->bounds(),
+          [this, window](const gfx::Rect& workarea,
+                         gfx::Rect& bounds,
+                         std::function<gfx::Rect(Widget*)> getWidgetBounds){
+            const gfx::Rect itemBounds = getWidgetBounds(this);
+            if (inBar()) {
+              bounds.x = std::clamp(itemBounds.x, workarea.x, std::max(workarea.x, workarea.x2()-bounds.w));
+              bounds.y = std::max(workarea.y, itemBounds.y2());
+            }
+            else {
+              int scale = guiscale();
+              if (get_multiple_displays())
+                scale = display()->scale();
 
-        // Menubox position
-        Rect pos = window->bounds();
+              const gfx::Rect parentBounds = getWidgetBounds(this->window());
+              bounds.y = itemBounds.y-3*scale;
+              choose_side(bounds, workarea, parentBounds);
+            }
 
-        if (inBar()) {
-          pos.x = std::clamp(bounds().x, 0, ui::display_w()-pos.w);
-          pos.y = std::max(0, bounds().y2());
-        }
-        else {
-          int x_left = old_pos.x - pos.w;
-          int x_right = old_pos.x2();
-          int x, y = bounds().y-3*guiscale();
-          Rect r1(0, 0, pos.w, pos.h), r2(0, 0, pos.w, pos.h);
-
-          r1.x = x_left = std::clamp(x_left, 0, std::max(0, ui::display_w()-pos.w));
-          r2.x = x_right = std::clamp(x_right, 0, std::max(0, ui::display_w()-pos.w));
-          r1.y = r2.y = y = std::clamp(y, 0, std::max(0, ui::display_h()-pos.h));
-
-          // Calculate both intersections
-          gfx::Rect s1 = r1.createIntersection(old_pos);
-          gfx::Rect s2 = r2.createIntersection(old_pos);
-
-          if (s2.isEmpty())
-            x = x_right;        // Use the right because there aren't intersection with it
-          else if (s1.isEmpty())
-            x = x_left;         // Use the left because there are not intersection
-          else if (r2.w*r2.h <= r1.w*r1.h)
-            x = x_right;                // Use the right because there are less intersection area
-          else
-            x = x_left;         // Use the left because there are less intersection area
-
-          pos.x = x;
-          pos.y = y;
-        }
-
-        window->positionWindow(pos.x, pos.y);
-        add_scrollbars_if_needed(window);
-
-        // Set the focus to the new menubox
-        menubox->setFocusMagnet(true);
+            add_scrollbars_if_needed(window, workarea, bounds);
+          });
 
         // Setup the highlight of the new menubox
         if (select_first) {
@@ -938,16 +972,10 @@ bool MenuItem::onProcessMessage(Message* msg)
 
         ASSERT(base->is_processing);
 
-        MenuBox* menubox = m_submenu_menubox;
-        m_submenu_menubox = nullptr;
-
-        ASSERT(menubox != nullptr);
-
-        Window* window = menubox->window();
+        ASSERT(m_submenu_menubox);
+        Window* window = m_submenu_menubox->window();
         ASSERT(window && window->type() == kWindowWidget);
-
-        // Fetch the "menu" to avoid destroy it with 'delete'.
-        menubox->setMenu(nullptr);
+        m_submenu_menubox = nullptr;
 
         // Destroy the window
         window->closeWindow(nullptr);
@@ -1181,7 +1209,7 @@ void Menu::unhighlightItem()
   highlightItem(nullptr, false, false, false);
 }
 
-bool MenuItem::inBar()
+bool MenuItem::inBar() const
 {
   return
     (parent() &&
@@ -1468,12 +1496,35 @@ static MenuItem* find_previtem(Menu* menu, MenuItem* menuitem)
 //////////////////////////////////////////////////////////////////////
 // MenuBoxWindow
 
-MenuBoxWindow::MenuBoxWindow(MenuBox* menubox)
+MenuBoxWindow::MenuBoxWindow(MenuItem* menuitem)
   : Window(WithoutTitleBar, "")
+  , m_menuitem(menuitem)
 {
   setMoveable(false); // Can't move the window
-  addChild(menubox);
-  remapWindow();
+  setSizeable(false); // Can't resize the window
+
+  m_menubox.setFocusMagnet(true);
+
+  addChild(&m_menubox);
+}
+
+MenuBoxWindow::~MenuBoxWindow()
+{
+  // The menu of the menubox should already be nullptr because it
+  // was reset in kCloseMessage.
+  ASSERT(m_menubox.getMenu() == nullptr);
+  m_menubox.setMenu(nullptr);
+
+  // This can fail in case that add_scrollbars_if_needed() replaced
+  // the MenuBox widget with a View, and now the MenuBox is inside the
+  // viewport.
+  if (hasChild(&m_menubox)) {
+    removeChild(&m_menubox);
+  }
+  else {
+    ASSERT(firstChild() != nullptr &&
+           firstChild()->type() == kViewWidget);
+  }
 }
 
 bool MenuBoxWindow::onProcessMessage(Message* msg)
@@ -1481,8 +1532,20 @@ bool MenuBoxWindow::onProcessMessage(Message* msg)
   switch (msg->type()) {
 
     case kCloseMessage:
-      // Delete this window automatically
-      deferDelete();
+      if (m_menuitem) {
+        MenuBaseData* base = get_base(m_menuitem);
+
+        // If this window was closed using the OS close button
+        // (e.g. on Linux we can Super key+right click to show the
+        // popup menu and close the window)
+        if (base && !base->is_processing) {
+          if (m_menuitem->hasSubmenuOpened())
+            m_menuitem->closeSubmenu(true);
+        }
+      }
+
+      // Fetch the "menu" to avoid destroy it with 'delete'.
+      m_menubox.setMenu(nullptr);
       break;
 
   }

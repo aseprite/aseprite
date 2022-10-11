@@ -1,5 +1,6 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2001-2014  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -7,6 +8,8 @@
 #ifndef DOC_IMAGE_BITS_H_INCLUDED
 #define DOC_IMAGE_BITS_H_INCLUDED
 #pragma once
+
+#include <algorithm>
 
 namespace doc {
 
@@ -151,6 +154,20 @@ namespace doc {
 
     LockImageBits();            // Undefined
   };
+
+  template<class ImageTraits,
+           class UnaryFunction>
+  inline void for_each_pixel(const Image* image, UnaryFunction f) {
+    const LockImageBits<ImageTraits> bits(image);
+    std::for_each(bits.begin(), bits.end(), f);
+  }
+
+  template<class ImageTraits,
+           class UnaryOperation>
+  inline void transform_image(Image* image, UnaryOperation f) {
+    LockImageBits<ImageTraits> bits(image);
+    std::transform(bits.begin(), bits.end(), bits.begin(), f);
+  }
 
 } // namespace doc
 

@@ -62,7 +62,7 @@ public:
 
     m_view.attachToView(&m_textbox);
 
-    Grid* grid = new Grid(1, false);
+    ui::Grid* grid = new ui::Grid(1, false);
     grid->addChildInCell(&m_view, 1, 1, HORIZONTAL | VERTICAL);
     grid->addChildInCell(&m_button, 1, 1, CENTER);
     addChild(grid);
@@ -105,10 +105,16 @@ public:
 
   void centerConsole() {
     initTheme();
-    remapWindow();
-    setBounds(gfx::Rect(0, 0, ui::display_w()*9/10, ui::display_h()*6/10));
-    centerWindow();
-    invalidate();
+
+    Display* display = ui::Manager::getDefault()->display();
+    const gfx::Rect displayRc = display->bounds();
+    gfx::Rect rc;
+    rc.w = displayRc.w*9/10;
+    rc.h = displayRc.h*6/10;
+    rc.x = displayRc.x + displayRc.w/2 - rc.w/2;
+    rc.y = displayRc.y + displayRc.h/2 - rc.h/2;
+
+    ui::fit_bounds(display, this, rc);
   }
 
 private:
@@ -198,14 +204,16 @@ Console::Console(Context* ctx)
   if (!ui::is_ui_thread())
     return;
 
-  if (ctx)
+  if (ctx) {
     m_withUI = (ctx->isUIAvailable());
-  else
+  }
+  else {
     m_withUI =
       (App::instance() &&
        App::instance()->isGui() &&
        Manager::getDefault() &&
-       Manager::getDefault()->display());
+       Manager::getDefault()->display()->nativeWindow());
+  }
 
   if (!m_withUI)
     return;

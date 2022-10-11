@@ -1,0 +1,25 @@
+<!-- Aseprite -->
+<!-- Copyright (c) 2021  Igara Studio S.A. -->
+<gui i18nwarnings="false">
+  <window id="enter_license" text="@.title" expansive="true">
+    <box vertical="true">
+      <hbox>
+        <label text="@.default_message" />
+        <link text="https://www.aseprite.org/download/" url="https://www.aseprite.org/download/" />
+      </hbox>
+      <separator text="@.license_key" left="true" horizontal="true" />
+      <entry id="license_key" cell_align="horizontal" magnet="true" maxsize="17" />
+      <hbox>
+        <image id="icon" icon="warning_box" visible="false" />
+        <label id="message" text="" expansive="true" minheight="40" />
+      </hbox>
+      <box horizontal="true">
+        <box horizontal="true" expansive="true" />
+        <box horizontal="true" homogeneous="true">
+          <button text="@general.ok" id="ok_button" magnet="true" width="60" />
+          <button text="@general.close" closewindow="true" />
+        </box>
+      </box>
+    </box>
+  </window>
+</gui>

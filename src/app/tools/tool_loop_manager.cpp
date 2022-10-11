@@ -30,8 +30,9 @@
 
 #include <algorithm>
 #include <climits>
+#include <cmath>
 
-#define TOOL_TRACE(...) // TRACEARGS
+#define TOOL_TRACE(...) // TRACEARGS(__VA_ARGS__)
 
 namespace app {
 namespace tools {
@@ -42,6 +43,7 @@ using namespace filters;
 
 ToolLoopManager::ToolLoopManager(ToolLoop* toolLoop)
   : m_toolLoop(toolLoop)
+  , m_canceled(false)
   , m_brush0(*toolLoop->getBrush())
   , m_dynamics(toolLoop->getDynamics())
 {
@@ -53,7 +55,20 @@ ToolLoopManager::~ToolLoopManager()
 
 bool ToolLoopManager::isCanceled() const
 {
- return m_toolLoop->isCanceled();
+  return m_canceled;
+}
+
+void ToolLoopManager::cancel()
+{
+  m_canceled = true;
+}
+
+void ToolLoopManager::end()
+{
+  if (m_canceled)
+    m_toolLoop->rollback();
+  else
+    m_toolLoop->commit();
 }
 
 void ToolLoopManager::prepareLoop(const Pointer& pointer)
@@ -64,7 +79,7 @@ void ToolLoopManager::prepareLoop(const Pointer& pointer)
   // Prepare the ink
   m_toolLoop->getInk()->prepareInk(m_toolLoop);
   m_toolLoop->getController()->prepareController(m_toolLoop);
-  m_toolLoop->getIntertwine()->prepareIntertwine();
+  m_toolLoop->getIntertwine()->prepareIntertwine(m_toolLoop);
   m_toolLoop->getPointShape()->preparePointShape(m_toolLoop);
 }
 
@@ -100,9 +115,11 @@ void ToolLoopManager::pressButton(const Pointer& pointer)
   if ((m_toolLoop->getMouseButton() == ToolLoop::Left && pointer.button() == Pointer::Right) ||
       (m_toolLoop->getMouseButton() == ToolLoop::Right && pointer.button() == Pointer::Left)) {
     // Cancel the tool-loop (the destination image should be completely discarded)
-    m_toolLoop->cancel();
+    cancel();
     return;
   }
+
+  m_stabilizerCenter = pointer.point();
 
   Stroke::Pt spritePoint = getSpriteStrokePt(pointer);
   m_toolLoop->getController()->pressButton(m_toolLoop, m_stroke, spritePoint);
@@ -149,8 +166,27 @@ bool ToolLoopManager::releaseButton(const Pointer& pointer)
   return res;
 }
 
-void ToolLoopManager::movement(const Pointer& pointer)
+void ToolLoopManager::movement(Pointer pointer)
 {
+  // Filter points with the stabilizer
+  if (m_dynamics.stabilizerFactor > 0) {
+    const double f = m_dynamics.stabilizerFactor;
+    const gfx::Point delta = (pointer.point() - m_stabilizerCenter);
+    const double distance = std::sqrt(delta.x*delta.x + delta.y*delta.y);
+
+    const double angle = std::atan2(delta.y, delta.x);
+    const gfx::PointF newPoint(m_stabilizerCenter.x + distance/f*std::cos(angle),
+                               m_stabilizerCenter.y + distance/f*std::sin(angle));
+
+    m_stabilizerCenter = newPoint;
+
+    pointer = Pointer(gfx::Point(newPoint),
+                      pointer.velocity(),
+                      pointer.button(),
+                      pointer.type(),
+                      pointer.pressure());
+  }
+
   m_lastPointer = pointer;
 
   if (isCanceled())
@@ -229,21 +265,6 @@ void ToolLoopManager::doLoopStep(bool lastStep)
     // (the final result is filled).
     m_toolLoop->invalidateDstImage();
   }
-  else if (m_toolLoop->getTracePolicy() == TracePolicy::AccumulateUpdateLast) {
-    // Revalidate only this last dirty area (e.g. pixel-perfect
-    // freehand algorithm needs this trace policy to redraw only the
-    // last dirty area, which can vary in one pixel from the previous
-    // tool loop cycle).
-    if (m_toolLoop->getBrush()->type() != kImageBrushType) {
-      m_toolLoop->invalidateDstImage(m_dirtyArea);
-    }
-    // For custom brush we revalidate the whole destination area so
-    // the whole trace is redrawn from scratch.
-    else {
-      m_toolLoop->invalidateDstImage();
-      m_toolLoop->validateDstImage(gfx::Region(m_toolLoop->getDstImage()->bounds()));
-    }
-  }
 
   m_toolLoop->validateDstImage(m_dirtyArea);
 
@@ -259,8 +280,10 @@ void ToolLoopManager::doLoopStep(bool lastStep)
     m_toolLoop->copyValidDstToSrcImage(m_dirtyArea);
   }
 
-  if (!m_dirtyArea.isEmpty())
+  if (!m_dirtyArea.isEmpty()) {
+    m_toolLoop->validateDstTileset(m_dirtyArea);
     m_toolLoop->updateDirtyArea(m_dirtyArea);
+  }
 
   TOOL_TRACE("ToolLoopManager::doLoopStep dirtyArea", m_dirtyArea.bounds());
 }
@@ -326,42 +349,8 @@ void ToolLoopManager::calculateDirtyArea(const Strokes& strokes)
   // Apply tiled mode
   TiledMode tiledMode = m_toolLoop->getTiledMode();
   if (tiledMode != TiledMode::NONE) {
-    int w = m_toolLoop->sprite()->width();
-    int h = m_toolLoop->sprite()->height();
-    Region sprite_area(Rect(0, 0, w, h));
-    Region outside;
-    outside.createSubtraction(m_dirtyArea, sprite_area);
-
-    switch (tiledMode) {
-      case TiledMode::X_AXIS:
-        outside.createIntersection(outside, Region(Rect(-w*10000, 0, w*20000, h)));
-        break;
-      case TiledMode::Y_AXIS:
-        outside.createIntersection(outside, Region(Rect(0, -h*10000, w, h*20000)));
-        break;
-    }
-
-    Rect outsideBounds = outside.bounds();
-    if (outsideBounds.x < 0) outside.offset(w * (1+((-outsideBounds.x) / w)), 0);
-    if (outsideBounds.y < 0) outside.offset(0, h * (1+((-outsideBounds.y) / h)));
-    int x1 = outside.bounds().x;
-
-    while (true) {
-      Region in_sprite;
-      in_sprite.createIntersection(outside, sprite_area);
-      outside.createSubtraction(outside, in_sprite);
-      m_dirtyArea.createUnion(m_dirtyArea, in_sprite);
-
-      outsideBounds = outside.bounds();
-      if (outsideBounds.isEmpty())
-        break;
-      else if (outsideBounds.x+outsideBounds.w > w)
-        outside.offset(-w, 0);
-      else if (outsideBounds.y+outsideBounds.h > h)
-        outside.offset(x1-outsideBounds.x, -h);
-      else
-        break;
-    }
+    m_toolLoop->getTiledModeHelper().wrapPosition(m_dirtyArea);
+    m_toolLoop->getTiledModeHelper().collapseRegionByTiledMode(m_dirtyArea);
   }
 }
 

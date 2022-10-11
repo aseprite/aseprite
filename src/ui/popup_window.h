@@ -1,4 +1,5 @@
 // Aseprite UI Library
+// Copyright (C) 2021  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -33,7 +34,10 @@ namespace ui {
 
     // Sets the hot region. This region indicates the area where the
     // mouse can be located and the window will be kept open.
-    void setHotRegion(const gfx::Region& region);
+    //
+    // The screenRegion must be specified in native screen coordinates.
+    void setHotRegion(const gfx::Region& screenRegion);
+
     void setClickBehavior(ClickBehavior behavior);
     void setEnterBehavior(EnterBehavior behavior);
 
@@ -54,8 +58,8 @@ namespace ui {
     ClickBehavior m_clickBehavior;
     EnterBehavior m_enterBehavior;
     gfx::Region m_hotRegion;
-    bool m_filtering;
-    bool m_fixed;
+    bool m_filtering = false;
+    bool m_fixed = false;
   };
 
   class TransparentPopupWindow : public PopupWindow {

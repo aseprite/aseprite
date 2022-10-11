@@ -1,11 +1,12 @@
 {
   "name": "aseprite-theme",
   "displayName": "Aseprite Default Theme",
-  "description": "Default Aseprite Pixel-Art Theme",
+  "description": "Default Aseprite Pixel-Art Themes",
   "version": "1.0",
-  "author": { "name": "David Capello", "email": "davidcapello@gmail.com", "url": "http://davidcapello.com/" },
+  "author": { "name": "David Capello", "email": "david@igarastudio.com", "url": "http://davidcapello.com/" },
   "contributors": [
-    { "name": "Ilija Melentijevic", "url": "http://ilkke.blogspot.com/" }
+    { "name": "Ilija Melentijevic", "url": "http://ilkke.blogspot.com/" },
+    { "name": "Nicolas Desilets", "url": "https://twitter.com/MapleGecko" }
   ],
   "publisher": "aseprite",
   "license": "CC-BY-4.0",
@@ -14,7 +15,8 @@
   ],
   "contributes": {
     "themes": [
-      { "id": "default", "path": "." }
+      { "id": "default", "path": ".", "variant": "Light" },
+      { "id": "default-dark", "path": "./dark", "variant": "Dark" }
     ]
   }
 }

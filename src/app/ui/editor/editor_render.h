@@ -26,14 +26,12 @@ namespace doc {
   class Layer;
   class Palette;
   class Sprite;
-}
-
-namespace render {
-  class Render;
+  class Tileset;
 }
 
 namespace app {
   class Doc;
+  class Renderer;
 
   class EditorRender {
   public:
@@ -54,6 +52,7 @@ namespace app {
     void setPreviewImage(const doc::Layer* layer,
                          const doc::frame_t frame,
                          const doc::Image* image,
+                         const doc::Tileset* tileset,
                          const gfx::Point& pos,
                          const doc::BlendMode blendMode);
     void removePreviewImage();
@@ -94,7 +93,7 @@ namespace app {
     doc::ImageBufferPtr getRenderImageBuffer();
 
   private:
-    render::Render* m_render;
+    std::unique_ptr<Renderer> m_renderer;
   };
 
 } // namespace app

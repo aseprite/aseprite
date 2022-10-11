@@ -198,6 +198,7 @@ bool BackupObserver::saveDocData(Doc* doc)
                   diff.frameDuration ? "frameDuration": "",
                   diff.tags ? "tags": "",
                   diff.palettes ? "palettes": "",
+                  diff.tilesets ? "tilesets": "",
                   diff.layers ? "layers": "",
                   diff.cels ? "cels": "",
                   diff.images ? "images": "",

@@ -26,6 +26,7 @@ namespace ui {
 }
 
 namespace app {
+  class Site;
 
   gfx::Color grid_color1();
   gfx::Color grid_color2();
@@ -50,6 +51,18 @@ namespace app {
                          const doc::ColorMode colorMode,
                          const bool hot,
                          const bool drag);
+
+  void draw_tile(ui::Graphics* g,
+                 const gfx::Rect& rc,
+                 const Site& site,
+                 const doc::tile_t tile);
+
+  void draw_tile_button(ui::Graphics* g,
+                        const gfx::Rect& rc,
+                        const Site& site,
+                        doc::tile_t tile,
+                        const bool hot,
+                        const bool drag);
 
   void draw_alpha_slider(ui::Graphics* g,
                          const gfx::Rect& rc,

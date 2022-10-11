@@ -1,5 +1,5 @@
 // Aseprite Rener Library
-// Copyright (c) 2019-2020  Igara Studio S.A.
+// Copyright (c) 2019-2021  Igara Studio S.A.
 // Copyright (c) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -11,6 +11,7 @@
 
 #include "doc/frame.h"
 #include "doc/pixel_format.h"
+#include "doc/rgbmap_algorithm.h"
 #include "render/color_histogram.h"
 
 #include <vector>
@@ -28,9 +29,15 @@ namespace render {
 
   class PaletteOptimizer {
   public:
-    void feedWithImage(doc::Image* image, bool withAlpha);
+    void feedWithImage(const doc::Image* image,
+                       const bool withAlpha);
+    void feedWithImage(const doc::Image* image,
+                       const gfx::Rect& bounds,
+                       const bool withAlpha);
     void feedWithRgbaColor(doc::color_t color);
     void calculate(doc::Palette* palette, int maskIndex);
+    bool isHighPrecision() { return m_histogram.isHighPrecision(); }
+    int highPrecisionSize() { return m_histogram.highPrecisionSize(); }
 
   private:
     render::ColorHistogram<5, 6, 5, 5> m_histogram;
@@ -45,7 +52,9 @@ namespace render {
     const bool withAlpha,
     doc::Palette* newPalette, // Can be NULL to create a new palette
     TaskDelegate* delegate,
-    const bool newBlend);
+    const bool newBlend,
+    RgbMapAlgorithm mapAlgo,
+    const bool calculateWithTransparent = true);
 
   // Changes the image pixel format. The dithering method is used only
   // when you want to convert from RGB to Indexed.

@@ -20,6 +20,7 @@
 #include "app/script/userdata.h"
 #include "app/tx.h"
 #include "doc/layer.h"
+#include "doc/layer_tilemap.h"
 #include "doc/sprite.h"
 
 namespace app {
@@ -151,6 +152,13 @@ int Layer_get_isGroup(lua_State* L)
   return 1;
 }
 
+int Layer_get_isTilemap(lua_State* L)
+{
+  auto layer = get_docobj<Layer>(L, 1);
+  lua_pushboolean(L, layer->isTilemap());
+  return 1;
+}
+
 int Layer_get_isTransparent(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
@@ -211,6 +219,16 @@ int Layer_get_cels(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
   push_cels(L, layer);
+  return 1;
+}
+
+int Layer_get_tileset(lua_State* L)
+{
+  auto layer = get_docobj<Layer>(L, 1);
+  if (layer->isTilemap())
+    push_tileset(L, static_cast<doc::LayerTilemap*>(layer)->tileset());
+  else
+    lua_pushnil(L);
   return 1;
 }
 
@@ -376,6 +394,7 @@ const Property Layer_properties[] = {
   { "blendMode", Layer_get_blendMode, Layer_set_blendMode },
   { "isImage", Layer_get_isImage, nullptr },
   { "isGroup", Layer_get_isGroup, nullptr },
+  { "isTilemap", Layer_get_isTilemap, nullptr },
   { "isTransparent", Layer_get_isTransparent, nullptr },
   { "isBackground", Layer_get_isBackground, nullptr },
   { "isEditable", Layer_get_isEditable, Layer_set_isEditable },
@@ -387,6 +406,7 @@ const Property Layer_properties[] = {
   { "cels", Layer_get_cels, nullptr },
   { "color", UserData_get_color<Layer>, UserData_set_color<Layer> },
   { "data", UserData_get_text<Layer>, UserData_set_text<Layer> },
+  { "tileset", Layer_get_tileset, nullptr },
   { nullptr, nullptr, nullptr }
 };
 

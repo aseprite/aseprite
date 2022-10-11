@@ -143,7 +143,7 @@ public:
   }
 
   void processPixel(int x, int y) {
-    *SimpleInkProcessing<CopyInkProcessing<ImageTraits>, ImageTraits>::m_dstAddress = m_color;
+    *this->m_dstAddress = m_color;
   }
 
 private:
@@ -290,10 +290,7 @@ public:
       c = m_palette->getEntry(c);
 
     c = rgba_blender_normal(c, m_color, m_opacity);
-    *m_dstAddress = m_rgbmap->mapColor(rgba_getr(c),
-                                       rgba_getg(c),
-                                       rgba_getb(c),
-                                       rgba_geta(c));
+    *m_dstAddress = m_rgbmap->mapColor(c);
   }
 
 private:
@@ -363,10 +360,7 @@ public:
       c = m_palette->getEntry(c);
 
     c = rgba_blender_merge(c, m_color, m_opacity);
-    *m_dstAddress = m_rgbmap->mapColor(rgba_getr(c),
-                                       rgba_getg(c),
-                                       rgba_getb(c),
-                                       rgba_geta(c));
+    *m_dstAddress = m_rgbmap->mapColor(c);
   }
 
 private:
@@ -518,8 +512,7 @@ public:
                            doc::rgba(m_area.r, m_area.g, m_area.b, m_area.a),
                            m_opacity);
 
-      *m_dstAddress = m_rgbmap->mapColor(
-        rgba_getr(c), rgba_getg(c), rgba_getb(c), rgba_geta(c));
+      *m_dstAddress = m_rgbmap->mapColor(c);
     }
     else {
       *m_dstAddress = *m_srcAddress;
@@ -631,8 +624,7 @@ public:
         color_t c = rgba_blender_normal(
           m_palette->getEntry(*m_srcAddress), m_color2, m_opacity);
 
-        *m_dstAddress = m_rgbmap->mapColor(
-          rgba_getr(c), rgba_getg(c), rgba_getb(c), rgba_geta(c));
+        *m_dstAddress = m_rgbmap->mapColor(c);
       }
     }
   }
@@ -644,6 +636,12 @@ private:
   color_t m_color2;
   int m_opacity;
 };
+
+template<>
+void ReplaceInkProcessing<TilemapTraits>::processPixel(int x, int y) {
+  color_t c = *m_srcAddress;
+  *m_dstAddress = (c == m_color1 ? m_color2: c);
+}
 
 //////////////////////////////////////////////////////////////////////
 // Jumble Ink
@@ -719,10 +717,7 @@ void JumbleInkProcessing<IndexedTraits>::processPixel(int x, int y)
                                  tc, m_opacity);
 
   if (rgba_geta(c) >= 128)
-    *m_dstAddress = m_rgbmap->mapColor(rgba_getr(c),
-                                       rgba_getg(c),
-                                       rgba_getb(c),
-                                       rgba_geta(c));
+    *m_dstAddress = m_rgbmap->mapColor(c);
   else
     *m_dstAddress = 0;
 }
@@ -1058,10 +1053,7 @@ void GradientInkProcessing<IndexedTraits>::processPixel(int x, int y)
     c0 = m_palette->getEntry(c0);
   c = rgba_blender_normal(c0, c, m_opacity);
 
-  *m_dstAddress = m_rgbmap->mapColor(rgba_getr(c),
-                                     rgba_getg(c),
-                                     rgba_getb(c),
-                                     rgba_geta(c));
+  *m_dstAddress = m_rgbmap->mapColor(c);
 
   ++m_tmpAddress;
 }
@@ -1074,25 +1066,18 @@ void GradientInkProcessing<IndexedTraits>::processPixel(int x, int y)
 template<typename ImageTraits>
 class XorInkProcessing : public DoubleInkProcessing<XorInkProcessing<ImageTraits>, ImageTraits> {
 public:
-  XorInkProcessing(ToolLoop* loop) {
-    m_color = loop->getPrimaryColor();
-  }
-  void processPixel(int x, int y) {
-    // Do nothing
-  }
-
-private:
-  color_t m_color;
+  XorInkProcessing(ToolLoop* loop) { }
+  void processPixel(int x, int y) { }
 };
 
 template<>
 void XorInkProcessing<RgbTraits>::processPixel(int x, int y) {
-  *m_dstAddress = rgba_blender_neg_bw(*m_srcAddress, m_color, 255);
+  *m_dstAddress = rgba_blender_neg_bw(*m_srcAddress, 0, 255);
 }
 
 template<>
 void XorInkProcessing<GrayscaleTraits>::processPixel(int x, int y) {
-  *m_dstAddress = graya_blender_neg_bw(*m_srcAddress, m_color, 255);
+  *m_dstAddress = graya_blender_neg_bw(*m_srcAddress, 0, 255);
 }
 
 template<>
@@ -1100,22 +1085,17 @@ class XorInkProcessing<IndexedTraits> : public DoubleInkProcessing<XorInkProcess
 public:
   XorInkProcessing(ToolLoop* loop) :
     m_palette(loop->getPalette()),
-    m_rgbmap(loop->getRgbMap()),
-    m_color(m_palette->getEntry(loop->getPrimaryColor())) {
+    m_rgbmap(loop->getRgbMap()) {
   }
 
   void processPixel(int x, int y) {
-    color_t c = rgba_blender_neg_bw(m_palette->getEntry(*m_srcAddress), m_color, 255);
-    *m_dstAddress = m_rgbmap->mapColor(rgba_getr(c),
-                                       rgba_getg(c),
-                                       rgba_getb(c),
-                                       rgba_geta(c));
+    color_t c = rgba_blender_neg_bw(m_palette->getEntry(*m_srcAddress), 0, 255);
+    *m_dstAddress = m_rgbmap->mapColor(c);
   }
 
 private:
   const Palette* m_palette;
   const RgbMap* m_rgbmap;
-  color_t m_color;
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -1922,6 +1902,19 @@ BaseInkProcessing* get_ink_proc(ToolLoop* loop)
     case IMAGE_RGB:       return new T<RgbTraits>(loop);
     case IMAGE_GRAYSCALE: return new T<GrayscaleTraits>(loop);
     case IMAGE_INDEXED:   return new T<IndexedTraits>(loop);
+  }
+  ASSERT(false);
+  return nullptr;
+}
+
+template<template<typename> class T>
+BaseInkProcessing* get_ink_proc2(ToolLoop* loop)
+{
+  switch (loop->getDstImage()->pixelFormat()) {
+    case IMAGE_RGB:       return new T<RgbTraits>(loop);
+    case IMAGE_GRAYSCALE: return new T<GrayscaleTraits>(loop);
+    case IMAGE_INDEXED:   return new T<IndexedTraits>(loop);
+    case IMAGE_TILEMAP:   return new T<TilemapTraits>(loop);
   }
   ASSERT(false);
   return nullptr;

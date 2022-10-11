@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021  Igara Studio S.A.
+// Copyright (C) 2019-2021  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -76,7 +76,11 @@ void FillCommand::onExecute(Context* ctx)
     return;
 
   Preferences& pref = Preferences::instance();
-  app::Color color = pref.colorBar.fgColor();
+  doc::color_t color;
+  if (site.tilemapMode() == TilemapMode::Tiles)
+    color = pref.colorBar.fgTile();
+  else
+    color = color_utils::color_for_layer(pref.colorBar.fgColor(), layer);
 
   {
     Tx tx(writer.context(), "Fill Selection with Foreground Color");
@@ -90,25 +94,28 @@ void FillCommand::onExecute(Context* ctx)
                       mask->bounds());
       expand.validateDestCanvas(rgn);
 
-      const gfx::Point offset = (mask->bounds().origin()
-                                 - expand.getCel()->position());
-      const doc::color_t docColor =
-        color_utils::color_for_layer(
-          color, layer);
+      gfx::Rect imageBounds(expand.getCel()->position(),
+                            expand.getDestCanvas()->size());
+      doc::Grid grid = site.grid();
+
+      if (site.tilemapMode() == TilemapMode::Tiles)
+        imageBounds = grid.tileToCanvas(imageBounds);
 
       if (m_type == Stroke) {
         doc::algorithm::stroke_selection(
           expand.getDestCanvas(),
-          offset,
+          imageBounds,
           mask,
-          docColor);
+          color,
+          (site.tilemapMode() == TilemapMode::Tiles ? &grid: nullptr));
       }
       else {
         doc::algorithm::fill_selection(
           expand.getDestCanvas(),
-          offset,
+          imageBounds,
           mask,
-          docColor);
+          color,
+          (site.tilemapMode() == TilemapMode::Tiles ? &grid: nullptr));
       }
 
       expand.commit();
@@ -116,7 +123,7 @@ void FillCommand::onExecute(Context* ctx)
 
     // If the cel wasn't deleted by cmd::ClearMask, we trim it.
     Cel* cel = ctx->activeSite().cel();
-    if (cel && layer->isTransparent())
+    if (site.shouldTrimCel(cel))
       tx(new cmd::TrimCel(cel));
 
     tx.commit();

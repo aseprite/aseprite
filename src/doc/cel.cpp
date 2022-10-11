@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019 Igara Studio S.A.
+// Copyright (c) 2019-2020 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -11,10 +11,13 @@
 
 #include "doc/cel.h"
 
-#include "gfx/rect.h"
+#include "doc/grid.h"
 #include "doc/image.h"
 #include "doc/layer.h"
+#include "doc/layer_tilemap.h"
 #include "doc/sprite.h"
+#include "doc/tile.h"
+#include "gfx/rect.h"
 
 namespace doc {
 
@@ -145,11 +148,29 @@ void Cel::setParentLayer(LayerImage* layer)
   fixupImage();
 }
 
+Grid Cel::grid() const
+{
+  if (m_layer) {
+    if (m_layer->isTilemap()) {
+      doc::Grid grid = static_cast<LayerTilemap*>(m_layer)->tileset()->grid();
+      grid.origin(grid.origin() + position());
+      return grid;
+    }
+    else
+      return m_layer->grid();
+  }
+  return Grid();
+}
+
 void Cel::fixupImage()
 {
   // Change the mask color to the sprite mask color
-  if (m_layer && image())
-    image()->setMaskColor(m_layer->sprite()->transparentColor());
+  if (m_layer && image()) {
+    image()->setMaskColor((image()->pixelFormat() == IMAGE_TILEMAP) ?
+                            notile : m_layer->sprite()->transparentColor());
+    ASSERT(m_data);
+    m_data->adjustBounds(m_layer);
+  }
 }
 
 } // namespace doc

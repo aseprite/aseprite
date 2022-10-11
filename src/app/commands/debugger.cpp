@@ -663,7 +663,7 @@ public:
           bounds.w = std::max(bounds.w, 256*guiscale());
           bounds.h = std::max(bounds.h, 256*guiscale());
         }
-        setBounds(bounds);
+        expandWindow(bounds.size());
         invalidate();
       }
 

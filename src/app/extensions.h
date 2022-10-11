@@ -18,9 +18,9 @@
 
 namespace app {
 
-  // Key=theme/palette/etc. id
-  // Value=theme/palette/etc. path
-  typedef std::map<std::string, std::string> ExtensionItems;
+  // Key=id
+  // Value=path
+  using ExtensionItems = std::map<std::string, std::string>;
 
   class Extensions;
 
@@ -36,6 +36,7 @@ namespace app {
   class Extension {
     friend class Extensions;
   public:
+
     enum class Category {
       None,
       Keys,
@@ -64,6 +65,20 @@ namespace app {
       mutable bool m_loaded = false;
     };
 
+    struct ThemeInfo {
+      std::string path;
+      std::string variant;
+
+      ThemeInfo() = default;
+      ThemeInfo(const std::string& path,
+                const std::string& variant)
+        : path(path)
+        , variant(variant) { }
+    };
+
+    using Themes = std::map<std::string, ThemeInfo>;
+    using DitheringMatrices = std::map<std::string, DitheringMatrixInfo>;
+
     Extension(const std::string& path,
               const std::string& name,
               const std::string& version,
@@ -83,12 +98,12 @@ namespace app {
 
     const ExtensionItems& keys() const { return m_keys; }
     const ExtensionItems& languages() const { return m_languages; }
-    const ExtensionItems& themes() const { return m_themes; }
+    const Themes& themes() const { return m_themes; }
     const ExtensionItems& palettes() const { return m_palettes; }
 
     void addKeys(const std::string& id, const std::string& path);
     void addLanguage(const std::string& id, const std::string& path);
-    void addTheme(const std::string& id, const std::string& path);
+    void addTheme(const std::string& id, const std::string& path, const std::string& variant);
     void addPalette(const std::string& id, const std::string& path);
     void addDitheringMatrix(const std::string& id,
                             const std::string& path,
@@ -113,12 +128,13 @@ namespace app {
     void addScript(const std::string& fn);
 #endif
 
+    bool isCurrentTheme() const;
+
   private:
     void enable(const bool state);
     void uninstall(const DeletePluginPref delPref);
     void uninstallFiles(const std::string& path,
                         const DeletePluginPref delPref);
-    bool isCurrentTheme() const;
     bool isDefaultTheme() const;
     void updateCategory(const Category newCategory);
 #ifdef ENABLE_SCRIPTING
@@ -128,9 +144,9 @@ namespace app {
 
     ExtensionItems m_keys;
     ExtensionItems m_languages;
-    ExtensionItems m_themes;
+    Themes m_themes;
     ExtensionItems m_palettes;
-    std::map<std::string, DitheringMatrixInfo> m_ditheringMatrices;
+    DitheringMatrices m_ditheringMatrices;
 
 #ifdef ENABLE_SCRIPTING
     struct ScriptItem {

@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019 Igara Studio S.A.
+// Copyright (c) 2019-2020 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -11,9 +11,15 @@
 
 #include "doc/algorithm/shrink_bounds.h"
 
+#include "doc/cel.h"
+#include "doc/grid.h"
 #include "doc/image.h"
 #include "doc/image_impl.h"
+#include "doc/layer.h"
+#include "doc/layer_tilemap.h"
+#include "doc/primitives.h"
 #include "doc/primitives_fast.h"
+#include "doc/tileset.h"
 
 #include <thread>
 
@@ -43,6 +49,12 @@ bool is_same_pixel<GrayscaleTraits>(color_t pixel1, color_t pixel2)
 
 template<>
 bool is_same_pixel<IndexedTraits>(color_t pixel1, color_t pixel2)
+{
+  return pixel1 == pixel2;
+}
+
+template<>
+bool is_same_pixel<BitmapTraits>(color_t pixel1, color_t pixel2)
 {
   return pixel1 == pixel2;
 }
@@ -223,46 +235,171 @@ bool shrink_bounds_templ2(const Image* a, const Image* b, gfx::Rect& bounds)
   return (!bounds.isEmpty());
 }
 
+bool shrink_bounds_tilemap(const Image* image,
+                           const color_t refpixel,
+                           const Layer* layer,
+                           gfx::Rect& bounds)
+{
+  ASSERT(layer);
+  if (!layer)
+    return false;
+
+  ASSERT(layer->isTilemap());
+  if (!layer->isTilemap())
+    return false;
+
+  const Tileset* tileset =
+    static_cast<const LayerTilemap*>(layer)->tileset();
+
+  bool shrink;
+  int u, v;
+
+  // Shrink left side
+  for (u=bounds.x; u<bounds.x+bounds.w; ++u) {
+    shrink = true;
+    for (v=bounds.y; v<bounds.y+bounds.h; ++v) {
+      const tile_t tile = get_pixel_fast<TilemapTraits>(image, u, v);
+      const tile_t tileIndex = tile_geti(tile);
+      const ImageRef tileImg = tileset->get(tileIndex);
+
+      if (tileImg && !is_plain_image(tileImg.get(), refpixel)) {
+        shrink = false;
+        break;
+      }
+    }
+    if (!shrink)
+      break;
+    ++bounds.x;
+    --bounds.w;
+  }
+
+  // Shrink right side
+  for (u=bounds.x+bounds.w-1; u>=bounds.x; --u) {
+    shrink = true;
+    for (v=bounds.y; v<bounds.y+bounds.h; ++v) {
+      const tile_t tile = get_pixel_fast<TilemapTraits>(image, u, v);
+      const tile_t tileIndex = tile_geti(tile);
+      const ImageRef tileImg = tileset->get(tileIndex);
+
+      if (tileImg && !is_plain_image(tileImg.get(), refpixel)) {
+        shrink = false;
+        break;
+      }
+    }
+    if (!shrink)
+      break;
+    --bounds.w;
+  }
+
+  // Shrink top side
+  for (v=bounds.y; v<bounds.y+bounds.h; ++v) {
+    shrink = true;
+    for (u=bounds.x; u<bounds.x+bounds.w; ++u) {
+      const tile_t tile = get_pixel_fast<TilemapTraits>(image, u, v);
+      const tile_t tileIndex = tile_geti(tile);
+      const ImageRef tileImg = tileset->get(tileIndex);
+
+      if (tileImg && !is_plain_image(tileImg.get(), refpixel)) {
+        shrink = false;
+        break;
+      }
+    }
+    if (!shrink)
+      break;
+    ++bounds.y;
+    --bounds.h;
+  }
+
+  // Shrink bottom side
+  for (v=bounds.y+bounds.h-1; v>=bounds.y; --v) {
+    shrink = true;
+    for (u=bounds.x; u<bounds.x+bounds.w; ++u) {
+      const tile_t tile = get_pixel_fast<TilemapTraits>(image, u, v);
+      const tile_t tileIndex = tile_geti(tile);
+      const ImageRef tileImg = tileset->get(tileIndex);
+
+      if (tileImg && !is_plain_image(tileImg.get(), refpixel)) {
+        shrink = false;
+        break;
+      }
+    }
+    if (!shrink)
+      break;
+    --bounds.h;
+  }
+
+  return (!bounds.isEmpty());
+}
+
 }
 
 bool shrink_bounds(const Image* image,
-                   const gfx::Rect& start_bounds,
-                   gfx::Rect& bounds,
-                   color_t refpixel)
+                   const color_t refpixel,
+                   const Layer* layer,
+                   const gfx::Rect& startBounds,
+                   gfx::Rect& bounds)
 {
-  bounds = (start_bounds & image->bounds());
+  bounds = (startBounds & image->bounds());
   switch (image->pixelFormat()) {
     case IMAGE_RGB:       return shrink_bounds_templ<RgbTraits>(image, bounds, refpixel);
     case IMAGE_GRAYSCALE: return shrink_bounds_templ<GrayscaleTraits>(image, bounds, refpixel);
     case IMAGE_INDEXED:   return shrink_bounds_templ<IndexedTraits>(image, bounds, refpixel);
-    case IMAGE_BITMAP:
-      // Not supported
-      break;
+    case IMAGE_BITMAP:    return shrink_bounds_templ<BitmapTraits>(image, bounds, refpixel);
+    case IMAGE_TILEMAP:   return shrink_bounds_tilemap(image, refpixel, layer, bounds);
   }
   ASSERT(false);
-  bounds = start_bounds;
+  bounds = startBounds;
   return true;
 }
 
-bool shrink_bounds(const Image* image, gfx::Rect& bounds, color_t refpixel)
+bool shrink_bounds(const Image* image,
+                   const color_t refpixel,
+                   const Layer* layer,
+                   gfx::Rect& bounds)
 {
-  return shrink_bounds(image, image->bounds(), bounds, refpixel);
+  return shrink_bounds(image, refpixel, layer, image->bounds(), bounds);
 }
 
-bool shrink_bounds2(const Image* a, const Image* b,
-                    const gfx::Rect& start_bounds,
+bool shrink_cel_bounds(const Cel* cel,
+                       const color_t refpixel,
+                       gfx::Rect& bounds)
+{
+  if (shrink_bounds(cel->image(), refpixel, cel->layer(), bounds)) {
+    // For tilemaps, we have to convert imgBounds (in tiles
+    // coordinates) to canvas coordinates using the Grid specs.
+    if (cel->layer()->isTilemap()) {
+      doc::LayerTilemap* tilemapLayer = static_cast<doc::LayerTilemap*>(cel->layer());
+      doc::Tileset* tileset = tilemapLayer->tileset();
+      doc::Grid grid = tileset->grid();
+      grid.origin(grid.origin() + cel->position());
+      bounds = grid.tileToCanvas(bounds);
+    }
+    else {
+      bounds.offset(cel->position());
+    }
+    return true;
+  }
+  else {
+    return false;
+  }
+}
+
+bool shrink_bounds2(const Image* a,
+                    const Image* b,
+                    const gfx::Rect& startBounds,
                     gfx::Rect& bounds)
 {
   ASSERT(a && b);
   ASSERT(a->bounds() == b->bounds());
 
-  bounds = (start_bounds & a->bounds());
+  bounds = (startBounds & a->bounds());
 
   switch (a->pixelFormat()) {
     case IMAGE_RGB:       return shrink_bounds_templ2<RgbTraits>(a, b, bounds);
     case IMAGE_GRAYSCALE: return shrink_bounds_templ2<GrayscaleTraits>(a, b, bounds);
     case IMAGE_INDEXED:   return shrink_bounds_templ2<IndexedTraits>(a, b, bounds);
     case IMAGE_BITMAP:    return shrink_bounds_templ2<BitmapTraits>(a, b, bounds);
+    case IMAGE_TILEMAP:   return shrink_bounds_templ2<TilemapTraits>(a, b, bounds);
   }
   ASSERT(false);
   return false;

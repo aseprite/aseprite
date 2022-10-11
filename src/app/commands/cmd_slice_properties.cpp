@@ -104,7 +104,7 @@ void SlicePropertiesCommand::onExecute(Context* context)
       // Change user data
       if ((mods & SliceWindow::kUserData) &&
           slice->userData() != window.userDataValue()) {
-        tx(new cmd::SetUserData(slice, window.userDataValue()));
+        tx(new cmd::SetUserData(slice, window.userDataValue(), static_cast<Doc*>(sprite->document())));
       }
 
       // Change slice properties

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -58,6 +58,7 @@ namespace app {
     // TabView implementation
     std::string getTabText() override;
     TabIcon getTabIcon() override;
+    gfx::Color getTabColor() override;
 
     // WorkspaceView implementation
     ui::Widget* getContentWidget() override { return this; }
@@ -81,6 +82,7 @@ namespace app {
     void onAfterRemoveCel(DocEvent& ev) override;
     void onTotalFramesChanged(DocEvent& ev) override;
     void onLayerRestacked(DocEvent& ev) override;
+    void onTilesetChanged(DocEvent& ev) override;
 
     // InputChainElement impl
     void onNewInputPriority(InputChainElement* element,

@@ -28,6 +28,7 @@ namespace app {
 
     std::string outputFilenameValue() const;
     double resizeValue() const;
+    std::string areaValue() const;
     std::string layersValue() const;
     int layersIndex() const;
     std::string framesValue() const;
@@ -37,6 +38,7 @@ namespace app {
 
     void setOutputFilename(const std::string& pathAndFilename);
     void setResizeScale(const double scale);
+    void setArea(const std::string& area);
     void setAniDir(const doc::AniDir aniDir);
 
     obs::signal<std::string()> SelectOutputFile;

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -10,8 +10,10 @@
 #pragma once
 
 #include "app/ui/color_button.h"
+#include "app/ui/user_data_view.h"
 #include "doc/anidir.h"
 #include "doc/frame.h"
+#include "doc/user_data.h"
 
 #include "tag_properties.xml.h"
 
@@ -30,12 +32,16 @@ namespace app {
 
     std::string nameValue();
     void rangeValue(doc::frame_t& from, doc::frame_t& to);
-    doc::color_t colorValue();
     doc::AniDir aniDirValue();
+    const doc::UserData& userDataValue() const { return m_userDataView.userData(); }
 
   private:
+    void onToggleUserData();
+
     const doc::Sprite* m_sprite;
     int m_base;
+    doc::UserData m_userData;
+    UserDataView m_userDataView;
   };
 
 }

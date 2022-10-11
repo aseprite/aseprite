@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2020  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -19,6 +19,7 @@
 
 namespace doc {
   class Slices;
+  class Sprite;
 
   class SliceKey {
   public:
@@ -73,6 +74,7 @@ namespace doc {
     std::size_t size() const { return m_keys.size(); }
     bool empty() const { return m_keys.empty(); }
 
+    Sprite* sprite() const;
     Slices* owner() const { return m_owner; }
     frame_t fromFrame() const { return m_keys.fromFrame(); }
     frame_t toFrame() const { return m_keys.toFrame(); }
