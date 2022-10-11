@@ -35,4 +35,7 @@ do
   assert(a.color == Color(0, 0, 0))
   a.color = Color(255, 0, 0)
   assert(a.color == Color(255, 0, 0))
+
+  a.data = "Data"
+  assert(a.data == "Data")
 end
