@@ -221,7 +221,7 @@
       <option id="api" type="std::string" />
     </section>
     <section id="experimental" text="Experimental">
-      <option id="multiple_windows" type="bool" default="true" />
+      <option id="multiple_windows" type="bool" default="false" />
       <option id="new_render_engine" type="bool" default="true" />
       <option id="new_blend" type="bool" default="true" />
       <option id="use_native_clipboard" type="bool" default="true" />
