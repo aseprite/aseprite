@@ -91,17 +91,25 @@ ImageRef shift_image_with_mask(const Cel* cel,
   ImageRef imageToShift(Image::create(compImage->pixelFormat(), maskedBounds.w, maskedBounds.h));
   imageToShift->copy(compImage.get(), gfx::Clip(0, 0, maskedBounds));
 
-  // Shiftting the masked area of the COMPOUND IMAGE (compImage).
-  int initialX = maskedBounds.x;
-  int initialY = maskedBounds.y;
-  int finalX = maskedBounds.x2();
-  int finalY = maskedBounds.y2();
-  for (int y=initialY; y<finalY; ++y) {
-    for (int x=initialX; x<finalX; ++x) {
-        put_pixel(compImage.get(),
-                  initialX + (maskedBounds.w + dx + x-initialX) % maskedBounds.w,
-                  initialY + (maskedBounds.h + dy + y-initialY) % maskedBounds.h,
-                  get_pixel(imageToShift.get(), x - initialX, y - initialY));
+  // Shifting the masked area of the COMPOUND IMAGE (compImage).
+  const int xInitial = maskedBounds.x;
+  const int yInitial = maskedBounds.y;
+  const int wMask = maskedBounds.w;
+  const int hMask = maskedBounds.h;
+  for (int y=0; y<hMask; ++y) {
+    for (int x=0; x<wMask; ++x) {
+      // Use floor modulo (Euclidean remainder).
+      // Shifts are broken out and stored in separate variables
+      // to make them easier to recognize and change in the event
+      // that rem_eucl is implemented formally in the future.
+      const int xShift = ((dx + x) % wMask + wMask) % wMask;
+      const int yShift = ((dy + y) % hMask + hMask) % hMask;
+
+      put_pixel(
+        compImage.get(),
+        xInitial + xShift,
+        yInitial + yShift,
+        get_pixel(imageToShift.get(), x, y));
     }
   }
 

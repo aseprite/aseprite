@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -14,8 +15,6 @@ namespace app {
 
   class FilenameInfo {
   public:
-    FilenameInfo() : m_frame(-1), m_tagFrame(-1) { }
-
     const std::string& filename() const { return m_filename; }
     const std::string& layerName() const { return m_layerName; }
     const std::string& groupName() const { return m_groupName; }
@@ -78,9 +77,9 @@ namespace app {
     std::string m_innerTagName;
     std::string m_outerTagName;
     std::string m_sliceName;
-    int m_frame;
-    int m_tagFrame;
-    int m_duration;
+    int m_frame = -1;
+    int m_tagFrame = -1;
+    int m_duration = 0;
   };
 
   // Returns the information inside {frame} tag.
