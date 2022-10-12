@@ -35,6 +35,7 @@ namespace app {
     void loadParams(const Params& params);
     bool isEnabled(Context* context);
     bool isChecked(Context* context);
+    void generateFriendlyName();
 
   protected:
     virtual bool onNeedsParams() const;

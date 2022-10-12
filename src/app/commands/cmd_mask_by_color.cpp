@@ -18,6 +18,7 @@
 #include "app/context_access.h"
 #include "app/doc.h"
 #include "app/ini_file.h"
+#include "app/i18n/strings.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/tx.h"
@@ -106,7 +107,8 @@ void MaskByColorCommand::onExecute(Context* context)
   if (!image)
     return;
 
-  std::unique_ptr<Window> win(new Window(Window::WithTitleBar, "Mask by Color"));
+  std::unique_ptr<Window> win(
+    new Window(Window::WithTitleBar, Strings::mask_by_color_title()));
   base::ScopedValue<Window*> setWindow(m_window, win.get(), nullptr);
   TooltipManager* tooltipManager = new TooltipManager();
   m_window->addChild(tooltipManager);
@@ -114,20 +116,20 @@ void MaskByColorCommand::onExecute(Context* context)
   auto box2 = new Box(HORIZONTAL);
   auto box3 = new Box(HORIZONTAL);
   auto box4 = new Box(HORIZONTAL | HOMOGENEOUS);
-  auto label_color = new Label("Color:");
+  auto label_color = new Label(Strings::mask_by_color_label_color());
   m_buttonColor = new ColorButton(
     ColorBar::instance()->getFgColor(),
     sprite->pixelFormat(),
     ColorButtonOptions());
-  auto label_tolerance = new Label("Tolerance:");
+  auto label_tolerance = new Label(Strings::mask_by_color_tolerance());
   m_sliderTolerance = new Slider(0, 255, get_config_int(ConfigSection, "Tolerance", 0));
 
   m_selMode = new SelModeField;
   m_selMode->setupTooltips(tooltipManager);
 
-  m_checkPreview = new CheckBox("&Preview");
-  auto button_ok = new Button("&OK");
-  auto button_cancel = new Button("&Cancel");
+  m_checkPreview = new CheckBox(Strings::mask_by_color_preview());
+  auto button_ok = new Button(Strings::mask_by_color_ok());
+  auto button_cancel = new Button(Strings::mask_by_color_cancel());
 
   m_checkPreview->processMnemonicFromText();
   button_ok->processMnemonicFromText();

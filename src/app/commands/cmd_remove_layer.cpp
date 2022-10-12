@@ -97,9 +97,11 @@ void RemoveLayerCommand::onExecute(Context* context)
 
     StatusBar::instance()->invalidate();
     if (!layerName.empty())
-      StatusBar::instance()->showTip(1000, fmt::format("Layer '{}' removed", layerName));
+      StatusBar::instance()->showTip(
+        1000, fmt::format(Strings::remove_layer_x_removed(), layerName));
     else
-      StatusBar::instance()->showTip(1000, "Layers removed");
+      StatusBar::instance()->showTip(1000,
+                                     Strings::remove_layer_layers_removed());
   }
 #endif
 }

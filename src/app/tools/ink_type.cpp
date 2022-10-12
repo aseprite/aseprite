@@ -10,6 +10,7 @@
 #endif
 
 #include "app/tools/ink_type.h"
+#include "app/i18n/strings.h"
 
 namespace app {
 namespace tools {
@@ -17,13 +18,13 @@ namespace tools {
 std::string ink_type_to_string(InkType inkType)
 {
   switch (inkType) {
-    case tools::InkType::SIMPLE: return "Simple Ink";
-    case tools::InkType::ALPHA_COMPOSITING: return "Alpha Compositing";
-    case tools::InkType::COPY_COLOR: return "Copy Color+Alpha";
-    case tools::InkType::LOCK_ALPHA: return "Lock Alpha";
-    case tools::InkType::SHADING: return "Shading";
+    case tools::InkType::SIMPLE:            return Strings::inks_simple_ink();
+    case tools::InkType::ALPHA_COMPOSITING: return Strings::inks_alpha_compositing();
+    case tools::InkType::COPY_COLOR:        return Strings::inks_copy_color();
+    case tools::InkType::LOCK_ALPHA:        return Strings::inks_lock_alpha();
+    case tools::InkType::SHADING:           return Strings::inks_shading();
   }
-  return "Unknown";
+  return Strings::general_unknown();
 }
 
 std::string ink_type_to_string_id(InkType inkType)

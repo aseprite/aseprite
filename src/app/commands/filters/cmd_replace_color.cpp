@@ -22,6 +22,7 @@
 #include "app/commands/new_params.h"
 #include "app/context.h"
 #include "app/find_widget.h"
+#include "app/i18n/strings.h"
 #include "app/ini_file.h"
 #include "app/load_widget.h"
 #include "app/pref/preferences.h"
@@ -78,7 +79,9 @@ static const char* ConfigSection = "ReplaceColor";
 class ReplaceColorWindow : public FilterWindow {
 public:
   ReplaceColorWindow(ReplaceColorFilterWrapper& filter, FilterManagerImpl& filterMgr)
-    : FilterWindow("Replace Color", ConfigSection, &filterMgr,
+    : FilterWindow(Strings::replace_color_title().c_str(),
+                   ConfigSection,
+                   &filterMgr,
                    WithChannelsSelector,
                    WithoutTiledCheckBox)
     , m_filter(filter)

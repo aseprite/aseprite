@@ -472,14 +472,14 @@ public:
       discardBrush()->setSelected(true);
 
     // Scope
-    bgScope()->addItem("Background for New Documents");
-    gridScope()->addItem("Grid for New Documents");
+    bgScope()->addItem(Strings::options_bg_for_new_docs());
+    gridScope()->addItem(Strings::options_grid_for_new_docs());
     if (context->activeDocument()) {
-      bgScope()->addItem("Background for the Active Document");
+      bgScope()->addItem(Strings::options_bg_for_active_doc());
       bgScope()->setSelectedItemIndex(1);
       bgScope()->Change.connect([this]{ onChangeBgScope(); });
 
-      gridScope()->addItem("Grid for the Active Document");
+      gridScope()->addItem(Strings::options_grid_for_active_doc());
       gridScope()->setSelectedItemIndex(1);
       gridScope()->Change.connect([this]{ onChangeGridScope(); });
     }
@@ -526,13 +526,13 @@ public:
     static_assert(int(app::gen::RightClickMode::LASSO) == 5, "");
     static_assert(int(app::gen::RightClickMode::SELECT_LAYER_AND_MOVE) == 6, "");
 
-    rightClickBehavior()->addItem("Paint with background color");
-    rightClickBehavior()->addItem("Pick foreground color");
-    rightClickBehavior()->addItem("Erase");
-    rightClickBehavior()->addItem("Scroll");
-    rightClickBehavior()->addItem("Rectangular Marquee");
-    rightClickBehavior()->addItem("Lasso");
-    rightClickBehavior()->addItem("Select Layer & Move");
+    rightClickBehavior()->addItem(Strings::options_right_click_paint_bgcolor());
+    rightClickBehavior()->addItem(Strings::options_right_click_pick_fgcolor());
+    rightClickBehavior()->addItem(Strings::options_right_click_erase());
+    rightClickBehavior()->addItem(Strings::options_right_click_scroll());
+    rightClickBehavior()->addItem(Strings::options_right_click_rectangular_marquee());
+    rightClickBehavior()->addItem(Strings::options_right_click_lasso());
+    rightClickBehavior()->addItem(Strings::options_right_click_select_layer_and_move());
     rightClickBehavior()->setSelectedItemIndex((int)m_pref.editor.rightClickMode());
 
 #ifndef __APPLE__ // Zoom sliding two fingers option only on macOS
@@ -548,7 +548,7 @@ public:
     checkeredBgSize()->addItem("4x4");
     checkeredBgSize()->addItem("2x2");
     checkeredBgSize()->addItem("1x1");
-    checkeredBgSize()->addItem("Custom");
+    checkeredBgSize()->addItem(Strings::options_bg_custom_size());
     checkeredBgSize()->Change.connect([this]{ onCheckeredBgSizeChange(); });
 
     // Reset buttons
@@ -1339,7 +1339,7 @@ private:
       if (first) {
         first = false;
         themeList()->addChild(
-          new SeparatorInView("Extension Themes", HORIZONTAL));
+          new SeparatorInView(Strings::options_extension_themes(), HORIZONTAL));
       }
 
       for (auto it : ext->themes()) {

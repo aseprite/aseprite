@@ -818,12 +818,14 @@ tools::ToolLoop* create_tool_loop(
     Layer* layer = site.layer();
     if (!layer) {
       StatusBar::instance()->showTip(
-        1000, "There is no active layer");
+        1000, Strings::statusbar_tips_no_active_layers());
       return nullptr;
     }
     else if (!layer->isVisibleHierarchy()) {
       StatusBar::instance()->showTip(
-        1000, fmt::format("Layer '{}' is hidden", layer->name()));
+        1000,
+        fmt::format(Strings::statusbar_tips_layer_x_is_hidden(),
+                    layer->name()));
       return nullptr;
     }
     // If the active layer is read-only.
@@ -833,7 +835,9 @@ tools::ToolLoop* create_tool_loop(
     // If the active layer is reference.
     else if (layer->isReference()) {
       StatusBar::instance()->showTip(
-        1000, fmt::format("Layer '{}' is reference, cannot be modified", layer->name()));
+        1000,
+        fmt::format(Strings::statusbar_tips_unmodifiable_reference_layer(),
+                    layer->name()));
       return nullptr;
     }
   }

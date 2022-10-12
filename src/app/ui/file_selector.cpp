@@ -485,7 +485,8 @@ bool FileSelector::show(
 
   // File type for all formats
   fileType()->addItem(
-    new CustomFileExtensionItem("All formats", allExtensions));
+    new CustomFileExtensionItem(Strings::file_selector_all_formats(),
+                                allExtensions));
 
   // One file type for each supported image format
   for (const auto& e : allExtensions) {
@@ -499,7 +500,7 @@ bool FileSelector::show(
   }
   // All files
   fileType()->addItem(
-    new CustomFileExtensionItem("All files",
+    new CustomFileExtensionItem(Strings::file_selector_all_files(),
                                 base::paths())); // Empty extensions means "*.*"
 
   // file name entry field

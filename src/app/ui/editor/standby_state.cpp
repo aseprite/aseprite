@@ -180,12 +180,14 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
     if (layer) {
       // TODO we should be able to move the `Background' with tiled mode
       if (layer->isBackground()) {
-        StatusBar::instance()->showTip(1000,
-          "The background layer cannot be moved");
+        StatusBar::instance()->showTip(
+          1000, Strings::statusbar_tips_cannot_move_bg_layer());
       }
       else if (!layer->isVisibleHierarchy()) {
         StatusBar::instance()->showTip(
-          1000, fmt::format("Layer '{}' is hidden", layer->name()));
+          1000,
+          fmt::format(Strings::statusbar_tips_layer_x_is_hidden(),
+                      layer->name()));
       }
       else if (!layer->isMovable() || !layer->isEditableHierarchy()) {
         StatusBar::instance()->showTip(
@@ -195,7 +197,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
         MovingCelCollect collect(editor, layer);
         if (collect.empty()) {
           StatusBar::instance()->showTip(
-            1000, "Nothing to move");
+            1000, Strings::statusbar_tips_nothing_to_move());
         }
         else {
           try {
@@ -211,7 +213,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
           catch (const LockedDocException&) {
             // TODO break the background task that is locking this sprite
             StatusBar::instance()->showTip(
-              1000, "Sprite is used by a backup/data recovery task");
+              1000, Strings::statusbar_tips_recovery_task_using_sprite());
           }
         }
       }
@@ -748,7 +750,8 @@ void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleT
   Layer* layer = editor->layer();
   if (layer && layer->isReference()) {
     StatusBar::instance()->showTip(
-      1000, fmt::format("Layer '{}' is reference, cannot be transformed",
+      1000,
+      fmt::format(Strings::statusbar_tips_non_transformable_reference_layer(),
                         layer->name()));
     return;
   }
@@ -803,11 +806,13 @@ void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleT
     // Other editor is locking the document.
 
     // TODO steal the PixelsMovement of the other editor and use it for this one.
-    StatusBar::instance()->showTip(1000, "The sprite is locked in other editor");
+    StatusBar::instance()->showTip(
+      1000, Strings::statusbar_tips_sprite_locked_somewhere());
     editor->showMouseCursor(kForbiddenCursor);
   }
   catch (const std::bad_alloc&) {
-    StatusBar::instance()->showTip(1000, "Not enough memory to transform the selection");
+    StatusBar::instance()->showTip(
+      1000, Strings::statusbar_tips_not_enough_transform_memory());
     editor->showMouseCursor(kForbiddenCursor);
   }
 }

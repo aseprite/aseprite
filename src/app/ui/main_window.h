@@ -116,6 +116,7 @@ namespace app {
     void onSaveLayout(ui::SaveLayoutEvent& ev) override;
     void onResize(ui::ResizeEvent& ev) override;
     void onActiveViewChange();
+    void onLanguageChange();
 
   private:
     DocView* getDocView();

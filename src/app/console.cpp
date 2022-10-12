@@ -13,6 +13,7 @@
 
 #include "app/app.h"
 #include "app/context.h"
+#include "app/i18n/strings.h"
 #include "app/modules/gui.h"
 #include "app/ui/main_window.h"
 #include "app/ui/status_bar.h"
@@ -35,9 +36,9 @@ Console::ConsoleWindow* Console::m_console = nullptr;
 
 class Console::ConsoleWindow final : public Window {
 public:
-  ConsoleWindow() : Window(Window::WithTitleBar, "Console"),
+  ConsoleWindow() : Window(Window::WithTitleBar, Strings::debugger_console()),
                     m_textbox("", WORDWRAP),
-                    m_button("Cancel") {
+                    m_button(Strings::debugger_cancel()) {
     TRACE_CON("CON: ConsoleWindow this=", this);
 
     m_button.Click.connect([this]{ closeWindow(&m_button); });

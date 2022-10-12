@@ -17,6 +17,7 @@
 #include "app/commands/new_params.h"
 #include "app/context.h"
 #include "app/ini_file.h"
+#include "app/i18n/strings.h"
 #include "app/modules/gui.h"
 #include "app/ui/color_button.h"
 #include "app/ui/color_sliders.h"
@@ -47,16 +48,20 @@ class BrightnessContrastWindow : public FilterWindow {
 public:
   BrightnessContrastWindow(BrightnessContrastFilter& filter,
                            FilterManagerImpl& filterMgr)
-    : FilterWindow("Brightness/Contrast", ConfigSection, &filterMgr,
+    : FilterWindow(Strings::brightness_contrast_title().c_str(),
+                   ConfigSection,
+                   &filterMgr,
                    WithChannelsSelector,
                    WithoutTiledCheckBox)
     , m_brightness(-100, 100, int(100.0 * filter.brightness()))
     , m_contrast(-100, 100, int(100.0 * filter.contrast()))
     , m_filter(filter)
   {
-    getContainer()->addChild(new ui::Label("Brightness:"));
+    getContainer()->addChild(
+      new ui::Label(Strings::brightness_contrast_brightness_label()));
     getContainer()->addChild(&m_brightness);
-    getContainer()->addChild(new ui::Label("Contrast:"));
+    getContainer()->addChild(
+      new ui::Label(Strings::brightness_contrast_contrast_label()));
     getContainer()->addChild(&m_contrast);
     m_brightness.Change.connect([this]{ onChange(); });
     m_contrast.Change.connect([this]{ onChange(); });

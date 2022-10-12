@@ -20,12 +20,7 @@ Command::Command(const char* id, CommandFlags flags)
   : m_id(id)
   , m_flags(flags)
 {
-  std::string strId = "commands.";
-  strId += this->id();
-  if (auto s = Strings::instance())
-    m_friendlyName = s->translate(strId.c_str());
-  else
-    m_friendlyName = strId;
+  generateFriendlyName();
 }
 
 Command::~Command()
@@ -67,6 +62,15 @@ bool Command::isChecked(Context* context)
     // TODO add a status-bar item...
     return false;
   }
+}
+
+void Command::generateFriendlyName()
+{
+  std::string strId = "commands." + this->id();
+  if (auto s = Strings::instance())
+    m_friendlyName = s->translate(strId.c_str());
+  else
+    m_friendlyName = strId;
 }
 
 void Command::execute(Context* context)

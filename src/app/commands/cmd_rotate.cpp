@@ -46,8 +46,10 @@ class RotateJob : public SpriteJob {
 
 public:
 
-  RotateJob(const ContextReader& reader, int angle, const CelList& cels, bool rotateSprite)
-    : SpriteJob(reader, "Rotate Canvas")
+  RotateJob(const ContextReader& reader,
+            const std::string& jobName,
+            int angle, const CelList& cels, bool rotateSprite)
+    : SpriteJob(reader, jobName.c_str())
     , m_cels(cels)
     , m_rotateSprite(rotateSprite) {
     m_angle = angle;
@@ -237,7 +239,7 @@ void RotateCommand::onExecute(Context* context)
 
     ContextReader reader(context);
     {
-      RotateJob job(reader, m_angle, cels, rotateSprite);
+      RotateJob job(reader, friendlyName(), m_angle, cels, rotateSprite);
       job.startJob();
       job.waitJob();
     }

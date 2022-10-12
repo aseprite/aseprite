@@ -12,6 +12,7 @@
 #include "app/ui/color_wheel.h"
 
 #include "app/color_utils.h"
+#include "app/i18n/strings.h"
 #include "app/pref/preferences.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
@@ -474,15 +475,15 @@ void ColorWheel::onResize(ui::ResizeEvent& ev)
 void ColorWheel::onOptions()
 {
   Menu menu;
-  MenuItem discrete("Discrete");
-  MenuItem none("Without Harmonies");
-  MenuItem complementary("Complementary");
-  MenuItem monochromatic("Monochromatic");
-  MenuItem analogous("Analogous");
-  MenuItem split("Split-Complementary");
-  MenuItem triadic("Triadic");
-  MenuItem tetradic("Tetradic");
-  MenuItem square("Square");
+  MenuItem discrete(Strings::color_wheel_discrete());
+  MenuItem none(Strings::color_wheel_no_harmonies());
+  MenuItem complementary(Strings::color_wheel_complementary());
+  MenuItem monochromatic(Strings::color_wheel_monochromatic());
+  MenuItem analogous(Strings::color_wheel_analogous());
+  MenuItem split(Strings::color_wheel_split_complementary());
+  MenuItem triadic(Strings::color_wheel_triadic());
+  MenuItem tetradic(Strings::color_wheel_tetradic());
+  MenuItem square(Strings::color_wheel_square());
   menu.addChild(&discrete);
   if (m_colorModel != ColorModel::NORMAL_MAP) {
     menu.addChild(new MenuSeparator);

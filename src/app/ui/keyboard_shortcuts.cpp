@@ -15,9 +15,9 @@
 #include "app/app_menus.h"
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
-#include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/doc.h"
+#include "app/i18n/strings.h"
 #include "app/tools/active_tool.h"
 #include "app/tools/ink.h"
 #include "app/tools/tool.h"
@@ -36,41 +36,51 @@
 
 #define XML_KEYBOARD_FILE_VERSION "1"
 
+#define I18N_KEY(a) app::Strings::keyboard_shortcuts_##a()
+
 namespace {
 
-  static struct {
+  struct KeyShortcutAction {
     const char* name;
-    const char* userfriendly;
+    std::string userfriendly;
     app::KeyAction action;
     app::KeyContext context;
-  } actions[] = {
-    { "CopySelection"       , "Copy Selection"     , app::KeyAction::CopySelection, app::KeyContext::TranslatingSelection },
-    { "SnapToGrid"          , "Snap To Grid"       , app::KeyAction::SnapToGrid, app::KeyContext::TranslatingSelection },
-    { "LockAxis"            , "Lock Axis"          , app::KeyAction::LockAxis, app::KeyContext::TranslatingSelection },
-    { "FineControl"         , "Fine Translating"   , app::KeyAction::FineControl , app::KeyContext::TranslatingSelection },
-    { "MaintainAspectRatio" , "Maintain Aspect Ratio", app::KeyAction::MaintainAspectRatio, app::KeyContext::ScalingSelection },
-    { "ScaleFromCenter"     , "Scale From Center"  , app::KeyAction::ScaleFromCenter, app::KeyContext::ScalingSelection },
-    { "FineControl"         , "Fine Scaling"       , app::KeyAction::FineControl , app::KeyContext::ScalingSelection },
-    { "AngleSnap"           , "Angle Snap"         , app::KeyAction::AngleSnap, app::KeyContext::RotatingSelection },
-    { "AddSelection"        , "Add Selection"      , app::KeyAction::AddSelection, app::KeyContext::SelectionTool },
-    { "SubtractSelection"   , "Subtract Selection" , app::KeyAction::SubtractSelection, app::KeyContext::SelectionTool },
-    { "IntersectSelection"  , "Intersect Selection" , app::KeyAction::IntersectSelection, app::KeyContext::SelectionTool },
-    { "AutoSelectLayer"     , "Auto Select Layer"  , app::KeyAction::AutoSelectLayer, app::KeyContext::MoveTool },
-    { "StraightLineFromLastPoint", "Straight Line from Last Point", app::KeyAction::StraightLineFromLastPoint, app::KeyContext::FreehandTool },
-    { "AngleSnapFromLastPoint", "Angle Snap from Last Point", app::KeyAction::AngleSnapFromLastPoint, app::KeyContext::FreehandTool },
-    { "MoveOrigin"          , "Move Origin"        , app::KeyAction::MoveOrigin, app::KeyContext::ShapeTool },
-    { "SquareAspect"        , "Square Aspect"      , app::KeyAction::SquareAspect, app::KeyContext::ShapeTool },
-    { "DrawFromCenter"      , "Draw From Center"   , app::KeyAction::DrawFromCenter, app::KeyContext::ShapeTool },
-    { "RotateShape"         , "Rotate Shape"       , app::KeyAction::RotateShape, app::KeyContext::ShapeTool },
-    { "LeftMouseButton"     , "Trigger Left Mouse Button" , app::KeyAction::LeftMouseButton, app::KeyContext::Any },
-    { "RightMouseButton"    , "Trigger Right Mouse Button" , app::KeyAction::RightMouseButton, app::KeyContext::Any },
-    { NULL                  , NULL                 , app::KeyAction::None, app::KeyContext::Any }
   };
+
+  static std::vector<KeyShortcutAction> g_actions;
+
+  static const std::vector<KeyShortcutAction>& actions() {
+    if (g_actions.empty()) {
+      g_actions = std::vector<KeyShortcutAction> {
+        { "CopySelection"       , I18N_KEY(copy_selection)             , app::KeyAction::CopySelection, app::KeyContext::TranslatingSelection },
+        { "SnapToGrid"          , I18N_KEY(snap_to_grid)               , app::KeyAction::SnapToGrid, app::KeyContext::TranslatingSelection },
+        { "LockAxis"            , I18N_KEY(lock_axis)                  , app::KeyAction::LockAxis, app::KeyContext::TranslatingSelection },
+        { "FineControl"         , I18N_KEY(fine_translating)           , app::KeyAction::FineControl , app::KeyContext::TranslatingSelection },
+        { "MaintainAspectRatio" , I18N_KEY(maintain_aspect_ratio)      , app::KeyAction::MaintainAspectRatio, app::KeyContext::ScalingSelection },
+        { "ScaleFromCenter"     , I18N_KEY(scale_from_center)          , app::KeyAction::ScaleFromCenter, app::KeyContext::ScalingSelection },
+        { "FineControl"         , I18N_KEY(fine_scaling)               , app::KeyAction::FineControl , app::KeyContext::ScalingSelection },
+        { "AngleSnap"           , I18N_KEY(angle_snap)                 , app::KeyAction::AngleSnap, app::KeyContext::RotatingSelection },
+        { "AddSelection"        , I18N_KEY(add_selection)              , app::KeyAction::AddSelection, app::KeyContext::SelectionTool },
+        { "SubtractSelection"   , I18N_KEY(subtract_selection)         , app::KeyAction::SubtractSelection, app::KeyContext::SelectionTool },
+        { "IntersectSelection"  , I18N_KEY(intersect_selection)        , app::KeyAction::IntersectSelection, app::KeyContext::SelectionTool },
+        { "AutoSelectLayer"     , I18N_KEY(auto_select_layer)          , app::KeyAction::AutoSelectLayer, app::KeyContext::MoveTool },
+        { "StraightLineFromLastPoint", I18N_KEY(line_from_last_point)  , app::KeyAction::StraightLineFromLastPoint, app::KeyContext::FreehandTool },
+        { "AngleSnapFromLastPoint", I18N_KEY(angle_from_last_point)    , app::KeyAction::AngleSnapFromLastPoint, app::KeyContext::FreehandTool },
+        { "MoveOrigin"          , I18N_KEY(move_origin)                , app::KeyAction::MoveOrigin, app::KeyContext::ShapeTool },
+        { "SquareAspect"        , I18N_KEY(square_aspect)              , app::KeyAction::SquareAspect, app::KeyContext::ShapeTool },
+        { "DrawFromCenter"      , I18N_KEY(draw_from_center)           , app::KeyAction::DrawFromCenter, app::KeyContext::ShapeTool },
+        { "RotateShape"         , I18N_KEY(rotate_shape)               , app::KeyAction::RotateShape, app::KeyContext::ShapeTool },
+        { "LeftMouseButton"     , I18N_KEY(trigger_left_mouse_button)  , app::KeyAction::LeftMouseButton, app::KeyContext::Any },
+        { "RightMouseButton"    , I18N_KEY(trigger_right_mouse_button) , app::KeyAction::RightMouseButton, app::KeyContext::Any }
+      };
+    }
+    return g_actions;
+  }
 
   static struct {
     const char* name;
     app::KeyContext context;
-  } contexts[] = {
+  } g_contexts[] = {
     { ""                     , app::KeyContext::Any },
     { "Normal"               , app::KeyContext::Normal },
     { "Selection"            , app::KeyContext::SelectionTool },
@@ -85,37 +95,46 @@ namespace {
 
   using Vec = app::DragVector;
 
-  static struct {
+  struct KeyShortcutWheelAction {
     const char* name;
-    const char* userfriendly;
+    const std::string userfriendly;
     Vec vector;
-  } wheel_actions[] = {
-    { ""             , ""                         , Vec(0.0, 0.0) },
-    { "Zoom"         , "Zoom"                     , Vec(8.0, 0.0) },
-    { "VScroll"      , "Scroll: Vertically"       , Vec(4.0, 0.0) },
-    { "HScroll"      , "Scroll: Horizontally"     , Vec(4.0, 0.0) },
-    { "FgColor"      , "Color: Foreground Palette Entry" , Vec(8.0, 0.0) },
-    { "BgColor"      , "Color: Background Palette Entry" , Vec(8.0, 0.0) },
-    { "FgTile"       , "Tile: Foreground Tile Entry" , Vec(8.0, 0.0) },
-    { "BgTile"       , "Tile: Background Tile Entry" , Vec(8.0, 0.0) },
-    { "Frame"        , "Change Frame"             , Vec(16.0, 0.0) },
-    { "BrushSize"    , "Change Brush Size"        , Vec(4.0, 0.0) },
-    { "BrushAngle"   , "Change Brush Angle"       , Vec(-4.0, 0.0) },
-    { "ToolSameGroup"  , "Change Tool (same group)" , Vec(8.0, 0.0) },
-    { "ToolOtherGroup" , "Change Tool"            , Vec(0.0, -8.0) },
-    { "Layer"        , "Change Layer"             , Vec(0.0, 8.0) },
-    { "InkType"      , "Change Ink Type"          , Vec(0.0, -16.0) },
-    { "InkOpacity"   , "Change Ink Opacity"       , Vec(0.0, 1.0) },
-    { "LayerOpacity" , "Change Layer Opacity"     , Vec(0.0, 1.0) },
-    { "CelOpacity"   , "Change Cel Opacity"       , Vec(0.0, 1.0) },
-    { "Alpha"        , "Color: Alpha"             , Vec(4.0, 0.0) },
-    { "HslHue"       , "Color: HSL Hue"           , Vec(1.0, 0.0) },
-    { "HslSaturation", "Color: HSL Saturation"    , Vec(4.0, 0.0) },
-    { "HslLightness" , "Color: HSL Lightness"     , Vec(0.0, 4.0) },
-    { "HsvHue"       , "Color: HSV Hue"           , Vec(1.0, 0.0) },
-    { "HsvSaturation", "Color: HSV Saturation"    , Vec(4.0, 0.0) },
-    { "HsvValue"     , "Color: HSV Value"         , Vec(0.0, 4.0) },
   };
+
+  static std::vector<KeyShortcutWheelAction> g_wheel_actions;
+
+  static const std::vector<KeyShortcutWheelAction>& wheel_actions() {
+    if (g_wheel_actions.empty()) {
+      g_wheel_actions = std::vector<KeyShortcutWheelAction> {
+        { ""              , ""                               , Vec(0.0, 0.0) },
+        { "Zoom"          , I18N_KEY(zoom)                   , Vec(8.0, 0.0) },
+        { "VScroll"       , I18N_KEY(scroll_vertically)      , Vec(4.0, 0.0) },
+        { "HScroll"       , I18N_KEY(scroll_horizontally)    , Vec(4.0, 0.0) },
+        { "FgColor"       , I18N_KEY(fg_color)               , Vec(8.0, 0.0) },
+        { "BgColor"       , I18N_KEY(bg_color)               , Vec(8.0, 0.0) },
+        { "FgTile"        , I18N_KEY(fg_tile)                , Vec(8.0, 0.0) },
+        { "BgTile"        , I18N_KEY(bg_tile)                , Vec(8.0, 0.0) },
+        { "Frame"         , I18N_KEY(change_frame)           , Vec(16.0, 0.0) },
+        { "BrushSize"     , I18N_KEY(change_brush_size)      , Vec(4.0, 0.0) },
+        { "BrushAngle"    , I18N_KEY(change_brush_angle)     , Vec(-4.0, 0.0) },
+        { "ToolSameGroup" , I18N_KEY(change_tool_same_group) , Vec(8.0, 0.0) },
+        { "ToolOtherGroup", I18N_KEY(change_tool)            , Vec(0.0, -8.0) },
+        { "Layer"         , I18N_KEY(change_layer)           , Vec(0.0, 8.0) },
+        { "InkType"       , I18N_KEY(change_ink_type)        , Vec(0.0, -16.0) },
+        { "InkOpacity"    , I18N_KEY(change_ink_opacity)     , Vec(0.0, 1.0) },
+        { "LayerOpacity"  , I18N_KEY(change_layer_opacity)   , Vec(0.0, 1.0) },
+        { "CelOpacity"    , I18N_KEY(change_cel_opacity)     , Vec(0.0, 1.0) },
+        { "Alpha"         , I18N_KEY(color_alpha)            , Vec(4.0, 0.0) },
+        { "HslHue"        , I18N_KEY(color_hsl_hue)          , Vec(1.0, 0.0) },
+        { "HslSaturation" , I18N_KEY(color_hsl_saturation)   , Vec(4.0, 0.0) },
+        { "HslLightness"  , I18N_KEY(color_hsl_lightness)    , Vec(0.0, 4.0) },
+        { "HsvHue"        , I18N_KEY(color_hsv_hue)          , Vec(1.0, 0.0) },
+        { "HsvSaturation" , I18N_KEY(color_hsv_saturation)   , Vec(4.0, 0.0) },
+        { "HsvValue"      , I18N_KEY(color_hsv_value)        , Vec(0.0, 4.0) }
+      };
+    }
+    return g_wheel_actions;
+  }
 
   const char* get_shortcut(TiXmlElement* elem) {
     const char* shortcut = NULL;
@@ -136,10 +155,9 @@ namespace {
 
   std::string get_user_friendly_string_for_keyaction(app::KeyAction action,
                                                      app::KeyContext context) {
-    for (int c=0; actions[c].name; ++c) {
-      if (action == actions[c].action &&
-          context == actions[c].context)
-        return actions[c].userfriendly;
+    for (const auto& a : actions()) {
+      if (action == a.action && context == a.context)
+        return a.userfriendly;
     }
     return std::string();
   }
@@ -148,7 +166,7 @@ namespace {
     int c = int(wheelAction);
     if (c >= int(app::WheelAction::First) &&
         c <= int(app::WheelAction::Last)) {
-      return wheel_actions[c].userfriendly;
+      return wheel_actions()[c].userfriendly;
     }
     else
       return std::string();
@@ -185,26 +203,25 @@ namespace {
 namespace base {
 
   template<> app::KeyAction convert_to(const std::string& from) {
-    app::KeyAction action = app::KeyAction::None;
-    for (int c=0; actions[c].name; ++c) {
-      if (from == actions[c].name)
-        return actions[c].action;
+    for (const auto& a : actions()) {
+      if (from == a.name)
+        return a.action;
     }
-    return action;
+    return app::KeyAction::None;
   }
 
   template<> std::string convert_to(const app::KeyAction& from) {
-    for (int c=0; actions[c].name; ++c) {
-      if (from == actions[c].action)
-        return actions[c].name;
+    for (const auto& a : actions()) {
+      if (from == a.action)
+        return a.name;
     }
-    return "";
+    return std::string();
   }
 
   template<> app::WheelAction convert_to(const std::string& from) {
     for (int c=int(app::WheelAction::First);
             c<=int(app::WheelAction::Last); ++c) {
-      if (from == wheel_actions[c].name)
+      if (from == wheel_actions()[c].name)
         return (app::WheelAction)c;
     }
     return app::WheelAction::None;
@@ -214,24 +231,24 @@ namespace base {
     int c = int(from);
     if (c >= int(app::WheelAction::First) &&
         c <= int(app::WheelAction::Last)) {
-      return wheel_actions[c].name;
+      return wheel_actions()[c].name;
     }
     else
       return std::string();
   }
 
   template<> app::KeyContext convert_to(const std::string& from) {
-    for (int c=0; contexts[c].name; ++c) {
-      if (from == contexts[c].name)
-        return contexts[c].context;
+    for (int c=0; g_contexts[c].name; ++c) {
+      if (from == g_contexts[c].name)
+        return g_contexts[c].context;
     }
     return app::KeyContext::Any;
   }
 
   template<> std::string convert_to(const app::KeyContext& from) {
-    for (int c=0; contexts[c].name; ++c) {
-      if (from == contexts[c].context)
-        return contexts[c].name;
+    for (int c=0; g_contexts[c].name; ++c) {
+      if (from == g_contexts[c].context)
+        return g_contexts[c].name;
     }
     return std::string();
   }
@@ -358,7 +375,7 @@ KeyPtr Key::MakeDragAction(WheelAction dragAction)
   KeyPtr k(new Key(dragAction));
   k->m_type = KeyType::DragAction;
   k->m_keycontext = KeyContext::Any;
-  k->m_dragVector = wheel_actions[(int)dragAction].vector;
+  k->m_dragVector = wheel_actions()[(int)dragAction].vector;
   return k;
 }
 
@@ -554,6 +571,12 @@ void KeyboardShortcuts::destroyInstance()
 
 KeyboardShortcuts::KeyboardShortcuts()
 {
+  ASSERT(Strings::instance());
+  Strings::instance()->LanguageChange.connect([]{
+    // Clear collections so they are re-constructed with the new language
+    g_actions.clear();
+    g_wheel_actions.clear();
+  });
 }
 
 KeyboardShortcuts::~KeyboardShortcuts()
@@ -1300,21 +1323,21 @@ std::string convertKeyContextToUserFriendlyString(KeyContext keyContext)
     case KeyContext::Any:
       return std::string();
     case KeyContext::Normal:
-      return "Normal";
+      return I18N_KEY(key_context_normal);
     case KeyContext::SelectionTool:
-      return "Selection";
+      return I18N_KEY(key_context_selection);
     case KeyContext::TranslatingSelection:
-      return "Translating Selection";
+      return I18N_KEY(key_context_translating_selection);
     case KeyContext::ScalingSelection:
-      return "Scaling Selection";
+      return I18N_KEY(key_context_scaling_selection);
     case KeyContext::RotatingSelection:
-      return "Rotating Selection";
+      return I18N_KEY(key_context_rotating_selection);
     case KeyContext::MoveTool:
-      return "Move Tool";
+      return I18N_KEY(key_context_move_tool);
     case KeyContext::FreehandTool:
-      return "Freehand Tool";
+      return I18N_KEY(key_context_freehand_tool);
     case KeyContext::ShapeTool:
-      return "Shape Tool";
+      return I18N_KEY(key_context_shape_tool);
   }
   return std::string();
 }

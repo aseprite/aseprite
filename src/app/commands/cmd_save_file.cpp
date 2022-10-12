@@ -49,7 +49,7 @@ namespace app {
 class SaveFileJob : public Job, public IFileOpProgress {
 public:
   SaveFileJob(FileOp* fop)
-    : Job("Saving file")
+    : Job(Strings::save_file_saving().c_str())
     , m_fop(fop)
   {
   }
@@ -254,7 +254,7 @@ void SaveFileBaseCommand::saveDocumentInBackground(
 #ifdef ENABLE_UI
     if (context->isUIAvailable() && params().ui()) {
       StatusBar::instance()->setStatusText(
-        2000, fmt::format("File <{}> saved.",
+        2000, fmt::format(Strings::save_file_saved(),
                           base::get_file_name(filename)));
     }
 #endif
@@ -298,7 +298,7 @@ void SaveFileCommand::onExecute(Context* context)
   // save-as dialog to the user to select for first time the file-name
   // for this document.
   else {
-    saveAsDialog(context, "Save File",
+    saveAsDialog(context, Strings::save_file_title(),
                  (params().filename.isSet() ? params().filename():
                                               document->filename()),
                  MarkAsSaved::On);
@@ -321,7 +321,7 @@ SaveFileAsCommand::SaveFileAsCommand()
 void SaveFileAsCommand::onExecute(Context* context)
 {
   Doc* document = context->activeDocument();
-  saveAsDialog(context, "Save As",
+  saveAsDialog(context, Strings::save_file_save_as(),
                (params().filename.isSet() ? params().filename():
                                             document->filename()),
                MarkAsSaved::On);
@@ -366,7 +366,7 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
       [this, &win, &askOverwrite, context, doc]() -> std::string {
         std::string result =
           saveAsDialog(
-            context, "Export",
+            context, Strings::save_file_export(),
             win.outputFilenameValue(),
             MarkAsSaved::Off,
             SaveInBackground::Off,

@@ -16,6 +16,7 @@
 #include "app/doc_access.h"
 #include "app/doc_event.h"
 #include "app/doc_range.h"
+#include "app/i18n/strings.h"
 #include "app/modules/editors.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
@@ -587,7 +588,7 @@ class StatusBar::SnapToGridWindow : public ui::PopupWindow {
 public:
   SnapToGridWindow()
     : ui::PopupWindow("", ClickBehavior::DoNothingOnClick)
-    , m_button("Disable Snap to Grid") {
+    , m_button(Strings::statusbar_tips_disable_snap_grid()) {
     InitTheme.connect(
       [this]{
         setBorder(gfx::Border(2 * guiscale()));
@@ -692,7 +693,7 @@ StatusBar::StatusBar(TooltipManager* tooltipManager)
     Box* box1 = new Box(HORIZONTAL);
     Box* box4 = new Box(HORIZONTAL);
 
-    m_frameLabel = new Label("Frame:");
+    m_frameLabel = new Label(Strings::statusbar_tips_frame());
     m_currentFrame = new GotoFrameEntry();
     m_newFrame = new Button("+");
     m_newFrame->Click.connect([this]{ newFrame(); });
@@ -713,9 +714,12 @@ StatusBar::StatusBar(TooltipManager* tooltipManager)
   }
 
   // Tooltips
-  tooltipManager->addTooltipFor(m_currentFrame, "Current Frame", BOTTOM);
-  tooltipManager->addTooltipFor(m_zoomEntry, "Zoom Level", BOTTOM);
-  tooltipManager->addTooltipFor(m_newFrame, "New Frame", BOTTOM);
+  tooltipManager->addTooltipFor(
+    m_currentFrame, Strings::statusbar_tips_current_frame(), BOTTOM);
+  tooltipManager->addTooltipFor(
+    m_zoomEntry, Strings::statusbar_tips_zoom_level(), BOTTOM);
+  tooltipManager->addTooltipFor(
+    m_newFrame, Strings::statusbar_tips_new_frame(), BOTTOM);
 
   App::instance()->activeToolManager()->add_observer(this);
 

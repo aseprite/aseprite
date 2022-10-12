@@ -122,18 +122,18 @@ void SpritePropertiesCommand::onExecute(Context* context)
     // Update widgets values
     switch (sprite->pixelFormat()) {
       case IMAGE_RGB:
-        imgtype_text = "RGB";
+        imgtype_text = Strings::sprite_properties_rgb();
         break;
       case IMAGE_GRAYSCALE:
-        imgtype_text = "Grayscale";
+        imgtype_text = Strings::sprite_properties_grayscale();
         break;
       case IMAGE_INDEXED:
-        imgtype_text = fmt::format("Indexed ({0} colors)",
+        imgtype_text = fmt::format(Strings::sprite_properties_indexed_color(),
                                    sprite->palette(0)->size());
         break;
       default:
         ASSERT(false);
-        imgtype_text = "Unknown";
+        imgtype_text = Strings::general_unknown();
         break;
     }
 
@@ -169,7 +169,8 @@ void SpritePropertiesCommand::onExecute(Context* context)
         LEFT);
     }
     else {
-      window.transparentColorPlaceholder()->addChild(new Label("(only for indexed images)"));
+      window.transparentColorPlaceholder()->addChild(
+        new Label(Strings::sprite_properties_indexed_image_only()));
     }
 
     // Pixel ratio
@@ -205,7 +206,7 @@ void SpritePropertiesCommand::onExecute(Context* context)
 
         ContextWriter writer(context);
         Sprite* sprite(writer.sprite());
-        Tx tx(writer.context(), "Assign Color Profile");
+        Tx tx(writer.context(), Strings::sprite_properties_assign_color_profile());
         tx(new cmd::AssignColorProfile(
              sprite, colorSpaces[selectedColorProfile]->gfxColorSpace()));
         tx.commit();
@@ -218,7 +219,7 @@ void SpritePropertiesCommand::onExecute(Context* context)
 
         ContextWriter writer(context);
         Sprite* sprite(writer.sprite());
-        Tx tx(writer.context(), "Convert Color Profile");
+        Tx tx(writer.context(), Strings::sprite_properties_convert_color_profile());
         tx(new cmd::ConvertColorProfile(
              sprite, colorSpaces[selectedColorProfile]->gfxColorSpace()));
         tx.commit();
@@ -248,7 +249,7 @@ void SpritePropertiesCommand::onExecute(Context* context)
     if (index != sprite->transparentColor() ||
         pixelRatio != sprite->pixelRatio() ||
         newUserData != sprite->userData()) {
-      Tx tx(writer.context(), "Change Sprite Properties");
+      Tx tx(writer.context(), Strings::sprite_properties_change_sprite_props());
       DocApi api = writer.document()->getApi(tx);
 
       if (index != sprite->transparentColor())
