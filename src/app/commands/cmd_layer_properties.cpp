@@ -160,8 +160,8 @@ public:
       m_document->add_observer(this);
 
     if (countLayers() > 0) {
-      ui::Grid* mainGrid = g_window->propertiesGrid();
-      m_userDataView.configureAndSet(m_layer->userData(), mainGrid);
+      m_userDataView.configureAndSet(m_layer->userData(),
+                                     g_window->propertiesGrid());
     }
 
     updateFromLayer();

@@ -30,8 +30,7 @@ TagWindow::TagWindow(const doc::Sprite* sprite, const doc::Tag* tag)
   , m_userData(tag->userData())
   , m_userDataView(Preferences::instance().tags.userDataVisibility)
 {
-  auto mainGrid = findChildT<ui::Grid>("properties_grid");
-  m_userDataView.configureAndSet(m_userData, mainGrid);
+  m_userDataView.configureAndSet(m_userData, propertiesGrid());
 
   name()->setText(tag->name());
   from()->setTextf("%d", tag->fromFrame()+m_base);

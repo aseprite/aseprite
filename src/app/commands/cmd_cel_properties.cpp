@@ -81,9 +81,9 @@ public:
       m_document->add_observer(this);
 
     if (countCels() > 0) {
-      ui::Grid* mainGrid = g_window->propertiesGrid();
       m_userDataView.configureAndSet(
-        (m_cel ? m_cel->data()->userData(): UserData()), mainGrid);
+        (m_cel ? m_cel->data()->userData(): UserData()),
+        g_window->propertiesGrid());
     }
     else if (!m_cel)
       m_userDataView.setVisible(false, false);

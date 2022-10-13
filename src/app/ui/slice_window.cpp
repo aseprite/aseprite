@@ -31,8 +31,7 @@ SliceWindow::SliceWindow(const doc::Sprite* sprite,
   ASSERT(!slices.empty());
 
   Slice* slice = slices.frontAs<Slice>();
-  auto mainGrid = findChildT<ui::Grid>("properties_grid");
-  m_userDataView.configureAndSet(slice->userData(), mainGrid);
+  m_userDataView.configureAndSet(slice->userData(), propertiesGrid());
   userData()->Click.connect([this]{ onToggleUserData(); });
 
   if (slices.size() == 1) {

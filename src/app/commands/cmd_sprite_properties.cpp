@@ -49,8 +49,8 @@ public:
   {
     userData()->Click.connect([this]{ onToggleUserData(); });
 
-    ui::Grid* mainGrid = propertiesGrid();
-    m_userDataView.configureAndSet(m_sprite->userData(), mainGrid);
+    m_userDataView.configureAndSet(m_sprite->userData(),
+                                   propertiesGrid());
 
     remapWindow();
     centerWindow();
