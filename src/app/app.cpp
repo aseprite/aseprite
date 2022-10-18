@@ -57,7 +57,6 @@
 #include "app/util/clipboard.h"
 #include "base/exception.h"
 #include "base/fs.h"
-#include "base/scoped_lock.h"
 #include "base/split_string.h"
 #include "doc/sprite.h"
 #include "fmt/format.h"

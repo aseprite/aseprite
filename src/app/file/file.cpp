@@ -31,8 +31,6 @@
 #include "app/ui/optional_alert.h"
 #include "app/ui/status_bar.h"
 #include "base/fs.h"
-#include "base/mutex.h"
-#include "base/scoped_lock.h"
 #include "base/string.h"
 #include "dio/detect_format.h"
 #include "doc/algorithm/resize_image.h"
@@ -1051,13 +1049,13 @@ void FileOp::operate(IFileOpProgress* progress)
 void FileOp::done()
 {
   // Finally done.
-  scoped_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   m_done = true;
 }
 
 void FileOp::stop()
 {
-  scoped_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
   if (!m_done)
     m_stop = true;
 }
@@ -1338,7 +1336,7 @@ void FileOp::setError(const char *format, ...)
 
   // Concatenate the new error
   {
-    scoped_lock lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     // Add a newline char automatically if it's needed
     if (!m_error.empty() && m_error.back() != '\n')
       m_error.push_back('\n');
@@ -1348,7 +1346,7 @@ void FileOp::setError(const char *format, ...)
 
 void FileOp::setProgress(double progress)
 {
-  scoped_lock lock(m_mutex);
+  std::lock_guard lock(m_mutex);
 
   if (isSequence()) {
     m_progress =
@@ -1377,7 +1375,7 @@ double FileOp::progress() const
 {
   double progress;
   {
-    scoped_lock lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     progress = m_progress;
   }
   return progress;
@@ -1389,7 +1387,7 @@ bool FileOp::isDone() const
 {
   bool done;
   {
-    scoped_lock lock(m_mutex);
+    std::lock_guard lock(m_mutex);
     done = m_done;
   }
   return done;
@@ -1399,7 +1397,7 @@ bool FileOp::isStop() const
 {
   bool stop;
   {
-    scoped_lock lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
     stop = m_stop;
   }
   return stop;

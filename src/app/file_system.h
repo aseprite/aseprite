@@ -9,11 +9,11 @@
 #define APP_FILE_SYSTEM_H_INCLUDED
 #pragma once
 
-#include "base/mutex.h"
 #include "base/paths.h"
 #include "obs/signal.h"
 #include "os/surface.h"
 
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -47,7 +47,7 @@ namespace app {
     obs::signal<void(IFileItem*)> ItemRemoved;
 
   private:
-    base::mutex m_mutex;
+    std::mutex m_mutex;
   };
 
   class LockFS {

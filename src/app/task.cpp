@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -29,7 +29,7 @@ Task::~Task()
 
 void Task::run(base::task::func_t&& func)
 {
-  std::lock_guard<std::mutex> lock(m_token_mutex);
+  std::lock_guard lock(m_token_mutex);
   m_task.on_execute(std::move(func));
   m_token = &m_task.start(tasks_pool);
 }

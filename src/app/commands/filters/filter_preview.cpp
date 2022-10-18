@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -14,7 +14,6 @@
 #include "app/commands/filters/filter_manager_impl.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_render.h"
-#include "base/scoped_lock.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
 #include "ui/manager.h"
@@ -60,7 +59,7 @@ void FilterPreview::setEnablePreview(bool state)
 void FilterPreview::stop()
 {
   {
-    base::scoped_lock lock(m_filterMgrMutex);
+    std::scoped_lock lock(m_filterMgrMutex);
     if (m_timer.isRunning()) {
       ASSERT(m_filterMgr);
       m_filterMgr->end();
@@ -79,7 +78,7 @@ void FilterPreview::restartPreview()
 {
   stop();
 
-  base::scoped_lock lock(m_filterMgrMutex);
+  std::scoped_lock lock(m_filterMgrMutex);
 
   m_filterMgr->beginForPreview();
   m_filterIsDone = false;
@@ -101,13 +100,13 @@ bool FilterPreview::onProcessMessage(Message* msg)
 
       // Stop the preview timer.
       {
-        base::scoped_lock lock(m_filterMgrMutex);
+        std::scoped_lock lock(m_filterMgrMutex);
         m_timer.stop();
       }
       break;
 
     case kTimerMessage: {
-      base::scoped_lock lock(m_filterMgrMutex);
+      std::scoped_lock lock(m_filterMgrMutex);
       if (m_filterMgr) {
         m_filterMgr->flush();
         if (m_filterIsDone)
@@ -126,7 +125,7 @@ void FilterPreview::onFilterThread()
   bool running = true;
   while (running) {
     {
-      base::scoped_lock lock(m_filterMgrMutex);
+      std::scoped_lock lock(m_filterMgrMutex);
       m_filterIsDone = !m_filterMgr->applyStep();
       running = (!m_filterIsDone && m_timer.isRunning());
     }

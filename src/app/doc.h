@@ -14,7 +14,6 @@
 #include "app/file/format_options.h"
 #include "app/transformation.h"
 #include "base/disable_copying.h"
-#include "base/mutex.h"
 #include "base/rw_lock.h"
 #include "doc/blend_mode.h"
 #include "doc/color.h"

@@ -25,7 +25,6 @@
 #include "app/ui/timeline/timeline.h"
 #include "app/ui/workspace.h"
 #include "app/ui/workspace_tabs.h"
-#include "base/mutex.h"
 #include "doc/sprite.h"
 #include "ui/system.h"
 

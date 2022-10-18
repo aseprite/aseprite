@@ -15,8 +15,6 @@
 #include "app/console.h"
 #include "app/context.h"
 #include "app/i18n/strings.h"
-#include "base/mutex.h"
-#include "base/scoped_lock.h"
 #include "fmt/format.h"
 #include "ui/alert.h"
 #include "ui/widget.h"

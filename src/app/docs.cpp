@@ -13,7 +13,6 @@
 
 #include "app/doc.h"
 #include "base/fs.h"
-#include "base/mutex.h"
 
 #include <algorithm>
 

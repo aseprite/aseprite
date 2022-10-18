@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -12,14 +12,13 @@
 #include "doc/object.h"
 
 #include "base/debug.h"
-#include "base/mutex.h"
-#include "base/scoped_lock.h"
 
 #include <map>
+#include <mutex>
 
 namespace doc {
 
-static base::mutex mutex;
+static std::mutex g_mutex;
 static ObjectId newId = 0;
 // TODO Profile this and see if an unordered_map is better
 static std::map<ObjectId, Object*> objects;
@@ -54,7 +53,7 @@ const ObjectId Object::id() const
   // The first time the ID is request, we store the object in the
   // "objects" hash table.
   if (!m_id) {
-    base::scoped_lock hold(mutex);
+    std::lock_guard lock(g_mutex);
     m_id = ++newId;
     objects.insert(std::make_pair(m_id, const_cast<Object*>(this)));
   }
@@ -63,7 +62,7 @@ const ObjectId Object::id() const
 
 void Object::setId(ObjectId id)
 {
-  base::scoped_lock hold(mutex);
+  std::lock_guard lock(g_mutex);
 
   if (m_id) {
     auto it = objects.find(m_id);
@@ -102,7 +101,7 @@ void Object::setVersion(ObjectVersion version)
 
 Object* get_object(ObjectId id)
 {
-  base::scoped_lock hold(mutex);
+  std::lock_guard lock(g_mutex);
   auto it = objects.find(id);
   if (it != objects.end())
     return it->second;

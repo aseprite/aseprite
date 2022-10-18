@@ -14,7 +14,6 @@
 #include "app/file/file_op_config.h"
 #include "app/file/format_options.h"
 #include "app/pref/preferences.h"
-#include "base/mutex.h"
 #include "base/paths.h"
 #include "doc/frame.h"
 #include "doc/image_ref.h"
@@ -24,6 +23,7 @@
 
 #include <cstdio>
 #include <memory>
+#include <mutex>
 #include <string>
 
 // Flags for FileOp::createLoadDocumentOperation()
@@ -278,7 +278,7 @@ namespace app {
     FileOpROI m_roi;
 
     // Shared fields between threads.
-    mutable base::mutex m_mutex; // Mutex to access to the next two fields.
+    mutable std::mutex m_mutex; // Mutex to access to the next two fields.
     double m_progress;          // Progress (1.0 is ready).
     IFileOpProgress* m_progressInterface;
     std::string m_error;        // Error string.
