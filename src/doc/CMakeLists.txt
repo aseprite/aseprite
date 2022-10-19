@@ -39,7 +39,6 @@ add_library(doc-lib
   file/pal_file.cpp
   grid.cpp
   grid_io.cpp
-  handle_anidir.cpp
   image.cpp
   image_impl.cpp
   image_io.cpp
@@ -55,6 +54,7 @@ add_library(doc-lib
   octree_map.cpp
   palette.cpp
   palette_io.cpp
+  playback.cpp
   primitives.cpp
   remap.cpp
   rgbmap_rgb5a3.cpp

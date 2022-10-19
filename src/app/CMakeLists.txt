@@ -521,6 +521,7 @@ add_library(app-lib
   cmd/set_tag_color.cpp
   cmd/set_tag_name.cpp
   cmd/set_tag_range.cpp
+  cmd/set_tag_repeat.cpp
   cmd/set_tileset_base_index.cpp
   cmd/set_tileset_name.cpp
   cmd/set_total_frames.cpp

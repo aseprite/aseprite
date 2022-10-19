@@ -292,7 +292,15 @@ for each tag.
                   0 = Forward
                   1 = Reverse
                   2 = Ping-pong
-      BYTE[8]   For future (set to zero)
+                  3 = Ping-pong Reverse
+      WORD      Repeat N times. Play this animation section N times:
+                  0 = Doesn't specify (plays infinite in UI, once on export,
+                      for ping-pong it plays once in each direction)
+                  1 = Plays once (for ping-pong, it plays just in one direction)
+                  2 = Plays twice (for ping-pong, it plays once in one direction,
+                      and once in reverse)
+                  n = Plays N times
+      BYTE[6]   For future (set to zero)
       BYTE[3]   RGB values of the tag color
                   Deprecated, used only for backward compatibility with Aseprite v1.2.x
                   The color of the tag is the one in the user data field following

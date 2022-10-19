@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -23,6 +23,8 @@ namespace doc {
 
   class Tag : public WithUserData {
   public:
+    static constexpr int kMaxRepeat = 65535;
+
     Tag(frame_t from, frame_t to);
     Tag(const Tag& other);
     ~Tag();
@@ -35,19 +37,27 @@ namespace doc {
     const std::string& name() const { return m_name; }
     color_t color() const { return userData().color(); }
     AniDir aniDir() const { return m_aniDir; }
+    int repeat() const { return m_repeat; }
 
     void setFrameRange(frame_t from, frame_t to);
     void setName(const std::string& name);
     void setColor(color_t color);
     void setAniDir(AniDir aniDir);
+    void setRepeat(int repeat);
 
     void setOwner(Tags* owner);
+
+    bool contains(const frame_t frame) const {
+      return (frame >= m_from &&
+              frame <= m_to);
+    }
 
   public:
     Tags* m_owner;
     frame_t m_from, m_to;
     std::string m_name;
-    AniDir m_aniDir;
+    AniDir m_aniDir = AniDir::FORWARD;
+    int m_repeat = 0;
 
     // Disable operator=
     Tag& operator=(Tag&);

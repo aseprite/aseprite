@@ -21,7 +21,6 @@
 #include "app/ui/editor/scrolling_state.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui_context.h"
-#include "doc/handle_anidir.h"
 #include "doc/tag.h"
 #include "ui/manager.h"
 #include "ui/message.h"
@@ -39,7 +38,6 @@ PlayState::PlayState(const bool playOnce,
   , m_toScroll(false)
   , m_playTimer(10)
   , m_nextFrameTime(-1)
-  , m_pingPongForward(true)
   , m_refFrame(0)
   , m_tag(nullptr)
 {
@@ -85,10 +83,17 @@ void PlayState::onEnterState(Editor* editor)
     m_editor->setFrame(frame);
   }
 
+  m_playback = doc::Playback(m_editor->sprite(),
+                             TagsList(), // TODO add support to follow subtags
+                             m_editor->frame(),
+                             m_playOnce ? doc::Playback::PlayOnce:
+                             m_playAll ? doc::Playback::PlayWithoutTagsInLoop:
+                                         doc::Playback::PlayInLoop,
+                             m_tag);
+
   m_toScroll = false;
   m_nextFrameTime = getNextFrameTime();
   m_curFrameTick = base::current_tick();
-  m_pingPongForward = true;
 
   // Maybe we came from ScrollingState and the timer is already
   // running.
@@ -195,40 +200,12 @@ void PlayState::onPlaybackTick()
 
   m_nextFrameTime -= (base::current_tick() - m_curFrameTick);
 
-  doc::Sprite* sprite = m_editor->sprite();
-
   while (m_nextFrameTime <= 0) {
-    doc::frame_t frame = m_editor->frame();
-
-    if (m_playOnce) {
-      bool atEnd = false;
-      if (m_tag) {
-        switch (m_tag->aniDir()) {
-          case AniDir::FORWARD:
-            atEnd = (frame == m_tag->toFrame());
-            break;
-          case AniDir::REVERSE:
-            atEnd = (frame == m_tag->fromFrame());
-            break;
-          case AniDir::PING_PONG:
-            atEnd = (!m_pingPongForward &&
-                     frame == m_tag->fromFrame());
-            break;
-        }
-      }
-      else {
-        atEnd = (frame == sprite->lastFrame());
-      }
-      if (atEnd) {
-        m_editor->stop();
-        break;
-      }
+    doc::frame_t frame = m_playback.nextFrame();
+    if (m_playback.isStopped()) {
+      m_editor->stop();
+      break;
     }
-
-    frame = calculate_next_frame(
-      sprite, frame, frame_t(1), m_tag,
-      m_pingPongForward);
-
     m_editor->setFrame(frame);
     m_nextFrameTime += getNextFrameTime();
   }

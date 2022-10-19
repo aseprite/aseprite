@@ -584,7 +584,7 @@ void Timeline::activateClipboardRange()
 }
 
 Tag* Timeline::getTagByFrame(const frame_t frame,
-                                       const bool getLoopTagIfNone)
+                             const bool getLoopTagIfNone)
 {
   if (!m_sprite)
     return nullptr;

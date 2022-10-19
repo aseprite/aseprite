@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2021  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -12,6 +12,7 @@
 #include "app/ui/editor/state_with_wheel_behavior.h"
 #include "base/time.h"
 #include "doc/frame.h"
+#include "doc/playback.h"
 #include "obs/connection.h"
 #include "ui/timer.h"
 
@@ -50,6 +51,7 @@ namespace app {
     double getNextFrameTime();
 
     Editor* m_editor;
+    doc::Playback m_playback;
     bool m_playOnce;
     bool m_playAll;
     bool m_toScroll;

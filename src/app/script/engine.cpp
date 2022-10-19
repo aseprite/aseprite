@@ -275,6 +275,7 @@ Engine::Engine()
   setfield_integer(L, "FORWARD", doc::AniDir::FORWARD);
   setfield_integer(L, "REVERSE", doc::AniDir::REVERSE);
   setfield_integer(L, "PING_PONG", doc::AniDir::PING_PONG);
+  setfield_integer(L, "PING_PONG_REVERSE", doc::AniDir::PING_PONG_REVERSE);
   lua_pop(L, 1);
 
   lua_newtable(L);

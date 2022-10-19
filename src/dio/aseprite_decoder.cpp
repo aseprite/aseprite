@@ -986,11 +986,13 @@ void AsepriteDecoder::readTagsChunk(doc::Tags* tags)
     int aniDir = read8();
     if (aniDir != int(doc::AniDir::FORWARD) &&
         aniDir != int(doc::AniDir::REVERSE) &&
-        aniDir != int(doc::AniDir::PING_PONG)) {
+        aniDir != int(doc::AniDir::PING_PONG) &&
+        aniDir != int(doc::AniDir::PING_PONG_REVERSE)) {
       aniDir = int(doc::AniDir::FORWARD);
     }
 
-    read32();                     // 8 reserved bytes
+    int repeat = read16();      // Number of times we repeat this tag
+    read16();                   // 6 reserved bytes
     read32();
 
     int r = read8();
@@ -1009,6 +1011,7 @@ void AsepriteDecoder::readTagsChunk(doc::Tags* tags)
 
     tag->setName(name);
     tag->setAniDir((doc::AniDir)aniDir);
+    tag->setRepeat(repeat);
     tags->add(tag);
   }
 }

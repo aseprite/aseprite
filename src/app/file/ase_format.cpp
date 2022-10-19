@@ -1109,7 +1109,8 @@ static void ase_file_write_tags_chunk(FILE* f,
     fputw(to, f);
     fputc((int)tag->aniDir(), f);
 
-    fputl(0, f);  // 8 reserved bytes
+    fputw(std::clamp(tag->repeat(), 0, Tag::kMaxRepeat), f);  // repeat
+    fputw(0, f);  // 6 reserved bytes
     fputl(0, f);
 
     fputc(doc::rgba_getr(tag->color()), f);
