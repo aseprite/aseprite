@@ -76,6 +76,10 @@ namespace doc {
     // The tag that is being played right now (can be nullptr).
     Tag* tag() const;
 
+    // Should be called when a specific tag is going to be deleted so
+    // we remove all references to this tag.
+    void removeReferencesToTag(Tag* tag);
+
   private:
     // Information about playing tags (and inner tags)
     struct PlayTag {

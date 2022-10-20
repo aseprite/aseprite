@@ -192,6 +192,8 @@ void PlayState::onRemoveTag(Editor* editor, doc::Tag* tag)
 {
   if (m_tag == tag)
     m_tag = nullptr;
+
+  m_playback.removeReferencesToTag(tag);
 }
 
 void PlayState::onPlaybackTick()

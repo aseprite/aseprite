@@ -10,6 +10,7 @@
 
 #include "doc/playback.h"
 
+#include "base/remove_from_container.h"
 #include "doc/frame.h"
 #include "doc/sprite.h"
 #include "doc/tag.h"
@@ -142,6 +143,20 @@ void Playback::stop()
 Tag* Playback::tag() const
 {
   return (!m_playing.empty() ? const_cast<Tag*>(m_playing.back()->tag): nullptr);
+}
+
+void Playback::removeReferencesToTag(Tag* tag)
+{
+  base::remove_from_container(m_tags, tag);
+  base::remove_from_container(m_played, tag);
+
+  for (auto it=m_playing.begin(); it!=m_playing.end(); ) {
+    std::unique_ptr<PlayTag>& playTag = *it;
+    if (playTag->tag == tag)
+      it = m_playing.erase(it);
+    else
+      ++it;
+  }
 }
 
 void Playback::handleEnterFrame(const frame_t frameDelta, const bool firstTime)
