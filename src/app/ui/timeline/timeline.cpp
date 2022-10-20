@@ -513,7 +513,8 @@ void Timeline::setFrame(frame_t frame, bool byUser)
 
     if (isPlaying)
       m_editor->play(false,
-                     Preferences::instance().editor.playAll());
+                     Preferences::instance().editor.playAll(),
+                     Preferences::instance().editor.playSubtags());
   }
 }
 

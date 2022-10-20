@@ -31,10 +31,12 @@ namespace app {
 using namespace ui;
 
 PlayState::PlayState(const bool playOnce,
-                     const bool playAll)
+                     const bool playAll,
+                     const bool playSubtags)
   : m_editor(nullptr)
   , m_playOnce(playOnce)
   , m_playAll(playAll)
+  , m_playSubtags(playSubtags)
   , m_toScroll(false)
   , m_playTimer(10)
   , m_nextFrameTime(-1)
@@ -83,13 +85,14 @@ void PlayState::onEnterState(Editor* editor)
     m_editor->setFrame(frame);
   }
 
-  m_playback = doc::Playback(m_editor->sprite(),
-                             TagsList(), // TODO add support to follow subtags
-                             m_editor->frame(),
-                             m_playOnce ? doc::Playback::PlayOnce:
-                             m_playAll ? doc::Playback::PlayWithoutTagsInLoop:
-                                         doc::Playback::PlayInLoop,
-                             m_tag);
+  m_playback = doc::Playback(
+    m_editor->sprite(),
+    m_playSubtags ? m_editor->sprite()->tags().getInternalList() : TagsList(),
+    m_editor->frame(),
+    m_playOnce ? doc::Playback::PlayOnce :
+    m_playAll  ? doc::Playback::PlayWithoutTagsInLoop :
+                 doc::Playback::PlayInLoop,
+    m_tag);
 
   m_toScroll = false;
   m_nextFrameTime = getNextFrameTime();

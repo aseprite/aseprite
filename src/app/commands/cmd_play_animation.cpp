@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -62,7 +63,8 @@ void PlayAnimationCommand::onExecute(Context* context)
     current_editor->stop();
   else
     current_editor->play(Preferences::instance().editor.playOnce(),
-                         Preferences::instance().editor.playAll());
+                         Preferences::instance().editor.playAll(),
+                         Preferences::instance().editor.playSubtags());
 }
 
 //////////////////////////////////////////////////////////////////////

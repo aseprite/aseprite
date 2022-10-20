@@ -27,7 +27,8 @@ namespace app {
   class PlayState : public StateWithWheelBehavior {
   public:
     PlayState(const bool playOnce,
-              const bool playAll);
+              const bool playAll,
+              const bool playSubtags);
 
     doc::Tag* playingTag() const;
 
@@ -54,6 +55,7 @@ namespace app {
     doc::Playback m_playback;
     bool m_playOnce;
     bool m_playAll;
+    bool m_playSubtags;
     bool m_toScroll;
     ui::Timer m_playTimer;
 
