@@ -56,13 +56,14 @@ static Tag* make_tag(const char* name, frame_t from, frame_t to, AniDir aniDir, 
 }
 
 static void expect_frames(Playback& play,
-                          const std::vector<frame_t>& expected)
+                          const std::vector<frame_t>& expected,
+                          frame_t frameDelta = frame_t(+1))
 {
   std::vector<frame_t> result;
   result.push_back(play.frame());
   for (int i=1; i<expected.size(); ++i) {
     PLAY_TRACE("[", i, "]");
-    result.push_back(play.nextFrame());
+    result.push_back(play.nextFrame(frameDelta));
   }
 
   for (int i=0; i<expected.size(); ++i) {
@@ -131,6 +132,14 @@ TEST(Playback, LoopSpriteStartFromFrame2)
   EXPECT_FALSE(play.isStopped());
 }
 
+TEST(Playback, LoopSpriteReverse)
+{
+  auto sprite = make_sprite(4);
+  Playback play(sprite.get(), 2, Playback::Mode::PlayInLoop);
+  expect_frames(play, {2,1,0,3,2,1,0,3}, -1);
+  EXPECT_FALSE(play.isStopped());
+}
+
 TEST(Playback, WithTagRepetitions)
 {
   Tag* a = make_tag("A", 1, 2, AniDir::FORWARD, 2);
@@ -147,6 +156,10 @@ TEST(Playback, WithTagRepetitions)
 
 TEST(Playback, LoopTagInfinite)
 {
+  //    A
+  //   -->
+  // 0 1 2 4
+
   Tag* a = make_tag("A", 1, 2, AniDir::FORWARD, 0);
   auto sprite = make_sprite(4, { a });
   Playback play(sprite.get(), 0, Playback::Mode::PlayInLoop, a);
@@ -154,9 +167,23 @@ TEST(Playback, LoopTagInfinite)
   EXPECT_FALSE(play.isStopped());
 }
 
-TEST(Playback, LoopTagInfiniteAndFinite)
+TEST(Playback, LoopInfiniteReverse)
 {
-  //   A
+  //    A
+  //   -->
+  // 0 1 2 4
+
+  Tag* a = make_tag("A", 1, 2, AniDir::FORWARD, 0);
+  auto sprite = make_sprite(4, { a });
+  Playback play(sprite.get(), TagsList(), // Ignore tags
+                0, Playback::Mode::PlayInLoop, nullptr);
+  expect_frames(play, {0,3,2,1,0,3,2,1,0}, -1);
+  EXPECT_FALSE(play.isStopped());
+}
+
+TEST(Playback, LoopTagFinite)
+{
+  //    A
   //   -->
   // 0 1 2 3
 

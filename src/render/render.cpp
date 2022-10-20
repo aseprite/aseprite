@@ -854,10 +854,12 @@ void Render::renderOnionskin(
     Tag* loop = m_onionskin.loopTag();
     Layer* onionLayer = (m_onionskin.layer() ? m_onionskin.layer():
                                                m_sprite->root());
-    Playback play(m_sprite, frame,
-                  loop ? Playback::PlayInLoop:
-                         Playback::PlayOnce,
-                  loop);
+    Playback play(
+      m_sprite,
+      TagsList(),  // TODO add an onionskin option to iterate subtags
+      frame,
+      Playback::PlayInLoop,
+      loop);
     play.nextFrame(-m_onionskin.prevFrames());
 
     for (frame_t frameOut = frame - m_onionskin.prevFrames();
