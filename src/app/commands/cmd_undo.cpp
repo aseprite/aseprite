@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2021  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -14,7 +14,6 @@
 #include "app/context_access.h"
 #include "app/doc_undo.h"
 #include "app/ini_file.h"
-#include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/pref/preferences.h"
@@ -69,11 +68,12 @@ void UndoCommand::onExecute(Context* context)
   DocUndo* undo = document->undoHistory();
 
 #ifdef ENABLE_UI
+  auto editor = Editor::activeEditor();
   Sprite* sprite = document->sprite();
   SpritePosition spritePosition;
   const bool gotoModified =
     (Preferences::instance().undo.gotoModified() &&
-     context->isUIAvailable() && current_editor);
+     context->isUIAvailable() && editor);
   if (gotoModified) {
     SpritePosition currentPosition(writer.site()->layer(),
                                    writer.site()->frame());
@@ -86,15 +86,15 @@ void UndoCommand::onExecute(Context* context)
     if (spritePosition != currentPosition) {
       Layer* selectLayer = spritePosition.layer();
       if (selectLayer)
-        current_editor->setLayer(selectLayer);
-      current_editor->setFrame(spritePosition.frame());
+        editor->setLayer(selectLayer);
+      editor->setFrame(spritePosition.frame());
 
       // Draw the current layer/frame (which is not undone yet) so the
       // user can see the doUndo/doRedo effect.
-      current_editor->drawSpriteClipped(
+      editor->drawSpriteClipped(
         gfx::Region(gfx::Rect(0, 0, sprite->width(), sprite->height())));
 
-      current_editor->display()->flipDisplay();
+      editor->display()->flipDisplay();
       base::this_thread::sleep_for(0.01);
     }
   }
@@ -141,8 +141,8 @@ void UndoCommand::onExecute(Context* context)
     if (spritePosition != currentPosition) {
       Layer* selectLayer = spritePosition.layer();
       if (selectLayer)
-        current_editor->setLayer(selectLayer);
-      current_editor->setFrame(spritePosition.frame());
+        editor->setLayer(selectLayer);
+      editor->setFrame(spritePosition.frame());
     }
   }
 

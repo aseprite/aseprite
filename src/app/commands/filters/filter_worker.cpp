@@ -14,7 +14,6 @@
 #include "app/console.h"
 #include "app/i18n/strings.h"
 #include "app/ini_file.h"
-#include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/status_bar.h"

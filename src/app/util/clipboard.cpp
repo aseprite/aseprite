@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -20,7 +20,6 @@
 #include "app/doc_api.h"
 #include "app/doc_range.h"
 #include "app/doc_range_ops.h"
-#include "app/modules/editors.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
@@ -466,6 +465,8 @@ void Clipboard::paste(Context* ctx,
   if (!dstSpr)
     return;
 
+  auto editor = Editor::activeEditor();
+
   switch (format()) {
 
     case ClipboardFormat::Image: {
@@ -499,15 +500,15 @@ void Clipboard::paste(Context* ctx,
             0));
       }
 
-      if (current_editor && interactive) {
+      if (editor && interactive) {
         // TODO we don't support pasting in multiple cels at the
         //      moment, so we clear the range here (same as in
         //      PasteTextCommand::onExecute())
         App::instance()->timeline()->clearAndInvalidateRange();
 
         // Change to MovingPixelsState
-        current_editor->pasteImage(src_image.get(),
-                                   m_data->mask.get());
+        editor->pasteImage(src_image.get(),
+                           m_data->mask.get());
       }
       else {
         // Non-interactive version (just copy the image to the cel)
@@ -544,13 +545,13 @@ void Clipboard::paste(Context* ctx,
     }
 
     case ClipboardFormat::Tilemap: {
-      if (current_editor && interactive) {
+      if (editor && interactive) {
         // TODO match both tilesets?
         // TODO add post-command parameters (issue #2324)
 
         // Change to MovingTilemapState
-        current_editor->pasteImage(m_data->tilemap.get(),
-                                   m_data->mask.get());
+        editor->pasteImage(m_data->tilemap.get(),
+                           m_data->mask.get());
       }
       else {
         // TODO non-interactive version (for scripts)
@@ -588,8 +589,8 @@ void Clipboard::paste(Context* ctx,
             // This is the app::copy_range (not clipboard::copy_range()).
             if (srcRange.layers() == dstRange.layers())
               app::copy_range(srcDoc, srcRange, dstRange, kDocRangeBefore);
-            if (current_editor)
-              current_editor->invalidate(); // TODO check if this is necessary
+            if (editor)
+              editor->invalidate(); // TODO check if this is necessary
             return;
           }
 
@@ -635,8 +636,8 @@ void Clipboard::paste(Context* ctx,
           }
 
           tx.commit();
-          if (current_editor)
-            current_editor->invalidate(); // TODO check if this is necessary
+          if (editor)
+            editor->invalidate(); // TODO check if this is necessary
           break;
         }
 
@@ -688,8 +689,8 @@ void Clipboard::paste(Context* ctx,
           }
 
           tx.commit();
-          if (current_editor)
-            current_editor->invalidate(); // TODO check if this is necessary
+          if (editor)
+            editor->invalidate(); // TODO check if this is necessary
           break;
         }
 
@@ -740,8 +741,8 @@ void Clipboard::paste(Context* ctx,
           }
 
           tx.commit();
-          if (current_editor)
-            current_editor->invalidate(); // TODO check if this is necessary
+          if (editor)
+            editor->invalidate(); // TODO check if this is necessary
           break;
         }
       }

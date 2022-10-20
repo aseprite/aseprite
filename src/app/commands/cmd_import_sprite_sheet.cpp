@@ -18,7 +18,6 @@
 #include "app/doc_access.h"
 #include "app/doc_api.h"
 #include "app/i18n/strings.h"
-#include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/pref/preferences.h"
@@ -310,7 +309,7 @@ private:
     if (m_document && !m_editor) {
       m_rect = getRectFromEntries();
       m_padding = getPaddingFromEntries();
-      m_editor = current_editor;
+      m_editor = Editor::activeEditor();
       m_editorState.reset(
         new SelectBoxState(
           this, m_rect,

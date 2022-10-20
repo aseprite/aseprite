@@ -18,7 +18,6 @@
 #include "app/console.h"
 #include "app/doc.h"
 #include "app/i18n/strings.h"
-#include "app/modules/editors.h"
 #include "app/modules/palettes.h"
 #include "app/pref/preferences.h"
 #include "app/ui/button_set.h"

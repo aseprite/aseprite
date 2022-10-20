@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -22,7 +22,6 @@
 #include "app/doc_access.h"
 #include "app/doc_event.h"
 #include "app/i18n/strings.h"
-#include "app/modules/editors.h"
 #include "app/modules/palettes.h"
 #include "app/pref/preferences.h"
 #include "app/tx.h"
@@ -427,7 +426,7 @@ void DocView::onLayerMergedDown(DocEvent& ev)
 
 void DocView::onAddLayer(DocEvent& ev)
 {
-  if (current_editor == m_editor) {
+  if (m_editor->isActive()) {
     ASSERT(ev.layer() != NULL);
     m_editor->setLayer(ev.layer());
   }
@@ -435,7 +434,7 @@ void DocView::onAddLayer(DocEvent& ev)
 
 void DocView::onAddFrame(DocEvent& ev)
 {
-  if (current_editor == m_editor)
+  if (m_editor->isActive())
     m_editor->setFrame(ev.frame());
   else if (m_editor->frame() > ev.frame())
     m_editor->setFrame(m_editor->frame()+1);

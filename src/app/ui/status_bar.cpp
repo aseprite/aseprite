@@ -17,7 +17,6 @@
 #include "app/doc_event.h"
 #include "app/doc_range.h"
 #include "app/i18n/strings.h"
-#include "app/modules/editors.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
@@ -959,8 +958,8 @@ void StatusBar::onActiveSiteChange(const Site& site)
     }
 
     // Zoom level
-    if (current_editor)
-      updateFromEditor(current_editor);
+    if (auto editor = Editor::activeEditor())
+      updateFromEditor(editor);
   }
   else {
     m_docControls->setVisible(false);
@@ -993,8 +992,8 @@ void StatusBar::newFrame()
 
 void StatusBar::onChangeZoom(const render::Zoom& zoom)
 {
-  if (current_editor)
-    current_editor->setEditorZoom(zoom);
+  if (auto editor = Editor::activeEditor())
+    editor->setEditorZoom(zoom);
 }
 
 void StatusBar::updateSnapToGridWindowPosition()

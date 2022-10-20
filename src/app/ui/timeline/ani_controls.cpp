@@ -14,7 +14,6 @@
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
 #include "app/i18n/strings.h"
-#include "app/modules/editors.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/skin/skin_theme.h"
@@ -83,8 +82,10 @@ void AniControls::onClickButton()
 
   Command* cmd = Commands::instance()->byId(getCommandId(item));
   if (cmd) {
+    auto editor = Editor::activeEditor();
+
     UIContext::instance()->executeCommandFromMenuOrShortcut(cmd);
-    updateUsingEditor(current_editor);
+    updateUsingEditor(editor);
   }
 }
 
@@ -92,10 +93,12 @@ void AniControls::onRightClick(Item* item)
 {
   ButtonSet::onRightClick(item);
 
-  if (item == getItem(ACTION_PLAY) && current_editor)
-    current_editor->showAnimationSpeedMultiplierPopup(
+  auto editor = Editor::activeEditor();
+  if (item == getItem(ACTION_PLAY) && editor) {
+    editor->showAnimationSpeedMultiplierPopup(
       Preferences::instance().editor.playOnce,
       Preferences::instance().editor.playAll, true);
+  }
 }
 
 const char* AniControls::getCommandId(int index) const

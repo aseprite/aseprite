@@ -20,7 +20,6 @@
 #include "app/file_selector.h"
 #include "app/i18n/strings.h"
 #include "app/job.h"
-#include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
 #include "app/recent_files.h"

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -15,7 +15,6 @@
 #include "app/commands/params.h"
 #include "app/context_access.h"
 #include "app/i18n/strings.h"
-#include "app/modules/editors.h"
 #include "app/ui/editor/editor.h"
 #include "base/convert_to.h"
 #include "fmt/format.h"
@@ -55,11 +54,12 @@ bool ScrollCommand::onEnabled(Context* context)
 
 void ScrollCommand::onExecute(Context* context)
 {
-  ui::View* view = ui::View::getView(current_editor);
+  auto editor = Editor::activeEditor();
+  ui::View* view = ui::View::getView(editor);
   gfx::Point scroll = view->viewScroll();
   gfx::Point delta = m_moveThing.getDelta(context);
 
-  current_editor->setEditorScroll(scroll+delta);
+  editor->setEditorScroll(scroll+delta);
 }
 
 std::string ScrollCommand::onGetFriendlyName() const

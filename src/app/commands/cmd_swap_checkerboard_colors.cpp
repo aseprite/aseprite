@@ -10,7 +10,6 @@
 
 #include "app/app.h"
 #include "app/commands/command.h"
-#include "app/modules/editors.h"
 #include "app/ui/editor/editor.h"
 #include "ui/base.h"
 #include "app/context.h"

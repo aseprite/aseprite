@@ -19,7 +19,6 @@
 #include "app/crash/data_recovery.h"
 #include "app/doc.h"
 #include "app/ini_file.h"
-#include "app/modules/editors.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
@@ -60,7 +59,6 @@
 
 #if defined(_DEBUG) && defined(ENABLE_DATA_RECOVERY)
 #include "app/crash/data_recovery.h"
-#include "app/modules/editors.h"
 #endif
 
 namespace app {
@@ -736,17 +734,18 @@ bool CustomizedGuiManager::onProcessDevModeKeyDown(KeyMessage* msg)
 
 #ifdef ENABLE_DATA_RECOVERY
   // Ctrl+Shift+R recover active sprite from the backup store
+  auto editor = Editor::activeEditor();
   if (msg->ctrlPressed() &&
       msg->shiftPressed() &&
       msg->scancode() == kKeyR &&
       App::instance()->dataRecovery() &&
       App::instance()->dataRecovery()->activeSession() &&
-      current_editor &&
-      current_editor->document()) {
+      editor &&
+      editor->document()) {
     Doc* doc = App::instance()
       ->dataRecovery()
       ->activeSession()
-      ->restoreBackupById(current_editor->document()->id(), nullptr);
+      ->restoreBackupById(editor->document()->id(), nullptr);
     if (doc)
       UIContext::instance()->documents().add(doc);
     return true;

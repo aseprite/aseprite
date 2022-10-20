@@ -13,7 +13,6 @@
 #include "app/commands/params.h"
 #include "app/loop_tag.h"
 #include "app/match_words.h"
-#include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_customization_delegate.h"
@@ -36,13 +35,14 @@ protected:
     : Command(id, CmdRecordableFlag) { }
 
   bool onEnabled(Context* context) override {
-    return (current_editor != NULL);
+    return (Editor::activeEditor() != nullptr);
   }
 
   void onExecute(Context* context) override {
-    ASSERT(current_editor != NULL);
+    auto editor = Editor::activeEditor();
+    ASSERT(editor != nullptr);
 
-    current_editor->setFrame(onGetFrame(current_editor));
+    editor->setFrame(onGetFrame(editor));
   }
 
   virtual frame_t onGetFrame(Editor* editor) = 0;

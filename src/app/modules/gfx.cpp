@@ -15,7 +15,6 @@
 #include "app/color_spaces.h"
 #include "app/color_utils.h"
 #include "app/console.h"
-#include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/site.h"
@@ -79,16 +78,18 @@ void draw_checkered_grid(ui::Graphics* g,
 
 gfx::Color grid_color1()
 {
-  if (ui::is_ui_thread() && current_editor)
-    return color_utils::color_for_ui(current_editor->docPref().bg.color1());
+  auto editor = Editor::activeEditor();
+  if (ui::is_ui_thread() && editor)
+    return color_utils::color_for_ui(editor->docPref().bg.color1());
   else
     return gfx::rgba(128, 128, 128);
 }
 
 gfx::Color grid_color2()
 {
-  if (ui::is_ui_thread() && current_editor)
-    return color_utils::color_for_ui(current_editor->docPref().bg.color2());
+  auto editor = Editor::activeEditor();
+  if (ui::is_ui_thread() && editor)
+    return color_utils::color_for_ui(editor->docPref().bg.color2());
   else
     return gfx::rgba(192, 192, 192);
 }

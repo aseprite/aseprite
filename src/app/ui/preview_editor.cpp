@@ -17,7 +17,6 @@
 #include "app/ini_file.h"
 #include "app/loop_tag.h"
 #include "app/i18n/strings.h"
-#include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
 #include "app/ui/editor/editor.h"
@@ -209,7 +208,7 @@ void PreviewEditorWindow::setPreviewEnabled(bool state)
 {
   m_isEnabled = state;
 
-  updateUsingEditor(current_editor);
+  updateUsingEditor(Editor::activeEditor());
 }
 
 void PreviewEditorWindow::pressPlayButton()

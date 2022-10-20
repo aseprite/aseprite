@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -15,7 +15,6 @@
 #include "app/color_utils.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
-#include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/tools/tool_box.h"
 #include "app/tx.h"
@@ -66,7 +65,7 @@ void MaskContentCommand::onExecute(Context* context)
       ColorPicker picker;
       picker.pickColor(*writer.site(),
                        gfx::PointF(0.0, 0.0),
-                       current_editor->projection(),
+                       Editor::activeEditor()->projection(),
                        ColorPicker::FromComposition);
       color = color_utils::color_for_layer(picker.color(), writer.layer());
     }

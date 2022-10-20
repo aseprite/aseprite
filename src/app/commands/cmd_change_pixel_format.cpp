@@ -18,7 +18,6 @@
 #include "app/extensions.h"
 #include "app/i18n/strings.h"
 #include "app/load_matrix.h"
-#include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/sprite_job.h"
@@ -616,7 +615,7 @@ void ChangePixelFormatCommand::onExecute(Context* context)
 
 #ifdef ENABLE_UI
   if (m_useUI) {
-    ColorModeWindow window(current_editor);
+    ColorModeWindow window(Editor::activeEditor());
 
     window.remapWindow();
     window.centerWindow();

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -13,7 +13,6 @@
 
 #include "app/app.h"
 #include "app/doc.h"
-#include "app/modules/editors.h"
 #include "app/site.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/doc_view.h"
@@ -98,21 +97,27 @@ void UIContext::setActiveView(DocView* docView)
       (docView && docView->isPreview()))
     return;
 
+  Editor* editor = nullptr;
   if (docView) {
-    current_editor = docView->editor();
+    editor = docView->editor();
     mainWin->getTabsBar()->selectTab(docView);
 
     if (mainWin->getWorkspace()->activeView() != docView)
       mainWin->getWorkspace()->setActiveView(docView);
 
-    if (current_editor)
-      current_editor->requestFocus();
+    if (editor)
+      editor->requestFocus();
   }
-  else
-    current_editor = nullptr;
 
-  mainWin->getTimeline()->updateUsingEditor(current_editor);
-  mainWin->getPreviewEditor()->updateUsingEditor(current_editor);
+  // This is the only place where we change the Editor::m_activeEditor
+  // value.
+  //
+  // TODO probably Editor should have an observer to update its active
+  //      editor value.
+  Editor::_setActiveEditor(editor);
+
+  mainWin->getTimeline()->updateUsingEditor(editor);
+  mainWin->getPreviewEditor()->updateUsingEditor(editor);
 
   // Change the image-type of color bar.
   ColorBar::instance()->setPixelFormat(app_get_current_pixel_format());

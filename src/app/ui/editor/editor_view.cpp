@@ -12,7 +12,6 @@
 #include "app/ui/editor/editor_view.h"
 
 #include "app/app.h"
-#include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
 #include "app/ui/editor/editor.h"

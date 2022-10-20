@@ -14,7 +14,6 @@
 #include "app/app.h"
 #include "app/color.h"
 #include "app/color_utils.h"
-#include "app/modules/editors.h"
 #include "app/modules/gfx.h"
 #include "app/site.h"
 #include "app/ui/color_bar.h"
@@ -260,15 +259,16 @@ void ColorButton::onPaint(PaintEvent& ev)
 
     // Show transparent color in indexed sprites as mask color when we
     // are in a transparent layer.
+    auto editor = Editor::activeEditor();
     if (color.getType() == app::Color::IndexType &&
-        current_editor &&
-        current_editor->sprite() &&
-        current_editor->sprite()->pixelFormat() == IMAGE_INDEXED) {
+        editor &&
+        editor->sprite() &&
+        editor->sprite()->pixelFormat() == IMAGE_INDEXED) {
       m_dependOnLayer = true;
 
-      if (int(current_editor->sprite()->transparentColor()) == color.getIndex() &&
-          current_editor->layer() &&
-          !current_editor->layer()->isBackground()) {
+      if (int(editor->sprite()->transparentColor()) == color.getIndex() &&
+          editor->layer() &&
+          !editor->layer()->isBackground()) {
         color = app::Color::fromMask();
       }
     }

@@ -113,9 +113,11 @@ namespace app {
            EditorStatePtr state = nullptr);
     ~Editor();
 
+    static Editor* activeEditor() { return m_activeEditor; }
+    static void _setActiveEditor(Editor* editor) { m_activeEditor = editor; }
     static void destroyEditorSharedInternals();
 
-    bool isActive() const;
+    bool isActive() const { return (m_activeEditor == this); }
     bool isUsingNewRenderEngine() const;
 
     DocView* getDocView() { return m_docView; }
@@ -447,9 +449,6 @@ namespace app {
 
     EditorCustomizationDelegate* m_customizationDelegate;
 
-    // TODO This field shouldn't be here. It should be removed when
-    // editors.cpp are finally replaced with a fully funtional Workspace
-    // widget.
     DocView* m_docView;
 
     gfx::Point m_oldPos;
@@ -482,6 +481,9 @@ namespace app {
 
     // For slices
     doc::SelectedObjects m_selectedSlices;
+
+    // Active sprite editor with the keyboard focus.
+    static Editor* m_activeEditor;
 
     // The render engine must be shared between all editors so when a
     // DrawingState is being used in one editor, other editors for the

@@ -11,7 +11,6 @@
 #include "app/app.h"
 #include "app/context.h"
 #include "app/doc_range.h"
-#include "app/modules/editors.h"
 #include "app/script/docobj.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
@@ -192,8 +191,8 @@ int Range_clear(lua_State* L)
 #ifdef ENABLE_UI
   // Empty selected slices in the current editor
   // TODO add a new function to Context class for this
-  if (current_editor)
-    current_editor->clearSlicesSelection();
+  if (auto editor = Editor::activeEditor())
+    editor->clearSlicesSelection();
 #endif
 
   obj->updateFromSite(ctx->activeSite());
@@ -399,12 +398,12 @@ int Range_set_slices(lua_State* L)
 
   // TODO we should add support to CLI scripts
 #ifdef ENABLE_UI
-  if (current_editor) {
-    current_editor->clearSlicesSelection();
+  if (auto editor = Editor::activeEditor()) {
+    editor->clearSlicesSelection();
     const int len = luaL_len(L, 2);
     for (int i = 1; i <= len; i++) {
       if (lua_geti(L, 2, i) != LUA_TNIL)
-        current_editor->selectSlice(get_docobj<Slice>(L, -1));
+        editor->selectSlice(get_docobj<Slice>(L, -1));
       lua_pop(L, 1);
     }
   }

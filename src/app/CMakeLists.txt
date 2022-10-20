@@ -320,7 +320,6 @@ if(ENABLE_UI)
     commands/show_menu.cpp
     commands/tileset_mode.cpp
     file_selector.cpp
-    modules/editors.cpp
     modules/gfx.cpp
     modules/gui.cpp
     ui/app_menuitem.cpp

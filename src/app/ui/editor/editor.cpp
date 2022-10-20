@@ -22,7 +22,6 @@
 #include "app/doc_event.h"
 #include "app/i18n/strings.h"
 #include "app/ini_file.h"
-#include "app/modules/editors.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
@@ -134,6 +133,9 @@ private:
 };
 
 // static
+Editor* Editor::m_activeEditor = nullptr;
+
+// static
 std::unique_ptr<EditorRender> Editor::m_renderEngine = nullptr;
 
 Editor::Editor(Doc* document, EditorFlags flags, EditorStatePtr state)
@@ -238,11 +240,6 @@ void Editor::destroyEditorSharedInternals()
   BrushPreview::destroyInternals();
   if (m_renderEngine)
     m_renderEngine.reset();
-}
-
-bool Editor::isActive() const
-{
-  return (current_editor == this);
 }
 
 bool Editor::isUsingNewRenderEngine() const

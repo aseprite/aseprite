@@ -14,7 +14,6 @@
 #include "app/console.h"
 #include "app/context.h"
 #include "app/file_selector.h"
-#include "app/modules/editors.h"
 #include "app/pref/preferences.h"
 #include "app/ui/drop_down_button.h"
 #include "app/ui/editor/editor.h"
@@ -140,8 +139,8 @@ private:
 
 void PasteTextCommand::onExecute(Context* ctx)
 {
-  Editor* editor = current_editor;
-  if (editor == NULL)
+  auto editor = Editor::activeEditor();
+  if (editor == nullptr)
     return;
 
   Preferences& pref = Preferences::instance();

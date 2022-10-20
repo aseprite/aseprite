@@ -12,7 +12,6 @@
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
 #include "app/context_access.h"
-#include "app/modules/editors.h"
 #include "app/ui/doc_view.h"
 #include "app/ui/status_bar.h"
 #include "app/ui/workspace.h"

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020 Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -11,7 +11,6 @@
 
 #include "app/app.h"
 #include "app/commands/command.h"
-#include "app/modules/editors.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/context_bar.h"
 #include "app/ui/editor/editor.h"
@@ -35,16 +34,17 @@ SwitchColorsCommand::SwitchColorsCommand()
 
 bool SwitchColorsCommand::onEnabled(Context* context)
 {
-  return (current_editor ? true: false);
+  return (Editor::activeEditor() ? true: false);
 }
 
 void SwitchColorsCommand::onExecute(Context* context)
 {
-  ASSERT(current_editor);
-  if (!current_editor)
+  auto editor = Editor::activeEditor();
+  ASSERT(editor);
+  if (!editor)
     return;
 
-  tools::Tool* tool = current_editor->getCurrentEditorTool();
+  tools::Tool* tool = editor->getCurrentEditorTool();
   if (tool) {
     const auto& toolPref(Preferences::instance().tool(tool));
     if (toolPref.ink() == tools::InkType::SHADING) {

@@ -22,7 +22,6 @@
 #include "app/i18n/strings.h"
 #include "app/ini_file.h"
 #include "app/match_words.h"
-#include "app/modules/editors.h"
 #include "app/pref/preferences.h"
 #include "app/shade.h"
 #include "app/site.h"
@@ -1129,8 +1128,8 @@ private:
     updateEditor();
   }
   void updateEditor() {
-    if (current_editor)
-      current_editor->updateTransformation(m_t);
+    if (auto editor = Editor::activeEditor())
+      editor->updateTransformation(m_t);
   }
 
   CustomEntry m_x, m_y, m_w, m_h;
@@ -1513,8 +1512,10 @@ class ContextBar::SliceFields : public HBox {
           slice = item->slice();
         }
       }
-      if (!slice && current_editor)
-        slice = current_editor->sprite()->slices().getByName(getValue());
+
+      auto editor = Editor::activeEditor();
+      if (!slice && editor)
+        slice = editor->sprite()->slices().getByName(getValue());
       if (slice)
         m_sliceFields->scrollToSlice(slice);
 
@@ -1637,9 +1638,10 @@ private:
   }
 
   void scrollToSlice(const Slice* slice) {
-    if (current_editor && slice) {
-      if (const SliceKey* key = slice->getByFrame(current_editor->frame())) {
-        current_editor->centerInSpritePoint(key->bounds().center());
+    auto editor = Editor::activeEditor();
+    if (editor && slice) {
+      if (const SliceKey* key = slice->getByFrame(editor->frame())) {
+        editor->centerInSpritePoint(key->bounds().center());
       }
     }
   }
@@ -1660,12 +1662,12 @@ private:
     m_sel.deselectItems();
     switch (item) {
       case 0:
-        if (current_editor)
-          current_editor->selectAllSlices();
+        if (auto editor = Editor::activeEditor())
+          editor->selectAllSlices();
         break;
       case 1:
-        if (current_editor)
-          current_editor->clearSlicesSelection();
+        if (auto editor = Editor::activeEditor())
+          editor->clearSlicesSelection();
         break;
     }
   }
@@ -1677,10 +1679,10 @@ private:
     m_filter.clear();
 
     if (auto item = dynamic_cast<Item*>(m_combobox.getSelectedItem())) {
-      if (current_editor) {
+      if (auto editor = Editor::activeEditor()) {
         const doc::Slice* slice = item->slice();
-        current_editor->clearSlicesSelection();
-        current_editor->selectSlice(slice);
+        editor->clearSlicesSelection();
+        editor->selectSlice(slice);
       }
     }
   }
@@ -2193,12 +2195,13 @@ bool ContextBar::updateSamplingVisibility(tools::Tool* tool)
   if (!tool)
     tool = App::instance()->activeTool();
 
+  auto editor = Editor::activeEditor();
   const bool newVisibility =
     needZoomButtons(tool) &&
-    current_editor &&
-    (current_editor->projection().scaleX() < 1.0 ||
-     current_editor->projection().scaleY() < 1.0) &&
-    current_editor->isUsingNewRenderEngine();
+    editor &&
+    (editor->projection().scaleX() < 1.0 ||
+     editor->projection().scaleY() < 1.0) &&
+    editor->isUsingNewRenderEngine();
 
   if (newVisibility == m_samplingSelector->hasFlags(HIDDEN)) {
     m_samplingSelector->setVisible(newVisibility);

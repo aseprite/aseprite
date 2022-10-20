@@ -14,7 +14,6 @@
 #include "app/context_access.h"
 #include "app/doc_undo.h"
 #include "app/doc_api.h"
-#include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/tx.h"
 #include "app/ui/editor/editor.h"

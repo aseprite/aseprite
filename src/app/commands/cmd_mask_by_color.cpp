@@ -19,7 +19,6 @@
 #include "app/doc.h"
 #include "app/ini_file.h"
 #include "app/i18n/strings.h"
-#include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/tx.h"
 #include "app/ui/color_bar.h"

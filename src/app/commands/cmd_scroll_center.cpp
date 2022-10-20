@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -11,7 +12,6 @@
 #include "app/app.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
-#include "app/modules/editors.h"
 #include "app/ui/editor/editor.h"
 
 namespace app {
@@ -32,12 +32,12 @@ ScrollCenterCommand::ScrollCenterCommand()
 
 bool ScrollCenterCommand::onEnabled(Context* context)
 {
-  return (current_editor != nullptr);
+  return (Editor::activeEditor() != nullptr);
 }
 
 void ScrollCenterCommand::onExecute(Context* context)
 {
-  current_editor->setScrollToCenter();
+  Editor::activeEditor()->setScrollToCenter();
 }
 
 Command* CommandFactory::createScrollCenterCommand()

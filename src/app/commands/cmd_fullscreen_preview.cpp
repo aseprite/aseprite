@@ -14,7 +14,6 @@
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
 #include "app/context.h"
-#include "app/modules/editors.h"
 #include "app/modules/gfx.h"
 #include "app/pref/preferences.h"
 #include "app/ui/editor/editor.h"
@@ -282,7 +281,7 @@ bool FullscreenPreviewCommand::onEnabled(Context* context)
 // Shows the sprite using the complete screen.
 void FullscreenPreviewCommand::onExecute(Context* context)
 {
-  Editor* editor = current_editor;
+  auto editor = Editor::activeEditor();
 
   // Cancel operation if current editor does not have a sprite
   if (!editor || !editor->sprite())

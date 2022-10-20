@@ -18,7 +18,6 @@
 #include "app/crash/data_recovery.h"
 #include "app/i18n/strings.h"
 #include "app/ini_file.h"
-#include "app/modules/editors.h"
 #include "app/notification_delegate.h"
 #include "app/pref/preferences.h"
 #include "app/ui/browser_view.h"

@@ -35,7 +35,6 @@
 #include "app/i18n/strings.h"
 #include "app/ini_file.h"
 #include "app/inline_command_execution.h"
-#include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/pref/preferences.h"
@@ -1718,8 +1717,8 @@ void ColorBar::onTimerTick()
   // Redraw just the current editor
   else {
     m_redrawAll = true;
-    if (current_editor)
-      current_editor->updateEditor(true);
+    if (auto editor = Editor::activeEditor())
+      editor->updateEditor(true);
   }
 }
 
@@ -1728,9 +1727,10 @@ void ColorBar::updateWarningIcon(const app::Color& color, ui::Button* warningIco
   int index = -1;
 
   if (color.getType() == app::Color::MaskType) {
-    if (current_editor &&
-        current_editor->sprite()) {
-      index = current_editor->sprite()->transparentColor();
+    auto editor = Editor::activeEditor();
+    if (editor &&
+        editor->sprite()) {
+      index = editor->sprite()->transparentColor();
     }
     else
       index = 0;

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -15,7 +15,6 @@
 #include "app/color_utils.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
-#include "app/modules/editors.h"
 #include "app/pref/preferences.h"
 #include "app/tx.h"
 #include "app/ui/editor/editor.h"
@@ -53,13 +52,12 @@ bool FillCommand::onEnabled(Context* ctx)
     return true;
   }
 #if ENABLE_UI
-  else if (current_editor &&
-           current_editor->isMovingPixels()) {
+  auto editor = Editor::activeEditor();
+  if (editor && editor->isMovingPixels()) {
     return true;
   }
 #endif
-  else
-    return false;
+  return false;
 }
 
 void FillCommand::onExecute(Context* ctx)

@@ -13,7 +13,6 @@
 #include "app/commands/new_params.h"
 #include "app/context_access.h"
 #include "app/doc_api.h"
-#include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/tx.h"
 #include "app/ui/button_set.h"
@@ -61,7 +60,7 @@ public:
 
   CanvasSizeWindow(const CanvasSizeParams& params,
                    const gfx::Rect& bounds)
-    : m_editor(current_editor)
+    : m_editor(Editor::activeEditor())
     , m_rect(bounds)
     , m_selectBoxState(
       new SelectBoxState(
@@ -220,8 +219,8 @@ private:
   void updateBorderFromRect() {
     setLeft(-m_rect.x);
     setTop(-m_rect.y);
-    setRight((m_rect.x + m_rect.w) - current_editor->sprite()->width());
-    setBottom((m_rect.y + m_rect.h) - current_editor->sprite()->height());
+    setRight((m_rect.x + m_rect.w) - m_editor->sprite()->width());
+    setBottom((m_rect.y + m_rect.h) - m_editor->sprite()->height());
   }
 
   void updateEditorBoxFromRect() {

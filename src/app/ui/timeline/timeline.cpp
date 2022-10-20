@@ -28,7 +28,6 @@
 #include "app/doc_undo.h"
 #include "app/i18n/strings.h"
 #include "app/loop_tag.h"
-#include "app/modules/editors.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
 #include "app/thumbnails.h"

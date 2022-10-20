@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -12,7 +13,6 @@
 #include "app/commands/command.h"
 #include "app/context.h"
 #include "app/context_access.h"
-#include "app/modules/editors.h"
 #include "app/pref/preferences.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/main_window.h"
@@ -54,15 +54,16 @@ void PlayAnimationCommand::onExecute(Context* context)
       return;
   }
 
-  ASSERT(current_editor);
-  if (!current_editor)
+  auto editor = Editor::activeEditor();
+  ASSERT(editor);
+  if (!editor)
     return;
 
-  if (current_editor->isPlaying())
-    current_editor->stop();
+  if (editor->isPlaying())
+    editor->stop();
   else
-    current_editor->play(Preferences::instance().editor.playOnce(),
-                         Preferences::instance().editor.playAll());
+    editor->play(Preferences::instance().editor.playOnce(),
+                 Preferences::instance().editor.playAll());
 }
 
 //////////////////////////////////////////////////////////////////////

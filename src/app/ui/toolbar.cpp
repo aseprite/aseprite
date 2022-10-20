@@ -15,7 +15,6 @@
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
 #include "app/i18n/strings.h"
-#include "app/modules/editors.h"
 #include "app/modules/gfx.h"
 #include "app/tools/active_tool.h"
 #include "app/tools/tool_box.h"

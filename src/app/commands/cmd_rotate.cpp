@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -17,7 +17,6 @@
 #include "app/doc_api.h"
 #include "app/doc_range.h"
 #include "app/i18n/strings.h"
-#include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/sprite_job.h"
 #include "app/tools/tool_box.h"
@@ -209,7 +208,8 @@ void RotateCommand::onExecute(Context* context)
         if (tools::Tool* tool = App::instance()->toolBox()
             ->getToolById(tools::WellKnownTools::RectangularMarquee)) {
           ToolBar::instance()->selectTool(tool);
-          current_editor->startSelectionTransformation(gfx::Point(0, 0), m_angle);
+          if (auto editor = Editor::activeEditor())
+            editor->startSelectionTransformation(gfx::Point(0, 0), m_angle);
           return;
         }
       }

@@ -12,7 +12,6 @@
 #include "app/commands/command.h"
 #include "app/context_access.h"
 #include "app/ini_file.h"
-#include "app/modules/editors.h"
 #include "app/ui_context.h"
 #include "base/fs.h"
 #include "doc/sprite.h"

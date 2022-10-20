@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -17,7 +17,6 @@
 #include "app/context_access.h"
 #include "app/doc_api.h"
 #include "app/i18n/strings.h"
-#include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
 #include "app/tx.h"
@@ -65,11 +64,13 @@ bool MoveMaskCommand::onEnabled(Context* context)
                                    ContextFlags::HasVisibleMask |
                                    ContextFlags::HasActiveImage |
                                    ContextFlags::ActiveLayerIsEditable);
-      else
-        return (current_editor != nullptr) &&
+      else {
+        auto editor = Editor::activeEditor();
+        return (editor != nullptr) &&
           context->checkFlags(ContextFlags::HasActiveDocument |
                               ContextFlags::HasVisibleMask |
                               ContextFlags::HasActiveImage);
+      }
 
   }
 
@@ -108,7 +109,8 @@ void MoveMaskCommand::onExecute(Context* context)
         update_screen_for_document(writer.document());
       }
       else {
-        current_editor->startSelectionTransformation(delta, 0.0);
+        auto editor = Editor::activeEditor();
+        editor->startSelectionTransformation(delta, 0.0);
       }
       break;
 

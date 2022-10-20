@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -22,7 +22,6 @@
 #include "app/doc_api.h"
 #include "app/doc_range.h"
 #include "app/i18n/strings.h"
-#include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/tools/tool_box.h"
 #include "app/tx.h"
@@ -85,7 +84,8 @@ void FlipCommand::onExecute(Context* ctx)
       if (tools::Tool* tool = App::instance()->toolBox()
           ->getToolById(tools::WellKnownTools::RectangularMarquee)) {
         ToolBar::instance()->selectTool(tool);
-        current_editor->startFlipTransformation(m_flipType);
+        if (auto editor = Editor::activeEditor())
+          editor->startFlipTransformation(m_flipType);
         return;
       }
     }

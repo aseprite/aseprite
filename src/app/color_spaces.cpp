@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -11,7 +11,6 @@
 #include "app/color_spaces.h"
 
 #include "app/doc.h"
-#include "app/modules/editors.h"
 #include "app/pref/preferences.h"
 #include "app/ui/editor/editor.h"
 #include "os/system.h"
@@ -41,8 +40,8 @@ os::ColorSpaceRef get_screen_color_space()
 os::ColorSpaceRef get_current_color_space()
 {
 #ifdef ENABLE_UI
-  if (current_editor)
-    return current_editor->document()->osColorSpace();
+  if (auto editor = Editor::activeEditor())
+    return editor->document()->osColorSpace();
   else
 #endif
     return get_screen_color_space();
