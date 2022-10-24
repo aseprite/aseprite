@@ -36,6 +36,10 @@ do
   a.color = Color(255, 0, 0)
   assert(a.color == Color(255, 0, 0))
 
+  assert(a.repeats == 0)
+  a.repeats = 1
+  assert(a.repeats == 1)
+
   a.data = "Data"
   assert(a.data == "Data")
 end
