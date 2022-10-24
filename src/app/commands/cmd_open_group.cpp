@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2022  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This program is distributed under the terms of
@@ -53,9 +54,11 @@ bool OpenGroupCommand::onChecked(Context* context)
 void OpenGroupCommand::onExecute(Context* context)
 {
   ContextWriter writer(context);
+  Doc* doc = writer.document();
   Layer* layer = writer.layer();
 
   layer->setCollapsed(layer->isExpanded());
+  doc->notifyLayerGroupCollapseChange(layer);
 
   update_screen_for_document(writer.document());
 }

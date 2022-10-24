@@ -89,6 +89,9 @@ namespace app {
     // The tileset has changed.
     virtual void onTilesetChanged(DocEvent& ev) { }
 
+    // The collapsed/expanded flag of a specific layer changed.
+    virtual void onLayerCollapsedChanged(DocEvent& ev) { }
+
   };
 
 } // namespace app

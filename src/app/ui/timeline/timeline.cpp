@@ -1926,6 +1926,12 @@ void Timeline::onTagRename(DocEvent& ev)
   invalidateHit(Hit(PART_TAGS));
 }
 
+void Timeline::onLayerCollapsedChanged(DocEvent& ev)
+{
+  regenerateRows();
+  invalidate();
+}
+
 void Timeline::onStateChanged(Editor* editor)
 {
   m_aniControls.updateUsingEditor(editor);
@@ -4442,9 +4448,7 @@ void Timeline::setLayerCollapsedFlag(const layer_t l, const bool state)
 
   if (layer->isGroup() && layer->isCollapsed() != state) {
     layer->setCollapsed(state);
-
-    regenerateRows();
-    invalidate();
+    m_document->notifyLayerGroupCollapseChange(layer);
   }
 }
 

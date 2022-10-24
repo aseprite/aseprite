@@ -267,6 +267,13 @@ void Doc::notifyTilesetChanged(Tileset* tileset)
   notify_observers<DocEvent&>(&DocObserver::onTilesetChanged, ev);
 }
 
+void Doc::notifyLayerGroupCollapseChange(Layer* layer)
+{
+  DocEvent ev(this);
+  ev.layer(layer);
+  notify_observers<DocEvent&>(&DocObserver::onLayerCollapsedChanged, ev);
+}
+
 bool Doc::isModified() const
 {
   return !m_undo->isSavedState();

@@ -115,6 +115,7 @@ namespace app {
     void notifySelectionChanged();
     void notifySelectionBoundariesChanged();
     void notifyTilesetChanged(Tileset* tileset);
+    void notifyLayerGroupCollapseChange(Layer* layer);
 
     //////////////////////////////////////////////////////////////////////
     // File related properties
