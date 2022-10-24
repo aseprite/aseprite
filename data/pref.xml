@@ -180,6 +180,7 @@
       <option id="straight_line_preview" type="bool" default="true" />
       <option id="play_once" type="bool" default="false" />
       <option id="play_all" type="bool" default="false" />
+      <option id="play_subtags" type="bool" default="false" />
       <!-- TODO this would be nice to be "true" but we have to fix
            some performance issue rendering huge sprites with small
            zoom levels -->
@@ -211,6 +212,7 @@
     <section id="preview" text="Preview">
       <option id="play_once" type="bool" default="false" />
       <option id="play_all" type="bool" default="false" />
+      <option id="play_subtags" type="bool" default="false" />
     </section>
     <section id="theme" text="Theme">
       <option id="selected" type="std::string" default="&quot;default&quot;" />

@@ -97,7 +97,8 @@ void AniControls::onRightClick(Item* item)
   if (item == getItem(ACTION_PLAY) && editor) {
     editor->showAnimationSpeedMultiplierPopup(
       Preferences::instance().editor.playOnce,
-      Preferences::instance().editor.playAll, true);
+      Preferences::instance().editor.playAll,
+      Preferences::instance().editor.playSubtags, true);
   }
 }
 

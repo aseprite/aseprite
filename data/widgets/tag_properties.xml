@@ -6,17 +6,22 @@
 <window id="tag_properties" text="@.title">
   <vbox>
     <grid id="properties_grid" columns="3">
+
       <label text="@.name" />
       <entry maxsize="256" id="name" magnet="true" cell_align="horizontal" expansive="true" />
       <button id="user_data" icon="icon_user_data" maxsize="32" tooltip="@general.user_data" />
+
       <label text="@.from" />
       <expr id="from" cell_hspan="2" />
 
       <label text="@.to" />
       <expr id="to" cell_hspan="2" />
+
       <label text="@.ani_dir" />
       <combobox id="anidir" cell_hspan="2" />
 
+      <check text="@.repeat" id="limit_repeat" />
+      <vbox id="repeat_placeholder" cell_hspan="2" />
     </grid>
     <grid columns="2">
       <separator horizontal="true" cell_hspan="2" minwidth="180" />

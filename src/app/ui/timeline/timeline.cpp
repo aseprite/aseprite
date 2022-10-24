@@ -512,7 +512,8 @@ void Timeline::setFrame(frame_t frame, bool byUser)
 
     if (isPlaying)
       m_editor->play(false,
-                     Preferences::instance().editor.playAll());
+                     Preferences::instance().editor.playAll(),
+                     Preferences::instance().editor.playSubtags());
   }
 }
 
@@ -583,7 +584,7 @@ void Timeline::activateClipboardRange()
 }
 
 Tag* Timeline::getTagByFrame(const frame_t frame,
-                                       const bool getLoopTagIfNone)
+                             const bool getLoopTagIfNone)
 {
   if (!m_sprite)
     return nullptr;

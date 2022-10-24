@@ -14,9 +14,9 @@
 #include "doc/blend_internals.h"
 #include "doc/blend_mode.h"
 #include "doc/doc.h"
-#include "doc/handle_anidir.h"
 #include "doc/image_impl.h"
 #include "doc/layer_tilemap.h"
+#include "doc/playback.h"
 #include "doc/tileset.h"
 #include "doc/tilesets.h"
 #include "gfx/clip.h"
@@ -854,21 +854,18 @@ void Render::renderOnionskin(
     Tag* loop = m_onionskin.loopTag();
     Layer* onionLayer = (m_onionskin.layer() ? m_onionskin.layer():
                                                m_sprite->root());
-    frame_t frameIn;
+    Playback play(
+      m_sprite,
+      TagsList(),  // TODO add an onionskin option to iterate subtags
+      frame,
+      Playback::PlayInLoop,
+      loop);
+    play.nextFrame(-m_onionskin.prevFrames());
 
     for (frame_t frameOut = frame - m_onionskin.prevFrames();
          frameOut <= frame + m_onionskin.nextFrames();
-         ++frameOut) {
-      if (loop) {
-        bool pingPongForward = true;
-        frameIn =
-          calculate_next_frame(m_sprite,
-                               frame, frameOut - frame,
-                               loop, pingPongForward);
-      }
-      else {
-        frameIn = frameOut;
-      }
+         ++frameOut, play.nextFrame()) {
+      const frame_t frameIn = play.frame();
 
       if (frameIn == frame ||
           frameIn < 0 ||

@@ -13,6 +13,7 @@
 #include "app/cmd/set_tag_color.h"
 #include "app/cmd/set_tag_name.h"
 #include "app/cmd/set_tag_range.h"
+#include "app/cmd/set_tag_repeat.h"
 #include "app/cmd/set_user_data.h"
 #include "app/color.h"
 #include "app/commands/command.h"
@@ -107,6 +108,10 @@ void FrameTagPropertiesCommand::onExecute(Context* context)
   doc::AniDir anidir = window.aniDirValue();
   if (tag->aniDir() != anidir)
     tx(new cmd::SetTagAniDir(tag, anidir));
+
+  const int repeat = window.repeatValue();
+  if (tag->repeat() != repeat)
+    tx(new cmd::SetTagRepeat(tag, repeat));
 
   // Change user data
   doc::UserData userData = window.userDataValue();

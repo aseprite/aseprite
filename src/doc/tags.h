@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -21,12 +21,12 @@ namespace doc {
   class Tag;
   class Sprite;
 
-  class Tags {
-    typedef std::vector<Tag*> List;
+  using TagsList = std::vector<Tag*>;
 
+  class Tags {
   public:
-    typedef List::iterator iterator;
-    typedef List::const_iterator const_iterator;
+    using iterator = TagsList::iterator;
+    using const_iterator = TagsList::const_iterator;
 
     Tags(Sprite* sprite);
     ~Tags();
@@ -50,9 +50,11 @@ namespace doc {
     Tag* innerTag(const frame_t frame) const;
     Tag* outerTag(const frame_t frame) const;
 
+    const TagsList& getInternalList() const { return m_tags; }
+
   private:
     Sprite* m_sprite;
-    List m_tags;
+    TagsList m_tags;
 
     DISABLE_COPYING(Tags);
   };

@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -34,6 +34,7 @@ void write_tag(std::ostream& os, const Tag* tag)
   write8(os, (int)tag->aniDir());
   write_string(os, tag->name());
   write_user_data(os, tag->userData());
+  write32(os, tag->repeat());
 }
 
 Tag* read_tag(std::istream& is,
@@ -54,16 +55,21 @@ Tag* read_tag(std::istream& is,
   UserData userData;
 
   // If we are reading the new v1.3.x version, there is a user data with the color + text
-  if (!oldVersion)
+  int repeat = 0;
+  if (!oldVersion) {
     userData = read_user_data(is);
+    repeat = read32(is);
+  }
 
-  std::unique_ptr<Tag> tag(new Tag(from, to));
+  auto tag = std::make_unique<Tag>(from, to);
   tag->setAniDir(aniDir);
   tag->setName(name);
   if (oldVersion)
     tag->setColor(color);
-  else
+  else {
     tag->setUserData(userData);
+    tag->setRepeat(repeat);
+  }
   if (setId)
     tag->setId(id);
   return tag.release();

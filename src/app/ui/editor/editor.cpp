@@ -2751,7 +2751,8 @@ void Editor::startZoomingState(ui::MouseMessage* msg)
 }
 
 void Editor::play(const bool playOnce,
-                  const bool playAll)
+                  const bool playAll,
+                  const bool playSubtags)
 {
   ASSERT(m_state);
   if (!m_state)
@@ -2761,7 +2762,9 @@ void Editor::play(const bool playOnce,
     stop();
 
   m_isPlaying = true;
-  setState(EditorStatePtr(new PlayState(playOnce, playAll)));
+  setState(EditorStatePtr(new PlayState(playOnce,
+                                        playAll,
+                                        playSubtags)));
 }
 
 void Editor::stop()
@@ -2789,6 +2792,7 @@ bool Editor::isPlaying() const
 
 void Editor::showAnimationSpeedMultiplierPopup(Option<bool>& playOnce,
                                                Option<bool>& playAll,
+                                               Option<bool>& playSubtags,
                                                const bool withStopBehaviorOptions)
 {
   const double options[] = { 0.25, 0.5, 1.0, 1.5, 2.0, 3.0 };
@@ -2825,6 +2829,17 @@ void Editor::showAnimationSpeedMultiplierPopup(Option<bool>& playOnce,
     menu.addChild(item);
   }
 
+  // Play subtags & repeats
+  {
+    MenuItem* item = new MenuItem(Strings::preview_play_subtags_and_repeats());
+    item->Click.connect(
+      [&playSubtags]() {
+        playSubtags(!playSubtags());
+      });
+    item->setSelected(playSubtags());
+    menu.addChild(item);
+  }
+
   if (withStopBehaviorOptions) {
     MenuItem* item = new MenuItem(Strings::preview_rewind_on_stop());
     item->Click.connect(
@@ -2843,7 +2858,8 @@ void Editor::showAnimationSpeedMultiplierPopup(Option<bool>& playOnce,
     // Re-play
     stop();
     play(playOnce(),
-         playAll());
+         playAll(),
+         playSubtags());
   }
 }
 

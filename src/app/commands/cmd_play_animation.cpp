@@ -63,7 +63,8 @@ void PlayAnimationCommand::onExecute(Context* context)
     editor->stop();
   else
     editor->play(Preferences::instance().editor.playOnce(),
-                 Preferences::instance().editor.playAll());
+                 Preferences::instance().editor.playAll(),
+                 Preferences::instance().editor.playSubtags());
 }
 
 //////////////////////////////////////////////////////////////////////

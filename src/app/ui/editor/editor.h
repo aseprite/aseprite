@@ -276,13 +276,15 @@ namespace app {
 
     // Animation control
     void play(const bool playOnce,
-              const bool playAll);
+              const bool playAll,
+              const bool playSubtags);
     void stop();
     bool isPlaying() const;
 
     // Shows a popup menu to change the editor animation speed.
     void showAnimationSpeedMultiplierPopup(Option<bool>& playOnce,
                                            Option<bool>& playAll,
+                                           Option<bool>& playSubtags,
                                            const bool withStopBehaviorOptions);
     double getAnimationSpeedMultiplier() const;
     void setAnimationSpeedMultiplier(double speed);

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -67,7 +67,8 @@ DocDiff compare_docs(const Doc* a,
           aTag->toFrame()   != bTag->toFrame()   ||
           aTag->name()      != bTag->name()      ||
           aTag->color()     != bTag->color()     ||
-          aTag->aniDir()    != bTag->aniDir()) {
+          aTag->aniDir()    != bTag->aniDir() ||
+          aTag->repeat()    != bTag->repeat()) {
         diff.anything = diff.tags = true;
       }
     }

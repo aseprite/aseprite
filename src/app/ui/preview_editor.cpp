@@ -316,7 +316,8 @@ void PreviewEditorWindow::onPlayClicked()
   if (m_playButton->isPlaying()) {
     m_refFrame = miniEditor->frame();
     miniEditor->play(Preferences::instance().preview.playOnce(),
-                     Preferences::instance().preview.playAll());
+                     Preferences::instance().preview.playAll(),
+                     Preferences::instance().preview.playSubtags());
   }
   else {
     miniEditor->stop();
@@ -336,6 +337,7 @@ void PreviewEditorWindow::onPopupSpeed()
   miniEditor->showAnimationSpeedMultiplierPopup(
     pref.preview.playOnce,
     pref.preview.playAll,
+    pref.preview.playSubtags,
     false);
   m_aniSpeed = miniEditor->getAnimationSpeedMultiplier();
 }
@@ -512,7 +514,8 @@ void PreviewEditorWindow::adjustPlayingTag()
     miniEditor->setFrame(m_refFrame = editor->frame());
 
   miniEditor->play(Preferences::instance().preview.playOnce(),
-                   Preferences::instance().preview.playAll());
+                   Preferences::instance().preview.playAll(),
+                   Preferences::instance().preview.playSubtags());
 }
 
 } // namespace app

@@ -1435,6 +1435,9 @@ void DocExporter::createDataFile(const Samples& samples,
            << " \"from\": " << (tag->fromFrame()) << ","
            << " \"to\": " << (tag->toFrame()) << ","
            " \"direction\": \"" << escape_for_json(convert_anidir_to_string(tag->aniDir())) << "\"";
+        if (tag->repeat() > 0) {
+          os << ", \"repeat\": \"" << tag->repeat() << "\"";
+        }
         os << tag->userData() << " }";
       }
     }

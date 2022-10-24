@@ -141,11 +141,13 @@ void fill_anidir_combobox(ui::ComboBox* anidir, doc::AniDir defAnidir)
   static_assert(
     int(doc::AniDir::FORWARD) == 0 &&
     int(doc::AniDir::REVERSE) == 1 &&
-    int(doc::AniDir::PING_PONG) == 2, "doc::AniDir has changed");
+    int(doc::AniDir::PING_PONG) == 2 &&
+    int(doc::AniDir::PING_PONG_REVERSE) == 3, "doc::AniDir has changed");
 
   anidir->addItem(Strings::anidir_combo_forward());
   anidir->addItem(Strings::anidir_combo_reverse());
   anidir->addItem(Strings::anidir_combo_ping_pong());
+  anidir->addItem(Strings::anidir_combo_ping_pong_reverse());
   anidir->setSelectedItemIndex(int(defAnidir));
 }
 
