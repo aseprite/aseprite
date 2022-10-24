@@ -13,6 +13,7 @@
 #include "app/cmd/set_tag_color.h"
 #include "app/cmd/set_tag_name.h"
 #include "app/cmd/set_tag_range.h"
+#include "app/cmd/set_tag_repeat.h"
 #include "app/script/docobj.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
@@ -84,6 +85,13 @@ int Tag_get_aniDir(lua_State* L)
   return 1;
 }
 
+int Tag_get_repeats(lua_State* L)
+{
+  auto tag = get_docobj<Tag>(L, 1);
+  lua_pushinteger(L, (int)tag->repeat());
+  return 1;
+}
+
 int Tag_set_fromFrame(lua_State* L)
 {
   auto tag = get_docobj<Tag>(L, 1);
@@ -129,6 +137,16 @@ int Tag_set_aniDir(lua_State* L)
   return 0;
 }
 
+int Tag_set_repeats(lua_State* L)
+{
+  auto tag = get_docobj<Tag>(L, 1);
+  const int repeat = lua_tointeger(L, 2);
+  Tx tx;
+  tx(new cmd::SetTagRepeat(tag, repeat));
+  tx.commit();
+  return 0;
+}
+
 const luaL_Reg Tag_methods[] = {
   { "__eq", Tag_eq },
   { nullptr, nullptr }
@@ -141,6 +159,7 @@ const Property Tag_properties[] = {
   { "frames", Tag_get_frames, nullptr },
   { "name", Tag_get_name, Tag_set_name },
   { "aniDir", Tag_get_aniDir, Tag_set_aniDir },
+  { "repeats", Tag_get_repeats, Tag_set_repeats }, // Cannot be "repeat" because it's a Lua keyword
   { "color", UserData_get_color<Tag>, UserData_set_color<Tag> },
   { "data", UserData_get_text<Tag>, UserData_set_text<Tag> },
   { nullptr, nullptr, nullptr }
