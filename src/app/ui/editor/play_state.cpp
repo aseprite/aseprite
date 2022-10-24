@@ -207,7 +207,11 @@ void PlayState::onPlaybackTick()
 
   while (m_nextFrameTime <= 0) {
     doc::frame_t frame = m_playback.nextFrame();
-    if (m_playback.isStopped()) {
+    if (m_playback.isStopped() ||
+        // TODO invalid frame from Playback::nextFrame(), in this way
+        //      we avoid any kind of crash or assert fail
+        frame < 0 || frame > m_editor->sprite()->lastFrame()) {
+      TRACEARGS("!!! PlayState: invalid frame from Playback::nextFrame() frame=", frame);
       m_editor->stop();
       break;
     }
