@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2020 Igara Studio S.A.
+// Copyright (c) 2019-2022 Igara Studio S.A.
 // Copyright (c) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -582,8 +582,8 @@ color_t graya_blender_merge(color_t backdrop, color_t src, int opacity)
 
 color_t graya_blender_neg_bw(color_t backdrop, color_t src, int opacity)
 {
-  if ((backdrop & graya_a_mask) == 0)
-    return src;
+  if (!(backdrop & graya_a_mask))
+    return graya(0, 255);
   else if (graya_getv(backdrop) < 128)
     return graya(255, 255);
   else
