@@ -352,7 +352,6 @@ namespace app {
 
     // Theme/dimensions
     skin::SkinTheme* skinTheme() const;
-    gfx::Size celBoxSize() const;
     int headerBoxWidth() const;
     int headerBoxHeight() const;
     int layerBoxHeight() const;

@@ -4133,11 +4133,6 @@ skin::SkinTheme* Timeline::skinTheme() const
   return SkinTheme::get(this);
 }
 
-gfx::Size Timeline::celBoxSize() const
-{
-  return gfx::Size(frameBoxWidth(), layerBoxHeight());
-}
-
 int Timeline::headerBoxWidth() const
 {
   return skinTheme()->dimensions.timelineBaseSize();
