@@ -10,6 +10,7 @@
 #endif
 
 #include "app/cmd.h"
+#include "app/cmd_transaction.h"
 #include "app/commands/command.h"
 #include "app/console.h"
 #include "app/context.h"
@@ -52,8 +53,12 @@ public:
       initTheme();
     }
 
-    void setUndoHistory(DocUndo* history) {
+    void setUndoHistory(Doc* doc, DocUndo* history) {
+      m_doc = doc;
       m_undoHistory = history;
+
+      updateSavedState();
+
       invalidate();
     }
 
@@ -92,6 +97,26 @@ public:
       }
 
       view->setViewScroll(scroll);
+    }
+
+    void updateSavedState() {
+      const auto oldIsAssociatedToFile = m_isAssociatedToFile;
+      const auto oldSavedState = m_savedState;
+
+      m_isAssociatedToFile =
+        (m_doc && m_undoHistory ?
+         m_doc->isAssociatedToFile() && !m_undoHistory->isSavedStateIsLost() :
+         false);
+
+      // Get the state where this sprite was saved.
+      m_savedState = nullptr;
+      if (m_undoHistory && m_isAssociatedToFile)
+        m_savedState = m_undoHistory->savedState();
+
+      if (oldIsAssociatedToFile != m_isAssociatedToFile ||
+          oldSavedState != m_savedState) {
+        invalidate();
+      }
     }
 
     obs::signal<void(const undo::UndoState*)> Change;
@@ -283,6 +308,9 @@ public:
         return;
 
       auto style = theme->styles.listItem();
+      if (m_isAssociatedToFile && m_savedState == state) {
+        style = theme->styles.undoSavedItem();
+      }
 
       ui::PaintWidgetPartInfo info;
       info.text = &itemText;
@@ -291,7 +319,10 @@ public:
     }
 
     UndoHistoryWindow* m_window;
+    Doc* m_doc = nullptr;
     DocUndo* m_undoHistory = nullptr;
+    bool m_isAssociatedToFile = false;
+    const undo::UndoState* m_savedState = nullptr;
     int m_itemHeight;
   };
 
@@ -348,7 +379,7 @@ private:
         m_actions.invalidate();
       }
       catch (const std::exception& ex) {
-        selectState(m_doc->undoHistory()->currentState());
+        selectCurrentState();
         Console::showException(ex);
       }
     }
@@ -376,19 +407,21 @@ private:
 
     ++m_nitems;
 
+    m_actions.updateSavedState();
     m_actions.invalidate();
     view()->updateView();
 
-    selectState(history->currentState());
+    selectCurrentState();
   }
 
   void onDeleteUndoState(DocUndo* history,
                          undo::UndoState* state) override {
+    m_actions.updateSavedState();
     --m_nitems;
   }
 
   void onCurrentUndoStateChange(DocUndo* history) override {
-    selectState(history->currentState());
+    selectCurrentState();
   }
 
   void onClearRedo(DocUndo* history) override {
@@ -397,6 +430,10 @@ private:
 
   void onTotalUndoSizeChange(DocUndo* history) override {
     updateTitle();
+  }
+
+  void onNewSavedState(DocUndo* history) override {
+    m_actions.updateSavedState();
   }
 
   void attachDocument(Doc* doc) {
@@ -428,15 +465,15 @@ private:
 
   void setUndoHistory(DocUndo* history) {
     m_nitems = 0;
-    m_actions.setUndoHistory(history);
+    m_actions.setUndoHistory(m_doc, history);
     view()->updateView();
 
     if (history)
-      m_actions.selectState(history->currentState());
+      selectCurrentState();
   }
 
-  void selectState(const undo::UndoState* state) {
-    m_actions.selectState(state);
+  void selectCurrentState() {
+    m_actions.selectState(m_doc->undoHistory()->currentState());
   }
 
   void updateTitle() {

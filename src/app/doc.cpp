@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -276,7 +276,7 @@ void Doc::notifyLayerGroupCollapseChange(Layer* layer)
 
 bool Doc::isModified() const
 {
-  return !m_undo->isSavedState();
+  return !m_undo->isInSavedState();
 }
 
 bool Doc::isAssociatedToFile() const
@@ -286,8 +286,8 @@ bool Doc::isAssociatedToFile() const
 
 void Doc::markAsSaved()
 {
-  m_undo->markSavedState();
   m_flags |= kAssociatedToFile;
+  m_undo->markSavedState();
 }
 
 void Doc::impossibleToBackToSavedState()

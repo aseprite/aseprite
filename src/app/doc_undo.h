@@ -44,9 +44,11 @@ namespace app {
 
     void clearRedo();
 
-    bool isSavedState() const;
+    bool isInSavedState() const;
+    bool isSavedStateIsLost() const { return m_savedStateIsLost; }
     void markSavedState();
     void impossibleToBackToSavedState();
+    const undo::UndoState* savedState() const { return m_savedState; }
 
     std::string nextUndoLabel() const;
     std::string nextRedoLabel() const;
@@ -57,8 +59,6 @@ namespace app {
     std::istream* nextRedoDocRange() const;
 
     Cmd* lastExecutedCmd() const;
-
-    int* savedCounter() { return &m_savedCounter; }
 
     const undo::UndoState* firstState() const   { return m_undoHistory.firstState(); }
     const undo::UndoState* lastState() const    { return m_undoHistory.lastState(); }
@@ -74,19 +74,13 @@ namespace app {
     void onDeleteUndoState(undo::UndoState* state) override;
 
     undo::UndoHistory m_undoHistory;
-    Context* m_ctx;
-    size_t m_totalUndoSize;
-
-    // This counter is equal to 0 if we are in the "saved state", i.e.
-    // the document on memory is equal to the document on disk. This
-    // value is less than 0 if we're in a past version of the document
-    // (due undoes), or greater than 0 if we are in a future version
-    // (due redoes).
-    int m_savedCounter;
+    const undo::UndoState* m_savedState = nullptr;
+    Context* m_ctx = nullptr;
+    size_t m_totalUndoSize = 0;
 
     // True if the saved state was invalidated/corrupted/lost in some
     // way. E.g. If the save process fails.
-    bool m_savedStateIsLost;
+    bool m_savedStateIsLost = false;
 
     DISABLE_COPYING(DocUndo);
   };

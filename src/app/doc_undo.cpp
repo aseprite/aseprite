@@ -31,10 +31,6 @@ namespace app {
 
 DocUndo::DocUndo()
   : m_undoHistory(this)
-  , m_ctx(nullptr)
-  , m_totalUndoSize(0)
-  , m_savedCounter(0)
-  , m_savedStateIsLost(false)
 {
 }
 
@@ -144,20 +140,25 @@ void DocUndo::clearRedo()
   notify_observers(&DocUndoObserver::onClearRedo, this);
 }
 
-bool DocUndo::isSavedState() const
+bool DocUndo::isInSavedState() const
 {
-  return (!m_savedStateIsLost && m_savedCounter == 0);
+  return (!m_savedStateIsLost &&
+          m_savedState == currentState());
 }
 
 void DocUndo::markSavedState()
 {
-  m_savedCounter = 0;
+  m_savedState = currentState();
   m_savedStateIsLost = false;
+  notify_observers(&DocUndoObserver::onNewSavedState, this);
 }
 
 void DocUndo::impossibleToBackToSavedState()
 {
+  // Now there is no state related to the disk state.
+  m_savedState = nullptr;
   m_savedStateIsLost = true;
+  notify_observers(&DocUndoObserver::onNewSavedState, this);
 }
 
 std::string DocUndo::nextUndoLabel() const
@@ -270,6 +271,11 @@ void DocUndo::onDeleteUndoState(undo::UndoState* state)
 
   m_totalUndoSize -= cmd->memSize();
   notify_observers(&DocUndoObserver::onDeleteUndoState, this, state);
+
+  // Mark this document as impossible to match the version on disk
+  // because we're just going to delete the saved state.
+  if (m_savedState == state)
+    impossibleToBackToSavedState();
 }
 
 } // namespace app

@@ -997,6 +997,14 @@
             <text color="listitem_selected_text" align="left middle" x="1" state="selected" />
             <text color="disabled" align="left middle" x="1" state="disabled" />
         </style>
+        <style id="undo_saved_item" extends="list_item">
+            <text color="listitem_normal_text" align="left middle" x="11" />
+            <text color="listitem_selected_text" align="left middle" x="11" state="selected" />
+            <text color="disabled" align="left middle" x="11" state="disabled" />
+            <icon part="icon_save" color="listitem_normal_text" align="left middle" x="1" />
+            <icon part="icon_save" color="listitem_selected_text" align="left middle" x="1" state="selected" />
+            <icon part="icon_save" color="disabled" align="left middle" x="1" state="disabled" />
+        </style>
         <style id="aseprite_face">
             <icon part="aseprite_face" />
             <icon part="aseprite_face_mouse" state="mouse" />
