@@ -231,7 +231,6 @@ if(ENABLE_UI)
     commands/cmd_copy_cel.cpp
     commands/cmd_copy_merged.cpp
     commands/cmd_cut.cpp
-    commands/cmd_deselect_mask.cpp
     commands/cmd_discard_brush.cpp
     commands/cmd_duplicate_layer.cpp
     commands/cmd_duplicate_sprite.cpp
@@ -257,7 +256,6 @@ if(ENABLE_UI)
     commands/cmd_layer_visibility.cpp
     commands/cmd_link_cels.cpp
     commands/cmd_load_mask.cpp
-    commands/cmd_mask_all.cpp
     commands/cmd_mask_by_color.cpp
     commands/cmd_mask_content.cpp
     commands/cmd_modify_selection.cpp
@@ -550,6 +548,7 @@ add_library(app-lib
   commands/cmd_change_pixel_format.cpp
   commands/cmd_color_quantization.cpp
   commands/cmd_crop.cpp
+  commands/cmd_deselect_mask.cpp
   commands/cmd_export_sprite_sheet.cpp
   commands/cmd_fill_and_stroke.cpp
   commands/cmd_flatten_layers.cpp
@@ -557,6 +556,7 @@ add_library(app-lib
   commands/cmd_import_sprite_sheet.cpp
   commands/cmd_layer_from_background.cpp
   commands/cmd_load_palette.cpp
+  commands/cmd_mask_all.cpp
   commands/cmd_merge_down_layer.cpp
   commands/cmd_new_file.cpp
   commands/cmd_new_frame.cpp
