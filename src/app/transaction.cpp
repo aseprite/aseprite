@@ -45,7 +45,8 @@ Transaction::Transaction(
   m_doc->add_observer(this);
   m_undo = m_doc->undoHistory();
 
-  m_cmds = new CmdTransaction(label);
+  m_cmds = new CmdTransaction(label,
+                              modification == Modification::ModifyDocument);
 
   // Here we are executing an empty CmdTransaction, just to save the
   // SpritePosition. Sub-cmds are executed then one by one, in

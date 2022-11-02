@@ -44,11 +44,33 @@ namespace app {
 
     void clearRedo();
 
-    bool isInSavedState() const;
+    // Returns true we are in the UndoState that matches the sprite
+    // version on the disk (or we are in a similar state that doesn't
+    // modify that same state, e.g. if the current state modifies the
+    // selection but not the pixels, we are in a similar state)
+    bool isInSavedStateOrSimilar() const;
+
+    // Returns true if the saved state was lost, e.g. because we
+    // deleted the redo history and the saved state was there.
     bool isSavedStateIsLost() const { return m_savedStateIsLost; }
+
+    // Marks current UndoState as the one that matches the sprite on
+    // the disk (this is used after saving the file).
     void markSavedState();
+
+    // Indicates that now it's impossible to back to the version of
+    // the sprite that matches the saved version. This can be because
+    // the save process fails or because we deleted the redo history
+    // where the saved state was available.
     void impossibleToBackToSavedState();
-    const undo::UndoState* savedState() const { return m_savedState; }
+
+    // Returns the position in the undo history where this sprite was
+    // saved, if this is nullptr, it means that the initial state is
+    // the saved state (if m_savedStateIsLost is false) or it means
+    // that there is no saved state (ifm_savedStateIsLost is true)
+    const undo::UndoState* savedState() const {
+      return m_savedState;
+    }
 
     std::string nextUndoLabel() const;
     std::string nextRedoLabel() const;

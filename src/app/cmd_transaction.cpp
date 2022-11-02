@@ -21,15 +21,18 @@
 
 namespace app {
 
-CmdTransaction::CmdTransaction(const std::string& label)
+CmdTransaction::CmdTransaction(const std::string& label,
+                               bool changeSavedState)
   : m_ranges(nullptr)
   , m_label(label)
+  , m_changeSavedState(changeSavedState)
 {
 }
 
 CmdTransaction* CmdTransaction::moveToEmptyCopy()
 {
-  CmdTransaction* copy = new CmdTransaction(m_label);
+  CmdTransaction* copy = new CmdTransaction(m_label,
+                                            m_changeSavedState);
   copy->m_spritePositionBefore = m_spritePositionBefore;
   copy->m_spritePositionAfter = m_spritePositionAfter;
   if (m_ranges) {

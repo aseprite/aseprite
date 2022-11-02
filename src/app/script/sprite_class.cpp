@@ -617,6 +617,14 @@ int Sprite_get_filename(lua_State* L)
   return 1;
 }
 
+int Sprite_get_isModified(lua_State* L)
+{
+  auto sprite = get_docobj<Sprite>(L, 1);
+  Doc* doc = static_cast<Doc*>(sprite->document());
+  lua_pushboolean(L, doc->isModified());
+  return 1;
+}
+
 int Sprite_get_width(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
@@ -854,6 +862,7 @@ const luaL_Reg Sprite_methods[] = {
 
 const Property Sprite_properties[] = {
   { "filename", Sprite_get_filename, Sprite_set_filename },
+  { "isModified", Sprite_get_isModified, nullptr },
   { "width", Sprite_get_width, Sprite_set_width },
   { "height", Sprite_get_height, Sprite_set_height },
   { "colorMode", Sprite_get_colorMode, nullptr },

@@ -9,6 +9,7 @@
 #include "config.h"
 #endif
 
+#include "app/app.h"
 #include "app/cmd.h"
 #include "app/cmd_transaction.h"
 #include "app/commands/command.h"
@@ -24,6 +25,7 @@
 #include "app/modules/palettes.h"
 #include "app/site.h"
 #include "app/ui/skin/skin_theme.h"
+#include "app/ui/workspace.h"
 #include "base/mem_utils.h"
 #include "fmt/format.h"
 #include "ui/init_theme_event.h"
@@ -422,6 +424,9 @@ private:
 
   void onCurrentUndoStateChange(DocUndo* history) override {
     selectCurrentState();
+
+    // TODO DocView should be an DocUndoObserver and update its state automatically
+    App::instance()->workspace()->updateTabs();
   }
 
   void onClearRedo(DocUndo* history) override {

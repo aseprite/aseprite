@@ -140,10 +140,50 @@ void DocUndo::clearRedo()
   notify_observers(&DocUndoObserver::onClearRedo, this);
 }
 
-bool DocUndo::isInSavedState() const
+bool DocUndo::isInSavedStateOrSimilar() const
 {
-  return (!m_savedStateIsLost &&
-          m_savedState == currentState());
+  if (m_savedStateIsLost)
+    return false;
+
+  // Here we try to find if we can reach the saved state from the
+  // currentState() undoing or redoing and the sprite is exactly the
+  // same as the saved state, e.g. this can happen if the undo states
+  // don't modify the sprite (like actions that change the current
+  // selection/mask boundaries).
+  bool savedStateWithUndoes = true;
+
+  auto state = currentState();
+  while (state) {
+    if (m_savedState == state) {
+      return true;
+    }
+    else if (STATE_CMD(state)->doesChangeSavedState()) {
+      savedStateWithUndoes = false;
+      break;
+    }
+    state = state->prev();
+  }
+
+  // If we reached the end of the undo history (e.g. because all undo
+  // states do not modify the sprite), the only way to be in the saved
+  // state is if the initial point of history is the saved state too
+  // i.e. when m_savedState is nullptr (and m_savedStateIsLost is
+  // false).
+  if (savedStateWithUndoes && m_savedState == nullptr)
+    return true;
+
+  // Now we try with redoes.
+  state = (currentState() ? currentState()->next(): firstState());
+  while (state) {
+    if (STATE_CMD(state)->doesChangeSavedState()) {
+      return false;
+    }
+    else if (m_savedState == state) {
+      return true;
+    }
+    state = state->next();
+  }
+  return false;
 }
 
 void DocUndo::markSavedState()

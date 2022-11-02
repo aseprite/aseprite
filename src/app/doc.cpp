@@ -276,7 +276,7 @@ void Doc::notifyLayerGroupCollapseChange(Layer* layer)
 
 bool Doc::isModified() const
 {
-  return !m_undo->isInSavedState();
+  return !m_undo->isInSavedStateOrSimilar();
 }
 
 bool Doc::isAssociatedToFile() const
