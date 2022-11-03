@@ -193,7 +193,7 @@ Image* convert_pixel_format(
 
     case IMAGE_RGB: {
       const LockImageBits<RgbTraits> srcBits(image);
-      LockImageBits<RgbTraits>::const_iterator src_it = srcBits.begin(), src_end = srcBits.end();
+      auto src_it = srcBits.begin(), src_end = srcBits.end();
 
       switch (new_image->pixelFormat()) {
 
@@ -205,12 +205,11 @@ Image* convert_pixel_format(
         // RGB -> Grayscale
         case IMAGE_GRAYSCALE: {
           LockImageBits<GrayscaleTraits> dstBits(new_image, Image::WriteLock);
-          LockImageBits<GrayscaleTraits>::iterator dst_it = dstBits.begin();
+          auto dst_it = dstBits.begin();
 #ifdef _DEBUG
-          LockImageBits<GrayscaleTraits>::iterator dst_end = dstBits.end();
+          auto dst_end = dstBits.end();
           ASSERT(toGray);
 #endif
-
           for (; src_it != src_end; ++src_it, ++dst_it) {
             ASSERT(dst_it != dst_end);
             *dst_it = (*toGray)(*src_it);
@@ -222,9 +221,9 @@ Image* convert_pixel_format(
         // RGB -> Indexed
         case IMAGE_INDEXED: {
           LockImageBits<IndexedTraits> dstBits(new_image, Image::WriteLock);
-          LockImageBits<IndexedTraits>::iterator dst_it = dstBits.begin();
+          auto dst_it = dstBits.begin();
 #ifdef _DEBUG
-          LockImageBits<IndexedTraits>::iterator dst_end = dstBits.end();
+          auto dst_end = dstBits.end();
 #endif
 
           for (; src_it != src_end; ++src_it, ++dst_it) {
@@ -252,18 +251,17 @@ Image* convert_pixel_format(
 
     case IMAGE_GRAYSCALE: {
       const LockImageBits<GrayscaleTraits> srcBits(image);
-      LockImageBits<GrayscaleTraits>::const_iterator src_it = srcBits.begin(), src_end = srcBits.end();
+      auto src_it = srcBits.begin(), src_end = srcBits.end();
 
       switch (new_image->pixelFormat()) {
 
         // Grayscale -> RGB
         case IMAGE_RGB: {
           LockImageBits<RgbTraits> dstBits(new_image, Image::WriteLock);
-          LockImageBits<RgbTraits>::iterator dst_it = dstBits.begin();
+          auto dst_it = dstBits.begin();
 #ifdef _DEBUG
-          LockImageBits<RgbTraits>::iterator dst_end = dstBits.end();
+          auto dst_end = dstBits.end();
 #endif
-
           for (; src_it != src_end; ++src_it, ++dst_it) {
             ASSERT(dst_it != dst_end);
             c = *src_it;
@@ -284,11 +282,10 @@ Image* convert_pixel_format(
         // Grayscale -> Indexed
         case IMAGE_INDEXED: {
           LockImageBits<IndexedTraits> dstBits(new_image, Image::WriteLock);
-          LockImageBits<IndexedTraits>::iterator dst_it = dstBits.begin();
+          auto dst_it = dstBits.begin();
 #ifdef _DEBUG
-          LockImageBits<IndexedTraits>::iterator dst_end = dstBits.end();
+          auto dst_end = dstBits.end();
 #endif
-
           for (; src_it != src_end; ++src_it, ++dst_it) {
             ASSERT(dst_it != dst_end);
             c = *src_it;
@@ -311,18 +308,17 @@ Image* convert_pixel_format(
 
     case IMAGE_INDEXED: {
       const LockImageBits<IndexedTraits> srcBits(image);
-      LockImageBits<IndexedTraits>::const_iterator src_it = srcBits.begin(), src_end = srcBits.end();
+      auto src_it = srcBits.begin(), src_end = srcBits.end();
 
       switch (new_image->pixelFormat()) {
 
         // Indexed -> RGB
         case IMAGE_RGB: {
           LockImageBits<RgbTraits> dstBits(new_image, Image::WriteLock);
-          LockImageBits<RgbTraits>::iterator dst_it = dstBits.begin();
+          auto dst_it = dstBits.begin();
 #ifdef _DEBUG
-          LockImageBits<RgbTraits>::iterator dst_end = dstBits.end();
+          auto dst_end = dstBits.end();
 #endif
-
           for (; src_it != src_end; ++src_it, ++dst_it) {
             ASSERT(dst_it != dst_end);
             c = *src_it;
@@ -344,12 +340,11 @@ Image* convert_pixel_format(
         // Indexed -> Grayscale
         case IMAGE_GRAYSCALE: {
           LockImageBits<GrayscaleTraits> dstBits(new_image, Image::WriteLock);
-          LockImageBits<GrayscaleTraits>::iterator dst_it = dstBits.begin();
+          auto dst_it = dstBits.begin();
 #ifdef _DEBUG
-          LockImageBits<GrayscaleTraits>::iterator dst_end = dstBits.end();
+          auto dst_end = dstBits.end();
           ASSERT(toGray);
 #endif
-
           for (; src_it != src_end; ++src_it, ++dst_it) {
             ASSERT(dst_it != dst_end);
             c = *src_it;
@@ -368,11 +363,10 @@ Image* convert_pixel_format(
         // Indexed -> Indexed
         case IMAGE_INDEXED: {
           LockImageBits<IndexedTraits> dstBits(new_image, Image::WriteLock);
-          LockImageBits<IndexedTraits>::iterator dst_it = dstBits.begin();
+          auto dst_it = dstBits.begin();
 #ifdef _DEBUG
-          LockImageBits<IndexedTraits>::iterator dst_end = dstBits.end();
+          auto dst_end = dstBits.end();
 #endif
-
           for (; src_it != src_end; ++src_it, ++dst_it) {
             ASSERT(dst_it != dst_end);
             c = *src_it;
