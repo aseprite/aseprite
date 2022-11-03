@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -46,8 +46,7 @@ Transaction::Transaction(
   m_undo = m_doc->undoHistory();
 
   m_cmds = new CmdTransaction(label,
-    modification == Modification::ModifyDocument,
-    m_undo->savedCounter());
+                              modification == Modification::ModifyDocument);
 
   // Here we are executing an empty CmdTransaction, just to save the
   // SpritePosition. Sub-cmds are executed then one by one, in

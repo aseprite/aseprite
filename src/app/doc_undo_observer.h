@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021  Igara Studio S.A.
+// Copyright (C) 2021-2022  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -26,6 +26,7 @@ namespace app {
     virtual void onCurrentUndoStateChange(DocUndo* history) { }
     virtual void onClearRedo(DocUndo* history) { }
     virtual void onTotalUndoSizeChange(DocUndo* history) { }
+    virtual void onNewSavedState(DocUndo* history) { }
   };
 
 } // namespace app

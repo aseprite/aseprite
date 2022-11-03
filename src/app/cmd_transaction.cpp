@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -22,20 +22,17 @@
 namespace app {
 
 CmdTransaction::CmdTransaction(const std::string& label,
-                               bool changeSavedState,
-                               int* savedCounter)
+                               bool changeSavedState)
   : m_ranges(nullptr)
   , m_label(label)
   , m_changeSavedState(changeSavedState)
-  , m_savedCounter(savedCounter)
 {
 }
 
 CmdTransaction* CmdTransaction::moveToEmptyCopy()
 {
   CmdTransaction* copy = new CmdTransaction(m_label,
-                                            m_changeSavedState,
-                                            m_savedCounter);
+                                            m_changeSavedState);
   copy->m_spritePositionBefore = m_spritePositionBefore;
   copy->m_spritePositionAfter = m_spritePositionAfter;
   if (m_ranges) {
@@ -99,25 +96,16 @@ void CmdTransaction::onExecute()
 
   // Execute the sequence of "cmds"
   CmdSequence::onExecute();
-
-  if (m_changeSavedState)
-    ++(*m_savedCounter);
 }
 
 void CmdTransaction::onUndo()
 {
   CmdSequence::onUndo();
-
-  if (m_changeSavedState)
-    --(*m_savedCounter);
 }
 
 void CmdTransaction::onRedo()
 {
   CmdSequence::onRedo();
-
-  if (m_changeSavedState)
-    ++(*m_savedCounter);
 }
 
 std::string CmdTransaction::onLabel() const
