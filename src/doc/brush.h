@@ -17,6 +17,7 @@
 #include "gfx/rect.h"
 
 #include <memory>
+#include <optional>
 #include <vector>
 
 namespace doc {
@@ -97,8 +98,8 @@ namespace doc {
 
     // Extra data used for setImageColor()
     ImageRef m_backupImage; // Backup image to avoid losing original brush colors/pattern
-    std::unique_ptr<color_t> m_mainColor; // Main image brush color (nullptr if it wasn't specified)
-    std::unique_ptr<color_t> m_bgColor;   // Background color (nullptr if it wasn't specified)
+    std::optional<color_t> m_mainColor; // Main image brush color
+    std::optional<color_t> m_bgColor;   // Background color
   };
 
   typedef std::shared_ptr<Brush> BrushRef;

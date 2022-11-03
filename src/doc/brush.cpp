@@ -249,10 +249,10 @@ void Brush::setImageColor(ImageColor imageColor, color_t color)
 
   switch (imageColor) {
     case ImageColor::MainColor:
-      m_mainColor.reset(new color_t(color));
+      m_mainColor = color_t(color);
       break;
     case ImageColor::BackgroundColor:
-      m_bgColor.reset(new color_t(color));
+      m_bgColor = color_t(color);
       break;
   }
 
