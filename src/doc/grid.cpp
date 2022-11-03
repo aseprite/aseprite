@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2021  Igara Studio S.A.
+// Copyright (c) 2019-2022  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -181,6 +181,53 @@ std::vector<gfx::Point> Grid::tilesInCanvasRegion(const gfx::Region& rgn) const
                                   it.y()+bounds.y));
   }
   return result;
+}
+
+Mask Grid::makeAlignedMask(const Mask* mask) const {
+  // Fact: the newBounds will be always larger or equal than oldBounds
+  Mask maskOutput;
+  if (mask->isFrozen()) {
+    ASSERT(false);
+    return maskOutput;
+  }
+  gfx::Rect oldBounds = mask->bounds();
+  gfx::Rect newBounds = alignBounds(mask->bounds());
+  ASSERT(newBounds.w > 0 && newBounds.h > 0);
+  ImageRef newBitmap;
+  if (!mask->bitmap()) {
+    maskOutput.replace(newBounds);
+    return maskOutput;
+  }
+
+  newBitmap.reset(Image::create(IMAGE_BITMAP, newBounds.w, newBounds.h));
+  maskOutput.freeze();
+  maskOutput.reserve(newBounds);
+
+  const LockImageBits<BitmapTraits> bits(mask->bitmap());
+  typename LockImageBits<BitmapTraits>::const_iterator it = bits.begin();
+  // We must travel thought the old bitmap and masking the new bitmap
+  gfx::Point previousPoint(std::numeric_limits<int>::max(),
+                           std::numeric_limits<int>::max());
+  for (int y=0; y < oldBounds.h; ++y) {
+    for (int x=0; x < oldBounds.w; ++x, ++it) {
+      ASSERT(it != bits.end());
+      if (*it) {
+        gfx::Rect newBoundsTile =
+          alignBounds(gfx::Rect(oldBounds.x + x, oldBounds.y + y, 1, 1));
+        if (previousPoint != newBoundsTile.origin()) {
+          // Fill a tile region in the newBitmap
+          fill_rect(maskOutput.bitmap(),
+                    gfx::Rect(newBoundsTile.x - newBounds.x,
+                              newBoundsTile.y - newBounds.y,
+                              tileSize().w, tileSize().h),
+                    1);
+          previousPoint = newBoundsTile.origin();
+        }
+      }
+    }
+  }
+  maskOutput.unfreeze();
+  return maskOutput;
 }
 
 } // namespace doc
