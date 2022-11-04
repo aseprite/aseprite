@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2020 Igara Studio S.A.
+// Copyright (c) 2020-2022 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -47,6 +47,11 @@ namespace doc {
     return (c >> rgba_a_shift) & 0xff;
   }
 
+  inline uint32_t rgba_seta(uint32_t c, uint8_t a) {
+    return ((c & rgba_rgb_mask) |
+            (a << rgba_a_shift));
+  }
+
   inline uint32_t rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
     return ((r << rgba_r_shift) |
             (g << rgba_g_shift) |
@@ -77,6 +82,11 @@ namespace doc {
 
   inline uint8_t graya_geta(uint16_t c) {
     return (c >> graya_a_shift) & 0xff;
+  }
+
+  inline uint16_t graya_seta(uint16_t c, uint8_t a) {
+    return ((c & graya_v_mask) |
+            (a << graya_a_shift));
   }
 
   inline uint16_t graya(uint8_t v, uint8_t a) {
