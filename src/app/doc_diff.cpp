@@ -25,11 +25,15 @@
 #include "doc/user_data.h"
 
 #ifdef _DEBUG
-static std::ostream& operator<<(std::ostream& os, const doc::UserData& userData)
+namespace doc {
+
+static std::ostream& operator<<(std::ostream& os, const UserData& userData)
 {
   return os << "("
             << userData.text() << ", "
             << userData.color() << ")";
+}
+
 }
 #endif
 
