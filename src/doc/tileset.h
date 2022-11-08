@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2021  Igara Studio S.A.
+// Copyright (c) 2019-2022  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -13,6 +13,7 @@
 #include "doc/object.h"
 #include "doc/tile.h"
 #include "doc/tileset_hash_table.h"
+#include "doc/with_user_data.h"
 
 #include <string>
 #include <vector>
@@ -22,7 +23,7 @@ namespace doc {
   class Remap;
   class Sprite;
 
-  class Tileset : public Object {
+  class Tileset : public WithUserData {
   public:
     typedef std::vector<ImageRef> Tiles;
     typedef Tiles::iterator iterator;

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -11,6 +11,7 @@
 #include "app/script/docobj.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
+#include "app/script/userdata.h"
 #include "doc/tileset.h"
 
 namespace app {
@@ -97,6 +98,8 @@ const Property Tileset_properties[] = {
   { "name", Tileset_get_name, Tileset_set_name },
   { "grid", Tileset_get_grid, nullptr },
   { "baseIndex", Tileset_get_baseIndex, Tileset_set_baseIndex },
+  { "color", UserData_get_color<Tileset>, UserData_set_color<Tileset> },
+  { "data", UserData_get_text<Tileset>, UserData_set_text<Tileset> },
   { nullptr, nullptr, nullptr }
 };
 

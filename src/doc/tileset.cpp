@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2021  Igara Studio S.A.
+// Copyright (c) 2019-2022  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -23,7 +23,7 @@ namespace doc {
 Tileset::Tileset(Sprite* sprite,
                  const Grid& grid,
                  const tileset_index ntiles)
-  : Object(ObjectType::Tileset)
+  : WithUserData(ObjectType::Tileset)
   , m_sprite(sprite)
   , m_grid(grid)
   , m_tiles(ntiles)

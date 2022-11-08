@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -16,6 +16,7 @@
 #include "doc/image_io.h"
 #include "doc/subobjects_io.h"
 #include "doc/tileset.h"
+#include "doc/user_data_io.h"
 #include "doc/util.h"
 
 #include <iostream>
@@ -23,6 +24,9 @@
 // Extra BYTE with special flags to check the tileset version.  This
 // field didn't exist in Aseprite v1.3-alpha3 (so read8() fails = 0)
 #define TILESET_VER1     1
+
+// Tileset has UserData now
+#define TILESET_VER2     2
 
 namespace doc {
 
@@ -44,7 +48,8 @@ bool write_tileset(std::ostream& os,
     write_image(os, tileset->get(ti).get(), cancel);
   }
 
-  write8(os, TILESET_VER1);
+  write8(os, TILESET_VER2);
+  write_user_data(os, tileset->userData());
   return true;
 }
 
@@ -67,11 +72,17 @@ Tileset* read_tileset(std::istream& is,
 
   // Read extra version byte after tiles
   uint32_t ver = read8(is);
-  if (ver == TILESET_VER1) {
+  if (ver == TILESET_VER1 ||
+      ver == TILESET_VER2) {
     if (isOldVersion)
       *isOldVersion = false;
 
     tileset->setBaseIndex(1);
+
+    if (ver == TILESET_VER2) {
+      UserData userData = read_user_data(is);
+      tileset->setUserData(userData);
+    }
   }
   // Old tileset used in internal versions (this was added to recover
   // old files, maybe in a future we could remove this code)
