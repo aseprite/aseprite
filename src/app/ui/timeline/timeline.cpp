@@ -396,6 +396,9 @@ void Timeline::updateUsingEditor(Editor* editor)
 
 void Timeline::detachDocument()
 {
+  if (m_confPopup && m_confPopup->isVisible())
+    m_confPopup->closeWindow(nullptr);
+
   m_firstFrameConn.disconnect();
 
   if (m_document) {
