@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -25,6 +25,11 @@ class DraggableWidget : public Base {
 public:
   template<typename...Args>
   DraggableWidget(Args...args) : Base(args...) { }
+
+  ~DraggableWidget() {
+    if (m_floatingOverlay)
+      destroyFloatingOverlay();
+  }
 
   bool onProcessMessage(ui::Message* msg) override {
     switch (msg->type()) {
