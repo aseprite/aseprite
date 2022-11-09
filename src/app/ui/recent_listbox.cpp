@@ -207,6 +207,13 @@ private:
   gfx::Rect pinBounds(const gfx::Rect& bounds) {
     auto theme = SkinTheme::get(this);
     ui::Style* pinStyle = theme->styles.recentFilePin();
+
+    // We've received some crash reports where it looks like the
+    // parent() is nullptr.
+    ASSERT(parent());
+    if (!parent())
+      return gfx::Rect();
+
     ui::View* view = View::getView(parent());
     const gfx::Size pinSize = theme->calcSizeHint(this, pinStyle);
     const gfx::Rect vp = view->viewportBounds();
