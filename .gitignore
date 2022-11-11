@@ -12,6 +12,7 @@
 *.res
 .DS_Store
 .vs
+.vscode
 
 # CMake output
 build
