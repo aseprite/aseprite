@@ -228,25 +228,10 @@ app::Color ColorWheel::getMainAreaColor(const int _u, const int umax,
         intAngle *= 30;
         angle = PI * intAngle / 180.0;
 
-        int blueAngleDegrees;
-        if (normalizedDistance < 0.25) {
-          normalizedDistance = 0;
-          blueAngleDegrees = 90;
-          angle = PI / 2;
+        if (normalizedDistance < 1.0/6.0)
           angle = 0;
-        }
-        else if (normalizedDistance < 0.5) {
-          normalizedDistance = 0.25;
-          blueAngleDegrees = 45;
-        }
-        else if (normalizedDistance < 0.75) {
-          normalizedDistance = 0.5;
-          blueAngleDegrees = 30;
-        }
-        else {
-          normalizedDistance = 0.75;
-          blueAngleDegrees = 15;
-        }
+        normalizedDistance = (std::floor((normalizedDistance) * 6.0 + 1.0) - 1) / 5.0;
+        int blueAngleDegrees = 90.0 * (6.0 - std::floor(normalizedDistance * 6.0)) / 5.0;
         blueAngle = PI * blueAngleDegrees / 180.0;
 
         r = 128 + int(128.0 * normalizedDistance * std::cos(angle));
