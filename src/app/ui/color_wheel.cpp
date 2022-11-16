@@ -78,7 +78,6 @@ const char* ColorWheel::getMainAreaShader()
                     "uniform half4 iBack;"
                     "uniform int iDiscrete;"
                     "uniform int iMode;";
-    m_mainShader += kRGB_to_HSV_sksl;
     m_mainShader += kHSV_to_RGB_sksl;
     m_mainShader += R"(
 const half PI = 3.1415;
@@ -96,6 +95,38 @@ half4 main(vec2 fragcoord) {
  half r = length(d);
 
  if (r <= 0.5) {
+  if (iMode == 2) { // Normal map mode
+   float nd = r / 0.5;
+   half4 rgba = half4(0, 0, 0, 1);
+   float blueAngle;
+
+   if (iDiscrete != 0) {
+    float angle;
+    if (nd < 1.0/6.0)
+     angle = 0;
+    else {
+     angle = atan(-d.y, d.x);
+     angle = floor(180.0 * angle / PI) + 360;
+     angle = floor((angle+15) / 30) * 30;
+     angle = PI * angle / 180.0;
+    }
+    nd = (floor(nd * 6.0 + 1.0) - 1) / 5.0;
+    float blueAngleDegrees = floor(90.0 * (6.0 - floor(nd * 6.0)) / 5.0);
+    blueAngle = PI * blueAngleDegrees / 180.0;
+
+    rgba.r = 0.5 + 0.5 * nd * cos(angle);
+    rgba.g = 0.5 + 0.5 * nd * sin(angle);
+   }
+   else {
+    rgba.r = 0.5 + d.x;
+    rgba.g = 0.5 - d.y;
+    blueAngle = acos(nd);
+   }
+   rgba.b = 0.5 + 0.5 * sin(blueAngle);
+
+   return clamp(rgba, 0.0, 1.0);
+  }
+
   half a = atan(-d.y, d.x);
   half hue = (floor(180.0 * a / PI)
              + 180            // To avoid [-180,0) range
@@ -112,15 +143,6 @@ half4 main(vec2 fragcoord) {
    hue = rybhue_to_rgbhue(hue);
   }
   hue /= 360.0;
-
-  if (iMode == 2) { // Normal map mode
-   float di = 0.5 * r / 0.5;
-   half3 rgb = half3(0.5+di*cos(a), 0.5+di*sin(a), 1.0-di);
-   return half4(
-    clamp(rgb.x, 0, 1),
-    clamp(rgb.y, 0, 1),
-    clamp(rgb.z, 0.5, 1), 1);
-  }
 
   half sat = r / 0.5;
   if (iDiscrete != 0) {
@@ -207,32 +229,49 @@ app::Color ColorWheel::getMainAreaColor(const int _u, const int umax,
 
   // When we click the main area we can limit the distance to the
   // wheel radius to pick colors even outside the wheel radius.
-  if (hasCaptureInMainArea() && d > m_wheelRadius)
+  if (hasCaptureInMainArea() && d > m_wheelRadius) {
     d = m_wheelRadius;
+  }
 
   if (m_colorModel == ColorModel::NORMAL_MAP) {
-    double a = std::atan2(-v, u);
-    int di = int(128.0 * d / m_wheelRadius);
-
-    if (m_discrete) {
-      int ai = (int(180.0 * a / PI) + 360);
-      ai += 15;
-      ai /= 30;
-      ai *= 30;
-      a = PI * ai / 180.0;
-
-      di /= 32;
-      di *= 32;
-    }
-
-    int r = 128 + di*std::cos(a);
-    int g = 128 + di*std::sin(a);
-    int b = 255 - di;
     if (d <= m_wheelRadius) {
+      double normalizedDistance = d / m_wheelRadius;
+      double normalizedU = u / m_wheelRadius;
+      double normalizedV = v / m_wheelRadius;
+      double blueAngle;
+      int r, g, b;
+
+      if (m_discrete) {
+        double angle = std::atan2(-v, u);
+
+        int intAngle = (int(180.0 * angle / PI) + 360);
+        intAngle += 15;
+        intAngle /= 30;
+        intAngle *= 30;
+        angle = PI * intAngle / 180.0;
+
+        if (normalizedDistance < 1.0/6.0)
+          angle = 0;
+        normalizedDistance = (std::floor((normalizedDistance) * 6.0 + 1.0) - 1) / 5.0;
+        int blueAngleDegrees = 90.0 * (6.0 - std::floor(normalizedDistance * 6.0)) / 5.0;
+        blueAngle = PI * blueAngleDegrees / 180.0;
+
+        r = 128 + int(128.0 * normalizedDistance * std::cos(angle));
+        g = 128 + int(128.0 * normalizedDistance * std::sin(angle));
+      }
+      else {
+        r = 128 + int(128.0 * normalizedU);
+        g = 128 - int(128.0 * normalizedV);
+
+        blueAngle = std::acos(normalizedDistance);
+      }
+
+      b = 128 + int(128.0 * std::sin(blueAngle));
+
       return app::Color::fromRgb(
         std::clamp(r, 0, 255),
         std::clamp(g, 0, 255),
-        std::clamp(b, 128, 255));
+        std::clamp(b, 0, 255));
     }
     else {
       return app::Color::fromRgb(128, 128, 255);
@@ -297,15 +336,27 @@ void ColorWheel::onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc)
 
   if (m_color.getAlpha() > 0) {
     if (m_colorModel == ColorModel::NORMAL_MAP) {
-      double angle = std::atan2(m_color.getGreen()-128,
-                                m_color.getRed()-128);
-      double dist = (255-m_color.getBlue()) / 128.0;
-      dist = std::clamp(dist, 0.0, 1.0);
+      double normalizedRed = (double(m_color.getRed()) / 255.0) * 2.0 - 1.0;
+      double normalizedGreen = (double(m_color.getGreen()) / 255.0) * 2.0 - 1.0;
+      double normalizedBlue = (double(m_color.getBlue()) / 255.0) * 2.0 - 1.0;
+      normalizedBlue = std::clamp(normalizedBlue, 0.0, 1.0);
 
-      gfx::Point pos =
-        m_wheelBounds.center() +
-        gfx::Point(int(+std::cos(angle)*double(m_wheelRadius)*dist),
-                   int(-std::sin(angle)*double(m_wheelRadius)*dist));
+      double x, y;
+
+      double approximationThreshold = (246.0 / 255.0) * 2.0 - 1.0;
+      if (normalizedBlue > approximationThreshold) { // If blue is too high, we use red and green only as approximation
+        x = normalizedRed * m_wheelRadius;
+        y = -normalizedGreen * m_wheelRadius;
+      }
+      else {
+        double normalizedDistance = std::cos(std::asin(normalizedBlue));
+        double angle = std::atan2(normalizedGreen, normalizedRed);
+
+        x = std::cos(angle) * m_wheelRadius * normalizedDistance;
+        y = -std::sin(angle) * m_wheelRadius * normalizedDistance;
+      }
+
+      gfx::Point pos = m_wheelBounds.center() + gfx::Point(int(x), int(y));
       paintColorIndicator(g, pos, true);
     }
     else {
