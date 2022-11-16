@@ -78,7 +78,6 @@ const char* ColorWheel::getMainAreaShader()
                     "uniform half4 iBack;"
                     "uniform int iDiscrete;"
                     "uniform int iMode;";
-    m_mainShader += kRGB_to_HSV_sksl;
     m_mainShader += kHSV_to_RGB_sksl;
     m_mainShader += R"(
 const half PI = 3.1415;
@@ -249,7 +248,7 @@ app::Color ColorWheel::getMainAreaColor(const int _u, const int umax,
       return app::Color::fromRgb(
         std::clamp(r, 0, 255),
         std::clamp(g, 0, 255),
-        std::clamp(b, 0/*128*/, 255));
+        std::clamp(b, 0, 255));
     }
     else {
       return app::Color::fromRgb(128, 128, 255);
