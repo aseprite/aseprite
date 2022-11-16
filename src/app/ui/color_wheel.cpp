@@ -95,6 +95,38 @@ half4 main(vec2 fragcoord) {
  half r = length(d);
 
  if (r <= 0.5) {
+  if (iMode == 2) { // Normal map mode
+   float nd = r / 0.5;
+   half4 rgba = half4(0, 0, 0, 1);
+   float blueAngle;
+
+   if (iDiscrete != 0) {
+    float angle;
+    if (nd < 1.0/6.0)
+     angle = 0;
+    else {
+     angle = atan(-d.y, d.x);
+     angle = floor(180.0 * angle / PI) + 360;
+     angle = floor((angle+15) / 30) * 30;
+     angle = PI * angle / 180.0;
+    }
+    nd = (floor(nd * 6.0 + 1.0) - 1) / 5.0;
+    float blueAngleDegrees = floor(90.0 * (6.0 - floor(nd * 6.0)) / 5.0);
+    blueAngle = PI * blueAngleDegrees / 180.0;
+
+    rgba.r = 0.5 + 0.5 * nd * cos(angle);
+    rgba.g = 0.5 + 0.5 * nd * sin(angle);
+   }
+   else {
+    rgba.r = 0.5 + d.x;
+    rgba.g = 0.5 - d.y;
+    blueAngle = acos(nd);
+   }
+   rgba.b = 0.5 + 0.5 * sin(blueAngle);
+
+   return clamp(rgba, 0.0, 1.0);
+  }
+
   half a = atan(-d.y, d.x);
   half hue = (floor(180.0 * a / PI)
              + 180            // To avoid [-180,0) range
@@ -111,15 +143,6 @@ half4 main(vec2 fragcoord) {
    hue = rybhue_to_rgbhue(hue);
   }
   hue /= 360.0;
-
-  if (iMode == 2) { // Normal map mode
-   float di = 0.5 * r / 0.5;
-   half3 rgb = half3(0.5+di*cos(a), 0.5+di*sin(a), 1.0-di);
-   return half4(
-    clamp(rgb.x, 0, 1),
-    clamp(rgb.y, 0, 1),
-    clamp(rgb.z, 0.5, 1), 1);
-  }
 
   half sat = r / 0.5;
   if (iDiscrete != 0) {
