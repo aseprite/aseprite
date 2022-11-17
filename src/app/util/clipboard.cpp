@@ -466,6 +466,7 @@ void Clipboard::paste(Context* ctx,
     return;
 
   auto editor = Editor::activeEditor();
+  bool updateDstDoc = false;
 
   switch (format()) {
 
@@ -587,11 +588,11 @@ void Clipboard::paste(Context* ctx,
           // cels in the same document.
           if (srcDoc == dstDoc) {
             // This is the app::copy_range (not clipboard::copy_range()).
-            if (srcRange.layers() == dstRange.layers())
+            if (srcRange.layers() == dstRange.layers()) {
               app::copy_range(srcDoc, srcRange, dstRange, kDocRangeBefore);
-            if (editor)
-              editor->invalidate(); // TODO check if this is necessary
-            return;
+              updateDstDoc = true;
+            }
+            break;
           }
 
           Tx tx(ctx, "Paste Cels");
@@ -636,8 +637,7 @@ void Clipboard::paste(Context* ctx,
           }
 
           tx.commit();
-          if (editor)
-            editor->invalidate(); // TODO check if this is necessary
+          updateDstDoc = true;
           break;
         }
 
@@ -651,6 +651,7 @@ void Clipboard::paste(Context* ctx,
             dstRange.startRange(nullptr, dstFrame, DocRange::kFrames);
             dstRange.endRange(nullptr, dstFrame);
             app::copy_range(srcDoc, srcRange, dstRange, kDocRangeBefore);
+            updateDstDoc = true;
             break;
           }
 
@@ -689,8 +690,7 @@ void Clipboard::paste(Context* ctx,
           }
 
           tx.commit();
-          if (editor)
-            editor->invalidate(); // TODO check if this is necessary
+          updateDstDoc = true;
           break;
         }
 
@@ -741,8 +741,7 @@ void Clipboard::paste(Context* ctx,
           }
 
           tx.commit();
-          if (editor)
-            editor->invalidate(); // TODO check if this is necessary
+          updateDstDoc = true;
           break;
         }
       }
@@ -750,6 +749,10 @@ void Clipboard::paste(Context* ctx,
     }
 
   }
+
+  // Update all editors/views showing this document
+  if (updateDstDoc)
+    dstDoc->notifyGeneralUpdate();
 }
 
 ImageRef Clipboard::getImage(Palette* palette)
