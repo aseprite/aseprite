@@ -344,9 +344,14 @@ void ColorWheel::onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc)
       double x, y;
 
       double approximationThreshold = (246.0 / 255.0) * 2.0 - 1.0;
-      if (normalizedBlue > approximationThreshold) { // If blue is too high, we use red and green only as approximation
-        x = normalizedRed * m_wheelRadius;
-        y = -normalizedGreen * m_wheelRadius;
+      if (normalizedBlue > approximationThreshold) {
+        // If blue is too high, we use red and green only as approximation
+        double angle = std::atan2(normalizedGreen, normalizedRed);
+        double dist = std::sqrt(normalizedRed*normalizedRed + normalizedGreen*normalizedGreen);
+        dist = std::clamp(dist, 0.0, 1.0);
+
+        x = std::cos(angle) * m_wheelRadius * dist;
+        y = -std::sin(angle) * m_wheelRadius * dist;
       }
       else {
         double normalizedDistance = std::cos(std::asin(normalizedBlue));
