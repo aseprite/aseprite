@@ -445,7 +445,7 @@ void floodfill(const Image* image,
             p = FLOOD_LINE(c);
           }
 
-          if (p->lpos-1 >= 0 &&
+          if (p->lpos-1 >= bounds.x &&
               check_flood_line(image, mask, p->y+1, p->lpos-1, p->rpos, bounds,
                                src_color, tolerance, data, proc)) {
             done = false;
@@ -459,7 +459,7 @@ void floodfill(const Image* image,
             p = FLOOD_LINE(c);
           }
 
-          if (p->rpos-1 >= 0 &&
+          if (p->rpos-1 >= bounds.x &&
               check_flood_line(image, mask, p->y+1, p->lpos, p->rpos-1, bounds,
                                src_color, tolerance, data, proc)) {
             done = false;
@@ -486,7 +486,7 @@ void floodfill(const Image* image,
             p = FLOOD_LINE(c);
           }
 
-          if (p->lpos-1 >= 0 &&
+          if (p->lpos-1 >= bounds.x &&
               check_flood_line(image, mask, p->y-1, p->lpos-1, p->rpos, bounds,
                                src_color, tolerance, data, proc)) {
             done = false;
@@ -500,7 +500,7 @@ void floodfill(const Image* image,
             p = FLOOD_LINE(c);
           }
 
-          if (p->rpos-1 >= 0 &&
+          if (p->rpos-1 >= bounds.x &&
               check_flood_line(image, mask, p->y-1, p->lpos, p->rpos-1, bounds,
                                src_color, tolerance, data, proc)) {
             done = false;

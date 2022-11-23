@@ -1,4 +1,4 @@
--- Copyright (C) 2019-2020  Igara Studio S.A.
+-- Copyright (C) 2019-2022  Igara Studio S.A.
 --
 -- This file is released under the terms of the MIT license.
 -- Read LICENSE.txt for more information.
@@ -681,4 +681,88 @@ do
              { 1, 1, 1,
                1, 2, 1,
                1, 1, 1 })
+end
+
+----------------------------------------------------------------------
+-- Floodfill + 8-Connected + Stop at Grid tests
+----------------------------------------------------------------------
+
+do
+  -- https://github.com/aseprite/aseprite/issues/3564
+  -- 8-Connected Fill Escapes Grid With "Stop At Grid" Checked
+  -- Magic Wand Test - Stop At Grid + pixel connectivity '8-connected':
+  local spr2 = Sprite(9, 9, ColorMode.INDEXED)
+  local p2 = spr2.palettes[1]
+  p2:setColor(0, Color{ r=0, g=0, b=0 })
+  p2:setColor(1, Color{ r=255, g=255, b=255 })
+  p2:setColor(2, Color{ r=255, g=0, b=0 })
+
+  -- Changing grid size:
+  spr2.gridBounds = Rectangle(0, 0, 3, 3)
+
+  -- Painting a white background
+  app.useTool {
+    tool='paint_bucket',
+    color=1,
+    points={ Point(0, 0) }
+  }
+
+  -- Configure magic wand settings
+  app.command.ShowGrid()
+  app.preferences.tool("magic_wand").floodfill.pixel_connectivity = 1
+  app.preferences.tool("magic_wand").floodfill.stop_at_grid = 2
+  app.preferences.tool("magic_wand").floodfill.refer_to = 0
+  app.preferences.tool("magic_wand").contiguous = true
+  app.useTool {
+    tool='magic_wand',
+    points={ Point(4, 4) }
+  }
+
+  -- Painting the selected area
+  app.useTool {
+    tool='paint_bucket',
+    color=0,
+    points={ Point(4, 4) }
+  }
+
+  expect_img(app.activeImage, { 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                                1, 1, 1, 1, 1, 1, 1, 1, 1,
+                                1, 1, 1, 1, 1, 1, 1, 1, 1,
+                                1, 1, 1, 0, 0, 0, 1, 1, 1,
+                                1, 1, 1, 0, 0, 0, 1, 1, 1,
+                                1, 1, 1, 0, 0, 0, 1, 1, 1,
+                                1, 1, 1, 1, 1, 1, 1, 1, 1,
+                                1, 1, 1, 1, 1, 1, 1, 1, 1,
+                                1, 1, 1, 1, 1, 1, 1, 1, 1 })
+  app.undo()
+  app.undo()
+
+  -- Paint Bucket Test - Stop At Grid + pixel connectivity '8-connected':
+  app.preferences.tool("paint_bucket").floodfill.pixel_connectivity = 1
+  app.preferences.tool("paint_bucket").floodfill.stop_at_grid = 1
+  app.preferences.tool("paint_bucket").floodfill.refer_to = 0
+  app.preferences.tool("paint_bucket").contiguous = true
+  app.useTool {
+    tool='paint_bucket',
+    color=2,
+    points={ Point(4, 4) }
+  }
+
+  expect_img(app.activeImage, { 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                                1, 1, 1, 1, 1, 1, 1, 1, 1,
+                                1, 1, 1, 1, 1, 1, 1, 1, 1,
+                                1, 1, 1, 2, 2, 2, 1, 1, 1,
+                                1, 1, 1, 2, 2, 2, 1, 1, 1,
+                                1, 1, 1, 2, 2, 2, 1, 1, 1,
+                                1, 1, 1, 1, 1, 1, 1, 1, 1,
+                                1, 1, 1, 1, 1, 1, 1, 1, 1,
+                                1, 1, 1, 1, 1, 1, 1, 1, 1 })
+
+  app.command.ShowGrid()
+  app.preferences.tool("magic_wand").floodfill.pixel_connectivity = 0
+  app.preferences.tool("magic_wand").floodfill.stop_at_grid = 0
+  app.preferences.tool("magic_wand").floodfill.refer_to = 0
+  app.preferences.tool("paint_bucket").floodfill.pixel_connectivity = 0
+  app.preferences.tool("paint_bucket").floodfill.stop_at_grid = 0
+  app.preferences.tool("paint_bucket").floodfill.refer_to = 0
 end
