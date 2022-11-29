@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -94,7 +94,8 @@ class GifFormat : public FileFormat {
       FILE_SUPPORT_FRAMES |
       FILE_SUPPORT_PALETTES |
       FILE_SUPPORT_GET_FORMAT_OPTIONS |
-      FILE_ENCODE_ABSTRACT_IMAGE;
+      FILE_ENCODE_ABSTRACT_IMAGE |
+      FILE_GIF_ANI_LIMITATIONS;
   }
 
   bool onLoad(FileOp* fop) override;
