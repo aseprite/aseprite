@@ -607,6 +607,28 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
     }
   }
 
+  // GIF doesn't support frame duration lower than 20ms, also
+  // the duration of each frame will be floored to 10ms multiples.
+  if (fop->m_format->support(FILE_DURATION_LESS_20MS_UNSUPPORTED) ||
+      fop->m_format->support(FILE_DURATION_MIN_PRECISION_10MS)) {
+    bool durationLowerThan20 = false;
+    bool milisecPrecision = false;
+    for (int i=0; i < fop->document()->sprite()->totalFrames(); i++) {
+        int frameDuration = fop->document()->sprite()->frameDuration(i);
+        if (frameDuration < 20)
+          durationLowerThan20 = true;
+        if (frameDuration % 10) {
+          milisecPrecision = true;
+          if (durationLowerThan20)
+            break;
+        }
+    }
+    if (durationLowerThan20)
+      warnings += "<<- " + Strings::alerts_gif_format_min_duration();
+    if (milisecPrecision)
+      warnings += "<<- " + Strings::alerts_gif_format_duration_limitation();
+  }
+
   // Show the confirmation alert
   if (!warnings.empty()) {
 #ifdef ENABLE_UI
