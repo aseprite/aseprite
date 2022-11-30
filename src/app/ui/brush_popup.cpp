@@ -493,6 +493,8 @@ os::SurfaceRef BrushPopup::createSurfaceForBrush(const BrushRef& origBrush,
 
     if (image->pixelFormat() == IMAGE_BITMAP)
       delete palette;
+
+    surface->applyScale(guiscale());
   }
   else {
     surface->clear();
