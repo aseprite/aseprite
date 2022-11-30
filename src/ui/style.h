@@ -48,6 +48,7 @@ namespace ui {
         kFocus = 2,
         kSelected = 4,
         kDisabled = 8,
+        kCapture = 16
       };
 
       Layer()

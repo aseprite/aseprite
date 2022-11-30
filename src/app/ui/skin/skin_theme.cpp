@@ -666,6 +666,7 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
           if (state.find("selected") != std::string::npos) flags |= ui::Style::Layer::kSelected;
           if (state.find("focus") != std::string::npos) flags |= ui::Style::Layer::kFocus;
           if (state.find("mouse") != std::string::npos) flags |= ui::Style::Layer::kMouse;
+          if (state.find("capture") != std::string::npos) flags |= ui::Style::Layer::kCapture;
           layer.setFlags(flags);
         }
 

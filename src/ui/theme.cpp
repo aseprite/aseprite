@@ -123,7 +123,8 @@ int PaintWidgetPartInfo::getStyleFlagsForWidget(const Widget* widget)
     (widget->isEnabled() ? 0: Style::Layer::kDisabled) |
     (widget->isSelected() ? Style::Layer::kSelected: 0) |
     (widget->hasMouse() ? Style::Layer::kMouse: 0) |
-    (widget->hasFocus() ? Style::Layer::kFocus: 0);
+    (widget->hasFocus() ? Style::Layer::kFocus: 0) |
+    (widget->hasCapture() ? Style::Layer::kCapture: 0);
 }
 
 Theme::Theme()
