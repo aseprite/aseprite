@@ -582,7 +582,7 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
         const char* t = xmlStyle->Attribute("margin-top");
         const char* r = xmlStyle->Attribute("margin-right");
         const char* b = xmlStyle->Attribute("margin-bottom");
-        gfx::Border margin = ui::Style::UndefinedBorder();
+        gfx::Border margin = style->margin();
         if (m || l) margin.left(scale*std::strtol(l ? l: m, nullptr, 10));
         if (m || t) margin.top(scale*std::strtol(t ? t: m, nullptr, 10));
         if (m || r) margin.right(scale*std::strtol(r ? r: m, nullptr, 10));
@@ -597,7 +597,7 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
         const char* t = xmlStyle->Attribute("border-top");
         const char* r = xmlStyle->Attribute("border-right");
         const char* b = xmlStyle->Attribute("border-bottom");
-        gfx::Border border = ui::Style::UndefinedBorder();
+        gfx::Border border = style->border();
         if (m || l) border.left(scale*std::strtol(l ? l: m, nullptr, 10));
         if (m || t) border.top(scale*std::strtol(t ? t: m, nullptr, 10));
         if (m || r) border.right(scale*std::strtol(r ? r: m, nullptr, 10));
@@ -612,7 +612,7 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
         const char* t = xmlStyle->Attribute("padding-top");
         const char* r = xmlStyle->Attribute("padding-right");
         const char* b = xmlStyle->Attribute("padding-bottom");
-        gfx::Border padding = ui::Style::UndefinedBorder();
+        gfx::Border padding = style->padding();
         if (m || l) padding.left(scale*std::strtol(l ? l: m, nullptr, 10));
         if (m || t) padding.top(scale*std::strtol(t ? t: m, nullptr, 10));
         if (m || r) padding.right(scale*std::strtol(r ? r: m, nullptr, 10));
