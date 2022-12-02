@@ -25,6 +25,10 @@ jobs:
     - uses: seanmiddleditch/gha-setup-ninja@master
     - uses: ilammy/msvc-dev-cmd@v1
       if: runner.os == 'Windows'
+    - name: Workaround for windows-2022 and cmake 3.25.0
+      if: runner.os == 'Windows'
+      shell: bash
+      run: rm -rf C:/Strawberry/
     - name: Install Dependencies
       shell: bash
       run: |
