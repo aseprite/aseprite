@@ -409,8 +409,11 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
         if (sizeStr)
           size = std::strtol(sizeStr, nullptr, 10);
 
+        const char* mnemonicsStr = xmlFont->Attribute("mnemonics");
+        bool mnemonics = mnemonicsStr ? (std::string(mnemonicsStr) != "off") : true;
+
         os::FontRef font = fontData->getFont(size);
-        m_themeFonts[idStr] = font;
+        m_themeFonts[idStr] = ThemeFont(font, mnemonics);
 
         if (id == "default")
           m_defaultFont = font;
@@ -624,8 +627,16 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
       {
         const char* fontId = xmlStyle->Attribute("font");
         if (fontId) {
-          os::FontRef font = m_themeFonts[fontId];
-          style->setFont(font);
+          auto themeFont = m_themeFonts[fontId];
+          style->setFont(themeFont.font());
+          style->setMnemonics(themeFont.mnemonics());
+        }
+
+        // Override mnemonics value if it is defined for this style.
+        const char* mnemonicsStr = xmlStyle->Attribute("mnemonics");
+        if (mnemonicsStr) {
+          bool mnemonics = mnemonicsStr ? (std::string(mnemonicsStr) != "off") : true;
+          style->setMnemonics(mnemonics);
         }
       }
 

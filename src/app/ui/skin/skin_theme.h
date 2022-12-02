@@ -34,6 +34,17 @@ namespace app {
 
     class FontData;
 
+    class ThemeFont {
+      public:
+        ThemeFont() {}
+        ThemeFont(os::FontRef font, bool mnemonics) : m_font(font), m_mnemonics(mnemonics) {}
+        os::FontRef font() { return m_font; }
+        bool mnemonics() { return m_mnemonics; }
+      private:
+        os::FontRef m_font;
+        bool m_mnemonics;
+    };
+
     // This is the GUI theme used by Aseprite (which use images from
     // data/skins directory).
     class SkinTheme : public ui::Theme
@@ -161,7 +172,7 @@ namespace app {
       std::array<ui::Cursor*, ui::kCursorTypes> m_standardCursors;
       std::map<std::string, ui::Style*> m_styles;
       std::map<std::string, FontData*> m_fonts;
-      std::map<std::string, os::FontRef> m_themeFonts;
+      std::map<std::string, ThemeFont> m_themeFonts;
       os::FontRef m_defaultFont;
       os::FontRef m_miniFont;
       int m_preferredScreenScaling;

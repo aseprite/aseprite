@@ -105,6 +105,7 @@ namespace ui {
     const gfx::Border& border() const { return m_border; }
     const gfx::Border& padding() const { return m_padding; }
     os::Font* font() const { return m_font.get(); }
+    const bool mnemonics() const { return m_mnemonics; }
     const Layers& layers() const { return m_layers; }
     Layers& layers() { return m_layers; }
 
@@ -113,6 +114,7 @@ namespace ui {
     void setBorder(const gfx::Border& value) { m_border = value; }
     void setPadding(const gfx::Border& value) { m_padding = value; }
     void setFont(const os::FontRef& font);
+    void setMnemonics(const bool enabled) { m_mnemonics = enabled; }
     void addLayer(const Layer& layer);
 
   private:
@@ -123,6 +125,7 @@ namespace ui {
     gfx::Border m_border;
     gfx::Border m_padding;
     os::FontRef m_font;
+    bool m_mnemonics;
   };
 
 } // namespace ui

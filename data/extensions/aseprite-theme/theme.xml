@@ -6,7 +6,7 @@
     </authors>
     <fonts>
         <font id="default" font="Aseprite" />
-        <font id="mini" font="Aseprite Mini" />
+        <font id="mini" font="Aseprite Mini" mnemonics="off" />
     </fonts>
     <dimensions>
         <dim id="scrollbar_size" value="12" />

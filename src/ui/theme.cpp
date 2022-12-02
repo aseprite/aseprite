@@ -464,7 +464,7 @@ void Theme::paintLayer(Graphics* g,
           g->drawUIText(text,
                         layer.color(),
                         bgColor,
-                        pt, mnemonic);
+                        pt, style->mnemonics() ? mnemonic : 0);
         }
 
         if (style->font())
