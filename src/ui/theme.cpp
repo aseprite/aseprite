@@ -444,20 +444,26 @@ void Theme::paintLayer(Graphics* g,
         else {
           gfx::Size textSize = g->measureUIText(text);
           gfx::Point pt;
+          gfx::Border undef = Style::UndefinedBorder();
+          gfx::Border padding = style->padding();
+          if (padding.left() == undef.left()) padding.left(0);
+          if (padding.right() == undef.right()) padding.right(0);
+          if (padding.top() == undef.top()) padding.top(0);
+          if (padding.bottom() == undef.bottom()) padding.bottom(0);
 
           if (layer.align() & LEFT)
-            pt.x = rc.x;
+            pt.x = rc.x+padding.left();
           else if (layer.align() & RIGHT)
-            pt.x = rc.x+rc.w-textSize.w;
+            pt.x = rc.x+rc.w-textSize.w-padding.right();
           else
-            pt.x = rc.x+rc.w/2-textSize.w/2;
+            pt.x = rc.x+padding.left()+(rc.w-padding.width())/2-textSize.w/2;
 
           if (layer.align() & TOP)
-            pt.y = rc.y;
+            pt.y = rc.y+padding.top();
           else if (layer.align() & BOTTOM)
-            pt.y = rc.y+rc.h-textSize.h;
+            pt.y = rc.y+rc.h-textSize.h-padding.bottom();
           else
-            pt.y = rc.y+rc.h/2-textSize.h/2;
+            pt.y = rc.y+padding.top()+(rc.h-padding.height())/2-textSize.h/2;
 
           pt += layer.offset();
 
@@ -477,20 +483,26 @@ void Theme::paintLayer(Graphics* g,
       if (icon) {
         gfx::Size iconSize(icon->width(), icon->height());
         gfx::Point pt;
+        gfx::Border undef = Style::UndefinedBorder();
+        gfx::Border padding = style->padding();
+        if (padding.left() == undef.left()) padding.left(0);
+        if (padding.right() == undef.right()) padding.right(0);
+        if (padding.top() == undef.top()) padding.top(0);
+        if (padding.bottom() == undef.bottom()) padding.bottom(0);
 
         if (layer.align() & LEFT)
-          pt.x = rc.x;
+          pt.x = rc.x+padding.left();
         else if (layer.align() & RIGHT)
-          pt.x = rc.x+rc.w-iconSize.w;
+          pt.x = rc.x+rc.w-iconSize.w-padding.right();
         else
-          pt.x = rc.x+rc.w/2-iconSize.w/2;
+          pt.x = rc.x+padding.left()+(rc.w-padding.width())/2-iconSize.w/2;
 
         if (layer.align() & TOP)
-          pt.y = rc.y;
+          pt.y = rc.y+padding.top();
         else if (layer.align() & BOTTOM)
-          pt.y = rc.y+rc.h-iconSize.h;
+          pt.y = rc.y+rc.h-iconSize.h-padding.bottom();
         else
-          pt.y = rc.y+rc.h/2-iconSize.h/2;
+          pt.y = rc.y+padding.top()+(rc.h-padding.height())/2-iconSize.h/2;
 
         pt += layer.offset();
 

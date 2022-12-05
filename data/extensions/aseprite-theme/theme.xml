@@ -1008,7 +1008,7 @@
             <text color="slider_empty_text" align="center middle" />
             <text color="slider_empty_text" align="center middle" state="focus" y="1" />
         </style>
-        <style id="mini_slider" extends="slider" font="mini" padding-top="1" padding-bottom="3">
+        <style id="mini_slider" extends="slider" font="mini">
             <background part="mini_slider_empty" />
             <text color="slider_empty_text" align="center middle" />
             <text color="slider_empty_text" align="center middle" state="focus" />
