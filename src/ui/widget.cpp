@@ -203,6 +203,8 @@ void Widget::setStyle(Style* style)
   m_style = style;
   m_border = m_theme->calcBorder(this, style);
   m_bgColor = m_theme->calcBgColor(this, style);
+  m_minSize = m_theme->calcMinSize(this, style);
+  m_maxSize = m_theme->calcMaxSize(this, style);
   if (style->font())
     m_font = AddRef(style->font());
 }

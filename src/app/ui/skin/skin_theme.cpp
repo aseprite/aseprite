@@ -623,6 +623,31 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
         style->setPadding(padding);
       }
 
+      // Size
+      {
+        const char* width     = xmlStyle->Attribute("width");
+        const char* height    = xmlStyle->Attribute("height");
+        const char* minwidth  = xmlStyle->Attribute("minwidth");
+        const char* minheight = xmlStyle->Attribute("minheight");
+        const char* maxwidth  = xmlStyle->Attribute("maxwidth");
+        const char* maxheight = xmlStyle->Attribute("maxheight");
+        gfx::Size minSize = style->minSize();
+        gfx::Size maxSize = style->maxSize();
+        if (width) {
+          if (!minwidth) minwidth = width;
+          if (!maxwidth) maxwidth = width;
+        }
+        if (height) {
+          if (!minheight) minheight = height;
+          if (!maxheight) maxheight = height;
+        }
+        if (minwidth) minSize.w = scale*std::strtol(minwidth, nullptr, 10);
+        if (minheight) minSize.h = scale*std::strtol(minheight, nullptr, 10);
+        if (maxwidth) maxSize.w = scale*std::strtol(maxwidth, nullptr, 10);
+        if (maxheight) maxSize.h = scale*std::strtol(maxheight, nullptr, 10);
+        style->setMinSize(minSize);
+        style->setMaxSize(maxSize);
+      }
       // Font
       {
         const char* fontId = xmlStyle->Attribute("font");

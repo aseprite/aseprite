@@ -663,6 +663,34 @@ gfx::Color Theme::calcBgColor(const Widget* widget,
   return bgColor;
 }
 
+gfx::Size Theme::calcMinSize(const Widget* widget,
+                              const Style* style)
+{
+  ASSERT(widget);
+  ASSERT(style);
+
+  gfx::Size sz = widget->minSize();
+
+  if (sz.w == 0) sz.w = style->minSize().w;
+  if (sz.h == 0) sz.h = style->minSize().h;
+
+  return sz;
+}
+
+gfx::Size Theme::calcMaxSize(const Widget* widget,
+                              const Style* style)
+{
+  ASSERT(widget);
+  ASSERT(style);
+
+  gfx::Size sz = widget->maxSize();
+
+  if (sz.w == std::numeric_limits<int>::max()) sz.w = style->maxSize().w;
+  if (sz.h == std::numeric_limits<int>::max()) sz.h = style->maxSize().h;
+
+  return sz;
+}
+
 void Theme::calcWidgetMetrics(const Widget* widget,
                               const Style* style,
                               gfx::Size& sizeHint,
@@ -718,6 +746,9 @@ void Theme::calcWidgetMetrics(const Widget* widget,
     sizeHint.h += std::max(textHint.h, iconHint.h);
   else
     sizeHint.h += textHint.h + iconHint.h;
+
+  sizeHint.w = std::clamp(sizeHint.w, widget->minSize().w, widget->maxSize().w);
+  sizeHint.h = std::clamp(sizeHint.h, widget->minSize().h, widget->maxSize().h);
 }
 
 //////////////////////////////////////////////////////////////////////

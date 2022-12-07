@@ -119,6 +119,10 @@ namespace ui {
                               gfx::Rect& textBounds, int& textAlign);
     virtual gfx::Color calcBgColor(const Widget* widget,
                                    const Style* style);
+    virtual gfx::Size calcMinSize(const Widget* widget,
+                                  const Style* style);
+    virtual gfx::Size calcMaxSize(const Widget* widget,
+                                  const Style* style);
 
     static void drawSlices(Graphics* g,
                            os::Surface* sheet,
