@@ -968,15 +968,22 @@ void Widget::getTextIconInfo(
   // Box position
   if (align() & RIGHT)
     box_x = bounds.x2() - box_w - border().right();
-  else if (align() & CENTER)
-    box_x = (bounds.x+bounds.x2())/2 - box_w/2;
+  else if (align() & CENTER) {
+    box_x = (bounds.x + bounds.x2() - box_w) / 2;
+    // Adjust position when it is not a multiple of guiscale. Without these adjustements
+    // it could happen that an icon or text is displayed a in a fraction of a scaled pixel.
+    ADJUST_TO_GUISCALE(box_x);
+  }
   else
     box_x = bounds.x + border().left();
 
   if (align() & BOTTOM)
     box_y = bounds.y2() - box_h - border().bottom();
-  else if (align() & MIDDLE)
-    box_y = (bounds.y+bounds.y2())/2 - box_h/2;
+  else if (align() & MIDDLE) {
+    box_y = (bounds.y + bounds.y2() - box_h) / 2;
+    // Adjust position when it is not a multiple of guiscale
+    ADJUST_TO_GUISCALE(box_y);
+  }
   else
     box_y = bounds.y + border().top();
 
@@ -988,8 +995,11 @@ void Widget::getTextIconInfo(
       icon_x = box_x + box_w - icon_w;
     }
     else if (icon_align & CENTER) {
-      text_x = box_x + box_w/2 - text_w/2;
-      icon_x = box_x + box_w/2 - icon_w/2;
+      text_x = box_x + (box_w - text_w)/2;
+      icon_x = box_x + (box_w - icon_w)/2;
+      // Adjust position when it is not a multiple of guiscale
+      ADJUST_TO_GUISCALE(text_x);
+      ADJUST_TO_GUISCALE(icon_x);
     }
     else {
       text_x = box_x + box_w - text_w;
@@ -1002,8 +1012,11 @@ void Widget::getTextIconInfo(
       icon_y = box_y + box_h - icon_h;
     }
     else if (icon_align & MIDDLE) {
-      text_y = box_y + box_h/2 - text_h/2;
-      icon_y = box_y + box_h/2 - icon_h/2;
+      text_y = box_y + (box_h - text_h)/2;
+      icon_y = box_y + (box_h - icon_h)/2;
+      // Adjust position when it is not a multiple of guiscale
+      ADJUST_TO_GUISCALE(text_y);
+      ADJUST_TO_GUISCALE(icon_y);
     }
     else {
       text_y = box_y + box_h - text_h;

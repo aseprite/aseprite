@@ -455,15 +455,19 @@ void Theme::paintLayer(Graphics* g,
             pt.x = rc.x+padding.left();
           else if (layer.align() & RIGHT)
             pt.x = rc.x+rc.w-textSize.w-padding.right();
-          else
+          else {
             pt.x = rc.x+padding.left()+(rc.w-padding.width())/2-textSize.w/2;
+            ADJUST_TO_GUISCALE(pt.x);
+          }
 
           if (layer.align() & TOP)
             pt.y = rc.y+padding.top();
           else if (layer.align() & BOTTOM)
             pt.y = rc.y+rc.h-textSize.h-padding.bottom();
-          else
+          else {
             pt.y = rc.y+padding.top()+(rc.h-padding.height())/2-textSize.h/2;
+            ADJUST_TO_GUISCALE(pt.y);
+          }
 
           pt += layer.offset();
 
@@ -494,15 +498,19 @@ void Theme::paintLayer(Graphics* g,
           pt.x = rc.x+padding.left();
         else if (layer.align() & RIGHT)
           pt.x = rc.x+rc.w-iconSize.w-padding.right();
-        else
+        else {
           pt.x = rc.x+padding.left()+(rc.w-padding.width())/2-iconSize.w/2;
+          ADJUST_TO_GUISCALE(pt.x);
+        }
 
         if (layer.align() & TOP)
           pt.y = rc.y+padding.top();
         else if (layer.align() & BOTTOM)
           pt.y = rc.y+rc.h-iconSize.h-padding.bottom();
-        else
+        else {
           pt.y = rc.y+padding.top()+(rc.h-padding.height())/2-iconSize.h/2;
+          ADJUST_TO_GUISCALE(pt.y);
+        }
 
         pt += layer.offset();
 

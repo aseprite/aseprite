@@ -16,6 +16,9 @@
 #include "ui/base.h"
 #include "ui/cursor_type.h"
 #include "ui/style.h"
+#include "ui/scale.h"
+
+#define ADJUST_TO_GUISCALE(v) v -= (v % guiscale());
 
 namespace gfx {
   class Region;
