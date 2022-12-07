@@ -104,6 +104,7 @@ PaintWidgetPartInfo::PaintWidgetPartInfo()
   styleFlags = 0;
   text = nullptr;
   mnemonic = 0;
+  icon = nullptr;
 }
 
 PaintWidgetPartInfo::PaintWidgetPartInfo(const Widget* widget)
@@ -114,6 +115,10 @@ PaintWidgetPartInfo::PaintWidgetPartInfo(const Widget* widget)
   styleFlags = PaintWidgetPartInfo::getStyleFlagsForWidget(widget);
   text = &widget->text();
   mnemonic = widget->mnemonic();
+  icon = nullptr;
+  if (const Style::Layer::IconSurfaceProvider* iconProvider = dynamic_cast<const Style::Layer::IconSurfaceProvider*>(widget)) {
+    icon = iconProvider->iconSurface();
+  }
 }
 
 // static
@@ -202,7 +207,7 @@ void Theme::paintWidgetPart(Graphics* g,
     (const Style::Layer& layer) {
       paintLayer(g, style, layer,
                  (info.text ? *info.text: std::string()),
-                 info.mnemonic, rc, outBgColor);
+                 info.mnemonic, info.icon, rc, outBgColor);
     });
 }
 
@@ -319,6 +324,7 @@ void Theme::paintLayer(Graphics* g,
                        const Style::Layer& layer,
                        const std::string& text,
                        const int mnemonic,
+                       os::Surface* providedIcon,
                        gfx::Rect& rc,
                        gfx::Color& bgColor)
 {
@@ -483,7 +489,7 @@ void Theme::paintLayer(Graphics* g,
       break;
 
     case Style::Layer::Type::kIcon: {
-      os::Surface* icon = layer.icon();
+      os::Surface* icon = providedIcon ? providedIcon : layer.icon();
       if (icon) {
         gfx::Size iconSize(icon->width(), icon->height());
         gfx::Point pt;
@@ -599,7 +605,11 @@ void Theme::measureLayer(const Widget* widget,
       break;
 
     case Style::Layer::Type::kIcon: {
-      os::Surface* icon = layer.icon();
+      const os::Surface* icon = layer.icon();
+      if (const Style::Layer::IconSurfaceProvider* iconProvider = dynamic_cast<const Style::Layer::IconSurfaceProvider*>(widget)) {
+        icon = iconProvider->iconSurface() ? iconProvider->iconSurface() : icon;
+      }
+
       if (icon) {
         iconHint.w = std::max(iconHint.w, icon->width()+ABS(layer.offset().x));
         iconHint.h = std::max(iconHint.h, icon->height()+ABS(layer.offset().y));

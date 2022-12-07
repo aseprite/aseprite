@@ -51,6 +51,11 @@ namespace ui {
         kCapture = 16
       };
 
+      class IconSurfaceProvider {
+      public:
+        virtual os::Surface* iconSurface() const = 0;
+      };
+
       Layer()
         : m_type(Type::kNone)
         , m_flags(0)

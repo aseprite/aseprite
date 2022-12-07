@@ -46,6 +46,7 @@ namespace ui {
     int styleFlags;           // ui::Style::Layer flags
     const std::string* text;
     int mnemonic;
+    os::Surface* icon;
 
     PaintWidgetPartInfo();
     PaintWidgetPartInfo(const Widget* widget);
@@ -148,6 +149,7 @@ namespace ui {
                     const Style::Layer& layer,
                     const std::string& text,
                     const int mnemonic,
+                    os::Surface* icon,
                     gfx::Rect& rc,
                     gfx::Color& bgColor);
     void measureLayer(const Widget* widget,

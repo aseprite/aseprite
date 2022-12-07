@@ -12,6 +12,7 @@
 #include "app/ui/skin/skin_part.h"
 #include "obs/signal.h"
 #include "ui/grid.h"
+#include "ui/style.h"
 
 #include <string>
 
@@ -19,12 +20,13 @@ namespace app {
 
   class ButtonSet : public ui::Grid {
   public:
-    class Item : public ui::Widget {
+    class Item : public ui::Widget, public ui::Style::Layer::IconSurfaceProvider {
     public:
       Item();
       void setHotColor(gfx::Color color);
       void setIcon(const skin::SkinPartPtr& icon, bool mono = false);
       void setMono(const bool mono) { m_mono = mono; }
+      os::Surface* iconSurface() const override { return m_icon ? m_icon->bitmap(0) : nullptr; }
       skin::SkinPartPtr icon() const { return m_icon; }
       ButtonSet* buttonSet();
     protected:
