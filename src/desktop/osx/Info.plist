@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>QLGenerator</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>dyn.ah62d4rv4ge80c65f</string>
+				<string>dyn.ah62d4rv4ge80c65fsb3gw7df</string>
+			</array>
+		</dict>
+	</array>
+	<key>CFBundleExecutable</key>
+	<string>AsepriteThumbnailer</string>
+	<key>CFBundleIdentifier</key>
+	<string>org.aseprite.AsepriteThumbnailer</string>
+	<key>CFBundleName</key>
+	<string>AsepriteThumbnailer</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundlePackageType</key>
+	<string>XPC!</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0</string>
+	<key>CFBundleVersion</key>
+	<string>1.0</string>
+	<key>CFPlugInFactories</key>
+	<dict>
+		<key>A5E9417E-6E7A-4B2D-85A4-84E114D7A960</key>
+		<string>QuickLookGeneratorPluginFactory</string>
+	</dict>
+	<key>CFPlugInTypes</key>
+	<dict>
+		<key>5E2D9680-5022-40FA-B806-43349622E5B9</key>
+		<array>
+			<string>A5E9417E-6E7A-4B2D-85A4-84E114D7A960</string>
+		</array>
+	</dict>
+	<key>CFPlugInUnloadFunction</key>
+	<string></string>
+	<key>QLThumbnailMinimumSize</key>
+	<real>32</real>
+	<key>QLPreviewWidth</key>
+	<real>256</real>
+	<key>QLPreviewHeight</key>
+	<real>256</real>
+	<key>QLNeedsToBeRunInMainThread</key>
+	<true/>
+	<key>QLSupportsConcurrentRequests</key>
+	<false/>
+	<key>NSHumanReadableCopyright</key>
+	<string>Copyright © Igara Studio S.A. All rights reserved.</string>
+</dict>
+</plist>
