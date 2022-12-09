@@ -696,6 +696,7 @@ Widget* AppMenus::convertXmlelemToMenuitem(TiXmlElement* elem)
 {
   const char* id = elem->Attribute("id");
   const char* group = elem->Attribute("group");
+  const char* standard = elem->Attribute("standard");
 
   // is it a <separator>?
   if (strcmp(elem->Value(), "separator") == 0) {
@@ -744,6 +745,9 @@ Widget* AppMenus::convertXmlelemToMenuitem(TiXmlElement* elem)
   menuitem->processMnemonicFromText();
   if (group)
     m_groups[group].end = menuitem;
+
+  if (standard && strcmp(standard, "edit") == 0)
+    menuitem->setStandardEditMenu();
 
   // Has it a ID?
   if (id) {
@@ -985,6 +989,10 @@ void AppMenus::createNativeSubmenus(os::Menu* osMenu,
       if (appMenuItem) {
         native.menuItem = osItem;
         appMenuItem->setNative(native);
+
+        // Set this menu item as the standard "Edit" item for macOS
+        if (appMenuItem->isStandardEditMenu())
+          osItem->setAsStandardEditMenuItem();
       }
 
       if (child->type() == ui::kMenuItemWidget &&

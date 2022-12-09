@@ -52,6 +52,13 @@ namespace app {
     void disposeNative();
     void syncNativeMenuItemKeyShortcut();
 
+    // Indicates if this is the standard "Edit" menu, used for macOS
+    // which requires a standard "Edit" menu when the native file
+    // dialog is displayed, so Command+C/X/V/A, etc. shortcuts start
+    // working as expected.
+    bool isStandardEditMenu() const { return m_isStandardEditMenu; }
+    void setStandardEditMenu() { m_isStandardEditMenu = true; }
+
     static void setContextParams(const Params& params);
 
   protected:
@@ -64,7 +71,8 @@ namespace app {
     KeyPtr m_key;
     std::string m_commandId;
     Params m_params;
-    bool m_isRecentFileItem;
+    bool m_isRecentFileItem = false;
+    bool m_isStandardEditMenu = false;
     std::unique_ptr<Native> m_native;
 
     static Params s_contextParams;

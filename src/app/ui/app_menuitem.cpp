@@ -42,7 +42,6 @@ AppMenuItem::AppMenuItem(const std::string& text,
  , m_key(nullptr)
  , m_commandId(commandId)
  , m_params(params)
- , m_isRecentFileItem(false)
  , m_native(nullptr)
 {
 }

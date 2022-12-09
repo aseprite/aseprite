@@ -697,7 +697,7 @@
         <separator group="file_app" />
         <item command="Exit" text="@.file_exit" />
       </menu>
-      <menu text="@.edit" id="edit_menu">
+      <menu text="@.edit" id="edit_menu" standard="edit">
         <item command="Undo" text="@.edit_undo" />
         <item command="Redo" text="@.edit_redo" />
         <item command="UndoHistory" text="@.edit_undo_history" group="edit_undo" />
