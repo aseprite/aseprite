@@ -648,6 +648,18 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
         style->setMinSize(minSize);
         style->setMaxSize(maxSize);
       }
+
+      // Gap
+      {
+        const char* m = xmlStyle->Attribute("gap");
+        const char* r = xmlStyle->Attribute("gap-rows");
+        const char* c = xmlStyle->Attribute("gap-columns");
+        gfx::Size gap = style->gap();
+        if (m || c) gap.w = scale*std::strtol(c ? c: m, nullptr, 10);
+        if (m || r) gap.h = scale*std::strtol(r ? r: m, nullptr, 10);
+        style->setGap(gap);
+      }
+
       // Font
       {
         const char* fontId = xmlStyle->Attribute("font");
@@ -880,6 +892,7 @@ void SkinTheme::initWidget(Widget* widget)
       widget->setStyle(styles.grid());
       BORDER(0);
       widget->setChildSpacing(4 * scale);
+      static_cast<ui::Grid *>(widget)->setGap(styles.grid()->gap());
       break;
 
     case kLabelWidget:

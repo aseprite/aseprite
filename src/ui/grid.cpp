@@ -40,6 +40,8 @@ Grid::Cell::Cell()
 
 Grid::Grid(int columns, bool same_width_columns)
   : Widget(kGridWidget)
+  , m_rowgap(0)
+  , m_colgap(0)
   , m_colstrip(columns)
 {
   ASSERT(columns > 0);
@@ -121,6 +123,18 @@ Grid::Info Grid::getChildInfo(Widget* child)
   return info;
 }
 
+void Grid::setStyle(Style* style)
+{
+  Widget::setStyle(style);
+  setGap(style->gap());
+}
+
+void Grid::setGap(const gfx::Size& gap)
+{
+  m_colgap = gap.w;
+  m_rowgap = gap.h;
+}
+
 void Grid::onResize(ResizeEvent& ev)
 {
   gfx::Rect rect = ev.bounds();
@@ -181,15 +195,20 @@ void Grid::onResize(ResizeEvent& ev)
         if (y+h > rect.y+rect.h-border().bottom())
           h = rect.y+rect.h-border().bottom()-y;
 
+        if (m_colgap < 0 && col+cell->hspan-1 < (int)m_colstrip.size()-1)
+          w += m_colgap;
+        if (m_rowgap < 0 && row+cell->vspan-1 < (int)m_rowstrip.size()-1)
+          h += m_rowgap;
+
         cell->child->setBounds(Rect(x, y, w, h));
       }
 
       if (m_colstrip[col].size > 0)
-        pos_x += m_colstrip[col].size + childSpacing();
+        pos_x += m_colstrip[col].size + childSpacing() + m_colgap;
     }
 
     if (m_rowstrip[row].size > 0)
-      pos_y += m_rowstrip[row].size + childSpacing();
+      pos_y += m_rowstrip[row].size + childSpacing() + m_rowgap;
   }
 }
 
@@ -211,13 +230,14 @@ void Grid::onSizeHint(SizeHintEvent& ev)
 void Grid::sumStripSize(const std::vector<Strip>& strip, int& size)
 {
   int i, j;
+  int gap = &strip == &m_colstrip ? m_colgap : m_rowgap;
 
   size = 0;
   for (i=j=0; i<(int)strip.size(); ++i) {
     if (strip[i].size > 0) {
       size += strip[i].size;
       if (++j > 1)
-        size += this->childSpacing();
+        size += this->childSpacing()+gap;
     }
   }
 }
@@ -225,6 +245,7 @@ void Grid::sumStripSize(const std::vector<Strip>& strip, int& size)
 void Grid::calculateCellSize(int start, int span, const std::vector<Strip>& strip, int& size)
 {
   int i, j;
+  int gap = &strip == &m_colstrip ? m_colgap : m_rowgap;
 
   size = 0;
 
@@ -232,7 +253,7 @@ void Grid::calculateCellSize(int start, int span, const std::vector<Strip>& stri
     if (strip[i].size > 0) {
       size += strip[i].size;
       if (++j > 1)
-        size += this->childSpacing();
+        size += this->childSpacing()+gap;
     }
   }
 }
@@ -283,8 +304,8 @@ void Grid::calculateStripSize(std::vector<Strip>& colstrip,
           // If the widget isn't hidden then we can request its size
           if (!(cell->child->hasFlags(HIDDEN))) {
             Size reqSize = cell->child->sizeHint();
-            cell->w = reqSize.w - (cell->hspan-1) * this->childSpacing();
-            cell->h = reqSize.h - (cell->vspan-1) * this->childSpacing();
+            cell->w = reqSize.w - (cell->hspan-1) * (this->childSpacing()+m_colgap);
+            cell->h = reqSize.h - (cell->vspan-1) * (this->childSpacing()+m_rowgap);
 
             if ((cell->align & align) == align)
               ++expand_count;
@@ -397,6 +418,7 @@ void Grid::distributeStripSize(std::vector<Strip>& colstrip,
                                int rect_size, int border_size, bool same_width)
 {
   int i, j;
+  int gap = &colstrip == &m_colstrip ? m_colgap : m_rowgap;
 
   int max_expand_count = 0;
   for (i=0; i<(int)colstrip.size(); ++i)
@@ -409,7 +431,7 @@ void Grid::distributeStripSize(std::vector<Strip>& colstrip,
     if (colstrip[i].size > 0) {
       total_req += colstrip[i].size;
       if (++j > 1)
-        total_req += this->childSpacing();
+        total_req += this->childSpacing()+gap;
     }
 
     if (colstrip[i].expand_count == max_expand_count || same_width) {
@@ -430,7 +452,7 @@ void Grid::distributeStripSize(std::vector<Strip>& colstrip,
     for (i=0; i<(int)colstrip.size(); ++i) {
       if ((colstrip[i].size == 0) &&
           (colstrip[i].expand_count == max_expand_count || same_width)) {
-        extra_total -= SGN(extra_total)*this->childSpacing();
+        extra_total -= SGN(extra_total)*(this->childSpacing()+gap);
       }
     }
 

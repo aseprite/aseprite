@@ -40,6 +40,7 @@ Style::Style(const Style* base)
   , m_padding(base ? base->padding(): Style::UndefinedBorder())
   , m_minSize(base ? base->minSize(): Style::MinSize())
   , m_maxSize(base ? base->maxSize(): Style::MaxSize())
+  , m_gap(base ? base->gap(): gfx::Size(0, 0))
   , m_font(nullptr)
   , m_mnemonics(base ? base->mnemonics() : true)
 {
