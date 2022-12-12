@@ -227,7 +227,7 @@
       <option id="new_render_engine" type="bool" default="true" />
       <option id="new_blend" type="bool" default="true" />
       <option id="use_native_clipboard" type="bool" default="true" />
-      <option id="use_native_file_dialog" type="bool" default="false" />
+      <option id="use_native_file_dialog" type="bool" default="true" />
       <option id="use_shaders_for_color_selectors" type="bool" default="true" />
       <option id="hue_with_sat_value_for_color_selector" type="bool" default="false" />
       <option id="one_finger_as_mouse_movement" type="bool" default="true" />
