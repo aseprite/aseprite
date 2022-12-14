@@ -6,6 +6,7 @@
 
 #include "app/script/canvas_widget.h"
 
+#include "app/script/graphics_context.h"
 #include "app/ui/skin/skin_theme.h"
 #include "os/system.h"
 #include "ui/message.h"
@@ -58,6 +59,10 @@ void Canvas::onResize(ui::ResizeEvent& ev)
       os::Paint p;
       p.color(bgColor());
       m_surface->drawRect(m_surface->bounds(), p);
+
+      // Draw only on resize (onPaint we draw the cached m_surface)
+      GraphicsContext gc(m_surface);
+      Paint(gc);
     }
   }
   else
@@ -66,8 +71,6 @@ void Canvas::onResize(ui::ResizeEvent& ev)
 
 void Canvas::onPaint(ui::PaintEvent& ev)
 {
-  Paint(ev);
-
   auto g = ev.graphics();
   const gfx::Rect rc = clientBounds();
   if (m_surface)

@@ -14,6 +14,8 @@
 namespace app {
 namespace script {
 
+class GraphicsContext;
+
 // The canvas widget of a Dialog() created with Dialog:canvas{ ... }
 // This is a generic widget where all its events can be listened.
 class Canvas : public ui::Widget {
@@ -22,7 +24,7 @@ public:
 
   Canvas();
 
-  obs::signal<void(ui::PaintEvent&)> Paint;
+  obs::signal<void(GraphicsContext&)> Paint;
 
 private:
   void onInitTheme(ui::InitThemeEvent& ev) override;

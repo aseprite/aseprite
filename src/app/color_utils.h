@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2022  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -25,6 +25,7 @@ namespace app {
     gfx::Color blackandwhite(gfx::Color color);
     gfx::Color blackandwhite_neg(gfx::Color color);
 
+    app::Color color_from_ui(const gfx::Color color);
     gfx::Color color_for_ui(const app::Color& color);
     doc::color_t color_for_image(const app::Color& color, doc::PixelFormat format);
     doc::color_t color_for_image_without_alpha(const app::Color& color, doc::PixelFormat format);

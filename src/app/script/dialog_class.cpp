@@ -15,6 +15,7 @@
 #include "app/file_selector.h"
 #include "app/script/canvas_widget.h"
 #include "app/script/engine.h"
+#include "app/script/graphics_context.h"
 #include "app/script/luacpp.h"
 #include "app/ui/color_button.h"
 #include "app/ui/color_shades.h"
@@ -915,8 +916,9 @@ int Dialog_canvas(lua_State* L)
       if (type == LUA_TFUNCTION) {
         Dialog_connect_signal(
           L, 1, widget->Paint,
-          [](lua_State* L, ui::PaintEvent& ev) {
-            // TODO
+          [](lua_State* L, GraphicsContext& gc) {
+            push_new<GraphicsContext>(L, std::move(gc));
+            lua_setfield(L, -2, "context");
           });
       }
       lua_pop(L, 1);

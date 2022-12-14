@@ -159,6 +159,7 @@ void register_color_class(lua_State* L);
 void register_color_space_class(lua_State* L);
 #ifdef ENABLE_UI
 void register_dialog_class(lua_State* L);
+void register_graphics_context_class(lua_State* L);
 #endif
 void register_events_class(lua_State* L);
 void register_frame_class(lua_State* L);
@@ -412,6 +413,7 @@ Engine::Engine()
   register_color_space_class(L);
 #ifdef ENABLE_UI
   register_dialog_class(L);
+  register_graphics_context_class(L);
 #endif
   register_events_class(L);
   register_frame_class(L);

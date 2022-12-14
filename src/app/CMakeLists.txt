@@ -175,6 +175,7 @@ if(ENABLE_SCRIPTING)
     script/events_class.cpp
     script/frame_class.cpp
     script/frames_class.cpp
+    script/graphics_context.cpp
     script/grid_class.cpp
     script/image_class.cpp
     script/image_iterator_class.cpp
