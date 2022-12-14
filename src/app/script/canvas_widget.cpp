@@ -1,0 +1,80 @@
+// Aseprite
+// Copyright (c) 2022  Igara Studio S.A.
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
+
+#include "app/script/canvas_widget.h"
+
+#include "app/ui/skin/skin_theme.h"
+#include "os/system.h"
+#include "ui/message.h"
+#include "ui/paint_event.h"
+#include "ui/resize_event.h"
+#include "ui/size_hint_event.h"
+
+#ifdef ENABLE_UI
+
+namespace app {
+namespace script {
+
+// static
+ui::WidgetType Canvas::Type()
+{
+  static ui::WidgetType type = ui::kGenericWidget;
+  if (type == ui::kGenericWidget)
+    type = ui::register_widget_type();
+  return type;
+}
+
+Canvas::Canvas() : ui::Widget(Type())
+{
+}
+
+void Canvas::onInitTheme(ui::InitThemeEvent& ev)
+{
+  Widget::onInitTheme(ev);
+
+  gfx::Color bg;
+  if (auto theme = skin::SkinTheme::get(this))
+    bg = theme->colors.windowFace();
+  else
+    bg = gfx::rgba(0, 0, 0);
+  setBgColor(bg);
+}
+
+void Canvas::onResize(ui::ResizeEvent& ev)
+{
+  Widget::onResize(ev);
+  if (os::instance() && !ev.bounds().isEmpty()) {
+    const int w = ev.bounds().w;
+    const int h = ev.bounds().h;
+
+    if (!m_surface ||
+        m_surface->width() != w ||
+        m_surface->height() != h) {
+      m_surface = os::instance()->makeSurface(w, h);
+
+      os::Paint p;
+      p.color(bgColor());
+      m_surface->drawRect(m_surface->bounds(), p);
+    }
+  }
+  else
+    m_surface.reset();
+}
+
+void Canvas::onPaint(ui::PaintEvent& ev)
+{
+  Paint(ev);
+
+  auto g = ev.graphics();
+  const gfx::Rect rc = clientBounds();
+  if (m_surface)
+    g->drawSurface(m_surface.get(), rc.x, rc.y);
+}
+
+} // namespace script
+} // namespace app
+
+#endif // ENABLE_UI

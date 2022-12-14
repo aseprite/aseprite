@@ -165,6 +165,7 @@ if(ENABLE_SCRIPTING)
     script/app_fs_object.cpp
     script/app_object.cpp
     script/brush_class.cpp
+    script/canvas_widget.cpp
     script/cel_class.cpp
     script/cels_class.cpp
     script/color_class.cpp
