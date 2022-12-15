@@ -10,6 +10,7 @@
 
 #ifdef ENABLE_UI
 
+#include "gfx/path.h"
 #include "os/font.h"
 #include "os/paint.h"
 #include "os/surface.h"
@@ -30,6 +31,7 @@ public:
     std::swap(m_surface, gc.m_surface);
     std::swap(m_paint, gc.m_paint);
     std::swap(m_font, gc.m_font);
+    std::swap(m_path, gc.m_path);
   }
 
   os::FontRef font() const { return m_font; }
@@ -75,10 +77,22 @@ public:
 
   void drawImage(const doc::Image* img, int x, int y);
 
+  // Path
+  void beginPath() { m_path.reset(); }
+  void closePath() { m_path.close(); }
+  void moveTo(float x, float y) { m_path.moveTo(x, y); }
+  void lineTo(float x, float y) { m_path.lineTo(x, y); }
+  void cubicTo(float cp1x, float cp1y, float cp2x, float cp2y, float x, float y) {
+    m_path.cubicTo(cp1x, cp1y, cp2x, cp2y, x, y);
+  }
+  void stroke();
+  void fill();
+
 private:
   os::SurfaceRef m_surface = nullptr;
   os::Paint m_paint;
   os::FontRef m_font;
+  gfx::Path m_path;
   std::stack<os::Paint> m_saved;
 };
 

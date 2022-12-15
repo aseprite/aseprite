@@ -46,6 +46,18 @@ void GraphicsContext::drawImage(const doc::Image* img, int x, int y)
     img->width(), img->height());
 }
 
+void GraphicsContext::stroke()
+{
+  m_paint.style(os::Paint::Stroke);
+  m_surface->drawPath(m_path, m_paint);
+}
+
+void GraphicsContext::fill()
+{
+  m_paint.style(os::Paint::Fill);
+  m_surface->drawPath(m_path, m_paint);
+}
+
 namespace {
 
 int GraphicsContext_gc(lua_State* L)
@@ -117,6 +129,72 @@ int GraphicsContext_drawImage(lua_State* L)
   return 0;
 }
 
+int GraphicsContext_beginPath(lua_State* L)
+{
+  auto gc = get_obj<GraphicsContext>(L, 1);
+  gc->beginPath();
+  lua_pushvalue(L, 1);
+  return 1;
+}
+
+int GraphicsContext_closePath(lua_State* L)
+{
+  auto gc = get_obj<GraphicsContext>(L, 1);
+  gc->closePath();
+  lua_pushvalue(L, 1);
+  return 1;
+}
+
+int GraphicsContext_moveTo(lua_State* L)
+{
+  auto gc = get_obj<GraphicsContext>(L, 1);
+  float x = lua_tonumber(L, 2);
+  float y = lua_tonumber(L, 3);
+  gc->moveTo(x, y);
+  lua_pushvalue(L, 1);
+  return 1;
+}
+
+int GraphicsContext_lineTo(lua_State* L)
+{
+  auto gc = get_obj<GraphicsContext>(L, 1);
+  float x = lua_tonumber(L, 2);
+  float y = lua_tonumber(L, 3);
+  gc->lineTo(x, y);
+  lua_pushvalue(L, 1);
+  return 1;
+}
+
+int GraphicsContext_cubicTo(lua_State* L)
+{
+  auto gc = get_obj<GraphicsContext>(L, 1);
+  float cp1x = lua_tonumber(L, 2);
+  float cp1y = lua_tonumber(L, 3);
+  float cp2x = lua_tonumber(L, 4);
+  float cp2y = lua_tonumber(L, 5);
+  float x = lua_tonumber(L, 6);
+  float y = lua_tonumber(L, 7);
+  gc->cubicTo(cp1x, cp1y, cp2x, cp2y, x, y);
+  lua_pushvalue(L, 1);
+  return 1;
+}
+
+int GraphicsContext_stroke(lua_State* L)
+{
+  auto gc = get_obj<GraphicsContext>(L, 1);
+  gc->stroke();
+  lua_pushvalue(L, 1);
+  return 1;
+}
+
+int GraphicsContext_fill(lua_State* L)
+{
+  auto gc = get_obj<GraphicsContext>(L, 1);
+  gc->fill();
+  lua_pushvalue(L, 1);
+  return 1;
+}
+
 int GraphicsContext_get_width(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
@@ -185,6 +263,13 @@ const luaL_Reg GraphicsContext_methods[] = {
   { "fillText", GraphicsContext_fillText },
   { "measureText", GraphicsContext_measureText },
   { "drawImage", GraphicsContext_drawImage },
+  { "beginPath", GraphicsContext_beginPath },
+  { "closePath", GraphicsContext_closePath },
+  { "moveTo", GraphicsContext_moveTo },
+  { "lineTo", GraphicsContext_lineTo },
+  { "cubicTo", GraphicsContext_cubicTo },
+  { "stroke", GraphicsContext_stroke },
+  { "fill", GraphicsContext_fill },
   { nullptr, nullptr }
 };
 
