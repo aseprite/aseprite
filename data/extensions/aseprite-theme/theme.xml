@@ -1013,5 +1013,31 @@
             <text color="slider_empty_text" align="center middle" />
             <text color="slider_empty_text" align="center middle" state="focus" />
         </style>
+        <style id="buttonset" gap-rows="-3" gap-columns="-1" />
+        <style id="buttonset_item" font="mini">
+            <background-border part="buttonset_item_normal" />
+            <background-border part="buttonset_item_hot" state="selected" />
+            <background-border part="buttonset_item_hot" state="mouse" />
+            <background-border part="buttonset_item_hot_focused" state="selected focus" />
+            <background-border part="buttonset_item_hot_focused" state="mouse focus" />
+            <background-border part="buttonset_item_pushed" state="capture selected" />
+            <background-border part="buttonset_item_pushed" state="mouse capture" />
+            <background-border part="buttonset_item_focused" state="focus" />
+        </style>
+        <style id="buttonset_item_icon" extends="buttonset_item">
+            <icon />
+            <icon state="disabled" color="disabled" />
+            <icon state="capture selected" color="button_selected_text" />
+        </style>
+        <style id="buttonset_item_text" extends="buttonset_item" padding="1">
+            <text color="button_normal_text" y="1" />
+            <text color="button_hot_text" state="selected" y="1" />
+            <text color="button_hot_text" state="mouse" y="1" />
+            <text color="button_selected_text" state="mouse capture" y="1" />
+            <text color="button_selected_text" state="capture selected" y="1" />
+            <text color="background" x="1" y="2" state="disabled" />
+            <newlayer />
+            <text color="disabled" state="disabled" align="top" y="1" />
+        </style>
     </styles>
 </theme>
