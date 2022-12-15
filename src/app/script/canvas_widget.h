@@ -27,9 +27,13 @@ public:
   void callPaint();
 
   obs::signal<void(GraphicsContext&)> Paint;
+  obs::signal<void(ui::MouseMessage*)> MouseMove;
+  obs::signal<void(ui::MouseMessage*)> MouseDown;
+  obs::signal<void(ui::MouseMessage*)> MouseUp;
 
 private:
   void onInitTheme(ui::InitThemeEvent& ev) override;
+  bool onProcessMessage(ui::Message* msg) override;
   void onResize(ui::ResizeEvent& ev) override;
   void onPaint(ui::PaintEvent& ev) override;
 

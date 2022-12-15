@@ -32,6 +32,7 @@
 #include "ui/grid.h"
 #include "ui/label.h"
 #include "ui/manager.h"
+#include "ui/message.h"
 #include "ui/separator.h"
 #include "ui/slider.h"
 #include "ui/window.h"
@@ -921,6 +922,36 @@ int Dialog_canvas(lua_State* L)
             push_new<GraphicsContext>(L, std::move(gc));
             lua_setfield(L, -2, "context");
           });
+      }
+      lua_pop(L, 1);
+
+      auto mouseCallback =
+        [](lua_State* L, ui::MouseMessage* msg) {
+          lua_pushinteger(L, msg->position().x);
+          lua_setfield(L, -2, "x");
+
+          lua_pushinteger(L, msg->position().y);
+          lua_setfield(L, -2, "y");
+
+          lua_pushinteger(L, int(msg->button()));
+          lua_setfield(L, -2, "button");
+        };
+
+      type = lua_getfield(L, 2, "onmousemove");
+      if (type == LUA_TFUNCTION) {
+        Dialog_connect_signal(L, 1, widget->MouseMove, mouseCallback);
+      }
+      lua_pop(L, 1);
+
+      type = lua_getfield(L, 2, "onmousedown");
+      if (type == LUA_TFUNCTION) {
+        Dialog_connect_signal(L, 1, widget->MouseDown, mouseCallback);
+      }
+      lua_pop(L, 1);
+
+      type = lua_getfield(L, 2, "onmouseup");
+      if (type == LUA_TFUNCTION) {
+        Dialog_connect_signal(L, 1, widget->MouseUp, mouseCallback);
       }
       lua_pop(L, 1);
     }

@@ -58,6 +58,32 @@ void Canvas::onInitTheme(ui::InitThemeEvent& ev)
   setBgColor(bg);
 }
 
+bool Canvas::onProcessMessage(ui::Message* msg)
+{
+  switch (msg->type()) {
+
+    case ui::kMouseMoveMessage: {
+      auto mouseMsg = static_cast<ui::MouseMessage*>(msg);
+      MouseMove(mouseMsg);
+      break;
+    }
+
+    case ui::kMouseDownMessage: {
+      auto mouseMsg = static_cast<ui::MouseMessage*>(msg);
+      MouseDown(mouseMsg);
+      break;
+    }
+
+    case ui::kMouseUpMessage: {
+      auto mouseMsg = static_cast<ui::MouseMessage*>(msg);
+      MouseUp(mouseMsg);
+      break;
+    }
+
+  }
+  return ui::Widget::onProcessMessage(msg);
+}
+
 void Canvas::onResize(ui::ResizeEvent& ev)
 {
   Widget::onResize(ev);
