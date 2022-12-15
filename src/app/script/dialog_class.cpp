@@ -927,10 +927,10 @@ int Dialog_canvas(lua_State* L)
 
       auto mouseCallback =
         [](lua_State* L, ui::MouseMessage* msg) {
-          lua_pushinteger(L, msg->position().x);
+          lua_pushinteger(L, msg->position().x - msg->recipient()->bounds().x);
           lua_setfield(L, -2, "x");
 
-          lua_pushinteger(L, msg->position().y);
+          lua_pushinteger(L, msg->position().y - msg->recipient()->bounds().y);
           lua_setfield(L, -2, "y");
 
           lua_pushinteger(L, int(msg->button()));
