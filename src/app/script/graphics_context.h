@@ -77,6 +77,9 @@ public:
 
   void drawImage(const doc::Image* img, int x, int y);
 
+  void drawThemeImage(const std::string& partId, const gfx::Point& pt);
+  void drawThemeRect(const std::string& partId, const gfx::Rect& rc);
+
   // Path
   void beginPath() { m_path.reset(); }
   void closePath() { m_path.close(); }

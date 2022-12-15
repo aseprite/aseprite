@@ -15,6 +15,7 @@
 #include "app/modules/palettes.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
+#include "app/ui/skin/skin_theme.h"
 #include "app/util/conversion_to_surface.h"
 #include "os/draw_text.h"
 
@@ -44,6 +45,26 @@ void GraphicsContext::drawImage(const doc::Image* img, int x, int y)
     0, 0,
     x, y,
     img->width(), img->height());
+}
+
+void GraphicsContext::drawThemeImage(const std::string& partId, const gfx::Point& pt)
+{
+  if (auto theme = skin::SkinTheme::instance()) {
+    skin::SkinPartPtr part = theme->getPartById(partId);
+    if (part && part->bitmap(0))
+      m_surface->drawRgbaSurface(part->bitmap(0), pt.x, pt.y);
+  }
+}
+
+void GraphicsContext::drawThemeRect(const std::string& partId, const gfx::Rect& rc)
+{
+  if (auto theme = skin::SkinTheme::instance()) {
+    skin::SkinPartPtr part = theme->getPartById(partId);
+    if (part && part->bitmap(0)) {
+      ui::Graphics g(nullptr, m_surface, 0, 0);
+      theme->drawRect(&g, rc, part.get(), true);
+    }
+  }
 }
 
 void GraphicsContext::stroke()
@@ -125,6 +146,26 @@ int GraphicsContext_drawImage(lua_State* L)
     int x = lua_tointeger(L, 3);
     int y = lua_tointeger(L, 4);
     gc->drawImage(img, x, y);
+  }
+  return 0;
+}
+
+int GraphicsContext_drawThemeImage(lua_State* L)
+{
+  auto gc = get_obj<GraphicsContext>(L, 1);
+  if (const char* id = lua_tostring(L, 2)) {
+    const gfx::Point pt = convert_args_into_point(L, 3);
+    gc->drawThemeImage(id, pt);
+  }
+  return 0;
+}
+
+int GraphicsContext_drawThemeRect(lua_State* L)
+{
+  auto gc = get_obj<GraphicsContext>(L, 1);
+  if (const char* id = lua_tostring(L, 2)) {
+    const gfx::Rect rc = convert_args_into_rect(L, 3);
+    gc->drawThemeRect(id, rc);
   }
   return 0;
 }
@@ -263,6 +304,8 @@ const luaL_Reg GraphicsContext_methods[] = {
   { "fillText", GraphicsContext_fillText },
   { "measureText", GraphicsContext_measureText },
   { "drawImage", GraphicsContext_drawImage },
+  { "drawThemeImage", GraphicsContext_drawThemeImage },
+  { "drawThemeRect", GraphicsContext_drawThemeRect },
   { "beginPath", GraphicsContext_beginPath },
   { "closePath", GraphicsContext_closePath },
   { "moveTo", GraphicsContext_moveTo },
