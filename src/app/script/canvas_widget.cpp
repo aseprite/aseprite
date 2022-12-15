@@ -43,6 +43,7 @@ void Canvas::callPaint()
 
   // Draw only on resize (onPaint we draw the cached m_surface)
   GraphicsContext gc(m_surface);
+  gc.font(AddRef(font()));
   Paint(gc);
 }
 

@@ -10,6 +10,7 @@
 
 #ifdef ENABLE_UI
 
+#include "os/font.h"
 #include "os/paint.h"
 #include "os/surface.h"
 
@@ -27,7 +28,12 @@ public:
   GraphicsContext(const os::SurfaceRef& surface) : m_surface(surface) { }
   GraphicsContext(GraphicsContext&& gc) {
     std::swap(m_surface, gc.m_surface);
+    std::swap(m_paint, gc.m_paint);
+    std::swap(m_font, gc.m_font);
   }
+
+  os::FontRef font() const { return m_font; }
+  void font(const os::FontRef& font) { m_font = font; }
 
   int width() const { return m_surface->width(); }
   int height() const { return m_surface->height(); }
@@ -45,6 +51,15 @@ public:
     }
   }
 
+  bool antialias() const { return m_paint.antialias(); }
+  void antialias(bool value) { m_paint.antialias(value); }
+
+  gfx::Color color() const { return m_paint.color(); }
+  void color(gfx::Color color) { m_paint.color(color); }
+
+  float strokeWidth() const { return m_paint.strokeWidth(); }
+  void strokeWidth(float value) { m_paint.strokeWidth(value); }
+
   void strokeRect(const gfx::Rect& rc) {
     m_paint.style(os::Paint::Stroke);
     m_surface->drawRect(rc, m_paint);
@@ -55,20 +70,15 @@ public:
     m_surface->drawRect(rc, m_paint);
   }
 
-  bool antialias() const { return m_paint.antialias(); }
-  void antialias(bool value) { m_paint.antialias(value); }
-
-  gfx::Color color() const { return m_paint.color(); }
-  void color(gfx::Color color) { m_paint.color(color); }
-
-  float strokeWidth() const { return m_paint.strokeWidth(); }
-  void strokeWidth(float value) { m_paint.strokeWidth(value); }
+  void fillText(const std::string& text, int x, int y);
+  gfx::Size measureText(const std::string& text) const;
 
   void drawImage(const doc::Image* img, int x, int y);
 
 private:
   os::SurfaceRef m_surface = nullptr;
   os::Paint m_paint;
+  os::FontRef m_font;
   std::stack<os::Paint> m_saved;
 };
 

@@ -16,11 +16,24 @@
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
 #include "app/util/conversion_to_surface.h"
+#include "os/draw_text.h"
 
 #ifdef ENABLE_UI
 
 namespace app {
 namespace script {
+
+void GraphicsContext::fillText(const std::string& text, int x, int y)
+{
+  os::draw_text(m_surface.get(), m_font.get(),
+                text, m_paint.color(), 0, x, y, nullptr);
+}
+
+gfx::Size GraphicsContext::measureText(const std::string& text) const
+{
+  return os::draw_text(nullptr, m_font.get(), text,
+                       0, 0, 0, 0, nullptr).size();
+}
 
 void GraphicsContext::drawImage(const doc::Image* img, int x, int y)
 {
@@ -69,6 +82,27 @@ int GraphicsContext_fillRect(lua_State* L)
   auto gc = get_obj<GraphicsContext>(L, 1);
   const gfx::Rect rc = convert_args_into_rect(L, 2);
   gc->fillRect(rc);
+  return 0;
+}
+
+int GraphicsContext_fillText(lua_State* L)
+{
+  auto gc = get_obj<GraphicsContext>(L, 1);
+  if (const char* text = lua_tostring(L, 2)) {
+    int x = lua_tointeger(L, 3);
+    int y = lua_tointeger(L, 4);
+    gc->fillText(text, x, y);
+  }
+  return 0;
+}
+
+int GraphicsContext_measureText(lua_State* L)
+{
+  auto gc = get_obj<GraphicsContext>(L, 1);
+  if (const char* text = lua_tostring(L, 2)) {
+    push_obj(L, gc->measureText(text));
+    return 1;
+  }
   return 0;
 }
 
@@ -148,6 +182,8 @@ const luaL_Reg GraphicsContext_methods[] = {
   { "restore", GraphicsContext_restore },
   { "strokeRect", GraphicsContext_strokeRect },
   { "fillRect", GraphicsContext_fillRect },
+  { "fillText", GraphicsContext_fillText },
+  { "measureText", GraphicsContext_measureText },
   { "drawImage", GraphicsContext_drawImage },
   { nullptr, nullptr }
 };
