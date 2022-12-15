@@ -927,6 +927,10 @@ int Dialog_canvas(lua_State* L)
 
       auto mouseCallback =
         [](lua_State* L, ui::MouseMessage* msg) {
+          ASSERT(msg->recipient());
+          if (!msg->recipient())
+            return;
+
           lua_pushinteger(L, msg->position().x - msg->recipient()->bounds().x);
           lua_setfield(L, -2, "x");
 
