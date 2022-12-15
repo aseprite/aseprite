@@ -32,6 +32,20 @@ Canvas::Canvas() : ui::Widget(Type())
 {
 }
 
+void Canvas::callPaint()
+{
+  if (!m_surface)
+    return;
+
+  os::Paint p;
+  p.color(bgColor());
+  m_surface->drawRect(m_surface->bounds(), p);
+
+  // Draw only on resize (onPaint we draw the cached m_surface)
+  GraphicsContext gc(m_surface);
+  Paint(gc);
+}
+
 void Canvas::onInitTheme(ui::InitThemeEvent& ev)
 {
   Widget::onInitTheme(ev);
@@ -56,13 +70,7 @@ void Canvas::onResize(ui::ResizeEvent& ev)
         m_surface->height() != h) {
       m_surface = os::instance()->makeSurface(w, h);
 
-      os::Paint p;
-      p.color(bgColor());
-      m_surface->drawRect(m_surface->bounds(), p);
-
-      // Draw only on resize (onPaint we draw the cached m_surface)
-      GraphicsContext gc(m_surface);
-      Paint(gc);
+      callPaint();
     }
   }
   else

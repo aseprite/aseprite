@@ -24,6 +24,8 @@ public:
 
   Canvas();
 
+  void callPaint();
+
   obs::signal<void(GraphicsContext&)> Paint;
 
 private:

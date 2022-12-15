@@ -37,6 +37,7 @@
 #include "ui/window.h"
 
 #include <map>
+#include <stack>
 #include <string>
 #include <vector>
 
@@ -1115,6 +1116,27 @@ int Dialog_modify(lua_State* L)
   return 1;
 }
 
+int Dialog_repaint(lua_State* L)
+{
+  auto dlg = get_obj<Dialog>(L, 1);
+  std::stack<ui::Widget*> widgets;
+  widgets.push(&dlg->grid);
+
+  while (!widgets.empty()) {
+    auto child = widgets.top();
+    widgets.pop();
+
+    if (child->type() == Canvas::Type()) {
+      static_cast<Canvas*>(child)->callPaint();
+      child->invalidate();
+    }
+
+    for (auto subchild : child->children())
+      widgets.push(subchild);
+  }
+  return 0;
+}
+
 int Dialog_get_data(lua_State* L)
 {
   auto dlg = get_obj<Dialog>(L, 1);
@@ -1333,6 +1355,7 @@ const luaL_Reg Dialog_methods[] = {
   { "file", Dialog_file },
   { "canvas", Dialog_canvas },
   { "modify", Dialog_modify },
+  { "repaint", Dialog_repaint },
   { nullptr, nullptr }
 };
 
