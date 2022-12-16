@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -751,10 +751,11 @@ void ExpandCelCanvas::copySourceTilestToDestTileset()
   ASSERT(m_layer->isTilemap());
   const Tileset* srcTileset = static_cast<LayerTilemap*>(m_layer)->tileset();
 
+  m_dstTileset->setTilesetData(srcTileset->userData());
   for (tile_index i=0; i<srcTileset->size(); ++i) {
     doc::copy_image(m_dstTileset->get(i).get(),
                     srcTileset->get(i).get());
-
+    m_dstTileset->setUserData(i, srcTileset->getUserData(i));
     // To rehash the tileset
     m_dstTileset->notifyTileContentChange(i);
   }

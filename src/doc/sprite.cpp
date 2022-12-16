@@ -535,7 +535,7 @@ void Sprite::replaceImage(ObjectId curImageId, const ImageRef& newImage)
       for (tile_index i=0; i<tileset->size(); ++i) {
         ImageRef image = tileset->get(i);
         if (image && image->id() == curImageId)
-          tileset->set(i, newImage);
+          tileset->set(i, newImage);// TO DO: Do we need to getUserData too?
       }
     }
   }
@@ -569,7 +569,7 @@ void Sprite::getImages(std::vector<ImageRef>& images) const
       for (tile_index i=0; i<tileset->size(); ++i) {
         ImageRef image = tileset->get(i);
         if (image)
-          images.push_back(image);
+          images.push_back(image);// TO DO: Do we need to getUserData too?
       }
     }
   }

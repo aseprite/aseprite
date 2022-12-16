@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -889,14 +889,17 @@ void copy_tiles_in_tileset(
   OPS_TRACE("copy_tiles_in_tileset beforeIndex=%d npicks=%d\n", beforeIndex, picks.picks());
 
   std::vector<ImageRef> newTiles;
+  std::vector<UserData> newTilesUserData;
   for (int i=0; i<picks.size(); ++i) {
     if (!picks[i])
       continue;
     else if (i >= 0 && i < tileset->size()) {
       newTiles.emplace_back(Image::createCopy(tileset->get(i).get()));
+      newTilesUserData.emplace_back(tileset->getUserData(i));
     }
     else {
       newTiles.emplace_back(tileset->makeEmptyTile());
+      newTilesUserData.emplace_back(UserData());
     }
   }
 
@@ -921,8 +924,8 @@ void copy_tiles_in_tileset(
       // "beforeIndex" with empty tiles
       while (tileset->size() < i)
         cmds->executeAndAdd(new cmd::AddTile(tileset, tileset->makeEmptyTile()));
-
-      tileset->insert(i, newTiles[j++]);
+      tileset->insert(i, newTiles[j], newTilesUserData[j]);
+      j++;
       cmds->executeAndAdd(new cmd::AddTile(tileset, i));
     }
   }

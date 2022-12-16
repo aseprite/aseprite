@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -35,6 +35,7 @@ namespace doc {
     LayerTilemap = 14,
     Tileset = 15,
     Tilesets = 16,
+    Tile = 17,
   };
 
 } // namespace doc

@@ -26,6 +26,7 @@ namespace doc {
   class Tileset : public WithUserData {
   public:
     typedef std::vector<ImageRef> Tiles;
+    typedef std::vector<UserData> TilesUserData;
     typedef Tiles::iterator iterator;
     typedef Tiles::const_iterator const_iterator;
 
@@ -41,6 +42,9 @@ namespace doc {
 
     Sprite* sprite() const { return m_sprite; }
     const Grid& grid() const { return m_grid; }
+    void setTilesetData(const UserData& userData) {
+      WithUserData::setUserData(userData);
+    }
 
     const std::string& name() const { return m_name; }
     void setName(const std::string& name) { m_name = name; }
@@ -67,9 +71,20 @@ namespace doc {
     void set(const tile_index ti,
              const ImageRef& image);
 
-    tile_index add(const ImageRef& image);
+    UserData getUserData(const tile_index ti) const {
+      if (ti >= 0 && ti < size())
+        return m_tilesUserData[ti];
+      else
+        return UserData();
+    }
+    void setUserData(const tile_index ti,
+                     const UserData& user_data = UserData());
+
+    tile_index add(const ImageRef& image,
+                   const UserData& userData = UserData());
     void insert(const tile_index ti,
-                const ImageRef& image);
+                const ImageRef& image,
+                const UserData& userData = UserData());
     void erase(const tile_index ti);
 
     // Linked with an external file
@@ -126,6 +141,7 @@ namespace doc {
     Grid m_grid;
     Tiles m_tiles;
     TilesetHashTable m_hash;
+    TilesUserData m_tilesUserData;
     std::string m_name;
     int m_baseIndex = 1;
     struct External {

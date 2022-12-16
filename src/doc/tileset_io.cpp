@@ -81,7 +81,7 @@ Tileset* read_tileset(std::istream& is,
 
     if (ver == TILESET_VER2) {
       UserData userData = read_user_data(is);
-      tileset->setUserData(userData);
+      tileset->setTilesetData(userData);
     }
   }
   // Old tileset used in internal versions (this was added to recover

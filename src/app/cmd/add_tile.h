@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -13,6 +13,7 @@
 #include "app/cmd/with_tileset.h"
 #include "doc/image_ref.h"
 #include "doc/tile.h"
+#include "doc/with_user_data.h"
 
 #include <sstream>
 
@@ -25,9 +26,12 @@ namespace cmd {
 
   class AddTile : public Cmd
                 , public WithTileset
-                , public WithImage {
+                , public WithImage
+                , public WithUserData {
   public:
-    AddTile(doc::Tileset* tileset, const doc::ImageRef& image);
+    AddTile(doc::Tileset* tileset,
+            const doc::ImageRef& image,
+            const doc::UserData& userData = UserData());
     AddTile(doc::Tileset* tileset, const doc::tile_index ti);
 
     doc::tile_index tileIndex() const { return m_tileIndex; }
@@ -43,7 +47,8 @@ namespace cmd {
 
   private:
     void addTile(doc::Tileset* tileset,
-                 const doc::ImageRef& image);
+                 const doc::ImageRef& image,
+                 const doc::UserData& userData = UserData());
 
     size_t m_size;
     std::stringstream m_stream;
