@@ -480,6 +480,12 @@ int App_get_events(lua_State* L)
   return 1;
 }
 
+int App_get_theme(lua_State* L)
+{
+  push_app_theme(L);
+  return 1;
+}
+
 int App_get_activeSprite(lua_State* L)
 {
   app::Context* ctx = App::instance()->context();
@@ -761,6 +767,7 @@ const Property App_properties[] = {
   { "isUIAvailable", App_get_isUIAvailable, nullptr },
   { "defaultPalette", App_get_defaultPalette, App_set_defaultPalette },
   { "events", App_get_events, nullptr },
+  { "theme", App_get_theme, nullptr },
   { nullptr, nullptr, nullptr }
 };
 

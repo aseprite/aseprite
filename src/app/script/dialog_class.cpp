@@ -13,7 +13,9 @@
 #include "app/color.h"
 #include "app/color_utils.h"
 #include "app/file_selector.h"
+#include "app/script/canvas_widget.h"
 #include "app/script/engine.h"
+#include "app/script/graphics_context.h"
 #include "app/script/luacpp.h"
 #include "app/ui/color_button.h"
 #include "app/ui/color_shades.h"
@@ -30,11 +32,13 @@
 #include "ui/grid.h"
 #include "ui/label.h"
 #include "ui/manager.h"
+#include "ui/message.h"
 #include "ui/separator.h"
 #include "ui/slider.h"
 #include "ui/window.h"
 
 #include <map>
+#include <stack>
 #include <string>
 #include <vector>
 
@@ -334,6 +338,9 @@ int Dialog_add_widget(lua_State* L, Widget* widget)
   const char* label = nullptr;
   std::string id;
   bool visible = true;
+  bool hexpand = true;
+  // Canvas is vertically expansive by default too
+  bool vexpand = (widget->type() == Canvas::Type());
 
   // This is to separate different kind of widgets without label in
   // different rows.
@@ -380,6 +387,15 @@ int Dialog_add_widget(lua_State* L, Widget* widget)
       widget->setVisible(visible);
     }
     lua_pop(L, 1);
+
+    // Expand horizontally/vertically, it allows to indicate that a
+    // specific widget is not expansive (e.g. a canvas with a fixed
+    // size)
+    type = lua_getfield(L, 2, "hexpand");
+    type = lua_getfield(L, 2, "vexpand");
+    if (type != LUA_TNIL) hexpand = lua_toboolean(L, -2);
+    if (type != LUA_TNIL) vexpand = lua_toboolean(L, -1);
+    lua_pop(L, 2);
   }
 
   if (label || !dlg->hbox) {
@@ -398,11 +414,15 @@ int Dialog_add_widget(lua_State* L, Widget* widget)
     auto hbox = new ui::HBox;
     if (widget->type() == ui::kButtonWidget)
       hbox->enableFlags(ui::HOMOGENEOUS);
-    dlg->grid.addChildInCell(hbox, 1, 1, ui::HORIZONTAL | ui::TOP);
+
+    dlg->grid.addChildInCell(
+      hbox, 1, 1,
+      ui::HORIZONTAL | (vexpand ? ui::VERTICAL: ui::TOP));
+
     dlg->hbox = hbox;
   }
 
-  widget->setExpansive(true);
+  widget->setExpansive(hexpand);
   dlg->hbox->addChild(widget);
 
   lua_pushvalue(L, 1);
@@ -872,6 +892,78 @@ int Dialog_file(lua_State* L)
   return Dialog_add_widget(L, widget);
 }
 
+int Dialog_canvas(lua_State* L)
+{
+  auto widget = new Canvas;
+
+  if (lua_istable(L, 2)) {
+    gfx::Size sz(0, 0);
+
+    int type = lua_getfield(L, 2, "width");
+    if (type != LUA_TNIL) {
+      sz.w = lua_tointegerx(L, -1, nullptr);
+    }
+    lua_pop(L, 1);
+
+    type = lua_getfield(L, 2, "height");
+    if (type != LUA_TNIL) {
+      sz.h = lua_tointegerx(L, -1, nullptr);
+    }
+    lua_pop(L, 1);
+
+    widget->setSizeHint(sz);
+
+    if (lua_istable(L, 2)) {
+      int type = lua_getfield(L, 2, "onpaint");
+      if (type == LUA_TFUNCTION) {
+        Dialog_connect_signal(
+          L, 1, widget->Paint,
+          [](lua_State* L, GraphicsContext& gc) {
+            push_new<GraphicsContext>(L, std::move(gc));
+            lua_setfield(L, -2, "context");
+          });
+      }
+      lua_pop(L, 1);
+
+      auto mouseCallback =
+        [](lua_State* L, ui::MouseMessage* msg) {
+          ASSERT(msg->recipient());
+          if (!msg->recipient())
+            return;
+
+          lua_pushinteger(L, msg->position().x - msg->recipient()->bounds().x);
+          lua_setfield(L, -2, "x");
+
+          lua_pushinteger(L, msg->position().y - msg->recipient()->bounds().y);
+          lua_setfield(L, -2, "y");
+
+          lua_pushinteger(L, int(msg->button()));
+          lua_setfield(L, -2, "button");
+        };
+
+      type = lua_getfield(L, 2, "onmousemove");
+      if (type == LUA_TFUNCTION) {
+        Dialog_connect_signal(L, 1, widget->MouseMove, mouseCallback);
+      }
+      lua_pop(L, 1);
+
+      type = lua_getfield(L, 2, "onmousedown");
+      if (type == LUA_TFUNCTION) {
+        Dialog_connect_signal(L, 1, widget->MouseDown, mouseCallback);
+      }
+      lua_pop(L, 1);
+
+      type = lua_getfield(L, 2, "onmouseup");
+      if (type == LUA_TFUNCTION) {
+        Dialog_connect_signal(L, 1, widget->MouseUp, mouseCallback);
+      }
+      lua_pop(L, 1);
+    }
+  }
+
+  return Dialog_add_widget(L, widget);
+}
+
 int Dialog_modify(lua_State* L)
 {
   auto dlg = get_obj<Dialog>(L, 1);
@@ -1057,6 +1149,27 @@ int Dialog_modify(lua_State* L)
   }
   lua_pushvalue(L, 1);
   return 1;
+}
+
+int Dialog_repaint(lua_State* L)
+{
+  auto dlg = get_obj<Dialog>(L, 1);
+  std::stack<ui::Widget*> widgets;
+  widgets.push(&dlg->grid);
+
+  while (!widgets.empty()) {
+    auto child = widgets.top();
+    widgets.pop();
+
+    if (child->type() == Canvas::Type()) {
+      static_cast<Canvas*>(child)->callPaint();
+      child->invalidate();
+    }
+
+    for (auto subchild : child->children())
+      widgets.push(subchild);
+  }
+  return 0;
 }
 
 int Dialog_get_data(lua_State* L)
@@ -1275,7 +1388,9 @@ const luaL_Reg Dialog_methods[] = {
   { "color", Dialog_color },
   { "shades", Dialog_shades },
   { "file", Dialog_file },
+  { "canvas", Dialog_canvas },
   { "modify", Dialog_modify },
+  { "repaint", Dialog_repaint },
   { nullptr, nullptr }
 };
 

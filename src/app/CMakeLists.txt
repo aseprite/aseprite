@@ -164,7 +164,9 @@ if(ENABLE_SCRIPTING)
     script/app_command_object.cpp
     script/app_fs_object.cpp
     script/app_object.cpp
+    script/app_theme_object.cpp
     script/brush_class.cpp
+    script/canvas_widget.cpp
     script/cel_class.cpp
     script/cels_class.cpp
     script/color_class.cpp
@@ -174,6 +176,7 @@ if(ENABLE_SCRIPTING)
     script/events_class.cpp
     script/frame_class.cpp
     script/frames_class.cpp
+    script/graphics_context.cpp
     script/grid_class.cpp
     script/image_class.cpp
     script/image_iterator_class.cpp

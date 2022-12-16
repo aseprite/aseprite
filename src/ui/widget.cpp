@@ -1557,6 +1557,7 @@ bool Widget::onProcessMessage(Message* msg)
       MouseMessage mouseMsg2(kMouseDownMessage,
                              *mouseMsg,
                              mouseMsg->position());
+      mouseMsg2.setRecipient(this);
       mouseMsg2.setDisplay(mouseMsg->display());
       sendMessage(&mouseMsg2);
       break;
