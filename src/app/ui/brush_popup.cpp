@@ -154,7 +154,7 @@ public:
     , m_brushes(App::instance()->brushes())
     , m_slot(slot) {
     auto theme = skin::SkinTheme::get(this);
-    setIcon(theme->parts.iconArrowDown(), true);
+    setIcon(theme->parts.iconArrowDown());
   }
 
 private:
@@ -283,7 +283,7 @@ class NewBrushOptionsItem : public ButtonSet::Item {
 public:
   NewBrushOptionsItem() {
     auto theme = skin::SkinTheme::get(this);
-    setIcon(theme->parts.iconArrowDown(), true);
+    setIcon(theme->parts.iconArrowDown());
   }
 
 private:
@@ -362,8 +362,7 @@ BrushPopup::BrushPopup()
   for (const auto& brush : brushes.getStandardBrushes()) {
     m_standardBrushes.addItem(
       new SelectBrushItem(
-        BrushSlot(BrushSlot::Flags::BrushType, brush)))
-      ->setMono(true);
+        BrushSlot(BrushSlot::Flags::BrushType, brush)), "standard_brush");
   }
   m_standardBrushes.setTransparent(true);
 
@@ -428,12 +427,13 @@ void BrushPopup::regenerate(ui::Display* display,
     }
     m_customBrushes->addItem(new SelectBrushItem(brush, slot));
     m_customBrushes->addItem(new BrushShortcutItem(shortcut, slot));
-    m_customBrushes->addItem(new BrushOptionsItem(this, slot));
+    m_customBrushes->addItem(new BrushOptionsItem(this, slot), "buttonset_item_icon_mono");
   }
 
   m_customBrushes->addItem(new NewCustomBrushItem, 2, 1);
-  m_customBrushes->addItem(new NewBrushOptionsItem);
+  m_customBrushes->addItem(new NewBrushOptionsItem, "buttonset_item_icon_mono");
   m_customBrushes->setExpansive(true);
+  m_customBrushes->initTheme();
   m_box.addChild(m_customBrushes);
 
   // Resize the window and change the hot region.

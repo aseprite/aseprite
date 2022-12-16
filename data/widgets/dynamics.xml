@@ -16,16 +16,16 @@
       <item text="@.velocity" tooltip="@.velocity_tooltip" tooltip_dir="bottom" />
 
       <item text="@.size" tooltip="@.size_tooltip" tooltip_dir="right" />
-      <item text="" minheight="1" maxheight="1" />
-      <item text="" minheight="1" maxheight="1" />
+      <item minheight="1" maxheight="1" />
+      <item minheight="1" maxheight="1" />
 
       <item text="@.angle" tooltip="@.angle_tooltip" tooltip_dir="right" />
-      <item text="" minheight="1" maxheight="1" />
-      <item text="" minheight="1" maxheight="1" />
+      <item minheight="1" maxheight="1" />
+      <item minheight="1" maxheight="1" />
 
       <item text="@.gradient" tooltip="@.gradient_tooltip" tooltip_dir="right" />
-      <item text="" minheight="1" maxheight="1" />
-      <item text="" minheight="1" maxheight="1" />
+      <item minheight="1" maxheight="1" />
+      <item minheight="1" maxheight="1" />
     </buttonset>
     </hbox>
 
