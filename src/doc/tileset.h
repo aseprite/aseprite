@@ -26,6 +26,7 @@ namespace doc {
   class Tileset : public WithUserData {
   public:
     typedef std::vector<ImageRef> Tiles;
+    typedef std::vector<UserData> Datas;
     typedef Tiles::iterator iterator;
     typedef Tiles::const_iterator const_iterator;
 
@@ -68,9 +69,20 @@ namespace doc {
     void set(const tile_index ti,
              const ImageRef& image);
 
-    tile_index add(const ImageRef& image);
+    UserData getTileData(const tile_index ti) const {
+      if (ti >= 0 && ti < size())
+        return m_datas[ti];
+      else
+        return UserData();
+    }
+    void setTileData(const tile_index ti,
+                     const UserData& userData);
+
+    tile_index add(const ImageRef& image,
+                   const UserData& userData = UserData());
     void insert(const tile_index ti,
-                const ImageRef& image);
+                const ImageRef& image,
+                const UserData& userData = UserData());
     void erase(const tile_index ti);
 
     // Linked with an external file
@@ -126,6 +138,7 @@ namespace doc {
     Sprite* m_sprite;
     Grid m_grid;
     Tiles m_tiles;
+    Datas m_datas;
     TilesetHashTable m_hash;
     std::string m_name;
     int m_baseIndex = 1;

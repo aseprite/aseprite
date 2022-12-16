@@ -534,8 +534,10 @@ void Sprite::replaceImage(ObjectId curImageId, const ImageRef& newImage)
     for (Tileset* tileset : *tilesets()) {
       for (tile_index i=0; i<tileset->size(); ++i) {
         ImageRef image = tileset->get(i);
-        if (image && image->id() == curImageId)
+        if (image && image->id() == curImageId) {
+          // Change only the tile image (not its user data)
           tileset->set(i, newImage);
+        }
       }
     }
   }

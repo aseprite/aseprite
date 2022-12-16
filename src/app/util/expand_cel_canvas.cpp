@@ -752,7 +752,7 @@ void ExpandCelCanvas::copySourceTilestToDestTileset()
   for (tile_index i=0; i<srcTileset->size(); ++i) {
     doc::copy_image(m_dstTileset->get(i).get(),
                     srcTileset->get(i).get());
-
+    m_dstTileset->setTileData(i, srcTileset->getTileData(i));
     // To rehash the tileset
     m_dstTileset->notifyTileContentChange(i);
   }

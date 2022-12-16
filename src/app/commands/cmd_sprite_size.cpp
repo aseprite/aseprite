@@ -138,6 +138,7 @@ protected:
                 sprite()->rgbMap(0)));   // TODO first frame?
 
             newTileset->set(idx, newTileImg);
+            newTileset->setTileData(idx, tileset->getTileData(idx));
           }
 
           jobProgress((float)progress / img_count);

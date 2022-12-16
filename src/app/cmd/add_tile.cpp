@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -20,12 +20,14 @@ namespace app {
 namespace cmd {
 
 AddTile::AddTile(doc::Tileset* tileset,
-                 const doc::ImageRef& image)
+                 const doc::ImageRef& image,
+                 const doc::UserData& userData)
   : WithTileset(tileset)
   , WithImage(image.get())
   , m_size(0)
   , m_tileIndex(doc::notile)
   , m_imageRef(image)
+  , m_userData(userData)
 {
 }
 
@@ -36,6 +38,7 @@ AddTile::AddTile(doc::Tileset* tileset,
   , m_size(0)
   , m_tileIndex(ti)
   , m_imageRef(nullptr)
+  , m_userData(tileset->getTileData(ti))
 {
 }
 
@@ -51,7 +54,7 @@ void AddTile::onExecute()
   }
   else {
     ASSERT(m_imageRef);
-    addTile(tileset, m_imageRef);
+    addTile(tileset, m_imageRef, m_userData);
     m_imageRef.reset();
   }
 }
@@ -78,7 +81,7 @@ void AddTile::onRedo()
   m_imageRef.reset(read_image(m_stream));
   ASSERT(m_imageRef);
 
-  addTile(tileset, m_imageRef);
+  addTile(tileset, m_imageRef, m_userData);
   m_imageRef.reset();
 
   m_stream.str(std::string());
@@ -95,12 +98,14 @@ void AddTile::onFireNotifications()
     ->notifyTilesetChanged(tileset);
 }
 
-void AddTile::addTile(doc::Tileset* tileset, const doc::ImageRef& image)
+void AddTile::addTile(doc::Tileset* tileset,
+                      const doc::ImageRef& image,
+                      const doc::UserData& userData)
 {
   if (m_tileIndex == doc::notile)
-    m_tileIndex = tileset->add(image);
+    m_tileIndex = tileset->add(image, userData);
   else
-    tileset->insert(m_tileIndex, image);
+    tileset->insert(m_tileIndex, image, userData);
 
   tileset->sprite()->incrementVersion();
   tileset->incrementVersion();
