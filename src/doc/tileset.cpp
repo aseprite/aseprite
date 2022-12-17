@@ -45,13 +45,21 @@ Tileset::Tileset(Sprite* sprite,
 }
 
 // static
-Tileset* Tileset::MakeCopyWithSameImages(const Tileset* tileset)
+Tileset* Tileset::MakeCopyWithoutImages(const Tileset* tileset)
 {
   std::unique_ptr<Tileset> copy(
     new Tileset(tileset->sprite(),
                 tileset->grid(),
                 tileset->size()));
   copy->setName(tileset->name());
+  copy->setUserData(tileset->userData());
+  return copy.release();
+}
+
+// static
+Tileset* Tileset::MakeCopyWithSameImages(const Tileset* tileset)
+{
+  std::unique_ptr<Tileset> copy(MakeCopyWithoutImages(tileset));
   for (tile_index ti=0; ti<copy->size(); ++ti) {
     ImageRef image = tileset->get(ti);
     ASSERT(image);
@@ -63,11 +71,7 @@ Tileset* Tileset::MakeCopyWithSameImages(const Tileset* tileset)
 // static
 Tileset* Tileset::MakeCopyCopyingImages(const Tileset* tileset)
 {
-  std::unique_ptr<Tileset> copy(
-    new Tileset(tileset->sprite(),
-                tileset->grid(),
-                tileset->size()));
-  copy->setName(tileset->name());
+  std::unique_ptr<Tileset> copy(MakeCopyWithoutImages(tileset));
   for (tile_index ti=0; ti<copy->size(); ++ti) {
     ImageRef image = tileset->get(ti);
     ASSERT(image);

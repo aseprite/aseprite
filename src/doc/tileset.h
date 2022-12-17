@@ -36,6 +36,7 @@ namespace doc {
             const Grid& grid,
             const tileset_index ntiles);
 
+    static Tileset* MakeCopyWithoutImages(const Tileset* tileset);
     static Tileset* MakeCopyWithSameImages(const Tileset* tileset);
     static Tileset* MakeCopyCopyingImages(const Tileset* tileset);
 
