@@ -76,6 +76,9 @@ public:
   gfx::Size measureText(const std::string& text) const;
 
   void drawImage(const doc::Image* img, int x, int y);
+  void drawImage(const doc::Image* img,
+                 const gfx::Rect& srcRc,
+                 const gfx::Rect& dstRc);
 
   void drawThemeImage(const std::string& partId, const gfx::Point& pt);
   void drawThemeRect(const std::string& partId, const gfx::Rect& rc);

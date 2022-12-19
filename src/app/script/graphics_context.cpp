@@ -18,6 +18,8 @@
 #include "app/ui/skin/skin_theme.h"
 #include "app/util/conversion_to_surface.h"
 #include "os/draw_text.h"
+#include "os/surface.h"
+#include "os/system.h"
 
 #ifdef ENABLE_UI
 
@@ -45,6 +47,26 @@ void GraphicsContext::drawImage(const doc::Image* img, int x, int y)
     0, 0,
     x, y,
     img->width(), img->height());
+}
+
+void GraphicsContext::drawImage(const doc::Image* img,
+                                const gfx::Rect& srcRc,
+                                const gfx::Rect& dstRc)
+{
+  auto tmpSurface = os::instance()->makeRgbaSurface(srcRc.w, srcRc.h);
+  if (tmpSurface) {
+    convert_image_to_surface(
+      img,
+      get_current_palette(),
+      tmpSurface.get(),
+      srcRc.x, srcRc.y,
+      0, 0,
+      srcRc.w, srcRc.h);
+
+    m_surface->drawSurface(tmpSurface.get(),
+                           tmpSurface->bounds(),
+                           dstRc);
+  }
 }
 
 void GraphicsContext::drawThemeImage(const std::string& partId, const gfx::Point& pt)
@@ -145,7 +167,19 @@ int GraphicsContext_drawImage(lua_State* L)
   if (const doc::Image* img = may_get_image_from_arg(L, 2)) {
     int x = lua_tointeger(L, 3);
     int y = lua_tointeger(L, 4);
-    gc->drawImage(img, x, y);
+
+    if (lua_gettop(L) >= 9) {
+      int w = lua_tointeger(L, 5);
+      int h = lua_tointeger(L, 6);
+      int dx = lua_tointeger(L, 7);
+      int dy = lua_tointeger(L, 8);
+      int dw = lua_tointeger(L, 9);
+      int dh = lua_tointeger(L, 10);
+      gc->drawImage(img, gfx::Rect(x, y, w, h), gfx::Rect(dx, dy, dw, dh));
+    }
+    else {
+      gc->drawImage(img, x, y);
+    }
   }
   return 0;
 }
