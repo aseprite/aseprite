@@ -141,6 +141,9 @@ bool shrink_bounds_templ(const Image* image, gfx::Rect& bounds, color_t refpixel
     gfx::Rect
       leftBounds(bounds), rightBounds(bounds),
       topBounds(bounds), bottomBounds(bounds);
+
+    // TODO use a base::thread_pool and a base::task for each border
+
     std::thread left  ([&]{ shrink_bounds_left_templ  <ImageTraits>(image, leftBounds, refpixel, rowSize); });
     std::thread right ([&]{ shrink_bounds_right_templ <ImageTraits>(image, rightBounds, refpixel, rowSize); });
     std::thread top   ([&]{ shrink_bounds_top_templ   <ImageTraits>(image, topBounds, refpixel); });
