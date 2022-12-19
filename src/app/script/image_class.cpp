@@ -511,6 +511,27 @@ int Image_resize(lua_State* L)
   return 0;
 }
 
+int Image_shrinkBounds(lua_State* L)
+{
+  auto obj = get_obj<ImageObj>(L, 1);
+  doc::Image* img = obj->image(L);
+  doc::color_t refcolor;
+  if (lua_isnone(L, 2))
+    refcolor = img->maskColor();
+  else if (lua_isinteger(L, 2))
+    refcolor = lua_tointeger(L, 2);
+  else
+    refcolor = convert_args_into_pixel_color(L, 2, img->pixelFormat());
+
+  gfx::Rect bounds;
+  if (!doc::algorithm::shrink_bounds(img, refcolor, nullptr, bounds)) {
+    bounds = gfx::Rect();
+  }
+
+  push_obj(L, bounds);
+  return 1;
+}
+
 int Image_get_rowStride(lua_State* L)
 {
   const auto obj = get_obj<ImageObj>(L, 1);
@@ -556,6 +577,13 @@ int Image_get_height(lua_State* L)
   return 1;
 }
 
+int Image_get_bounds(lua_State* L)
+{
+  const auto obj = get_obj<ImageObj>(L, 1);
+  push_obj(L, obj->image(L)->bounds());
+  return 1;
+}
+
 int Image_get_colorMode(lua_State* L)
 {
   const auto obj = get_obj<ImageObj>(L, 1);
@@ -590,6 +618,7 @@ const luaL_Reg Image_methods[] = {
   { "isPlain", Image_isPlain },
   { "saveAs", Image_saveAs },
   { "resize", Image_resize },
+  { "shrinkBounds", Image_shrinkBounds },
   { "__gc", Image_gc },
   { "__eq", Image_eq },
   { nullptr, nullptr }
@@ -600,6 +629,7 @@ const Property Image_properties[] = {
   { "bytes", Image_get_bytes, Image_set_bytes },
   { "width", Image_get_width, nullptr },
   { "height", Image_get_height, nullptr },
+  { "bounds", Image_get_bounds, nullptr },
   { "colorMode", Image_get_colorMode, nullptr },
   { "spec", Image_get_spec, nullptr },
   { "cel", Image_get_cel, nullptr },

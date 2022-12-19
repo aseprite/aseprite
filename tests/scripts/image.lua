@@ -204,6 +204,28 @@ do
   expect_img(img2, cols)
 end
 
+-- Bounds & shrink bounds
+do
+  local a = Image(5, 4, ColorMode.INDEXED)
+  array_to_pixels({ 0, 0, 0, 0, 0,
+                    0, 1, 0, 0, 0,
+                    0, 0, 0, 1, 0,
+                    0, 0, 0, 0, 0, }, a)
+
+  expect_eq(a.bounds, Rectangle(0, 0, 5, 4))
+  expect_eq(a:shrinkBounds(), Rectangle(1, 1, 3, 2))
+  expect_eq(a:shrinkBounds(1), Rectangle(0, 0, 5, 4))
+
+  array_to_pixels({ 2, 2, 2, 2, 2,
+                    0, 1, 0, 0, 2,
+                    0, 0, 0, 1, 2,
+                    0, 0, 0, 0, 2, }, a)
+
+  expect_eq(a:shrinkBounds(), Rectangle(0, 0, 5, 4))
+  expect_eq(a:shrinkBounds(1), Rectangle(0, 0, 5, 4))
+  expect_eq(a:shrinkBounds(2), Rectangle(0, 1, 4, 3))
+end
+
 -- Test v1.2.17 crashes
 do
   local defSpec = ImageSpec{ width=1, height=1, colorMode=ColorMode.RGB }
