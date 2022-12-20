@@ -1235,10 +1235,7 @@ static void ase_file_write_external_files_chunk(
 {
   for (const Tileset* tileset : *sprite->tilesets()) {
     if (!tileset->externalFilename().empty()) {
-      auto id = ++ext_files.lastid;
-      auto fn = tileset->externalFilename();
-      ext_files.to_fn[id] = fn;
-      ext_files.to_id[fn] = id;
+      ext_files.put(tileset->externalFilename());
     }
   }
 
