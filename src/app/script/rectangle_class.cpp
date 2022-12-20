@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 // Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -9,10 +9,12 @@
 #include "config.h"
 #endif
 
+#include "app/script/engine.h"
 #include "app/script/luacpp.h"
 #include "fmt/format.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
+#include "gfx/size.h"
 
 namespace app {
 namespace script {
@@ -92,8 +94,12 @@ int Rectangle_tostring(lua_State* L)
 int Rectangle_contains(lua_State* L)
 {
   const auto a = get_obj<gfx::Rect>(L, 1);
-  const auto b = get_obj<gfx::Rect>(L, 2);
-  lua_pushboolean(L, a->contains(*b));
+  if (const auto b = may_get_obj<gfx::Rect>(L, 2))
+    lua_pushboolean(L, a->contains(*b));
+  else if (const auto b = may_get_obj<gfx::Point>(L, 2))
+    lua_pushboolean(L, a->contains(*b));
+  else
+    lua_pushboolean(L, false);
   return 1;
 }
 
@@ -149,6 +155,20 @@ int Rectangle_get_height(lua_State* L)
   return 1;
 }
 
+int Rectangle_get_origin(lua_State* L)
+{
+  const auto rc = get_obj<gfx::Rect>(L, 1);
+  push_obj(L, rc->origin());
+  return 1;
+}
+
+int Rectangle_get_size(lua_State* L)
+{
+  const auto rc = get_obj<gfx::Rect>(L, 1);
+  push_obj(L, rc->size());
+  return 1;
+}
+
 int Rectangle_set_x(lua_State* L)
 {
   auto rc = get_obj<gfx::Rect>(L, 1);
@@ -177,6 +197,22 @@ int Rectangle_set_height(lua_State* L)
   return 0;
 }
 
+int Rectangle_set_origin(lua_State* L)
+{
+  const auto rc = get_obj<gfx::Rect>(L, 1);
+  const auto pt = convert_args_into_point(L, 2);
+  rc->setOrigin(pt);
+  return 0;
+}
+
+int Rectangle_set_size(lua_State* L)
+{
+  const auto rc = get_obj<gfx::Rect>(L, 1);
+  const auto sz = convert_args_into_size(L, 2);
+  rc->setSize(sz);
+  return 0;
+}
+
 int Rectangle_get_isEmpty(lua_State* L)
 {
   const auto rc = get_obj<gfx::Rect>(L, 1);
@@ -202,6 +238,8 @@ const Property Rectangle_properties[] = {
   { "y", Rectangle_get_y, Rectangle_set_y },
   { "width", Rectangle_get_width, Rectangle_set_width },
   { "height", Rectangle_get_height, Rectangle_set_height },
+  { "origin", Rectangle_get_origin, Rectangle_set_origin },
+  { "size", Rectangle_get_size, Rectangle_set_size },
   { "isEmpty", Rectangle_get_isEmpty, nullptr },
   { nullptr, nullptr, nullptr }
 };

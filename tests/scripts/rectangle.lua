@@ -16,6 +16,8 @@ assert(rc.x == 1)
 assert(rc.y == 2)
 assert(rc.width == 3)
 assert(rc.height == 4)
+assert(rc.origin == Point(1, 2))
+assert(rc.size == Size(3, 4))
 assert(not rc.isEmpty)
 assert("Rectangle{ x=1, y=2, width=3, height=4 }" == tostring(rc))
 
@@ -33,6 +35,18 @@ assert(rc.x == 5)
 assert(rc.y == 6)
 assert(rc.width == 7)
 assert(rc.height == 8)
+
+rc.origin = Point(10, 12)
+assert(rc.x == 10)
+assert(rc.y == 12)
+assert(rc.width == 7)
+assert(rc.height == 8)
+
+rc.size = Size(32, 64)
+assert(rc.x == 10)
+assert(rc.y == 12)
+assert(rc.width == 32)
+assert(rc.height == 64)
 
 rc = Rectangle{x=2, y=3, width=4, height=5}
 assert(rc.x == 2)
