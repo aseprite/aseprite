@@ -1,4 +1,4 @@
--- Copyright (C) 2019  Igara Studio S.A.
+-- Copyright (C) 2019-2022  Igara Studio S.A.
 -- Copyright (C) 2018  David Capello
 --
 -- This file is released under the terms of the MIT license.
@@ -25,10 +25,10 @@ assert(rc2.y == 2)
 assert(rc2.width == 3)
 assert(rc2.height == 4)
 
-rc.x = 5;
-rc.y = 6;
-rc.width = 7;
-rc.height = 8;
+rc.x = 5
+rc.y = 6
+rc.width = 7
+rc.height = 8
 assert(rc.x == 5)
 assert(rc.y == 6)
 assert(rc.width == 7)
