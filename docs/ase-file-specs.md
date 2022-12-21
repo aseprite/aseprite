@@ -251,7 +251,7 @@ Color profile for RGB or grayscale values.
 
 ### External Files Chunk (0x2008)
 
-A list of external files linked with this file. It might be used to
+A list of external files linked with this file can be found in the first frame. It might be used to
 reference external palettes or tilesets.
 
     DWORD       Number of entries
