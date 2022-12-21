@@ -124,6 +124,13 @@ int GraphicsContext_restore(lua_State* L)
   return 0;
 }
 
+int GraphicsContext_clip(lua_State* L)
+{
+  auto gc = get_obj<GraphicsContext>(L, 1);
+  gc->clip();
+  return 0;
+}
+
 int GraphicsContext_strokeRect(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
@@ -254,6 +261,24 @@ int GraphicsContext_cubicTo(lua_State* L)
   return 1;
 }
 
+int GraphicsContext_rect(lua_State* L)
+{
+  auto gc = get_obj<GraphicsContext>(L, 1);
+  const gfx::Rect rc = convert_args_into_rect(L, 2);
+  gc->rect(rc);
+  return 0;
+}
+
+int GraphicsContext_roundedRect(lua_State* L)
+{
+  auto gc = get_obj<GraphicsContext>(L, 1);
+  const gfx::Rect rc = convert_args_into_rect(L, 2);
+  const float rx = lua_tonumber(L, 3);
+  const float ry = (lua_gettop(L) >= 4 ? lua_tonumber(L, 4): rx);
+  gc->roundedRect(rc, rx, ry);
+  return 0;
+}
+
 int GraphicsContext_stroke(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
@@ -333,6 +358,7 @@ const luaL_Reg GraphicsContext_methods[] = {
   { "__gc", GraphicsContext_gc },
   { "save", GraphicsContext_save },
   { "restore", GraphicsContext_restore },
+  { "clip", GraphicsContext_clip },
   { "strokeRect", GraphicsContext_strokeRect },
   { "fillRect", GraphicsContext_fillRect },
   { "fillText", GraphicsContext_fillText },
@@ -345,6 +371,8 @@ const luaL_Reg GraphicsContext_methods[] = {
   { "moveTo", GraphicsContext_moveTo },
   { "lineTo", GraphicsContext_lineTo },
   { "cubicTo", GraphicsContext_cubicTo },
+  { "rect", GraphicsContext_rect },
+  { "roundedRect", GraphicsContext_roundedRect },
   { "stroke", GraphicsContext_stroke },
   { "fill", GraphicsContext_fill },
   { nullptr, nullptr }

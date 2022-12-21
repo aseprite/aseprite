@@ -91,8 +91,18 @@ public:
   void cubicTo(float cp1x, float cp1y, float cp2x, float cp2y, float x, float y) {
     m_path.cubicTo(cp1x, cp1y, cp2x, cp2y, x, y);
   }
+  void rect(const gfx::Rect& rc) {
+    m_path.rect(rc);
+  }
+  void roundedRect(const gfx::Rect& rc, float rx, float ry) {
+    m_path.roundedRect(rc, rx, ry);
+  }
   void stroke();
   void fill();
+
+  void clip() {
+    m_surface->clipPath(m_path);
+  }
 
 private:
   os::SurfaceRef m_surface = nullptr;
