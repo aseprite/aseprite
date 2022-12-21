@@ -60,6 +60,12 @@ assert(rc.y == 7)
 assert(rc.width == 8)
 assert(rc.height == 9)
 
+rc = Rectangle(Point(2, 3), Size(4, 5))
+assert(rc.x == 2)
+assert(rc.y == 3)
+assert(rc.width == 4)
+assert(rc.height == 5)
+
 -- Rectangle:contains
 
 local a = Rectangle{x=2, y=3, width=4, height=5}

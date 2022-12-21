@@ -23,13 +23,13 @@ namespace {
 
 gfx::Rect Rectangle_new(lua_State* L, int index)
 {
-  gfx::Rect rc(0, 0, 0, 0);
   // Copy other rectangle
   if (auto rc2 = may_get_obj<gfx::Rect>(L, index)) {
-    rc = *rc2;
+    return *rc2;
   }
   // Convert { x, y, width, height } into a Rectangle
   else if (lua_istable(L, index)) {
+    gfx::Rect rc(0, 0, 0, 0);
     const int type = lua_getfield(L, index, "x");
     if (VALID_LUATYPE(type)) {
       lua_getfield(L, index, "y");
@@ -53,14 +53,22 @@ gfx::Rect Rectangle_new(lua_State* L, int index)
       rc.h = lua_tointeger(L, -1);
       lua_pop(L, 4);
     }
+    return rc;
   }
-  else {
-    rc.x = lua_tointeger(L, index);
-    rc.y = lua_tointeger(L, index+1);
-    rc.w = lua_tointeger(L, index+2);
-    rc.h = lua_tointeger(L, index+3);
+  else if (index > 0) {
+    if (lua_gettop(L) >= index+1) {
+      const auto pt = may_get_obj<gfx::Point>(L, index);
+      const auto sz = may_get_obj<gfx::Size>(L, index+1);
+      if (pt && sz)
+        return gfx::Rect(*pt, *sz);
+    }
+    return gfx::Rect(lua_tointeger(L, index),
+                     lua_tointeger(L, index + 1),
+                     lua_tointeger(L, index + 2),
+                     lua_tointeger(L, index + 3));
   }
-  return rc;
+  else
+    return gfx::Rect();
 }
 
 int Rectangle_new(lua_State* L)
