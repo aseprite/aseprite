@@ -184,8 +184,14 @@ int GraphicsContext_drawImage(lua_State* L)
       int dh = lua_tointeger(L, 10);
       gc->drawImage(img, gfx::Rect(x, y, w, h), gfx::Rect(dx, dy, dw, dh));
     }
-    else {
-      gc->drawImage(img, x, y);
+    else if (lua_gettop(L) >= 3) {
+      const auto srcRect = may_get_obj<gfx::Rect>(L, 3);
+      const auto dstRect = may_get_obj<gfx::Rect>(L, 4);
+      if (srcRect && dstRect)
+        gc->drawImage(img, *srcRect, *dstRect);
+      else {
+        gc->drawImage(img, x, y);
+      }
     }
   }
   return 0;
