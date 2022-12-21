@@ -70,6 +70,9 @@ bool Canvas::onProcessMessage(ui::Message* msg)
     }
 
     case ui::kMouseDownMessage: {
+      if (!hasCapture())
+        captureMouse();
+
       auto mouseMsg = static_cast<ui::MouseMessage*>(msg);
       MouseDown(mouseMsg);
       break;
@@ -78,6 +81,9 @@ bool Canvas::onProcessMessage(ui::Message* msg)
     case ui::kMouseUpMessage: {
       auto mouseMsg = static_cast<ui::MouseMessage*>(msg);
       MouseUp(mouseMsg);
+
+      if (hasCapture())
+        releaseMouse();
       break;
     }
 
