@@ -35,6 +35,7 @@ protected:
   uint8_t read8();
   uint16_t read16();
   uint32_t read32();
+  uint64_t read64();
   size_t readBytes(uint8_t* buf, size_t n);
 
 private:

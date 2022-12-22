@@ -31,6 +31,8 @@
 #include "zlib.h"
 
 #include <cstdio>
+#include <deque>
+#include <variant>
 
 namespace app {
 
@@ -143,12 +145,16 @@ static void ase_file_write_header_filesize(FILE* f, dio::AsepriteHeader* header)
 static void ase_file_prepare_frame_header(FILE* f, dio::AsepriteFrameHeader* frame_header);
 static void ase_file_write_frame_header(FILE* f, dio::AsepriteFrameHeader* frame_header);
 
-static void ase_file_write_layers(FILE* f, dio::AsepriteFrameHeader* frame_header, const Layer* layer, int child_level);
-static layer_t ase_file_write_cels(FILE* f, dio::AsepriteFrameHeader* frame_header,
+static void ase_file_write_layers(FILE* f, FileOp* fop,
+                                  dio::AsepriteFrameHeader* frame_header,
+                                  const dio::AsepriteExternalFiles& ext_files,
+                                  const Layer* layer, int child_level);
+static layer_t ase_file_write_cels(FILE* f,  FileOp* fop,
+                                   dio::AsepriteFrameHeader* frame_header,
+                                   const dio::AsepriteExternalFiles& ext_files,
                                    const Sprite* sprite, const Layer* layer,
                                    layer_t layer_index,
-                                   const frame_t frame,
-                                   const frame_t firstFrame);
+                                   const frame_t frame);
 
 static void ase_file_write_padding(FILE* f, int bytes);
 static void ase_file_write_string(FILE* f, const std::string& string);
@@ -175,12 +181,18 @@ static void ase_file_write_mask_chunk(FILE* f, dio::AsepriteFrameHeader* frame_h
 #endif
 static void ase_file_write_tags_chunk(FILE* f, dio::AsepriteFrameHeader* frame_header, const Tags* tags,
                                       const frame_t fromFrame, const frame_t toFrame);
-static void ase_file_write_slice_chunks(FILE* f, dio::AsepriteFrameHeader* frame_header, const Slices& slices,
+static void ase_file_write_slice_chunks(FILE* f, FileOp* fop,
+                                        dio::AsepriteFrameHeader* frame_header,
+                                        const dio::AsepriteExternalFiles& ext_files,
+                                        const Slices& slices,
                                         const frame_t fromFrame, const frame_t toFrame);
 static void ase_file_write_slice_chunk(FILE* f, dio::AsepriteFrameHeader* frame_header, Slice* slice,
                                        const frame_t fromFrame, const frame_t toFrame);
-static void ase_file_write_user_data_chunk(FILE* f, dio::AsepriteFrameHeader* frame_header, const UserData* userData);
-static void ase_file_write_external_files_chunk(FILE* f,
+static void ase_file_write_user_data_chunk(FILE* f, FileOp* fop,
+                                           dio::AsepriteFrameHeader* frame_header,
+                                           const dio::AsepriteExternalFiles& ext_files,
+                                           const UserData* userData);
+static void ase_file_write_external_files_chunk(FILE* f, FileOp* fop,
                                                 dio::AsepriteFrameHeader* frame_header,
                                                 dio::AsepriteExternalFiles& ext_files,
                                                const Sprite* sprite);
@@ -193,6 +205,11 @@ static void ase_file_write_tileset_chunk(FILE* f, FileOp* fop,
                                          const dio::AsepriteExternalFiles& ext_files,
                                          const Tileset* tileset,
                                          const tileset_index si);
+static void ase_file_write_properties(FILE* f,
+                                      const UserData::Properties& properties);
+static void ase_file_write_properties_maps(FILE* f, FileOp* fop,
+                                      const dio::AsepriteExternalFiles& ext_files,
+                                      const doc::UserData::PropertiesMaps& propertiesMaps);
 static bool ase_has_groups(LayerGroup* group);
 static void ase_ungroup_all(LayerGroup* group);
 
@@ -351,7 +368,7 @@ bool AseFormat::onSave(FileOp* fop)
 
     if (outputFrame == 0) {
       // Check if we need the "external files" chunk
-      ase_file_write_external_files_chunk(f, &frame_header, ext_files, sprite);
+      ase_file_write_external_files_chunk(f, fop, &frame_header, ext_files, sprite);
 
       // Save color profile in first frame
       if (fop->preserveColorProfile())
@@ -379,7 +396,7 @@ bool AseFormat::onSave(FileOp* fop)
     if (frame == fop->roi().fromFrame()) {
       // Write sprite user data only if needed
       if (!sprite->userData().isEmpty())
-        ase_file_write_user_data_chunk(f, &frame_header, &sprite->userData());
+        ase_file_write_user_data_chunk(f, fop, &frame_header, ext_files, &sprite->userData());
 
       // Write tilesets
       ase_file_write_tileset_chunks(f, fop, &frame_header, ext_files,
@@ -392,7 +409,7 @@ bool AseFormat::onSave(FileOp* fop)
                                   fop->roi().toFrame());
         // Write user data for tags
         for (doc::Tag* tag : sprite->tags()) {
-          ase_file_write_user_data_chunk(f, &frame_header, &(tag->userData()));
+          ase_file_write_user_data_chunk(f, fop, &frame_header, ext_files, &(tag->userData()));
         }
       }
 
@@ -401,19 +418,20 @@ bool AseFormat::onSave(FileOp* fop)
       // before layers so older version don't get confused by the new
       // user data chunks for tags.
       for (Layer* child : sprite->root()->layers())
-        ase_file_write_layers(f, &frame_header, child, 0);
+        ase_file_write_layers(f, fop, &frame_header, ext_files, child, 0);
 
       // Write slice chunks
-      ase_file_write_slice_chunks(f, &frame_header,
+      ase_file_write_slice_chunks(f, fop, &frame_header,
+                                  ext_files,
                                   sprite->slices(),
                                   fop->roi().fromFrame(),
                                   fop->roi().toFrame());
     }
 
     // Write cel chunks
-    ase_file_write_cels(f, &frame_header,
+    ase_file_write_cels(f, fop, &frame_header, ext_files,
                         sprite, sprite->root(),
-                        0, frame, fop->roi().fromFrame());
+                        0, frame);
 
     // Write the frame header
     ase_file_write_frame_header(f, &frame_header);
@@ -541,37 +559,41 @@ static void ase_file_write_frame_header(FILE* f, dio::AsepriteFrameHeader* frame
   fseek(f, end, SEEK_SET);
 }
 
-static void ase_file_write_layers(FILE* f, dio::AsepriteFrameHeader* frame_header, const Layer* layer, int child_index)
+static void ase_file_write_layers(FILE* f, FileOp* fop,
+                                  dio::AsepriteFrameHeader* frame_header,
+                                  const dio::AsepriteExternalFiles& ext_files,
+                                  const Layer* layer, int child_index)
 {
   ase_file_write_layer_chunk(f, frame_header, layer, child_index);
   if (!layer->userData().isEmpty())
-    ase_file_write_user_data_chunk(f, frame_header, &layer->userData());
+    ase_file_write_user_data_chunk(f, fop, frame_header, ext_files, &layer->userData());
 
   if (layer->isGroup()) {
     for (const Layer* child : static_cast<const LayerGroup*>(layer)->layers())
-      ase_file_write_layers(f, frame_header, child, child_index+1);
+      ase_file_write_layers(f, fop, frame_header, ext_files, child, child_index+1);
   }
 }
 
-static layer_t ase_file_write_cels(FILE* f, dio::AsepriteFrameHeader* frame_header,
+static layer_t ase_file_write_cels(FILE* f, FileOp* fop,
+                                   dio::AsepriteFrameHeader* frame_header,
+                                   const dio::AsepriteExternalFiles& ext_files,
                                    const Sprite* sprite, const Layer* layer,
                                    layer_t layer_index,
-                                   const frame_t frame,
-                                   const frame_t firstFrame)
+                                   const frame_t frame)
 {
   if (layer->isImage()) {
     const Cel* cel = layer->cel(frame);
     if (cel) {
       ase_file_write_cel_chunk(f, frame_header, cel,
                                static_cast<const LayerImage*>(layer),
-                               layer_index, sprite, firstFrame);
+                               layer_index, sprite, fop->roi().fromFrame());
 
       if (layer->isReference())
         ase_file_write_cel_extra_chunk(f, frame_header, cel);
 
       if (!cel->link() &&
           !cel->data()->userData().isEmpty()) {
-        ase_file_write_user_data_chunk(f, frame_header,
+        ase_file_write_user_data_chunk(f, fop, frame_header, ext_files,
                                        &cel->data()->userData());
       }
     }
@@ -583,8 +605,8 @@ static layer_t ase_file_write_cels(FILE* f, dio::AsepriteFrameHeader* frame_head
   if (layer->isGroup()) {
     for (const Layer* child : static_cast<const LayerGroup*>(layer)->layers()) {
       layer_index =
-        ase_file_write_cels(f, frame_header, sprite, child,
-                            layer_index, frame, firstFrame);
+        ase_file_write_cels(f, fop, frame_header, ext_files, sprite, child,
+                            layer_index, frame);
     }
   }
 
@@ -603,6 +625,18 @@ static void ase_file_write_string(FILE* f, const std::string& string)
 
   for (size_t c=0; c<string.size(); ++c)
     fputc(string[c], f);
+}
+
+static void ase_file_write_point(FILE* f, const gfx::Point& point)
+{
+  fputl(point.x, f);
+  fputl(point.y, f);
+}
+
+static void ase_file_write_size(FILE* f, const gfx::Size& size)
+{
+  fputl(size.w, f);
+  fputl(size.h, f);
 }
 
 static void ase_file_write_start_chunk(FILE* f, dio::AsepriteFrameHeader* frame_header, int type, dio::AsepriteChunk* chunk)
@@ -1122,7 +1156,10 @@ static void ase_file_write_tags_chunk(FILE* f,
   }
 }
 
-static void ase_file_write_user_data_chunk(FILE* f, dio::AsepriteFrameHeader* frame_header, const UserData* userData)
+static void ase_file_write_user_data_chunk(FILE* f, FileOp* fop,
+                                           dio::AsepriteFrameHeader* frame_header,
+                                           const dio::AsepriteExternalFiles& ext_files,
+                                           const UserData* userData)
 {
   ChunkWriter chunk(f, frame_header, ASE_FILE_CHUNK_USER_DATA);
 
@@ -1131,6 +1168,8 @@ static void ase_file_write_user_data_chunk(FILE* f, dio::AsepriteFrameHeader* fr
     flags |= ASE_USER_DATA_FLAG_HAS_TEXT;
   if (doc::rgba_geta(userData->color()))
     flags |= ASE_USER_DATA_FLAG_HAS_COLOR;
+  if (!userData->propertiesMaps().empty())
+    flags |= ASE_USER_DATA_FLAG_HAS_PROPERTIES;
   fputl(flags, f);
 
   if (flags & ASE_USER_DATA_FLAG_HAS_TEXT)
@@ -1142,9 +1181,15 @@ static void ase_file_write_user_data_chunk(FILE* f, dio::AsepriteFrameHeader* fr
     fputc(doc::rgba_getb(userData->color()), f);
     fputc(doc::rgba_geta(userData->color()), f);
   }
+
+  if (flags & ASE_USER_DATA_FLAG_HAS_PROPERTIES) {
+    ase_file_write_properties_maps(f, fop, ext_files, userData->propertiesMaps());
+  }
 }
 
-static void ase_file_write_slice_chunks(FILE* f, dio::AsepriteFrameHeader* frame_header,
+static void ase_file_write_slice_chunks(FILE* f, FileOp* fop,
+                                        dio::AsepriteFrameHeader* frame_header,
+                                        const dio::AsepriteExternalFiles& ext_files,
                                         const Slices& slices,
                                         const frame_t fromFrame,
                                         const frame_t toFrame)
@@ -1158,7 +1203,7 @@ static void ase_file_write_slice_chunks(FILE* f, dio::AsepriteFrameHeader* frame
                                fromFrame, toFrame);
 
     if (!slice->userData().isEmpty())
-      ase_file_write_user_data_chunk(f, frame_header, &slice->userData());
+      ase_file_write_user_data_chunk(f, fop, frame_header, ext_files, &slice->userData());
   }
 }
 
@@ -1228,15 +1273,64 @@ static void ase_file_write_slice_chunk(FILE* f, dio::AsepriteFrameHeader* frame_
 }
 
 static void ase_file_write_external_files_chunk(
-  FILE* f,
+  FILE* f, FileOp* fop,
   dio::AsepriteFrameHeader* frame_header,
   dio::AsepriteExternalFiles& ext_files,
   const Sprite* sprite)
 {
+  auto putExtentionIds = [](const UserData::PropertiesMaps& propertiesMaps, dio::AsepriteExternalFiles& ext_files) {
+      for (auto propertiesMap : propertiesMaps) {
+        if (!propertiesMap.first.empty())
+          ext_files.put(propertiesMap.first, ASE_EXTERNAL_FILE_EXTENSION);
+      }
+  };
+
   for (const Tileset* tileset : *sprite->tilesets()) {
     if (!tileset->externalFilename().empty()) {
-      ext_files.put(tileset->externalFilename());
+      ext_files.put(tileset->externalFilename(), ASE_EXTERNAL_FILE_TILESET);
     }
+
+    putExtentionIds(tileset->userData().propertiesMaps(), ext_files);
+
+    for (tile_index i=0; i < tileset->size(); ++i) {
+      UserData tileData = tileset->getTileData(i);
+      putExtentionIds(tileData.propertiesMaps(), ext_files);
+    }
+  }
+
+  putExtentionIds(sprite->userData().propertiesMaps(), ext_files);
+
+  for (doc::Tag* tag : sprite->tags()) {
+    putExtentionIds(tag->userData().propertiesMaps(), ext_files);
+  }
+
+  // Go through all the layers collecting all the extension IDs we find
+  std::deque<Layer*> layers(sprite->root()->layers().begin(), sprite->root()->layers().end());
+  while (!layers.empty()) {
+    auto layer = layers.front();
+    layers.pop_front();
+
+    putExtentionIds(layer->userData().propertiesMaps(), ext_files);
+    if (layer->isGroup()) {
+      auto childLayers = static_cast<const LayerGroup*>(layer)->layers();
+      layers.insert(layers.end(), childLayers.begin(), childLayers.end());
+    }
+    else if (layer->isImage()) {
+      for (frame_t frame : fop->roi().selectedFrames()) {
+        const Cel* cel = layer->cel(frame);
+        if (cel && !cel->link()) {
+          putExtentionIds(cel->data()->userData().propertiesMaps(), ext_files);
+        }
+      }
+    }
+  }
+
+  for (Slice* slice : sprite->slices()) {
+    // Skip slices that are outside of the given ROI
+    if (slice->range(fop->roi().fromFrame(), fop->roi().toFrame()).empty())
+      continue;
+
+    putExtentionIds(slice->userData().propertiesMaps(), ext_files);
   }
 
   // No external files to write
@@ -1247,7 +1341,8 @@ static void ase_file_write_external_files_chunk(
   ase_file_write_padding(f, 8);
   for (auto item : ext_files.to_fn) {
     fputl(item.first, f);                  // ID
-    ase_file_write_padding(f, 8);
+    fputc(ext_files.types[item.first], f); // Type
+    ase_file_write_padding(f, 7);
     ase_file_write_string(f, item.second); // Filename
   }
 }
@@ -1261,6 +1356,14 @@ static void ase_file_write_tileset_chunks(FILE* f, FileOp* fop,
   for (const Tileset* tileset : *tilesets) {
     ase_file_write_tileset_chunk(f, fop, frame_header, ext_files,
                                  tileset, si);
+
+    ase_file_write_user_data_chunk(f, fop, frame_header, ext_files, &tileset->userData());
+
+    // Write tile UserData
+    for (tile_index i=0; i < tileset->size(); ++i) {
+      UserData tileData = tileset->getTileData(i);
+      ase_file_write_user_data_chunk(f, fop, frame_header, ext_files, &tileData);
+    }
     ++si;
   }
 }
@@ -1320,6 +1423,127 @@ static void ase_file_write_tileset_chunk(FILE* f, FileOp* fop,
     fputl(end-beg-4, f);          // Save the compressed data length
     fseek(f, end, SEEK_SET);
   }
+}
+
+static void ase_file_write_property_value(FILE* f,
+                                          const UserData::Variant& value)
+{
+  if (const bool* v = std::get_if<bool>(&value)) {
+    fputc(*v, f);
+  }
+  else if (const int8_t* v = std::get_if<int8_t>(&value)) {
+    fputc(*v, f);
+  }
+  else if (const uint8_t* v = std::get_if<uint8_t>(&value)) {
+    fputc(*v, f);
+  }
+  else if (const int16_t* v = std::get_if<int16_t>(&value)) {
+    fputw(*v, f);
+  }
+  else if (const uint16_t* v = std::get_if<uint16_t>(&value)) {
+    fputw(*v, f);
+  }
+  else if (const int32_t* v = std::get_if<int32_t>(&value)) {
+    fputl(*v, f);
+  }
+  else if (const uint32_t* v = std::get_if<uint32_t>(&value)) {
+    fputl(*v, f);
+  }
+  else if (const int64_t* v = std::get_if<int64_t>(&value)) {
+    fputq(*v, f);
+  }
+  else if (const uint64_t* v = std::get_if<uint64_t>(&value)) {
+    fputq(*v, f);
+  }
+  else if (const UserData::Fixed* v = std::get_if<UserData::Fixed>(&value)) {
+    fputl(v->value, f);
+  }
+  else if (const std::string* v = std::get_if<std::string>(&value)) {
+    ase_file_write_string(f, *v);
+  }
+  else if (const gfx::Point* v = std::get_if<gfx::Point>(&value)) {
+    ase_file_write_point(f, *v);
+  }
+  else if (const gfx::Size* v = std::get_if<gfx::Size>(&value)) {
+    ase_file_write_size(f, *v);
+  }
+  else if (const gfx::Rect* v = std::get_if<gfx::Rect>(&value)) {
+    ase_file_write_point(f, v->origin());
+    ase_file_write_size(f, v->size());
+  }
+  else if (const std::vector<UserData::Variant>* v = std::get_if<std::vector<UserData::Variant>>(&value)) {
+    fputl(v->size(), f);
+    const uint16_t type = v->size() == 0 ? 0 : v->front().type();
+    fputw(type, f);
+    for (auto elem : *v) {
+      ase_file_write_property_value(f, elem);
+    }
+  }
+  else if (const UserData::Properties* v = std::get_if<UserData::Properties>(&value)) {
+    ase_file_write_properties(f, *v);
+  }
+}
+
+static void ase_file_write_properties(FILE* f,
+                                      const UserData::Properties& properties)
+{
+  ASSERT(properties.size() > 0);
+
+  fputl(properties.size(), f);
+
+  for (auto property : properties) {
+    const std::string& name = property.first;
+    ase_file_write_string(f, name);
+
+    const UserData::Variant& value = property.second;
+    fputw(value.type(), f);
+
+    ase_file_write_property_value(f, value);
+  }
+}
+
+static void ase_file_write_properties_maps(FILE* f, FileOp* fop,
+                                      const dio::AsepriteExternalFiles& ext_files,
+                                      const doc::UserData::PropertiesMaps& propertiesMaps)
+{
+  uint32_t numMaps = propertiesMaps.size();
+  if (numMaps == 0) return;
+
+  long startPos = ftell(f);
+  // We zero the size in bytes of all properties maps stored in this
+  // chunk for now. (actual value is calculated after serialization
+  // of all properties maps, at which point this field is overwritten)
+  fputl(0, f);
+
+  fputl(numMaps, f);
+  for (auto propertiesMap : propertiesMaps) {
+    const UserData::Properties& properties = propertiesMap.second;
+    // Skip properties map if it doesn't have any property
+    if (properties.size() == 0) continue;
+
+    const std::string& extensionKey = propertiesMap.first;
+    try {
+      uint32_t extensionId = extensionKey == "" ? 0 : ext_files.to_id.at(extensionKey);
+      fputl(extensionId, f);
+    }
+    catch(const std::out_of_range&) {
+      ASSERT(false); // This shouldn't ever happen, but if it does...
+                     // most likely it is because we forgot to add the
+                     // extensionID to the ext_files object. And this
+                     // Could happen if someone adds the possibility to
+                     // store custom properties to some object that
+                     // didn't support it previously.
+      fop->setError("Error writing properties for extension '%s'.\n", extensionKey.c_str());
+      continue;
+    }
+    ase_file_write_properties(f, properties);
+  }
+  long endPos = ftell(f);
+  // We can overwrite the properties maps size now
+  fseek(f, startPos, SEEK_SET);
+  fputl(endPos-startPos, f);
+  // Let's go back to where we were
+  fseek(f, endPos, SEEK_SET);
 }
 
 static bool ase_has_groups(LayerGroup* group)
