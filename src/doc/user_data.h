@@ -40,7 +40,11 @@ namespace doc {
                                         gfx::Size,
                                         gfx::Rect,
                                         std::vector<Variant>,
-                                        Properties>{};
+                                        Properties> {
+      const uint16_t type() const {
+        return index() + 1;
+      }
+    };
     using PropertiesMaps = std::map<std::string, Properties>;
 
     UserData() : m_color(0) {
