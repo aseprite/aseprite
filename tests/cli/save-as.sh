@@ -254,3 +254,16 @@ expect_rendered_layers(img("g3-cc"), g3, { "c/c" })
 EOF
 $ASEPRITE -b -script "$d/compare.lua" || exit 1
 fi
+
+# Test --save-as {title}
+# https://github.com/aseprite/aseprite/issues/2442
+# https://community.aseprite.org/t/16491
+
+d=$t/save-as-title
+$ASEPRITE -b sprites/groups2.aseprite -save-as "$d/{title}.png" || exit 1
+$ASEPRITE -b sprites/groups3abc.aseprite -save-as "$d/{title}.png" || exit 1
+$ASEPRITE -b sprites/link.aseprite -save-as "$d/{title}{frame}.png" || exit 1
+expect "groups2.png
+groups3abc.png
+link0.png
+link1.png" "list_files $d"
