@@ -400,3 +400,28 @@ for fr=1,#restoredSprite.frames do
 end
 EOF
 $ASEPRITE -b -script "$d/check.lua" || exit 1
+
+# Test solution to #1514 using new --tagname-format
+d=$t/issue-1514
+$ASEPRITE -b "sprites/1empty3.aseprite" "sprites/tags3.aseprite" \
+	  -data "$d/atlas.json" \
+	  -format json-array \
+	  -sheet "$d/atlas.png" \
+	  -list-tags -tagname-format="{title}-{tag}" || exit 1
+cat >$d/compare.lua <<EOF
+local json = dofile('third_party/json/json.lua')
+local data = json.decode(io.open('$d/atlas.json'):read('a'))
+assert(#data.meta.frameTags == 5)
+
+local tags = {}
+for i,t in ipairs(data.meta.frameTags) do
+  tags[t.name] = t
+end
+
+t = tags["1empty3-a"]      assert(t.from == 0 and t.to == 1)
+t = tags["1empty3-b"]      assert(t.from == 2 and t.to == 2)
+t = tags["tags3-forward"]  assert(t.from == 0 and t.to == 3)
+t = tags["tags3-reverse"]  assert(t.from == 4 and t.to == 7)
+t = tags["tags3-pingpong"] assert(t.from == 8 and t.to == 11)
+EOF
+$ASEPRITE -b -script "$d/compare.lua" || exit 1
