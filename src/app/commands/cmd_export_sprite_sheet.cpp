@@ -989,8 +989,7 @@ private:
     bool state = dataEnabled()->isSelected();
     dataFilename()->setVisible(state);
     dataMeta()->setVisible(state);
-    dataFilenameFormatPlaceholder()->setVisible(state);
-    dataTagnameFormatPlaceholder()->setVisible(state);
+    dataFormatsPlaceholder()->setVisible(state);
   }
 
   void onGenTimerTick() {
