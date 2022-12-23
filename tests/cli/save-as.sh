@@ -267,3 +267,12 @@ expect "groups2.png
 groups3abc.png
 link0.png
 link1.png" "list_files $d"
+
+d=$t/save-as-title-multiplefiles
+$ASEPRITE -b sprites/groups2.aseprite \
+             sprites/groups3abc.aseprite \
+             sprites/link.aseprite -save-as "$d/{title}-{frame1}.png" || exit 1
+expect "groups2-1.png
+groups3abc-1.png
+link-1.png
+link-2.png" "list_files $d"

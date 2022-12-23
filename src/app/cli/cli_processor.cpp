@@ -403,9 +403,7 @@ int CliProcessor::process(Context* ctx)
 
             // Automatic --filename-format
             // in case the output filename already contains template elements.
-            bool hasTemplateElement = is_template_in_filename(fn);
-
-            if (hasTemplateElement) {
+            if (is_template_in_filename(fn)) {
               cof.filenameFormat = fn;
               // Automatic --split-layer, --split-tags, --split-slices
               // in case the output filename already contains {layer},
@@ -420,13 +418,21 @@ int CliProcessor::process(Context* ctx)
                 cof.splitTags = (cof.splitTags || hasTagTemplate);
                 cof.splitSlices = (cof.splitSlices || hasSliceTemplate);
               }
+
+              // Save all documents
+              for (auto doc : ctx->documents()) {
+                ctx->setActiveDocument(doc);
+                cof.filename = doc->filename();
+                cof.document = doc;
+                saveFile(ctx, cof);
+              }
+              ctx->setActiveDocument(lastDoc);
             }
             else {
               cof.filename = fn;
+              cof.document = lastDoc;
+              saveFile(ctx, cof);
             }
-
-            cof.document = lastDoc;
-            saveFile(ctx, cof);
           }
           else
             console.printf("A document is needed before --save-as argument\n");
