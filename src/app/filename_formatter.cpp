@@ -217,4 +217,9 @@ std::string get_default_filename_format_for_sheet(
   return format;
 }
 
+std::string get_default_tagname_format_for_sheet()
+{
+  return "{tag}";
+}
+
 } // namespace app

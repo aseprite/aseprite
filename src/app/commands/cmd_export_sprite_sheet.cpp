@@ -974,7 +974,15 @@ private:
   }
 
   void updateDefaultDataTagnameFormat() {
-    m_tagnameFormatDefault = "{tag}";
+    m_tagnameFormatDefault =
+      get_default_tagname_format_for_sheet();
+
+    if (m_tagnameFormat.empty()) {
+      dataTagnameFormat()->setText(m_tagnameFormatDefault);
+    }
+    else {
+      dataTagnameFormat()->setText(m_tagnameFormat);
+    }
   }
 
   void updateDataFields() {

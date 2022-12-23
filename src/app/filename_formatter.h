@@ -114,6 +114,8 @@ namespace app {
     const bool hasLayer,
     const bool hasTag);
 
+  std::string get_default_tagname_format_for_sheet();
+
 } // namespace app
 
 #endif
