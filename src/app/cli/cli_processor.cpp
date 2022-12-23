@@ -437,7 +437,7 @@ int CliProcessor::process(Context* ctx)
             ASSERT(cof.document == lastDoc);
 
             std::string filename = value.value();
-            m_delegate->loadPalette(ctx, cof, filename);
+            m_delegate->loadPalette(ctx, filename);
           }
           else {
             console.printf("You need to load a document to change its palette with --palette\n");

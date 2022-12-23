@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -167,14 +167,9 @@ void PreviewCliDelegate::saveFile(Context* ctx, const CliOpenFile& cof)
 }
 
 void PreviewCliDelegate::loadPalette(Context* ctx,
-                                     const CliOpenFile& cof,
                                      const std::string& filename)
 {
-  ASSERT(cof.document);
-  ASSERT(cof.document->sprite());
-
   std::cout << "- Load palette:\n"
-            << "  - Sprite: '" << cof.filename << "'\n"
             << "  - Palette: '" << filename << "'\n";
 }
 

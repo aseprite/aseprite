@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2022  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -103,7 +103,6 @@ void DefaultCliDelegate::saveFile(Context* ctx, const CliOpenFile& cof)
 }
 
 void DefaultCliDelegate::loadPalette(Context* ctx,
-                                     const CliOpenFile& cof,
                                      const std::string& filename)
 {
   std::unique_ptr<doc::Palette> palette(load_palette(filename.c_str()));
