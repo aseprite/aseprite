@@ -375,7 +375,7 @@ Engine::Engine()
   lua_newtable(L);
   lua_pushvalue(L, -1);
   lua_setglobal(L, "MouseCursor");
-  setfield_integer(L, "HIDDEN",   (int)ui::kNoCursor);
+  setfield_integer(L, "NONE",   (int)ui::kNoCursor);
   setfield_integer(L, "ARROW", (int)ui::kArrowCursor);
   setfield_integer(L, "CROSSHAIR", (int)ui::kCrosshairCursor);
   setfield_integer(L, "POINTER", (int)ui::kHandCursor);
