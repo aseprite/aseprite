@@ -9,6 +9,7 @@ dofile('./test_utils.lua')
 local rgba = app.pixelColor.rgba
 
 local a = Image(32, 64)
+assert(a.id > 0)
 assert(a.width == 32)
 assert(a.height == 64)
 assert(a.colorMode == ColorMode.RGB) -- RGB by default
@@ -50,6 +51,7 @@ do
   assert(c.width == d.width)
   assert(c.height == d.height)
   assert(c.colorMode == d.colorMode)
+  assert(c.id ~= d.id) -- The clone must have different ID
 
   -- Get RGB pixels
   for y=0,c.height-1 do
@@ -75,6 +77,9 @@ end
 do
   local spr = Sprite(256, 256)
   local image = app.site.image
+  local imageID = image.id
+  assert(image.id > 0)
+  assert(image.version == 0)
   local copy = image:clone()
   assert(image:getPixel(0, 0) == 0)
   for y=0,copy.height-1 do
@@ -83,9 +88,12 @@ do
     end
   end
   image:putImage(copy)
+  assert(image.version == 1)
   assert(image:getPixel(0, 0) == rgba(255, 255, 0, 255))
   assert(image:getPixel(255, 255) == rgba(0, 0, 0, 255))
   app.undo()
+  assert(image.version == 2)
+  assert(image.id == imageID) -- the ID doesn't change
   assert(image:getPixel(0, 0) == rgba(0, 0, 0, 0))
   assert(image:getPixel(255, 255) == rgba(0, 0, 0, 0))
 end

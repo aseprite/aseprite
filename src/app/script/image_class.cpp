@@ -532,6 +532,20 @@ int Image_shrinkBounds(lua_State* L)
   return 1;
 }
 
+int Image_get_id(lua_State* L)
+{
+  const auto obj = get_obj<ImageObj>(L, 1);
+  lua_pushinteger(L, obj->imageId);
+  return 1;
+}
+
+int Image_get_version(lua_State* L)
+{
+  const auto obj = get_obj<ImageObj>(L, 1);
+  lua_pushinteger(L, obj->image(L)->version());
+  return 1;
+}
+
 int Image_get_rowStride(lua_State* L)
 {
   const auto obj = get_obj<ImageObj>(L, 1);
@@ -625,6 +639,8 @@ const luaL_Reg Image_methods[] = {
 };
 
 const Property Image_properties[] = {
+  { "id", Image_get_id, nullptr },
+  { "version", Image_get_version, nullptr },
   { "rowStride", Image_get_rowStride, nullptr },
   { "bytes", Image_get_bytes, Image_set_bytes },
   { "width", Image_get_width, nullptr },
