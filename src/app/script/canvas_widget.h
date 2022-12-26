@@ -9,6 +9,7 @@
 #pragma once
 
 #include "os/surface.h"
+#include "ui/cursor_type.h"
 #include "ui/widget.h"
 
 namespace app {
@@ -26,6 +27,10 @@ public:
 
   void callPaint();
 
+  void setMouseCursor(const ui::CursorType cursor) {
+    m_cursorType = cursor;
+  }
+
   obs::signal<void(GraphicsContext&)> Paint;
   obs::signal<void(ui::MouseMessage*)> MouseMove;
   obs::signal<void(ui::MouseMessage*)> MouseDown;
@@ -38,6 +43,7 @@ private:
   void onPaint(ui::PaintEvent& ev) override;
 
   os::SurfaceRef m_surface;
+  ui::CursorType m_cursorType = ui::kArrowCursor;
 };
 
 } // namespace script

@@ -13,6 +13,7 @@
 #include "ui/paint_event.h"
 #include "ui/resize_event.h"
 #include "ui/size_hint_event.h"
+#include "ui/system.h"
 
 #ifdef ENABLE_UI
 
@@ -62,6 +63,10 @@ void Canvas::onInitTheme(ui::InitThemeEvent& ev)
 bool Canvas::onProcessMessage(ui::Message* msg)
 {
   switch (msg->type()) {
+
+    case ui::kSetCursorMessage:
+      ui::set_mouse_cursor(m_cursorType);
+      return true;
 
     case ui::kMouseMoveMessage: {
       auto mouseMsg = static_cast<ui::MouseMessage*>(msg);

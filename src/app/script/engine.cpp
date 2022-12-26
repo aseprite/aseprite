@@ -30,6 +30,7 @@
 #include "doc/blend_mode.h"
 #include "doc/color_mode.h"
 #include "filters/target.h"
+#include "ui/cursor_type.h"
 #include "ui/mouse_button.h"
 
 #include <fstream>
@@ -369,6 +370,29 @@ Engine::Engine()
   setfield_integer(L, "RGB",   TARGET_RED_CHANNEL | TARGET_GREEN_CHANNEL | TARGET_BLUE_CHANNEL);
   setfield_integer(L, "RGBA",   TARGET_RED_CHANNEL | TARGET_GREEN_CHANNEL | TARGET_BLUE_CHANNEL | TARGET_ALPHA_CHANNEL);
   setfield_integer(L, "GRAYA",   TARGET_GRAY_CHANNEL | TARGET_ALPHA_CHANNEL);
+  lua_pop(L, 1);
+
+  lua_newtable(L);
+  lua_pushvalue(L, -1);
+  lua_setglobal(L, "MouseCursor");
+  setfield_integer(L, "HIDDEN",   (int)ui::kNoCursor);
+  setfield_integer(L, "ARROW", (int)ui::kArrowCursor);
+  setfield_integer(L, "CROSSHAIR", (int)ui::kCrosshairCursor);
+  setfield_integer(L, "POINTER", (int)ui::kHandCursor);
+  setfield_integer(L, "NOT_ALLOWED", (int)ui::kForbiddenCursor);
+  setfield_integer(L, "GRAB", (int)ui::kScrollCursor);
+  setfield_integer(L, "GRABBING", (int)ui::kScrollCursor);
+  setfield_integer(L, "MOVE", (int)ui::kMoveCursor);
+  setfield_integer(L, "NS_RESIZE", (int)ui::kSizeNSCursor);
+  setfield_integer(L, "WE_RESIZE", (int)ui::kSizeWECursor);
+  setfield_integer(L, "N_RESIZE", (int)ui::kSizeNCursor);
+  setfield_integer(L, "NE_RESIZE", (int)ui::kSizeNECursor);
+  setfield_integer(L, "E_RESIZE", (int)ui::kSizeECursor);
+  setfield_integer(L, "SE_RESIZE", (int)ui::kSizeSECursor);
+  setfield_integer(L, "S_RESIZE", (int)ui::kSizeSCursor);
+  setfield_integer(L, "SW_RESIZE", (int)ui::kSizeSWCursor);
+  setfield_integer(L, "W_RESIZE", (int)ui::kSizeWCursor);
+  setfield_integer(L, "NW_RESIZE", (int)ui::kSizeNWCursor);
   lua_pop(L, 1);
 
   lua_newtable(L);

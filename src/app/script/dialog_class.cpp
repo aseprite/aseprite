@@ -35,6 +35,7 @@
 #include "ui/message.h"
 #include "ui/separator.h"
 #include "ui/slider.h"
+#include "ui/system.h"
 #include "ui/window.h"
 
 #include <map>
@@ -1133,6 +1134,15 @@ int Dialog_modify(lua_State* L)
     if (auto p = lua_tostring(L, -1)) {
       if (auto filenameField = dynamic_cast<FilenameField*>(widget)) {
         filenameField->setFilename(p);
+      }
+    }
+    lua_pop(L, 1);
+
+    type = lua_getfield(L, 2, "mouseCursor");
+    if (type != LUA_TNIL) {
+      if (auto canvas = dynamic_cast<Canvas*>(widget)) {
+        auto cursor = (ui::CursorType)lua_tointeger(L, -1);
+        canvas->setMouseCursor(cursor);
       }
     }
     lua_pop(L, 1);
