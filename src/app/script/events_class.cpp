@@ -12,6 +12,7 @@
 #include "app/context.h"
 #include "app/context_observer.h"
 #include "app/doc.h"
+#include "app/doc_event.h"
 #include "app/doc_undo.h"
 #include "app/doc_undo_observer.h"
 #include "app/pref/preferences.h"
@@ -209,7 +210,12 @@ class SpriteEvents : public Events
                    , public DocUndoObserver
                    , public DocObserver {
 public:
-  enum : EventType { Unknown = -1, Change, FilenameChange };
+  enum : EventType {
+    Unknown = -1,
+    Change,
+    FilenameChange,
+    RemapTileset,
+  };
 
   SpriteEvents(const Sprite* sprite)
     : m_spriteId(sprite->id()) {
@@ -235,6 +241,8 @@ public:
       return Change;
     else if (std::strcmp(eventName, "filenamechange") == 0)
       return FilenameChange;
+    else if (std::strcmp(eventName, "remaptileset") == 0)
+      return RemapTileset;
     else
       return Unknown;
   }
@@ -251,6 +259,12 @@ public:
 
   void onFileNameChanged(Doc* doc) override {
     call(FilenameChange);
+  }
+
+  void onRemapTileset(DocEvent& ev, const doc::Remap& remap) override {
+    const bool fromUndo = (ev.document()->transaction() == nullptr);
+    call(RemapTileset, { { "remap", std::any(&remap) },
+                         { "fromUndo", fromUndo } });
   }
 
   // DocUndoObserver impl

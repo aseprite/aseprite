@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2022  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -30,6 +30,7 @@ namespace cmd {
     }
 
   private:
+    void remapTileset(Tileset* tileset, const Remap& remap);
     void incrementVersions(Tileset* tileset);
 
     Remap m_remap;

@@ -9,6 +9,10 @@
 #define APP_DOC_OBSERVER_H_INCLUDED
 #pragma once
 
+namespace doc {
+  class Remap;
+}
+
 namespace app {
   class Doc;
   class DocEvent;
@@ -91,6 +95,9 @@ namespace app {
 
     // The collapsed/expanded flag of a specific layer changed.
     virtual void onLayerCollapsedChanged(DocEvent& ev) { }
+
+    // The tileset was remapped (e.g. when tiles are re-ordered).
+    virtual void onRemapTileset(DocEvent& ev, const doc::Remap& remap) { }
 
   };
 
