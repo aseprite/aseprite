@@ -113,6 +113,8 @@ void push_value_to_lua(lua_State* L, const std::any& value) {
     push_value_to_lua(L, *v);
   else if (auto v = std::any_cast<const doc::Remap*>(&value))
     push_value_to_lua(L, **v);
+  else if (auto v = std::any_cast<const doc::Tileset*>(&value))
+    push_tileset(L, *v);
   else {
     ASSERT(false);
     throw std::runtime_error("Cannot convert type inside std::any");

@@ -114,7 +114,7 @@ void register_tileset_class(lua_State* L)
   REG_CLASS_PROPERTIES(L, Tileset);
 }
 
-void push_tileset(lua_State* L, Tileset* tileset)
+void push_tileset(lua_State* L, const Tileset* tileset)
 {
   push_docobj(L, tileset);
 }

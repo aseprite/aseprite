@@ -23,7 +23,7 @@ template <typename T> void push_docobj(lua_State* L, doc::ObjectId id) {
   lua_setmetatable(L, -2);
 }
 
-template <typename T> void push_docobj(lua_State* L, T* obj) {
+template <typename T> void push_docobj(lua_State* L, const T* obj) {
   push_docobj<T>(L, obj->id());
 }
 

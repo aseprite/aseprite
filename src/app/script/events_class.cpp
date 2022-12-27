@@ -264,6 +264,7 @@ public:
   void onRemapTileset(DocEvent& ev, const doc::Remap& remap) override {
     const bool fromUndo = (ev.document()->transaction() == nullptr);
     call(RemapTileset, { { "remap", std::any(&remap) },
+                         { "tileset", std::any((const doc::Tileset*)ev.tileset()) },
                          { "fromUndo", fromUndo } });
   }
 
