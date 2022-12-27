@@ -105,14 +105,14 @@ template<>
 void push_value_to_lua(lua_State* L, const std::any& value) {
   if (!value.has_value())
     lua_pushnil(L);
-  else if (const bool* v = std::any_cast<bool>(&value))
+  else if (auto v = std::any_cast<bool>(&value))
     push_value_to_lua(L, *v);
-  else if (const int* v = std::any_cast<int>(&value))
+  else if (auto v = std::any_cast<int>(&value))
     push_value_to_lua(L, *v);
-  else if (const std::string* v = std::any_cast<std::string>(&value))
+  else if (auto v = std::any_cast<std::string>(&value))
     push_value_to_lua(L, *v);
-  else if (const doc::Remap* v = std::any_cast<const doc::Remap*>(value))
-    push_value_to_lua(L, *v);
+  else if (auto v = std::any_cast<const doc::Remap*>(&value))
+    push_value_to_lua(L, **v);
   else {
     ASSERT(false);
     throw std::runtime_error("Cannot convert type inside std::any");
