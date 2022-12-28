@@ -31,6 +31,17 @@ inline doc::WithUserData* get_WithUserData<doc::Cel>(doc::Cel* obj) {
 }
 
 template<typename T>
+int UserData_get_properties(lua_State* L) {
+  auto obj = get_docobj<T>(L, 1);
+  UserData ud = get_WithUserData<T>(obj)->userData();
+  if (!ud.propertiesMaps().empty())
+    push_properties_maps(L, ud.propertiesMaps());
+  else
+    lua_pushnil(L);
+  return 1;
+}
+
+template<typename T>
 int UserData_get_text(lua_State* L) {
   auto obj = get_docobj<T>(L, 1);
   lua_pushstring(L, get_WithUserData<T>(obj)->userData().text().c_str());

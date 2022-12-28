@@ -100,6 +100,7 @@ const Property Tileset_properties[] = {
   { "baseIndex", Tileset_get_baseIndex, Tileset_set_baseIndex },
   { "color", UserData_get_color<Tileset>, UserData_set_color<Tileset> },
   { "data", UserData_get_text<Tileset>, UserData_set_text<Tileset> },
+  { "properties", UserData_get_properties<Tileset>, nullptr },
   { nullptr, nullptr, nullptr }
 };
 

@@ -190,6 +190,7 @@ if(ENABLE_SCRIPTING)
     script/pixel_color_object.cpp
     script/plugin_class.cpp
     script/point_class.cpp
+    script/properties_class.cpp
     script/preferences_object.cpp
     script/range_class.cpp
     script/rectangle_class.cpp
