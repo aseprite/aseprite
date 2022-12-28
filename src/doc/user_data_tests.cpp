@@ -27,7 +27,7 @@ TEST(CustomProperties, SimpleProperties)
   data.properties()["char"] = Variant{uint8_t('A')};
   data.properties()["number16"] = Variant{int16_t(-1024)};
   data.properties()["number32"] = Variant{int32_t(-5628102)};
-  data.properties()["text"] = Variant{"this is some text"};
+  data.properties()["text"] = Variant{std::string("this is some text")};
   EXPECT_TRUE(data.properties().size() == 5);
 
   bool* boolean = std::get_if<bool>(&data.properties()["boolean"]);
@@ -103,7 +103,7 @@ TEST(CustomProperties, ComplexProperties)
   data.properties()["object"] = Variant{
     Properties{
       {"id", Variant{uint16_t(400)}},
-      {"color", Variant{"red"}},
+      {"color", Variant{std::string("red")}},
       {"size", Variant{gfx::Size{25,65}}}
     }
   };
@@ -131,7 +131,6 @@ TEST(CustomProperties, ComplexProperties)
   data.properties().erase("rect");
   data.properties().erase("list");
   data.properties().erase("point");
-  data.properties().erase("text");
   data.properties().erase("size");
   data.properties().erase("object");
   data.properties().erase("fixed");
@@ -148,7 +147,7 @@ TEST(ExtensionProperties, SimpleProperties)
   data.properties("someExtensionId")["char"] = Variant{uint8_t('A')};
   data.properties("someExtensionId")["number16"] = Variant{int16_t(-1024)};
   data.properties()["number32"] = Variant{int32_t(-5628102)};
-  data.properties()["text"] = Variant{"this is some text"};
+  data.properties()["text"] = Variant{std::string("this is some text")};
   EXPECT_TRUE(data.properties("someExtensionId").size() == 3);
   EXPECT_TRUE(data.properties().size() == 2);
 
