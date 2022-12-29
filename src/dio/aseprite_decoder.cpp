@@ -59,12 +59,12 @@ bool AsepriteDecoder::decode()
 
   // Create the new sprite
   std::unique_ptr<doc::Sprite> sprite(
-    new doc::Sprite(doc::ImageSpec(header.depth == 32 ? doc::ColorMode::RGB:
-                                   header.depth == 16 ? doc::ColorMode::GRAYSCALE:
-                                                        doc::ColorMode::INDEXED,
-                                   header.width,
-                                   header.height),
-                    header.ncolors));
+    std::make_unique<doc::Sprite>(doc::ImageSpec(header.depth == 32 ? doc::ColorMode::RGB:
+                                                 header.depth == 16 ? doc::ColorMode::GRAYSCALE:
+                                                                      doc::ColorMode::INDEXED,
+                                                 header.width,
+                                                 header.height),
+                                  header.ncolors));
 
   // Set frames and speed
   sprite->setTotalFrames(doc::frame_t(header.frames));
@@ -784,7 +784,7 @@ doc::Cel* AsepriteDecoder::readCelChunk(doc::Sprite* sprite,
             break;
         }
 
-        cel.reset(new doc::Cel(frame, image));
+        cel = std::make_unique<doc::Cel>(frame, image);
         cel->setPosition(x, y);
         cel->setOpacity(opacity);
       }
@@ -825,7 +825,7 @@ doc::Cel* AsepriteDecoder::readCelChunk(doc::Sprite* sprite,
         doc::ImageRef image(doc::Image::create(pixelFormat, w, h));
         read_compressed_image(f(), delegate(), image.get(), header, chunk_end);
 
-        cel.reset(new doc::Cel(frame, image));
+        cel = std::make_unique<doc::Cel>(frame, image);
         cel->setPosition(x, y);
         cel->setOpacity(opacity);
       }
@@ -870,7 +870,7 @@ doc::Cel* AsepriteDecoder::readCelChunk(doc::Sprite* sprite,
             return doc::tile_geti(tile) >= tilesetSize ? doc::notile : tile;
           });
 
-        cel.reset(new doc::Cel(frame, image));
+        cel = std::make_unique<doc::Cel>(frame, image);
         cel->setPosition(x, y);
         cel->setOpacity(opacity);
       }
@@ -1075,7 +1075,7 @@ doc::Slice* AsepriteDecoder::readSliceChunk(doc::Slices& slices)
   read32();                        // 4 bytes reserved
   std::string name = readString(); // Name
 
-  std::unique_ptr<doc::Slice> slice(new doc::Slice);
+  std::unique_ptr<doc::Slice> slice(std::make_unique<doc::Slice>());
   slice->setName(name);
 
   // For each key
