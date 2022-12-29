@@ -92,6 +92,18 @@ bool Canvas::onProcessMessage(ui::Message* msg)
       break;
     }
 
+    case ui::kMouseWheelMessage: {
+      auto mouseMsg = static_cast<ui::MouseMessage*>(msg);
+      Wheel(mouseMsg);
+      break;
+    }
+
+    case ui::kTouchMagnifyMessage: {
+      auto touchMsg = static_cast<ui::TouchMessage*>(msg);
+      TouchMagnify(touchMsg);
+      break;
+    }
+
   }
   return ui::Widget::onProcessMessage(msg);
 }

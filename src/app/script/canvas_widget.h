@@ -12,6 +12,10 @@
 #include "ui/cursor_type.h"
 #include "ui/widget.h"
 
+namespace ui {
+  class TouchMessage;
+}
+
 namespace app {
 namespace script {
 
@@ -35,6 +39,8 @@ public:
   obs::signal<void(ui::MouseMessage*)> MouseMove;
   obs::signal<void(ui::MouseMessage*)> MouseDown;
   obs::signal<void(ui::MouseMessage*)> MouseUp;
+  obs::signal<void(ui::MouseMessage*)> Wheel;
+  obs::signal<void(ui::TouchMessage*)> TouchMagnify;
 
 private:
   void onInitTheme(ui::InitThemeEvent& ev) override;

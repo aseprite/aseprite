@@ -926,6 +926,7 @@ int Dialog_canvas(lua_State* L)
       }
       lua_pop(L, 1);
 
+      // Auxiliary callbacks used in Canvas events
       auto mouseCallback =
         [](lua_State* L, ui::MouseMessage* msg) {
           ASSERT(msg->recipient());
@@ -940,6 +941,33 @@ int Dialog_canvas(lua_State* L)
 
           lua_pushinteger(L, int(msg->button()));
           lua_setfield(L, -2, "button");
+
+          lua_pushnumber(L, msg->pressure());
+          lua_setfield(L, -2, "pressure");
+
+          if (msg->type() == kMouseWheelMessage) {
+            lua_pushnumber(L, msg->wheelDelta().x);
+            lua_setfield(L, -2, "deltaX");
+
+            lua_pushnumber(L, msg->wheelDelta().y);
+            lua_setfield(L, -2, "deltaY");
+          }
+        };
+
+      auto touchCallback =
+        [](lua_State* L, ui::TouchMessage* msg) {
+          ASSERT(msg->recipient());
+          if (!msg->recipient())
+            return;
+
+          lua_pushinteger(L, msg->position().x - msg->recipient()->bounds().x);
+          lua_setfield(L, -2, "x");
+
+          lua_pushinteger(L, msg->position().y - msg->recipient()->bounds().y);
+          lua_setfield(L, -2, "y");
+
+          lua_pushnumber(L, msg->magnification());
+          lua_setfield(L, -2, "magnification");
         };
 
       type = lua_getfield(L, 2, "onmousemove");
@@ -957,6 +985,18 @@ int Dialog_canvas(lua_State* L)
       type = lua_getfield(L, 2, "onmouseup");
       if (type == LUA_TFUNCTION) {
         Dialog_connect_signal(L, 1, widget->MouseUp, mouseCallback);
+      }
+      lua_pop(L, 1);
+
+      type = lua_getfield(L, 2, "onwheel");
+      if (type == LUA_TFUNCTION) {
+        Dialog_connect_signal(L, 1, widget->Wheel, mouseCallback);
+      }
+      lua_pop(L, 1);
+
+      type = lua_getfield(L, 2, "ontouchmagnify");
+      if (type == LUA_TFUNCTION) {
+        Dialog_connect_signal(L, 1, widget->TouchMagnify, touchCallback);
       }
       lua_pop(L, 1);
     }
