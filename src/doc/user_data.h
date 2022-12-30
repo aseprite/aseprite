@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2022 Igara Studio S.A.
 // Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -15,6 +16,7 @@
 #include "gfx/rect.h"
 
 #include <map>
+#include <stdexcept>
 #include <string>
 #include <variant>
 #include <vector>
@@ -26,26 +28,40 @@ namespace doc {
     struct Fixed {
       fixmath::fixed value;
     };
-    struct VariantStruct;
-    using Variant = VariantStruct;
+    struct Variant;
+    using Vector = std::vector<Variant>;
     using Properties = std::map<std::string, Variant>;
-    struct VariantStruct : std::variant<bool,
-                                        int8_t, uint8_t,
-                                        int16_t, uint16_t,
-                                        int32_t, uint32_t,
-                                        int64_t, uint64_t,
-                                        Fixed,
-                                        std::string,
-                                        gfx::Point,
-                                        gfx::Size,
-                                        gfx::Rect,
-                                        std::vector<Variant>,
-                                        Properties>{
+    using PropertiesMaps = std::map<std::string, Properties>;
+    using VariantBase = std::variant<bool,
+                                     int8_t, uint8_t,
+                                     int16_t, uint16_t,
+                                     int32_t, uint32_t,
+                                     int64_t, uint64_t,
+                                     Fixed,
+                                     std::string,
+                                     gfx::Point,
+                                     gfx::Size,
+                                     gfx::Rect,
+                                     Vector,
+                                     Properties>;
+
+    struct Variant : public VariantBase {
+      Variant() = default;
+      Variant(const Variant& v) = default;
+
+      template<typename T>
+      Variant(T&& v) : VariantBase(std::forward<T>(v)) { }
+
+      template<typename T>
+      Variant& operator=(T&& v) {
+        VariantBase::operator=(std::forward<T>(v));
+        return *this;
+      }
+
       const uint16_t type() const {
         return index() + 1;
       }
     };
-    using PropertiesMaps = std::map<std::string, Properties>;
 
     UserData() : m_color(0) {
     }
@@ -58,7 +74,7 @@ namespace doc {
     const std::string& text() const { return m_text; }
     color_t color() const { return m_color; }
     const PropertiesMaps& propertiesMaps() const { return m_propertiesMaps; }
-    Properties& properties() { return properties(""); }
+    Properties& properties() { return properties(std::string()); }
     Properties& properties(const std::string& groupKey) { return m_propertiesMaps[groupKey]; }
 
     void setText(const std::string& text) { m_text = text; }
@@ -78,6 +94,26 @@ namespace doc {
     color_t m_color;
     PropertiesMaps m_propertiesMaps;
   };
+
+  // macOS 10.9 C++ runtime doesn't support std::get<T>(value)
+  // directly and we have to use std::get_if<T>(value)
+  //
+  // TODO replace this with std::get() in the future when we drop macOS 10.9 support
+  template<typename T>
+  inline const T& get_value(const UserData::Variant& variant) {
+    const T* value = std::get_if<T>(&variant);
+    if (value == nullptr)
+      throw std::runtime_error("bad_variant_access");
+    return *value;
+  }
+
+  template<typename T>
+  inline T& get_value(UserData::Variant& variant) {
+    T* value = std::get_if<T>(&variant);
+    if (value == nullptr)
+      throw std::runtime_error("bad_variant_access");
+    return *value;
+  }
 
 } // namespace doc
 
