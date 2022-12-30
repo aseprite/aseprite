@@ -1337,6 +1337,7 @@ static void ase_file_write_external_files_chunk(
   if (ext_files.lastid == 0)
     return;
 
+  ChunkWriter chunk(f, frame_header, ASE_FILE_CHUNK_EXTERNAL_FILE);
   fputl(ext_files.to_fn.size(), f);        // Number of entries
   ase_file_write_padding(f, 8);
   for (auto item : ext_files.to_fn) {
