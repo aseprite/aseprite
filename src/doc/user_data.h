@@ -21,6 +21,23 @@
 #include <variant>
 #include <vector>
 
+#define USER_DATA_PROPERTY_TYPE_BOOL        0x0001
+#define USER_DATA_PROPERTY_TYPE_INT8        0x0002
+#define USER_DATA_PROPERTY_TYPE_UINT8       0x0003
+#define USER_DATA_PROPERTY_TYPE_INT16       0x0004
+#define USER_DATA_PROPERTY_TYPE_UINT16      0x0005
+#define USER_DATA_PROPERTY_TYPE_INT32       0x0006
+#define USER_DATA_PROPERTY_TYPE_UINT32      0x0007
+#define USER_DATA_PROPERTY_TYPE_INT64       0x0008
+#define USER_DATA_PROPERTY_TYPE_UINT64      0x0009
+#define USER_DATA_PROPERTY_TYPE_FIXED       0x000A
+#define USER_DATA_PROPERTY_TYPE_STRING      0x000B
+#define USER_DATA_PROPERTY_TYPE_POINT       0x000C
+#define USER_DATA_PROPERTY_TYPE_SIZE        0x000D
+#define USER_DATA_PROPERTY_TYPE_RECT        0x000E
+#define USER_DATA_PROPERTY_TYPE_VECTOR      0x000F
+#define USER_DATA_PROPERTY_TYPE_PROPERTIES  0x0010
+
 namespace doc {
 
   class UserData {
@@ -74,6 +91,7 @@ namespace doc {
     const std::string& text() const { return m_text; }
     color_t color() const { return m_color; }
     const PropertiesMaps& propertiesMaps() const { return m_propertiesMaps; }
+    PropertiesMaps& propertiesMaps() { return m_propertiesMaps; }
     Properties& properties() { return properties(std::string()); }
     Properties& properties(const std::string& groupKey) { return m_propertiesMaps[groupKey]; }
 
