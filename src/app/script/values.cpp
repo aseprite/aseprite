@@ -289,7 +289,60 @@ void push_value_to_lua(lua_State* L, const doc::UserData::Vector& value) {
 
 template<>
 void push_value_to_lua(lua_State* L, const doc::UserData::Variant& value) {
+#if 1 // We are targetting macOS 10.9, so we don't have the std::visit() available
+  switch (value.type()) {
+    case USER_DATA_PROPERTY_TYPE_BOOL:
+      push_value_to_lua(L, *std::get_if<bool>(&value));
+      break;
+    case USER_DATA_PROPERTY_TYPE_INT8:
+      push_value_to_lua(L, *std::get_if<int8_t>(&value));
+      break;
+    case USER_DATA_PROPERTY_TYPE_UINT8:
+      push_value_to_lua(L, *std::get_if<uint8_t>(&value));
+      break;
+    case USER_DATA_PROPERTY_TYPE_INT16:
+      push_value_to_lua(L, *std::get_if<int16_t>(&value));
+      break;
+    case USER_DATA_PROPERTY_TYPE_UINT16:
+      push_value_to_lua(L, *std::get_if<uint16_t>(&value));
+      break;
+    case USER_DATA_PROPERTY_TYPE_INT32:
+      push_value_to_lua(L, *std::get_if<int32_t>(&value));
+      break;
+    case USER_DATA_PROPERTY_TYPE_UINT32:
+      push_value_to_lua(L, *std::get_if<uint32_t>(&value));
+      break;
+    case USER_DATA_PROPERTY_TYPE_INT64:
+      push_value_to_lua(L, *std::get_if<int64_t>(&value));
+      break;
+    case USER_DATA_PROPERTY_TYPE_UINT64:
+      push_value_to_lua(L, *std::get_if<uint64_t>(&value));
+      break;
+    case USER_DATA_PROPERTY_TYPE_FIXED:
+      push_value_to_lua(L, *std::get_if<doc::UserData::Fixed>(&value));
+      break;
+    case USER_DATA_PROPERTY_TYPE_STRING:
+      push_value_to_lua(L, *std::get_if<std::string>(&value));
+      break;
+    case USER_DATA_PROPERTY_TYPE_POINT:
+      push_value_to_lua(L, *std::get_if<gfx::Point>(&value));
+      break;
+    case USER_DATA_PROPERTY_TYPE_SIZE:
+      push_value_to_lua(L, *std::get_if<gfx::Size>(&value));
+      break;
+    case USER_DATA_PROPERTY_TYPE_RECT:
+      push_value_to_lua(L, *std::get_if<gfx::Rect>(&value));
+      break;
+    case USER_DATA_PROPERTY_TYPE_VECTOR:
+      push_value_to_lua(L, *std::get_if<doc::UserData::Vector>(&value));
+      break;
+    case USER_DATA_PROPERTY_TYPE_PROPERTIES:
+      push_value_to_lua(L, *std::get_if<doc::UserData::Properties>(&value));
+      break;
+  }
+#else // TODO enable this in the future
   std::visit([L](auto&& v){ push_value_to_lua(L, v); }, value);
+#endif
 }
 
 } // namespace script
