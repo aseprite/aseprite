@@ -52,6 +52,13 @@ int UserData_get_color(lua_State* L) {
 }
 
 template<typename T>
+int UserData_get_properties(lua_State* L) {
+  auto obj = get_docobj<T>(L, 1);
+  push_properties(L, get_WithUserData<T>(obj));
+  return 1;
+}
+
+template<typename T>
 int UserData_set_text(lua_State* L) {
   auto obj = get_docobj<T>(L, 1);
   auto spr = obj->sprite();

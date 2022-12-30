@@ -16,6 +16,7 @@
 #include "doc/remap.h"
 
 #include <any>
+#include <variant>
 
 namespace app {
 namespace script {
@@ -39,9 +40,21 @@ bool get_value_from_lua(lua_State* L, int index) {
 // int
 
 template<>
-void push_value_to_lua(lua_State* L, const int& value) {
-  lua_pushinteger(L, value);
-}
+void push_value_to_lua(lua_State* L, const int8_t& value) { lua_pushinteger(L, value); }
+template<>
+void push_value_to_lua(lua_State* L, const int16_t& value) { lua_pushinteger(L, value); }
+template<>
+void push_value_to_lua(lua_State* L, const int32_t& value) { lua_pushinteger(L, value); }
+template<>
+void push_value_to_lua(lua_State* L, const int64_t& value) { lua_pushinteger(L, value); }
+template<>
+void push_value_to_lua(lua_State* L, const uint8_t& value) { lua_pushinteger(L, value); }
+template<>
+void push_value_to_lua(lua_State* L, const uint16_t& value) { lua_pushinteger(L, value); }
+template<>
+void push_value_to_lua(lua_State* L, const uint32_t& value) { lua_pushinteger(L, value); }
+template<>
+void push_value_to_lua(lua_State* L, const uint64_t& value) { lua_pushinteger(L, value); }
 
 template<>
 int get_value_from_lua(lua_State* L, int index) {
@@ -59,6 +72,14 @@ void push_value_to_lua(lua_State* L, const double& value) {
 template<>
 double get_value_from_lua(lua_State* L, int index) {
   return lua_tonumber(L, index);
+}
+
+// ----------------------------------------------------------------------
+// fixed
+
+template<>
+void push_value_to_lua(lua_State* L, const doc::UserData::Fixed& value) {
+  lua_pushnumber(L, fixmath::fixtof(value.value));
 }
 
 // ----------------------------------------------------------------------
@@ -193,10 +214,12 @@ app::tools::InkType get_value_from_lua(lua_State* L, int index) {
 // ----------------------------------------------------------------------
 // doc::tile_t
 
+#if 0 // doc::tile_t matches uint32_t, and we have the uint32_t version already defined
 template<>
 void push_value_to_lua(lua_State* L, const doc::tile_t& value) {
   lua_pushinteger(L, value);
 }
+#endif
 
 template<>
 doc::tile_t get_value_from_lua(lua_State* L, int index) {
@@ -250,6 +273,24 @@ FOR_ENUM(doc::RgbMapAlgorithm)
 FOR_ENUM(filters::HueSaturationFilter::Mode)
 FOR_ENUM(filters::TiledMode)
 FOR_ENUM(render::OnionskinPosition)
+
+// ----------------------------------------------------------------------
+// UserData::Properties / VariantStruct
+
+template<>
+void push_value_to_lua(lua_State* L, const doc::UserData::Properties& value) {
+  // TODO convert a Properties map into a Lua table
+}
+
+template<>
+void push_value_to_lua(lua_State* L, const doc::UserData::Vector& value) {
+  // TODO convert a Vector into a Lua table
+}
+
+template<>
+void push_value_to_lua(lua_State* L, const doc::UserData::Variant& value) {
+  std::visit([L](auto&& v){ push_value_to_lua(L, v); }, value);
+}
 
 } // namespace script
 } // namespace app

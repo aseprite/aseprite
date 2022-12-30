@@ -882,6 +882,7 @@ const Property Sprite_properties[] = {
   { "gridBounds", Sprite_get_gridBounds, Sprite_set_gridBounds },
   { "color", UserData_get_color<Sprite>, UserData_set_color<Sprite> },
   { "data", UserData_get_text<Sprite>, UserData_set_text<Sprite> },
+  { "properties", UserData_get_properties<Sprite>, nullptr },
   { "pixelRatio", Sprite_get_pixelRatio, Sprite_set_pixelRatio },
   { "events", Sprite_get_events, nullptr },
   { nullptr, nullptr, nullptr }

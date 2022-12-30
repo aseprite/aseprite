@@ -191,6 +191,7 @@ if(ENABLE_SCRIPTING)
     script/plugin_class.cpp
     script/point_class.cpp
     script/preferences_object.cpp
+    script/properties_class.cpp
     script/range_class.cpp
     script/rectangle_class.cpp
     script/security.cpp

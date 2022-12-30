@@ -150,6 +150,7 @@ namespace app {
   void push_layers(lua_State* L, const doc::ObjectIds& layers);
   void push_palette(lua_State* L, doc::Palette* palette);
   void push_plugin(lua_State* L, Extension* ext);
+  void push_properties(lua_State* L, doc::WithUserData* userData);
   void push_sprite_cel(lua_State* L, doc::Cel* cel);
   void push_sprite_events(lua_State* L, doc::Sprite* sprite);
   void push_sprite_frame(lua_State* L, doc::Sprite* sprite, doc::frame_t frame);
@@ -166,7 +167,6 @@ namespace app {
   void push_tileset_image(lua_State* L, doc::Tileset* tileset, doc::Image* image);
   void push_tilesets(lua_State* L, doc::Tilesets* tilesets);
   void push_tool(lua_State* L, app::tools::Tool* tool);
-  void push_userdata(lua_State* L, doc::WithUserData* userData);
   void push_version(lua_State* L, const base::Version& ver);
 
   gfx::Point convert_args_into_point(lua_State* L, int index);
