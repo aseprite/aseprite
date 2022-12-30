@@ -44,6 +44,10 @@ namespace doc {
   public:
     struct Fixed {
       fixmath::fixed value;
+
+      bool operator==(const Fixed& f) const {
+        return this->value == f.value;
+      }
     };
     struct Variant;
     using Vector = std::vector<Variant>;
