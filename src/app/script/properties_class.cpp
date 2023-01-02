@@ -26,6 +26,18 @@ struct Properties {
   Properties(doc::ObjectId id) : id(id) { }
 };
 
+int Properties_len(lua_State* L)
+{
+  auto propObj = get_obj<Properties>(L, 1);
+  auto obj = static_cast<doc::WithUserData*>(get_object(propObj->id));
+  if (!obj)
+    return luaL_error(L, "the object with these properties was destroyed");
+
+  auto& properties = obj->userData().properties();
+  lua_pushinteger(L, properties.size());
+  return 1;
+}
+
 int Properties_index(lua_State* L)
 {
   auto propObj = get_obj<Properties>(L, 1);
@@ -105,6 +117,7 @@ int Properties_newindex(lua_State* L)
 }
 
 const luaL_Reg Properties_methods[] = {
+  { "__len", Properties_len },
   { "__index", Properties_index },
   { "__newindex", Properties_newindex },
   { nullptr, nullptr }

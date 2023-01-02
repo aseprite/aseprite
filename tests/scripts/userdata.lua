@@ -15,6 +15,7 @@ do
   assert(spr.properties.c == "hi")
   -- TODO we don't have too much precision saving fixed points in properties
   assert(math.abs(spr.properties.d - 2.3) < 0.00001)
+  assert(#spr.properties == 4)
 
   spr.properties.a = false
   assert(spr.properties.a == false)
