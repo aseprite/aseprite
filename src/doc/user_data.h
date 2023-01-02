@@ -69,6 +69,10 @@ namespace doc {
       template<typename T>
       Variant(T&& v) : VariantBase(std::forward<T>(v)) { }
 
+      // Avoid using Variant.operator=(const char*) because the "const
+      // char*" is converted to a bool implicitly by MSVC.
+      Variant& operator=(const char*) = delete;
+
       template<typename T>
       Variant& operator=(T&& v) {
         VariantBase::operator=(std::forward<T>(v));
