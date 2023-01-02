@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022  Igara Studio S.A.
+// Copyright (C) 2022-2023  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -79,8 +79,7 @@ int Properties_newindex(lua_State* L)
   switch (lua_type(L, 3)) {
 
     case LUA_TNONE:
-    case LUA_TNIL:
-    default: {
+    case LUA_TNIL: {
       // Just erase the property
       auto it = properties.find(field);
       if (it != properties.end())
@@ -88,32 +87,9 @@ int Properties_newindex(lua_State* L)
       break;
     }
 
-    case LUA_TBOOLEAN:
-      properties[field] = (lua_toboolean(L, 3) ? true: false);
+    default:
+      properties[field] = get_value_from_lua<doc::UserData::Variant>(L, 3);
       break;
-
-    case LUA_TNUMBER:
-      if (lua_isinteger(L, 3))
-        properties[field] = lua_tointeger(L, 3);
-      else {
-        properties[field] = doc::UserData::Fixed{
-          fixmath::ftofix(lua_tonumber(L, 3))
-        };
-      }
-      break;
-
-    case LUA_TSTRING:
-      properties[field] = std::string(lua_tostring(L, 3));
-      break;
-
-    case LUA_TTABLE:
-      // TODO convert a full table into properties recursively
-      break;
-
-    case LUA_TUSERDATA:
-      // TODO convert table-like objects (Size, Point, Rectangle, etc.)
-      break;
-
   }
   return 1;
 }
