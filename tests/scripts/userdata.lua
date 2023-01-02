@@ -17,6 +17,16 @@ do
   assert(math.abs(spr.properties.d - 2.3) < 0.00001)
   assert(#spr.properties == 4)
 
+  -- Iterate all properties
+  local t = {}
+  for k,v in pairs(spr.properties) do
+    t[k] = v
+  end
+  assert(t.a == true)
+  assert(t.b == 1)
+  assert(t.c == "hi")
+  assert(math.abs(t.d - 2.3) < 0.00001)
+
   spr.properties.a = false
   assert(spr.properties.a == false)
 

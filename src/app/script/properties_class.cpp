@@ -26,6 +26,8 @@ struct Properties {
   Properties(doc::ObjectId id) : id(id) { }
 };
 
+using PropertiesIterator = doc::UserData::Properties::iterator;
+
 int Properties_len(lua_State* L)
 {
   auto propObj = get_obj<Properties>(L, 1);
@@ -116,20 +118,59 @@ int Properties_newindex(lua_State* L)
   return 1;
 }
 
+int Properties_pairs_next(lua_State* L)
+{
+  auto propObj = get_obj<Properties>(L, 1);
+  auto obj = static_cast<doc::WithUserData*>(get_object(propObj->id));
+  if (!obj)
+    return luaL_error(L, "the object with these properties was destroyed");
+
+  auto& properties = obj->userData().properties();
+  auto& it = *get_obj<PropertiesIterator>(L, lua_upvalueindex(1));
+  if (it == properties.end())
+    return 0;
+  lua_pushstring(L, (*it).first.c_str());
+  push_value_to_lua(L, (*it).second);
+  ++it;
+  return 2;
+}
+
+int Properties_pairs(lua_State* L)
+{
+  auto propObj = get_obj<Properties>(L, 1);
+  auto obj = static_cast<doc::WithUserData*>(get_object(propObj->id));
+  if (!obj)
+    return luaL_error(L, "the object with these properties was destroyed");
+
+  auto& properties = obj->userData().properties();
+
+  push_obj(L, properties.begin());
+  lua_pushcclosure(L, Properties_pairs_next, 1);
+  lua_pushvalue(L, 1); // Copy the same propObj as the second return value
+  return 2;
+}
+
 const luaL_Reg Properties_methods[] = {
   { "__len", Properties_len },
   { "__index", Properties_index },
   { "__newindex", Properties_newindex },
+  { "__pairs", Properties_pairs },
+  { nullptr, nullptr }
+};
+
+const luaL_Reg PropertiesIterator_methods[] = {
   { nullptr, nullptr }
 };
 
 } // anonymous namespace
 
 DEF_MTNAME(Properties);
+DEF_MTNAME(PropertiesIterator);
 
 void register_properties_class(lua_State* L)
 {
   REG_CLASS(L, Properties);
+  REG_CLASS(L, PropertiesIterator);
 }
 
 void push_properties(lua_State* L, doc::WithUserData* userData)
