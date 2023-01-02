@@ -89,7 +89,7 @@ int Properties_newindex(lua_State* L)
       break;
 
     case LUA_TSTRING:
-      properties[field] = lua_tostring(L, 3);
+      properties[field] = std::string(lua_tostring(L, 3));
       break;
 
     case LUA_TTABLE:
