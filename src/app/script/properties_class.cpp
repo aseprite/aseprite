@@ -150,6 +150,12 @@ int Properties_pairs(lua_State* L)
   return 2;
 }
 
+int PropertiesIterator_gc(lua_State* L)
+{
+  get_obj<PropertiesIterator>(L, 1)->~PropertiesIterator();
+  return 0;
+}
+
 const luaL_Reg Properties_methods[] = {
   { "__len", Properties_len },
   { "__index", Properties_index },
@@ -159,6 +165,7 @@ const luaL_Reg Properties_methods[] = {
 };
 
 const luaL_Reg PropertiesIterator_methods[] = {
+  { "__gc", PropertiesIterator_gc },
   { nullptr, nullptr }
 };
 
