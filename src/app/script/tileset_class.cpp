@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -100,6 +100,7 @@ const Property Tileset_properties[] = {
   { "baseIndex", Tileset_get_baseIndex, Tileset_set_baseIndex },
   { "color", UserData_get_color<Tileset>, UserData_set_color<Tileset> },
   { "data", UserData_get_text<Tileset>, UserData_set_text<Tileset> },
+  { "properties", UserData_get_properties<Tileset>, UserData_set_properties<Tileset> },
   { nullptr, nullptr, nullptr }
 };
 

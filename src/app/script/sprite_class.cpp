@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -882,7 +882,7 @@ const Property Sprite_properties[] = {
   { "gridBounds", Sprite_get_gridBounds, Sprite_set_gridBounds },
   { "color", UserData_get_color<Sprite>, UserData_set_color<Sprite> },
   { "data", UserData_get_text<Sprite>, UserData_set_text<Sprite> },
-  { "properties", UserData_get_properties<Sprite>, nullptr },
+  { "properties", UserData_get_properties<Sprite>, UserData_set_properties<Sprite> },
   { "pixelRatio", Sprite_get_pixelRatio, Sprite_set_pixelRatio },
   { "events", Sprite_get_events, nullptr },
   { nullptr, nullptr, nullptr }

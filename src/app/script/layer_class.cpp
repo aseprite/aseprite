@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -406,6 +406,7 @@ const Property Layer_properties[] = {
   { "cels", Layer_get_cels, nullptr },
   { "color", UserData_get_color<Layer>, UserData_set_color<Layer> },
   { "data", UserData_get_text<Layer>, UserData_set_text<Layer> },
+  { "properties", UserData_get_properties<Layer>, UserData_set_properties<Layer> },
   { "tileset", Layer_get_tileset, nullptr },
   { nullptr, nullptr, nullptr }
 };
