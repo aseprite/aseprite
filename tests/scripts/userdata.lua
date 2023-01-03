@@ -53,6 +53,7 @@ do
                        e=Point(32, 20),
                        f=Size(40, 80),
                        g=Rectangle(2, 4, 6, 8) }
+  assert(#spr.properties == 6)
   local m = spr.properties.m
   assert(m.a == 10)
   assert(m.b == "bye")
@@ -72,6 +73,11 @@ do
   assert(m.g.y == 4)
   assert(m.g.width == 6)
   assert(m.g.height == 8)
+
+  -- Set all properties
+  spr.properties = { a=1000 }
+  assert(spr.properties.a == 1000)
+  assert(#spr.properties == 1)
 
   -- Extension properties
   spr.properties.a = 10

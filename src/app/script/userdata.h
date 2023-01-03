@@ -13,6 +13,7 @@
 #include "app/color.h"
 #include "app/color_utils.h"
 #include "app/script/luacpp.h"
+#include "app/script/values.h"
 #include "app/tx.h"
 #include "doc/cel.h"
 #include "doc/with_user_data.h"
@@ -56,6 +57,15 @@ int UserData_get_properties(lua_State* L) {
   auto obj = get_docobj<T>(L, 1);
   push_properties(L, get_WithUserData<T>(obj), std::string());
   return 1;
+}
+
+template<typename T>
+int UserData_set_properties(lua_State* L) {
+  auto obj = get_docobj<T>(L, 1);
+  auto& properties = get_WithUserData<T>(obj)->userData().properties();
+  // TODO add undo information
+  properties = get_value_from_lua<doc::UserData::Properties>(L, 2);
+  return 0;
 }
 
 template<typename T>
