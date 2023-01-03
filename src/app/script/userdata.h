@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -54,7 +54,7 @@ int UserData_get_color(lua_State* L) {
 template<typename T>
 int UserData_get_properties(lua_State* L) {
   auto obj = get_docobj<T>(L, 1);
-  push_properties(L, get_WithUserData<T>(obj));
+  push_properties(L, get_WithUserData<T>(obj), std::string());
   return 1;
 }
 

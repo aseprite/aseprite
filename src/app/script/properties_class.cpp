@@ -23,7 +23,13 @@ namespace {
 
 struct Properties {
   doc::ObjectId id = 0;
-  Properties(doc::ObjectId id) : id(id) { }
+  std::string extID;
+
+  Properties(doc::ObjectId id,
+             const std::string& extID)
+    : id(id)
+    , extID(extID) {
+  }
 };
 
 using PropertiesIterator = doc::UserData::Properties::iterator;
@@ -35,7 +41,7 @@ int Properties_len(lua_State* L)
   if (!obj)
     return luaL_error(L, "the object with these properties was destroyed");
 
-  auto& properties = obj->userData().properties();
+  auto& properties = obj->userData().properties(propObj->extID);
   lua_pushinteger(L, properties.size());
   return 1;
 }
@@ -51,7 +57,7 @@ int Properties_index(lua_State* L)
   if (!obj)
     return luaL_error(L, "the object with these properties was destroyed");
 
-  auto& properties = obj->userData().properties();
+  auto& properties = obj->userData().properties(propObj->extID);
   auto it = properties.find(field);
   if (it != properties.end()) {
     push_value_to_lua(L, (*it).second);
@@ -73,7 +79,7 @@ int Properties_newindex(lua_State* L)
   if (!obj)
     return luaL_error(L, "the object with these properties was destroyed");
 
-  auto& properties = obj->userData().properties();
+  auto& properties = obj->userData().properties(propObj->extID);
 
   // TODO add undo information
   switch (lua_type(L, 3)) {
@@ -91,6 +97,30 @@ int Properties_newindex(lua_State* L)
       properties[field] = get_value_from_lua<doc::UserData::Variant>(L, 3);
       break;
   }
+  return 0;
+}
+
+int Properties_call(lua_State* L)
+{
+  auto propObj = get_obj<Properties>(L, 1);
+  const char* extID = lua_tostring(L, 2);
+  if (!extID)
+    return luaL_error(L, "extensionID in 'properties(\"extensionID\")' must be a string");
+
+  // Special syntax to change the full extension properties using:
+  //
+  //   object.property("extension", { ...})
+  //
+  if (lua_istable(L, 3)) {
+    auto obj = static_cast<doc::WithUserData*>(get_object(propObj->id));
+    if (!obj)
+      return luaL_error(L, "the object with these properties was destroyed");
+
+    auto& properties = obj->userData().properties(extID);
+    properties = get_value_from_lua<doc::UserData::Properties>(L, 3);
+  }
+
+  push_new<Properties>(L, propObj->id, extID);
   return 1;
 }
 
@@ -101,7 +131,7 @@ int Properties_pairs_next(lua_State* L)
   if (!obj)
     return luaL_error(L, "the object with these properties was destroyed");
 
-  auto& properties = obj->userData().properties();
+  auto& properties = obj->userData().properties(propObj->extID);
   auto& it = *get_obj<PropertiesIterator>(L, lua_upvalueindex(1));
   if (it == properties.end())
     return 0;
@@ -118,7 +148,7 @@ int Properties_pairs(lua_State* L)
   if (!obj)
     return luaL_error(L, "the object with these properties was destroyed");
 
-  auto& properties = obj->userData().properties();
+  auto& properties = obj->userData().properties(propObj->extID);
 
   push_obj(L, properties.begin());
   lua_pushcclosure(L, Properties_pairs_next, 1);
@@ -134,6 +164,7 @@ int PropertiesIterator_gc(lua_State* L)
 
 const luaL_Reg Properties_methods[] = {
   { "__len", Properties_len },
+  { "__call", Properties_call },
   { "__index", Properties_index },
   { "__newindex", Properties_newindex },
   { "__pairs", Properties_pairs },
@@ -156,9 +187,11 @@ void register_properties_class(lua_State* L)
   REG_CLASS(L, PropertiesIterator);
 }
 
-void push_properties(lua_State* L, doc::WithUserData* userData)
+void push_properties(lua_State* L,
+                     doc::WithUserData* userData,
+                     const std::string& extID)
 {
-  push_obj<Properties>(L, userData->id());
+  push_new<Properties>(L, userData->id(), extID);
 }
 
 } // namespace script

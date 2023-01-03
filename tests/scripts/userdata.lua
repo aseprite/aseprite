@@ -72,4 +72,24 @@ do
   assert(m.g.y == 4)
   assert(m.g.width == 6)
   assert(m.g.height == 8)
+
+  -- Extension properties
+  spr.properties.a = 10
+  spr.properties("ext1").a = 20
+  assert(spr.properties.a == 10)
+  assert(spr.properties("ext1").a == 20)
+
+  spr.properties("ext1", { a=30, b=35 })
+  assert(spr.properties("ext1").a == 30)
+  assert(spr.properties("ext1").b == 35)
+
+  local ext1 = spr.properties("ext1")
+  ext1.a = 40
+  ext1.b = 45
+  assert(spr.properties("ext1").a == 40)
+  assert(spr.properties("ext1").b == 45)
+
+  spr.properties("", { a=50, b=60 }) -- Empty extension is the user properties
+  assert(spr.properties.a == 50)
+  assert(spr.properties.b == 60)
 end
