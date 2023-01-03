@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -160,6 +160,7 @@ const Property Cel_properties[] = {
   { "opacity", Cel_get_opacity, Cel_set_opacity },
   { "color", UserData_get_color<Cel>, UserData_set_color<Cel> },
   { "data", UserData_get_text<Cel>, UserData_set_text<Cel> },
+  { "properties", UserData_get_properties<Cel>, UserData_set_properties<Cel> },
   { nullptr, nullptr, nullptr }
 };
 

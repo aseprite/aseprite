@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -162,6 +162,7 @@ const Property Tag_properties[] = {
   { "repeats", Tag_get_repeats, Tag_set_repeats }, // Cannot be "repeat" because it's a Lua keyword
   { "color", UserData_get_color<Tag>, UserData_set_color<Tag> },
   { "data", UserData_get_text<Tag>, UserData_set_text<Tag> },
+  { "properties", UserData_get_properties<Tag>, UserData_set_properties<Tag> },
   { nullptr, nullptr, nullptr }
 };
 

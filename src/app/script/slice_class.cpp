@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -145,6 +145,7 @@ const Property Slice_properties[] = {
   { "pivot", Slice_get_pivot, Slice_set_pivot },
   { "color", UserData_get_color<Slice>, UserData_set_color<Slice> },
   { "data", UserData_get_text<Slice>, UserData_set_text<Slice> },
+  { "properties", UserData_get_properties<Slice>, UserData_set_properties<Slice> },
   { nullptr, nullptr, nullptr }
 };
 
