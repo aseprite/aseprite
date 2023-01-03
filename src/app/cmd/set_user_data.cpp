@@ -14,7 +14,6 @@
 #include "app/doc.h"
 #include "app/doc_event.h"
 #include "doc/sprite.h"
-
 #include "doc/with_user_data.h"
 
 namespace app {

@@ -22,11 +22,11 @@ namespace app {
 namespace cmd {
 
   class SetUserData : public Cmd
-                    , public WithDocument
-  {
+                    , public WithDocument {
   public:
-  SetUserData(doc::WithUserData* obj, const doc::UserData& userData,
-              app::Doc* doc);
+    SetUserData(doc::WithUserData* obj,
+                const doc::UserData& userData,
+                app::Doc* doc);
 
   protected:
     void onExecute() override;
