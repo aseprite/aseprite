@@ -12,11 +12,15 @@
 #include "app/doc.h"
 #include "app/file/file.h"
 #include "app/file/file_formats_manager.h"
+#include "base/base64.h"
 #include "doc/doc.h"
+#include "doc/user_data.h"
 
 #include <cstdio>
 #include <cstdlib>
+#include <functional>
 #include <vector>
+#include <fstream>
 
 using namespace app;
 
@@ -75,6 +79,212 @@ TEST(File, SeveralSizes)
 
         doc->close();
       }
+    }
+  }
+}
+
+TEST(File, CustomProperties)
+{
+  app::Context ctx;
+
+  struct TestCase {
+    std::string filename;
+    int w;
+    int h;
+    doc::ColorMode mode;
+    int ncolors;
+    doc::UserData::PropertiesMaps propertiesMaps;
+    std::function<void(const TestCase&, doc::Sprite*)> setProperties;
+    std::function<void(const TestCase&, doc::Sprite*)> assertions;
+  };
+  std::vector<TestCase> tests = {
+    { // Test sprite's userData simple custom properties
+      "test_props_1.ase", 50, 50, doc::ColorMode::INDEXED, 256,
+      {
+        {"", {
+               {"number", int32_t(560304)},
+               {"is_solid", bool(true)},
+               {"label", std::string("Rock")},
+               {"weight", doc::UserData::Fixed{fixmath::ftofix(50.34)}},
+               {"big_number", int64_t(9223372036854775807)},
+               {"unsigned_big_number", uint64_t(18446744073709551615ULL)},
+             }
+        }
+      },
+      [](const TestCase& test, doc::Sprite* sprite){
+        sprite->userData().propertiesMaps() = test.propertiesMaps;
+      },
+      [](const TestCase& test, doc::Sprite* sprite){
+        ASSERT_EQ(doc::get_value<int32_t>(sprite->userData().properties()["number"]), 560304);
+        ASSERT_EQ(doc::get_value<bool>(sprite->userData().properties()["is_solid"]), true);
+        ASSERT_EQ(doc::get_value<std::string>(sprite->userData().properties()["label"]), "Rock");
+        ASSERT_EQ(doc::get_value<doc::UserData::Fixed>(sprite->userData().properties()["weight"]).value, fixmath::ftofix(50.34));
+        ASSERT_EQ(doc::get_value<int64_t>(sprite->userData().properties()["big_number"]), 9223372036854775807);
+        ASSERT_EQ(doc::get_value<uint64_t>(sprite->userData().properties()["unsigned_big_number"]), 18446744073709551615ULL);
+      }
+    },
+    { // Test sprite's userData extension's simple properties
+      "test_props_2.ase", 50, 50, doc::ColorMode::INDEXED, 256,
+      {
+        {"extensionIdentification", {
+               {"number", int32_t(160304)},
+               {"is_solid", bool(false)},
+               {"label", std::string("Smoke")},
+               {"weight", doc::UserData::Fixed{fixmath::ftofix(0.14)}}
+             }
+        }
+      },
+      [](const TestCase& test, doc::Sprite* sprite){
+        sprite->userData().propertiesMaps() = test.propertiesMaps;
+      },
+      [](const TestCase& test, doc::Sprite* sprite){
+        ASSERT_EQ(doc::get_value<int32_t>(sprite->userData().properties("extensionIdentification")["number"]), 160304);
+        ASSERT_EQ(doc::get_value<bool>(sprite->userData().properties("extensionIdentification")["is_solid"]), false);
+        ASSERT_EQ(doc::get_value<std::string>(sprite->userData().properties("extensionIdentification")["label"]), "Smoke");
+        ASSERT_EQ(doc::get_value<doc::UserData::Fixed>(sprite->userData().properties("extensionIdentification")["weight"]).value, fixmath::ftofix(0.14));
+      }
+    },
+    { // Test sprite's userData custom + extension's simple properties
+      "test_props_3.ase", 50, 50, doc::ColorMode::INDEXED, 256,
+      {
+        {"", {
+               {"number", int32_t(560304)},
+               {"is_solid", bool(true)},
+               {"label", std::string("Rock")},
+               {"weight", doc::UserData::Fixed{fixmath::ftofix(50.34)}}
+             }
+        },
+        {"extensionIdentification", {
+               {"number", int32_t(160304)},
+               {"is_solid", bool(false)},
+               {"label", std::string("Smoke")},
+               {"weight", doc::UserData::Fixed{fixmath::ftofix(0.14)}}
+             }
+        }
+      },
+      [](const TestCase& test, doc::Sprite* sprite){
+        sprite->userData().propertiesMaps() = test.propertiesMaps;
+      },
+      [](const TestCase& test, doc::Sprite* sprite){
+        ASSERT_EQ(doc::get_value<int32_t>(sprite->userData().properties()["number"]), 560304);
+        ASSERT_EQ(doc::get_value<bool>(sprite->userData().properties()["is_solid"]), true);
+        ASSERT_EQ(doc::get_value<std::string>(sprite->userData().properties()["label"]), "Rock");
+        ASSERT_EQ(doc::get_value<doc::UserData::Fixed>(sprite->userData().properties()["weight"]).value, fixmath::ftofix(50.34));
+
+        ASSERT_EQ(doc::get_value<int32_t>(sprite->userData().properties("extensionIdentification")["number"]), 160304);
+        ASSERT_EQ(doc::get_value<bool>(sprite->userData().properties("extensionIdentification")["is_solid"]), false);
+        ASSERT_EQ(doc::get_value<std::string>(sprite->userData().properties("extensionIdentification")["label"]), "Smoke");
+        ASSERT_EQ(doc::get_value<doc::UserData::Fixed>(sprite->userData().properties("extensionIdentification")["weight"]).value, fixmath::ftofix(0.14));
+      }
+    },
+    { // Test sprite's userData complex properties
+      "test_props_4.ase", 50, 50, doc::ColorMode::INDEXED, 256,
+      {
+        {"", {
+               {"coordinates", gfx::Point(10, 20)},
+               {"size", gfx::Size(100, 200)},
+               {"bounds", gfx::Rect(30, 40, 150, 250)},
+               {"items", doc::UserData::Vector {
+                  std::string("arrow"), std::string("hammer"), std::string("coin")
+               }},
+               {"player", doc::UserData::Properties {
+                            {"lives", uint8_t(5)},
+                            {"name", std::string("John Doe")},
+                            {"energy", uint16_t(1000)}
+                          }
+               }
+             }
+        },
+        {"ext", {
+                  {"numbers", doc::UserData::Vector {int32_t(11), int32_t(22), int32_t(33)}},
+                  {"player", doc::UserData::Properties {
+                                {"id", uint32_t(12347455)},
+                                {"coordinates", gfx::Point(45, 56)},
+                                {"cards", doc::UserData::Vector {int8_t(11), int8_t(6), int8_t(0), int8_t(13)}}
+                              }
+                  }
+                }
+        }
+      },
+      [](const TestCase& test, doc::Sprite* sprite){
+        sprite->userData().propertiesMaps() = test.propertiesMaps;
+      },
+      [](const TestCase& test, doc::Sprite* sprite){
+        ASSERT_EQ(doc::get_value<gfx::Point>(sprite->userData().properties()["coordinates"]),
+                  gfx::Point(10, 20));
+        ASSERT_EQ(doc::get_value<gfx::Size>(sprite->userData().properties()["size"]),
+                  gfx::Size(100, 200));
+        ASSERT_EQ(doc::get_value<gfx::Rect>(sprite->userData().properties()["bounds"]),
+                  gfx::Rect(30, 40, 150, 250));
+        ASSERT_EQ(doc::get_value<doc::UserData::Vector>(sprite->userData().properties()["items"]),
+                  (doc::UserData::Vector{std::string("arrow"), std::string("hammer"), std::string("coin")}));
+        ASSERT_EQ(doc::get_value<doc::UserData::Properties>(sprite->userData().properties()["player"]),
+                  (doc::UserData::Properties {
+                    {"lives", uint8_t(5)},
+                    {"name", std::string("John Doe")},
+                    {"energy", uint16_t(1000)}
+                  }));
+
+        ASSERT_EQ(doc::get_value<doc::UserData::Vector>(sprite->userData().properties("ext")["numbers"]),
+                  (doc::UserData::Vector {int32_t(11), int32_t(22), int32_t(33)}));
+
+        ASSERT_EQ(doc::get_value<doc::UserData::Properties>(sprite->userData().properties("ext")["player"]),
+                  (doc::UserData::Properties {
+                    {"id", uint32_t(12347455)},
+                    {"coordinates", gfx::Point(45, 56)},
+                    {"cards", doc::UserData::Vector {int8_t(11), int8_t(6), int8_t(0), int8_t(13)}}
+                  }));
+      }
+    }
+  };
+
+  for (const TestCase& test : tests) {
+    {
+      std::unique_ptr<Doc> doc(
+        ctx.documents().add(test.w, test.h, test.mode, test.ncolors));
+      doc->setFilename(test.filename);
+      // Random pixels
+      LayerImage* layer = static_cast<LayerImage*>(doc->sprite()->root()->firstLayer());
+      ASSERT_TRUE(layer != NULL);
+      ImageRef image = layer->cel(frame_t(0))->imageRef();
+
+      std::srand(test.w*test.h);
+      int c = 0;
+      for (int y=0; y<test.h; y++) {
+        for (int x=0; x<test.w; x++) {
+          if ((std::rand()&4) == 0)
+            c = std::rand()%test.ncolors;
+          put_pixel_fast<IndexedTraits>(image.get(), x, y, c);
+        }
+      }
+
+      test.setProperties(test, doc->sprite());
+
+      save_document(&ctx, doc.get());
+      doc->close();
+    }
+    {
+      std::unique_ptr<Doc> doc(load_document(&ctx, test.filename));
+      ASSERT_EQ(test.w, doc->sprite()->width());
+      ASSERT_EQ(test.h, doc->sprite()->height());
+
+      // Same random pixels (see the seed)
+      Layer* layer = doc->sprite()->root()->firstLayer();
+      ASSERT_TRUE(layer != nullptr);
+      Image* image = layer->cel(frame_t(0))->image();
+      std::srand(test.w*test.h);
+      int c = 0;
+      for (int y=0; y<test.h; y++) {
+        for (int x=0; x<test.w; x++) {
+          if ((std::rand()&4) == 0)
+            c = std::rand()%test.ncolors;
+          ASSERT_EQ(c, get_pixel_fast<IndexedTraits>(image, x, y));
+        }
+      }
+
+      test.assertions(test, doc->sprite());
+
+      doc->close();
     }
   }
 }
