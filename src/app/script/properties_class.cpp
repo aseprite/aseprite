@@ -8,10 +8,14 @@
 #include "config.h"
 #endif
 
+#include "app/cmd/remove_user_data_property.h"
+#include "app/cmd/set_user_data_properties.h"
+#include "app/cmd/set_user_data_property.h"
 #include "app/script/docobj.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
 #include "app/script/values.h"
+#include "app/tx.h"
 #include "doc/with_user_data.h"
 
 #include <cstring>
@@ -81,21 +85,45 @@ int Properties_newindex(lua_State* L)
 
   auto& properties = obj->userData().properties(propObj->extID);
 
-  // TODO add undo information
   switch (lua_type(L, 3)) {
 
     case LUA_TNONE:
     case LUA_TNIL: {
-      // Just erase the property
+      // If we assign nil to a property, we just remove the property.
+
       auto it = properties.find(field);
-      if (it != properties.end())
-        properties.erase(it);
+      if (it != properties.end()) {
+        // TODO add Object::sprite() member function, and fix "Tx" object
+        //      to use the sprite of this object instead of the activeDocument()
+        //if (obj->sprite()) {
+        if (App::instance()->context()->activeDocument()) {
+          Tx tx;
+          tx(new cmd::RemoveUserDataProperty(obj, propObj->extID, field));
+          tx.commit();
+        }
+        else {
+          properties.erase(it);
+        }
+      }
       break;
     }
 
-    default:
-      properties[field] = get_value_from_lua<doc::UserData::Variant>(L, 3);
+    default: {
+      auto newValue = get_value_from_lua<doc::UserData::Variant>(L, 3);
+
+      // TODO add Object::sprite() member function
+      //if (obj->sprite()) {
+      if (App::instance()->context()->activeDocument()) {
+        Tx tx;
+        tx(new cmd::SetUserDataProperty(obj, propObj->extID, field,
+                                        std::move(newValue)));
+        tx.commit();
+      }
+      else {
+        properties[field] = std::move(newValue);
+      }
       break;
+    }
   }
   return 0;
 }
@@ -112,12 +140,23 @@ int Properties_call(lua_State* L)
   //   object.property("extension", { ...})
   //
   if (lua_istable(L, 3)) {
+    auto newProperties = get_value_from_lua<doc::UserData::Properties>(L, 3);
+
     auto obj = static_cast<doc::WithUserData*>(get_object(propObj->id));
     if (!obj)
       return luaL_error(L, "the object with these properties was destroyed");
 
-    auto& properties = obj->userData().properties(extID);
-    properties = get_value_from_lua<doc::UserData::Properties>(L, 3);
+    // TODO add Object::sprite() member function
+    //if (obj->sprite()) {
+    if (App::instance()->context()->activeDocument()) {
+      Tx tx;
+      tx(new cmd::SetUserDataProperties(obj, extID, std::move(newProperties)));
+      tx.commit();
+    }
+    else {
+      auto& properties = obj->userData().properties(extID);
+      properties = std::move(newProperties);
+    }
   }
 
   push_new<Properties>(L, propObj->id, extID);

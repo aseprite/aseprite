@@ -78,6 +78,12 @@ do
   spr.properties = { a=1000 }
   assert(spr.properties.a == 1000)
   assert(#spr.properties == 1)
+  app.undo()                    -- Test undo/redo
+  assert(spr.properties.a == false)
+  assert(#spr.properties == 6)
+  app.redo()
+  assert(spr.properties.a == 1000)
+  assert(#spr.properties == 1)
 
   -- Extension properties
   spr.properties.a = 10
@@ -88,6 +94,10 @@ do
   spr.properties("ext1", { a=30, b=35 })
   assert(spr.properties("ext1").a == 30)
   assert(spr.properties("ext1").b == 35)
+  app.undo()                    -- Test undo/redo
+  assert(spr.properties("ext1").a == 20)
+  assert(spr.properties("ext1").b == nil)
+  app.redo()
 
   local ext1 = spr.properties("ext1")
   ext1.a = 40
@@ -97,5 +107,25 @@ do
 
   spr.properties("", { a=50, b=60 }) -- Empty extension is the user properties
   assert(spr.properties.a == 50)
+  assert(spr.properties.b == 60)
+
+  -- Test undo/redo setting/removing one property at a time
+  spr.properties.a = "hi"
+  assert(spr.properties.a == "hi")
+  assert(spr.properties.b == 60)
+  app.undo()
+  assert(spr.properties.a == 50)
+  assert(spr.properties.b == 60)
+  app.redo()
+  assert(spr.properties.a == "hi")
+  assert(spr.properties.b == 60)
+  assert(#spr.properties == 2)
+  spr.properties.a = nil
+  assert(#spr.properties == 1)
+  assert(spr.properties.a == nil)
+  assert(spr.properties.b == 60)
+  app.undo()
+  assert(#spr.properties == 2)
+  assert(spr.properties.a == "hi")
   assert(spr.properties.b == 60)
 end

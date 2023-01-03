@@ -1,5 +1,5 @@
 # Aseprite
-# Copyright (C) 2018-2022  Igara Studio S.A.
+# Copyright (C) 2018-2023  Igara Studio S.A.
 # Copyright (C) 2001-2018  David Capello
 
 # Generate a ui::Widget for each widget in a XML file
@@ -495,6 +495,7 @@ add_library(app-lib
   cmd/remove_tag.cpp
   cmd/remove_tile.cpp
   cmd/remove_tileset.cpp
+  cmd/remove_user_data_property.cpp
   cmd/replace_image.cpp
   cmd/replace_tileset.cpp
   cmd/reselect_mask.cpp
@@ -528,6 +529,8 @@ add_library(app-lib
   cmd/set_total_frames.cpp
   cmd/set_transparent_color.cpp
   cmd/set_user_data.cpp
+  cmd/set_user_data_properties.cpp
+  cmd/set_user_data_property.cpp
   cmd/shift_masked_cel.cpp
   cmd/trim_cel.cpp
   cmd/unlink_cel.cpp
