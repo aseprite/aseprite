@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -16,6 +16,7 @@
 #include "app/script/canvas_widget.h"
 #include "app/script/engine.h"
 #include "app/script/graphics_context.h"
+#include "app/script/keys.h"
 #include "app/script/luacpp.h"
 #include "app/ui/color_button.h"
 #include "app/ui/color_shades.h"
@@ -914,6 +915,7 @@ int Dialog_canvas(lua_State* L)
 
     widget->setSizeHint(sz);
 
+    bool handleKeyEvents = false;
     if (lua_istable(L, 2)) {
       int type = lua_getfield(L, 2, "onpaint");
       if (type == LUA_TFUNCTION) {
@@ -927,6 +929,47 @@ int Dialog_canvas(lua_State* L)
       lua_pop(L, 1);
 
       // Auxiliary callbacks used in Canvas events
+      auto keyCallback =
+        [](lua_State* L, ui::KeyMessage* msg) {
+          ASSERT(msg->recipient());
+          if (!msg->recipient())
+            return;
+
+          // Key modifiers
+          lua_pushboolean(L, msg->modifiers() & ui::kKeyAltModifier);
+          lua_setfield(L, -2, "altKey");
+
+          lua_pushboolean(L, msg->modifiers() & (ui::kKeyCmdModifier | ui::kKeyWinModifier));
+          lua_setfield(L, -2, "metaKey");
+
+          lua_pushboolean(L, msg->modifiers() & ui::kKeyCtrlModifier);
+          lua_setfield(L, -2, "ctrlKey");
+
+          lua_pushboolean(L, msg->modifiers() & ui::kKeyShiftModifier);
+          lua_setfield(L, -2, "shiftKey");
+
+          lua_pushboolean(L, msg->modifiers() & ui::kKeySpaceModifier);
+          lua_setfield(L, -2, "spaceKey");
+
+          // KeyMessage specifics
+          lua_pushinteger(L, msg->repeat());
+          lua_setfield(L, -2, "repeat");
+
+          // TODO improve this (create an Event metatable)
+          lua_pushcfunction(L, [](lua_State*) -> int {
+            Canvas::stopKeyEventPropagation();
+            return 0;
+          });
+          lua_setfield(L, -2, "stopPropagation");
+
+          std::wstring keyString(1, (wchar_t)msg->unicodeChar());
+          lua_pushstring(L, base::to_utf8(keyString).c_str());
+          lua_setfield(L, -2, "key");
+
+          lua_pushstring(L, vkcode_to_code(msg->scancode()));
+          lua_setfield(L, -2, "code");
+        };
+
       auto mouseCallback =
         [](lua_State* L, ui::MouseMessage* msg) {
           ASSERT(msg->recipient());
@@ -970,6 +1013,20 @@ int Dialog_canvas(lua_State* L)
           lua_setfield(L, -2, "magnification");
         };
 
+      type = lua_getfield(L, 2, "onkeydown");
+      if (type == LUA_TFUNCTION) {
+        Dialog_connect_signal(L, 1, widget->KeyDown, keyCallback);
+        handleKeyEvents = true;
+      }
+      lua_pop(L, 1);
+
+      type = lua_getfield(L, 2, "onkeyup");
+      if (type == LUA_TFUNCTION) {
+        Dialog_connect_signal(L, 1, widget->KeyUp, keyCallback);
+        handleKeyEvents = true;
+      }
+      lua_pop(L, 1);
+
       type = lua_getfield(L, 2, "onmousemove");
       if (type == LUA_TFUNCTION) {
         Dialog_connect_signal(L, 1, widget->MouseMove, mouseCallback);
@@ -1000,6 +1057,11 @@ int Dialog_canvas(lua_State* L)
       }
       lua_pop(L, 1);
     }
+
+    // If this canvas handle keydown/up events, we set it as a focus
+    // stop.
+    if (handleKeyEvents)
+      widget->setFocusStop(true);
   }
 
   return Dialog_add_widget(L, widget);

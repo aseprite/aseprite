@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2022  Igara Studio S.A.
+// Copyright (c) 2022-2023  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -27,6 +27,15 @@ ui::WidgetType Canvas::Type()
   if (type == ui::kGenericWidget)
     type = ui::register_widget_type();
   return type;
+}
+
+// static
+bool Canvas::s_stopKeyEventPropagation = false;
+
+// static
+void Canvas::stopKeyEventPropagation()
+{
+  s_stopKeyEventPropagation = true;
 }
 
 Canvas::Canvas() : ui::Widget(Type())
@@ -64,6 +73,26 @@ bool Canvas::onProcessMessage(ui::Message* msg)
 {
   switch (msg->type()) {
 
+    case ui::kKeyDownMessage:
+      if (hasFocus()) {
+        s_stopKeyEventPropagation = false;
+        auto keyMsg = static_cast<ui::KeyMessage*>(msg);
+        KeyDown(keyMsg);
+        if (s_stopKeyEventPropagation)
+          return true;
+      }
+      break;
+
+    case ui::kKeyUpMessage:
+      if (hasFocus()) {
+        s_stopKeyEventPropagation = false;
+        auto keyMsg = static_cast<ui::KeyMessage*>(msg);
+        KeyUp(keyMsg);
+        if (s_stopKeyEventPropagation)
+          return true;
+      }
+      break;
+
     case ui::kSetCursorMessage:
       ui::set_mouse_cursor(m_cursorType);
       return true;
@@ -77,6 +106,9 @@ bool Canvas::onProcessMessage(ui::Message* msg)
     case ui::kMouseDownMessage: {
       if (!hasCapture())
         captureMouse();
+
+      if (isFocusStop() && !hasFocus())
+        requestFocus();
 
       auto mouseMsg = static_cast<ui::MouseMessage*>(msg);
       MouseDown(mouseMsg);
