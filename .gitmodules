@@ -81,3 +81,6 @@
 [submodule "src/psd"]
 	path = src/psd
 	url = https://github.com/aseprite/psd.git
+[submodule "third_party/qoi"]
+	path = third_party/qoi
+	url = https://github.com/aseprite/qoi.git

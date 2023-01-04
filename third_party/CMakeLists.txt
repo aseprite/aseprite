@@ -1,5 +1,5 @@
 # Aseprite
-# Copyright (C) 2021-2022  Igara Studio S.A.
+# Copyright (C) 2021-2023  Igara Studio S.A.
 # Copyright (C) 2001-2018  David Capello
 
 include_directories(.)
@@ -210,3 +210,7 @@ if(ENABLE_SCRIPTING)
   endif()
 
 endif()
+
+# qoi
+add_library(qoi INTERFACE)
+target_include_directories(qoi INTERFACE qoi)

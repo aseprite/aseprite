@@ -136,6 +136,7 @@ set(file_formats
   file/jpeg_format.cpp
   file/pcx_format.cpp
   file/png_format.cpp
+  file/qoi_format.cpp
   file/svg_format.cpp
   file/tga_format.cpp)
 if(ENABLE_WEBP)
@@ -718,7 +719,8 @@ target_link_libraries(app-lib
   json11
   archive_static
   fmt
-  tinyexpr)
+  tinyexpr
+  qoi)
 
 if(ENABLE_PSD)
   target_link_libraries(app-lib psd)

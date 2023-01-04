@@ -1,5 +1,5 @@
 // Aseprite Document IO Library
-// Copyright (c) 2021 Igara Studio S.A.
+// Copyright (c) 2021-2023 Igara Studio S.A.
 // Copyright (c) 2016-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -34,6 +34,7 @@ enum class FileFormat {
   WEBP_ANIMATION,
   CSS_STYLE,
   PSD_IMAGE,
+  QOI_IMAGE,
 };
 
 } // namespace dio

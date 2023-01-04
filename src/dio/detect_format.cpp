@@ -1,5 +1,5 @@
 // Aseprite Document IO Library
-// Copyright (c) 2021 Igara Studio S.A.
+// Copyright (c) 2021-2023 Igara Studio S.A.
 // Copyright (c) 2016-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -24,6 +24,7 @@
 #define WEBP_STAMP_1     "RIFF" // "RIFFnnnnWEBP"
 #define WEBP_STAMP_2     "WEBP"
 #define PSD_STAMP        "8BPS"
+#define QOI_STAMP        "qoif"
 
 namespace dio {
 
@@ -68,6 +69,9 @@ FileFormat detect_format_by_file_content_bytes(const uint8_t* buf,
 
       if (std::strncmp((const char*)buf, PSD_STAMP, 4) == 0)
         return FileFormat::PSD_IMAGE;
+
+      if (std::strncmp((const char*)buf, QOI_STAMP, 4) == 0)
+        return FileFormat::QOI_IMAGE;
 
       if (IS_MAGIC_WORD(4, ASE_MAGIC_NUMBER))
         return FileFormat::ASE_ANIMATION;
@@ -163,6 +167,9 @@ FileFormat detect_format_by_file_extension(const std::string& filename)
   if (ext == "psd" ||
       ext == "psb")
     return FileFormat::PSD_IMAGE;
+
+  if (ext == "qoi")
+    return FileFormat::QOI_IMAGE;
 
   return FileFormat::UNKNOWN;
 }
