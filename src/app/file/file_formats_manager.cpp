@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021  Igara Studio S.A.
+// Copyright (C) 2021-2023  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -30,6 +30,7 @@ extern FileFormat* CreateIcoFormat();
 extern FileFormat* CreateJpegFormat();
 extern FileFormat* CreatePcxFormat();
 extern FileFormat* CreatePngFormat();
+extern FileFormat* CreateQoiFormat();
 extern FileFormat* CreateSvgFormat();
 extern FileFormat* CreateTgaFormat();
 
@@ -75,6 +76,7 @@ FileFormatsManager::FileFormatsManager()
   registerFormat(CreatePsdFormat());
 #endif
 
+  registerFormat(CreateQoiFormat());
   registerFormat(CreateSvgFormat());
   registerFormat(CreateTgaFormat());
 
