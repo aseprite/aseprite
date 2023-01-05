@@ -1051,6 +1051,8 @@
       <separator />
       <item command="OpenWithApp" text="@.open_with_os" />
       <item command="OpenInFolder" text="@.open_in_folder" group="document_tab_open" />
+      <separator />
+      <item command="CopyPath" text="@.copy_path" group="document_tab_path" />
     </menu>
 
     <menu id="layer_popup_menu">

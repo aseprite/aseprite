@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -17,6 +17,7 @@ FOR_EACH_COMMAND(ColorQuantization)
 FOR_EACH_COMMAND(ConvertLayer)
 FOR_EACH_COMMAND(ConvolutionMatrix)
 FOR_EACH_COMMAND(CopyColors)
+FOR_EACH_COMMAND(CopyPath)
 FOR_EACH_COMMAND(CopyTiles)
 FOR_EACH_COMMAND(CropSprite)
 FOR_EACH_COMMAND(DeselectMask)

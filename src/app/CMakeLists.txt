@@ -579,6 +579,7 @@ add_library(app-lib
   commands/command.cpp
   commands/commands.cpp
   commands/convert_layer.cpp
+  commands/copy_path.cpp
   commands/export_tileset.cpp
   commands/filters/cmd_brightness_contrast.cpp
   commands/filters/cmd_color_curve.cpp
