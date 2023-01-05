@@ -46,6 +46,8 @@ private:
   void readFrameHeader(AsepriteFrameHeader* frame_header);
   void readPadding(const int bytes);
   std::string readString();
+  float readFloat();
+  double readDouble();
   doc::Palette* readColorChunk(doc::Palette* prevPal, doc::frame_t frame);
   doc::Palette* readColor2Chunk(doc::Palette* prevPal, doc::frame_t frame);
   doc::Palette* readPaletteChunk(doc::Palette* prevPal, doc::frame_t frame);

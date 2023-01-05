@@ -17,6 +17,8 @@ ASE files use Intel (little-endian) byte order.
 * `DWORD`: A 32-bit unsigned integer value
 * `LONG`: A 32-bit signed integer value
 * `FIXED`: A 32-bit fixed point (16.16) value
+* `FLOAT`: A 32-bit single-precision value
+* `DOUBLE`: A 64-bit double-precision value
 * `QWORD`: A 64-bit unsigned integer value
 * `LONG64`: A 64-bit signed integer value
 * `BYTE[n]`: "n" bytes.
@@ -399,19 +401,23 @@ there is an User Data Chunk at the first frame after the Palette Chunk.
           + If type==0x000A
             FIXED
           + If type==0x000B
-            STRING
+            FLOAT
           + If type==0x000C
-            POINT
+            DOUBLE
           + If type==0x000D
-            SIZE
+            STRING
           + If type==0x000E
+            POINT
+          + If type==0x000F
+            SIZE
+          + If type==0x0010
             RECT
-          + If type==0x000F (vector)
+          + If type==0x0011 (vector)
             DWORD     Number of elements
             WORD      Element's type
             BYTE[]    As many values as the number of elements indicates
                       Structure depends on the element's type
-          + If type==0x0010 (nested properties map)
+          + If type==0x0012 (nested properties map)
             DWORD     Number of properties
             BYTE[]    Nested properties data
                       Structure is the same as indicated in this loop

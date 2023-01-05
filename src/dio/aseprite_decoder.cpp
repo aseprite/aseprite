@@ -391,6 +391,67 @@ std::string AsepriteDecoder::readString()
   return string;
 }
 
+float AsepriteDecoder::readFloat()
+{
+  int b1, b2, b3, b4;
+
+  if ((b1 = read8()) == EOF)
+    return EOF;
+
+  if ((b2 = read8()) == EOF)
+    return EOF;
+
+  if ((b3 = read8()) == EOF)
+    return EOF;
+
+  if ((b4 = read8()) == EOF)
+    return EOF;
+
+  // Little endian.
+  int v = ((b4 << 24) | (b3 << 16) | (b2 << 8) | b1);
+  return *reinterpret_cast<float*>(&v);
+}
+
+double AsepriteDecoder::readDouble()
+{
+  int b1, b2, b3, b4, b5, b6, b7, b8;
+
+  if ((b1 = read8()) == EOF)
+    return EOF;
+
+  if ((b2 = read8()) == EOF)
+    return EOF;
+
+  if ((b3 = read8()) == EOF)
+    return EOF;
+
+  if ((b4 = read8()) == EOF)
+    return EOF;
+
+  if ((b5 = read8()) == EOF)
+    return EOF;
+
+  if ((b6 = read8()) == EOF)
+    return EOF;
+
+  if ((b7 = read8()) == EOF)
+    return EOF;
+
+  if ((b8 = read8()) == EOF)
+    return EOF;
+
+  // Little endian.
+  long long v = (((long long)b8 << 56) |
+                 ((long long)b7 << 48) |
+                 ((long long)b6 << 40) |
+                 ((long long)b5 << 32) |
+                 ((long long)b4 << 24) |
+                 ((long long)b3 << 16) |
+                 ((long long)b2 << 8) |
+                 (long long)b1);
+  return *reinterpret_cast<double*>(&v);
+}
+
 doc::Palette* AsepriteDecoder::readColorChunk(doc::Palette* prevPal,
                                               doc::frame_t frame)
 {
@@ -1248,6 +1309,14 @@ const doc::UserData::Variant AsepriteDecoder::readPropertyValue(uint16_t type)
     case USER_DATA_PROPERTY_TYPE_FIXED: {
       int32_t value = read32();
       return doc::UserData::Fixed{value};
+    }
+    case USER_DATA_PROPERTY_TYPE_FLOAT: {
+      float value = readFloat();
+      return value;
+    }
+    case USER_DATA_PROPERTY_TYPE_DOUBLE: {
+      double value = readDouble();
+      return value;
     }
     case USER_DATA_PROPERTY_TYPE_STRING: {
       std::string value = readString();

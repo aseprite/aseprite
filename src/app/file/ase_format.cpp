@@ -1459,6 +1459,12 @@ static void ase_file_write_property_value(FILE* f,
   else if (const UserData::Fixed* v = std::get_if<UserData::Fixed>(&value)) {
     fputl(v->value, f);
   }
+  else if (const float_t* v = std::get_if<float_t>(&value)) {
+    fputf(*v, f);
+  }
+  else if (const double_t* v = std::get_if<double_t>(&value)) {
+    fputd(*v, f);
+  }
   else if (const std::string* v = std::get_if<std::string>(&value)) {
     ase_file_write_string(f, *v);
   }
