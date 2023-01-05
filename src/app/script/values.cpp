@@ -334,6 +334,7 @@ void push_value_to_lua(lua_State* L, const doc::UserData::Variant& value)
       break;
     case USER_DATA_PROPERTY_TYPE_FIXED:
       push_value_to_lua(L, *std::get_if<doc::UserData::Fixed>(&value));
+      break;
     case USER_DATA_PROPERTY_TYPE_FLOAT:
       push_value_to_lua(L, *std::get_if<float>(&value));
       break;
