@@ -277,7 +277,6 @@ reference external palettes, tilesets, or extensions that make use of extended p
                   2 - Extension name for properties
       BYTE[7]   Reserved (set to zero)
       STRING    External file name or extension ID
-                When this is an extension ID, it starts with the prefix "extension:"
 
 ### Mask Chunk (0x2016) DEPRECATED
 
