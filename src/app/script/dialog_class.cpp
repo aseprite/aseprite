@@ -894,6 +894,100 @@ int Dialog_file(lua_State* L)
   return Dialog_add_widget(L, widget);
 }
 
+// Auxiliary callbacks used in Canvas events
+static void fill_message_values(lua_State* L, const ui::Message* msg)
+{
+  // Key modifiers
+  lua_pushboolean(L, msg->modifiers() & ui::kKeyAltModifier);
+  lua_setfield(L, -2, "altKey");
+
+  lua_pushboolean(L, msg->modifiers() & (ui::kKeyCmdModifier | ui::kKeyWinModifier));
+  lua_setfield(L, -2, "metaKey");
+
+  lua_pushboolean(L, msg->modifiers() & ui::kKeyCtrlModifier);
+  lua_setfield(L, -2, "ctrlKey");
+
+  lua_pushboolean(L, msg->modifiers() & ui::kKeyShiftModifier);
+  lua_setfield(L, -2, "shiftKey");
+
+  lua_pushboolean(L, msg->modifiers() & ui::kKeySpaceModifier);
+  lua_setfield(L, -2, "spaceKey");
+}
+
+static void fill_keymessage_values(lua_State* L, const ui::KeyMessage* msg)
+{
+  ASSERT(msg->recipient());
+  if (!msg->recipient())
+    return;
+
+  fill_message_values(L, msg);
+
+  // KeyMessage specifics
+  lua_pushinteger(L, msg->repeat());
+  lua_setfield(L, -2, "repeat");
+
+  // TODO improve this (create an Event metatable)
+  lua_pushcfunction(L, [](lua_State*) -> int {
+    Canvas::stopKeyEventPropagation();
+    return 0;
+  });
+  lua_setfield(L, -2, "stopPropagation");
+
+  std::wstring keyString(1, (wchar_t)msg->unicodeChar());
+  lua_pushstring(L, base::to_utf8(keyString).c_str());
+  lua_setfield(L, -2, "key");
+
+  lua_pushstring(L, vkcode_to_code(msg->scancode()));
+  lua_setfield(L, -2, "code");
+}
+
+static void fill_mousemessage_values(lua_State* L, const ui::MouseMessage* msg)
+{
+  ASSERT(msg->recipient());
+  if (!msg->recipient())
+    return;
+
+  fill_message_values(L, msg);
+
+  lua_pushinteger(L, msg->position().x - msg->recipient()->bounds().x);
+  lua_setfield(L, -2, "x");
+
+  lua_pushinteger(L, msg->position().y - msg->recipient()->bounds().y);
+  lua_setfield(L, -2, "y");
+
+  lua_pushinteger(L, int(msg->button()));
+  lua_setfield(L, -2, "button");
+
+  lua_pushnumber(L, msg->pressure());
+  lua_setfield(L, -2, "pressure");
+
+  if (msg->type() == kMouseWheelMessage) {
+    lua_pushnumber(L, msg->wheelDelta().x);
+    lua_setfield(L, -2, "deltaX");
+
+    lua_pushnumber(L, msg->wheelDelta().y);
+    lua_setfield(L, -2, "deltaY");
+  }
+}
+
+static void fill_touchmessage_values(lua_State* L, const ui::TouchMessage* msg)
+{
+  ASSERT(msg->recipient());
+  if (!msg->recipient())
+    return;
+
+  fill_message_values(L, msg);
+
+  lua_pushinteger(L, msg->position().x - msg->recipient()->bounds().x);
+  lua_setfield(L, -2, "x");
+
+  lua_pushinteger(L, msg->position().y - msg->recipient()->bounds().y);
+  lua_setfield(L, -2, "y");
+
+  lua_pushnumber(L, msg->magnification());
+  lua_setfield(L, -2, "magnification");
+}
+
 int Dialog_canvas(lua_State* L)
 {
   auto widget = new Canvas;
@@ -928,132 +1022,47 @@ int Dialog_canvas(lua_State* L)
       }
       lua_pop(L, 1);
 
-      // Auxiliary callbacks used in Canvas events
-      auto keyCallback =
-        [](lua_State* L, ui::KeyMessage* msg) {
-          ASSERT(msg->recipient());
-          if (!msg->recipient())
-            return;
-
-          // Key modifiers
-          lua_pushboolean(L, msg->modifiers() & ui::kKeyAltModifier);
-          lua_setfield(L, -2, "altKey");
-
-          lua_pushboolean(L, msg->modifiers() & (ui::kKeyCmdModifier | ui::kKeyWinModifier));
-          lua_setfield(L, -2, "metaKey");
-
-          lua_pushboolean(L, msg->modifiers() & ui::kKeyCtrlModifier);
-          lua_setfield(L, -2, "ctrlKey");
-
-          lua_pushboolean(L, msg->modifiers() & ui::kKeyShiftModifier);
-          lua_setfield(L, -2, "shiftKey");
-
-          lua_pushboolean(L, msg->modifiers() & ui::kKeySpaceModifier);
-          lua_setfield(L, -2, "spaceKey");
-
-          // KeyMessage specifics
-          lua_pushinteger(L, msg->repeat());
-          lua_setfield(L, -2, "repeat");
-
-          // TODO improve this (create an Event metatable)
-          lua_pushcfunction(L, [](lua_State*) -> int {
-            Canvas::stopKeyEventPropagation();
-            return 0;
-          });
-          lua_setfield(L, -2, "stopPropagation");
-
-          std::wstring keyString(1, (wchar_t)msg->unicodeChar());
-          lua_pushstring(L, base::to_utf8(keyString).c_str());
-          lua_setfield(L, -2, "key");
-
-          lua_pushstring(L, vkcode_to_code(msg->scancode()));
-          lua_setfield(L, -2, "code");
-        };
-
-      auto mouseCallback =
-        [](lua_State* L, ui::MouseMessage* msg) {
-          ASSERT(msg->recipient());
-          if (!msg->recipient())
-            return;
-
-          lua_pushinteger(L, msg->position().x - msg->recipient()->bounds().x);
-          lua_setfield(L, -2, "x");
-
-          lua_pushinteger(L, msg->position().y - msg->recipient()->bounds().y);
-          lua_setfield(L, -2, "y");
-
-          lua_pushinteger(L, int(msg->button()));
-          lua_setfield(L, -2, "button");
-
-          lua_pushnumber(L, msg->pressure());
-          lua_setfield(L, -2, "pressure");
-
-          if (msg->type() == kMouseWheelMessage) {
-            lua_pushnumber(L, msg->wheelDelta().x);
-            lua_setfield(L, -2, "deltaX");
-
-            lua_pushnumber(L, msg->wheelDelta().y);
-            lua_setfield(L, -2, "deltaY");
-          }
-        };
-
-      auto touchCallback =
-        [](lua_State* L, ui::TouchMessage* msg) {
-          ASSERT(msg->recipient());
-          if (!msg->recipient())
-            return;
-
-          lua_pushinteger(L, msg->position().x - msg->recipient()->bounds().x);
-          lua_setfield(L, -2, "x");
-
-          lua_pushinteger(L, msg->position().y - msg->recipient()->bounds().y);
-          lua_setfield(L, -2, "y");
-
-          lua_pushnumber(L, msg->magnification());
-          lua_setfield(L, -2, "magnification");
-        };
-
       type = lua_getfield(L, 2, "onkeydown");
       if (type == LUA_TFUNCTION) {
-        Dialog_connect_signal(L, 1, widget->KeyDown, keyCallback);
+        Dialog_connect_signal(L, 1, widget->KeyDown, fill_keymessage_values);
         handleKeyEvents = true;
       }
       lua_pop(L, 1);
 
       type = lua_getfield(L, 2, "onkeyup");
       if (type == LUA_TFUNCTION) {
-        Dialog_connect_signal(L, 1, widget->KeyUp, keyCallback);
+        Dialog_connect_signal(L, 1, widget->KeyUp, fill_keymessage_values);
         handleKeyEvents = true;
       }
       lua_pop(L, 1);
 
       type = lua_getfield(L, 2, "onmousemove");
       if (type == LUA_TFUNCTION) {
-        Dialog_connect_signal(L, 1, widget->MouseMove, mouseCallback);
+        Dialog_connect_signal(L, 1, widget->MouseMove, fill_mousemessage_values);
       }
       lua_pop(L, 1);
 
       type = lua_getfield(L, 2, "onmousedown");
       if (type == LUA_TFUNCTION) {
-        Dialog_connect_signal(L, 1, widget->MouseDown, mouseCallback);
+        Dialog_connect_signal(L, 1, widget->MouseDown, fill_mousemessage_values);
       }
       lua_pop(L, 1);
 
       type = lua_getfield(L, 2, "onmouseup");
       if (type == LUA_TFUNCTION) {
-        Dialog_connect_signal(L, 1, widget->MouseUp, mouseCallback);
+        Dialog_connect_signal(L, 1, widget->MouseUp, fill_mousemessage_values);
       }
       lua_pop(L, 1);
 
       type = lua_getfield(L, 2, "onwheel");
       if (type == LUA_TFUNCTION) {
-        Dialog_connect_signal(L, 1, widget->Wheel, mouseCallback);
+        Dialog_connect_signal(L, 1, widget->Wheel, fill_mousemessage_values);
       }
       lua_pop(L, 1);
 
       type = lua_getfield(L, 2, "ontouchmagnify");
       if (type == LUA_TFUNCTION) {
-        Dialog_connect_signal(L, 1, widget->TouchMagnify, touchCallback);
+        Dialog_connect_signal(L, 1, widget->TouchMagnify, fill_touchmessage_values);
       }
       lua_pop(L, 1);
     }
