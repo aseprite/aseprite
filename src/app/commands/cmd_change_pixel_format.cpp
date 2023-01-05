@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -27,7 +27,6 @@
 #include "app/ui/editor/editor_render.h"
 #include "app/ui/rgbmap_algorithm_selector.h"
 #include "app/ui/skin/skin_theme.h"
-#include "base/thread.h"
 #include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
@@ -43,7 +42,9 @@
 #include "ui/size_hint_event.h"
 
 #include "color_mode.xml.h"
+
 #include <string>
+#include <thread>
 
 namespace app {
 
@@ -161,7 +162,7 @@ private:
   bool m_running;
   bool m_stopFlag;
   double m_progress;
-  base::thread m_thread;
+  std::thread m_thread;
 };
 
 #ifdef ENABLE_UI

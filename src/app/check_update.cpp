@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2021  Igara Studio S.A.
+// Copyright (C) 2020-2023  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -135,7 +135,7 @@ void CheckUpdateThreadLauncher::launch()
   m_delegate->onCheckingUpdates();
 
   m_bgJob.reset(new CheckUpdateBackgroundJob);
-  m_thread.reset(new base::thread([this]{ checkForUpdates(); }));
+  m_thread.reset(new std::thread([this]{ checkForUpdates(); }));
 
   // Start a timer to monitoring the progress of the background job
   // executed in "m_thread". The "onMonitoringTick" method will be

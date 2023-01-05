@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -11,12 +11,12 @@
 
 #ifdef ENABLE_UPDATER
 
-#include "base/thread.h"
 #include "ui/timer.h"
 #include "updater/check_update.h"
 
 #include <atomic>
 #include <memory>
+#include <thread>
 
 namespace app {
 
@@ -46,7 +46,7 @@ namespace app {
     CheckUpdateDelegate* m_delegate;
     Preferences& m_preferences;
     updater::Uuid m_uuid;
-    std::unique_ptr<base::thread> m_thread;
+    std::unique_ptr<std::thread> m_thread;
     std::unique_ptr<CheckUpdateBackgroundJob> m_bgJob;
     bool m_doCheck;
     std::atomic<bool> m_received;

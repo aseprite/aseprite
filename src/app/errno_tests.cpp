@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2023  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -6,8 +7,8 @@
 
 #include "tests/app_test.h"
 
-#include <errno.h>
-#include "base/thread.h"
+#include <cerrno>
+#include <thread>
 
 static void run_thread()
 {
@@ -22,7 +23,7 @@ TEST(Errno, ThreadSafe)
 
   // Run another thread that will be modify the errno variable, and
   // wait it (join).
-  base::thread thr(&run_thread);
+  std::thread thr(&run_thread);
   thr.join();
 
   // See if errno was not modified in this thread.

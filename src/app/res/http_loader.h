@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022  Igara Studio S.A.
+// Copyright (C) 2022-2023  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -9,10 +9,9 @@
 #define APP_RES_HTTP_LOADER_H_INCLUDED
 #pragma once
 
-#include "base/thread.h"
-
 #include <atomic>
 #include <string>
+#include <thread>
 
 namespace net {
   class HttpRequest;
@@ -35,7 +34,7 @@ namespace app {
     std::string m_url;
     std::atomic<bool> m_done;
     net::HttpRequest* m_request;
-    base::thread m_thread;
+    std::thread m_thread;
     std::string m_filename;
   };
 

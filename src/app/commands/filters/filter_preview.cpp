@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -14,11 +14,14 @@
 #include "app/commands/filters/filter_manager_impl.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_render.h"
+#include "base/thread.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
 #include "ui/manager.h"
 #include "ui/message.h"
 #include "ui/widget.h"
+
+#include <thread>
 
 namespace app {
 
@@ -84,7 +87,7 @@ void FilterPreview::restartPreview()
   m_filterIsDone = false;
   m_timer.start();
   m_filterThread.reset(
-    new base::thread([this]{ onFilterThread(); }));
+    new std::thread([this]{ onFilterThread(); }));
 }
 
 bool FilterPreview::onProcessMessage(Message* msg)

@@ -10,9 +10,9 @@
 #pragma once
 
 #include "base/concurrent_queue.h"
-#include "base/thread.h"
 
 #include <memory>
+#include <thread>
 
 namespace app {
 
@@ -31,7 +31,7 @@ namespace app {
 
   private:
     void threadLoadResources();
-    base::thread* createThread();
+    std::thread* createThread();
 
     typedef base::concurrent_queue<Resource*> Queue;
 
@@ -39,7 +39,7 @@ namespace app {
     bool m_done;
     bool m_cancel;
     Queue m_queue;
-    std::unique_ptr<base::thread> m_thread;
+    std::unique_ptr<std::thread> m_thread;
   };
 
 } // namespace app

@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -11,7 +11,6 @@
 
 #include "ui/system.h"
 
-#include "base/thread.h"
 #include "gfx/point.h"
 #include "os/event.h"
 #include "os/event_queue.h"
@@ -29,11 +28,13 @@
 #include "ui/theme.h"
 #include "ui/widget.h"
 
+#include <thread>
+
 namespace ui {
 
 // This is used to check if calls to UI layer are made from the non-UI
 // thread. (Which might be catastrofic.)
-base::thread::native_id_type main_gui_thread;
+std::thread::id main_gui_thread;
 
 // Multiple displays (create one os::Window for each ui::Window)
 bool multi_displays = false;
@@ -218,7 +219,7 @@ UISystem::UISystem()
   ASSERT(!g_instance);
   g_instance = this;
 
-  main_gui_thread = base::this_thread::native_id();
+  main_gui_thread = std::this_thread::get_id();
   mouse_cursor_type = kOutsideDisplay;
   support_native_custom_cursor =
     ((os::instance() &&
@@ -379,7 +380,7 @@ void execute_from_ui_thread(std::function<void()>&& func)
 
 bool is_ui_thread()
 {
-  return (main_gui_thread == base::this_thread::native_id());
+  return (main_gui_thread == std::this_thread::get_id());
 }
 
 #ifdef _DEBUG
