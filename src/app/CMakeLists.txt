@@ -421,8 +421,6 @@ if(ENABLE_UI)
     ui/workspace_tabs.cpp
     ui/zoom_entry.cpp
     ui_context.cpp
-    util/clipboard.cpp
-    util/clipboard_native.cpp
     widget_loader.cpp)
   if(ENABLE_NEWS)
     set(ui_app_files
@@ -664,6 +662,8 @@ add_library(app-lib
   util/autocrop.cpp
   util/buffer_region.cpp
   util/cel_ops.cpp
+  util/clipboard.cpp
+  util/clipboard_native.cpp
   util/conversion_to_surface.cpp
   util/expand_cel_canvas.cpp
   util/filetoks.cpp
