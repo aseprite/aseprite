@@ -106,6 +106,23 @@ bool QoiFormat::onLoad(FileOp* fop)
   if (desc.channels == 4)
     fop->sequenceSetHasAlpha(true);
 
+  // Setup the color space.
+  gfx::ColorSpaceRef colorSpace = nullptr;
+  switch (desc.colorspace) {
+    case QOI_SRGB:
+      colorSpace = gfx::ColorSpace::MakeSRGB();
+      break;
+    case QOI_LINEAR:
+      colorSpace = gfx::ColorSpace::MakeNone();
+      break;
+  }
+  if (colorSpace &&
+      fop->document()->sprite()->colorSpace()->type() == gfx::ColorSpace::None) {
+    fop->setEmbeddedColorProfile();
+    fop->document()->sprite()->setColorSpace(colorSpace);
+    fop->document()->notifyColorSpaceChanged();
+  }
+
   if (ferror(handle.get())) {
     fop->setError("Error reading file.\n");
     return false;
@@ -128,7 +145,15 @@ bool QoiFormat::onSave(FileOp* fop)
   desc.width = img->width();
   desc.height = img->height();
   desc.channels = (img->needAlpha() ? 4: 3);
-  desc.colorspace = QOI_LINEAR; // TODO QOI_SRGB
+
+  if (img->osColorSpace() &&
+      img->osColorSpace()->isSRGB()) {
+    desc.colorspace = QOI_SRGB;
+  }
+  else {
+    // TODO support or warn about the color space
+    desc.colorspace = QOI_LINEAR;
+  }
 
   auto pixels = (uint8_t*)QOI_MALLOC(desc.width * desc.height * desc.channels);
   if (!pixels)
