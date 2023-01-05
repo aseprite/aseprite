@@ -610,6 +610,13 @@ int Sprite_get_events(lua_State* L)
   return 1;
 }
 
+int Sprite_get_id(lua_State* L)
+{
+  auto sprite = get_docobj<Sprite>(L, 1);
+  lua_pushinteger(L, sprite->id());
+  return 1;
+}
+
 int Sprite_get_filename(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
@@ -861,6 +868,7 @@ const luaL_Reg Sprite_methods[] = {
 };
 
 const Property Sprite_properties[] = {
+  { "id", Sprite_get_id, nullptr },
   { "filename", Sprite_get_filename, Sprite_set_filename },
   { "isModified", Sprite_get_isModified, nullptr },
   { "width", Sprite_get_width, Sprite_set_width },

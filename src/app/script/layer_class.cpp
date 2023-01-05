@@ -49,6 +49,13 @@ int Layer_cel(lua_State* L)
   return 1;
 }
 
+int Layer_get_id(lua_State* L)
+{
+  auto layer = get_docobj<Layer>(L, 1);
+  lua_pushinteger(L, layer->id());
+  return 1;
+}
+
 int Layer_get_sprite(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
@@ -383,6 +390,7 @@ const luaL_Reg Layer_methods[] = {
 };
 
 const Property Layer_properties[] = {
+  { "id", Layer_get_id, nullptr },
   { "sprite", Layer_get_sprite, nullptr },
   { "parent", Layer_get_parent, Layer_set_parent },
   { "layers", Layer_get_layers, nullptr },
