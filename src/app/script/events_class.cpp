@@ -270,7 +270,7 @@ public:
 
   // DocUndoObserver impl
   void onAddUndoState(DocUndo* history) override {
-    call(Change);
+    call(Change, { { "fromUndo", false } });
   }
   void onCurrentUndoStateChange(DocUndo* history) override {
     call(Change, { { "fromUndo", true } });
