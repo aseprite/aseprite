@@ -1253,10 +1253,11 @@ void AsepriteDecoder::readPropertiesMaps(doc::UserData::PropertiesMaps& properti
     if (id) {
       try {
         extensionId = extFiles.to_fn.at(id);
-      } catch (std::out_of_range) {
+      }
+      catch (const std::out_of_range&) {
         // This shouldn't happen, but if it does, we put the properties
         // in an artificial extensionId.
-        extensionId = (std::stringstream() << "__missed__" << id).str();
+        extensionId = fmt::format("__missed__{}", id);
         delegate()->error(
           fmt::format("Error: Invalid extension ID (id={0} not found)", id));
       }
