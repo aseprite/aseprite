@@ -27,7 +27,6 @@
 #include "zlib.h"
 
 #include <cstdio>
-#include <sstream>
 
 namespace dio {
 
