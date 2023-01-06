@@ -25,3 +25,5 @@
   merged in the same texture atlas.
 * `2f-index-3x3.aseprite`: Indexed, 2 frames, 1 layer, mask color set
   to index 21.
+* `file-tests-props.aseprite`: Indexed, 64x64, 6 frames, 4 layers (one
+   of them is a tilemap), 13 cels, 1 tag.
