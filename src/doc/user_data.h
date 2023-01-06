@@ -31,12 +31,14 @@
 #define USER_DATA_PROPERTY_TYPE_INT64       0x0008
 #define USER_DATA_PROPERTY_TYPE_UINT64      0x0009
 #define USER_DATA_PROPERTY_TYPE_FIXED       0x000A
-#define USER_DATA_PROPERTY_TYPE_STRING      0x000B
-#define USER_DATA_PROPERTY_TYPE_POINT       0x000C
-#define USER_DATA_PROPERTY_TYPE_SIZE        0x000D
-#define USER_DATA_PROPERTY_TYPE_RECT        0x000E
-#define USER_DATA_PROPERTY_TYPE_VECTOR      0x000F
-#define USER_DATA_PROPERTY_TYPE_PROPERTIES  0x0010
+#define USER_DATA_PROPERTY_TYPE_FLOAT       0x000B
+#define USER_DATA_PROPERTY_TYPE_DOUBLE      0x000C
+#define USER_DATA_PROPERTY_TYPE_STRING      0x000D
+#define USER_DATA_PROPERTY_TYPE_POINT       0x000E
+#define USER_DATA_PROPERTY_TYPE_SIZE        0x000F
+#define USER_DATA_PROPERTY_TYPE_RECT        0x0010
+#define USER_DATA_PROPERTY_TYPE_VECTOR      0x0011
+#define USER_DATA_PROPERTY_TYPE_PROPERTIES  0x0012
 
 namespace doc {
 
@@ -44,6 +46,10 @@ namespace doc {
   public:
     struct Fixed {
       fixmath::fixed value;
+
+      bool operator==(const Fixed& f) const {
+        return this->value == f.value;
+      }
     };
     struct Variant;
     using Vector = std::vector<Variant>;
@@ -55,6 +61,7 @@ namespace doc {
                                      int32_t, uint32_t,
                                      int64_t, uint64_t,
                                      Fixed,
+                                     float, double,
                                      std::string,
                                      gfx::Point,
                                      gfx::Size,

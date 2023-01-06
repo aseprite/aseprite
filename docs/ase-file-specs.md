@@ -17,11 +17,24 @@ ASE files use Intel (little-endian) byte order.
 * `DWORD`: A 32-bit unsigned integer value
 * `LONG`: A 32-bit signed integer value
 * `FIXED`: A 32-bit fixed point (16.16) value
+* `FLOAT`: A 32-bit single-precision value
+* `DOUBLE`: A 64-bit double-precision value
+* `QWORD`: A 64-bit unsigned integer value
+* `LONG64`: A 64-bit signed integer value
 * `BYTE[n]`: "n" bytes.
 * `STRING`:
   - `WORD`: string length (number of bytes)
   - `BYTE[length]`: characters (in UTF-8)
   The `'\0'` character is not included.
+* `POINT`:
+  - `LONG`: X coordinate value
+  - `LONG`: Y coordinate value
+* `SIZE`:
+  - `LONG`: Width value
+  - `LONG`: Height value
+* `RECT`:
+  - `POINT`: Origin coordinates
+  - `SIZE`: Rectangle size
 * `PIXEL`: One pixel, depending on the image pixel format:
   - **RGBA**: `BYTE[4]`, each pixel have 4 bytes in this order Red, Green, Blue, Alpha.
   - **Grayscale**: `BYTE[2]`, each pixel have 2 bytes in the order Value, Alpha.
@@ -251,15 +264,19 @@ Color profile for RGB or grayscale values.
 
 ### External Files Chunk (0x2008)
 
-A list of external files linked with this file. It might be used to
-reference external palettes or tilesets.
+A list of external files linked with this file can be found in the first frame. It might be used to
+reference external palettes, tilesets, or extensions that make use of extended properties.
 
     DWORD       Number of entries
     BYTE[8]     Reserved (set to zero)
     + For each entry
-      DWORD     Entry ID (this ID is referenced by tilesets or palettes)
-      BYTE[8]   Reserved (set to zero)
-      STRING    External file name
+      DWORD     Entry ID (this ID is referenced by tilesets, palettes, or extended properties)
+      BYTE      Type
+                  0 - External palette
+                  1 - External tileset
+                  2 - Extension name for properties
+      BYTE[7]   Reserved (set to zero)
+      STRING    External file name or extension ID
 
 ### Mask Chunk (0x2016) DEPRECATED
 
@@ -331,13 +348,18 @@ layer, this user data belongs to that layer, if we've read a cel, it
 belongs to that cel, etc. There are some special cases: After a Tags
 chunk, there will be several user data fields, one for each tag, you
 should associate the user data in the same order as the tags are in
-the Tags chunk.
+the Tags chunk. Another special case is after the Tileset chunk, it
+could be followed by a user data chunk (empty or not) and then all
+the user data chunks of the tiles ordered by tile index, or it could
+be followed by none user data chunk if the file was created in an
+older Aseprite version.
 In version 1.3 a sprite has associated user data, to consider this case
 there is an User Data Chunk at the first frame after the Palette Chunk.
 
     DWORD       Flags
                   1 = Has text
                   2 = Has color
+                  4 = Has properties
     + If flags have bit 1
       STRING    Text
     + If flags have bit 2
@@ -345,6 +367,59 @@ there is an User Data Chunk at the first frame after the Palette Chunk.
       BYTE      Color Green (0-255)
       BYTE      Color Blue (0-255)
       BYTE      Color Alpha (0-255)
+    + If flags have bit 4
+      DWORD     Size in bytes of all properties maps stored in this chunk
+      DWORD     Number of properties maps
+      + For each properties map:
+        DWORD     Properties maps key
+                  == 0 means user properties
+                  != 0 means an extension Entry ID (see External Files Chunk))
+        DWORD     Number of properties
+        + For each property:
+          STRING    Name
+          WORD      Type
+          + If type==0x0001 (bool)
+            BYTE    == 0 means FALSE
+                    != 0 means TRUE
+          + If type==0x0002 (int8)
+            BYTE
+          + If type==0x0003 (uint8)
+            BYTE
+          + If type==0x0004 (int16)
+            SHORT
+          + If type==0x0005 (uint16)
+            WORD
+          + If type==0x0006 (int32)
+            LONG
+          + If type==0x0007 (uint32)
+            DWORD
+          + If type==0x0008 (int64)
+            LONG64
+          + If type==0x0009 (uint64)
+            QWORD
+          + If type==0x000A
+            FIXED
+          + If type==0x000B
+            FLOAT
+          + If type==0x000C
+            DOUBLE
+          + If type==0x000D
+            STRING
+          + If type==0x000E
+            POINT
+          + If type==0x000F
+            SIZE
+          + If type==0x0010
+            RECT
+          + If type==0x0011 (vector)
+            DWORD     Number of elements
+            WORD      Element's type
+            BYTE[]    As many values as the number of elements indicates
+                      Structure depends on the element's type
+          + If type==0x0012 (nested properties map)
+            DWORD     Number of properties
+            BYTE[]    Nested properties data
+                      Structure is the same as indicated in this loop
 
 ### Slice Chunk (0x2022)
 

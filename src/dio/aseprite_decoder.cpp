@@ -20,7 +20,6 @@
 #include "dio/file_interface.h"
 #include "dio/pixel_io.h"
 #include "doc/doc.h"
-#include "doc/user_data.h"
 #include "doc/util.h"
 #include "fixmath/fixmath.h"
 #include "fmt/format.h"
@@ -59,12 +58,12 @@ bool AsepriteDecoder::decode()
 
   // Create the new sprite
   std::unique_ptr<doc::Sprite> sprite(
-    new doc::Sprite(doc::ImageSpec(header.depth == 32 ? doc::ColorMode::RGB:
-                                   header.depth == 16 ? doc::ColorMode::GRAYSCALE:
-                                                        doc::ColorMode::INDEXED,
-                                   header.width,
-                                   header.height),
-                    header.ncolors));
+    std::make_unique<doc::Sprite>(doc::ImageSpec(header.depth == 32 ? doc::ColorMode::RGB:
+                                                 header.depth == 16 ? doc::ColorMode::GRAYSCALE:
+                                                                      doc::ColorMode::INDEXED,
+                                                 header.width,
+                                                 header.height),
+                                  header.ncolors));
 
   // Set frames and speed
   sprite->setTotalFrames(doc::frame_t(header.frames));
@@ -228,38 +227,51 @@ bool AsepriteDecoder::decode()
 
           case ASE_FILE_CHUNK_USER_DATA: {
             doc::UserData userData;
-            readUserDataChunk(&userData);
+            readUserDataChunk(&userData, extFiles);
 
             if (last_object_with_user_data) {
               last_object_with_user_data->setUserData(userData);
 
-              if (last_object_with_user_data->type() == doc::ObjectType::Tag) {
-                // Tags are a special case, user data for tags come
-                // all together (one next to other) after the tags
-                // chunk, in the same order:
-                //
-                // * TAGS CHUNK (TAG1, TAG2, ..., TAGn)
-                // * USER DATA CHUNK FOR TAG1
-                // * USER DATA CHUNK FOR TAG2
-                // * ...
-                // * USER DATA CHUNK FOR TAGn
-                //
-                // So here we expect that the next user data chunk
-                // will correspond to the next tag in the tags
-                // collection.
-                ++tag_it;
+              switch(last_object_with_user_data->type()) {
+                case doc::ObjectType::Tag:
+                  // Tags are a special case, user data for tags come
+                  // all together (one next to other) after the tags
+                  // chunk, in the same order:
+                  //
+                  // * TAGS CHUNK (TAG1, TAG2, ..., TAGn)
+                  // * USER DATA CHUNK FOR TAG1
+                  // * USER DATA CHUNK FOR TAG2
+                  // * ...
+                  // * USER DATA CHUNK FOR TAGn
+                  //
+                  // So here we expect that the next user data chunk
+                  // will correspond to the next tag in the tags
+                  // collection.
+                  ++tag_it;
 
-                if (tag_it != tag_end)
-                  last_object_with_user_data = *tag_it;
-                else
+                  if (tag_it != tag_end)
+                    last_object_with_user_data = *tag_it;
+                  else
+                    last_object_with_user_data = nullptr;
+                  break;
+                case doc::ObjectType::Tileset:
+                  // Read tiles user datas.
+                  // TODO: Should we refactor how tile user data is handled so we can actually
+                  // decode this user data chunks the same way as the user data chunks for
+                  // the tags?
+                  doc::Tileset* tileset = static_cast<doc::Tileset*>(last_object_with_user_data);
+                  readTilesData(tileset, extFiles);
                   last_object_with_user_data = nullptr;
+                  break;
               }
             }
             break;
           }
 
           case ASE_FILE_CHUNK_TILESET: {
-            readTilesetChunk(sprite.get(), &header, extFiles);
+            doc::Tileset* tileset = readTilesetChunk(sprite.get(), &header, extFiles);
+            if (tileset)
+              last_object_with_user_data = tileset;
             break;
           }
 
@@ -376,6 +388,67 @@ std::string AsepriteDecoder::readString()
     string.push_back(read8());
 
   return string;
+}
+
+float AsepriteDecoder::readFloat()
+{
+  int b1, b2, b3, b4;
+
+  if ((b1 = read8()) == EOF)
+    return EOF;
+
+  if ((b2 = read8()) == EOF)
+    return EOF;
+
+  if ((b3 = read8()) == EOF)
+    return EOF;
+
+  if ((b4 = read8()) == EOF)
+    return EOF;
+
+  // Little endian.
+  int v = ((b4 << 24) | (b3 << 16) | (b2 << 8) | b1);
+  return *reinterpret_cast<float*>(&v);
+}
+
+double AsepriteDecoder::readDouble()
+{
+  int b1, b2, b3, b4, b5, b6, b7, b8;
+
+  if ((b1 = read8()) == EOF)
+    return EOF;
+
+  if ((b2 = read8()) == EOF)
+    return EOF;
+
+  if ((b3 = read8()) == EOF)
+    return EOF;
+
+  if ((b4 = read8()) == EOF)
+    return EOF;
+
+  if ((b5 = read8()) == EOF)
+    return EOF;
+
+  if ((b6 = read8()) == EOF)
+    return EOF;
+
+  if ((b7 = read8()) == EOF)
+    return EOF;
+
+  if ((b8 = read8()) == EOF)
+    return EOF;
+
+  // Little endian.
+  long long v = (((long long)b8 << 56) |
+                 ((long long)b7 << 48) |
+                 ((long long)b6 << 40) |
+                 ((long long)b5 << 32) |
+                 ((long long)b4 << 24) |
+                 ((long long)b3 << 16) |
+                 ((long long)b2 << 8) |
+                 (long long)b1);
+  return *reinterpret_cast<double*>(&v);
 }
 
 doc::Palette* AsepriteDecoder::readColorChunk(doc::Palette* prevPal,
@@ -771,7 +844,7 @@ doc::Cel* AsepriteDecoder::readCelChunk(doc::Sprite* sprite,
             break;
         }
 
-        cel.reset(new doc::Cel(frame, image));
+        cel = std::make_unique<doc::Cel>(frame, image);
         cel->setPosition(x, y);
         cel->setOpacity(opacity);
       }
@@ -812,7 +885,7 @@ doc::Cel* AsepriteDecoder::readCelChunk(doc::Sprite* sprite,
         doc::ImageRef image(doc::Image::create(pixelFormat, w, h));
         read_compressed_image(f(), delegate(), image.get(), header, chunk_end);
 
-        cel.reset(new doc::Cel(frame, image));
+        cel = std::make_unique<doc::Cel>(frame, image);
         cel->setPosition(x, y);
         cel->setOpacity(opacity);
       }
@@ -857,7 +930,7 @@ doc::Cel* AsepriteDecoder::readCelChunk(doc::Sprite* sprite,
             return doc::tile_geti(tile) >= tilesetSize ? doc::notile : tile;
           });
 
-        cel.reset(new doc::Cel(frame, image));
+        cel = std::make_unique<doc::Cel>(frame, image);
         cel->setPosition(x, y);
         cel->setOpacity(opacity);
       }
@@ -938,10 +1011,10 @@ void AsepriteDecoder::readExternalFiles(AsepriteExternalFiles& extFiles)
   readPadding(8);
   for (uint32_t i=0; i<n; ++i) {
     uint32_t id = read32();
-    readPadding(8);
+    uint8_t type = read8();
+    readPadding(7);
     std::string fn = readString();
-    extFiles.to_fn[id] = fn;
-    extFiles.to_id[fn] = id;
+    extFiles.put(id, fn, type);
   }
 }
 
@@ -1016,7 +1089,8 @@ void AsepriteDecoder::readTagsChunk(doc::Tags* tags)
   }
 }
 
-void AsepriteDecoder::readUserDataChunk(doc::UserData* userData)
+void AsepriteDecoder::readUserDataChunk(doc::UserData* userData,
+                                        const AsepriteExternalFiles& extFiles)
 {
   size_t flags = read32();
 
@@ -1031,6 +1105,10 @@ void AsepriteDecoder::readUserDataChunk(doc::UserData* userData)
     int b = read8();
     int a = read8();
     userData->setColor(doc::rgba(r, g, b, a));
+  }
+
+  if (flags & ASE_USER_DATA_FLAG_HAS_PROPERTIES) {
+    readPropertiesMaps(userData->propertiesMaps(), extFiles);
   }
 }
 
@@ -1057,7 +1135,7 @@ doc::Slice* AsepriteDecoder::readSliceChunk(doc::Slices& slices)
   read32();                        // 4 bytes reserved
   std::string name = readString(); // Name
 
-  std::unique_ptr<doc::Slice> slice(new doc::Slice);
+  std::unique_ptr<doc::Slice> slice(std::make_unique<doc::Slice>());
   slice->setName(name);
 
   // For each key
@@ -1089,7 +1167,7 @@ doc::Slice* AsepriteDecoder::readSliceChunk(doc::Slices& slices)
   return slice.release();
 }
 
-void AsepriteDecoder::readTilesetChunk(doc::Sprite* sprite,
+doc::Tileset* AsepriteDecoder::readTilesetChunk(doc::Sprite* sprite,
                                        const AsepriteHeader* header,
                                        const AsepriteExternalFiles& extFiles)
 {
@@ -1107,7 +1185,7 @@ void AsepriteDecoder::readTilesetChunk(doc::Sprite* sprite,
     delegate()->error(
       fmt::format("Error: Invalid tileset (number of tiles={0}, tile size={1}x{2})",
                   ntiles, w, h));
-    return;
+    return nullptr;
   }
 
   doc::Grid grid(gfx::Size(w, h));
@@ -1158,6 +1236,154 @@ void AsepriteDecoder::readTilesetChunk(doc::Sprite* sprite,
   if (id >= m_tilesetFlags.size())
     m_tilesetFlags.resize(id+1, 0);
   m_tilesetFlags[id] = flags;
+
+  return tileset;
+}
+
+void AsepriteDecoder::readPropertiesMaps(doc::UserData::PropertiesMaps& propertiesMaps,
+                                         const AsepriteExternalFiles& extFiles)
+{
+  auto startPos = f()->tell();
+  auto size = read32();
+  auto numMaps = read32();
+  for (int i=0; i<numMaps; ++i) {
+    auto id = read32();
+    std::string extensionId = "";
+    if (id) {
+      try {
+        extensionId = extFiles.to_fn.at(id);
+      }
+      catch (const std::out_of_range&) {
+        // This shouldn't happen, but if it does, we put the properties
+        // in an artificial extensionId.
+        extensionId = fmt::format("__missed__{}", id);
+        delegate()->error(
+          fmt::format("Error: Invalid extension ID (id={0} not found)", id));
+      }
+    }
+    auto properties = readPropertyValue(USER_DATA_PROPERTY_TYPE_PROPERTIES);
+    propertiesMaps[extensionId] = *std::get_if<doc::UserData::Properties>(&properties);
+  }
+  f()->seek(startPos+size);
+}
+
+const doc::UserData::Variant AsepriteDecoder::readPropertyValue(uint16_t type)
+{
+  switch (type) {
+    case USER_DATA_PROPERTY_TYPE_BOOL: {
+      bool value = read8();
+      return value;
+    }
+    case USER_DATA_PROPERTY_TYPE_INT8: {
+      int8_t value = read8();
+      return value;
+    }
+    case USER_DATA_PROPERTY_TYPE_UINT8: {
+      uint8_t value = read8();
+      return value;
+    }
+    case USER_DATA_PROPERTY_TYPE_INT16: {
+      int16_t value = read16();
+      return value;
+    }
+    case USER_DATA_PROPERTY_TYPE_UINT16: {
+      uint16_t value = read16();
+      return value;
+    }
+    case USER_DATA_PROPERTY_TYPE_INT32: {
+      int32_t value = read32();
+      return value;
+    }
+    case USER_DATA_PROPERTY_TYPE_UINT32: {
+      uint32_t value = read32();
+      return value;
+    }
+    case USER_DATA_PROPERTY_TYPE_INT64: {
+      int64_t value = read64();
+      return value;
+    }
+    case USER_DATA_PROPERTY_TYPE_UINT64: {
+      uint64_t value = read64();
+      return value;
+    }
+    case USER_DATA_PROPERTY_TYPE_FIXED: {
+      int32_t value = read32();
+      return doc::UserData::Fixed{value};
+    }
+    case USER_DATA_PROPERTY_TYPE_FLOAT: {
+      float value = readFloat();
+      return value;
+    }
+    case USER_DATA_PROPERTY_TYPE_DOUBLE: {
+      double value = readDouble();
+      return value;
+    }
+    case USER_DATA_PROPERTY_TYPE_STRING: {
+      std::string value = readString();
+      return value;
+    }
+    case USER_DATA_PROPERTY_TYPE_POINT: {
+      int32_t x = read32();
+      int32_t y = read32();
+      return gfx::Point(x, y);
+    }
+    case USER_DATA_PROPERTY_TYPE_SIZE: {
+      int32_t w = read32();
+      int32_t h = read32();
+      return gfx::Size(w, h);
+    }
+    case USER_DATA_PROPERTY_TYPE_RECT: {
+      int32_t x = read32();
+      int32_t y = read32();
+      int32_t w = read32();
+      int32_t h = read32();
+      return gfx::Rect(x, y, w, h);
+    }
+    case USER_DATA_PROPERTY_TYPE_VECTOR: {
+      auto numElems = read32();
+      auto elemsType = read16();
+      std::vector<doc::UserData::Variant> value;
+      for (int k=0; k<numElems;++k) {
+        value.push_back(readPropertyValue(elemsType));
+      }
+      return value;
+    }
+    case USER_DATA_PROPERTY_TYPE_PROPERTIES: {
+      auto numProps = read32();
+      doc::UserData::Properties value;
+      for (int j=0; j<numProps;++j) {
+        auto name = readString();
+        auto type = read16();
+        value[name] = readPropertyValue(type);
+      }
+      return value;
+    }
+  }
+
+  return doc::UserData::Variant{};
+}
+
+void AsepriteDecoder::readTilesData(doc::Tileset* tileset, const AsepriteExternalFiles& extFiles)
+{
+  // Read as many user data chunks as tiles are in the tileset
+  for (doc::tile_index i=0; i < tileset->size(); i++) {
+    size_t chunk_pos = f()->tell();
+    // Read chunk information
+    int chunk_size = read32();
+    int chunk_type = read16();
+    if (chunk_type != ASE_FILE_CHUNK_USER_DATA) {
+      // Something went wrong...
+      delegate()->error(
+              fmt::format("WARNING: Unexpected chunk type {0} when reading tileset index {1}", chunk_type, i));
+      f()->seek(chunk_pos);
+      return;
+    }
+
+    doc::UserData tileData;
+    readUserDataChunk(&tileData, extFiles);
+    tileset->setTileData(i, tileData);
+    f()->seek(chunk_pos+chunk_size);
+  }
 }
 
 } // namespace dio

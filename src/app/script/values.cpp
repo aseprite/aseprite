@@ -62,6 +62,19 @@ int get_value_from_lua(lua_State* L, int index) {
 }
 
 // ----------------------------------------------------------------------
+// float
+
+template<>
+void push_value_to_lua(lua_State* L, const float& value) {
+  lua_pushnumber(L, value);
+}
+
+template<>
+float get_value_from_lua(lua_State* L, int index) {
+  return lua_tonumber(L, index);
+}
+
+// ----------------------------------------------------------------------
 // double
 
 template<>
@@ -322,6 +335,12 @@ void push_value_to_lua(lua_State* L, const doc::UserData::Variant& value)
     case USER_DATA_PROPERTY_TYPE_FIXED:
       push_value_to_lua(L, *std::get_if<doc::UserData::Fixed>(&value));
       break;
+    case USER_DATA_PROPERTY_TYPE_FLOAT:
+      push_value_to_lua(L, *std::get_if<float>(&value));
+      break;
+    case USER_DATA_PROPERTY_TYPE_DOUBLE:
+      push_value_to_lua(L, *std::get_if<double>(&value));
+      break;
     case USER_DATA_PROPERTY_TYPE_STRING:
       push_value_to_lua(L, *std::get_if<std::string>(&value));
       break;
@@ -366,9 +385,7 @@ doc::UserData::Variant get_value_from_lua(lua_State* L, int index)
       if (lua_isinteger(L, index))
         v = lua_tointeger(L, index);
       else {
-        v = doc::UserData::Fixed{
-          fixmath::ftofix(lua_tonumber(L, index))
-        };
+        v = lua_tonumber(L, index);
       }
       break;
 
