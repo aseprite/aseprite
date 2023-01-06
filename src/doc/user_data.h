@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2022 Igara Studio S.A.
+// Copyright (c) 2022-2023 Igara Studio S.A.
 // Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -15,12 +15,14 @@
 #include "gfx/size.h"
 #include "gfx/rect.h"
 
+#include <cstddef>
 #include <map>
 #include <stdexcept>
 #include <string>
 #include <variant>
 #include <vector>
 
+#define USER_DATA_PROPERTY_TYPE_NULLPTR     0x0000
 #define USER_DATA_PROPERTY_TYPE_BOOL        0x0001
 #define USER_DATA_PROPERTY_TYPE_INT8        0x0002
 #define USER_DATA_PROPERTY_TYPE_UINT8       0x0003
@@ -55,7 +57,8 @@ namespace doc {
     using Vector = std::vector<Variant>;
     using Properties = std::map<std::string, Variant>;
     using PropertiesMaps = std::map<std::string, Properties>;
-    using VariantBase = std::variant<bool,
+    using VariantBase = std::variant<std::nullptr_t,
+                                     bool,
                                      int8_t, uint8_t,
                                      int16_t, uint16_t,
                                      int32_t, uint32_t,
@@ -87,7 +90,7 @@ namespace doc {
       }
 
       const uint16_t type() const {
-        return index() + 1;
+        return index();
       }
     };
 

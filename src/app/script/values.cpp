@@ -24,6 +24,15 @@ namespace script {
 // TODO this is similar to app::Param<> specializations::fromLua() specializations
 
 // ----------------------------------------------------------------------
+// nullptr_t
+
+template<>
+void push_value_to_lua(lua_State* L, const nullptr_t&) {
+  TRACEARGS("push_value_to_lua nullptr_t");
+  lua_pushnil(L);
+}
+
+// ----------------------------------------------------------------------
 // bool
 
 template<>
@@ -305,6 +314,9 @@ void push_value_to_lua(lua_State* L, const doc::UserData::Variant& value)
 {
 #if 1 // We are targetting macOS 10.9, so we don't have the std::visit() available
   switch (value.type()) {
+    case USER_DATA_PROPERTY_TYPE_NULLPTR:
+      push_value_to_lua<nullptr_t>(L, nullptr);
+      break;
     case USER_DATA_PROPERTY_TYPE_BOOL:
       push_value_to_lua(L, *std::get_if<bool>(&value));
       break;
@@ -374,7 +386,7 @@ doc::UserData::Variant get_value_from_lua(lua_State* L, int index)
 
     case LUA_TNONE:
     case LUA_TNIL:
-      // TODO should we add nullptr_t in Variant?
+      v = nullptr;
       break;
 
     case LUA_TBOOLEAN:

@@ -495,7 +495,6 @@ add_library(app-lib
   cmd/remove_tag.cpp
   cmd/remove_tile.cpp
   cmd/remove_tileset.cpp
-  cmd/remove_user_data_property.cpp
   cmd/replace_image.cpp
   cmd/replace_tileset.cpp
   cmd/reselect_mask.cpp

@@ -1,5 +1,5 @@
 // Aseprite Document IO Library
-// Copyright (c) 2018-2022 Igara Studio S.A.
+// Copyright (c) 2018-2023 Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -1270,6 +1270,11 @@ void AsepriteDecoder::readPropertiesMaps(doc::UserData::PropertiesMaps& properti
 const doc::UserData::Variant AsepriteDecoder::readPropertyValue(uint16_t type)
 {
   switch (type) {
+    case USER_DATA_PROPERTY_TYPE_NULLPTR: {
+      // This shouldn't exist in a .aseprite file
+      ASSERT(false);
+      return nullptr;
+    }
     case USER_DATA_PROPERTY_TYPE_BOOL: {
       bool value = read8();
       return value;

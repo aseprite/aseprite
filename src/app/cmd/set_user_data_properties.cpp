@@ -10,10 +10,6 @@
 
 #include "app/cmd/set_user_data_properties.h"
 
-#include "app/cmd.h"
-#include "app/cmd/with_document.h"
-#include "doc/object_id.h"
-#include "doc/user_data.h"
 #include "doc/with_user_data.h"
 
 namespace app {

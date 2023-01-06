@@ -33,6 +33,12 @@ do
   spr.properties.b = nil
   assert(spr.properties.b == nil)
   assert(#spr.properties == 3)
+  -- We set an unexistent property now, undo it, the property shouldn't exist
+  spr.properties.b = 5
+  assert(spr.properties.b == 5)
+  assert(#spr.properties == 4)
+  app.undo()
+  assert(#spr.properties == 3)
 
   spr.properties.v = { 10, 20, 30 }
   assert(#spr.properties.v == 3)

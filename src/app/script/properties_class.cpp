@@ -8,7 +8,6 @@
 #include "config.h"
 #endif
 
-#include "app/cmd/remove_user_data_property.h"
 #include "app/cmd/set_user_data_properties.h"
 #include "app/cmd/set_user_data_property.h"
 #include "app/script/docobj.h"
@@ -84,46 +83,18 @@ int Properties_newindex(lua_State* L)
     return luaL_error(L, "the object with these properties was destroyed");
 
   auto& properties = obj->userData().properties(propObj->extID);
+  auto newValue = get_value_from_lua<doc::UserData::Variant>(L, 3);
 
-  switch (lua_type(L, 3)) {
-
-    case LUA_TNONE:
-    case LUA_TNIL: {
-      // If we assign nil to a property, we just remove the property.
-
-      auto it = properties.find(field);
-      if (it != properties.end()) {
-        // TODO add Object::sprite() member function, and fix "Tx" object
-        //      to use the sprite of this object instead of the activeDocument()
-        //if (obj->sprite()) {
-        if (App::instance()->context()->activeDocument()) {
-          Tx tx;
-          tx(new cmd::RemoveUserDataProperty(obj, propObj->extID, field));
-          tx.commit();
-        }
-        else {
-          properties.erase(it);
-        }
-      }
-      break;
-    }
-
-    default: {
-      auto newValue = get_value_from_lua<doc::UserData::Variant>(L, 3);
-
-      // TODO add Object::sprite() member function
-      //if (obj->sprite()) {
-      if (App::instance()->context()->activeDocument()) {
-        Tx tx;
-        tx(new cmd::SetUserDataProperty(obj, propObj->extID, field,
-                                        std::move(newValue)));
-        tx.commit();
-      }
-      else {
-        properties[field] = std::move(newValue);
-      }
-      break;
-    }
+  // TODO add Object::sprite() member function
+  //if (obj->sprite()) {
+  if (App::instance()->context()->activeDocument()) {
+    Tx tx;
+    tx(new cmd::SetUserDataProperty(obj, propObj->extID, field,
+                                    std::move(newValue)));
+    tx.commit();
+  }
+  else {
+    properties[field] = std::move(newValue);
   }
   return 0;
 }
