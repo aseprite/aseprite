@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2022  Igara Studio S.A.
+// Copyright (c) 2019-2023  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -24,6 +24,7 @@ namespace doc {
   class Sprite;
 
   class Tileset : public WithUserData {
+    static UserData kNoUserData;
   public:
     typedef std::vector<ImageRef> Tiles;
     typedef std::vector<UserData> Datas;
@@ -69,11 +70,11 @@ namespace doc {
     void set(const tile_index ti,
              const ImageRef& image);
 
-    UserData getTileData(const tile_index ti) const {
+    UserData& getTileData(const tile_index ti) const {
       if (ti >= 0 && ti < size())
-        return m_datas[ti];
+        return const_cast<UserData&>(m_datas[ti]);
       else
-        return UserData();
+        return kNoUserData;
     }
     void setTileData(const tile_index ti,
                      const UserData& userData);

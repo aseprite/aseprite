@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2022  Igara Studio S.A.
+// Copyright (c) 2019-2023  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -19,6 +19,9 @@
 #define TS_TRACE(...) // TRACE(__VA_ARGS__)
 
 namespace doc {
+
+// static
+UserData Tileset::kNoUserData;
 
 Tileset::Tileset(Sprite* sprite,
                  const Grid& grid,
@@ -131,7 +134,8 @@ void Tileset::remap(const Remap& remap)
 void Tileset::setTileData(const tile_index ti,
                           const UserData& userData)
 {
-  m_datas[ti] = userData;
+  if (ti >= 0 && ti < size())
+    m_datas[ti] = userData;
 }
 
 void Tileset::set(const tile_index ti,

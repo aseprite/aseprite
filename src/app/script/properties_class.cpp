@@ -8,6 +8,8 @@
 #include "config.h"
 #endif
 
+#include "app/cmd/set_tile_data_properties.h"
+#include "app/cmd/set_tile_data_property.h"
 #include "app/cmd/set_user_data_properties.h"
 #include "app/cmd/set_user_data_property.h"
 #include "app/script/docobj.h"
@@ -15,6 +17,7 @@
 #include "app/script/luacpp.h"
 #include "app/script/values.h"
 #include "app/tx.h"
+#include "doc/tileset.h"
 #include "doc/with_user_data.h"
 
 #include <cstring>
@@ -25,14 +28,58 @@ namespace script {
 namespace {
 
 struct Properties {
+  // WithUserData ID or tileset ID
   doc::ObjectId id = 0;
+  // If notile, it's the properties of a WithUserData, in other case,
+  // it's the user data of this specific tile.
+  doc::tile_index ti = doc::notile;
   std::string extID;
 
-  Properties(doc::ObjectId id,
+  Properties(const doc::WithUserData* wud,
              const std::string& extID)
-    : id(id)
+    : id(wud->id())
     , extID(extID) {
   }
+
+  Properties(const doc::Tileset* ts,
+             const doc::tile_index ti,
+             const std::string& extID)
+    : id(ts->id())
+    , ti(ti)
+    , extID(extID) {
+  }
+
+  Properties(const Properties& copy,
+             const std::string& extID)
+    : id(copy.id)
+    , ti(copy.ti)
+    , extID(extID) {
+  }
+
+  doc::WithUserData* object(lua_State* L) {
+    auto obj = static_cast<doc::WithUserData*>(doc::get_object(id));
+    if (!obj) {
+      // luaL_error never returns
+      luaL_error(L, "the object with these properties was destroyed");
+    }
+    return obj;
+  }
+
+  doc::UserData::Properties& properties(lua_State* L, doc::WithUserData* obj = nullptr) {
+    if (!obj)
+      obj = object(L);
+    if (ti == doc::notile) {
+      return obj->userData().properties(extID);
+    }
+    else {
+      ASSERT(obj->type() == doc::ObjectType::Tileset);
+      return
+        const_cast<doc::UserData*>(
+          &static_cast<doc::Tileset*>(obj)->getTileData(ti))
+        ->properties(extID);
+    }
+  }
+
 };
 
 using PropertiesIterator = doc::UserData::Properties::iterator;
@@ -40,11 +87,7 @@ using PropertiesIterator = doc::UserData::Properties::iterator;
 int Properties_len(lua_State* L)
 {
   auto propObj = get_obj<Properties>(L, 1);
-  auto obj = static_cast<doc::WithUserData*>(get_object(propObj->id));
-  if (!obj)
-    return luaL_error(L, "the object with these properties was destroyed");
-
-  auto& properties = obj->userData().properties(propObj->extID);
+  auto& properties = propObj->properties(L);
   lua_pushinteger(L, properties.size());
   return 1;
 }
@@ -56,11 +99,7 @@ int Properties_index(lua_State* L)
   if (!field)
     return luaL_error(L, "field in 'properties.field' must be a string");
 
-  auto obj = static_cast<doc::WithUserData*>(get_object(propObj->id));
-  if (!obj)
-    return luaL_error(L, "the object with these properties was destroyed");
-
-  auto& properties = obj->userData().properties(propObj->extID);
+  auto& properties = propObj->properties(L);
   auto it = properties.find(field);
   if (it != properties.end()) {
     push_value_to_lua(L, (*it).second);
@@ -82,15 +121,22 @@ int Properties_newindex(lua_State* L)
   if (!obj)
     return luaL_error(L, "the object with these properties was destroyed");
 
-  auto& properties = obj->userData().properties(propObj->extID);
+  auto& properties = propObj->properties(L, obj);
   auto newValue = get_value_from_lua<doc::UserData::Variant>(L, 3);
 
   // TODO add Object::sprite() member function
   //if (obj->sprite()) {
   if (App::instance()->context()->activeDocument()) {
     Tx tx;
-    tx(new cmd::SetUserDataProperty(obj, propObj->extID, field,
-                                    std::move(newValue)));
+    if (propObj->ti != doc::notile) {
+      tx(new cmd::SetTileDataProperty(static_cast<doc::Tileset*>(obj),
+                                      propObj->ti, propObj->extID, field,
+                                      std::move(newValue)));
+    }
+    else {
+      tx(new cmd::SetUserDataProperty(obj, propObj->extID, field,
+                                      std::move(newValue)));
+    }
     tx.commit();
   }
   else {
@@ -121,7 +167,13 @@ int Properties_call(lua_State* L)
     //if (obj->sprite()) {
     if (App::instance()->context()->activeDocument()) {
       Tx tx;
-      tx(new cmd::SetUserDataProperties(obj, extID, std::move(newProperties)));
+      if (propObj->ti != doc::notile) {
+        tx(new cmd::SetTileDataProperties(static_cast<doc::Tileset*>(obj),
+                                          propObj->ti, extID, std::move(newProperties)));
+      }
+      else {
+        tx(new cmd::SetUserDataProperties(obj, extID, std::move(newProperties)));
+      }
       tx.commit();
     }
     else {
@@ -130,18 +182,14 @@ int Properties_call(lua_State* L)
     }
   }
 
-  push_new<Properties>(L, propObj->id, extID);
+  push_new<Properties>(L, *propObj, extID);
   return 1;
 }
 
 int Properties_pairs_next(lua_State* L)
 {
   auto propObj = get_obj<Properties>(L, 1);
-  auto obj = static_cast<doc::WithUserData*>(get_object(propObj->id));
-  if (!obj)
-    return luaL_error(L, "the object with these properties was destroyed");
-
-  auto& properties = obj->userData().properties(propObj->extID);
+  auto& properties = propObj->properties(L);
   auto& it = *get_obj<PropertiesIterator>(L, lua_upvalueindex(1));
   if (it == properties.end())
     return 0;
@@ -158,7 +206,7 @@ int Properties_pairs(lua_State* L)
   if (!obj)
     return luaL_error(L, "the object with these properties was destroyed");
 
-  auto& properties = obj->userData().properties(propObj->extID);
+  auto& properties = propObj->properties(L);
 
   push_obj(L, properties.begin());
   lua_pushcclosure(L, Properties_pairs_next, 1);
@@ -198,10 +246,18 @@ void register_properties_class(lua_State* L)
 }
 
 void push_properties(lua_State* L,
-                     doc::WithUserData* userData,
+                     doc::WithUserData* wud,
                      const std::string& extID)
 {
-  push_new<Properties>(L, userData->id(), extID);
+  push_new<Properties>(L, wud, extID);
+}
+
+void push_tile_properties(lua_State* L,
+                          const doc::Tileset* ts,
+                          doc::tile_index ti,
+                          const std::string& extID)
+{
+  push_new<Properties>(L, ts, ti, extID);
 }
 
 } // namespace script

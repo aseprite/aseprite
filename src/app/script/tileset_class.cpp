@@ -48,6 +48,17 @@ int Tileset_getTile(lua_State* L)
   return 1;
 }
 
+int Tileset_tile(lua_State* L)
+{
+  auto tileset = get_docobj<Tileset>(L, 1);
+  tile_index ti = lua_tointeger(L, 2);
+  if (ti >= 0 && ti < tileset->size())
+    push_tile(L, tileset, ti);
+  else
+    lua_pushnil(L);
+  return 1;
+}
+
 int Tileset_get_name(lua_State* L)
 {
   auto tileset = get_docobj<Tileset>(L, 1);
@@ -89,8 +100,7 @@ const luaL_Reg Tileset_methods[] = {
   { "__eq", Tileset_eq },
   { "__len", Tileset_len },
   { "getTile", Tileset_getTile },
-  // TODO
-  // { "setTile", Tileset_setTile },
+  { "tile", Tileset_tile },
   { nullptr, nullptr }
 };
 

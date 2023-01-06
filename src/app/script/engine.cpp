@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -189,6 +189,7 @@ void register_sprites_class(lua_State* L);
 void register_tag_class(lua_State* L);
 void register_tags_class(lua_State* L);
 void register_theme_classes(lua_State* L);
+void register_tile_class(lua_State* L);
 void register_tileset_class(lua_State* L);
 void register_tilesets_class(lua_State* L);
 void register_tool_class(lua_State* L);
@@ -468,6 +469,7 @@ Engine::Engine()
   register_tag_class(L);
   register_tags_class(L);
   register_theme_classes(L);
+  register_tile_class(L);
   register_tileset_class(L);
   register_tilesets_class(L);
   register_tool_class(L);

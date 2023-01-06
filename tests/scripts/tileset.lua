@@ -26,6 +26,7 @@ do
   tileset.name = "Default Land"
   assert(tileset.name == "Default Land")
 
+  -- Tileset user data
   assert(tileset.data == "")
   tileset.data = "land"
   assert(tileset.data == "land")
@@ -33,4 +34,18 @@ do
   assert(tileset.color == Color())
   tileset.color = Color(255, 0, 0)
   assert(tileset.color == Color(255, 0, 0))
+
+  -- Create extra tile
+  app.useTool{
+    tool='pencil',
+    color=1,
+    layer=tilemap,
+    tilesetMode=TilesetMode.STACK,
+    points={ Point(1, 1) }}
+  assert(#tileset == 3)
+
+  -- Check that Tileset:getTile(ti) returns Tileset:tile(ti).image user data
+  for ti=0,2 do
+    assert(tileset:tile(ti).image.id == tileset:getTile(ti).id)
+  end
 end

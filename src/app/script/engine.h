@@ -20,6 +20,7 @@
 #include "doc/frame.h"
 #include "doc/object_ids.h"
 #include "doc/pixel_format.h"
+#include "doc/tile.h"
 #include "gfx/fwd.h"
 
 #include <cstdio>
@@ -163,6 +164,8 @@ namespace app {
   void push_sprite_slices(lua_State* L, doc::Sprite* sprite);
   void push_sprite_tags(lua_State* L, doc::Sprite* sprite);
   void push_sprites(lua_State* L);
+  void push_tile(lua_State* L, const doc::Tileset* tileset, doc::tile_index ti);
+  void push_tile_properties(lua_State* L, const doc::Tileset* tileset, doc::tile_index ti, const std::string& extID);
   void push_tileset(lua_State* L, const doc::Tileset* tileset);
   void push_tileset_image(lua_State* L, doc::Tileset* tileset, doc::Image* image);
   void push_tilesets(lua_State* L, doc::Tilesets* tilesets);

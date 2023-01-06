@@ -206,6 +206,7 @@ if(ENABLE_SCRIPTING)
     script/sprites_class.cpp
     script/tag_class.cpp
     script/tags_class.cpp
+    script/tile_class.cpp
     script/tileset_class.cpp
     script/tilesets_class.cpp
     script/tool_class.cpp
@@ -523,6 +524,9 @@ add_library(app-lib
   cmd/set_tag_name.cpp
   cmd/set_tag_range.cpp
   cmd/set_tag_repeat.cpp
+  cmd/set_tile_data.cpp
+  cmd/set_tile_data_properties.cpp
+  cmd/set_tile_data_property.cpp
   cmd/set_tileset_base_index.cpp
   cmd/set_tileset_name.cpp
   cmd/set_total_frames.cpp
