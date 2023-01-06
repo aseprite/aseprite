@@ -28,6 +28,9 @@
 // Tileset has UserData now
 #define TILESET_VER2     2
 
+// Each tileset's tile has UserData now
+#define TILESET_VER3     3
+
 namespace doc {
 
 using namespace base::serialization;
@@ -48,8 +51,15 @@ bool write_tileset(std::ostream& os,
     write_image(os, tileset->get(ti).get(), cancel);
   }
 
-  write8(os, TILESET_VER2);
+  write8(os, TILESET_VER3);
   write_user_data(os, tileset->userData());
+
+  for (tile_index ti=0; ti<tileset->size(); ++ti) {
+    if (cancel && cancel->isCanceled())
+      return false;
+
+    write_user_data(os, tileset->getTileData(ti));
+  }
   return true;
 }
 
@@ -72,16 +82,21 @@ Tileset* read_tileset(std::istream& is,
 
   // Read extra version byte after tiles
   uint32_t ver = read8(is);
-  if (ver == TILESET_VER1 ||
-      ver == TILESET_VER2) {
+  if (ver >= TILESET_VER1 && ver <= TILESET_VER3) {
     if (isOldVersion)
       *isOldVersion = false;
 
     tileset->setBaseIndex(1);
 
-    if (ver == TILESET_VER2) {
+    if (ver >= TILESET_VER2) {
       UserData userData = read_user_data(is);
       tileset->setUserData(userData);
+    }
+
+    if (ver >= TILESET_VER3) {
+      for (tileset_index ti=0; ti<ntiles; ++ti) {
+        tileset->setTileData(ti, read_user_data(is));
+      }
     }
   }
   // Old tileset used in internal versions (this was added to recover
