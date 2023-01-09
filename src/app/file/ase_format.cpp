@@ -208,8 +208,9 @@ static void ase_file_write_tileset_chunk(FILE* f, FileOp* fop,
 static void ase_file_write_properties(FILE* f,
                                       const UserData::Properties& properties);
 static void ase_file_write_properties_maps(FILE* f, FileOp* fop,
-                                      const dio::AsepriteExternalFiles& ext_files,
-                                      const doc::UserData::PropertiesMaps& propertiesMaps);
+                                           const dio::AsepriteExternalFiles& ext_files,
+                                            size_t nmaps,
+                                           const doc::UserData::PropertiesMaps& propertiesMaps);
 static bool ase_has_groups(LayerGroup* group);
 static void ase_ungroup_all(LayerGroup* group);
 
@@ -1163,12 +1164,13 @@ static void ase_file_write_user_data_chunk(FILE* f, FileOp* fop,
 {
   ChunkWriter chunk(f, frame_header, ASE_FILE_CHUNK_USER_DATA);
 
+  size_t nmaps = userData->countNonEmptyPropertiesMaps();
   int flags = 0;
   if (!userData->text().empty())
     flags |= ASE_USER_DATA_FLAG_HAS_TEXT;
   if (doc::rgba_geta(userData->color()))
     flags |= ASE_USER_DATA_FLAG_HAS_COLOR;
-  if (!userData->propertiesMaps().empty())
+  if (nmaps)
     flags |= ASE_USER_DATA_FLAG_HAS_PROPERTIES;
   fputl(flags, f);
 
@@ -1183,7 +1185,7 @@ static void ase_file_write_user_data_chunk(FILE* f, FileOp* fop,
   }
 
   if (flags & ASE_USER_DATA_FLAG_HAS_PROPERTIES) {
-    ase_file_write_properties_maps(f, fop, ext_files, userData->propertiesMaps());
+    ase_file_write_properties_maps(f, fop, ext_files, nmaps, userData->propertiesMaps());
   }
 }
 
@@ -1527,11 +1529,11 @@ static void ase_file_write_properties(FILE* f,
 }
 
 static void ase_file_write_properties_maps(FILE* f, FileOp* fop,
-                                      const dio::AsepriteExternalFiles& ext_files,
-                                      const doc::UserData::PropertiesMaps& propertiesMaps)
+                                           const dio::AsepriteExternalFiles& ext_files,
+                                           size_t nmaps,
+                                           const doc::UserData::PropertiesMaps& propertiesMaps)
 {
-  uint32_t numMaps = propertiesMaps.size();
-  if (numMaps == 0) return;
+  ASSERT(nmaps > 0);
 
   long startPos = ftell(f);
   // We zero the size in bytes of all properties maps stored in this
@@ -1539,7 +1541,7 @@ static void ase_file_write_properties_maps(FILE* f, FileOp* fop,
   // of all properties maps, at which point this field is overwritten)
   fputl(0, f);
 
-  fputl(numMaps, f);
+  fputl(nmaps, f);
   for (auto propertiesMap : propertiesMaps) {
     const UserData::Properties& properties = propertiesMap.second;
     // Skip properties map if it doesn't have any property
@@ -1558,7 +1560,11 @@ static void ase_file_write_properties_maps(FILE* f, FileOp* fop,
       // didn't support it previously.
       ASSERT(false);
       fop->setError("Error writing properties for extension '%s'.\n", extensionKey.c_str());
-      continue;
+
+      // We have to write something for this extensionId, because we
+      // wrote the number of expected property maps (nmaps) in the
+      // header.
+      //continue;
     }
     fputl(extensionId, f);
     ase_file_write_properties(f, properties);
