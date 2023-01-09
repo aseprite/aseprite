@@ -1526,23 +1526,23 @@ static void ase_file_write_properties_maps(FILE* f, FileOp* fop,
   for (auto propertiesMap : propertiesMaps) {
     const UserData::Properties& properties = propertiesMap.second;
     // Skip properties map if it doesn't have any property
-    if (properties.size() == 0) continue;
+    if (properties.empty())
+      continue;
 
     const std::string& extensionKey = propertiesMap.first;
-    try {
-      uint32_t extensionId = extensionKey == "" ? 0 : ext_files.to_id.at(extensionKey);
-      fputl(extensionId, f);
-    }
-    catch(const std::out_of_range&) {
-      ASSERT(false); // This shouldn't ever happen, but if it does...
-                     // most likely it is because we forgot to add the
-                     // extensionID to the ext_files object. And this
-                     // Could happen if someone adds the possibility to
-                     // store custom properties to some object that
-                     // didn't support it previously.
+    uint32_t extensionId = 0;
+    if (!extensionKey.empty() &&
+        !ext_files.getIDByFilename(extensionKey, extensionId)) {
+      // This shouldn't ever happen, but if it does...  most likely
+      // it is because we forgot to add the extensionID to the
+      // ext_files object. And this could happen if someone adds the
+      // possibility to store custom properties to some object that
+      // didn't support it previously.
+      ASSERT(false);
       fop->setError("Error writing properties for extension '%s'.\n", extensionKey.c_str());
       continue;
     }
+    fputl(extensionId, f);
     ase_file_write_properties(f, properties);
   }
   long endPos = ftell(f);

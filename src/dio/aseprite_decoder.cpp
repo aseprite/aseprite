@@ -1248,18 +1248,14 @@ void AsepriteDecoder::readPropertiesMaps(doc::UserData::PropertiesMaps& properti
   auto numMaps = read32();
   for (int i=0; i<numMaps; ++i) {
     auto id = read32();
-    std::string extensionId = "";
-    if (id) {
-      try {
-        extensionId = extFiles.to_fn.at(id);
-      }
-      catch (const std::out_of_range&) {
-        // This shouldn't happen, but if it does, we put the properties
-        // in an artificial extensionId.
-        extensionId = fmt::format("__missed__{}", id);
-        delegate()->error(
-          fmt::format("Error: Invalid extension ID (id={0} not found)", id));
-      }
+    std::string extensionId; // extensionId = empty by default (when id == 0)
+    if (id &&
+        !extFiles.getFilenameByID(id, extensionId)) {
+      // This shouldn't happen, but if it does, we put the properties
+      // in an artificial extensionId.
+      extensionId = fmt::format("__missed__{}", id);
+      delegate()->error(
+        fmt::format("Error: Invalid extension ID (id={0} not found)", id));
     }
     auto properties = readPropertyValue(USER_DATA_PROPERTY_TYPE_PROPERTIES);
     propertiesMaps[extensionId] = *std::get_if<doc::UserData::Properties>(&properties);
