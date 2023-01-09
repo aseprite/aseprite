@@ -8,6 +8,8 @@
 #include "config.h"
 #endif
 
+#include "app/cmd/add_tile.h"
+#include "app/cmd/remove_tile.h"
 #include "app/script/docobj.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
@@ -96,11 +98,57 @@ int Tileset_set_baseIndex(lua_State* L)
   return 0;
 }
 
+int Tileset_addTile(lua_State* L)
+{
+  auto tileset = get_docobj<Tileset>(L, 1);
+  if (auto image = may_get_image_from_arg(L, 2)) {
+    ImageRef tileImage(Image::createCopy(image));
+    tile_index ti;
+    if (tileset->findTileIndex(tileImage, ti)) {
+      // Duplicated image in the tileset, do nothing.
+      push_tileset(L, tileset);
+      return 1;
+    }
+    Tx tx;
+    tx(new cmd::AddTile(tileset, tileImage));
+    tx.commit();
+    push_tileset(L, tileset);
+    return 1;
+  }
+  else
+    return luaL_error(L, "the argument must be an image");
+}
+
+int Tileset_eraseTile(lua_State* L)
+{
+  auto tileset = get_docobj<Tileset>(L, 1);
+  tile_index ti;
+  if (auto tileImage = may_get_image_from_arg(L, 2)) {
+    ImageRef imageToRemove(Image::createCopy(tileImage));
+    if (!tileset->findTileIndex(imageToRemove, ti))
+      return luaL_error(L, "tile image not found in tileset");
+  }
+  else {
+    ti = tile_index(lua_tointeger(L, 2));
+    if (ti <= 0)
+      return luaL_error(L, "index must be equal to or greater than 1");
+    else if (ti >= tileset->size())
+      return luaL_error(L, "index %d is out of bounds. Max valid index is %d", ti, tileset->size()-1);
+  }
+  Tx tx;
+  tx(new cmd::RemoveTile(tileset, ti));
+  tx.commit();
+  push_tileset(L, tileset);
+  return 1;
+}
+
 const luaL_Reg Tileset_methods[] = {
   { "__eq", Tileset_eq },
   { "__len", Tileset_len },
   { "getTile", Tileset_getTile },
   { "tile", Tileset_tile },
+  { "addTile", Tileset_addTile },
+  { "eraseTile", Tileset_eraseTile },
   { nullptr, nullptr }
 };
 
