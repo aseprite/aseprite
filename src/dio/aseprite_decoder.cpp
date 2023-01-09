@@ -1197,9 +1197,8 @@ doc::Tileset* AsepriteDecoder::readTilesetChunk(doc::Sprite* sprite,
     const uint32_t extFileId = read32(); // filename ID in the external files chunk
     const doc::tileset_index extTilesetId = read32(); // tileset ID in the external file
 
-    auto it = extFiles.to_fn.find(extFileId);
-    if (it != extFiles.to_fn.end()) {
-      auto fn = it->second;
+    std::string fn;
+    if (extFiles.getFilenameByID(extFileId, fn)) {
       tileset->setExternal(fn, extTilesetId);
     }
     else {

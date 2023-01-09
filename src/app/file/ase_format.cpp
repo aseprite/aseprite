@@ -1338,13 +1338,13 @@ static void ase_file_write_external_files_chunk(
     return;
 
   ChunkWriter chunk(f, frame_header, ASE_FILE_CHUNK_EXTERNAL_FILE);
-  fputl(ext_files.to_fn.size(), f);        // Number of entries
+  fputl(ext_files.items.size(), f);         // Number of entries
   ase_file_write_padding(f, 8);
-  for (auto item : ext_files.to_fn) {
-    fputl(item.first, f);                  // ID
-    fputc(ext_files.types[item.first], f); // Type
+  for (const auto& it : ext_files.items) {
+    fputl(it.first, f);                     // ID
+    fputc(it.second.type, f);               // Type
     ase_file_write_padding(f, 7);
-    ase_file_write_string(f, item.second); // Filename
+    ase_file_write_string(f, it.second.fn); // Filename
   }
 }
 
