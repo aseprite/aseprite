@@ -1432,65 +1432,79 @@ static void ase_file_write_tileset_chunk(FILE* f, FileOp* fop,
 static void ase_file_write_property_value(FILE* f,
                                           const UserData::Variant& value)
 {
-  if (const bool* v = std::get_if<bool>(&value)) {
-    fputc(*v, f);
-  }
-  else if (const int8_t* v = std::get_if<int8_t>(&value)) {
-    fputc(*v, f);
-  }
-  else if (const uint8_t* v = std::get_if<uint8_t>(&value)) {
-    fputc(*v, f);
-  }
-  else if (const int16_t* v = std::get_if<int16_t>(&value)) {
-    fputw(*v, f);
-  }
-  else if (const uint16_t* v = std::get_if<uint16_t>(&value)) {
-    fputw(*v, f);
-  }
-  else if (const int32_t* v = std::get_if<int32_t>(&value)) {
-    fputl(*v, f);
-  }
-  else if (const uint32_t* v = std::get_if<uint32_t>(&value)) {
-    fputl(*v, f);
-  }
-  else if (const int64_t* v = std::get_if<int64_t>(&value)) {
-    fputq(*v, f);
-  }
-  else if (const uint64_t* v = std::get_if<uint64_t>(&value)) {
-    fputq(*v, f);
-  }
-  else if (const UserData::Fixed* v = std::get_if<UserData::Fixed>(&value)) {
-    fputl(v->value, f);
-  }
-  else if (const float_t* v = std::get_if<float_t>(&value)) {
-    fputf(*v, f);
-  }
-  else if (const double_t* v = std::get_if<double_t>(&value)) {
-    fputd(*v, f);
-  }
-  else if (const std::string* v = std::get_if<std::string>(&value)) {
-    ase_file_write_string(f, *v);
-  }
-  else if (const gfx::Point* v = std::get_if<gfx::Point>(&value)) {
-    ase_file_write_point(f, *v);
-  }
-  else if (const gfx::Size* v = std::get_if<gfx::Size>(&value)) {
-    ase_file_write_size(f, *v);
-  }
-  else if (const gfx::Rect* v = std::get_if<gfx::Rect>(&value)) {
-    ase_file_write_point(f, v->origin());
-    ase_file_write_size(f, v->size());
-  }
-  else if (const std::vector<UserData::Variant>* v = std::get_if<std::vector<UserData::Variant>>(&value)) {
-    fputl(v->size(), f);
-    const uint16_t type = v->size() == 0 ? 0 : v->front().type();
-    fputw(type, f);
-    for (auto elem : *v) {
-      ase_file_write_property_value(f, elem);
+  // TODO reduce value type depending on the actual value we're going
+  // to save (e.g. we don't need to save a 64-bit integer if the
+  // value=30, we can use a uint8_t for that case)
+
+  switch (value.type()) {
+    case USER_DATA_PROPERTY_TYPE_NULLPTR:
+      ASSERT(false);
+      break;
+    case USER_DATA_PROPERTY_TYPE_BOOL:
+      fputc(*std::get_if<bool>(&value), f);
+      break;
+    case USER_DATA_PROPERTY_TYPE_INT8:
+      fputc(*std::get_if<int8_t>(&value), f);
+      break;
+    case USER_DATA_PROPERTY_TYPE_UINT8:
+      fputc(*std::get_if<uint8_t>(&value), f);
+      break;
+    case USER_DATA_PROPERTY_TYPE_INT16:
+      fputw(*std::get_if<int16_t>(&value), f);
+      break;
+    case USER_DATA_PROPERTY_TYPE_UINT16:
+      fputw(*std::get_if<uint16_t>(&value), f);
+      break;
+    case USER_DATA_PROPERTY_TYPE_INT32:
+      fputl(*std::get_if<int32_t>(&value), f);
+      break;
+    case USER_DATA_PROPERTY_TYPE_UINT32:
+      fputl(*std::get_if<uint32_t>(&value), f);
+      break;
+    case USER_DATA_PROPERTY_TYPE_INT64:
+      fputq(*std::get_if<int64_t>(&value), f);
+      break;
+    case USER_DATA_PROPERTY_TYPE_UINT64:
+      fputq(*std::get_if<uint64_t>(&value), f);
+      break;
+    case USER_DATA_PROPERTY_TYPE_FIXED:
+      fputl(std::get_if<doc::UserData::Fixed>(&value)->value, f);
+      break;
+    case USER_DATA_PROPERTY_TYPE_FLOAT:
+      fputf(*std::get_if<float>(&value), f);
+      break;
+    case USER_DATA_PROPERTY_TYPE_DOUBLE:
+      fputd(*std::get_if<double>(&value), f);
+      break;
+    case USER_DATA_PROPERTY_TYPE_STRING:
+      ase_file_write_string(f, *std::get_if<std::string>(&value));
+      break;
+    case USER_DATA_PROPERTY_TYPE_POINT:
+      ase_file_write_point(f, *std::get_if<gfx::Point>(&value));
+      break;
+    case USER_DATA_PROPERTY_TYPE_SIZE:
+      ase_file_write_size(f, *std::get_if<gfx::Size>(&value));
+      break;
+    case USER_DATA_PROPERTY_TYPE_RECT: {
+      auto& rc = *std::get_if<gfx::Rect>(&value);
+      ase_file_write_point(f, rc.origin());
+      ase_file_write_size(f, rc.size());
+      break;
     }
-  }
-  else if (const UserData::Properties* v = std::get_if<UserData::Properties>(&value)) {
-    ase_file_write_properties(f, *v);
+    case USER_DATA_PROPERTY_TYPE_VECTOR: {
+      auto& v = *std::get_if<UserData::Vector>(&value);
+      fputl(v.size(), f);
+      const uint16_t type = (v.empty() ? 0 : v.front().type());
+      fputw(type, f);
+      for (const auto& elem : v) {
+        ASSERT(type == elem.type()); // Check that all elements have the same type
+        ase_file_write_property_value(f, elem);
+      }
+      break;
+    }
+    case USER_DATA_PROPERTY_TYPE_PROPERTIES:
+      ase_file_write_properties(f, *std::get_if<UserData::Properties>(&value));
+      break;
   }
 }
 
