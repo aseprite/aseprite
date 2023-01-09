@@ -1014,7 +1014,7 @@ void AsepriteDecoder::readExternalFiles(AsepriteExternalFiles& extFiles)
     uint8_t type = read8();
     readPadding(7);
     std::string fn = readString();
-    extFiles.put(id, fn, type);
+    extFiles.insert(id, type, fn);
   }
 }
 

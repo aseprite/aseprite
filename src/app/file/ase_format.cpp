@@ -1278,16 +1278,19 @@ static void ase_file_write_external_files_chunk(
   dio::AsepriteExternalFiles& ext_files,
   const Sprite* sprite)
 {
-  auto putExtentionIds = [](const UserData::PropertiesMaps& propertiesMaps, dio::AsepriteExternalFiles& ext_files) {
+  auto putExtentionIds = [](const UserData::PropertiesMaps& propertiesMaps,
+                            dio::AsepriteExternalFiles& ext_files) {
       for (auto propertiesMap : propertiesMaps) {
         if (!propertiesMap.first.empty())
-          ext_files.put(propertiesMap.first, ASE_EXTERNAL_FILE_EXTENSION);
+          ext_files.insert(ASE_EXTERNAL_FILE_EXTENSION,
+                           propertiesMap.first);
       }
   };
 
   for (const Tileset* tileset : *sprite->tilesets()) {
     if (!tileset->externalFilename().empty()) {
-      ext_files.put(tileset->externalFilename(), ASE_EXTERNAL_FILE_TILESET);
+      ext_files.insert(ASE_EXTERNAL_FILE_TILESET,
+                       tileset->externalFilename());
     }
 
     putExtentionIds(tileset->userData().propertiesMaps(), ext_files);
@@ -1334,13 +1337,13 @@ static void ase_file_write_external_files_chunk(
   }
 
   // No external files to write
-  if (ext_files.lastid == 0)
+  if (ext_files.items().empty())
     return;
 
   ChunkWriter chunk(f, frame_header, ASE_FILE_CHUNK_EXTERNAL_FILE);
-  fputl(ext_files.items.size(), f);         // Number of entries
+  fputl(ext_files.items().size(), f);       // Number of entries
   ase_file_write_padding(f, 8);
-  for (const auto& it : ext_files.items) {
+  for (const auto& it : ext_files.items()) {
     fputl(it.first, f);                     // ID
     fputc(it.second.type, f);               // Type
     ase_file_write_padding(f, 7);
@@ -1395,9 +1398,9 @@ static void ase_file_write_tileset_chunk(FILE* f, FileOp* fop,
 
   // Flag 1 = external tileset
   if (flags & ASE_TILESET_FLAG_EXTERNAL_FILE) {
-    auto it = ext_files.to_id.find(tileset->externalFilename());
-    if (it != ext_files.to_id.end()) {
-      auto file_id = it->second;
+    uint32_t file_id = 0;
+    if (ext_files.getIDByFilename(ASE_EXTERNAL_FILE_TILESET,
+                                  tileset->externalFilename(), file_id)) {
       fputl(file_id, f);
       fputl(tileset->externalTileset(), f);
     }
@@ -1532,7 +1535,8 @@ static void ase_file_write_properties_maps(FILE* f, FileOp* fop,
     const std::string& extensionKey = propertiesMap.first;
     uint32_t extensionId = 0;
     if (!extensionKey.empty() &&
-        !ext_files.getIDByFilename(extensionKey, extensionId)) {
+        !ext_files.getIDByFilename(ASE_EXTERNAL_FILE_EXTENSION,
+                                   extensionKey, extensionId)) {
       // This shouldn't ever happen, but if it does...  most likely
       // it is because we forgot to add the extensionID to the
       // ext_files object. And this could happen if someone adds the
