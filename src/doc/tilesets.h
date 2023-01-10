@@ -40,6 +40,15 @@ namespace doc {
         return nullptr;
     }
 
+    tileset_index getIndex(Tileset *tileset) {
+      for (tileset_index i = 0; i < size(); ++i) {
+        if (m_tilesets[i] == tileset) {
+          return i;
+        }
+      }
+      return -1;
+    }
+
     void set(const tileset_index tsi, Tileset* tileset) {
       if (tsi >= m_tilesets.size())
         m_tilesets.resize(tsi+1, nullptr);
