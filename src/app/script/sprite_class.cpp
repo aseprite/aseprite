@@ -12,6 +12,7 @@
 #include "app/app.h"
 #include "app/cmd/add_layer.h"
 #include "app/cmd/add_slice.h"
+#include "app/cmd/add_tile.h"
 #include "app/cmd/assign_color_profile.h"
 #include "app/cmd/clear_cel.h"
 #include "app/cmd/convert_color_profile.h"
@@ -20,6 +21,7 @@
 #include "app/cmd/remove_layer.h"
 #include "app/cmd/remove_slice.h"
 #include "app/cmd/remove_tag.h"
+#include "app/cmd/remove_tile.h"
 #include "app/cmd/set_grid_bounds.h"
 #include "app/cmd/set_mask.h"
 #include "app/cmd/set_pixel_ratio.h"
@@ -54,11 +56,14 @@
 #include "doc/slice.h"
 #include "doc/sprite.h"
 #include "doc/tag.h"
+#include "doc/tileset.h"
 
 #include <algorithm>
 
 namespace app {
 namespace script {
+
+Tileset* get_tile_index_from_arg(lua_State* L, int index, tile_index& ts);
 
 namespace {
 
@@ -835,6 +840,44 @@ int Sprite_set_pixelRatio(lua_State* L)
   return 0;
 }
 
+int Sprite_newTile(lua_State* L)
+{
+  auto sprite = get_docobj<Sprite>(L, 1);
+  auto ts = get_docobj<Tileset>(L, 2);
+  if (!ts) {
+    return luaL_error(L, "empty argument not allowed and must be a Tileset object");
+  }
+  tile_index ti = ts->size();
+  if (lua_isinteger(L, 3)) {
+    ti = tile_index(lua_tointeger(L, 3));
+    if (ti < 1)
+      return luaL_error(L, "index must be equal to or greater than 1");
+  }
+  ts->insert(ti, ts->makeEmptyTile());
+  Tx tx;
+  tx(new cmd::AddTile(ts, ti));
+  tx.commit();
+  push_tile(L, ts, ti);
+  return 1;
+}
+
+int Sprite_deleteTile(lua_State* L)
+{
+  auto sprite = get_docobj<Sprite>(L, 1);
+  tile_index ti;
+  Tileset* ts = get_tile_index_from_arg(L, 2, ti);
+  if (!ts) {
+    return luaL_error(L, "inexistent Tileset inside of Tile object");
+  }
+  if (ti < 0 || ti >= ts->size())
+    return luaL_error(L, "index out of bounds");
+  Tx tx;
+  tx(new cmd::RemoveTile(ts, ti));
+  tx.commit();
+  push_tile(L, ts, ti);
+  return 1;
+}
+
 const luaL_Reg Sprite_methods[] = {
   { "__eq", Sprite_eq },
   { "resize", Sprite_resize },
@@ -864,6 +907,9 @@ const luaL_Reg Sprite_methods[] = {
   // Slices
   { "newSlice", Sprite_newSlice },
   { "deleteSlice", Sprite_deleteSlice },
+  // Tiles
+  { "newTile", Sprite_newTile },
+  { "deleteTile", Sprite_deleteTile },
   { nullptr, nullptr }
 };
 

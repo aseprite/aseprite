@@ -33,6 +33,31 @@ struct Tile {
   }
 };
 
+Tile Tile_new(lua_State* L, int index)
+{
+  Tileset* ts = get_docobj<Tileset>(L, 1);
+  tile_index ti = -1;
+  if (!ts)
+    luaL_error(L, "empty argument not allowed and must be a Tileset object");
+  if (lua_isinteger(L, 2)) {
+    ti = tile_index(lua_tointeger(L, 2));
+    lua_pop(L, 1);
+  }
+  if (ti < 1) {
+    luaL_error(L, "index must be equal to or greater than 1");
+    ti = 0;
+  }
+  Tile tile(ts, ti);
+  lua_pop(L, 1);
+  return tile;
+}
+
+int Tile_new(lua_State* L)
+{
+  push_obj(L, Tile_new(L, 1));
+  return 1;
+}
+
 int Tile_get_image(lua_State* L)
 {
   auto tile = get_obj<Tile>(L, 1);
@@ -179,12 +204,20 @@ DEF_MTNAME(Tile);
 void register_tile_class(lua_State* L)
 {
   REG_CLASS(L, Tile);
+  REG_CLASS_NEW(L, Tile);
   REG_CLASS_PROPERTIES(L, Tile);
 }
 
 void push_tile(lua_State* L, const Tileset* ts, tile_index ti)
 {
   push_new<Tile>(L, ts, ti);
+}
+
+Tileset* get_tile_index_from_arg(lua_State* L, int index, tile_index& ti)
+{
+  Tile* tile = get_obj<Tile>(L, index);
+  ti = tile->ti;
+  return static_cast<Tileset*>(get_object(tile->id));
 }
 
 } // namespace script

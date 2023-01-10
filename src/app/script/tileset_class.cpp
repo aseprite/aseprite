@@ -130,5 +130,10 @@ void push_tileset(lua_State* L, const Tileset* tileset)
   push_docobj(L, tileset);
 }
 
+Tileset* get_tileset_from_arg(lua_State* L, int index)
+{
+  return get_obj<Tileset>(L, index);
+}
+
 } // namespace script
 } // namespace app
