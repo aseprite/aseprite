@@ -30,7 +30,7 @@ doc::Grid Grid_new(lua_State* L, int index)
   // Convert Rectangle into a Grid
   else if (lua_istable(L, index)) {
     gfx::Rect rect = convert_args_into_rect(L, index);
-    doc::Grid grid(rect.size());
+    grid = Grid(rect.size());
     grid.origin(rect.origin());
   }
   return grid;
