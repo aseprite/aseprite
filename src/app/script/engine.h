@@ -186,6 +186,7 @@ namespace app {
   const doc::Mask* get_mask_from_arg(lua_State* L, int index);
   app::tools::Tool* get_tool_from_arg(lua_State* L, int index);
   doc::BrushRef get_brush_from_arg(lua_State* L, int index);
+  doc::Tileset* get_tile_index_from_arg(lua_State* L, int index, doc::tile_index& ts);
 
   // Used by App.open(), Sprite{ fromFile }, and Image{ fromFile }
   enum class LoadSpriteFromFileParam { FullAniAsSprite,

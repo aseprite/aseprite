@@ -187,5 +187,12 @@ void push_tile(lua_State* L, const Tileset* ts, tile_index ti)
   push_new<Tile>(L, ts, ti);
 }
 
+Tileset* get_tile_index_from_arg(lua_State* L, int index, tile_index& ti)
+{
+  Tile* tile = get_obj<Tile>(L, index);
+  ti = tile->ti;
+  return doc::get<Tileset>(tile->id);
+}
+
 } // namespace script
 } // namespace app
