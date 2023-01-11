@@ -511,6 +511,7 @@ add_library(app-lib
   cmd/set_layer_flags.cpp
   cmd/set_layer_name.cpp
   cmd/set_layer_opacity.cpp
+  cmd/set_layer_tileset.cpp
   cmd/set_mask.cpp
   cmd/set_mask_position.cpp
   cmd/set_palette.cpp

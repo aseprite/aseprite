@@ -12,6 +12,7 @@
 #include "app/cmd/set_layer_blend_mode.h"
 #include "app/cmd/set_layer_name.h"
 #include "app/cmd/set_layer_opacity.h"
+#include "app/cmd/set_layer_tileset.h"
 #include "app/doc.h"
 #include "app/doc_api.h"
 #include "app/script/docobj.h"
@@ -22,6 +23,8 @@
 #include "doc/layer.h"
 #include "doc/layer_tilemap.h"
 #include "doc/sprite.h"
+#include "doc/tileset.h"
+#include "doc/tilesets.h"
 
 namespace app {
 namespace script {
@@ -383,6 +386,27 @@ int Layer_set_parent(lua_State* L)
   return 0;
 }
 
+int Layer_set_tileset(lua_State* L)
+{
+  auto layer = get_docobj<Layer>(L, 1);
+  if (layer->isTilemap()) {
+    auto tilemap = static_cast<doc::LayerTilemap*>(layer);
+    doc::tileset_index tsi = tilemap->tilesetIndex();
+
+    if (auto tileset = may_get_docobj<Tileset>(L, 2))
+      tsi = layer->sprite()->tilesets()->getIndex(tileset);
+    else if (lua_isinteger(L, 2))
+      tsi = lua_tointeger(L, 2);
+
+    if (tsi != tilemap->tilesetIndex()) {
+      Tx tx;
+      tx(new cmd::SetLayerTileset(tilemap, tsi));
+      tx.commit();
+    }
+  }
+  return 0;
+}
+
 const luaL_Reg Layer_methods[] = {
   { "__eq", Layer_eq },
   { "cel", Layer_cel },
@@ -415,7 +439,7 @@ const Property Layer_properties[] = {
   { "color", UserData_get_color<Layer>, UserData_set_color<Layer> },
   { "data", UserData_get_text<Layer>, UserData_set_text<Layer> },
   { "properties", UserData_get_properties<Layer>, UserData_set_properties<Layer> },
-  { "tileset", Layer_get_tileset, nullptr },
+  { "tileset", Layer_get_tileset, Layer_set_tileset },
   { nullptr, nullptr, nullptr }
 };
 
