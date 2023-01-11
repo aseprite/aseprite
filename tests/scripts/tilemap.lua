@@ -1,4 +1,4 @@
--- Copyright (C) 2019-2021  Igara Studio S.A.
+-- Copyright (C) 2019-2023  Igara Studio S.A.
 --
 -- This file is released under the terms of the MIT license.
 -- Read LICENSE.txt for more information.
@@ -215,7 +215,7 @@ do
   app.useTool{
     tool='pencil',
     color=Color{ r=0, g=0, b=0 },
-    tilemapMode=TilesetMode.PIXELS,
+    tilemapMode=TilemapMode.PIXELS,
     tilesetMode=TilesetMode.STACK,
     points={ Point(0, 0), Point(31, 31) }}
 
@@ -539,7 +539,7 @@ do
   app.useTool{
     tool='pencil',
     color=Color{ r=0, g=0, b=0, a=255 },
-    tilemapMode=TilesetMode.PIXELS,
+    tilemapMode=TilemapMode.PIXELS,
     tilesetMode=TilesetMode.STACK,
     points={ Point(0, 0), Point(3, 0) }}
 
@@ -548,7 +548,7 @@ do
   app.useTool{
     tool='pencil',
     color=Color{ r=255, g=0, b=0, a=0 },
-    tilemapMode=TilesetMode.PIXELS,
+    tilemapMode=TilemapMode.PIXELS,
     tilesetMode=TilesetMode.STACK,
     points={ Point(0, 0), Point(1, 0) }}
 
