@@ -143,13 +143,17 @@ struct Dialog {
 
   gfx::Rect getWindowBounds() const {
     gfx::Rect bounds = window.bounds();
-    // Bounds in scripts will be relative to the the main window
-    // origin/scale.
+    // Bounds in scripts will be relative to the parent window
+    // origin/scale (or main window if a parent window wasn't specified).
     if (window.ownDisplay()) {
-      const auto mainWindow = App::instance()->mainWindow();
-      const int scale = mainWindow->display()->scale();
+      const Display* parentDisplay = window.parentDisplay();
+      if (!parentDisplay) {
+        const auto mainWindow = App::instance()->mainWindow();
+        parentDisplay = mainWindow->display();
+      }
+      const int scale = parentDisplay->scale();
       const gfx::Point dialogOrigin = window.display()->nativeWindow()->contentRect().origin();
-      const gfx::Point mainOrigin = mainWindow->display()->nativeWindow()->contentRect().origin();
+      const gfx::Point mainOrigin = parentDisplay->nativeWindow()->contentRect().origin();
       bounds.setOrigin((dialogOrigin - mainOrigin) / scale);
     }
     return bounds;
@@ -159,9 +163,14 @@ struct Dialog {
     if (window.ownDisplay()) {
       window.expandWindow(rc.size());
 
-      const auto mainWindow = App::instance()->mainWindow();
-      const int scale = mainWindow->display()->scale();
-      const gfx::Point mainOrigin = mainWindow->display()->nativeWindow()->contentRect().origin();
+      const Display* parentDisplay = window.parentDisplay();
+      if (!parentDisplay) {
+        const auto mainWindow = App::instance()->mainWindow();
+        parentDisplay = mainWindow->display();
+      }
+
+      const int scale = parentDisplay->scale();
+      const gfx::Point mainOrigin = parentDisplay->nativeWindow()->contentRect().origin();
       gfx::Rect frame = window.display()->nativeWindow()->contentRect();
       frame.setOrigin(mainOrigin + rc.origin() * scale);
       window.display()->nativeWindow()->setFrame(frame);
@@ -262,6 +271,13 @@ int Dialog_new(lua_State* L)
     int type = lua_getfield(L, 1, "title");
     if (type != LUA_TNIL)
       dlg->window.setText(lua_tostring(L, -1));
+    lua_pop(L, 1);
+
+    type = lua_getfield(L, 1, "parent");
+    if (type != LUA_TNIL) {
+      if (auto parentDlg = may_get_obj<Dialog>(L, -1))
+        dlg->window.setParentDisplay(parentDlg->window.display());
+    }
     lua_pop(L, 1);
 
     type = lua_getfield(L, 1, "onclose");

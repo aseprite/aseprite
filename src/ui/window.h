@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -27,6 +27,12 @@ namespace ui {
 
     explicit Window(Type type, const std::string& text = "");
     ~Window();
+
+    // Preset parent display (instead of using the foreground/main
+    // window). Useful to display an alert/subdialog inside a specific
+    // window.
+    void setParentDisplay(Display* display) { m_parentDisplay = display; }
+    Display* parentDisplay() const { return m_parentDisplay; }
 
     bool ownDisplay() const { return m_ownDisplay; }
     Display* display() const;
@@ -109,6 +115,7 @@ namespace ui {
     void limitSize(int* w, int* h);
     void moveWindow(const gfx::Rect& rect, bool use_blit);
 
+    Display* m_parentDisplay = nullptr;
     Display* m_display;
     Widget* m_closer;
     Label* m_titleLabel;
