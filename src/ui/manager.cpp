@@ -1318,7 +1318,9 @@ void Manager::_closingAppWithException()
 // Configures the window for begin the loop
 void Manager::_openWindow(Window* window, bool center)
 {
-  Display* parentDisplay = getForegroundDisplay();
+  Display* parentDisplay = (window->parentDisplay() ?
+                            window->parentDisplay():
+                            getForegroundDisplay());
   ASSERT(parentDisplay);
 
   // Opening other window in the "close app" state, ok, let's back to normal.

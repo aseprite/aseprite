@@ -95,3 +95,27 @@ do
   assert(spr.slices[1].properties("ext").a.width == 30)
   assert(spr.slices[1].properties("ext").a.height == 40)
 end
+
+-- Test bug saving empty properties map with a empty set of properties
+do
+  local spr = Sprite(32, 32)
+  spr:newLayer("B")
+
+  -- Just create an empty property
+  local properties1 = spr.layers[1].properties("ext")
+  if properties1.categories then
+    -- do nothing
+  end
+
+  local properties2 = spr.layers[2].properties("ext")
+  properties2.b = 32
+
+  spr:saveAs("_test_userdata_codec_2.aseprite")
+  assert(#spr.layers == 2)
+  spr:close()
+
+  spr = Sprite{ fromFile="_test_userdata_codec_2.aseprite" }
+  assert(#spr.layers[1].properties("ext") == 0)
+  assert(#spr.layers[2].properties("ext") == 1)
+  assert(spr.layers[2].properties("ext").b == 32)
+end

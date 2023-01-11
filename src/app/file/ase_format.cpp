@@ -208,8 +208,9 @@ static void ase_file_write_tileset_chunk(FILE* f, FileOp* fop,
 static void ase_file_write_properties(FILE* f,
                                       const UserData::Properties& properties);
 static void ase_file_write_properties_maps(FILE* f, FileOp* fop,
-                                      const dio::AsepriteExternalFiles& ext_files,
-                                      const doc::UserData::PropertiesMaps& propertiesMaps);
+                                           const dio::AsepriteExternalFiles& ext_files,
+                                            size_t nmaps,
+                                           const doc::UserData::PropertiesMaps& propertiesMaps);
 static bool ase_has_groups(LayerGroup* group);
 static void ase_ungroup_all(LayerGroup* group);
 
@@ -1163,12 +1164,13 @@ static void ase_file_write_user_data_chunk(FILE* f, FileOp* fop,
 {
   ChunkWriter chunk(f, frame_header, ASE_FILE_CHUNK_USER_DATA);
 
+  size_t nmaps = userData->countNonEmptyPropertiesMaps();
   int flags = 0;
   if (!userData->text().empty())
     flags |= ASE_USER_DATA_FLAG_HAS_TEXT;
   if (doc::rgba_geta(userData->color()))
     flags |= ASE_USER_DATA_FLAG_HAS_COLOR;
-  if (!userData->propertiesMaps().empty())
+  if (nmaps)
     flags |= ASE_USER_DATA_FLAG_HAS_PROPERTIES;
   fputl(flags, f);
 
@@ -1183,7 +1185,7 @@ static void ase_file_write_user_data_chunk(FILE* f, FileOp* fop,
   }
 
   if (flags & ASE_USER_DATA_FLAG_HAS_PROPERTIES) {
-    ase_file_write_properties_maps(f, fop, ext_files, userData->propertiesMaps());
+    ase_file_write_properties_maps(f, fop, ext_files, nmaps, userData->propertiesMaps());
   }
 }
 
@@ -1278,16 +1280,19 @@ static void ase_file_write_external_files_chunk(
   dio::AsepriteExternalFiles& ext_files,
   const Sprite* sprite)
 {
-  auto putExtentionIds = [](const UserData::PropertiesMaps& propertiesMaps, dio::AsepriteExternalFiles& ext_files) {
+  auto putExtentionIds = [](const UserData::PropertiesMaps& propertiesMaps,
+                            dio::AsepriteExternalFiles& ext_files) {
       for (auto propertiesMap : propertiesMaps) {
         if (!propertiesMap.first.empty())
-          ext_files.put(propertiesMap.first, ASE_EXTERNAL_FILE_EXTENSION);
+          ext_files.insert(ASE_EXTERNAL_FILE_EXTENSION,
+                           propertiesMap.first);
       }
   };
 
   for (const Tileset* tileset : *sprite->tilesets()) {
     if (!tileset->externalFilename().empty()) {
-      ext_files.put(tileset->externalFilename(), ASE_EXTERNAL_FILE_TILESET);
+      ext_files.insert(ASE_EXTERNAL_FILE_TILESET,
+                       tileset->externalFilename());
     }
 
     putExtentionIds(tileset->userData().propertiesMaps(), ext_files);
@@ -1334,17 +1339,17 @@ static void ase_file_write_external_files_chunk(
   }
 
   // No external files to write
-  if (ext_files.lastid == 0)
+  if (ext_files.items().empty())
     return;
 
   ChunkWriter chunk(f, frame_header, ASE_FILE_CHUNK_EXTERNAL_FILE);
-  fputl(ext_files.to_fn.size(), f);        // Number of entries
+  fputl(ext_files.items().size(), f);       // Number of entries
   ase_file_write_padding(f, 8);
-  for (auto item : ext_files.to_fn) {
-    fputl(item.first, f);                  // ID
-    fputc(ext_files.types[item.first], f); // Type
+  for (const auto& it : ext_files.items()) {
+    fputl(it.first, f);                     // ID
+    fputc(it.second.type, f);               // Type
     ase_file_write_padding(f, 7);
-    ase_file_write_string(f, item.second); // Filename
+    ase_file_write_string(f, it.second.fn); // Filename
   }
 }
 
@@ -1395,9 +1400,9 @@ static void ase_file_write_tileset_chunk(FILE* f, FileOp* fop,
 
   // Flag 1 = external tileset
   if (flags & ASE_TILESET_FLAG_EXTERNAL_FILE) {
-    auto it = ext_files.to_id.find(tileset->externalFilename());
-    if (it != ext_files.to_id.end()) {
-      auto file_id = it->second;
+    uint32_t file_id = 0;
+    if (ext_files.getIDByFilename(ASE_EXTERNAL_FILE_TILESET,
+                                  tileset->externalFilename(), file_id)) {
       fputl(file_id, f);
       fputl(tileset->externalTileset(), f);
     }
@@ -1429,65 +1434,79 @@ static void ase_file_write_tileset_chunk(FILE* f, FileOp* fop,
 static void ase_file_write_property_value(FILE* f,
                                           const UserData::Variant& value)
 {
-  if (const bool* v = std::get_if<bool>(&value)) {
-    fputc(*v, f);
-  }
-  else if (const int8_t* v = std::get_if<int8_t>(&value)) {
-    fputc(*v, f);
-  }
-  else if (const uint8_t* v = std::get_if<uint8_t>(&value)) {
-    fputc(*v, f);
-  }
-  else if (const int16_t* v = std::get_if<int16_t>(&value)) {
-    fputw(*v, f);
-  }
-  else if (const uint16_t* v = std::get_if<uint16_t>(&value)) {
-    fputw(*v, f);
-  }
-  else if (const int32_t* v = std::get_if<int32_t>(&value)) {
-    fputl(*v, f);
-  }
-  else if (const uint32_t* v = std::get_if<uint32_t>(&value)) {
-    fputl(*v, f);
-  }
-  else if (const int64_t* v = std::get_if<int64_t>(&value)) {
-    fputq(*v, f);
-  }
-  else if (const uint64_t* v = std::get_if<uint64_t>(&value)) {
-    fputq(*v, f);
-  }
-  else if (const UserData::Fixed* v = std::get_if<UserData::Fixed>(&value)) {
-    fputl(v->value, f);
-  }
-  else if (const float_t* v = std::get_if<float_t>(&value)) {
-    fputf(*v, f);
-  }
-  else if (const double_t* v = std::get_if<double_t>(&value)) {
-    fputd(*v, f);
-  }
-  else if (const std::string* v = std::get_if<std::string>(&value)) {
-    ase_file_write_string(f, *v);
-  }
-  else if (const gfx::Point* v = std::get_if<gfx::Point>(&value)) {
-    ase_file_write_point(f, *v);
-  }
-  else if (const gfx::Size* v = std::get_if<gfx::Size>(&value)) {
-    ase_file_write_size(f, *v);
-  }
-  else if (const gfx::Rect* v = std::get_if<gfx::Rect>(&value)) {
-    ase_file_write_point(f, v->origin());
-    ase_file_write_size(f, v->size());
-  }
-  else if (const std::vector<UserData::Variant>* v = std::get_if<std::vector<UserData::Variant>>(&value)) {
-    fputl(v->size(), f);
-    const uint16_t type = v->size() == 0 ? 0 : v->front().type();
-    fputw(type, f);
-    for (auto elem : *v) {
-      ase_file_write_property_value(f, elem);
+  // TODO reduce value type depending on the actual value we're going
+  // to save (e.g. we don't need to save a 64-bit integer if the
+  // value=30, we can use a uint8_t for that case)
+
+  switch (value.type()) {
+    case USER_DATA_PROPERTY_TYPE_NULLPTR:
+      ASSERT(false);
+      break;
+    case USER_DATA_PROPERTY_TYPE_BOOL:
+      fputc(*std::get_if<bool>(&value), f);
+      break;
+    case USER_DATA_PROPERTY_TYPE_INT8:
+      fputc(*std::get_if<int8_t>(&value), f);
+      break;
+    case USER_DATA_PROPERTY_TYPE_UINT8:
+      fputc(*std::get_if<uint8_t>(&value), f);
+      break;
+    case USER_DATA_PROPERTY_TYPE_INT16:
+      fputw(*std::get_if<int16_t>(&value), f);
+      break;
+    case USER_DATA_PROPERTY_TYPE_UINT16:
+      fputw(*std::get_if<uint16_t>(&value), f);
+      break;
+    case USER_DATA_PROPERTY_TYPE_INT32:
+      fputl(*std::get_if<int32_t>(&value), f);
+      break;
+    case USER_DATA_PROPERTY_TYPE_UINT32:
+      fputl(*std::get_if<uint32_t>(&value), f);
+      break;
+    case USER_DATA_PROPERTY_TYPE_INT64:
+      fputq(*std::get_if<int64_t>(&value), f);
+      break;
+    case USER_DATA_PROPERTY_TYPE_UINT64:
+      fputq(*std::get_if<uint64_t>(&value), f);
+      break;
+    case USER_DATA_PROPERTY_TYPE_FIXED:
+      fputl(std::get_if<doc::UserData::Fixed>(&value)->value, f);
+      break;
+    case USER_DATA_PROPERTY_TYPE_FLOAT:
+      fputf(*std::get_if<float>(&value), f);
+      break;
+    case USER_DATA_PROPERTY_TYPE_DOUBLE:
+      fputd(*std::get_if<double>(&value), f);
+      break;
+    case USER_DATA_PROPERTY_TYPE_STRING:
+      ase_file_write_string(f, *std::get_if<std::string>(&value));
+      break;
+    case USER_DATA_PROPERTY_TYPE_POINT:
+      ase_file_write_point(f, *std::get_if<gfx::Point>(&value));
+      break;
+    case USER_DATA_PROPERTY_TYPE_SIZE:
+      ase_file_write_size(f, *std::get_if<gfx::Size>(&value));
+      break;
+    case USER_DATA_PROPERTY_TYPE_RECT: {
+      auto& rc = *std::get_if<gfx::Rect>(&value);
+      ase_file_write_point(f, rc.origin());
+      ase_file_write_size(f, rc.size());
+      break;
     }
-  }
-  else if (const UserData::Properties* v = std::get_if<UserData::Properties>(&value)) {
-    ase_file_write_properties(f, *v);
+    case USER_DATA_PROPERTY_TYPE_VECTOR: {
+      auto& v = *std::get_if<UserData::Vector>(&value);
+      fputl(v.size(), f);
+      const uint16_t type = (v.empty() ? 0 : v.front().type());
+      fputw(type, f);
+      for (const auto& elem : v) {
+        ASSERT(type == elem.type()); // Check that all elements have the same type
+        ase_file_write_property_value(f, elem);
+      }
+      break;
+    }
+    case USER_DATA_PROPERTY_TYPE_PROPERTIES:
+      ase_file_write_properties(f, *std::get_if<UserData::Properties>(&value));
+      break;
   }
 }
 
@@ -1510,11 +1529,11 @@ static void ase_file_write_properties(FILE* f,
 }
 
 static void ase_file_write_properties_maps(FILE* f, FileOp* fop,
-                                      const dio::AsepriteExternalFiles& ext_files,
-                                      const doc::UserData::PropertiesMaps& propertiesMaps)
+                                           const dio::AsepriteExternalFiles& ext_files,
+                                           size_t nmaps,
+                                           const doc::UserData::PropertiesMaps& propertiesMaps)
 {
-  uint32_t numMaps = propertiesMaps.size();
-  if (numMaps == 0) return;
+  ASSERT(nmaps > 0);
 
   long startPos = ftell(f);
   // We zero the size in bytes of all properties maps stored in this
@@ -1522,27 +1541,32 @@ static void ase_file_write_properties_maps(FILE* f, FileOp* fop,
   // of all properties maps, at which point this field is overwritten)
   fputl(0, f);
 
-  fputl(numMaps, f);
+  fputl(nmaps, f);
   for (auto propertiesMap : propertiesMaps) {
     const UserData::Properties& properties = propertiesMap.second;
     // Skip properties map if it doesn't have any property
-    if (properties.size() == 0) continue;
+    if (properties.empty())
+      continue;
 
     const std::string& extensionKey = propertiesMap.first;
-    try {
-      uint32_t extensionId = extensionKey == "" ? 0 : ext_files.to_id.at(extensionKey);
-      fputl(extensionId, f);
-    }
-    catch(const std::out_of_range&) {
-      ASSERT(false); // This shouldn't ever happen, but if it does...
-                     // most likely it is because we forgot to add the
-                     // extensionID to the ext_files object. And this
-                     // Could happen if someone adds the possibility to
-                     // store custom properties to some object that
-                     // didn't support it previously.
+    uint32_t extensionId = 0;
+    if (!extensionKey.empty() &&
+        !ext_files.getIDByFilename(ASE_EXTERNAL_FILE_EXTENSION,
+                                   extensionKey, extensionId)) {
+      // This shouldn't ever happen, but if it does...  most likely
+      // it is because we forgot to add the extensionID to the
+      // ext_files object. And this could happen if someone adds the
+      // possibility to store custom properties to some object that
+      // didn't support it previously.
+      ASSERT(false);
       fop->setError("Error writing properties for extension '%s'.\n", extensionKey.c_str());
-      continue;
+
+      // We have to write something for this extensionId, because we
+      // wrote the number of expected property maps (nmaps) in the
+      // header.
+      //continue;
     }
+    fputl(extensionId, f);
     ase_file_write_properties(f, properties);
   }
   long endPos = ftell(f);
