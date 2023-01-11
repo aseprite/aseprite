@@ -116,3 +116,162 @@ do
   assert(tileset2.grid.tileSize.height == 32)
   assert(tileset2.name == "")
 end
+
+do
+  -- Check Sprite:newTile() and Sprite:deleteTile() methods
+  local spr = Sprite(4, 4, ColorMode.INDEXED)
+  local pal = spr.palettes[1]
+  pal:setColor(0, Color(0, 0, 0))
+  pal:setColor(1, Color(255, 255, 0))
+  pal:setColor(2, Color(255, 0, 0))
+  spr.gridBounds = Rectangle(0, 0, 2, 2)
+  app.command.NewLayer{ tilemap=true }
+  local tilemap = spr.layers[2]
+  local tileset = tilemap.tileset
+  assert(tileset.grid.tileSize == Size(2, 2))
+  app.useTool{ tool="pencil",
+               color=1,
+               layer=tilemap,
+               tilesetMode=TilesetMode.AUTO,
+               tilemapMode=TilemapMode.PIXELS,
+               points={Point(0,0), Point(1, 0)}}
+  app.useTool{ tool="pencil",
+               color=2,
+               layer=tilemap,
+               tilesetMode=TilesetMode.AUTO,
+               tilemapMode=TilemapMode.PIXELS,
+               points={Point(2,0), Point(3, 1)}}
+  assert(#tileset == 3)
+  -- Insert a tile in the middle of the tileset
+  local tile1 = spr:newTile(tileset, 1)
+  assert(#tileset == 4)
+  expect_img(tileset:getTile(0), { 0, 0,
+                                   0, 0 })
+  expect_img(tileset:getTile(1), { 0, 0,
+                                   0, 0 })
+  expect_img(tileset:getTile(2), { 1, 1,
+                                   0, 0 })
+  expect_img(tileset:getTile(3), { 2, 0,
+                                   0, 2 })
+
+  app.undo()
+
+  assert(#tileset == 3)
+  expect_img(tileset:getTile(0), { 0, 0,
+                                   0, 0 })
+  expect_img(tileset:getTile(1), { 1, 1,
+                                   0, 0 })
+  expect_img(tileset:getTile(2), { 2, 0,
+                                   0, 2 })
+
+  app.redo()
+
+  assert(#tileset == 4)
+  expect_img(tileset:getTile(0), { 0, 0,
+                                   0, 0 })
+  expect_img(tileset:getTile(1), { 0, 0,
+                                   0, 0 })
+  expect_img(tileset:getTile(2), { 1, 1,
+                                   0, 0 })
+  expect_img(tileset:getTile(3), { 2, 0,
+                                   0, 2 })
+  -- Insert a tile at the end of the tileset (by index omission)
+  local tile2 = spr:newTile(tileset)
+  assert(#tileset == 5)
+  expect_img(tileset:getTile(3), { 2, 0,
+                                   0, 2 })
+  expect_img(tileset:getTile(4), { 0, 0,
+                                   0, 0 })
+  -- Insert at the end of the tileset explicity, and testing
+  -- other way to access to the tile image
+  local tile3 = spr:newTile(tileset, 5)
+  assert(#tileset == 6)
+  expect_img(tileset:tile(3).image, { 2, 0,
+                                      0, 2 })
+  expect_img(tileset:tile(4).image, { 0, 0,
+                                      0, 0 })
+  expect_img(tileset:tile(5).image, { 0, 0,
+                                      0, 0 })
+
+  app.undo()
+  app.undo()
+  app.undo()
+
+  assert(#tileset == 3)
+  expect_img(tileset:getTile(0), { 0, 0,
+                                   0, 0 })
+  expect_img(tileset:getTile(1), { 1, 1,
+                                   0, 0 })
+  expect_img(tileset:getTile(2), { 2, 0,
+                                   0, 2 })
+
+  app.redo()
+  app.redo()
+  app.redo()
+
+  assert(#tileset == 6)
+  expect_img(tileset:getTile(0), { 0, 0,
+                                   0, 0 })
+  expect_img(tileset:getTile(1), { 0, 0,
+                                   0, 0 })
+  expect_img(tileset:getTile(2), { 1, 1,
+                                   0, 0 })
+  expect_img(tileset:getTile(3), { 2, 0,
+                                   0, 2 })
+  expect_img(tileset:getTile(4), { 0, 0,
+                                   0, 0 })
+  expect_img(tileset:getTile(5), { 0, 0,
+                                   0, 0 })
+  -- Deleting tiles
+  spr:deleteTile(tileset:tile(5))
+  spr:deleteTile(tileset:tile(4))
+  spr:deleteTile(tileset:tile(1))
+
+  app.undo()
+
+  assert(#tileset == 4)
+  expect_img(tileset:getTile(0), { 0, 0,
+                                   0, 0 })
+  expect_img(tileset:getTile(1), { 0, 0,
+                                   0, 0 })
+  expect_img(tileset:getTile(2), { 1, 1,
+                                   0, 0 })
+  expect_img(tileset:getTile(3), { 2, 0,
+                                   0, 2 })
+
+  app.redo()
+
+  assert(#tileset == 3)
+  expect_img(tileset:getTile(0), { 0, 0,
+                                   0, 0 })
+  expect_img(tileset:getTile(1), { 1, 1,
+                                   0, 0 })
+  expect_img(tileset:getTile(2), { 2, 0,
+                                   0, 2 })
+  spr:deleteTile(tileset:tile(1))
+  assert(#tileset == 2)
+  expect_img(tileset:getTile(0), { 0, 0,
+                                   0, 0 })
+  expect_img(tileset:getTile(1), { 2, 0,
+                                   0, 2 })
+
+  app.undo()
+  app.undo()
+  app.undo()
+  app.undo()
+
+  assert(#tileset == 6)
+  expect_img(tileset:getTile(0), { 0, 0,
+                                   0, 0 })
+  expect_img(tileset:getTile(1), { 0, 0,
+                                   0, 0 })
+  expect_img(tileset:getTile(2), { 1, 1,
+                                   0, 0 })
+  expect_img(tileset:getTile(3), { 2, 0,
+                                   0, 2 })
+  expect_img(tileset:getTile(4), { 0, 0,
+                                   0, 0 })
+  expect_img(tileset:getTile(5), { 0, 0,
+                                   0, 0 })
+
+end
