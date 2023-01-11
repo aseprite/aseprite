@@ -125,7 +125,7 @@ bool Slider::onProcessMessage(Message* msg)
         range = m_max - m_min + 1;
 
         // With left click
-        if (slider_press_left) {
+        if (slider_press_left && rc.w != 0) {
           value = m_min + range * (mousePos.x - rc.x) / rc.w;
         }
         // With right click
