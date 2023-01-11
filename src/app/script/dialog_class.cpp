@@ -82,8 +82,9 @@ struct Dialog {
   int showRef = LUA_REFNIL;
   lua_State* L = nullptr;
 
-  Dialog()
-    : window(ui::Window::WithTitleBar, "Script"),
+  Dialog(const ui::Window::Type windowType,
+         const std::string& title)
+    : window(windowType, title),
       grid(2, false) {
     window.addChild(&grid);
     all_dialogs.push_back(this);
@@ -253,7 +254,21 @@ int Dialog_new(lua_State* L)
   if (!App::instance()->isGui())
     return 0;
 
-  auto dlg = push_new<Dialog>(L);
+  // Get the title, if it's empty, create a window without title bar
+  std::string title;
+  if (lua_isstring(L, 1)) {
+    title = lua_tostring(L, 1);
+  }
+  else if (lua_istable(L, 1)) {
+    int type = lua_getfield(L, 1, "title");
+    if (type != LUA_TNIL)
+      title = lua_tostring(L, -1);
+    lua_pop(L, 1);
+  }
+
+  auto dlg = push_new<Dialog>(
+    L, (!title.empty() ? ui::Window::WithTitleBar:
+                         ui::Window::WithoutTitleBar), title);
 
   // The uservalue of the dialog userdata will contain a table that
   // stores all the callbacks to handle events. As these callbacks can
@@ -264,16 +279,8 @@ int Dialog_new(lua_State* L)
   lua_newtable(L);
   lua_setuservalue(L, -2);
 
-  if (lua_isstring(L, 1)) {
-    dlg->window.setText(lua_tostring(L, 1));
-  }
-  else if (lua_istable(L, 1)) {
-    int type = lua_getfield(L, 1, "title");
-    if (type != LUA_TNIL)
-      dlg->window.setText(lua_tostring(L, -1));
-    lua_pop(L, 1);
-
-    type = lua_getfield(L, 1, "parent");
+  if (lua_istable(L, 1)) {
+    int type = lua_getfield(L, 1, "parent");
     if (type != LUA_TNIL) {
       if (auto parentDlg = may_get_obj<Dialog>(L, -1))
         dlg->window.setParentDisplay(parentDlg->window.display());
