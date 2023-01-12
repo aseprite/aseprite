@@ -1,5 +1,5 @@
 // Aseprite Document IO Library
-// Copyright (c) 2018-2020 Igara Studio S.A.
+// Copyright (c) 2018-2023 Igara Studio S.A.
 // Copyright (c) 2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -35,7 +35,7 @@ namespace dio {
 
 struct AsepriteHeader;
 struct AsepriteFrameHeader;
-struct AsepriteExternalFiles;
+class AsepriteExternalFiles;
 
 class AsepriteDecoder : public Decoder {
 public:
