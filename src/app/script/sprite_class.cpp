@@ -708,11 +708,14 @@ int Sprite_newTile(lua_State* L)
 int Sprite_deleteTile(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
-  tile_index ti;
-  Tileset* ts = get_tile_index_from_arg(L, 2, ti);
-  if (!ts) {
-    return luaL_error(L, "inexistent Tileset inside of Tile object");
-  }
+  tile_index ti = 0;
+  auto ts = may_get_docobj<Tileset>(L, 2);
+  if (ts)
+    ti = lua_tointeger(L, 3);
+  else
+    ts = get_tile_index_from_arg(L, 2, ti);
+  if (!ts)
+    return luaL_error(L, "Sprite:deleteTile() needs a Tileset or Tile as first argument");
   if (ti < 0 || ti >= ts->size())
     return luaL_error(L, "index out of bounds");
   Tx tx;
