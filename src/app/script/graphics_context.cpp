@@ -53,6 +53,9 @@ void GraphicsContext::drawImage(const doc::Image* img,
                                 const gfx::Rect& srcRc,
                                 const gfx::Rect& dstRc)
 {
+  if (srcRc.isEmpty() || dstRc.isEmpty())
+    return;                     // Do nothing for empty rectangles
+
   auto tmpSurface = os::instance()->makeRgbaSurface(srcRc.w, srcRc.h);
   if (tmpSurface) {
     convert_image_to_surface(
