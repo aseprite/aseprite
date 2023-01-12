@@ -427,13 +427,13 @@ public:
         loadWintabDriver2()->setSelected(false);
       }
 
-      tabletApiWindowsPointer()->Click.connect([this](Event&){ onTabletAPIChange(); });
-      tabletApiWintabSystem()->Click.connect([this](Event&){ onTabletAPIChange(); });
-      tabletApiWintabDirect()->Click.connect([this](Event&){ onTabletAPIChange(); });
+      tabletApiWindowsPointer()->Click.connect([this](){ onTabletAPIChange(); });
+      tabletApiWintabSystem()->Click.connect([this](){ onTabletAPIChange(); });
+      tabletApiWintabDirect()->Click.connect([this](){ onTabletAPIChange(); });
       loadWintabDriver()->Click.connect(
-        [this](Event&){ onLoadWintabChange(loadWintabDriver()->isSelected()); });
+        [this](){ onLoadWintabChange(loadWintabDriver()->isSelected()); });
       loadWintabDriver2()->Click.connect(
-        [this](Event&){ onLoadWintabChange(loadWintabDriver2()->isSelected()); });
+        [this](){ onLoadWintabChange(loadWintabDriver2()->isSelected()); });
     }
 #else  // For macOS and Linux
     {
