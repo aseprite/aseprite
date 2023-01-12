@@ -688,9 +688,10 @@ int Sprite_newTile(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   auto ts = get_docobj<Tileset>(L, 2);
-  if (!ts) {
+  if (!ts)
     return luaL_error(L, "empty argument not allowed and must be a Tileset object");
-  }
+  if (ts->sprite() != sprite)
+    return luaL_error(L, "the tileset belongs to another sprite");
   tile_index ti = ts->size();
   if (lua_isinteger(L, 3)) {
     ti = tile_index(lua_tointeger(L, 3));
@@ -716,6 +717,10 @@ int Sprite_deleteTile(lua_State* L)
     ts = get_tile_index_from_arg(L, 2, ti);
   if (!ts)
     return luaL_error(L, "Sprite:deleteTile() needs a Tileset or Tile as first argument");
+  if (ts->sprite() != sprite)
+    return luaL_error(L, "the tileset belongs to another sprite");
+  if (ti == 0)
+    return luaL_error(L, "tile index = 0 cannot be removed");
   if (ti < 0 || ti >= ts->size())
     return luaL_error(L, "index out of bounds");
   Tx tx;
