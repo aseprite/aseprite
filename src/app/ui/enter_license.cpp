@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021  Igara Studio S.A.
+// Copyright (C) 2021-2023  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -32,7 +32,7 @@ EnterLicense::EnterLicense() : m_timer(500, this), m_activationInProgress(false)
   });
 
   okButton()->setEnabled(false);
-  okButton()->Click.connect([this](ui::Event&) {
+  okButton()->Click.connect([this]() {
     startActivation();
   });
 

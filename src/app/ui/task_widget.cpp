@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -33,7 +33,7 @@ TaskWidget::TaskWidget(const Type type,
     addChild(&m_cancelButton);
 
     m_cancelButton.Click.connect(
-      [this](Event&){
+      [this](){
         m_task.cancel();
         m_cancelButton.setEnabled(false);
         m_progressBar.setEnabled(false);

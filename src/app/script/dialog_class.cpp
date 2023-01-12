@@ -558,7 +558,7 @@ int Dialog_button_base(lua_State* L, T** outputWidget = nullptr)
       auto dlg = get_obj<Dialog>(L, 1);
       Dialog_connect_signal(
         L, 1, widget->Click,
-        [dlg, widget](lua_State* L, Event&){
+        [dlg, widget](lua_State* L){
           if (widget->type() == ui::kButtonWidget)
             dlg->lastButton = widget;
         });

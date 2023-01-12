@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -115,7 +115,7 @@ namespace ui {
 
   private:
     void updateListBoxPos();
-    void onButtonClick(Event& ev);
+    void onButtonClick();
     void filterMessages();
     void removeMessageFilters();
     void putSelectedItemAsCustomWidget();

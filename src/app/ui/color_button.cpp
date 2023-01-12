@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2022  Igara Studio S.A.
+// Copyright (C) 2020-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -295,9 +295,9 @@ void ColorButton::onPaint(PaintEvent& ev)
   g->drawUIText(text(), textcolor, gfx::ColorNone, textrc.origin(), 0);
 }
 
-void ColorButton::onClick(Event& ev)
+void ColorButton::onClick()
 {
-  ButtonBase::onClick(ev);
+  ButtonBase::onClick();
 
   // If the popup window was not created or shown yet..
   if (!m_window || !m_window->isVisible()) {

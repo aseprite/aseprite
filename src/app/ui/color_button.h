@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021  Igara Studio S.A.
+// Copyright (C) 2021-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -57,7 +57,7 @@ namespace app {
     bool onProcessMessage(ui::Message* msg) override;
     void onSizeHint(ui::SizeHintEvent& ev) override;
     void onPaint(ui::PaintEvent& ev) override;
-    void onClick(ui::Event& ev) override;
+    void onClick() override;
     void onStartDrag() override;
     void onSelectWhenDragging() override;
     void onLoadLayout(ui::LoadLayoutEvent& ev) override;

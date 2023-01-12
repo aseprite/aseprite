@@ -70,8 +70,8 @@ public:
 
 protected:
 
-  void onClick(Event& ev) override {
-    ButtonBase::onClick(ev);
+  void onClick() override {
+    ButtonBase::onClick();
     closeWindow();
   }
 

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2023  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -29,7 +29,7 @@ namespace app {
   protected:
     void onSizeHint(ui::SizeHintEvent& ev) override;
     void onPaint(ui::PaintEvent& ev) override;
-    void onClick(ui::Event& ev) override;
+    void onClick() override;
 
   private:
     ui::Style* m_flagStyle;

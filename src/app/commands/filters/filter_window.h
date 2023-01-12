@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022  Igara Studio S.A.
+// Copyright (C) 2022-2023  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -52,9 +52,9 @@ namespace app {
     // Returns the container where derived classes should put controls.
     ui::Widget* getContainer() { return &m_container; }
 
-    void onOk(ui::Event& ev);
-    void onCancel(ui::Event& ev);
-    void onShowPreview(ui::Event& ev);
+    void onOk();
+    void onCancel();
+    void onShowPreview();
     void onTargetButtonChange();
     void onTiledChange();
 

@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2023  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -29,8 +30,8 @@ namespace app {
     obs::signal<void()> DropDownClick;
 
   protected:
-    void onButtonClick(ui::Event& ev);
-    void onDropDownButtonClick(ui::Event& ev);
+    void onButtonClick();
+    void onDropDownButtonClick();
 
   private:
     ui::Button* m_button;

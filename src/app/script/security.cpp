@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -167,7 +167,7 @@ bool ask_access(lua_State* L,
       });
 
     dlg.full()->Click.connect(
-      [&dlg, &allowButtonText](ui::Event&){
+      [&dlg, &allowButtonText](){
         if (dlg.full()->isSelected()) {
           dlg.dontShow()->setSelected(true);
           dlg.dontShow()->setEnabled(false);

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -150,17 +150,17 @@ void FilterWindow::setNewTarget(Target target)
   m_targetButton.setTarget(target);
 }
 
-void FilterWindow::onOk(Event& ev)
+void FilterWindow::onOk()
 {
   m_okButton.closeWindow();
 }
 
-void FilterWindow::onCancel(Event& ev)
+void FilterWindow::onCancel()
 {
   m_cancelButton.closeWindow();
 }
 
-void FilterWindow::onShowPreview(Event& ev)
+void FilterWindow::onShowPreview()
 {
   restartPreview();
 

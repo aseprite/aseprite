@@ -244,7 +244,7 @@ public:
       factor()->Change.connect([this]{ onIndexParamChange(); });
 
       advancedCheck()->Click.connect(
-        [this](ui::Event&){
+        [this](){
           advanced()->setVisible(advancedCheck()->isSelected());
           expandWindow(sizeHint());
         });

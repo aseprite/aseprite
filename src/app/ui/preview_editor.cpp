@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -114,11 +114,11 @@ private:
     setupIcons();
   }
 
-  void onClick(Event& ev) override {
+  void onClick() override {
     m_isPlaying = !m_isPlaying;
     setupIcons();
 
-    Button::onClick(ev);
+    Button::onClick();
   }
 
   void onSetDecorativeWidgetBounds() override {

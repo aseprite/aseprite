@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2021  Igara Studio S.A.
+// Copyright (C) 2021-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -33,14 +33,14 @@ namespace ui {
 
     WidgetType behaviorType() const;
     // Signals
-    obs::signal<void(Event&)> Click;
+    obs::signal<void()> Click;
 
   protected:
     // Events
     bool onProcessMessage(Message* msg) override;
 
     // New events
-    virtual void onClick(Event& ev);
+    virtual void onClick();
     virtual void onStartDrag();
     virtual void onSelectWhenDragging();
 

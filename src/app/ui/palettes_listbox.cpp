@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2022  Igara Studio S.A.
+// Copyright (C) 2020-2023  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -74,8 +74,8 @@ class PalettesListItem : public ResourceListItem {
       setBgColor(theme->colors.listitemNormalFace());
     }
 
-    void onClick(Event& ev) override {
-      IconButton::onClick(ev);
+    void onClick() override {
+      IconButton::onClick();
 
       std::string::size_type j, i = m_comment.find("http");
       if (i != std::string::npos) {

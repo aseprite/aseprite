@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -50,10 +50,10 @@ WidgetType ButtonBase::behaviorType() const
   return m_behaviorType;
 }
 
-void ButtonBase::onClick(Event& ev)
+void ButtonBase::onClick()
 {
   // Fire Click() signal
-  Click(ev);
+  Click();
 }
 
 bool ButtonBase::onProcessMessage(Message* msg)
@@ -147,8 +147,7 @@ bool ButtonBase::onProcessMessage(Message* msg)
 
           case kCheckWidget: {
             // Fire onClick() event
-            Event ev(this);
-            onClick(ev);
+            onClick();
             return true;
           }
 
@@ -212,8 +211,7 @@ bool ButtonBase::onProcessMessage(Message* msg)
             case kCheckWidget:
               {
                 // Fire onClick() event
-                Event ev(this);
-                onClick(ev);
+                onClick();
 
                 invalidate();
               }
@@ -225,8 +223,7 @@ bool ButtonBase::onProcessMessage(Message* msg)
                 setSelected(true);
 
                 // Fire onClick() event
-                Event ev(this);
-                onClick(ev);
+                onClick();
               }
               break;
           }
@@ -260,8 +257,7 @@ void ButtonBase::generateButtonSelectSignal()
   setSelected(false);
 
   // Fire onClick() event
-  Event ev(this);
-  onClick(ev);
+  onClick();
 }
 
 void ButtonBase::onStartDrag()

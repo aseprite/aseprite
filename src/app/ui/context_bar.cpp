@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -366,8 +366,8 @@ protected:
     setStyle(SkinTheme::get(this)->styles.miniCheckBox());
   }
 
-  void onClick(Event& ev) override {
-    CheckBox::onClick(ev);
+  void onClick() override {
+    CheckBox::onClick();
 
     Tool* tool = App::instance()->activeTool();
     Preferences::instance().tool(tool).contiguous(isSelected());
@@ -904,7 +904,7 @@ private:
     buttonset.setSelectedItem(int(pos));
 
     visible.Click.connect(
-      [&visible](Event&){
+      [&visible](){
         Preferences::instance().selection.pivotVisibility(
           visible.isSelected());
       });
@@ -1249,8 +1249,8 @@ protected:
     setStyle(SkinTheme::get(this)->styles.miniCheckBox());
   }
 
-  void onClick(Event& ev) override {
-    CheckBox::onClick(ev);
+  void onClick() override {
+    CheckBox::onClick();
 
     Tool* tool = App::instance()->activeTool();
     Preferences::instance().tool(tool).freehandAlgorithm(
@@ -1386,8 +1386,8 @@ protected:
     setStyle(SkinTheme::get(this)->styles.miniCheckBox());
   }
 
-  void onClick(Event& ev) override {
-    CheckBox::onClick(ev);
+  void onClick() override {
+    CheckBox::onClick();
 
     auto atm = App::instance()->activeToolManager();
     if (atm->quickTool() &&
