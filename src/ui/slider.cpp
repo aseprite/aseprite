@@ -123,9 +123,11 @@ bool Slider::onProcessMessage(Message* msg)
         gfx::Point mousePos = static_cast<MouseMessage*>(msg)->positionForDisplay(display());
 
         range = m_max - m_min + 1;
-
+        if (rc.w == 0) {
+        break;
+        }
         // With left click
-        if (slider_press_left &&  && rc.w != 0) {
+        if (slider_press_left) {
           value = m_min + range * (mousePos.x - rc.x) / rc.w;
         }
         // With right click
