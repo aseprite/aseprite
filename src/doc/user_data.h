@@ -109,14 +109,6 @@ namespace doc {
     Properties& properties() { return properties(std::string()); }
     Properties& properties(const std::string& groupKey) { return m_propertiesMaps[groupKey]; }
 
-    size_t countNonEmptyPropertiesMaps() const {
-      size_t i = 0;
-      for (const auto& it : m_propertiesMaps)
-        if (!it.second.empty())
-          ++i;
-      return i;
-    }
-
     void setText(const std::string& text) { m_text = text; }
     void setColor(color_t color) { m_color = color; }
 
@@ -154,6 +146,8 @@ namespace doc {
       throw std::runtime_error("bad_variant_access");
     return *value;
   }
+
+  size_t count_nonempty_properties_maps(const UserData::PropertiesMaps& propertiesMaps);
 
 } // namespace doc
 

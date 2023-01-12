@@ -35,4 +35,12 @@ UserData read_user_data(std::istream& is)
   return userData;
 }
 
+size_t count_nonempty_properties_maps(const UserData::PropertiesMaps& propertiesMaps) {
+  size_t i = 0;
+  for (const auto& it : propertiesMaps)
+    if (!it.second.empty())
+      ++i;
+  return i;
+}
+
 }
