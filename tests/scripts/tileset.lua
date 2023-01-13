@@ -67,12 +67,13 @@ do
 
   -- Create a tileset passing a grid
   local tileset2 = spr:newTileset(Grid{0, 0 ,32, 32})
+  tileset2.name = "Tileset 2"
   assert(#tileset2 == 1)
   assert(tileset2.grid.origin.x == 0)
   assert(tileset2.grid.origin.y == 0)
   assert(tileset2.grid.tileSize.width == 32)
   assert(tileset2.grid.tileSize.height == 32)
-  assert(tileset2.name == "")
+  assert(tileset2.name == "Tileset 2")
   assert(#spr.tilesets == 2)
 
   -- Create a tileset passing a table and a number of tiles
@@ -114,7 +115,7 @@ do
   assert(tileset2.grid.origin.y == 0)
   assert(tileset2.grid.tileSize.width == 32)
   assert(tileset2.grid.tileSize.height == 32)
-  assert(tileset2.name == "")
+  assert(tileset2.name == "Tileset 2")
 end
 
 do
