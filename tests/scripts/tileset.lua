@@ -13,7 +13,7 @@ do
   local tilemap = spr.layers[2]
 
   local tileset = tilemap.tileset
-  assert(#tileset == 1);
+  assert(#tileset == 1)
 
   app.useTool{
     tool='pencil',
@@ -49,6 +49,29 @@ do
   for ti=0,2 do
     assert(tileset:tile(ti).image.id == tileset:getTile(ti).id)
   end
+end
+
+-- Check undo/redo of name and baseIndex changes
+do
+  local spr = Sprite(4, 4, ColorMode.INDEXED)
+  app.command.NewLayer{ tilemap=true }
+  local tilemap = spr.layers[2]
+  local tileset = tilemap.tileset
+  assert(#tileset == 1)
+
+  -- Check undo/redo of name change
+  assert(tileset.name == "")
+  tileset.name = "Terrain"
+  assert(tileset.name == "Terrain")
+  app.undo() assert(tileset.name == "")
+  app.redo() assert(tileset.name == "Terrain")
+
+  -- Check undo/redo of baseIndex
+  assert(tileset.baseIndex == 1)
+  tileset.baseIndex = 2
+  assert(tileset.baseIndex == 2)
+  app.undo() assert(tileset.baseIndex == 1)
+  app.redo() assert(tileset.baseIndex == 2)
 end
 
 -- Create and delete Tilesets
