@@ -29,7 +29,8 @@
 // Tileset has UserData now
 #define TILESET_VER2     2
 
-// Tileset name (was missing originally)
+// Tileset name (was missing originally) + each tileset's tile has
+// UserData now
 #define TILESET_VER3     3
 
 namespace doc {
@@ -55,6 +56,13 @@ bool write_tileset(std::ostream& os,
   write8(os, TILESET_VER3);
   write_user_data(os, tileset->userData());
   write_string(os, tileset->name());
+
+  for (tile_index ti=0; ti<tileset->size(); ++ti) {
+    if (cancel && cancel->isCanceled())
+      return false;
+
+    write_user_data(os, tileset->getTileData(ti));
+  }
   return true;
 }
 
@@ -87,8 +95,13 @@ Tileset* read_tileset(std::istream& is,
       UserData userData = read_user_data(is);
       tileset->setUserData(userData);
 
-      if (ver >= TILESET_VER3)
+      if (ver >= TILESET_VER3) {
         tileset->setName(read_string(is));
+
+        for (tileset_index ti=0; ti<ntiles; ++ti) {
+          tileset->setTileData(ti, read_user_data(is));
+        }
+      }
     }
   }
   // Old tileset used in internal versions (this was added to recover

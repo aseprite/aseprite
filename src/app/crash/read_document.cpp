@@ -383,26 +383,12 @@ private:
 
     // Read Sprite User Data
     if (!s.eof()) {
-      UserData userData = readUserData(s);
+      UserData userData = read_user_data(s);
       if (!userData.isEmpty())
         spr->setUserData(userData);
     }
 
     return spr.release();
-  }
-
-  UserData readUserData(std::ifstream& s) {
-    UserData userData;
-    userData.setText(read_string(s));
-    // This check is here because we've been restoring sprites from
-    // old sessions where the color is restored incorrectly if we
-    // don't check if there is enough space to read from the file
-    // (e.g. reading a random color or just white, maybe -1 which is
-    // 0xffffffff in 32-bit).
-    if (!s.eof()) {
-      userData.setColor(read32(s));
-    }
-    return userData;
   }
 
   gfx::ColorSpaceRef readColorSpace(std::ifstream& s) {

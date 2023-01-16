@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -195,14 +195,8 @@ private:
     writeGridBounds(s, spr->gridBounds());
 
     // Write Sprite User Data
-    writeUserData(s, spr->userData());
+    write_user_data(s, spr->userData());
 
-    return true;
-  }
-
-  bool writeUserData(std::ofstream& s, const UserData& userData) {
-    write_string(s, userData.text());
-    write32(s, (uint32_t)userData.color());
     return true;
   }
 

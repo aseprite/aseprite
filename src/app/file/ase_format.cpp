@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -205,8 +205,6 @@ static void ase_file_write_tileset_chunk(FILE* f, FileOp* fop,
                                          const dio::AsepriteExternalFiles& ext_files,
                                          const Tileset* tileset,
                                          const tileset_index si);
-static void ase_file_write_properties(FILE* f,
-                                      const UserData::Properties& properties);
 static void ase_file_write_properties_maps(FILE* f, FileOp* fop,
                                            const dio::AsepriteExternalFiles& ext_files,
                                             size_t nmaps,
@@ -1164,7 +1162,7 @@ static void ase_file_write_user_data_chunk(FILE* f, FileOp* fop,
 {
   ChunkWriter chunk(f, frame_header, ASE_FILE_CHUNK_USER_DATA);
 
-  size_t nmaps = userData->countNonEmptyPropertiesMaps();
+  size_t nmaps = count_nonempty_properties_maps(userData->propertiesMaps());
   int flags = 0;
   if (!userData->text().empty())
     flags |= ASE_USER_DATA_FLAG_HAS_TEXT;
@@ -1504,27 +1502,22 @@ static void ase_file_write_property_value(FILE* f,
       }
       break;
     }
-    case USER_DATA_PROPERTY_TYPE_PROPERTIES:
-      ase_file_write_properties(f, *std::get_if<UserData::Properties>(&value));
+    case USER_DATA_PROPERTY_TYPE_PROPERTIES: {
+      auto& properties = *std::get_if<UserData::Properties>(&value);
+      ASSERT(properties.size() > 0);
+
+      fputl(properties.size(), f);
+      for (auto property : properties) {
+        const std::string& name = property.first;
+        ase_file_write_string(f, name);
+
+        const UserData::Variant& value = property.second;
+        fputw(value.type(), f);
+
+        ase_file_write_property_value(f, value);
+      }
       break;
-  }
-}
-
-static void ase_file_write_properties(FILE* f,
-                                      const UserData::Properties& properties)
-{
-  ASSERT(properties.size() > 0);
-
-  fputl(properties.size(), f);
-
-  for (auto property : properties) {
-    const std::string& name = property.first;
-    ase_file_write_string(f, name);
-
-    const UserData::Variant& value = property.second;
-    fputw(value.type(), f);
-
-    ase_file_write_property_value(f, value);
+    }
   }
 }
 
@@ -1567,7 +1560,7 @@ static void ase_file_write_properties_maps(FILE* f, FileOp* fop,
       //continue;
     }
     fputl(extensionId, f);
-    ase_file_write_properties(f, properties);
+    ase_file_write_property_value(f, properties);
   }
   long endPos = ftell(f);
   // We can overwrite the properties maps size now

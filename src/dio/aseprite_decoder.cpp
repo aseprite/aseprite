@@ -1257,7 +1257,7 @@ void AsepriteDecoder::readPropertiesMaps(doc::UserData::PropertiesMaps& properti
         fmt::format("Error: Invalid extension ID (id={0} not found)", id));
     }
     auto properties = readPropertyValue(USER_DATA_PROPERTY_TYPE_PROPERTIES);
-    propertiesMaps[extensionId] = *std::get_if<doc::UserData::Properties>(&properties);
+    propertiesMaps[extensionId] = doc::get_value<doc::UserData::Properties>(properties);
   }
   f()->seek(startPos+size);
 }
