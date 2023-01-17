@@ -413,9 +413,16 @@ there is an User Data Chunk at the first frame after the Palette Chunk.
             RECT
           + If type==0x0011 (vector)
             DWORD     Number of elements
-            WORD      Element's type
-            BYTE[]    As many values as the number of elements indicates
-                      Structure depends on the element's type
+            WORD      Element's type.
+            + If Element's type == 0 (all elements are not of the same type)
+              For each element:
+                WORD      Element's type
+                BYTE[]    Element's value. Structure depends on the
+                          element's type
+            + Else (all elements are of the same type)
+              For each element:
+                BYTE[]    Element's value. Structure depends on the
+                          element's type
           + If type==0x0012 (nested properties map)
             DWORD     Number of properties
             BYTE[]    Nested properties data
