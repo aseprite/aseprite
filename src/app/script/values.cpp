@@ -413,8 +413,6 @@ doc::UserData::Variant get_value_from_lua(lua_State* L, int index)
       lua_pushnil(L);
       while (lua_next(L, index) != 0) {
         if (lua_isinteger(L, -2)) {
-          // TODO we should check that all values are of the same type
-          //      to create the vector
           if (++i != lua_tointeger(L, -2)) {
             isArray = false;
             lua_pop(L, 2);  // Pop value and key
@@ -509,7 +507,6 @@ doc::UserData::Vector get_value_from_lua(lua_State* L, int index)
     --index;
   lua_pushnil(L);
   while (lua_next(L, index) != 0) {
-    // TODO we should check that all variants are of the same type
     v.push_back(get_value_from_lua<doc::UserData::Variant>(L, -1));
     lua_pop(L, 1);
   }

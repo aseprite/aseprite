@@ -149,6 +149,10 @@ namespace doc {
 
   size_t count_nonempty_properties_maps(const UserData::PropertiesMaps& propertiesMaps);
 
+  // If all the vector elements are of the same type returns such type.
+  // Otherwise it returns -1.
+  int all_elements_of_same_type(const UserData::Vector& vector);
+
 } // namespace doc
 
 #endif

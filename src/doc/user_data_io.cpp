@@ -55,6 +55,17 @@ size_t count_nonempty_properties_maps(const UserData::PropertiesMaps& properties
   return i;
 }
 
+
+int all_elements_of_same_type(const UserData::Vector& vector) {
+  int type = vector.empty() ? 0 : vector.front().type();
+  for (auto value : vector) {
+    if (type != value.type()) {
+      return 0;
+    }
+  }
+  return type;
+}
+
 void write_point(std::ostream& os, const gfx::Point& point)
 {
   write32(os, point.x);
@@ -125,9 +136,8 @@ void write_property_value(std::ostream& os, const UserData::Variant& variant)
     case USER_DATA_PROPERTY_TYPE_VECTOR: {
         const std::vector<UserData::Variant>& vector = get_value<std::vector<UserData::Variant>>(variant);
         write32(os, vector.size());
-        const uint16_t type = vector.size() == 0 ? 0 : vector.front().type();
-        write16(os, type);
         for (auto elem : vector) {
+          write16(os, elem.type());
           write_property_value(os, elem);
         }
       break;
@@ -237,10 +247,10 @@ UserData::Variant read_property_value(std::istream& is, uint16_t type)
     }
     case USER_DATA_PROPERTY_TYPE_VECTOR: {
       auto numElems = read32(is);
-      auto elemsType = read16(is);
       std::vector<doc::UserData::Variant> value;
       for (int k=0; k<numElems;++k) {
-        value.push_back(read_property_value(is, elemsType));
+        auto elemType = read16(is);
+        value.push_back(read_property_value(is, elemType));
       }
       return value;
     }

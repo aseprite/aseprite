@@ -1342,9 +1342,13 @@ const doc::UserData::Variant AsepriteDecoder::readPropertyValue(uint16_t type)
     case USER_DATA_PROPERTY_TYPE_VECTOR: {
       auto numElems = read32();
       auto elemsType = read16();
+      auto elemType = elemsType;
       std::vector<doc::UserData::Variant> value;
       for (int k=0; k<numElems;++k) {
-        value.push_back(readPropertyValue(elemsType));
+        if (elemsType == 0) {
+          elemType = read16();
+        }
+        value.push_back(readPropertyValue(elemType));
       }
       return value;
     }
