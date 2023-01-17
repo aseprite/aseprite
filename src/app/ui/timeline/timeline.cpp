@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -390,7 +390,7 @@ void Timeline::updateUsingEditor(Editor* editor)
 
   setFocusStop(true);
   regenerateRows();
-  setViewScroll(viewScroll());
+  setViewScroll(view->timelineScroll());
   showCurrentCel();
 }
 
@@ -417,6 +417,9 @@ void Timeline::detachDocument()
   m_dropRange.clearRange();
 
   if (m_editor) {
+    if (DocView* view = m_editor->getDocView())
+      view->setTimelineScroll(viewScroll());
+
     m_editor->remove_observer(this);
     m_editor = nullptr;
   }
