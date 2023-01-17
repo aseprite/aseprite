@@ -130,3 +130,23 @@ do
   assert(#spr.layers[2].properties("ext") == 1)
   assert(spr.layers[2].properties("ext").b == 32)
 end
+
+-- Test save vector with different types inside
+do
+  local spr = Sprite(32, 32)
+  spr.properties.a = { 3, "hi", {4, 5, 6}, {a="bye", b=10} }
+
+  spr:saveAs("_test_userdata_codec_3.aseprite")
+  spr:close()
+
+  spr = Sprite{ fromFile="_test_userdata_codec_3.aseprite" }
+  assert(#spr.properties.a == 4)
+  assert(spr.properties.a[1] == 3)
+  assert(spr.properties.a[2] == "hi")
+  assert(#spr.properties.a[3] == 3)
+  assert(spr.properties.a[3][1] == 4)
+  assert(spr.properties.a[3][2] == 5)
+  assert(spr.properties.a[3][3] == 6)
+  assert(spr.properties.a[4].a == "bye")
+  assert(spr.properties.a[4].b == 10)
+end

@@ -1570,10 +1570,14 @@ static void ase_file_write_property_value(FILE* f,
     case USER_DATA_PROPERTY_TYPE_VECTOR: {
       auto& v = *std::get_if<UserData::Vector>(&value);
       fputl(v.size(), f);
-      const uint16_t type = (v.empty() ? 0 : v.front().type());
+      const uint16_t type = doc::all_elements_of_same_type(v);
       fputw(type, f);
       for (const auto& elem : v) {
-        ASSERT(type == elem.type()); // Check that all elements have the same type
+        // Check that all elements have the same type when mode == 0. Or just that mode == 1
+        ASSERT(type != 0 && type == elem.type() || type == 0);
+        if (type == 0) {
+          fputw(elem.type(), f);
+        }
         ase_file_write_property_value(f, elem);
       }
       break;
