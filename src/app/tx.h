@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -22,9 +22,11 @@ namespace app {
   // transaction in the context.
   class Tx {
   public:
+    static constexpr const char* kDefaultTransactionName = "Transaction";
+
     Tx(Context* ctx,
-       const std::string& label = "Transaction",
-       Modification mod = ModifyDocument)
+       const std::string& label = kDefaultTransactionName,
+       const Modification mod = ModifyDocument)
     {
       m_doc = ctx->activeDocument();
       if (!m_doc)
@@ -41,7 +43,8 @@ namespace app {
     }
 
     // Use the default App context
-    Tx(const std::string& label = "Transaction", Modification mod = ModifyDocument)
+    Tx(const std::string& label = kDefaultTransactionName,
+       const Modification mod = ModifyDocument)
       : Tx(App::instance()->context(), label, mod) {
     }
 

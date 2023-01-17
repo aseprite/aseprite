@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -133,9 +133,26 @@ int App_transaction(lua_State* L)
 {
   int top = lua_gettop(L);
   int nresults = 0;
-  if (lua_isfunction(L, 1)) {
-    Tx tx; // Create a new transaction so it exists in the whole
-            // duration of the argument function call.
+  int index = 1;
+  std::string label = Tx::kDefaultTransactionName;
+
+  // This can be:
+  //
+  //   app.transaction(function)
+  //   app.transaction(string, function)
+  //
+  // Where if the string is the first argument, it will be the
+  // transaction name/undo-redo label.
+
+  if (lua_isstring(L, index)) {
+    label = lua_tostring(L, index);
+    ++index;
+  }
+
+  if (lua_isfunction(L, index)) {
+    Tx tx(label); // Create a new transaction so it exists in the whole
+                  // duration of the argument function call.
+
     lua_pushvalue(L, -1);
     if (lua_pcall(L, 0, LUA_MULTRET, 0) == LUA_OK)
       tx.commit();
