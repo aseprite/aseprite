@@ -78,9 +78,14 @@ public:
         return false;
 
     if (spr->hasTilesets()) {
-      for (Tileset* tset : *spr->tilesets())
-        if (!saveObject("tset", tset, &Writer::writeTileset))
-          return false;
+      for (Tileset* tset : *spr->tilesets()) {
+        // The tileset can be nullptr if it was erased (as we keep
+        // empty spaces in the Tilesets array)
+        if (tset) {
+          if (!saveObject("tset", tset, &Writer::writeTileset))
+            return false;
+        }
+      }
     }
 
     for (Tag* frtag : spr->tags())
@@ -165,8 +170,12 @@ private:
     // IDs of all tilesets
     write32(s, spr->hasTilesets() ? spr->tilesets()->size(): 0);
     if (spr->hasTilesets()) {
-      for (Tileset* tileset : *spr->tilesets())
-        write32(s, tileset->id());
+      for (Tileset* tileset : *spr->tilesets()) {
+        if (tileset)
+          write32(s, tileset->id());
+        else
+          write32(s, 0);
+      }
     }
 
     // IDs of all main layers

@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -226,8 +226,10 @@ void Sprite::setTransparentColor(color_t color)
 
   // Transform the empty tile of all tilemaps
   if (hasTilesets()) {
-    for (Tileset* tileset : *tilesets())
-      tileset->notifyRegenerateEmptyTile();
+    for (Tileset* tileset : *tilesets()) {
+      if (tileset)
+        tileset->notifyRegenerateEmptyTile();
+    }
   }
 }
 
@@ -501,6 +503,9 @@ ImageRef Sprite::getImageRef(ObjectId imageId)
   }
   if (hasTilesets()) {
     for (Tileset* tileset : *tilesets()) {
+      if (!tileset)
+        continue;
+
       for (tile_index i=0; i<tileset->size(); ++i) {
         ImageRef image = tileset->get(i);
         if (image && image->id() == imageId)
@@ -532,6 +537,9 @@ void Sprite::replaceImage(ObjectId curImageId, const ImageRef& newImage)
 
   if (hasTilesets()) {
     for (Tileset* tileset : *tilesets()) {
+      if (!tileset)
+        continue;
+
       for (tile_index i=0; i<tileset->size(); ++i) {
         ImageRef image = tileset->get(i);
         if (image && image->id() == curImageId) {
@@ -568,6 +576,9 @@ void Sprite::getImages(std::vector<ImageRef>& images) const
 
   if (hasTilesets()) {
     for (Tileset* tileset : *tilesets()) {
+      if (!tileset)
+        continue;
+
       for (tile_index i=0; i<tileset->size(); ++i) {
         ImageRef image = tileset->get(i);
         if (image)

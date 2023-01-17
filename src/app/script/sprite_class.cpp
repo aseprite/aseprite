@@ -25,6 +25,7 @@
 #include "app/cmd/remove_tile.h"
 #include "app/cmd/remove_tileset.h"
 #include "app/cmd/set_grid_bounds.h"
+#include "app/cmd/set_layer_tileset.h"
 #include "app/cmd/set_mask.h"
 #include "app/cmd/set_pixel_ratio.h"
 #include "app/cmd/set_sprite_size.h"
@@ -53,6 +54,7 @@
 #include "base/convert_to.h"
 #include "base/fs.h"
 #include "doc/layer.h"
+#include "doc/layer_tilemap.h"
 #include "doc/mask.h"
 #include "doc/palette.h"
 #include "doc/slice.h"
@@ -675,6 +677,20 @@ int Sprite_deleteTileset(lua_State* L)
     if (sprite != tileset->sprite())
       return luaL_error(L, "the tileset doesn't belong to the sprite");
     Tx tx;
+
+    // Set the tileset from all layers that are using it
+    for (auto layer : sprite->allLayers()) {
+      if (layer->isTilemap()) {
+        auto tilemap = static_cast<doc::LayerTilemap*>(layer);
+        if (tilemap->tilesetIndex() == tsi) {
+          // TODO improve this in some way, we're setting tileset
+          //      index 0, but probably we should support a tilemap
+          //      without tileset (as a temporal state)
+          tx(new cmd::SetLayerTileset(tilemap, 0));
+        }
+      }
+    }
+
     tx(new cmd::RemoveTileset(sprite, tsi));
     tx.commit();
     return 0;

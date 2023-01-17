@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019  Igara Studio S.A.
+// Copyright (c) 2019-2023  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -35,6 +35,8 @@ int Tilesets::getMemSize() const
 
 tileset_index Tilesets::add(Tileset* tileset)
 {
+  // The tileset can be nullptr to add an empty slot in the Tilesets
+  // (and align tileset indexes).
   m_tilesets.push_back(tileset);
   return tileset_index(m_tilesets.size()-1);
 }

@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2023  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -78,6 +79,9 @@ void ReplaceImage::replaceImage(ObjectId oldId, const ImageRef& newImage)
 
   if (spr->hasTilesets()) {
     for (Tileset* tileset : *spr->tilesets()) {
+      if (!tileset)
+        continue;
+
       for (tile_index i=0; i<tileset->size(); ++i) {
         ImageRef image = tileset->get(i);
         if (image && image->id() == oldId)

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -88,8 +88,10 @@ SetPixelFormat::SetPixelFormat(Sprite* sprite,
     if (!cel->layer()->isTilemap())
       ++nimages;
   if (sprite->hasTilesets()) {
-    for (Tileset* tileset : *sprite->tilesets())
-      nimages += tileset->size();
+    for (Tileset* tileset : *sprite->tilesets()) {
+      if (tileset)
+        nimages += tileset->size();
+    }
   }
 
   SuperDelegate superDel(nimages, delegate);
@@ -114,6 +116,9 @@ SetPixelFormat::SetPixelFormat(Sprite* sprite,
   // Convert tileset images
   if (sprite->hasTilesets()) {
     for (Tileset* tileset : *sprite->tilesets()) {
+      if (!tileset)
+        continue;
+
       for (tile_index i=0; i<tileset->size(); ++i) {
         ImageRef oldImage = tileset->get(i);
         if (oldImage) {

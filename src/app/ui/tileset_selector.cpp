@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -33,6 +33,9 @@ TilesetSelector::TilesetSelector(const doc::Sprite* sprite,
 
   doc::tileset_index tsi = 0;
   for (doc::Tileset* tileset : *sprite->tilesets()) {
+    if (!tileset)
+      continue;
+
     auto item = new ListItem(
       fmt::format("Tileset #{0} ({1}x{2}): \"{3}\"",
                   tsi,

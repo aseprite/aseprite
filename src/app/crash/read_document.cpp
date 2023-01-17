@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -262,6 +262,8 @@ private:
           Tileset* tileset = loadObject<Tileset*>("tset", tilesetId, &Reader::readTileset);
           if (tileset)
             spr->tilesets()->add(tileset);
+          else
+            spr->tilesets()->add(nullptr);
         }
       }
     }
@@ -547,6 +549,9 @@ private:
     // Fix tilemaps using old tilesets
     if (!m_updateOldTilemapWithTileset.empty()) {
       for (Tileset* tileset : *spr->tilesets()) {
+        if (!tileset)
+          continue;
+
         if (m_updateOldTilemapWithTileset.find(tileset->id()) == m_updateOldTilemapWithTileset.end())
           continue;
 

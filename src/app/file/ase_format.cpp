@@ -1288,6 +1288,9 @@ static void ase_file_write_external_files_chunk(
   };
 
   for (const Tileset* tileset : *sprite->tilesets()) {
+    if (!tileset)
+      continue;
+
     if (!tileset->externalFilename().empty()) {
       ext_files.insert(ASE_EXTERNAL_FILE_TILESET,
                        tileset->externalFilename());
@@ -1358,15 +1361,17 @@ static void ase_file_write_tileset_chunks(FILE* f, FileOp* fop,
 {
   tileset_index si = 0;
   for (const Tileset* tileset : *tilesets) {
-    ase_file_write_tileset_chunk(f, fop, frame_header, ext_files,
-                                 tileset, si);
+    if (tileset) {
+      ase_file_write_tileset_chunk(f, fop, frame_header, ext_files,
+                                   tileset, si);
 
-    ase_file_write_user_data_chunk(f, fop, frame_header, ext_files, &tileset->userData());
+      ase_file_write_user_data_chunk(f, fop, frame_header, ext_files, &tileset->userData());
 
-    // Write tile UserData
-    for (tile_index i=0; i < tileset->size(); ++i) {
-      UserData tileData = tileset->getTileData(i);
-      ase_file_write_user_data_chunk(f, fop, frame_header, ext_files, &tileData);
+      // Write tile UserData
+      for (tile_index i=0; i < tileset->size(); ++i) {
+        UserData tileData = tileset->getTileData(i);
+        ase_file_write_user_data_chunk(f, fop, frame_header, ext_files, &tileData);
+      }
     }
     ++si;
   }

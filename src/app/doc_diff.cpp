@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -143,9 +143,17 @@ DocDiff compare_docs(const Doc* a,
       Tileset* aTileset = a->sprite()->tilesets()->get(i);
       Tileset* bTileset = b->sprite()->tilesets()->get(i);
 
-      if (aTileset->grid().tileSize() != bTileset->grid().tileSize() ||
-          aTileset->size() != bTileset->size() ||
-          aTileset->userData() != bTileset->userData()) {
+      if (aTileset == nullptr && bTileset == nullptr) {
+        // Both tilesets nullptr, it's ok
+        continue;
+      }
+      else if (aTileset == nullptr || bTileset == nullptr) {
+        diff.anything = diff.tilesets = true;
+        break;
+      }
+      else if (aTileset->grid().tileSize() != bTileset->grid().tileSize() ||
+               aTileset->size() != bTileset->size() ||
+               aTileset->userData() != bTileset->userData()) {
         diff.anything = diff.tilesets = true;
 
         TRACEDIFF(aTileset->grid().tileSize(), bTileset->grid().tileSize());

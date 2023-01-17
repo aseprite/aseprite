@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -97,7 +97,8 @@ protected:
     int img_count = 0;
     if (tilesets) {
       for (Tileset* tileset : *tilesets) {
-        img_count += tileset->size();
+        if (tileset)
+          img_count += tileset->size();
       }
     }
     for (Cel* cel : sprite()->uniqueCels()) { // TODO add size() member function to CelsRange
@@ -114,7 +115,8 @@ protected:
     if (tilesets) {
       for (tileset_index tsi=0; tsi<tilesets->size(); ++tsi) {
         Tileset* tileset = tilesets->get(tsi);
-        ASSERT(tileset);
+        if (!tileset)
+          continue;
 
         gfx::Size newGridSize = tileset->grid().tileSize();
         newGridSize.w *= scale.w;
