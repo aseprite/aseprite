@@ -1432,10 +1432,6 @@ static void ase_file_write_tileset_chunk(FILE* f, FileOp* fop,
 static void ase_file_write_property_value(FILE* f,
                                           const UserData::Variant& value)
 {
-  // TODO reduce value type depending on the actual value we're going
-  // to save (e.g. we don't need to save a 64-bit integer if the
-  // value=30, we can use a uint8_t for that case)
-
   switch (value.type()) {
     case USER_DATA_PROPERTY_TYPE_NULLPTR:
       ASSERT(false);
@@ -1492,17 +1488,23 @@ static void ase_file_write_property_value(FILE* f,
       break;
     }
     case USER_DATA_PROPERTY_TYPE_VECTOR: {
-      auto& v = *std::get_if<UserData::Vector>(&value);
-      fputl(v.size(), f);
-      const uint16_t type = doc::all_elements_of_same_type(v);
+      auto& vector = *std::get_if<UserData::Vector>(&value);
+      fputl(vector.size(), f);
+      const uint16_t type = doc::all_elements_of_same_type(vector);
       fputw(type, f);
-      for (const auto& elem : v) {
-        // Check that all elements have the same type when mode == 0. Or just that mode == 1
-        ASSERT(type != 0 && type == elem.type() || type == 0);
+      for (const auto& elem : vector) {
+        UserData::Variant v = elem;
         if (type == 0) {
-          fputw(elem.type(), f);
+          if (IS_REDUCIBLE_INT(v.type())) {
+            v = reduce_int_type_size(v);
+          }
+          fputw(v.type(), f);
         }
-        ase_file_write_property_value(f, elem);
+        else if (IS_REDUCIBLE_INT(v.type()) && type < v.type()) {
+          // We need to cast each value to the common type.
+          v = cast_to_smaller_int_type(v, type);
+        }
+        ase_file_write_property_value(f, v);
       }
       break;
     }
@@ -1514,11 +1516,13 @@ static void ase_file_write_property_value(FILE* f,
       for (auto property : properties) {
         const std::string& name = property.first;
         ase_file_write_string(f, name);
+        UserData::Variant v = property.second;
+        if (IS_REDUCIBLE_INT(v.type())) {
+          v = reduce_int_type_size(v);
+        }
+        fputw(v.type(), f);
 
-        const UserData::Variant& value = property.second;
-        fputw(value.type(), f);
-
-        ase_file_write_property_value(f, value);
+        ase_file_write_property_value(f, v);
       }
       break;
     }
