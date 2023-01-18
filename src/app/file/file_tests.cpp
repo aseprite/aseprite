@@ -226,7 +226,7 @@ TEST(File, CustomProperties)
                   }));
 
         ASSERT_EQ(doc::get_value<doc::UserData::Vector>(sprite->userData().properties("ext")["numbers"]),
-                  (doc::UserData::Vector {int32_t(11), int32_t(22), int32_t(33)}));
+                  (doc::UserData::Vector {int8_t(11), int8_t(22), int8_t(33)}));
 
         ASSERT_EQ(doc::get_value<doc::UserData::Properties>(sprite->userData().properties("ext")["player"]),
                   (doc::UserData::Properties {
@@ -234,6 +234,46 @@ TEST(File, CustomProperties)
                     {"coordinates", gfx::Point(45, 56)},
                     {"cards", doc::UserData::Vector {int8_t(11), int8_t(6), int8_t(0), int8_t(13)}}
                   }));
+      }
+    },
+    { // Test size reduction of integer properties
+      "test_props_4.ase", 50, 50, doc::ColorMode::INDEXED, 256,
+      {
+        {"", {
+               {"int16_to_int8", int16_t(127)},
+               {"int16_to_uint8", int16_t(128)},
+               {"int32_to_int8", int32_t(126)},
+               {"int32_to_uint8", int32_t(129)},
+               {"int32_to_int16", int32_t(32767)},
+               {"int32_to_uint16", int32_t(32768)},
+               {"int64_to_int8", int64_t(125)},
+               {"int64_to_uint8", int64_t(130)},
+               {"int64_to_int16", int64_t(32765)},
+               {"int64_to_uint16", int64_t(32769)},
+               {"int64_to_int32", int64_t(2147483647)},
+               {"int64_to_uint32", int64_t(2147483648)},
+               {"v1", doc::UserData::Vector {uint64_t(18446744073709551615ULL), uint64_t(6), uint64_t(0), uint64_t(13)}},
+             }
+        }
+      },
+      [](const TestCase& test, doc::Sprite* sprite){
+        sprite->userData().propertiesMaps() = test.propertiesMaps;
+      },
+      [](const TestCase& test, doc::Sprite* sprite){
+        ASSERT_EQ(doc::get_value<int8_t>(sprite->userData().properties()["int16_to_int8"]), 127);
+        ASSERT_EQ(doc::get_value<uint8_t>(sprite->userData().properties()["int16_to_uint8"]), 128);
+        ASSERT_EQ(doc::get_value<int8_t>(sprite->userData().properties()["int32_to_int8"]), 126);
+        ASSERT_EQ(doc::get_value<uint8_t>(sprite->userData().properties()["int32_to_uint8"]), 129);
+        ASSERT_EQ(doc::get_value<int16_t>(sprite->userData().properties()["int32_to_int16"]), 32767);
+        ASSERT_EQ(doc::get_value<uint16_t>(sprite->userData().properties()["int32_to_uint16"]), 32768);
+        ASSERT_EQ(doc::get_value<int8_t>(sprite->userData().properties()["int64_to_int8"]), 125);
+        ASSERT_EQ(doc::get_value<uint8_t>(sprite->userData().properties()["int64_to_uint8"]), 130);
+        ASSERT_EQ(doc::get_value<int16_t>(sprite->userData().properties()["int64_to_int16"]), 32765);
+        ASSERT_EQ(doc::get_value<uint16_t>(sprite->userData().properties()["int64_to_uint16"]), 32769);
+        ASSERT_EQ(doc::get_value<int32_t>(sprite->userData().properties()["int64_to_int32"]), 2147483647);
+        ASSERT_EQ(doc::get_value<uint32_t>(sprite->userData().properties()["int64_to_uint32"]), 2147483648);
+        ASSERT_EQ(doc::get_value<doc::UserData::Vector>(sprite->userData().properties()["v1"]),
+                  (doc::UserData::Vector {uint64_t(18446744073709551615ULL), uint64_t(6), uint64_t(0), uint64_t(13)}));
       }
     }
   };

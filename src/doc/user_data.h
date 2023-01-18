@@ -42,6 +42,15 @@
 #define USER_DATA_PROPERTY_TYPE_VECTOR      0x0011
 #define USER_DATA_PROPERTY_TYPE_PROPERTIES  0x0012
 
+#define INT8_COMPATIBLE(i)   i >= -128        && i <= 127
+#define UINT8_COMPATIBLE(i)  i >= 128         && i <= 255
+#define INT16_COMPATIBLE(i)  i >= -32768      && i <= 32767
+#define UINT16_COMPATIBLE(i) i >= 32768       && i <= 65535
+#define INT32_COMPATIBLE(i)  i >= -2147483648 && i <= 2147483647
+#define UINT32_COMPATIBLE(i) i >= 2147483648  && i <= 4294967295
+
+#define IS_REDUCIBLE_INT(variantType) variantType >= USER_DATA_PROPERTY_TYPE_INT16 && variantType <= USER_DATA_PROPERTY_TYPE_UINT64
+
 namespace doc {
 
   class UserData {
@@ -151,7 +160,11 @@ namespace doc {
 
   // If all the vector elements are of the same type returns such type.
   // Otherwise it returns -1.
-  int all_elements_of_same_type(const UserData::Vector& vector);
+  uint16_t all_elements_of_same_type(const UserData::Vector& vector);
+
+  UserData::Variant reduce_int_type_size(const UserData::Variant& value);
+
+  UserData::Variant cast_to_smaller_int_type(const UserData::Variant& value, uint16_t type);
 
 } // namespace doc
 
