@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -911,9 +911,10 @@ void StatusBar::onInitTheme(ui::InitThemeEvent& ev)
   auto theme = SkinTheme::get(this);
   setBgColor(theme->colors.statusBarFace());
   setBorder(gfx::Border(6*guiscale(), 0, 6*guiscale(), 0));
-  setMinSize(Size(0, textHeight()+8*guiscale()));
-  setMaxSize(Size(std::numeric_limits<int>::max(),
-                  textHeight()+8*guiscale()));
+  setMinMaxSize(
+    Size(0, textHeight()+8*guiscale()),
+    Size(std::numeric_limits<int>::max(),
+         textHeight()+8*guiscale()));
 
   m_newFrame->setStyle(theme->styles.newFrameButton());
   m_commandsBox->setBorder(gfx::Border(2, 1, 2, 2)*guiscale());

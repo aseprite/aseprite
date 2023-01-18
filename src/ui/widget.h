@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -260,6 +260,7 @@ namespace ui {
     const gfx::Size& maxSize() const { return m_maxSize; }
     void setMinSize(const gfx::Size& sz);
     void setMaxSize(const gfx::Size& sz);
+    void setMinMaxSize(const gfx::Size& minSz, const gfx::Size& maxSz);
     void resetMinSize();
     void resetMaxSize();
 

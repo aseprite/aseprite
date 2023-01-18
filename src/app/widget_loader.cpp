@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -642,14 +642,12 @@ void WidgetLoader::fillWidgetWithXmlElementAttributes(const TiXmlElement* elem, 
     const int maxh = (maxheight ? strtol(maxheight, NULL, 10): 0);
     widget->InitTheme.connect(
       [widget, minw, minh, maxw, maxh]{
-        widget->setMinSize(gfx::Size(0, 0));
-        widget->setMaxSize(gfx::Size(std::numeric_limits<int>::max(),
-                                     std::numeric_limits<int>::max()));
+        widget->resetMinSize();
+        widget->resetMaxSize();
         const gfx::Size reqSize = widget->sizeHint();
-        widget->setMinSize(
+        widget->setMinMaxSize(
           gfx::Size((minw > 0 ? guiscale()*minw: reqSize.w),
-                    (minh > 0 ? guiscale()*minh: reqSize.h)));
-        widget->setMaxSize(
+                    (minh > 0 ? guiscale()*minh: reqSize.h)),
           gfx::Size((maxw > 0 ? guiscale()*maxw: std::numeric_limits<int>::max()),
                     (maxh > 0 ? guiscale()*maxh: std::numeric_limits<int>::max())));
       });

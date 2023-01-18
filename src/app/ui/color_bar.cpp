@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -303,8 +303,9 @@ ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
 
       for (auto w : { &m_editPal, &m_buttons,
                       &m_tilesButton, &m_tilesetModeButtons }) {
-        w->setMinSize(gfx::Size(0, theme->dimensions.colorBarButtonsHeight()));
-        w->setMaxSize(gfx::Size(std::numeric_limits<int>::max(),
+        w->setMinMaxSize(
+          gfx::Size(0, theme->dimensions.colorBarButtonsHeight()),
+          gfx::Size(std::numeric_limits<int>::max(),
                                 theme->dimensions.colorBarButtonsHeight())); // TODO add resetMaxSize
       }
 

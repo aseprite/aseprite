@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -1032,6 +1032,15 @@ void Widget::setMaxSize(const gfx::Size& sz)
   ASSERT(sz.w >= m_minSize.w);
   ASSERT(sz.h >= m_minSize.h);
   m_maxSize = sz;
+}
+
+void Widget::setMinMaxSize(const gfx::Size& minSz,
+                           const gfx::Size& maxSz)
+{
+  ASSERT(minSz.w <= maxSz.w);
+  ASSERT(minSz.h <= maxSz.h);
+  m_minSize = minSz;
+  m_maxSize = maxSz;
 }
 
 void Widget::resetMinSize()
