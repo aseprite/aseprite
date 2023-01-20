@@ -42,12 +42,14 @@
 #define USER_DATA_PROPERTY_TYPE_VECTOR      0x0011
 #define USER_DATA_PROPERTY_TYPE_PROPERTIES  0x0012
 
-#define INT8_COMPATIBLE(i)   i >= -128        && i <= 127
-#define UINT8_COMPATIBLE(i)  i >= 128         && i <= 255
-#define INT16_COMPATIBLE(i)  i >= -32768      && i <= 32767
-#define UINT16_COMPATIBLE(i) i >= 32768       && i <= 65535
-#define INT32_COMPATIBLE(i)  i >= -2147483648 && i <= 2147483647
-#define UINT32_COMPATIBLE(i) i >= 2147483648  && i <= 4294967295
+#define INT8_COMPATIBLE(i)   i >= -128               && i <= 127
+#define UINT8_COMPATIBLE(i)  i >= 128                && i <= 255
+#define INT16_COMPATIBLE(i)  i >= -32768             && i <= 32767
+#define UINT16_COMPATIBLE(i) i >= 32768              && i <= 65535
+// The (int) cast is to make MSVC happy. If we remove it, the condition could
+// be jumped.
+#define INT32_COMPATIBLE(i)  i >= ((int)-2147483648) && i <= 2147483647
+#define UINT32_COMPATIBLE(i) i >= 2147483648         && i <= 4294967295
 
 #define IS_REDUCIBLE_INT(variantType) variantType >= USER_DATA_PROPERTY_TYPE_INT16 && variantType <= USER_DATA_PROPERTY_TYPE_UINT64
 
