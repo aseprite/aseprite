@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -643,8 +643,10 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
     else
 #endif // ENABLE_UI
     if (fatal) {
-      fop->setError(warnings.c_str());
-      return fop.release();
+      // Return nullptr as the operation cannot be done because a
+      // fatal error/conversion was found, e.g. the format doesn't
+      // support the color mode of the sprite.
+      return nullptr;
     }
   }
 
