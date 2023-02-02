@@ -1,5 +1,6 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013, 2015  David Capello
+// Copyright (C) 2023  Igara Studio S.A.
+// Copyright (C) 2001-2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -18,7 +19,7 @@ void setup_scrollbars(const gfx::Size& scrollableSize,
                       ScrollBar& hbar,
                       ScrollBar& vbar)
 {
-#define NEED_BAR(w, h, width)                       \
+#define NEED_BAR(w, h)                              \
   ((scrollableSize.w > viewportArea.w) &&           \
    (vbar.getBarWidth() < fullViewportArea.w) &&     \
    (hbar.getBarWidth() < fullViewportArea.h))
@@ -31,13 +32,13 @@ void setup_scrollbars(const gfx::Size& scrollableSize,
   if (hbar.parent()) parent.removeChild(&hbar);
   if (vbar.parent()) parent.removeChild(&vbar);
 
-  if (NEED_BAR(w, h, width)) {
+  if (NEED_BAR(w, h)) {
     viewportArea.h -= hbar.getBarWidth();
     parent.addChild(&hbar);
 
-    if (NEED_BAR(h, w, height)) {
+    if (NEED_BAR(h, w)) {
       viewportArea.w -= vbar.getBarWidth();
-      if (NEED_BAR(w, h, width))
+      if (NEED_BAR(w, h))
         parent.addChild(&vbar);
       else {
         viewportArea.w += vbar.getBarWidth();
@@ -46,13 +47,13 @@ void setup_scrollbars(const gfx::Size& scrollableSize,
       }
     }
   }
-  else if (NEED_BAR(h, w, height)) {
+  else if (NEED_BAR(h, w)) {
     viewportArea.w -= vbar.getBarWidth();
     parent.addChild(&vbar);
 
-    if (NEED_BAR(w, h, width)) {
+    if (NEED_BAR(w, h)) {
       viewportArea.h -= hbar.getBarWidth();
-      if (NEED_BAR(h, w, height))
+      if (NEED_BAR(h, w))
         parent.addChild(&hbar);
       else {
         viewportArea.w += vbar.getBarWidth();
