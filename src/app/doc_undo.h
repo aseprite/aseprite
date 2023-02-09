@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022  Igara Studio S.A.
+// Copyright (C) 2022-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -99,6 +99,10 @@ namespace app {
     const undo::UndoState* m_savedState = nullptr;
     Context* m_ctx = nullptr;
     size_t m_totalUndoSize = 0;
+
+    // True when we are undoing/redoing. Used to avoid adding new undo
+    // information when we are moving through the undo history.
+    bool m_undoing = false;
 
     // True if the saved state was invalidated/corrupted/lost in some
     // way. E.g. If the save process fails.

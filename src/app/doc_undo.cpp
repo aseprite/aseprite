@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022  Igara Studio S.A.
+// Copyright (C) 2022-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -14,10 +14,12 @@
 #include "app/app.h"
 #include "app/cmd.h"
 #include "app/cmd_transaction.h"
+#include "app/console.h"
 #include "app/context.h"
 #include "app/doc_undo_observer.h"
 #include "app/pref/preferences.h"
 #include "base/mem_utils.h"
+#include "base/scoped_value.h"
 #include "undo/undo_history.h"
 #include "undo/undo_state.h"
 
@@ -42,6 +44,11 @@ void DocUndo::setContext(Context* ctx)
 void DocUndo::add(CmdTransaction* cmd)
 {
   ASSERT(cmd);
+
+  if (m_undoing) {
+    Console(m_ctx).printf("Error running scripts: Adding undo information when navigating undo history");
+  }
+
   UNDO_TRACE("UNDO: Add state <%s> of %s to %s\n",
              cmd->label().c_str(),
              base::get_pretty_memory_size(cmd->memSize()).c_str(),
@@ -96,6 +103,8 @@ bool DocUndo::canRedo() const
 
 void DocUndo::undo()
 {
+  ASSERT(!m_undoing);
+  base::ScopedValue undoing(m_undoing, true, false);
   const size_t oldSize = m_totalUndoSize;
   {
     const undo::UndoState* state = nextUndo();
@@ -116,6 +125,8 @@ void DocUndo::undo()
 
 void DocUndo::redo()
 {
+  ASSERT(!m_undoing);
+  base::ScopedValue undoing(m_undoing, true, false);
   const size_t oldSize = m_totalUndoSize;
   {
     const undo::UndoState* state = nextRedo();
