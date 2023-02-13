@@ -24,6 +24,13 @@ do
   spr.layers[1].tileset.properties.a = "i'm a tilemap"
   spr.layers[1].tileset.properties.b = 11
   spr.layers[1].tileset.properties("ext").a = "text from extension"
+  -- Create some tiles with properties
+  local tile = spr:newTile(spr.layers[1].tileset, 1)
+  tile.properties.a = 320
+  tile.properties.b = 330
+  tile = spr:newTile(spr.layers[1].tileset, 2)
+  tile.properties.a = 640
+  tile.properties.b = 650
   -- Set tags custom properties
   spr.tags[1].properties.a = Point(1,2)
   spr.tags[1].properties.b = {a="text",b=35.567,c=Rectangle(1,2,3,4)}
@@ -60,6 +67,10 @@ do
   assert(spr.layers[1].tileset.properties.a == "i'm a tilemap")
   assert(spr.layers[1].tileset.properties.b == 11)
   assert(spr.layers[1].tileset.properties("ext").a == "text from extension")
+  assert(spr.layers[1].tileset:tile(1).properties.a == 320)
+  assert(spr.layers[1].tileset:tile(1).properties.b == 330)
+  assert(spr.layers[1].tileset:tile(2).properties.a == 640)
+  assert(spr.layers[1].tileset:tile(2).properties.b == 650)
   assert(#spr.tags[1].properties == 2)
   assert(#spr.tags[1].properties("ext") == 1)
   assert(spr.tags[1].properties.a.x == 1)
