@@ -24,10 +24,16 @@ namespace doc {
   class Sprite;
 
   class Tileset : public WithUserData {
+    struct Tile {
+      ImageRef image;
+      UserData data;
+      Tile() { }
+      Tile(const ImageRef& image,
+           const UserData& data) : image(image), data(data) { }
+    };
     static UserData kNoUserData;
   public:
-    typedef std::vector<ImageRef> Tiles;
-    typedef std::vector<UserData> Datas;
+    typedef std::vector<Tile> Tiles;
     typedef Tiles::iterator iterator;
     typedef Tiles::const_iterator const_iterator;
 
@@ -63,7 +69,7 @@ namespace doc {
 
     ImageRef get(const tile_index ti) const {
       if (ti >= 0 && ti < size())
-        return m_tiles[ti];
+        return m_tiles[ti].image;
       else
         return ImageRef(nullptr);
     }
@@ -72,7 +78,7 @@ namespace doc {
 
     UserData& getTileData(const tile_index ti) const {
       if (ti >= 0 && ti < size())
-        return const_cast<UserData&>(m_datas[ti]);
+        return const_cast<UserData&>(m_tiles[ti].data);
       else
         return kNoUserData;
     }
@@ -92,16 +98,9 @@ namespace doc {
     const std::string& externalFilename() const { return m_external.filename; }
     tileset_index externalTileset() const { return m_external.tileset; }
 
-    bool operator==(const Tileset& other) const {
-      // TODO compare the all grid members
-      return (m_grid.tileSize() == other.m_grid.tileSize() &&
-              m_tiles == other.m_tiles &&
-              m_name == other.m_name);
-    }
-
-    bool operator!=(const Tileset& other) const {
-      return !operator==(other);
-    }
+    // Unused functions.
+    bool operator==(const Tileset& other) const = delete;
+    bool operator!=(const Tileset& other) const = delete;
 
     // Returns a new empty tile with the tileset specs.
     ImageRef makeEmptyTile();
@@ -139,7 +138,6 @@ namespace doc {
     Sprite* m_sprite;
     Grid m_grid;
     Tiles m_tiles;
-    Datas m_datas;
     TilesetHashTable m_hash;
     std::string m_name;
     int m_baseIndex = 1;

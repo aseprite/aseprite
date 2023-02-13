@@ -129,11 +129,11 @@ protected:
         doc::tile_index idx = 0;
         newTileset->setName(tileset->name());
         newTileset->setUserData(tileset->userData());
-        for (doc::ImageRef tileImg : *tileset) {
+        for (auto& tile : *tileset) {
           if (idx != 0) {
             doc::ImageRef newTileImg(
               resize_image(
-                tileImg.get(),
+                tile.image.get(),
                 scale,
                 m_resize_method,
                 sprite()->palette(0),

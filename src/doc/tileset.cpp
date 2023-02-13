@@ -30,7 +30,6 @@ Tileset::Tileset(Sprite* sprite,
   , m_sprite(sprite)
   , m_grid(grid)
   , m_tiles(ntiles)
-  , m_datas(ntiles)
 {
   // The origin of tileset grids must be 0,0 (the origin is then
   // specified by each cel position)
@@ -43,7 +42,7 @@ Tileset::Tileset(Sprite* sprite,
 
   for (tile_index ti=0; ti<ntiles; ++ti) {
     ImageRef tile = makeEmptyTile();
-    m_tiles[ti] = tile;
+    m_tiles[ti].image = tile;
     hashImage(ti, tile);
   }
 }
@@ -90,9 +89,9 @@ Tileset* Tileset::MakeCopyCopyingImages(const Tileset* tileset)
 int Tileset::getMemSize() const
 {
   int size = sizeof(Tileset) + m_name.size();
-  for (auto& img : const_cast<Tileset*>(this)->m_tiles) {
-    ASSERT(img);
-    size += img->getMemSize();
+  for (auto& tile : const_cast<Tileset*>(this)->m_tiles) {
+    ASSERT(tile.image);
+    size += tile.image->getMemSize();
   }
   return size;
 }
@@ -101,15 +100,13 @@ void Tileset::resize(const tile_index ntiles)
 {
   int oldSize = m_tiles.size();
   m_tiles.resize(ntiles);
-  m_datas.resize(ntiles);
   for (tile_index ti=oldSize; ti<ntiles; ++ti)
-    m_tiles[ti] = makeEmptyTile();
+    m_tiles[ti].image = makeEmptyTile();
 }
 
 void Tileset::remap(const Remap& remap)
 {
   Tiles tmp = m_tiles;
-  Datas tmpUD = m_datas;
 
   // The notile cannot be remapped
   ASSERT(remap[0] == 0);
@@ -124,7 +121,6 @@ void Tileset::remap(const Remap& remap)
       ASSERT(remap[ti] != notile);
 
       m_tiles[remap[ti]] = tmp[ti];
-      m_datas[remap[ti]] = tmpUD[ti];
     }
   }
 
@@ -135,7 +131,7 @@ void Tileset::setTileData(const tile_index ti,
                           const UserData& userData)
 {
   if (ti >= 0 && ti < size())
-    m_datas[ti] = userData;
+    m_tiles[ti].data = userData;
 }
 
 void Tileset::set(const tile_index ti,
@@ -154,7 +150,7 @@ void Tileset::set(const tile_index ti,
   removeFromHash(ti, false);
 
   preprocess_transparent_pixels(image.get());
-  m_tiles[ti] = image;
+  m_tiles[ti].image = image;
 
   if (!m_hash.empty())
     hashImage(ti, image);
@@ -168,8 +164,7 @@ tile_index Tileset::add(const ImageRef& image,
   ASSERT(image->height() == m_grid.tileSize().h);
 
   preprocess_transparent_pixels(image.get());
-  m_tiles.push_back(image);
-  m_datas.push_back(userData);
+  m_tiles.push_back(Tile(image, userData));
 
   const tile_index newIndex = tile_index(m_tiles.size()-1);
   if (!m_hash.empty())
@@ -193,8 +188,7 @@ void Tileset::insert(const tile_index ti,
 
   ASSERT(ti >= 0 && ti <= m_tiles.size()+1);
   preprocess_transparent_pixels(image.get());
-  m_tiles.insert(m_tiles.begin()+ti, image);
-  m_datas.insert(m_datas.begin()+ti, userData);
+  m_tiles.insert(m_tiles.begin()+ti, Tile(image, userData));
 
   if (!m_hash.empty()) {
     // Fix all indexes in the hash that are greater than "ti"
@@ -214,7 +208,6 @@ void Tileset::erase(const tile_index ti)
   //removeFromHash(ti, true);
 
   m_tiles.erase(m_tiles.begin()+ti);
-  m_datas.erase(m_datas.begin()+ti);
   rehash();
 }
 
@@ -290,8 +283,8 @@ void Tileset::notifyTileContentChange(const tile_index ti)
 
   (void)ti;                     // unused
 
-  if (ti >= 0 && ti < m_tiles.size() && m_tiles[ti])
-    preprocess_transparent_pixels(m_tiles[ti].get());
+  if (ti >= 0 && ti < m_tiles.size() && m_tiles[ti].image)
+    preprocess_transparent_pixels(m_tiles[ti].image.get());
 
   rehash();
 
@@ -339,19 +332,19 @@ void Tileset::assertValidHashTable()
   // array.
   if (m_hash.size() < m_tiles.size()) {
     for (tile_index ti=0; ti<tile_index(m_tiles.size()); ++ti) {
-      auto it = m_hash.find(m_tiles[ti]);
+      auto it = m_hash.find(m_tiles[ti].image);
       ASSERT(it != m_hash.end());
 
       // If the hash doesn't match, it is because other tile is equal
       // to this one.
       if (it->second != ti) {
-        ASSERT(is_same_image(it->first.get(), m_tiles[it->second].get()));
+        ASSERT(is_same_image(it->first.get(), m_tiles[it->second].image.get()));
       }
     }
   }
   else if (m_hash.size() == m_tiles.size()) {
     for (tile_index ti=0; ti<tile_index(m_tiles.size()); ++ti) {
-      auto it = m_hash.find(m_tiles[ti]);
+      auto it = m_hash.find(m_tiles[ti].image);
       ASSERT(it != m_hash.end());
       ASSERT(it->second == ti);
     }
@@ -381,8 +374,8 @@ TilesetHashTable& Tileset::hashTable()
   if (m_hash.empty()) {
     // Re-hash/create the whole hash table from scratch
     tile_index ti = 0;
-    for (auto tile : m_tiles)
-      hashImage(ti++, tile);
+    for (auto& tile : m_tiles)
+      hashImage(ti++, tile.image);
   }
   return m_hash;
 }

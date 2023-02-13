@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -865,8 +865,8 @@ int DocExporter::addTilesetsSamples(
       Tileset* ts = dynamic_cast<LayerTilemap*>(layer)->tileset();
 
       if (alreadyExported.find(ts->id()) == alreadyExported.end()) {
-        for (const ImageRef& image : *ts) {
-          addImage(doc, image);
+        for (const auto& tile : *ts) {
+          addImage(doc, tile.image);
           ++items;
         }
         alreadyExported.insert(ts->id());
