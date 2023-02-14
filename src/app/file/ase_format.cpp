@@ -14,7 +14,6 @@
 #include "app/file/file.h"
 #include "app/file/file_format.h"
 #include "app/file/format_options.h"
-#include "app/pref/preferences.h"
 #include "base/cfile.h"
 #include "base/exception.h"
 #include "base/file_handle.h"
@@ -65,7 +64,7 @@ public:
   }
 
   doc::color_t defaultSliceColor() override {
-    auto color = Preferences::instance().slices.defaultColor();
+    auto color = m_fop->config().defaultSliceColor;
     return doc::rgba(color.getRed(),
                      color.getGreen(),
                      color.getBlue(),

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -260,6 +260,7 @@ namespace app {
     bool hasEmbeddedGridBounds() const { return m_embeddedGridBounds; }
 
     bool newBlend() const { return m_config.newBlend; }
+    const FileOpConfig& config() const { return m_config; }
 
   private:
     FileOp();                   // Undefined
