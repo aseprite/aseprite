@@ -18,6 +18,7 @@
 #include "base/exception.h"
 #include "base/file_handle.h"
 #include "base/fs.h"
+#include "base/mem_utils.h"
 #include "dio/aseprite_common.h"
 #include "dio/aseprite_decoder.h"
 #include "dio/decode_delegate.h"
@@ -32,6 +33,8 @@
 #include <cstdio>
 #include <deque>
 #include <variant>
+
+#define ASEFILE_TRACE(...) // TRACE(__VA_ARGS__)
 
 namespace app {
 
@@ -76,6 +79,10 @@ public:
   }
 
   doc::Sprite* sprite() { return m_sprite; }
+
+  bool cacheCompressedTilesets() const {
+    return m_fop->config().cacheCompressedTilesets;
+  }
 
 private:
   FileOp* m_fop;
@@ -855,7 +862,9 @@ static void write_raw_image(FILE* f, ScanlinesGen* gen, PixelFormat pixelFormat)
 //////////////////////////////////////////////////////////////////////
 
 template<typename ImageTraits>
-static void write_compressed_image_templ(FILE* f, ScanlinesGen* gen)
+static void write_compressed_image_templ(FILE* f,
+                                         ScanlinesGen* gen,
+                                         base::buffer* compressedOutput)
 {
   PixelIO<ImageTraits> pixel_io;
   z_stream zstream;
@@ -896,6 +905,17 @@ static void write_compressed_image_templ(FILE* f, ScanlinesGen* gen)
         if ((fwrite(&compressed[0], 1, output_bytes, f) != (size_t)output_bytes)
             || ferror(f))
           throw base::Exception("Error writing compressed image pixels.\n");
+
+        // Save the whole compressed buffer to re-use in following
+        // save options (so we don't have to re-compress the whole
+        // tileset)
+        if (compressedOutput) {
+          std::size_t n = compressedOutput->size();
+          compressedOutput->resize(n + output_bytes);
+          std::copy(compressed.begin(),
+                    compressed.begin() + output_bytes,
+                    compressedOutput->begin() + n);
+        }
       }
     } while (zstream.avail_out == 0);
   }
@@ -905,23 +925,26 @@ static void write_compressed_image_templ(FILE* f, ScanlinesGen* gen)
     throw base::Exception("ZLib error %d in deflateEnd().", err);
 }
 
-static void write_compressed_image(FILE* f, ScanlinesGen* gen, PixelFormat pixelFormat)
+static void write_compressed_image(FILE* f,
+                                   ScanlinesGen* gen,
+                                   PixelFormat pixelFormat,
+                                   base::buffer* compressedOutput = nullptr)
 {
   switch (pixelFormat) {
     case IMAGE_RGB:
-      write_compressed_image_templ<RgbTraits>(f, gen);
+      write_compressed_image_templ<RgbTraits>(f, gen, compressedOutput);
       break;
 
     case IMAGE_GRAYSCALE:
-      write_compressed_image_templ<GrayscaleTraits>(f, gen);
+      write_compressed_image_templ<GrayscaleTraits>(f, gen, compressedOutput);
       break;
 
     case IMAGE_INDEXED:
-      write_compressed_image_templ<IndexedTraits>(f, gen);
+      write_compressed_image_templ<IndexedTraits>(f, gen, compressedOutput);
       break;
 
     case IMAGE_TILEMAP:
-      write_compressed_image_templ<TilemapTraits>(f, gen);
+      write_compressed_image_templ<TilemapTraits>(f, gen, compressedOutput);
       break;
   }
 }
@@ -1436,14 +1459,43 @@ static void ase_file_write_tileset_chunk(FILE* f, FileOp* fop,
   // Flag 2 = tileset
   if (flags & ASE_TILESET_FLAG_EMBEDDED) {
     size_t beg = ftell(f);
-    fputl(0, f);                  // Field for compressed data length (completed later)
-    TilesetScanlines gen(tileset);
-    write_compressed_image(f, &gen, tileset->sprite()->pixelFormat());
 
-    size_t end = ftell(f);
-    fseek(f, beg, SEEK_SET);
-    fputl(end-beg-4, f);          // Save the compressed data length
-    fseek(f, end, SEEK_SET);
+    // Save the cached tileset compressed data
+    if (!tileset->compressedData().empty() &&
+        tileset->compressedDataVersion() == tileset->version()) {
+      const base::buffer& data = tileset->compressedData();
+
+      ASEFILE_TRACE("[%d] saving compressed tileset (%s)\n",
+                    tileset->id(), base::get_pretty_memory_size(data.size()).c_str());
+
+      fputl(data.size(), f); // Compressed data length
+      fwrite(&data[0], 1, data.size(), f);
+    }
+    // Compress and save the tileset now
+    else {
+      fputl(0, f);                  // Field for compressed data length (completed later)
+      TilesetScanlines gen(tileset);
+
+      ASEFILE_TRACE("[%d] recompressing tileset\n", tileset->id());
+
+      base::buffer compressedData;
+      base::buffer* compressedDataPtr = nullptr;
+      if (fop->config().cacheCompressedTilesets)
+        compressedDataPtr = &compressedData;
+
+      write_compressed_image(f, &gen, tileset->sprite()->pixelFormat(),
+                             compressedDataPtr);
+
+      // As we've just compressed the tileset, we can cache this same
+      // data (so saving the file again will not need recompressing).
+      if (compressedDataPtr)
+        tileset->setCompressedData(compressedData);
+
+      size_t end = ftell(f);
+      fseek(f, beg, SEEK_SET);
+      fputl(end-beg-4, f);          // Save the compressed data length
+      fseek(f, end, SEEK_SET);
+    }
   }
 }
 

@@ -10,6 +10,7 @@
 
 #include "doc/tileset.h"
 
+#include "base/mem_utils.h"
 #include "doc/primitives.h"
 #include "doc/remap.h"
 #include "doc/sprite.h"
@@ -86,6 +87,27 @@ Tileset* Tileset::MakeCopyCopyingImages(const Tileset* tileset)
   return copy.release();
 }
 
+void Tileset::discardCompressedData()
+{
+  if (!m_compressedData.empty()) {
+    TS_TRACE("TS: [%d] discardCompressedData\n", id());
+
+    m_compressedData.clear();
+    m_compressedDataVersion = 0;
+  }
+}
+
+void Tileset::setCompressedData(const base::buffer& buffer) const
+{
+  if (!buffer.empty()) {
+    TS_TRACE("TS: [%d] setCompressedData (%s)\n", id(),
+             base::get_pretty_memory_size(buffer.size()).c_str());
+
+    m_compressedData = buffer;
+    m_compressedDataVersion = version();
+  }
+}
+
 int Tileset::getMemSize() const
 {
   int size = sizeof(Tileset) + m_name.size();
@@ -112,7 +134,7 @@ void Tileset::remap(const Remap& remap)
   ASSERT(remap[0] == 0);
 
   for (tile_index ti=1; ti<size(); ++ti) {
-    TS_TRACE("m_tiles[%d] = tmp[%d]\n", remap[ti], ti);
+    TS_TRACE("TS: m_tiles[%d] = tmp[%d]\n", remap[ti], ti);
 
     ASSERT(remap[ti] >= 0);
     ASSERT(remap[ti] < m_tiles.size());
@@ -367,6 +389,10 @@ void Tileset::rehash()
   // Clear the hash table, we'll lazy-rehash it when
   // hashTable()/findTileIndex() is used.
   m_hash.clear();
+
+  // Reset the compressed data (just in case we have cached the data
+  // from a loaded .aseprite file or when saving the file).
+  discardCompressedData();
 }
 
 TilesetHashTable& Tileset::hashTable()

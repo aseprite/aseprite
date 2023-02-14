@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -35,6 +35,12 @@ namespace app {
 
     // Algorithm used to create a palette from RGB files.
     doc::RgbMapAlgorithm rgbMapAlgorithm = doc::RgbMapAlgorithm::DEFAULT;
+
+    // Cache compressed tilesets. When we load a tileset from a
+    // .aseprite file, the compressed data will be stored on memory to
+    // make the save operation faster (as we can re-use the already
+    // compressed data that was loaded as-is).
+    bool cacheCompressedTilesets = true;
 
     void fillFromPreferences();
   };

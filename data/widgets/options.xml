@@ -1,5 +1,5 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2018-2022  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-2023  Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2018  David Capello -->
 <gui>
   <window id="options" text="@.title">
@@ -522,6 +522,9 @@
           <check id="tint_shade_tone_hue_with_sat_value"
                  text="@.hue_with_sat_value"
                  pref="experimental.hue_with_sat_value_for_color_selector" />
+          <check id="cache_compressed_tilesets"
+                 text="@.cache_compressed_tilesets"
+                 pref="tileset.cache_compressed_tilesets" />
           <hbox id="load_wintab_driver_box">
             <check id="load_wintab_driver2"
                    text="@.load_wintab_driver"

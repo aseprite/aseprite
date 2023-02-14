@@ -1181,9 +1181,10 @@ doc::Slice* AsepriteDecoder::readSliceChunk(doc::Slices& slices)
   return slice.release();
 }
 
-doc::Tileset* AsepriteDecoder::readTilesetChunk(doc::Sprite* sprite,
-                                       const AsepriteHeader* header,
-                                       const AsepriteExternalFiles& extFiles)
+doc::Tileset* AsepriteDecoder::readTilesetChunk(
+  doc::Sprite* sprite,
+  const AsepriteHeader* header,
+  const AsepriteExternalFiles& extFiles)
 {
   const doc::tileset_index id = read32();
   const uint32_t flags = read32();
@@ -1228,6 +1229,14 @@ doc::Tileset* AsepriteDecoder::readTilesetChunk(doc::Sprite* sprite,
       const size_t dataBeg = f()->tell();
       const size_t dataEnd = dataBeg+dataSize;
 
+      base::buffer compressed;
+      if (delegate()->cacheCompressedTilesets() &&
+          dataSize > 0) {
+        compressed.resize(dataSize);
+        f()->readBytes(&compressed[0], dataSize);
+        f()->seek(dataBeg);
+      }
+
       doc::ImageRef alltiles(doc::Image::create(sprite->pixelFormat(), w, h*ntiles));
       alltiles->setMaskColor(sprite->transparentColor());
 
@@ -1242,6 +1251,9 @@ doc::Tileset* AsepriteDecoder::readTilesetChunk(doc::Sprite* sprite,
       // If we are reading and old .aseprite file (where empty tile is not the zero]
       if ((flags & ASE_TILESET_FLAG_ZERO_IS_NOTILE) == 0)
         doc::fix_old_tileset(tileset);
+
+      if (!compressed.empty())
+        tileset->setCompressedData(compressed);
     }
     sprite->tilesets()->set(id, tileset);
   }

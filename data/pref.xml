@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2018-2022  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-2023  Igara Studio S.A. -->
 <!-- Copyright (C) 2014-2018  David Capello -->
 <preferences>
 
@@ -427,6 +427,7 @@
     </section>
     <section id="tileset">
       <option id="base_index" type="int" default="1" />
+      <option id="cache_compressed_tilesets" type="bool" default="true" />
     </section>
   </global>
 

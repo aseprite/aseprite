@@ -8,6 +8,7 @@
 #define DOC_TILESET_H_INCLUDED
 #pragma once
 
+#include "base/buffer.h"
 #include "doc/grid.h"
 #include "doc/image_ref.h"
 #include "doc/object.h"
@@ -56,6 +57,13 @@ namespace doc {
 
     int baseIndex() const { return m_baseIndex; }
     void setBaseIndex(int index) { m_baseIndex = index; }
+
+    // Cached compressed tileset read/writen directly from .aseprite
+    // files.
+    void discardCompressedData();
+    void setCompressedData(const base::buffer& buffer) const;
+    const base::buffer& compressedData() const { return m_compressedData; }
+    ObjectVersion compressedDataVersion() const { return m_compressedDataVersion; }
 
     int getMemSize() const override;
 
@@ -145,6 +153,18 @@ namespace doc {
       std::string filename;
       tileset_index tileset;
     } m_external;
+
+    // This is a cached version of the compressed tileset data
+    // directly read from an .aseprite file. It's used to save the
+    // tileset as-is (without re-compressing). When we modify the
+    // tileset (at least one tile), the compressed data is discarded,
+    // and the recompressiong must be done.
+    //
+    // This was added to improve the performance of saving a sprite
+    // when tilesets are not modified (generally useful when a sprite
+    // contains several layers with tilesets).
+    mutable base::buffer m_compressedData;
+    mutable doc::ObjectVersion m_compressedDataVersion;
   };
 
 } // namespace doc
