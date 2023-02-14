@@ -628,10 +628,10 @@ doc::Layer* AsepriteDecoder::readLayerChunk(AsepriteHeader* header,
 namespace {
 
 template<typename ImageTraits>
-void read_raw_image(FileInterface* f,
-                    DecodeDelegate* delegate,
-                    doc::Image* image,
-                    const AsepriteHeader* header)
+void read_raw_image_templ(FileInterface* f,
+                          DecodeDelegate* delegate,
+                          doc::Image* image,
+                          const AsepriteHeader* header)
 {
   PixelIO<ImageTraits> pixel_io;
   int x, y;
@@ -643,6 +643,34 @@ void read_raw_image(FileInterface* f,
       doc::put_pixel_fast<ImageTraits>(image, x, y, pixel_io.read_pixel(f));
     }
     delegate->progress((float)f->tell() / (float)header->size);
+  }
+}
+
+void read_raw_image(FileInterface* f,
+                    DecodeDelegate* delegate,
+                    doc::Image* image,
+                    const AsepriteHeader* header)
+{
+  switch (image->pixelFormat()) {
+    case doc::IMAGE_RGB:
+      read_raw_image_templ<doc::RgbTraits>(
+        f, delegate, image, header);
+      break;
+
+    case doc::IMAGE_GRAYSCALE:
+      read_raw_image_templ<doc::GrayscaleTraits>(
+        f, delegate, image, header);
+      break;
+
+    case doc::IMAGE_INDEXED:
+      read_raw_image_templ<doc::IndexedTraits>(
+        f, delegate, image, header);
+      break;
+
+    case doc::IMAGE_TILEMAP:
+      read_raw_image_templ<doc::TilemapTraits>(
+        f, delegate, image, header);
+      break;
   }
 }
 
@@ -826,23 +854,9 @@ doc::Cel* AsepriteDecoder::readCelChunk(doc::Sprite* sprite,
       int h = read16();
 
       if (w > 0 && h > 0) {
-        doc::ImageRef image(doc::Image::create(pixelFormat, w, h));
-
         // Read pixel data
-        switch (image->pixelFormat()) {
-
-          case doc::IMAGE_RGB:
-            read_raw_image<doc::RgbTraits>(f(), delegate(), image.get(), header);
-            break;
-
-          case doc::IMAGE_GRAYSCALE:
-            read_raw_image<doc::GrayscaleTraits>(f(), delegate(), image.get(), header);
-            break;
-
-          case doc::IMAGE_INDEXED:
-            read_raw_image<doc::IndexedTraits>(f(), delegate(), image.get(), header);
-            break;
-        }
+        doc::ImageRef image(doc::Image::create(pixelFormat, w, h));
+        read_raw_image(f(), delegate(), image.get(), header);
 
         cel = std::make_unique<doc::Cel>(frame, image);
         cel->setPosition(x, y);

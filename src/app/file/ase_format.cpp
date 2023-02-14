@@ -85,25 +85,25 @@ private:
 class ScanlinesGen {
 public:
   virtual ~ScanlinesGen() { }
-  virtual gfx::Size getImageSize() = 0;
-  virtual int getScanlineSize() = 0;
-  virtual const uint8_t* getScanlineAddress(int y) = 0;
+  virtual gfx::Size getImageSize() const = 0;
+  virtual int getScanlineSize() const = 0;
+  virtual const uint8_t* getScanlineAddress(int y) const = 0;
 };
 
 class ImageScanlines : public ScanlinesGen {
   const Image* m_image;
 public:
   ImageScanlines(const Image* image) : m_image(image) { }
-  gfx::Size getImageSize() override {
+  gfx::Size getImageSize() const override {
     return gfx::Size(m_image->width(),
                      m_image->height());
   }
-  int getScanlineSize() override {
+  int getScanlineSize() const override {
     return doc::calculate_rowstride_bytes(
       m_image->pixelFormat(),
       m_image->width());
   }
-  const uint8_t* getScanlineAddress(int y) override {
+  const uint8_t* getScanlineAddress(int y) const override {
     return m_image->getPixelAddress(0, y);
   }
 };
@@ -112,16 +112,16 @@ class TilesetScanlines : public ScanlinesGen {
   const Tileset* m_tileset;
 public:
   TilesetScanlines(const Tileset* tileset) : m_tileset(tileset) { }
-  gfx::Size getImageSize() override {
+  gfx::Size getImageSize() const override {
     return gfx::Size(m_tileset->grid().tileSize().w,
                      m_tileset->grid().tileSize().h * m_tileset->size());
   }
-  int getScanlineSize() override {
+  int getScanlineSize() const override {
     return doc::calculate_rowstride_bytes(
       m_tileset->sprite()->pixelFormat(),
       m_tileset->grid().tileSize().w);
   }
-  const uint8_t* getScanlineAddress(int y) override {
+  const uint8_t* getScanlineAddress(int y) const override {
     const int h = m_tileset->grid().tileSize().h;
     const tile_index ti = (y / h);
     ASSERT(ti >= 0 && ti < m_tileset->size());
@@ -813,14 +813,41 @@ public:
 //////////////////////////////////////////////////////////////////////
 
 template<typename ImageTraits>
-static void write_raw_image(FILE* f, const Image* image)
+static void write_raw_image_templ(FILE* f, const ScanlinesGen* gen)
 {
+  const gfx::Size imgSize = gen->getImageSize();
   PixelIO<ImageTraits> pixel_io;
   int x, y;
 
-  for (y=0; y<image->height(); y++)
-    for (x=0; x<image->width(); x++)
-      pixel_io.write_pixel(f, get_pixel_fast<ImageTraits>(image, x, y));
+  for (y=0; y<imgSize.h; ++y) {
+    typename ImageTraits::address_t address =
+      (typename ImageTraits::address_t)gen->getScanlineAddress(y);
+
+    for (x=0; x<imgSize.w; ++x, ++address)
+      pixel_io.write_pixel(f, *address);
+  }
+}
+
+static void write_raw_image(FILE* f, ScanlinesGen* gen, PixelFormat pixelFormat)
+{
+  switch (pixelFormat) {
+
+    case IMAGE_RGB:
+      write_raw_image_templ<RgbTraits>(f, gen);
+      break;
+
+    case IMAGE_GRAYSCALE:
+      write_raw_image_templ<GrayscaleTraits>(f, gen);
+      break;
+
+    case IMAGE_INDEXED:
+      write_raw_image_templ<IndexedTraits>(f, gen);
+      break;
+
+    case IMAGE_TILEMAP:
+      write_raw_image_templ<TilemapTraits>(f, gen);
+      break;
+  }
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -949,21 +976,8 @@ static void ase_file_write_cel_chunk(FILE* f, dio::AsepriteFrameHeader* frame_he
         fputw(image->height(), f);
 
         // Pixel data
-        switch (image->pixelFormat()) {
-
-          case IMAGE_RGB:
-            write_raw_image<RgbTraits>(f, image);
-            break;
-
-          case IMAGE_GRAYSCALE:
-            write_raw_image<GrayscaleTraits>(f, image);
-            break;
-
-          case IMAGE_INDEXED:
-            write_raw_image<IndexedTraits>(f, image);
-            break;
-
-        }
+        ImageScanlines scan(image);
+        write_raw_image(f, &scan, image->pixelFormat());
       }
       else {
         // Width and height
