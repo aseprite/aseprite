@@ -187,6 +187,13 @@ bool AsepriteDecoder::decode()
 
           case ASE_FILE_CHUNK_EXTERNAL_FILE:
             readExternalFiles(extFiles);
+
+            // Tile management plugin
+            if (!extFiles.empty()) {
+              std::string fn = extFiles.tileManagementPlugin();
+              if (!fn.empty())
+                sprite->setTileManagementPlugin(fn);
+            }
             break;
 
           case ASE_FILE_CHUNK_MASK: {

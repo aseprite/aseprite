@@ -29,6 +29,7 @@
 #include "app/cmd/set_mask.h"
 #include "app/cmd/set_pixel_ratio.h"
 #include "app/cmd/set_sprite_size.h"
+#include "app/cmd/set_sprite_tile_management_plugin.h"
 #include "app/cmd/set_transparent_color.h"
 #include "app/color_spaces.h"
 #include "app/commands/commands.h"
@@ -978,6 +979,31 @@ int Sprite_set_pixelRatio(lua_State* L)
   return 0;
 }
 
+int Sprite_get_tileManagementPlugin(lua_State* L)
+{
+  const auto sprite = get_docobj<Sprite>(L, 1);
+  if (sprite->hasTileManagementPlugin())
+    lua_pushstring(L, sprite->tileManagementPlugin().c_str());
+  else
+    lua_pushnil(L);
+  return 1;
+}
+
+int Sprite_set_tileManagementPlugin(lua_State* L)
+{
+  auto sprite = get_docobj<Sprite>(L, 1);
+  std::string value;
+  if (const char* p = lua_tostring(L, 2))
+    value = p;
+
+  if (sprite->tileManagementPlugin() != value) {
+    Tx tx;
+    tx(new cmd::SetSpriteTileManagementPlugin(sprite, value));
+    tx.commit();
+  }
+  return 0;
+}
+
 const luaL_Reg Sprite_methods[] = {
   { "__eq", Sprite_eq },
   { "resize", Sprite_resize },
@@ -1041,6 +1067,7 @@ const Property Sprite_properties[] = {
   { "properties", UserData_get_properties<Sprite>, UserData_set_properties<Sprite> },
   { "pixelRatio", Sprite_get_pixelRatio, Sprite_set_pixelRatio },
   { "events", Sprite_get_events, nullptr },
+  { "tileManagementPlugin", Sprite_get_tileManagementPlugin, Sprite_set_tileManagementPlugin },
   { nullptr, nullptr, nullptr }
 };
 

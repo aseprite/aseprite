@@ -539,6 +539,12 @@ TilemapMode ColorBar::tilemapMode() const
 
 void ColorBar::setTilemapMode(TilemapMode mode)
 {
+  // With sprites that has a custom tile management plugin, we support
+  // only editing pixels in manual mode.
+  if (customTileManagement()) {
+    mode = TilemapMode::Pixels;
+  }
+
   if (m_tilemapMode != mode) {
     m_tilemapMode = mode;
     updateFromTilemapMode();
@@ -610,8 +616,14 @@ TilesetMode ColorBar::tilesetMode() const
     return TilesetMode::Manual;
 }
 
-void ColorBar::setTilesetMode(const TilesetMode mode)
+void ColorBar::setTilesetMode(TilesetMode mode)
 {
+  // With sprites that has a custom tile management plugin, we support
+  // only the manual mode.
+  if (customTileManagement()) {
+    mode = TilesetMode::Manual;
+  }
+
   m_tilesetMode = mode;
 
   for (int i=0; i<3; ++i) {
@@ -652,8 +664,15 @@ void ColorBar::onActiveSiteChange(const Site& site)
   }
 
   bool isTilemap = false;
-  if (site.layer())
+  if (site.layer()) {
     isTilemap = site.layer()->isTilemap();
+
+    if (isTilemap && customTileManagement()) {
+      isTilemap = false;
+      m_tilesetMode = TilesetMode::Manual;
+      m_tilemapMode = TilemapMode::Pixels;
+    }
+  }
 
   if (m_tilesHBox.isVisible() != isTilemap) {
     m_tilesHBox.setVisible(isTilemap);
@@ -690,6 +709,12 @@ void ColorBar::onTilesetChanged(DocEvent& ev)
     m_scrollableTilesView.updateView();
 
   m_tilesView.deselect();
+}
+
+void ColorBar::onTileManagementPluginChange(DocEvent& ev)
+{
+  // Same update process as in onActiveSiteChange()
+  onActiveSiteChange(UIContext::instance()->activeSite());
 }
 
 void ColorBar::onAppPaletteChange()
@@ -2008,7 +2033,15 @@ bool ColorBar::canEditTiles() const
 {
   const Site site = UIContext::instance()->activeSite();
   return (site.layer() &&
-          site.layer()->isTilemap());
+          site.layer()->isTilemap() &&
+          !customTileManagement());
+}
+
+bool ColorBar::customTileManagement() const
+{
+  return (m_lastDocument &&
+          m_lastDocument->sprite() &&
+          m_lastDocument->sprite()->hasTileManagementPlugin());
 }
 
 } // namespace app

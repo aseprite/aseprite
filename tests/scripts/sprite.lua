@@ -1,4 +1,4 @@
--- Copyright (C) 2019-2022  Igara Studio S.A.
+-- Copyright (C) 2019-2023  Igara Studio S.A.
 -- Copyright (C) 2018  David Capello
 --
 -- This file is released under the terms of the MIT license.
@@ -205,4 +205,26 @@ do
   local b = Sprite(1, 1)
   assert(a == a)
   assert(a ~= b) -- Compares IDs, not sprite size
+end
+
+-- Tile management plugin
+
+do
+  local fn = "_test_sprite_tileManagementPlugin.aseprite"
+  local a = Sprite(1, 1)
+  assert(a.tileManagementPlugin == nil)
+  a.tileManagementPlugin = "test"
+  app.undo()
+  assert(a.tileManagementPlugin == nil)
+  app.redo()
+  assert(a.tileManagementPlugin == "test")
+  a:saveAs(fn)
+
+  b = app.open(fn)
+  assert(b.tileManagementPlugin == "test")
+  b.tileManagementPlugin = nil
+  b:saveAs(fn)
+
+  c = app.open(fn)
+  assert(c.tileManagementPlugin == nil)
 end

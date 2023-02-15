@@ -1375,6 +1375,12 @@ static void ase_file_write_external_files_chunk(
     putExtentionIds(slice->userData().propertiesMaps(), ext_files);
   }
 
+  // Tile management plugin
+  if (sprite->hasTileManagementPlugin()) {
+    ext_files.insert(ASE_EXTERNAL_FILE_TILE_MANAGEMENT,
+                     sprite->tileManagementPlugin());
+  }
+
   // No external files to write
   if (ext_files.items().empty())
     return;

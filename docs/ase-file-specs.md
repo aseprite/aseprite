@@ -275,8 +275,9 @@ reference external palettes, tilesets, or extensions that make use of extended p
                   0 - External palette
                   1 - External tileset
                   2 - Extension name for properties
+                  3 - Extension name for tile management (can exist one per sprite)
       BYTE[7]   Reserved (set to zero)
-      STRING    External file name or extension ID
+      STRING    External file name or extension ID (see NOTE.4)
 
 ### Mask Chunk (0x2016) DEPRECATED
 
@@ -514,6 +515,15 @@ Details about the ZLIB and DEFLATE compression methods:
 * https://www.ietf.org/rfc/rfc1951
 * Some extra notes that might help you to decode the data:
   http://george.chiramattel.com/blog/2007/09/deflatestream-block-length-does-not-match.html
+
+#### NOTE.4
+
+The extension ID must be a string like `publisher/ExtensionName`, for
+example, the [Aseprite Attachment System](https://github.com/aseprite/Attachment-System)
+uses `aseprite/Attachment-System`.
+
+This string will be used in a future to automatically link to the
+extension URL in the [Aseprite Store](https://github.com/aseprite/aseprite/issues/1928).
 
 ## File Format Changes
 

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -98,6 +98,9 @@ namespace app {
 
     // The tileset was remapped (e.g. when tiles are re-ordered).
     virtual void onRemapTileset(DocEvent& ev, const doc::Remap& remap) { }
+
+    // When the tile management plugin property is changed.
+    virtual void onTileManagementPluginChange(DocEvent& ev) { }
 
   };
 

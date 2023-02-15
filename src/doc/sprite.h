@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -29,6 +29,7 @@
 #include "gfx/rect.h"
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #define DOC_SPRITE_MAX_WIDTH  65535
@@ -222,6 +223,18 @@ namespace doc {
     bool hasTilesets() const { return m_tilesets != nullptr; }
     Tilesets* tilesets() const;
 
+    const std::string& tileManagementPlugin() const {
+      return m_tileManagementPlugin;
+    }
+
+    bool hasTileManagementPlugin() const {
+      return !m_tileManagementPlugin.empty();
+    }
+
+    void setTileManagementPlugin(const std::string& plugin) {
+      m_tileManagementPlugin = plugin;
+    }
+
   private:
     Document* m_document;
     ImageSpec m_spec;
@@ -241,6 +254,15 @@ namespace doc {
 
     // Tilesets
     mutable Tilesets* m_tilesets;
+
+    // Custom tile management plugin. This can be an ID that specifies
+    // a custom plugin that will be used to handle tilesets and
+    // tilemaps for this specific sprite. This property is saved
+    // inside .aseprite files (ASE_EXTERNAL_FILE_TILE_MANAGEMENT), and
+    // it's used by the UI to disable the standard tileset/tilemap UX
+    // (e.g. drag & drop tiles, or TilesetMode::Auto mode, etc.),
+    // giving the possibility to handle tiles exclusively to a plugin.
+    std::string m_tileManagementPlugin;
 
     // Disable default constructor and copying
     Sprite();

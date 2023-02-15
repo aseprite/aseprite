@@ -520,6 +520,7 @@ add_library(app-lib
   cmd/set_slice_key.cpp
   cmd/set_slice_name.cpp
   cmd/set_sprite_size.cpp
+  cmd/set_sprite_tile_management_plugin.cpp
   cmd/set_tag_anidir.cpp
   cmd/set_tag_color.cpp
   cmd/set_tag_name.cpp

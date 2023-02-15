@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -94,7 +94,7 @@ namespace app {
     void setTilemapMode(TilemapMode mode);
 
     TilesetMode tilesetMode() const;
-    void setTilesetMode(const TilesetMode mode);
+    void setTilesetMode(TilesetMode mode);
 
     ColorButton* fgColorButton() { return &m_fgColor; }
     ColorButton* bgColorButton() { return &m_bgColor; }
@@ -105,6 +105,7 @@ namespace app {
     // DocObserver impl
     void onGeneralUpdate(DocEvent& ev) override;
     void onTilesetChanged(DocEvent& ev) override;
+    void onTileManagementPluginChange(DocEvent& ev) override;
 
     // InputChainElement impl
     void onNewInputPriority(InputChainElement* element,
@@ -190,6 +191,7 @@ namespace app {
     void showPalettePresets();
     void showPaletteOptions();
     bool canEditTiles() const;
+    bool customTileManagement() const;
     void updateFromTilemapMode();
     static void fixColorIndex(ColorButton& color);
 
