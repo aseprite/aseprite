@@ -148,8 +148,8 @@ Ignore this chunk if you find the new palette chunk (0x2019)
 
 ### Layer Chunk (0x2004)
 
-  In the first frame should be a set of layer chunks to determine the
-  entire layers layout:
+In the first frame should be a set of layer chunks to determine the
+entire layers layout:
 
     WORD        Flags:
                   1 = Visible
@@ -344,18 +344,25 @@ for each tag.
 
 ### User Data Chunk (0x2020)
 
-Insert this user data in the last read chunk.  E.g. If we've read a
-layer, this user data belongs to that layer, if we've read a cel, it
-belongs to that cel, etc. There are some special cases: After a Tags
-chunk, there will be several user data fields, one for each tag, you
-should associate the user data in the same order as the tags are in
-the Tags chunk. Another special case is after the Tileset chunk, it
-could be followed by a user data chunk (empty or not) and then all
-the user data chunks of the tiles ordered by tile index, or it could
-be followed by none user data chunk if the file was created in an
-older Aseprite version.
-In version 1.3 a sprite has associated user data, to consider this case
-there is an User Data Chunk at the first frame after the Palette Chunk.
+Specifies the user data (color/text/properties) to be associated with
+the last read chunk/object. E.g. If the last chunk we've read is a
+layer and then this chunk appears, this user data belongs to that
+layer, if we've read a cel, it belongs to that cel, etc. There are
+some special cases:
+
+1. After a Tags chunk, there will be several user data chunks, one for
+   each tag, you should associate the user data in the same order as
+   the tags are in the Tags chunk.
+2. After the Tileset chunk, it could be followed by a user data chunk
+   (empty or not) and then all the user data chunks of the tiles
+   ordered by tile index, or it could be followed by none user data
+   chunk (if the file was created in an older Aseprite version of if
+   no tile has user data).
+3. In Aseprite v1.3 a sprite has associated user data, to consider
+   this case there is an User Data Chunk at the first frame after the
+   Palette Chunk.
+
+The data of this chunk is as follows:
 
     DWORD       Flags
                   1 = Has text
@@ -495,8 +502,9 @@ the last one read, for example:
 
 #### NOTE.2
 
-The layer index is a number to identify any layer in the sprite, for
-example:
+The layer index is a number to identify a layer in the sprite. Layers
+are numbered in the same order as Layer Chunks (0x2004) appear in the
+file, for example:
 
     Layer name and hierarchy      Layer index
     -----------------------------------------------
@@ -506,6 +514,9 @@ example:
       |- My set1                  3
       |  `- Layer2                4
       `- Layer3                   5
+
+It means that in the file you will find the `Background` layer chunk
+first, then the `Layer1` layer chunk, etc.
 
 #### NOTE.3
 
