@@ -1874,13 +1874,13 @@ void Timeline::onRemoveFrame(DocEvent& ev)
 {
   // Adjust current frame of all editors that are in a frame more
   // advanced that the removed one.
-  if (getFrame() > ev.frame()) {
-    setFrame(getFrame()-1, false);
+  if (m_frame > ev.frame()) {
+    setFrame(m_frame-1, false);
   }
   // If the editor was in the previous "last frame" (current value of
   // totalFrames()), we've to adjust it to the new last frame
   // (lastFrame())
-  else if (getFrame() >= sprite()->totalFrames()) {
+  else if (m_frame >= sprite()->totalFrames()) {
     setFrame(sprite()->lastFrame(), false);
   }
 

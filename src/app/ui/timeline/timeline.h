@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -106,10 +106,7 @@ namespace app {
     void updateUsingEditor(Editor* editor);
 
     Sprite* sprite() { return m_sprite; }
-    Layer* getLayer() { return m_layer; }
-    frame_t getFrame() { return m_frame; }
 
-    State getState() const { return m_state; }
     bool isMovingCel() const;
 
     Range range() const { return m_range; }
