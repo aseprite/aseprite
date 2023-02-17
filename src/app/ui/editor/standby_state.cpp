@@ -642,6 +642,11 @@ DrawingState* StandbyState::startDrawingState(
   const DrawingType drawingType,
   const tools::Pointer& pointer)
 {
+  if (editor->layer()->isTilemap() &&
+      editor->sprite()->hasTileManagementPlugin() &&
+      !editor->layer()->cel(editor->frame())) {
+    return nullptr;
+  }
   // We need to clear and redraw the brush boundaries after the
   // first mouse pressed/point shape if drawn. This is to avoid
   // graphical glitches (invalid areas in the ToolLoop's src/dst
