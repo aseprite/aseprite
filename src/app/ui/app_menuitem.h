@@ -15,6 +15,7 @@
 #include "os/shortcut.h"
 #include "ui/menu.h"
 
+#include <cstddef>
 #include <memory>
 
 namespace app {

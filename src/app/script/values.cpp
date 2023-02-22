@@ -16,6 +16,7 @@
 #include "doc/remap.h"
 
 #include <any>
+#include <cstddef>
 #include <variant>
 
 namespace app {
@@ -27,7 +28,7 @@ namespace script {
 // nullptr_t
 
 template<>
-void push_value_to_lua(lua_State* L, const nullptr_t&) {
+void push_value_to_lua(lua_State* L, const std::nullptr_t&) {
   TRACEARGS("push_value_to_lua nullptr_t");
   lua_pushnil(L);
 }
@@ -315,7 +316,7 @@ void push_value_to_lua(lua_State* L, const doc::UserData::Variant& value)
 #if 1 // We are targetting macOS 10.9, so we don't have the std::visit() available
   switch (value.type()) {
     case USER_DATA_PROPERTY_TYPE_NULLPTR:
-      push_value_to_lua<nullptr_t>(L, nullptr);
+      push_value_to_lua<std::nullptr_t>(L, nullptr);
       break;
     case USER_DATA_PROPERTY_TYPE_BOOL:
       push_value_to_lua(L, *std::get_if<bool>(&value));
