@@ -116,6 +116,10 @@ Then each chunk format is:
     WORD        Chunk type
     BYTE[]      Chunk data
 
+The chunk size includes the DWORD of the size itself, and the WORD of
+the chunk type, so a chunk size must be equal or greater than 6 bytes
+at least.
+
 ## Chunk Types
 
 ### Old palette chunk (0x0004)
@@ -377,6 +381,8 @@ The data of this chunk is as follows:
       BYTE      Color Alpha (0-255)
     + If flags have bit 4
       DWORD     Size in bytes of all properties maps stored in this chunk
+                The size includes the this field and the number of property maps
+                (so it will be a value greater or equal to 8 bytes).
       DWORD     Number of properties maps
       + For each properties map:
         DWORD     Properties maps key
