@@ -192,6 +192,7 @@ void register_theme_classes(lua_State* L);
 void register_tile_class(lua_State* L);
 void register_tileset_class(lua_State* L);
 void register_tilesets_class(lua_State* L);
+void register_timer_class(lua_State* L);
 void register_tool_class(lua_State* L);
 void register_version_class(lua_State* L);
 void register_websocket_class(lua_State* L);
@@ -472,6 +473,7 @@ Engine::Engine()
   register_tile_class(L);
   register_tileset_class(L);
   register_tilesets_class(L);
+  register_timer_class(L);
   register_tool_class(L);
   register_version_class(L);
 #if ENABLE_WEBSOCKET

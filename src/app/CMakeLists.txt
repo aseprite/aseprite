@@ -209,6 +209,7 @@ if(ENABLE_SCRIPTING)
     script/tile_class.cpp
     script/tileset_class.cpp
     script/tilesets_class.cpp
+    script/timer_class.cpp
     script/tool_class.cpp
     script/values.cpp
     script/version_class.cpp
