@@ -49,14 +49,15 @@ uint16_t all_elements_of_same_type(const UserData::Vector& vector)
   uint16_t type = vector.empty() ? 0 : vector.front().type();
   uint16_t commonReducedType = 0;
   bool hasNegativeNumbers = false;
-  for (auto value : vector) {
+
+  for (const auto& value : vector) {
     if (type != value.type()) {
       return 0;
     }
-    else if (IS_REDUCIBLE_INT(value.type())) {
+    else if (is_reducible_int(value)) {
       auto t = reduce_int_type_size(value).type();
       hasNegativeNumbers |= is_negative(value);
-      if (t > commonReducedType) {
+      if (commonReducedType < t) {
         commonReducedType = t;
       }
     }
@@ -69,14 +70,16 @@ uint16_t all_elements_of_same_type(const UserData::Vector& vector)
   // If our common reduced type is unsigned and we have negative numbers
   // in our vector we should select the next signed type that includes it.
   if (commonReducedType != 0 &&
-      (commonReducedType & 1) &&
+      (commonReducedType & 1) && // TODO fix this assumption about USER_DATA_PROPERTY_TYPE_* values
       hasNegativeNumbers) {
     commonReducedType++;
-    // We couldn't find one type that satisfies all the integers. This shouldn't ever happen.
-    if (commonReducedType >= USER_DATA_PROPERTY_TYPE_UINT64) commonReducedType = 0;
+    // We couldn't find one type that satisfies all the integers. This
+    // shouldn't ever happen.
+    if (commonReducedType >= USER_DATA_PROPERTY_TYPE_UINT64)
+      commonReducedType = 0;
   }
 
-  return commonReducedType ? commonReducedType : type;
+  return (commonReducedType ? commonReducedType : type);
 }
 
 UserData::Variant cast_to_smaller_int_type(const UserData::Variant& value, uint16_t type)
@@ -164,50 +167,50 @@ UserData::Variant reduce_int_type_size(const UserData::Variant& value)
   switch (value.type()) {
     case USER_DATA_PROPERTY_TYPE_INT16: {
       auto v = get_value<int16_t>(value);
-      if (INT8_COMPATIBLE(v)) return static_cast<int8_t>(v);
-      else if (UINT8_COMPATIBLE(v)) return static_cast<uint8_t>(v);
+      if (is_compatible_int<int8_t>(v)) return static_cast<int8_t>(v);
+      else if (is_compatible_int<uint8_t>(v)) return static_cast<uint8_t>(v);
       return v;
     }
     case USER_DATA_PROPERTY_TYPE_UINT16: {
       auto v = get_value<uint16_t>(value);
-      if (INT8_COMPATIBLE(v)) return static_cast<int8_t>(v);
-      else if (UINT8_COMPATIBLE(v)) return static_cast<uint8_t>(v);
+      if (is_compatible_int<int8_t>(v)) return static_cast<int8_t>(v);
+      else if (is_compatible_int<uint8_t>(v)) return static_cast<uint8_t>(v);
       return v;
     }
     case USER_DATA_PROPERTY_TYPE_INT32: {
       auto v = get_value<int32_t>(value);
-      if (INT8_COMPATIBLE(v)) return static_cast<int8_t>(v);
-      else if (UINT8_COMPATIBLE(v)) return static_cast<uint8_t>(v);
-      else if (INT16_COMPATIBLE(v)) return static_cast<int16_t>(v);
-      else if (UINT16_COMPATIBLE(v)) return static_cast<uint16_t>(v);
+      if (is_compatible_int<int8_t>(v)) return static_cast<int8_t>(v);
+      else if (is_compatible_int<uint8_t>(v)) return static_cast<uint8_t>(v);
+      else if (is_compatible_int<int16_t>(v)) return static_cast<int16_t>(v);
+      else if (is_compatible_int<uint16_t>(v)) return static_cast<uint16_t>(v);
       return v;
     }
     case USER_DATA_PROPERTY_TYPE_UINT32: {
       auto v = get_value<uint32_t>(value);
-      if (INT8_COMPATIBLE(v)) return static_cast<int8_t>(v);
-      else if (UINT8_COMPATIBLE(v)) return static_cast<uint8_t>(v);
-      else if (INT16_COMPATIBLE(v)) return static_cast<int16_t>(v);
-      else if (UINT16_COMPATIBLE(v)) return static_cast<uint16_t>(v);
+      if (is_compatible_int<int8_t>(v)) return static_cast<int8_t>(v);
+      else if (is_compatible_int<uint8_t>(v)) return static_cast<uint8_t>(v);
+      else if (is_compatible_int<int16_t>(v)) return static_cast<int16_t>(v);
+      else if (is_compatible_int<uint16_t>(v)) return static_cast<uint16_t>(v);
       return v;
     }
     case USER_DATA_PROPERTY_TYPE_INT64: {
       auto v = get_value<int64_t>(value);
-      if (INT8_COMPATIBLE(v)) return static_cast<int8_t>(v);
-      else if (UINT8_COMPATIBLE(v)) return static_cast<uint8_t>(v);
-      else if (INT16_COMPATIBLE(v)) return static_cast<int16_t>(v);
-      else if (UINT16_COMPATIBLE(v)) return static_cast<uint16_t>(v);
-      else if (INT32_COMPATIBLE(v)) return static_cast<int32_t>(v);
-      else if (UINT32_COMPATIBLE(v)) return static_cast<uint32_t>(v);
+      if (is_compatible_int<int8_t>(v)) return static_cast<int8_t>(v);
+      else if (is_compatible_int<uint8_t>(v)) return static_cast<uint8_t>(v);
+      else if (is_compatible_int<int16_t>(v)) return static_cast<int16_t>(v);
+      else if (is_compatible_int<uint16_t>(v)) return static_cast<uint16_t>(v);
+      else if (is_compatible_int<int32_t>(v)) return static_cast<int32_t>(v);
+      else if (is_compatible_int<uint32_t>(v)) return static_cast<uint32_t>(v);
       return v;
     }
     case USER_DATA_PROPERTY_TYPE_UINT64: {
       auto v = get_value<uint64_t>(value);
-      if (INT8_COMPATIBLE(v)) return static_cast<int8_t>(v);
-      else if (UINT8_COMPATIBLE(v)) return static_cast<uint8_t>(v);
-      else if (INT16_COMPATIBLE(v)) return static_cast<int16_t>(v);
-      else if (UINT16_COMPATIBLE(v)) return static_cast<uint16_t>(v);
-      else if (INT32_COMPATIBLE(v)) return static_cast<int32_t>(v);
-      else if (UINT32_COMPATIBLE(v)) return static_cast<uint32_t>(v);
+      if (is_compatible_int<int8_t>(v)) return static_cast<int8_t>(v);
+      else if (is_compatible_int<uint8_t>(v)) return static_cast<uint8_t>(v);
+      else if (is_compatible_int<int16_t>(v)) return static_cast<int16_t>(v);
+      else if (is_compatible_int<uint16_t>(v)) return static_cast<uint16_t>(v);
+      else if (is_compatible_int<int32_t>(v)) return static_cast<int32_t>(v);
+      else if (is_compatible_int<uint32_t>(v)) return static_cast<uint32_t>(v);
       return v;
     }
     default:

@@ -1566,20 +1566,26 @@ static void ase_file_write_property_value(FILE* f,
     case USER_DATA_PROPERTY_TYPE_VECTOR: {
       auto& vector = *std::get_if<UserData::Vector>(&value);
       fputl(vector.size(), f);
+
       const uint16_t type = doc::all_elements_of_same_type(vector);
       fputw(type, f);
+
       for (const auto& elem : vector) {
         UserData::Variant v = elem;
+
+        // Reduce each element if possible, because each element has
+        // its own type.
         if (type == 0) {
-          if (IS_REDUCIBLE_INT(v.type())) {
+          if (is_reducible_int(v)) {
             v = reduce_int_type_size(v);
           }
           fputw(v.type(), f);
         }
-        else if (IS_REDUCIBLE_INT(v.type()) && type < v.type()) {
-          // We need to cast each value to the common type.
+        // Reduce to the smaller/common int type.
+        else if (is_reducible_int(v) && type < v.type()) {
           v = cast_to_smaller_int_type(v, type);
         }
+
         ase_file_write_property_value(f, v);
       }
       break;
@@ -1587,13 +1593,14 @@ static void ase_file_write_property_value(FILE* f,
     case USER_DATA_PROPERTY_TYPE_PROPERTIES: {
       auto& properties = *std::get_if<UserData::Properties>(&value);
       ASSERT(properties.size() > 0);
-
       fputl(properties.size(), f);
-      for (auto property : properties) {
+
+      for (const auto& property : properties) {
         const std::string& name = property.first;
         ase_file_write_string(f, name);
+
         UserData::Variant v = property.second;
-        if (IS_REDUCIBLE_INT(v.type())) {
+        if (is_reducible_int(v)) {
           v = reduce_int_type_size(v);
         }
         fputw(v.type(), f);
@@ -1619,7 +1626,7 @@ static void ase_file_write_properties_maps(FILE* f, FileOp* fop,
   fputl(0, f);
 
   fputl(nmaps, f);
-  for (auto propertiesMap : propertiesMaps) {
+  for (const auto& propertiesMap : propertiesMaps) {
     const UserData::Properties& properties = propertiesMap.second;
     // Skip properties map if it doesn't have any property
     if (properties.empty())

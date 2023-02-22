@@ -16,6 +16,7 @@
 #include "gfx/rect.h"
 
 #include <cstddef>
+#include <limits>
 #include <map>
 #include <stdexcept>
 #include <string>
@@ -41,17 +42,6 @@
 #define USER_DATA_PROPERTY_TYPE_RECT        0x0010
 #define USER_DATA_PROPERTY_TYPE_VECTOR      0x0011
 #define USER_DATA_PROPERTY_TYPE_PROPERTIES  0x0012
-
-#define INT8_COMPATIBLE(i)   i >= -128               && i <= 127
-#define UINT8_COMPATIBLE(i)  i >= 128                && i <= 255
-#define INT16_COMPATIBLE(i)  i >= -32768             && i <= 32767
-#define UINT16_COMPATIBLE(i) i >= 32768              && i <= 65535
-// The (int) cast is to make MSVC happy. If we remove it, the condition could
-// be jumped.
-#define INT32_COMPATIBLE(i)  i >= ((int)-2147483648) && i <= 2147483647
-#define UINT32_COMPATIBLE(i) i >= 2147483648         && i <= 4294967295
-
-#define IS_REDUCIBLE_INT(variantType) variantType >= USER_DATA_PROPERTY_TYPE_INT16 && variantType <= USER_DATA_PROPERTY_TYPE_UINT64
 
 namespace doc {
 
@@ -156,6 +146,18 @@ namespace doc {
     if (value == nullptr)
       throw std::runtime_error("bad_variant_access");
     return *value;
+  }
+
+  template<typename T, typename U>
+  inline bool is_compatible_int(const U u) {
+    static_assert(sizeof(U) > sizeof(T), "T type must be smaller than U type");
+    return (u >= std::numeric_limits<T>::min() &&
+            u <= std::numeric_limits<T>::max());
+  }
+
+  inline bool is_reducible_int(const UserData::Variant& variant) {
+    return (variant.type() >= USER_DATA_PROPERTY_TYPE_INT16 &&
+            variant.type() <= USER_DATA_PROPERTY_TYPE_UINT64);
   }
 
   size_t count_nonempty_properties_maps(const UserData::PropertiesMaps& propertiesMaps);
