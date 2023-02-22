@@ -255,8 +255,9 @@ int Dialog_new(lua_State* L)
   if (!App::instance()->isGui())
     return 0;
 
-  // Get the title, if it's empty, create a window without title bar
-  std::string title;
+  // Get the title and the type of window (with or without title bar)
+  ui::Window::Type windowType = ui::Window::WithTitleBar;
+  std::string title = "Script";
   if (lua_isstring(L, 1)) {
     title = lua_tostring(L, 1);
   }
@@ -265,11 +266,14 @@ int Dialog_new(lua_State* L)
     if (type != LUA_TNIL)
       title = lua_tostring(L, -1);
     lua_pop(L, 1);
+
+    type = lua_getfield(L, 1, "notitlebar");
+    if (type != LUA_TNIL && lua_toboolean(L, -1))
+      windowType = ui::Window::WithoutTitleBar;
+    lua_pop(L, 1);
   }
 
-  auto dlg = push_new<Dialog>(
-    L, (!title.empty() ? ui::Window::WithTitleBar:
-                         ui::Window::WithoutTitleBar), title);
+  auto dlg = push_new<Dialog>(L, windowType, title);
 
   // The uservalue of the dialog userdata will contain a table that
   // stores all the callbacks to handle events. As these callbacks can
