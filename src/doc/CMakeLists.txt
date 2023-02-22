@@ -1,5 +1,5 @@
 # Aseprite Document Library
-# Copyright (C) 2019-2022 Igara Studio S.A.
+# Copyright (C) 2019-2023 Igara Studio S.A.
 # Copyright (C) 2001-2018 David Capello
 
 if(WIN32)
@@ -74,6 +74,7 @@ add_library(doc-lib
   tileset.cpp
   tileset_io.cpp
   tilesets.cpp
+  user_data.cpp
   user_data_io.cpp
   util.cpp)
 

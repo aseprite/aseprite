@@ -160,13 +160,13 @@ namespace doc {
 
   size_t count_nonempty_properties_maps(const UserData::PropertiesMaps& propertiesMaps);
 
-  // If all the vector elements are of the same type returns such type.
-  // Otherwise it returns -1.
+  // If all the elements of vector have the same type, returns that type, also
+  // if this type is an integer, it tries to reduce it to the minimum int type
+  // capable of storing all the vector values.
+  // If all the elements of vector doesn't have the same type, returns 0.
   uint16_t all_elements_of_same_type(const UserData::Vector& vector);
-
-  UserData::Variant reduce_int_type_size(const UserData::Variant& value);
-
   UserData::Variant cast_to_smaller_int_type(const UserData::Variant& value, uint16_t type);
+  UserData::Variant reduce_int_type_size(const UserData::Variant& value);
 
 } // namespace doc
 
