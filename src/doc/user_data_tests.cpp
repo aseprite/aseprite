@@ -18,6 +18,33 @@ using Fixed = UserData::Fixed;
 using Vector = UserData::Vector;
 using Properties = UserData::Properties;
 
+TEST(UserDataVariant, AllElementsOfSameType)
+{
+  EXPECT_EQ(0, all_elements_of_same_type(UserData::Vector{}));
+  EXPECT_EQ(USER_DATA_PROPERTY_TYPE_BOOL,
+            all_elements_of_same_type(UserData::Vector{false}));
+  EXPECT_EQ(USER_DATA_PROPERTY_TYPE_INT8,
+            all_elements_of_same_type(UserData::Vector{1,-1}));
+  EXPECT_EQ(USER_DATA_PROPERTY_TYPE_INT8,
+            all_elements_of_same_type(UserData::Vector{0,127}));
+  EXPECT_EQ(USER_DATA_PROPERTY_TYPE_INT8,
+            all_elements_of_same_type(UserData::Vector{-128,127}));
+  EXPECT_EQ(USER_DATA_PROPERTY_TYPE_UINT8,
+            all_elements_of_same_type(UserData::Vector{0,128}));
+  EXPECT_EQ(USER_DATA_PROPERTY_TYPE_INT16,
+            all_elements_of_same_type(UserData::Vector{-1,128}));
+  EXPECT_EQ(USER_DATA_PROPERTY_TYPE_INT8,
+            all_elements_of_same_type(UserData::Vector{0,0,0}));
+  EXPECT_EQ(USER_DATA_PROPERTY_TYPE_UINT8,
+            all_elements_of_same_type(UserData::Vector{0,0,128}));
+  EXPECT_EQ(0,
+            all_elements_of_same_type(UserData::Vector{0,0,128,false}));
+  EXPECT_EQ(USER_DATA_PROPERTY_TYPE_INT16,
+            all_elements_of_same_type(UserData::Vector{0,0,128,256}));
+  EXPECT_EQ(USER_DATA_PROPERTY_TYPE_UINT16,
+            all_elements_of_same_type(UserData::Vector{0,0,128,40000}));
+}
+
 TEST(CustomProperties, SimpleProperties)
 {
   UserData data;
