@@ -444,6 +444,8 @@
         <part id="cursor_skew_e" x="288" y="176" w="16" h="16" focusx="8" focusy="8" />
         <part id="cursor_skew_nw" x="272" y="160" w="16" h="16" focusx="8" focusy="8" />
         <part id="cursor_skew_ne" x="288" y="160" w="16" h="16" focusx="8" focusy="8" />
+        <part id="one_win_icon" x="96" y="256" w="8" h="7" />
+        <part id="multi_win_icon" x="104" y="256" w="8" h="7" />
     </parts>
     <styles>
         <style id="box" />

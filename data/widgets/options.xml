@@ -32,6 +32,18 @@
         <vbox id="section_general">
           <separator text="@.section_general" horizontal="true" />
           <grid columns="3">
+            <label text="@.ui_windows" />
+            <hbox>
+              <buttonset columns="2" id="ui_windows">
+                <item icon="one_win_icon" tooltip="@.one_win" tooltip_dir="bottom" />
+                <item icon="multi_win_icon" tooltip="@.multi_win" tooltip_dir="bottom" />
+              </buttonset>
+              <hbox id="theme_variants">
+                <label text="@.theme_mode" />
+              </hbox>
+            </hbox>
+            <boxfiller />
+
             <label text="@.screen_scaling" />
             <combobox id="screen_scale">
               <listitem text="100%" value="1" />
@@ -39,7 +51,7 @@
               <listitem text="300%" value="3" />
               <listitem text="400%" value="4" />
             </combobox>
-	    <hbox id="theme_variants" />
+            <boxfiller />
 
             <label text="@.ui_scaling" />
             <combobox id="ui_scale">

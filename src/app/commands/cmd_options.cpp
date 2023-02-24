@@ -484,6 +484,17 @@ public:
       gridScope()->Change.connect([this]{ onChangeGridScope(); });
     }
 
+    // Update the one/multiple window buttonset (and keep in on sync
+    // with the old/experimental checkbox)
+    uiWindows()->setSelectedItem(multipleWindows()->isSelected() ? 1: 0);
+    uiWindows()->ItemChange.connect([this]() {
+      multipleWindows()->setSelected(uiWindows()->selectedItem() == 1);
+    });
+    multipleWindows()->Click.connect([this](){
+      uiWindows()->setSelectedItem(multipleWindows()->isSelected() ? 1: 0);
+    });
+
+    // Scaling
     selectScalingItems();
 
 #ifdef _DEBUG // TODO enable this on Release when Aseprite supports
@@ -942,6 +953,7 @@ private:
       m_themeVars->deferDelete();
     }
     m_themeVars = list;
+    themeVariants()->setVisible(list ? true: false);
   }
 
   void fillExtensionsCombobox(ui::ComboBox* combobox,
