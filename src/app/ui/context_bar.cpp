@@ -470,7 +470,7 @@ public:
   InkTypeField(ContextBar* owner) : ButtonSet(1)
                                   , m_owner(owner) {
     auto theme = SkinTheme::get(this);
-    addItem(theme->parts.inkSimple(), "context_bar_button");
+    addItem(theme->parts.inkSimple(), "ink_type");
   }
 
   void setInkType(InkType inkType) {
@@ -1149,7 +1149,7 @@ public:
   DynamicsField(ContextBar* ctxBar)
     : ButtonSet(1)
     , m_ctxBar(ctxBar) {
-    addItem(SkinTheme::get(this)->parts.dynamics(), "context_bar_button");
+    addItem(SkinTheme::get(this)->parts.dynamics(), "dynamics_field");
   }
 
   void switchPopup() {

@@ -1067,6 +1067,8 @@
         <style id="brush_type_mono" extends="context_bar_button" padding-top="1">
             <icon color="button_normal_text" />
         </style>
+        <style id="ink_type" extends="context_bar_button" padding-left="1" />
+        <style id="dynamics_field" extends="context_bar_button" padding-left="1" />
         <style id="pivot_field" extends="context_bar_button" padding-top="1" />
         <style id="pivot_dir" extends="buttonset_item_icon" width="17" height="19" />
         <style id="selection_mode" extends="context_bar_button" padding-top="1" />
