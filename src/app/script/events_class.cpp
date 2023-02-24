@@ -30,6 +30,11 @@
 #include <map>
 #include <memory>
 
+// This event was disabled because it can be triggered in a background thread
+// when any effect (e.g. like Replace Color or Convolution Matrix) is running.
+// And running script code in a background is not supported.
+//#define ENABLE_REMAP_TILESET_EVENT
+
 namespace app {
 namespace script {
 
@@ -214,7 +219,9 @@ public:
     Unknown = -1,
     Change,
     FilenameChange,
+#if ENABLE_REMAP_TILESET_EVENT
     RemapTileset,
+#endif
   };
 
   SpriteEvents(const Sprite* sprite)
@@ -241,8 +248,10 @@ public:
       return Change;
     else if (std::strcmp(eventName, "filenamechange") == 0)
       return FilenameChange;
+#if ENABLE_REMAP_TILESET_EVENT
     else if (std::strcmp(eventName, "remaptileset") == 0)
       return RemapTileset;
+#endif
     else
       return Unknown;
   }
@@ -261,12 +270,14 @@ public:
     call(FilenameChange);
   }
 
+#if ENABLE_REMAP_TILESET_EVENT
   void onRemapTileset(DocEvent& ev, const doc::Remap& remap) override {
     const bool fromUndo = (ev.document()->transaction() == nullptr);
     call(RemapTileset, { { "remap", std::any(&remap) },
                          { "tileset", std::any((const doc::Tileset*)ev.tileset()) },
                          { "fromUndo", fromUndo } });
   }
+#endif
 
   // DocUndoObserver impl
   void onAddUndoState(DocUndo* history) override {
