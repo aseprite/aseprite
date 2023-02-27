@@ -460,12 +460,14 @@ void BrushPopup::onBrushChanges()
 os::SurfaceRef BrushPopup::createSurfaceForBrush(const BrushRef& origBrush,
                                                  const bool useOriginalImage)
 {
+  constexpr int kMaxSize = 9;
+
   Image* image = nullptr;
   BrushRef brush = origBrush;
   if (brush) {
-    if (brush->type() != kImageBrushType && brush->size() > 10) {
+    if (brush->type() != kImageBrushType && brush->size() > kMaxSize) {
       brush.reset(new Brush(*brush));
-      brush->setSize(10);
+      brush->setSize(kMaxSize);
     }
     // Show the original image in the popup (without the image colors
     // modified if there were some modification).
@@ -476,8 +478,8 @@ os::SurfaceRef BrushPopup::createSurfaceForBrush(const BrushRef& origBrush,
   }
 
   os::SurfaceRef surface = os::instance()->makeRgbaSurface(
-    std::min(10, image ? image->width(): 4),
-    std::min(10, image ? image->height(): 4));
+    std::min(kMaxSize, (image ? image->width(): 4)),
+    std::min(kMaxSize, (image ? image->height(): 4)));
 
   if (image) {
     Palette* palette = get_current_palette();
