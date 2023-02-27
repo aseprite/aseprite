@@ -239,6 +239,9 @@ ButtonSet::Item* ButtonSet::addItem(Item* item, const char* styleId)
 
 ButtonSet::Item* ButtonSet::addItem(Item* item, int hspan, int vspan, const char* styleId)
 {
+  // TODO warning, here we're saving a copy of the styleId pointer,
+  //      which if it's not a literal that lives enough for this
+  //      lambda, it will crash the program
   item->InitTheme.connect(
     [item, styleId] {
       ui::Style* style;
