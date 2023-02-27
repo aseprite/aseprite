@@ -203,7 +203,7 @@
         <part id="toolbutton_hot" x="112" y="0" w1="3" w2="10" w3="3" h1="3" h2="9" h3="4" />
         <part id="toolbutton_last" x="96" y="16" w1="3" w2="10" w3="3" h1="3" h2="9" h3="4" />
         <part id="toolbutton_pushed" x="112" y="16" w1="3" w2="10" w3="3" h1="3" h2="9" h3="4" />
-        <part id="buttonset_item_normal" x="96" y="16" w1="3" w2="10" w3="3" h1="3" h2="8" h3="5" />
+        <part id="buttonset_item_normal" x="96" y="16" w1="2" w2="12" w3="2" h1="2" h2="10" h3="4" />
         <part id="buttonset_item_hot" x="112" y="0" w1="3" w2="10" w3="3" h1="3" h2="8" h3="5" />
         <part id="buttonset_item_hot_focused" x="128" y="0" w1="3" w2="10" w3="3" h1="3" h2="8" h3="5" />
         <part id="buttonset_item_focused" x="128" y="16" w1="3" w2="10" w3="3" h1="3" h2="8" h3="5" />
@@ -608,7 +608,7 @@
             <icon part="radio_selected" align="left middle" x="2" state="selected" />
             <icon part="radio_disabled" align="left middle" x="2" state="disabled" />
         </style>
-        <style id="mini_button" padding-top="1">
+        <style id="mini_button" padding-top="1" border="3" border-bottom="5">
             <background-border part="buttonset_item_normal" />
             <background-border part="buttonset_item_hot" state="mouse" />
             <background-border part="buttonset_item_hot" state="focus" />
@@ -1014,7 +1014,7 @@
             <text color="slider_empty_text" align="center middle" state="focus" />
         </style>
         <style id="buttonset" gap-rows="-3" gap-columns="-1" />
-        <style id="buttonset_item" font="mini">
+        <style id="buttonset_item" font="mini" border="3" border-bottom="5">
             <background-border part="buttonset_item_normal" />
             <background-border part="buttonset_item_hot" state="selected" />
             <background-border part="buttonset_item_hot" state="mouse" />
