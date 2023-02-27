@@ -1063,8 +1063,8 @@
         <style id="dir_item" extends="buttonset_item_icon" width="18" height="20" />
         <style id="context_bar_button" extends="buttonset_item_icon" width="15" />
         <style id="context_bar_text_button" extends="buttonset_item_text" width="15" />
-        <style id="brush_type" extends="context_bar_button" padding-top="1" />
-        <style id="brush_type_mono" extends="context_bar_button" padding-top="1">
+        <style id="brush_type" extends="context_bar_button" />
+        <style id="brush_type_mono" extends="context_bar_button">
             <icon color="button_normal_text" />
         </style>
         <style id="ink_type" extends="context_bar_button" padding-left="1" />
