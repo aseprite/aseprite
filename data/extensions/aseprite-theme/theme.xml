@@ -180,18 +180,18 @@
         <part id="mini_slider_thumb_focused" x="48" y="176" w="5" h="4" />
         <part id="separator_horz" x="32" y="80" w="9" h="5" />
         <part id="separator_vert" x="32" y="96" w="5" h="9" />
-        <part id="combobox_arrow_down" x="100" y="148" w="9" h="9" />
-        <part id="combobox_arrow_down_selected" x="116" y="148" w="9" h="9" />
-        <part id="combobox_arrow_down_disabled" x="132" y="148" w="9" h="9" />
-        <part id="combobox_arrow_up" x="100" y="163" w="9" h="9" />
-        <part id="combobox_arrow_up_selected" x="116" y="163" w="9" h="9" />
-        <part id="combobox_arrow_up_disabled" x="132" y="163" w="9" h="9" />
-        <part id="combobox_arrow_left" x="99" y="180" w="9" h="9" />
-        <part id="combobox_arrow_left_selected" x="115" y="180" w="9" h="9" />
-        <part id="combobox_arrow_left_disabled" x="131" y="180" w="9" h="9" />
-        <part id="combobox_arrow_right" x="99" y="196" w="9" h="9" />
-        <part id="combobox_arrow_right_selected" x="115" y="196" w="9" h="9" />
-        <part id="combobox_arrow_right_disabled" x="131" y="196" w="9" h="9" />
+        <part id="combobox_arrow_down" x="100" y="148" w="9" h="8" />
+        <part id="combobox_arrow_down_selected" x="116" y="148" w="9" h="8" />
+        <part id="combobox_arrow_down_disabled" x="132" y="148" w="9" h="8" />
+        <part id="combobox_arrow_up" x="100" y="163" w="9" h="8" />
+        <part id="combobox_arrow_up_selected" x="116" y="163" w="9" h="8" />
+        <part id="combobox_arrow_up_disabled" x="132" y="163" w="9" h="8" />
+        <part id="combobox_arrow_left" x="99" y="180" w="9" h="8" />
+        <part id="combobox_arrow_left_selected" x="115" y="180" w="9" h="8" />
+        <part id="combobox_arrow_left_disabled" x="131" y="180" w="9" h="8" />
+        <part id="combobox_arrow_right" x="99" y="196" w="9" h="8" />
+        <part id="combobox_arrow_right_selected" x="115" y="196" w="9" h="8" />
+        <part id="combobox_arrow_right_disabled" x="131" y="196" w="9" h="8" />
         <part id="arrow_circle_cw" x="99" y="243" w="10" h="10" />
         <part id="arrow_circle_cw_selected" x="115" y="243" w="10" h="10" />
         <part id="newfolder" x="99" y="211" w="9" h="9" />
@@ -619,9 +619,9 @@
         </style>
         <style id="mini_check_box" extends="check_box" font="mini" />
         <style id="combobox_button" extends="mini_button" padding="0">
-            <icon part="combobox_arrow_down" y="1" />
-            <icon part="combobox_arrow_down_selected" state="selected" y="1" />
-            <icon part="combobox_arrow_down_disabled" state="disabled" y="1" />
+            <icon part="combobox_arrow_down" />
+            <icon part="combobox_arrow_down_selected" state="selected" />
+            <icon part="combobox_arrow_down_disabled" state="disabled" />
         </style>
         <style id="drop_down_button" extends="button">
             <background-border part="drop_down_button_left_normal" />
