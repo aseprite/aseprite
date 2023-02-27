@@ -35,8 +35,8 @@
             <label text="@.ui_windows" />
             <hbox>
               <buttonset columns="2" id="ui_windows">
-                <item icon="one_win_icon" tooltip="@.one_win" tooltip_dir="bottom" />
-                <item icon="multi_win_icon" tooltip="@.multi_win" tooltip_dir="bottom" />
+                <item icon="one_win_icon" tooltip="@.one_win" tooltip_dir="bottom" style="multi_window_item" />
+                <item icon="multi_win_icon" tooltip="@.multi_win" tooltip_dir="bottom" style="multi_window_item" />
               </buttonset>
               <hbox id="theme_variants">
                 <label text="@.theme_mode" />
