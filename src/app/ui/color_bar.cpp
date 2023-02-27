@@ -186,11 +186,12 @@ ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
 
   auto theme = SkinTheme::get(this);
 
-  auto item = m_editPal.addItem(theme->parts.timelineOpenPadlockActive());
+  auto item = m_editPal.addItem("");
   item->InitTheme.connect(
     [this, item](){
-      auto style = m_editMode ? SkinTheme::instance()->styles.palEditButton() :
-                                SkinTheme::instance()->styles.palEditButtonHot();
+      auto style =
+        (m_editMode ? SkinTheme::instance()->styles.palEditButtonUnlock() :
+                      SkinTheme::instance()->styles.palEditButtonLock());
       item->setStyle(style);
   });
   m_buttons.addItem(theme->parts.palSort(), "pal_button");
@@ -532,13 +533,12 @@ bool ColorBar::inEditMode() const
 
 void ColorBar::setEditMode(bool state)
 {
-  auto theme = SkinTheme::get(this);
-  ButtonSet::Item* item = m_editPal.getItem(0);
-
   m_editMode = state;
-  item->setIcon(state ? theme->parts.timelineClosedPadlockNormal():
-                        theme->parts.timelineOpenPadlockActive());
+
+  // The item icon/style will be set depending on m_editMode state.
+  ButtonSet::Item* item = m_editPal.getItem(0);
   item->initTheme();
+  item->invalidate();
 
   // Deselect color entries when we cancel editing
   if (!state)

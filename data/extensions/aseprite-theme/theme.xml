@@ -1074,12 +1074,14 @@
         <style id="selection_mode" extends="context_bar_button" padding-top="1" />
         <style id="symmetry_field" extends="context_bar_button" padding-top="1" />
         <style id="symmetry_options" extends="context_bar_text_button" padding-left="3" padding-bottom="3" />
-        <style id="pal_edit_button" extends="buttonset_item_icon" width="15" />
-        <style id="pal_edit_button_hot" extends="buttonset_item" width="15">
+        <style id="pal_edit_button_lock" extends="buttonset_item_icon" width="15">
+            <icon part="timeline_closed_padlock_normal" />
+            <icon part="timeline_closed_padlock_normal" state="capture selected" />
+        </style>
+        <style id="pal_edit_button_unlock" extends="pal_edit_button_lock">
             <background color="edit_pal_face" />
-            <icon />
-            <icon state="disabled" color="disabled" />
-            <icon state="capture selected" color="button_selected_text" />
+            <newlayer />
+            <icon part="timeline_open_padlock_active" />
         </style>
         <style id="pal_button" extends="buttonset_item_icon" minwidth="15" padding-top="1" />
         <style id="debugger_button" extends="buttonset_item_icon" width="17" height="19" />
