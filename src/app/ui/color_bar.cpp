@@ -200,12 +200,11 @@ ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
   item = m_tilesButton.addItem(theme->parts.tiles());
   item->InitTheme.connect(
     [this, item]() {
-
-      const bool canEditTiles = this->canEditTiles();
-      const bool editTiles = (canEditTiles &&
+      auto theme = SkinTheme::instance();
+      const bool editTiles = (canEditTiles() &&
                               m_tilemapMode == TilemapMode::Tiles);
-      auto style = editTiles ? SkinTheme::instance()->styles.tilesButtonHot() :
-                               SkinTheme::instance()->styles.tilesButton();
+      auto style = (editTiles ? theme->styles.editTilesMode() :
+                                theme->styles.editPixelsMode());
       item->setStyle(style);
     });
 
