@@ -954,6 +954,7 @@ private:
     }
     m_themeVars = list;
     themeVariants()->setVisible(list ? true: false);
+    themeVariants()->initTheme();
   }
 
   void fillExtensionsCombobox(ui::ComboBox* combobox,
