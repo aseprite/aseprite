@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -13,6 +13,7 @@
 
 #include "app/modules/gui.h"
 #include "app/ui/skin/skin_theme.h"
+#include "fmt/format.h"
 #include "gfx/color.h"
 #include "os/surface.h"
 #include "ui/box.h"
@@ -237,25 +238,26 @@ ButtonSet::Item* ButtonSet::addItem(Item* item, const char* styleId)
   return addItem(item, 1, 1, styleId);
 }
 
-ButtonSet::Item* ButtonSet::addItem(Item* item, int hspan, int vspan, const char* styleId)
+ButtonSet::Item* ButtonSet::addItem(Item* item, int hspan, int vspan, const char* styleIdStr)
 {
-  // TODO warning, here we're saving a copy of the styleId pointer,
-  //      which if it's not a literal that lives enough for this
-  //      lambda, it will crash the program
+  std::string styleId;
+  if (styleIdStr)
+    styleId = styleIdStr;
+
   item->InitTheme.connect(
     [item, styleId] {
+      auto theme = SkinTheme::get(item);
       ui::Style* style;
-      if (styleId) {
-        auto theme = SkinTheme::get(item);
+      if (!styleId.empty()) {
         style = theme->getStyleById(styleId);
         if (!style)
-          throw base::Exception("Style %s not found", styleId);
+          throw base::Exception(fmt::format("Style {} not found", styleId));
       }
       else {
-        style = SkinTheme::instance()->styles.buttonsetItemIcon();
+        style = theme->styles.buttonsetItemIcon();
         if (!item->text().empty()) {
-          style = item->icon() ? SkinTheme::instance()->styles.buttonsetItemTextTopIconBottom() :
-                                SkinTheme::instance()->styles.buttonsetItemText();
+          style = (item->icon() ? theme->styles.buttonsetItemTextTopIconBottom() :
+                                  theme->styles.buttonsetItemText());
         }
       }
 
