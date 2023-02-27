@@ -190,8 +190,8 @@ ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
   item->InitTheme.connect(
     [this, item](){
       auto style =
-        (m_editMode ? SkinTheme::instance()->styles.palEditButtonUnlock() :
-                      SkinTheme::instance()->styles.palEditButtonLock());
+        (m_editMode ? SkinTheme::instance()->styles.palEditUnlock() :
+                      SkinTheme::instance()->styles.palEditLock());
       item->setStyle(style);
   });
   m_buttons.addItem(theme->parts.palSort(), "pal_button");
