@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -230,7 +230,7 @@ void Grid::onSizeHint(SizeHintEvent& ev)
 void Grid::sumStripSize(const std::vector<Strip>& strip, int& size)
 {
   int i, j;
-  int gap = &strip == &m_colstrip ? m_colgap : m_rowgap;
+  int gap = (&strip == &m_colstrip ? m_colgap: m_rowgap);
 
   size = 0;
   for (i=j=0; i<(int)strip.size(); ++i) {
@@ -245,7 +245,7 @@ void Grid::sumStripSize(const std::vector<Strip>& strip, int& size)
 void Grid::calculateCellSize(int start, int span, const std::vector<Strip>& strip, int& size)
 {
   int i, j;
-  int gap = &strip == &m_colstrip ? m_colgap : m_rowgap;
+  int gap = (&strip == &m_colstrip ? m_colgap: m_rowgap);
 
   size = 0;
 
@@ -418,7 +418,7 @@ void Grid::distributeStripSize(std::vector<Strip>& colstrip,
                                int rect_size, int border_size, bool same_width)
 {
   int i, j;
-  int gap = &colstrip == &m_colstrip ? m_colgap : m_rowgap;
+  int gap = (&colstrip == &m_colstrip ? m_colgap: m_rowgap);
 
   int max_expand_count = 0;
   for (i=0; i<(int)colstrip.size(); ++i)
