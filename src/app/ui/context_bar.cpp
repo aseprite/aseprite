@@ -458,6 +458,7 @@ protected:
         }
       });
 
+    menu.initTheme();
     menu.showPopup(gfx::Point(bounds.x, bounds.y2()),
                    display());
     deselectItems();
