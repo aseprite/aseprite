@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -44,6 +44,7 @@
 
 #include <algorithm>
 #include <cstring>
+#include <memory>
 
 #define BGCOLOR                 (getWidgetBgColor(widget))
 
@@ -56,37 +57,76 @@ using namespace ui;
 // TODO For backward compatibility, in future versions we should remove this (extensions are preferred)
 const char* SkinTheme::kThemesFolderName = "themes";
 
-// This class offer backward compatibility with old themes, completing
-// or changing styles from the default theme to match the default
-// theme of previous versions, so third-party themes can look like
-// they are running in the old Aseprite without any modification.
-struct app::skin::SkinTheme::BackwardCompatibility {
-  bool hasSliderStyle = false;
-  void notifyStyleExistence(const char* styleId) {
-    if (std::strcmp(styleId, "slider") == 0)
-      hasSliderStyle = true;
+// Offers backward compatibility with old themes, copying missing
+// styles (raw XML <style> elements) from the default theme to the
+// current theme. This must be done so all <style> elements in the new
+// theme use colors and parts from the new theme instead of the
+// default one (as when they were loaded).
+class app::skin::SkinTheme::BackwardCompatibility {
+
+  enum class State {
+    // When we are loading the default theme
+    LoadingStyles,
+    // When we are loading the selected theme (so we must copy missing
+    // styles from the previously loaded default theme)
+    CopyingStyles,
+  };
+
+  State m_state = State::LoadingStyles;
+
+  // Loaded XML <style> element from the original theme (cloned
+  // elements).  Must be in order to insert them in the same order in
+  // the selected theme.
+  std::vector<std::unique_ptr<TiXmlElement>> m_styles;
+
+public:
+  void copyingStyles() {
+    m_state = State::CopyingStyles;
   }
-  void createMissingStyles(SkinTheme* theme) {
-    if (!hasSliderStyle &&
-        theme->styles.slider() &&
-        theme->styles.miniSlider()) {
-      // Old slider style
-      ui::Style style(nullptr);
-      os::Font* font = theme->getDefaultFont();
-      const int h = font->height();
 
-      style.setId(theme->styles.slider()->id());
-      style.setFont(AddRef(font));
+  // Called for each <style> element found in theme.xml.
+  void onStyle(TiXmlElement* xmlStyle) {
+    // Loading <style> from the default theme
+    if (m_state == State::LoadingStyles)
+      m_styles.emplace_back((TiXmlElement*)xmlStyle->Clone());
+  }
 
-      auto part = theme->parts.sliderEmpty();
-      style.setBorder(
-        gfx::Border(part->bitmapW()->width()-1*guiscale(),
-                    part->bitmapN()->height()+h/2,
-                    part->bitmapE()->width()-1*guiscale(),
-                    part->bitmapS()->height()-1*guiscale()+h/2));
+  void removeExistentStyles(TiXmlElement* xmlStyle) {
+    if (m_state != State::CopyingStyles)
+      return;
 
-      *theme->styles.slider() = style;
-      *theme->styles.miniSlider() = style;
+    while (xmlStyle) {
+      const char* s = xmlStyle->Attribute("id");
+      if (!s)
+        break;
+      std::string styleId = s;
+
+      // Remove any existent style in the selected theme.
+      auto it = std::find_if(m_styles.begin(),
+                             m_styles.end(),
+                             [styleId](auto& style){
+                               return (style->Attribute("id") == styleId);
+                             });
+      if (it != m_styles.end())
+        m_styles.erase(it);
+
+      xmlStyle = xmlStyle->NextSiblingElement();
+    }
+  }
+
+  // Copies all missing <style> elements to the new theme. xmlStyles
+  // is the <styles> element from the theme.xml of the selected theme
+  // (non the default one).
+  void copyMissingStyles(TiXmlNode* xmlStyles) {
+    if (m_state != State::CopyingStyles)
+      return;
+
+    for (auto& style : m_styles) {
+      LOG(VERBOSE, "THEME: Copying <style id='%s'> from default theme\n",
+          style->Attribute("id"));
+
+      // InsertEndChild() clones the node
+      xmlStyles->InsertEndChild(*style.get());
     }
   }
 };
@@ -265,15 +305,16 @@ SkinTheme::~SkinTheme()
 void SkinTheme::onRegenerateTheme()
 {
   Preferences& pref = Preferences::instance();
+  BackwardCompatibility backward;
 
   // First we load the skin from default theme, which is more proper
   // to have every single needed skin part/color/dimension.
-  loadAll(pref.theme.selected.defaultValue());
+  loadAll(pref.theme.selected.defaultValue(), &backward);
 
   // Then we load the selected theme to redefine default theme parts.
   if (pref.theme.selected.defaultValue() != pref.theme.selected()) {
     try {
-      BackwardCompatibility backward;
+      backward.copyingStyles();
       loadAll(pref.theme.selected(), &backward);
     }
     catch (const std::exception& e) {
@@ -554,6 +595,11 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
     if (!xmlStyle)              // Without styles?
       throw base::Exception("There are no styles");
 
+    if (backward) {
+      backward->removeExistentStyles(xmlStyle);
+      backward->copyMissingStyles(xmlStyle->Parent());
+    }
+
     while (xmlStyle) {
       const char* style_id = xmlStyle->Attribute("id");
       if (!style_id) {
@@ -567,7 +613,7 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
         base = m_styles[extends_id];
 
       if (backward)
-        backward->notifyStyleExistence(style_id);
+        backward->onStyle(xmlStyle);
 
       ui::Style* style = m_styles[style_id];
       if (!style) {
@@ -797,9 +843,6 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
       xmlStyle = xmlStyle->NextSiblingElement();
     }
   }
-
-  if (backward)
-    backward->createMissingStyles(this);
 
   ThemeFile<SkinTheme>::updateInternals();
 }

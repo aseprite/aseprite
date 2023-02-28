@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2022  Igara Studio S.A.
+// Copyright (C) 2020-2023  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -141,7 +141,7 @@ namespace app {
       void onRegenerateTheme() override;
 
     private:
-      struct BackwardCompatibility;
+      class BackwardCompatibility;
 
       void loadFontData();
       void loadAll(const std::string& themeId,
