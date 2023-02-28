@@ -395,8 +395,21 @@ doc::UserData::Variant get_value_from_lua(lua_State* L, int index)
       break;
 
     case LUA_TNUMBER:
-      if (lua_isinteger(L, index))
-        v = lua_tointeger(L, index);
+      if (lua_isinteger(L, index)) {
+        // This is required because some compilers/stdc++ impls
+        // (clang-10 + libstdc++ 7.5.0) don't convert "long long" type
+        // to "int64_t" automatically (?)
+        if constexpr (sizeof(lua_Integer) == 8) {
+          v = (int64_t)lua_tointeger(L, index);
+        }
+        else if constexpr (sizeof(lua_Integer) == 4) {
+          v = (int32_t)lua_tointeger(L, index);
+        }
+        else {
+          static_assert((sizeof(lua_Integer) == 8 ||
+                         sizeof(lua_Integer) == 4), "Invalid lua_Integer size");
+        }
+      }
       else {
         v = lua_tonumber(L, index);
       }
