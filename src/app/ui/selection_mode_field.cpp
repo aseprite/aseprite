@@ -24,10 +24,10 @@ SelectionModeField::SelectionModeField()
 {
   auto theme = SkinTheme::get(this);
 
-  addItem(theme->parts.selectionReplace());
-  addItem(theme->parts.selectionAdd());
-  addItem(theme->parts.selectionSubtract());
-  addItem(theme->parts.selectionIntersect());
+  addItem(theme->parts.selectionReplace(), "selection_mode");
+  addItem(theme->parts.selectionAdd(), "selection_mode");
+  addItem(theme->parts.selectionSubtract(), "selection_mode");
+  addItem(theme->parts.selectionIntersect(), "selection_mode");
 
   setSelectedItem((int)Preferences::instance().selection.mode());
 }

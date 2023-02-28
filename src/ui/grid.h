@@ -1,4 +1,5 @@
 // Aseprite UI Library
+// Copyright (C) 2023  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -31,11 +32,18 @@ namespace ui {
 
     void addChildInCell(Widget* child, int hspan, int vspan, int align);
     Info getChildInfo(Widget* child);
+    void setGap(const gfx::Size& gap);
+    void setStyle(Style* style) override;
 
   protected:
     // Events
     void onResize(ResizeEvent& ev) override;
     void onSizeHint(SizeHintEvent& ev) override;
+
+    // Separation between rows of grid cells. Negative values will overlap rows.
+    int m_rowgap;
+    // Separation between columns of grid cells. Negative values will overlap columns.
+    int m_colgap;
 
   private:
     struct Cell {

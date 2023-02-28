@@ -241,7 +241,6 @@ ColorSliders::ColorSliders()
   , m_color(app::Color::fromMask())
 {
   addChild(&m_grid);
-  m_grid.setChildSpacing(0);
 
   // Same order as in Channel enum
   static_assert(Channel::Red == (Channel)0, "");
@@ -257,6 +256,12 @@ ColorSliders::ColorSliders()
   addSlider(Channel::HslLightness,  "L", 0, 100, -100, 100);
   addSlider(Channel::Gray,          "V", 0, 255, -100, 100);
   addSlider(Channel::Alpha,         "A", 0, 255, -100, 100);
+
+  InitTheme.connect(
+    [this] {
+      m_grid.setChildSpacing(0);
+    }
+  );
 
   m_appConn = App::instance()
     ->ColorSpaceChange.connect([this]{ invalidate(); });

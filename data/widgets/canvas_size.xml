@@ -14,15 +14,15 @@
         <hbox filler="true" cell_hspan="2" />
       </grid>
       <buttonset columns="3" id="dir">
-        <item icon="canvas_nw" />
-        <item icon="canvas_n" />
-        <item icon="canvas_ne" />
-        <item icon="canvas_w" />
-        <item icon="canvas_c" />
-        <item icon="canvas_e" />
-        <item icon="canvas_sw" />
-        <item icon="canvas_s" />
-        <item icon="canvas_se" />
+        <item icon="canvas_nw" style="dir_item" />
+        <item icon="canvas_n" style="dir_item" />
+        <item icon="canvas_ne" style="dir_item" />
+        <item icon="canvas_w" style="dir_item" />
+        <item icon="canvas_c" style="dir_item" />
+        <item icon="canvas_e" style="dir_item" />
+        <item icon="canvas_sw" style="dir_item" />
+        <item icon="canvas_s" style="dir_item" />
+        <item icon="canvas_se" style="dir_item" />
       </buttonset>
     </hbox>
 

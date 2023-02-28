@@ -20,15 +20,15 @@
 	</hbox>
 	<hbox>
 	  <buttonset id="outline_matrix" columns="3">
-            <item icon="outline_empty_pixel" />
-            <item icon="outline_empty_pixel" />
-            <item icon="outline_empty_pixel" />
-            <item icon="outline_empty_pixel" />
-            <item icon="outline_empty_pixel" />
-            <item icon="outline_empty_pixel" />
-            <item icon="outline_empty_pixel" />
-            <item icon="outline_empty_pixel" />
-            <item icon="outline_empty_pixel" />
+            <item icon="outline_empty_pixel" style="outline_cell" />
+            <item icon="outline_empty_pixel" style="outline_cell" />
+            <item icon="outline_empty_pixel" style="outline_cell" />
+            <item icon="outline_empty_pixel" style="outline_cell" />
+            <item icon="outline_empty_pixel" style="outline_cell" />
+            <item icon="outline_empty_pixel" style="outline_cell" />
+            <item icon="outline_empty_pixel" style="outline_cell" />
+            <item icon="outline_empty_pixel" style="outline_cell" />
+            <item icon="outline_empty_pixel" style="outline_cell" />
 	  </buttonset>
 	</hbox>
       </vbox>

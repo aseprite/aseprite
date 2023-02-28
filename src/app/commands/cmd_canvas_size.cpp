@@ -15,7 +15,6 @@
 #include "app/doc_api.h"
 #include "app/modules/gui.h"
 #include "app/tx.h"
-#include "app/ui/button_set.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/doc_view.h"
 #include "app/ui/editor/editor.h"

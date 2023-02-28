@@ -80,6 +80,7 @@ public:
     m_sliders.setMode(ColorSliders::Mode::Relative);
     m_sliders.ColorChange.connect([this]{ onChangeControls(); });
 
+    initTheme();
     onChangeMode();
   }
 

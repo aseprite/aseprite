@@ -5,10 +5,10 @@
   <vbox childspacing="0">
     <hbox>
       <buttonset columns="4" id="control">
-        <item icon="debug_continue" tooltip="@.continue" tooltip_dir="bottom" />
-        <item icon="debug_step_into" tooltip="@.step_into" tooltip_dir="bottom" />
-        <item icon="debug_step_over" tooltip="@.step_over" tooltip_dir="bottom" />
-        <item icon="debug_step_out" tooltip="@.step_out" tooltip_dir="bottom" />
+        <item icon="debug_continue" style="debugger_button" tooltip="@.continue" tooltip_dir="bottom" />
+        <item icon="debug_step_into" style="debugger_button" tooltip="@.step_into" tooltip_dir="bottom" />
+        <item icon="debug_step_over" style="debugger_button" tooltip="@.step_over" tooltip_dir="bottom" />
+        <item icon="debug_step_out" style="debugger_button" tooltip="@.step_out" tooltip_dir="bottom" />
       </buttonset>
       <buttonset columns="1" id="breakpoint">
         <item icon="debug_breakpoint" tooltip="@.toggle_breakpoint" tooltip_dir="bottom" />

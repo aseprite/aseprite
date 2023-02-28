@@ -68,6 +68,7 @@ FilterTargetButtons::FilterTargetButtons(int imgtype, bool withChannels)
   // Create the button to select which cels will be modified by the
   // filter.
   m_cels = addItem(getCelsTargetText(), 4, 1);
+  initTheme();
 }
 
 void FilterTargetButtons::setTarget(const int target)

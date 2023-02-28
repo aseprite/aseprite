@@ -104,6 +104,7 @@ PaintWidgetPartInfo::PaintWidgetPartInfo()
   styleFlags = 0;
   text = nullptr;
   mnemonic = 0;
+  icon = nullptr;
 }
 
 PaintWidgetPartInfo::PaintWidgetPartInfo(const Widget* widget)
@@ -114,6 +115,10 @@ PaintWidgetPartInfo::PaintWidgetPartInfo(const Widget* widget)
   styleFlags = PaintWidgetPartInfo::getStyleFlagsForWidget(widget);
   text = &widget->text();
   mnemonic = widget->mnemonic();
+  icon = nullptr;
+  if (const Style::Layer::IconSurfaceProvider* iconProvider = dynamic_cast<const Style::Layer::IconSurfaceProvider*>(widget)) {
+    icon = iconProvider->iconSurface();
+  }
 }
 
 // static
@@ -123,7 +128,8 @@ int PaintWidgetPartInfo::getStyleFlagsForWidget(const Widget* widget)
     (widget->isEnabled() ? 0: Style::Layer::kDisabled) |
     (widget->isSelected() ? Style::Layer::kSelected: 0) |
     (widget->hasMouse() ? Style::Layer::kMouse: 0) |
-    (widget->hasFocus() ? Style::Layer::kFocus: 0);
+    (widget->hasFocus() ? Style::Layer::kFocus: 0) |
+    (widget->hasCapture() ? Style::Layer::kCapture: 0);
 }
 
 Theme::Theme()
@@ -201,7 +207,7 @@ void Theme::paintWidgetPart(Graphics* g,
     (const Style::Layer& layer) {
       paintLayer(g, style, layer,
                  (info.text ? *info.text: std::string()),
-                 info.mnemonic, rc, outBgColor);
+                 info.mnemonic, info.icon, rc, outBgColor);
     });
 }
 
@@ -318,6 +324,7 @@ void Theme::paintLayer(Graphics* g,
                        const Style::Layer& layer,
                        const std::string& text,
                        const int mnemonic,
+                       os::Surface* providedIcon,
                        gfx::Rect& rc,
                        gfx::Color& bgColor)
 {
@@ -443,27 +450,37 @@ void Theme::paintLayer(Graphics* g,
         else {
           gfx::Size textSize = g->measureUIText(text);
           gfx::Point pt;
+          gfx::Border undef = Style::UndefinedBorder();
+          gfx::Border padding = style->padding();
+          if (padding.left() == undef.left()) padding.left(0);
+          if (padding.right() == undef.right()) padding.right(0);
+          if (padding.top() == undef.top()) padding.top(0);
+          if (padding.bottom() == undef.bottom()) padding.bottom(0);
 
           if (layer.align() & LEFT)
-            pt.x = rc.x;
+            pt.x = rc.x+padding.left();
           else if (layer.align() & RIGHT)
-            pt.x = rc.x+rc.w-textSize.w;
-          else
-            pt.x = rc.x+rc.w/2-textSize.w/2;
+            pt.x = rc.x+rc.w-textSize.w-padding.right();
+          else {
+            pt.x = rc.x+padding.left()+(rc.w-padding.width())/2-textSize.w/2;
+            ADJUST_TO_GUISCALE(pt.x);
+          }
 
           if (layer.align() & TOP)
-            pt.y = rc.y;
+            pt.y = rc.y+padding.top();
           else if (layer.align() & BOTTOM)
-            pt.y = rc.y+rc.h-textSize.h;
-          else
-            pt.y = rc.y+rc.h/2-textSize.h/2;
+            pt.y = rc.y+rc.h-textSize.h-padding.bottom();
+          else {
+            pt.y = rc.y+padding.top()+(rc.h-padding.height())/2-textSize.h/2;
+            ADJUST_TO_GUISCALE(pt.y);
+          }
 
           pt += layer.offset();
 
           g->drawUIText(text,
                         layer.color(),
                         bgColor,
-                        pt, mnemonic);
+                        pt, style->mnemonics() ? mnemonic : 0);
         }
 
         if (style->font())
@@ -472,24 +489,34 @@ void Theme::paintLayer(Graphics* g,
       break;
 
     case Style::Layer::Type::kIcon: {
-      os::Surface* icon = layer.icon();
+      os::Surface* icon = providedIcon ? providedIcon : layer.icon();
       if (icon) {
         gfx::Size iconSize(icon->width(), icon->height());
         gfx::Point pt;
+        gfx::Border undef = Style::UndefinedBorder();
+        gfx::Border padding = style->padding();
+        if (padding.left() == undef.left()) padding.left(0);
+        if (padding.right() == undef.right()) padding.right(0);
+        if (padding.top() == undef.top()) padding.top(0);
+        if (padding.bottom() == undef.bottom()) padding.bottom(0);
 
         if (layer.align() & LEFT)
-          pt.x = rc.x;
+          pt.x = rc.x+padding.left();
         else if (layer.align() & RIGHT)
-          pt.x = rc.x+rc.w-iconSize.w;
-        else
-          pt.x = rc.x+rc.w/2-iconSize.w/2;
+          pt.x = rc.x+rc.w-iconSize.w-padding.right();
+        else {
+          pt.x = rc.x+padding.left()+(rc.w-padding.width())/2-iconSize.w/2;
+          ADJUST_TO_GUISCALE(pt.x);
+        }
 
         if (layer.align() & TOP)
-          pt.y = rc.y;
+          pt.y = rc.y+padding.top();
         else if (layer.align() & BOTTOM)
-          pt.y = rc.y+rc.h-iconSize.h;
-        else
-          pt.y = rc.y+rc.h/2-iconSize.h/2;
+          pt.y = rc.y+rc.h-iconSize.h-padding.bottom();
+        else {
+          pt.y = rc.y+padding.top()+(rc.h-padding.height())/2-iconSize.h/2;
+          ADJUST_TO_GUISCALE(pt.y);
+        }
 
         pt += layer.offset();
 
@@ -578,7 +605,11 @@ void Theme::measureLayer(const Widget* widget,
       break;
 
     case Style::Layer::Type::kIcon: {
-      os::Surface* icon = layer.icon();
+      const os::Surface* icon = layer.icon();
+      if (const Style::Layer::IconSurfaceProvider* iconProvider = dynamic_cast<const Style::Layer::IconSurfaceProvider*>(widget)) {
+        icon = iconProvider->iconSurface() ? iconProvider->iconSurface() : icon;
+      }
+
       if (icon) {
         iconHint.w = std::max(iconHint.w, icon->width()+ABS(layer.offset().x));
         iconHint.h = std::max(iconHint.h, icon->height()+ABS(layer.offset().y));
@@ -650,6 +681,34 @@ gfx::Color Theme::calcBgColor(const Widget* widget,
   return bgColor;
 }
 
+gfx::Size Theme::calcMinSize(const Widget* widget,
+                              const Style* style)
+{
+  ASSERT(widget);
+  ASSERT(style);
+
+  gfx::Size sz = widget->minSize();
+
+  if (sz.w == 0) sz.w = style->minSize().w;
+  if (sz.h == 0) sz.h = style->minSize().h;
+
+  return sz;
+}
+
+gfx::Size Theme::calcMaxSize(const Widget* widget,
+                              const Style* style)
+{
+  ASSERT(widget);
+  ASSERT(style);
+
+  gfx::Size sz = widget->maxSize();
+
+  if (sz.w == std::numeric_limits<int>::max()) sz.w = style->maxSize().w;
+  if (sz.h == std::numeric_limits<int>::max()) sz.h = style->maxSize().h;
+
+  return sz;
+}
+
 void Theme::calcWidgetMetrics(const Widget* widget,
                               const Style* style,
                               gfx::Size& sizeHint,
@@ -705,6 +764,9 @@ void Theme::calcWidgetMetrics(const Widget* widget,
     sizeHint.h += std::max(textHint.h, iconHint.h);
   else
     sizeHint.h += textHint.h + iconHint.h;
+
+  sizeHint.w = std::clamp(sizeHint.w, widget->minSize().w, widget->maxSize().w);
+  sizeHint.h = std::clamp(sizeHint.h, widget->minSize().h, widget->maxSize().h);
 }
 
 //////////////////////////////////////////////////////////////////////

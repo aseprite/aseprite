@@ -44,11 +44,11 @@ AniControls::AniControls(TooltipManager* tooltipManager)
 {
   auto theme = SkinTheme::get(this);
 
-  addItem(theme->parts.aniFirst());
-  addItem(theme->parts.aniPrevious());
-  addItem(theme->parts.aniPlay());
-  addItem(theme->parts.aniNext());
-  addItem(theme->parts.aniLast());
+  addItem(theme->parts.aniFirst(), "ani_button");
+  addItem(theme->parts.aniPrevious(), "ani_button");
+  addItem(theme->parts.aniPlay(), "ani_button");
+  addItem(theme->parts.aniNext(), "ani_button");
+  addItem(theme->parts.aniLast(), "ani_button");
   ItemChange.connect([this]{ onClickButton(); });
 
   setTriggerOnMouseUp(true);

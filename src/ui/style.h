@@ -48,6 +48,12 @@ namespace ui {
         kFocus = 2,
         kSelected = 4,
         kDisabled = 8,
+        kCapture = 16
+      };
+
+      class IconSurfaceProvider {
+      public:
+        virtual os::Surface* iconSurface() const = 0;
       };
 
       Layer()
@@ -97,13 +103,20 @@ namespace ui {
 
     static gfx::Border UndefinedBorder();
 
+    static gfx::Size MinSize();
+    static gfx::Size MaxSize();
+
     Style(const Style* base);
 
     const std::string& id() const { return m_id; }
     const gfx::Border& margin() const { return m_margin; }
     const gfx::Border& border() const { return m_border; }
     const gfx::Border& padding() const { return m_padding; }
+    const gfx::Size& minSize() const { return m_minSize; }
+    const gfx::Size& maxSize() const { return m_maxSize; }
+    const gfx::Size& gap() const { return m_gap; }
     os::Font* font() const { return m_font.get(); }
+    const bool mnemonics() const { return m_mnemonics; }
     const Layers& layers() const { return m_layers; }
     Layers& layers() { return m_layers; }
 
@@ -111,7 +124,11 @@ namespace ui {
     void setMargin(const gfx::Border& value) { m_margin = value; }
     void setBorder(const gfx::Border& value) { m_border = value; }
     void setPadding(const gfx::Border& value) { m_padding = value; }
+    void setMinSize(const gfx::Size& sz);
+    void setMaxSize(const gfx::Size& sz);
+    void setGap(const gfx::Size& value) { m_gap = value; }
     void setFont(const os::FontRef& font);
+    void setMnemonics(const bool enabled) { m_mnemonics = enabled; }
     void addLayer(const Layer& layer);
 
   private:
@@ -121,7 +138,14 @@ namespace ui {
     gfx::Border m_margin;
     gfx::Border m_border;
     gfx::Border m_padding;
+    // Min width and height for the widget.
+    gfx::Size m_minSize;
+    // Max width and height for the widget.
+    gfx::Size m_maxSize;
+    // Grid's columns and rows separation in pixels.
+    gfx::Size m_gap;
     os::FontRef m_font;
+    bool m_mnemonics;
   };
 
 } // namespace ui

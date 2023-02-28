@@ -152,7 +152,7 @@ namespace ui {
     Theme* theme() const { return m_theme; }
     Style* style() const { return m_style; }
     void setTheme(Theme* theme);
-    void setStyle(Style* style);
+    virtual void setStyle(Style* style);
     void initTheme();
 
     // ===============================================================

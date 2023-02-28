@@ -186,19 +186,35 @@ ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
 
   auto theme = SkinTheme::get(this);
 
-  m_editPal.addItem(theme->parts.timelineOpenPadlockActive());
-  m_buttons.addItem(theme->parts.palSort());
-  m_buttons.addItem(theme->parts.palPresets());
-  m_buttons.addItem(theme->parts.palOptions());
-  m_tilesButton.addItem(theme->parts.tiles());
+  auto item = m_editPal.addItem("");
+  item->InitTheme.connect(
+    [this, item](){
+      auto style =
+        (m_editMode ? SkinTheme::instance()->styles.palEditUnlock() :
+                      SkinTheme::instance()->styles.palEditLock());
+      item->setStyle(style);
+  });
+  m_buttons.addItem(theme->parts.palSort(), "pal_button");
+  m_buttons.addItem(theme->parts.palPresets(), "pal_button");
+  m_buttons.addItem(theme->parts.palOptions(), "pal_button");
+  item = m_tilesButton.addItem(theme->parts.tiles());
+  item->InitTheme.connect(
+    [this, item]() {
+      auto theme = SkinTheme::instance();
+      const bool editTiles = (canEditTiles() &&
+                              m_tilemapMode == TilemapMode::Tiles);
+      auto style = (editTiles ? theme->styles.editTilesMode() :
+                                theme->styles.editPixelsMode());
+      item->setStyle(style);
+    });
 
   static_assert(0 == int(TilesetMode::Manual) &&
                 1 == int(TilesetMode::Auto) &&
                 2 == int(TilesetMode::Stack), "Tileset mode buttons doesn't match TilesetMode enum values");
 
-  m_tilesetModeButtons.addItem(theme->parts.tilesManual());
-  m_tilesetModeButtons.addItem(theme->parts.tilesAuto());
-  m_tilesetModeButtons.addItem(theme->parts.tilesStack());
+  m_tilesetModeButtons.addItem(theme->parts.tilesManual(), "pal_button");
+  m_tilesetModeButtons.addItem(theme->parts.tilesAuto(), "pal_button");
+  m_tilesetModeButtons.addItem(theme->parts.tilesStack(), "pal_button");
   setTilesetMode(m_tilesetMode);
 
   m_paletteView.setColumns(8);
@@ -516,13 +532,12 @@ bool ColorBar::inEditMode() const
 
 void ColorBar::setEditMode(bool state)
 {
-  auto theme = SkinTheme::get(this);
-  ButtonSet::Item* item = m_editPal.getItem(0);
-
   m_editMode = state;
-  item->setIcon(state ? theme->parts.timelineOpenPadlockActive():
-                        theme->parts.timelineClosedPadlockNormal());
-  item->setHotColor(state ? theme->colors.editPalFace(): gfx::ColorNone);
+
+  // The item icon/style will be set depending on m_editMode state.
+  ButtonSet::Item* item = m_editPal.getItem(0);
+  item->initTheme();
+  item->invalidate();
 
   // Deselect color entries when we cancel editing
   if (!state)
@@ -553,16 +568,11 @@ void ColorBar::setTilemapMode(TilemapMode mode)
 
 void ColorBar::updateFromTilemapMode()
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme());
   ButtonSet::Item* item = m_tilesButton.getItem(0);
-
   const bool canEditTiles = this->canEditTiles();
   const bool editTiles = (canEditTiles &&
                           m_tilemapMode == TilemapMode::Tiles);
-
-  item->setHotColor(editTiles ? theme->colors.editPalFace():
-                                gfx::ColorNone);
-  item->setMono(true);
+  item->initTheme();
 
   if (Preferences::instance().colorBar.showColorAndTiles()) {
     m_scrollablePalView.setVisible(true);

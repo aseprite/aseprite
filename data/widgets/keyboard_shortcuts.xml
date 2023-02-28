@@ -67,28 +67,36 @@
               </vbox>
               <buttonset columns="3" id="drag_angle">
                 <item icon="canvas_nw"
+                      style="dir_item"
                       tooltip="@.drag_angle_tooltip"
                       tooltip_dir="bottom" />
                 <item icon="canvas_n"
+                      style="dir_item"
                       tooltip="@.drag_angle_tooltip"
                       tooltip_dir="bottom" />
                 <item icon="canvas_ne"
+                      style="dir_item"
                       tooltip="@.drag_angle_tooltip"
                       tooltip_dir="bottom" />
                 <item icon="canvas_w"
+                      style="dir_item"
                       tooltip="@.drag_angle_tooltip"
                       tooltip_dir="right" />
                 <item />
                 <item icon="canvas_e"
+                      style="dir_item"
                       tooltip="@.drag_angle_tooltip"
                       tooltip_dir="left" />
                 <item icon="canvas_sw"
+                      style="dir_item"
                       tooltip="@.drag_angle_tooltip"
                       tooltip_dir="top" />
                 <item icon="canvas_s"
+                      style="dir_item"
                       tooltip="@.drag_angle_tooltip"
                       tooltip_dir="top" />
                 <item icon="canvas_se"
+                      style="dir_item"
                       tooltip="@.drag_angle_tooltip"
                       tooltip_dir="top" />
               </buttonset>

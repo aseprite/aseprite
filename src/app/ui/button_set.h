@@ -12,6 +12,7 @@
 #include "app/ui/skin/skin_part.h"
 #include "obs/signal.h"
 #include "ui/grid.h"
+#include "ui/style.h"
 
 #include <string>
 
@@ -19,24 +20,20 @@ namespace app {
 
   class ButtonSet : public ui::Grid {
   public:
-    class Item : public ui::Widget {
+    class Item : public ui::Widget, public ui::Style::Layer::IconSurfaceProvider {
     public:
       Item();
-      void setHotColor(gfx::Color color);
-      void setIcon(const skin::SkinPartPtr& icon, bool mono = false);
-      void setMono(const bool mono) { m_mono = mono; }
+      void setIcon(const skin::SkinPartPtr& icon);
+      os::Surface* iconSurface() const override { return m_icon ? m_icon->bitmap(0) : nullptr; }
       skin::SkinPartPtr icon() const { return m_icon; }
       ButtonSet* buttonSet();
     protected:
       void onPaint(ui::PaintEvent& ev) override;
       bool onProcessMessage(ui::Message* msg) override;
-      void onSizeHint(ui::SizeHintEvent& ev) override;
       virtual void onClick();
       virtual void onRightClick();
     private:
       skin::SkinPartPtr m_icon;
-      bool m_mono;
-      gfx::Color m_hotColor;
     };
 
     enum class MultiMode {
@@ -47,9 +44,12 @@ namespace app {
 
     ButtonSet(int columns);
 
-    Item* addItem(const std::string& text, int hspan = 1, int vspan = 1);
-    Item* addItem(const skin::SkinPartPtr& icon, int hspan = 1, int vspan = 1);
-    Item* addItem(Item* item, int hspan = 1, int vspan = 1);
+    Item* addItem(const std::string& text, const char* styleId);
+    Item* addItem(const std::string& text, int hspan = 1, int vspan = 1, const char* styleId = nullptr);
+    Item* addItem(const skin::SkinPartPtr& icon, const char* styleId);
+    Item* addItem(const skin::SkinPartPtr& icon, int hspan = 1, int vspan = 1, const char* styleId = nullptr);
+    Item* addItem(Item* item, const char* styleId);
+    Item* addItem(Item* item, int hspan = 1, int vspan = 1, const char* styleId = nullptr);
     Item* getItem(int index);
     int getItemIndex(const Item* item) const;
 

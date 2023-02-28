@@ -15,16 +15,16 @@
 
       <separator text="@.color_mode" left="true" horizontal="true" />
       <buttonset columns="3" id="color_mode">
-        <item text="@.rgba" icon="icon_rgb" tooltip="@.rgba_tooltip" tooltip_dir="bottom" />
-        <item text="@.grayscale" icon="icon_grayscale" tooltip="@.grayscale_tooltip" tooltip_dir="bottom" />
-        <item text="@.indexed" icon="icon_indexed" tooltip="@.indexed_tooltip" tooltip_dir="bottom" />
+        <item text="@.rgba" icon="icon_rgb" style="new_sprite_rgb" tooltip="@.rgba_tooltip" tooltip_dir="bottom" />
+        <item text="@.grayscale" icon="icon_grayscale" style="new_sprite_grayscale" tooltip="@.grayscale_tooltip" tooltip_dir="bottom" />
+        <item text="@.indexed" icon="icon_indexed" style="new_sprite_indexed" tooltip="@.indexed_tooltip" tooltip_dir="bottom" />
       </buttonset>
 
       <separator text="@.background" left="true" horizontal="true" />
       <buttonset columns="3" id="bg_color">
-        <item text="@.transparent" icon="icon_transparent" />
-        <item text="@.white" icon="icon_white" />
-        <item text="@.black" icon="icon_black" />
+        <item text="@.transparent" icon="icon_transparent" style="bg_transparent" />
+        <item text="@.white" icon="icon_white" style="bg_white" />
+        <item text="@.black" icon="icon_black" style="bg_black" />
       </buttonset>
 
       <check id="advanced_check" text="@general.advanced_options" />
