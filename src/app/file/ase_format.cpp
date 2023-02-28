@@ -80,7 +80,7 @@ public:
 
   doc::Sprite* sprite() { return m_sprite; }
 
-  bool cacheCompressedTilesets() const {
+  bool cacheCompressedTilesets() const override {
     return m_fop->config().cacheCompressedTilesets;
   }
 

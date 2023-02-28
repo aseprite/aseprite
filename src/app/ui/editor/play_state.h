@@ -64,7 +64,6 @@ namespace app {
     double m_nextFrameTime;
     base::tick_t m_curFrameTick;
 
-    bool m_pingPongForward;
     doc::frame_t m_refFrame;
     doc::Tag* m_tag;
 

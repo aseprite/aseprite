@@ -119,8 +119,7 @@ doc::Image* new_image_from_mask(const Site& site,
 doc::Image* new_tilemap_from_mask(const Site& site,
                                   const doc::Mask* srcMask)
 {
-  const Sprite* srcSprite = site.sprite();
-  ASSERT(srcSprite);
+  ASSERT(site.sprite());
   ASSERT(srcMask);
 
   const Cel* srcCel = site.cel();
