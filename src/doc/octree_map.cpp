@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2020-2022 Igara Studio S.A.
+// Copyright (c) 2020-2023 Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -13,7 +13,6 @@
 #include "doc/palette.h"
 
 #define MIN_LEVEL_OCTREE_DEEP 3
-#define MIN_ALPHA_THRESHOLD 16
 
 namespace doc {
 
@@ -237,8 +236,7 @@ void OctreeMap::feedWithImage(const Image* image,
   auto add_color_to_octree =
     [this, &forceFullOpacity, levelDeep, imageIsRGBA](color_t color) {
       const int alpha = (imageIsRGBA ? rgba_geta(color) : graya_geta(color));
-      if (alpha >= MIN_ALPHA_THRESHOLD) { // Colors which alpha is less than
-                                          // MIN_ALPHA_THRESHOLD will not registered
+      if (alpha) {
         color |= forceFullOpacity;
         color = (imageIsRGBA ? color : rgba(graya_getv(color),
                                             graya_getv(color),
