@@ -1085,16 +1085,17 @@ void Editor::drawGrid(Graphics* g, const gfx::Rect& spriteBounds, const Rect& gr
   if (grid.y < 0) grid.y += grid.h;
 
   // Convert the "grid" rectangle to screen coordinates
-  grid = editorToScreen(grid);
-  if (grid.w < 1 || grid.h < 1)
+  RectF gridF(grid);
+  gridF = editorToScreenF(gridF);
+  if (gridF.w < 1. || gridF.h < 1.)
     return;
 
   // Adjust for client area
   gfx::Rect bounds = this->bounds();
-  grid.offset(-bounds.origin());
+  gridF.offset(-bounds.origin());
 
-  while (grid.x-grid.w >= spriteBounds.x) grid.x -= grid.w;
-  while (grid.y-grid.h >= spriteBounds.y) grid.y -= grid.h;
+  while (gridF.x-gridF.w >= spriteBounds.x) gridF.x -= gridF.w;
+  while (gridF.y-gridF.h >= spriteBounds.y) gridF.y -= gridF.h;
 
   // Get the grid's color
   gfx::Color grid_color = color_utils::color_for_ui(color);
@@ -1105,18 +1106,18 @@ void Editor::drawGrid(Graphics* g, const gfx::Rect& spriteBounds, const Rect& gr
 
   // Draw horizontal lines
   int x1 = spriteBounds.x;
-  int y1 = grid.y;
+  int y1 = gridF.y;
   int x2 = spriteBounds.x + spriteBounds.w;
   int y2 = spriteBounds.y + spriteBounds.h;
 
-  for (int c=y1; c<=y2; c+=grid.h)
+  for (double c=y1; c<=y2; c+=gridF.h)
     g->drawHLine(grid_color, x1, c, spriteBounds.w);
 
   // Draw vertical lines
-  x1 = grid.x;
+  x1 = gridF.x;
   y1 = spriteBounds.y;
 
-  for (int c=x1; c<=x2; c+=grid.w)
+  for (double c=x1; c<=x2; c+=gridF.w)
     g->drawVLine(grid_color, c, y1, spriteBounds.h);
 }
 
