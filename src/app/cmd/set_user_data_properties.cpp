@@ -28,16 +28,18 @@ SetUserDataProperties::SetUserDataProperties(
 
 void SetUserDataProperties::onExecute()
 {
-  auto obj = doc::get<doc::WithUserData>(m_objId);
-  obj->userData().properties(m_group) = m_newProperties;
-  obj->incrementVersion();
+  if (auto obj = doc::get<doc::WithUserData>(m_objId)) {
+    obj->userData().properties(m_group) = m_newProperties;
+    obj->incrementVersion();
+  }
 }
 
 void SetUserDataProperties::onUndo()
 {
-  auto obj = doc::get<doc::WithUserData>(m_objId);
-  obj->userData().properties(m_group) = m_oldProperties;
-  obj->incrementVersion();
+  if (auto obj = doc::get<doc::WithUserData>(m_objId)) {
+    obj->userData().properties(m_group) = m_oldProperties;
+    obj->incrementVersion();
+  }
 }
 
 } // namespace cmd

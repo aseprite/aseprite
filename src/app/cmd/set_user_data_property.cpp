@@ -30,36 +30,38 @@ SetUserDataProperty::SetUserDataProperty(
 
 void SetUserDataProperty::onExecute()
 {
-  auto obj = doc::get<doc::WithUserData>(m_objId);
-  auto& properties = obj->userData().properties(m_group);
+  if (auto obj = doc::get<doc::WithUserData>(m_objId)) {
+    auto& properties = obj->userData().properties(m_group);
 
-  if (m_newValue.type() == USER_DATA_PROPERTY_TYPE_NULLPTR) {
-    auto it = properties.find(m_field);
-    if (it != properties.end())
-      properties.erase(it);
-  }
-  else {
-    properties[m_field] = m_newValue;
-  }
+    if (m_newValue.type() == USER_DATA_PROPERTY_TYPE_NULLPTR) {
+      auto it = properties.find(m_field);
+      if (it != properties.end())
+        properties.erase(it);
+    }
+    else {
+      properties[m_field] = m_newValue;
+    }
 
-  obj->incrementVersion();
+    obj->incrementVersion();
+  }
 }
 
 void SetUserDataProperty::onUndo()
 {
-  auto obj = doc::get<doc::WithUserData>(m_objId);
-  auto& properties = obj->userData().properties(m_group);
+  if (auto obj = doc::get<doc::WithUserData>(m_objId)) {
+    auto& properties = obj->userData().properties(m_group);
 
-  if (m_oldValue.type() == USER_DATA_PROPERTY_TYPE_NULLPTR) {
-    auto it = properties.find(m_field);
-    if (it != properties.end())
-      properties.erase(it);
-  }
-  else {
-    properties[m_field] = m_oldValue;
-  }
+    if (m_oldValue.type() == USER_DATA_PROPERTY_TYPE_NULLPTR) {
+      auto it = properties.find(m_field);
+      if (it != properties.end())
+        properties.erase(it);
+    }
+    else {
+      properties[m_field] = m_oldValue;
+    }
 
-  obj->incrementVersion();
+    obj->incrementVersion();
+  }
 }
 
 } // namespace cmd
