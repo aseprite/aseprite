@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021-2022  Igara Studio S.A.
+// Copyright (C) 2021-2023  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -13,6 +13,7 @@
 #include "app/resource_finder.h"
 #include "base/fs.h"
 #include "base/log.h"
+#include "base/replace_string.h"
 #include "base/string.h"
 #include "ver/info.h"
 
@@ -31,6 +32,12 @@ void Sentry::init()
 
   std::string release = "aseprite@";
   release += get_app_version();
+
+  // Remove CPU architecture from the Sentry release version (as the
+  // architecture is displayed by Sentry anyway and we can group
+  // events/crashes by version).
+  base::replace_string(release, "-x64", "");
+  base::replace_string(release, "-arm64", "");
   sentry_options_set_release(options, release.c_str());
 
 #if _DEBUG
