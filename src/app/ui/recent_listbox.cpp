@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -209,7 +209,12 @@ private:
     ui::Style* pinStyle = theme->styles.recentFilePin();
 
     // We've received some crash reports where it looks like the
-    // parent() is nullptr.
+    // parent() is nullptr. This crash was related to some
+    // kPaintMessage messages being still in the queue for
+    // RecentFileItem that were removed from its RecentListBox and
+    // deferred for deletion (deferDelete()) but still have some
+    // living kPaintMessage messages. It was fixed removing
+    // kPaintMessage when Widget::removeChild() is used.
     ASSERT(parent());
     if (!parent())
       return gfx::Rect();

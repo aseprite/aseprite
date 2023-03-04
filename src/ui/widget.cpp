@@ -582,9 +582,13 @@ void Widget::removeChild(const WidgetsList::iterator& it)
   else
     return;
 
-  // Free child from manager
-  if (auto man = manager())
+  if (auto man = manager()) {
+    // Remove all paint messages for this widget.
+    man->removeMessagesFor(child, kPaintMessage);
+
+    // Free child from manager.
     man->freeWidget(child);
+  }
 
   child->m_parent = nullptr;
   child->m_parentIndex = -1;
