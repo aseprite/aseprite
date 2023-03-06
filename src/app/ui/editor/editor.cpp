@@ -2625,8 +2625,8 @@ void Editor::pasteImage(const Image* image, const Mask* mask)
     // Limit the image inside the sprite's bounds.
     if (sprite->width() <= image->width() ||
         sprite->height() <= image->height()) {
-      x = std::clamp(x, 0, image->width() - sprite->width());
-      y = std::clamp(y, 0, image->height() - sprite->height());
+      x = std::clamp(x, 0, std::max(0, sprite->width() - image->width()));
+      y = std::clamp(y, 0, std::max(0, sprite->height() - image->height()));
     }
     else {
       // Also we always limit the 1 image pixel inside the sprite's bounds.
