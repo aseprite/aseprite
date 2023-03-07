@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021-2022  Igara Studio S.A.
+// Copyright (C) 2021-2023  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -20,6 +20,7 @@
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
 #include "app/script/values.h"
+#include "app/site.h"
 #include "doc/document.h"
 #include "doc/sprite.h"
 #include "ui/app_state.h"
@@ -204,7 +205,9 @@ private:
 
   // ContextObserver impl
   void onActiveSiteChange(const Site& site) override {
-    call(SiteChange);
+    const bool fromUndo = (site.document() &&
+                           site.document()->isUndoing());
+    call(SiteChange, { { "fromUndo", fromUndo } });
   }
 
   obs::scoped_connection m_fgConn;

@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2023  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -20,6 +21,7 @@ namespace app {
     ~CmdSequence();
 
     void add(Cmd* cmd);
+    void addAndExecute(Context* ctx, Cmd* cmd);
 
     // Helper to create a CmdSequence in the same onExecute() member
     // function.

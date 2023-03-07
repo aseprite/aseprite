@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -95,6 +95,8 @@ namespace app {
 
     const DocUndo* undoHistory() const { return m_undo.get(); }
     DocUndo* undoHistory() { return m_undo.get(); }
+
+    bool isUndoing() const;
 
     color_t bgColor() const;
     color_t bgColor(Layer* layer) const;

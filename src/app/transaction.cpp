@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -140,19 +140,23 @@ void Transaction::rollback(CmdTransaction* newCmds)
 
 void Transaction::execute(Cmd* cmd)
 {
-  try {
-    cmd->execute(m_ctx);
-  }
-  catch (...) {
+  // If we are undoing/redoing, just throw an exception, we cannot
+  // modify the sprite while we are moving throw the undo history.
+  // To undo/redo we have just to call the onUndo/onRedo of each
+  // app::Cmd.
+  if (m_doc->isUndoing()) {
     delete cmd;
-    throw;
+    throw CannotModifyWhenUndoingException();
   }
 
   try {
-    m_cmds->add(cmd);
+    // We have to add the "cmd" to the sequence (CmdTransaction) and
+    // then execute it. This is because the execution can generate
+    // some signals that could add/execute new actions to the undo
+    // history/sequence.
+    m_cmds->addAndExecute(m_ctx, cmd);
   }
   catch (...) {
-    cmd->undo();
     delete cmd;
     throw;
   }

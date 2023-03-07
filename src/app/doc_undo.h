@@ -12,6 +12,7 @@
 #include "app/doc_range.h"
 #include "app/sprite_position.h"
 #include "base/disable_copying.h"
+#include "base/exception.h"
 #include "obs/observable.h"
 #include "undo/undo_history.h"
 
@@ -25,6 +26,15 @@ namespace app {
   class CmdTransaction;
   class Context;
   class DocUndoObserver;
+
+  // Exception thrown when we want to modify the sprite (add new
+  // app::Cmd objects) when we are undoing/redoing/moving throw the
+  // undo history.
+  class CannotModifyWhenUndoingException : public base::Exception {
+  public:
+    CannotModifyWhenUndoingException() throw()
+    : base::Exception("Cannot modify the sprite when we are undoing/redoing an action.") { }
+  };
 
   class DocUndo : public obs::observable<DocUndoObserver>,
                   public undo::UndoHistoryDelegate {
@@ -85,6 +95,8 @@ namespace app {
     const undo::UndoState* firstState() const   { return m_undoHistory.firstState(); }
     const undo::UndoState* lastState() const    { return m_undoHistory.lastState(); }
     const undo::UndoState* currentState() const { return m_undoHistory.currentState(); }
+
+    bool isUndoing() const { return m_undoing; }
 
     void moveToState(const undo::UndoState* state);
 

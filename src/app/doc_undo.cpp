@@ -46,7 +46,8 @@ void DocUndo::add(CmdTransaction* cmd)
   ASSERT(cmd);
 
   if (m_undoing) {
-    Console(m_ctx).printf("Error running scripts: Adding undo information when navigating undo history");
+    delete cmd;
+    throw CannotModifyWhenUndoingException();
   }
 
   UNDO_TRACE("UNDO: Add state <%s> of %s to %s\n",
