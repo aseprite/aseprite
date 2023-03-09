@@ -618,6 +618,10 @@
             <text color="button_selected_text" state="selected" />
         </style>
         <style id="mini_check_box" extends="check_box" font="mini" />
+        <style id="combobox">
+            <background-border part="sunken2_focused" state="focus" />
+            <background-border part="sunken2_normal" />
+        </style>
         <style id="combobox_button" extends="mini_button" padding="0">
             <icon part="combobox_arrow_down" />
             <icon part="combobox_arrow_down_selected" state="selected" />
