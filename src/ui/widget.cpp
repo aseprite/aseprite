@@ -973,10 +973,7 @@ void Widget::getTextIconInfo(
   if (align() & RIGHT)
     box_x = bounds.x2() - box_w - border().right();
   else if (align() & CENTER) {
-    box_x = (bounds.x + bounds.x2() - box_w) / 2;
-    // Adjust position when it is not a multiple of guiscale. Without these adjustements
-    // it could happen that an icon or text is displayed a in a fraction of a scaled pixel.
-    ADJUST_TO_GUISCALE(box_x);
+    box_x = CALC_FOR_CENTER(bounds.x + border().top(), bounds.w - border().width(), box_w);
   }
   else
     box_x = bounds.x + border().left();
@@ -984,9 +981,7 @@ void Widget::getTextIconInfo(
   if (align() & BOTTOM)
     box_y = bounds.y2() - box_h - border().bottom();
   else if (align() & MIDDLE) {
-    box_y = (bounds.y + bounds.y2() - box_h) / 2;
-    // Adjust position when it is not a multiple of guiscale
-    ADJUST_TO_GUISCALE(box_y);
+    box_y = CALC_FOR_CENTER(bounds.y + border().left(), bounds.h - border().height(), box_h);
   }
   else
     box_y = bounds.y + border().top();
@@ -999,11 +994,8 @@ void Widget::getTextIconInfo(
       icon_x = box_x + box_w - icon_w;
     }
     else if (icon_align & CENTER) {
-      text_x = box_x + (box_w - text_w)/2;
-      icon_x = box_x + (box_w - icon_w)/2;
-      // Adjust position when it is not a multiple of guiscale
-      ADJUST_TO_GUISCALE(text_x);
-      ADJUST_TO_GUISCALE(icon_x);
+      text_x = CALC_FOR_CENTER(box_x, box_w, text_w);
+      icon_x = CALC_FOR_CENTER(box_x, box_w, icon_w);
     }
     else {
       text_x = box_x + box_w - text_w;
@@ -1016,11 +1008,8 @@ void Widget::getTextIconInfo(
       icon_y = box_y + box_h - icon_h;
     }
     else if (icon_align & MIDDLE) {
-      text_y = box_y + (box_h - text_h)/2;
-      icon_y = box_y + (box_h - icon_h)/2;
-      // Adjust position when it is not a multiple of guiscale
-      ADJUST_TO_GUISCALE(text_y);
-      ADJUST_TO_GUISCALE(icon_y);
+      text_y = CALC_FOR_CENTER(box_y, box_h, text_h);
+      icon_y = CALC_FOR_CENTER(box_y, box_h, icon_h);
     }
     else {
       text_y = box_y + box_h - text_h;

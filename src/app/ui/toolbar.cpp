@@ -323,8 +323,8 @@ void ToolBar::onPaint(ui::PaintEvent& ev)
     os::Surface* icon = theme->getToolIcon(tool->getId().c_str());
     if (icon) {
       g->drawRgbaSurface(icon,
-        toolrc.x+toolrc.w/2-icon->width()/2,
-        toolrc.y+toolrc.h/2-icon->height()/2);
+        CALC_FOR_CENTER(toolrc.x, toolrc.w, icon->width()),
+        CALC_FOR_CENTER(toolrc.y, toolrc.h, icon->height()));
     }
   }
 
@@ -342,8 +342,8 @@ void ToolBar::onPaint(ui::PaintEvent& ev)
   os::Surface* icon = theme->getToolIcon("minieditor");
   if (icon) {
     g->drawRgbaSurface(icon,
-      toolrc.x+toolrc.w/2-icon->width()/2,
-      toolrc.y+toolrc.h/2-icon->height()/2);
+      CALC_FOR_CENTER(toolrc.x, toolrc.w, icon->width()),
+      CALC_FOR_CENTER(toolrc.y, toolrc.h, icon->height()));
   }
 }
 
@@ -415,7 +415,7 @@ void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
 
   for (Tool* tool : *toolbox) {
     if (tool->getGroup() == tool_group)
-      w += bounds().w-border().width()-1;
+      w += bounds().w-border().width()-1*guiscale();
   }
 
   rc.x -= w;
@@ -722,8 +722,8 @@ void ToolBar::ToolStrip::onPaint(PaintEvent& ev)
       if (icon) {
         g->drawRgbaSurface(
           icon,
-          toolrc.x+toolrc.w/2-icon->width()/2,
-          toolrc.y+toolrc.h/2-icon->height()/2);
+          CALC_FOR_CENTER(toolrc.x, toolrc.w, icon->width()),
+          CALC_FOR_CENTER(toolrc.y, toolrc.h, icon->height()));
       }
     }
   }
@@ -734,7 +734,7 @@ Rect ToolBar::ToolStrip::getToolBounds(int index)
   const Rect& bounds(this->bounds());
   Size iconsize = getToolIconSize(this);
 
-  return Rect(bounds.x+index*(iconsize.w-1), bounds.y,
+  return Rect(bounds.x+index*(iconsize.w-1*guiscale()), bounds.y,
               iconsize.w, bounds.h);
 }
 

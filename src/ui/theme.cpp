@@ -462,8 +462,7 @@ void Theme::paintLayer(Graphics* g,
           else if (layer.align() & RIGHT)
             pt.x = rc.x+rc.w-textSize.w-padding.right();
           else {
-            pt.x = rc.x+padding.left()+(rc.w-padding.width())/2-textSize.w/2;
-            ADJUST_TO_GUISCALE(pt.x);
+            pt.x = CALC_FOR_CENTER(rc.x+padding.left(), rc.w-padding.width(), textSize.w);
           }
 
           if (layer.align() & TOP)
@@ -471,8 +470,7 @@ void Theme::paintLayer(Graphics* g,
           else if (layer.align() & BOTTOM)
             pt.y = rc.y+rc.h-textSize.h-padding.bottom();
           else {
-            pt.y = rc.y+padding.top()+(rc.h-padding.height())/2-textSize.h/2;
-            ADJUST_TO_GUISCALE(pt.y);
+            pt.y = CALC_FOR_CENTER(rc.y+padding.top(), rc.h-padding.height(), textSize.h);
           }
 
           pt += layer.offset();
@@ -505,8 +503,7 @@ void Theme::paintLayer(Graphics* g,
         else if (layer.align() & RIGHT)
           pt.x = rc.x+rc.w-iconSize.w-padding.right();
         else {
-          pt.x = rc.x+padding.left()+(rc.w-padding.width())/2-iconSize.w/2;
-          ADJUST_TO_GUISCALE(pt.x);
+          pt.x = CALC_FOR_CENTER(rc.x+padding.left(), rc.w-padding.width(), iconSize.w);
         }
 
         if (layer.align() & TOP)
@@ -514,8 +511,7 @@ void Theme::paintLayer(Graphics* g,
         else if (layer.align() & BOTTOM)
           pt.y = rc.y+rc.h-iconSize.h-padding.bottom();
         else {
-          pt.y = rc.y+padding.top()+(rc.h-padding.height())/2-iconSize.h/2;
-          ADJUST_TO_GUISCALE(pt.y);
+          pt.y = CALC_FOR_CENTER(rc.y+padding.top(), rc.h-padding.height(), iconSize.h);
         }
 
         pt += layer.offset();

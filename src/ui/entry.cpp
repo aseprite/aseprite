@@ -545,7 +545,7 @@ gfx::Rect Entry::onGetEntryTextBounds() const
 {
   gfx::Rect bounds = clientBounds();
   bounds.x += border().left();
-  bounds.y += bounds.h/2 - textHeight()/2;
+  bounds.y += CALC_FOR_CENTER(0, bounds.h, textHeight());
   bounds.w -= border().width();
   bounds.h = textHeight();
   return bounds;
