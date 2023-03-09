@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -283,6 +283,19 @@ AppMenuItem::Native get_native_shortcut_for_command(
   return native;
 }
 
+void destroy_menu_item(ui::Widget* item)
+{
+  if (item->parent())
+    item->parent()->removeChild(item);
+
+  if (auto appItem = dynamic_cast<AppMenuItem*>(item)) {
+    if (appItem)
+      appItem->disposeNative();
+  }
+
+  item->deferDelete();
+}
+
 } // anonymous namespace
 
 os::Shortcut get_os_shortcut_from_key(const Key* key)
@@ -341,9 +354,12 @@ void AppMenus::reload()
   for (auto& it : m_groups) {
     GroupInfo& group = it.second;
     MENUS_TRACE("MENUS: - groups", it.first, "with", group.items.size(), "item(s)");
-    group.end = nullptr;        // This value will be restored later
+
     for (auto& item : group.items)
-      item->parent()->removeChild(item);
+      group.menu->removeChild(item);
+
+    // These values will be restored later
+    group.end = nullptr;
   }
 
   ////////////////////////////////////////
@@ -412,11 +428,13 @@ void AppMenus::reload()
 
   for (auto& it : m_groups) {
     GroupInfo& group = it.second;
-    if (group.end) {
+    if (group.menu) {
       MENUS_TRACE("MENUS: - re-adding group ", it.first, "with", group.items.size(), "item(s)");
 
-      auto menu = group.end->parent();
+      auto menu = group.menu;
       int insertIndex = menu->getChildIndex(group.end);
+      if (insertIndex < 0)
+        insertIndex = -1;
       for (auto& item : group.items) {
         menu->insertChild(++insertIndex, item);
         group.end = item;
@@ -590,14 +608,51 @@ bool AppMenus::rebuildRecentList()
   return true;
 }
 
+void AppMenus::addMenuGroup(const std::string& groupId,
+                            MenuItem* menuItem)
+{
+  GroupInfo& group = m_groups[groupId];
+  ASSERT(group.menu == nullptr);
+  ASSERT(group.end == nullptr);
+  group.menu = menuItem->getSubmenu();
+  group.end = nullptr;
+}
+
+void AppMenus::removeMenuGroup(const std::string& groupId)
+{
+  auto it = m_groups.find(groupId);
+  if (it != m_groups.end()) {
+    GroupInfo& group = it->second;
+
+    ASSERT(group.items.empty()); // To remove a group, the group must be empty
+
+    if (group.menu->getOwnerMenuItem()) {
+      ui::MenuItem* item = group.menu->getOwnerMenuItem();
+      removeMenuItemFromGroup(
+        [item](Widget* i){
+          return item == i;
+        });
+    }
+    m_groups.erase(it);
+  }
+}
+
 void AppMenus::addMenuItemIntoGroup(const std::string& groupId,
                                     std::unique_ptr<MenuItem>&& menuItem)
 {
   GroupInfo& group = m_groups[groupId];
-  Widget* menu = group.end->parent();
+
+  Menu* menu = group.menu;
   ASSERT(menu);
-  int insertIndex = menu->getChildIndex(group.end);
-  menu->insertChild(insertIndex+1, menuItem.get());
+
+  if (group.end) {
+    int insertIndex = menu->getChildIndex(group.end);
+    ASSERT(insertIndex >= 0);
+    menu->insertChild(insertIndex+1, menuItem.get());
+  }
+  else {
+    menu->addChild(menuItem.get());
+  }
 
   group.end = menuItem.get();
   group.items.push_back(menuItem.get());
@@ -616,12 +671,7 @@ void AppMenus::removeMenuItemFromGroup(Pred pred)
         if (item == group.end)
           group.end = group.end->previousSibling();
 
-        item->parent()->removeChild(item);
-        if (auto appItem = dynamic_cast<AppMenuItem*>(item)) {
-          if (appItem)
-            appItem->disposeNative();
-        }
-        item->deferDelete();
+        destroy_menu_item(item);
 
         it = group.items.erase(it);
       }
@@ -679,7 +729,7 @@ Menu* AppMenus::convertXmlelemToMenu(TiXmlElement* elem)
 
   TiXmlElement* child = elem->FirstChildElement();
   while (child) {
-    Widget* menuitem = convertXmlelemToMenuitem(child);
+    Widget* menuitem = convertXmlelemToMenuitem(child, menu);
     if (menuitem)
       menu->addChild(menuitem);
     else
@@ -692,7 +742,7 @@ Menu* AppMenus::convertXmlelemToMenu(TiXmlElement* elem)
   return menu;
 }
 
-Widget* AppMenus::convertXmlelemToMenuitem(TiXmlElement* elem)
+Widget* AppMenus::convertXmlelemToMenuitem(TiXmlElement* elem, Menu* menu)
 {
   const char* id = elem->Attribute("id");
   const char* group = elem->Attribute("group");
@@ -709,8 +759,10 @@ Widget* AppMenus::convertXmlelemToMenuitem(TiXmlElement* elem)
         m_recentFilesPlaceholder = item;
       }
     }
-    if (group)
+    if (group) {
+      m_groups[group].menu = menu;
       m_groups[group].end = item;
+    }
     return item;
   }
 
@@ -743,8 +795,10 @@ Widget* AppMenus::convertXmlelemToMenuitem(TiXmlElement* elem)
 
   if (id) menuitem->setId(id);
   menuitem->processMnemonicFromText();
-  if (group)
+  if (group) {
+    m_groups[group].menu = menu;
     m_groups[group].end = menuitem;
+  }
 
   if (standard && strcmp(standard, "edit") == 0)
     menuitem->setStandardEditMenu();

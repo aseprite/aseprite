@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2022  Igara Studio S.A.
+// Copyright (C) 2020-2023  Igara Studio S.A.
 // Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -306,6 +306,27 @@ void Extension::removeCommand(const std::string& id)
 {
   for (auto it=m_plugin.items.begin(); it != m_plugin.items.end(); ) {
     if (it->type == PluginItem::Command &&
+        it->id == id) {
+      it = m_plugin.items.erase(it);
+    }
+    else {
+      ++it;
+    }
+  }
+}
+
+void Extension::addMenuGroup(const std::string& id)
+{
+  PluginItem item;
+  item.type = PluginItem::MenuGroup;
+  item.id = id;
+  m_plugin.items.push_back(item);
+}
+
+void Extension::removeMenuGroup(const std::string& id)
+{
+  for (auto it=m_plugin.items.begin(); it != m_plugin.items.end(); ) {
+    if (it->type == PluginItem::MenuGroup &&
         it->id == id) {
       it = m_plugin.items.erase(it);
     }
@@ -685,30 +706,39 @@ void Extension::exitScripts()
     m_plugin.pluginRef = LUA_REFNIL;
   }
 
-  // Remove plugin items automatically
+  // Remove plugin items automatically (first commands, then menu
+  // groups)
   for (const auto& item : m_plugin.items) {
-    switch (item.type) {
-      case PluginItem::Command: {
-        auto cmds = Commands::instance();
-        auto cmd = cmds->byId(item.id.c_str());
-        ASSERT(cmd);
+    if (item.type == PluginItem::Command) {
+      auto cmds = Commands::instance();
+      auto cmd = cmds->byId(item.id.c_str());
+      ASSERT(cmd);
 
-        if (cmd) {
+      if (cmd) {
 #ifdef ENABLE_UI
-          // TODO use a signal
-          AppMenus::instance()->removeMenuItemFromGroup(cmd);
+        // TODO use a signal
+        AppMenus::instance()->removeMenuItemFromGroup(cmd);
 #endif // ENABLE_UI
 
-          cmds->remove(cmd);
+        cmds->remove(cmd);
 
-          // This will call ~PluginCommand() and unref the command
-          // onclick callback.
-          delete cmd;
-        }
-        break;
+        // This will call ~PluginCommand() and unref the command
+        // onclick callback.
+        delete cmd;
       }
     }
   }
+
+  for (const auto& item : m_plugin.items) {
+    if (item.type == PluginItem::MenuGroup) {
+#ifdef ENABLE_UI
+      // TODO use a signal
+      AppMenus::instance()->removeMenuGroup(item.id);
+#endif // ENABLE_UI
+      break;
+    }
+  }
+
   m_plugin.items.clear();
 }
 
