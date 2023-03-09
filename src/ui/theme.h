@@ -18,7 +18,7 @@
 #include "ui/style.h"
 #include "ui/scale.h"
 
-#define ADJUST_TO_GUISCALE(v) v -= (v % guiscale());
+#define CALC_FOR_CENTER(p, s1, s2) ((p)/guiscale() + ((s1)/guiscale())/2 - ((s2)/guiscale())/2)*guiscale()
 
 namespace gfx {
   class Region;
