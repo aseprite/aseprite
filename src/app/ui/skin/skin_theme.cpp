@@ -1505,15 +1505,9 @@ void SkinTheme::paintComboBoxEntry(ui::PaintEvent& ev)
   Graphics* g = ev.graphics();
   Entry* widget = static_cast<Entry*>(ev.getSource());
   gfx::Rect bounds = widget->clientBounds();
+  ui::Style* style = styles.combobox();
 
-  // Outside borders
-  g->fillRect(BGCOLOR, bounds);
-
-  drawRect(g, bounds,
-           (widget->hasFocus() ?
-            parts.sunken2Focused().get():
-            parts.sunken2Normal().get()));
-
+  paintWidget(g, widget, style, bounds);
   drawEntryText(g, widget);
 }
 
