@@ -385,7 +385,7 @@ private:
 
     // Read Sprite User Data
     if (!s.eof()) {
-      UserData userData = read_user_data(s);
+      UserData userData = read_user_data(s, m_docFormatVer);
       if (!userData.isEmpty())
         spr->setUserData(userData);
     }
@@ -483,7 +483,7 @@ private:
     }
 
     if (lay) {
-      UserData userData = read_user_data(s);
+      UserData userData = read_user_data(s, m_docFormatVer);
       lay->setUserData(userData);
       return lay.release();
     }
@@ -496,7 +496,7 @@ private:
   }
 
   CelData* readCelData(std::ifstream& s) {
-    return read_celdata(s, this, false);
+    return read_celdata(s, this, false, m_docFormatVer);
   }
 
   Image* readImage(std::ifstream& s) {
@@ -508,16 +508,15 @@ private:
   }
 
   Tileset* readTileset(std::ifstream& s) {
-    bool isOldVersion = false;
-    Tileset* tileset = read_tileset(s, m_sprite, false, &isOldVersion);
-    if (tileset && isOldVersion)
+    uint32_t tilesetVer;
+    Tileset* tileset = read_tileset(s, m_sprite, false, &tilesetVer, m_docFormatVer);
+    if (tileset && tilesetVer < TILESET_VER1)
       m_updateOldTilemapWithTileset.insert(tileset->id());
     return tileset;
   }
 
   Tag* readTag(std::ifstream& s) {
-    const bool oldVersion = (m_docFormatVer < DOC_FORMAT_VERSION_1);
-    return read_tag(s, false, oldVersion);
+    return read_tag(s, false, m_docFormatVer);
   }
 
   Slice* readSlice(std::ifstream& s) {

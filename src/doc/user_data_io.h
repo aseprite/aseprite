@@ -8,6 +8,8 @@
 #define DOC_USER_DATA_IO_H_INCLUDED
 #pragma once
 
+#include "app/crash/doc_format.h"
+
 #include <iosfwd>
 
 namespace doc {
@@ -15,7 +17,7 @@ namespace doc {
   class UserData;
 
   void write_user_data(std::ostream& os, const UserData& userData);
-  UserData read_user_data(std::istream& is);
+  UserData read_user_data(std::istream& is, const int docFormatVer = DOC_FORMAT_VERSION_LAST);
 
 } // namespace doc
 

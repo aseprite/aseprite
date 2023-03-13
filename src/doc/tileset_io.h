@@ -8,7 +8,20 @@
 #define DOC_TILESET_IO_H_INCLUDED
 #pragma once
 
+#include "app/crash/doc_format.h"
+
 #include <iosfwd>
+
+// Extra BYTE with special flags to check the tileset version.  This
+// field didn't exist in Aseprite v1.3-alpha3 (so read8() fails = 0)
+#define TILESET_VER1     1
+
+// Tileset has UserData now
+#define TILESET_VER2     2
+
+// Tileset name (was missing originally) + each tileset's tile has
+// UserData now
+#define TILESET_VER3     3
 
 namespace doc {
 
@@ -23,7 +36,8 @@ namespace doc {
   Tileset* read_tileset(std::istream& is,
                         Sprite* sprite,
                         bool setId = true,
-                        bool* isOldVersion = nullptr);
+                        uint32_t* tilesetVer = nullptr,
+                        const int docFormatVer = DOC_FORMAT_VERSION_LAST);
 
 } // namespace doc
 

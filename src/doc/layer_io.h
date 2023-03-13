@@ -8,6 +8,7 @@
 #define DOC_LAYER_IO_H_INCLUDED
 #pragma once
 
+#include "app/crash/doc_format.h"
 #include "base/exception.h"
 
 #include <iosfwd>
@@ -23,7 +24,7 @@ namespace doc {
   };
 
   void write_layer(std::ostream& os, const Layer* layer);
-  Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects);
+  Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects, const int docFormatVer = DOC_FORMAT_VERSION_LAST);
 
 } // namespace doc
 

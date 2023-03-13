@@ -8,6 +8,8 @@
 #define DOC_CEL_DATA_IO_H_INCLUDED
 #pragma once
 
+#include "app/crash/doc_format.h"
+
 #include <iosfwd>
 
 namespace doc {
@@ -16,7 +18,7 @@ namespace doc {
   class SubObjectsIO;
 
   void write_celdata(std::ostream& os, const CelData* cel);
-  CelData* read_celdata(std::istream& is, SubObjectsIO* subObjects, bool setId = true);
+  CelData* read_celdata(std::istream& is, SubObjectsIO* subObjects, const bool setId = true, const int read_celdata = DOC_FORMAT_VERSION_LAST);
 
 } // namespace doc
 

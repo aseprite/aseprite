@@ -50,7 +50,7 @@ void write_celdata(std::ostream& os, const CelData* celdata)
   }
 }
 
-CelData* read_celdata(std::istream& is, SubObjectsIO* subObjects, bool setId)
+CelData* read_celdata(std::istream& is, SubObjectsIO* subObjects, const bool setId, const int docFormatVer)
 {
   ObjectId id = read32(is);
   int x = read32(is);
@@ -59,7 +59,7 @@ CelData* read_celdata(std::istream& is, SubObjectsIO* subObjects, bool setId)
   int h = read32(is);
   int opacity = read8(is);
   ObjectId imageId = read32(is);
-  UserData userData = read_user_data(is);
+  UserData userData = read_user_data(is, docFormatVer);
   gfx::RectF boundsF;
 
   // Extra fields

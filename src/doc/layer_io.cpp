@@ -110,7 +110,7 @@ void write_layer(std::ostream& os, const Layer* layer)
   write_user_data(os, layer->userData());
 }
 
-Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects)
+Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects, const int docFormatVer)
 {
   ObjectId id = read32(is);
   std::string name = read_string(is);
@@ -147,7 +147,7 @@ Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects)
       // Read celdatas
       int celdatas = read16(is);
       for (int c=0; c<celdatas; ++c) {
-        CelDataRef celdata(read_celdata(is, subObjects));
+        CelDataRef celdata(read_celdata(is, subObjects, true, docFormatVer));
         subObjects->addCelDataRef(celdata);
       }
 
@@ -190,7 +190,7 @@ Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects)
 
   }
 
-  UserData userData = read_user_data(is);
+  UserData userData = read_user_data(is, docFormatVer);
 
   if (layer) {
     layer->setName(name);
