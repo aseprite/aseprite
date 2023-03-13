@@ -56,7 +56,14 @@ void GraphicsContext::drawImage(const doc::Image* img,
   if (srcRc.isEmpty() || dstRc.isEmpty())
     return;                     // Do nothing for empty rectangles
 
-  auto tmpSurface = os::instance()->makeRgbaSurface(srcRc.w, srcRc.h);
+  static os::SurfaceRef tmpSurface = nullptr;
+  if (!tmpSurface ||
+      tmpSurface->width() < srcRc.w ||
+      tmpSurface->height() < srcRc.h) {
+    tmpSurface = os::instance()->makeRgbaSurface(
+      std::max(srcRc.w, (tmpSurface ? tmpSurface->width(): 0)),
+      std::max(srcRc.h, (tmpSurface ? tmpSurface->height(): 0)));
+  }
   if (tmpSurface) {
     convert_image_to_surface(
       img,
