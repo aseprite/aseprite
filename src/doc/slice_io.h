@@ -8,6 +8,8 @@
 #define DOC_SLICE_IO_H_INCLUDED
 #pragma once
 
+#include "app/crash/doc_format.h"
+
 #include <iosfwd>
 
 namespace doc {
@@ -16,7 +18,7 @@ namespace doc {
   class SliceKey;
 
   void write_slice(std::ostream& os, const Slice* slice);
-  Slice* read_slice(std::istream& is, bool setId = true);
+  Slice* read_slice(std::istream& is, const bool setId = true, const int docFormatVer = DOC_FORMAT_VERSION_LAST);
 
   void write_slicekey(std::ostream& os, const SliceKey& sliceKey);
   SliceKey read_slicekey(std::istream& is);

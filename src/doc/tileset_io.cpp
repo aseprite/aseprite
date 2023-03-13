@@ -22,17 +22,6 @@
 
 #include <iostream>
 
-// Extra BYTE with special flags to check the tileset version.  This
-// field didn't exist in Aseprite v1.3-alpha3 (so read8() fails = 0)
-#define TILESET_VER1     1
-
-// Tileset has UserData now
-#define TILESET_VER2     2
-
-// Tileset name (was missing originally) + each tileset's tile has
-// UserData now
-#define TILESET_VER3     3
-
 namespace doc {
 
 using namespace base::serialization;
@@ -69,7 +58,8 @@ bool write_tileset(std::ostream& os,
 Tileset* read_tileset(std::istream& is,
                       Sprite* sprite,
                       bool setId,
-                      bool* isOldVersion)
+                      uint32_t* tilesetVer,
+                      const int docFormatVer)
 {
   ObjectId id = read32(is);
   tileset_index ntiles = read32(is);
@@ -85,21 +75,20 @@ Tileset* read_tileset(std::istream& is,
 
   // Read extra version byte after tiles
   uint32_t ver = read8(is);
+  if (tilesetVer)
+    *tilesetVer = ver;
   if (ver >= TILESET_VER1) {
-    if (isOldVersion)
-      *isOldVersion = false;
-
     tileset->setBaseIndex(1);
 
     if (ver >= TILESET_VER2) {
-      UserData userData = read_user_data(is);
+      UserData userData = read_user_data(is, docFormatVer);
       tileset->setUserData(userData);
 
       if (ver >= TILESET_VER3) {
         tileset->setName(read_string(is));
 
         for (tileset_index ti=0; ti<ntiles; ++ti) {
-          tileset->setTileData(ti, read_user_data(is));
+          tileset->setTileData(ti, read_user_data(is, docFormatVer));
         }
       }
     }
@@ -107,9 +96,6 @@ Tileset* read_tileset(std::istream& is,
   // Old tileset used in internal versions (this was added to recover
   // old files, maybe in a future we could remove this code)
   else {
-    if (isOldVersion)
-      *isOldVersion = true;
-
     fix_old_tileset(tileset);
   }
 
