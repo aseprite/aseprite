@@ -66,9 +66,11 @@ void GraphicsContext::drawImage(const doc::Image* img,
       0, 0,
       srcRc.w, srcRc.h);
 
-    m_surface->drawSurface(tmpSurface.get(),
-                           tmpSurface->bounds(),
-                           dstRc);
+    // TODO add configuration for sampling method, and blend mode
+    os::Paint paint;
+    paint.blendMode(os::BlendMode::SrcOver);
+    m_surface->drawSurface(tmpSurface.get(), gfx::Rect(0, 0, srcRc.w, srcRc.h),
+                           dstRc, os::Sampling(), &paint);
   }
 }
 
