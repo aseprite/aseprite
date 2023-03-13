@@ -18,8 +18,6 @@
 #include "ui/style.h"
 #include "ui/scale.h"
 
-#define CALC_FOR_CENTER(p, s1, s2) ((p)/guiscale() + ((s1)/guiscale())/2 - ((s2)/guiscale())/2)*guiscale()
-
 namespace gfx {
   class Region;
 }
@@ -40,6 +38,10 @@ namespace ui {
 
   void set_theme(Theme* theme, const int uiscale);
   Theme* get_theme();
+
+  inline int CALC_FOR_CENTER(int p, int s1, int s2) {
+    return (p/guiscale() + (s1/guiscale())/2 - (s2/guiscale())/2)*guiscale();
+  }
 
   struct PaintWidgetPartInfo {
     gfx::Color bgColor;
