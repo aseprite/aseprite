@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2022  Igara Studio S.A.
+// Copyright (c) 2022-2023  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -78,7 +78,8 @@ public:
   void drawImage(const doc::Image* img, int x, int y);
   void drawImage(const doc::Image* img,
                  const gfx::Rect& srcRc,
-                 const gfx::Rect& dstRc);
+                 const gfx::Rect& dstRc,
+                 const os::Paint* paint);
 
   void drawThemeImage(const std::string& partId, const gfx::Point& pt);
   void drawThemeRect(const std::string& partId, const gfx::Rect& rc);

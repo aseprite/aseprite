@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022  Igara Studio S.A.
+// Copyright (C) 2022-2023  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -51,7 +51,8 @@ void GraphicsContext::drawImage(const doc::Image* img, int x, int y)
 
 void GraphicsContext::drawImage(const doc::Image* img,
                                 const gfx::Rect& srcRc,
-                                const gfx::Rect& dstRc)
+                                const gfx::Rect& dstRc,
+                                const os::Paint* paint)
 {
   if (srcRc.isEmpty() || dstRc.isEmpty())
     return;                     // Do nothing for empty rectangles
@@ -73,11 +74,8 @@ void GraphicsContext::drawImage(const doc::Image* img,
       0, 0,
       srcRc.w, srcRc.h);
 
-    // TODO add configuration for sampling method, and blend mode
-    os::Paint paint;
-    paint.blendMode(os::BlendMode::SrcOver);
     m_surface->drawSurface(tmpSurface.get(), gfx::Rect(0, 0, srcRc.w, srcRc.h),
-                           dstRc, os::Sampling(), &paint);
+                           dstRc, os::Sampling(), paint);
   }
 }
 
@@ -221,13 +219,15 @@ int GraphicsContext_drawImage(lua_State* L)
       int dy = lua_tointeger(L, 8);
       int dw = lua_tointeger(L, 9);
       int dh = lua_tointeger(L, 10);
-      gc->drawImage(img, gfx::Rect(x, y, w, h), gfx::Rect(dx, dy, dw, dh));
+      auto p = may_get_obj<os::Paint>(L, 11);
+      gc->drawImage(img, gfx::Rect(x, y, w, h), gfx::Rect(dx, dy, dw, dh), p);
     }
     else if (lua_gettop(L) >= 3) {
       const auto srcRect = may_get_obj<gfx::Rect>(L, 3);
       const auto dstRect = may_get_obj<gfx::Rect>(L, 4);
+      auto p = may_get_obj<os::Paint>(L, 5);
       if (srcRect && dstRect)
-        gc->drawImage(img, *srcRect, *dstRect);
+        gc->drawImage(img, *srcRect, *dstRect, p);
       else {
         gc->drawImage(img, x, y);
       }
