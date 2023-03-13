@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -154,6 +154,14 @@ int Size_pow(lua_State* L)
   return 1;
 }
 
+int Size_union(lua_State* L)
+{
+  const auto a = get_obj<gfx::Size>(L, 1);
+  const auto b = get_obj<gfx::Size>(L, 2);
+  push_obj(L, a->createUnion(*b));
+  return 1;
+}
+
 int Size_get_width(lua_State* L)
 {
   const auto sz = get_obj<gfx::Size>(L, 1);
@@ -198,6 +206,7 @@ const luaL_Reg Size_methods[] = {
   { "__mod", Size_mod },
   { "__pow", Size_pow },
   { "__idiv", Size_div },
+  { "union", Size_union },
   { nullptr, nullptr }
 };
 

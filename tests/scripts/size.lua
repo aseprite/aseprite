@@ -1,4 +1,4 @@
--- Copyright (C) 2019  Igara Studio S.A.
+-- Copyright (C) 2019-2023  Igara Studio S.A.
 -- Copyright (C) 2018  David Capello
 --
 -- This file is released under the terms of the MIT license.
@@ -73,3 +73,9 @@ assert(sz.height == 25)
 sz = Size(31, 10) // 3
 assert(sz.width == 10)
 assert(sz.height == 3)
+
+-- Size:union
+
+sz = Size(4, 2):union(Size(1, 8))
+assert(sz.width == 4)
+assert(sz.height == 8)
