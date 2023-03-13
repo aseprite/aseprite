@@ -27,6 +27,10 @@
 #include "base/fstream_path.h"
 #include "render/dithering_matrix.h"
 
+#if ENABLE_SENTRY
+#include "app/sentry_wrapper.h"
+#endif
+
 #ifdef ENABLE_SCRIPTING
   #include "app/script/engine.h"
   #include "app/script/luacpp.h"
@@ -1067,14 +1071,25 @@ Extension* Extensions::loadExtension(const std::string& path,
 
   LOG("EXT: Extension '%s' loaded\n", name.c_str());
 
-  std::unique_ptr<Extension> extension(
-    new Extension(path,
-                  name,
-                  version,
-                  displayName,
-                  // Extensions are enabled by default
-                  get_config_bool("extensions", name.c_str(), true),
-                  isBuiltinExtension));
+#if ENABLE_SENTRY
+  if (!isBuiltinExtension) {
+    std::map<std::string, std::string> data = { { "name", name },
+                                                { "version", version } };
+    if (json["author"].is_object()) {
+      data["url"] = json["author"]["url"].string_value();
+    }
+    Sentry::addBreadcrumb("Load extension", data);
+  }
+#endif
+
+  auto extension = std::make_unique<Extension>(
+    path,
+    name,
+    version,
+    displayName,
+    // Extensions are enabled by default
+    get_config_bool("extensions", name.c_str(), true),
+    isBuiltinExtension);
 
   auto contributes = json["contributes"];
   if (contributes.is_object()) {
