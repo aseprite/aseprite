@@ -187,7 +187,6 @@ if(ENABLE_SCRIPTING)
     script/layer_class.cpp
     script/layers_class.cpp
     script/luacpp.cpp
-    script/paint_class.cpp
     script/palette_class.cpp
     script/palettes_class.cpp
     script/pixel_color_object.cpp

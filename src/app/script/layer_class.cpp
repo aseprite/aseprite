@@ -15,6 +15,7 @@
 #include "app/cmd/set_layer_tileset.h"
 #include "app/doc.h"
 #include "app/doc_api.h"
+#include "app/script/blend_mode.h"
 #include "app/script/docobj.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
@@ -141,7 +142,9 @@ int Layer_get_blendMode(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
   if (layer->isImage()) {
-    lua_pushinteger(L, (int)static_cast<LayerImage*>(layer)->blendMode());
+    lua_pushinteger(
+      L, int(base::convert_to<app::script::BlendMode>(
+               static_cast<LayerImage*>(layer)->blendMode())));
     return 1;
   }
   else
@@ -269,11 +272,11 @@ int Layer_set_opacity(lua_State* L)
 int Layer_set_blendMode(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
-  const int blendMode = lua_tointeger(L, 2);
+  auto blendMode = app::script::BlendMode(lua_tointeger(L, 2));
   if (layer->isImage()) {
     Tx tx;
     tx(new cmd::SetLayerBlendMode(static_cast<LayerImage*>(layer),
-                                  (doc::BlendMode)blendMode));
+                                  base::convert_to<doc::BlendMode>(blendMode)));
     tx.commit();
   }
   return 0;

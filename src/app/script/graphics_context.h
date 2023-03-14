@@ -62,6 +62,17 @@ public:
   float strokeWidth() const { return m_paint.strokeWidth(); }
   void strokeWidth(float value) { m_paint.strokeWidth(value); }
 
+#if LAF_SKIA
+  float opacity() const { return m_paint.skPaint().getAlphaf(); }
+  void opacity(float value) { m_paint.skPaint().setAlphaf(value); }
+#else
+  float opacity() const { return 1.0f; }
+  void opacity(float) { }
+#endif
+
+  os::BlendMode blendMode() const { return m_paint.blendMode(); }
+  void blendMode(const os::BlendMode bm) { m_paint.blendMode(bm); }
+
   void strokeRect(const gfx::Rect& rc) {
     m_paint.style(os::Paint::Stroke);
     m_surface->drawRect(rc, m_paint);
@@ -78,8 +89,7 @@ public:
   void drawImage(const doc::Image* img, int x, int y);
   void drawImage(const doc::Image* img,
                  const gfx::Rect& srcRc,
-                 const gfx::Rect& dstRc,
-                 const os::Paint* paint);
+                 const gfx::Rect& dstRc);
 
   void drawThemeImage(const std::string& partId, const gfx::Point& pt);
   void drawThemeRect(const std::string& partId, const gfx::Rect& rc);

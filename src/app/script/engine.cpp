@@ -16,6 +16,7 @@
 #include "app/doc_exporter.h"
 #include "app/doc_range.h"
 #include "app/pref/preferences.h"
+#include "app/script/blend_mode.h"
 #include "app/script/luacpp.h"
 #include "app/script/security.h"
 #include "app/sprite_sheet_type.h"
@@ -27,7 +28,6 @@
 #include "base/fs.h"
 #include "base/fstream_path.h"
 #include "doc/anidir.h"
-#include "doc/blend_mode.h"
 #include "doc/color_mode.h"
 #include "filters/target.h"
 #include "ui/cursor_type.h"
@@ -161,7 +161,6 @@ void register_color_space_class(lua_State* L);
 #ifdef ENABLE_UI
 void register_dialog_class(lua_State* L);
 void register_graphics_context_class(lua_State* L);
-void register_paint_class(lua_State* L);
 #endif
 void register_events_class(lua_State* L);
 void register_frame_class(lua_State* L);
@@ -288,25 +287,44 @@ Engine::Engine()
   lua_newtable(L);
   lua_pushvalue(L, -1);
   lua_setglobal(L, "BlendMode");
-  setfield_integer(L, "NORMAL", doc::BlendMode::NORMAL);
-  setfield_integer(L, "MULTIPLY", doc::BlendMode::MULTIPLY);
-  setfield_integer(L, "SCREEN", doc::BlendMode::SCREEN);
-  setfield_integer(L, "OVERLAY", doc::BlendMode::OVERLAY);
-  setfield_integer(L, "DARKEN", doc::BlendMode::DARKEN);
-  setfield_integer(L, "LIGHTEN", doc::BlendMode::LIGHTEN);
-  setfield_integer(L, "COLOR_DODGE", doc::BlendMode::COLOR_DODGE);
-  setfield_integer(L, "COLOR_BURN", doc::BlendMode::COLOR_BURN);
-  setfield_integer(L, "HARD_LIGHT", doc::BlendMode::HARD_LIGHT);
-  setfield_integer(L, "SOFT_LIGHT", doc::BlendMode::SOFT_LIGHT);
-  setfield_integer(L, "DIFFERENCE", doc::BlendMode::DIFFERENCE);
-  setfield_integer(L, "EXCLUSION", doc::BlendMode::EXCLUSION);
-  setfield_integer(L, "HSL_HUE", doc::BlendMode::HSL_HUE);
-  setfield_integer(L, "HSL_SATURATION", doc::BlendMode::HSL_SATURATION);
-  setfield_integer(L, "HSL_COLOR", doc::BlendMode::HSL_COLOR);
-  setfield_integer(L, "HSL_LUMINOSITY", doc::BlendMode::HSL_LUMINOSITY);
-  setfield_integer(L, "ADDITION", doc::BlendMode::ADDITION);
-  setfield_integer(L, "SUBTRACT", doc::BlendMode::SUBTRACT);
-  setfield_integer(L, "DIVIDE", doc::BlendMode::DIVIDE);
+  setfield_integer(L, "CLEAR",          app::script::BlendMode::CLEAR);
+  setfield_integer(L, "SRC",            app::script::BlendMode::SRC);
+  setfield_integer(L, "DST",            app::script::BlendMode::DST);
+  setfield_integer(L, "SRC_OVER",       app::script::BlendMode::SRC_OVER);
+  setfield_integer(L, "DST_OVER",       app::script::BlendMode::DST_OVER);
+  setfield_integer(L, "SRC_IN",         app::script::BlendMode::SRC_IN);
+  setfield_integer(L, "DST_IN",         app::script::BlendMode::DST_IN);
+  setfield_integer(L, "SRC_OUT",        app::script::BlendMode::SRC_OUT);
+  setfield_integer(L, "DST_OUT",        app::script::BlendMode::DST_OUT);
+  setfield_integer(L, "SRC_ATOP",       app::script::BlendMode::SRC_ATOP);
+  setfield_integer(L, "DST_ATOP",       app::script::BlendMode::DST_ATOP);
+  setfield_integer(L, "XOR",            app::script::BlendMode::XOR);
+  setfield_integer(L, "PLUS",           app::script::BlendMode::PLUS);
+  setfield_integer(L, "MODULATE",       app::script::BlendMode::MODULATE);
+  setfield_integer(L, "MULTIPLY",       app::script::BlendMode::MULTIPLY);
+  setfield_integer(L, "SCREEN",         app::script::BlendMode::SCREEN);
+  setfield_integer(L, "OVERLAY",        app::script::BlendMode::OVERLAY);
+  setfield_integer(L, "DARKEN",         app::script::BlendMode::DARKEN);
+  setfield_integer(L, "LIGHTEN",        app::script::BlendMode::LIGHTEN);
+  setfield_integer(L, "COLOR_DODGE",    app::script::BlendMode::COLOR_DODGE);
+  setfield_integer(L, "COLOR_BURN",     app::script::BlendMode::COLOR_BURN);
+  setfield_integer(L, "HARD_LIGHT",     app::script::BlendMode::HARD_LIGHT);
+  setfield_integer(L, "SOFT_LIGHT",     app::script::BlendMode::SOFT_LIGHT);
+  setfield_integer(L, "DIFFERENCE",     app::script::BlendMode::DIFFERENCE);
+  setfield_integer(L, "EXCLUSION",      app::script::BlendMode::EXCLUSION);
+  setfield_integer(L, "HUE",            app::script::BlendMode::HUE);
+  setfield_integer(L, "SATURATION",     app::script::BlendMode::SATURATION);
+  setfield_integer(L, "COLOR",          app::script::BlendMode::COLOR);
+  setfield_integer(L, "LUMINOSITY",     app::script::BlendMode::LUMINOSITY);
+  setfield_integer(L, "ADDITION",       app::script::BlendMode::ADDITION);
+  setfield_integer(L, "SUBTRACT",       app::script::BlendMode::SUBTRACT);
+  setfield_integer(L, "DIVIDE",         app::script::BlendMode::DIVIDE);
+  // Backward compatibility
+  setfield_integer(L, "NORMAL",         app::script::BlendMode::SRC_OVER);
+  setfield_integer(L, "HSL_HUE",        app::script::BlendMode::HUE);
+  setfield_integer(L, "HSL_SATURATION", app::script::BlendMode::SATURATION);
+  setfield_integer(L, "HSL_COLOR",      app::script::BlendMode::COLOR);
+  setfield_integer(L, "HSL_LUMINOSITY", app::script::BlendMode::LUMINOSITY);
   lua_pop(L, 1);
 
   lua_newtable(L);
@@ -443,7 +461,6 @@ Engine::Engine()
 #ifdef ENABLE_UI
   register_dialog_class(L);
   register_graphics_context_class(L);
-  register_paint_class(L);
 #endif
   register_events_class(L);
   register_frame_class(L);
