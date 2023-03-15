@@ -361,6 +361,12 @@ void Menu::showPopup(const gfx::Point& pos,
   MenuBoxWindow window;
   window.Open.connect([this]{ this->onOpenPopup(); });
 
+  // Set the native parent (without this the menubox will appear in
+  // the same screen of the main window/manager and not the
+  // parentDisplay's screen)
+  if (parentDisplay)
+    window.setParentDisplay(parentDisplay);
+
   MenuBox* menubox = window.menubox();
   MenuBaseData* base = menubox->createBase();
   base->was_clicked = true;
@@ -373,9 +379,9 @@ void Menu::showPopup(const gfx::Point& pos,
   fit_bounds(parentDisplay,
              &window,
              gfx::Rect(pos, window.size()),
-             [&window, pos](const gfx::Rect& workarea,
-                            gfx::Rect& bounds,
-                            std::function<gfx::Rect(Widget*)> getWidgetBounds) {
+             [&window](const gfx::Rect& workarea,
+                       gfx::Rect& bounds,
+                       std::function<gfx::Rect(Widget*)> getWidgetBounds) {
                choose_side(bounds, workarea, gfx::Rect(bounds.x-1, bounds.y, 1, 1));
                add_scrollbars_if_needed(&window, workarea, bounds);
              });
@@ -905,16 +911,20 @@ bool MenuItem::onProcessMessage(Message* msg)
           window->deferDelete();
         });
 
+        auto parentDisplay = display();
+        if (parentDisplay)
+          window->setParentDisplay(parentDisplay);
+
         MenuBox* menubox = window->menubox();
         m_submenu_menubox = menubox;
         menubox->setMenu(m_submenu);
 
         window->remapWindow();
         fit_bounds(
-          display(), window, window->bounds(),
-          [this, window](const gfx::Rect& workarea,
-                         gfx::Rect& bounds,
-                         std::function<gfx::Rect(Widget*)> getWidgetBounds){
+          parentDisplay, window, window->bounds(),
+          [this, window, parentDisplay](const gfx::Rect& workarea,
+                                        gfx::Rect& bounds,
+                                        std::function<gfx::Rect(Widget*)> getWidgetBounds){
             const gfx::Rect itemBounds = getWidgetBounds(this);
             if (inBar()) {
               bounds.x = std::clamp(itemBounds.x, workarea.x, std::max(workarea.x, workarea.x2()-bounds.w));
@@ -923,7 +933,7 @@ bool MenuItem::onProcessMessage(Message* msg)
             else {
               int scale = guiscale();
               if (get_multiple_displays())
-                scale = display()->scale();
+                scale = parentDisplay->scale();
 
               const gfx::Rect parentBounds = getWidgetBounds(this->window());
               bounds.y = itemBounds.y-3*scale;
