@@ -207,7 +207,8 @@ bool Playback::handleExitFrame(const frame_t frameDelta)
 
     case PlayAll:
     case PlayInLoop: {
-      if (auto tag = this->tag()) {
+      auto tag = this->tag();
+      if (tag && tag->contains(m_frame)) {
         ASSERT(!m_playing.empty());
         int forward = m_playing.back()->forward;
 
@@ -232,13 +233,15 @@ bool Playback::handleExitFrame(const frame_t frameDelta)
           m_playing.back()->invertForward();
           return decrementRepeat(frameDelta);
         }
-        else if (m_playMode == PlayInLoop && frameDelta < 0
-                 && m_frame == firstTagFrame(tag)) {
-          PLAY_TRACE("    Going to last frame=", lastTagFrame(tag),
-                     " (PlayInLoop) frame=", m_frame, " forward=", forward);
+        else if (m_playMode == PlayInLoop) {
+          if (frameDelta < 0 && m_frame == firstTagFrame(tag)) {
+            PLAY_TRACE("    Going to last frame=", lastTagFrame(tag),
+                      " (PlayInLoop) frame=", m_frame, " forward=", forward);
 
-          m_frame = lastTagFrame(tag);
-          return false;
+            m_frame = lastTagFrame(tag);
+            return false;
+          }
+          break;
         }
       }
 

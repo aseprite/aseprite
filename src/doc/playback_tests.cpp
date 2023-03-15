@@ -477,8 +477,6 @@ TEST(Playback, TwoLoopsInCascade)
 
 TEST(Playback, TwoLoopsInCascadeReverse)
 {
-  GTEST_SKIP() << "TODO not yet ready";
-
   //    A
   //   <----
   //       B
