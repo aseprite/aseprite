@@ -232,6 +232,14 @@ bool Playback::handleExitFrame(const frame_t frameDelta)
           m_playing.back()->invertForward();
           return decrementRepeat(frameDelta);
         }
+        else if (m_playMode == PlayInLoop && frameDelta < 0
+                 && m_frame == firstTagFrame(tag)) {
+          PLAY_TRACE("    Going to last frame=", lastTagFrame(tag),
+                     " (PlayInLoop) frame=", m_frame, " forward=", forward);
+
+          m_frame = lastTagFrame(tag);
+          return false;
+        }
       }
 
       if (frameDelta > 0 && m_frame == m_sprite->lastFrame()) {
@@ -486,7 +494,7 @@ frame_t Playback::firstTagFrame(const Tag* tag)
   ASSERT(!m_playing.empty());
   int forward = m_playing.back()->forward;
   return (forward < 0 ? tag->toFrame():
-                                     tag->fromFrame());
+                        tag->fromFrame());
 }
 
 frame_t Playback::lastTagFrame(const Tag* tag)
