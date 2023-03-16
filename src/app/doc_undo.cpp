@@ -278,6 +278,9 @@ Cmd* DocUndo::lastExecutedCmd() const
 
 void DocUndo::moveToState(const undo::UndoState* state)
 {
+  ASSERT(!m_undoing);
+  base::ScopedValue undoing(m_undoing, true, false);
+
   m_undoHistory.moveTo(state);
 
   // After onCurrentUndoStateChange don't use the "state" argument, it
