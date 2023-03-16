@@ -69,9 +69,9 @@ PointF Transformation::rotatePoint(
   const double angle,
   const double skew)
 {
-  double cos = std::cos(-angle);
-  double sin = std::sin(-angle);
-  double tan = std::tan(skew);
+  double cos = std::roundl(std::cos(-angle)*100000.0)/100000.0;
+  double sin = std::roundl(std::sin(-angle)*100000.0)/100000.0;
+  double tan = std::roundl(std::tan(skew)*100000.0)/100000.0;
   double dx = point.x - pivot.x;
   double dy = point.y - pivot.y;
   dx += dy*tan;
