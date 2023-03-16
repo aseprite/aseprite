@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2021  Igara Studio S.A.
+// Copyright (c) 2019-2023  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -21,7 +21,10 @@ LayerTilemap::LayerTilemap(Sprite* sprite, const tileset_index tsi)
   , m_tileset(sprite->tilesets()->get(tsi))
   , m_tilesetIndex(tsi)
 {
-  ASSERT(m_tileset);
+  // m_tileset can be temporarily nullptr when tsi is 0, which means
+  // that the layer was read from doc::read_layer() and the tsi is 0
+  // until we can read that field.
+  ASSERT(m_tileset || tsi == 0);
 }
 
 LayerTilemap::~LayerTilemap()
