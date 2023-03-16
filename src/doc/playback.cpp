@@ -119,10 +119,7 @@ frame_t Playback::nextFrame(frame_t frameDelta)
       handleMoveFrame(step);
     handleEnterFrame(step, false);
 
-    if (frameDelta > 0)
-      --frameDelta;
-    else if (frameDelta < 0)
-      ++frameDelta;
+    frameDelta -= step;
   }
 
   PLAY_TRACE("  } =", m_frame,
@@ -187,7 +184,7 @@ void Playback::handleEnterFrame(const frame_t frameDelta, const bool firstTime)
           else {
             addTag(t, false, forward);
             if (!firstTime)
-              goToFirstTagFrame(t, frameDelta);
+              goToFirstTagFrame(t);
           }
         }
       }
@@ -210,7 +207,8 @@ bool Playback::handleExitFrame(const frame_t frameDelta)
 
     case PlayAll:
     case PlayInLoop: {
-      if (auto tag = this->tag()) {
+      auto tag = this->tag();
+      if (tag && tag->contains(m_frame)) {
         ASSERT(!m_playing.empty());
         int forward = m_playing.back()->forward;
 
@@ -220,23 +218,30 @@ bool Playback::handleExitFrame(const frame_t frameDelta)
 
         if ((tag->aniDir() == AniDir::FORWARD ||
              tag->aniDir() == AniDir::REVERSE)
-            && ((forward > 0 && m_frame == tag->toFrame())
-                ||
-                (forward < 0 && m_frame == tag->fromFrame()))) {
+            && (frameDelta > 0 && m_frame == lastTagFrame(tag))) {
           decrementRepeat(frameDelta);
           return false;
         }
         // Change ping-pong direction
         else if ((tag->aniDir() == AniDir::PING_PONG ||
                   tag->aniDir() == AniDir::PING_PONG_REVERSE)
-                 && ((m_frame == tag->fromFrame() && forward < 0)
-                     || (m_frame == tag->toFrame() && forward > 0))) {
+                 && m_frame == lastTagFrame(tag)) {
           PLAY_TRACE("    Changing direction frame=", m_frame,
                      " forward=", forward, "->", -forward);
 
           // Changing the direction of the ping-pong animation
           m_playing.back()->invertForward();
           return decrementRepeat(frameDelta);
+        }
+        else if (m_playMode == PlayInLoop) {
+          if (frameDelta < 0 && m_frame == firstTagFrame(tag)) {
+            PLAY_TRACE("    Going to last frame=", lastTagFrame(tag),
+                      " (PlayInLoop) frame=", m_frame, " forward=", forward);
+
+            m_frame = lastTagFrame(tag);
+            return false;
+          }
+          break;
         }
       }
 
@@ -404,7 +409,7 @@ bool Playback::decrementRepeat(const frame_t frameDelta)
 
     if (m_playing.back()->repeat > 1) {
       --m_playing.back()->repeat;
-      goToFirstTagFrame(tag, frameDelta);
+      goToFirstTagFrame(tag);
 
       PLAY_TRACE("    Repeat tag", tag->name(), " frame=", m_frame,
                  "repeat=", m_playing.back()->repeat,
@@ -431,7 +436,7 @@ bool Playback::decrementRepeat(const frame_t frameDelta)
       // New frame outside the tag
       frame_t newFrame;
       if (rewind) {
-        newFrame = firstTagFrame(m_playing.back()->tag, frameDelta);
+        newFrame = firstTagFrame(m_playing.back()->tag);
       }
       else {
         newFrame = (frameDelta * forward < 0 ? tag->fromFrame()-1: tag->toFrame()+1);
@@ -486,21 +491,28 @@ bool Playback::decrementRepeat(const frame_t frameDelta)
   }
 }
 
-frame_t Playback::firstTagFrame(const Tag* tag,
-                                const frame_t frameDelta)
+frame_t Playback::firstTagFrame(const Tag* tag)
 {
   ASSERT(tag);
   ASSERT(!m_playing.empty());
   int forward = m_playing.back()->forward;
-  return (frameDelta * forward < 0 ? tag->toFrame():
-                                     tag->fromFrame());
+  return (forward < 0 ? tag->toFrame():
+                        tag->fromFrame());
 }
 
-void Playback::goToFirstTagFrame(const Tag* tag,
-                                 const frame_t frameDelta)
+frame_t Playback::lastTagFrame(const Tag* tag)
 {
   ASSERT(tag);
-  m_frame = firstTagFrame(tag, frameDelta);
+  ASSERT(!m_playing.empty());
+  int forward = m_playing.back()->forward;
+  return (forward > 0 ? tag->toFrame():
+                        tag->fromFrame());
+}
+
+void Playback::goToFirstTagFrame(const Tag* tag)
+{
+  ASSERT(tag);
+  m_frame = firstTagFrame(tag);
   PLAY_TRACE("    Go to first frame of tag", tag->name(), "frame=", m_frame);
 }
 

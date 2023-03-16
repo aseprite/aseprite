@@ -115,10 +115,9 @@ namespace doc {
                 const int forward);
     void removeLastTagFromPlayed();
     bool decrementRepeat(const frame_t frameDelta);
-    frame_t firstTagFrame(const Tag* tag,
-                          const frame_t frameDelta);
-    void goToFirstTagFrame(const Tag* tag,
-                           const frame_t frameDelta);
+    frame_t firstTagFrame(const Tag* tag);
+    frame_t lastTagFrame(const Tag* tag);
+    void goToFirstTagFrame(const Tag* tag);
     int getParentForward() const;
 
     const Sprite* m_sprite;

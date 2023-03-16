@@ -858,11 +858,13 @@ void Render::renderOnionskin(
       m_sprite,
       TagsList(),  // TODO add an onionskin option to iterate subtags
       frame,
-      Playback::PlayInLoop,
+      loop ? Playback::PlayInLoop : Playback::PlayAll,
       loop);
-    play.nextFrame(-m_onionskin.prevFrames());
+    frame_t prevFrames = (loop ? m_onionskin.prevFrames():
+                                 std::min(frame, m_onionskin.prevFrames()));
+    play.nextFrame(-prevFrames);
 
-    for (frame_t frameOut = frame - m_onionskin.prevFrames();
+    for (frame_t frameOut = frame - prevFrames;
          frameOut <= frame + m_onionskin.nextFrames();
          ++frameOut, play.nextFrame()) {
       const frame_t frameIn = play.frame();
