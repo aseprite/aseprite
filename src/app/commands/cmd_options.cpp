@@ -754,7 +754,10 @@ public:
     update_windows_color_profile_from_preferences();
 
     // Change sprite grid bounds
-    if (m_context && m_context->activeDocument()) {
+    if (m_context &&
+        m_context->activeDocument() &&
+        m_context->activeDocument()->sprite() &&
+        m_context->activeDocument()->sprite()->gridBounds() != gridBounds()) {
       ContextWriter writer(m_context);
       Tx tx(m_context, Strings::commands_GridSettings(), ModifyDocument);
       tx(new cmd::SetGridBounds(writer.sprite(), gridBounds()));
