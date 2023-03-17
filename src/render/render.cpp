@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -930,8 +930,9 @@ void Render::renderCheckeredBackground(
 
   gfx::Rect dstBounds = area.dstBounds();
 
-  // Fix background color (make them opaque)
-  switch (image->pixelFormat()) {
+  // Fix background colors (make them opaque)
+  ASSERT(m_bg.colorPixelFormat == image->pixelFormat());
+  switch (m_bg.colorPixelFormat) {
     case IMAGE_RGB:
       m_bg.color1 |= doc::rgba_a_mask;
       m_bg.color2 |= doc::rgba_a_mask;

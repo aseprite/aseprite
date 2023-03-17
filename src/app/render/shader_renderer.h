@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022  Igara Studio S.A.
+// Copyright (C) 2022-2023  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -11,6 +11,7 @@
 #if SK_ENABLE_SKSL
 
 #include "app/render/renderer.h"
+#include "doc/palette.h"
 
 #include "include/core/SkRefCnt.h"
 
@@ -81,11 +82,15 @@ namespace app {
                    const doc::BlendMode blendMode);
 
     bool checkIfWeShouldUsePreview(const doc::Cel* cel) const;
+    void afterBackgroundLayerIsPainted();
 
     Properties m_properties;
     render::BgOptions m_bgOptions;
     render::Projection m_proj;
     sk_sp<SkRuntimeEffect> m_bgEffect;
+    sk_sp<SkRuntimeEffect> m_indexedEffect;
+    const doc::Sprite* m_sprite = nullptr;
+    const doc::LayerImage* m_bgLayer = nullptr;
     // TODO these members are the same as in render::Render, we should
     //      see a way to merge both
     const doc::Layer* m_selectedLayerForOpacity = nullptr;
@@ -95,6 +100,10 @@ namespace app {
     const doc::Tileset* m_previewTileset = nullptr;
     gfx::Point m_previewPos;
     doc::BlendMode m_previewBlendMode = doc::BlendMode::NORMAL;
+
+    // Palette of 256 colors (useful for the indexed shader to set all
+    // colors outside the valid range as transparent RGBA=0 values)
+    doc::Palette m_palette;
   };
 
 } // namespace app

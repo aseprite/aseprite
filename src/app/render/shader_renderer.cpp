@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022  Igara Studio S.A.
+// Copyright (C) 2022-2023  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -30,6 +30,16 @@ uniform half2 iStripeSize;
 half4 main(vec2 fragcoord) {
  vec2 u = fragcoord.xy / iStripeSize.xy;
  return (mod(mod(floor(u.x), 2) + mod(floor(u.y), 2), 2) != 0.0 ? iBg2: iBg1);
+}
+)";
+
+const char* kIndexedShaderCode = R"(
+uniform shader iImg;
+uniform shader iPal;
+
+half4 main(vec2 fragcoord) {
+ int index = int(255.0 * iImg.eval(fragcoord).a);
+ return iPal.eval(half2(index, 0));
 }
 )";
 
@@ -65,13 +75,18 @@ ShaderRenderer::ShaderRenderer()
   m_properties.renderBgOnScreen = true;
   m_properties.requiresRgbaBackbuffer = true;
 
-  auto result = SkRuntimeEffect::MakeForShader(SkString(kBgShaderCode));
-  if (!result.errorText.isEmpty()) {
-    LOG(ERROR, "Shader error: %s\n", result.errorText.c_str());
-    std::printf("Shader error: %s\n", result.errorText.c_str());
-    throw std::runtime_error("Cannot compile shaders for ShaderRenderer");
-  }
-  m_bgEffect = result.effect;
+  auto makeShader = [](const char* code) {
+    auto result = SkRuntimeEffect::MakeForShader(SkString(code));
+    if (!result.errorText.isEmpty()) {
+      LOG(ERROR, "Shader error: %s\n", result.errorText.c_str());
+      std::printf("Shader error: %s\n", result.errorText.c_str());
+      throw std::runtime_error("Cannot compile shaders for ShaderRenderer");
+    }
+    return result;
+  };
+
+  m_bgEffect = makeShader(kBgShaderCode).effect;
+  m_indexedEffect = makeShader(kIndexedShaderCode).effect;
 }
 
 ShaderRenderer::~ShaderRenderer() = default;
@@ -157,6 +172,25 @@ void ShaderRenderer::renderSprite(os::Surface* dstSurface,
                                   const doc::frame_t frame,
                                   const gfx::ClipF& area)
 {
+  m_sprite = sprite;
+
+  // Copy the current color palette to a 256 palette (so all entries
+  // outside the valid range will be transparent in the kIndexedShaderCode)
+  if (m_sprite->pixelFormat() == IMAGE_INDEXED) {
+    const auto srcPal = m_sprite->palette(frame);
+    m_palette.resize(256, 0);
+    for (int i=0; i<srcPal->size(); ++i)
+      m_palette.setEntry(i, srcPal->entry(i));
+
+    m_bgLayer = sprite->backgroundLayer();
+    if (!m_bgLayer || !m_bgLayer->isVisible()) {
+      afterBackgroundLayerIsPainted();
+    }
+  }
+  else {
+    m_bgLayer = nullptr;
+  }
+
   SkCanvas* canvas = &static_cast<os::SkiaSurface*>(dstSurface)->canvas();
   canvas->save();
   {
@@ -308,6 +342,10 @@ void ShaderRenderer::drawLayerGroup(SkCanvas* canvas,
                        frame, area);
         break;
     }
+
+    if (layer == m_bgLayer) {
+      afterBackgroundLayerIsPainted();
+    }
   }
 }
 
@@ -318,11 +356,11 @@ void ShaderRenderer::renderCheckeredBackground(os::Surface* dstSurface,
   SkRuntimeShaderBuilder builder(m_bgEffect);
   builder.uniform("iBg1") = gfxColor_to_SkV4(
     color_utils::color_for_ui(
-      app::Color::fromImage(sprite->pixelFormat(),
+      app::Color::fromImage(m_bgOptions.colorPixelFormat,
                             m_bgOptions.color1)));
   builder.uniform("iBg2") = gfxColor_to_SkV4(
     color_utils::color_for_ui(
-      app::Color::fromImage(sprite->pixelFormat(),
+      app::Color::fromImage(m_bgOptions.colorPixelFormat,
                             m_bgOptions.color2)));
 
   float sx = (m_bgOptions.zoom ? m_proj.scaleX(): 1.0);
@@ -370,25 +408,75 @@ void ShaderRenderer::drawImage(SkCanvas* canvas,
     (const void*)srcImage->getPixelAddress(0, 0),
     srcImage->getMemSize());
 
-  // TODO support other color modes
-  ASSERT(srcImage->colorMode() == doc::ColorMode::RGB);
+  switch (srcImage->colorMode()) {
 
-  auto skImg = SkImage::MakeRasterData(
-    SkImageInfo::Make(srcImage->width(),
-                      srcImage->height(),
-                      kRGBA_8888_SkColorType,
-                      kUnpremul_SkAlphaType),
-    skData,
-    srcImage->getRowStrideSize());
+    case doc::ColorMode::RGB: {
+      auto skImg = SkImage::MakeRasterData(
+        SkImageInfo::Make(srcImage->width(),
+                          srcImage->height(),
+                          kRGBA_8888_SkColorType,
+                          kUnpremul_SkAlphaType),
+        skData,
+        srcImage->getRowStrideSize());
 
-  SkPaint p;
-  p.setAlpha(opacity);
-  p.setBlendMode(to_skia(blendMode));
-  canvas->drawImage(skImg.get(),
-                    SkIntToScalar(x),
-                    SkIntToScalar(y),
-                    SkSamplingOptions(),
-                    &p);
+      SkPaint p;
+      p.setAlpha(opacity);
+      p.setBlendMode(to_skia(blendMode));
+      canvas->drawImage(skImg.get(),
+                        SkIntToScalar(x),
+                        SkIntToScalar(y),
+                        SkSamplingOptions(),
+                        &p);
+      break;
+    }
+
+    case doc::ColorMode::GRAYSCALE: {
+      break;
+    }
+
+    case doc::ColorMode::INDEXED: {
+      // We use kAlpha_8_SkColorType to access to the index value through the alpha channel
+      auto skImg = SkImage::MakeRasterData(
+        SkImageInfo::Make(srcImage->width(),
+                          srcImage->height(),
+                          kAlpha_8_SkColorType,
+                          kUnpremul_SkAlphaType),
+        skData,
+        srcImage->getRowStrideSize());
+
+      // Use the palette data as an "width x height" image where
+      // width=number of palette colors, and height=1
+      const size_t palSize = sizeof(color_t) * m_palette.size();
+      auto skPalData = SkData::MakeWithoutCopy(
+        (const void*)m_palette.rawColorsData(),
+        palSize);
+      auto skPal = SkImage::MakeRasterData(
+        SkImageInfo::Make(m_palette.size(), 1,
+                          kRGBA_8888_SkColorType,
+                          kUnpremul_SkAlphaType),
+        skPalData,
+        palSize);
+
+      SkRuntimeShaderBuilder builder(m_indexedEffect);
+      builder.child("iImg") = skImg->makeRawShader(SkSamplingOptions(SkFilterMode::kNearest));
+      builder.child("iPal") = skPal->makeShader(SkSamplingOptions(SkFilterMode::kNearest));
+
+      SkPaint p;
+      p.setAlpha(opacity);
+      p.setBlendMode(to_skia(blendMode));
+      p.setStyle(SkPaint::kFill_Style);
+      p.setShader(builder.makeShader());
+
+      canvas->save();
+      canvas->translate(
+        SkIntToScalar(x),
+        SkIntToScalar(y));
+      canvas->drawRect(SkRect::MakeXYWH(0, 0, srcImage->width(), srcImage->height()), p);
+      canvas->restore();
+      break;
+    }
+
+  }
 }
 
 // TODO this is equal to Render::checkIfWeShouldUsePreview(const Cel*),
@@ -408,6 +496,17 @@ bool ShaderRenderer::checkIfWeShouldUsePreview(const doc::Cel* cel) const
     }
   }
   return false;
+}
+
+void ShaderRenderer::afterBackgroundLayerIsPainted()
+{
+  if (m_sprite && m_sprite->pixelFormat() == IMAGE_INDEXED) {
+    // Only after we draw the background layer we set the transparent
+    // index of the sprite as transparent, so the shader can return
+    // the transparent color for this specific index on transparent
+    // layers.
+    m_palette.setEntry(m_sprite->transparentColor(), 0);
+  }
 }
 
 } // namespace app

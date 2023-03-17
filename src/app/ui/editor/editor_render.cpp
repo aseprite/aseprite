@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -116,6 +116,7 @@ void EditorRender::setupBackground(Doc* doc, doc::PixelFormat pixelFormat)
   render::BgOptions bg;
   bg.type = bgType;
   bg.zoom = docPref.bg.zoom();
+  bg.colorPixelFormat = pixelFormat;
   bg.color1 = color_utils::color_for_image_without_alpha(docPref.bg.color1(), pixelFormat);
   bg.color2 = color_utils::color_for_image_without_alpha(docPref.bg.color2(), pixelFormat);
   bg.stripeSize = tile;
