@@ -43,6 +43,15 @@ half4 main(vec2 fragcoord) {
 }
 )";
 
+const char* kGrayscaleShaderCode = R"(
+uniform shader iImg;
+
+half4 main(vec2 fragcoord) {
+ half4 c = iImg.eval(fragcoord);
+ return half4(c.rrr * c.g, c.g);
+}
+)";
+
 inline SkBlendMode to_skia(const doc::BlendMode bm) {
   switch (bm) {
     case doc::BlendMode::NORMAL: return SkBlendMode::kSrcOver;
@@ -87,6 +96,7 @@ ShaderRenderer::ShaderRenderer()
 
   m_bgEffect = makeShader(kBgShaderCode).effect;
   m_indexedEffect = makeShader(kIndexedShaderCode).effect;
+  m_grayscaleEffect = makeShader(kGrayscaleShaderCode).effect;
 }
 
 ShaderRenderer::~ShaderRenderer() = default;
@@ -431,6 +441,30 @@ void ShaderRenderer::drawImage(SkCanvas* canvas,
     }
 
     case doc::ColorMode::GRAYSCALE: {
+      // We use kR8G8_unorm_SkColorType to access gray and alpha
+      auto skImg = SkImage::MakeRasterData(
+        SkImageInfo::Make(srcImage->width(),
+                          srcImage->height(),
+                          kR8G8_unorm_SkColorType,
+                          kOpaque_SkAlphaType),
+        skData,
+        srcImage->getRowStrideSize());
+
+      SkRuntimeShaderBuilder builder(m_grayscaleEffect);
+      builder.child("iImg") = skImg->makeRawShader(SkSamplingOptions(SkFilterMode::kNearest));
+
+      SkPaint p;
+      p.setAlpha(opacity);
+      p.setBlendMode(to_skia(blendMode));
+      p.setStyle(SkPaint::kFill_Style);
+      p.setShader(builder.makeShader());
+
+      canvas->save();
+      canvas->translate(
+        SkIntToScalar(x),
+        SkIntToScalar(y));
+      canvas->drawRect(SkRect::MakeXYWH(0, 0, srcImage->width(), srcImage->height()), p);
+      canvas->restore();
       break;
     }
 

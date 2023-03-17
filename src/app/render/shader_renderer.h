@@ -89,6 +89,7 @@ namespace app {
     render::Projection m_proj;
     sk_sp<SkRuntimeEffect> m_bgEffect;
     sk_sp<SkRuntimeEffect> m_indexedEffect;
+    sk_sp<SkRuntimeEffect> m_grayscaleEffect;
     const doc::Sprite* m_sprite = nullptr;
     const doc::LayerImage* m_bgLayer = nullptr;
     // TODO these members are the same as in render::Render, we should
