@@ -46,6 +46,7 @@
 #include "doc/tag.h"
 #include "render/render.h"
 #include "ui/alert.h"
+#include "ui/scale.h"
 #include "ver/info.h"
 
 #include <cstring>
@@ -503,6 +504,12 @@ int App_get_theme(lua_State* L)
   return 1;
 }
 
+int App_get_uiScale(lua_State* L)
+{
+  lua_pushinteger(L, ui::guiscale());
+  return 1;
+}
+
 int App_get_activeSprite(lua_State* L)
 {
   app::Context* ctx = App::instance()->context();
@@ -785,6 +792,7 @@ const Property App_properties[] = {
   { "defaultPalette", App_get_defaultPalette, App_set_defaultPalette },
   { "events", App_get_events, nullptr },
   { "theme", App_get_theme, nullptr },
+  { "uiScale", App_get_uiScale, nullptr },
   { nullptr, nullptr, nullptr }
 };
 
