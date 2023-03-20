@@ -64,7 +64,7 @@ namespace app {
                       MenuItem* menuItem);
     void removeMenuGroup(const std::string& groupId);
     void addMenuItemIntoGroup(const std::string& groupId,
-                              std::unique_ptr<MenuItem>&& menuItem);
+                              std::unique_ptr<Widget>&& menuItem);
     void removeMenuItemFromGroup(Command* cmd);
     void removeMenuItemFromGroup(Widget* menuItem);
 

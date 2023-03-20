@@ -16,6 +16,10 @@
 #include <string>
 #include <vector>
 
+namespace ui {
+  class Widget;
+}
+
 namespace app {
 
   // Key=id
@@ -114,6 +118,8 @@ namespace app {
 
     void addMenuGroup(const std::string& id);
     void removeMenuGroup(const std::string& id);
+
+    void addMenuSeparator(ui::Widget* widget);
 #endif
 
     bool isEnabled() const { return m_isEnabled; }
@@ -158,9 +164,10 @@ namespace app {
       ScriptItem(const std::string& fn);
     };
     struct PluginItem {
-      enum Type { Command, MenuGroup };
+      enum Type { Command, MenuGroup, MenuSeparator };
       Type type;
       std::string id;
+      ui::Widget* widget = nullptr;
     };
     struct Plugin {
       int pluginRef;

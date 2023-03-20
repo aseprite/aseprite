@@ -638,7 +638,7 @@ void AppMenus::removeMenuGroup(const std::string& groupId)
 }
 
 void AppMenus::addMenuItemIntoGroup(const std::string& groupId,
-                                    std::unique_ptr<MenuItem>&& menuItem)
+                                    std::unique_ptr<Widget>&& menuItem)
 {
   GroupInfo& group = m_groups[groupId];
 

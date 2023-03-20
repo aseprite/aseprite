@@ -26,6 +26,7 @@
 #include "base/fs.h"
 #include "base/fstream_path.h"
 #include "render/dithering_matrix.h"
+#include "ui/widget.h"
 
 #if ENABLE_SENTRY
 #include "app/sentry_wrapper.h"
@@ -338,6 +339,14 @@ void Extension::removeMenuGroup(const std::string& id)
       ++it;
     }
   }
+}
+
+void Extension::addMenuSeparator(ui::Widget* widget)
+{
+  PluginItem item;
+  item.type = PluginItem::MenuSeparator;
+  item.widget = widget;
+  m_plugin.items.push_back(item);
 }
 
 #endif
@@ -710,9 +719,9 @@ void Extension::exitScripts()
     m_plugin.pluginRef = LUA_REFNIL;
   }
 
-  // Remove plugin items automatically (first commands, then menu
-  // groups)
-  for (const auto& item : m_plugin.items) {
+  // Remove plugin items automatically: first commands and menu
+  // separators, then menu groups.
+  for (auto& item : m_plugin.items) {
     if (item.type == PluginItem::Command) {
       auto cmds = Commands::instance();
       auto cmd = cmds->byId(item.id.c_str());
@@ -730,6 +739,19 @@ void Extension::exitScripts()
         // onclick callback.
         delete cmd;
       }
+    }
+    else if (item.type == PluginItem::MenuSeparator) {
+#ifdef ENABLE_UI
+      ASSERT(item.widget);
+      ASSERT(item.widget->parent());
+      if (item.widget &&
+          item.widget->parent()) {
+        // TODO use a signal
+        AppMenus::instance()->removeMenuItemFromGroup(item.widget);
+        ASSERT(!item.widget->parent());
+        item.widget = nullptr;
+      }
+#endif // ENABLE_UI
     }
   }
 
