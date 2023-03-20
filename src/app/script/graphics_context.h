@@ -63,11 +63,11 @@ public:
   void strokeWidth(float value) { m_paint.strokeWidth(value); }
 
 #if LAF_SKIA
-  float opacity() const { return m_paint.skPaint().getAlphaf(); }
-  void opacity(float value) { m_paint.skPaint().setAlphaf(value); }
+  int opacity() const { return m_paint.skPaint().getAlpha(); }
+  void opacity(int value) { m_paint.skPaint().setAlpha(value); }
 #else
-  float opacity() const { return 1.0f; }
-  void opacity(float) { }
+  int opacity() const { return 255; }
+  void opacity(int) { }
 #endif
 
   os::BlendMode blendMode() const { return m_paint.blendMode(); }

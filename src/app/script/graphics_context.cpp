@@ -22,6 +22,8 @@
 #include "os/surface.h"
 #include "os/system.h"
 
+#include <algorithm>
+
 #ifdef ENABLE_UI
 
 namespace app {
@@ -416,15 +418,15 @@ int GraphicsContext_set_blendMode(lua_State* L)
 int GraphicsContext_get_opacity(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
-  lua_pushnumber(L, gc->opacity());
+  lua_pushinteger(L, gc->opacity());
   return 1;
 }
 
 int GraphicsContext_set_opacity(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
-  const float opacity = lua_tonumber(L, 2);
-  gc->opacity(opacity);
+  const int opacity = lua_tointeger(L, 2);
+  gc->opacity(std::clamp(opacity, 0, 255));
   return 0;
 }
 
