@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -49,6 +49,23 @@ namespace app {
     void reopenLastClosedDoc();
     std::vector<Doc*> getAndRemoveAllClosedDocs();
 
+    // Sets the DocView used to run some specific commands
+    // (e.g. commands that depend on the current view or the preview
+    // view).
+    class SetTargetView {
+      DocView* m_old;
+    public:
+      SetTargetView(DocView* newView) {
+        auto ctx = UIContext::instance();
+        m_old = ctx->m_targetView;
+        ctx->m_targetView = newView;
+      }
+      ~SetTargetView() {
+        auto ctx = UIContext::instance();
+        ctx->m_targetView = m_old;
+      }
+    };
+
   protected:
     void onAddDocument(Doc* doc) override;
     void onRemoveDocument(Doc* doc) override;
@@ -62,7 +79,13 @@ namespace app {
     void onCloseDocument(Doc* doc) override;
 
   private:
-    DocView* m_lastSelectedView;
+    DocView* m_lastSelectedView = nullptr;
+
+    // Temporary DocView used to change activeView() behavior, used in
+    // some specific commands that depends on the current DocView (or
+    // the preview DocView).
+    DocView* m_targetView = nullptr;
+
     ClosedDocs m_closedDocs;
 
     static UIContext* m_instance;

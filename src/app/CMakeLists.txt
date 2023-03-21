@@ -323,8 +323,10 @@ if(ENABLE_UI)
     commands/filters/filter_target_buttons.cpp
     commands/filters/filter_window.cpp
     commands/screenshot.cpp
+    commands/set_playback_speed.cpp
     commands/show_menu.cpp
     commands/tileset_mode.cpp
+    commands/toggle_play_option.cpp
     file_selector.cpp
     modules/gfx.cpp
     modules/gui.cpp

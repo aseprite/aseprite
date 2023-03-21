@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2018-2022  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-2023  Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2018  David Capello -->
 <gui>
   <!-- Keyboard shortcuts -->
@@ -911,6 +911,23 @@
         </item>
         <item command="RemoveFrame" text="@.frame_delete_frame" group="cel_delete" />
         <separator />
+        <menu text="@.frame_playback" id="animation_menu" group="cel_animation">
+          <item command="PlayAnimation" />
+          <item command="PlayPreviewAnimation" />
+          <separator />
+          <item command="SetPlaybackSpeed"><param name="multiplier" value="0.25" /></item>
+          <item command="SetPlaybackSpeed"><param name="multiplier" value="0.5" /></item>
+          <item command="SetPlaybackSpeed"><param name="multiplier" value="1.0" /></item>
+          <item command="SetPlaybackSpeed"><param name="multiplier" value="1.5" /></item>
+          <item command="SetPlaybackSpeed"><param name="multiplier" value="2.0" /></item>
+          <item command="SetPlaybackSpeed"><param name="multiplier" value="3.0" /></item>
+          <separator />
+          <item command="TogglePlayOnce" />
+          <item command="TogglePlayAll" />
+          <item command="TogglePlaySubtags" />
+          <separator />
+          <item command="ToggleRewindOnStop" />
+        </menu>
         <menu text="@.frame_tags">
           <item command="FrameTagProperties" text="@.frame_tags_tag_properties" />
           <separator />
@@ -928,7 +945,6 @@
           <separator />
           <item command="GotoFrame" text="@.frame_go_to_frame" />
         </menu>
-        <item command="PlayAnimation" text="@.frame_play_animation" group="cel_animation" />
         <separator />
         <item command="FrameProperties" text="@.frame_constant_frame_rate">
           <param name="frame" value="all" />

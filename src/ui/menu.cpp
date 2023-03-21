@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -11,6 +11,7 @@
 
 #include "ui/menu.h"
 
+#include "base/scoped_value.h"
 #include "gfx/size.h"
 #include "os/font.h"
 #include "ui/display.h"
@@ -344,6 +345,11 @@ bool MenuItem::hasSubmenu() const
 void Menu::showPopup(const gfx::Point& pos,
                      Display* parentDisplay)
 {
+  // Set the owner menu item to nullptr temporarily in case that we
+  // are re-using a menu from the root menu as popup menu (e.g. like
+  // "animation_menu", that is used when right-cliking a Play button)
+  base::ScopedValue<MenuItem*> restoreOwner(m_menuitem, nullptr, m_menuitem);
+
   // Generally, when we call showPopup() the menu shouldn't contain a
   // parent menu-box, because we're filtering kMouseDownMessage to
   // close the popup automatically when we click outside the menubox.
@@ -1169,7 +1175,11 @@ void Menu::highlightItem(MenuItem* menuitem, bool click, bool open_submenu, bool
       menuitem->invalidate();
 
       // Scroll
-      View* view = View::getView(menuitem->parent()->parent());
+      View* view = nullptr;
+      if (menuitem->parent() &&
+          menuitem->parent()->parent()) {
+        view = View::getView(menuitem->parent()->parent());
+      }
       if (view) {
         gfx::Rect itemBounds = menuitem->bounds();
         itemBounds.y -= menuitem->parent()->origin().y;

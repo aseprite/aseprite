@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -34,8 +34,7 @@ namespace app {
 UIContext* UIContext::m_instance = nullptr;
 
 UIContext::UIContext()
-  : m_lastSelectedView(nullptr)
-  , m_closedDocs(preferences())
+  : m_closedDocs(preferences())
 {
   ASSERT(m_instance == nullptr);
   m_instance = this;
@@ -66,6 +65,10 @@ DocView* UIContext::activeView() const
 {
   if (!isUIAvailable())
     return nullptr;
+
+  // Bypass the active workspace view.
+  if (m_targetView)
+    return m_targetView;
 
   Workspace* workspace = App::instance()->workspace();
   if (!workspace)

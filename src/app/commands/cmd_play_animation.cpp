@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022  Igara Studio S.A.
+// Copyright (C) 2022-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -29,8 +29,9 @@ public:
   PlayAnimationCommand();
 
 protected:
-  bool onEnabled(Context* context) override;
-  void onExecute(Context* context) override;
+  bool onEnabled(Context* ctx) override;
+  bool onChecked(Context* ctx) override;
+  void onExecute(Context* ctx) override;
 };
 
 PlayAnimationCommand::PlayAnimationCommand()
@@ -38,17 +39,23 @@ PlayAnimationCommand::PlayAnimationCommand()
 {
 }
 
-bool PlayAnimationCommand::onEnabled(Context* context)
+bool PlayAnimationCommand::onEnabled(Context* ctx)
 {
-  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                             ContextFlags::HasActiveSprite);
+  return ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+                         ContextFlags::HasActiveSprite);
 }
 
-void PlayAnimationCommand::onExecute(Context* context)
+bool PlayAnimationCommand::onChecked(Context* ctx)
+{
+  auto editor = Editor::activeEditor();
+  return (editor && editor->isPlaying());
+}
+
+void PlayAnimationCommand::onExecute(Context* ctx)
 {
   // Do not play one-frame images
   {
-    ContextReader writer(context);
+    ContextReader writer(ctx);
     Sprite* sprite(writer.sprite());
     if (!sprite || sprite->totalFrames() < 2)
       return;
@@ -74,8 +81,9 @@ public:
   PlayPreviewAnimationCommand();
 
 protected:
-  bool onEnabled(Context* context) override;
-  void onExecute(Context* context) override;
+  bool onEnabled(Context* ctx) override;
+  bool onChecked(Context* ctx) override;
+  void onExecute(Context* ctx) override;
 };
 
 PlayPreviewAnimationCommand::PlayPreviewAnimationCommand()
@@ -83,13 +91,19 @@ PlayPreviewAnimationCommand::PlayPreviewAnimationCommand()
 {
 }
 
-bool PlayPreviewAnimationCommand::onEnabled(Context* context)
+bool PlayPreviewAnimationCommand::onEnabled(Context* ctx)
 {
-  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                             ContextFlags::HasActiveSprite);
+  return ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+                         ContextFlags::HasActiveSprite);
 }
 
-void PlayPreviewAnimationCommand::onExecute(Context* context)
+bool PlayPreviewAnimationCommand::onChecked(Context* ctx)
+{
+  PreviewEditorWindow* preview = App::instance()->mainWindow()->getPreviewEditor();
+  return (preview && preview->previewEditor()->isPlaying());
+}
+
+void PlayPreviewAnimationCommand::onExecute(Context* ctx)
 {
   PreviewEditorWindow* preview = App::instance()->mainWindow()->getPreviewEditor();
   if (!preview->isPreviewEnabled())

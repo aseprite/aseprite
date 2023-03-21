@@ -608,6 +608,16 @@ bool AppMenus::rebuildRecentList()
   return true;
 }
 
+Menu* AppMenus::getAnimationMenu()
+{
+  auto menuItem =
+    dynamic_cast<MenuItem*>(m_rootMenu->findItemById("animation_menu"));
+  if (menuItem)
+    return menuItem->getSubmenu();
+  else
+    return nullptr;
+}
+
 void AppMenus::addMenuGroup(const std::string& groupId,
                             MenuItem* menuItem)
 {
@@ -766,10 +776,10 @@ Widget* AppMenus::convertXmlelemToMenuitem(TiXmlElement* elem, Menu* menu)
     return item;
   }
 
-  const char* command_id = elem->Attribute("command");
+  const char* commandId = elem->Attribute("command");
   Command* command =
-    command_id ? Commands::instance()->byId(command_id):
-                 nullptr;
+    (commandId ? Commands::instance()->byId(commandId):
+                 nullptr);
 
   // load params
   Params params;
@@ -793,8 +803,17 @@ Widget* AppMenus::convertXmlelemToMenuitem(TiXmlElement* elem, Menu* menu)
   if (!menuitem)
     return nullptr;
 
+  // Get menu item text from command friendly name
+  if (command && menuitem->text().empty()) {
+    command->loadParams(params);
+    menuitem->setText(command->friendlyName());
+  }
+  // If the menu item has a specific text, process its mnemonic
+  else {
+    menuitem->processMnemonicFromText();
+  }
+
   if (id) menuitem->setId(id);
-  menuitem->processMnemonicFromText();
   if (group) {
     m_groups[group].menu = menu;
     m_groups[group].end = menuitem;

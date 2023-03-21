@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -12,6 +12,7 @@
 #include "app/ui/editor/editor.h"
 
 #include "app/app.h"
+#include "app/app_menus.h"
 #include "app/color.h"
 #include "app/color_picker.h"
 #include "app/color_utils.h"
@@ -34,6 +35,7 @@
 #include "app/tools/tool_box.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/context_bar.h"
+#include "app/ui/doc_view.h"
 #include "app/ui/editor/drawing_state.h"
 #include "app/ui/editor/editor_customization_delegate.h"
 #include "app/ui/editor/editor_decorator.h"
@@ -2789,76 +2791,29 @@ bool Editor::isPlaying() const
   return m_isPlaying;
 }
 
-void Editor::showAnimationSpeedMultiplierPopup(Option<bool>& playOnce,
-                                               Option<bool>& playAll,
-                                               Option<bool>& playSubtags,
-                                               const bool withStopBehaviorOptions)
+void Editor::showAnimationSpeedMultiplierPopup()
 {
-  const double options[] = { 0.25, 0.5, 1.0, 1.5, 2.0, 3.0 };
-  Menu menu;
-
-  for (double option : options) {
-    MenuItem* item = new MenuItem(fmt::format(Strings::preview_speed_x(), option));
-    item->Click.connect([this, option]{ setAnimationSpeedMultiplier(option); });
-    item->setSelected(m_aniSpeed == option);
-    menu.addChild(item);
+  if (auto menu = AppMenus::instance()->getAnimationMenu()) {
+    UIContext::SetTargetView setView(m_docView);
+    menu->showPopup(mousePosInDisplay(), display());
   }
-
-  menu.addChild(new MenuSeparator);
-
-  // Play once option
-  {
-    MenuItem* item = new MenuItem(Strings::preview_play_once());
-    item->Click.connect(
-      [&playOnce]() {
-        playOnce(!playOnce());
-      });
-    item->setSelected(playOnce());
-    menu.addChild(item);
-  }
-
-  // Play all option
-  {
-    MenuItem* item = new MenuItem(Strings::preview_play_all_no_tags());
-    item->Click.connect(
-      [&playAll]() {
-        playAll(!playAll());
-      });
-    item->setSelected(playAll());
-    menu.addChild(item);
-  }
-
-  // Play subtags & repeats
-  {
-    MenuItem* item = new MenuItem(Strings::preview_play_subtags_and_repeats());
-    item->Click.connect(
-      [&playSubtags]() {
-        playSubtags(!playSubtags());
-      });
-    item->setSelected(playSubtags());
-    menu.addChild(item);
-  }
-
-  if (withStopBehaviorOptions) {
-    MenuItem* item = new MenuItem(Strings::preview_rewind_on_stop());
-    item->Click.connect(
-      []() {
-        // Switch the "rewind_on_stop" option
-        Preferences::instance().general.rewindOnStop(
-          !Preferences::instance().general.rewindOnStop());
-      });
-    item->setSelected(Preferences::instance().general.rewindOnStop());
-    menu.addChild(item);
-  }
-
-  menu.showPopup(mousePosInDisplay(), display());
 
   if (isPlaying()) {
     // Re-play
     stop();
-    play(playOnce(),
-         playAll(),
-         playSubtags());
+
+    // TODO improve/generalize this in some way
+    auto& pref = Preferences::instance();
+    if (m_docView->isPreview()) {
+      play(pref.preview.playOnce(),
+           pref.preview.playAll(),
+           pref.preview.playSubtags());
+    }
+    else {
+      play(pref.editor.playOnce(),
+           pref.editor.playAll(),
+           pref.editor.playSubtags());
+    }
   }
 }
 

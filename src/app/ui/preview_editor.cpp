@@ -332,13 +332,7 @@ void PreviewEditorWindow::onPopupSpeed()
   if (!miniEditor || !miniEditor->document())
     return;
 
-  auto& pref = Preferences::instance();
-
-  miniEditor->showAnimationSpeedMultiplierPopup(
-    pref.preview.playOnce,
-    pref.preview.playAll,
-    pref.preview.playSubtags,
-    false);
+  miniEditor->showAnimationSpeedMultiplierPopup();
   m_aniSpeed = miniEditor->getAnimationSpeedMultiplier();
 }
 

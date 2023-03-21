@@ -54,6 +54,7 @@ namespace app {
     Menu* getSlicePopupMenu() { return m_slicePopupMenu.get(); }
     Menu* getPalettePopupMenu() { return m_palettePopupMenu.get(); }
     Menu* getInkPopupMenu() { return m_inkPopupMenu.get(); }
+    Menu* getAnimationMenu();
 
     void applyShortcutToMenuitemsWithCommand(Command* command, const Params& params,
                                              const KeyPtr& key);
