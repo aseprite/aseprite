@@ -470,10 +470,11 @@ int Dialog_add_widget(lua_State* L, Widget* widget)
     // specific widget is not expansive (e.g. a canvas with a fixed
     // size)
     type = lua_getfield(L, 2, "hexpand");
+    if (type != LUA_TNIL) hexpand = lua_toboolean(L, -1);
+    lua_pop(L, 1);
     type = lua_getfield(L, 2, "vexpand");
-    if (type != LUA_TNIL) hexpand = lua_toboolean(L, -2);
     if (type != LUA_TNIL) vexpand = lua_toboolean(L, -1);
-    lua_pop(L, 2);
+    lua_pop(L, 1);
   }
 
   if (label || !dlg->hbox) {
