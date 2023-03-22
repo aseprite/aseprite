@@ -2793,12 +2793,14 @@ bool Editor::isPlaying() const
 
 void Editor::showAnimationSpeedMultiplierPopup()
 {
+  const bool wasPlaying = isPlaying();
+
   if (auto menu = AppMenus::instance()->getAnimationMenu()) {
     UIContext::SetTargetView setView(m_docView);
     menu->showPopup(mousePosInDisplay(), display());
   }
 
-  if (isPlaying()) {
+  if (wasPlaying) {
     // Re-play
     stop();
 
