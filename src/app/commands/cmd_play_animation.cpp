@@ -100,7 +100,9 @@ bool PlayPreviewAnimationCommand::onEnabled(Context* ctx)
 bool PlayPreviewAnimationCommand::onChecked(Context* ctx)
 {
   PreviewEditorWindow* preview = App::instance()->mainWindow()->getPreviewEditor();
-  return (preview && preview->previewEditor()->isPlaying());
+  return (preview &&
+          preview->previewEditor() &&
+          preview->previewEditor()->isPlaying());
 }
 
 void PlayPreviewAnimationCommand::onExecute(Context* ctx)
