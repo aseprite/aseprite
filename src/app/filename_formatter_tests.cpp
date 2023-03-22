@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2023  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -232,4 +233,21 @@ TEST(FilenameFormatter, DefaultFormat)
   fn = "/path/hello1.png";
   EXPECT_EQ("{path}/{title} #{tag} {frame}.{extension}", get_default_filename_format(fn, true, true, false, true));
   EXPECT_EQ("/path/hello1.png", fn);
+}
+
+TEST(FilenameFormatter, DetectFrame)
+{
+  std::string fn;
+
+  fn = "/path/hello.png";
+  EXPECT_EQ("/path/hello{frame1}.png", replace_frame_number_with_frame_format(fn));
+
+  fn = "/path/hello0.png";
+  EXPECT_EQ("/path/hello{frame0}.png", replace_frame_number_with_frame_format(fn));
+
+  fn = "/path/hello1.png";
+  EXPECT_EQ("/path/hello{frame1}.png", replace_frame_number_with_frame_format(fn));
+
+  fn = "/path/hello002.png";
+  EXPECT_EQ("/path/hello{frame002}.png", replace_frame_number_with_frame_format(fn));
 }

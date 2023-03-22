@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022  Igara Studio S.A.
+// Copyright (C) 2022-2023  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -118,6 +118,17 @@ namespace app {
     const bool hasTag);
 
   std::string get_default_tagname_format_for_sheet();
+
+  // Replaces "sprite1.png" with "sprite{frame1}.png". It's used to
+  // enable saving a sequence of images when the filename format
+  // doesn't specify {frame} but has some other formatting.
+  // E.g. -save-as "{tag}-1.png" will not use the default filename
+  // format (because the format is already specified in the filename,
+  // at least partially) but it still requires the {frame} format to
+  // avoid saving all frames into "...-1.png", so the result in this
+  // case must be: "{tag}-{frame1}.png".
+  std::string replace_frame_number_with_frame_format(
+    const std::string& filename);
 
 } // namespace app
 

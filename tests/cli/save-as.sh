@@ -1,5 +1,5 @@
 #! /bin/bash
-# Copyright (C) 2018-2021 Igara Studio S.A.
+# Copyright (C) 2018-2023 Igara Studio S.A.
 
 function list_files() {
     oldwd=$(pwd $PWDARG)
@@ -276,3 +276,29 @@ expect "groups2-1.png
 groups3abc-1.png
 link-1.png
 link-2.png" "list_files $d"
+
+# Test regression with --save-as {tag}_1.png to interpret 1 as {frame1}
+# https://community.aseprite.org/t/17253
+
+d=$t/save-as-1-as-frame1-ok
+$ASEPRITE -b sprites/1empty3.aseprite \
+             -save-as "$d/{tag}-{frame1}.png" || exit 1
+expect "a-1.png
+a-2.png
+b-1.png" "list_files $d"
+
+d=$t/save-as-1-as-frame1-regression
+$ASEPRITE -b sprites/1empty3.aseprite \
+             -save-as "$d/{tag}-1.png" || exit 1
+expect "a-1.png
+a-2.png
+b-1.png" "list_files $d"
+
+# Test that -save-as {tag}.png will save with the frame number when needed
+
+d=$t/save-as-with-format-but-without-frame
+$ASEPRITE -b sprites/1empty3.aseprite \
+             -save-as "$d/{tag}.png" || exit 1
+expect "a1.png
+a2.png
+b.png" "list_files $d"
