@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2022  Igara Studio S.A.
+// Copyright (C) 2020-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -66,11 +66,23 @@ void PlayState::onEnterState(Editor* editor)
   }
 
   // Get the tag
-  if (!m_playAll)
+  if (!m_playAll) {
     m_tag = m_editor
       ->getCustomizationDelegate()
       ->getTagProvider()
       ->getTagByFrame(m_refFrame, true);
+
+    // Don't repeat the tag infinitely if the tag repeat field doesn't
+    // say so.
+    if (m_playSubtags &&
+        m_tag &&
+        m_tag->repeat() != 0) {
+      m_tag = nullptr;
+    }
+  }
+  else {
+    m_tag = nullptr;
+  }
 
   // Go to the first frame of the animation or active frame tag
   if (m_playOnce) {
