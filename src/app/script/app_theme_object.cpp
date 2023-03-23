@@ -61,6 +61,7 @@ int Theme_styleMetrics(lua_State* L)
   if (!id)
     return 0;
 
+#ifdef ENABLE_UI
   auto theme = skin::SkinTheme::instance();
   if (!theme)
     return 0;
@@ -87,6 +88,9 @@ int Theme_styleMetrics(lua_State* L)
   lua_setfield(L, -2, "border");
 
   return 1;
+#else  // ENABLE_UI
+  return 0;
+#endif
 }
 
 int Theme_get_dimension(lua_State* L)
