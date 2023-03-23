@@ -735,6 +735,8 @@ void Window::onBuildTitleLabel()
 
 void Window::windowSetPosition(const gfx::Rect& rect)
 {
+  m_isResizing = bounds().size() != rect.size();
+
   // Copy the new position rectangle
   setBoundsQuietly(rect);
   Rect cpos = childrenBounds();
@@ -748,6 +750,7 @@ void Window::windowSetPosition(const gfx::Rect& rect)
   }
 
   onWindowResize();
+  m_isResizing = false;
 }
 
 void Window::limitSize(int* w, int* h)
