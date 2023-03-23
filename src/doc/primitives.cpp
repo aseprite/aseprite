@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2018-2021 Igara Studio S.A.
+// Copyright (c) 2018-2023 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -65,6 +65,44 @@ void copy_image(Image* dst, const Image* src, int x, int y)
   ASSERT(src);
 
   dst->copy(src, gfx::Clip(x, y, 0, 0, src->width(), src->height()));
+}
+
+ template<typename ImageTraits>
+ void blend_image_templ(Image* dst,
+                        const Image* src,
+                        const int x, const int y,
+                        const int opacity,
+                        BlendFunc& blender)
+ {
+  gfx::Clip area = gfx::Clip(x, y, 0, 0, src->width(), src->height());
+  if (!area.clip(dst->width(), dst->height(), src->width(), src->height()))
+    return;
+  LockImageBits<ImageTraits> dstBits(dst);
+  const LockImageBits<ImageTraits> srcBits(src);
+  typename LockImageBits<ImageTraits>::iterator dstIt(dstBits.begin_area(area.dstBounds()));
+  typename LockImageBits<ImageTraits>::const_iterator srcIt(srcBits.begin_area(area.srcBounds()));
+  typename LockImageBits<ImageTraits>::iterator dstEnd(dstBits.end_area(area.dstBounds()));
+  for (; dstIt < dstEnd; ++dstIt, ++srcIt)
+    *dstIt = blender(*dstIt, *srcIt, opacity);
+}
+
+void blend_image(Image* dst, const Image* src, const int x, const int y,
+                 const int opacity,
+                 const doc::BlendMode blendMode)
+{
+  ASSERT(dst->pixelFormat() == src->pixelFormat());
+  BlendFunc blender;
+  switch (src->pixelFormat()) {
+    case IMAGE_RGB:
+      blender = get_rgba_blender(blendMode, true);
+      return blend_image_templ<RgbTraits>(dst, src, x, y, opacity, blender);
+    case IMAGE_GRAYSCALE:
+      blender = get_graya_blender(blendMode, true);
+      return blend_image_templ<GrayscaleTraits>(dst, src, x, y, opacity, blender);
+    case IMAGE_INDEXED:
+      blender = get_indexed_blender(blendMode, true);
+      return blend_image_templ<IndexedTraits>(dst, src, x, y, opacity, blender);
+  }
 }
 
 void copy_image(Image* dst, const Image* src, const gfx::Region& rgn)

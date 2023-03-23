@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -15,6 +15,7 @@
 #include "app/context.h"
 #include "app/doc.h"
 #include "app/file/file.h"
+#include "app/script/blend_mode.h"
 #include "app/script/docobj.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
@@ -40,6 +41,8 @@ namespace app {
 namespace script {
 
 namespace {
+
+static ImageBufferPtr buf; // TODO non-thread safe
 
 struct ImageObj {
   doc::ObjectId imageId = 0;
@@ -247,23 +250,41 @@ int Image_drawImage(lua_State* L)
   auto obj = get_obj<ImageObj>(L, 1);
   auto sprite = get_obj<ImageObj>(L, 2);
   gfx::Point pos = convert_args_into_point(L, 3);
+
+  int opacity = 255;
+  if (lua_isinteger(L, 4))
+    opacity = std::clamp(int(lua_tointeger(L, 4)), 0, 255);
+
+  doc::BlendMode blendMode = doc::BlendMode::NORMAL;
+  if (lua_isinteger(L, 5)) {
+    blendMode = base::convert_to<doc::BlendMode>(
+                  app::script::BlendMode(lua_tointeger(L, 5)));
+  }
+
   Image* dst = obj->image(L);
   const Image* src = sprite->image(L);
 
   // If the destination image is not related to a sprite, we just draw
   // the source image without undo information.
   if (obj->cel(L) == nullptr) {
-    doc::copy_image(dst, src, pos.x, pos.y);
+    doc::blend_image(dst, src,
+                     pos.x, pos.y,
+                     opacity, blendMode);
   }
   else {
     gfx::Rect bounds(0, 0, src->size().w, src->size().h);
-
+    buf.reset(new doc::ImageBuffer);
+    ImageRef tmp_src(
+      doc::crop_image(dst,
+                      gfx::Rect(pos.x, pos.y, src->size().w, src->size().h),
+                      0, buf));
+    doc::blend_image(tmp_src.get(), src, 0, 0, opacity, blendMode);
     // TODO Use something similar to doc::algorithm::shrink_bounds2()
     //      but we need something that does the render and compares
     //      the minimal modified area.
     Tx tx;
     tx(new cmd::CopyRegion(
-         dst, src, gfx::Region(bounds),
+         dst, tmp_src.get(), gfx::Region(bounds),
          gfx::Point(pos.x + bounds.x, pos.y + bounds.y)));
     tx.commit();
   }
