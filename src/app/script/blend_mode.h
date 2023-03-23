@@ -135,6 +135,7 @@ inline app::script::BlendMode convert_to(const os::BlendMode& from) {
 template<>
 inline doc::BlendMode convert_to(const app::script::BlendMode& from) {
   switch (from) {
+    case app::script::BlendMode::SRC:         return doc::BlendMode::SRC;
     case app::script::BlendMode::SRC_OVER:    return doc::BlendMode::NORMAL;
     case app::script::BlendMode::PLUS:        return doc::BlendMode::ADDITION;
     case app::script::BlendMode::MULTIPLY:    return doc::BlendMode::MULTIPLY;
@@ -157,7 +158,6 @@ inline doc::BlendMode convert_to(const app::script::BlendMode& from) {
     case app::script::BlendMode::DIVIDE:      return doc::BlendMode::DIVIDE;
     // Default value
     case app::script::BlendMode::CLEAR:
-    case app::script::BlendMode::SRC:
     case app::script::BlendMode::DST:
     case app::script::BlendMode::DST_OVER:
     case app::script::BlendMode::SRC_IN:
@@ -175,6 +175,7 @@ inline doc::BlendMode convert_to(const app::script::BlendMode& from) {
 template<>
 inline app::script::BlendMode convert_to(const doc::BlendMode& from) {
   switch (from) {
+    case doc::BlendMode::SRC: return app::script::BlendMode::SRC;
     case doc::BlendMode::NORMAL: return app::script::BlendMode::SRC_OVER;
     case doc::BlendMode::MULTIPLY: return app::script::BlendMode::MULTIPLY;
     case doc::BlendMode::SCREEN: return app::script::BlendMode::SCREEN;

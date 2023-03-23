@@ -1,4 +1,4 @@
--- Copyright (C) 2019-2022  Igara Studio S.A.
+-- Copyright (C) 2019-2023  Igara Studio S.A.
 -- Copyright (C) 2018  David Capello
 --
 -- This file is released under the terms of the MIT license.
@@ -303,4 +303,82 @@ do
   local s = Sprite(5, 4, ColorMode.INDEXED)
   test(app.activeCel.image)
 
+end
+
+-- Tests using Image:drawImage() with opacity and blend modes
+do
+  local spr = Sprite(3, 3, ColorMode.RGB)
+  local back = Image(3, 3)
+  local r_255 = Color(255, 0, 0).rgbaPixel
+  local g_255 = Color(0, 255, 0).rgbaPixel
+  local g_127 = Color(0, 255, 0, 127).rgbaPixel
+  local g_064 = Color(0, 255, 0, 64).rgbaPixel
+  local r_g127 = Color(128, 127, 0, 255).rgbaPixel -- result of g_127 over r_255 (NORMAL blend mode)
+  local r_g064 = Color(191, 64, 0, 255).rgbaPixel  -- result of g_064 over r_255 (NORMAL blend mode)
+  local mask = Color(0, 0, 0, 0).rgbaPixel
+  back:clear(r_255)
+  spr:newCel(spr.layers[1], 1, back, Point(0, 0))
+
+  local image = Image(2, 2)
+  image:drawPixel(0, 0, g_127)
+  image:drawPixel(1, 0, g_064)
+  image:drawPixel(0, 1, mask)
+  image:drawPixel(1, 1, g_255)
+
+  local c = spr.layers[1]:cel(1).image
+
+  expect_img(c, { r_255, r_255, r_255,
+                  r_255, r_255, r_255,
+                  r_255, r_255, r_255 })
+
+  spr.layers[1]:cel(1).image:drawImage(image, Point(1, 1), 255, BlendMode.NORMAL)
+
+  c = spr.layers[1]:cel(1).image
+
+  expect_img(c, { r_255, r_255, r_255,
+                  r_255, r_g127, r_g064,
+                  r_255, r_255, g_255 })
+  undo()
+  c = spr.layers[1]:cel(1).image
+  expect_img(c, { r_255, r_255, r_255,
+                  r_255, r_255, r_255,
+                  r_255, r_255, r_255 })
+
+  -- Image:drawImage() with 50% opacity
+  spr.layers[1]:cel(1).image:drawImage(image, Point(1, 1), 128, BlendMode.NORMAL)
+  local r_g032 = Color(223, 32, 0, 255).rgbaPixel -- result of g_064 @oopacity=128 over r_255 (NORMAL blend mode)
+  local r_g128 = Color(127, 128, 0, 255).rgbaPixel  -- result of g_255 o@oopacity=128 ver r_255 (NORMAL blend mode)
+  c = spr.layers[1]:cel(1).image
+
+  expect_img(c, { r_255, r_255, r_255,
+                  r_255, r_g064, r_g032,
+                  r_255, r_255, r_g128 })
+  undo()
+  c = spr.layers[1]:cel(1).image
+  expect_img(c, { r_255, r_255, r_255,
+                  r_255, r_255, r_255,
+                  r_255, r_255, r_255 })
+
+  -- Image:drawImage() without undo information (destination image
+  -- not related with a cel on a sprite)
+  local back2 = Image(3, 3, ColorMode.RGB)
+  back2:clear(r_255)
+  local image2 = Image(2, 2, ColorMode.RGB)
+  image2:drawPixel(0, 0, g_127)
+  image2:drawPixel(1, 0, g_064)
+  image2:drawPixel(0, 1, mask)
+  image2:drawPixel(1, 1, g_255)
+
+  expect_img(back2, { r_255, r_255, r_255,
+                      r_255, r_255, r_255,
+                      r_255, r_255, r_255 })
+
+  back2:drawImage(image2, Point(1, 1), 255, BlendMode.NORMAL)
+  expect_img(back2, { r_255, r_255, r_255,
+                      r_255, r_g127, r_g064,
+                      r_255, r_255, g_255 })
+  undo()
+  expect_img(back2, { r_255, r_255, r_255,
+                      r_255, r_g127, r_g064,
+                      r_255, r_255, g_255 })
 end

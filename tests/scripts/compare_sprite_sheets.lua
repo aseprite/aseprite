@@ -1,4 +1,4 @@
--- Copyright (C) 2019  Igara Studio S.A.
+-- Copyright (C) 2019-2023  Igara Studio S.A.
 --
 -- This file is released under the terms of the MIT license.
 -- Read LICENSE.txt for more information.
@@ -43,13 +43,13 @@ for k,v in pairs(data1.frames) do
 
   local celImage1 = Image(fr1.frame.w, fr1.frame.h, sheet1.colorMode)
   local celImage2 = Image(fr2.frame.w, fr2.frame.h, sheet2.colorMode)
-  celImage1:drawSprite(sheet1, 1, -fr1.frame.x, -fr1.frame.y)
-  celImage2:drawSprite(sheet2, 1, -fr2.frame.x, -fr2.frame.y)
+  celImage1:drawSprite(sheet1, 1, Point(-fr1.frame.x, -fr1.frame.y))
+  celImage2:drawSprite(sheet2, 1, Point(-fr2.frame.x, -fr2.frame.y))
 
   local frImage1 = Image(fr1.sourceSize.w, fr1.sourceSize.h, sheet1.colorMode)
   local frImage2 = Image(fr2.sourceSize.w, fr2.sourceSize.h, sheet2.colorMode)
-  frImage1:drawImage(celImage1, fr1.spriteSourceSize.x, fr1.spriteSourceSize.y)
-  frImage2:drawImage(celImage2, fr2.spriteSourceSize.x, fr2.spriteSourceSize.y)
+  frImage1:drawImage(celImage1, Point(fr1.spriteSourceSize.x, fr1.spriteSourceSize.y), 255, BlendMode.SRC)
+  frImage2:drawImage(celImage2, Point(fr2.spriteSourceSize.x, fr2.spriteSourceSize.y), 255, BlendMode.SRC)
 
   -- To debug this function
   --frImage1:saveAs(replace_filename(file1, k .. "-fr1.png"))
