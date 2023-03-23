@@ -306,6 +306,14 @@ int GraphicsContext_cubicTo(lua_State* L)
   return 1;
 }
 
+int GraphicsContext_oval(lua_State* L)
+{
+  auto gc = get_obj<GraphicsContext>(L, 1);
+  const gfx::Rect rc = convert_args_into_rect(L, 2);
+  gc->oval(rc);
+  return 0;
+}
+
 int GraphicsContext_rect(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
@@ -447,6 +455,7 @@ const luaL_Reg GraphicsContext_methods[] = {
   { "moveTo", GraphicsContext_moveTo },
   { "lineTo", GraphicsContext_lineTo },
   { "cubicTo", GraphicsContext_cubicTo },
+  { "oval", GraphicsContext_oval },
   { "rect", GraphicsContext_rect },
   { "roundedRect", GraphicsContext_roundedRect },
   { "stroke", GraphicsContext_stroke },
