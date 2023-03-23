@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2022  Igara Studio S.A.
+// Copyright (c) 2022-2023  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -52,6 +52,43 @@ int ThemeColor_index(lua_State* L)
   return 1;
 }
 
+int Theme_styleMetrics(lua_State* L)
+{
+  [[maybe_unused]]
+  auto t = get_obj<Theme>(L, 1);
+
+  const char* id = lua_tostring(L, 2);
+  if (!id)
+    return 0;
+
+  auto theme = skin::SkinTheme::instance();
+  if (!theme)
+    return 0;
+
+  ui::Style* style = theme->getStyleById(id);
+  if (!style)
+    return 0;
+
+  ui::Widget widget(ui::kGenericWidget);
+  gfx::Border border = theme->calcBorder(&widget, style);
+
+  lua_newtable(L);
+  {
+    lua_newtable(L);
+    lua_pushinteger(L, border.left());
+    lua_setfield(L, -2, "left");
+    lua_pushinteger(L, border.top());
+    lua_setfield(L, -2, "top");
+    lua_pushinteger(L, border.right());
+    lua_setfield(L, -2, "right");
+    lua_pushinteger(L, border.bottom());
+    lua_setfield(L, -2, "bottom");
+  }
+  lua_setfield(L, -2, "border");
+
+  return 1;
+}
+
 int Theme_get_dimension(lua_State* L)
 {
   push_obj<ThemeDimension>(L, ThemeDimension());
@@ -65,6 +102,7 @@ int Theme_get_color(lua_State* L)
 }
 
 const luaL_Reg Theme_methods[] = {
+  { "styleMetrics", Theme_styleMetrics },
   { nullptr, nullptr }
 };
 
