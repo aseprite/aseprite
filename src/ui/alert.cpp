@@ -111,7 +111,12 @@ void Alert::addSeparator()
 void Alert::addButton(const std::string& text)
 {
   auto button = new Button(text);
-  button->processMnemonicFromText();
+
+  // Process the mnemonic next to & character and "false" means that
+  // the mnemonic letter can be used without Alt or Command key
+  // modifiers.
+  button->processMnemonicFromText('&', false);
+
   button->setMinSize(gfx::Size(60*guiscale(), 0));
   m_buttons.push_back(button);
 

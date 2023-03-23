@@ -1503,12 +1503,18 @@ gfx::Point Widget::mousePosInDisplay() const
   return display()->nativeWindow()->pointFromScreen(get_mouse_position());
 }
 
-void Widget::setMnemonic(int mnemonic)
+void Widget::setMnemonic(const int mnemonic,
+                         const bool requireModifiers)
 {
-  m_mnemonic = mnemonic;
+  static_assert((kMnemonicCharMask & kMnemonicModifiersMask) == 0);
+  ASSERT((mnemonic & kMnemonicModifiersMask) == 0);
+  m_mnemonic =
+    (mnemonic & kMnemonicCharMask) |
+    (requireModifiers ? kMnemonicModifiersMask: 0);
 }
 
-void Widget::processMnemonicFromText(int escapeChar)
+void Widget::processMnemonicFromText(const int escapeChar,
+                                     const bool requireModifiers)
 {
   // Avoid calling setText() when the widget doesn't have the HAS_TEXT flag
   if (!hasText())
@@ -1526,7 +1532,7 @@ void Widget::processMnemonicFromText(int escapeChar)
         break;    // Ill-formed string (it ends with escape character)
       }
       else if (chr != escapeChar) {
-        setMnemonic(chr);
+        setMnemonic(chr, requireModifiers);
       }
     }
     newText.push_back(chr);

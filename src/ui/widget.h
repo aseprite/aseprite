@@ -372,14 +372,23 @@ namespace ui {
 
     // Returns lower-case letter that represet the mnemonic of the widget
     // (the underscored character, i.e. the letter after & symbol).
-    int mnemonic() const { return m_mnemonic; }
-    void setMnemonic(int mnemonic);
+    int mnemonic() const {
+      return (m_mnemonic & kMnemonicCharMask);
+    }
+    bool mnemonicRequiresModifiers() const {
+      return (m_mnemonic & kMnemonicModifiersMask ? true: false);
+    }
+    void setMnemonic(const int mnemonic,
+                     const bool requireModifiers);
 
     // Assigns mnemonic from the character preceded by the given
     // escapeChar ('&' by default).
-    void processMnemonicFromText(int escapeChar = '&');
+    void processMnemonicFromText(const int escapeChar = '&',
+                                 const bool requireModifiers = true);
 
-    // Returns true if the mnemonic character is pressed.
+    // Returns true if the mnemonic character is pressed (without modifiers).
+    // TODO maybe we can add check for modifiers now that this
+    //      information is included in the Widget
     bool isMnemonicPressed(const ui::KeyMessage* keyMsg) const;
 
     // Signals
@@ -437,7 +446,14 @@ namespace ui {
     Widget* m_parent;             // Who is the parent?
     int m_parentIndex;            // Location/index of this widget in the parent's Widget::m_children vector
     gfx::Size* m_sizeHint;
-    int m_mnemonic;               // Keyboard shortcut to access this widget like Alt+mnemonic
+
+    // Keyboard shortcut to access this widget like Alt+mnemonic.  If
+    // kMnemonicModifiersMask bit is zero, it means that the mnemonic
+    // can be used without Alt or Command key modifiers (useful for
+    // buttons in ui::Alert).
+    static constexpr int kMnemonicCharMask = 0x7f;
+    static constexpr int kMnemonicModifiersMask = 0x80;
+    int m_mnemonic;
 
     // Widget size limits
     gfx::Size m_minSize, m_maxSize;

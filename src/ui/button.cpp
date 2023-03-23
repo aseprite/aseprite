@@ -80,8 +80,11 @@ bool ButtonBase::onProcessMessage(Message* msg)
       KeyScancode scancode = keymsg->scancode();
 
       if (isEnabled() && isVisible()) {
-        bool mnemonicPressed =
-          ((msg->altPressed() || msg->cmdPressed()) &&
+        const bool mnemonicPressed =
+          (mnemonic() &&
+           (!mnemonicRequiresModifiers() ||
+            msg->altPressed() ||
+            msg->cmdPressed()) &&
            isMnemonicPressed(keymsg));
 
         // For kButtonWidget
