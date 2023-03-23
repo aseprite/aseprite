@@ -66,6 +66,10 @@ namespace ui {
     bool isSizeable() const { return m_isSizeable; }
     bool isMoveable() const { return m_isMoveable; }
 
+    // Returns true only inside onWindowResize() when the window size
+    // changed.
+    bool isResizing() const { return m_isResizing; }
+
     bool shouldCreateNativeWindow() const {
       return !isDesktop();
     }
@@ -128,6 +132,7 @@ namespace ui {
     bool m_isWantFocus : 1;
     bool m_isForeground : 1;
     bool m_isAutoRemap : 1;
+    bool m_isResizing : 1;
     int m_hitTest;
     gfx::Rect m_lastFrame;
   };

@@ -1362,7 +1362,11 @@ int Dialog_modify(lua_State* L)
 
     // TODO shades mode? file title / open / save / filetypes? on* events?
 
-    if (relayout) {
+    // Relayout only if the the dialog window is not being resized.
+    // This is due to the possibility of a script calling a method
+    // to modify dialog's properties (which might generate a relayout)
+    // during an ongoing resize event.
+    if (relayout && !dlg->window.isResizing()) {
       dlg->window.layout();
 
       gfx::Rect bounds(dlg->window.bounds().w,
