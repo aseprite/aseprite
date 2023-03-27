@@ -1,5 +1,5 @@
 Aseprite Font
-Copyright (C) 2001-2017 David Capello
+Copyright (C) 2001-2023 David Capello
 http://www.aseprite.org/
 
 This work is licensed under the Creative Commons Attribution 4.0
