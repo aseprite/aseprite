@@ -2073,11 +2073,10 @@ void Timeline::drawClipboardRange(ui::Graphics* g)
     &clipboard_document,
     &clipboard_range);
 
-  if (!m_document || clipboard_document != m_document)
+  if (!m_document ||
+      clipboard_document != m_document ||
+      !m_clipboard_timer.isRunning())
     return;
-
-  if (!m_clipboard_timer.isRunning())
-    m_clipboard_timer.start();
 
   IntersectClip clip(g, getRangeClipBounds(clipboard_range));
   if (clip) {
@@ -4272,6 +4271,14 @@ bool Timeline::onPaste(Context* ctx)
 {
   auto clipboard = ctx->clipboard();
   if (clipboard->format() == ClipboardFormat::DocRange) {
+    // After a paste action, we just remove the marching ant
+    // (following paste commands will paste the same source range, but
+    // we just disable the marching ants effect).
+    if (m_clipboard_timer.isRunning()) {
+      m_clipboard_timer.stop();
+      m_redrawMarchingAntsOnly = false;
+      invalidate();
+    }
     clipboard->paste(ctx, true);
     return true;
   }
