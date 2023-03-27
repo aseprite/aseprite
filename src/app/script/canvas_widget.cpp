@@ -124,6 +124,12 @@ bool Canvas::onProcessMessage(ui::Message* msg)
       break;
     }
 
+    case ui::kDoubleClickMessage: {
+      auto mouseMsg = static_cast<ui::MouseMessage*>(msg);
+      DoubleClick(mouseMsg);
+      break;
+    }
+
     case ui::kMouseWheelMessage: {
       auto mouseMsg = static_cast<ui::MouseMessage*>(msg);
       Wheel(mouseMsg);
