@@ -141,10 +141,12 @@ protected:
     DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
     docPref.show.brushPreview(!docPref.show.brushPreview());
 
+#if ENABLE_UI
     // TODO we shouldn't need this, but it happens to be that the
     // Preview editor isn't being updated correctly when we change the
     // brush preview state.
     update_screen_for_document(ctx->activeDocument());
+#endif
   }
 };
 

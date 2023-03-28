@@ -305,7 +305,6 @@ if(ENABLE_UI)
     commands/cmd_set_palette.cpp
     commands/cmd_set_palette_entry_size.cpp
     commands/cmd_set_same_ink.cpp
-    commands/cmd_show.cpp
     commands/cmd_slice_properties.cpp
     commands/cmd_sprite_properties.cpp
     commands/cmd_swap_checkerboard_colors.cpp
@@ -580,6 +579,7 @@ add_library(app-lib
   commands/cmd_palette_size.cpp
   commands/cmd_remove_layer.cpp
   commands/cmd_save_file.cpp
+  commands/cmd_show.cpp
   commands/cmd_sprite_size.cpp
   commands/cmd_undo.cpp
   commands/command.cpp
