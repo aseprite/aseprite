@@ -1334,6 +1334,16 @@ void Manager::_openWindow(Window* window, bool center)
     freeFocus();
   }
 
+  // Relayout before inserting the window to the list of children widgets prevents
+  // the manager to invalidate a window currently being laid out when
+  // ui::Manager::getDefault()->invalidate() is called. This situation could happen,
+  // for instance, when a script opens a dialog whose canvas.onpaint handler opens
+  // another dialog, because the onpaint handler is executed during window layout.
+  if (center)
+    window->centerWindow(parentDisplay);
+  else
+    window->layout();
+
   // Add the window to manager.
   insertChild(0, window);
 
@@ -1342,12 +1352,6 @@ void Manager::_openWindow(Window* window, bool center)
     Message msg(kOpenMessage);
     window->sendMessage(&msg);
   }
-
-  // Relayout
-  if (center)
-    window->centerWindow(parentDisplay);
-  else
-    window->layout();
 
   // If the window already was set a display, we don't setup it
   // (i.e. in the case of combobox popup/window the display field is
