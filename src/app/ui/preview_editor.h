@@ -70,6 +70,10 @@ namespace app {
     doc::frame_t m_refFrame;
     double m_aniSpeed;
     Editor* m_relatedEditor;
+    // This flag indicates that the preview editor is being opened, it is used to avoid
+    // an infinite recursive loop when PreviewEditorWindow::updateUsingEditor calls the
+    // openWindow() method.
+    bool m_opening;
   };
 
 } // namespace app
