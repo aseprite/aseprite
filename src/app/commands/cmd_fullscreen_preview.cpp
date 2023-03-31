@@ -11,6 +11,7 @@
 
 #include "ui/ui.h"
 
+#include "app/app.h"
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
 #include "app/context.h"
@@ -19,6 +20,8 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_render.h"
 #include "app/ui/keyboard_shortcuts.h"
+#include "app/ui/main_window.h"
+#include "app/ui/preview_editor.h"
 #include "app/ui/status_bar.h"
 #include "app/util/conversion_to_surface.h"
 #include "doc/image.h"
@@ -278,6 +281,30 @@ bool FullscreenPreviewCommand::onEnabled(Context* context)
                              ContextFlags::HasActiveSprite);
 }
 
+// Hides the preview editor only if needed, and returns a boolean to
+// tell if the preview editor was enabled before calling this function.
+static bool hidePreviewEditor(const PreviewWindow& previewWindow)
+{
+  auto previewEditor = App::instance()->mainWindow()->getPreviewEditor();
+  bool isPreviewEnabled = previewEditor->isPreviewEnabled();
+  if (isPreviewEnabled) {
+    auto pvEditorFrame = previewEditor->window()->display()->nativeWindow()->frame();
+    auto pvWindowFrame = previewWindow.window()->display()->nativeWindow()->frame();
+
+    // Disable the preview editor if it is enabled and the full screen preview window's frame
+    // rectangle touches the preview editor window's frame rectangle.
+    if (pvWindowFrame.intersects(pvEditorFrame)) {
+      previewEditor->setPreviewEnabled(false);
+    }
+  }
+  return isPreviewEnabled;
+}
+
+static void showPreviewEditor()
+{
+  App::instance()->mainWindow()->getPreviewEditor()->setPreviewEnabled(true);
+}
+
 // Shows the sprite using the complete screen.
 void FullscreenPreviewCommand::onExecute(Context* context)
 {
@@ -287,8 +314,16 @@ void FullscreenPreviewCommand::onExecute(Context* context)
   if (!editor || !editor->sprite())
     return;
 
-  PreviewWindow window(context, editor);
-  window.openWindowInForeground();
+  PreviewWindow previewWindow(context, editor);
+
+  bool wasPreviewEnabled = hidePreviewEditor(previewWindow);
+
+  previewWindow.openWindowInForeground();
+
+  // Enable the preview editor if it was enabled before showing the full screen preview.
+  if (wasPreviewEnabled) {
+    showPreviewEditor();
+  }
 
   // Check that the full screen invalidation code is working
   // correctly. This check is just in case that some regression is
