@@ -1,4 +1,4 @@
-Copyright (c) 2019-2020  Igara Studio S.A.
+Copyright (c) 2019-2023  Igara Studio S.A.
 Copyright (c) 2001-2018  David Capello
 
 Permission is hereby granted, free of charge, to any person obtaining

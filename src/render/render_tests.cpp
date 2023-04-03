@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2022 Igara Studio S.A.
+// Copyright (c) 2019-2023 Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -143,6 +143,7 @@ TEST(Render, CheckeredBackground)
   BgOptions bg;
   bg.type = BgType::CHECKERED;
   bg.zoom = true;
+  bg.colorPixelFormat = IMAGE_INDEXED;
   bg.color1 = 1;
   bg.color2 = 2;
 
@@ -203,6 +204,7 @@ TEST(Render, ZoomAndDstBounds)
   BgOptions bg;
   bg.type = BgType::CHECKERED;
   bg.zoom = true;
+  bg.colorPixelFormat = IMAGE_INDEXED;
   bg.color1 = 1;
   bg.color2 = 2;
   bg.stripeSize = gfx::Size(1, 1);
@@ -238,6 +240,7 @@ TEST(Render, BugWithMultiplesOf3ZoomFactors)
     BgOptions bg;
     bg.type = BgType::CHECKERED;
     bg.zoom = false;
+    bg.colorPixelFormat = IMAGE_RGB;
     bg.color1 = rgba(128, 128, 128, 255);
     bg.color2 = rgba(64, 64, 64, 255);
     bg.stripeSize = gfx::Size(2, 2);
