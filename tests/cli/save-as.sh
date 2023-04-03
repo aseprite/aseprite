@@ -302,3 +302,15 @@ $ASEPRITE -b sprites/1empty3.aseprite \
 expect "a1.png
 a2.png
 b.png" "list_files $d"
+
+# Test https://github.com/aseprite/aseprite/issues/3733#issuecomment-1489720933
+#      https://github.com/aseprite/aseprite/issues/3733#issuecomment-1494682407
+# Same as previous test, but with -filename-format with -split-tags
+
+d=$t/save-as-with-filename-format--and-split-tags-without-frame
+$ASEPRITE -b sprites/1empty3.aseprite \
+          -split-tags -filename-format "$d/{tag}.png" \
+          -save-as "$d/test.png"
+expect "a1.png
+a2.png
+b.png" "list_files $d"
