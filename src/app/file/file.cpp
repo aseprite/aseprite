@@ -685,7 +685,7 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
     // If the filename format is given, we have to check if the
     // {frame} is specified, or in other case, if it's something like
     // "..._1.png", replace the it with "..._{frame1}.png"
-    else if (fop->m_roi.selectedFrames().size() > 1) {
+    else if (fop->m_roi.frames() > 1) {
       fn_format = replace_frame_number_with_frame_format(fn_format);
     }
 
