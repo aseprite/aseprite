@@ -247,7 +247,7 @@ bool Editor::isUsingNewRenderEngine() const
 {
   ASSERT(m_sprite);
   return
-    // TODO add an option to the ShaderRenderer to works as the "old"
+    // TODO add an option to the ShaderRenderer to work as the "old"
     //      engine (screen pixel by screen pixel) or as the "new"
     //      engine (sprite pixel by sprite pixel)
     (m_renderEngine->type() == EditorRender::Type::kShaderRenderer)

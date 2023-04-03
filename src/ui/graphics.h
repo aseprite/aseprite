@@ -116,7 +116,9 @@ namespace ui {
     static int measureUITextLength(const std::string& str, os::Font* font);
     gfx::Size fitString(const std::string& str, int maxWidth, int align);
 
-    // Can be used in case you access/modify getInternalSurface() directly.
+    // Can be used in case that you've accessed/changed the
+    // getInternalSurface() directly and need to specify which area
+    // was modified.
     void invalidate(const gfx::Rect& bounds);
 
   private:

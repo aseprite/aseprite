@@ -22,6 +22,9 @@ namespace app {
 
   // Use SkSL to compose images with Skia shaders on the CPU (with the
   // SkSL VM) or GPU-accelerated (with native OpenGL/Metal/etc. shaders).
+  //
+  // TODO This is an ongoing effort, not yet ready for production, and
+  //      only accessible when ENABLE_DEVMODE is defined.
   class ShaderRenderer : public Renderer {
   public:
     ShaderRenderer();

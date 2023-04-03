@@ -10,7 +10,7 @@
 
 #include "app/render/shader_renderer.h"
 
-#if SK_ENABLE_SKSL
+#if SK_ENABLE_SKSL && ENABLE_DEVMODE // TODO remove ENABLE_DEVMODE when the ShaderRenderer is ready
 
 #include "app/color_utils.h"
 #include "app/util/shader_helpers.h"
@@ -545,4 +545,4 @@ void ShaderRenderer::afterBackgroundLayerIsPainted()
 
 } // namespace app
 
-#endif // SK_ENABLE_SKSL
+#endif // SK_ENABLE_SKSL && ENABLE_DEVMODE
