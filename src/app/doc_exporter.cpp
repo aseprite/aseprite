@@ -1068,6 +1068,13 @@ void DocExporter::captureSamples(Samples& samples,
           alreadyTrimmed = true;
         }
       }
+      // If "Ignore Empty" is checked and the item is a tile...
+      else if (m_ignoreEmptyCels && item.isOneImageOnly()) {
+        // Skip empty tile
+        if (is_empty_image(item.image.get()))
+          continue;
+      }
+
       if (!alreadyTrimmed && m_trimSprite)
         sample.setTrimmedBounds(spriteBounds);
 
