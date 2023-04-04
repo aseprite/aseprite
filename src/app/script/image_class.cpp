@@ -251,14 +251,23 @@ int Image_drawImage(lua_State* L)
   auto sprite = get_obj<ImageObj>(L, 2);
   gfx::Point pos = convert_args_into_point(L, 3);
 
+  // Arguments index fix to support the following cases:
+  //   - Image:drawImage(image, x, y, opacity, blendMode)
+  //   - Image:drawImage(image, Point(x, y), opacity, blendMode)
+  //   - Image:drawImage(image, {x, y}, opacity, blendMode)
+  //   - Image:drawImage(image, {x=x1, y=y1}, opacity, blendMode)
+  int argsFix = 0;
+  if (lua_isinteger(L, 3))
+    argsFix = 1;
+
   int opacity = 255;
-  if (lua_isinteger(L, 4))
-    opacity = std::clamp(int(lua_tointeger(L, 4)), 0, 255);
+  if (lua_isinteger(L, 4 + argsFix))
+    opacity = std::clamp(int(lua_tointeger(L, 4 + argsFix)), 0, 255);
 
   doc::BlendMode blendMode = doc::BlendMode::NORMAL;
-  if (lua_isinteger(L, 5)) {
+  if (lua_isinteger(L, 5 + argsFix)) {
     blendMode = base::convert_to<doc::BlendMode>(
-                  app::script::BlendMode(lua_tointeger(L, 5)));
+                  app::script::BlendMode(lua_tointeger(L, 5 + argsFix)));
   }
 
   Image* dst = obj->image(L);
