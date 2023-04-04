@@ -1309,8 +1309,10 @@ ImageRef FileOp::sequenceImage(PixelFormat pixelFormat, int w, int h)
   else {
     sprite = m_document->sprite();
 
-    if (sprite->pixelFormat() != pixelFormat)
+    if (sprite->pixelFormat() != pixelFormat) {
+      setError("Error: image does not match color mode\n");
       return nullptr;
+    }
   }
 
   if (m_seq.last_cel) {
