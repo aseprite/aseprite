@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -27,9 +27,14 @@
 #include "app/load_widget.h"
 #include "app/pref/preferences.h"
 #include "app/site.h"
+#include "app/tools/tool.h"
+#include "app/tools/tool_box.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/color_button.h"
+#include "app/ui/editor/editor.h"
 #include "app/ui/keyboard_shortcuts.h"
+#include "app/ui/toolbar.h"
+#include "app/tools/tool_box.h"
 #include "app/ui_context.h"
 #include "doc/image.h"
 #include "doc/mask.h"
@@ -78,7 +83,9 @@ static const char* ConfigSection = "ReplaceColor";
 
 class ReplaceColorWindow : public FilterWindow {
 public:
-  ReplaceColorWindow(ReplaceColorFilterWrapper& filter, FilterManagerImpl& filterMgr)
+  ReplaceColorWindow(ReplaceColorFilterWrapper& filter,
+                     FilterManagerImpl& filterMgr,
+                     Context* context)
     : FilterWindow(Strings::replace_color_title().c_str(),
                    ConfigSection,
                    &filterMgr,
@@ -89,6 +96,9 @@ public:
     , m_fromButton(app::find_widget<ColorButton>(m_controlsWidget.get(), "from"))
     , m_toButton(app::find_widget<ColorButton>(m_controlsWidget.get(), "to"))
     , m_toleranceSlider(app::find_widget<ui::Slider>(m_controlsWidget.get(), "tolerance"))
+    , m_context(context)
+    , m_editor(nullptr)
+    , m_colorbar(nullptr)
   {
     getContainer()->addChild(m_controlsWidget.get());
 
@@ -99,6 +109,23 @@ public:
     m_fromButton->Change.connect(&ReplaceColorWindow::onFromChange, this);
     m_toButton->Change.connect(&ReplaceColorWindow::onToChange, this);
     m_toleranceSlider->Change.connect(&ReplaceColorWindow::onToleranceChange, this);
+
+    if (m_context->activeDocument()) {
+      m_editor = Editor::activeEditor();
+      m_oldTool = m_editor->getCurrentEditorTool();
+      auto eyedropper = App::instance()->toolBox()->getToolById(tools::WellKnownTools::Eyedropper);
+      ToolBar::instance()->selectTool(eyedropper);
+      m_colorbar = ColorBar::instance();
+      m_fgColorConn = m_colorbar->fgColorButton()->Change.connect([this]{ onPickFgColor(); });
+      m_bgColorConn = m_colorbar->bgColorButton()->Change.connect([this]{ onPickBgColor(); });
+      m_editor->invalidate();
+    }
+  }
+
+  ~ReplaceColorWindow() {
+    ToolBar::instance()->selectTool(m_oldTool);
+    m_fgColorConn.disconnect();
+    m_bgColorConn.disconnect();
   }
 
 private:
@@ -115,10 +142,35 @@ private:
     restartPreview();
   }
 
+  void onPickFgColor() {
+    stopPreview();
+    m_filter.setFrom(m_colorbar->fgColorButton()->getColor());
+    m_fromButton->setColor(m_colorbar->fgColorButton()->getColor());
+    restartPreview();
+  }
+
+  void onPickBgColor() {
+    stopPreview();
+    m_filter.setTo(m_colorbar->bgColorButton()->getColor());
+    m_toButton->setColor(m_colorbar->bgColorButton()->getColor());
+    restartPreview();
+  }
+
   void onToleranceChange() {
     stopPreview();
     m_filter.setTolerance(m_toleranceSlider->getValue());
     restartPreview();
+  }
+
+ void onBroadcastMouseMessage(const gfx::Point& screenPos,
+                               ui::WidgetsList& targets) override {
+    Window::onBroadcastMouseMessage(screenPos, targets);
+
+    // Add the editor as receptor of mouse events too.
+    if (m_editor) {
+      targets.push_back(ui::View::getView(m_editor));
+      targets.push_back(ColorBar::instance()->getPaletteView());
+    }
   }
 
   bool onProcessMessage(ui::Message* msg) override {
@@ -144,6 +196,12 @@ private:
   ColorButton* m_fromButton;
   ColorButton* m_toButton;
   ui::Slider* m_toleranceSlider;
+  Context* m_context;
+  Editor* m_editor;
+  ColorBar* m_colorbar;
+  tools::Tool* m_oldTool;
+  obs::scoped_connection m_fgColorConn;
+  obs::scoped_connection m_bgColorConn;
 };
 
 #endif  // ENABLE_UI
@@ -200,7 +258,7 @@ void ReplaceColorCommand::onExecute(Context* context)
 
 #ifdef ENABLE_UI
   if (ui) {
-    ReplaceColorWindow window(filter, filterMgr);
+    ReplaceColorWindow window(filter, filterMgr, context);
     if (window.doModal())
       set_config_int(ConfigSection, "Tolerance", filter.getTolerance());
   }
