@@ -256,6 +256,10 @@ int Image_drawImage(lua_State* L)
   //   - Image:drawImage(image, Point(x, y), opacity, blendMode)
   //   - Image:drawImage(image, {x, y}, opacity, blendMode)
   //   - Image:drawImage(image, {x=x1, y=y1}, opacity, blendMode)
+  //
+  // TODO create a similar convert_args_into_point() function so we
+  //      can get the argsFix/modified index directly from there to
+  //      read the next argument
   int argsFix = 0;
   if (lua_isinteger(L, 3))
     argsFix = 1;
