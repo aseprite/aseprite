@@ -248,13 +248,18 @@ void Console::printf(const char* format, ...)
   std::string msg = base::string_vprintf(format, ap);
   va_end(ap);
 
-  if (!m_withUI || !m_console) {
+  if (!m_withUI) {
     fputs(msg.c_str(), stdout);
     fflush(stdout);
     return;
   }
 
-  // Open the window
+  // Create the console window if it was closed/deleted by the user
+  if (!m_console) {
+    m_console = new ConsoleWindow;
+  }
+
+  // Open the window if it's hidden
   if (!m_console->isVisible()) {
     m_console->openWindow();
     ui::Manager::getDefault()->invalidate();
