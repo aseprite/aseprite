@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2020-2022  Igara Studio S.A.
+// Copyright (C) 2020-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -37,7 +37,10 @@ namespace doc {
     static Palette* createGrayscale();
 
     int size() const { return (int)m_colors.size(); }
-    void resize(int ncolors);
+    void resize(int ncolors, color_t color = doc::rgba(0, 0, 0, 255));
+
+    // Used to share the palette data with a SkSL shader
+    const color_t* rawColorsData() const { return m_colors.data(); }
 
     const std::string& filename() const { return m_filename; }
     const std::string& comment() const { return m_comment; }

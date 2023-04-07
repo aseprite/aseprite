@@ -4,20 +4,31 @@
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
-#ifndef APP_RENDER_SIMPLE_RENDERER_H_INCLUDED
-#define APP_RENDER_SIMPLE_RENDERER_H_INCLUDED
+#ifndef APP_RENDER_SHADER_RENDERER_H_INCLUDED
+#define APP_RENDER_SHADER_RENDERER_H_INCLUDED
 #pragma once
 
+#if SK_ENABLE_SKSL
+
 #include "app/render/renderer.h"
+#include "doc/palette.h"
+
+#include "include/core/SkRefCnt.h"
+
+class SkCanvas;
+class SkRuntimeEffect;
 
 namespace app {
 
-  // Represents the way to render sprites on Aseprite (Old and "New")
-  // which use the render::Render class to render sprites with the
-  // CPU-only.
-  class SimpleRenderer : public Renderer {
+  // Use SkSL to compose images with Skia shaders on the CPU (with the
+  // SkSL VM) or GPU-accelerated (with native OpenGL/Metal/etc. shaders).
+  //
+  // TODO This is an ongoing effort, not yet ready for production, and
+  //      only accessible when ENABLE_DEVMODE is defined.
+  class ShaderRenderer : public Renderer {
   public:
-    SimpleRenderer();
+    ShaderRenderer();
+    ~ShaderRenderer();
 
     const Properties& properties() const override { return m_properties; }
 
@@ -59,11 +70,48 @@ namespace app {
                      const int y,
                      const int opacity,
                      const doc::BlendMode blendMode) override;
+
   private:
+    void drawLayerGroup(SkCanvas* canvas,
+                        const doc::Sprite* sprite,
+                        const doc::LayerGroup* group,
+                        const doc::frame_t frame,
+                        const gfx::ClipF& area);
+    void drawImage(SkCanvas* canvas,
+                   const doc::Image* srcImage,
+                   const int x,
+                   const int y,
+                   const int opacity,
+                   const doc::BlendMode blendMode);
+
+    bool checkIfWeShouldUsePreview(const doc::Cel* cel) const;
+    void afterBackgroundLayerIsPainted();
+
     Properties m_properties;
-    render::Render m_render;
+    render::BgOptions m_bgOptions;
+    render::Projection m_proj;
+    sk_sp<SkRuntimeEffect> m_bgEffect;
+    sk_sp<SkRuntimeEffect> m_indexedEffect;
+    sk_sp<SkRuntimeEffect> m_grayscaleEffect;
+    const doc::Sprite* m_sprite = nullptr;
+    const doc::LayerImage* m_bgLayer = nullptr;
+    // TODO these members are the same as in render::Render, we should
+    //      see a way to merge both
+    const doc::Layer* m_selectedLayerForOpacity = nullptr;
+    const doc::Layer* m_selectedLayer = nullptr;
+    doc::frame_t m_selectedFrame = -1;
+    const doc::Image* m_previewImage = nullptr;
+    const doc::Tileset* m_previewTileset = nullptr;
+    gfx::Point m_previewPos;
+    doc::BlendMode m_previewBlendMode = doc::BlendMode::NORMAL;
+
+    // Palette of 256 colors (useful for the indexed shader to set all
+    // colors outside the valid range as transparent RGBA=0 values)
+    doc::Palette m_palette;
   };
 
 } // namespace app
+
+#endif // SK_ENABLE_SKSL
 
 #endif

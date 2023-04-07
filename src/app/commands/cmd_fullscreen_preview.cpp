@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -28,9 +28,15 @@
 #include "doc/palette.h"
 #include "doc/primitives.h"
 #include "doc/sprite.h"
+#include "gfx/matrix.h"
 #include "os/surface.h"
 #include "os/system.h"
 
+#if LAF_SKIA
+  #include "os/skia/skia_surface.h"
+#endif
+
+#include <cmath>
 #include <cstring>
 
 #define PREVIEW_TILED           1
@@ -52,14 +58,7 @@ public:
     , m_sprite(editor->sprite())
     , m_pal(m_sprite->palette(editor->frame()))
     , m_proj(editor->projection())
-    , m_index_bg_color(-1)
-    , m_doublebuf(Image::create(
-                    IMAGE_RGB,
-                    editor->display()->size().w,
-                    editor->display()->size().h))
-    , m_doublesur(os::instance()->makeRgbaSurface(
-                    editor->display()->size().w,
-                    editor->display()->size().h)) {
+    , m_index_bg_color(-1) {
     // Do not use DocWriter (do not lock the document) because we
     // will call other sub-commands (e.g. previous frame, next frame,
     // etc.).
@@ -133,8 +132,8 @@ protected:
              command->id() == CommandId::GotoNextFrame() ||
              command->id() == CommandId::GotoLastFrame())) {
           m_context->executeCommand(command, params);
+          m_repaint = true; // Re-render
           invalidate();
-          m_render.reset(nullptr); // Re-render
         }
 #if 0
         // Play the animation
@@ -177,71 +176,116 @@ protected:
   }
 
   virtual void onPaint(PaintEvent& ev) override {
-    gfx::Size displaySize = display()->size();
     Graphics* g = ev.graphics();
     EditorRender& render = m_editor->renderEngine();
     render.setRefLayersVisiblity(false);
-    render.setProjection(render::Projection());
     render.disableOnionskin();
     render.setTransparentBackground();
 
     // Render sprite and leave the result in 'm_render' variable
     if (m_render == nullptr) {
-      ImageBufferPtr buf = render.getRenderImageBuffer();
-      m_render.reset(Image::create(IMAGE_RGB,
-          m_sprite->width(), m_sprite->height(), buf));
+      m_render = os::instance()->makeRgbaSurface(m_sprite->width(),
+                                                 m_sprite->height());
 
-      render.renderSprite(
-        m_render.get(), m_sprite, m_editor->frame());
+#if LAF_SKIA
+      // The SimpleRenderer renders unpremultiplied surfaces when
+      // rendering on transparent background (this is the only place
+      // where this happens).
+      if (render.properties().outputsUnpremultiplied) {
+        // We use a little tricky with Skia indicating that the alpha
+        // is unpremultiplied
+        ((os::SkiaSurface*)m_render.get())
+          ->bitmap().setAlphaType(kUnpremul_SkAlphaType);
+      }
+#endif
+
+      m_repaint = true;
     }
 
-    int x, y, w, h, u, v;
-    x = m_pos.x + m_proj.applyX(m_proj.removeX(m_delta.x));
-    y = m_pos.y + m_proj.applyY(m_proj.removeY(m_delta.y));
+    if (m_repaint) {
+      m_repaint = false;
+
+      m_render->clear();
+      render.setProjection(render::Projection());
+      render.renderSprite(
+        m_render.get(), m_sprite, m_editor->frame(),
+        gfx::ClipF(0, 0, 0, 0, m_sprite->width(), m_sprite->height()));
+    }
+
+    float x, y, w, h, u, v;
+    x = m_pos.x + m_delta.x;
+    y = m_pos.y + m_delta.y;
     w = m_proj.applyX(m_sprite->width());
     h = m_proj.applyY(m_sprite->height());
 
-    if (int(m_tiled) & int(TiledMode::X_AXIS)) x = SGN(x) * (ABS(x)%w);
-    if (int(m_tiled) & int(TiledMode::Y_AXIS)) y = SGN(y) * (ABS(y)%h);
+    if (int(m_tiled) & int(TiledMode::X_AXIS)) x = SGN(x) * std::fmod(ABS(x), w);
+    if (int(m_tiled) & int(TiledMode::Y_AXIS)) y = SGN(y) * std::fmod(ABS(y), h);
 
-    render.setProjection(m_proj);
     if (m_index_bg_color == -1) {
-      render.setupBackground(m_doc, m_doublebuf->pixelFormat());
+      render.setProjection(m_proj);
+      render.setupBackground(m_doc, IMAGE_RGB);
       render.renderCheckeredBackground(
-        m_doublebuf.get(),
-        gfx::Clip(0, 0, -m_pos.x, -m_pos.y,
-                  m_doublebuf->width(), m_doublebuf->height()));
+        g->getInternalSurface(), m_sprite,
+        gfx::Clip(g->getInternalDeltaX(),
+                  g->getInternalDeltaY(),
+                  -m_pos.x, -m_pos.y,
+                  2*g->getInternalSurface()->width(),
+                  2*g->getInternalSurface()->height()));
+
+      // Invalidate the whole Graphics (as we've just modified its
+      // internal os::Surface directly).
+      g->invalidate(g->getClipBounds());
     }
     else {
-      doc::clear_image(m_doublebuf.get(), m_pal->getEntry(m_index_bg_color));
+      auto col = m_pal->getEntry(m_index_bg_color);
+      g->fillRect(gfx::rgba(doc::rgba_getr(col),
+                            doc::rgba_getg(col),
+                            doc::rgba_getb(col),
+                            doc::rgba_geta(col)),
+                  clientBounds());
     }
+
+    const double sx = m_proj.scaleX();
+    const double sy = m_proj.scaleY();
+
+    gfx::RectF tiledBounds;
+    tiledBounds.w = (2+std::ceil(float(clientBounds().w)/w))*w;
+    tiledBounds.h = (2+std::ceil(float(clientBounds().h)/h))*h;
+    tiledBounds.x = x-w;
+    tiledBounds.y = y-h;
+    g->save();
 
     switch (m_tiled) {
       case TiledMode::NONE:
-        render.renderImage(m_doublebuf.get(), m_render.get(), m_pal, x, y,
-                           255, doc::BlendMode::NORMAL);
+        g->setMatrix(gfx::Matrix::MakeTrans(x, y));
+        g->concat(gfx::Matrix::MakeScale(sx, sy));
+        g->drawRgbaSurface(m_render.get(), 0, 0);
         break;
       case TiledMode::X_AXIS:
-        for (u=x-w; u<displaySize.w+w; u+=w)
-          render.renderImage(m_doublebuf.get(), m_render.get(), m_pal, u, y,
-                             255, doc::BlendMode::NORMAL);
+        for (u=tiledBounds.x; u<tiledBounds.x2(); u+=w) {
+          g->setMatrix(gfx::Matrix::MakeTrans(u, y));
+          g->concat(gfx::Matrix::MakeScale(sx, sy));
+          g->drawRgbaSurface(m_render.get(), 0, 0);
+        }
         break;
       case TiledMode::Y_AXIS:
-        for (v=y-h; v<displaySize.h+h; v+=h)
-          render.renderImage(m_doublebuf.get(), m_render.get(), m_pal, x, v,
-                             255, doc::BlendMode::NORMAL);
+        for (v=tiledBounds.y; v<tiledBounds.y2(); v+=h) {
+          g->setMatrix(gfx::Matrix::MakeTrans(x, v));
+          g->concat(gfx::Matrix::MakeScale(sx, sy));
+          g->drawRgbaSurface(m_render.get(), 0, 0);
+        }
         break;
       case TiledMode::BOTH:
-        for (v=y-h; v<displaySize.h+h; v+=h)
-          for (u=x-w; u<displaySize.w+w; u+=w)
-            render.renderImage(m_doublebuf.get(), m_render.get(), m_pal, u, v,
-                               255, doc::BlendMode::NORMAL);
+        for (v=tiledBounds.y; v<tiledBounds.y2(); v+=h) {
+          for (u=tiledBounds.x; u<tiledBounds.x2(); u+=w) {
+            g->setMatrix(gfx::Matrix::MakeTrans(u, v));
+            g->concat(gfx::Matrix::MakeScale(sx, sy));
+            g->drawRgbaSurface(m_render.get(), 0, 0);
+          }
+        }
         break;
     }
-
-    convert_image_to_surface(m_doublebuf.get(), m_pal,
-      m_doublesur.get(), 0, 0, 0, 0, m_doublebuf->width(), m_doublebuf->height());
-    g->blit(m_doublesur.get(), 0, 0, 0, 0, m_doublesur->width(), m_doublesur->height());
+    g->restore();
   }
 
 private:
@@ -255,9 +299,8 @@ private:
   gfx::Point m_delta;
   render::Projection m_proj;
   int m_index_bg_color;
-  std::unique_ptr<Image> m_render;
-  std::unique_ptr<Image> m_doublebuf;
-  os::SurfaceRef m_doublesur;
+  os::SurfaceRef m_render;
+  bool m_repaint = true;
   filters::TiledMode m_tiled;
 };
 

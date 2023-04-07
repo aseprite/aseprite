@@ -53,7 +53,6 @@
 #include "app/ui/timeline/timeline.h"
 #include "app/ui/toolbar.h"
 #include "app/ui_context.h"
-#include "app/util/conversion_to_surface.h"
 #include "app/util/layer_utils.h"
 #include "base/chrono.h"
 #include "base/convert_to.h"
@@ -248,6 +247,11 @@ bool Editor::isUsingNewRenderEngine() const
 {
   ASSERT(m_sprite);
   return
+    // TODO add an option to the ShaderRenderer to work as the "old"
+    //      engine (screen pixel by screen pixel) or as the "new"
+    //      engine (sprite pixel by sprite pixel)
+    (m_renderEngine->type() == EditorRender::Type::kShaderRenderer)
+    ||
     (Preferences::instance().experimental.newRenderEngine()
      // Reference layers + zoom > 100% need the old render engine for
      // sub-pixel rendering.
@@ -656,16 +660,14 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
     dest.h = rc.h;
   }
 
-  std::unique_ptr<Image> rendered(nullptr);
+  // Convert the render to a os::Surface
+  static os::SurfaceRef rendered = nullptr; // TODO move this to other centralized place
+  const auto& renderProperties = m_renderEngine->properties();
   try {
     // Generate a "expose sprite pixels" notification. This is used by
     // tool managers that need to validate this region (copy pixels from
     // the original cel) before it can be used by the RenderEngine.
     m_document->notifyExposeSpritePixels(m_sprite, gfx::Region(expose));
-
-    // Create a temporary RGB bitmap to draw all to it
-    rendered.reset(Image::create(IMAGE_RGB, rc2.w, rc2.h,
-                                 m_renderEngine->getRenderImageBuffer()));
 
     m_renderEngine->setNewBlendMethod(pref.experimental.newBlend());
     m_renderEngine->setRefLayersVisiblity(true);
@@ -674,9 +676,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
       m_renderEngine->setNonactiveLayersOpacity(pref.experimental.nonactiveLayersOpacity());
     else
       m_renderEngine->setNonactiveLayersOpacity(255);
-    m_renderEngine->setProjection(
-      newEngine ? render::Projection(): m_proj);
-    m_renderEngine->setupBackground(m_document, rendered->pixelFormat());
+    m_renderEngine->setupBackground(m_document, IMAGE_RGB);
     m_renderEngine->disableOnionskin();
 
     if ((m_flags & kShowOnionskin) == kShowOnionskin) {
@@ -715,6 +715,32 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
         m_layer, m_frame);
     }
 
+    // Render background first (e.g. new ShaderRenderer will paint the
+    // background on the screen first and then composite the rendered
+    // sprite on it.)
+    if (renderProperties.renderBgOnScreen) {
+      m_renderEngine->setProjection(m_proj);
+      m_renderEngine->renderCheckeredBackground(
+        g->getInternalSurface(),
+        m_sprite,
+        gfx::Clip(dest.x + g->getInternalDeltaX(),
+                  dest.y + g->getInternalDeltaY(),
+                  m_proj.apply(rc2)));
+    }
+
+    // Create a temporary surface to draw the sprite on it
+    if (!rendered ||
+        rendered->width() < rc2.w ||
+        rendered->height() < rc2.h ||
+        rendered->colorSpace() != m_document->osColorSpace()) {
+      const int maxw = std::max(rc2.w, rendered ? rendered->width(): 0);
+      const int maxh = std::max(rc2.h, rendered ? rendered->height(): 0);
+      rendered = os::instance()->makeRgbaSurface(
+        maxw, maxh, m_document->osColorSpace());
+    }
+
+    m_renderEngine->setProjection(
+      newEngine ? render::Projection(): m_proj);
     m_renderEngine->renderSprite(
       rendered.get(), m_sprite, m_frame, gfx::Clip(0, 0, rc2));
 
@@ -729,70 +755,42 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
     Console::showException(e);
   }
 
-  if (rendered) {
-    // Convert the render to a os::Surface
-    static os::SurfaceRef tmp = nullptr; // TODO move this to other centralized place
-
-    if (!tmp ||
-        tmp->width() < rc2.w ||
-        tmp->height() < rc2.h ||
-        tmp->colorSpace() != m_document->osColorSpace()) {
-      const int maxw = std::max(rc2.w, tmp ? tmp->width(): 0);
-      const int maxh = std::max(rc2.h, tmp ? tmp->height(): 0);
-      tmp = os::instance()->makeSurface(
-        maxw, maxh, m_document->osColorSpace());
-    }
-
-    if (tmp->nativeHandle()) {
-      if (newEngine) {
-        // Without doing something on the "tmp" surface before (like
-        // just drawing a pixel), we get a strange behavior where
-        // pixels are not updated correctly on the editor (e.g. when
-        // zoom < 100%). I didn't have enough time to investigate this
-        // issue yet, but this is a partial fix/hack.
-        //
-        // TODO review why do we need to do this, it looks like some
-        //      internal state of a SkCanvas or SkBitmap thing is
-        //      updated after this, because convert_image_to_surface()
-        //      will overwrite these pixels anyway.
-        os::Paint paint;
-        paint.color(gfx::rgba(0, 0, 0, 255));
-        tmp->drawRect(gfx::Rect(0, 0, 1, 1), paint);
-      }
-
-      convert_image_to_surface(rendered.get(), m_sprite->palette(m_frame),
-                               tmp.get(), 0, 0, 0, 0, rc2.w, rc2.h);
-
-      if (newEngine) {
-        os::Sampling sampling;
-        if (m_proj.scaleX() < 1.0) {
-          switch (pref.editor.downsampling()) {
-            case gen::Downsampling::NEAREST:
-              sampling = os::Sampling(os::Sampling::Filter::Nearest);
-              break;
-            case gen::Downsampling::BILINEAR:
-              sampling = os::Sampling(os::Sampling::Filter::Linear);
-              break;
-            case gen::Downsampling::BILINEAR_MIPMAP:
-              sampling = os::Sampling(os::Sampling::Filter::Linear,
-                                      os::Sampling::Mipmap::Nearest);
-              break;
-            case gen::Downsampling::TRILINEAR_MIPMAP:
-              sampling = os::Sampling(os::Sampling::Filter::Linear,
-                                      os::Sampling::Mipmap::Linear);
-              break;
-          }
+  if (rendered && rendered->nativeHandle()) {
+    if (newEngine) {
+      os::Sampling sampling;
+      if (m_proj.scaleX() < 1.0) {
+        switch (pref.editor.downsampling()) {
+          case gen::Downsampling::NEAREST:
+            sampling = os::Sampling(os::Sampling::Filter::Nearest);
+            break;
+          case gen::Downsampling::BILINEAR:
+            sampling = os::Sampling(os::Sampling::Filter::Linear);
+            break;
+          case gen::Downsampling::BILINEAR_MIPMAP:
+            sampling = os::Sampling(os::Sampling::Filter::Linear,
+                                    os::Sampling::Mipmap::Nearest);
+            break;
+          case gen::Downsampling::TRILINEAR_MIPMAP:
+            sampling = os::Sampling(os::Sampling::Filter::Linear,
+                                    os::Sampling::Mipmap::Linear);
+            break;
         }
+      }
 
-        g->drawSurface(tmp.get(),
-                       gfx::Rect(0, 0, rc2.w, rc2.h),
-                       dest,
-                       sampling,
-                       nullptr);
-      }
-      else {
-        g->blit(tmp.get(), 0, 0, dest.x, dest.y, dest.w, dest.h);
-      }
+      os::Paint p;
+      if (renderProperties.requiresRgbaBackbuffer)
+        p.blendMode(os::BlendMode::SrcOver);
+      else
+        p.blendMode(os::BlendMode::Src);
+
+      g->drawSurface(rendered.get(),
+                     gfx::Rect(0, 0, rc2.w, rc2.h),
+                     dest,
+                     sampling,
+                     &p);
+    }
+    else {
+      g->blit(rendered.get(), 0, 0, dest.x, dest.y, dest.w, dest.h);
     }
   }
 
@@ -2034,15 +2032,52 @@ bool Editor::onProcessMessage(Message* msg)
 
     case kKeyDownMessage:
 #if ENABLE_DEVMODE
-      // Switch render mode
+      // Switch renderer
       if (!msg->ctrlPressed() &&
           static_cast<KeyMessage*>(msg)->scancode() == kKeyF1) {
-        Preferences::instance().experimental.newRenderEngine(
-          !Preferences::instance().experimental.newRenderEngine());
-        invalidateCanvas();
+        // TODO replace this experimental flag with a new enum (or
+        //      maybe there is no need for user option now that the
+        //      new engine allows to disable the bilinear mipmapping
+        //      interpolation) as we still need the "old" engine to
+        //      render reference layers
+        auto& newRenderEngine = Preferences::instance().experimental.newRenderEngine;
+
+#if SK_ENABLE_SKSL
+        // Simple (new) -> Simple (old) -> Shader -> Simple (new) -> ...
+        if (m_renderEngine->type() == EditorRender::Type::kShaderRenderer) {
+          newRenderEngine(true);
+          m_renderEngine->setType(EditorRender::Type::kSimpleRenderer);
+        }
+        else {
+          if (newRenderEngine()) {
+            newRenderEngine(false);
+          }
+          else {
+            newRenderEngine(true);
+            m_renderEngine->setType(EditorRender::Type::kShaderRenderer);
+          }
+        }
+#else
+        // Simple (new) <-> Simple (old)
+        newRenderEngine(!newRenderEngine());
+#endif
+
+        switch (m_renderEngine->type()) {
+          case EditorRender::Type::kSimpleRenderer:
+            StatusBar::instance()->showTip(
+              1000, fmt::format("Simple Renderer ({})", newRenderEngine() ? "new": "old"));
+            break;
+          case EditorRender::Type::kShaderRenderer:
+            StatusBar::instance()->showTip(
+              1000, fmt::format("Shader Renderer"));
+            break;
+        }
+
+        app_refresh_screen();
         return true;
       }
-#endif
+#endif  // ENABLE_DEVMODE
+
       if (m_sprite) {
         EditorStatePtr holdState(m_state);
         bool used = m_state->onKeyDown(this, static_cast<KeyMessage*>(msg));

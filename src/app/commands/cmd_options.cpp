@@ -497,8 +497,8 @@ public:
     // Scaling
     selectScalingItems();
 
-#ifdef _DEBUG // TODO enable this on Release when Aseprite supports
-              //      GPU-acceleration properly
+#ifdef ENABLE_DEVMODE // TODO enable this on Release when Aseprite supports
+                      //      GPU-acceleration properly
     if (os::instance()->hasCapability(os::Capabilities::GpuAccelerationSwitch)) {
       gpuAcceleration()->setSelected(m_pref.general.gpuAcceleration());
     }
