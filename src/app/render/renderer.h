@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022  Igara Studio S.A.
+// Copyright (C) 2022-2023  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -38,6 +38,10 @@ namespace app {
       // composite the background already painted on the screen with
       // the sprite painted in the backbuffer.
       bool requiresRgbaBackbuffer = false;
+
+      // True if renderSprite() composite an unpremultiplied RGBA
+      // surface when we draw on a transparent background.
+      bool outputsUnpremultiplied = false;
     };
 
     virtual ~Renderer() { }

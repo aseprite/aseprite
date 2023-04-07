@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022  Igara Studio S.A.
+// Copyright (C) 2022-2023  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -17,6 +17,8 @@ namespace app {
   // CPU-only.
   class SimpleRenderer : public Renderer {
   public:
+    SimpleRenderer();
+
     const Properties& properties() const override { return m_properties; }
 
     void setRefLayersVisiblity(const bool visible) override;

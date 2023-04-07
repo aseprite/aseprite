@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -31,6 +31,10 @@
 #include "gfx/matrix.h"
 #include "os/surface.h"
 #include "os/system.h"
+
+#if LAF_SKIA
+  #include "os/skia/skia_surface.h"
+#endif
 
 #include <cmath>
 #include <cstring>
@@ -182,6 +186,19 @@ protected:
     if (m_render == nullptr) {
       m_render = os::instance()->makeRgbaSurface(m_sprite->width(),
                                                  m_sprite->height());
+
+#if LAF_SKIA
+      // The SimpleRenderer renders unpremultiplied surfaces when
+      // rendering on transparent background (this is the only place
+      // where this happens).
+      if (render.properties().outputsUnpremultiplied) {
+        // We use a little tricky with Skia indicating that the alpha
+        // is unpremultiplied
+        ((os::SkiaSurface*)m_render.get())
+          ->bitmap().setAlphaType(kUnpremul_SkAlphaType);
+      }
+#endif
+
       m_repaint = true;
     }
 
@@ -210,7 +227,10 @@ protected:
       render.renderCheckeredBackground(
         g->getInternalSurface(), m_sprite,
         gfx::Clip(g->getInternalDeltaX(),
-                  g->getInternalDeltaY(), clientBounds()));
+                  g->getInternalDeltaY(),
+                  -m_pos.x, -m_pos.y,
+                  2*g->getInternalSurface()->width(),
+                  2*g->getInternalSurface()->height()));
 
       // Invalidate the whole Graphics (as we've just modified its
       // internal os::Surface directly).

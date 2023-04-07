@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022  Igara Studio S.A.
+// Copyright (C) 2022-2023  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -16,6 +16,11 @@
 namespace app {
 
 using namespace doc;
+
+SimpleRenderer::SimpleRenderer()
+{
+  m_properties.outputsUnpremultiplied = true;
+}
 
 void SimpleRenderer::setRefLayersVisiblity(const bool visible)
 {
