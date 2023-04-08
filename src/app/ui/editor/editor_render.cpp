@@ -34,7 +34,7 @@ EditorRender::~EditorRender()
 
 EditorRender::Type EditorRender::type() const
 {
-#if SK_ENABLE_SKSL
+#if SK_ENABLE_SKSL && ENABLE_DEVMODE
   if (dynamic_cast<ShaderRenderer*>(m_renderer.get()))
     return Type::kShaderRenderer;
 #endif
@@ -43,7 +43,7 @@ EditorRender::Type EditorRender::type() const
 
 void EditorRender::setType(const Type type)
 {
-#if SK_ENABLE_SKSL
+#if SK_ENABLE_SKSL && ENABLE_DEVMODE
   if (type == Type::kShaderRenderer) {
     m_renderer = std::make_unique<ShaderRenderer>();
   }
