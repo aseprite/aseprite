@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2022 Igara Studio S.A.
+// Copyright (c) 2019-2023 Igara Studio S.A.
 // Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -33,7 +33,7 @@ namespace doc {
     using pointer = PointerType;
     using reference = ReferenceType;
 
-    ImageIteratorT() : m_ptr(nullptr) {
+    ImageIteratorT() {
     }
 
     ImageIteratorT(const ImageIteratorT& other) :
@@ -126,11 +126,11 @@ namespace doc {
     int y() const { return m_y; }
 
   private:
-    Image* m_image;
-    pointer m_ptr;
-    int m_x, m_y;
-    int m_xbegin;
-    int m_xend;
+    Image* m_image = nullptr;
+    pointer m_ptr = nullptr;
+    int m_x = 0, m_y = 0;
+    int m_xbegin = 0;
+    int m_xend = 0;
   };
 
   template<typename ImageTraits>
@@ -168,9 +168,7 @@ namespace doc {
 
   class BitPixelAccess {
   public:
-    BitPixelAccess() :
-      m_ptr(nullptr),
-      m_bit(0) {
+    BitPixelAccess() {
     }
 
     void reset(BitmapTraits::address_t ptr, int bit) {
@@ -229,8 +227,8 @@ namespace doc {
     // Non-copyable by copy constructor.
     BitPixelAccess(const BitPixelAccess& other);
 
-    BitmapTraits::address_t m_ptr;
-    int m_bit;
+    BitmapTraits::address_t m_ptr = nullptr;
+    int m_bit = 0;
   };
 
   inline bool operator==(int a, const BitPixelAccess& b) {
@@ -261,7 +259,7 @@ namespace doc {
 
     enum { pixels_per_byte = BitmapTraits::pixels_per_byte };
 
-    ImageIteratorT() : m_ptr(nullptr) {
+    ImageIteratorT() {
     }
 
     ImageIteratorT(const ImageIteratorT& other) :
@@ -369,12 +367,12 @@ namespace doc {
     int y() const { return m_y; }
 
   private:
-    Image* m_image;
-    pointer m_ptr;
-    int m_x, m_y;
-    int m_subPixel;
-    int m_xbegin;
-    int m_xend;
+    Image* m_image = nullptr;
+    pointer m_ptr = nullptr;
+    int m_x = 0, m_y = 0;
+    int m_subPixel = 0;
+    int m_xbegin = 0;
+    int m_xend = 0;
     mutable BitPixelAccess m_access;
   };
 
