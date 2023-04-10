@@ -220,6 +220,16 @@ int Image_clear(lua_State* L)
   auto obj = get_obj<ImageObj>(L, 1);
   auto img = obj->image(L);
   doc::color_t color;
+  if (auto rc = may_get_obj<gfx::Rect>(L, 2)) {
+    if (lua_isinteger(L, 3))
+      color = lua_tointeger(L, 3);
+    else
+      color = convert_args_into_pixel_color(L, 3, img->pixelFormat());
+    if (!img->bounds().contains(*rc))
+      return luaL_error(L, "rectangle out of image bounds");
+    img->fillRect(rc->x, rc->y, rc->x2()-1, rc->y2()-1, color);
+    return 0;
+  }
   if (lua_isnone(L, 2))
     color = img->maskColor();
   else if (lua_isinteger(L, 2))
