@@ -41,6 +41,27 @@ do
   assert(not a:isEmpty())
 end
 
+-- Clear
+do
+  local spec = ImageSpec{
+    width=2, height=2,
+    colorMode=ColorMode.INDEXED,
+    transparentColor=1 }
+
+  local img = Image(spec)
+  img:clear()
+  expect_img(img, { 1, 1,
+                    1, 1 })
+
+  img:clear(img.bounds)
+  expect_img(img, { 1, 1,
+                    1, 1 })
+
+  img:clear(Rectangle(1, 0, 1, 2), 2)
+  expect_img(img, { 1, 2,
+                    1, 2 })
+end
+
 -- Clone
 do
   local c = Image(a)

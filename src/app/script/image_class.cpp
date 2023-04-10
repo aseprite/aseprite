@@ -220,13 +220,25 @@ int Image_clear(lua_State* L)
   auto obj = get_obj<ImageObj>(L, 1);
   auto img = obj->image(L);
   doc::color_t color;
-  if (lua_isnone(L, 2))
+  gfx::Rect rc;
+  int i = 2;
+
+  if (auto rcPtr = may_get_obj<gfx::Rect>(L, i)) {
+    rc = *rcPtr;
+    ++i;
+  }
+  else {
+    rc = img->bounds();         // Clear the whole image
+  }
+
+  if (lua_isnone(L, i))
     color = img->maskColor();
-  else if (lua_isinteger(L, 2))
-    color = lua_tointeger(L, 2);
+  else if (lua_isinteger(L, i))
+    color = lua_tointeger(L, i);
   else
-    color = convert_args_into_pixel_color(L, 2, img->pixelFormat());
-  doc::clear_image(img, color);
+    color = convert_args_into_pixel_color(L, i, img->pixelFormat());
+
+  doc::fill_rect(img, rc, color); // Clips the rectangle to the image bounds
   return 0;
 }
 
