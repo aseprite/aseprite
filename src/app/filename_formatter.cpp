@@ -101,6 +101,7 @@ bool is_template_in_filename(const std::string& format)
     "{title}",
     "{extension}",
     "{layer}",
+    "{slice}",
     "{tag}",
     "{innertag}",
     "{outertag}",
