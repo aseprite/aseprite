@@ -14,6 +14,7 @@
 
 #include "app/color_utils.h"
 #include "app/util/shader_helpers.h"
+#include "doc/render_plan.h"
 #include "os/skia/skia_surface.h"
 
 #include "include/core/SkCanvas.h"
@@ -215,21 +216,21 @@ void ShaderRenderer::renderSprite(os::Surface* dstSurface,
                       area.dst.y - area.src.y);
     canvas->scale(m_proj.scaleX(), m_proj.scaleY());
 
-    drawLayerGroup(canvas, sprite, sprite->root(), frame, area);
+    RenderPlan plan;
+    plan.addLayer(sprite->root(), frame);
+    renderPlan(canvas, sprite, plan, frame, area);
   }
   canvas->restore();
 }
 
-void ShaderRenderer::drawLayerGroup(SkCanvas* canvas,
-                                    const doc::Sprite* sprite,
-                                    const doc::LayerGroup* group,
-                                    const doc::frame_t frame,
-                                    const gfx::ClipF& area)
+void ShaderRenderer::renderPlan(SkCanvas* canvas,
+                                const doc::Sprite* sprite,
+                                const doc::RenderPlan& plan,
+                                const doc::frame_t frame,
+                                const gfx::ClipF& area)
 {
-  for (auto layer : group->layers()) {
-    // Ignore hidden layers
-    if (!layer->isVisible())
-      continue;
+  for (const Cel* cel : plan.cels()) {
+    const Layer* layer = cel->layer();
 
     switch (layer->type()) {
 
@@ -346,10 +347,7 @@ void ShaderRenderer::drawLayerGroup(SkCanvas* canvas,
       }
 
       case doc::ObjectType::LayerGroup:
-        // TODO draw a group in a sub-surface and then compose that surface
-        drawLayerGroup(canvas, sprite,
-                       static_cast<const doc::LayerGroup*>(layer),
-                       frame, area);
+        ASSERT(false);
         break;
     }
 

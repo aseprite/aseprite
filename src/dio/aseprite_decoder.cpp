@@ -831,7 +831,8 @@ doc::Cel* AsepriteDecoder::readCelChunk(doc::Sprite* sprite,
   int y = ((int16_t)read16());
   int opacity = read8();
   int cel_type = read16();
-  readPadding(7);
+  int zIndex = ((int16_t)read16());
+  readPadding(5);
 
   doc::Layer* layer = nullptr;
   if (layer_index >= 0 && layer_index < doc::layer_t(m_allLayers.size()))
@@ -868,6 +869,7 @@ doc::Cel* AsepriteDecoder::readCelChunk(doc::Sprite* sprite,
         cel = std::make_unique<doc::Cel>(frame, image);
         cel->setPosition(x, y);
         cel->setOpacity(opacity);
+        cel->setZIndex(zIndex);
       }
       break;
     }
@@ -889,6 +891,7 @@ doc::Cel* AsepriteDecoder::readCelChunk(doc::Sprite* sprite,
           cel->setPosition(x, y);
           cel->setOpacity(opacity);
         }
+        cel->setZIndex(zIndex);
       }
       else {
         // Linked cel doesn't found
@@ -909,6 +912,7 @@ doc::Cel* AsepriteDecoder::readCelChunk(doc::Sprite* sprite,
         cel = std::make_unique<doc::Cel>(frame, image);
         cel->setPosition(x, y);
         cel->setOpacity(opacity);
+        cel->setZIndex(zIndex);
       }
       break;
     }
@@ -954,6 +958,7 @@ doc::Cel* AsepriteDecoder::readCelChunk(doc::Sprite* sprite,
         cel = std::make_unique<doc::Cel>(frame, image);
         cel->setPosition(x, y);
         cel->setOpacity(opacity);
+        cel->setZIndex(zIndex);
       }
       break;
     }

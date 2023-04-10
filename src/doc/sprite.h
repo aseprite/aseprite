@@ -36,7 +36,6 @@
 #define DOC_SPRITE_MAX_HEIGHT 65535
 
 namespace doc {
-
   class CelsRange;
   class Document;
   class Image;
@@ -46,6 +45,7 @@ namespace doc {
   class Mask;
   class Palette;
   class Remap;
+  class RenderPlan;
   class RgbMap;
   class RgbMapRGB5A3;
   class SelectedFrames;
@@ -197,11 +197,9 @@ namespace doc {
     void remapImages(const Remap& remap);
     void remapTilemaps(const Tileset* tileset,
                        const Remap& remap);
-    void pickCels(const double x,
-                  const double y,
-                  const frame_t frame,
+    void pickCels(const gfx::PointF& pos,
                   const int opacityThreshold,
-                  const LayerList& layers,
+                  const RenderPlan& plan,
                   CelList& cels) const;
 
     ////////////////////////////////////////
@@ -214,6 +212,7 @@ namespace doc {
 
     CelsRange cels() const;
     CelsRange cels(frame_t frame) const;
+    CelsRange cels(const SelectedFrames& selFrames) const;
     CelsRange uniqueCels() const;
     CelsRange uniqueCels(const SelectedFrames& selFrames) const;
 

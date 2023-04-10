@@ -986,7 +986,8 @@ static void ase_file_write_cel_chunk(FILE* f, dio::AsepriteFrameHeader* frame_he
   fputw(cel->y(), f);
   fputc(cel->opacity(), f);
   fputw(cel_type, f);
-  ase_file_write_padding(f, 7);
+  fputw(cel->zIndex(), f);
+  ase_file_write_padding(f, 5);
 
   switch (cel_type) {
 

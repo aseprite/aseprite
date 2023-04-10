@@ -325,6 +325,7 @@
         <part id="timeline_drop_frame_deco" x="252" y="120" w1="2" w2="1" w3="2" h1="3" h2="1" h3="3" />
         <part id="timeline_loop_range" x="240" y="132" w1="4" w2="4" w3="4" h1="3" h2="6" h3="3" />
         <part id="timeline_focused" x="228" y="12" w1="2" w2="8" w3="2" h1="2" h2="8" h3="2" />
+        <part id="timeline_zindex" x="272" y="122" w="6" h="6" />
         <part id="flag_normal" x="0" y="240" w="16" h="10" />
         <part id="flag_highlight" x="16" y="240" w="16" h="10" />
         <part id="drop_pixels_ok" x="176" y="176" w="7" h="8" />
@@ -446,6 +447,8 @@
         <part id="cursor_skew_ne" x="288" y="160" w="16" h="16" focusx="8" focusy="8" />
         <part id="one_win_icon" x="96" y="256" w="8" h="7" />
         <part id="multi_win_icon" x="104" y="256" w="8" h="7" />
+        <part id="spin_up" x="128" y="256" w="5" h="3" />
+        <part id="spin_down" x="128" y="259" w="5" h="3" />
     </parts>
     <styles>
         <style id="box" />
@@ -935,6 +938,9 @@
         </style>
         <style id="timeline_both_links">
             <background part="timeline_both_links_active" />
+        </style>
+        <style id="timeline_zindex">
+            <icon part="timeline_zindex" align="right bottom" x="0" y="-1" />
         </style>
         <style id="timeline_gear" extends="timeline_box">
             <icon part="timeline_gear" />

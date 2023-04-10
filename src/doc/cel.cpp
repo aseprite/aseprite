@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2020 Igara Studio S.A.
+// Copyright (c) 2019-2023 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -46,6 +46,7 @@ Cel* Cel::MakeCopy(const frame_t newFrame,
 
   cel->setPosition(other->position());
   cel->setOpacity(other->opacity());
+  cel->setZIndex(other->zIndex());
   return cel;
 }
 
@@ -53,7 +54,9 @@ Cel* Cel::MakeCopy(const frame_t newFrame,
 Cel* Cel::MakeLink(const frame_t newFrame,
                    const Cel* other)
 {
-  return new Cel(newFrame, other->dataRef());
+  Cel* cel = new Cel(newFrame, other->dataRef());
+  cel->setZIndex(other->zIndex());
+  return cel;
 }
 
 void Cel::setFrame(frame_t frame)
@@ -91,6 +94,11 @@ void Cel::setBoundsF(const gfx::RectF& bounds)
 void Cel::setOpacity(int opacity)
 {
   m_data->setOpacity(opacity);
+}
+
+void Cel::setZIndex(int zindex)
+{
+  m_zIndex = zindex;
 }
 
 Document* Cel::document() const

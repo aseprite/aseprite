@@ -506,6 +506,7 @@ add_library(app-lib
   cmd/set_cel_frame.cpp
   cmd/set_cel_opacity.cpp
   cmd/set_cel_position.cpp
+  cmd/set_cel_zindex.cpp
   cmd/set_frame_duration.cpp
   cmd/set_grid_bounds.cpp
   cmd/set_last_point.cpp

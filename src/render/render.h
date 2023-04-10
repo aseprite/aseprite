@@ -28,6 +28,7 @@ namespace doc {
   class Image;
   class Layer;
   class Palette;
+  class RenderPlan;
   class Sprite;
   class Tileset;
 }
@@ -158,8 +159,8 @@ namespace render {
       const frame_t frame,
       const CompositeImageFunc compositeImage);
 
-    void renderLayer(
-      const Layer* layer,
+    void renderPlan(
+      doc::RenderPlan& plan,
       Image* image,
       const gfx::Clip& area,
       const frame_t frame,

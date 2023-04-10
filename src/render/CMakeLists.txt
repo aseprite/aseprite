@@ -1,5 +1,5 @@
 # Aseprite Render Library
-# Copyright (C) 2019  Igara Studio S.A.
+# Copyright (C) 2019-2023  Igara Studio S.A.
 # Copyright (C) 2001-2018 David Capello
 
 add_library(render-lib

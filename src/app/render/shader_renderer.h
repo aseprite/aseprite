@@ -18,6 +18,10 @@
 class SkCanvas;
 class SkRuntimeEffect;
 
+namespace doc {
+  class RenderPlan;
+}
+
 namespace app {
 
   // Use SkSL to compose images with Skia shaders on the CPU (with the
@@ -72,11 +76,11 @@ namespace app {
                      const doc::BlendMode blendMode) override;
 
   private:
-    void drawLayerGroup(SkCanvas* canvas,
-                        const doc::Sprite* sprite,
-                        const doc::LayerGroup* group,
-                        const doc::frame_t frame,
-                        const gfx::ClipF& area);
+    void renderPlan(SkCanvas* canvas,
+                    const doc::Sprite* sprite,
+                    const doc::RenderPlan& plan,
+                    const doc::frame_t frame,
+                    const gfx::ClipF& area);
     void drawImage(SkCanvas* canvas,
                    const doc::Image* srcImage,
                    const int x,

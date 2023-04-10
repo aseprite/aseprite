@@ -22,6 +22,7 @@
 #include "doc/palette.h"
 #include "doc/primitives.h"
 #include "doc/remap.h"
+#include "doc/render_plan.h"
 #include "doc/rgbmap_rgb5a3.h"
 #include "doc/tag.h"
 #include "doc/tilesets.h"
@@ -624,22 +625,16 @@ void Sprite::remapTilemaps(const Tileset* tileset,
 //////////////////////////////////////////////////////////////////////
 // Drawing
 
-void Sprite::pickCels(const double x,
-                      const double y,
-                      const frame_t frame,
+void Sprite::pickCels(const gfx::PointF& pos,
                       const int opacityThreshold,
-                      const LayerList& layers,
+                      const RenderPlan& plan,
                       CelList& cels) const
 {
-  gfx::PointF pos(x, y);
-
-  for (int i=(int)layers.size()-1; i>=0; --i) {
-    const Layer* layer = layers[i];
-
-    Cel* cel = layer->cel(frame);
-    if (!cel)
-      continue;
-
+  // Iterate cels in reversed order (from the front-most to the
+  // bottom-most) so we pick first visible cel in the given position.
+  const CelList& planCels = plan.cels();
+  for (auto it=planCels.rbegin(), end=planCels.rend(); it!=end; ++it) {
+    Cel* cel = *it;
     const Image* image = cel->image();
     if (!image)
       continue;
@@ -750,6 +745,11 @@ CelsRange Sprite::cels(frame_t frame) const
   SelectedFrames selFrames;
   selFrames.insert(frame);
   return CelsRange(this, selFrames);
+}
+
+CelsRange Sprite::cels(const SelectedFrames& selFrames) const
+{
+  return CelsRange(this, selFrames, CelsRange::ALL);
 }
 
 CelsRange Sprite::uniqueCels() const

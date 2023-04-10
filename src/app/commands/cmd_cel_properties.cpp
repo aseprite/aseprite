@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2022  Igara Studio S.A.
+// Copyright (C) 2020-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -11,6 +11,7 @@
 
 #include "app/app.h"
 #include "app/cmd/set_cel_opacity.h"
+#include "app/cmd/set_cel_zindex.h"
 #include "app/cmd/set_user_data.h"
 #include "app/commands/command.h"
 #include "app/console.h"
@@ -33,6 +34,9 @@
 
 #include "cel_properties.xml.h"
 
+#include <algorithm>
+#include <limits>
+
 namespace app {
 
 using namespace ui;
@@ -49,10 +53,19 @@ public:
     , m_userDataView(Preferences::instance().cels.userDataVisibility)
   {
     opacity()->Change.connect([this]{ onStartTimer(); });
+    zindex()->Change.connect([this]{ onStartTimer(); });
     userData()->Click.connect([this]{ onToggleUserData(); });
     m_timer.Tick.connect([this]{ onCommitChange(); });
 
     m_userDataView.UserDataChange.connect([this]{ onStartTimer(); });
+
+    // TODO add to Expr widget spin flag to include these widgets in
+    //      the same Expr
+    zindexSpin()->ItemChange.connect([this]{
+      int dz = (zindexSpin()->selectedItem() == 0 ? +1: -1);
+      zindex()->setTextf("%d", zindex()->textInt() + dz);
+      onStartTimer();
+    });
 
     remapWindow();
     centerWindow();
@@ -99,6 +112,10 @@ private:
     return opacity()->getValue();
   }
 
+  int zindexValue() const {
+    return zindex()->textInt();
+  }
+
   int countCels(int* backgroundCount = nullptr) const {
     if (backgroundCount)
       *backgroundCount = 0;
@@ -133,7 +150,8 @@ private:
     switch (msg->type()) {
 
       case kKeyDownMessage:
-        if (opacity()->hasFocus()) {
+        if (opacity()->hasFocus() ||
+            zindex()->hasFocus()) {
           KeyScancode scancode = static_cast<KeyMessage*>(msg)->scancode();
           if (scancode == kKeyEnter ||
               scancode == kKeyEsc) {
@@ -175,11 +193,16 @@ private:
     m_timer.stop();
 
     const int newOpacity = opacityValue();
+    // Clamp z-index to the limits of the .aseprite specs
+    const int newZIndex = std::clamp<int>(zindexValue(),
+                                          std::numeric_limits<int16_t>::min(),
+                                          std::numeric_limits<int16_t>::max());
     const UserData newUserData= m_userDataView.userData();
     const int count = countCels();
 
     if ((count > 1) ||
         (count == 1 && m_cel && (newOpacity != m_cel->opacity() ||
+                                 newZIndex != m_cel->zIndex() ||
                                  newUserData != m_cel->data()->userData()))) {
       try {
         ContextWriter writer(UIContext::instance());
@@ -194,6 +217,9 @@ private:
         }
 
         Sprite* sprite = m_document->sprite();
+        bool redrawTimeline = false;
+
+        // For each unique cel (don't repeat on links)
         for (Cel* cel : sprite->uniqueCels(range.selectedFrames())) {
           if (range.contains(cel->layer())) {
             if (!cel->layer()->isBackground() && newOpacity != cel->opacity()) {
@@ -206,11 +232,24 @@ private:
               // Redraw timeline because the cel's user data/color
               // might have changed.
               if (newUserData.color() != cel->data()->userData().color()) {
-                App::instance()->timeline()->invalidate();
+                redrawTimeline = true;
               }
             }
           }
         }
+
+        // For all cels (repeat links)
+        for (Cel* cel : sprite->cels(range.selectedFrames())) {
+          if (range.contains(cel->layer())) {
+            if (newZIndex != cel->zIndex()) {
+              tx(new cmd::SetCelZIndex(cel, newZIndex));
+              redrawTimeline = true;
+            }
+          }
+        }
+
+        if (redrawTimeline)
+          App::instance()->timeline()->invalidate();
 
         tx.commit();
       }
@@ -253,6 +292,11 @@ private:
       updateFromCel();
   }
 
+  void onCelZIndexChange(DocEvent& ev) override {
+    if (m_cel == ev.cel())
+      updateFromCel();
+  }
+
   void onUserDataChange(DocEvent& ev) override {
      if (m_cel && m_cel->data() == ev.withUserData())
       updateFromCel();
@@ -272,6 +316,7 @@ private:
     if (count > 0) {
       if (m_cel) {
         opacity()->setValue(m_cel->opacity());
+        zindex()->setTextf("%d", m_cel->zIndex());
         color_t c = m_cel->data()->userData().color();
         m_userDataView.color()->setColor(Color::fromRgb(rgba_getr(c), rgba_getg(c), rgba_getb(c), rgba_geta(c)));
         m_userDataView.entry()->setText(m_cel->data()->userData().text());

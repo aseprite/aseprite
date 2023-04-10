@@ -2398,6 +2398,11 @@ void Timeline::drawCel(ui::Graphics* g, layer_t layerIndex, frame_t frame, Cel* 
   // Draw decorators to link the activeCel with its links.
   if (data && data->activeIt != data->end)
     drawCelLinkDecorators(g, full_bounds, cel, frame, is_loosely_active, is_hover, data);
+
+  // Draw 'z' if this cel has a custom z-index (non-zero)
+  if (cel && cel->zIndex() != 0) {
+    drawPart(g, bounds, nullptr, styles.timelineZindex(), is_loosely_active, is_hover);
+  }
 }
 
 void Timeline::updateCelOverlayBounds(const Hit& hit)

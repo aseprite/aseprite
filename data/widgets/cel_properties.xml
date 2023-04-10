@@ -1,12 +1,20 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2020 by Igara Studio S.A. -->
+<!-- Copyright (C) 2020-2023 by Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2016 by David Capello -->
 <gui>
 <window id="cel_properties" text="@.title">
-  <grid id="properties_grid" columns="3">
+  <grid id="properties_grid" columns="4">
     <label text="@.opacity" />
-    <slider min="0" max="255" id="opacity" cell_align="horizontal" width="128" />
+    <slider min="0" max="255" id="opacity" cell_align="horizontal" width="128" cell_hspan="2" />
     <button id="user_data" icon="icon_user_data" tooltip="@.user_data_tooltip" />
+
+    <label text="@.zindex" />
+    <expr id="zindex" cell_align="horizontal" width="128" />
+    <buttonset id="zindex_spin" columns="1">
+      <item icon="spin_up" />
+      <item icon="spin_down" />
+    </buttonset>
+    <boxfiller />
   </grid>
 </window>
 </gui>

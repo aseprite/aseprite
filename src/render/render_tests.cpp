@@ -1,4 +1,4 @@
-// Aseprite Document Library
+// Aseprite Render Library
 // Copyright (c) 2019-2023 Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //

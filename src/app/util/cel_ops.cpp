@@ -212,10 +212,11 @@ Cel* create_cel_copy(CmdSequence* cmds,
   }
 
   // New cel
-  std::unique_ptr<Cel> dstCel(
-    new Cel(dstFrame, ImageRef(Image::create(dstPixelFormat, dstSize.w, dstSize.h))));
+  auto dstCel = std::make_unique<Cel>(
+    dstFrame, ImageRef(Image::create(dstPixelFormat, dstSize.w, dstSize.h)));
 
   dstCel->setOpacity(srcCel->opacity());
+  dstCel->setZIndex(srcCel->zIndex());
   dstCel->data()->setUserData(srcCel->data()->userData());
 
   // Special case were we copy from a tilemap...

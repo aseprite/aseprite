@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -19,6 +19,7 @@
 #include "doc/image.h"
 #include "doc/layer_tilemap.h"
 #include "doc/primitives.h"
+#include "doc/render_plan.h"
 #include "doc/sprite.h"
 #include "doc/tileset.h"
 #include "gfx/point.h"
@@ -127,9 +128,11 @@ void ColorPicker::pickColor(const Site& site,
 
     // Pick from the composed image
     case FromComposition: {
+      doc::RenderPlan plan;
+      plan.addLayer(sprite->root(), site.frame());
+
       doc::CelList cels;
-      sprite->pickCels(pos.x, pos.y, site.frame(), kOpacityThreshold,
-                       sprite->allVisibleLayers(), cels);
+      sprite->pickCels(pos, kOpacityThreshold, plan, cels);
       if (!cels.empty())
         m_layer = cels.front()->layer();
 
@@ -191,9 +194,12 @@ void ColorPicker::pickColor(const Site& site,
     }
 
     case FromFirstReferenceLayer: {
+      doc::RenderPlan plan;
+      for (doc::Layer* refLayer : sprite->allVisibleReferenceLayers())
+        plan.addLayer(refLayer, site.frame());
+
       doc::CelList cels;
-      sprite->pickCels(pos.x, pos.y, site.frame(), kOpacityThreshold,
-                       sprite->allVisibleReferenceLayers(), cels);
+      sprite->pickCels(pos, kOpacityThreshold, plan, cels);
 
       for (const Cel* cel : cels) {
         doc::color_t imageColor;

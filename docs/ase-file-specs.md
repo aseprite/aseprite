@@ -210,7 +210,11 @@ This chunk determine where to put a cel in the specified layer/frame.
                 1 - Linked Cel
                 2 - Compressed Image
                 3 - Compressed Tilemap
-    BYTE[7]     For future (set to zero)
+    SHORT       Z-Index
+                0 = default layer ordering
+                +N = show this cel N layers later
+                -N = show this cel N layers back
+    BYTE[5]     For future (set to zero)
     + For cel type = 0 (Raw Image Data)
       WORD      Width in pixels
       WORD      Height in pixels

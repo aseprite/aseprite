@@ -1,3 +1,4 @@
+-- Copyright (C) 2023  Igara Studio S.A.
 -- Copyright (C) 2018  David Capello
 --
 -- This file is released under the terms of the MIT license.
@@ -27,3 +28,11 @@ assert(c.data == "test")
 c.position = Point(2, 4)
 assert(c.position == Point(2, 4))
 assert(c.bounds == Rectangle(2, 4, 32, 64))
+
+assert(c.opacity == 255)
+c.opacity = 128
+assert(c.opacity == 128)
+
+assert(c.zIndex == 0)
+c.zIndex = -2
+assert(c.zIndex == -2)

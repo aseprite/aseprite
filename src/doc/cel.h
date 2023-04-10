@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2020 Igara Studio S.A.
+// Copyright (c) 2019-2023 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -39,6 +39,7 @@ namespace doc {
     const gfx::Rect& bounds() const { return m_data->bounds(); }
     const gfx::RectF& boundsF() const { return m_data->boundsF(); }
     int opacity() const { return m_data->opacity(); }
+    int zIndex() const { return m_zIndex; }
 
     gfx::Rect imageBounds() const { return m_data->imageBounds(); }
 
@@ -62,6 +63,7 @@ namespace doc {
     void setBounds(const gfx::Rect& bounds);
     void setBoundsF(const gfx::RectF& bounds);
     void setOpacity(int opacity);
+    void setZIndex(int zindex);
 
     virtual int getMemSize() const override {
       return sizeof(Cel) + m_data->getMemSize();
@@ -76,6 +78,7 @@ namespace doc {
     LayerImage* m_layer;
     frame_t m_frame;            // Frame position
     CelDataRef m_data;
+    int m_zIndex = 0;
 
     Cel();
     DISABLE_COPYING(Cel);
