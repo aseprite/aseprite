@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -23,6 +23,7 @@
 #include "app/tools/tool.h"
 #include "app/tools/tool_box.h"
 #include "app/ui/key.h"
+#include "app/ui/timeline/timeline.h"
 #include "app/ui_context.h"
 #include "app/xml_document.h"
 #include "app/xml_exception.h"
@@ -90,6 +91,7 @@ namespace {
     { "MoveTool"             , app::KeyContext::MoveTool },
     { "FreehandTool"         , app::KeyContext::FreehandTool },
     { "ShapeTool"            , app::KeyContext::ShapeTool },
+    { "FramesSelection"      , app::KeyContext::FramesSelection },
     { NULL                   , app::KeyContext::Any }
   };
 
@@ -435,13 +437,15 @@ void Key::add(const ui::Accelerator& accel,
 const ui::Accelerator* Key::isPressed(const Message* msg,
                                       KeyboardShortcuts& globalKeys) const
 {
+  const KeyContext currentKeyContext = globalKeys.getCurrentKeyContext();
+
   if (auto keyMsg = dynamic_cast<const KeyMessage*>(msg)) {
     for (const Accelerator& accel : accels()) {
       if (accel.isPressed(keyMsg->modifiers(),
                           keyMsg->scancode(),
                           keyMsg->unicodeChar()) &&
           (m_keycontext == KeyContext::Any ||
-           m_keycontext == globalKeys.getCurrentKeyContext())) {
+           m_keycontext == currentKeyContext)) {
         return &accel;
       }
     }
@@ -1081,10 +1085,19 @@ KeyContext KeyboardShortcuts::getCurrentKeyContext()
       // eyedropper, but we want to use alt+left and alt+right in the
       // original context (the selection tool).
       App::instance()->activeToolManager()
-        ->selectedTool()->getInk(0)->isSelection())
+        ->selectedTool()->getInk(0)->isSelection()) {
     return KeyContext::SelectionTool;
-  else
-    return KeyContext::Normal;
+  }
+
+  auto timeline = App::instance()->timeline();
+  if (doc && timeline &&
+      !timeline->selectedFrames().empty() &&
+      (timeline->range().type() == DocRange::kFrames ||
+       timeline->range().type() == DocRange::kCels)) {
+    return KeyContext::FramesSelection;
+  }
+
+  return KeyContext::Normal;
 }
 
 bool KeyboardShortcuts::getCommandFromKeyMessage(const Message* msg, Command** command, Params* params)
@@ -1338,6 +1351,8 @@ std::string convertKeyContextToUserFriendlyString(KeyContext keyContext)
       return I18N_KEY(key_context_freehand_tool);
     case KeyContext::ShapeTool:
       return I18N_KEY(key_context_shape_tool);
+    case KeyContext::FramesSelection:
+      return I18N_KEY(key_context_frames_selection);
   }
   return std::string();
 }

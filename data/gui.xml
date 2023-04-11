@@ -76,6 +76,7 @@
       <key command="CanvasSize" shortcut="C" />
       <!-- Layer -->
       <key command="LayerProperties" shortcut="Shift+P" />
+      <key command="LayerProperties" shortcut="F2" context="Normal" />
       <key command="LayerVisibility" shortcut="Shift+X" />
       <key command="OpenGroup" shortcut="Shift+E" />
       <key command="NewLayer" shortcut="Shift+N" />
@@ -147,7 +148,7 @@
       <key command="ShowGrid" shortcut="Ctrl+'" mac="Cmd+'" />
       <key command="ShowPixelGrid" shortcut="Ctrl+Shift+'" mac="Cmd+Shift+'" />
       <key command="SnapToGrid" shortcut="Shift+S" />
-      <key command="SetLoopSection" shortcut="F2" />
+      <key command="SetLoopSection" shortcut="F2" context="FramesSelection" />
       <key command="ShowOnionSkin" shortcut="F3" />
       <key command="ToggleTimelineThumbnails" shortcut="F6" />
       <key command="Timeline" shortcut="Tab">
