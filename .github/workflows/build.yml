@@ -21,7 +21,7 @@ jobs:
       uses: hendrikmuhs/ccache-action@v1
       if: runner.os == 'Linux'
       with:
-        key: ${{ matrix.os }}-${{ matrix.enable_ui }}
+        key: ${{ matrix.os }}-${{ matrix.enable_ui }}-${{ matrix.build_type }}
     - uses: turtlesec-no/get-ninja@main
     - uses: ilammy/msvc-dev-cmd@v1
       if: runner.os == 'Windows'
