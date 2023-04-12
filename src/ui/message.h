@@ -188,6 +188,15 @@ namespace ui {
         m_magnification(magnification) {
     }
 
+    // Copy other TouchMessage converting its type
+    TouchMessage(MessageType type,
+                 const TouchMessage& other,
+                 const gfx::Point& newPosition)
+      : Message(type, other.modifiers()),
+        m_pos(newPosition),
+        m_magnification(other.magnification()) {
+    }
+
     const gfx::Point& position() const { return m_pos; }
     double magnification() const { return m_magnification; }
 

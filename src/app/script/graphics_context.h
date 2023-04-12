@@ -26,12 +26,13 @@ namespace script {
 
 class GraphicsContext {
 public:
-  GraphicsContext(const os::SurfaceRef& surface) : m_surface(surface) { }
+  GraphicsContext(const os::SurfaceRef& surface, int uiscale) : m_surface(surface), m_uiscale(uiscale) { }
   GraphicsContext(GraphicsContext&& gc) {
     std::swap(m_surface, gc.m_surface);
     std::swap(m_paint, gc.m_paint);
     std::swap(m_font, gc.m_font);
     std::swap(m_path, gc.m_path);
+    m_uiscale = gc.m_uiscale;
   }
 
   os::FontRef font() const { return m_font; }
@@ -118,8 +119,14 @@ public:
     m_surface->clipPath(m_path);
   }
 
+  int uiscale() const {
+    return m_uiscale;
+  }
+
 private:
   os::SurfaceRef m_surface = nullptr;
+  // Keeps the UI Scale currently in use when canvas autoScaling is enabled.
+  int m_uiscale;
   os::Paint m_paint;
   os::FontRef m_font;
   gfx::Path m_path;
