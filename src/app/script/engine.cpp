@@ -194,6 +194,7 @@ void register_tileset_class(lua_State* L);
 void register_tilesets_class(lua_State* L);
 void register_timer_class(lua_State* L);
 void register_tool_class(lua_State* L);
+void register_uuid_class(lua_State* L);
 void register_version_class(lua_State* L);
 void register_websocket_class(lua_State* L);
 
@@ -494,6 +495,7 @@ Engine::Engine()
   register_tilesets_class(L);
   register_timer_class(L);
   register_tool_class(L);
+  register_uuid_class(L);
   register_version_class(L);
 #if ENABLE_WEBSOCKET
   register_websocket_class(L);

@@ -211,6 +211,7 @@ if(ENABLE_SCRIPTING)
     script/tilesets_class.cpp
     script/timer_class.cpp
     script/tool_class.cpp
+    script/uuid_class.cpp
     script/values.cpp
     script/version_class.cpp
     shell.cpp
