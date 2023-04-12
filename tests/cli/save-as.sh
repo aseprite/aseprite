@@ -314,3 +314,11 @@ $ASEPRITE -b sprites/1empty3.aseprite \
 expect "a1.png
 a2.png
 b.png" "list_files $d"
+
+# Regression with -save-as {slice}
+# https://github.com/aseprite/aseprite/issues/3801
+
+d=$t/save-as-with-slice
+$ASEPRITE -b sprites/slices.aseprite -save-as $d/{slice}.png
+expect "square.png
+line.png" "list_files $d"

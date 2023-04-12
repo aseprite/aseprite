@@ -27,3 +27,4 @@
   to index 21.
 * `file-tests-props.aseprite`: Indexed, 64x64, 6 frames, 4 layers (one
    of them is a tilemap), 13 cels, 1 tag.
+* `slices.aseprite`: Indexed, 4x4, background layer, 2 slices.
