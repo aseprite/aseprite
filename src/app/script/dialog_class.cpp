@@ -35,6 +35,7 @@
 #include "ui/manager.h"
 #include "ui/menu.h"
 #include "ui/message.h"
+#include "ui/scale.h"
 #include "ui/separator.h"
 #include "ui/slider.h"
 #include "ui/system.h"
@@ -1102,6 +1103,15 @@ int Dialog_canvas(lua_State* L)
       sz.h = lua_tointegerx(L, -1, nullptr);
     }
     lua_pop(L, 1);
+
+    type = lua_getfield(L, 2, "autoScaling");
+    if (type != LUA_TNIL) {
+      widget->setAutoScaling(lua_toboolean(L, -1));
+    }
+    lua_pop(L, 1);
+
+    if (widget->isAutoScaling())
+      sz *= ui::guiscale();
 
     widget->setSizeHint(sz);
 

@@ -28,6 +28,7 @@ namespace skin {
       m_fallbackSize = fallbackSize;
     }
 
+    os::FontRef getFont(int size, int uiscale);
     os::FontRef getFont(int size);
 
   private:

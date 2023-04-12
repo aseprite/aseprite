@@ -28,13 +28,13 @@ FontData::FontData(os::FontType type)
 {
 }
 
-os::FontRef FontData::getFont(int size)
+os::FontRef FontData::getFont(int size, int uiscale)
 {
-  if (m_type == os::FontType::SpriteSheet)
+    if (m_type == os::FontType::SpriteSheet)
     size = 1;                   // Same size always
 
   // Use cache
-  size *= ui::guiscale();
+  size *= uiscale;
   auto it = m_fonts.find(size);
   if (it != m_fonts.end())
     return it->second;
@@ -64,6 +64,11 @@ os::FontRef FontData::getFont(int size)
   // Cache this font
   m_fonts[size] = font;
   return font;
+}
+
+os::FontRef FontData::getFont(int size)
+{
+  return getFont(size, ui::guiscale());
 }
 
 } // namespace skin

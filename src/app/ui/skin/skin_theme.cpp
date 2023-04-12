@@ -288,6 +288,7 @@ SkinTheme::~SkinTheme()
   for (auto& it : m_cursors)
     delete it.second;           // Delete cursor
 
+  m_unscaledSheet.reset();
   m_sheet.reset();
   m_parts_by_id.clear();
 
@@ -337,12 +338,12 @@ void SkinTheme::loadFontData()
 {
   LOG("THEME: Loading fonts\n");
 
-  std::string fonstFilename("fonts/fonts.xml");
+  std::string fontsFilename("fonts/fonts.xml");
 
   ResourceFinder rf;
-  rf.includeDataDir(fonstFilename.c_str());
+  rf.includeDataDir(fontsFilename.c_str());
   if (!rf.findFirst())
-    throw base::Exception("File %s not found", fonstFilename.c_str());
+    throw base::Exception("File %s not found", fontsFilename.c_str());
 
   XmlDocumentRef doc = open_xml(rf.filename());
   TiXmlHandle handle(doc.get());
@@ -386,6 +387,12 @@ void SkinTheme::loadSheet()
   }
   if (!newSheet)
     throw base::Exception("Error loading %s file", sheet_filename.c_str());
+
+  // TODO Change os::Surface::applyScale() to return a new surface,
+  //      avoid loading two times the same file (even more, if there
+  //      is no scale to apply, m_unscaledSheet must reference the
+  //      same m_sheet).
+  m_unscaledSheet = os::instance()->loadRgbaSurface(sheet_filename.c_str());
 
   // Replace the sprite sheet
   if (m_sheet)
@@ -455,6 +462,10 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
 
         os::FontRef font = fontData->getFont(size);
         m_themeFonts[idStr] = ThemeFont(font, mnemonics);
+
+        // Store a unscaled version for using when ui scaling is not desired (i.e. in a Canvas widget with
+        // autoScaling enabled).
+        m_unscaledFonts[font.get()] = fontData->getFont(size, 1);
 
         if (id == "default")
           m_defaultFont = font;
@@ -530,9 +541,15 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
       if (!part)
         part = m_parts_by_id[part_id] = SkinPartPtr(new SkinPart);
 
+      SkinPartPtr unscaledPart = m_unscaledParts_by_id[part_id];
+      if (!unscaledPart)
+        unscaledPart = m_unscaledParts_by_id[part_id] = SkinPartPtr(new SkinPart);
+
       if (w > 0 && h > 0) {
         part->setSpriteBounds(gfx::Rect(x, y, w, h));
         part->setBitmap(0, sliceSheet(part->bitmapRef(0), gfx::Rect(x, y, w, h)));
+        unscaledPart->setSpriteBounds(part->spriteBounds()/scale);
+        unscaledPart->setBitmap(0, sliceUnscaledSheet(unscaledPart->bitmapRef(0), unscaledPart->spriteBounds()));
       }
       else if (xmlPart->Attribute("w1")) { // 3x3-1 part (NW, N, NE, E, SE, S, SW, W)
         int w1 = scale*strtol(xmlPart->Attribute("w1"), nullptr, 10);
@@ -553,6 +570,18 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
         part->setBitmap(5, sliceSheet(part->bitmapRef(5), gfx::Rect(x+w1, y+h1+h2, w2, h3))); // S
         part->setBitmap(6, sliceSheet(part->bitmapRef(6), gfx::Rect(x, y+h1+h2, w1, h3))); // SW
         part->setBitmap(7, sliceSheet(part->bitmapRef(7), gfx::Rect(x, y+h1, w1, h2))); // W
+
+        unscaledPart->setSpriteBounds(part->spriteBounds()/scale);
+        unscaledPart->setSlicesBounds(part->slicesBounds()/scale);
+
+        unscaledPart->setBitmap(0, sliceUnscaledSheet(unscaledPart->bitmapRef(0), gfx::Rect(x, y, w1, h1)/scale));
+        unscaledPart->setBitmap(1, sliceUnscaledSheet(unscaledPart->bitmapRef(1), gfx::Rect(x+w1, y, w2, h1)/scale));
+        unscaledPart->setBitmap(2, sliceUnscaledSheet(unscaledPart->bitmapRef(2), gfx::Rect(x+w1+w2, y, w3, h1)/scale));
+        unscaledPart->setBitmap(3, sliceUnscaledSheet(unscaledPart->bitmapRef(3), gfx::Rect(x+w1+w2, y+h1, w3, h2)/scale));
+        unscaledPart->setBitmap(4, sliceUnscaledSheet(unscaledPart->bitmapRef(4), gfx::Rect(x+w1+w2, y+h1+h2, w3, h3)/scale));
+        unscaledPart->setBitmap(5, sliceUnscaledSheet(unscaledPart->bitmapRef(5), gfx::Rect(x+w1, y+h1+h2, w2, h3)/scale));
+        unscaledPart->setBitmap(6, sliceUnscaledSheet(unscaledPart->bitmapRef(6), gfx::Rect(x, y+h1+h2, w1, h3)/scale));
+        unscaledPart->setBitmap(7, sliceUnscaledSheet(unscaledPart->bitmapRef(7), gfx::Rect(x, y+h1, w1, h2)/scale));
       }
 
       // Is it a mouse cursor?
@@ -847,7 +876,7 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
   ThemeFile<SkinTheme>::updateInternals();
 }
 
-os::SurfaceRef SkinTheme::sliceSheet(os::SurfaceRef sur, const gfx::Rect& bounds)
+static os::SurfaceRef sliceSheet(os::SurfaceRef sheet, os::SurfaceRef sur, const gfx::Rect& bounds)
 {
   if (sur && (sur->width() != bounds.w ||
               sur->height() != bounds.h)) {
@@ -858,9 +887,9 @@ os::SurfaceRef SkinTheme::sliceSheet(os::SurfaceRef sur, const gfx::Rect& bounds
     if (!sur)
       sur = os::instance()->makeRgbaSurface(bounds.w, bounds.h);
 
-    os::SurfaceLock lockSrc(m_sheet.get());
+    os::SurfaceLock lockSrc(sheet.get());
     os::SurfaceLock lockDst(sur.get());
-    m_sheet->blitTo(sur.get(), bounds.x, bounds.y, 0, 0, bounds.w, bounds.h);
+    sheet->blitTo(sur.get(), bounds.x, bounds.y, 0, 0, bounds.w, bounds.h);
 
     // The new surface is immutable because we're going to re-use the
     // surface if we reload the theme.
@@ -873,6 +902,16 @@ os::SurfaceRef SkinTheme::sliceSheet(os::SurfaceRef sur, const gfx::Rect& bounds
   }
 
   return sur;
+}
+
+os::SurfaceRef SkinTheme::sliceSheet(os::SurfaceRef sur, const gfx::Rect& bounds)
+{
+  return app::skin::sliceSheet(m_sheet, sur, bounds);
+}
+
+os::SurfaceRef SkinTheme::sliceUnscaledSheet(os::SurfaceRef sur, const gfx::Rect& bounds)
+{
+  return app::skin::sliceSheet(m_unscaledSheet, sur, bounds);
 }
 
 os::Font* SkinTheme::getWidgetFont(const Widget* widget) const
@@ -1706,6 +1745,16 @@ void SkinTheme::drawRect(ui::Graphics* g, const gfx::Rect& rc,
                          SkinPart* skinPart, const bool drawCenter)
 {
   Theme::drawSlices(g, m_sheet.get(), rc,
+                    skinPart->spriteBounds(),
+                    skinPart->slicesBounds(),
+                    gfx::ColorNone,
+                    drawCenter);
+}
+
+void SkinTheme::drawRectUsingUnscaledSheet(ui::Graphics* g, const gfx::Rect& rc,
+                                           SkinPart* skinPart, const bool drawCenter)
+{
+  Theme::drawSlices(g, m_unscaledSheet.get(), rc,
                     skinPart->spriteBounds(),
                     skinPart->slicesBounds(),
                     gfx::ColorNone,

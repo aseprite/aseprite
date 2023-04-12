@@ -84,16 +84,20 @@ void GraphicsContext::drawImage(const doc::Image* img,
 void GraphicsContext::drawThemeImage(const std::string& partId, const gfx::Point& pt)
 {
   if (auto theme = skin::SkinTheme::instance()) {
-    skin::SkinPartPtr part = theme->getPartById(partId);
-    if (part && part->bitmap(0))
-      m_surface->drawRgbaSurface(part->bitmap(0), pt.x, pt.y);
+    skin::SkinPartPtr part = (m_uiscale > 1 ? theme->getUnscaledPartById(partId):
+                                              theme->getPartById(partId));
+    if (part && part->bitmap(0)) {
+      auto bmp = part->bitmap(0);
+      m_surface->drawRgbaSurface(bmp, pt.x, pt.y);
+    }
   }
 }
 
 void GraphicsContext::drawThemeRect(const std::string& partId, const gfx::Rect& rc)
 {
   if (auto theme = skin::SkinTheme::instance()) {
-    skin::SkinPartPtr part = theme->getPartById(partId);
+    skin::SkinPartPtr part = (m_uiscale > 1 ? theme->getUnscaledPartById(partId):
+                                              theme->getPartById(partId));
     if (part && part->bitmap(0)) {
       ui::Graphics g(nullptr, m_surface, 0, 0);
 
@@ -101,16 +105,20 @@ void GraphicsContext::drawThemeRect(const std::string& partId, const gfx::Rect& 
 
       // 9-slices
       if (!part->slicesBounds().isEmpty()) {
-        theme->drawRect(&g, rc, part.get(), true);
+        if (m_uiscale > 1)
+          theme->drawRectUsingUnscaledSheet(&g, rc, part.get(), true);
+        else
+          theme->drawRect(&g, rc, part.get(), true);
       }
       else {
         ui::IntersectClip clip(&g, rc);
         if (clip) {
+          auto bmp = part->bitmap(0);
           // Horizontal line
           if (rc.w > part->spriteBounds().w) {
             for (int x=rc.x; x<rc.x2(); x+=part->spriteBounds().w) {
               g.drawRgbaSurface(
-                part->bitmap(0),
+                bmp,
                 x, rc.y+rc.h/2-part->spriteBounds().h/2);
             }
           }
@@ -118,7 +126,7 @@ void GraphicsContext::drawThemeRect(const std::string& partId, const gfx::Rect& 
           else {
             for (int y=rc.y; y<rc.y2(); y+=part->spriteBounds().h) {
               g.drawRgbaSurface(
-                part->bitmap(0),
+                bmp,
                 rc.x+rc.w/2-part->spriteBounds().w/2, y);
             }
           }
@@ -234,6 +242,13 @@ int GraphicsContext_drawImage(lua_State* L)
     }
   }
   return 0;
+}
+
+int GraphicsContext_theme(lua_State* L)
+{
+  auto gc = get_obj<GraphicsContext>(L, 1);
+  push_app_theme(L, gc->uiscale());
+  return 1;
 }
 
 int GraphicsContext_drawThemeImage(lua_State* L)
@@ -466,6 +481,7 @@ const luaL_Reg GraphicsContext_methods[] = {
 const Property GraphicsContext_properties[] = {
   { "width", GraphicsContext_get_width, nullptr },
   { "height", GraphicsContext_get_height, nullptr },
+  { "theme", GraphicsContext_theme, nullptr },
   { "antialias", GraphicsContext_get_antialias, GraphicsContext_set_antialias },
   { "color", GraphicsContext_get_color, GraphicsContext_set_color },
   { "strokeWidth", GraphicsContext_get_strokeWidth, GraphicsContext_set_strokeWidth },

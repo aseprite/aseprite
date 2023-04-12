@@ -52,8 +52,14 @@ void Canvas::callPaint()
   m_surface->drawRect(m_surface->bounds(), p);
 
   // Draw only on resize (onPaint we draw the cached m_surface)
-  GraphicsContext gc(m_surface);
-  gc.font(AddRef(font()));
+  GraphicsContext gc(m_surface, m_autoScaling ? ui::guiscale() : 1);
+  if (m_autoScaling) {
+    auto theme = skin::SkinTheme::get(this);
+    gc.font(AddRef(theme->getUnscaledFont(font())));
+  }
+  else
+    gc.font(AddRef(font()));
+
   Paint(gc);
 }
 
@@ -67,6 +73,16 @@ void Canvas::onInitTheme(ui::InitThemeEvent& ev)
   else
     bg = gfx::rgba(0, 0, 0);
   setBgColor(bg);
+}
+
+template <typename T>
+static T makeScaled(T* msg, const gfx::Point& offset)
+{
+  static_assert(std::is_base_of<ui::Message, T>::value, "type parameter must derive from ui::Message");
+  auto result = T(msg->type(), *msg, ((msg->position() - offset) / ui::guiscale()) + offset);
+  result.setRecipient(static_cast<ui::Message*>(msg)->recipient());
+  result.setDisplay(static_cast<ui::Message*>(msg)->display());
+  return result;
 }
 
 bool Canvas::onProcessMessage(ui::Message* msg)
@@ -98,8 +114,11 @@ bool Canvas::onProcessMessage(ui::Message* msg)
       return true;
 
     case ui::kMouseMoveMessage: {
-      auto mouseMsg = static_cast<ui::MouseMessage*>(msg);
-      MouseMove(mouseMsg);
+      auto mouseMsg = *static_cast<ui::MouseMessage*>(msg);
+      if (m_autoScaling) {
+        mouseMsg = makeScaled(&mouseMsg, bounds().origin());
+      }
+      MouseMove(&mouseMsg);
       break;
     }
 
@@ -110,14 +129,20 @@ bool Canvas::onProcessMessage(ui::Message* msg)
       if (isFocusStop() && !hasFocus())
         requestFocus();
 
-      auto mouseMsg = static_cast<ui::MouseMessage*>(msg);
-      MouseDown(mouseMsg);
+      auto mouseMsg = *static_cast<ui::MouseMessage*>(msg);
+      if (m_autoScaling) {
+        mouseMsg = makeScaled(&mouseMsg, bounds().origin());
+      }
+      MouseDown(&mouseMsg);
       break;
     }
 
     case ui::kMouseUpMessage: {
-      auto mouseMsg = static_cast<ui::MouseMessage*>(msg);
-      MouseUp(mouseMsg);
+      auto mouseMsg = *static_cast<ui::MouseMessage*>(msg);
+      if (m_autoScaling) {
+        mouseMsg = makeScaled(&mouseMsg, bounds().origin());
+      }
+      MouseUp(&mouseMsg);
 
       if (hasCapture())
         releaseMouse();
@@ -125,20 +150,29 @@ bool Canvas::onProcessMessage(ui::Message* msg)
     }
 
     case ui::kDoubleClickMessage: {
-      auto mouseMsg = static_cast<ui::MouseMessage*>(msg);
-      DoubleClick(mouseMsg);
+      auto mouseMsg = *static_cast<ui::MouseMessage*>(msg);
+      if (m_autoScaling) {
+        mouseMsg = makeScaled(&mouseMsg, bounds().origin());
+      }
+      DoubleClick(&mouseMsg);
       break;
     }
 
     case ui::kMouseWheelMessage: {
-      auto mouseMsg = static_cast<ui::MouseMessage*>(msg);
-      Wheel(mouseMsg);
+      auto mouseMsg = *static_cast<ui::MouseMessage*>(msg);
+      if (m_autoScaling) {
+        mouseMsg = makeScaled(&mouseMsg, bounds().origin());
+      }
+      Wheel(&mouseMsg);
       break;
     }
 
     case ui::kTouchMagnifyMessage: {
-      auto touchMsg = static_cast<ui::TouchMessage*>(msg);
-      TouchMagnify(touchMsg);
+      auto touchMsg = *static_cast<ui::TouchMessage*>(msg);
+      if (m_autoScaling) {
+        touchMsg = makeScaled(&touchMsg, bounds().origin());
+      }
+      TouchMagnify(&touchMsg);
       break;
     }
 
@@ -150,14 +184,18 @@ void Canvas::onResize(ui::ResizeEvent& ev)
 {
   Widget::onResize(ev);
   if (os::instance() && !ev.bounds().isEmpty()) {
-    const int w = ev.bounds().w;
-    const int h = ev.bounds().h;
+    int w = ev.bounds().w;
+    int h = ev.bounds().h;
+
+    if (m_autoScaling) {
+      w = w/ui::guiscale() + (w % ui::guiscale());
+      h = h/ui::guiscale() + (h % ui::guiscale());
+    }
 
     if (!m_surface ||
         m_surface->width() != w ||
         m_surface->height() != h) {
       m_surface = os::instance()->makeSurface(w, h);
-
       callPaint();
     }
   }
@@ -168,9 +206,14 @@ void Canvas::onResize(ui::ResizeEvent& ev)
 void Canvas::onPaint(ui::PaintEvent& ev)
 {
   auto g = ev.graphics();
-  const gfx::Rect rc = clientBounds();
-  if (m_surface)
-    g->drawSurface(m_surface.get(), rc.x, rc.y);
+  gfx::Rect rc = clientBounds();
+  if (m_surface) {
+    if (m_autoScaling) {
+      rc.w += (rc.w % ui::guiscale());
+      rc.h += (rc.h % ui::guiscale());
+    }
+    g->drawSurface(m_surface.get(), m_surface->bounds(), rc, os::Sampling(), nullptr);
+  }
 }
 
 } // namespace script
