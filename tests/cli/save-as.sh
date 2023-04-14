@@ -320,5 +320,5 @@ b.png" "list_files $d"
 
 d=$t/save-as-with-slice
 $ASEPRITE -b sprites/slices.aseprite -save-as $d/{slice}.png
-expect "square.png
-line.png" "list_files $d"
+expect "line.png
+square.png" "list_files $d"
