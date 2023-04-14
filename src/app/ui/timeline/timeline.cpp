@@ -778,7 +778,7 @@ bool Timeline::onProcessMessage(Message* msg)
           break;
         }
         case PART_ROW_TEXT: {
-          base::ScopedValue<bool> lock(m_fromTimeline, true, false);
+          base::ScopedValue lock(m_fromTimeline, true);
           const layer_t old_layer = getLayerIndex(m_layer);
           const bool selectLayer = (mouseMsg->left() || !isLayerActive(m_clk.layer));
           const bool selectLayerInCanvas =
@@ -913,7 +913,7 @@ bool Timeline::onProcessMessage(Message* msg)
           break;
 
         case PART_CEL: {
-          base::ScopedValue<bool> lock(m_fromTimeline, true, false);
+          base::ScopedValue lock(m_fromTimeline, true);
           const layer_t old_layer = getLayerIndex(m_layer);
           const bool selectCel = (mouseMsg->left()
             || !isLayerActive(m_clk.layer)

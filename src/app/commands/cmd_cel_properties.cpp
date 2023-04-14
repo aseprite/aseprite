@@ -188,7 +188,7 @@ private:
     if (!m_pendingChanges)
       return;
 
-    base::ScopedValue<bool> switchSelf(m_selfUpdate, true, false);
+    base::ScopedValue switchSelf(m_selfUpdate, true);
 
     m_timer.stop();
 
@@ -308,7 +308,7 @@ private:
 
     m_timer.stop(); // Cancel current editions (just in case)
 
-    base::ScopedValue<bool> switchSelf(m_selfUpdate, true, false);
+    base::ScopedValue switchSelf(m_selfUpdate, true);
 
     int bgCount = 0;
     int count = countCels(&bgCount);

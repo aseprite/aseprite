@@ -332,7 +332,7 @@ bool ColorSelector::onProcessMessage(ui::Message* msg)
 
       app::Color color = getColorByPosition(pos);
       if (color != app::Color::fromMask()) {
-        base::ScopedValue<bool> switcher(m_lockColor, subColorPicked(), false);
+        base::ScopedValue switcher(m_lockColor, subColorPicked());
 
         StatusBar::instance()->showColor(0, color);
         if (hasCapture())

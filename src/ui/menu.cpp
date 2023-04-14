@@ -348,7 +348,7 @@ void Menu::showPopup(const gfx::Point& pos,
   // Set the owner menu item to nullptr temporarily in case that we
   // are re-using a menu from the root menu as popup menu (e.g. like
   // "animation_menu", that is used when right-cliking a Play button)
-  base::ScopedValue<MenuItem*> restoreOwner(m_menuitem, nullptr, m_menuitem);
+  base::ScopedValue<MenuItem*> restoreOwner(m_menuitem, nullptr);
 
   // Generally, when we call showPopup() the menu shouldn't contain a
   // parent menu-box, because we're filtering kMouseDownMessage to

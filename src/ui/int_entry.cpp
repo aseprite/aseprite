@@ -221,7 +221,7 @@ void IntEntry::closePopup()
 
 void IntEntry::onChangeSlider()
 {
-  base::ScopedValue<bool> lockFlag(m_changeFromSlider, true, false);
+  base::ScopedValue lockFlag(m_changeFromSlider, true);
   setValue(m_slider.getValue());
   selectAllText();
 }

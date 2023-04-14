@@ -257,7 +257,7 @@ private:
       return;
 
     IntEntry::onValueChange();
-    base::ScopedValue<bool> lockFlag(g_updatingFromCode, true, g_updatingFromCode);
+    base::ScopedValue lockFlag(g_updatingFromCode, true);
 
     Tool* tool = App::instance()->activeTool();
     Preferences::instance().tool(tool).brush.size(getValue());
@@ -278,7 +278,7 @@ protected:
       return;
 
     IntEntry::onValueChange();
-    base::ScopedValue<bool> lockFlag(g_updatingFromCode, true, g_updatingFromCode);
+    base::ScopedValue lockFlag(g_updatingFromCode, true);
 
     Tool* tool = App::instance()->activeTool();
     Preferences::instance().tool(tool).brush.angle(getValue());
@@ -718,7 +718,7 @@ protected:
       return;
 
     IntEntry::onValueChange();
-    base::ScopedValue<bool> lockFlag(g_updatingFromCode, true, g_updatingFromCode);
+    base::ScopedValue lockFlag(g_updatingFromCode, true);
 
     int newValue = getValue();
     Preferences& pref = Preferences::instance();
@@ -1970,7 +1970,7 @@ void ContextBar::updateForTool(tools::Tool* tool)
   // ContextBar elements.
 
   const bool oldUpdatingFromCode = g_updatingFromCode;
-  base::ScopedValue<bool> lockFlag(g_updatingFromCode, true, oldUpdatingFromCode);
+  base::ScopedValue lockFlag(g_updatingFromCode, true);
 
   ToolPreferences* toolPref = nullptr;
   ToolPreferences::Brush* brushPref = nullptr;

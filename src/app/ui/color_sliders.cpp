@@ -450,7 +450,7 @@ void ColorSliders::syncRelHsvHslSliders()
 
 void ColorSliders::onSliderChange(const Channel i)
 {
-  base::ScopedValue<int> lock(m_lockSlider, i, m_lockSlider);
+  base::ScopedValue<int> lock(m_lockSlider, i);
 
   updateEntryText(i);
   onControlChange(i);
@@ -458,7 +458,7 @@ void ColorSliders::onSliderChange(const Channel i)
 
 void ColorSliders::onEntryChange(const Channel i)
 {
-  base::ScopedValue<int> lock(m_lockEntry, i, m_lockEntry);
+  base::ScopedValue<int> lock(m_lockEntry, i);
 
   // Update the slider related to the changed entry widget.
   int value = m_items[i].entry->textInt();

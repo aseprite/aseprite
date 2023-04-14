@@ -243,7 +243,7 @@ private:
     if (!m_layer)
       return;
 
-    base::ScopedValue<bool> switchSelf(m_selfUpdate, true, false);
+    base::ScopedValue switchSelf(m_selfUpdate, true);
 
     m_timer.stop();
 
@@ -396,7 +396,7 @@ private:
 
     m_timer.stop(); // Cancel current editions (just in case)
 
-    base::ScopedValue<bool> switchSelf(m_selfUpdate, true, false);
+    base::ScopedValue switchSelf(m_selfUpdate, true);
 
     const bool tilemapVisibility = (m_layer && m_layer->isTilemap());
     if (m_layer) {

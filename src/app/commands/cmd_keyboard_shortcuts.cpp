@@ -762,7 +762,7 @@ private:
   }
 
   void onSearchChange() {
-    base::ScopedValue<bool> flag(m_searchChange, true, false);
+    base::ScopedValue flag(m_searchChange, true);
     std::string searchText = search()->text();
 
     if (searchText.empty())

@@ -55,7 +55,7 @@ void ZoomEntry::setZoom(const render::Zoom& zoom)
 
 void ZoomEntry::onValueChange()
 {
-  base::ScopedValue<bool> lock(m_locked, true, m_locked);
+  base::ScopedValue lock(m_locked, true);
   IntEntry::onValueChange();
 
   render::Zoom zoom = render::Zoom::fromLinearScale(getValue());

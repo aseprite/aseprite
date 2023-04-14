@@ -88,7 +88,7 @@ DocumentPreferences& ConfigureTimelinePopup::docPref()
 void ConfigureTimelinePopup::updateWidgetsFromCurrentSettings()
 {
   DocumentPreferences& docPref = this->docPref();
-  base::ScopedValue<bool> lockUpdates(m_lockUpdates, true, false);
+  base::ScopedValue lockUpdates(m_lockUpdates, true);
 
   auto position = Preferences::instance().general.timelinePosition();
   int selItem = 2;

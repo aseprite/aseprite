@@ -30,7 +30,7 @@ UserDataView::UserDataView(Option<bool>& visibility)
 
 void UserDataView::configureAndSet(const doc::UserData& userData, ui::Grid* parent)
 {
-  base::ScopedValue<bool> switchSelf(m_selfUpdate, true, m_selfUpdate);
+  base::ScopedValue switchSelf(m_selfUpdate, true);
 
   if (!m_isConfigured) {
     // Find the correct hspan to add to an arbitrary grid column count:

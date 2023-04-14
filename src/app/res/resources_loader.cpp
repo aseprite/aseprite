@@ -62,7 +62,7 @@ void ResourcesLoader::reload()
 
 void ResourcesLoader::threadLoadResources()
 {
-  base::ScopedValue<bool> scoped(m_done, false, true);
+  base::ScopedValue scoped(m_done, false, true);
 
   // Load resources from extensions
   std::map<std::string, std::string> idAndPaths;

@@ -252,8 +252,7 @@ bool DrawingState::onMouseMove(Editor* editor, MouseMessage* msg)
 
   // Don't process onScrollChange() messages if autoScroll() changes
   // the scroll.
-  base::ScopedValue<bool> disableScroll(m_processScrollChange,
-                                        false, m_processScrollChange);
+  base::ScopedValue disableScroll(m_processScrollChange, false);
 
   // Update velocity sensor.
   m_velocity.updateWithDisplayPoint(msg->position());

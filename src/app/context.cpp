@@ -153,9 +153,7 @@ void Context::executeCommandFromMenuOrShortcut(Command* command, const Params& p
         command->id().c_str(), executingCommand->id().c_str());
     return;
   }
-  base::ScopedValue<Command*> commandGuard(executingCommand,
-                                           command, nullptr);
-
+  base::ScopedValue commandGuard(executingCommand, command);
   executeCommand(command, params);
 }
 

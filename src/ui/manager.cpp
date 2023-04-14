@@ -748,7 +748,7 @@ void Manager::handleWindowZOrder()
     (!window->isForeground()) &&
     // If the window is not already the top window of the manager.
     (window != win_manager->getTopWindow())) {
-    base::ScopedValue<Widget*> scoped(m_lockedWindow, window, nullptr);
+    base::ScopedValue<Widget*> scoped(m_lockedWindow, window);
 
     window->display()->handleWindowZOrder(window);
 

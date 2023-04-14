@@ -1029,7 +1029,7 @@ void ColorBar::onPaletteViewIndexChange(int index, ui::MouseButton button)
 {
   COLOR_BAR_TRACE("ColorBar::onPaletteViewIndexChange(%d)\n", index);
 
-  base::ScopedValue<bool> lock(m_fromPalView, true, m_fromPalView);
+  base::ScopedValue lock(m_fromPalView, true);
 
   app::Color color = app::Color::fromIndex(index);
 
@@ -1294,7 +1294,7 @@ void ColorBar::onFgColorChangeFromPreferences()
   if (m_fromPref)
     return;
 
-  base::ScopedValue<bool> sync(m_fromPref, true, false);
+  base::ScopedValue sync(m_fromPref, true);
   setFgColor(Preferences::instance().colorBar.fgColor());
 }
 
@@ -1312,7 +1312,7 @@ void ColorBar::onBgColorChangeFromPreferences()
     setFgColor(Preferences::instance().colorBar.bgColor());
   }
   else {
-    base::ScopedValue<bool> sync(m_fromPref, true, false);
+    base::ScopedValue sync(m_fromPref, true);
     setBgColor(Preferences::instance().colorBar.bgColor());
   }
 }
@@ -1322,7 +1322,7 @@ void ColorBar::onFgTileChangeFromPreferences()
   if (m_fromPref)
     return;
 
-  base::ScopedValue<bool> sync(m_fromPref, true, false);
+  base::ScopedValue sync(m_fromPref, true);
   auto tile = Preferences::instance().colorBar.fgTile();
   m_fgTile.setTile(tile);
   m_tilesView.selectColor(tile);
@@ -1333,7 +1333,7 @@ void ColorBar::onBgTileChangeFromPreferences()
   if (m_fromPref)
     return;
 
-  base::ScopedValue<bool> sync(m_fromPref, true, false);
+  base::ScopedValue sync(m_fromPref, true);
   auto tile = Preferences::instance().colorBar.bgTile();
   m_bgTile.setTile(tile);
   m_tilesView.selectColor(tile);
@@ -1372,10 +1372,10 @@ void ColorBar::onFgColorButtonChange(const app::Color& color)
   if (m_fromFgButton)
     return;
 
-  base::ScopedValue<bool> lock(m_fromFgButton, true, false);
+  base::ScopedValue lock(m_fromFgButton, true);
 
   if (!m_fromPref) {
-    base::ScopedValue<bool> sync(m_fromPref, true, false);
+    base::ScopedValue sync(m_fromPref, true);
     Preferences::instance().colorBar.fgColor(color);
   }
 
@@ -1390,13 +1390,13 @@ void ColorBar::onBgColorButtonChange(const app::Color& color)
   if (m_fromBgButton)
     return;
 
-  base::ScopedValue<bool> lock(m_fromBgButton, true, false);
+  base::ScopedValue lock(m_fromBgButton, true);
 
   if (!m_fromPalView && !inEditMode())
     m_paletteView.deselect();
 
   if (!m_fromPref) {
-    base::ScopedValue<bool> sync(m_fromPref, true, false);
+    base::ScopedValue sync(m_fromPref, true);
     Preferences::instance().colorBar.bgColor(color);
   }
 
@@ -1716,7 +1716,7 @@ void ColorBar::onFixWarningClick(ColorButton* colorButton, ui::Button* warningIc
   if (inEditMode()) {
     const int newEntries = palette->size();
     if (oldEntries != newEntries) {
-      base::ScopedValue<bool> sync(m_fromPref, true, m_fromPref);
+      base::ScopedValue sync(m_fromPref, true);
       app::Color newIndex = app::Color::fromIndex(newEntries-1);
       if (colorButton == &m_bgColor)
         setBgColor(newIndex);
