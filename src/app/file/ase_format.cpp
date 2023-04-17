@@ -1610,6 +1610,13 @@ static void ase_file_write_property_value(FILE* f,
       }
       break;
     }
+    case USER_DATA_PROPERTY_TYPE_UUID: {
+      auto& uuid = *std::get_if<base::Uuid>(&value);
+      for (int i=0; i<16; ++i) {
+        fputc(uuid[i], f);
+      }
+      break;
+    }
   }
 }
 

@@ -218,6 +218,19 @@ gfx::Rect get_value_from_lua(lua_State* L, int index) {
 }
 
 // ----------------------------------------------------------------------
+// Uuid
+
+template<>
+void push_value_to_lua(lua_State* L, const base::Uuid& value) {
+  push_obj(L, value);
+}
+
+template<>
+base::Uuid get_value_from_lua(lua_State* L, int index) {
+  return convert_args_into_uuid(L, index);
+}
+
+// ----------------------------------------------------------------------
 // tools::InkType
 
 template<>
@@ -372,6 +385,9 @@ void push_value_to_lua(lua_State* L, const doc::UserData::Variant& value)
     case USER_DATA_PROPERTY_TYPE_PROPERTIES:
       push_value_to_lua(L, *std::get_if<doc::UserData::Properties>(&value));
       break;
+    case USER_DATA_PROPERTY_TYPE_UUID:
+      push_value_to_lua(L, *std::get_if<base::Uuid>(&value));
+      break;
   }
 #else // TODO enable this in the future
   std::visit([L](auto&& v){ push_value_to_lua(L, v); }, value);
@@ -460,6 +476,9 @@ doc::UserData::Variant get_value_from_lua(lua_State* L, int index)
       }
       else if (auto sz = may_get_obj<gfx::Size>(L, index)) {
         v = *sz;
+      }
+      else if (auto uuid = may_get_obj<base::Uuid>(L, index)) {
+        v = *uuid;
       }
       break;
     }

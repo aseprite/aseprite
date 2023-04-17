@@ -108,6 +108,7 @@ TEST(File, CustomProperties)
                {"weight", doc::UserData::Fixed{fixmath::ftofix(50.34)}},
                {"big_number", int64_t(9223372036854775807)},
                {"unsigned_big_number", uint64_t(18446744073709551615ULL)},
+               {"my_uuid", base::Uuid::Generate()},
              }
         }
       },
@@ -121,6 +122,8 @@ TEST(File, CustomProperties)
         ASSERT_EQ(doc::get_value<doc::UserData::Fixed>(sprite->userData().properties()["weight"]).value, fixmath::ftofix(50.34));
         ASSERT_EQ(doc::get_value<int64_t>(sprite->userData().properties()["big_number"]), 9223372036854775807);
         ASSERT_EQ(doc::get_value<uint64_t>(sprite->userData().properties()["unsigned_big_number"]), 18446744073709551615ULL);
+        ASSERT_EQ(doc::get_value<base::Uuid>(sprite->userData().properties()["my_uuid"]),
+                  doc::get_value<base::Uuid>(test.propertiesMaps.at("").at("my_uuid")));
       }
     },
     { // Test sprite's userData extension's simple properties
@@ -130,7 +133,8 @@ TEST(File, CustomProperties)
                {"number", int32_t(160304)},
                {"is_solid", bool(false)},
                {"label", std::string("Smoke")},
-               {"weight", doc::UserData::Fixed{fixmath::ftofix(0.14)}}
+               {"weight", doc::UserData::Fixed{fixmath::ftofix(0.14)}},
+               {"my_uuid", base::Uuid::Generate()},
              }
         }
       },
@@ -142,6 +146,8 @@ TEST(File, CustomProperties)
         ASSERT_EQ(doc::get_value<bool>(sprite->userData().properties("extensionIdentification")["is_solid"]), false);
         ASSERT_EQ(doc::get_value<std::string>(sprite->userData().properties("extensionIdentification")["label"]), "Smoke");
         ASSERT_EQ(doc::get_value<doc::UserData::Fixed>(sprite->userData().properties("extensionIdentification")["weight"]).value, fixmath::ftofix(0.14));
+        ASSERT_EQ(doc::get_value<base::Uuid>(sprite->userData().properties("extensionIdentification")["my_uuid"]),
+                                             doc::get_value<base::Uuid>(test.propertiesMaps.at("extensionIdentification").at("my_uuid")));
       }
     },
     { // Test sprite's userData custom + extension's simple properties
@@ -151,14 +157,16 @@ TEST(File, CustomProperties)
                {"number", int32_t(560304)},
                {"is_solid", bool(true)},
                {"label", std::string("Rock")},
-               {"weight", doc::UserData::Fixed{fixmath::ftofix(50.34)}}
+               {"weight", doc::UserData::Fixed{fixmath::ftofix(50.34)}},
+               {"my_uuid", base::Uuid::Generate()},
              }
         },
         {"extensionIdentification", {
                {"number", int32_t(160304)},
                {"is_solid", bool(false)},
                {"label", std::string("Smoke")},
-               {"weight", doc::UserData::Fixed{fixmath::ftofix(0.14)}}
+               {"weight", doc::UserData::Fixed{fixmath::ftofix(0.14)}},
+               {"my_uuid2", base::Uuid::Generate()},
              }
         }
       },
@@ -170,11 +178,15 @@ TEST(File, CustomProperties)
         ASSERT_EQ(doc::get_value<bool>(sprite->userData().properties()["is_solid"]), true);
         ASSERT_EQ(doc::get_value<std::string>(sprite->userData().properties()["label"]), "Rock");
         ASSERT_EQ(doc::get_value<doc::UserData::Fixed>(sprite->userData().properties()["weight"]).value, fixmath::ftofix(50.34));
+        ASSERT_EQ(doc::get_value<base::Uuid>(sprite->userData().properties("")["my_uuid"]),
+                                             doc::get_value<base::Uuid>(test.propertiesMaps.at("").at("my_uuid")));
 
         ASSERT_EQ(doc::get_value<int32_t>(sprite->userData().properties("extensionIdentification")["number"]), 160304);
         ASSERT_EQ(doc::get_value<bool>(sprite->userData().properties("extensionIdentification")["is_solid"]), false);
         ASSERT_EQ(doc::get_value<std::string>(sprite->userData().properties("extensionIdentification")["label"]), "Smoke");
         ASSERT_EQ(doc::get_value<doc::UserData::Fixed>(sprite->userData().properties("extensionIdentification")["weight"]).value, fixmath::ftofix(0.14));
+        ASSERT_EQ(doc::get_value<base::Uuid>(sprite->userData().properties("extensionIdentification")["my_uuid2"]),
+                                             doc::get_value<base::Uuid>(test.propertiesMaps.at("extensionIdentification").at("my_uuid2")));
       }
     },
     { // Test sprite's userData complex properties
