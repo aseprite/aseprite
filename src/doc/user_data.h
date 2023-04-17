@@ -9,6 +9,7 @@
 #define DOC_USER_DATA_H_INCLUDED
 #pragma once
 
+#include "base/uuid.h"
 #include "doc/color.h"
 #include "fixmath/fixmath.h"
 #include "gfx/point.h"
@@ -42,6 +43,7 @@
 #define USER_DATA_PROPERTY_TYPE_RECT        0x0010
 #define USER_DATA_PROPERTY_TYPE_VECTOR      0x0011
 #define USER_DATA_PROPERTY_TYPE_PROPERTIES  0x0012
+#define USER_DATA_PROPERTY_TYPE_UUID        0x0013
 
 namespace doc {
 
@@ -71,7 +73,8 @@ namespace doc {
                                      gfx::Size,
                                      gfx::Rect,
                                      Vector,
-                                     Properties>;
+                                     Properties,
+                                     base::Uuid>;
 
     struct Variant : public VariantBase {
       Variant() = default;

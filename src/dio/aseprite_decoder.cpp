@@ -1412,6 +1412,14 @@ const doc::UserData::Variant AsepriteDecoder::readPropertyValue(uint16_t type)
       }
       return value;
     }
+    case USER_DATA_PROPERTY_TYPE_UUID: {
+      base::Uuid value;
+      uint8_t* bytes = value.bytes();
+      for (int i=0; i<16; ++i) {
+        bytes[i] = read8();
+      }
+      return value;
+    }
   }
 
   return doc::UserData::Variant{};

@@ -43,6 +43,7 @@ ASE files use Intel (little-endian) byte order.
 * `TILE`: **Tilemaps**: Each tile can be a 8-bit (`BYTE`), 16-bit
   (`WORD`), or 32-bit (`DWORD`) value and there are masks related to
   the meaning of each bit.
+* `UUID`: A Universally Unique Identifier stored as `BYTE[16]`.
 
 ## Introduction
 
@@ -446,6 +447,8 @@ The data of this chunk is as follows:
             DWORD     Number of properties
             BYTE[]    Nested properties data
                       Structure is the same as indicated in this loop
+          + If type==0x0013
+            UUID
 
 ### Slice Chunk (0x2022)
 
