@@ -229,7 +229,8 @@ void ShaderRenderer::renderPlan(SkCanvas* canvas,
                                 const doc::frame_t frame,
                                 const gfx::ClipF& area)
 {
-  for (const Cel* cel : plan.cels()) {
+  for (const auto& item : plan.items()) {
+    const Cel* cel = item.cel;
     const Layer* layer = cel->layer();
 
     switch (layer->type()) {

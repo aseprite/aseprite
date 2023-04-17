@@ -632,9 +632,9 @@ void Sprite::pickCels(const gfx::PointF& pos,
 {
   // Iterate cels in reversed order (from the front-most to the
   // bottom-most) so we pick first visible cel in the given position.
-  const CelList& planCels = plan.cels();
-  for (auto it=planCels.rbegin(), end=planCels.rend(); it!=end; ++it) {
-    Cel* cel = *it;
+  const auto& planItems = plan.items();
+  for (auto it=planItems.rbegin(), end=planItems.rend(); it!=end; ++it) {
+    Cel* cel = it->cel;
     const Image* image = cel->image();
     if (!image)
       continue;

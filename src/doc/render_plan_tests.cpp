@@ -29,11 +29,11 @@ using namespace doc;
   {                                                                     \
     RenderPlan plan;                                                    \
     plan.addLayer(spr->root(), 0);                                      \
-    const auto& cels = plan.cels();                                     \
-    EXPECT_EQ(a, cels[0]) << HELPER_LOG(cels[0], a);                    \
-    EXPECT_EQ(b, cels[1]) << HELPER_LOG(cels[1], b);                    \
-    EXPECT_EQ(c, cels[2]) << HELPER_LOG(cels[2], c);                    \
-    EXPECT_EQ(d, cels[3]) << HELPER_LOG(cels[3], d);                    \
+    const auto& items = plan.items();                                   \
+    EXPECT_EQ(a, items[0].cel) << HELPER_LOG(items[0].cel, a);          \
+    EXPECT_EQ(b, items[1].cel) << HELPER_LOG(items[1].cel, b);          \
+    EXPECT_EQ(c, items[2].cel) << HELPER_LOG(items[2].cel, c);          \
+    EXPECT_EQ(d, items[3].cel) << HELPER_LOG(items[3].cel, d);          \
   }
 
 TEST(RenderPlan, ZIndex)
@@ -89,6 +89,49 @@ TEST(RenderPlan, ZIndex)
   c->setZIndex(0);
   d->setZIndex(-1);
   EXPECT_PLAN(b, d, c, a);
+}
+
+TEST(RenderPlan, ZIndexBugWithEmptyCels)
+{
+#undef EXPECT_PLAN
+#define EXPECT_PLAN(a, b, c)                                            \
+  {                                                                     \
+    RenderPlan plan;                                                    \
+    plan.addLayer(spr->root(), 0);                                      \
+    const auto& items = plan.items();                                   \
+    EXPECT_EQ(a, items[0].cel) << HELPER_LOG(items[0].cel, a);          \
+    EXPECT_EQ(b, items[1].cel) << HELPER_LOG(items[1].cel, b);          \
+    EXPECT_EQ(c, items[2].cel) << HELPER_LOG(items[2].cel, c);          \
+  }
+
+  auto doc = std::make_shared<Document>();
+  ImageSpec spec(ColorMode::INDEXED, 2, 2);
+  Sprite* spr;
+  doc->sprites().add(spr = Sprite::MakeStdSprite(spec));
+
+  LayerImage
+    *lay0 = static_cast<LayerImage*>(spr->root()->firstLayer()),
+    *lay1 = new LayerImage(spr),
+    *lay2 = new LayerImage(spr),
+    *lay3 = new LayerImage(spr);
+
+  lay0->setName("a");
+  lay1->setName("b");
+  lay2->setName("c");
+  lay3->setName("d");
+
+  Cel* a = lay0->cel(0), *b, *d;
+  lay1->addCel(b = new Cel(0, ImageRef(Image::create(spec))));
+  // lay2 has an empty cel
+  lay3->addCel(d = new Cel(0, ImageRef(Image::create(spec))));
+
+  spr->root()->insertLayer(lay1, lay0);
+  spr->root()->insertLayer(lay2, lay1);
+  spr->root()->insertLayer(lay3, lay2);
+
+  d->setZIndex(-1); EXPECT_PLAN(a, b, d); // -1 is not enough to pass through lay2
+  d->setZIndex(-2); EXPECT_PLAN(a, d, b);
+  d->setZIndex(-3); EXPECT_PLAN(d, a, b);
 }
 
 int main(int argc, char** argv)

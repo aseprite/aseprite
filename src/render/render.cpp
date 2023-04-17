@@ -1006,7 +1006,8 @@ void Render::renderPlan(
   const BlendMode blendMode,
   bool isSelected)
 {
-  for (const Cel* cel : plan.cels()) {
+  for (const auto& item : plan.items()) {
+    const Cel* cel = item.cel;
     const Layer* layer = cel->layer();
 
     ASSERT(layer->isVisible()); // Hidden layers shouldn't be in the plan

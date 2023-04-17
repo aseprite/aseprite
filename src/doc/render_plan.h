@@ -19,12 +19,20 @@ namespace doc {
   // layer/layers.
   class RenderPlan {
   public:
+    struct Item {
+      int order;
+      Cel* cel;
+      Item(int order = 0, Cel* cel = nullptr)
+        : order(order), cel(cel) { }
+    };
+    using Items = std::vector<Item>;
+
     RenderPlan();
 
-    const CelList& cels() const {
+    const Items& items() const {
       if (m_processZIndex)
         processZIndexes();
-      return m_cels;
+      return m_items;
     }
 
     void addLayer(const Layer* layer,
@@ -33,7 +41,8 @@ namespace doc {
   private:
     void processZIndexes() const;
 
-    mutable CelList m_cels;
+    int m_order = 0;
+    mutable Items m_items;
     mutable bool m_processZIndex = true;
   };
 

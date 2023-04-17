@@ -26,8 +26,10 @@ void RenderPlan::addLayer(const Layer* layer,
                           const frame_t frame)
 {
   // We cannot add new layers after using processZIndexes()/modified
-  // m_cels array using z-indexes.
+  // m_items array using z-indexes.
   ASSERT(m_processZIndex == true);
+
+  ++m_order;
 
   // We can't read this layer
   if (!layer->isVisible())
@@ -38,7 +40,7 @@ void RenderPlan::addLayer(const Layer* layer,
     case ObjectType::LayerImage:
     case ObjectType::LayerTilemap: {
       if (Cel* cel = layer->cel(frame)) {
-        m_cels.push_back(cel);
+        m_items.emplace_back(m_order, cel);
       }
       break;
     }
@@ -57,10 +59,10 @@ void RenderPlan::processZIndexes() const
 {
   m_processZIndex = false;
 
-  // If all cels has a z-index = 0, we can just use the m_cels as it is
+  // If all cels has a z-index = 0, we can just use the m_items as it is
   bool noZIndex = true;
-  for (int i=0; i<int(m_cels.size()); ++i) {
-    const int z = m_cels[i]->zIndex();
+  for (int i=0; i<int(m_items.size()); ++i) {
+    const int z = m_items[i].cel->zIndex();
     if (z != 0) {
       noZIndex = false;
       break;
@@ -69,24 +71,15 @@ void RenderPlan::processZIndexes() const
   if (noZIndex)
     return;
 
-  // Order cels using its real index in the m_cels array + its z-index value
-  std::vector<std::pair<int, Cel*>> indexedCels;
-  const int n = m_cels.size();
-  indexedCels.reserve(n);
-  for (int i=0; i<n; ++i) {
-    Cel* cel = m_cels[i];
-    int z = cel->zIndex();
-    indexedCels.push_back(std::make_pair(i+z, cel));
-  }
-  std::sort(indexedCels.begin(), indexedCels.end(),
-            [](const auto& a, const auto& b){
+  // Order cels using its "order" number in m_items array + cel z-index offset
+  for (Item& item : m_items)
+    item.order = item.order + item.cel->zIndex();
+  std::sort(m_items.begin(), m_items.end(),
+            [](const Item& a, const Item& b){
               return
-                (a.first < b.first) ||
-                (a.first == b.first && (a.second->zIndex() < b.second->zIndex()));
+                (a.order < b.order) ||
+                (a.order == b.order && (a.cel->zIndex() < b.cel->zIndex()));
             });
-  for (int i=0; i<n; ++i) {
-    m_cels[i] = indexedCels[i].second;
-  }
 }
 
 } // namespace doc
