@@ -719,49 +719,52 @@ void Extension::exitScripts()
     m_plugin.pluginRef = LUA_REFNIL;
   }
 
-  // Remove plugin items automatically: first commands and menu
-  // separators, then menu groups.
-  for (auto& item : m_plugin.items) {
-    if (item.type == PluginItem::Command) {
-      auto cmds = Commands::instance();
-      auto cmd = cmds->byId(item.id.c_str());
-      ASSERT(cmd);
+  // Remove plugin items automatically from back to front (in the
+  // reverse order that they were added).
+  for (auto it=m_plugin.items.rbegin(), end=m_plugin.items.rend(); it!=end; ++it) {
+    auto& item = *it;
 
-      if (cmd) {
+    switch (item.type) {
+      case PluginItem::Command: {
+        auto cmds = Commands::instance();
+        auto cmd = cmds->byId(item.id.c_str());
+        ASSERT(cmd);
+        if (cmd) {
 #ifdef ENABLE_UI
-        // TODO use a signal
-        AppMenus::instance()->removeMenuItemFromGroup(cmd);
+          // TODO use a signal
+          AppMenus::instance()->removeMenuItemFromGroup(cmd);
 #endif // ENABLE_UI
 
-        cmds->remove(cmd);
+          cmds->remove(cmd);
 
-        // This will call ~PluginCommand() and unref the command
-        // onclick callback.
-        delete cmd;
+          // This will call ~PluginCommand() and unref the command
+          // onclick callback.
+          delete cmd;
+        }
+        break;
       }
-    }
-    else if (item.type == PluginItem::MenuSeparator) {
-#ifdef ENABLE_UI
-      ASSERT(item.widget);
-      ASSERT(item.widget->parent());
-      if (item.widget &&
-          item.widget->parent()) {
-        // TODO use a signal
-        AppMenus::instance()->removeMenuItemFromGroup(item.widget);
-        ASSERT(!item.widget->parent());
-        item.widget = nullptr;
-      }
-#endif // ENABLE_UI
-    }
-  }
 
-  for (const auto& item : m_plugin.items) {
-    if (item.type == PluginItem::MenuGroup) {
 #ifdef ENABLE_UI
-      // TODO use a signal
-      AppMenus::instance()->removeMenuGroup(item.id);
+
+      case PluginItem::MenuSeparator:
+        ASSERT(item.widget);
+        ASSERT(item.widget->parent());
+        if (item.widget &&
+            item.widget->parent()) {
+          // TODO use a signal
+          AppMenus::instance()->removeMenuItemFromGroup(item.widget);
+          ASSERT(!item.widget->parent());
+          item.widget = nullptr;
+        }
+        break;
+
+      case PluginItem::MenuGroup:
+        // TODO use a signal
+        AppMenus::instance()->removeMenuGroup(item.id);
+        break;
+
 #endif // ENABLE_UI
-      break;
+
     }
   }
 
