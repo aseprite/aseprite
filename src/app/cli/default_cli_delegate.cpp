@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -137,7 +137,7 @@ int DefaultCliDelegate::execScript(const std::string& filename,
                                    const Params& params)
 {
   auto engine = App::instance()->scriptEngine();
-  if (!engine->evalFile(filename, params))
+  if (!engine->evalUserFile(filename, params))
     throw base::Exception("Error executing script %s", filename.c_str());
   return engine->returnCode();
 }

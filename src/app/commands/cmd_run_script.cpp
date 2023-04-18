@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -78,7 +78,7 @@ void RunScriptCommand::onExecute(Context* context)
 
   App::instance()
     ->scriptEngine()
-    ->evalFile(m_filename, m_params);
+    ->evalUserFile(m_filename, m_params);
 
 #if ENABLE_UI
   if (context->isUIAvailable())

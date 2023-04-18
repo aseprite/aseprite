@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -44,6 +44,8 @@ void run_mt_index_code(lua_State* L)
     const char* s = lua_tostring(L, -1);
     if (s)
       std::puts(s);
+
+    lua_pop(L, 1);
   }
 }
 

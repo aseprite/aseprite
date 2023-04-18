@@ -18,6 +18,7 @@
 #include "app/pref/preferences.h"
 #include "app/script/blend_mode.h"
 #include "app/script/luacpp.h"
+#include "app/script/require.h"
 #include "app/script/security.h"
 #include "app/sprite_sheet_type.h"
 #include "app/tilemap_mode.h"
@@ -217,16 +218,7 @@ Engine::Engine()
 #endif
 
   // Standard Lua libraries
-  luaL_requiref(L, LUA_GNAME, luaopen_base, 1);
-  luaL_requiref(L, LUA_COLIBNAME, luaopen_coroutine, 1);
-  luaL_requiref(L, LUA_TABLIBNAME, luaopen_table, 1);
-  luaL_requiref(L, LUA_IOLIBNAME, luaopen_io, 1);
-  luaL_requiref(L, LUA_OSLIBNAME, luaopen_os, 1);
-  luaL_requiref(L, LUA_STRLIBNAME, luaopen_string, 1);
-  luaL_requiref(L, LUA_MATHLIBNAME, luaopen_math, 1);
-  luaL_requiref(L, LUA_UTF8LIBNAME, luaopen_utf8, 1);
-  luaL_requiref(L, LUA_DBLIBNAME, luaopen_debug, 1);
-  lua_pop(L, 9);
+  luaL_openlibs(L);
 
   // Overwrite Lua functions
   lua_register(L, "print", print);
@@ -254,6 +246,9 @@ Engine::Engine()
   lua_pushcclosure(L, secure_os_execute, 1);
   lua_setfield(L, -2, "execute");
   lua_pop(L, 1);
+
+  // Enhance require() function for plugins
+  custom_require_function(L);
 
   // Generic code used by metatables
   run_mt_index_code(L);
@@ -579,7 +574,7 @@ bool Engine::evalFile(const std::string& filename,
   }
   std::string absFilename = base::get_absolute_path(filename);
 
-  AddScriptFilename add(absFilename);
+  AddScriptFilename addScript(absFilename);
   set_app_params(L, params);
 
   if (g_debuggerDelegate)
@@ -591,6 +586,18 @@ bool Engine::evalFile(const std::string& filename,
     g_debuggerDelegate->endFile(absFilename);
 
   return result;
+}
+
+bool Engine::evalUserFile(const std::string& filename,
+                          const Params& params)
+{
+  // Set the _SCRIPT_PATH global so require() can find .lua files from
+  // the script path.
+  std::string path =
+    base::get_file_path(
+      base::get_absolute_path(filename));
+  SetScriptForRequire setScript(L, path.c_str());
+  return evalFile(filename, params);
 }
 
 void Engine::startDebugger(DebuggerDelegate* debuggerDelegate)

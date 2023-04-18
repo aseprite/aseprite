@@ -35,6 +35,7 @@
 #ifdef ENABLE_SCRIPTING
   #include "app/script/engine.h"
   #include "app/script/luacpp.h"
+  #include "app/script/require.h"
 #endif
 
 #include "archive.h"
@@ -627,6 +628,10 @@ void Extension::initScripts()
   script::push_plugin(L, this);
   m_plugin.pluginRef = luaL_ref(L, LUA_REGISTRYINDEX);
 
+  // Set the _PLUGIN global so require() can find .lua files from the
+  // plugin path.
+  script::SetPluginForRequire setPlugin(L, m_plugin.pluginRef);
+
   // Read plugin.preferences value
   {
     std::string fn = base::join_path(m_path, kPrefLua);
@@ -665,7 +670,7 @@ void Extension::initScripts()
       lua_pop(L, 1);
     }
 
-    // Call the init() function of thi sscript with a Plugin object as first parameter
+    // Call the init() function of this script with a Plugin object as first parameter
     if (lua_getglobal(L, "init") == LUA_TFUNCTION) {
       // Call init(plugin)
       lua_rawgeti(L, LUA_REGISTRYINDEX, m_plugin.pluginRef);

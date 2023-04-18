@@ -196,6 +196,7 @@ if(ENABLE_SCRIPTING)
     script/properties_class.cpp
     script/range_class.cpp
     script/rectangle_class.cpp
+    script/require.cpp
     script/security.cpp
     script/selection_class.cpp
     script/site_class.cpp

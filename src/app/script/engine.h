@@ -96,6 +96,8 @@ namespace app {
                   const std::string& filename = std::string());
     bool evalFile(const std::string& filename,
                   const Params& params = Params());
+    bool evalUserFile(const std::string& filename,
+                      const Params& params = Params());
 
     void consolePrint(const char* text) {
       onConsolePrint(text);

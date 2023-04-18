@@ -313,6 +313,20 @@ int Plugin_newMenuSeparator(lua_State* L)
   return 0;
 }
 
+int Plugin_get_name(lua_State* L)
+{
+  auto plugin = get_obj<Plugin>(L, 1);
+  lua_pushstring(L, plugin->ext->name().c_str());
+  return 1;
+}
+
+int Plugin_get_path(lua_State* L)
+{
+  auto plugin = get_obj<Plugin>(L, 1);
+  lua_pushstring(L, plugin->ext->path().c_str());
+  return 1;
+}
+
 int Plugin_get_preferences(lua_State* L)
 {
   if (!lua_getuservalue(L, 1)) {
@@ -341,6 +355,8 @@ const luaL_Reg Plugin_methods[] = {
 };
 
 const Property Plugin_properties[] = {
+  { "name", Plugin_get_name, nullptr },
+  { "path", Plugin_get_path, nullptr },
   { "preferences", Plugin_get_preferences, Plugin_set_preferences },
   { nullptr, nullptr, nullptr }
 };
