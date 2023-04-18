@@ -81,6 +81,7 @@ void ListBox::selectChild(Widget* item, Message* msg)
     // Save current state of all children when we start selecting
     if (msg == nullptr ||
         msg->type() == kMouseDownMessage ||
+        (msg->type() == kMouseMoveMessage && m_firstSelectedIndex < 0) ||
         msg->type() == kKeyDownMessage) {
       m_firstSelectedIndex = itemIndex;
       m_states.resize(children().size());
@@ -256,8 +257,11 @@ bool ListBox::onProcessMessage(Message* msg)
       return true;
 
     case kMouseUpMessage:
-      if (hasCapture())
+      if (hasCapture()) {
         releaseMouse();
+        m_firstSelectedIndex = -1;
+        m_lastSelectedIndex = -1;
+      }
       return true;
 
     case kMouseWheelMessage: {
