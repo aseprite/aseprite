@@ -1,4 +1,4 @@
--- Copyright (C) 2020  Igara Studio S.A.
+-- Copyright (C) 2020-2023  Igara Studio S.A.
 -- Copyright (C) 2018  David Capello
 --
 -- This file is released under the terms of the MIT license.
@@ -14,6 +14,8 @@ do
   assert(a.fromFrame.frameNumber == 1)
   assert(a.toFrame.frameNumber == 8)
   assert(a.frames == 8)
+
+  assert(app.tag == a)
 
   a.fromFrame = 2
   a.toFrame = 5

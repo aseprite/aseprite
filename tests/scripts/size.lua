@@ -9,7 +9,9 @@ assert(sz.width == 0)
 assert(sz.height == 0)
 
 sz = Size(3, 4)
-assert(sz.width == 3)
+assert(sz.w == 3)               -- Short w/h form
+assert(sz.h == 4)
+assert(sz.width == 3)           -- Long width/height form
 assert(sz.height == 4)
 assert("Size{ width=3, height=4 }" == tostring(sz))
 
@@ -26,9 +28,13 @@ sz = Size{width=10, height=20}
 assert(sz.width == 10)
 assert(sz.height == 20)
 
+sz = Size{w=30, h=40}
+assert(sz.width == 30)
+assert(sz.height == 40)
+
 sz = Size{45, 25}
-assert(sz.width == 45)
-assert(sz.height == 25)
+assert(sz.w == 45)
+assert(sz.h == 25)
 
 sz = -sz
 assert(sz.width == -45)

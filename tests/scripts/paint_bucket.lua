@@ -6,6 +6,8 @@
 dofile('./test_utils.lua')
 
 app.activeTool = 'paint_bucket'
+assert(app.tool.id == 'paint_bucket')
+assert(app.brush.type == BrushType.CIRCLE)
 assert(app.activeTool.id == 'paint_bucket')
 assert(app.activeBrush.type == BrushType.CIRCLE)
 assert(app.activeBrush.size == 1)

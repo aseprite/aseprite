@@ -29,7 +29,7 @@ gfx::Size Size_new(lua_State* L, int index)
   }
   // Convert {x=int,y=int} or {int,int} into a Size
   else if (lua_istable(L, index)) {
-    const int type = lua_getfield(L, index, "width");
+    int type = lua_getfield(L, index, "width");
     if (VALID_LUATYPE(type)) {
       lua_getfield(L, index, "height");
       sz.w = lua_tointeger(L, -2);
@@ -38,11 +38,21 @@ gfx::Size Size_new(lua_State* L, int index)
     }
     else {
       lua_pop(L, 1);
-      lua_geti(L, index, 1);
-      lua_geti(L, index, 2);
-      sz.w = lua_tointeger(L, -2);
-      sz.h = lua_tointeger(L, -1);
-      lua_pop(L, 2);
+      type = lua_getfield(L, index, "w");
+      if (VALID_LUATYPE(type)) {
+        lua_getfield(L, index, "h");
+        sz.w = lua_tointeger(L, -2);
+        sz.h = lua_tointeger(L, -1);
+        lua_pop(L, 2);
+      }
+      else {
+        lua_pop(L, 1);
+        lua_geti(L, index, 1);
+        lua_geti(L, index, 2);
+        sz.w = lua_tointeger(L, -2);
+        sz.h = lua_tointeger(L, -1);
+        lua_pop(L, 2);
+      }
     }
   }
   else {
@@ -211,6 +221,8 @@ const luaL_Reg Size_methods[] = {
 };
 
 const Property Size_properties[] = {
+  { "w", Size_get_width, Size_set_width },
+  { "h", Size_get_height, Size_set_height },
   { "width", Size_get_width, Size_set_width },
   { "height", Size_get_height, Size_set_height },
   { nullptr, nullptr, nullptr }

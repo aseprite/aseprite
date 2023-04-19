@@ -510,7 +510,7 @@ int App_get_uiScale(lua_State* L)
   return 1;
 }
 
-int App_get_activeSprite(lua_State* L)
+int App_get_sprite(lua_State* L)
 {
   app::Context* ctx = App::instance()->context();
   Doc* doc = ctx->activeDocument();
@@ -521,7 +521,7 @@ int App_get_activeSprite(lua_State* L)
   return 1;
 }
 
-int App_get_activeLayer(lua_State* L)
+int App_get_layer(lua_State* L)
 {
   app::Context* ctx = App::instance()->context();
   Site site = ctx->activeSite();
@@ -532,7 +532,7 @@ int App_get_activeLayer(lua_State* L)
   return 1;
 }
 
-int App_get_activeFrame(lua_State* L)
+int App_get_frame(lua_State* L)
 {
   app::Context* ctx = App::instance()->context();
   Site site = ctx->activeSite();
@@ -543,7 +543,7 @@ int App_get_activeFrame(lua_State* L)
   return 1;
 }
 
-int App_get_activeCel(lua_State* L)
+int App_get_cel(lua_State* L)
 {
   app::Context* ctx = App::instance()->context();
   Site site = ctx->activeSite();
@@ -554,7 +554,7 @@ int App_get_activeCel(lua_State* L)
   return 1;
 }
 
-int App_get_activeImage(lua_State* L)
+int App_get_image(lua_State* L)
 {
   app::Context* ctx = App::instance()->context();
   Site site = ctx->activeSite();
@@ -565,7 +565,7 @@ int App_get_activeImage(lua_State* L)
   return 1;
 }
 
-int App_get_activeTag(lua_State* L)
+int App_get_tag(lua_State* L)
 {
   Tag* tag = nullptr;
 
@@ -657,14 +657,14 @@ int App_get_apiVersion(lua_State* L)
   return 1;
 }
 
-int App_get_activeTool(lua_State* L)
+int App_get_tool(lua_State* L)
 {
   tools::Tool* tool = App::instance()->activeToolManager()->activeTool();
   push_tool(L, tool);
   return 1;
 }
 
-int App_get_activeBrush(lua_State* L)
+int App_get_brush(lua_State* L)
 {
 #if ENABLE_UI
   App* app = App::instance();
@@ -688,7 +688,7 @@ int App_get_defaultPalette(lua_State* L)
   return 1;
 }
 
-int App_set_activeSprite(lua_State* L)
+int App_set_sprite(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 2);
   app::Context* ctx = App::instance()->context();
@@ -697,7 +697,7 @@ int App_set_activeSprite(lua_State* L)
   return 0;
 }
 
-int App_set_activeLayer(lua_State* L)
+int App_set_layer(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 2);
   app::Context* ctx = App::instance()->context();
@@ -705,7 +705,7 @@ int App_set_activeLayer(lua_State* L)
   return 0;
 }
 
-int App_set_activeFrame(lua_State* L)
+int App_set_frame(lua_State* L)
 {
   const doc::frame_t frame = get_frame_number_from_arg(L, 2);
   app::Context* ctx = App::instance()->context();
@@ -713,7 +713,7 @@ int App_set_activeFrame(lua_State* L)
   return 0;
 }
 
-int App_set_activeCel(lua_State* L)
+int App_set_cel(lua_State* L)
 {
   const auto cel = get_docobj<Cel>(L, 2);
   app::Context* ctx = App::instance()->context();
@@ -722,7 +722,7 @@ int App_set_activeCel(lua_State* L)
   return 0;
 }
 
-int App_set_activeImage(lua_State* L)
+int App_set_image(lua_State* L)
 {
   const auto cel = get_image_cel_from_arg(L, 2);
   if (!cel)
@@ -734,14 +734,14 @@ int App_set_activeImage(lua_State* L)
   return 0;
 }
 
-int App_set_activeTool(lua_State* L)
+int App_set_tool(lua_State* L)
 {
   if (auto tool = get_tool_from_arg(L, 2))
     App::instance()->activeToolManager()->setSelectedTool(tool);
   return 0;
 }
 
-int App_set_activeBrush(lua_State* L)
+int App_set_brush(lua_State* L)
 {
 #if ENABLE_UI
   if (auto brush = get_brush_from_arg(L, 2)) {
@@ -773,27 +773,39 @@ const luaL_Reg App_methods[] = {
 };
 
 const Property App_properties[] = {
-  { "activeSprite", App_get_activeSprite, App_set_activeSprite },
-  { "activeLayer", App_get_activeLayer, App_set_activeLayer },
-  { "activeFrame", App_get_activeFrame, App_set_activeFrame },
-  { "activeCel", App_get_activeCel, App_set_activeCel },
-  { "activeImage", App_get_activeImage, App_set_activeImage },
-  { "activeTag", App_get_activeTag, nullptr },
-  { "activeTool", App_get_activeTool, App_set_activeTool },
-  { "activeBrush", App_get_activeBrush, App_set_activeBrush },
-  { "sprites", App_get_sprites, nullptr },
-  { "fgColor", App_get_fgColor, App_set_fgColor },
-  { "bgColor", App_get_bgColor, App_set_bgColor },
-  { "version", App_get_version, nullptr },
-  { "apiVersion", App_get_apiVersion, nullptr },
-  { "site", App_get_site, nullptr },
-  { "range", App_get_range, nullptr },
-  { "isUIAvailable", App_get_isUIAvailable, nullptr },
+  // Deprecated longer fields
+  { "activeSprite",   App_get_sprite,   App_set_sprite },
+  { "activeLayer",    App_get_layer,    App_set_layer },
+  { "activeFrame",    App_get_frame,    App_set_frame },
+  { "activeCel",      App_get_cel,      App_set_cel },
+  { "activeImage",    App_get_image,    App_set_image },
+  { "activeTag",      App_get_tag,      nullptr },
+  { "activeTool",     App_get_tool,     App_set_tool },
+  { "activeBrush",    App_get_brush,    App_set_brush },
+
+  // New shorter fields
+  { "sprite",         App_get_sprite,   App_set_sprite },
+  { "layer",          App_get_layer,    App_set_layer },
+  { "frame",          App_get_frame,    App_set_frame },
+  { "cel",            App_get_cel,      App_set_cel },
+  { "image",          App_get_image,    App_set_image },
+  { "tag",            App_get_tag,      nullptr },
+  { "tool",           App_get_tool,     App_set_tool },
+  { "brush",          App_get_brush,    App_set_brush },
+
+  { "sprites",        App_get_sprites,        nullptr },
+  { "fgColor",        App_get_fgColor,        App_set_fgColor },
+  { "bgColor",        App_get_bgColor,        App_set_bgColor },
+  { "version",        App_get_version,        nullptr },
+  { "apiVersion",     App_get_apiVersion,     nullptr },
+  { "site",           App_get_site,           nullptr },
+  { "range",          App_get_range,          nullptr },
+  { "isUIAvailable",  App_get_isUIAvailable,  nullptr },
   { "defaultPalette", App_get_defaultPalette, App_set_defaultPalette },
-  { "events", App_get_events, nullptr },
-  { "theme", App_get_theme, nullptr },
-  { "uiScale", App_get_uiScale, nullptr },
-  { nullptr, nullptr, nullptr }
+  { "events",         App_get_events,         nullptr },
+  { "theme",          App_get_theme,          nullptr },
+  { "uiScale",        App_get_uiScale,        nullptr },
+  { nullptr,          nullptr,                nullptr }
 };
 
 } // anonymous namespace

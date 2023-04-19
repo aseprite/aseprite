@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -30,11 +30,18 @@ gfx::Rect Rectangle_new(lua_State* L, int index)
   // Convert { x, y, width, height } into a Rectangle
   else if (lua_istable(L, index)) {
     gfx::Rect rc(0, 0, 0, 0);
-    const int type = lua_getfield(L, index, "x");
+    int type = lua_getfield(L, index, "x");
     if (VALID_LUATYPE(type)) {
       lua_getfield(L, index, "y");
-      lua_getfield(L, index, "width");
-      lua_getfield(L, index, "height");
+      type = lua_getfield(L, index, "width");
+      if (VALID_LUATYPE(type)) {
+        lua_getfield(L, index, "height");
+      }
+      else {
+        lua_pop(L, 1);
+        lua_getfield(L, index, "w");
+        lua_getfield(L, index, "h");
+      }
       rc.x = lua_tointeger(L, -4);
       rc.y = lua_tointeger(L, -3);
       rc.w = lua_tointeger(L, -2);
@@ -244,6 +251,8 @@ const luaL_Reg Rectangle_methods[] = {
 const Property Rectangle_properties[] = {
   { "x", Rectangle_get_x, Rectangle_set_x },
   { "y", Rectangle_get_y, Rectangle_set_y },
+  { "w", Rectangle_get_width, Rectangle_set_width },
+  { "h", Rectangle_get_height, Rectangle_set_height },
   { "width", Rectangle_get_width, Rectangle_set_width },
   { "height", Rectangle_get_height, Rectangle_set_height },
   { "origin", Rectangle_get_origin, Rectangle_set_origin },
