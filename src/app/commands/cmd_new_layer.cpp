@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -61,6 +61,7 @@ struct NewLayerParams : public NewParams {
   Param<bool> group { this, false, "group" };
   Param<bool> reference { this, false, "reference" };
   Param<bool> tilemap { this, false, "tilemap" };
+  Param<gfx::Rect> gridBounds { this, gfx::Rect(), "gridBounds" };
   Param<bool> ask { this, false, "ask" };
   Param<bool> fromFile { this, false, { "fromFile", "from-file" } };
   Param<bool> fromClipboard { this, false, "fromClipboard" };
@@ -203,7 +204,9 @@ void NewLayerCommand::onExecute(Context* context)
   // Information about the tileset to be used for new tilemaps
   TilesetSelector::Info tilesetInfo;
   tilesetInfo.newTileset = true;
-  tilesetInfo.grid = context->activeSite().grid();
+  tilesetInfo.grid = (params().gridBounds().isEmpty() ?
+                      context->activeSite().grid():
+                      doc::Grid(params().gridBounds()));
   tilesetInfo.baseIndex = 1;
 
 #ifdef ENABLE_UI

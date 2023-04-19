@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2021  Igara Studio S.A.
+// Copyright (c) 2019-2023  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -30,6 +30,12 @@ namespace doc {
 Grid Grid::MakeRect(const gfx::Size& sz)
 {
   return Grid(sz);
+}
+
+// static
+Grid Grid::MakeRect(const gfx::Rect& rc)
+{
+  return Grid(rc);
 }
 
 // Converts a tile position into a canvas position

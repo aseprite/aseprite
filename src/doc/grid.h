@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2020  Igara Studio S.A.
+// Copyright (c) 2019-2023  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -17,16 +17,26 @@ namespace doc {
 
   class Grid {
   public:
-    Grid(const gfx::Size& sz = gfx::Size(16, 16))
+    explicit Grid(const gfx::Size& sz = gfx::Size(16, 16))
       : m_tileSize(sz)
       , m_origin(0, 0)
-      , m_tileCenter(gfx::Point(sz.w/2, sz.h/2))
-      , m_tileOffset(gfx::Point(sz.w, sz.h))
+      , m_tileCenter(sz.w/2, sz.h/2)
+      , m_tileOffset(sz)
+      , m_oddRowOffset(0, 0)
+      , m_oddColOffset(0, 0)
+      , m_mask(nullptr) { }
+
+    explicit Grid(const gfx::Rect& rc)
+      : m_tileSize(rc.size())
+      , m_origin(rc.origin())
+      , m_tileCenter(m_tileSize.w/2, m_tileSize.h/2)
+      , m_tileOffset(m_tileSize)
       , m_oddRowOffset(0, 0)
       , m_oddColOffset(0, 0)
       , m_mask(nullptr) { }
 
     static Grid MakeRect(const gfx::Size& sz);
+    static Grid MakeRect(const gfx::Rect& rc);
 
     bool isEmpty() const { return m_tileSize.w == 0 || m_tileSize.h == 0; }
 
