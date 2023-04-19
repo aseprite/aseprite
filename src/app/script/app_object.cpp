@@ -510,6 +510,18 @@ int App_get_uiScale(lua_State* L)
   return 1;
 }
 
+int App_get_editor(lua_State* L)
+{
+#ifdef ENABLE_UI
+  auto ctx = UIContext::instance();
+  if (Editor* editor = ctx->activeEditor()) {
+    push_editor(L, editor);
+    return 1;
+  }
+#endif
+  return 0;
+}
+
 int App_get_sprite(lua_State* L)
 {
   app::Context* ctx = App::instance()->context();
@@ -805,6 +817,7 @@ const Property App_properties[] = {
   { "events",         App_get_events,         nullptr },
   { "theme",          App_get_theme,          nullptr },
   { "uiScale",        App_get_uiScale,        nullptr },
+  { "editor",         App_get_editor,         nullptr },
   { nullptr,          nullptr,                nullptr }
 };
 
