@@ -21,6 +21,11 @@
 
 namespace app {
 
+  // State used to select boxes or points. Used for multiple-purposes:
+  // - To select a new canvas size in CanvasSizeCommand
+  // - To select a tile bounds in ImportSpriteSheetCommand
+  // - To select and create a brush using canvas pixels from NewBrushCommand
+  // - To select a point with app.editor:askPoint() API
   class SelectBoxDelegate {
   public:
     virtual ~SelectBoxDelegate() { }
@@ -67,7 +72,10 @@ namespace app {
       PaddingRulers = 32,
 
       // Include Partial Tiles at the end of the sprite? Used in Import Sprite Sheet render
-      IncludePartialTiles = 64
+      IncludePartialTiles = 64,
+
+      // Select just a point quickly
+      QuickPoint = 128,
     };
 
     SelectBoxState(SelectBoxDelegate* delegate,
