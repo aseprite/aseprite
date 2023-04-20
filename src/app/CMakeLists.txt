@@ -385,6 +385,7 @@ if(ENABLE_UI)
     ui/home_view.cpp
     ui/icon_button.cpp
     ui/input_chain.cpp
+    ui/input_options.cpp
     ui/keyboard_shortcuts.cpp
     ui/main_menu_bar.cpp
     ui/main_window.cpp

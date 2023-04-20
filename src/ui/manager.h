@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -9,6 +9,7 @@
 #define UI_MANAGER_H_INCLUDED
 #pragma once
 
+#include "app/ui/input_options_delegate.h"
 #include "gfx/region.h"
 #include "ui/display.h"
 #include "ui/keys.h"
@@ -24,9 +25,29 @@ namespace os {
 
 namespace ui {
 
+  class InputOptionsDelegate;
   class LayoutIO;
   class Timer;
   class Window;
+
+  class UIInputOptions {
+  public:
+    static UIInputOptions* instance();
+
+    UIInputOptions();
+    ~UIInputOptions();
+
+    void setDelegate(InputOptionsDelegate* delegate) {
+      m_inputOptionsDelegate = delegate;
+    }
+
+    InputOptionsDelegate* delegate() {
+      return m_inputOptionsDelegate;
+    }
+
+  private:
+    InputOptionsDelegate* m_inputOptionsDelegate;
+  };
 
   class Manager : public Widget {
   public:
@@ -185,8 +206,14 @@ namespace ui {
     // restack a window if the user clicks on it.
     Widget* m_lockedWindow;
 
+    // Holds fractional increments on scroll wheel to be computed on next
+    // mouse message.
+    static gfx::PointF g_wheelDeltaFraction;
+
     // Last pressed mouse button.
     MouseButton m_mouseButton;
+
+    InputOptionsDelegate* m_inputOptionsDelegate;
   };
 
 } // namespace ui

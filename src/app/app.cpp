@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -48,6 +48,7 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_view.h"
 #include "app/ui/input_chain.h"
+#include "app/ui/input_options.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/main_window.h"
 #include "app/ui/status_bar.h"
@@ -150,6 +151,7 @@ public:
   RecentFiles m_recent_files;
   InputChain m_inputChain;
   Clipboard m_clipboard;
+  InputOptions m_inputOptions;
 #endif
 #ifdef ENABLE_DATA_RECOVERY
   // This is a raw pointer because we want to delete it explicitly.
@@ -165,6 +167,7 @@ public:
     , m_activeToolManager(&m_toolbox)
 #ifdef ENABLE_UI
     , m_recent_files(pref.general.recentItems())
+    , m_inputOptions(pref)
 #endif
 #ifdef ENABLE_DATA_RECOVERY
     , m_recovery(nullptr)
@@ -304,6 +307,7 @@ int App::initialize(const AppOptions& options)
 
   if (m_isGui)
     m_uiSystem.reset(new ui::UISystem);
+    m_uiInputOptions.reset(new ui::UIInputOptions);
 
   bool createLogInDesktop = false;
   switch (options.verboseLevel()) {
@@ -352,6 +356,11 @@ int App::initialize(const AppOptions& options)
     // Set the ClipboardDelegate impl to copy/paste text in the native
     // clipboard from the ui::Entry control.
     m_uiSystem->setClipboardDelegate(&m_modules->m_clipboard);
+
+    // Set the InputOptionsDelegate impl to communicate peripheral
+    // input options (as scroll wheel sensitivity) between
+    // Preferences variables and ui::Manager.
+    m_uiInputOptions->setDelegate(&m_modules->m_inputOptions);
 
     // Setup the GUI cursor and redraw screen
     ui::set_use_native_cursors(preferences().cursor.useNativeCursor());

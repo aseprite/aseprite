@@ -66,6 +66,29 @@ RedrawState redrawState = RedrawState::Normal;
 
 } // anonymous namespace
 
+gfx::PointF Manager::g_wheelDeltaFraction = gfx::PointF(0, 0);
+
+static UIInputOptions* g_inputOptions = nullptr;
+
+// static
+UIInputOptions* UIInputOptions::instance()
+{
+  return g_inputOptions;
+}
+
+UIInputOptions::UIInputOptions()
+  : m_inputOptionsDelegate(nullptr)
+{
+  ASSERT(!g_inputOptions);
+  g_inputOptions = this;
+}
+
+UIInputOptions::~UIInputOptions()
+{
+  ASSERT(g_inputOptions);
+  g_inputOptions = nullptr;
+}
+
 static const int NFILTERS = (int)(kFirstRegisteredMessage+1);
 
 struct Filter {
@@ -2168,9 +2191,17 @@ Message* Manager::newMouseMessage(
   }
 #endif
 
+  gfx::PointF wheelDeltaF(wheelDelta);
+  double sensitivity = 1.0;
+  if (g_inputOptions && g_inputOptions->delegate())
+    sensitivity = g_inputOptions->delegate()->scrollWheelSensitivity();
+  wheelDeltaF = wheelDeltaF * sensitivity + g_wheelDeltaFraction;
+  gfx::Point wheelDeltaSens(wheelDeltaF);
+  g_wheelDeltaFraction = wheelDeltaF - gfx::PointF(wheelDeltaSens);
+
   Message* msg = new MouseMessage(
     type, pointerType, button, modifiers, mousePos,
-    wheelDelta, preciseWheel, pressure);
+    wheelDeltaSens, preciseWheel, pressure);
 
   if (display)
     msg->setDisplay(display);

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -27,6 +27,7 @@ namespace doc {
 
 namespace ui {
   class UISystem;
+  class UIInputOptions;
 }
 
 namespace app {
@@ -136,6 +137,7 @@ namespace app {
 
     AppMod* m_mod;
     std::unique_ptr<ui::UISystem> m_uiSystem;
+    std::unique_ptr<ui::UIInputOptions> m_uiInputOptions;
     std::unique_ptr<CoreModules> m_coreModules;
     std::unique_ptr<Modules> m_modules;
     std::unique_ptr<LegacyModules> m_legacy;

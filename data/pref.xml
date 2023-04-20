@@ -160,6 +160,9 @@
       <option id="osx_async_view" type="bool" default="true" />
       <option id="x11_stylus_id" type="std::string" />
     </section>
+    <section id="mouse">
+      <option id="scroll_wheel_sens" type="double" default="1.0" />
+    </section>
     <section id="undo" text="Undo">
       <option id="size_limit" type="int" default="0" />
       <option id="goto_modified" type="bool" default="true" />
