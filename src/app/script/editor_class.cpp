@@ -160,8 +160,7 @@ public:
           Console().printf("%s\n", s);
       }
     }
-    m_askPoint.reset();
-    editor->backToPreviousState();
+    cancel();
   }
 
   void onQuickboxCancel(Editor* editor) override {
@@ -174,8 +173,7 @@ public:
           Console().printf("%s\n", s);
       }
     }
-    m_askPoint.reset();
-    editor->backToPreviousState();
+    cancel();
   }
 
   std::string onGetContextBarHelp() override {
