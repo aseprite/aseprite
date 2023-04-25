@@ -99,6 +99,9 @@ protected:
   // LayoutIO implementation
   std::string loadLayout(Widget* widget) override;
   void saveLayout(Widget* widget, const std::string& str) override;
+
+private:
+  bool processKey(Message* msg);
 };
 
 static os::WindowRef main_window = nullptr;
@@ -580,80 +583,9 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
       if (Manager::onProcessMessage(msg))
         return true;
 
-      KeyboardShortcuts* keys = KeyboardShortcuts::instance();
-      for (const KeyPtr& key : *keys) {
-        if (key->isPressed(msg, *keys)) {
-          // Cancel menu-bar loops (to close any popup menu)
-          App::instance()->mainWindow()->getMenuBar()->cancelMenuLoop();
+      if (processKey(msg))
+        return true;
 
-          switch (key->type()) {
-
-            case KeyType::Tool: {
-              tools::Tool* current_tool = App::instance()->activeTool();
-              tools::Tool* select_this_tool = key->tool();
-              tools::ToolBox* toolbox = App::instance()->toolBox();
-              std::vector<tools::Tool*> possibles;
-
-              // Collect all tools with the pressed keyboard-shortcut
-              for (tools::Tool* tool : *toolbox) {
-                const KeyPtr key = KeyboardShortcuts::instance()->tool(tool);
-                if (key && key->isPressed(msg, *keys))
-                  possibles.push_back(tool);
-              }
-
-              if (possibles.size() >= 2) {
-                bool done = false;
-
-                for (size_t i=0; i<possibles.size(); ++i) {
-                  if (possibles[i] != current_tool &&
-                      ToolBar::instance()->isToolVisible(possibles[i])) {
-                    select_this_tool = possibles[i];
-                    done = true;
-                    break;
-                  }
-                }
-
-                if (!done) {
-                  for (size_t i=0; i<possibles.size(); ++i) {
-                    // If one of the possibilities is the current tool
-                    if (possibles[i] == current_tool) {
-                      // We select the next tool in the possibilities
-                      select_this_tool = possibles[(i+1) % possibles.size()];
-                      break;
-                    }
-                  }
-                }
-              }
-
-              ToolBar::instance()->selectTool(select_this_tool);
-              return true;
-            }
-
-            case KeyType::Command: {
-              Command* command = key->command();
-
-              // Commands are executed only when the main window is
-              // the current window running.
-              if (getForegroundWindow() == App::instance()->mainWindow()) {
-                // OK, so we can execute the command represented
-                // by the pressed-key in the message...
-                UIContext::instance()->executeCommandFromMenuOrShortcut(
-                  command, key->params());
-                return true;
-              }
-              break;
-            }
-
-            case KeyType::Quicktool: {
-              // Do nothing, it is used in the editor through the
-              // KeyboardShortcuts::getCurrentQuicktool() function.
-              break;
-            }
-
-          }
-          break;
-        }
-      }
       break;
     }
 
@@ -776,6 +708,86 @@ void CustomizedGuiManager::onNewDisplayConfiguration(Display* display)
     //      detect the os::Window (or UI Screen Scaling) change?
     Console::notifyNewDisplayConfiguration();
   }
+}
+
+bool CustomizedGuiManager::processKey(Message* msg)
+{
+  App* app = App::instance();
+  const KeyboardShortcuts* keys = KeyboardShortcuts::instance();
+  for (const KeyPtr& key : *keys) {
+    if (key->isPressed(msg, *keys)) {
+      // Cancel menu-bar loops (to close any popup menu)
+      app->mainWindow()->getMenuBar()->cancelMenuLoop();
+
+      switch (key->type()) {
+
+        case KeyType::Tool: {
+          tools::Tool* current_tool = app->activeTool();
+          tools::Tool* select_this_tool = key->tool();
+          tools::ToolBox* toolbox = app->toolBox();
+          std::vector<tools::Tool*> possibles;
+
+          // Collect all tools with the pressed keyboard-shortcut
+          for (tools::Tool* tool : *toolbox) {
+            const KeyPtr key = keys->tool(tool);
+            if (key && key->isPressed(msg, *keys))
+              possibles.push_back(tool);
+          }
+
+          if (possibles.size() >= 2) {
+            bool done = false;
+
+            for (size_t i=0; i<possibles.size(); ++i) {
+              if (possibles[i] != current_tool &&
+                  ToolBar::instance()->isToolVisible(possibles[i])) {
+                select_this_tool = possibles[i];
+                done = true;
+                break;
+              }
+            }
+
+            if (!done) {
+              for (size_t i=0; i<possibles.size(); ++i) {
+                // If one of the possibilities is the current tool
+                if (possibles[i] == current_tool) {
+                  // We select the next tool in the possibilities
+                  select_this_tool = possibles[(i+1) % possibles.size()];
+                  break;
+                }
+              }
+            }
+          }
+
+          ToolBar::instance()->selectTool(select_this_tool);
+          return true;
+        }
+
+        case KeyType::Command: {
+          Command* command = key->command();
+
+          // Commands are executed only when the main window is
+          // the current window running.
+          if (getForegroundWindow() == app->mainWindow()) {
+            // OK, so we can execute the command represented
+            // by the pressed-key in the message...
+            UIContext::instance()->executeCommandFromMenuOrShortcut(
+              command, key->params());
+            return true;
+          }
+          break;
+        }
+
+        case KeyType::Quicktool: {
+          // Do nothing, it is used in the editor through the
+          // KeyboardShortcuts::getCurrentQuicktool() function.
+          break;
+        }
+
+      }
+      break;
+    }
+  }
+  return false;
 }
 
 std::string CustomizedGuiManager::loadLayout(Widget* widget)

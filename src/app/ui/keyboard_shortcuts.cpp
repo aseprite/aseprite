@@ -435,7 +435,7 @@ void Key::add(const ui::Accelerator& accel,
 }
 
 const ui::Accelerator* Key::isPressed(const Message* msg,
-                                      KeyboardShortcuts& globalKeys) const
+                                      const KeyboardShortcuts& globalKeys) const
 {
   const KeyContext currentKeyContext = globalKeys.getCurrentKeyContext();
 
@@ -954,7 +954,9 @@ void KeyboardShortcuts::reset()
     key->reset();
 }
 
-KeyPtr KeyboardShortcuts::command(const char* commandName, const Params& params, KeyContext keyContext)
+KeyPtr KeyboardShortcuts::command(const char* commandName,
+                                  const Params& params,
+                                  const KeyContext keyContext) const
 {
   Command* command = Commands::instance()->byId(commandName);
   if (!command)
@@ -974,7 +976,7 @@ KeyPtr KeyboardShortcuts::command(const char* commandName, const Params& params,
   return key;
 }
 
-KeyPtr KeyboardShortcuts::tool(tools::Tool* tool)
+KeyPtr KeyboardShortcuts::tool(tools::Tool* tool) const
 {
   for (KeyPtr& key : m_keys) {
     if (key->type() == KeyType::Tool &&
@@ -988,7 +990,7 @@ KeyPtr KeyboardShortcuts::tool(tools::Tool* tool)
   return key;
 }
 
-KeyPtr KeyboardShortcuts::quicktool(tools::Tool* tool)
+KeyPtr KeyboardShortcuts::quicktool(tools::Tool* tool) const
 {
   for (KeyPtr& key : m_keys) {
     if (key->type() == KeyType::Quicktool &&
@@ -1002,8 +1004,8 @@ KeyPtr KeyboardShortcuts::quicktool(tools::Tool* tool)
   return key;
 }
 
-KeyPtr KeyboardShortcuts::action(KeyAction action,
-                                 KeyContext keyContext)
+KeyPtr KeyboardShortcuts::action(const KeyAction action,
+                                 const KeyContext keyContext) const
 {
   for (KeyPtr& key : m_keys) {
     if (key->type() == KeyType::Action &&
@@ -1018,7 +1020,7 @@ KeyPtr KeyboardShortcuts::action(KeyAction action,
   return key;
 }
 
-KeyPtr KeyboardShortcuts::wheelAction(WheelAction wheelAction)
+KeyPtr KeyboardShortcuts::wheelAction(const WheelAction wheelAction) const
 {
   for (KeyPtr& key : m_keys) {
     if (key->type() == KeyType::WheelAction &&
@@ -1032,7 +1034,7 @@ KeyPtr KeyboardShortcuts::wheelAction(WheelAction wheelAction)
   return key;
 }
 
-KeyPtr KeyboardShortcuts::dragAction(WheelAction dragAction)
+KeyPtr KeyboardShortcuts::dragAction(const WheelAction dragAction) const
 {
   for (KeyPtr& key : m_keys) {
     if (key->type() == KeyType::DragAction &&
@@ -1069,7 +1071,7 @@ void KeyboardShortcuts::disableAccel(const ui::Accelerator& accel,
   }
 }
 
-KeyContext KeyboardShortcuts::getCurrentKeyContext()
+KeyContext KeyboardShortcuts::getCurrentKeyContext() const
 {
   Doc* doc = UIContext::instance()->activeDocument();
   if (doc &&

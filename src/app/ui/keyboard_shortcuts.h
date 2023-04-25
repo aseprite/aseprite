@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2022  Igara Studio S.A.
+// Copyright (C) 2020-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -34,7 +34,6 @@ namespace app {
     const_iterator begin() const { return m_keys.begin(); }
     const_iterator end() const { return m_keys.end(); }
 
-    // const Keys& keys() const { return m_keys; }
     void setKeys(const KeyboardShortcuts& keys,
                  const bool cloneKeys);
 
@@ -46,20 +45,20 @@ namespace app {
 
     KeyPtr command(const char* commandName,
                    const Params& params = Params(),
-                   const KeyContext keyContext = KeyContext::Any);
-    KeyPtr tool(tools::Tool* tool);
-    KeyPtr quicktool(tools::Tool* tool);
+                   const KeyContext keyContext = KeyContext::Any) const;
+    KeyPtr tool(tools::Tool* tool) const;
+    KeyPtr quicktool(tools::Tool* tool) const;
     KeyPtr action(const KeyAction action,
-                  const KeyContext keyContext = KeyContext::Any);
-    KeyPtr wheelAction(const WheelAction action);
-    KeyPtr dragAction(const WheelAction action);
+                  const KeyContext keyContext = KeyContext::Any) const;
+    KeyPtr wheelAction(const WheelAction action) const;
+    KeyPtr dragAction(const WheelAction action) const;
 
     void disableAccel(const ui::Accelerator& accel,
                       const KeySource source,
                       const KeyContext keyContext,
                       const Key* newKey);
 
-    KeyContext getCurrentKeyContext();
+    KeyContext getCurrentKeyContext() const;
     bool getCommandFromKeyMessage(const ui::Message* msg, Command** command, Params* params);
     tools::Tool* getCurrentQuicktool(tools::Tool* currentTool);
     KeyAction getCurrentActionModifiers(KeyContext context);
@@ -82,7 +81,7 @@ namespace app {
     void exportKeys(TiXmlElement& parent, KeyType type);
     void exportAccel(TiXmlElement& parent, const Key* key, const ui::Accelerator& accel, bool removed);
 
-    Keys m_keys;
+    mutable Keys m_keys;
   };
 
   std::string key_tooltip(const char* str, const Key* key);
