@@ -132,6 +132,9 @@ namespace app {
              const KeySource source,
              KeyboardShortcuts& globalKeys);
     const ui::Accelerator* isPressed(const ui::Message* msg,
+                                     const KeyboardShortcuts& globalKeys,
+                                     const KeyContext keyContext) const;
+    const ui::Accelerator* isPressed(const ui::Message* msg,
                                      const KeyboardShortcuts& globalKeys) const;
     bool isPressed() const;
     bool isLooselyPressed() const;
