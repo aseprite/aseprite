@@ -920,6 +920,11 @@ void FileOp::operate(IFileOpProgress* progress)
         setError("Error loading data file: %s\n", ex.what());
       }
     }
+
+    if (hasIncompatibilityError()) {
+      setError(fmt::format(Strings::alerts_load_file_with_incompatibilities(),
+               m_incompatibilityError).c_str());
+    }
   }
   // Save //////////////////////////////////////////////////////////////////////
   else if (m_type == FileOpSave &&
@@ -935,6 +940,11 @@ void FileOp::operate(IFileOpProgress* progress)
                     get_app_download_url()).c_str());
     }
 #endif
+
+    if (m_document && m_document->isReadOnly()) {
+      setError(fmt::format(Strings::alerts_cannot_overwrite_readonly()).c_str());
+      return;
+    }
 
     // Save a sequence
     if (isSequence()) {
@@ -1081,12 +1091,14 @@ FileOp::~FileOp()
   delete m_seq.palette;
 }
 
-void FileOp::createDocument(Sprite* spr)
+void FileOp::createDocument(Sprite* spr, bool readOnly)
 {
   // spr can be NULL if the sprite is set in onPostLoad() then
 
   ASSERT(m_document == NULL);
   m_document = new Doc(spr);
+  if (readOnly)
+    m_document->markAsReadOnly();
 }
 
 void FileOp::postLoad()
@@ -1359,6 +1371,18 @@ void FileOp::setError(const char *format, ...)
     if (!m_error.empty() && m_error.back() != '\n')
       m_error.push_back('\n');
     m_error += buf_error;
+  }
+}
+
+void FileOp::setIncompatibilityError(const std::string& msg)
+{
+  // Concatenate the new error
+  {
+    std::lock_guard lock(m_mutex);
+    // Add a newline char automatically if it's needed
+    if (!m_incompatibilityError.empty() && m_incompatibilityError.back() != '\n')
+      m_incompatibilityError.push_back('\n');
+    m_incompatibilityError += msg;
   }
 }
 

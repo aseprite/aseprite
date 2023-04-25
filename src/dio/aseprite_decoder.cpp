@@ -1295,20 +1295,26 @@ void AsepriteDecoder::readPropertiesMaps(doc::UserData::PropertiesMaps& properti
   auto startPos = f()->tell();
   auto size = read32();
   auto numMaps = read32();
-  for (int i=0; i<numMaps; ++i) {
-    auto id = read32();
-    std::string extensionId; // extensionId = empty by default (when id == 0)
-    if (id &&
-        !extFiles.getFilenameByID(id, extensionId)) {
-      // This shouldn't happen, but if it does, we put the properties
-      // in an artificial extensionId.
-      extensionId = fmt::format("__missed__{}", id);
-      delegate()->error(
-        fmt::format("Error: Invalid extension ID (id={0} not found)", id));
+  try {
+    for (int i=0; i<numMaps; ++i) {
+      auto id = read32();
+      std::string extensionId; // extensionId = empty by default (when id == 0)
+      if (id &&
+          !extFiles.getFilenameByID(id, extensionId)) {
+        // This shouldn't happen, but if it does, we put the properties
+        // in an artificial extensionId.
+        extensionId = fmt::format("__missed__{}", id);
+        delegate()->error(
+          fmt::format("Error: Invalid extension ID (id={0} not found)", id));
+      }
+      auto properties = readPropertyValue(USER_DATA_PROPERTY_TYPE_PROPERTIES);
+      propertiesMaps[extensionId] = doc::get_value<doc::UserData::Properties>(properties);
     }
-    auto properties = readPropertyValue(USER_DATA_PROPERTY_TYPE_PROPERTIES);
-    propertiesMaps[extensionId] = doc::get_value<doc::UserData::Properties>(properties);
   }
+  catch(const base::Exception& e) {
+    delegate()->incompatibilityError(fmt::format("Error reading custom properties: {0}", e.what()));
+  }
+
   f()->seek(startPos+size);
 }
 
@@ -1419,6 +1425,9 @@ const doc::UserData::Variant AsepriteDecoder::readPropertyValue(uint16_t type)
         bytes[i] = read8();
       }
       return value;
+    }
+    default: {
+      throw base::Exception(fmt::format("Unexpected property type '{0}' at file position {1}", type, f()->tell()));
     }
   }
 

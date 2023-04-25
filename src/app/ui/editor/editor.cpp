@@ -2418,7 +2418,8 @@ bool Editor::canDraw()
           m_layer->isImage() &&
           m_layer->isVisibleHierarchy() &&
           m_layer->isEditableHierarchy() &&
-          !m_layer->isReference());
+          !m_layer->isReference() &&
+          !m_document->isReadOnly());
 }
 
 bool Editor::isInsideSelection()

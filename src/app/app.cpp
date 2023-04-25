@@ -766,6 +766,9 @@ void App::updateDisplayTitleBar()
   if (docView) {
     // Prepend the document's filename.
     title += docView->document()->name();
+    if (docView->document()->isReadOnly()) {
+      title += " [Read-Only]";
+    }
     title += " - ";
   }
 
