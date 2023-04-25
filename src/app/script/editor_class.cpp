@@ -10,6 +10,7 @@
 
 #include "app/console.h"
 #include "app/script/docobj.h"
+#include "app/script/engine.h"
 #include "app/script/luacpp.h"
 #include "app/script/registry.h"
 #include "app/ui/editor/editor.h"
@@ -89,6 +90,7 @@ public:
 
   void askPoint(lua_State* L,
                 const std::string& title,
+                const gfx::Point* initialPoint,
                 RegistryRef&& onclick,
                 RegistryRef&& onchange,
                 RegistryRef&& oncancel) {
@@ -104,13 +106,17 @@ public:
     m_askPoint->onchange = std::move(onchange);
     m_askPoint->oncancel = std::move(oncancel);
 
-    m_editor->setState(
-      std::make_shared<SelectBoxState>(
-        this, m_editor->sprite()->bounds(),
-        SelectBoxState::Flags(int(SelectBoxState::Flags::Rulers) |
-                              int(SelectBoxState::Flags::DarkOutside) |
-                              int(SelectBoxState::Flags::QuickBox) |
-                              int(SelectBoxState::Flags::QuickPoint))));
+    auto state = std::make_shared<SelectBoxState>(
+      this, m_editor->sprite()->bounds(),
+      SelectBoxState::Flags(int(SelectBoxState::Flags::Rulers) |
+                            int(SelectBoxState::Flags::DarkOutside) |
+                            int(SelectBoxState::Flags::QuickBox) |
+                            int(SelectBoxState::Flags::QuickPoint)));
+
+    if (initialPoint)
+      state->setBoxBounds(gfx::Rect(initialPoint->x, initialPoint->y, 1, 1));
+
+    m_editor->setState(state);
   }
 
   // EditorObserver impl
@@ -204,10 +210,16 @@ int Editor_askPoint(lua_State* L)
     return luaL_error(L, "app.askPoint() must be called with a table as its first argument");
 
   std::string title;
+  std::unique_ptr<gfx::Point> initialPoint;
 
   int type = lua_getfield(L, 2, "title");
   if (type != LUA_TNIL)
     title = lua_tostring(L, -1);
+  lua_pop(L, 1);
+
+  type = lua_getfield(L, 2, "point");
+  if (type != LUA_TNIL)
+    initialPoint = std::make_unique<gfx::Point>(convert_args_into_point(L, -1));
   lua_pop(L, 1);
 
   RegistryRef onclick;
@@ -231,7 +243,7 @@ int Editor_askPoint(lua_State* L)
   else
     lua_pop(L, 1);
 
-  obj->askPoint(L, title,
+  obj->askPoint(L, title, initialPoint.get(),
                 std::move(onclick),
                 std::move(onchange),
                 std::move(oncancel));

@@ -135,7 +135,7 @@ bool SelectBoxState::onMouseDown(Editor* editor, MouseMessage* msg)
       editor->screenToEditor(msg->position())
       - editor->mainTilePosition();
 
-    if (hasFlag(Flags::Rulers)) {
+    if (hasFlag(Flags::Rulers) && !hasFlag(Flags::QuickPoint)) {
       m_rulersDragAlign = hitTestRulers(editor, msg->position(), true);
       if (m_rulersDragAlign)
         m_startRulers = m_rulers; // Capture start positions
@@ -145,6 +145,10 @@ bool SelectBoxState::onMouseDown(Editor* editor, MouseMessage* msg)
       m_selectingBox = true;
       m_selectingButton = msg->button();
       setBoxBounds(gfx::Rect(m_startingPos, gfx::Size(1, 1)));
+
+      // Redraw the editor so we can show the pixel where the mouse
+      // button is pressed for first time.
+      editor->invalidate();
     }
 
     editor->captureMouse();
