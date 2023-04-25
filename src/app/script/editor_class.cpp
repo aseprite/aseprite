@@ -54,11 +54,13 @@ struct AskPoint {
   lua_State* L;
   std::string title;
   RegistryRef onclick;
+  RegistryRef onchange;
   RegistryRef oncancel;
 
   AskPoint(lua_State* L) : L(L) { }
   ~AskPoint() {
     onclick.unref(L);
+    onchange.unref(L);
     oncancel.unref(L);
   }
 };
@@ -88,6 +90,7 @@ public:
   void askPoint(lua_State* L,
                 const std::string& title,
                 RegistryRef&& onclick,
+                RegistryRef&& onchange,
                 RegistryRef&& oncancel) {
     // Cancel previous askPoint()
     if (m_askPoint) {
@@ -98,6 +101,7 @@ public:
     m_askPoint = std::make_unique<AskPoint>(L);
     m_askPoint->title = title;
     m_askPoint->onclick = std::move(onclick);
+    m_askPoint->onchange = std::move(onchange);
     m_askPoint->oncancel = std::move(oncancel);
 
     m_editor->setState(
@@ -116,6 +120,20 @@ public:
   }
 
   // SelectBoxDelegate impl
+  void onChangeRectangle(const gfx::Rect& rect) override {
+    lua_State* L = m_askPoint->L;
+
+    if (m_askPoint && m_askPoint->onchange.get(L)) {
+      lua_newtable(L);       // Create "ev" argument with ev.point
+      push_obj(L, rect.origin());
+      lua_setfield(L, -2, "point");
+      if (lua_pcall(L, 1, 0, 0) != LUA_OK) {
+        if (const char* s = lua_tostring(L, -1))
+          Console().printf("%s\n", s);
+      }
+    }
+  }
+
   void onQuickboxEnd(Editor* editor, const gfx::Rect& rect, ui::MouseButton button) override {
     lua_State* L = m_askPoint->L;
 
@@ -199,6 +217,13 @@ int Editor_askPoint(lua_State* L)
   else
     lua_pop(L, 1);
 
+  RegistryRef onchange;
+  type = lua_getfield(L, 2, "onchange");
+  if (type == LUA_TFUNCTION)
+    onchange.ref(L);
+  else
+    lua_pop(L, 1);
+
   RegistryRef oncancel;
   type = lua_getfield(L, 2, "oncancel");
   if (type == LUA_TFUNCTION)
@@ -206,7 +231,10 @@ int Editor_askPoint(lua_State* L)
   else
     lua_pop(L, 1);
 
-  obj->askPoint(L, title, std::move(onclick), std::move(oncancel));
+  obj->askPoint(L, title,
+                std::move(onclick),
+                std::move(onchange),
+                std::move(oncancel));
   return 0;
 }
 
