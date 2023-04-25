@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -75,6 +75,9 @@ namespace ui {
 
     gfx::Size workareaSizeUIScale();
 
+    const gfx::Point& lastMousePos() const { return m_lastMousePos; }
+    void updateLastMousePos(const gfx::Point& pos) { m_lastMousePos = pos; }
+
     void _setParentDisplay(Display* parentDisplay) {
       m_parentDisplay = parentDisplay;
     }
@@ -86,6 +89,7 @@ namespace ui {
     std::vector<Window*> m_windows; // Sub-windows in this display
     gfx::Region m_invalidRegion;    // Invalid region (we didn't receive paint messages yet for this).
     gfx::Region m_dirtyRegion;      // Region to flip to the os::Display
+    gfx::Point m_lastMousePos;
   };
 
 } // namespace ui

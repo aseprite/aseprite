@@ -450,6 +450,10 @@ namespace app {
 
     DocView* m_docView;
 
+    // Last known mouse position received by this editor when the
+    // mouse button was pressed. Used for auto-scrolling. To get the
+    // current mouse position on the editor you can use
+    // ui::Display::lastMousePos().
     gfx::Point m_oldPos;
 
     EditorFlags m_flags;

@@ -15,6 +15,7 @@
 #include "app/script/registry.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/select_box_state.h"
+#include "ui/display.h"
 
 #ifdef ENABLE_UI
 
@@ -94,10 +95,10 @@ public:
                 RegistryRef&& onclick,
                 RegistryRef&& onchange,
                 RegistryRef&& oncancel) {
-    // Cancel previous askPoint()
     if (m_askPoint) {
-      onQuickboxCancel(m_editor);
-      ASSERT(!m_askPoint);
+      // Don't call onQuickboxCancel() to avoid calling oncancel, the
+      // script should know that it called askPoint() previously.
+      m_editor->backToPreviousState();
     }
 
     m_askPoint = std::make_unique<AskPoint>(L);
@@ -117,6 +118,13 @@ public:
       state->setBoxBounds(gfx::Rect(initialPoint->x, initialPoint->y, 1, 1));
 
     m_editor->setState(state);
+  }
+
+  void cancel() {
+    if (m_askPoint) {
+      m_askPoint.reset();
+      m_editor->backToPreviousState();
+    }
   }
 
   // EditorObserver impl
@@ -250,6 +258,13 @@ int Editor_askPoint(lua_State* L)
   return 0;
 }
 
+int Editor_cancel(lua_State* L)
+{
+  auto obj = get_obj<EditorObj>(L, 1);
+  obj->cancel();
+  return 0;
+}
+
 int Editor_get_sprite(lua_State* L)
 {
   auto obj = get_obj<EditorObj>(L, 1);
@@ -257,15 +272,33 @@ int Editor_get_sprite(lua_State* L)
   return 1;
 }
 
+int Editor_get_spritePos(lua_State* L)
+{
+  auto obj = get_obj<EditorObj>(L, 1);
+  push_obj(L, obj->editor()->screenToEditor(
+                obj->editor()->display()->lastMousePos()));
+  return 1;
+}
+
+int Editor_get_mousePos(lua_State* L)
+{
+  auto obj = get_obj<EditorObj>(L, 1);
+  push_obj(L, obj->editor()->display()->lastMousePos());
+  return 1;
+}
+
 const luaL_Reg Editor_methods[] = {
   { "__gc", Editor_gc },
   { "__eq", Editor_eq },
   { "askPoint", Editor_askPoint },
+  { "cancel", Editor_cancel },
   { nullptr, nullptr }
 };
 
 const Property Editor_properties[] = {
   { "sprite", Editor_get_sprite, nullptr },
+  { "spritePos", Editor_get_spritePos, nullptr },
+  { "mousePos", Editor_get_mousePos, nullptr },
   { nullptr, nullptr, nullptr }
 };
 

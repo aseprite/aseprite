@@ -784,8 +784,14 @@ void Manager::handleWindowZOrder()
 void Manager::updateMouseWidgets(const gfx::Point& mousePos,
                                  Display* display)
 {
-  gfx::Point screenPos = (display ? display->nativeWindow()->pointToScreen(mousePos):
-                                    mousePos);
+  gfx::Point screenPos;
+  if (display) {
+    screenPos = display->nativeWindow()->pointToScreen(mousePos);
+    display->updateLastMousePos(mousePos);
+  }
+  else {
+    screenPos = mousePos;
+  }
 
   // Get the list of widgets to send mouse messages.
   mouse_widgets_list.clear();
