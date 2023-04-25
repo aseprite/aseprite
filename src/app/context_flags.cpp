@@ -44,7 +44,7 @@ void ContextFlags::update(Context* context)
 
       updateFlagsFromSite(site);
 
-      if (document->canWriteLockFromRead())
+      if (document->canWriteLockFromRead() && !document->isReadOnly())
         m_flags |= ActiveDocumentIsWritable;
 
       document->unlock();

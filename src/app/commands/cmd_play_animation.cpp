@@ -41,7 +41,7 @@ PlayAnimationCommand::PlayAnimationCommand()
 
 bool PlayAnimationCommand::onEnabled(Context* ctx)
 {
-  return ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+  return ctx->checkFlags(ContextFlags::ActiveDocumentIsReadable |
                          ContextFlags::HasActiveSprite);
 }
 

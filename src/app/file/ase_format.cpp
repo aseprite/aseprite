@@ -54,6 +54,10 @@ public:
     m_fop->setError(msg.c_str());
   }
 
+  void incompatibilityError(const std::string& msg) override {
+    m_fop->setIncompatibilityError(msg.c_str());
+  }
+
   void progress(double fromZeroToOne) override {
     m_fop->setProgress(fromZeroToOne);
   }
@@ -289,7 +293,7 @@ bool AseFormat::onLoad(FileOp* fop)
     return false;
 
   Sprite* sprite = delegate.sprite();
-  fop->createDocument(sprite);
+  fop->createDocument(sprite, fop->hasIncompatibilityError());
 
   if (sprite->colorSpace() != nullptr &&
       sprite->colorSpace()->type() != gfx::ColorSpace::None) {

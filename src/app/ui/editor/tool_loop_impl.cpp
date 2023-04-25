@@ -783,6 +783,14 @@ tools::ToolLoop* create_tool_loop(
   Site site = editor->getSite();
   doc::Grid grid = site.grid();
 
+  // If the document is read-only.
+  if (site.document()->isReadOnly()) {
+    StatusBar::instance()->showTip(
+      1000,
+      fmt::format(Strings::statusbar_tips_unmodifiable_sprite()));
+    return nullptr;
+  }
+
   ToolLoopParams params;
   params.tool = editor->getCurrentEditorTool();
   params.ink = editor->getCurrentEditorInk();

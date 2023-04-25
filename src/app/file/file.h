@@ -168,7 +168,7 @@ namespace app {
 
     const FileOpROI& roi() const { return m_roi; }
 
-    void createDocument(Sprite* spr);
+    void createDocument(Sprite* spr, bool readOnly = false);
     void operate(IFileOpProgress* progress = nullptr);
 
     void done();
@@ -247,6 +247,8 @@ namespace app {
     const std::string& error() const { return m_error; }
     void setError(const char *error, ...);
     bool hasError() const { return !m_error.empty(); }
+    void setIncompatibilityError(const std::string& msg);
+    bool hasIncompatibilityError() const { return !m_incompatibilityError.empty(); }
 
     double progress() const;
     void setProgress(double progress);
@@ -283,6 +285,7 @@ namespace app {
     double m_progress;          // Progress (1.0 is ready).
     IFileOpProgress* m_progressInterface;
     std::string m_error;        // Error string.
+    std::string m_incompatibilityError; // Incompatibility error string.
     bool m_done;                // True if the operation finished.
     bool m_stop;                // Force the break of the operation.
     bool m_oneframe;            // Load just one frame (in formats

@@ -140,6 +140,12 @@ void Transaction::rollback(CmdTransaction* newCmds)
 
 void Transaction::execute(Cmd* cmd)
 {
+  // Read-only sprites cannot be modified.
+  if (m_doc->isReadOnly()) {
+    delete cmd;
+    throw CannotModifyWhenReadOnlyException();
+  }
+
   // If we are undoing/redoing, just throw an exception, we cannot
   // modify the sprite while we are moving throw the undo history.
   // To undo/redo we have just to call the onUndo/onRedo of each

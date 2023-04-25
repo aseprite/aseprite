@@ -12,8 +12,10 @@
 #include "app/doc_observer.h"
 #include "app/extra_cel.h"
 #include "app/file/format_options.h"
+#include "app/i18n/strings.h"
 #include "app/transformation.h"
 #include "base/disable_copying.h"
+#include "base/exception.h"
 #include "base/rw_lock.h"
 #include "doc/blend_mode.h"
 #include "doc/color.h"
@@ -64,6 +66,7 @@ namespace app {
       kMaskVisible      = 2, // The mask wasn't hidden by the user
       kInhibitBackup    = 4, // Inhibit the backup process
       kFullyBackedUp    = 8, // Full backup was done
+      kReadOnly         = 16,// This document is read-only
     };
   public:
     Doc(Sprite* sprite);
@@ -145,6 +148,10 @@ namespace app {
 
     void markAsBackedUp();
     bool isFullyBackedUp() const;
+
+    void markAsReadOnly();
+    bool isReadOnly() const;
+    void removeReadOnlyMark();
 
     //////////////////////////////////////////////////////////////////////
     // Loaded options from file
@@ -266,6 +273,14 @@ namespace app {
     os::ColorSpaceRef m_osColorSpace;
 
     DISABLE_COPYING(Doc);
+  };
+
+  // Exception thrown when we want to modify a sprite (add new
+  // app::Cmd objects) marked as read-only.
+  class CannotModifyWhenReadOnlyException : public base::Exception {
+  public:
+    CannotModifyWhenReadOnlyException() throw()
+    : base::Exception(Strings::alerts_cannot_modify_readonly()) { }
   };
 
 } // namespace app

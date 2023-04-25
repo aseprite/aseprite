@@ -24,6 +24,10 @@ public:
   // Used to log errors
   virtual void error(const std::string& msg) { }
 
+  // Sets an error when an incompatibility issue is
+  // detected.
+  virtual void incompatibilityError(const std::string &msg) { }
+
   // Used to report progress of the whole operation
   virtual void progress(double fromZeroToOne) { }
 

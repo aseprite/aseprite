@@ -332,6 +332,25 @@ bool Doc::isFullyBackedUp() const
   return (m_flags & kFullyBackedUp ? true: false);
 }
 
+void Doc::markAsReadOnly()
+{
+  DOC_TRACE("DOC: Mark as read-only", this);
+
+  m_flags |= kReadOnly;
+}
+
+bool Doc::isReadOnly() const
+{
+  return (m_flags & kReadOnly ? true: false);
+}
+
+void Doc::removeReadOnlyMark()
+{
+  DOC_TRACE("DOC: Read-only mark removed", this);
+
+  m_flags &= ~kReadOnly;
+}
+
 //////////////////////////////////////////////////////////////////////
 // Loaded options from file
 

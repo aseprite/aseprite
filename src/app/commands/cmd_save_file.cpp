@@ -162,6 +162,12 @@ std::string SaveFileBaseCommand::saveAsDialog(
   if (filename.empty())
     return std::string();
 
+  // Document is being saved under a different path/name, remove
+  // read-only mark then.
+  if (filename != initialFilename) {
+    document->removeReadOnlyMark();
+  }
+
   if (saveInBackground == SaveInBackground::On) {
     saveDocumentInBackground(
       context, document,
@@ -238,8 +244,10 @@ void SaveFileBaseCommand::saveDocumentInBackground(
     console.printf(fop->error().c_str());
 
     // We don't know if the file was saved correctly or not. So mark
-    // it as it should be saved again.
-    document->impossibleToBackToSavedState();
+    // it as it should be saved again. Except for read-only documents,
+    // since we know they must not be saved.
+    if (!document->isReadOnly())
+      document->impossibleToBackToSavedState();
   }
   // If the job was cancelled, mark the document as modified.
   else if (fop->isStop()) {
@@ -315,6 +323,7 @@ public:
 
 protected:
   void onExecute(Context* context) override;
+  bool onEnabled(Context* context) override;
 };
 
 SaveFileAsCommand::SaveFileAsCommand()
@@ -329,6 +338,11 @@ void SaveFileAsCommand::onExecute(Context* context)
                (params().filename.isSet() ? params().filename():
                                             document->filename()),
                MarkAsSaved::On);
+}
+
+bool SaveFileAsCommand::onEnabled(Context* context)
+{
+  return context->checkFlags(ContextFlags::ActiveDocumentIsReadable);
 }
 
 class SaveFileCopyAsCommand : public SaveFileBaseCommand {
