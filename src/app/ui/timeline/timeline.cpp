@@ -1520,8 +1520,12 @@ bool Timeline::onProcessMessage(Message* msg)
 
     case kMouseWheelMessage:
       if (m_document) {
-        gfx::Point delta = static_cast<MouseMessage*>(msg)->wheelDelta();
+        gfx::PointF delta;
         const bool precise = static_cast<MouseMessage*>(msg)->preciseWheel();
+        if (precise)
+          delta = static_cast<MouseMessage*>(msg)->wheelDeltaF();
+        else
+          delta = static_cast<MouseMessage*>(msg)->wheelDelta();
 
         // Zoom timeline
         if (msg->ctrlPressed() || // TODO configurable
@@ -1538,10 +1542,10 @@ bool Timeline::onProcessMessage(Message* msg)
         }
         else {
           if (!precise) {
-            delta.x *= frameBoxWidth();
-            delta.y *= layerBoxHeight();
+            delta.x *= float(frameBoxWidth());
+            delta.y *= float(layerBoxHeight());
 
-            if (delta.x == 0 && // On macOS shift already changes the wheel axis
+            if (delta.x < 0.05 && delta.x > -0.05 && // On macOS shift already changes the wheel axis
                 msg->shiftPressed()) {
               if (std::fabs(delta.y) > delta.x)
                 std::swap(delta.x, delta.y);

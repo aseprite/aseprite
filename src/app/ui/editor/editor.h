@@ -162,9 +162,11 @@ namespace app {
 
     const render::Projection& projection() const { return m_proj; }
     const render::Zoom& zoom() const { return m_proj.zoom(); }
+    const gfx::PointF wheelAcum() const { return m_wheelAcum; }
     const gfx::Point& padding() const { return m_padding; }
 
     void setZoom(const render::Zoom& zoom);
+    void addWheelDelta(const gfx::PointF& delta);
     void setDefaultScroll();
     void setScrollToCenter();
     void setScrollAndZoomToFitScreen();
@@ -455,6 +457,9 @@ namespace app {
     EditorFlags m_flags;
 
     bool m_secondaryButton;
+    // Wheel Delta float accumulator. Internal accumulation of
+    // scroll wheel steps/fractions to get a smoother wheel actions.
+    gfx::PointF m_wheelAcum;
     Flashing m_flashing;
 
     // Animation speed multiplier.

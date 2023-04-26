@@ -48,7 +48,7 @@ namespace app {
     void processWheelAction(Editor* editor,
                             WheelAction wheelAction,
                             const gfx::Point& position,
-                            gfx::Point delta,
+                            gfx::PointF delta,
                             double dz,
                             const ScrollBigSteps scrollBigSteps,
                             const PreciseWheel preciseWheel,

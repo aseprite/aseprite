@@ -481,6 +481,11 @@ void Editor::setZoom(const render::Zoom& zoom)
   }
 }
 
+void Editor::addWheelDelta(const gfx::PointF& delta)
+{
+  m_wheelAcum += delta;
+}
+
 void Editor::setDefaultScroll()
 {
   if (Preferences::instance().editor.autoFit())

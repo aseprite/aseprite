@@ -146,7 +146,7 @@ namespace ui {
                           const gfx::Point& mousePos,
                           KeyModifiers modifiers,
                           PointerType pointerType,
-                          const gfx::Point& wheelDelta,
+                          const gfx::PointF& wheelDelta,
                           bool preciseWheel);
     void handleTouchMagnify(Display* display,
                             const gfx::Point& mousePos,
@@ -170,7 +170,7 @@ namespace ui {
       PointerType pointerType,
       MouseButton button,
       KeyModifiers modifiers,
-      const gfx::Point& wheelDelta = gfx::Point(0, 0),
+      const gfx::PointF& wheelDelta = gfx::PointF(0, 0),
       bool preciseWheel = false,
       float pressure = 0.0f);
     void broadcastKeyMsg(Message* msg);

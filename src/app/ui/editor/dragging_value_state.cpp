@@ -123,7 +123,7 @@ bool DraggingValueState::onMouseMove(Editor* editor, MouseMessage* msg)
       processWheelAction(editor,
                          key->wheelAction(),
                          msg->position(),
-                         delta,
+                         gfx::PointF(delta),
                          dz,
                          ScrollBigSteps::Off,
                          preciseWheel,

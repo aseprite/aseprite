@@ -70,8 +70,20 @@ StateWithWheelBehavior::StateWithWheelBehavior()
 
 bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
 {
-  gfx::Point delta = msg->wheelDelta();
+  gfx::PointF delta;
+  float preciseSens = 1.0;
+  float sensitivity = 1.0;
+  if (msg->preciseWheel())
+    delta = msg->wheelDeltaF() * preciseSens;
+  else
+    delta = gfx::PointF(msg->wheelDelta()) * sensitivity;
+  gfx::PointF wheelAcum = editor->wheelAcum();
+  gfx::PointF wheelAcum2 = wheelAcum + delta;
+  editor->addWheelDelta(delta);
+  delta.x = std::floor(wheelAcum2.x) - std::floor(wheelAcum.x);
+  delta.y = std::floor(wheelAcum2.y) - std::floor(wheelAcum.y);
   double dz = delta.x + delta.y;
+
   WheelAction wheelAction = WheelAction::None;
 
   if (KeyboardShortcuts::instance()->hasMouseWheelCustomization()) {
@@ -160,7 +172,7 @@ void StateWithWheelBehavior::processWheelAction(
   Editor* editor,
   WheelAction wheelAction,
   const gfx::Point& position,
-  gfx::Point delta,
+  gfx::PointF delta,
   double dz,
   const ScrollBigSteps scrollBigSteps,
   const PreciseWheel preciseWheel,
@@ -257,10 +269,10 @@ void StateWithWheelBehavior::processWheelAction(
         gfx::Rect vp = view->viewportBounds();
 
         if (wheelAction == WheelAction::HScroll) {
-          delta.x = int(dz * vp.w);
+          delta.x = dz * float(vp.w);
         }
         else {
-          delta.y = int(dz * vp.h);
+          delta.y = dz * float(vp.h);
         }
 
         if (scrollBigSteps == ScrollBigSteps::On) {

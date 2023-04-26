@@ -125,7 +125,7 @@ namespace ui {
                  MouseButton button,
                  KeyModifiers modifiers,
                  const gfx::Point& pos,
-                 const gfx::Point& wheelDelta = gfx::Point(0, 0),
+                 const gfx::PointF& wheelDelta = gfx::PointF(0, 0),
                  bool preciseWheel = false,
                  float pressure = 0.0f)
       : Message(type, modifiers),
@@ -133,6 +133,7 @@ namespace ui {
         m_button(button),
         m_pos(pos),
         m_wheelDelta(wheelDelta),
+        m_wheelDeltaF(wheelDelta),
         m_preciseWheel(preciseWheel),
         m_pressure(pressure) {
     }
@@ -146,6 +147,7 @@ namespace ui {
         m_button(other.button()),
         m_pos(newPosition),
         m_wheelDelta(other.wheelDelta()),
+        m_wheelDeltaF(other.wheelDeltaF()),
         m_preciseWheel(other.preciseWheel()),
         m_pressure(other.pressure()) {
     }
@@ -156,6 +158,7 @@ namespace ui {
     bool right() const { return (m_button == kButtonRight); }
     bool middle() const { return (m_button == kButtonMiddle); }
     gfx::Point wheelDelta() const { return m_wheelDelta; }
+    gfx::PointF wheelDeltaF() const { return m_wheelDeltaF; }
     bool preciseWheel() const { return m_preciseWheel; }
     float pressure() const { return m_pressure; }
 
@@ -173,6 +176,7 @@ namespace ui {
     MouseButton m_button;       // Pressed button
     gfx::Point m_pos;           // Mouse position
     gfx::Point m_wheelDelta;    // Wheel axis variation
+    gfx::PointF m_wheelDeltaF;  // Float wheel axis variation for precise deltas
     bool m_preciseWheel;
     float m_pressure;
   };

@@ -568,11 +568,16 @@ void Manager::generateMessagesFromOSEvents()
       }
 
       case os::Event::MouseWheel: {
+        gfx::PointF delta;
+        if (osEvent.preciseWheel())
+          delta = osEvent.wheelDeltaF();
+        else
+          delta = osEvent.wheelDelta();
         handleMouseWheel(display,
                          osEvent.position(),
                          osEvent.modifiers(),
                          osEvent.pointerType(),
-                         osEvent.wheelDelta(),
+                         delta,
                          osEvent.preciseWheel());
         break;
       }
@@ -627,7 +632,7 @@ void Manager::handleMouseMove(Display* display,
       pointerType,
       m_mouseButton,
       modifiers,
-      gfx::Point(0, 0),
+      gfx::PointF(0, 0),
       false,
       pressure));
 }
@@ -650,7 +655,7 @@ void Manager::handleMouseDown(Display* display,
       pointerType,
       mouseButton,
       modifiers,
-      gfx::Point(0, 0),
+      gfx::PointF(0, 0),
       false,
       pressure));
 }
@@ -686,7 +691,7 @@ void Manager::handleMouseDoubleClick(Display* display,
         kDoubleClickMessage,
         display, dst, mousePos, pointerType,
         mouseButton, modifiers,
-        gfx::Point(0, 0), false,
+        gfx::PointF(0, 0), false,
         pressure));
   }
 }
@@ -695,7 +700,7 @@ void Manager::handleMouseWheel(Display* display,
                                const gfx::Point& mousePos,
                                KeyModifiers modifiers,
                                PointerType pointerType,
-                               const gfx::Point& wheelDelta,
+                               const gfx::PointF& wheelDelta,
                                bool preciseWheel)
 {
   enqueueMessage(newMouseMessage(
@@ -2151,7 +2156,7 @@ Message* Manager::newMouseMessage(
   PointerType pointerType,
   MouseButton button,
   KeyModifiers modifiers,
-  const gfx::Point& wheelDelta,
+  const gfx::PointF& wheelDelta,
   bool preciseWheel,
   float pressure)
 {
