@@ -27,6 +27,7 @@
 #include "zlib.h"
 
 #include <cstdio>
+#include <vector>
 
 namespace dio {
 
@@ -694,20 +695,21 @@ void read_compressed_image_templ(FileInterface* f,
 {
   PixelIO<ImageTraits> pixel_io;
   z_stream zstream;
-  int y, err;
-
   zstream.zalloc = (alloc_func)0;
   zstream.zfree  = (free_func)0;
   zstream.opaque = (voidpf)0;
 
-  err = inflateInit(&zstream);
+  int err = inflateInit(&zstream);
   if (err != Z_OK)
     throw base::Exception("ZLib error %d in inflateInit().", err);
 
-  std::vector<uint8_t> scanline(ImageTraits::getRowStrideBytes(image->width()));
-  std::vector<uint8_t> uncompressed(image->height() * ImageTraits::getRowStrideBytes(image->width()));
+  const int width = image->width();
+  const int rowstride = ImageTraits::getRowStrideBytes(width);
+  std::vector<uint8_t> scanline(rowstride);
   std::vector<uint8_t> compressed(4096);
-  int uncompressed_offset = 0;
+  std::vector<uint8_t> uncompressed(4096);
+  int scanline_offset = 0;
+  int y = 0;
 
   while (true) {
     size_t input_bytes;
@@ -738,36 +740,46 @@ void read_compressed_image_templ(FileInterface* f,
     zstream.avail_in = bytes_read;
 
     do {
-      zstream.next_out = (Bytef*)&scanline[0];
-      zstream.avail_out = scanline.size();
+      zstream.next_out = (Bytef*)&uncompressed[0];
+      zstream.avail_out = uncompressed.size();
 
       err = inflate(&zstream, Z_NO_FLUSH);
       if (err != Z_OK && err != Z_STREAM_END && err != Z_BUF_ERROR)
         throw base::Exception("ZLib error %d in inflate().", err);
 
-      size_t uncompressed_bytes = scanline.size() - zstream.avail_out;
+      size_t uncompressed_bytes = uncompressed.size() - zstream.avail_out;
       if (uncompressed_bytes > 0) {
-        if (uncompressed_offset+uncompressed_bytes > uncompressed.size())
-          throw base::Exception("Bad compressed image.");
-
-        std::copy(scanline.begin(), scanline.begin()+uncompressed_bytes,
-                  uncompressed.begin()+uncompressed_offset);
-
-        uncompressed_offset += uncompressed_bytes;
+        int i = 0;
+        while (true) {
+          int n = std::min(uncompressed_bytes, scanline.size() - scanline_offset);
+          if (n > 0) {
+            // Fill the scanline buffer until it's completed
+            std::copy(uncompressed.begin()+i,
+                      uncompressed.begin()+i+n,
+                      scanline.begin()+scanline_offset);
+            uncompressed_bytes -= n;
+            scanline_offset += n;
+            i += n;
+          }
+          else if (scanline_offset < rowstride) {
+            // The scanline is not filled yet.
+            break;
+          }
+          else {
+            // Copy the whole scanline to the image
+            pixel_io.read_scanline(
+              (typename ImageTraits::address_t)image->getPixelAddress(0, y),
+              width, &scanline[0]);
+            ++y;
+            scanline_offset = 0;
+            if (uncompressed_bytes == 0)
+              break;
+          }
+        }
       }
-    } while (zstream.avail_out == 0);
+    } while (zstream.avail_in != 0 && zstream.avail_out == 0);
 
     delegate->progress((float)f->tell() / (float)header->size);
-  }
-
-  uncompressed_offset = 0;
-  for (y=0; y<image->height(); y++) {
-    typename ImageTraits::address_t address =
-      (typename ImageTraits::address_t)image->getPixelAddress(0, y);
-
-    pixel_io.read_scanline(address, image->width(), &uncompressed[uncompressed_offset]);
-
-    uncompressed_offset += ImageTraits::getRowStrideBytes(image->width());
   }
 
   err = inflateEnd(&zstream);
