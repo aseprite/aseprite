@@ -2033,7 +2033,7 @@ bool Editor::onProcessMessage(Message* msg)
     case kKeyDownMessage:
 #if ENABLE_DEVMODE
       // Switch renderer
-      if (!msg->ctrlPressed() &&
+      if (msg->modifiers() == 0 &&
           static_cast<KeyMessage*>(msg)->scancode() == kKeyF1) {
         // TODO replace this experimental flag with a new enum (or
         //      maybe there is no need for user option now that the
