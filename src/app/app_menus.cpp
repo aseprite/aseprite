@@ -650,8 +650,15 @@ void AppMenus::removeMenuGroup(const std::string& groupId)
 void AppMenus::addMenuItemIntoGroup(const std::string& groupId,
                                     std::unique_ptr<Widget>&& menuItem)
 {
-  GroupInfo& group = m_groups[groupId];
+  auto it = m_groups.find(groupId);
+  if (it == m_groups.end()) {
+    LOG(ERROR, "MENU: An extension tried to add a command (%s) in a non-existent group (%s)\n",
+        menuItem->text().c_str(), groupId.c_str());
+    menuItem.release();
+    return;
+  }
 
+  GroupInfo& group = it->second;
   Menu* menu = group.menu;
   ASSERT(menu);
 
