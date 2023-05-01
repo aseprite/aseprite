@@ -38,8 +38,10 @@ XmlDocumentRef open_xml(const std::string& filename)
 void save_xml(XmlDocumentRef doc, const std::string& filename)
 {
   FileHandle file(open_file(filename, "wb"));
-  if (!file)
+  if (!file) {
+    // TODO add information about why the file couldn't be opened (errno?, win32?)
     throw Exception("Error loading file: " + filename);
+  }
 
   if (!doc->SaveFile(file.get()))
     throw XmlException(doc.get());
