@@ -57,8 +57,8 @@
 #include <list>
 #include <vector>
 
-#if defined(_DEBUG) && defined(ENABLE_DATA_RECOVERY)
-#include "app/crash/data_recovery.h"
+#if defined(ENABLE_DEVMODE) && defined(ENABLE_DATA_RECOVERY)
+  #include "app/crash/data_recovery.h"
 #endif
 
 namespace app {
