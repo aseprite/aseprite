@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -20,6 +20,7 @@
 
 #include "app/app.h"
 #include "app/context.h"
+#include "app/crash/log.h"
 #include "app/crash/recovery_config.h"
 #include "app/crash/session.h"
 #include "app/doc.h"
@@ -83,7 +84,7 @@ void BackupObserver::stop()
 
 void BackupObserver::onAddDocument(Doc* document)
 {
-  TRACE("RECO: Observe document %p\n", document);
+  RECO_TRACE("RECO: Observe document %p\n", document);
 
   std::unique_lock<std::mutex> lock(m_mutex);
   m_documents.push_back(document);
@@ -91,7 +92,7 @@ void BackupObserver::onAddDocument(Doc* document)
 
 void BackupObserver::onRemoveDocument(Doc* doc)
 {
-  TRACE("RECO: Remove document %p\n", doc);
+  RECO_TRACE("RECO: Remove document %p\n", doc);
   {
     std::unique_lock<std::mutex> lock(m_mutex);
     base::remove_from_container(m_documents, doc);
@@ -108,13 +109,13 @@ void BackupObserver::onRemoveDocument(Doc* doc)
     // in m_closedDocs list anyway so we call markAsBackedUp(), and
     // then it's deleted from ClosedDocs::backgroundThread()
 
-    TRACE("RECO: Adding to CLOSEDOC %p\n", doc);
+    RECO_TRACE("RECO: Adding to CLOSEDOC %p\n", doc);
 
     std::unique_lock<std::mutex> lock(m_mutex);
     m_closedDocs.push_back(doc);
   }
   else {
-    TRACE("RECO: Removing doc %p from session\n", doc);
+    RECO_TRACE("RECO: Removing doc %p from session\n", doc);
     m_session->removeDocument(doc);
   }
 }
@@ -135,8 +136,8 @@ void BackupObserver::backgroundThread()
   while (!m_done) {
     m_wakeup.wait_for(lock, std::chrono::seconds(waitFor));
 
-    TRACE("RECO: Start backup process for %d documents\n",
-          m_documents.size() + m_closedDocs.size());
+    RECO_TRACE("RECO: Start backup process for %d documents\n",
+               m_documents.size() + m_closedDocs.size());
 
     SwitchBackupIcon icon;
     base::Chrono chrono;
@@ -151,10 +152,10 @@ void BackupObserver::backgroundThread()
       for (auto it=m_closedDocs.begin(); it != m_closedDocs.end(); ) {
         Doc* doc = *it;
 
-        TRACE("RECO: Save backup data for %p...\n", doc);
+        RECO_TRACE("RECO: Save backup data for %p...\n", doc);
 
         if (saveDocData(doc)) {
-          TRACE("RECO: Doc %p is fully backed up\n", doc);
+          RECO_TRACE("RECO: Doc %p is fully backed up\n", doc);
 
           it = m_closedDocs.erase(it);
           doc->markAsBackedUp();
@@ -168,7 +169,7 @@ void BackupObserver::backgroundThread()
 
     waitFor = (somethingLocked ? lockedPeriod: normalPeriod);
 
-    TRACE("RECO: Backup process done (%.16g)\n", chrono.elapsed());
+    RECO_TRACE("RECO: Backup process done (%.16g)\n", chrono.elapsed());
   }
 }
 
@@ -180,10 +181,10 @@ bool BackupObserver::saveDocData(Doc* doc)
       return true;
 
     if (doc->inhibitBackup()) {
-      TRACE("RECO: Document '%d' backup is temporarily inhibited\n", doc->id());
+      RECO_TRACE("RECO: Document '%d' backup is temporarily inhibited\n", doc->id());
     }
     else if (!m_session->saveDocumentChanges(doc)) {
-      TRACE("RECO: Document '%d' backup was canceled by UI\n", doc->id());
+      RECO_TRACE("RECO: Document '%d' backup was canceled by UI\n", doc->id());
     }
     else {
 #ifdef TEST_BACKUP_INTEGRITY
@@ -192,18 +193,18 @@ bool BackupObserver::saveDocData(Doc* doc)
         m_session->restoreBackupDocById(doc->id(), nullptr));
       DocDiff diff = compare_docs(doc, copy.get());
       if (diff.anything) {
-        TRACEARGS("RECO: Differences:",
-                  diff.canvas ? "canvas": "",
-                  diff.totalFrames ? "totalFrames": "",
-                  diff.frameDuration ? "frameDuration": "",
-                  diff.tags ? "tags": "",
-                  diff.palettes ? "palettes": "",
-                  diff.tilesets ? "tilesets": "",
-                  diff.layers ? "layers": "",
-                  diff.cels ? "cels": "",
-                  diff.images ? "images": "",
-                  diff.colorProfiles ? "colorProfiles": "",
-                  diff.gridBounds ? "gridBounds": "");
+        RECO_TRACE("RECO: Differences: %s %s %s %s %s %s %s %s %s %s %s\n",
+                   diff.canvas ? "canvas": "",
+                   diff.totalFrames ? "totalFrames": "",
+                   diff.frameDuration ? "frameDuration": "",
+                   diff.tags ? "tags": "",
+                   diff.palettes ? "palettes": "",
+                   diff.tilesets ? "tilesets": "",
+                   diff.layers ? "layers": "",
+                   diff.cels ? "cels": "",
+                   diff.images ? "images": "",
+                   diff.colorProfiles ? "colorProfiles": "",
+                   diff.gridBounds ? "gridBounds": "");
 
         Doc* copyDoc = copy.release();
         ui::execute_from_ui_thread(
@@ -212,14 +213,14 @@ bool BackupObserver::saveDocData(Doc* doc)
           });
       }
       else {
-        TRACE("RECO: No differences\n");
+        RECO_TRACE("RECO: No differences\n");
       }
 #endif
       return true;
     }
   }
   catch (const std::exception&) {
-    TRACE("RECO: Document '%d' is locked\n", doc->id());
+    RECO_TRACE("RECO: Document '%d' is locked\n", doc->id());
   }
   return false;
 }

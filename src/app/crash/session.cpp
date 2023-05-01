@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -13,6 +13,7 @@
 
 #include "app/console.h"
 #include "app/context.h"
+#include "app/crash/log.h"
 #include "app/crash/read_document.h"
 #include "app/crash/recovery_config.h"
 #include "app/crash/write_document.h"
@@ -236,7 +237,7 @@ bool Session::saveDocumentChanges(Doc* doc)
   app::Context ctx;
   std::string dir = base::join_path(m_path,
     base::convert_to<std::string>(doc->id()));
-  TRACE("RECO: Saving document '%s'...\n", dir.c_str());
+  RECO_TRACE("RECO: Saving document '%s'...\n", dir.c_str());
 
   // Create directory for document
   if (!base::is_directory(dir))
@@ -375,7 +376,7 @@ void Session::markDocumentAsCorrectlyClosed(app::Doc* doc)
 
   std::string openFn = base::join_path(dir, kOpenFilename);
   if (base::is_file(openFn)) {
-    TRACE("RECO: Document was closed correctly, deleting file '%s'\n", openFn.c_str());
+    RECO_TRACE("RECO: Document was closed correctly, deleting file '%s'\n", openFn.c_str());
     base::delete_file(openFn);
   }
 }
@@ -389,7 +390,7 @@ void Session::deleteDirectory(const std::string& dir)
   for (auto& item : base::list_files(dir)) {
     std::string objfn = base::join_path(dir, item);
     if (base::is_file(objfn)) {
-      TRACE("RECO: Deleting file '%s'\n", objfn.c_str());
+      RECO_TRACE("RECO: Deleting file '%s'\n", objfn.c_str());
       base::delete_file(objfn);
     }
   }

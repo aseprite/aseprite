@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -12,6 +12,7 @@
 #include "app/crash/data_recovery.h"
 
 #include "app/crash/backup_observer.h"
+#include "app/crash/log.h"
 #include "app/crash/session.h"
 #include "app/pref/preferences.h"
 #include "app/resource_finder.h"
@@ -22,8 +23,6 @@
 #include <algorithm>
 #include <chrono>
 #include <thread>
-
-#define RECO_TRACE(...) // TRACE
 
 namespace app {
 namespace crash {

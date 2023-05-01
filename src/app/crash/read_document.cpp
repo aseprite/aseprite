@@ -14,6 +14,7 @@
 #include "app/console.h"
 #include "app/crash/doc_format.h"
 #include "app/crash/internals.h"
+#include "app/crash/log.h"
 #include "app/doc.h"
 #include "base/convert_to.h"
 #include "base/exception.h"
@@ -152,7 +153,7 @@ private:
       if (!ver)
         continue;
 
-      TRACE("RECO: Restoring %s #%d v%d\n", prefix, id, ver);
+      RECO_TRACE("RECO: Restoring %s #%d v%d\n", prefix, id, ver);
 
       std::string fn = prefix;
       fn.push_back('-');
@@ -166,11 +167,11 @@ private:
         obj = (this->*readMember)(s);
 
       if (obj) {
-        TRACE("RECO: %s #%d v%d restored successfully\n", prefix, id, ver);
+        RECO_TRACE("RECO: %s #%d v%d restored successfully\n", prefix, id, ver);
         return obj;
       }
       else {
-        TRACE("RECO: %s #%d v%d was not restored\n", prefix, id, ver);
+        RECO_TRACE("RECO: %s #%d v%d was not restored\n", prefix, id, ver);
       }
     }
 
@@ -187,7 +188,7 @@ private:
     m_docFormatVer = read16(s);
     if (s.eof()) m_docFormatVer = DOC_FORMAT_VERSION_0;
 
-    TRACE("RECO: internal format version=%d\n", m_docFormatVer);
+    RECO_TRACE("RECO: internal format version=%d\n", m_docFormatVer);
 
     // Load DocumentInfo only
     if (m_loadInfo) {

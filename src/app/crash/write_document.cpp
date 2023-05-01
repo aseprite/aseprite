@@ -13,6 +13,7 @@
 
 #include "app/crash/doc_format.h"
 #include "app/crash/internals.h"
+#include "app/crash/log.h"
 #include "app/doc.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
@@ -355,7 +356,7 @@ private:
     // Rotate versions and add the latest one
     versions.rotateRevisions(obj->version());
 
-    TRACE(" - Saved %s #%d v%d\n", prefix, obj->id(), obj->version());
+    RECO_TRACE(" - Saved %s #%d v%d\n", prefix, obj->id(), obj->version());
     return true;
   }
 
@@ -365,11 +366,11 @@ private:
       m_deleteFiles.erase(m_deleteFiles.end()-1);
 
       try {
-        TRACE(" - Deleting <%s>\n", file.c_str());
+        RECO_TRACE(" - Deleting <%s>\n", file.c_str());
         base::delete_file(file);
       }
       catch (const std::exception&) {
-        TRACE(" - Cannot delete <%s>\n", file.c_str());
+        RECO_TRACE(" - Cannot delete <%s>\n", file.c_str());
       }
     }
   }
