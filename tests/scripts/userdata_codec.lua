@@ -150,3 +150,20 @@ do
   assert(spr.properties.a[4].a == "bye")
   assert(spr.properties.a[4].b == 10)
 end
+
+-- Test save UUID
+do
+  local a = Uuid()
+  local b = Uuid()
+  local spr = Sprite(1, 1)
+  spr.properties.a = a
+  spr.properties.b = b
+
+  spr:saveAs("_test_userdata_codec_4.aseprite")
+  spr:close()
+
+  spr = Sprite{ fromFile="_test_userdata_codec_4.aseprite" }
+  assert(#spr.properties == 2)
+  assert(spr.properties.a == a)
+  assert(spr.properties.b == b)
+end
