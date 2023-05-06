@@ -686,7 +686,7 @@ void Render::renderLayer(
   renderPlan(
     plan, dstImage, area,
     frame, compositeImage,
-    true, true, blendMode, false);
+    true, true, blendMode);
 }
 
 void Render::renderSprite(
@@ -789,8 +789,7 @@ void Render::renderSpriteLayers(Image* dstImage,
              area, frame, compositeImage,
              true,
              false,
-             BlendMode::UNSPECIFIED,
-             false);
+             BlendMode::UNSPECIFIED);
 
   // Draw onion skin behind the sprite.
   if (m_onionskin.position() == OnionskinPosition::BEHIND)
@@ -802,7 +801,7 @@ void Render::renderSpriteLayers(Image* dstImage,
              area, frame, compositeImage,
              false,
              true,
-             BlendMode::UNSPECIFIED, false);
+             BlendMode::UNSPECIFIED);
 }
 
 void Render::renderBackground(Image* image,
@@ -906,7 +905,7 @@ void Render::renderOnionskin(
           // when opacity is < 255
           (m_globalOpacity < 255 &&
            m_onionskin.position() == OnionskinPosition::INFRONT),
-          true, blendMode, false);
+          true, blendMode);
       }
     }
   }
@@ -1003,8 +1002,7 @@ void Render::renderPlan(
   const CompositeImageFunc compositeImage,
   const bool render_background,
   const bool render_transparent,
-  const BlendMode blendMode,
-  bool isSelected)
+  const BlendMode blendMode)
 {
   for (const auto& item : plan.items()) {
     const Cel* cel = item.cel;
@@ -1012,9 +1010,7 @@ void Render::renderPlan(
 
     ASSERT(layer->isVisible()); // Hidden layers shouldn't be in the plan
 
-    if (m_selectedLayerForOpacity == layer)
-      isSelected = true;
-
+    const bool isSelected = (m_selectedLayerForOpacity == layer);
     gfx::Rect extraArea;
     bool drawExtra = false;
 
