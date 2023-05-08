@@ -210,7 +210,7 @@ This chunk determine where to put a cel in the specified layer/frame.
                 1 - Linked Cel
                 2 - Compressed Image
                 3 - Compressed Tilemap
-    SHORT       Z-Index
+    SHORT       Z-Index (see NOTE.5)
                 0 = default layer ordering
                 +N = show this cel N layers later
                 -N = show this cel N layers back
@@ -552,6 +552,37 @@ uses `aseprite/Attachment-System`.
 
 This string will be used in a future to automatically link to the
 extension URL in the [Aseprite Store](https://github.com/aseprite/aseprite/issues/1928).
+
+#### NOTE.5
+
+In case that you read and render an `.aseprite` file in your game
+engine/software, you are going to need to process the z-index field
+for each cel with a specific algorithm. This is a possible C++ code
+about how to order layers for a specific frame (the `zIndex` must be
+set depending on the active frame/cel):
+
+```c++
+struct Layer {
+  int layerIndex; // See the "layer index" in NOTE.2
+  int zIndex;     // The z-index value for a specific cel in this layer/frame
+
+  int order() const {
+    return layerIndex + zIndex;
+  }
+
+  // Function to order with std::sort() by operator<(),
+  // which establish the render order from back to front.
+  bool operator<(const Layer& b) const {
+    return (order() < b.order()) ||
+           (order() == b.order() && (zIndex < b.zIndex));
+  }
+};
+```
+
+Basically we first compare `layerIndex + zIndex` of each cel, and then
+if this value is the same, we compare the specific `zIndex` value to
+disambiguate some scenarios. An example of this implementation can be
+found in the [RenderPlan code](https://github.com/aseprite/aseprite/blob/8e91d22b704d6d1e95e1482544318cee9f166c4d/src/doc/render_plan.cpp#L77).
 
 ## File Format Changes
 
