@@ -5,7 +5,8 @@
 3. [Header](#header)
 4. [Frames](#frames)
 5. [Chunk Types](#chunk-types)
-6. [File Format Changes](#file-format-changes)
+6. [Notes](#notes)
+7. [File Format Changes](#file-format-changes)
 
 ## References
 
@@ -501,9 +502,9 @@ The data of this chunk is as follows:
       PIXEL[]   Compressed Tileset image (see NOTE.3):
                   (Tile Width) x (Tile Height x Number of Tiles)
 
-### Notes
+## Notes
 
-#### NOTE.1
+### NOTE.1
 
 The child level is used to show the relationship of this layer with
 the last one read, for example:
@@ -517,7 +518,7 @@ the last one read, for example:
       |  `- Layer2                2
       `- Layer3                   1
 
-#### NOTE.2
+### NOTE.2
 
 The layer index is a number to identify a layer in the sprite. Layers
 are numbered in the same order as Layer Chunks (0x2004) appear in the
@@ -535,7 +536,7 @@ file, for example:
 It means that in the file you will find the `Background` layer chunk
 first, then the `Layer1` layer chunk, etc.
 
-#### NOTE.3
+### NOTE.3
 
 Details about the ZLIB and DEFLATE compression methods:
 
@@ -544,7 +545,7 @@ Details about the ZLIB and DEFLATE compression methods:
 * Some extra notes that might help you to decode the data:
   http://george.chiramattel.com/blog/2007/09/deflatestream-block-length-does-not-match.html
 
-#### NOTE.4
+### NOTE.4
 
 The extension ID must be a string like `publisher/ExtensionName`, for
 example, the [Aseprite Attachment System](https://github.com/aseprite/Attachment-System)
@@ -553,7 +554,7 @@ uses `aseprite/Attachment-System`.
 This string will be used in a future to automatically link to the
 extension URL in the [Aseprite Store](https://github.com/aseprite/aseprite/issues/1928).
 
-#### NOTE.5
+### NOTE.5
 
 In case that you read and render an `.aseprite` file in your game
 engine/software, you are going to need to process the z-index field
