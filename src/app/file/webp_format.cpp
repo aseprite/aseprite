@@ -228,11 +228,12 @@ bool WebPFormat::onLoad(FileOp* fop)
 struct WriterData {
   FILE* fp;
   FileOp* fop;
-  frame_t f, n;
-  double progress;
+  frame_t f = 0;
+  frame_t n;
+  double progress = 0.0;
 
-  WriterData(FILE* fp, FileOp* fop, frame_t f, frame_t n, double progress)
-    : fp(fp), fop(fop), f(f), n(n), progress(progress) { }
+  WriterData(FILE* fp, FileOp* fop, frame_t n)
+    : fp(fp), fop(fop), n(n) { }
 };
 
 static int progress_report(int percent, const WebPPicture* pic)
@@ -302,7 +303,7 @@ bool WebPFormat::onSave(FileOp* fop)
   ImageRef image(Image::create(IMAGE_RGB, w, h));
 
   const doc::frame_t totalFrames = fop->roi().frames();
-  WriterData wd(fp, fop, 0, totalFrames, 0.0);
+  WriterData wd(fp, fop, totalFrames);
   WebPPicture pic;
   WebPPictureInit(&pic);
   pic.width = w;
@@ -315,15 +316,7 @@ bool WebPFormat::onSave(FileOp* fop)
 
   WebPAnimEncoder* enc = WebPAnimEncoderNew(w, h, &enc_options);
   int timestamp_ms = 0;
-    auto frame_beg = fop->roi().selectedFrames().begin();
-#if _DEBUG
-    auto frame_end = fop->roi().selectedFrames().end();
-#endif
-    auto frame_it = frame_beg;
-  for (frame_t f=0; f<totalFrames; ++f) {
-    ASSERT(frame_it != frame_end);
-    frame_t frame = *frame_it;
-    ++frame_it;
+  for (frame_t frame : fop->roi().selectedFrames()) {
     // Render the frame in the bitmap
     clear_image(image.get(), image->maskColor());
     sprite->renderFrame(frame, image.get());
@@ -344,7 +337,7 @@ bool WebPFormat::onSave(FileOp* fop)
 
     if (!WebPAnimEncoderAdd(enc, &pic, timestamp_ms, &config)) {
       if (!fop->isStop()) {
-        fop->setError("Error saving frame %d info\n", f);
+        fop->setError("Error saving frame %d info\n", frame);
         return false;
       }
       else
@@ -352,7 +345,7 @@ bool WebPFormat::onSave(FileOp* fop)
     }
     timestamp_ms += sprite->frameDuration(frame);
 
-    wd.f = f;
+    wd.f++;
   }
   WebPAnimEncoderAdd(enc, nullptr, timestamp_ms, nullptr);
 
