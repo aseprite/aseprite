@@ -322,3 +322,38 @@ d=$t/save-as-with-slice
 $ASEPRITE -b sprites/slices.aseprite -save-as $d/{slice}.png
 expect "line.png
 square.png" "list_files $d"
+
+# Test https://github.com/aseprite/aseprite/issues/3622
+# Test that -save-as -tag will save the right tag frames in webp file format
+
+d=$t/save-as-tag-webp
+mkdir $d  # TODO why do we need this?
+$ASEPRITE -b -frame-tag "a" sprites/1empty3.aseprite -save-as $d/save-as-tag.webp || exit 1
+expect "save-as-tag.webp" "list_files $d"
+cat >$d/compare.lua <<EOF
+local a = app.open("sprites/1empty3.aseprite")
+app.command.FlattenLayers()
+local b = app.open("$d/save-as-tag.webp")
+-- Shrink frames:
+for f = 1,#b.frames do
+  local oldColor = b.layers[1]:cel(f).image:getPixel(0,0)
+  app.useTool{tool="pencil", points={Point(0,0)}, color=Color(255,0,0)}
+  app.useTool{tool='pencil', points={Point(0,0)}, color=oldColor}
+end
+local tagA = a.tags[1]
+assert(tagA.name == "a")
+assert(tagA.frames == #b.frames)
+local cleanImage = Image(b.spec)
+cleanImage:clear()
+for f = 1,#b.frames do
+  local celA = a.layers[1]:cel(f + tagA.fromFrame.frameNumber - 1)
+  local celB = b.layers[1]:cel(f)
+  if celA and celB then
+    assert(celA.image:isEqual(celB.image))
+  else
+    assert(not celA)
+    assert(not celB or celB.image:isEqual(cleanImage))
+  end
+end
+EOF
+$ASEPRITE -b -script "$d/compare.lua" || exit 1

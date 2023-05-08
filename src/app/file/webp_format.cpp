@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 // Copyright (C) 2015  Gabriel Rauter
 //
@@ -257,7 +257,6 @@ bool WebPFormat::onSave(FileOp* fop)
   FILE* fp = handle.get();
 
   const FileAbstractImage* sprite = fop->abstractImage();
-  const doc::frame_t totalFrames = sprite->frames();
   const int w = sprite->width();
   const int h = sprite->height();
 
@@ -302,6 +301,7 @@ bool WebPFormat::onSave(FileOp* fop)
 
   ImageRef image(Image::create(IMAGE_RGB, w, h));
 
+  const doc::frame_t totalFrames = fop->roi().frames();
   WriterData wd(fp, fop, 0, totalFrames, 0.0);
   WebPPicture pic;
   WebPPictureInit(&pic);
@@ -315,10 +315,18 @@ bool WebPFormat::onSave(FileOp* fop)
 
   WebPAnimEncoder* enc = WebPAnimEncoderNew(w, h, &enc_options);
   int timestamp_ms = 0;
+    auto frame_beg = fop->roi().selectedFrames().begin();
+#if _DEBUG
+    auto frame_end = fop->roi().selectedFrames().end();
+#endif
+    auto frame_it = frame_beg;
   for (frame_t f=0; f<totalFrames; ++f) {
+    ASSERT(frame_it != frame_end);
+    frame_t frame = *frame_it;
+    ++frame_it;
     // Render the frame in the bitmap
     clear_image(image.get(), image->maskColor());
-    sprite->renderFrame(f, image.get());
+    sprite->renderFrame(frame, image.get());
 
     // Switch R <-> B channels because WebPAnimEncoderAssemble()
     // expects MODE_BGRA pictures.
@@ -342,7 +350,7 @@ bool WebPFormat::onSave(FileOp* fop)
       else
         return true;
     }
-    timestamp_ms += sprite->frameDuration(f);
+    timestamp_ms += sprite->frameDuration(frame);
 
     wd.f = f;
   }
