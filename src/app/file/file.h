@@ -325,6 +325,7 @@ namespace app {
 
     void prepareForSequence();
     void makeAbstractImage();
+    void makeDirectories();
   };
 
   // Available extensions for each load/save operation.

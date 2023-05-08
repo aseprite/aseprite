@@ -36,7 +36,6 @@ layer (fg) 2.png" "list_files $d"
 # --save-as {layer}
 
 d=$t/save-as-layer
-mkdir $d  # TODO why do we need this?
 $ASEPRITE -b sprites/1empty3.aseprite --save-as $d/layer-{layer}.gif || exit 1
 expect "layer-bg.gif
 layer-fg.gif" "list_files $d"
@@ -182,7 +181,6 @@ if [[ "$(uname)" =~ "MINGW" ]] || [[ "$(uname)" =~ "MSYS" ]] ; then
     echo Do nothing
 else
 d=$t/save-as-groups-and-hidden
-mkdir $d
 $ASEPRITE -b sprites/groups2.aseprite -layer \* -save-as "$d/g2-all.png" || exit 1
 $ASEPRITE -b sprites/groups2.aseprite -layer \* -ignore-layer items -save-as "$d/g2-all-without-items.png" || exit 1
 $ASEPRITE -b sprites/groups2.aseprite -layer \* -ignore-layer gun -save-as "$d/g2-all-without-gun1.png" || exit 1
@@ -327,7 +325,6 @@ square.png" "list_files $d"
 # Test that -save-as -tag will save the right tag frames in webp file format
 
 d=$t/save-as-tag-webp
-mkdir $d  # TODO why do we need this?
 $ASEPRITE -b -frame-tag "a" sprites/1empty3.aseprite -save-as $d/save-as-tag.webp || exit 1
 expect "save-as-tag.webp" "list_files $d"
 cat >$d/compare.lua <<EOF
