@@ -786,8 +786,7 @@ tools::ToolLoop* create_tool_loop(
   // If the document is read-only.
   if (site.document()->isReadOnly()) {
     StatusBar::instance()->showTip(
-      1000,
-      fmt::format(Strings::statusbar_tips_unmodifiable_sprite()));
+      1000, Strings::statusbar_tips_unmodifiable_sprite());
     return nullptr;
   }
 

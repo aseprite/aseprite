@@ -922,8 +922,9 @@ void FileOp::operate(IFileOpProgress* progress)
     }
 
     if (hasIncompatibilityError()) {
-      setError(fmt::format(Strings::alerts_load_file_with_incompatibilities(),
-               m_incompatibilityError).c_str());
+      setError(
+        fmt::format(Strings::alerts_load_file_with_incompatibilities(),
+                    m_incompatibilityError).c_str());
     }
   }
   // Save //////////////////////////////////////////////////////////////////////
@@ -942,7 +943,7 @@ void FileOp::operate(IFileOpProgress* progress)
 #endif
 
     if (m_document && m_document->isReadOnly()) {
-      setError(fmt::format(Strings::alerts_cannot_overwrite_readonly()).c_str());
+      setError(Strings::alerts_cannot_overwrite_readonly().c_str());
       return;
     }
 

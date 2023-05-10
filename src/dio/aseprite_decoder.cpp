@@ -240,7 +240,7 @@ bool AsepriteDecoder::decode()
             if (last_object_with_user_data) {
               last_object_with_user_data->setUserData(userData);
 
-              switch(last_object_with_user_data->type()) {
+              switch (last_object_with_user_data->type()) {
                 case doc::ObjectType::Tag:
                   // Tags are a special case, user data for tags come
                   // all together (one next to other) after the tags
@@ -1311,8 +1311,9 @@ void AsepriteDecoder::readPropertiesMaps(doc::UserData::PropertiesMaps& properti
       propertiesMaps[extensionId] = doc::get_value<doc::UserData::Properties>(properties);
     }
   }
-  catch(const base::Exception& e) {
-    delegate()->incompatibilityError(fmt::format("Error reading custom properties: {0}", e.what()));
+  catch (const base::Exception& e) {
+    delegate()->incompatibilityError(
+      fmt::format("Error reading custom properties: {0}", e.what()));
   }
 
   f()->seek(startPos+size);
@@ -1427,7 +1428,9 @@ const doc::UserData::Variant AsepriteDecoder::readPropertyValue(uint16_t type)
       return value;
     }
     default: {
-      throw base::Exception(fmt::format("Unexpected property type '{0}' at file position {1}", type, f()->tell()));
+      throw base::Exception(
+        fmt::format("Unexpected property type '{0}' at file position {1}",
+                    type, f()->tell()));
     }
   }
 
@@ -1445,7 +1448,8 @@ void AsepriteDecoder::readTilesData(doc::Tileset* tileset, const AsepriteExterna
     if (chunk_type != ASE_FILE_CHUNK_USER_DATA) {
       // Something went wrong...
       delegate()->error(
-              fmt::format("WARNING: Unexpected chunk type {0} when reading tileset index {1}", chunk_type, i));
+        fmt::format("Warning: Unexpected chunk type {0} when reading tileset index {1}",
+                    chunk_type, i));
       f()->seek(chunk_pos);
       return;
     }

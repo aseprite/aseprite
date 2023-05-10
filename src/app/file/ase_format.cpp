@@ -55,7 +55,7 @@ public:
   }
 
   void incompatibilityError(const std::string& msg) override {
-    m_fop->setIncompatibilityError(msg.c_str());
+    m_fop->setIncompatibilityError(msg);
   }
 
   void progress(double fromZeroToOne) override {
