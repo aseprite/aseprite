@@ -86,6 +86,16 @@ void DrawingState::initToolLoop(Editor* editor,
                                 const ui::MouseMessage* msg,
                                 const tools::Pointer& pointer)
 {
+  // This line was moved here to avoid a crash in app::tools::BaseInk::prepareForPointShape
+  // where m_proc was null when m_delayedMouseMove.onMouseDown was called. Then by calling
+  // prepareLoop we make sure m_proc is properly set before the m_delayedMouseMove.onMouseDown
+  // call (Issue: https://github.com/aseprite/aseprite/issues/3338)
+  m_toolLoopManager->prepareLoop(pointer);
+  // This line was moved here because the previous prepareLoop call might set the toolLoop
+  // controller to null, which would make the app crash. Then by calling pressButton we make
+  // sure the toolLoop controller is properly set.
+  m_toolLoopManager->pressButton(pointer);
+
   if (msg)
     m_delayedMouseMove.onMouseDown(msg);
   else
@@ -119,9 +129,6 @@ void DrawingState::initToolLoop(Editor* editor,
   m_mouseDownPos = (msg ? msg->position():
                           editor->editorToScreen(pointer.point()));
   m_mouseDownTime = base::current_tick();
-
-  m_toolLoopManager->prepareLoop(pointer);
-  m_toolLoopManager->pressButton(pointer);
 
   ASSERT(!m_toolLoopManager->isCanceled());
 
