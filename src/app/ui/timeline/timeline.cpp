@@ -1681,8 +1681,8 @@ void Timeline::onPaint(ui::PaintEvent& ev)
       if (!clip)
         continue;
 
-      Layer* layerPtr = m_rows[layer].layer();
-      if (!layerPtr->isImage()) {
+      Layer* layerPtr = getLayer(layer);
+      if (!layerPtr || !layerPtr->isImage()) {
         // Draw empty cels
         for (frame=firstFrame; frame<=lastFrame; ++frame) {
           drawCel(g, layer, frame, nullptr, nullptr);
@@ -2162,9 +2162,10 @@ void Timeline::drawHeaderFrame(ui::Graphics* g, frame_t frame)
            is_active, is_hover, is_clicked);
 }
 
-void Timeline::drawLayer(ui::Graphics* g, int layerIdx)
+void Timeline::drawLayer(ui::Graphics* g, const int layerIdx)
 {
-  ASSERT(layerIdx >= 0 && layerIdx < int(m_rows.size()));
+  // It can happen when the m_rows is empty (e.g. the sprite doesn't
+  // have layers)
   if (layerIdx < 0 || layerIdx >= m_rows.size())
     return;
 
@@ -2303,10 +2304,12 @@ void Timeline::drawLayer(ui::Graphics* g, int layerIdx)
   }
 }
 
-void Timeline::drawCel(ui::Graphics* g, layer_t layerIndex, frame_t frame, Cel* cel, DrawCelData* data)
+void Timeline::drawCel(ui::Graphics* g,
+                       const layer_t layerIndex, const frame_t frame,
+                       const Cel* cel, const DrawCelData* data)
 {
   auto& styles = skinTheme()->styles;
-  Layer* layer = m_rows[layerIndex].layer();
+  Layer* layer = getLayer(layerIndex);
   Image* image = (cel ? cel->image(): nullptr);
   bool is_hover = (m_hot.part == PART_CEL &&
     m_hot.layer == layerIndex &&
@@ -2489,8 +2492,9 @@ void Timeline::drawCelOverlay(ui::Graphics* g)
 }
 
 void Timeline::drawCelLinkDecorators(ui::Graphics* g, const gfx::Rect& bounds,
-                                     Cel* cel, frame_t frame, bool is_active, bool is_hover,
-                                     DrawCelData* data)
+                                     const Cel* cel, const frame_t frame,
+                                     const bool is_active, const bool is_hover,
+                                     const DrawCelData* data)
 {
   auto& styles = skinTheme()->styles;
   ObjectId imageId = (*data->activeIt)->image()->id();
@@ -3864,6 +3868,17 @@ bool Timeline::allLayersDiscontinuous()
   return true;
 }
 
+doc::Layer* Timeline::getLayer(int layerIndex) const
+{
+  if (layerIndex >= 0 && layerIndex < m_rows.size())
+    return m_rows[layerIndex].layer();
+  else {
+    // Only possible when m_rows is empty
+    ASSERT(m_rows.size() == 0);
+    return nullptr;
+  }
+}
+
 layer_t Timeline::getLayerIndex(const Layer* layer) const
 {
   for (int i=0; i<(int)m_rows.size(); i++)
@@ -3875,10 +3890,14 @@ layer_t Timeline::getLayerIndex(const Layer* layer) const
 
 bool Timeline::isLayerActive(const layer_t layerIndex) const
 {
-  if (layerIndex == getLayerIndex(m_layer))
+  Layer* layer = getLayer(layerIndex);
+  if (!layer)
+    return false;
+
+  if (layer == m_layer)
     return true;
   else
-    return m_range.contains(m_rows[layerIndex].layer());
+    return m_range.contains(layer);
 }
 
 bool Timeline::isFrameActive(const frame_t frame) const
@@ -3891,20 +3910,28 @@ bool Timeline::isFrameActive(const frame_t frame) const
 
 bool Timeline::isCelActive(const layer_t layerIdx, const frame_t frame) const
 {
+  Layer* layer = getLayer(layerIdx);
+  if (!layer)
+    return false;
+
   if (m_range.enabled())
-    return m_range.contains(m_rows[layerIdx].layer(), frame);
+    return m_range.contains(layer, frame);
   else
-    return (layerIdx == getLayerIndex(m_layer) &&
+    return (layer == m_layer &&
             frame == m_frame);
 }
 
 bool Timeline::isCelLooselyActive(const layer_t layerIdx, const frame_t frame) const
 {
+  Layer* layer = getLayer(layerIdx);
+  if (!layer)
+    return false;
+
   if (m_range.enabled())
-    return (m_range.contains(m_rows[layerIdx].layer()) ||
+    return (m_range.contains(layer) ||
             m_range.contains(frame));
   else
-    return (layerIdx == getLayerIndex(m_layer) ||
+    return (layer == m_layer ||
             frame == m_frame);
 }
 
@@ -4059,8 +4086,10 @@ void Timeline::updateDropRange(const gfx::Point& pt)
     case Range::kFrames:
     case Range::kLayers:
       m_dropRange.clearRange();
-      m_dropRange.startRange(m_rows[m_hot.layer].layer(), m_hot.frame, m_range.type());
-      m_dropRange.endRange(m_rows[m_hot.layer].layer(), m_hot.frame);
+      if (!m_rows.empty()) {
+        m_dropRange.startRange(m_rows[m_hot.layer].layer(), m_hot.frame, m_range.type());
+        m_dropRange.endRange(m_rows[m_hot.layer].layer(), m_hot.frame);
+      }
       break;
   }
 
