@@ -1249,7 +1249,10 @@ bool Widget::isTransparent() const
 
 void Widget::setTransparent(bool transparent)
 {
-  enableFlags(TRANSPARENT);
+  if (transparent)
+    enableFlags(TRANSPARENT);
+  else
+    disableFlags(TRANSPARENT);
 }
 
 void Widget::invalidate()
