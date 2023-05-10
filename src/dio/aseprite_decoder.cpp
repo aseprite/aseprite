@@ -160,6 +160,11 @@ bool AsepriteDecoder::decode()
               m_allLayers.push_back(newLayer);
               last_object_with_user_data = newLayer;
             }
+            else {
+              // Add a null layer only to match the "layer index" in cel chunk
+              m_allLayers.push_back(nullptr);
+              last_object_with_user_data = nullptr;
+            }
             break;
           }
 
@@ -171,6 +176,9 @@ bool AsepriteDecoder::decode()
             if (cel) {
               last_cel = cel;
               last_object_with_user_data = cel->data();
+            }
+            else {
+              last_object_with_user_data = nullptr;
             }
             break;
           }
@@ -284,7 +292,7 @@ bool AsepriteDecoder::decode()
           }
 
           default:
-            delegate()->error(
+            delegate()->incompatibilityError(
               fmt::format("Warning: Unsupported chunk type {0} (skipping)", chunk_type));
             break;
         }
@@ -583,6 +591,11 @@ doc::Layer* AsepriteDecoder::readLayerChunk(AsepriteHeader* header,
       layer = new doc::LayerTilemap(sprite, tsi);
       break;
     }
+
+    default:
+      delegate()->incompatibilityError(
+        fmt::format("Unknown layer type found: {0}", layer_type));
+      break;
   }
 
   if (layer) {
@@ -975,6 +988,11 @@ doc::Cel* AsepriteDecoder::readCelChunk(doc::Sprite* sprite,
       break;
     }
 
+    default:
+      delegate()->incompatibilityError(
+        fmt::format("Unknown cel type found: {0}", cel_type));
+      break;
+
   }
 
   if (!cel)
@@ -1038,6 +1056,11 @@ void AsepriteDecoder::readColorProfile(doc::Sprite* sprite)
       }
       break;
     }
+
+    default:
+      delegate()->incompatibilityError(
+        fmt::format("Unknown color profile type found: {0}", type));
+      break;
   }
 
   sprite->setColorSpace(cs);
