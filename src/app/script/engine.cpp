@@ -17,6 +17,7 @@
 #include "app/doc_range.h"
 #include "app/pref/preferences.h"
 #include "app/script/blend_mode.h"
+#include "app/script/flip_type.h"
 #include "app/script/luacpp.h"
 #include "app/script/require.h"
 #include "app/script/security.h"
@@ -447,6 +448,13 @@ Engine::Engine()
   setfield_integer(L, "ADD",       (int)gen::SelectionMode::ADD);
   setfield_integer(L, "SUBTRACT",  (int)gen::SelectionMode::SUBTRACT);
   setfield_integer(L, "INTERSECT", (int)gen::SelectionMode::INTERSECT);
+  lua_pop(L, 1);
+
+  lua_newtable(L);
+  lua_pushvalue(L, -1);
+  lua_setglobal(L, "FlipType");
+  setfield_integer(L, "HORIZONTAL", app::script::FlipType::HORIZONTAL);
+  setfield_integer(L, "VERTICAL",   app::script::FlipType::VERTICAL);
   lua_pop(L, 1);
 
   // Register classes/prototypes

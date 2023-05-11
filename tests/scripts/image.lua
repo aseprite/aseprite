@@ -403,3 +403,43 @@ do
                       r_255, r_g127, r_g064,
                       r_255, r_255, g_255 })
 end
+
+-- Tests for Image:flip()
+do
+  local img = Image(3, 3)
+  local r = Color(255, 0, 0).rgbaPixel
+  local g = Color(0, 255, 0).rgbaPixel
+  img:clear(0)
+  img:drawPixel(0, 0, g)
+  img:drawPixel(1, 1, r)
+  img:drawPixel(2, 2, r)
+  expect_img(img, { g, 0, 0,
+                    0, r, 0,
+                    0, 0, r })
+  img:flip()
+  expect_img(img, { 0, 0, g,
+                    0, r, 0,
+                    r, 0, 0 })
+  app.undo()
+  expect_img(img, { g, 0, 0,
+                    0, r, 0,
+                    0, 0, r })
+  img:flip(FlipType.HORIZONTAL)
+  expect_img(img, { 0, 0, g,
+                    0, r, 0,
+                    r, 0, 0 })
+  app.undo()
+  img:flip(FlipType.VERTICAL)
+  expect_img(img, { 0, 0, r,
+                    0, r, 0,
+                    g, 0, 0 })
+  img:flip(FlipType.VERTICAL)
+  expect_img(img, { g, 0, 0,
+                    0, r, 0,
+                    0, 0, r })
+  app.undo()
+  app.undo()
+  expect_img(img, { g, 0, 0,
+                    0, r, 0,
+                    0, 0, r })
+end
