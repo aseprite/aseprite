@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -11,6 +11,7 @@
 
 #include "app/cmd_transaction.h"
 #include "app/doc_observer.h"
+#include "base/exception.h"
 
 #include <string>
 
@@ -24,6 +25,13 @@ namespace app {
   enum Modification {
     ModifyDocument,      // This item changes the "saved status" of the document.
     DoesntModifyDocument // This item doesn't modify the document.
+  };
+
+  // Exception thrown when we want to modify a sprite (add new
+  // app::Cmd objects) marked as read-only.
+  class CannotModifyWhenReadOnlyException : public base::Exception {
+  public:
+    CannotModifyWhenReadOnlyException() throw();
   };
 
   // High-level class to group a set of commands to modify the

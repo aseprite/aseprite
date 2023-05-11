@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -12,6 +12,7 @@
 #include "ui/textbox.h"
 
 #include "gfx/size.h"
+#include "ui/display.h"
 #include "ui/intern.h"
 #include "ui/message.h"
 #include "ui/size_hint_event.h"
@@ -26,6 +27,7 @@ namespace ui {
 TextBox::TextBox(const std::string& text, int align)
  : Widget(kTextBoxWidget)
 {
+  setBgColor(gfx::ColorNone);
   setFocusStop(true);
   setAlign(align);
   setText(text);
@@ -156,8 +158,9 @@ void TextBox::onPaint(PaintEvent& ev)
 
 void TextBox::onSizeHint(SizeHintEvent& ev)
 {
-  int w = 0;
-  int h = 0;
+  gfx::Size borderSize = border().size();
+  int w = borderSize.w;
+  int h = borderSize.h;
 
   Theme::drawTextBox(nullptr, this, &w, &h, gfx::ColorNone, gfx::ColorNone);
 
@@ -165,17 +168,17 @@ void TextBox::onSizeHint(SizeHintEvent& ev)
     View* view = View::getView(this);
     int width, min = w;
 
-    if (view) {
+    if (view)
       width = view->viewportBounds().w;
-    }
-    else {
+    else if (bounds().w > 0)
       width = bounds().w;
-    }
+    else if (auto display = this->display())
+      width = display->size().w / guiscale();
+    else
+      width = 0;
 
     w = std::max(min, width);
     Theme::drawTextBox(nullptr, this, &w, &h, gfx::ColorNone, gfx::ColorNone);
-
-    w = min;
   }
 
   ev.setSizeHint(gfx::Size(w, h));

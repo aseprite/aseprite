@@ -28,6 +28,7 @@
 #include "app/modules/palettes.h"
 #include "app/pref/preferences.h"
 #include "app/tx.h"
+#include "app/ui/incompat_file_window.h"
 #include "app/ui/optional_alert.h"
 #include "app/ui/status_bar.h"
 #include "base/fs.h"
@@ -920,12 +921,6 @@ void FileOp::operate(IFileOpProgress* progress)
         setError("Error loading data file: %s\n", ex.what());
       }
     }
-
-    if (hasIncompatibilityError()) {
-      setError(
-        fmt::format(Strings::alerts_load_file_with_incompatibilities(),
-                    m_incompatibilityError).c_str());
-    }
   }
   // Save //////////////////////////////////////////////////////////////////////
   else if (m_type == FileOpSave &&
@@ -942,10 +937,9 @@ void FileOp::operate(IFileOpProgress* progress)
     }
 #endif
 
-    if (m_document && m_document->isReadOnly()) {
-      setError(Strings::alerts_cannot_overwrite_readonly().c_str());
-      return;
-    }
+    // TODO Should we check m_document->isReadOnly() here?  the flag
+    //      is already checked in SaveFileBaseCommand::saveDocumentInBackground
+    //      and only in UI mode (so the CLI still works)
 
     // Save a sequence
     if (isSequence()) {
@@ -1092,14 +1086,12 @@ FileOp::~FileOp()
   delete m_seq.palette;
 }
 
-void FileOp::createDocument(Sprite* spr, bool readOnly)
+void FileOp::createDocument(Sprite* spr)
 {
   // spr can be NULL if the sprite is set in onPostLoad() then
 
   ASSERT(m_document == NULL);
   m_document = new Doc(spr);
-  if (readOnly)
-    m_document->markAsReadOnly();
 }
 
 void FileOp::postLoad()
@@ -1228,7 +1220,35 @@ void FileOp::postLoad()
     }
   }
 
+  // Mark this document as associated to a file in the disk (so File >
+  // Save doesn't ask for a new name)
   m_document->markAsSaved();
+
+  // In case that the document was loaded without all the information
+  // from the file, i.e. we loaded an .aseprite file created with a
+  // newer Aseprite version and cannot interpret all its information,
+  // saving this file should show a warning that some original data
+  // will be lost if we save/overwrite it.
+  if (hasIncompatibilityError()) {
+    // Mark the active undo state as impossible to reach the original
+    // disk state.
+    m_document->impossibleToBackToSavedState();
+
+#ifdef ENABLE_UI
+    if (m_context && m_context->isUIAvailable()) {
+      IncompatFileWindow window;
+      window.show(m_incompatibilityError);
+    }
+    else
+#endif // ENABLE_UI
+    {
+      setError(m_incompatibilityError.c_str());
+    }
+
+    // Mark as read-only so we cannot save the file directly (without
+    // an incompatibility warning/error).
+    m_document->markAsReadOnly();
+  }
 }
 
 void FileOp::setLoadedFormatOptions(const FormatOptionsPtr& opts)

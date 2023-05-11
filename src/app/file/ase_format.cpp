@@ -293,7 +293,7 @@ bool AseFormat::onLoad(FileOp* fop)
     return false;
 
   Sprite* sprite = delegate.sprite();
-  fop->createDocument(sprite, fop->hasIncompatibilityError());
+  fop->createDocument(sprite);
 
   if (sprite->colorSpace() != nullptr &&
       sprite->colorSpace()->type() != gfx::ColorSpace::None) {

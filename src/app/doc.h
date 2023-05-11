@@ -12,10 +12,8 @@
 #include "app/doc_observer.h"
 #include "app/extra_cel.h"
 #include "app/file/format_options.h"
-#include "app/i18n/strings.h"
 #include "app/transformation.h"
 #include "base/disable_copying.h"
-#include "base/exception.h"
 #include "base/rw_lock.h"
 #include "doc/blend_mode.h"
 #include "doc/color.h"
@@ -149,6 +147,13 @@ namespace app {
     void markAsBackedUp();
     bool isFullyBackedUp() const;
 
+    // TODO This read-only flag might be confusing because it
+    //      indicates that the file was loaded from an incompatible
+    //      version (future unknown feature) and it's preferable to
+    //      mark the sprite as read-only to avoid overwriting unknown
+    //      data. If in the future we want to add the possibility to
+    //      mark a regular file as read-only, this flag'll need a new
+    //      name.
     void markAsReadOnly();
     bool isReadOnly() const;
     void removeReadOnlyMark();
@@ -273,14 +278,6 @@ namespace app {
     os::ColorSpaceRef m_osColorSpace;
 
     DISABLE_COPYING(Doc);
-  };
-
-  // Exception thrown when we want to modify a sprite (add new
-  // app::Cmd objects) marked as read-only.
-  class CannotModifyWhenReadOnlyException : public base::Exception {
-  public:
-    CannotModifyWhenReadOnlyException() throw()
-    : base::Exception(Strings::alerts_cannot_modify_readonly()) { }
   };
 
 } // namespace app

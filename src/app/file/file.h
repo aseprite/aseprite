@@ -168,7 +168,8 @@ namespace app {
 
     const FileOpROI& roi() const { return m_roi; }
 
-    void createDocument(Sprite* spr, bool readOnly = false);
+    // Creates a new document with the given sprite.
+    void createDocument(Sprite* spr);
     void operate(IFileOpProgress* progress = nullptr);
 
     void done();

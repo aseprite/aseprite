@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -30,6 +30,7 @@
 #include "app/recent_files.h"
 #include "app/restore_visible_layers.h"
 #include "app/ui/export_file_window.h"
+#include "app/ui/incompat_file_window.h"
 #include "app/ui/layer_frame_comboboxes.h"
 #include "app/ui/optional_alert.h"
 #include "app/ui/status_bar.h"
@@ -112,7 +113,7 @@ void SaveFileBaseCommand::onLoadParams(const Params& params)
 // [main thread]
 bool SaveFileBaseCommand::onEnabled(Context* context)
 {
-  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable);
+  return context->checkFlags(ContextFlags::ActiveDocumentIsReadable);
 }
 
 std::string SaveFileBaseCommand::saveAsDialog(
@@ -200,6 +201,17 @@ void SaveFileBaseCommand::saveDocumentInBackground(
   const ResizeOnTheFly resizeOnTheFly,
   const gfx::PointF& scale)
 {
+#ifdef ENABLE_UI
+  // If the document is read only, we cannot save it directly (we have
+  // to use File > Save As)
+  if (document->isReadOnly() &&
+      context->isUIAvailable()) {
+    IncompatFileWindow window;
+    window.show();
+    return;
+  }
+#endif // ENABLE_UI
+
   if (params().aniDir.isSet()) {
     switch (params().aniDir()) {
       case AniDir::REVERSE:
@@ -323,7 +335,6 @@ public:
 
 protected:
   void onExecute(Context* context) override;
-  bool onEnabled(Context* context) override;
 };
 
 SaveFileAsCommand::SaveFileAsCommand()
@@ -338,11 +349,6 @@ void SaveFileAsCommand::onExecute(Context* context)
                (params().filename.isSet() ? params().filename():
                                             document->filename()),
                MarkAsSaved::On);
-}
-
-bool SaveFileAsCommand::onEnabled(Context* context)
-{
-  return context->checkFlags(ContextFlags::ActiveDocumentIsReadable);
 }
 
 class SaveFileCopyAsCommand : public SaveFileBaseCommand {

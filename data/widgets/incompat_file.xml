@@ -1,0 +1,23 @@
+<!-- Aseprite -->
+<!-- Copyright (c) 2023  Igara Studio S.A. -->
+<gui>
+  <window id="incompat_file" text="@.title">
+    <vbox>
+      <textbox text="@.message" wordwrap="true" style="textbox_label" />
+      <vbox id="errors_placeholder" expansive="true">
+        <label text="@.incompatibilities" />
+        <view id="errors_view" expansive="true">
+          <textbox id="errors" text="" />
+        </view>
+      </vbox>
+      <hbox>
+        <boxfiller />
+        <vbox>
+          <link text="@.update_link" url="https://www.aseprite.org/faq/#update" />
+          <button text="@general.close" closewindow="true" id="ok" magnet="true" minwidth="60" />
+        </vbox>
+        <boxfiller />
+      </hbox>
+    </vbox>
+  </window>
+</gui>

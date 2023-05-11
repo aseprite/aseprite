@@ -15,6 +15,7 @@
 #include "app/context_access.h"
 #include "app/doc.h"
 #include "app/doc_undo.h"
+#include "app/i18n/strings.h"
 #include "app/modules/palettes.h"
 #include "doc/sprite.h"
 #include "ui/manager.h"
@@ -25,6 +26,11 @@
 namespace app {
 
 using namespace doc;
+
+CannotModifyWhenReadOnlyException::CannotModifyWhenReadOnlyException() throw()
+  : base::Exception(Strings::statusbar_tips_cannot_modify_readonly_sprite())
+{
+}
 
 Transaction::Transaction(
   Context* ctx,

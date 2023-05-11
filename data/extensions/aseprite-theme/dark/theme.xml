@@ -528,6 +528,10 @@
             <background color="textbox_face" />
             <text color="textbox_text" align="left" />
         </style>
+        <style id="textbox_label" extends="textbox_text">
+            <background color="window_face" />
+            <text color="text" align="left" />
+        </style>
         <style id="label" padding="1">
             <text color="text" align="left" />
             <text color="disabled" align="left" state="disabled" />
