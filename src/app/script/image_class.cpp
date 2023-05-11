@@ -11,6 +11,7 @@
 
 #include "app/cmd/copy_rect.h"
 #include "app/cmd/copy_region.h"
+#include "app/cmd/flip_image.h"
 #include "app/commands/new_params.h" // Used for enum <-> Lua conversions
 #include "app/context.h"
 #include "app/doc.h"
@@ -18,6 +19,7 @@
 #include "app/script/blend_mode.h"
 #include "app/script/docobj.h"
 #include "app/script/engine.h"
+#include "app/script/flip_type.h"
 #include "app/script/luacpp.h"
 #include "app/script/security.h"
 #include "app/site.h"
@@ -578,6 +580,20 @@ int Image_shrinkBounds(lua_State* L)
   return 1;
 }
 
+int Image_flip(lua_State* L)
+{
+  auto obj = get_obj<ImageObj>(L, 1);
+  doc::Image* img = obj->image(L);
+  doc::algorithm::FlipType flipType = doc::algorithm::FlipType::FlipHorizontal;
+  if (lua_isinteger(L, 2) && lua_tointeger(L, 2) > 0)
+    flipType = doc::algorithm::FlipType::FlipVertical;
+
+  Tx tx;
+  tx(new cmd::FlipImage(img, img->bounds(), flipType));
+  tx.commit();
+  return 0;
+}
+
 int Image_get_id(lua_State* L)
 {
   const auto obj = get_obj<ImageObj>(L, 1);
@@ -679,6 +695,7 @@ const luaL_Reg Image_methods[] = {
   { "saveAs", Image_saveAs },
   { "resize", Image_resize },
   { "shrinkBounds", Image_shrinkBounds },
+  { "flip", Image_flip },
   { "__gc", Image_gc },
   { "__eq", Image_eq },
   { nullptr, nullptr }
