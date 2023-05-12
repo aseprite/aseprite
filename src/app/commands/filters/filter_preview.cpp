@@ -21,8 +21,6 @@
 #include "ui/message.h"
 #include "ui/widget.h"
 
-#include <thread>
-
 namespace app {
 
 using namespace ui;
@@ -32,8 +30,6 @@ FilterPreview::FilterPreview(FilterManagerImpl* filterMgr)
   : Widget(kGenericWidget)
   , m_filterMgr(filterMgr)
   , m_timer(1, this)
-  , m_filterThread(nullptr)
-  , m_filterIsDone(false)
 {
   setVisible(false);
 }
@@ -67,27 +63,32 @@ void FilterPreview::stop()
       ASSERT(m_filterMgr);
       m_filterMgr->end();
     }
+    m_timer.stop();
   }
-
-  m_timer.stop();
-
-  if (m_filterThread) {
-    m_filterThread->join();
-    m_filterThread.reset();
+  if (m_filterTask.running()) {
+    m_filterTask.cancel();
+    m_filterTask.wait();
   }
 }
 
 void FilterPreview::restartPreview()
 {
-  stop();
-
   std::scoped_lock lock(m_filterMgrMutex);
 
+  // Restart filter, timer, and task if needed (there is no need to
+  // restart the task if it's already running)
+  if (m_timer.isRunning()) {
+    ASSERT(m_filterMgr);
+    m_filterMgr->end();
+  }
   m_filterMgr->beginForPreview();
-  m_filterIsDone = false;
   m_timer.start();
-  m_filterThread.reset(
-    new std::thread([this]{ onFilterThread(); }));
+
+  if (!m_filterTask.running()) {
+    m_filterTask.run([this](base::task_token& token){
+      onFilterTask(token);
+    });
+  }
 }
 
 bool FilterPreview::onProcessMessage(Message* msg)
@@ -112,7 +113,7 @@ bool FilterPreview::onProcessMessage(Message* msg)
       std::scoped_lock lock(m_filterMgrMutex);
       if (m_filterMgr) {
         m_filterMgr->flush();
-        if (m_filterIsDone)
+        if (m_filterTask.completed())
           m_timer.stop();
       }
       break;
@@ -123,14 +124,13 @@ bool FilterPreview::onProcessMessage(Message* msg)
 }
 
 // This is executed in other thread.
-void FilterPreview::onFilterThread()
+void FilterPreview::onFilterTask(base::task_token& token)
 {
-  bool running = true;
-  while (running) {
+  while (!token.canceled()) {
     {
       std::scoped_lock lock(m_filterMgrMutex);
-      m_filterIsDone = !m_filterMgr->applyStep();
-      running = (!m_filterIsDone && m_timer.isRunning());
+      if (!m_filterMgr->applyStep())
+        token.cancel();
     }
     base::this_thread::yield();
   }

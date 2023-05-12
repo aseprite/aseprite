@@ -9,11 +9,11 @@
 #define APP_COMMANDS_FILTERS_FILTER_PREVIEW_H_INCLUDED
 #pragma once
 
+#include "app/task.h"
 #include "ui/timer.h"
 #include "ui/widget.h"
 
 #include <mutex>
-#include <thread>
 
 namespace app {
 
@@ -34,12 +34,12 @@ namespace app {
     bool onProcessMessage(ui::Message* msg) override;
 
   private:
-    void onFilterThread();
+    void onFilterTask(base::task_token& token);
 
     FilterManagerImpl* m_filterMgr;
     ui::Timer m_timer;
     std::mutex m_filterMgrMutex;
-    std::unique_ptr<std::thread> m_filterThread;
+    app::Task m_filterTask;
     bool m_filterIsDone;
   };
 
