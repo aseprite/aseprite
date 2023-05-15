@@ -209,8 +209,10 @@ private:
         Tx tx(writer.context(), "Set Cel Properties");
 
         DocRange range;
-        if (m_range.enabled())
+        if (m_range.enabled()) {
           range = m_range;
+          range.convertToCels(m_document->sprite());
+        }
         else {
           range.startRange(m_cel->layer(), m_cel->frame(), DocRange::kCels);
           range.endRange(m_cel->layer(), m_cel->frame());
