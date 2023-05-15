@@ -49,14 +49,10 @@ const char* ReplaceColorFilter::getName()
 
 void ReplaceColorFilter::applyToRgba(FilterManager* filterMgr)
 {
-  const uint32_t* src_address = (uint32_t*)filterMgr->getSourceAddress();
-  uint32_t* dst_address = (uint32_t*)filterMgr->getDestinationAddress();
-  int w = filterMgr->getWidth();
-  Target target = filterMgr->getTarget();
   int from_r, from_g, from_b, from_a;
   int src_r, src_g, src_b, src_a;
   int to_r, to_g, to_b, to_a;
-  int x, c;
+  int c;
 
   from_r = rgba_getr(m_from);
   from_g = rgba_getg(m_from);
@@ -67,14 +63,8 @@ void ReplaceColorFilter::applyToRgba(FilterManager* filterMgr)
   to_b = rgba_getb(m_to);
   to_a = rgba_geta(m_to);
 
-  for (x=0; x<w; x++) {
-    if (filterMgr->skipPixel()) {
-      ++src_address;
-      ++dst_address;
-      continue;
-    }
-
-    c = *(src_address++);
+  FILTER_LOOP_THROUGH_ROW_BEGIN(uint32_t) {
+    c = *src_address;
     src_r = rgba_getr(c);
     src_g = rgba_getg(c);
     src_b = rgba_getb(c);
@@ -89,41 +79,32 @@ void ReplaceColorFilter::applyToRgba(FilterManager* filterMgr)
         (ABS(src_g-from_g) <= m_tolerance) &&
         (ABS(src_b-from_b) <= m_tolerance) &&
         (ABS(src_a-from_a) <= m_tolerance)) {
-      *(dst_address++) = rgba(
+      *dst_address = rgba(
         (target & TARGET_RED_CHANNEL   ? to_r: src_r),
         (target & TARGET_GREEN_CHANNEL ? to_g: src_g),
         (target & TARGET_BLUE_CHANNEL  ? to_b: src_b),
         (target & TARGET_ALPHA_CHANNEL ? to_a: src_a));
     }
     else
-      *(dst_address++) = c;
+      *dst_address = c;
   }
+  FILTER_LOOP_THROUGH_ROW_END()
 }
 
 void ReplaceColorFilter::applyToGrayscale(FilterManager* filterMgr)
 {
-  const uint16_t* src_address = (uint16_t*)filterMgr->getSourceAddress();
-  uint16_t* dst_address = (uint16_t*)filterMgr->getDestinationAddress();
-  int w = filterMgr->getWidth();
-  Target target = filterMgr->getTarget();
   int from_v, from_a;
   int src_v, src_a;
   int to_v, to_a;
-  int x, c;
+  int c;
 
   from_v = graya_getv(m_from);
   from_a = graya_geta(m_from);
   to_v = graya_getv(m_to);
   to_a = graya_geta(m_to);
 
-  for (x=0; x<w; x++) {
-    if (filterMgr->skipPixel()) {
-      ++src_address;
-      ++dst_address;
-      continue;
-    }
-
-    c = *(src_address++);
+  FILTER_LOOP_THROUGH_ROW_BEGIN(uint16_t) {
+    c = *src_address;
     src_v = graya_getv(c);
     src_a = graya_geta(c);
 
@@ -132,27 +113,24 @@ void ReplaceColorFilter::applyToGrayscale(FilterManager* filterMgr)
 
     if ((ABS(src_v-from_v) <= m_tolerance) &&
         (ABS(src_a-from_a) <= m_tolerance)) {
-      *(dst_address++) = graya(
+      *dst_address = graya(
         (target & TARGET_GRAY_CHANNEL  ? to_v: src_v),
         (target & TARGET_ALPHA_CHANNEL ? to_a: src_a));
     }
     else
-      *(dst_address++) = c;
+      *dst_address = c;
   }
+  FILTER_LOOP_THROUGH_ROW_END()
 }
 
 void ReplaceColorFilter::applyToIndexed(FilterManager* filterMgr)
 {
-  const uint8_t* src_address = (uint8_t*)filterMgr->getSourceAddress();
-  uint8_t* dst_address = (uint8_t*)filterMgr->getDestinationAddress();
-  int w = filterMgr->getWidth();
-  Target target = filterMgr->getTarget();
   const Palette* pal = filterMgr->getIndexedData()->getPalette();
   const RgbMap* rgbmap = filterMgr->getIndexedData()->getRgbMap();
   int from_r, from_g, from_b, from_a;
   int src_r, src_g, src_b, src_a;
   int to_r, to_g, to_b, to_a;
-  int x, c;
+  int c;
 
   c = pal->getEntry(m_from);
   from_r = rgba_getr(c);
@@ -166,20 +144,14 @@ void ReplaceColorFilter::applyToIndexed(FilterManager* filterMgr)
   to_b = rgba_getb(c);
   to_a = rgba_geta(c);
 
-  for (x=0; x<w; x++) {
-    if (filterMgr->skipPixel()) {
-      ++src_address;
-      ++dst_address;
-      continue;
-    }
-
-    c = *(src_address++);
+  FILTER_LOOP_THROUGH_ROW_BEGIN(uint8_t) {
+    c = *src_address;
 
     if (target & TARGET_INDEX_CHANNEL) {
       if (ABS(c-m_from) <= m_tolerance)
-        *(dst_address++) = m_to;
+        *dst_address = m_to;
       else
-        *(dst_address++) = c;
+        *dst_address = c;
     }
     else {
       src_r = rgba_getr(pal->getEntry(c));
@@ -196,16 +168,17 @@ void ReplaceColorFilter::applyToIndexed(FilterManager* filterMgr)
           (ABS(src_g-from_g) <= m_tolerance) &&
           (ABS(src_b-from_b) <= m_tolerance) &&
           (ABS(src_a-from_a) <= m_tolerance)) {
-        *(dst_address++) = rgbmap->mapColor(
+        *dst_address = rgbmap->mapColor(
           (target & TARGET_RED_CHANNEL   ? to_r: src_r),
           (target & TARGET_GREEN_CHANNEL ? to_g: src_g),
           (target & TARGET_BLUE_CHANNEL  ? to_b: src_b),
           (target & TARGET_ALPHA_CHANNEL ? to_a: src_a));
       }
       else
-        *(dst_address++) = c;
+        *dst_address = c;
     }
   }
+  FILTER_LOOP_THROUGH_ROW_END()
 }
 
 } // namespace filters

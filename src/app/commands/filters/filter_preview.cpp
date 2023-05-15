@@ -57,6 +57,8 @@ void FilterPreview::setEnablePreview(bool state)
 
 void FilterPreview::stop()
 {
+  // Cancel the token (so the filter processing stops immediately)
+  m_filterTask.cancel();
   {
     std::scoped_lock lock(m_filterMgrMutex);
     if (m_timer.isRunning()) {
@@ -65,14 +67,14 @@ void FilterPreview::stop()
     }
     m_timer.stop();
   }
-  if (m_filterTask.running()) {
-    m_filterTask.cancel();
+  if (m_filterTask.running())
     m_filterTask.wait();
-  }
 }
 
 void FilterPreview::restartPreview()
 {
+  // Cancel the token (so the filter processing stops immediately)
+  m_filterTask.cancel();
   std::scoped_lock lock(m_filterMgrMutex);
 
   // Restart filter, timer, and task if needed (there is no need to
@@ -84,10 +86,17 @@ void FilterPreview::restartPreview()
   m_filterMgr->beginForPreview();
   m_timer.start();
 
+  // TODO add timer to restart...
+
   if (!m_filterTask.running()) {
-    m_filterTask.run([this](base::task_token& token){
+    m_filterTask.run([this](base::task_token& token) {
+      m_filterMgr->setTaskToken(token);
       onFilterTask(token);
     });
+  }
+  else {
+    // Is it possible to happen? We cancel the token, the task is
+    // still running, we don't launch it again and we are here.
   }
 }
 

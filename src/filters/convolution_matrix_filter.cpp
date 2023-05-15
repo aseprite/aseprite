@@ -136,21 +136,10 @@ void ConvolutionMatrixFilter::applyToRgba(FilterManager* filterMgr)
     return;
 
   const Image* src = filterMgr->getSourceImage();
-  uint32_t* dst_address = (uint32_t*)filterMgr->getDestinationAddress();
-  Target target = filterMgr->getTarget();
   uint32_t color;
   GetPixelsDelegateRgba delegate;
-  int x = filterMgr->x();
-  int x2 = x+filterMgr->getWidth();
-  int y = filterMgr->y();
 
-  for (; x<x2; ++x) {
-    // Avoid the non-selected region
-    if (filterMgr->skipPixel()) {
-      ++dst_address;
-      continue;
-    }
-
+  FILTER_LOOP_THROUGH_ROW_BEGIN(uint32_t) {
     delegate.reset(m_matrix.get());
     get_neighboring_pixels<RgbTraits>(src, x, y,
                                       m_matrix->getWidth(),
@@ -161,7 +150,7 @@ void ConvolutionMatrixFilter::applyToRgba(FilterManager* filterMgr)
 
     color = get_pixel_fast<RgbTraits>(src, x, y);
     if (delegate.div == 0) {
-      *(dst_address++) = color;
+      *dst_address = color;
       continue;
     }
 
@@ -193,8 +182,9 @@ void ConvolutionMatrixFilter::applyToRgba(FilterManager* filterMgr)
     else
       delegate.a = rgba_geta(color);
 
-    *(dst_address++) = rgba(delegate.r, delegate.g, delegate.b, delegate.a);
+    *dst_address = rgba(delegate.r, delegate.g, delegate.b, delegate.a);
   }
+  FILTER_LOOP_THROUGH_ROW_END()
 }
 
 void ConvolutionMatrixFilter::applyToGrayscale(FilterManager* filterMgr)
@@ -203,21 +193,10 @@ void ConvolutionMatrixFilter::applyToGrayscale(FilterManager* filterMgr)
     return;
 
   const Image* src = filterMgr->getSourceImage();
-  uint16_t* dst_address = (uint16_t*)filterMgr->getDestinationAddress();
-  Target target = filterMgr->getTarget();
   uint16_t color;
   GetPixelsDelegateGrayscale delegate;
-  int x = filterMgr->x();
-  int x2 = x+filterMgr->getWidth();
-  int y = filterMgr->y();
 
-  for (; x<x2; ++x) {
-    // Avoid the non-selected region
-    if (filterMgr->skipPixel()) {
-      ++dst_address;
-      continue;
-    }
-
+  FILTER_LOOP_THROUGH_ROW_BEGIN(uint16_t) {
     delegate.reset(m_matrix.get());
     get_neighboring_pixels<GrayscaleTraits>(src, x, y,
                                             m_matrix->getWidth(),
@@ -228,7 +207,7 @@ void ConvolutionMatrixFilter::applyToGrayscale(FilterManager* filterMgr)
 
     color = get_pixel_fast<GrayscaleTraits>(src, x, y);
     if (delegate.div == 0) {
-      *(dst_address++) = color;
+      *dst_address = color;
       continue;
     }
 
@@ -246,8 +225,9 @@ void ConvolutionMatrixFilter::applyToGrayscale(FilterManager* filterMgr)
     else
       delegate.a = graya_geta(color);
 
-    *(dst_address++) = graya(delegate.v, delegate.a);
+    *dst_address = graya(delegate.v, delegate.a);
   }
+  FILTER_LOOP_THROUGH_ROW_END()
 }
 
 void ConvolutionMatrixFilter::applyToIndexed(FilterManager* filterMgr)
@@ -256,23 +236,12 @@ void ConvolutionMatrixFilter::applyToIndexed(FilterManager* filterMgr)
     return;
 
   const Image* src = filterMgr->getSourceImage();
-  uint8_t* dst_address = (uint8_t*)filterMgr->getDestinationAddress();
   const Palette* pal = filterMgr->getIndexedData()->getPalette();
   const RgbMap* rgbmap = filterMgr->getIndexedData()->getRgbMap();
-  Target target = filterMgr->getTarget();
   uint8_t color;
   GetPixelsDelegateIndexed delegate(pal);
-  int x = filterMgr->x();
-  int x2 = x+filterMgr->getWidth();
-  int y = filterMgr->y();
 
-  for (; x<x2; ++x) {
-    // Avoid the non-selected region
-    if (filterMgr->skipPixel()) {
-      ++dst_address;
-      continue;
-    }
-
+  FILTER_LOOP_THROUGH_ROW_BEGIN(uint8_t) {
     delegate.reset(m_matrix.get());
     get_neighboring_pixels<IndexedTraits>(src, x, y,
                                           m_matrix->getWidth(),
@@ -283,7 +252,7 @@ void ConvolutionMatrixFilter::applyToIndexed(FilterManager* filterMgr)
 
     color = get_pixel_fast<IndexedTraits>(src, x, y);
     if (delegate.div == 0) {
-      *(dst_address++) = color;
+      *dst_address = color;
       continue;
     }
 
@@ -291,7 +260,7 @@ void ConvolutionMatrixFilter::applyToIndexed(FilterManager* filterMgr)
       delegate.index = delegate.index / m_matrix->getDiv() + m_matrix->getBias();
       delegate.index = std::clamp(delegate.index, 0, 255);
 
-      *(dst_address++) = delegate.index;
+      *dst_address = delegate.index;
     }
     else {
       color = pal->getEntry(color);
@@ -324,9 +293,10 @@ void ConvolutionMatrixFilter::applyToIndexed(FilterManager* filterMgr)
       else
         delegate.a = rgba_geta(color);
 
-      *(dst_address++) = rgbmap->mapColor(delegate.r, delegate.g, delegate.b, delegate.a);
+      *dst_address = rgbmap->mapColor(delegate.r, delegate.g, delegate.b, delegate.a);
     }
   }
+  FILTER_LOOP_THROUGH_ROW_END()
 }
 
 } // namespace filters

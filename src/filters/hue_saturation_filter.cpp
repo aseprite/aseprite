@@ -71,19 +71,9 @@ void HueSaturationFilter::applyToRgba(FilterManager* filterMgr)
   FilterIndexedData* fid = filterMgr->getIndexedData();
   const Palette* pal = fid->getPalette();
   Palette* newPal = (m_usePaletteOnRGB ? fid->getNewPalette(): nullptr);
-  const uint32_t* src_address = (uint32_t*)filterMgr->getSourceAddress();
-  uint32_t* dst_address = (uint32_t*)filterMgr->getDestinationAddress();
-  const int w = filterMgr->getWidth();
-  const Target target = filterMgr->getTarget();
 
-  for (int x=0; x<w; x++) {
-    if (filterMgr->skipPixel()) {
-      ++src_address;
-      ++dst_address;
-      continue;
-    }
-
-    color_t c = *(src_address++);
+  FILTER_LOOP_THROUGH_ROW_BEGIN(uint32_t) {
+    color_t c = *src_address;
 
     if (newPal) {
       int i =
@@ -98,25 +88,15 @@ void HueSaturationFilter::applyToRgba(FilterManager* filterMgr)
       applyFilterToRgb(target, c);
     }
 
-    *(dst_address++) = c;
+    *dst_address = c;
   }
+  FILTER_LOOP_THROUGH_ROW_END()
 }
 
 void HueSaturationFilter::applyToGrayscale(FilterManager* filterMgr)
 {
-  const uint16_t* src_address = (uint16_t*)filterMgr->getSourceAddress();
-  uint16_t* dst_address = (uint16_t*)filterMgr->getDestinationAddress();
-  const int w = filterMgr->getWidth();
-  const Target target = filterMgr->getTarget();
-
-  for (int x=0; x<w; x++) {
-    if (filterMgr->skipPixel()) {
-      ++src_address;
-      ++dst_address;
-      continue;
-    }
-
-    color_t c = *(src_address++);
+  FILTER_LOOP_THROUGH_ROW_BEGIN(uint16_t) {
+    color_t c = *src_address;
     int k = graya_getv(c);
     int a = graya_geta(c);
 
@@ -137,8 +117,9 @@ void HueSaturationFilter::applyToGrayscale(FilterManager* filterMgr)
       }
     }
 
-    *(dst_address++) = graya(k, a);
+    *dst_address = graya(k, a);
   }
+  FILTER_LOOP_THROUGH_ROW_END()
 }
 
 void HueSaturationFilter::applyToIndexed(FilterManager* filterMgr)
@@ -151,24 +132,15 @@ void HueSaturationFilter::applyToIndexed(FilterManager* filterMgr)
 
   // Apply filter to color region
   FilterIndexedData* fid = filterMgr->getIndexedData();
-  const Target target = filterMgr->getTarget();
   const Palette* pal = fid->getPalette();
   const RgbMap* rgbmap = fid->getRgbMap();
-  const uint8_t* src_address = (uint8_t*)filterMgr->getSourceAddress();
-  uint8_t* dst_address = (uint8_t*)filterMgr->getDestinationAddress();
-  const int w = filterMgr->getWidth();
 
-  for (int x=0; x<w; x++) {
-    if (filterMgr->skipPixel()) {
-      ++src_address;
-      ++dst_address;
-      continue;
-    }
-
-    color_t c = pal->getEntry(*(src_address++));
+  FILTER_LOOP_THROUGH_ROW_BEGIN(uint8_t) {
+    color_t c = pal->getEntry(*src_address);
     applyFilterToRgb(target, c);
-    *(dst_address++) = rgbmap->mapColor(c);
+    *dst_address = rgbmap->mapColor(c);
   }
+  FILTER_LOOP_THROUGH_ROW_END()
 }
 
 void HueSaturationFilter::onApplyToPalette(FilterManager* filterMgr,

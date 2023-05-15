@@ -98,12 +98,6 @@ const char* OutlineFilter::getName()
 void OutlineFilter::applyToRgba(FilterManager* filterMgr)
 {
   const Image* src = filterMgr->getSourceImage();
-  const uint32_t* src_address = (uint32_t*)filterMgr->getSourceAddress();
-  uint32_t* dst_address = (uint32_t*)filterMgr->getDestinationAddress();
-  int x = filterMgr->x();
-  const int x2 = x+filterMgr->getWidth();
-  const int y = filterMgr->y();
-  Target target = filterMgr->getTarget();
   int r, g, b, a, n;
   color_t c;
   bool isTransparent;
@@ -111,10 +105,7 @@ void OutlineFilter::applyToRgba(FilterManager* filterMgr)
   GetPixelsDelegateRgba delegate;
   delegate.init(m_bgColor, m_matrix);
 
-  for (; x<x2; ++x, ++src_address, ++dst_address) {
-    if (filterMgr->skipPixel())
-      continue;
-
+  FILTER_LOOP_THROUGH_ROW_BEGIN(uint32_t) {
     delegate.reset();
     get_neighboring_pixels<RgbTraits>(src, x, y, 3, 3, 1, 1, m_tiledMode, delegate);
 
@@ -134,17 +125,12 @@ void OutlineFilter::applyToRgba(FilterManager* filterMgr)
 
     *dst_address = c;
   }
+  FILTER_LOOP_THROUGH_ROW_END()
 }
 
 void OutlineFilter::applyToGrayscale(FilterManager* filterMgr)
 {
   const Image* src = filterMgr->getSourceImage();
-  const uint16_t* src_address = (uint16_t*)filterMgr->getSourceAddress();
-  uint16_t* dst_address = (uint16_t*)filterMgr->getDestinationAddress();
-  int x = filterMgr->x();
-  const int x2 = x+filterMgr->getWidth();
-  const int y = filterMgr->y();
-  Target target = filterMgr->getTarget();
   int k, a, n;
   color_t c;
   bool isTransparent;
@@ -152,10 +138,7 @@ void OutlineFilter::applyToGrayscale(FilterManager* filterMgr)
   GetPixelsDelegateGrayscale delegate;
   delegate.init(m_bgColor, m_matrix);
 
-  for (; x<x2; ++x, ++src_address, ++dst_address) {
-    if (filterMgr->skipPixel())
-      continue;
-
+  FILTER_LOOP_THROUGH_ROW_BEGIN(uint16_t) {
     delegate.reset();
     get_neighboring_pixels<GrayscaleTraits>(src, x, y, 3, 3, 1, 1, m_tiledMode, delegate);
 
@@ -173,19 +156,14 @@ void OutlineFilter::applyToGrayscale(FilterManager* filterMgr)
 
     *dst_address = c;
   }
+  FILTER_LOOP_THROUGH_ROW_END()
 }
 
 void OutlineFilter::applyToIndexed(FilterManager* filterMgr)
 {
   const Image* src = filterMgr->getSourceImage();
-  const uint8_t* src_address = (uint8_t*)filterMgr->getSourceAddress();
-  uint8_t* dst_address = (uint8_t*)filterMgr->getDestinationAddress();
   const Palette* pal = filterMgr->getIndexedData()->getPalette();
   const RgbMap* rgbmap = filterMgr->getIndexedData()->getRgbMap();
-  int x = filterMgr->x();
-  const int x2 = x+filterMgr->getWidth();
-  const int y = filterMgr->y();
-  Target target = filterMgr->getTarget();
   int r, g, b, a, n;
   color_t c;
   bool isTransparent;
@@ -193,10 +171,7 @@ void OutlineFilter::applyToIndexed(FilterManager* filterMgr)
   GetPixelsDelegateIndexed delegate(pal);
   delegate.init(m_bgColor, m_matrix);
 
-  for (; x<x2; ++x, ++src_address, ++dst_address) {
-    if (filterMgr->skipPixel())
-      continue;
-
+  FILTER_LOOP_THROUGH_ROW_BEGIN(uint8_t) {
     delegate.reset();
     get_neighboring_pixels<IndexedTraits>(src, x, y, 3, 3, 1, 1, m_tiledMode, delegate);
 
@@ -228,6 +203,7 @@ void OutlineFilter::applyToIndexed(FilterManager* filterMgr)
 
     *dst_address = c;
   }
+  FILTER_LOOP_THROUGH_ROW_END()
 }
 
 } // namespace filters

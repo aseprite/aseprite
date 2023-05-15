@@ -27,20 +27,10 @@ const char* InvertColorFilter::getName()
 
 void InvertColorFilter::applyToRgba(FilterManager* filterMgr)
 {
-  const uint32_t* src_address = (uint32_t*)filterMgr->getSourceAddress();
-  uint32_t* dst_address = (uint32_t*)filterMgr->getDestinationAddress();
-  int w = filterMgr->getWidth();
-  Target target = filterMgr->getTarget();
-  int x, c, r, g, b, a;
+  int c, r, g, b, a;
 
-  for (x=0; x<w; x++) {
-    if (filterMgr->skipPixel()) {
-      ++src_address;
-      ++dst_address;
-      continue;
-    }
-
-    c = *(src_address++);
+  FILTER_LOOP_THROUGH_ROW_BEGIN(uint32_t) {
+    c = *src_address;
 
     r = rgba_getr(c);
     g = rgba_getg(c);
@@ -52,26 +42,17 @@ void InvertColorFilter::applyToRgba(FilterManager* filterMgr)
     if (target & TARGET_BLUE_CHANNEL) b ^= 0xff;
     if (target & TARGET_ALPHA_CHANNEL) a ^= 0xff;
 
-    *(dst_address++) = rgba(r, g, b, a);
+    *dst_address = rgba(r, g, b, a);
   }
+  FILTER_LOOP_THROUGH_ROW_END()
 }
 
 void InvertColorFilter::applyToGrayscale(FilterManager* filterMgr)
 {
-  const uint16_t* src_address = (uint16_t*)filterMgr->getSourceAddress();
-  uint16_t* dst_address = (uint16_t*)filterMgr->getDestinationAddress();
-  int w = filterMgr->getWidth();
-  Target target = filterMgr->getTarget();
-  int x, c, k, a;
+  int c, k, a;
 
-  for (x=0; x<w; x++) {
-    if (filterMgr->skipPixel()) {
-      ++src_address;
-      ++dst_address;
-      continue;
-    }
-
-    c = *(src_address++);
+  FILTER_LOOP_THROUGH_ROW_BEGIN(uint16_t) {
+    c = *src_address;
 
     k = graya_getv(c);
     a = graya_geta(c);
@@ -79,28 +60,19 @@ void InvertColorFilter::applyToGrayscale(FilterManager* filterMgr)
     if (target & TARGET_GRAY_CHANNEL) k ^= 0xff;
     if (target & TARGET_ALPHA_CHANNEL) a ^= 0xff;
 
-    *(dst_address++) = graya(k, a);
+    *dst_address = graya(k, a);
   }
+  FILTER_LOOP_THROUGH_ROW_END()
 }
 
 void InvertColorFilter::applyToIndexed(FilterManager* filterMgr)
 {
-  const uint8_t* src_address = (uint8_t*)filterMgr->getSourceAddress();
-  uint8_t* dst_address = (uint8_t*)filterMgr->getDestinationAddress();
   const Palette* pal = filterMgr->getIndexedData()->getPalette();
   const RgbMap* rgbmap = filterMgr->getIndexedData()->getRgbMap();
-  int w = filterMgr->getWidth();
-  Target target = filterMgr->getTarget();
-  int x, c, r, g, b, a;
+  int c, r, g, b, a;
 
-  for (x=0; x<w; x++) {
-    if (filterMgr->skipPixel()) {
-      ++src_address;
-      ++dst_address;
-      continue;
-    }
-
-    c = *(src_address++);
+  FILTER_LOOP_THROUGH_ROW_BEGIN(uint8_t) {
+    c = *src_address;
 
     if (target & TARGET_INDEX_CHANNEL)
       c ^= 0xff;
@@ -119,8 +91,9 @@ void InvertColorFilter::applyToIndexed(FilterManager* filterMgr)
       c = rgbmap->mapColor(r, g, b, a);
     }
 
-    *(dst_address++) = c;
+    *dst_address = c;
   }
+  FILTER_LOOP_THROUGH_ROW_END()
 }
 
 } // namespace filters

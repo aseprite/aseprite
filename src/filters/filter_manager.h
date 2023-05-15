@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -9,8 +9,28 @@
 #define FILTERS_FILTER_MANAGER_H_INCLUDED
 #pragma once
 
+#include "base/task.h"
 #include "doc/pixel_format.h"
 #include "filters/target.h"
+
+// Creates src_address, dst_address, x, x2, and y variables to iterate
+// through a row of the target. Skips non-selected areas.
+// Requires the "filterMgr" variable.
+#define FILTER_LOOP_THROUGH_ROW_BEGIN(Type)                             \
+  const Target target = filterMgr->getTarget();                         \
+  auto src_address = (const Type*)filterMgr->getSourceAddress();        \
+  auto dst_address = (Type*)filterMgr->getDestinationAddress();         \
+  int x = filterMgr->x();                                               \
+  const int x2 = x + filterMgr->getWidth();                             \
+  [[maybe_unused]] const int y = filterMgr->y();                        \
+  auto& token = filterMgr->taskToken();                                 \
+  for (; x < x2 && !token.canceled();                                   \
+       ++x, ++src_address, ++dst_address) {                             \
+    if (filterMgr->skipPixel())                                         \
+      continue;
+
+#define FILTER_LOOP_THROUGH_ROW_END()                                   \
+  }
 
 namespace doc {
   class Image;
@@ -81,6 +101,10 @@ namespace filters {
     // filter just to a part of the sprite).
     virtual bool isMaskActive() const = 0;
 
+    // Task token used to cancel the filter operation (the filter can
+    // check this each X pixels to know if the user canceled the
+    // operation)
+    virtual base::task_token& taskToken() const = 0;
   };
 
 } // namespace filters

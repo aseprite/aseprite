@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -64,7 +64,8 @@ FilterManagerImpl::FilterManagerImpl(Context* context, Filter* filter)
   , m_target(TARGET_ALL_CHANNELS)
   , m_celsTarget(CelsTarget::Selected)
   , m_oldPalette(nullptr)
-  , m_progressDelegate(NULL)
+  , m_taskToken(&m_noToken)
+  , m_progressDelegate(nullptr)
 {
   int x, y;
   Image* image = m_site.image(&x, &y);
@@ -121,6 +122,7 @@ void FilterManagerImpl::begin()
 
   m_row = 0;
   m_mask = (document->isMaskVisible() ? document->mask(): nullptr);
+  m_taskToken = &m_noToken; // Don't use the preview token (which can be canceled)
   updateBounds(m_mask);
 }
 
@@ -548,6 +550,17 @@ void FilterManagerImpl::redrawColorPalette()
 bool FilterManagerImpl::isMaskActive() const
 {
   return m_site.document()->isMaskVisible();
+}
+
+base::task_token& FilterManagerImpl::taskToken() const
+{
+  ASSERT(m_taskToken); // It's always pointing to a token, m_noToken by default
+  return *m_taskToken;
+}
+
+void FilterManagerImpl::setTaskToken(base::task_token& token)
+{
+  m_taskToken = &token;
 }
 
 } // namespace app

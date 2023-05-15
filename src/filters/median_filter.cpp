@@ -124,22 +124,10 @@ const char* MedianFilter::getName()
 void MedianFilter::applyToRgba(FilterManager* filterMgr)
 {
   const Image* src = filterMgr->getSourceImage();
-  uint32_t* dst_address = (uint32_t*)filterMgr->getDestinationAddress();
-  Target target = filterMgr->getTarget();
-  int color;
-  int r, g, b, a;
+  int color, r, g, b, a;
   GetPixelsDelegateRgba delegate(m_channel);
-  int x = filterMgr->x();
-  int x2 = x+filterMgr->getWidth();
-  int y = filterMgr->y();
 
-  for (; x<x2; ++x) {
-    // Avoid the non-selected region
-    if (filterMgr->skipPixel()) {
-      ++dst_address;
-      continue;
-    }
-
+  FILTER_LOOP_THROUGH_ROW_BEGIN(uint32_t) {
     delegate.reset();
     get_neighboring_pixels<RgbTraits>(src, x, y, m_width, m_height, m_width/2, m_height/2,
                                       m_tiledMode, delegate);
@@ -174,28 +162,18 @@ void MedianFilter::applyToRgba(FilterManager* filterMgr)
     else
       a = rgba_geta(color);
 
-    *(dst_address++) = rgba(r, g, b, a);
+    *dst_address = rgba(r, g, b, a);
   }
+  FILTER_LOOP_THROUGH_ROW_END()
 }
 
 void MedianFilter::applyToGrayscale(FilterManager* filterMgr)
 {
   const Image* src = filterMgr->getSourceImage();
-  uint16_t* dst_address = (uint16_t*)filterMgr->getDestinationAddress();
-  Target target = filterMgr->getTarget();
   int color, k, a;
   GetPixelsDelegateGrayscale delegate(m_channel);
-  int x = filterMgr->x();
-  int x2 = x+filterMgr->getWidth();
-  int y = filterMgr->y();
 
-  for (; x<x2; ++x) {
-    // Avoid the non-selected region
-    if (filterMgr->skipPixel()) {
-      ++dst_address;
-      continue;
-    }
-
+  FILTER_LOOP_THROUGH_ROW_BEGIN(uint16_t) {
     delegate.reset();
     get_neighboring_pixels<GrayscaleTraits>(src, x, y, m_width, m_height, m_width/2, m_height/2,
                                             m_tiledMode, delegate);
@@ -216,37 +194,27 @@ void MedianFilter::applyToGrayscale(FilterManager* filterMgr)
     else
       a = graya_geta(color);
 
-    *(dst_address++) = graya(k, a);
+    *dst_address = graya(k, a);
   }
+  FILTER_LOOP_THROUGH_ROW_END()
 }
 
 void MedianFilter::applyToIndexed(FilterManager* filterMgr)
 {
   const Image* src = filterMgr->getSourceImage();
-  uint8_t* dst_address = (uint8_t*)filterMgr->getDestinationAddress();
   const Palette* pal = filterMgr->getIndexedData()->getPalette();
   const RgbMap* rgbmap = filterMgr->getIndexedData()->getRgbMap();
-  Target target = filterMgr->getTarget();
   int color, r, g, b, a;
-  GetPixelsDelegateIndexed delegate(pal, m_channel, target);
-  int x = filterMgr->x();
-  int x2 = x+filterMgr->getWidth();
-  int y = filterMgr->y();
+  GetPixelsDelegateIndexed delegate(pal, m_channel, filterMgr->getTarget());
 
-  for (; x<x2; ++x) {
-    // Avoid the non-selected region
-    if (filterMgr->skipPixel()) {
-      ++dst_address;
-      continue;
-    }
-
+  FILTER_LOOP_THROUGH_ROW_BEGIN(uint8_t) {
     delegate.reset();
     get_neighboring_pixels<IndexedTraits>(src, x, y, m_width, m_height, m_width/2, m_height/2,
                                           m_tiledMode, delegate);
 
     if (target & TARGET_INDEX_CHANNEL) {
       std::sort(m_channel[0].begin(), m_channel[0].end());
-      *(dst_address++) = m_channel[0][m_ncolors/2];
+      *dst_address = m_channel[0][m_ncolors/2];
     }
     else {
       color = get_pixel_fast<IndexedTraits>(src, x, y);
@@ -280,9 +248,10 @@ void MedianFilter::applyToIndexed(FilterManager* filterMgr)
       else
         a = rgba_geta(color);
 
-      *(dst_address++) = rgbmap->mapColor(r, g, b, a);
+      *dst_address = rgbmap->mapColor(r, g, b, a);
     }
   }
+  FILTER_LOOP_THROUGH_ROW_END()
 }
 
 } // namespace filters
