@@ -61,7 +61,7 @@ protected:
   }
 
 private:
-  InkProcessingPtr m_proc;
+  InkProcessingPtr m_proc = std::make_unique<NoopInkProcessing>();
 };
 
 // Ink used for tools which paint with primary/secondary
@@ -516,7 +516,7 @@ public:
       m_mask.unfreeze();
 
       loop->setMask(&m_mask);
-      double cornerThick = (loop->isTilemapMode()) ? 
+      double cornerThick = (loop->isTilemapMode()) ?
                               CORNER_THICK_FOR_TILEMAP_MODE :
                               CORNER_THICK_FOR_PIXELS_MODE;
       loop->getDocument()->setTransformation(
