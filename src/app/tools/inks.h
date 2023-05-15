@@ -61,7 +61,7 @@ protected:
   }
 
 private:
-  InkProcessingPtr m_proc;
+  InkProcessingPtr m_proc = std::make_unique<NoopInkProcessing>();
 };
 
 // Ink used for tools which paint with primary/secondary

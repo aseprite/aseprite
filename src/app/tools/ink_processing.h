@@ -39,6 +39,11 @@ public:
   virtual void prepareUForPointShapeSlicedScanline(ToolLoop* loop, bool leftSlice, int x1) { }
 };
 
+class NoopInkProcessing : public BaseInkProcessing {
+public:
+  void processScanline(int x1, int y, int x2, ToolLoop* loop) override { }
+};
+
 typedef std::unique_ptr<BaseInkProcessing> InkProcessingPtr;
 
 namespace {
