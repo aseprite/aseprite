@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2023  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -12,6 +13,7 @@
 #include "app/commands/command.h"
 #include "app/context.h"
 #include "app/doc.h"
+#include "app/modules/gui.h"
 #include "app/pref/preferences.h"
 
 namespace app {
@@ -34,6 +36,7 @@ protected:
   void onExecute(Context* context) override {
     DocumentPreferences& docPref = Preferences::instance().document(context->activeDocument());
     docPref.onionskin.active(!docPref.onionskin.active());
+    update_screen_for_document(context->activeDocument());
   }
 };
 
