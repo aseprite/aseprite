@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -62,7 +63,7 @@ void LoadPaletteCommand::onExecute(Context* context)
     filename = m_filename;
   }
 #ifdef ENABLE_UI
-  else {
+  else if (context->isUIAvailable()) {
     base::paths exts = get_readable_palette_extensions();
     base::paths filenames;
     if (app::show_file_selector(
