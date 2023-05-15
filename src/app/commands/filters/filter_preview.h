@@ -35,9 +35,11 @@ namespace app {
 
   private:
     void onFilterTask(base::task_token& token);
+    void onDelayedStartPreview();
 
     FilterManagerImpl* m_filterMgr;
     ui::Timer m_timer;
+    ui::Timer m_restartPreviewTimer;
     std::mutex m_filterMgrMutex;
     app::Task m_filterTask;
     bool m_filterIsDone;
