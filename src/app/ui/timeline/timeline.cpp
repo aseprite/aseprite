@@ -388,6 +388,8 @@ void Timeline::updateUsingEditor(Editor* editor)
   m_firstFrameConn = Preferences::instance().document(m_document)
     .timeline.firstFrame.AfterChange.connect([this]{ invalidate(); });
 
+  m_onionskinConn = docPref.onionskin.AfterChange.connect([this]{ invalidate(); });
+
   setFocusStop(true);
   regenerateRows();
   setViewScroll(view->timelineScroll());
@@ -400,6 +402,7 @@ void Timeline::detachDocument()
     m_confPopup->closeWindow(nullptr);
 
   m_firstFrameConn.disconnect();
+  m_onionskinConn.disconnect();
 
   if (m_document) {
     m_thumbnailsPrefConn.disconnect();

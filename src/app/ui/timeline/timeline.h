@@ -424,6 +424,7 @@ namespace app {
     std::unique_ptr<ConfigureTimelinePopup> m_confPopup;
     obs::scoped_connection m_ctxConn1, m_ctxConn2;
     obs::connection m_firstFrameConn;
+    obs::connection m_onionskinConn;
 
     // Marching ants stuff to show the range in the clipboard.
     // TODO merge this with the marching ants of the sprite editor (ui::Editor)
