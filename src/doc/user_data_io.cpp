@@ -117,6 +117,7 @@ static void write_property_value(std::ostream& os, const UserData::Variant& vari
       for (int i=0; i<16; ++i) {
         write8(os, uuid[i]);
       }
+      break;
     }
   }
 }
@@ -236,7 +237,7 @@ static UserData::Variant read_property_value(std::istream& is, uint16_t type)
     case USER_DATA_PROPERTY_TYPE_UUID: {
       base::Uuid value;
       uint8_t* bytes = value.bytes();
-      for (int i; i<16;++i) {
+      for (int i=0; i<16; ++i) {
         bytes[i] = read8(is);
       }
       return value;
