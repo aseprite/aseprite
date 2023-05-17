@@ -167,3 +167,17 @@ do
   assert(spr.properties.a == a)
   assert(spr.properties.b == b)
 end
+
+-- Test undo and redo setting UUID property
+do
+  local a = Uuid()
+  local spr = Sprite(1, 1)
+  spr.properties.a = a
+
+  app.undo()
+  assert(#spr.properties == 0)
+
+  app.redo()
+  assert(#spr.properties == 1)
+  assert(spr.properties.a == a)
+end
