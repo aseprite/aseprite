@@ -634,7 +634,10 @@ void Sprite::pickCels(const gfx::PointF& pos,
   // bottom-most) so we pick first visible cel in the given position.
   const auto& planItems = plan.items();
   for (auto it=planItems.rbegin(), end=planItems.rend(); it!=end; ++it) {
-    Cel* cel = it->cel;
+    const Cel* cel = it->cel;
+    if (!cel)
+      continue;
+
     const Image* image = cel->image();
     if (!image)
       continue;
@@ -698,7 +701,7 @@ void Sprite::pickCels(const gfx::PointF& pos,
     if (!isOpaque)
       continue;
 
-    cels.push_back(cel);
+    cels.push_back(const_cast<Cel*>(cel));
   }
 }
 

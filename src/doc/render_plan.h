@@ -8,6 +8,7 @@
 #define DOC_RENDER_PLAN_H_INCLUDED
 #pragma once
 
+#include "doc/cel.h"
 #include "doc/cel_list.h"
 #include "doc/frame.h"
 
@@ -21,9 +22,13 @@ namespace doc {
   public:
     struct Item {
       int order;
-      Cel* cel;
-      Item(int order = 0, Cel* cel = nullptr)
-        : order(order), cel(cel) { }
+      const Layer* layer;
+      const Cel* cel;
+      int zIndex() const { return (cel ? cel->zIndex(): 0); }
+      Item(const int order = 0,
+           const Layer* layer = nullptr,
+           const Cel* cel = nullptr)
+        : order(order), layer(layer), cel(cel) { }
     };
     using Items = std::vector<Item>;
 

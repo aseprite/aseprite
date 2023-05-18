@@ -1006,7 +1006,7 @@ void Render::renderPlan(
 {
   for (const auto& item : plan.items()) {
     const Cel* cel = item.cel;
-    const Layer* layer = cel->layer();
+    const Layer* layer = item.layer;
 
     ASSERT(layer->isVisible()); // Hidden layers shouldn't be in the plan
 
@@ -1034,8 +1034,7 @@ void Render::renderPlan(
       else {
         // Check if we can draw the extra cel when we render a linked
         // frame.
-        cel = layer->cel(frame);
-        Cel* cel2 = layer->cel(m_extraCel->frame());
+        const Cel* cel2 = layer->cel(m_extraCel->frame());
         if (cel && cel2 &&
             cel->data() == cel2->data()) {
           drawExtra = true;
@@ -1085,7 +1084,7 @@ void Render::renderPlan(
           // If not, we use the original cel-image from the images' stock
           else {
             celImage = cel->image();
-            if (cel->layer()->isReference())
+            if (layer->isReference())
               celBounds = cel->boundsF();
             else
               celBounds = cel->bounds();

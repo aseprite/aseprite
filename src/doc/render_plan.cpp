@@ -39,9 +39,7 @@ void RenderPlan::addLayer(const Layer* layer,
 
     case ObjectType::LayerImage:
     case ObjectType::LayerTilemap: {
-      if (Cel* cel = layer->cel(frame)) {
-        m_items.emplace_back(m_order, cel);
-      }
+      m_items.emplace_back(m_order, layer, layer->cel(frame));
       break;
     }
 
@@ -62,7 +60,7 @@ void RenderPlan::processZIndexes() const
   // If all cels has a z-index = 0, we can just use the m_items as it is
   bool noZIndex = true;
   for (int i=0; i<int(m_items.size()); ++i) {
-    const int z = m_items[i].cel->zIndex();
+    const int z = m_items[i].zIndex();
     if (z != 0) {
       noZIndex = false;
       break;
@@ -73,12 +71,12 @@ void RenderPlan::processZIndexes() const
 
   // Order cels using its "order" number in m_items array + cel z-index offset
   for (Item& item : m_items)
-    item.order = item.order + item.cel->zIndex();
+    item.order = item.order + item.zIndex();
   std::sort(m_items.begin(), m_items.end(),
             [](const Item& a, const Item& b){
               return
                 (a.order < b.order) ||
-                (a.order == b.order && (a.cel->zIndex() < b.cel->zIndex()));
+                (a.order == b.order && (a.zIndex() < b.zIndex()));
             });
 }
 

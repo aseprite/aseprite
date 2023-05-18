@@ -231,14 +231,14 @@ void ShaderRenderer::renderPlan(SkCanvas* canvas,
 {
   for (const auto& item : plan.items()) {
     const Cel* cel = item.cel;
-    const Layer* layer = cel->layer();
+    const Layer* layer = item.layer;
 
     switch (layer->type()) {
 
       case doc::ObjectType::LayerImage: {
         auto imgLayer = static_cast<const LayerImage*>(layer);
 
-        if (doc::Cel* cel = imgLayer->cel(frame)) {
+        if (cel) {
           const doc::Image* celImage = nullptr;
           gfx::RectF celBounds;
 
@@ -254,7 +254,7 @@ void ShaderRenderer::renderPlan(SkCanvas* canvas,
           // If not, we use the original cel-image from the images' stock
           else {
             celImage = cel->image();
-            if (cel->layer()->isReference())
+            if (layer->isReference())
               celBounds = cel->boundsF();
             else
               celBounds = cel->bounds();
@@ -276,7 +276,8 @@ void ShaderRenderer::renderPlan(SkCanvas* canvas,
 
       case doc::ObjectType::LayerTilemap: {
         auto tilemapLayer = static_cast<const LayerTilemap*>(layer);
-        doc::Cel* cel = tilemapLayer->cel(frame);
+
+        // TODO selected layer?
         if (!cel)
           break;
 
