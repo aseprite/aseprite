@@ -702,9 +702,9 @@ int App_get_defaultPalette(lua_State* L)
 
 int App_set_sprite(lua_State* L)
 {
-  auto sprite = get_docobj<Sprite>(L, 2);
+  auto sprite = may_get_docobj<Sprite>(L, 2);
   app::Context* ctx = App::instance()->context();
-  doc::Document* doc = sprite->document();
+  doc::Document* doc = (sprite ? sprite->document(): nullptr);
   ctx->setActiveDocument(static_cast<Doc*>(doc));
   return 0;
 }
