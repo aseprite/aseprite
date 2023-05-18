@@ -158,6 +158,7 @@ public:
     BgColorChange,
     BeforeCommand,
     AfterCommand,
+    BeforePaintEmptyTilemap,
   };
 
   AppEvents() {
@@ -174,6 +175,8 @@ public:
       return BeforeCommand;
     else if (std::strcmp(eventName, "aftercommand") == 0)
       return AfterCommand;
+    else if (std::strcmp(eventName, "beforepaintemptytilemap") == 0)
+      return BeforePaintEmptyTilemap;
     else
       return Unknown;
   }
@@ -181,7 +184,8 @@ public:
 private:
 
   void onAddFirstListener(EventType eventType) override {
-    auto ctx = App::instance()->context();
+    auto app = App::instance();
+    auto ctx = app->context();
     auto& pref = Preferences::instance();
     switch (eventType) {
       case SiteChange:
@@ -203,6 +207,10 @@ private:
         m_afterCmdConn = ctx->AfterCommandExecution
           .connect(&AppEvents::onAfterCommand, this);
         break;
+      case BeforePaintEmptyTilemap:
+        m_beforePaintConn = app->BeforePaintEmptyTilemap
+          .connect(&AppEvents::onBeforePaintEmptyTilemap, this);
+        break;
     }
   }
 
@@ -222,6 +230,9 @@ private:
         break;
       case AfterCommand:
         m_afterCmdConn.disconnect();
+        break;
+      case BeforePaintEmptyTilemap:
+        m_beforePaintConn.disconnect();
         break;
     }
   }
@@ -253,6 +264,10 @@ private:
                          { "params", ev.params() } });
   }
 
+  void onBeforePaintEmptyTilemap() {
+    call(BeforePaintEmptyTilemap);
+  }
+
   // ContextObserver impl
   void onActiveSiteChange(const Site& site) override {
     const bool fromUndo = (site.document() &&
@@ -264,6 +279,7 @@ private:
   obs::scoped_connection m_bgConn;
   obs::scoped_connection m_beforeCmdConn;
   obs::scoped_connection m_afterCmdConn;
+  obs::scoped_connection m_beforePaintConn;
 };
 
 class SpriteEvents : public Events

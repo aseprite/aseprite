@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -126,6 +126,12 @@ namespace app {
     obs::signal<void()> PaletteChange;
     obs::signal<void()> ColorSpaceChange;
     obs::signal<void()> PalettePresetsChange;
+
+    // Signal triggered for TileManagementPlugin that want to create a
+    // tile on-the-fly when the active tilemap cel is empty (it's like
+    // a way to customize the "tilemap/tileset", instead of
+    // Manual/Auto/Semi, the plugin can offer a custom behavior).
+    obs::signal<void()> BeforePaintEmptyTilemap;
 
   private:
     class CoreModules;

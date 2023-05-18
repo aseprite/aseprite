@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -645,7 +645,15 @@ DrawingState* StandbyState::startDrawingState(
   if (editor->layer()->isTilemap() &&
       editor->sprite()->hasTileManagementPlugin() &&
       !editor->layer()->cel(editor->frame())) {
-    return nullptr;
+    // Trigger event so the plugin can create a cel on-the-fly
+    App::instance()->BeforePaintEmptyTilemap();
+
+    if (!editor->layer() ||
+        !editor->layer()->cel(editor->frame())) {
+      return nullptr;
+    }
+    // In other case, it looks like PaintEmptyTilemap event created
+    // the cel...
   }
   // We need to clear and redraw the brush boundaries after the
   // first mouse pressed/point shape if drawn. This is to avoid
