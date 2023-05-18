@@ -9,6 +9,7 @@
 #endif
 
 #include "app/app.h"
+#include "app/commands/command.h"
 #include "app/context.h"
 #include "app/context_observer.h"
 #include "app/doc.h"
@@ -147,7 +148,14 @@ private:
 class AppEvents : public Events
                 , private ContextObserver {
 public:
-  enum : EventType { Unknown = -1, SiteChange, FgColorChange, BgColorChange };
+  enum : EventType {
+    Unknown = -1,
+    SiteChange,
+    FgColorChange,
+    BgColorChange,
+    BeforeCommand,
+    AfterCommand,
+  };
 
   AppEvents() {
   }
@@ -159,6 +167,10 @@ public:
       return FgColorChange;
     else if (std::strcmp(eventName, "bgcolorchange") == 0)
       return BgColorChange;
+    else if (std::strcmp(eventName, "beforecommand") == 0)
+      return BeforeCommand;
+    else if (std::strcmp(eventName, "aftercommand") == 0)
+      return AfterCommand;
     else
       return Unknown;
   }
@@ -166,17 +178,27 @@ public:
 private:
 
   void onAddFirstListener(EventType eventType) override {
+    auto ctx = App::instance()->context();
+    auto& pref = Preferences::instance();
     switch (eventType) {
       case SiteChange:
-        App::instance()->context()->add_observer(this);
+        ctx->add_observer(this);
         break;
       case FgColorChange:
-        m_fgConn = Preferences::instance().colorBar.fgColor
-          .AfterChange.connect([this]{ onFgColorChange(); });
+        m_fgConn = pref.colorBar.fgColor.AfterChange
+          .connect([this]{ onFgColorChange(); });
         break;
       case BgColorChange:
-        m_bgConn = Preferences::instance().colorBar.bgColor
-          .AfterChange.connect([this]{ onBgColorChange(); });
+        m_bgConn = pref.colorBar.bgColor.AfterChange
+          .connect([this]{ onBgColorChange(); });
+        break;
+      case BeforeCommand:
+        m_beforeCmdConn = ctx->BeforeCommandExecution
+          .connect(&AppEvents::onBeforeCommand, this);
+        break;
+      case AfterCommand:
+        m_afterCmdConn = ctx->AfterCommandExecution
+          .connect(&AppEvents::onAfterCommand, this);
         break;
     }
   }
@@ -192,6 +214,12 @@ private:
       case BgColorChange:
         m_bgConn.disconnect();
         break;
+      case BeforeCommand:
+        m_beforeCmdConn.disconnect();
+        break;
+      case AfterCommand:
+        m_afterCmdConn.disconnect();
+        break;
     }
   }
 
@@ -203,6 +231,16 @@ private:
     call(BgColorChange);
   }
 
+  void onBeforeCommand(CommandExecutionEvent& ev) {
+    call(BeforeCommand, { { "name", ev.command()->id() },
+                          { "params", ev.params() } });
+  }
+
+  void onAfterCommand(CommandExecutionEvent& ev) {
+    call(AfterCommand, { { "name", ev.command()->id() },
+                         { "params", ev.params() } });
+  }
+
   // ContextObserver impl
   void onActiveSiteChange(const Site& site) override {
     const bool fromUndo = (site.document() &&
@@ -212,6 +250,8 @@ private:
 
   obs::scoped_connection m_fgConn;
   obs::scoped_connection m_bgConn;
+  obs::scoped_connection m_beforeCmdConn;
+  obs::scoped_connection m_afterCmdConn;
 };
 
 class SpriteEvents : public Events

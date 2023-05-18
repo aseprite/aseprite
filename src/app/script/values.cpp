@@ -143,6 +143,19 @@ void push_value_to_lua(lua_State* L, const doc::Remap& value) {
 }
 
 // ----------------------------------------------------------------------
+// app::Params
+
+template<>
+void push_value_to_lua(lua_State* L, const Params& params) {
+  lua_newtable(L);
+  for (const auto& param : params) {
+    lua_pushstring(L, param.first.c_str());
+    lua_pushstring(L, param.second.c_str());
+    lua_rawset(L, -3);
+  }
+}
+
+// ----------------------------------------------------------------------
 // std::any
 
 template<>
@@ -159,6 +172,9 @@ void push_value_to_lua(lua_State* L, const std::any& value) {
     push_value_to_lua(L, **v);
   else if (auto v = std::any_cast<const doc::Tileset*>(&value))
     push_tileset(L, *v);
+  else if (auto v = std::any_cast<const Params>(&value)) {
+    push_value_to_lua(L, *v);
+  }
   else {
     ASSERT(false);
     throw std::runtime_error("Cannot convert type inside std::any");

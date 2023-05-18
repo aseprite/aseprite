@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021  Igara Studio S.A.
+// Copyright (C) 2021-2023  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -23,16 +23,17 @@ public:
     : Command("", CmdUIOnlyFlag)
     , m_context(ctx)
   {
-    CommandExecutionEvent ev(this);
+    CommandExecutionEvent ev(this, m_noParams);
     m_context->BeforeCommandExecution(ev);
   }
   ~InlineCommandExecution()
   {
-    CommandExecutionEvent ev(this);
+    CommandExecutionEvent ev(this, m_noParams);
     m_context->AfterCommandExecution(ev);
   }
 private:
   Context* m_context;
+  Params m_noParams;
 };
 
 } // namespace app
