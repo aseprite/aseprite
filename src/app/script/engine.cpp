@@ -17,7 +17,6 @@
 #include "app/doc_range.h"
 #include "app/pref/preferences.h"
 #include "app/script/blend_mode.h"
-#include "app/script/flip_type.h"
 #include "app/script/luacpp.h"
 #include "app/script/require.h"
 #include "app/script/security.h"
@@ -29,6 +28,7 @@
 #include "base/file_handle.h"
 #include "base/fs.h"
 #include "base/fstream_path.h"
+#include "doc/algorithm/flip_type.h"
 #include "doc/anidir.h"
 #include "doc/color_mode.h"
 #include "filters/target.h"
@@ -453,8 +453,8 @@ Engine::Engine()
   lua_newtable(L);
   lua_pushvalue(L, -1);
   lua_setglobal(L, "FlipType");
-  setfield_integer(L, "HORIZONTAL", app::script::FlipType::HORIZONTAL);
-  setfield_integer(L, "VERTICAL",   app::script::FlipType::VERTICAL);
+  setfield_integer(L, "HORIZONTAL", doc::algorithm::FlipType::FlipHorizontal);
+  setfield_integer(L, "VERTICAL",   doc::algorithm::FlipType::FlipVertical);
   lua_pop(L, 1);
 
   // Register classes/prototypes
