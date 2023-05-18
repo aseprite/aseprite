@@ -405,8 +405,7 @@ do
 end
 
 -- Tests for Image:flip()
-do
-  local img = Image(3, 3)
+function test_image_flip(img)
   local r = Color(255, 0, 0).rgbaPixel
   local g = Color(0, 255, 0).rgbaPixel
   img:clear(0)
@@ -420,6 +419,10 @@ do
   expect_img(img, { 0, 0, g,
                     0, r, 0,
                     r, 0, 0 })
+
+  -- Without sprite, don't test undo
+  if not app.sprite then return end
+
   app.undo()
   expect_img(img, { g, 0, 0,
                     0, r, 0,
@@ -443,3 +446,8 @@ do
                     0, r, 0,
                     0, 0, r })
 end
+
+local spr = Sprite(3, 3)   -- Test with sprite (with transactions & undo/redo)
+test_image_flip(app.image)
+app.sprite = nil           -- Test without sprite (without transactions)
+test_image_flip(Image(3, 3))

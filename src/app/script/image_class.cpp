@@ -26,6 +26,7 @@
 #include "app/util/autocrop.h"
 #include "app/util/resize_image.h"
 #include "base/fs.h"
+#include "doc/algorithm/flip_image.h"
 #include "doc/algorithm/flip_type.h"
 #include "doc/algorithm/shrink_bounds.h"
 #include "doc/cel.h"
@@ -585,12 +586,17 @@ int Image_flip(lua_State* L)
   auto obj = get_obj<ImageObj>(L, 1);
   doc::Image* img = obj->image(L);
   doc::algorithm::FlipType flipType = doc::algorithm::FlipType::FlipHorizontal;
-  if (lua_isinteger(L, 2) && lua_tointeger(L, 2) > 0)
-    flipType = doc::algorithm::FlipType::FlipVertical;
+  if (lua_isinteger(L, 2))
+    flipType = (doc::algorithm::FlipType)lua_tointeger(L, 2);
 
-  Tx tx;
-  tx(new cmd::FlipImage(img, img->bounds(), flipType));
-  tx.commit();
+  if (obj->cel(L) == nullptr) {
+    doc::algorithm::flip_image(img, img->bounds(), flipType);
+  }
+  else {
+    Tx tx;
+    tx(new cmd::FlipImage(img, img->bounds(), flipType));
+    tx.commit();
+  }
   return 0;
 }
 
