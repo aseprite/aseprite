@@ -145,6 +145,9 @@ private:
   std::vector<EventListeners> m_listeners;
 };
 
+// Used in BeforeCommand
+static bool s_stopPropagationFlag = false;
+
 class AppEvents : public Events
                 , private ContextObserver {
 public:
@@ -232,8 +235,17 @@ private:
   }
 
   void onBeforeCommand(CommandExecutionEvent& ev) {
+    s_stopPropagationFlag = false;
     call(BeforeCommand, { { "name", ev.command()->id() },
-                          { "params", ev.params() } });
+                          { "params", ev.params() },
+                          { "stopPropagation",
+                            (lua_CFunction)
+                            [](lua_State*) -> int {
+                              s_stopPropagationFlag = true;
+                              return 0;
+                            } } });
+    if (s_stopPropagationFlag)
+      ev.cancel();
   }
 
   void onAfterCommand(CommandExecutionEvent& ev) {

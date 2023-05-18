@@ -168,6 +168,8 @@ void push_value_to_lua(lua_State* L, const std::any& value) {
     push_value_to_lua(L, *v);
   else if (auto v = std::any_cast<std::string>(&value))
     push_value_to_lua(L, *v);
+  else if (auto v = std::any_cast<lua_CFunction>(&value))
+    lua_pushcfunction(L, *v);
   else if (auto v = std::any_cast<const doc::Remap*>(&value))
     push_value_to_lua(L, **v);
   else if (auto v = std::any_cast<const doc::Tileset*>(&value))
