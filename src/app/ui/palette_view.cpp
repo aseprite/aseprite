@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -745,7 +745,15 @@ bool PaletteView::onProcessMessage(Message* msg)
 
       if (msg->onlyCtrlPressed() ||
           msg->onlyCmdPressed()) {
-        int z = delta.x - delta.y;
+        auto editor = Editor::activeEditor();
+        int z;
+        if (editor && static_cast<MouseMessage*>(msg)->preciseWheel()) {
+          gfx::PointF deltaF(delta);
+          editor->addWheelDelta(deltaF);
+          z = deltaF.x - deltaF.y;
+        }
+        else
+          z = delta.x - delta.y;
         setBoxSize(m_boxsize + z);
       }
       else {
