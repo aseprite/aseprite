@@ -1529,13 +1529,11 @@ bool Timeline::onProcessMessage(Message* msg)
         // Zoom timeline
         if (msg->ctrlPressed() || // TODO configurable
             msg->cmdPressed()) {
-          double dz = delta.x + delta.y;
-
-          if (precise) {
-            dz /= 1.5;
-            if (dz < -1.0) dz = -1.0;
-            else if (dz > 1.0) dz = 1.0;
-          }
+          double dz;
+          if (precise)
+            dz = (double(delta.x) + double(delta.y)) / 10.0;
+          else
+            dz = delta.x + delta.y;
 
           setZoomAndUpdate(m_zoom - dz, true);
         }
