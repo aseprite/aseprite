@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -372,13 +372,12 @@ bool FileList::onProcessMessage(Message* msg)
             msg->cmdPressed()) {
           gfx::Point delta = static_cast<MouseMessage*>(msg)->wheelDelta();
           const bool precise = static_cast<MouseMessage*>(msg)->preciseWheel();
-          double dz = delta.x + delta.y;
 
-          if (precise) {
-            dz /= 1.5;
-            if (dz < -1.0) dz = -1.0;
-            else if (dz > 1.0) dz = 1.0;
-          }
+          double dz;
+          if (precise)
+            dz = (double(delta.x) + double(delta.y)) / 10;
+          else
+            dz = delta.x + delta.y;
 
           setZoom(zoom() - dz);
           break;
