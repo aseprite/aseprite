@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -276,6 +276,10 @@ namespace app {
 
     // Initial mouse position when we start the dragging process.
     gfx::Point m_dragMousePos;
+
+    // Internal accumulation of wheel fractions to get
+    // smoother zoom action.
+    gfx::PointF m_wheelAcum;
 
     // New position where m_selected is being dragged. It's used to
     // change the position of m_selected inside the m_list vector in

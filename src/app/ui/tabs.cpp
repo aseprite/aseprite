@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -427,9 +427,23 @@ bool Tabs::onProcessMessage(Message* msg)
 
     case kMouseWheelMessage:
       if (!m_isDragging) {
-        int dz =
-          (static_cast<MouseMessage*>(msg)->wheelDelta().x +
-           static_cast<MouseMessage*>(msg)->wheelDelta().y);
+        gfx::Point delta = static_cast<MouseMessage*>(msg)->wheelDelta();
+        bool presiceWheel = static_cast<MouseMessage*>(msg)->preciseWheel();
+        int dz;
+
+        if (presiceWheel) {
+          gfx::PointF deltaF(delta);
+          deltaF /= 10.0;
+          deltaF.x = std::clamp(deltaF.x, -1.0, 1.0);
+          deltaF.y = std::clamp(deltaF.y, -1.0, 1.0);
+          gfx::PointF wheelAcum = m_wheelAcum;
+          m_wheelAcum += deltaF;
+          deltaF.x = std::floor(m_wheelAcum.x) - std::floor(wheelAcum.x);
+          deltaF.y = std::floor(m_wheelAcum.y) - std::floor(wheelAcum.y);
+          dz = int(deltaF.x + deltaF.y);
+        }
+        else
+          dz = delta.x + delta.y;
 
         auto it = std::find(m_list.begin(), m_list.end(), m_selected);
         if (it != m_list.end()) {
