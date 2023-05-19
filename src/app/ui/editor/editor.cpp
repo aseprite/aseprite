@@ -481,6 +481,18 @@ void Editor::setZoom(const render::Zoom& zoom)
   }
 }
 
+// Helps to accummulate wheel delta fractions
+void Editor::addWheelDelta(gfx::PointF& deltaF)
+{
+    deltaF /= 10;
+    deltaF.x = std::clamp(deltaF.x, -1.0, 1.0);
+    deltaF.y = std::clamp(deltaF.y, -1.0, 1.0);
+    gfx::PointF wheelAcum = m_wheelAcum;
+    m_wheelAcum += deltaF;
+    deltaF.x = std::floor(m_wheelAcum.x) - std::floor(wheelAcum.x);
+    deltaF.y = std::floor(m_wheelAcum.y) - std::floor(wheelAcum.y);
+}
+
 void Editor::setDefaultScroll()
 {
   if (Preferences::instance().editor.autoFit())

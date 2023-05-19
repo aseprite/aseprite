@@ -70,12 +70,25 @@ StateWithWheelBehavior::StateWithWheelBehavior()
 
 bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
 {
+  const bool preciseWheel = msg->preciseWheel();
   gfx::Point delta = msg->wheelDelta();
   double dz = delta.x + delta.y;
   WheelAction wheelAction = WheelAction::None;
 
+  // We need to process a new accumulated wheel delta for touchpads ('msg' with
+  // preciseWheel behavior) when the action isn't scrolling to get a better control of
+  // the delta change rate.
+  gfx::PointF deltaF(msg->wheelDelta());
+  double dzF;
+  if (preciseWheel) {
+    editor->addWheelDelta(deltaF);
+    dzF = deltaF.x + deltaF.y;
+  }
+  else
+    dzF = dz;
+
   if (KeyboardShortcuts::instance()->hasMouseWheelCustomization()) {
-    if (!Preferences::instance().editor.zoomWithSlide() && msg->preciseWheel())
+    if (!Preferences::instance().editor.zoomWithSlide() && preciseWheel)
       wheelAction = WheelAction::VScroll;
     else
       wheelAction = KeyboardShortcuts::instance()
@@ -95,7 +108,7 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
     // Normal behavior: mouse wheel zooms If the message is from a
     // precise wheel i.e. a trackpad/touch-like device, we scroll by
     // default.
-    else if (Preferences::instance().editor.zoomWithWheel() && !msg->preciseWheel()) {
+    else if (Preferences::instance().editor.zoomWithWheel() && !preciseWheel) {
       if (msg->ctrlPressed() && msg->shiftPressed())
         wheelAction = WheelAction::Frame;
       else if (msg->ctrlPressed())
@@ -106,7 +119,7 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
         wheelAction = WheelAction::Zoom;
     }
     // Zoom sliding two fingers
-    else if (Preferences::instance().editor.zoomWithSlide() && msg->preciseWheel()) {
+    else if (Preferences::instance().editor.zoomWithSlide() && preciseWheel) {
       if (msg->ctrlPressed() && msg->shiftPressed())
         wheelAction = WheelAction::Frame;
       else if (msg->ctrlPressed())
@@ -122,16 +135,19 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
         wheelAction = WheelAction::VScroll;
       }
       else {
-        delta.x = 0;
-        dz = delta.y;
+        deltaF.x = 0;
+        dzF = deltaF.y;
         wheelAction = WheelAction::Zoom;
       }
     }
     // For laptops, it's convenient to that Ctrl+wheel zoom (because
     // it's the "pinch" gesture).
     else {
-      if (msg->ctrlPressed())
+      if (msg->ctrlPressed()) {
+        deltaF.x = 0;
+        dzF = deltaF.y;
         wheelAction = WheelAction::Zoom;
+      }
       else if (delta.x != 0 || msg->shiftPressed())
         wheelAction = WheelAction::HScroll;
       else
@@ -139,17 +155,20 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
     }
   }
 
+  const bool isNonScrollActionWithTouchpad = preciseWheel &&
+    !(wheelAction == WheelAction::HScroll || wheelAction == WheelAction::VScroll);
+
   processWheelAction(editor,
                      wheelAction,
                      msg->position(),
-                     delta,
-                     dz,
+                     isNonScrollActionWithTouchpad ? gfx::Point(deltaF) : delta,
+                     isNonScrollActionWithTouchpad ? dzF : dz,
                      // The possibility for big scroll steps was lost
                      // in history (it was possible using Shift key in
                      // very old versions, now Shift is used for
                      // horizontal scroll).
                      ScrollBigSteps::Off,
-                     (msg->preciseWheel() ?
+                     (preciseWheel ?
                       PreciseWheel::On:
                       PreciseWheel::Off),
                      FromMouseWheel::On);
@@ -235,13 +254,6 @@ void StateWithWheelBehavior::processWheelAction(
 
     case WheelAction::Zoom: {
       render::Zoom zoom = initialZoom(editor);
-
-      if (preciseWheel == PreciseWheel::On) {
-        dz /= 1.5;
-        if (dz < -1.0) dz = -1.0;
-        else if (dz > 1.0) dz = 1.0;
-      }
-
       zoom = render::Zoom::fromLinearScale(zoom.linearScale() - int(dz));
 
       setZoom(editor, zoom, position);

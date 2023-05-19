@@ -165,6 +165,7 @@ namespace app {
     const gfx::Point& padding() const { return m_padding; }
 
     void setZoom(const render::Zoom& zoom);
+    void addWheelDelta(gfx::PointF& deltaF);
     void setDefaultScroll();
     void setScrollToCenter();
     void setScrollAndZoomToFitScreen();
@@ -459,6 +460,9 @@ namespace app {
     EditorFlags m_flags;
 
     bool m_secondaryButton;
+    // Internal accumulation of wheel fractions to get
+    // smoother wheel zoom or color/tile selection.
+    gfx::PointF m_wheelAcum;
     Flashing m_flashing;
 
     // Animation speed multiplier.
