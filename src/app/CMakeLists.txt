@@ -318,6 +318,7 @@ if(ENABLE_UI)
     commands/cmd_undo_history.cpp
     commands/cmd_unlink_cel.cpp
     commands/cmd_zoom.cpp
+    commands/collapse_tag.cpp
     commands/filters/filter_preview.cpp
     commands/filters/filter_target_buttons.cpp
     commands/filters/filter_window.cpp

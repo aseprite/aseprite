@@ -2035,6 +2035,11 @@ void Timeline::onLayerCollapsedChanged(DocEvent& ev)
   invalidate();
 }
 
+void Timeline::onTagCollapsedChanged(DocEvent& ev)
+{
+  invalidate();
+}
+
 void Timeline::onAfterLayerVisibilityChange(DocEvent& ev)
 {
   layer_t layerIdx = getLayerIndex(ev.layer());
