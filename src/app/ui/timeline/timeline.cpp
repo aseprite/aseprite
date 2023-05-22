@@ -2027,6 +2027,11 @@ void Timeline::onLayerCollapsedChanged(DocEvent& ev)
   invalidate();
 }
 
+void Timeline::onTagCollapsedChanged(DocEvent& ev)
+{
+  invalidate();
+}
+
 void Timeline::onStateChanged(Editor* editor)
 {
   m_aniControls.updateUsingEditor(editor);

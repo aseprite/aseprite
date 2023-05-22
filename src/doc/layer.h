@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -14,6 +14,7 @@
 #include "doc/frame.h"
 #include "doc/layer_list.h"
 #include "doc/object.h"
+#include "doc/with_flags.h"
 #include "doc/with_user_data.h"
 
 #include <string>
@@ -48,7 +49,8 @@ namespace doc {
     BackgroundLayerFlags = LockMove | Background,
   };
 
-  class Layer : public WithUserData {
+  class Layer : public WithUserData
+              , public WithFlags<LayerFlags> {
   protected:
     Layer(ObjectType type, Sprite* sprite);
 
@@ -103,25 +105,6 @@ namespace doc {
     void setCollapsed (bool state) { switchFlags(LayerFlags::Collapsed, state); }
     void setReference (bool state) { switchFlags(LayerFlags::Reference, state); }
 
-    LayerFlags flags() const {
-      return m_flags;
-    }
-
-    bool hasFlags(LayerFlags flags) const {
-      return (int(m_flags) & int(flags)) == int(flags);
-    }
-
-    void setFlags(LayerFlags flags) {
-      m_flags = flags;
-    }
-
-    void switchFlags(LayerFlags flags, bool state) {
-      if (state)
-        m_flags = LayerFlags(int(m_flags) | int(flags));
-      else
-        m_flags = LayerFlags(int(m_flags) & ~int(flags));
-    }
-
     virtual Grid grid() const;
     virtual Cel* cel(frame_t frame) const;
     virtual void getCels(CelList& cels) const = 0;
@@ -131,7 +114,6 @@ namespace doc {
     std::string m_name;           // layer name
     Sprite* m_sprite;             // owner of the layer
     LayerGroup* m_parent;        // parent layer
-    LayerFlags m_flags;           // stack order cannot be changed
 
     // Disable assigment
     Layer& operator=(const Layer& other);
