@@ -35,6 +35,7 @@ namespace doc {
   class LayerTilemap;
   class Mask;
   class Sprite;
+  class Tag;
   class Tileset;
 }
 
@@ -132,6 +133,7 @@ namespace app {
     void notifySelectionBoundariesChanged();
     void notifyTilesetChanged(Tileset* tileset);
     void notifyLayerGroupCollapseChange(Layer* layer);
+    void notifyTagCollapseChange(Tag* tag);
     void notifyAfterAddTile(LayerTilemap* layer, frame_t frame, tile_index ti);
 
     //////////////////////////////////////////////////////////////////////

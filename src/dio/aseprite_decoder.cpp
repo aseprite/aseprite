@@ -1161,7 +1161,8 @@ void AsepriteDecoder::readTagsChunk(doc::Tags* tags)
     }
 
     int repeat = read16();      // Number of times we repeat this tag
-    read16();                   // 6 reserved bytes
+    int flags = read8();        // Flags
+    read8();                    // 5 reserved bytes
     read32();
 
     int r = read8();
@@ -1181,6 +1182,7 @@ void AsepriteDecoder::readTagsChunk(doc::Tags* tags)
     tag->setName(name);
     tag->setAniDir((doc::AniDir)aniDir);
     tag->setRepeat(repeat);
+    tag->setFlags((doc::TagFlags)flags);
     tags->add(tag);
   }
 }

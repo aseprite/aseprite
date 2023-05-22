@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -24,11 +24,11 @@ namespace doc {
 
 Layer::Layer(ObjectType type, Sprite* sprite)
   : WithUserData(type)
+  , WithFlags(LayerFlags(
+                int(LayerFlags::Visible) |
+                int(LayerFlags::Editable)))
   , m_sprite(sprite)
   , m_parent(NULL)
-  , m_flags(LayerFlags(
-      int(LayerFlags::Visible) |
-      int(LayerFlags::Editable)))
 {
   ASSERT(type == ObjectType::LayerImage ||
          type == ObjectType::LayerGroup ||

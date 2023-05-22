@@ -958,6 +958,8 @@
           <separator />
           <item command="NewFrameTag" text="@.frame_tags_new_tag" />
           <item command="RemoveFrameTag" text="@.frame_tags_delete_tag" />
+          <separator />
+          <item command="CollapseTag" text="@.frame_tags_collapse_tag" />
         </menu>
         <menu text="@.frame_jump_to">
           <item command="GotoFirstFrame" text="@.frame_jump_to_first_frame" />
@@ -1183,6 +1185,8 @@
     <menu id="tag_popup_menu">
       <item command="FrameTagProperties" text="@main_menu.frame_tags_tag_properties" group="tag_popup_properties" />
       <item command="RemoveFrameTag" text="@main_menu.frame_tags_delete_tag" group="tag_popup_delete" />
+      <separator />
+      <item command="CollapseTag" text="@main_menu.frame_tags_collapse_tag" group="tag_popup_collapse" />
     </menu>
 
     <menu id="slice_popup_menu">
