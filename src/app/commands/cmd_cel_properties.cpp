@@ -44,6 +44,13 @@ using namespace ui;
 class CelPropertiesWindow;
 static CelPropertiesWindow* g_window = nullptr;
 
+struct CelPropsLastValues {
+  int opacity = 0;
+  int zIndex = 0;
+  color_t color = 0;
+  std::string text = "";
+};
+
 class CelPropertiesWindow : public app::gen::CelProperties,
                             public ContextObserver,
                             public DocObserver {
@@ -197,10 +204,16 @@ private:
     const int newZIndex = std::clamp<int>(zindexValue(),
                                           std::numeric_limits<int16_t>::min(),
                                           std::numeric_limits<int16_t>::max());
-    const UserData newUserData= m_userDataView.userData();
+    UserData newUserData= m_userDataView.userData();
+
+    const bool opacityChanged = newOpacity != m_lastValues.opacity;
+    const bool zIndexChanged = newZIndex != m_lastValues.zIndex;
+    const bool colorChanged = newUserData.color() != m_lastValues.color;
+    const bool textChanged = newUserData.text() != m_lastValues.text;
+
     const int count = countCels();
 
-    if ((count > 1) ||
+    if ((count > 0) ||
         (count == 1 && m_cel && (newOpacity != m_cel->opacity() ||
                                  newZIndex != m_cel->zIndex() ||
                                  newUserData != m_cel->data()->userData()))) {
@@ -224,11 +237,17 @@ private:
         // For each unique cel (don't repeat on links)
         for (Cel* cel : sprite->uniqueCels(range.selectedFrames())) {
           if (range.contains(cel->layer())) {
-            if (!cel->layer()->isBackground() && newOpacity != cel->opacity()) {
+            if (opacityChanged &&
+                !cel->layer()->isBackground() &&
+                newOpacity != cel->opacity()) {
               tx(new cmd::SetCelOpacity(cel, newOpacity));
             }
 
             if (newUserData != cel->data()->userData()) {
+              if (!colorChanged)
+                newUserData.setColor(cel->data()->userData().color());
+              if (!textChanged)
+                newUserData.setText(cel->data()->userData().text());
               tx(new cmd::SetUserData(cel->data(), newUserData, m_document));
 
               // Redraw timeline because the cel's user data/color
@@ -241,14 +260,21 @@ private:
         }
 
         // For all cels (repeat links)
-        for (Cel* cel : sprite->cels(range.selectedFrames())) {
-          if (range.contains(cel->layer())) {
-            if (newZIndex != cel->zIndex()) {
-              tx(new cmd::SetCelZIndex(cel, newZIndex));
-              redrawTimeline = true;
+        if (newZIndex != m_lastValues.zIndex) {
+          for (Cel* cel : sprite->cels(range.selectedFrames())) {
+            if (range.contains(cel->layer())) {
+              if (newZIndex != cel->zIndex()) {
+                tx(new cmd::SetCelZIndex(cel, newZIndex));
+                redrawTimeline = true;
+              }
             }
           }
         }
+
+        m_lastValues.opacity = newOpacity;
+        m_lastValues.zIndex = newZIndex;
+        m_lastValues.color = newUserData.color();
+        m_lastValues.text = newUserData.text();
 
         if (redrawTimeline)
           App::instance()->timeline()->invalidate();
@@ -315,6 +341,12 @@ private:
     int bgCount = 0;
     int count = countCels(&bgCount);
 
+    // Dafault cel values when the active cel is empty
+    m_lastValues.opacity = 0;
+    m_lastValues.zIndex = 0;
+    m_lastValues.color = 0;
+    m_lastValues.text = "";
+
     if (count > 0) {
       if (m_cel) {
         opacity()->setValue(m_cel->opacity());
@@ -322,10 +354,21 @@ private:
         color_t c = m_cel->data()->userData().color();
         m_userDataView.color()->setColor(Color::fromRgb(rgba_getr(c), rgba_getg(c), rgba_getb(c), rgba_geta(c)));
         m_userDataView.entry()->setText(m_cel->data()->userData().text());
+        // Set last filled values in CelPropertiesWindow
+        m_lastValues.opacity = m_cel->opacity();
+        m_lastValues.zIndex = m_cel->zIndex();
+        m_lastValues.color = m_cel->data()->userData().color();
+        m_lastValues.text = m_cel->data()->userData().text();
+      }
+      else {
+        opacity()->setValue(0);
+        zindex()->setText("0");
       }
       opacity()->setEnabled(bgCount < count);
     }
     else {
+      opacity()->setValue(0);
+      zindex()->setText("0");
       opacity()->setEnabled(false);
       m_userDataView.setVisible(false, false);
     }
@@ -338,6 +381,7 @@ private:
   DocRange m_range;
   bool m_selfUpdate = false;
   UserDataView m_userDataView;
+  CelPropsLastValues m_lastValues;
 };
 
 class CelPropertiesCommand : public Command {
