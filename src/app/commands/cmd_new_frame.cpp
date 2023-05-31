@@ -124,31 +124,31 @@ void NewFrameCommand::onExecute(Context* context)
           case Content::DUPLICATE_CELS_LINKED: continuous.reset(new bool(true)); break;
         }
 
-        const Site* site = writer.site();
-        if (site->inTimeline() &&
-            !site->selectedLayers().empty() &&
-            !site->selectedFrames().empty()) {
+        const Site& site = writer.site();
+        if (site.inTimeline() &&
+            !site.selectedLayers().empty() &&
+            !site.selectedFrames().empty()) {
 #if ENABLE_UI
           auto timeline = App::instance()->timeline();
           timeline->prepareToMoveRange();
-          DocRange range = timeline->range();
 #endif
+          DocRange range = site.range();
 
           SelectedLayers selLayers;
-          if (site->inFrames())
+          if (site.inFrames())
             selLayers.selectAllLayers(writer.sprite()->root());
           else {
-            selLayers = site->selectedLayers();
+            selLayers = site.selectedLayers();
             selLayers.expandCollapsedGroups();
           }
 
           frame_t frameRange =
-            (site->selectedFrames().lastFrame() -
-             site->selectedFrames().firstFrame() + 1);
+            (site.selectedFrames().lastFrame() -
+             site.selectedFrames().firstFrame() + 1);
 
           for (Layer* layer : selLayers) {
             if (layer->isImage()) {
-              for (frame_t srcFrame : site->selectedFrames().reversed()) {
+              for (frame_t srcFrame : site.selectedFrames().reversed()) {
                 frame_t dstFrame = srcFrame+frameRange;
                 api.copyCel(
                   static_cast<LayerImage*>(layer), srcFrame,
@@ -157,8 +157,8 @@ void NewFrameCommand::onExecute(Context* context)
             }
           }
 
-#ifdef ENABLE_UI                // TODO the range should be part of the Site
           range.displace(0, frameRange);
+#ifdef ENABLE_UI       // TODO should this logic be part of the view::Range?
           timeline->moveRange(range);
 #endif
         }
