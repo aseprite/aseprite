@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -63,7 +63,7 @@ bool FillCommand::onEnabled(Context* ctx)
 void FillCommand::onExecute(Context* ctx)
 {
   ContextWriter writer(ctx);
-  Site site = *writer.site();
+  const Site& site = writer.site();
   Doc* doc = site.document();
   Sprite* sprite = site.sprite();
   Layer* layer = site.layer();

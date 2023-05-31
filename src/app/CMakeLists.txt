@@ -621,7 +621,6 @@ add_library(app-lib
   doc_api.cpp
   doc_diff.cpp
   doc_exporter.cpp
-  doc_range.cpp
   doc_range_ops.cpp
   doc_undo.cpp
   docs.cpp
@@ -694,7 +693,6 @@ add_library(app-lib
   util/pal_ops.cpp
   util/pic_file.cpp
   util/pixel_ratio.cpp
-  util/range_utils.cpp
   util/readable_time.cpp
   util/resize_image.cpp
   util/tileset_utils.cpp
@@ -717,6 +715,7 @@ target_link_libraries(app-lib
   cfg-lib
   clip
   doc-lib
+  view-lib
   dio-lib
   filters-lib
   fixmath-lib

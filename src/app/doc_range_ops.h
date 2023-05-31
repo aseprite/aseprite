@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2023 Igara Studio S.A.
 // Copyright (C) 2001-2018 David Capello
 //
 // This program is distributed under the terms of
@@ -8,13 +9,13 @@
 #define APP_DOC_RANGE_OPS_H_INCLUDED
 #pragma once
 
+#include "app/doc_range.h"
 #include "app/tags_handling.h"
 
 #include <vector>
 
 namespace app {
   class Doc;
-  class DocRange;
 
   enum DocRangePlace {
     kDocRangeBefore,

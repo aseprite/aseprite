@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -26,12 +26,15 @@ namespace doc {
   class Tileset;
 }
 
+namespace view {
+  class Range;
+}
+
 namespace app {
   class Context;
   class ContextReader;
   class ContextWriter;
   class Doc;
-  class DocRange;
   class Site;
   class Tx;
 
@@ -52,7 +55,7 @@ namespace app {
     ~Clipboard();
 
     ClipboardFormat format() const;
-    void getDocumentRangeInfo(Doc** document, DocRange* range);
+    void getDocumentRangeInfo(Doc** document, view::Range* range);
 
     void clearMaskFromCels(Tx& tx,
                            Doc* doc,
@@ -64,7 +67,7 @@ namespace app {
     void cut(ContextWriter& context);
     void copy(const ContextReader& context);
     void copyMerged(const ContextReader& context);
-    void copyRange(const ContextReader& context, const DocRange& range);
+    void copyRange(const ContextReader& context, const view::Range& range);
     void copyImage(const doc::Image* image,
                    const doc::Mask* mask,
                    const doc::Palette* palette);

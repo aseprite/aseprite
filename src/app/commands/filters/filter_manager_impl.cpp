@@ -28,7 +28,6 @@
 #include "app/ui/timeline/timeline.h"
 #include "app/ui_context.h"
 #include "app/util/cel_ops.h"
-#include "app/util/range_utils.h"
 #include "doc/algorithm/shrink_bounds.h"
 #include "doc/cel.h"
 #include "doc/cels_range.h"
@@ -40,6 +39,7 @@
 #include "ui/manager.h"
 #include "ui/view.h"
 #include "ui/widget.h"
+#include "view/cels.h"
 
 #include <cstdlib>
 #include <cstring>
@@ -52,7 +52,7 @@ using namespace ui;
 
 FilterManagerImpl::FilterManagerImpl(Context* context, Filter* filter)
   : m_reader(context)
-  , m_site(*const_cast<Site*>(m_reader.site()))
+  , m_site(const_cast<Site&>(m_reader.site()))
   , m_filter(filter)
   , m_cel(nullptr)
   , m_src(nullptr)
@@ -283,16 +283,7 @@ void FilterManagerImpl::applyToTarget()
   switch (m_celsTarget) {
 
     case CelsTarget::Selected: {
-      auto range = m_site.range();
-      if (range.enabled()) {
-        for (Cel* cel : get_unique_cels_to_edit_pixels(m_site.sprite(), range))
-          cels.push_back(cel);
-      }
-      else if (m_site.cel() &&
-               m_site.layer() &&
-               m_site.layer()->canEditPixels()) {
-        cels.push_back(m_site.cel());
-      }
+      cels = m_site.selectedUniqueCelsToEditPixels();
       break;
     }
 

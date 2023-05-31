@@ -15,11 +15,14 @@
 
 #include <string>
 
+namespace view {
+  class Range;
+}
+
 namespace app {
 
   class Cmd;
   class Context;
-  class DocRange;
   class DocUndo;
 
   enum Modification {
@@ -69,7 +72,7 @@ namespace app {
     // Can be used to change the new document range resulting from
     // executing this transaction. This range can be used then in
     // undo/redo operations to restore the Timeline selection/range.
-    void setNewDocRange(const DocRange& range);
+    void setNewDocRange(const view::Range& range);
 
     // This must be called to commit all the changes, so the undo will
     // be finally added in the sprite.
