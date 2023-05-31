@@ -34,7 +34,6 @@
 #include "app/ui/toolbar.h"
 #include "app/ui/zoom_entry.h"
 #include "app/ui_context.h"
-#include "app/util/range_utils.h"
 #include "app/util/tile_flags_utils.h"
 #include "base/fs.h"
 #include "base/string.h"

@@ -34,7 +34,6 @@
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
 #include "app/util/new_image_from_mask.h"
-#include "app/util/range_utils.h"
 #include "doc/layer.h"
 #include "doc/layer_tilemap.h"
 #include "doc/primitives.h"

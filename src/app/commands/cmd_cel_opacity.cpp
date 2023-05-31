@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2022  Igara Studio S.A.
+// Copyright (C) 2020-2023  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -64,8 +64,9 @@ bool CelOpacityCommand::onEnabled(Context* context)
 void CelOpacityCommand::onExecute(Context* context)
 {
   ContextWriter writer(context);
-  Layer* layer = writer.layer();
-  Cel* cel = writer.cel();
+  const Site& site = writer.site();
+  Layer* layer = site.layer();
+  Cel* cel = site.cel();
   if (!cel ||
       layer->isBackground() ||
       !layer->isEditable() ||
@@ -75,26 +76,11 @@ void CelOpacityCommand::onExecute(Context* context)
   {
     Tx tx(writer, "Set Cel Opacity");
 
-    // TODO the range of selected cels should be in app::Site.
-    DocRange range;
-
-#ifdef ENABLE_UI
-    if (context->isUIAvailable())
-      range = App::instance()->timeline()->range();
-#endif
-
-    if (!range.enabled()) {
-      range.startRange(layer, cel->frame(), DocRange::kCels);
-      range.endRange(layer, cel->frame());
-    }
-
-    for (Cel* c : cel->sprite()->uniqueCels(range.selectedFrames())) {
-      if (range.contains(c->layer())) {
-        if (!c->layer()->isBackground() &&
-            c->layer()->isEditable() &&
-            m_opacity != c->opacity()) {
-          tx(new cmd::SetCelOpacity(c, m_opacity));
-        }
+    for (Cel* c : site.selectedUniqueCels()) {
+      if (!c->layer()->isBackground() &&
+          c->layer()->isEditable() &&
+          m_opacity != c->opacity()) {
+        tx(new cmd::SetCelOpacity(c, m_opacity));
       }
     }
 

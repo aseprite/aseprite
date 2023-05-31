@@ -36,7 +36,6 @@
 #include "app/ui/workspace.h"
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
-#include "app/util/range_utils.h"
 #include "base/fs.h"
 #include "doc/color.h"
 #include "doc/layer.h"
@@ -580,9 +579,9 @@ bool DocView::onCut(Context* ctx)
 bool DocView::onCopy(Context* ctx)
 {
   const ContextReader reader(ctx);
-  if (reader.site()->document() &&
-      static_cast<const Doc*>(reader.site()->document())->isMaskVisible() &&
-      reader.site()->image()) {
+  if (reader.site().document() &&
+      static_cast<const Doc*>(reader.site().document())->isMaskVisible() &&
+      reader.site().image()) {
     ctx->clipboard()->copy(reader);
     return true;
   }
@@ -618,14 +617,7 @@ bool DocView::onClear(Context* ctx)
   Doc* document = site.document();
   bool visibleMask = document->isMaskVisible();
 
-  CelList cels;
-  if (site.range().enabled()) {
-    cels = get_unique_cels_to_edit_pixels(site.sprite(), site.range());
-  }
-  else if (site.cel()) {
-    cels.push_back(site.cel());
-  }
-
+  CelList cels = site.selectedUniqueCelsToEditPixels();
   if (cels.empty())            // No cels to modify
     return false;
 

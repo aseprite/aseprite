@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -12,8 +12,8 @@
 #include "app/doc.h"
 #include "app/doc_event.h"
 #include "app/site.h"
-#include "app/util/layer_utils.h"
 #include "doc/layer.h"
+#include "view/layers.h"
 
 namespace app {
 
@@ -143,7 +143,8 @@ void ActiveSiteHandler::onBeforeRemoveLayer(DocEvent& ev)
   data.range.eraseAndAdjust(ev.layer());
 
   // Select other layer as active
-  doc::Layer* layerToSelect = candidate_if_layer_is_deleted(selectedLayer, ev.layer());
+  doc::Layer* layerToSelect =
+    view::candidate_if_layer_is_deleted(selectedLayer, ev.layer());
   if (selectedLayer != layerToSelect) {
     data.layer = (layerToSelect ? layerToSelect->id():
                                   doc::NullId);

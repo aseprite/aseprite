@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -162,11 +162,11 @@ void calculate_visible_layers(const Site& site,
   if (layersValue == kSelectedLayers) {
     if (!site.selectedLayers().empty()) {
       layersVisibility.showSelectedLayers(
-        const_cast<Sprite*>(site.sprite()),
+        const_cast<doc::Sprite*>(site.sprite()),
         site.selectedLayers());
     }
     else {
-      layersVisibility.showLayer(const_cast<Layer*>(site.layer()));
+      layersVisibility.showLayer(const_cast<doc::Layer*>(site.layer()));
     }
   }
   else if (layersValue != kAllLayers) {

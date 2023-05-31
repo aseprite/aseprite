@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2021  Igara Studio S.A.
+// Copyright (C) 2020-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -147,10 +147,10 @@ void RemoveLayerCommand::onExecute(Context* context)
     // the std::greater Compare.
     std::set<tileset_index, std::greater<tileset_index>> tsiToDelete;
 
-    const Site* site = writer.site();
-    if (site->inTimeline() &&
-        !site->selectedLayers().empty()) {
-      SelectedLayers selLayers = site->selectedLayers();
+    const Site& site = writer.site();
+    if (site.inTimeline() &&
+        !site.selectedLayers().empty()) {
+      SelectedLayers selLayers = site.selectedLayers();
       selLayers.removeChildrenIfParentIsSelected();
 
       layer_t deletedTopLevelLayers = 0;
