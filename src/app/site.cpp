@@ -19,6 +19,8 @@
 #include "doc/sprite.h"
 #include "doc/tileset.h"
 #include "ui/system.h"
+#include "view/cels.h"
+#include "view/range.h"
 
 namespace app {
 
@@ -133,6 +135,31 @@ bool Site::shouldTrimCel(Cel* cel) const
           !(m_tilemapMode == TilemapMode::Pixels &&
             m_tilesetMode == TilesetMode::Manual &&
             cel->layer()->isTilemap()));
+}
+
+CelList Site::selectedUniqueCels() const
+{
+  if (m_range.enabled()) {
+    return view::get_unique_cels(m_sprite, m_range);
+  }
+  else if (auto c = cel()) {
+    return CelList{ c };
+  }
+  else
+    return CelList();
+}
+
+CelList Site::selectedUniqueCelsToEditPixels() const
+{
+  if (m_range.enabled()) {
+    return view::get_unique_cels_to_edit_pixels(m_sprite, m_range);
+  }
+  else if (auto c = cel()) {
+    if (m_layer &&
+        m_layer->canEditPixels())
+      return CelList{ c };
+  }
+  return CelList();
 }
 
 } // namespace app

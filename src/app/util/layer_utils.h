@@ -19,13 +19,6 @@ namespace app {
 
   class Editor;
 
-  // Calculates a possible candidate to be selected in case that we
-  // have a specific "selectedLayer" and are going to delete the given
-  // "layerToDelete".
-  doc::Layer* candidate_if_layer_is_deleted(
-    const doc::Layer* selectedLayer,
-    const doc::Layer* layerToDelete);
-
   // True if the active layer is locked (itself or its hierarchy),
   // also, it sends a tip to the user 'Layer ... is locked'
   bool layer_is_locked(Editor* editor);

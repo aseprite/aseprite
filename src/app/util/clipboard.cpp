@@ -32,7 +32,6 @@
 #include "app/util/cel_ops.h"
 #include "app/util/clipboard.h"
 #include "app/util/new_image_from_mask.h"
-#include "app/util/range_utils.h"
 #include "clip/clip.h"
 #include "doc/algorithm/shrink_bounds.h"
 #include "doc/blend_image.h"
@@ -40,6 +39,7 @@
 #include "render/dithering.h"
 #include "render/ordered_dither.h"
 #include "render/quantization.h"
+#include "view/cels.h"
 
 #include <memory>
 #include <stdexcept>
@@ -345,7 +345,7 @@ void Clipboard::cut(ContextWriter& writer)
   ASSERT(writer.sprite() != NULL);
   ASSERT(writer.layer() != NULL);
 
-  if (!copyFromDocument(*writer.site())) {
+  if (!copyFromDocument(writer.site())) {
     Console console;
     console.printf("Can't copying an image portion from the current layer\n");
   }
@@ -354,13 +354,7 @@ void Clipboard::cut(ContextWriter& writer)
     {
       Tx tx(writer, "Cut");
       Site site = writer.context()->activeSite();
-      CelList cels;
-      if (site.range().enabled()) {
-        cels = get_unique_cels_to_edit_pixels(site.sprite(), site.range());
-      }
-      else if (site.cel()) {
-        cels.push_back(site.cel());
-      }
+      CelList cels = site.selectedUniqueCelsToEditPixels();
       clearMaskFromCels(tx,
                         writer.document(),
                         site,
@@ -377,7 +371,7 @@ void Clipboard::copy(const ContextReader& reader)
 {
   ASSERT(reader.document() != NULL);
 
-  if (!copyFromDocument(*reader.site())) {
+  if (!copyFromDocument(reader.site())) {
     Console console;
     console.printf("Can't copying an image portion from the current layer\n");
     return;
@@ -388,7 +382,7 @@ void Clipboard::copyMerged(const ContextReader& reader)
 {
   ASSERT(reader.document() != NULL);
 
-  copyFromDocument(*reader.site(), true);
+  copyFromDocument(reader.site(), true);
 }
 
 void Clipboard::copyRange(const ContextReader& reader, const DocRange& range)

@@ -46,7 +46,6 @@
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
 #include "app/util/layer_boundaries.h"
-#include "app/util/layer_utils.h"
 #include "app/util/readable_time.h"
 #include "base/convert_to.h"
 #include "base/memory.h"
@@ -62,6 +61,7 @@
 #include "os/system.h"
 #include "text/font.h"
 #include "ui/ui.h"
+#include "view/layers.h"
 
 #include <algorithm>
 #include <cstdio>
@@ -1934,7 +1934,7 @@ void Timeline::onAddLayer(DocEvent& ev)
 // TODO similar to ActiveSiteHandler::onBeforeRemoveLayer() and Editor::onBeforeRemoveLayer()
 void Timeline::onBeforeRemoveLayer(DocEvent& ev)
 {
-  Layer* layerToSelect = candidate_if_layer_is_deleted(m_layer, ev.layer());
+  Layer* layerToSelect = view::candidate_if_layer_is_deleted(m_layer, ev.layer());
   if (m_layer != layerToSelect)
     setLayer(layerToSelect);
 

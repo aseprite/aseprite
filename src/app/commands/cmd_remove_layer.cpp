@@ -140,10 +140,10 @@ void RemoveLayerCommand::onExecute(Context* context)
     // the std::greater Compare.
     std::set<tileset_index, std::greater<tileset_index>> tsiToDelete;
 
-    const Site* site = writer.site();
-    if (site->inTimeline() &&
-        !site->selectedLayers().empty()) {
-      SelectedLayers selLayers = site->selectedLayers();
+    const Site& site = writer.site();
+    if (site.inTimeline() &&
+        !site.selectedLayers().empty()) {
+      SelectedLayers selLayers = site.selectedLayers();
       selLayers.removeChildrenIfParentIsSelected();
 
       layer_t deletedTopLevelLayers = 0;

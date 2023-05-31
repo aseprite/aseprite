@@ -82,7 +82,7 @@ void RemoveSliceCommand::onExecute(Context* context)
     if (slice)
       slicesToDelete.insert(slice->id());
     else
-      slicesToDelete = reader.site()->selectedSlices();
+      slicesToDelete = reader.site().selectedSlices();
   }
 
   // Nothing to delete

@@ -31,12 +31,15 @@ namespace doc {
   class PalettePicks;
 }
 
+namespace view {
+  class Range;
+}
+
 namespace app {
   class ActiveSiteHandler;
   class Clipboard;
   class Command;
   class Doc;
-  class DocRange;
   class DocView;
   class Preferences;
 
@@ -134,7 +137,7 @@ namespace app {
     void setActiveDocument(Doc* document);
     void setActiveLayer(doc::Layer* layer);
     void setActiveFrame(doc::frame_t frame);
-    void setRange(const DocRange& range);
+    void setRange(const view::Range& range);
     void setSelectedColors(const doc::PalettePicks& picks);
     void setSelectedTiles(const doc::PalettePicks& picks);
     bool hasModifiedDocuments() const;
@@ -167,7 +170,7 @@ namespace app {
     virtual void onSetActiveDocument(Doc* doc, bool notify);
     virtual void onSetActiveLayer(doc::Layer* layer);
     virtual void onSetActiveFrame(const doc::frame_t frame);
-    virtual void onSetRange(const DocRange& range);
+    virtual void onSetRange(const view::Range& range);
     virtual void onSetSelectedColors(const doc::PalettePicks& picks);
     virtual void onSetSelectedTiles(const doc::PalettePicks& picks);
     virtual void onCloseDocument(Doc* doc);

@@ -1,5 +1,5 @@
-// Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Aseprite View Library
+// Copyright (C) 2020-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -9,24 +9,24 @@
 #include "config.h"
 #endif
 
-#include "app/doc_range.h"
+#include "view/range.h"
 
-#include "app/util/layer_utils.h"
 #include "base/serialization.h"
 #include "doc/cel.h"
 #include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
+#include "view/layers.h"
 
 #include <iostream>
 
-namespace app {
+namespace view {
 
 using namespace base::serialization;
 using namespace base::serialization::little_endian;
 using namespace doc;
 
-DocRange::DocRange()
+Range::Range()
   : m_type(kNone)
   , m_flags(m_type)
   , m_selectingFromLayer(nullptr)
@@ -34,7 +34,7 @@ DocRange::DocRange()
 {
 }
 
-DocRange::DocRange(Cel* cel)
+Range::Range(Cel* cel)
   : m_type(kCels)
   , m_flags(m_type)
   , m_selectingFromLayer(nullptr)
@@ -44,7 +44,7 @@ DocRange::DocRange(Cel* cel)
   m_selectedFrames.insert(cel->frame());
 }
 
-void DocRange::clearRange()
+void Range::clearRange()
 {
   m_type = kNone;
   m_flags = kNone;
@@ -58,7 +58,7 @@ void DocRange::clearRange()
   m_selectingFromFrame = -1;
 }
 
-void DocRange::startRange(Layer* fromLayer, frame_t fromFrame, Type type)
+void Range::startRange(Layer* fromLayer, frame_t fromFrame, Type type)
 {
   m_type = type;
   m_flags |= type;
@@ -71,7 +71,7 @@ void DocRange::startRange(Layer* fromLayer, frame_t fromFrame, Type type)
     m_selectedFrames.insert(fromFrame);
 }
 
-void DocRange::endRange(Layer* toLayer, frame_t toFrame)
+void Range::endRange(Layer* toLayer, frame_t toFrame)
 {
   ASSERT(enabled());
 
@@ -82,7 +82,7 @@ void DocRange::endRange(Layer* toLayer, frame_t toFrame)
     selectFrameRange(m_selectingFromFrame, toFrame);
 }
 
-void DocRange::selectLayer(Layer* layer)
+void Range::selectLayer(Layer* layer)
 {
   if (m_type == kNone)
     m_type = kLayers;
@@ -91,7 +91,7 @@ void DocRange::selectLayer(Layer* layer)
   m_selectedLayers.insert(layer);
 }
 
-void DocRange::selectLayers(const SelectedLayers& selLayers)
+void Range::selectLayers(const SelectedLayers& selLayers)
 {
   if (m_type == kNone)
     m_type = kLayers;
@@ -101,7 +101,7 @@ void DocRange::selectLayers(const SelectedLayers& selLayers)
     m_selectedLayers.insert(layer);
 }
 
-void DocRange::eraseAndAdjust(const Layer* layer)
+void Range::eraseAndAdjust(const Layer* layer)
 {
   if (!enabled())
     return;
@@ -126,7 +126,7 @@ void DocRange::eraseAndAdjust(const Layer* layer)
   }
 }
 
-bool DocRange::contains(const Layer* layer) const
+bool Range::contains(const Layer* layer) const
 {
   if (enabled())
     return m_selectedLayers.contains(const_cast<Layer*>(layer));
@@ -134,15 +134,15 @@ bool DocRange::contains(const Layer* layer) const
     return false;
 }
 
-bool DocRange::contains(const Layer* layer,
+bool Range::contains(const Layer* layer,
                         const frame_t frame) const
 {
   switch (m_type) {
-    case DocRange::kNone:
+    case Range::kNone:
       return false;
-    case DocRange::kCels:
+    case Range::kCels:
       return contains(layer) && contains(frame);
-    case DocRange::kFrames:
+    case Range::kFrames:
       if (contains(frame)) {
         if ((m_flags & (kCels | kLayers)) != 0)
           return contains(layer);
@@ -150,7 +150,7 @@ bool DocRange::contains(const Layer* layer,
           return true;
       }
       break;
-    case DocRange::kLayers:
+    case Range::kLayers:
       if (contains(layer)) {
         if ((m_flags & (kCels | kFrames)) != 0)
           return contains(frame);
@@ -162,37 +162,38 @@ bool DocRange::contains(const Layer* layer,
   return false;
 }
 
-void DocRange::displace(layer_t layerDelta, frame_t frameDelta)
+void Range::displace(const layer_t layerDelta,
+                     const frame_t frameDelta)
 {
   m_selectedLayers.displace(layerDelta);
   m_selectedFrames.displace(frameDelta);
 }
 
-bool DocRange::convertToCels(const Sprite* sprite)
+bool Range::convertToCels(const Sprite* sprite)
 {
   switch (m_type) {
-    case DocRange::kNone:
+    case Range::kNone:
       return false;
-    case DocRange::kCels:
+    case Range::kCels:
       break;
-    case DocRange::kFrames: {
+    case Range::kFrames: {
       if ((m_flags & (kCels | kLayers)) == 0) {
         for (auto layer : sprite->allBrowsableLayers())
           m_selectedLayers.insert(layer);
       }
-      m_type = DocRange::kCels;
+      m_type = Range::kCels;
       break;
     }
-    case DocRange::kLayers:
+    case Range::kLayers:
       if ((m_flags & (kCels | kFrames)) == 0)
         selectFrameRange(0, sprite->lastFrame());
-      m_type = DocRange::kCels;
+      m_type = Range::kCels;
       break;
   }
   return true;
 }
 
-bool DocRange::write(std::ostream& os) const
+bool Range::write(std::ostream& os) const
 {
   write32(os, m_type);
   write32(os, m_flags);
@@ -205,7 +206,7 @@ bool DocRange::write(std::ostream& os) const
   return os.good();
 }
 
-bool DocRange::read(std::istream& is)
+bool Range::read(std::istream& is)
 {
   clearRange();
 
@@ -221,7 +222,7 @@ bool DocRange::read(std::istream& is)
   return is.good();
 }
 
-void DocRange::selectLayerRange(Layer* fromLayer, Layer* toLayer)
+void Range::selectLayerRange(Layer* fromLayer, Layer* toLayer)
 {
   ASSERT(fromLayer);
   ASSERT(toLayer);
@@ -267,12 +268,12 @@ void DocRange::selectLayerRange(Layer* fromLayer, Layer* toLayer)
   } while (it);
 }
 
-void DocRange::selectFrameRange(frame_t fromFrame, frame_t toFrame)
+void Range::selectFrameRange(frame_t fromFrame, frame_t toFrame)
 {
   m_selectedFrames.insert(fromFrame, toFrame);
 }
 
-void DocRange::setType(const Type type)
+void Range::setType(const Type type)
 {
   if (type != kNone) {
     m_type = type;
@@ -284,7 +285,7 @@ void DocRange::setType(const Type type)
   }
 }
 
-void DocRange::setSelectedLayers(const SelectedLayers& layers)
+void Range::setSelectedLayers(const SelectedLayers& layers)
 {
   if (layers.empty()) {
     m_type = kNone;
@@ -297,7 +298,7 @@ void DocRange::setSelectedLayers(const SelectedLayers& layers)
   m_selectedLayers = layers;
 }
 
-void DocRange::setSelectedFrames(const SelectedFrames& frames)
+void Range::setSelectedFrames(const SelectedFrames& frames)
 {
   if (frames.empty()) {
     m_type = kNone;
@@ -310,4 +311,4 @@ void DocRange::setSelectedFrames(const SelectedFrames& frames)
   m_selectedFrames = frames;
 }
 
-} // namespace app
+} // namespace view

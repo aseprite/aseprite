@@ -165,11 +165,11 @@ void calculate_visible_layers(const Site& site,
   if (layersValue == kSelectedLayers) {
     if (!site.selectedLayers().empty()) {
       layersVisibility.showSelectedLayers(
-        const_cast<Sprite*>(site.sprite()),
+        const_cast<doc::Sprite*>(site.sprite()),
         site.selectedLayers());
     }
     else {
-      layersVisibility.showLayer(const_cast<Layer*>(site.layer()));
+      layersVisibility.showLayer(const_cast<doc::Layer*>(site.layer()));
     }
   }
   else if (layersValue != kAllLayers) {
