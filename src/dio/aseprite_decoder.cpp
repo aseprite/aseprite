@@ -946,13 +946,21 @@ doc::Cel* AsepriteDecoder::readCelChunk(doc::Sprite* sprite,
       // Read width and height
       int w = read16();
       int h = read16();
-      int bitsPerTile = read16(); // TODO add support for more bpp
+      int bitsPerTile = read16();
       uint32_t tileIDMask = read32();
       uint32_t flipxMask = read32();
       uint32_t flipyMask = read32();
       uint32_t rot90Mask = read32();
       uint32_t flagsMask = (flipxMask | flipyMask | rot90Mask);
       readPadding(10);
+
+      // We only support 32bpp at the moment
+      // TODO add support for other bpp (8-bit, 16-bpp)
+      if (bitsPerTile != 32) {
+        delegate()->incompatibilityError(
+          fmt::format("Unsupported tile format: {0} bits per tile", bitsPerTile));
+        break;
+      }
 
       if (w > 0 && h > 0) {
         doc::ImageRef image(doc::Image::create(doc::IMAGE_TILEMAP, w, h));
