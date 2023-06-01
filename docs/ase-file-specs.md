@@ -227,7 +227,7 @@ This chunk determine where to put a cel in the specified layer/frame.
     + For cel type = 2 (Compressed Image)
       WORD      Width in pixels
       WORD      Height in pixels
-      BYTE[]    "Raw Cel" data compressed with ZLIB method (see NOTE.3)
+      PIXEL[]   "Raw Cel" data compressed with ZLIB method (see NOTE.3)
     + For cel type = 3 (Compressed Tilemap)
       WORD      Width in number of tiles
       WORD      Height in number of tiles
@@ -541,7 +541,20 @@ first, then the `Layer1` layer chunk, etc.
 
 ### NOTE.3
 
-Details about the ZLIB and DEFLATE compression methods:
+**Uncompressed Image**: Uncompressed ("raw") images inside `.aseprite`
+files are saved row by row from top to bottom, and for each
+row/scanline, pixels are from left to right. Each pixel is a `PIXEL`
+(or a `TILE` in the case of tilemaps) as defined in the
+[References](#references) section (so the number and order of bytes
+depends on the color mode of the image/sprite, or the tile
+format). Generally you'll not find uncompressed images in `.aseprite`
+files (only in very old `.aseprite` files).
+
+**Compressed Image**: When an image is compressed (the regular case
+that you will find in `.aseprite` files), the data is a stream of
+bytes in exactly the same *"Uncompressed Image"* format as described
+above, but compressed using the ZLIB method. Details about the ZLIB
+and DEFLATE compression methods can be found here:
 
 * https://www.ietf.org/rfc/rfc1950
 * https://www.ietf.org/rfc/rfc1951
