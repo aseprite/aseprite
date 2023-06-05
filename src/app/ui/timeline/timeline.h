@@ -32,6 +32,7 @@
 #include "ui/scroll_bar.h"
 #include "ui/timer.h"
 #include "ui/widget.h"
+#include "view/timeline_adapter.h"
 
 #include <memory>
 #include <vector>
@@ -72,7 +73,10 @@ namespace app {
                    public InputChainElement,
                    public TagProvider {
   public:
-    typedef DocRange Range;
+    using Range = DocRange;
+    using fr_t = view::fr_t;
+    using col_t = view::col_t;
+    static constexpr const auto kNoCol = view::kNoCol;
 
     enum State {
       STATE_STANDBY,
@@ -109,6 +113,9 @@ namespace app {
 
     bool isMovingCel() const;
 
+    // The range is specified in "virtual frames" (not real sprite
+    // frames, we'll have to do a conversion each time we want to use
+    // this range with the sprite).
     Range range() const { return m_range; }
     const SelectedLayers& selectedLayers() const { return m_range.selectedLayers(); }
     const SelectedFrames& selectedFrames() const { return m_range.selectedFrames(); }
@@ -201,14 +208,14 @@ namespace app {
     struct Hit {
       int part;
       layer_t layer;
-      frame_t frame;
+      col_t frame;
       ObjectId tag;
       bool veryBottom;
       int band;
 
       Hit(int part = 0,
           layer_t layer = -1,
-          frame_t frame = 0,
+          col_t frame = kNoCol,
           ObjectId tag = NullId,
           int band = -1);
       bool operator!=(const Hit& other) const;
@@ -278,16 +285,16 @@ namespace app {
     void handleRangeMouseDown(const ui::Message* msg,
                               const Range::Type rangeType,
                               doc::Layer* fromLayer,
-                              const doc::frame_t fromFrame);
+                              const col_t fromFrame);
 
     void handleRangeMouseMove(doc::Layer* fromLayer,
-                              const doc::frame_t fromFrame);
+                              const col_t fromFrame);
 
     bool selectedLayersBounds(const SelectedLayers& layers,
                               layer_t* first, layer_t* last) const;
 
     void setLayer(Layer* layer);
-    void setFrame(frame_t frame, bool byUser);
+    void setFrame(col_t frame, bool byUser);
     bool allLayersVisible();
     bool allLayersInvisible();
     bool allLayersLocked();
@@ -297,7 +304,7 @@ namespace app {
     void detachDocument();
     void setCursor(ui::Message* msg, const Hit& hit);
     void getDrawableLayers(layer_t* firstLayer, layer_t* lastLayer);
-    void getDrawableFrames(frame_t* firstFrame, frame_t* lastFrame);
+    void getDrawableFrames(col_t* firstFrame, col_t* lastFrame);
     void drawPart(ui::Graphics* g, const gfx::Rect& bounds,
                   const std::string* text,
                   ui::Style* style,
@@ -307,13 +314,13 @@ namespace app {
                   const bool is_disabled = false);
     void drawTop(ui::Graphics* g);
     void drawHeader(ui::Graphics* g);
-    void drawHeaderFrame(ui::Graphics* g, const frame_t frame);
+    void drawHeaderFrame(ui::Graphics* g, const col_t frame);
     void drawLayer(ui::Graphics* g, const layer_t layerIdx);
     void drawCel(ui::Graphics* g,
-                 const layer_t layerIdx, const frame_t frame,
+                 const layer_t layerIdx, const col_t frame,
                  const Cel* cel, const DrawCelData* data);
     void drawCelLinkDecorators(ui::Graphics* g, const gfx::Rect& bounds,
-                               const Cel* cel, const frame_t frame,
+                               const Cel* cel, const col_t frame,
                                const bool is_active, const bool is_hover,
                                const DrawCelData* data);
     void drawTags(ui::Graphics* g);
@@ -323,7 +330,7 @@ namespace app {
                        const gfx::Rect& clipBounds);
     void drawRangeOutline(ui::Graphics* g);
     void drawPaddings(ui::Graphics* g);
-    bool drawPart(ui::Graphics* g, int part, layer_t layer, frame_t frame);
+    bool drawPart(ui::Graphics* g, int part, layer_t layer, col_t frame);
     void drawClipboardRange(ui::Graphics* g);
     gfx::Rect getLayerHeadersBounds() const;
     gfx::Rect getFrameHeadersBounds() const;
@@ -332,12 +339,12 @@ namespace app {
     gfx::Rect getPartBounds(const Hit& hit) const;
     gfx::Rect getRangeBounds(const Range& range) const;
     gfx::Rect getRangeClipBounds(const Range& range) const;
-    int getFrameXPos(const frame_t frame) const;
-    int getFrameWidth(const frame_t frame) const;
-    frame_t getFrameInXPos(const int x) const;
+    int getFrameXPos(const col_t frame) const;
+    int getFrameWidth(const col_t frame) const;
+    col_t getFrameInXPos(const int x) const;
     void invalidateHit(const Hit& hit);
     void invalidateLayer(const Layer* layer);
-    void invalidateFrame(const frame_t frame);
+    void invalidateFrame(const col_t frame);
     void invalidateRange();
     void regenerateCols();
     void regenerateRows();
@@ -348,7 +355,7 @@ namespace app {
     Hit hitTest(ui::Message* msg, const gfx::Point& mousePos);
     Hit hitTestCel(const gfx::Point& mousePos);
     void setHot(const Hit& hit);
-    void showCel(layer_t layer, frame_t frame);
+    void showCel(layer_t layer, col_t frame);
     void showCurrentCel();
     void focusTagBand(int band);
     void cleanClk();
@@ -357,26 +364,27 @@ namespace app {
     doc::Layer* getLayer(int layerIndex) const;
     layer_t getLayerIndex(const Layer* layer) const;
     bool isLayerActive(const layer_t layerIdx) const;
-    bool isFrameActive(const frame_t frame) const;
-    bool isCelActive(const layer_t layerIdx, const frame_t frame) const;
-    bool isCelLooselyActive(const layer_t layerIdx, const frame_t frame) const;
+    bool isFrameActive(const col_t frame) const;
+    bool isCelActive(const layer_t layerIdx, const col_t frame) const;
+    bool isCelLooselyActive(const layer_t layerIdx, const col_t frame) const;
+
     void updateStatusBar(ui::Message* msg);
-    void updateStatusBarForFrame(const frame_t frame,
+    void updateStatusBarForFrame(const col_t frame,
                                  const Tag* tag,
                                  const Cel* cel);
     void updateDropRange(const gfx::Point& pt);
     void clearClipboardRange();
 
     // The layer of the bottom (e.g. Background layer)
-    layer_t firstLayer() const { return 0; }
+    constexpr layer_t firstLayer() const { return 0; }
     // The layer of the top.
     layer_t lastLayer() const { return m_rows.size()-1; }
 
-    frame_t firstFrame() const { return frame_t(0); }
-    frame_t lastFrame() const { return m_sprite->lastFrame(); }
+    constexpr col_t firstFrame() const { return col_t(0); }
+    col_t lastFrame() const;
 
     bool validLayer(layer_t layer) const { return layer >= firstLayer() && layer <= lastLayer(); }
-    bool validFrame(frame_t frame) const { return frame >= firstFrame() && frame <= lastFrame(); }
+    bool validFrame(col_t frame) const { return frame >= firstFrame() && frame <= lastFrame(); }
 
     int topHeight() const;
 
@@ -391,7 +399,7 @@ namespace app {
     int frameBoxWidth() const;
     int outlineWidth() const;
     int oneTagHeight() const;
-    frame_t calcTagVisibleToFrame(Tag* tag) const;
+    col_t calcTagVisibleToFrame(Tag* tag) const;
 
     void updateCelOverlayBounds(const Hit& hit);
     void drawCelOverlay(ui::Graphics* g);
@@ -415,6 +423,7 @@ namespace app {
 
     static gfx::Color highlightColor(const gfx::Color color);
 
+    std::unique_ptr<view::TimelineAdapter> m_adapter;
     ui::ScrollBar m_hbar;
     ui::ScrollBar m_vbar;
     gfx::Rect m_viewportArea;
@@ -424,7 +433,7 @@ namespace app {
     Doc* m_document;
     Sprite* m_sprite;
     Layer* m_layer;
-    frame_t m_frame;
+    col_t m_frame;
     int m_rangeLocks;
     Range m_range;
     Range m_startRange;
@@ -483,22 +492,22 @@ namespace app {
     // Temporal data used to move the range.
     struct MoveRange {
       layer_t activeRelativeLayer;
-      frame_t activeRelativeFrame;
+      col_t activeRelativeFrame;
     } m_moveRangeData;
 
     // Temporal data used to move tags.
     struct ResizeTag {
       doc::ObjectId tag = doc::NullId;
-      doc::frame_t from, to;
+      col_t from, to;
       void reset() {
         tag = doc::NullId;
       }
-      void reset(const doc::ObjectId tagId) {
-        auto tag = doc::get<doc::Tag>(tagId);
-        if (tag) {
+      void reset(const view::TimelineAdapter& adapter,
+                 const doc::ObjectId tagId) {
+        if (auto tag = doc::get<doc::Tag>(tagId)) {
           this->tag = tagId;
-          this->from = tag->fromFrame();
-          this->to = tag->toFrame();
+          this->from = adapter.toColFrame(fr_t(tag->fromFrame()));
+          this->to = adapter.toColFrame(fr_t(tag->toFrame()));
         }
         else {
           this->tag = doc::NullId;
