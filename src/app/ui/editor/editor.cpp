@@ -2078,13 +2078,13 @@ bool Editor::onProcessMessage(Message* msg)
       }
 #endif  // ENABLE_DEVMODE
 
-      if (m_sprite) {
+      if (m_sprite && (isActive() || hasMouse())) {
         EditorStatePtr holdState(m_state);
         bool used = m_state->onKeyDown(this, static_cast<KeyMessage*>(msg));
 
-        updateToolLoopModifiersIndicators();
-        updateAutoCelGuides(msg);
         if (hasMouse()) {
+          updateToolLoopModifiersIndicators();
+          updateAutoCelGuides(msg);
           updateQuicktool();
           setCursor(mousePosInDisplay());
         }
@@ -2095,13 +2095,13 @@ bool Editor::onProcessMessage(Message* msg)
       break;
 
     case kKeyUpMessage:
-      if (m_sprite) {
+      if (m_sprite && (isActive() || hasMouse())) {
         EditorStatePtr holdState(m_state);
         bool used = m_state->onKeyUp(this, static_cast<KeyMessage*>(msg));
 
-        updateToolLoopModifiersIndicators();
-        updateAutoCelGuides(msg);
         if (hasMouse()) {
+          updateToolLoopModifiersIndicators();
+          updateAutoCelGuides(msg);
           updateQuicktool();
           setCursor(mousePosInDisplay());
         }

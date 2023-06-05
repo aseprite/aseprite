@@ -498,7 +498,7 @@ bool StandbyState::onKeyDown(Editor* editor, KeyMessage* msg)
 
   Keys keys = KeyboardShortcuts::instance()
     ->getDragActionsFromKeyMessage(KeyContext::MouseWheel, msg);
-  if (!keys.empty()) {
+  if (editor->hasMouse() && !keys.empty()) {
     // Don't enter DraggingValueState to change brush size if we are
     // in a selection-like tool
     if (keys.size() == 1 &&
