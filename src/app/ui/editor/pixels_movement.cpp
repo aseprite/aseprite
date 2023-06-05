@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -699,7 +699,7 @@ void PixelsMovement::moveImage(const gfx::PointF& pos, MoveModifier moveModifier
 
     case PivotHandle: {
       // Calculate the new position of the pivot
-      gfx::PointF newPivot = m_initialData.pivot() + pos - m_catchPos;
+      gfx::PointF newPivot = m_initialData.pivot() + gfx::Point(pos) - m_catchPos;
       newTransformation = m_initialData;
       newTransformation.displacePivotTo(newPivot);
       break;
