@@ -234,11 +234,11 @@ void NewLayerCommand::onExecute(Context* context)
     if (window.closer() != window.ok())
       return;
 
-    pref.tileset.baseIndex(tilesetSelector->getInfo().baseIndex);
-
     name = window.name()->text();
-    if (tilesetSelector)
+    if (tilesetSelector) {
+      pref.tileset.baseIndex(tilesetSelector->getInfo().baseIndex);
       tilesetInfo = tilesetSelector->getInfo();
+    }
   }
 #endif
 
