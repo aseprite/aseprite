@@ -8,6 +8,8 @@
 #define DOC_TILESETS_H_INCLUDED
 #pragma once
 
+#include "doc/layer_tilemap.h"
+#include "doc/sprite.h"
 #include "doc/tileset.h"
 
 #include <vector>
@@ -40,7 +42,7 @@ namespace doc {
         return nullptr;
     }
 
-    tileset_index getIndex(Tileset *tileset) {
+    tileset_index getIndex(const Tileset *tileset) {
       for (tileset_index i = 0; i < size(); ++i) {
         if (m_tilesets[i] == tileset) {
           return i;
@@ -55,23 +57,44 @@ namespace doc {
       m_tilesets[tsi] = tileset;
     }
 
+    void add(const tileset_index tsi, Tileset* tileset) {
+      if (tsi >= m_tilesets.size()) {
+        m_tilesets.push_back(tileset);
+      }
+      else {
+        m_tilesets.insert(m_tilesets.begin()+tsi, tileset);
+        // Update tileset indexes of the affected tilemaps. We have to shift the indexes
+        // for all the tilemaps pointing to a tileset index equals or greater than the added one.
+        shiftTilesetIndexes(tileset->sprite(), tsi, 1);
+      }
+    }
+
     void erase(const tileset_index tsi) {
-      // Do not m_tilesets.erase() the tileset so other tilesets
-      // indexes/IDs are kept intact.
+      // When tsi is the last one, other tilemaps tilesets
+      // indexes are not affected.
       if (tsi == size()-1) {
         m_tilesets.erase(--m_tilesets.end());
       }
       else {
-        // TODO Should we keep the empty slot? Or should we update all
-        //      indexes (even from external files?). Having a nullptr
-        //      tileset in the sprite adds a lot of complexity (each
-        //      for-loop must check the tileset)
-        m_tilesets[tsi] = nullptr;
+        auto ts = m_tilesets[tsi];
+        m_tilesets.erase(m_tilesets.begin()+tsi);
+        // Update tileset indexes of the affected tilemaps. We have to shift the indexes
+        // for all the tilemaps pointing to a tileset index greater than the deleted one.
+        shiftTilesetIndexes(ts->sprite(), tsi+1, -1);
       }
     }
 
   private:
     Array m_tilesets;
+
+    void shiftTilesetIndexes(Sprite *sprite, tileset_index pos, int n) {
+      for (auto layer : sprite->allTilemaps()) {
+        auto tilemap = static_cast<LayerTilemap*>(layer);
+        if (tilemap->tilesetIndex() >= pos) {
+          tilemap->setTilesetIndex(tilemap->tilesetIndex()+n);
+        }
+      }
+    }
   };
 
 } // namespace doc

@@ -131,6 +131,9 @@ namespace doc {
     // have to regenerate the empty tile with that new mask color.
     void notifyRegenerateEmptyTile();
 
+    // Returns the number of tilemap layers that are referencing this tileset.
+    int tilemapsCount() const;
+
 #ifdef _DEBUG
     void assertValidHashTable();
 #endif

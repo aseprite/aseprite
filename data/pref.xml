@@ -429,6 +429,9 @@
       <option id="base_index" type="int" default="1" />
       <option id="cache_compressed_tilesets" type="bool" default="true" />
     </section>
+    <section id="tilemap">
+      <option id="show_delete_unused_tileset_alert" type="bool" default="true" />
+    </section>
   </global>
 
   <tool>

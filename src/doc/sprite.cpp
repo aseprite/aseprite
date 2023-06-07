@@ -736,6 +736,13 @@ LayerList Sprite::allBrowsableLayers() const
   return list;
 }
 
+LayerList Sprite::allTilemaps() const
+{
+  LayerList list;
+  m_root->allTilemaps(list);
+  return list;
+}
+
 CelsRange Sprite::cels() const
 {
   SelectedFrames selFrames;

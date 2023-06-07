@@ -78,7 +78,7 @@ void AddTileset::addTileset(doc::Tileset* tileset)
   if (m_tilesetIndex == -1)
     m_tilesetIndex = sprite->tilesets()->add(tileset);
   else
-    sprite->tilesets()->set(m_tilesetIndex, tileset);
+    sprite->tilesets()->add(m_tilesetIndex, tileset);
 
   sprite->incrementVersion();
   sprite->tilesets()->incrementVersion();
