@@ -1117,3 +1117,113 @@ do
   expect_eq(app.activeLayer.cels[1].image.width, 1) -- width in tilemap terms
   expect_eq(app.activeLayer.cels[1].image.height, 2) -- height in tilemap terms
 end
+
+----------------------------------------------------------------------
+-- Tests removal of unused tilesets when deleting tilemaps
+----------------------------------------------------------------------
+
+do
+  local spr = Sprite(32, 32, ColorMode.INDEXED)
+  assert(spr.layers[1].isImage)
+  assert(not spr.layers[1].isTilemap)
+
+  -- Create some tilemaps
+  app.command.NewLayer{ tilemap=true }
+  assert(#spr.layers == 2)
+  local tilemapLay1 = spr.layers[2]
+  assert(tilemapLay1.isImage)
+  assert(tilemapLay1.isTilemap)
+  assert(#spr.tilesets == 1)
+  assert(spr.tilesets[1] == tilemapLay1.tileset)
+
+  app.command.NewLayer{ tilemap=true }
+  assert(#spr.layers == 3)
+  local tilemapLay2 = spr.layers[3]
+  assert(tilemapLay2.isImage)
+  assert(tilemapLay2.isTilemap)
+  assert(#spr.tilesets == 2)
+  assert(spr.tilesets[2] == tilemapLay2.tileset)
+
+  app.command.NewLayer{ tilemap=true }
+  assert(#spr.layers == 4)
+  local tilemapLay3 = spr.layers[4]
+  assert(tilemapLay3.isImage)
+  assert(tilemapLay3.isTilemap)
+  assert(#spr.tilesets == 3)
+  assert(spr.tilesets[3] == tilemapLay3.tileset)
+
+  -- Remove tilemap 2 and check that a tilemap was removed and
+  -- tilesets of remaining tilemaps are correct.
+  app.range.layers = { tilemapLay2 }
+  app.command.RemoveLayer()
+  assert(#spr.layers == 3)
+  assert(#spr.tilesets == 2)
+  assert(spr.tilesets[1] == tilemapLay1.tileset)
+  assert(spr.tilesets[2] == tilemapLay3.tileset)
+
+  -- Undo tilemap removal and check that it goes back to
+  -- previous state.
+  app.undo()
+
+  assert(#spr.layers == 4)
+  assert(#spr.tilesets == 3)
+  assert(spr.tilesets[1] == tilemapLay1.tileset)
+  assert(spr.tilesets[2] == tilemapLay2.tileset)
+  assert(spr.tilesets[3] == tilemapLay3.tileset)
+
+  -- Try removing 2 tilemaps now
+  app.range.layers = { tilemapLay1, tilemapLay2 }
+  app.command.RemoveLayer()
+  assert(#spr.layers == 2)
+  assert(#spr.tilesets == 1)
+  assert(spr.tilesets[1] == tilemapLay3.tileset)
+
+  app.undo()
+
+  assert(#spr.layers == 4)
+  assert(#spr.tilesets == 3)
+  assert(spr.tilesets[1] == tilemapLay1.tileset)
+  assert(spr.tilesets[2] == tilemapLay2.tileset)
+  assert(spr.tilesets[3] == tilemapLay3.tileset)
+
+  -- Assign same tileset to tilemap 1 and tilemap 3.
+  local oldTilemapLay3Tileset = tilemapLay3.tileset
+  tilemapLay3.tileset = tilemapLay1.tileset
+  -- We have to manually delete tilemap 3 tileset because
+  -- assigning a different tileset doesn't check for/remove
+  -- unused tilesets (TODO: should we add this?)
+  spr:deleteTileset(oldTilemapLay3Tileset)
+
+  assert(#spr.tilesets == 2)
+  assert(spr.tilesets[1] == tilemapLay1.tileset)
+  assert(spr.tilesets[2] == tilemapLay2.tileset)
+  assert(spr.tilesets[1] == tilemapLay3.tileset)
+
+  -- Remove tilemap 1 and check that no tileset was removed.
+  app.range.layers = { tilemapLay1 }
+  app.command.RemoveLayer()
+  assert(#spr.layers == 3)
+  assert(#spr.tilesets == 2)
+  assert(spr.tilesets[2] == tilemapLay2.tileset)
+  assert(spr.tilesets[1] == tilemapLay3.tileset)
+
+  -- Remove tilemap 3 and check that the tileset was removed now.
+  app.range.layers = { tilemapLay3 }
+  app.command.RemoveLayer()
+  assert(#spr.layers == 2)
+  assert(#spr.tilesets == 1)
+  assert(spr.tilesets[1] == tilemapLay2.tileset)
+
+  -- Undo all
+  app.undo()
+  app.undo()
+  app.undo()
+  -- Manually re-assign its tileset to tilemap 3.
+  tilemapLay3.tileset = spr.tilesets[3]
+
+  assert(#spr.layers == 4)
+  assert(#spr.tilesets == 3)
+  assert(spr.tilesets[1] == tilemapLay1.tileset)
+  assert(spr.tilesets[2] == tilemapLay2.tileset)
+  assert(spr.tilesets[3] == tilemapLay3.tileset)
+end

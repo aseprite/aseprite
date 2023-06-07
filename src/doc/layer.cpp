@@ -529,6 +529,17 @@ void LayerGroup::allBrowsableLayers(LayerList& list) const
   }
 }
 
+void LayerGroup::allTilemaps(LayerList& list) const
+{
+  for (Layer* child : m_layers) {
+    if (child->isGroup())
+      static_cast<LayerGroup*>(child)->allTilemaps(list);
+
+    if (child->isTilemap())
+      list.push_back(child);
+  }
+}
+
 void LayerGroup::getCels(CelList& cels) const
 {
   for (const Layer* layer : m_layers)

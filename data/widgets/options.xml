@@ -458,6 +458,8 @@
                  pref="export_file.show_overwrite_files_alert" />
           <check id="overwrite_files_on_export_sprite_sheet_alert" text="@.overwrite_files_on_export_sprite_sheet_alert"
                  pref="sprite_sheet.show_overwrite_files_alert" />
+          <check id="delete_tilemap_delete_unused_tileset_alert" text="@.delete_tilemap_delete_unused_tileset_alert"
+                 pref="tilemap.show_delete_unused_tileset_alert" />
           <check id="advanced_mode_alert" text="@.advanced_mode_alert"
                  pref="advanced_mode.show_alert" />
           <check id="invalid_fg_bg_color_alert" text="@.invalid_fg_bg_color_alert"

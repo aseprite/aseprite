@@ -211,6 +211,7 @@ namespace doc {
     void allVisibleLayers(LayerList& list) const;
     void allVisibleReferenceLayers(LayerList& list) const;
     void allBrowsableLayers(LayerList& list) const;
+    void allTilemaps(LayerList& list) const;
 
     void getCels(CelList& cels) const override;
     void displaceFrames(frame_t fromThis, frame_t delta) override;

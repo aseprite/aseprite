@@ -10,6 +10,9 @@
 
 #include "doc/tileset.h"
 
+#include "doc/tilesets.h"
+#include "doc/layer.h"
+#include "doc/layer_tilemap.h"
 #include "base/mem_utils.h"
 #include "doc/primitives.h"
 #include "doc/remap.h"
@@ -404,6 +407,17 @@ TilesetHashTable& Tileset::hashTable()
       hashImage(ti++, tile.image);
   }
   return m_hash;
+}
+
+int Tileset::tilemapsCount() const {
+  auto tsi = sprite()->tilesets()->getIndex(this);
+  int count = 0;
+  for (auto layer : sprite()->allLayers()) {
+    if (layer->isTilemap() && static_cast<LayerTilemap*>(layer)->tilesetIndex() == tsi) {
+      count++;
+    }
+  }
+  return count;
 }
 
 } // namespace doc

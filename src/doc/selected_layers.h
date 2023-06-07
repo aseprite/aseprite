@@ -41,6 +41,7 @@ namespace doc {
     bool hasSameParent() const;
     LayerList toBrowsableLayerList() const;
     LayerList toAllLayersList() const;
+    LayerList toAllTilemaps() const;
 
     void removeChildrenIfParentIsSelected();
     void expandCollapsedGroups();

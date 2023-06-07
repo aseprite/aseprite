@@ -99,6 +99,24 @@ LayerList SelectedLayers::toBrowsableLayerList() const
   return output;
 }
 
+LayerList SelectedLayers::toAllTilemaps() const
+{
+  LayerList output;
+
+  if (empty())
+    return output;
+
+  for (Layer* layer : *this) {
+    if (layer->isGroup()) {
+      auto group = static_cast<LayerGroup*>(layer);
+      group->allTilemaps(output);
+    } else if (layer->isTilemap())
+      output.push_back(layer);
+  }
+
+  return output;
+}
+
 void SelectedLayers::removeChildrenIfParentIsSelected()
 {
   SelectedLayers removeThese;
