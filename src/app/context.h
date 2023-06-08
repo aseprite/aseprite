@@ -22,6 +22,7 @@
 #include "obs/observable.h"
 #include "obs/signal.h"
 #include "os/surface.h"
+#include "view/range.h"
 
 #include <memory>
 #include <vector>
@@ -29,10 +30,6 @@
 namespace doc {
   class Layer;
   class PalettePicks;
-}
-
-namespace view {
-  class Range;
 }
 
 namespace app {
@@ -134,10 +131,11 @@ namespace app {
 
     Site activeSite() const;
     Doc* activeDocument() const;
+    const view::RealRange& range() const;
     void setActiveDocument(Doc* document);
     void setActiveLayer(doc::Layer* layer);
     void setActiveFrame(doc::frame_t frame);
-    void setRange(const view::Range& range);
+    void setRange(const view::RealRange& range);
     void setSelectedColors(const doc::PalettePicks& picks);
     void setSelectedTiles(const doc::PalettePicks& picks);
     bool hasModifiedDocuments() const;
@@ -170,7 +168,7 @@ namespace app {
     virtual void onSetActiveDocument(Doc* doc, bool notify);
     virtual void onSetActiveLayer(doc::Layer* layer);
     virtual void onSetActiveFrame(const doc::frame_t frame);
-    virtual void onSetRange(const view::Range& range);
+    virtual void onSetRange(const view::RealRange& range);
     virtual void onSetSelectedColors(const doc::PalettePicks& picks);
     virtual void onSetSelectedTiles(const doc::PalettePicks& picks);
     virtual void onCloseDocument(Doc* doc);
@@ -188,6 +186,7 @@ namespace app {
     Doc* m_lastSelectedDoc;
     mutable std::unique_ptr<Preferences> m_preferences;
     std::unique_ptr<DraggedData> m_draggedData = nullptr;
+    mutable view::RealRange m_range; // Last/current range
 
     // Result of the execution of a command.
     CommandResult m_result;

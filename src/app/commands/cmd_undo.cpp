@@ -144,12 +144,9 @@ void UndoCommand::onExecute(Context* context)
   // this point when objects (possible layers) are re-created after
   // the undo and we can deserialize them.
   if (docRangeStream) {
-    Timeline* timeline = App::instance()->timeline();
-    if (timeline) {
-      DocRange docRange;
-      if (docRange.read(*docRangeStream))
-        timeline->setRange(docRange);
-    }
+    view::Range docRange;
+    if (docRange.read(*docRangeStream))
+      context->setRange(docRange);
   }
 
   document->generateMaskBoundaries();

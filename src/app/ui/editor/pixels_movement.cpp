@@ -187,7 +187,7 @@ bool PixelsMovement::editMultipleCels() const
   return
     (m_site.range().enabled() &&
      (Preferences::instance().selection.multicelWhenLayersOrFrames() ||
-      m_site.range().type() == DocRange::kCels));
+      m_site.range().type() == view::Range::kCels));
 }
 
 void PixelsMovement::setDelegate(PixelsMovementDelegate* delegate)

@@ -49,7 +49,6 @@
 #include "app/ui/main_window.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
-#include "app/ui/timeline/timeline.h"
 #include "app/ui_context.h"
 #include "app/util/layer_utils.h"
 #include "app/util/new_image_from_mask.h"
@@ -165,7 +164,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
                        editor->projection(),
                        ColorPicker::FromComposition);
 
-      auto range = App::instance()->timeline()->range();
+      const view::RealRange& range = context->range();
       if (picker.layer() &&
           !range.contains(picker.layer())) {
         layer = picker.layer();

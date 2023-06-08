@@ -43,8 +43,10 @@ namespace view {
     const doc::SelectedFrames& selectedFrames() const  { return m_selectedFrames; }
 
     void setType(const Type type);
-    void setSelectedLayers(const doc::SelectedLayers& layers);
-    void setSelectedFrames(const doc::SelectedFrames& frames);
+    void setSelectedLayers(const doc::SelectedLayers& layers,
+                           const bool touchFlags = true);
+    void setSelectedFrames(const doc::SelectedFrames& frames,
+                           const bool touchFlags = true);
 
     void displace(const doc::layer_t layerDelta,
                   const doc::frame_t frameDelta);
@@ -94,6 +96,13 @@ namespace view {
     doc::Layer* m_selectingFromLayer;
     doc::frame_t m_selectingFromFrame;
   };
+
+  // TODO We should make these types strongly-typed and not just aliases.
+  // E.g.
+  //   using VirtualRange = RangeT<col_t>;
+  //   using RealRange = RangeT<fr_t>;
+  using VirtualRange = Range;
+  using RealRange = Range;
 
 } // namespace view
 

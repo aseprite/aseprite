@@ -66,7 +66,7 @@ MovingSliceState::MovingSliceState(Editor* editor,
   }
 
   if (editor->slicesTransforms() && !m_items.empty()) {
-    DocRange range = m_site.range();
+    view::Range range = m_site.range();
     SelectedLayers selectedLayers = range.selectedLayers();
     // Do not take into account invisible layers.
     for (auto it = selectedLayers.begin(); it != selectedLayers.end(); ++it) {

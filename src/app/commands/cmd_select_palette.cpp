@@ -113,12 +113,12 @@ void SelectPaletteColorsCommand::onExecute(Context* context)
 {
   Site site = context->activeSite();
   Sprite* sprite = site.sprite();
-  DocRange range = site.range();
+  view::RealRange range = site.range();
   SelectedFrames selectedFrames;
   SelectedLayers selectedLayers;
-  if (range.type() == DocRange::Type::kNone) {
+  if (range.type() == view::Range::Type::kNone) {
     // If there isn't a cels range selected, it assumes the whole sprite:
-    range.startRange(site.layer(), 0, DocRange::Type::kFrames);
+    range.startRange(site.layer(), 0, view::Range::Type::kFrames);
     range.endRange(site.layer(), sprite->lastFrame());
     selectedFrames = range.selectedFrames();
     selectedLayers.selectAllLayers(sprite->root());
