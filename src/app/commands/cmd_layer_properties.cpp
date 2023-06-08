@@ -157,7 +157,7 @@ public:
     m_timer.stop();
     m_document = doc;
     m_layer = layer;
-    m_range = App::instance()->timeline()->range();
+    m_range = UIContext::instance()->range();
 
     if (m_document)
       m_document->add_observer(this);
@@ -267,11 +267,11 @@ private:
         ContextWriter writer(UIContext::instance());
         Tx tx(writer, "Set Layer Properties");
 
-        DocRange range;
+        view::RealRange range;
         if (m_range.enabled())
           range = m_range;
         else {
-          range.startRange(m_layer, -1, DocRange::kLayers);
+          range.startRange(m_layer, -1, view::Range::kLayers);
           range.endRange(m_layer, -1);
         }
 
@@ -471,7 +471,7 @@ private:
   bool m_pendingChanges = false;
   Doc* m_document = nullptr;
   Layer* m_layer = nullptr;
-  DocRange m_range;
+  view::RealRange m_range;
   bool m_selfUpdate = false;
   UserDataView m_userDataView;
 };

@@ -9,6 +9,7 @@
 #pragma once
 
 #include "doc/sprite.h"
+#include "doc/tag.h"
 #include "view/frames.h"
 
 namespace view {
@@ -35,6 +36,12 @@ public:
   // frame of the sprite. Returns -1 if the frame is not visible given
   // the current timeline filters/hidden frames.
   virtual col_t toColFrame(fr_t frame) const = 0;
+
+  // Returns true if this tag is being used for this specific timeline
+  // adapter/view. E.g. if a tag is going to be removed and this
+  // timeline view is using that tag, we must switch to other kind of
+  // timeline view that doesn't use this tag anymore.
+  virtual bool isViewingTag(doc::Tag* tag) const = 0;
 };
 
 // Represents the default timeline view where the whole sprite is
@@ -46,8 +53,36 @@ public:
   int frameDuration(col_t frame) const override { return m_sprite->frameDuration(frame); }
   fr_t toRealFrame(col_t frame) const override { return fr_t(frame); }
   col_t toColFrame(fr_t frame) const override { return col_t(frame); }
+  bool isViewingTag(doc::Tag*) const override { return false; }
 private:
   doc::Sprite* m_sprite = nullptr;
+};
+
+// Represents an alternative timeline to show only the specified tag.
+class ShowTagTimelineAdapter : public TimelineAdapter {
+public:
+  ShowTagTimelineAdapter(doc::Sprite* sprite,
+                         doc::Tag* tag) : m_sprite(sprite)
+                                        , m_tag(tag) { }
+  col_t totalFrames() const override { return col_t(m_tag->frames()); }
+  int frameDuration(col_t frame) const override {
+    return m_sprite->frameDuration(doc::frame_t(toRealFrame(frame)));
+  }
+  fr_t toRealFrame(col_t frame) const override {
+    return fr_t(frame + m_tag->fromFrame());
+  }
+  col_t toColFrame(fr_t frame) const override {
+    if (m_tag->contains(frame))
+      return col_t(frame - m_tag->fromFrame());
+    else
+      return kNoCol;
+  }
+  bool isViewingTag(doc::Tag* tag) const override {
+    return m_tag == tag;
+  }
+private:
+  doc::Sprite* m_sprite = nullptr;
+  doc::Tag* m_tag = nullptr;
 };
 
 } // namespace view

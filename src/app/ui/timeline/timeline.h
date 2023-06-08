@@ -10,7 +10,6 @@
 #pragma once
 
 #include "app/doc_observer.h"
-#include "app/doc_range.h"
 #include "app/docs_observer.h"
 #include "app/loop_tag.h"
 #include "app/pref/preferences.h"
@@ -32,6 +31,7 @@
 #include "ui/scroll_bar.h"
 #include "ui/timer.h"
 #include "ui/widget.h"
+#include "view/range.h"
 #include "view/timeline_adapter.h"
 
 #include <memory>
@@ -73,7 +73,9 @@ namespace app {
                    public InputChainElement,
                    public TagProvider {
   public:
-    using Range = DocRange;
+    using Range = view::Range;
+    using RealRange = view::RealRange;
+    using VirtualRange = view::VirtualRange;
     using fr_t = view::fr_t;
     using col_t = view::col_t;
     static constexpr const auto kNoCol = view::kNoCol;
@@ -116,13 +118,16 @@ namespace app {
     // The range is specified in "virtual frames" (not real sprite
     // frames, we'll have to do a conversion each time we want to use
     // this range with the sprite).
-    Range range() const { return m_range; }
-    const SelectedLayers& selectedLayers() const { return m_range.selectedLayers(); }
-    const SelectedFrames& selectedFrames() const { return m_range.selectedFrames(); }
+    VirtualRange virtualRange() const { return m_range; }
+    bool isRangeEnabled() const { return m_range.enabled(); }
+
+    // Returns the range in "real sprite frames."
+    RealRange realRange() const;
 
     void prepareToMoveRange();
-    void moveRange(const Range& range);
-    void setRange(const Range& range);
+    void moveRange(const VirtualRange& range);
+    void setVirtualRange(const VirtualRange& range);
+    void setRealRange(const RealRange& range);
 
     void activateClipboardRange();
 
@@ -305,6 +310,7 @@ namespace app {
     void setCursor(ui::Message* msg, const Hit& hit);
     void getDrawableLayers(layer_t* firstLayer, layer_t* lastLayer);
     void getDrawableFrames(col_t* firstFrame, col_t* lastFrame);
+    bool getTagFrames(const doc::Tag* tag, col_t* fromFrame, col_t* toFrame) const;
     void drawPart(ui::Graphics* g, const gfx::Rect& bounds,
                   const std::string* text,
                   ui::Style* style,
@@ -314,13 +320,13 @@ namespace app {
                   const bool is_disabled = false);
     void drawTop(ui::Graphics* g);
     void drawHeader(ui::Graphics* g);
-    void drawHeaderFrame(ui::Graphics* g, const col_t frame);
+    void drawHeaderFrame(ui::Graphics* g, const col_t col);
     void drawLayer(ui::Graphics* g, const layer_t layerIdx);
     void drawCel(ui::Graphics* g,
-                 const layer_t layerIdx, const col_t frame,
+                 const layer_t layerIdx, const col_t col,
                  const Cel* cel, const DrawCelData* data);
     void drawCelLinkDecorators(ui::Graphics* g, const gfx::Rect& bounds,
-                               const Cel* cel, const col_t frame,
+                               const Cel* cel, const col_t col,
                                const bool is_active, const bool is_hover,
                                const DrawCelData* data);
     void drawTags(ui::Graphics* g);
@@ -420,6 +426,7 @@ namespace app {
 
     int separatorX() const;
     void setSeparatorX(int newValue);
+    void updateTimelineAdapter(bool allTags);
 
     static gfx::Color highlightColor(const gfx::Color color);
 
@@ -435,9 +442,9 @@ namespace app {
     Layer* m_layer;
     col_t m_frame;
     int m_rangeLocks;
-    Range m_range;
-    Range m_startRange;
-    Range m_dropRange;
+    VirtualRange m_range;
+    VirtualRange m_startRange;
+    VirtualRange m_dropRange;
     State m_state;
 
     // Version of the sprite before executing a command. Used to check
@@ -504,13 +511,13 @@ namespace app {
       }
       void reset(const view::TimelineAdapter& adapter,
                  const doc::ObjectId tagId) {
-        if (auto tag = doc::get<doc::Tag>(tagId)) {
-          this->tag = tagId;
-          this->from = adapter.toColFrame(fr_t(tag->fromFrame()));
-          this->to = adapter.toColFrame(fr_t(tag->toFrame()));
+        if (auto t = doc::get<doc::Tag>(tagId)) {
+          tag = tagId;
+          from = adapter.toColFrame(fr_t(t->fromFrame()));
+          to = adapter.toColFrame(fr_t(t->toFrame()));
         }
         else {
-          this->tag = doc::NullId;
+          tag = doc::NullId;
         }
       }
     } m_resizeTagData;
