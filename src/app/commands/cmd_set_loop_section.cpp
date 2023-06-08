@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2023  Igara Studio SA
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -79,7 +80,7 @@ void SetLoopSectionCommand::onExecute(Context* ctx)
   switch (m_action) {
 
     case Action::Auto: {
-      auto range = App::instance()->timeline()->range();
+      const view::RealRange& range = ctx->range();
       if (range.enabled() && (range.frames() > 1)) {
         begin = range.selectedFrames().firstFrame();
         end = range.selectedFrames().lastFrame();

@@ -9,7 +9,6 @@
 #define APP_SITE_H_INCLUDED
 #pragma once
 
-#include "app/doc_range.h"
 #include "app/tilemap_mode.h"
 #include "app/tileset_mode.h"
 #include "doc/cel_list.h"
@@ -17,6 +16,7 @@
 #include "doc/palette_picks.h"
 #include "doc/selected_objects.h"
 #include "gfx/fwd.h"
+#include "view/range.h"
 
 namespace doc {
   class Grid;
@@ -70,14 +70,14 @@ namespace app {
     doc::Layer* layer() const { return m_layer; }
     doc::frame_t frame() const { return m_frame; }
     doc::Cel* cel() const;
-    const DocRange& range() const { return m_range; }
+    const view::RealRange& range() const { return m_range; }
 
     void focus(Focus focus) { m_focus = focus; }
     void document(Doc* document) { m_document = document; }
     void sprite(doc::Sprite* sprite) { m_sprite = sprite; }
     void layer(doc::Layer* layer) { m_layer = layer; }
     void frame(doc::frame_t frame) { m_frame = frame; }
-    void range(const DocRange& range);
+    void range(const view::RealRange& range);
 
     const doc::SelectedLayers& selectedLayers() const { return m_range.selectedLayers(); }
     const doc::SelectedFrames& selectedFrames() const { return m_range.selectedFrames(); }
@@ -132,7 +132,7 @@ namespace app {
     doc::Sprite* m_sprite;
     doc::Layer* m_layer;
     doc::frame_t m_frame;
-    DocRange m_range;
+    view::RealRange m_range;
     doc::PalettePicks m_selectedColors;
     doc::PalettePicks m_selectedTiles;
     doc::SelectedObjects m_selectedSlices;
