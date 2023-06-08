@@ -285,29 +285,37 @@ void Range::setType(const Type type)
   }
 }
 
-void Range::setSelectedLayers(const SelectedLayers& layers)
+void Range::setSelectedLayers(const SelectedLayers& layers,
+                              const bool touchFlags)
 {
   if (layers.empty()) {
-    m_type = kNone;
+    if (touchFlags)
+      m_type = kNone;
     m_selectedLayers.clear();
     return;
   }
 
-  m_type = kLayers;
-  m_flags |= kLayers;
+  if (touchFlags) {
+    m_type = kLayers;
+    m_flags |= kLayers;
+  }
   m_selectedLayers = layers;
 }
 
-void Range::setSelectedFrames(const SelectedFrames& frames)
+void Range::setSelectedFrames(const SelectedFrames& frames,
+                              const bool touchFlags)
 {
   if (frames.empty()) {
-    m_type = kNone;
+    if (touchFlags)
+      m_type = kNone;
     m_selectedFrames.clear();
     return;
   }
 
-  m_type = kFrames;
-  m_flags |= kFrames;
+  if (touchFlags) {
+    m_type = kFrames;
+    m_flags |= kFrames;
+  }
   m_selectedFrames = frames;
 }
 

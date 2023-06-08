@@ -1072,7 +1072,8 @@ void KeyboardShortcuts::disableAccel(const ui::Accelerator& accel,
 
 KeyContext KeyboardShortcuts::getCurrentKeyContext() const
 {
-  Doc* doc = UIContext::instance()->activeDocument();
+  auto ctx = UIContext::instance();
+  Doc* doc = ctx->activeDocument();
   if (doc &&
       doc->isMaskVisible() &&
       // The active key context will be the selectedTool() (in the
@@ -1090,11 +1091,11 @@ KeyContext KeyboardShortcuts::getCurrentKeyContext() const
     return KeyContext::SelectionTool;
   }
 
-  auto timeline = App::instance()->timeline();
-  if (doc && timeline &&
-      !timeline->selectedFrames().empty() &&
-      (timeline->range().type() == DocRange::kFrames ||
-       timeline->range().type() == DocRange::kCels)) {
+  const view::RealRange& range = ctx->range();
+  if (doc &&
+      !range.selectedFrames().empty() &&
+      (range.type() == view::Range::kFrames ||
+       range.type() == view::Range::kCels)) {
     return KeyContext::FramesSelection;
   }
 

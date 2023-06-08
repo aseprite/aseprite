@@ -95,7 +95,7 @@ public:
     m_timer.stop();
     m_document = doc;
     m_cel = cel;
-    m_range = App::instance()->timeline()->range();
+    m_range = UIContext::instance()->range();
 
     if (m_document)
       m_document->add_observer(this);
@@ -276,7 +276,7 @@ private:
         m_lastValues.text = newUserData.text();
 
         if (redrawTimeline)
-          App::instance()->timeline()->invalidate();
+          App::instance()->timeline()->invalidate(); // TODO avoid this invalidating in tx.commit()
 
         tx.commit();
       }
@@ -378,7 +378,7 @@ private:
   bool m_pendingChanges = false;
   Doc* m_document = nullptr;
   Cel* m_cel = nullptr;
-  DocRange m_range;
+  view::RealRange m_range;
   bool m_selfUpdate = false;
   UserDataView m_userDataView;
   CelPropsLastValues m_lastValues;

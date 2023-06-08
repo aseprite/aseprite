@@ -441,8 +441,8 @@ void Editor::getSite(Site* site) const
   Timeline* timeline = App::instance()->timeline();
   if (timeline &&
       timeline->isVisible() &&
-      timeline->range().enabled()) {
-    site->range(timeline->range());
+      timeline->isRangeEnabled()) {
+    site->range(timeline->realRange());
   }
 
   if (m_layer && m_layer->isTilemap()) {

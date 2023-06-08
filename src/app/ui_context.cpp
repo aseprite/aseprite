@@ -176,13 +176,13 @@ void UIContext::onSetActiveFrame(const doc::frame_t frame)
     Context::onSetActiveFrame(frame);
 }
 
-void UIContext::onSetRange(const DocRange& range)
+void UIContext::onSetRange(const view::RealRange& range)
 {
   Timeline* timeline =
     (App::instance()->mainWindow() ?
      App::instance()->mainWindow()->getTimeline(): nullptr);
   if (timeline) {
-    timeline->setRange(range);
+    timeline->setRealRange(range);
   }
   else if (!isUIAvailable()) {
     Context::onSetRange(range);
@@ -353,8 +353,8 @@ void UIContext::onGetActiveSite(Site* site) const
       Timeline* timeline = App::instance()->timeline();
       if (timeline &&
           timeline->isVisible() &&
-          timeline->range().enabled()) {
-        site->range(timeline->range());
+          timeline->isRangeEnabled()) {
+        site->range(timeline->realRange());
       }
       else {
         ColorBar* colorBar = ColorBar::instance();

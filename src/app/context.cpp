@@ -96,6 +96,14 @@ Doc* Context::activeDocument() const
   return site.document();
 }
 
+const view::RealRange& Context::range() const
+{
+  Site site;
+  onGetActiveSite(&site);
+  m_range = site.range(); // TODO cache this value as much as possible
+  return m_range;
+}
+
 void Context::setActiveDocument(Doc* document)
 {
   onSetActiveDocument(document, true);
@@ -111,7 +119,7 @@ void Context::setActiveFrame(const doc::frame_t frame)
   onSetActiveFrame(frame);
 }
 
-void Context::setRange(const DocRange& range)
+void Context::setRange(const view::RealRange& range)
 {
   onSetRange(range);
 }
@@ -304,7 +312,7 @@ void Context::onSetActiveFrame(const doc::frame_t frame)
   notifyActiveSiteChanged();
 }
 
-void Context::onSetRange(const DocRange& range)
+void Context::onSetRange(const view::RealRange& range)
 {
   if (m_lastSelectedDoc)
     activeSiteHandler()->setRangeInDoc(m_lastSelectedDoc, range);

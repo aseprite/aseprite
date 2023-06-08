@@ -145,19 +145,16 @@ void UndoCommand::onExecute(Context* context)
       editor->setFrame(spritePosition.frame());
     }
   }
+#endif  // ENABLE_UI
 
   // Update timeline range. We've to deserialize the DocRange at
   // this point when objects (possible layers) are re-created after
   // the undo and we can deserialize them.
   if (docRangeStream) {
-    Timeline* timeline = App::instance()->timeline();
-    if (timeline) {
-      DocRange docRange;
-      if (docRange.read(*docRangeStream))
-        timeline->setRange(docRange);
-    }
+    view::Range docRange;
+    if (docRange.read(*docRangeStream))
+      context->setRange(docRange);
   }
-#endif  // ENABLE_UI
 
   document->generateMaskBoundaries();
   document->setExtraCel(ExtraCelRef(nullptr));

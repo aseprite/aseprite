@@ -4,7 +4,8 @@
 add_library(view-lib
   cels.cpp
   layers.cpp
-  range.cpp)
+  range.cpp
+  utils.cpp)
 
 target_link_libraries(view-lib
   doc-lib
