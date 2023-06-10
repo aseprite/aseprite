@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CMakeSharedSettings">
+    <configurations>
+      <configuration PROFILE_NAME="Release" ENABLED="true" CONFIG_NAME="RelWithDebInfo" GENERATION_OPTIONS="-DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 -DLAF_BACKEND=skia -DSKIA_DIR=~/deps/skia -DSKIA_LIBRARY_DIR=~/deps/skia/out/Release-arm64 -DSKIA_LIBRARY=~/deps/skia/out/Release-arm64/libskia.a -DPNG_ARM_NEON:STRING=on" />
+      <configuration PROFILE_NAME="Debug" ENABLED="true" CONFIG_NAME="Debug" GENERATION_OPTIONS="-DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 -DLAF_BACKEND=skia -DSKIA_DIR=~/deps/skia -DSKIA_LIBRARY_DIR=~/deps/skia/out/Release-arm64 -DSKIA_LIBRARY=~/deps/skia/out/Release-arm64/libskia.a -DPNG_ARM_NEON:STRING=on" />
+    </configurations>
+  </component>
+</project>
