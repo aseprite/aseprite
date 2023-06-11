@@ -653,6 +653,8 @@ void Window::onInvalidateRegion(const gfx::Region& region)
 void Window::onResize(ResizeEvent& ev)
 {
   windowSetPosition(ev.bounds());
+  // Fire Resize signal
+  Resize(ev);
 }
 
 void Window::onSizeHint(SizeHintEvent& ev)

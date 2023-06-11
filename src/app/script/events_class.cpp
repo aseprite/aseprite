@@ -22,9 +22,11 @@
 #include "app/script/luacpp.h"
 #include "app/script/values.h"
 #include "app/site.h"
+#include "app/ui/main_window.h"
 #include "doc/document.h"
 #include "doc/sprite.h"
 #include "ui/app_state.h"
+#include "ui/resize_event.h"
 
 #include <any>
 #include <cstring>
@@ -158,6 +160,7 @@ public:
     BgColorChange,
     BeforeCommand,
     AfterCommand,
+    Resize,
   };
 
   AppEvents() {
@@ -174,6 +177,8 @@ public:
       return BeforeCommand;
     else if (std::strcmp(eventName, "aftercommand") == 0)
       return AfterCommand;
+    else if (std::strcmp(eventName, "resize") == 0)
+      return Resize;
     else
       return Unknown;
   }
@@ -204,6 +209,10 @@ private:
         m_afterCmdConn = ctx->AfterCommandExecution
           .connect(&AppEvents::onAfterCommand, this);
         break;
+      case Resize:
+        m_resizeConn = app->mainWindow()->Resize
+          .connect(&AppEvents::onResize, this);
+        break;
     }
   }
 
@@ -223,6 +232,9 @@ private:
         break;
       case AfterCommand:
         m_afterCmdConn.disconnect();
+        break;
+      case Resize:
+        m_resizeConn.disconnect();
         break;
     }
   }
@@ -254,6 +266,11 @@ private:
                          { "params", ev.params() } });
   }
 
+  void onResize(ui::ResizeEvent& ev) {
+    call(Resize, { { "width", ev.bounds().w },
+                   { "height", ev.bounds().h } });
+  }
+
   // ContextObserver impl
   void onActiveSiteChange(const Site& site) override {
     const bool fromUndo = (site.document() &&
@@ -266,6 +283,7 @@ private:
   obs::scoped_connection m_beforeCmdConn;
   obs::scoped_connection m_afterCmdConn;
   obs::scoped_connection m_beforePaintConn;
+  obs::scoped_connection m_resizeConn;
 };
 
 class SpriteEvents : public Events

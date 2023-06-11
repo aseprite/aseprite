@@ -92,6 +92,7 @@ namespace ui {
     // Signals
     obs::signal<void (Event&)> Open;
     obs::signal<void (CloseEvent&)> Close;
+    obs::signal<void (ResizeEvent&)> Resize;
 
   protected:
     ButtonBase* closeButton() { return m_closeButton; }
