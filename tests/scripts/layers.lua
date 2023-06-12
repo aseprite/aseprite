@@ -213,3 +213,23 @@ do
   assert(s.layers[1] ~= s) -- Uses Layer_eq() to compare
   assert(s ~= s.layers[1]) -- Uses Sprite_eq() to compare
 end
+
+-- Try to remove all layers and check that it wasn't allowed
+
+do
+  -- Try removing default layer
+  local s = Sprite(2, 2)
+  assert(#s.layers == 1)
+  app.command.RemoveLayer()
+  assert(#s.layers == 1)
+
+  -- Try deleting all layers when there are more than one.
+  s = Sprite(2, 2)
+  local a = s.layers[1]
+  local b = s:newLayer()
+  local c = s:newLayer()
+  app.range.layers = { a, b, c }
+  assert(#s.layers == 3)
+  app.command.RemoveLayer()
+  assert(#s.layers == 3)
+end

@@ -30,6 +30,24 @@
 
 namespace app {
 
+// If the UI is available this function shows an alert informing the user that they
+// cannot remove all the layers from the sprite (this is true when topLevelLayersToDelete
+// value is equals to the number of layers in the sprite's root group) and returns true.
+// If the UI is not available, this function just returns true if topLevelLayersToDelete is
+// equals to the number of layers in the sprite's root group.
+static bool deleting_all_layers(Context* ctx, Sprite* sprite, int topLevelLayersToDelete)
+{
+  const bool deletingAll = (topLevelLayersToDelete == sprite->root()->layersCount());
+
+#ifdef ENABLE_UI
+  if (ctx->isUIAvailable() && deletingAll) {
+    ui::Alert::show(Strings::alerts_cannot_delete_all_layers());
+  }
+#endif
+
+  return deletingAll;
+}
+
 // Calculates the list of unused tileset indexes (returned in tsiToDelete parameter)
 // once the layers specified are removed.
 // Also, if the UI is available, shows a warning message about the deletion of unused
@@ -130,8 +148,7 @@ void RemoveLayerCommand::onExecute(Context* context)
           ++deletedTopLevelLayers;
       }
 
-      if (deletedTopLevelLayers == sprite->root()->layersCount()) {
-        ui::Alert::show(Strings::alerts_cannot_delete_all_layers());
+      if (deleting_all_layers(context, sprite, deletedTopLevelLayers)) {
         return;
       }
 
@@ -144,8 +161,7 @@ void RemoveLayerCommand::onExecute(Context* context)
       }
     }
     else {
-      if (sprite->root()->layersCount() == 1) {
-        ui::Alert::show(Strings::alerts_cannot_delete_all_layers());
+      if (deleting_all_layers(context, sprite, 1)) {
         return;
       }
 
