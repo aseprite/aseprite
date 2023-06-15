@@ -221,6 +221,7 @@ public:
     , m_disposalMethod(DisposalMethod::NONE)
     , m_bgIndex(m_gifFile->SBackGroundColor >= 0 ? m_gifFile->SBackGroundColor: 0)
     , m_localTransparentIndex(-1)
+    , m_relocatedBgIndex(false)
     , m_frameDelay(1)
     , m_remap(256)
     , m_hasLocalColormaps(false)
@@ -371,7 +372,7 @@ private:
     }
 
     // Merge this frame colors with the current palette
-    if (frameImage)
+    if (frameImage && m_sprite->palette(m_frameNum)->size() <= 256)
       updatePalette(frameImage.get());
 
     // Convert the sprite to RGB if we have more than 256 colors
@@ -493,9 +494,12 @@ private:
   }
 
   // Adds colors used in the GIF frame so we can draw it over
-  // m_currentImage. If the frame contains a local colormap, we try to
-  // find them in the current sprite palette (using
-  // Palette::findExactMatch()) so we don't add duplicated entries.
+  // m_currentImage. If the frame 0 contains global palette and no local palette
+  // we'll take the entire global palette as a pelette, no matter if it's
+  // used or not in the image.
+  // On the other hand if the frame contains local palette, the colors will be
+  // added to the palette of the sprite via Palette::findExactMatch()) so
+  // we don't add duplicated entries.
   // To do so we use a Remap (m_remap variable) which matches the
   // original GIF frame colors with the current sprite colors.
   void updatePalette(const Image* frameImage) {
@@ -508,161 +512,136 @@ private:
     // We'll calculate the list of used colormap indexes in this
     // frameImage.
     PalettePicks usedEntries(ncolors);
-    if (isLocalColormap) {
-      // With this we avoid discarding the transparent index when a
-      // frame indicates that it uses a specific index as transparent
-      // but the image is completely opaque anyway.
-      if (!m_opaque && m_frameNum == 0 && m_localTransparentIndex >= 0 &&
-          m_localTransparentIndex < ncolors) {
-        usedEntries[m_localTransparentIndex] = true;
-      }
+    if (m_frameNum == 0 && !m_opaque &&
+        m_localTransparentIndex < ncolors &&
+        m_localTransparentIndex >= 0) {
+      m_bgIndex = m_localTransparentIndex;
+      m_sprite->setTransparentColor(m_bgIndex);
+      clear_image(m_currentImage.get(), m_bgIndex);
+      clear_image(m_previousImage.get(), m_bgIndex);
+      usedEntries[m_bgIndex] = true;
+    }
 
+    if (m_frameNum == 0 && !isLocalColormap)
+      // Mark all entries as used if the colormap is global.
+      usedEntries.all();
+    else {
       for (const auto& i : LockImageBits<IndexedTraits>(frameImage)) {
-        if (i >= 0 && i < ncolors && i != m_localTransparentIndex)
+        if (i >= 0 && i < ncolors)
           usedEntries[i] = true;
       }
-    }
-    // Mark all entries as used if the colormap is global.
-    else {
-      usedEntries.all();
     }
 
     // Number of colors (indexes) used in the frame image.
     int usedNColors = usedEntries.picks();
 
-    // Check if we need an extra color equal to the bg color in a
-    // transparent frameImage.
-    bool needsExtraBgColor = false;
-    bool needCheckLocalTransparent = m_bgIndex != m_localTransparentIndex ||
-                                     (ncolors > m_localTransparentIndex
-                                     && m_localTransparentIndex >= 0
-                                     && usedEntries[m_localTransparentIndex]);
-
-    if (m_sprite->pixelFormat() == IMAGE_INDEXED &&
-        !m_opaque &&
-        needCheckLocalTransparent) {
-      for (const auto& i : LockImageBits<IndexedTraits>(frameImage)) {
-        if (i == m_bgIndex) {
-          needsExtraBgColor = true;
-          break;
-        }
+    std::unique_ptr<Palette> palette;
+    if (m_frameNum == 0) {
+      int extraColor = m_localTransparentIndex >= ncolors ? 1 : 0;
+      palette.reset(new Palette(m_frameNum, usedNColors + extraColor));
+      if (!m_opaque && m_localTransparentIndex >= ncolors) {
+        // If m_localTransparentIndex is out of bounds, we'll define
+        // m_localTransparentIndex = last used color;
+        m_localTransparentIndex = palette->size() - 1;
+        m_bgIndex = m_localTransparentIndex;
+        m_sprite->setTransparentColor(m_bgIndex);
+        clear_image(m_currentImage.get(), m_bgIndex);
+        clear_image(m_previousImage.get(), m_bgIndex);
+        m_relocatedBgIndex = true;
       }
     }
-
-    std::unique_ptr<Palette> palette;
-    if (m_frameNum == 0)
-      palette.reset(new Palette(m_frameNum, usedNColors + (needsExtraBgColor ? 1: 0)));
     else {
       palette.reset(new Palette(*m_sprite->palette(m_frameNum-1)));
       palette->setFrame(m_frameNum);
     }
-    resetRemap(std::max(ncolors, palette->size()));
+    resetRemap(256);
 
-    // Number of colors in the colormap that are part of the current
-    // sprite palette.
-    int found = 0;
-    if (m_frameNum > 0) {
-      ColorMapObject* globalCMap = m_gifFile->SColorMap;
-      ColorMapObject* localCMap = m_gifFile->Image.ColorMap;
-      if (globalCMap && !m_hasLocalColormaps)
-        found = usedEntries.size();
-      else {
-        for (int i=0; i<ncolors; ++i) {
-          if (!usedEntries[i])
-            continue;
+    // Variable to stop remapping colors, because the palette
+    // passed 256 colors, this will imply that the sprite
+    // will be converted to RGBA mode, so remapping no longer makes sense.
+    bool stopRemap = false;
+    std::function relocateColorIndex =
+      [this, &palette, usedEntries, colormap, &stopRemap](int i, int maskIndex) {
+        int j = palette->findExactMatch(
+                  colormap->Colors[i].Red,
+                  colormap->Colors[i].Green,
+                  colormap->Colors[i].Blue, 255,
+                  maskIndex);
+        if (j < 0) {
+          palette->resize(palette->size() + 1);
+          j = palette->size() - 1;
+          palette->setEntry(j, colormap2rgba(colormap, i));
+        }
+        if (j < 256)
+          m_remap.map(i, j);
+        else
+          stopRemap = true;
+      };
 
-          if (localCMap && i < localCMap->ColorCount &&
-              rgba(localCMap->Colors[i].Red,
-                   localCMap->Colors[i].Green,
-                   localCMap->Colors[i].Blue, 255) == palette->getEntry(i)) {
-            ++found;
-            continue;
-          }
+    ColorMapObject* localCMap = m_gifFile->Image.ColorMap;
+    if (m_frameNum == 0) {
+      int j = 0;
+      for (int i = 0; i < ncolors; i++) {
+        if (!usedEntries[i])
+          continue;
+        palette->setEntry(j, colormap2rgba(colormap, i));
+        m_remap.map(i, j);
+        j++;
+      }
+      if (usedEntries[m_bgIndex] && m_relocatedBgIndex)
+        relocateColorIndex(m_bgIndex, m_bgIndex);
+    }
+    else {
+      for (int i=0; i<ncolors; ++i) {
 
-          int j = palette->findExactMatch(colormap->Colors[i].Red,
-                                          colormap->Colors[i].Green,
-                                          colormap->Colors[i].Blue, 255,
-                                          (m_opaque ? -1: m_bgIndex));
-          if (j >= 0) {
-            m_remap.map(i, j);
-            ++found;
-          }
+        if (i < usedEntries.size() && !usedEntries[i])
+          continue;
+
+        if (localCMap &&
+            i < palette->size() &&
+            i < localCMap->ColorCount &&
+            rgba(localCMap->Colors[i].Red,
+                 localCMap->Colors[i].Green,
+                 localCMap->Colors[i].Blue, 255) == palette->getEntry(i))
+          continue;
+
+        relocateColorIndex(i, m_opaque ? -1: m_bgIndex);
+        if (stopRemap)
+          break;
+      }
+    }
+    if (!stopRemap) {
+      if (m_localTransparentIndex != m_bgIndex &&
+          localCMap && !m_opaque && m_frameNum > 0 &&
+          palette->size() <= 256 &&
+          m_sprite->pixelFormat() == IMAGE_INDEXED &&
+          m_localTransparentIndex >= 0 &&
+          m_localTransparentIndex < usedEntries.size()) {
+        color_t localTransIndexColor = rgba(localCMap->Colors[m_bgIndex].Red,
+                                            localCMap->Colors[m_bgIndex].Green,
+                                            localCMap->Colors[m_bgIndex].Blue, 255);
+        int j = -1;
+        if (localTransIndexColor == palette->getEntry(m_localTransparentIndex))
+          j = m_localTransparentIndex;
+        else
+          j = palette->findExactMatch(rgba_getr(localTransIndexColor),
+                                      rgba_getg(localTransIndexColor),
+                                      rgba_getb(localTransIndexColor), 255,
+                                      m_bgIndex);
+        if (j < 0) {
+          palette->resize(palette->size() + 1);
+          j = palette->size() - 1;
+          palette->setEntry(j, localTransIndexColor);
+        }
+        if (j < 256) {
+          m_remap.map(m_bgIndex, j);
+          m_remap.map(m_localTransparentIndex, m_bgIndex);
         }
       }
+      int bgIndex = palette->size() >= 256 ? m_bgIndex : m_remap[m_bgIndex];
+      m_currentImage.get()->setMaskColor(bgIndex);
+      m_previousImage.get()->setMaskColor(bgIndex);
     }
-
-    // All needed colors in the colormap are present in the current
-    // palette.
-    if (found == usedNColors)
-      return;
-
-    // In other case, we need to add the missing colors...
-
-    // First index that acts like a base for new colors in palette.
-    int base = (m_frameNum == 0 ? 0: palette->size());
-
-    // Number of colors in the image that aren't in the palette.
-    int missing = (usedNColors - found);
-
-    GIF_TRACE("GIF: Bg index=%d,\n"
-              "  Local transparent index=%d,\n"
-              "  Need extra index to show bg color=%d,\n  "
-              "  Found colors in palette=%d,\n"
-              "  Used colors in local pixels=%d,\n"
-              "  Base for new colors in palette=%d,\n"
-              "  Colors in the image missing in the palette=%d,\n"
-              "  New palette size=%d\n",
-              m_bgIndex, m_localTransparentIndex, needsExtraBgColor,
-              found, usedNColors, base, missing,
-              base + missing + (needsExtraBgColor ? 1: 0));
-
-    Palette oldPalette(*palette);
-    palette->resize(base + missing + (needsExtraBgColor ? 1: 0));
-    resetRemap(std::max(ncolors, palette->size()));
-
-    for (int i=0; i<ncolors; ++i) {
-      if (!usedEntries[i])
-        continue;
-
-      int j = -1;
-
-      if (m_frameNum > 0) {
-        j = oldPalette.findExactMatch(
-          colormap->Colors[i].Red,
-          colormap->Colors[i].Green,
-          colormap->Colors[i].Blue, 255,
-          (m_opaque ? -1: m_bgIndex));
-      }
-
-      if (j < 0) {
-        j = base++;
-        palette->setEntry(j, colormap2rgba(colormap, i));
-      }
-      m_remap.map(i, j);
-    }
-
-    if (needsExtraBgColor) {
-      int i = m_bgIndex;
-      int j = base++;
-      palette->setEntry(j, colormap2rgba(colormap, i));
-      // m_firstLocalColorMap, is used only if we have no global color map in the gif source,
-      // and we want to preserve original color indexes, as much we can.
-      // If the palette size is > 256, m_firstLocalColormal is no more useful, because
-      // the sprite pixel format will be converted in RGBA image, and the colors will
-      // be picked from the sprite palette, instead of m_firstLocalColorMap.
-      if (m_firstLocalColormap && m_firstLocalColormap->ColorCount > j) {
-        // We need add this extra color to m_firstLocalColormap, because
-        // it might has not been considered in the first getFrameColormap execution.
-        // (this happen when: in the first execution of getFrameColormap function
-        // an extra color was not needed)
-        m_firstLocalColormap->Colors[j].Red = rgba_getr(palette->getEntry(j));
-        m_firstLocalColormap->Colors[j].Green = rgba_getg(palette->getEntry(j));
-        m_firstLocalColormap->Colors[j].Blue = rgba_getb(palette->getEntry(j));
-      }
-      m_remap.map(i, j);
-    }
-
-    ASSERT(base == palette->size());
     m_sprite->setPalette(palette.get(), false);
   }
 
@@ -818,7 +797,7 @@ private:
                   // INDEXED->RGB conversions
          m_sprite->palette(cel->frame()),
          m_opaque,
-         m_bgIndex,
+         0,
          nullptr));
 
       m_sprite->replaceImage(oldImage->id(), newImage);
@@ -831,7 +810,7 @@ private:
        nullptr,
        m_sprite->palette(m_frameNum),
        m_opaque,
-       m_bgIndex));
+       0));
 
     m_previousImage.reset(
       render::convert_pixel_format
@@ -840,9 +819,10 @@ private:
        nullptr,
        m_sprite->palette(std::max(0, m_frameNum-1)),
        m_opaque,
-       m_bgIndex));
+       0));
 
     m_sprite->setPixelFormat(IMAGE_RGB);
+    m_sprite->setTransparentColor(0);
   }
 
   void remapToGlobalColormap(ColorMapObject* colormap) {
@@ -890,6 +870,11 @@ private:
   DisposalMethod m_disposalMethod;
   int m_bgIndex;
   int m_localTransparentIndex;
+  // When the local transparent index is out of bounds in frame 0, we need relocation of
+  // the global transparent index (m_bgIndex) and it was defined to move to the last index.
+  // Then if m_relocatedBgIndex == true, any pixel == m_bgIndex should be remaped to
+  // a new color, options: find a color match, or add a new color to the palette.
+  bool m_relocatedBgIndex;
   int m_frameDelay;
   ImageRef m_currentImage;
   ImageRef m_previousImage;
