@@ -10,6 +10,7 @@
 #pragma once
 
 #include "app/color.h"
+#include "app/ui/expr_entry.h"
 #include "obs/connection.h"
 #include "obs/signal.h"
 #include "ui/event.h"
@@ -81,7 +82,7 @@ namespace app {
       ui::Box* box = nullptr;
       ui::Slider* absSlider = nullptr;
       ui::Slider* relSlider = nullptr;
-      ui::Entry* entry = nullptr;
+      app::ExprEntry* entry = nullptr;
     };
 
     std::vector<Item> m_items;

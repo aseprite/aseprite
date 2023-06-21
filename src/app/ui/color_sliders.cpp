@@ -373,7 +373,7 @@ void ColorSliders::addSlider(const Channel channel,
   item.box       = new HBox();
   item.absSlider = new Slider(absMin, absMax, 0);
   item.relSlider = new Slider(relMin, relMax, 0);
-  item.entry     = new ColorEntry(item.absSlider, item.relSlider);
+  item.entry     = new ExprEntry();
 
   item.relSlider->setSizeHint(gfx::Size(128, 0));
   item.absSlider->setSizeHint(gfx::Size(128, 0));
