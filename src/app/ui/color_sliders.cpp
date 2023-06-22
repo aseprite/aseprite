@@ -14,6 +14,7 @@
 #include "app/color_utils.h"
 #include "app/modules/gfx.h"
 #include "app/ui/color_sliders.h"
+#include "app/ui/expr_entry.h"
 #include "app/ui/skin/skin_slider_property.h"
 #include "app/ui/skin/skin_theme.h"
 #include "base/scoped_value.h"
@@ -128,10 +129,10 @@ namespace {
     app::Color m_color;
   };
 
-  class ColorEntry : public Entry {
+  class ColorEntry : public app::ExprEntry {
   public:
     ColorEntry(Slider* absSlider, Slider* relSlider)
-      : Entry(4, "0")
+      : app::ExprEntry()
       , m_absSlider(absSlider)
       , m_relSlider(relSlider)
       , m_recent_focus(false) {
@@ -373,7 +374,7 @@ void ColorSliders::addSlider(const Channel channel,
   item.box       = new HBox();
   item.absSlider = new Slider(absMin, absMax, 0);
   item.relSlider = new Slider(relMin, relMax, 0);
-  item.entry     = new ExprEntry();
+  item.entry     = new ColorEntry(item.absSlider, item.relSlider);
 
   item.relSlider->setSizeHint(gfx::Size(128, 0));
   item.absSlider->setSizeHint(gfx::Size(128, 0));
