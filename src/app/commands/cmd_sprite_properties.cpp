@@ -11,6 +11,8 @@
 
 #include "app/cmd/assign_color_profile.h"
 #include "app/cmd/convert_color_profile.h"
+#include "app/cmd/add_tileset.h"
+#include "app/cmd/remove_tileset.h"
 #include "app/cmd/set_pixel_ratio.h"
 #include "app/cmd/set_user_data.h"
 #include "app/color.h"
@@ -20,15 +22,18 @@
 #include "app/i18n/strings.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
+#include "app/util/tileset_utils.h"
 #include "app/tx.h"
 #include "app/ui/color_button.h"
 #include "app/ui/user_data_view.h"
+#include "app/ui/skin/skin_theme.h"
 #include "app/util/pixel_ratio.h"
 #include "base/mem_utils.h"
 #include "doc/image.h"
 #include "doc/palette.h"
 #include "doc/sprite.h"
 #include "doc/user_data.h"
+#include "doc/tilesets.h"
 #include "fmt/format.h"
 #include "os/color_space.h"
 #include "os/system.h"
@@ -39,6 +44,92 @@
 namespace app {
 
 using namespace ui;
+
+class TilesetListItem : public ui::ListItem {
+public:
+  TilesetListItem(const doc::Tileset* tileset, doc::tileset_index tsi)
+    : ListItem(app::tileset_label(tileset, tsi))
+  {
+    m_buttons.setTransparent(true);
+    m_buttons.setExpansive(true);
+    m_buttons.setVisible(false);
+
+    auto filler = new BoxFiller();
+    filler->setTransparent(true);
+    m_buttons.addChild(filler);
+
+    auto theme = skin::SkinTheme::get(this);
+    auto duplicateBtn = new Button(Strings::sprite_properties_duplicate_tileset());
+    duplicateBtn->setStyle(theme->styles.miniButton());
+    duplicateBtn->setTransparent(true);
+    duplicateBtn->Click.connect([this, tileset]{ onDuplicate(tileset); });
+    m_buttons.addChild(duplicateBtn);
+
+    auto deleteBtn = new Button(Strings::sprite_properties_delete_tileset());
+    deleteBtn->setStyle(theme->styles.miniButton());
+    deleteBtn->setTransparent(true);
+    deleteBtn->Click.connect([this, tileset]{ onDelete(tileset); });
+    m_buttons.addChild(deleteBtn);
+
+    addChild(&m_buttons);
+  }
+
+  bool onProcessMessage(Message* msg) override
+  {
+    switch (msg->type()) {
+      case kMouseLeaveMessage:
+        m_buttons.setVisible(false);
+        invalidate();
+        break;
+      case kMouseEnterMessage:
+        m_buttons.setVisible(true);
+        invalidate();
+        break;
+    }
+
+    return ui::ListItem::onProcessMessage(msg);
+  }
+
+  obs::signal<void(TilesetListItem *)> TilesetDeleted;
+  obs::signal<void(const Tileset*)> TilesetDuplicated;
+
+private:
+   void onDuplicate(const doc::Tileset* tileset)
+   {
+     auto tilesetClone = Tileset::MakeCopyCopyingImages(tileset);
+
+     Tx tx(fmt::format(Strings::commands_TilesetDuplicate()));
+     tx(new cmd::AddTileset(tileset->sprite(), tilesetClone));
+     tx.commit();
+
+     TilesetDuplicated(tilesetClone);
+   }
+
+   void onDelete(const doc::Tileset* tileset)
+   {
+    doc::tileset_index tsi = tileset->sprite()->tilesets()->getIndex(tileset);
+    std::string tilemapsNames;
+    for (auto layer : tileset->sprite()->allTilemaps()) {
+      auto tilemap = static_cast<doc::LayerTilemap*>(layer);
+      if (tilemap->tilesetIndex() == tsi) {
+        tilemapsNames += tilemap->name() + ", ";
+      }
+    }
+    if (!tilemapsNames.empty()) {
+      tilemapsNames = tilemapsNames.substr(0, tilemapsNames.size()-2);
+      ui::Alert::show(fmt::format(Strings::alerts_cannot_delete_used_tileset(), tilemapsNames));
+      return;
+    }
+
+    Tx tx(fmt::format(Strings::commands_TilesetDelete()));
+    tx(new cmd::RemoveTileset(tileset->sprite(), tsi));
+    tx.commit();
+
+    TilesetDeleted(this);
+   }
+
+  ui::HBox m_buttons;
+};
 
 class SpritePropertiesWindow : public app::gen::SpriteProperties {
 public:
@@ -52,19 +143,73 @@ public:
     m_userDataView.configureAndSet(m_sprite->userData(),
                                    propertiesGrid());
 
-    remapWindow();
-    centerWindow();
-    load_window_pos(this, "SpriteProperties");
-    manager()->invalidate();
+    if (sprite->tilesets()->size() == 0) {
+      tilesetsPlaceholder()->parent()->removeChild(tilesetsPlaceholder());
+    }
+    else {
+      for (int i = 0; i < sprite->tilesets()->size(); ++i) {
+        auto tileset = (*sprite->tilesets()).get(i);
+        addTilesetListItem(tileset, i);
+      }
+
+      Open.connect([this]{ adjustSize(); });
+    }
   }
 
   const UserData& getUserData() const { return m_userDataView.userData(); }
 
+protected:
+  virtual void onSizeHint(SizeHintEvent& ev) override {
+    app::gen::SpriteProperties::onSizeHint(ev);
+    auto sz = ev.sizeHint();
+    sz.h += getTilesetsViewHeight();
+    ev.setSizeHint(sz);
+  }
+
 private:
+  int getTilesetsViewHeight() {
+    auto sz = tilesetsView()->viewport()->calculateNeededSize();
+    return std::min(72, sz.h);
+  }
+
+  void addTilesetListItem(const doc::Tileset* tileset, doc::tileset_index tsi) {
+    auto item = new TilesetListItem(tileset, tsi);
+    item->TilesetDeleted.connect(&SpritePropertiesWindow::onTilesetDeleted, this);
+    item->TilesetDuplicated.connect(&SpritePropertiesWindow::onTilesedDuplicated, this);
+    tilesets()->addChild(item);
+  }
+
   void onToggleUserData() {
     m_userDataView.toggleVisibility();
     remapWindow();
     manager()->invalidate();
+  }
+
+  void onTilesedDuplicated(const Tileset* tilesetClone) {
+    addTilesetListItem(tilesetClone, tilesets()->children().size());
+    layout();
+  }
+
+  void onTilesetDeleted(TilesetListItem *item) {
+    int i = tilesets()->getChildIndex(item);
+    tilesets()->removeChild(item);
+    // Update text for items below the removed one, because tileset indexes
+    // have changed.
+    for (;i < tilesets()->children().size(); ++i) {
+      auto it = tilesets()->children()[i];
+      it->setText(app::tileset_label(m_sprite->tilesets()->get(i), i));
+    }
+    layout();
+  }
+
+  void adjustSize() {
+    // If the tilesets view is too small, lets inflate the windows height a bit.
+    if (tilesetsView()->childrenBounds().h < 36) {
+      auto bounds = this->bounds();
+      bounds.inflate(0, getTilesetsViewHeight() - tilesetsView()->clientBounds().h);
+      setBounds(bounds);
+      remapWindow();
+    }
   }
 
   Sprite* m_sprite;

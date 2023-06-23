@@ -43,6 +43,14 @@
         </hbox>
       </hbox>
     </grid>
+
+    <vbox expansive="true" id="tilesets_placeholder">
+      <separator text="@.tilesets" horizontal="true" />
+      <view id="tilesets_view" expansive="true">
+        <listbox id="tilesets"></listbox>
+      </view>
+    </vbox>
+
     <separator horizontal="true" />
     <hbox>
       <boxfiller />

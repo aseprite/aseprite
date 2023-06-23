@@ -66,6 +66,10 @@ namespace ui {
     // items in case that the user is Ctrl+clicking items several
     // items at the same time.
     std::vector<bool> m_states;
+
+  private:
+    // Finds the parent ListItem that contains the specified descendant.
+    ListItem* findParentListItem(Widget* descendant);
   };
 
 } // namespace ui

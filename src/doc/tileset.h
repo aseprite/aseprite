@@ -33,6 +33,7 @@ namespace doc {
            const UserData& data) : image(image), data(data) { }
     };
     static UserData kNoUserData;
+
   public:
     typedef std::vector<Tile> Tiles;
     typedef Tiles::iterator iterator;
