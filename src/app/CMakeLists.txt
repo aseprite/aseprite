@@ -694,6 +694,7 @@ add_library(app-lib
   util/range_utils.cpp
   util/readable_time.cpp
   util/resize_image.cpp
+  util/tileset_utils.cpp
   util/wrap_point.cpp
   xml_document.cpp
   xml_exception.cpp

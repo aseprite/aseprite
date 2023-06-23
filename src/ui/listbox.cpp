@@ -249,9 +249,11 @@ bool ListBox::onProcessMessage(Message* msg)
           if (dynamic_cast<ui::Separator*>(picked))
             picked = nullptr;
 
-          // If the picked widget is a child of the list, select it
-          if (picked && hasChild(picked))
-            selectChild(picked, msg);
+          // If the picked widget has this list as an ancestor, select the item containing it.
+          if (picked && picked->hasAncestor(this)) {
+            ListItem *it = findParentListItem(picked);
+            selectChild(it, msg);
+          }
         }
       }
       return true;
@@ -461,6 +463,18 @@ int ListBox::advanceIndexThroughVisibleItems(
     }
   }
   return lastVisibleIndex;
+}
+
+ListItem* ListBox::findParentListItem(Widget* descendant)
+{
+  if (descendant->parent() == this)
+    return static_cast<ListItem*>(descendant);
+
+  for (Widget* widget=descendant->parent(); widget; widget=widget->parent()) {
+    return findParentListItem(widget);
+  }
+
+ return nullptr;
 }
 
 } // namespace ui
