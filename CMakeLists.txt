@@ -150,6 +150,10 @@ if(MSVC)
         CACHE STRING "Profiling linker flags")
 endif()
 
+if(MINGW)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static")
+endif()
+
 ######################################################################
 # Directories
 
