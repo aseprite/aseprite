@@ -158,10 +158,6 @@ target_include_directories(tinyexpr PUBLIC tinyexpr)
 # cityhash
 add_subdirectory(cityhash)
 
-if(MINGW)
-  include_directories(../src/byteswap)
-endif()
-
 # lua
 if(ENABLE_SCRIPTING)
   add_library(lua
