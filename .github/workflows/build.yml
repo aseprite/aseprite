@@ -91,4 +91,6 @@ jobs:
     - name: Generating Makefiles
       run: cmake -B ${{ github.workspace }}/build -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -G Ninja
     - name: Compiling
-      run: ninja aseprite
+      run: |
+        cd ${{ github.workspace }}/build
+        ninja aseprite
