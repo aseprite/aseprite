@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -90,6 +90,18 @@ MainWindow::MainWindow()
   , m_devConsoleView(nullptr)
 #endif
 {
+}
+
+// This 'initialize' function is a way to split the creation of the
+// MainWindow. First a minimal instance of MainWindow is created, then
+// all UI components that can trigger the Console to report any
+// unexpected errors/warnings in the initialization. Prior to this,
+// Aseprite could fail in the same constructor, and the Console didn't
+// have access to the App::instance()->mainWindow() pointer.
+//
+// Refer to https://github.com/aseprite/aseprite/issues/3914
+void MainWindow::initialize()
+{
   m_tooltipManager = new TooltipManager();
   m_menuBar = new MainMenuBar();
 
@@ -104,13 +116,13 @@ MainWindow::MainWindow()
 
   m_notifications = new Notifications();
   m_statusBar = new StatusBar(m_tooltipManager);
-  m_colorBar = new ColorBar(colorBarPlaceholder()->align(),
-                            m_tooltipManager);
-  m_contextBar = new ContextBar(m_tooltipManager, m_colorBar);
   m_toolBar = new ToolBar();
   m_tabsBar = new WorkspaceTabs(this);
   m_workspace = new Workspace();
   m_previewEditor = new PreviewEditorWindow();
+  m_colorBar = new ColorBar(colorBarPlaceholder()->align(),
+                            m_tooltipManager);
+  m_contextBar = new ContextBar(m_tooltipManager, m_colorBar);
 
   // The timeline (AniControls) tooltips will use the keyboard
   // shortcuts loaded above.
@@ -168,34 +180,38 @@ MainWindow::~MainWindow()
 
 #ifdef ENABLE_SCRIPTING
   if (m_devConsoleView) {
-    if (m_devConsoleView->parent())
+    if (m_devConsoleView->parent() && m_workspace)
       m_workspace->removeView(m_devConsoleView);
     delete m_devConsoleView;
   }
 #endif
 
   if (m_browserView) {
-    if (m_browserView->parent())
+    if (m_browserView->parent() && m_workspace)
       m_workspace->removeView(m_browserView);
     delete m_browserView;
   }
 
   if (m_homeView) {
-    if (m_homeView->parent())
+    if (m_homeView->parent() && m_workspace)
       m_workspace->removeView(m_homeView);
     delete m_homeView;
   }
-  delete m_contextBar;
-  delete m_previewEditor;
+  if (m_contextBar)
+    delete m_contextBar;
+  if (m_previewEditor)
+    delete m_previewEditor;
 
   // Destroy the workspace first so ~Editor can dettach slots from
   // ColorBar. TODO this is a terrible hack for slot/signal stuff,
   // connections should be handle in a better/safer way.
-  delete m_workspace;
+  if (m_workspace)
+    delete m_workspace;
 
   // Remove the root-menu from the menu-bar (because the rootmenu
   // module should destroy it).
-  m_menuBar->setMenu(NULL);
+  if (m_menuBar)
+    m_menuBar->setMenu(NULL);
 }
 
 void MainWindow::onLanguageChange()

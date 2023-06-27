@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -363,6 +363,7 @@ int App::initialize(const AppOptions& options)
 
     // Create the main window.
     m_mainWindow.reset(new MainWindow);
+    m_mainWindow->initialize();
     if (m_mod)
       m_mod->modMainWindow(m_mainWindow.get());
 

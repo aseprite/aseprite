@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2023  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This program is distributed under the terms of
@@ -16,7 +17,7 @@ namespace render {
 
 namespace app {
 
-  bool load_dithering_matrix_from_sprite(
+  void load_dithering_matrix_from_sprite(
     const std::string& filename,
     render::DitheringMatrix& matrix);
 

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This program is distributed under the terms of
@@ -12,6 +12,7 @@
 #include "app/ui/dithering_selector.h"
 
 #include "app/app.h"
+#include "app/console.h"
 #include "app/extensions.h"
 #include "app/i18n/strings.h"
 #include "app/modules/palettes.h"
@@ -210,17 +211,29 @@ void DitheringSelector::regenerate()
                              render::DitheringMatrix(),
                              Strings::dithering_selector_no_dithering()));
       for (const auto& it : ditheringMatrices) {
-        addItem(new DitherItem(
-          render::DitheringAlgorithm::Ordered,
-          it.matrix(),
-          Strings::dithering_selector_ordered_dithering() + it.name()));
+        try {
+          addItem(new DitherItem(
+            render::DitheringAlgorithm::Ordered,
+            it.matrix(),
+            Strings::dithering_selector_ordered_dithering() + it.name()));
+        }
+        catch (const std::exception& e) {
+          LOG(ERROR, "%s\n", e.what());
+          Console::showException(e);
+        }
       }
       for (const auto& it : ditheringMatrices) {
-        addItem(
-          new DitherItem(
-            render::DitheringAlgorithm::Old,
-            it.matrix(),
-            Strings::dithering_selector_old_dithering() + it.name()));
+        try {
+          addItem(
+            new DitherItem(
+              render::DitheringAlgorithm::Old,
+              it.matrix(),
+              Strings::dithering_selector_old_dithering() + it.name()));
+        }
+        catch (const std::exception& e) {
+          LOG(ERROR, "%s\n", e.what());
+          Console::showException(e);
+        }
       }
       addItem(
         new DitherItem(
@@ -231,8 +244,15 @@ void DitheringSelector::regenerate()
     case SelectMatrix:
       addItem(new DitherItem(render::DitheringMatrix(),
                              Strings::dithering_selector_no_dithering()));
-      for (auto& it : ditheringMatrices)
-        addItem(new DitherItem(it.matrix(), it.name()));
+      for (auto& it : ditheringMatrices) {
+        try {
+          addItem(new DitherItem(it.matrix(), it.name()));
+        }
+        catch (const std::exception& e) {
+          LOG(ERROR, "%s\n", e.what());
+          Console::showException(e);
+        }
+      }
       break;
   }
 

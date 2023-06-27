@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2023 Igara Studio S.A.
 // Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -15,17 +16,19 @@
 #include "app/file/file.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
+#include "fmt/format.h"
 #include "render/dithering_matrix.h"
 
 namespace app {
 
-bool load_dithering_matrix_from_sprite(
+void load_dithering_matrix_from_sprite(
   const std::string& filename,
   render::DitheringMatrix& matrix)
 {
   std::unique_ptr<Doc> doc(load_document(nullptr, filename));
   if (!doc)
-    return false;
+    throw std::runtime_error(
+      fmt::format("The dithering matrix file {} doesn't exist", filename));
 
   doc::Sprite* spr = doc->sprite();
   const doc::Layer* lay = (spr && spr->root() ? spr->root()->firstLayer():
@@ -45,8 +48,6 @@ bool load_dithering_matrix_from_sprite(
   else {
     matrix = render::DitheringMatrix();
   }
-
-  return true;
 }
 
 } // namespace app
