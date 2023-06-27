@@ -219,8 +219,8 @@ Extension::DitheringMatrixInfo::DitheringMatrixInfo(const std::string& path,
 const render::DitheringMatrix& Extension::DitheringMatrixInfo::matrix() const
 {
   if (!m_loaded) {
-    m_loaded = true;
     load_dithering_matrix_from_sprite(m_path, m_matrix);
+    m_loaded = true;
   }
   return m_matrix;
 }
