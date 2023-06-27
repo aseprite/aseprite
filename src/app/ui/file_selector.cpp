@@ -410,28 +410,10 @@ bool FileSelector::show(
 
   fs->refresh();
 
-  // we have to find where the user should begin to browse files (start_folder)
-  std::string start_folder_path;
-  IFileItem* start_folder = nullptr;
-
-  // If initialPath doesn't contain a path.
-  if (base::get_file_path(initialPath).empty()) {
-    // Get the saved `path' in the configuration file.
-    std::string path = Preferences::instance().fileSelector.currentFolder();
-    if (path == "<empty>") {
-      start_folder_path = base::get_user_docs_folder();
-      path = base::join_path(start_folder_path, initialPath);
-    }
-    start_folder = fs->getFileItemFromPath(path);
-  }
-  else {
-    // Remove the filename.
-    start_folder_path = base::join_path(base::get_file_path(initialPath), "");
-  }
-  start_folder_path = base::fix_path_separators(start_folder_path);
-
-  if (!start_folder)
-    start_folder = fs->getFileItemFromPath(start_folder_path);
+  // We have to find where the user should begin to browse files
+  std::string start_folder_path =
+    base::get_file_path(get_initial_path_to_select_filename(initialPath));
+  IFileItem* start_folder = fs->getFileItemFromPath(start_folder_path);
 
   FILESEL_TRACE("FILESEL: Start folder '%s' (%p)\n", start_folder_path.c_str(), start_folder);
 
@@ -703,7 +685,7 @@ again:
 
     // save the path in the configuration file
     std::string lastpath = folder->keyName();
-    Preferences::instance().fileSelector.currentFolder(lastpath);
+    set_current_dir_for_file_selector(lastpath);
   }
   Preferences::instance().fileSelector.zoom(m_fileList->zoom());
 

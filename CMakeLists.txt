@@ -109,16 +109,6 @@ if(NOT LAF_OS_BACKEND)
   endif()
 endif()
 
-# Check valid gtk + libpng combination
-if(LAF_OS_WITH_GTK)
-  if(NOT USE_SHARED_LIBPNG)
-    message(FATAL_ERROR "Cannot compile with gtk and static libpng, set USE_SHARED_LIBPNG=ON")
-  endif()
-  if(NOT USE_SHARED_HARFBUZZ)
-    message(FATAL_ERROR "Cannot compile with gtk and static HarfBuzz, set USE_SHARED_HARFBUZZ=ON")
-  endif()
-endif()
-
 if(ENABLE_DRM AND NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/drm/CMakeLists.txt)
   message(FATAL_ERROR "Your Aseprite repository is incomplete, clone the drm repository")
 endif()
