@@ -10,6 +10,7 @@
 
 #include "app/cmd/set_layer_tileset.h"
 
+#include "app/app.h"
 #include "app/doc.h"
 #include "doc/layer_tilemap.h"
 #include "doc/sprite.h"
@@ -37,6 +38,13 @@ void SetLayerTileset::onUndo()
   auto layer = static_cast<LayerTilemap*>(this->layer());
   layer->setTilesetIndex(m_oldTsi);
   layer->incrementVersion();
+}
+
+void SetLayerTileset::onFireNotifications()
+{
+  auto layer = static_cast<LayerTilemap*>(this->layer());
+  Doc* doc = static_cast<Doc*>(layer->sprite()->document());
+  doc->notifyTilesetChanged(layer->tileset());
 }
 
 } // namespace cmd

@@ -22,14 +22,18 @@ namespace app {
 using namespace ui;
 
 TilesetSelector::TilesetSelector(const doc::Sprite* sprite,
-                                 const TilesetSelector::Info& info)
+                                 const TilesetSelector::Info& info) : m_info(info)
 {
   initTheme();
 
-  name()->setText(info.name);
-  gridWidth()->setTextf("%d", info.grid.tileSize().w);
-  gridHeight()->setTextf("%d", info.grid.tileSize().h);
-  baseIndex()->setTextf("%d", info.baseIndex);
+  name()->setText(m_info.name);
+  gridWidth()->setTextf("%d", m_info.grid.tileSize().w);
+  gridHeight()->setTextf("%d", m_info.grid.tileSize().h);
+  baseIndex()->setTextf("%d", m_info.baseIndex);
+
+  if (!m_info.allowNewTileset) {
+    tilesets()->deleteAllItems();
+  }
 
   doc::tileset_index tsi = 0;
   for (doc::Tileset* tileset : *sprite->tilesets()) {
@@ -40,40 +44,47 @@ TilesetSelector::TilesetSelector(const doc::Sprite* sprite,
       fmt::format("Tileset #{0} ({1}x{2}): \"{3}\"",
                   tsi,
                   tileset->grid().tileSize().w,
-                  tileset->grid().tileSize().w,
+                  tileset->grid().tileSize().h,
                   tileset->name()));
     tilesets()->addItem(item);
 
-    if (info.tsi == tsi)
+    if (m_info.tsi == tsi)
       tilesets()->setSelectedItem(item);
 
     ++tsi;
   }
 
-  if (info.enabled) {
+  if (m_info.enabled) {
     tilesets()->Change.connect(
       [this, sprite]() {
-        int index = tilesets()->getSelectedItemIndex();
-        bool editable = (index == 0);
-
-        if (index == 0) {
-          name()->setText("");
-          baseIndex()->setTextf("%d", 1);
-        }
-        else {
-          doc::Tileset* ts = sprite->tilesets()->get(index-1);
-          doc::Grid grid = ts->grid();
-          name()->setText(ts->name());
-          gridWidth()->setTextf("%d", grid.tileSize().w);
-          gridHeight()->setTextf("%d", grid.tileSize().h);
-          baseIndex()->setTextf("%d", ts->baseIndex());
-        }
-
-        name()->setEnabled(editable);
-        gridWidth()->setEnabled(editable);
-        gridHeight()->setEnabled(editable);
-        baseIndex()->setEnabled(editable);
+        updateControlsState(sprite->tilesets());
       });
+  }
+  updateControlsState(sprite->tilesets());
+}
+
+void TilesetSelector::updateControlsState(const doc::Tilesets* spriteTilesets)
+{
+  if (m_info.enabled) {
+    int index = getSelectedItemIndex();
+    bool isNewTileset = (index == 0);
+    if (isNewTileset) {
+      name()->setText("");
+      baseIndex()->setTextf("%d", 1);
+    }
+    else {
+      doc::Tileset* ts = spriteTilesets->get(index-1);
+      doc::Grid grid = ts->grid();
+      name()->setText(ts->name());
+      gridWidth()->setTextf("%d", grid.tileSize().w);
+      gridHeight()->setTextf("%d", grid.tileSize().h);
+      baseIndex()->setTextf("%d", ts->baseIndex());
+    }
+
+    name()->setEnabled(isNewTileset || !m_info.allowNewTileset);
+    gridWidth()->setEnabled(isNewTileset);
+    gridHeight()->setEnabled(isNewTileset);
+    baseIndex()->setEnabled(isNewTileset);
   }
   else {
     tilesets()->setEnabled(false);
@@ -84,7 +95,7 @@ TilesetSelector::TilesetSelector(const doc::Sprite* sprite,
 
 TilesetSelector::Info TilesetSelector::getInfo()
 {
-  int itemIndex = tilesets()->getSelectedItemIndex();
+  int itemIndex = getSelectedItemIndex();
   Info info;
   if (itemIndex == 0) {
     gfx::Size sz(std::max(1, gridWidth()->textInt()),
@@ -100,6 +111,17 @@ TilesetSelector::Info TilesetSelector::getInfo()
   info.name = name()->text();
   info.baseIndex = baseIndex()->textInt();
   return info;
+}
+
+int TilesetSelector::getSelectedItemIndex()
+{
+  int index = tilesets()->getSelectedItemIndex();
+  // We have to compensate the selected index when allowNewTileset is false,
+  // because the "New Tileset" item was removed.
+  if (!m_info.allowNewTileset) {
+    index++;
+  }
+  return index;
 }
 
 } // namespace app
