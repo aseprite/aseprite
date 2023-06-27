@@ -18,6 +18,7 @@
 namespace doc {
   class Sprite;
   class Tileset;
+  class Tilesets;
 }
 
 namespace app {
@@ -25,8 +26,14 @@ namespace app {
   class TilesetSelector : public app::gen::TilesetSelector {
   public:
     struct Info {
+      // Enables/disables the tileset selector combobox
       bool enabled = true;
-      bool newTileset = true;
+      // When false, removes the "New Tileset" option from the tileset selector combobox
+      bool allowNewTileset = true;
+
+      // Output members that are set when TilesetSelector.getInfo()
+      // is called.
+      bool newTileset = true;  // Set to true when the selected item is "New Tileset"
       std::string name;
       doc::Grid grid;
       int baseIndex = 1;
@@ -36,7 +43,18 @@ namespace app {
     TilesetSelector(const doc::Sprite* sprite,
                     const TilesetSelector::Info& info);
 
+    // Returns the data of this widget according to the user input
     Info getInfo();
+
+  private:
+    void updateControlsState(const doc::Tilesets* spriteTilesets);
+
+    // Returns the selected item index as if the combobox always has the "New Tileset"
+    // as its first item.
+    int getSelectedItemIndex();
+
+    // Holds the information used to create this widget
+    const TilesetSelector::Info m_info;
   };
 
 } // namespace app
