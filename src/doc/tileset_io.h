@@ -9,6 +9,7 @@
 #pragma once
 
 #include "app/crash/doc_format.h"
+#include "base/ints.h"
 
 #include <iosfwd>
 
