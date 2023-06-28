@@ -9,6 +9,8 @@
 #define DIO_ASEPRITE_COMMON_H_INCLUDED
 #pragma once
 
+#include "base/ints.h"
+
 #include <map>
 #include <string>
 

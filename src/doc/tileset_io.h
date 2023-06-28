@@ -8,6 +8,7 @@
 #define DOC_TILESET_IO_H_INCLUDED
 #pragma once
 
+#include "base/ints.h"
 #include "app/crash/doc_format.h"
 
 #include <iosfwd>
