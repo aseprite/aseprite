@@ -97,23 +97,27 @@ void PlayState::onEnterState(Editor* editor)
     m_editor->setFrame(frame);
   }
 
-  m_playback = doc::Playback(
-    m_editor->sprite(),
-    m_playSubtags ? m_editor->sprite()->tags().getInternalList() : TagsList(),
-    m_editor->frame(),
-    m_playOnce ? doc::Playback::PlayOnce :
-    m_playAll  ? doc::Playback::PlayWithoutTagsInLoop :
-                 doc::Playback::PlayInLoop,
-    m_tag);
-
   m_toScroll = false;
-  m_nextFrameTime = getNextFrameTime();
-  m_curFrameTick = base::current_tick();
 
   // Maybe we came from ScrollingState and the timer is already
-  // running.
-  if (!m_playTimer.isRunning())
+  // running. Which also means there was a Playback in course, so
+  // don't create a new one (this fixes an issue when the editor
+  // came back from the ScrollingState while playing a tag
+  // with ping-pong direction: the direction was reset every time
+  // the user released the mouse button after scrolling the editor).
+  if (!m_playTimer.isRunning()) {
+    m_playback = doc::Playback(
+      m_editor->sprite(),
+      m_playSubtags ? m_editor->sprite()->tags().getInternalList() : TagsList(),
+      m_editor->frame(),
+      m_playOnce ? doc::Playback::PlayOnce :
+      m_playAll  ? doc::Playback::PlayWithoutTagsInLoop :
+                  doc::Playback::PlayInLoop,
+      m_tag);
+    m_nextFrameTime = getNextFrameTime();
+    m_curFrameTick = base::current_tick();
     m_playTimer.start();
+  }
 }
 
 EditorState::LeaveAction PlayState::onLeaveState(Editor* editor, EditorState* newState)
