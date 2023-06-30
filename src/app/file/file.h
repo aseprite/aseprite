@@ -365,6 +365,9 @@ namespace app {
   // as sequence of files).
   bool is_static_image_format(const std::string& filename);
 
+  // Returns true if the given file format supports palette/s
+  bool format_supports_palette(const std::string& filename);
+
 } // namespace app
 
 #endif

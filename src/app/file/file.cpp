@@ -286,6 +286,16 @@ bool is_static_image_format(const std::string& filename)
   return (format && format->support(FILE_SUPPORT_SEQUENCES));
 }
 
+bool format_supports_palette(const std::string& filename)
+{
+  // Get the format through the extension of the filename
+  FileFormat* format =
+    FileFormatsManager::instance()
+    ->getFileFormat(dio::detect_format_by_file_extension(filename));
+
+  return (format && format->support(FILE_SUPPORT_PALETTES));
+}
+
 FileOpROI::FileOpROI()
   : m_document(nullptr)
   , m_slice(nullptr)

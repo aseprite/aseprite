@@ -175,6 +175,22 @@ int Palette::countDiff(const Palette* other, int* from, int* to) const
   return diff;
 }
 
+void Palette::addNonRepeatedColors(const Palette* palette,
+                                   const int max)
+{
+  ASSERT(palette);
+  if (!palette || size() >= max)
+    return;
+  for (int i=0; i < palette->size(); i++) {
+    color_t newColor = palette->getEntry(i);
+    if (!findExactMatch(newColor)) {
+      addEntry(newColor);
+      if (size() >= max)
+        return;
+    }
+  }
+}
+
 bool Palette::isBlack() const
 {
   for (std::size_t c=0; c<m_colors.size(); ++c)
