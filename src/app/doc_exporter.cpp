@@ -1180,10 +1180,13 @@ Doc* DocExporter::createEmptyTexture(const Samples& samples,
                                      base::task_token& token) const
 {
   ColorMode colorMode = ColorMode::INDEXED;
-  Palette* palette = nullptr;
+  Palette palette(0, 0);
   int maxColors = 256;
   gfx::ColorSpaceRef colorSpace;
   color_t transparentColor = 0;
+  const bool textureSupportsPalette =
+    (m_textureFilename.empty() || // This is the preview and we create the palette anyway
+    format_supports_palette(m_textureFilename));
 
   for (const auto& sample : samples) {
     if (token.canceled())
@@ -1210,14 +1213,21 @@ Doc* DocExporter::createEmptyTexture(const Samples& samples,
       else if (sample.sprite()->getPalettes().size() > 1) {
         colorMode = ColorMode::RGB;
       }
-      else if (palette &&
-               palette->countDiff(sample.sprite()->palette(frame_t(0)),
-                                  nullptr, nullptr) > 0) {
+      else if (palette.size() > 0 &&
+               palette.countDiff(sample.sprite()->palette(frame_t(0)),
+                                 nullptr, nullptr) > 0) {
         colorMode = ColorMode::RGB;
       }
-      else if (!palette) {
-        palette = sample.sprite()->palette(frame_t(0));
+      else if (palette.size() == 0) {
+        palette = *sample.sprite()->palette(frame_t(0));
         transparentColor = sample.sprite()->transparentColor();
+      }
+      if (colorMode == ColorMode::RGB &&
+          textureSupportsPalette &&
+          sample.sprite() &&
+          sample.sprite()->getPalettes()[0]) {
+        Palette* samplePalette = sample.sprite()->getPalettes()[0];
+        palette.addNonRepeatedColors(samplePalette);
       }
     }
   }
@@ -1236,8 +1246,8 @@ Doc* DocExporter::createEmptyTexture(const Samples& samples,
       maxColors,
       m_docBuf));
 
-  if (palette)
-    sprite->setPalette(palette, false);
+  if (palette.size() > 0)
+    sprite->setPalette(&palette, false);
 
   std::unique_ptr<Doc> document(new Doc(sprite.get()));
   sprite.release();

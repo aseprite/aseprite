@@ -86,6 +86,9 @@ namespace doc {
 
     int countDiff(const Palette* other, int* from, int* to) const;
 
+    void addNonRepeatedColors(const Palette* palette,
+                              const int max = 256);
+
     bool operator==(const Palette& other) const {
       return (countDiff(&other, nullptr, nullptr) == 0);
     }
