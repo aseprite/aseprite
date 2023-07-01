@@ -189,9 +189,12 @@ but it could be different in your Mac.
 ### Apple Silicon
 
 If you running macOS on an ARM64/AArch64/Apple Silicon Mac (e.g. M1),
-you can compile a native ARM64 version of Aseprite following the same
+you can compile a native ARM64 version of Aseprite following similar 
 steps as above but when we call `cmake`, we have some differences:
 
+    cd aseprite
+    mkdir build
+    cd build
     cmake \
       -DCMAKE_BUILD_TYPE=RelWithDebInfo \
       -DCMAKE_OSX_ARCHITECTURES=arm64 \
@@ -204,6 +207,7 @@ steps as above but when we call `cmake`, we have some differences:
       -DPNG_ARM_NEON:STRING=on \
       -G Ninja \
       ..
+      ninja aseprite
 
 ### Issues with Retina displays
 
