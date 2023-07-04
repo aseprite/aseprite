@@ -49,12 +49,12 @@ private:
 };
 
 struct ThemeDimension {
-  Theme* theme;
+  const Theme theme;
 
-  ThemeDimension(Theme* theme) : theme(theme) { }
+  ThemeDimension(const Theme& theme) : theme(theme) { }
 
   int getById(const std::string& id) const {
-    return theme->getDimensionById(id);
+    return theme.getDimensionById(id);
   }
 };
 
@@ -129,7 +129,7 @@ int Theme_styleMetrics(lua_State* L)
 int Theme_get_dimension(lua_State* L)
 {
   auto theme = get_obj<Theme>(L, 1);
-  push_new<ThemeDimension>(L, theme);
+  push_new<ThemeDimension>(L, *theme);
   return 1;
 }
 
