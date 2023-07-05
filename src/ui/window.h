@@ -117,7 +117,8 @@ namespace ui {
   private:
     void windowSetPosition(const gfx::Rect& rect);
     int getAction(int x, int y);
-    void limitSize(int* w, int* h);
+    void limitSize(gfx::Size& size);
+    void limitPosition(gfx::Rect& rect);
     void moveWindow(const gfx::Rect& rect, bool use_blit);
 
     Display* m_parentDisplay = nullptr;
