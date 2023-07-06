@@ -36,10 +36,10 @@
 
       <label text="@.color_profile" />
       <hbox>
-        <combobox id="color_profile" cell_align="horizontal" expansive="true"></combobox>
+        <combobox id="color_profile" cell_align="horizontal" expansive="true" />
         <hbox homogeneous="true">
-          <button id="assign_color_profile" text="@.assign_color_profile">Assign</button>
-          <button id="convert_color_profile" text="@.convert_color_profile">Convert</button>
+          <button id="assign_color_profile" text="@.assign" />
+          <button id="convert_color_profile" text="@.convert" />
         </hbox>
       </hbox>
     </grid>
