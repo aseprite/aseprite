@@ -27,6 +27,7 @@
 #include "base/memory.h"
 #include "doc/cel.h"
 #include "doc/layer.h"
+#include "doc/layer_tilemap.h"
 #include "doc/mask.h"
 #include "doc/mask_boundaries.h"
 #include "doc/palette.h"
@@ -277,6 +278,17 @@ void Doc::notifyLayerGroupCollapseChange(Layer* layer)
   DocEvent ev(this);
   ev.layer(layer);
   notify_observers<DocEvent&>(&DocObserver::onLayerCollapsedChanged, ev);
+}
+
+void Doc::notifyAfterAddTile(LayerTilemap* layer, frame_t frame, tile_index ti)
+{
+  DocEvent ev(this);
+  ev.sprite(layer->sprite());
+  ev.layer(layer);
+  ev.frame(frame);
+  ev.tileset(layer->tileset());
+  ev.tileIndex(ti);
+  notify_observers<DocEvent&>(&DocObserver::onAfterAddTile, ev);
 }
 
 bool Doc::isModified() const

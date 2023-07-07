@@ -57,6 +57,7 @@
 #include "base/vector2d.h"
 #include "doc/grid.h"
 #include "doc/layer.h"
+#include "doc/layer_tilemap.h"
 #include "doc/mask.h"
 #include "doc/slice.h"
 #include "doc/sprite.h"
@@ -642,19 +643,6 @@ DrawingState* StandbyState::startDrawingState(
   const DrawingType drawingType,
   const tools::Pointer& pointer)
 {
-  if (editor->layer()->isTilemap() &&
-      editor->sprite()->hasTileManagementPlugin() &&
-      !editor->layer()->cel(editor->frame())) {
-    // Trigger event so the plugin can create a cel on-the-fly
-    App::instance()->BeforePaintEmptyTilemap();
-
-    if (!editor->layer() ||
-        !editor->layer()->cel(editor->frame())) {
-      return nullptr;
-    }
-    // In other case, it looks like PaintEmptyTilemap event created
-    // the cel...
-  }
   // We need to clear and redraw the brush boundaries after the
   // first mouse pressed/point shape if drawn. This is to avoid
   // graphical glitches (invalid areas in the ToolLoop's src/dst

@@ -11,9 +11,13 @@
 #include "app/script/values.h"
 
 #include "app/pref/preferences.h"
+#include "app/script/docobj.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
+#include "doc/frame.h"
+#include "doc/layer.h"
 #include "doc/remap.h"
+#include "doc/sprite.h"
 
 #include <any>
 #include <cstddef>
@@ -166,14 +170,24 @@ void push_value_to_lua(lua_State* L, const std::any& value) {
     push_value_to_lua(L, *v);
   else if (auto v = std::any_cast<int>(&value))
     push_value_to_lua(L, *v);
+  // TODO "doc::frame_t" type matches "int", we could add a doc::Frame()
+  //      kind of object in the future
+  //else if (auto v = std::any_cast<doc::frame_t>(&value))
+  //  push_sprite_frame(L, nullptr, *v);
+  else if (auto v = std::any_cast<doc::tile_index>(&value))
+    push_value_to_lua(L, *v);
   else if (auto v = std::any_cast<std::string>(&value))
     push_value_to_lua(L, *v);
   else if (auto v = std::any_cast<lua_CFunction>(&value))
     lua_pushcfunction(L, *v);
   else if (auto v = std::any_cast<const doc::Remap*>(&value))
     push_value_to_lua(L, **v);
-  else if (auto v = std::any_cast<const doc::Tileset*>(&value))
+  else if (auto v = std::any_cast<doc::Tileset*>(&value))
     push_tileset(L, *v);
+  else if (auto v = std::any_cast<doc::Sprite*>(&value))
+    push_docobj(L, *v);
+  else if (auto v = std::any_cast<doc::Layer*>(&value))
+    push_docobj(L, *v);
   else if (auto v = std::any_cast<const Params>(&value)) {
     push_value_to_lua(L, *v);
   }

@@ -158,7 +158,6 @@ public:
     BgColorChange,
     BeforeCommand,
     AfterCommand,
-    BeforePaintEmptyTilemap,
   };
 
   AppEvents() {
@@ -175,8 +174,6 @@ public:
       return BeforeCommand;
     else if (std::strcmp(eventName, "aftercommand") == 0)
       return AfterCommand;
-    else if (std::strcmp(eventName, "beforepaintemptytilemap") == 0)
-      return BeforePaintEmptyTilemap;
     else
       return Unknown;
   }
@@ -207,10 +204,6 @@ private:
         m_afterCmdConn = ctx->AfterCommandExecution
           .connect(&AppEvents::onAfterCommand, this);
         break;
-      case BeforePaintEmptyTilemap:
-        m_beforePaintConn = app->BeforePaintEmptyTilemap
-          .connect(&AppEvents::onBeforePaintEmptyTilemap, this);
-        break;
     }
   }
 
@@ -230,9 +223,6 @@ private:
         break;
       case AfterCommand:
         m_afterCmdConn.disconnect();
-        break;
-      case BeforePaintEmptyTilemap:
-        m_beforePaintConn.disconnect();
         break;
     }
   }
@@ -264,10 +254,6 @@ private:
                          { "params", ev.params() } });
   }
 
-  void onBeforePaintEmptyTilemap() {
-    call(BeforePaintEmptyTilemap);
-  }
-
   // ContextObserver impl
   void onActiveSiteChange(const Site& site) override {
     const bool fromUndo = (site.document() &&
@@ -290,6 +276,7 @@ public:
     Unknown = -1,
     Change,
     FilenameChange,
+    AfterAddTile,
 #if ENABLE_REMAP_TILESET_EVENT
     RemapTileset,
 #endif
@@ -319,6 +306,8 @@ public:
       return Change;
     else if (std::strcmp(eventName, "filenamechange") == 0)
       return FilenameChange;
+    else if (std::strcmp(eventName, "afteraddtile") == 0)
+      return AfterAddTile;
 #if ENABLE_REMAP_TILESET_EVENT
     else if (std::strcmp(eventName, "remaptileset") == 0)
       return RemapTileset;
@@ -341,11 +330,20 @@ public:
     call(FilenameChange);
   }
 
+  void onAfterAddTile(DocEvent& ev) override {
+    call(AfterAddTile, { { "sprite", ev.sprite() },
+                         { "layer", ev.layer() },
+                         // This is detected as a "int" type
+                         { "frameNumber", ev.frame()+1 },
+                         { "tileset", ev.tileset() },
+                         { "tileIndex", ev.tileIndex() } });
+  }
+
 #if ENABLE_REMAP_TILESET_EVENT
   void onRemapTileset(DocEvent& ev, const doc::Remap& remap) override {
     const bool fromUndo = (ev.document()->transaction() == nullptr);
     call(RemapTileset, { { "remap", std::any(&remap) },
-                         { "tileset", std::any((const doc::Tileset*)ev.tileset()) },
+                         { "tileset", ev.tileset() },
                          { "fromUndo", fromUndo } });
   }
 #endif

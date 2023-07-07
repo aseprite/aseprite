@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -9,8 +9,9 @@
 #define APP_DOC_EVENT_H_INCLUDED
 #pragma once
 
-#include "gfx/region.h"
 #include "doc/frame.h"
+#include "doc/tile.h"
+#include "gfx/region.h"
 
 namespace doc {
   class Cel;
@@ -55,6 +56,7 @@ namespace app {
     doc::Tag* tag() const { return m_tag; }
     doc::Slice* slice() const { return m_slice; }
     doc::Tileset* tileset() const { return m_tileset; }
+    doc::tile_index tileIndex() const { return m_ti; }
     const gfx::Region& region() const { return m_region; }
     doc::WithUserData* withUserData() const { return m_withUserData; }
 
@@ -67,6 +69,7 @@ namespace app {
     void tag(doc::Tag* tag) { m_tag = tag; }
     void slice(doc::Slice* slice) { m_slice = slice; }
     void tileset(doc::Tileset* tileset) { m_tileset = tileset; }
+    void tileIndex(doc::tile_index ti) { m_ti = ti; }
     void region(const gfx::Region& rgn) { m_region = rgn; }
     void withUserData(doc::WithUserData* withUserData) { m_withUserData = withUserData; }
 
@@ -88,6 +91,7 @@ namespace app {
     doc::Tag* m_tag;
     doc::Slice* m_slice;
     doc::Tileset* m_tileset;
+    doc::tile_index m_ti = doc::notile;
     gfx::Region m_region;
     doc::WithUserData* m_withUserData;
 
