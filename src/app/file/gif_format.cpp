@@ -371,7 +371,7 @@ private:
     }
 
     // Merge this frame colors with the current palette
-    if (frameImage)
+    if (frameImage && m_sprite->palette(m_frameNum)->size() <= 256)
       updatePalette(frameImage.get());
 
     // Convert the sprite to RGB if we have more than 256 colors
@@ -492,177 +492,160 @@ private:
     return colormap;
   }
 
-  // Adds colors used in the GIF frame so we can draw it over
-  // m_currentImage. If the frame contains a local colormap, we try to
-  // find them in the current sprite palette (using
-  // Palette::findExactMatch()) so we don't add duplicated entries.
-  // To do so we use a Remap (m_remap variable) which matches the
-  // original GIF frame colors with the current sprite colors.
+  // Accumulates colors to get the final palette in the sprite.
+  // If the GIF file contains a global palette and no local palette
+  // on frame 0, we'll take the global palette as base,
+  // no matter if its colors are used or not in the image,
+  // then the new colors are used in each frame will be accumulated.
+  // If there is no global palette, the colors will accumulate
+  // as they are used in each frame.
+  // Note that the order of colors in the resulting palette will be
+  // very different from the order of the local palette of the
+  // corresponding GIF, since the unused colors will be discarded.
   void updatePalette(const Image* frameImage) {
     ColorMapObject* colormap = getFrameColormap();
-    const int ncolors = colormap->ColorCount;
+    int ncolors = colormap->ColorCount;
     bool isLocalColormap = (m_gifFile->Image.ColorMap ? true: false);
 
     GIF_TRACE("GIF: Local colormap=%d, ncolors=%d\n", isLocalColormap, ncolors);
 
-    // We'll calculate the list of used colormap indexes in this
-    // frameImage.
     PalettePicks usedEntries(ncolors);
-    if (isLocalColormap) {
-      // With this we avoid discarding the transparent index when a
-      // frame indicates that it uses a specific index as transparent
-      // but the image is completely opaque anyway.
-      if (!m_opaque && m_frameNum == 0 && m_localTransparentIndex >= 0 &&
-          m_localTransparentIndex < ncolors) {
-        usedEntries[m_localTransparentIndex] = true;
-      }
+    // This holds the eventual necessity of increment in one color
+    // the palette and usedEntries in case of m_localTransparentIndex
+    // is out of bounds and non opaque sprite.
+    int extraEntry = 0;
 
-      for (const auto& i : LockImageBits<IndexedTraits>(frameImage)) {
-        if (i >= 0 && i < ncolors && i != m_localTransparentIndex)
-          usedEntries[i] = true;
-      }
-    }
-    // Mark all entries as used if the colormap is global.
-    else {
+    if (m_frameNum == 0 && !isLocalColormap)
+      // Mark all entries as used if the colormap is global.
       usedEntries.all();
+    else {
+      for (const auto& i : LockImageBits<IndexedTraits>(frameImage)) {
+        if (i >= 0 && i < ncolors) {
+          usedEntries[i] = true;
+        }
+      }
+      // GIF Case: unnamed.gif. If a pixel is equal to
+      // m_localtransparentindex in a frame > 0 in a sprite
+      // defined as opaque, it will be the same as leaving
+      // the m_bgindex color in said pixel.
+      // That's why we mark m_localTransparentIndex entry as not used.
+      if (m_opaque &&
+          0 <= m_localTransparentIndex &&
+          m_localTransparentIndex < usedEntries.size() &&
+          m_frameNum > 0) {
+        usedEntries[m_localTransparentIndex] = false;
+      }
+      // A sprite with transparent layer always needs a defined transparent
+      // entry to be able to represent transparent color.
+      // If the GIF is identified as a transparent sprite, we'll be forced
+      // to adopt a transparent entry (no matter if the sprite will end
+      // with all opaque pixels).
+      // That's why we must force m_localTransparentIndex as used entry.
+      if (m_frameNum == 0 && !m_opaque) {
+        // Regular case
+        if (0 <= m_localTransparentIndex &&
+            m_localTransparentIndex < ncolors)
+          usedEntries[m_localTransparentIndex] = true;
+        // Out of bounds case (will need an extra palette entry)
+        else if (m_localTransparentIndex >= ncolors)
+          extraEntry = 1;
+      }
     }
 
     // Number of colors (indexes) used in the frame image.
-    int usedNColors = usedEntries.picks();
+    const int usedNColors = usedEntries.picks();
 
-    // Check if we need an extra color equal to the bg color in a
-    // transparent frameImage.
-    bool needsExtraBgColor = false;
-    bool needCheckLocalTransparent = m_bgIndex != m_localTransparentIndex ||
-                                     (ncolors > m_localTransparentIndex
-                                     && m_localTransparentIndex >= 0
-                                     && usedEntries[m_localTransparentIndex]);
-
-    if (m_sprite->pixelFormat() == IMAGE_INDEXED &&
-        !m_opaque &&
-        needCheckLocalTransparent) {
-      for (const auto& i : LockImageBits<IndexedTraits>(frameImage)) {
-        if (i == m_bgIndex) {
-          needsExtraBgColor = true;
-          break;
-        }
-      }
-    }
+    resetRemap(256);
 
     std::unique_ptr<Palette> palette;
-    if (m_frameNum == 0)
-      palette.reset(new Palette(m_frameNum, usedNColors + (needsExtraBgColor ? 1: 0)));
+    if (m_frameNum == 0) {
+      palette = std::make_unique<Palette>(m_frameNum, usedNColors + extraEntry);
+      if (palette->size() > 256)
+        return;
+      // The final palette will have a "transparent index".
+      // That index will be stored in m_bgIndex.
+      // So we'll update the m_bgIndex only if the
+      // GIF is defined as transparent and the m_localTransparentIndex
+      // is a valid index on frame 0.
+      // If the GIF is defined as 'opaque' (i.e. no transparent color)
+      // m_bgIndex will be defined on GifDecoder constructor equal to
+      // SBackGroundColor or 0.
+      if (!m_opaque) {
+        // Regular case
+        if (0 <= m_localTransparentIndex &&
+            m_localTransparentIndex < ncolors)
+          m_bgIndex = m_localTransparentIndex;
+        // Out of bound case
+        else if (m_localTransparentIndex >= ncolors) {
+          m_bgIndex = palette->size() - 1;
+          m_remap.map(m_localTransparentIndex, m_bgIndex);
+        }
+        else
+          ASSERT(false); // Can it happen?
+        clear_image(m_currentImage.get(), m_bgIndex);
+        clear_image(m_previousImage.get(), m_bgIndex);
+      }
+      m_currentImage.get()->setMaskColor(m_bgIndex);
+      m_previousImage.get()->setMaskColor(m_bgIndex);
+      m_sprite->setTransparentColor(m_bgIndex);
+    }
     else {
       palette.reset(new Palette(*m_sprite->palette(m_frameNum-1)));
       palette->setFrame(m_frameNum);
     }
-    resetRemap(std::max(ncolors, palette->size()));
 
-    // Number of colors in the colormap that are part of the current
-    // sprite palette.
-    int found = 0;
-    if (m_frameNum > 0) {
-      ColorMapObject* globalCMap = m_gifFile->SColorMap;
-      ColorMapObject* localCMap = m_gifFile->Image.ColorMap;
-      if (globalCMap && !m_hasLocalColormaps)
-        found = usedEntries.size();
-      else {
-        for (int i=0; i<ncolors; ++i) {
-          if (!usedEntries[i])
-            continue;
-
-          if (localCMap && i < localCMap->ColorCount &&
-              rgba(localCMap->Colors[i].Red,
-                   localCMap->Colors[i].Green,
-                   localCMap->Colors[i].Blue, 255) == palette->getEntry(i)) {
-            ++found;
-            continue;
-          }
-
-          int j = palette->findExactMatch(colormap->Colors[i].Red,
-                                          colormap->Colors[i].Green,
-                                          colormap->Colors[i].Blue, 255,
-                                          (m_opaque ? -1: m_bgIndex));
-          if (j >= 0) {
-            m_remap.map(i, j);
-            ++found;
-          }
-        }
-      }
-    }
-
-    // All needed colors in the colormap are present in the current
-    // palette.
-    if (found == usedNColors)
-      return;
-
-    // In other case, we need to add the missing colors...
-
-    // First index that acts like a base for new colors in palette.
-    int base = (m_frameNum == 0 ? 0: palette->size());
-
-    // Number of colors in the image that aren't in the palette.
-    int missing = (usedNColors - found);
-
-    GIF_TRACE("GIF: Bg index=%d,\n"
-              "  Local transparent index=%d,\n"
-              "  Need extra index to show bg color=%d,\n  "
-              "  Found colors in palette=%d,\n"
-              "  Used colors in local pixels=%d,\n"
-              "  Base for new colors in palette=%d,\n"
-              "  Colors in the image missing in the palette=%d,\n"
-              "  New palette size=%d\n",
-              m_bgIndex, m_localTransparentIndex, needsExtraBgColor,
-              found, usedNColors, base, missing,
-              base + missing + (needsExtraBgColor ? 1: 0));
-
-    Palette oldPalette(*palette);
-    palette->resize(base + missing + (needsExtraBgColor ? 1: 0));
-    resetRemap(std::max(ncolors, palette->size()));
-
-    for (int i=0; i<ncolors; ++i) {
-      if (!usedEntries[i])
-        continue;
-
-      int j = -1;
-
-      if (m_frameNum > 0) {
-        j = oldPalette.findExactMatch(
-          colormap->Colors[i].Red,
-          colormap->Colors[i].Green,
-          colormap->Colors[i].Blue, 255,
-          (m_opaque ? -1: m_bgIndex));
-      }
-
-      if (j < 0) {
-        j = base++;
+    // On frame 0 fill the palette with used colors and remap
+    if (m_frameNum == 0) {
+      int j = 0;
+      for (int i = 0; i < ncolors; i++) {
+        if (!usedEntries[i])
+          continue;
         palette->setEntry(j, colormap2rgba(colormap, i));
+        m_remap.map(i, j);
+        j++;
       }
-      m_remap.map(i, j);
     }
+    // Frames > 0, find new colors on the palette and remap or
+    // add new used color and remap.
+    else {
+      for (int i=0; i<ncolors; ++i) {
 
-    if (needsExtraBgColor) {
-      int i = m_bgIndex;
-      int j = base++;
-      palette->setEntry(j, colormap2rgba(colormap, i));
-      // m_firstLocalColorMap, is used only if we have no global color map in the gif source,
-      // and we want to preserve original color indexes, as much we can.
-      // If the palette size is > 256, m_firstLocalColormal is no more useful, because
-      // the sprite pixel format will be converted in RGBA image, and the colors will
-      // be picked from the sprite palette, instead of m_firstLocalColorMap.
-      if (m_firstLocalColormap && m_firstLocalColormap->ColorCount > j) {
-        // We need add this extra color to m_firstLocalColormap, because
-        // it might has not been considered in the first getFrameColormap execution.
-        // (this happen when: in the first execution of getFrameColormap function
-        // an extra color was not needed)
-        m_firstLocalColormap->Colors[j].Red = rgba_getr(palette->getEntry(j));
-        m_firstLocalColormap->Colors[j].Green = rgba_getg(palette->getEntry(j));
-        m_firstLocalColormap->Colors[j].Blue = rgba_getb(palette->getEntry(j));
+        if (!usedEntries[i])
+          continue;
+
+        // If by chance, the actual used entry 'i'
+        // matches with the palette entry 'i', it isn't
+        // need to find a match or add a new color to the palette.
+        if (i < palette->size() &&
+            (i != m_bgIndex || m_opaque) &&
+            colormap &&
+            i < colormap->ColorCount &&
+            rgba(colormap->Colors[i].Red,
+                 colormap->Colors[i].Green,
+                 colormap->Colors[i].Blue,
+                 255) == palette->getEntry(i)) {
+          continue;
+        }
+
+        int j = palette->findExactMatch(
+                  colormap->Colors[i].Red,
+                  colormap->Colors[i].Green,
+                  colormap->Colors[i].Blue, 255,
+                  m_opaque ? -1: m_bgIndex);
+        if (j < 0) {
+          palette->resize(palette->size() + 1);
+          j = palette->size() - 1;
+          palette->setEntry(j, colormap2rgba(colormap, i));
+        }
+        // If the palette size is >256, we'll stop updating
+        // the palette for the remaining frames because
+        // we'll switch to RGB pixel format, so we have no interest
+        // in further managing or remapping colors in the palette.
+        if (j >= 256)
+          break;
+        m_remap.map(i, j);
       }
-      m_remap.map(i, j);
     }
-
-    ASSERT(base == palette->size());
     m_sprite->setPalette(palette.get(), false);
   }
 
@@ -818,7 +801,7 @@ private:
                   // INDEXED->RGB conversions
          m_sprite->palette(cel->frame()),
          m_opaque,
-         m_bgIndex,
+         0,
          nullptr));
 
       m_sprite->replaceImage(oldImage->id(), newImage);
@@ -831,7 +814,7 @@ private:
        nullptr,
        m_sprite->palette(m_frameNum),
        m_opaque,
-       m_bgIndex));
+       0));
 
     m_previousImage.reset(
       render::convert_pixel_format
@@ -840,9 +823,10 @@ private:
        nullptr,
        m_sprite->palette(std::max(0, m_frameNum-1)),
        m_opaque,
-       m_bgIndex));
+       0));
 
     m_sprite->setPixelFormat(IMAGE_RGB);
+    m_sprite->setTransparentColor(0);
   }
 
   void remapToGlobalColormap(ColorMapObject* colormap) {
