@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -48,7 +48,7 @@ bool LinkLabel::onProcessMessage(Message* msg)
 
     case kSetCursorMessage:
       // TODO theme stuff
-      if (isEnabled() && hasMouseOver()) {
+      if (isEnabled() && hasMouse()) {
         set_mouse_cursor(kHandCursor);
         return true;
       }
@@ -66,7 +66,7 @@ bool LinkLabel::onProcessMessage(Message* msg)
 
     case kMouseMoveMessage:
       if (isEnabled() && hasCapture())
-        setSelected(hasMouseOver());
+        setSelected(hasMouse());
       break;
 
     case kMouseDownMessage:
@@ -83,7 +83,7 @@ bool LinkLabel::onProcessMessage(Message* msg)
         setSelected(false);
         invalidate();           // TODO theme specific
 
-        if (hasMouseOver())
+        if (hasMouse())
           onClick();
       }
       break;

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022  Igara Studio S.A.
+// Copyright (C) 2022-2023  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -56,7 +56,7 @@ void IconButton::onPaint(PaintEvent& ev)
     fg = theme->colors.menuitemHighlightText();
     bg = theme->colors.menuitemHighlightFace();
   }
-  else if (isEnabled() && hasMouseOver()) {
+  else if (isEnabled() && hasMouse()) {
     fg = theme->colors.menuitemHotText();
     bg = theme->colors.menuitemHotFace();
   }

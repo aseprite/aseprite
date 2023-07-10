@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2020-2022  Igara Studio S.A.
+// Copyright (c) 2020-2023  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -164,7 +164,7 @@ void TileButton::onPaint(PaintEvent& ev)
   Site site = UIContext::instance()->activeSite();
   draw_tile_button(g, rc,
                    site, m_tile,
-                   hasMouseOver(), false);
+                   hasMouse(), false);
 
   // Draw text
   if (m_tile != doc::notile) {

@@ -62,7 +62,7 @@ void Notifications::onPaint(PaintEvent& ev)
   Graphics* g = ev.graphics();
 
   PaintWidgetPartInfo info;
-  if (hasMouseOver()) info.styleFlags |= ui::Style::Layer::kMouse;
+  if (hasMouse()) info.styleFlags |= ui::Style::Layer::kMouse;
   if (m_red) info.styleFlags |= ui::Style::Layer::kFocus;
   if (isSelected()) info.styleFlags |= ui::Style::Layer::kSelected;
 

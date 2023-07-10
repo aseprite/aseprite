@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -17,6 +17,8 @@
 #include "ui/message_type.h"
 #include "ui/mouse_button.h"
 #include "ui/pointer_type.h"
+
+#include <functional>
 
 namespace ui {
 
@@ -79,6 +81,18 @@ namespace ui {
     Widget* m_recipient;      // Recipient of this message
     Widget* m_commonAncestor; // Common ancestor between the Leave <-> Enter messages
     KeyModifiers m_modifiers; // Key modifiers pressed when message was created
+  };
+
+  class CallbackMessage : public Message {
+  public:
+    CallbackMessage(std::function<void()>&& callback)
+      : Message(kCallbackMessage)
+      , m_callback(std::move(callback)) { }
+    void call() {
+      m_callback();
+    }
+  private:
+    std::function<void()> m_callback;
   };
 
   class KeyMessage : public Message {

@@ -1496,11 +1496,6 @@ bool Widget::offerCapture(ui::MouseMessage* mouseMsg, int widget_type)
   return false;
 }
 
-bool Widget::hasMouseOver() const
-{
-  return (this == pickFromScreenPos(get_mouse_position()));
-}
-
 gfx::Point Widget::mousePosInDisplay() const
 {
   return display()->nativeWindow()->pointFromScreen(get_mouse_position());

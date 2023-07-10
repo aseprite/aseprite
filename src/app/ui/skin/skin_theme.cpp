@@ -1489,16 +1489,16 @@ void SkinTheme::paintSlider(PaintEvent& ev)
     SkinPartPtr empty_part;
 
     if (isMiniLook) {
-      full_part = widget->hasMouseOver() ? parts.miniSliderFullFocused():
-                                           parts.miniSliderFull();
-      empty_part = widget->hasMouseOver() ? parts.miniSliderEmptyFocused():
-                                            parts.miniSliderEmpty();
+      full_part = (widget->hasMouse() ? parts.miniSliderFullFocused():
+                                        parts.miniSliderFull());
+      empty_part = (widget->hasMouse() ? parts.miniSliderEmptyFocused():
+                                         parts.miniSliderEmpty());
     }
     else {
-      full_part = widget->hasFocus() ? parts.sliderFullFocused():
-                                       parts.sliderFull();
-      empty_part = widget->hasFocus() ? parts.sliderEmptyFocused():
-                                        parts.sliderEmpty();
+      full_part = (widget->hasFocus() ? parts.sliderFullFocused():
+                                        parts.sliderFull());
+      empty_part = (widget->hasFocus() ? parts.sliderEmptyFocused():
+                                         parts.sliderEmpty());
     }
 
     if (value == min)

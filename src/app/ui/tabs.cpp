@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -1042,7 +1042,7 @@ void Tabs::updateDragTabIndexes(int mouseX, bool startAni)
         startAni = true;
       }
     }
-    else if (hasMouseOver()) {
+    else if (hasMouse()) {
       i = std::clamp(i, 0, int(m_list.size())-1);
       if (i != m_dragTabIndex) {
         m_list.erase(m_list.begin()+m_dragTabIndex);

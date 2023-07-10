@@ -496,30 +496,37 @@ void Manager::generateMessagesFromOSEvents()
       }
 
       case os::Event::MouseEnter: {
-        if (get_multiple_displays()) {
-          if (osEvent.window()) {
-            ASSERT(display != nullptr);
-            _internal_set_mouse_display(display);
+        auto msg = new CallbackMessage([osEvent, display]{
+          if (get_multiple_displays()) {
+            if (osEvent.window()) {
+              ASSERT(display != nullptr);
+              _internal_set_mouse_display(display);
+            }
           }
-        }
-        set_mouse_cursor(kArrowCursor);
+          set_mouse_cursor(kArrowCursor);
+          mouse_display = display;
+        });
+        enqueueMessage(msg);
         lastMouseMoveEvent = osEvent;
-        mouse_display = display;
         break;
       }
 
       case os::Event::MouseLeave: {
-        if (mouse_display == display) {
-          set_mouse_cursor(kOutsideDisplay);
-          setMouse(nullptr);
+        auto msg = new CallbackMessage([this, display]{
+          if (mouse_display == display) {
+            set_mouse_cursor(kOutsideDisplay);
+            setMouse(nullptr);
 
-          _internal_no_mouse_position();
-          mouse_display = nullptr;
+            _internal_no_mouse_position();
+            mouse_display = nullptr;
+          }
+        });
 
-          // To avoid calling kSetCursorMessage when the mouse leaves
-          // the window.
-          lastMouseMoveEvent = os::Event();
-        }
+        enqueueMessage(msg);
+
+        // To avoid calling kSetCursorMessage when the mouse leaves
+        // the window.
+        lastMouseMoveEvent = os::Event();
         break;
       }
 
@@ -1000,54 +1007,61 @@ void Manager::setMouse(Widget* widget)
             (widget ? widget->id(): ""));
 #endif
 
-  if ((mouse_widget != widget) && (!capture_widget)) {
-    Widget* commonAncestor = findLowestCommonAncestor(mouse_widget, widget);
+  if (mouse_widget == widget)
+    return;
 
-    // Fetch the mouse
-    if (mouse_widget && mouse_widget != commonAncestor) {
-      auto msg = new Message(kMouseLeaveMessage);
-      msg->setRecipient(mouse_widget);
-      msg->setPropagateToParent(true);
-      msg->setCommonAncestor(commonAncestor);
-      enqueueMessage(msg);
+  Widget* commonAncestor = findLowestCommonAncestor(mouse_widget, widget);
 
-      // Remove HAS_MOUSE from all the hierarchy
-      auto a = mouse_widget;
-      while (a && a != commonAncestor) {
-        a->disableFlags(HAS_MOUSE);
-        a = a->parent();
-      }
+  // Fetch the mouse
+  if (mouse_widget && mouse_widget != commonAncestor) {
+    auto msg = new Message(kMouseLeaveMessage);
+    msg->setRecipient(mouse_widget);
+    msg->setPropagateToParent(true);
+    msg->setCommonAncestor(commonAncestor);
+    enqueueMessage(msg);
+
+    // Remove HAS_MOUSE from all the hierarchy
+    auto a = mouse_widget;
+    while (a && a != commonAncestor) {
+      a->disableFlags(HAS_MOUSE);
+      a = a->parent();
     }
+  }
 
-    // Put the mouse
-    mouse_widget = widget;
-    if (widget) {
-      Display* display = mouse_widget->display();
-      gfx::Point mousePos = display->nativeWindow()->pointFromScreen(get_mouse_position());
+  // If the mouse is captured, we can just put the HAS_MOUSE flag in
+  // the captured widget (or in none).
+  if (capture_widget && capture_widget != widget) {
+    widget = nullptr;
+  }
 
-      auto msg = newMouseMessage(
-        kMouseEnterMessage,
-        display, nullptr,
-        mousePos,
-        PointerType::Unknown,
-        m_mouseButton,
-        kKeyUninitializedModifier);
+  // Put the mouse
+  mouse_widget = widget;
+  if (widget) {
+    Display* display = mouse_widget->display();
+    gfx::Point mousePos = display->nativeWindow()->pointFromScreen(get_mouse_position());
 
-      msg->setRecipient(widget);
-      msg->setPropagateToParent(true);
-      msg->setCommonAncestor(commonAncestor);
-      enqueueMessage(msg);
-      generateSetCursorMessage(display,
-                               mousePos,
-                               kKeyUninitializedModifier,
-                               PointerType::Unknown);
+    auto msg = newMouseMessage(
+      kMouseEnterMessage,
+      display, nullptr,
+      mousePos,
+      PointerType::Unknown,
+      m_mouseButton,
+      kKeyUninitializedModifier);
 
-      // Add HAS_MOUSE to all the hierarchy
-      auto a = mouse_widget;
-      while (a && a != commonAncestor) {
-        a->enableFlags(HAS_MOUSE);
-        a = a->parent();
-      }
+    msg->setRecipient(widget);
+    msg->setPropagateToParent(true);
+    msg->setCommonAncestor(commonAncestor);
+    enqueueMessage(msg);
+    generateSetCursorMessage(display,
+                             mousePos,
+                             kKeyUninitializedModifier,
+                             PointerType::Unknown);
+
+    // Add HAS_MOUSE to all the hierarchy
+    auto a = mouse_widget;
+    while (a && a != commonAncestor) {
+      a->enableFlags(HAS_MOUSE);
+      a = a->parent();
     }
   }
 }
@@ -1929,9 +1943,10 @@ bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
       "kSetCursorMessage",
       "kMouseWheelMessage",
       "kTouchMagnifyMessage",
+      "kCallbackMessage",
     };
     static_assert(kOpenMessage == 0 &&
-                  kTouchMagnifyMessage == sizeof(msg_name)/sizeof(const char*)-1,
+                  kCallbackMessage == sizeof(msg_name)/sizeof(const char*)-1,
                   "MessageType enum has changed");
     const char* string =
       (msg->type() >= 0 &&

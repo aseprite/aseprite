@@ -3241,7 +3241,7 @@ void Timeline::updateScrollBars()
 void Timeline::updateByMousePos(ui::Message* msg, const gfx::Point& mousePos)
 {
   Hit hit = hitTest(msg, mousePos);
-  if (hasMouseOver())
+  if (hasMouse())
     setCursor(msg, hit);
   setHot(hit);
 }

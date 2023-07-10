@@ -277,7 +277,7 @@ void ColorButton::onPaint(PaintEvent& ev)
   draw_color_button(g, rc,
                     color,
                     (doc::ColorMode)m_pixelFormat,
-                    hasMouseOver(), false);
+                    hasMouse(), false);
 
   // Draw text
   std::string str = m_color.toHumanReadableString(m_pixelFormat,
