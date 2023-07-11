@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2018-2019  Igara Studio S.A.
+// Copyright (c) 2018-2023  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -88,7 +88,7 @@ bool CssFormat::onLoad(FileOp* fop)
 
 bool CssFormat::onSave(FileOp* fop)
 {
-  const ImageRef image = fop->sequenceImage();
+  const ImageRef image = fop->sequenceImageToSave();
   int x, y, c, r, g, b, a, alpha;
   const auto css_options = std::static_pointer_cast<CssOptions>(fop->formatOptions());
   FileHandle handle(open_file_with_exception_sync_on_close(fop->filename(), "wb"));

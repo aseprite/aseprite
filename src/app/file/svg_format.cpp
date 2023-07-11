@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2018-2022  Igara Studio S.A.
+// Copyright (c) 2018-2023  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -81,7 +81,7 @@ bool SvgFormat::onLoad(FileOp* fop)
 
 bool SvgFormat::onSave(FileOp* fop)
 {
-  const ImageRef image = fop->sequenceImage();
+  const ImageRef image = fop->sequenceImageToSave();
   int x, y, c, r, g, b, a, alpha;
   const auto svg_options = std::static_pointer_cast<SvgOptions>(fop->formatOptions());
   const int pixelScaleValue = std::clamp(svg_options->pixelScale, 0, 10000);

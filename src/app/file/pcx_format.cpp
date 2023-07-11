@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022  Igara Studio S.A.
+// Copyright (C) 2022-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -106,10 +106,10 @@ bool PcxFormat::onLoad(FileOp* fop)
   for (c=0; c<60; c++)             /* skip some more junk */
     fgetc(f);
 
-  ImageRef image = fop->sequenceImage(bpp == 8 ?
-                                      IMAGE_INDEXED:
-                                      IMAGE_RGB,
-                                      width, height);
+  ImageRef image = fop->sequenceImageToLoad(
+    (bpp == 8 ? IMAGE_INDEXED:
+                IMAGE_RGB),
+    width, height);
   if (!image) {
     return false;
   }
@@ -192,7 +192,7 @@ bool PcxFormat::onLoad(FileOp* fop)
 #ifdef ENABLE_SAVE
 bool PcxFormat::onSave(FileOp* fop)
 {
-  const FileAbstractImage* img = fop->abstractImage();
+  const FileAbstractImage* img = fop->abstractImageToSave();
   const ImageSpec spec = img->spec();
   int c, r, g, b;
   int x, y;

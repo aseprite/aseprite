@@ -278,7 +278,8 @@ bool PngFormat::onLoad(FileOp* fop)
 
   int imageWidth = png_get_image_width(png, info);
   int imageHeight = png_get_image_height(png, info);
-  ImageRef image = fop->sequenceImage(pixelFormat, imageWidth, imageHeight);
+  ImageRef image = fop->sequenceImageToLoad(
+    pixelFormat, imageWidth, imageHeight);
   if (!image)
     return false;
 
@@ -551,7 +552,7 @@ bool PngFormat::onSave(FileOp* fop)
 
   png_init_io(png, fp);
 
-  const FileAbstractImage* img = fop->abstractImage();
+  const FileAbstractImage* img = fop->abstractImageToSave();
   const ImageSpec spec = img->spec();
 
   switch (spec.colorMode()) {

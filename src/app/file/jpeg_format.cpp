@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -178,7 +178,7 @@ bool JpegFormat::onLoad(FileOp* fop)
   jpeg_start_decompress(&dinfo);
 
   // Create the image.
-  ImageRef image = fop->sequenceImage(
+  ImageRef image = fop->sequenceImageToLoad(
     (dinfo.out_color_space == JCS_RGB ? IMAGE_RGB:
                                         IMAGE_GRAYSCALE),
     dinfo.output_width,
@@ -353,7 +353,7 @@ bool JpegFormat::onSave(FileOp* fop)
 {
   struct jpeg_compress_struct cinfo;
   struct error_mgr jerr;
-  const FileAbstractImage* img = fop->abstractImage();
+  const FileAbstractImage* img = fop->abstractImageToSave();
   const ImageSpec spec = img->spec();
   JSAMPARRAY buffer;
   JDIMENSION buffer_height;

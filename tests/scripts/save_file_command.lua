@@ -1,9 +1,25 @@
--- Copyright (C) 2022  Igara Studio S.A.
+-- Copyright (C) 2022-2023  Igara Studio S.A.
 --
 -- This file is released under the terms of the MIT license.
 -- Read LICENSE.txt for more information.
 
-function fix_test_img(testImg, scale, fileExt, cm, c1)
+function fix_images(testImg, scale, fileExt, c, cm, c1)
+  -- GIF file is loaded as indexed, so we have to convert from indexed
+  -- to the ColorMode
+  if c.colorMode ~= cm then
+    assert(fileExt == "gif" or fileExt == "bmp")
+
+    if cm == ColorMode.RGB then
+      app.sprite = c
+      app.command.ChangePixelFormat{ format="rgb" }
+    elseif cm == ColorMode.GRAYSCALE then
+      app.sprite = c
+      app.command.ChangePixelFormat{ format="grayscale" }
+    else
+      assert(false)
+    end
+  end
+
   -- With file formats that don't support alpha channel, we
   -- compare totally transparent pixels (alpha=0) with black.
   if fileExt == "tga" and cm == ColorMode.GRAYSCALE then
@@ -20,6 +36,16 @@ function fix_test_img(testImg, scale, fileExt, cm, c1)
     end
   end
   testImg:resize(testImg.width*scale, testImg.height*scale)
+end
+
+function compatible_modes(fileExt, cm)
+  return
+    -- TODO support saving any color mode to FLI files on the fly
+    (fileExt ~= "fli" or cm == ColorMode.INDEXED) and
+    -- TODO Review grayscale support in bmp files
+    (fileExt ~= "bmp" or cm ~= ColorMode.GRAYSCALE) and
+    -- TODO Review grayscale/indexed support in webp files
+    (fileExt ~= "webp" or cm == ColorMode.RGB)
 end
 
 for _,cm in ipairs{ ColorMode.RGB,
@@ -59,44 +85,26 @@ for _,cm in ipairs{ ColorMode.RGB,
   assert(spr.filename == "_test_b.png")
 
   -- Scale
-  for _,fn in ipairs{ "_test_c_scaled.png",
-		      "_test_c_scaled.gif",
+  for _,fn in ipairs{ "_test_c_scaled.bmp",
 		      "_test_c_scaled.fli",
+		      "_test_c_scaled.gif",
+		      "_test_c_scaled.png",
 		      "_test_c_scaled.tga",
-		      "_test_c_scaled.bmp" } do
+		      "_test_c_scaled.webp" } do
     local fileExt = app.fs.fileExtension(fn)
 
-    -- TODO support saving any color mode to FLI files on the fly
-    if (fileExt ~= "fli" or cm == ColorMode.INDEXED) and
-       -- TODO Review grayscale support in bmp files
-       (fileExt ~= "bmp" or cm ~= ColorMode.GRAYSCALE) then
-      for _,scale in ipairs({ 1, 2, 3, 4 }) do
+    if compatible_modes(fileExt, cm) then
+      for _,scale in ipairs({ 0.25, 0.5, 1, 2, 3, 4 }) do
 	print(fn, scale, cm)
 
-	app.activeSprite = spr
+	app.sprite = spr
 	app.command.SaveFileCopyAs{ filename=fn, scale=scale }
 	local c = app.open(fn)
 	assert(c.width == spr.width*scale)
 	assert(c.height == spr.height*scale)
 
-	-- GIF file is loaded as indexed, so we have to convert from
-	-- indexed to the ColorMode
-	if c.colorMode ~= cm then
-	  assert(fileExt == "gif" or fileExt == "bmp")
-
-	  if cm == ColorMode.RGB then
-	    app.activeSprite = c
-	    app.command.ChangePixelFormat{ format="rgb" }
-	  elseif cm == ColorMode.GRAYSCALE then
-	    app.activeSprite = c
-	    app.command.ChangePixelFormat{ format="grayscale" }
-	  else
-	    assert(false)
-	  end
-	end
-
 	local testImg = Image(spr.cels[1].image)
-	fix_test_img(testImg, scale, fileExt, cm, c1)
+	fix_images(testImg, scale, fileExt, c, cm, c1)
 	if not c.cels[1].image:isEqual(testImg) then
 	  c.cels[1].image:saveAs("_testA.png")
 	  testImg:saveAs("_testB.png")
@@ -110,26 +118,26 @@ for _,cm in ipairs{ ColorMode.RGB,
   -- Scale + Slices
   local slice = spr:newSlice(Rectangle(1, 2, 8, 15))
   slice.name = "small_slice"
-  for _,fn in ipairs({ "_test_c_small_slice.png",
-		       -- TODO slices aren't supported in gif/fli yet
-		       --"_test_c_small_slice.gif",
-		       --"_test_c_small_slice.fli",
+  for _,fn in ipairs({ "_test_c_small_slice.bmp",
+		       "_test_c_small_slice.fli",
+		       "_test_c_small_slice.gif",
+		       "_test_c_small_slice.png",
 		       "_test_c_small_slice.tga",
-		       "_test_c_small_slice.bmp" }) do
+		       "_test_c_small_slice.webp" }) do
     local fileExt = app.fs.fileExtension(fn)
 
-    if (fileExt ~= "bmp" or cm ~= ColorMode.GRAYSCALE) then
-      for _,scale in ipairs({ 1, 2, 3, 4 }) do
+    if compatible_modes(fileExt, cm) then
+      for _,scale in ipairs({ 0.25, 0.5, 1, 2, 3, 4 }) do
 	print(fn, scale, cm)
 
-	app.activeSprite = spr
+	app.sprite = spr
 	app.command.SaveFileCopyAs{ filename=fn, slice="small_slice", scale=scale }
 	local c = app.open(fn)
 	assert(c.width == slice.bounds.width*scale)
 	assert(c.height == slice.bounds.height*scale)
 
 	local testImg = Image(spr.cels[1].image, spr.slices[1].bounds)
-	fix_test_img(testImg, scale, fileExt, cm, c1)
+	fix_images(testImg, scale, fileExt, c, cm, c1)
 	if not c.cels[1].image:isEqual(testImg) then
 	  c.cels[1].image:saveAs("_testA.png")
 	  testImg:saveAs("_testB.png")

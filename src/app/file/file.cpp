@@ -47,6 +47,7 @@
 #include "ask_for_color_profile.xml.h"
 #include "open_sequence.xml.h"
 
+#include <algorithm>
 #include <cstring>
 #include <cstdarg>
 
@@ -60,24 +61,39 @@ public:
     : m_doc(fop->document())
     , m_sprite(m_doc->sprite())
     , m_spec(m_sprite->spec())
-    , m_newBlend(fop->newBlend()) {
+    , m_supportAnimation(fop->fileFormat()->support(FILE_SUPPORT_FRAMES))
+    , m_newBlend(fop->newBlend())
+  {
     ASSERT(m_doc && m_sprite);
   }
 
-  void setSpecSize(const gfx::Size& size) {
-    m_spec.setWidth(size.w * m_scale.x);
-    m_spec.setHeight(size.h * m_scale.y);
+  void setSpecSize(const gfx::Size& fullCanvasSize,
+                   const gfx::Size& frameSize) {
+    if (m_supportAnimation) {
+      m_spec.setSize(std::max<int>(1, fullCanvasSize.w*m_scale.x),
+                     std::max<int>(1, fullCanvasSize.h*m_scale.y));
+    }
+    else {
+      m_spec.setSize(std::max<int>(1, frameSize.w*m_scale.x),
+                     std::max<int>(1, frameSize.h*m_scale.y));
+    }
   }
 
-  void setUnscaledImage(const doc::frame_t frame,
-                        const doc::ImageRef& image) {
-    if (m_spec.width() == image->width() &&
-        m_spec.height() == image->height()) {
+  void setUnscaledImageToSave(const doc::frame_t frame,
+                              const doc::ImageRef& image) {
+    // If we don't need to rescale the input "image", we can just
+    // reference the same exact image to encode (as we don't need to
+    // call resize_image()).
+    if (!needResize()) {
       m_tmpScaledImage = image;
     }
     else {
-      if (!m_tmpScaledImage)
+      // In other case we need to create a temporal image to resize
+      // the input "image" to "m_tmpScaledImage" for the encoder.
+      if (!m_tmpScaledImage ||
+          m_tmpScaledImage->spec() != m_spec) {
         m_tmpScaledImage.reset(doc::Image::create(m_spec));
+      }
 
       doc::algorithm::resize_image(
         image.get(),
@@ -132,13 +148,16 @@ public:
     return m_tmpScaledImage->getPixelAddress(0, y);
   }
 
-  void renderFrame(const doc::frame_t frame, doc::Image* dst) const override {
-    const bool needResize =
-      (dst->width() != m_sprite->width() ||
-       dst->height() != m_sprite->height());
+  void renderFrame(const doc::frame_t frame,
+                   const gfx::Rect& frameBounds,
+                   doc::Image* dst) const override {
+    const bool needResize = this->needResize();
 
-    if (needResize && !m_tmpUnscaledRender) {
+    if (needResize &&
+        (!m_tmpUnscaledRender ||
+         m_tmpUnscaledRender->size() != frameBounds.size())) {
       auto spec = m_sprite->spec();
+      spec.setSize(frameBounds.size());
       spec.setColorMode(dst->colorMode());
       m_tmpUnscaledRender.reset(doc::Image::create(spec));
     }
@@ -148,7 +167,8 @@ public:
     render.setBgOptions(render::BgOptions::MakeNone());
     render.renderSprite(
       (needResize ? m_tmpUnscaledRender.get(): dst),
-      m_sprite, frame);
+      m_sprite, frame,
+      gfx::Clip(gfx::Point(0, 0), frameBounds));
 
     if (needResize) {
       doc::algorithm::resize_image(
@@ -168,10 +188,15 @@ public:
   }
 
 private:
+  bool needResize() const {
+    return (m_scale != gfx::PointF(1.0, 1.0));
+  }
+
   const Doc* m_doc;
   const doc::Sprite* m_sprite;
   doc::ImageSpec m_spec;
-  bool m_newBlend;
+  const bool m_supportAnimation;
+  const bool m_newBlend;
   doc::ImageRef m_tmpScaledImage = nullptr;
   mutable doc::ImageRef m_tmpUnscaledRender = nullptr;
   gfx::PointF m_scale = gfx::PointF(1.0, 1.0);
@@ -232,7 +257,8 @@ int save_document(Context* context, Doc* document)
   std::unique_ptr<FileOp> fop(
     FileOp::createSaveDocumentOperation(
       context,
-      FileOpROI(document, gfx::Rect(), "", "", SelectedFrames(), false),
+      FileOpROI(document, document->sprite()->bounds(),
+                "", "", SelectedFrames(), false),
       document->filename(), "",
       false));
   if (!fop)
@@ -300,6 +326,37 @@ FileOpROI::FileOpROI(const Doc* doc,
     // All frames if selected frames is empty
     else if (m_selFrames.empty())
       m_selFrames.insert(0, doc->sprite()->lastFrame());
+  }
+}
+
+gfx::Rect FileOpROI::frameBounds(const frame_t frame) const
+{
+  // Export bounds of specific slice
+  if (m_slice) {
+    const SliceKey* key = m_slice->getByFrame(frame);
+    if (!key || key->isEmpty())
+      return gfx::Rect(); // Return an empty rectangle
+
+    return key->bounds();
+  }
+  else {
+    // Export specific bounds
+    ASSERT(!m_bounds.isEmpty());
+    return m_bounds;
+  }
+}
+
+gfx::Size FileOpROI::fileCanvasSize() const
+{
+  if (m_slice) {
+    gfx::Size size;
+    for (auto frame : m_selFrames)
+      size |= frameBounds(frame).size();
+    return size;
+  }
+  else {
+    ASSERT(!m_bounds.isEmpty());
+    return m_bounds.size();
   }
 }
 
@@ -859,7 +916,7 @@ void FileOp::operate(IFileOpProgress* progress)
           }
           // We don't need this image
           else {
-            delete m_seq.image;
+            m_seq.image.reset();
 
             // But add a link frame
             m_seq.last_cel->image = image_index;
@@ -949,8 +1006,8 @@ void FileOp::operate(IFileOpProgress* progress)
 
       // Create a temporary bitmap
       m_seq.image.reset(Image::create(sprite->pixelFormat(),
-                                      sprite->width(),
-                                      sprite->height()));
+                                      m_roi.fileCanvasSize().w,
+                                      m_roi.fileCanvasSize().h));
 
       m_seq.progress_offset = 0.0f;
       m_seq.progress_fraction = 1.0f / (double)sprite->totalFrames();
@@ -961,39 +1018,19 @@ void FileOp::operate(IFileOpProgress* progress)
 
       frame_t outputFrame = 0;
       for (frame_t frame : m_roi.selectedFrames()) {
-        gfx::Rect bounds;
+        gfx::Rect bounds = m_roi.frameBounds(frame);
+        if (bounds.isEmpty())
+          continue; // Skip frame because there is no slice key
 
-        // Export bounds of specific slice
-        if (m_roi.slice()) {
-          const SliceKey* key = m_roi.slice()->getByFrame(frame);
-          if (!key || key->isEmpty())
-            continue;           // Skip frame because there is no slice key
-
-          bounds = key->bounds();
-        }
-        // Export specific bounds
-        else if (!m_roi.bounds().isEmpty()) {
-          bounds = m_roi.bounds();
+        if (m_abstractImage) {
+          m_abstractImage->setSpecSize(m_roi.fileCanvasSize(),
+                                       bounds.size());
         }
 
-        // Draw the "frame" in "m_seq.image" with the given bounds
-        // (bounds can be the selection bounds or a slice key bounds)
-        if (!bounds.isEmpty()) {
-          if (m_abstractImage)
-            m_abstractImage->setSpecSize(bounds.size());
-
-          m_seq.image.reset(
-            Image::create(sprite->pixelFormat(),
-                          bounds.w,
-                          bounds.h));
-
-          render.renderSprite(
-            m_seq.image.get(), sprite, frame,
-            gfx::Clip(gfx::Point(0, 0), bounds));
-        }
-        else {
-          render.renderSprite(m_seq.image.get(), sprite, frame);
-        }
+        // Render the (unscaled) sequenced image.
+        render.renderSprite(
+          m_seq.image.get(), sprite, frame,
+          gfx::Clip(gfx::Point(0, 0), bounds));
 
         bool save = true;
 
@@ -1034,6 +1071,11 @@ void FileOp::operate(IFileOpProgress* progress)
     // Direct save to a file.
     else {
       makeDirectories();
+
+      if (m_abstractImage) {
+        m_abstractImage->setSpecSize(m_roi.fileCanvasSize(),
+                                     m_roi.fileCanvasSize());
+      }
 
       // Call the "save" procedure.
       if (!m_format->save(this)) {
@@ -1308,7 +1350,9 @@ void FileOp::sequenceGetAlpha(int index, int* a) const
     *a = 0;
 }
 
-ImageRef FileOp::sequenceImage(PixelFormat pixelFormat, int w, int h)
+ImageRef FileOp::sequenceImageToLoad(
+  const PixelFormat pixelFormat,
+  const int w, const int h)
 {
   Sprite* sprite;
 
@@ -1340,7 +1384,7 @@ ImageRef FileOp::sequenceImage(PixelFormat pixelFormat, int w, int h)
   }
 
   if (m_seq.last_cel) {
-    setError("Error: called two times FileOp::sequenceImage()\n");
+    setError("Error: called two times FileOp::sequenceImageToLoad()\n");
     return nullptr;
   }
 
@@ -1358,15 +1402,17 @@ void FileOp::makeAbstractImage()
     m_abstractImage = std::make_unique<FileAbstractImageImpl>(this);
 }
 
-FileAbstractImage* FileOp::abstractImage()
+FileAbstractImage* FileOp::abstractImageToSave()
 {
   ASSERT(m_format->support(FILE_ENCODE_ABSTRACT_IMAGE));
 
   makeAbstractImage();
 
-  // Use sequenceImage() to fill the current image
-  if (m_format->support(FILE_SUPPORT_SEQUENCES))
-    m_abstractImage->setUnscaledImage(m_seq.frame, sequenceImage());
+  // Use sequenceImageToSave() to fill the current image
+  if (m_format->support(FILE_SUPPORT_SEQUENCES)) {
+    m_abstractImage->setUnscaledImageToSave(m_seq.frame++,
+                                            m_seq.image);
+  }
 
   return m_abstractImage.get();
 }

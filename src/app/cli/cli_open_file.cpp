@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2016-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -28,7 +28,7 @@ FileOpROI CliOpenFile::roi() const
     selFrames.insert(fromFrame, toFrame);
 
   return FileOpROI(document,
-                   gfx::Rect(),
+                   document->sprite()->bounds(),
                    slice,
                    tag,
                    selFrames,

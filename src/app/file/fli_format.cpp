@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -206,7 +206,7 @@ static int get_time_precision(const FileAbstractImage* sprite,
 
 bool FliFormat::onSave(FileOp* fop)
 {
-  const FileAbstractImage* sprite = fop->abstractImage();
+  const FileAbstractImage* sprite = fop->abstractImageToSave();
 
   // Open the file to write in binary mode
   FileHandle handle(open_file_with_exception_sync_on_close(fop->filename(), "wb"));
@@ -251,7 +251,7 @@ bool FliFormat::onSave(FileOp* fop)
     }
 
     // Render the frame in the bitmap
-    sprite->renderFrame(frame, bmp.get());
+    sprite->renderFrame(frame, fop->roi().frameBounds(frame), bmp.get());
 
     // How many times this frame should be written to get the same
     // time that it has in the sprite

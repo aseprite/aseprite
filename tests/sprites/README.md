@@ -28,3 +28,6 @@
 * `file-tests-props.aseprite`: Indexed, 64x64, 6 frames, 4 layers (one
    of them is a tilemap), 13 cels, 1 tag.
 * `slices.aseprite`: Indexed, 4x4, background layer, 2 slices.
+* `slices-moving.aseprite`: Indexed, 4x4, 1 linked cel in 4 frames,
+  background layer, 1 slice with 4 keyframes (each keyframe with a
+  different position/size).

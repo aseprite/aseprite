@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -1089,9 +1089,10 @@ bool BmpFormat::onLoad(FileOp *fop)
   else
     rmask = gmask = bmask = amask = 0;
 
-  ImageRef image = fop->sequenceImage(pixelFormat,
-                                      infoheader.biWidth,
-                                      ABS((int)infoheader.biHeight));
+  ImageRef image = fop->sequenceImageToLoad(
+    pixelFormat,
+    infoheader.biWidth,
+    ABS((int)infoheader.biHeight));
   if (!image) {
     return false;
   }
@@ -1166,7 +1167,7 @@ bool BmpFormat::onLoad(FileOp *fop)
 #ifdef ENABLE_SAVE
 bool BmpFormat::onSave(FileOp *fop)
 {
-  const FileAbstractImage* img = fop->abstractImage();
+  const FileAbstractImage* img = fop->abstractImageToSave();
   const ImageSpec spec = img->spec();
   const int w = spec.width();
   const int h = spec.height();

@@ -970,7 +970,7 @@ public:
     : m_fop(fop)
     , m_gifFile(gifFile)
     , m_sprite(fop->document()->sprite())
-    , m_img(fop->abstractImage())
+    , m_img(fop->abstractImageToSave())
     , m_spec(m_img->spec())
     , m_spriteBounds(m_spec.bounds())
     , m_hasBackground(m_img->isOpaque())
@@ -1570,7 +1570,7 @@ private:
       clear_image(dst, m_bgIndex);
     else
       clear_image(dst, 0);
-    m_img->renderFrame(frame, dst);
+    m_img->renderFrame(frame, m_fop->roi().frameBounds(frame), dst);
   }
 
 private:

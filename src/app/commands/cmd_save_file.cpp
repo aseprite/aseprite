@@ -228,8 +228,14 @@ void SaveFileBaseCommand::saveDocumentInBackground(
   }
 
   gfx::Rect bounds;
-  if (params().bounds.isSet())
+  if (params().bounds.isSet()) {
+    // Export the specific given bounds (e.g. the selection bounds)
     bounds = params().bounds();
+  }
+  else {
+    // Export the whole sprite canvas.
+    bounds = document->sprite()->bounds();
+  }
 
   FileOpROI roi(document, bounds,
                 params().slice(), params().tag(),

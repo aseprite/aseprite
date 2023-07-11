@@ -257,7 +257,7 @@ bool WebPFormat::onSave(FileOp* fop)
   FileHandle handle(open_file_with_exception_sync_on_close(fop->filename(), "wb"));
   FILE* fp = handle.get();
 
-  const FileAbstractImage* sprite = fop->abstractImage();
+  const FileAbstractImage* sprite = fop->abstractImageToSave();
   const int w = sprite->width();
   const int h = sprite->height();
 
@@ -319,7 +319,7 @@ bool WebPFormat::onSave(FileOp* fop)
   for (frame_t frame : fop->roi().selectedFrames()) {
     // Render the frame in the bitmap
     clear_image(image.get(), image->maskColor());
-    sprite->renderFrame(frame, image.get());
+    sprite->renderFrame(frame, fop->roi().frameBounds(frame), image.get());
 
     // Switch R <-> B channels because WebPAnimEncoderAssemble()
     // expects MODE_BGRA pictures.

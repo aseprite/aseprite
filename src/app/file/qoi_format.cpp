@@ -76,9 +76,10 @@ bool QoiFormat::onLoad(FileOp* fop)
   if (!pixels)
     return false;
 
-  ImageRef image = fop->sequenceImage(IMAGE_RGB,
-                                      desc.width,
-                                      desc.height);
+  ImageRef image = fop->sequenceImageToLoad(
+    IMAGE_RGB,
+    desc.width,
+    desc.height);
   if (!image)
     return false;
 
@@ -136,7 +137,7 @@ bool QoiFormat::onLoad(FileOp* fop)
 
 bool QoiFormat::onSave(FileOp* fop)
 {
-  const FileAbstractImage* img = fop->abstractImage();
+  const FileAbstractImage* img = fop->abstractImageToSave();
   FileHandle handle(open_file_with_exception_sync_on_close(fop->filename(), "wb"));
   FILE* f = handle.get();
   doc::ImageRef image = img->getScaledImage();

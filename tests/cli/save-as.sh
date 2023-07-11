@@ -178,7 +178,7 @@ cd $oldwd
 
 if [[ "$(uname)" =~ "MINGW" ]] || [[ "$(uname)" =~ "MSYS" ]] ; then
     # Ignore this test on Windows because we cannot give * as a parameter (?)
-    echo Do nothing
+    echo Skip one -save-as test because Windows does not support using asterisk in arguments without listing files
 else
 d=$t/save-as-groups-and-hidden
 $ASEPRITE -b sprites/groups2.aseprite -layer \* -save-as "$d/g2-all.png" || exit 1
@@ -352,5 +352,58 @@ for f = 1,#b.frames do
     assert(not celB or celB.image:isEqual(cleanImage))
   end
 end
+EOF
+$ASEPRITE -b -script "$d/compare.lua" || exit 1
+
+# Test -save-as selection to gif
+# https://github.com/aseprite/aseprite/issues/3827
+d=$t/save-selection-to-gif
+mkdir $d
+cat >$d/save.lua <<EOF
+local a = app.open("sprites/tags3.aseprite")
+assert(a.width == 4)
+assert(a.height == 4)
+app.command.SaveFileCopyAs{
+  filename="$d/output.gif",
+  bounds=Rectangle(1, 2, 3, 2)
+}
+local b = app.open("$d/output.gif")
+assert(b.width == 3)
+assert(b.height == 2)
+EOF
+"$ASEPRITE" -b -script "$d/save.lua" || exit 1
+
+# Saving moving slice
+d=$t/save-moving-slice
+$ASEPRITE -b sprites/slices-moving.aseprite -slice square -save-as $d/output.gif || exit 1
+$ASEPRITE -b sprites/slices-moving.aseprite -slice square -save-as $d/output.png || exit 1
+$ASEPRITE -b sprites/slices-moving.aseprite -scale 2 -slice square -save-as $d/scaled.gif || exit 1
+$ASEPRITE -b sprites/slices-moving.aseprite -scale 2 -slice square -save-as $d/scaled.png || exit 1
+cat >$d/compare.lua <<EOF
+local a = app.open("$d/output.gif")
+local b = app.open("$d/output1.png")
+app.command.OpenFile{ filename="$d/output1.png", oneframe=1 } local b1 = app.sprite
+app.command.OpenFile{ filename="$d/output2.png", oneframe=1 } local b2 = app.sprite
+app.command.OpenFile{ filename="$d/output3.png", oneframe=1 } local b3 = app.sprite
+app.command.OpenFile{ filename="$d/output4.png", oneframe=1 } local b4 = app.sprite
+assert(a.bounds == Rectangle(0, 0, 4, 2))
+assert(b.bounds == Rectangle(0, 0, 4, 2))
+assert(b1.bounds == Rectangle(0, 0, 2, 2))
+assert(b2.bounds == Rectangle(0, 0, 4, 2))
+assert(b3.bounds == Rectangle(0, 0, 3, 2))
+assert(b4.bounds == Rectangle(0, 0, 4, 2))
+
+local c = app.open("$d/scaled.gif")
+local d = app.open("$d/scaled1.png")
+app.command.OpenFile{ filename="$d/scaled1.png", oneframe=1 } local d1 = app.sprite
+app.command.OpenFile{ filename="$d/scaled2.png", oneframe=1 } local d2 = app.sprite
+app.command.OpenFile{ filename="$d/scaled3.png", oneframe=1 } local d3 = app.sprite
+app.command.OpenFile{ filename="$d/scaled4.png", oneframe=1 } local d4 = app.sprite
+assert(c.bounds == Rectangle(0, 0, 8, 4))
+assert(d.bounds == Rectangle(0, 0, 8, 4))
+assert(d1.bounds == Rectangle(0, 0, 4, 4))
+assert(d2.bounds == Rectangle(0, 0, 8, 4))
+assert(d3.bounds == Rectangle(0, 0, 6, 4))
+assert(d4.bounds == Rectangle(0, 0, 8, 4))
 EOF
 $ASEPRITE -b -script "$d/compare.lua" || exit 1
