@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2023  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -8,13 +9,13 @@
 #define APP_I18N_STRINGS_INCLUDED
 #pragma once
 
+#include "app/i18n/lang_info.h"
+#include "obs/signal.h"
+#include "strings.ini.h"
+
 #include <set>
 #include <string>
 #include <unordered_map>
-
-#include "obs/signal.h"
-
-#include "strings.ini.h"
 
 namespace app {
 
@@ -30,7 +31,7 @@ namespace app {
 
     const std::string& translate(const char* id) const;
 
-    std::set<std::string> availableLanguages() const;
+    std::set<LangInfo> availableLanguages() const;
     std::string currentLanguage() const;
     void setCurrentLanguage(const std::string& langId);
 

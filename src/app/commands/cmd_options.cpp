@@ -164,6 +164,19 @@ class OptionsWindow : public app::gen::Options {
     std::string m_name;
   };
 
+  class LangItem : public ListItem {
+  public:
+    LangItem(const LangInfo& langInfo)
+      : ListItem(langInfo.displayName)
+      , m_langInfo(langInfo) {
+    }
+    const std::string& langId() const {
+      return m_langInfo.id;
+    }
+  private:
+    LangInfo m_langInfo;
+  };
+
   class ExtensionItem : public ListItem {
   public:
     ExtensionItem(Extension* extension)
@@ -641,8 +654,9 @@ public:
 #endif
 
     // Update language
-    Strings::instance()->setCurrentLanguage(
-      language()->getItemText(language()->getSelectedItemIndex()));
+    if (auto item = dynamic_cast<const LangItem*>(language()->getSelectedItem())) {
+      Strings::instance()->setCurrentLanguage(item->langId());
+    }
 
     m_globPref.timeline.firstFrame(firstFrame()->textInt());
     m_pref.general.showFullPath(showFullPath()->isSelected());
@@ -1285,11 +1299,12 @@ private:
     if (language()->getItemCount() > 0)
       return;
 
+    // Select current language by lang ID
     Strings* strings = Strings::instance();
     std::string curLang = strings->currentLanguage();
-    for (const std::string& lang : strings->availableLanguages()) {
-      int i = language()->addItem(lang);
-      if (lang == curLang)
+    for (const LangInfo& lang : strings->availableLanguages()) {
+      int i = language()->addItem(new LangItem(lang));
+      if (lang.id == curLang)
         language()->setSelectedItemIndex(i);
     }
   }

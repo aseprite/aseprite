@@ -1,5 +1,5 @@
 // Aseprite Config Library
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2014-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -88,7 +88,7 @@ public:
     m_ini.Delete(section, nullptr, true);
   }
 
-  void load(const std::string& filename) {
+  bool load(const std::string& filename) {
     m_filename = filename;
 
     base::FileHandle file(base::open_file(m_filename, "rb"));
@@ -98,8 +98,10 @@ public:
       if (err != SI_OK) {
         LOG(ERROR, "CFG: Error %d loading configuration from %s\n",
             (int)err, m_filename.c_str());
+        return false;
       }
     }
+    return true;
   }
 
   void save() {
@@ -193,9 +195,9 @@ void CfgFile::deleteSection(const char* section)
   m_impl->deleteSection(section);
 }
 
-void CfgFile::load(const std::string& filename)
+bool CfgFile::load(const std::string& filename)
 {
-  m_impl->load(filename);
+  return m_impl->load(filename);
 }
 
 void CfgFile::save()

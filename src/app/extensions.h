@@ -9,6 +9,7 @@
 #define APP_EXTENSIONS_H_INCLUDED
 #pragma once
 
+#include "app/i18n/lang_info.h"
 #include "obs/signal.h"
 #include "render/dithering_matrix.h"
 
@@ -80,6 +81,7 @@ namespace app {
         , variant(variant) { }
     };
 
+    using Languages = std::map<std::string, LangInfo>;
     using Themes = std::map<std::string, ThemeInfo>;
     using DitheringMatrices = std::map<std::string, DitheringMatrixInfo>;
 
@@ -101,13 +103,17 @@ namespace app {
     const Category category() const { return m_category; }
 
     const ExtensionItems& keys() const { return m_keys; }
-    const ExtensionItems& languages() const { return m_languages; }
+    const Languages& languages() const { return m_languages; }
     const Themes& themes() const { return m_themes; }
     const ExtensionItems& palettes() const { return m_palettes; }
 
     void addKeys(const std::string& id, const std::string& path);
-    void addLanguage(const std::string& id, const std::string& path);
-    void addTheme(const std::string& id, const std::string& path, const std::string& variant);
+    void addLanguage(const std::string& id,
+                     const std::string& path,
+                     const std::string& displayName);
+    void addTheme(const std::string& id,
+                  const std::string& path,
+                  const std::string& variant);
     void addPalette(const std::string& id, const std::string& path);
     void addDitheringMatrix(const std::string& id,
                             const std::string& path,
@@ -152,7 +158,7 @@ namespace app {
 #endif
 
     ExtensionItems m_keys;
-    ExtensionItems m_languages;
+    Languages m_languages;
     Themes m_themes;
     ExtensionItems m_palettes;
     DitheringMatrices m_ditheringMatrices;

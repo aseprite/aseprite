@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2023  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -18,6 +19,8 @@
 #include "app/xml_exception.h"
 #include "base/fs.h"
 #include "cfg/cfg.h"
+
+#include <algorithm>
 
 namespace app {
 
@@ -46,20 +49,29 @@ Strings::Strings(Preferences& pref,
   loadLanguage(currentLanguage());
 }
 
-std::set<std::string> Strings::availableLanguages() const
+std::set<LangInfo> Strings::availableLanguages() const
 {
-  std::set<std::string> result;
+  std::set<LangInfo> result;
 
   // Add languages in data/strings/
   ResourceFinder rf;
   rf.includeDataDir("strings");
   while (rf.next()) {
-    if (!base::is_directory(rf.filename()))
+    const std::string stringsPath = rf.filename();
+    if (!base::is_directory(stringsPath))
       continue;
 
-    for (const auto& fn : base::list_files(rf.filename())) {
+    for (const auto& fn : base::list_files(stringsPath)) {
       const std::string langId = base::get_file_title(fn);
-      result.insert(langId);
+      std::string path = base::join_path(stringsPath, fn);
+      std::string displayName = langId;
+
+      // Load display name
+      cfg::CfgFile cfg;
+      if (cfg.load(path))
+        displayName = cfg.getValue("", "display_name", displayName.c_str());
+
+      result.insert(LangInfo(langId, path, displayName));
     }
   }
 
@@ -67,12 +79,17 @@ std::set<std::string> Strings::availableLanguages() const
   for (const auto& ext : m_exts) {
     if (ext->isEnabled() &&
         ext->hasLanguages()) {
-      for (const auto& langId : ext->languages())
-        result.insert(langId.first);
+      for (const auto& lang : ext->languages())
+        result.insert(lang.second);
     }
   }
 
-  ASSERT(result.find(kDefLanguage) != result.end());
+  // Check that the default language exists.
+  ASSERT(std::find_if(result.begin(), result.end(),
+                      [](const LangInfo& li){
+                        return li.id == kDefLanguage;
+                      }) != result.end());
+
   return result;
 }
 

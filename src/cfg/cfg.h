@@ -1,5 +1,5 @@
 // Aseprite Config Library
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2014-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -37,7 +37,7 @@ namespace cfg {
     void deleteValue(const char* section, const char* name);
     void deleteSection(const char* section);
 
-    void load(const std::string& filename);
+    bool load(const std::string& filename);
     void save();
 
   private:

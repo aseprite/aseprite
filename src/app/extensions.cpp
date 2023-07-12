@@ -271,13 +271,17 @@ void Extension::addKeys(const std::string& id, const std::string& path)
   updateCategory(Category::Keys);
 }
 
-void Extension::addLanguage(const std::string& id, const std::string& path)
+void Extension::addLanguage(const std::string& id,
+                            const std::string& path,
+                            const std::string& displayName)
 {
-  m_languages[id] = path;
+  m_languages[id] = LangInfo(id, path, displayName);
   updateCategory(Category::Languages);
 }
 
-void Extension::addTheme(const std::string& id, const std::string& path, const std::string& variant)
+void Extension::addTheme(const std::string& id,
+                         const std::string& path,
+                         const std::string& variant)
 {
   m_themes[id] = ThemeInfo(path, variant);
   updateCategory(Category::Themes);
@@ -871,7 +875,7 @@ std::string Extensions::languagePath(const std::string& langId)
 
     auto it = ext->languages().find(langId);
     if (it != ext->languages().end())
-      return it->second;
+      return it->second.path;
   }
   return std::string();
 }
@@ -1147,15 +1151,19 @@ Extension* Extensions::loadExtension(const std::string& path,
       for (const auto& lang : languages.array_items()) {
         std::string langId = lang["id"].string_value();
         std::string langPath = lang["path"].string_value();
+        std::string langDisplayName = lang["displayName"].string_value();
 
         // The path must be always relative to the extension
         langPath = base::join_path(path, langPath);
 
-        LOG("EXT: New language id=%s path=%s\n",
+        LOG("EXT: New language id=%s path=%s displayName=%s\n",
             langId.c_str(),
-            langPath.c_str());
+            langPath.c_str(),
+            langDisplayName.c_str());
 
-        extension->addLanguage(langId, langPath);
+        extension->addLanguage(langId,
+                               langPath,
+                               langDisplayName);
       }
     }
 
