@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -685,8 +685,10 @@ gfx::Size Theme::calcMinSize(const Widget* widget,
 
   gfx::Size sz = widget->minSize();
 
-  if (sz.w == 0) sz.w = style->minSize().w;
-  if (sz.h == 0) sz.h = style->minSize().h;
+  if (sz.w == 0 || style->minSize().w > 0)
+    sz.w = style->minSize().w;
+  if (sz.h == 0 || style->minSize().h > 0)
+    sz.h = style->minSize().h;
 
   return sz;
 }
@@ -699,8 +701,11 @@ gfx::Size Theme::calcMaxSize(const Widget* widget,
 
   gfx::Size sz = widget->maxSize();
 
-  if (sz.w == std::numeric_limits<int>::max()) sz.w = style->maxSize().w;
-  if (sz.h == std::numeric_limits<int>::max()) sz.h = style->maxSize().h;
+  int maxInt = std::numeric_limits<int>::max();
+  if (sz.w == maxInt || style->maxSize().w < maxInt)
+   sz.w = style->maxSize().w;
+  if (sz.h == maxInt || style->maxSize().h < maxInt)
+   sz.h = style->maxSize().h;
 
   return sz;
 }
