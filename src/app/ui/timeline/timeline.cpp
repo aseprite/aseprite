@@ -246,7 +246,7 @@ Timeline::Timeline(TooltipManager* tooltipManager)
   , m_tagBands(0)
   , m_tagFocusBand(-1)
   , m_separator_x(
-      Preferences::instance().general.timelineLayerPanelWidth() * guiscale())
+      Preferences::instance().general.timelineLayerPanelWidth())
   , m_separator_w(1)
   , m_confPopup(nullptr)
   , m_clipboard_timer(100, this)
@@ -277,8 +277,9 @@ Timeline::Timeline(TooltipManager* tooltipManager)
 
 Timeline::~Timeline()
 {
+  // Save unscaled separator
   Preferences::instance().general.timelineLayerPanelWidth(
-    m_separator_x / guiscale());
+    m_separator_x);
 
   m_clipboard_timer.stop();
 
@@ -4499,7 +4500,7 @@ void Timeline::setLayerCollapsedFlag(const layer_t l, const bool state)
 
 int Timeline::separatorX() const
 {
-  return std::clamp(m_separator_x,
+  return std::clamp(m_separator_x * guiscale(),
                     headerBoxWidth(),
                     std::max(bounds().w-guiscale(),
                              headerBoxWidth()));
@@ -4507,7 +4508,7 @@ int Timeline::separatorX() const
 
 void Timeline::setSeparatorX(int newValue)
 {
-  m_separator_x = std::max(0, newValue);
+  m_separator_x = std::max(0, newValue) / guiscale();
 }
 
 //static
