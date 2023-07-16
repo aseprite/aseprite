@@ -9,7 +9,6 @@ if file1 == nil or file2 == nil then
   return 0
 end
 
-local json = dofile('../third_party/json/json.lua')
 local data1 = json.decode(io.open(file1):read('a'))
 local data2 = json.decode(io.open(file2):read('a'))
 

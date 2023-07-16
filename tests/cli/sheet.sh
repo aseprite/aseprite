@@ -17,7 +17,6 @@ if ! $ASEPRITE -b sprites/1empty3.aseprite --sheet "$d/sheet.png" > "$d/stdout.j
    exit 1
 fi
 cat >$d/compare.lua <<EOF
-local json = dofile('third_party/json/json.lua')
 local data = json.decode(io.open('$d/stdout.json'):read('a'))
 local frames = { data.frames['1empty3 0.aseprite'],
                  data.frames['1empty3 1.aseprite'],
@@ -93,7 +92,6 @@ $ASEPRITE -b --split-layers sprites/1empty3.aseprite \
 	  --sheet "$d/sheet.png" \
 	  --data "$d/sheet.json" || exit 1
 cat >$d/compare.lua <<EOF
-local json = dofile('third_party/json/json.lua')
 local data = json.decode(io.open('$d/sheet.json'):read('a'))
 assert(data.meta.size.w == 96)
 assert(data.meta.size.h == 64)
@@ -159,7 +157,6 @@ $ASEPRITE -b \
 	  -data "$d/sheet2.json" || exit 1
 
 cat >$d/check.lua <<EOF
-local json = dofile('third_party/json/json.lua')
 local sheet1 = json.decode(io.open('$d/sheet1.json'):read('a'))
 local sheet2 = json.decode(io.open('$d/sheet2.json'):read('a'))
 assert(#sheet1.frames == 12)
@@ -258,7 +255,6 @@ for layer in a b ; do
 	      -data "$d/data2-$layer.json" \
 	      -format json-array -sheet "$d/sheet2-$layer.png" || exit 1
     cat >$d/compare.lua <<EOF
-local json = dofile('third_party/json/json.lua')
 local data1 = json.decode(io.open('$d/data1-$layer.json'):read('a'))
 local data2 = json.decode(io.open('$d/data2-$layer.json'):read('a'))
 assert(#data1.frames == #data2.frames)
@@ -289,7 +285,6 @@ $ASEPRITE -b \
 	  -data "$d/data2.json" \
 	  -format json-array -sheet-pack -sheet "$d/sheet2.png" || exit 1
 cat >$d/compare.lua <<EOF
-local json = dofile('third_party/json/json.lua')
 local data1 = json.decode(io.open('$d/data1.json'):read('a'))
 local data2 = json.decode(io.open('$d/data2.json'):read('a'))
 assert(#data1.frames == #data2.frames)
@@ -308,7 +303,6 @@ d=$t/issue-2380
 $ASEPRITE -b -trim -all-layers "sprites/groups3abc.aseprite" -data "$d/sheet1.json" -format json-array -sheet "$d/sheet1.png" -list-layers
 $ASEPRITE -b -trim -all-layers -split-layers "sprites/groups3abc.aseprite" -data "$d/sheet2.json" -format json-array -sheet "$d/sheet2.png" -list-layers
 cat >$d/check.lua <<EOF
-local json = dofile('third_party/json/json.lua')
 local sheet1 = json.decode(io.open('$d/sheet1.json'):read('a'))
 local sheet2 = json.decode(io.open('$d/sheet2.json'):read('a'))
 assert(#sheet1.meta.layers == 12)
@@ -323,7 +317,6 @@ d=$t/issue-2432
 $ASEPRITE -b -trim -ignore-layer "c" -all-layers "sprites/groups3abc.aseprite" -data "$d/sheet1.json" -format json-array -sheet "$d/sheet1.png" -list-layers
 $ASEPRITE -b -trim -ignore-layer "c" -all-layers -split-layers "sprites/groups3abc.aseprite" -data "$d/sheet2.json" -format json-array -sheet "$d/sheet2.png" -list-layers
 cat >$d/check.lua <<EOF
-local json = dofile('third_party/json/json.lua')
 local sheet1 = json.decode(io.open('$d/sheet1.json'):read('a'))
 local sheet2 = json.decode(io.open('$d/sheet2.json'):read('a'))
 assert(#sheet1.meta.layers == 8)
@@ -337,7 +330,6 @@ $ASEPRITE -b -script "$d/check.lua" || exit 1
 d=$t/issue-2600
 $ASEPRITE -b -list-layers -format json-array -trim -merge-duplicates -split-layers -all-layers "sprites/link.aseprite" -data "$d/sheet.json" -sheet "$d/sheet.png"
 cat >$d/check.lua <<EOF
-local json = dofile('third_party/json/json.lua')
 local sheet = json.decode(io.open('$d/sheet.json'):read('a'))
 local restoredSprite = Sprite(sheet.frames[1].sourceSize.w, sheet.frames[1].sourceSize.h, ColorMode.RGB)
 local spriteSheet = Image{ fromFile="$d/sheet.png" }
@@ -409,7 +401,6 @@ $ASEPRITE -b "sprites/1empty3.aseprite" "sprites/tags3.aseprite" \
 	  -sheet "$d/atlas.png" \
 	  -list-tags -tagname-format="{title}-{tag}" || exit 1
 cat >$d/compare.lua <<EOF
-local json = dofile('third_party/json/json.lua')
 local data = json.decode(io.open('$d/atlas.json'):read('a'))
 assert(#data.meta.frameTags == 5)
 

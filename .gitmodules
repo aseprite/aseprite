@@ -1,6 +1,3 @@
-[submodule "tests/third_party/json"]
-	path = tests/third_party/json
-	url = https://github.com/aseprite/json.lua
 [submodule "third_party/pixman"]
 	path = third_party/pixman
 	url = https://github.com/aseprite/pixman.git

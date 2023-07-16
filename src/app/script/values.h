@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -20,6 +20,9 @@ T get_value_from_lua(lua_State* L, int index);
 
 template<typename T>
 void push_value_to_lua(lua_State* L, const T& value);
+
+// Returns true if the given table is an array
+bool is_array_table(lua_State* L, int index);
 
 } // namespace script
 } // namespace app
