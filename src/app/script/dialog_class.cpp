@@ -30,6 +30,7 @@
 #include "ui/combobox.h"
 #include "ui/display.h"
 #include "ui/entry.h"
+#include "ui/fit_bounds.h"
 #include "ui/grid.h"
 #include "ui/label.h"
 #include "ui/manager.h"
@@ -39,6 +40,7 @@
 #include "ui/separator.h"
 #include "ui/slider.h"
 #include "ui/system.h"
+#include "ui/view.h"
 #include "ui/window.h"
 
 #include <map>
@@ -184,6 +186,65 @@ struct Dialog {
     }
   }
 
+  void addScrollbarsIfNeeded(const gfx::Rect& workarea,
+                             gfx::Rect& bounds)
+  {
+    gfx::Rect rc = bounds;
+
+    if (rc.x < workarea.x) {
+      rc.w -= (workarea.x - rc.x);
+      rc.x = workarea.x;
+    }
+    if (rc.x2() > workarea.x2()) {
+      rc.w = workarea.x2() - rc.x;
+    }
+
+    bool vscrollbarsAdded = false;
+    if (rc.y < workarea.y) {
+      rc.h -= (workarea.y - rc.y);
+      rc.y = workarea.y;
+      vscrollbarsAdded = true;
+    }
+    if (rc.y2() > workarea.y2()) {
+      rc.h = workarea.y2() - rc.y;
+      vscrollbarsAdded = true;
+    }
+
+    gfx::Rect newRc = rc;
+    if (get_multiple_displays() && window.shouldCreateNativeWindow()) {
+      const os::Window* nativeWindow = const_cast<ui::Display*>(parentDisplay())->nativeWindow();
+      newRc.setOrigin(nativeWindow->pointFromScreen(rc.origin()));
+      newRc.setSize(rc.size() / nativeWindow->scale());
+    }
+    if (newRc == window.bounds())
+      return;
+
+    View* view = new View();
+    view->InitTheme.connect([view]{ view->noBorderNoChildSpacing(); });
+    view->initTheme();
+
+    if (vscrollbarsAdded) {
+      int barWidth = view->verticalBar()->getBarWidth();;
+      if (get_multiple_displays())
+        barWidth *= window.display()->scale();
+
+      rc.w += 2*barWidth;
+      if (rc.x2() > workarea.x2()) {
+        rc.x = workarea.x2() - rc.w;
+        if (rc.x < workarea.x) {
+          rc.x = workarea.x;
+          rc.w = workarea.w;
+        }
+      }
+    }
+
+    // New bounds
+    bounds = rc;
+
+    window.removeChild(&grid);
+    view->attachToView(&grid);
+    window.addChild(view);
+  }
 };
 
 template<typename...Args,
@@ -327,6 +388,7 @@ int Dialog_show(lua_State* L)
   dlg->refShow(L);
 
   bool wait = true;
+  bool autoScrollbars = false;
   obs::scoped_connection conn;
   if (lua_istable(L, 2)) {
     int type = lua_getfield(L, 2, "wait");
@@ -344,6 +406,24 @@ int Dialog_show(lua_State* L)
       }
     }
     lua_pop(L, 1);
+
+    type = lua_getfield(L, 2, "autoscrollbars");
+    if (type == LUA_TBOOLEAN)
+      autoScrollbars = lua_toboolean(L, -1);
+    lua_pop(L, 1);
+  }
+
+  if (autoScrollbars) {
+    dlg->window.remapWindow();
+    dlg->window.centerWindow();
+    fit_bounds(dlg->parentDisplay(),
+              &dlg->window,
+              dlg->window.bounds(),
+              [dlg](const gfx::Rect& workarea,
+                    gfx::Rect& bounds,
+                    std::function<gfx::Rect(Widget*)> getWidgetBounds) {
+                dlg->addScrollbarsIfNeeded(workarea, bounds);
+              });
   }
 
   if (wait)
