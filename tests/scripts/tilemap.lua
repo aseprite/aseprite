@@ -1227,3 +1227,102 @@ do
   assert(spr.tilesets[2] == tilemapLay2.tileset)
   assert(spr.tilesets[3] == tilemapLay3.tileset)
 end
+
+-----------------------------------------------------------------------
+-- Test tilemaps with flags (flips)
+-----------------------------------------------------------------------
+
+do
+  local spr = Sprite(8, 8, ColorMode.INDEXED)
+
+  -- Create a new tilemap (delete the default regular layer)
+  app.command.NewLayer{ tilemap=true, gridBounds=Rectangle{ 0, 0, 2, 2 } }
+  local mapLay = app.layer
+  spr:deleteLayer(spr.layers[1])
+  assert(#mapLay.cels == 0)
+
+  -- Set a palette just for testing/preview the result
+  spr:setPalette(Palette{ fromResource="Teletext" })
+
+  -- Create one tile with these pixels (indexes):
+  -- 12
+  -- 34
+  local tile = spr:newTile(mapLay.tileset, 1)
+  array_to_pixels({ 1, 2,
+                    3, 4 }, tile.image)
+
+  -- Fill the tilemap with this only tile
+  app.useTool{ tool='paint_bucket', color=1, layer=mapLay,
+               tilemapMode=TilemapMode.TILES,
+               points={ Point(0, 0) }}
+
+  assert(#mapLay.cels == 1)
+  local map = mapLay.cels[1].image
+  assert(map.width == 4)
+  assert(map.height == 4)
+
+  -- Constants
+  local x = app.pixelColor.TILE_XFLIP
+  local y = app.pixelColor.TILE_YFLIP
+  local d = app.pixelColor.TILE_DFLIP
+
+  -- Normal (tile without flags)
+  -- 12
+  -- 34
+  map:drawPixel(0, 0, 1)
+
+  -- Flip X
+  -- 21
+  -- 43
+  map:drawPixel(1, 0, 1|x)
+
+  -- Flip Y
+  -- 34
+  -- 12
+  map:drawPixel(0, 1, 1|y)
+
+  -- Flip X+Y
+  -- 43
+  -- 21
+  map:drawPixel(1, 1, 1|x|y)
+
+  -- Flip D
+  -- 31
+  -- 42
+  map:drawPixel(2, 2, 1|d)
+
+  -- Flip X+D
+  -- 42
+  -- 31
+  map:drawPixel(3, 2, 1|x|d)
+
+  -- Flip Y+D
+  -- 13
+  -- 24
+  map:drawPixel(2, 3, 1|y|d)
+
+  -- Flip X+Y+D
+  -- 24
+  -- 13
+  map:drawPixel(3, 3, 1|x|y|d)
+
+  -- Clear areas
+  app.useTool{ tool='filled_rectangle', color=0, layer=mapLay,
+               tilemapMode=TilemapMode.TILES,
+               points={ Point(0, 4), Point(3, 7) }}
+  app.useTool{ tool='filled_rectangle', color=0, layer=mapLay,
+               tilemapMode=TilemapMode.TILES,
+               points={ Point(4, 0), Point(7, 3) }}
+
+  -- Save, load, and test if the tilemap were saved correctly with the
+  -- given flags
+  spr:saveAs('_test_tile_flags.aseprite')
+  spr:close()
+
+  local spr2 = app.open('_test_tile_flags.aseprite')
+  local map2 = spr2.layers[1].cels[1].image
+  expect_img(map2, { 1,   (1|x),   0,     0,
+                     1|y, (1|x|y), 0,     0,
+                     0,   0,     1|d,   (1|x|d),
+                     0,   0,     1|y|d, (1|x|y|d) })
+end

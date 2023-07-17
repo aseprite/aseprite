@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -99,6 +99,12 @@ inline bool lua2bool(lua_State* L, int index) {
 template<typename T>
 inline void setfield_integer(lua_State* L, const char* key, const T& value) {
   lua_pushinteger(L, int(value));
+  lua_setfield(L, -2, key);
+}
+
+template<typename T>
+inline void setfield_uinteger(lua_State* L, const char* key, const T& value) {
+  lua_pushinteger(L, value);
   lua_setfield(L, -2, key);
 }
 

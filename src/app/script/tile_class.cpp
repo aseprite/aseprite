@@ -48,11 +48,7 @@ int Tile_get_image(lua_State* L)
   if (!ts)
     return 0;
 
-  ImageRef image = ts->get(tile->ti);
-  if (image)
-    push_tileset_image(L, ts, image.get());
-  else
-    lua_pushnil(L);
+  push_tileset_image(L, ts, tile->ti);
   return 1;
 }
 

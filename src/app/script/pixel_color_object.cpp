@@ -116,6 +116,12 @@ void register_app_pixel_color_object(lua_State* L)
   lua_pushvalue(L, -2);         // Copy table
   lua_rawset(L, -4);
   luaL_setfuncs(L, PixelColor_methods, 0);
+
+  // Masks for tile flags
+  setfield_uinteger(L, "TILE_XFLIP", doc::tile_f_xflip);
+  setfield_uinteger(L, "TILE_YFLIP", doc::tile_f_yflip);
+  setfield_uinteger(L, "TILE_DFLIP", doc::tile_f_dflip);
+
   lua_pop(L, 2);                // Pop table & app global
 }
 

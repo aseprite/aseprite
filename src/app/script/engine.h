@@ -178,7 +178,7 @@ namespace app {
   void push_tile(lua_State* L, const doc::Tileset* tileset, doc::tile_index ti);
   void push_tile_properties(lua_State* L, const doc::Tileset* tileset, doc::tile_index ti, const std::string& extID);
   void push_tileset(lua_State* L, const doc::Tileset* tileset);
-  void push_tileset_image(lua_State* L, doc::Tileset* tileset, doc::Image* image);
+  void push_tileset_image(lua_State* L, doc::Tileset* tileset, doc::tile_index ti);
   void push_tilesets(lua_State* L, doc::Tilesets* tilesets);
   void push_tool(lua_State* L, app::tools::Tool* tool);
   void push_version(lua_State* L, const base::Version& ver);
