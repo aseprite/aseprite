@@ -235,7 +235,7 @@ This chunk determine where to put a cel in the specified layer/frame.
       DWORD     Bitmask for tile ID (e.g. 0x1fffffff for 32-bit tiles)
       DWORD     Bitmask for X flip
       DWORD     Bitmask for Y flip
-      DWORD     Bitmask for 90CW rotation
+      DWORD     Bitmask for diagonal flip (swap X/Y axis)
       BYTE[10]  Reserved
       TILE[]    Row by row, from top to bottom tile by tile
                 compressed with ZLIB method (see NOTE.3)

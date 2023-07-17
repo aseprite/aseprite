@@ -519,9 +519,10 @@ public:
       else
         str += fmt::format("{}", ti + baseIndex - 1);
       if (tf) {
-        if (tf & doc::tile_f_flipx) str += " FlipX";
-        if (tf & doc::tile_f_flipy) str += " FlipY";
-        if (tf & doc::tile_f_90cw) str += " Rot90CW";
+        str += " Flip ";
+        if (tf & doc::tile_f_xflip) str += "X";
+        if (tf & doc::tile_f_yflip) str += "Y";
+        if (tf & doc::tile_f_dflip) str += "D";
       }
     }
     m_indicators->addTextIndicator(str.c_str());
