@@ -63,6 +63,7 @@ inline os::BlendMode convert_to(const app::script::BlendMode& from) {
     case app::script::BlendMode::CLEAR:       return os::BlendMode::Clear;
     case app::script::BlendMode::SRC:         return os::BlendMode::Src;
     case app::script::BlendMode::DST:         return os::BlendMode::Dst;
+    default:
     case app::script::BlendMode::SRC_OVER:    return os::BlendMode::SrcOver;
     case app::script::BlendMode::DST_OVER:    return os::BlendMode::DstOver;
     case app::script::BlendMode::SRC_IN:      return os::BlendMode::SrcIn;
@@ -90,7 +91,7 @@ inline os::BlendMode convert_to(const app::script::BlendMode& from) {
     case app::script::BlendMode::COLOR:       return os::BlendMode::Color;
     case app::script::BlendMode::LUMINOSITY:  return os::BlendMode::Luminosity;
     case app::script::BlendMode::ADDITION:    return os::BlendMode::Plus;
-    // Default value
+    // Use the default value for undefined conversions
     case app::script::BlendMode::SUBTRACT:
     case app::script::BlendMode::DIVIDE:
       return os::BlendMode::SrcOver;
@@ -103,6 +104,7 @@ inline app::script::BlendMode convert_to(const os::BlendMode& from) {
     case os::BlendMode::Clear:       return app::script::BlendMode::CLEAR;
     case os::BlendMode::Src:         return app::script::BlendMode::SRC;
     case os::BlendMode::Dst:         return app::script::BlendMode::DST;
+    default:
     case os::BlendMode::SrcOver:     return app::script::BlendMode::SRC_OVER;
     case os::BlendMode::DstOver:     return app::script::BlendMode::DST_OVER;
     case os::BlendMode::SrcIn:       return app::script::BlendMode::SRC_IN;
@@ -136,6 +138,7 @@ template<>
 inline doc::BlendMode convert_to(const app::script::BlendMode& from) {
   switch (from) {
     case app::script::BlendMode::SRC:         return doc::BlendMode::SRC;
+    default:
     case app::script::BlendMode::SRC_OVER:    return doc::BlendMode::NORMAL;
     case app::script::BlendMode::PLUS:        return doc::BlendMode::ADDITION;
     case app::script::BlendMode::MULTIPLY:    return doc::BlendMode::MULTIPLY;
@@ -156,7 +159,7 @@ inline doc::BlendMode convert_to(const app::script::BlendMode& from) {
     case app::script::BlendMode::ADDITION:    return doc::BlendMode::ADDITION;
     case app::script::BlendMode::SUBTRACT:    return doc::BlendMode::SUBTRACT;
     case app::script::BlendMode::DIVIDE:      return doc::BlendMode::DIVIDE;
-    // Default value
+    // Use the default value for undefined conversions
     case app::script::BlendMode::CLEAR:
     case app::script::BlendMode::DST:
     case app::script::BlendMode::DST_OVER:
@@ -176,6 +179,7 @@ template<>
 inline app::script::BlendMode convert_to(const doc::BlendMode& from) {
   switch (from) {
     case doc::BlendMode::SRC: return app::script::BlendMode::SRC;
+    default:
     case doc::BlendMode::NORMAL: return app::script::BlendMode::SRC_OVER;
     case doc::BlendMode::MULTIPLY: return app::script::BlendMode::MULTIPLY;
     case doc::BlendMode::SCREEN: return app::script::BlendMode::SCREEN;
@@ -195,8 +199,6 @@ inline app::script::BlendMode convert_to(const doc::BlendMode& from) {
     case doc::BlendMode::ADDITION: return app::script::BlendMode::ADDITION;
     case doc::BlendMode::SUBTRACT: return app::script::BlendMode::SUBTRACT;
     case doc::BlendMode::DIVIDE: return app::script::BlendMode::DIVIDE;
-    default:
-      return app::script::BlendMode::SRC_OVER;
   }
 }
 
