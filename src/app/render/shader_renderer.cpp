@@ -22,6 +22,8 @@
 
 namespace app {
 
+using namespace doc;
+
 namespace {
 
 const char* kBgShaderCode = R"(

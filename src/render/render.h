@@ -9,10 +9,10 @@
 #define RENDER_RENDER_H_INCLUDED
 #pragma once
 
-#include "doc/doc.h"
 #include "doc/anidir.h"
 #include "doc/blend_mode.h"
 #include "doc/color.h"
+#include "doc/doc.h"
 #include "doc/frame.h"
 #include "doc/pixel_format.h"
 #include "gfx/clip.h"

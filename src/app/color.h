@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -19,8 +20,6 @@ namespace doc {
 }
 
 namespace app {
-
-  using namespace doc;
 
   class Color {
   public:
@@ -48,13 +47,14 @@ namespace app {
     static Color fromGray(int g, int a = 255);
     static Color fromIndex(int index);
 
-    static Color fromImage(PixelFormat pixelFormat, color_t c);
-    static Color fromImageGetPixel(Image* image, int x, int y);
+    static Color fromImage(doc::PixelFormat pixelFormat, doc::color_t c);
+    static Color fromImageGetPixel(doc::Image* image, int x, int y);
     static Color fromString(const std::string& str);
 
     Color toRgb() const;
     std::string toString() const;
-    std::string toHumanReadableString(PixelFormat format, HumanReadableString type) const;
+    std::string toHumanReadableString(doc::PixelFormat format,
+                                      HumanReadableString type) const;
 
     bool operator==(const Color& other) const;
     bool operator!=(const Color& other) const {

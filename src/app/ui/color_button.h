@@ -30,12 +30,12 @@ namespace app {
                       public IColorSource {
   public:
     ColorButton(const app::Color& color,
-                const PixelFormat pixelFormat,
+                const doc::PixelFormat pixelFormat,
                 const ColorButtonOptions& options);
     ~ColorButton();
 
-    PixelFormat pixelFormat() const;
-    void setPixelFormat(PixelFormat pixelFormat);
+    doc::PixelFormat pixelFormat() const;
+    void setPixelFormat(doc::PixelFormat pixelFormat);
 
     app::Color getColor() const;
     void setColor(const app::Color& color);
@@ -78,7 +78,7 @@ namespace app {
 
     app::Color m_color;
     app::Color m_startDragColor;
-    PixelFormat m_pixelFormat;
+    doc::PixelFormat m_pixelFormat;
     ColorPopup* m_window;
     gfx::Rect m_windowDefaultBounds;
     gfx::Rect m_hiddenPopupBounds;

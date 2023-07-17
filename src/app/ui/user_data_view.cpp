@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2022  Igara Studio S.A.
+// Copyright (C) 2020-2023  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -11,6 +11,7 @@
 #include "app/ui/user_data_view.h"
 
 #include "app/color.h"
+#include "app/color_utils.h"
 #include "app/pref/preferences.h"
 #include "app/ui/color_button.h"
 #include "base/scoped_value.h"
@@ -64,8 +65,7 @@ void UserDataView::configureAndSet(const doc::UserData& userData, ui::Grid* pare
     m_isConfigured = true;
   }
   m_userData = userData;
-  color_t c = userData.color();
-  color()->setColor(Color::fromRgb(rgba_getr(c),rgba_getg(c), rgba_getb(c), rgba_geta(c)));
+  color()->setColor(Color::fromImage(doc::IMAGE_RGB, userData.color()));
   entry()->setText(m_userData.text());
   setVisible(isVisible());
 }
@@ -96,14 +96,10 @@ void UserDataView::onEntryChange()
 
 void UserDataView::onColorChange()
 {
-  color_t c = m_userData.color();
-  app::Color oldColor = app::Color::fromRgb(rgba_getr(c), rgba_getg(c), rgba_getb(c), rgba_geta(c));
+  app::Color oldColor = app::Color::fromImage(doc::IMAGE_RGB, m_userData.color());
   app::Color newColor = color()->getColor();
   if (newColor != oldColor) {
-    m_userData.setColor(rgba(newColor.getRed(),
-                             newColor.getGreen(),
-                             newColor.getBlue(),
-                             newColor.getAlpha()));
+    m_userData.setColor(color_utils::color_for_image(newColor, doc::IMAGE_RGB));
     if (!m_selfUpdate)
       UserDataChange();
   }

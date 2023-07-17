@@ -67,7 +67,7 @@ namespace app {
     ColorBar(int align, ui::TooltipManager* tooltipManager);
     ~ColorBar();
 
-    void setPixelFormat(PixelFormat pixelFormat);
+    void setPixelFormat(doc::PixelFormat pixelFormat);
 
     app::Color getFgColor() const;
     app::Color getBgColor() const;
@@ -151,7 +151,7 @@ namespace app {
     void onPickSpectrum(const app::Color& color, ui::MouseButton button);
     void onReverseColors();
     void onSortBy(doc::SortPaletteBy channel);
-    void onGradient(GradientType gradientType);
+    void onGradient(doc::GradientType gradientType);
     void onFixWarningClick(ColorButton* colorButton, ui::Button* warningIcon);
     void onTimerTick();
     void setAscending(bool ascending);
@@ -161,7 +161,7 @@ namespace app {
     void onPaletteViewIndexChange(int index, ui::MouseButton button) override;
     void onPaletteViewModification(const doc::Palette* newPalette, PaletteViewModification mod) override;
     void onPaletteViewChangeSize(PaletteView* paletteView, int boxsize) override;
-    void onPaletteViewPasteColors(const Palette* fromPal, const doc::PalettePicks& from, const doc::PalettePicks& to) override;
+    void onPaletteViewPasteColors(const doc::Palette* fromPal, const doc::PalettePicks& from, const doc::PalettePicks& to) override;
     app::Color onPaletteViewGetForegroundIndex() override;
     app::Color onPaletteViewGetBackgroundIndex() override;
     doc::tile_index onPaletteViewGetForegroundTile() override;

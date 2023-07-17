@@ -149,7 +149,7 @@ void Param<doc::ColorMode>::fromString(const std::string& value)
 template<>
 void Param<doc::AniDir>::fromString(const std::string& value)
 {
-  setValue(convert_string_to_anidir(value));
+  setValue(doc::convert_string_to_anidir(value));
 }
 
 template<>
