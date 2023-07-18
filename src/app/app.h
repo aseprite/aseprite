@@ -123,6 +123,7 @@ namespace app {
 
     // App Signals
     obs::signal<void()> Exit;
+    obs::signal<void()> ExitGui;
     obs::signal<void()> PaletteChange;
     obs::signal<void()> ColorSpaceChange;
     obs::signal<void()> PalettePresetsChange;

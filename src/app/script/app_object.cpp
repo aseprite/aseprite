@@ -701,25 +701,18 @@ int App_get_defaultPalette(lua_State* L)
   return 1;
 }
 
-int App_get_width(lua_State* L)
+int App_get_window(lua_State* L)
 {
 #if ENABLE_UI
   App* app = App::instance();
-  lua_pushinteger(L, app->mainWindow()->bounds().w);
-  return 1;
+  if (app && app->mainWindow()) {
+    push_ptr(L, (ui::Window*)app->mainWindow());
+  }
+  else
 #endif
-  lua_pushinteger(L, 0);
-  return 1;
-}
-
-int App_get_height(lua_State* L)
-{
-#if ENABLE_UI
-  App* app = App::instance();
-  lua_pushinteger(L, app->mainWindow()->bounds().h);
-  return 1;
-#endif
-  lua_pushinteger(L, 0);
+  {
+    lua_pushnil(L);
+  }
   return 1;
 }
 
@@ -837,8 +830,7 @@ const Property App_properties[] = {
   { "range",          App_get_range,          nullptr },
   { "isUIAvailable",  App_get_isUIAvailable,  nullptr },
   { "defaultPalette", App_get_defaultPalette, App_set_defaultPalette },
-  { "width",          App_get_width,          nullptr },
-  { "height",         App_get_height,         nullptr },
+  { "window",         App_get_window,         nullptr },
   { "events",         App_get_events,         nullptr },
   { "theme",          App_get_theme,          nullptr },
   { "uiScale",        App_get_uiScale,        nullptr },

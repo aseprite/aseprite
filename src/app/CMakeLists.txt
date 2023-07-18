@@ -217,6 +217,7 @@ if(ENABLE_SCRIPTING)
     script/uuid_class.cpp
     script/values.cpp
     script/version_class.cpp
+    script/window_class.cpp
     shell.cpp
     ${scripting_files_ws}
     ${scripting_files_ui})

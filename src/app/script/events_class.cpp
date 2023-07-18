@@ -49,8 +49,10 @@ namespace {
 using EventListener = int;
 
 class AppEvents;
+class WindowEvents;
 class SpriteEvents;
 static std::unique_ptr<AppEvents> g_appEvents;
+static std::unique_ptr<WindowEvents> g_windowEvents;
 static std::map<doc::ObjectId, std::unique_ptr<SpriteEvents>> g_spriteEvents;
 
 class Events {
@@ -160,7 +162,6 @@ public:
     BgColorChange,
     BeforeCommand,
     AfterCommand,
-    Resize,
   };
 
   AppEvents() {
@@ -177,8 +178,6 @@ public:
       return BeforeCommand;
     else if (std::strcmp(eventName, "aftercommand") == 0)
       return AfterCommand;
-    else if (std::strcmp(eventName, "resize") == 0)
-      return Resize;
     else
       return Unknown;
   }
@@ -209,10 +208,6 @@ private:
         m_afterCmdConn = ctx->AfterCommandExecution
           .connect(&AppEvents::onAfterCommand, this);
         break;
-      case Resize:
-        m_resizeConn = app->mainWindow()->Resize
-          .connect(&AppEvents::onResize, this);
-        break;
     }
   }
 
@@ -232,9 +227,6 @@ private:
         break;
       case AfterCommand:
         m_afterCmdConn.disconnect();
-        break;
-      case Resize:
-        m_resizeConn.disconnect();
         break;
     }
   }
@@ -266,11 +258,6 @@ private:
                          { "params", ev.params() } });
   }
 
-  void onResize(ui::ResizeEvent& ev) {
-    call(Resize, { { "width", ev.bounds().w },
-                   { "height", ev.bounds().h } });
-  }
-
   // ContextObserver impl
   void onActiveSiteChange(const Site& site) override {
     const bool fromUndo = (site.document() &&
@@ -283,6 +270,53 @@ private:
   obs::scoped_connection m_beforeCmdConn;
   obs::scoped_connection m_afterCmdConn;
   obs::scoped_connection m_beforePaintConn;
+};
+
+class WindowEvents : public Events
+                   , private ContextObserver {
+public:
+  enum : EventType {
+    Unknown = -1,
+    Resize,
+  };
+
+  WindowEvents(ui::Window* window)
+    : m_window(window) {
+  }
+
+  ui::Window* window() const { return m_window; }
+
+  EventType eventType(const char* eventName) const override {
+    if (std::strcmp(eventName, "resize") == 0)
+      return Resize;
+    else
+      return Unknown;
+  }
+
+private:
+
+  void onAddFirstListener(EventType eventType) override {
+    switch (eventType) {
+      case Resize:
+        m_resizeConn = m_window->Resize.connect(&WindowEvents::onResize, this);
+        break;
+    }
+  }
+
+  void onRemoveLastListener(EventType eventType) override {
+    switch (eventType) {
+      case Resize:
+        m_resizeConn.disconnect();
+        break;
+    }
+  }
+
+  void onResize(ui::ResizeEvent& ev) {
+    call(Resize, { { "width", ev.bounds().w },
+                   { "height", ev.bounds().h } });
+  }
+
+  ui::Window* m_window;
   obs::scoped_connection m_resizeConn;
 };
 
@@ -536,6 +570,22 @@ void push_sprite_events(lua_State* L, Sprite* sprite)
 
   push_ptr<Events>(L, spriteEvents);
 }
+
+#ifdef ENABLE_UI
+
+void push_window_events(lua_State* L, ui::Window* window)
+{
+  if (!g_windowEvents) {
+    App::instance()->ExitGui.connect([]{ g_windowEvents.reset(); });
+    g_windowEvents = std::make_unique<WindowEvents>(window);
+  }
+  else {
+    ASSERT(g_windowEvents->window() == window);
+  }
+  push_ptr<Events>(L, g_windowEvents.get());
+}
+
+#endif // ENABLE_UI
 
 } // namespace script
 } // namespace app

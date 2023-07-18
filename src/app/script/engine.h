@@ -54,6 +54,10 @@ namespace doc {
   class WithUserData;
 }
 
+namespace ui {
+  class Window;
+}
+
 namespace app {
 
   class Editor;
@@ -176,6 +180,9 @@ namespace app {
   void push_tilesets(lua_State* L, doc::Tilesets* tilesets);
   void push_tool(lua_State* L, app::tools::Tool* tool);
   void push_version(lua_State* L, const base::Version& ver);
+#ifdef ENABLE_UI
+  void push_window_events(lua_State* L, ui::Window* window);
+#endif
 
   gfx::Point convert_args_into_point(lua_State* L, int index);
   gfx::Rect convert_args_into_rect(lua_State* L, int index);

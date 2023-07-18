@@ -576,6 +576,8 @@ void App::close()
 {
 #ifdef ENABLE_UI
   if (isGui()) {
+    ExitGui();
+
     // Select no document
     static_cast<UIContext*>(context())->setActiveView(nullptr);
 
