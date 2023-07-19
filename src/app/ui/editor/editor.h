@@ -90,15 +90,13 @@ namespace app {
       kShowDecorators = 16,
       kShowSymmetryLine = 32,
       kShowSlices = 64,
-      kUseNonactiveLayersOpacityWhenEnabled = 128,
       kDefaultEditorFlags = (kShowGrid |
                              kShowMask |
                              kShowOnionskin |
                              kShowOutside |
                              kShowDecorators |
                              kShowSymmetryLine |
-                             kShowSlices |
-                             kUseNonactiveLayersOpacityWhenEnabled)
+                             kShowSlices)
     };
 
     enum class ZoomBehavior {
@@ -397,6 +395,8 @@ namespace app {
     void invalidateCanvas();
     void invalidateIfActive();
     void updateAutoCelGuides(ui::Message* msg);
+
+    int otherLayersOpacity() const;
 
     // Stack of states. The top element in the stack is the current state (m_state).
     EditorStatesHistory m_statesHistory;

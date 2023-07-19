@@ -303,6 +303,12 @@
       <key command="LayerOpacity"><param name="opacity" value="224" /></key>
       <key command="LayerOpacity" shortcut="Shift+4"><param name="opacity" value="255" /></key>
 
+      <key command="ToggleOtherLayersOpacity" />
+      <key command="ToggleOtherLayersOpacity" shortcut="Shift+F7">
+        <param name="preview" value="true" />
+        <param name="checkedIfZero" value="true" />
+      </key>
+
       <!-- Scroll to center -->
       <key command="ScrollCenter" shortcut="Shift+Z" />
       <key command="FitScreen" shortcut="Ctrl+0" mac="Cmd+0" />
@@ -1017,7 +1023,14 @@
         <item command="Timeline" text="@.view_timeline">
           <param name="switch" value="true" />
         </item>
-        <item command="TogglePreview" text="@.view_preview" />
+        <menu text="@.view_preview">
+          <item command="TogglePreview" text="@.view_preview" />
+          <separator />
+          <item command="ToggleOtherLayersOpacity" text="@.view_preview_hide_other_layers">
+            <param name="preview" value="true" />
+            <param name="checkedIfZero" value="true" />
+          </item>
+        </menu>
         <item command="AdvancedMode" text="@.view_advanced_mode" />
         <item command="FullscreenMode" text="@.view_full_screen_mode" />
         <item command="FullscreenPreview" text="@.view_full_screen_preview" />

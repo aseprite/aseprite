@@ -383,7 +383,7 @@ void Editor::setLayer(const Layer* layer)
         // If the user want to see the active layer edges...
         m_docPref.show.layerEdges() ||
         // If there is a different opacity for nonactive-layers
-        Preferences::instance().experimental.nonactiveLayersOpacity() < 255 ||
+        otherLayersOpacity() < 255 ||
         // If the automatic cel guides are visible...
         m_showGuidesThisCel ||
         // If grid settings changed
@@ -672,10 +672,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
     m_renderEngine->setNewBlendMethod(pref.experimental.newBlend());
     m_renderEngine->setRefLayersVisiblity(true);
     m_renderEngine->setSelectedLayer(m_layer);
-    if (m_flags & Editor::kUseNonactiveLayersOpacityWhenEnabled)
-      m_renderEngine->setNonactiveLayersOpacity(pref.experimental.nonactiveLayersOpacity());
-    else
-      m_renderEngine->setNonactiveLayersOpacity(255);
+    m_renderEngine->setNonactiveLayersOpacity(otherLayersOpacity());
     m_renderEngine->setupBackground(m_document, IMAGE_RGB);
     m_renderEngine->disableOnionskin();
 
@@ -2978,9 +2975,18 @@ void Editor::updateAutoCelGuides(ui::Message* msg)
   }
 }
 
+int Editor::otherLayersOpacity() const
+{
+  if (m_docView && m_docView->isPreview())
+    return Preferences::instance().experimental.nonactiveLayersOpacityPreview();
+  else
+    return Preferences::instance().experimental.nonactiveLayersOpacity();
+}
+
 // static
 void Editor::registerCommands()
 {
+  // TODO merge with ToggleOtherLayersOpacity
   Commands::instance()
     ->add(
       new QuickCommand(
