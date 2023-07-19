@@ -184,6 +184,7 @@ ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
 {
   m_instance = this;
 
+  auto& pref = Preferences::instance();
   auto theme = SkinTheme::get(this);
 
   auto item = m_editPal.addItem("");
@@ -215,6 +216,8 @@ ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
   m_tilesetModeButtons.addItem(theme->parts.tilesManual(), "pal_button");
   m_tilesetModeButtons.addItem(theme->parts.tilesAuto(), "pal_button");
   m_tilesetModeButtons.addItem(theme->parts.tilesStack(), "pal_button");
+
+  m_tilesetMode = pref.colorBar.defaultTilesetMode();
   setTilesetMode(m_tilesetMode);
 
   m_paletteView.setColumns(8);
@@ -242,8 +245,7 @@ ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
   m_splitter.addChild(&m_palettePlaceholder);
   m_splitter.addChild(&m_selectorPlaceholder);
 
-  setColorSelector(
-    Preferences::instance().colorBar.selector());
+  setColorSelector(pref.colorBar.selector());
 
   m_tilesHBox.addChild(&m_tilesButton);
   m_tilesHBox.addChild(&m_tilesetModeButtons);
@@ -304,6 +306,7 @@ ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
   m_fgTile.Change.connect(&ColorBar::onFgTileButtonChange, this);
   m_bgTile.Change.connect(&ColorBar::onBgTileButtonChange, this);
   m_tilesetModeButtons.ItemChange.connect([this]{ onTilesetModeButtonClick(); });
+  m_tilesetModeButtons.RightClick.connect([this]{ onTilesetModeButtonRightClick(); });
 
   InitTheme.connect(
     [this, fgBox, bgBox]{
@@ -355,13 +358,13 @@ ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
   initTheme();
 
   // Set background color reading its value from the configuration.
-  setBgColor(Preferences::instance().colorBar.bgColor());
+  setBgColor(pref.colorBar.bgColor());
 
   // Clear the selection of the BG color in the palette.
   m_paletteView.deselect();
 
   // Set foreground color reading its value from the configuration.
-  setFgColor(Preferences::instance().colorBar.fgColor());
+  setFgColor(pref.colorBar.fgColor());
 
   // Tooltips
   setupTooltips(tooltipManager);
@@ -371,11 +374,11 @@ ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
   UIContext::instance()->add_observer(this);
   m_beforeCmdConn = UIContext::instance()->BeforeCommandExecution.connect(&ColorBar::onBeforeExecuteCommand, this);
   m_afterCmdConn = UIContext::instance()->AfterCommandExecution.connect(&ColorBar::onAfterExecuteCommand, this);
-  m_fgConn = Preferences::instance().colorBar.fgColor.AfterChange.connect([this]{ onFgColorChangeFromPreferences(); });
-  m_bgConn = Preferences::instance().colorBar.bgColor.AfterChange.connect([this]{ onBgColorChangeFromPreferences(); });
-  m_fgTileConn = Preferences::instance().colorBar.fgTile.AfterChange.connect([this]{ onFgTileChangeFromPreferences(); });
-  m_bgTileConn = Preferences::instance().colorBar.bgTile.AfterChange.connect([this]{ onBgTileChangeFromPreferences(); });
-  m_sepConn = Preferences::instance().colorBar.entriesSeparator.AfterChange.connect([this]{ invalidate(); });
+  m_fgConn = pref.colorBar.fgColor.AfterChange.connect([this]{ onFgColorChangeFromPreferences(); });
+  m_bgConn = pref.colorBar.bgColor.AfterChange.connect([this]{ onBgColorChangeFromPreferences(); });
+  m_fgTileConn = pref.colorBar.fgTile.AfterChange.connect([this]{ onFgTileChangeFromPreferences(); });
+  m_bgTileConn = pref.colorBar.bgTile.AfterChange.connect([this]{ onBgTileChangeFromPreferences(); });
+  m_sepConn = pref.colorBar.entriesSeparator.AfterChange.connect([this]{ invalidate(); });
   m_paletteView.FocusOrClick.connect(&ColorBar::onFocusPaletteView, this);
   m_tilesView.FocusOrClick.connect(&ColorBar::onFocusTilesView, this);
   m_appPalChangeConn = App::instance()->PaletteChange.connect(&ColorBar::onAppPaletteChange, this);
@@ -833,6 +836,25 @@ void ColorBar::onTilesetModeButtonClick()
   int item = m_tilesetModeButtons.selectedItem();
   m_tilesetModeButtons.deselectItems();
   setTilesetMode(static_cast<TilesetMode>(item));
+}
+
+void ColorBar::onTilesetModeButtonRightClick()
+{
+  int item = m_tilesetModeButtons.selectedItem();
+  gfx::Rect bounds = m_tilesetModeButtons.getItem(item)->bounds();
+
+  Menu menu;
+  MenuItem setAsDefault(Strings::color_bar_set_as_default());
+
+  auto& pref = Preferences::instance();
+  setAsDefault.setSelected(item == int(pref.colorBar.defaultTilesetMode()));
+  menu.addChild(&setAsDefault);
+
+  setAsDefault.Click.connect([&pref, item]{
+    pref.colorBar.defaultTilesetMode((TilesetMode)item);
+  });
+
+  menu.showPopup(gfx::Point(bounds.x, bounds.y2()), display());
 }
 
 void ColorBar::onRemapPalButtonClick()

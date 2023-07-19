@@ -256,6 +256,7 @@
       <option id="show_invalid_fg_bg_color_alert" type="bool" default="true" />
       <option id="entries_separator" type="bool" default="true" />
       <option id="show_color_and_tiles" type="bool" default="true" />
+      <option id="default_tileset_mode" type="app::TilesetMode" default="app::TilesetMode::Auto" />
     </section>
     <section id="updater">
       <option id="inits" type="int" default="0" />

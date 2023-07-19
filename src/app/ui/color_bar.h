@@ -134,6 +134,7 @@ namespace app {
     void onTilesButtonClick();
     void onTilesButtonRightClick();
     void onTilesetModeButtonClick();
+    void onTilesetModeButtonRightClick();
     void onTilesetOptionsClick();
     void onRemapPalButtonClick();
     void onRemapTilesButtonClick();
