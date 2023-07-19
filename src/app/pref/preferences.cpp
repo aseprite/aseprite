@@ -52,6 +52,11 @@ Preferences::Preferences()
   // doesn't exist.
   const bool firstTime = (!base::is_file(fn));
 
+#if LAF_LINUX
+  // Don't use native dialogs on Linux by default
+  experimental.useNativeFileDialog.setDefaultValue(false);
+#endif
+
   load();
 
   // Create a connection with the default RgbMapAlgorithm preferences
