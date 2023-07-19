@@ -251,6 +251,13 @@ Engine::Engine()
   lua_setfield(L, -2, "execute");
   lua_pop(L, 1);
 
+  // Wrap package.loadlib()
+  lua_getglobal(L, "package");
+  lua_getfield(L, -1, "loadlib");
+  lua_pushcclosure(L, secure_package_loadlib, 1);
+  lua_setfield(L, -2, "loadlib");
+  lua_pop(L, 1);
+
   // Enhance require() function for plugins
   custom_require_function(L);
 
