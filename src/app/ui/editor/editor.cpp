@@ -1917,8 +1917,16 @@ bool Editor::onProcessMessage(Message* msg)
 
     case kMouseEnterMessage:
       m_brushPreview.hide();
-      updateToolLoopModifiersIndicators();
-      updateQuicktool();
+
+      // Do not update tool loop modifiers when the mouse exits and/re-enters
+      // the editor area while we are inside the same tool loop (hasCapture()).
+      // E.g. This avoids starting to rotate a rectangular marquee (Alt key
+      // pressed) if we have the subtract mode on (Shift+Alt) and touch the
+      // editor edge (MouseLeave/Enter)
+      if (!hasCapture()) {
+        updateToolLoopModifiersIndicators();
+        updateQuicktool();
+      }
       break;
 
     case kMouseLeaveMessage:
