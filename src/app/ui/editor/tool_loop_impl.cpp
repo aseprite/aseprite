@@ -829,11 +829,15 @@ tools::ToolLoop* create_tool_loop(
       return nullptr;
     }
     else if (!layer->isVisibleHierarchy()) {
-      StatusBar::instance()->showTip(
-        1000,
-        fmt::format(Strings::statusbar_tips_layer_x_is_hidden(),
-                    layer->name()));
-      return nullptr;
+      auto& toolPref = Preferences::instance().tool(params.tool);
+      if (toolPref.floodfill.referTo() ==
+          app::gen::FillReferTo::ACTIVE_LAYER) {
+        StatusBar::instance()->showTip(
+          1000,
+          fmt::format(Strings::statusbar_tips_layer_x_is_hidden(),
+                      layer->name()));
+        return nullptr;
+      }
     }
     // If the active layer is read-only.
     else if (layer_is_locked(editor)) {
