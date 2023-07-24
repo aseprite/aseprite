@@ -10,7 +10,7 @@ jobs:
         build_type: [RelWithDebInfo, Debug]
         enable_ui: [off]
         include:
-          - os: ubuntu-latest
+          - os: windows-latest
             build_type: Debug
             enable_ui: on
     steps:
