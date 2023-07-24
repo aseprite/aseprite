@@ -411,10 +411,20 @@ bool FileSelector::show(
   fs->refresh();
 
   // We have to find where the user should begin to browse files
-  std::string start_folder_path =
-    base::get_file_path(get_initial_path_to_select_filename(initialPath));
-  IFileItem* start_folder = fs->getFileItemFromPath(start_folder_path);
+  std::string start_folder_path;
+  if (initialPath.empty()) {
+    start_folder_path = get_initial_path_to_select_filename(initialPath);
+  }
+  else {
+    start_folder_path = base::get_file_path(initialPath);
+  }
 
+  IFileItem* start_folder = fs->getFileItemFromPath(start_folder_path);
+  if (!start_folder) {
+    // If the directory doesn't exist anymore, get the default FS item
+    // (root item, or user folder).
+    start_folder = fs->getFileItemFromPath(std::string());
+  }
   FILESEL_TRACE("FILESEL: Start folder '%s' (%p)\n", start_folder_path.c_str(), start_folder);
 
   {
