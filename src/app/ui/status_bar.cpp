@@ -472,6 +472,11 @@ public:
   }
 
   IndicatorsGeneration& add(const app::Color& color) {
+    // For Color::TileType, use the tile version
+    if (color.getType() == app::Color::TileType) {
+      return add(color.getTile());
+    }
+
     auto theme = SkinTheme::get(m_indicators);
 
     // Eyedropper icon

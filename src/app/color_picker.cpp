@@ -63,10 +63,14 @@ bool get_cel_pixel(const Cel* cel,
     if (!image->bounds().contains(tilePos))
       return false;
 
-    const doc::tile_index ti =
+    const doc::tile_index t =
       get_pixel(image, tilePos.x, tilePos.y);
 
-    PICKER_TRACE("PICKER: tile index=%d\n", ti);
+    // TODO take care of flip flags
+
+    const doc::tile_index ti = doc::tile_geti(t);
+
+    PICKER_TRACE("PICKER: tile=%d index=%d\n", t, ti);
 
     doc::ImageRef tile = layerTilemap->tileset()->get(ti);
     if (!tile)
@@ -143,7 +147,7 @@ void ColorPicker::pickColor(const Site& site,
         const gfx::Point tilePos = site.grid().canvasToTile(gfx::Point(pos));
         if (cels.front()->image()->bounds().contains(tilePos)) {
           m_tile = doc::get_pixel(cels.front()->image(), tilePos.x, tilePos.y);
-          m_color = app::Color::fromIndex(m_tile);
+          m_color = app::Color::fromTile(m_tile);
         }
       }
       else if (site.tilemapMode() == TilemapMode::Pixels) {
@@ -166,7 +170,7 @@ void ColorPicker::pickColor(const Site& site,
         const gfx::Point tilePos = site.grid().canvasToTile(gfx::Point(pos));
         if (cel->image()->bounds().contains(tilePos)) {
           m_tile = doc::get_pixel(cel->image(), tilePos.x, tilePos.y);
-          m_color = app::Color::fromIndex(m_tile);
+          m_color = app::Color::fromTile(m_tile);
         }
       }
       else if (site.tilemapMode() == TilemapMode::Pixels) {

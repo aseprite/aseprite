@@ -700,13 +700,14 @@ void Sprite::pickCels(const gfx::PointF& pos,
       const Grid grid = cel->grid();
 
       tile_t tile = notile;
-      gfx::Point tilePos = grid.canvasToTile(gfx::Point(pos));
+      const gfx::Point tilePos = grid.canvasToTile(gfx::Point(pos));
       if (image->bounds().contains(tilePos.x, tilePos.y))
         tile = image->getPixel(tilePos.x, tilePos.y);
       if (tile == notile)
         continue;
 
-      image = tileset->get(tile).get();
+      const tile_index ti = tile_geti(tile);
+      image = tileset->get(ti).get();
       if (!image)
         continue;
 

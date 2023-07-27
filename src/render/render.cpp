@@ -529,15 +529,16 @@ void composite_image_general_with_tile_flags(
     int(std::ceil(area.dstBounds().w)),
     int(std::ceil(area.dstBounds().h)));
   gfx::Rect srcBounds = area.srcBounds();
+  const gfx::Rect srcImgBounds = src->bounds();
   const gfx::Size srcMinSize = src->size();
 
   dstBounds &= dst->bounds();
 
   if (tileFlags & tile_f_xflip) {
-    srcBounds.x = src->bounds().x2()-srcBounds.w-srcBounds.x;
+    srcBounds.x = sx*srcImgBounds.x2() - srcBounds.x2();
   }
   if (tileFlags & tile_f_yflip) {
-    srcBounds.y = src->bounds().y2()-srcBounds.h-srcBounds.y;
+    srcBounds.y = sy*srcImgBounds.y2() - srcBounds.y2();
   }
 
   int dstY = dstBounds.y;
@@ -558,7 +559,7 @@ void composite_image_general_with_tile_flags(
         srcX = (srcBounds.x2()-1-x) / sx;
       }
       else {
-        srcX = srcBounds.x+x / sx;
+        srcX = (srcBounds.x+x) / sx;
       }
       if (tileFlags & tile_f_yflip) {
         srcY = (srcBounds.y2()-1-y) / sy;
