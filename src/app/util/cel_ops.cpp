@@ -23,6 +23,7 @@
 #include "app/cmd_sequence.h"
 #include "app/doc.h"
 #include "doc/algorithm/fill_selection.h"
+#include "doc/algorithm/flip_image.h"
 #include "doc/algorithm/resize_image.h"
 #include "doc/algorithm/shrink_bounds.h"
 #include "doc/cel.h"
@@ -657,6 +658,8 @@ void modify_tilemap_cel_region(
         continue;
 
       const doc::tile_index ti = doc::tile_geti(t);
+      const doc::tile_flags tf = doc::tile_getf(t);
+
       const doc::ImageRef existentTileImage = tileset->get(ti);
       if (!existentTileImage) {
         // TODO add support to fill the tileset with the tile "ti"
@@ -668,9 +671,50 @@ void modify_tilemap_cel_region(
       if (grid.hasMask())
         mask_image(tileImage.get(), grid.mask().get());
 
+      const gfx::Rect tileImageBounds = tileImage->bounds();
+
       gfx::Region tileRgn(tileInCanvasRc);
       tileRgn.createIntersection(tileRgn, region);
       tileRgn.offset(-tileInCanvasRc.origin());
+
+      // TODO implement all flips at once
+
+      // Undo flips in tileImage and tileRgn
+      if (tf & doc::tile_f_xflip) {
+        doc::algorithm::flip_image(tileImage.get(),
+                                   tileImageBounds,
+                                   doc::algorithm::FlipHorizontal);
+
+        gfx::Region flippedTileRgn;
+        for (auto& rc : tileRgn) {
+          flippedTileRgn |= gfx::Region(
+            gfx::Rect(tileImageBounds.x2() - rc.x2(), rc.y, rc.w, rc.h));
+        }
+        tileRgn = flippedTileRgn;
+      }
+      if (tf & doc::tile_f_yflip) {
+        doc::algorithm::flip_image(tileImage.get(),
+                                   tileImageBounds,
+                                   doc::algorithm::FlipVertical);
+
+        gfx::Region flippedTileRgn;
+        for (auto& rc : tileRgn) {
+          flippedTileRgn |= gfx::Region(
+            gfx::Rect(rc.x, tileImageBounds.y2() - rc.y2(), rc.w, rc.h));
+        }
+        tileRgn = flippedTileRgn;
+      }
+      if (tf & doc::tile_f_dflip) {
+        doc::algorithm::flip_image(tileImage.get(),
+                                   tileImageBounds,
+                                   doc::algorithm::FlipDiagonal);
+
+        gfx::Region flippedTileRgn;
+        for (auto& rc : tileRgn) {
+          flippedTileRgn |= gfx::Region(gfx::Rect(rc.y, rc.x, rc.h, rc.w));
+        }
+        tileRgn = flippedTileRgn;
+      }
 
       ImageRef tileDstImage = tileset->get(ti);
 
