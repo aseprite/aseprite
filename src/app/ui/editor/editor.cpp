@@ -2567,8 +2567,8 @@ void Editor::setZoomAndCenterInMouse(const Zoom& zoom,
   // extra space for the zoom)
   gfx::Rect visibleBounds = editorToScreen(
     getViewportBounds().createIntersection(gfx::Rect(gfx::Point(0, 0), canvasSize())));
-  screenPos.x = std::clamp(screenPos.x, visibleBounds.x, visibleBounds.x2()-1);
-  screenPos.y = std::clamp(screenPos.y, visibleBounds.y, visibleBounds.y2()-1);
+  screenPos.x = std::clamp(screenPos.x, visibleBounds.x, std::max(visibleBounds.x, visibleBounds.x2()-1));
+  screenPos.y = std::clamp(screenPos.y, visibleBounds.y, std::max(visibleBounds.y, visibleBounds.y2()-1));
 
   spritePos = screenToEditor(screenPos);
 

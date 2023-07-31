@@ -147,8 +147,8 @@ void fit_bounds(const Display* parentDisplay,
     if (fitLogic)
       fitLogic(displayBounds, frame, [](Widget* widget){ return widget->bounds(); });
 
-    frame.x = std::clamp(frame.x, 0, displayBounds.w - frame.w);
-    frame.y = std::clamp(frame.y, 0, displayBounds.h - frame.h);
+    frame.x = std::clamp(frame.x, 0, std::max(0, displayBounds.w - frame.w));
+    frame.y = std::clamp(frame.y, 0, std::max(0, displayBounds.h - frame.h));
 
     window->setBounds(frame);
   }
