@@ -413,6 +413,7 @@ int Dialog_show(lua_State* L)
       if (!rc.isEmpty()) {
         conn = dlg->window.Open.connect([dlg, rc]{
           dlg->setWindowBounds(rc);
+          dlg->window.setAutoRemap(false);
         });
       }
     }
@@ -1836,9 +1837,10 @@ int Dialog_set_data(lua_State* L)
 int Dialog_get_bounds(lua_State* L)
 {
   auto dlg = get_obj<Dialog>(L, 1);
-  if (!dlg->window.isVisible())
+  if (!dlg->window.isVisible() && dlg->window.bounds().isEmpty()) {
     dlg->window.remapWindow();
-
+    dlg->window.centerWindow(dlg->parentDisplay());
+  }
   push_new<gfx::Rect>(L, dlg->getWindowBounds());
   return 1;
 }
@@ -1848,8 +1850,10 @@ int Dialog_set_bounds(lua_State* L)
   auto dlg = get_obj<Dialog>(L, 1);
   const auto rc = get_obj<gfx::Rect>(L, 2);
   if (rc) {
-    if (*rc != dlg->getWindowBounds())
+    if (*rc != dlg->getWindowBounds()) {
       dlg->setWindowBounds(*rc);
+      dlg->window.setAutoRemap(false);
+    }
   }
   return 0;
 }
