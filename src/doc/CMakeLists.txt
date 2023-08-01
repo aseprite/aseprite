@@ -13,6 +13,7 @@ add_library(doc-lib
   algorithm/floodfill.cpp
   algorithm/modify_selection.cpp
   algorithm/polygon.cpp
+  algorithm/random_image.cpp
   algorithm/resize_image.cpp
   algorithm/rotate.cpp
   algorithm/rotsprite.cpp
