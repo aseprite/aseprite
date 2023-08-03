@@ -41,7 +41,11 @@ template <typename T> T* check_docobj(lua_State* L, T* obj) {
   if (obj)
     return obj;
   else {
-    luaL_error(L, "Using a nil '%s' object", get_mtname<T>());
+    luaL_traceback(L, L, nullptr, 1);
+    const char* traceback = lua_tostring(L, -1);
+    luaL_error(L, "%s: Tried to access a deleted '%s'",
+               traceback ? traceback: "",
+               get_mtname<T>());
     ASSERT(false);              // unreachable code
     return nullptr;
   }
