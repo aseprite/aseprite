@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -155,22 +156,22 @@ public:
 
     LayerList layers = sprite->allLayers();
 
-    for (layer_t i=0; i<layers.size(); i++) {
-      LayerImage* layer = static_cast<LayerImage*>(layers[i]);
+    for (layer_t l=0; l<layers.size(); l++) {
+      LayerImage* layer = static_cast<LayerImage*>(layers[l]);
 
-      for (frame_t j=0; j<sprite->totalFrames(); j++) {
-        Cel* cel = layer->cel(frame_t(j));
+      for (frame_t f=0; f<sprite->totalFrames(); f++) {
+        Cel* cel = layer->cel(frame_t(f));
         ImageRef image;
         if (cel)
           image = cel->imageRef();
         else {
           image.reset(Image::create(IMAGE_RGB, 6, 4));
-          cel = new Cel(frame_t(j), image);
+          cel = new Cel(frame_t(f), image);
           layer->addCel(cel);
         }
 
-        clear_image(image.get(), i + j*100);
-        put_pixel(image.get(), i, j, expected_color);
+        clear_image(image.get(), rgba(f + l*10, 0, 0, 64));
+        put_pixel(image.get(), f, l, expected_color);
       }
     }
   }
@@ -226,11 +227,11 @@ protected:
 
     color_t color = get_pixel(
       cel->image(),
-      expected_layer, expected_frame);
+      expected_frame, expected_layer);
 
     EXPECT_EQ(expected_color, color)
-      << " - expecting layer " << expected_layer << " in " << layer << " and it is " << int(color%100) << "\n"
-      << " - expecting frame " << expected_frame << " in " << frame << " and it is " << int(color/100);
+      << " - expecting layer " << expected_layer << " in " << layer << " and it is " << int(rgba_getr(color)/10) << "\n"
+      << " - expecting frame " << expected_frame << " in " << frame << " and it is " << int(rgba_getr(color)%10);
 
     return (expected_color == color);
   }
