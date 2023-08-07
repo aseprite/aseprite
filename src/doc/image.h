@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2018-2020 Igara Studio S.A.
+// Copyright (c) 2018-2023 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -55,9 +55,22 @@ namespace doc {
     void setMaskColor(color_t c) { m_spec.setMaskColor(c); }
     void setColorSpace(const gfx::ColorSpaceRef& cs) { m_spec.setColorSpace(cs); }
 
+    // Number of bytes to store one pixel of this image.
+    int bytesPerPixel() const { return m_spec.bytesPerPixel(); }
+
+    // Number of bytes to store all visible pixels on each row.
+    int widthBytes() const { return m_spec.widthBytes(); }
+
+    // Number of bytes for each row of this image on memory (some
+    // bytes for each row might be hidden/just for alignment to
+    // "base_alignment").
+    int rowBytes() const { return m_rowBytes; }
+
+    // Number of pixels for each row (some of these pixels are hidden
+    // when width() < rowPixels()).
+    int rowPixels() const { return m_rowBytes / bytesPerPixel(); }
+
     virtual int getMemSize() const override;
-    int getRowStrideSize() const;
-    int getRowStrideSize(int pixels_per_row) const;
 
     template<typename ImageTraits>
     ImageBits<ImageTraits> lockBits(LockType lockType, const gfx::Rect& bounds) {
@@ -89,29 +102,12 @@ namespace doc {
   protected:
     Image(const ImageSpec& spec);
 
+    // Number of bytes for each row.
+    size_t m_rowBytes;
+
   private:
     ImageSpec m_spec;
   };
-
-} // namespace doc
-
-// It's here because it needs a complete definition of Image class,
-// and then ImageTraits are used in the next functions below.
-#include "doc/image_traits.h"
-
-namespace doc {
-
-  inline int calculate_rowstride_bytes(PixelFormat pixelFormat, int pixels_per_row)
-  {
-    switch (pixelFormat) {
-      case IMAGE_RGB:       return RgbTraits::getRowStrideBytes(pixels_per_row);
-      case IMAGE_GRAYSCALE: return GrayscaleTraits::getRowStrideBytes(pixels_per_row);
-      case IMAGE_INDEXED:   return IndexedTraits::getRowStrideBytes(pixels_per_row);
-      case IMAGE_BITMAP:    return BitmapTraits::getRowStrideBytes(pixels_per_row);
-      case IMAGE_TILEMAP:   return TilemapTraits::getRowStrideBytes(pixels_per_row);
-    }
-    return 0;
-  }
 
 } // namespace doc
 

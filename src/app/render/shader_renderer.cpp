@@ -418,7 +418,7 @@ void ShaderRenderer::drawImage(SkCanvas* canvas,
 {
   auto skData = SkData::MakeWithoutCopy(
     (const void*)srcImage->getPixelAddress(0, 0),
-    srcImage->getMemSize());
+    srcImage->rowBytes() * srcImage->height());
 
   switch (srcImage->colorMode()) {
 
@@ -429,7 +429,7 @@ void ShaderRenderer::drawImage(SkCanvas* canvas,
                           kRGBA_8888_SkColorType,
                           kUnpremul_SkAlphaType),
         skData,
-        srcImage->getRowStrideSize());
+        srcImage->rowBytes());
 
       SkPaint p;
       p.setAlpha(opacity);
@@ -450,7 +450,7 @@ void ShaderRenderer::drawImage(SkCanvas* canvas,
                           kR8G8_unorm_SkColorType,
                           kOpaque_SkAlphaType),
         skData,
-        srcImage->getRowStrideSize());
+        srcImage->rowBytes());
 
       SkRuntimeShaderBuilder builder(m_grayscaleEffect);
       builder.child("iImg") = skImg->makeRawShader(SkSamplingOptions(SkFilterMode::kNearest));
@@ -478,7 +478,7 @@ void ShaderRenderer::drawImage(SkCanvas* canvas,
                           kAlpha_8_SkColorType,
                           kUnpremul_SkAlphaType),
         skData,
-        srcImage->getRowStrideSize());
+        srcImage->rowBytes());
 
       // Use the palette data as an "width x height" image where
       // width=number of palette colors, and height=1

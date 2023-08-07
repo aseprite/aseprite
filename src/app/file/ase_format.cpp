@@ -110,9 +110,7 @@ public:
                      m_image->height());
   }
   int getScanlineSize() const override {
-    return doc::calculate_rowstride_bytes(
-      m_image->pixelFormat(),
-      m_image->width());
+    return m_image->widthBytes();
   }
   const uint8_t* getScanlineAddress(int y) const override {
     return m_image->getPixelAddress(0, y);
@@ -128,9 +126,8 @@ public:
                      m_tileset->grid().tileSize().h * m_tileset->size());
   }
   int getScanlineSize() const override {
-    return doc::calculate_rowstride_bytes(
-      m_tileset->sprite()->pixelFormat(),
-      m_tileset->grid().tileSize().w);
+    return bytes_per_pixel_for_colormode(m_tileset->sprite()->colorMode())
+      * m_tileset->grid().tileSize().w;
   }
   const uint8_t* getScanlineAddress(int y) const override {
     const int h = m_tileset->grid().tileSize().h;

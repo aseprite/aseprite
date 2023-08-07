@@ -174,8 +174,8 @@ bool TgaFormat::onLoad(FileOp* fop)
 
   tga::Image tgaImage;
   tgaImage.pixels = image->getPixelAddress(0, 0);
-  tgaImage.rowstride = image->getRowStrideSize();
-  tgaImage.bytesPerPixel = image->getRowStrideSize(1);
+  tgaImage.rowstride = image->rowBytes();
+  tgaImage.bytesPerPixel = image->bytesPerPixel();
 
   // Read image
   TgaDelegate delegate(fop);
@@ -312,8 +312,8 @@ bool TgaFormat::onSave(FileOp* fop)
   doc::ImageRef image = img->getScaledImage();
   tga::Image tgaImage;
   tgaImage.pixels = image->getPixelAddress(0, 0);
-  tgaImage.rowstride = image->getRowStrideSize();
-  tgaImage.bytesPerPixel = image->getRowStrideSize(1);
+  tgaImage.rowstride = image->rowBytes();
+  tgaImage.bytesPerPixel = image->bytesPerPixel();
 
   TgaDelegate delegate(fop);
   encoder.writeImage(header, tgaImage);

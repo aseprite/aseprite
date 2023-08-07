@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2018-2019 Igara Studio S.A.
+// Copyright (c) 2018-2023 Igara Studio S.A.
 // Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -9,6 +9,8 @@
 #define DOC_IMAGE_TRAITS_H_INCLUDED
 #pragma once
 
+#include "base/memory.h"
+#include "doc/aligned_memory.h"
 #include "doc/blend_funcs.h"
 #include "doc/color.h"
 #include "doc/color_mode.h"
@@ -35,8 +37,12 @@ namespace doc {
     static const pixel_t min_value = 0x00000000l;
     static const pixel_t max_value = 0xffffffffl;
 
-    static inline int getRowStrideBytes(int pixels_per_row) {
+    static inline int width_bytes(int pixels_per_row) {
       return bytes_per_pixel * pixels_per_row;
+    }
+
+    static inline int rowstride_bytes(int pixels_per_row) {
+      return doc_align_size(width_bytes(pixels_per_row));
     }
 
     static inline BlendFunc get_blender(BlendMode blend_mode, bool newBlend) {
@@ -76,8 +82,12 @@ namespace doc {
     static const pixel_t min_value = 0x0000;
     static const pixel_t max_value = 0xffff;
 
-    static inline int getRowStrideBytes(int pixels_per_row) {
+    static inline int width_bytes(int pixels_per_row) {
       return bytes_per_pixel * pixels_per_row;
+    }
+
+    static inline int rowstride_bytes(int pixels_per_row) {
+      return doc_align_size(width_bytes(pixels_per_row));
     }
 
     static inline BlendFunc get_blender(BlendMode blend_mode, bool newBlend) {
@@ -117,8 +127,12 @@ namespace doc {
     static const pixel_t min_value = 0x00;
     static const pixel_t max_value = 0xff;
 
-    static inline int getRowStrideBytes(int pixels_per_row) {
+    static inline int width_bytes(int pixels_per_row) {
       return bytes_per_pixel * pixels_per_row;
+    }
+
+    static inline int rowstride_bytes(int pixels_per_row) {
+      return doc_align_size(width_bytes(pixels_per_row));
     }
 
     static inline BlendFunc get_blender(BlendMode blend_mode, bool newBlend) {
@@ -149,8 +163,12 @@ namespace doc {
     static const pixel_t min_value = 0;
     static const pixel_t max_value = 1;
 
-    static inline int getRowStrideBytes(int pixels_per_row) {
-      return ((pixels_per_row+7) / 8);
+    static inline int width_bytes(int pixels_per_row) {
+      return (pixels_per_row+7) / 8;
+    }
+
+    static inline int rowstride_bytes(int pixels_per_row) {
+      return doc_align_size(width_bytes(pixels_per_row));
     }
 
     static inline bool same_color(const pixel_t a, const pixel_t b) {
@@ -177,8 +195,12 @@ namespace doc {
     static const pixel_t min_value = 0x00000000l;
     static const pixel_t max_value = 0xffffffffl;
 
-    static inline int getRowStrideBytes(int pixels_per_row) {
+    static inline int width_bytes(int pixels_per_row) {
       return bytes_per_pixel * pixels_per_row;
+    }
+
+    static inline int rowstride_bytes(int pixels_per_row) {
+      return doc_align_size(width_bytes(pixels_per_row));
     }
 
     static inline BlendFunc get_blender(BlendMode blend_mode, bool newBlend) {

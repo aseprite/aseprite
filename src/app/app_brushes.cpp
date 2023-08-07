@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2022  Igara Studio S.A.
+// Copyright (C) 2020-2023  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -128,7 +128,7 @@ void save_xml_image(TiXmlElement* imageElem, const Image* image)
     imageElem->SetAttribute("format", format.c_str());
 
   base::buffer data;
-  data.reserve(h * image->getRowStrideSize());
+  data.reserve(h * image->widthBytes());
   switch (image->pixelFormat()) {
     case IMAGE_RGB:{
       const LockImageBits<RgbTraits> pixels(image);

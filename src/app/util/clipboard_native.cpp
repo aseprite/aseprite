@@ -131,7 +131,7 @@ bool Clipboard::setNativeBitmap(const doc::Image* image,
   spec.height = image->height();
   spec.bits_per_pixel = 32;
   spec.bytes_per_row = (image->pixelFormat() == doc::IMAGE_RGB ?
-                        image->getRowStrideSize(): 4*spec.width);
+                        image->rowBytes(): 4*spec.width);
   spec.red_mask    = doc::rgba_r_mask;
   spec.green_mask  = doc::rgba_g_mask;
   spec.blue_mask   = doc::rgba_b_mask;

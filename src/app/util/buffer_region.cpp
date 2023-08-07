@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -24,7 +24,7 @@ void save_image_region_in_buffer(
   base::buffer& buffer)
 {
   // Calculate buffer size for the region
-  const size_t bytesPerPixel = image->getRowStrideSize(1);
+  const size_t bytesPerPixel = image->bytesPerPixel();
   size_t reqBytes = 0;
   for (const auto& rc : region)
     reqBytes += bytesPerPixel*rc.w*rc.h;
@@ -48,7 +48,7 @@ void swap_image_region_with_buffer(
   doc::Image* image,
   base::buffer& buffer)
 {
-  const size_t bytesPerPixel = image->getRowStrideSize(1);
+  const size_t bytesPerPixel = image->bytesPerPixel();
   auto it = buffer.begin();
   for (const auto& rc : region) {
     for (int y=0; y<rc.h; ++y) {

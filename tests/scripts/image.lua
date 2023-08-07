@@ -14,6 +14,7 @@ assert(a.width == 32)
 assert(a.height == 64)
 assert(a.colorMode == ColorMode.RGB) -- RGB by default
 assert(a.rowStride == 32*4)
+assert(a.bytesPerPixel == 4)
 assert(a:isEmpty())
 assert(a:isPlain(rgba(0, 0, 0, 0)))
 assert(a:isPlain(0))
@@ -24,6 +25,7 @@ do
   assert(b.height == 64)
   assert(b.colorMode == ColorMode.INDEXED)
   assert(b.rowStride == 32*1)
+  assert(b.bytesPerPixel == 1)
 
   local c = Image{ width=32, height=64, colorMode=ColorMode.INDEXED }
   assert(c.width == 32)

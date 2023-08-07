@@ -717,8 +717,8 @@ void read_compressed_image_templ(FileInterface* f,
     throw base::Exception("ZLib error %d in inflateInit().", err);
 
   const int width = image->width();
-  const int rowstride = ImageTraits::getRowStrideBytes(width);
-  std::vector<uint8_t> scanline(rowstride);
+  const int widthBytes = image->widthBytes();
+  std::vector<uint8_t> scanline(widthBytes);
   std::vector<uint8_t> compressed(4096);
   std::vector<uint8_t> uncompressed(4096);
   int scanline_offset = 0;
@@ -774,7 +774,7 @@ void read_compressed_image_templ(FileInterface* f,
             scanline_offset += n;
             i += n;
           }
-          else if (scanline_offset < rowstride) {
+          else if (scanline_offset < widthBytes) {
             // The scanline is not filled yet.
             break;
           }

@@ -104,7 +104,7 @@ bool FliFormat::onLoad(FileOp* fop)
   flic::Frame fliFrame;
   flic::Colormap oldFliColormap;
   fliFrame.pixels = bmp->getPixelAddress(0, 0);
-  fliFrame.rowstride = IndexedTraits::getRowStrideBytes(bmp->width());
+  fliFrame.rowstride = bmp->rowBytes();
 
   frame_t frame_out = 0;
   for (frame_t frame_in=0;
@@ -229,7 +229,7 @@ bool FliFormat::onSave(FileOp* fop)
   // Write frame by frame
   flic::Frame fliFrame;
   fliFrame.pixels = bmp->getPixelAddress(0, 0);
-  fliFrame.rowstride = IndexedTraits::getRowStrideBytes(bmp->width());
+  fliFrame.rowstride = bmp->rowBytes();
 
   auto frame_beg = fop->roi().selectedFrames().begin();
   auto frame_end = fop->roi().selectedFrames().end();

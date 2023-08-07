@@ -40,6 +40,14 @@ namespace doc {
     gfx::Rect bounds() const { return gfx::Rect(m_size); }
     const gfx::ColorSpaceRef& colorSpace() const { return m_colorSpace; }
 
+    int bytesPerPixel() const {
+      return bytes_per_pixel_for_colormode(m_colorMode);
+    }
+
+    int widthBytes() const {
+      return bytesPerPixel() * width();
+    }
+
     // The transparent color for colored images (0 by default) or just 0 for RGBA and Grayscale
     color_t maskColor() const { return m_maskColor; }
 

@@ -153,7 +153,7 @@ CGImageRef get_thumbnail(CFURLRef url,
   CGColorSpaceRef cs = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
   CGContextRef gc = CGBitmapContextCreate(
     image->getPixelAddress(0, 0),
-    w, h, 8, image->getRowStrideSize(), cs,
+    w, h, 8, image->rowBytes(), cs,
     kCGImageAlphaPremultipliedLast);
   CGColorSpaceRelease(cs);
 

@@ -241,7 +241,7 @@ int Sprite::getMemSize() const
   std::vector<ImageRef> images;
   getImages(images);
   for (const ImageRef& image : images)
-    size += image->getRowStrideSize() * image->height();
+    size += image->rowBytes() * image->height();
 
   return size;
 }

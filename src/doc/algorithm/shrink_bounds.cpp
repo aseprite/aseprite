@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2020 Igara Studio S.A.
+// Copyright (c) 2019-2023 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -60,13 +60,13 @@ bool is_same_pixel<BitmapTraits>(color_t pixel1, color_t pixel2)
 }
 
 template<typename ImageTraits>
-bool shrink_bounds_left_templ(const Image* image, gfx::Rect& bounds, color_t refpixel, int rowSize)
+bool shrink_bounds_left_templ(const Image* image, gfx::Rect& bounds, color_t refpixel, int rowPixels)
 {
   int u, v;
   // Shrink left side
   for (u=bounds.x; u<bounds.x2(); ++u) {
     auto ptr = get_pixel_address_fast<ImageTraits>(image, u, v=bounds.y);
-    for (; v<bounds.y2(); ++v, ptr+=rowSize) {
+    for (; v<bounds.y2(); ++v, ptr+=rowPixels) {
       ASSERT(ptr == get_pixel_address_fast<ImageTraits>(image, u, v));
       if (!is_same_pixel<ImageTraits>(*ptr, refpixel))
         return (!bounds.isEmpty());
@@ -78,13 +78,13 @@ bool shrink_bounds_left_templ(const Image* image, gfx::Rect& bounds, color_t ref
 }
 
 template<typename ImageTraits>
-bool shrink_bounds_right_templ(const Image* image, gfx::Rect& bounds, color_t refpixel, int rowSize)
+bool shrink_bounds_right_templ(const Image* image, gfx::Rect& bounds, color_t refpixel, int rowPixels)
 {
   int u, v;
   // Shrink right side
   for (u=bounds.x2()-1; u>=bounds.x; --u) {
     auto ptr = get_pixel_address_fast<ImageTraits>(image, u, v=bounds.y);
-    for (; v<bounds.y2(); ++v, ptr+=rowSize) {
+    for (; v<bounds.y2(); ++v, ptr+=rowPixels) {
       ASSERT(ptr == get_pixel_address_fast<ImageTraits>(image, u, v));
       if (!is_same_pixel<ImageTraits>(*ptr, refpixel))
         return (!bounds.isEmpty());
@@ -133,7 +133,7 @@ template<typename ImageTraits>
 bool shrink_bounds_templ(const Image* image, gfx::Rect& bounds, color_t refpixel)
 {
   // Pixels per row
-  const int rowSize = image->getRowStrideSize() / image->getRowStrideSize(1);
+  const int rowPixels = image->rowPixels();
   const int canvasSize = image->width()*image->height();
   if ((std::thread::hardware_concurrency() >= 4) &&
       ((image->pixelFormat() == IMAGE_RGB && canvasSize >= 800*800) ||
@@ -144,8 +144,8 @@ bool shrink_bounds_templ(const Image* image, gfx::Rect& bounds, color_t refpixel
 
     // TODO use a base::thread_pool and a base::task for each border
 
-    std::thread left  ([&]{ shrink_bounds_left_templ  <ImageTraits>(image, leftBounds, refpixel, rowSize); });
-    std::thread right ([&]{ shrink_bounds_right_templ <ImageTraits>(image, rightBounds, refpixel, rowSize); });
+    std::thread left  ([&]{ shrink_bounds_left_templ  <ImageTraits>(image, leftBounds, refpixel, rowPixels); });
+    std::thread right ([&]{ shrink_bounds_right_templ <ImageTraits>(image, rightBounds, refpixel, rowPixels); });
     std::thread top   ([&]{ shrink_bounds_top_templ   <ImageTraits>(image, topBounds, refpixel); });
     std::thread bottom([&]{ shrink_bounds_bottom_templ<ImageTraits>(image, bottomBounds, refpixel); });
     left.join();
@@ -160,8 +160,8 @@ bool shrink_bounds_templ(const Image* image, gfx::Rect& bounds, color_t refpixel
   }
   else {
     return
-      shrink_bounds_left_templ<ImageTraits>(image, bounds, refpixel, rowSize) &&
-      shrink_bounds_right_templ<ImageTraits>(image, bounds, refpixel, rowSize) &&
+      shrink_bounds_left_templ<ImageTraits>(image, bounds, refpixel, rowPixels) &&
+      shrink_bounds_right_templ<ImageTraits>(image, bounds, refpixel, rowPixels) &&
       shrink_bounds_top_templ<ImageTraits>(image, bounds, refpixel) &&
       shrink_bounds_bottom_templ<ImageTraits>(image, bounds, refpixel);
   }
