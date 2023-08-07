@@ -607,7 +607,14 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
             site.layer()->isTilemap() &&
             site.image()) {
           if (site.image()->bounds().contains(pt)) {
-            buf += fmt::format(" [{}]", site.image()->getPixel(pt.x, pt.y));
+            doc::tile_t t = site.image()->getPixel(pt.x, pt.y);
+            doc::tile_index ti = doc::tile_geti(t);
+            doc::tile_flags tf = doc::tile_getf(t);
+            std::string str;
+            if (tf & doc::tile_f_xflip) str += "x";
+            if (tf & doc::tile_f_yflip) str += "y";
+            if (tf & doc::tile_f_dflip) str += "d";
+            buf += fmt::format(" [{}{}]", ti, str);
           }
         }
       }
