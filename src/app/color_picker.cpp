@@ -21,9 +21,12 @@
 #include "doc/primitives.h"
 #include "doc/render_plan.h"
 #include "doc/sprite.h"
+#include "doc/tile.h"
 #include "doc/tileset.h"
 #include "gfx/point.h"
 #include "render/get_sprite_pixel.h"
+
+#include <algorithm>
 
 #define PICKER_TRACE(...) // TRACE
 
@@ -65,19 +68,20 @@ bool get_cel_pixel(const Cel* cel,
 
     const doc::tile_index t =
       get_pixel(image, tilePos.x, tilePos.y);
-
-    // TODO take care of flip flags
-
     const doc::tile_index ti = doc::tile_geti(t);
+    const doc::tile_index tf = doc::tile_getf(t);
 
-    PICKER_TRACE("PICKER: tile=%d index=%d\n", t, ti);
+    PICKER_TRACE("PICKER: tile=%d index=%d flags=%d\n", t, ti, tf);
 
     doc::ImageRef tile = layerTilemap->tileset()->get(ti);
     if (!tile)
       return false;
 
-    const gfx::Point ipos =
+    gfx::Point ipos =
       gfx::Point(pos) - grid.tileToCanvas(tilePos);
+    if (tf & doc::tile_f_xflip) { ipos.x = tile->width()-ipos.x-1; }
+    if (tf & doc::tile_f_yflip) { ipos.y = tile->height()-ipos.y-1; }
+    if (tf & doc::tile_f_dflip) { std::swap(ipos.x, ipos.y); }
 
     PICKER_TRACE("PICKER: ipos=%d %d\n", ipos.x, ipos.y);
 
