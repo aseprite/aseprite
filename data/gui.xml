@@ -1262,7 +1262,7 @@
         <param name="type" value="shading" />
       </item>
       <separator />
-      <item command="SetSameInk" text="@.same_in_all_tools" group="ink_options" />
+      <item command="SetSameInk" text="@general.same_in_all_tools" group="ink_options" />
     </menu>
 
   </menus>

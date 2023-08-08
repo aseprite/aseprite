@@ -37,8 +37,10 @@ namespace app {
 
     tools::DynamicsOptions getDynamics() const;
     void setOptionsGridVisibility(bool state);
-    void loadDynamicPref(ToolPreferences* toolPref);
+    void loadDynamicsPref();
     int ditheringIndex() const;
+    void refreshVisibility();
+    bool sharedSettings() const;
 
   private:
     class ThresholdSlider;

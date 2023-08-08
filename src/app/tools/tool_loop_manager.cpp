@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -169,7 +169,7 @@ bool ToolLoopManager::releaseButton(const Pointer& pointer)
 void ToolLoopManager::movement(Pointer pointer)
 {
   // Filter points with the stabilizer
-  if (m_dynamics.stabilizerFactor > 0) {
+  if (m_dynamics.stabilizer && m_dynamics.stabilizerFactor > 0) {
     const double f = m_dynamics.stabilizerFactor;
     const gfx::Point delta = (pointer.point() - m_stabilizerCenter);
     const double distance = std::sqrt(delta.x*delta.x + delta.y*delta.y);
