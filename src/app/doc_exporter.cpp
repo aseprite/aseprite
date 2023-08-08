@@ -1302,7 +1302,11 @@ void DocExporter::trimTexture(const Samples& samples,
         sample.isEmpty())
       continue;
 
-    bounds |= sample.inTextureBounds();
+    // We add the border padding in the sample size to do an union
+    // between full bounds and sample's inTextureBounds (it
+    // shouldn't make full bounds bigger).
+    bounds |= gfx::Rect(
+      sample.inTextureBounds()).inflate(m_borderPadding);
   }
 
   if (m_textureWidth == 0) {
