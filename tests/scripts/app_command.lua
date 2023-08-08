@@ -1,4 +1,4 @@
--- Copyright (C) 2019-2020  Igara Studio S.A.
+-- Copyright (C) 2019-2023  Igara Studio S.A.
 -- Copyright (C) 2018  David Capello
 --
 -- This file is released under the terms of the MIT license.
@@ -53,6 +53,51 @@ do -- ExportSpriteSheet
     11,8,11,21,8,11,11,
     11,8,11,21,11,8,11,
     11,8,11,21,11,11,8,
+  })
+
+  local s = Sprite{ fromFile="sprites/4f-index-4x4.aseprite" }
+  app.command.ExportSpriteSheet {
+    type=SpriteSheetType.PACKED,
+    textureFilename="_test_export_spritesheet2.png",
+    borderPadding=1,
+    shapePadding=1,
+    trim=true,
+  }
+  local i = Image{ fromFile="_test_export_spritesheet2.png" }
+  expect_img(i,  {
+    0,0,0,0,0,0,0,
+    0,1,0,2,0,3,0,
+    0,1,0,2,0,3,0,
+    0,1,0,0,0,0,0,
+    0,0,0,4,4,0,0,
+    0,0,0,0,0,0,0,
+  })
+
+  app.sprite = s
+  app.command.ExportSpriteSheet {
+    type=SpriteSheetType.PACKED,
+    textureFilename="_test_export_spritesheet3.png",
+    borderPadding=2,
+    shapePadding=1,
+    innerPadding=1,
+    trim=true,
+  }
+  local i = Image{ fromFile="_test_export_spritesheet3.png" }
+  expect_img(i,  {
+    0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,
+    0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,
+    0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,
+    0,0,0,1, 0,0,0,2, 0,0,0,3, 0,0,0,
+
+    0,0,0,1, 0,0,0,2, 0,0,0,3, 0,0,0,
+    0,0,0,1, 0,0,0,0, 0,0,0,0, 0,0,0,
+    0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,
+    0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,
+
+    0,0,0,0, 0,0,0,4, 4,0,0,0, 0,0,0,
+    0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,
+    0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,
+    0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,
   })
 end
 
