@@ -1,5 +1,5 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2020-2022  Igara Studio S.A. -->
+<!-- Copyright (C) 2020-2023  Igara Studio S.A. -->
 <gui>
   <vbox id="dynamics">
     <hbox>
@@ -57,6 +57,8 @@
       <label id="velocity_label" text="@.velocity" style="mini_label" />
       <hbox id="velocity_placeholder" cell_align="horizontal" />
     </grid>
+    <separator horizontal="true" cell_hspan="2" />
+    <check id="same_in_all_tools" text="@general.same_in_all_tools" />
 
   </vbox>
 </gui>
