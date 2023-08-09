@@ -14,6 +14,7 @@
 #include "app/script/docobj.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
+#include "app/tools/dynamics.h"
 #include "doc/frame.h"
 #include "doc/layer.h"
 #include "doc/remap.h"
@@ -333,6 +334,8 @@ FOR_ENUM(app::gen::SymmetryMode)
 FOR_ENUM(app::gen::TimelinePosition)
 FOR_ENUM(app::gen::ToGrayAlgorithm)
 FOR_ENUM(app::gen::WindowColorProfile)
+FOR_ENUM(app::tools::ColorFromTo)
+FOR_ENUM(app::tools::DynamicSensor)
 FOR_ENUM(app::tools::FreehandAlgorithm)
 FOR_ENUM(app::tools::RotationAlgorithm)
 FOR_ENUM(doc::AniDir)

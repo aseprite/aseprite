@@ -1151,6 +1151,38 @@ public:
     : ButtonSet(1)
     , m_ctxBar(ctxBar) {
     addItem(SkinTheme::get(this)->parts.dynamics(), "dynamics_field");
+
+    // TODO: it would be better to initialize 'm_popup' at the time you
+    // need to display the dynamic options in the 'switchPopup()'
+    // function.
+    // However, initialization during construction of the DynamicField
+    // is an easy way to get the current dithering matrix given the
+    // index of the selected item of the "dithering matrix" comboBox.
+    m_popup.reset(new DynamicsPopup(this));
+    m_popup->loadDynamicPref(
+      &Preferences::instance().tool(App::instance()->activeTool()));
+    m_popup->setOptionsGridVisibility(m_optionsGridVisibility);
+    m_dynamics = m_popup->getDynamics();
+    m_popup->Close.connect(
+      [this](CloseEvent&){
+        deselectItems();
+        m_dynamics = m_popup->getDynamics();
+        auto& dynaPref = Preferences::instance().tool(
+          App::instance()->activeTool()).dynamics;
+        dynaPref.stabilizer(m_dynamics.stabilizer);
+        dynaPref.stabilizerFactor(m_dynamics.stabilizerFactor);
+        dynaPref.size(m_dynamics.size);
+        dynaPref.angle(m_dynamics.angle);
+        dynaPref.gradient(m_dynamics.gradient);
+        dynaPref.minSize.setValue(m_dynamics.minSize);
+        dynaPref.minAngle.setValue(m_dynamics.minAngle);
+        dynaPref.minPressureThreshold(m_dynamics.minPressureThreshold);
+        dynaPref.minVelocityThreshold(m_dynamics.minVelocityThreshold);
+        dynaPref.maxPressureThreshold(m_dynamics.maxPressureThreshold);
+        dynaPref.maxVelocityThreshold(m_dynamics.maxVelocityThreshold);
+        dynaPref.colorFromTo(m_dynamics.colorFromTo);
+        dynaPref.matrixIndex(m_popup->ditheringIndex());
+      });
   }
 
   void switchPopup() {
@@ -1158,16 +1190,6 @@ public:
         m_popup->isVisible()) {
       m_popup->closeWindow(nullptr);
       return;
-    }
-
-    if (!m_popup) {
-      m_popup.reset(new DynamicsPopup(this));
-      m_popup->setOptionsGridVisibility(m_optionsGridVisibility);
-      m_popup->Close.connect(
-        [this](CloseEvent&){
-          deselectItems();
-          m_dynamics = m_popup->getDynamics();
-        });
     }
 
     const gfx::Rect bounds = this->bounds();
