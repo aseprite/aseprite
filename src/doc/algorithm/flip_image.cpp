@@ -56,6 +56,19 @@ void flip_image_with_put_pixel_fast_templ(Image* image, const gfx::Rect& bounds,
       }
       break;
     }
+
+    case FlipDiagonal: {
+      int d = std::min(bounds.w, bounds.h);
+      for (int y=bounds.y; y<bounds.y+d; ++y) {
+        for (int x=bounds.x+y; x<bounds.x+d; ++x) {
+          uint32_t c1 = get_pixel_fast<ImageTraits>(image, x, y);
+          uint32_t c2 = get_pixel_fast<ImageTraits>(image, y, x);
+          put_pixel_fast<ImageTraits>(image, x, y, c2);
+          put_pixel_fast<ImageTraits>(image, y, x, c1);
+        }
+      }
+      break;
+    }
   }
 }
 
@@ -91,6 +104,10 @@ void flip_image_with_rawptr_templ(Image* image, const gfx::Rect& bounds, FlipTyp
       }
       break;
     }
+
+    case FlipDiagonal:
+      flip_image_with_put_pixel_fast_templ<ImageTraits>(image, bounds, flipType);
+      break;
   }
 }
 
@@ -167,6 +184,10 @@ void flip_image_with_mask_templ(Image* image, const Mask* mask, FlipType flipTyp
       break;
     }
 
+    // TODO
+    case FlipDiagonal:
+      ASSERT(false);
+      break;
   }
 }
 

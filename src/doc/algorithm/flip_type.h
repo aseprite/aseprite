@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2023 Igara Studio S.A.
 // Copyright (c) 2001-2014 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -14,6 +15,7 @@ namespace doc {
     enum FlipType {
       FlipHorizontal,
       FlipVertical,
+      FlipDiagonal,
     };
 
   }
