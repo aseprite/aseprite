@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2021  Igara Studio S.A.
+// Copyright (C) 2020-2023  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -25,6 +25,7 @@ namespace tools {
   };
 
   struct DynamicsOptions {
+    bool stabilizer = false;
     int stabilizerFactor = 0;
     DynamicSensor size = DynamicSensor::Static;
     DynamicSensor angle = DynamicSensor::Static;

@@ -459,6 +459,21 @@
       <option id="refer_to" type="FillReferTo" default="FillReferTo::ACTIVE_LAYER" />
       <option id="pixel_connectivity" type="PixelConnectivity" default="PixelConnectivity::FOUR_CONNECTED" />
     </section>
+    <section id="dynamics">
+      <option id="stabilizer" type="bool" default="false" />
+      <option id="stabilizer_factor" type="int" default="0" />
+      <option id="size" type="app::tools::DynamicSensor" default="app::tools::DynamicSensor::Static" />
+      <option id="angle" type="app::tools::DynamicSensor" default="app::tools::DynamicSensor::Static" />
+      <option id="gradient" type="app::tools::DynamicSensor" default="app::tools::DynamicSensor::Static" />
+      <option id="min_size" type="int" default="1" />
+      <option id="min_angle" type="int" default="1" />
+      <option id="color_from_to" type="app::tools::ColorFromTo" default="app::tools::ColorFromTo::BgToFg" />
+      <option id="matrix_index" type="int" default="0" />
+      <option id="min_pressure_threshold" type="double" default="0.1" />
+      <option id="max_pressure_threshold" type="double" default="0.9" />
+      <option id="min_velocity_threshold" type="double" default="0.1" />
+      <option id="max_velocity_threshold" type="double" default="0.9" />
+    </section>
   </tool>
 
   <document>
