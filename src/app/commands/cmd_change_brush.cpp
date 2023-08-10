@@ -15,6 +15,7 @@
 #include "app/context.h"
 #include "app/i18n/strings.h"
 #include "app/pref/preferences.h"
+#include "app/tilemap_mode.h"
 #include "app/tools/active_tool.h"
 #include "app/tools/ink.h"
 #include "app/tools/tool.h"
@@ -95,6 +96,7 @@ void ChangeBrushCommand::onExecute(Context* context)
   auto app = App::instance();
   auto atm = app->activeToolManager();
   auto& pref = Preferences::instance();
+  auto colorBar = ColorBar::instance();
   auto contextBar = (app->mainWindow() ? app->mainWindow()->getContextBar():
                                          nullptr);
   const BrushRef brush = (contextBar ? contextBar->activeBrush():
@@ -185,7 +187,14 @@ void ChangeBrushCommand::onExecute(Context* context)
 
     case FlipX:
     case FlipY:
-      if (isImageBrush) {
+      if (colorBar && colorBar->tilemapMode() == TilemapMode::Tiles) {
+        doc::tile_t t = pref.colorBar.fgTile();
+        switch (m_change) {
+          case FlipX: pref.colorBar.fgTile(t ^ tile_f_xflip); break;
+          case FlipY: pref.colorBar.fgTile(t ^ tile_f_yflip); break;
+        }
+      }
+      else if (isImageBrush) {
         ImageRef newImg(Image::createCopy(brush->image()));
         ImageRef newMsk(Image::createCopy(brush->maskBitmap()));
         const gfx::Rect bounds = newImg->bounds();
@@ -221,7 +230,25 @@ void ChangeBrushCommand::onExecute(Context* context)
 
     case FlipD:
     case Rotate90CW:
-      if (isImageBrush) {
+      if (colorBar && colorBar->tilemapMode() == TilemapMode::Tiles) {
+        doc::tile_t t = pref.colorBar.fgTile();
+        switch (m_change) {
+          case FlipD:
+            pref.colorBar.fgTile(t ^ tile_f_dflip);
+            break;
+          case Rotate90CW: {
+            doc::tile_flags ti = doc::tile_geti(t);
+            doc::tile_flags tf = doc::tile_getf(t);
+            tf =
+              (tf & doc::tile_f_xflip ? doc::tile_f_yflip: 0) |
+              (tf & doc::tile_f_yflip ? 0: doc::tile_f_xflip) |
+              (tf & doc::tile_f_dflip ? 0: doc::tile_f_dflip);
+            pref.colorBar.fgTile(doc::tile(ti, tf));
+            break;
+          }
+        }
+      }
+      else if (isImageBrush) {
         const gfx::Rect origBounds = brush->bounds();
         const int m = std::max(origBounds.w, origBounds.h);
         const gfx::Rect maxBounds(0, 0, m, m);
