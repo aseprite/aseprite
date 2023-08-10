@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2016  David Capello
 //
 // This program is distributed under the terms of
@@ -142,6 +142,12 @@ void ActiveToolManager::newQuickToolSelectedFromEditor(Tool* tool)
 {
   ActiveToolChangeTrigger trigger(this);
   m_quickTool = tool;
+}
+
+void ActiveToolManager::brushChanged()
+{
+  ActiveToolChangeTrigger trigger(this);
+  m_quickTool = nullptr;
 }
 
 void ActiveToolManager::regularTipProximity()

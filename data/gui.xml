@@ -224,6 +224,18 @@
       <key command="ChangeBrush" shortcut="Minus Pad">
         <param name="change" value="decrement-size" />
       </key>
+      <key command="ChangeBrush" shortcut="Space+H">
+        <param name="change" value="flip-x" />
+      </key>
+      <key command="ChangeBrush" shortcut="Space+V">
+        <param name="change" value="flip-y" />
+      </key>
+      <key command="ChangeBrush" shortcut="Space+D">
+        <param name="change" value="flip-d" />
+      </key>
+      <key command="ChangeBrush" shortcut="Space+R">
+        <param name="change" value="rotate-90cw" />
+      </key>
 
       <!-- Custom brushes -->
       <key command="ChangeBrush" shortcut="Alt+1">

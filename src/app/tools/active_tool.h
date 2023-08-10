@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2023  Igara Studio S.A.
 // Copyright (C) 2016  David Capello
 //
 // This program is distributed under the terms of
@@ -42,6 +42,7 @@ public:
   // modify the active tool.
   void newToolSelectedInToolBar(Tool* tool);
   void newQuickToolSelectedFromEditor(Tool* tool);
+  void brushChanged();
   void regularTipProximity();
   void eraserTipProximity();
   void pressButton(const Pointer& pointer);
