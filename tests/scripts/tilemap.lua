@@ -228,7 +228,7 @@ do
 
   app.useTool{
     tool='pencil',
-    color=Color{ index=1 },
+    color=Color{ index=1 }, -- We can use a Color{ index } to paint tiles too
     tilemapMode=TilemapMode.TILES,
     tilesetMode=TilesetMode.STACK,
     points={ Point(0, 16) }} -- y=16 is the first pixel of 3rd row of tiles
@@ -240,7 +240,7 @@ do
 
   app.useTool{
     tool='pencil',
-    color=Color{ index=1 },
+    color=Color{ tile=1 }, -- Color{ tile } is the new constructor to paint tiles + flags
     tilemapMode=TilemapMode.TILES,
     tilesetMode=TilesetMode.STACK,
     points={ Point(0, 0), Point(16, 0) }} -- x=16 is the first pixel of 3rd column of tiles
@@ -255,7 +255,7 @@ do
   expect_eq(Point{ 10, 8 }, cel.position)
   app.useTool{
     tool='pencil',
-    color=Color{ index=0 },
+    color=Color{ tile=0 },
     tilemapMode=TilemapMode.TILES,
     tilesetMode=TilesetMode.STACK,
     points={ { 10, 8 }, { 18, 16 } }} -- {10,8} is the first existent tile in the tilemap
@@ -268,7 +268,7 @@ do
 
   app.useTool{
     tool='pencil',
-    color=Color{ index=1 },
+    color=Color{ tile=1 },
     tilemapMode=TilemapMode.TILES,
     tilesetMode=TilesetMode.STACK,
     points={ Point(1, 7), Point(2, 8) }} -- Tile 0,0 and 1,1

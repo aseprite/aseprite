@@ -893,6 +893,9 @@ doc::tile_t Color::getTile() const
 {
   switch (getType()) {
 
+    case Color::IndexType:
+      return m_value.index;
+
     case Color::TileType:
       return m_value.tile;
 
@@ -928,6 +931,9 @@ int Color::getAlpha() const
       else
         return 0;
     }
+
+    case Color::TileType:
+      return 255;
 
   }
 
