@@ -186,6 +186,8 @@ struct Dialog {
     }
   }
 
+  // TODO merge this code with add_scrollbars_if_needed() from
+  //      ui/menu.cpp (creating a new function in the ui library)
   void addScrollbarsIfNeeded(const gfx::Rect& workarea,
                              gfx::Rect& bounds)
   {
