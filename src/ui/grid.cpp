@@ -129,6 +129,21 @@ void Grid::setStyle(Style* style)
   setGap(style->gap());
 }
 
+void Grid::setColumns(int columns)
+{
+  if (columns == m_colstrip.size())
+    return;
+
+  int oldSize = m_colstrip.size();
+  m_colstrip.resize(columns);
+  for (int row=0; row<m_rowstrip.size(); ++row) {
+    m_cells[row].resize(m_colstrip.size());
+    for (int col=oldSize; col<(int)m_cells[row].size(); ++col) {
+      m_cells[row][col] = new Cell;
+    }
+  }
+}
+
 void Grid::setGap(const gfx::Size& gap)
 {
   m_colgap = gap.w;

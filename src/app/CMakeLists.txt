@@ -207,6 +207,7 @@ if(ENABLE_SCRIPTING)
     script/slices_class.cpp
     script/sprite_class.cpp
     script/sprites_class.cpp
+    script/tabs_widget.cpp
     script/tag_class.cpp
     script/tags_class.cpp
     script/tile_class.cpp

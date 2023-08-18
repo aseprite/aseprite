@@ -474,6 +474,9 @@ Engine::Engine()
   setfield_integer(L, "LEFT",   ui::LEFT);
   setfield_integer(L, "CENTER", ui::CENTER);
   setfield_integer(L, "RIGHT",  ui::RIGHT);
+  setfield_integer(L, "TOP",    ui::TOP);
+  setfield_integer(L, "BOTTOM", ui::BOTTOM);
+
   lua_pop(L, 1);
 
   // Register classes/prototypes

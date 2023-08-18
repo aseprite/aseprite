@@ -18,6 +18,7 @@
 #include "app/script/graphics_context.h"
 #include "app/script/keys.h"
 #include "app/script/luacpp.h"
+#include "app/script/tabs_widget.h"
 #include "app/ui/button_set.h"
 #include "app/ui/color_button.h"
 #include "app/ui/color_shades.h"
@@ -76,11 +77,10 @@ struct Dialog {
   std::map<std::string, ui::Widget*> labelWidgets;
   int currentRadioGroup = 0;
 
-  // Members used to hold current state about the creation of a group
-  // of tabs. After creation, these members are reset to their initial
-  // empty state to be ready for the next group of tabs.
-  std::vector<ui::Grid*> tabs;
-  HBox* tabsSelector = nullptr;
+  // Member used to hold current state about the creation of a tabs
+  // widget. After creation it is reset to null to be ready for the
+  // creation of the next tabs widget.
+  app::script::Tabs* wipTab = nullptr;
 
   // Used to create a new row when a different kind of widget is added
   // in the dialog.
@@ -581,15 +581,23 @@ int Dialog_add_widget(lua_State* L, Widget* widget)
       if (!id.empty())
         dlg->labelWidgets[id] = labelWidget;
     }
-    else
-      dlg->currentGrid->addChildInCell(new ui::HBox, 1, 1, ui::LEFT | ui::TOP);
+    else {
+      // For tabs we don't want the empty space of an unspecified label.
+      if (widget->type() != Tabs::Type()) {
+        dlg->currentGrid->addChildInCell(new ui::HBox, 1, 1, ui::LEFT | ui::TOP);
+      }
+    }
+
 
     auto hbox = new ui::HBox;
     if (widget->type() == ui::kButtonWidget)
       hbox->enableFlags(ui::HOMOGENEOUS);
 
+    // For tabs we don't want the empty space of an unspecified label, so
+    // span 2 columns.
+    const int hspan = (widget->type() == Tabs::Type() ? 2: 1);
     dlg->currentGrid->addChildInCell(
-      hbox, 1, 1,
+      hbox, hspan, 1,
       ui::HORIZONTAL | (vexpand ? ui::VERTICAL: ui::TOP));
 
     dlg->hbox = hbox;
@@ -1286,27 +1294,35 @@ int Dialog_tab(lua_State* L)
   auto dlg = get_obj<Dialog>(L, 1);
 
   std::string text;
+  std::string id;
   if (lua_istable(L, 2)) {
-    int type = lua_getfield(L, 2, "text");
+    int type = lua_getfield(L, 2, "id");
+    if (type != LUA_TNIL)
+      id = lua_tostring(L, -1);
+    lua_pop(L, 1);
+
+    type = lua_getfield(L, 2, "text");
     if (type != LUA_TNIL) {
       text = lua_tostring(L, -1);
     }
     lua_pop(L, 1);
+
+    // If there was no id set, then use the tab text as the tab id.
+    if (id.empty()) id = text;
+  }
+
+  if (!dlg->wipTab) {
+    dlg->wipTab = new app::script::Tabs(ui::CENTER);
   }
 
   auto tabContent = new ui::Grid(2, false);
+  tabContent->setExpansive(true);
   tabContent->setVisible(false);
   tabContent->setText(text);
-  dlg->tabs.push_back(tabContent);
+  tabContent->setId(id.c_str());
+  dlg->wipTab->addTab(tabContent);
   dlg->currentGrid = tabContent;
 
-  // If this is the first tab create the tabs selector container.
-  if (dlg->tabs.size() == 1) {
-    dlg->tabsSelector = new HBox();
-    dlg->grid.addChildInCell(dlg->tabsSelector, 2, 1, ui::HORIZONTAL);
-  }
-
-  dlg->grid.addChildInCell(tabContent, 2, 1, ui::HORIZONTAL | ui::VERTICAL);
   lua_pushvalue(L, 1);
   return 1;
 }
@@ -1316,7 +1332,7 @@ int Dialog_endtabs(lua_State* L)
   auto dlg = get_obj<Dialog>(L, 1);
 
   // There is no starting :tab(), do nothing then.
-  if (dlg->tabs.empty()) {
+  if (!dlg->wipTab) {
     lua_pushvalue(L, 1);
     return 1;
   }
@@ -1327,70 +1343,35 @@ int Dialog_endtabs(lua_State* L)
     int type = lua_getfield(L, 2, "selected");
     switch (type) {
       case LUA_TSTRING: {
-        // Find the tab index with the specified text.
-        std::string selTabText = lua_tostring(L, -1);
-        for (int i=0; i<dlg->tabs.size(); ++i) {
-          if (dlg->tabs[i]->text() == selTabText) {
-            selectedTab = i;
-            break;
-          }
-        }
+        // Find the tab index by id first, if not found try by text then.
+        std::string selTabStr = lua_tostring(L, -1);
+        selectedTab = dlg->wipTab->tabIndexById(selTabStr);
+        if (selectedTab < 0)
+          selectedTab = dlg->wipTab->tabIndexByText(selTabStr);
         break;
       }
       case LUA_TNUMBER:
-        selectedTab = std::clamp<int>(lua_tointeger(L, -1), 1, dlg->tabs.size()) - 1;
+        selectedTab = std::clamp<int>(lua_tointeger(L, -1), 1, dlg->wipTab->size()) - 1;
         break;
     }
     lua_pop(L, 1);
 
     type = lua_getfield(L, 2, "align");
-    if(type != LUA_TNIL) {
-      int v = lua_tointeger(L, -1) & (ui::CENTER | ui::LEFT | ui::RIGHT);
-      // Set align only if it has a valid value.
+    if (type != LUA_TNIL) {
+      // Filter invalid flags.
+      int v = lua_tointeger(L, -1) & (ui::CENTER | ui::LEFT | ui::RIGHT | ui::TOP | ui::BOTTOM);
       if (v) align = v;
     }
     lua_pop(L, 1);
   }
+  dlg->wipTab->setSelectorFlags(align);
+  dlg->wipTab->selectTab(selectedTab);
 
-  // Create the tabs selector's buttonset
-  auto widget = new app::ButtonSet(dlg->tabs.size());
-  for (int i=0; i<dlg->tabs.size(); ++i) {
-    auto item = widget->addItem(dlg->tabs[i]->text());
-    item->setSelected(i == selectedTab);
-    dlg->tabs[i]->setVisible(i == selectedTab);
-  }
-  auto tabs = dlg->tabs;
-  widget->ItemChange.connect([dlg, tabs](ButtonSet::Item* selItem) {
-    for (auto tab : tabs) {
-      tab->setVisible(selItem->text() ==  tab->text());
-    }
-    dlg->window.remapWindow();
-  });
-  widget->initTheme();
-  ui::Separator* sep;
-  if (align & ui::CENTER || align & ui::RIGHT) {
-    sep = new ui::Separator("", ui::HORIZONTAL);
-    sep->setExpansive(true);
-    dlg->tabsSelector->addChild(sep);
-  }
-  dlg->tabsSelector->addChild(widget);
-  if (align & ui::CENTER || align & ui::LEFT) {
-    sep = new ui::Separator("", ui::HORIZONTAL);
-    sep->setExpansive(true);
-    dlg->tabsSelector->addChild(sep);
-  }
-  // Add tab's bottom separator
-  sep = new ui::Separator("", ui::HORIZONTAL);
-  sep->setExpansive(true);
-  dlg->grid.addChildInCell(sep, 2, 1, ui::HORIZONTAL);
-
-  // Clear state to be ready for the next tabs creation
-  dlg->tabsSelector = nullptr;
-  dlg->tabs.clear();
+  auto newTab = dlg->wipTab;
   dlg->currentGrid = &dlg->grid;
+  dlg->wipTab = nullptr;
 
-  lua_pushvalue(L, 1);
-  return 1;
+  return Dialog_add_widget(L, newTab);
 }
 
 int Dialog_modify(lua_State* L)
@@ -1695,6 +1676,10 @@ int Dialog_get_data(lua_State* L)
         else if (auto filenameField = dynamic_cast<const FilenameField*>(widget)) {
           lua_pushstring(L, filenameField->filename().c_str());
         }
+        else if (auto tabs = dynamic_cast<const app::script::Tabs*>(widget)) {
+          std::string tabStr = tabs->tabId(tabs->selectedTab());
+          lua_pushstring(L, tabStr.c_str());
+        }
         else {
           lua_pushnil(L);
         }
@@ -1784,6 +1769,16 @@ int Dialog_set_data(lua_State* L)
         else if (auto filenameField = dynamic_cast<FilenameField*>(widget)) {
           if (auto p = lua_tostring(L, -1))
             filenameField->setFilename(p);
+        }
+        else if (auto tabs = dynamic_cast<app::script::Tabs*>(widget)) {
+          int type = lua_type(L, -1);
+          if (type == LUA_TNUMBER)
+            tabs->selectTab(lua_tointeger(L, -1)-1);
+          else if (type == LUA_TSTRING) {
+            std::string tabStr = lua_tostring(L, -1);
+            int tabIndex = tabs->tabIndexById(tabStr);
+            tabs->selectTab(tabIndex);
+          }
         }
         break;
     }
