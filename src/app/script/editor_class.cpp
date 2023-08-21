@@ -92,6 +92,8 @@ public:
   void askPoint(lua_State* L,
                 const std::string& title,
                 const gfx::Point* initialPoint,
+                const bool rulers,
+                const bool dimmed,
                 RegistryRef&& onclick,
                 RegistryRef&& onchange,
                 RegistryRef&& oncancel) {
@@ -109,8 +111,8 @@ public:
 
     auto state = std::make_shared<SelectBoxState>(
       this, m_editor->sprite()->bounds(),
-      SelectBoxState::Flags(int(SelectBoxState::Flags::Rulers) |
-                            int(SelectBoxState::Flags::DarkOutside) |
+      SelectBoxState::Flags((rulers ? int(SelectBoxState::Flags::Rulers): 0) |
+                            (dimmed ? int(SelectBoxState::Flags::DarkOutside): 0) |
                             int(SelectBoxState::Flags::QuickBox) |
                             int(SelectBoxState::Flags::QuickPoint)));
 
@@ -228,6 +230,22 @@ int Editor_askPoint(lua_State* L)
     initialPoint = std::make_unique<gfx::Point>(convert_args_into_point(L, -1));
   lua_pop(L, 1);
 
+  bool rulers = false;
+  bool dimmed = false;
+  type = lua_getfield(L, 2, "decorate");
+  if (type == LUA_TTABLE) {
+    int type = lua_getfield(L, -1, "rulers");
+    if (type == LUA_TBOOLEAN)
+      rulers = lua_toboolean(L, -1);
+    lua_pop(L, 1);
+
+    type = lua_getfield(L, -1, "dimmed");
+    if (type == LUA_TBOOLEAN)
+      dimmed = lua_toboolean(L, -1);
+    lua_pop(L, 1);
+  }
+  lua_pop(L, 1);
+
   RegistryRef onclick;
   type = lua_getfield(L, 2, "onclick");
   if (type == LUA_TFUNCTION)
@@ -250,6 +268,7 @@ int Editor_askPoint(lua_State* L)
     lua_pop(L, 1);
 
   obj->askPoint(L, title, initialPoint.get(),
+                rulers, dimmed,
                 std::move(onclick),
                 std::move(onchange),
                 std::move(oncancel));
