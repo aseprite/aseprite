@@ -1197,11 +1197,20 @@ int Dialog_canvas(lua_State* L)
     }
     lua_pop(L, 1);
 
-    type = lua_getfield(L, 2, "autoScaling");
+    type = lua_getfield(L, 2, "autoscaling");
     if (type != LUA_TNIL) {
       widget->setAutoScaling(lua_toboolean(L, -1));
     }
     lua_pop(L, 1);
+
+    // Backward compatibility with "autoScaling" parameter.
+    if (type == LUA_TNIL) {
+      type = lua_getfield(L, 2, "autoScaling");
+      if (type != LUA_TNIL) {
+        widget->setAutoScaling(lua_toboolean(L, -1));
+      }
+      lua_pop(L, 1);
+    }
 
     if (widget->isAutoScaling())
       sz *= ui::guiscale();
