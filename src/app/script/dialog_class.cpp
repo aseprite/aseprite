@@ -1329,8 +1329,19 @@ int Dialog_tab(lua_State* L)
   tabContent->setVisible(false);
   tabContent->setText(text);
   tabContent->setId(id.c_str());
-  dlg->wipTab->addTab(tabContent);
+  auto tabBtn = dlg->wipTab->addTab(tabContent);
   dlg->currentGrid = tabContent;
+
+  if (lua_istable(L, 2)) {
+    int type = lua_getfield(L, 2, "onclick");
+    if (type == LUA_TFUNCTION) {
+      Dialog_connect_signal(L, 1, tabBtn->Click,
+        [id](lua_State* L){
+          lua_pushstring(L, id.c_str());
+          lua_setfield(L, -2, "tab");
+        });
+    }
+  }
 
   lua_pushvalue(L, 1);
   return 1;
@@ -1372,6 +1383,16 @@ int Dialog_endtabs(lua_State* L)
       if (v) align = v;
     }
     lua_pop(L, 1);
+
+    type = lua_getfield(L, 2, "onchange");
+    if (type == LUA_TFUNCTION) {
+      auto tab = dlg->wipTab;
+      Dialog_connect_signal(L, 1, dlg->wipTab->TabChanged,
+        [tab](lua_State* L){
+          lua_pushstring(L, tab->tabId(tab->selectedTab()).c_str());
+          lua_setfield(L, -2, "tab");
+        });
+    }
   }
   dlg->wipTab->setSelectorFlags(align);
   dlg->wipTab->selectTab(selectedTab);
