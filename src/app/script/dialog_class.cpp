@@ -1295,10 +1295,13 @@ int Dialog_tab(lua_State* L)
 
   std::string text;
   std::string id;
+  bool hasId = false;
   if (lua_istable(L, 2)) {
     int type = lua_getfield(L, 2, "id");
-    if (type != LUA_TNIL)
+    if (type != LUA_TNIL) {
       id = lua_tostring(L, -1);
+      hasId = !id.empty();
+    }
     lua_pop(L, 1);
 
     type = lua_getfield(L, 2, "text");
@@ -1308,7 +1311,7 @@ int Dialog_tab(lua_State* L)
     lua_pop(L, 1);
 
     // If there was no id set, then use the tab text as the tab id.
-    if (id.empty()) id = text;
+    if (!hasId) id = text;
   }
 
   if (!dlg->wipTab) {
@@ -1322,6 +1325,8 @@ int Dialog_tab(lua_State* L)
   tabContent->setId(id.c_str());
   auto tabBtn = dlg->wipTab->addTab(tabContent);
   dlg->currentGrid = tabContent;
+
+  if (hasId) dlg->dataWidgets[id] = tabBtn;
 
   if (lua_istable(L, 2)) {
     int type = lua_getfield(L, 2, "onclick");
