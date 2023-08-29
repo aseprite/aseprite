@@ -29,6 +29,7 @@
 #include "app/pref/preferences.h"
 #include "base/chrono.h"
 #include "base/remove_from_container.h"
+#include "base/thread.h"
 #include "ui/system.h"
 
 namespace app {
@@ -123,6 +124,7 @@ void BackupObserver::onRemoveDocument(Doc* doc)
 void BackupObserver::backgroundThread()
 {
   std::unique_lock<std::mutex> lock(m_mutex);
+  base::this_thread::set_name("backup");
 
   int normalPeriod = int(60.0*m_config->dataRecoveryPeriod);
   int lockedPeriod = 5;

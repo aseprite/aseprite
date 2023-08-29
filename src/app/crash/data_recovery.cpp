@@ -17,6 +17,7 @@
 #include "app/pref/preferences.h"
 #include "app/resource_finder.h"
 #include "base/fs.h"
+#include "base/thread.h"
 #include "base/time.h"
 #include "ui/system.h"
 
@@ -109,6 +110,7 @@ void DataRecovery::launchSearch()
 
   m_thread = std::thread(
     [this]{
+      base::this_thread::set_name("search-sessions");
       searchForSessions();
       m_searching = false;
     });

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -175,6 +175,8 @@ private:
 
   void paintingProc() {
     COLSEL_TRACE("COLSEL: paintingProc starts\n");
+
+    base::this_thread::set_name("colsel-painter");
 
     std::unique_lock<std::mutex> lock(m_mutex);
     while (true) {

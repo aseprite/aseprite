@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -11,6 +11,7 @@
 #include "app/closed_docs.h"
 #include "app/doc.h"
 #include "app/pref/preferences.h"
+#include "base/thread.h"
 
 #include <algorithm>
 #include <limits>
@@ -117,6 +118,8 @@ std::vector<Doc*> ClosedDocs::getAndRemoveAllClosedDocs()
 void ClosedDocs::backgroundThread()
 {
   CLOSEDOC_TRACE("CLOSEDOC: [BG] Background thread start");
+
+  base::this_thread::set_name("closed-docs");
 
   std::unique_lock<std::mutex> lock(m_mutex);
   while (!m_done) {

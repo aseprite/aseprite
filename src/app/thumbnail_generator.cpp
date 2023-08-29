@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -206,6 +206,8 @@ private:
   }
 
   void loadBgThread() {
+    base::this_thread::set_name("thumbnails");
+
     while (!m_queue.empty()) {
       bool success = true;
       while (success) {

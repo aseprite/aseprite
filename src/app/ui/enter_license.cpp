@@ -12,6 +12,7 @@
 #include "app/i18n/strings.h"
 #include "app/resource_finder.h"
 #include "base/fs.h"
+#include "base/thread.h"
 #include "enter_license.h"
 #include "ui/message.h"
 #include "ui/style.h"
@@ -72,6 +73,7 @@ void EnterLicense::startActivation()
   std::string key = licenseKey()->text();
   m_activationInProgress = true;
   m_activation = std::thread([this, key]() {
+    base::this_thread::set_name("activate-key");
     try {
       auto token = drm::LicenseManager::instance()->activate(key);
       onActivated(token);
