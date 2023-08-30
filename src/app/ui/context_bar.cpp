@@ -1164,22 +1164,13 @@ public:
 
     if (!m_popup.get())
       m_popup.reset(new DynamicsPopup(this));
-    auto activeTool = App::instance()->activeTool();
-    m_popup->loadDynamicsPref();
-    m_dynamics = m_popup->getDynamics();
     m_sameInAllTools = m_popup->sharedSettings();
+    m_popup->loadDynamicsPref(m_sameInAllTools);
+    m_dynamics = m_popup->getDynamics();
     m_popup->Close.connect(
       [this](CloseEvent&) {
         deselectItems();
-        auto activeTool = App::instance()->activeTool();
-        m_dynamics = m_popup->getDynamics();
-        m_sameInAllTools = m_popup->sharedSettings();
-        if (m_sameInAllTools) {
-          for (Tool* tool : *App::instance()->toolBox())
-            saveDynamicsPref(tool);
-        }
-        else
-          saveDynamicsPref(activeTool);
+        saveDynamicsPref();
       });
 
     m_popup->refreshVisibility();
@@ -1206,8 +1197,15 @@ public:
       m_popup->setOptionsGridVisibility(state);
   }
 
-  void saveDynamicsPref(Tool* tool) {
+  void saveDynamicsPref() {
+    m_sameInAllTools = m_popup->sharedSettings();
+    Preferences::instance().shared.shareDynamics(m_sameInAllTools);
+    tools::Tool* tool = nullptr;
+    if (!m_sameInAllTools)
+      tool = App::instance()->activeTool();
+
     auto& dynaPref = Preferences::instance().tool(tool).dynamics;
+    m_dynamics = m_popup->getDynamics();
     dynaPref.stabilizer(m_dynamics.stabilizer);
     dynaPref.stabilizerFactor(m_dynamics.stabilizerFactor);
     dynaPref.size(m_dynamics.size);
@@ -1220,13 +1218,16 @@ public:
     dynaPref.maxPressureThreshold(m_dynamics.maxPressureThreshold);
     dynaPref.maxVelocityThreshold(m_dynamics.maxVelocityThreshold);
     dynaPref.colorFromTo(m_dynamics.colorFromTo);
-    dynaPref.matrixIndex(m_popup->ditheringIndex());
-    Preferences::instance().shared.shareDynamics(m_sameInAllTools);
+    dynaPref.matrixName(m_popup->ditheringMatrixName());
   }
 
   void loadDynamicsPref() {
-    auto& dynaPref = Preferences::instance()
-      .tool(App::instance()->activeTool()).dynamics;
+    m_sameInAllTools = Preferences::instance().shared.shareDynamics();
+    tools::Tool* tool = nullptr;
+    if (!m_sameInAllTools)
+      tool = App::instance()->activeTool();
+
+    auto& dynaPref = Preferences::instance().tool(tool).dynamics;
     m_dynamics.stabilizer = dynaPref.stabilizer();
     m_dynamics.stabilizerFactor = dynaPref.stabilizerFactor();
     m_dynamics.size = dynaPref.size();
@@ -1241,11 +1242,10 @@ public:
     m_dynamics.colorFromTo = dynaPref.colorFromTo();
 
     DitheringSelector matrixSel(DitheringSelector::SelectMatrix);
-    matrixSel.setSelectedItemIndex(dynaPref.matrixIndex());
+    matrixSel.setSelectedItemIndex(matrixSel.findItemIndex(
+      dynaPref.matrixName()));
     render::DitheringMatrix matrix(matrixSel.ditheringMatrix());
     m_dynamics.ditheringMatrix = matrix;
-
-    m_sameInAllTools = Preferences::instance().shared.shareDynamics();
   }
 
 private:

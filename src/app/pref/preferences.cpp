@@ -147,23 +147,29 @@ bool Preferences::isSet(OptionBase& opt) const
 
 ToolPreferences& Preferences::tool(tools::Tool* tool)
 {
-  ASSERT(tool != NULL);
+  std::string id;
 
-  auto it = m_tools.find(tool->getId());
+  // If tool == nullptr it means that the tool's options are shared with all tools.
+  if (tool)
+    id = tool->getId();
+  else
+    id = "shared";
+
+  auto it = m_tools.find(id);
   if (it != m_tools.end()) {
     return *it->second;
   }
   else {
-    std::string section = std::string("tool.") + tool->getId();
+    std::string section = std::string("tool.") + id;
     ToolPreferences* toolPref = new ToolPreferences(section);
 
     // Default size for eraser, blur, etc.
-    if (tool->getInk(0)->isEraser() ||
-        tool->getInk(0)->isEffect()) {
+    if (tool && (tool->getInk(0)->isEraser() ||
+                 tool->getInk(0)->isEffect())) {
       toolPref->brush.size.setDefaultValue(8);
     }
 
-    m_tools[tool->getId()] = toolPref;
+    m_tools[id] = toolPref;
     toolPref->load();
     return *toolPref;
   }
@@ -223,6 +229,9 @@ void Preferences::resetToolPreferences(tools::Tool* tool)
   del_config_section((section + ".brush").c_str());
   del_config_section((section + ".spray").c_str());
   del_config_section((section + ".floodfill").c_str());
+  del_config_section((section + ".dynamics").c_str());
+  std::string shared = "tool.shared";
+  del_config_section(shared.c_str());
 }
 
 void Preferences::removeDocument(Doc* doc)

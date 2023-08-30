@@ -198,7 +198,14 @@ void DitheringSelector::onInitTheme(ui::InitThemeEvent& ev)
     setSizeHint(getItem(0)->sizeHint());
 }
 
-void DitheringSelector::regenerate()
+void DitheringSelector::setSelectedItemByName(const std::string& name)
+{
+  int index = findItemIndex(name);
+  setSelectedItemIndex(index);
+  regenerate(index);
+}
+
+void DitheringSelector::regenerate(int selectedItemIndex)
 {
   deleteAllItems();
 
@@ -255,9 +262,9 @@ void DitheringSelector::regenerate()
       }
       break;
   }
-
-  setSelectedItemIndex(0);
-  setSizeHint(getItem(0)->sizeHint());
+  selectedItemIndex = std::clamp(selectedItemIndex, 0, std::max(0, getItemCount()-1));
+  setSelectedItemIndex(selectedItemIndex);
+  setSizeHint(getItem(selectedItemIndex)->sizeHint());
 }
 
 render::DitheringAlgorithm DitheringSelector::ditheringAlgorithm()
