@@ -37,8 +37,9 @@ namespace app {
 
     tools::DynamicsOptions getDynamics() const;
     void setOptionsGridVisibility(bool state);
-    void loadDynamicsPref();
-    int ditheringIndex() const;
+    void loadDynamicsPref(bool sameInAllTools);
+    void saveDynamicsPref(bool sameInAllTools);
+    std::string ditheringMatrixName() const;
     void refreshVisibility();
     bool sharedSettings() const;
 

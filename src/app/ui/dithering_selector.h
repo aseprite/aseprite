@@ -27,13 +27,13 @@ namespace app {
 
     render::DitheringAlgorithm ditheringAlgorithm();
     render::DitheringMatrix ditheringMatrix();
+    void setSelectedItemByName(const std::string& name);
 
   protected:
     void onInitTheme(ui::InitThemeEvent& ev) override;
 
   private:
-    void regenerate();
-
+  void regenerate(int selectedItemIndex = 0);
     Type m_type;
     obs::scoped_connection m_extChanges;
   };

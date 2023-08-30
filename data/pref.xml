@@ -321,7 +321,7 @@
       <option id="discard_brush" type="bool" default="false" />
     </section>
     <section id="shared">
-      <option id="share_dynamics" type="bool" default="false" />
+      <option id="share_dynamics" type="bool" default="true" />
       <option id="share_ink" type="bool" default="false" />
       <option id="ink" type="app::tools::InkType" default="app::tools::InkType::DEFAULT" />
     </section>
@@ -473,7 +473,7 @@
       <option id="min_size" type="int" default="1" />
       <option id="min_angle" type="int" default="1" />
       <option id="color_from_to" type="app::tools::ColorFromTo" default="app::tools::ColorFromTo::BgToFg" />
-      <option id="matrix_index" type="int" default="0" />
+      <option id="matrix_name" type="std::string" />
       <option id="min_pressure_threshold" type="double" default="0.1" />
       <option id="max_pressure_threshold" type="double" default="0.9" />
       <option id="min_velocity_threshold" type="double" default="0.1" />

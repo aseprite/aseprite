@@ -11,11 +11,13 @@
 #include "app/ui/dynamics_popup.h"
 
 #include "app/app.h"
+#include "app/i18n/strings.h"
 #include "app/tools/tool_box.h"
 #include "app/ui/dithering_selector.h"
 #include "app/ui/skin/skin_theme.h"
 #include "os/font.h"
 #include "os/surface.h"
+#include "ui/fit_bounds.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"
 #include "ui/scale.h"
@@ -275,7 +277,22 @@ DynamicsPopup::DynamicsPopup(Delegate* delegate)
         setHotRegion(m_hotRegion);
       }
     });
-
+  m_dynamics->sameInAllTools()->setSelected(
+    Preferences::instance().shared.shareDynamics());
+  m_dynamics->sameInAllTools()->Click.connect(
+    [this]{
+      // if sameInAllTools is true here, this means:
+      // "Transition false to true of 'Same in all tools' and the
+      //  current parameters in the DynamicsPopup windows are the
+      //  old one, i.e non-shared parameters."
+      bool sameInAllTools = m_dynamics->sameInAllTools()->isSelected();
+      // Save the old dynamics options:
+      saveDynamicsPref(!sameInAllTools);
+      Preferences::instance().shared.shareDynamics(sameInAllTools);
+      // Load the new dynamics options:
+      loadDynamicsPref(sameInAllTools);
+      refreshVisibility();
+    });
   m_dynamics->gradientPlaceholder()->addChild(m_ditheringSel);
   m_dynamics->pressurePlaceholder()->addChild(m_pressureThreshold = new ThresholdSlider);
   m_dynamics->velocityPlaceholder()->addChild(m_velocityThreshold = new ThresholdSlider);
@@ -289,15 +306,22 @@ void DynamicsPopup::setOptionsGridVisibility(bool state)
     expandWindow(sizeHint());
 }
 
-int DynamicsPopup::ditheringIndex() const {
+std::string DynamicsPopup::ditheringMatrixName() const
+{
   if (m_ditheringSel)
-    return m_ditheringSel->getSelectedItemIndex();
-  return 0;
+    return m_ditheringSel->getItemText(
+      m_ditheringSel->getSelectedItemIndex());
+  return std::string();
 }
 
-void DynamicsPopup::loadDynamicsPref() {
-  auto& dynaPref = Preferences::instance().tool(
-    App::instance()->activeTool()).dynamics;
+void DynamicsPopup::loadDynamicsPref(bool sameInAllTools)
+{
+  m_dynamics->sameInAllTools()->setSelected(sameInAllTools);
+  tools::Tool* tool = nullptr;
+  if (!sameInAllTools)
+    tool = App::instance()->activeTool();
+
+  auto& dynaPref = Preferences::instance().tool(tool).dynamics;
   m_dynamics->stabilizer()->setSelected(dynaPref.stabilizer());
   m_stabilizerFactorBackup = dynaPref.stabilizerFactor();
   m_dynamics->stabilizerFactor()->setValue(
@@ -324,10 +348,34 @@ void DynamicsPopup::loadDynamicsPref() {
            dynaPref.gradient() == tools::DynamicSensor::Velocity);
 
   if (m_ditheringSel)
-    m_ditheringSel->setSelectedItemIndex(dynaPref.matrixIndex());
+    m_ditheringSel->setSelectedItemByName(dynaPref.matrixName());
+}
 
-  m_dynamics->sameInAllTools()->setSelected(
-    Preferences::instance().shared.shareDynamics());
+void DynamicsPopup::saveDynamicsPref(bool sameInAllTools)
+{
+  tools::DynamicsOptions dyna = getDynamics();
+  tools::Tool* tool = nullptr;
+  if (!sameInAllTools)
+    tool = App::instance()->activeTool();
+
+  auto dynaPref = &Preferences::instance().tool(tool).dynamics;
+  dynaPref->stabilizer(dyna.stabilizer);
+  dynaPref->stabilizerFactor(m_stabilizerFactorBackup);
+  dynaPref->minSize(dyna.minSize);
+  dynaPref->minAngle(dyna.minAngle);
+  dynaPref->minPressureThreshold(dyna.minPressureThreshold);
+  dynaPref->maxPressureThreshold(dyna.maxPressureThreshold);
+  dynaPref->minVelocityThreshold(dyna.minVelocityThreshold);
+  dynaPref->maxVelocityThreshold(dyna.maxVelocityThreshold);
+  dynaPref->colorFromTo(m_fromTo);
+
+  dynaPref->size(dyna.size);
+  dynaPref->angle(dyna.angle);
+  dynaPref->gradient(dyna.gradient);
+
+  if (m_ditheringSel)
+    dynaPref->matrixName(m_ditheringSel->getItemText(
+      m_ditheringSel->getSelectedItemIndex()));
 }
 
 tools::DynamicsOptions DynamicsPopup::getDynamics() const
