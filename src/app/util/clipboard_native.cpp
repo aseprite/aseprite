@@ -84,6 +84,7 @@ void Clipboard::registerNativeFormats()
 
 bool Clipboard::hasNativeBitmap() const
 {
+  InhibitClipErrors ice;
   return clip::has(clip::image_format());
 }
 
