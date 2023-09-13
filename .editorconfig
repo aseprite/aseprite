@@ -1,0 +1,24 @@
+root = true
+
+# Enable this in the future (we have to apply this change to all files
+# in one commit first).
+#[*]
+#end_of_line = lf
+#insert_final_newline = true
+
+[*.cpp]
+indent_style = space
+indent_size = 2
+
+[{CMakeLists.txt,*.cmake}]
+indent_size = 2
+indent_style = space
+
+[*.lua]
+indent_style = space
+indent_size = 2
+
+[*.sh]
+indent_style = space
+indent_size = 4
+tab_width = 8
