@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -18,6 +18,7 @@
 #include "app/color_utils.h"
 #include "app/doc.h"
 #include "app/site.h"
+#include "app/snap_to_grid.h"
 #include "app/tools/controller.h"
 #include "app/tools/ink.h"
 #include "app/tools/intertwine.h"
@@ -142,6 +143,7 @@ void BrushPreview::show(const gfx::Point& screenPos)
 
   Doc* document = m_editor->document();
   Sprite* sprite = m_editor->sprite();
+  Site site = m_editor->getSite();
   Layer* layer = (m_editor->layer() &&
                   m_editor->layer()->isImage() ? m_editor->layer():
                                                  nullptr);
@@ -159,11 +161,26 @@ void BrushPreview::show(const gfx::Point& screenPos)
   app::Color appCursorColor = pref.cursor.cursorColor();
   m_blackAndWhiteNegative = (appCursorColor.getType() == app::Color::MaskType);
 
+  BrushRef brush = getCurrentBrush();
+
+  const bool isFloodfill = m_editor->getCurrentEditorTool()->getPointShape(0)->isFloodFill();
+  // TODO add support for "tile-brushes"
+  gfx::Rect origBrushBounds =
+    (isFloodfill || site.tilemapMode() == TilemapMode::Tiles ? gfx::Rect(0, 0, 1, 1):
+                                                               brush->bounds());
+  gfx::Rect brushBounds = origBrushBounds;
+
   // Cursor in the screen (view)
   m_screenPosition = screenPos;
 
   // Get cursor position in the editor
   gfx::Point spritePos = m_editor->screenToEditor(screenPos);
+  if (m_editor->docPref().grid.snap()) {
+    spritePos = snap_to_grid(m_editor->docPref().grid.bounds(),
+                             spritePos,
+                             PreferSnapTo::ClosestGridVertex) +
+                gfx::Point(brushBounds.w / 2, brushBounds.h / 2);
+  }
 
   // Get the current tool
   tools::Ink* ink = m_editor->getCurrentEditorInk();
@@ -171,12 +188,10 @@ void BrushPreview::show(const gfx::Point& screenPos)
   // Get current tilemap mode
   TilemapMode tilemapMode = ColorBar::instance()->tilemapMode();
 
-  const bool isFloodfill = m_editor->getCurrentEditorTool()->getPointShape(0)->isFloodFill();
   const auto& dynamics = App::instance()->contextBar()->getDynamics();
 
   // Setup the cursor type depending on several factors (current tool,
   // foreground color, layer transparency, brush size, etc.).
-  BrushRef brush = getCurrentBrush();
   color_t brush_color = getBrushColor(sprite, layer);
   color_t mask_index = sprite->transparentColor();
 
@@ -273,13 +288,6 @@ void BrushPreview::show(const gfx::Point& screenPos)
 
   // Draw pixel/brush preview
   if (showPreview) {
-    Site site = m_editor->getSite();
-
-    // TODO add support for "tile-brushes"
-    gfx::Rect origBrushBounds =
-      (isFloodfill || site.tilemapMode() == TilemapMode::Tiles ? gfx::Rect(0, 0, 1, 1):
-                                                                 brush->bounds());
-    gfx::Rect brushBounds = origBrushBounds;
     brushBounds.offset(spritePos);
     gfx::Rect extraCelBoundsInCanvas = brushBounds;
 
