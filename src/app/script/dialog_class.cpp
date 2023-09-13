@@ -504,6 +504,29 @@ int Dialog_close(lua_State* L)
   return 1;
 }
 
+void set_widget_flags(lua_State* L, int idx, Widget* widget)
+{
+    // Focus magnet
+    int type = lua_getfield(L, idx, "focus");
+    if (type != LUA_TNIL && lua_toboolean(L, -1))
+      widget->setFocusMagnet(true);
+    lua_pop(L, 1);
+
+    // Enabled
+    type = lua_getfield(L, idx, "enabled");
+    if (type != LUA_TNIL)
+      widget->setEnabled(lua_toboolean(L, -1));
+    lua_pop(L, 1);
+
+    // Visible
+    widget->setVisible(true);
+    type = lua_getfield(L, idx, "visible");
+    if (type != LUA_TNIL) {
+      widget->setVisible(lua_toboolean(L, -1));
+    }
+    lua_pop(L, 1);
+}
+
 int Dialog_add_widget(lua_State* L, Widget* widget)
 {
   auto dlg = get_obj<Dialog>(L, 1);
@@ -540,23 +563,11 @@ int Dialog_add_widget(lua_State* L, Widget* widget)
       label = lua_tostring(L, -1);
     lua_pop(L, 1);
 
-    // Focus magnet
-    type = lua_getfield(L, 2, "focus");
-    if (type != LUA_TNIL && lua_toboolean(L, -1))
-      widget->setFocusMagnet(true);
-    lua_pop(L, 1);
+    set_widget_flags(L, 2, widget);
 
-    // Enabled
-    type = lua_getfield(L, 2, "enabled");
-    if (type != LUA_TNIL)
-      widget->setEnabled(lua_toboolean(L, -1));
-    lua_pop(L, 1);
-
-    // Visible
     type = lua_getfield(L, 2, "visible");
     if (type != LUA_TNIL) {
       visible = lua_toboolean(L, -1);
-      widget->setVisible(visible);
     }
     lua_pop(L, 1);
 
@@ -587,7 +598,6 @@ int Dialog_add_widget(lua_State* L, Widget* widget)
         dlg->currentGrid->addChildInCell(new ui::HBox, 1, 1, ui::LEFT | ui::TOP);
       }
     }
-
 
     auto hbox = new ui::HBox;
     if (widget->type() == ui::kButtonWidget)
@@ -1346,6 +1356,8 @@ int Dialog_tab(lua_State* L)
           lua_setfield(L, -2, "tab");
         });
     }
+
+    set_widget_flags(L, 2, tabBtn);
   }
 
   lua_pushvalue(L, 1);
