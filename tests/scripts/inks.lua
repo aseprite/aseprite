@@ -1,4 +1,4 @@
--- Copyright (C) 2020-2022  Igara Studio S.A.
+-- Copyright (C) 2020-2023  Igara Studio S.A.
 --
 -- This file is released under the terms of the MIT license.
 -- Read LICENSE.txt for more information.
@@ -282,4 +282,53 @@ do
   expect_img(app.activeImage, { 0, 2,
                                 2, 2 })
 
+end
+
+----------------------------------------------------------------------
+-- Tests for Paint Bucket Tool with image brush and
+-- pattern alignment SRC (ORIGIN) vs DST (TARGET)
+----------------------------------------------------------------------
+
+do
+  local s = Sprite(3, 3, ColorMode.INDEXED)
+  array_to_pixels({ 0, 0, 0,
+                    0, 0, 0,
+                    0, 0, 0 }, app.activeImage)
+
+  local brushImage = Image(2, 2, ColorMode.INDEXED)
+  array_to_pixels({ 0, 1,
+                    2, 0 }, brushImage)
+  brush = Brush{
+    image=brushImage,
+    pattern=BrushPattern.ORIGIN
+  }
+
+  app.useTool{ tool="paint_bucket", brush=brush, points={ Point(0, 0) } }
+  expect_img(app.activeImage,
+            {  0, 1, 0,
+               2, 0, 2,
+               0, 1, 0 })
+  app.undo()
+  app.useTool{ tool="paint_bucket", brush=brush, points={ Point(1, 0) } }
+  expect_img(app.activeImage,
+            {  0, 1, 0,
+               2, 0, 2,
+               0, 1, 0 })
+  app.undo()
+
+  brush = Brush{
+    image=brushImage,
+    pattern=BrushPattern.TARGET
+  }
+  app.useTool{ tool="paint_bucket", brush=brush, points={ Point(1, 1) } }
+  expect_img(app.activeImage,
+            {  0, 1, 0,
+               2, 0, 2,
+               0, 1, 0 })
+  app.undo()
+  app.useTool{ tool="paint_bucket", brush=brush, points={ Point(2, 1) } }
+  expect_img(app.activeImage,
+            { 1, 0, 1,
+              0, 2, 0,
+              1, 0, 1})
 end
