@@ -201,6 +201,9 @@
     </section>
     <section id="timeline">
       <option id="keep_selection" type="bool" default="false" />
+      <option id="select_on_click" type="bool" default="false" />
+      <option id="select_on_click_with_key" type="bool" default="true" />
+      <option id="select_on_drag" type="bool" default="true" />
     </section>
     <section id="cursor">
       <option id="use_native_cursor" type="bool" default="false" />

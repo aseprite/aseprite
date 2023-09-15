@@ -276,6 +276,9 @@
 		 pref="general.rewind_on_stop" />
           <check text="@.keep_timeline_selection" id="keep_selection" tooltip="@.keep_timeline_selection_tooltip"
 		 pref="timeline.keep_selection" />
+          <check text="@.select_on_click" pref="timeline.select_on_click" />
+          <check text="@.select_on_click_with_key" pref="timeline.select_on_click_with_key" />
+          <check text="@.select_on_drag" pref="timeline.select_on_drag" />
 	  <hbox>
 	    <label text="@.default_first_frame" />
 	    <expr id="first_frame" />

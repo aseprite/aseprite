@@ -338,7 +338,7 @@ void Timeline::updateUsingEditor(Editor* editor)
 
   detachDocument();
 
-  if (Preferences::instance().timeline.keepSelection())
+  if (timelinePref().keepSelection())
     m_range = oldRange;
   else {
     // The range is reset in detachDocument()
@@ -679,14 +679,6 @@ bool Timeline::onProcessMessage(Message* msg)
       // Clicked-part = hot-part.
       m_clk = m_hot;
 
-      // With Ctrl+click (Win/Linux) or Shift+click (OS X) we can
-      // select non-adjacents layer/frame ranges
-      bool clearRange =
-#if !defined(__APPLE__)
-        !msg->ctrlPressed() &&
-#endif
-        !msg->shiftPressed();
-
       captureMouse();
 
       switch (m_hot.part) {
@@ -767,15 +759,14 @@ bool Timeline::onProcessMessage(Message* msg)
           break;
         }
         case PART_HEADER_FRAME: {
-          bool selectFrame = (mouseMsg->left() || !isFrameActive(m_clk.frame));
+          bool selectFrame = (mouseMsg->left() ||
+                              !isFrameActive(m_clk.frame));
 
           if (selectFrame) {
             m_state = STATE_SELECTING_FRAMES;
-            if (clearRange)
-              clearAndInvalidateRange();
-            m_range.startRange(m_layer, m_clk.frame, Range::kFrames);
-            m_startRange = m_range;
-            invalidateRange();
+
+            handleRangeMouseDown(msg, Range::kFrames,
+                                 m_layer, m_clk.frame);
 
             setFrame(m_clk.frame, true);
           }
@@ -796,12 +787,9 @@ bool Timeline::onProcessMessage(Message* msg)
           }
           else if (selectLayer) {
             m_state = STATE_SELECTING_LAYERS;
-            if (clearRange)
-              clearAndInvalidateRange();
-            m_range.startRange(m_rows[m_clk.layer].layer(),
-                               m_frame, Range::kLayers);
-            m_startRange = m_range;
-            invalidateRange();
+
+            handleRangeMouseDown(msg, Range::kLayers,
+                                 m_rows[m_clk.layer].layer(), m_frame);
 
             // Did the user select another layer?
             if (old_layer != m_clk.layer) {
@@ -936,17 +924,14 @@ bool Timeline::onProcessMessage(Message* msg)
           else {
             if (selectCel) {
               m_state = STATE_SELECTING_CELS;
-              if (clearRange)
-                clearAndInvalidateRange();
-              m_range.startRange(m_rows[m_clk.layer].layer(),
-                                 m_clk.frame, Range::kCels);
-              m_startRange = m_range;
-              invalidateRange();
+
+              handleRangeMouseDown(msg, Range::kCels,
+                                   m_rows[m_clk.layer].layer(), m_clk.frame);
             }
 
             // Select the new clicked-part.
-            if (old_layer != m_clk.layer
-                || old_frame != m_clk.frame) {
+            if (old_layer != m_clk.layer ||
+                old_frame != m_clk.frame) {
               setLayer(m_rows[m_clk.layer].layer());
               setFrame(m_clk.frame, true);
               invalidate();
@@ -1157,42 +1142,58 @@ bool Timeline::onProcessMessage(Message* msg)
 
           case STATE_SELECTING_LAYERS: {
             Layer* hitLayer = m_rows[hit.layer].layer();
-            if (m_layer != hitLayer) {
-              m_clk.layer = hit.layer;
+            if (m_layer != hitLayer ||
+                // Hit other part? useful to enable the range when
+                // selectOnDrag is enabled.
+                m_clk.part != hit.part) {
+              if (m_layer != hitLayer) {
+                m_clk.layer = hit.layer;
+              }
+              else {
+                hitLayer = m_rows[m_clk.layer].layer();
+              }
 
               // We have to change the range before we generate an
               // onActiveSiteChange() event so observers (like cel
               // properties dialog) know the new selected range.
-              m_range = m_startRange;
-              m_range.endRange(hitLayer, m_frame);
-
+              handleRangeMouseMove(hitLayer, m_frame);
               setLayer(hitLayer);
             }
             break;
           }
 
           case STATE_SELECTING_FRAMES: {
-            invalidateRange();
+            if (m_clk.frame != hit.frame ||
+                m_clk.part != hit.part) {
+              if (m_clk.frame != hit.frame)
+                m_clk.frame = hit.frame;
 
-            m_range = m_startRange;
-            m_range.endRange(m_layer, hit.frame);
+              invalidateRange();
 
-            setFrame(m_clk.frame = hit.frame, true);
+              handleRangeMouseMove(m_layer, m_clk.frame);
+              setFrame(m_clk.frame, true);
 
-            invalidateRange();
+              invalidateRange();
+            }
             break;
           }
 
           case STATE_SELECTING_CELS: {
             Layer* hitLayer = m_rows[hit.layer].layer();
-            if ((m_layer != hitLayer) || (m_frame != hit.frame)) {
-              m_clk.layer = hit.layer;
+            if ((m_layer != hitLayer) ||
+                (m_frame != hit.frame) ||
+                (m_clk.part != hit.part)) {
+              if (m_layer != hitLayer)
+                m_clk.layer = hit.layer;
+              else
+                hitLayer = m_rows[m_clk.layer].layer();
 
-              m_range = m_startRange;
-              m_range.endRange(hitLayer, hit.frame);
+              if (m_clk.frame != hit.frame)
+                m_clk.frame = hit.frame;
 
+              handleRangeMouseMove(hitLayer, m_clk.frame);
               setLayer(hitLayer);
-              setFrame(m_clk.frame = hit.frame, true);
+              setFrame(m_clk.frame, true);
             }
             break;
           }
@@ -1576,6 +1577,78 @@ bool Timeline::onProcessMessage(Message* msg)
   }
 
   return Widget::onProcessMessage(msg);
+}
+
+void Timeline::handleRangeMouseDown(const ui::Message* msg,
+                                    const Range::Type rangeType,
+                                    doc::Layer* fromLayer,
+                                    const doc::frame_t fromFrame)
+{
+  // With Ctrl+click (Win/Linux) or Shift+click (OS X) we can
+  // select non-adjacents layer/frame ranges
+  const bool hasKeyModifier =
+#if !defined(__APPLE__)
+    msg->ctrlPressed() ||
+#endif
+    msg->shiftPressed();
+
+  // Clear the range (i.e. "start range from scratch") if the shift
+  // key isn't pressed, or if it shouldn't act as a "keep selection"
+  // modifier (selectOnClickWithKey = false)
+  if (!hasKeyModifier ||
+      !timelinePref().selectOnClickWithKey()) {
+    clearAndInvalidateRange();
+
+    // If the Shift key is pressed here, it means that
+    // selectOnClickWithKey=false, so Shift+click works as if it
+    // doesn't select a range at all.
+    if (hasKeyModifier) {
+      // Here we clear the start range too and return (so Shift+click
+      // acts like a single click without selecting the range).
+      m_startRange.clearRange();
+      return;
+    }
+  }
+
+  // Start the range on mouse down/click.
+  if ((timelinePref().selectOnClick()) ||
+      (timelinePref().selectOnClickWithKey() && hasKeyModifier)) {
+    // If Shift key is pressed, and we are just starting the range,
+    // add the current location in the range too just in case that
+    // we've clicked a layer/frame different from the active one.
+    if (hasKeyModifier && !m_range.enabled()) {
+      m_range.startRange(m_layer, m_frame, rangeType);
+      m_range.endRange(m_layer, m_frame);
+    }
+    // Start the range with the clicked fromLayer/Frame position.
+    m_range.startRange(fromLayer, fromFrame, rangeType);
+    m_startRange = m_range;
+  }
+  // If selectOnClick/WithKey are disabled, we start the range on
+  // drag, but we've to indicate from where we're starting
+  // (m_startRange).
+  else if (timelinePref().selectOnDrag()) {
+    m_startRange.clearRange();
+    m_startRange.startRange(fromLayer, fromFrame, rangeType);
+  }
+  else {
+    m_startRange = m_range;
+  }
+
+  invalidateRange();
+}
+
+void Timeline::handleRangeMouseMove(doc::Layer* fromLayer,
+                                    const doc::frame_t fromFrame)
+{
+  // Indicate the range end if it's already enabled by the mouse down
+  // event, or in other case, check the if selectOnDrag=true to enable
+  // the range when we move the mouse.
+  if (m_range.enabled() ||
+      timelinePref().selectOnDrag()) {
+    m_range = m_startRange;
+    m_range.endRange(fromLayer, fromFrame);
+  }
 }
 
 void Timeline::onInitTheme(ui::InitThemeEvent& ev)
@@ -4164,6 +4237,11 @@ void Timeline::clearAndInvalidateRange()
     invalidateRange();
     m_range.clearRange();
   }
+}
+
+app::gen::GlobalPref::Timeline& Timeline::timelinePref() const
+{
+  return Preferences::instance().timeline;
 }
 
 DocumentPreferences& Timeline::docPref() const
