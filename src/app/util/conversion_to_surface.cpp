@@ -30,13 +30,13 @@ using namespace doc;
 namespace {
 
 template<typename ImageTraits, os::SurfaceFormat format>
-uint32_t convert_color_to_surface(color_t color, const Palette* palette, const os::SurfaceFormatData* fd) {
+uint32_t convert_color_to_surface(color_t color, const Palette* palette, const ImageSpec& spec, const os::SurfaceFormatData* fd) {
   static_assert(false && sizeof(ImageTraits), "Invalid color conversion");
   return 0;
 }
 
 template<>
-uint32_t convert_color_to_surface<RgbTraits, os::kRgbaSurfaceFormat>(color_t c, const Palette* palette, const os::SurfaceFormatData* fd) {
+uint32_t convert_color_to_surface<RgbTraits, os::kRgbaSurfaceFormat>(color_t c, const Palette* palette, const ImageSpec& spec, const os::SurfaceFormatData* fd) {
   return
     ((rgba_getr(c) << fd->redShift  ) & fd->redMask  ) |
     ((rgba_getg(c) << fd->greenShift) & fd->greenMask) |
@@ -45,7 +45,7 @@ uint32_t convert_color_to_surface<RgbTraits, os::kRgbaSurfaceFormat>(color_t c, 
 }
 
 template<>
-uint32_t convert_color_to_surface<GrayscaleTraits, os::kRgbaSurfaceFormat>(color_t c, const Palette* palette, const os::SurfaceFormatData* fd) {
+uint32_t convert_color_to_surface<GrayscaleTraits, os::kRgbaSurfaceFormat>(color_t c, const Palette* palette, const ImageSpec& spec, const os::SurfaceFormatData* fd) {
   return
     ((graya_getv(c) << fd->redShift  ) & fd->redMask  ) |
     ((graya_getv(c) << fd->greenShift) & fd->greenMask) |
@@ -54,8 +54,8 @@ uint32_t convert_color_to_surface<GrayscaleTraits, os::kRgbaSurfaceFormat>(color
 }
 
 template<>
-uint32_t convert_color_to_surface<IndexedTraits, os::kRgbaSurfaceFormat>(color_t c0, const Palette* palette, const os::SurfaceFormatData* fd) {
-  color_t c = palette->getEntry(c0);
+uint32_t convert_color_to_surface<IndexedTraits, os::kRgbaSurfaceFormat>(color_t c0, const Palette* palette, const ImageSpec& spec, const os::SurfaceFormatData* fd) {
+  color_t c = (c0 == spec.maskColor() ? 0 : palette->getEntry(c0));
   return
     ((rgba_getr(c) << fd->redShift  ) & fd->redMask  ) |
     ((rgba_getg(c) << fd->greenShift) & fd->greenMask) |
@@ -64,7 +64,7 @@ uint32_t convert_color_to_surface<IndexedTraits, os::kRgbaSurfaceFormat>(color_t
 }
 
 template<>
-uint32_t convert_color_to_surface<BitmapTraits, os::kRgbaSurfaceFormat>(color_t c0, const Palette* palette, const os::SurfaceFormatData* fd) {
+uint32_t convert_color_to_surface<BitmapTraits, os::kRgbaSurfaceFormat>(color_t c0, const Palette* palette, const ImageSpec& spec, const os::SurfaceFormatData* fd) {
   color_t c = palette->getEntry(c0);
   return
     ((rgba_getr(c) << fd->redShift  ) & fd->redMask  ) |
@@ -88,7 +88,7 @@ void convert_image_to_surface_templ(const Image* image, os::Surface* dst,
     for (int u=0; u<w; ++u) {
       ASSERT(src_it != src_end);
 
-      *dst_address = convert_color_to_surface<ImageTraits, os::kRgbaSurfaceFormat>(*src_it, palette, fd);
+      *dst_address = convert_color_to_surface<ImageTraits, os::kRgbaSurfaceFormat>(*src_it, palette, image->spec(), fd);
       ++dst_address;
       ++src_it;
     }
