@@ -289,9 +289,6 @@ DynamicsPopup::DynamicsPopup(Delegate* delegate)
       // Save the old dynamics options:
       saveDynamicsPref(!sameInAllTools);
       Preferences::instance().shared.shareDynamics(sameInAllTools);
-      // Load the new dynamics options:
-      loadDynamicsPref(sameInAllTools);
-      refreshVisibility();
     });
   m_dynamics->gradientPlaceholder()->addChild(m_ditheringSel);
   m_dynamics->pressurePlaceholder()->addChild(m_pressureThreshold = new ThresholdSlider);
