@@ -22,3 +22,8 @@ indent_size = 2
 indent_style = space
 indent_size = 4
 tab_width = 8
+
+[*.xml]
+indent_style = space
+indent_size = 2
+tab_width = 8
