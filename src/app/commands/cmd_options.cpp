@@ -331,9 +331,12 @@ public:
     // Slices default color
     defaultSliceColor()->setColor(m_pref.slices.defaultColor());
 
-    // Others
+    // Timeline
     firstFrame()->setTextf("%d", m_globPref.timeline.firstFrame());
+    resetTimelineSel()->Click.connect([this]{ onResetTimelineSel(); });
+    resetTimelineSelAsV12()->Click.connect([this]{ onResetTimelineSelV12(); });
 
+    // Others
     if (m_pref.general.expandMenubarOnMouseover())
       expandMenubarOnMouseover()->setSelected(true);
 
@@ -1696,6 +1699,20 @@ private:
         break;
     }
     layout();
+  }
+
+  void onResetTimelineSel() {
+    keepSelection()->setSelected(false);
+    selectOnClick()->setSelected(false);
+    selectOnClickWithKey()->setSelected(true);
+    selectOnDrag()->setSelected(true);
+  }
+
+  void onResetTimelineSelV12() {
+    keepSelection()->setSelected(false);
+    selectOnClick()->setSelected(true);
+    selectOnClickWithKey()->setSelected(true);
+    selectOnDrag()->setSelected(true);
   }
 
   gfx::Rect gridBounds() const {

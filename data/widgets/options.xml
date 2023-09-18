@@ -274,15 +274,32 @@
 		 pref="general.autoshow_timeline" />
           <check text="@.rewind_on_stop" id="rewind_on_stop" tooltip="@.rewind_on_stop_tooltip"
 		 pref="general.rewind_on_stop" />
-          <check text="@.keep_timeline_selection" id="keep_selection" tooltip="@.keep_timeline_selection_tooltip"
-		 pref="timeline.keep_selection" />
-          <check text="@.select_on_click" pref="timeline.select_on_click" />
-          <check text="@.select_on_click_with_key" pref="timeline.select_on_click_with_key" />
-          <check text="@.select_on_drag" pref="timeline.select_on_drag" />
 	  <hbox>
 	    <label text="@.default_first_frame" />
 	    <expr id="first_frame" />
 	  </hbox>
+          <separator text="@.timeline_selection" horizontal="true" />
+          <check id="keep_selection"
+                 text="@.keep_timeline_selection"
+                 tooltip="@.keep_timeline_selection_tooltip"
+                 pref="timeline.keep_selection" />
+          <check id="select_on_click"
+                 text="@.select_on_click"
+                 tooltip="@.select_on_click_tooltip"
+                 pref="timeline.select_on_click" />
+          <check id="select_on_click_with_key"
+                 text="@.select_on_click_with_key"
+                 tooltip="@.select_on_click_with_key_tooltip"
+                 pref="timeline.select_on_click_with_key" />
+          <check id="select_on_drag"
+                 text="@.select_on_drag"
+                 tooltip="@.select_on_drag_tooltip"
+                 pref="timeline.select_on_drag" />
+          <hbox>
+            <hbox expansive="true" />
+            <button id="reset_timeline_sel" text="@general.reset" width="60" />
+            <button id="reset_timeline_sel_as_v12" text="@.reset_as_v12" />
+          </hbox>
 	</vbox>
 
         <!-- Cursors -->
