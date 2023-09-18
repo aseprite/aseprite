@@ -43,13 +43,18 @@ gfx::Size GraphicsContext::measureText(const std::string& text) const
 
 void GraphicsContext::drawImage(const doc::Image* img, int x, int y)
 {
-  convert_image_to_surface(
-    img,
-    get_current_palette(),
-    m_surface.get(),
-    0, 0,
-    x, y,
-    img->width(), img->height());
+  if (m_paint.blendMode() == os::BlendMode::Src) {
+    convert_image_to_surface(
+      img,
+      get_current_palette(),
+      m_surface.get(),
+      0, 0,
+      x, y,
+      img->width(), img->height());
+    return;
+  }
+
+   drawImage(img, img->bounds(), gfx::Rect(x, y, img->size().w, img->size().h));
 }
 
 void GraphicsContext::drawImage(const doc::Image* img,
