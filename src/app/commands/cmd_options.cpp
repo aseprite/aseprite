@@ -1701,18 +1701,21 @@ private:
     layout();
   }
 
-  void onResetTimelineSel() {
+  void onResetTimelineSelCommon() {
     keepSelection()->setSelected(false);
-    selectOnClick()->setSelected(false);
     selectOnClickWithKey()->setSelected(true);
     selectOnDrag()->setSelected(true);
+    dragAndDropFromEdges()->setSelected(true);
+  }
+
+  void onResetTimelineSel() {
+    onResetTimelineSelCommon();
+    selectOnClick()->setSelected(false);
   }
 
   void onResetTimelineSelV12() {
-    keepSelection()->setSelected(false);
+    onResetTimelineSelCommon();
     selectOnClick()->setSelected(true);
-    selectOnClickWithKey()->setSelected(true);
-    selectOnDrag()->setSelected(true);
   }
 
   gfx::Rect gridBounds() const {

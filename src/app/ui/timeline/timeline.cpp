@@ -3529,7 +3529,8 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
              mouseMsg &&
              mouseMsg->right()) ||
             // Drag with left-click only if we are inside the range edges
-            !gfx::Rect(outline).shrink(2*outlineWidth()).contains(mousePos)) {
+            (Preferences::instance().timeline.dragAndDropFromEdges() &&
+             !gfx::Rect(outline).shrink(2*outlineWidth()).contains(mousePos))) {
           hit.part = PART_RANGE_OUTLINE;
         }
       }

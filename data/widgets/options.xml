@@ -295,6 +295,9 @@
                  text="@.select_on_drag"
                  tooltip="@.select_on_drag_tooltip"
                  pref="timeline.select_on_drag" />
+          <check id="drag_and_drop_from_edges"
+                 text="@.drag_and_drop_from_edges"
+                 pref="timeline.drag_and_drop_from_edges" />
           <hbox>
             <hbox expansive="true" />
             <button id="reset_timeline_sel" text="@general.reset" width="60" />
