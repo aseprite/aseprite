@@ -85,6 +85,13 @@ struct ImageObj {
     else
       return nullptr;
   }
+
+  doc::Tileset* tileset(lua_State* L) {
+    if (tilesetId)
+      return check_docobj(L, doc::get<doc::Tileset>(tilesetId));
+    else
+      return nullptr;
+  }
 };
 
 void render_sprite(Image* dst,
@@ -775,6 +782,11 @@ doc::Image* get_image_from_arg(lua_State* L, int index)
 doc::Cel* get_image_cel_from_arg(lua_State* L, int index)
 {
   return get_obj<ImageObj>(L, index)->cel(L);
+}
+
+doc::Tileset* get_image_tileset_from_arg(lua_State* L, int index)
+{
+  return get_obj<ImageObj>(L, index)->tileset(L);
 }
 
 } // namespace script

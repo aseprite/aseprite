@@ -18,6 +18,8 @@
 #include "app/script/luacpp.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/util/conversion_to_surface.h"
+#include "doc/cel.h"
+#include "doc/tileset.h"
 #include "os/draw_text.h"
 #include "os/surface.h"
 #include "os/system.h"
@@ -220,10 +222,32 @@ int GraphicsContext_measureText(lua_State* L)
   return 0;
 }
 
+doc::Palette* get_image_palette(const doc::Image* img,
+                                const doc::Palette* currentPal,
+                                lua_State* L,
+                                int index)
+{
+  if (img->spec().colorMode() != ColorMode::INDEXED || currentPal)
+    return nullptr;
+
+  if (const doc::Cel* cel = get_image_cel_from_arg(L, index)) {
+    return cel->sprite()->palette(cel->frame());
+  }
+  else if (const doc::Tileset* tileset = get_image_tileset_from_arg(L, index)) {
+    return tileset->sprite()->palette(0);
+  }
+  return nullptr;
+}
+
 int GraphicsContext_drawImage(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   if (const doc::Image* img = may_get_image_from_arg(L, 2)) {
+    doc::Palette* pal = get_image_palette(img, gc->palette(), L, 2);
+    if (pal) {
+      gc->save();
+      gc->palette(pal);
+    }
     int x = lua_tointeger(L, 3);
     int y = lua_tointeger(L, 4);
 
@@ -245,6 +269,8 @@ int GraphicsContext_drawImage(lua_State* L)
         gc->drawImage(img, x, y);
       }
     }
+    if (pal)
+      gc->restore();
   }
   return 0;
 }
