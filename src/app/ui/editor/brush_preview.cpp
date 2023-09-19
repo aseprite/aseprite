@@ -253,6 +253,7 @@ void BrushPreview::show(const gfx::Point& screenPos)
         case app::gen::BrushPreview::FULLNEDGES:
           if (showPreview)
             showPreviewWithEdges = true;
+          m_type = BRUSH_BOUNDARIES;
           break;
       }
       break;
