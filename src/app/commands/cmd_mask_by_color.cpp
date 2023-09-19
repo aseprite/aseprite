@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -77,6 +77,7 @@ private:
   CheckBox* m_checkPreview = nullptr;
   Slider* m_sliderTolerance = nullptr;
   SelModeField* m_selMode = nullptr;
+  bool m_isOrigMaskVisible;
 };
 
 MaskByColorCommand::MaskByColorCommand()
@@ -167,6 +168,10 @@ void MaskByColorCommand::onExecute(Context* context)
   m_window->remapWindow();
   m_window->centerWindow();
 
+  // Save original mask visibility to process it correctly in
+  // ADD/SUBTRACT/INTERSECT Selection Mode
+  m_isOrigMaskVisible = reader.document()->isMaskVisible();
+
   // Mask first preview
   maskPreview(reader);
 
@@ -217,7 +222,7 @@ Mask* MaskByColorCommand::generateMask(const Mask& origMask,
   mask->byColor(image, color, tolerance);
   mask->offsetOrigin(xpos, ypos);
 
-  if (!origMask.isEmpty()) {
+  if (!origMask.isEmpty() && m_isOrigMaskVisible) {
     switch (mode) {
       case gen::SelectionMode::DEFAULT:
         break;
