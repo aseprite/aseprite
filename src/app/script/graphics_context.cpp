@@ -46,7 +46,7 @@ void GraphicsContext::drawImage(const doc::Image* img, int x, int y)
   if (m_paint.blendMode() == os::BlendMode::Src) {
     convert_image_to_surface(
       img,
-      get_current_palette(),
+      m_palette ? m_palette : get_current_palette(),
       m_surface.get(),
       0, 0,
       x, y,
@@ -75,7 +75,7 @@ void GraphicsContext::drawImage(const doc::Image* img,
   if (tmpSurface) {
     convert_image_to_surface(
       img,
-      get_current_palette(),
+      m_palette ? m_palette : get_current_palette(),
       tmpSurface.get(),
       srcRc.x, srcRc.y,
       0, 0,
@@ -458,6 +458,21 @@ int GraphicsContext_set_opacity(lua_State* L)
   return 0;
 }
 
+int GraphicsContext_get_palette(lua_State* L)
+{
+  auto gc = get_obj<GraphicsContext>(L, 1);
+  push_palette(L, gc->palette());
+  return 1;
+}
+
+int GraphicsContext_set_palette(lua_State* L)
+{
+  auto gc = get_obj<GraphicsContext>(L, 1);
+  doc::Palette* palette = get_palette_from_arg(L, 2);
+  gc->palette(palette);
+  return 1;
+}
+
 const luaL_Reg GraphicsContext_methods[] = {
   { "__gc", GraphicsContext_gc },
   { "save", GraphicsContext_save },
@@ -492,6 +507,7 @@ const Property GraphicsContext_properties[] = {
   { "strokeWidth", GraphicsContext_get_strokeWidth, GraphicsContext_set_strokeWidth },
   { "blendMode", GraphicsContext_get_blendMode, GraphicsContext_set_blendMode },
   { "opacity", GraphicsContext_get_opacity, GraphicsContext_set_opacity },
+  { "palette", GraphicsContext_get_palette, GraphicsContext_set_palette },
   { nullptr, nullptr, nullptr }
 };
 
