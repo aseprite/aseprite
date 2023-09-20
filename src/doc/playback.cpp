@@ -210,6 +210,7 @@ bool Playback::handleExitFrame(const frame_t frameDelta)
       auto tag = this->tag();
       if (tag && tag->contains(m_frame)) {
         ASSERT(!m_playing.empty());
+        [[maybe_unused]]
         int forward = m_playing.back()->forward;
 
         PLAY_TRACE("tag aniDir=", (int)tag->aniDir(),

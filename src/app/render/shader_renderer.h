@@ -101,7 +101,6 @@ namespace app {
     const doc::LayerImage* m_bgLayer = nullptr;
     // TODO these members are the same as in render::Render, we should
     //      see a way to merge both
-    const doc::Layer* m_selectedLayerForOpacity = nullptr;
     const doc::Layer* m_selectedLayer = nullptr;
     doc::frame_t m_selectedFrame = -1;
     const doc::Image* m_previewImage = nullptr;

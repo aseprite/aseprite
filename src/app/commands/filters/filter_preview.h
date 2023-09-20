@@ -42,7 +42,6 @@ namespace app {
     ui::Timer m_restartPreviewTimer;
     std::mutex m_filterMgrMutex;
     app::Task m_filterTask;
-    bool m_filterIsDone;
   };
 
 } // namespace app

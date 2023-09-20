@@ -142,7 +142,6 @@ Image* read_image(std::istream& is, bool setId)
     if (err != Z_OK)
       throw base::Exception("ZLib error %d in inflateInit().", err);
 
-    int uncompressed_offset = 0;
     int remain = avail_bytes;
 
     std::vector<uint8_t> compressed(4096);
@@ -186,7 +185,6 @@ Image* read_image(std::istream& is, bool setId)
 
         int uncompressed_bytes = (int)((address_end - address) - zstream.avail_out);
         if (uncompressed_bytes > 0) {
-          uncompressed_offset += uncompressed_bytes;
           address += uncompressed_bytes;
         }
       } while (zstream.avail_in != 0 && zstream.avail_out == 0);

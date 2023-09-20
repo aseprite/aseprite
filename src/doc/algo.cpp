@@ -653,7 +653,7 @@ double algo_spline_get_tan(double x0, double y0, double x1, double y1,
 
   /* Derivatives of x(t) and y(t). */
   double x, dx, ddx, dddx;
-  double y, dy, ddy, dddy;
+  double    dy, ddy, dddy;
   int i;
 
   /* Temp variables used in the setup. */
@@ -693,21 +693,18 @@ double algo_spline_get_tan(double x0, double y0, double x1, double y1,
   dx = xdt3_term - xdt2_term + 3 * dt * (x1 - x0);
   dy = ydt3_term - ydt2_term + dt * 3 * (y1 - y0);
   x = x0;
-  y = y0;
 
   old_x = x0;
   old_dx = dx;
   old_dy = dy;
 
   x += .5;
-  y += .5;
   for (i=1; i<npts; i++) {
     ddx += dddx;
     ddy += dddy;
     dx += ddx;
     dy += ddy;
     x += dx;
-    y += dy;
 
     out_x = x;
     if (out_x > in_x) {
