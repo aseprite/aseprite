@@ -683,23 +683,6 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
       warnings += "<<- " + Strings::alerts_file_format_10ms_duration_precision();
   }
 
-  // CHR allows no more than 4 colors, and the sprite dimensions
-  // should be 128 x 128 to avoid rearanging.
-  if(format->support(FILE_CHR_LIMITATIONS)) {
-	if(sprite->width() != 128 || sprite->height() != 128) {
-	  warnings += "<<- Dimensions other than 128 x 128";
-	}
-	if(sprite->width() % 8 != 0 || sprite->height() % 8 != 0) {
-	  warnings += "<<- Dimensions that are not multiples of 8";
-	}
-	for (const Palette* pal : sprite->getPalettes()) {
-	  if (pal->size() > 4) {
-		warnings += "<<- Palettes with more than 4 colors";
-		break;
-	  }
-	}
-  }
-
   // Show the confirmation alert
   if (!warnings.empty()) {
 #ifdef ENABLE_UI

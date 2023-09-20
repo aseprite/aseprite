@@ -19,7 +19,6 @@ enum class FileFormat {
   ASE_PALETTE,                  // Adobe Swatch Exchange
   ACT_PALETTE,
   BMP_IMAGE,
-  CHR_IMAGE,
   COL_PALETTE,
   FLIC_ANIMATION,
   GIF_ANIMATION,

@@ -32,7 +32,6 @@
 #define FILE_SUPPORT_PALETTE_WITH_ALPHA 0x00004000
 #define FILE_ENCODE_ABSTRACT_IMAGE      0x00008000 // Use the new FileAbstractImage
 #define FILE_GIF_ANI_LIMITATIONS        0x00010000
-#define FILE_CHR_LIMITATIONS        	0x00020000
 
 namespace app {
 
