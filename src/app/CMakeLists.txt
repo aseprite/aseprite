@@ -138,8 +138,7 @@ set(file_formats
   file/png_format.cpp
   file/qoi_format.cpp
   file/svg_format.cpp
-  file/tga_format.cpp
-  file/chr_format.cpp)
+  file/tga_format.cpp)
 if(ENABLE_WEBP)
   list(APPEND file_formats file/webp_format.cpp)
 endif()
