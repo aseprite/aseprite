@@ -122,6 +122,9 @@ FileFormat detect_format_by_file_extension(const std::string& filename)
   if (ext == "col")
     return FileFormat::COL_PALETTE;
 
+  if (ext == "chr")
+    return FileFormat::CHR_IMAGE;
+
   if (ext == "flc" ||
       ext == "fli")
     return FileFormat::FLIC_ANIMATION;

@@ -15,11 +15,12 @@ enum class FileFormat {
   ERROR = -1,
   UNKNOWN = 0,
 
-  ASE_ANIMATION,                // Aseprite File Format
-  ASE_PALETTE,                  // Adobe Swatch Exchange
+  ASE_ANIMATION,  // Aseprite File Format
+  ASE_PALETTE,    // Adobe Swatch Exchange
   ACT_PALETTE,
   BMP_IMAGE,
   COL_PALETTE,
+  CHR_IMAGE,
   FLIC_ANIMATION,
   GIF_ANIMATION,
   GPL_PALETTE,
@@ -37,6 +38,6 @@ enum class FileFormat {
   QOI_IMAGE,
 };
 
-} // namespace dio
+}  // namespace dio
 
 #endif
