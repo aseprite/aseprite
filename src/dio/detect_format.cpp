@@ -119,6 +119,9 @@ FileFormat detect_format_by_file_extension(const std::string& filename)
   if (ext == "bmp")
     return FileFormat::BMP_IMAGE;
 
+  if (ext == "chr")
+    return FileFormat::CHR_IMAGE;
+
   if (ext == "col")
     return FileFormat::COL_PALETTE;
 
