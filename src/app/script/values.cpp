@@ -311,6 +311,7 @@ doc::tile_t get_value_from_lua(lua_State* L, int index) {
 
 FOR_ENUM(app::CelsTarget)
 FOR_ENUM(app::ColorBar::ColorSelector)
+FOR_ENUM(app::PreferSnapTo)
 FOR_ENUM(app::SpriteSheetDataFormat)
 FOR_ENUM(app::SpriteSheetType)
 FOR_ENUM(app::TilesetMode)

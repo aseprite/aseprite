@@ -417,6 +417,7 @@ if(ENABLE_UI)
     ui/skin/skin_theme.cpp
     ui/slice_window.cpp
     ui/slider2.cpp
+    ui/snap_to_selector.cpp
     ui/status_bar.cpp
     ui/tabs.cpp
     ui/tag_window.cpp

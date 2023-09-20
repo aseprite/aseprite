@@ -33,6 +33,8 @@
 #include "app/ui/sampling_selector.h"
 #include "app/ui/separator_in_view.h"
 #include "app/ui/skin/skin_theme.h"
+#include "app/ui/snap_to_selector.h"
+#include "app/ui/status_bar.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
 #include "base/string.h"
@@ -472,6 +474,10 @@ public:
     m_rgbmapAlgorithmSelector.setExpansive(true);
     m_rgbmapAlgorithmSelector.algorithm(m_pref.quantization.rgbmapAlgorithm());
 
+    snapToPlaceholder()->addChild(&m_snapToSelector);
+    m_snapToSelector.setExpansive(true);
+    m_snapToSelector.snapTo(app::PreferSnapTo::ClosestGridVertex);
+
     if (m_pref.editor.showScrollbars())
       showScrollbars()->setSelected(true);
 
@@ -788,6 +794,12 @@ public:
     m_curPref->pixelGrid.color(pixelGridColor()->getColor());
     m_curPref->pixelGrid.opacity(pixelGridOpacity()->getValue());
     m_curPref->pixelGrid.autoOpacity(pixelGridAutoOpacity()->isSelected());
+
+    m_curPref->grid.snapTo(
+      (app::PreferSnapTo)m_snapToSelector.getSelectedItemIndex());
+    m_curPref->grid.snap(snapToGrid()->isSelected());
+    StatusBar::instance()->showSnapToGridWarning(
+      m_docPref.grid.snap());
 
     m_curPref->bg.type(app::gen::BgType(checkeredBgSize()->getSelectedItemIndex()));
     if (m_curPref->bg.type() == app::gen::BgType::CHECKERED_CUSTOM) {
@@ -1189,8 +1201,16 @@ private:
     int item = gridScope()->getSelectedItemIndex();
 
     switch (item) {
-      case 0: m_curPref = &m_globPref; break;
-      case 1: m_curPref = &m_docPref; break;
+      case 0:
+        m_curPref = &m_globPref;
+        snapToGrid()->setSelected(false);
+        snapToGrid()->setEnabled(false);
+      break;
+      case 1:
+        m_curPref = &m_docPref;
+        snapToGrid()->setEnabled(true);
+        snapToGrid()->setSelected(m_curPref->grid.snap());
+      break;
     }
 
     gridVisible()->setSelected(m_curPref->show.grid());
@@ -1207,6 +1227,9 @@ private:
     pixelGridColor()->setColor(m_curPref->pixelGrid.color());
     pixelGridOpacity()->setValue(m_curPref->pixelGrid.opacity());
     pixelGridAutoOpacity()->setSelected(m_curPref->pixelGrid.autoOpacity());
+
+    m_snapToSelector.setSelectedItemIndex(
+      (int)m_curPref->grid.snapTo());
   }
 
   void onResetBg() {
@@ -1249,6 +1272,10 @@ private:
       pixelGridColor()->setColor(pref.pixelGrid.color.defaultValue());
       pixelGridOpacity()->setValue(pref.pixelGrid.opacity.defaultValue());
       pixelGridAutoOpacity()->setSelected(pref.pixelGrid.autoOpacity.defaultValue());
+
+      snapToGrid()->setSelected(pref.grid.snap.defaultValue());
+      m_snapToSelector.setSelectedItemIndex(
+        (int)pref.grid.snapTo.defaultValue());
     }
     // Reset document preferences with global settings
     else {
@@ -1266,6 +1293,10 @@ private:
       pixelGridColor()->setColor(pref.pixelGrid.color());
       pixelGridOpacity()->setValue(pref.pixelGrid.opacity());
       pixelGridAutoOpacity()->setSelected(pref.pixelGrid.autoOpacity());
+
+      snapToGrid()->setSelected(pref.grid.snap());
+      m_snapToSelector.setSelectedItemIndex(
+        (int)pref.grid.snapTo());
     }
   }
 
@@ -1784,6 +1815,7 @@ private:
   RgbMapAlgorithmSelector m_rgbmapAlgorithmSelector;
   ButtonSet* m_themeVars = nullptr;
   SamplingSelector* m_samplingSelector = nullptr;
+  SnapToSelector m_snapToSelector;
 };
 
 class OptionsCommand : public Command {

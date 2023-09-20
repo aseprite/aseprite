@@ -212,6 +212,10 @@
       <option id="painting_cursor_type" type="PaintingCursorType" default="PaintingCursorType::CROSSHAIR_ON_SPRITE" />
       <option id="brush_preview" type="BrushPreview" default="BrushPreview::FULL" />
     </section>
+    <section id="grid">
+      <option id="snap" type="bool" default="false" />
+      <option id="snap_to" type="app::PreferSnapTo" default="app::PreferSnapTo::ClosestGridVertex" />
+    </section>
     <section id="preview" text="Preview">
       <option id="play_once" type="bool" default="false" />
       <option id="play_all" type="bool" default="false" />
@@ -495,6 +499,7 @@
     </section>
     <section id="grid" canforce="true">
       <option id="snap" type="bool" default="false" />
+      <option id="snap_to" type="app::PreferSnapTo" default="app::PreferSnapTo::ClosestGridVertex" />
       <option id="bounds" type="gfx::Rect" default="doc::Sprite::DefaultGridBounds()" />
       <option id="color" type="app::Color" default="app::Color::fromRgb(0, 0, 255)" />
       <option id="opacity" type="int" default="160" />
