@@ -105,6 +105,8 @@ namespace app {
     bool evalUserFile(const std::string& filename,
                       const Params& params = Params());
 
+    void handleException(const std::exception& ex);
+
     void consolePrint(const char* text) {
       onConsolePrint(text);
     }
