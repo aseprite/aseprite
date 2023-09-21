@@ -145,7 +145,6 @@ void UndoCommand::onExecute(Context* context)
       editor->setFrame(spritePosition.frame());
     }
   }
-#endif  // ENABLE_UI
 
   // Update timeline range. We've to deserialize the DocRange at
   // this point when objects (possible layers) are re-created after
@@ -155,6 +154,7 @@ void UndoCommand::onExecute(Context* context)
     if (docRange.read(*docRangeStream))
       context->setRange(docRange);
   }
+#endif  // ENABLE_UI
 
   document->generateMaskBoundaries();
   document->setExtraCel(ExtraCelRef(nullptr));
