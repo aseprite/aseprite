@@ -32,6 +32,7 @@
 #include "doc/anidir.h"
 #include "doc/color_mode.h"
 #include "filters/target.h"
+#include "fmt/format.h"
 #include "ui/base.h"
 #include "ui/cursor_type.h"
 #include "ui/mouse_button.h"
@@ -584,7 +585,7 @@ bool Engine::evalCode(const std::string& code,
     lua_pop(L, 1);
   }
   catch (const std::exception& ex) {
-    onConsoleError(ex.what());
+    handleException(ex);
     ok = false;
     m_returnCode = -1;
   }
@@ -592,6 +593,18 @@ bool Engine::evalCode(const std::string& code,
   // Collect script garbage.
   lua_gc(L, LUA_GCCOLLECT);
   return ok;
+}
+
+void Engine::handleException(const std::exception& ex)
+{
+  luaL_where(L, 1);
+  const char* where = lua_tostring(L, -1);
+  luaL_traceback(L, L, ex.what(), 1);
+  const char* traceback = lua_tostring(L, -1);
+  std::string msg(fmt::format("{}{}", where, traceback));
+  lua_pop(L, 2);
+
+  onConsoleError(msg.c_str());
 }
 
 bool Engine::evalFile(const std::string& filename,

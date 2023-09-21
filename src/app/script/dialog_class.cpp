@@ -287,20 +287,20 @@ void Dialog_connect_signal(lua_State* L,
       if (dlg->showRef == LUA_REFNIL)
         return;
 
-      try {
-        // Get the function "n" from the uservalue table of the dialog
-        lua_rawgeti(L, LUA_REGISTRYINDEX, dlg->showRef);
-        lua_getuservalue(L, -1);
-        lua_rawgeti(L, -1, n);
+      // Get the function "n" from the uservalue table of the dialog
+      lua_rawgeti(L, LUA_REGISTRYINDEX, dlg->showRef);
+      lua_getuservalue(L, -1);
+      lua_rawgeti(L, -1, n);
 
-        // Use the callback with a special table in the Lua stack to
-        // send it as parameter to the Lua function in the
-        // lua_pcall() (that table is like an "event data" parameter
-        // for the function).
-        lua_newtable(L);
-        callback(L, std::forward<Args>(args)...);
+      // Use the callback with a special table in the Lua stack to
+      // send it as parameter to the Lua function in the
+      // lua_pcall() (that table is like an "event data" parameter
+      // for the function).
+      lua_newtable(L);
+      callback(L, std::forward<Args>(args)...);
 
-        if (lua_isfunction(L, -2)) {
+      if (lua_isfunction(L, -2)) {
+        try {
           if (lua_pcall(L, 1, 0, 0)) {
             if (const char* s = lua_tostring(L, -1))
               App::instance()
@@ -308,19 +308,17 @@ void Dialog_connect_signal(lua_State* L,
                 ->consolePrint(s);
           }
         }
-        else {
-          lua_pop(L, 1); // Pop the value which should have been a function
+        catch(const std::exception& ex) {
+          // This is used to catch unhandled exception or for
+          // example, std::runtime_error exceptions when a Tx() is
+          // created without an active sprite.
+          App::instance()->scriptEngine()->handleException(ex);
         }
-        lua_pop(L, 2);   // Pop uservalue & userdata
       }
-      catch (const std::exception& ex) {
-        // This is used to catch unhandled exception or for
-        // example, std::runtime_error exceptions when a Tx() is
-        // created without an active sprite.
-        App::instance()
-          ->scriptEngine()
-          ->consolePrint(ex.what());
+      else {
+        lua_pop(L, 1); // Pop the value which should have been a function
       }
+      lua_pop(L, 2);   // Pop uservalue & userdata
     });
 }
 
