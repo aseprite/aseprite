@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -15,6 +15,7 @@
 #include "base/base64.h"
 #include "doc/doc.h"
 #include "doc/user_data.h"
+#include "fmt/format.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -27,18 +28,18 @@ using namespace app;
 TEST(File, SeveralSizes)
 {
   // Register all possible image formats.
-  std::vector<char> fn(256);
+  std::string fn;
   app::Context ctx;
 
   for (int w=10; w<=10+503*2; w+=503) {
     for (int h=10; h<=10+503*2; h+=503) {
-      //std::sprintf(&fn[0], "test_%dx%d.ase", w, h);
-      std::sprintf(&fn[0], "test.ase");
+      //fn = fmt::format("test_{}x{}.ase", w, h);
+      fn = "test.ase";
 
       {
         std::unique_ptr<Doc> doc(
           ctx.documents().add(w, h, doc::ColorMode::INDEXED, 256));
-        doc->setFilename(&fn[0]);
+        doc->setFilename(fn);
 
         // Random pixels
         Layer* layer = doc->sprite()->root()->firstLayer();
@@ -59,7 +60,7 @@ TEST(File, SeveralSizes)
       }
 
       {
-        std::unique_ptr<Doc> doc(load_document(&ctx, &fn[0]));
+        std::unique_ptr<Doc> doc(load_document(&ctx, fn));
         ASSERT_EQ(w, doc->sprite()->width());
         ASSERT_EQ(h, doc->sprite()->height());
 

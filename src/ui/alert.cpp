@@ -121,7 +121,7 @@ void Alert::addButton(const std::string& text)
   m_buttons.push_back(button);
 
   char id[256];
-  sprintf(id, "button-%lu", m_buttons.size());
+  std::snprintf(id, sizeof(id), "button-%lu", m_buttons.size());
   button->setId(id);
   button->Click.connect([this, button]{ closeWindow(button); });
 

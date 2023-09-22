@@ -401,7 +401,7 @@ FileOp* FileOp::createLoadDocumentOperation(Context* context,
     if (!(flags & FILE_LOAD_SEQUENCE_NONE)) {
       std::string left, right;
       int c, width, start_from;
-      char buf[512];
+      std::string buf;
 
       // First of all, we must generate the list of files to load in the
       // sequence...
@@ -412,7 +412,7 @@ FileOp* FileOp::createLoadDocumentOperation(Context* context,
         // Try to get more file names
         for (c=start_from+1; ; c++) {
           // Get the next file name
-          sprintf(buf, "%s%0*d%s", left.c_str(), width, c, right.c_str());
+          buf = fmt::format("{0}{1:0{2}d}{3}", left, c, width, right);
 
           // If the file doesn't exist, we doesn't need more files to load
           if (!base::is_file(buf))

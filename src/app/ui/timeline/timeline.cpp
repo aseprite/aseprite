@@ -3746,7 +3746,7 @@ void Timeline::updateStatusBarForFrame(const frame_t frame,
   if (!m_sprite)
     return;
 
-  char buf[256] = { 0 };
+  std::string buf;
   frame_t base = docPref().timeline.firstFrame();
   frame_t firstFrame = frame;
   frame_t lastFrame = frame;
@@ -3761,41 +3761,34 @@ void Timeline::updateStatusBarForFrame(const frame_t frame,
     lastFrame = m_range.lastFrame();
   }
 
-  std::sprintf(
-    buf+std::strlen(buf), ":frame: %d",
-    base+frame);
+  buf += fmt::format(":frame: {}",
+                     int(base+frame));
   if (firstFrame != lastFrame) {
-    std::sprintf(
-      buf+std::strlen(buf), " [%d...%d]",
-      int(base+firstFrame),
-      int(base+lastFrame));
+    buf += fmt::format(" [{}...{}]",
+                       int(base+firstFrame),
+                       int(base+lastFrame));
   }
 
-  std::sprintf(
-    buf+std::strlen(buf), " :clock: %s",
-    human_readable_time(m_sprite->frameDuration(frame)).c_str());
+  buf += fmt::format(" :clock: {}",
+                     human_readable_time(m_sprite->frameDuration(frame)));
   if (firstFrame != lastFrame) {
-    std::sprintf(
-      buf+std::strlen(buf), " [%s]",
-      tag ?
-      human_readable_time(tagFramesDuration(tag)).c_str():
-      human_readable_time(selectedFramesDuration()).c_str());
+    buf += fmt::format(" [{}]",
+                       tag ?
+                       human_readable_time(tagFramesDuration(tag)):
+                       human_readable_time(selectedFramesDuration()));
   }
   if (m_sprite->totalFrames() > 1)
-    std::sprintf(
-      buf+std::strlen(buf), "/%s",
-      human_readable_time(m_sprite->totalAnimationDuration()).c_str());
+    buf += fmt::format("/{}",
+                       human_readable_time(m_sprite->totalAnimationDuration()));
 
   if (cel) {
-    std::sprintf(
-      buf+std::strlen(buf), " Cel :pos: %d %d :size: %d %d",
-      cel->bounds().x, cel->bounds().y,
-      cel->bounds().w, cel->bounds().h);
+    buf += fmt::format(" Cel :pos: {} {} :size: {} {}",
+                       cel->bounds().x, cel->bounds().y,
+                       cel->bounds().w, cel->bounds().h);
 
     if (cel->links() > 0) {
-      std::sprintf(
-        buf+std::strlen(buf), " Links %d",
-        int(cel->links()));
+      buf += fmt::format(" Links {}",
+                         int(cel->links()));
     }
   }
 

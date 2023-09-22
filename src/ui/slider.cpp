@@ -74,7 +74,7 @@ std::string Slider::convertValueToText(int value) const
     return m_delegate->onGetTextFromValue(value);
   else {
     char buf[128];
-    std::sprintf(buf, "%d", value);
+    std::snprintf(buf, sizeof(buf), "%d", value);
     return buf;
   }
 }

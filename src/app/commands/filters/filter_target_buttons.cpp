@@ -16,6 +16,7 @@
 #include "app/modules/gui.h"
 #include "app/ui/skin/skin_theme.h"
 #include "doc/image.h"
+#include "fmt/format.h"
 #include "ui/box.h"
 #include "ui/button.h"
 #include "ui/theme.h"
@@ -115,10 +116,10 @@ void FilterTargetButtons::updateFromCelsTarget()
 void FilterTargetButtons::updateComponentTooltip(Item* item, const char* channelName, int align)
 {
   if (item) {
-    char buf[256];
-    std::sprintf(buf, "%s %s Component",
-                 (item->isSelected() ? "Modify": "Ignore"),
-                 channelName);
+    std::string buf =
+      fmt::format("{} {} Component",
+                  (item->isSelected() ? "Modify": "Ignore"),
+                  channelName);
     m_tooltips.addTooltipFor(item, buf, align);
   }
 }

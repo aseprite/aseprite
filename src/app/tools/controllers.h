@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -8,6 +8,7 @@
 #include "app/snap_to_grid.h"
 #include "base/gcd.h"
 #include "base/pi.h"
+#include "fmt/format.h"
 
 #include <algorithm>
 #include <cmath>
@@ -93,13 +94,12 @@ public:
       return;
 
     gfx::Point offset = loop->statusBarPositionOffset();
-    char buf[1024];
-    sprintf(buf, ":start: %d %d :end: %d %d",
-            stroke.firstPoint().x+offset.x,
-            stroke.firstPoint().y+offset.y,
-            stroke.lastPoint().x+offset.x,
-            stroke.lastPoint().y+offset.y);
-    text = buf;
+    text = fmt::format(
+      ":start: {} {} :end: {} {}",
+      stroke.firstPoint().x+offset.x,
+      stroke.firstPoint().y+offset.y,
+      stroke.lastPoint().x+offset.x,
+      stroke.lastPoint().y+offset.y);
   }
 
 private:
@@ -253,16 +253,16 @@ public:
     if (stroke.size() < 2)
       return;
 
-    int w = ABS(stroke[1].x-stroke[0].x)+1;
-    int h = ABS(stroke[1].y-stroke[0].y)+1;
+    const int w = ABS(stroke[1].x-stroke[0].x)+1;
+    const int h = ABS(stroke[1].y-stroke[0].y)+1;
 
-    gfx::Point offset = loop->statusBarPositionOffset();
-    char buf[1024];
-    int gcd = base::gcd(w, h);
-    sprintf(buf, ":start: %d %d :end: %d %d :size: %d %d :distance: %.1f",
-            stroke[0].x+offset.x, stroke[0].y+offset.y,
-            stroke[1].x+offset.x, stroke[1].y+offset.y,
-            w, h, std::sqrt(w*w + h*h));
+    const gfx::Point offset = loop->statusBarPositionOffset();
+    const int gcd = base::gcd(w, h);
+
+    text = fmt::format(":start: {} {} :end: {} {} :size: {} {} :distance: {:.1f}",
+                       stroke[0].x+offset.x, stroke[0].y+offset.y,
+                       stroke[1].x+offset.x, stroke[1].y+offset.y,
+                       w, h, std::sqrt(w*w + h*h));
 
     if (hasAngle() ||
         loop->getIntertwine()->snapByAngle()) {
@@ -272,14 +272,12 @@ public:
       else
         angle = std::atan2(static_cast<double>(stroke[0].y-stroke[1].y),
                            static_cast<double>(stroke[1].x-stroke[0].x));
-      sprintf(buf+strlen(buf), " :angle: %.1f", 180.0 * angle / PI);
+      text += fmt::format(" :angle: {:.1f}", 180.0 * angle / PI);
     }
 
     // Aspect ratio at the end
-    sprintf(buf+strlen(buf), " :aspect_ratio: %d:%d",
-            w/gcd, h/gcd);
-
-    text = buf;
+    text += fmt::format(" :aspect_ratio: {}:{}",
+                        w/gcd, h/gcd);
   }
 
   double getShapeAngle() const override {
@@ -361,13 +359,11 @@ public:
       return;
 
     gfx::Point offset = loop->statusBarPositionOffset();
-    char buf[1024];
-    sprintf(buf, ":start: %d %d :end: %d %d",
-            stroke.firstPoint().x+offset.x,
-            stroke.firstPoint().y+offset.y,
-            stroke.lastPoint().x+offset.x,
-            stroke.lastPoint().y+offset.y);
-    text = buf;
+    text = fmt::format(":start: {} {} :end: {} {}",
+                       stroke.firstPoint().x+offset.x,
+                       stroke.firstPoint().y+offset.y,
+                       stroke.lastPoint().x+offset.x,
+                       stroke.lastPoint().y+offset.y);
   }
 
 };
@@ -401,11 +397,9 @@ public:
       return;
 
     gfx::Point offset = loop->statusBarPositionOffset();
-    char buf[1024];
-    sprintf(buf, ":pos: %d %d",
-            stroke[0].x+offset.x,
-            stroke[0].y+offset.y);
-    text = buf;
+    text = fmt::format(":pos: {} {}",
+                       stroke[0].x+offset.x,
+                       stroke[0].y+offset.y);
   }
 
 };
@@ -459,14 +453,12 @@ public:
       return;
 
     gfx::Point offset = loop->statusBarPositionOffset();
-    char buf[1024];
-    sprintf(buf, ":start: %d %d :end: %d %d (%d %d - %d %d)",
-            stroke[0].x+offset.x, stroke[0].y+offset.y,
-            stroke[3].x+offset.x, stroke[3].y+offset.y,
-            stroke[1].x+offset.x, stroke[1].y+offset.y,
-            stroke[2].x+offset.x, stroke[2].y+offset.y);
 
-    text = buf;
+    text = fmt::format(":start: {} {} :end: {} {} ({} {} - {} {})",
+                       stroke[0].x+offset.x, stroke[0].y+offset.y,
+                       stroke[3].x+offset.x, stroke[3].y+offset.y,
+                       stroke[1].x+offset.x, stroke[1].y+offset.y,
+                       stroke[2].x+offset.x, stroke[2].y+offset.y);
   }
 
 private:

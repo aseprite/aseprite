@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021  Igara Studio S.A.
+// Copyright (C) 2021-2023  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -13,6 +13,7 @@
 
 #include "app/modules/gui.h"
 #include "base/scoped_value.h"
+#include "fmt/format.h"
 #include "gfx/rect.h"
 #include "gfx/region.h"
 #include "ui/manager.h"
@@ -65,10 +66,7 @@ void ZoomEntry::onValueChange()
 std::string ZoomEntry::onGetTextFromValue(int value)
 {
   render::Zoom zoom = render::Zoom::fromLinearScale(value);
-
-  char buf[256];
-  std::sprintf(buf, "%.1f", zoom.scale() * 100.0);
-  return buf;
+  return fmt::format("{:.1f}", zoom.scale() * 100.0);
 }
 
 int ZoomEntry::onGetValueFromText(const std::string& text)

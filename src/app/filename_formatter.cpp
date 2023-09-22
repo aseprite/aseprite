@@ -16,6 +16,7 @@
 #include "base/convert_to.h"
 #include "base/fs.h"
 #include "base/replace_string.h"
+#include "fmt/format.h"
 
 #include <cstdlib>
 #include <cstring>
@@ -35,14 +36,17 @@ static bool replace_frame(const char* frameKey, // E.g. = "{frame"
     if (j != std::string::npos) {
       std::string from = str.substr(i, j - i + 1);
       if (frameBase >= 0) {
-        std::vector<char> to(32);
         int offset = std::strtol(from.c_str()+keyLen, NULL, 10);
 
-        std::sprintf(&to[0], "%0*d", (int(j)-int(i+keyLen)), frameBase + offset);
-        base::replace_string(str, from, &to[0]);
+        const std::string to =
+          fmt::format("{0:0{1}d}",
+                      frameBase + offset,
+                      (int(j)-int(i+keyLen)));
+
+        base::replace_string(str, from, to);
       }
       else
-        base::replace_string(str, from, "");
+        base::replace_string(str, from, std::string());
     }
     return true;
   }
@@ -59,9 +63,7 @@ static bool autodetect_frame_format(const std::string& filename,
   int frameWidth = 0;
   frameBase = split_filename(filename, left, right, frameWidth);
   if (frameBase >= 0) {
-    std::vector<char> buf(32);
-    std::sprintf(&buf[0], "{frame%0*d}", frameWidth, frameBase);
-    frameFormat = std::string(&buf[0]);
+    frameFormat = fmt::format("{{frame{0:0{1}d}}}", frameBase, frameWidth);
     return true;
   }
   else

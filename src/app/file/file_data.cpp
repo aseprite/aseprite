@@ -18,6 +18,7 @@
 #include "doc/color.h"
 #include "doc/document.h"
 #include "doc/slice.h"
+#include "fmt/format.h"
 #include "gfx/color.h"
 
 #include <cstdlib>
@@ -33,19 +34,19 @@ namespace {
 
 std::string color_to_hex(doc::color_t color)
 {
-  char buf[256];
+  std::string buf;
   if (doc::rgba_geta(color) == 255) {
-    std::sprintf(buf, "#%02x%02x%02x",
-                 doc::rgba_getr(color),
-                 doc::rgba_getg(color),
-                 doc::rgba_getb(color));
+    buf = fmt::format("#{:02x}{:02x}{:02x}",
+                      doc::rgba_getr(color),
+                      doc::rgba_getg(color),
+                      doc::rgba_getb(color));
   }
   else {
-    std::sprintf(buf, "#%02x%02x%02x%02x",
-                 doc::rgba_getr(color),
-                 doc::rgba_getg(color),
-                 doc::rgba_getb(color),
-                 doc::rgba_geta(color));
+    buf = fmt::format("#{:02x}{:02x}{:02x}{:02x}",
+                      doc::rgba_getr(color),
+                      doc::rgba_getg(color),
+                      doc::rgba_getb(color),
+                      doc::rgba_geta(color));
   }
   return buf;
 }

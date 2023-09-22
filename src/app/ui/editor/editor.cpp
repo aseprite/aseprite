@@ -2243,10 +2243,10 @@ void Editor::onPaint(ui::PaintEvent& ev)
       if (Preferences::instance().perf.showRenderTime()) {
         View* view = View::getView(this);
         gfx::Rect vp = view->viewportBounds();
-        char buf[128];
-        sprintf(buf, "%c %.4gs",
-                Preferences::instance().experimental.newRenderEngine() ? 'N': 'O',
-                renderElapsed);
+        std::string buf =
+          fmt::format("{:c} {:.4g}s",
+                      Preferences::instance().experimental.newRenderEngine() ? 'N': 'O',
+                      renderElapsed);
         g->drawText(
           buf,
           gfx::rgba(255, 255, 255, 255),

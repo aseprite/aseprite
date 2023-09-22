@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -21,6 +21,7 @@
 #include "doc/mask.h"
 #include "doc/palette.h"
 #include "doc/sprite.h"
+#include "fmt/format.h"
 
 #include <cstdio>
 
@@ -80,11 +81,13 @@ void NewSpriteFromSelectionCommand::onExecute(Context* context)
 
   std::unique_ptr<Doc> dstDoc(new Doc(dstSprite.get()));
   dstSprite.release();
-  char buf[1024];
-  std::sprintf(buf, "%s-%dx%d-%dx%d",
-               base::get_file_title(doc->filename()).c_str(),
-               mask->bounds().x, mask->bounds().y,
-               mask->bounds().w, mask->bounds().h);
+
+  const std::string buf =
+    fmt::format("{}-{}x{}-{}x{}",
+                base::get_file_title(doc->filename()),
+                mask->bounds().x, mask->bounds().y,
+                mask->bounds().w, mask->bounds().h);
+
   dstDoc->setFilename(buf);
   dstDoc->setContext(context);
   dstDoc.release();
