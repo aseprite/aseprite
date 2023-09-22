@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -226,6 +226,10 @@ public:
         snapPointsToGridTiles(loop, stroke);
       }
       else {
+        auto& docPref =
+          Preferences::instance().document(loop->getDocument());
+        if (docPref.grid.snapTo() == PreferSnapTo::BoxCenter)
+          return;
         if (stroke[0].x < stroke[1].x)
           stroke[1].x -= bounds.w;
         else if (stroke[0].x > stroke[1].x)
