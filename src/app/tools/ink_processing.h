@@ -1152,8 +1152,8 @@ public:
       }
       // Case: during brush preview of PaintBucket Tool
       else if (loop->getController()->isOnePoint()) {
-        m_u = m_brush->bounds().w / 2;
-        m_v = m_brush->bounds().h / 2;
+        m_u = 0;
+        m_v = 0;
       }
       else {
         m_u = ((m_brush->patternOrigin().x % loop->sprite()->width()) - loop->getCelOrigin().x) % m_width;

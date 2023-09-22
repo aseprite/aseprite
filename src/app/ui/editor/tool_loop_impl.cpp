@@ -973,9 +973,14 @@ public:
         tools::WellKnownPointShapes::Brush);
     }
     else if (m_pointShape->isFloodFill()) {
-      m_pointShape = App::instance()->toolBox()->getPointShapeById
-        (m_tilesMode ? tools::WellKnownPointShapes::Tile:
-                       tools::WellKnownPointShapes::Pixel);
+      const char* id;
+      if (m_tilesMode)
+        id = tools::WellKnownPointShapes::Tile;
+      else if (m_brush->type() == BrushType::kImageBrushType)
+        id = tools::WellKnownPointShapes::Brush;
+      else
+        id = tools::WellKnownPointShapes::Pixel;
+      m_pointShape = App::instance()->toolBox()->getPointShapeById(id);
     }
   }
 

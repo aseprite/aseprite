@@ -166,8 +166,9 @@ void BrushPreview::show(const gfx::Point& screenPos)
   const bool isFloodfill = m_editor->getCurrentEditorTool()->getPointShape(0)->isFloodFill();
   // TODO add support for "tile-brushes"
   gfx::Rect origBrushBounds =
-    (isFloodfill || site.tilemapMode() == TilemapMode::Tiles ? gfx::Rect(0, 0, 1, 1):
-                                                               brush->bounds());
+    ((isFloodfill && brush->type() != BrushType::kImageBrushType) ||
+     site.tilemapMode() == TilemapMode::Tiles ? gfx::Rect(0, 0, 1, 1)
+                                              : brush->bounds());
   gfx::Rect brushBounds = origBrushBounds;
 
   // Cursor in the screen (view)
