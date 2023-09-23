@@ -9,7 +9,7 @@
 #endif
 
 #include "app/cmd/remove_frame.h"
-
+#include "app/cmd/clear_cel.h"
 #include "app/cmd/remove_cel.h"
 #include "app/doc.h"
 #include "app/doc_event.h"
@@ -28,21 +28,33 @@ RemoveFrame::RemoveFrame(Sprite* sprite, frame_t frame)
   , m_frameRemoved(false)
 {
   m_frameDuration = sprite->frameDuration(frame);
-  for (Cel* cel : sprite->cels(m_frame))
+  for (Cel* cel : sprite->cels(m_frame)) {
+    if (m_frame == 0) {
+      m_seq.add(new cmd::ClearCel(cel));
+      break;
+    }
+
     m_seq.add(new cmd::RemoveCel(cel));
+  }
 }
 
 void RemoveFrame::onExecute()
 {
   Sprite* sprite = this->sprite();
   Doc* doc = static_cast<Doc*>(sprite->document());
-
   if (m_firstTime) {
     m_firstTime = false;
     m_seq.execute(context());
   }
   else
     m_seq.redo();
+
+  // If the user has selected frames in a range - last frame
+  // will be the 0th frame, so don't displace the frame inside
+  // Sprite::RemoveFrame, just clear the cel inside it and bail out
+  // from this function
+  if (sprite->totalFrames() - 1 == 0)
+    return;
 
   int oldTotalFrames = sprite->totalFrames();
 
