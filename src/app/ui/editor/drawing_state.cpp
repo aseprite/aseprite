@@ -154,6 +154,8 @@ bool DrawingState::onMouseDown(Editor* editor, MouseMessage* msg)
 
   if (!editor->hasCapture())
     editor->captureMouse();
+  else
+    return true;
 
   tools::Pointer pointer = pointer_from_msg(editor, msg,
                                             m_velocity.velocity());
