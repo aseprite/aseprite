@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -83,7 +83,7 @@ void RemoveSliceCommand::onExecute(Context* context)
     if (slice)
       slicesToDelete.insert(slice->id());
     else
-      slicesToDelete = reader.site()->selectedSlices();
+      slicesToDelete = reader.site().selectedSlices();
   }
 
   // Nothing to delete

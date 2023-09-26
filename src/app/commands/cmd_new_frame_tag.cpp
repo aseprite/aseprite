@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -16,7 +16,6 @@
 #include "app/context_access.h"
 #include "app/tx.h"
 #include "app/ui/tag_window.h"
-#include "app/ui/timeline/timeline.h"
 #include "doc/tag.h"
 
 #include <stdexcept>
@@ -52,10 +51,10 @@ void NewFrameTagCommand::onExecute(Context* context)
   frame_t from = reader.frame();
   frame_t to = reader.frame();
 
-  auto range = App::instance()->timeline()->range();
+  view::RealRange range = context->range();
   if (range.enabled() &&
-      (range.type() == DocRange::kFrames ||
-       range.type() == DocRange::kCels)) {
+      (range.type() == view::Range::kFrames ||
+       range.type() == view::Range::kCels)) {
     from = range.selectedFrames().firstFrame();
     to = range.selectedFrames().lastFrame();
   }
@@ -79,8 +78,6 @@ void NewFrameTagCommand::onExecute(Context* context)
     tag.release();
     tx.commit();
   }
-
-  App::instance()->timeline()->invalidate();
 }
 
 Command* CommandFactory::createNewFrameTagCommand()

@@ -53,7 +53,6 @@
 #include "app/ui/timeline/timeline.h"
 #include "app/ui/toolbar.h"
 #include "app/ui_context.h"
-#include "app/util/layer_utils.h"
 #include "base/chrono.h"
 #include "base/convert_to.h"
 #include "doc/doc.h"
@@ -66,6 +65,7 @@
 #include "os/system.h"
 #include "render/rasterize.h"
 #include "ui/ui.h"
+#include "view/layers.h"
 
 #include <algorithm>
 #include <cmath>
@@ -439,8 +439,8 @@ void Editor::getSite(Site* site) const
   Timeline* timeline = App::instance()->timeline();
   if (timeline &&
       timeline->isVisible() &&
-      timeline->range().enabled()) {
-    site->range(timeline->range());
+      timeline->isRangeEnabled()) {
+    site->range(timeline->realRange());
   }
 
   if (m_layer && m_layer->isTilemap()) {
@@ -2372,7 +2372,8 @@ void Editor::onBeforeRemoveLayer(DocEvent& ev)
 
   // If the layer that was removed is the selected one in the editor,
   // or is an ancestor of the selected one.
-  Layer* layerToSelect = candidate_if_layer_is_deleted(layer(), ev.layer());
+  Layer* layerToSelect =
+    view::candidate_if_layer_is_deleted(layer(), ev.layer());
   if (layer() != layerToSelect)
     setLayer(layerToSelect);
 }

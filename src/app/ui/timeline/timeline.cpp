@@ -44,7 +44,6 @@
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
 #include "app/util/layer_boundaries.h"
-#include "app/util/layer_utils.h"
 #include "app/util/readable_time.h"
 #include "base/convert_to.h"
 #include "base/memory.h"
@@ -57,6 +56,9 @@
 #include "os/surface.h"
 #include "os/system.h"
 #include "ui/ui.h"
+#include "view/layers.h"
+#include "view/timeline_adapter.h"
+#include "view/utils.h"
 
 #include <algorithm>
 #include <cstdio>
@@ -165,7 +167,7 @@ namespace {
 
 Timeline::Hit::Hit(int part,
                    layer_t layer,
-                   frame_t frame,
+                   col_t frame,
                    ObjectId tag,
                    int band)
   : part(part),
@@ -234,6 +236,7 @@ bool Timeline::Row::parentEditable() const
 
 Timeline::Timeline(TooltipManager* tooltipManager)
   : Widget(kGenericWidget)
+  , m_adapter(nullptr)
   , m_hbar(HORIZONTAL, this)
   , m_vbar(VERTICAL, this)
   , m_zoom(1.0)
@@ -294,6 +297,9 @@ void Timeline::setZoom(const double zoom)
   m_zoom = std::clamp(zoom, 1.0, 10.0);
   m_thumbnailsOverlayDirection = gfx::Point(int(frameBoxWidth()*1.0), int(frameBoxWidth()*0.5));
   m_thumbnailsOverlayVisible = false;
+
+  if (m_document)
+    regenerateCols();
 }
 
 void Timeline::setZoomAndUpdate(const double zoom,
@@ -370,18 +376,13 @@ void Timeline::updateUsingEditor(Editor* editor)
     docPref.thumbnails.enabled() ?
     docPref.thumbnails.zoom(): 1.0);
 
-  // If we are already in the same position as the "editor", we don't
-  // need to update the at all timeline.
-  if (m_document == site.document() &&
-      m_sprite == site.sprite() &&
-      m_layer == site.layer() &&
-      m_frame == site.frame())
-    return;
-
   m_document = site.document();
   m_sprite = site.sprite();
   m_layer = site.layer();
-  m_frame = site.frame();
+
+  updateTimelineAdapter(false);
+
+  m_frame = m_adapter->toColFrame(fr_t(site.frame()));
   m_state = STATE_STANDBY;
   m_hot.part = PART_NOTHING;
   m_clk.part = PART_NOTHING;
@@ -392,6 +393,7 @@ void Timeline::updateUsingEditor(Editor* editor)
   m_onionskinConn = docPref.onionskin.AfterChange.connect([this]{ invalidate(); });
 
   setFocusStop(true);
+  regenerateCols();
   regenerateRows();
   setViewScroll(view->timelineScroll());
   showCurrentCel();
@@ -427,6 +429,8 @@ void Timeline::detachDocument()
     m_editor->remove_observer(this);
     m_editor = nullptr;
   }
+
+  m_adapter.reset();
 
   invalidate();
 }
@@ -479,25 +483,23 @@ void Timeline::setLayer(Layer* layer)
     m_editor->setLayer(m_layer);
 }
 
-void Timeline::setFrame(frame_t frame, bool byUser)
+void Timeline::setFrame(col_t frame, bool byUser)
 {
-  ASSERT(m_editor != NULL);
-  // ASSERT(frame >= 0 && frame < m_sprite->totalFrames());
+  ASSERT(m_editor);
+  ASSERT(m_adapter);
 
-  if (frame < 0)
-    frame = firstFrame();
-  else if (frame >= m_sprite->totalFrames())
-    frame = frame_t(m_sprite->totalFrames()-1);
+  frame = std::clamp(frame, firstFrame(), lastFrame());
 
   if (m_layer) {
-    Cel* oldCel = m_layer->cel(m_frame);
-    Cel* newCel = m_layer->cel(frame);
+    Cel* oldCel = m_layer->cel(m_adapter->toRealFrame(m_frame));
+    Cel* newCel = m_layer->cel(m_adapter->toRealFrame(frame));
     std::size_t oldLinks = (oldCel ? oldCel->links(): 0);
     std::size_t newLinks = (newCel ? newCel->links(): 0);
     if ((oldLinks && !newCel) ||
         (newLinks && !oldCel) ||
-        ((oldLinks || newLinks) && (oldCel->data() != newCel->data())))
+        ((oldLinks || newLinks) && (oldCel->data() != newCel->data()))) {
       invalidateLayer(m_layer);
+    }
   }
 
   invalidateFrame(m_frame);
@@ -512,19 +514,25 @@ void Timeline::setFrame(frame_t frame, bool byUser)
   if (!onionRc.isEmpty())
     invalidateRect(onionRc.offset(origin()));
 
-  if (m_editor->frame() != frame) {
+  const frame_t realFrame = m_adapter->toRealFrame(m_frame);
+  if (m_editor->frame() != realFrame) {
     const bool isPlaying = m_editor->isPlaying();
 
     if (isPlaying)
       m_editor->stop();
 
-    m_editor->setFrame(m_frame);
+    m_editor->setFrame(realFrame);
 
     if (isPlaying)
       m_editor->play(false,
                      Preferences::instance().editor.playAll(),
                      Preferences::instance().editor.playSubtags());
   }
+}
+
+view::RealRange Timeline::realRange() const
+{
+  return view::to_real_range(m_adapter.get(), m_range);
 }
 
 void Timeline::prepareToMoveRange()
@@ -538,19 +546,20 @@ void Timeline::prepareToMoveRange()
     ++i;
   }
 
-  frame_t j = 0;
+  col_t j = col_t(0);
   for (auto frame : m_range.selectedFrames()) {
     if (frame == m_frame)
       break;
-    ++j;
+    j = col_t(j+1);
   }
 
   m_moveRangeData.activeRelativeLayer = i;
   m_moveRangeData.activeRelativeFrame = j;
 }
 
-void Timeline::moveRange(const Range& range)
+void Timeline::moveRange(const VirtualRange& range)
 {
+  regenerateCols();
   regenerateRows();
 
   // We have to change the range before we generate an
@@ -567,13 +576,13 @@ void Timeline::moveRange(const Range& range)
     ++i;
   }
 
-  frame_t j = 0;
+  col_t j = col_t(0);
   for (auto frame : range.selectedFrames()) {
     if (j == m_moveRangeData.activeRelativeFrame) {
-      setFrame(frame, true);
+      setFrame(col_t(frame), true);
       break;
     }
-    ++j;
+    j = col_t(j+1);
   }
 
   // Select the range again (it might be lost between all the
@@ -581,9 +590,15 @@ void Timeline::moveRange(const Range& range)
   m_range = range;
 }
 
-void Timeline::setRange(const Range& range)
+void Timeline::setVirtualRange(const VirtualRange& range)
 {
   m_range = range;
+  invalidate();
+}
+
+void Timeline::setRealRange(const RealRange& range)
+{
+  m_range = view::to_virtual_range(m_adapter.get(), range);
   invalidate();
 }
 
@@ -782,7 +797,8 @@ bool Timeline::onProcessMessage(Message* msg)
              is_select_layer_in_canvas_key_pressed(mouseMsg));
 
           if (selectLayerInCanvas) {
-            select_layer_boundaries(m_rows[m_clk.layer].layer(), m_frame,
+            select_layer_boundaries(m_rows[m_clk.layer].layer(),
+                                    m_adapter->toRealFrame(m_frame),
                                     get_select_layer_in_canvas_op(mouseMsg));
           }
           else if (selectLayer) {
@@ -914,7 +930,7 @@ bool Timeline::onProcessMessage(Message* msg)
             (m_clk.layer != -1 &&
              mouseMsg->left() &&
              is_select_layer_in_canvas_key_pressed(mouseMsg));
-          const frame_t old_frame = m_frame;
+          const col_t old_frame = m_frame;
 
           if (selectCelInCanvas) {
             select_layer_boundaries(m_rows[m_clk.layer].layer(),
@@ -955,7 +971,7 @@ bool Timeline::onProcessMessage(Message* msg)
 
             if (m_range.layers() > 0) {
               layer_t layerFirst, layerLast;
-              if (selectedLayersBounds(selectedLayers(),
+              if (selectedLayersBounds(m_range.selectedLayers(),
                                        &layerFirst, &layerLast)) {
                 layer_t layerIdx = m_clk.layer;
                 layerIdx = std::clamp(layerIdx, layerFirst, layerLast);
@@ -964,25 +980,25 @@ bool Timeline::onProcessMessage(Message* msg)
             }
 
             if (m_clk.frame < m_range.firstFrame())
-              m_clk.frame = m_range.firstFrame();
+              m_clk.frame = col_t(m_range.firstFrame());
             else if (m_clk.frame > m_range.lastFrame())
-              m_clk.frame = m_range.lastFrame();
+              m_clk.frame = col_t(m_range.lastFrame());
           }
           break;
 
         case PART_TAG:
           m_state = STATE_MOVING_TAG;
-          m_resizeTagData.reset(m_clk.tag);
+          m_resizeTagData.reset(*m_adapter, m_clk.tag);
           break;
         case PART_TAG_LEFT:
           m_state = STATE_RESIZING_TAG_LEFT;
-          m_resizeTagData.reset(m_clk.tag);
+          m_resizeTagData.reset(*m_adapter, m_clk.tag);
           // TODO reduce the scope of the invalidation
           invalidate();
           break;
         case PART_TAG_RIGHT:
           m_state = STATE_RESIZING_TAG_RIGHT;
-          m_resizeTagData.reset(m_clk.tag);
+          m_resizeTagData.reset(*m_adapter, m_clk.tag);
           invalidate();
           break;
 
@@ -1098,21 +1114,21 @@ bool Timeline::onProcessMessage(Message* msg)
         switch (m_state) {
 
             case STATE_MOVING_RANGE: {
-                frame_t newFrame;
+                col_t newFrame;
                 if (m_range.type() == Range::kLayers) {
                   // If we are moving only layers we don't change the
                   // current frame.
                   newFrame = m_frame;
                 }
                 else {
-                  frame_t firstDrawableFrame;
-                  frame_t lastDrawableFrame;
+                  col_t firstDrawableFrame;
+                  col_t lastDrawableFrame;
                   getDrawableFrames(&firstDrawableFrame, &lastDrawableFrame);
 
                   if (hit.frame < firstDrawableFrame)
-                    newFrame = firstDrawableFrame - 1;
+                    newFrame = col_t(firstDrawableFrame - 1);
                   else if (hit.frame > lastDrawableFrame)
-                    newFrame = lastDrawableFrame + 1;
+                    newFrame = col_t(lastDrawableFrame + 1);
                   else
                     newFrame = hit.frame;
                 }
@@ -1208,10 +1224,12 @@ bool Timeline::onProcessMessage(Message* msg)
             if (tag) {
               switch (m_state) {
                 case STATE_RESIZING_TAG_LEFT:
-                  m_resizeTagData.from = std::clamp(hit.frame, 0, tag->toFrame());
+                  m_resizeTagData.from = std::clamp(
+                    hit.frame, col_t(0), m_adapter->toColFrame(fr_t(tag->toFrame())));
                   break;
                 case STATE_RESIZING_TAG_RIGHT:
-                  m_resizeTagData.to = std::clamp(hit.frame, tag->fromFrame(), m_sprite->lastFrame());
+                  m_resizeTagData.to = std::clamp(
+                    hit.frame, m_adapter->toColFrame(fr_t(tag->fromFrame())), lastFrame());
                   break;
               }
               invalidate();
@@ -1320,6 +1338,8 @@ bool Timeline::onProcessMessage(Message* msg)
           }
 
           case PART_TAG: {
+            m_resizeTagData.reset(); // Reset resize info
+
             Tag* tag = m_clk.getTag();
             if (tag) {
               Params params;
@@ -1390,8 +1410,12 @@ bool Timeline::onProcessMessage(Message* msg)
                 Tx tx(UIContext::instance(), Strings::commands_FrameTagProperties());
                 tx(new cmd::SetTagRange(
                      tag,
-                     (m_state == STATE_RESIZING_TAG_LEFT ? m_resizeTagData.from: tag->fromFrame()),
-                     (m_state == STATE_RESIZING_TAG_RIGHT ? m_resizeTagData.to: tag->toFrame())));
+                     (m_state == STATE_RESIZING_TAG_LEFT ?
+                      m_adapter->toRealFrame(m_resizeTagData.from):
+                      tag->fromFrame()),
+                     (m_state == STATE_RESIZING_TAG_RIGHT ?
+                      m_adapter->toRealFrame(m_resizeTagData.to):
+                      tag->toFrame())));
                 tx.commit();
 
                 regenerateRows();
@@ -1582,7 +1606,7 @@ bool Timeline::onProcessMessage(Message* msg)
 void Timeline::handleRangeMouseDown(const ui::Message* msg,
                                     const Range::Type rangeType,
                                     doc::Layer* fromLayer,
-                                    const doc::frame_t fromFrame)
+                                    const col_t fromFrame)
 {
   // With Ctrl+click (Win/Linux) or Shift+click (OS X) we can
   // select non-adjacents layer/frame ranges
@@ -1621,7 +1645,7 @@ void Timeline::handleRangeMouseDown(const ui::Message* msg,
       m_range.endRange(m_layer, m_frame);
     }
     // Start the range with the clicked fromLayer/Frame position.
-    m_range.startRange(fromLayer, fromFrame, rangeType);
+    m_range.startRange(fromLayer, frame_t(fromFrame), rangeType);
     m_startRange = m_range;
   }
   // If selectOnClick/WithKey are disabled, we start the range on
@@ -1629,7 +1653,7 @@ void Timeline::handleRangeMouseDown(const ui::Message* msg,
   // (m_startRange).
   else if (timelinePref().selectOnDrag()) {
     m_startRange.clearRange();
-    m_startRange.startRange(fromLayer, fromFrame, rangeType);
+    m_startRange.startRange(fromLayer, frame_t(fromFrame), rangeType);
   }
   else {
     m_startRange = m_range;
@@ -1639,7 +1663,7 @@ void Timeline::handleRangeMouseDown(const ui::Message* msg,
 }
 
 void Timeline::handleRangeMouseMove(doc::Layer* fromLayer,
-                                    const doc::frame_t fromFrame)
+                                    const col_t fromFrame)
 {
   // Indicate the range end if it's already enabled by the mouse down
   // event, or in other case, check the if selectOnDrag=true to enable
@@ -1717,7 +1741,7 @@ void Timeline::onPaint(ui::PaintEvent& ev)
     }
 
     layer_t layer, firstLayer, lastLayer;
-    frame_t frame, firstFrame, lastFrame;
+    col_t frame, firstFrame, lastFrame;
 
     getDrawableLayers(&firstLayer, &lastLayer);
     getDrawableFrames(&firstFrame, &lastFrame);
@@ -1731,7 +1755,7 @@ void Timeline::onPaint(ui::PaintEvent& ev)
     {
       IntersectClip clip(g, getFrameHeadersBounds());
       if (clip) {
-        for (frame=firstFrame; frame<=lastFrame; ++frame)
+        for (frame=firstFrame; frame<=lastFrame; frame=col_t(frame+1))
           drawHeaderFrame(g, frame);
 
         // Draw onionskin indicators.
@@ -1747,6 +1771,7 @@ void Timeline::onPaint(ui::PaintEvent& ev)
 
     // Draw each visible layer.
     DrawCelData data;
+    const view::fr_t realActiveFrame = m_adapter->toRealFrame(m_frame);
     for (layer=lastLayer; layer>=firstLayer; --layer) {
       {
         IntersectClip clip(g, getLayerHeadersBounds());
@@ -1761,18 +1786,25 @@ void Timeline::onPaint(ui::PaintEvent& ev)
       Layer* layerPtr = getLayer(layer);
       if (!layerPtr || !layerPtr->isImage()) {
         // Draw empty cels
-        for (frame=firstFrame; frame<=lastFrame; ++frame) {
+        for (frame=firstFrame; frame<=lastFrame; frame=col_t(frame+1)) {
           drawCel(g, layer, frame, nullptr, nullptr);
         }
         continue;
       }
 
+      // TODO Draw the set of cels by "column blocks" (set of
+      //      consecutive frame columns)
+
       // Get the first CelIterator to be drawn (it is the first cel with cel->frame >= first_frame)
       LayerImage* layerImagePtr = static_cast<LayerImage*>(layerPtr);
       data.begin = layerImagePtr->getCelBegin();
       data.end = layerImagePtr->getCelEnd();
-      data.it = layerImagePtr->findFirstCelIteratorAfter(firstFrame-1);
-      if (firstFrame > 0 && data.it != data.begin)
+
+      const frame_t firstRealFrame(m_adapter->toRealFrame(firstFrame));
+      const frame_t lastRealFrame(m_adapter->toRealFrame(lastFrame));
+      data.it = layerImagePtr->findFirstCelIteratorAfter(firstRealFrame-1);
+
+      if (firstRealFrame > 0 && data.it != data.begin)
         data.prevIt = data.it-1;
       else
         data.prevIt = data.end;
@@ -1783,7 +1815,7 @@ void Timeline::onPaint(ui::PaintEvent& ev)
       data.lastLink = data.end;
 
       if (layerPtr == m_layer) {
-        data.activeIt = layerImagePtr->findCelIterator(m_frame);
+        data.activeIt = layerImagePtr->findCelIterator(frame_t(realActiveFrame));
         if (data.activeIt != data.end) {
           data.firstLink = data.activeIt;
           data.lastLink = data.activeIt;
@@ -1796,7 +1828,7 @@ void Timeline::onPaint(ui::PaintEvent& ev)
               --it2;
               if ((*it2)->image()->id() == imageId) {
                 data.firstLink = it2;
-                if ((*data.firstLink)->frame() < firstFrame)
+                if ((*it2)->frame() < firstRealFrame)
                   break;
               }
             } while (it2 != data.begin);
@@ -1806,7 +1838,7 @@ void Timeline::onPaint(ui::PaintEvent& ev)
           while (it2 != data.end) {
             if ((*it2)->image()->id() == imageId) {
               data.lastLink = it2;
-              if ((*data.lastLink)->frame() > lastFrame)
+              if ((*it2)->frame() > lastRealFrame)
                 break;
             }
             ++it2;
@@ -1817,10 +1849,11 @@ void Timeline::onPaint(ui::PaintEvent& ev)
         data.activeIt = data.end;
 
       // Draw every visible cel for each layer.
-      for (frame=firstFrame; frame<=lastFrame; ++frame) {
+      for (frame=firstFrame; frame<=lastFrame; frame=col_t(frame+1)) {
+        const view::fr_t realFrame = m_adapter->toRealFrame(frame);
         Cel* cel =
           (data.it != data.end &&
-           (*data.it)->frame() == frame ? *data.it: nullptr);
+           (*data.it)->frame() == realFrame ? *data.it: nullptr);
 
         drawCel(g, layer, frame, cel, &data);
 
@@ -1873,6 +1906,7 @@ void Timeline::onAfterCommandExecution(CommandExecutionEvent& ev)
   // TODO Improve this: check if the structure of layers/frames has changed
   const doc::ObjectVersion currentVersion = m_document->sprite()->version();
   if (m_savedVersion != currentVersion) {
+    regenerateCols();
     regenerateRows();
     showCurrentCel();
     invalidate();
@@ -1881,8 +1915,10 @@ void Timeline::onAfterCommandExecution(CommandExecutionEvent& ev)
 
 void Timeline::onActiveSiteChange(const Site& site)
 {
-  if (hasMouse()) {
-    updateStatusBarForFrame(site.frame(), nullptr, site.cel());
+  if (m_adapter && hasMouse()) {
+    updateStatusBarForFrame(
+      m_adapter->toColFrame(fr_t(site.frame())),
+      nullptr, site.cel());
   }
 }
 
@@ -1904,6 +1940,7 @@ void Timeline::onAddLayer(DocEvent& ev)
 
   setLayer(ev.layer());
 
+  regenerateCols();
   regenerateRows();
   showCurrentCel();
   clearClipboardRange();
@@ -1913,7 +1950,7 @@ void Timeline::onAddLayer(DocEvent& ev)
 // TODO similar to ActiveSiteHandler::onBeforeRemoveLayer() and Editor::onBeforeRemoveLayer()
 void Timeline::onBeforeRemoveLayer(DocEvent& ev)
 {
-  Layer* layerToSelect = candidate_if_layer_is_deleted(m_layer, ev.layer());
+  Layer* layerToSelect = view::candidate_if_layer_is_deleted(m_layer, ev.layer());
   if (m_layer != layerToSelect)
     setLayer(layerToSelect);
 
@@ -1931,6 +1968,7 @@ void Timeline::onBeforeRemoveLayer(DocEvent& ev)
 // removed from the sprite.
 void Timeline::onAfterRemoveLayer(DocEvent& ev)
 {
+  regenerateCols();
   regenerateRows();
   showCurrentCel();
   clearClipboardRange();
@@ -1939,8 +1977,10 @@ void Timeline::onAfterRemoveLayer(DocEvent& ev)
 
 void Timeline::onAddFrame(DocEvent& ev)
 {
-  setFrame(ev.frame(), false);
+  const col_t col = m_adapter->toColFrame(fr_t(ev.frame()));
+  setFrame(col, false);
 
+  regenerateCols();
   showCurrentCel();
   clearClipboardRange();
   invalidate();
@@ -1949,22 +1989,29 @@ void Timeline::onAddFrame(DocEvent& ev)
 // TODO similar to ActiveSiteHandler::onRemoveFrame()
 void Timeline::onRemoveFrame(DocEvent& ev)
 {
+  const col_t evCol = m_adapter->toColFrame(fr_t(ev.frame()));
+
+  // In case that the column isn't visible we can just ignore this event
+  if (evCol == kNoCol) {
+    // TODO Check if we can just ignore this
+  }
   // Adjust current frame of all editors that are in a frame more
   // advanced that the removed one.
-  if (m_frame > ev.frame()) {
-    setFrame(m_frame-1, false);
+  else if (m_frame > evCol) {
+    setFrame(col_t(m_frame-1), false);
   }
   // If the editor was in the previous "last frame" (current value of
   // totalFrames()), we've to adjust it to the new last frame
   // (lastFrame())
-  else if (m_frame >= sprite()->totalFrames()) {
-    setFrame(sprite()->lastFrame(), false);
+  else if (m_frame >= m_adapter->totalFrames()) {
+    setFrame(lastFrame(), false);
   }
 
   // Disable the selected range when we remove frames
   if (m_range.enabled())
     clearAndInvalidateRange();
 
+  regenerateCols();
   showCurrentCel();
   clearClipboardRange();
   invalidate();
@@ -1989,13 +2036,20 @@ void Timeline::onAddTag(DocEvent& ev)
 {
   if (m_tagFocusBand >= 0) {
     m_tagFocusBand = -1;
-    regenerateRows();
+
+    regenerateTagBands();
+    updateScrollBars();
     layout();
   }
+  invalidate();
 }
 
 void Timeline::onRemoveTag(DocEvent& ev)
 {
+  if (m_adapter && m_adapter->isViewingTag(ev.tag())) {
+    updateTimelineAdapter(true);
+  }
+
   onAddTag(ev);
 }
 
@@ -2015,6 +2069,33 @@ void Timeline::onLayerCollapsedChanged(DocEvent& ev)
   invalidate();
 }
 
+void Timeline::onTagCollapsedChanged(DocEvent& ev)
+{
+  ASSERT(m_adapter);
+  if (!m_adapter)
+    return;
+
+  // Cache active frame/range to real frame/range to convert them back
+  // to virtual after we update the timeline adapter.
+  const view::fr_t realFrame = m_adapter->toRealFrame(m_frame);
+  const view::RealRange realRange = this->realRange();
+
+  updateTimelineAdapter(false);
+  regenerateCols();
+
+  // Restore frame and range
+  m_frame = m_adapter->toColFrame(realFrame);
+  if (m_frame == kNoCol)
+    m_frame = firstFrame();
+
+  if (realRange.enabled())
+    setRealRange(realRange);
+
+  regenerateTagBands();
+  updateScrollBars();
+  layout();
+}
+
 void Timeline::onStateChanged(Editor* editor)
 {
   m_aniControls.updateUsingEditor(editor);
@@ -2025,11 +2106,12 @@ void Timeline::onAfterFrameChanged(Editor* editor)
   if (m_fromTimeline)
     return;
 
-  setFrame(editor->frame(), false);
+  setFrame(m_adapter->toColFrame(fr_t(editor->frame())), false);
 
   if (!hasCapture() && !editor->keepTimelineRange())
     clearAndInvalidateRange();
 
+  regenerateCols();
   showCurrentCel();
 }
 
@@ -2113,11 +2195,32 @@ void Timeline::getDrawableLayers(layer_t* firstDrawableLayer,
   *lastDrawableLayer = j;
 }
 
-void Timeline::getDrawableFrames(frame_t* firstFrame, frame_t* lastFrame)
+void Timeline::getDrawableFrames(col_t* firstFrame, col_t* lastFrame)
 {
-  *firstFrame = frame_t(viewScroll().x / frameBoxWidth());
-  *lastFrame = frame_t((viewScroll().x
-      + getCelsBounds().w) / frameBoxWidth());
+  const int availW = (clientBounds().w - m_separator_x);
+
+  *firstFrame = getFrameInXPos(viewScroll().x);
+  *lastFrame = getFrameInXPos(viewScroll().x + availW);
+}
+
+// Gets the range of columns used by the tag. Returns false if the tag
+// is not visible (or is partially visible) with the current timeline
+// adapter/view.
+bool Timeline::getTagFrames(const doc::Tag* tag, col_t* fromFrame, col_t* toFrame) const
+{
+  ASSERT(tag);
+
+  *fromFrame = m_adapter->toColFrame(fr_t(tag->fromFrame()));
+  *toFrame = m_adapter->toColFrame(fr_t(tag->toFrame()));
+
+  if (m_resizeTagData.tag == tag->id()) {
+    *fromFrame = m_resizeTagData.from;
+    *toFrame = m_resizeTagData.to;
+  }
+
+  // TODO show partial tags
+  return (*fromFrame != kNoCol &&
+          *toFrame != kNoCol);
 }
 
 void Timeline::drawPart(ui::Graphics* g, const gfx::Rect& bounds,
@@ -2218,18 +2321,19 @@ void Timeline::drawHeader(ui::Graphics* g)
     NULL, styles.timelineBox(), false, false, false);
 }
 
-void Timeline::drawHeaderFrame(ui::Graphics* g, frame_t frame)
+void Timeline::drawHeaderFrame(ui::Graphics* g, col_t col)
 {
-  bool is_active = isFrameActive(frame);
-  bool is_hover = (m_hot.part == PART_HEADER_FRAME && m_hot.frame == frame);
-  bool is_clicked = (m_clk.part == PART_HEADER_FRAME && m_clk.frame == frame);
-  gfx::Rect bounds = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), frame));
+  bool is_active = isFrameActive(col);
+  bool is_hover = (m_hot.part == PART_HEADER_FRAME && m_hot.frame == col);
+  bool is_clicked = (m_clk.part == PART_HEADER_FRAME && m_clk.frame == col);
+  gfx::Rect bounds = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), col));
   IntersectClip clip(g, bounds);
   if (!clip)
     return;
 
   // Draw the header for the layers.
-  const int n = (docPref().timeline.firstFrame()+frame);
+  const fr_t frame = m_adapter->toRealFrame(col);
+  const int n = (docPref().timeline.firstFrame() + frame);
   std::string text = base::convert_to<std::string, int>(n % 100);
   if (n >= 100 && (n % 100) < 10)
     text.insert(0, 1, '0');
@@ -2382,7 +2486,7 @@ void Timeline::drawLayer(ui::Graphics* g, const int layerIdx)
 }
 
 void Timeline::drawCel(ui::Graphics* g,
-                       const layer_t layerIndex, const frame_t frame,
+                       const layer_t layerIndex, const col_t col,
                        const Cel* cel, const DrawCelData* data)
 {
   auto& styles = skinTheme()->styles;
@@ -2390,18 +2494,20 @@ void Timeline::drawCel(ui::Graphics* g,
   Image* image = (cel ? cel->image(): nullptr);
   bool is_hover = (m_hot.part == PART_CEL &&
     m_hot.layer == layerIndex &&
-    m_hot.frame == frame);
-  const bool is_active = isCelActive(layerIndex, frame);
-  const bool is_loosely_active = isCelLooselyActive(layerIndex, frame);
+    m_hot.frame == col);
+  const bool is_active = isCelActive(layerIndex, col);
+  const bool is_loosely_active = isCelLooselyActive(layerIndex, col);
   const bool is_empty = (image == nullptr);
-  gfx::Rect bounds = getPartBounds(Hit(PART_CEL, layerIndex, frame));
+  gfx::Rect bounds = getPartBounds(Hit(PART_CEL, layerIndex, col));
   gfx::Rect full_bounds = bounds;
   IntersectClip clip(g, bounds);
   if (!clip)
     return;
 
+  const fr_t frame = m_adapter->toRealFrame(col);
+
   // Draw background
-  if (layer == m_layer && frame == m_frame)
+  if (layer == m_layer && col == m_frame)
     drawPart(g, bounds, nullptr,
              m_range.enabled() ? styles.timelineFocusedCel():
                                  styles.timelineSelectedCel(), false, is_hover, true);
@@ -2477,7 +2583,7 @@ void Timeline::drawCel(ui::Graphics* g,
 
   // Draw decorators to link the activeCel with its links.
   if (data && data->activeIt != data->end)
-    drawCelLinkDecorators(g, full_bounds, cel, frame, is_loosely_active, is_hover, data);
+    drawCelLinkDecorators(g, full_bounds, cel, col, is_loosely_active, is_hover, data);
 
   // Draw 'z' if this cel has a custom z-index (non-zero)
   if (cel && cel->zIndex() != 0) {
@@ -2569,7 +2675,7 @@ void Timeline::drawCelOverlay(ui::Graphics* g)
 }
 
 void Timeline::drawCelLinkDecorators(ui::Graphics* g, const gfx::Rect& bounds,
-                                     const Cel* cel, const frame_t frame,
+                                     const Cel* cel, const col_t col,
                                      const bool is_active, const bool is_hover,
                                      const DrawCelData* data)
 {
@@ -2580,6 +2686,7 @@ void Timeline::drawCelLinkDecorators(ui::Graphics* g, const gfx::Rect& bounds,
   ui::Style* style2 = nullptr;
 
   // Links at the left or right side
+  fr_t frame = m_adapter->toRealFrame(col);
   bool left = (data->firstLink != data->end ? frame > (*data->firstLink)->frame(): false);
   bool right = (data->lastLink != data->end ? frame < (*data->lastLink)->frame(): false);
 
@@ -2624,7 +2731,7 @@ void Timeline::drawTags(ui::Graphics* g)
       m_tagBands > 1 &&
       m_tagFocusBand < 0) {
     gfx::Rect bandBounds =
-      getPartBounds(Hit(PART_TAG_BAND, -1, 0,
+      getPartBounds(Hit(PART_TAG_BAND, -1, kNoCol,
                         doc::NullId, m_hot.band));
     g->fillRect(theme->colors.timelineBandHighlight(), bandBounds);
   }
@@ -2643,17 +2750,14 @@ void Timeline::drawTags(ui::Graphics* g)
         }
       }
 
-      doc::frame_t fromFrame = tag->fromFrame();
-      doc::frame_t toFrame = tag->toFrame();
-      if (m_resizeTagData.tag == tag->id()) {
-        fromFrame = m_resizeTagData.from;
-        toFrame = m_resizeTagData.to;
-      }
+      col_t fromFrame, toFrame;
+      if (!getTagFrames(tag, &fromFrame, &toFrame))
+        continue;
 
       gfx::Rect bounds1 = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), fromFrame));
       gfx::Rect bounds2 = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), toFrame));
       gfx::Rect bounds = bounds1.createUnion(bounds2);
-      gfx::Rect tagBounds = getPartBounds(Hit(PART_TAG, 0, 0, tag->id()));
+      gfx::Rect tagBounds = getPartBounds(Hit(PART_TAG, 0, kNoCol, tag->id()));
       bounds.h = bounds.y2() - tagBounds.y2();
       bounds.y = tagBounds.y2();
 
@@ -2663,19 +2767,19 @@ void Timeline::drawTags(ui::Graphics* g)
           m_dropRange.type() == DocRange::kFrames) {
         switch (m_dropTarget.hhit) {
           case DropTarget::Before:
-            if (m_dropRange.firstFrame() == tag->fromFrame()) {
+            if (m_dropRange.firstFrame() == fromFrame) {
               dx = +frameBoxWidth()/4;
               dw = -frameBoxWidth()/4;
             }
-            else if (m_dropRange.firstFrame()-1 == tag->toFrame()) {
+            else if (m_dropRange.firstFrame()-1 == toFrame) {
               dw = -frameBoxWidth()/4;
             }
             break;
           case DropTarget::After:
-            if (m_dropRange.lastFrame() == tag->toFrame()) {
+            if (m_dropRange.lastFrame() == toFrame) {
               dw = -frameBoxWidth()/4;
             }
-            else if (m_dropRange.lastFrame()+1 == tag->fromFrame()) {
+            else if (m_dropRange.lastFrame()+1 == fromFrame) {
               dx = +frameBoxWidth()/4;
               dw = -frameBoxWidth()/4;
             }
@@ -2741,7 +2845,7 @@ void Timeline::drawTags(ui::Graphics* g)
   // Draw button to expand/collapse the active band
   if (m_hot.band >= 0 && m_tagBands > 1) {
     gfx::Rect butBounds =
-      getPartBounds(Hit(PART_TAG_SWITCH_BAND_BUTTON, -1, 0,
+      getPartBounds(Hit(PART_TAG_SWITCH_BAND_BUTTON, -1, kNoCol,
                         doc::NullId, m_hot.band));
     PaintWidgetPartInfo info;
     if (m_hot.part == PART_TAG_SWITCH_BAND_BUTTON) {
@@ -2791,10 +2895,9 @@ void Timeline::drawRangeOutline(ui::Graphics* g)
   theme()->paintWidgetPart(
     g, styles.timelineRangeOutline(), bounds, info);
 
-  Range drop = m_dropRange;
-  gfx::Rect dropBounds = getRangeBounds(drop);
+  gfx::Rect dropBounds = getRangeBounds(m_dropRange);
 
-  switch (drop.type()) {
+  switch (m_dropRange.type()) {
 
     case Range::kCels: {
       dropBounds = dropBounds.enlarge(outlineWidth());
@@ -2809,7 +2912,7 @@ void Timeline::drawRangeOutline(ui::Graphics* g)
 
       if (m_dropTarget.hhit == DropTarget::Before)
         dropBounds.x -= w/2;
-      else if (drop == m_range)
+      else if (m_dropRange == m_range)
         dropBounds.x = dropBounds.x + getRangeBounds(m_range).w - w/2;
       else
         dropBounds.x = dropBounds.x + dropBounds.w - w/2;
@@ -2827,7 +2930,7 @@ void Timeline::drawRangeOutline(ui::Graphics* g)
 
       if (m_dropTarget.vhit == DropTarget::Top)
         dropBounds.y -= h/2;
-      else if (drop == m_range)
+      else if (m_dropRange == m_range)
         dropBounds.y = dropBounds.y + getRangeBounds(m_range).h - h/2;
       else
         dropBounds.y = dropBounds.y + dropBounds.h - h/2;
@@ -2903,8 +3006,8 @@ gfx::Rect Timeline::getOnionskinFramesBounds() const
   if (!docPref.onionskin.active())
     return gfx::Rect();
 
-  frame_t firstFrame = m_frame - docPref.onionskin.prevFrames();
-  frame_t lastFrame = m_frame + docPref.onionskin.nextFrames();
+  col_t firstFrame = col_t(m_frame - docPref.onionskin.prevFrames());
+  col_t lastFrame = col_t(m_frame + docPref.onionskin.nextFrames());
 
   if (firstFrame < this->firstFrame())
     firstFrame = this->firstFrame();
@@ -2967,11 +3070,13 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
       return gfx::Rect(bounds.x + headerBoxWidth()*5, bounds.y + y,
                        separatorX() - headerBoxWidth()*5, headerBoxHeight());
 
-    case PART_HEADER_FRAME:
+    case PART_HEADER_FRAME: {
+      col_t frame = std::max(firstFrame(), hit.frame);
       return gfx::Rect(
         bounds.x + separatorX() + m_separator_w - 1
-        + frameBoxWidth()*std::max(firstFrame(), hit.frame) - viewScroll().x,
-        bounds.y + y, frameBoxWidth(), headerBoxHeight());
+        + getFrameXPos(frame) - viewScroll().x,
+        bounds.y + y, getFrameWidth(frame), headerBoxHeight());
+    }
 
     case PART_ROW:
       if (validLayer(hit.layer)) {
@@ -3017,9 +3122,11 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
     case PART_CEL:
       if (validLayer(hit.layer) && hit.frame >= frame_t(0)) {
         return gfx::Rect(
-          bounds.x + separatorX() + m_separator_w - 1 + frameBoxWidth()*hit.frame - viewScroll().x,
-          bounds.y + y + headerBoxHeight() + layerBoxHeight()*(lastLayer()-hit.layer) - viewScroll().y,
-          frameBoxWidth(), layerBoxHeight());
+          bounds.x + separatorX() + m_separator_w - 1
+          + getFrameXPos(hit.frame) - viewScroll().x,
+          bounds.y + y + headerBoxHeight()
+          + layerBoxHeight()*(lastLayer()-hit.layer) - viewScroll().y,
+          getFrameWidth(hit.frame), layerBoxHeight());
       }
       break;
 
@@ -3035,12 +3142,8 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
     case PART_TAG: {
       Tag* tag = hit.getTag();
       if (tag) {
-        doc::frame_t fromFrame = tag->fromFrame();
-        doc::frame_t toFrame = tag->toFrame();
-        if (m_resizeTagData.tag == tag->id()) {
-          fromFrame = m_resizeTagData.from;
-          toFrame = m_resizeTagData.to;
-        }
+        col_t fromFrame, toFrame;
+        getTagFrames(tag, &fromFrame, &toFrame);
 
         gfx::Rect bounds1 = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), fromFrame));
         gfx::Rect bounds2 = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), toFrame));
@@ -3117,14 +3220,14 @@ gfx::Rect Timeline::getRangeBounds(const Range& range) const
     case Range::kCels:
       for (auto layer : range.selectedLayers()) {
         layer_t layerIdx = getLayerIndex(layer);
-        for (auto frame : range.selectedFrames())
-          rc |= getPartBounds(Hit(PART_CEL, layerIdx, frame));
+        for (frame_t frame : range.selectedFrames())
+          rc |= getPartBounds(Hit(PART_CEL, layerIdx, col_t(frame)));
       }
       break;
     case Range::kFrames: {
-      for (auto frame : range.selectedFrames()) {
-        rc |= getPartBounds(Hit(PART_HEADER_FRAME, 0, frame));
-        rc |= getPartBounds(Hit(PART_CEL, 0, frame));
+      for (frame_t frame : range.selectedFrames()) {
+        rc |= getPartBounds(Hit(PART_HEADER_FRAME, 0, col_t(frame)));
+        rc |= getPartBounds(Hit(PART_CEL, 0, col_t(frame)));
       }
       break;
     }
@@ -3132,7 +3235,7 @@ gfx::Rect Timeline::getRangeBounds(const Range& range) const
       for (auto layer : range.selectedLayers()) {
         layer_t layerIdx = getLayerIndex(layer);
         rc |= getPartBounds(Hit(PART_ROW_TEXT, layerIdx));
-        rc |= getPartBounds(Hit(PART_CEL, layerIdx, m_sprite->lastFrame()));
+        rc |= getPartBounds(Hit(PART_CEL, layerIdx, lastFrame()));
       }
       break;
   }
@@ -3167,6 +3270,39 @@ gfx::Rect Timeline::getRangeClipBounds(const Range& range) const
   return clipBounds;
 }
 
+int Timeline::getFrameXPos(const col_t frame) const
+{
+  if (frame < 0 || m_cols.empty())
+    return 0;
+  else if (frame >= int(m_cols.size()))
+    return m_cols.back().x2() + frameBoxWidth() * (frame - m_cols.size());
+  else
+    return m_cols[frame].x();
+}
+
+int Timeline::getFrameWidth(const col_t frame) const
+{
+  return (frame >= 0 && frame < int(m_cols.size()) ?
+          m_cols[frame].width():
+          frameBoxWidth());
+}
+
+view::col_t Timeline::getFrameInXPos(const int x) const
+{
+  col_t f = col_t(0);
+  for (auto
+         it = m_cols.begin(),
+         end = m_cols.end();
+       it != end; ++it) {
+    if (x >= it->x() && x < it->x2())
+      return f;
+    f = col_t(f+1);
+  }
+  if (!m_cols.empty())
+    f = col_t(f + (x - m_cols.back().x2()) / frameBoxWidth());
+  return f;
+}
+
 void Timeline::invalidateHit(const Hit& hit)
 {
   if (hit.band >= 0) {
@@ -3197,7 +3333,7 @@ void Timeline::invalidateLayer(const Layer* layer)
   invalidateRect(rc);
 }
 
-void Timeline::invalidateFrame(const frame_t frame)
+void Timeline::invalidateFrame(const col_t frame)
 {
   if (!validFrame(frame))
     return;
@@ -3210,6 +3346,30 @@ void Timeline::invalidateFrame(const frame_t frame)
   rc |= rcCels;
   rc.offset(origin());
   invalidateRect(rc);
+}
+
+void Timeline::regenerateCols()
+{
+  ASSERT(m_document);
+  ASSERT(m_sprite);
+
+  const col_t nframes = m_adapter->totalFrames();
+  const col_t ncols = std::max(col_t(1), nframes);
+  m_cols.resize(ncols);
+
+  col_t f = col_t(0);
+  int x = 0;
+  for (; f<nframes; f=col_t(f+1)) {
+    int duration = m_adapter->frameDuration(f);
+    int w = frameBoxWidth();
+    m_cols[f] = Col(duration, x, w);
+    x += w;
+  }
+  for (; f<frame_t(m_cols.size()); f=col_t(f+1)) {
+    int w = frameBoxWidth();
+    m_cols[f] = Col(0, x, w);
+    x += w;
+  }
 }
 
 void Timeline::regenerateRows()
@@ -3247,28 +3407,30 @@ void Timeline::regenerateTagBands()
   const bool oldEmptyTagBand = m_tagBand.empty();
 
   // TODO improve this implementation
-  std::vector<unsigned char> tagsPerFrame(m_sprite->totalFrames(), 0);
+  std::vector<unsigned char> tagsPerFrame(m_adapter->totalFrames(), 0);
   std::vector<Tag*> bands(4, nullptr);
   m_tagBand.clear();
   for (Tag* tag : m_sprite->tags()) {
-    frame_t f = tag->fromFrame();
+    col_t fromFrame, toFrame;
+    if (!getTagFrames(tag, &fromFrame, &toFrame))
+      continue; // Ignore tags that are not inside the timeline adapter/view
 
     int b=0;
     for (; b<int(bands.size()); ++b) {
       if (!bands[b] ||
-          tag->fromFrame() > calcTagVisibleToFrame(bands[b])) {
+          fromFrame > calcTagVisibleToFrame(bands[b])) {
         bands[b] = tag;
         m_tagBand[tag] = b;
         break;
       }
     }
     if (b == int(bands.size()))
-      m_tagBand[tag] = tagsPerFrame[f];
+      m_tagBand[tag] = tagsPerFrame[fromFrame];
 
-    frame_t toFrame = calcTagVisibleToFrame(tag);
-    if (toFrame >= frame_t(tagsPerFrame.size()))
+    toFrame = calcTagVisibleToFrame(tag);
+    if (toFrame >= col_t(tagsPerFrame.size()))
       tagsPerFrame.resize(toFrame+1, 0);
-    for (; f<=toFrame; ++f) {
+    for (col_t f=fromFrame; f<=toFrame; f=col_t(f+1)) {
       ASSERT(f < frame_t(tagsPerFrame.size()));
       if (tagsPerFrame[f] < 255)
         ++tagsPerFrame[f];
@@ -3322,7 +3484,7 @@ void Timeline::updateByMousePos(ui::Message* msg, const gfx::Point& mousePos)
 
 Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
 {
-  Hit hit(PART_NOTHING, -1, -1);
+  Hit hit(PART_NOTHING);
   if (!m_document)
     return hit;
 
@@ -3339,10 +3501,11 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
         - headerBoxHeight()
         + scroll.y) / layerBoxHeight());
 
-    hit.frame = frame_t((mousePos.x
-        - separatorX()
-        - m_separator_w
-        + scroll.x) / frameBoxWidth());
+    hit.frame = getFrameInXPos(
+      mousePos.x
+      - separatorX()
+      - m_separator_w
+      + scroll.x);
 
     // Flag which indicates that we are in the are below the Background layer/last layer area
     if (hit.layer < 0)
@@ -3357,7 +3520,7 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
     }
     else {
       if (hit.layer > lastLayer()) hit.layer = -1;
-      if (hit.frame > lastFrame()) hit.frame = -1;
+      if (hit.frame > lastFrame()) hit.frame = kNoCol;
     }
 
     // Is the mouse over onionskin handles?
@@ -3375,7 +3538,7 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
         if (m_tagFocusBand < 0) {
           for (int band=0; band<m_tagBands; ++band) {
             gfx::Rect bounds = getPartBounds(
-              Hit(PART_TAG_SWITCH_BAND_BUTTON, 0, 0,
+              Hit(PART_TAG_SWITCH_BAND_BUTTON, 0, kNoCol,
                   doc::NullId, band));
             if (bounds.contains(mousePos)) {
               hit.part = PART_TAG_SWITCH_BAND_BUTTON;
@@ -3386,7 +3549,7 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
         }
         else {
           gfx::Rect bounds = getPartBounds(
-            Hit(PART_TAG_SWITCH_BAND_BUTTON, 0, 0,
+            Hit(PART_TAG_SWITCH_BAND_BUTTON, 0, kNoCol,
                 doc::NullId, m_tagFocusBand));
           if (bounds.contains(mousePos)) {
             hit.part = PART_TAG_SWITCH_BAND_BUTTON;
@@ -3398,6 +3561,10 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
       // Mouse in frame tags
       if (hit.part == PART_NOTHING) {
         for (Tag* tag : m_sprite->tags()) {
+          col_t fromFrame, toFrame;
+          if (!getTagFrames(tag, &fromFrame, &toFrame))
+            continue;
+
           const int band = m_tagBand[tag];
 
           // Skip unfocused bands
@@ -3406,7 +3573,7 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
             continue;
           }
 
-          gfx::Rect tagBounds = getPartBounds(Hit(PART_TAG, 0, 0, tag->id()));
+          gfx::Rect tagBounds = getPartBounds(Hit(PART_TAG, 0, kNoCol, tag->id()));
           if (tagBounds.contains(mousePos)) {
             hit.part = PART_TAG;
             hit.tag = tag->id();
@@ -3415,13 +3582,15 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
           }
           // Check if we are in the left/right handles to resize the tag
           else {
-            gfx::Rect bounds1 = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), tag->fromFrame()));
-            gfx::Rect bounds2 = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), tag->toFrame()));
+            gfx::Rect bounds1 = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), fromFrame));
+            gfx::Rect bounds2 = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), toFrame));
             gfx::Rect bounds = bounds1.createUnion(bounds2);
             bounds.h = bounds.y2() - tagBounds.y2();
             bounds.y = tagBounds.y2();
 
-            gfx::Rect bandBounds = getPartBounds(Hit(PART_TAG_BAND, 0, 0, doc::NullId, band));
+            gfx::Rect bandBounds = getPartBounds(
+              Hit(PART_TAG_BAND, 0, kNoCol,
+                  doc::NullId, band));
 
             const int fw = frameBoxWidth()/2;
             if (gfx::Rect(bounds.x2()-fw, bounds.y, fw, bounds.h).contains(mousePos)) {
@@ -3450,7 +3619,7 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
         if (m_tagFocusBand < 0) {
           for (int band=0; band<m_tagBands; ++band) {
             gfx::Rect bounds = getPartBounds(
-              Hit(PART_TAG_BAND, 0, 0,
+              Hit(PART_TAG_BAND, 0, kNoCol,
                   doc::NullId, band));
             if (bounds.contains(mousePos)) {
               hit.part = PART_TAG_BAND;
@@ -3461,7 +3630,7 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
         }
         else {
           gfx::Rect bounds = getPartBounds(
-            Hit(PART_TAG_BAND, 0, 0,
+            Hit(PART_TAG_BAND, 0, kNoCol,
                 doc::NullId, m_tagFocusBand));
           if (bounds.contains(mousePos)) {
             hit.part = PART_TAG_BAND;
@@ -3542,7 +3711,7 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
 
 Timeline::Hit Timeline::hitTestCel(const gfx::Point& mousePos)
 {
-  Hit hit(PART_NOTHING, -1, -1);
+  Hit hit(PART_NOTHING);
   if (!m_document)
     return hit;
 
@@ -3555,10 +3724,11 @@ Timeline::Hit Timeline::hitTestCel(const gfx::Point& mousePos)
      - headerBoxHeight()
      + scroll.y) / layerBoxHeight());
 
-  hit.frame = frame_t((mousePos.x
-                       - separatorX()
-                       - m_separator_w
-                       + scroll.x) / frameBoxWidth());
+  hit.frame = getFrameInXPos(
+    mousePos.x
+    - separatorX()
+    - m_separator_w
+    + scroll.x);
 
   hit.layer = std::clamp(hit.layer, firstLayer(), lastLayer());
   hit.frame = std::max(firstFrame(), hit.frame);
@@ -3723,7 +3893,7 @@ void Timeline::updateStatusBar(ui::Message* msg)
       case PART_HEADER_FRAME:
       case PART_CEL:
       case PART_TAG: {
-        frame_t frame = m_frame;
+        col_t frame = m_frame;
         if (validFrame(m_hot.frame))
           frame = m_hot.frame;
 
@@ -3739,15 +3909,16 @@ void Timeline::updateStatusBar(ui::Message* msg)
   sb->showDefaultText();
 }
 
-void Timeline::updateStatusBarForFrame(const frame_t frame,
+void Timeline::updateStatusBarForFrame(const col_t col,
                                        const Tag* tag,
                                        const Cel* cel)
 {
-  if (!m_sprite)
+  if (!m_sprite || !m_adapter)
     return;
 
   char buf[256] = { 0 };
   frame_t base = docPref().timeline.firstFrame();
+  const fr_t frame = m_adapter->toRealFrame(col);
   frame_t firstFrame = frame;
   frame_t lastFrame = frame;
 
@@ -3757,8 +3928,8 @@ void Timeline::updateStatusBarForFrame(const frame_t frame,
   }
   else if (m_range.enabled() &&
            m_range.frames() > 1) {
-    firstFrame = m_range.firstFrame();
-    lastFrame = m_range.lastFrame();
+    firstFrame = m_adapter->toRealFrame(col_t(m_range.firstFrame()));
+    lastFrame = m_adapter->toRealFrame(col_t(m_range.lastFrame()));
   }
 
   std::sprintf(
@@ -3773,7 +3944,7 @@ void Timeline::updateStatusBarForFrame(const frame_t frame,
 
   std::sprintf(
     buf+std::strlen(buf), " :clock: %s",
-    human_readable_time(m_sprite->frameDuration(frame)).c_str());
+    human_readable_time(m_adapter->frameDuration(col)).c_str());
   if (firstFrame != lastFrame) {
     std::sprintf(
       buf+std::strlen(buf), " [%s]",
@@ -3802,7 +3973,7 @@ void Timeline::updateStatusBarForFrame(const frame_t frame,
   StatusBar::instance()->setStatusText(0, buf);
 }
 
-void Timeline::showCel(layer_t layer, frame_t frame)
+void Timeline::showCel(layer_t layer, col_t frame)
 {
   gfx::Point scroll = viewScroll();
 
@@ -3814,9 +3985,9 @@ void Timeline::showCel(layer_t layer, frame_t frame)
     viewport.h += m_vbar.getBarWidth();
 
   gfx::Rect celBounds(
-    viewport.x + frameBoxWidth()*frame - scroll.x,
+    viewport.x + getFrameXPos(frame) - scroll.x,
     viewport.y + layerBoxHeight()*(lastLayer() - layer) - scroll.y,
-    frameBoxWidth(), layerBoxHeight());
+    getFrameWidth(frame), layerBoxHeight());
 
   const bool isPlaying = m_editor->isPlaying();
 
@@ -3871,7 +4042,7 @@ gfx::Size Timeline::getScrollableSize() const
 {
   if (m_sprite) {
     return gfx::Size(
-      m_sprite->totalFrames() * frameBoxWidth() + getCelsBounds().w/2,
+      getFrameXPos(m_adapter->totalFrames()) + getCelsBounds().w/2,
       (m_rows.size()+1) * layerBoxHeight());
   }
   else
@@ -3978,15 +4149,15 @@ bool Timeline::isLayerActive(const layer_t layerIndex) const
     return m_range.contains(layer);
 }
 
-bool Timeline::isFrameActive(const frame_t frame) const
+bool Timeline::isFrameActive(const col_t frame) const
 {
   if (frame == m_frame)
     return true;
   else
-    return m_range.contains(frame);
+    return m_range.contains(frame_t(frame));
 }
 
-bool Timeline::isCelActive(const layer_t layerIdx, const frame_t frame) const
+bool Timeline::isCelActive(const layer_t layerIdx, const col_t frame) const
 {
   Layer* layer = getLayer(layerIdx);
   if (!layer)
@@ -3999,7 +4170,7 @@ bool Timeline::isCelActive(const layer_t layerIdx, const frame_t frame) const
             frame == m_frame);
 }
 
-bool Timeline::isCelLooselyActive(const layer_t layerIdx, const frame_t frame) const
+bool Timeline::isCelLooselyActive(const layer_t layerIdx, const col_t frame) const
 {
   Layer* layer = getLayer(layerIdx);
   if (!layer)
@@ -4016,9 +4187,9 @@ bool Timeline::isCelLooselyActive(const layer_t layerIdx, const frame_t frame) c
 void Timeline::dropRange(DropOp op)
 {
   bool copy = (op == Timeline::kCopy);
-  Range newFromRange;
+  VirtualRange newFromRange;
   DocRangePlace place = kDocRangeAfter;
-  Range dropRange = m_dropRange;
+  RealRange dropRange = view::to_real_range(m_adapter.get(), m_dropRange);
   bool outside = m_dropTarget.outside;
 
   switch (m_range.type()) {
@@ -4054,13 +4225,14 @@ void Timeline::dropRange(DropOp op)
   try {
     TagsHandling tagsHandling = (outside ? kFitOutsideTags:
                                            kFitInsideTags);
+    const RealRange realRange = this->realRange();
 
     invalidateRange();
     if (copy)
-      newFromRange = copy_range(m_document, m_range, dropRange,
+      newFromRange = copy_range(m_document, realRange, dropRange,
                                 place, tagsHandling);
     else
-      newFromRange = move_range(m_document, m_range, dropRange,
+      newFromRange = move_range(m_document, realRange, dropRange,
                                 place, tagsHandling);
 
     // If we drop a cel in the same frame (but in another layer),
@@ -4068,6 +4240,7 @@ void Timeline::dropRange(DropOp op)
     // all views.
     m_document->notifyGeneralUpdate();
 
+    newFromRange = view::to_virtual_range(m_adapter.get(), newFromRange);
     moveRange(newFromRange);
 
     invalidateRange();
@@ -4224,7 +4397,7 @@ void Timeline::invalidateRange()
     for (const Layer* layer : m_range.selectedLayers())
       invalidateLayer(layer);
     for (const frame_t frame : m_range.selectedFrames())
-      invalidateFrame(frame);
+      invalidateFrame(col_t(frame));
 
     invalidateHit(Hit(PART_RANGE_OUTLINE));
   }
@@ -4296,14 +4469,21 @@ double Timeline::zoom() const
     return 1.0;
 }
 
-// Returns the last frame where the frame tag (or frame tag label)
-// is visible in the timeline.
-int Timeline::calcTagVisibleToFrame(Tag* tag) const
+// Returns the last frame where the frame tag (or tag label) is
+// visible in the timeline.
+view::col_t Timeline::calcTagVisibleToFrame(Tag* tag) const
 {
-  return
-    std::max(tag->toFrame(),
-             tag->fromFrame() +
-             font()->textLength(tag->name())/frameBoxWidth());
+  col_t frame =
+    getFrameInXPos(
+      getFrameXPos(m_adapter->toColFrame(fr_t(tag->fromFrame()))) +
+      font()->textLength(tag->name()));
+
+  return std::max(frame, m_adapter->toColFrame(fr_t(tag->toFrame())));
+}
+
+view::col_t Timeline::lastFrame() const
+{
+  return std::max(col_t(0), col_t(m_adapter->totalFrames()-1));
 }
 
 int Timeline::topHeight() const
@@ -4449,22 +4629,24 @@ int Timeline::tagFramesDuration(const Tag* tag) const
   ASSERT(m_sprite);
   ASSERT(tag);
 
+  const col_t fromFrame = m_adapter->toColFrame(fr_t(tag->fromFrame()));
+  const col_t toFrame = m_adapter->toColFrame(fr_t(tag->toFrame()));
   int duration = 0;
-  for (frame_t f=tag->fromFrame();
-       f<tag->toFrame(); ++f) {
-    duration += m_sprite->frameDuration(f);
+  for (col_t f=fromFrame; f<=toFrame; f=col_t(f+1)) {
+    duration += m_adapter->frameDuration(f);
   }
   return duration;
 }
 
 int Timeline::selectedFramesDuration() const
 {
-  ASSERT(m_sprite);
+  ASSERT(m_adapter);
 
+  const col_t nframes = m_adapter->totalFrames();
   int duration = 0;
-  for (frame_t f=0; f<m_sprite->totalFrames(); ++f) {
+  for (col_t f = col_t(0); f<nframes; f=col_t(f+1)) {
     if (isFrameActive(f))
-      duration += m_sprite->frameDuration(f);
+      duration += m_adapter->frameDuration(f);
   }
   return duration; // TODO cache this value
 }
@@ -4588,6 +4770,30 @@ int Timeline::separatorX() const
 void Timeline::setSeparatorX(int newValue)
 {
   m_separator_x = std::max(0, newValue) / guiscale();
+}
+
+// Re-constructs the timeline adapter
+void Timeline::updateTimelineAdapter(bool allTags)
+{
+  // Search a tag to show
+  Tag* showTag = nullptr;
+  if (!allTags) {
+    for (Tag* tag : m_sprite->tags()) {
+      // TODO we're using the "collapse flag" just for testing (the
+      //      collapse flag should have exactly the opposite effect,
+      //      hide the tag)
+      if (tag->isCollapsed()) {
+        showTag = tag;
+        break;
+      }
+    }
+  }
+  if (showTag)
+    m_adapter = std::make_unique<view::ShowTagTimelineAdapter>(m_sprite, showTag);
+  else
+    m_adapter = std::make_unique<view::FullSpriteTimelineAdapter>(m_sprite);
+
+  invalidate();
 }
 
 //static

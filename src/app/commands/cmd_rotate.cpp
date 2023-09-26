@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -26,7 +26,6 @@
 #include "app/ui/status_bar.h"
 #include "app/ui/timeline/timeline.h"
 #include "app/ui/toolbar.h"
-#include "app/util/range_utils.h"
 #include "base/convert_to.h"
 #include "doc/cel.h"
 #include "doc/cels_range.h"
@@ -214,15 +213,7 @@ void RotateCommand::onExecute(Context* context)
         }
       }
 
-      auto range = App::instance()->timeline()->range();
-      if (range.enabled())
-        cels = get_unique_cels_to_edit_pixels(site.sprite(), range);
-      else if (site.cel() &&
-               site.layer() &&
-               site.layer()->canEditPixels()) {
-        cels.push_back(site.cel());
-      }
-
+      cels = site.selectedUniqueCelsToEditPixels();
       if (cels.empty()) {
         StatusBar::instance()->showTip(
           1000, Strings::statusbar_tips_all_layers_are_locked());
@@ -231,9 +222,7 @@ void RotateCommand::onExecute(Context* context)
     }
     // Flip the whole sprite (even locked layers)
     else if (site.sprite()) {
-      for (Cel* cel : site.sprite()->uniqueCels())
-        cels.push_back(cel);
-
+      cels = site.sprite()->uniqueCels().toList();
       rotateSprite = true;
     }
 

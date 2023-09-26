@@ -19,6 +19,7 @@
 #include "doc/frame.h"
 #include "obs/observable.h"
 #include "obs/signal.h"
+#include "view/range.h"
 
 #include <memory>
 #include <vector>
@@ -33,7 +34,6 @@ namespace app {
   class Clipboard;
   class Command;
   class Doc;
-  class DocRange;
   class DocView;
   class Preferences;
 
@@ -111,10 +111,11 @@ namespace app {
 
     Site activeSite() const;
     Doc* activeDocument() const;
+    const view::RealRange& range() const;
     void setActiveDocument(Doc* document);
     void setActiveLayer(doc::Layer* layer);
     void setActiveFrame(doc::frame_t frame);
-    void setRange(const DocRange& range);
+    void setRange(const view::RealRange& range);
     void setSelectedColors(const doc::PalettePicks& picks);
     void setSelectedTiles(const doc::PalettePicks& picks);
     bool hasModifiedDocuments() const;
@@ -142,7 +143,7 @@ namespace app {
     virtual void onSetActiveDocument(Doc* doc, bool notify);
     virtual void onSetActiveLayer(doc::Layer* layer);
     virtual void onSetActiveFrame(const doc::frame_t frame);
-    virtual void onSetRange(const DocRange& range);
+    virtual void onSetRange(const view::RealRange& range);
     virtual void onSetSelectedColors(const doc::PalettePicks& picks);
     virtual void onSetSelectedTiles(const doc::PalettePicks& picks);
     virtual void onCloseDocument(Doc* doc);
@@ -159,6 +160,7 @@ namespace app {
     ContextFlags m_flags;       // Last updated flags.
     Doc* m_lastSelectedDoc;
     mutable std::unique_ptr<Preferences> m_preferences;
+    mutable view::RealRange m_range; // Last/current range
 
     // Result of the execution of a command.
     CommandResult m_result;

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -10,8 +10,8 @@
 #pragma once
 
 #include "app/cmd_sequence.h"
-#include "app/doc_range.h"
 #include "app/sprite_position.h"
+#include "view/range.h"
 
 #include <memory>
 #include <sstream>
@@ -32,7 +32,7 @@ namespace app {
     // the new CmdTransaction.
     CmdTransaction* moveToEmptyCopy();
 
-    void setNewDocRange(const DocRange& range);
+    void setNewDocRange(const view::RealRange& range);
     void updateSpritePositionAfter();
 
     SpritePosition spritePositionBeforeExecute() const { return m_spritePositionBefore; }
@@ -51,7 +51,7 @@ namespace app {
   private:
     SpritePosition calcSpritePosition() const;
     bool isDocRangeEnabled() const;
-    DocRange calcDocRange() const;
+    view::RealRange calcDocRange() const;
 
     struct Ranges {
       std::stringstream m_before;
