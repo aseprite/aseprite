@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -520,12 +520,12 @@ void ColorSliders::onSetColor(const app::Color& color)
   setAbsSliderValue(Channel::Red,           color.getRed());
   setAbsSliderValue(Channel::Green,         color.getGreen());
   setAbsSliderValue(Channel::Blue,          color.getBlue());
-  setAbsSliderValue(Channel::HsvHue,        int(color.getHsvHue()));
-  setAbsSliderValue(Channel::HsvSaturation, int(color.getHsvSaturation() * 100.0));
-  setAbsSliderValue(Channel::HsvValue,      int(color.getHsvValue() * 100.0));
-  setAbsSliderValue(Channel::HslHue,        int(color.getHslHue()));
-  setAbsSliderValue(Channel::HslSaturation, int(color.getHslSaturation() * 100.0));
-  setAbsSliderValue(Channel::HslLightness,  int(color.getHslLightness() * 100.0));
+  setAbsSliderValue(Channel::HsvHue,        int(color.getHsvHue() + 0.5));
+  setAbsSliderValue(Channel::HsvSaturation, int(color.getHsvSaturation() * 100.0 + 0.5));
+  setAbsSliderValue(Channel::HsvValue,      int(color.getHsvValue() * 100.0 + 0.5));
+  setAbsSliderValue(Channel::HslHue,        int(color.getHslHue() + 0.5));
+  setAbsSliderValue(Channel::HslSaturation, int(color.getHslSaturation() * 100.0 + 0.5));
+  setAbsSliderValue(Channel::HslLightness,  int(color.getHslLightness() * 100.0 + 0.5));
   setAbsSliderValue(Channel::Gray,          color.getGray());
   setAbsSliderValue(Channel::Alpha,         color.getAlpha());
 }
