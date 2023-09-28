@@ -194,8 +194,11 @@ DitheringSelector::DitheringSelector(Type type)
 void DitheringSelector::onInitTheme(ui::InitThemeEvent& ev)
 {
   ComboBox::onInitTheme(ev);
-  if (getItem(0))
-    setSizeHint(getItem(0)->sizeHint());
+  if (getItem(0)){
+    gfx::Size selectorSz = getItem(0)->sizeHint();
+    selectorSz.w += 8 * guiscale(); // Added offset to prevent unnecessary scrollbar in X dimension
+    setSizeHint(selectorSz);
+  }
 }
 
 void DitheringSelector::setSelectedItemByName(const std::string& name)
@@ -264,7 +267,9 @@ void DitheringSelector::regenerate(int selectedItemIndex)
   }
   selectedItemIndex = std::clamp(selectedItemIndex, 0, std::max(0, getItemCount()-1));
   setSelectedItemIndex(selectedItemIndex);
-  setSizeHint(getItem(selectedItemIndex)->sizeHint());
+  gfx::Size selectorSz = getItem(selectedItemIndex)->sizeHint();
+  selectorSz.w += 8 * guiscale(); // Added offset to prevent unnecessary scrollbar in X dimension
+  setSizeHint(selectorSz);
 }
 
 render::DitheringAlgorithm DitheringSelector::ditheringAlgorithm()
