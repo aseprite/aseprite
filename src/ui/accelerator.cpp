@@ -330,6 +330,7 @@ std::string Accelerator::toString() const
 bool Accelerator::isPressed(KeyModifiers modifiers, KeyScancode scancode, int unicodeChar) const
 {
   return ((scancode && *this == Accelerator(modifiers, scancode, 0)) ||
+          (scancode && *this == Accelerator(kKeyNoneModifier, scancode, 0)) ||
           (unicodeChar && *this == Accelerator(modifiers, kKeyNil, unicodeChar)));
 }
 
