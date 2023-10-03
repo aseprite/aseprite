@@ -408,7 +408,7 @@ if(ENABLE_UI)
     ui/rgbmap_algorithm_selector.cpp
     ui/sampling_selector.cpp
     ui/search_entry.cpp
-    ui/select_accelerator.cpp
+    ui/select_keyshortcut.cpp
     ui/selection_mode_field.cpp
     ui/skin/font_data.cpp
     ui/skin/skin_part.cpp

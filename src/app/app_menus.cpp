@@ -132,7 +132,7 @@ bool can_call_global_shortcut(const AppMenuItem::Native* native)
 }
 
 // TODO this should be on "she" library (or we should use
-// os::Shortcut instead of ui::Accelerators)
+// os::Shortcut instead of ui::KeyShortcuts)
 int from_scancode_to_unicode(KeyScancode scancode)
 {
   static int map[] = {
@@ -300,20 +300,20 @@ void destroy_menu_item(ui::Widget* item)
 
 os::Shortcut get_os_shortcut_from_key(const Key* key)
 {
-  if (key && !key->accels().empty()) {
-    const ui::Accelerator& accel = key->accels().front();
+  if (key && !key->keyshortcuts().empty()) {
+    const ui::KeyShortcut& keyshortcut = key->keyshortcuts().front();
 
 #ifdef __APPLE__
     // Shortcuts with spacebar as modifier do not work well in macOS
     // (they will be called when the space bar is unpressed too).
-    if ((accel.modifiers() & ui::kKeySpaceModifier) == ui::kKeySpaceModifier)
+    if ((keyshortcut.modifiers() & ui::kKeySpaceModifier) == ui::kKeySpaceModifier)
       return os::Shortcut();
 #endif
 
     return os::Shortcut(
-      (accel.unicodeChar() ? accel.unicodeChar():
-                             from_scancode_to_unicode(accel.scancode())),
-      accel.modifiers());
+      (keyshortcut.unicodeChar() ? keyshortcut.unicodeChar():
+                             from_scancode_to_unicode(keyshortcut.scancode())),
+      keyshortcut.modifiers());
   }
   else
     return os::Shortcut();

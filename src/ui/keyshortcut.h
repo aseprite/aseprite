@@ -4,8 +4,8 @@
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
-#ifndef UI_ACCELERATOR_H_INCLUDED
-#define UI_ACCELERATOR_H_INCLUDED
+#ifndef UI_KEYSHORTCUT_H_INCLUDED
+#define UI_KEYSHORTCUT_H_INCLUDED
 #pragma once
 
 #include <string>
@@ -17,13 +17,12 @@ namespace ui {
 
   extern const char* kWinKeyName;
 
-  // TODO rename this class to Shortcut
-  class Accelerator {
+  class KeyShortcut {
   public:
-    Accelerator();
-    Accelerator(KeyModifiers modifiers, KeyScancode scancode, int unicodeChar);
-    // Convert string like "Ctrl+Q" or "Alt+X" into an accelerator.
-    explicit Accelerator(const std::string& str);
+    KeyShortcut();
+    KeyShortcut(KeyModifiers modifiers, KeyScancode scancode, int unicodeChar);
+    // Convert string like "Ctrl+Q" or "Alt+X" into a keyboard shortcut.
+    explicit KeyShortcut(const std::string& str);
 
     bool isEmpty() const;
     std::string toString() const;
@@ -38,8 +37,8 @@ namespace ui {
     // modifiers are allowed too).
     bool isLooselyPressed() const;
 
-    bool operator==(const Accelerator& other) const;
-    bool operator!=(const Accelerator& other) const {
+    bool operator==(const KeyShortcut& other) const;
+    bool operator!=(const KeyShortcut& other) const {
       return !operator==(other);
     }
 
@@ -53,10 +52,9 @@ namespace ui {
     int m_unicodeChar;
   };
 
-  // TODO rename this class to Shortcuts
-  class Accelerators {
+  class KeyShortcuts {
   public:
-    typedef std::vector<Accelerator> List;
+    typedef std::vector<KeyShortcut> List;
     typedef List::iterator iterator;
     typedef List::const_iterator const_iterator;
 
@@ -68,20 +66,20 @@ namespace ui {
     bool empty() const { return m_list.empty(); }
     std::size_t size() const { return m_list.size(); }
 
-    const ui::Accelerator& front() const { return m_list.front(); }
+    const ui::KeyShortcut& front() const { return m_list.front(); }
 
-    const ui::Accelerator& operator[](int index) const {
+    const ui::KeyShortcut& operator[](int index) const {
       return m_list[index];
     }
 
-    ui::Accelerator& operator[](int index) {
+    ui::KeyShortcut& operator[](int index) {
       return m_list[index];
     }
 
     void clear() { m_list.clear(); }
-    bool has(const Accelerator& accel) const;
-    void add(const Accelerator& accel);
-    void remove(const Accelerator& accel);
+    bool has(const KeyShortcut& keyshortcut) const;
+    void add(const KeyShortcut& keyshortcut);
+    void remove(const KeyShortcut& keyshortcut);
 
   private:
     List m_list;

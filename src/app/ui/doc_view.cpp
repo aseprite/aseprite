@@ -42,7 +42,7 @@
 #include "doc/layer.h"
 #include "doc/sprite.h"
 #include "fmt/format.h"
-#include "ui/accelerator.h"
+#include "ui/keyshortcut.h"
 #include "ui/alert.h"
 #include "ui/menu.h"
 #include "ui/message.h"

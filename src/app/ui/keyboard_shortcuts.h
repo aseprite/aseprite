@@ -53,7 +53,7 @@ namespace app {
     KeyPtr wheelAction(const WheelAction action) const;
     KeyPtr dragAction(const WheelAction action) const;
 
-    void disableAccel(const ui::Accelerator& accel,
+    void disableKeyShortcut(const ui::KeyShortcut& keyshortcut,
                       const KeySource source,
                       const KeyContext keyContext,
                       const Key* newKey);
@@ -79,7 +79,7 @@ namespace app {
 
   private:
     void exportKeys(TiXmlElement& parent, KeyType type);
-    void exportAccel(TiXmlElement& parent, const Key* key, const ui::Accelerator& accel, bool removed);
+    void exportKeyShortcut(TiXmlElement& parent, const Key* key, const ui::KeyShortcut& keyshortcut, bool removed);
 
     mutable Keys m_keys;
   };

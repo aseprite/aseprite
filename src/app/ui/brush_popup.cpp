@@ -422,8 +422,8 @@ void BrushPopup::regenerate(ui::Display* display,
       params.set("slot", base::convert_to<std::string>(slot).c_str());
       KeyPtr key = KeyboardShortcuts::instance()->command(
         CommandId::ChangeBrush(), params);
-      if (key && !key->accels().empty())
-        shortcut = key->accels().front().toString();
+      if (key && !key->keyshortcuts().empty())
+        shortcut = key->keyshortcuts().front().toString();
     }
     m_customBrushes->addItem(new SelectBrushItem(brush, slot));
     m_customBrushes->addItem(new BrushShortcutItem(shortcut, slot));

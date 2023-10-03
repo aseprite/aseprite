@@ -9,7 +9,7 @@
 #define UI_UI_H_INCLUDED
 #pragma once
 
-#include "ui/accelerator.h"
+#include "ui/keyshortcut.h"
 #include "ui/alert.h"
 #include "ui/app_state.h"
 #include "ui/base.h"

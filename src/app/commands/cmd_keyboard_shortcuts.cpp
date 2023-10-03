@@ -23,7 +23,7 @@
 #include "app/ui/app_menuitem.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/search_entry.h"
-#include "app/ui/select_accelerator.h"
+#include "app/ui/select_keyshortcut.h"
 #include "app/ui/separator_in_view.h"
 #include "app/ui/skin/skin_theme.h"
 #include "base/fs.h"
@@ -162,7 +162,7 @@ public:
     , m_keyOrig(key ? new Key(*key): nullptr)
     , m_menuitem(menuitem)
     , m_level(level)
-    , m_hotAccel(-1)
+    , m_hotKeyShortcut(-1)
     , m_lockButtons(false)
     , m_headerItem(headerItem) {
     gfx::Border border = this->border();
@@ -215,49 +215,49 @@ public:
 
 private:
 
-  void onChangeAccel(int index) {
+  void onChangeKeyShortcut(int index) {
     LockButtons lock(this);
-    Accelerator origAccel = m_key->accels()[index];
-    SelectAccelerator window(origAccel,
+    KeyShortcut origKeyshortcut = m_key->keyshortcuts()[index];
+    SelectKeyShortcut window(origKeyshortcut,
                              m_key->keycontext(),
                              m_keys);
     window.openWindowInForeground();
 
     if (window.isModified()) {
-      m_key->disableAccel(origAccel, KeySource::UserDefined);
-      if (!window.accel().isEmpty())
-        m_key->add(window.accel(), KeySource::UserDefined, m_keys);
+      m_key->disableKeyShortcut(origKeyshortcut, KeySource::UserDefined);
+      if (!window.keyshortcut().isEmpty())
+        m_key->add(window.keyshortcut(), KeySource::UserDefined, m_keys);
     }
 
     this->window()->layout();
   }
 
-  void onDeleteAccel(int index) {
+  void onDeleteKeyShortcut(int index) {
     LockButtons lock(this);
-    // We need to create a copy of the accelerator because
-    // Key::disableAccel() will modify the accels() collection itself.
-    ui::Accelerator accel = m_key->accels()[index];
+    // We need to create a copy of the key shortcut because
+    // Key::disableKeyshortcut() will modify the keyshortcuts() collection itself.
+    ui::KeyShortcut keyshortcut = m_key->keyshortcuts()[index];
 
     if (ui::Alert::show(
           fmt::format(
             Strings::alerts_delete_shortcut(),
-            accel.toString())) != 1)
+            keyshortcut.toString())) != 1)
       return;
 
-    m_key->disableAccel(accel, KeySource::UserDefined);
+    m_key->disableKeyShortcut(keyshortcut, KeySource::UserDefined);
     window()->layout();
   }
 
-  void onAddAccel() {
+  void onAddKeyShortcut() {
     LockButtons lock(this);
-    ui::Accelerator accel;
-    SelectAccelerator window(accel,
+    ui::KeyShortcut keyshortcut;
+    SelectKeyShortcut window(keyshortcut,
                              m_key ? m_key->keycontext(): KeyContext::Any,
                              m_keys);
     window.openWindowInForeground();
 
     if ((window.isModified()) ||
-        // We can assign a "None" accelerator to mouse wheel actions
+        // We can assign a "None" keyboard shortcut to mouse wheel actions
         (m_key && m_key->type() == KeyType::WheelAction && window.isOK())) {
       if (!m_key) {
         ASSERT(m_menuitem);
@@ -273,7 +273,7 @@ private:
         m_menuKeys[m_menuitem] = m_key;
       }
 
-      m_key->add(window.accel(), KeySource::UserDefined, m_keys);
+      m_key->add(window.keyshortcut(), KeySource::UserDefined, m_keys);
     }
 
     this->window()->layout();
@@ -291,8 +291,8 @@ private:
       size.w = std::max(size.w, w);
     }
 
-    if (m_key && !m_key->accels().empty()) {
-      size_t combos = m_key->accels().size();
+    if (m_key && !m_key->keyshortcuts().empty()) {
+      size_t combos = m_key->keyshortcuts().size();
       if (combos > 1)
         size.h *= combos;
     }
@@ -332,7 +332,7 @@ private:
       }
     }
 
-    if (m_key && !m_key->accels().empty()) {
+    if (m_key && !m_key->keyshortcuts().empty()) {
       if (m_key->keycontext() != KeyContext::Any) {
         g->drawText(
           convertKeyContextToUserFriendlyString(m_key->keycontext()), fg, bg,
@@ -342,13 +342,13 @@ private:
       const int dh = th + 4*guiscale();
       IntersectClip clip(g, gfx::Rect(keyXPos, y,
                                       contextXPos - keyXPos,
-                                      dh * m_key->accels().size()));
+                                      dh * m_key->keyshortcuts().size()));
       if (clip) {
         int i = 0;
-        for (const Accelerator& accel : m_key->accels()) {
-          if (i != m_hotAccel || !m_changeButton) {
+        for (const KeyShortcut& keyshortcut : m_key->keyshortcuts()) {
+          if (i != m_hotKeyShortcut || !m_changeButton) {
             g->drawText(
-              getAccelText(accel), fg, bg,
+              getKeyShortcutText(keyshortcut), fg, bg,
               gfx::Point(keyXPos, y));
           }
           y += dh;
@@ -379,16 +379,16 @@ private:
         gfx::Rect bounds = this->bounds();
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
 
-        const Accelerators* accels = (m_key ? &m_key->accels() : NULL);
+        const KeyShortcuts* keyshortcuts = (m_key ? &m_key->keyshortcuts() : NULL);
         int y = bounds.y;
         int dh = textSize().h + 4*guiscale();
-        int maxi = (accels && accels->size() > 1 ? accels->size(): 1);
+        int maxi = (keyshortcuts && keyshortcuts->size() > 1 ? keyshortcuts->size(): 1);
 
         auto theme = SkinTheme::get(this);
 
         for (int i=0; i<maxi; ++i, y += dh) {
           int w = Graphics::measureUITextLength(
-            (accels && i < (int)accels->size() ? getAccelText((*accels)[i]).c_str(): ""),
+            (keyshortcuts && i < (int)keyshortcuts->size() ? getKeyShortcutText((*keyshortcuts)[i]).c_str(): ""),
             font());
           gfx::Rect itemBounds(bounds.x + m_headerItem->keyXPos(), y, w, dh);
           itemBounds = itemBounds.enlarge(
@@ -396,28 +396,28 @@ private:
               4*guiscale(), 0,
               6*guiscale(), 1*guiscale()));
 
-          if (accels &&
-              i < (int)accels->size() &&
+          if (keyshortcuts &&
+              i < (int)keyshortcuts->size() &&
               mouseMsg->position().y >= itemBounds.y &&
               mouseMsg->position().y < itemBounds.y+itemBounds.h) {
-            if (m_hotAccel != i) {
-              m_hotAccel = i;
+            if (m_hotKeyShortcut != i) {
+              m_hotKeyShortcut = i;
 
               m_changeConn = obs::connection();
               m_changeButton.reset(new Button(""));
-              m_changeConn = m_changeButton->Click.connect([this, i]{ onChangeAccel(i); });
+              m_changeConn = m_changeButton->Click.connect([this, i]{ onDeleteKeyShortcut(i); });
               m_changeButton->setStyle(theme->styles.miniButton());
               addChild(m_changeButton.get());
 
               m_deleteConn = obs::connection();
               m_deleteButton.reset(new Button(""));
-              m_deleteConn = m_deleteButton->Click.connect([this, i]{ onDeleteAccel(i); });
+              m_deleteConn = m_deleteButton->Click.connect([this, i]{ onDeleteKeyShortcut(i); });
               m_deleteButton->setStyle(theme->styles.miniButton());
               addChild(m_deleteButton.get());
 
               m_changeButton->setBgColor(gfx::ColorNone);
               m_changeButton->setBounds(itemBounds);
-              m_changeButton->setText(getAccelText((*accels)[i]));
+              m_changeButton->setText(getKeyShortcutText((*keyshortcuts)[i]));
 
               const char* label = "x";
               m_deleteButton->setBgColor(gfx::ColorNone);
@@ -438,7 +438,7 @@ private:
               (!m_menuitem || m_menuitem->getCommand())) {
             m_addConn = obs::connection();
             m_addButton.reset(new Button(""));
-            m_addConn = m_addButton->Click.connect([this]{ onAddAccel(); });
+            m_addConn = m_addButton->Click.connect([this]{ onAddKeyShortcut(); });
             m_addButton->setStyle(theme->styles.miniButton());
             addChild(m_addButton.get());
 
@@ -475,16 +475,16 @@ private:
       if (m_addButton) m_addButton->setVisible(false);
     }
 
-    m_hotAccel = -1;
+    m_hotKeyShortcut = -1;
   }
 
-  std::string getAccelText(const Accelerator& accel) const {
+  std::string getKeyShortcutText(const KeyShortcut& keyshortcut) const {
     if (m_key && m_key->type() == KeyType::WheelAction &&
-        accel.isEmpty()) {
+        keyshortcut.isEmpty()) {
       return Strings::keyboard_shortcuts_default_action();
     }
     else {
-      return accel.toString();
+      return keyshortcut.toString();
     }
   }
 
@@ -494,14 +494,14 @@ private:
   KeyPtr m_keyOrig;
   AppMenuItem* m_menuitem;
   int m_level;
-  ui::Accelerators m_newAccels;
+  ui::KeyShortcuts m_newKeyShortcuts;
   std::shared_ptr<ui::Button> m_changeButton;
   std::shared_ptr<ui::Button> m_deleteButton;
   std::shared_ptr<ui::Button> m_addButton;
   obs::scoped_connection m_changeConn;
   obs::scoped_connection m_deleteConn;
   obs::scoped_connection m_addConn;
-  int m_hotAccel;
+  int m_hotKeyShortcut;
   bool m_lockButtons;
   HeaderItem* m_headerItem;
 };

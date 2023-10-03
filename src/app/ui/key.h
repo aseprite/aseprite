@@ -13,7 +13,7 @@
 #include "app/ui/key_context.h"
 #include "base/convert_to.h"
 #include "base/vector2d.h"
-#include "ui/accelerator.h"
+#include "ui/keyshortcut.h"
 
 #include <memory>
 #include <utility>
@@ -109,7 +109,7 @@ namespace app {
   class Key;
   using KeyPtr = std::shared_ptr<Key>;
   using Keys = std::vector<KeyPtr>;
-  using KeySourceAccelList = std::vector<std::pair<KeySource, ui::Accelerator>>;
+  using KeySourceKeyShortcutList = std::vector<std::pair<KeySource, ui::KeyShortcut>>;
   using DragVector = base::Vector2d<double>;
 
   class Key {
@@ -124,31 +124,31 @@ namespace app {
     static KeyPtr MakeDragAction(WheelAction dragAction);
 
     KeyType type() const { return m_type; }
-    const ui::Accelerators& accels() const;
-    const KeySourceAccelList addsKeys() const { return m_adds; }
-    const KeySourceAccelList delsKeys() const { return m_dels; }
+    const ui::KeyShortcuts& keyshortcuts() const;
+    const KeySourceKeyShortcutList addsKeys() const { return m_adds; }
+    const KeySourceKeyShortcutList delsKeys() const { return m_dels; }
 
-    void add(const ui::Accelerator& accel,
+    void add(const ui::KeyShortcut& keyshortcut,
              const KeySource source,
              KeyboardShortcuts& globalKeys);
-    const ui::Accelerator* isPressed(const ui::Message* msg,
+    const ui::KeyShortcut* isPressed(const ui::Message* msg,
                                      const KeyboardShortcuts& globalKeys,
                                      const KeyContext keyContext) const;
-    const ui::Accelerator* isPressed(const ui::Message* msg,
+    const ui::KeyShortcut* isPressed(const ui::Message* msg,
                                      const KeyboardShortcuts& globalKeys) const;
     bool isPressed() const;
     bool isLooselyPressed() const;
 
-    bool hasAccel(const ui::Accelerator& accel) const;
-    bool hasUserDefinedAccels() const;
+    bool hasKeyShortcut(const ui::KeyShortcut& keyshortcut) const;
+    bool hasUserDefinedKeyShortcuts() const;
 
     // The KeySource indicates from where the key was disabled
     // (e.g. if it was removed from an extension-defined file, or from
     // user-defined).
-    void disableAccel(const ui::Accelerator& accel,
+    void disableKeyShortcut(const ui::KeyShortcut& keyshortcut,
                       const KeySource source);
 
-    // Resets user accelerators to the original & extension-defined ones.
+    // Resets user keyshortcuts to the original & extension-defined ones.
     void reset();
 
     void copyOriginalToUser();
@@ -171,11 +171,11 @@ namespace app {
 
   private:
     KeyType m_type;
-    KeySourceAccelList m_adds;
-    KeySourceAccelList m_dels;
-    // Final list of accelerators after processing the
+    KeySourceKeyShortcutList m_adds;
+    KeySourceKeyShortcutList m_dels;
+    // Final list of keyshortcuts after processing the
     // addition/deletion of extension-defined & user-defined keys.
-    mutable std::unique_ptr<ui::Accelerators> m_accels;
+    mutable std::unique_ptr<ui::KeyShortcuts> m_keyshortcuts;
     KeyContext m_keycontext;
 
     // for KeyType::Command

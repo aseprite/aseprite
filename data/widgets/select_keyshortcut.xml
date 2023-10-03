@@ -1,7 +1,7 @@
 <!-- Aseprite -->
 <!-- Copyright (C) 2001-2016 by David Capello -->
 <gui>
-  <window id="select_accelerator" text="@.title">
+  <window id="select_keyshortcut" text="@.title">
     <vbox expansive="true">
       <grid columns="3">
         <label text="@.key" />

@@ -4,32 +4,32 @@
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
-#ifndef APP_UI_SELECT_ACCELERATOR_H_INCLUDED
-#define APP_UI_SELECT_ACCELERATOR_H_INCLUDED
+#ifndef APP_UI_SELECT_KEYSHORTCUT_H_INCLUDED
+#define APP_UI_SELECT_KEYSHORTCUT_H_INCLUDED
 #pragma once
 
 #include "app/ui/key_context.h"
-#include "ui/accelerator.h"
+#include "ui/keyshortcut.h"
 #include "ui/tooltips.h"
 
-#include "select_accelerator.xml.h"
+#include "select_keyshortcut.xml.h"
 
 namespace app {
   class KeyboardShortcuts;
 
-  class SelectAccelerator : public app::gen::SelectAccelerator {
+  class SelectKeyShortcut : public app::gen::SelectKeyShortcut {
   public:
-    SelectAccelerator(const ui::Accelerator& accelerator,
+    SelectKeyShortcut(const ui::KeyShortcut& keyshortcut,
                       const KeyContext keyContext,
                       const KeyboardShortcuts& currentKeys);
 
     bool isOK() const { return m_ok; }
     bool isModified() const { return m_modified; }
-    const ui::Accelerator& accel() const { return m_accel; }
+    const ui::KeyShortcut& keyshortcut() const { return m_keyshortcut; }
 
   private:
     void onModifierChange(ui::KeyModifiers modifier, ui::CheckBox* checkbox);
-    void onAccelChange(const ui::Accelerator* accel);
+    void onKeyShortcutChange(const ui::KeyShortcut* keyshortcut);
     void onClear();
     void onOK();
     void onCancel();
@@ -42,8 +42,8 @@ namespace app {
     KeyField* m_keyField;
     KeyContext m_keyContext;
     const KeyboardShortcuts& m_currentKeys;
-    ui::Accelerator m_origAccel;
-    ui::Accelerator m_accel;
+    ui::KeyShortcut m_origKeyShortcut;
+    ui::KeyShortcut m_keyshortcut;
     bool m_ok;
     bool m_modified;
   };

@@ -7,7 +7,7 @@ if(WIN32)
 endif()
 
 add_library(ui-lib
-  accelerator.cpp
+  keyshortcut.cpp
   alert.cpp
   app_state.cpp
   box.cpp

@@ -62,11 +62,11 @@ void AdvancedModeCommand::onExecute(Context* context)
   if (oldMode == MainWindow::NormalMode &&
       pref.advancedMode.showAlert()) {
     KeyPtr key = KeyboardShortcuts::instance()->command(this->id().c_str());
-    if (!key->accels().empty()) {
+    if (!key->keyshortcuts().empty()) {
       app::gen::AdvancedMode window;
 
       window.warningLabel()->setTextf("You can go back pressing \"%s\" key.",
-        key->accels().front().toString().c_str());
+        key->keyshortcuts().front().toString().c_str());
 
       window.openWindowInForeground();
 

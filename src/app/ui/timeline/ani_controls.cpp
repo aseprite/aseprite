@@ -121,13 +121,13 @@ std::string AniControls::getTooltipFor(int index) const
     tooltip = cmd->friendlyName();
 
     KeyPtr key = KeyboardShortcuts::instance()->command(cmd->id().c_str());
-    if (!key || key->accels().empty())
+    if (!key || key->keyshortcuts().empty())
       key = KeyboardShortcuts::instance()->command(cmd->id().c_str(),
                                                    Params(),
                                                    KeyContext::Normal);
-    if (key && !key->accels().empty()) {
+    if (key && !key->keyshortcuts().empty()) {
       tooltip += "\n\n" + Strings::ani_controls_shortcut() + " ";
-      tooltip += key->accels().front().toString();
+      tooltip += key->keyshortcuts().front().toString();
     }
 
     if (index == ACTION_PLAY) {

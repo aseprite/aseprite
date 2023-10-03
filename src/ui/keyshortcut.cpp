@@ -9,7 +9,7 @@
 #include "config.h"
 #endif
 
-#include "ui/accelerator.h"
+#include "ui/keyshortcut.h"
 
 #include "base/debug.h"
 #include "base/replace_string.h"
@@ -144,21 +144,21 @@ int scancode_to_string_size =
 
 } // anonymous namespace
 
-Accelerator::Accelerator()
+KeyShortcut::KeyShortcut()
   : m_modifiers(kKeyNoneModifier)
   , m_scancode(kKeyNil)
   , m_unicodeChar(0)
 {
 }
 
-Accelerator::Accelerator(KeyModifiers modifiers, KeyScancode scancode, int unicodeChar)
+KeyShortcut::KeyShortcut(KeyModifiers modifiers, KeyScancode scancode, int unicodeChar)
   : m_modifiers(modifiers)
   , m_scancode(scancode)
   , m_unicodeChar(unicodeChar)
 {
 }
 
-Accelerator::Accelerator(const std::string& str)
+KeyShortcut::KeyShortcut(const std::string& str)
   : m_modifiers(kKeyNoneModifier)
   , m_scancode(kKeyNil)
   , m_unicodeChar(0)
@@ -278,13 +278,13 @@ Accelerator::Accelerator(const std::string& str)
   }
 }
 
-bool Accelerator::operator==(const Accelerator& other) const
+bool KeyShortcut::operator==(const KeyShortcut& other) const
 {
   // TODO improve this, avoid conversion to std::string
   return toString() == other.toString();
 }
 
-bool Accelerator::isEmpty() const
+bool KeyShortcut::isEmpty() const
 {
   return
     (m_modifiers == kKeyNoneModifier &&
@@ -292,7 +292,7 @@ bool Accelerator::isEmpty() const
      m_unicodeChar == 0);
 }
 
-std::string Accelerator::toString() const
+std::string KeyShortcut::toString() const
 {
   std::string buf;
 
@@ -327,13 +327,13 @@ std::string Accelerator::toString() const
   return buf;
 }
 
-bool Accelerator::isPressed(KeyModifiers modifiers, KeyScancode scancode, int unicodeChar) const
+bool KeyShortcut::isPressed(KeyModifiers modifiers, KeyScancode scancode, int unicodeChar) const
 {
-  return ((scancode && *this == Accelerator(modifiers, scancode, 0)) ||
-          (unicodeChar && *this == Accelerator(modifiers, kKeyNil, unicodeChar)));
+  return ((scancode && *this == KeyShortcut(modifiers, scancode, 0)) ||
+          (unicodeChar && *this == KeyShortcut(modifiers, kKeyNil, unicodeChar)));
 }
 
-bool Accelerator::isPressed() const
+bool KeyShortcut::isPressed() const
 {
   os::System* sys = os::instance();
   if (!sys)
@@ -357,7 +357,7 @@ bool Accelerator::isPressed() const
   return false;
 }
 
-bool Accelerator::isLooselyPressed() const
+bool KeyShortcut::isLooselyPressed() const
 {
   os::System* sys = os::instance();
   if (!sys)
@@ -385,22 +385,22 @@ bool Accelerator::isLooselyPressed() const
 }
 
 //////////////////////////////////////////////////////////////////////
-// Accelerators
+// KeyShortcuts
 
-bool Accelerators::has(const Accelerator& accel) const
+bool KeyShortcuts::has(const KeyShortcut& keyshortcut) const
 {
-  return (std::find(begin(), end(), accel) != end());
+  return (std::find(begin(), end(), keyshortcut) != end());
 }
 
-void Accelerators::add(const Accelerator& accel)
+void KeyShortcuts::add(const KeyShortcut& keyshortcut)
 {
-  if (!has(accel))
-    m_list.push_back(accel);
+  if (!has(keyshortcut))
+    m_list.push_back(keyshortcut);
 }
 
-void Accelerators::remove(const Accelerator& accel)
+void KeyShortcuts::remove(const KeyShortcut& keyshortcut)
 {
-  auto it = std::find(begin(), end(), accel);
+  auto it = std::find(begin(), end(), keyshortcut);
   if (it != end())
     m_list.erase(it);
 }
