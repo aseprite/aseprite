@@ -987,7 +987,7 @@ doc::Cel* AsepriteDecoder::readCelChunk(doc::Sprite* sprite,
         doc::transform_image<doc::TilemapTraits>(
           image.get(),
           [ts, tileIDMask, tileIDShift,
-           xflipMask, yflipMask, dflipMask, flagsMask]
+           xflipMask, yflipMask, dflipMask]
           (doc::tile_t tile) {
             // Get the tile index.
             doc::tile_index ti = ((tile & tileIDMask) >> tileIDShift);
