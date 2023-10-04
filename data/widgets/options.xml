@@ -71,6 +71,8 @@
                  tooltip="@.gpu_acceleration_tooltip" />
           <check id="show_menu_bar"
 		 text="@.show_menu_bar" />
+          <check id="show_aseprite_file_dialog"
+                 text="@.show_aseprite_file_dialog" />
           <check id="show_home"
 		 text="@.show_home" />
           <check id="expand_menubar_on_mouseover"
@@ -548,8 +550,10 @@
                    pref="experimental.new_blend" />
             <link text="(#1096)" url="https://github.com/aseprite/aseprite/issues/1096" />
           </hbox>
-          <check id="native_clipboard" text="@.native_clipboard" />
-          <check id="native_file_dialog" text="@.native_file_dialog" />
+          <check id="native_clipboard" text="@.native_clipboard"
+                 pref="experimental.use_native_clipboard" />
+          <check id="native_file_dialog" text="@.native_file_dialog"
+                 pref="experimental.use_native_file_dialog" />
           <check id="tint_shade_tone_hue_with_sat_value"
                  text="@.hue_with_sat_value"
                  pref="experimental.hue_with_sat_value_for_color_selector" />
