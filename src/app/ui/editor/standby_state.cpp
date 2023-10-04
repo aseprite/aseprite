@@ -53,6 +53,7 @@
 #include "app/util/layer_utils.h"
 #include "app/util/new_image_from_mask.h"
 #include "app/util/readable_time.h"
+#include "app/util/tile_flags_utils.h"
 #include "base/pi.h"
 #include "base/vector2d.h"
 #include "doc/grid.h"
@@ -611,9 +612,7 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
             doc::tile_index ti = doc::tile_geti(t);
             doc::tile_flags tf = doc::tile_getf(t);
             std::string str;
-            if (tf & doc::tile_f_xflip) str += "x";
-            if (tf & doc::tile_f_yflip) str += "y";
-            if (tf & doc::tile_f_dflip) str += "d";
+            build_tile_flags_string(tf, str);
             buf += fmt::format(" [{}{}]", ti, str);
           }
         }

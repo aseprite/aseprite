@@ -35,6 +35,7 @@
 #include "app/ui/zoom_entry.h"
 #include "app/ui_context.h"
 #include "app/util/range_utils.h"
+#include "app/util/tile_flags_utils.h"
 #include "base/fs.h"
 #include "base/string.h"
 #include "doc/image.h"
@@ -525,9 +526,7 @@ public:
         str += fmt::format("{}", ti + baseIndex - 1);
       if (tf) {
         str += " Flip ";
-        if (tf & doc::tile_f_xflip) str += "X";
-        if (tf & doc::tile_f_yflip) str += "Y";
-        if (tf & doc::tile_f_dflip) str += "D";
+        build_tile_flags_string(tf, str);
       }
     }
     m_indicators->addTextIndicator(str.c_str());
