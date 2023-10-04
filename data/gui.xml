@@ -227,7 +227,13 @@
       <key command="ChangeBrush" shortcut="Space+H">
         <param name="change" value="flip-x" />
       </key>
+      <key command="ChangeBrush" shortcut="Space+X">
+        <param name="change" value="flip-x" />
+      </key>
       <key command="ChangeBrush" shortcut="Space+V">
+        <param name="change" value="flip-y" />
+      </key>
+      <key command="ChangeBrush" shortcut="Space+Y">
         <param name="change" value="flip-y" />
       </key>
       <key command="ChangeBrush" shortcut="Space+D">
