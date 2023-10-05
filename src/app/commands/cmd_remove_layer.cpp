@@ -172,11 +172,17 @@ void RemoveLayerCommand::onExecute(Context* context)
       }
     }
     else {
-      if (deleting_all_layers(context, sprite, 1)) {
+      Layer* layer = writer.layer();
+      layer_t deletedTopLevelLayers = 0;
+
+      if (layer->parent() == sprite->root()) {
+        ++deletedTopLevelLayers;
+      }
+
+      if (deleting_all_layers(context, sprite, deletedTopLevelLayers)) {
         return;
       }
 
-      Layer* layer = writer.layer();
       if (layer->isTilemap() && !continue_deleting_unused_tilesets(context, sprite, {layer}, tsiToDelete)) {
         return;
       }
