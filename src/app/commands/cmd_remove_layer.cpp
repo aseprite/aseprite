@@ -28,6 +28,7 @@
 #include "ui/alert.h"
 #include "ui/widget.h"
 
+
 namespace app {
 
 // If the UI is available this function shows an alert informing the user that they
@@ -161,11 +162,21 @@ void RemoveLayerCommand::onExecute(Context* context)
       }
     }
     else {
-      if (deleting_all_layers(context, sprite, 1)) {
+
+      auto layers = sprite->root()->layers();
+      Layer* layer = writer.layer();
+
+      layer_t deletedTopLevelLayers = 0;
+
+      if (layer->parent() == sprite->root()){
+        ++deletedTopLevelLayers;
+      }
+
+      if (deleting_all_layers(context, sprite, deletedTopLevelLayers)) {
         return;
       }
 
-      Layer* layer = writer.layer();
+      //Layer* layer = writer.layer();
       if (layer->isTilemap() && !continue_deleting_unused_tilesets(context, sprite, {layer}, tsiToDelete)) {
         return;
       }
