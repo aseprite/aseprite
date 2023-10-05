@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -49,8 +49,6 @@
 #include <algorithm>
 #include <map>
 #include <memory>
-
-#define KEYBOARD_FILENAME_EXTENSION "aseprite-keys"
 
 namespace app {
 

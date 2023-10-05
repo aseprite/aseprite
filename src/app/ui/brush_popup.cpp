@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -19,6 +19,7 @@
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/pref/preferences.h"
+#include "app/resource_finder.h"
 #include "app/tools/tool.h"
 #include "app/ui/app_menuitem.h"
 #include "app/ui/button_set.h"
@@ -411,8 +412,12 @@ void BrushPopup::regenerate(ui::Display* display,
   m_customBrushes->setTriggerOnMouseUp(true);
 
   int slot = 0;
+  int lastDeletedSlotIndex = App::instance()->brushes().getlastDeletedSlotIndex();
   for (const auto& brush : brushSlots) {
     ++slot;
+
+    if (slot >= lastDeletedSlotIndex)
+      KeyboardShortcuts::instance()->replaceCustomBrushShortcut(slot);
 
     // Get shortcut
     std::string shortcut;
@@ -422,8 +427,10 @@ void BrushPopup::regenerate(ui::Display* display,
       params.set("slot", base::convert_to<std::string>(slot).c_str());
       KeyPtr key = KeyboardShortcuts::instance()->command(
         CommandId::ChangeBrush(), params);
-      if (key && !key->accels().empty())
+      if (key && !key->accels().empty()) {
         shortcut = key->accels().front().toString();
+        key->originalKeyToUserDefinedKey();
+      }
     }
     m_customBrushes->addItem(new SelectBrushItem(brush, slot));
     m_customBrushes->addItem(new BrushShortcutItem(shortcut, slot));
@@ -439,6 +446,8 @@ void BrushPopup::regenerate(ui::Display* display,
   // Resize the window and change the hot region.
   fit_bounds(display, this, gfx::Rect(pos, sizeHint()));
   setHotRegion(gfx::Region(boundsOnScreen()));
+
+  App::instance()->brushes().resetDeletedSlotIndex();
 }
 
 void BrushPopup::onBrushChanges()

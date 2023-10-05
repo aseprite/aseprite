@@ -190,6 +190,7 @@ AppBrushes::AppBrushes()
     }
   }
   m_userBrushesFilename = fn;
+  m_lastSlotDeletedIndex = 0xffff;
 }
 
 AppBrushes::~AppBrushes()
@@ -225,7 +226,9 @@ void AppBrushes::removeBrushSlot(slot_id slot)
 {
   --slot;
   if (slot >= 0 && slot < (int)m_slots.size()) {
-    m_slots[slot] = BrushSlot();
+
+    m_slots.erase(m_slots.begin() + slot);
+    m_lastSlotDeletedIndex = slot + 1; // the first slot_id is 1
 
     // Erase empty trailing slots
     while (!m_slots.empty() &&

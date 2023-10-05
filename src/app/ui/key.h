@@ -152,6 +152,8 @@ namespace app {
     void reset();
 
     void copyOriginalToUser();
+    void copyAddsAndDels(const KeyPtr key);
+    void originalKeyToUserDefinedKey();
 
     // for KeyType::Command
     Command* command() const { return m_command; }

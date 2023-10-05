@@ -12,6 +12,8 @@
 #include "app/ui/key.h"
 #include "obs/signal.h"
 
+#define KEYBOARD_FILENAME_EXTENSION "aseprite-keys"
+
 class TiXmlElement;
 
 namespace app {
@@ -43,6 +45,13 @@ namespace app {
     void exportFile(const std::string& filename);
     void reset();
 
+    int findKeyCommandShortcutIndex(const char* commandName,
+                                    const Params& params = Params(),
+                                    const KeyContext keyContext = KeyContext::Any) const;
+    bool deleteKeyCommandShortcut(const char* commandName,
+                                  const Params& params = Params(),
+                                  const KeyContext keyContext = KeyContext::Any) const;
+    void replaceCustomBrushShortcut(int slot);
     KeyPtr command(const char* commandName,
                    const Params& params = Params(),
                    const KeyContext keyContext = KeyContext::Any) const;

@@ -538,6 +538,33 @@ void Key::copyOriginalToUser()
   m_accels.reset();
 }
 
+void Key::copyAddsAndDels(const KeyPtr key) {
+  m_dels.clear();
+  auto delsCopy = key->delsKeys();
+  for (const auto& kv : delsCopy)
+    m_dels.emplace_back(kv.first, kv.second);
+
+  m_adds.clear();
+  auto addsCopy = key->addsKeys();
+  for (const auto& kv : addsCopy)
+    m_adds.emplace_back(kv.first, kv.second);
+
+  m_accels.reset();
+}
+
+void Key::originalKeyToUserDefinedKey()
+{
+  auto addsCopy = m_adds;
+  m_adds.clear();
+  for (const auto& kv : addsCopy) {
+    if (kv.first == KeySource::Original)
+      m_adds.emplace_back(KeySource::UserDefined, kv.second);
+    else
+      m_adds.emplace_back(kv.first, kv.second);
+  }
+  m_accels.reset();
+}
+
 std::string Key::triggerString() const
 {
   switch (m_type) {
@@ -959,6 +986,67 @@ void KeyboardShortcuts::reset()
 {
   for (KeyPtr& key : m_keys)
     key->reset();
+}
+
+int KeyboardShortcuts::findKeyCommandShortcutIndex(
+  const char* commandName,
+  const Params& params,
+  const KeyContext keyContext) const
+{
+  Command* command = Commands::instance()->byId(commandName);
+  int i = 0;
+  for (KeyPtr& key : m_keys) {
+    if (key &&
+        key->type() == KeyType::Command &&
+        key->keycontext() == keyContext &&
+        key->command() == command &&
+        key->params() == params) {
+      return i;
+    }
+    i++;
+  }
+  return -1;
+}
+
+bool KeyboardShortcuts::deleteKeyCommandShortcut(
+  const char* commandName,
+  const Params& params,
+  const KeyContext keyContext) const
+{
+  int i = -1;
+  while (i < 0) {
+    i = findKeyCommandShortcutIndex(commandName, params, keyContext);
+    if (i < 0)
+      return false;
+    m_keys.erase(m_keys.begin() + i);
+    i = -1;
+  }
+  return true;
+}
+
+void KeyboardShortcuts::replaceCustomBrushShortcut(int slot)
+{
+  Command* command = Commands::instance()->byId(CommandId::ChangeBrush());
+  Params params;
+  params.set("change", "custom");
+  params.set("slot", base::convert_to<std::string>(slot + 1).c_str());
+  KeyPtr nextBrushKey = instance()->command(CommandId::ChangeBrush(), params);
+  params.set("slot", base::convert_to<std::string>(slot).c_str());
+
+  if (nextBrushKey) {
+    KeyPtr newKey = std::make_shared<Key>(command, params, KeyContext::Any);
+    newKey->copyAddsAndDels(nextBrushKey);
+
+    // Clear all commands/shortcuts related to current slot
+    deleteKeyCommandShortcut(CommandId::ChangeBrush(), params);
+
+    // Adding new commad/shortcuts to KeyboardShortcuts
+    m_keys.push_back(newKey);
+
+    return;
+  }
+  params.set("slot", base::convert_to<std::string>(slot).c_str());
+  deleteKeyCommandShortcut(CommandId::ChangeBrush(), params);
 }
 
 KeyPtr KeyboardShortcuts::command(const char* commandName,

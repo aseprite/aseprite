@@ -23,6 +23,7 @@
 #include "app/ini_file.h"
 #include "app/match_words.h"
 #include "app/pref/preferences.h"
+#include "app/resource_finder.h"
 #include "app/shade.h"
 #include "app/site.h"
 #include "app/tools/active_tool.h"
@@ -169,6 +170,15 @@ public:
         gfx::Region rgn(m_popupWindow.boundsOnScreen());
         rgn |= gfx::Region(this->boundsOnScreen());
         m_popupWindow.setHotRegion(rgn);
+      });
+    m_popupWindow.Close.connect(
+      [this]{
+        // Save keyboard shortcuts in configuration file
+        auto globalKeys = KeyboardShortcuts::instance();
+        ResourceFinder rf;
+        rf.includeUserDir("user." KEYBOARD_FILENAME_EXTENSION);
+        std::string fn = rf.getFirstOrCreateDefault();
+        globalKeys->exportFile(fn);
       });
   }
 
