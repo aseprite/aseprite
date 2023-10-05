@@ -163,9 +163,7 @@ void RemoveLayerCommand::onExecute(Context* context)
     }
     else {
 
-      auto layers = sprite->root()->layers();
       Layer* layer = writer.layer();
-
       layer_t deletedTopLevelLayers = 0;
 
       if (layer->parent() == sprite->root()){
@@ -176,7 +174,6 @@ void RemoveLayerCommand::onExecute(Context* context)
         return;
       }
 
-      //Layer* layer = writer.layer();
       if (layer->isTilemap() && !continue_deleting_unused_tilesets(context, sprite, {layer}, tsiToDelete)) {
         return;
       }
