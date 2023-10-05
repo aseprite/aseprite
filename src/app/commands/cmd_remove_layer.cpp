@@ -117,13 +117,15 @@ RemoveLayerCommand::RemoveLayerCommand()
 bool RemoveLayerCommand::onEnabled(Context* context)
 {
   if (!context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                 ContextFlags::HasActiveSprite |
                  ContextFlags::HasActiveLayer))
     return false;
 
   const ContextReader reader(context);
   const Sprite* sprite(reader.sprite());
-  return sprite && sprite->allLayersCount() > 1;
+  const Layer* layer = reader.layer();
+
+  return sprite && (sprite->root()->layersCount() > 1 || layer->parent() != sprite->root());
+  
 }
 
 void RemoveLayerCommand::onExecute(Context* context)
