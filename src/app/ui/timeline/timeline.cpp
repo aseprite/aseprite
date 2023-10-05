@@ -4444,7 +4444,7 @@ int Timeline::tagFramesDuration(const Tag* tag) const
 
   int duration = 0;
   for (frame_t f=tag->fromFrame();
-       f<tag->toFrame(); ++f) {
+       f<=tag->toFrame(); ++f) {
     duration += m_sprite->frameDuration(f);
   }
   return duration;
