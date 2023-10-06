@@ -33,3 +33,5 @@
 * `slices-moving.aseprite`: Indexed, 4x4, 1 linked cel in 4 frames,
   background layer, 1 slice with 4 keyframes (each keyframe with a
   different position/size).
+* `2x2tilemap2x2tile.aseprite`: RGB, 6x6, 2x2 tilemap layer, 5 tiles tileset,
+2x2 tile size, 1 frame.

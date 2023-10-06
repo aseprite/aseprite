@@ -29,6 +29,7 @@
 
 #include <algorithm>
 #include <cstring>
+#include <functional>
 #include <memory>
 #include <vector>
 
@@ -119,23 +120,18 @@ Sprite::~Sprite()
   }
 }
 
-// static
-Sprite* Sprite::MakeStdSprite(const ImageSpec& spec,
-                              const int ncolors,
-                              const ImageBufferPtr& imageBuf)
+static Sprite* makeSprite(const ImageSpec& spec,
+                          const ImageRef& image,
+                          std::function<std::unique_ptr<LayerImage>(Sprite* sprite)> makeLayer,
+                          const int ncolors,
+                          const ImageBufferPtr& imageBuf)
 {
   // Create the sprite.
-  std::unique_ptr<Sprite> sprite(new Sprite(spec, ncolors));
+  std::unique_ptr<Sprite> sprite = std::make_unique<Sprite>(spec, ncolors);
   sprite->setTotalFrames(frame_t(1));
-
-  // Create the main image.
-  ImageRef image(Image::create(spec, imageBuf));
-  clear_image(image.get(), 0);
-
-  // Create the first transparent layer.
+  // Create the first layer.
   {
-    std::unique_ptr<LayerImage> layer(new LayerImage(sprite.get()));
-    layer->setName("Layer 1");
+    std::unique_ptr<LayerImage> layer = makeLayer(sprite.get());
 
     // Create the cel.
     {
@@ -152,6 +148,50 @@ Sprite* Sprite::MakeStdSprite(const ImageSpec& spec,
   }
 
   return sprite.release();
+}
+
+// static
+Sprite* Sprite::MakeStdSprite(const ImageSpec& spec,
+                              const int ncolors,
+                              const ImageBufferPtr& imageBuf)
+{
+  // Create the main image.
+  ImageRef image(Image::create(spec, imageBuf));
+  clear_image(image.get(), 0);
+
+  auto makeLayer = [](Sprite* sprite) {
+                     // Create a transparent layer.
+                     auto layer = std::make_unique<LayerImage>(sprite);
+                     layer->setName("Layer 1");
+                     return layer;
+                   };
+  return makeSprite(spec, image, makeLayer, ncolors, imageBuf);
+}
+
+// static
+Sprite* Sprite::MakeStdTilemapSpriteWithTileset(const ImageSpec& spec,
+                                                const ImageSpec& tilemapspec,
+                                                const Tileset& tileset,
+                                                const int ncolors,
+                                                const ImageBufferPtr& imageBuf)
+{
+  ASSERT(spec.colorMode() != ColorMode::TILEMAP);
+  ASSERT(tilemapspec.colorMode() == ColorMode::TILEMAP);
+
+  ImageRef image(Image::create(tilemapspec, imageBuf));
+  clear_image(image.get(), 0);
+
+  auto makeLayer = [&tileset](Sprite* sprite) {
+                     // Create a tilemap layer.
+                     // We first need to add the tileset to the sprite.
+                     sprite->tilesets()->add(
+                       Tileset::MakeCopyCopyingImages(&tileset));
+
+                     auto layer = std::make_unique<LayerTilemap>(sprite, 0);
+                     layer->setName("Tilemap 1");
+                     return layer;
+                   };
+  return makeSprite(spec, image, makeLayer, ncolors, imageBuf);
 }
 
 //////////////////////////////////////////////////////////////////////
