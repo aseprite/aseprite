@@ -73,6 +73,14 @@ namespace doc {
     static Sprite* MakeStdSprite(const ImageSpec& spec,
                                  const int ncolors = 256,
                                  const ImageBufferPtr& imageBuf = ImageBufferPtr());
+    // Creates a new sprite with one tilemap layer and one cel
+    // with a tilemap's image of the size specified by tilemapspec and the
+    // given tileset.
+    static Sprite* MakeStdTilemapSpriteWithTileset(const ImageSpec& spec,
+                                  const ImageSpec& tilemapspec,
+                                  const Tileset& tileset,
+                                  const int ncolors = 256,
+                                  const ImageBufferPtr& imageBuf = ImageBufferPtr());
 
     ////////////////////////////////////////
     // Main properties

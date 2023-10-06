@@ -454,10 +454,29 @@ int Image_saveAs(lua_State* L)
     return luaL_error(L, "script doesn't have access to write file %s",
                       absFn.c_str());
 
-  std::unique_ptr<Sprite> sprite(Sprite::MakeStdSprite(img->spec(), 256));
-
+  std::unique_ptr<Sprite> sprite;
   std::vector<ImageRef> oneImage;
-  sprite->getImages(oneImage);
+  // If we are saving a tilemap's image, we create a sprite with a tilemap layer
+  // and the cel's layer tileset.
+  // TODO: Consider the possibility to add a "tileset" parameter to
+  // Image:saveAs{}.
+  if (cel && cel->layer()->isTilemap()) {
+    auto tileset = static_cast<LayerTilemap*>(cel->layer())->tileset();
+    auto spec = cel->sprite()->spec();
+    // Use the correct final image size, not the sprite size.
+    spec.setSize(tileset->grid().tilemapSizeToCanvas(img->spec().size()));
+    sprite.reset(Sprite::MakeStdTilemapSpriteWithTileset(spec,
+                                                         img->spec(),
+                                                         *tileset,
+                                                         256));
+    sprite->getTilemapsByTileset(sprite->tilesets()->get(0), oneImage);
+  }
+  // Create a standard sprite otherwise
+  else {
+    sprite.reset(Sprite::MakeStdSprite(img->spec(), 256));
+    sprite->getImages(oneImage);
+  }
+
   ASSERT(oneImage.size() == 1);
   if (!oneImage.empty())
     copy_image(oneImage.front().get(), img);
