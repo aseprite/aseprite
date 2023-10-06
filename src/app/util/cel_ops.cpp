@@ -609,8 +609,9 @@ void modify_tilemap_cel_region(
 
         // We add the new one tileIndex in the histogram count.
         if (tilesetMode == TilesetMode::Auto &&
-            tileIndex != doc::notile &&
-            tileIndex >= 0 && tileIndex < tilesHistogram.size()) {
+            tile != doc::notile &&
+            tileIndex >= 0 && tileIndex < tilesHistogram.size() &&
+            ti != tileIndex) {
           ++tilesHistogram[tileIndex];
         }
       }
