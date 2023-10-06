@@ -59,6 +59,10 @@ namespace doc {
 
     const std::string& name() const { return m_name; }
     void setName(const std::string& name) { m_name = name; }
+    void setLayerPrevName(const std::string& name) { m_prev_name = name; }
+    void setBgPrevName(const std::string& name) { m_prev_bg_name = name; }
+    const std::string& prevName() const { return m_prev_name; }
+    const std::string& prevBgName() const { return m_prev_bg_name; }
 
     Sprite* sprite() const { return m_sprite; }
     LayerGroup* parent() const { return m_parent; }
@@ -129,8 +133,10 @@ namespace doc {
 
   private:
     std::string m_name;           // layer name
+    std::string m_prev_name;      // previous layer name (before conversion to bg)
+    std::string m_prev_bg_name;   // previous background layer name (before conversion to layer)
     Sprite* m_sprite;             // owner of the layer
-    LayerGroup* m_parent;        // parent layer
+    LayerGroup* m_parent;         // parent layer
     LayerFlags m_flags;           // stack order cannot be changed
 
     // Disable assigment
