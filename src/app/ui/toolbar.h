@@ -9,6 +9,7 @@
 #pragma once
 
 #include "app/tools/active_tool_observer.h"
+#include "app/ui/skin/skin_part.h"
 #include "gfx/point.h"
 #include "obs/connection.h"
 #include "ui/timer.h"
@@ -37,6 +38,7 @@ namespace app {
 
     static const int NoneIndex = -1;
     static const int PreviewVisibilityIndex = -2;
+    static const int TimelineVisibilityIndex = -3;
 
     ToolBar();
     ~ToolBar();
@@ -62,6 +64,7 @@ namespace app {
     gfx::Point getToolPositionInGroup(int group_index, tools::Tool* tool);
     void openTipWindow(int group_index, tools::Tool* tool);
     void onClosePopup();
+    void drawToolIcon(ui::Graphics* g, int group_index, skin::SkinPartPtr skin, os::Surface* icon);
 
     // ActiveToolObserver impl
     void onActiveToolChange(tools::Tool* tool) override;
