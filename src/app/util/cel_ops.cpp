@@ -543,6 +543,9 @@ void modify_tilemap_cel_region(
       const doc::tile_t t = newTilemap->getPixel(u, v);
       const doc::tile_index ti = (t != doc::notile ? doc::tile_geti(t): doc::notile);
       const doc::ImageRef existentTileImage = tileset->get(ti);
+      if (!existentTileImage) {
+        continue;
+      }
 
       const gfx::Rect tileInCanvasRc(grid.tileToCanvas(tilePt), tileSize);
       ImageRef tileImage(getTileImage(existentTileImage, tileInCanvasRc));
