@@ -124,7 +124,7 @@ bool RemoveLayerCommand::onEnabled(Context* context)
   const Sprite* sprite(reader.sprite());
   const Layer* layer = reader.layer();
 
-  return sprite && (sprite->root()->layersCount() > 1 || layer->parent() != sprite->root());
+  return sprite && !((sprite->root()->layersCount() == 1) && (layer->parent() == sprite->root()));
   
 }
 
