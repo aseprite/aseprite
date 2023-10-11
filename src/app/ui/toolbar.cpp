@@ -335,23 +335,24 @@ void ToolBar::onPaint(ui::PaintEvent& ev)
     drawToolIcon(g, c, nw, icon);
   }
 
+  // Draw button to show/hide timeline
+  const auto mainWindow = App::instance()->mainWindow();
+  bool isHot = (m_hotIndex == TimelineVisibilityIndex ||
+                mainWindow->getTimelineVisibility());
+  nw = isHot ? theme->parts.toolbuttonHot():
+               theme->parts.toolbuttonNormal();
+  icon = theme->getToolIcon("timeline");
+
+  drawToolIcon(g, TimelineVisibilityIndex, nw, icon);
+
   // Draw button to show/hide preview
-  bool isHot = (m_hotIndex == PreviewVisibilityIndex ||
-    App::instance()->mainWindow()->getPreviewEditor()->isPreviewEnabled());
+  isHot = (m_hotIndex == PreviewVisibilityIndex ||
+           mainWindow->getPreviewEditor()->isPreviewEnabled());
   nw = isHot ? theme->parts.toolbuttonHot():
                theme->parts.toolbuttonLast();
   icon = theme->getToolIcon("minieditor");
 
   drawToolIcon(g, PreviewVisibilityIndex, nw, icon);
-
-  // Draw button to show/hide timeline
-  isHot = (m_hotIndex == TimelineVisibilityIndex ||
-    App::instance()->mainWindow()->getTimelineVisibility());
-  nw = isHot ? theme->parts.toolbuttonHot():
-               theme->parts.toolbuttonLast();
-  icon = theme->getToolIcon("timeline");
-
-  drawToolIcon(g, TimelineVisibilityIndex, nw, icon);
 }
 
 void ToolBar::onVisible(bool visible)
