@@ -117,6 +117,7 @@ RemoveLayerCommand::RemoveLayerCommand()
 bool RemoveLayerCommand::onEnabled(Context* context)
 {
   if (!context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+                 ContextFlags::HasActiveSprite |
                  ContextFlags::HasActiveLayer))
     return false;
 
@@ -124,7 +125,11 @@ bool RemoveLayerCommand::onEnabled(Context* context)
   const Sprite* sprite(reader.sprite());
   const Layer* layer = reader.layer();
 
-  return sprite && !((sprite->root()->layersCount() == 1) && (layer->parent() == sprite->root()));
+  return sprite && layer && 
+    //Check that the layer is not the last one in the sprite
+    ((sprite->root()->layersCount() > 1) || 
+    //removing all non-root layers should still be allowed
+    (layer->parent() != sprite->root()));
   
 }
 
