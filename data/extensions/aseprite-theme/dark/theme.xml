@@ -416,6 +416,7 @@
         <part id="tool_jumble" x="176" y="112" w="16" h="16" />
         <part id="tool_configuration" x="144" y="128" w="16" h="16" />
         <part id="tool_minieditor" x="160" y="128" w="16" h="16" />
+        <part id="tool_timeline" x="176" y="128" w="16" h="16" />
         <part id="simple_color_border" x="16" y="32" w1="3" w2="6" w3="3" h1="3" h2="6" h3="3" />
         <part id="simple_color_selected" x="32" y="32" w1="3" w2="6" w3="3" h1="3" h2="6" h3="3" />
         <part id="aseprite_face" x="0" y="272" w="28" h="30" />

@@ -349,7 +349,7 @@ void ToolBar::onPaint(ui::PaintEvent& ev)
     App::instance()->mainWindow()->getTimelineVisibility());
   nw = isHot ? theme->parts.toolbuttonHot():
                theme->parts.toolbuttonLast();
-  icon = theme->getToolIcon("minieditor");
+  icon = theme->getToolIcon("timeline");
 
   drawToolIcon(g, TimelineVisibilityIndex, nw, icon);
 }
