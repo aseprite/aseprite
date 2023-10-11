@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -77,6 +77,10 @@ namespace doc {
         return m_backupImage.get();
       else
         return m_image.get();
+    }
+
+    const bool isMonochromeImage() const {
+      return m_mainColor.has_value();
     }
 
   private:
