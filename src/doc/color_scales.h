@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2020-2022  Igara Studio S.A.
+// Copyright (C) 2020-2023  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -13,22 +13,23 @@
 
 namespace doc {
 
-  inline int scale_3bits_to_8bits(const int v) {
+  constexpr inline int scale_3bits_to_8bits(const int v) {
     ASSERT(v >= 0 && v < 8);
     return (v << 5) | (v << 2) | (v >> 1);
   }
 
-  inline int scale_5bits_to_8bits(const int v) {
+  constexpr inline int scale_5bits_to_8bits(const int v) {
     ASSERT(v >= 0 && v < 32);
     return (v << 3) | (v >> 2);
   }
 
-  inline int scale_6bits_to_8bits(const int v) {
+  constexpr inline int scale_6bits_to_8bits(const int v) {
     ASSERT(v >= 0 && v < 64);
     return (v << 2) | (v >> 4);
   }
 
-  inline int scale_xbits_to_8bits(const int x, const int v) {
+  template<typename T>
+  constexpr inline int scale_xbits_to_8bits(const int x, const T v) {
     switch (x) {
       case 3:
         return scale_3bits_to_8bits(v);
@@ -36,8 +37,16 @@ namespace doc {
         return scale_5bits_to_8bits(v);
       case 6:
         return scale_6bits_to_8bits(v);
+      default:
+        if (x < 8) {
+          return (255.0 * double(v) / double((T(1)<<x)-1));
+        }
+        else {
+          // To reduce precision (e.g. from 10 bits to 8 bits) we just
+          // remove least significant bits.
+          return v >> (x - 8);
+        }
     }
-    return (int)(255.0 / (double(1<<x) - 1.0) * (double)v);
   }
 
 } // namespace doc

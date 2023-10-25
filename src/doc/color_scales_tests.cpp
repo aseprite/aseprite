@@ -34,6 +34,12 @@ TEST(ColorScales, MatchValues)
   }
 }
 
+TEST(ColorScales, TenBits)
+{
+  EXPECT_EQ(0xff, scale_xbits_to_8bits(10, 0x3ff));
+  EXPECT_EQ(0x7f, scale_xbits_to_8bits(10, 0x1ff));
+}
+
 int main(int argc, char** argv)
 {
   ::testing::InitGoogleTest(&argc, argv);
