@@ -301,9 +301,8 @@
                  text="@.drag_and_drop_from_edges"
                  pref="timeline.drag_and_drop_from_edges" />
           <hbox>
-            <hbox expansive="true" />
+            <boxfiller />
             <button id="reset_timeline_sel" text="@general.reset" width="60" />
-            <button id="reset_timeline_sel_as_v12" text="@.reset_as_v12" />
           </hbox>
 	</vbox>
 

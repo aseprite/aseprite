@@ -334,7 +334,6 @@ public:
     // Timeline
     firstFrame()->setTextf("%d", m_globPref.timeline.firstFrame());
     resetTimelineSel()->Click.connect([this]{ onResetTimelineSel(); });
-    resetTimelineSelAsV12()->Click.connect([this]{ onResetTimelineSelV12(); });
 
     // Others
     if (m_pref.general.expandMenubarOnMouseover())
@@ -1706,21 +1705,12 @@ private:
     layout();
   }
 
-  void onResetTimelineSelCommon() {
-    keepSelection()->setSelected(false);
-    selectOnClickWithKey()->setSelected(true);
-    selectOnDrag()->setSelected(true);
-    dragAndDropFromEdges()->setSelected(true);
-  }
-
   void onResetTimelineSel() {
-    onResetTimelineSelCommon();
-    selectOnClick()->setSelected(false);
-  }
-
-  void onResetTimelineSelV12() {
-    onResetTimelineSelCommon();
-    selectOnClick()->setSelected(true);
+    keepSelection()->setSelected(m_pref.timeline.keepSelection.defaultValue());
+    selectOnClick()->setSelected(m_pref.timeline.selectOnClick.defaultValue());
+    selectOnClickWithKey()->setSelected(m_pref.timeline.selectOnClickWithKey.defaultValue());
+    selectOnDrag()->setSelected(m_pref.timeline.selectOnDrag.defaultValue());
+    dragAndDropFromEdges()->setSelected(m_pref.timeline.dragAndDropFromEdges.defaultValue());
   }
 
   gfx::Rect gridBounds() const {
