@@ -28,8 +28,8 @@ namespace doc {
     return (v << 2) | (v >> 4);
   }
 
-  inline int scale_xxbits_to_8bits(const int xx, const int v) {
-    switch (xx) {
+  inline int scale_xbits_to_8bits(const int x, const int v) {
+    switch (x) {
       case 3:
         return scale_3bits_to_8bits(v);
       case 5:
@@ -37,7 +37,7 @@ namespace doc {
       case 6:
         return scale_6bits_to_8bits(v);
     }
-    return (int)(255.0 / (double(1<<xx) - 1.0) * (double)v);
+    return (int)(255.0 / (double(1<<x) - 1.0) * (double)v);
   }
 
 } // namespace doc

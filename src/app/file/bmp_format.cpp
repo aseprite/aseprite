@@ -937,10 +937,10 @@ static int read_bitfields_image(FILE *f, Image *image, BITMAPINFOHEADER *infohea
       b = (buffer & bmask) >> bshift;
       a = (buffer & amask) >> ashift;
 
-      r = (rbits == 8 ? r : scale_xxbits_to_8bits(rbits, r) );
-      g = (gbits == 8 ? g : scale_xxbits_to_8bits(gbits, g) );
-      b = (bbits == 8 ? b : scale_xxbits_to_8bits(bbits, b) );
-      a = (abits == 8 ? a : scale_xxbits_to_8bits(abits, a) );
+      r = (rbits == 8 ? r: scale_xbits_to_8bits(rbits, r));
+      g = (gbits == 8 ? g: scale_xbits_to_8bits(gbits, g));
+      b = (bbits == 8 ? b: scale_xbits_to_8bits(bbits, b));
+      a = (abits == 8 ? a: scale_xbits_to_8bits(abits, a));
 
       if (a)
         withAlpha = true;
