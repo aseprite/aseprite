@@ -1,73 +1,125 @@
 name: build
+
 on: [push, pull_request]
+
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest]
-        build_type: [RelWithDebInfo, Debug]
-        enable_ui: [off]
-        include:
-          - os: ubuntu-latest
-            build_type: Debug
-            enable_ui: on
-    steps:
-    - uses: actions/checkout@v3
-      with:
-        submodules: 'recursive'
-    - name: ccache
-      uses: hendrikmuhs/ccache-action@v1
-      if: ${{ runner.os == 'Linux' || runner.os == 'macOS' }}
-      with:
-        key: ${{ matrix.os }}-${{ matrix.enable_ui }}-${{ matrix.build_type }}
-    - uses: turtlesec-no/get-ninja@main
-    - uses: ilammy/msvc-dev-cmd@v1
-      if: runner.os == 'Windows'
-    - name: Workaround for windows-2022 and cmake 3.25.0
-      if: runner.os == 'Windows'
-      shell: bash
-      run: rm -rf C:/Strawberry/
-    - name: Install Dependencies
-      shell: bash
-      run: |
-        if [[ "${{ runner.os }}" == "Linux" ]] ; then
-          sudo apt-get update -qq
-          sudo apt-get install -y \
-            libx11-dev libxcursor-dev libxi-dev
-        fi
-    - name: Generating Makefiles
-      shell: bash
-      run: |
-        if [[ "${{ runner.os }}" == "Windows" ]] ; then
-          export enable_ccache=off
-        else
-          export enable_ccache=on
-        fi
-        cmake -S . -B build -G Ninja \
-          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-          -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 \
-          -DENABLE_TESTS=ON \
-          -DENABLE_UI=${{ matrix.enable_ui }} \
-          -DENABLE_CCACHE=$enable_ccache
-    - name: Compiling
-      shell: bash
-      run: |
-        cd build && ninja
-    - name: Running C++ Tests
-      shell: bash
-      run: |
-        if [[ "${{ runner.os }}" == "Linux" ]] ; then
-          export XVFB=xvfb-run
-        fi
-        cd build && $XVFB ctest --output-on-failure
-    - name: Running CLI Tests
-      shell: bash
-      run: |
-        if [[ "${{ runner.os }}" == "Linux" ]] ; then
-          export XVFB=xvfb-run
-        fi
-        export ASEPRITE=$PWD/build/bin/aseprite
-        cd tests
-        $XVFB bash run-tests.sh
+
+  build:
+
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+
+      fail-fast: false
+
+      matrix:
+
+        os: [windows-latest]
+
+        build_type: [Release]
+
+        enable_ui: [on]
+
+        include:
+
+          - os: windows-latest
+
+            build_type: Release
+
+            enable_ui: on
+
+    steps:
+
+    - uses: actions/checkout@v3
+
+      with:
+
+        submodules: 'recursive'
+
+    - name: ccache
+
+      uses: hendrikmuhs/ccache-action@v1
+
+      if: runner.os == 'Linux'
+
+      with:
+
+        key: ${{ matrix.os }}-${{ matrix.enable_ui }}
+
+    - uses: seanmiddleditch/gha-setup-ninja@master
+
+    - uses: ilammy/msvc-dev-cmd@v1
+
+      if: runner.os == 'Windows'
+
+    - name: Install Dependencies
+
+      shell: bash
+
+      run: |
+
+        if [[ "${{ runner.os }}" == "Linux" ]] ; then
+
+          sudo apt-get update -qq
+
+          sudo apt-get install -y \
+
+            libx11-dev libxcursor-dev libxi-dev
+
+        fi
+
+    - name: Generating Makefiles
+
+      shell: bash
+
+      run: |
+
+        if [[ "${{ runner.os }}" == "Windows" ]] ; then
+
+          export enable_ccache=off
+
+        else
+
+          export enable_ccache=on
+
+        fi
+
+        curl -L https://github.com/blueloveTH/aseprite/releases/download/v0.01/skia.zip --output skia.zip
+
+        7z x skia.zip
+
+        cmake -S . -B build -G Ninja \
+
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+
+          -DENABLE_UI=${{ matrix.enable_ui }} \
+
+          -DENABLE_CCACHE=$enable_ccache \
+
+          -DLAF_BACKEND=skia \
+
+          -DSKIA_DIR=./skia \
+
+          -DSKIA_LIBRARY_DIR=./skia/out/Release-x64 \
+
+          -DSKIA_LIBRARY=./skia/out/Release-x64/skia.lib
+
+    - name: Compiling
+
+      shell: bash
+
+      run: |
+
+        cd build && ninja
+
+    - uses: actions/upload-artifact@v3
+
+      with:
+
+        name: aseprite
+
+        path: |
+
+          D:/a/aseprite/aseprite/build/bin/data
+
+          D:/a/aseprite/aseprite/build/bin/aseprite.exe 作者：独立游戏杂货铺 https://www.bilibili.com/read/cv27083106/ 出处：bilibili
