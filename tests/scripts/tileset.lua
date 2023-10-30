@@ -310,3 +310,14 @@ do
                                    0, 0 })
 
 end
+
+-- Test that we use the sprite grid size by default to create new tilesets
+do
+  local spr = Sprite(32, 32, ColorMode.INDEXED)
+  local ts = spr:newTileset()
+  assert(ts.grid.tileSize == Size(16, 16))
+
+  spr.gridBounds = Rectangle(1, 2, 3, 4)
+  ts = spr:newTileset()
+  assert(ts.grid.tileSize == Size(3, 4))
+end

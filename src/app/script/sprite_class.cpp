@@ -625,7 +625,7 @@ int Sprite_newTileset(lua_State* L)
     tileset = Tileset::MakeCopyCopyingImages(reference);
   }
   else {
-    Grid grid;
+    Grid grid(sprite->gridBounds().size()); // Use sprite grid bounds by default
     int ntiles = 1;
     if (!lua_isnone(L, 2)) {
       if (auto g = may_get_obj<Grid>(L, 2)) {
