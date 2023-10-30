@@ -651,6 +651,14 @@ int Sprite_newTileset(lua_State* L)
         }
       }
     }
+
+    // This a limitation in our code and doesn't make too much sense
+    // to specify a different origin by default (because the origin is
+    // specified on the tilemap cel).
+    if (grid.origin() != gfx::Point(0, 0)) {
+      return luaL_error(L, "a tileset with origin different than 0,0 cannot be created");
+    }
+
     tileset = new Tileset(sprite, grid, ntiles);
   }
 
