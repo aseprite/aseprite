@@ -89,7 +89,7 @@ do
   assert(#spr.tilesets == 1)
 
   -- Create a tileset passing a grid
-  local tileset2 = spr:newTileset(Grid{0, 0 ,32, 32})
+  local tileset2 = spr:newTileset(Grid{0, 0, 32, 32})
   tileset2.name = "Tileset 2"
   assert(#tileset2 == 1)
   assert(tileset2.grid.origin.x == 0)
@@ -100,7 +100,7 @@ do
   assert(#spr.tilesets == 2)
 
   -- Create a tileset passing a table and a number of tiles
-  local tileset3 = spr:newTileset({0, 0 ,64, 64}, 5)
+  local tileset3 = spr:newTileset({0, 0, 64, 64}, 5)
   assert(#tileset3 == 5)
   assert(tileset3.grid.origin.x == 0)
   assert(tileset3.grid.origin.y == 0)
@@ -121,6 +121,17 @@ do
   assert(#spr.tilesets == 4)
 
   -- Undo last tileset addition
+  app.undo()
+  assert(#spr.tilesets == 3)
+
+  -- Create a tileset with a rectangle
+  local tileset5 = spr:newTileset(Rectangle(0, 0, 32, 64), 4)
+  assert(#tileset5 == 4)
+  assert(tileset5.grid.origin.x == 0)
+  assert(tileset5.grid.origin.y == 0)
+  assert(tileset5.grid.tileSize.width == 32)
+  assert(tileset5.grid.tileSize.height == 64)
+  assert(#spr.tilesets == 4)
   app.undo()
   assert(#spr.tilesets == 3)
 

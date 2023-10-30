@@ -632,7 +632,8 @@ int Sprite_newTileset(lua_State* L)
         grid = *g;
       }
       // Convert Rectangle into a Grid
-      else if (lua_istable(L, 2)) {
+      else if (lua_istable(L, 2) ||
+               may_get_obj<gfx::Rect>(L, 2)) {
         gfx::Rect rect = convert_args_into_rect(L, 2);
         grid = Grid(rect.size());
         grid.origin(rect.origin());
