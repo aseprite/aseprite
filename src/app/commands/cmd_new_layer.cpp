@@ -208,6 +208,7 @@ void NewLayerCommand::onExecute(Context* context)
                       context->activeSite().grid():
                       doc::Grid(params().gridBounds()));
   tilesetInfo.baseIndex = 1;
+  tilesetInfo.matchFlags = 0;   // TODO default flags?
 
 #ifdef ENABLE_UI
   // If params specify to ask the user about the name...
@@ -236,8 +237,8 @@ void NewLayerCommand::onExecute(Context* context)
 
     name = window.name()->text();
     if (tilesetSelector) {
-      pref.tileset.baseIndex(tilesetSelector->getInfo().baseIndex);
       tilesetInfo = tilesetSelector->getInfo();
+      pref.tileset.baseIndex(tilesetInfo.baseIndex);
     }
   }
 #endif
@@ -286,6 +287,7 @@ void NewLayerCommand::onExecute(Context* context)
         if (tilesetInfo.newTileset) {
           auto tileset = new Tileset(sprite, tilesetInfo.grid, 1);
           tileset->setBaseIndex(tilesetInfo.baseIndex);
+          tileset->setMatchFlags(tilesetInfo.matchFlags);
           tileset->setName(tilesetInfo.name);
 
           auto addTileset = new cmd::AddTileset(sprite, tileset);

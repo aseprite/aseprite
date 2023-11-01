@@ -120,6 +120,136 @@ struct Mod {
   gfx::Region tileRgn;
 };
 
+class DoFlip {
+public:
+  DoFlip(const doc::ImageRef& image,
+         const doc::algorithm::FlipType flipType)
+    : m_image(image.get())
+    , m_flipType(flipType) {
+  }
+  ~DoFlip() {
+    reset();
+  }
+  void flip() {
+    m_flipped = !m_flipped;
+    doc::algorithm::flip_image(m_image,
+                               m_image->bounds(),
+                               m_flipType);
+  }
+  void reset() {
+    if (m_flipped)
+      flip();
+  }
+  bool operator!() const {
+    return !m_flipped;
+  }
+private:
+  doc::Image* m_image;
+  bool m_flipped = false;
+  doc::algorithm::FlipType m_flipType;
+};
+
+// This is a terrible way to find tiles, i.e. flipping several times
+// the image, instead of searching for flipped hashes. In the future
+// we could try to improve it.
+bool find_tile(doc::Tileset* tileset,
+               doc::ImageRef& tileImage,
+               doc::tile_index& tileIndex,
+               doc::tile_flags& tileFlags)
+{
+  // Find without flags
+  if (tileset->findTileIndex(tileImage, tileIndex)) {
+    tileFlags = 0;
+    return true;
+  }
+
+  if (tileset->matchFlags() == 0) // In case we don't allow flipped tiles
+    return false;
+
+  DoFlip x(tileImage, doc::algorithm::FlipHorizontal);
+
+  // Find with X flip
+  if (tileset->matchFlags() & doc::tile_f_xflip) {
+    x.flip();
+    if (tileset->findTileIndex(tileImage, tileIndex)) {
+      tileFlags = doc::tile_f_xflip;
+      return true;
+    }
+    x.reset();
+  }
+
+  // Find with Y flip
+  DoFlip y(tileImage, doc::algorithm::FlipVertical);
+  if (tileset->matchFlags() & doc::tile_f_yflip) {
+    y.flip();
+    if (tileset->findTileIndex(tileImage, tileIndex)) {
+      tileFlags = doc::tile_f_yflip;
+      return true;
+    }
+
+    if (tileset->matchFlags() & doc::tile_f_xflip) {
+      // Find with X+Y flip
+      x.flip();
+      if (tileset->findTileIndex(tileImage, tileIndex)) {
+        tileFlags = doc::tile_f_xflip | doc::tile_f_yflip;
+        return true;
+      }
+      x.reset();
+    }
+    y.reset();
+  }
+
+  // Check if we can match diagonal flips
+  if ((tileset->matchFlags() & doc::tile_f_dflip) == 0)
+    return false;
+
+  // Find with D flip
+  DoFlip d(tileImage, doc::algorithm::FlipDiagonal);
+  d.flip();
+  if (tileset->findTileIndex(tileImage, tileIndex)) {
+    tileFlags = doc::tile_f_dflip;
+    return true;
+  }
+
+  // Find with X+D flip
+  if (tileset->matchFlags() & doc::tile_f_xflip) {
+    d.reset();
+    x.flip();
+    d.flip();
+    if (tileset->findTileIndex(tileImage, tileIndex)) {
+      tileFlags = doc::tile_f_xflip | doc::tile_f_dflip;
+      return true;
+    }
+
+    // Find with X+Y+D flip
+    if (tileset->matchFlags() & doc::tile_f_yflip) {
+      d.reset();
+      y.flip();
+      d.flip();
+      if (tileset->findTileIndex(tileImage, tileIndex)) {
+        tileFlags = doc::tile_f_xflip | doc::tile_f_yflip | doc::tile_f_dflip;
+        return true;
+      }
+    }
+  }
+
+  // Find with Y+D flip only
+  if (tileset->matchFlags() & doc::tile_f_yflip) {
+    d.reset();
+    x.reset();
+    if (!y)
+      y.flip();
+    d.flip();
+    if (tileset->findTileIndex(tileImage, tileIndex)) {
+      tileFlags =  doc::tile_f_yflip | doc::tile_f_dflip;
+      return true;
+    }
+  }
+
+  // DoFlip destructors will reset the image.
+  return false;
+}
+
 } // anonymous namespace
 
 void create_region_with_differences(const Image* a,
@@ -411,7 +541,9 @@ void draw_image_into_new_tilemap_cel(
     preprocess_transparent_pixels(tileImage.get());
 
     doc::tile_index tileIndex;
-    if (!tileset->findTileIndex(tileImage, tileIndex)) {
+    doc::tile_flags tileFlag = 0;
+
+    if (!find_tile(tileset, tileImage, tileIndex, tileFlag)) {
       auto addTile = new cmd::AddTile(tileset, tileImage);
 
       if (cmds)
@@ -436,7 +568,8 @@ void draw_image_into_new_tilemap_cel(
       const int u = tilePt.x-tilemapBounds.x;
       const int v = tilePt.y-tilemapBounds.y;
       ASSERT((u >= 0) && (v >= 0) && (u < newTilemap->width()) && (v < newTilemap->height()));
-      doc::put_pixel(newTilemap.get(), u, v, tileIndex);
+      doc::put_pixel(newTilemap.get(), u, v,
+                     doc::tile(tileIndex, tileFlag));
     }
   }
 
@@ -555,8 +688,10 @@ void modify_tilemap_cel_region(
 
       preprocess_transparent_pixels(tileImage.get());
 
-      tile_index tileIndex;
-      if (tileset->findTileIndex(tileImage, tileIndex)) {
+      doc::tile_index tileIndex;
+      doc::tile_flags tileFlag = 0;
+
+      if (find_tile(tileset, tileImage, tileIndex, tileFlag)) {
         // We can re-use an existent tile (tileIndex) from the tileset
       }
       else if (tilesetMode == TilesetMode::Auto &&
@@ -602,7 +737,7 @@ void modify_tilemap_cel_region(
                 (t == doc::notile ? -1: ti),
                 tileIndex);
 
-      const doc::tile_t tile = doc::tile(tileIndex, 0);
+      const doc::tile_t tile = doc::tile(tileIndex, tileFlag);
       if (t != tile) {
         newTilemap->putPixel(u, v, tile);
         tilePtsRgn |= gfx::Region(gfx::Rect(u, v, 1, 1));

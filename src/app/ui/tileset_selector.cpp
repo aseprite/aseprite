@@ -26,10 +26,10 @@ TilesetSelector::TilesetSelector(const doc::Sprite* sprite,
 {
   initTheme();
 
-  name()->setText(m_info.name);
-  gridWidth()->setTextf("%d", m_info.grid.tileSize().w);
-  gridHeight()->setTextf("%d", m_info.grid.tileSize().h);
-  baseIndex()->setTextf("%d", m_info.baseIndex);
+  fillControls(m_info.name,
+               m_info.grid.tileSize(),
+               m_info.baseIndex,
+               m_info.matchFlags);
 
   if (!m_info.allowNewTileset) {
     tilesets()->deleteAllItems();
@@ -63,22 +63,35 @@ TilesetSelector::TilesetSelector(const doc::Sprite* sprite,
   updateControlsState(sprite->tilesets());
 }
 
+void TilesetSelector::fillControls(const std::string& nameValue,
+                                   const gfx::Size& gridSize,
+                                   const int baseIndexValue,
+                                   const doc::tile_flags matchFlags)
+{
+  name()->setText(nameValue);
+  gridWidth()->setTextf("%d", gridSize.w);
+  gridHeight()->setTextf("%d", gridSize.h);
+  baseIndex()->setTextf("%d", baseIndexValue);
+  xflip()->setSelected((matchFlags & doc::tile_f_xflip) ? true: false);
+  yflip()->setSelected((matchFlags & doc::tile_f_yflip) ? true: false);
+  dflip()->setSelected((matchFlags & doc::tile_f_dflip) ? true: false);
+}
+
 void TilesetSelector::updateControlsState(const doc::Tilesets* spriteTilesets)
 {
   if (m_info.enabled) {
-    int index = getSelectedItemIndex();
-    bool isNewTileset = (index == 0);
+    const int index = getSelectedItemIndex();
+    const bool isNewTileset = (index == 0);
     if (isNewTileset) {
       name()->setText("");
       baseIndex()->setTextf("%d", 1);
     }
     else {
-      doc::Tileset* ts = spriteTilesets->get(index-1);
-      doc::Grid grid = ts->grid();
-      name()->setText(ts->name());
-      gridWidth()->setTextf("%d", grid.tileSize().w);
-      gridHeight()->setTextf("%d", grid.tileSize().h);
-      baseIndex()->setTextf("%d", ts->baseIndex());
+      const doc::Tileset* ts = spriteTilesets->get(index-1);
+      fillControls(ts->name(),
+                   ts->grid().tileSize(),
+                   ts->baseIndex(),
+                   ts->matchFlags());
     }
 
     name()->setEnabled(isNewTileset || !m_info.allowNewTileset);
@@ -90,6 +103,10 @@ void TilesetSelector::updateControlsState(const doc::Tilesets* spriteTilesets)
     tilesets()->setEnabled(false);
     gridWidth()->setEnabled(false);
     gridHeight()->setEnabled(false);
+    baseIndex()->setEnabled(false);
+    xflip()->setEnabled(false);
+    yflip()->setEnabled(false);
+    dflip()->setEnabled(false);
   }
 }
 
@@ -110,6 +127,11 @@ TilesetSelector::Info TilesetSelector::getInfo()
   }
   info.name = name()->text();
   info.baseIndex = baseIndex()->textInt();
+  info.matchFlags =
+    (xflip()->isSelected() ? doc::tile_f_xflip: 0) |
+    (yflip()->isSelected() ? doc::tile_f_yflip: 0) |
+    (dflip()->isSelected() ? doc::tile_f_dflip: 0);
+
   return info;
 }
 

@@ -19,5 +19,14 @@
     <expr id="base_index" text="1" tooltip="@.base_tooltip" />
     <boxfiller cell_hspan="2" />
   </grid>
+
+  <hbox>
+    <label text="@.allow_flipped_tiles" />
+    <buttonset id="flipped_tiles" columns="3" multiple="true">
+      <item id="xflip" text="X" minwidth="20" tooltip="@.allow_flipped_tiles_tooltip" tooltip_dir="bottom" />
+      <item id="yflip" text="Y" minwidth="20" tooltip="@.allow_flipped_tiles_tooltip" tooltip_dir="bottom" />
+      <item id="dflip" text="D" minwidth="20" tooltip="@.allow_flipped_tiles_tooltip" tooltip_dir="bottom" />
+    </buttonset>
+  </hbox>
 </vbox>
 </gui>

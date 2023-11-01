@@ -485,6 +485,11 @@ The data of this chunk is as follows:
                       (this is the new format). In rare cases this bit is off,
                       and the empty tile will be equal to 0xffffffff (used in
                       internal versions of Aseprite)
+                  8 - Aseprite will try to match modified tiles with their X
+                      flipped version automatically in Auto mode when using
+                      this tileset.
+                  16 - Same for Y flips
+                  32 - Same for D(iagonal) flips
     DWORD       Number of tiles
     WORD        Tile Width
     WORD        Tile Height

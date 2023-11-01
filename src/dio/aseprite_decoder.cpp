@@ -1340,6 +1340,11 @@ doc::Tileset* AsepriteDecoder::readTilesetChunk(
     sprite->tilesets()->set(id, tileset);
   }
 
+  tileset->setMatchFlags(
+    (flags & ASE_TILESET_FLAG_MATCH_XFLIP ? doc::tile_f_xflip: 0) |
+    (flags & ASE_TILESET_FLAG_MATCH_YFLIP ? doc::tile_f_yflip: 0) |
+    (flags & ASE_TILESET_FLAG_MATCH_DFLIP ? doc::tile_f_dflip: 0));
+
   if (id >= m_tilesetFlags.size())
     m_tilesetFlags.resize(id+1, 0);
   m_tilesetFlags[id] = flags;

@@ -1437,6 +1437,11 @@ static void ase_file_write_tileset_chunk(FILE* f, FileOp* fop,
   else
     flags |= ASE_TILESET_FLAG_EMBEDDED;
 
+  doc::tile_flags tf = tileset->matchFlags();
+  if (tf & doc::tile_f_xflip) flags |= ASE_TILESET_FLAG_MATCH_XFLIP;
+  if (tf & doc::tile_f_yflip) flags |= ASE_TILESET_FLAG_MATCH_YFLIP;
+  if (tf & doc::tile_f_dflip) flags |= ASE_TILESET_FLAG_MATCH_DFLIP;
+
   fputl(si, f);         // Tileset ID
   fputl(flags, f);      // Tileset Flags
   fputl(tileset->size(), f);
