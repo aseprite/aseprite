@@ -22,13 +22,12 @@
 #include "doc/render_plan.h"
 #include "doc/sprite.h"
 #include "doc/tile.h"
+#include "doc/tile_primitives.h"
 #include "doc/tileset.h"
 #include "gfx/point.h"
 #include "render/get_sprite_pixel.h"
 
 #include <algorithm>
-
-#define PICKER_TRACE(...) // TRACE
 
 namespace app {
 
@@ -57,37 +56,9 @@ bool get_cel_pixel(const Cel* cel,
   if (image->pixelFormat() == IMAGE_TILEMAP) {
     ASSERT(cel->layer()->isTilemap());
 
-    auto layerTilemap = static_cast<doc::LayerTilemap*>(cel->layer());
-    doc::Grid grid = layerTilemap->tileset()->grid();
-    grid.origin(grid.origin() + cel->position());
-
-    gfx::Point tilePos = grid.canvasToTile(gfx::Point(pos));
-    PICKER_TRACE("PICKER: tilePos=(%d %d)\n", tilePos.x,tilePos.y);
-    if (!image->bounds().contains(tilePos))
-      return false;
-
-    const doc::tile_index t =
-      get_pixel(image, tilePos.x, tilePos.y);
-    const doc::tile_index ti = doc::tile_geti(t);
-    const doc::tile_index tf = doc::tile_getf(t);
-
-    PICKER_TRACE("PICKER: tile=%d index=%d flags=%d\n", t, ti, tf);
-
-    doc::ImageRef tile = layerTilemap->tileset()->get(ti);
-    if (!tile)
-      return false;
-
-    gfx::Point ipos =
-      gfx::Point(pos) - grid.tileToCanvas(tilePos);
-    if (tf & doc::tile_f_xflip) { ipos.x = tile->width()-ipos.x-1; }
-    if (tf & doc::tile_f_yflip) { ipos.y = tile->height()-ipos.y-1; }
-    if (tf & doc::tile_f_dflip) { std::swap(ipos.x, ipos.y); }
-
-    PICKER_TRACE("PICKER: ipos=%d %d\n", ipos.x, ipos.y);
-
-    output = get_pixel(tile.get(), ipos.x, ipos.y);
-    PICKER_TRACE("PICKER: output=%d\n", output);
-    return true;
+    doc::tile_index ti;
+    doc::tile_flags tf;
+    return get_tile_pixel(cel, pos, ti, tf, output);
   }
   // Regular images
   else {
@@ -145,12 +116,18 @@ void ColorPicker::pickColor(const Site& site,
         m_layer = cels.front()->layer();
 
       if (site.tilemapMode() == TilemapMode::Tiles) {
-        if (cels.empty() || !cels.front()->image()->isTilemap())
+        if (cels.empty())
           return;
 
-        const gfx::Point tilePos = site.grid().canvasToTile(gfx::Point(pos));
-        if (cels.front()->image()->bounds().contains(tilePos)) {
-          m_tile = doc::get_pixel(cels.front()->image(), tilePos.x, tilePos.y);
+        const Cel* cel = cels.front();
+        if (!cel->image()->isTilemap())
+          return;
+
+        doc::tile_index ti;
+        doc::tile_flags tf;
+        doc::color_t pixelColor;
+        if (get_tile_pixel(cel, pos, ti, tf, pixelColor)) {
+          m_tile = doc::tile(ti, tf);
           m_color = app::Color::fromTile(m_tile);
         }
       }
@@ -171,9 +148,12 @@ void ColorPicker::pickColor(const Site& site,
         return;
 
       if (site.tilemapMode() == TilemapMode::Tiles) {
-        const gfx::Point tilePos = site.grid().canvasToTile(gfx::Point(pos));
-        if (cel->image()->bounds().contains(tilePos)) {
-          m_tile = doc::get_pixel(cel->image(), tilePos.x, tilePos.y);
+        doc::tile_index ti;
+        doc::tile_flags tf;
+        doc::color_t pixelColor;
+        if (cel->layer()->isTilemap() &&
+            get_tile_pixel(cel, pos, ti, tf, pixelColor)) {
+          m_tile = doc::tile(ti, tf);
           m_color = app::Color::fromTile(m_tile);
         }
       }
