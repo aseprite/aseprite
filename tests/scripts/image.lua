@@ -192,9 +192,9 @@ do
   assert(img.height == tilemapImg.height * tilemapImg.height)
   for y=0,img.height-1 do
     for x=0,img.width-1 do
-      local tmx = x // tileSize.w;
-      local tmy = y // tileSize.h;
-      local tileImg = tileset:getTile(tilemapImg:getPixel(tmx, tmy));
+      local tmx = x // tileSize.w
+      local tmy = y // tileSize.h
+      local tileImg = tileset:getTile(tilemapImg:getPixel(tmx, tmy))
       -- Compare each pixel of the saved image with each pixel of the
       -- corresponding tile of the original sprite's tilemap.
       assert(img:getPixel(x, y) == tileImg:getPixel(x % tileSize.w, y % tileSize.h))

@@ -32,7 +32,7 @@ do
                4, 3, 2, 1,
                3, 2, 1, 0 })
 
-  app.undo();
+  app.undo()
   app.command.ImportSpriteSheet{
     ui=false,
     type=SpriteSheetType.ROWS,
@@ -57,7 +57,7 @@ do
                2, 1 })
 
 
-  app.undo();
+  app.undo()
   app.command.ImportSpriteSheet{
     ui=false,
     type=SpriteSheetType.ROWS,

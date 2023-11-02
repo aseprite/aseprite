@@ -173,7 +173,7 @@ function assert_layer_eq(expectedLayer, layer)
   assert(expectedLayer.data == layer.data)
 
   if expectedLayer.isGroup then
-    assert_layers_eq(expectedLayer.layers, layer.layers);
+    assert_layers_eq(expectedLayer.layers, layer.layers)
   else
     assert_cels_eq(expectedLayer.cels, layer.cels)
   end

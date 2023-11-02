@@ -74,7 +74,7 @@ do
   -- Default sprite palette is completely black
   -- TODO should we use the app.defaultPalette as the default palette?
   local spr = Sprite(32, 32, ColorMode.INDEXED)
-  local sprPal = spr.palettes[1];
+  local sprPal = spr.palettes[1]
   assert(#sprPal == 256)
   assert(sprPal ~= db16)
   assert(sprPal ~= db32)
