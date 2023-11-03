@@ -593,6 +593,12 @@ bool StateWithWheelBehavior::onSetCursor(Editor* editor, const gfx::Point& mouse
   return true;
 }
 
+void StateWithWheelBehavior::onBeforeRemoveLayer(Editor* editor)
+{
+  // Clear the cached list of layers
+  m_browsableLayers.clear();
+}
+
 void StateWithWheelBehavior::setZoom(Editor* editor,
                                      const render::Zoom& zoom,
                                      const gfx::Point& mousePos)

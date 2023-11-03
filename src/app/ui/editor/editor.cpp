@@ -2375,6 +2375,9 @@ void Editor::onBeforeRemoveLayer(DocEvent& ev)
   Layer* layerToSelect = candidate_if_layer_is_deleted(layer(), ev.layer());
   if (layer() != layerToSelect)
     setLayer(layerToSelect);
+
+  if (m_state)
+    m_state->onBeforeRemoveLayer(this);
 }
 
 void Editor::onBeforeRemoveCel(DocEvent& ev)

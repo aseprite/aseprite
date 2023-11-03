@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -139,6 +139,11 @@ namespace app {
     // Used to adjust the grid origin point for temporal cels created
     // by states like DrawingState + ExpandCelCanvas.
     virtual bool getGridBounds(Editor* editor, gfx::Rect& gridBounds) { return false; }
+
+    // Called when a layer is going to be removed, e.g. useful in case
+    // that the state cached a layer pointer in an internal
+    // collection.
+    virtual void onBeforeRemoveLayer(Editor* editor) { }
 
   private:
     DISABLE_COPYING(EditorState);
