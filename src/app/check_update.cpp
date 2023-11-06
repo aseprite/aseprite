@@ -121,10 +121,12 @@ void CheckUpdateThreadLauncher::launch()
   if (m_uuid.empty())
     m_uuid = m_preferences.updater.uuid();
 
+  if (!m_uuid.empty()) {
 #if ENABLE_SENTRY
-  if (!m_uuid.empty())
     Sentry::setUserID(m_uuid);
 #endif
+    LOG(VERBOSE, "APP: Saved UUID %s\n", m_uuid.c_str());
+  }
 
   // In this case we are in the "wait days" period, so we don't check
   // for updates.
@@ -179,10 +181,12 @@ void CheckUpdateThreadLauncher::onMonitoringTick()
     m_uuid = m_response.getUuid();
     m_preferences.updater.uuid(m_uuid);
 
+    if (!m_uuid.empty()) {
 #if ENABLE_SENTRY
-    if (!m_uuid.empty())
       Sentry::setUserID(m_uuid);
 #endif
+      LOG(VERBOSE, "APP: New UUID %s\n", m_uuid.c_str());
+    }
   }
 
   // Set the date of the last "check for updates" and the "WaitDays" parameter.
