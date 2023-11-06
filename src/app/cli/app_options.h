@@ -21,8 +21,8 @@ class AppOptions {
 public:
   enum VerboseLevel {
     kNoVerbose,
-    kVerbose,
-    kHighlyVerbose,
+    kVerbose,                   // --verbose
+    kHighlyVerbose,             // --debug
   };
 
   typedef base::ProgramOptions PO;
