@@ -177,6 +177,13 @@ void IntEntry::openPopup()
 {
   m_slider.setValue(getValue());
 
+  // We weren't able to reproduce it, but there are crash reports
+  // where this openPopup() function is called and the popup is still
+  // alive, with the slider inside (we have to remove it before
+  // resetting m_popupWindow pointer to avoid deleting the slider
+  // pointer).
+  removeSlider();
+
   m_popupWindow = std::make_unique<TransparentPopupWindow>(PopupWindow::ClickBehavior::CloseOnClickInOtherWindow);
   m_popupWindow->setAutoRemap(false);
   m_popupWindow->addChild(&m_slider);
