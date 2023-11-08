@@ -194,11 +194,8 @@ DitheringSelector::DitheringSelector(Type type)
 void DitheringSelector::onInitTheme(ui::InitThemeEvent& ev)
 {
   ComboBox::onInitTheme(ev);
-  if (getItem(0)){
-    gfx::Size selectorSz = getItem(0)->sizeHint();
-    selectorSz.w += 8 * guiscale(); // Added offset to prevent unnecessary scrollbar in X dimension
-    setSizeHint(selectorSz);
-  }
+  if (getItem(0))
+    setSizeHint(calcItemSizeHint(0));
 }
 
 void DitheringSelector::setSelectedItemByName(const std::string& name)
@@ -267,9 +264,7 @@ void DitheringSelector::regenerate(int selectedItemIndex)
   }
   selectedItemIndex = std::clamp(selectedItemIndex, 0, std::max(0, getItemCount()-1));
   setSelectedItemIndex(selectedItemIndex);
-  gfx::Size selectorSz = getItem(selectedItemIndex)->sizeHint();
-  selectorSz.w += 8 * guiscale(); // Added offset to prevent unnecessary scrollbar in X dimension
-  setSizeHint(selectorSz);
+  setSizeHint(calcItemSizeHint(selectedItemIndex));
 }
 
 render::DitheringAlgorithm DitheringSelector::ditheringAlgorithm()
@@ -288,6 +283,20 @@ render::DitheringMatrix DitheringSelector::ditheringMatrix()
     return item->matrix();
   else
     return render::DitheringMatrix();
+}
+
+gfx::Size DitheringSelector::calcItemSizeHint(int index)
+{
+  auto item = getItem(index);
+  if (item) {
+    return
+      item->sizeHint()
+      // Added offset to prevent unnecessary scrollbar in X dimension
+      + gfx::Size(6*guiscale(), 0);
+  }
+  else {
+    return gfx::Size(0, 0);
+  }
 }
 
 } // namespace app

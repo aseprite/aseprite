@@ -33,7 +33,9 @@ namespace app {
     void onInitTheme(ui::InitThemeEvent& ev) override;
 
   private:
-  void regenerate(int selectedItemIndex = 0);
+    void regenerate(int selectedItemIndex = 0);
+    gfx::Size calcItemSizeHint(int index);
+
     Type m_type;
     obs::scoped_connection m_extChanges;
   };
