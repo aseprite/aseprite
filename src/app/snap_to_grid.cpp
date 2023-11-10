@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -69,6 +69,16 @@ gfx::Point snap_to_grid(const gfx::Rect& grid,
 
       d = std::div(newPoint.y, grid.h);
       newPoint.y = dy.rem + (d.quot+1)*grid.h;
+      break;
+
+    case PreferSnapTo::BoxCenter:
+      d = std::div(newPoint.x, grid.w);
+      bool nextBox = newPoint.x >= d.quot * grid.w;
+      newPoint.x = d.quot * grid.w + grid.w / (nextBox ? 2 : -2);
+
+      d = std::div(newPoint.y, grid.h);
+      nextBox = newPoint.y >= d.quot * grid.h;
+      newPoint.y = d.quot * grid.h + grid.h / (nextBox ? 2 : -2);
       break;
   }
 

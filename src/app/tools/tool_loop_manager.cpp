@@ -296,10 +296,12 @@ void ToolLoopManager::snapToGrid(Stroke::Pt& pt)
       m_toolLoop->isSelectingTiles())
     return;
 
+  PreferSnapTo snapTo = Preferences::instance().document(
+                          m_toolLoop->getDocument()).grid.snapTo();
   gfx::Point point(pt.x, pt.y);
-  point = snap_to_grid(m_toolLoop->getGridBounds(), point,
-                       PreferSnapTo::ClosestGridVertex);
-  point += m_toolLoop->getBrush()->center();
+  point = snap_to_grid(m_toolLoop->getGridBounds(), point, snapTo);
+  if (snapTo != PreferSnapTo::BoxCenter)
+    point += m_toolLoop->getBrush()->center();
   pt.x = point.x;
   pt.y = point.y;
 }

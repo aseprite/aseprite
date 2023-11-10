@@ -179,8 +179,9 @@ void BrushPreview::show(const gfx::Point& screenPos)
   if (m_editor->docPref().grid.snap()) {
     spritePos = snap_to_grid(m_editor->docPref().grid.bounds(),
                              spritePos,
-                             PreferSnapTo::ClosestGridVertex) +
-                gfx::Point(brushBounds.w / 2, brushBounds.h / 2);
+                             m_editor->docPref().grid.snapTo());
+    if (m_editor->docPref().grid.snapTo() != PreferSnapTo::BoxCenter)
+      spritePos += gfx::Point(brushBounds.w / 2, brushBounds.h / 2);
   }
 
   // Get the current tool
