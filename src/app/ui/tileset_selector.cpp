@@ -11,6 +11,7 @@
 #include "app/ui/tileset_selector.h"
 
 #include "app/i18n/strings.h"
+#include "app/pref/preferences.h"
 #include "doc/sprite.h"
 #include "doc/tilesets.h"
 #include "fmt/format.h"
@@ -22,7 +23,9 @@ namespace app {
 using namespace ui;
 
 TilesetSelector::TilesetSelector(const doc::Sprite* sprite,
-                                 const TilesetSelector::Info& info) : m_info(info)
+                                 const TilesetSelector::Info& info)
+  : m_sprite(sprite)
+  , m_info(info)
 {
   initTheme();
 
@@ -55,12 +58,22 @@ TilesetSelector::TilesetSelector(const doc::Sprite* sprite,
   }
 
   if (m_info.enabled) {
-    tilesets()->Change.connect(
-      [this, sprite]() {
-        updateControlsState(sprite->tilesets());
-      });
+    tilesets()->Change.connect([this]() {
+      updateControlsState();
+    });
   }
-  updateControlsState(sprite->tilesets());
+
+  // Advanced controls
+  const Preferences& pref = Preferences::instance();
+  advanced()->setSelected(pref.tileset.advanced());
+  advanced()->Click.connect([this]() {
+    updateControlsVisibility();
+    if (auto win = window())
+      win->expandWindow(win->sizeHint());
+  });
+
+  updateControlsState();
+  updateControlsVisibility();
 }
 
 void TilesetSelector::fillControls(const std::string& nameValue,
@@ -77,8 +90,10 @@ void TilesetSelector::fillControls(const std::string& nameValue,
   dflip()->setSelected((matchFlags & doc::tile_f_dflip) ? true: false);
 }
 
-void TilesetSelector::updateControlsState(const doc::Tilesets* spriteTilesets)
+void TilesetSelector::updateControlsState()
 {
+  const doc::Tilesets* spriteTilesets = m_sprite->tilesets();
+
   if (m_info.enabled) {
     const int index = getSelectedItemIndex();
     const bool isNewTileset = (index == 0);
@@ -110,6 +125,17 @@ void TilesetSelector::updateControlsState(const doc::Tilesets* spriteTilesets)
   }
 }
 
+void TilesetSelector::updateControlsVisibility()
+{
+  const bool v = advanced()->isSelected();
+  baseIndexLabel()->setVisible(v);
+  baseIndex()->setVisible(v);
+  baseIndexFiller()->setVisible(v);
+  flipsLabel()->setVisible(v);
+  flips()->setVisible(v);
+  flipsFiller()->setVisible(v);
+}
+
 TilesetSelector::Info TilesetSelector::getInfo()
 {
   int itemIndex = getSelectedItemIndex();
@@ -126,13 +152,32 @@ TilesetSelector::Info TilesetSelector::getInfo()
     info.tsi = itemIndex-1;
   }
   info.name = name()->text();
-  info.baseIndex = baseIndex()->textInt();
-  info.matchFlags =
-    (xflip()->isSelected() ? doc::tile_f_xflip: 0) |
-    (yflip()->isSelected() ? doc::tile_f_yflip: 0) |
-    (dflip()->isSelected() ? doc::tile_f_dflip: 0);
+
+  // If we are creating a new tilemap/tileset, and the advanced
+  // options are hidden, we use the default values (only in that
+  // case). In other case we use the edited options (even if the
+  // advanced options are hidden).
+  if (m_info.allowNewTileset &&
+      m_info.newTileset &&
+      !advanced()->isSelected()) {
+    info.baseIndex = 1;
+    info.matchFlags = 0;
+  }
+  else {
+    info.baseIndex = baseIndex()->textInt();
+    info.matchFlags =
+      (xflip()->isSelected() ? doc::tile_f_xflip: 0) |
+      (yflip()->isSelected() ? doc::tile_f_yflip: 0) |
+      (dflip()->isSelected() ? doc::tile_f_dflip: 0);
+  }
 
   return info;
+}
+
+void TilesetSelector::saveAdvancedPreferences()
+{
+  Preferences& pref = Preferences::instance();
+  pref.tileset.advanced(advanced()->isSelected());
 }
 
 int TilesetSelector::getSelectedItemIndex()

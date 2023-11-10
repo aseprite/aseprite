@@ -374,6 +374,9 @@ private:
       if (window.closer() != window.ok())
         return;
 
+      // Save "advanced" options
+      tilesetSel.saveAdvancedPreferences();
+
       tilesetInfo = tilesetSel.getInfo();
 
       if (tileset->name() != tilesetInfo.name ||

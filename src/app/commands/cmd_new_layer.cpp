@@ -238,7 +238,10 @@ void NewLayerCommand::onExecute(Context* context)
     name = window.name()->text();
     if (tilesetSelector) {
       tilesetInfo = tilesetSelector->getInfo();
+
+      // Save information for next new tilemap layers
       pref.tileset.baseIndex(tilesetInfo.baseIndex);
+      tilesetSelector->saveAdvancedPreferences();
     }
   }
 #endif

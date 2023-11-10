@@ -47,16 +47,21 @@ namespace app {
     // Returns the data of this widget according to the user input
     Info getInfo();
 
+    void saveAdvancedPreferences();
+
   private:
     void fillControls(const std::string& name,
                       const gfx::Size& gridSize,
                       const int baseIndex,
                       const doc::tile_flags matchFlags);
-    void updateControlsState(const doc::Tilesets* spriteTilesets);
+    void updateControlsState();
+    void updateControlsVisibility();
 
     // Returns the selected item index as if the combobox always has the "New Tileset"
     // as its first item.
     int getSelectedItemIndex();
+
+    const doc::Sprite* m_sprite;
 
     // Holds the information used to create this widget
     const TilesetSelector::Info m_info;
