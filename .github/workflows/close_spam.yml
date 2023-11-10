@@ -1,0 +1,13 @@
+name: Close Spam PR
+on:
+  pull_request_target:
+    types: [opened, reopened]
+    paths:
+      - '.github/workflows/**'
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: superbrothers/close-pull-request@v3
+      with:
+        comment: "We do not accept PRs to modify GitHub actions. Contact david@igara.com directly with patches for this."
