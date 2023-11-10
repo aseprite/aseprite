@@ -335,24 +335,22 @@ void ToolBar::onPaint(ui::PaintEvent& ev)
     drawToolIcon(g, c, nw, icon);
   }
 
-  // Draw button to show/hide timeline
+  // Draw button to show/hide preview
   const auto mainWindow = App::instance()->mainWindow();
-  bool isHot = (m_hotIndex == TimelineVisibilityIndex ||
-                mainWindow->getTimelineVisibility());
+  bool isHot = (m_hotIndex == PreviewVisibilityIndex ||
+                mainWindow->getPreviewEditor()->isPreviewEnabled());
   nw = isHot ? theme->parts.toolbuttonHot():
                theme->parts.toolbuttonNormal();
-  icon = theme->getToolIcon("timeline");
+  icon = theme->getToolIcon("minieditor");
+  drawToolIcon(g, PreviewVisibilityIndex, nw, icon);
 
-  drawToolIcon(g, TimelineVisibilityIndex, nw, icon);
-
-  // Draw button to show/hide preview
-  isHot = (m_hotIndex == PreviewVisibilityIndex ||
-           mainWindow->getPreviewEditor()->isPreviewEnabled());
+  // Draw button to show/hide timeline
+  isHot = (m_hotIndex == TimelineVisibilityIndex ||
+           mainWindow->getTimelineVisibility());
   nw = isHot ? theme->parts.toolbuttonHot():
                theme->parts.toolbuttonLast();
-  icon = theme->getToolIcon("minieditor");
-
-  drawToolIcon(g, PreviewVisibilityIndex, nw, icon);
+  icon = theme->getToolIcon("timeline");
+  drawToolIcon(g, TimelineVisibilityIndex, nw, icon);
 }
 
 void ToolBar::onVisible(bool visible)
@@ -461,12 +459,12 @@ Rect ToolBar::getToolGroupBounds(int group_index)
   switch (group_index) {
 
     case PreviewVisibilityIndex:
-      rc.y += rc.h - iconsize.h - 2*guiscale();
+      rc.y += rc.h - 2*iconsize.h - 2*guiscale();
       rc.h = iconsize.h+2*guiscale();
       break;
 
     case TimelineVisibilityIndex:
-      rc.y += rc.h - iconsize.h - iconsize.h - 2*guiscale();
+      rc.y += rc.h - iconsize.h - 2*guiscale();
       rc.h = iconsize.h+2*guiscale();
       break;
 
