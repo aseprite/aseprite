@@ -79,15 +79,15 @@ void render_rgba_linear_gradient(
     c1 = (c0 & doc::rgba_rgb_mask);
   }
 
-  const double r0 = double(doc::rgba_getr(c0)) / 255.0;
-  const double g0 = double(doc::rgba_getg(c0)) / 255.0;
-  const double b0 = double(doc::rgba_getb(c0)) / 255.0;
-  const double a0 = double(doc::rgba_geta(c0)) / 255.0;
+  const uint8_t r0 = doc::rgba_getr(c0);
+  const uint8_t g0 = doc::rgba_getg(c0);
+  const uint8_t b0 = doc::rgba_getb(c0);
+  const uint8_t a0 = doc::rgba_geta(c0);
 
-  const double r1 = double(doc::rgba_getr(c1)) / 255.0;
-  const double g1 = double(doc::rgba_getg(c1)) / 255.0;
-  const double b1 = double(doc::rgba_getb(c1)) / 255.0;
-  const double a1 = double(doc::rgba_geta(c1)) / 255.0;
+  const uint8_t r1 = doc::rgba_getr(c1);
+  const uint8_t g1 = doc::rgba_getg(c1);
+  const uint8_t b1 = doc::rgba_getb(c1);
+  const uint8_t a1 = doc::rgba_geta(c1);
 
   doc::LockImageBits<doc::RgbTraits> bits(img);
   auto it = bits.begin();
@@ -106,10 +106,10 @@ void render_rgba_linear_gradient(
         if (f < 0.0) c = c0;
         else if (f > 1.0) c = c1;
         else {
-          c = doc::rgba(int(255.0 * (r0 + f*(r1-r0))),
-                        int(255.0 * (g0 + f*(g1-g0))),
-                        int(255.0 * (b0 + f*(b1-b0))),
-                        int(255.0 * (a0 + f*(a1-a0))));
+          c = doc::rgba(int(r0 + f*(r1-r0) + 1e-7),
+                        int(g0 + f*(g1-g0) + 1e-7),
+                        int(b0 + f*(b1-b0) + 1e-7),
+                        int(a0 + f*(a1-a0) + 1e-7));
         }
 
         *it = c;
@@ -170,15 +170,15 @@ void render_rgba_radial_gradient(
     c1 = (c0 & doc::rgba_rgb_mask);
   }
 
-  const double r0 = double(doc::rgba_getr(c0)) / 255.0;
-  const double g0 = double(doc::rgba_getg(c0)) / 255.0;
-  const double b0 = double(doc::rgba_getb(c0)) / 255.0;
-  const double a0 = double(doc::rgba_geta(c0)) / 255.0;
+  const uint8_t r0 = doc::rgba_getr(c0);
+  const uint8_t g0 = doc::rgba_getg(c0);
+  const uint8_t b0 = doc::rgba_getb(c0);
+  const uint8_t a0 = doc::rgba_geta(c0);
 
-  const double r1 = double(doc::rgba_getr(c1)) / 255.0;
-  const double g1 = double(doc::rgba_getg(c1)) / 255.0;
-  const double b1 = double(doc::rgba_getb(c1)) / 255.0;
-  const double a1 = double(doc::rgba_geta(c1)) / 255.0;
+  const uint8_t r1 = doc::rgba_getr(c1);
+  const uint8_t g1 = doc::rgba_getg(c1);
+  const uint8_t b1 = doc::rgba_getb(c1);
+  const uint8_t a1 = doc::rgba_geta(c1);
 
   doc::LockImageBits<doc::RgbTraits> bits(img);
   auto it = bits.begin();
@@ -199,10 +199,10 @@ void render_rgba_radial_gradient(
         if (f < 0.0) c = c0;
         else if (f > 1.0) c = c1;
         else {
-          c = doc::rgba(int(255.0 * (r0 + f*(r1-r0))),
-                        int(255.0 * (g0 + f*(g1-g0))),
-                        int(255.0 * (b0 + f*(b1-b0))),
-                        int(255.0 * (a0 + f*(a1-a0))));
+          c = doc::rgba(int(r0 + f*(r1-r0) + 1e-7),
+                        int(g0 + f*(g1-g0) + 1e-7),
+                        int(b0 + f*(b1-b0) + 1e-7),
+                        int(a0 + f*(a1-a0) + 1e-7));
         }
 
         *it = c;
