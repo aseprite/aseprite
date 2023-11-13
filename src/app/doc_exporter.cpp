@@ -11,6 +11,7 @@
 
 #include "app/doc_exporter.h"
 
+#include "app/app.h"
 #include "app/cmd/set_pixel_format.h"
 #include "app/console.h"
 #include "app/context.h"
@@ -1184,9 +1185,13 @@ Doc* DocExporter::createEmptyTexture(const Samples& samples,
   int maxColors = 256;
   gfx::ColorSpaceRef colorSpace;
   color_t transparentColor = 0;
+  bool ui = false;
+#ifdef ENABLE_UI
+  if (App::instance()->isGui())
+    ui = true;
+#endif
   const bool textureSupportsPalette =
-    (m_textureFilename.empty() || // This is the preview and we create the palette anyway
-    format_supports_palette(m_textureFilename));
+    format_supports_palette(m_textureFilename) || ui;
 
   for (const auto& sample : samples) {
     if (token.canceled())
