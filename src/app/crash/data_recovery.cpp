@@ -83,7 +83,9 @@ DataRecovery::DataRecovery(Context* ctx)
 DataRecovery::~DataRecovery()
 {
   g_stillAliveFlag = false;
-  m_thread.join();
+
+  if (m_thread.joinable())
+    m_thread.join();
 
   m_backup->stop();
   delete m_backup;
