@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -212,20 +212,22 @@ void draw_tile(ui::Graphics* g,
   if (tile == doc::notile)
     return;
 
-  doc::Tileset* ts = site.tileset();
+  const doc::Tileset* ts = site.tileset();
   if (!ts)
     return;
 
-  doc::tile_index ti = doc::tile_geti(tile);
+  const doc::tile_index ti = doc::tile_geti(tile);
   if (ti < 0 || ti >= ts->size())
     return;
 
-  doc::ImageRef tileImage = ts->get(ti);
+  const doc::ImageRef tileImage = ts->get(ti);
   if (!tileImage)
     return;
 
-  const int w = tileImage->width();
-  const int h = tileImage->height();
+  const doc::tile_index tf = doc::tile_getf(tile);
+
+  int w = tileImage->width();
+  int h = tileImage->height();
   os::SurfaceRef surface = os::instance()->makeRgbaSurface(w, h);
   convert_image_to_surface(tileImage.get(), get_current_palette(),
                            surface.get(), 0, 0, 0, 0, w, h);
@@ -239,8 +241,41 @@ void draw_tile(ui::Graphics* g,
                             os::Sampling::Mipmap::Nearest);
   }
 
-  g->drawSurface(surface.get(), gfx::Rect(0, 0, w, h), rc,
-                 os::Sampling(), &paint);
+  gfx::Matrix m;
+
+  if (tf & doc::tile_f_dflip) {
+    gfx::Matrix rot;
+    rot.setRotate(90.0f);
+    rot.postConcat(gfx::Matrix::MakeScale(-1.0f, 1.0f));
+    m.preConcat(rot);
+    std::swap(w, h);
+  }
+
+  if (tf & doc::tile_f_xflip) {
+    gfx::Matrix flip;
+    flip.setScale(-1.0f, 1.0f, w/float(2.0f), 0.0f);
+    m.postConcat(flip);
+  }
+
+  if (tf & doc::tile_f_yflip) {
+    gfx::Matrix flip;
+    flip.setScale(1.0f, -1.0f, 0.0f, h/float(2.0f));
+    m.postConcat(flip);
+  }
+
+  m.postConcat(gfx::Matrix::MakeScale(float(rc.w) / w,
+                                      float(rc.h) / h));
+
+  // TODO integrate getInternalDeltaX/Y translation in ui::Graphics
+  m.postConcat(gfx::Matrix::MakeTrans(rc.x+g->getInternalDeltaX(),
+                                      rc.y+g->getInternalDeltaY()));
+
+  g->save();
+  g->setMatrix(m);
+  g->drawRgbaSurface(surface.get(),
+                     -g->getInternalDeltaX(),
+                     -g->getInternalDeltaY());
+  g->restore();
 }
 
 void draw_tile_button(ui::Graphics* g,

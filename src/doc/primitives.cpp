@@ -567,11 +567,11 @@ void remap_image(Image* image, const Remap& remap)
     case IMAGE_TILEMAP:
       transform_image<TilemapTraits>(
         image, [&remap](color_t c) -> color_t {
-          auto to = remap[c];
+          auto to = remap[tile_geti(c)];
           if (c == notile || to == Remap::kNoTile)
             return notile;
           else if (to != Remap::kUnused)
-            return to;
+            return tile(to, tile_getf(c));
           else
             return c;
         });

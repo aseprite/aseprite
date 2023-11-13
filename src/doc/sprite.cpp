@@ -25,6 +25,7 @@
 #include "doc/render_plan.h"
 #include "doc/rgbmap_rgb5a3.h"
 #include "doc/tag.h"
+#include "doc/tile_primitives.h"
 #include "doc/tilesets.h"
 
 #include <algorithm>
@@ -691,47 +692,31 @@ void Sprite::pickCels(const gfx::PointF& pos,
     if (!celBounds.contains(pos))
       continue;
 
-    gfx::Point ipos;
+    color_t color = 0;
     if (image->isTilemap()) {
-      Tileset* tileset = static_cast<LayerTilemap*>(cel->layer())->tileset();
-      if (!tileset)
+      tile_index ti;
+      tile_index tf;
+      if (!get_tile_pixel(cel, pos, ti, tf, color))
         continue;
-
-      const Grid grid = cel->grid();
-
-      tile_t tile = notile;
-      gfx::Point tilePos = grid.canvasToTile(gfx::Point(pos));
-      if (image->bounds().contains(tilePos.x, tilePos.y))
-        tile = image->getPixel(tilePos.x, tilePos.y);
-      if (tile == notile)
-        continue;
-
-      image = tileset->get(tile).get();
-      if (!image)
-        continue;
-
-      gfx::Point tileStart = grid.tileToCanvas(tilePos);
-      ipos = gfx::Point(pos.x - tileStart.x,
-                        pos.y - tileStart.y);
     }
     else {
-      ipos = gfx::Point(
+      gfx::Point ipos(
         int((pos.x-celBounds.x)*image->width()/celBounds.w),
         int((pos.y-celBounds.y)*image->height()/celBounds.h));
+      if (!image->bounds().contains(ipos))
+        continue;
+
+      color = get_pixel(image, ipos.x, ipos.y);
     }
 
-    if (!image->bounds().contains(ipos))
-      continue;
-
-    const color_t color = get_pixel(image, ipos.x, ipos.y);
     bool isOpaque = true;
 
-    switch (image->pixelFormat()) {
+    switch (pixelFormat()) {
       case IMAGE_RGB:
         isOpaque = (rgba_geta(color) >= opacityThreshold);
         break;
       case IMAGE_INDEXED:
-        isOpaque = (color != image->maskColor());
+        isOpaque = (color != transparentColor());
         break;
       case IMAGE_GRAYSCALE:
         isOpaque = (graya_geta(color) >= opacityThreshold);

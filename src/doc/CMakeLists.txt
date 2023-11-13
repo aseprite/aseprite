@@ -73,6 +73,7 @@ add_library(doc-lib
   tag.cpp
   tag_io.cpp
   tags.cpp
+  tile_primitives.cpp
   tileset.cpp
   tileset_io.cpp
   tilesets.cpp

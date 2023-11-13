@@ -15,6 +15,7 @@
 #include "base/exception.h"
 #include "base/file_handle.h"
 #include "base/fs.h"
+#include "base/mask_shift.h"
 #include "dio/aseprite_common.h"
 #include "dio/decode_delegate.h"
 #include "dio/file_interface.h"
@@ -948,10 +949,11 @@ doc::Cel* AsepriteDecoder::readCelChunk(doc::Sprite* sprite,
       int h = read16();
       int bitsPerTile = read16();
       uint32_t tileIDMask = read32();
-      uint32_t flipxMask = read32();
-      uint32_t flipyMask = read32();
-      uint32_t rot90Mask = read32();
-      uint32_t flagsMask = (flipxMask | flipyMask | rot90Mask);
+      uint32_t tileIDShift = base::mask_shift(tileIDMask);
+      uint32_t xflipMask = read32();
+      uint32_t yflipMask = read32();
+      uint32_t dflipMask = read32();
+      uint32_t flagsMask = (xflipMask | yflipMask | dflipMask);
       readPadding(10);
 
       // We only support 32bpp at the moment
@@ -980,12 +982,37 @@ doc::Cel* AsepriteDecoder::readCelChunk(doc::Sprite* sprite,
           doc::fix_old_tilemap(image.get(), ts, tileIDMask, flagsMask);
         }
 
-        // normalize the tile, so its value is never out of bounds
-        const doc::tile_index tilesetSize = ts->size();
+        // Convert the tile index and masks to a proper in-memory
+        // representation for the doc-lib.
         doc::transform_image<doc::TilemapTraits>(
           image.get(),
-          [tilesetSize](const doc::tile_t& tile){
-            return doc::tile_geti(tile) >= tilesetSize ? doc::notile : tile;
+          [ts, tileIDMask, tileIDShift,
+           xflipMask, yflipMask, dflipMask]
+          (doc::tile_t tile) {
+            // Get the tile index.
+            doc::tile_index ti = ((tile & tileIDMask) >> tileIDShift);
+
+            // If the index is out of bounds from the tileset, we
+            // allow to keep some small values in-memory, but if the
+            // index is too big, we consider it as a broken file and
+            // remove the tile (as an huge index bring some lag
+            // problems in the remove_unused_tiles_from_tileset()
+            // creating a big Remap structure).
+            //
+            // Related to https://github.com/aseprite/aseprite/issues/2877
+            if (ti > ts->size() &&
+                ti > 0xffffff) {
+              return doc::notile;
+            }
+
+            // Convert read index to doc::tile_i_mask, and flags to doc::tile_f_mask
+            tile = doc::tile(
+              ti,
+              ((tile & xflipMask) == xflipMask ? doc::tile_f_xflip: 0) |
+              ((tile & yflipMask) == yflipMask ? doc::tile_f_yflip: 0) |
+              ((tile & dflipMask) == dflipMask ? doc::tile_f_dflip: 0));
+
+            return tile;
           });
 
         cel = std::make_unique<doc::Cel>(frame, image);
@@ -1312,6 +1339,11 @@ doc::Tileset* AsepriteDecoder::readTilesetChunk(
     }
     sprite->tilesets()->set(id, tileset);
   }
+
+  tileset->setMatchFlags(
+    (flags & ASE_TILESET_FLAG_MATCH_XFLIP ? doc::tile_f_xflip: 0) |
+    (flags & ASE_TILESET_FLAG_MATCH_YFLIP ? doc::tile_f_yflip: 0) |
+    (flags & ASE_TILESET_FLAG_MATCH_DFLIP ? doc::tile_f_dflip: 0));
 
   if (id >= m_tilesetFlags.size())
     m_tilesetFlags.resize(id+1, 0);

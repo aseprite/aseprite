@@ -11,6 +11,7 @@
 
 #include "doc/color.h"
 #include "doc/pixel_format.h"
+#include "doc/tile.h"
 
 #include <string>
 
@@ -30,6 +31,7 @@ namespace app {
       HslType,
       GrayType,
       IndexType,
+      TileType,
     };
 
     enum HumanReadableString {
@@ -46,6 +48,7 @@ namespace app {
     static Color fromHsl(double h, double s, double l, int a = 255); // h=[0,360], s=[0,1], v=[0,1]
     static Color fromGray(int g, int a = 255);
     static Color fromIndex(int index);
+    static Color fromTile(doc::tile_t tile);
 
     static Color fromImage(doc::PixelFormat pixelFormat, doc::color_t c);
     static Color fromImageGetPixel(doc::Image* image, int x, int y);
@@ -79,6 +82,7 @@ namespace app {
     double getHslLightness() const;
     int getGray() const;
     int getIndex() const;
+    doc::tile_t getTile() const;
     int getAlpha() const;
 
     // Setters
@@ -107,6 +111,7 @@ namespace app {
         int g, a;
       } gray;
       int index;
+      doc::tile_t tile;
     } m_value;
   };
 

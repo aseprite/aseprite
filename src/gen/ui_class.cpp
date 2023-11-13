@@ -1,5 +1,5 @@
 // Aseprite Code Generator
-// Copyright (c) 2021 Igara Studio S.A.
+// Copyright (c) 2021-2023 Igara Studio S.A.
 // Copyright (c) 2014-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -80,6 +80,9 @@ static Item convert_to_item(TiXmlElement* elem)
   }
 
   if (name == "box")
+    return item.typeIncl("ui::Box",
+                         "ui/box.h");
+  if (name == "boxfiller")
     return item.typeIncl("ui::Box",
                          "ui/box.h");
   if (name == "button")

@@ -1,6 +1,6 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2019-2020  Igara Studio S.A. -->
-<gui>
+<!-- Copyright (C) 2019-2023  Igara Studio S.A. -->
+<gui i18nwarnings="false">
 <vbox id="tileset_selector">
   <combobox id="tilesets">
     <listitem text="@.new_tileset" value="-1" />
@@ -15,9 +15,19 @@
     <label text="@.grid_height" />
     <expr id="grid_height" text="" />
 
-    <label text="@.base_index" />
+    <label id="base_index_label" text="@.base_index" />
     <expr id="base_index" text="1" tooltip="@.base_tooltip" />
-    <boxfiller cell_hspan="2" />
+    <boxfiller id="base_index_filler" cell_hspan="2" />
+
+    <label id="flips_label" text="@.allowed_flips" />
+    <buttonset id="flips" columns="3" multiple="true">
+      <item id="xflip" text="X" minwidth="20" tooltip="@.allowed_flips_tooltip" tooltip_dir="bottom" />
+      <item id="yflip" text="Y" minwidth="20" tooltip="@.allowed_flips_tooltip" tooltip_dir="bottom" />
+      <item id="dflip" text="D" minwidth="20" tooltip="@.allowed_flips_tooltip" tooltip_dir="bottom" />
+    </buttonset>
+    <boxfiller id="flips_filler" cell_hspan="2" />
+
+    <check id="advanced" text="@general.advanced_options" cell_hspan="4" />
   </grid>
 </vbox>
 </gui>

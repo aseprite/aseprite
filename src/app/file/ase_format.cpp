@@ -1045,9 +1045,9 @@ static void ase_file_write_cel_chunk(FILE* f, dio::AsepriteFrameHeader* frame_he
       fputw(image->height(), f);
       fputw(32, f);             // TODO use different bpp when possible
       fputl(tile_i_mask, f);
-      fputl(tile_f_flipx, f);
-      fputl(tile_f_flipy, f);
-      fputl(tile_f_90cw, f);
+      fputl(tile_f_xflip, f);
+      fputl(tile_f_yflip, f);
+      fputl(tile_f_dflip, f);
       ase_file_write_padding(f, 10);
 
       ImageScanlines scan(image);
@@ -1436,6 +1436,11 @@ static void ase_file_write_tileset_chunk(FILE* f, FileOp* fop,
     flags |= ASE_TILESET_FLAG_EXTERNAL_FILE;
   else
     flags |= ASE_TILESET_FLAG_EMBEDDED;
+
+  doc::tile_flags tf = tileset->matchFlags();
+  if (tf & doc::tile_f_xflip) flags |= ASE_TILESET_FLAG_MATCH_XFLIP;
+  if (tf & doc::tile_f_yflip) flags |= ASE_TILESET_FLAG_MATCH_YFLIP;
+  if (tf & doc::tile_f_dflip) flags |= ASE_TILESET_FLAG_MATCH_DFLIP;
 
   fputl(si, f);         // Tileset ID
   fputl(flags, f);      // Tileset Flags

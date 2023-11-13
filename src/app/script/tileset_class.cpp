@@ -41,12 +41,8 @@ int Tileset_len(lua_State* L)
 int Tileset_getTile(lua_State* L)
 {
   auto tileset = get_docobj<Tileset>(L, 1);
-  tile_index i = lua_tointeger(L, 2);
-  ImageRef image = tileset->get(i);
-  if (image)
-    push_tileset_image(L, tileset, image.get());
-  else
-    lua_pushnil(L);
+  tile_index ti = lua_tointeger(L, 2);
+  push_tileset_image(L, tileset, ti);
   return 1;
 }
 

@@ -235,7 +235,7 @@ This chunk determine where to put a cel in the specified layer/frame.
       DWORD     Bitmask for tile ID (e.g. 0x1fffffff for 32-bit tiles)
       DWORD     Bitmask for X flip
       DWORD     Bitmask for Y flip
-      DWORD     Bitmask for 90CW rotation
+      DWORD     Bitmask for diagonal flip (swap X/Y axis)
       BYTE[10]  Reserved
       TILE[]    Row by row, from top to bottom tile by tile
                 compressed with ZLIB method (see NOTE.3)
@@ -485,6 +485,11 @@ The data of this chunk is as follows:
                       (this is the new format). In rare cases this bit is off,
                       and the empty tile will be equal to 0xffffffff (used in
                       internal versions of Aseprite)
+                  8 - Aseprite will try to match modified tiles with their X
+                      flipped version automatically in Auto mode when using
+                      this tileset.
+                  16 - Same for Y flips
+                  32 - Same for D(iagonal) flips
     DWORD       Number of tiles
     WORD        Tile Width
     WORD        Tile Height

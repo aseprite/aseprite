@@ -155,7 +155,8 @@ void composite_image_without_scale(
   const BlendMode blendMode,
   const double sx,
   const double sy,
-  const bool newBlend)
+  const bool newBlend,
+  const tile_flags)             // Ignored
 {
   ASSERT(dst);
   ASSERT(src);
@@ -178,9 +179,9 @@ void composite_image_without_scale(
   // Lock all necessary bits
   const LockImageBits<SrcTraits> srcBits(src, srcBounds);
   LockImageBits<DstTraits> dstBits(dst, dstBounds);
-  typename LockImageBits<SrcTraits>::const_iterator src_it = srcBits.begin();
+  auto src_it = srcBits.begin();
 #ifdef _DEBUG
-  typename LockImageBits<SrcTraits>::const_iterator src_end = srcBits.end();
+  auto src_end = srcBits.end();
 #endif
   typename LockImageBits<DstTraits>::iterator dst_it, dst_end;
 
@@ -211,7 +212,8 @@ void composite_image_scale_up(
   const BlendMode blendMode,
   const double sx,
   const double sy,
-  const bool newBlend)
+  const bool newBlend,
+  const tile_flags)             // Ignored
 {
   ASSERT(dst);
   ASSERT(src);
@@ -363,7 +365,8 @@ void composite_image_scale_down(
   const BlendMode blendMode,
   const double sx,
   const double sy,
-  const bool newBlend)
+  const bool newBlend,
+  const tile_flags)             // Ignored
 {
   ASSERT(dst);
   ASSERT(src);
@@ -431,7 +434,8 @@ void composite_image_general(
   const BlendMode blendMode,
   const double sx,
   const double sy,
-  const bool newBlend)
+  const bool newBlend,
+  const tile_flags)             // Ignored
 {
   ASSERT(dst);
   ASSERT(src);
@@ -498,10 +502,107 @@ void composite_image_general(
 }
 
 template<class DstTraits, class SrcTraits>
-CompositeImageFunc get_fastest_composition_path(const Projection& proj,
-                                                const bool finegrain)
+void composite_image_general_with_tile_flags(
+  Image* dst, const Image* src, const Palette* pal,
+  const gfx::ClipF& areaF,
+  const int opacity,
+  const BlendMode blendMode,
+  const double sx,
+  const double sy,
+  const bool newBlend,
+  const tile_flags tileFlags)
 {
-  if (finegrain || !proj.zoom().isSimpleZoomLevel()) {
+  ASSERT(dst);
+  ASSERT(src);
+  ASSERT(DstTraits::pixel_format == dst->pixelFormat());
+  ASSERT(SrcTraits::pixel_format == src->pixelFormat());
+
+  gfx::ClipF area(areaF);
+  if (!area.clip(dst->width(), dst->height(),
+                 sx*src->width(), sy*src->height()))
+    return;
+
+  BlenderHelper<DstTraits, SrcTraits> blender(src, pal, blendMode, newBlend);
+
+  gfx::Rect dstBounds(
+    area.dstBounds().x, area.dstBounds().y,
+    int(std::ceil(area.dstBounds().w)),
+    int(std::ceil(area.dstBounds().h)));
+  gfx::Rect srcBounds = area.srcBounds();
+  const gfx::Rect srcImgBounds = src->bounds();
+  const gfx::Size srcMinSize = src->size();
+
+  dstBounds &= dst->bounds();
+
+  if (tileFlags & tile_f_xflip) {
+    srcBounds.x = sx*srcImgBounds.x2() - srcBounds.x2();
+  }
+  if (tileFlags & tile_f_yflip) {
+    srcBounds.y = sy*srcImgBounds.y2() - srcBounds.y2();
+  }
+
+  int dstY = dstBounds.y;
+
+  for (int y=0; y<dstBounds.h; ++y, ++dstY) {
+    ASSERT(dstY >= 0 && dstY < dst->height());
+
+    auto dstPtr = get_pixel_address_fast<DstTraits>(dst, dstBounds.x, dstY);
+
+#if _DEBUG
+    int dstX = dstBounds.x;
+#endif
+
+    for (int x=0; x<dstBounds.w; ++x, ++dstPtr) {
+      int srcX;
+      int srcY;
+      if (tileFlags & tile_f_xflip) {
+        srcX = (srcBounds.x2()-1-x) / sx;
+      }
+      else {
+        srcX = (srcBounds.x+x) / sx;
+      }
+      if (tileFlags & tile_f_yflip) {
+        srcY = (srcBounds.y2()-1-y) / sy;
+      }
+      else {
+        srcY = (srcBounds.y+y) / sy;
+      }
+
+      gfx::Size minSize;
+      if (tileFlags & tile_f_dflip) {
+        std::swap(srcX, srcY);
+        minSize.w = minSize.h = std::min(srcMinSize.w, srcMinSize.h);
+      }
+      else {
+        minSize = srcMinSize;
+      }
+
+      ASSERT(dstX >= 0 && dstX < dst->width());
+
+      if (srcX >= 0 && srcX < minSize.w &&
+          srcY >= 0 && srcY < minSize.h) {
+        auto srcPtr = get_pixel_address_fast<SrcTraits>(src, srcX, srcY);
+        *dstPtr = blender(*dstPtr, *srcPtr, opacity);
+      }
+      else {
+        *dstPtr = 0;
+      }
+#if _DEBUG
+      ++dstX;
+#endif
+    }
+  }
+}
+
+template<class DstTraits, class SrcTraits>
+CompositeImageFunc get_fastest_composition_path(const Projection& proj,
+                                                const bool finegrain,
+                                                const tile_flags tileFlags)
+{
+  if (tileFlags) {
+    return composite_image_general_with_tile_flags<DstTraits, SrcTraits>;
+  }
+  else if (finegrain || !proj.zoom().isSimpleZoomLevel()) {
     return composite_image_general<DstTraits, SrcTraits>;
   }
   else if (proj.applyX(1) == 1 && proj.applyY(1) == 1) {
@@ -976,10 +1077,12 @@ void Render::renderImage(
   const int opacity,
   const BlendMode blendMode)
 {
+  const tile_flags tileFlags = 0;
+
   CompositeImageFunc compositeImage =
     getImageComposition(
       dst_image->pixelFormat(),
-      src_image->pixelFormat(), nullptr);
+      src_image->pixelFormat(), nullptr, tileFlags);
   if (!compositeImage)
     return;
 
@@ -991,7 +1094,8 @@ void Render::renderImage(
     opacity, blendMode,
     m_proj.scaleX(),
     m_proj.scaleY(),
-    m_newBlendMethod);
+    m_newBlendMethod,
+    tileFlags);
 }
 
 void Render::renderPlan(
@@ -1297,7 +1401,7 @@ void Render::renderCel(
               continue;
 
             renderImage(dst_image, tile_image.get(), pal, tileBoundsOnCanvas,
-                        area, compositeImage, opacity, blendMode);
+                        area, compositeImage, opacity, blendMode, tile_getf(t));
           }
         }
       }
@@ -1315,14 +1419,23 @@ void Render::renderImage(
   const Palette* pal,
   const gfx::RectF& celBounds,
   const gfx::Clip& area,
-  const CompositeImageFunc compositeImage,
+  CompositeImageFunc compositeImage,
   const int opacity,
-  const BlendMode blendMode)
+  const BlendMode blendMode,
+  const tile_flags tileFlags)
 {
   gfx::RectF scaledBounds = m_proj.apply(celBounds);
   gfx::RectF srcBounds = gfx::RectF(area.srcBounds()).createIntersection(scaledBounds);
   if (srcBounds.isEmpty())
     return;
+
+  // Get the function to composite the tile with the given flip flags
+  if (tileFlags) {
+    compositeImage = getImageComposition(
+      dst_image->pixelFormat(),
+      cel_image->pixelFormat(),
+      nullptr, tileFlags);
+  }
 
   compositeImage(
     dst_image, cel_image, pal,
@@ -1337,13 +1450,15 @@ void Render::renderImage(
     blendMode,
     m_proj.scaleX() * celBounds.w / double(cel_image->width()),
     m_proj.scaleY() * celBounds.h / double(cel_image->height()),
-    m_newBlendMethod);
+    m_newBlendMethod,
+    tileFlags);
 }
 
 CompositeImageFunc Render::getImageComposition(
   const PixelFormat dstFormat,
   const PixelFormat srcFormat,
-  const Layer* layer)
+  const Layer* layer,
+  const tile_flags tileFlags)
 {
   // True if we need blending pixel by pixel. If this is false we can
   // blend src+dst one time and repeat the resulting color in dst
@@ -1362,32 +1477,32 @@ CompositeImageFunc Render::getImageComposition(
 
     case IMAGE_RGB:
       switch (dstFormat) {
-        case IMAGE_RGB:       return get_fastest_composition_path<RgbTraits, RgbTraits>(m_proj, finegrain);
-        case IMAGE_GRAYSCALE: return get_fastest_composition_path<GrayscaleTraits, RgbTraits>(m_proj, finegrain);
-        case IMAGE_INDEXED:   return get_fastest_composition_path<IndexedTraits, RgbTraits>(m_proj, finegrain);
+        case IMAGE_RGB:       return get_fastest_composition_path<RgbTraits, RgbTraits>(m_proj, finegrain, tileFlags);
+        case IMAGE_GRAYSCALE: return get_fastest_composition_path<GrayscaleTraits, RgbTraits>(m_proj, finegrain, tileFlags);
+        case IMAGE_INDEXED:   return get_fastest_composition_path<IndexedTraits, RgbTraits>(m_proj, finegrain, tileFlags);
       }
       break;
 
     case IMAGE_GRAYSCALE:
       switch (dstFormat) {
-        case IMAGE_RGB:       return get_fastest_composition_path<RgbTraits, GrayscaleTraits>(m_proj, finegrain);
-        case IMAGE_GRAYSCALE: return get_fastest_composition_path<GrayscaleTraits, GrayscaleTraits>(m_proj, finegrain);
-        case IMAGE_INDEXED:   return get_fastest_composition_path<IndexedTraits, GrayscaleTraits>(m_proj, finegrain);
+        case IMAGE_RGB:       return get_fastest_composition_path<RgbTraits, GrayscaleTraits>(m_proj, finegrain, tileFlags);
+        case IMAGE_GRAYSCALE: return get_fastest_composition_path<GrayscaleTraits, GrayscaleTraits>(m_proj, finegrain, tileFlags);
+        case IMAGE_INDEXED:   return get_fastest_composition_path<IndexedTraits, GrayscaleTraits>(m_proj, finegrain, tileFlags);
       }
       break;
 
     case IMAGE_INDEXED:
       switch (dstFormat) {
-        case IMAGE_RGB:       return get_fastest_composition_path<RgbTraits, IndexedTraits>(m_proj, finegrain);
-        case IMAGE_GRAYSCALE: return get_fastest_composition_path<GrayscaleTraits, IndexedTraits>(m_proj, finegrain);
-        case IMAGE_INDEXED:   return get_fastest_composition_path<IndexedTraits, IndexedTraits>(m_proj, finegrain);
+        case IMAGE_RGB:       return get_fastest_composition_path<RgbTraits, IndexedTraits>(m_proj, finegrain, tileFlags);
+        case IMAGE_GRAYSCALE: return get_fastest_composition_path<GrayscaleTraits, IndexedTraits>(m_proj, finegrain, tileFlags);
+        case IMAGE_INDEXED:   return get_fastest_composition_path<IndexedTraits, IndexedTraits>(m_proj, finegrain, tileFlags);
       }
       break;
 
     case IMAGE_TILEMAP:
       switch (dstFormat) {
         case IMAGE_TILEMAP:
-          return get_fastest_composition_path<TilemapTraits, TilemapTraits>(m_proj, finegrain);
+          return get_fastest_composition_path<TilemapTraits, TilemapTraits>(m_proj, finegrain, tileFlags);
       }
       break;
   }

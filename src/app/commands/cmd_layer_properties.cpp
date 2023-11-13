@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2022  Igara Studio S.A.
+// Copyright (C) 2020-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -15,6 +15,7 @@
 #include "app/cmd/set_layer_opacity.h"
 #include "app/cmd/set_layer_tileset.h"
 #include "app/cmd/set_tileset_base_index.h"
+#include "app/cmd/set_tileset_match_flags.h"
 #include "app/cmd/set_tileset_name.h"
 #include "app/cmd/set_user_data.h"
 #include "app/commands/command.h"
@@ -362,6 +363,7 @@ private:
     tilesetInfo.grid = tileset->grid();
     tilesetInfo.name = tileset->name();
     tilesetInfo.baseIndex = tileset->baseIndex();
+    tilesetInfo.matchFlags = tileset->matchFlags();
     tilesetInfo.tsi = tilemap->tilesetIndex();
 
     try {
@@ -372,10 +374,14 @@ private:
       if (window.closer() != window.ok())
         return;
 
+      // Save "advanced" options
+      tilesetSel.saveAdvancedPreferences();
+
       tilesetInfo = tilesetSel.getInfo();
 
       if (tileset->name() != tilesetInfo.name ||
           tileset->baseIndex() != tilesetInfo.baseIndex ||
+          tileset->matchFlags() != tilesetInfo.matchFlags ||
           tilesetInfo.tsi != tilemap->tilesetIndex()) {
         ContextWriter writer(UIContext::instance());
         Tx tx(writer.context(), "Set Tileset Properties");
@@ -388,6 +394,8 @@ private:
           tx(new cmd::SetTilesetName(tileset, tilesetInfo.name));
         if (tileset->baseIndex() != tilesetInfo.baseIndex)
           tx(new cmd::SetTilesetBaseIndex(tileset, tilesetInfo.baseIndex));
+        if (tileset->matchFlags() != tilesetInfo.matchFlags)
+          tx(new cmd::SetTilesetMatchFlags(tileset, tilesetInfo.matchFlags));
         // TODO catch the tileset base index modification from the editor
         App::instance()->mainWindow()->invalidate();
         tx.commit();

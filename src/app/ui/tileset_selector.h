@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2019-2020  Igara Studio S.A.
+// Copyright (c) 2019-2023  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -37,6 +37,7 @@ namespace app {
       std::string name;
       doc::Grid grid;
       int baseIndex = 1;
+      doc::tile_flags matchFlags = 0;
       doc::tileset_index tsi = -1;
     };
 
@@ -46,12 +47,21 @@ namespace app {
     // Returns the data of this widget according to the user input
     Info getInfo();
 
+    void saveAdvancedPreferences();
+
   private:
-    void updateControlsState(const doc::Tilesets* spriteTilesets);
+    void fillControls(const std::string& name,
+                      const gfx::Size& gridSize,
+                      const int baseIndex,
+                      const doc::tile_flags matchFlags);
+    void updateControlsState();
+    void updateControlsVisibility();
 
     // Returns the selected item index as if the combobox always has the "New Tileset"
     // as its first item.
     int getSelectedItemIndex();
+
+    const doc::Sprite* m_sprite;
 
     // Holds the information used to create this widget
     const TilesetSelector::Info m_info;
