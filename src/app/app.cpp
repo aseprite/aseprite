@@ -614,6 +614,11 @@ App::~App()
     // Fire App Exit signal.
     App::instance()->Exit();
 
+    // Destroy the windows before some components get destroyed to avoid
+    // crashing the app if an exception occurs after main window creation and
+    // before the run() method call.
+    m_mainWindow.reset();
+
 #ifdef ENABLE_UI
     // Finalize modules, configuration and core.
     Editor::destroyEditorSharedInternals();
