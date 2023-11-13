@@ -18,6 +18,7 @@
 #include "app/commands/commands.h"
 #include "app/commands/new_params.h"
 #include "app/commands/params.h"
+#include "app/console.h"
 #include "app/context_access.h"
 #include "app/doc_api.h"
 #include "app/find_widget.h"
@@ -170,8 +171,14 @@ void NewLayerCommand::onExecute(Context* context)
   Scoped destroyPasteDoc(
     [&pasteDoc, context]{
       if (pasteDoc) {
-        DocDestroyer destroyer(context, pasteDoc, 100);
-        destroyer.destroyDocument();
+        try {
+          DocDestroyer destroyer(context, pasteDoc, 1000);
+          destroyer.destroyDocument();
+        }
+        catch (const CannotWriteDocException& e) {
+          LOG(ERROR, "%s\n", e.what());
+          Console::showException(e);
+        }
       }
     });
 
@@ -192,6 +199,9 @@ void NewLayerCommand::onExecute(Context* context)
     // The user have selected another document.
     if (oldActiveDocument != context->activeDocument()) {
       pasteDoc = context->activeDocument();
+      if (pasteDoc)
+        pasteDoc->setInhibitBackup(true);
+
       static_cast<UIContext*>(context)
         ->setActiveDocument(oldActiveDocument);
     }
