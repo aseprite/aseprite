@@ -965,9 +965,11 @@ void ColorBar::onRemapTilesButtonClick()
 
     if (n > 0) {
       for (const ImageRef& tilemap : tilemaps) {
-        for (const doc::tile_t t : LockImageBits<TilemapTraits>(tilemap.get()))
-          if (t != doc::notile)
-            usedTiles[doc::tile_geti(t)] = true;
+        for (const doc::tile_t t : LockImageBits<TilemapTraits>(tilemap.get())) {
+          const doc::tile_index ti = doc::tile_geti(t);
+          if (ti > 0 && ti < n)
+            usedTiles[ti] = true;
+        }
       }
     }
 
