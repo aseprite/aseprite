@@ -176,7 +176,8 @@ void BrushPreview::show(const gfx::Point& screenPos)
 
   // Get cursor position in the editor
   gfx::Point spritePos = m_editor->screenToEditor(screenPos);
-  if (m_editor->docPref().grid.snap()) {
+  if (pref.cursor.snapToGrid() &&
+      m_editor->docPref().grid.snap()) {
     spritePos = snap_to_grid(m_editor->docPref().grid.bounds(),
                              spritePos,
                              PreferSnapTo::ClosestGridVertex) +

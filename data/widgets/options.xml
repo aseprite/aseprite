@@ -346,6 +346,9 @@
 
 	    <boxfiller />
 	    <colorpicker id="cursor_color" rgba="true" />
+
+            <check text="@.snap_cursor_to_grid"
+                   pref="cursor.snap_to_grid" cell_hspan="2" />
 	  </grid>
         </vbox>
 
