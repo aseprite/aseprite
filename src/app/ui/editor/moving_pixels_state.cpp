@@ -179,6 +179,11 @@ void MovingPixelsState::onEnterState(Editor* editor)
 {
   StandbyState::onEnterState(editor);
 
+  // Get the active key action so we can lock the FineControl action
+  // until we release/press again the Ctrl key just in case if we
+  // started moving the pixels with the Ctrl key pressed.
+  m_lockedKeyAction = getCurrentKeyAction();
+
   update_screen_for_document(editor->document());
 }
 
@@ -340,11 +345,15 @@ bool MovingPixelsState::onMouseDown(Editor* editor, MouseMessage* msg)
       return true;
 
     // In case that the user is pressing the copy-selection keyboard shortcut.
-    EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
-    if ((customization) &&
-        int(customization->getPressedKeyAction(KeyContext::TranslatingSelection) & KeyAction::CopySelection)) {
-      // Stamp the pixels to create the copy.
-      m_pixelsMovement->stampImage();
+    if (auto customization = editor->getCustomizationDelegate()) {
+      if (int(customization->getPressedKeyAction(KeyContext::TranslatingSelection) & KeyAction::CopySelection)) {
+        // Stamp the pixels to create the copy.
+        m_pixelsMovement->stampImage();
+      }
+
+      // Set the locked key action again to lock the FineControl until
+      // with press Ctrl key again.
+      m_lockedKeyAction = getCurrentKeyAction();
     }
 
     // Re-catch the image
@@ -407,40 +416,8 @@ void MovingPixelsState::onCommitMouseMove(Editor* editor,
 
   m_pixelsMovement->setFastMode(true);
 
-  // Get the customization for the pixels movement (snap to grid, angle snap, etc.).
-  KeyContext keyContext = KeyContext::Normal;
-  switch (m_pixelsMovement->handle()) {
-    case MovePixelsHandle:
-      keyContext = KeyContext::TranslatingSelection;
-      break;
-    case ScaleNWHandle:
-    case ScaleNHandle:
-    case ScaleNEHandle:
-    case ScaleWHandle:
-    case ScaleEHandle:
-    case ScaleSWHandle:
-    case ScaleSHandle:
-    case ScaleSEHandle:
-      keyContext = KeyContext::ScalingSelection;
-      break;
-    case RotateNWHandle:
-    case RotateNEHandle:
-    case RotateSWHandle:
-    case RotateSEHandle:
-      keyContext = KeyContext::RotatingSelection;
-      break;
-    case SkewNHandle:
-    case SkewWHandle:
-    case SkewEHandle:
-    case SkewSHandle:
-      keyContext = KeyContext::ScalingSelection;
-      break;
-  }
-
+  const KeyAction action = getCurrentKeyAction();
   PixelsMovement::MoveModifier moveModifier = PixelsMovement::NormalMovement;
-  KeyAction action = m_editor->getCustomizationDelegate()
-    ->getPressedKeyAction(keyContext);
-
   bool snapToGrid = (Preferences::instance().selection.snapToGrid() &&
                      m_editor->docPref().grid.snap());
   if (bool(action & KeyAction::SnapToGrid))
@@ -461,8 +438,12 @@ void MovingPixelsState::onCommitMouseMove(Editor* editor,
   if (int(action & KeyAction::LockAxis))
     moveModifier |= PixelsMovement::LockAxisMovement;
 
-  if (int(action & KeyAction::FineControl))
+  // Enable the FineControl only if we've already released and pressed
+  // the key again (because it )
+  if (int(action & KeyAction::FineControl) &&
+      int(m_lockedKeyAction & KeyAction::FineControl) == 0) {
     moveModifier |= PixelsMovement::FineControl;
+  }
 
   // Invalidate handles
   Decorator* decorator = static_cast<Decorator*>(m_editor->decorator());
@@ -502,6 +483,10 @@ bool MovingPixelsState::onKeyDown(Editor* editor, KeyMessage* msg)
     return false;
   ASSERT(editor == m_editor);
 
+  // Reset the locked action just to indicate that we can use the
+  // FineControl now (e.g. if we pressed another modifier key).
+  m_lockedKeyAction = KeyAction::None;
+
   if (msg->scancode() == kKeyEnter || // TODO make this key customizable
       msg->scancode() == kKeyEnterPad ||
       msg->scancode() == kKeyEsc) {
@@ -526,6 +511,10 @@ bool MovingPixelsState::onKeyUp(Editor* editor, KeyMessage* msg)
   if (!isActiveEditor())
     return false;
   ASSERT(editor == m_editor);
+
+  // Reset the locked action just to indicate that we can use the
+  // FineControl now (e.g. if we release the Ctrl key).
+  m_lockedKeyAction = KeyAction::None;
 
   // Use StandbyState implementation
   return StandbyState::onKeyUp(editor, msg);
@@ -879,6 +868,46 @@ void MovingPixelsState::removePixelsMovement()
   m_ctxConn.disconnect();
   m_opaqueConn.disconnect();
   m_transparentConn.disconnect();
+}
+
+KeyAction MovingPixelsState::getCurrentKeyAction() const
+{
+  KeyContext keyContext = KeyContext::Normal;
+  switch (m_pixelsMovement->handle()) {
+    case MovePixelsHandle:
+      keyContext = KeyContext::TranslatingSelection;
+      break;
+    case ScaleNWHandle:
+    case ScaleNHandle:
+    case ScaleNEHandle:
+    case ScaleWHandle:
+    case ScaleEHandle:
+    case ScaleSWHandle:
+    case ScaleSHandle:
+    case ScaleSEHandle:
+      keyContext = KeyContext::ScalingSelection;
+      break;
+    case RotateNWHandle:
+    case RotateNEHandle:
+    case RotateSWHandle:
+    case RotateSEHandle:
+      keyContext = KeyContext::RotatingSelection;
+      break;
+    case SkewNHandle:
+    case SkewWHandle:
+    case SkewEHandle:
+    case SkewSHandle:
+      keyContext = KeyContext::ScalingSelection;
+      break;
+  }
+
+  // Ask to the editor the customization delegate for the active key
+  // action/modifier for the pixels movement (snap to grid, angle
+  // snap, etc.).
+  if (auto customizable = m_editor->getCustomizationDelegate())
+    return customizable->getPressedKeyAction(keyContext);
+  else
+    return KeyAction::None;
 }
 
 } // namespace app

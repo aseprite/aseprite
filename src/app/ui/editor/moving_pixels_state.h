@@ -104,6 +104,8 @@ namespace app {
     void removeAsEditorObserver();
     void removePixelsMovement();
 
+    KeyAction getCurrentKeyAction() const;
+
     // Helper member to move/translate selection and pixels.
     PixelsMovementPtr m_pixelsMovement;
     DelayedMouseMove m_delayedMouseMove;
@@ -113,6 +115,12 @@ namespace app {
     // True if the image was discarded (e.g. when a "Cut" command was
     // used to remove the dragged image).
     bool m_discarded;
+
+    // Variable to store the initial key action to ignore it until we
+    // re-press the key. This was done mainly to avoid activating the
+    // fine control with the Ctrl key when we copy the selection until
+    // the user release and press again the Ctrl key.
+    KeyAction m_lockedKeyAction = KeyAction::None;
 
     ui::Timer m_renderTimer;
 
