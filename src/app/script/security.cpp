@@ -73,7 +73,7 @@ int secure_io_open(lua_State* L)
 {
   int n = lua_gettop(L);
 
-  std::string absFilename = base::get_absolute_path(lua_tostring(L, 1));
+  std::string absFilename = base::get_absolute_path(luaL_checkstring(L, 1));
 
   FileAccessMode mode = FileAccessMode::Read; // Read is the default access
   if (lua_tostring(L, 2) &&
