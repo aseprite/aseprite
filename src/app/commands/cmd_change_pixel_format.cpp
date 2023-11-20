@@ -710,7 +710,7 @@ std::string ChangePixelFormatCommand::onGetFriendlyName() const
             conversion = Strings::commands_ChangePixelFormat_Indexed_OldDithering();
             break;
           case render::DitheringAlgorithm::ErrorDiffusion:
-            conversion = Strings::commands_ChangePixelFormat_Indexed_ErrorDifussion();
+            conversion = Strings::commands_ChangePixelFormat_Indexed_ErrorDiffusion();
             break;
         }
         break;
