@@ -441,7 +441,8 @@ void MovingPixelsState::onCommitMouseMove(Editor* editor,
   KeyAction action = m_editor->getCustomizationDelegate()
     ->getPressedKeyAction(keyContext);
 
-  bool snapToGrid  = m_editor->docPref().grid.snap();
+  bool snapToGrid = (Preferences::instance().selection.snapToGrid() &&
+                     m_editor->docPref().grid.snap());
   if (bool(action & KeyAction::SnapToGrid))
     snapToGrid = !snapToGrid;
 

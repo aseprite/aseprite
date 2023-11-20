@@ -307,6 +307,7 @@
       <option id="doubleclick_select_tile" type="bool" default="true" />
       <option id="force_rotsprite" type="bool" default="false" />
       <option id="multicel_when_layers_or_frames" type="bool" default="true" />
+      <option id="snap_to_grid" type="bool" default="true" />
     </section>
     <section id="quantization">
       <option id="with_alpha" type="bool" default="true" />

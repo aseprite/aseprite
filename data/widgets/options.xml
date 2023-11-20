@@ -262,6 +262,8 @@
           <check text="@.move_on_add_mode" id="move_on_add_mode" tooltip="@.move_on_add_mode_tooltip" />
           <check text="@.select_tile_with_double_click" id="select_tile_with_double_click"
 		 pref="selection.doubleclick_select_tile" />
+          <check text="@.snap_to_grid_selection"
+                 pref="selection.snap_to_grid"/>
           <check text="@.force_rotsprite" id="force_rotsprite"
 		 pref="selection.force_rotsprite"/>
           <check text="@.multicel_when_layers_or_frames" id="multicel_when_layers_or_frames"
