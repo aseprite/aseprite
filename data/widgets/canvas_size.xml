@@ -49,7 +49,7 @@
     <hbox>
       <boxfiller />
       <hbox homogeneous="true">
-        <button text="@general.ok" closewindow="true" id="ok" magnet="true" width="60" />
+        <button text="@general.ok" closewindow="true" id="ok" magnet="true" minwidth="60" />
         <button text="@general.cancel" closewindow="true" />
       </hbox>
     </hbox>

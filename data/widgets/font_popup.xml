@@ -6,7 +6,7 @@
     <view id="view" expansive="true" />
     <hbox>
       <boxfiller />
-      <button id="load_font" text="@.load" magnet="true" width="80" />
+      <button id="load_font" text="@.load" magnet="true" minwidth="80" />
     </hbox>
   </vbox>
 </gui>

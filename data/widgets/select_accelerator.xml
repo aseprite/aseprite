@@ -6,7 +6,7 @@
       <grid columns="3">
         <label text="@.key" />
         <hbox id="key_placeholder" cell_align="horizontal" />
-        <button text="@.clear" id="clear_button" width="60" />
+        <button text="@.clear" id="clear_button" minwidth="60" />
 
         <label text="@.modifiers" />
         <hbox cell_hspan="2" cell_align="horizontal">
@@ -28,7 +28,7 @@
       <box horizontal="true">
         <boxfiller />
         <box horizontal="true" homogeneous="true">
-          <button text="@.ok" id="ok_button" magnet="true" width="60" />
+          <button text="@.ok" id="ok_button" magnet="true" minwidth="60" />
           <button text="@.cancel" id="cancel_button" />
         </box>
       </box>

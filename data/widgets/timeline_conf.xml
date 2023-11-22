@@ -39,7 +39,7 @@
     <hbox cell_hspan="2">
       <radio group="1" text="@.merge_frames" id="merge" />
       <radio group="1" text="@.red_blue_tint" id="tint" />
-      <button id="reset_onionskin" text="@.reset" width="60" />
+      <button id="reset_onionskin" text="@.reset" minwidth="60" />
     </hbox>
 
     <label text="@.opacity" />

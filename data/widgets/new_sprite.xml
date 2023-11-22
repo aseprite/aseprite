@@ -40,7 +40,7 @@
       <box horizontal="true">
         <box horizontal="true" expansive="true" />
         <box horizontal="true" homogeneous="true">
-          <button text="@general.ok" closewindow="true" id="ok_button" magnet="true" width="60" />
+          <button text="@general.ok" closewindow="true" id="ok_button" magnet="true" minwidth="60" />
           <button text="@general.cancel" closewindow="true" />
         </box>
       </box>

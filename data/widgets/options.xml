@@ -132,7 +132,7 @@
             <label text="@.recent_files" />
             <hbox>
               <slider min="0" max="100" id="recent_files" width="128" tooltip="@.recent_files_tooltip" />
-              <button id="clear_recent_files" text="@.clear_recent_files" tooltip="@.clear_recent_files_tooltip" width="60" />
+              <button id="clear_recent_files" text="@.clear_recent_files" tooltip="@.clear_recent_files_tooltip" minwidth="60" />
             </hbox>
 
             <boxfiller />
@@ -225,7 +225,7 @@
 
 	  <hbox>
 	    <hbox expansive="true" />
-            <button id="reset_color_management" text="@general.reset" width="60" />
+            <button id="reset_color_management" text="@general.reset" minwidth="60" />
 	  </hbox>
         </vbox>
 
@@ -304,7 +304,7 @@
                  pref="timeline.drag_and_drop_from_edges" />
           <hbox>
             <boxfiller />
-            <button id="reset_timeline_sel" text="@general.reset" width="60" />
+            <button id="reset_timeline_sel" text="@general.reset" minwidth="60" />
           </hbox>
 	</vbox>
 
@@ -377,7 +377,7 @@
 
 	  <hbox>
 	    <hbox expansive="true" />
-            <button id="reset_bg" text="@general.reset" width="60" />
+            <button id="reset_bg" text="@general.reset" minwidth="60" />
 	  </hbox>
         </vbox>
 
@@ -427,7 +427,7 @@
 
 	  <hbox>
 	    <hbox expansive="true" />
-            <button id="reset_grid" text="@general.reset" width="60" />
+            <button id="reset_grid" text="@general.reset" minwidth="60" />
 	  </hbox>
         </vbox>
 
@@ -517,10 +517,10 @@
             <listbox id="theme_list" />
 	  </view>
           <hbox>
-	    <button id="select_theme" text="@.select_theme" width="60" />
+	    <button id="select_theme" text="@.select_theme" minwidth="60" />
             <link text="@.download_themes" url="https://www.aseprite.org/themes/" />
 	    <boxfiller />
-	    <button id="open_theme_folder" text="@.open_theme_folder" width="100" />
+	    <button id="open_theme_folder" text="@.open_theme_folder" minwidth="100" />
           </hbox>
         </vbox>
 
@@ -595,7 +595,7 @@
     <hbox>
       <boxfiller />
       <hbox homogeneous="true">
-        <button text="@.ok" closewindow="true" id="button_ok" magnet="true" width="60" />
+        <button text="@.ok" closewindow="true" id="button_ok" magnet="true" minwidth="60" />
         <button text="@.apply" id="button_apply" />
         <button text="@.cancel" closewindow="true" />
       </hbox>
