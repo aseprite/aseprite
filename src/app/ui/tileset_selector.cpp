@@ -111,10 +111,10 @@ void TilesetSelector::updateControlsState()
                    ts->matchFlags());
     }
 
-    name()->setEnabled(isNewTileset || !m_info.allowNewTileset);
+    name()->setEnabled(true);
     gridWidth()->setEnabled(isNewTileset);
     gridHeight()->setEnabled(isNewTileset);
-    baseIndex()->setEnabled(isNewTileset);
+    baseIndex()->setEnabled(true);
   }
   else {
     tilesets()->setEnabled(false);

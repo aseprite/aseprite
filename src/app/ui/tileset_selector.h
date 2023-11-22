@@ -26,11 +26,16 @@ namespace app {
   class TilesetSelector : public app::gen::TilesetSelector {
   public:
     struct Info {
-      // Enables/disables the tileset selector combobox
+      // Enables/disables the tileset selector combobox and fields to
+      // edit the tileset data.
       bool enabled = true;
-      // When false, removes the "New Tileset" option from the tileset selector combobox
+
+      // When false, removes the "New Tileset" option from the tileset
+      // selector combobox.
       bool allowNewTileset = true;
-      // When false, we only can select a "New Tileset" option or change the tileset properties
+
+      // When false, we only can select a "New Tileset" option or
+      // change the tileset properties.
       bool allowExistentTileset = true;
 
       // Output members that are set when TilesetSelector.getInfo()
