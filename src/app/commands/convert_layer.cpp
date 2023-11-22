@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021-2022  Igara Studio S.A.
+// Copyright (C) 2021-2023  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -21,6 +21,7 @@
 #include "app/i18n/strings.h"
 #include "app/modules/gui.h"
 #include "app/tx.h"
+#include "app/ui/tileset_selector.h"
 #include "app/util/cel_ops.h"
 #include "doc/grid.h"
 #include "doc/layer.h"
@@ -30,6 +31,8 @@
 #ifdef ENABLE_SCRIPTING
 #include "app/script/luacpp.h"
 #endif
+
+#include "tileset_selector_window.xml.h"
 
 #include <map>
 
@@ -59,6 +62,7 @@ void Param<ConvertLayerParam>::fromLua(lua_State* L, int index)
 #endif // ENABLE_SCRIPTING
 
 struct ConvertLayerParams : public NewParams {
+  Param<bool> ui { this, true, "ui" };
   Param<ConvertLayerParam> to { this, ConvertLayerParam::None, "to" };
 };
 
@@ -127,13 +131,56 @@ bool ConvertLayerCommand::onEnabled(Context* ctx)
 
 void ConvertLayerCommand::onExecute(Context* ctx)
 {
+  Site site = ctx->activeSite();
+  Sprite* sprite = site.sprite();
+  Layer* srcLayer = site.layer();
+
+  // Unexpected (onEnabled filters this case)
+  if (!sprite || !srcLayer)
+    return;
+
+  // Default options to convert a layer to a tilemap
+  std::string tilesetName;
+  int baseIndex = 1;
+  tile_flags matchFlags = 0;
+  Grid grid0 = site.grid();
+  grid0.origin(gfx::Point(0, 0));
+
+#if ENABLE_UI
+  if (params().to() == ConvertLayerParam::Tilemap &&
+      ctx->isUIAvailable() &&
+      params().ui() &&
+      // Background or Transparent Layer -> Tilemap
+      (srcLayer->isImage() &&
+       (srcLayer->isBackground() ||
+        srcLayer->isTransparent()))) {
+    TilesetSelector::Info tilesetInfo;
+    tilesetInfo.allowNewTileset = true;
+    tilesetInfo.allowExistentTileset = false;
+    tilesetInfo.grid = grid0;
+
+    gen::TilesetSelectorWindow window;
+    TilesetSelector tilesetSel(sprite, tilesetInfo);
+    window.tilesetOptions()->addChild(&tilesetSel);
+    window.openWindowInForeground();
+    if (window.closer() != window.ok())
+      return;
+
+    // Save "advanced" options
+    tilesetSel.saveAdvancedPreferences();
+
+    tilesetInfo = tilesetSel.getInfo();
+    tilesetName = tilesetInfo.name;
+    grid0 = tilesetInfo.grid;
+    baseIndex = tilesetInfo.baseIndex;
+    matchFlags = tilesetInfo.matchFlags;
+  }
+#endif
+
   ContextWriter writer(ctx);
   Doc* document(writer.document());
   {
     Tx tx(ctx, friendlyName());
-    Site site = ctx->activeSite();
-    Sprite* sprite = site.sprite();
-    Layer* srcLayer = site.layer();
 
     switch (params().to()) {
 
@@ -187,9 +234,10 @@ void ConvertLayerCommand::onExecute(Context* ctx)
         if (srcLayer->isImage() &&
             (srcLayer->isBackground() ||
              srcLayer->isTransparent())) {
-          Grid grid0 = site.grid();
-          grid0.origin(gfx::Point(0, 0));
           auto tileset = new Tileset(sprite, grid0, 1);
+          tileset->setName(tilesetName);
+          tileset->setBaseIndex(baseIndex);
+          tileset->setMatchFlags(matchFlags);
 
           auto addTileset = new cmd::AddTileset(sprite, tileset);
           tx(addTileset);

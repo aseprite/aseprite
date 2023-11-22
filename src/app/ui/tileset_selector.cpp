@@ -38,23 +38,25 @@ TilesetSelector::TilesetSelector(const doc::Sprite* sprite,
     tilesets()->deleteAllItems();
   }
 
-  doc::tileset_index tsi = 0;
-  for (doc::Tileset* tileset : *sprite->tilesets()) {
-    if (!tileset)
-      continue;
+  if (m_info.allowExistentTileset) {
+    doc::tileset_index tsi = 0;
+    for (doc::Tileset* tileset : *sprite->tilesets()) {
+      if (!tileset)
+        continue;
 
-    auto item = new ListItem(
-      fmt::format("Tileset #{0} ({1}x{2}): \"{3}\"",
-                  tsi,
-                  tileset->grid().tileSize().w,
-                  tileset->grid().tileSize().h,
-                  tileset->name()));
-    tilesets()->addItem(item);
+      auto item = new ListItem(
+        fmt::format("Tileset #{0} ({1}x{2}): \"{3}\"",
+                    tsi,
+                    tileset->grid().tileSize().w,
+                    tileset->grid().tileSize().h,
+                    tileset->name()));
+      tilesets()->addItem(item);
 
-    if (m_info.tsi == tsi)
-      tilesets()->setSelectedItem(item);
+      if (m_info.tsi == tsi)
+        tilesets()->setSelectedItem(item);
 
-    ++tsi;
+      ++tsi;
+    }
   }
 
   if (m_info.enabled) {

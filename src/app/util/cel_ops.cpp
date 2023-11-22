@@ -324,19 +324,11 @@ Cel* create_cel_copy(CmdSequence* cmds,
   else if (dstLayer->isTilemap()) {
     auto dstLayerTilemap = static_cast<doc::LayerTilemap*>(dstLayer);
 
+    Grid grid = dstLayerTilemap->tileset()->grid();
+
     // Tilemap -> Tilemap
-    Grid grid;
-    if (srcCel->layer()->isTilemap()) {
-      grid = dstLayerTilemap->tileset()->grid();
-      if (srcCel->layer()->isTilemap())
-        grid.origin(srcCel->position());
-    }
-    // Image -> Tilemap
-    else {
-      auto gridBounds = dstLayerTilemap->sprite()->gridBounds();
-      grid.origin(gridBounds.origin());
-      grid.tileSize(gridBounds.size());
-    }
+    if (srcCel->layer()->isTilemap())
+      grid.origin(srcCel->position());
 
     const gfx::Rect tilemapBounds = grid.canvasToTile(srcCel->bounds());
     dstSize = tilemapBounds.size();
