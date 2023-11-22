@@ -36,6 +36,7 @@ static void print_pref_class_def(TiXmlElement* elem, const std::string& classNam
   std::cout
     << indent << "  void load();\n"
     << indent << "  void save();\n"
+    << indent << "  bool isDirty() const;\n"
     << indent << "  Section* section(const char* id) override;\n"
     << indent << "  OptionBase* option(const char* id) override;\n";
 
@@ -200,7 +201,9 @@ static void print_pref_class_impl(TiXmlElement* elem, const std::string& prefix,
 
   std::cout
     << "void " << prefix << className << "::save()\n"
-    << "{\n";
+    << "{\n"
+    << "  if (!isDirty())\n"
+    << "    return;\n";
 
   child = (elem->FirstChild() ? elem->FirstChild()->ToElement(): NULL);
   while (child) {
@@ -219,6 +222,33 @@ static void print_pref_class_impl(TiXmlElement* elem, const std::string& prefix,
   }
 
   std::cout
+    << "}\n"
+    << "\n";
+
+  // Section::isDirty()
+
+  std::cout
+    << "bool " << prefix << className << "::isDirty() const\n"
+    << "{\n";
+
+  child = (elem->FirstChild() ? elem->FirstChild()->ToElement(): NULL);
+  while (child) {
+    if (child->Value()) {
+      std::string name = child->Value();
+      if (name == "option") {
+        std::string memberName = convert_xmlid_to_cppid(child->Attribute("id"), false);
+        std::cout << "  if (" << memberName << ".isDirty()) return true;\n";
+      }
+      else if (name == "section") {
+        std::string memberName = convert_xmlid_to_cppid(child->Attribute("id"), false);
+        std::cout << "  if (" << memberName << ".isDirty()) return true;\n";
+      }
+    }
+    child = child->NextSiblingElement();
+  }
+
+  std::cout
+    << "  return false;\n"
     << "}\n"
     << "\n";
 
