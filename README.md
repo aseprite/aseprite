@@ -16,7 +16,7 @@
 * [Layer groups](https://imgur.com/x3OKkGj) for organizing your work, and [reference layers](https://twitter.com/aseprite/status/806889204601016325) for rotoscoping.
 * Pixel-art specific tools like [Pixel Perfect freehand mode](https://imgur.com/0fdlNau), [Shading ink](https://www.aseprite.org/docs/shading/), [Custom Brushes](https://twitter.com/aseprite/status/1196883990080344067), [Outlines](https://twitter.com/aseprite/status/1126548469865431041), [Wide Pixels](https://imgur.com/1yZKUcs), etc.
 * Other special drawing tools like [Pressure sensitivity](https://twitter.com/aseprite/status/1253770784708886533), [Symmetry Tool](https://twitter.com/aseprite/status/659709226747625472), [Stroke and Fill](https://imgur.com/7JZQ81o) selection, [Gradients](https://twitter.com/aseprite/status/1126549217856622597).
-* [Tiled mode](https://twitter.com/pixel__toast/status/1132079817736695808) useful to draw patterns and textures.
+* [Tiled mode](https://youtu.be/G_JeWBaxQIg) useful to draw patterns and textures.
 * [Transform multiple frames/layers](https://twitter.com/aseprite/status/1170007034651172866) at the same time.
 * [Lua scripting capabilities](https://www.aseprite.org/docs/scripting/).
 * [CLI - Command Line Interface](https://www.aseprite.org/docs/cli/) to automatize tasks.
