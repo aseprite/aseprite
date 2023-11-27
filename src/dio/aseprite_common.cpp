@@ -11,6 +11,8 @@
 
 #include "dio/aseprite_common.h"
 
+#include "base/debug.h"
+
 namespace dio {
 
 uint32_t AsepriteExternalFiles::insert(const uint8_t type,

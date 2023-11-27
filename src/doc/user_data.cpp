@@ -10,6 +10,8 @@
 
 #include "doc/user_data.h"
 
+#include "base/debug.h"
+
 namespace doc {
 
 size_t count_nonempty_properties_maps(const UserData::PropertiesMaps& propertiesMaps)
