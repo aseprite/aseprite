@@ -14,5 +14,4 @@ if(NOT "${CUSTOM_WEBSITE_URL}" STREQUAL "")
 endif()
 
 add_library(ver-lib info.c ${gen_ver_fn})
-add_dependencies(ver-lib generated_version_h)
 target_include_directories(ver-lib PRIVATE .. "${CMAKE_CURRENT_BINARY_DIR}")
