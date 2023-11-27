@@ -764,7 +764,7 @@ void read_compressed_image_templ(FileInterface* f,
       size_t uncompressed_bytes = uncompressed.size() - zstream.avail_out;
       if (uncompressed_bytes > 0) {
         int i = 0;
-        while (true) {
+        while (y < image->height()) {
           int n = std::min(uncompressed_bytes, scanline.size() - scanline_offset);
           if (n > 0) {
             // Fill the scanline buffer until it's completed
