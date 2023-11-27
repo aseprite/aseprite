@@ -1,4 +1,5 @@
-# Copyright (C) 2014, 2016 by David Capello
+# Copyright (C) 2023  Igara Studio S.A.
+# Copyright (C) 2014-2016  David Capello
 
 add_definitions(-DHAVE_CONFIG_H)
 
@@ -14,11 +15,6 @@ set(PIXMAN_VERSION_MICRO 0)
 configure_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/../pixman/pixman/pixman-version.h.in"
   "${CMAKE_BINARY_DIR}/pixman-version.h")
-
-include_directories(
-  ${CMAKE_CURRENT_SOURCE_DIR}
-  ${CMAKE_CURRENT_SOURCE_DIR}/../pixman/pixman
-  ${CMAKE_BINARY_DIR})
 
 add_library(pixman
   ../pixman/pixman/pixman-access-accessors.c
@@ -51,3 +47,8 @@ add_library(pixman
   ../pixman/pixman/pixman-utils.c
   ../pixman/pixman/pixman-x86.c
   ../pixman/pixman/pixman.c)
+
+target_include_directories(pixman PUBLIC
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR}/../pixman/pixman
+  ${CMAKE_BINARY_DIR})
