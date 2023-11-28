@@ -1149,9 +1149,11 @@ private:
 class ContextBar::DynamicsField : public ButtonSet
                                 , public DynamicsPopup::Delegate {
 public:
-  DynamicsField(ContextBar* ctxBar)
+  DynamicsField(ContextBar* ctxBar,
+                DitheringSelector* ditheringSelector)
     : ButtonSet(1)
-    , m_ctxBar(ctxBar) {
+    , m_ctxBar(ctxBar)
+    , m_ditheringSelector(ditheringSelector) {
     addItem(SkinTheme::get(this)->parts.dynamics(), "dynamics_field");
 
     loadDynamicsPref();
@@ -1193,6 +1195,9 @@ public:
     }
     else {
       // Load dynamics just in case that the active tool has changed.
+      //
+      // TODO cache the loaded dynamics per tool until the preferences
+      //      changes (listen pref changes)
       loadDynamicsPref();
     }
     return m_dynamics;
@@ -1248,11 +1253,11 @@ public:
     m_dynamics.maxVelocityThreshold = dynaPref.maxVelocityThreshold();
     m_dynamics.colorFromTo = dynaPref.colorFromTo();
 
-    DitheringSelector matrixSel(DitheringSelector::SelectMatrix);
-    matrixSel.setSelectedItemIndex(matrixSel.findItemIndex(
-      dynaPref.matrixName()));
-    render::DitheringMatrix matrix(matrixSel.ditheringMatrix());
-    m_dynamics.ditheringMatrix = matrix;
+    m_ditheringSelector->setSelectedItemIndex(
+      m_ditheringSelector->findItemIndex(dynaPref.matrixName()));
+
+    m_dynamics.ditheringMatrix =
+      m_ditheringSelector->ditheringMatrix();
   }
 
 private:
@@ -1286,6 +1291,7 @@ private:
 
   std::unique_ptr<DynamicsPopup> m_popup;
   ContextBar* m_ctxBar;
+  DitheringSelector* m_ditheringSelector;
   mutable tools::DynamicsOptions m_dynamics;
   bool m_optionsGridVisibility = true;
   bool m_sameInAllTools = false;
@@ -1843,7 +1849,7 @@ ContextBar::ContextBar(TooltipManager* tooltipManager,
   addChild(m_selectBoxHelp = new Label(""));
   addChild(m_freehandBox = new HBox());
 
-  m_freehandBox->addChild(m_dynamics = new DynamicsField(this));
+  m_freehandBox->addChild(m_dynamics = new DynamicsField(this, m_ditheringSelector));
   m_freehandBox->addChild(m_freehandAlgo = new FreehandAlgorithmField());
 
   addChild(m_symmetry = new SymmetryField());
