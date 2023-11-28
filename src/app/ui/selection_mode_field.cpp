@@ -30,6 +30,7 @@ SelectionModeField::SelectionModeField()
   addItem(theme->parts.selectionIntersect(), "selection_mode");
 
   setSelectedItem((int)Preferences::instance().selection.mode());
+  initTheme();
 }
 
 void SelectionModeField::setupTooltips(TooltipManager* tooltipManager)
