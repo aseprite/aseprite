@@ -32,8 +32,8 @@ namespace doc {
 
   private:
     ImageBufferPtr m_buffer;
-    address_t m_bits;
     address_t* m_rows;
+    address_t m_bits;
 
     inline address_t getLineAddress(int y) {
       ASSERT(y >= 0 && y < height());
@@ -64,7 +64,7 @@ namespace doc {
 
       m_rowBytes = Traits::rowstride_bytes(width());
 
-      const std::size_t for_rows = sizeof(address_t) * height();
+      const std::size_t for_rows = doc_align_size(sizeof(address_t) * height());
       const std::size_t for_pixels = m_rowBytes * height();
       const std::size_t required_size = for_pixels + for_rows;
 
@@ -76,13 +76,13 @@ namespace doc {
       std::fill(m_buffer->buffer(),
                 m_buffer->buffer()+required_size, 0);
 
-      m_bits = (address_t)m_buffer->buffer();
-      m_rows = (address_t*)(m_buffer->buffer() + for_pixels);
+      m_rows = (address_t*)m_buffer->buffer();
+      m_bits = (address_t)(m_buffer->buffer() + for_rows);
 
-      address_t addr = m_bits;
+      auto addr = (uint8_t*)m_bits;
       for (int y=0; y<height(); ++y) {
-        m_rows[y] = addr;
-        addr = (address_t)(((uint8_t*)addr) + m_rowBytes);
+        m_rows[y] = (address_t)addr;
+        addr += m_rowBytes;
       }
     }
 
