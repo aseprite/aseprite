@@ -19,6 +19,7 @@
 #include "app/commands/quick_command.h"
 #include "app/doc.h"
 #include "app/doc_event.h"
+#include "app/extensions.h"
 #include "app/i18n/strings.h"
 #include "app/ini_file.h"
 #include "app/match_words.h"
@@ -1149,11 +1150,9 @@ private:
 class ContextBar::DynamicsField : public ButtonSet
                                 , public DynamicsPopup::Delegate {
 public:
-  DynamicsField(ContextBar* ctxBar,
-                DitheringSelector* ditheringSelector)
+  DynamicsField(ContextBar* ctxBar)
     : ButtonSet(1)
-    , m_ctxBar(ctxBar)
-    , m_ditheringSelector(ditheringSelector) {
+    , m_ctxBar(ctxBar) {
     addItem(SkinTheme::get(this)->parts.dynamics(), "dynamics_field");
 
     loadDynamicsPref();
@@ -1253,11 +1252,19 @@ public:
     m_dynamics.maxVelocityThreshold = dynaPref.maxVelocityThreshold();
     m_dynamics.colorFromTo = dynaPref.colorFromTo();
 
-    m_ditheringSelector->setSelectedItemIndex(
-      m_ditheringSelector->findItemIndex(dynaPref.matrixName()));
-
-    m_dynamics.ditheringMatrix =
-      m_ditheringSelector->ditheringMatrix();
+    // Get the dithering matrix by name from the extensions.
+    bool found = false;
+    auto ditheringMatrices = App::instance()
+      ->extensions().ditheringMatrices();
+    for (const auto& it : ditheringMatrices) {
+      if (it.name() == dynaPref.matrixName()) {
+        m_dynamics.ditheringMatrix = it.matrix();
+        found = true;
+        break;
+      }
+    }
+    if (!found)
+      m_dynamics.ditheringMatrix = render::DitheringMatrix();
   }
 
 private:
@@ -1291,7 +1298,6 @@ private:
 
   std::unique_ptr<DynamicsPopup> m_popup;
   ContextBar* m_ctxBar;
-  DitheringSelector* m_ditheringSelector;
   mutable tools::DynamicsOptions m_dynamics;
   bool m_optionsGridVisibility = true;
   bool m_sameInAllTools = false;
@@ -1849,7 +1855,7 @@ ContextBar::ContextBar(TooltipManager* tooltipManager,
   addChild(m_selectBoxHelp = new Label(""));
   addChild(m_freehandBox = new HBox());
 
-  m_freehandBox->addChild(m_dynamics = new DynamicsField(this, m_ditheringSelector));
+  m_freehandBox->addChild(m_dynamics = new DynamicsField(this));
   m_freehandBox->addChild(m_freehandAlgo = new FreehandAlgorithmField());
 
   addChild(m_symmetry = new SymmetryField());
