@@ -1203,7 +1203,6 @@ public:
   }
 
   void setOptionsGridVisibility(bool state) {
-    m_optionsGridVisibility = state;
     if (m_popup)
       m_popup->setOptionsGridVisibility(state);
   }
@@ -1299,7 +1298,6 @@ private:
   std::unique_ptr<DynamicsPopup> m_popup;
   ContextBar* m_ctxBar;
   mutable tools::DynamicsOptions m_dynamics;
-  bool m_optionsGridVisibility = true;
   bool m_sameInAllTools = false;
 };
 
@@ -2170,6 +2168,10 @@ void ContextBar::updateForTool(tools::Tool* tool)
     (tool->getController(0)->isFreehand() ||
      tool->getController(1)->isFreehand());
 
+  const bool isFilled = tool &&
+    (tool->getFill(0) == tools::FillAlways ||
+     tool->getFill(1) == tools::FillAlways);
+
   const bool showOpacity =
     (supportOpacity) &&
     ((isPaint && (hasInkWithOpacity || hasImageBrush)) ||
@@ -2179,9 +2181,11 @@ void ContextBar::updateForTool(tools::Tool* tool)
     (tool->getInk(0)->withDitheringOptions() ||
      tool->getInk(1)->withDitheringOptions());
 
-  // True if the brush supports dynamics
-  // TODO add support for dynamics in custom brushes in the future
-  const bool supportDynamics = (!hasImageBrush);
+  // True if the tool & brush support dynamics
+  const bool supportDynamics =
+    (isFreehand &&
+     !isFilled &&     // TODO add support for dynamics to contour tool
+     !hasImageBrush); // TODO add support for dynamics in custom brushes
 
   // Show/Hide fields
   m_zoomButtons->setVisible(needZoomButtons(tool));
@@ -2196,7 +2200,7 @@ void ContextBar::updateForTool(tools::Tool* tool)
   m_inkShades->setVisible(hasInkShades);
   m_eyedropperField->setVisible(isEyedropper);
   m_autoSelectLayer->setVisible(isMove);
-  m_dynamics->setVisible(isFreehand && supportDynamics);
+  m_dynamics->setVisible(supportDynamics);
   m_dynamics->setOptionsGridVisibility(isFreehand && !hasSelectOptions);
   m_freehandBox->setVisible(isFreehand && (supportOpacity || hasSelectOptions));
   m_toleranceLabel->setVisible(hasTolerance);

@@ -379,6 +379,7 @@ Stroke::Pt ToolLoopManager::getSpriteStrokePt(const Pointer& pointer)
 bool ToolLoopManager::useDynamics() const
 {
   return (m_dynamics.isDynamic() &&
+          // TODO add support for dynamics to contour tool
           !m_toolLoop->getFilled() &&
           m_toolLoop->getController()->isFreehand());
 }

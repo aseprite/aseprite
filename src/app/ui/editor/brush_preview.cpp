@@ -163,7 +163,8 @@ void BrushPreview::show(const gfx::Point& screenPos)
 
   BrushRef brush = getCurrentBrush();
 
-  const bool isFloodfill = m_editor->getCurrentEditorTool()->getPointShape(0)->isFloodFill();
+  tools::Tool* tool = m_editor->getCurrentEditorTool();
+  const bool isFloodfill = tool->getPointShape(0)->isFloodFill();
   // TODO add support for "tile-brushes"
   gfx::Rect origBrushBounds =
     ((isFloodfill && brush->type() != BrushType::kImageBrushType) ||
@@ -190,21 +191,26 @@ void BrushPreview::show(const gfx::Point& screenPos)
   // Get current tilemap mode
   TilemapMode tilemapMode = ColorBar::instance()->tilemapMode();
 
-  const auto& dynamics = App::instance()->contextBar()->getDynamics();
-
   // Setup the cursor type depending on several factors (current tool,
   // foreground color, layer transparency, brush size, etc.).
   color_t brush_color = getBrushColor(sprite, layer);
   color_t mask_index = sprite->transparentColor();
 
-  if (brush->type() != doc::kImageBrushType &&
-      (dynamics.size != tools::DynamicSensor::Static ||
-       dynamics.angle != tools::DynamicSensor::Static)) {
-    brush.reset(
-      new Brush(
-        brush->type(),
-        (dynamics.size != tools::DynamicSensor::Static ? dynamics.minSize: brush->size()),
-        (dynamics.angle != tools::DynamicSensor::Static ? dynamics.minAngle: brush->angle())));
+  // Check dynamics option for freehand tools
+  if (tool &&
+      tool->getController(0)->isFreehand() &&
+      // TODO add support for dynamics to contour tool
+      tool->getFill(0) == tools::FillNone) {
+    const auto& dynamics = App::instance()->contextBar()->getDynamics();
+    if (brush->type() != doc::kImageBrushType &&
+        (dynamics.size != tools::DynamicSensor::Static ||
+         dynamics.angle != tools::DynamicSensor::Static)) {
+      brush.reset(
+        new Brush(
+          brush->type(),
+          (dynamics.size != tools::DynamicSensor::Static ? dynamics.minSize: brush->size()),
+          (dynamics.angle != tools::DynamicSensor::Static ? dynamics.minAngle: brush->angle())));
+    }
   }
 
   if (ink->isSelection() || ink->isSlice()) {
