@@ -67,7 +67,7 @@ int UserData_set_text(lua_State* L) {
   const char* text = lua_tostring(L, 2);
   auto wud = get_WithUserData<T>(obj);
   UserData ud = wud->userData();
-  ud.setText(text);
+  ud.setText(text ? std::string(text): std::string());
   if (spr) {
     Tx tx;
     tx(new cmd::SetUserData(wud, ud, static_cast<Doc*>(spr->document())));

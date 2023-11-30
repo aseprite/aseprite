@@ -135,3 +135,10 @@ do
   assert(spr.properties.a == "hi")
   assert(spr.properties.b == 60)
 end
+
+-- Test crash setting nil user data
+-- https://github.com/aseprite/aseprite/issues/4187
+do
+  local spr = Sprite(1, 1)
+  spr.data = nil
+end
