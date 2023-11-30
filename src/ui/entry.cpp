@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -195,8 +195,8 @@ Entry::Range Entry::selectedRange() const
     range.from = std::min(m_caret, m_select);
     range.to   = std::max(m_caret, m_select);
 
-    ASSERT(range.from >= 0 && range.from < int(m_boxes.size()));
-    ASSERT(range.to   >= 0 && range.to   <= int(m_boxes.size()));
+    range.from = std::clamp(range.from, 0, std::max(0, int(m_boxes.size())-1));
+    range.to = std::clamp(range.to, 0, int(m_boxes.size()));
   }
   return range;
 }
