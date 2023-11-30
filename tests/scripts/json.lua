@@ -71,3 +71,33 @@ do
   assert(obj.d[2] == 8)
   assert(obj.d[3].a == 2)
 end
+
+-- Test crash setting fields (index out of bounds, or setting a field
+-- in an array object, etc.).
+-- https://github.com/aseprite/aseprite/issues/4166
+do
+  local o = json.decode('{"a":[10,20,30]}')
+  assert(#o == 1)
+  assert(#o.a == 3)
+  assert(o.a[1] == 10)
+  assert(o.a[2] == 20)
+  assert(o.a[3] == 30)
+  assert(o.a[4] == nil)
+  assert(o.a["b"] == nil)
+
+  o.a[4] = 40
+  assert(#o.a == 4)
+  assert(o.a[4] == 40)
+
+  -- Cannot add a map field to an array
+  o.a.b = "d"
+  assert(o.a.b == nil)
+
+  -- Creating a field that is an object and set a field
+  o.b = { c=1 }
+  o.b.d = 2
+  assert(o.b.c == 1)
+  assert(o.b.d == 2)
+
+  assert(tostring(o) == '{"a": [10, 20, 30, 40], "b": {"c": 1, "d": 2}}')
+end

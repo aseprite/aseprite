@@ -159,15 +159,14 @@ int JsonObj_newindex(lua_State* L)
   auto obj = get_obj<JsonObj>(L, 1);
   if (obj->type() == json11::Json::OBJECT) {
     if (auto key = lua_tostring(L, 2)) {
-      // TODO ugly hack, but it works
-      const_cast<std::map<std::string, json11::Json>&>
-        (obj->object_items())[key] = get_json_value(L, 3);
+      obj->set_object_item(key, get_json_value(L, 3));
     }
   }
   else if (obj->type() == json11::Json::ARRAY) {
-    auto i = lua_tointeger(L, 2) - 1; // Adjust to 0-based index
-    const_cast<std::vector<json11::Json>&>
-      (obj->array_items())[i] = get_json_value(L, 3);
+    auto i = lua_tointeger(L, 2);
+    // Adjust to 0-based index
+    if (i > 0)
+      obj->set_array_item(i-1, get_json_value(L, 3));
   }
   return 0;
 }
