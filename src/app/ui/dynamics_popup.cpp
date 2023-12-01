@@ -482,6 +482,10 @@ void DynamicsPopup::refreshVisibility()
 
   m_hotRegion |= gfx::Region(boundsOnScreen());
   setHotRegion(m_hotRegion);
+
+  // Inform to the delegate that the dynamics have changed (so the
+  // delegate can update the UI to show if the dynamics are on/off).
+  m_delegate->onDynamicsChange(getDynamics());
 }
 
 bool DynamicsPopup::sharedSettings() const

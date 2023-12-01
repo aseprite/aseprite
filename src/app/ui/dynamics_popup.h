@@ -32,6 +32,7 @@ namespace app {
       virtual doc::BrushRef getActiveBrush() = 0;
       virtual void setMaxSize(int size) = 0;
       virtual void setMaxAngle(int angle) = 0;
+      virtual void onDynamicsChange(const tools::DynamicsOptions& dynamicsOptions) = 0;
     };
     DynamicsPopup(Delegate* delegate);
 

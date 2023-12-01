@@ -1156,6 +1156,11 @@ public:
     addItem(SkinTheme::get(this)->parts.dynamics(), "dynamics_field");
 
     loadDynamicsPref();
+    initTheme();
+  }
+
+  void updateIconFromActiveToolPref() {
+    initTheme();
   }
 
   void switchPopup() {
@@ -1210,11 +1215,8 @@ public:
   void saveDynamicsPref() {
     m_sameInAllTools = m_popup->sharedSettings();
     Preferences::instance().shared.shareDynamics(m_sameInAllTools);
-    tools::Tool* tool = nullptr;
-    if (!m_sameInAllTools)
-      tool = App::instance()->activeTool();
 
-    auto& dynaPref = Preferences::instance().tool(tool).dynamics;
+    auto& dynaPref = Preferences::instance().tool(getTool()).dynamics;
     m_dynamics = m_popup->getDynamics();
     dynaPref.stabilizer(m_dynamics.stabilizer);
     dynaPref.stabilizerFactor(m_dynamics.stabilizerFactor);
@@ -1229,15 +1231,14 @@ public:
     dynaPref.maxVelocityThreshold(m_dynamics.maxVelocityThreshold);
     dynaPref.colorFromTo(m_dynamics.colorFromTo);
     dynaPref.matrixName(m_popup->ditheringMatrixName());
+
+    initTheme();
   }
 
   void loadDynamicsPref() {
     m_sameInAllTools = Preferences::instance().shared.shareDynamics();
-    tools::Tool* tool = nullptr;
-    if (!m_sameInAllTools)
-      tool = App::instance()->activeTool();
 
-    auto& dynaPref = Preferences::instance().tool(tool).dynamics;
+    auto& dynaPref = Preferences::instance().tool(getTool()).dynamics;
     m_dynamics.stabilizer = dynaPref.stabilizer();
     m_dynamics.stabilizerFactor = dynaPref.stabilizerFactor();
     m_dynamics.size = dynaPref.size();
@@ -1282,6 +1283,12 @@ private:
     Preferences::instance().tool(tool).brush.angle(angle);
   }
 
+  void onDynamicsChange(const tools::DynamicsOptions& dynamicsOptions) override {
+    updateIcon(dynamicsOptions.size != tools::DynamicSensor::Static ||
+               dynamicsOptions.angle != tools::DynamicSensor::Static ||
+               dynamicsOptions.gradient != tools::DynamicSensor::Static);
+  }
+
   // ButtonSet overrides
   void onItemChange(Item* item) override {
     ButtonSet::onItemChange(item);
@@ -1291,8 +1298,27 @@ private:
   // Widget overrides
   void onInitTheme(InitThemeEvent& ev) override {
     ButtonSet::onInitTheme(ev);
+
+    auto& dynaPref = Preferences::instance().tool(getTool()).dynamics;
+    updateIcon(dynaPref.size() != tools::DynamicSensor::Static ||
+               dynaPref.angle() != tools::DynamicSensor::Static ||
+               dynaPref.gradient() != tools::DynamicSensor::Static);
+
     if (m_popup)
       m_popup->initTheme();
+  }
+
+  tools::Tool* getTool() const {
+    if (m_sameInAllTools)
+      return nullptr; // For shared dynamic options we use tool=nullptr
+    else
+      return App::instance()->activeTool();
+  }
+
+  void updateIcon(const bool dynamicsOn) {
+    auto theme = SkinTheme::get(this);
+    getItem(0)->setIcon(dynamicsOn ? theme->parts.dynamicsOn():
+                                     theme->parts.dynamics());
   }
 
   std::unique_ptr<DynamicsPopup> m_popup;
@@ -2202,6 +2228,8 @@ void ContextBar::updateForTool(tools::Tool* tool)
   m_autoSelectLayer->setVisible(isMove);
   m_dynamics->setVisible(supportDynamics);
   m_dynamics->setOptionsGridVisibility(isFreehand && !hasSelectOptions);
+  if (supportDynamics)
+    m_dynamics->updateIconFromActiveToolPref();
   m_freehandBox->setVisible(isFreehand && (supportOpacity || hasSelectOptions));
   m_toleranceLabel->setVisible(hasTolerance);
   m_tolerance->setVisible(hasTolerance);
