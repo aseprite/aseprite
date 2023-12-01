@@ -385,6 +385,7 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
   double scale = params().scale();
   gfx::Rect bounds = params().bounds();
   doc::AniDir aniDirValue = params().aniDir();
+  bool isPlaySubtags = params().playSubtags();
   bool isForTwitter = false;
 
 #if ENABLE_UI
@@ -462,6 +463,7 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
     applyPixelRatio = win.applyPixelRatio();
     aniDirValue = win.aniDirValue();
     isForTwitter = win.isForTwitter();
+    isPlaySubtags = win.isPlaySubtags();
   }
 #endif
 
@@ -534,6 +536,7 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
     params().aniDir(aniDirValue);
     if (!bounds.isEmpty())
       params().bounds(bounds);
+    params().playSubtags(isPlaySubtags);
 
     // TODO This should be set as options for the specific encoder
     GifEncoderDurationFix fixGif(isForTwitter);

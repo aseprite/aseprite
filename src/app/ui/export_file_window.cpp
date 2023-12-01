@@ -59,12 +59,13 @@ ExportFileWindow::ExportFileWindow(const Doc* doc)
   pixelRatio()->setSelected(m_docPref.saveCopy.applyPixelRatio());
   forTwitter()->setSelected(m_docPref.saveCopy.forTwitter());
   adjustResize()->setVisible(false);
-
+  playSubtags()->setSelected(m_docPref.saveCopy.playSubtags());
   // Here we don't call updateAniDir() because it's already filled and
   // set by the function fill_anidir_combobox(). So if the user
   // exported a tag with a specific AniDir, we want to keep the option
   // in the preference (instead of the tag's AniDir).
   //updateAniDir();
+  updatePlaySubtags();
 
   updateAdjustResizeButton();
 
@@ -82,7 +83,10 @@ ExportFileWindow::ExportFileWindow(const Doc* doc)
     });
 
   resize()->Change.connect([this]{ updateAdjustResizeButton(); });
-  frames()->Change.connect([this]{ updateAniDir(); });
+  frames()->Change.connect([this]{
+    updateAniDir();
+    updatePlaySubtags();
+  });
   forTwitter()->Click.connect([this]{ updateAdjustResizeButton(); });
   adjustResize()->Click.connect([this]{ onAdjustResize(); });
   ok()->Click.connect([this]{ onOK(); });
@@ -105,6 +109,7 @@ void ExportFileWindow::savePref()
   m_docPref.saveCopy.frameTag(framesValue());
   m_docPref.saveCopy.applyPixelRatio(applyPixelRatio());
   m_docPref.saveCopy.forTwitter(isForTwitter());
+  m_docPref.saveCopy.playSubtags(isPlaySubtags());
 }
 
 std::string ExportFileWindow::outputFilenameValue() const
@@ -143,6 +148,11 @@ std::string ExportFileWindow::framesValue() const
 doc::AniDir ExportFileWindow::aniDirValue() const
 {
   return (doc::AniDir)anidir()->getSelectedItemIndex();
+}
+
+bool ExportFileWindow::isPlaySubtags() const
+{
+  return playSubtags()->isSelected() && framesValue() != kSelectedFrames;
 }
 
 bool ExportFileWindow::applyPixelRatio() const
@@ -203,6 +213,13 @@ void ExportFileWindow::updateAniDir()
   }
   else
     anidir()->setSelectedItemIndex(int(doc::AniDir::FORWARD));
+}
+
+void ExportFileWindow::updatePlaySubtags()
+{
+  std::string framesValue = this->framesValue();
+  playSubtags()->setVisible(framesValue != kSelectedFrames);
+  layout();
 }
 
 void ExportFileWindow::updateAdjustResizeButton()

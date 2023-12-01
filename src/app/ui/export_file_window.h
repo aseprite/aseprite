@@ -33,6 +33,7 @@ namespace app {
     int layersIndex() const;
     std::string framesValue() const;
     doc::AniDir aniDirValue() const;
+    bool isPlaySubtags() const;
     bool applyPixelRatio() const;
     bool isForTwitter() const;
 
@@ -47,6 +48,7 @@ namespace app {
     void updateOutputFilenameEntry();
     void onOutputFilenameEntryChange();
     void updateAniDir();
+    void updatePlaySubtags();
     void updateAdjustResizeButton();
     void onAdjustResize();
     void onOK();

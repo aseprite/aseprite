@@ -33,6 +33,7 @@ namespace app {
     Param<bool> ignoreEmpty { this, false, "ignoreEmpty" };
     Param<double> scale { this, 1.0, "scale" };
     Param<gfx::Rect> bounds { this, gfx::Rect(), "bounds" };
+    Param<bool> playSubtags { this, false, "playSubtags" };
   };
 
   class SaveFileBaseCommand : public CommandWithNewParams<SaveFileParams> {

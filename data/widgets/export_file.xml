@@ -37,6 +37,8 @@
       <label id="anidir_label" text="@.anidir" />
       <combobox id="anidir" text="" cell_align="horizontal" cell_hspan="2" />
 
+      <check id="play_subtags" text="@.play_subtags" cell_hspan="3" />
+
       <check id="pixel_ratio" text="@.pixel_ratio" cell_hspan="3" />
 
       <hbox cell_hspan="3">
