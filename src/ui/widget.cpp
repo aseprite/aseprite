@@ -1529,6 +1529,9 @@ void Widget::processMnemonicFromText(const int escapeChar,
       if (!chr) {
         break;    // Ill-formed string (it ends with escape character)
       }
+      else if (chr == ' ') {           // escape char is followed by a space,
+        newText.push_back(escapeChar); // leave it its place then.
+      }
       else if (chr != escapeChar) {
         setMnemonic(chr, requireModifiers);
       }
