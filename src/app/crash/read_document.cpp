@@ -521,7 +521,7 @@ private:
   }
 
   Slice* readSlice(std::ifstream& s) {
-    return read_slice(s, false);
+    return read_slice(s, false, m_docFormatVer);
   }
 
   // Fix issues that the restoration process could produce.
