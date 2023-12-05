@@ -69,7 +69,7 @@ std::set<LangInfo> Strings::availableLanguages() const
       // Load display name
       cfg::CfgFile cfg;
       if (cfg.load(path))
-        displayName = cfg.getValue("", "display_name", displayName.c_str());
+        displayName = cfg.getValue("_", "display_name", displayName.c_str());
 
       result.insert(LangInfo(langId, path, displayName));
     }
