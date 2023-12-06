@@ -1,5 +1,5 @@
 // Aseprite Code Generator
-// Copyright (c) 2021 Igara Studio S.A.
+// Copyright (c) 2021-2023 Igara Studio S.A.
 // Copyright (c) 2016-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -22,6 +22,10 @@
 #include <memory>
 #include <stdexcept>
 #include <vector>
+
+// Check only the existence of strings from the main "en.ini" file
+// All other translations will be considered work-in-progress.
+#define ENGLISH_ONLY 1
 
 typedef std::vector<TiXmlElement*> XmlElements;
 
@@ -90,7 +94,13 @@ class CheckStrings {
 public:
 
   void loadStrings(const std::string& dir) {
-    for (const auto& fn : base::list_files(dir)) {
+#if ENGLISH_ONLY
+    std::string fn = "en.ini";
+#else
+    for (const auto& fn : base::list_files(dir))
+#endif
+    {
+
       std::unique_ptr<cfg::CfgFile> f(new cfg::CfgFile);
       f->load(base::join_path(dir, fn));
       m_stringFiles.push_back(std::move(f));
