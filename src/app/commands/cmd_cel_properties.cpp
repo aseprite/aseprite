@@ -287,6 +287,7 @@ private:
       update_screen_for_document(m_document);
     }
 
+    // TODO this is similar to LayerPropertiesWindow::onCommitChange()
     m_pendingChanges = false;
   }
 

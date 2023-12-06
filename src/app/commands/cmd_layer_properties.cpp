@@ -308,6 +308,17 @@ private:
 
       update_screen_for_document(m_document);
     }
+
+    // We indicate that there are no more pending changes in both
+    // cases 1) if we were able to commit the transaction or 2) if an
+    // exception ocurred (e.g. the sprite was locked). This is because
+    // sometimes if a big operation with multiple modifications
+    // (e.g. deleting a lot of cels at the same time) is going to
+    // happen, we'll receive a lot of onActiveSiteChange() events +
+    // onCommitChange() calls.
+    //
+    // TODO this is similar to CelPropertiesWindow::onCommitChange()
+    m_pendingChanges = false;
   }
 
   // ContextObserver impl
