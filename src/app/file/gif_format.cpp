@@ -57,6 +57,8 @@
 // GifBitSize can return 9 (it's a bug in giflib)
 #define GifBitSizeLimited(v) (std::min(GifBitSize(v), 8))
 
+#define BLACK 0xff000000
+
 namespace app {
 
 using namespace base;
@@ -224,7 +226,9 @@ public:
     , m_frameDelay(1)
     , m_remap(256)
     , m_hasLocalColormaps(false)
-    , m_firstLocalColormap(nullptr) {
+    , m_firstLocalColormap(nullptr)
+    , m_largestUsedIndex(0)
+    , m_hasGlobalColormap(m_gifFile->SColorMap ? true : false) {
     GIF_TRACE("GIF: background index=%d\n", (int)m_gifFile->SBackGroundColor);
     GIF_TRACE("GIF: global colormap=%d, ncolors=%d\n",
               (m_gifFile->SColorMap ? 1: 0),
@@ -515,6 +519,17 @@ private:
     // is out of bounds and non opaque sprite.
     int extraEntry = 0;
 
+    if (m_hasGlobalColormap) {
+      if (m_localTransparentIndex >= 0 && m_localTransparentIndex < ncolors)
+        m_largestUsedIndex = m_localTransparentIndex;
+      for (const auto& i : LockImageBits<IndexedTraits>(frameImage)) {
+        if (i >= m_largestUsedIndex && i < ncolors)
+          m_largestUsedIndex = i;
+      }
+      usedEntries.resize(m_largestUsedIndex + 1);
+      ncolors = usedEntries.size();
+    }
+
     if (m_frameNum == 0 && !isLocalColormap)
       // Mark all entries as used if the colormap is global.
       usedEntries.all();
@@ -584,6 +599,15 @@ private:
           ASSERT(false); // Can it happen?
         clear_image(m_currentImage.get(), m_bgIndex);
         clear_image(m_previousImage.get(), m_bgIndex);
+        if (m_bgIndex > m_largestUsedIndex && m_hasGlobalColormap) {
+          m_largestUsedIndex = m_bgIndex;
+          if (m_largestUsedIndex >= usedEntries.size()) {
+            usedEntries.resize(m_largestUsedIndex + 1);
+            usedEntries[m_largestUsedIndex] = true;
+            palette->resize(m_largestUsedIndex + 1);
+            ncolors = usedEntries.size();
+          }
+        }
       }
       m_currentImage.get()->setMaskColor(m_bgIndex);
       m_previousImage.get()->setMaskColor(m_bgIndex);
@@ -636,6 +660,13 @@ private:
           palette->resize(palette->size() + 1);
           j = palette->size() - 1;
           palette->setEntry(j, colormap2rgba(colormap, i));
+          if (j > m_largestUsedIndex && m_hasGlobalColormap) {
+            m_largestUsedIndex = j;
+            if (m_largestUsedIndex > usedEntries.size() - 1) {
+              usedEntries.resize(m_largestUsedIndex + 1);
+              usedEntries[m_largestUsedIndex] = true;
+            }
+          }
         }
         // If the palette size is >256, we'll stop updating
         // the palette for the remaining frames because
@@ -833,9 +864,22 @@ private:
     Palette* oldPalette = m_sprite->palette(0);
     Palette newPalette(0, colormap->ColorCount);
 
+    // Adjust the final palette size (removing the last unused
+    // default colors (black))
+    int largestIndex = m_bgIndex;
     for (int i=0; i<colormap->ColorCount; ++i) {
-      newPalette.setEntry(i, colormap2rgba(colormap, i));;
+      color_t c = colormap2rgba(colormap, i);
+      newPalette.setEntry(i, colormap2rgba(colormap, i));
+      if (oldPalette->findExactMatch(c)) {
+        if (c == BLACK && i > oldPalette->size() - 1)
+          continue;
+        if (i >= largestIndex)
+          largestIndex = i;
+      }
+      else if (c != BLACK && i >= largestIndex)
+        largestIndex = i;
     }
+    newPalette.resize(largestIndex + 1);
 
     Remap remap = create_remap_to_change_palette(
       oldPalette, &newPalette, m_bgIndex,
@@ -884,6 +928,13 @@ private:
   // all local colormaps are the same, so we can use it as a global
   // colormap.
   ColorMapObject* m_firstLocalColormap;
+  // The "largest used index" is useful for resizing the final palette
+  // and discarding the last unused colors when:
+  // - Loading GIF files
+  // - GIF has global palette
+  // - GIF is no opaque
+  int m_largestUsedIndex;
+  bool m_hasGlobalColormap;
 };
 
 bool GifFormat::onLoad(FileOp* fop)
