@@ -162,7 +162,6 @@ void Strings::loadStringsFromFile(const std::string& fn)
 
       value = cfg.getValue(section.c_str(), key.c_str(), "");
       base::replace_string(value, "\\n", "\n");
-      base::replace_string(value, "\\ ", " "); // Mainly used for leading blanks
       m_strings[textId] = value;
 
       //TRACE("I18N: Reading string %s -> %s\n", textId.c_str(), m_strings[textId].c_str());
