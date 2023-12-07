@@ -126,7 +126,7 @@ void PreviewCliDelegate::saveFile(Context* ctx, const CliOpenFile& cof)
   }
 
   if (cof.hasFrameRange()) {
-    const auto& selFrames = cof.roi().selectedFrames();
+    const auto& selFrames = cof.roi().framesSequence();
     if (!selFrames.empty()) {
       if (selFrames.ranges() == 1)
         std::cout << "  - Frame range from "

@@ -319,7 +319,7 @@ bool WebPFormat::onSave(FileOp* fop)
 
   WebPAnimEncoder* enc = WebPAnimEncoderNew(w, h, &enc_options);
   int timestamp_ms = 0;
-  for (frame_t frame : fop->roi().selectedFrames()) {
+  for (frame_t frame : fop->roi().framesSequence()) {
     // Render the frame in the bitmap
     clear_image(image.get(), image->maskColor());
     sprite->renderFrame(frame, fop->roi().frameBounds(frame), image.get());

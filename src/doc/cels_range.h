@@ -62,7 +62,7 @@ namespace doc {
     private:
       Cel* m_cel;
       const SelectedFrames& m_selFrames;
-      SelectedFrames::const_iterator m_frameIterator;
+      frames::const_iterator m_frameIterator;
       Flags m_flags;
       std::set<ObjectId> m_visited;
     };

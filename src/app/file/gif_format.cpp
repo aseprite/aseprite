@@ -1104,9 +1104,9 @@ public:
     m_currentImage = m_images[1].get();
     m_nextImage = m_images[2].get();
 
-    auto frame_beg = m_fop->roi().selectedFrames().begin();
+    auto frame_beg = m_fop->roi().framesSequence().begin();
 #if _DEBUG
-    auto frame_end = m_fop->roi().selectedFrames().end();
+    auto frame_end = m_fop->roi().framesSequence().end();
 #endif
     auto frame_it = frame_beg;
 
