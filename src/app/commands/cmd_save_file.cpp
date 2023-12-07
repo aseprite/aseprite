@@ -221,8 +221,8 @@ void SaveFileBaseCommand::saveDocumentInBackground(
         m_selFrames = m_selFrames.makePingPong();
         break;
       case AniDir::PING_PONG_REVERSE:
-        m_selFrames = m_selFrames.makePingPong();
         m_selFrames = m_selFrames.makeReverse();
+        m_selFrames = m_selFrames.makePingPong();
         break;
     }
   }
