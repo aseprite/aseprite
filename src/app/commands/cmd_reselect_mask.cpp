@@ -53,7 +53,7 @@ void ReselectMaskCommand::onExecute(Context* context)
   ContextWriter writer(context);
   Doc* document(writer.document());
   {
-    Tx tx(writer.context(), "Reselect", DoesntModifyDocument);
+    Tx tx(writer, "Reselect", DoesntModifyDocument);
     tx(new cmd::ReselectMask(document));
     tx.commit();
   }

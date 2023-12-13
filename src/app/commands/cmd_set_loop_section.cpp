@@ -107,14 +107,14 @@ void SetLoopSectionCommand::onExecute(Context* ctx)
       loopTag = create_loop_tag(begin, end);
 
       ContextWriter writer(ctx);
-      Tx tx(writer.context(), "Add Loop");
+      Tx tx(writer, "Add Loop");
       tx(new cmd::AddTag(sprite, loopTag));
       tx.commit();
     }
     else if (loopTag->fromFrame() != begin ||
              loopTag->toFrame() != end) {
       ContextWriter writer(ctx);
-      Tx tx(writer.context(), "Set Loop Range");
+      Tx tx(writer, "Set Loop Range");
       tx(new cmd::SetTagRange(loopTag, begin, end));
       tx.commit();
     }
@@ -126,7 +126,7 @@ void SetLoopSectionCommand::onExecute(Context* ctx)
   else {
     if (loopTag) {
       ContextWriter writer(ctx);
-      Tx tx(writer.context(), "Remove Loop");
+      Tx tx(writer, "Remove Loop");
       tx(new cmd::RemoveTag(sprite, loopTag));
       tx.commit();
     }

@@ -127,7 +127,7 @@ void FramePropertiesCommand::onExecute(Context* context)
     int newMsecs = window.frlen()->textInt();
 
     ContextWriter writer(reader);
-    Tx tx(writer.context(), "Frame Duration");
+    Tx tx(writer, "Frame Duration");
     DocApi api = writer.document()->getApi(tx);
 
     for (frame_t frame : selFrames)

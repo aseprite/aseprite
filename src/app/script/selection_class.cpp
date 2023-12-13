@@ -117,7 +117,7 @@ int Selection_deselect(lua_State* L)
     ASSERT(doc);
 
     if (doc->isMaskVisible()) {
-      Tx tx;
+      Tx tx(doc);
       tx(new cmd::DeselectMask(doc));
       tx.commit();
     }
@@ -180,7 +180,7 @@ int Selection_op(lua_State* L, OpMask opMask, OpRect opRect)
       Mask newMask;
       opMask(newMask, *mask, *otherMask);
 
-      Tx tx;
+      Tx tx(sprite);
       tx(new cmd::SetMask(doc, &newMask));
       tx.commit();
     }
@@ -198,7 +198,7 @@ int Selection_op(lua_State* L, OpMask opMask, OpRect opRect)
       Mask newMask;
       opRect(newMask, *mask, bounds);
 
-      Tx tx;
+      Tx tx(sprite);
       tx(new cmd::SetMask(doc, &newMask));
       tx.commit();
     }
@@ -223,7 +223,7 @@ int Selection_selectAll(lua_State* L)
     Mask newMask;
     newMask.replace(sprite->bounds());
 
-    Tx tx;
+    Tx tx(doc);
     tx(new cmd::SetMask(doc, &newMask));
     tx.commit();
   }
@@ -290,7 +290,7 @@ int Selection_set_origin(lua_State* L)
   if (auto sprite = obj->sprite(L)) {
     Doc* doc = static_cast<Doc*>(sprite->document());
     if (doc->isMaskVisible()) {
-      Tx tx;
+      Tx tx(doc);
       doc->getApi(tx).setMaskPosition(pt.x, pt.y);
       tx.commit();
     }

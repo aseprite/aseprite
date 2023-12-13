@@ -353,7 +353,7 @@ void FilterManagerImpl::initTransaction()
 {
   ASSERT(!m_tx);
   m_writer.reset(new ContextWriter(m_reader));
-  m_tx.reset(new Tx(m_writer->context(),
+  m_tx.reset(new Tx(*m_writer,
                     m_filter->getName(),
                     ModifyDocument));
 }

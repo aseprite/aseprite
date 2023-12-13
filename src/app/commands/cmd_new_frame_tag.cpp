@@ -74,7 +74,7 @@ void NewFrameTagCommand::onExecute(Context* context)
 
   {
     ContextWriter writer(reader);
-    Tx tx(writer.context(), friendlyName());
+    Tx tx(writer, friendlyName());
     tx(new cmd::AddTag(writer.sprite(), tag.get()));
     tag.release();
     tx.commit();

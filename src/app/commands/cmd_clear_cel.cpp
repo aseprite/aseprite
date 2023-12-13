@@ -48,7 +48,7 @@ void ClearCelCommand::onExecute(Context* context)
   Doc* document(writer.document());
   bool nonEditableLayers = false;
   {
-    Tx tx(writer.context(), "Clear Cel");
+    Tx tx(writer, "Clear Cel");
 
     const Site* site = writer.site();
     if (site->inTimeline() &&

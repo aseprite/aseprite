@@ -110,8 +110,8 @@ int Cel_set_frame(lua_State* L)
   if (cel->frame() == frame)
     return 0;
 
-  Tx tx;
   Doc* doc = static_cast<Doc*>(cel->document());
+  Tx tx(doc);
   DocApi api = doc->getApi(tx);
   api.moveCel(cel->layer(), cel->frame(),
               cel->layer(), frame);
@@ -125,7 +125,7 @@ int Cel_set_image(lua_State* L)
   auto srcImage = get_image_from_arg(L, 2);
   ImageRef newImage(Image::createCopy(srcImage));
 
-  Tx tx;
+  Tx tx(cel->sprite());
   tx(new cmd::ReplaceImage(cel->sprite(),
                            cel->imageRef(),
                            newImage));
@@ -137,7 +137,7 @@ int Cel_set_position(lua_State* L)
 {
   auto cel = get_docobj<Cel>(L, 1);
   const gfx::Point pos = convert_args_into_point(L, 2);
-  Tx tx;
+  Tx tx(cel->sprite());
   tx(new cmd::SetCelPosition(cel, pos.x, pos.y));
   tx.commit();
   return 0;
@@ -146,7 +146,7 @@ int Cel_set_position(lua_State* L)
 int Cel_set_opacity(lua_State* L)
 {
   auto cel = get_docobj<Cel>(L, 1);
-  Tx tx;
+  Tx tx(cel->sprite());
   tx(new cmd::SetCelOpacity(cel, lua_tointeger(L, 2)));
   tx.commit();
   return 0;
@@ -155,7 +155,7 @@ int Cel_set_opacity(lua_State* L)
 int Cel_set_zIndex(lua_State* L)
 {
   auto cel = get_docobj<Cel>(L, 1);
-  Tx tx;
+  Tx tx(cel->sprite());
   tx(new cmd::SetCelZIndex(cel, lua_tointeger(L, 2)));
   tx.commit();
   return 0;

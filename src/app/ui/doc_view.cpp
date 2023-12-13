@@ -594,7 +594,8 @@ bool DocView::onPaste(Context* ctx)
   auto clipboard = ctx->clipboard();
   if (clipboard->format() == ClipboardFormat::Image ||
       clipboard->format() == ClipboardFormat::Tilemap) {
-    clipboard->paste(ctx, true);
+    ContextWriter writer(ctx);
+    clipboard->paste(writer, true);
     return true;
   }
   else
@@ -630,7 +631,7 @@ bool DocView::onClear(Context* ctx)
 
   // TODO This code is similar to clipboard::cut()
   {
-    Tx tx(writer.context(), "Clear");
+    Tx tx(writer, "Clear");
     const bool deselectMask =
       (visibleMask &&
        !Preferences::instance().selection.keepSelectionAfterClear());

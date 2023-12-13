@@ -55,7 +55,7 @@ protected:
     if (!writer.palette())
       return;
 
-    Tx tx(writer.context(), friendlyName(), ModifyDocument);
+    Tx tx(writer, friendlyName(), ModifyDocument);
     const int beforeIndex = params().before();
     int currentEntry = picks.firstPick();
 

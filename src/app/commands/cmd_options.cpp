@@ -782,7 +782,7 @@ public:
         m_context->activeDocument()->sprite() &&
         m_context->activeDocument()->sprite()->gridBounds() != gridBounds()) {
       ContextWriter writer(m_context);
-      Tx tx(m_context, Strings::commands_GridSettings(), ModifyDocument);
+      Tx tx(writer, Strings::commands_GridSettings(), ModifyDocument);
       tx(new cmd::SetGridBounds(writer.sprite(), gridBounds()));
       tx.commit();
     }

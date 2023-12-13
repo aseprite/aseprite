@@ -126,8 +126,8 @@ int Properties_newindex(lua_State* L)
 
   // TODO add Object::sprite() member function
   //if (obj->sprite()) {
-  if (App::instance()->context()->activeDocument()) {
-    Tx tx;
+  if (auto doc = App::instance()->context()->activeDocument()) {
+    Tx tx(doc);                 // TODO propObj might not be member of "doc"
     if (propObj->ti != doc::notile) {
       tx(new cmd::SetTileDataProperty(static_cast<doc::Tileset*>(obj),
                                       propObj->ti, propObj->extID, field,
@@ -165,8 +165,8 @@ int Properties_call(lua_State* L)
 
     // TODO add Object::sprite() member function
     //if (obj->sprite()) {
-    if (App::instance()->context()->activeDocument()) {
-      Tx tx;
+    if (auto doc = App::instance()->context()->activeDocument()) {
+      Tx tx(doc);                 // TODO propObj might not be member of "doc"
       if (propObj->ti != doc::notile) {
         tx(new cmd::SetTileDataProperties(static_cast<doc::Tileset*>(obj),
                                           propObj->ti, extID, std::move(newProperties)));

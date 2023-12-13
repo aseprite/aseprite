@@ -77,7 +77,7 @@ void RemoveFrameTagCommand::onExecute(Context* context)
   if (!foundTag)
     return;
 
-  Tx tx(writer.context(), friendlyName());
+  Tx tx(writer, friendlyName());
   tx(new cmd::RemoveTag(sprite, foundTag));
   tx.commit();
 

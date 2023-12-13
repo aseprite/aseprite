@@ -138,7 +138,7 @@ void ModifySelectionCommand::onExecute(Context* context)
   }
 
   // Set the new mask
-  Tx tx(writer.context(),
+  Tx tx(writer,
         friendlyName(),
         DoesntModifyDocument);
   tx(new cmd::SetMask(document, mask.get()));

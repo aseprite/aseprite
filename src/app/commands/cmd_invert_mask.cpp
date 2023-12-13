@@ -93,7 +93,7 @@ void InvertMaskCommand::onExecute(Context* context)
     mask->intersect(sprite->bounds());
 
     // Set the new mask
-    Tx tx(writer.context(), "Mask Invert", DoesntModifyDocument);
+    Tx tx(writer, "Mask Invert", DoesntModifyDocument);
     tx(new cmd::SetMask(document, mask.get()));
     tx.commit();
 

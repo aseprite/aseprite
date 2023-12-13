@@ -274,9 +274,8 @@ void NewLayerCommand::onExecute(Context* context)
 
   Layer* layer = nullptr;
   {
-    Tx tx(
-      writer.context(),
-      fmt::format(Strings::commands_NewLayer(), layerPrefix()));
+    Tx tx(writer,
+          fmt::format(Strings::commands_NewLayer(), layerPrefix()));
     DocApi api = document->getApi(tx);
     bool afterBackground = false;
 
@@ -428,7 +427,7 @@ void NewLayerCommand::onExecute(Context* context)
 #ifdef ENABLE_UI
     // Paste new layer from clipboard
     else if (params().fromClipboard() && layer->isImage()) {
-      context->clipboard()->paste(context, false);
+      context->clipboard()->paste(writer, false);
 
       if (layer->isReference()) {
         if (Cel* cel = layer->cel(site.frame())) {

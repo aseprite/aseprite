@@ -81,7 +81,7 @@ void MaskContentCommand::onExecute(Context* context)
       newMask.replace(cel->bounds());
     }
 
-    Tx tx(writer.context(), "Select Content", DoesntModifyDocument);
+    Tx tx(writer, "Select Content", DoesntModifyDocument);
     tx(new cmd::SetMask(document, &newMask));
     document->resetTransformation();
     tx.commit();

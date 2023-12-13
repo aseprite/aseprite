@@ -72,7 +72,7 @@ void CropSpriteCommand::onExecute(Context* context)
     bounds = m_bounds;
 
   {
-    Tx tx(writer.context(), "Sprite Crop");
+    Tx tx(writer, "Sprite Crop");
     document->getApi(tx).cropSprite(sprite, bounds);
     tx.commit();
   }
@@ -119,7 +119,7 @@ void AutocropSpriteCommand::onExecute(Context* context)
   Doc* document(writer.document());
   Sprite* sprite(writer.sprite());
   {
-    Tx tx(writer.context(), onGetFriendlyName());
+    Tx tx(writer, onGetFriendlyName());
     document->getApi(tx).trimSprite(sprite, m_byGrid);
     tx.commit();
   }

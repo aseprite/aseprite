@@ -96,10 +96,11 @@ public:
 private:
    void onDuplicate(const doc::Tileset* tileset)
    {
+     auto sprite = tileset->sprite();
      auto tilesetClone = Tileset::MakeCopyCopyingImages(tileset);
 
-     Tx tx(fmt::format(Strings::commands_TilesetDuplicate()));
-     tx(new cmd::AddTileset(tileset->sprite(), tilesetClone));
+     Tx tx(sprite, fmt::format(Strings::commands_TilesetDuplicate()));
+     tx(new cmd::AddTileset(sprite, tilesetClone));
      tx.commit();
 
      TilesetDuplicated(tilesetClone);
@@ -121,8 +122,9 @@ private:
       return;
     }
 
-    Tx tx(fmt::format(Strings::commands_TilesetDelete()));
-    tx(new cmd::RemoveTileset(tileset->sprite(), tsi));
+    auto sprite = tileset->sprite();
+    Tx tx(sprite, fmt::format(Strings::commands_TilesetDelete()));
+    tx(new cmd::RemoveTileset(sprite, tsi));
     tx.commit();
 
     TilesetDeleted(this);
@@ -351,7 +353,7 @@ void SpritePropertiesCommand::onExecute(Context* context)
 
         ContextWriter writer(context);
         Sprite* sprite(writer.sprite());
-        Tx tx(writer.context(), Strings::sprite_properties_assign_color_profile());
+        Tx tx(writer, Strings::sprite_properties_assign_color_profile());
         tx(new cmd::AssignColorProfile(
              sprite, colorSpaces[selectedColorProfile]->gfxColorSpace()));
         tx.commit();
@@ -364,7 +366,7 @@ void SpritePropertiesCommand::onExecute(Context* context)
 
         ContextWriter writer(context);
         Sprite* sprite(writer.sprite());
-        Tx tx(writer.context(), Strings::sprite_properties_convert_color_profile());
+        Tx tx(writer, Strings::sprite_properties_convert_color_profile());
         tx(new cmd::ConvertColorProfile(
              sprite, colorSpaces[selectedColorProfile]->gfxColorSpace()));
         tx.commit();
@@ -394,7 +396,7 @@ void SpritePropertiesCommand::onExecute(Context* context)
     if (index != sprite->transparentColor() ||
         pixelRatio != sprite->pixelRatio() ||
         newUserData != sprite->userData()) {
-      Tx tx(writer.context(), Strings::sprite_properties_change_sprite_props());
+      Tx tx(writer, Strings::sprite_properties_change_sprite_props());
       DocApi api = writer.document()->getApi(tx);
 
       if (index != sprite->transparentColor())

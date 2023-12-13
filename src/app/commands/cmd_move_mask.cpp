@@ -87,7 +87,7 @@ void MoveMaskCommand::onExecute(Context* context)
       ContextWriter writer(context);
       Doc* document(writer.document());
       {
-        Tx tx(writer.context(), "Move Selection", DoesntModifyDocument);
+        Tx tx(writer, "Move Selection", DoesntModifyDocument);
         gfx::Point pt = document->mask()->bounds().origin();
         document->getApi(tx).setMaskPosition(pt.x+delta.x, pt.y+delta.y);
         tx.commit();
@@ -102,7 +102,7 @@ void MoveMaskCommand::onExecute(Context* context)
         ContextWriter writer(context);
         if (writer.cel()) {
           // Rotate content
-          Tx tx(writer.context(), "Shift Pixels");
+          Tx tx(writer, "Shift Pixels");
           tx(new cmd::ShiftMaskedCel(writer.cel(), delta.x, delta.y));
           tx.commit();
         }

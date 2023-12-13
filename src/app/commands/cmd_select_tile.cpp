@@ -101,7 +101,7 @@ void SelectTileCommand::onExecute(Context* ctx)
   }
 
   // Set the new mask
-  Tx tx(writer.context(),
+  Tx tx(writer,
         friendlyName(),
         DoesntModifyDocument);
   tx(new cmd::SetMask(doc, mask.get()));

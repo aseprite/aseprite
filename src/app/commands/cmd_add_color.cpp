@@ -130,7 +130,7 @@ void AddColorCommand::onExecute(Context* ctx)
     if (document) {
       frame_t frame = writer.frame();
 
-      Tx tx(writer.context(), friendlyName(), ModifyDocument);
+      Tx tx(writer, friendlyName(), ModifyDocument);
       tx(new cmd::SetPalette(sprite, frame, newPalette.get()));
       tx.commit();
     }

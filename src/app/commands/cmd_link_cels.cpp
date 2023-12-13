@@ -57,7 +57,7 @@ void LinkCelsCommand::onExecute(Context* context)
     if (!site.inTimeline())
       return;
 
-    Tx tx(writer.context(), friendlyName());
+    Tx tx(writer, friendlyName());
 
     for (Layer* layer : site.selectedLayers()) {
       if (!layer->isImage())

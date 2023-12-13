@@ -265,7 +265,7 @@ private:
                                      newBlendMode != static_cast<LayerImage*>(m_layer)->blendMode()))))) {
       try {
         ContextWriter writer(UIContext::instance());
-        Tx tx(writer.context(), "Set Layer Properties");
+        Tx tx(writer, "Set Layer Properties");
 
         DocRange range;
         if (m_range.enabled())
@@ -395,7 +395,7 @@ private:
           tileset->matchFlags() != tilesetInfo.matchFlags ||
           tilesetInfo.tsi != tilemap->tilesetIndex()) {
         ContextWriter writer(UIContext::instance());
-        Tx tx(writer.context(), "Set Tileset Properties");
+        Tx tx(writer, "Set Tileset Properties");
         // User changed tilemap's tileset
         if (tilesetInfo.tsi != tilemap->tilesetIndex()) {
           tileset = tilemap->sprite()->tilesets()->get(tilesetInfo.tsi);

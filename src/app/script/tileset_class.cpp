@@ -68,7 +68,7 @@ int Tileset_set_name(lua_State* L)
 {
   auto tileset = get_docobj<Tileset>(L, 1);
   if (const char* newName = lua_tostring(L, 2)) {
-    Tx tx;
+    Tx tx(tileset->sprite());
     tx(new cmd::SetTilesetName(tileset, newName));
     tx.commit();
   }
@@ -93,7 +93,7 @@ int Tileset_set_baseIndex(lua_State* L)
 {
   auto tileset = get_docobj<Tileset>(L, 1);
   int i = lua_tointeger(L, 2);
-  Tx tx;
+  Tx tx(tileset->sprite());
   tx(new cmd::SetTilesetBaseIndex(tileset, i));
   tx.commit();
   return 0;

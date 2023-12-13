@@ -102,7 +102,7 @@ void NewFrameCommand::onExecute(Context* context)
 #endif
 
   {
-    Tx tx(writer.context(), friendlyName());
+    Tx tx(writer, friendlyName());
     DocApi api = document->getApi(tx);
 
     switch (m_content) {

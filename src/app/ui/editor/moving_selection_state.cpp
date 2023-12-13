@@ -82,7 +82,7 @@ EditorState::LeaveAction MovingSelectionState::onLeaveState(Editor* editor, Edit
   else {
     {
       ContextWriter writer(UIContext::instance(), 1000);
-      Tx tx(writer.context(), "Move Selection Edges", DoesntModifyDocument);
+      Tx tx(writer, "Move Selection Edges", DoesntModifyDocument);
       tx(new cmd::SetMaskPosition(doc, newOrigin));
       tx.commit();
     }

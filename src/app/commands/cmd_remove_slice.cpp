@@ -101,7 +101,7 @@ void RemoveSliceCommand::onExecute(Context* context)
     ContextWriter writer(reader);
     Doc* document(writer.document());
     Sprite* sprite(writer.sprite());
-    Tx tx(writer.context(), "Remove Slice");
+    Tx tx(writer, "Remove Slice");
 
     for (auto slice : slicesToDelete.iterateAs<Slice>()) {
       ASSERT(slice);

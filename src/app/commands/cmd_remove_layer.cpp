@@ -139,7 +139,7 @@ void RemoveLayerCommand::onExecute(Context* context)
   Doc* document(writer.document());
   Sprite* sprite(writer.sprite());
   {
-    Tx tx(writer.context(), "Remove Layer");
+    Tx tx(writer, "Remove Layer");
     DocApi api = document->getApi(tx);
     // We need to remove all the tilesets after the tilemaps are deleted
     // and in descending tileset index order, otherwise the tileset indexes

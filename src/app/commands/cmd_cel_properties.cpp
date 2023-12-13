@@ -218,7 +218,7 @@ private:
                                  newUserData != m_cel->data()->userData()))) {
       try {
         ContextWriter writer(UIContext::instance());
-        Tx tx(writer.context(), "Set Cel Properties");
+        Tx tx(writer, "Set Cel Properties");
 
         DocRange range;
         if (m_range.enabled()) {

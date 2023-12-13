@@ -55,7 +55,7 @@ void BackgroundFromLayerCommand::onExecute(Context* context)
   Doc* document(writer.document());
 
   {
-    Tx tx(writer.context(), friendlyName());
+    Tx tx(writer, friendlyName());
     tx(new cmd::BackgroundFromLayer(static_cast<LayerImage*>(writer.layer())));
     tx.commit();
   }

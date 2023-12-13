@@ -512,8 +512,9 @@ void ImportSpriteSheetCommand::onExecute(Context* context)
     // The following steps modify the sprite, so we wrap all
     // operations in a undo-transaction.
     ContextWriter writer(context);
-    Tx tx(
-      writer.context(), Strings::import_sprite_sheet_title(), ModifyDocument);
+    Tx tx(writer,
+          Strings::import_sprite_sheet_title(),
+          ModifyDocument);
     DocApi api = document->getApi(tx);
 
     // Add the layer in the sprite.

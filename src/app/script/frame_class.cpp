@@ -104,7 +104,7 @@ int Frame_set_duration(lua_State* L)
   auto obj = get_obj<FrameObj>(L, 1);
   auto sprite = obj->sprite(L);
   double duration = lua_tonumber(L, 2) * 1000.0;
-  Tx tx;
+  Tx tx(sprite);
   tx(new cmd::SetFrameDuration(sprite, obj->frame, int(duration)));
   tx.commit();
   return 1;

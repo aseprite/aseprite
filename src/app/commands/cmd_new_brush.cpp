@@ -117,7 +117,7 @@ void NewBrushCommand::onQuickboxEnd(Editor* editor, const gfx::Rect& rect, ui::M
       if (writer.cel()) {
         gfx::Rect canvasRect = (rect & writer.cel()->bounds());
         if (!canvasRect.isEmpty()) {
-          Tx tx(writer.context(), "Clear");
+          Tx tx(writer, "Clear");
           tx(new cmd::ClearRect(writer.cel(), canvasRect));
           tx.commit();
         }

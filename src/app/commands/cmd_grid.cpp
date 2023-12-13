@@ -73,7 +73,7 @@ protected:
     const Mask* mask = doc->mask();
     gfx::Rect newGrid = mask->bounds();
 
-    Tx tx(writer.context(), friendlyName(), ModifyDocument);
+    Tx tx(writer, friendlyName(), ModifyDocument);
     tx(new cmd::SetGridBounds(writer.sprite(), newGrid));
     tx.commit();
 
@@ -125,7 +125,7 @@ void GridSettingsCommand::onExecute(Context* context)
     bounds.h = std::max(bounds.h, 1);
 
     ContextWriter writer(context);
-    Tx tx(context, friendlyName(), ModifyDocument);
+    Tx tx(writer, friendlyName(), ModifyDocument);
     tx(new cmd::SetGridBounds(site.sprite(), bounds));
     tx.commit();
 

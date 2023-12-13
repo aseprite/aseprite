@@ -892,7 +892,7 @@ void ColorBar::onRemapPalButtonClick()
     if (sprite) {
       ASSERT(sprite->pixelFormat() == IMAGE_INDEXED);
 
-      Tx tx(writer.context(), "Remap Colors", ModifyDocument);
+      Tx tx(writer, "Remap Colors", ModifyDocument);
       bool remapPixels = true;
 
       std::vector<ImageRef> images;
@@ -1003,7 +1003,7 @@ void ColorBar::onRemapTilesButtonClick()
       return;
     }
 
-    Tx tx(writer.context(), Strings::color_bar_remap_tiles(), ModifyDocument);
+    Tx tx(writer, Strings::color_bar_remap_tiles(), ModifyDocument);
     if (!existMapToEmpty &&
         remap.isInvertible(usedTiles)) {
       tx(new cmd::RemapTilemaps(tileset, remap));
@@ -1090,7 +1090,7 @@ void ColorBar::setPalette(const doc::Palette* newPalette, const std::string& act
     frame_t frame = writer.frame();
     if (sprite &&
         newPalette->countDiff(sprite->palette(frame), nullptr, nullptr)) {
-      Tx tx(writer.context(), actionText, ModifyDocument);
+      Tx tx(writer, actionText, ModifyDocument);
       tx(new cmd::SetPalette(sprite, frame, newPalette));
       tx.commit();
     }
@@ -1110,7 +1110,7 @@ void ColorBar::setTransparentIndex(int index)
         sprite->pixelFormat() == IMAGE_INDEXED &&
         int(sprite->transparentColor()) != index) {
       // TODO merge this code with SpritePropertiesCommand
-      Tx tx(writer.context(), "Set Transparent Color");
+      Tx tx(writer, "Set Transparent Color");
       DocApi api = writer.document()->getApi(tx);
       api.setSpriteTransparentColor(sprite, index);
       tx.commit();
@@ -1209,7 +1209,7 @@ void ColorBar::onTilesViewClearTiles(const doc::PalettePicks& _picks)
     if (sprite) {
       auto tileset = m_tilesView.tileset();
 
-      Tx tx(writer.context(), "Clear Tiles", ModifyDocument);
+      Tx tx(writer, "Clear Tiles", ModifyDocument);
       for (int ti=int(picks.size())-1; ti>=0; --ti) {
         if (picks[ti])
           tx(new cmd::RemoveTile(tileset, ti));
@@ -1240,7 +1240,7 @@ void ColorBar::onTilesViewResize(const int newSize)
     if (sprite) {
       auto tileset = m_tilesView.tileset();
 
-      Tx tx(writer.context(), Strings::color_bar_resize_tiles(), ModifyDocument);
+      Tx tx(writer, Strings::color_bar_resize_tiles(), ModifyDocument);
       if (tileset->size() < newSize) {
         for (doc::tile_index ti=tileset->size(); ti<newSize; ++ti) {
           ImageRef img = tileset->makeEmptyTile();
@@ -1281,7 +1281,7 @@ void ColorBar::onTilesViewDragAndDrop(doc::Tileset* tileset,
     Context* ctx = UIContext::instance();
     InlineCommandExecution inlineCmd(ctx);
     ContextWriter writer(ctx, 500);
-    Tx tx(writer.context(), Strings::color_bar_drag_and_drop_tiles(), ModifyDocument);
+    Tx tx(writer, Strings::color_bar_drag_and_drop_tiles(), ModifyDocument);
     if (isCopy)
       copy_tiles_in_tileset(tx, tileset, picks, currentEntry, beforeIndex);
     else
@@ -1880,7 +1880,7 @@ void ColorBar::updateCurrentSpritePalette(const char* operationName)
           cmd.release()->execute(UIContext::instance());
         }
         else {
-          Tx tx(writer.context(), operationName, ModifyDocument);
+          Tx tx(writer, operationName, ModifyDocument);
           // If tx() fails it will delete the cmd anyway, so we can
           // release the unique pointer here.
           tx(cmd.release());

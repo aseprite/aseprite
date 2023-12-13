@@ -44,7 +44,7 @@ void DeselectMaskCommand::onExecute(Context* context)
   ContextWriter writer(context);
   Doc* document(writer.document());
   {
-    Tx tx(writer.context(), "Deselect", DoesntModifyDocument);
+    Tx tx(writer, "Deselect", DoesntModifyDocument);
     tx(new cmd::DeselectMask(document));
     tx.commit();
   }

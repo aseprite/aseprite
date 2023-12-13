@@ -47,7 +47,7 @@ void UnlinkCelCommand::onExecute(Context* context)
   Doc* document(writer.document());
   bool nonEditableLayers = false;
   {
-    Tx tx(writer.context(), "Unlink Cel");
+    Tx tx(writer, "Unlink Cel");
 
     const Site* site = writer.site();
     if (site->inTimeline() &&

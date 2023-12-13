@@ -69,7 +69,7 @@ void LayerOpacityCommand::onExecute(Context* context)
     return;
 
   {
-    Tx tx(writer.context(), "Set Layer Opacity");
+    Tx tx(writer, "Set Layer Opacity");
 
     // TODO the range of selected frames should be in app::Site.
     SelectedLayers selLayers;

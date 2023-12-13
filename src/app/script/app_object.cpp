@@ -13,6 +13,7 @@
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/context.h"
+#include "app/context_access.h"
 #include "app/doc.h"
 #include "app/doc_access.h"
 #include "app/i18n/strings.h"
@@ -152,8 +153,22 @@ int App_transaction(lua_State* L)
   }
 
   if (lua_isfunction(L, index)) {
-    Tx tx(label); // Create a new transaction so it exists in the whole
-                  // duration of the argument function call.
+    app::Context* ctx = App::instance()->context();
+    if (!ctx)
+      return luaL_error(L, "no context");
+
+    // Create a new transaction so it exists in the whole duration of
+    // the argument function call.
+#if 0
+    // TODO To be able to lock the document in the transaction we have
+    // to create a re-entrant RWLock implementation to allow to call
+    // commands (creating sub-ContextWriters) inside the
+    // app.transaction()
+    ContextWriter writer(ctx);
+    Tx tx(writer, label);
+#else
+    Tx tx(Tx::DontLockDoc, ctx, ctx->activeDocument(), label);
+#endif
 
     lua_pushvalue(L, -1);
     if (lua_pcall(L, 0, LUA_MULTRET, 0) == LUA_OK)

@@ -81,7 +81,7 @@ void FillCommand::onExecute(Context* ctx)
     color = color_utils::color_for_layer(pref.colorBar.fgColor(), layer);
 
   {
-    Tx tx(writer.context(), "Fill Selection with Foreground Color");
+    Tx tx(writer, "Fill Selection with Foreground Color");
     {
       ExpandCelCanvas expand(
         site, layer,

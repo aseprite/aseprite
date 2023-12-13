@@ -83,7 +83,7 @@ int Slice_set_name(lua_State* L)
   auto slice = get_docobj<Slice>(L, 1);
   const char* name = lua_tostring(L, 2);
   if (name) {
-    Tx tx;
+    Tx tx(slice->sprite());
     tx(new cmd::SetSliceName(slice, name));
     tx.commit();
   }
@@ -98,7 +98,7 @@ int Slice_set_bounds(lua_State* L)
   if (const SliceKey* srcKey = slice->getByFrame(0))
     key = *srcKey;
   key.setBounds(bounds);
-  Tx tx;
+  Tx tx(slice->sprite());
   tx(new cmd::SetSliceKey(slice, 0, key));
   tx.commit();
   return 0;
@@ -112,7 +112,7 @@ int Slice_set_center(lua_State* L)
   if (const SliceKey* srcKey = slice->getByFrame(0))
     key = *srcKey;
   key.setCenter(center);
-  Tx tx;
+  Tx tx(slice->sprite());
   tx(new cmd::SetSliceKey(slice, 0, key));
   tx.commit();
   return 0;
@@ -126,7 +126,7 @@ int Slice_set_pivot(lua_State* L)
   if (const SliceKey* srcKey = slice->getByFrame(0))
     key = *srcKey;
   key.setPivot(pivot);
-  Tx tx;
+  Tx tx(slice->sprite());
   tx(new cmd::SetSliceKey(slice, 0, key));
   tx.commit();
   return 0;

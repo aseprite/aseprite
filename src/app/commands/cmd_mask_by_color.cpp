@@ -187,7 +187,7 @@ void MaskByColorCommand::onExecute(Context* context)
   Doc* document(writer.document());
 
   if (apply) {
-    Tx tx(writer.context(), "Mask by Color", DoesntModifyDocument);
+    Tx tx(writer, "Mask by Color", DoesntModifyDocument);
     std::unique_ptr<Mask> mask(generateMask(*document->mask(),
                                             sprite, image, xpos, ypos,
                                             m_selMode->selectionMode()));

@@ -79,7 +79,7 @@ void MergeDownLayerCommand::onExecute(Context* context)
   LayerImage* src_layer = static_cast<LayerImage*>(writer.layer());
   Layer* dst_layer = src_layer->getPrevious();
 
-  Tx tx(writer.context(), friendlyName(), ModifyDocument);
+  Tx tx(writer, friendlyName(), ModifyDocument);
 
   for (frame_t frpos = 0; frpos<sprite->totalFrames(); ++frpos) {
     // Get frames

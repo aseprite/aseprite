@@ -333,7 +333,7 @@ static DocRange drop_range_op(
     const app::Context* context = static_cast<app::Context*>(doc->context());
     const ContextReader reader(context);
     ContextWriter writer(reader);
-    Tx tx(writer.context(), undoLabel, ModifyDocument);
+    Tx tx(writer, undoLabel, ModifyDocument);
     DocApi api = doc->getApi(tx);
 
     // TODO Try to add the range with just one call to DocApi
@@ -490,7 +490,7 @@ void reverse_frames(Doc* doc, const DocRange& range)
   const app::Context* context = static_cast<app::Context*>(doc->context());
   const ContextReader reader(context);
   ContextWriter writer(reader);
-  Tx tx(writer.context(), "Reverse Frames");
+  Tx tx(writer, "Reverse Frames");
   DocApi api = doc->getApi(tx);
   Sprite* sprite = doc->sprite();
   LayerList layers;

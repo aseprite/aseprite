@@ -153,7 +153,7 @@ bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
   if (modified) {
     {
       ContextWriter writer(m_reader, 1000);
-      Tx tx(writer.context(), "Cel Movement", ModifyDocument);
+      Tx tx(writer, "Cel Movement", ModifyDocument);
       DocApi api = document->getApi(tx);
       gfx::Point intOffset = intCelOffset();
 

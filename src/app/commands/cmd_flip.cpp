@@ -120,7 +120,7 @@ void FlipCommand::onExecute(Context* ctx)
   ContextWriter writer(ctx);
   Doc* document = writer.document();
   Sprite* sprite = writer.sprite();
-  Tx tx(ctx, friendlyName());
+  Tx tx(writer, friendlyName());
   DocApi api = document->getApi(tx);
 
   Mask* mask = document->mask();

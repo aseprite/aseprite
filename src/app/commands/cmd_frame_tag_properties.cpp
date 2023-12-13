@@ -91,7 +91,7 @@ void FrameTagPropertiesCommand::onExecute(Context* context)
     return;
 
   ContextWriter writer(reader);
-  Tx tx(writer.context(), friendlyName());
+  Tx tx(writer, friendlyName());
   Tag* tag = const_cast<Tag*>(foundTag);
 
   std::string name = window.nameValue();

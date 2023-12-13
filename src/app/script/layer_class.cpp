@@ -250,7 +250,7 @@ int Layer_set_name(lua_State* L)
   auto layer = get_docobj<Layer>(L, 1);
   const char* name = lua_tostring(L, 2);
   if (name) {
-    Tx tx;
+    Tx tx(layer->sprite());
     tx(new cmd::SetLayerName(layer, name));
     tx.commit();
   }
@@ -262,7 +262,7 @@ int Layer_set_opacity(lua_State* L)
   auto layer = get_docobj<Layer>(L, 1);
   const int opacity = lua_tointeger(L, 2);
   if (layer->isImage()) {
-    Tx tx;
+    Tx tx(layer->sprite());
     tx(new cmd::SetLayerOpacity(static_cast<LayerImage*>(layer), opacity));
     tx.commit();
   }
@@ -274,7 +274,7 @@ int Layer_set_blendMode(lua_State* L)
   auto layer = get_docobj<Layer>(L, 1);
   auto blendMode = app::script::BlendMode(lua_tointeger(L, 2));
   if (layer->isImage()) {
-    Tx tx;
+    Tx tx(layer->sprite());
     tx(new cmd::SetLayerBlendMode(static_cast<LayerImage*>(layer),
                                   base::convert_to<doc::BlendMode>(blendMode)));
     tx.commit();
@@ -313,7 +313,7 @@ int Layer_set_stackIndex(lua_State* L)
     return 0;
 
   Doc* doc = static_cast<Doc*>(layer->sprite()->document());
-  Tx tx;
+  Tx tx(doc);
   DocApi(doc, tx).restackLayerBefore(layer, parent, beforeThis);
   tx.commit();
   return 0;
@@ -381,7 +381,7 @@ int Layer_set_parent(lua_State* L)
 
   if (parent) {
     Doc* doc = static_cast<Doc*>(layer->sprite()->document());
-    Tx tx;
+    Tx tx(doc);
     DocApi(doc, tx).restackLayerAfter(
       layer, parent, parent->lastLayer());
     tx.commit();
@@ -402,7 +402,7 @@ int Layer_set_tileset(lua_State* L)
       tsi = lua_tointeger(L, 2);
 
     if (tsi != tilemap->tilesetIndex()) {
-      Tx tx;
+      Tx tx(layer->sprite());
       tx(new cmd::SetLayerTileset(tilemap, tsi));
       tx.commit();
     }

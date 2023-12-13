@@ -73,7 +73,7 @@ void CelOpacityCommand::onExecute(Context* context)
     return;
 
   {
-    Tx tx(writer.context(), "Set Cel Opacity");
+    Tx tx(writer, "Set Cel Opacity");
 
     // TODO the range of selected cels should be in app::Site.
     DocRange range;

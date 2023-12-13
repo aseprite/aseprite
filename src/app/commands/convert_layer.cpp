@@ -180,7 +180,7 @@ void ConvertLayerCommand::onExecute(Context* ctx)
   ContextWriter writer(ctx);
   Doc* document(writer.document());
   {
-    Tx tx(ctx, friendlyName());
+    Tx tx(writer, friendlyName());
 
     switch (params().to()) {
 

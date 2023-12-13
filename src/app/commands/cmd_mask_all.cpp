@@ -49,7 +49,7 @@ void MaskAllCommand::onExecute(Context* context)
   Mask newMask;
   newMask.replace(sprite->bounds());
 
-  Tx tx(writer.context(), "Select All", DoesntModifyDocument);
+  Tx tx(writer, "Select All", DoesntModifyDocument);
   tx(new cmd::SetMask(document, &newMask));
   document->resetTransformation();
   tx.commit();

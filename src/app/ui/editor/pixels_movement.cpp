@@ -119,7 +119,8 @@ PixelsMovement::PixelsMovement(
   : m_reader(context)
   , m_site(site)
   , m_document(site.document())
-  , m_tx(context, operationName)
+  , m_tx(Tx::DontLockDoc, context,
+         context->activeDocument(), operationName)
   , m_isDragging(false)
   , m_adjustPivot(false)
   , m_handle(NoHandle)

@@ -63,13 +63,12 @@ int UserData_get_properties(lua_State* L) {
 template<typename T>
 int UserData_set_text(lua_State* L) {
   auto obj = get_docobj<T>(L, 1);
-  auto spr = obj->sprite();
   const char* text = lua_tostring(L, 2);
   auto wud = get_WithUserData<T>(obj);
   UserData ud = wud->userData();
   ud.setText(text ? std::string(text): std::string());
-  if (spr) {
-    Tx tx;
+  if (auto spr = obj->sprite()) {
+    Tx tx(spr);
     tx(new cmd::SetUserData(wud, ud, static_cast<Doc*>(spr->document())));
     tx.commit();
   }
@@ -82,13 +81,12 @@ int UserData_set_text(lua_State* L) {
 template<typename T>
 int UserData_set_color(lua_State* L) {
   auto obj = get_docobj<T>(L, 1);
-  auto spr = obj->sprite();
   doc::color_t docColor = convert_args_into_pixel_color(L, 2, doc::IMAGE_RGB);
   auto wud = get_WithUserData<T>(obj);
   UserData ud = wud->userData();
   ud.setColor(docColor);
-  if (spr) {
-    Tx tx;
+  if (auto spr = obj->sprite()) {
+    Tx tx(spr);
     tx(new cmd::SetUserData(wud, ud, static_cast<Doc*>(spr->document())));
     tx.commit();
   }
@@ -103,8 +101,8 @@ int UserData_set_properties(lua_State* L) {
   auto obj = get_docobj<T>(L, 1);
   auto wud = get_WithUserData<T>(obj);
   auto newProperties = get_value_from_lua<doc::UserData::Properties>(L, 2);
-  if (obj->sprite()) {
-    Tx tx;
+  if (auto spr = obj->sprite()) {
+    Tx tx(spr);
     tx(new cmd::SetUserDataProperties(wud,
                                       std::string(),
                                       std::move(newProperties)));

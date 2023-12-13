@@ -57,7 +57,7 @@ protected:
     if (picks.picks() == 0)
       return;
 
-    Tx tx(writer.context(), onGetFriendlyName(), ModifyDocument);
+    Tx tx(writer, onGetFriendlyName(), ModifyDocument);
     const int beforeIndex = params().before();
     int currentEntry = picks.firstPick();
 

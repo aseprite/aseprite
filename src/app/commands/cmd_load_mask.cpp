@@ -77,7 +77,7 @@ void LoadMaskCommand::onExecute(Context* context)
   {
     ContextWriter writer(reader);
     Doc* document = writer.document();
-    Tx tx(writer.context(),
+    Tx tx(writer,
           Strings::load_selection_title(),
           DoesntModifyDocument);
     tx(new cmd::SetMask(document, mask.get()));

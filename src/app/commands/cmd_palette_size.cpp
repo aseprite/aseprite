@@ -78,7 +78,7 @@ void PaletteSizeCommand::onExecute(Context* context)
   palette.resize(std::clamp(ncolors, 1, std::numeric_limits<int>::max()));
 
   ContextWriter writer(reader);
-  Tx tx(context, "Palette Size", ModifyDocument);
+  Tx tx(writer, "Palette Size", ModifyDocument);
   tx(new cmd::SetPalette(writer.sprite(), frame, &palette));
   tx.commit();
 }

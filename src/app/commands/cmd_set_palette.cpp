@@ -37,7 +37,7 @@ void SetPaletteCommand::onExecute(Context* context)
 
   ContextWriter writer(context);
   if (writer.document()) {
-    Tx tx(writer.context(), "Set Palette");
+    Tx tx(writer, "Set Palette");
     writer.document()->getApi(tx)
       .setPalette(writer.sprite(), writer.frame(), m_palette);
     tx.commit();

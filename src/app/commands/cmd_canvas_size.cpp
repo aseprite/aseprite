@@ -385,7 +385,7 @@ void CanvasSizeCommand::onExecute(Context* context)
     ContextWriter writer(reader);
     Doc* doc = writer.document();
     Sprite* sprite = writer.sprite();
-    Tx tx(writer.context(), "Canvas Size");
+    Tx tx(writer, "Canvas Size");
     DocApi api = doc->getApi(tx);
     api.cropSprite(sprite, bounds, params.trimOutside());
     tx.commit();

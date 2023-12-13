@@ -311,14 +311,7 @@ int Image_drawImage(lua_State* L)
   Image* dst = obj->image(L);
   const Image* src = sprite->image(L);
 
-  // If the destination image is not related to a sprite, we just draw
-  // the source image without undo information.
-  if (obj->cel(L) == nullptr) {
-    doc::blend_image(dst, src,
-                     pos.x, pos.y,
-                     opacity, blendMode);
-  }
-  else {
+  if (auto cel = obj->cel(L)) {
     gfx::Rect bounds(0, 0, src->size().w, src->size().h);
     buf.reset(new doc::ImageBuffer);
     ImageRef tmp_src(
@@ -329,11 +322,18 @@ int Image_drawImage(lua_State* L)
     // TODO Use something similar to doc::algorithm::shrink_bounds2()
     //      but we need something that does the render and compares
     //      the minimal modified area.
-    Tx tx;
+    Tx tx(cel->sprite());
     tx(new cmd::CopyRegion(
          dst, tmp_src.get(), gfx::Region(bounds),
          gfx::Point(pos.x + bounds.x, pos.y + bounds.y)));
     tx.commit();
+  }
+  // If the destination image is not related to a sprite, we just draw
+  // the source image without undo information.
+  else {
+    doc::blend_image(dst, src,
+                     pos.x, pos.y,
+                     opacity, blendMode);
   }
   return 0;
 }
@@ -349,13 +349,8 @@ int Image_drawSprite(lua_State* L)
   ASSERT(dst);
   ASSERT(sprite);
 
-  // If the destination image is not related to a sprite, we just draw
-  // the source image without undo information.
-  if (obj->cel(L) == nullptr) {
-    render_sprite(dst, sprite, frame, pos.x, pos.y);
-  }
-  else {
-    Tx tx;
+  if (auto cel = obj->cel(L)) {
+    Tx tx(cel->sprite());
 
     ImageRef tmp(Image::createCopy(dst));
     render_sprite(tmp.get(), sprite, frame, pos.x, pos.y);
@@ -368,6 +363,11 @@ int Image_drawSprite(lua_State* L)
     }
 
     tx.commit();
+  }
+  // If the destination image is not related to a sprite, we just draw
+  // the source image without undo information.
+  else {
+    render_sprite(dst, sprite, frame, pos.x, pos.y);
   }
   return 0;
 }
@@ -571,7 +571,7 @@ int Image_resize(lua_State* L)
   // If the destination image is not related to a sprite, we just draw
   // the source image without undo information.
   if (cel) {
-    Tx tx;
+    Tx tx(cel->sprite());
     resize_cel_image(tx, cel, scale, method,
                      gfx::PointF(pivot));
     tx.commit();
@@ -627,13 +627,13 @@ int Image_flip(lua_State* L)
   if (lua_isinteger(L, 2))
     flipType = (doc::algorithm::FlipType)lua_tointeger(L, 2);
 
-  if (obj->cel(L) == nullptr) {
-    doc::algorithm::flip_image(img, img->bounds(), flipType);
-  }
-  else {
-    Tx tx;
+  if (auto cel = obj->cel(L)) {
+    Tx tx(cel->sprite());
     tx(new cmd::FlipImage(img, img->bounds(), flipType));
     tx.commit();
+  }
+  else {
+    doc::algorithm::flip_image(img, img->bounds(), flipType);
   }
   return 0;
 }

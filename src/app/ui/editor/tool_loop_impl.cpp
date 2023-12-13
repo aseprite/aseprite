@@ -477,7 +477,9 @@ public:
                const bool saveLastPoint)
     : ToolLoopBase(editor, site, grid, params)
     , m_context(context)
-    , m_tx(m_context,
+    , m_tx(Tx::DontLockDoc,
+           m_context,
+           m_context->activeDocument(),
            m_tool->getText().c_str(),
            ((m_ink->isSelection() ||
              m_ink->isEyedropper() ||

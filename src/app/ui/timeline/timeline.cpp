@@ -1387,7 +1387,8 @@ bool Timeline::onProcessMessage(Message* msg)
             if (tag) {
               if ((m_state == STATE_RESIZING_TAG_LEFT && tag->fromFrame() != m_resizeTagData.from) ||
                   (m_state == STATE_RESIZING_TAG_RIGHT && tag->toFrame() != m_resizeTagData.to)) {
-                Tx tx(UIContext::instance(), Strings::commands_FrameTagProperties());
+                ContextWriter writer(UIContext::instance());
+                Tx tx(writer, Strings::commands_FrameTagProperties());
                 tx(new cmd::SetTagRange(
                      tag,
                      (m_state == STATE_RESIZING_TAG_LEFT ? m_resizeTagData.from: tag->fromFrame()),
@@ -4389,7 +4390,9 @@ bool Timeline::onPaste(Context* ctx)
       m_redrawMarchingAntsOnly = false;
       invalidate();
     }
-    clipboard->paste(ctx, true);
+
+    ContextWriter writer(ctx);
+    clipboard->paste(writer, true);
     return true;
   }
   else

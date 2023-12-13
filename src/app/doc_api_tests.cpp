@@ -52,7 +52,7 @@ TEST_F(BasicDocApiTest, RestackLayerBefore)
 {
   EXPECT_EQ(layer1, root->firstLayer());
   {
-    Tx tx(&ctx, "");
+    Tx tx(sprite, "");
     // Do nothing
     doc->getApi(tx).restackLayerBefore(layer1, layer1->parent(), layer1);
     EXPECT_EQ(layer1, root->firstLayer());
@@ -63,7 +63,7 @@ TEST_F(BasicDocApiTest, RestackLayerBefore)
 
   EXPECT_EQ(layer1, root->firstLayer());
   {
-    Tx tx(&ctx, "");
+    Tx tx(sprite, "");
     doc->getApi(tx).restackLayerBefore(layer1, layer3->parent(), layer3);
     EXPECT_EQ(layer2, root->firstLayer());
     EXPECT_EQ(layer1, root->firstLayer()->getNext());
@@ -73,7 +73,7 @@ TEST_F(BasicDocApiTest, RestackLayerBefore)
 
   EXPECT_EQ(layer1, root->firstLayer());
   {
-    Tx tx(&ctx, "");
+    Tx tx(sprite, "");
     doc->getApi(tx).restackLayerBefore(layer1, layer1->parent(), nullptr);
     EXPECT_EQ(layer2, root->firstLayer());
     EXPECT_EQ(layer3, root->firstLayer()->getNext());
@@ -86,7 +86,7 @@ TEST_F(BasicDocApiTest, RestackLayerAfter)
 {
   EXPECT_EQ(layer1, root->firstLayer());
   {
-    Tx tx(&ctx, "");
+    Tx tx(sprite, "");
     // Do nothing
     doc->getApi(tx).restackLayerAfter(layer1, layer1->parent(), layer1);
     EXPECT_EQ(layer1, root->firstLayer());
@@ -97,7 +97,7 @@ TEST_F(BasicDocApiTest, RestackLayerAfter)
 
   EXPECT_EQ(layer1, root->firstLayer());
   {
-    Tx tx(&ctx, "");
+    Tx tx(sprite, "");
     doc->getApi(tx).restackLayerAfter(layer1, layer3->parent(), layer3);
     EXPECT_EQ(layer2, root->firstLayer());
     EXPECT_EQ(layer3, root->firstLayer()->getNext());
@@ -107,7 +107,7 @@ TEST_F(BasicDocApiTest, RestackLayerAfter)
 
   EXPECT_EQ(layer1, root->firstLayer());
   {
-    Tx tx(&ctx, "");
+    Tx tx(sprite, "");
     doc->getApi(tx).restackLayerAfter(layer3, layer3->parent(), nullptr);
     EXPECT_EQ(layer3, root->firstLayer());
     EXPECT_EQ(layer1, root->firstLayer()->getNext());
@@ -132,7 +132,7 @@ TEST_F(BasicDocApiTest, MoveCel)
   // Create a copy for later comparison.
   std::unique_ptr<Image> expectedImage(Image::createCopy(image1));
 
-  Tx tx(&ctx, "");
+  Tx tx(sprite, "");
   doc->getApi(tx).moveCel(
     layer1, frame_t(0),
     layer2, frame_t(1));

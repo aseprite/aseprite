@@ -105,7 +105,7 @@ namespace doc {
     void setColorSpace(const gfx::ColorSpaceRef& colorSpace);
 
     // This method is only required/used for the template functions app::script::UserData_set_text/color.
-    const Sprite* sprite() const { return this; }
+    Sprite* sprite() const { return const_cast<Sprite*>(this); }
 
     // Returns true if the sprite has a background layer and it's visible
     bool isOpaque() const;

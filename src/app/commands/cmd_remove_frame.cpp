@@ -53,7 +53,7 @@ void RemoveFrameCommand::onExecute(Context* context)
   Doc* document(writer.document());
   Sprite* sprite(writer.sprite());
   {
-    Tx tx(writer.context(), "Remove Frame");
+    Tx tx(writer, "Remove Frame");
     DocApi api = document->getApi(tx);
     const Site* site = writer.site();
     if (site->inTimeline() &&

@@ -96,7 +96,7 @@ int Tag_set_fromFrame(lua_State* L)
 {
   auto tag = get_docobj<Tag>(L, 1);
   const auto fromFrame = get_frame_number_from_arg(L, 2);
-  Tx tx;
+  Tx tx(tag->sprite());
   tx(new cmd::SetTagRange(tag, fromFrame,
                           std::max(fromFrame, tag->toFrame())));
   tx.commit();
@@ -107,7 +107,7 @@ int Tag_set_toFrame(lua_State* L)
 {
   auto tag = get_docobj<Tag>(L, 1);
   const auto toFrame = get_frame_number_from_arg(L, 2);
-  Tx tx;
+  Tx tx(tag->sprite());
   tx(new cmd::SetTagRange(tag,
                                std::min(tag->fromFrame(), toFrame),
                                toFrame));
@@ -120,7 +120,7 @@ int Tag_set_name(lua_State* L)
   auto tag = get_docobj<Tag>(L, 1);
   const char* name = lua_tostring(L, 2);
   if (name) {
-    Tx tx;
+    Tx tx(tag->sprite());
     tx(new cmd::SetTagName(tag, name));
     tx.commit();
   }
@@ -131,7 +131,7 @@ int Tag_set_aniDir(lua_State* L)
 {
   auto tag = get_docobj<Tag>(L, 1);
   const int aniDir = lua_tointeger(L, 2);
-  Tx tx;
+  Tx tx(tag->sprite());
   tx(new cmd::SetTagAniDir(tag, (doc::AniDir)aniDir));
   tx.commit();
   return 0;
@@ -141,7 +141,7 @@ int Tag_set_repeats(lua_State* L)
 {
   auto tag = get_docobj<Tag>(L, 1);
   const int repeat = lua_tointeger(L, 2);
-  Tx tx;
+  Tx tx(tag->sprite());
   tx(new cmd::SetTagRepeat(tag, repeat));
   tx.commit();
   return 0;

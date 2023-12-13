@@ -74,7 +74,8 @@ namespace app {
                      const doc::Tileset* tileset);
     void copyPalette(const doc::Palette* palette,
                      const doc::PalettePicks& picks);
-    void paste(Context* ctx, const bool interactive);
+    void paste(ContextWriter& writer,
+               const bool interactive);
 
     doc::ImageRef getImage(doc::Palette* palette);
 

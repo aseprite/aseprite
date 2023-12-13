@@ -91,7 +91,7 @@ void SlicePropertiesCommand::onExecute(Context* context)
   {
     const SliceWindow::Mods mods = window.modifiedFields();
     ContextWriter writer(reader);
-    Tx tx(writer.context(), "Slice Properties");
+    Tx tx(writer, "Slice Properties");
 
     for (Slice* slice : slices.iterateAs<Slice>()) {
       // Change name

@@ -55,7 +55,7 @@ bool MovingSliceState::onMouseUp(Editor* editor, MouseMessage* msg)
 {
   {
     ContextWriter writer(UIContext::instance(), 1000);
-    Tx tx(writer.context(), "Slice Movement", ModifyDocument);
+    Tx tx(writer, "Slice Movement", ModifyDocument);
 
     for (const auto& item : m_items) {
       item.slice->insert(m_frame, item.oldKey);

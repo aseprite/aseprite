@@ -57,7 +57,7 @@ void FlattenLayersCommand::onExecute(Context* context)
   ContextWriter writer(context);
   Sprite* sprite = writer.sprite();
   {
-    Tx tx(writer.context(), "Flatten Layers");
+    Tx tx(writer, "Flatten Layers");
 
     // TODO the range of selected layers should be in app::Site.
     DocRange range;

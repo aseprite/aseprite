@@ -121,7 +121,7 @@ void select_layer_boundaries(Layer* layer,
       }
     }
 
-    Tx tx(writer.context(), "Select Layer Boundaries", DoesntModifyDocument);
+    Tx tx(writer, "Select Layer Boundaries", DoesntModifyDocument);
     tx(new cmd::SetMask(doc, &newMask));
     tx.commit();
 
