@@ -993,6 +993,10 @@
             <icon part="window_center_icon" color="button_hot_text" state="mouse" />
             <icon part="window_center_icon" color="button_selected_text" state="selected" />
         </style>
+        <style id="shade_empty">
+            <background color="editor_face" />
+            <text color="status_bar_text" />
+        </style>
         <style id="shade_selection">
             <background part="colorbar_selection_hot" />
         </style>
