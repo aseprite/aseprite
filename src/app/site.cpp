@@ -98,25 +98,29 @@ Grid Site::grid() const
 
 gfx::Rect Site::gridBounds() const
 {
+  gfx::Rect bounds;
   if (m_layer && m_layer->isTilemap()) {
     const Grid& grid = static_cast<LayerTilemap*>(m_layer)->tileset()->grid();
     gfx::Point offset = grid.tileOffset();
     if (const Cel* cel = m_layer->cel(m_frame))
       offset += cel->bounds().origin();
-    return gfx::Rect(offset, grid.tileSize());
+    bounds = gfx::Rect(offset, grid.tileSize());
+    if (!bounds.isEmpty())
+      return bounds;
+  }
+  else {
+    if (m_sprite) {
+      bounds = m_sprite->gridBounds();
+      if (!bounds.isEmpty())
+        return bounds;
+    }
+    if (ui::is_ui_thread()) {
+      bounds = Preferences::instance().document(m_document).grid.bounds();
+      if (!bounds.isEmpty())
+        return bounds;
+    }
   }
 
-  gfx::Rect bounds;
-  if (m_sprite) {
-    bounds = m_sprite->gridBounds();
-    if (!bounds.isEmpty())
-      return bounds;
-  }
-  if (ui::is_ui_thread()) {
-    bounds = Preferences::instance().document(m_document).grid.bounds();
-    if (!bounds.isEmpty())
-      return bounds;
-  }
   return doc::Sprite::DefaultGridBounds();
 }
 
