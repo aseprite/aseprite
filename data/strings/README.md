@@ -8,56 +8,54 @@ through the following Weblate project:
 This is only possible thanks to the contribution, help, and good will
 of several translators:
 
-* German
+* Arabic
 
-    * inxomnyaa <thebigsmilexd@gmail.com> (1844)
-
-
-* Russian
-
-    * Aleksey Smirnov <debugger94@gmail.com> (1615)
-
-
-* Ukrainian
-
-    * dio.next.door201bade7ea0e4d3c <dio.next.door@gmail.com> (14)
-
-
-* Polish
-
-    * Jakub Mańczak <jakub+github@manczak.net> (54)
-
-
-* Italian
-
-    * Fabiano Caputo <fabiano.caputo@outlook.it> (1720)
-
-
-* Spanish
-
-    * David Capello <david@igara.com> (302)
-
-
-* French
-
-    * Nathan <bonnemainsnathan@gmail.com> (1183)
-
-* Korean
-
-    * KESTREL (Kestrel) <flameblast12@gmail.com> (838)
-    * 프돔 <pdom0327@gmail.com> (20)
-    * 정원혁 (William Chung) <mylovesarah@gmail.com> (7)
-
+  * Mr.k <mineshtine28546271@gmail.com>
 
 * Chinese (Simplified)
 
-    * SRCat.nana <ftxydd@hotmail.com> (1593)
-    * 66six11 <2652915018@qq.com> (28)
+  * 66six11 <2652915018@qq.com>
+  * SRCat.nana <ftxydd@hotmail.com>
 
+* French
 
-A special thankfulness for the feedback of [TakWolf](https://github.com/TakWolf)
-and its [aseprite-quest](https://github.com/aseprite-quest) work to create an
-unified package to offer a proper Aseprite UX in different languages.
+  * Grey <gregorypro@protonmail.com>
+  * Nathan <bonnemainsnathan@gmail.com>
+
+* German
+
+  * inxomnyaa <thebigsmilexd@gmail.com>
+
+* Italian
+
+  * Fabiano Caputo <fabiano.caputo@outlook.it>
+
+* Korean
+
+  * KESTREL (Kestrel) <flameblast12@gmail.com>
+  * 정원혁 (William Chung) <mylovesarah@gmail.com>
+  * 프돔 <pdom0327@gmail.com>
+
+* Polish
+
+  * Jakub Mańczak <jakub+github@manczak.net>
+  * PxSprite <pxsprite@tuta.io>
+
+* Russian
+
+  * Aleksey Smirnov <debugger94@gmail.com>
+
+* Spanish
+
+  * David Capello <david@igara.com>
+
+* Ukrainian
+
+  * dio.next.door201bade7ea0e4d3c <dio.next.door@gmail.com>
+
+A special thanks for the feedback of [TakWolf](https://github.com/TakWolf)
+and its [aseprite-quest](https://github.com/aseprite-quest) work to create
+an unified package to offer a proper Aseprite UX in different languages.
 
 ## License
 
