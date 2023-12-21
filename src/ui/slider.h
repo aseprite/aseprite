@@ -55,6 +55,7 @@ namespace ui {
 
   private:
     void setupSliderCursor();
+    void enforceValidRange(int min, int max);
 
     int m_min;
     int m_max;
