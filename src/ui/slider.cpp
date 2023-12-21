@@ -30,23 +30,30 @@ static bool slider_press_left;
 
 Slider::Slider(int min, int max, int value, SliderDelegate* delegate)
   : Widget(kSliderWidget)
-  , m_min(min)
-  , m_max(max)
-  , m_value(std::clamp(value, min, max))
+  , m_value(value)
   , m_readOnly(false)
   , m_delegate(delegate)
 {
+  enforceValidRange(min, max);
   setFocusStop(true);
   initTheme();
 }
 
 void Slider::setRange(int min, int max)
 {
+  enforceValidRange(min, max);
+  invalidate();
+}
+
+void Slider::enforceValidRange(int min, int max)
+{
+  // Do not allow min > max
+  if (min > max)
+    max = min;
+
   m_min = min;
   m_max = max;
   m_value = std::clamp(m_value, min, max);
-
-  invalidate();
 }
 
 void Slider::setValue(int value)
