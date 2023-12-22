@@ -18,7 +18,6 @@
 #include "app/xml_document.h"
 #include "app/xml_exception.h"
 #include "base/fs.h"
-#include "base/replace_string.h"
 #include "cfg/cfg.h"
 
 #include <algorithm>
@@ -161,7 +160,26 @@ void Strings::loadStringsFromFile(const std::string& fn)
       textId.append(key);
 
       value = cfg.getValue(section.c_str(), key.c_str(), "");
-      base::replace_string(value, "\\n", "\n");
+
+      // Process escaped chars (\\, \n, \s, \t, etc.)
+      for (int i=0; i<int(value.size()); ) {
+        if (value[i] == '\\') {
+          value.erase(i, 1);
+          if (i == int(value.size()))
+            break;
+          int chr = value[i];
+          switch (chr) {
+            case '\\': chr = '\\'; break;
+            case 'n': chr = '\n'; break;
+            case 't': chr = '\t'; break;
+            case 's': chr = ' '; break;
+          }
+          value[i] = chr;
+        }
+        else {
+          ++i;
+        }
+      }
       m_strings[textId] = value;
 
       //TRACE("I18N: Reading string %s -> %s\n", textId.c_str(), m_strings[textId].c_str());
