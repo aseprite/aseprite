@@ -129,9 +129,9 @@ On SUSE:
 
 Open a command prompt window (`cmd.exe`) and call:
 
-    call "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\VsDevCmd.bat" -arch=<target architecture>
+    call "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\VsDevCmd.bat" -arch=amd64
 
-The command above is required while using the 64-bit version of skia. When compiling with the 32-bit version, it is possible to open a [developer command prompt](https://docs.microsoft.com/en-us/dotnet/framework/tools/developer-command-prompt-for-vs) instead. See this section to specify the correct [target architecture](https://learn.microsoft.com/en-us/visualstudio/ide/reference/command-prompt-powershell?view=vs-2022#target-architecture-and-host-architecture).
+The command above is required while using the 64-bit version of skia. When compiling with the 32-bit version, it is possible to open a [developer command prompt](https://docs.microsoft.com/en-us/dotnet/framework/tools/developer-command-prompt-for-vs) instead. Note the target architecture argument in the above command is set to a value of amd64. If you are compiling in an environment with a different architecture, you can specify it by using one of the values in the [target architecture](https://learn.microsoft.com/en-us/visualstudio/ide/reference/command-prompt-powershell?view=vs-2022#target-architecture-and-host-architecture) section.
 
 And then
 
