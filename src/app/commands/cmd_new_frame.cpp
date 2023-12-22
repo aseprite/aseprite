@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -181,9 +181,10 @@ void NewFrameCommand::onExecute(Context* context)
     update_screen_for_document(document);
 
     StatusBar::instance()->showTip(
-      1000, fmt::format("New frame {}/{}",
-                        (int)context->activeSite().frame()+1,
-                        (int)sprite->totalFrames()));
+      1000, fmt::format(
+        Strings::commands_NewFrame_tooltip(),
+        (int)context->activeSite().frame()+1,
+        (int)sprite->totalFrames()));
 
     App::instance()->mainWindow()->popTimeline();
   }
