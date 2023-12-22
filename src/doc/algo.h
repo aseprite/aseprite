@@ -33,6 +33,10 @@ void algo_line_perfect_with_fix_for_line_brush(int x1,
                                                void* data,
                                                AlgoPixel proc);
 
+// For lines with constant integer pixel runs throughout the line.
+void algo_line_snap(int x1, int y1, int x2, int y2, void* data, AlgoPixel proc);
+int algo_line_snap_endpoint(int* x_out, int* y_out, int x1, int y1, int x2, int y2);
+
 // Useful to create continuous lines (you can draw from one point to
 // another, and continue from that point to another in the same
 // angle and the line will look continous).
