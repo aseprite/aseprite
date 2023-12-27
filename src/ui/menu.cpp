@@ -323,6 +323,9 @@ void MenuItem::setSubmenu(Menu* menu)
 
 void MenuItem::openSubmenu()
 {
+  MenuBaseData* base = get_base(this);
+  if (base && base->is_processing)
+    return;
   if (auto menu = static_cast<Menu*>(parent()))
     menu->highlightItem(this, true, true, true);
 }
