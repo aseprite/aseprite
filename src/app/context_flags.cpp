@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -36,7 +36,8 @@ void ContextFlags::update(Context* context)
   if (document) {
     m_flags |= HasActiveDocument;
 
-    if (document->readLock(0)) {
+    Doc::LockResult res = document->readLock(0);
+    if (res != Doc::LockResult::Fail) {
       m_flags |= ActiveDocumentIsReadable;
 
       if (document->isMaskVisible())
@@ -47,7 +48,7 @@ void ContextFlags::update(Context* context)
       if (document->canWriteLockFromRead() && !document->isReadOnly())
         m_flags |= ActiveDocumentIsWritable;
 
-      document->unlock();
+      document->unlock(res);
     }
 
 #ifdef ENABLE_UI

@@ -46,17 +46,19 @@ namespace app {
       if (!m_doc)
         throw std::runtime_error("No document to execute a transaction");
 
+      // Lock the document here (even if we are inside a transaction,
+      // this will be a re-entrant lock if we can)
+      if (lockAction == LockDoc) {
+        m_lockResult = m_doc->writeLock(500);
+        if (m_lockResult == Doc::LockResult::Fail)
+          throw CannotWriteDocException();
+      }
+
       m_transaction = m_doc->transaction();
       if (m_transaction) {
         m_owner = false;
       }
       else {
-        if (lockAction == LockDoc) {
-          if (!m_doc->writeLock(500))
-            throw CannotWriteDocException();
-          m_locked = true;
-        }
-
         m_transaction = new Transaction(ctx, m_doc, label, mod);
         m_doc->setTransaction(m_transaction);
         m_owner = true;
@@ -92,10 +94,10 @@ namespace app {
       if (m_owner) {
         m_doc->setTransaction(nullptr);
         delete m_transaction;
-
-        if (m_locked)
-          m_doc->unlock();
       }
+
+      if (m_lockResult != Doc::LockResult::Fail)
+        m_doc->unlock(m_lockResult);
     }
 
     void commit() {
@@ -127,7 +129,7 @@ namespace app {
   private:
     Doc* m_doc;
     Transaction* m_transaction;
-    bool m_locked = false; // The doc was locked here
+    Doc::LockResult m_lockResult = Doc::LockResult::Fail;
     bool m_owner = false;  // Owner of the transaction
   };
 

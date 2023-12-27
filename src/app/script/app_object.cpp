@@ -157,25 +157,23 @@ int App_transaction(lua_State* L)
     if (!ctx)
       return luaL_error(L, "no context");
 
-    // Create a new transaction so it exists in the whole duration of
-    // the argument function call.
-#if 0
-    // TODO To be able to lock the document in the transaction we have
-    // to create a re-entrant RWLock implementation to allow to call
-    // commands (creating sub-ContextWriters) inside the
-    // app.transaction()
-    ContextWriter writer(ctx);
-    Tx tx(writer, label);
-#else
-    Tx tx(Tx::DontLockDoc, ctx, ctx->activeDocument(), label);
-#endif
+    try {
+      // We lock the document in the whole transaction because the
+      // RWLock now is re-entrant and we are able to call commands
+      // inside the app.transaction() (creating inner ContextWriters).
+      ContextWriter writer(ctx);
+      Tx tx(writer, label);
 
-    lua_pushvalue(L, -1);
-    if (lua_pcall(L, 0, LUA_MULTRET, 0) == LUA_OK)
-      tx.commit();
-    else
-      return lua_error(L); // pcall already put an error object on the stack
-    nresults = lua_gettop(L) - top;
+      lua_pushvalue(L, -1);
+      if (lua_pcall(L, 0, LUA_MULTRET, 0) == LUA_OK)
+        tx.commit();
+      else
+        return lua_error(L); // pcall already put an error object on the stack
+      nresults = lua_gettop(L) - top;
+    }
+    catch (const LockedDocException& ex) {
+      return luaL_error(L, "cannot lock document for transaction\n%s", ex.what());
+    }
   }
   return nresults;
 }

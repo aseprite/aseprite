@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -46,6 +46,8 @@ namespace app {
   // locks.
   class DocAccess {
   public:
+    using LockResult = Doc::LockResult;
+
     DocAccess() : m_doc(NULL) { }
     DocAccess(const DocAccess& copy) : m_doc(copy.m_doc) { }
     explicit DocAccess(Doc* doc) : m_doc(doc) { }
@@ -71,6 +73,7 @@ namespace app {
 
   protected:
     Doc* m_doc;
+    LockResult m_lockResult = LockResult::Fail;
   };
 
   // Class to view the document's state. Its constructor request a
@@ -83,14 +86,20 @@ namespace app {
 
     explicit DocReader(Doc* doc, int timeout)
       : DocAccess(doc) {
-      if (m_doc && !m_doc->readLock(timeout))
-        throw CannotReadDocException();
+      if (m_doc) {
+        m_lockResult = m_doc->readLock(timeout);
+        if (m_lockResult == LockResult::Fail)
+          throw CannotReadDocException();
+      }
     }
 
     explicit DocReader(const DocReader& copy, int timeout)
       : DocAccess(copy) {
-      if (m_doc && !m_doc->readLock(timeout))
-        throw CannotReadDocException();
+      if (m_doc) {
+        m_lockResult = m_doc->readLock(timeout);
+        if (m_lockResult == LockResult::Fail)
+          throw CannotReadDocException();
+      }
     }
 
     ~DocReader() {
@@ -100,7 +109,7 @@ namespace app {
   protected:
     void unlock() {
       if (m_doc) {
-        m_doc->unlock();
+        m_doc->unlock(m_lockResult);
         m_doc = nullptr;
       }
     }
@@ -127,7 +136,8 @@ namespace app {
       , m_from_reader(false)
       , m_locked(false) {
       if (m_doc) {
-        if (!m_doc->writeLock(timeout))
+        m_lockResult = m_doc->writeLock(timeout);
+        if (m_lockResult == LockResult::Fail)
           throw CannotWriteDocException();
 
         m_locked = true;
@@ -141,7 +151,8 @@ namespace app {
       , m_from_reader(true)
       , m_locked(false) {
       if (m_doc) {
-        if (!m_doc->upgradeToWrite(timeout))
+        m_lockResult = m_doc->upgradeToWrite(timeout);
+        if (m_lockResult == LockResult::Fail)
           throw CannotWriteDocException();
 
         m_locked = true;
@@ -156,9 +167,9 @@ namespace app {
     void unlock() {
       if (m_doc && m_locked) {
         if (m_from_reader)
-          m_doc->downgradeToRead();
+          m_doc->downgradeToRead(m_lockResult);
         else
-          m_doc->unlock();
+          m_doc->unlock(m_lockResult);
 
         m_doc = nullptr;
         m_locked = false;

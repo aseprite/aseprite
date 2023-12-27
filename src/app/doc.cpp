@@ -41,7 +41,7 @@
 #include <limits>
 #include <map>
 
-#define DOC_TRACE(...) // TRACEARGS
+#define DOC_TRACE(...) // TRACEARGS(__VA_ARGS__)
 
 namespace app {
 
@@ -102,38 +102,50 @@ bool Doc::canWriteLockFromRead() const
   return m_rwLock.canWriteLockFromRead();
 }
 
-bool Doc::readLock(int timeout)
+Doc::LockResult Doc::readLock(int timeout)
 {
-  return m_rwLock.lock(base::RWLock::ReadLock, timeout);
+  auto res = m_rwLock.lock(base::RWLock::ReadLock, timeout);
+  DOC_TRACE("DOC: readLock", this, (int)res);
+  return res;
 }
 
-bool Doc::writeLock(int timeout)
+Doc::LockResult Doc::writeLock(int timeout)
 {
-  return m_rwLock.lock(base::RWLock::WriteLock, timeout);
+  auto res = m_rwLock.lock(base::RWLock::WriteLock, timeout);
+  DOC_TRACE("DOC: writeLock", this, (int)res);
+  return res;
 }
 
-bool Doc::upgradeToWrite(int timeout)
+Doc::LockResult Doc::upgradeToWrite(int timeout)
 {
-  return m_rwLock.upgradeToWrite(timeout);
+  auto res = m_rwLock.upgradeToWrite(timeout);
+  DOC_TRACE("DOC: upgradeToWrite", this, (int)res);
+  return res;
 }
 
-void Doc::downgradeToRead()
+void Doc::downgradeToRead(LockResult lockResult)
 {
-  m_rwLock.downgradeToRead();
+  DOC_TRACE("DOC: downgradeToRead", this, (int)lockResult);
+  m_rwLock.downgradeToRead(lockResult);
 }
 
-void Doc::unlock()
+void Doc::unlock(LockResult lockResult)
 {
-  m_rwLock.unlock();
+  ASSERT(lockResult != base::RWLock::LockResult::Fail);
+  DOC_TRACE("DOC: unlock", this, (int)lockResult);
+  m_rwLock.unlock(lockResult);
 }
 
 bool Doc::weakLock(std::atomic<base::RWLock::WeakLock>* weak_lock_flag)
 {
-  return m_rwLock.weakLock(weak_lock_flag);
+  bool res = m_rwLock.weakLock(weak_lock_flag);
+  DOC_TRACE("DOC: weakLock", this, (int)res);
+  return res;
 }
 
 void Doc::weakUnlock()
 {
+  DOC_TRACE("DOC: weakUnlock", this);
   m_rwLock.weakUnlock();
 }
 
