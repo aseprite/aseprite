@@ -457,6 +457,7 @@ endif()
 add_library(app-lib
   active_site_handler.cpp
   app.cpp
+  app_init.cpp
   check_update.cpp
   cli/app_options.cpp
   cli/cli_open_file.cpp

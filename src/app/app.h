@@ -13,9 +13,11 @@
 #include "app/app_brushes.h"
 #endif
 
+#include "app/app_init.h"
 #include "base/paths.h"
 #include "doc/pixel_format.h"
 #include "obs/signal.h"
+#include "os/system.h"
 
 #include <memory>
 #include <string>
@@ -150,6 +152,19 @@ namespace app {
 #endif // ENABLE_UI
 #ifdef ENABLE_SCRIPTING
     std::unique_ptr<script::Engine> m_engine;
+#endif
+    os::SystemRef m_system;
+    MemLeak m_memleak;
+#if LAF_WINDOWS
+    CoInit m_com;                   // To create COM objects
+#endif
+#if ENABLE_SENTRY
+    app::Sentry m_sentry;
+  #if USE_SENTRY_BREADCRUMB_FOR_WINTAB
+    std::unique_ptr<WintabApiDelegate> m_wintabDelegate;
+  #endif
+#else
+    base::MemoryDump m_memoryDump;
 #endif
 
     // Set the memory dump filename to show in the Preferences dialog

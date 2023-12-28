@@ -60,11 +60,12 @@
 #include "base/platform.h"
 #include "base/replace_string.h"
 #include "base/split_string.h"
+#include "base/system_console.h"
+#include "base/thread.h"
 #include "doc/sprite.h"
 #include "fmt/format.h"
 #include "os/error.h"
 #include "os/surface.h"
-#include "os/system.h"
 #include "os/window.h"
 #include "render/render.h"
 #include "ui/intern.h"
@@ -72,14 +73,12 @@
 #include "updater/user_agent.h"
 #include "ver/info.h"
 
+
 #if LAF_MACOS
   #include "os/osx/system.h"
 #elif LAF_LINUX
   #include "os/x11/system.h"
 #endif
-
-#include <iostream>
-#include <memory>
 
 #ifdef ENABLE_SCRIPTING
   #include "app/script/engine.h"
@@ -90,6 +89,10 @@
   #include "steam/steam.h"
 #endif
 
+#include <clocale>
+#include <cstdlib>
+#include <ctime>
+#include <iostream>
 #include <memory>
 #include <optional>
 
@@ -116,7 +119,7 @@ private:
 
 } // anonymous namespace
 
-#endif // ENABLER_SCRIPTING
+#endif // ENABLE_SCRIPTING
 
 class App::CoreModules {
 public:
@@ -255,6 +258,10 @@ App::App(AppMod* mod)
 #endif
 #ifdef ENABLE_SCRIPTING
   , m_engine(new script::Engine)
+  , m_system(os::make_system())
+#endif
+#if ENABLE_SENTRY && USE_SENTRY_BREADCRUMB_FOR_WINTAB
+  , m_wintabDelegate(nullptr)
 #endif
 {
   ASSERT(m_instance == nullptr);
@@ -263,7 +270,34 @@ App::App(AppMod* mod)
 
 int App::initialize(const AppOptions& options)
 {
-  os::System* system = os::instance();
+  // Initialize the locale. Aseprite isn't ready to handle numeric
+  // fields with other locales (e.g. we expect strings like "10.32" be
+  // used in std::strtod(), not something like "10,32").
+  std::setlocale(LC_ALL, "en-US");
+  ASSERT(std::strtod("10.32", nullptr) == 10.32);
+
+  // Initialize the random seed.
+  std::srand(static_cast<unsigned int>(std::time(nullptr)));
+
+  // Main thread name
+  base::this_thread::set_name("main");
+
+  doc::Palette::initBestfit();
+
+#if ENABLE_SENTRY
+  m_sentry.init();
+  #if USE_SENTRY_BREADCRUMB_FOR_WINTAB
+  m_wintabDelegate = std::make_unique<WintabApiDelegate>();
+  #endif
+#else
+  // Change the memory dump filename to save on disk (.dmp
+  // file). Note: Only useful on Windows.
+  {
+    const std::string fn = app::SendCrash::DefaultMemoryDumpFilename();
+    if (!fn.empty())
+      m_memoryDump.setFileName(fn);
+  }
+#endif
 
 #ifdef ENABLE_UI
   m_isGui = options.startUI() && !options.previewCLI();
@@ -278,12 +312,12 @@ int App::initialize(const AppOptions& options)
   if (options.disableWintab() ||
       !preferences().experimental.loadWintabDriver() ||
       preferences().tablet.api() == "pointer") {
-    system->setTabletAPI(os::TabletAPI::WindowsPointerInput);
+    m_system->setTabletAPI(os::TabletAPI::WindowsPointerInput);
   }
   else if (preferences().tablet.api() == "wintab_packets")
-    system->setTabletAPI(os::TabletAPI::WintabPackets);
+    m_system->setTabletAPI(os::TabletAPI::WintabPackets);
   else // preferences().tablet.api() == "wintab"
-    system->setTabletAPI(os::TabletAPI::Wintab);
+    m_system->setTabletAPI(os::TabletAPI::Wintab);
 
 #elif LAF_MACOS
 
@@ -300,9 +334,9 @@ int App::initialize(const AppOptions& options)
 
 #endif
 
-  system->setAppName(get_app_name());
-  system->setAppMode(m_isGui ? os::AppMode::GUI:
-                               os::AppMode::CLI);
+  m_system->setAppName(get_app_name());
+  m_system->setAppMode(m_isGui ? os::AppMode::GUI:
+                                 os::AppMode::CLI);
 
   if (m_isGui)
     m_uiSystem.reset(new ui::UISystem);
@@ -419,7 +453,7 @@ int App::initialize(const AppOptions& options)
   }
 
   LOG("APP: Finish launching...\n");
-  system->finishLaunching();
+  m_system->finishLaunching();
   return code;
 }
 
@@ -466,6 +500,10 @@ namespace {
 
 void App::run()
 {
+  base::SystemConsole systemConsole;
+  if (m_isShell)
+      systemConsole.prepareShell();
+
 #ifdef ENABLE_UI
   CloseMainWindow closeMainWindow(m_mainWindow);
 #endif
