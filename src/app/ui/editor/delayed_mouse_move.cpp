@@ -71,7 +71,12 @@ void DelayedMouseMove::commitMouseMove()
   if (m_timer.isRunning())
     m_timer.stop();
 
-  m_delegate->onCommitMouseMove(m_editor, spritePos());
+  try {
+    m_delegate->onCommitMouseMove(m_editor, spritePos());
+  }
+  catch (const std::exception& ex) {
+    m_editor->showUnhandledException(ex, nullptr);
+  }
 }
 
 const gfx::PointF& DelayedMouseMove::spritePos() const

@@ -167,15 +167,7 @@ protected:
       return Editor::onProcessMessage(msg);
     }
     catch (const std::exception& ex) {
-      EditorState* state = getState().get();
-
-      Console console;
-      Console::showException(ex);
-      console.printf("\nInternal details:\n"
-        "- Message type: %d\n"
-        "- Editor state: %s\n",
-        msg->type(),
-        state ? typeid(*state).name(): "None");
+      showUnhandledException(ex, msg);
       return false;
     }
   }

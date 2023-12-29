@@ -322,6 +322,11 @@ namespace app {
     // Properties to show information in the status bar
     bool showAutoCelGuides() const { return m_showAutoCelGuides; }
 
+    // Used in case an unhandled exception was caught when processing
+    // an Editor or EditorState event.
+    void showUnhandledException(const std::exception& ex,
+                                const ui::Message* msg);
+
     static void registerCommands();
 
   protected:

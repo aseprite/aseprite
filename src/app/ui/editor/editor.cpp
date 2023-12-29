@@ -1897,6 +1897,21 @@ void Editor::cancelSelections()
   clearSlicesSelection();
 }
 
+void Editor::showUnhandledException(const std::exception& ex,
+                                    const ui::Message* msg)
+{
+  EditorState* state = getState().get();
+
+  Console console;
+  Console::showException(ex);
+  console.printf(
+    "\nInternal details:\n"
+    "- Message type: %d\n"
+    "- Editor state: %s\n",
+    (msg ? msg->type(): -1),
+    (state ? typeid(*state).name(): "None"));
+}
+
 //////////////////////////////////////////////////////////////////////
 // Message handler for the editor
 
