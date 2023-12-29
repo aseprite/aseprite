@@ -16,6 +16,12 @@ of several translators:
 
   * 66six11 <2652915018@qq.com>
   * SRCat.nana <ftxydd@hotmail.com>
+  * TakWolf <takwolf@foxmail.com>
+  * 鲸流 <cetaceaqua@outlook.com>
+
+* Chinese (Traditional)
+
+  * Héctor Cortés <frewilfis@protonmail.ch>
 
 * French
 
@@ -24,6 +30,7 @@ of several translators:
 
 * German
 
+  * Cerno_b <cerno.b@gmail.com>
   * inxomnyaa <thebigsmilexd@gmail.com>
 
 * Italian
@@ -38,16 +45,23 @@ of several translators:
 
 * Polish
 
+  * Eryk Michalak <gnu.ewm@protonmail.com>
   * Jakub Mańczak <jakub+github@manczak.net>
   * PxSprite <pxsprite@tuta.io>
+
+* Portuguese
+
+  * Murilo Gama <murilovsky2030@gmail.com>
 
 * Russian
 
   * Aleksey Smirnov <debugger94@gmail.com>
+  * Ruslan <vovavalenkov15@gmail.com>
 
 * Spanish
 
   * David Capello <david@igara.com>
+  * Héctor Cortés <frewilfis@protonmail.ch>
 
 * Ukrainian
 
