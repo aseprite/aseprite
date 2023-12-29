@@ -256,9 +256,8 @@ void NewLayerCommand::onExecute(Context* context)
   }
 #endif
 
-  ContextWriter writer(reader);
   LayerGroup* parent = sprite->root();
-  Layer* activeLayer = writer.layer();
+  Layer* activeLayer = reader.layer();
   SelectedLayers selLayers = site.selectedLayers();
   if (activeLayer) {
     if (activeLayer->isGroup() &&
@@ -274,6 +273,7 @@ void NewLayerCommand::onExecute(Context* context)
 
   Layer* layer = nullptr;
   {
+    ContextWriter writer(reader);
     Tx tx(writer,
           fmt::format(Strings::commands_NewLayer(), layerPrefix()));
     DocApi api = document->getApi(tx);
@@ -427,7 +427,7 @@ void NewLayerCommand::onExecute(Context* context)
 #ifdef ENABLE_UI
     // Paste new layer from clipboard
     else if (params().fromClipboard() && layer->isImage()) {
-      context->clipboard()->paste(writer, false);
+      context->clipboard()->paste(context, false);
 
       if (layer->isReference()) {
         if (Cel* cel = layer->cel(site.frame())) {

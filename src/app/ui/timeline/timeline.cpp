@@ -4391,8 +4391,7 @@ bool Timeline::onPaste(Context* ctx)
       invalidate();
     }
 
-    ContextWriter writer(ctx);
-    clipboard->paste(writer, true);
+    clipboard->paste(ctx, true);
     return true;
   }
   else

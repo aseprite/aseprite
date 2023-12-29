@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -74,7 +74,7 @@ namespace app {
                      const doc::Tileset* tileset);
     void copyPalette(const doc::Palette* palette,
                      const doc::PalettePicks& picks);
-    void paste(ContextWriter& writer,
+    void paste(Context* ctx,
                const bool interactive);
 
     doc::ImageRef getImage(doc::Palette* palette);

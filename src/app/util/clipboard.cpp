@@ -461,10 +461,10 @@ void Clipboard::copyPalette(const Palette* palette,
   m_data->picks = picks;
 }
 
-void Clipboard::paste(ContextWriter& writer,
+void Clipboard::paste(Context* ctx,
                       const bool interactive)
 {
-  const Site site = *writer.site();
+  const Site site = ctx->activeSite();
   Doc* dstDoc = site.document();
   if (!dstDoc)
     return;
@@ -531,6 +531,7 @@ void Clipboard::paste(ContextWriter& writer,
         if (!dstLayer || !dstLayer->isImage())
           return;
 
+        ContextWriter writer(ctx);
         Tx tx(writer, "Paste Image");
         DocApi api = dstDoc->getApi(tx);
         Cel* dstCel = api.addCel(
@@ -611,6 +612,7 @@ void Clipboard::paste(ContextWriter& writer,
             break;
           }
 
+          ContextWriter writer(ctx);
           Tx tx(writer, "Paste Cels");
           DocApi api = dstDoc->getApi(tx);
 
@@ -671,6 +673,7 @@ void Clipboard::paste(ContextWriter& writer,
             break;
           }
 
+          ContextWriter writer(ctx);
           Tx tx(writer, "Paste Frames");
           DocApi api = dstDoc->getApi(tx);
 
@@ -714,6 +717,7 @@ void Clipboard::paste(ContextWriter& writer,
           if (srcDoc->colorMode() != dstDoc->colorMode())
             throw std::runtime_error("You cannot copy layers of document with different color modes");
 
+          ContextWriter writer(ctx);
           Tx tx(writer, "Paste Layers");
           DocApi api = dstDoc->getApi(tx);
 
