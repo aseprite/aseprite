@@ -30,6 +30,7 @@
 #include "base/chrono.h"
 #include "base/remove_from_container.h"
 #include "base/thread.h"
+#include "ui/app_state.h"
 #include "ui/system.h"
 
 namespace app {
@@ -105,7 +106,13 @@ void BackupObserver::onRemoveDocument(Doc* doc)
       // If the backup is disabled, we don't need it (e.g. when the
       // document is destroyed from a script with Sprite:close(), the
       // backup is disabled)
-      !doc->inhibitBackup()) {
+      !doc->inhibitBackup() &&
+      // Don't add the document to closed docs list if we're closing
+      // the app by an exception. Without this
+      // BackupObserver::backgroundThread() could crash using a
+      // document that was already destroyed (because we're unwinding
+      // the stack and destroying all objects by an exception).
+      ui::get_app_state() != ui::AppState::kClosingWithException) {
     // If m_config->keepEditedSpriteDataFor == 0 we add the document
     // in m_closedDocs list anyway so we call markAsBackedUp(), and
     // then it's deleted from ClosedDocs::backgroundThread()
