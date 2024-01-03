@@ -33,6 +33,10 @@ of several translators:
   * Cerno_b <cerno.b@gmail.com>
   * inxomnyaa <thebigsmilexd@gmail.com>
 
+* Irish
+
+  * doctor <imdrnow@gmail.com>
+
 * Italian
 
   * Fabiano Caputo <fabiano.caputo@outlook.it>
@@ -52,16 +56,22 @@ of several translators:
 * Portuguese
 
   * Murilo Gama <murilovsky2030@gmail.com>
+  * puddiCria <puddindesign@gmail.com>
 
 * Russian
 
   * Aleksey Smirnov <debugger94@gmail.com>
+  * Blezz Rot <markus.jenya04@yandex.ru>
   * Ruslan <vovavalenkov15@gmail.com>
 
 * Spanish
 
   * David Capello <david@igara.com>
   * Héctor Cortés <frewilfis@protonmail.ch>
+
+* Swedish
+
+  * Samuel Pettersson <samuelpettersson09@gmail.com>
 
 * Ukrainian
 
