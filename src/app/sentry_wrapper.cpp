@@ -120,12 +120,18 @@ bool Sentry::areThereCrashesToReport()
 }
 
 // static
+void Sentry::addBreadcrumb(const char* message)
+{
+  LOG(VERBOSE, "BC: %s\n", message);
+
+  sentry_value_t c = sentry_value_new_breadcrumb(nullptr, message);
+  sentry_add_breadcrumb(c);
+}
+
+// static
 void Sentry::addBreadcrumb(const std::string& message)
 {
-  LOG(VERBOSE, "BC: %s\n", message.c_str());
-
-  sentry_value_t c = sentry_value_new_breadcrumb(nullptr, message.c_str());
-  sentry_add_breadcrumb(c);
+  addBreadcrumb(message.c_str());
 }
 
 // static

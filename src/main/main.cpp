@@ -116,12 +116,12 @@ int app_main(int argc, char* argv[])
   // Main thread name
   base::this_thread::set_name("main");
 
-  try {
 #if ENABLE_SENTRY
-    app::Sentry sentry;
+  app::Sentry sentry;
 #else
-    base::MemoryDump memoryDump;
+  base::MemoryDump memoryDump;
 #endif
+  try {
     MemLeak memleak;
     base::SystemConsole systemConsole;
     app::AppOptions options(argc, const_cast<const char**>(argv));
@@ -158,6 +158,13 @@ int app_main(int argc, char* argv[])
   catch (std::exception& e) {
     std::cerr << e.what() << '\n';
     os::error_message(e.what());
-    return 1;
+
+#if ENABLE_SENTRY
+    sentry.addBreadcrumb(e.what());
+#endif
+
+    // Crash with the unhandled exception, so the OS or Sentry can
+    // handle/report the crash.
+    throw;
   }
 }

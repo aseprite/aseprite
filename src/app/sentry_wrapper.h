@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021-2022  Igara Studio S.A.
+// Copyright (C) 2021-2023  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -34,6 +34,7 @@ public:
   // the "give consent" check box for first time.
   static bool areThereCrashesToReport();
 
+  static void addBreadcrumb(const char* message);
   static void addBreadcrumb(const std::string& message);
   static void addBreadcrumb(const std::string& message,
                             const std::map<std::string, std::string>& data);
