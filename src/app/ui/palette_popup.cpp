@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2022  Igara Studio S.A.
+// Copyright (C) 2020-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -23,6 +23,8 @@
 #include "ui/box.h"
 #include "ui/button.h"
 #include "ui/fit_bounds.h"
+#include "ui/keys.h"
+#include "ui/message.h"
 #include "ui/scale.h"
 #include "ui/theme.h"
 #include "ui/view.h"
@@ -45,6 +47,7 @@ PalettePopup::PalettePopup()
   m_paletteListBox.DoubleClickItem.connect([this]{ onLoadPal(); });
   m_paletteListBox.FinishLoading.connect([this]{ onSearchChange(); });
   m_popup->search()->Change.connect([this]{ onSearchChange(); });
+  m_popup->refresh()->Click.connect([this]{ onRefresh(); });
   m_popup->loadPal()->Click.connect([this]{ onLoadPal(); });
   m_popup->openFolder()->Click.connect([this]{ onOpenFolder(); });
 
@@ -76,6 +79,25 @@ void PalettePopup::showPopup(ui::Display* display,
              });
 
   openWindowInForeground();
+}
+
+bool PalettePopup::onProcessMessage(ui::Message* msg)
+{
+  switch (msg->type()) {
+    case kKeyDownMessage: {
+      KeyMessage* keyMsg = static_cast<KeyMessage*>(msg);
+      KeyScancode scancode = keyMsg->scancode();
+      bool refresh = (scancode == kKeyF5 ||
+                      (msg->ctrlPressed() && scancode == kKeyR) ||
+                      (msg->cmdPressed() && scancode == kKeyR));
+      if (refresh) {
+        onRefresh();
+        return true;
+      }
+      break;
+    }
+  }
+  return ui::PopupWindow::onProcessMessage(msg);
 }
 
 void PalettePopup::onPalChange(const doc::Palette* palette)
@@ -110,6 +132,11 @@ void PalettePopup::onSearchChange()
     m_paletteListBox.selectChild(nullptr);
 
   m_popup->view()->layout();
+}
+
+void PalettePopup::onRefresh()
+{
+  m_paletteListBox.reload();
 }
 
 void PalettePopup::onLoadPal()

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2023  Igara Studio S.A.
+// Copyright (C) 2020-2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -126,10 +126,10 @@ PalettesListBox::PalettesListBox()
 
   m_extPaletteChanges =
     App::instance()->extensions().PalettesChange.connect(
-      [this]{ reload(); });
+      [this]{ markToReload(); });
   m_extPresetsChanges =
     App::instance()->PalettePresetsChange.connect(
-      [this]{ reload(); });
+      [this]{ markToReload(); });
 }
 
 const doc::Palette* PalettesListBox::selectedPalette()

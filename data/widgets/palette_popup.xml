@@ -1,8 +1,12 @@
 <!-- Aseprite -->
+<!-- Copyright (C) 2024 by Igara Studio S.A. -->
 <!-- Copyright (C) 2014-2017 by David Capello -->
 <gui>
   <vbox id="palette_popup">
-    <search id="search" magnet="true" />
+    <hbox>
+      <search id="search" magnet="true" expansive="true" />
+      <button text="" id="refresh" style="refresh_button" />
+    </hbox>
     <view id="view" expansive="true" />
     <hbox>
       <button id="load_pal" text="@.load" minwidth="80" magnet="true" />

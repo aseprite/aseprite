@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -42,6 +43,7 @@ class ResourceListItem : public ui::ListItem {
 
     Resource* selectedResource();
 
+    void markToReload();
     void reload();
 
     obs::signal<void()> FinishLoading;
@@ -57,6 +59,7 @@ class ResourceListItem : public ui::ListItem {
     virtual void onResourceSizeHint(Resource* resource, gfx::Size& size) = 0;
 
   private:
+    void deleteAllChildren();
     void paintResource(ui::Graphics* g, gfx::Rect& bounds, Resource* resource);
     gfx::Size resourceSizeHint(Resource* resource);
 
@@ -65,10 +68,10 @@ class ResourceListItem : public ui::ListItem {
 
     std::unique_ptr<ResourcesLoader> m_resourcesLoader;
     ui::Timer m_resourcesTimer;
-    bool m_reload;
+    bool m_reloadOnOpen = false;
 
     class LoadingItem;
-    LoadingItem* m_loadingItem;
+    LoadingItem* m_loadingItem = nullptr;
   };
 
 } // namespace app

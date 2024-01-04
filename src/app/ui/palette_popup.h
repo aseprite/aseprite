@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021-2022  Igara Studio S.A.
+// Copyright (C) 2021-2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -31,8 +31,11 @@ namespace app {
                    const gfx::Rect& buttonPos);
 
   protected:
+    bool onProcessMessage(ui::Message* msg) override;
+
     void onPalChange(const doc::Palette* palette);
     void onSearchChange();
+    void onRefresh();
     void onLoadPal();
     void onOpenFolder();
 

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2022  Igara Studio S.A.
+// Copyright (C) 2020-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -111,8 +111,6 @@ private:
 ResourcesListBox::ResourcesListBox(ResourcesLoader* resourcesLoader)
   : m_resourcesLoader(resourcesLoader)
   , m_resourcesTimer(100)
-  , m_reload(false)
-  , m_loadingItem(nullptr)
 {
   m_resourcesTimer.Tick.connect([this]{ onTick(); });
 }
@@ -125,7 +123,24 @@ Resource* ResourcesListBox::selectedResource()
     return nullptr;
 }
 
+void ResourcesListBox::markToReload()
+{
+  deleteAllChildren();
+  m_reloadOnOpen = true;
+}
+
 void ResourcesListBox::reload()
+{
+  deleteAllChildren();
+
+  ASSERT(m_resourcesLoader);
+  if (m_resourcesLoader) {
+    m_resourcesLoader->reload();
+    m_resourcesTimer.start();
+  }
+}
+
+void ResourcesListBox::deleteAllChildren()
 {
   auto children = this->children(); // Create a copy because we'll
                                     // modify the list in the for()
@@ -136,8 +151,6 @@ void ResourcesListBox::reload()
     if (dynamic_cast<ResourceListItem*>(child))
       delete child;
   }
-
-  m_reload = true;
 }
 
 void ResourcesListBox::paintResource(Graphics* g, gfx::Rect& bounds, Resource* resource)
@@ -157,12 +170,15 @@ bool ResourcesListBox::onProcessMessage(ui::Message* msg)
   switch (msg->type()) {
 
     case kOpenMessage: {
-      if (m_reload) {
-        m_reload = false;
-        m_resourcesLoader->reload();
+      if (m_reloadOnOpen) {
+        m_reloadOnOpen = false;
+        reload();
       }
-
-      m_resourcesTimer.start();
+      else {
+        // Start timer to fill the list box with the current resource
+        // loader state.
+        m_resourcesTimer.start();
+      }
       break;
     }
 
