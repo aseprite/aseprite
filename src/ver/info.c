@@ -1,5 +1,5 @@
 /* Aseprite
-   Copyright (C) 2020-2022  Igara Studio S.A.
+   Copyright (C) 2020-2024  Igara Studio S.A.
 
    This program is distributed under the terms of
    the End-User License Agreement for Aseprite.  */
@@ -8,7 +8,7 @@
 #include "generated_version.h"  /* It defines the VERSION macro */
 
 #define PACKAGE                 "Aseprite"
-#define COPYRIGHT               "Copyright (C) 2001-2022 Igara Studio S.A."
+#define COPYRIGHT               "Copyright (C) 2001-2024 Igara Studio S.A."
 
 #if defined(_WIN32) || defined(__APPLE__)
   #define HTTP                  "https"
