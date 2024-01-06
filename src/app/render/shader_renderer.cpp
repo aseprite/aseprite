@@ -423,7 +423,7 @@ void ShaderRenderer::drawImage(SkCanvas* canvas,
   switch (srcImage->colorMode()) {
 
     case doc::ColorMode::RGB: {
-      auto skImg = SkImage::MakeRasterData(
+      auto skImg = SkImages::RasterFromData(
         SkImageInfo::Make(srcImage->width(),
                           srcImage->height(),
                           kRGBA_8888_SkColorType,
@@ -444,7 +444,7 @@ void ShaderRenderer::drawImage(SkCanvas* canvas,
 
     case doc::ColorMode::GRAYSCALE: {
       // We use kR8G8_unorm_SkColorType to access gray and alpha
-      auto skImg = SkImage::MakeRasterData(
+      auto skImg = SkImages::RasterFromData(
         SkImageInfo::Make(srcImage->width(),
                           srcImage->height(),
                           kR8G8_unorm_SkColorType,
@@ -472,7 +472,7 @@ void ShaderRenderer::drawImage(SkCanvas* canvas,
 
     case doc::ColorMode::INDEXED: {
       // We use kAlpha_8_SkColorType to access to the index value through the alpha channel
-      auto skImg = SkImage::MakeRasterData(
+      auto skImg = SkImages::RasterFromData(
         SkImageInfo::Make(srcImage->width(),
                           srcImage->height(),
                           kAlpha_8_SkColorType,
@@ -486,7 +486,7 @@ void ShaderRenderer::drawImage(SkCanvas* canvas,
       auto skPalData = SkData::MakeWithoutCopy(
         (const void*)m_palette.rawColorsData(),
         palSize);
-      auto skPal = SkImage::MakeRasterData(
+      auto skPal = SkImages::RasterFromData(
         SkImageInfo::Make(m_palette.size(), 1,
                           kRGBA_8888_SkColorType,
                           kUnpremul_SkAlphaType),

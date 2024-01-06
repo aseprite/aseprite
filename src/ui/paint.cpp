@@ -14,6 +14,8 @@
 
 #if LAF_SKIA
   #include "include/core/SkBitmap.h"
+  #include "include/core/SkShader.h"
+  #include "include/core/SkTileMode.h"
 #endif
 
 namespace ui {

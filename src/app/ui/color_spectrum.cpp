@@ -40,16 +40,16 @@ ColorSpectrum::ColorSpectrum()
 const char* ColorSpectrum::getMainAreaShader()
 {
   if (m_mainShader.empty()) {
-    m_mainShader += "uniform half3 iRes;"
-                    "uniform half4 iHsl;";
-    m_mainShader += kHSL_to_RGB_sksl;
     m_mainShader += R"(
+uniform half3 iRes;
+uniform half4 iHsl;
+
 half4 main(vec2 fragcoord) {
  vec2 d = fragcoord.xy / iRes.xy;
  half hue = d.x;
  half sat = iHsl.y;
  half lit = 1.0 - d.y;
- return hsl_to_rgb(half3(hue, sat, lit)).rgb1;
+ return $hsl_to_rgb(half3(hue, sat, lit)).rgb1;
 }
 )";
   }
@@ -59,13 +59,13 @@ half4 main(vec2 fragcoord) {
 const char* ColorSpectrum::getBottomBarShader()
 {
   if (m_bottomShader.empty()) {
-    m_bottomShader += "uniform half3 iRes;"
-                      "uniform half4 iHsl;";
-    m_bottomShader += kHSL_to_RGB_sksl;
     m_bottomShader += R"(
+uniform half3 iRes;
+uniform half4 iHsl;
+
 half4 main(vec2 fragcoord) {
  half s = (fragcoord.x / iRes.x);
- return hsl_to_rgb(half3(iHsl.x, s, iHsl.z)).rgb1;
+ return $hsl_to_rgb(half3(iHsl.x, s, iHsl.z)).rgb1;
 }
 )";
   }

@@ -15,9 +15,6 @@
 
 #include "include/core/SkM44.h"
 
-// To include kRGB_to_HSL_sksl and kHSL_to_RGB_sksl
-#include "src/core/SkRuntimeEffectPriv.h"
-
 namespace app {
 
 // rgb_to_hsl() and hsv_to_hsl() functions by Sam Hocevar licensed
