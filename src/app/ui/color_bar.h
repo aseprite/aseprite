@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -132,6 +132,7 @@ namespace app {
 
   protected:
     void onSizeHint(ui::SizeHintEvent& ev) override;
+    void onResize(ui::ResizeEvent& ev) override;
     void onAppPaletteChange();
     void onFocusPaletteView(ui::Message* msg);
     void onFocusTilesView(ui::Message* msg);
