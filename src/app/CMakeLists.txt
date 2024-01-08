@@ -327,6 +327,7 @@ if(ENABLE_UI)
     commands/tileset_mode.cpp
     commands/toggle_other_layers_opacity.cpp
     commands/toggle_play_option.cpp
+    commands/toggle_workspace_layout.cpp
     file_selector.cpp
     modules/gfx.cpp
     modules/gui.cpp
