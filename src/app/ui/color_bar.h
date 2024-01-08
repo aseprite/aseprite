@@ -136,6 +136,7 @@ public:
 
 protected:
   void onSizeHint(ui::SizeHintEvent& ev) override;
+  void onResize(ui::ResizeEvent& ev) override;
   void onAppPaletteChange();
   void onFocusPaletteView(ui::Message* msg);
   void onFocusTilesView(ui::Message* msg);
