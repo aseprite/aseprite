@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -59,6 +59,7 @@ public:
 
   // TODO refactor: remove the get prefix from these functions
   MainMenuBar* getMenuBar() { return m_menuBar.get(); }
+  LayoutSelector* layoutSelector() { return m_layoutSelector.get(); }
   ContextBar* getContextBar() { return m_contextBar.get(); }
   StatusBar* statusBar() { return m_statusBar.get(); }
   WorkspaceTabs* getTabsBar() { return m_tabsBar.get(); }

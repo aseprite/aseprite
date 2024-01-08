@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021-2022  Igara Studio S.A.
+// Copyright (C) 2021-2024  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -48,6 +48,9 @@ public:
   ~LayoutSelector();
 
   void addLayout(const LayoutPtr& layout);
+  void switchSelector();
+  void switchSelectorFromCommand();
+  bool isSelectorVisible() const;
 
   // Dockable impl
   int dockableAt() const override { return ui::TOP | ui::BOTTOM; }
@@ -56,13 +59,13 @@ private:
   void setupTooltips(ui::TooltipManager* tooltipManager);
   void onAnimationFrame() override;
   void onAnimationStop(int animation) override;
-  void switchSelector();
 
   LayoutComboBox m_comboBox;
   IconButton m_button;
   gfx::Size m_startSize;
   gfx::Size m_endSize;
   Layouts m_layouts;
+  bool m_switchComboBoxAfterAni = false;
 };
 
 } // namespace app
