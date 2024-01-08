@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -765,12 +765,17 @@ void Window::limitSize(gfx::Size& size)
 
 void Window::limitPosition(gfx::Rect& rect)
 {
+  auto parent = this->parent();
+  ASSERT(parent);
+  if (!parent)
+    return;
+
   if (rect.y < 0) {
     rect.y = 0;
     rect.h = bounds().h;
   }
   auto titlebarH = childrenBounds().y - bounds().y;
-  auto limitB = parent()->bounds().y2() - titlebarH;
+  auto limitB = parent->bounds().y2() - titlebarH;
   if (rect.y > limitB) {
     rect.y = limitB;
     rect.h = bounds().h;
@@ -781,7 +786,7 @@ void Window::limitPosition(gfx::Rect& rect)
     rect.x = limitL;
     rect.w = bounds().w;
   }
-  auto limitR = parent()->bounds().x2() - border().right();
+  auto limitR = parent->bounds().x2() - border().right();
   if (rect.x > limitR) {
     rect.x = limitR;
     rect.w = bounds().w;
