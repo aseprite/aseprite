@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021-2022  Igara Studio S.A.
+// Copyright (C) 2021-2024  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -26,7 +26,7 @@
 
 #include "new_layout.xml.h"
 
-#define ANI_TICKS 5
+#define ANI_TICKS 2
 
 namespace app {
 
@@ -292,10 +292,20 @@ void LayoutSelector::onAnimationFrame()
 void LayoutSelector::onAnimationStop(int animation)
 {
   switch (animation) {
-    case ANI_EXPANDING: m_comboBox.setSizeHint(m_endSize); break;
+    case ANI_EXPANDING:
+      m_comboBox.setSizeHint(m_endSize);
+      if (m_switchComboBoxAfterAni) {
+        m_switchComboBoxAfterAni = false;
+        m_comboBox.openListBox();
+      }
+      break;
     case ANI_COLLAPSING:
       m_comboBox.setVisible(false);
       m_comboBox.setSizeHint(m_endSize);
+      if (m_switchComboBoxAfterAni) {
+        m_switchComboBoxAfterAni = false;
+        m_comboBox.closeListBox();
+      }
       break;
   }
 
@@ -336,6 +346,17 @@ void LayoutSelector::switchSelector()
 
   m_comboBox.setSizeHint(m_startSize);
   startAnimation((expand ? ANI_EXPANDING : ANI_COLLAPSING), ANI_TICKS);
+}
+
+void LayoutSelector::switchSelectorFromCommand()
+{
+  m_switchComboBoxAfterAni = true;
+  switchSelector();
+}
+
+bool LayoutSelector::isSelectorVisible() const
+{
+  return (m_comboBox.isVisible());
 }
 
 void LayoutSelector::setupTooltips(TooltipManager* tooltipManager)
