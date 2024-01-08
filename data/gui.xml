@@ -175,6 +175,7 @@
         <param name="popup" value="background" />
       </key>
       <key command="ShowExtras" shortcut="Ctrl+H" />
+      <key command="ToggleWorkspaceLayout" shortcut="Shift+W" />
       <!-- Tabs -->
       <key command="GotoNextTab" shortcut="Ctrl+Tab" />
       <key command="GotoPreviousTab" shortcut="Ctrl+Shift+Tab" />
@@ -1002,6 +1003,7 @@
       </menu>
       <menu text="@.view" id="view_menu">
         <item command="DuplicateView" text="@.view_duplicate_view" group="view_new" />
+        <item command="ToggleWorkspaceLayout" text="@.view_workspace_layout" />
         <separator />
         <item command="ShowExtras" text="@.view_show_extras" />
         <menu text="@.view_show" group="view_extras">
