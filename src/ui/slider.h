@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2024  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -35,7 +35,8 @@ namespace ui {
     bool isReadOnly() const { return m_readOnly; }
     void setReadOnly(bool readOnly) { m_readOnly = readOnly; }
 
-    void getSliderThemeInfo(int* min, int* max, int* value) const;
+    virtual void getSliderThemeInfo(int* min, int* max, int* value) const;
+    virtual void updateValue(int value);
 
     std::string convertValueToText(int value) const;
     int convertTextToValue(const std::string& text) const;
@@ -45,6 +46,10 @@ namespace ui {
     obs::signal<void()> SliderReleased;
 
   protected:
+    static int slider_press_x;
+    static int slider_press_value;
+    static bool slider_press_left;
+
     // Events
     bool onProcessMessage(Message* msg) override;
     void onPaint(PaintEvent& ev) override;
