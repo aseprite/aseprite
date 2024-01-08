@@ -1,5 +1,5 @@
 # Aseprite
-# Copyright (C) 2018-2023  Igara Studio S.A.
+# Copyright (C) 2018-2024  Igara Studio S.A.
 # Copyright (C) 2001-2018  David Capello
 
 # Generate a ui::Widget for each widget in a XML file

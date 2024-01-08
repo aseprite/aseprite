@@ -1,5 +1,5 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2020-2023 by Igara Studio S.A. -->
+<!-- Copyright (C) 2020-2024 by Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2016 by David Capello -->
 <gui>
 <window id="cel_properties" text="@.title">

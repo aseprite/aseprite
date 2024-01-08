@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -776,6 +776,9 @@ public:
     }
     update_windows_color_profile_from_preferences();
 
+    m_pref.range.alpha(static_cast<app::gen::AlphaRange>(alpha()->getSelectedItemIndex()));
+    m_pref.range.opacity(static_cast<app::gen::AlphaRange>(opacity()->getSelectedItemIndex()));
+
     // Change sprite grid bounds
     if (m_context &&
         m_context->activeDocument() &&
@@ -1073,6 +1076,9 @@ private:
     filesWithCs()->setEnabled(state);
     missingCsLabel()->setEnabled(state);
     missingCs()->setEnabled(state);
+
+    alpha()->setSelectedItemIndex(static_cast<int>(m_pref.range.alpha()));
+    opacity()->setSelectedItemIndex(static_cast<int>(m_pref.range.opacity()));
   }
 
   void onResetColorManagement() {

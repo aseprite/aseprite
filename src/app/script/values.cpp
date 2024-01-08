@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -334,6 +334,7 @@ FOR_ENUM(app::gen::SymmetryMode)
 FOR_ENUM(app::gen::TimelinePosition)
 FOR_ENUM(app::gen::ToGrayAlgorithm)
 FOR_ENUM(app::gen::WindowColorProfile)
+FOR_ENUM(app::gen::AlphaRange)
 FOR_ENUM(app::tools::ColorFromTo)
 FOR_ENUM(app::tools::DynamicSensor)
 FOR_ENUM(app::tools::FreehandAlgorithm)
