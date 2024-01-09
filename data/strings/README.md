@@ -12,6 +12,10 @@ of several translators:
 
   * Mr.k <mineshtine28546271@gmail.com>
 
+* Azerbaijani
+
+  * Mehrab Poladov <thepoladov@protonmail.com>
+
 * Chinese (Simplified)
 
   * 66six11 <2652915018@qq.com>
@@ -22,6 +26,10 @@ of several translators:
 * Chinese (Traditional)
 
   * Héctor Cortés <frewilfis@protonmail.ch>
+
+* Danish
+
+  * symegac <symmetricalmegalomania@gmail.com>
 
 * French
 
