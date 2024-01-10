@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -17,7 +17,6 @@
 #include "app/color.h"
 #include "app/color_utils.h"
 #include "app/doc.h"
-#include "app/site.h"
 #include "app/snap_to_grid.h"
 #include "app/tools/controller.h"
 #include "app/tools/ink.h"
@@ -25,7 +24,6 @@
 #include "app/tools/point_shape.h"
 #include "app/tools/tool.h"
 #include "app/tools/tool_loop.h"
-#include "app/ui/color_bar.h"
 #include "app/ui/context_bar.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/tool_loop_impl.h"
@@ -165,11 +163,14 @@ void BrushPreview::show(const gfx::Point& screenPos)
 
   tools::Tool* tool = m_editor->getCurrentEditorTool();
   const bool isFloodfill = tool->getPointShape(0)->isFloodFill();
-  // TODO add support for "tile-brushes"
+
+  // Get current tilemap mode
+  const TilemapMode tilemapMode = site.tilemapMode();
+
   gfx::Rect origBrushBounds =
     ((isFloodfill && brush->type() != BrushType::kImageBrushType) ||
-     site.tilemapMode() == TilemapMode::Tiles ? gfx::Rect(0, 0, 1, 1)
-                                              : brush->bounds());
+     tilemapMode == TilemapMode::Tiles ? gfx::Rect(0, 0, 1, 1)
+                                       : brush->bounds());
   gfx::Rect brushBounds = origBrushBounds;
 
   // Cursor in the screen (view)
@@ -187,9 +188,6 @@ void BrushPreview::show(const gfx::Point& screenPos)
 
   // Get the current tool
   tools::Ink* ink = m_editor->getCurrentEditorInk();
-
-  // Get current tilemap mode
-  TilemapMode tilemapMode = ColorBar::instance()->tilemapMode();
 
   // Setup the cursor type depending on several factors (current tool,
   // foreground color, layer transparency, brush size, etc.).
@@ -267,6 +265,12 @@ void BrushPreview::show(const gfx::Point& screenPos)
       break;
   }
 
+  // For tiles as we show the edges of the tile, we add the crosshair
+  // in the mouse position as a helper.
+  if (m_type & BRUSH_BOUNDARIES &&
+      tilemapMode == TilemapMode::Tiles)
+    m_type |= CROSSHAIR;
+
   if (m_type & SELECTION_CROSSHAIR)
     showPreview = false;
 
@@ -293,7 +297,7 @@ void BrushPreview::show(const gfx::Point& screenPos)
       m_type &= ~BRUSH_BOUNDARIES;
   }
   if (m_type & BRUSH_BOUNDARIES)
-    generateBoundaries();
+    generateBoundaries(site, spritePos);
 
   // Draw pixel/brush preview
   if (showPreview) {
@@ -321,7 +325,7 @@ void BrushPreview::show(const gfx::Point& screenPos)
     }
 
     gfx::Rect extraCelBounds;
-    if (site.tilemapMode() == TilemapMode::Tiles) {
+    if (tilemapMode == TilemapMode::Tiles) {
       ASSERT(layer->isTilemap());
       doc::Grid grid = site.grid();
       extraCelBounds = grid.canvasToTile(extraCelBoundsInCanvas);
@@ -347,7 +351,7 @@ void BrushPreview::show(const gfx::Point& screenPos)
       m_extraCel.reset(new ExtraCel);
 
     m_extraCel->create(
-      site.tilemapMode(),
+      tilemapMode,
       document->sprite(),
       extraCelBoundsInCanvas,
       extraCelBounds.size(),
@@ -432,6 +436,9 @@ void BrushPreview::show(const gfx::Point& screenPos)
 
   if (m_type & NATIVE_CROSSHAIR)
     ui::set_mouse_cursor(ui::kCrosshairCursor);
+
+  m_lastLayer = site.layer();
+  m_lastTilemapMode = tilemapMode;
 }
 
 // Cleans the brush cursor from the specified editor.
@@ -512,13 +519,38 @@ void BrushPreview::invalidateRegion(const gfx::Region& region)
   m_clippingRegion.createSubtraction(m_clippingRegion, region);
 }
 
-void BrushPreview::generateBoundaries()
+void BrushPreview::calculateTileBoundariesOrigin(const doc::Grid& grid,
+                                                 const gfx::Point& spritePos)
+{
+  m_brushBoundaries.offset(-m_brushBoundaries.begin()[0].bounds().x,
+                           -m_brushBoundaries.begin()[0].bounds().y);
+  gfx::Point canvasPos = grid.tileToCanvas(grid.canvasToTile(spritePos));
+  m_brushBoundaries.offset(canvasPos.x - spritePos.x,
+                           canvasPos.y - spritePos.y);
+}
+
+void BrushPreview::generateBoundaries(const Site& site,
+                                      const gfx::Point& spritePos)
 {
   BrushRef brush = getCurrentBrush();
+  Layer* currentLayer = site.layer();
+  TilemapMode tilemapMode = site.tilemapMode();
 
-  if (!m_brushBoundaries.isEmpty() &&
-      m_brushGen == brush->gen())
+  if (tilemapMode == TilemapMode::Pixels &&
+      tilemapMode == m_lastTilemapMode &&
+      !m_brushBoundaries.isEmpty() &&
+      m_brushGen == brush->gen()) {
     return;
+  }
+  else if (tilemapMode == TilemapMode::Tiles &&
+           tilemapMode == m_lastTilemapMode &&
+           m_lastLayer == currentLayer) {
+    // When tilemapMode is 'Tiles' is needed an offset
+    // re-calculation of the brush boundaries, even
+    // if it's no need to update the mask.
+    calculateTileBoundariesOrigin(site.grid(), spritePos);
+    return;
+  }
 
   const bool isOnePixel =
     (m_editor->getCurrentEditorTool()->getPointShape(0)->isPixel() ||
@@ -528,7 +560,13 @@ void BrushPreview::generateBoundaries()
 
   Image* mask = nullptr;
   bool deleteMask = true;
-  if (isOnePixel) {
+  if (tilemapMode == TilemapMode::Tiles) {
+    mask = Image::create(IMAGE_BITMAP,
+                         site.grid().tileSize().w,
+                         site.grid().tileSize().h);
+    mask->clear((color_t)1);
+  }
+  else if (isOnePixel) {
     mask = Image::create(IMAGE_BITMAP, 1, 1);
     mask->putPixel(0, 0, (color_t)1);
   }
@@ -539,9 +577,13 @@ void BrushPreview::generateBoundaries()
   }
 
   m_brushBoundaries.regen(mask ? mask: brushImage);
-  if (!isOnePixel)
-    m_brushBoundaries.offset(-brush->center().x,
-                             -brush->center().y);
+  if (tilemapMode == TilemapMode::Pixels) {
+    if (!isOnePixel)
+      m_brushBoundaries.offset(-brush->center().x,
+                               -brush->center().y);
+  }
+  else
+    calculateTileBoundariesOrigin(site.grid(), spritePos);
 
   if (deleteMask)
     delete mask;
