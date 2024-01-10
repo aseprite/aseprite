@@ -43,10 +43,10 @@
     </hbox>
 
     <label text="@.opacity" />
-    <slider min="0" max="255" id="opacity" cell_align="horizontal" width="128" />
+    <opacityslider id="opacity" cell_align="horizontal" width="128" />
 
     <label text="@.opacity_step" />
-    <slider min="0" max="255" id="opacity_step" cell_align="horizontal" width="128" />
+    <opacityslider id="opacity_step" cell_align="horizontal" width="128" />
 
     <check id="loop_tag" text="@.loop_tags" cell_hspan="2" />
     <check id="current_layer" text="@.current_layer" cell_hspan="2" />

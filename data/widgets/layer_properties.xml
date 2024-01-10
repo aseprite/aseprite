@@ -14,7 +14,7 @@
       <button id="tileset" icon="tiles" tooltip="@.tileset_tooltip" />
 
       <label text="@.opacity" />
-      <slider id="opacity" min="0" max="255" width="128" cell_align="horizontal" cell_hspan="2" />
+      <opacityslider id="opacity" width="128" cell_align="horizontal" cell_hspan="2" />
     </grid>
   </vbox>
 </window>
