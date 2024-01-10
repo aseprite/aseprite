@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -34,6 +34,7 @@ namespace ui {
 
 namespace app {
   class Editor;
+  class Site;
 
   class BrushPreview {
   public:
@@ -90,7 +91,13 @@ namespace app {
     doc::BrushRef getCurrentBrush();
     static doc::color_t getBrushColor(doc::Sprite* sprite, doc::Layer* layer);
 
-    void generateBoundaries();
+    // Offset re-calculation of brush boundaries only for TilemapMode::Tiles.
+    // Used within 'generateBoundaries' function.
+    void calculateTileBoundariesOrigin(const doc::Grid& grid,
+                                       const gfx::Point& spritePos);
+
+    void generateBoundaries(const Site& site,
+                            const gfx::Point& spritePos);
 
     // Creates a little native cursor to draw the CROSSHAIR
     void createCrosshairCursor(ui::Graphics* g, const gfx::Color cursorColor);
@@ -140,6 +147,9 @@ namespace app {
     // brush preview in the exact same place.
     gfx::Rect m_lastBounds;
     doc::frame_t m_lastFrame;
+
+    doc::Layer* m_lastLayer = nullptr;
+    TilemapMode m_lastTilemapMode;
 
     ExtraCelRef m_extraCel;
   };
