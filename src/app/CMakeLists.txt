@@ -336,6 +336,7 @@ if(ENABLE_UI)
     file_selector.cpp
     modules/gfx.cpp
     modules/gui.cpp
+    ui/alpha_entry.cpp
     ui/alpha_slider.cpp
     ui/app_menuitem.cpp
     ui/backup_indicator.cpp

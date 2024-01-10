@@ -36,13 +36,13 @@ IntEntry::IntEntry(int min, int max, SliderDelegate* sliderDelegate)
   : Entry(int(std::floor(std::log10(double(max))))+1, "")
   , m_min(min)
   , m_max(max)
-  , m_slider(m_min, m_max, m_min, sliderDelegate)
   , m_popupWindow(nullptr)
   , m_changeFromSlider(false)
 {
-  m_slider.setFocusStop(false); // In this way the IntEntry doesn't lost the focus
-  m_slider.setTransparent(true);
-  m_slider.Change.connect(&IntEntry::onChangeSlider, this);
+  m_slider = std::make_unique<Slider>(m_min, m_max, m_min, sliderDelegate);
+  m_slider->setFocusStop(false); // In this way the IntEntry doesn't lost the focus
+  m_slider->setTransparent(true);
+  m_slider->Change.connect(&IntEntry::onChangeSlider, this);
   initTheme();
 }
 
@@ -53,7 +53,7 @@ IntEntry::~IntEntry()
 
 int IntEntry::getValue() const
 {
-  int value = m_slider.convertTextToValue(text());
+  int value = m_slider->convertTextToValue(text());
   return std::clamp(value, m_min, m_max);
 }
 
@@ -61,10 +61,10 @@ void IntEntry::setValue(int value)
 {
   value = std::clamp(value, m_min, m_max);
 
-  setText(m_slider.convertValueToText(value));
+  setText(m_slider->convertValueToText(value));
 
   if (m_popupWindow && !m_changeFromSlider)
-    m_slider.setValue(value);
+    m_slider->setValue(value);
 
   onValueChange();
 }
@@ -92,7 +92,7 @@ bool IntEntry::onProcessMessage(Message* msg)
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
         Widget* pick = manager()->pickFromScreenPos(
           display()->nativeWindow()->pointToScreen(mouseMsg->position()));
-        if (pick == &m_slider) {
+        if (pick == m_slider.get()) {
           releaseMouse();
 
           MouseMessage mouseMsg2(kMouseDownMessage,
@@ -140,7 +140,7 @@ bool IntEntry::onProcessMessage(Message* msg)
 void IntEntry::onInitTheme(InitThemeEvent& ev)
 {
   Entry::onInitTheme(ev);
-  m_slider.initTheme();       // The slider might not be in the popup window
+  m_slider->initTheme();       // The slider might not be in the popup window
   if (m_popupWindow)
     m_popupWindow->initTheme();
 }
@@ -150,8 +150,8 @@ void IntEntry::onSizeHint(SizeHintEvent& ev)
   int trailing = font()->textLength(getSuffix());
   trailing = std::max(trailing, 2*theme()->getEntryCaretSize(this).w);
 
-  int min_w = font()->textLength(m_slider.convertValueToText(m_min));
-  int max_w = font()->textLength(m_slider.convertValueToText(m_max)) + trailing;
+  int min_w = font()->textLength(m_slider->convertValueToText(m_min));
+  int max_w = font()->textLength(m_slider->convertValueToText(m_max)) + trailing;
 
   int w = std::max(min_w, max_w);
   int h = textHeight();
@@ -175,7 +175,7 @@ void IntEntry::onValueChange()
 
 void IntEntry::openPopup()
 {
-  m_slider.setValue(getValue());
+  m_slider->setValue(getValue());
 
   // We weren't able to reproduce it, but there are crash reports
   // where this openPopup() function is called and the popup is still
@@ -186,7 +186,7 @@ void IntEntry::openPopup()
 
   m_popupWindow = std::make_unique<TransparentPopupWindow>(PopupWindow::ClickBehavior::CloseOnClickInOtherWindow);
   m_popupWindow->setAutoRemap(false);
-  m_popupWindow->addChild(&m_slider);
+  m_popupWindow->addChild(m_slider.get());
   m_popupWindow->Close.connect(&IntEntry::onPopupClose, this);
 
   fit_bounds(
@@ -229,7 +229,7 @@ void IntEntry::closePopup()
 void IntEntry::onChangeSlider()
 {
   base::ScopedValue lockFlag(m_changeFromSlider, true);
-  setValue(m_slider.getValue());
+  setValue(m_slider->getValue());
   selectAllText();
 }
 
@@ -244,8 +244,8 @@ void IntEntry::onPopupClose(CloseEvent& ev)
 void IntEntry::removeSlider()
 {
   if (m_popupWindow &&
-      m_slider.parent() == m_popupWindow.get()) {
-    m_popupWindow->removeChild(&m_slider);
+      m_slider->parent() == m_popupWindow.get()) {
+    m_popupWindow->removeChild(m_slider.get());
   }
 }
 
