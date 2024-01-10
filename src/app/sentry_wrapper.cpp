@@ -99,7 +99,29 @@ bool Sentry::areThereCrashesToReport()
 
   // As we don't use sentry_clear_crashed_last_run(), this will
   // return 1 if the last run (or any previous run) has crashed.
-  return (sentry_get_crashed_last_run() == 1);
+  if (sentry_get_crashed_last_run() == 1)
+    return true;
+
+  // If the last_crash file exists, we can say that there are
+  // something to report (this file is created on Windows and Linux).
+  if (base::is_file(base::join_path(m_dbdir, "last_crash")))
+    return true;
+
+  // At least one .dmp file in the completed/ directory means that
+  // there was at least one crash in the past (this is for macOS).
+  for (auto f : base::list_files(base::join_path(m_dbdir, "completed"))) {
+    if (base::get_file_extension(f) == "dmp")
+      return true;
+  }
+
+  // In case that "last_crash" doesn't exist we can check for some
+  // .dmp file in the reports/ directory (it looks like the completed/
+  // directory is not generated on Windows).
+  for (auto f : base::list_files(base::join_path(m_dbdir, "reports"))) {
+    if (base::get_file_extension(f) == "dmp")
+      return true;
+  }
+  return false;
 }
 
 // static
