@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022  Igara Studio S.A.
+// Copyright (C) 2022-2024  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -144,17 +144,20 @@ static void load_dock_layout(const TiXmlElement* elem, Dock* dock)
 LayoutPtr Layout::MakeFromXmlElement(const TiXmlElement* layoutElem)
 {
   auto layout = std::make_shared<Layout>();
-  if (auto name = layoutElem->Attribute("name"))
+  if (auto name = layoutElem->Attribute("name")) {
+    layout->m_id = name;
     layout->m_name = name;
+  }
 
   layout->m_elem.reset(layoutElem->Clone()->ToElement());
   return layout;
 }
 
 // static
-LayoutPtr Layout::MakeFromDock(const std::string& name, const Dock* dock)
+LayoutPtr Layout::MakeFromDock(const std::string& id, const std::string& name, const Dock* dock)
 {
   auto layout = std::make_shared<Layout>();
+  layout->m_id = id;
   layout->m_name = name;
 
   layout->m_elem = std::make_unique<TiXmlElement>("layout");
@@ -162,6 +165,16 @@ LayoutPtr Layout::MakeFromDock(const std::string& name, const Dock* dock)
   save_dock_layout(layout->m_elem.get(), dock);
 
   return layout;
+}
+
+bool Layout::matchId(const std::string& id) const
+{
+  if (m_id == id)
+    return true;
+  else if ((m_id.empty() && id == kDefault) || (m_id == kDefault && id.empty()))
+    return true;
+  else
+    return false;
 }
 
 bool Layout::loadLayout(Dock* dock) const

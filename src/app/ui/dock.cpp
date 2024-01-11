@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021-2022  Igara Studio S.A.
+// Copyright (C) 2021-2024  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -349,6 +349,7 @@ bool Dock::onProcessMessage(ui::Message* msg)
     case kMouseUpMessage: {
       if (hasCapture()) {
         releaseMouse();
+        onUserResizedDock();
       }
       break;
     }
@@ -375,6 +376,20 @@ bool Dock::onProcessMessage(ui::Message* msg)
     }
   }
   return Widget::onProcessMessage(msg);
+}
+
+void Dock::onUserResizedDock()
+{
+  // Generate the UserResizedDock signal, this can be used to know
+  // when the user modified the dock configuration to save the new
+  // layout in a user/preference file.
+  UserResizedDock();
+
+  // Send the same notification for the parent (as probably eh
+  // MainWindow is listening the signal of just the root dock).
+  if (auto parentDock = dynamic_cast<Dock*>(parent())) {
+    parentDock->onUserResizedDock();
+  }
 }
 
 void Dock::setSide(const int i, Widget* newWidget)

@@ -47,7 +47,11 @@ public:
   LayoutSelector(ui::TooltipManager* tooltipManager);
   ~LayoutSelector();
 
+  LayoutPtr activeLayout();
+  std::string activeLayoutId() const { return m_activeLayoutId; }
+
   void addLayout(const LayoutPtr& layout);
+  void updateActiveLayout(const LayoutPtr& layout);
   void switchSelector();
   void switchSelectorFromCommand();
   bool isSelectorVisible() const;
@@ -57,9 +61,11 @@ public:
 
 private:
   void setupTooltips(ui::TooltipManager* tooltipManager);
+  LayoutItem* getItemByLayoutId(const std::string& id);
   void onAnimationFrame() override;
   void onAnimationStop(int animation) override;
 
+  std::string m_activeLayoutId;
   LayoutComboBox m_comboBox;
   IconButton m_button;
   gfx::Size m_startSize;

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2022  Igara Studio S.A.
+// Copyright (c) 2022-2024  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -21,6 +21,8 @@ public:
   ~Layouts();
 
   size_t size() const { return m_layouts.size(); }
+
+  LayoutPtr getById(const std::string& id) const;
 
   // Returns true if the layout is added, or false if it was
   // replaced.
