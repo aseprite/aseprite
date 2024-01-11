@@ -18,7 +18,6 @@
 #include "app/ui/main_window.h"
 #include "app/ui/separator_in_view.h"
 #include "app/ui/skin/skin_theme.h"
-#include "fmt/format.h"
 #include "ui/entry.h"
 #include "ui/listitem.h"
 #include "ui/tooltips.h"
@@ -127,26 +126,35 @@ private:
 
 class LayoutSelector::LayoutItem : public ListItem {
 public:
-  enum LayoutId {
+  enum LayoutOption {
     DEFAULT,
-    DEFAULT_MIRROR,
-    SAVE_LAYOUT,
+    MIRRORED_DEFAULT,
     USER_DEFINED,
+    NEW_LAYOUT,
   };
 
   LayoutItem(LayoutSelector* selector,
-             const LayoutId id,
+             const LayoutOption option,
              const std::string& text,
-             const LayoutPtr layout = nullptr)
+             const LayoutPtr layout)
     : ListItem(text)
-    , m_id(id)
+    , m_option(option)
     , m_selector(selector)
     , m_layout(layout)
   {
-    ASSERT((id != USER_DEFINED && layout == nullptr) || (id == USER_DEFINED && layout != nullptr));
   }
 
-  Layout* layout() const { return m_layout.get(); }
+  std::string getLayoutId() const
+  {
+    if (m_layout)
+      return m_layout->id();
+    else
+      return std::string();
+  }
+
+  bool matchId(const std::string& id) const { return (m_layout && m_layout->matchId(id)); }
+
+  const LayoutPtr& layout() const { return m_layout; }
 
   void setLayout(const LayoutPtr& layout) { m_layout = layout; }
 
@@ -154,26 +162,25 @@ public:
   {
     MainWindow* win = App::instance()->mainWindow();
 
-    switch (m_id) {
-      case LayoutId::DEFAULT:        win->setDefaultLayout(); break;
-      case LayoutId::DEFAULT_MIRROR: win->setDefaultMirrorLayout(); break;
-      case LayoutId::USER_DEFINED:
-        ASSERT(m_layout);
-        if (m_layout)
-          win->loadUserLayout(m_layout.get());
-        break;
-      default:
-        // Do nothing
-        break;
+    if (m_layout)
+      m_selector->m_activeLayoutId = m_layout->id();
+
+    switch (m_option) {
+      case LayoutOption::DEFAULT:          win->setDefaultLayout(); break;
+      case LayoutOption::MIRRORED_DEFAULT: win->setMirroredDefaultLayout(); break;
     }
+    // Even Default & Mirrored Default can have a customized layout
+    // (customized default layout).
+    if (m_layout)
+      win->loadUserLayout(m_layout.get());
   }
 
   void selectAfterClose()
   {
     MainWindow* win = App::instance()->mainWindow();
 
-    switch (m_id) {
-      case LayoutId::SAVE_LAYOUT: {
+    switch (m_option) {
+      case LayoutOption::NEW_LAYOUT: {
         // Select the "Layout" separator (it's like selecting nothing)
         // TODO improve the ComboBox to select a real "nothing" (with
         //      a placeholder text)
@@ -183,14 +190,13 @@ public:
         LayoutsEntry name(m_selector->m_layouts);
         name.getEntryWidget()->setMaxTextLength(128);
         name.setFocusMagnet(true);
-        name.setValue(fmt::format("{} ({})",
-                                  Strings::new_layout_default_name(),
-                                  m_selector->m_layouts.size() + 1));
+        name.setValue(Strings::new_layout_default_name(m_selector->m_layouts.size() + 1));
 
         window.namePlaceholder()->addChild(&name);
         window.openWindowInForeground();
         if (window.closer() == window.ok()) {
-          auto layout = Layout::MakeFromDock(name.getValue(), win->customizableDock());
+          auto layout =
+            Layout::MakeFromDock(name.getValue(), name.getValue(), win->customizableDock());
 
           m_selector->addLayout(layout);
         }
@@ -203,7 +209,7 @@ public:
   }
 
 private:
-  LayoutId m_id;
+  LayoutOption m_option;
   LayoutSelector* m_selector;
   LayoutPtr m_layout;
 };
@@ -229,6 +235,8 @@ void LayoutSelector::LayoutComboBox::onCloseListBox()
 LayoutSelector::LayoutSelector(TooltipManager* tooltipManager)
   : m_button(SkinTheme::instance()->parts.iconUserData())
 {
+  m_activeLayoutId = Preferences::instance().general.workspaceLayout();
+
   m_button.Click.connect([this]() { switchSelector(); });
 
   m_comboBox.setVisible(false);
@@ -248,16 +256,25 @@ LayoutSelector::LayoutSelector(TooltipManager* tooltipManager)
 
 LayoutSelector::~LayoutSelector()
 {
+  Preferences::instance().general.workspaceLayout(m_activeLayoutId);
+
   stopAnimation();
+}
+
+LayoutPtr LayoutSelector::activeLayout()
+{
+  return m_layouts.getById(m_activeLayoutId);
 }
 
 void LayoutSelector::addLayout(const LayoutPtr& layout)
 {
   bool added = m_layouts.addLayout(layout);
   if (added) {
-    auto item = m_comboBox.addItem(
-      new LayoutItem(this, LayoutItem::USER_DEFINED, layout->name(), layout));
-    m_comboBox.setSelectedItemIndex(item);
+    auto item = new LayoutItem(this, LayoutItem::USER_DEFINED, layout->name(), layout);
+    m_comboBox.insertItem(m_comboBox.getItemCount() - 1, // Above the "New Layout" item
+                          item);
+
+    m_comboBox.setSelectedItem(item);
   }
   else {
     for (auto item : m_comboBox) {
@@ -270,6 +287,15 @@ void LayoutSelector::addLayout(const LayoutPtr& layout)
       }
     }
   }
+}
+
+void LayoutSelector::updateActiveLayout(const LayoutPtr& newLayout)
+{
+  bool result = m_layouts.addLayout(newLayout);
+
+  // It means that the layout wasn't added, but replaced, when we
+  // update a layout it must be existent in the m_layouts collection.
+  ASSERT(result == false);
 }
 
 void LayoutSelector::onAnimationFrame()
@@ -321,16 +347,23 @@ void LayoutSelector::switchSelector()
 
     // Create the combobox for first time
     if (m_comboBox.getItemCount() == 0) {
-      m_comboBox.addItem(new SeparatorInView("Layout", HORIZONTAL));
-      m_comboBox.addItem(new LayoutItem(this, LayoutItem::DEFAULT, "Default"));
-      m_comboBox.addItem(new LayoutItem(this, LayoutItem::DEFAULT_MIRROR, "Default / Mirror"));
-      m_comboBox.addItem(new SeparatorInView("Timeline", HORIZONTAL));
+      m_comboBox.addItem(new SeparatorInView(Strings::main_window_layout(), HORIZONTAL));
+      m_comboBox.addItem(new LayoutItem(this,
+                                        LayoutItem::DEFAULT,
+                                        Strings::main_window_default_layout(),
+                                        m_layouts.getById(Layout::kDefault)));
+      m_comboBox.addItem(new LayoutItem(this,
+                                        LayoutItem::MIRRORED_DEFAULT,
+                                        Strings::main_window_mirrored_default_layout(),
+                                        m_layouts.getById(Layout::kMirroredDefault)));
+      m_comboBox.addItem(new SeparatorInView(Strings::main_window_timeline(), HORIZONTAL));
       m_comboBox.addItem(new TimelineButtons());
-      m_comboBox.addItem(new SeparatorInView("User Layouts", HORIZONTAL));
-      m_comboBox.addItem(new LayoutItem(this, LayoutItem::SAVE_LAYOUT, "Save..."));
+      m_comboBox.addItem(new SeparatorInView(Strings::main_window_user_layouts(), HORIZONTAL));
       for (const auto& layout : m_layouts) {
         m_comboBox.addItem(new LayoutItem(this, LayoutItem::USER_DEFINED, layout->name(), layout));
       }
+      m_comboBox.addItem(
+        new LayoutItem(this, LayoutItem::NEW_LAYOUT, Strings::main_window_new_layout(), nullptr));
     }
 
     m_comboBox.setVisible(true);
@@ -343,6 +376,9 @@ void LayoutSelector::switchSelector()
     m_startSize = m_comboBox.bounds().size();
     m_endSize = gfx::Size(0, 0);
   }
+
+  if (auto item = getItemByLayoutId(m_activeLayoutId))
+    m_comboBox.setSelectedItem(item);
 
   m_comboBox.setSizeHint(m_startSize);
   startAnimation((expand ? ANI_EXPANDING : ANI_COLLAPSING), ANI_TICKS);
@@ -362,6 +398,17 @@ bool LayoutSelector::isSelectorVisible() const
 void LayoutSelector::setupTooltips(TooltipManager* tooltipManager)
 {
   tooltipManager->addTooltipFor(&m_button, Strings::main_window_layout(), TOP);
+}
+
+LayoutSelector::LayoutItem* LayoutSelector::getItemByLayoutId(const std::string& id)
+{
+  for (auto child : m_comboBox) {
+    if (auto item = dynamic_cast<LayoutItem*>(child)) {
+      if (item->matchId(id))
+        return item;
+    }
+  }
+  return nullptr;
 }
 
 } // namespace app
