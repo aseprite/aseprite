@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2022  Igara Studio S.A.
+// Copyright (c) 2022-2024  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -38,10 +38,18 @@ Layouts::~Layouts()
     save(m_userLayoutsFilename);
 }
 
+LayoutPtr Layouts::getById(const std::string& id) const
+{
+  auto it = std::find_if(m_layouts.begin(), m_layouts.end(), [&id](const LayoutPtr& l) {
+    return l->matchId(id);
+  });
+  return (it != m_layouts.end() ? *it : nullptr);
+}
+
 bool Layouts::addLayout(const LayoutPtr& layout)
 {
   auto it = std::find_if(m_layouts.begin(), m_layouts.end(), [layout](const LayoutPtr& l) {
-    return l->name() == layout->name();
+    return l->matchId(layout->id());
   });
   if (it != m_layouts.end()) {
     *it = layout; // Replace existent layout

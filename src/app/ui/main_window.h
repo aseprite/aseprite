@@ -93,7 +93,7 @@ public:
   void popTimeline();
 
   void setDefaultLayout();
-  void setDefaultMirrorLayout();
+  void setMirroredDefaultLayout();
   void loadUserLayout(const Layout* layout);
   const Dock* customizableDock() const { return m_customizableDock; }
 
@@ -136,6 +136,7 @@ private:
   void configureWorkspaceLayout();
   void saveTimelineConfiguration();
   void saveColorBarConfiguration();
+  void saveActiveLayout();
 
   ui::TooltipManager* m_tooltipManager;
   Dock* m_dock;
@@ -161,6 +162,7 @@ private:
 #endif
   obs::scoped_connection m_timelineResizeConn;
   obs::scoped_connection m_colorBarResizeConn;
+  obs::scoped_connection m_saveDockLayoutConn;
 };
 
 } // namespace app

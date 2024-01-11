@@ -44,6 +44,7 @@
 #include "os/event.h"
 #include "os/event_queue.h"
 #include "os/system.h"
+#include "ui/app_state.h"
 #include "ui/drag_event.h"
 #include "ui/message.h"
 #include "ui/splitter.h"
@@ -183,7 +184,13 @@ void MainWindow::initialize()
   m_dock->top()->dock(ui::CENTER, m_menuBar.get());
   m_dock->dock(ui::CENTER, m_customizableDockPlaceholder.get());
 
+  // After the user resizes the dock we save the updated layout
+  m_saveDockLayoutConn = m_customizableDock->UserResizedDock.connect(
+    [this] { saveActiveLayout(); });
+
   setDefaultLayout();
+  if (LayoutPtr layout = m_layoutSelector->activeLayout())
+    loadUserLayout(layout.get());
 
   // Reconfigure workspace when the timeline position is changed.
   auto& pref = Preferences::instance();
@@ -204,6 +211,7 @@ MainWindow::~MainWindow()
 {
   m_timelineResizeConn.disconnect();
   m_colorBarResizeConn.disconnect();
+  m_saveDockLayoutConn.disconnect();
 
   m_dock->resetDocks();
   m_customizableDock->resetDocks();
@@ -408,7 +416,7 @@ void MainWindow::setDefaultLayout()
   configureWorkspaceLayout();
 }
 
-void MainWindow::setDefaultMirrorLayout()
+void MainWindow::setMirroredDefaultLayout()
 {
   m_timelineResizeConn.disconnect();
   m_colorBarResizeConn.disconnect();
@@ -495,6 +503,11 @@ void MainWindow::onBeforeViewChange()
 // inform to the UIContext that the current view has changed.
 void MainWindow::onActiveViewChange()
 {
+  // If we are closing the app, we just ignore all view changes (as
+  // docs will be destroyed and views closed).
+  if (get_app_state() != AppState::kNormal)
+    return;
+
   // First we have to configure the MainWindow layout (e.g. show
   // Timeline if needed) as UIContext::setActiveView() will configure
   // several widgets (calling updateUsingEditor() functions) using the
@@ -769,6 +782,15 @@ void MainWindow::saveColorBarConfiguration()
   set_config_double(kLegacyLayoutMainWindowSection,
                     kLegacyLayoutColorBarSplitter,
                     m_colorBar->bounds().w);
+}
+
+void MainWindow::saveActiveLayout()
+{
+  ASSERT(m_layoutSelector);
+
+  auto id = m_layoutSelector->activeLayoutId();
+  auto layout = Layout::MakeFromDock(id, id, m_customizableDock);
+  m_layoutSelector->updateActiveLayout(layout);
 }
 
 } // namespace app

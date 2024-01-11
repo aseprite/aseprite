@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021-2022  Igara Studio S.A.
+// Copyright (C) 2021-2024  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -58,6 +58,7 @@ public:
   gfx::Size getUserDefinedSizeAtSide(int side) const;
 
   obs::signal<void()> Resize;
+  obs::signal<void()> UserResizedDock;
 
 protected:
   void onSizeHint(ui::SizeHintEvent& ev) override;
@@ -65,6 +66,7 @@ protected:
   void onPaint(ui::PaintEvent& ev) override;
   void onInitTheme(ui::InitThemeEvent& ev) override;
   bool onProcessMessage(ui::Message* msg) override;
+  void onUserResizedDock();
 
 private:
   void setSide(const int i, ui::Widget* newWidget);
