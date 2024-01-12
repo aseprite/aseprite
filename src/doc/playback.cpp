@@ -244,6 +244,8 @@ bool Playback::handleExitFrame(const frame_t frameDelta)
           }
           break;
         }
+        else if (m_playMode == PlayAll)
+          break;
       }
 
       if (frameDelta > 0 && m_frame == m_sprite->lastFrame()) {
