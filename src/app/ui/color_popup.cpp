@@ -188,6 +188,7 @@ ColorPopup::ColorPopup(const ColorButtonOptions& options)
   if (options.showSimpleColors) {
     if (!g_simplePal) {
       ResourceFinder rf;
+      rf.includeUserDir("palettes/tags.gpl");
       rf.includeDataDir("palettes/tags.gpl");
       if (rf.findFirst())
         g_simplePal = load_palette(rf.filename().c_str());
