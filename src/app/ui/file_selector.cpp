@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -696,6 +696,12 @@ again:
   Preferences::instance().fileSelector.zoom(m_fileList->zoom());
 
   return (!output.empty());
+}
+
+void FileSelector::onOpen(Event& ev)
+{
+  app::gen::FileSelector::onOpen(ev);
+  onRefreshFolder();
 }
 
 bool FileSelector::onProcessMessage(ui::Message* msg)
