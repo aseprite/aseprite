@@ -1,10 +1,13 @@
 // Aseprite
-// Copyright (c) 2022-2023  Igara Studio S.A.
+// Copyright (c) 2022-2024  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
 #include "app/script/tabs_widget.h"
+#include "tabs_widget.h"
+
+#define TAB_CONTENT_ID(tabid)  (tabid + "_content")
 
 #ifdef ENABLE_UI
 
@@ -31,18 +34,22 @@ Tabs::Tabs(int selectorFlags) : m_selectorFlags(selectorFlags)
   layoutChilds();
 }
 
-Tab* Tabs::addTab(Grid* content)
+Tab* Tabs::addTab(const std::string& id, const std::string& text)
 {
+  auto content = new ui::Grid(2, false);
+  content->setExpansive(true);
+  content->setVisible(false);
+  content->setId(TAB_CONTENT_ID(id).c_str());
   m_pages.addChild(content);
 
   if (m_buttons.children().empty()) {
     m_buttonsBox.addChild(&m_buttons);
-    m_buttons.ItemChange.connect([this](ButtonSet::Item* selItem) {
+    m_buttons.ItemChange.connect([this](ButtonSet::Item* tab) {
       int oldSelectedTabIndex = m_selectedTab;
       for (int i=0; i<m_pages.children().size(); ++i) {
-        auto tab = m_pages.children()[i];
-        bool isSelectedTab = selItem->text() ==  tab->text();
-        tab->setVisible(isSelectedTab);
+        auto tabContent = m_pages.children()[i];
+        bool isSelectedTab = (TAB_CONTENT_ID(tab->id()) == tabContent->id());
+        tabContent->setVisible(isSelectedTab);
         if (isSelectedTab)
           m_selectedTab = i;
       }
@@ -55,8 +62,9 @@ Tab* Tabs::addTab(Grid* content)
   else {
     m_buttons.setColumns(m_pages.children().size());
   }
-  auto tab = new Tab();
-  tab->setText(content->text());
+  auto tab = new Tab(content);
+  tab->setText(text);
+  tab->setId(id.c_str());
   m_buttons.addItem(tab);
   // Select the first tab by default.
   if (m_buttons.children().size() == 1) {
@@ -89,8 +97,8 @@ void Tabs::setSelectorFlags(int selectorFlags)
 
 int Tabs::tabIndexById(const std::string& id) const
 {
-  for (int i=0; i<m_pages.children().size(); ++i) {
-    if (m_pages.children()[i]->id() == id)
+  for (int i=0; i<m_buttons.children().size(); ++i) {
+    if (m_buttons.children()[i]->id() == id)
       return i;
   }
   return -1;
@@ -98,8 +106,8 @@ int Tabs::tabIndexById(const std::string& id) const
 
 int Tabs::tabIndexByText(const std::string& text) const
 {
-  for (int i=0; i<m_pages.children().size(); ++i) {
-    if (m_pages.children()[i]->text() == text)
+  for (int i=0; i<m_buttons.children().size(); ++i) {
+    if (m_buttons.children()[i]->text() == text)
       return i;
   }
   return -1;
@@ -107,15 +115,15 @@ int Tabs::tabIndexByText(const std::string& text) const
 
 std::string Tabs::tabId(int index) const
 {
-  return index >= 0 && index < m_pages.children().size() ?
-         m_pages.children()[index]->id() :
+  return index >= 0 && index < m_buttons.children().size() ?
+         m_buttons.children()[index]->id() :
          std::string();
 }
 
 std::string Tabs::tabText(int index) const
 {
-  return index >= 0 && index < m_pages.children().size() ?
-         m_pages.children()[index]->text() :
+  return index >= 0 && index < m_buttons.children().size() ?
+         m_buttons.children()[index]->text() :
          std::string();
 }
 
@@ -171,6 +179,9 @@ void Pages::onSizeHint(ui::SizeHintEvent& ev)
   ev.setSizeHint(prefSize);
 }
 
+Tab::Tab(ui::Grid* content) : m_content(content)
+{
+}
 
 void Tab::onClick()
 {

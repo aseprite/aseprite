@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2023  Igara Studio S.A.
+// Copyright (C) 2023-2024  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -20,9 +20,16 @@ namespace script {
 
 class Tab : public app::ButtonSet::Item {
 public:
+  Tab(ui::Grid* content);
+  ui::Grid* content() { return m_content; }
+
   obs::signal<void()> Click;
+
 protected:
   virtual void onClick();
+
+private:
+  ui::Grid* m_content;
 };
 
 class Pages : public ui::VBox {
@@ -37,7 +44,7 @@ public:
 
   Tabs(int selectorFlags);
 
-  Tab* addTab(ui::Grid* content);
+  Tab* addTab(const std::string& id, const std::string& text);
   void selectTab(int index);
   void setSelectorFlags(int selectorFlags);
 
