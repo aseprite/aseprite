@@ -35,6 +35,7 @@ of several translators:
 
   * Grey <gregorypro@protonmail.com>
   * Nathan <bonnemainsnathan@gmail.com>
+  * peperoni <sacerludum@gmail.com>
 
 * German
 
@@ -59,6 +60,7 @@ of several translators:
 
   * Eryk Michalak <gnu.ewm@protonmail.com>
   * Jakub Mańczak <jakub+github@manczak.net>
+  * Maks Dziemiańczuk <galaxy7mx@gmail.com>
   * PxSprite <pxsprite@tuta.io>
 
 * Portuguese
@@ -70,11 +72,14 @@ of several translators:
 
   * Aleksey Smirnov <debugger94@gmail.com>
   * Blezz Rot <markus.jenya04@yandex.ru>
+  * Ivan Oranchuk <oranchukivan@gmail.com>
   * Ruslan <vovavalenkov15@gmail.com>
 
 * Spanish
 
+  * Aitornado _8 <aitortq33@gmail.com>
   * David Capello <david@igara.com>
+  * gallegonovato <fran-carro@hotmail.es>
   * Héctor Cortés <frewilfis@protonmail.ch>
 
 * Swedish
@@ -84,6 +89,7 @@ of several translators:
 * Ukrainian
 
   * dio.next.door201bade7ea0e4d3c <dio.next.door@gmail.com>
+  * Veydzher <veydzherDGswift008@gmail.com>
 
 A special thanks for the feedback of [TakWolf](https://github.com/TakWolf)
 and its [aseprite-quest](https://github.com/aseprite-quest) work to create
