@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -2247,6 +2247,7 @@ void ContextBar::updateForTool(tools::Tool* tool)
   if (supportDynamics)
     m_dynamics->updateIconFromActiveToolPref();
   m_freehandBox->setVisible(isFreehand && (supportOpacity || hasSelectOptions));
+  m_freehandAlgo->setVisible(!hasSprayOptions);
   m_toleranceLabel->setVisible(hasTolerance);
   m_tolerance->setVisible(hasTolerance);
   m_contiguous->setVisible(hasTolerance);
