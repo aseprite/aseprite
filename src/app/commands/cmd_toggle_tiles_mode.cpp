@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2019-2020  Igara Studio S.A.
+// Copyright (c) 2019-2024  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -30,10 +30,12 @@ protected:
 
   void onExecute(Context* context) override {
     auto colorBar = ColorBar::instance();
-    colorBar->setTilemapMode(
-      colorBar->tilemapMode() == TilemapMode::Pixels ?
-      TilemapMode::Tiles:
-      TilemapMode::Pixels);
+    if (!colorBar->isTilemapModeLocked()) {
+      colorBar->setTilemapMode(
+        colorBar->tilemapMode() == TilemapMode::Pixels ?
+        TilemapMode::Tiles:
+        TilemapMode::Pixels);
+    }
   }
 };
 

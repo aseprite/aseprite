@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -74,6 +74,8 @@ namespace app {
                    const Image* moveThis,
                    const Mask* mask,
                    const char* operationName);
+
+    ~PixelsMovement();
 
     HandleType handle() const { return m_handle; }
     bool canHandleFrameChange() const { return m_canHandleFrameChange; }
@@ -159,6 +161,16 @@ namespace app {
                             const double angle);
     CelList getEditableCels();
     void reproduceAllTransformationsWithInnerCmds();
+
+    void alignMasksAndTransformData(const Mask* initialMask0,
+                                    const Mask* initialMask,
+                                    const Mask* currentMask,
+                                    const Transformation* initialData,
+                                    const Transformation* currentData,
+                                    const doc::Grid& grid,
+                                    const gfx::Size& deltaA,
+                                    const gfx::Size& deltaB);
+
 #if _DEBUG
     void dumpInnerCmds();
 #endif
