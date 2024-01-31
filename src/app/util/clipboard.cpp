@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -227,7 +227,8 @@ void Clipboard::setData(Image* image,
   else
     m_data->image.reset(image);
 
-  if (set_native_clipboard) {
+  if (set_native_clipboard &&
+      use_native_clipboard()) {
     // Copy tilemap to the native clipboard
     if (isTilemap) {
       ASSERT(tileset);
@@ -242,8 +243,7 @@ void Clipboard::setData(Image* image,
           image->setMaskColor(-1);
       }
 
-      if (use_native_clipboard())
-        setNativeBitmap(image, mask, palette);
+      setNativeBitmap(image, mask, palette);
 
       if (image && !image_source_is_transparent)
         image->setMaskColor(oldMask);
@@ -456,8 +456,13 @@ void Clipboard::copyPalette(const Palette* palette,
           nullptr,
           new Palette(*palette),
           nullptr,
-          true,                 // set native clipboard
+          false,               // Don't touch the native clipboard now
           false);
+
+  // Here is where we copy the palette as text (hex format)
+  if (use_native_clipboard())
+    setNativePalette(palette, picks);
+
   m_data->picks = picks;
 }
 

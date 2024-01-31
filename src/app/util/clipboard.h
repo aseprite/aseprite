@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -113,6 +113,9 @@ namespace app {
                          doc::Palette** palette,
                          doc::Tileset** tileset);
     bool getNativeBitmapSize(gfx::Size* size);
+
+    bool setNativePalette(const doc::Palette* palette,
+                          const doc::PalettePicks& picks);
 
     struct Data;
     std::unique_ptr<Data> m_data;
