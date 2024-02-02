@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2020  Igara Studio S.A.
+// Copyright (c) 2019-2024  Igara Studio S.A.
 // Copyright (c) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -169,11 +169,23 @@ Image* read_image(std::istream& is, bool setId)
 
       do {
         if (address == address_end) {
-          if (y == image->height())
-            throw base::Exception("Too much data to uncompress for the image.");
-
-          address = image->getPixelAddress(0, y++);
-          address_end = address + widthBytes;
+          if (y < image->height()) {
+            address = image->getPixelAddress(0, y++);
+            address_end = address + widthBytes;
+          }
+          else {
+            // Special reported case where we just fill the whole
+            // output image buffer (avail_out == 0), and more input
+            // was previously reported as available (avail_in != 0).
+            //
+            // Not sure why zlib reports this in certain cases, where
+            // avail_in != 0 and err == Z_OK instead of err ==
+            // Z_STREAM_END and we have to do a final inflate() call
+            // (even w/avail_out=0) to get the final Z_STREAM_END
+            // result.
+            ASSERT(y == image->height());
+            ASSERT(err == Z_OK);
+          }
         }
 
         zstream.next_out = (Bytef*)address;
