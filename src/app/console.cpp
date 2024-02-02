@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -19,6 +19,7 @@
 #include "app/ui/status_bar.h"
 #include "base/memory.h"
 #include "base/string.h"
+#include "fmt/format.h"
 #include "ui/system.h"
 #include "ui/ui.h"
 
@@ -205,16 +206,10 @@ Console::Console(Context* ctx)
   if (!ui::is_ui_thread())
     return;
 
-  if (ctx) {
-    m_withUI = (ctx->isUIAvailable());
-  }
-  else {
-    m_withUI =
-      (App::instance() &&
-       App::instance()->isGui() &&
-       Manager::getDefault() &&
-       Manager::getDefault()->display()->nativeWindow());
-  }
+  if (ctx)
+    m_withUI = ctx->isUIAvailable();
+  else
+    m_withUI = Console::isUIAvailable();
 
   if (!m_withUI)
     return;
@@ -272,16 +267,28 @@ void Console::printf(const char* format, ...)
 // static
 void Console::showException(const std::exception& e)
 {
+  std::string text;
+  if (typeid(e) == typeid(std::bad_alloc))
+    text = "There is not enough memory to complete the action.";
+  else
+    text = fmt::format("A problem has occurred.\n\nDetails:\n{}\n", e.what());
+
   if (!ui::is_ui_thread()) {
-    LOG(ERROR, "A problem has occurred.\n\nDetails:\n%s\n", e.what());
+    LOG(ERROR, text.c_str());
+
+    // Show the error in the UI thread (if the UI is available)
+    if (Console::isUIAvailable()) {
+      ui::execute_from_ui_thread(
+        [text]{
+          Console console;
+          console.printf(text.c_str());
+        });
+    }
     return;
   }
 
   Console console;
-  if (typeid(e) == typeid(std::bad_alloc))
-    console.printf("There is not enough memory to complete the action.");
-  else
-    console.printf("A problem has occurred.\n\nDetails:\n%s\n", e.what());
+  console.printf(text.c_str());
 }
 
 // static
@@ -289,6 +296,15 @@ void Console::notifyNewDisplayConfiguration()
 {
   if (m_console)
     m_console->centerConsole();
+}
+
+// static
+bool Console::isUIAvailable()
+{
+  auto app = App::instance();
+  auto man = Manager::getDefault();
+  return (app && app->isGui() &&
+          man && man->display() && man->display()->nativeWindow());
 }
 
 } // namespace app

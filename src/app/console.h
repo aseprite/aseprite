@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -25,9 +25,11 @@ namespace app {
     static void notifyNewDisplayConfiguration();
 
   private:
-    class ConsoleWindow;
+    static bool isUIAvailable();
 
     bool m_withUI;
+
+    class ConsoleWindow;
     static ConsoleWindow* m_console;
   };
 
