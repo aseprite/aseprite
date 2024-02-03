@@ -1435,6 +1435,9 @@ void DocExporter::createDataFile(const Samples& samples,
      << "  \"scale\": \"1\"";
 
   {
+    os << ",\n"
+       << "  \"documents\": [";
+
     bool firstDoc = true;
   
     std::set<doc::ObjectId> includedSprites;
