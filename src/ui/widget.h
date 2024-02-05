@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -468,8 +468,8 @@ namespace ui {
     // kMnemonicModifiersMask bit is zero, it means that the mnemonic
     // can be used without Alt or Command key modifiers (useful for
     // buttons in ui::Alert).
-    static constexpr int kMnemonicCharMask = 0x7f;
-    static constexpr int kMnemonicModifiersMask = 0x80;
+    static constexpr int kMnemonicCharMask = 0xffff;
+    static constexpr int kMnemonicModifiersMask = 0x10000;
     int m_mnemonic;
 
     // Widget size limits
