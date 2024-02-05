@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2023  Igara Studio S.A.
+// Copyright (C) 2023-2024  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -53,15 +53,20 @@ std::set<LangInfo> Strings::availableLanguages() const
 {
   std::set<LangInfo> result;
 
-  // Add languages in data/strings/
+  // Add languages in data/strings/ + data/strings.git/
   ResourceFinder rf;
   rf.includeDataDir("strings");
+  rf.includeDataDir("strings.git");
   while (rf.next()) {
     const std::string stringsPath = rf.filename();
     if (!base::is_directory(stringsPath))
       continue;
 
     for (const auto& fn : base::list_files(stringsPath)) {
+      // Ignore README/LICENSE files.
+      if (base::get_file_extension(fn) != "ini")
+        continue;
+
       const std::string langId = base::get_file_title(fn);
       std::string path = base::join_path(stringsPath, fn);
       std::string displayName = langId;
@@ -123,14 +128,15 @@ void Strings::loadLanguage(const std::string& langId)
 void Strings::loadStringsFromDataDir(const std::string& langId)
 {
   // Load the English language file from the Aseprite data directory (so we have the most update list of strings)
-  LOG("I18N: Loading strings/%s.ini file\n", langId.c_str());
+  LOG("I18N: Loading %s.ini file\n", langId.c_str());
   ResourceFinder rf;
-  rf.includeDataDir(("strings/" + langId + ".ini").c_str());
+  rf.includeDataDir(base::join_path("strings", langId + ".ini").c_str());
+  rf.includeDataDir(base::join_path("strings.git", langId + ".ini").c_str());
   if (!rf.findFirst()) {
-    LOG("strings/%s.ini was not found", langId.c_str());
+    LOG("I18N: %s.ini was not found\n", langId.c_str());
     return;
   }
-
+  LOG("I18N: %s found\n", rf.filename().c_str());
   loadStringsFromFile(rf.filename());
 }
 
