@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -20,6 +20,7 @@
 #include "doc/image_ref.h"
 #include "gfx/size.h"
 #include "obs/connection.h"
+#include "render/render.h"
 
 #include <memory>
 
@@ -159,6 +160,11 @@ namespace app {
                             const double angle);
     CelList getEditableCels();
     void reproduceAllTransformationsWithInnerCmds();
+    void renderLayer(render::Render* render,
+                     Image* dstImage,
+                     const Layer* layer,
+                     frame_t frame,
+                     const gfx::Clip& area);
 #if _DEBUG
     void dumpInnerCmds();
 #endif
