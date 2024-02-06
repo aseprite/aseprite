@@ -670,7 +670,7 @@ int Dialog_separator(lua_State* L)
   }
 
   dlg->mainWidgets.push_back(widget);
-  dlg->grid.addChildInCell(widget, 2, 1, ui::HORIZONTAL | ui::TOP);
+  dlg->currentGrid->addChildInCell(widget, 2, 1, ui::HORIZONTAL | ui::TOP);
   dlg->hbox = nullptr;
 
   lua_pushvalue(L, 1);
