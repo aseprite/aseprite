@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2023 Igara Studio S.A.
+// Copyright (c) 2023-2024 Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -9,8 +9,6 @@
 #pragma once
 
 #include "doc/selected_frames.h"
-
-using namespace doc::frames;
 
 namespace doc {
 
@@ -22,10 +20,10 @@ namespace doc {
     FramesSequence() {}
     FramesSequence(const SelectedFrames& selectedFrames);
 
-    const_iterator begin() const { return const_iterator(m_ranges.begin()); }
-    const_iterator end() const { return const_iterator(m_ranges.end()); }
-    const_reverse_iterator rbegin() const { return const_reverse_iterator(m_ranges.rbegin()); }
-    const_reverse_iterator rend() const { return const_reverse_iterator(m_ranges.rend()); }
+    frames::const_iterator begin() const { return frames::const_iterator(m_ranges.begin()); }
+    frames::const_iterator end() const { return frames::const_iterator(m_ranges.end()); }
+    frames::const_reverse_iterator rbegin() const { return frames::const_reverse_iterator(m_ranges.rbegin()); }
+    frames::const_reverse_iterator rend() const { return frames::const_reverse_iterator(m_ranges.rend()); }
 
     std::size_t size() const;
     std::size_t ranges() const { return m_ranges.size(); }
@@ -44,7 +42,7 @@ namespace doc {
     frame_t lowestFrame() const;
 
     void displace(frame_t frameDelta);
-    Reversed<FramesSequence> reversed() const { return Reversed(*this); }
+    frames::Reversed<FramesSequence> reversed() const { return frames::Reversed(*this); }
 
     FramesSequence makeReverse() const;
     FramesSequence makePingPong() const;
@@ -61,7 +59,7 @@ namespace doc {
     bool read(std::istream& is);
 
   private:
-    Ranges m_ranges;
+    frames::Ranges m_ranges;
   };
 
 } // namespace doc
