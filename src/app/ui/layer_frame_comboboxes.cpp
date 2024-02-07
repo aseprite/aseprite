@@ -11,16 +11,19 @@
 
 #include "app/ui/layer_frame_comboboxes.h"
 
+#include "app/doc.h"
 #include "app/i18n/strings.h"
 #include "app/restore_visible_layers.h"
 #include "app/site.h"
 #include "doc/anidir.h"
+#include "doc/frames_sequence.h"
 #include "doc/layer.h"
 #include "doc/selected_frames.h"
 #include "doc/selected_layers.h"
 #include "doc/slice.h"
 #include "doc/sprite.h"
 #include "doc/tag.h"
+#include "doc/playback.h"
 #include "ui/combobox.h"
 
 namespace app {
@@ -178,6 +181,96 @@ void calculate_visible_layers(const Site& site,
       }
     }
   }
+}
+
+doc::Tag* calculate_frames_sequence(const Site& site,
+                                    const std::string& framesValue,
+                                    doc::FramesSequence& framesSeq,
+                                    bool playSubtags,
+                                    AniDir aniDir)
+{
+  doc::Tag* tag = nullptr;
+
+  if (!playSubtags || framesValue == kSelectedFrames) {
+    SelectedFrames selFrames;
+    tag = calculate_selected_frames(site, framesValue, selFrames);
+    framesSeq = FramesSequence(selFrames);
+  }
+  else {
+    frame_t start = 0;
+    AniDir origAniDir = aniDir;
+    int forward = 1;
+    if (framesValue == kAllFrames) {
+      tag = nullptr;
+      forward = (aniDir == AniDir::FORWARD || aniDir == AniDir::PING_PONG ? 1 : -1);
+      if (forward < 0)
+        start = site.sprite()->lastFrame();
+
+      // Look for a tag containing the first frame and determine the start frame
+      // according to the selected animation direction.
+      auto startTag = site.sprite()->tags().innerTag(start);
+      if (startTag) {
+        int startTagForward = (startTag->aniDir() == AniDir::FORWARD ||
+                               startTag->aniDir() == AniDir::PING_PONG
+                               ? 1 : -1);
+        start = forward * startTagForward > 0
+                ? startTag->fromFrame()
+                : startTag->toFrame();
+      }
+    }
+    else {
+      tag = site.sprite()->tags().getByName(framesValue);
+      // User selected a specific tag, then set its anidir to the selected
+      // direction. We save the original direction to restore it later.
+      if (tag) {
+        origAniDir = tag->aniDir();
+        tag->setAniDir(aniDir);
+        start = (aniDir == AniDir::FORWARD || aniDir == AniDir::PING_PONG
+                 ? tag->fromFrame()
+                 : tag->toFrame());
+      }
+    }
+
+    auto playback = doc::Playback(
+      site.document()->sprite(),
+      site.document()->sprite()->tags().getInternalList(),
+      start,
+      doc::Playback::PlayAll,
+      tag,
+      forward);
+    framesSeq.insert(playback.frame());
+    auto frame = playback.nextFrame();
+    while(!playback.isStopped()) {
+      framesSeq.insert(frame);
+      frame = playback.nextFrame();
+    }
+
+    if (framesValue == kAllFrames) {
+      // If the user is playing all frames and selected some of the ping-pong
+      // animation direction, then modify the animation as needed.
+      if (aniDir == AniDir::PING_PONG || aniDir == AniDir::PING_PONG_REVERSE)
+        framesSeq = framesSeq.makePingPong();
+    }
+    else if (tag) {
+      // If exported tag is ping-pong, remove last frame of the sequence to
+      // avoid playing the first frame twice.
+      if (aniDir == AniDir::PING_PONG || aniDir == AniDir::PING_PONG_REVERSE) {
+        doc::FramesSequence newSeq;
+        int i = 0;
+        int frames = framesSeq.size()-1;
+        for (auto f : framesSeq) {
+          if (i < frames)
+            newSeq.insert(f);
+          ++i;
+        }
+        framesSeq = newSeq;
+      }
+      // Restore tag's original animation direction.
+      tag->setAniDir(origAniDir);
+    }
+  }
+
+  return tag;
 }
 
 doc::Tag* calculate_selected_frames(const Site& site,

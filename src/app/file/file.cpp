@@ -258,7 +258,7 @@ int save_document(Context* context, Doc* document)
     FileOp::createSaveDocumentOperation(
       context,
       FileOpROI(document, document->sprite()->bounds(),
-                "", "", SelectedFrames(), false),
+                "", "", FramesSequence(), false),
       document->filename(), "",
       false));
   if (!fop)
@@ -307,13 +307,13 @@ FileOpROI::FileOpROI(const Doc* doc,
                      const gfx::Rect& bounds,
                      const std::string& sliceName,
                      const std::string& tagName,
-                     const doc::SelectedFrames& selFrames,
+                     const doc::FramesSequence& framesSeq,
                      const bool adjustByTag)
   : m_document(doc)
   , m_bounds(bounds)
   , m_slice(nullptr)
   , m_tag(nullptr)
-  , m_selFrames(selFrames)
+  , m_framesSeq(framesSeq)
 {
   if (doc) {
     if (!sliceName.empty())
@@ -324,18 +324,18 @@ FileOpROI::FileOpROI(const Doc* doc,
       m_tag = doc->sprite()->tags().getByName(tagName);
 
     if (m_tag) {
-      if (m_selFrames.empty())
-        m_selFrames.insert(m_tag->fromFrame(), m_tag->toFrame());
+      if (m_framesSeq.empty())
+        m_framesSeq.insert(m_tag->fromFrame(), m_tag->toFrame());
       else if (adjustByTag)
-        m_selFrames.displace(m_tag->fromFrame());
+        m_framesSeq.displace(m_tag->fromFrame());
 
-      m_selFrames =
-        m_selFrames.filter(std::max(0, m_tag->fromFrame()),
+      m_framesSeq =
+        m_framesSeq.filter(std::max(0, m_tag->fromFrame()),
                            std::min(m_tag->toFrame(), doc->sprite()->lastFrame()));
     }
     // All frames if selected frames is empty
-    else if (m_selFrames.empty())
-      m_selFrames.insert(0, doc->sprite()->lastFrame());
+    else if (m_framesSeq.empty())
+      m_framesSeq.insert(0, doc->sprite()->lastFrame());
   }
 }
 
@@ -360,7 +360,7 @@ gfx::Size FileOpROI::fileCanvasSize() const
 {
   if (m_slice) {
     gfx::Size size;
-    for (auto frame : m_selFrames)
+    for (auto frame : m_framesSeq)
       size |= frameBounds(frame).size();
     return size;
   }
@@ -759,7 +759,7 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
 
     frame_t outputFrame = 0;
 
-    for (frame_t frame : fop->m_roi.selectedFrames()) {
+    for (frame_t frame : fop->m_roi.framesSequence()) {
       Tag* innerTag = (fop->m_roi.tag() ? fop->m_roi.tag(): sprite->tags().innerTag(frame));
       Tag* outerTag = (fop->m_roi.tag() ? fop->m_roi.tag(): sprite->tags().outerTag(frame));
       FilenameInfo fnInfo;
@@ -1027,7 +1027,7 @@ void FileOp::operate(IFileOpProgress* progress)
       render.setNewBlend(m_config.newBlend);
 
       frame_t outputFrame = 0;
-      for (frame_t frame : m_roi.selectedFrames()) {
+      for (frame_t frame : m_roi.framesSequence()) {
         gfx::Rect bounds = m_roi.frameBounds(frame);
         if (bounds.isEmpty())
           continue; // Skip frame because there is no slice key

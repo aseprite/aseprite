@@ -31,7 +31,7 @@ FileOpROI CliOpenFile::roi() const
                    document->sprite()->bounds(),
                    slice,
                    tag,
-                   selFrames,
+                   FramesSequence(selFrames),
                    true);
 }
 

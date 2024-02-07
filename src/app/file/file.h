@@ -18,7 +18,7 @@
 #include "doc/frame.h"
 #include "doc/image_ref.h"
 #include "doc/pixel_format.h"
-#include "doc/selected_frames.h"
+#include "doc/frames_sequence.h"
 #include "os/color_space.h"
 
 #include <cstdio>
@@ -75,18 +75,18 @@ namespace app {
               const gfx::Rect& bounds,
               const std::string& sliceName,
               const std::string& tagName,
-              const doc::SelectedFrames& selFrames,
+              const doc::FramesSequence& frames,
               const bool adjustByTag);
 
     const Doc* document() const { return m_document; }
     doc::Slice* slice() const { return m_slice; }
     doc::Tag* tag() const { return m_tag; }
-    doc::frame_t fromFrame() const { return m_selFrames.firstFrame(); }
-    doc::frame_t toFrame() const { return m_selFrames.lastFrame(); }
-    const doc::SelectedFrames& selectedFrames() const { return m_selFrames; }
+    doc::frame_t fromFrame() const { return m_framesSeq.firstFrame(); }
+    doc::frame_t toFrame() const { return m_framesSeq.lastFrame(); }
+    const doc::FramesSequence& framesSequence() const { return m_framesSeq; }
 
     doc::frame_t frames() const {
-      return (doc::frame_t)m_selFrames.size();
+      return (doc::frame_t)m_framesSeq.size();
     }
 
     // Returns an empty rectangle only when exporting a slice and the
@@ -103,7 +103,7 @@ namespace app {
     gfx::Rect m_bounds;
     doc::Slice* m_slice;
     doc::Tag* m_tag;
-    doc::SelectedFrames m_selFrames;
+    doc::FramesSequence m_framesSeq;
   };
 
   // Used by file formats with FILE_ENCODE_ABSTRACT_IMAGE flag, to

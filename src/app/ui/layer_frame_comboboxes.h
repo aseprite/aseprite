@@ -17,6 +17,7 @@
 namespace doc {
   class Layer;
   class SelectedFrames;
+  class FramesSequence;
   class SelectedLayers;
   class Slice;
   class Sprite;
@@ -75,6 +76,11 @@ namespace app {
                                 const int layersIndex,
                                 RestoreVisibleLayers& layersVisibility);
 
+  doc::Tag* calculate_frames_sequence(const Site& site,
+                                      const std::string& framesValue,
+                                      doc::FramesSequence& selFrames,
+                                      bool playSubtags,
+                                      doc::AniDir aniDir);
   doc::Tag* calculate_selected_frames(const Site& site,
                                       const std::string& framesValue,
                                       doc::SelectedFrames& selFrames);

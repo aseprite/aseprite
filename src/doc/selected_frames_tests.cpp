@@ -211,6 +211,46 @@ TEST(SelectedFrames, MakePingPongAndFilter)
   EXPECT_EQ(7, res[1]);
 }
 
+TEST(SelectedFrames, Displace)
+{
+  SelectedFrames f;
+  f.insert(1);
+  f.insert(4, 5);
+  f.insert(7, 9);
+  EXPECT_EQ(6, f.size());
+  EXPECT_EQ(3, f.ranges());
+
+  f.displace(4);
+  auto res = to_vector(f);
+  ASSERT_EQ(6, res.size());
+  EXPECT_EQ(5, res[0]);
+  EXPECT_EQ(8, res[1]);
+  EXPECT_EQ(9, res[2]);
+  EXPECT_EQ(11, res[3]);
+  EXPECT_EQ(12, res[4]);
+  EXPECT_EQ(13, res[5]);
+
+  f.clear();
+
+  f.insert(3);
+  f.insert(4, 5);
+  f.insert(7, 9);
+  EXPECT_EQ(6, f.size());
+  EXPECT_EQ(2, f.ranges());
+
+  // Check that it was displaced just -3 frames because 3 is the first selected
+  // frame.
+  f.displace(-4);
+  res = to_vector(f);
+  ASSERT_EQ(6, res.size());
+  EXPECT_EQ(0, res[0]);
+  EXPECT_EQ(1, res[1]);
+  EXPECT_EQ(2, res[2]);
+  EXPECT_EQ(4, res[3]);
+  EXPECT_EQ(5, res[4]);
+  EXPECT_EQ(6, res[5]);
+}
+
 int main(int argc, char** argv)
 {
   ::testing::InitGoogleTest(&argc, argv);

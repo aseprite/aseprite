@@ -364,7 +364,7 @@ bool AseFormat::onSave(FileOp* fop)
   // Write frames
   int outputFrame = 0;
   dio::AsepriteExternalFiles ext_files;
-  for (frame_t frame : fop->roi().selectedFrames()) {
+  for (frame_t frame : fop->roi().framesSequence()) {
     // Prepare the frame header
     dio::AsepriteFrameHeader frame_header;
     ase_file_prepare_frame_header(f, &frame_header);
@@ -1361,7 +1361,7 @@ static void ase_file_write_external_files_chunk(
       layers.insert(layers.end(), childLayers.begin(), childLayers.end());
     }
     else if (layer->isImage()) {
-      for (frame_t frame : fop->roi().selectedFrames()) {
+      for (frame_t frame : fop->roi().framesSequence()) {
         const Cel* cel = layer->cel(frame);
         if (cel && !cel->link()) {
           putExtentionIds(cel->data()->userData().propertiesMaps(), ext_files);

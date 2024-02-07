@@ -546,6 +546,7 @@
       <option id="ani_dir" type="doc::AniDir" default="doc::AniDir::FORWARD" />
       <option id="apply_pixel_ratio" type="bool" default="false" />
       <option id="for_twitter" type="bool" default="false" />
+      <option id="play_subtags" type="bool" default="true" />
     </section>
     <section id="sprite_sheet">
       <option id="defined" type="bool" default="false" />
