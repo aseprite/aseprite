@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -17,6 +17,7 @@
 #include "app/i18n/strings.h"
 #include "app/modules/gui.h"
 #include "app/resource_finder.h"
+#include "app/ui/alpha_slider.h"
 #include "app/ui/button_set.h"
 #include "app/ui/color_button.h"
 #include "app/ui/drop_down_button.h"
@@ -404,6 +405,13 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
 
     widget = new Slider(min_value, max_value, min_value);
     static_cast<Slider*>(widget)->setReadOnly(readonly);
+  }
+  else if (elem_name == "alphaslider" || elem_name == "opacityslider") {
+    const bool readonly = bool_attr(elem, "readonly", false);
+    widget = new AlphaSlider(0, (elem_name == "alphaslider"
+                                 ? AlphaSlider::Type::ALPHA
+                                 : AlphaSlider::Type::OPACITY));
+    static_cast<AlphaSlider*>(widget)->setReadOnly(readonly);
   }
   else if (elem_name == "textbox") {
     const char* text = (elem->GetText() ? elem->GetText(): "");

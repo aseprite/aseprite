@@ -1,5 +1,5 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2018-2023  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-2024  Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2018  David Capello -->
 <gui>
   <window id="options" text="@.title">
@@ -192,7 +192,7 @@
           <separator text="@.section_color" horizontal="true" />
           <check text="@.color_management" id="color_management" pref="color.manage" />
 
-	  <grid columns="2">
+          <grid columns="2">
             <label text="@.window_cs" id="window_cs_label" />
             <combobox id="window_cs">
               <listitem text="@.use_monitor_cs" />
@@ -213,20 +213,34 @@
               <listitem text="@.convert_cs" />
               <listitem text="@.assign_cs" />
               <listitem text="@.ask_cs" />
-	    </combobox>
+            </combobox>
 
             <label text="@.missing_cs" id="missing_cs_label" />
             <combobox id="missing_cs">
               <listitem text="@.disable_cs" />
               <listitem text="@.assign_cs" />
               <listitem text="@.ask_cs" />
-	    </combobox>
-	  </grid>
+            </combobox>
+          </grid>
 
-	  <hbox>
-	    <hbox expansive="true" />
+          <hbox>
+            <hbox expansive="true" />
             <button id="reset_color_management" text="@general.reset" minwidth="60" />
-	  </hbox>
+          </hbox>
+
+          <separator text="@.alpha_and_opacity" horizontal="true" />
+          <grid columns="2">
+            <label text="@.alpha_range" id="alpha_range_label" />
+            <combobox id="alpha">
+              <listitem text="@.8bit_value" />
+              <listitem text="@.percentage" />
+            </combobox>
+            <label text="@.opacity_range" id="opacity_range_label" />
+            <combobox id="opacity">
+              <listitem text="@.8bit_value" />
+              <listitem text="@.percentage" />
+            </combobox>
+          </grid>
         </vbox>
 
         <!-- Editor -->

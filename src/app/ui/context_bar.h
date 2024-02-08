@@ -123,6 +123,7 @@ namespace app {
     void onBrushAngleChange();
     void onSymmetryModeChange();
     void onFgOrBgColorChange(doc::Brush::ImageColor imageColor);
+    void onOpacityRangeChange();
     void onDropPixels(ContextBarObserver::DropAction action);
     void updateSliceFields(const Site& site);
 
@@ -203,6 +204,7 @@ namespace app {
     obs::scoped_connection m_symmModeConn;
     obs::scoped_connection m_fgColorConn;
     obs::scoped_connection m_bgColorConn;
+    obs::scoped_connection m_alphaRangeConn;
     obs::scoped_connection m_keysConn;
     obs::scoped_connection m_dropPixelsConn;
     obs::scoped_connection m_sizeConn;

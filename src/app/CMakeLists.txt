@@ -1,5 +1,5 @@
 # Aseprite
-# Copyright (C) 2018-2023  Igara Studio S.A.
+# Copyright (C) 2018-2024  Igara Studio S.A.
 # Copyright (C) 2001-2018  David Capello
 
 # Generate a ui::Widget for each widget in a XML file
@@ -336,6 +336,8 @@ if(ENABLE_UI)
     file_selector.cpp
     modules/gfx.cpp
     modules/gui.cpp
+    ui/alpha_entry.cpp
+    ui/alpha_slider.cpp
     ui/app_menuitem.cpp
     ui/backup_indicator.cpp
     ui/browser_view.cpp
