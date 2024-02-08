@@ -1,5 +1,5 @@
 // Aseprite Steam Wrapper
-// Copyright (c) 2020 Igara Studio S.A.
+// Copyright (c) 2020-2024 Igara Studio S.A.
 // Copyright (c) 2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -47,7 +47,7 @@ struct CallbackMsg_t {
 #endif
 
 // Steam main API
-typedef bool (__cdecl *SteamAPI_Init_Func)();
+typedef bool (__cdecl *SteamAPI_InitSafe_Func)();
 typedef void (__cdecl *SteamAPI_Shutdown_Func)();
 typedef HSteamPipe (__cdecl *SteamAPI_GetHSteamPipe_Func)();
 
@@ -90,14 +90,14 @@ public:
       return;
     }
 
-    auto SteamAPI_Init = GETPROC(SteamAPI_Init);
-    if (!SteamAPI_Init) {
-      LOG("STEAM: SteamAPI_Init not found...\n");
+    auto SteamAPI_InitSafe = GETPROC(SteamAPI_InitSafe);
+    if (!SteamAPI_InitSafe) {
+      LOG("STEAM: SteamAPI_InitSafe not found...\n");
       return;
     }
 
-    // Call SteamAPI_Init() to connect to Steam
-    if (!SteamAPI_Init()) {
+    // Call SteamAPI_InitSafe() to connect to Steam
+    if (!SteamAPI_InitSafe()) {
       LOG("STEAM: Steam is not initialized...\n");
       return;
     }
