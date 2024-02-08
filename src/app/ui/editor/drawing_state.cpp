@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -96,8 +96,9 @@ void DrawingState::initToolLoop(Editor* editor,
   // For selection inks we don't use a "the selected layer" for
   // preview purposes, because we want the selection feedback to be at
   // the top of all layers.
-  Layer* previewLayer = (m_toolLoop->getInk()->isSelection() ? nullptr:
-                                                               m_toolLoop->getLayer());
+  Layer* previewLayer = (m_toolLoop->getInk()->isSelection() ||
+                         m_toolLoop->getInk()->isSlice() ?
+                           nullptr : m_toolLoop->getLayer());
 
   // Prepare preview image (the destination image will be our preview
   // in the tool-loop time, so we can see what we are drawing)

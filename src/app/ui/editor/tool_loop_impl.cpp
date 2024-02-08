@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -517,6 +517,9 @@ public:
       }
     }
 
+    // 'isSelectionPreview = true' if the intention is to show a preview
+    // of Selection tools or Slice tool.
+    const bool isSelectionPreview = m_ink->isSelection() || m_ink->isSlice();
     m_expandCelCanvas.reset(new ExpandCelCanvas(
       site, m_layer,
       m_docPref.tiled.mode(),
@@ -530,10 +533,10 @@ public:
         (m_layer->isTilemap() &&
          site.tilemapMode() == TilemapMode::Pixels &&
          site.tilesetMode() == TilesetMode::Manual &&
-         !m_ink->isSelection() ? ExpandCelCanvas::TilesetPreview:
-                                 ExpandCelCanvas::None) |
-        (m_ink->isSelection() ? ExpandCelCanvas::SelectionPreview:
-                                ExpandCelCanvas::None))));
+         (!isSelectionPreview ? ExpandCelCanvas::TilesetPreview:
+                                ExpandCelCanvas::None)) |
+        (isSelectionPreview ? ExpandCelCanvas::SelectionPreview:
+                              ExpandCelCanvas::None))));
 
     if (!m_floodfillSrcImage)
       m_floodfillSrcImage = const_cast<Image*>(getSrcImage());
@@ -555,7 +558,7 @@ public:
     m_sprayWidth = m_toolPref.spray.width();
     m_spraySpeed = m_toolPref.spray.speed();
 
-    if (m_ink->isSelection()) {
+    if (isSelectionPreview) {
       m_useMask = false;
     }
     else {
@@ -563,7 +566,7 @@ public:
     }
 
     // Start with an empty mask if the user is selecting with "default selection mode"
-    if (m_ink->isSelection() &&
+    if (isSelectionPreview &&
         (!m_document->isMaskVisible() ||
          (int(getModifiers()) & int(tools::ToolLoopModifiers::kReplaceSelection)))) {
       Mask emptyMask;
