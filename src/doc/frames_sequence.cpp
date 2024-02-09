@@ -171,7 +171,7 @@ FramesSequence FramesSequence::makePingPong() const
     if (i == 0) reversedRange.toFrame+=step;
     if (j == 0) reversedRange.fromFrame-=step;
 
-    if (reversedRange.fromFrame != reversedRange.toFrame)
+    if (reversedRange != range)
       newFrames.m_ranges.insert(
         newFrames.m_ranges.begin() + n,
         reversedRange);

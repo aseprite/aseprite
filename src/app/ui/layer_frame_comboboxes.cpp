@@ -195,6 +195,18 @@ doc::Tag* calculate_frames_sequence(const Site& site,
     SelectedFrames selFrames;
     tag = calculate_selected_frames(site, framesValue, selFrames);
     framesSeq = FramesSequence(selFrames);
+    switch (aniDir) {
+      case AniDir::REVERSE:
+        framesSeq = framesSeq.makeReverse();
+        break;
+      case AniDir::PING_PONG:
+        framesSeq = framesSeq.makePingPong();
+        break;
+      case AniDir::PING_PONG_REVERSE:
+        framesSeq = framesSeq.makeReverse();
+        framesSeq = framesSeq.makePingPong();
+        break;
+    }
   }
   else {
     frame_t start = 0;

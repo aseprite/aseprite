@@ -196,6 +196,33 @@ TEST(FramesSequence, MakeReverse)
   EXPECT_EQ(1, res[13]);
 }
 
+TEST(FramesSequence, MakePingPong)
+{
+  FramesSequence f;
+  f.insert(1, 3);
+  EXPECT_EQ(3, f.size());
+  EXPECT_EQ(1, f.ranges());
+  f = f.makePingPong();
+  EXPECT_EQ(4, f.size());
+  EXPECT_EQ(2, f.ranges());
+
+  FramesSequence f2;
+  f2.insert(1, 2);
+  EXPECT_EQ(2, f2.size());
+  EXPECT_EQ(1, f2.ranges());
+  f2 = f2.makePingPong();
+  EXPECT_EQ(2, f2.size());
+  EXPECT_EQ(1, f2.ranges());
+
+  FramesSequence f3;
+  f3.insert(1, 1);
+  EXPECT_EQ(1, f3.size());
+  EXPECT_EQ(1, f3.ranges());
+  f3 = f3.makePingPong();
+  EXPECT_EQ(1, f3.size());
+  EXPECT_EQ(1, f3.ranges());
+}
+
 TEST(FramesSequence, MakePingPongAndFilter)
 {
   FramesSequence f;
