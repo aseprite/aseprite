@@ -186,7 +186,7 @@ endforeach()
 # have to manually sync the "en.ini" file in the "strings" repo from
 # the "aseprite" repo.
 add_custom_command(
-  OUTPUT ${DATA_OUTPUT_DIR}/en.ini
+  OUTPUT ${DATA_OUTPUT_DIR}/strings.git/en.ini
   COMMAND ${CMAKE_COMMAND} -E copy_if_different ${SOURCE_DATA_DIR}/strings/en.ini ${DATA_OUTPUT_DIR}/strings.git/en.ini
   MAIN_DEPENDENCY ${SOURCE_DATA_DIR}/strings/en.ini)
 list(APPEND out_data_files ${DATA_OUTPUT_DIR}/strings.git/en.ini)
