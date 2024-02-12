@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021  Igara Studio S.A.
+// Copyright (C) 2021-2024  Igara Studio S.A.
 // Copyright (C) 2016  David Capello
 //
 // This program is distributed under the terms of
@@ -40,6 +40,7 @@ namespace app {
   private:
     class CMarkBox;
 
+    std::string m_title;
     ui::View m_view;
     CMarkBox* m_textBox;
   };

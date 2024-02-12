@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2021  Igara Studio S.A.
+// Copyright (C) 2020-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -48,6 +48,11 @@ void AboutCommand::onExecute(Context* context)
     [&window]{
       window.closeWindow(nullptr);
       App::instance()->mainWindow()->showBrowser("README.md", "Authors");
+    });
+  window.i18nCredits()->Click.connect(
+    [&window]{
+      window.closeWindow(nullptr);
+      App::instance()->mainWindow()->showBrowser("strings/README.md", "Translators");
     });
   window.openWindowInForeground();
 }

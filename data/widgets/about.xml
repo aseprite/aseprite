@@ -1,5 +1,5 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2018-2022  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-2024  Igara Studio S.A. -->
 <!-- Copyright (C) 2018  David Capello -->
 <gui i18nwarnings="false">
 <window id="about" text="About Aseprite">
@@ -20,6 +20,7 @@
       <vbox>
         <separator text="Credits" horizontal="true" cell_hspan="2" />
         <link text="Contributors" url="" id="credits" />
+        <link text="Translators" url="" id="i18n_credits" />
         <link text="Open Source Projects" url="" id="licenses" />
       </vbox>
     </hbox>

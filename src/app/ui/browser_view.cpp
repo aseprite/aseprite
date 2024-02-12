@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2016-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -237,7 +237,14 @@ private:
 
   bool onProcessMessage(Message* msg) override {
     if (msg->type() == kLoadFileMessage) {
-      loadFile(static_cast<LoadFileMessage*>(msg)->file());
+      std::string newFile = static_cast<LoadFileMessage*>(msg)->file();
+      std::string newRelativeFile =
+        base::join_path(base::get_file_path(m_file),
+                        newFile);
+      if (base::is_file(newRelativeFile)) {
+        newFile = newRelativeFile;
+      }
+      loadFile(newFile);
       return true;
     }
 
@@ -574,12 +581,16 @@ BrowserView::~BrowserView()
 void BrowserView::loadFile(const std::string& file,
                            const std::string& section)
 {
+  if (section.empty())
+    m_title = base::get_file_title(file);
+  else
+    m_title = section;
   m_textBox->loadFile(file, section);
 }
 
 std::string BrowserView::getTabText()
 {
-  return base::get_file_title(m_textBox->file());
+  return m_title;
 }
 
 TabIcon BrowserView::getTabIcon()
