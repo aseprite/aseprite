@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -127,10 +127,8 @@ const Session::Backups& Session::backups()
 bool Session::isRunning()
 {
   loadPid();
-  if (m_pid)
-    return base::is_process_running(m_pid);
-  else
-    return false;
+  return base::get_process_name(m_pid) ==
+    base::get_process_name(base::get_current_process_id());
 }
 
 bool Session::isCrashedSession()
