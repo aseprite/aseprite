@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2022  Igara Studio S.A.
+// Copyright (C) 2020-2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -106,6 +106,19 @@ std::string parse_html(const std::string& str)
         ++i;
       }
 
+      paraOpen = false;
+    }
+    // Replace "right single quotation mark" = "’" = 0x2019 = 0xe2
+    // 0x80 0x99 (utf8) with ASCII char "'", useful for news phrases
+    // like "What's new? ..." or "We're ..." and to avoid
+    // anti-aliasing (using a TTF font) as the Aseprite font doesn't
+    // contain this character yet.
+    else if (i+2 < str.size() &&
+             unsigned char(str[i  ]) == 0xe2 &&
+             unsigned char(str[i+1]) == 0x80 &&
+             unsigned char(str[i+2]) == 0x99) {
+      result.push_back('\'');
+      i += 3;
       paraOpen = false;
     }
     else {
