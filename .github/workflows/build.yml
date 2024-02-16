@@ -14,7 +14,7 @@ jobs:
             build_type: Debug
             enable_ui: on
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         submodules: 'recursive'
     - name: ccache
