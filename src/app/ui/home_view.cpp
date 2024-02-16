@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -25,6 +25,7 @@
 #include "app/ui/workspace.h"
 #include "app/ui/workspace_tabs.h"
 #include "app/ui_context.h"
+#include "app/util/clipboard.h"
 #include "base/exception.h"
 #include "fmt/format.h"
 #include "ui/label.h"
@@ -190,6 +191,71 @@ void HomeView::onTabPopup(Workspace* workspace)
 void HomeView::onWorkspaceViewSelected()
 {
   StatusBar::instance()->showDefaultText();
+}
+
+
+void HomeView::onNewInputPriority(InputChainElement* element,
+                                 const ui::Message* msg)
+{
+  // Do nothing
+}
+
+bool HomeView::onCanCut(Context* ctx)
+{
+  return false;
+}
+
+bool HomeView::onCanCopy(Context* ctx)
+{
+  return false;
+}
+
+bool HomeView::onCanPaste(Context* ctx)
+{
+  return (ctx->clipboard()->format() == ClipboardFormat::Image);
+}
+
+bool HomeView::onCanClear(Context* ctx)
+{
+  return false;
+}
+
+bool HomeView::onCut(Context* ctx)
+{
+  return false;
+}
+
+bool HomeView::onCopy(Context* ctx)
+{
+  return false;
+}
+
+bool HomeView::onPaste(Context* ctx)
+{
+  auto clipboard = ctx->clipboard();
+  if (clipboard->format() == ClipboardFormat::Image) {
+    // Create new sprite from the clipboard image.
+    Params params;
+    params.set("ui", "false");
+    params.set("fromClipboard", "true");
+    ctx->executeCommand(
+      Commands::instance()->byId(CommandId::NewFile()),
+      params);
+    return true;
+  }
+  else
+    return false;
+}
+
+bool HomeView::onClear(Context* ctx)
+{
+  // Do nothing
+  return false;
+}
+
+void HomeView::onCancel(Context* ctx)
+{
+  // Do nothing
 }
 
 void HomeView::onNewFile()
