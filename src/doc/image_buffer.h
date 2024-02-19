@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -25,6 +25,8 @@ namespace doc {
     ImageBuffer(std::size_t size = 1)
       : m_size(doc_align_size(size))
       , m_buffer((uint8_t*)doc_aligned_alloc(m_size)) {
+      if (!m_buffer)
+        throw std::bad_alloc();
     }
 
     ~ImageBuffer() noexcept {
@@ -44,6 +46,8 @@ namespace doc {
 
         m_size = doc_align_size(size);
         m_buffer = (uint8_t*)doc_aligned_alloc(m_size);
+        if (!m_buffer)
+          throw std::bad_alloc();
       }
     }
 
