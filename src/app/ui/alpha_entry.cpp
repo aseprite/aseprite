@@ -13,7 +13,6 @@
 #include "base/scoped_value.h"
 #include "gfx/rect.h"
 #include "gfx/region.h"
-#include "os/font.h"
 #include "ui/fit_bounds.h"
 #include "ui/manager.h"
 #include "ui/message.h"
