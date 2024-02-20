@@ -729,6 +729,7 @@ target_link_libraries(app-lib
   render-lib
   laf-ft
   laf-os
+  laf-text
   ui-lib
   ver-lib
   undo

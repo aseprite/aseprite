@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -12,9 +12,9 @@
 #include "ui/entry.h"
 
 #include "base/string.h"
-#include "os/draw_text.h"
-#include "os/font.h"
 #include "os/system.h"
+#include "text/draw_text.h"
+#include "text/font.h"
 #include "ui/display.h"
 #include "ui/menu.h"
 #include "ui/message.h"
@@ -886,7 +886,7 @@ void Entry::showEditPopupMenu(const gfx::Point& pt)
   menu.showPopup(pt, display());
 }
 
-class Entry::CalcBoxesTextDelegate : public os::DrawTextDelegate {
+class Entry::CalcBoxesTextDelegate : public text::DrawTextDelegate {
 public:
   CalcBoxesTextDelegate(const int end) : m_end(end) {
   }
@@ -926,8 +926,8 @@ void Entry::recalcCharBoxes(const std::string& text)
 {
   int lastTextIndex = int(text.size());
   CalcBoxesTextDelegate delegate(lastTextIndex);
-  os::draw_text(nullptr, font(), text,
-                 gfx::ColorNone, gfx::ColorNone, 0, 0, &delegate);
+  text::draw_text(nullptr, base::AddRef(font()), text,
+                  gfx::ColorNone, gfx::ColorNone, 0, 0, &delegate);
   m_boxes = delegate.boxes();
 
   if (!m_boxes.empty()) {

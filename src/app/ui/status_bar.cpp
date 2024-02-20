@@ -43,8 +43,8 @@
 #include "doc/sprite.h"
 #include "fmt/format.h"
 #include "gfx/size.h"
-#include "os/font.h"
 #include "os/surface.h"
+#include "text/font.h"
 #include "ui/ui.h"
 #include "ver/info.h"
 

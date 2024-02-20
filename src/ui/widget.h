@@ -16,7 +16,7 @@
 #include "gfx/region.h"
 #include "gfx/size.h"
 #include "obs/signal.h"
-#include "os/font.h"
+#include "text/font.h"
 #include "ui/base.h"
 #include "ui/component.h"
 #include "ui/graphics.h"
@@ -136,7 +136,7 @@ namespace ui {
     // LOOK & FEEL
     // ===============================================================
 
-    os::Font* font() const;
+    text::Font* font() const;
 
     // Gets the background color of the widget.
     gfx::Color bgColor() const {
@@ -455,7 +455,7 @@ namespace ui {
     Theme* m_theme;              // Widget's theme
     Style* m_style;
     std::string m_text;          // Widget text
-    mutable os::FontRef m_font;  // Cached font returned by the theme
+    mutable text::FontRef m_font;  // Cached font returned by the theme
     gfx::Color m_bgColor;        // Background color
     gfx::Rect m_bounds;
     gfx::Region m_updateRegion;   // Region to be redrawed.

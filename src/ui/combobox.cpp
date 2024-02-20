@@ -12,7 +12,6 @@
 #include "ui/combobox.h"
 
 #include "gfx/size.h"
-#include "os/font.h"
 #include "ui/button.h"
 #include "ui/entry.h"
 #include "ui/fit_bounds.h"

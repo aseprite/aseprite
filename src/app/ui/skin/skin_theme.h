@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2023  Igara Studio S.A.
+// Copyright (C) 2020-2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -12,6 +12,7 @@
 #include "app/ui/skin/skin_part.h"
 #include "gfx/color.h"
 #include "gfx/fwd.h"
+#include "text/font_mgr.h"
 #include "ui/cursor.h"
 #include "ui/cursor_type.h"
 #include "ui/manager.h"
@@ -37,11 +38,11 @@ namespace app {
     class ThemeFont {
       public:
         ThemeFont() {}
-        ThemeFont(os::FontRef font, bool mnemonics) : m_font(font), m_mnemonics(mnemonics) {}
-        os::FontRef font() { return m_font; }
+        ThemeFont(text::FontRef font, bool mnemonics) : m_font(font), m_mnemonics(mnemonics) {}
+        text::FontRef font() { return m_font; }
         bool mnemonics() { return m_mnemonics; }
       private:
-        os::FontRef m_font;
+        text::FontRef m_font;
         bool m_mnemonics;
     };
 
@@ -62,10 +63,11 @@ namespace app {
       int preferredScreenScaling() { return m_preferredScreenScaling; }
       int preferredUIScaling() { return m_preferredUIScaling; }
 
-      os::Font* getDefaultFont() const override { return m_defaultFont.get(); }
-      os::Font* getWidgetFont(const ui::Widget* widget) const override;
-      os::Font* getMiniFont() const { return m_miniFont.get(); }
-      os::Font* getUnscaledFont(os::Font* font) const {
+      text::FontMgrRef fontMgr() const { return m_fontMgr; }
+      text::Font* getDefaultFont() const override { return m_defaultFont.get(); }
+      text::Font* getWidgetFont(const ui::Widget* widget) const override;
+      text::Font* getMiniFont() const { return m_miniFont.get(); }
+      text::Font* getUnscaledFont(text::Font* font) const {
         auto it = m_unscaledFonts.find(font);
         if (it != m_unscaledFonts.end())
           return it->second.get();
@@ -180,6 +182,7 @@ namespace app {
 
       std::string findThemePath(const std::string& themeId) const;
 
+      text::FontMgrRef m_fontMgr;
       std::string m_path;
       os::SurfaceRef m_sheet;
       // Contains the sheet surface as is, without any scale.
@@ -195,9 +198,9 @@ namespace app {
       std::map<std::string, FontData*> m_fonts;
       std::map<std::string, ThemeFont> m_themeFonts;
       // Stores the unscaled font version of the Font pointer used as a key.
-      std::map<os::Font*, os::FontRef> m_unscaledFonts;
-      os::FontRef m_defaultFont;
-      os::FontRef m_miniFont;
+      std::map<text::Font*, text::FontRef> m_unscaledFonts;
+      text::FontRef m_defaultFont;
+      text::FontRef m_miniFont;
       int m_preferredScreenScaling;
       int m_preferredUIScaling;
     };

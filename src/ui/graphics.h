@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -15,8 +15,8 @@
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
-#include "os/font.h"
 #include "os/surface.h"
+#include "text/font.h"
 #include "ui/paint.h"
 
 #include <memory>
@@ -29,8 +29,11 @@ namespace gfx {
 }
 
 namespace os {
-  class DrawTextDelegate;
   struct Sampling;
+}
+
+namespace text {
+  class DrawTextDelegate;
 }
 
 namespace ui {
@@ -102,18 +105,19 @@ namespace ui {
     // FONT & TEXT
     // ======================================================================
 
-    os::Font* font() { return m_font.get(); }
-    void setFont(const os::FontRef& font);
+    text::Font* font() { return m_font.get(); }
+    void setFont(const text::FontRef& font);
 
     void drawText(const std::string& str,
                   gfx::Color fg, gfx::Color bg,
                   const gfx::Point& pt,
-                  os::DrawTextDelegate* delegate = nullptr);
+                  text::DrawTextDelegate* delegate = nullptr);
     void drawUIText(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Point& pt, const int mnemonic);
     void drawAlignedUIText(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Rect& rc, const int align);
 
     gfx::Size measureUIText(const std::string& str);
-    static int measureUITextLength(const std::string& str, os::Font* font);
+    static int measureUITextLength(const std::string& str,
+                                   text::Font* font);
     gfx::Size fitString(const std::string& str, int maxWidth, int align);
 
     // Can be used in case that you've accessed/changed the
@@ -130,7 +134,7 @@ namespace ui {
     int m_dx;
     int m_dy;
     gfx::Rect m_clipBounds;
-    os::FontRef m_font;
+    text::FontRef m_font;
     gfx::Rect m_dirtyBounds;
   };
 

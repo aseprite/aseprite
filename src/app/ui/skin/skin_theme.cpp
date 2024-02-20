@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -33,10 +33,10 @@
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
-#include "os/draw_text.h"
-#include "os/font.h"
 #include "os/surface.h"
 #include "os/system.h"
+#include "text/draw_text.h"
+#include "text/font.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
 
@@ -189,7 +189,7 @@ static FontData* load_font(std::map<std::string, FontData*>& fonts,
   if (type == "spritesheet") {
     const char* fileStr = xmlFont->Attribute("file");
     if (fileStr) {
-      font.reset(new FontData(os::FontType::SpriteSheet));
+      font.reset(new FontData(text::FontType::SpriteSheet));
       font->setFilename(base::join_path(xmlDir, fileStr));
     }
   }
@@ -219,7 +219,7 @@ static FontData* load_font(std::map<std::string, FontData*>& fonts,
     // The filename can be empty if the font was not found, anyway we
     // want to keep the font information (e.g. to use the fallback
     // information of this font).
-    font.reset(new FontData(os::FontType::FreeType));
+    font.reset(new FontData(text::FontType::FreeType));
     font->setFilename(fontFilename);
     font->setAntialias(antialias);
 
@@ -273,7 +273,8 @@ SkinTheme* SkinTheme::get(const ui::Widget* widget)
 }
 
 SkinTheme::SkinTheme()
-  : m_sheet(nullptr)
+  : m_fontMgr(text::FontMgr::Make())
+  , m_sheet(nullptr)
   , m_defaultFont(nullptr)
   , m_miniFont(nullptr)
   , m_preferredScreenScaling(-1)
@@ -403,7 +404,7 @@ void SkinTheme::loadSheet()
   m_sheet->setImmutable();
 
   // Reset sprite sheet and font of all layer styles (to avoid
-  // dangling pointers to os::Surface or os::Font).
+  // dangling pointers to os::Surface or text::Font).
   for (auto& it : m_styles) {
     for (auto& layer : it.second->layers()) {
       layer.setIcon(nullptr);
@@ -460,12 +461,12 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
         const char* mnemonicsStr = xmlFont->Attribute("mnemonics");
         bool mnemonics = mnemonicsStr ? (std::string(mnemonicsStr) != "off") : true;
 
-        os::FontRef font = fontData->getFont(size);
+        text::FontRef font = fontData->getFont(m_fontMgr, size);
         m_themeFonts[idStr] = ThemeFont(font, mnemonics);
 
         // Store a unscaled version for using when ui scaling is not desired (i.e. in a Canvas widget with
         // autoScaling enabled).
-        m_unscaledFonts[font.get()] = fontData->getFont(size, 1);
+        m_unscaledFonts[font.get()] = fontData->getFont(m_fontMgr, size, 1);
 
         if (id == "default")
           m_defaultFont = font;
@@ -914,7 +915,7 @@ os::SurfaceRef SkinTheme::sliceUnscaledSheet(os::SurfaceRef sur, const gfx::Rect
   return app::skin::sliceSheet(m_unscaledSheet, sur, bounds);
 }
 
-os::Font* SkinTheme::getWidgetFont(const Widget* widget) const
+text::Font* SkinTheme::getWidgetFont(const Widget* widget) const
 {
   auto skinPropery = std::static_pointer_cast<SkinProperty>(widget->getProperty(SkinProperty::Name));
   if (skinPropery && skinPropery->hasMiniFont())
@@ -1119,7 +1120,7 @@ int SkinTheme::getScrollbarSize()
 
 gfx::Size SkinTheme::getEntryCaretSize(Widget* widget)
 {
-  if (widget->font()->type() == os::FontType::FreeType)
+  if (widget->font()->type() == text::FontType::FreeType)
     return gfx::Size(2*guiscale(), widget->textHeight());
   else
     return gfx::Size(2*guiscale(), widget->textHeight()+2*guiscale());
@@ -1149,7 +1150,7 @@ void SkinTheme::paintEntry(PaintEvent& ev)
 
 namespace {
 
-class DrawEntryTextDelegate : public os::DrawTextDelegate {
+class DrawEntryTextDelegate : public text::DrawTextDelegate {
 public:
   DrawEntryTextDelegate(Entry* widget, Graphics* graphics,
                         const gfx::Point& pos, const int h)

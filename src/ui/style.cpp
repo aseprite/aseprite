@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2024  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -10,8 +10,6 @@
 #endif
 
 #include "ui/style.h"
-
-#include "os/font.h"
 
 namespace ui {
 
@@ -62,7 +60,7 @@ void Style::setMaxSize(const gfx::Size& sz)
   m_maxSize = sz;
 }
 
-void Style::setFont(const os::Ref<os::Font>& font)
+void Style::setFont(const text::FontRef& font)
 {
   m_font = font;
 }

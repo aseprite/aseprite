@@ -16,10 +16,10 @@
 #include "base/memory.h"
 #include "base/string.h"
 #include "base/utf8_decode.h"
-#include "os/font.h"
 #include "os/surface.h"
 #include "os/system.h"
 #include "os/window.h"
+#include "text/font.h"
 #include "ui/app_state.h"
 #include "ui/init_theme_event.h"
 #include "ui/intern.h"
@@ -163,7 +163,7 @@ void Widget::setTextQuiet(const std::string& text)
   enableFlags(HAS_TEXT);
 }
 
-os::Font* Widget::font() const
+text::Font* Widget::font() const
 {
   if (!m_font && m_theme)
     m_font = AddRef(m_theme->getWidgetFont(this));

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -36,10 +36,10 @@
 #include "fmt/format.h"
 #include "gfx/color.h"
 #include "gfx/point.h"
-#include "os/font.h"
 #include "os/surface.h"
 #include "os/surface.h"
 #include "os/system.h"
+#include "text/font.h"
 #include "ui/graphics.h"
 #include "ui/manager.h"
 #include "ui/message.h"
@@ -940,7 +940,7 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
         m_adapter->drawEntry(g, theme, i, k, childSpacing(),
                              box2, negColor);
 
-        os::Font* minifont = theme->getMiniFont();
+        text::Font* minifont = theme->getMiniFont();
         const std::string text = base::convert_to<std::string>(k);
         g->setFont(AddRef(minifont));
         g->drawText(text, negColor, gfx::ColorNone,

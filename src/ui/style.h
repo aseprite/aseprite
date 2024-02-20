@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2024  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -14,8 +14,8 @@
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
-#include "os/font.h"
 #include "os/surface.h"
+#include "text/font.h"
 #include "ui/base.h"
 
 #include <string>
@@ -115,7 +115,7 @@ namespace ui {
     const gfx::Size& minSize() const { return m_minSize; }
     const gfx::Size& maxSize() const { return m_maxSize; }
     const gfx::Size& gap() const { return m_gap; }
-    os::Font* font() const { return m_font.get(); }
+    text::Font* font() const { return m_font.get(); }
     const bool mnemonics() const { return m_mnemonics; }
     const Layers& layers() const { return m_layers; }
     Layers& layers() { return m_layers; }
@@ -127,7 +127,7 @@ namespace ui {
     void setMinSize(const gfx::Size& sz);
     void setMaxSize(const gfx::Size& sz);
     void setGap(const gfx::Size& value) { m_gap = value; }
-    void setFont(const os::FontRef& font);
+    void setFont(const text::FontRef& font);
     void setMnemonics(const bool enabled) { m_mnemonics = enabled; }
     void addLayer(const Layer& layer);
 
@@ -144,7 +144,7 @@ namespace ui {
     gfx::Size m_maxSize;
     // Grid's columns and rows separation in pixels.
     gfx::Size m_gap;
-    os::FontRef m_font;
+    text::FontRef m_font;
     bool m_mnemonics;
   };
 

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -16,8 +16,8 @@
 #include "app/ui/skin/skin_theme.h"
 #include "base/string.h"
 #include "base/time.h"
-#include "os/font.h"
 #include "os/surface.h"
+#include "text/font.h"
 #include "ui/ui.h"
 
 #include <algorithm>

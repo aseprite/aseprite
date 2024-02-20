@@ -1,5 +1,5 @@
 # Aseprite UI Library
-# Copyright (C) 2019-2022  Igara Studio S.A.
+# Copyright (C) 2019-2024  Igara Studio S.A.
 # Copyright (C) 2001-2018  David Capello
 
 if(WIN32)
@@ -61,6 +61,7 @@ add_library(ui-lib
 
 target_link_libraries(ui-lib
   laf-os
+  laf-text
   laf-gfx
   laf-base
   obs)

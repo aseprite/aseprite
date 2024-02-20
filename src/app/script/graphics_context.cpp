@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022-2023  Igara Studio S.A.
+// Copyright (C) 2022-2024  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -20,9 +20,9 @@
 #include "app/util/conversion_to_surface.h"
 #include "doc/cel.h"
 #include "doc/tileset.h"
-#include "os/draw_text.h"
 #include "os/surface.h"
 #include "os/system.h"
+#include "text/draw_text.h"
 
 #include <algorithm>
 
@@ -33,14 +33,14 @@ namespace script {
 
 void GraphicsContext::fillText(const std::string& text, int x, int y)
 {
-  os::draw_text(m_surface.get(), m_font.get(),
-                text, m_paint.color(), 0, x, y, nullptr);
+  text::draw_text(m_surface.get(), m_font,
+                  text, m_paint.color(), 0, x, y, nullptr);
 }
 
 gfx::Size GraphicsContext::measureText(const std::string& text) const
 {
-  return os::draw_text(nullptr, m_font.get(), text,
-                       0, 0, 0, 0, nullptr).size();
+  return text::draw_text(nullptr, m_font, text,
+                         0, 0, 0, 0, nullptr).size();
 }
 
 void GraphicsContext::drawImage(const doc::Image* img, int x, int y)

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -53,9 +53,9 @@
 #include "fmt/format.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
-#include "os/font.h"
 #include "os/surface.h"
 #include "os/system.h"
+#include "text/font.h"
 #include "ui/ui.h"
 
 #include <algorithm>

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022-2023  Igara Studio S.A.
+// Copyright (C) 2022-2024  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -15,6 +15,7 @@
 #include "app/color_utils.h"
 #include "app/util/shader_helpers.h"
 #include "doc/render_plan.h"
+#include "os/common/generic_surface.h"
 #include "os/skia/skia_surface.h"
 
 #include "include/core/SkCanvas.h"

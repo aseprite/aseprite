@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -11,8 +11,9 @@
 
 #include "app/ui/skin/font_data.h"
 
-#include "os/font.h"
-#include "os/system.h"
+#include "text/font.h"
+#include "text/font_mgr.h"
+#include "ui/manager.h"
 #include "ui/scale.h"
 
 #include <set>
@@ -20,7 +21,7 @@
 namespace app {
 namespace skin {
 
-FontData::FontData(os::FontType type)
+FontData::FontData(text::FontType type)
   : m_type(type)
   , m_antialias(false)
   , m_fallback(nullptr)
@@ -28,9 +29,11 @@ FontData::FontData(os::FontType type)
 {
 }
 
-os::FontRef FontData::getFont(int size, int uiscale)
+text::FontRef FontData::getFont(text::FontMgrRef& fontMgr, int size, int uiscale)
 {
-    if (m_type == os::FontType::SpriteSheet)
+  ASSERT(fontMgr);
+
+  if (m_type == text::FontType::SpriteSheet)
     size = 1;                   // Same size always
 
   // Use cache
@@ -39,14 +42,14 @@ os::FontRef FontData::getFont(int size, int uiscale)
   if (it != m_fonts.end())
     return it->second;
 
-  os::FontRef font = nullptr;
+  text::FontRef font = nullptr;
 
   switch (m_type) {
-    case os::FontType::SpriteSheet:
-      font = os::instance()->loadSpriteSheetFont(m_filename.c_str(), size);
+    case text::FontType::SpriteSheet:
+      font = fontMgr->loadSpriteSheetFont(m_filename.c_str(), size);
       break;
-    case os::FontType::FreeType: {
-      font = os::instance()->loadTrueTypeFont(m_filename.c_str(), size);
+    case text::FontType::FreeType: {
+      font = fontMgr->loadTrueTypeFont(m_filename.c_str(), size);
       if (font)
         font->setAntialias(m_antialias);
       break;
@@ -54,7 +57,8 @@ os::FontRef FontData::getFont(int size, int uiscale)
   }
 
   if (m_fallback) {
-    os::FontRef fallback = m_fallback->getFont(m_fallbackSize);
+    text::FontRef fallback = m_fallback->getFont(fontMgr,
+                                                 m_fallbackSize);
     if (font)
       font->setFallback(fallback.get());
     else
@@ -66,9 +70,9 @@ os::FontRef FontData::getFont(int size, int uiscale)
   return font;
 }
 
-os::FontRef FontData::getFont(int size)
+text::FontRef FontData::getFont(text::FontMgrRef& fontMgr, int size)
 {
-  return getFont(size, ui::guiscale());
+  return getFont(fontMgr, size, ui::guiscale());
 }
 
 } // namespace skin

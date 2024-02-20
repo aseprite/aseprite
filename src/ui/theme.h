@@ -62,8 +62,8 @@ namespace ui {
     Theme();
     virtual ~Theme();
 
-    virtual os::Font* getDefaultFont() const = 0;
-    virtual os::Font* getWidgetFont(const Widget* widget) const = 0;
+    virtual text::Font* getDefaultFont() const = 0;
+    virtual text::Font* getWidgetFont(const Widget* widget) const = 0;
 
     virtual ui::Cursor* getStandardCursor(CursorType type) = 0;
     virtual void initWidget(Widget* widget) = 0;

@@ -15,7 +15,6 @@
 #include "app/tools/tool_box.h"
 #include "app/ui/dithering_selector.h"
 #include "app/ui/skin/skin_theme.h"
-#include "os/font.h"
 #include "os/surface.h"
 #include "ui/fit_bounds.h"
 #include "ui/message.h"

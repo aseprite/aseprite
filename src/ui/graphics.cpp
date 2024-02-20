@@ -19,12 +19,12 @@
 #include "gfx/rect.h"
 #include "gfx/region.h"
 #include "gfx/size.h"
-#include "os/draw_text.h"
-#include "os/font.h"
+#include "text/font.h"
 #include "os/sampling.h"
 #include "os/surface.h"
 #include "os/system.h"
 #include "os/window.h"
+#include "text/draw_text.h"
 #include "ui/display.h"
 #include "ui/scale.h"
 #include "ui/theme.h"
@@ -338,7 +338,7 @@ void Graphics::blit(os::Surface* srcSurface, int srcx, int srcy, int dstx, int d
   srcSurface->blitTo(m_surface.get(), srcx, srcy, m_dx+dstx, m_dy+dsty, w, h);
 }
 
-void Graphics::setFont(const os::FontRef& font)
+void Graphics::setFont(const text::FontRef& font)
 {
   m_font = font;
 }
@@ -346,23 +346,24 @@ void Graphics::setFont(const os::FontRef& font)
 void Graphics::drawText(const std::string& str,
                         gfx::Color fg, gfx::Color bg,
                         const gfx::Point& origPt,
-                        os::DrawTextDelegate* delegate)
+                        text::DrawTextDelegate* delegate)
 {
   gfx::Point pt(m_dx+origPt.x, m_dy+origPt.y);
 
   os::SurfaceLock lock(m_surface.get());
   gfx::Rect textBounds =
-    os::draw_text(m_surface.get(), m_font.get(), str, fg, bg, pt.x, pt.y, delegate);
+    text::draw_text(m_surface.get(), m_font, str, fg, bg, pt.x, pt.y, delegate);
 
   dirty(gfx::Rect(pt.x, pt.y, textBounds.w, textBounds.h));
 }
 
 namespace {
 
-class DrawUITextDelegate : public os::DrawTextDelegate {
+class DrawUITextDelegate : public text::DrawTextDelegate {
 public:
   DrawUITextDelegate(os::Surface* surface,
-                     os::Font* font, const int mnemonic)
+                     text::Font* font,
+                     const int mnemonic)
     : m_surface(surface)
     , m_font(font)
     , m_mnemonic(std::tolower(mnemonic))
@@ -398,7 +399,7 @@ public:
     if (!gfx::is_transparent(m_underscoreColor)) {
       // TODO underscore height = guiscale() should be configurable from ui::Theme
       int dy = 0;
-      if (m_font->type() == os::FontType::FreeType) // TODO use other method to locate the underline
+      if (m_font->type() == text::FontType::FreeType) // TODO use other method to locate the underline
         dy += guiscale();
       gfx::Rect underscoreBounds(charBounds.x, charBounds.y+charBounds.h+dy,
                                  charBounds.w, guiscale());
@@ -414,7 +415,7 @@ public:
 
 private:
   os::Surface* m_surface;
-  os::Font* m_font;
+  text::Font* m_font;
   int m_mnemonic;
   gfx::Color m_underscoreColor;
   gfx::Rect m_bounds;
@@ -430,8 +431,8 @@ void Graphics::drawUIText(const std::string& str, gfx::Color fg, gfx::Color bg,
   int y = m_dy+pt.y;
 
   DrawUITextDelegate delegate(m_surface.get(), m_font.get(), mnemonic);
-  os::draw_text(m_surface.get(), m_font.get(), str,
-                fg, bg, x, y, &delegate);
+  text::draw_text(m_surface.get(), m_font, str,
+                  fg, bg, x, y, &delegate);
 
   dirty(delegate.bounds());
 }
@@ -450,12 +451,13 @@ gfx::Size Graphics::measureUIText(const std::string& str)
 }
 
 // static
-int Graphics::measureUITextLength(const std::string& str, os::Font* font)
+int Graphics::measureUITextLength(const std::string& str,
+                                  text::Font* font)
 {
   DrawUITextDelegate delegate(nullptr, font, 0);
-  os::draw_text(nullptr, font, str,
-                gfx::ColorNone, gfx::ColorNone, 0, 0,
-                &delegate);
+  text::draw_text(nullptr, base::AddRef(font), str,
+                  gfx::ColorNone, gfx::ColorNone, 0, 0,
+                  &delegate);
   return delegate.bounds().w;
 }
 
@@ -606,9 +608,9 @@ void Graphics::dirty(const gfx::Rect& bounds)
 // ScreenGraphics
 
 ScreenGraphics::ScreenGraphics(Display* display)
-  : Graphics(display, AddRef(display->surface()), 0, 0)
+  : Graphics(display, base::AddRef(display->surface()), 0, 0)
 {
-  setFont(AddRef(get_theme()->getDefaultFont()));
+  setFont(base::AddRef(get_theme()->getDefaultFont()));
 }
 
 ScreenGraphics::~ScreenGraphics()

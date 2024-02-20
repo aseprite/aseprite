@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -13,9 +13,9 @@
 
 #include "gfx/point.h"
 #include "gfx/size.h"
-#include "os/font.h"
 #include "os/surface.h"
 #include "os/system.h"
+#include "text/font.h"
 #include "ui/intern.h"
 #include "ui/manager.h"
 #include "ui/paint_event.h"
@@ -434,7 +434,7 @@ void Theme::paintLayer(Graphics* g,
 
     case Style::Layer::Type::kText:
       if (layer.color() != gfx::ColorNone) {
-        os::FontRef oldFont = AddRef(g->font());
+        text::FontRef oldFont = base::AddRef(g->font());
         if (style->font())
           g->setFont(AddRef(style->font()));
 
@@ -588,7 +588,7 @@ void Theme::measureLayer(const Widget* widget,
 
     case Style::Layer::Type::kText:
       if (layer.color() != gfx::ColorNone) {
-        os::Font* font = (style->font() ? style->font():
+        text::Font* font = (style->font() ? style->font():
                                           widget->font());
         gfx::Size textSize(Graphics::measureUITextLength(widget->text(), font),
                            font->height());
@@ -834,7 +834,7 @@ void Theme::drawTextBox(Graphics* g, const Widget* widget,
   int x, y, chr, len;
   gfx::Point scroll;
   int textheight = widget->textHeight();
-  os::Font* font = widget->font();
+  text::Font* font = widget->font();
   char *beg_end, *old_end;
   int width;
   gfx::Rect vp;

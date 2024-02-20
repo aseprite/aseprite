@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2022-2023  Igara Studio S.A.
+// Copyright (c) 2022-2024  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -12,9 +12,9 @@
 
 #include "doc/palette.h"
 #include "gfx/path.h"
-#include "os/font.h"
 #include "os/paint.h"
 #include "os/surface.h"
+#include "text/font.h"
 
 #include <stack>
 
@@ -42,8 +42,8 @@ public:
     m_uiscale = gc.m_uiscale;
   }
 
-  os::FontRef font() const { return m_font; }
-  void font(const os::FontRef& font) { m_font = font; }
+  text::FontRef font() const { return m_font; }
+  void font(const text::FontRef& font) { m_font = font; }
 
   doc::Palette* palette() const { return m_palette; }
   void palette(doc::Palette* palette) { m_palette = palette; }
@@ -140,7 +140,7 @@ private:
   // Keeps the UI Scale currently in use when canvas autoScaling is enabled.
   int m_uiscale;
   os::Paint m_paint;
-  os::FontRef m_font;
+  text::FontRef m_font;
   gfx::Path m_path;
   std::stack<State> m_saved;
   doc::Palette* m_palette = nullptr;

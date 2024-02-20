@@ -21,7 +21,7 @@
 #include "base/file_handle.h"
 #include "base/fs.h"
 #include "base/split_string.h"
-#include "os/font.h"
+#include "text/font.h"
 #include "ui/alert.h"
 #include "ui/link_label.h"
 #include "ui/menu.h"
