@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -41,7 +41,7 @@ std::string getUserAgent()
       userAgent << " NT";
       break;
   }
-  userAgent << " " << p.osVer.major() << "." << p.osVer.minor();
+  userAgent << " " << p.osVer.str();
 
   if (p.servicePack.major() > 0)
     userAgent << " SP" << p.servicePack.major();
