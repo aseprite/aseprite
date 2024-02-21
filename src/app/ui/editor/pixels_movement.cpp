@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -131,9 +131,9 @@ PixelsMovement::PixelsMovement(
   , m_fastMode(false)
   , m_needsRotSpriteRedraw(false)
 {
-  double cornerThick = (m_site.tilemapMode() == TilemapMode::Tiles) ?
-                          CORNER_THICK_FOR_TILEMAP_MODE :
-                          CORNER_THICK_FOR_PIXELS_MODE;
+  const float cornerThick = (m_site.tilemapMode() == TilemapMode::Tiles ?
+                             CORNER_THICK_FOR_TILEMAP_MODE:
+                             CORNER_THICK_FOR_PIXELS_MODE);
   Transformation transform(mask->bounds(), cornerThick);
   set_pivot_from_preferences(transform);
 

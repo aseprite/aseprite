@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2022  Igara Studio S.A.
+// Copyright (C) 2020-2024  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -13,8 +13,8 @@
 #include "gfx/rect.h"
 #include <vector>
 
-#define CORNER_THICK_FOR_TILEMAP_MODE 0.001
-#define CORNER_THICK_FOR_PIXELS_MODE 1.0
+#define CORNER_THICK_FOR_TILEMAP_MODE   0.001f
+#define CORNER_THICK_FOR_PIXELS_MODE    1.0f
 
 namespace app {
 
@@ -59,7 +59,7 @@ public:
       void rightBottom(const gfx::PointF& pt) { m_corners[RIGHT_BOTTOM] = pt; }
       void leftBottom(const gfx::PointF& pt) { m_corners[LEFT_BOTTOM] = pt; }
 
-      gfx::RectF bounds(double cornerThick) const {
+      gfx::RectF bounds(const float cornerThick) const {
         gfx::RectF bounds;
         for (int i=0; i<Corners::NUM_OF_CORNERS; ++i)
           bounds |= gfx::RectF(m_corners[i].x, m_corners[i].y, cornerThick, cornerThick);
@@ -71,20 +71,21 @@ public:
   };
 
   Transformation();
-  Transformation(const gfx::RectF& bounds, double cornerThick);
+  Transformation(const gfx::RectF& bounds,
+                 const float cornerThick);
 
   // Simple getters and setters. The angle is in radians.
 
   const gfx::RectF& bounds() const { return m_bounds; }
   const gfx::PointF& pivot() const { return m_pivot; }
-  double cornerThick() const { return m_cornerThick; }
-  double angle() const { return m_angle; }
-  double skew() const { return m_skew; }
+  float cornerThick() const { return m_cornerThick; }
+  float angle() const { return m_angle; }
+  float skew() const { return m_skew; }
 
   void bounds(const gfx::RectF& bounds) { m_bounds = bounds; }
   void pivot(const gfx::PointF& pivot) { m_pivot = pivot; }
-  void angle(double angle) { m_angle = angle; }
-  void skew(double angle) { m_skew = angle; }
+  void angle(float angle) { m_angle = angle; }
+  void skew(float angle) { m_skew = angle; }
 
   // Applies the transformation (rotation with angle/pivot) to the
   // current bounds (m_bounds).
@@ -99,15 +100,15 @@ public:
   // Static helper method to rotate points.
   static gfx::PointF rotatePoint(const gfx::PointF& point,
                                  const gfx::PointF& pivot,
-                                 const double angle,
-                                 const double skew);
+                                 const float angle,
+                                 const float skew);
 
 private:
-  gfx::RectF m_bounds = gfx::RectF(0.0, 0.0, 0.0, 0.0);
-  gfx::PointF m_pivot = gfx::PointF(0.0, 0.0);
-  double m_angle = 0.0;
-  double m_skew = 0.0;
-  double m_cornerThick = CORNER_THICK_FOR_PIXELS_MODE;
+  gfx::RectF m_bounds = gfx::RectF(0.0f, 0.0f, 0.0f, 0.0f);
+  gfx::PointF m_pivot = gfx::PointF(0.0f, 0.0f);
+  float m_angle = 0.0;
+  float m_skew = 0.0;
+  float m_cornerThick = CORNER_THICK_FOR_PIXELS_MODE;
 };
 
 } // namespace app

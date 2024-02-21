@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022  Igara Studio S.A.
+// Copyright (C) 2022-2024  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -20,8 +20,8 @@ DelayedMouseMove::DelayedMouseMove(DelayedMouseMoveDelegate* delegate,
   : m_delegate(delegate)
   , m_editor(editor)
   , m_timer(interval)
-  , m_spritePos(std::numeric_limits<double>::min(),
-                std::numeric_limits<double>::min())
+  , m_spritePos(std::numeric_limits<float>::min(),
+                std::numeric_limits<float>::min())
 {
   ASSERT(m_delegate);
   m_timer.Tick.connect([this] { commitMouseMove(); });
@@ -81,8 +81,8 @@ void DelayedMouseMove::commitMouseMove()
 
 const gfx::PointF& DelayedMouseMove::spritePos() const
 {
-  ASSERT(m_spritePos.x != std::numeric_limits<double>::min() &&
-         m_spritePos.y != std::numeric_limits<double>::min());
+  ASSERT(m_spritePos.x != std::numeric_limits<float>::min() &&
+         m_spritePos.y != std::numeric_limits<float>::min());
   return m_spritePos;
 }
 
