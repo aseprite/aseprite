@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2020-2022  Igara Studio S.A.
+// Copyright (Cg) 2020-2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -141,6 +141,8 @@ namespace ui {
     static void drawTextBox(Graphics* g, const Widget* textbox,
                             int* w, int* h, gfx::Color bg, gfx::Color fg);
 
+    static ui::Style* getDefaultStyle() { return &m_defaultStyle; }
+
   protected:
     virtual void onRegenerateTheme() = 0;
 
@@ -165,6 +167,8 @@ namespace ui {
                            gfx::Size& sizeHint,
                            gfx::Border& borderHint,
                            gfx::Rect& textHint, int& textAlign);
+
+    static ui::Style m_defaultStyle;
   };
 
 } // namespace ui
