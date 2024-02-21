@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -142,6 +142,9 @@ namespace app {
     std::unique_ptr<LegacyModules> m_legacy;
     bool m_isGui;
     bool m_isShell;
+#ifdef ENABLE_STEAM
+    bool m_inAppSteam = true;
+#endif
     std::unique_ptr<MainWindow> m_mainWindow;
     base::paths m_files;
 #ifdef ENABLE_UI

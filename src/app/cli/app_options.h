@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -95,6 +95,9 @@ public:
   const Option& exportTileset() const { return m_exportTileset; }
 
   bool hasExporterParams() const;
+#ifdef ENABLE_STEAM
+  bool noInApp() const;
+#endif
 #ifdef _WIN32
   bool disableWintab() const;
 #endif
@@ -166,6 +169,9 @@ private:
 
   Option& m_verbose;
   Option& m_debug;
+#ifdef ENABLE_STEAM
+  Option& m_noInApp;
+#endif
 #ifdef _WIN32
   Option& m_disableWintab;
 #endif

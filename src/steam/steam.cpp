@@ -134,7 +134,7 @@ public:
     unloadLib();
   }
 
-  bool initialized() const {
+  bool isInitialized() const {
     return m_initialized;
   }
 
@@ -239,7 +239,7 @@ SteamAPI* SteamAPI::instance()
 }
 
 SteamAPI::SteamAPI()
-  : m_impl(new Impl)
+  : m_impl(std::make_unique<Impl>())
 {
   ASSERT(g_instance == nullptr);
   g_instance = this;
@@ -247,15 +247,13 @@ SteamAPI::SteamAPI()
 
 SteamAPI::~SteamAPI()
 {
-  delete m_impl;
-
   ASSERT(g_instance == this);
   g_instance = nullptr;
 }
 
-bool SteamAPI::initialized() const
+bool SteamAPI::isInitialized() const
 {
-  return m_impl->initialized();
+  return m_impl->isInitialized();
 }
 
 void SteamAPI::runCallbacks()
