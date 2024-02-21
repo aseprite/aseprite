@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -125,6 +125,9 @@ Grid::Info Grid::getChildInfo(Widget* child)
 
 void Grid::setStyle(Style* style)
 {
+  ASSERT(style);
+  if (!style)
+    style = Theme::getDefaultStyle();
   Widget::setStyle(style);
   setGap(style->gap());
 }
