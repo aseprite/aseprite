@@ -767,6 +767,8 @@ if(ENABLE_SCRIPTING)
 
   if(ENABLE_WEBSOCKET)
     target_link_libraries(app-lib ixwebsocket)
+
+    target_compile_definitions(app-lib PUBLIC USE_TLS=1)
   endif()
 endif()
 
