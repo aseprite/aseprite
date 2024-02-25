@@ -106,14 +106,27 @@ void ColorSpectrum::onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc)
 {
     doc::PalettePicks picks;
     ColorBar::instance()->getPaletteView()->getSelectedEntries(picks);
+    if (picks.picks() > 1)
+    {
+      for (int i = 0; i<picks.size(); i++) {
+        if (!picks[i])
+          continue;
+        Color color = app::Color::fromIndex(i);
+        if (color.getType() != app::Color::MaskType) {
+          double hue = color.getHslHue();
+          double lit = color.getHslLightness();
+          gfx::Point pos(rc.x + int(hue * rc.w / 360.0),
+                         rc.y + rc.h - int(lit * rc.h));
 
-    for (int i = 0; i<picks.size(); i++) {
-      if (!picks[i])
-        continue;
-      Color color = app::Color::fromIndex(i);
-      if (color.getType() != app::Color::MaskType) {
-        double hue = color.getHslHue();
-        double lit = color.getHslLightness();
+          paintColorIndicator(g, pos, lit < 0.5);
+        }
+      }
+    }
+    else
+    {
+      if (m_color.getType() != app::Color::MaskType) {
+        double hue = m_color.getHslHue();
+        double lit = m_color.getHslLightness();
         gfx::Point pos(rc.x + int(hue * rc.w / 360.0),
                        rc.y + rc.h - int(lit * rc.h));
 
