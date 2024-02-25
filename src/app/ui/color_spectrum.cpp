@@ -14,6 +14,7 @@
 #include "app/color_utils.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
+#include "app/ui/color_bar.h"
 #include "app/util/shader_helpers.h"
 #include "os/surface.h"
 #include "ui/graphics.h"
@@ -103,14 +104,22 @@ app::Color ColorSpectrum::getBottomBarColor(const int u, const int umax)
 
 void ColorSpectrum::onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc)
 {
-  if (m_color.getType() != app::Color::MaskType) {
-    double hue = m_color.getHslHue();
-    double lit = m_color.getHslLightness();
-    gfx::Point pos(rc.x + int(hue * rc.w / 360.0),
-                   rc.y + rc.h - int(lit * rc.h));
+    doc::PalettePicks picks;
+    ColorBar::instance()->getPaletteView()->getSelectedEntries(picks);
 
-    paintColorIndicator(g, pos, lit < 0.5);
-  }
+    for (int i = 0; i<picks.size(); i++) {
+      if (!picks[i])
+        continue;
+      Color color = app::Color::fromIndex(i);
+      if (color.getType() != app::Color::MaskType) {
+        double hue = color.getHslHue();
+        double lit = color.getHslLightness();
+        gfx::Point pos(rc.x + int(hue * rc.w / 360.0),
+                       rc.y + rc.h - int(lit * rc.h));
+
+        paintColorIndicator(g, pos, lit < 0.5);
+      }
+    }
 }
 
 void ColorSpectrum::onPaintBottomBar(ui::Graphics* g, const gfx::Rect& rc)
