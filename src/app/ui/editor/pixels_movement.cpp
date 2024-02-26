@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -44,6 +44,7 @@
 #include "doc/mask.h"
 #include "doc/sprite.h"
 #include "gfx/region.h"
+#include "render/render.h"
 
 #include <algorithm>
 
@@ -1065,8 +1066,10 @@ void PixelsMovement::drawImage(
 
     if (renderOriginalLayer) {
       render::Render render;
-      renderLayer(&render, dst, m_site.layer(), m_site.frame(),
-                  gfx::Clip(bounds.x-pt.x, bounds.y-pt.y, bounds));
+      render.renderLayer(
+        dst, m_site.layer(), m_site.frame(),
+        gfx::Clip(bounds.x-pt.x, bounds.y-pt.y, bounds),
+        BlendMode::SRC);
     }
 
     color_t maskColor = m_maskColor;
@@ -1307,11 +1310,8 @@ CelList PixelsMovement::getEditableCels()
     // TODO This case is used in paste too, where the cel() can be
     //      nullptr (e.g. we paste the clipboard image into an empty
     //      cel).
-    // Note: m_site.layer()->canEditPixels() is not used since
-    //       PixelsMovement can modify hidden layers.
     if (m_site.layer() &&
-        m_site.layer()->isEditable() &&
-        !m_site.layer()->isReference()) {
+        m_site.layer()->canEditPixels()) {
       cels.push_back(m_site.cel());
     }
     return cels;
@@ -1320,8 +1320,7 @@ CelList PixelsMovement::getEditableCels()
   // Current cel (m_site.cel()) can be nullptr when we paste in an
   // empty cel (Ctrl+V) and cut (Ctrl+X) the floating pixels.
   if (m_site.cel() &&
-      m_site.cel()->layer()->isEditable() &&
-      !m_site.cel()->layer()->isReference()) {
+      m_site.cel()->layer()->canEditPixels()) {
     CelList::iterator it;
 
     // If we are in a linked cel, remove the cel that matches the
@@ -1439,25 +1438,6 @@ void PixelsMovement::reproduceAllTransformationsWithInnerCmds()
   redrawExtraImage();
   redrawCurrentMask();
   updateDocumentMask();
-}
-
-void PixelsMovement::renderLayer(
-  render::Render* render,
-  Image* dstImage,
-  const Layer* layer,
-  frame_t frame,
-  const gfx::Clip& area)
-{
-  // On PixelsMovement is posible to modify the pixels on
-  // the current layer, to do so we need to include the layer
-  // on the renderPlan (inside renderLayer), which only includes
-  // visible layers, that is why we turn ON the layer visibility
-  // temporarily.
-  const bool layerIsVisible = m_site.layer()->isVisible();
-  m_site.layer()->setVisible(true);
-  render->renderLayer(dstImage, layer, frame, area, BlendMode::SRC);
-  if (!layerIsVisible)
-    m_site.layer()->setVisible(false);
 }
 
 #if _DEBUG
