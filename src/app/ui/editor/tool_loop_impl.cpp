@@ -452,8 +452,8 @@ protected:
 //////////////////////////////////////////////////////////////////////
 // For drawing
 
-class ToolLoopImpl : public ToolLoopBase,
-                     public EditorObserver {
+class ToolLoopImpl final : public ToolLoopBase,
+                           public EditorObserver {
   Context* m_context;
   bool m_filled;
   bool m_previewFilled;
@@ -592,6 +592,9 @@ public:
       m_editor->remove_observer(this);
 #endif
 
+    // getSrcImage() is a virtual member function but ToolLoopImpl is
+    // marked as final to avoid not calling a derived version from
+    // this destructor.
     if (m_floodfillSrcImage != getSrcImage())
       delete m_floodfillSrcImage;
   }
@@ -954,7 +957,7 @@ tools::ToolLoop* create_tool_loop_for_script(
 
 #ifdef ENABLE_UI
 
-class PreviewToolLoopImpl : public ToolLoopBase {
+class PreviewToolLoopImpl final : public ToolLoopBase {
   Image* m_image;
 
 public:
