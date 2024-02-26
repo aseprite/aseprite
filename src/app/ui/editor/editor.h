@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -351,6 +351,7 @@ namespace app {
     void onAddTag(DocEvent& ev) override;
     void onRemoveTag(DocEvent& ev) override;
     void onRemoveSlice(DocEvent& ev) override;
+    void onBeforeLayerVisibilityChange(DocEvent& ev, bool newState) override;
 
     // ActiveToolObserver impl
     void onActiveToolChange(tools::Tool* tool) override;
