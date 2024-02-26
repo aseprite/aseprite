@@ -52,7 +52,13 @@ if false then
 end
 
 do
+  -- Test load/save file (and keep the properties intact)
   local spr = Sprite{ fromFile="sprites/file-tests-props.aseprite" }
+  assert(#spr.properties == 5)
+  spr:saveAs("_test_userdata_codec_1.aseprite")
+  spr:close()
+
+  local spr = Sprite{ fromFile="_test_userdata_codec_1.aseprite" }
   assert(#spr.properties == 5)
   assert(#spr.properties("ext") == 1)
   assert(spr.properties.a == true)
