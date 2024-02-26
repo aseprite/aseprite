@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -21,7 +21,7 @@
 #include "ui/timer.h"
 
 namespace doc {
-  class Image;
+  class Layer;
 }
 
 namespace app {
@@ -54,35 +54,37 @@ namespace app {
     void updateTransformation(const Transformation& t);
 
     // EditorState
-    virtual void onEnterState(Editor* editor) override;
-    virtual void onEditorGotFocus(Editor* editor) override;
-    virtual LeaveAction onLeaveState(Editor* editor, EditorState* newState) override;
-    virtual void onActiveToolChange(Editor* editor, tools::Tool* tool) override;
-    virtual bool onMouseDown(Editor* editor, ui::MouseMessage* msg) override;
-    virtual bool onMouseUp(Editor* editor, ui::MouseMessage* msg) override;
-    virtual bool onMouseMove(Editor* editor, ui::MouseMessage* msg) override;
-    virtual bool onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos) override;
-    virtual bool onKeyDown(Editor* editor, ui::KeyMessage* msg) override;
-    virtual bool onKeyUp(Editor* editor, ui::KeyMessage* msg) override;
-    virtual bool onUpdateStatusBar(Editor* editor) override;
-    virtual bool acceptQuickTool(tools::Tool* tool) override;
-    virtual bool requireBrushPreview() override { return false; }
+    void onEnterState(Editor* editor) override;
+    void onEditorGotFocus(Editor* editor) override;
+    LeaveAction onLeaveState(Editor* editor, EditorState* newState) override;
+    void onActiveToolChange(Editor* editor, tools::Tool* tool) override;
+    bool onMouseDown(Editor* editor, ui::MouseMessage* msg) override;
+    bool onMouseUp(Editor* editor, ui::MouseMessage* msg) override;
+    bool onMouseMove(Editor* editor, ui::MouseMessage* msg) override;
+    bool onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos) override;
+    bool onKeyDown(Editor* editor, ui::KeyMessage* msg) override;
+    bool onKeyUp(Editor* editor, ui::KeyMessage* msg) override;
+    bool onUpdateStatusBar(Editor* editor) override;
+    bool acceptQuickTool(tools::Tool* tool) override;
+    bool requireBrushPreview() override { return false; }
+    void onBeforeLayerVisibilityChange(Editor* editor, doc::Layer* layer, bool newState) override;
+
 
     // EditorObserver
-    virtual void onDestroyEditor(Editor* editor) override;
-    virtual void onBeforeFrameChanged(Editor* editor) override;
-    virtual void onBeforeLayerChanged(Editor* editor) override;
+    void onDestroyEditor(Editor* editor) override;
+    void onBeforeFrameChanged(Editor* editor) override;
+    void onBeforeLayerChanged(Editor* editor) override;
 
     // TimelineObserver
-    virtual void onBeforeRangeChanged(Timeline* timeline) override;
+    void onBeforeRangeChanged(Timeline* timeline) override;
 
     // ContextBarObserver
-    virtual void onDropPixels(ContextBarObserver::DropAction action) override;
+    void onDropPixels(ContextBarObserver::DropAction action) override;
 
     // PixelsMovementDelegate
-    virtual void onPivotChange() override;
+    void onPivotChange() override;
 
-    virtual Transformation getTransformation(Editor* editor) override;
+    Transformation getTransformation(Editor* editor) override;
 
   private:
     // DelayedMouseMoveDelegate impl

@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -8,7 +9,6 @@
 #include "config.h"
 #endif
 
-#include "app/app.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
 #include "app/modules/gui.h"
@@ -49,7 +49,7 @@ bool LayerVisibilityCommand::onChecked(Context* context)
     return false;
 
   SelectedLayers selLayers;
-  auto range = App::instance()->timeline()->range();
+  DocRange range = context->activeSite().range();
   if (range.enabled()) {
     selLayers = range.selectedLayers();
   }
@@ -67,24 +67,25 @@ bool LayerVisibilityCommand::onChecked(Context* context)
 void LayerVisibilityCommand::onExecute(Context* context)
 {
   ContextWriter writer(context);
+  Doc* doc = writer.document();
   SelectedLayers selLayers;
-  auto range = App::instance()->timeline()->range();
+  DocRange range = context->activeSite().range();
   if (range.enabled()) {
     selLayers = range.selectedLayers();
   }
   else {
     selLayers.insert(writer.layer());
   }
+
   bool anyVisible = false;
   for (auto layer : selLayers) {
     if (layer->isVisible())
       anyVisible = true;
   }
-  for (auto layer : selLayers) {
-    layer->setVisible(!anyVisible);
-  }
 
-  update_screen_for_document(writer.document());
+  const bool newState = !anyVisible;
+  for (auto layer : selLayers)
+    doc->setLayerVisibilityWithNotifications(layer, newState);
 }
 
 Command* CommandFactory::createLayerVisibilityCommand()

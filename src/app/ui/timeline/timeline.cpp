@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -696,7 +696,9 @@ bool Timeline::onProcessMessage(Message* msg)
           bool newVisibleState = !allLayersVisible();
           for (Layer* topLayer : m_sprite->root()->layers()) {
             if (topLayer->isVisible() != newVisibleState) {
-              topLayer->setVisible(newVisibleState);
+              m_document->setLayerVisibilityWithNotifications(
+                topLayer, newVisibleState);
+
               if (topLayer->isGroup())
                 regenRows = true;
             }
@@ -825,11 +827,11 @@ bool Timeline::onProcessMessage(Message* msg)
                 for (Row& row : m_rows) {
                   Layer* l = row.layer();
                   if (l->hasFlags(LayerFlags::Internal_WasVisible)) {
-                    l->setVisible(true);
+                    m_document->setLayerVisibilityWithNotifications(l, true);
                     l->switchFlags(LayerFlags::Internal_WasVisible, false);
                   }
                   else {
-                    l->setVisible(false);
+                    m_document->setLayerVisibilityWithNotifications(l, false);
                   }
                 }
               }
@@ -838,7 +840,7 @@ bool Timeline::onProcessMessage(Message* msg)
                 for (Row& row : m_rows) {
                   Layer* l = row.layer();
                   l->switchFlags(LayerFlags::Internal_WasVisible, l->isVisible());
-                  l->setVisible(false);
+                  m_document->setLayerVisibilityWithNotifications(l, false);
                 }
               }
 
@@ -2014,6 +2016,14 @@ void Timeline::onLayerCollapsedChanged(DocEvent& ev)
 {
   regenerateRows();
   invalidate();
+}
+
+void Timeline::onAfterLayerVisibilityChange(DocEvent& ev)
+{
+  layer_t layerIdx = getLayerIndex(ev.layer());
+  if (layerIdx >= 0)
+    invalidateRect(getPartBounds(Hit(PART_ROW_EYE_ICON, layerIdx))
+                   .offset(origin()));
 }
 
 void Timeline::onStateChanged(Editor* editor)
@@ -4475,12 +4485,10 @@ void Timeline::setLayerVisibleFlag(const layer_t l, const bool state)
   if (!layer)
     return;
 
-  bool redrawEditors = false;
   bool regenRows = false;
 
   if (layer->isVisible() != state) {
-    layer->setVisible(state);
-    redrawEditors = true;
+    m_document->setLayerVisibilityWithNotifications(layer, state);
 
     // Regenerate rows because might change the flag of the children
     // (the flag is propagated to the children in m_inheritedFlags).
@@ -4493,9 +4501,8 @@ void Timeline::setLayerVisibleFlag(const layer_t l, const bool state)
       layer = layer->parent();
       while (layer) {
         if (!layer->isVisible()) {
-          layer->setVisible(true);
+          m_document->setLayerVisibilityWithNotifications(layer, true);
           regenRows = true;
-          redrawEditors = true;
         }
         layer = layer->parent();
       }
@@ -4506,9 +4513,6 @@ void Timeline::setLayerVisibleFlag(const layer_t l, const bool state)
     regenerateRows();
     invalidate();
   }
-
-  if (redrawEditors)
-    m_document->notifyGeneralUpdate();
 }
 
 void Timeline::setLayerEditableFlag(const layer_t l, const bool state)

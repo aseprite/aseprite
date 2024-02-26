@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -2436,6 +2436,12 @@ void Editor::onRemoveSlice(DocEvent& ev)
       m_selectedSlices.contains(ev.slice()->id())) {
     m_selectedSlices.erase(ev.slice()->id());
   }
+}
+
+void Editor::onBeforeLayerVisibilityChange(DocEvent& ev, bool newState)
+{
+  if (m_state)
+    m_state->onBeforeLayerVisibilityChange(this, ev.layer(), newState);
 }
 
 void Editor::setCursor(const gfx::Point& mouseDisplayPos)
