@@ -282,6 +282,48 @@ TEST(Playback, SimplePingPong3)
   EXPECT_FALSE(play.isStopped());
 }
 
+TEST(Playback, SimplePingPong4)
+{
+  // A
+  // <>
+  // 0
+
+  Tag* a = make_tag("A", 0, 0, AniDir::PING_PONG, 1);
+  auto sprite = make_sprite(1, { a });
+
+  Playback play(sprite.get(), 0, Playback::Mode::PlayAll);
+  expect_frames(play, {0,0});
+  EXPECT_TRUE(play.isStopped());
+}
+
+TEST(Playback, SimplePingPong5)
+{
+  // A
+  // <>
+  // 0
+
+  Tag* a = make_tag("A", 0, 0, AniDir::PING_PONG, 3);
+  auto sprite = make_sprite(1, { a });
+
+  Playback play(sprite.get(), 0, Playback::Mode::PlayAll);
+  expect_frames(play, {0,0,0,0});
+  EXPECT_TRUE(play.isStopped());
+}
+
+TEST(Playback, SimplePingPong6)
+{
+  // A
+  // <>
+  // 0
+
+  Tag* a = make_tag("A", 0, 0, AniDir::PING_PONG, 0);
+  auto sprite = make_sprite(1, { a });
+
+  Playback play(sprite.get(), 0, Playback::Mode::PlayAll);
+  expect_frames(play, {0,0,0});
+  EXPECT_TRUE(play.isStopped());
+}
+
 TEST(Playback, SimplePingPong3Repeats)
 {
   //   A
@@ -296,6 +338,7 @@ TEST(Playback, SimplePingPong3Repeats)
                        0,1,2,1,0,1,2});
   EXPECT_FALSE(play.isStopped());
 }
+
 
 TEST(Playback, TagOneFrame)
 {

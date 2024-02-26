@@ -435,7 +435,8 @@ bool Playback::decrementRepeat(const frame_t frameDelta)
       PLAY_TRACE("    Repeat tag", tag->name(), " frame=", m_frame,
                  "repeat=", m_playing.back()->repeat,
                  "forward=", m_playing.back()->forward);
-      return true;
+      // Tag has only 1 frame, then don't move the playback cue.
+      return tag->frames() > 1;
     }
     else {
       // Remove tag from played
