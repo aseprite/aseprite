@@ -5,6 +5,10 @@ on:
     - '**.cpp'
     - '**.h'
     - '.github/workflows/clang_tidy.yml'
+
+permissions:
+  contents: read
+
 jobs:
   review:
     runs-on: ubuntu-latest
@@ -12,19 +16,17 @@ jobs:
     - uses: actions/checkout@v4
       with:
         submodules: 'recursive'
-    - uses: ZedThree/clang-tidy-review@v0.17.1
+    - uses: ZedThree/clang-tidy-review@v0.14.0
       id: review
       with:
-        token: ${{ secrets.CLANG_TIDY_TOKEN }}
         build_dir: build
         config_file: .clang-tidy
+        split_workflow: true
         apt_packages: |
           libc++-dev, libc++abi-dev, libpixman-1-dev,
           libfreetype6-dev, libharfbuzz-dev, zlib1g-dev, libx11-dev,
           libxcursor-dev, libxi-dev, libgl1-mesa-dev
         cmake_command: |
           cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DLAF_BACKEND=none -DCMAKE_EXPORT_COMPILE_COMMANDS=on
-    - uses: ZedThree/clang-tidy-review/upload@v0.17.1
+    - uses: ZedThree/clang-tidy-review/upload@v0.14.0
       id: upload-review
-    - if: steps.review.outputs.total_comments > 0
-      run: exit 1
