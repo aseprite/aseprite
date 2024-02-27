@@ -4,7 +4,7 @@ on:
     paths:
     - '**.cpp'
     - '**.h'
-    - '.github/workflows/clang-tidy.yml'
+    - '.github/workflows/clang_tidy.yml'
 jobs:
   build:
     runs-on: ubuntu-latest
