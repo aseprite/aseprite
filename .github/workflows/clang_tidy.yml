@@ -23,7 +23,7 @@ jobs:
           libfreetype6-dev, libharfbuzz-dev, zlib1g-dev, libx11-dev,
           libxcursor-dev, libxi-dev, libgl1-mesa-dev
         cmake_command: |
-          cmake -S . B build -DCMAKE_BUILD_TYPE=Debug -DLAF_BACKEND=none -DCMAKE_EXPORT_COMPILE_COMMANDS=on
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DLAF_BACKEND=none -DCMAKE_EXPORT_COMPILE_COMMANDS=on
     - uses: ZedThree/clang-tidy-review/upload@v0.17.1
       id: upload-review
     - if: steps.review.outputs.total_comments > 0
