@@ -533,8 +533,8 @@ public:
         (m_layer->isTilemap() &&
          site.tilemapMode() == TilemapMode::Pixels &&
          site.tilesetMode() == TilesetMode::Manual &&
-         (!isSelectionPreview ? ExpandCelCanvas::TilesetPreview:
-                                ExpandCelCanvas::None)) |
+         !isSelectionPreview ? ExpandCelCanvas::TilesetPreview:
+                               ExpandCelCanvas::None) |
         (isSelectionPreview ? ExpandCelCanvas::SelectionPreview:
                               ExpandCelCanvas::None))));
 
