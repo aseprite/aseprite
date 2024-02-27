@@ -122,6 +122,8 @@ int app_main(int argc, char* argv[])
   base::MemoryDump memoryDump;
 #endif
   try {
+    auto ptr = argv;
+
     MemLeak memleak;
     base::SystemConsole systemConsole;
     app::AppOptions options(argc, const_cast<const char**>(argv));
