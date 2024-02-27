@@ -1696,8 +1696,12 @@ static void ase_ungroup_all(LayerGroup* group)
 
   for (Layer* child : list) {
     if (child->isGroup()) {
-      ase_ungroup_all(static_cast<LayerGroup*>(child));
-      group->removeLayer(child);
+      auto* childGroup = static_cast<LayerGroup*>(child);
+      ase_ungroup_all(childGroup);
+      group->removeLayer(childGroup);
+
+      ASSERT(childGroup->layersCount() == 0);
+      delete childGroup;
     }
     else if (group != root) {
       // Create a new name adding all group layer names
@@ -1714,11 +1718,6 @@ static void ase_ungroup_all(LayerGroup* group)
       group->removeLayer(child);
       root->addLayer(child);
     }
-  }
-
-  if (group != root) {
-    ASSERT(group->layersCount() == 0);
-    delete group;
   }
 }
 
