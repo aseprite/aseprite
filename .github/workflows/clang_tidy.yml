@@ -6,7 +6,7 @@ on:
     - '**.h'
     - '.github/workflows/clang_tidy.yml'
 jobs:
-  build:
+  review:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
