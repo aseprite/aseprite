@@ -17,6 +17,7 @@ jobs:
       with:
         token: ${{ secrets.CLANG_TIDY_TOKEN }}
         build_dir: build
+        config_file: .clang-tidy
         apt_packages: |
           libc++-dev, libc++abi-dev, libpixman-1-dev,
           libfreetype6-dev, libharfbuzz-dev, zlib1g-dev, libx11-dev,
