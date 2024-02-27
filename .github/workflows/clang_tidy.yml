@@ -1,0 +1,31 @@
+name: Clang Tidy Diff
+on:
+  pull_request_target:
+    paths:
+    - '**.cpp'
+    - '**.h'
+    - '.github/workflows/clang-tidy.yml'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+    - uses: ilammy/msvc-dev-cmd@v1
+      if: runner.os == 'Windows'
+    - uses: turtlesec-no/get-ninja@main
+    - uses: ZedThree/clang-tidy-review@v0.17.1
+      id: review
+      with:
+        token: ${{ secrets.CLANG_TIDY_TOKEN }}
+        apt_packages: |
+          libc++-dev, libc++abi-dev, libpixman-1-dev,
+          libfreetype6-dev, libharfbuzz-dev, zlib1g-dev, libx11-dev,
+          libxcursor-dev, libxi-dev, libgl1-mesa-dev, ninja-build
+        cmake_command: |
+          cmake . -G Ninja -DCMAKE_BUILD_TYPE=Debug -DLAF_BACKEND=none -DCMAKE_EXPORT_COMPILE_COMMANDS=on
+    - uses: ZedThree/clang-tidy-review/upload@v0.17.1
+      id: upload-review
+    - if: steps.review.outputs.total_comments > 0
+      run: exit 1
