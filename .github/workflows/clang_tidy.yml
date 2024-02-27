@@ -12,9 +12,6 @@ jobs:
     - uses: actions/checkout@v4
       with:
         submodules: 'recursive'
-    - uses: ilammy/msvc-dev-cmd@v1
-      if: runner.os == 'Windows'
-    - uses: turtlesec-no/get-ninja@main
     - uses: ZedThree/clang-tidy-review@v0.17.1
       id: review
       with:
@@ -23,9 +20,9 @@ jobs:
         apt_packages: |
           libc++-dev, libc++abi-dev, libpixman-1-dev,
           libfreetype6-dev, libharfbuzz-dev, zlib1g-dev, libx11-dev,
-          libxcursor-dev, libxi-dev, libgl1-mesa-dev, ninja-build
+          libxcursor-dev, libxi-dev, libgl1-mesa-dev
         cmake_command: |
-          cmake -S . B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DLAF_BACKEND=none -DCMAKE_EXPORT_COMPILE_COMMANDS=on
+          cmake -S . B build -DCMAKE_BUILD_TYPE=Debug -DLAF_BACKEND=none -DCMAKE_EXPORT_COMPILE_COMMANDS=on
     - uses: ZedThree/clang-tidy-review/upload@v0.17.1
       id: upload-review
     - if: steps.review.outputs.total_comments > 0
