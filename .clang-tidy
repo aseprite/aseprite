@@ -28,6 +28,12 @@
 # readability-uppercase-literal-suffix: We use a lot of 0.0f, but in a
 # future we might enable this.
 #
+# readability-named-parameter: We prefer misc-unused-parameters to
+# remove a parameter name that is not used.
+#
+# misc-use-anonymous-namespace: We use anonymous namespaces or static
+# functions indifferently.
+#
 # misc-non-private-member-variables-in-classes: We use structs with
 # all public members in some cases.
 #
@@ -42,11 +48,13 @@ Checks: >
   portability-*,
   readability-*,
   -bugprone-easily-swappable-parameters,
+  -misc-use-anonymous-namespace,
   -readability-braces-around-statements,
   -readability-function-cognitive-complexity,
   -readability-identifier-length,
   -readability-isolate-declaration,
   -readability-magic-numbers,
+  -readability-named-parameter,
   -readability-uppercase-literal-suffix
 WarningsAsErrors: ''
 CheckOptions:
