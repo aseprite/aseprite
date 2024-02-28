@@ -151,7 +151,7 @@ void FilterWorker::run()
   }
 
   {
-    std::lock_guard lock(m_mutex);
+    const std::lock_guard lock(m_mutex);
     if (m_done && m_filterMgr->isTransaction())
       m_filterMgr->commitTransaction();
     else
@@ -180,7 +180,7 @@ void FilterWorker::run()
 //
 void FilterWorker::reportProgress(float progress)
 {
-  std::lock_guard lock(m_mutex);
+  const std::lock_guard lock(m_mutex);
   m_pos = progress;
 }
 
@@ -192,7 +192,7 @@ bool FilterWorker::isCancelled()
 {
   bool cancelled;
 
-  std::lock_guard lock(m_mutex);
+  const std::lock_guard lock(m_mutex);
   cancelled = (m_cancelled || m_abort);
 
   return cancelled;
@@ -209,7 +209,7 @@ void FilterWorker::applyFilterInBackground()
     m_filterMgr->applyToTarget();
 
     // Mark the work as 'done'.
-    std::lock_guard lock(m_mutex);
+    const std::lock_guard lock(m_mutex);
     m_done = true;
   }
   catch (std::exception& e) {
@@ -224,7 +224,7 @@ void FilterWorker::applyFilterInBackground()
 // every 100 milliseconds).
 void FilterWorker::onMonitoringTick()
 {
-  std::lock_guard lock(m_mutex);
+  const std::lock_guard lock(m_mutex);
 
   if (m_alert) {
     m_alert->setProgress(m_pos);

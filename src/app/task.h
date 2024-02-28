@@ -34,7 +34,7 @@ namespace app {
     }
 
     bool canceled() const {
-      std::lock_guard lock(m_token_mutex);
+      const std::lock_guard lock(m_token_mutex);
       if (m_token)
         return m_token->canceled();
       else
@@ -42,7 +42,7 @@ namespace app {
     }
 
     float progress() const {
-      std::lock_guard lock(m_token_mutex);
+      const std::lock_guard lock(m_token_mutex);
       if (m_token)
         return m_token->progress();
       else
@@ -50,13 +50,13 @@ namespace app {
     }
 
     void cancel() {
-      std::lock_guard lock(m_token_mutex);
+      const std::lock_guard lock(m_token_mutex);
       if (m_token)
         m_token->cancel();
     }
 
     void set_progress(float progress) {
-      std::lock_guard lock(m_token_mutex);
+      const std::lock_guard lock(m_token_mutex);
       if (m_token)
         m_token->set_progress(progress);
     }

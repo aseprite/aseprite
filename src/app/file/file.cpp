@@ -1122,13 +1122,13 @@ void FileOp::operate(IFileOpProgress* progress)
 void FileOp::done()
 {
   // Finally done.
-  std::lock_guard lock(m_mutex);
+  const std::lock_guard lock(m_mutex);
   m_done = true;
 }
 
 void FileOp::stop()
 {
-  std::lock_guard lock(m_mutex);
+  const std::lock_guard lock(m_mutex);
   if (!m_done)
     m_stop = true;
 }
@@ -1443,7 +1443,7 @@ void FileOp::setError(const char *format, ...)
 
   // Concatenate the new error
   {
-    std::lock_guard lock(m_mutex);
+    const std::lock_guard lock(m_mutex);
     // Add a newline char automatically if it's needed
     if (!m_error.empty() && m_error.back() != '\n')
       m_error.push_back('\n');
@@ -1455,7 +1455,7 @@ void FileOp::setIncompatibilityError(const std::string& msg)
 {
   // Concatenate the new error
   {
-    std::lock_guard lock(m_mutex);
+    const std::lock_guard lock(m_mutex);
     // Add a newline char automatically if it's needed
     if (!m_incompatibilityError.empty() && m_incompatibilityError.back() != '\n')
       m_incompatibilityError.push_back('\n');
@@ -1465,7 +1465,7 @@ void FileOp::setIncompatibilityError(const std::string& msg)
 
 void FileOp::setProgress(double progress)
 {
-  std::lock_guard lock(m_mutex);
+  const std::lock_guard lock(m_mutex);
 
   if (isSequence()) {
     m_progress =
@@ -1494,7 +1494,7 @@ double FileOp::progress() const
 {
   double progress;
   {
-    std::lock_guard lock(m_mutex);
+    const std::lock_guard lock(m_mutex);
     progress = m_progress;
   }
   return progress;
@@ -1506,7 +1506,7 @@ bool FileOp::isDone() const
 {
   bool done;
   {
-    std::lock_guard lock(m_mutex);
+    const std::lock_guard lock(m_mutex);
     done = m_done;
   }
   return done;
