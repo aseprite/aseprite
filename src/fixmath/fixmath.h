@@ -52,17 +52,13 @@ namespace fixmath {
         errno = ERANGE;
         return -0x7FFFFFFF;
       }
-      else
-        return result;
+      return result;
     }
-    else {
-      if ((x > 0) && (y > 0)) {
-        errno = ERANGE;
-        return 0x7FFFFFFF;
-      }
-      else
-        return result;
+    if ((x > 0) && (y > 0)) {
+      errno = ERANGE;
+      return 0x7FFFFFFF;
     }
+    return result;
   }
 
   inline fixed fixsub(fixed x, fixed y) {
@@ -73,17 +69,13 @@ namespace fixmath {
         errno = ERANGE;
         return -0x7FFFFFFF;
       }
-      else
-        return result;
+      return result;
     }
-    else {
-      if ((x > 0) && (y < 0)) {
-        errno = ERANGE;
-        return 0x7FFFFFFF;
-      }
-      else
-        return result;
+    if ((x > 0) && (y < 0)) {
+      errno = ERANGE;
+      return 0x7FFFFFFF;
     }
+    return result;
   }
 
   inline fixed fixmul(fixed x, fixed y) {
@@ -95,16 +87,14 @@ namespace fixmath {
       errno = ERANGE;
       return (x < 0) ? -0x7FFFFFFF : 0x7FFFFFFF;
     }
-    else
-      return ftofix(fixtof(x) / fixtof(y));
+    return ftofix(fixtof(x) / fixtof(y));
   }
 
   inline int fixfloor(fixed x) {
     /* (x >> 16) is not portable */
     if (x >= 0)
       return (x >> 16);
-    else
-      return ~((~x) >> 16);
+    return ~((~x) >> 16);
   }
 
   inline int fixceil(fixed x) {

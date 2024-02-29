@@ -54,8 +54,7 @@ namespace doc {
       //ASSERT(index >= 0 && index < size());
       if (index >= 0 && index < size())
         return m_map[index];
-      else
-        return index;           // No remap
+      return index;           // No remap
     }
 
     void merge(const Remap& other);

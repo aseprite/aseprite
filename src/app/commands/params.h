@@ -48,8 +48,7 @@ namespace app {
       auto it = m_params.find(name);
       if (it != m_params.end())
         return it->second;
-      else
-        return std::string();
+      return std::string();
     }
 
     void operator|=(const Params& params) {

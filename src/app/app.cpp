@@ -720,24 +720,21 @@ Workspace* App::workspace() const
 {
   if (m_mainWindow)
     return m_mainWindow->getWorkspace();
-  else
-    return nullptr;
+  return nullptr;
 }
 
 ContextBar* App::contextBar() const
 {
   if (m_mainWindow)
     return m_mainWindow->getContextBar();
-  else
-    return nullptr;
+  return nullptr;
 }
 
 Timeline* App::timeline() const
 {
   if (m_mainWindow)
     return m_mainWindow->getTimeline();
-  else
-    return nullptr;
+  return nullptr;
 }
 
 Preferences& App::preferences() const
@@ -866,8 +863,7 @@ PixelFormat app_get_current_pixel_format()
   Doc* doc = ctx->activeDocument();
   if (doc)
     return doc->sprite()->pixelFormat();
-  else
-    return IMAGE_RGB;
+  return IMAGE_RGB;
 }
 
 int app_get_color_to_clear_layer(Layer* layer)

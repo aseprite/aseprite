@@ -37,16 +37,14 @@ namespace app {
       const std::lock_guard lock(m_token_mutex);
       if (m_token)
         return m_token->canceled();
-      else
-        return false;
+      return false;
     }
 
     float progress() const {
       const std::lock_guard lock(m_token_mutex);
       if (m_token)
         return m_token->progress();
-      else
-        return 0.0f;
+      return 0.0f;
     }
 
     void cancel() {

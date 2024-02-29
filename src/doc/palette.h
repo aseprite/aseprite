@@ -73,8 +73,7 @@ namespace doc {
       ASSERT(i >= 0);
       if (i >= 0 && i < size())
         return m_colors[i];
-      else
-        return 0;
+      return 0;
     }
     color_t getEntry(int i) const {
       return entry(i);
