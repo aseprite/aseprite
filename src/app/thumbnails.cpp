@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 // Copyright (C) 2016  Carlo Caputo
 //
@@ -58,7 +58,7 @@ os::SurfaceRef get_cel_thumbnail(const doc::Cel* cel,
     gfx::Clip(gfx::Rect(gfx::Point(0, 0), newSize)),
     255, doc::BlendMode::NORMAL);
 
-  if (os::SurfaceRef thumbnail = os::instance()->makeRgbaSurface(
+  if (os::SurfaceRef thumbnail = os::System::instance()->makeRgbaSurface(
         thumbnailImage->width(),
         thumbnailImage->height())) {
     convert_image_to_surface(

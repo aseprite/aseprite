@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -73,7 +73,7 @@ ConfigModule::ConfigModule()
       std::string err = "Error in configuration migration: ";
       err += ex.what();
 
-      auto system = os::instance();
+      const os::SystemRef system = os::System::instance();
       if (system && system->logger())
         system->logger()->logError(err.c_str());
     }

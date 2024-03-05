@@ -70,7 +70,7 @@ void GraphicsContext::drawImage(const doc::Image* img,
   if (!tmpSurface ||
       tmpSurface->width() < srcRc.w ||
       tmpSurface->height() < srcRc.h) {
-    tmpSurface = os::instance()->makeRgbaSurface(
+    tmpSurface = os::System::instance()->makeRgbaSurface(
       std::max(srcRc.w, (tmpSurface ? tmpSurface->width(): 0)),
       std::max(srcRc.h, (tmpSurface ? tmpSurface->height(): 0)));
   }

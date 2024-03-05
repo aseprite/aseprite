@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -263,7 +263,7 @@ App::App(AppMod* mod)
 
 int App::initialize(const AppOptions& options)
 {
-  os::System* system = os::instance();
+  const os::SystemRef system = os::System::instance();
 
 #ifdef ENABLE_UI
   m_isGui = options.startUI() && !options.previewCLI();
@@ -485,14 +485,15 @@ void App::run()
 #if LAF_LINUX
     // Setup app icon for Linux window managers
     try {
-      os::Window* window = os::instance()->defaultWindow();
+      os::Window* window = os::System::instance()->defaultWindow();
       os::SurfaceList icons;
 
       for (const int size : { 32, 64, 128 }) {
         ResourceFinder rf;
         rf.includeDataDir(fmt::format("icons/ase{0}.png", size).c_str());
         if (rf.findFirst()) {
-          os::SurfaceRef surf = os::instance()->loadRgbaSurface(rf.filename().c_str());
+          os::SurfaceRef surf = os::System::instance()
+            ->loadRgbaSurface(rf.filename().c_str());
           if (surf) {
             surf->setImmutable();
             icons.push_back(surf);
@@ -512,14 +513,14 @@ void App::run()
 #ifdef ENABLE_STEAM
     steam::SteamAPI steam;
     if (steam.initialized())
-      os::instance()->activateApp();
+      os::System::instance()->activateApp();
 #endif
 
 #if defined(_DEBUG) || defined(ENABLE_DEVMODE)
     // On OS X, when we compile Aseprite on devmode, we're using it
     // outside an app bundle, so we must active the app explicitly.
     if (isGui())
-      os::instance()->activateApp();
+      os::System::instance()->activateApp();
 #endif
 
 #ifdef ENABLE_UPDATER
@@ -804,7 +805,7 @@ void App::updateDisplayTitleBar()
   }
 
   title += defaultTitle;
-  os::instance()->defaultWindow()->setTitle(title);
+  os::System::instance()->defaultWindow()->setTitle(title);
 }
 
 InputChain& App::inputChain()

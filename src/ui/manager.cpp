@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -200,7 +200,7 @@ bool Manager::widgetAssociatedToManager(Widget* widget)
 Manager::Manager(const os::WindowRef& nativeWindow)
   : Widget(kManagerWidget)
   , m_display(nullptr, nativeWindow, this)
-  , m_eventQueue(os::instance()->eventQueue())
+  , m_eventQueue(os::System::instance()->eventQueue())
   , m_lockedWindow(nullptr)
   , m_mouseButton(kButtonNone)
 {
@@ -1428,7 +1428,7 @@ void Manager::_openWindow(Window* window, bool center)
         spec.parent(parentDisplay->nativeWindow());
       }
 
-      os::WindowRef newNativeWindow = os::instance()->makeWindow(spec);
+      os::WindowRef newNativeWindow = os::System::instance()->makeWindow(spec);
       ui::Display* newDisplay = new ui::Display(parentDisplay, newNativeWindow, window);
 
       newNativeWindow->setUserData(newDisplay);

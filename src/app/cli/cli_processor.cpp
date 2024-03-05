@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -661,7 +661,7 @@ bool CliProcessor::openFile(Context* ctx, CliOpenFile& cof)
     auto fn = base::normalize_path(usedFn);
     m_usedFiles.insert(fn);
 
-    os::instance()->markCliFileAsProcessed(fn);
+    os::System::instance()->markCliFileAsProcessed(fn);
   }
 
   Doc* doc = ctx->activeDocument();

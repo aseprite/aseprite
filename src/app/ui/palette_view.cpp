@@ -311,7 +311,7 @@ public:
     if (tileImage) {
       int w = tileImage->width();
       int h = tileImage->height();
-      os::SurfaceRef surface = os::instance()->makeRgbaSurface(w, h);
+      os::SurfaceRef surface = os::System::instance()->makeRgbaSurface(w, h);
       convert_image_to_surface(tileImage.get(), get_current_palette(),
                                surface.get(), 0, 0, 0, 0, w, h);
 

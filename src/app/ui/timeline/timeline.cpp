@@ -660,7 +660,7 @@ bool Timeline::onProcessMessage(Message* msg)
         break;
 
       if (mouseMsg->middle() ||
-          os::instance()->isKeyPressed(kKeySpace)) {
+          os::System::instance()->isKeyPressed(kKeySpace)) {
         captureMouse();
         m_state = STATE_SCROLLING;
         m_oldPos = static_cast<MouseMessage*>(msg)->position();

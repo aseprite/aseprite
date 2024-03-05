@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -219,13 +219,13 @@ UISystem::UISystem()
   ASSERT(!g_instance);
   g_instance = this;
 
+  os::SystemRef system = os::System::instance();
+
   main_gui_thread = std::this_thread::get_id();
   mouse_cursor_type = kOutsideDisplay;
   support_native_custom_cursor =
-    ((os::instance() &&
-      (int(os::instance()->capabilities()) &
-       int(os::Capabilities::CustomMouseCursor))) ?
-     true: false);
+    (system &&
+     system->hasCapability(os::Capabilities::CustomMouseCursor));
 
   details::initWidgets();
 }
@@ -354,7 +354,7 @@ void _internal_no_mouse_position()
 
 gfx::Point get_mouse_position()
 {
-  return os::instance()->mousePosition();
+  return os::System::instance()->mousePosition();
 }
 
 void set_mouse_position(const gfx::Point& newPos,
@@ -366,7 +366,7 @@ void set_mouse_position(const gfx::Point& newPos,
   if (display)
     display->nativeWindow()->setMousePosition(newPos);
   else
-    os::instance()->setMousePosition(newPos);
+    os::System::instance()->setMousePosition(newPos);
 }
 
 void execute_from_ui_thread(std::function<void()>&& func)

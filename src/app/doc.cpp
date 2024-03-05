@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -671,8 +671,7 @@ void Doc::removeFromContext()
 
 void Doc::updateOSColorSpace(bool appWideSignal)
 {
-  auto system = os::instance();
-  if (system) {
+  if (const os::SystemRef system = os::System::instance()) {
     m_osColorSpace = system->makeColorSpace(sprite()->colorSpace());
     if (!m_osColorSpace && system->defaultWindow())
       m_osColorSpace = system->defaultWindow()->colorSpace();

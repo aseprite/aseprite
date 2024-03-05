@@ -376,11 +376,13 @@ void SkinTheme::loadAll(const std::string& themeId,
 
 void SkinTheme::loadSheet()
 {
+  os::SystemRef system = os::System::instance();
+
   // Load the skin sheet
   std::string sheet_filename(base::join_path(m_path, "sheet.png"));
   os::SurfaceRef newSheet;
   try {
-    newSheet = os::instance()->loadRgbaSurface(sheet_filename.c_str());
+    newSheet = os::System::instance()->loadRgbaSurface(sheet_filename.c_str());
   }
   catch (...) {
     // Ignore the error, newSheet is nullptr and we will throw our own
@@ -393,7 +395,7 @@ void SkinTheme::loadSheet()
   //      avoid loading two times the same file (even more, if there
   //      is no scale to apply, m_unscaledSheet must reference the
   //      same m_sheet).
-  m_unscaledSheet = os::instance()->loadRgbaSurface(sheet_filename.c_str());
+  m_unscaledSheet = system->loadRgbaSurface(sheet_filename.c_str());
 
   // Replace the sprite sheet
   if (m_sheet)
@@ -886,7 +888,7 @@ static os::SurfaceRef sliceSheet(os::SurfaceRef sheet, os::SurfaceRef sur, const
 
   if (!bounds.isEmpty()) {
     if (!sur)
-      sur = os::instance()->makeRgbaSurface(bounds.w, bounds.h);
+      sur = os::System::instance()->makeRgbaSurface(bounds.w, bounds.h);
 
     os::SurfaceLock lockSrc(sheet.get());
     os::SurfaceLock lockDst(sur.get());

@@ -256,7 +256,8 @@ class OptionsWindow : public app::gen::Options {
 
 public:
   OptionsWindow(Context* context, int& curSection)
-    : m_context(context)
+    : m_system(os::System::instance())
+    , m_context(context)
     , m_pref(Preferences::instance())
     , m_globPref(m_pref.document(nullptr))
     , m_docPref(m_pref.document(context->activeDocument()))
@@ -289,7 +290,7 @@ public:
     resetColorManagement()->Click.connect([this]{ onResetColorManagement(); });
     colorManagement()->Click.connect([this]{ onColorManagement(); });
     {
-      os::instance()->listColorSpaces(m_colorSpaces);
+      m_system->listColorSpaces(m_colorSpaces);
       for (auto& cs : m_colorSpaces) {
         if (cs->gfxColorSpace()->type() != gfx::ColorSpace::None)
           workingRgbCs()->addItem(new ColorSpaceItem(cs));
@@ -400,8 +401,7 @@ public:
       moveOnAddMode()->setSelected(true);
 
     // If the platform supports native cursors...
-    if ((int(os::instance()->capabilities()) &
-         int(os::Capabilities::CustomMouseCursor)) != 0) {
+    if (m_system->hasCapability(os::Capabilities::CustomMouseCursor)) {
       if (m_pref.cursor.useNativeCursor())
         nativeCursor()->setSelected(true);
       nativeCursor()->Click.connect([this]{ onNativeCursorChange(); });
@@ -431,7 +431,7 @@ public:
 
 #ifdef _WIN32 // Show Tablet section on Windows
     {
-      os::TabletAPI tabletAPI = os::instance()->tabletAPI();
+      os::TabletAPI tabletAPI = m_system->tabletAPI();
 
       if (tabletAPI == os::TabletAPI::Wintab) {
         tabletApiWintabSystem()->setSelected(true);
@@ -521,7 +521,7 @@ public:
 
 #ifdef ENABLE_DEVMODE // TODO enable this on Release when Aseprite supports
                       //      GPU-acceleration properly
-    if (os::instance()->hasCapability(os::Capabilities::GpuAccelerationSwitch)) {
+    if (m_system->hasCapability(os::Capabilities::GpuAccelerationSwitch)) {
       gpuAcceleration()->setSelected(m_pref.general.gpuAcceleration());
     }
     else
@@ -532,7 +532,7 @@ public:
 
     // If the platform does support native menus, we show the option,
     // in other case, the option doesn't make sense for this platform.
-    if (os::instance()->menus())
+    if (m_system->menus())
       showMenuBar()->setSelected(m_pref.general.showMenuBar());
     else
       showMenuBar()->setVisible(false);
@@ -855,7 +855,7 @@ public:
         ->setInterpretOneFingerGestureAsMouseMovement(
           oneFingerAsMouseMovement()->isSelected());
 
-      os::instance()->setTabletAPI(tabletAPI);
+      os::System::instance()->setTabletAPI(tabletAPI);
     }
 #endif
 
@@ -883,7 +883,7 @@ public:
       reset_screen = true;
     }
 
-    if (os::instance()->menus() &&
+    if (m_system->menus() &&
         m_pref.general.showMenuBar() != showMenuBar()->isSelected()) {
       m_pref.general.showMenuBar(showMenuBar()->isSelected());
     }
@@ -1013,7 +1013,7 @@ private:
 
   void updateScreenScaling() {
     ui::Manager* manager = ui::Manager::getDefault();
-    os::instance()->setGpuAcceleration(m_pref.general.gpuAcceleration());
+    m_system->setGpuAcceleration(m_pref.general.gpuAcceleration());
     manager->updateAllDisplaysWithNewScale(m_pref.general.screenScale());
   }
 
@@ -1027,8 +1027,7 @@ private:
   void onNativeCursorChange() {
     bool state =
       // If the platform supports custom cursors...
-      (((int(os::instance()->capabilities()) &
-         int(os::Capabilities::CustomMouseCursor)) != 0) &&
+      ((m_system->hasCapability(os::Capabilities::CustomMouseCursor)) &&
        // If the native cursor option is not selec
        !nativeCursor()->isSelected());
 
@@ -1789,6 +1788,7 @@ private:
 
 #endif // _WIN32
 
+  os::SystemRef m_system;
   Context* m_context;
   Preferences& m_pref;
   DocumentPreferences& m_globPref;

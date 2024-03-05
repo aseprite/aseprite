@@ -673,8 +673,8 @@ void BrushPreview::createCrosshairCursor(ui::Graphics* g,
       const gfx::Color black = gfx::rgba(0, 0, 0);
       const gfx::Color white = gfx::rgba(255, 255, 255);
       os::SurfaceRef cursorSurface =
-        os::instance()->makeRgbaSurface(cursorBounds.w,
-                                        cursorBounds.h);
+        os::System::instance()->makeRgbaSurface(cursorBounds.w,
+                                                cursorBounds.h);
       cursorSurface->clear();
       int bit = 0;
       if (m_type & CROSSHAIR) {
@@ -704,7 +704,7 @@ void BrushPreview::createCrosshairCursor(ui::Graphics* g,
       }
 
       cursor = g_bwCursors[k] =
-        os::instance()->makeCursor(
+        os::System::instance()->makeCursor(
           cursorSurface.get(),
           cursorCenter,
           scale);
@@ -733,8 +733,8 @@ void BrushPreview::createCrosshairCursor(ui::Graphics* g,
     }
     else {
       os::SurfaceRef cursorSurface =
-        os::instance()->makeRgbaSurface(cursorBounds.w,
-                                        cursorBounds.h);
+        os::System::instance()->makeRgbaSurface(cursorBounds.w,
+                                                cursorBounds.h);
       cursorSurface->clear();
       if (m_type & CROSSHAIR) {
         for (int v=0; v<7; v++)
@@ -746,7 +746,7 @@ void BrushPreview::createCrosshairCursor(ui::Graphics* g,
         cursorSurface->putPixel(cursorColor, cursorBounds.w/2, cursorBounds.h/2);
 
       cursor = g_solidCursors[k] =
-        os::instance()->makeCursor(
+        os::System::instance()->makeCursor(
           cursorSurface.get(),
           cursorCenter,
           scale);

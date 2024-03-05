@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -95,10 +95,10 @@ Preferences::Preferences()
   // Hide the menu bar depending on:
   // 1. this is the first run of the program
   // 2. the native menu bar is available
-  if (firstTime &&
-      os::instance() &&
-      os::instance()->menus()) {
-    general.showMenuBar(false);
+  if (firstTime) {
+    const os::SystemRef system = os::System::instance();
+    if (system && system->menus())
+      general.showMenuBar(false);
   }
 }
 

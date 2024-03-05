@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This program is distributed under the terms of
@@ -112,7 +112,7 @@ private:
         m_dithering, nullptr, palette, true, -1, nullptr);
     }
 
-    m_preview = os::instance()->makeRgbaSurface(w, h);
+    m_preview = os::System::instance()->makeRgbaSurface(w, h);
     convert_image_to_surface(image2.get(), palette, m_preview.get(),
                              0, 0, 0, 0, w, h);
 

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -143,7 +143,7 @@ private:
     gfx::Size sz = getFloatingOverlaySize();
     sz.w = std::max(1, sz.w);
     sz.h = std::max(1, sz.h);
-    os::SurfaceRef surface = os::instance()->makeRgbaSurface(sz.w, sz.h);
+    os::SurfaceRef surface = os::System::instance()->makeRgbaSurface(sz.w, sz.h);
 
     {
       os::SurfaceLock lock(surface.get());

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2023  Igara Studio S.A.
+// Copyright (C) 2020-2024 Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -28,13 +28,14 @@ bool show_file_selector(
   FileSelectorType type,
   base::paths& output)
 {
+  const os::SystemRef system = os::System::instance();
   const std::string defExtension =
     Preferences::instance().saveFile.defaultExtension();
 
   if (Preferences::instance().experimental.useNativeFileDialog() &&
-      os::instance()->nativeDialogs()) {
+      system->nativeDialogs()) {
     os::FileDialogRef dlg =
-      os::instance()->nativeDialogs()->makeFileDialog();
+      system->nativeDialogs()->makeFileDialog();
 
     if (dlg) {
       dlg->setTitle(title);
@@ -71,7 +72,7 @@ bool show_file_selector(
       for (const auto& ext : extensions)
         dlg->addFilter(ext, ext + " files (*." + ext + ")");
 
-      auto res = dlg->show(os::instance()->defaultWindow());
+      auto res = dlg->show(system->defaultWindow());
       if (res != os::FileDialog::Result::Error) {
         if (res == os::FileDialog::Result::OK) {
           if (type == FileSelectorType::OpenMultiple)

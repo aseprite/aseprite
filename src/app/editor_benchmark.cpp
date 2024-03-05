@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022  Igara Studio S.A.
+// Copyright (C) 2022-2024  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -134,7 +134,7 @@ BENCHMARK(BM_ZoomEditor)
 
 int app_main(int argc, char* argv[])
 {
-  os::SystemRef system(os::make_system());
+  os::SystemRef system = os::System::make();
   App app;
   const char* argv2[] = { argv[0] };
   app.initialize(AppOptions(1, { argv2 }));

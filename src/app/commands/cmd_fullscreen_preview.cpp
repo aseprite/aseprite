@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -184,8 +184,8 @@ protected:
 
     // Render sprite and leave the result in 'm_render' variable
     if (m_render == nullptr) {
-      m_render = os::instance()->makeRgbaSurface(m_sprite->width(),
-                                                 m_sprite->height());
+      m_render = os::System::instance()->makeRgbaSurface(m_sprite->width(),
+                                                         m_sprite->height());
 
 #if LAF_SKIA
       // The SimpleRenderer renders unpremultiplied surfaces when

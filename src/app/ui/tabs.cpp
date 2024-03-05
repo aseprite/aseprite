@@ -970,8 +970,8 @@ void Tabs::createFloatingOverlay(Tab* tab)
   ASSERT(!m_floatingOverlay);
 
   ui::Display* display = this->display();
-  os::SurfaceRef surface = os::instance()->makeRgbaSurface(
-    tab->width, m_tabsHeight);
+  os::SurfaceRef surface = os::System::instance()
+    ->makeRgbaSurface(tab->width, m_tabsHeight);
 
   // Fill the surface with pink color
   {

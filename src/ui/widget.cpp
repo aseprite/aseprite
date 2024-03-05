@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -1314,7 +1314,7 @@ GraphicsPtr Widget::getGraphics(const gfx::Rect& clip)
   // buffer only if the default surface is the screen.
   if (isDoubleBuffered() && dstSurface->isDirectToScreen()) {
     os::SurfaceRef surface =
-      os::instance()->makeSurface(clip.w, clip.h);
+      os::System::instance()->makeSurface(clip.w, clip.h);
     graphics.reset(new Graphics(display, surface, -clip.x, -clip.y),
                    DeleteGraphicsAndSurface(clip, surface,
                                             dstSurface));

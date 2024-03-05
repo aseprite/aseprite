@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -27,8 +27,9 @@ Message::Message(MessageType type, KeyModifiers modifiers)
   , m_recipient(nullptr)
   , m_commonAncestor(nullptr)
 {
-  if (modifiers == kKeyUninitializedModifier && os::instance())
-    m_modifiers = os::instance()->keyModifiers();
+  const os::SystemRef system = os::System::instance();
+  if (modifiers == kKeyUninitializedModifier && system)
+    m_modifiers = system->keyModifiers();
   else
     m_modifiers = modifiers;
 }

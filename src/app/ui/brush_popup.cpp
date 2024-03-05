@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -478,7 +478,7 @@ os::SurfaceRef BrushPopup::createSurfaceForBrush(const BrushRef& origBrush,
       image = brush->image();
   }
 
-  os::SurfaceRef surface = os::instance()->makeRgbaSurface(
+  os::SurfaceRef surface = os::System::instance()->makeRgbaSurface(
     std::min(kMaxSize, (image ? image->width(): 4)),
     std::min(kMaxSize, (image ? image->height(): 4)));
 

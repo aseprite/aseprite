@@ -511,7 +511,8 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
           throw base::Exception("File %s not found", file);
 
         try {
-          os::SurfaceRef sur = os::instance()->loadRgbaSurface(rf.filename().c_str());
+          os::SurfaceRef sur = os::System::instance()
+            ->loadRgbaSurface(rf.filename().c_str());
           if (sur) {
             sur->setImmutable();
             widget = new ImageView(sur, 0);

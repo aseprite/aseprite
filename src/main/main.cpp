@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -78,10 +78,10 @@ namespace {
     bool m_done = false;
   public:
     WintabApiDelegate() {
-      os::instance()->setWintabDelegate(this);
+      os::System::instance()->setWintabDelegate(this);
     }
     ~WintabApiDelegate() {
-      os::instance()->setWintabDelegate(nullptr);
+      os::System::instance()->setWintabDelegate(nullptr);
     }
     void onWintabID(const std::string& id) override {
       if (!m_done) {
@@ -125,7 +125,7 @@ int app_main(int argc, char* argv[])
     MemLeak memleak;
     base::SystemConsole systemConsole;
     app::AppOptions options(argc, const_cast<const char**>(argv));
-    os::SystemRef system(os::make_system());
+    os::SystemRef system = os::System::make();
     doc::Palette::initBestfit();
     app::App app;
 

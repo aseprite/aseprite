@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -93,9 +93,10 @@ void Overlay::captureOverlappedArea()
 
   if (!m_overlap) {
     // Use the same color space for the overlay as in the screen
-    m_overlap = os::instance()->makeSurface(m_surface->width(),
-                                            m_surface->height(),
-                                            displaySurface->colorSpace());
+    m_overlap = os::System::instance()
+      ->makeSurface(m_surface->width(),
+                    m_surface->height(),
+                    displaySurface->colorSpace());
   }
 
   os::SurfaceLock lock(m_overlap.get());

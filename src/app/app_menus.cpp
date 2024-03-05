@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -597,7 +597,7 @@ bool AppMenus::rebuildRecentList()
   // Sync native menus
   if (owner->native() &&
       owner->native()->menuItem) {
-    auto menus = os::instance()->menus();
+    auto menus = os::System::instance()->menus();
     os::MenuRef osMenu = (menus ? menus->makeMenu(): nullptr);
     if (osMenu) {
       createNativeSubmenus(osMenu.get(), menu);
@@ -923,7 +923,7 @@ void AppMenus::updateMenusList()
 
 void AppMenus::createNativeMenus()
 {
-  os::Menus* menus = os::instance()->menus();
+  os::Menus* menus = os::System::instance()->menus();
   if (!menus)       // This platform doesn't support native menu items
     return;
 
@@ -1021,7 +1021,7 @@ void AppMenus::createNativeMenus()
 void AppMenus::createNativeSubmenus(os::Menu* osMenu,
                                     const ui::Menu* uiMenu)
 {
-  os::Menus* menus = os::instance()->menus();
+  os::Menus* menus = os::System::instance()->menus();
 
   for (const auto& child : uiMenu->children()) {
     os::MenuItemInfo info;

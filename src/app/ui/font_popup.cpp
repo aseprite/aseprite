@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2022  Igara Studio S.A.
+// Copyright (C) 2020-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -73,8 +73,9 @@ private:
 
     if (m_image) {
       Graphics* g = ev.graphics();
-      os::SurfaceRef sur = os::instance()->makeRgbaSurface(m_image->width(),
-                                                           m_image->height());
+      os::SurfaceRef sur = os::System::instance()
+        ->makeRgbaSurface(m_image->width(),
+                          m_image->height());
 
       convert_image_to_surface(
         m_image.get(), nullptr, sur.get(),

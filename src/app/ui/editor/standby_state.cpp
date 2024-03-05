@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -926,7 +926,7 @@ bool StandbyState::Decorator::onSetCursor(tools::Ink* ink, Editor* editor, const
       ink->isSelection() &&
       editor->document()->isMaskVisible() &&
       (!Preferences::instance().selection.modifiersDisableHandles() ||
-       os::instance()->keyModifiers() == kKeyNoneModifier)) {
+       os::System::instance()->keyModifiers() == kKeyNoneModifier)) {
     auto theme = skin::SkinTheme::get(editor);
     const Transformation transformation(m_standbyState->getTransformation(editor));
     TransformHandles* tr = getTransformHandles(editor);

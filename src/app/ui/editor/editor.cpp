@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -733,7 +733,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
         rendered->colorSpace() != m_document->osColorSpace()) {
       const int maxw = std::max(rc2.w, rendered ? rendered->width(): 0);
       const int maxh = std::max(rc2.h, rendered ? rendered->height(): 0);
-      rendered = os::instance()->makeRgbaSurface(
+      rendered = os::System::instance()->makeRgbaSurface(
         maxw, maxh, m_document->osColorSpace());
     }
 

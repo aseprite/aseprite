@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2022-2023  Igara Studio S.A.
+// Copyright (c) 2022-2024  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -183,7 +183,9 @@ bool Canvas::onProcessMessage(ui::Message* msg)
 void Canvas::onResize(ui::ResizeEvent& ev)
 {
   Widget::onResize(ev);
-  if (os::instance() && !ev.bounds().isEmpty()) {
+
+  const os::SystemRef system = os::System::instance();
+  if (system && !ev.bounds().isEmpty()) {
     int w = ev.bounds().w;
     int h = ev.bounds().h;
 
@@ -195,7 +197,7 @@ void Canvas::onResize(ui::ResizeEvent& ev)
     if (!m_surface ||
         m_surface->width() != w ||
         m_surface->height() != h) {
-      m_surface = os::instance()->makeSurface(w, h);
+      m_surface = system->makeSurface(w, h);
       callPaint();
     }
   }

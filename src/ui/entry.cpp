@@ -264,7 +264,7 @@ bool Entry::onProcessMessage(Message* msg)
 
       // Start processing dead keys
       if (m_translate_dead_keys)
-        os::instance()->setTranslateDeadKeys(true);
+        os::System::instance()->setTranslateDeadKeys(true);
       break;
 
     case kFocusLeaveMessage:
@@ -279,7 +279,7 @@ bool Entry::onProcessMessage(Message* msg)
 
       // Stop processing dead keys
       if (m_translate_dead_keys)
-        os::instance()->setTranslateDeadKeys(false);
+        os::System::instance()->setTranslateDeadKeys(false);
       break;
 
     case kKeyDownMessage:
