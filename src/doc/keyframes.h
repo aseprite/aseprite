@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2022 Igara Studio S.A.
+// Copyright (c) 2022-2024 Igara Studio S.A.
 // Copyright (c) 2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -72,14 +72,12 @@ namespace doc {
         T* operator*() {
           if (m_it != m_end)
             return m_it->value();
-          else
-            return nullptr;
+          return nullptr;
         }
         T* operator->() {
           if (m_it != m_end)
             return m_it->value();
-          else
-            return nullptr;
+          return nullptr;
         }
       private:
         iterator m_it, m_next;
@@ -154,8 +152,7 @@ namespace doc {
           it->value() &&
           frame >= it->frame())
         return it->value();
-      else
-        return nullptr;
+      return nullptr;
     }
 
     iterator begin() { return m_keys.begin(); }
@@ -185,15 +182,13 @@ namespace doc {
     frame_t fromFrame() const {
       if (!m_keys.empty())
         return m_keys.front().frame();
-      else
-        return -1;
+      return -1;
     }
 
     frame_t toFrame() const {
       if (!m_keys.empty())
         return m_keys.back().frame();
-      else
-        return -1;
+      return -1;
     }
 
     Range range(const frame_t from,

@@ -142,8 +142,7 @@ namespace ui {
     gfx::Color bgColor() const {
       if (gfx::geta(m_bgColor) == 0 && m_parent)
         return m_parent->bgColor();
-      else
-        return m_bgColor;
+      return m_bgColor;
     }
 
     // Sets the background color of the widget

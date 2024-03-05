@@ -126,9 +126,12 @@ at least.
 
 ### Old palette chunk (0x0004)
 
-Ignore this chunk if you find the new palette chunk (0x2019) Aseprite
-v1.1 saves both chunks 0x0004 and 0x2019 just for backward
-compatibility.
+Ignore this chunk if you find the new palette chunk (0x2019). Aseprite
+v1.1 saves both chunks (0x0004 and 0x2019) just for backward
+compatibility. Aseprite v1.3.5 writes this chunk if the palette
+doesn't have alpha channel and contains 256 colors or less (because
+this chunk is smaller), in other case the new palette chunk (0x2019)
+will be used (and the old one is not saved anymore).
 
     WORD        Number of packets
     + For each packet

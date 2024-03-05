@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -23,7 +23,7 @@ namespace app {
 
   // Wrapper to create a new transaction or get the current
   // transaction in the context.
-  class Tx {
+  class [[nodiscard]] Tx {
   public:
     enum LockAction {
       DocIsLocked, // The doc is locked to be written

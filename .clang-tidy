@@ -1,4 +1,65 @@
+#
+# Disabled or configured checks:
+#
+# bugprone-easily-swappable-parameters: We have a lot of functions
+# with (int, int) or (string, string) so it does't make sense to enable
+# this option.
+#
+# readability-braces-around-statements: We use a lot of:
+#   if (cond)
+#     stmt;
+#   else
+#     stmt;
+# and there is no way to allow this with this check.
+#
+# readability-function-cognitive-complexity: We have this disabled
+# temporarily, but it'd be nice to enable this with a high threshold
+# in the future.
+#
+# readability-identifier-length: We use a lot of short names like x,
+# y, w, h so we prefer to remove this.
+#
+# readability-magic-numbers: We use a lot of magic numbers like 8, 16,
+#  24 for masks like 0xFF00, etc.
+#
+# readability-isolate-declaration: We use multiple declarations
+# several times (e.g. int x, y, etc.)
+#
+# readability-uppercase-literal-suffix: We use a lot of 0.0f, but in a
+# future we might enable this.
+#
+# readability-named-parameter: We prefer misc-unused-parameters to
+# remove a parameter name that is not used.
+#
+# misc-use-anonymous-namespace: We use anonymous namespaces or static
+# functions indifferently.
+#
+# misc-non-private-member-variables-in-classes: We use structs with
+# all public members in some cases.
+#
 ---
-Checks: 'clang-analyzer-*'
+Checks: >
+  -*,
+  bugprone-*,
+  clang-analyzer-*,
+  concurrency-*,
+  misc-*,
+  performance-*,
+  portability-*,
+  readability-*,
+  -bugprone-easily-swappable-parameters,
+  -misc-use-anonymous-namespace,
+  -readability-braces-around-statements,
+  -readability-function-cognitive-complexity,
+  -readability-identifier-length,
+  -readability-isolate-declaration,
+  -readability-magic-numbers,
+  -readability-named-parameter,
+  -readability-uppercase-literal-suffix
 WarningsAsErrors: ''
+CheckOptions:
+  - key: readability-implicit-bool-conversion.AllowPointerConditions
+    value: true
+  - key: misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
+    value: true
 ...

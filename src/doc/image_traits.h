@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2018-2023 Igara Studio S.A.
+// Copyright (c) 2018-2024 Igara Studio S.A.
 // Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -53,13 +53,11 @@ namespace doc {
       if (rgba_geta(a) == 0) {
         if (rgba_geta(b) == 0)
           return true;
-        else
-          return false;
-      }
-      else if (rgba_geta(b) == 0)
         return false;
-      else
-        return a == b;
+      }
+      if (rgba_geta(b) == 0)
+        return false;
+      return a == b;
     }
   };
 
@@ -98,13 +96,11 @@ namespace doc {
       if (graya_geta(a) == 0) {
         if (graya_geta(b) == 0)
           return true;
-        else
-          return false;
-      }
-      else if (graya_geta(b) == 0)
         return false;
-      else
-        return a == b;
+      }
+      if (graya_geta(b) == 0)
+        return false;
+      return a == b;
     }
   };
 

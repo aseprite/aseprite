@@ -75,8 +75,7 @@ namespace doc {
     Image* originalImage() const {
       if (m_backupImage)
         return m_backupImage.get();
-      else
-        return m_image.get();
+      return m_image.get();
     }
 
   private:

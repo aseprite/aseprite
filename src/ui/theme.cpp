@@ -142,6 +142,9 @@ Theme::~Theme()
     set_theme(nullptr, guiscale());
 }
 
+// static
+ui::Style Theme::m_defaultStyle(nullptr);
+
 void Theme::regenerateTheme()
 {
   set_mouse_cursor(kNoCursor);

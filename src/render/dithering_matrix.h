@@ -72,10 +72,9 @@ namespace render {
 
       if (n == 2)
         return D2[i*2 + j];
-      else
-        return
-          + 4*Dn(i%(n/2), j%(n/2), n/2)
-          +   Dn(i/(n/2), j/(n/2), 2);
+      return
+        + 4*Dn(i%(n/2), j%(n/2), n/2)
+        +   Dn(i/(n/2), j/(n/2), 2);
     }
   };
 

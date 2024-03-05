@@ -787,9 +787,10 @@ void PixelsMovement::stampImage(bool finalStamp)
     cels.push_back(currentCel);
   }
 
-  if (currentCel && currentCel->layer() &&
+  if (currentCel &&
+      currentCel->layer() &&
       currentCel->layer()->isImage() &&
-      !currentCel->layer()->isEditableHierarchy()) {
+      !currentCel->layer()->canEditPixels()) {
     Transformation initialCelPos(gfx::Rect(m_initialMask0->bounds()), m_currentData.cornerThick());
     redrawExtraImage(&initialCelPos);
     stampExtraCelImage();

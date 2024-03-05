@@ -2438,6 +2438,12 @@ void Editor::onRemoveSlice(DocEvent& ev)
   }
 }
 
+void Editor::onBeforeLayerVisibilityChange(DocEvent& ev, bool newState)
+{
+  if (m_state)
+    m_state->onBeforeLayerVisibilityChange(this, ev.layer(), newState);
+}
+
 void Editor::setCursor(const gfx::Point& mouseDisplayPos)
 {
   Rect vp = View::getView(this)->viewportBounds();

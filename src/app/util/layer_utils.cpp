@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2024  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -45,14 +45,34 @@ Layer* candidate_if_layer_is_deleted(
 bool layer_is_locked(Editor* editor)
 {
   Layer* layer = editor->layer();
-  if (layer && !layer->isEditableHierarchy()) {
+  if (!layer)
+    return false;
+
 #ifdef ENABLE_UI
-    if (auto statusBar = StatusBar::instance())
+  auto statusBar = StatusBar::instance();
+#endif
+
+  if (!layer->isVisibleHierarchy()) {
+#ifdef ENABLE_UI
+    if (statusBar) {
       statusBar->showTip(
-        1000, fmt::format(Strings::statusbar_tips_layer_locked(), layer->name()));
+        1000, fmt::format(Strings::statusbar_tips_layer_x_is_hidden(),
+                          layer->name()));
+    }
 #endif
     return true;
   }
+
+  if (!layer->isEditableHierarchy()) {
+#ifdef ENABLE_UI
+    if (statusBar) {
+      statusBar->showTip(
+        1000, fmt::format(Strings::statusbar_tips_layer_locked(), layer->name()));
+    }
+#endif
+    return true;
+  }
+
   return false;
 }
 

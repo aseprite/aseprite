@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -14,6 +14,10 @@
 #include "app/ui/tabs.h"
 #include "app/ui/workspace_view.h"
 #include "ui/box.h"
+
+namespace doc {
+  class Layer;
+}
 
 namespace ui {
   class View;
@@ -86,6 +90,7 @@ namespace app {
     void onAfterRemoveCel(DocEvent& ev) override;
     void onTotalFramesChanged(DocEvent& ev) override;
     void onLayerRestacked(DocEvent& ev) override;
+    void onAfterLayerVisibilityChange(DocEvent& ev) override;
     void onTilesetChanged(DocEvent& ev) override;
 
     // InputChainElement impl
@@ -105,6 +110,8 @@ namespace app {
     bool onProcessMessage(ui::Message* msg) override;
 
   private:
+    bool hasContentInActiveFrame(const doc::Layer* layer) const;
+
     Type m_type;
     Doc* m_document;
     ui::View* m_view;

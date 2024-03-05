@@ -1,5 +1,5 @@
 // Aseprite Steam Wrapper
-// Copyright (c) 2020 Igara Studio S.A.
+// Copyright (c) 2020-2024 Igara Studio S.A.
 // Copyright (c) 2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -8,6 +8,8 @@
 #ifndef STEAM_STEAM_H_INCLUDED
 #define STEAM_STEAM_H_INCLUDED
 #pragma once
+
+#include <memory>
 
 namespace steam {
 
@@ -18,7 +20,7 @@ public:
   SteamAPI();
   ~SteamAPI();
 
-  bool initialized() const;
+  bool isInitialized() const;
   void runCallbacks();
 
   bool writeScreenshot(void* rgbBuffer,
@@ -27,7 +29,7 @@ public:
 
 private:
   class Impl;
-  Impl* m_impl;
+  std::unique_ptr<Impl> m_impl;
 };
 
 } // namespace steam

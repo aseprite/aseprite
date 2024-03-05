@@ -29,7 +29,7 @@ Task::~Task()
 
 void Task::run(base::task::func_t&& func)
 {
-  std::lock_guard lock(m_token_mutex);
+  const std::lock_guard lock(m_token_mutex);
   m_task.on_execute(std::move(func));
   m_token = &m_task.start(tasks_pool);
 }

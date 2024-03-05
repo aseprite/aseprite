@@ -38,8 +38,7 @@ namespace doc {
     Tileset* get(const tileset_index tsi) const {
       if (tsi < size())
         return m_tilesets[tsi];
-      else
-        return nullptr;
+      return nullptr;
     }
 
     tileset_index getIndex(const Tileset *tileset) {

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -26,6 +26,7 @@ namespace ui {
 }
 
 namespace doc {
+  class Layer;
   class Tag;
 }
 
@@ -144,6 +145,11 @@ namespace app {
     // that the state cached a layer pointer in an internal
     // collection.
     virtual void onBeforeRemoveLayer(Editor* editor) { }
+
+    // Called when the visibility of a specific layer is changed.
+    virtual void onBeforeLayerVisibilityChange(Editor* editor,
+                                               doc::Layer* layer,
+                                               bool newState) { }
 
   private:
     DISABLE_COPYING(EditorState);

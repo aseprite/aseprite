@@ -76,16 +76,14 @@ namespace render {
   inline int Zoom::remove(int x) const {
     if (x < 0)
       return (x * m_den / m_num) - 1;
-    else
-      return (x * m_den / m_num);
+    return (x * m_den / m_num);
   }
 
   inline int Zoom::removeCeiling(int x) const {
     int v = x * m_den;
     if (x < 0)
       return (v / m_num);
-    else
-      return (v / m_num) + (v % m_num != 0);
+    return (v / m_num) + (v % m_num != 0);
   }
 
   inline gfx::Rect Zoom::apply(const gfx::Rect& r) const {

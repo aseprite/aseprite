@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -163,6 +163,7 @@ namespace app {
     void onTagChange(DocEvent& ev) override;
     void onTagRename(DocEvent& ev) override;
     void onLayerCollapsedChanged(DocEvent& ev) override;
+    void onAfterLayerVisibilityChange(DocEvent& ev) override;
 
     // app::Context slots.
     void onBeforeCommandExecution(CommandExecutionEvent& ev);

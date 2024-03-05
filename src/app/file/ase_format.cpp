@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -355,7 +355,7 @@ bool AseFormat::onSave(FileOp* fop)
 
   bool require_new_palette_chunk = false;
   for (Palette* pal : sprite->getPalettes()) {
-    if (pal->size() != 256 || pal->hasAlpha()) {
+    if (pal->size() > 256 || pal->hasAlpha()) {
       require_new_palette_chunk = true;
       break;
     }
@@ -393,9 +393,12 @@ bool AseFormat::onSave(FileOp* fop)
         ase_file_write_palette_chunk(f, &frame_header,
                                      pal, palFrom, palTo);
       }
-
-      // Write color chunk for backward compatibility only
-      ase_file_write_color2_chunk(f, &frame_header, pal);
+      else {
+        // Use old color chunk only when the palette has 256 or less
+        // colors, and we don't need the alpha channel (as this chunk
+        // is smaller than the new palette chunk).
+        ase_file_write_color2_chunk(f, &frame_header, pal);
+      }
     }
 
     // Write extra chunks in the first frame
@@ -676,6 +679,7 @@ static void ase_file_write_color2_chunk(FILE* f, dio::AsepriteFrameHeader* frame
 
   // First packet
   fputc(0, f);                                   // skip 0 colors
+  ASSERT(pal->size() <= 256);                    // For >256 we use the palette chunk
   fputc(pal->size() == 256 ? 0: pal->size(), f); // number of colors
   for (c=0; c<pal->size(); c++) {
     color = pal->getEntry(c);
@@ -1692,8 +1696,12 @@ static void ase_ungroup_all(LayerGroup* group)
 
   for (Layer* child : list) {
     if (child->isGroup()) {
-      ase_ungroup_all(static_cast<LayerGroup*>(child));
-      group->removeLayer(child);
+      auto* childGroup = static_cast<LayerGroup*>(child);
+      ase_ungroup_all(childGroup);
+      group->removeLayer(childGroup);
+
+      ASSERT(childGroup->layersCount() == 0);
+      delete childGroup;
     }
     else if (group != root) {
       // Create a new name adding all group layer names
@@ -1710,11 +1718,6 @@ static void ase_ungroup_all(LayerGroup* group)
       group->removeLayer(child);
       root->addLayer(child);
     }
-  }
-
-  if (group != root) {
-    ASSERT(group->layersCount() == 0);
-    delete group;
   }
 }
 

@@ -9,7 +9,6 @@
 #define DOC_TAG_H_INCLUDED
 #pragma once
 
-#include "base/disable_copying.h"
 #include "doc/anidir.h"
 #include "doc/frame.h"
 #include "doc/object.h"

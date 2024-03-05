@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -79,6 +79,9 @@ AppOptions::AppOptions(int argc, const char* argv[])
   , m_exportTileset(m_po.add("export-tileset").description("Export only tilesets from visible tilemap layers"))
   , m_verbose(m_po.add("verbose").mnemonic('v').description("Explain what is being done"))
   , m_debug(m_po.add("debug").description("Extreme verbose mode and\ncopy log to desktop"))
+#ifdef ENABLE_STEAM
+  , m_noInApp(m_po.add("noinapp").description("Disable \"in game\" visibility on Steam\nDoesn't count playtime"))
+#endif
 #ifdef _WIN32
   , m_disableWintab(m_po.add("disable-wintab").description("Don't load wintab32.dll library"))
 #endif
@@ -120,6 +123,13 @@ bool AppOptions::hasExporterParams() const
     m_po.enabled(m_data) ||
     m_po.enabled(m_sheet);
 }
+
+#ifdef ENABLE_STEAM
+bool AppOptions::noInApp() const
+{
+  return m_po.enabled(m_noInApp);
+}
+#endif
 
 #ifdef _WIN32
 bool AppOptions::disableWintab() const

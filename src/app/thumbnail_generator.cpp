@@ -49,7 +49,7 @@ public:
 
   ~Worker() {
     {
-      std::lock_guard lock(m_mutex);
+      const std::lock_guard lock(m_mutex);
       if (m_fop)
         m_fop->stop();
     }
@@ -57,7 +57,7 @@ public:
   }
 
   void stop() const {
-    std::lock_guard lock(m_mutex);
+    const std::lock_guard lock(m_mutex);
     if (m_fop)
       m_fop->stop();
   }
@@ -67,7 +67,7 @@ public:
   }
 
   void updateProgress() {
-    std::lock_guard lock(m_mutex);
+    const std::lock_guard lock(m_mutex);
     if (m_item.fileitem && m_item.fop) {
       double progress = m_item.fop->progress();
       if (progress > m_item.fileitem->getThumbnailProgress())
@@ -80,7 +80,7 @@ private:
     ASSERT(!m_fop);
     try {
       {
-        std::lock_guard lock(m_mutex);
+        const std::lock_guard lock(m_mutex);
         m_fop = m_item.fop;
         ASSERT(m_fop);
       }
@@ -167,7 +167,7 @@ private:
           0, 0, 0, 0, thumbnailImage->width(), thumbnailImage->height());
 
         {
-          std::lock_guard lock(m_mutex);
+          const std::lock_guard lock(m_mutex);
           m_item.fileitem->setThumbnail(thumbnail);
         }
       }
@@ -191,13 +191,13 @@ private:
     // Reset the m_item (first the fileitem so this worker is not
     // associated to this fileitem anymore, and then the FileOp).
     {
-      std::lock_guard lock(m_mutex);
+      const std::lock_guard lock(m_mutex);
       m_item.fileitem = nullptr;
     }
 
     m_fop->done();
     {
-      std::lock_guard lock(m_mutex);
+      const std::lock_guard lock(m_mutex);
       m_item.fop = nullptr;
       delete m_fop;
       m_fop = nullptr;
@@ -212,7 +212,7 @@ private:
       bool success = true;
       while (success) {
         {
-          std::lock_guard lock(m_mutex); // To access m_item
+          const std::lock_guard lock(m_mutex); // To access m_item
           success = m_queue.try_pop(m_item);
         }
         if (success)
@@ -253,7 +253,7 @@ ThumbnailGenerator::ThumbnailGenerator()
 
 bool ThumbnailGenerator::checkWorkers()
 {
-  std::lock_guard lock(m_workersAccess);
+  const std::lock_guard lock(m_workersAccess);
   bool doingWork = (!m_workers.empty());
 
   for (WorkerList::iterator
@@ -339,14 +339,14 @@ void ThumbnailGenerator::stopAllWorkers()
     }
   }
 
-  std::lock_guard lock(m_workersAccess);
+  const std::lock_guard lock(m_workersAccess);
   for (const auto& worker : m_workers)
     worker->stop();
 }
 
 void ThumbnailGenerator::startWorker()
 {
-  std::lock_guard lock(m_workersAccess);
+  const std::lock_guard lock(m_workersAccess);
   if (m_workers.size() < m_maxWorkers) {
     m_workers.push_back(std::make_unique<Worker>(m_remainingItems));
   }

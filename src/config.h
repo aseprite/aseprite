@@ -1,15 +1,15 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
-#ifdef __ASEPRITE_CONFIG_H
+#ifdef ASEPRITE_CONFIG_H_INCLUDED
 #error You cannot use config.h two times
 #endif
 
-#define __ASEPRITE_CONFIG_H
+#define ASEPRITE_CONFIG_H_INCLUDED
 
 // In MSVC
 #ifdef _MSC_VER

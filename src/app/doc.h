@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -108,6 +108,14 @@ namespace app {
     os::ColorSpaceRef osColorSpace() const { return m_osColorSpace; }
 
     //////////////////////////////////////////////////////////////////////
+    // Modifications with notifications
+
+    // Use this function to change the layer visibility and notify all
+    // DocObservers about this change (e.g. so the Editor can be
+    // invalidated/redrawn, MovingPixelsState can drop pixels, etc.)
+    void setLayerVisibilityWithNotifications(Layer* layer, const bool visible);
+
+    //////////////////////////////////////////////////////////////////////
     // Notifications
 
     void notifyGeneralUpdate();
@@ -116,6 +124,8 @@ namespace app {
     void notifySpritePixelsModified(Sprite* sprite, const gfx::Region& region, frame_t frame);
     void notifyExposeSpritePixels(Sprite* sprite, const gfx::Region& region);
     void notifyLayerMergedDown(Layer* srcLayer, Layer* targetLayer);
+    void notifyBeforeLayerVisibilityChange(Layer* layer, bool newState);
+    void notifyAfterLayerVisibilityChange(Layer* layer);
     void notifyCelMoved(Layer* fromLayer, frame_t fromFrame, Layer* toLayer, frame_t toFrame);
     void notifyCelCopied(Layer* fromLayer, frame_t fromFrame, Layer* toLayer, frame_t toFrame);
     void notifySelectionChanged();

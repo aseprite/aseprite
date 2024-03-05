@@ -328,6 +328,11 @@ int App::initialize(const AppOptions& options)
   app_configure_drm();
 #endif
 
+#ifdef ENABLE_STEAM
+  if (options.noInApp())
+    m_inAppSteam = false;
+#endif
+
   // Load modules
   m_modules = std::make_unique<Modules>(createLogInDesktop, preferences());
   m_legacy = std::make_unique<LegacyModules>(isGui() ? REQUIRE_INTERFACE: 0);
@@ -511,9 +516,18 @@ void App::run()
 
     // Initialize Steam API
 #ifdef ENABLE_STEAM
-    steam::SteamAPI steam;
-    if (steam.initialized())
-      os::System::instance()->activateApp();
+    std::unique_ptr<steam::SteamAPI> steam;
+    if (m_inAppSteam) {
+      steam = std::make_unique<steam::SteamAPI>();
+      if (steam->isInitialized())
+        os::System::instance()->activateApp();
+    }
+    else {
+      // We tried to load the Steam SDK without calling
+      // SteamAPI_InitSafe() to check if we could run the program
+      // without "in game" indication but still capturing screenshots
+      // on Steam, and that wasn't the case.
+    }
 #endif
 
 #if defined(_DEBUG) || defined(ENABLE_DEVMODE)
@@ -707,24 +721,21 @@ Workspace* App::workspace() const
 {
   if (m_mainWindow)
     return m_mainWindow->getWorkspace();
-  else
-    return nullptr;
+  return nullptr;
 }
 
 ContextBar* App::contextBar() const
 {
   if (m_mainWindow)
     return m_mainWindow->getContextBar();
-  else
-    return nullptr;
+  return nullptr;
 }
 
 Timeline* App::timeline() const
 {
   if (m_mainWindow)
     return m_mainWindow->getTimeline();
-  else
-    return nullptr;
+  return nullptr;
 }
 
 Preferences& App::preferences() const
@@ -853,8 +864,7 @@ PixelFormat app_get_current_pixel_format()
   Doc* doc = ctx->activeDocument();
   if (doc)
     return doc->sprite()->pixelFormat();
-  else
-    return IMAGE_RGB;
+  return IMAGE_RGB;
 }
 
 int app_get_color_to_clear_layer(Layer* layer)

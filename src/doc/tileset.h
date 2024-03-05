@@ -84,8 +84,7 @@ namespace doc {
     ImageRef get(const tile_index ti) const {
       if (ti >= 0 && ti < size())
         return m_tiles[ti].image;
-      else
-        return ImageRef(nullptr);
+      return ImageRef(nullptr);
     }
     void set(const tile_index ti,
              const ImageRef& image);
@@ -93,8 +92,7 @@ namespace doc {
     UserData& getTileData(const tile_index ti) const {
       if (ti >= 0 && ti < size())
         return const_cast<UserData&>(m_tiles[ti].data);
-      else
-        return kNoUserData;
+      return kNoUserData;
     }
     void setTileData(const tile_index ti,
                      const UserData& userData);

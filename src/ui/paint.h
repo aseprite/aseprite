@@ -8,7 +8,6 @@
 #define UI_PAINT_H_INCLUDED
 #pragma once
 
-#include "base/disable_copying.h"
 #include "gfx/color.h"
 #include "os/paint.h"
 

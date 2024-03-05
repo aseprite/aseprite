@@ -1,0 +1,32 @@
+name: Clang Tidy Diff
+on:
+  pull_request:
+    paths:
+    - '**.cpp'
+    - '**.h'
+    - '.github/workflows/clang_tidy.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+    - uses: ZedThree/clang-tidy-review@v0.14.0
+      id: review
+      with:
+        build_dir: build
+        config_file: .clang-tidy
+        split_workflow: true
+        apt_packages: |
+          libc++-dev, libc++abi-dev, libpixman-1-dev,
+          libfreetype6-dev, libharfbuzz-dev, zlib1g-dev, libx11-dev,
+          libxcursor-dev, libxi-dev, libgl1-mesa-dev
+        cmake_command: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DLAF_BACKEND=none -DCMAKE_EXPORT_COMPILE_COMMANDS=on
+    - uses: ZedThree/clang-tidy-review/upload@v0.14.0
+      id: upload-review

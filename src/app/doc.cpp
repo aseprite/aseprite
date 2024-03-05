@@ -194,6 +194,16 @@ color_t Doc::bgColor(Layer* layer) const
 }
 
 //////////////////////////////////////////////////////////////////////
+// Modifications with notifications
+
+void Doc::setLayerVisibilityWithNotifications(Layer* layer, const bool visible)
+{
+  notifyBeforeLayerVisibilityChange(layer, visible);
+  layer->setVisible(visible);
+  notifyAfterLayerVisibilityChange(layer);
+}
+
+//////////////////////////////////////////////////////////////////////
 // Notifications
 
 void Doc::notifyGeneralUpdate()
@@ -242,6 +252,20 @@ void Doc::notifyLayerMergedDown(Layer* srcLayer, Layer* targetLayer)
   ev.layer(srcLayer);
   ev.targetLayer(targetLayer);
   notify_observers<DocEvent&>(&DocObserver::onLayerMergedDown, ev);
+}
+
+void Doc::notifyBeforeLayerVisibilityChange(Layer* layer, bool newState)
+{
+  DocEvent ev(this);
+  ev.layer(layer);
+  notify_observers<DocEvent&, bool>(&DocObserver::onBeforeLayerVisibilityChange, ev, newState);
+}
+
+void Doc::notifyAfterLayerVisibilityChange(Layer* layer)
+{
+  DocEvent ev(this);
+  ev.layer(layer);
+  notify_observers<DocEvent&>(&DocObserver::onAfterLayerVisibilityChange, ev);
 }
 
 void Doc::notifyCelMoved(Layer* fromLayer, frame_t fromFrame, Layer* toLayer, frame_t toFrame)

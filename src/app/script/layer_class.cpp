@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -329,7 +329,9 @@ int Layer_set_isEditable(lua_State* L)
 int Layer_set_isVisible(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
-  layer->setVisible(lua_toboolean(L, 2));
+  const bool newState = lua_toboolean(L, 2);
+  Doc* doc = static_cast<Doc*>(layer->sprite()->document());
+  doc->setLayerVisibilityWithNotifications(layer, newState);
   return 0;
 }
 

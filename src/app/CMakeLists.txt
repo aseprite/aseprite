@@ -776,7 +776,10 @@ if(ENABLE_UPDATER)
 endif()
 
 if(ENABLE_STEAM)
-  add_definitions(-DENABLE_STEAM)
+  # We need the ENABLE_STEAM flag in main module too so AppOptions are
+  # equal in both modules, app-lib and main (that's why this flag is
+  # marked as PUBLIC).
+  target_compile_definitions(app-lib PUBLIC -DENABLE_STEAM)
   target_link_libraries(app-lib steam-lib)
 endif()
 
