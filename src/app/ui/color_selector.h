@@ -88,7 +88,8 @@ namespace app {
 
     void paintColorIndicator(ui::Graphics* g,
                              const gfx::Point& pos,
-                             const bool white);
+                             const bool white,
+                             const int alpha=255);
 
     // Returns the 255 if m_color is the mask color, or the
     // m_color.getAlpha() if it's really a color.

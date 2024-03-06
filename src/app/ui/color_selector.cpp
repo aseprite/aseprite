@@ -577,14 +577,15 @@ int ColorSelector::onNeedsSurfaceRepaint(const app::Color& newColor)
 
 void ColorSelector::paintColorIndicator(ui::Graphics* g,
                                         const gfx::Point& pos,
-                                        const bool white)
+                                        const bool white,
+                                        const int alpha)
 {
   auto theme = SkinTheme::get(this);
   os::Surface* icon = theme->parts.colorWheelIndicator()->bitmap(0);
 
   g->drawColoredRgbaSurface(
     icon,
-    white ? gfx::rgba(255, 255, 255): gfx::rgba(0, 0, 0),
+    white ? gfx::rgba(255, 255, 255, alpha): gfx::rgba(0, 0, 0, alpha),
     pos.x-icon->width()/2,
     pos.y-icon->height()/2);
 }

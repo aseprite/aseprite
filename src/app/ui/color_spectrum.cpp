@@ -118,7 +118,8 @@ void ColorSpectrum::onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc)
         gfx::Point pos(rc.x + int(hue * rc.w / 360.0),
                        rc.y + rc.h - int(lit * rc.h));
 
-        paintColorIndicator(g, pos, lit < 0.5);
+        int alpha = color == m_color ? 255 : 100;
+        paintColorIndicator(g, pos, lit < 0.5, alpha);
       }
     }
   }
@@ -150,7 +151,8 @@ void ColorSpectrum::onPaintBottomBar(ui::Graphics* g, const gfx::Rect& rc)
         double sat = color.getHslSaturation();
         gfx::Point pos(rc.x + int(double(rc.w) * sat),
                        rc.y + rc.h/2);
-        paintColorIndicator(g, pos, lit < 0.5);
+        int alpha = color == m_color ? 255 : 100;
+        paintColorIndicator(g, pos, lit < 0.5, alpha);
         }
       }
     }
