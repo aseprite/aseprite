@@ -106,29 +106,33 @@ void ColorSpectrum::onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc)
 {
   doc::PalettePicks picks;
   ColorBar::instance()->getPaletteView()->getSelectedEntries(picks);
-  if (picks.picks() > 1)
-  {
+  if (picks.picks() > 1) {
+    std::vector<gfx::Point> positions;
+    std::vector<bool> white;
+    int current;
     for (int i = 0; i<picks.size(); i++) {
-      if (!picks[i])
+      if (picks[i] == 0)
         continue;
-      Color color = app::Color::fromIndex(i);
+      Color const color = app::Color::fromIndex(i);
       if (color.getType() != app::Color::MaskType) {
-        double hue = color.getHslHue();
-        double lit = color.getHslLightness();
-        gfx::Point pos(rc.x + int(hue * rc.w / 360.0),
+        double const hue = color.getHslHue();
+        double const lit = color.getHslLightness();
+        gfx::Point const pos(rc.x + int(hue * rc.w / 360.0),
                        rc.y + rc.h - int(lit * rc.h));
 
-        int alpha = color == m_color ? 255 : 100;
-        paintColorIndicator(g, pos, lit < 0.5, alpha);
+        if (color == m_color)
+          current = positions.size();
+        positions.push_back(pos);
+        white.push_back(lit < 0.5);
       }
     }
+    paintColorIndicatorChain(g, positions, white, current);
   }
-  else
-  {
+  else {
     if (m_color.getType() != app::Color::MaskType) {
-      double hue = m_color.getHslHue();
-      double lit = m_color.getHslLightness();
-      gfx::Point pos(rc.x + int(hue * rc.w / 360.0),
+      double const hue = m_color.getHslHue();
+      double const lit = m_color.getHslLightness();
+      gfx::Point const pos(rc.x + int(hue * rc.w / 360.0),
                      rc.y + rc.h - int(lit * rc.h));
 
       paintColorIndicator(g, pos, lit < 0.5);
@@ -140,32 +144,30 @@ void ColorSpectrum::onPaintBottomBar(ui::Graphics* g, const gfx::Rect& rc)
 {
   doc::PalettePicks picks;
   ColorBar::instance()->getPaletteView()->getSelectedEntries(picks);
-  if (picks.picks() > 1)
-  {
+  if (picks.picks() > 1) {
     for (int i = 0; i<picks.size(); i++) {
-      if (!picks[i])
+      if (picks[i] == 0)
         continue;
-      Color color = app::Color::fromIndex(i);
-      double lit = color.getHslLightness();
+      Color const color = app::Color::fromIndex(i);
+      double const lit = color.getHslLightness();
       if (color.getType() != app::Color::MaskType) {
-        double sat = color.getHslSaturation();
-        gfx::Point pos(rc.x + int(double(rc.w) * sat),
+        double const sat = color.getHslSaturation();
+        gfx::Point const pos(rc.x + int(double(rc.w) * sat),
                        rc.y + rc.h/2);
-        int alpha = color == m_color ? 255 : 100;
+        int const alpha = color == m_color ? 255 : 50;
         paintColorIndicator(g, pos, lit < 0.5, alpha);
-        }
       }
     }
-    else
-    {
-      double lit = m_color.getHslLightness();
-      if (m_color.getType() != app::Color::MaskType) {
-        double sat = m_color.getHslSaturation();
-        gfx::Point pos(rc.x + int(double(rc.w) * sat),
-                       rc.y + rc.h/2);
-        paintColorIndicator(g, pos, lit < 0.5);
-      }
+  }
+  else {
+    double const lit = m_color.getHslLightness();
+    if (m_color.getType() != app::Color::MaskType) {
+      double const sat = m_color.getHslSaturation();
+      gfx::Point const pos(rc.x + int(double(rc.w) * sat),
+                     rc.y + rc.h/2);
+      paintColorIndicator(g, pos, lit < 0.5);
     }
+  }
 }
 
 void ColorSpectrum::onPaintSurfaceInBgThread(

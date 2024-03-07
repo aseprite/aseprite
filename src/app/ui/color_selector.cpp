@@ -580,7 +580,7 @@ void ColorSelector::paintColorIndicator(ui::Graphics* g,
                                         const bool white,
                                         const int alpha)
 {
-  auto theme = SkinTheme::get(this);
+  auto *theme = SkinTheme::get(this);
   os::Surface* icon = theme->parts.colorWheelIndicator()->bitmap(0);
 
   g->drawColoredRgbaSurface(
@@ -588,6 +588,29 @@ void ColorSelector::paintColorIndicator(ui::Graphics* g,
     white ? gfx::rgba(255, 255, 255, alpha): gfx::rgba(0, 0, 0, alpha),
     pos.x-icon->width()/2,
     pos.y-icon->height()/2);
+}
+
+void ColorSelector::paintColorIndicatorChain(ui::Graphics* g,
+    const std::vector<gfx::Point>& positions,
+    const std::vector<bool>& white,
+    const int current)
+{
+  auto theme = SkinTheme::get(this);
+  os::Surface* icon = theme->parts.colorWheelIndicator()->bitmap(0);
+
+  for (int i=0; i<positions.size(); i++)
+  {
+    int const alpha = i == current ? 255 : 50;
+    auto color =
+      white.at(i) ? gfx::rgba(255, 255, 255, alpha): gfx::rgba(0, 0, 0, alpha);
+    g->drawColoredRgbaSurface(
+        icon,
+        color,
+        positions.at(i).x-icon->width()/2,
+        positions.at(i).y-icon->height()/2);
+    if (i < positions.size()-1)
+      g->drawLine(color, positions.at(i), positions.at(i+1));
+  }
 }
 
 int ColorSelector::getCurrentAlphaForNewColor() const
