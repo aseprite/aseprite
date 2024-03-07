@@ -33,14 +33,19 @@ namespace script {
 
 void GraphicsContext::fillText(const std::string& text, int x, int y)
 {
-  text::draw_text(m_surface.get(), m_font,
-                  text, m_paint.color(), 0, x, y, nullptr);
+  if (auto theme = skin::SkinTheme::instance()) {
+    text::draw_text(m_surface.get(), theme->fontMgr(), m_font,
+                    text, m_paint.color(), 0, x, y, nullptr);
+  }
 }
 
 gfx::Size GraphicsContext::measureText(const std::string& text) const
 {
-  return text::draw_text(nullptr, m_font, text,
-                         0, 0, 0, 0, nullptr).size();
+  if (auto theme = skin::SkinTheme::instance()) {
+    return text::draw_text(nullptr, theme->fontMgr(), m_font, text,
+                           0, 0, 0, 0, nullptr).size();
+  }
+  return gfx::Size();
 }
 
 void GraphicsContext::drawImage(const doc::Image* img, int x, int y)

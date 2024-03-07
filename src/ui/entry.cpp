@@ -894,7 +894,7 @@ public:
   const Entry::CharBoxes& boxes() const { return m_boxes; }
 
   void preProcessChar(const int index,
-                      const int codepoint,
+                      const base::codepoint_t codepoint,
                       gfx::Color& fg,
                       gfx::Color& bg,
                       const gfx::Rect& charBounds) override {
@@ -926,7 +926,9 @@ void Entry::recalcCharBoxes(const std::string& text)
 {
   int lastTextIndex = int(text.size());
   CalcBoxesTextDelegate delegate(lastTextIndex);
-  text::draw_text(nullptr, base::AddRef(font()), text,
+  text::draw_text(nullptr,
+                  theme()->fontMgr(),
+                  base::AddRef(font()), text,
                   gfx::ColorNone, gfx::ColorNone, 0, 0, &delegate);
   m_boxes = delegate.boxes();
 

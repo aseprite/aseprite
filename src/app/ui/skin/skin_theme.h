@@ -48,8 +48,8 @@ namespace app {
 
     // This is the GUI theme used by Aseprite (which use images from
     // data/skins directory).
-    class SkinTheme : public ui::Theme
-                    , public app::gen::ThemeFile<SkinTheme> {
+    class SkinTheme final : public ui::Theme
+                          , public app::gen::ThemeFile<SkinTheme> {
     public:
       static const char* kThemesFolderName;
 
@@ -63,7 +63,7 @@ namespace app {
       int preferredScreenScaling() { return m_preferredScreenScaling; }
       int preferredUIScaling() { return m_preferredUIScaling; }
 
-      text::FontMgrRef fontMgr() const { return m_fontMgr; }
+      text::FontMgrRef fontMgr() const override { return m_fontMgr; }
       text::Font* getDefaultFont() const override { return m_defaultFont.get(); }
       text::Font* getWidgetFont(const ui::Widget* widget) const override;
       text::Font* getMiniFont() const { return m_miniFont.get(); }

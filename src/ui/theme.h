@@ -13,10 +13,11 @@
 #include "gfx/color.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
+#include "text/fwd.h"
 #include "ui/base.h"
 #include "ui/cursor_type.h"
-#include "ui/style.h"
 #include "ui/scale.h"
+#include "ui/style.h"
 
 namespace gfx {
   class Region;
@@ -62,6 +63,7 @@ namespace ui {
     Theme();
     virtual ~Theme();
 
+    virtual text::FontMgrRef fontMgr() const = 0;
     virtual text::Font* getDefaultFont() const = 0;
     virtual text::Font* getWidgetFont(const Widget* widget) const = 0;
 

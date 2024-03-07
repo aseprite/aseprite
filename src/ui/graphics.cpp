@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -352,7 +352,8 @@ void Graphics::drawText(const std::string& str,
 
   os::SurfaceLock lock(m_surface.get());
   gfx::Rect textBounds =
-    text::draw_text(m_surface.get(), m_font, str, fg, bg, pt.x, pt.y, delegate);
+    text::draw_text(m_surface.get(), get_theme()->fontMgr(),
+                    m_font, str, fg, bg, pt.x, pt.y, delegate);
 
   dirty(gfx::Rect(pt.x, pt.y, textBounds.w, textBounds.h));
 }
@@ -373,7 +374,7 @@ public:
   gfx::Rect bounds() const { return m_bounds; }
 
   void preProcessChar(const int index,
-                      const int codepoint,
+                      const base::codepoint_t codepoint,
                       gfx::Color& fg,
                       gfx::Color& bg,
                       const gfx::Rect& charBounds) override {
@@ -431,8 +432,8 @@ void Graphics::drawUIText(const std::string& str, gfx::Color fg, gfx::Color bg,
   int y = m_dy+pt.y;
 
   DrawUITextDelegate delegate(m_surface.get(), m_font.get(), mnemonic);
-  text::draw_text(m_surface.get(), m_font, str,
-                  fg, bg, x, y, &delegate);
+  text::draw_text(m_surface.get(), get_theme()->fontMgr(),
+                  m_font, str, fg, bg, x, y, &delegate);
 
   dirty(delegate.bounds());
 }
@@ -455,9 +456,10 @@ int Graphics::measureUITextLength(const std::string& str,
                                   text::Font* font)
 {
   DrawUITextDelegate delegate(nullptr, font, 0);
-  text::draw_text(nullptr, base::AddRef(font), str,
-                  gfx::ColorNone, gfx::ColorNone, 0, 0,
-                  &delegate);
+  text::draw_text(nullptr, get_theme()->fontMgr(),
+                  base::AddRef(font), str,
+                  gfx::ColorNone, gfx::ColorNone,
+                  0, 0, &delegate);
   return delegate.bounds().w;
 }
 

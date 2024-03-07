@@ -1172,7 +1172,7 @@ public:
   const gfx::Rect& textBounds() const { return m_textBounds; }
 
   void preProcessChar(const int index,
-                      const int codepoint,
+                      const base::codepoint_t codepoint,
                       gfx::Color& fg,
                       gfx::Color& bg,
                       const gfx::Rect& charBounds) override {
