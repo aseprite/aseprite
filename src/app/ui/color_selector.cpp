@@ -601,15 +601,24 @@ void ColorSelector::paintColorIndicatorChain(ui::Graphics* g,
   for (int i=0; i<positions.size(); i++)
   {
     int const alpha = i == current ? 255 : 50;
-    auto color =
+    auto const color =
       white.at(i) ? gfx::rgba(255, 255, 255, alpha): gfx::rgba(0, 0, 0, alpha);
+
     g->drawColoredRgbaSurface(
         icon,
         color,
         positions.at(i).x-icon->width()/2,
         positions.at(i).y-icon->height()/2);
-    if (i < positions.size()-1)
-      g->drawLine(color, positions.at(i), positions.at(i+1));
+    if (i < positions.size()-1) {
+      gfx::Color line_color;
+      if (white.at(i) && white.at(i+1))
+        line_color = gfx::rgba(255,255,255,50);
+      else if (!white.at(i) && !white.at(i+1))
+        line_color = gfx::rgba(0,0,0,50);
+      else
+        line_color = gfx::rgba(127,127,127,100);
+      g->drawLine(line_color, positions.at(i), positions.at(i+1));
+    }
   }
 }
 
