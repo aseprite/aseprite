@@ -784,10 +784,15 @@ public:
         m_context->activeDocument() &&
         m_context->activeDocument()->sprite() &&
         m_context->activeDocument()->sprite()->gridBounds() != gridBounds()) {
-      ContextWriter writer(m_context);
-      Tx tx(writer, Strings::commands_GridSettings(), ModifyDocument);
-      tx(new cmd::SetGridBounds(writer.sprite(), gridBounds()));
-      tx.commit();
+      try {
+        ContextWriter writer(m_context, 1000);
+        Tx tx(writer, Strings::commands_GridSettings(), ModifyDocument);
+        tx(new cmd::SetGridBounds(writer.sprite(), gridBounds()));
+        tx.commit();
+      }
+      catch (const std::exception& ex) {
+        Console::showException(ex);
+      }
     }
 
     m_curPref->show.grid(gridVisible()->isSelected());
