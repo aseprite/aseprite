@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -11,6 +11,7 @@
 
 #include "app/app.h"
 #include "app/commands/cmd_export_sprite_sheet.h"
+#include "app/console.h"
 #include "app/context.h"
 #include "app/context_access.h"
 #include "app/doc.h"
@@ -140,6 +141,17 @@ ConstraintType constraint_type_from_params(const ExportSpriteSheetParams& params
 }
 
 #endif // ENABLE_UI
+
+void destroy_doc(Context* ctx, Doc* doc)
+{
+  try {
+    DocDestroyer destroyer(ctx, doc, 500);
+    destroyer.destroyDocument();
+  }
+  catch (const LockedDocException& ex) {
+    Console::showException(ex);
+  }
+}
 
 Doc* generate_sprite_sheet_from_params(
   DocExporter& exporter,
@@ -500,8 +512,7 @@ public:
       auto ctx = UIContext::instance();
       ctx->setActiveDocument(m_site.document());
 
-      DocDestroyer destroyer(ctx, m_spriteSheet.release(), 100);
-      destroyer.destroyDocument();
+      destroy_doc(ctx, m_spriteSheet.release());
     }
   }
 
@@ -1014,8 +1025,7 @@ private:
         auto ctx = UIContext::instance();
         ctx->setActiveDocument(m_site.document());
 
-        DocDestroyer destroyer(ctx, m_spriteSheet.release(), 100);
-        destroyer.destroyDocument();
+        destroy_doc(ctx, m_spriteSheet.release());
         m_editor = nullptr;
       }
       return;
@@ -1066,8 +1076,7 @@ private:
       return;
 
     if (token.canceled()) {
-      DocDestroyer destroyer(&tmpCtx, newDocument, 100);
-      destroyer.destroyDocument();
+      destroy_doc(&tmpCtx, newDocument);
       return;
     }
 
@@ -1090,8 +1099,7 @@ private:
         // old one. IN this case the newDocument contains a back
         // buffer (ImageBufferPtr) that will be discarded.
         m_executionID != executionID) {
-      DocDestroyer destroyer(context, newDocument, 100);
-      destroyer.destroyDocument();
+      destroy_doc(context, newDocument);
       return;
     }
 
@@ -1137,8 +1145,7 @@ private:
 
       m_spriteSheet->notifyGeneralUpdate();
 
-      DocDestroyer destroyer(context, newDocument, 100);
-      destroyer.destroyDocument();
+      destroy_doc(context, newDocument);
     }
 
     waitGenTaskAndDelete();
@@ -1407,8 +1414,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     newDocument.release();
   }
   else {
-    DocDestroyer destroyer(context, newDocument.release(), 100);
-    destroyer.destroyDocument();
+    destroy_doc(context, newDocument.release());
   }
 }
 

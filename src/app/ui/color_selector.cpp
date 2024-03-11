@@ -655,33 +655,20 @@ bool ColorSelector::buildEffects()
 
   if (!m_mainEffect) {
     if (const char* code = getMainAreaShader())
-      m_mainEffect = buildEffect(code);
+      m_mainEffect = make_shader(code);
   }
 
   if (!m_bottomEffect) {
     if (const char* code = getBottomBarShader())
-      m_bottomEffect = buildEffect(code);
+      m_bottomEffect = make_shader(code);
   }
 
   if (!m_alphaEffect) {
     if (const char* code = getAlphaBarShader())
-      m_alphaEffect = buildEffect(code);
+      m_alphaEffect = make_shader(code);
   }
 
   return (m_mainEffect && m_bottomEffect && m_alphaEffect);
-}
-
-sk_sp<SkRuntimeEffect> ColorSelector::buildEffect(const char* code)
-{
-  auto result = SkRuntimeEffect::MakeForShader(SkString(code));
-  if (!result.errorText.isEmpty()) {
-    LOG(ERROR, "Shader error: %s\n", result.errorText.c_str());
-    std::printf("Shader error: %s\n", result.errorText.c_str());
-    return nullptr;
-  }
-  else {
-    return result.effect;
-  }
 }
 
 void ColorSelector::resetBottomEffect()

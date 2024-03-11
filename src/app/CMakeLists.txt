@@ -699,6 +699,7 @@ add_library(app-lib
   util/range_utils.cpp
   util/readable_time.cpp
   util/resize_image.cpp
+  util/shader_helpers.cpp
   util/tile_flags_utils.cpp
   util/tileset_utils.cpp
   util/wrap_point.cpp

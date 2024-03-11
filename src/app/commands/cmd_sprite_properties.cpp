@@ -9,31 +9,32 @@
 #include "config.h"
 #endif
 
+#include "app/cmd/add_tileset.h"
 #include "app/cmd/assign_color_profile.h"
 #include "app/cmd/convert_color_profile.h"
-#include "app/cmd/add_tileset.h"
 #include "app/cmd/remove_tileset.h"
 #include "app/cmd/set_pixel_ratio.h"
 #include "app/cmd/set_user_data.h"
 #include "app/color.h"
 #include "app/commands/command.h"
+#include "app/console.h"
 #include "app/context_access.h"
 #include "app/doc_api.h"
 #include "app/i18n/strings.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
-#include "app/util/tileset_utils.h"
 #include "app/tx.h"
 #include "app/ui/color_button.h"
-#include "app/ui/user_data_view.h"
 #include "app/ui/skin/skin_theme.h"
+#include "app/ui/user_data_view.h"
 #include "app/util/pixel_ratio.h"
+#include "app/util/tileset_utils.h"
 #include "base/mem_utils.h"
 #include "doc/image.h"
 #include "doc/palette.h"
 #include "doc/sprite.h"
-#include "doc/user_data.h"
 #include "doc/tilesets.h"
+#include "doc/user_data.h"
 #include "fmt/format.h"
 #include "os/color_space.h"
 #include "os/system.h"
@@ -352,12 +353,17 @@ void SpritePropertiesCommand::onExecute(Context* context)
       [&](){
         selectedColorProfile = window.colorProfile()->getSelectedItemIndex();
 
-        ContextWriter writer(context);
-        Sprite* sprite(writer.sprite());
-        Tx tx(writer, Strings::sprite_properties_assign_color_profile());
-        tx(new cmd::AssignColorProfile(
-             sprite, colorSpaces[selectedColorProfile]->gfxColorSpace()));
-        tx.commit();
+        try {
+          ContextWriter writer(context);
+          Sprite* sprite(writer.sprite());
+          Tx tx(writer, Strings::sprite_properties_assign_color_profile());
+          tx(new cmd::AssignColorProfile(
+               sprite, colorSpaces[selectedColorProfile]->gfxColorSpace()));
+          tx.commit();
+        }
+        catch (const base::Exception& e) {
+          Console::showException(e);
+        }
 
         updateButtons();
       });
@@ -365,12 +371,17 @@ void SpritePropertiesCommand::onExecute(Context* context)
       [&](){
         selectedColorProfile = window.colorProfile()->getSelectedItemIndex();
 
-        ContextWriter writer(context);
-        Sprite* sprite(writer.sprite());
-        Tx tx(writer, Strings::sprite_properties_convert_color_profile());
-        tx(new cmd::ConvertColorProfile(
-             sprite, colorSpaces[selectedColorProfile]->gfxColorSpace()));
-        tx.commit();
+        try {
+          ContextWriter writer(context);
+          Sprite* sprite(writer.sprite());
+          Tx tx(writer, Strings::sprite_properties_convert_color_profile());
+          tx(new cmd::ConvertColorProfile(
+               sprite, colorSpaces[selectedColorProfile]->gfxColorSpace()));
+          tx.commit();
+        }
+        catch (const base::Exception& e) {
+          Console::showException(e);
+        }
 
         updateButtons();
       });

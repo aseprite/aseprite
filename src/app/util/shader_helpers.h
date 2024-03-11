@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022  Igara Studio S.A.
+// Copyright (C) 2022-2024  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -8,14 +8,29 @@
 #define APP_UTIL_SHADER_HELPERS_H_INCLUDED
 #pragma once
 
-#if SK_ENABLE_SKSL
+#if LAF_SKIA
 
 #include "app/color.h"
 #include "gfx/color.h"
 
+#include "include/core/SkCanvas.h"
+#include "include/core/SkImage.h"
 #include "include/core/SkM44.h"
+#include "include/core/SkRefCnt.h"
+
+#if SK_ENABLE_SKSL
+  #include "include/effects/SkRuntimeEffect.h"
+#endif
+
+#include <memory>
+
+namespace doc {
+  class Image;
+}
 
 namespace app {
+
+#if SK_ENABLE_SKSL
 
 // rgb_to_hsl() and hsv_to_hsl() functions by Sam Hocevar licensed
 // under WTFPL (https://en.wikipedia.org/wiki/WTFPL)
@@ -71,8 +86,16 @@ inline SkV4 appColorHsl_to_SkV4(const app::Color& color) {
               float(color.getAlpha() / 255.0)};
 }
 
+sk_sp<SkRuntimeEffect> make_shader(const char* code);
+
+#endif  // SK_ENABLE_SKSL
+
+SkImageInfo get_skimageinfo_for_docimage(const doc::Image* img);
+sk_sp<SkImage> make_skimage_for_docimage(const doc::Image* img);
+std::unique_ptr<SkCanvas> make_skcanvas_for_docimage(const doc::Image* img);
+
 } // namespace app
 
-#endif
+#endif  // LAF_SKIA
 
 #endif

@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -29,6 +30,8 @@ namespace app {
     virtual bool onCanPaste(Context* ctx) = 0;
     virtual bool onCanClear(Context* ctx) = 0;
 
+    // These commands are executed from Context::executeCommand()
+    // which catch any exception that is thrown.
     virtual bool onCut(Context* ctx) = 0;
     virtual bool onCopy(Context* ctx) = 0;
     virtual bool onPaste(Context* ctx) = 0;
