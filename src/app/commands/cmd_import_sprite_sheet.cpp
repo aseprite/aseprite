@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -13,6 +13,7 @@
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
 #include "app/commands/new_params.h"
+#include "app/console.h"
 #include "app/context.h"
 #include "app/context_access.h"
 #include "app/doc_access.h"
@@ -264,8 +265,13 @@ private:
       releaseEditor();
 
       if (m_fileOpened) {
-        DocDestroyer destroyer(m_context, oldDocument, 100);
-        destroyer.destroyDocument();
+        try {
+          DocDestroyer destroyer(m_context, oldDocument, 500);
+          destroyer.destroyDocument();
+        }
+        catch (const LockedDocException& ex) {
+          Console::showException(ex);
+        }
       }
     }
 
