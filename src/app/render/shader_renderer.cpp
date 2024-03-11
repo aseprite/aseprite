@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022-2023  Igara Studio S.A.
+// Copyright (C) 2022-2024  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -87,19 +87,9 @@ ShaderRenderer::ShaderRenderer()
   m_properties.renderBgOnScreen = true;
   m_properties.requiresRgbaBackbuffer = true;
 
-  auto makeShader = [](const char* code) {
-    auto result = SkRuntimeEffect::MakeForShader(SkString(code));
-    if (!result.errorText.isEmpty()) {
-      LOG(ERROR, "Shader error: %s\n", result.errorText.c_str());
-      std::printf("Shader error: %s\n", result.errorText.c_str());
-      throw std::runtime_error("Cannot compile shaders for ShaderRenderer");
-    }
-    return result;
-  };
-
-  m_bgEffect = makeShader(kBgShaderCode).effect;
-  m_indexedEffect = makeShader(kIndexedShaderCode).effect;
-  m_grayscaleEffect = makeShader(kGrayscaleShaderCode).effect;
+  m_bgEffect = make_shader(kBgShaderCode);
+  m_indexedEffect = make_shader(kIndexedShaderCode);
+  m_grayscaleEffect = make_shader(kGrayscaleShaderCode);
 }
 
 ShaderRenderer::~ShaderRenderer() = default;
@@ -416,21 +406,11 @@ void ShaderRenderer::drawImage(SkCanvas* canvas,
                                const int opacity,
                                const doc::BlendMode blendMode)
 {
-  auto skData = SkData::MakeWithoutCopy(
-    (const void*)srcImage->getPixelAddress(0, 0),
-    srcImage->rowBytes() * srcImage->height());
+  auto skImg = make_skimage_for_docimage(srcImage);
 
   switch (srcImage->colorMode()) {
 
     case doc::ColorMode::RGB: {
-      auto skImg = SkImage::MakeRasterData(
-        SkImageInfo::Make(srcImage->width(),
-                          srcImage->height(),
-                          kRGBA_8888_SkColorType,
-                          kUnpremul_SkAlphaType),
-        skData,
-        srcImage->rowBytes());
-
       SkPaint p;
       p.setAlpha(opacity);
       p.setBlendMode(to_skia(blendMode));
@@ -443,15 +423,6 @@ void ShaderRenderer::drawImage(SkCanvas* canvas,
     }
 
     case doc::ColorMode::GRAYSCALE: {
-      // We use kR8G8_unorm_SkColorType to access gray and alpha
-      auto skImg = SkImage::MakeRasterData(
-        SkImageInfo::Make(srcImage->width(),
-                          srcImage->height(),
-                          kR8G8_unorm_SkColorType,
-                          kOpaque_SkAlphaType),
-        skData,
-        srcImage->rowBytes());
-
       SkRuntimeShaderBuilder builder(m_grayscaleEffect);
       builder.child("iImg") = skImg->makeRawShader(SkSamplingOptions(SkFilterMode::kNearest));
 
@@ -471,15 +442,6 @@ void ShaderRenderer::drawImage(SkCanvas* canvas,
     }
 
     case doc::ColorMode::INDEXED: {
-      // We use kAlpha_8_SkColorType to access to the index value through the alpha channel
-      auto skImg = SkImage::MakeRasterData(
-        SkImageInfo::Make(srcImage->width(),
-                          srcImage->height(),
-                          kAlpha_8_SkColorType,
-                          kUnpremul_SkAlphaType),
-        skData,
-        srcImage->rowBytes());
-
       // Use the palette data as an "width x height" image where
       // width=number of palette colors, and height=1
       const size_t palSize = sizeof(color_t) * m_palette.size();
