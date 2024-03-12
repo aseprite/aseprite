@@ -228,7 +228,9 @@ void ExportFileWindow::updateAniDir()
 void ExportFileWindow::updatePlaySubtags()
 {
   std::string framesValue = this->framesValue();
-  playSubtags()->setVisible(framesValue != kSelectedFrames);
+  playSubtags()->setVisible(framesValue != kSelectedFrames &&
+                            // We hide the option if there is no tag
+                            !m_doc->sprite()->tags().empty());
   layout();
 }
 
