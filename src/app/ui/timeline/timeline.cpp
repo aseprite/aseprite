@@ -2093,7 +2093,10 @@ void Timeline::setCursor(ui::Message* msg, const Hit& hit)
     ui::set_mouse_cursor(kSizeECursor);
   }
   else if (hit.part == PART_RANGE_OUTLINE) {
-    ui::set_mouse_cursor(kMoveCursor);
+    if (is_copy_key_pressed(msg))
+      ui::set_mouse_cursor(kArrowPlusCursor);
+    else
+      ui::set_mouse_cursor(kMoveCursor);
   }
   else if (hit.part == PART_SEPARATOR) {
     ui::set_mouse_cursor(kSizeWECursor);
