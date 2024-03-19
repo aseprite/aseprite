@@ -262,10 +262,7 @@ bool shrink_bounds_tilemap(const Image* image,
     shrink = true;
     for (v=bounds.y; v<bounds.y+bounds.h; ++v) {
       const tile_t tile = get_pixel_fast<TilemapTraits>(image, u, v);
-      const tile_t tileIndex = tile_geti(tile);
-      const ImageRef tileImg = tileset->get(tileIndex);
-
-      if (tileImg && !is_plain_image(tileImg.get(), refpixel)) {
+      if (tile != refpixel) {
         shrink = false;
         break;
       }
@@ -281,10 +278,7 @@ bool shrink_bounds_tilemap(const Image* image,
     shrink = true;
     for (v=bounds.y; v<bounds.y+bounds.h; ++v) {
       const tile_t tile = get_pixel_fast<TilemapTraits>(image, u, v);
-      const tile_t tileIndex = tile_geti(tile);
-      const ImageRef tileImg = tileset->get(tileIndex);
-
-      if (tileImg && !is_plain_image(tileImg.get(), refpixel)) {
+      if (tile != refpixel) {
         shrink = false;
         break;
       }
@@ -299,10 +293,7 @@ bool shrink_bounds_tilemap(const Image* image,
     shrink = true;
     for (u=bounds.x; u<bounds.x+bounds.w; ++u) {
       const tile_t tile = get_pixel_fast<TilemapTraits>(image, u, v);
-      const tile_t tileIndex = tile_geti(tile);
-      const ImageRef tileImg = tileset->get(tileIndex);
-
-      if (tileImg && !is_plain_image(tileImg.get(), refpixel)) {
+      if (tile != refpixel) {
         shrink = false;
         break;
       }
@@ -318,10 +309,7 @@ bool shrink_bounds_tilemap(const Image* image,
     shrink = true;
     for (u=bounds.x; u<bounds.x+bounds.w; ++u) {
       const tile_t tile = get_pixel_fast<TilemapTraits>(image, u, v);
-      const tile_t tileIndex = tile_geti(tile);
-      const ImageRef tileImg = tileset->get(tileIndex);
-
-      if (tileImg && !is_plain_image(tileImg.get(), refpixel)) {
+      if (tile != refpixel) {
         shrink = false;
         break;
       }
