@@ -101,23 +101,20 @@ add_definitions(-DLIBARCHIVE_STATIC)
 ######################################################################
 # app-lib target
 
+add_library(app-lib ${generated_files})
+
 # These specific-platform files should be in an external library
 # (e.g. "base" or "os").
-set(app_platform_files)
 if(WIN32)
-  set(app_platform_files
-    font_path_win.cpp)
+  target_sources(app-lib PRIVATE font_path_win.cpp)
 elseif(APPLE)
-  set(app_platform_files
-    font_path_osx.mm)
+  target_sources(app-lib PRIVATE font_path_osx.mm)
 else()
-  set(app_platform_files
-    font_path_unix.cpp)
+  target_sources(app-lib PRIVATE font_path_unix.cpp)
 endif()
 
-set(data_recovery_files)
 if(ENABLE_DATA_RECOVERY)
-  set(data_recovery_files
+  target_sources(app-lib PRIVATE
     crash/backup_observer.cpp
     crash/data_recovery.cpp
     crash/read_document.cpp
@@ -126,7 +123,7 @@ if(ENABLE_DATA_RECOVERY)
     ui/data_recovery_view.cpp)
 endif()
 
-set(file_formats
+target_sources(app-lib PRIVATE
   file/ase_format.cpp
   file/bmp_format.cpp
   file/css_format.cpp
@@ -140,27 +137,27 @@ set(file_formats
   file/svg_format.cpp
   file/tga_format.cpp)
 if(ENABLE_WEBP)
-  list(APPEND file_formats file/webp_format.cpp)
+  target_sources(app-lib PRIVATE
+    file/webp_format.cpp)
 endif()
 if(ENABLE_PSD)
-  list(APPEND file_formats file/psd_format.cpp)
+  target_sources(app-lib PRIVATE
+    file/psd_format.cpp)
 endif()
 
-set(scripting_files)
 if(ENABLE_SCRIPTING)
-  set(scripting_files_ui)
   if(ENABLE_UI)
-    set(scripting_files_ui
+    target_sources(app-lib PRIVATE
       commands/cmd_developer_console.cpp
       commands/cmd_open_script_folder.cpp
       commands/debugger.cpp
       ui/devconsole_view.cpp)
   endif()
   if(ENABLE_WEBSOCKET)
-    set(scripting_files_ws
+    target_sources(app-lib PRIVATE
       script/websocket_class.cpp)
   endif()
-  set(scripting_files
+  target_sources(app-lib PRIVATE
     commands/cmd_run_script.cpp
     script/app_command_object.cpp
     script/app_fs_object.cpp
@@ -219,14 +216,11 @@ if(ENABLE_SCRIPTING)
     script/values.cpp
     script/version_class.cpp
     script/window_class.cpp
-    shell.cpp
-    ${scripting_files_ws}
-    ${scripting_files_ui})
+    shell.cpp)
 endif()
 
-set(ui_app_files)
 if(ENABLE_UI)
-  set(ui_app_files
+  target_sources(app-lib PRIVATE
     app_brushes.cpp
     app_menus.cpp
     closed_docs.cpp
@@ -436,34 +430,30 @@ if(ENABLE_UI)
     ui_context.cpp
     widget_loader.cpp)
   if(ENABLE_NEWS)
-    set(ui_app_files
+    target_sources(app-lib PRIVATE
       res/http_loader.cpp
-      ui/news_listbox.cpp
-      ${ui_app_files})
+      ui/news_listbox.cpp)
   endif()
   if(ENABLE_DRM)
-    set(ui_app_files
+    target_sources(app-lib PRIVATE
       ui/enter_license.cpp
-      ui/aseprite_update.cpp
-    ${ui_app_files})
+      ui/aseprite_update.cpp)
   endif()
 endif()
 
-set(send_crash_files)
 if(ENABLE_SENTRY)
-  set(send_crash_files sentry_wrapper.cpp)
+  target_sources(app-lib PRIVATE sentry_wrapper.cpp)
 else()
-  set(send_crash_files send_crash.cpp)
+  target_sources(app-lib PRIVATE send_crash.cpp)
 endif()
 
-add_library(app-lib
+target_sources(app-lib PRIVATE
   active_site_handler.cpp
   app.cpp
   check_update.cpp
   cli/app_options.cpp
   cli/cli_open_file.cpp
   cli/cli_processor.cpp
-  ${file_formats}
   cli/default_cli_delegate.cpp
   cli/preview_cli_delegate.cpp
   cmd.cpp
@@ -704,13 +694,7 @@ add_library(app-lib
   util/tileset_utils.cpp
   util/wrap_point.cpp
   xml_document.cpp
-  xml_exception.cpp
-  ${send_crash_files}
-  ${ui_app_files}
-  ${app_platform_files}
-  ${data_recovery_files}
-  ${scripting_files}
-  ${generated_files})
+  xml_exception.cpp)
 
 if(TARGET generated_version)
   add_dependencies(app-lib generated_version)
