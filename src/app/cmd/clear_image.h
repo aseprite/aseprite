@@ -9,8 +9,9 @@
 #pragma once
 
 #include "app/cmd.h"
-#include "app/cmd/with_image.h"
+#include "app/cmd/with_cel.h"
 #include "doc/color.h"
+#include "doc/cel.h"
 #include "doc/image_ref.h"
 
 namespace app {
@@ -18,9 +19,9 @@ namespace cmd {
   using namespace doc;
 
   class ClearImage : public Cmd
-                   , public WithImage {
+                   , public WithCel {
   public:
-    ClearImage(Image* image, color_t color);
+    ClearImage(Cel* cel, color_t color);
 
   protected:
     void onExecute() override;
@@ -32,6 +33,7 @@ namespace cmd {
   private:
     ImageRef m_copy;
     color_t m_color;
+    frame_t m_frame_copy;
   };
 
 } // namespace cmd
