@@ -1341,7 +1341,7 @@ private:
 
     auto theme = skin::SkinTheme::get(this);
     auto userFolder = userThemeFolder();
-    auto folders = themeFolders();
+    auto folders = themeFolders({skin::SkinTheme::kThemesFolderName});
     std::sort(folders.begin(), folders.end());
     const auto& selectedPath = theme->path();
 
@@ -1382,7 +1382,8 @@ private:
       if (!ext->isEnabled())
         continue;
 
-      if (ext->themes().empty())
+      if (ext->themes().empty() ||
+          isExtensionADuplicatedDefaultTheme(ext))
         continue;
 
       if (first) {
@@ -1414,6 +1415,8 @@ private:
     extensionsList()->addChild(sep);
     for (auto e : App::instance()->extensions()) {
       if (e->category() == category) {
+        if (isExtensionADuplicatedDefaultTheme(e))
+          continue;
         ExtensionItem* item = new ExtensionItem(e);
         extensionsList()->addChild(item);
         hasItems = true;
@@ -1746,9 +1749,10 @@ private:
     return base::normalize_path(rf.defaultFilename());
   }
 
-  static base::paths themeFolders() {
+  static base::paths themeFolders(const std::vector<std::string> filenames) {
     ResourceFinder rf;
-    rf.includeDataDir(skin::SkinTheme::kThemesFolderName);
+    for (auto& fn : filenames)
+      rf.includeUserDir(fn.c_str());
 
     base::paths paths;
     while (rf.next())
@@ -1769,6 +1773,20 @@ private:
       if (auto sep = dynamic_cast<ExtensionCategorySeparator*>(w))
         sep->setVisible(visibleCategories[int(sep->category())]);
     }
+  }
+
+  // Function to determine if the input extension is the default theme
+  static bool isExtensionADuplicatedDefaultTheme(const Extension* e) {
+    if (!e->isDefaultTheme())
+      return false;
+    auto userThemePaths =
+      themeFolders({"extensions", skin::SkinTheme::kThemesFolderName});
+    for (auto& p : userThemePaths) {
+      // Has the user path (p) the same path of the extension (e->path())?
+      if (std::strncmp(e->path().c_str(), p.c_str(), p.size()) == 0)
+        return true;
+    }
+    return false;
   }
 
 #ifdef _WIN32
