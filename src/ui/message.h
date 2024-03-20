@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -94,6 +94,21 @@ namespace ui {
     }
   private:
     std::function<void()> m_callback;
+  };
+
+  class FocusMessage : public Message {
+  public:
+    FocusMessage(MessageType type,
+                 Widget* oldFocus,
+                 Widget* newFocus)
+      : Message(type)
+      , m_oldFocus(oldFocus)
+      , m_newFocus(newFocus) { }
+    Widget* oldFocus() { return m_oldFocus; }
+    Widget* newFocus() { return m_newFocus; }
+  private:
+    Widget* m_oldFocus;
+    Widget* m_newFocus;
   };
 
   class KeyMessage : public Message {

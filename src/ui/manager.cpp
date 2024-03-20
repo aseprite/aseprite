@@ -964,10 +964,13 @@ void Manager::setFocus(Widget* widget)
               && !(widget->hasFlags(DECORATIVE))
               && someParentIsFocusStop(widget)))) {
     Widget* commonAncestor = findLowestCommonAncestor(focus_widget, widget);
+    Widget* oldFocus = focus_widget;
 
     // Fetch the focus
     if (focus_widget && focus_widget != commonAncestor) {
-      auto msg = new Message(kFocusLeaveMessage);
+      auto* msg = new FocusMessage(kFocusLeaveMessage,
+                                   oldFocus,
+                                   widget);
       msg->setRecipient(focus_widget);
       msg->setPropagateToParent(true);
       msg->setCommonAncestor(commonAncestor);
@@ -984,7 +987,9 @@ void Manager::setFocus(Widget* widget)
     // Put the focus
     focus_widget = widget;
     if (widget) {
-      auto msg = new Message(kFocusEnterMessage);
+      auto* msg = new FocusMessage(kFocusEnterMessage,
+                                   oldFocus,
+                                   widget);
       msg->setRecipient(widget);
       msg->setPropagateToParent(true);
       msg->setCommonAncestor(commonAncestor);
