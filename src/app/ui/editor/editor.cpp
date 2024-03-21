@@ -1705,6 +1705,13 @@ void Editor::updateToolLoopModifiersIndicators(const bool firstFromMouseDown)
       tools::Controller* controller = (tool ? tool->getController(0): nullptr);
       tools::Ink* ink = (tool ? tool->getInk(0): nullptr);
 
+      if (controller == App::instance()->toolBox()->getControllerById(
+            tools::WellKnownControllers::PointByPoint)) {
+        action = m_customizationDelegate->getPressedKeyAction(KeyContext::ShapeTool);
+        if (int(action & KeyAction::DrawFromCenter))
+          modifiers |= int(tools::ToolLoopModifiers::kSquareAspect);
+      }
+
       // Shape tools modifiers (line, curves, rectangles, etc.)
       if (controller && controller->isTwoPoints()) {
         action = m_customizationDelegate->getPressedKeyAction(KeyContext::ShapeTool);

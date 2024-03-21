@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2020 Igara Studio S.A.
+// Copyright (c) 2019-2023 Igara Studio S.A.
 // Copyright (c) 2001-2014 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -10,7 +10,6 @@
 #endif
 
 #include "base/debug.h"
-#include "doc/algo.h"
 #include "doc/algorithm/polygon.h"
 
 #include "gfx/point.h"
@@ -105,7 +104,9 @@ bool algorithm::createUnion(std::vector<int>& pairs,
   return false;
 }
 
-void algorithm::polygon(int vertices, const int* points, void* data, AlgoHLine proc)
+void algorithm::polygon(int vertices, const int* points,
+                        void* data, AlgoHLine proc,
+                        AlgoLineWithAlgoPixel algoLine)
 {
   if (!vertices)
     return;
@@ -138,12 +139,9 @@ void algorithm::polygon(int vertices, const int* points, void* data, AlgoHLine p
   std::vector<gfx::Point> pts;
   for (int c=0; c < verts.size(); ++c) {
     if (c == verts.size() - 1) {
-      algo_line_continuous(verts[verts.size()-1].x,
-                           verts[verts.size()-1].y,
-                           verts[0].x,
-                           verts[0].y,
-                           (void*)&pts,
-                           (AlgoPixel)&addPointsWithoutDuplicatingLastOne);
+      algoLine(verts[verts.size()-1].x, verts[verts.size()-1].y,
+               verts[0].x, verts[0].y, (void*)&pts,
+               (AlgoPixel)&addPointsWithoutDuplicatingLastOne);
       // Consideration when we want to draw a simple pixel with contour tool
       // dragging the cursor inside of a pixel (in this case pts contains
       // just one element, which want to preserve).
@@ -153,12 +151,9 @@ void algorithm::polygon(int vertices, const int* points, void* data, AlgoHLine p
         pts.pop_back();
     }
     else {
-      algo_line_continuous(verts[c].x,
-                           verts[c].y,
-                           verts[c+1].x,
-                           verts[c+1].y,
-                           (void*)&pts,
-                           (AlgoPixel)&addPointsWithoutDuplicatingLastOne);
+      algoLine(verts[c].x, verts[c].y,
+               verts[c+1].x, verts[c+1].y,
+               (void*)&pts, (AlgoPixel)&addPointsWithoutDuplicatingLastOne);
     }
   }
 

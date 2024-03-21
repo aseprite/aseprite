@@ -1,11 +1,12 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
 #include "base/pi.h"
+#include "doc/algo.h"
 #include "doc/layer_tilemap.h"
 
 namespace app {
@@ -143,7 +144,8 @@ public:
       // When this is missing, we have problems previewing the stroke of
       // contour tool, with brush type = kImageBrush with alpha content and
       // with not Pixel Perfect pencil mode.
-      if (loop->getFilled() && !loop->getController()->isFreehand()) {
+      if (loop->getFilled() && !loop->getController()->isFreehand() &&
+          stroke.size() > 2) {
         doPointshapeLine(stroke[stroke.size()-1], stroke[0], loop);
       }
     }
@@ -171,11 +173,14 @@ public:
 
     // Fill content
     auto v = stroke.toXYInts();
+
+    auto algoLine = algo_line_continuous;
+    if (int(loop->getModifiers()) & int(ToolLoopModifiers::kSquareAspect))
+      algoLine = algo_line_perfect;
     doc::algorithm::polygon(
       v.size()/2, &v[0],
-      loop, (AlgoHLine)doPointshapeHline);
+      loop, (AlgoHLine)doPointshapeHline, algoLine);
   }
-
 };
 
 class IntertwineAsRectangles : public Intertwine {
