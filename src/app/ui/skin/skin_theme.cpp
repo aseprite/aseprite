@@ -1678,6 +1678,15 @@ void SkinTheme::drawEntryCaret(ui::Graphics* g, Entry* widget, int x, int y)
     g->drawVLine(color, u, y+textHeight/2-caretSize.h/2, caretSize.h);
 }
 
+text::FontRef SkinTheme::getFontByName(const std::string& name,
+                                       const int size)
+{
+  auto it = m_fonts.find(name);
+  if (it == m_fonts.end())
+    return nullptr;
+  return it->second->getFont(m_fontMgr, size);
+}
+
 SkinPartPtr SkinTheme::getToolPart(const char* toolId) const
 {
   return getPartById(std::string("tool_") + toolId);

@@ -51,7 +51,7 @@ To compile Aseprite you will need:
 
 * The latest version of [CMake](https://cmake.org) (3.16 or greater)
 * [Ninja](https://ninja-build.org) build system
-* And a compiled version of the `aseprite-m102` branch of
+* And a compiled version of the `aseprite-m124` branch of
   the [Skia library](https://github.com/aseprite/skia#readme).
   There are [pre-built packages available](https://github.com/aseprite/skia/releases).
   You can get some extra information in

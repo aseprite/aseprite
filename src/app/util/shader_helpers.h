@@ -93,6 +93,7 @@ sk_sp<SkRuntimeEffect> make_shader(const char* code);
 SkImageInfo get_skimageinfo_for_docimage(const doc::Image* img);
 sk_sp<SkImage> make_skimage_for_docimage(const doc::Image* img);
 std::unique_ptr<SkCanvas> make_skcanvas_for_docimage(const doc::Image* img);
+sk_sp<SkSurface> wrap_docimage_in_sksurface(const doc::Image* img);
 
 } // namespace app
 
