@@ -1,12 +1,12 @@
 <!-- Aseprite -->
+<!-- Copyright (C) 2024 by Igara Studio S.A. -->
 <!-- Copyright (C) 2015-2017 by David Capello -->
 <gui>
   <vbox id="font_popup">
-    <search id="search" magnet="true" />
     <view id="view" expansive="true" />
     <hbox>
       <boxfiller />
-      <button id="load_font" text="@.load" magnet="true" minwidth="80" />
+      <button id="load_font" text="@.load" minwidth="80" />
     </hbox>
   </vbox>
 </gui>
