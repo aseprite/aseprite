@@ -388,6 +388,7 @@ if(ENABLE_UI)
     ui/file_list_view.cpp
     ui/file_selector.cpp
     ui/filename_field.cpp
+    ui/font_entry.cpp
     ui/font_popup.cpp
     ui/hex_color_entry.cpp
     ui/home_view.cpp
@@ -639,6 +640,7 @@ add_library(app-lib
   file_system.cpp
   filename_formatter.cpp
   flatten.cpp
+  font_info.cpp
   font_path.cpp
   gui_xml.cpp
   i18n/strings.cpp
@@ -688,7 +690,6 @@ add_library(app-lib
   util/conversion_to_surface.cpp
   util/expand_cel_canvas.cpp
   util/filetoks.cpp
-  util/freetype_utils.cpp
   util/layer_boundaries.cpp
   util/layer_utils.cpp
   util/msk_file.cpp
@@ -698,6 +699,7 @@ add_library(app-lib
   util/pixel_ratio.cpp
   util/range_utils.cpp
   util/readable_time.cpp
+  util/render_text.cpp
   util/resize_image.cpp
   util/shader_helpers.cpp
   util/tile_flags_utils.cpp
@@ -728,7 +730,6 @@ target_link_libraries(app-lib
   tga-lib
   laf-gfx
   render-lib
-  laf-ft
   laf-os
   laf-text
   ui-lib

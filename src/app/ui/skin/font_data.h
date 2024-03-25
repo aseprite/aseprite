@@ -18,6 +18,7 @@
 namespace app {
 namespace skin {
 
+  // TODO should we merge this with FontInfo?
   class FontData {
   public:
     FontData(text::FontType type);
@@ -31,6 +32,8 @@ namespace skin {
 
     text::FontRef getFont(text::FontMgrRef& fontMgr, int size, int uiscale);
     text::FontRef getFont(text::FontMgrRef& fontMgr, int size);
+
+    const std::string& filename() const { return m_filename; }
 
   private:
     text::FontType m_type;

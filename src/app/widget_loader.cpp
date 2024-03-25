@@ -22,6 +22,7 @@
 #include "app/ui/color_button.h"
 #include "app/ui/drop_down_button.h"
 #include "app/ui/expr_entry.h"
+#include "app/ui/font_entry.h"
 #include "app/ui/icon_button.h"
 #include "app/ui/search_entry.h"
 #include "app/ui/skin/skin_theme.h"
@@ -533,6 +534,10 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
   else if (elem_name == "search") {
     if (!widget)
       widget = new SearchEntry;
+  }
+  else if (elem_name == "font") {
+    if (!widget)
+      widget = new FontEntry;
   }
 
   // Was the widget created?

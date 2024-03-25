@@ -34,6 +34,7 @@ namespace app {
   namespace skin {
 
     class FontData;
+    using FontDataMap = std::map<std::string, FontData*>;
 
     class ThemeFont {
       public:
@@ -155,6 +156,9 @@ namespace app {
 
       void drawEntryCaret(ui::Graphics* g, ui::Entry* widget, int x, int y);
 
+      const FontDataMap& getWellKnownFonts() const { return m_fonts; }
+      text::FontRef getFontByName(const std::string& name, int size);
+
     protected:
       void onRegenerateTheme() override;
 
@@ -195,7 +199,7 @@ namespace app {
       std::map<std::string, ui::Cursor*> m_cursors;
       std::array<ui::Cursor*, ui::kCursorTypes> m_standardCursors;
       std::map<std::string, ui::Style*> m_styles;
-      std::map<std::string, FontData*> m_fonts;
+      FontDataMap m_fonts;
       std::map<std::string, ThemeFont> m_themeFonts;
       // Stores the unscaled font version of the Font pointer used as a key.
       std::map<text::Font*, text::FontRef> m_unscaledFonts;
