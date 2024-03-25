@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -177,45 +177,46 @@ void ColorQuantizationCommand::onExecute(Context* ctx)
     return;
 
   try {
-    ContextReader reader(ctx);
+    Doc* doc = site.document();
     Sprite* sprite = site.sprite();
     frame_t frame = site.frame();
     const Palette* curPalette = site.sprite()->palette(frame);
     Palette tmpPalette(frame, entries.picks());
 
-    SpriteJob job(reader, "Color Quantization");
+    SpriteJob job(ctx, doc, "Color Quantization");
     const bool newBlend = pref.experimental.newBlend();
     job.startJobWithCallback(
-      [sprite, withAlpha, &tmpPalette, &job, newBlend, algorithm]{
+      [sprite, withAlpha, curPalette, &tmpPalette, &job, &entries,
+       newBlend, algorithm, createPal, site, frame](Tx& tx) {
         render::create_palette_from_sprite(
           sprite, 0, sprite->lastFrame(),
           withAlpha, &tmpPalette,
           &job,                 // SpriteJob is a render::TaskDelegate
           newBlend,
           algorithm);
+
+        std::unique_ptr<Palette> newPalette(
+          new Palette(createPal ? tmpPalette:
+                                  *site.palette()));
+
+        if (createPal) {
+          entries = PalettePicks(newPalette->size());
+          entries.all();
+        }
+
+        int i = 0, j = 0;
+        for (bool state : entries) {
+          if (state)
+            newPalette->setEntry(i, tmpPalette.getEntry(j++));
+          ++i;
+        }
+
+        if (*curPalette != *newPalette)
+          tx(new cmd::SetPalette(sprite, frame, newPalette.get()));
       });
     job.waitJob();
     if (job.isCanceled())
       return;
-
-    std::unique_ptr<Palette> newPalette(
-      new Palette(createPal ? tmpPalette:
-                              *site.palette()));
-
-    if (createPal) {
-      entries = PalettePicks(newPalette->size());
-      entries.all();
-    }
-
-    int i = 0, j = 0;
-    for (bool state : entries) {
-      if (state)
-        newPalette->setEntry(i, tmpPalette.getEntry(j++));
-      ++i;
-    }
-
-    if (*curPalette != *newPalette)
-      job.tx()(new cmd::SetPalette(sprite, frame, newPalette.get()));
   }
   catch (const base::Exception& e) {
     Console::showException(e);

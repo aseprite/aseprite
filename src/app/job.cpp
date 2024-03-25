@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021  Igara Studio S.A.
+// Copyright (C) 2021-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -33,7 +33,7 @@ int Job::runningJobs()
   return g_runningJobs;
 }
 
-Job::Job(const char* jobName)
+Job::Job(const std::string& jobName)
 {
   m_last_progress = 0.0;
   m_done_flag = false;
