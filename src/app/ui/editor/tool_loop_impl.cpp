@@ -45,6 +45,7 @@
 #include "app/ui_context.h"
 #include "app/util/expand_cel_canvas.h"
 #include "app/util/layer_utils.h"
+#include "doc/brush.h"
 #include "doc/cel.h"
 #include "doc/image.h"
 #include "doc/layer.h"
@@ -188,6 +189,18 @@ public:
     ASSERT(m_tool);
     ASSERT(m_ink);
     ASSERT(m_controller);
+
+    if (m_brush->type() == kImageBrushType &&
+        (m_button == Right || (m_button == Left && m_brush->isMonochromeImage()))) {
+      m_brush->setImageColor(
+        Brush::ImageColor::MainColor,
+        color_utils::color_for_target_mask(
+          (m_button == Left ? Preferences::instance().colorBar.fgColor() :
+                              Preferences::instance().colorBar.bgColor()),
+          ColorTarget(ColorTarget::TransparentLayer,
+                      m_brush->image()->pixelFormat(),
+                      -1)));
+    }
 
     if (m_tilesMode) {
       // Use FloodFillPointShape or TilePointShape in tiles mode
