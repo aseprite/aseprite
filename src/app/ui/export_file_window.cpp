@@ -13,6 +13,7 @@
 
 #include "app/doc.h"
 #include "app/file/file.h"
+#include "app/filename_formatter.h"
 #include "app/i18n/strings.h"
 #include "app/site.h"
 #include "app/ui/layer_frame_comboboxes.h"
@@ -190,10 +191,55 @@ void ExportFileWindow::setAniDir(const doc::AniDir aniDir)
   anidir()->setSelectedItemIndex(int(aniDir));
 }
 
+static std::string::const_iterator get_separator_pos(const std::string& filename) {
+  std::string::const_iterator it;
+  std::size_t min_format_pos = std::string::npos;
+
+  for (int i = 0; i < app::path_formats.size(); i++) {
+    min_format_pos = std::min(min_format_pos, filename.find(app::path_formats[i]));
+  }
+
+  if (min_format_pos == std::string::npos) {
+    for (it = filename.end(); it != filename.begin(); --it)
+      if (base::is_path_separator(*it))
+        break;
+  } else {
+    for (it = filename.begin()+min_format_pos; it != filename.begin(); --it)
+      if (base::is_path_separator(*it))
+        break;
+  }
+
+  return it;
+}
+
+static std::string get_file_path_with_format(const std::string& filename)
+{
+  std::string::const_iterator it = get_separator_pos(filename);
+  std::string result;
+
+  std::copy(filename.begin(), it, std::back_inserter(result));
+
+  return result;
+}
+
+static std::string get_file_name_with_format(const std::string& filename)
+{
+  std::string::const_iterator it = get_separator_pos(filename);
+  std::string result;
+
+  if (it != filename.end()) {
+    ++it;
+  }
+
+  std::copy(it, filename.end(), std::back_inserter(result));
+
+  return result;
+}
+
 void ExportFileWindow::setOutputFilename(const std::string& pathAndFilename)
 {
-  m_outputPath = base::get_file_path(pathAndFilename);
-  m_outputFilename = base::get_file_name(pathAndFilename);
+  m_outputPath = get_file_path_with_format(pathAndFilename);
+  m_outputFilename = get_file_name_with_format(pathAndFilename);
 
   updateOutputFilenameEntry();
 }

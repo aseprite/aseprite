@@ -94,24 +94,25 @@ bool get_frame_info_from_filename_format(
     return false;
 }
 
+ std::array<const char*, 12> path_formats = {
+  "{fullname}",
+  "{path}",
+  "{name}",
+  "{title}",
+  "{extension}",
+  "{layer}",
+  "{slice}",
+  "{tag}",
+  "{innertag}",
+  "{outertag}",
+  "{frame}",
+  "{tagframe}"
+};
+
 bool is_template_in_filename(const std::string& format)
 {
-  std::vector<std::string> formats{
-    "{fullname}",
-    "{path}",
-    "{name}",
-    "{title}",
-    "{extension}",
-    "{layer}",
-    "{slice}",
-    "{tag}",
-    "{innertag}",
-    "{outertag}",
-    "{frame}",
-    "{tagframe}"
-  };
-  for (int i = 0; i < formats.size(); i++) {
-    if (format.find(formats[i]) != std::string::npos) {
+  for (int i = 0; i < path_formats.size(); i++) {
+    if (format.find(path_formats[i]) != std::string::npos) {
       return true;
     }
   }
