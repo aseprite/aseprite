@@ -24,9 +24,6 @@
 [submodule "third_party/libpng"]
 	path = third_party/libpng
 	url = https://github.com/aseprite/libpng.git
-[submodule "src/clip"]
-	path = src/clip
-	url = https://github.com/aseprite/clip.git
 [submodule "src/observable"]
 	path = src/observable
 	url = https://github.com/aseprite/observable.git
