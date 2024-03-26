@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2021-2022  Igara Studio S.A.
+// Copyright (C) 2021-2024  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -423,6 +423,7 @@ void Playback::removeLastTagFromPlayed()
 
 bool Playback::decrementRepeat(const frame_t frameDelta)
 {
+  bool move = true;
   while (true) {
     Tag* tag = this->tag();
     PLAY_TRACE("    Decrement tag", tag->name(),
@@ -436,13 +437,21 @@ bool Playback::decrementRepeat(const frame_t frameDelta)
                  "repeat=", m_playing.back()->repeat,
                  "forward=", m_playing.back()->forward);
       // Tag has only 1 frame, then don't move the playback cue.
-      return tag->frames() > 1;
+      return tag->frames() > 1 &&
+             // If the last tag removed was configured with
+             // animation direction == PingPong/PingPongReverse,
+             // decrementRepeat() should indicate to the caller
+             // function to not move the frame sequence (simply
+             // returning 'false').
+             move;
     }
     else {
       // Remove tag from played
       if (!m_playing.back()->delayedDelete) {
         PLAY_TRACE("    Removing played tag", tag->name());
         removeLastTagFromPlayed();
+        move = (m_playing.back()->tag->aniDir() != AniDir::PING_PONG &&
+                m_playing.back()->tag->aniDir() != AniDir::PING_PONG_REVERSE);
       }
       else {
         PLAY_TRACE("    Delaying the removal of played tag", tag->name());
