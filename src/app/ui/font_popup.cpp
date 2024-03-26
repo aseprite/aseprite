@@ -229,7 +229,28 @@ FontPopup::FontPopup(const FontInfo& fontInfo)
       std::string name = fontMgr->familyName(i);
       text::FontStyleSetRef set = fontMgr->familyStyleSet(i);
       if (set && set->count() > 0) {
-        auto* item = new FontItem(name, set->typeface(0));
+        // Best style for preview purposes, i.e. the most regular
+        // style, without bold, italic, etc.
+        int best;
+        text::FontStyle bestStyle;
+
+        for (int i=0; i<set->count(); ++i) {
+          text::FontStyle style;
+          std::string subname;
+          set->getStyle(i, style, subname);
+          if ((i == 0) ||
+              ((style.weight() == text::FontStyle::Weight::Normal &&
+                bestStyle.weight() != text::FontStyle::Weight::Normal) ||
+               (style.width() == text::FontStyle::Width::Normal &&
+                bestStyle.width() != text::FontStyle::Width::Normal) ||
+               (style.slant() == text::FontStyle::Slant::Upright &&
+                bestStyle.slant() != text::FontStyle::Slant::Upright))) {
+            best = i;
+            bestStyle = style;
+          }
+        }
+
+        auto* item = new FontItem(name, set->typeface(best));
         item->ThumbnailGenerated.connect([this]{ onThumbnailGenerated(); });
         m_listBox.addChild(item);
         empty = false;
