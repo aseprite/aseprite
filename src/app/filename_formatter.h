@@ -9,6 +9,7 @@
 #define APP_FILENAME_FORMATTER_H_INCLUDED
 #pragma once
 
+#include <array>
 #include <string>
 
 namespace app {
@@ -86,6 +87,9 @@ namespace app {
   // E.g. For {frame001} returns width=3 and startFrom=1
   bool get_frame_info_from_filename_format(
     const std::string& format, int* startFrom, int* width);
+
+  // Types of formats that can be used in the filename formatter. E.g. "{frame}"
+  extern std::array<const char*, 12> path_formats;
 
   // Returns true if the given filename contains a format element
   bool is_template_in_filename(const std::string& format);
