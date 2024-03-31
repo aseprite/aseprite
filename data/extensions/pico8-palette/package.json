@@ -10,7 +10,8 @@
   ],
   "contributes": {
     "palettes": [
-      { "id": "PICO-8", "path": "./pico-8.gpl" }
+      { "id": "PICO-8", "path": "./pico-8.gpl" },
+      { "id": "PICO-8 Extended", "path": "./pico-8-extended.gpl" }
     ]
   }
 }
