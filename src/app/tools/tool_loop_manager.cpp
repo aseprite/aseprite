@@ -202,6 +202,12 @@ void ToolLoopManager::movement(Pointer pointer)
   doLoopStep(false);
 }
 
+void ToolLoopManager::disableMouseStabilizer() 
+{
+  // Disable mouse stabilizer for the current ToolLoopManager
+  m_dynamics.stabilizer = false;
+}
+
 void ToolLoopManager::doLoopStep(bool lastStep)
 {
   // Original set of points to interwine (original user stroke,
