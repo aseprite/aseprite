@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021  Igara Studio S.A.
+// Copyright (C) 2021-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -15,6 +15,7 @@
 #include <atomic>
 #include <exception>
 #include <mutex>
+#include <string>
 #include <thread>
 
 namespace app {
@@ -23,7 +24,7 @@ namespace app {
   public:
     static int runningJobs();
 
-    Job(const char* jobName);
+    Job(const std::string& jobName);
     virtual ~Job();
 
     // Starts the job calling onJob() event in another thread and

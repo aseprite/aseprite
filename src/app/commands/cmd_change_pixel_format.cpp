@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -646,12 +646,12 @@ void ChangePixelFormatCommand::onExecute(Context* context)
 #endif // ENABLE_UI
 
   // No conversion needed
-  if (context->activeDocument()->sprite()->pixelFormat() == m_format)
+  Doc* doc = context->activeDocument();
+  if (doc->sprite()->pixelFormat() == m_format)
     return;
 
   {
-    const ContextReader reader(context);
-    SpriteJob job(reader, Strings::color_mode_title().c_str());
+    SpriteJob job(context, doc, Strings::color_mode_title());
     Sprite* sprite(job.sprite());
 
     // TODO this was moved in the main UI thread because
@@ -662,16 +662,17 @@ void ChangePixelFormatCommand::onExecute(Context* context)
     //      https://github.com/aseprite/aseprite/issues/509
     //      https://github.com/aseprite/aseprite/issues/378
     if (flatten) {
+      Tx tx(Tx::LockDoc, context, doc);
       const bool newBlend = Preferences::instance().experimental.newBlend();
       SelectedLayers selLayers;
       for (auto layer : sprite->root()->layers())
         selLayers.insert(layer);
-      job.tx()(new cmd::FlattenLayers(sprite, selLayers, newBlend));
+      tx(new cmd::FlattenLayers(sprite, selLayers, newBlend));
     }
 
     job.startJobWithCallback(
-      [this, &job, sprite] {
-        job.tx()(
+      [this, &job, sprite](Tx& tx) {
+        tx(
           new cmd::SetPixelFormat(
             sprite, m_format,
             m_dithering,

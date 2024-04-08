@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -13,7 +13,6 @@
 #include "app/cmd/set_cel_bounds.h"
 #include "app/commands/cmd_rotate.h"
 #include "app/commands/params.h"
-#include "app/context_access.h"
 #include "app/doc_api.h"
 #include "app/doc_range.h"
 #include "app/i18n/strings.h"
@@ -45,10 +44,10 @@ class RotateJob : public SpriteJob {
 
 public:
 
-  RotateJob(const ContextReader& reader,
+  RotateJob(Context* ctx, Doc* doc,
             const std::string& jobName,
             int angle, const CelList& cels, bool rotateSprite)
-    : SpriteJob(reader, jobName.c_str())
+    : SpriteJob(ctx, doc, jobName)
     , m_cels(cels)
     , m_rotateSprite(rotateSprite) {
     m_angle = angle;
@@ -80,8 +79,8 @@ protected:
   }
 
   // [working thread]
-  void onJob() override {
-    DocApi api = document()->getApi(tx());
+  void onSpriteJob(Tx& tx) override {
+    DocApi api = document()->getApi(tx);
 
     // 1) Rotate cel positions
     for (Cel* cel : m_cels) {
@@ -93,7 +92,7 @@ protected:
         gfx::RectF bounds = cel->boundsF();
         rotate_rect(bounds);
         if (cel->boundsF() != bounds)
-          tx()(new cmd::SetCelBoundsF(cel, bounds));
+          tx(new cmd::SetCelBoundsF(cel, bounds));
       }
       else {
         gfx::Rect bounds = cel->bounds();
@@ -192,6 +191,7 @@ void RotateCommand::onExecute(Context* context)
 {
   {
     Site site = context->activeSite();
+    Doc* doc = site.document();
     CelList cels;
     bool rotateSprite = false;
 
@@ -203,7 +203,7 @@ void RotateCommand::onExecute(Context* context)
       // If we want to rotate the visible mask, we can go to
       // MovingPixelsState (even when the range is enabled, because
       // now PixelsMovement support ranges).
-      if (site.document()->isMaskVisible()) {
+      if (doc->isMaskVisible()) {
         // Select marquee tool
         if (tools::Tool* tool = App::instance()->toolBox()
             ->getToolById(tools::WellKnownTools::RectangularMarquee)) {
@@ -237,13 +237,12 @@ void RotateCommand::onExecute(Context* context)
       rotateSprite = true;
     }
 
-    ContextReader reader(context);
     {
-      RotateJob job(reader, friendlyName(), m_angle, cels, rotateSprite);
+      RotateJob job(context, doc, friendlyName(), m_angle, cels, rotateSprite);
       job.startJob();
       job.waitJob();
     }
-    update_screen_for_document(reader.document());
+    update_screen_for_document(doc);
   }
 }
 

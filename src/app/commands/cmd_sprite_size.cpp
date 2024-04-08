@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -80,8 +80,11 @@ class SpriteSizeJob : public SpriteJob {
 
 public:
 
-  SpriteSizeJob(const ContextReader& reader, int new_width, int new_height, ResizeMethod resize_method)
-    : SpriteJob(reader, Strings::sprite_size_title().c_str()) {
+  SpriteSizeJob(Context* ctx, Doc* doc,
+                const int new_width,
+                const int new_height,
+                const ResizeMethod resize_method)
+    : SpriteJob(ctx, doc, Strings::sprite_size_title()) {
     m_new_width = new_width;
     m_new_height = new_height;
     m_resize_method = resize_method;
@@ -90,8 +93,8 @@ public:
 protected:
 
   // [working thread]
-  void onJob() override {
-    DocApi api = writer().document()->getApi(tx());
+  void onSpriteJob(Tx& tx) override {
+    DocApi api = document()->getApi(tx);
     Tilesets* tilesets = sprite()->tilesets();
 
     int img_count = 0;
@@ -147,7 +150,7 @@ protected:
           ++progress;
           ++idx;
         }
-        tx()(new cmd::ReplaceTileset(sprite(), tsi, newTileset));
+        tx(new cmd::ReplaceTileset(sprite(), tsi, newTileset));
 
         // Cancel all the operation?
         if (isCanceled())
@@ -170,11 +173,11 @@ protected:
                             cel->y()*scale.h,
                             canvasSize.w,
                             canvasSize.h);
-        tx()(new cmd::SetCelBoundsF(cel, newBounds));
+        tx(new cmd::SetCelBoundsF(cel, newBounds));
       }
       else {
         resize_cel_image(
-          tx(), cel, scale,
+          tx, cel, scale,
           m_resize_method,
           cel->layer()->isReference() ?
           -cel->boundsF().origin():
@@ -239,7 +242,7 @@ protected:
           newKey.setPivot(gfx::Point(scale_x(newKey.pivot().x),
                                      scale_y(newKey.pivot().y)));
 
-        tx()(new cmd::SetSliceKey(slice, k.frame(), newKey));
+        tx(new cmd::SetSliceKey(slice, k.frame(), newKey));
       }
     }
 
@@ -373,8 +376,9 @@ void SpriteSizeCommand::onExecute(Context* context)
 #ifdef ENABLE_UI
   const bool ui = (params().ui() && context->isUIAvailable());
 #endif
-  const ContextReader reader(context);
-  const Sprite* sprite(reader.sprite());
+  const Site site = context->activeSite();
+  Doc* doc = site.document();
+  Sprite* sprite = site.sprite();
   auto& params = this->params();
 
   double ratio = sprite->width() / double(sprite->height());
@@ -461,13 +465,13 @@ void SpriteSizeCommand::onExecute(Context* context)
   new_height = std::clamp(new_height, 1, DOC_SPRITE_MAX_HEIGHT);
 
   {
-    SpriteSizeJob job(reader, new_width, new_height, resize_method);
+    SpriteSizeJob job(context, doc, new_width, new_height, resize_method);
     job.startJob();
     job.waitJob();
   }
 
 #ifdef ENABLE_UI
-  update_screen_for_document(reader.document());
+  update_screen_for_document(doc);
 #endif
 }
 
