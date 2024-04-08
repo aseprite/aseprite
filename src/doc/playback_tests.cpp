@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2021-2022 Igara Studio S.A.
+// Copyright (c) 2021-2024 Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -152,6 +152,47 @@ TEST(Playback, WithTagRepetitions)
   play = Playback(sprite.get(), 0, Playback::Mode::PlayAll);
   expect_frames(play, {0,1,2,1,2,3,0,0,0});
   EXPECT_TRUE(play.isStopped());
+
+  Tag* b = make_tag("B", 0, 3, AniDir::PING_PONG, 2);
+  sprite = make_sprite(4, { b });
+  play = Playback(sprite.get(), 0, Playback::Mode::PlayInLoop);
+  expect_frames(play, {0,1,2,3,2,1,0,
+                       0,1,2,3,2,1,0,
+                       0,1,2,3,2,1,0});
+  EXPECT_FALSE(play.isStopped());
+
+  Tag* c = make_tag("C", 0, 3, AniDir::PING_PONG_REVERSE, 2);
+  sprite = make_sprite(4, { c });
+  play = Playback(sprite.get(), 0, Playback::Mode::PlayInLoop);
+  expect_frames(play, {0,1,2,3,
+                       3,2,1,0,1,2,3,
+                       3,2,1,0,1,2,3});
+  EXPECT_FALSE(play.isStopped());
+
+  Tag* d = make_tag("D", 0, 3, AniDir::PING_PONG_REVERSE, 2);
+  sprite = make_sprite(4, { d });
+  play = Playback(sprite.get(), 1, Playback::Mode::PlayInLoop);
+  expect_frames(play, {1,0,1,2,3,
+                       3,2,1,0,1,2,3,
+                       3,2,1,0,1,2,3});
+  EXPECT_FALSE(play.isStopped());
+
+  Tag* e = make_tag("E", 0, 3, AniDir::PING_PONG_REVERSE, 1);
+  sprite = make_sprite(4, { e });
+  play = Playback(sprite.get(), 0, Playback::Mode::PlayInLoop);
+  expect_frames(play, {0,
+                       3,2,1,0,
+                       3,2,1,0,
+                       3,2,1,0});
+  EXPECT_FALSE(play.isStopped());
+
+  Tag* f = make_tag("F", 0, 3, AniDir::REVERSE, 2);
+  sprite = make_sprite(4, { f });
+  play = Playback(sprite.get(), 0, Playback::Mode::PlayInLoop);
+  expect_frames(play, {0,3,2,1,0,
+                       3,2,1,0, 3,2,1,0,
+                       3,2,1,0, 3,2,1,0});
+  EXPECT_FALSE(play.isStopped());
 }
 
 TEST(Playback, LoopTagInfinite)
@@ -464,39 +505,361 @@ TEST(Playback, PingPongWithInnerReverse)
   EXPECT_FALSE(play.isStopped());
 }
 
+// OnePingPongInsideOther series
+std::vector<int> goRight(std::vector<int> range) {
+  std::vector<int> out;
+  if (range[0] > range[1])
+    return out;
+  for (int i=range[0]; i<range[1]+1 ; ++i)
+    out.push_back(i);
+  return out;
+}
+
+std::vector<int> goLeft(std::vector<int> range) {
+  std::vector<int> out;
+  if (range[0] > range[1])
+    return out;
+  for (int i=range[1]; i>range[0]-1 ; --i)
+    out.push_back(i);
+  return out;
+}
+
+void concat(std::vector<int>& a, std::vector<int>& b)
+{
+  if (b.empty())
+    return;
+  for (int i=0; i<b.size(); ++i)
+    a.push_back(b[i]);
+}
+
 TEST(Playback, OnePingPongInsideOther)
 {
-  //     A
-  // <------->
-  //     B
-  //   >---<
-  // 0 1 2 3 4
+  // A repeat = 2  ;  B repeat = 2
+  //
+  //     A            A            A
+  // *-------*    *-------*    *-------*
+  //   B              B              B
+  // *---*          *---*          *---*
+  // 0 1 2 3 4    0 1 2 3 4    0 1 2 3 4
+  const int lastFrame = 4;
+  std::vector<AniDir> A_AniDirs = {AniDir::PING_PONG, AniDir::PING_PONG_REVERSE};
+  std::vector<AniDir> B_AniDirs = {AniDir::PING_PONG, AniDir::PING_PONG_REVERSE};
+  std::vector<int> A_Range = {0,lastFrame};
+  std::vector<std::vector<int>> rangeBs = {{0,2}, {1,3}, {2,4}};
+  std::vector<std::vector<int>> pingPongSeq1 = {{0,1,2,1,0}, {2,1,0,1,2}};
+  std::vector<std::vector<int>> pingPongSeq2 = {{1,2,3,2,1}, {3,2,1,2,3}};
+  std::vector<std::vector<int>> pingPongSeq3 = {{2,3,4,3,2}, {4,3,2,3,4}};
+  std::vector<int> right012 = {0,1,2};
 
-  Tag* tagA = make_tag("A", 0, 4, AniDir::PING_PONG, 2);
-  Tag* tagB = make_tag("B", 1, 3, AniDir::PING_PONG_REVERSE, 3);
-  auto sprite = make_sprite(5, { tagA, tagB });
+  for (auto A_aniDir : A_AniDirs) {
+    for (auto B_aniDir : B_AniDirs) {
+      for (auto B_Range : rangeBs) {
+        std::vector<int> expected;
+        std::vector<int> temp;
+        //     A            A            A
+        // <------->    <------->    <------->
+        //   B              B              B
+        // *---*          *---*          *---*
+        // 0 1 2 3 4    0 1 2 3 4    0 1 2 3 4
+        if (A_aniDir == doc::AniDir::PING_PONG) {
+
+          // Start
+          temp = goRight({0, B_Range[0]-1});
+          concat(expected, temp);
+
+          // Tag B playback
+          if (B_Range[0] == 0)
+            concat(expected, B_aniDir == doc::AniDir::PING_PONG ? pingPongSeq1[0] : right012);
+          else if (B_Range[0] == 1)
+            concat(expected, B_aniDir == doc::AniDir::PING_PONG ? pingPongSeq2[0] : pingPongSeq2[1]);
+          else if (B_Range[0] == 2)
+            concat(expected, B_aniDir == doc::AniDir::PING_PONG ? pingPongSeq3[0] : pingPongSeq3[1]);
+
+          // Reproduce right side of the tag A
+          temp = goRight({B_Range[1]+1, lastFrame});
+          concat(expected, temp);
+          temp = goLeft({B_Range[1]+1, lastFrame-1});
+          concat(expected, temp);
+
+          // Tag B playback (only if tag B last frame doesn't match with the tag A last frame
+          if (B_Range[1] != A_Range[1]) {
+            if (B_Range[1] == lastFrame - 1)
+              concat(expected, B_aniDir == doc::AniDir::PING_PONG ? pingPongSeq2[1] : pingPongSeq2[0]);
+            else if (B_Range[1] == lastFrame - 2)
+              concat(expected, B_aniDir == doc::AniDir::PING_PONG ? pingPongSeq1[1] : pingPongSeq1[0]);
+          }
+
+          // Reproduce right side of the tag A
+          temp = goLeft({0, B_Range[0]-1});
+          concat(expected, temp);
+          // Sequence end
+        }
+        //     A            A            A
+        // >-------<    >-------<    >-------<
+        //   B              B              B
+        // *---*          *---*          *---*
+        // 0 1 2 3 4    0 1 2 3 4    0 1 2 3 4
+        else {
+
+          // Start
+          temp = goRight({0, B_Range[0]-1});
+          concat(expected, temp);
+
+          // Tag B playback
+          if (B_Range[0] == 0)
+            concat(expected, B_aniDir == doc::AniDir::PING_PONG ? pingPongSeq1[0] : right012);
+          else if (B_Range[0] == 1)
+            concat(expected, B_aniDir == doc::AniDir::PING_PONG ? pingPongSeq2[0] : pingPongSeq2[1]);
+          else if (B_Range[0] == 2)
+            concat(expected, B_aniDir == doc::AniDir::PING_PONG ? pingPongSeq3[0] : pingPongSeq3[1]);
+
+          // Reproduce right side of the tag A
+          temp = goRight({B_Range[1]+1, lastFrame});
+          concat(expected, temp);
+          // Sequence end
+
+          // New Start
+          temp = goLeft({B_Range[1]+1, lastFrame});
+          concat(expected, temp);
+
+          // Tag B playback
+          if (B_Range[1] == lastFrame)
+            concat(expected, B_aniDir == doc::AniDir::PING_PONG ? pingPongSeq3[1] : pingPongSeq3[0]);
+          else if (B_Range[1] == lastFrame-1)
+            concat(expected, B_aniDir == doc::AniDir::PING_PONG ? pingPongSeq2[1] : pingPongSeq2[0]);
+          else if (B_Range[1] == lastFrame-2)
+            concat(expected, B_aniDir == doc::AniDir::PING_PONG ? pingPongSeq1[1] : pingPongSeq1[0]);
+
+          // Reproduce left side of the tag A
+          temp = goLeft({0, B_Range[0]-1});
+          concat(expected, temp);
+          temp = goRight({1, B_Range[0]-1});
+          concat(expected, temp);
+
+          // Tag B playback (only if tag B first frame doesn't match with the tag A first frame
+          if (B_Range[0] == 1)
+            concat(expected, B_aniDir == doc::AniDir::PING_PONG ? pingPongSeq2[0] : pingPongSeq2[1]);
+          else if (B_Range[0] == 2)
+            concat(expected, B_aniDir == doc::AniDir::PING_PONG ? pingPongSeq3[0] : pingPongSeq3[1]);
+
+
+          // Reproduce right side of the tag A
+          temp = goRight({B_Range[1]+1, lastFrame});
+          concat(expected, temp);
+          // Sequence end
+        }
+
+        // Test
+        Tag* tagA = make_tag("A", 0, 4, A_aniDir, 2);
+        Tag* tagB = make_tag("B", B_Range[0], B_Range[1], B_aniDir, 2);
+        auto sprite = make_sprite(lastFrame + 1, { tagA, tagB });
+        Playback play(sprite.get(), 0, Playback::Mode::PlayInLoop);
+
+        expect_frames(play, expected);
+        EXPECT_FALSE(play.isStopped());
+      }
+    }
+  }
+}
+
+TEST(Playback, OnePingPongInsideOther1Repeat)
+{
+  // A repeat = 1  ;  B repeat = 1
+  //
+  //     A            A            A
+  // *-------*    *-------*    *-------*
+  //   B              B              B
+  // *---*          *---*          *---*
+  // 0 1 2 3 4    0 1 2 3 4    0 1 2 3 4
+
+  const int lastFrame = 4;
+  std::vector<AniDir> A_AniDirs = {AniDir::PING_PONG, AniDir::PING_PONG_REVERSE};
+  std::vector<AniDir> B_AniDirs = {AniDir::PING_PONG, AniDir::PING_PONG_REVERSE};
+  std::vector<int> A_Range = {0,lastFrame};
+  std::vector<std::vector<int>> rangeBs = {{0,2}, {1,3}, {2,4}};
+  std::vector<std::vector<int>> pingPongSeq1 = {{0,1,2}, {2,1,0}};
+  std::vector<std::vector<int>> pingPongSeq2 = {{1,2,3}, {3,2,1}};
+  std::vector<std::vector<int>> pingPongSeq3 = {{2,3,4}, {4,3,2}};
+
+  for (auto A_aniDir : A_AniDirs) {
+    for (auto B_aniDir : B_AniDirs) {
+      for (auto B_Range : rangeBs) {
+        std::vector<int> expected;
+        std::vector<int> temp;
+        //     A            A            A
+        // <------->    <------->    <------->
+        //   B              B              B
+        // *---*          *---*          *---*
+        // 0 1 2 3 4    0 1 2 3 4    0 1 2 3 4
+        if (A_aniDir == doc::AniDir::PING_PONG) {
+
+          // Start
+          temp = goRight({0, B_Range[0]-1});
+          concat(expected, temp);
+          // Tag B playback
+          if (B_Range[0] == 0) {
+            temp = {0};
+            concat(expected, B_aniDir == doc::AniDir::PING_PONG ? pingPongSeq1[0] : temp);
+          }
+          else if (B_Range[0] == 1)
+            concat(expected, B_aniDir == doc::AniDir::PING_PONG ? pingPongSeq2[0] : pingPongSeq2[1]);
+          else if (B_Range[0] == 2)
+            concat(expected, B_aniDir == doc::AniDir::PING_PONG ? pingPongSeq3[0] : pingPongSeq3[1]);
+          // Reproduce right side of the tag A
+          temp = goRight({B_Range[1]+1, lastFrame});
+          concat(expected, temp);
+          // Sequence end
+
+          // Fresh sequence start
+          temp = goRight({0, B_Range[0]-1});
+          concat(expected, temp);
+          // Tag B playback
+          if (B_Range[0] == 0)
+            concat(expected, B_aniDir == doc::AniDir::PING_PONG ? pingPongSeq1[0] : pingPongSeq1[1]);
+          else if (B_Range[0] == 1)
+            concat(expected, B_aniDir == doc::AniDir::PING_PONG ? pingPongSeq2[0] : pingPongSeq2[1]);
+          else if (B_Range[0] == 2)
+            concat(expected, B_aniDir == doc::AniDir::PING_PONG ? pingPongSeq3[0] : pingPongSeq3[1]);
+          // Reproduce right side of the tag A
+          temp = goRight({B_Range[1]+1, lastFrame});
+          concat(expected, temp);
+          // Sequence end
+
+        }
+        //     A            A            A
+        // >-------<    >-------<    >-------<
+        //   B              B              B
+        // *---*          *---*          *---*
+        // 0 1 2 3 4    0 1 2 3 4    0 1 2 3 4
+        else {
+          // Start
+          temp = {0};
+          // Tag B playback
+          if (B_Range[0] == 0 && B_aniDir == doc::AniDir::PING_PONG)
+            concat(expected, pingPongSeq1[0]);
+          else
+            concat(expected, temp);
+          // Sequence end
+
+          // Fresh sequence start
+          // Reproduce right side of the tag A
+          temp = goLeft({B_Range[1]+1, lastFrame});
+          concat(expected, temp);
+
+          // Tag B playback
+          if (B_Range[1] == lastFrame)
+            concat(expected, B_aniDir == doc::AniDir::PING_PONG ? pingPongSeq3[1] : pingPongSeq3[0]);
+          else if (B_Range[1] == lastFrame-1)
+            concat(expected, B_aniDir == doc::AniDir::PING_PONG ? pingPongSeq2[1] : pingPongSeq2[0]);
+          else if (B_Range[1] == lastFrame-2)
+            concat(expected, B_aniDir == doc::AniDir::PING_PONG ? pingPongSeq1[1] : pingPongSeq1[0]);
+
+          // Reproduce left side of the tag A
+          temp = goLeft({0, B_Range[0]-1});
+          concat(expected, temp);
+          // Sequence end
+        }
+
+        // Test
+        Tag* tagA = make_tag("A", 0, 4, A_aniDir, 1);
+        Tag* tagB = make_tag("B", B_Range[0], B_Range[1], B_aniDir, 1);
+        auto sprite = make_sprite(lastFrame + 1, { tagA, tagB });
+        Playback play(sprite.get(), 0, Playback::Mode::PlayInLoop);
+
+        expect_frames(play, expected);
+        EXPECT_FALSE(play.isStopped());
+      }
+    }
+  }
+}
+
+TEST(Playback, OnePingPongInsideForward)
+{
+ //     A
+ // -------->
+ //       B
+ //     <--->
+ // 0 1 2 3 4
+
+ Tag* tagA = make_tag("A", 0, 4, AniDir::FORWARD, 2);
+ Tag* tagB = make_tag("B", 2, 4, AniDir::PING_PONG, 2);
+ auto sprite = make_sprite(5, { tagA, tagB });
+
+ Playback play(sprite.get(), 0, Playback::Mode::PlayInLoop);
+ expect_frames(play, {0,1 , 2,3,4,3,2,
+                      0,1 , 2,3,4,3,2});
+ EXPECT_FALSE(play.isStopped());
+}
+
+TEST(Playback, OnePingPongInsideForward2)
+{
+  //      A
+  //   -------->
+  //         B
+  //       <--->
+  // 0 1 2 3 4 5
+
+  Tag* tagA = make_tag("A", 1, 5, AniDir::FORWARD, 2);
+  Tag* tagB = make_tag("B", 3, 5, AniDir::PING_PONG, 2);
+  auto sprite = make_sprite(6, { tagA, tagB });
 
   Playback play(sprite.get(), 0, Playback::Mode::PlayInLoop);
-  expect_frames(play, {0, 3,2,1,2,3,2,1, 4, 1,2,3,2,1,2,3, 0,
-                       0, 3,2,1,2,3,2,1, 4, 1,2,3,2,1,2,3, 0, });
+  expect_frames(play, {0 , 1,2 , 3,4,5,4,3,  1,2 , 3,4,5,4,3,
+                       0 , 1,2 , 3,4,5,4,3,  1,2 , 3,4,5,4,3});
   EXPECT_FALSE(play.isStopped());
 }
 
-TEST(Playback, OnePingPongInsideOther3)
+TEST(Playback, OnePingPongInsidePingPongReverse)
 {
-  //     A
-  // <------->
-  //     B
-  //   >---<
-  // 0 1 2 3 4
+  //      A
+  //   >-------<
+  //         B
+  //       <--->
+  // 0 1 2 3 4 5
 
-  Tag* tagA = make_tag("A", 0, 4, AniDir::PING_PONG, 3);
-  Tag* tagB = make_tag("B", 1, 3, AniDir::PING_PONG_REVERSE, 2);
-  auto sprite = make_sprite(5, { tagA, tagB });
+  Tag* tagA = make_tag("A", 1, 5, AniDir::PING_PONG_REVERSE, 2);
+  Tag* tagB = make_tag("B", 3, 5, AniDir::PING_PONG, 2);
+  auto sprite = make_sprite(6, { tagA, tagB });
 
   Playback play(sprite.get(), 0, Playback::Mode::PlayInLoop);
-  expect_frames(play, {0, 3,2,1,2,3, 4, 1,2,3,2,1, 0, 3,2,1,2,3, 4,
-                       0, 3,2,1,2,3, 4, 1,2,3,2,1, 0, 3,2,1,2,3, 4, 0 });
+  expect_frames(play, {0 , 5,4,3,4,5 , 2,1,2 , 3,4,5,4,3,
+                       0 , 5,4,3,4,5 , 2,1,2 , 3,4,5,4,3});
+  EXPECT_FALSE(play.isStopped());
+}
+
+TEST(Playback, OneReverseInsidePingPongReverse)
+{
+  //      A
+  //   >-------<
+  //         B
+  //       <----
+  // 0 1 2 3 4 5
+
+  Tag* tagA = make_tag("A", 1, 5, AniDir::PING_PONG_REVERSE, 2);
+  Tag* tagB = make_tag("B", 3, 5, AniDir::REVERSE, 2);
+  auto sprite = make_sprite(6, { tagA, tagB });
+
+  Playback play(sprite.get(), 0, Playback::Mode::PlayInLoop);
+  expect_frames(play, {0 , 3,4,5,3,4,5 , 2,1,2 , 5,4,3,5,4,3,
+                       0 , 3,4,5,3,4,5 , 2,1,2 , 5,4,3,5,4,3});
+  EXPECT_FALSE(play.isStopped());
+}
+
+TEST(Playback, OnePingPongReverseInsideReverse)
+{
+  //      A
+  //   <--------
+  //         B
+  //       >---<
+  // 0 1 2 3 4 5
+
+  Tag* tagA = make_tag("A", 1, 5, AniDir::REVERSE, 2);
+  Tag* tagB = make_tag("B", 3, 5, AniDir::PING_PONG_REVERSE, 2);
+  auto sprite = make_sprite(6, { tagA, tagB });
+
+  Playback play(sprite.get(), 0, Playback::Mode::PlayInLoop);
+  expect_frames(play, {0 , 3,4,5,4,3 , 2,1, 3,4,5,4,3 , 2,1,
+                       0 , 3,4,5,4,3 , 2,1, 3,4,5,4,3 , 2,1});
   EXPECT_FALSE(play.isStopped());
 }
 
@@ -533,6 +896,96 @@ TEST(Playback, TwoLoopsInCascadeReverse)
   Playback play(sprite.get(), 0, Playback::Mode::PlayInLoop);
   expect_frames(play, {0, 3,2,1,3,2,1, 4,3,2,4,3,2,
                        0, 3,2,1,3,2,1, 4,3,2,4,3,2, 0 });
+  EXPECT_FALSE(play.isStopped());
+}
+
+TEST(Playback, TwoLoopsInCascadeReversePingPongReverse1)
+{
+  //    A
+  //   <----
+  //       B
+  //     >---<
+  // 0 1 2 3 4
+
+  Tag* a = make_tag("A", 1, 3, AniDir::REVERSE, 2);
+  Tag* b = make_tag("B", 2, 4, AniDir::PING_PONG_REVERSE, 2);
+  auto sprite = make_sprite(5, { a, b });
+
+  Playback play(sprite.get(), 0, Playback::Mode::PlayInLoop);
+  expect_frames(play, {0, 3,2,1,3,2,1, 4,3,2,3,4,
+                       0, 3,2,1,3,2,1, 4,3,2,3,4, 0 });
+  EXPECT_FALSE(play.isStopped());
+}
+
+TEST(Playback, TwoLoopsInCascadeReversePingPongReverse2)
+{
+  //    A
+  // <------
+  //       B
+  //     >---<
+  // 0 1 2 3 4
+
+  Tag* a = make_tag("A", 0, 3, AniDir::REVERSE, 2);
+  Tag* b = make_tag("B", 2, 4, AniDir::PING_PONG_REVERSE, 2);
+  auto sprite = make_sprite(5, { a, b });
+
+  Playback play(sprite.get(), 0, Playback::Mode::PlayInLoop);
+  expect_frames(play, {0, 3,2,1,0, 4,3,2,3,4,
+                          3,2,1,0,3,2,1,0, 4,3,2,3,4 });
+  EXPECT_FALSE(play.isStopped());
+}
+
+TEST(Playback, TwoLoopsInCascadeReversePingPongReverse3)
+{
+  //    A
+  // <--------
+  //       B
+  //     >---<
+  // 0 1 2 3 4
+
+  Tag* a = make_tag("A", 0, 4, AniDir::REVERSE, 2);
+  Tag* b = make_tag("B", 2, 4, AniDir::PING_PONG_REVERSE, 2);
+  auto sprite = make_sprite(5, { a, b });
+
+  Playback play(sprite.get(), 0, Playback::Mode::PlayInLoop);
+  expect_frames(play, {0, 2,3,4,3,2, 1,0,
+                       2,3,4,3,2, 1,0, 2,3,4,3,2, 1,0,});
+  EXPECT_FALSE(play.isStopped());
+}
+
+TEST(Playback, TwoLoopsInCascadePingPongReverseReverse1)
+{
+  //    A
+  // >-----<
+  //       B
+  //     <----
+  // 0 1 2 3 4
+
+  Tag* a = make_tag("A", 0, 3, AniDir::PING_PONG_REVERSE, 2);
+  Tag* b = make_tag("B", 2, 4, AniDir::REVERSE, 2);
+  auto sprite = make_sprite(5, { a, b });
+
+  Playback play(sprite.get(), 0, Playback::Mode::PlayInLoop);
+  expect_frames(play, {0, 1,2,3, 4,3,2,4,3,2,
+                          3,2,1,0,1,2,3, 4,3,2,4,3,2 });
+  EXPECT_FALSE(play.isStopped());
+}
+
+TEST(Playback, TwoLoopsInCascadePingPongReverseReverse2)
+{
+  //     A
+  //   >---<
+  //       B
+  //     <----
+  // 0 1 2 3 4
+
+  Tag* a = make_tag("A", 1, 3, AniDir::PING_PONG_REVERSE, 2);
+  Tag* b = make_tag("B", 2, 4, AniDir::REVERSE, 2);
+  auto sprite = make_sprite(5, { a, b });
+
+  Playback play(sprite.get(), 0, Playback::Mode::PlayInLoop);
+  expect_frames(play, {0, 3,2,1,2,3, 4,3,2,4,3,2,
+                       0, 3,2,1,2,3, 4,3,2,4,3,2, 0 });
   EXPECT_FALSE(play.isStopped());
 }
 
