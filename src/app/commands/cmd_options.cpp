@@ -1317,9 +1317,20 @@ private:
     if (language()->getItemCount() > 0)
       return;
 
-    // Select current language by lang ID
+    // Check if the current language exists, in other case select English.
     Strings* strings = Strings::instance();
     std::string curLang = strings->currentLanguage();
+    bool found = false;
+    for (const LangInfo& lang : strings->availableLanguages()) {
+      if (lang.id == curLang) {
+        found = true;
+        break;
+      }
+    }
+    if (!found)
+      curLang = Strings::kDefLanguage;
+
+    // Select current language by lang ID
     for (const LangInfo& lang : strings->availableLanguages()) {
       int i = language()->addItem(new LangItem(lang));
       if (lang.id == curLang)

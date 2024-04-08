@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2023  Igara Studio S.A.
+// Copyright (C) 2023-2024  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -25,6 +25,8 @@ namespace app {
   // Singleton class to load and access "strings/en.ini" file.
   class Strings : public app::gen::Strings<app::Strings> {
   public:
+    static const char* kDefLanguage;
+
     static void createInstance(Preferences& pref,
                                Extensions& exts);
     static Strings* instance();
