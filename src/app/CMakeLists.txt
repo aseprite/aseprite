@@ -97,6 +97,8 @@ endif()
 
 # libarchive definitions
 add_definitions(-DLIBARCHIVE_STATIC)
+add_definitions(-DHAVE_WCSCPY)
+add_definitions(-DHAVE_WCSLEN)
 
 ######################################################################
 # app-lib target
