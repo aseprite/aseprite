@@ -15,7 +15,7 @@ endif()
 if(NOT USE_SHARED_ZLIB)
   set(SKIP_INSTALL_ALL on)
   # Don't build zlib tests
-  set(ZLIB_TESTS OFF CACHE BOOL "Build zlib tests")
+  set(ZLIB_BUILD_EXAMPLES OFF CACHE BOOL "Build zlib tests")
   add_subdirectory(zlib)
 endif()
 
