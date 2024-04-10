@@ -95,8 +95,11 @@ if(ENABLE_PSD)
   add_definitions(-DENABLE_PSD)
 endif()
 
-# libarchive definitions
-add_definitions(-DLIBARCHIVE_STATIC -DHAVE_WCSCPY=1 -DHAVE_WCSLEN=1)
+# libarchive definitions and variables
+add_definitions(-DLIBARCHIVE_STATIC)
+
+set(HAVE_WCSCPY 1)
+set(HAVE_WCSLEN 1)
 
 ######################################################################
 # app-lib target
