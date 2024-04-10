@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2023  Igara Studio S.A.
+// Copyright (C) 2020-2024  Igara Studio S.A.
 // Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -30,6 +30,7 @@ namespace app {
   class Extensions;
 
   struct ExtensionInfo {
+    std::string themeId;
     std::string name;
     std::string version;
     std::string dstPath;
@@ -53,6 +54,8 @@ namespace app {
       Multiple,
       Max
     };
+
+    bool isDefaultTheme() const;
 
     class DitheringMatrixInfo {
     public:
@@ -150,7 +153,6 @@ namespace app {
     void uninstall(const DeletePluginPref delPref);
     void uninstallFiles(const std::string& path,
                         const DeletePluginPref delPref);
-    bool isDefaultTheme() const;
     void updateCategory(const Category newCategory);
 #ifdef ENABLE_SCRIPTING
     void initScripts();
@@ -196,6 +198,7 @@ namespace app {
   public:
     typedef std::vector<Extension*> List;
     typedef List::iterator iterator;
+    static const char* kAsepriteDefaultThemeName;
 
     Extensions();
     ~Extensions();

@@ -926,6 +926,18 @@ public:
       }
     }
 
+    // Get the extension information from the compressed
+    // package.json file.
+    const ExtensionInfo info =
+      App::instance()->extensions().getCompressedExtensionInfo(filename);
+    // Check if the filename corresponds to aseprite-default theme
+    if (base::string_to_lower(info.name) ==
+        Extensions::kAsepriteDefaultThemeName) {
+      ui::Alert::show(
+        fmt::format(Strings::alerts_cannot_install_default_extension()));
+      return false;
+    }
+
     // Install?
     if (ui::Alert::show(Strings::alerts_install_extension(filename)) != 1)
       return false;
@@ -1378,7 +1390,8 @@ private:
       if (!ext->isEnabled())
         continue;
 
-      if (ext->themes().empty())
+      if (ext->themes().empty() ||
+          isExtensionADuplicatedDefaultTheme(ext))
         continue;
 
       if (first) {
@@ -1410,6 +1423,9 @@ private:
     extensionsList()->addChild(sep);
     for (auto e : App::instance()->extensions()) {
       if (e->category() == category) {
+        if (category == Extension::Category::Themes &&
+            isExtensionADuplicatedDefaultTheme(e))
+          continue;
         ExtensionItem* item = new ExtensionItem(e);
         extensionsList()->addChild(item);
         hasItems = true;
@@ -1571,6 +1587,11 @@ private:
       // package.json file.
       ExtensionInfo info = exts.getCompressedExtensionInfo(filename);
 
+      if (info.themeId == "default") {
+        ui::Alert::show(
+          fmt::format(Strings::alerts_cannot_open_theme()));
+        return;
+      }
       // Check if the extension already exist
       for (auto ext : exts) {
         if (base::string_to_lower(ext->name()) !=
@@ -1749,6 +1770,17 @@ private:
     return paths;
   }
 
+  static base::paths getUserDirPaths(const base::paths& dirNames) {
+    ResourceFinder rf;
+    for (auto& fn : dirNames)
+      rf.includeUserDir(fn.c_str());
+
+    base::paths paths;
+    while (rf.next())
+      paths.push_back(base::normalize_path(rf.filename()));
+    return paths;
+  }
+
   void updateCategoryVisibility() {
     bool visibleCategories[int(Extension::Category::Max)];
     for (auto& v : visibleCategories)
@@ -1762,6 +1794,20 @@ private:
       if (auto sep = dynamic_cast<ExtensionCategorySeparator*>(w))
         sep->setVisible(visibleCategories[int(sep->category())]);
     }
+  }
+
+  // Function to determine if the input extension is the default theme
+  static bool isExtensionADuplicatedDefaultTheme(const Extension* e) {
+    if (!e->isDefaultTheme())
+      return false;
+    auto userThemePaths =
+      getUserDirPaths({"extensions", skin::SkinTheme::kThemesFolderName});
+    for (auto& p : userThemePaths) {
+      // Has the user path (p) the same path of the extension (e->path())?
+      if (std::strncmp(e->path().c_str(), p.c_str(), p.size()) == 0)
+        return true;
+    }
+    return false;
   }
 
 #ifdef LAF_WINDOWS
