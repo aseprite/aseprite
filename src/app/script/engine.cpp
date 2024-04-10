@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -244,6 +244,13 @@ Engine::Engine()
   lua_getfield(L, -1, "open");
   lua_pushcclosure(L, secure_io_open, 1);
   lua_setfield(L, -2, "open");
+  lua_pop(L, 1);
+
+  // Wrap io.popen()
+  lua_getglobal(L, "io");
+  lua_getfield(L, -1, "popen");
+  lua_pushcclosure(L, secure_os_execute, 1);
+  lua_setfield(L, -2, "popen");
   lua_pop(L, 1);
 
   // Wrap os.execute()

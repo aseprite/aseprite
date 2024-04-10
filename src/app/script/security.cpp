@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -94,6 +94,7 @@ int secure_io_open(lua_State* L)
   return 1;
 }
 
+// Used for os.execute() and io.popen()
 int secure_os_execute(lua_State* L)
 {
   int n = lua_gettop(L);

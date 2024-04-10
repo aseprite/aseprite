@@ -1,5 +1,5 @@
 # Aseprite
-# Copyright (C) 2021-2023  Igara Studio S.A.
+# Copyright (C) 2021-2024  Igara Studio S.A.
 # Copyright (C) 2001-2018  David Capello
 
 include_directories(.)
@@ -195,12 +195,22 @@ if(ENABLE_SCRIPTING)
     lua/lstrlib.c
     lua/ltablib.c
     lua/lutf8lib.c)
+
+  if(WIN32)
+    target_compile_definitions(lua PUBLIC LUA_USE_WINDOWS=1)
+  elseif(APPLE)
+    target_compile_definitions(lua PUBLIC LUA_USE_MACOSX=1)
+  elseif(UNIX)
+    target_compile_definitions(lua PUBLIC LUA_USE_LINUX=1)
+  endif()
+
   target_compile_definitions(lua PUBLIC LUA_FLOORN2I=1)
   target_compile_definitions(lualib PRIVATE HAVE_SYSTEM)
   target_include_directories(lua PUBLIC lua)
   target_include_directories(lauxlib PUBLIC lua)
   target_include_directories(lualib PUBLIC lua)
   target_link_libraries(lauxlib lua)
+  target_link_libraries(lualib lua)
 
   # ixwebsocket
   if(ENABLE_WEBSOCKET)
