@@ -506,29 +506,27 @@ TEST(Playback, PingPongWithInnerReverse)
 }
 
 // OnePingPongInsideOther series
-std::vector<int> goRight(std::vector<int> range) {
+static std::vector<int> goRight(const int a, const int b) {
   std::vector<int> out;
-  if (range[0] > range[1])
+  if (a > b)
     return out;
-  for (int i=range[0]; i<range[1]+1 ; ++i)
+  for (int i=a; i<=b ; ++i)
     out.push_back(i);
   return out;
 }
 
-std::vector<int> goLeft(std::vector<int> range) {
+std::vector<int> goLeft(const int a, const int b) {
   std::vector<int> out;
-  if (range[0] > range[1])
+  if (a > b)
     return out;
-  for (int i=range[1]; i>range[0]-1 ; --i)
+  for (int i=b; i>=a ; --i)
     out.push_back(i);
   return out;
 }
 
-void concat(std::vector<int>& a, std::vector<int>& b)
+static void concat(std::vector<int>& a, const std::vector<int>& b)
 {
-  if (b.empty())
-    return;
-  for (int i=0; i<b.size(); ++i)
+  for (size_t i=0; i<b.size(); ++i)
     a.push_back(b[i]);
 }
 
@@ -564,7 +562,7 @@ TEST(Playback, OnePingPongInsideOther)
         if (A_aniDir == doc::AniDir::PING_PONG) {
 
           // Start
-          temp = goRight({0, B_Range[0]-1});
+          temp = goRight(0, B_Range[0]-1);
           concat(expected, temp);
 
           // Tag B playback
@@ -576,9 +574,9 @@ TEST(Playback, OnePingPongInsideOther)
             concat(expected, B_aniDir == doc::AniDir::PING_PONG ? pingPongSeq3[0] : pingPongSeq3[1]);
 
           // Reproduce right side of the tag A
-          temp = goRight({B_Range[1]+1, lastFrame});
+          temp = goRight(B_Range[1]+1, lastFrame);
           concat(expected, temp);
-          temp = goLeft({B_Range[1]+1, lastFrame-1});
+          temp = goLeft(B_Range[1]+1, lastFrame-1);
           concat(expected, temp);
 
           // Tag B playback (only if tag B last frame doesn't match with the tag A last frame
@@ -590,7 +588,7 @@ TEST(Playback, OnePingPongInsideOther)
           }
 
           // Reproduce right side of the tag A
-          temp = goLeft({0, B_Range[0]-1});
+          temp = goLeft(0, B_Range[0]-1);
           concat(expected, temp);
           // Sequence end
         }
@@ -602,7 +600,7 @@ TEST(Playback, OnePingPongInsideOther)
         else {
 
           // Start
-          temp = goRight({0, B_Range[0]-1});
+          temp = goRight(0, B_Range[0]-1);
           concat(expected, temp);
 
           // Tag B playback
@@ -614,12 +612,12 @@ TEST(Playback, OnePingPongInsideOther)
             concat(expected, B_aniDir == doc::AniDir::PING_PONG ? pingPongSeq3[0] : pingPongSeq3[1]);
 
           // Reproduce right side of the tag A
-          temp = goRight({B_Range[1]+1, lastFrame});
+          temp = goRight(B_Range[1]+1, lastFrame);
           concat(expected, temp);
           // Sequence end
 
           // New Start
-          temp = goLeft({B_Range[1]+1, lastFrame});
+          temp = goLeft(B_Range[1]+1, lastFrame);
           concat(expected, temp);
 
           // Tag B playback
@@ -631,9 +629,9 @@ TEST(Playback, OnePingPongInsideOther)
             concat(expected, B_aniDir == doc::AniDir::PING_PONG ? pingPongSeq1[1] : pingPongSeq1[0]);
 
           // Reproduce left side of the tag A
-          temp = goLeft({0, B_Range[0]-1});
+          temp = goLeft(0, B_Range[0]-1);
           concat(expected, temp);
-          temp = goRight({1, B_Range[0]-1});
+          temp = goRight(1, B_Range[0]-1);
           concat(expected, temp);
 
           // Tag B playback (only if tag B first frame doesn't match with the tag A first frame
@@ -644,7 +642,7 @@ TEST(Playback, OnePingPongInsideOther)
 
 
           // Reproduce right side of the tag A
-          temp = goRight({B_Range[1]+1, lastFrame});
+          temp = goRight(B_Range[1]+1, lastFrame);
           concat(expected, temp);
           // Sequence end
         }
@@ -694,7 +692,7 @@ TEST(Playback, OnePingPongInsideOther1Repeat)
         if (A_aniDir == doc::AniDir::PING_PONG) {
 
           // Start
-          temp = goRight({0, B_Range[0]-1});
+          temp = goRight(0, B_Range[0]-1);
           concat(expected, temp);
           // Tag B playback
           if (B_Range[0] == 0) {
@@ -706,12 +704,12 @@ TEST(Playback, OnePingPongInsideOther1Repeat)
           else if (B_Range[0] == 2)
             concat(expected, B_aniDir == doc::AniDir::PING_PONG ? pingPongSeq3[0] : pingPongSeq3[1]);
           // Reproduce right side of the tag A
-          temp = goRight({B_Range[1]+1, lastFrame});
+          temp = goRight(B_Range[1]+1, lastFrame);
           concat(expected, temp);
           // Sequence end
 
           // Fresh sequence start
-          temp = goRight({0, B_Range[0]-1});
+          temp = goRight(0, B_Range[0]-1);
           concat(expected, temp);
           // Tag B playback
           if (B_Range[0] == 0)
@@ -721,7 +719,7 @@ TEST(Playback, OnePingPongInsideOther1Repeat)
           else if (B_Range[0] == 2)
             concat(expected, B_aniDir == doc::AniDir::PING_PONG ? pingPongSeq3[0] : pingPongSeq3[1]);
           // Reproduce right side of the tag A
-          temp = goRight({B_Range[1]+1, lastFrame});
+          temp = goRight(B_Range[1]+1, lastFrame);
           concat(expected, temp);
           // Sequence end
 
@@ -743,7 +741,7 @@ TEST(Playback, OnePingPongInsideOther1Repeat)
 
           // Fresh sequence start
           // Reproduce right side of the tag A
-          temp = goLeft({B_Range[1]+1, lastFrame});
+          temp = goLeft(B_Range[1]+1, lastFrame);
           concat(expected, temp);
 
           // Tag B playback
@@ -755,7 +753,7 @@ TEST(Playback, OnePingPongInsideOther1Repeat)
             concat(expected, B_aniDir == doc::AniDir::PING_PONG ? pingPongSeq1[1] : pingPongSeq1[0]);
 
           // Reproduce left side of the tag A
-          temp = goLeft({0, B_Range[0]-1});
+          temp = goLeft(0, B_Range[0]-1);
           concat(expected, temp);
           // Sequence end
         }

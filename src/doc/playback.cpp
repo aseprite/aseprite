@@ -167,7 +167,7 @@ void Playback::handleEnterFrame(const frame_t frameDelta, const bool firstTime)
     case PlayAll:
     case PlayInLoop: {
       const Tag* tag = this->tag();
-      frame_t frame = m_frame;
+      const frame_t frame = m_frame;
       const int forward = getParentForward();
 
       for (const Tag* t : m_tags) {
@@ -187,12 +187,16 @@ void Playback::handleEnterFrame(const frame_t frameDelta, const bool firstTime)
             addTag(t, false, forward);
             if (!firstTime) {
               goToFirstTagFrame(t);
+              // Handle cases where inner tags will jump to different
+              // frames several times recursively (e.g. one reverse
+              // inside other reverse).
+              //
               // Consideration for tests:
               // Playback.OnePingPongInsidePingPongReverse
               // Playback.OneReverseInsidePingPongReverse
               // Playback.OnePingPongReverseInsideReverse
               if (frame != m_frame)
-                handleEnterFrame(m_frame, firstTime);
+                handleEnterFrame(0, firstTime);
             }
           }
         }
@@ -482,12 +486,14 @@ bool Playback::decrementRepeat(const frame_t frameDelta)
           return false;
         }
         if (newFrame < 0) {
-          if (m_playing.empty() ||
-              m_playing.back()->tag->fromFrame() != 0 ||
-              m_playing.back()->tag->aniDir() == AniDir::REVERSE) {
-            m_frame = m_sprite->lastFrame();
-            return false;
-          }
+          // m_playing.empty() never happen, because the only way
+          // to have newFrame < 0 is IF WE HAVE A TAG ON m_playing
+          // in REVERSE or PING PONG REVERSE which frame 0 is
+          // contained into that tag.
+          ASSERT(!m_playing.empty());
+          // Just to avoid a crash in production if there is a future bug
+          if (m_playing.empty())
+            newFrame = m_sprite->lastFrame();
           // Special cases arise with PING_PONG_REVERSE aniDir and when
           // the begining of the tag range matches with the first frame of
           // the sprite.
