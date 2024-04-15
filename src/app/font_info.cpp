@@ -25,14 +25,12 @@ FontInfo::FontInfo(Type type,
                    const std::string& name,
                    const float size,
                    const text::FontStyle style,
-                   const bool antialias,
-                   const text::TypefaceRef& typeface)
+                   const bool antialias)
   : m_type(type)
   , m_name(name)
   , m_size(size)
   , m_style(style)
   , m_antialias(antialias)
-  , m_typeface(typeface)
 {
 }
 
@@ -45,7 +43,6 @@ FontInfo::FontInfo(const FontInfo& other,
   , m_size(size)
   , m_style(style)
   , m_antialias(antialias)
-  , m_typeface(other.typeface())
 {
 }
 
@@ -67,18 +64,16 @@ std::string FontInfo::thumbnailId() const
   return std::string();
 }
 
-void FontInfo::findTypeface(const text::FontMgrRef& fontMgr) const
+text::TypefaceRef FontInfo::findTypeface(const text::FontMgrRef& fontMgr) const
 {
-  if (m_type != Type::System ||
-      m_typeface != nullptr) {
-    return;
-  }
+  if (m_type != Type::System)
+    return nullptr;
 
   const text::FontStyleSetRef set = fontMgr->matchFamily(m_name);
-  if (set) {
-    if (auto newTypeface = set->matchStyle(m_style))
-      m_typeface = newTypeface;
-  }
+  if (set)
+    return set->matchStyle(m_style);
+
+  return nullptr;
 }
 
 } // namespace app
