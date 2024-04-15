@@ -63,22 +63,28 @@ public:
   FontItem(const std::string& name, ByName)
     : ListItem(name)
     , m_fontInfo(FontInfo::Type::Name, name,
-                 FontInfo::kDefaultSize, true) {
+                 FontInfo::kDefaultSize,
+                 text::FontStyle(), true) {
     getCachedThumbnail();
   }
 
   FontItem(const std::string& fn)
     : ListItem(base::get_file_title(fn))
     , m_fontInfo(FontInfo::Type::File, fn,
-                 FontInfo::kDefaultSize, true) {
+                 FontInfo::kDefaultSize,
+                 text::FontStyle(), true) {
     getCachedThumbnail();
   }
 
   FontItem(const std::string& name,
+           const text::FontStyle& style,
+           const text::FontStyleSetRef& set,
            const text::TypefaceRef& typeface)
     : ListItem(name)
     , m_fontInfo(FontInfo::Type::System, name,
-                 FontInfo::kDefaultSize, true, typeface) {
+                 FontInfo::kDefaultSize,
+                 style, true, typeface)
+    , m_set(set) {
     getCachedThumbnail();
   }
 
@@ -161,6 +167,7 @@ private:
 private:
   os::SurfaceRef m_thumbnail;
   FontInfo m_fontInfo;
+  text::FontStyleSetRef m_set;
 };
 
 bool FontPopup::FontListBox::onProcessMessage(ui::Message* msg)
@@ -229,31 +236,16 @@ FontPopup::FontPopup(const FontInfo& fontInfo)
       std::string name = fontMgr->familyName(i);
       text::FontStyleSetRef set = fontMgr->familyStyleSet(i);
       if (set && set->count() > 0) {
-        // Best style for preview purposes, i.e. the most regular
-        // style, without bold, italic, etc.
-        int best;
-        text::FontStyle bestStyle;
-
-        for (int i=0; i<set->count(); ++i) {
-          text::FontStyle style;
-          std::string subname;
-          set->getStyle(i, style, subname);
-          if ((i == 0) ||
-              ((style.weight() == text::FontStyle::Weight::Normal &&
-                bestStyle.weight() != text::FontStyle::Weight::Normal) ||
-               (style.width() == text::FontStyle::Width::Normal &&
-                bestStyle.width() != text::FontStyle::Width::Normal) ||
-               (style.slant() == text::FontStyle::Slant::Upright &&
-                bestStyle.slant() != text::FontStyle::Slant::Upright))) {
-            best = i;
-            bestStyle = style;
-          }
+        // Match the typeface with the default FontStyle (Normal
+        // weight, Upright slant, etc.)
+        auto typeface = set->matchStyle(text::FontStyle());
+        if (typeface) {
+          auto* item = new FontItem(name, typeface->fontStyle(),
+                                    set, typeface);
+          item->ThumbnailGenerated.connect([this]{ onThumbnailGenerated(); });
+          m_listBox.addChild(item);
+          empty = false;
         }
-
-        auto* item = new FontItem(name, set->typeface(best));
-        item->ThumbnailGenerated.connect([this]{ onThumbnailGenerated(); });
-        m_listBox.addChild(item);
-        empty = false;
       }
     }
   }

@@ -135,19 +135,30 @@ void FontEntry::FontSize::onEntryChange()
   Change();
 }
 
+FontEntry::FontStyle::FontStyle()
+  : ButtonSet(2, true)
+{
+  addItem("B");
+  addItem("I");
+  setMultiMode(MultiMode::Set);
+}
+
 FontEntry::FontEntry()
   : m_antialias("Antialias")
 {
   m_face.setExpansive(true);
   m_size.setExpansive(false);
+  m_style.setExpansive(false);
   m_antialias.setExpansive(false);
   addChild(&m_face);
   addChild(&m_size);
+  addChild(&m_style);
   addChild(&m_antialias);
 
   m_face.FontChange.connect([this](const FontInfo& newTypeName) {
     setInfo(FontInfo(newTypeName,
                      m_info.size(),
+                     m_info.style(),
                      m_info.antialias()),
             From::Face);
     invalidate();
@@ -157,13 +168,45 @@ FontEntry::FontEntry()
     const float newSize = std::strtof(m_size.getValue().c_str(), nullptr);
     setInfo(FontInfo(m_info,
                      newSize,
+                     m_info.style(),
                      m_info.antialias()),
             From::Size);
+  });
+
+  m_style.ItemChange.connect([this](ButtonSet::Item* item){
+    text::FontStyle style = m_info.style();
+    switch (m_style.getItemIndex(item)) {
+      // Bold button changed
+      case 0: {
+        const bool bold = m_style.getItem(0)->isSelected();
+        style = text::FontStyle(bold ? text::FontStyle::Weight::Bold:
+                                       text::FontStyle::Weight::Normal,
+                                style.width(),
+                                style.slant());
+        break;
+      }
+      // Italic button changed
+      case 1: {
+        const bool italic = m_style.getItem(1)->isSelected();
+        style = text::FontStyle(style.weight(),
+                                style.width(),
+                                italic ? text::FontStyle::Slant::Italic:
+                                         text::FontStyle::Slant::Upright);
+        break;
+      }
+    }
+
+    setInfo(FontInfo(m_info,
+                     m_info.size(),
+                     style,
+                     m_info.antialias()),
+            From::Style);
   });
 
   m_antialias.Click.connect([this](){
     setInfo(FontInfo(m_info,
                      m_info.size(),
+                     m_info.style(),
                      m_antialias.isSelected()),
             From::Antialias);
   });
@@ -178,6 +221,11 @@ void FontEntry::setInfo(const FontInfo& info,
 
   if (fromField != From::Size)
     m_size.setValue(fmt::format("{}", info.size()));
+
+  if (fromField != From::Style) {
+    m_style.getItem(0)->setSelected(info.style().weight() >= text::FontStyle::Weight::SemiBold);
+    m_style.getItem(1)->setSelected(info.style().slant() != text::FontStyle::Slant::Upright);
+  }
 
   if (fromField != From::Antialias)
     m_antialias.setSelected(info.antialias());
