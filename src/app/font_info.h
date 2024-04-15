@@ -9,6 +9,7 @@
 #pragma once
 
 #include "base/convert_to.h"
+#include "text/font_style.h"
 #include "text/fwd.h"
 #include "text/typeface.h"
 
@@ -32,11 +33,13 @@ namespace app {
     FontInfo(Type type = Type::Unknown,
              const std::string& name = {},
              float size = kDefaultSize,
+             text::FontStyle style = text::FontStyle(),
              bool antialias = false,
              const text::TypefaceRef& typeface = nullptr);
 
     FontInfo(const FontInfo& other,
              float size,
+             text::FontStyle style,
              bool antialias);
 
     bool isValid() const { return m_type != Type::Unknown; }
@@ -54,6 +57,7 @@ namespace app {
     std::string thumbnailId() const;
 
     float size() const { return m_size; }
+    text::FontStyle style() const { return m_style; }
     bool antialias() const { return m_antialias; }
 
     void findTypeface(const text::FontMgrRef& fontMgr) const;
@@ -70,6 +74,7 @@ namespace app {
     Type m_type = Type::Unknown;
     std::string m_name;
     float m_size = kDefaultSize;
+    text::FontStyle m_style;
     bool m_antialias = false;
     mutable text::TypefaceRef m_typeface;
   };

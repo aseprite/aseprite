@@ -82,6 +82,7 @@ void PasteTextCommand::onExecute(Context* ctx)
     fontInfo = FontInfo(FontInfo::Type::File,
                         pref.textTool.fontFace(),
                         pref.textTool.fontSize(),
+                        text::FontStyle(),
                         pref.textTool.antialias());
   }
   // New configuration

@@ -9,6 +9,7 @@
 #pragma once
 
 #include "app/font_info.h"
+#include "app/ui/button_set.h"
 #include "app/ui/search_entry.h"
 #include "ui/box.h"
 #include "ui/button.h"
@@ -25,6 +26,7 @@ namespace app {
       User,
       Face,
       Size,
+      Style,
       Antialias,
     };
 
@@ -55,9 +57,15 @@ namespace app {
       void onEntryChange() override;
     };
 
+    class FontStyle : public ButtonSet {
+    public:
+      FontStyle();
+    };
+
     FontInfo m_info;
     FontFace m_face;
     FontSize m_size;
+    FontStyle m_style;
     ui::CheckBox m_antialias;
   };
 
