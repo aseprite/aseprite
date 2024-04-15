@@ -49,10 +49,10 @@ doc::ImageRef render_text(
 
   if (fontInfo.type() == FontInfo::Type::System) {
     // Just in case the typeface is not present in the FontInfo
-    fontInfo.findTypeface(fontMgr);
+    auto typeface = fontInfo.findTypeface(fontMgr);
 
     const text::FontMgrRef fontMgr = theme->fontMgr();
-    font = fontMgr->makeFont(fontInfo.typeface());
+    font = fontMgr->makeFont(typeface);
     if (!fontInfo.useDefaultSize())
       font->setSize(fontInfo.size());
   }

@@ -78,12 +78,10 @@ public:
 
   FontItem(const std::string& name,
            const text::FontStyle& style,
-           const text::FontStyleSetRef& set,
-           const text::TypefaceRef& typeface)
+           const text::FontStyleSetRef& set)
     : ListItem(name)
     , m_fontInfo(FontInfo::Type::System, name,
-                 FontInfo::kDefaultSize,
-                 style, true, typeface)
+                 FontInfo::kDefaultSize, style, true)
     , m_set(set) {
     getCachedThumbnail();
   }
@@ -240,8 +238,7 @@ FontPopup::FontPopup(const FontInfo& fontInfo)
         // weight, Upright slant, etc.)
         auto typeface = set->matchStyle(text::FontStyle());
         if (typeface) {
-          auto* item = new FontItem(name, typeface->fontStyle(),
-                                    set, typeface);
+          auto* item = new FontItem(name, typeface->fontStyle(), set);
           item->ThumbnailGenerated.connect([this]{ onThumbnailGenerated(); });
           m_listBox.addChild(item);
           empty = false;

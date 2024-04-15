@@ -34,8 +34,7 @@ namespace app {
              const std::string& name = {},
              float size = kDefaultSize,
              text::FontStyle style = text::FontStyle(),
-             bool antialias = false,
-             const text::TypefaceRef& typeface = nullptr);
+             bool antialias = false);
 
     FontInfo(const FontInfo& other,
              float size,
@@ -60,8 +59,7 @@ namespace app {
     text::FontStyle style() const { return m_style; }
     bool antialias() const { return m_antialias; }
 
-    void findTypeface(const text::FontMgrRef& fontMgr) const;
-    text::TypefaceRef typeface() const { return m_typeface; }
+    text::TypefaceRef findTypeface(const text::FontMgrRef& fontMgr) const;
 
     bool operator==(const FontInfo& other) const {
       return (m_type == other.m_type &&
@@ -76,7 +74,6 @@ namespace app {
     float m_size = kDefaultSize;
     text::FontStyle m_style;
     bool m_antialias = false;
-    mutable text::TypefaceRef m_typeface;
   };
 
 } // namespace app
