@@ -27,6 +27,7 @@
 #include "app/doc_range_ops.h"
 #include "app/doc_undo.h"
 #include "app/i18n/strings.h"
+#include "app/inline_command_execution.h"
 #include "app/loop_tag.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
@@ -1390,6 +1391,7 @@ bool Timeline::onProcessMessage(Message* msg)
               if ((m_state == STATE_RESIZING_TAG_LEFT && tag->fromFrame() != m_resizeTagData.from) ||
                   (m_state == STATE_RESIZING_TAG_RIGHT && tag->toFrame() != m_resizeTagData.to)) {
                 try {
+                  InlineCommandExecution inlineCmd(m_context);
                   ContextWriter writer(m_context);
                   Tx tx(writer, Strings::commands_FrameTagProperties());
                   tx(new cmd::SetTagRange(
