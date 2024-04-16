@@ -37,6 +37,7 @@
 #include "app/ui/configure_timeline_popup.h"
 #include "app/ui/doc_view.h"
 #include "app/ui/editor/editor.h"
+#include "app/ui/editor/moving_pixels_state.h"
 #include "app/ui/input_chain.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
@@ -1390,6 +1391,12 @@ bool Timeline::onProcessMessage(Message* msg)
               if ((m_state == STATE_RESIZING_TAG_LEFT && tag->fromFrame() != m_resizeTagData.from) ||
                   (m_state == STATE_RESIZING_TAG_RIGHT && tag->toFrame() != m_resizeTagData.to)) {
                 try {
+                  // Drop pixels if the editor is in the middle of a transformation
+                  // state (i.e. editor state is 'MovingPixelsState')
+                  if (m_editor) {
+                    if (auto movingPixels = dynamic_cast<MovingPixelsState*>(m_editor->getState().get()))
+                      movingPixels->onDropPixels(ContextBarObserver::DropPixels);
+                  }
                   ContextWriter writer(m_context);
                   Tx tx(writer, Strings::commands_FrameTagProperties());
                   tx(new cmd::SetTagRange(
