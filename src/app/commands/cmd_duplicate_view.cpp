@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C)      2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -35,6 +36,8 @@ DuplicateViewCommand::DuplicateViewCommand()
 bool DuplicateViewCommand::onEnabled(Context* context)
 {
   Workspace* workspace = App::instance()->workspace();
+  if (!workspace) // Workspace (main window) can be null if we are in --batch mode
+    return false;
   WorkspaceView* view = workspace->activeView();
   return (view != nullptr);
 }
