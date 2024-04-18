@@ -584,7 +584,9 @@ int Entry::getCaretFromMouse(MouseMessage* mousemsg)
   return std::clamp(i, 0, lastPos);
 }
 
-void Entry::executeCmd(EntryCmd cmd, int unicodeChar, bool shift_pressed)
+void Entry::executeCmd(const EntryCmd cmd,
+                       const base::codepoint_t unicodeChar,
+                       const bool shift_pressed)
 {
   std::string text = this->text();
   const Range range = selectedRange();
@@ -615,11 +617,10 @@ void Entry::executeCmd(EntryCmd cmd, int unicodeChar, bool shift_pressed)
       if (lastCaretPos() < m_maxsize) {
         ASSERT(m_caret <= lastCaretPos());
 
-        std::wstring unicodeStr;
-        unicodeStr.push_back(unicodeChar);
+        const std::string unicodeStr =
+          base::codepoint_to_utf8(unicodeChar);
 
-        text.insert(m_boxes[m_caret].from,
-                    base::to_utf8(unicodeStr));
+        text.insert(m_boxes[m_caret].from, unicodeStr);
         recalcCharBoxes(text);
         ++m_caret;
       }

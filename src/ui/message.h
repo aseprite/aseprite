@@ -9,6 +9,7 @@
 #define UI_MESSAGE_H_INCLUDED
 #pragma once
 
+#include "base/codepoint.h"
 #include "base/paths.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
@@ -100,18 +101,18 @@ namespace ui {
     KeyMessage(MessageType type,
                KeyScancode scancode,
                KeyModifiers modifiers,
-               int unicodeChar,
+               base::codepoint_t unicodeChar,
                int repeat);
 
     KeyScancode scancode() const { return m_scancode; }
-    int unicodeChar() const { return m_unicodeChar; }
+    base::codepoint_t unicodeChar() const { return m_unicodeChar; }
     int repeat() const { return m_repeat; }
     bool isDeadKey() const { return m_isDead; }
     void setDeadKey(bool state) { m_isDead = state; }
 
   private:
     KeyScancode m_scancode;
-    int m_unicodeChar;
+    base::codepoint_t m_unicodeChar;
     int m_repeat; // repeat=0 means the first time the key is pressed
     bool m_isDead;
   };

@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -9,6 +9,7 @@
 #define UI_ENTRY_H_INCLUDED
 #pragma once
 
+#include "base/codepoint.h"
 #include "obs/signal.h"
 #include "ui/widget.h"
 
@@ -99,7 +100,7 @@ namespace ui {
     };
 
     int getCaretFromMouse(MouseMessage* mousemsg);
-    void executeCmd(EntryCmd cmd, int ascii, bool shift_pressed);
+    void executeCmd(EntryCmd cmd, base::codepoint_t unicodeChar, bool shift_pressed);
     void forwardWord();
     void backwardWord();
     Range wordRange(int pos);

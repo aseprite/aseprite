@@ -56,10 +56,11 @@ void Message::removeRecipient(Widget* widget)
     m_recipient = nullptr;
 }
 
-KeyMessage::KeyMessage(MessageType type,
-                       KeyScancode scancode,
-                       KeyModifiers modifiers,
-                       int unicodeChar, int repeat)
+KeyMessage::KeyMessage(const MessageType type,
+                       const KeyScancode scancode,
+                       const KeyModifiers modifiers,
+                       const base::codepoint_t unicodeChar,
+                       const int repeat)
   : Message(type, modifiers)
   , m_scancode(scancode)
   , m_unicodeChar(unicodeChar)
