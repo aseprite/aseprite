@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -564,7 +564,7 @@ public:
       // point so we can restore it when erasing a point because of
       // pixel-perfect. So we set the following flag to indicate this, and
       // use it in doTransformPoint.
-      m_saveStrokeArea = (c == m_pts.size() - 1 && !m_retainedTracePolicyLast);
+      m_saveStrokeArea = (c == m_pts.size() - 1);
       if (m_saveStrokeArea) {
         clearPointshapeStrokePtAreas();
         setLastPtIndex(c);
