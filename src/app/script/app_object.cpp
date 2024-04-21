@@ -168,7 +168,7 @@ int App_transaction(lua_State* L)
       if (lua_pcall(L, 0, LUA_MULTRET, 0) == LUA_OK)
         tx.commit();
       else
-        return lua_error(L); // pcall already put an error object on the stack
+        lua_error(L); // pcall already put an error object on the stack
       nresults = lua_gettop(L) - top;
     }
     catch (const LockedDocException& ex) {
