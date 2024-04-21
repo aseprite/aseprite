@@ -129,6 +129,23 @@ int dofile(lua_State *L)
   return dofilecont(L, 0, 0);
 }
 
+lua_CFunction orig_loadfile = nullptr;
+int loadfile(lua_State *L)
+{
+  ASSERT(orig_loadfile);
+  if (!orig_loadfile)
+    return luaL_error(L, "no original loadfile()?");
+
+  // fname is not optional if we are running in GUI mode as it blocks
+  // the program.
+  if (auto app = App::instance();
+      app && app->isGui() && !lua_isstring(L, 1)) {
+    return luaL_error(L, "loadfile() for stdin cannot be used running in GUI mode");
+  }
+
+  return orig_loadfile(L);
+}
+
 int os_clock(lua_State* L)
 {
   lua_pushnumber(L, luaClock.elapsed());
@@ -226,9 +243,16 @@ Engine::Engine()
   // Standard Lua libraries
   luaL_openlibs(L);
 
-  // Overwrite Lua functions
+  // Overwrite Lua functions with custom implementations
   lua_register(L, "print", print);
   lua_register(L, "dofile", dofile);
+
+  if (!orig_loadfile) {
+    lua_getglobal(L, "loadfile");
+    orig_loadfile = lua_tocfunction(L, -1);
+    lua_pop(L, 1);
+  }
+  lua_register(L, "loadfile", loadfile);
 
   lua_getglobal(L, "os");
   for (const char* name : { "remove", "rename", "exit", "tmpname" }) {
