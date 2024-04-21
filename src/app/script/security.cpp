@@ -36,12 +36,18 @@ namespace {
 
 int secure_io_open(lua_State* L);
 int secure_io_popen(lua_State* L);
+int secure_io_lines(lua_State* L);
+int secure_io_input(lua_State* L);
+int secure_io_output(lua_State* L);
 int secure_os_execute(lua_State* L);
 int secure_package_loadlib(lua_State* L);
 
 enum {
   io_open,
   io_popen,
+  io_lines,
+  io_input,
+  io_output,
   os_execute,
   package_loadlib,
 };
@@ -54,6 +60,9 @@ static struct {
 } replaced_functions[] = {
   { "io", "open", secure_io_open },
   { "io", "popen", secure_io_popen },
+  { "io", "lines", secure_io_lines },
+  { "io", "input", secure_io_input },
+  { "io", "output", secure_io_output },
   { "os", "execute", secure_os_execute },
   { "package", "loadlib", secure_package_loadlib },
 };
@@ -133,6 +142,45 @@ int secure_io_popen(lua_State* L)
                       cmd);
   }
   return replaced_functions[io_popen].origfunc(L);
+}
+
+int secure_io_lines(lua_State* L)
+{
+  if (auto fn = lua_tostring(L, 1)) {
+    std::string absFilename = base::get_absolute_path(fn);
+
+    if (!ask_access(L, absFilename.c_str(), FileAccessMode::Read, ResourceType::File)) {
+      return luaL_error(L, "the script doesn't have access to file '%s'",
+                        absFilename.c_str());
+    }
+  }
+  return replaced_functions[io_lines].origfunc(L);
+}
+
+int secure_io_input(lua_State* L)
+{
+  if (auto fn = lua_tostring(L, 1)) {
+    std::string absFilename = base::get_absolute_path(fn);
+
+    if (!ask_access(L, absFilename.c_str(), FileAccessMode::Read, ResourceType::File)) {
+      return luaL_error(L, "the script doesn't have access to file '%s'",
+                        absFilename.c_str());
+    }
+  }
+  return replaced_functions[io_input].origfunc(L);
+}
+
+int secure_io_output(lua_State* L)
+{
+  if (auto fn = lua_tostring(L, 1)) {
+    std::string absFilename = base::get_absolute_path(fn);
+
+    if (!ask_access(L, absFilename.c_str(), FileAccessMode::Write, ResourceType::File)) {
+      return luaL_error(L, "the script doesn't have access to file '%s'",
+                        absFilename.c_str());
+    }
+  }
+  return replaced_functions[io_output].origfunc(L);
 }
 
 int secure_os_execute(lua_State* L)
