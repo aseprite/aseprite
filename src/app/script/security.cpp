@@ -32,8 +32,33 @@
 namespace app {
 namespace script {
 
-#ifdef ENABLE_UI
 namespace {
+
+int secure_io_open(lua_State* L);
+int secure_io_popen(lua_State* L);
+int secure_os_execute(lua_State* L);
+int secure_package_loadlib(lua_State* L);
+
+enum {
+  io_open,
+  io_popen,
+  os_execute,
+  package_loadlib,
+};
+
+static struct {
+  const char* package;
+  const char* funcname;
+  lua_CFunction newfunc;
+  lua_CFunction origfunc = nullptr;
+} replaced_functions[] = {
+  { "io", "open", secure_io_open },
+  { "io", "popen", secure_io_popen },
+  { "os", "execute", secure_os_execute },
+  { "package", "loadlib", secure_package_loadlib },
+};
+
+#ifdef ENABLE_UI
 
 // Map from .lua file name -> sha1
 std::unordered_map<std::string, std::string> g_keys;
@@ -66,13 +91,24 @@ std::string get_script_filename(lua_State* L)
   return script;
 }
 
-} // anonymous namespace
 #endif // ENABLE_UI
+
+int unsupported(lua_State* L)
+{
+  // debug.getinfo(1, "n").name
+  lua_getglobal(L, "debug");
+  lua_getfield(L, -1, "getinfo");
+  lua_remove(L, -2);
+  lua_pushinteger(L, 1);
+  lua_pushstring(L, "n");
+  lua_call(L, 2, 1);
+  lua_getfield(L, -1, "name");
+  return luaL_error(L, "unsupported function '%s'",
+                    lua_tostring(L, -1));
+}
 
 int secure_io_open(lua_State* L)
 {
-  int n = lua_gettop(L);
-
   std::string absFilename = base::get_absolute_path(luaL_checkstring(L, 1));
 
   FileAccessMode mode = FileAccessMode::Read; // Read is the default access
@@ -85,54 +121,72 @@ int secure_io_open(lua_State* L)
     return luaL_error(L, "the script doesn't have access to file '%s'",
                       absFilename.c_str());
   }
-
-  lua_pushvalue(L, lua_upvalueindex(1));
-  lua_pushstring(L, absFilename.c_str());
-  for (int i=2; i<=n; ++i)
-    lua_pushvalue(L, i);
-  lua_call(L, n, 1);
-  return 1;
+  return replaced_functions[io_open].origfunc(L);
 }
 
-// Used for os.execute() and io.popen()
-int secure_os_execute(lua_State* L)
+int secure_io_popen(lua_State* L)
 {
-  int n = lua_gettop(L);
-  if (n == 0)
-    return 0;
-
-  const char* cmd = lua_tostring(L, 1);
+  const char* cmd = luaL_checkstring(L, 1);
   if (!ask_access(L, cmd, FileAccessMode::Execute, ResourceType::Command)) {
     // Stop script
     return luaL_error(L, "the script doesn't have access to execute the command: '%s'",
                       cmd);
   }
+  return replaced_functions[io_popen].origfunc(L);
+}
 
-  lua_pushvalue(L, lua_upvalueindex(1));
-  for (int i=1; i<=n; ++i)
-    lua_pushvalue(L, i);
-  lua_call(L, n, 1);
-  return 1;
+int secure_os_execute(lua_State* L)
+{
+  const char* cmd = luaL_checkstring(L, 1);
+  if (!ask_access(L, cmd, FileAccessMode::Execute, ResourceType::Command)) {
+    // Stop script
+    return luaL_error(L, "the script doesn't have access to execute the command: '%s'",
+                      cmd);
+  }
+  return replaced_functions[os_execute].origfunc(L);
 }
 
 int secure_package_loadlib(lua_State* L)
 {
-  int n = lua_gettop(L);
-  if (n == 0)
-    return 0;
-
-  const char* cmd = lua_tostring(L, 1);
+  const char* cmd = luaL_checkstring(L, 1);
   if (!ask_access(L, cmd, FileAccessMode::LoadLib, ResourceType::File)) {
     // Stop script
     return luaL_error(L, "the script doesn't have access to execute the command: '%s'",
                       cmd);
   }
+  return replaced_functions[package_loadlib].origfunc(L);
+}
 
-  lua_pushvalue(L, lua_upvalueindex(1));
-  for (int i=1; i<=n; ++i)
-    lua_pushvalue(L, i);
-  lua_call(L, n, 1);
-  return 1;
+} // anonymous namespace
+
+void overwrite_unsecure_functions(lua_State* L)
+{
+  // Remove unsupported functions
+  lua_getglobal(L, "os");
+  for (const char* name : { "remove", "rename", "exit", "tmpname" }) {
+    lua_pushcfunction(L, unsupported);
+    lua_setfield(L, -2, name);
+  }
+  lua_pop(L, 1);
+
+  // Replace functions with our own implementations (that ask for
+  // permissions first).
+  for (auto& item : replaced_functions) {
+    lua_getglobal(L, item.package);
+
+    // Get old function
+    if (!item.origfunc) {
+      lua_getfield(L, -1, item.funcname);
+      item.origfunc = lua_tocfunction(L, -1);
+      lua_pop(L, 1);
+    }
+
+    // Push and set the new function
+    lua_pushcfunction(L, item.newfunc);
+    lua_setfield(L, -2, item.funcname);
+
+    lua_pop(L, 1);
+  }
 }
 
 bool ask_access(lua_State* L,

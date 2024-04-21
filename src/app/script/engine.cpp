@@ -152,20 +152,6 @@ int os_clock(lua_State* L)
   return 1;
 }
 
-int unsupported(lua_State* L)
-{
-  // debug.getinfo(1, "n").name
-  lua_getglobal(L, "debug");
-  lua_getfield(L, -1, "getinfo");
-  lua_remove(L, -2);
-  lua_pushinteger(L, 1);
-  lua_pushstring(L, "n");
-  lua_call(L, 2, 1);
-  lua_getfield(L, -1, "name");
-  return luaL_error(L, "unsupported function '%s'",
-                    lua_tostring(L, -1));
-}
-
 } // anonymous namespace
 
 void register_app_object(lua_State* L);
@@ -243,6 +229,9 @@ Engine::Engine()
   // Standard Lua libraries
   luaL_openlibs(L);
 
+  // Secure Lua functions
+  overwrite_unsecure_functions(L);
+
   // Overwrite Lua functions with custom implementations
   lua_register(L, "print", print);
   lua_register(L, "dofile", dofile);
@@ -255,40 +244,8 @@ Engine::Engine()
   lua_register(L, "loadfile", loadfile);
 
   lua_getglobal(L, "os");
-  for (const char* name : { "remove", "rename", "exit", "tmpname" }) {
-    lua_pushcfunction(L, unsupported);
-    lua_setfield(L, -2, name);
-  }
   lua_pushcfunction(L, os_clock);
   lua_setfield(L, -2, "clock");
-  lua_pop(L, 1);
-
-  // Wrap io.open()
-  lua_getglobal(L, "io");
-  lua_getfield(L, -1, "open");
-  lua_pushcclosure(L, secure_io_open, 1);
-  lua_setfield(L, -2, "open");
-  lua_pop(L, 1);
-
-  // Wrap io.popen()
-  lua_getglobal(L, "io");
-  lua_getfield(L, -1, "popen");
-  lua_pushcclosure(L, secure_os_execute, 1);
-  lua_setfield(L, -2, "popen");
-  lua_pop(L, 1);
-
-  // Wrap os.execute()
-  lua_getglobal(L, "os");
-  lua_getfield(L, -1, "execute");
-  lua_pushcclosure(L, secure_os_execute, 1);
-  lua_setfield(L, -2, "execute");
-  lua_pop(L, 1);
-
-  // Wrap package.loadlib()
-  lua_getglobal(L, "package");
-  lua_getfield(L, -1, "loadlib");
-  lua_pushcclosure(L, secure_package_loadlib, 1);
-  lua_setfield(L, -2, "loadlib");
   lua_pop(L, 1);
 
   // Enhance require() function for plugins
