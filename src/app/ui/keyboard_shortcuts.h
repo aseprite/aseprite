@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2023  Igara Studio S.A.
+// Copyright (C) 2020-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -12,7 +12,9 @@
 #include "app/ui/key.h"
 #include "obs/signal.h"
 
-class TiXmlElement;
+namespace tinyxml2 {
+  class XMLElement;
+}
 
 namespace app {
 
@@ -38,7 +40,7 @@ namespace app {
                  const bool cloneKeys);
 
     void clear();
-    void importFile(TiXmlElement* rootElement, KeySource source);
+    void importFile(tinyxml2::XMLElement* rootElement, KeySource source);
     void importFile(const std::string& filename, KeySource source);
     void exportFile(const std::string& filename);
     void reset();
@@ -78,8 +80,8 @@ namespace app {
     obs::signal<void()> UserChange;
 
   private:
-    void exportKeys(TiXmlElement& parent, KeyType type);
-    void exportAccel(TiXmlElement& parent, const Key* key, const ui::Accelerator& accel, bool removed);
+    void exportKeys(tinyxml2::XMLElement* parent, KeyType type);
+    void exportAccel(tinyxml2::XMLElement* parent, const Key* key, const ui::Accelerator& accel, bool removed);
 
     mutable Keys m_keys;
   };

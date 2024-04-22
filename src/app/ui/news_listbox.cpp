@@ -27,15 +27,16 @@
 #include "ui/view.h"
 #include "ver/info.h"
 
-#include "tinyxml.h"
+#include "tinyxml2.h"
 
 #include <cctype>
 #include <sstream>
 
 namespace app {
 
-using namespace ui;
 using namespace app::skin;
+using namespace tinyxml2;
+using namespace ui;
 
 namespace {
 
@@ -267,7 +268,7 @@ void NewsListBox::parseFile(const std::string& filename)
 {
   View* view = View::getView(this);
 
-  XmlDocumentRef doc;
+  XMLDocumentRef doc;
   try {
     doc = open_xml(filename);
   }
@@ -278,18 +279,18 @@ void NewsListBox::parseFile(const std::string& filename)
     return;
   }
 
-  TiXmlHandle handle(doc.get());
-  TiXmlElement* itemXml = handle
-    .FirstChild("rss")
-    .FirstChild("channel")
-    .FirstChild("item").ToElement();
+  XMLHandle handle(doc.get());
+  XMLElement* itemXml = handle
+    .FirstChildElement("rss")
+    .FirstChildElement("channel")
+    .FirstChildElement("item").ToElement();
 
   int count = 0;
 
   while (itemXml) {
-    TiXmlElement* titleXml = itemXml->FirstChildElement("title");
-    TiXmlElement* descXml = itemXml->FirstChildElement("description");
-    TiXmlElement* linkXml = itemXml->FirstChildElement("link");
+    XMLElement* titleXml = itemXml->FirstChildElement("title");
+    XMLElement* descXml = itemXml->FirstChildElement("description");
+    XMLElement* linkXml = itemXml->FirstChildElement("link");
     if (titleXml && titleXml->GetText() &&
         descXml && descXml->GetText() &&
         linkXml && linkXml->GetText()) {
@@ -316,10 +317,10 @@ void NewsListBox::parseFile(const std::string& filename)
     itemXml = itemXml->NextSiblingElement();
   }
 
-  TiXmlElement* linkXml = handle
-    .FirstChild("rss")
-    .FirstChild("channel")
-    .FirstChild("link").ToElement();
+  XMLElement* linkXml = handle
+    .FirstChildElement("rss")
+    .FirstChildElement("channel")
+    .FirstChildElement("link").ToElement();
   if (linkXml && linkXml->GetText())
     addChild(
       new NewsItem(linkXml->GetText(), Strings::news_listbox_more(), ""));

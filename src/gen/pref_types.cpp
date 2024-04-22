@@ -1,5 +1,5 @@
 // Aseprite Code Generator
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2014-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -17,9 +17,11 @@
 #include <stdexcept>
 #include <vector>
 
-typedef std::vector<TiXmlElement*> XmlElements;
+using namespace tinyxml2;
 
-static void print_pref_class_def(TiXmlElement* elem, const std::string& className, const char* section, int indentSpaces)
+typedef std::vector<XMLElement*> XmlElements;
+
+static void print_pref_class_def(XMLElement* elem, const std::string& className, const char* section, int indentSpaces)
 {
   std::string indent(indentSpaces, ' ');
   std::cout
@@ -39,7 +41,7 @@ static void print_pref_class_def(TiXmlElement* elem, const std::string& classNam
     << indent << "  Section* section(const char* id) override;\n"
     << indent << "  OptionBase* option(const char* id) override;\n";
 
-  TiXmlElement* child = (elem->FirstChild() ? elem->FirstChild()->ToElement(): NULL);
+  XMLElement* child = (elem->FirstChild() ? elem->FirstChild()->ToElement(): nullptr);
   while (child) {
     if (child->Value()) {
       std::string name = child->Value();
@@ -68,7 +70,7 @@ static void print_pref_class_def(TiXmlElement* elem, const std::string& classNam
     << indent << "};\n";
 }
 
-static void print_pref_class_impl(TiXmlElement* elem, const std::string& prefix, const std::string& className, const char* section)
+static void print_pref_class_impl(XMLElement* elem, const std::string& prefix, const std::string& className, const char* section)
 {
   std::cout
     << "\n"
@@ -79,7 +81,7 @@ static void print_pref_class_impl(TiXmlElement* elem, const std::string& prefix,
   else
     std::cout << "  : Section(name)\n";
 
-  TiXmlElement* child = (elem->FirstChild() ? elem->FirstChild()->ToElement(): NULL);
+  XMLElement* child = (elem->FirstChild() ? elem->FirstChild()->ToElement(): nullptr);
   while (child) {
     if (child->Value()) {
       std::string name = child->Value();
@@ -284,7 +286,7 @@ static void print_pref_class_impl(TiXmlElement* elem, const std::string& prefix,
   }
 }
 
-void gen_pref_header(TiXmlDocument* doc, const std::string& inputFn)
+void gen_pref_header(XMLDocument* doc, const std::string& inputFn)
 {
   std::cout
     << "// Don't modify, generated file from " << inputFn << "\n"
@@ -300,18 +302,18 @@ void gen_pref_header(TiXmlDocument* doc, const std::string& inputFn)
     << "namespace app {\n"
     << "namespace gen {\n";
 
-  TiXmlHandle handle(doc);
-  TiXmlElement* elem = handle
-    .FirstChild("preferences")
-    .FirstChild("types")
-    .FirstChild("enum").ToElement();
+  XMLHandle handle(doc);
+  XMLElement* elem = handle
+    .FirstChildElement("preferences")
+    .FirstChildElement("types")
+    .FirstChildElement("enum").ToElement();
   while (elem) {
     if (!elem->Attribute("id")) throw std::runtime_error("missing 'id' attr in <enum>");
     std::cout
       << "\n"
       << "  enum class " << elem->Attribute("id") << " {\n";
 
-    TiXmlElement* child = elem->FirstChildElement("value");
+    XMLElement* child = elem->FirstChildElement("value");
     while (child) {
       if (!child->Attribute("id")) throw std::runtime_error("missing 'id' attr in <value>");
       if (!child->Attribute("value")) throw std::runtime_error("missing 'value' attr in <value>");
@@ -328,20 +330,20 @@ void gen_pref_header(TiXmlDocument* doc, const std::string& inputFn)
   }
 
   elem = handle
-    .FirstChild("preferences")
-    .FirstChild("global").ToElement();
+    .FirstChildElement("preferences")
+    .FirstChildElement("global").ToElement();
   if (elem)
     print_pref_class_def(elem, "GlobalPref", NULL, 2);
 
   elem = handle
-    .FirstChild("preferences")
-    .FirstChild("tool").ToElement();
+    .FirstChildElement("preferences")
+    .FirstChildElement("tool").ToElement();
   if (elem)
     print_pref_class_def(elem, "ToolPref", NULL, 2);
 
   elem = handle
-    .FirstChild("preferences")
-    .FirstChild("document").ToElement();
+    .FirstChildElement("preferences")
+    .FirstChildElement("document").ToElement();
   if (elem)
     print_pref_class_def(elem, "DocPref", NULL, 2);
 
@@ -353,7 +355,7 @@ void gen_pref_header(TiXmlDocument* doc, const std::string& inputFn)
     << "#endif\n";
 }
 
-void gen_pref_impl(TiXmlDocument* doc, const std::string& inputFn)
+void gen_pref_impl(XMLDocument* doc, const std::string& inputFn)
 {
   std::cout
     << "// Don't modify, generated file from " << inputFn << "\n"
@@ -370,22 +372,22 @@ void gen_pref_impl(TiXmlDocument* doc, const std::string& inputFn)
     << "namespace app {\n"
     << "namespace gen {\n";
 
-  TiXmlHandle handle(doc);
-  TiXmlElement* elem = handle
-    .FirstChild("preferences")
-    .FirstChild("global").ToElement();
+  XMLHandle handle(doc);
+  XMLElement* elem = handle
+    .FirstChildElement("preferences")
+    .FirstChildElement("global").ToElement();
   if (elem)
     print_pref_class_impl(elem, "", "GlobalPref", NULL);
 
   elem = handle
-    .FirstChild("preferences")
-    .FirstChild("tool").ToElement();
+    .FirstChildElement("preferences")
+    .FirstChildElement("tool").ToElement();
   if (elem)
     print_pref_class_impl(elem, "", "ToolPref", NULL);
 
   elem = handle
-    .FirstChild("preferences")
-    .FirstChild("document").ToElement();
+    .FirstChildElement("preferences")
+    .FirstChildElement("document").ToElement();
   if (elem)
     print_pref_class_impl(elem, "", "DocPref", NULL);
 

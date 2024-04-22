@@ -54,7 +54,7 @@ if(ENABLE_WEBP AND NOT LAF_BACKEND STREQUAL "skia")
 endif()
 
 if(NOT USE_SHARED_TINYXML)
-  add_subdirectory(tinyxml)
+  add_subdirectory(tinyxml2)
 endif()
 
 if(REQUIRE_CURL AND NOT USE_SHARED_CURL)
