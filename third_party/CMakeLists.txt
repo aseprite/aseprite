@@ -197,7 +197,8 @@ if(ENABLE_SCRIPTING)
     lua/lutf8lib.c)
 
   if(WIN32)
-    target_compile_definitions(lua PUBLIC LUA_USE_WINDOWS=1)
+    # LUA_USE_WINDOWS is defined in luaconf.h when we compile with _WIN32
+    #target_compile_definitions(lua PUBLIC LUA_USE_WINDOWS=1)
   elseif(APPLE)
     target_compile_definitions(lua PUBLIC LUA_USE_MACOSX=1)
   elseif(UNIX)
