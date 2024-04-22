@@ -536,6 +536,24 @@ void Engine::destroy()
   L = nullptr;
 }
 
+void Engine::notifyRunningGui()
+{
+  // Mark stdin file handle as closed so the following statements
+  // don't hang the program:
+  // - io.lines()
+  // - io.read('a')
+  // - io.stdin:read('a')
+  lua_getglobal(L, "io");
+  lua_getfield(L, -1, "stdin");
+
+  auto p = ((luaL_Stream*)luaL_checkudata(L, -1, LUA_FILEHANDLE));
+  ASSERT(p);
+  p->f = nullptr;
+  p->closef = nullptr;
+
+  lua_pop(L, 2);
+}
+
 void Engine::printLastResult()
 {
   m_printLastResult = true;
