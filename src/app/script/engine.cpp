@@ -42,6 +42,14 @@
 #include <stack>
 #include <string>
 
+// We use our own fopen() that supports Unicode filename on Windows
+// extern "C"
+FILE* lua_user_fopen(const char* fname,
+                     const char* mode)
+{
+  return base::open_file_raw(fname, mode);
+}
+
 namespace app {
 namespace script {
 
@@ -209,13 +217,6 @@ void register_version_class(lua_State* L);
 void register_websocket_class(lua_State* L);
 
 void set_app_params(lua_State* L, const Params& params);
-
-// We use our own fopen() that supports Unicode filename on Windows
-extern "C" FILE* lua_user_fopen(const char* fname,
-                                const char* mode)
-{
-  return base::open_file_raw(fname, mode);
-}
 
 Engine::Engine()
   : L(luaL_newstate())

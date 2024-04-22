@@ -205,7 +205,19 @@ if(ENABLE_SCRIPTING)
     target_compile_definitions(lua PUBLIC LUA_USE_LINUX=1)
   endif()
 
-  target_compile_definitions(lua PUBLIC LUA_FLOORN2I=1)
+  # Compile Lua as C++ to control errors with exceptions and have
+  # stack unwinding (i.e. calling destructors correctly).
+  if(MSVC)
+    target_compile_options(lua PRIVATE -TP)
+    target_compile_options(lualib PRIVATE -TP)
+    target_compile_options(lauxlib PRIVATE -TP)
+  else()
+    target_compile_options(lua PRIVATE -xc++)
+    target_compile_options(lualib PRIVATE -xc++)
+    target_compile_options(lauxlib PRIVATE -xc++)
+  endif()
+
+  target_compile_definitions(lua PUBLIC LUA_FLOORN2I=F2Ifloor)
   target_compile_definitions(lualib PRIVATE HAVE_SYSTEM)
   target_include_directories(lua PUBLIC lua)
   target_include_directories(lauxlib PUBLIC lua)
