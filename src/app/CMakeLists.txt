@@ -720,13 +720,13 @@ target_link_libraries(app-lib
   undo
   ${CMARK_LIBRARIES}
   ${TINYXML_LIBRARY}
-  ${JPEG_LIBRARIES}
   ${GIF_LIBRARIES}
   ${PNG_LIBRARIES}
   ${WEBP_LIBRARIES}
   ${ZLIB_LIBRARIES}
   ${FREETYPE_LIBRARIES}
   ${HARFBUZZ_LIBRARIES}
+  libjpeg-turbo
   json11
   archive_static
   fmt

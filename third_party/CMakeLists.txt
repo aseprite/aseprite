@@ -8,10 +8,6 @@ if(MSVC)
   add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 endif(MSVC)
 
-if(NOT USE_SHARED_JPEGLIB)
-  add_subdirectory(jpeg)
-endif()
-
 if(NOT USE_SHARED_ZLIB)
   set(SKIP_INSTALL_ALL on)
   # Don't build zlib tests

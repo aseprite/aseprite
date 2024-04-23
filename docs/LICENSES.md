@@ -695,15 +695,36 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-# [libjpeg](http://www.ijg.org/)
+# [libjpeg-turbo](https://libjpeg-turbo.org/)
 
 ```
+libjpeg-turbo is covered by three compatible BSD-style open source licenses:
+
+- The IJG (Independent JPEG Group) License, which is listed in
+  [README.ijg](https://raw.githubusercontent.com/libjpeg-turbo/libjpeg-turbo/main/README.ijg)
+
+  This license applies to the libjpeg API library and associated programs
+  (any code inherited from libjpeg, and any modifications to that code.)
+
+- The Modified (3-clause) BSD License, which is listed below
+
+  This license covers the TurboJPEG API library and associated programs, as
+  well as the build system.
+
+- The [zlib License](https://opensource.org/licenses/Zlib)
+
+  This license is a subset of the other two, and it covers the libjpeg-turbo
+  SIMD extensions.
+
+The Independent JPEG Group's JPEG software
+==========================================
+
 The authors make NO WARRANTY or representation, either express or implied,
 with respect to this software, its quality, accuracy, merchantability, or
 fitness for a particular purpose.  This software is provided "AS IS", and you,
 its user, assume the entire risk as to its quality and accuracy.
 
-This software is copyright (C) 1991-1998, Thomas G. Lane.
+This software is copyright (C) 1991-2020, Thomas G. Lane, Guido Vollbeding.
 All Rights Reserved except as specified below.
 
 Permission is hereby granted to use, copy, modify, and distribute this
@@ -733,42 +754,35 @@ We specifically permit and encourage the use of this software as the basis of
 commercial products, provided that all warranty or liability claims are
 assumed by the product vendor.
 
+The Modified (3-clause) BSD License
+===================================
 
-ansi2knr.c is included in this distribution by permission of L. Peter Deutsch,
-sole proprietor of its copyright holder, Aladdin Enterprises of Menlo Park, CA.
-ansi2knr.c is NOT covered by the above copyright and conditions, but instead
-by the usual distribution terms of the Free Software Foundation; principally,
-that you must include source code if you redistribute it.  (See the file
-ansi2knr.c for full details.)  However, since ansi2knr.c is not needed as part
-of any program generated from the IJG code, this does not limit you more than
-the foregoing paragraphs do.
+Copyright (C)2009-2022 D. R. Commander.  All Rights Reserved.
+Copyright (C)2015 Viktor Szathmáry.  All Rights Reserved.
 
-The Unix configuration script "configure" was produced with GNU Autoconf.
-It is copyright by the Free Software Foundation but is freely distributable.
-The same holds for its supporting scripts (config.guess, config.sub,
-ltconfig, ltmain.sh).  Another support script, install-sh, is copyright
-by M.I.T. but is also freely distributable.
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
 
-It appears that the arithmetic coding option of the JPEG spec is covered by
-patents owned by IBM, AT&T, and Mitsubishi.  Hence arithmetic coding cannot
-legally be used without obtaining one or more licenses.  For this reason,
-support for arithmetic coding has been removed from the free JPEG software.
-(Since arithmetic coding provides only a marginal gain over the unpatented
-Huffman mode, it is unlikely that very many implementations will support it.)
-So far as we are aware, there are no patent restrictions on the remaining
-code.
+- Redistributions of source code must retain the above copyright notice,
+  this list of conditions and the following disclaimer.
+- Redistributions in binary form must reproduce the above copyright notice,
+  this list of conditions and the following disclaimer in the documentation
+  and/or other materials provided with the distribution.
+- Neither the name of the libjpeg-turbo Project nor the names of its
+  contributors may be used to endorse or promote products derived from this
+  software without specific prior written permission.
 
-The IJG distribution formerly included code to read and write GIF files.
-To avoid entanglement with the Unisys LZW patent, GIF reading support has
-been removed altogether, and the GIF writer has been simplified to produce
-"uncompressed GIFs".  This technique does not use the LZW algorithm; the
-resulting GIF files are larger than usual, but are readable by all standard
-GIF decoders.
-
-We are required to state that
-    "The Graphics Interchange Format(c) is the Copyright property of
-    CompuServe Incorporated.  GIF(sm) is a Service Mark property of
-    CompuServe Incorporated."
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS",
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
 ```
 
 # [libpng](http://www.libpng.org/pub/png/)
