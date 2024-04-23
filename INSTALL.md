@@ -163,29 +163,48 @@ More information in [issue #2449](https://github.com/aseprite/aseprite/issues/24
 
 ## macOS details
 
-Run `cmake` with the following parameters and then `ninja`:
+To compile Aseprite on macOS, you need to set up your build environment correctly. Here are the steps to prepare and build Aseprite using `cmake` and `ninja`:
 
+1. **Prepare the Build Directory**
+    ```sh
     cd aseprite
     mkdir build
     cd build
+    ```
+
+2. **Configure the Build**
+   Before running `cmake`, ensure you have the correct macOS SDK path. You can find the SDK path by running:
+    ```sh
+    xcrun --show-sdk-path
+    ```
+   Use the output from the above command to set the `CMAKE_OSX_SYSROOT` flag. Replace `/path/to/MacOSX.sdk` in the cmake command below with the path output from the `xcrun` command.
+
+    ```sh
     cmake \
       -DCMAKE_BUILD_TYPE=RelWithDebInfo \
       -DCMAKE_OSX_ARCHITECTURES=x86_64 \
       -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 \
-      -DCMAKE_OSX_SYSROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk \
+      -DCMAKE_OSX_SYSROOT=/path/to/MacOSX.sdk \
       -DLAF_BACKEND=skia \
       -DSKIA_DIR=$HOME/deps/skia \
       -DSKIA_LIBRARY_DIR=$HOME/deps/skia/out/Release-x64 \
       -DSKIA_LIBRARY=$HOME/deps/skia/out/Release-x64/libskia.a \
       -G Ninja \
       ..
-    ninja aseprite
+    ```
 
-In this case, `$HOME/deps/skia` is the directory where Skia was
-compiled or downloaded.  Make sure that `CMAKE_OSX_SYSROOT` is
-pointing to the correct SDK directory (in this case
-`/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk`),
-but it could be different in your Mac.
+3. **Build Aseprite**
+    ```sh
+    ninja aseprite
+    ```
+
+In this configuration:
+- Replace `/path/to/MacOSX.sdk` with the actual path to the MacOSX SDK on your system.
+- Ensure that `CMAKE_OSX_SYSROOT` points to the correct SDK directory as identified using `xcrun --show-sdk-path`.
+- `$HOME/deps/skia` should be the directory where Skia was compiled or downloaded.
+
+This setup will help ensure that your build environment is correctly configured for your specific macOS system and version.
+
 
 ### Apple Silicon
 
