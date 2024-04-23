@@ -29,7 +29,9 @@
 
 namespace app {
 
-static void save_dock_layout(TiXmlElement* elem, const Dock* dock)
+using namespace tinyxml2;
+
+static void save_dock_layout(XMLElement* elem, const Dock* dock)
 {
   for (const auto child : dock->children()) {
     const int side = dock->whichSideChildIsDocked(child);
@@ -46,32 +48,30 @@ static void save_dock_layout(TiXmlElement* elem, const Dock* dock)
         break;
     }
 
-    TiXmlElement childElem("");
+    XMLElement* childElem = elem->InsertNewChildElement("");
 
     if (auto subdock = dynamic_cast<const Dock*>(child)) {
-      childElem.SetValue("dock");
+      childElem->SetValue("dock");
       if (!sideStr.empty())
-        childElem.SetAttribute("side", sideStr);
+        childElem->SetAttribute("side", sideStr.c_str());
 
-      save_dock_layout(&childElem, subdock);
+      save_dock_layout(childElem, subdock);
     }
     else {
       // Set the widget ID as the element name, e.g. <timeline />,
       // <colorbar />, etc.
-      childElem.SetValue(child->id());
+      childElem->SetValue(child->id().c_str());
       if (!sideStr.empty())
-        childElem.SetAttribute("side", sideStr);
+        childElem->SetAttribute("side", sideStr.c_str());
       if (size.w)
-        childElem.SetAttribute("width", size.w);
+        childElem->SetAttribute("width", size.w);
       if (size.h)
-        childElem.SetAttribute("height", size.h);
+        childElem->SetAttribute("height", size.h);
     }
-
-    elem->InsertEndChild(childElem);
   }
 }
 
-static void load_dock_layout(const TiXmlElement* elem, Dock* dock)
+static void load_dock_layout(const XMLElement* elem, Dock* dock)
 {
   const char* elemNameStr = elem->Value();
   if (!elemNameStr) {
@@ -141,15 +141,14 @@ static void load_dock_layout(const TiXmlElement* elem, Dock* dock)
 }
 
 // static
-LayoutPtr Layout::MakeFromXmlElement(const TiXmlElement* layoutElem)
+LayoutPtr Layout::MakeFromXmlElement(const XMLElement* layoutElem)
 {
   auto layout = std::make_shared<Layout>();
   if (auto name = layoutElem->Attribute("name")) {
     layout->m_id = name;
     layout->m_name = name;
   }
-
-  layout->m_elem.reset(layoutElem->Clone()->ToElement());
+  layout->m_elem = layoutElem->DeepClone(&layout->m_dummyDoc)->ToElement();
   return layout;
 }
 
@@ -160,9 +159,9 @@ LayoutPtr Layout::MakeFromDock(const std::string& id, const std::string& name, c
   layout->m_id = id;
   layout->m_name = name;
 
-  layout->m_elem = std::make_unique<TiXmlElement>("layout");
-  layout->m_elem->SetAttribute("name", name);
-  save_dock_layout(layout->m_elem.get(), dock);
+  layout->m_elem = layout->m_dummyDoc.NewElement("layout");
+  layout->m_elem->SetAttribute("name", name.c_str());
+  save_dock_layout(layout->m_elem, dock);
 
   return layout;
 }
@@ -182,7 +181,7 @@ bool Layout::loadLayout(Dock* dock) const
   if (!m_elem)
     return false;
 
-  TiXmlElement* elem = m_elem->FirstChildElement();
+  XMLElement* elem = m_elem->FirstChildElement();
   while (elem) {
     load_dock_layout(elem, dock);
     elem = elem->NextSiblingElement();
