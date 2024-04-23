@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -16,7 +16,7 @@
 #include "net/http_headers.h"
 #include "net/http_request.h"
 #include "net/http_response.h"
-#include "tinyxml.h"
+#include "tinyxml2.h"
 #include "updater/user_agent.h"
 #include "ver/info.h"
 
@@ -25,6 +25,8 @@
 #include <sstream>
 
 namespace updater {
+
+using namespace tinyxml2;
 
 CheckUpdateResponse::CheckUpdateResponse()
   : m_type(Unknown)
@@ -44,11 +46,11 @@ CheckUpdateResponse::CheckUpdateResponse(const std::string& responseBody)
   : m_type(Unknown)
   , m_waitDays(0.0)
 {
-  TiXmlDocument doc;
+  XMLDocument doc;
   doc.Parse(responseBody.c_str());
 
-  TiXmlHandle handle(&doc);
-  TiXmlElement* xmlUpdate = handle.FirstChild("update").ToElement();
+  XMLHandle handle(&doc);
+  XMLElement* xmlUpdate = handle.FirstChildElement("update").ToElement();
   if (!xmlUpdate) {
     // TODO show error?
     return;

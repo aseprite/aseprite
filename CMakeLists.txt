@@ -1,5 +1,5 @@
 # Aseprite
-# Copyright (C) 2018-2022  Igara Studio S.A.
+# Copyright (C) 2018-2024  Igara Studio S.A.
 # Copyright (C) 2001-2018  David Capello
 
 cmake_minimum_required(VERSION 3.16)
@@ -161,7 +161,7 @@ set(PIXMAN_DIR          ${CMAKE_CURRENT_SOURCE_DIR}/third_party/pixman)
 set(FREETYPE_DIR        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/freetype2)
 set(HARFBUZZ_DIR        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/harfbuzz)
 set(SIMPLEINI_DIR       ${CMAKE_CURRENT_SOURCE_DIR}/third_party/simpleini)
-set(TINYXML_DIR         ${CMAKE_CURRENT_SOURCE_DIR}/third_party/tinyxml)
+set(TINYXML_DIR         ${CMAKE_CURRENT_SOURCE_DIR}/third_party/tinyxml2)
 set(ZLIB_DIR            ${CMAKE_CURRENT_SOURCE_DIR}/third_party/zlib)
 
 # Search in the "cmake" directory for additional CMake modules.
@@ -223,12 +223,12 @@ endif()
 include_directories(${PNG_INCLUDE_DIRS})
 add_definitions(-DPNG_NO_MMX_CODE) # Do not use MMX optimizations in PNG code
 
-# tinyxml
+# tinyxml2
 if(USE_SHARED_TINYXML)
-  find_library(TINYXML_LIBRARY NAMES tinyxml)
-  find_path(TINYXML_INCLUDE_DIR NAMES tinyxml.h)
+  find_library(TINYXML_LIBRARY NAMES tinyxml2)
+  find_path(TINYXML_INCLUDE_DIR NAMES tinyxml2.h)
 else()
-  set(TINYXML_LIBRARY tinyxml)
+  set(TINYXML_LIBRARY tinyxml2)
   set(TINYXML_INCLUDE_DIR ${TINYXML_DIR})
 endif()
 include_directories(${TINYXML_INCLUDE_DIR})

@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2024  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -10,13 +11,16 @@
 
 #include "base/exception.h"
 
-class TiXmlDocument;
+namespace tinyxml2 {
+  class XMLDocument;
+}
 
 namespace app {
 
   class XmlException : public base::Exception {
   public:
-    XmlException(const TiXmlDocument* doc) throw();
+    XmlException(const std::string& filename,
+                 const tinyxml2::XMLDocument* doc) noexcept;
   };
 
 } // namespace app

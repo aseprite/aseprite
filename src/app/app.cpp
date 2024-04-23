@@ -267,9 +267,19 @@ int App::initialize(const AppOptions& options)
 
 #ifdef ENABLE_UI
   m_isGui = options.startUI() && !options.previewCLI();
+
+  // Notify the scripting engine that we're going to enter to GUI
+  // mode, this is useful so we can mark the stdin file handle as
+  // closed so no script can hang the program if it tries to read from
+  // stdin when the GUI is running.
+  #ifdef ENABLE_SCRIPTING
+    if (m_isGui)
+      m_engine->notifyRunningGui();
+  #endif
 #else
   m_isGui = false;
 #endif
+
   m_isShell = options.startShell();
   m_coreModules = std::make_unique<CoreModules>();
 

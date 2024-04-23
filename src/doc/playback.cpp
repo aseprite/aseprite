@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2021-2022  Igara Studio S.A.
+// Copyright (C) 2021-2024  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -185,8 +185,19 @@ void Playback::handleEnterFrame(const frame_t frameDelta, const bool firstTime)
           }
           else {
             addTag(t, false, forward);
-            if (!firstTime)
+            if (!firstTime) {
               goToFirstTagFrame(t);
+              // Handle cases where inner tags will jump to different
+              // frames several times recursively (e.g. one reverse
+              // inside other reverse).
+              //
+              // Consideration for tests:
+              // Playback.OnePingPongInsidePingPongReverse
+              // Playback.OneReverseInsidePingPongReverse
+              // Playback.OnePingPongReverseInsideReverse
+              if (frame != m_frame)
+                handleEnterFrame(frameDelta, false);
+            }
           }
         }
       }
@@ -457,10 +468,11 @@ bool Playback::decrementRepeat(const frame_t frameDelta)
 
       // New frame outside the tag
       frame_t newFrame;
-      if (rewind) {
+      if (rewind && !m_playing.empty()) {
         newFrame = firstTagFrame(m_playing.back()->tag);
       }
       else {
+        // Note that 'tag' means 'the last tag removed from m_playing'
         newFrame = (frameDelta * forward < 0 ? tag->fromFrame()-1: tag->toFrame()+1);
       }
 
@@ -473,10 +485,100 @@ bool Playback::decrementRepeat(const frame_t frameDelta)
           stop();
           return false;
         }
-        if (newFrame < 0)
-          newFrame = m_sprite->lastFrame();
-        else if (newFrame > m_sprite->lastFrame())
-          newFrame = 0;
+        if (newFrame < 0) {
+          // m_playing.empty() should never happen, because the only
+          // way to have "newFrame < 0" is if we have a tag on
+          // m_playing in REVERSE or PING_PONG_REVERSE which frame 0
+          // is contained into that tag.
+          ASSERT(!m_playing.empty());
+          if (m_playing.empty()) {
+            newFrame = m_sprite->lastFrame();
+          }
+          else {
+            // Special cases arise with PING_PONG_REVERSE aniDir and when
+            // the begining of the tag range matches with the first frame of
+            // the sprite.
+            // Consideration for tests inside:
+            // Playback.OnePingPongInsideOther
+            //     A            A
+            // >-------<    >-------<
+            //   B            B
+            // <--->        >---<
+            // 0 1 2 3 4    0 1 2 3 4
+            PlayTag* parentPlaying = m_playing.back().get();
+            // When parentPlaying is PING_PONG_REVERSE
+            // the next frame will be defined according:
+            // 1. The playloop has more repetitions to decrement
+            //    --> go to the next frame of the 'tag'
+            // 2. The playloop has no more repetitions to decrement
+            //    --> Start all the playloop again.
+            if (parentPlaying->repeat > 1) {
+              if (parentPlaying->tag->aniDir() == AniDir::PING_PONG_REVERSE)
+                parentPlaying->invertForward();
+              --parentPlaying->repeat;
+              newFrame = tag->toFrame() + 1;
+            }
+            else
+              continue;
+          }
+        }
+        else if (newFrame > m_sprite->lastFrame()) {
+          // If all the tags were played and
+          // the 'tag' range  ==  timeline range and
+          // the 'tag' is PING_PONG_REVERSE -->
+          // The playloop has to start on the last frame of
+          // the timeline, or the first frame of the most nested
+          // tag (on reverse direction).
+          // Consideration for tests:
+          // Playback.WithTagRepetitions
+          // Playback.OnePingPongInsideOther
+          // Playback.OnePingPongInsideOther14, 15, 18 and 19
+          //    A      <-- last tag removed from 'm_playing', i.e. 'tag'
+          // >-----<
+          //    B      <-- most nested tag
+          // ***-***
+          // 0 1 2 3
+          if (m_playing.empty() &&
+              tag->aniDir() == AniDir::PING_PONG_REVERSE &&
+              tag->fromFrame() == 0 &&
+              tag->toFrame() == m_sprite->lastFrame()) {
+            m_frame = m_sprite->lastFrame();
+            handleEnterFrame(frameDelta, false);
+            if (m_playing.size() > 1) {
+              m_playing.back()->invertForward();
+              goToFirstTagFrame(m_playing.back()->tag);
+            }
+            return false;
+          }
+
+          // 'tag' is contained by other tag and the last frame of each tag
+          // matches in the last frame of the sprite
+          if (!m_playing.empty() &&
+              tag->toFrame() == m_playing.back()->tag->toFrame()) {
+            PlayTag* parentPlaying = m_playing.back().get();
+            // The parentPlaying has no more repetitions to decrement
+            //    --> continue to remove the 'parentTag'
+            if (parentPlaying->repeat <= 1)
+              continue;
+            // Consideration for test:
+            // Playback.OnePingPongInsideOther
+            if (parentPlaying->tag->aniDir() == AniDir::PING_PONG ||
+                parentPlaying->tag->aniDir() == AniDir::PING_PONG_REVERSE) {
+              parentPlaying->invertForward();
+              newFrame = tag->fromFrame() - 1;
+            }
+            // Consideration for test:
+            // Playback.OnePingPongInsideForward2
+            else if (parentPlaying->tag->aniDir() == AniDir::FORWARD) {
+              --parentPlaying->repeat;
+              newFrame = parentPlaying->tag->fromFrame();
+            }
+            else
+              newFrame = 0;
+          }
+          else
+            newFrame = 0;
+        }
       }
 
       m_frame = newFrame;

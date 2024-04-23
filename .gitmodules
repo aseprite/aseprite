@@ -78,3 +78,6 @@
 [submodule "third_party/qoi"]
 	path = third_party/qoi
 	url = https://github.com/aseprite/qoi.git
+[submodule "third_party/tinyxml2"]
+	path = third_party/tinyxml2
+	url = https://github.com/aseprite/tinyxml2.git

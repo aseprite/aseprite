@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -29,6 +29,8 @@
 #include "doc/image_impl.h"
 #include "doc/mask.h"
 
+#include "tinyxml2.h"
+
 #include <algorithm>
 #include <cstdlib>
 
@@ -41,6 +43,7 @@ namespace app {
 namespace tools {
 
 using namespace gfx;
+using namespace tinyxml2;
 
 const char* WellKnownTools::RectangularMarquee = "rectangular_marquee";
 const char* WellKnownTools::Lasso = "lasso";
@@ -206,11 +209,14 @@ void ToolBox::loadTools()
 {
   LOG("TOOL: Loading tools...\n");
 
-  XmlDocumentRef doc(GuiXml::instance()->doc());
-  TiXmlHandle handle(doc.get());
+  XMLDocument* doc = GuiXml::instance()->doc();
+  XMLHandle handle(doc);
 
   // For each group
-  TiXmlElement* xmlGroup = handle.FirstChild("gui").FirstChild("tools").FirstChild("group").ToElement();
+  XMLElement* xmlGroup = handle
+    .FirstChildElement("gui")
+    .FirstChildElement("tools")
+    .FirstChildElement("group").ToElement();
   while (xmlGroup) {
     const char* groupId = xmlGroup->Attribute("id");
     if (!groupId)
@@ -233,8 +239,8 @@ void ToolBox::loadTools()
     }
 
     // For each tool
-    TiXmlNode* xmlToolNode = xmlGroup->FirstChild("tool");
-    TiXmlElement* xmlTool = xmlToolNode ? xmlToolNode->ToElement(): NULL;
+    XMLNode* xmlToolNode = xmlGroup->FirstChildElement("tool");
+    XMLElement* xmlTool = (xmlToolNode ? xmlToolNode->ToElement(): nullptr);
     while (xmlTool) {
       const char* toolId = xmlTool->Attribute("id");
       std::string toolText = m_xmlTranslator(xmlTool, "text");
@@ -272,7 +278,7 @@ void ToolBox::loadTools()
   LOG("TOOL: Done. %d tools, %d groups.\n", m_tools.size(), m_groups.size());
 }
 
-void ToolBox::loadToolProperties(TiXmlElement* xmlTool, Tool* tool, int button, const std::string& suffix)
+void ToolBox::loadToolProperties(XMLElement* xmlTool, Tool* tool, int button, const std::string& suffix)
 {
   const char* tool_id = tool->getId().c_str();
   const char* fill = xmlTool->Attribute(("fill_"+suffix).c_str());
