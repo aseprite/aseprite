@@ -20,6 +20,8 @@
 
 namespace app {
 
+using namespace tinyxml2;
+
 Layouts::Layouts()
 {
   try {
@@ -63,9 +65,10 @@ bool Layouts::addLayout(const LayoutPtr& layout)
 
 void Layouts::load(const std::string& fn)
 {
-  XmlDocumentRef doc = app::open_xml(fn);
-  TiXmlHandle handle(doc.get());
-  TiXmlElement* layoutElem = handle.FirstChild("layouts").FirstChild("layout").ToElement();
+  XMLDocumentRef doc = app::open_xml(fn);
+  XMLHandle handle(doc.get());
+  XMLElement* layoutElem =
+    handle.FirstChildElement("layouts").FirstChildElement("layout").ToElement();
 
   while (layoutElem) {
     m_layouts.push_back(Layout::MakeFromXmlElement(layoutElem));
@@ -75,16 +78,16 @@ void Layouts::load(const std::string& fn)
 
 void Layouts::save(const std::string& fn) const
 {
-  XmlDocumentRef doc(new TiXmlDocument());
-  TiXmlElement layoutsElem("layouts");
+  auto doc = std::make_unique<XMLDocument>();
+  XMLElement* layoutsElem = doc->NewElement("layouts");
 
-  for (const auto& layout : m_layouts)
-    layoutsElem.InsertEndChild(*layout->xmlElement());
+  for (const auto& layout : m_layouts) {
+    layoutsElem->InsertEndChild(layout->xmlElement()->DeepClone(doc.get()));
+  }
 
-  TiXmlDeclaration declaration("1.0", "utf-8", "");
-  doc->InsertEndChild(declaration);
+  doc->InsertEndChild(doc->NewDeclaration("xml version=\"1.0\" encoding=\"utf-8\""));
   doc->InsertEndChild(layoutsElem);
-  save_xml(doc, fn);
+  save_xml(doc.get(), fn);
 }
 
 // static
