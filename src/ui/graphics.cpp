@@ -19,12 +19,13 @@
 #include "gfx/rect.h"
 #include "gfx/region.h"
 #include "gfx/size.h"
-#include "text/font.h"
 #include "os/sampling.h"
 #include "os/surface.h"
 #include "os/system.h"
 #include "os/window.h"
 #include "text/draw_text.h"
+#include "text/font.h"
+#include "text/font_metrics.h"
 #include "ui/display.h"
 #include "ui/scale.h"
 #include "ui/theme.h"
@@ -398,12 +399,16 @@ public:
 
   void postDrawChar(const gfx::Rect& charBounds) override {
     if (!gfx::is_transparent(m_underscoreColor)) {
-      // TODO underscore height = guiscale() should be configurable from ui::Theme
-      int dy = 0;
-      if (m_font->type() == text::FontType::FreeType) // TODO use other method to locate the underline
-        dy += guiscale();
-      gfx::Rect underscoreBounds(charBounds.x, charBounds.y+charBounds.h+dy,
-                                 charBounds.w, guiscale());
+      text::FontMetrics metrics;
+      float height = m_font->metrics(&metrics);
+
+      gfx::RectF underscoreBounds(
+        charBounds.x,
+        charBounds.y+(-metrics.ascent
+                      +metrics.underlinePosition
+                      -metrics.underlineThickness/2.0f),
+        charBounds.w,
+        metrics.underlineThickness*guiscale());
 
       os::Paint paint;
       paint.color(m_underscoreColor);
