@@ -27,6 +27,8 @@
 namespace doc {
 
 class OctreeNode;
+class OctreeMap;
+
 using OctreeNodes = std::vector<OctreeNode*>;
 
 class OctreeNode {
@@ -94,7 +96,9 @@ public:
   void addColor(color_t c, int level, OctreeNode* parent,
                 int paletteIndex = 0, int levelDeep = 7);
 
-  int mapColor(int  r, int g, int b, int a, int mask_index, const Palette* palette, int level) const;
+  int mapColor(int  r, int g, int b, int a, int mask_index,
+               const Palette* palette, int level,
+               const OctreeMap* octree) const;
 
   void collectLeafNodes(OctreeNodes& leavesVector, int& paletteIndex);
 
@@ -140,6 +144,10 @@ public:
   void regenerateMap(const Palette* palette, const int maskIndex) override;
   int mapColor(color_t rgba) const override;
   int maskIndex() const override { return m_maskIndex; }
+  int modifications() const override { return m_modifications; };
+  FitCriteria fitCriteria() const override { return m_fitCriteria; }
+  void fitCriteria(const FitCriteria fitCriteria) override { m_fitCriteria = fitCriteria; }
+
   int mapColor(const int r, const int g,
                const int b, const int a) const
   {
@@ -149,8 +157,6 @@ public:
     ASSERT(a >= 0 && a < 256);
     return mapColor(rgba(r, g, b, a));
   }
-
-  int moodifications() const { return m_modifications; };
 
 private:
   OctreeNode m_root;

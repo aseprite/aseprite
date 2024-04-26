@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2020-2022 Igara Studio S.A.
+// Copyright (c) 2020-2024 Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -10,6 +10,7 @@
 
 #include "base/debug.h"
 #include "doc/color.h"
+#include "doc/fit_criteria.h"
 
 namespace doc {
 
@@ -26,6 +27,12 @@ namespace doc {
     virtual int mapColor(const color_t rgba) const = 0;
 
     virtual int maskIndex() const = 0;
+
+    virtual int modifications() const = 0;
+
+    // Color Best Fit Criteria used to generate the rgbmap
+    virtual FitCriteria fitCriteria() const = 0;
+    virtual void fitCriteria(const FitCriteria fitCriteria) = 0;
 
     int mapColor(const int r,
                  const int g,
