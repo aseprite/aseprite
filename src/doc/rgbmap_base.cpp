@@ -99,7 +99,7 @@ int RgbMapBase::findBestfit(int r, int g, int b, int a,
 
   int bestfit = 0;
   double lowest = std::numeric_limits<double>::max();
-  int size = m_palette->size();
+  const int size = m_palette->size();
   // Linearice:
   double x = double(r);
   double y = double(g);

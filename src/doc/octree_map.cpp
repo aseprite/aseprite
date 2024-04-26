@@ -274,7 +274,9 @@ int OctreeMap::mapColor(color_t rgba) const
                          this);
 }
 
-void OctreeMap::regenerateMap(const Palette* palette, const int maskIndex)
+void OctreeMap::regenerateMap(const Palette* palette,
+                              const int maskIndex,
+                              const FitCriteria fitCriteria)
 {
   ASSERT(palette);
   if (!palette)
@@ -283,10 +285,12 @@ void OctreeMap::regenerateMap(const Palette* palette, const int maskIndex)
   // Skip useless regenerations
   if (m_palette == palette &&
       m_modifications == palette->getModifications() &&
-      m_maskIndex == maskIndex)
+      m_maskIndex == maskIndex &&
+      m_fitCriteria == fitCriteria)
     return;
 
   m_palette = palette;
+  m_fitCriteria = fitCriteria;
   m_root = OctreeNode();
   m_leavesVector.clear();
   m_maskIndex = maskIndex;

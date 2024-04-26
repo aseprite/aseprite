@@ -11,6 +11,7 @@
 #include "base/debug.h"
 #include "doc/color.h"
 #include "doc/fit_criteria.h"
+#include "doc/rgbmap_algorithm.h"
 
 namespace doc {
 
@@ -21,12 +22,19 @@ namespace doc {
   public:
     virtual ~RgbMap() { }
 
-    virtual void regenerateMap(const Palette* palette, const int maskIndex) = 0;
+    virtual void regenerateMap(const Palette* palette,
+                               const int maskIndex,
+                               const FitCriteria fitCriteria) = 0;
+
+    virtual void regenerateMap(const Palette* palette,
+                               const int maskIndex) = 0;
 
     // Should return the best index in a palette that matches the given RGBA values.
     virtual int mapColor(const color_t rgba) const = 0;
 
     virtual int maskIndex() const = 0;
+
+    virtual RgbMapAlgorithm rgbamapAlgorithm() const = 0;
 
     virtual int modifications() const = 0;
 

@@ -141,12 +141,21 @@ public:
                      const int levelDeep = 7);
 
   // RgbMap impl
-  void regenerateMap(const Palette* palette, const int maskIndex) override;
+  void regenerateMap(const Palette* palette,
+                     const int maskIndex,
+                     const FitCriteria fitCriteria) override;
+  void regenerateMap(const Palette* palette,
+                     const int maskIndex) override
+  {
+    regenerateMap(palette, maskIndex, m_fitCriteria);
+  };
+  
   int mapColor(color_t rgba) const override;
   int maskIndex() const override { return m_maskIndex; }
   int modifications() const override { return m_modifications; };
   FitCriteria fitCriteria() const override { return m_fitCriteria; }
-  void fitCriteria(const FitCriteria fitCriteria) override { m_fitCriteria = fitCriteria; }
+  void fitCriteria(const FitCriteria fitCriteria) override { m_fitCriteria == fitCriteria; }
+  RgbMapAlgorithm rgbamapAlgorithm() const override { return RgbMapAlgorithm::OCTREE; }
 
   int mapColor(const int r, const int g,
                const int b, const int a) const

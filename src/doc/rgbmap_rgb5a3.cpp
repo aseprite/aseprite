@@ -24,15 +24,19 @@ namespace doc {
 
 RgbMapRGB5A3::RgbMapRGB5A3() : m_map(MAPSIZE) {}
 
-void RgbMapRGB5A3::regenerateMap(const Palette* palette, int maskIndex)
+void RgbMapRGB5A3::regenerateMap(const Palette* palette,
+                                 const int maskIndex,
+                                 const FitCriteria fitCriteria)
 {
   // Skip useless regenerations
   if (m_palette == palette &&
       m_modifications == palette->getModifications() &&
-      m_maskIndex == maskIndex)
+      m_maskIndex == maskIndex &&
+      m_fitCriteria == fitCriteria)
     return;
 
   m_palette = palette;
+  m_fitCriteria = fitCriteria;
   m_modifications = palette->getModifications();
   m_maskIndex = maskIndex;
 
@@ -44,7 +48,7 @@ void RgbMapRGB5A3::regenerateMap(const Palette* palette, int maskIndex)
 int RgbMapRGB5A3::generateEntry(int i, int r, int g, int b, int a) const
 {
   return m_map[i] =
-    m_palette->findBestfit(
+    findBestfit(
       scale_5bits_to_8bits(r>>3),
       scale_5bits_to_8bits(g>>3),
       scale_5bits_to_8bits(b>>3),

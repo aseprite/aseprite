@@ -70,7 +70,6 @@ public:
                 const doc::frame_t frame,
                 const doc::PixelFormat pixelFormat,
                 const render::Dithering& dithering,
-                const doc::RgbMapAlgorithm rgbMapAlgorithm,
                 const gen::ToGrayAlgorithm toGray,
                 const gfx::Point& pos,
                 const bool newBlend)
@@ -84,13 +83,11 @@ public:
        sprite, frame,
        pixelFormat,
        dithering,
-       rgbMapAlgorithm,
        toGray,
        newBlend]() { // Copy the matrix
         run(sprite, frame,
             pixelFormat,
             dithering,
-            rgbMapAlgorithm,
             toGray,
             newBlend);
       })
@@ -115,7 +112,6 @@ private:
            const doc::frame_t frame,
            const doc::PixelFormat pixelFormat,
            const render::Dithering& dithering,
-           const doc::RgbMapAlgorithm rgbMapAlgorithm,
            const gen::ToGrayAlgorithm toGray,
            const bool newBlend) {
     doc::ImageRef tmp(
@@ -137,9 +133,7 @@ private:
       m_image.get(),
       pixelFormat,
       dithering,
-      sprite->rgbMap(frame,
-                     sprite->rgbMapForSprite(),
-                     rgbMapAlgorithm),
+      sprite->rgbMap(frame),
       sprite->palette(frame),
       (sprite->backgroundLayer() != nullptr),
       0,
@@ -251,6 +245,7 @@ public:
       // Signals
       m_ditheringSelector->Change.connect([this]{ onIndexParamChange(); });
       m_mapAlgorithmSelector->Change.connect([this]{ onIndexParamChange(); });
+      m_bestFitCriteriaSelector->Change.connect([this]{ onIndexParamChange(); });
       factor()->Change.connect([this]{ onIndexParamChange(); });
 
       advancedCheck()->Click.connect(
@@ -414,6 +409,12 @@ private:
       visibleBounds.origin(),
       doc::BlendMode::SRC);
 
+    m_editor->sprite()->rgbMap(
+      0,
+      m_editor->sprite()->rgbMapForSprite(),
+      rgbMapAlgorithm(),
+      fitCriteria());
+
     m_editor->invalidate();
     progress()->setValue(0);
     progress()->setVisible(false);
@@ -426,7 +427,6 @@ private:
         m_editor->frame(),
         dstPixelFormat,
         dithering(),
-        rgbMapAlgorithm(),
         toGray(),
         visibleBounds.origin(),
         Preferences::instance().experimental.newBlend()));
@@ -505,7 +505,7 @@ private:
   doc::PixelFormat m_format;
   render::Dithering m_dithering;
   doc::RgbMapAlgorithm m_rgbmap;
-  doc::FitCriteria m_fitCriteria;
+  doc::FitCriteria m_fitCriteria = FitCriteria::DEFAULT;
   gen::ToGrayAlgorithm m_toGray;
 };
 
@@ -697,7 +697,8 @@ void ChangePixelFormatCommand::onExecute(Context* context)
             m_dithering,
             m_rgbmap,
             get_gray_func(m_toGray),
-            &job));             // SpriteJob is a render::TaskDelegate
+            &job,
+            m_fitCriteria));             // SpriteJob is a render::TaskDelegate
       });
     job.waitJob();
   }

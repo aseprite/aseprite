@@ -12,6 +12,7 @@
 #include "base/debug.h"
 #include "base/disable_copying.h"
 #include "doc/object.h"
+#include "doc/palette.h"
 #include "doc/rgbmap.h"
 #include "doc/rgbmap_base.h"
 
@@ -31,7 +32,15 @@ namespace doc {
     RgbMapRGB5A3();
 
     // RgbMap impl
-    void regenerateMap(const Palette* palette, int maskIndex) override;
+    void regenerateMap(const Palette* palette,
+                       const int maskIndex,
+                       const FitCriteria fitCriteria) override;
+    void regenerateMap(const Palette* palette,
+                       const int maskIndex) override
+    {
+      regenerateMap(palette, maskIndex, m_fitCriteria);
+    };
+    
     int mapColor(const color_t rgba) const override {
       const int r = rgba_getr(rgba);
       const int g = rgba_getg(rgba);
@@ -46,7 +55,8 @@ namespace doc {
     int modifications() const override { return m_modifications; };
     int maskIndex() const override { return m_maskIndex; }
     FitCriteria fitCriteria() const override { return m_fitCriteria; }
-    void fitCriteria(const FitCriteria fitCriteria) override { m_fitCriteria = fitCriteria; }
+    void fitCriteria(const FitCriteria fitCriteria) override { m_fitCriteria == fitCriteria; }
+    RgbMapAlgorithm rgbamapAlgorithm() const override { return RgbMapAlgorithm::RGB5A3; }
 
   private:
     int generateEntry(int i, int r, int g, int b, int a) const;
