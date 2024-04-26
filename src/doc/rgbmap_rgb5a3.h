@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2020-2022 Igara Studio S.A.
+// Copyright (c) 2020-2024 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -13,6 +13,7 @@
 #include "base/disable_copying.h"
 #include "doc/object.h"
 #include "doc/rgbmap.h"
+#include "doc/rgbmap_base.h"
 
 #include <vector>
 
@@ -21,7 +22,8 @@ namespace doc {
   class Palette;
 
   // It acts like a cache for Palette:findBestfit() calls.
-  class RgbMapRGB5A3 : public RgbMap {
+  class RgbMapRGB5A3 : public RgbMap
+                     , public RgbMapBase {
     // Bit activated on m_map entries that aren't yet calculated.
     const int INVALID = 256;
 
@@ -47,9 +49,6 @@ namespace doc {
     int generateEntry(int i, int r, int g, int b, int a) const;
 
     mutable std::vector<uint16_t> m_map;
-    const Palette* m_palette;
-    int m_modifications;
-    int m_maskIndex;
 
     DISABLE_COPYING(RgbMapRGB5A3);
   };

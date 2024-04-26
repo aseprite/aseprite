@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2020-2022 Igara Studio S.A.
+// Copyright (c) 2020-2024 Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -12,6 +12,7 @@
 #include "doc/image_impl.h"
 #include "doc/palette.h"
 #include "doc/rgbmap.h"
+#include "doc/rgbmap_base.h"
 
 #include <array>
 #include <memory>
@@ -117,7 +118,8 @@ private:
   OctreeNode* m_parent = nullptr;
 };
 
-class OctreeMap : public RgbMap {
+class OctreeMap : public RgbMap
+                , public RgbMapBase {
 public:
   void addColor(color_t color, int levelDeep = 7) {
     m_root.addColor(color, 0, &m_root, 0, levelDeep);
@@ -153,9 +155,6 @@ public:
 private:
   OctreeNode m_root;
   OctreeNodes m_leavesVector;
-  const Palette* m_palette = nullptr;
-  int m_modifications = 0;
-  int m_maskIndex = 0;
   color_t m_maskColor = 0;
 };
 
