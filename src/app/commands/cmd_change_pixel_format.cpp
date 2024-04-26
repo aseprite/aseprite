@@ -23,6 +23,7 @@
 #include "app/modules/palettes.h"
 #include "app/sprite_job.h"
 #include "app/transaction.h"
+#include "app/ui/best_fit_criteria_selector.h"
 #include "app/ui/dithering_selector.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_render.h"
@@ -195,6 +196,7 @@ public:
     , m_selectedItem(nullptr)
     , m_ditheringSelector(nullptr)
     , m_mapAlgorithmSelector(nullptr)
+    , m_bestFitCriteriaSelector(nullptr)
     , m_imageJustCreated(true)
   {
     const auto& pref = Preferences::instance();
@@ -221,6 +223,9 @@ public:
       m_mapAlgorithmSelector = new RgbMapAlgorithmSelector;
       m_mapAlgorithmSelector->setExpansive(true);
 
+      m_bestFitCriteriaSelector = new BestFitCriteriaSelector;
+      m_bestFitCriteriaSelector->setExpansive(true);
+
       // Select default dithering method
       {
         int index = m_ditheringSelector->findItemIndex(
@@ -232,8 +237,12 @@ public:
       // Select default RgbMap algorithm
       m_mapAlgorithmSelector->algorithm(pref.quantization.rgbmapAlgorithm());
 
+      // Select default best fit criteria
+      m_bestFitCriteriaSelector->criteria(doc::FitCriteria::DEFAULT);
+
       ditheringPlaceholder()->addChild(m_ditheringSelector);
       rgbmapAlgorithmPlaceholder()->addChild(m_mapAlgorithmSelector);
+      bestFitCriteriaPlaceholder()->addChild(m_bestFitCriteriaSelector);
 
       const bool adv = pref.quantization.advanced();
       advancedCheck()->setSelected(adv);
@@ -301,6 +310,13 @@ public:
       return m_mapAlgorithmSelector->algorithm();
     else
       return doc::RgbMapAlgorithm::DEFAULT;
+  }
+
+  doc::FitCriteria fitCriteria() const {
+    if (m_bestFitCriteriaSelector)
+      return m_bestFitCriteriaSelector->criteria();
+    else
+      return doc::FitCriteria::DEFAULT;
   }
 
   gen::ToGrayAlgorithm toGray() const {
@@ -465,6 +481,7 @@ private:
   ConversionItem* m_selectedItem;
   DitheringSelector* m_ditheringSelector;
   RgbMapAlgorithmSelector* m_mapAlgorithmSelector;
+  BestFitCriteriaSelector* m_bestFitCriteriaSelector;
   bool m_imageJustCreated;
 };
 
@@ -488,6 +505,7 @@ private:
   doc::PixelFormat m_format;
   render::Dithering m_dithering;
   doc::RgbMapAlgorithm m_rgbmap;
+  doc::FitCriteria m_fitCriteria;
   gen::ToGrayAlgorithm m_toGray;
 };
 
@@ -638,6 +656,7 @@ void ChangePixelFormatCommand::onExecute(Context* context)
     m_format = window.pixelFormat();
     m_dithering = window.dithering();
     m_rgbmap = window.rgbMapAlgorithm();
+    m_fitCriteria = window.fitCriteria();
     m_toGray = window.toGray();
     flatten = window.flattenEnabled();
 

@@ -286,6 +286,7 @@ void OctreeMap::regenerateMap(const Palette* palette, const int maskIndex)
       m_maskIndex == maskIndex)
     return;
 
+  m_palette = palette;
   m_root = OctreeNode();
   m_leavesVector.clear();
   m_maskIndex = maskIndex;
@@ -310,7 +311,6 @@ void OctreeMap::regenerateMap(const Palette* palette, const int maskIndex)
     m_root.addColor(palette->entry(i), 0, &m_root, i, 8);
   }
 
-  m_palette = palette;
   m_modifications = palette->getModifications();
 }
 
