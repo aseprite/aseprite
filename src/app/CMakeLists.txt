@@ -579,6 +579,7 @@ target_sources(app-lib PRIVATE
   ui/alpha_slider.cpp
   ui/app_menuitem.cpp
   ui/backup_indicator.cpp
+  ui/best_fit_criteria_selector.cpp
   ui/browser_view.cpp
   ui/brush_popup.cpp
   ui/button_set.cpp

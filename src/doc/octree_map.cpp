@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2020-2023 Igara Studio S.A.
+// Copyright (c) 2020-2024 Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -35,19 +35,21 @@ void OctreeNode::addColor(color_t c, int level, OctreeNode* parent,
   (*m_children)[index].addColor(c, level + 1, this, paletteIndex, levelDeep);
 }
 
-int OctreeNode::mapColor(int  r, int g, int b, int a, int mask_index, const Palette* palette, int level) const
+int OctreeNode::mapColor(int  r, int g, int b, int a, int mask_index,
+                         const Palette* palette, int level,
+                         const OctreeMap* octree) const
 {
   // New behavior: if mapColor do not have an exact rgba match, it must calculate which
   // color of the current palette is the bestfit and memorize the index in a octree leaf.
   if (level >= 8) {
     if (m_paletteIndex == -1)
-      m_paletteIndex = palette->findBestfit(r, g, b, a, mask_index);
+      m_paletteIndex = octree->findBestfit(r, g, b, a, mask_index);
     return m_paletteIndex;
   }
   int index = getHextet(r, g, b, a, level);
   if (!m_children)
     m_children.reset(new std::array<OctreeNode, 16>());
-  return (*m_children)[index].mapColor(r, g, b, a, mask_index, palette, level + 1);
+  return (*m_children)[index].mapColor(r, g, b, a, mask_index, palette, level + 1, octree);
 }
 
 void OctreeNode::collectLeafNodes(OctreeNodes& leavesVector, int& paletteIndex)
@@ -268,10 +270,13 @@ int OctreeMap::mapColor(color_t rgba) const
                          rgba_getb(rgba),
                          rgba_geta(rgba),
                          m_maskIndex,
-                         m_palette, 0);
+                         m_palette, 0,
+                         this);
 }
 
-void OctreeMap::regenerateMap(const Palette* palette, const int maskIndex)
+void OctreeMap::regenerateMap(const Palette* palette,
+                              const int maskIndex,
+                              const FitCriteria fitCriteria)
 {
   ASSERT(palette);
   if (!palette)
@@ -280,9 +285,12 @@ void OctreeMap::regenerateMap(const Palette* palette, const int maskIndex)
   // Skip useless regenerations
   if (m_palette == palette &&
       m_modifications == palette->getModifications() &&
-      m_maskIndex == maskIndex)
+      m_maskIndex == maskIndex &&
+      m_fitCriteria == fitCriteria)
     return;
 
+  m_palette = palette;
+  m_fitCriteria = fitCriteria;
   m_root = OctreeNode();
   m_leavesVector.clear();
   m_maskIndex = maskIndex;
@@ -293,10 +301,10 @@ void OctreeMap::regenerateMap(const Palette* palette, const int maskIndex)
   }
   else {
     m_maskColor = palette->getEntry(maskIndex);
-    maskColorBestFitIndex = palette->findBestfit(rgba_getr(m_maskColor),
-                                                 rgba_getg(m_maskColor),
-                                                 rgba_getb(m_maskColor),
-                                                 rgba_geta(m_maskColor), maskIndex);
+    maskColorBestFitIndex = findBestfit(rgba_getr(m_maskColor),
+                                        rgba_getg(m_maskColor),
+                                        rgba_getb(m_maskColor),
+                                        rgba_geta(m_maskColor), maskIndex);
   }
 
   for (int i=0; i<palette->size(); i++) {
@@ -307,7 +315,6 @@ void OctreeMap::regenerateMap(const Palette* palette, const int maskIndex)
     m_root.addColor(palette->entry(i), 0, &m_root, i, 8);
   }
 
-  m_palette = palette;
   m_modifications = palette->getModifications();
 }
 

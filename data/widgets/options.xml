@@ -587,10 +587,12 @@
             <slider id="nonactive_layers_opacity" min="0" max="255" width="128" />
           </hbox>
           <separator text="@.color_quantization" horizontal="true" />
-          <hbox>
+          <grid columns="2">
             <label text="@rgbmap_algorithm_selector.label" />
             <hbox id="rgbmap_algorithm_placeholder" />
-          </hbox>
+            <label text="@best_fit_criteria_selector.label" />
+            <hbox id="best_fit_criteria_placeholder" />
+          </grid>
           <separator text="@.performance" horizontal="true" />
           <hbox>
             <check id="shaders_for_color_selectors"

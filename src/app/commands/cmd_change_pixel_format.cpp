@@ -23,6 +23,7 @@
 #include "app/modules/palettes.h"
 #include "app/sprite_job.h"
 #include "app/transaction.h"
+#include "app/ui/best_fit_criteria_selector.h"
 #include "app/ui/dithering_selector.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_render.h"
@@ -69,7 +70,6 @@ public:
                 const doc::frame_t frame,
                 const doc::PixelFormat pixelFormat,
                 const render::Dithering& dithering,
-                const doc::RgbMapAlgorithm rgbMapAlgorithm,
                 const gen::ToGrayAlgorithm toGray,
                 const gfx::Point& pos,
                 const bool newBlend)
@@ -83,13 +83,11 @@ public:
        sprite, frame,
        pixelFormat,
        dithering,
-       rgbMapAlgorithm,
        toGray,
        newBlend]() { // Copy the matrix
         run(sprite, frame,
             pixelFormat,
             dithering,
-            rgbMapAlgorithm,
             toGray,
             newBlend);
       })
@@ -114,7 +112,6 @@ private:
            const doc::frame_t frame,
            const doc::PixelFormat pixelFormat,
            const render::Dithering& dithering,
-           const doc::RgbMapAlgorithm rgbMapAlgorithm,
            const gen::ToGrayAlgorithm toGray,
            const bool newBlend) {
     doc::ImageRef tmp(
@@ -136,9 +133,7 @@ private:
       m_image.get(),
       pixelFormat,
       dithering,
-      sprite->rgbMap(frame,
-                     sprite->rgbMapForSprite(),
-                     rgbMapAlgorithm),
+      sprite->rgbMap(frame),
       sprite->palette(frame),
       (sprite->backgroundLayer() != nullptr),
       0,
@@ -193,6 +188,7 @@ public:
     , m_selectedItem(nullptr)
     , m_ditheringSelector(nullptr)
     , m_mapAlgorithmSelector(nullptr)
+    , m_bestFitCriteriaSelector(nullptr)
     , m_imageJustCreated(true)
   {
     const auto& pref = Preferences::instance();
@@ -219,6 +215,9 @@ public:
       m_mapAlgorithmSelector = new RgbMapAlgorithmSelector;
       m_mapAlgorithmSelector->setExpansive(true);
 
+      m_bestFitCriteriaSelector = new BestFitCriteriaSelector;
+      m_bestFitCriteriaSelector->setExpansive(true);
+
       // Select default dithering method
       {
         int index = m_ditheringSelector->findItemIndex(
@@ -230,8 +229,12 @@ public:
       // Select default RgbMap algorithm
       m_mapAlgorithmSelector->algorithm(pref.quantization.rgbmapAlgorithm());
 
+      // Select default best fit criteria
+      m_bestFitCriteriaSelector->criteria(pref.quantization.fitCriteria());
+
       ditheringPlaceholder()->addChild(m_ditheringSelector);
       rgbmapAlgorithmPlaceholder()->addChild(m_mapAlgorithmSelector);
+      bestFitCriteriaPlaceholder()->addChild(m_bestFitCriteriaSelector);
 
       const bool adv = pref.quantization.advanced();
       advancedCheck()->setSelected(adv);
@@ -240,6 +243,7 @@ public:
       // Signals
       m_ditheringSelector->Change.connect([this]{ onIndexParamChange(); });
       m_mapAlgorithmSelector->Change.connect([this]{ onIndexParamChange(); });
+      m_bestFitCriteriaSelector->Change.connect([this]{ onIndexParamChange(); });
       factor()->Change.connect([this]{ onIndexParamChange(); });
 
       advancedCheck()->Click.connect(
@@ -301,6 +305,13 @@ public:
       return doc::RgbMapAlgorithm::DEFAULT;
   }
 
+  doc::FitCriteria fitCriteria() const {
+    if (m_bestFitCriteriaSelector)
+      return m_bestFitCriteriaSelector->criteria();
+    else
+      return doc::FitCriteria::DEFAULT;
+  }
+
   gen::ToGrayAlgorithm toGray() const {
     static_assert(
       int(gen::ToGrayAlgorithm::LUMA) == 0 &&
@@ -331,7 +342,7 @@ public:
       }
     }
 
-    if (m_mapAlgorithmSelector)
+    if (m_mapAlgorithmSelector || m_bestFitCriteriaSelector)
       pref.quantization.advanced(advancedCheck()->isSelected());
   }
 
@@ -396,6 +407,12 @@ private:
       visibleBounds.origin(),
       doc::BlendMode::SRC);
 
+    m_editor->sprite()->rgbMap(
+      0,
+      m_editor->sprite()->rgbMapForSprite(),
+      rgbMapAlgorithm(),
+      fitCriteria());
+
     m_editor->invalidate();
     progress()->setValue(0);
     progress()->setVisible(false);
@@ -408,7 +425,6 @@ private:
         m_editor->frame(),
         dstPixelFormat,
         dithering(),
-        rgbMapAlgorithm(),
         toGray(),
         visibleBounds.origin(),
         Preferences::instance().experimental.newBlend()));
@@ -463,6 +479,7 @@ private:
   ConversionItem* m_selectedItem;
   DitheringSelector* m_ditheringSelector;
   RgbMapAlgorithmSelector* m_mapAlgorithmSelector;
+  BestFitCriteriaSelector* m_bestFitCriteriaSelector;
   bool m_imageJustCreated;
 };
 
@@ -485,6 +502,7 @@ private:
   doc::PixelFormat m_format;
   render::Dithering m_dithering;
   doc::RgbMapAlgorithm m_rgbmap;
+  doc::FitCriteria m_fitCriteria = FitCriteria::DEFAULT;
   gen::ToGrayAlgorithm m_toGray;
 };
 
@@ -624,7 +642,10 @@ void ChangePixelFormatCommand::onExecute(Context* context)
 {
   bool flatten = false;
 
-  if (context->isUIAvailable() && m_showDlg) {
+  if (!context->isUIAvailable()) {
+    // do nothing
+  }
+  else if (m_showDlg) {
     ColorModeWindow window(Editor::activeEditor());
 
     window.remapWindow();
@@ -640,10 +661,16 @@ void ChangePixelFormatCommand::onExecute(Context* context)
     m_format = window.pixelFormat();
     m_dithering = window.dithering();
     m_rgbmap = window.rgbMapAlgorithm();
+    m_fitCriteria = window.fitCriteria();
     m_toGray = window.toGray();
     flatten = window.flattenEnabled();
 
     window.saveOptions();
+  }
+  else {
+    // TO DO: in a first approach a simple conversion to indexed color mode
+    // it's just via the old fit criteria (Euclidean color distance).
+    m_fitCriteria = FitCriteria::DEFAULT;
   }
 
   // No conversion needed
@@ -679,7 +706,8 @@ void ChangePixelFormatCommand::onExecute(Context* context)
             m_dithering,
             m_rgbmap,
             get_gray_func(m_toGray),
-            &job));             // SpriteJob is a render::TaskDelegate
+            &job,
+            m_fitCriteria));             // SpriteJob is a render::TaskDelegate
       });
     job.waitJob();
   }
