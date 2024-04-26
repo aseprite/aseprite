@@ -26,6 +26,7 @@
 #include "app/recent_files.h"
 #include "app/resource_finder.h"
 #include "app/tx.h"
+#include "app/ui/best_fit_criteria_selector.h"
 #include "app/ui/color_button.h"
 #include "app/ui/main_window.h"
 #include "app/ui/pref_widget.h"
@@ -466,6 +467,10 @@ public:
     m_rgbmapAlgorithmSelector.setExpansive(true);
     m_rgbmapAlgorithmSelector.algorithm(m_pref.quantization.rgbmapAlgorithm());
 
+    bestFitCriteriaPlaceholder()->addChild(&m_bestFitCriteriaSelector);
+    m_bestFitCriteriaSelector.setExpansive(true);
+    m_bestFitCriteriaSelector.criteria(m_pref.quantization.fitCriteria());
+
     if (m_pref.editor.showScrollbars())
       showScrollbars()->setSelected(true);
 
@@ -816,6 +821,7 @@ public:
     m_pref.experimental.flashLayer(flashLayer()->isSelected());
     m_pref.experimental.nonactiveLayersOpacity(nonactiveLayersOpacity()->getValue());
     m_pref.quantization.rgbmapAlgorithm(m_rgbmapAlgorithmSelector.algorithm());
+    m_pref.quantization.fitCriteria(m_bestFitCriteriaSelector.criteria());
 
 #ifdef LAF_WINDOWS
     {
@@ -1830,6 +1836,7 @@ private:
   std::vector<os::ColorSpaceRef> m_colorSpaces;
   std::string m_templateTextForDisplayCS;
   RgbMapAlgorithmSelector m_rgbmapAlgorithmSelector;
+  BestFitCriteriaSelector m_bestFitCriteriaSelector;
   ButtonSet* m_themeVars = nullptr;
   SamplingSelector* m_samplingSelector = nullptr;
 };

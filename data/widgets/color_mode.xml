@@ -1,5 +1,5 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2019-2020  Igara Studio S.A. -->
+<!-- Copyright (C) 2019-2024  Igara Studio S.A. -->
 <!-- Copyright (C) 2017  David Capello -->
 <gui>
 <window id="color_mode" text="@.title">
@@ -23,10 +23,12 @@
     <check text="@.flatten" id="flatten" />
 
     <check id="advanced_check" text="@general.advanced_options" cell_hspan="2" />
-    <hbox id="advanced" cell_hspan="2">
-      <label text="@rgbmap_algorithm_selector.label" />
-      <hbox id="rgbmap_algorithm_placeholder" />
-    </hbox>
+    <vbox id="advanced" cell_hspan="2">
+      <label text="@rgbmap_algorithm_selector.label" cell_hspan="1" />
+      <hbox id="rgbmap_algorithm_placeholder" cell_hspan="1" />
+      <label text="@best_fit_criteria_selector.label" cell_hspan="1" />
+      <hbox id="best_fit_criteria_placeholder" cell_hspan="1" />
+    </vbox>
 
     <separator horizontal="true" />
     <hbox>

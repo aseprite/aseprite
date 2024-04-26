@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -12,6 +12,7 @@
 #include "app/cmd/with_sprite.h"
 #include "app/cmd_sequence.h"
 #include "doc/color.h"
+#include "doc/fit_criteria.h"
 #include "doc/frame.h"
 #include "doc/image_ref.h"
 #include "doc/pixel_format.h"
@@ -37,7 +38,8 @@ namespace cmd {
                    const render::Dithering& dithering,
                    const doc::RgbMapAlgorithm mapAlgorithm,
                    doc::rgba_to_graya_func toGray,
-                   render::TaskDelegate* delegate);
+                   render::TaskDelegate* delegate,
+                   const doc::FitCriteria fitCriteria = doc::FitCriteria::DEFAULT);
 
   protected:
     void onExecute() override;
@@ -56,7 +58,8 @@ namespace cmd {
                       const bool isBackground,
                       const doc::RgbMapAlgorithm mapAlgorithm,
                       doc::rgba_to_graya_func toGray,
-                      render::TaskDelegate* delegate);
+                      render::TaskDelegate* delegate,
+                      const doc::FitCriteria fitCriteria = doc::FitCriteria::DEFAULT);
 
     doc::PixelFormat m_oldFormat;
     doc::PixelFormat m_newFormat;
