@@ -87,6 +87,10 @@ if(ENABLE_WEBSOCKET)
   add_definitions(-DENABLE_WEBSOCKET)
 endif()
 
+if(ENABLE_FFI)
+  add_definitions(-DENABLE_FFI)
+endif()
+
 ######################################################################
 # Aseprite Libraries (in preferred order to be built)
 

@@ -753,6 +753,10 @@ if(ENABLE_SCRIPTING)
   if(ENABLE_WEBSOCKET)
     target_link_libraries(app-lib ixwebsocket)
   endif()
+  
+  if(ENABLE_FFI)
+    target_link_libraries(app-lib cffi-lua)
+  endif()
 endif()
 
 if(ENABLE_UPDATER)
