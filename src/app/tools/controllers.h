@@ -18,6 +18,55 @@ namespace tools {
 
 using namespace gfx;
 
+void adjustPointsToSquareAspect(const Stroke::Pt& first,
+                                Stroke::Pt& last,
+                                bool& isoAngle,
+                                tools::ToolLoop* loop)
+{
+  int dx = last.x - first.x;
+  int dy = last.y - first.y;
+  int minsize = std::min(ABS(dx), ABS(dy));
+  int maxsize = std::max(ABS(dx), ABS(dy));
+
+  // Lines
+  if (loop->getIntertwine()->snapByAngle()) {
+    double angle = 180.0 * std::atan(static_cast<double>(-dy) /
+                                     static_cast<double>(dx)) / PI;
+    angle = ABS(angle);
+
+    // Snap horizontally
+    if (angle < 18.0) {
+      last.y = first.y;
+    }
+    // Snap at 26.565
+    else if (angle < 36.0) {
+      last.x = first.x + SGN(dx)*maxsize;
+      last.y = first.y + SGN(dy)*maxsize/2;
+      isoAngle = true;
+    }
+    // Snap at 45
+    else if (angle < 54.0) {
+      last.x = first.x + SGN(dx)*minsize;
+      last.y = first.y + SGN(dy)*minsize;
+    }
+    // Snap at 63.435
+    else if (angle < 72.0) {
+      last.x = first.x + SGN(dx)*maxsize/2;
+      last.y = first.y + SGN(dy)*maxsize;
+      isoAngle = true;
+    }
+    // Snap vertically
+    else {
+      last.x = first.x;
+    }
+  }
+  // Rectangles and ellipses
+  else {
+    last.x = first.x + SGN(dx)*minsize;
+    last.y = first.y + SGN(dy)*minsize;
+  }
+}
+
 // Shared logic between controllers that can move/displace all points
 // using the space bar.
 class MoveOriginCapability : public Controller {
@@ -155,50 +204,8 @@ public:
 
     bool isoAngle = false;
 
-    if ((int(loop->getModifiers()) & int(ToolLoopModifiers::kSquareAspect))) {
-      int dx = stroke[1].x - m_first.x;
-      int dy = stroke[1].y - m_first.y;
-      int minsize = std::min(ABS(dx), ABS(dy));
-      int maxsize = std::max(ABS(dx), ABS(dy));
-
-      // Lines
-      if (loop->getIntertwine()->snapByAngle()) {
-        double angle = 180.0 * std::atan(static_cast<double>(-dy) /
-                                         static_cast<double>(dx)) / PI;
-        angle = ABS(angle);
-
-        // Snap horizontally
-        if (angle < 18.0) {
-          stroke[1].y = m_first.y;
-        }
-        // Snap at 26.565
-        else if (angle < 36.0) {
-          stroke[1].x = m_first.x + SGN(dx)*maxsize;
-          stroke[1].y = m_first.y + SGN(dy)*maxsize/2;
-          isoAngle = true;
-        }
-        // Snap at 45
-        else if (angle < 54.0) {
-          stroke[1].x = m_first.x + SGN(dx)*minsize;
-          stroke[1].y = m_first.y + SGN(dy)*minsize;
-        }
-        // Snap at 63.435
-        else if (angle < 72.0) {
-          stroke[1].x = m_first.x + SGN(dx)*maxsize/2;
-          stroke[1].y = m_first.y + SGN(dy)*maxsize;
-          isoAngle = true;
-        }
-        // Snap vertically
-        else {
-          stroke[1].x = m_first.x;
-        }
-      }
-      // Rectangles and ellipses
-      else {
-        stroke[1].x = m_first.x + SGN(dx)*minsize;
-        stroke[1].y = m_first.y + SGN(dy)*minsize;
-      }
-    }
+    if ((int(loop->getModifiers()) & int(ToolLoopModifiers::kSquareAspect)))
+      adjustPointsToSquareAspect(m_first, stroke[1], isoAngle, loop);
 
     if (hasAngle()) {
       int rx = stroke[1].x - m_center.x;
@@ -322,6 +329,12 @@ public:
   void pressButton(ToolLoop* loop, Stroke& stroke, const Stroke::Pt& pt) override {
     MoveOriginCapability::pressButton(loop, stroke, pt);
 
+    if (stroke.size() >= 2 &&
+      (int(loop->getModifiers()) & int(ToolLoopModifiers::kSquareAspect))) {
+      stroke.addPoint(stroke[stroke.size()-1]);
+      stroke.addPoint(pt);
+      return;
+    }
     stroke.addPoint(pt);
     stroke.addPoint(pt);
   }
@@ -346,7 +359,16 @@ public:
     if (MoveOriginCapability::isMovingOrigin(loop, stroke, pt))
       return;
 
-    stroke[stroke.size()-1] = pt;
+    if (stroke.size() >= 2 &&
+        (int(loop->getModifiers()) & int(ToolLoopModifiers::kSquareAspect))) {
+      auto last = pt;
+      auto penultimate = stroke[stroke.size()-2];
+      bool isoAngle = false;
+      adjustPointsToSquareAspect(penultimate, last, isoAngle, loop);
+      stroke[stroke.size()-1] = last;
+    }
+    else
+      stroke[stroke.size()-1] = pt;
   }
 
   void getStrokeToInterwine(const Stroke& input, Stroke& output) override {

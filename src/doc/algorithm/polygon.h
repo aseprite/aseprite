@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2023 Igara Studio S.A.
 // Copyright (c) 2001-2014 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -8,6 +9,7 @@
 #define DOC_ALGORITHM_POLYGON_H_INCLUDED
 #pragma once
 
+#include "doc/algo.h"
 #include "doc/algorithm/hline.h"
 #include "gfx/fwd.h"
 
@@ -16,7 +18,9 @@
 namespace doc {
   namespace algorithm {
 
-    void polygon(int vertices, const int* points, void* data, AlgoHLine proc);
+    void polygon(int vertices, const int* points,
+                 void* data, AlgoHLine proc,
+                 AlgoLineWithAlgoPixel algoLine = algo_line_continuous);
     bool createUnion(std::vector<int>& pairs, const int x, int& ints);
   }
 }
