@@ -591,10 +591,18 @@ void Theme::measureLayer(const Widget* widget,
 
     case Style::Layer::Type::kText:
       if (layer.color() != gfx::ColorNone) {
-        text::Font* font = (style->font() ? style->font():
-                                          widget->font());
-        gfx::Size textSize(Graphics::measureUITextLength(widget->text(), font),
-                           font->height());
+        gfx::Size textSize;
+        if (style->font() &&
+            style->font() != widget->font()) {
+          text::Font* font = style->font();
+          textSize = gfx::Size(Graphics::measureUITextLength(widget->text(), font),
+                               font->height());
+        }
+        else {
+          // We can use Widget::textSize() because we're going to use
+          // the widget font and, probably, the cached TextBlob.
+          textSize = widget->textSize();
+        }
 
         textHint.offset(layer.offset());
         textHint.w = std::max(textHint.w, textSize.w+ABS(layer.offset().x));
