@@ -822,13 +822,13 @@ void PixelsMovement::alignMasksAndTransformData(
   // Raw grid alignment of currentData can result in unintentional scaling.
   // That's why we need to know if the artist's intention was just to move
   // the selection and/or scaling via 'initialDeltaA' and 'initialDeltaB'.
-  gfx::Point currentDataAlignedOrigin =
+  const gfx::Point currentDataAlignedOrigin =
     grid.alignBounds(gfx::Rect(m_initialData.bounds().x + deltaA.w,
                                m_initialData.bounds().y + deltaA.h,
                                1, 1)).origin();
   int deltaH = deltaB.w - deltaA.w;
   int deltaV = deltaB.h - deltaA.h;
-  gfx::RectF currentDataBounds(
+  const gfx::RectF currentDataBounds(
     currentDataAlignedOrigin.x,
     currentDataAlignedOrigin.y,
     m_initialData.bounds().w + (deltaH == 0 ? 0 : deltaH),
@@ -873,13 +873,13 @@ void PixelsMovement::stampImage(bool finalStamp)
   // 'reproduceAllTransformationsWithInnerCmds' function for restoring later.
   // All values of m_initialXX, m_currentXX will be recalculated
   // to align their original selection bounds with each cel's grid.
-  TilemapMode originalSiteTilemapMode = (
+  const TilemapMode originalSiteTilemapMode = (
     m_site.tilemapMode() == TilemapMode::Tiles &&
     m_site.layer()->isTilemap()? TilemapMode::Tiles : TilemapMode::Pixels);
-  TilesetMode originalSiteTilesetMode = m_site.tilesetMode();
-  Mask initialMask0(*m_initialMask0);
-  Mask initialMask(*m_initialMask);
-  Mask currentMask(*m_currentMask);
+  const TilesetMode originalSiteTilesetMode = m_site.tilesetMode();
+  const Mask initialMask0(*m_initialMask0);
+  const Mask initialMask(*m_initialMask);
+  const Mask currentMask(*m_currentMask);
   auto initialData = m_initialData;
   auto currentData = m_currentData;
 
@@ -892,18 +892,18 @@ void PixelsMovement::stampImage(bool finalStamp)
   //   |     |
   //   |     |
   //    ---- b
-  gfx::Rect currentAlignedBounds(
+  const gfx::Rect currentAlignedBounds(
     m_site.grid().alignBounds(currentData.bounds()));
-  gfx::Rect initialAlignedBounds(
+  const gfx::Rect initialAlignedBounds(
     m_site.grid().alignBounds(initialMask.bounds()));
-  gfx::Size deltaA(currentAlignedBounds.origin().x -
-                     initialAlignedBounds.origin().x,
-                   currentAlignedBounds.origin().y -
-                     initialAlignedBounds.origin().y);
-  gfx::Size deltaB(currentAlignedBounds.x2() -
-                     initialAlignedBounds.x2(),
-                   currentAlignedBounds.y2() -
-                     initialAlignedBounds.y2());
+  const gfx::Size deltaA(currentAlignedBounds.origin().x -
+                         initialAlignedBounds.origin().x,
+                         currentAlignedBounds.origin().y -
+                         initialAlignedBounds.origin().y);
+  const gfx::Size deltaB(currentAlignedBounds.x2() -
+                         initialAlignedBounds.x2(),
+                         currentAlignedBounds.y2() -
+                         initialAlignedBounds.y2());
 
   for (Cel* target : cels) {
     // We'll re-create the transformation for the other cels

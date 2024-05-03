@@ -62,8 +62,8 @@ Mask make_aligned_mask(
     ASSERT(false);
     return maskOutput;
   }
-  gfx::Rect oldBounds = mask->bounds();
-  gfx::Rect newBounds = grid->alignBounds(mask->bounds());
+  const gfx::Rect oldBounds = mask->bounds();
+  const gfx::Rect newBounds = grid->alignBounds(mask->bounds());
   ASSERT(newBounds.w > 0 && newBounds.h > 0);
   ImageRef newBitmap;
   if (!mask->bitmap()) {
@@ -84,7 +84,7 @@ Mask make_aligned_mask(
     for (int x=0; x < oldBounds.w; ++x, ++it) {
       ASSERT(it != bits.end());
       if (*it) {
-        gfx::Rect newBoundsTile =
+        const gfx::Rect newBoundsTile =
           grid->alignBounds(gfx::Rect(oldBounds.x + x, oldBounds.y + y, 1, 1));
         if (previousPoint != newBoundsTile.origin()) {
           // Fill a tile region in the newBitmap
