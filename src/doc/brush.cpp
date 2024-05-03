@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -48,32 +48,43 @@ Brush::Brush(BrushType type, int size, int angle)
   regenerate();
 }
 
-Brush::Brush(const Brush& brush)
-{
-  m_type = brush.m_type;
-  m_size = brush.m_size;
-  m_angle = brush.m_angle;
-  m_image = brush.m_image;
-  m_maskBitmap = brush.m_maskBitmap;
-  m_pattern = brush.m_pattern;
-  m_patternOrigin = brush.m_patternOrigin;
-  m_gen = 0;
-
-  regenerate();
-}
-
 Brush::~Brush()
 {
   clean();
 }
 
-void Brush::setType(BrushType type)
+BrushRef Brush::cloneWithSharedImages() const
 {
-  m_type = type;
-  if (m_type != kImageBrushType)
-    regenerate();
+  BrushRef newBrush = std::make_shared<Brush>();
+  newBrush->copyFieldsFromBrush(*this);
+  return newBrush;
+}
+
+BrushRef Brush::cloneWithNewImages() const
+{
+  BrushRef newBrush = std::make_shared<Brush>();
+  newBrush->copyFieldsFromBrush(*this);
+  if (newBrush->m_image)
+    newBrush->m_image.reset(Image::createCopy(newBrush->m_image.get()));
+  if (newBrush->m_maskBitmap)
+    newBrush->m_maskBitmap.reset(Image::createCopy(newBrush->m_maskBitmap.get()));
+  return newBrush;
+}
+
+BrushRef Brush::cloneWithExistingImages(const ImageRef& image,
+                                        const ImageRef& maskBitmap) const
+{
+  BrushRef newBrush = std::make_shared<Brush>();
+  newBrush->copyFieldsFromBrush(*this);
+
+  newBrush->m_image = image;
+  if (maskBitmap)
+    newBrush->m_maskBitmap = maskBitmap;
   else
-    clean();
+    newBrush->regenerateMaskBitmap();
+
+  newBrush->resetBounds();
+  return newBrush;
 }
 
 void Brush::setSize(int size)
@@ -95,16 +106,8 @@ void Brush::setImage(const Image* image,
   m_image.reset(Image::createCopy(image));
   if (maskBitmap)
     m_maskBitmap.reset(Image::createCopy(maskBitmap));
-  else {
-    int w = image->width();
-    int h = image->height();
-    m_maskBitmap.reset(Image::create(IMAGE_BITMAP, w, h));
-    LockImageBits<BitmapTraits> bits(m_maskBitmap.get());
-    auto pos = bits.begin();
-    for (int v=0; v<h; ++v)
-      for (int u=0; u<w; ++u, ++pos)
-        *pos = (get_pixel(image, u, v) != image->maskColor());
-  }
+  else
+    regenerateMaskBitmap();
 
   m_backupImage.reset();
   m_mainColor.reset();
@@ -234,7 +237,8 @@ static void replace_image_colors_indexed(
   }
 }
 
-void Brush::setImageColor(ImageColor imageColor, color_t color)
+void Brush::setImageColor(const ImageColor imageColor,
+                          const color_t color)
 {
   ASSERT(m_image);
   if (!m_image)
@@ -249,10 +253,13 @@ void Brush::setImageColor(ImageColor imageColor, color_t color)
 
   switch (imageColor) {
     case ImageColor::MainColor:
-      m_mainColor = color_t(color);
+      m_mainColor = color;
       break;
     case ImageColor::BackgroundColor:
-      m_bgColor = color_t(color);
+      m_bgColor = color;
+      break;
+    case ImageColor::BothColors:
+      m_mainColor = m_bgColor = color;
       break;
   }
 
@@ -379,6 +386,22 @@ void Brush::regenerate()
   }
 }
 
+void Brush::regenerateMaskBitmap()
+{
+  ASSERT(m_image);
+  if (!m_image)
+    return;
+
+  int w = m_image->width();
+  int h = m_image->height();
+  m_maskBitmap.reset(Image::create(IMAGE_BITMAP, w, h));
+  LockImageBits<BitmapTraits> bits(m_maskBitmap.get());
+  auto pos = bits.begin();
+  for (int v=0; v<h; ++v)
+    for (int u=0; u<w; ++u, ++pos)
+      *pos = (get_pixel(m_image.get(), u, v) != m_image->maskColor());
+}
+
 void Brush::resetBounds()
 {
   m_center = gfx::Point(std::max(0, m_image->width()/2),
@@ -386,6 +409,21 @@ void Brush::resetBounds()
   m_bounds = gfx::Rect(-m_center,
                        gfx::Size(m_image->width(),
                                  m_image->height()));
+}
+
+void Brush::copyFieldsFromBrush(const Brush& brush)
+{
+  m_type = brush.m_type;
+  m_size = brush.m_size;
+  m_angle = brush.m_angle;
+  m_image = brush.m_image;
+  m_maskBitmap = brush.m_maskBitmap;
+  m_bounds = brush.m_bounds;
+  m_center = brush.m_center;
+  m_pattern = brush.m_pattern;
+  m_patternOrigin = brush.m_patternOrigin;
+  m_patternImage = brush.m_patternImage;
+  m_gen = 0;
 }
 
 } // namespace doc

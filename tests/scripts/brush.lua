@@ -1,4 +1,4 @@
--- Copyright (C) 2019-2023  Igara Studio S.A.
+-- Copyright (C) 2019-2024  Igara Studio S.A.
 --
 -- This file is released under the terms of the MIT license.
 -- Read LICENSE.txt for more information.
@@ -51,6 +51,7 @@ do
   assert(b.patternOrigin.y == 0)
 end
 
+-- Image brush
 do
   local rgba = app.pixelColor.rgba
   local r = rgba(255, 0, 0)
@@ -71,6 +72,15 @@ do
 
   brush:setBgColor(b)
   expect_img(brush.image, { b, g, g, b })
+
+  -- Test copy image brushes
+  local brush2 = Brush(brush)
+  expect_img(brush2.image, { b, g, g, b })
+  brush2:setFgColor(r)
+  expect_img(brush2.image, { b, r, r, b })
+  brush2:setBgColor(r)
+  expect_img(brush2.image, { r, r, r, r })
+  expect_img(brush.image, { b, g, g, b }) -- First brush wasn't modified
 end
 
 -- Tests with Image Brushes
