@@ -17,6 +17,7 @@
 #include "gfx/size.h"
 #include "obs/signal.h"
 #include "text/font.h"
+#include "text/text_blob.h"
 #include "ui/base.h"
 #include "ui/component.h"
 #include "ui/graphics.h"
@@ -88,6 +89,7 @@ namespace ui {
     void setTextf(const char* text, ...);
     void setTextQuiet(const std::string& text);
 
+    text::TextBlobRef textBlob() const;
     int textWidth() const;
     int textHeight() const;
 
@@ -455,6 +457,7 @@ namespace ui {
     Style* m_style;
     std::string m_text;          // Widget text
     mutable text::FontRef m_font;  // Cached font returned by the theme
+    mutable text::TextBlobRef m_blob; // Cached TextBlob
     gfx::Color m_bgColor;        // Background color
     gfx::Rect m_bounds;
     gfx::Region m_updateRegion;   // Region to be redrawed.

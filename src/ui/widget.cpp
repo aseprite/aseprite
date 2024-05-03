@@ -20,6 +20,7 @@
 #include "os/system.h"
 #include "os/window.h"
 #include "text/font.h"
+#include "text/font_mgr.h"
 #include "ui/app_state.h"
 #include "ui/init_theme_event.h"
 #include "ui/intern.h"
@@ -158,6 +159,10 @@ void Widget::setTextf(const char *format, ...)
 void Widget::setTextQuiet(const std::string& text)
 {
   assert_ui_thread();
+
+  // Reset blob
+  if (m_text != text)
+    m_blob.reset();
 
   m_text = text;
   enableFlags(HAS_TEXT);
@@ -914,14 +919,29 @@ void Widget::getDrawableRegion(gfx::Region& region, DrawableRegionFlags flags)
   region &= Region(cpos);
 }
 
+text::TextBlobRef Widget::textBlob() const
+{
+  if (!m_blob) {
+    m_blob = text::TextBlob::MakeWithShaper(
+      theme()->fontMgr(),
+      AddRef(font()),
+      m_text);
+  }
+  return m_blob;
+}
+
 int Widget::textWidth() const
 {
-  return Graphics::measureUITextLength(text().c_str(), font());
+  if (auto blob = textBlob())
+    return blob->bounds().w;
+  return 0;
 }
 
 int Widget::textHeight() const
 {
-  return font()->height();
+  auto blob = textBlob();
+  return std::max<int>(font()->height(),
+                       (blob ? blob->bounds().h: 0));
 }
 
 void Widget::getTextIconInfo(
@@ -1693,8 +1713,10 @@ void Widget::onBroadcastMouseMessage(const gfx::Point& screenPos,
 
 void Widget::onInitTheme(InitThemeEvent& ev)
 {
-  // Reset cached font
-  m_font = nullptr;
+  // Reset cached font and TextBlob
+  m_font.reset();
+  m_blob.reset();
+
   // Create a copy of the children list and iterate it, just in case a
   // initTheme() modifies this list (e.g. this can happen in some
   // strange cases with viewports, where scrollbars are added/removed
