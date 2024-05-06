@@ -23,12 +23,12 @@ using namespace ui;
 SelectionModeField::SelectionModeField()
   : ButtonSet(4)
 {
-  auto theme = SkinTheme::get(this);
+  auto* theme = SkinTheme::get(this);
 
-  addItem(theme->parts.selectionReplace(), "selection_mode");
-  addItem(theme->parts.selectionAdd(), "selection_mode");
-  addItem(theme->parts.selectionSubtract(), "selection_mode");
-  addItem(theme->parts.selectionIntersect(), "selection_mode");
+  addItem(theme->parts.selectionReplace(), theme->styles.selectionMode());
+  addItem(theme->parts.selectionAdd(), theme->styles.selectionMode());
+  addItem(theme->parts.selectionSubtract(), theme->styles.selectionMode());
+  addItem(theme->parts.selectionIntersect(), theme->styles.selectionMode());
 
   setSelectedItem((int)Preferences::instance().selection.mode());
   initTheme();

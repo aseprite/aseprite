@@ -44,12 +44,12 @@ namespace app {
 
     ButtonSet(int columns);
 
-    Item* addItem(const std::string& text, const char* styleId);
-    Item* addItem(const std::string& text, int hspan = 1, int vspan = 1, const char* styleId = nullptr);
-    Item* addItem(const skin::SkinPartPtr& icon, const char* styleId);
-    Item* addItem(const skin::SkinPartPtr& icon, int hspan = 1, int vspan = 1, const char* styleId = nullptr);
-    Item* addItem(Item* item, const char* styleId);
-    Item* addItem(Item* item, int hspan = 1, int vspan = 1, const char* styleId = nullptr);
+    Item* addItem(const std::string& text, ui::Style* style);
+    Item* addItem(const std::string& text, int hspan = 1, int vspan = 1, ui::Style* style = nullptr);
+    Item* addItem(const skin::SkinPartPtr& icon, ui::Style* style);
+    Item* addItem(const skin::SkinPartPtr& icon, int hspan = 1, int vspan = 1, ui::Style* style = nullptr);
+    Item* addItem(Item* item, ui::Style* style);
+    Item* addItem(Item* item, int hspan = 1, int vspan = 1, ui::Style* style = nullptr);
     Item* getItem(int index);
     int getItemIndex(const Item* item) const;
 
