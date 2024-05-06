@@ -42,13 +42,13 @@ enum AniAction {
 AniControls::AniControls(TooltipManager* tooltipManager)
   : ButtonSet(5)
 {
-  auto theme = SkinTheme::get(this);
+  auto* theme = SkinTheme::get(this);
 
-  addItem(theme->parts.aniFirst(), "ani_button");
-  addItem(theme->parts.aniPrevious(), "ani_button");
-  addItem(theme->parts.aniPlay(), "ani_button");
-  addItem(theme->parts.aniNext(), "ani_button");
-  addItem(theme->parts.aniLast(), "ani_button");
+  addItem(theme->parts.aniFirst(), theme->styles.aniButton());
+  addItem(theme->parts.aniPrevious(), theme->styles.aniButton());
+  addItem(theme->parts.aniPlay(), theme->styles.aniButton());
+  addItem(theme->parts.aniNext(), theme->styles.aniButton());
+  addItem(theme->parts.aniLast(), theme->styles.aniButton());
   ItemChange.connect([this]{ onClickButton(); });
 
   setTriggerOnMouseUp(true);

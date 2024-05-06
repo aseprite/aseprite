@@ -208,60 +208,50 @@ ButtonSet::ButtonSet(int columns)
   initTheme();
 }
 
-ButtonSet::Item* ButtonSet::addItem(const std::string& text, const char* styleId)
+ButtonSet::Item* ButtonSet::addItem(const std::string& text, ui::Style* style)
 {
-  return addItem(text, 1, 1, styleId);
+  return addItem(text, 1, 1, style);
 }
 
-ButtonSet::Item* ButtonSet::addItem(const std::string& text, int hspan, int vspan, const char* styleId)
+ButtonSet::Item* ButtonSet::addItem(const std::string& text, int hspan, int vspan, ui::Style* style)
 {
   Item* item = new Item();
   item->setText(text);
-  addItem(item, hspan, vspan, styleId);
+  addItem(item, hspan, vspan, style);
   return item;
 }
 
-ButtonSet::Item* ButtonSet::addItem(const skin::SkinPartPtr& icon, const char* styleId)
+ButtonSet::Item* ButtonSet::addItem(const skin::SkinPartPtr& icon, ui::Style* style)
 {
-  return addItem(icon, 1, 1, styleId);
+  return addItem(icon, 1, 1, style);
 }
 
-ButtonSet::Item* ButtonSet::addItem(const skin::SkinPartPtr& icon, int hspan, int vspan, const char* styleId)
+ButtonSet::Item* ButtonSet::addItem(const skin::SkinPartPtr& icon, int hspan, int vspan, ui::Style* style)
 {
   Item* item = new Item();
   item->setIcon(icon);
-  addItem(item, hspan, vspan, styleId);
+  addItem(item, hspan, vspan, style);
   return item;
 }
-ButtonSet::Item* ButtonSet::addItem(Item* item, const char* styleId)
+ButtonSet::Item* ButtonSet::addItem(Item* item, ui::Style* style)
 {
-  return addItem(item, 1, 1, styleId);
+  return addItem(item, 1, 1, style);
 }
 
-ButtonSet::Item* ButtonSet::addItem(Item* item, int hspan, int vspan, const char* styleIdStr)
+ButtonSet::Item* ButtonSet::addItem(Item* item, int hspan, int vspan, ui::Style* style)
 {
-  std::string styleId;
-  if (styleIdStr)
-    styleId = styleIdStr;
-
   item->InitTheme.connect(
-    [item, styleId] {
-      auto theme = SkinTheme::get(item);
-      ui::Style* style;
-      if (!styleId.empty()) {
-        style = theme->getStyleById(styleId);
-        if (!style)
-          throw base::Exception(fmt::format("Style {} not found", styleId));
-      }
-      else {
-        style = theme->styles.buttonsetItemIcon();
+    [item, style] {
+      ui::Style* s = style;
+      if (!s) {
+        auto* theme = SkinTheme::get(item);
+        s = theme->styles.buttonsetItemIcon();
         if (!item->text().empty()) {
-          style = (item->icon() ? theme->styles.buttonsetItemTextTopIconBottom() :
-                                  theme->styles.buttonsetItemText());
+          s = (item->icon() ? theme->styles.buttonsetItemTextTopIconBottom() :
+                              theme->styles.buttonsetItemText());
         }
       }
-
-      item->setStyle(style);
+      item->setStyle(s);
     }
   );
   addChildInCell(item, hspan, vspan, HORIZONTAL | VERTICAL);

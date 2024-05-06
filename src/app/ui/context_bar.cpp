@@ -164,7 +164,8 @@ public:
     , m_brushes(App::instance()->brushes()) {
     SkinPartPtr part(new SkinPart);
     part->setBitmap(0, BrushPopup::createSurfaceForBrush(BrushRef(nullptr)));
-    addItem(part, "brush_type");
+    auto* theme = SkinTheme::get(this);
+    addItem(part, theme->styles.brushType());
 
     m_popupWindow.Open.connect(
       [this]{
@@ -385,8 +386,8 @@ protected:
 class ContextBar::PaintBucketSettingsField : public ButtonSet {
 public:
   PaintBucketSettingsField() : ButtonSet(1) {
-    auto theme = SkinTheme::get(this);
-    addItem(theme->parts.timelineGear(), "context_bar_button");
+    auto* theme = SkinTheme::get(this);
+    addItem(theme->parts.timelineGear(), theme->styles.contextBarButton());
   }
 
 protected:
@@ -472,8 +473,8 @@ class ContextBar::InkTypeField : public ButtonSet {
 public:
   InkTypeField(ContextBar* owner) : ButtonSet(1)
                                   , m_owner(owner) {
-    auto theme = SkinTheme::get(this);
-    addItem(theme->parts.inkSimple(), "ink_type");
+    auto* theme = SkinTheme::get(this);
+    addItem(theme->parts.inkSimple(), theme->styles.inkType());
   }
 
   void setInkType(InkType inkType) {
@@ -872,7 +873,8 @@ class ContextBar::PivotField : public ButtonSet {
 public:
   PivotField()
     : ButtonSet(1) {
-    addItem(SkinTheme::get(this)->parts.pivotCenter(), "pivot_field");
+    auto* theme = SkinTheme::get(this);
+    addItem(SkinTheme::get(this)->parts.pivotCenter(), theme->styles.pivotField());
 
     m_pivotConn = Preferences::instance().selection.pivotPosition.AfterChange.connect(
       [this]{ onPivotChange(); });
@@ -885,22 +887,22 @@ private:
   void onItemChange(Item* item) override {
     ButtonSet::onItemChange(item);
 
-    auto theme = SkinTheme::get(this);
+    auto* theme = SkinTheme::get(this);
     gfx::Rect bounds = this->bounds();
 
     Menu menu;
     CheckBox visible(Strings::context_bar_default_display_pivot());
     HBox box;
     ButtonSet buttonset(3);
-    buttonset.addItem(theme->parts.pivotNorthwest(), "pivot_dir");
-    buttonset.addItem(theme->parts.pivotNorth(), "pivot_dir");
-    buttonset.addItem(theme->parts.pivotNortheast(), "pivot_dir");
-    buttonset.addItem(theme->parts.pivotWest(), "pivot_dir");
-    buttonset.addItem(theme->parts.pivotCenter(), "pivot_dir");
-    buttonset.addItem(theme->parts.pivotEast(), "pivot_dir");
-    buttonset.addItem(theme->parts.pivotSouthwest(), "pivot_dir");
-    buttonset.addItem(theme->parts.pivotSouth(), "pivot_dir");
-    buttonset.addItem(theme->parts.pivotSoutheast(), "pivot_dir");
+    buttonset.addItem(theme->parts.pivotNorthwest(), theme->styles.pivotDir());
+    buttonset.addItem(theme->parts.pivotNorth(), theme->styles.pivotDir());
+    buttonset.addItem(theme->parts.pivotNortheast(), theme->styles.pivotDir());
+    buttonset.addItem(theme->parts.pivotWest(), theme->styles.pivotDir());
+    buttonset.addItem(theme->parts.pivotCenter(), theme->styles.pivotDir());
+    buttonset.addItem(theme->parts.pivotEast(), theme->styles.pivotDir());
+    buttonset.addItem(theme->parts.pivotSouthwest(), theme->styles.pivotDir());
+    buttonset.addItem(theme->parts.pivotSouth(), theme->styles.pivotDir());
+    buttonset.addItem(theme->parts.pivotSoutheast(), theme->styles.pivotDir());
     box.addChild(&buttonset);
 
     menu.addChild(&visible);
@@ -1154,7 +1156,8 @@ public:
   DynamicsField(ContextBar* ctxBar)
     : ButtonSet(1)
     , m_ctxBar(ctxBar) {
-    addItem(SkinTheme::get(this)->parts.dynamics(), "dynamics_field");
+    auto* theme = SkinTheme::get(this);
+    addItem(theme->parts.dynamics(), theme->styles.dynamicsField());
 
     loadDynamicsPref();
     initTheme();
@@ -1381,10 +1384,10 @@ protected:
 class ContextBar::GradientTypeField : public ButtonSet {
 public:
   GradientTypeField() : ButtonSet(2) {
-    auto theme = SkinTheme::get(this);
+    auto* theme = SkinTheme::get(this);
 
-    addItem(theme->parts.linearGradient(), "context_bar_button");
-    addItem(theme->parts.radialGradient(), "context_bar_button");
+    addItem(theme->parts.linearGradient(), theme->styles.contextBarButton());
+    addItem(theme->parts.radialGradient(), theme->styles.contextBarButton());
 
     setSelectedItem(0);
   }
@@ -1404,10 +1407,10 @@ public:
 class ContextBar::DropPixelsField : public ButtonSet {
 public:
   DropPixelsField() : ButtonSet(2) {
-    auto theme = SkinTheme::get(this);
+    auto* theme = SkinTheme::get(this);
 
-    addItem(theme->parts.dropPixelsOk(), "context_bar_button");
-    addItem(theme->parts.dropPixelsCancel(), "context_bar_button");
+    addItem(theme->parts.dropPixelsOk(), theme->styles.contextBarButton());
+    addItem(theme->parts.dropPixelsCancel(), theme->styles.contextBarButton());
     setOfferCapture(false);
   }
 
@@ -1529,10 +1532,10 @@ class ContextBar::SymmetryField : public ButtonSet {
 public:
   SymmetryField() : ButtonSet(3) {
     setMultiMode(MultiMode::Set);
-    auto theme = SkinTheme::get(this);
-    addItem(theme->parts.horizontalSymmetry(), "symmetry_field");
-    addItem(theme->parts.verticalSymmetry(), "symmetry_field");
-    addItem("...", "symmetry_options");
+    auto* theme = SkinTheme::get(this);
+    addItem(theme->parts.horizontalSymmetry(), theme->styles.symmetryField());
+    addItem(theme->parts.verticalSymmetry(), theme->styles.symmetryField());
+    addItem("...", theme->styles.symmetryOptions());
   }
 
   void setupTooltips(TooltipManager* tooltipManager) {
@@ -1654,7 +1657,7 @@ public:
     , m_combobox(this)
     , m_action(2)
   {
-    auto theme = SkinTheme::get(this);
+    auto* theme = SkinTheme::get(this);
 
     m_sel.addItem(Strings::context_bar_all());
     m_sel.addItem(Strings::context_bar_none());
@@ -1667,8 +1670,8 @@ public:
     m_combobox.setExpansive(true);
     m_combobox.setMinSize(gfx::Size(256*guiscale(), 0));
 
-    m_action.addItem(theme->parts.iconUserData(), "buttonset_item_icon_mono");
-    m_action.addItem(theme->parts.iconClose(), "buttonset_item_icon_mono");
+    m_action.addItem(theme->parts.iconUserData(), theme->styles.buttonsetItemIconMono());
+    m_action.addItem(theme->parts.iconClose(), theme->styles.buttonsetItemIconMono());
     m_action.ItemChange.connect(
       [this](ButtonSet::Item* item){
         onAction(m_action.selectedItem());

@@ -185,7 +185,7 @@ ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
   m_instance = this;
 
   auto& pref = Preferences::instance();
-  auto theme = SkinTheme::get(this);
+  auto* theme = SkinTheme::get(this);
 
   auto item = m_editPal.addItem("");
   item->InitTheme.connect(
@@ -195,9 +195,9 @@ ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
                       SkinTheme::instance()->styles.palEditLock());
       item->setStyle(style);
   });
-  m_buttons.addItem(theme->parts.palSort(), "pal_button");
-  m_buttons.addItem(theme->parts.palPresets(), "pal_button");
-  m_buttons.addItem(theme->parts.palOptions(), "pal_button");
+  m_buttons.addItem(theme->parts.palSort(), theme->styles.palButton());
+  m_buttons.addItem(theme->parts.palPresets(), theme->styles.palButton());
+  m_buttons.addItem(theme->parts.palOptions(), theme->styles.palButton());
   item = m_tilesButton.addItem(theme->parts.tiles());
   item->InitTheme.connect(
     [this, item]() {
@@ -213,9 +213,9 @@ ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
                 1 == int(TilesetMode::Auto) &&
                 2 == int(TilesetMode::Stack), "Tileset mode buttons doesn't match TilesetMode enum values");
 
-  m_tilesetModeButtons.addItem(theme->parts.tilesManual(), "pal_button");
-  m_tilesetModeButtons.addItem(theme->parts.tilesAuto(), "pal_button");
-  m_tilesetModeButtons.addItem(theme->parts.tilesStack(), "pal_button");
+  m_tilesetModeButtons.addItem(theme->parts.tilesManual(), theme->styles.palButton());
+  m_tilesetModeButtons.addItem(theme->parts.tilesAuto(), theme->styles.palButton());
+  m_tilesetModeButtons.addItem(theme->parts.tilesStack(), theme->styles.palButton());
 
   m_tilesetMode = pref.colorBar.defaultTilesetMode();
   setTilesetMode(m_tilesetMode);
