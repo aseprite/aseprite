@@ -331,7 +331,9 @@ for each tag.
                   2 = Plays twice (for ping-pong, it plays once in one direction,
                       and once in reverse)
                   n = Plays N times
-      BYTE[6]   For future (set to zero)
+      BYTE      Flags
+                  1 = Tag should be displayed collapsed in the timeline UI
+      BYTE[5]   For future (set to zero)
       BYTE[3]   RGB values of the tag color
                   Deprecated, used only for backward compatibility with Aseprite v1.2.x
                   The color of the tag is the one in the user data field following

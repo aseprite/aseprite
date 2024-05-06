@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2023  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This program is distributed under the terms of
@@ -12,7 +13,6 @@
 #include "app/commands/command.h"
 #include "app/context_access.h"
 #include "app/modules/gui.h"
-#include "app/ui/timeline/timeline.h"
 #include "doc/image.h"
 #include "doc/layer.h"
 
@@ -49,7 +49,7 @@ bool LayerLockCommand::onChecked(Context* context)
     return false;
 
   SelectedLayers selLayers;
-  auto range = App::instance()->timeline()->range();
+  const view::RealRange& range = context->range();
   if (range.enabled()) {
     selLayers = range.selectedLayers();
   }
@@ -68,7 +68,7 @@ void LayerLockCommand::onExecute(Context* context)
 {
   ContextWriter writer(context);
   SelectedLayers selLayers;
-  auto range = App::instance()->timeline()->range();
+  auto range = context->range();
   if (range.enabled()) {
     selLayers = range.selectedLayers();
   }

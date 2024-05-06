@@ -316,6 +316,13 @@ void Doc::notifyLayerGroupCollapseChange(Layer* layer)
   notify_observers<DocEvent&>(&DocObserver::onLayerCollapsedChanged, ev);
 }
 
+void Doc::notifyTagCollapseChange(Tag* tag)
+{
+  DocEvent ev(this);
+  ev.tag(tag);
+  notify_observers<DocEvent&>(&DocObserver::onTagCollapsedChanged, ev);
+}
+
 void Doc::notifyAfterAddTile(LayerTilemap* layer, frame_t frame, tile_index ti)
 {
   DocEvent ev(this);

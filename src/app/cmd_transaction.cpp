@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -43,7 +43,7 @@ CmdTransaction* CmdTransaction::moveToEmptyCopy()
   return copy;
 }
 
-void CmdTransaction::setNewDocRange(const DocRange& range)
+void CmdTransaction::setNewDocRange(const view::RealRange& range)
 {
 #ifdef ENABLE_UI
   if (m_ranges)
@@ -134,26 +134,16 @@ bool CmdTransaction::isDocRangeEnabled() const
 #ifdef ENABLE_UI
   if (App::instance()) {
     Timeline* timeline = App::instance()->timeline();
-    if (timeline && timeline->range().enabled())
+    if (timeline && timeline->isRangeEnabled())
       return true;
   }
 #endif
   return false;
 }
 
-DocRange CmdTransaction::calcDocRange() const
+view::RealRange CmdTransaction::calcDocRange() const
 {
-#ifdef ENABLE_UI
-  // TODO We cannot use Context::activeSite() because it losts
-  //      important information about the DocRange() (type and
-  //      flags).
-  if (App::instance()) {
-    Timeline* timeline = App::instance()->timeline();
-    if (timeline)
-      return timeline->range();
-  }
-#endif
-  return DocRange();
+  return context()->range();
 }
 
 } // namespace app

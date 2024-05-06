@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2022  Igara Studio S.A.
+// Copyright (C) 2020-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -75,8 +75,8 @@ void UndoCommand::onExecute(Context* context)
     (Preferences::instance().undo.gotoModified() &&
      context->isUIAvailable() && editor);
   if (gotoModified) {
-    SpritePosition currentPosition(writer.site()->layer(),
-                                   writer.site()->frame());
+    SpritePosition currentPosition(writer.site().layer(),
+                                   writer.site().frame());
 
     if (m_type == Undo)
       spritePosition = undo->nextUndoSpritePosition();
@@ -150,12 +150,9 @@ void UndoCommand::onExecute(Context* context)
   // this point when objects (possible layers) are re-created after
   // the undo and we can deserialize them.
   if (docRangeStream) {
-    Timeline* timeline = App::instance()->timeline();
-    if (timeline) {
-      DocRange docRange;
-      if (docRange.read(*docRangeStream))
-        timeline->setRange(docRange);
-    }
+    view::Range docRange;
+    if (docRange.read(*docRangeStream))
+      context->setRange(docRange);
   }
 #endif  // ENABLE_UI
 

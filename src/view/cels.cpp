@@ -1,5 +1,5 @@
-// Aseprite
-// Copyright (C) 2020-2021  Igara Studio S.A.
+// Aseprite View Library
+// Copyright (C) 2020-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -9,18 +9,14 @@
 #include "config.h"
 #endif
 
-#include "app/util/range_utils.h"
+#include "view/cels.h"
 
-#include "app/context_access.h"
-#include "app/doc.h"
-#include "app/doc_range.h"
 #include "doc/cel.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
+#include "view/range.h"
 
-#include <set>
-
-namespace app {
+namespace view {
 
 using namespace doc;
 
@@ -31,10 +27,10 @@ enum class Target {
   kUniqueCanEditPixelsCels,
 };
 
-// TODO the DocRange should be "iteratable" to replace this function
+// TODO the view::Range should be "iteratable" to replace this function
 //      or we can wait to C++20 coroutines and co_yield
 static CelList get_cels_templ(const Sprite* sprite,
-                              DocRange range,
+                              Range range,
                               const Target target)
 {
   CelList cels;
@@ -71,24 +67,24 @@ static CelList get_cels_templ(const Sprite* sprite,
   return cels;
 }
 
-CelList get_cels(const doc::Sprite* sprite, const DocRange& range)
+CelList get_cels(const Sprite* sprite, const Range& range)
 {
   return get_cels_templ(sprite, range, Target::kAllCels);
 }
 
-CelList get_unique_cels(const Sprite* sprite, const DocRange& range)
+CelList get_unique_cels(const Sprite* sprite, const Range& range)
 {
   return get_cels_templ(sprite, range, Target::kUniqueCels);
 }
 
-CelList get_unique_cels_to_move_cel(const Sprite* sprite, const DocRange& range)
+CelList get_unique_cels_to_move_cel(const Sprite* sprite, const Range& range)
 {
   return get_cels_templ(sprite, range, Target::kUniqueCanMoveCels);
 }
 
-CelList get_unique_cels_to_edit_pixels(const Sprite* sprite, const DocRange& range)
+CelList get_unique_cels_to_edit_pixels(const Sprite* sprite, const Range& range)
 {
   return get_cels_templ(sprite, range, Target::kUniqueCanEditPixelsCels);
 }
 
-} // namespace app
+} // namespace view

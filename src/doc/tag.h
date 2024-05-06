@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -12,6 +12,7 @@
 #include "doc/anidir.h"
 #include "doc/frame.h"
 #include "doc/object.h"
+#include "doc/with_flags.h"
 #include "doc/with_user_data.h"
 
 #include <string>
@@ -20,7 +21,13 @@ namespace doc {
   class Sprite;
   class Tags;
 
-  class Tag : public WithUserData {
+  enum class TagFlags {
+    None       = 0,
+    Collapsed  = 1,
+  };
+
+  class Tag : public WithUserData,
+              public WithFlags<TagFlags> {
   public:
     static constexpr int kMaxRepeat = 65535;
 
@@ -37,6 +44,10 @@ namespace doc {
     color_t color() const { return userData().color(); }
     AniDir aniDir() const { return m_aniDir; }
     int repeat() const { return m_repeat; }
+
+    bool isCollapsed() const { return hasFlags(TagFlags::Collapsed); }
+    bool isExpanded() const  { return !hasFlags(TagFlags::Collapsed); }
+    void setCollapsed(bool state) { switchFlags(TagFlags::Collapsed, state); }
 
     void setFrameRange(frame_t from, frame_t to);
     void setName(const std::string& name);

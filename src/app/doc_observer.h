@@ -101,6 +101,9 @@ namespace app {
     virtual void onBeforeLayerVisibilityChange(DocEvent& ev, bool newState) { }
     virtual void onAfterLayerVisibilityChange(DocEvent& ev) { }
 
+    // The collapsed/expanded flag of a specific tag changed.
+    virtual void onTagCollapsedChanged(DocEvent& ev) { }
+
     // The tileset was remapped (e.g. when tiles are re-ordered).
     virtual void onRemapTileset(DocEvent& ev, const doc::Remap& remap) { }
 
