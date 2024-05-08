@@ -293,7 +293,7 @@ if(USE_SHARED_CMARK)
   find_path(CMARK_INCLUDE_DIRS NAMES cmark.h)
 else()
   add_definitions(-DCMARK_STATIC_DEFINE)
-  set(CMARK_LIBRARIES cmark_static)
+  set(CMARK_LIBRARIES cmark)
 endif()
 
 if(REQUIRE_CURL)
