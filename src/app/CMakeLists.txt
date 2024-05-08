@@ -161,6 +161,7 @@ if(ENABLE_SCRIPTING)
     commands/cmd_run_script.cpp
     script/app_command_object.cpp
     script/app_fs_object.cpp
+    script/app_os_object.cpp
     script/app_object.cpp
     script/app_theme_object.cpp
     script/brush_class.cpp
