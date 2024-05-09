@@ -37,7 +37,8 @@ class SpriteJob : public Job,
                   public render::TaskDelegate {
 public:
   SpriteJob(Context* ctx, Doc* doc,
-            const std::string& jobName);
+            const std::string& jobName,
+            const bool showProgress);
   ~SpriteJob();
 
   Doc* document() const { return m_doc; }

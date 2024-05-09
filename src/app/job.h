@@ -24,7 +24,10 @@ namespace app {
   public:
     static int runningJobs();
 
-    Job(const std::string& jobName);
+    Job(const std::string& jobName, bool showProgress);
+    Job() = delete;
+    Job(const Job&) = delete;
+    Job& operator==(const Job&) = delete;
     virtual ~Job();
 
     // Starts the job calling onJob() event in another thread and
@@ -68,12 +71,6 @@ namespace app {
     bool m_done_flag;
     bool m_canceled_flag;
     std::exception_ptr m_error;
-
-    // these methods are privated and not defined
-    Job();
-    Job(const Job&);
-    Job& operator==(const Job&);
-
   };
 
 } // namespace app

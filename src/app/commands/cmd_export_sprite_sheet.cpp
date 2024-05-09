@@ -1193,8 +1193,9 @@ public:
   ExportSpriteSheetJob(
     DocExporter& exporter,
     const Site& site,
-    const ExportSpriteSheetParams& params)
-    : Job(Strings::export_sprite_sheet_generating().c_str())
+    const ExportSpriteSheetParams& params,
+    const bool showProgress)
+    : Job(Strings::export_sprite_sheet_generating(), showProgress)
     , m_exporter(exporter)
     , m_site(site)
     , m_params(params) { }
@@ -1373,7 +1374,9 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   std::unique_ptr<Doc> newDocument;
 #ifdef ENABLE_UI
   if (context->isUIAvailable()) {
-    ExportSpriteSheetJob job(exporter, site, params);
+    ExportSpriteSheetJob job(exporter, site, params,
+                             // Progress bar can be disabled with ui=false
+                             params.ui());
     job.startJob();
     job.waitJob();
 

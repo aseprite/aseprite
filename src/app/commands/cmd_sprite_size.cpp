@@ -83,8 +83,9 @@ public:
   SpriteSizeJob(Context* ctx, Doc* doc,
                 const int new_width,
                 const int new_height,
-                const ResizeMethod resize_method)
-    : SpriteJob(ctx, doc, Strings::sprite_size_title()) {
+                const ResizeMethod resize_method,
+                const bool showProgress)
+    : SpriteJob(ctx, doc, Strings::sprite_size_title(), showProgress) {
     m_new_width = new_width;
     m_new_height = new_height;
     m_resize_method = resize_method;
@@ -373,9 +374,7 @@ bool SpriteSizeCommand::onEnabled(Context* context)
 
 void SpriteSizeCommand::onExecute(Context* context)
 {
-#ifdef ENABLE_UI
   const bool ui = (params().ui() && context->isUIAvailable());
-#endif
   const Site site = context->activeSite();
   Doc* doc = site.document();
   Sprite* sprite = site.sprite();
@@ -465,7 +464,7 @@ void SpriteSizeCommand::onExecute(Context* context)
   new_height = std::clamp(new_height, 1, DOC_SPRITE_MAX_HEIGHT);
 
   {
-    SpriteSizeJob job(context, doc, new_width, new_height, resize_method);
+    SpriteSizeJob job(context, doc, new_width, new_height, resize_method, ui);
     job.startJob();
     job.waitJob();
   }

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -36,8 +36,8 @@ namespace app {
 
 class OpenFileJob : public Job, public IFileOpProgress {
 public:
-  OpenFileJob(FileOp* fop)
-    : Job(Strings::open_file_loading().c_str())
+  OpenFileJob(FileOp* fop, const bool showProgress)
+    : Job(Strings::open_file_loading(), showProgress)
     , m_fop(fop)
   {
   }
@@ -76,6 +76,7 @@ private:
 
 OpenFileCommand::OpenFileCommand()
   : Command(CommandId::OpenFile(), CmdRecordableFlag)
+  , m_ui(true)
   , m_repeatCheckbox(false)
   , m_oneFrame(false)
   , m_seqDecision(gen::SequenceDecision::ASK)
@@ -86,6 +87,12 @@ void OpenFileCommand::onLoadParams(const Params& params)
 {
   m_filename = params.get("filename");
   m_folder = params.get("folder"); // Initial folder
+
+  if (params.has_param("ui"))
+    m_ui = params.get_as<bool>("ui");
+  else
+    m_ui = true;
+
   m_repeatCheckbox = params.get_as<bool>("repeat_checkbox");
   m_oneFrame = params.get_as<bool>("oneframe");
 
@@ -220,7 +227,7 @@ void OpenFileCommand::onExecute(Context* context)
         m_usedFiles.push_back(fn);
       }
 
-      OpenFileJob task(fop.get());
+      OpenFileJob task(fop.get(), m_ui);
       task.showProgressWindow();
 
       // Post-load processing, it is called from the GUI because may require user intervention.
