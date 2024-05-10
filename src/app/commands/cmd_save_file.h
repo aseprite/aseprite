@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021-2022  Igara Studio S.A.
+// Copyright (C) 2021-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -23,6 +23,7 @@ namespace app {
 
   struct SaveFileParams : public NewParams {
     Param<bool> ui { this, true, { "ui", "useUI" } };
+    Param<bool> recent { this, true, "recent" };
     Param<std::string> filename { this, std::string(), "filename" };
     Param<std::string> filenameFormat { this, std::string(), { "filenameFormat", "filename-format" } };
     Param<std::string> tag { this, std::string(), { "tag", "frame-tag" } };

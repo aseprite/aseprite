@@ -1389,8 +1389,10 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
       statusbar->showTip(1000, Strings::export_sprite_sheet_generated());
 
     // Save the exported sprite sheet as a recent file
-    if (newDocument->isAssociatedToFile())
+    if (newDocument->isAssociatedToFile() &&
+        should_add_file_to_recents(context, params)) {
       App::instance()->recentFiles()->addRecentFile(newDocument->filename());
+    }
 
     // Copy background and grid preferences
     DocumentPreferences& newDocPref(

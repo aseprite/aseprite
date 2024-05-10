@@ -257,7 +257,7 @@ void SaveFileBaseCommand::saveDocumentInBackground(
     document->impossibleToBackToSavedState();
   }
   else {
-    if (context->isUIAvailable() && params().ui())
+    if (should_add_file_to_recents(context, params()))
       App::instance()->recentFiles()->addRecentFile(filename);
 
     if (markAsSaved == MarkAsSaved::On) {
