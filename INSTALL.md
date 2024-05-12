@@ -3,24 +3,19 @@
 > [!NOTE]
 > If you're compiling an older version of Aseprite, follow its bundled `INSTALL.md`. Also, note that cross-compiling is not supported; compile on the same platform you intend to use Aseprite.
 
+## Platforms
 
 You should be able to compile Aseprite successfully on the following
-platforms:
+platforms.
 
-* Windows 11 + [Visual Studio Community 2022 + Windows 10.0 SDK (the latest version available)](https://imgur.com/a/7zs51IT) (we don't support [MinGW](#mingw))
-* macOS 13.0.1 Ventura + Xcode 14.1 + macOS 11.3 SDK (older version might work)
-* Linux Ubuntu Bionic 18.04 + clang 10.0
+| OS | Dev Environment | SDK |
+| --- | --- | --- |
+| Windows 11 or 10 | Visual Studio Community 2022 | Windows 10 SDK |
+| macOS Ventura 13.0.1 | Xcode 14.1 | macOS 11.3 SDK<br/>*Older versions might work.* |
+| Linux | Clang v10.0 or newer |
 
-# Get the source code
+> Newer versions may be compatible.
 
-You can get the source code downloading a `Aseprite-v1.x-Source.zip`
-file from the latest Aseprite release (*in that case please follow the
-compilation instructions inside the `.zip` file*):
-
-https://github.com/aseprite/aseprite/releases
-
-Or you can clone the repository and all its submodules using the
-following command:
 
     git clone --recursive https://github.com/aseprite/aseprite.git
 
