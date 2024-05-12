@@ -39,47 +39,71 @@ git submodule update --init --recursive
 
 To compile Aseprite you will need:
 
-* The latest version of [CMake](https://cmake.org) (3.16 or greater)
-* [Ninja](https://ninja-build.org) build system
-* And a compiled version of the `aseprite-m102` branch of
-  the [Skia library](https://github.com/aseprite/skia#readme).
-  There are [pre-built packages available](https://github.com/aseprite/skia/releases).
-  You can get some extra information in
-  the [*laf* dependencies](https://github.com/aseprite/laf#dependencies) page.
+| Package | Version | Note |
+| - | - | - |
+| [CMake](https://cmake.org) | Latest *(minimum v3.16)* | Make available in PATH environment variable |
+| [Ninja](https://ninja-build.org) | Latest | Make available in PATH environment variable |
+| [aseprite/Skia](https://github.com/aseprite/skia/releases) | Skia-m102 | See their release notes |
 
-## Windows dependencies
+> Visit each link for more information on how to download pre-built packages or how to compile them yourself.
 
-* Windows 10 (we don't support cross-compiling)
-* [Visual Studio Community 2022](https://visualstudio.microsoft.com/downloads/) (we don't support [MinGW](#mingw))
-* The [Desktop development with C++ item + Windows 10.0.18362.0 SDK](https://imgur.com/a/7zs51IT)
-  from the Visual Studio installer
+### 2.1 Additional dependencies *(platform-specific)*
 
-## macOS dependencies
+<details>
+<summary><h4>For Windows</h4></summary>
 
-On macOS you will need macOS 11.3 SDK and Xcode 13.1 (older versions
-might work).
+- [Visual Studio Community 2022](https://visualstudio.microsoft.com/downloads/)
 
-## Linux dependencies
+Using `Visual Studio Installer`, install the `Desktop development with C++` item and its following components:
 
-You will need the following dependencies on Ubuntu/Debian:
+- Windows 10 SDK (10.0.18362.0)
+- MSVC v143 - VS 2022 C++ x64/x86 build tools *(or newer)*
 
-    sudo apt-get install -y g++ clang libc++-dev libc++abi-dev cmake ninja-build libx11-dev libxcursor-dev libxi-dev libgl1-mesa-dev libfontconfig1-dev
+</details>
 
-Or use clang-10 packages (or newer) in case that clang in your distribution is older than clang 10.0:
+<details>
+<summary><h4>For macOS</h4></summary>
 
-    sudo apt-get install -y clang-10 libc++-10-dev libc++abi-10-dev
+You will need `macOS 11.3 SDK` and `Xcode 13.1`
 
-On Fedora:
+*Older versions might work*.
+</details>
 
-    sudo dnf install -y gcc-c++ clang libcxx-devel cmake ninja-build libX11-devel libXcursor-devel libXi-devel mesa-libGL-devel fontconfig-devel
+<details>
+<summary><h4>For Linux</h4></summary>
 
-On Arch:
+- Clang v10.0 or newer
 
-    sudo pacman -S gcc clang libc++ cmake ninja libx11 libxcursor mesa-libgl fontconfig
+##### Ubuntu/Debian
 
-On SUSE:
+```shell
+sudo apt-get install -y g++ clang libc++-dev libc++abi-dev cmake ninja-build libx11-dev libxcursor-dev libxi-dev libgl1-mesa-dev libfontconfig1-dev
+```
 
-    sudo zypper install gcc-c++ clang libc++-devel libc++abi-devel cmake ninja libX11-devel libXcursor-devel libXi-devel Mesa-libGL-devel fontconfig-devel
+If Clang in your distribution is older than v10.0, use `clang-10` packages or newer:
+
+```shell
+sudo apt-get install -y clang-10 libc++-10-dev libc++abi-10-dev
+```
+
+##### Fedora
+
+```shell
+sudo dnf install -y gcc-c++ clang libcxx-devel cmake ninja-build libX11-devel libXcursor-devel libXi-devel mesa-libGL-devel fontconfig-devel
+```
+
+##### Arch
+
+```shell
+sudo pacman -S gcc clang libc++ cmake ninja libx11 libxcursor mesa-libgl fontconfig
+```
+
+##### SUSE
+
+```shell
+sudo zypper install gcc-c++ clang libc++-devel libc++abi-devel cmake ninja libX11-devel libXcursor-devel libXi-devel Mesa-libGL-devel fontconfig-devel
+```
+</details>
 
 # Compiling
 
