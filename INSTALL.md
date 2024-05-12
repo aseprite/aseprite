@@ -105,168 +105,150 @@ sudo zypper install gcc-c++ clang libc++-devel libc++abi-devel cmake ninja libX1
 ```
 </details>
 
-# Compiling
+## 3. Compiling
 
-1. [Get Aseprite code](#get-the-source-code), put it in a folder like
-   `C:\aseprite`, and create a `build` directory inside to leave all
-   the files that are result of the compilation process (`.exe`,
-   `.lib`, `.obj`, `.a`, `.o`, etc).
+### 3.1 Create a build folder inside `./aseprite`
 
-        cd C:\aseprite
-        mkdir build
+```shell
+cd ./aseprite
+mkdir build
+```
 
-   In this way, if you want to start with a fresh copy of Aseprite
-   source code, you can remove the `build` directory and start again.
+This will contain files from the compilation process, for example `.exe`, `.lib`, `.obj`, `.a`, `.o`, etc.
 
-2. Enter in the new directory and execute `cmake`:
+> [!TIP]
+> This way, if you want to start with a fresh copy of Aseprite source code, you can remove the `build` folder and start again.
 
-        cd C:\aseprite\build
-        cmake -G Ninja -DLAF_BACKEND=skia ..
+### 3.2 Run `cmake` inside `./aseprite/build`
 
-   Here `cmake` needs different options depending on your
-   platform. You must check the details for
-   [Windows](#windows-details), [macOS](#macos-details), and
-   [Linux](#linux-details). Some `cmake` options can be modified using tools like
-   [`ccmake`](https://cmake.org/cmake/help/latest/manual/ccmake.1.html)
-   or [`cmake-gui`](https://cmake.org/cmake/help/latest/manual/cmake-gui.1.html).
+Some options can be modified using tools like [`ccmake`](https://cmake.org/cmake/help/latest/manual/ccmake.1.html) and [`cmake-gui`](https://cmake.org/cmake/help/latest/manual/cmake-gui.1.html).
 
-3. After you have executed and configured `cmake`, you have to compile
-   the project:
+> [!IMPORTANT]
+> When you run `cmake`, remember to adjust the paths if you've compiled or uncompressed Skia in a different location.
 
-        cd C:\aseprite\build
-        ninja aseprite
 
-4. When `ninja` finishes the compilation, you can find the executable
-   inside `C:\aseprite\build\bin\aseprite.exe`.
+<details>
+<summary><h4>On Windows</h4></summary>
 
-## Windows details
+1. Open terminal and enter the `Visual Studio 2022 Developer Command Prompt` environment by running:
 
-Open a command prompt window (`cmd.exe`) and call:
-
+    ```shell
     call "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\VsDevCmd.bat" -arch=x64
+    ```
 
-The command above is required while using the 64-bit version of skia. When compiling with the 32-bit version, it is possible to open a [developer command prompt](https://docs.microsoft.com/en-us/dotnet/framework/tools/developer-command-prompt-for-vs) instead.
+    > Required while using the 64-bit version of skia. To compile using the 32-bit version, it is possible to open a [developer command prompt](https://docs.microsoft.com/en-us/dotnet/framework/tools/developer-command-prompt-for-vs) instead.
 
-And then
+2. Then, run:
 
-    cd aseprite
-    mkdir build
-    cd build
+    ```shell
     cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DLAF_BACKEND=skia -DSKIA_DIR=C:\deps\skia -DSKIA_LIBRARY_DIR=C:\deps\skia\out\Release-x64 -DSKIA_LIBRARY=C:\deps\skia\out\Release-x64\skia.lib -G Ninja ..
-    ninja aseprite
+    ```
 
-In this case, `C:\deps\skia` is the directory where Skia was compiled
-or uncompressed.
+    ##### MinGW
 
-### MinGW
+    We don't support MinGW compiler and it might bring some problems into
+    the compilation process. If you see that the detected C++ compiler by
+    cmake is `C:\MinGW\bin\c++.exe` or something similar, you have to get
+    rid of MinGW path (`C:\MinGW\bin`) from the `PATH` environment
+    variable and run cmake again from scratch, so the Visual Studio C++
+    compiler (`cl.exe`) is used instead.
 
-We don't support MinGW compiler and it might bring some problems into
-the compilation process. If you see that the detected C++ compiler by
-cmake is `C:\MinGW\bin\c++.exe` or something similar, you have to get
-rid of MinGW path (`C:\MinGW\bin`) from the `PATH` environment
-variable and run cmake again from scratch, so the Visual Studio C++
-compiler (`cl.exe`) is used instead.
+    You can define the `CMAKE_IGNORE_PATH` variable when running cmake for
+    the first time in case that you don't know or don't want to modify the
+    `PATH` variable, e.g.:
 
-You can define the `CMAKE_IGNORE_PATH` variable when running cmake for
-the first time in case that you don't know or don't want to modify the
-`PATH` variable, e.g.:
-
+    ```shell
     cmake -DCMAKE_IGNORE_PATH=C:\MinGW\bin ...
+    ```
 
-More information in [issue #2449](https://github.com/aseprite/aseprite/issues/2449)
+    More information within [Issue #2449](https://github.com/aseprite/aseprite/issues/2449).
+</details>
 
-## macOS details
+<details>
+<summary><h4>On macOS</i></h4></summary>
 
-Run `cmake` with the following parameters and then `ninja`:
+> **Important**: Make sure that `CMAKE_OSX_SYSROOT` is pointing to the correct SDK directory as it could be different in your Mac.
 
-    cd aseprite
-    mkdir build
-    cd build
-    cmake \
-      -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-      -DCMAKE_OSX_ARCHITECTURES=x86_64 \
-      -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 \
-      -DCMAKE_OSX_SYSROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk \
-      -DLAF_BACKEND=skia \
-      -DSKIA_DIR=$HOME/deps/skia \
-      -DSKIA_LIBRARY_DIR=$HOME/deps/skia/out/Release-x64 \
-      -DSKIA_LIBRARY=$HOME/deps/skia/out/Release-x64/libskia.a \
-      -G Ninja \
-      ..
-    ninja aseprite
+<details>
+<summary><h5>Apple Silicon <i>(aka M1, ARM64, or AArch64)</i></h5></summary>
 
-In this case, `$HOME/deps/skia` is the directory where Skia was
-compiled or downloaded.  Make sure that `CMAKE_OSX_SYSROOT` is
-pointing to the correct SDK directory (in this case
-`/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk`),
-but it could be different in your Mac.
+```shell
+cmake \
+    -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+    -DCMAKE_OSX_ARCHITECTURES=arm64 \
+    -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
+    -DCMAKE_OSX_SYSROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk \
+    -DLAF_BACKEND=skia \
+    -DSKIA_DIR=$HOME/deps/skia \
+    -DSKIA_LIBRARY_DIR=$HOME/deps/skia/out/Release-arm64 \
+    -DSKIA_LIBRARY=$HOME/deps/skia/out/Release-arm64/libskia.a \
+    -DPNG_ARM_NEON:STRING=on \
+    -G Ninja \
+    ..
+```
+</details>
 
-### Apple Silicon
+<details>
+<summary><h5>Intel-based</h5></summary>
 
-If you running macOS on an ARM64/AArch64/Apple Silicon Mac (e.g. M1),
-you can compile a native ARM64 version of Aseprite following similar 
-steps as above but when we call `cmake`, we have some differences:
+```shell
+cmake \
+    -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+    -DCMAKE_OSX_ARCHITECTURES=x86_64 \
+    -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 \
+    -DCMAKE_OSX_SYSROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk \
+    -DLAF_BACKEND=skia \
+    -DSKIA_DIR=$HOME/deps/skia \
+    -DSKIA_LIBRARY_DIR=$HOME/deps/skia/out/Release-x64 \
+    -DSKIA_LIBRARY=$HOME/deps/skia/out/Release-x64/libskia.a \
+    -G Ninja \
+    ..
+```
 
-    cd aseprite
-    mkdir build
-    cd build
-    cmake \
-      -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-      -DCMAKE_OSX_ARCHITECTURES=arm64 \
-      -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
-      -DCMAKE_OSX_SYSROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk \
-      -DLAF_BACKEND=skia \
-      -DSKIA_DIR=$HOME/deps/skia \
-      -DSKIA_LIBRARY_DIR=$HOME/deps/skia/out/Release-arm64 \
-      -DSKIA_LIBRARY=$HOME/deps/skia/out/Release-arm64/libskia.a \
-      -DPNG_ARM_NEON:STRING=on \
-      -G Ninja \
-      ..
-      ninja aseprite
+</details>
 
-### Issues with Retina displays
+##### Issues with Retina displays
+If you have a Retina display, check the following issue: https://github.com/aseprite/aseprite/issues/589.
 
-If you have a Retina display, check the following issue:
+</details>
 
-  https://github.com/aseprite/aseprite/issues/589
+<details>
+<summary><h4>On Linux</h4></summary>
 
-## Linux details
+You must use `clang` and `libc++`, including if you are using the pre-compiled Skia version:
 
-You need to use clang and libc++ to compile Aseprite:
+```shell
+export CC=clang
+export CXX=clang++
 
-    cd aseprite
-    mkdir build
-    cd build
-    export CC=clang
-    export CXX=clang++
-    cmake \
-      -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-      -DCMAKE_CXX_FLAGS:STRING=-stdlib=libc++ \
-      -DCMAKE_EXE_LINKER_FLAGS:STRING=-stdlib=libc++ \
-      -DLAF_BACKEND=skia \
-      -DSKIA_DIR=$HOME/deps/skia \
-      -DSKIA_LIBRARY_DIR=$HOME/deps/skia/out/Release-x64 \
-      -DSKIA_LIBRARY=$HOME/deps/skia/out/Release-x64/libskia.a \
-      -G Ninja \
-      ..
-    ninja aseprite
+cmake \
+    -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+    -DCMAKE_CXX_FLAGS:STRING=-stdlib=libc++ \
+    -DCMAKE_EXE_LINKER_FLAGS:STRING=-stdlib=libc++ \
+    -DLAF_BACKEND=skia \
+    -DSKIA_DIR=$HOME/deps/skia \
+    -DSKIA_LIBRARY_DIR=$HOME/deps/skia/out/Release-x64 \
+    -DSKIA_LIBRARY=$HOME/deps/skia/out/Release-x64/libskia.a \
+    -G Ninja \
+    ..
+```
 
-In this case, `$HOME/deps/skia` is the directory where Skia was
-compiled or uncompressed.
+##### GCC compiler
+Only if you compile Skia with GCC, you will be able to compile Aseprite with GCC, and this
+is not recommended as you will have a **performance penalty** doing so.
+</details>
 
-### GCC compiler
+### 3.3 Run ninja in `aseprite/build` folder
 
-In case that you are using the pre-compiled Skia version, you must use
-the clang compiler and libc++ to compile Aseprite. Only if you compile
-Skia with GCC, you will be able to compile Aseprite with GCC, and this
-is not recommended as you will have a performance penalty doing so.
+```shell
+ninja aseprite
+```
 
-# Using shared third party libraries
+When `ninja` finishes the compilation, you can find `aseprite.exe` inside `aseprite/build/bin`.
 
-If you don't want to use the embedded code of third party libraries
-(i.e. to use your installed versions), you can disable static linking
-configuring each `USE_SHARED_` option.
 
-After running `cmake -G`, you can edit `build/CMakeCache.txt` file,
-and enable the `USE_SHARED_` flag (set its value to `ON`) of the
-library that you want to be linked dynamically.
+## Using shared third party libraries
+
+If you don't want to use the embedded code of third party libraries *(i.e. to use your installed versions)*, you can disable static linking configuring each `USE_SHARED_` option.
+
+After running `cmake -G`, you can edit `build/CMakeCache.txt` file and enable the `USE_SHARED_` flag *(set its value to `ON`)* of the library that you want to be linked dynamically.
