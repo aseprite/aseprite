@@ -16,19 +16,26 @@ platforms.
 
 > Newer versions may be compatible.
 
+## 1. Get the source code
 
-    git clone --recursive https://github.com/aseprite/aseprite.git
+### Option 1: Manual
+Go to the [Releases](https://github.com/aseprite/aseprite/releases) section and download *`Aseprite-vX.X.X-Source.zip`* file from the latest available release.
 
-To update an existing clone you can use the following commands:
+### Option 2: Git
+Clone the repository and all its submodules using the following command:
 
-    cd aseprite
-    git pull
-    git submodule update --init --recursive
+```shell
+git clone --recursive https://github.com/aseprite/aseprite.git
+```
 
-You can use [Git for Windows](https://git-for-windows.github.io/) to
-clone the repository on Windows.
+#### To update an existing clone:
+```shell
+cd aseprite
+git pull
+git submodule update --init --recursive
+```
 
-# Dependencies
+## 2. Dependencies
 
 To compile Aseprite you will need:
 
