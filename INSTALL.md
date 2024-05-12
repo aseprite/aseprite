@@ -1,20 +1,8 @@
-# Table of contents
+# Installation guide
 
-* [Platforms](#platforms)
-* [Get the source code](#get-the-source-code)
-* [Dependencies](#dependencies)
-  * [Windows dependencies](#windows-dependencies)
-  * [macOS dependencies](#macos-dependencies)
-  * [Linux dependencies](#linux-dependencies)
-* [Compiling](#compiling)
-  * [Windows details](#windows-details)
-    * [MinGW](#mingw)
-  * [macOS details](#macos-details)
-    * [Issues with Retina displays](#issues-with-retina-displays)
-  * [Linux details](#linux-details)
-* [Using shared third party libraries](#using-shared-third-party-libraries)
+> [!NOTE]
+> If you're compiling an older version of Aseprite, follow its bundled `INSTALL.md`. Also, note that cross-compiling is not supported; compile on the same platform you intend to use Aseprite.
 
-# Platforms
 
 You should be able to compile Aseprite successfully on the following
 platforms:
