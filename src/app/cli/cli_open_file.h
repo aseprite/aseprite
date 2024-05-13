@@ -44,6 +44,7 @@ namespace app {
     bool trimByGrid = false;
     bool oneFrame = false;
     bool exportTileset = false;
+    bool playSubtags = false;
     gfx::Rect crop;
 
     bool hasTag() const {
