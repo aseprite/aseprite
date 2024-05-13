@@ -303,6 +303,10 @@ int CliProcessor::process(Context* ctx)
         else if (opt == &m_options.tag()) {
           cof.tag = value.value();
         }
+        // --play-subtags
+        else if (opt == &m_options.playSubtags()) {
+          cof.playSubtags = true;
+        }
         // --frame-range from,to
         else if (opt == &m_options.frameRange()) {
           std::vector<std::string> splitRange;

@@ -121,6 +121,10 @@ void PreviewCliDelegate::saveFile(Context* ctx, const CliOpenFile& cof)
     std::cout << "  - Tag: '" << cof.tag << "'\n";
   }
 
+  if (cof.playSubtags) {
+    std::cout << "  - Play subtags & repeats\n";
+  }
+
   if (cof.hasSlice()) {
     std::cout << "  - Slice: '" << cof.slice << "'\n";
   }
