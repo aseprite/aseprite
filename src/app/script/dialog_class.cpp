@@ -25,6 +25,10 @@
 #include "app/ui/expr_entry.h"
 #include "app/ui/filename_field.h"
 #include "app/ui/main_window.h"
+#include "app/ui/editor/editor.h"
+#include "app/ui/toolbar.h"
+#include "app/ui/context_bar.h"
+#include "app/tools/tool_box.h"
 #include "base/paths.h"
 #include "base/remove_from_container.h"
 #include "ui/box.h"
@@ -58,12 +62,74 @@ namespace script {
 using namespace ui;
 
 namespace {
+  
+class DialogWindow : public ui::Window,
+                       public EditorObserver {
+  public:
+    bool moveTool;
+  
+    DialogWindow (Type type, const std::string& text = "")
+      : Window(type, text)
+      , moveTool(false)
+      , m_editor(nullptr)
+      , m_oldTool(nullptr)
+    {
+    }
+    
+    ~DialogWindow() {
+      if (m_editor)
+        m_editor->remove_observer(this);
+      if (m_oldTool)
+        ToolBar::instance()->selectTool(m_oldTool);
+    }
+    
+    void onOpen(Event& ev) override {
+      if (moveTool && Editor::activeEditor()) {
+        m_editor = Editor::activeEditor();
+        m_editor->add_observer(this);
+        m_oldTool = m_editor->getCurrentEditorTool();
+        tools::Tool* hand = App::instance()->toolBox()->getToolById(tools::WellKnownTools::Hand);
+        ToolBar::instance()->selectTool(hand);
+      }
+    }
+    
+    void onBeforeClose(CloseEvent& ev) override {
+      // unset references in case the same dialog is opened again
+      if (m_editor) {
+        m_editor->remove_observer(this);   
+        m_editor = nullptr;
+      }
+      if (m_oldTool) {
+        ToolBar::instance()->selectTool(m_oldTool);
+        m_oldTool = nullptr;   
+      }
+    }
+    
+    void onBroadcastMouseMessage(const gfx::Point& screenPos, ui::WidgetsList& targets) override {
+      if (moveTool) {
+        targets.push_back(this);
+        // Add also the editor as receptor of mouse events.
+        if (m_editor)
+          targets.push_back(ui::View::getView(m_editor));
+        // and add the context bar.
+        if (App::instance()->contextBar())
+          targets.push_back(App::instance()->contextBar());
+      }
+      else {
+        Window::onBroadcastMouseMessage(screenPos, targets);
+      }
+    }
+
+  private:
+    Editor* m_editor;
+    tools::Tool* m_oldTool;
+};
 
 struct Dialog;
 std::vector<Dialog*> all_dialogs;
 
 struct Dialog {
-  ui::Window window;
+  DialogWindow window;
   // Main grid that holds the dialog content.
   ui::Grid grid;
   // Pointer to current grid (might be the main grid or a tab's grid).
@@ -404,6 +470,13 @@ int Dialog_show(lua_State* L)
     if (type == LUA_TBOOLEAN)
       wait = lua_toboolean(L, -1);
     lua_pop(L, 1);
+    
+    type = lua_getfield(L, 2, "move");
+    if (type == LUA_TBOOLEAN)
+      dlg->window.moveTool = lua_toboolean(L, -1);
+    else
+      dlg->window.moveTool = false;
+    lua_pop(L, 1);
 
     type = lua_getfield(L, 2, "bounds");
     if (VALID_LUATYPE(type)) {
@@ -435,7 +508,7 @@ int Dialog_show(lua_State* L)
                 dlg->addScrollbarsIfNeeded(workarea, bounds);
               });
   }
-
+  
   if (wait)
     dlg->window.openWindowInForeground();
   else
