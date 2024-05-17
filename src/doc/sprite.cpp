@@ -311,7 +311,7 @@ LayerImage* Sprite::backgroundLayer() const
 Layer* Sprite::firstLayer() const
 {
   Layer* layer = root()->firstLayer();
-  while (layer->isGroup())
+  while (layer && layer->isGroup())
     layer = static_cast<LayerGroup*>(layer)->firstLayer();
   return layer;
 }
