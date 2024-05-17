@@ -1,4 +1,4 @@
--- Copyright (C) 2019-2023  Igara Studio S.A.
+-- Copyright (C) 2019-2024  Igara Studio S.A.
 -- Copyright (C) 2018  David Capello
 --
 -- This file is released under the terms of the MIT license.
@@ -98,6 +98,21 @@ do -- ExportSpriteSheet
     0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,
     0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,
     0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,
+  })
+
+  local s = Sprite{ fromFile="sprites/groups4.aseprite" }
+  local c = app.pixelColor.rgba(75, 105, 47)
+  app.command.ExportSpriteSheet {
+    type=SpriteSheetType.ROWS,
+    textureFilename="_test_export_spritesheet4.png",
+    layer="G1/G2/G3/b",
+    trim=true,
+  }
+  local i = Image{ fromFile="_test_export_spritesheet4.png" }
+  expect_img(i,  {
+    c,c,0,
+    c,c,0,
+    c,c,c,
   })
 end
 
