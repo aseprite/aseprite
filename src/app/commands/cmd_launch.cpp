@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -20,6 +20,7 @@ namespace app {
 class LaunchCommand : public Command {
 public:
   LaunchCommand();
+  const bool isSkipListing(const Params& params) const override { return true; }
 
 protected:
   void onLoadParams(const Params& params) override;

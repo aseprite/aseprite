@@ -100,6 +100,10 @@ protected:
 
     return (frame < last ? frame+1: 0);
   }
+
+  const bool isSkipListing(const Params& params) const override {
+    return params.empty();
+  }
 };
 
 class GotoNextFrameWithSameTagCommand : public GotoCommand {

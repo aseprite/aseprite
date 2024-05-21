@@ -45,6 +45,9 @@ protected:
   bool onEnabled(Context* context) override;
   void onExecute(Context* context) override;
   std::string onGetFriendlyName() const override;
+  const bool isSkipListing(const Params& params) const override {
+    return m_modifier == doc::algorithm::SelectionModifier::Contract;
+  }
 
 private:
   std::string getActionName() const;

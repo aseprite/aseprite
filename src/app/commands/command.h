@@ -37,6 +37,13 @@ namespace app {
     bool isEnabled(Context* context);
     bool isChecked(Context* context);
 
+    // Not all Commands must be listed on KeyBoard Shortcut list, so
+    // this function returns if a key command should be listed or not.
+    // Used on 'cmd_keyboard_shorcuts.cpp'.
+    virtual const bool isSkipListing(const Params& params) const {
+      return false;
+    }
+
   protected:
     virtual bool onNeedsParams() const;
     virtual void onLoadParams(const Params& params);

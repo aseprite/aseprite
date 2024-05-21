@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2024  Igara Studio S.A.
 // Copyright (C) 2016-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -23,6 +24,7 @@ public:
 protected:
   void onLoadParams(const Params& params) override;
   void onExecute(Context* context) override;
+  const bool isSkipListing(const Params& params) const override { return true; }
 
 private:
   std::string m_filename;

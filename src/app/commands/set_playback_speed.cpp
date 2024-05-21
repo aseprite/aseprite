@@ -26,6 +26,9 @@ protected:
   bool onChecked(Context* ctx) override;
   void onExecute(Context* ctx) override;
   std::string onGetFriendlyName() const override;
+  const bool isSkipListing(const Params& params) const override {
+    return params.empty();
+  }
 };
 
 SetPlaybackSpeedCommand::SetPlaybackSpeedCommand()

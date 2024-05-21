@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (c) 2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -23,6 +24,9 @@ protected:
   void onLoadParams(const Params& params) override;
   bool onChecked(Context* context) override;
   void onExecute(Context* context) override;
+  const bool isSkipListing(const Params& params) const override {
+    return !params.empty();
+  }
 
 private:
   int m_size;

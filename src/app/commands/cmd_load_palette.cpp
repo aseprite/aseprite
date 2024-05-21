@@ -32,6 +32,9 @@ public:
 protected:
   void onLoadParams(const Params& params) override;
   void onExecute(Context* context) override;
+  const bool isSkipListing(const Params& params) const override {
+    return !params.empty();
+  }
 
 private:
   std::string m_preset;

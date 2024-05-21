@@ -54,6 +54,10 @@ protected:
     return Strings::commands_TilesetMode(mode);
   }
 
+  const bool isSkipListing(const Params& params) const override {
+    return params.empty();
+  }
+
 private:
   TilesetMode m_mode;
 };

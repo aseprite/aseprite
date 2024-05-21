@@ -26,6 +26,9 @@ protected:
   bool onEnabled(Context* context) override;
   bool onChecked(Context* context) override;
   void onExecute(Context* context) override;
+  const bool isSkipListing(const Params& params) const override {
+    return params.empty();
+  }
 
   filters::TiledMode m_mode;
 };
