@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2023  Igara Studio S.A.
+// Copyright (c) 2023-2024  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -26,6 +26,9 @@ protected:
   bool onChecked(Context* ctx) override;
   void onExecute(Context* ctx) override;
   std::string onGetFriendlyName() const override;
+  const bool isSkipListing(const Params& params) const override {
+    return params.empty();
+  }
 };
 
 SetPlaybackSpeedCommand::SetPlaybackSpeedCommand()

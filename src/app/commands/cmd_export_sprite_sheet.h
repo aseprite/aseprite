@@ -64,6 +64,9 @@ public:
 protected:
   bool onEnabled(Context* context) override;
   void onExecute(Context* context) override;
+  const bool isSkipListing(const Params& params) const override {
+    return !params.empty();
+  }
 };
 
 } // namespace app

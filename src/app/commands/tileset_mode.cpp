@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2024  Igara Studio S.A.
 // Copyright (C) 2020  Igara Studio S.A.
 //
 // This program is distributed under the terms of
@@ -53,6 +54,10 @@ protected:
       case TilesetMode::Stack:  mode = Strings::commands_TilesetMode_Stack();  break;
     }
     return fmt::format(getBaseFriendlyName(), mode);
+  }
+
+  const bool isSkipListing(const Params& params) const override {
+    return params.empty();
   }
 
 private:

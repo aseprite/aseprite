@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -36,6 +37,12 @@ namespace app {
     bool isEnabled(Context* context);
     bool isChecked(Context* context);
     void generateFriendlyName();
+    // Not all Commands must be listed on KeyBoard Shortcut list, so
+    // this function returns if a key command should be listed or not.
+    // Used on 'cmd_keyboard_shorcuts.cpp'.
+    virtual const bool isSkipListing(const Params& params) const {
+      return false;
+    }
 
   protected:
     virtual bool onNeedsParams() const;

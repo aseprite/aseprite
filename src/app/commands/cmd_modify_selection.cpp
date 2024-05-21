@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -46,6 +46,9 @@ protected:
   bool onEnabled(Context* context) override;
   void onExecute(Context* context) override;
   std::string onGetFriendlyName() const override;
+  const bool isSkipListing(const Params& params) const override {
+    return m_modifier == doc::algorithm::SelectionModifier::Contract;
+  }
 
 private:
   std::string getActionName() const;

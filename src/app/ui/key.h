@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -138,6 +138,7 @@ namespace app {
                                      const KeyboardShortcuts& globalKeys) const;
     bool isPressed() const;
     bool isLooselyPressed() const;
+    bool isSkipListing() const;
 
     bool hasAccel(const ui::Accelerator& accel) const;
     bool hasUserDefinedAccels() const;
