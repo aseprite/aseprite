@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2024  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -9,6 +10,7 @@
 #pragma once
 
 #include "app/commands/command.h"
+#include "app/commands/params.h"
 #include "doc/algorithm/flip_type.h"
 
 namespace app {
@@ -24,6 +26,9 @@ namespace app {
     bool onEnabled(Context* context) override;
     void onExecute(Context* context) override;
     std::string onGetFriendlyName() const override;
+    bool isListed(const Params& params, const KeyContext& context) const override {
+      return !params.empty();
+    }
 
   private:
     bool m_flipMask;

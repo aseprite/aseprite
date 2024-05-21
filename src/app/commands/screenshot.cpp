@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -54,6 +54,9 @@ public:
 protected:
   void onExecute(Context* ctx) override;
   std::string onGetFriendlyName() const override;
+  bool isListed(const Params& params, const KeyContext& context) const override {
+    return !params.empty();
+  }
 };
 
 ScreenshotCommand::ScreenshotCommand()
