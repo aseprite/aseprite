@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -191,8 +191,8 @@ DocDiff compare_docs(const Doc* a,
       if (aLay->type() != bLay->type() ||
           aLay->name() != bLay->name() ||
           aLay->userData() != bLay->userData() ||
-          ((int(aLay->flags()) & int(LayerFlags::PersistentFlagsMask)) !=
-           (int(bLay->flags()) & int(LayerFlags::PersistentFlagsMask))) ||
+          ((int(aLay->flags()) & int(LayerFlags::StructuralFlagsMask)) !=
+           (int(bLay->flags()) & int(LayerFlags::StructuralFlagsMask))) ||
           (aLay->isImage() && bLay->isImage() &&
            (((const LayerImage*)aLay)->opacity() != ((const LayerImage*)bLay)->opacity())) ||
           (aLay->isTilemap() && bLay->isTilemap() &&
