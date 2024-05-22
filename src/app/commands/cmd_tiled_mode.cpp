@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (c) 2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -12,8 +13,10 @@
 #include "app/commands/command.h"
 #include "app/commands/params.h"
 #include "app/context.h"
+#include "app/i18n/strings.h"
 #include "app/pref/preferences.h"
 #include "filters/tiled_mode.h"
+#include "fmt/format.h"
 
 namespace app {
 
@@ -26,6 +29,7 @@ protected:
   bool onEnabled(Context* context) override;
   bool onChecked(Context* context) override;
   void onExecute(Context* context) override;
+  std::string onGetFriendlyName() const override;
   const bool isSkipListing(const Params& params) const override {
     return params.empty();
   }
@@ -65,6 +69,18 @@ void TiledModeCommand::onExecute(Context* ctx)
 {
   const Doc* doc = ctx->activeDocument();
   Preferences::instance().document(doc).tiled.mode(m_mode);
+}
+
+std::string TiledModeCommand::onGetFriendlyName() const {
+  std::string mode;
+  switch (m_mode) {
+    case filters::TiledMode::NONE: mode = Strings::main_menu_view_tiled_mode_none(); break;
+    case filters::TiledMode::BOTH: mode = Strings::main_menu_view_tiled_mode_both(); break;
+    case filters::TiledMode::X_AXIS: mode = Strings::main_menu_view_tiled_mode_x(); break;
+    case filters::TiledMode::Y_AXIS: mode = Strings::main_menu_view_tiled_mode_y(); break;
+  }
+  mode = base::removeEscapeCharFromText(mode, '&');
+  return fmt::format(getBaseFriendlyName(), mode);
 }
 
 Command* CommandFactory::createTiledModeCommand()
