@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -31,6 +31,8 @@
 #include "ui/accelerator.h"
 #include "ui/message.h"
 
+#include "tinyxml2.h"
+
 #include <algorithm>
 #include <set>
 #include <vector>
@@ -38,6 +40,8 @@
 #define XML_KEYBOARD_FILE_VERSION "1"
 
 #define I18N_KEY(a) app::Strings::keyboard_shortcuts_##a()
+
+using namespace tinyxml2;
 
 namespace {
 
@@ -138,7 +142,7 @@ namespace {
     return g_wheel_actions;
   }
 
-  const char* get_shortcut(TiXmlElement* elem) {
+  const char* get_shortcut(XMLElement* elem) {
     const char* shortcut = NULL;
 
 #ifdef _WIN32
@@ -613,13 +617,13 @@ void KeyboardShortcuts::clear()
   m_keys.clear();
 }
 
-void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
+void KeyboardShortcuts::importFile(XMLElement* rootElement, KeySource source)
 {
   // <keyboard><commands><key>
-  TiXmlHandle handle(rootElement);
-  TiXmlElement* xmlKey = handle
-    .FirstChild("commands")
-    .FirstChild("key").ToElement();
+  XMLHandle handle(rootElement);
+  XMLElement* xmlKey = handle
+    .FirstChildElement("commands")
+    .FirstChildElement("key").ToElement();
   while (xmlKey) {
     const char* command_name = xmlKey->Attribute("command");
     const char* command_key = get_shortcut(xmlKey);
@@ -637,7 +641,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
         // Read params
         Params params;
 
-        TiXmlElement* xmlParam = xmlKey->FirstChildElement("param");
+        XMLElement* xmlParam = xmlKey->FirstChildElement("param");
         while (xmlParam) {
           const char* param_name = xmlParam->Attribute("name");
           const char* param_value = xmlParam->Attribute("value");
@@ -677,8 +681,8 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
   // Load keyboard shortcuts for tools
   // <keyboard><tools><key>
   xmlKey = handle
-    .FirstChild("tools")
-    .FirstChild("key").ToElement();
+    .FirstChildElement("tools")
+    .FirstChildElement("key").ToElement();
   while (xmlKey) {
     const char* tool_id = xmlKey->Attribute("tool");
     const char* tool_key = get_shortcut(xmlKey);
@@ -705,8 +709,8 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
   // Load keyboard shortcuts for quicktools
   // <keyboard><quicktools><key>
   xmlKey = handle
-    .FirstChild("quicktools")
-    .FirstChild("key").ToElement();
+    .FirstChildElement("quicktools")
+    .FirstChildElement("key").ToElement();
   while (xmlKey) {
     const char* tool_id = xmlKey->Attribute("tool");
     const char* tool_key = get_shortcut(xmlKey);
@@ -733,8 +737,8 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
   // Load special keyboard shortcuts for sprite editor customization
   // <keyboard><actions><key>
   xmlKey = handle
-    .FirstChild("actions")
-    .FirstChild("key").ToElement();
+    .FirstChildElement("actions")
+    .FirstChildElement("key").ToElement();
   while (xmlKey) {
     const char* action_id = xmlKey->Attribute("action");
     const char* action_key = get_shortcut(xmlKey);
@@ -768,8 +772,8 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
   // Load special keyboard shortcuts for mouse wheel customization
   // <keyboard><wheel><key>
   xmlKey = handle
-    .FirstChild("wheel")
-    .FirstChild("key").ToElement();
+    .FirstChildElement("wheel")
+    .FirstChildElement("key").ToElement();
   while (xmlKey) {
     const char* action_id = xmlKey->Attribute("action");
     const char* action_key = get_shortcut(xmlKey);
@@ -796,8 +800,8 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
   // Load special keyboard shortcuts to simulate mouse wheel actions
   // <keyboard><drag><key>
   xmlKey = handle
-    .FirstChild("drag")
-    .FirstChild("key").ToElement();
+    .FirstChildElement("drag")
+    .FirstChildElement("key").ToElement();
   while (xmlKey) {
     const char* action_id = xmlKey->Attribute("action");
     const char* action_key = get_shortcut(xmlKey);
@@ -835,26 +839,25 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
 
 void KeyboardShortcuts::importFile(const std::string& filename, KeySource source)
 {
-  XmlDocumentRef doc = app::open_xml(filename);
-  TiXmlHandle handle(doc.get());
-  TiXmlElement* xmlKey = handle.FirstChild("keyboard").ToElement();
+  XMLDocumentRef doc = app::open_xml(filename);
+  XMLHandle handle(doc.get());
+  XMLElement* xmlKey = handle.FirstChildElement("keyboard").ToElement();
 
   importFile(xmlKey, source);
 }
 
 void KeyboardShortcuts::exportFile(const std::string& filename)
 {
-  XmlDocumentRef doc(new TiXmlDocument());
+  auto doc = std::make_unique<XMLDocument>();
+  XMLElement* keyboard = doc->NewElement("keyboard");
+  XMLElement* commands = keyboard->InsertNewChildElement("commands");
+  XMLElement* tools = keyboard->InsertNewChildElement("tools");
+  XMLElement* quicktools = keyboard->InsertNewChildElement("quicktools");
+  XMLElement* actions = keyboard->InsertNewChildElement("actions");
+  XMLElement* wheel = keyboard->InsertNewChildElement("wheel");
+  XMLElement* drag = keyboard->InsertNewChildElement("drag");
 
-  TiXmlElement keyboard("keyboard");
-  TiXmlElement commands("commands");
-  TiXmlElement tools("tools");
-  TiXmlElement quicktools("quicktools");
-  TiXmlElement actions("actions");
-  TiXmlElement wheel("wheel");
-  TiXmlElement drag("drag");
-
-  keyboard.SetAttribute("version", XML_KEYBOARD_FILE_VERSION);
+  keyboard->SetAttribute("version", XML_KEYBOARD_FILE_VERSION);
 
   exportKeys(commands, KeyType::Command);
   exportKeys(tools, KeyType::Tool);
@@ -863,20 +866,12 @@ void KeyboardShortcuts::exportFile(const std::string& filename)
   exportKeys(wheel, KeyType::WheelAction);
   exportKeys(drag, KeyType::DragAction);
 
-  keyboard.InsertEndChild(commands);
-  keyboard.InsertEndChild(tools);
-  keyboard.InsertEndChild(quicktools);
-  keyboard.InsertEndChild(actions);
-  keyboard.InsertEndChild(wheel);
-  keyboard.InsertEndChild(drag);
-
-  TiXmlDeclaration declaration("1.0", "utf-8", "");
-  doc->InsertEndChild(declaration);
+  doc->InsertEndChild(doc->NewDeclaration("xml version=\"1.0\" encoding=\"utf-8\""));
   doc->InsertEndChild(keyboard);
-  save_xml(doc, filename);
+  save_xml(doc.get(), filename);
 }
 
-void KeyboardShortcuts::exportKeys(TiXmlElement& parent, KeyType type)
+void KeyboardShortcuts::exportKeys(XMLElement* parent, KeyType type)
 {
   for (KeyPtr& key : m_keys) {
     // Save only user defined accelerators.
@@ -893,17 +888,17 @@ void KeyboardShortcuts::exportKeys(TiXmlElement& parent, KeyType type)
   }
 }
 
-void KeyboardShortcuts::exportAccel(TiXmlElement& parent, const Key* key, const ui::Accelerator& accel, bool removed)
+void KeyboardShortcuts::exportAccel(XMLElement* parent, const Key* key, const ui::Accelerator& accel, bool removed)
 {
-  TiXmlElement elem("key");
+  XMLElement* elem = parent->InsertNewChildElement("key");
 
   switch (key->type()) {
 
     case KeyType::Command: {
-      elem.SetAttribute("command", key->command()->id().c_str());
+      elem->SetAttribute("command", key->command()->id().c_str());
 
       if (key->keycontext() != KeyContext::Any) {
-        elem.SetAttribute("context",
+        elem->SetAttribute("context",
                           base::convert_to<std::string>(key->keycontext()).c_str());
       }
 
@@ -911,48 +906,45 @@ void KeyboardShortcuts::exportAccel(TiXmlElement& parent, const Key* key, const 
         if (param.second.empty())
           continue;
 
-        TiXmlElement paramElem("param");
-        paramElem.SetAttribute("name", param.first.c_str());
-        paramElem.SetAttribute("value", param.second.c_str());
-        elem.InsertEndChild(paramElem);
+        XMLElement* paramElem = elem->InsertNewChildElement("param");
+        paramElem->SetAttribute("name", param.first.c_str());
+        paramElem->SetAttribute("value", param.second.c_str());
       }
       break;
     }
 
     case KeyType::Tool:
     case KeyType::Quicktool:
-      elem.SetAttribute("tool", key->tool()->getId().c_str());
+      elem->SetAttribute("tool", key->tool()->getId().c_str());
       break;
 
     case KeyType::Action:
-      elem.SetAttribute("action",
+      elem->SetAttribute("action",
                         base::convert_to<std::string>(key->action()).c_str());
       if (key->keycontext() != KeyContext::Any)
-        elem.SetAttribute("context",
+        elem->SetAttribute("context",
                           base::convert_to<std::string>(key->keycontext()).c_str());
       break;
 
     case KeyType::WheelAction:
-      elem.SetAttribute("action",
-                        base::convert_to<std::string>(key->wheelAction()));
+      elem->SetAttribute("action",
+                         base::convert_to<std::string>(key->wheelAction()).c_str());
       break;
 
     case KeyType::DragAction:
-      elem.SetAttribute("action",
-                        base::convert_to<std::string>(key->wheelAction()));
-      elem.SetAttribute("vector",
-                        fmt::format("{},{}",
-                                    key->dragVector().x,
-                                    key->dragVector().y));
+      elem->SetAttribute("action",
+                         base::convert_to<std::string>(key->wheelAction()).c_str());
+      elem->SetAttribute("vector",
+                         fmt::format("{},{}",
+                                     key->dragVector().x,
+                                     key->dragVector().y).c_str());
       break;
   }
 
-  elem.SetAttribute("shortcut", accel.toString().c_str());
+  elem->SetAttribute("shortcut", accel.toString().c_str());
 
   if (removed)
-    elem.SetAttribute("removed", "true");
-
-  parent.InsertEndChild(elem);
+    elem->SetAttribute("removed", "true");
 }
 
 void KeyboardShortcuts::reset()

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -40,7 +40,7 @@
 #include "ui/intern.h"
 #include "ui/ui.h"
 
-#include "tinyxml.h"
+#include "tinyxml2.h"
 
 #include <algorithm>
 #include <cstring>
@@ -52,6 +52,7 @@ namespace app {
 namespace skin {
 
 using namespace gfx;
+using namespace tinyxml2;
 using namespace ui;
 
 // TODO For backward compatibility, in future versions we should remove this (extensions are preferred)
@@ -77,7 +78,8 @@ class app::skin::SkinTheme::BackwardCompatibility {
   // Loaded XML <style> element from the original theme (cloned
   // elements).  Must be in order to insert them in the same order in
   // the selected theme.
-  std::vector<std::unique_ptr<TiXmlElement>> m_styles;
+  XMLDocumentRef m_stylesDoc;
+  std::vector<XMLElement*> m_styles;
 
 public:
   void copyingStyles() {
@@ -85,13 +87,17 @@ public:
   }
 
   // Called for each <style> element found in theme.xml.
-  void onStyle(TiXmlElement* xmlStyle) {
+  void onStyle(XMLElement* xmlStyle) {
     // Loading <style> from the default theme
-    if (m_state == State::LoadingStyles)
-      m_styles.emplace_back((TiXmlElement*)xmlStyle->Clone());
+    if (m_state == State::LoadingStyles) {
+      if (!m_stylesDoc)
+        m_stylesDoc = std::make_unique<XMLDocument>();
+      m_styles.emplace_back(
+        xmlStyle->DeepClone(m_stylesDoc.get())->ToElement());
+    }
   }
 
-  void removeExistentStyles(TiXmlElement* xmlStyle) {
+  void removeExistentStyles(XMLElement* xmlStyle) {
     if (m_state != State::CopyingStyles)
       return;
 
@@ -117,7 +123,7 @@ public:
   // Copies all missing <style> elements to the new theme. xmlStyles
   // is the <styles> element from the theme.xml of the selected theme
   // (non the default one).
-  void copyMissingStyles(TiXmlNode* xmlStyles) {
+  void copyMissingStyles(XMLNode* xmlStyles) {
     if (m_state != State::CopyingStyles)
       return;
 
@@ -125,8 +131,8 @@ public:
       LOG(VERBOSE, "THEME: Copying <style id='%s'> from default theme\n",
           style->Attribute("id"));
 
-      // InsertEndChild() clones the node
-      xmlStyles->InsertEndChild(*style.get());
+      xmlStyles->InsertEndChild(
+        style->DeepClone(xmlStyles->GetDocument()));
     }
   }
 };
@@ -153,7 +159,7 @@ static const char* g_cursor_names[kCursorTypes] = {
 };
 
 static FontData* load_font(std::map<std::string, FontData*>& fonts,
-                           const TiXmlElement* xmlFont,
+                           const XMLElement* xmlFont,
                            const std::string& xmlFilename)
 {
   const char* fontRef = xmlFont->Attribute("font");
@@ -237,8 +243,8 @@ static FontData* load_font(std::map<std::string, FontData*>& fonts,
     font.release();
 
     // Fallback font
-    const TiXmlElement* xmlFallback =
-      (const TiXmlElement*)xmlFont->FirstChild("fallback");
+    const XMLElement* xmlFallback =
+      (const XMLElement*)xmlFont->FirstChildElement("fallback");
     if (xmlFallback) {
       FontData* fallback = load_font(fonts, xmlFallback, xmlFilename);
       if (fallback) {
@@ -345,12 +351,12 @@ void SkinTheme::loadFontData()
   if (!rf.findFirst())
     throw base::Exception("File %s not found", fontsFilename.c_str());
 
-  XmlDocumentRef doc = open_xml(rf.filename());
-  TiXmlHandle handle(doc.get());
+  XMLDocumentRef doc = open_xml(rf.filename());
+  XMLHandle handle(doc.get());
 
-  TiXmlElement* xmlFont = handle
-    .FirstChild("fonts")
-    .FirstChild("font").ToElement();
+  XMLElement* xmlFont = handle
+    .FirstChildElement("fonts")
+    .FirstChildElement("font").ToElement();
   while (xmlFont) {
     load_font(m_fonts, xmlFont, rf.filename());
     xmlFont = xmlFont->NextSiblingElement();
@@ -420,15 +426,15 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
   // Load the skin XML
   std::string xml_filename(base::join_path(m_path, "theme.xml"));
 
-  XmlDocumentRef doc = open_xml(xml_filename);
-  TiXmlHandle handle(doc.get());
+  XMLDocumentRef doc = open_xml(xml_filename);
+  XMLHandle handle(doc.get());
 
   // Load Preferred scaling
   m_preferredScreenScaling = -1;
   m_preferredUIScaling = -1;
   {
-    TiXmlElement* xmlTheme = handle
-      .FirstChild("theme").ToElement();
+    XMLElement* xmlTheme = handle
+      .FirstChildElement("theme").ToElement();
     if (xmlTheme) {
       const char* screenScaling = xmlTheme->Attribute("screenscaling");
       const char* uiScaling = xmlTheme->Attribute("uiscaling");
@@ -441,10 +447,10 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
 
   // Load fonts
   {
-    TiXmlElement* xmlFont = handle
-      .FirstChild("theme")
-      .FirstChild("fonts")
-      .FirstChild("font").ToElement();
+    XMLElement* xmlFont = handle
+      .FirstChildElement("theme")
+      .FirstChildElement("fonts")
+      .FirstChildElement("font").ToElement();
     while (xmlFont) {
       const char* idStr = xmlFont->Attribute("id");
       FontData* fontData = load_font(m_fonts, xmlFont, xml_filename);
@@ -485,10 +491,10 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
 
   // Load dimension
   {
-    TiXmlElement* xmlDim = handle
-      .FirstChild("theme")
-      .FirstChild("dimensions")
-      .FirstChild("dim").ToElement();
+    XMLElement* xmlDim = handle
+      .FirstChildElement("theme")
+      .FirstChildElement("dimensions")
+      .FirstChildElement("dim").ToElement();
     while (xmlDim) {
       std::string id = xmlDim->Attribute("id");
       uint32_t value = strtol(xmlDim->Attribute("value"), NULL, 10);
@@ -502,10 +508,10 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
 
   // Load colors
   {
-    TiXmlElement* xmlColor = handle
-      .FirstChild("theme")
-      .FirstChild("colors")
-      .FirstChild("color").ToElement();
+    XMLElement* xmlColor = handle
+      .FirstChildElement("theme")
+      .FirstChildElement("colors")
+      .FirstChildElement("color").ToElement();
     while (xmlColor) {
       std::string id = xmlColor->Attribute("id");
       uint32_t value = strtol(xmlColor->Attribute("value")+1, NULL, 16);
@@ -523,10 +529,10 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
 
   // Load parts
   {
-    TiXmlElement* xmlPart = handle
-      .FirstChild("theme")
-      .FirstChild("parts")
-      .FirstChild("part").ToElement();
+    XMLElement* xmlPart = handle
+      .FirstChildElement("theme")
+      .FirstChildElement("parts")
+      .FirstChildElement("part").ToElement();
     while (xmlPart) {
       // Get the tool-icon rectangle
       const char* part_id = xmlPart->Attribute("id");
@@ -616,10 +622,10 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
 
   // Load styles
   {
-    TiXmlElement* xmlStyle = handle
-      .FirstChild("theme")
-      .FirstChild("styles")
-      .FirstChild("style").ToElement();
+    XMLElement* xmlStyle = handle
+      .FirstChildElement("theme")
+      .FirstChildElement("styles")
+      .FirstChildElement("style").ToElement();
 
     if (!xmlStyle)              // Without styles?
       throw base::Exception("There are no styles");
@@ -752,7 +758,7 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
         }
       }
 
-      TiXmlElement* xmlLayer = xmlStyle->FirstChildElement();
+      XMLElement* xmlLayer = xmlStyle->FirstChildElement();
       while (xmlLayer) {
         const std::string layerName = xmlLayer->Value();
 

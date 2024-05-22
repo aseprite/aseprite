@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022  Igara Studio S.A.
+// Copyright (C) 2022-2024  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -19,6 +19,7 @@ namespace app {
 
 struct ExportSpriteSheetParams : public NewParams {
   Param<bool> ui { this, true, "ui" };
+  Param<bool> recent { this, true, "recent" };
   Param<bool> askOverwrite { this, true, { "askOverwrite", "ask-overwrite" } };
   Param<app::SpriteSheetType> type { this, app::SpriteSheetType::None, "type" };
   Param<int> columns { this, 0, "columns" };

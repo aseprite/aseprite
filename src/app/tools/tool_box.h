@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -16,7 +16,9 @@
 #include "app/i18n/xml_translator.h"
 #include "app/tools/tool.h"
 
-class TiXmlElement;
+namespace tinyxml2 {
+  class XMLElement;
+}
 
 namespace app {
   namespace tools {
@@ -113,7 +115,7 @@ namespace app {
 
     private:
       void loadTools();
-      void loadToolProperties(TiXmlElement* xmlTool, Tool* tool, int button, const std::string& suffix);
+      void loadToolProperties(tinyxml2::XMLElement* xmlTool, Tool* tool, int button, const std::string& suffix);
 
       std::map<std::string, Ink*> m_inks;
       std::map<std::string, Controller*> m_controllers;

@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -93,6 +93,7 @@ namespace doc {
     PixelFormat pixelFormat() const { return (PixelFormat)m_spec.colorMode(); }
     ColorMode colorMode() const { return m_spec.colorMode(); }
     const PixelRatio& pixelRatio() const { return m_pixelRatio; }
+    bool hasPixelRatio() const;
     gfx::Size size() const { return m_spec.size(); }
     gfx::Rect bounds() const { return m_spec.bounds(); }
     int width() const { return m_spec.width(); }

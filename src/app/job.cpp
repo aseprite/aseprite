@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021  Igara Studio S.A.
+// Copyright (C) 2021-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -33,18 +33,19 @@ int Job::runningJobs()
   return g_runningJobs;
 }
 
-Job::Job(const char* jobName)
+Job::Job(const std::string& jobName,
+         const bool showProgress)
 {
   m_last_progress = 0.0;
   m_done_flag = false;
   m_canceled_flag = false;
 
-  if (App::instance()->isGui()) {
+  if (showProgress && App::instance()->isGui()) {
     m_alert_window = ui::Alert::create(
       fmt::format(Strings::alerts_job_working(), jobName));
     m_alert_window->addProgress();
 
-    m_timer.reset(new ui::Timer(kMonitoringPeriod, m_alert_window.get()));
+    m_timer = std::make_unique<ui::Timer>(kMonitoringPeriod, m_alert_window.get());
     m_timer->Tick.connect(&Job::onMonitoringTick, this);
     m_timer->start();
   }
@@ -53,7 +54,7 @@ Job::Job(const char* jobName)
 Job::~Job()
 {
   if (App::instance()->isGui()) {
-    ASSERT(!m_timer->isRunning());
+    ASSERT(!m_timer || !m_timer->isRunning());
 
     if (m_alert_window)
       m_alert_window->closeWindow(NULL);

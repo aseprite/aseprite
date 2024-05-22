@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2022  Igara Studio S.A.
+// Copyright (C) 2020-2024  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -28,8 +28,8 @@ namespace app {
     GuiXml();
 
     // Returns the tinyxml document instance.
-    XmlDocumentRef doc() {
-      return m_doc;
+    tinyxml2::XMLDocument* doc() {
+      return m_doc.get();
     }
 
     // Returns the name of the gui.xml file.
@@ -38,7 +38,7 @@ namespace app {
     }
 
   private:
-    XmlDocumentRef m_doc;
+    XMLDocumentRef m_doc;
     friend class std::unique_ptr<GuiXml>;
   };
 

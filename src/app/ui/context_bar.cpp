@@ -1770,7 +1770,9 @@ private:
   }
 
   void updateLayout() {
-    const bool visible = (m_doc && !m_doc->sprite()->slices().empty());
+    const bool visible = (m_doc &&
+                          m_doc->sprite() &&
+                          !m_doc->sprite()->slices().empty());
     const bool relayout = (visible != m_combobox.isVisible() ||
                            visible != m_action.isVisible());
 

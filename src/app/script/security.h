@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021-2023  Igara Studio S.A.
+// Copyright (C) 2021-2024  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -33,9 +33,7 @@ namespace script {
     WebSocket,
   };
 
-  int secure_io_open(lua_State* L);
-  int secure_os_execute(lua_State* L);
-  int secure_package_loadlib(lua_State* L);
+  void overwrite_unsecure_functions(lua_State* L);
 
   bool ask_access(lua_State* L,
                   const char* filename,

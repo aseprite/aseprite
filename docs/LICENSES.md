@@ -1139,10 +1139,10 @@ freely, subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 ```
 
-# [tinyxml](http://www.grinninglizard.com/tinyxml/)
+# [tinyxml2](https://github.com/leethomason/tinyxml2)
 
 ```
-TinyXML is released under the zlib license:
+Original code by Lee Thomason (www.grinninglizard.com)
 
 This software is provided 'as-is', without any express or implied
 warranty. In no event will the authors be held liable for any
@@ -1162,12 +1162,6 @@ must not be misrepresented as being the original software.
 
 3. This notice may not be removed or altered from any source
 distribution.
-
---
-
-TinyXML was originally written by Lee Thomason. Lee reviews changes
-and releases new versions, with the help of Yves Berquin, Andrew
-Ellerton, and the tinyXml community.
 ```
 
 # [ucdn](https://github.com/grigorig/ucdn)

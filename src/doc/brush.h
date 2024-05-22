@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -22,17 +22,33 @@
 
 namespace doc {
 
+  class Brush;
+  using BrushRef = std::shared_ptr<Brush>;
+
   class Brush {
   public:
     static const int kMinBrushSize = 1;
     static const int kMaxBrushSize = 64;
 
-    enum class ImageColor { MainColor, BackgroundColor };
+    enum class ImageColor { MainColor, BackgroundColor, BothColors };
 
     Brush();
     Brush(BrushType type, int size, int angle);
-    Brush(const Brush& brush);
     ~Brush();
+
+    // Don't offer copy constructor/operator, use clone*() functions
+    // instead.
+    Brush(const Brush&) = delete;
+    Brush& operator=(const Brush&) = delete;
+
+    // Cloned brushes can share the same image until
+    // setSize()/Angle()/etc. (regenerate()) is called for the new
+    // brush. In that case the original brush and the cloned one will
+    // have a different image after all.
+    BrushRef cloneWithSharedImages() const;
+    BrushRef cloneWithNewImages() const;
+    BrushRef cloneWithExistingImages(const ImageRef& image,
+                                     const ImageRef& maskBitmap) const;
 
     BrushType type() const { return m_type; }
     int size() const { return m_size; }
@@ -48,7 +64,6 @@ namespace doc {
     const gfx::Rect& bounds() const { return m_bounds; }
     const gfx::Point& center() const { return m_center; }
 
-    void setType(BrushType type);
     void setSize(int size);
     void setAngle(int angle);
     void setImage(const Image* image,
@@ -81,7 +96,9 @@ namespace doc {
   private:
     void clean();
     void regenerate();
+    void regenerateMaskBitmap();
     void resetBounds();
+    void copyFieldsFromBrush(const Brush& brush);
 
     BrushType m_type;                     // Type of brush
     int m_size;                           // Size (diameter)
@@ -100,8 +117,6 @@ namespace doc {
     std::optional<color_t> m_mainColor; // Main image brush color
     std::optional<color_t> m_bgColor;   // Background color
   };
-
-  typedef std::shared_ptr<Brush> BrushRef;
 
 } // namespace doc
 

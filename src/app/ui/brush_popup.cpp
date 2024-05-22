@@ -467,7 +467,9 @@ os::SurfaceRef BrushPopup::createSurfaceForBrush(const BrushRef& origBrush,
   BrushRef brush = origBrush;
   if (brush) {
     if (brush->type() != kImageBrushType && brush->size() > kMaxSize) {
-      brush.reset(new Brush(*brush));
+      // Clone with shared images, as setSize() will re-create the
+      // images and the brush is no kImageBrushType anyway.
+      brush = brush->cloneWithSharedImages();
       brush->setSize(kMaxSize);
     }
     // Show the original image in the popup (without the image colors

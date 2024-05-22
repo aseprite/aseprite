@@ -95,12 +95,6 @@ set(OBSERVABLE_TESTS OFF CACHE BOOL "Compile observable tests")
 add_subdirectory(observable)
 include_directories(observable)
 
-# Disable clip examples and tests
-set(CLIP_EXAMPLES OFF CACHE BOOL "Compile clip examples")
-set(CLIP_TESTS OFF CACHE BOOL "Compile clip tests")
-set(CLIP_X11_PNG_LIBRARY "${PNG_LIBRARY}")
-add_subdirectory(clip)
-
 # Disable undo tests
 set(UNDO_TESTS OFF CACHE BOOL "Compile undo tests")
 add_subdirectory(undo)
@@ -123,6 +117,10 @@ if(REQUIRE_CURL)
   add_subdirectory(net)
 endif()
 
+# We need the updater library to check for updates (when
+# ENABLE_UPDATER) or for the app.os object (ENABLE_SCRIPTING).
+add_subdirectory(updater)
+
 if(GEN_EXE)
   add_executable(gen IMPORTED)
   set_target_properties(gen PROPERTIES IMPORTED_LOCATION ${GEN_EXE})
@@ -131,10 +129,6 @@ else()
   add_subdirectory(gen)
   set(GEN_EXE ${CMAKE_BINARY_DIR}/bin/gen)
   set(GEN_DEP gen)
-endif()
-
-if(ENABLE_UPDATER)
-  add_subdirectory(updater)
 endif()
 
 if(ENABLE_STEAM)

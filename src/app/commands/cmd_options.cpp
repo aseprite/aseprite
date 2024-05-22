@@ -784,10 +784,15 @@ public:
         m_context->activeDocument() &&
         m_context->activeDocument()->sprite() &&
         m_context->activeDocument()->sprite()->gridBounds() != gridBounds()) {
-      ContextWriter writer(m_context);
-      Tx tx(writer, Strings::commands_GridSettings(), ModifyDocument);
-      tx(new cmd::SetGridBounds(writer.sprite(), gridBounds()));
-      tx.commit();
+      try {
+        ContextWriter writer(m_context, 1000);
+        Tx tx(writer, Strings::commands_GridSettings(), ModifyDocument);
+        tx(new cmd::SetGridBounds(writer.sprite(), gridBounds()));
+        tx.commit();
+      }
+      catch (const std::exception& ex) {
+        Console::showException(ex);
+      }
     }
 
     m_curPref->show.grid(gridVisible()->isSelected());
@@ -1312,9 +1317,20 @@ private:
     if (language()->getItemCount() > 0)
       return;
 
-    // Select current language by lang ID
+    // Check if the current language exists, in other case select English.
     Strings* strings = Strings::instance();
     std::string curLang = strings->currentLanguage();
+    bool found = false;
+    for (const LangInfo& lang : strings->availableLanguages()) {
+      if (lang.id == curLang) {
+        found = true;
+        break;
+      }
+    }
+    if (!found)
+      curLang = Strings::kDefLanguage;
+
+    // Select current language by lang ID
     for (const LangInfo& lang : strings->availableLanguages()) {
       int i = language()->addItem(new LangItem(lang));
       if (lang.id == curLang)

@@ -1,4 +1,5 @@
 // Aseprite Code Generator
+// Copyright (c) 2024 Igara Studio S.A.
 // Copyright (c) 2015-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -13,7 +14,9 @@
 #include <iostream>
 #include <vector>
 
-void gen_theme_class(TiXmlDocument* doc, const std::string& inputFn)
+using namespace tinyxml2;
+
+void gen_theme_class(XMLDocument* doc, const std::string& inputFn)
 {
   std::vector<std::string> dimensions;
   std::vector<std::string> colors;
@@ -21,11 +24,11 @@ void gen_theme_class(TiXmlDocument* doc, const std::string& inputFn)
   std::vector<std::string> cursors;
   std::vector<std::string> styles;
 
-  TiXmlHandle handle(doc);
-  TiXmlElement* elem = handle
-    .FirstChild("theme")
-    .FirstChild("dimensions")
-    .FirstChild("dim").ToElement();
+  XMLHandle handle(doc);
+  XMLElement* elem = handle
+    .FirstChildElement("theme")
+    .FirstChildElement("dimensions")
+    .FirstChildElement("dim").ToElement();
   while (elem) {
     const char* id = elem->Attribute("id");
     dimensions.push_back(id);
@@ -33,9 +36,9 @@ void gen_theme_class(TiXmlDocument* doc, const std::string& inputFn)
   }
 
   elem = handle
-    .FirstChild("theme")
-    .FirstChild("colors")
-    .FirstChild("color").ToElement();
+    .FirstChildElement("theme")
+    .FirstChildElement("colors")
+    .FirstChildElement("color").ToElement();
   while (elem) {
     const char* id = elem->Attribute("id");
     colors.push_back(id);
@@ -43,9 +46,9 @@ void gen_theme_class(TiXmlDocument* doc, const std::string& inputFn)
   }
 
   elem = handle
-    .FirstChild("theme")
-    .FirstChild("parts")
-    .FirstChild("part").ToElement();
+    .FirstChildElement("theme")
+    .FirstChildElement("parts")
+    .FirstChildElement("part").ToElement();
   while (elem) {
     const char* id = elem->Attribute("id");
     if (std::strncmp(id, "cursor_", 7) == 0) {
@@ -57,9 +60,9 @@ void gen_theme_class(TiXmlDocument* doc, const std::string& inputFn)
   }
 
   elem = handle
-    .FirstChild("theme")
-    .FirstChild("styles")
-    .FirstChild("style").ToElement();
+    .FirstChildElement("theme")
+    .FirstChildElement("styles")
+    .FirstChildElement("style").ToElement();
   while (elem) {
     const char* id = elem->Attribute("id");
     styles.push_back(id);

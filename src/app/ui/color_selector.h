@@ -121,7 +121,6 @@ namespace app {
 #if SK_ENABLE_SKSL
     static const char* getAlphaBarShader();
     bool buildEffects();
-    sk_sp<SkRuntimeEffect> buildEffect(const char* code);
 #endif
 
     // Internal flag used to lock the modification of m_color.

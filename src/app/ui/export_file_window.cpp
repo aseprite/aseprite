@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -56,7 +56,17 @@ ExportFileWindow::ExportFileWindow(const Doc* doc)
   fill_layers_combobox(m_doc->sprite(), layers(), m_docPref.saveCopy.layer(), m_docPref.saveCopy.layerIndex());
   fill_frames_combobox(m_doc->sprite(), frames(), m_docPref.saveCopy.frameTag());
   fill_anidir_combobox(anidir(), m_docPref.saveCopy.aniDir());
-  pixelRatio()->setSelected(m_docPref.saveCopy.applyPixelRatio());
+
+  if (doc->sprite()->hasPixelRatio()) {
+    pixelRatio()->setSelected(m_docPref.saveCopy.applyPixelRatio());
+  }
+  else {
+    // Hide "Apply pixel ratio" checkbox when there is no pixel aspect
+    // ratio to apply.
+    pixelRatio()->setSelected(false);
+    pixelRatio()->setVisible(false);
+  }
+
   forTwitter()->setSelected(m_docPref.saveCopy.forTwitter());
   adjustResize()->setVisible(false);
   playSubtags()->setSelected(m_docPref.saveCopy.playSubtags());
@@ -218,7 +228,9 @@ void ExportFileWindow::updateAniDir()
 void ExportFileWindow::updatePlaySubtags()
 {
   std::string framesValue = this->framesValue();
-  playSubtags()->setVisible(framesValue != kSelectedFrames);
+  playSubtags()->setVisible(framesValue != kSelectedFrames &&
+                            // We hide the option if there is no tag
+                            !m_doc->sprite()->tags().empty());
   layout();
 }
 

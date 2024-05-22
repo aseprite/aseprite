@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -42,10 +42,13 @@ namespace doc {
     Reference  = 64,            // Is a reference layer
 
     PersistentFlagsMask = 0xffff,
-
     Internal_WasVisible = 0x10000, // Was visible in the alternative state (Alt+click)
 
     BackgroundLayerFlags = LockMove | Background,
+
+    // Flags that change the modified flag of the document
+    // (e.g. created by undoable actions).
+    StructuralFlagsMask = Background | Reference,
   };
 
   class Layer : public WithUserData {

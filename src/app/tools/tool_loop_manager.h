@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -95,7 +95,8 @@ private:
   Pointer m_lastPointer;
   gfx::Region m_dirtyArea;
   gfx::Region m_nextDirtyArea;
-  doc::Brush m_brush0;
+  const int m_brushSize0;
+  const int m_brushAngle0;
   DynamicsOptions m_dynamics;
   gfx::PointF m_stabilizerCenter;
 };

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -484,7 +484,8 @@ protected:
   std::string onGetFriendlyName() const override;
 
 private:
-  bool m_useUI;
+  bool m_showDlg;
+  bool m_showProgress;
   doc::PixelFormat m_format;
   render::Dithering m_dithering;
   doc::RgbMapAlgorithm m_rgbmap;
@@ -494,7 +495,8 @@ private:
 ChangePixelFormatCommand::ChangePixelFormatCommand()
   : Command(CommandId::ChangePixelFormat(), CmdUIOnlyFlag)
 {
-  m_useUI = true;
+  m_showDlg = true;
+  m_showProgress = true;
   m_format = IMAGE_RGB;
   m_dithering = render::Dithering();
   m_rgbmap = doc::RgbMapAlgorithm::DEFAULT;
@@ -503,15 +505,20 @@ ChangePixelFormatCommand::ChangePixelFormatCommand()
 
 void ChangePixelFormatCommand::onLoadParams(const Params& params)
 {
-  m_useUI = false;
+  m_showDlg = false;
+  m_showProgress = true;
 
   std::string format = params.get("format");
   if (format == "rgb") m_format = IMAGE_RGB;
   else if (format == "grayscale" ||
            format == "gray") m_format = IMAGE_GRAYSCALE;
   else if (format == "indexed") m_format = IMAGE_INDEXED;
-  else
-    m_useUI = true;
+  else {
+    m_showDlg = true;
+  }
+
+  if (params.has_param("ui"))
+    m_showDlg = m_showProgress = params.get_as<bool>("ui");
 
   std::string dithering = params.get("dithering");
   if (dithering == "ordered")
@@ -587,7 +594,7 @@ bool ChangePixelFormatCommand::onEnabled(Context* context)
   if (!sprite)
     return false;
 
-  if (m_useUI)
+  if (m_showDlg)
     return true;
 
   if (sprite->pixelFormat() == IMAGE_INDEXED &&
@@ -600,7 +607,7 @@ bool ChangePixelFormatCommand::onEnabled(Context* context)
 
 bool ChangePixelFormatCommand::onChecked(Context* context)
 {
-  if (m_useUI)
+  if (m_showDlg)
     return false;
 
   const ContextReader reader(context);
@@ -622,7 +629,7 @@ void ChangePixelFormatCommand::onExecute(Context* context)
   bool flatten = false;
 
 #ifdef ENABLE_UI
-  if (m_useUI) {
+  if (context->isUIAvailable() && m_showDlg) {
     ColorModeWindow window(Editor::activeEditor());
 
     window.remapWindow();
@@ -646,12 +653,12 @@ void ChangePixelFormatCommand::onExecute(Context* context)
 #endif // ENABLE_UI
 
   // No conversion needed
-  if (context->activeDocument()->sprite()->pixelFormat() == m_format)
+  Doc* doc = context->activeDocument();
+  if (doc->sprite()->pixelFormat() == m_format)
     return;
 
   {
-    const ContextReader reader(context);
-    SpriteJob job(reader, Strings::color_mode_title().c_str());
+    SpriteJob job(context, doc, Strings::color_mode_title(), m_showProgress);
     Sprite* sprite(job.sprite());
 
     // TODO this was moved in the main UI thread because
@@ -662,16 +669,17 @@ void ChangePixelFormatCommand::onExecute(Context* context)
     //      https://github.com/aseprite/aseprite/issues/509
     //      https://github.com/aseprite/aseprite/issues/378
     if (flatten) {
+      Tx tx(Tx::LockDoc, context, doc);
       const bool newBlend = Preferences::instance().experimental.newBlend();
       SelectedLayers selLayers;
       for (auto layer : sprite->root()->layers())
         selLayers.insert(layer);
-      job.tx()(new cmd::FlattenLayers(sprite, selLayers, newBlend));
+      tx(new cmd::FlattenLayers(sprite, selLayers, newBlend));
     }
 
     job.startJobWithCallback(
-      [this, &job, sprite] {
-        job.tx()(
+      [this, &job, sprite](Tx& tx) {
+        tx(
           new cmd::SetPixelFormat(
             sprite, m_format,
             m_dithering,
@@ -690,7 +698,7 @@ std::string ChangePixelFormatCommand::onGetFriendlyName() const
 {
   std::string conversion;
 
-  if (!m_useUI) {
+  if (!m_showDlg) {
     switch (m_format) {
       case IMAGE_RGB:
         conversion = Strings::commands_ChangePixelFormat_RGB();

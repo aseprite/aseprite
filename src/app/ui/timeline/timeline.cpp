@@ -1347,7 +1347,7 @@ bool Timeline::onProcessMessage(Message* msg)
               else if (mouseMsg->left()) {
                 Command* command = Commands::instance()
                   ->byId(CommandId::FrameTagProperties());
-                UIContext::instance()->executeCommand(command, params);
+                m_context->executeCommand(command, params);
               }
             }
             break;
@@ -1389,13 +1389,18 @@ bool Timeline::onProcessMessage(Message* msg)
             if (tag) {
               if ((m_state == STATE_RESIZING_TAG_LEFT && tag->fromFrame() != m_resizeTagData.from) ||
                   (m_state == STATE_RESIZING_TAG_RIGHT && tag->toFrame() != m_resizeTagData.to)) {
-                ContextWriter writer(UIContext::instance());
-                Tx tx(writer, Strings::commands_FrameTagProperties());
-                tx(new cmd::SetTagRange(
-                     tag,
-                     (m_state == STATE_RESIZING_TAG_LEFT ? m_resizeTagData.from: tag->fromFrame()),
-                     (m_state == STATE_RESIZING_TAG_RIGHT ? m_resizeTagData.to: tag->toFrame())));
-                tx.commit();
+                try {
+                  ContextWriter writer(m_context);
+                  Tx tx(writer, Strings::commands_FrameTagProperties());
+                  tx(new cmd::SetTagRange(
+                       tag,
+                       (m_state == STATE_RESIZING_TAG_LEFT ? m_resizeTagData.from: tag->fromFrame()),
+                       (m_state == STATE_RESIZING_TAG_RIGHT ? m_resizeTagData.to: tag->toFrame())));
+                  tx.commit();
+                }
+                catch (const base::Exception& e) {
+                  Console::showException(e);
+                }
 
                 regenerateRows();
               }
@@ -1431,7 +1436,7 @@ bool Timeline::onProcessMessage(Message* msg)
           Command* command = Commands::instance()
             ->byId(CommandId::LayerProperties());
 
-          UIContext::instance()->executeCommand(command);
+          m_context->executeCommand(command);
           return true;
         }
 
@@ -1441,7 +1446,7 @@ bool Timeline::onProcessMessage(Message* msg)
           Params params;
           params.set("frame", "current");
 
-          UIContext::instance()->executeCommand(command, params);
+          m_context->executeCommand(command, params);
           return true;
         }
 
@@ -1449,7 +1454,7 @@ bool Timeline::onProcessMessage(Message* msg)
           Command* command = Commands::instance()
             ->byId(CommandId::CelProperties());
 
-          UIContext::instance()->executeCommand(command);
+          m_context->executeCommand(command);
           return true;
         }
 
@@ -2088,7 +2093,10 @@ void Timeline::setCursor(ui::Message* msg, const Hit& hit)
     ui::set_mouse_cursor(kSizeECursor);
   }
   else if (hit.part == PART_RANGE_OUTLINE) {
-    ui::set_mouse_cursor(kMoveCursor);
+    if (is_copy_key_pressed(msg))
+      ui::set_mouse_cursor(kArrowPlusCursor);
+    else
+      ui::set_mouse_cursor(kMoveCursor);
   }
   else if (hit.part == PART_SEPARATOR) {
     ui::set_mouse_cursor(kSizeWECursor);

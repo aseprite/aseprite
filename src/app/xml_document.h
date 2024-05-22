@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -11,19 +11,21 @@
 
 #include "base/exception.h"
 
-#include "tinyxml.h"
+#include "tinyxml2.h"
 
 #include <memory>
 #include <string>
 
 namespace app {
 
-  typedef std::shared_ptr<TiXmlDocument> XmlDocumentRef;
+  using XMLDocumentRef = std::unique_ptr<tinyxml2::XMLDocument>;
 
-  XmlDocumentRef open_xml(const std::string& filename);
-  void save_xml(XmlDocumentRef doc, const std::string& filename);
+  XMLDocumentRef open_xml(const std::string& filename);
+  void save_xml(tinyxml2::XMLDocument* doc, const std::string& filename);
 
-  bool bool_attr(const TiXmlElement* elem, const char* attrName, bool defaultVal);
+  bool bool_attr(const tinyxml2::XMLElement* elem,
+                 const char* attrName,
+                 bool defaultVal);
 
 } // namespace app
 

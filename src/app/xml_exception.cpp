@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2023  Igara Studio S.A.
+// Copyright (C) 2023-2024  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -12,17 +12,21 @@
 #include "app/xml_exception.h"
 
 #include "fmt/format.h"
-#include "tinyxml.h"
+#include "tinyxml2.h"
 
 namespace app {
 
-XmlException::XmlException(const TiXmlDocument* doc) throw()
+using namespace tinyxml2;
+
+XmlException::XmlException(const std::string& filename,
+                           const XMLDocument* doc) noexcept
 {
   try {
     setMessage(
-      fmt::format("Error in XML file '{}' (line {}, column {})\nError {}: {}",
-                  doc->Value(), doc->ErrorRow(), doc->ErrorCol(),
-                  doc->ErrorId(), doc->ErrorDesc()).c_str());
+      fmt::format("Error in XML file '{}' (line {})\nError {}: {}",
+                  filename, doc->ErrorLineNum(),
+                  int(doc->ErrorID()),
+                  doc->ErrorStr()).c_str());
   }
   catch (...) {
     // No throw
