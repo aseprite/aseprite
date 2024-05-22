@@ -717,6 +717,7 @@ target_link_libraries(app-lib
   laf-os
   ui-lib
   ver-lib
+  updater-lib
   undo
   ${CMARK_LIBRARIES}
   ${TINYXML_LIBRARY}
@@ -754,10 +755,6 @@ if(ENABLE_SCRIPTING)
   if(ENABLE_WEBSOCKET)
     target_link_libraries(app-lib ixwebsocket)
   endif()
-endif()
-
-if(ENABLE_UPDATER)
-  target_link_libraries(app-lib updater-lib)
 endif()
 
 if(ENABLE_STEAM)

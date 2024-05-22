@@ -117,6 +117,10 @@ if(REQUIRE_CURL)
   add_subdirectory(net)
 endif()
 
+# We need the updater library to check for updates (when
+# ENABLE_UPDATER) or for the app.os object (ENABLE_SCRIPTING).
+add_subdirectory(updater)
+
 if(GEN_EXE)
   add_executable(gen IMPORTED)
   set_target_properties(gen PROPERTIES IMPORTED_LOCATION ${GEN_EXE})
@@ -125,10 +129,6 @@ else()
   add_subdirectory(gen)
   set(GEN_EXE ${CMAKE_BINARY_DIR}/bin/gen)
   set(GEN_DEP gen)
-endif()
-
-if(ENABLE_UPDATER)
-  add_subdirectory(updater)
 endif()
 
 if(ENABLE_STEAM)
