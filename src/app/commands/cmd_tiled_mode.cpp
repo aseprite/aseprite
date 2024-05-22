@@ -17,6 +17,7 @@
 #include "app/pref/preferences.h"
 #include "filters/tiled_mode.h"
 #include "fmt/format.h"
+#include "ui/intern.h"
 
 namespace app {
 
@@ -79,7 +80,7 @@ std::string TiledModeCommand::onGetFriendlyName() const {
     case filters::TiledMode::X_AXIS: mode = Strings::main_menu_view_tiled_mode_x(); break;
     case filters::TiledMode::Y_AXIS: mode = Strings::main_menu_view_tiled_mode_y(); break;
   }
-  mode = base::removeEscapeCharFromText(mode, '&');
+  mode = ui::details::removeEscapeCharFromText(mode, '&');
   return fmt::format(getBaseFriendlyName(), mode);
 }
 

@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2020-2022  Igara Studio S.A.
+// Copyright (C) 2020-2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -9,6 +9,7 @@
 #include "config.h"
 #endif
 
+#include "base/utf8_decode.h"
 #include "ui/manager.h"
 #include "ui/system.h"
 #include "ui/theme.h"
@@ -74,6 +75,24 @@ void reinitThemeForAllWidgets()
     if (theme != widget->theme())
       widget->setTheme(theme);
   }
+}
+
+std::string removeEscapeCharFromText(const std::string& original,
+                                     const int escapeChar)
+{
+  std::wstring newText; // wstring is used to properly push_back() multibyte chars
+  newText.reserve(original.size());
+
+  base::utf8_decode decode(original);
+  while (int chr = decode.next()) {
+    if (chr == escapeChar) {
+      chr = decode.next();
+      if (!chr)
+        break;    // Ill-formed string (it ends with escape character)
+    }
+    newText.push_back(chr);
+  }
+  return base::to_utf8(newText);
 }
 
 } // namespace details
