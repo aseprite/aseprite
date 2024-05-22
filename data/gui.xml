@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2018-2023  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-2024  Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2018  David Capello -->
 <gui>
   <!-- Keyboard shortcuts -->
@@ -290,11 +290,9 @@
       <key command="Zoom" shortcut="3"><param name="percentage" value="400" /></key>
       <key command="Zoom"><param name="percentage" value="500" /></key>
       <key command="Zoom"><param name="percentage" value="600" /></key>
-      <key command="Zoom"><param name="percentage" value="700" /></key>
       <key command="Zoom" shortcut="4"><param name="percentage" value="800" /></key>
-      <key command="Zoom"><param name="percentage" value="1000" /></key>
       <key command="Zoom" shortcut="5"><param name="percentage" value="1600" /></key>
-      <key command="Zoom"><param name="percentage" value="2000" /></key>
+      <key command="Zoom"><param name="percentage" value="2400" /></key>
       <key command="Zoom" shortcut="6"><param name="percentage" value="3200" /></key>
       <key command="Zoom" shortcut="Ctrl++" mac="Cmd++">
         <param name="action" value="in" />
