@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -58,6 +58,14 @@ using namespace doc;
 
 namespace {
 
+// Returns true if the file was saved correctly (has the "FINE" magic
+// number), so we can ignore broken versions of objects directly.
+bool check_magic_number(const std::string& fn)
+{
+  std::ifstream s(FSTREAM_PATH(fn), std::ifstream::binary);
+  return (read32(s) == MAGIC_NUMBER);
+}
+
 class Reader : public SubObjectsIO {
 public:
   Reader(const std::string& dir,
@@ -82,6 +90,11 @@ public:
       ObjectVersion ver = base::convert_to<int>(fn.substr(j+1));
       if (!id || !ver)
         continue;               // Error converting strings to ID/ver
+
+      if (!check_magic_number(base::join_path(m_dir, fn))) {
+        RECO_TRACE("RECO: Ignoring invalid file %s (no magic number)\n", fn.c_str());
+        continue;
+      }
 
       ObjVersions& versions = m_objVersions[id];
       versions.add(ver);
