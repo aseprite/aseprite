@@ -24,20 +24,18 @@
 
 #include <climits>
 #include <cmath>
+#include <limits>
 #include <vector>
 
 namespace doc {
 namespace algorithm {
 
 struct FLOODED_LINE {   // store segments which have been flooded
-  short flags;          // status of the segment
-  short lpos, rpos;     // left and right ends of segment
-  short y;              // y coordinate of the segment
+  char flags;           // status of the segment
+  int lpos, rpos;       // left and right ends of segment
+  int y;                // y coordinate of the segment
   int next;             // linked list if several per line
 };
-
-/* Note: a 'short' is not sufficient for 'next' above in some corner cases. */
-
 
 static std::vector<FLOODED_LINE> flood_buf;
 static int flood_count;          /* number of flooded segments */
@@ -415,8 +413,8 @@ void floodfill(const Image* image,
   FLOODED_LINE* p = (FLOODED_LINE*)&flood_buf[0];
   for (int c=0; c<flood_count; c++) {
     p[c].flags = 0;
-    p[c].lpos = SHRT_MAX;
-    p[c].rpos = SHRT_MIN;
+    p[c].lpos = std::numeric_limits<int>::max();
+    p[c].rpos = std::numeric_limits<int>::min();
     p[c].y = y;
     p[c].next = 0;
   }
