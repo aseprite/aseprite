@@ -6,14 +6,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, macos-latest]
+        os: [windows-latest]
         build_type: [Release]
         enable_ui: [on]
         include:
           - os: windows-latest
-            build_type: Release
-            enable_ui: on
-          - os: macos-latest
             build_type: Release
             enable_ui: on
     steps:
@@ -22,59 +19,32 @@ jobs:
         submodules: 'recursive'
     - name: ccache
       uses: hendrikmuhs/ccache-action@v1
-      if: ${{ runner.os == 'Linux' || runner.os == 'macOS' }}
+      if: runner.os == 'Linux'
       with:
-        key: ${{ matrix.os }}-${{ matrix.enable_ui }}-${{ matrix.build_type }}
-    - uses: aseprite/get-ninja@main
+        key: ${{ matrix.os }}-${{ matrix.enable_ui }}
+    - uses: seanmiddleditch/gha-setup-ninja@master
     - uses: ilammy/msvc-dev-cmd@v1
       if: runner.os == 'Windows'
-    - name: Install Dependencies
-      shell: bash
-      run: |
-        if [[ "${{ runner.os }}" == "Linux" ]] ; then
-          sudo apt-get update -qq
-          sudo apt-get install -y \
-            libx11-dev libxcursor-dev libxi-dev
-        fi
     - name: Generating Makefiles
       shell: bash
       run: |
-        if [[ "${{ runner.os }}" == "Windows" ]] ; then
-          export enable_ccache=off
-          curl -L https://github.com/aseprite/skia/releases/latest/download/Skia-Windows-Release-x86.zip --output skia.zip
-          curl -L https://github.com/blueloveTH/aseprite/releases/download/v0.01/libcrypto-1_1-x64.dll --output libcrypto-1_1-x64.dll
-          unzip -n skia.zip -d skia
-          cmake -S . -B build -G Ninja \
-            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-            -DENABLE_UI=${{ matrix.enable_ui }} \
-            -DENABLE_CCACHE=$enable_ccache \
-            -DLAF_BACKEND=skia \
-            -DSKIA_DIR=./skia \
-            -DSKIA_LIBRARY_DIR=./skia/out/Release-x64 \
-            -DSKIA_LIBRARY=./skia/out/Release-x64/skia.lib
-        elif [[ "${{ runner.os }}" == "macOS" ]] ; then
-          export enable_ccache=on
-          curl -L https://github.com/aseprite/skia/releases/latest/download/Skia-macOS-Release-x64.zip --output skia.zip
-          unzip -n skia.zip -d skia
-          cmake -S . -B build -G Ninja \
-            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-            -DENABLE_UI=${{ matrix.enable_ui }} \
-            -DCMAKE_OSX_ARCHITECTURES=x86_64 \
-            -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 \
-            -DCMAKE_OSX_SYSROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
-            -DENABLE_CCACHE=$enable_ccache \
-            -DLAF_BACKEND=skia \
-            -DSKIA_DIR=./skia \
-            -DSKIA_LIBRARY_DIR=./skia/out/Release-x64 \
-            -DSKIA_LIBRARY=./skia/out/Release-x64/libskia.a
-          ninja aseprite
-        fi
+        export enable_ccache=off
+        curl -L https://github.com/blueloveTH/aseprite/releases/download/v0.01/skia.zip --output skia.zip
+        curl -L https://github.com/blueloveTH/aseprite/releases/download/v0.01/libcrypto-1_1-x64.dll --output libcrypto-1_1-x64.dll
+        7z x skia.zip
+        cmake -S . -B build -G Ninja \
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+          -DENABLE_UI=${{ matrix.enable_ui }} \
+          -DENABLE_CCACHE=$enable_ccache \
+          -DLAF_BACKEND=skia \
+          -DSKIA_DIR=./skia \
+          -DSKIA_LIBRARY_DIR=./skia/out/Release-x64 \
+          -DSKIA_LIBRARY=./skia/out/Release-x64/skia.lib
     - name: Compiling
       shell: bash
       run: |
         cd build && ninja
     - uses: actions/upload-artifact@v3
-      if: runner.os == 'Windows'
       with:
         name: aseprite
         path: |
