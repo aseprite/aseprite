@@ -28,10 +28,6 @@ jobs:
     - uses: aseprite/get-ninja@main
     - uses: ilammy/msvc-dev-cmd@v1
       if: runner.os == 'Windows'
-    - name: Workaround for windows-2022 and cmake 3.25.0
-      if: runner.os == 'Windows'
-      shell: bash
-      run: rm -rf C:/Strawberry/
     - name: Install Dependencies
       shell: bash
       run: |
@@ -45,7 +41,7 @@ jobs:
       run: |
         if [[ "${{ runner.os }}" == "Windows" ]] ; then
           export enable_ccache=off
-          curl -L https://github.com/aseprite/skia/releases/download/m124-eadfe707ca/Skia-Windows-Release-x64.zip --output skia.zip
+          curl -L https://github.com/aseprite/skia/releases/latest/download/Skia-Windows-Release-x86.zip --output skia.zip
           curl -L https://github.com/blueloveTH/aseprite/releases/download/v0.01/libcrypto-1_1-x64.dll --output libcrypto-1_1-x64.dll
           unzip -n skia.zip -d skia
           cmake -S . -B build -G Ninja \
@@ -58,21 +54,19 @@ jobs:
             -DSKIA_LIBRARY=./skia/out/Release-x64/skia.lib
         elif [[ "${{ runner.os }}" == "macOS" ]] ; then
           export enable_ccache=on
-          curl -L https://github.com/aseprite/skia/releases/download/m124-eadfe707ca/Skia-macOS-Release-x64.zip --output skia.zip
+          curl -L https://github.com/aseprite/skia/releases/latest/download/Skia-macOS-Release-x64.zip --output skia.zip
           unzip -n skia.zip -d skia
           cmake -S . -B build -G Ninja \
             -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
             -DENABLE_UI=${{ matrix.enable_ui }} \
-            -DCMAKE_OSX_ARCHITECTURES=x86_64
+            -DCMAKE_OSX_ARCHITECTURES=x86_64 \
             -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 \
             -DCMAKE_OSX_SYSROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
             -DENABLE_CCACHE=$enable_ccache \
             -DLAF_BACKEND=skia \
             -DSKIA_DIR=./skia \
             -DSKIA_LIBRARY_DIR=./skia/out/Release-x64 \
-            -DSKIA_LIBRARY=./skia/out/Release-x64/libskia.a \
-            -G Ninja \
-            ..
+            -DSKIA_LIBRARY=./skia/out/Release-x64/libskia.a
           ninja aseprite
         fi
     - name: Compiling
@@ -82,7 +76,7 @@ jobs:
     - uses: actions/upload-artifact@v3
       if: runner.os == 'Windows'
       with:
-        name: aseprite-windows
+        name: aseprite
         path: |
           libcrypto-1_1-x64.dll
           D:/a/aseprite/aseprite/build/bin/data
