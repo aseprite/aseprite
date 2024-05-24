@@ -6,13 +6,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest]
+        os: [windows-latest, macos-latest]
         build_type: [Release]
         enable_ui: [on]
         include:
-          - os: ubuntu-latest
-            build_type: Release
-            enable_ui: on
           - os: windows-latest
             build_type: Release
             enable_ui: on
@@ -57,30 +54,21 @@ jobs:
             -DENABLE_CCACHE=$enable_ccache \
             -DLAF_BACKEND=skia \
             -DSKIA_DIR=./skia \
-            -DSKIA_LIBRARY_DIR=./out/Release-x64 \
-            -DSKIA_LIBRARY=./out/Release-x64/skia.lib
-        elif [[ "${{ runner.os }}" == "Linux" ]] ; then
-          export enable_ccache=on
-          curl -L https://github.com/aseprite/skia/releases/download/m124-eadfe707ca/Skia-Linux-Release-x64.zip --output skia.zip
-          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-          -DENABLE_UI=${{ matrix.enable_ui }} \
-          -DENABLE_CCACHE=$enable_ccache \
-          -DLAF_BACKEND=skia \
-          -DSKIA_DIR=./skia \
-          -DSKIA_LIBRARY_DIR=./out/Release-x64 \
-          -DSKIA_LIBRARY=./out/Release-x64/libskia.a
+            -DSKIA_LIBRARY_DIR=./skia/out/Release-x64 \
+            -DSKIA_LIBRARY=./skia/out/Release-x64/skia.lib
         elif [[ "${{ runner.os }}" == "macOS" ]] ; then
           export enable_ccache=on
           curl -L https://github.com/aseprite/skia/releases/download/m124-eadfe707ca/Skia-macOS-Release-x64.zip --output skia.zip
           cmake -S . -B build -G Ninja \
           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
           -DENABLE_UI=${{ matrix.enable_ui }} \
+          -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 \
           -DCMAKE_OSX_SYSROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
           -DENABLE_CCACHE=$enable_ccache \
           -DLAF_BACKEND=skia \
           -DSKIA_DIR=./skia \
-          -DSKIA_LIBRARY_DIR=./out/Release-x64 \
-          -DSKIA_LIBRARY=./out/Release-x64/libskia.a \
+          -DSKIA_LIBRARY_DIR=./skia/out/Release-x64 \
+          -DSKIA_LIBRARY=./skia/out/Release-x64/libskia.a \
           -G Ninja \
           .. ninja aseprite
         fi
@@ -96,10 +84,3 @@ jobs:
           libcrypto-1_1-x64.dll
           D:/a/aseprite/aseprite/build/bin/data
           D:/a/aseprite/aseprite/build/bin/aseprite.exe
-    - uses: actions/upload-artifact@v3  
-      if: runner.os == 'Linux'
-      with:
-        name: aseprite-ubuntu  
-        path: |
-          ./build/bin/data
-          ./build/bin/aseprite
