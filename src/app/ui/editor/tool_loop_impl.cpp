@@ -381,6 +381,10 @@ public:
   tools::PointShape* getPointShape() override { return m_pointShape; }
   tools::Intertwine* getIntertwine() override { return m_intertwine; }
   tools::TracePolicy getTracePolicy() override {
+
+    int modifiers = int(this->getModifiers ());
+    if (modifiers & int(tools::ToolLoopModifiers::kSpread)) return tools::TracePolicy::Accumulate;
+
     if (m_controller->handleTracePolicy())
       return m_controller->getTracePolicy();
     else
