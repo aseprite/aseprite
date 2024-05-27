@@ -773,6 +773,11 @@ LayerList Sprite::allTilemaps() const
   return list;
 }
 
+std::string Sprite::visibleLayerHierarchyAsString() const
+{
+  return m_root->visibleLayerHierarchyAsString("");
+}
+
 CelsRange Sprite::cels() const
 {
   SelectedFrames selFrames;

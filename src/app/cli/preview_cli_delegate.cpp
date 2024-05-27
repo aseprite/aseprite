@@ -67,6 +67,9 @@ void PreviewCliDelegate::afterOpenFile(const CliOpenFile& cof)
   if (cof.listLayers)
     std::cout << "  - List layers\n";
 
+  if (cof.listLayerHierarchy)
+    std::cout << "  - List layer hierarchy\n";
+
   if (cof.listTags)
     std::cout << "  - List tags\n";
 

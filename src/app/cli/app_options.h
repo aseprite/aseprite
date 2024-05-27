@@ -89,6 +89,7 @@ public:
   const Option& scriptParam() const { return m_scriptParam; }
 #endif
   const Option& listLayers() const { return m_listLayers; }
+  const Option& listLayerHierarchy() const { return m_listLayerHierarchy; }
   const Option& listTags() const { return m_listTags; }
   const Option& listSlices() const { return m_listSlices; }
   const Option& oneFrame() const { return m_oneFrame; }
@@ -162,6 +163,7 @@ private:
   Option& m_scriptParam;
 #endif
   Option& m_listLayers;
+  Option& m_listLayerHierarchy;
   Option& m_listTags;
   Option& m_listSlices;
   Option& m_oneFrame;

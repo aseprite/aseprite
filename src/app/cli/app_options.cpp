@@ -73,6 +73,7 @@ AppOptions::AppOptions(int argc, const char* argv[])
   , m_scriptParam(m_po.add("script-param").requiresValue("name=value").description("Parameter for a script executed from the\nCLI that you can access with app.params"))
 #endif
   , m_listLayers(m_po.add("list-layers").description("List layers of the next given sprite\nor include layers in JSON data"))
+  , m_listLayerHierarchy(m_po.add("list-layer-hierarchy").description("List layers with groups of the next given sprite\nor include layers hierarchy in JSON data"))
   , m_listTags(m_po.add("list-tags").description("List tags of the next given sprite\nor include frame tags in JSON data"))
   , m_listSlices(m_po.add("list-slices").description("List slices of the next given sprite\nor include slices in JSON data"))
   , m_oneFrame(m_po.add("oneframe").description("Load just the first frame"))

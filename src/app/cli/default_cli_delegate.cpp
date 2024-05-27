@@ -67,6 +67,10 @@ void DefaultCliDelegate::afterOpenFile(const CliOpenFile& cof)
       std::cout << layer->name() << "\n";
   }
 
+  if (cof.listLayerHierarchy) {
+    std::cout << cof.document->sprite()->visibleLayerHierarchyAsString() << "\n";
+  }
+
   if (cof.listTags) {
     for (doc::Tag* tag : cof.document->sprite()->tags())
       std::cout << tag->name() << "\n";
