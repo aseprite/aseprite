@@ -77,6 +77,7 @@ namespace app {
     void setSplitTags(bool splitTags) { m_splitTags = splitTags; }
     void setListTags(bool value) { m_listTags = value; }
     void setListLayers(bool value) { m_listLayers = value; }
+    void setListLayerHierarchy(bool value) { m_listLayerHierarchy = value; }
     void setListSlices(bool value) { m_listSlices = value; }
 
     void addImage(
@@ -180,6 +181,7 @@ namespace app {
     bool m_splitTags;
     bool m_listTags;
     bool m_listLayers;
+    bool m_listLayerHierarchy;
     bool m_listSlices;
     Items m_documents;
 

@@ -540,6 +540,20 @@ void LayerGroup::allTilemaps(LayerList& list) const
   }
 }
 
+std::string LayerGroup::visibleLayerHierarchyAsString(const std::string& indent) const
+{
+  std::string str;
+  for (Layer* child : m_layers) {
+    if (!child->isVisible())
+      continue;
+
+    str += indent + child->name() + (child->isGroup() ? "/" : "") + "\n";
+    if (child->isGroup())
+      str += static_cast<LayerGroup*>(child)->visibleLayerHierarchyAsString(indent+"  ");
+  }
+  return str;
+}
+
 void LayerGroup::getCels(CelList& cels) const
 {
   for (const Layer* layer : m_layers)

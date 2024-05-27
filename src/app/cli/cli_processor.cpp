@@ -587,6 +587,13 @@ int CliProcessor::process(Context* ctx)
           else
             cof.listLayers = true;
         }
+        // --list-layer-hierarchy
+        else if (opt == &m_options.listLayerHierarchy()) {
+          if (m_exporter)
+            m_exporter->setListLayerHierarchy(true);
+          else
+            cof.listLayerHierarchy = true;
+        }
         // --list-tags
         else if (opt == &m_options.listTags()) {
           if (m_exporter)
