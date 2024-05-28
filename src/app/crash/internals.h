@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2024  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -43,10 +44,10 @@ namespace crash {
 
     // Adds a version (we don't know if the version if the latest one)
     void add(doc::ObjectVersion ver) {
-      auto minver = std::min_element(m_vers, m_vers+2);
+      auto* minver = std::min_element(m_vers, m_vers+size());
       if (*minver < ver) {
         *minver = ver;
-        std::sort(m_vers, m_vers+2, std::greater<doc::ObjectVersion>());
+        std::sort(m_vers, m_vers+size(), std::greater<doc::ObjectVersion>());
       }
     }
 

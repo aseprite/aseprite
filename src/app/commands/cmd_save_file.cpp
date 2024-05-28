@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -49,8 +49,8 @@ namespace app {
 
 class SaveFileJob : public Job, public IFileOpProgress {
 public:
-  SaveFileJob(FileOp* fop)
-    : Job(Strings::save_file_saving().c_str())
+  SaveFileJob(FileOp* fop, const bool showProgressBar)
+    : Job(Strings::save_file_saving(), showProgressBar)
     , m_fop(fop)
   {
   }
@@ -239,7 +239,7 @@ void SaveFileBaseCommand::saveDocumentInBackground(
   if (resizeOnTheFly == ResizeOnTheFly::On)
     fop->setOnTheFlyScale(scale);
 
-  SaveFileJob job(fop.get());
+  SaveFileJob job(fop.get(), params().ui());
   job.showProgressWindow();
 
   if (fop->hasError()) {
@@ -257,7 +257,7 @@ void SaveFileBaseCommand::saveDocumentInBackground(
     document->impossibleToBackToSavedState();
   }
   else {
-    if (context->isUIAvailable() && params().ui())
+    if (should_add_file_to_recents(context, params()))
       App::instance()->recentFiles()->addRecentFile(filename);
 
     if (markAsSaved == MarkAsSaved::On) {

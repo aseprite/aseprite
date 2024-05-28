@@ -161,6 +161,7 @@ if(ENABLE_SCRIPTING)
     commands/cmd_run_script.cpp
     script/app_command_object.cpp
     script/app_fs_object.cpp
+    script/app_os_object.cpp
     script/app_object.cpp
     script/app_theme_object.cpp
     script/brush_class.cpp
@@ -717,6 +718,7 @@ target_link_libraries(app-lib
   laf-text
   ui-lib
   ver-lib
+  updater-lib
   undo
   ${CMARK_LIBRARIES}
   ${TINYXML_LIBRARY}
@@ -754,10 +756,6 @@ if(ENABLE_SCRIPTING)
   if(ENABLE_WEBSOCKET)
     target_link_libraries(app-lib ixwebsocket)
   endif()
-endif()
-
-if(ENABLE_UPDATER)
-  target_link_libraries(app-lib updater-lib)
 endif()
 
 if(ENABLE_STEAM)

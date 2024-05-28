@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -36,7 +36,7 @@ BrushRef Brush_new(lua_State* L, int index)
   if (auto brush2 = may_get_obj<BrushObj>(L, index)) {
     ASSERT(brush2->brush);
     if (brush2->brush)
-      brush.reset(new Brush(*brush2->brush));
+      brush = brush2->brush->cloneWithNewImages();
   }
   else if (auto image = may_get_image_from_arg(L, index)) {
     if (image) {

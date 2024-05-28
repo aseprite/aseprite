@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2021  Igara Studio S.A.
+// Copyright (C) 2020-2024  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -36,6 +36,7 @@ namespace app {
   private:
     std::string m_filename;
     std::string m_folder;
+    bool m_ui;
     bool m_repeatCheckbox;
     bool m_oneFrame;
     base::paths m_usedFiles;

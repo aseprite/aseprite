@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2024  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -12,6 +13,7 @@
 
 namespace updater {
 
+  std::string getFullOSString();
   std::string getUserAgent();
 
 } // namespace updater

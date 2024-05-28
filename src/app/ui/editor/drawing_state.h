@@ -60,6 +60,10 @@ namespace app {
                       const ui::MouseMessage* msg,
                       const tools::Pointer& pointer);
 
+    // Used to disable the current ToolLoopManager's stabilizer
+    // when Shift+brush tool is used to paint a line
+    void disableMouseStabilizer();
+
     // Used to send a movement() to the ToolLoopManager when
     // Shift+brush tool is used to paint a line.
     void sendMovementToToolLoop(const tools::Pointer& pointer);

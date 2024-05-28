@@ -129,6 +129,12 @@ void DrawingState::initToolLoop(Editor* editor,
   editor->captureMouse();
 }
 
+void DrawingState::disableMouseStabilizer() 
+{
+  ASSERT(m_toolLoopManager);
+  m_toolLoopManager->disableMouseStabilizer();
+}
+
 void DrawingState::sendMovementToToolLoop(const tools::Pointer& pointer)
 {
   ASSERT(m_toolLoopManager);

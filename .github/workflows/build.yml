@@ -22,7 +22,7 @@ jobs:
       if: ${{ runner.os == 'Linux' || runner.os == 'macOS' }}
       with:
         key: ${{ matrix.os }}-${{ matrix.enable_ui }}-${{ matrix.build_type }}
-    - uses: turtlesec-no/get-ninja@main
+    - uses: aseprite/get-ninja@main
     - uses: ilammy/msvc-dev-cmd@v1
       if: runner.os == 'Windows'
     - name: Workaround for windows-2022 and cmake 3.25.0

@@ -93,10 +93,7 @@ bool ColorQuantizationCommand::onEnabled(Context* ctx)
 
 void ColorQuantizationCommand::onExecute(Context* ctx)
 {
-#ifdef ENABLE_UI
   const bool ui = (params().ui() && ctx->isUIAvailable());
-#endif
-
   auto& pref = Preferences::instance();
   bool withAlpha = params().withAlpha();
   int maxColors = params().maxColors();
@@ -183,7 +180,7 @@ void ColorQuantizationCommand::onExecute(Context* ctx)
     const Palette* curPalette = site.sprite()->palette(frame);
     Palette tmpPalette(frame, entries.picks());
 
-    SpriteJob job(ctx, doc, "Color Quantization");
+    SpriteJob job(ctx, doc, "Color Quantization", ui);
     const bool newBlend = pref.experimental.newBlend();
     job.startJobWithCallback(
       [sprite, withAlpha, curPalette, &tmpPalette, &job, &entries,

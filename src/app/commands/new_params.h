@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -9,6 +9,7 @@
 
 #include "app/commands/command.h"
 #include "app/commands/params.h"
+#include "app/context.h"
 
 #include <map>
 #include <string>
@@ -151,6 +152,20 @@ namespace app {
   private:
     T m_params;
   };
+
+  // Common logic to know if we should add a file to recent files. We
+  // offer two params: "ui" and "recent", if "recent" is specified, we
+  // do what it says. In other case "ui" is like the default value of
+  // "recent", i.e. if there is ui=true, we add to recent, if there is
+  // ui=false, we don't add it.
+  template<typename T>
+  inline bool should_add_file_to_recents(const Context* ctx,
+                                         const T& params) {
+    ASSERT(ctx);
+    return (ctx->isUIAvailable()
+            && ((params.recent.isSet() && params.recent()) ||
+                (!params.recent.isSet() && params.ui())));
+  }
 
 } // namespace app
 

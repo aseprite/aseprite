@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2023  Igara Studio S.A.
+// Copyright (c) 2023-2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -156,9 +156,7 @@ void ChangeBrushCommand::onExecute(Context* context)
 
         // Create a copy of the brush (to avoid modifying the original
         // brush from the AppBrushes stock)
-        BrushRef newBrush = std::make_shared<Brush>(*brush);
-        newBrush->setImage(newImg.get(),
-                           newMsk.get());
+        BrushRef newBrush = brush->cloneWithExistingImages(newImg, newMsk);
         contextBar->setActiveBrush(newBrush);
       }
       else {
@@ -210,9 +208,7 @@ void ChangeBrushCommand::onExecute(Context* context)
             break;
         }
 
-        BrushRef newBrush = std::make_shared<Brush>(*brush);
-        newBrush->setImage(newImg.get(),
-                           newMsk.get());
+        BrushRef newBrush = brush->cloneWithExistingImages(newImg, newMsk);
         contextBar->setActiveBrush(newBrush);
       }
       else {
@@ -297,10 +293,7 @@ void ChangeBrushCommand::onExecute(Context* context)
 
         ImageRef newImg2(crop_image(newImg.get(), cropBounds, bg));
         ImageRef newMsk2(crop_image(newMsk.get(), cropBounds, bg));
-
-        BrushRef newBrush = std::make_shared<Brush>(*brush);
-        newBrush->setImage(newImg.get(),
-                           newMsk.get());
+        BrushRef newBrush = brush->cloneWithExistingImages(newImg2, newMsk2);
         contextBar->setActiveBrush(newBrush);
       }
       break;

@@ -45,6 +45,7 @@
 #include "app/ui_context.h"
 #include "app/util/expand_cel_canvas.h"
 #include "app/util/layer_utils.h"
+#include "doc/brush.h"
 #include "doc/cel.h"
 #include "doc/image.h"
 #include "doc/layer.h"
@@ -188,6 +189,33 @@ public:
     ASSERT(m_tool);
     ASSERT(m_ink);
     ASSERT(m_controller);
+
+    // If the user right-clicks with a custom/image brush we change
+    // the image's colors of the brush to the background color.
+    //
+    // This is different from SwitchColors that makes a new brush
+    // switching fg <-> bg colors, so here we have some extra
+    // functionality with custom brushes (quickly convert the custom
+    // brush with a plain color, or in other words, replace the custom
+    // brush area with the background color).
+    if (m_brush->type() == kImageBrushType && m_button == Right) {
+      // We've to recalculate the background color to use for the
+      // brush using the specific brush image pixel format/color mode,
+      // as we cannot use m_primaryColor or m_bgColor here because
+      // those are in the sprite pixel format/color mode.
+      const color_t brushColor =
+        color_utils::color_for_target_mask(
+          Preferences::instance().colorBar.bgColor(),
+          ColorTarget(ColorTarget::TransparentLayer,
+                      m_brush->image()->pixelFormat(),
+                      -1));
+
+      // Clone the brush with new images to avoid modifying the
+      // current brush used in left-click / brush preview.
+      BrushRef newBrush = m_brush->cloneWithNewImages();
+      newBrush->setImageColor(Brush::ImageColor::BothColors, brushColor);
+      m_brush = newBrush;
+    }
 
     if (m_tilesMode) {
       // Use FloodFillPointShape or TilePointShape in tiles mode

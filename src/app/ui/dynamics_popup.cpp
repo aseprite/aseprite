@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2023  Igara Studio S.A.
+// Copyright (C) 2020-2024  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -165,7 +165,9 @@ private:
           break;
 
         auto mouseMsg = static_cast<MouseMessage*>(msg);
-        const gfx::Rect rc = bounds();
+        gfx::Rect rc = bounds();
+        rc.shrink(border());
+        rc.shrink(gfx::Border(3, 0, 3, 1) * guiscale());
         float u = (mouseMsg->position().x - rc.x) / float(rc.w);
         u = std::clamp(u, 0.0f, 1.0f);
         switch (capture) {
