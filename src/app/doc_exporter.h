@@ -18,6 +18,7 @@
 #include "doc/image_buffer.h"
 #include "doc/object_id.h"
 #include "doc/object_version.h"
+#include "doc/with_user_data.h"
 #include "gfx/fwd.h"
 #include "gfx/rect.h"
 
@@ -40,7 +41,7 @@ namespace app {
   class Context;
   class Doc;
 
-  class DocExporter {
+  class DocExporter : public doc::WithUserData {
   public:
     DocExporter();
 

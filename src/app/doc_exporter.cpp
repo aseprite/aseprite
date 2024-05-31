@@ -591,7 +591,8 @@ public:
 };
 
 DocExporter::DocExporter()
-  : m_docBuf(std::make_shared<doc::ImageBuffer>())
+  : WithUserData(ObjectType::Sprite)
+  , m_docBuf(std::make_shared<doc::ImageBuffer>())
   , m_sampleBuf(std::make_shared<doc::ImageBuffer>())
 {
   m_cache.spriteId = doc::NullId;
@@ -1256,6 +1257,8 @@ Doc* DocExporter::createEmptyTexture(const Samples& samples,
       maxColors,
       m_docBuf));
 
+  sprite->setUserData(userData());
+
   if (palette.size() > 0)
     sprite->setPalette(&palette, false);
 
@@ -1421,7 +1424,8 @@ void DocExporter::createDataFile(const Samples& samples,
   os << ",\n"
      << " \"meta\": {\n"
      << "  \"app\": \"" << get_app_url() << "\",\n"
-     << "  \"version\": \"" << get_app_version() << "\",\n";
+     << "  \"version\": \"" << get_app_version() << "\""
+     << texture->userData() << ",\n";
 
   if (!m_textureFilename.empty())
     os << "  \"image\": \""

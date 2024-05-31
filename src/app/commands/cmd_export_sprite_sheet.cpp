@@ -267,6 +267,7 @@ Doc* generate_sprite_sheet_from_params(
   exporter.setSplitTags(splitTags);
   exporter.setIgnoreEmptyCels(ignoreEmpty);
   exporter.setMergeDuplicates(mergeDuplicates);
+  exporter.setUserData(sprite->userData());
   if (listLayers) exporter.setListLayers(true);
   if (listTags) exporter.setListTags(true);
   if (listSlices) exporter.setListSlices(true);
