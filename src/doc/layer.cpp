@@ -29,6 +29,8 @@ Layer::Layer(ObjectType type, Sprite* sprite)
   , m_flags(LayerFlags(
       int(LayerFlags::Visible) |
       int(LayerFlags::Editable)))
+  , m_blendmode(BlendMode::NORMAL)
+  , m_opacity(255)
 {
   ASSERT(type == ObjectType::LayerImage ||
          type == ObjectType::LayerGroup ||
@@ -228,8 +230,6 @@ Cel* Layer::cel(frame_t frame) const
 
 LayerImage::LayerImage(ObjectType type, Sprite* sprite)
   : Layer(type, sprite)
-  , m_blendmode(BlendMode::NORMAL)
-  , m_opacity(255)
 {
 }
 

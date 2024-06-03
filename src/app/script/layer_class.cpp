@@ -20,6 +20,7 @@
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
 #include "app/script/userdata.h"
+#include "app/pref/preferences.h"
 #include "app/tx.h"
 #include "doc/layer.h"
 #include "doc/layer_tilemap.h"
@@ -130,7 +131,7 @@ int Layer_get_name(lua_State* L)
 int Layer_get_opacity(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
-  if (layer->isImage()) {
+  if (layer->isImage() || (layer->isGroup() && app::Preferences::instance().experimental.composeGroups())) {
     lua_pushinteger(L, static_cast<LayerImage*>(layer)->opacity());
     return 1;
   }
@@ -141,7 +142,7 @@ int Layer_get_opacity(lua_State* L)
 int Layer_get_blendMode(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
-  if (layer->isImage()) {
+  if (layer->isImage() || (layer->isGroup() && app::Preferences::instance().experimental.composeGroups())) {
     lua_pushinteger(
       L, int(base::convert_to<app::script::BlendMode>(
                static_cast<LayerImage*>(layer)->blendMode())));
@@ -261,7 +262,7 @@ int Layer_set_opacity(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
   const int opacity = lua_tointeger(L, 2);
-  if (layer->isImage()) {
+  if (layer->isImage() || layer->isGroup()) {
     Tx tx(layer->sprite());
     tx(new cmd::SetLayerOpacity(static_cast<LayerImage*>(layer), opacity));
     tx.commit();
@@ -273,7 +274,7 @@ int Layer_set_blendMode(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
   auto blendMode = app::script::BlendMode(lua_tointeger(L, 2));
-  if (layer->isImage()) {
+  if (layer->isImage() || layer->isGroup()) {
     Tx tx(layer->sprite());
     tx(new cmd::SetLayerBlendMode(static_cast<LayerImage*>(layer),
                                   base::convert_to<doc::BlendMode>(blendMode)));

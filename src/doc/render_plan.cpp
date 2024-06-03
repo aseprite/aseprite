@@ -35,21 +35,12 @@ void RenderPlan::addLayer(const Layer* layer,
   if (!layer->isVisible())
     return;
 
-  switch (layer->type()) {
-
-    case ObjectType::LayerImage:
-    case ObjectType::LayerTilemap: {
-      m_items.emplace_back(m_order, layer, layer->cel(frame));
-      break;
+  if (layer->isGroup() && !m_composeGroups) {
+    for (auto *const child : static_cast<const LayerGroup*>(layer)->layers()) {
+      addLayer(child, frame);
     }
-
-    case ObjectType::LayerGroup: {
-      for (const auto child : static_cast<const LayerGroup*>(layer)->layers()) {
-        addLayer(child, frame);
-      }
-      break;
-    }
-
+  } else {
+    m_items.emplace_back(m_order, layer, layer->cel(frame));
   }
 }
 

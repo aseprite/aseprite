@@ -125,6 +125,12 @@ namespace doc {
         m_flags = LayerFlags(int(m_flags) & ~int(flags));
     }
 
+    BlendMode blendMode() const { return m_blendmode; }
+    void setBlendMode(BlendMode blendmode) { m_blendmode = blendmode; }
+
+    int opacity() const { return m_opacity; }
+    void setOpacity(int opacity) { m_opacity = opacity; }
+
     virtual Grid grid() const;
     virtual Cel* cel(frame_t frame) const;
     virtual void getCels(CelList& cels) const = 0;
@@ -136,6 +142,9 @@ namespace doc {
     LayerGroup* m_parent;        // parent layer
     LayerFlags m_flags;           // stack order cannot be changed
 
+    BlendMode m_blendmode;
+    int m_opacity;
+  
     // Disable assigment
     Layer& operator=(const Layer& other);
   };
@@ -150,12 +159,6 @@ namespace doc {
     virtual ~LayerImage();
 
     virtual int getMemSize() const override;
-
-    BlendMode blendMode() const { return m_blendmode; }
-    void setBlendMode(BlendMode blendmode) { m_blendmode = blendmode; }
-
-    int opacity() const { return m_opacity; }
-    void setOpacity(int opacity) { m_opacity = opacity; }
 
     void addCel(Cel *cel);
     void removeCel(Cel *cel);
@@ -180,9 +183,7 @@ namespace doc {
 
   private:
     void destroyAllCels();
-
-    BlendMode m_blendmode;
-    int m_opacity;
+  
     CelList m_cels;   // List of all cels inside this layer used by frames.
   };
 

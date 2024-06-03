@@ -57,6 +57,7 @@ namespace app {
     void setRefLayersVisiblity(const bool visible);
     void setNonactiveLayersOpacity(const int opacity);
     void setNewBlendMethod(const bool newBlend);
+    void setComposeGroups(bool composeGroups);
 
     void setProjection(const render::Projection& projection);
 

@@ -568,6 +568,11 @@
                    pref="experimental.new_blend" />
             <link text="(#1096)" url="https://github.com/aseprite/aseprite/issues/1096" />
           </hbox>
+          <hbox>
+            <check text="@.compose_groups"
+                   pref="experimental.compose_groups" />
+            <link text="(#3225)" url="https://github.com/aseprite/aseprite/issues/3225" />
+          </hbox>
           <check id="native_clipboard" text="@.native_clipboard"
                  pref="experimental.use_native_clipboard" />
           <check id="native_file_dialog" text="@.native_file_dialog"
