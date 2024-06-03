@@ -192,8 +192,14 @@ void ExportFileWindow::setAniDir(const doc::AniDir aniDir)
 
 void ExportFileWindow::setOutputFilename(const std::string& pathAndFilename)
 {
-  m_outputPath = base::get_file_path(pathAndFilename);
-  m_outputFilename = base::get_file_name(pathAndFilename);
+  if (base::get_file_path(m_doc->filename()).empty()) {
+    m_outputPath = base::get_file_path(pathAndFilename);
+    m_outputFilename = base::get_file_name(pathAndFilename);
+  }
+  else {
+    m_outputPath = base::get_file_path(m_doc->filename());
+    m_outputFilename = base::get_relative_path(pathAndFilename, base::get_file_path(m_doc->filename()));
+  }
 
   updateOutputFilenameEntry();
 }
