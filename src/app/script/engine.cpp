@@ -50,6 +50,13 @@ FILE* lua_user_fopen(const char* fname,
   return base::open_file_raw(fname, mode);
 }
 
+FILE* lua_user_freopen(const char* fname,
+                       const char* mode,
+                       FILE* stream)
+{
+  return base::reopen_file_raw(fname, mode, stream);
+}
+
 namespace app {
 namespace script {
 

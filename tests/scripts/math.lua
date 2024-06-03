@@ -8,3 +8,9 @@ assert(100 == math.min(100, 200, 300))
 assert(300 == math.max(100, 200, 300))
 assert(50 == math.fmod(250, 100))
 assert(3141 == math.floor(1000*math.pi))
+
+-- Add tests for integer <-> number comparisons
+assert(math.floor(0.5) == 0)
+assert(math.floor(0.5) == 0.0)
+assert(math.floor(0.5) ~= 0.5)
+assert(math.floor(0.5)+0.1-0.1 ~= 0.5)
