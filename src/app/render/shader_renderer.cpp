@@ -110,6 +110,11 @@ void ShaderRenderer::setNewBlendMethod(const bool newBlend)
   // TODO impl
 }
 
+void ShaderRenderer::setComposeGroups(const bool m_composeGroups)
+{
+  // TODO impl
+}
+
 void ShaderRenderer::setBgOptions(const render::BgOptions& bg)
 {
   m_bgOptions = bg;

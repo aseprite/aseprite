@@ -37,6 +37,11 @@ void SimpleRenderer::setNewBlendMethod(const bool newBlend)
   m_render.setNewBlend(newBlend);
 }
 
+void SimpleRenderer::setComposeGroups(const bool composeGroups)
+{
+  m_render.setComposeGroups(composeGroups);
+}
+
 void SimpleRenderer::setBgOptions(const render::BgOptions& bg)
 {
   m_render.setBgOptions(bg);

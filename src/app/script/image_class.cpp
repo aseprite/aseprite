@@ -107,6 +107,7 @@ void render_sprite(Image* dst,
 {
   render::Render render;
   render.setNewBlend(true);
+  render.setComposeGroups(Preferences::instance().experimental.composeGroups());
   render.renderSprite(
     dst, sprite, frame,
     gfx::Clip(x, y,

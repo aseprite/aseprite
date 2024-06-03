@@ -42,6 +42,24 @@ local function dump_img(image)
   print('}')
 end
 
+function expect_clr(color, expectedColor)
+  if color ~= expectedColor then
+    print(debug.traceback())
+    print('Expected A == B but:')
+    print(string.format(' - Value A = rgba(%d,%d,%d,%d)',
+      app.pixelColor.rgbaR(color),
+      app.pixelColor.rgbaG(color),
+      app.pixelColor.rgbaB(color),
+      app.pixelColor.rgbaA(color)))
+    print(string.format(' - Value B = rgba(%d,%d,%d,%d)',
+      app.pixelColor.rgbaR(expectedColor),
+      app.pixelColor.rgbaG(expectedColor),
+      app.pixelColor.rgbaB(expectedColor),
+      app.pixelColor.rgbaA(expectedColor)))
+    assert(color == expectedColor)
+  end
+end
+
 function expect_img(image, expectedPixels)
   local w = image.width
   local h = image.height

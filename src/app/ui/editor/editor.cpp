@@ -670,6 +670,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
     // the original cel) before it can be used by the RenderEngine.
     m_document->notifyExposeSpritePixels(m_sprite, gfx::Region(expose));
 
+    m_renderEngine->setComposeGroups(pref.experimental.composeGroups());
     m_renderEngine->setNewBlendMethod(pref.experimental.newBlend());
     m_renderEngine->setRefLayersVisiblity(true);
     m_renderEngine->setSelectedLayer(m_layer);
