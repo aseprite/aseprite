@@ -88,6 +88,9 @@ void DefaultCliDelegate::saveFile(Context* ctx, const CliOpenFile& cof)
   if (cof.hasTag()) {
     params.set("frame-tag", cof.tag.c_str());
   }
+  if (cof.playSubtags) {
+    params.set("playSubtags", "true");
+  }
   if (cof.hasFrameRange()) {
     params.set("from-frame", base::convert_to<std::string>(cof.fromFrame).c_str());
     params.set("to-frame", base::convert_to<std::string>(cof.toFrame).c_str());

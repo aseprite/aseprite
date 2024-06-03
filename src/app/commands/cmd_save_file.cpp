@@ -494,28 +494,27 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
 
   {
     RestoreVisibleLayers layersVisibility;
+    Site site = context->activeSite();
     if (context->isUIAvailable()) {
-      Site site = context->activeSite();
-
       // Selected layers to export
       calculate_visible_layers(site,
                                layers,
                                layersIndex,
                                layersVisibility);
-
-      // m_selFrames is not empty if fromFrame/toFrame parameters are
-      // specified.
-      if (m_framesSeq.empty()) {
-        // Frames sequence to export
-        FramesSequence framesSeq;
-        Tag* tag = calculate_frames_sequence(
-          site, frames, framesSeq, isPlaySubtags, aniDirValue);
-        if (tag)
-          params().tag(tag->name());
-        m_framesSeq = framesSeq;
-      }
-      m_adjustFramesByTag = false;
     }
+
+    // m_selFrames is not empty if fromFrame/toFrame parameters are
+    // specified.
+    if (m_framesSeq.empty()) {
+      // Frames sequence to export
+      FramesSequence framesSeq;
+      Tag* tag = calculate_frames_sequence(
+        site, frames, framesSeq, isPlaySubtags, aniDirValue);
+      if (tag)
+        params().tag(tag->name());
+      m_framesSeq = framesSeq;
+    }
+    m_adjustFramesByTag = false;
 
     // Set other parameters
     params().aniDir(aniDirValue);

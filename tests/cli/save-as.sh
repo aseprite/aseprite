@@ -407,3 +407,28 @@ assert(d3.bounds == Rectangle(0, 0, 6, 4))
 assert(d4.bounds == Rectangle(0, 0, 8, 4))
 EOF
 $ASEPRITE -b -script "$d/compare.lua" || exit 1
+
+# --play-subtags --save-as
+d=$t/save-as-play-subtags
+$ASEPRITE -b sprites/tags3x123reps.aseprite --play-subtags --save-as $d/image{frame01}.png || exit 1
+expect "image01.png
+image02.png
+image03.png
+image04.png
+image05.png
+image06.png
+image07.png
+image08.png
+image09.png
+image10.png
+image11.png" "list_files $d"
+cat >$d/compare.lua <<EOF
+local src = app.open("sprites/tags3x123reps.aseprite")
+src:flatten()
+local res = app.open("$d/image01.png")
+local frames = {1,2,3,6,5,4,7,8,9,8,7}
+for i = 1,#frames do
+  assert(src.layers[1]:cel(frames[i]).image:isEqual(res.layers[1]:cel(i).image))
+end
+EOF
+$ASEPRITE -b -script "$d/compare.lua" || exit 1

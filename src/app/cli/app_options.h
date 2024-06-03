@@ -70,6 +70,7 @@ public:
   const Option& allLayers() const { return m_allLayers; }
   const Option& ignoreLayer() const { return m_ignoreLayer; }
   const Option& tag() const { return m_tag; }
+  const Option& playSubtags() const { return m_playSubtags; }
   const Option& frameRange() const { return m_frameRange; }
   const Option& ignoreEmpty() const { return m_ignoreEmpty; }
   const Option& mergeDuplicates() const { return m_mergeDuplicates; }
@@ -143,6 +144,7 @@ private:
   Option& m_allLayers;
   Option& m_ignoreLayer;
   Option& m_tag;
+  Option& m_playSubtags;
   Option& m_frameRange;
   Option& m_ignoreEmpty;
   Option& m_mergeDuplicates;
