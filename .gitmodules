@@ -81,3 +81,9 @@
 [submodule "third_party/tinyxml2"]
 	path = third_party/tinyxml2
 	url = https://github.com/aseprite/tinyxml2.git
+[submodule "third_party/libffi"]
+	path = third_party/libffi
+	url = https://github.com/libffi/libffi.git
+[submodule "third_party/cffi-lua"]
+	path = third_party/cffi-lua
+	url = https://github.com/q66/cffi-lua

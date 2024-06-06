@@ -235,6 +235,28 @@ if(ENABLE_SCRIPTING)
     add_subdirectory(IXWebSocket)
     target_include_directories(ixwebsocket PUBLIC)
   endif()
+  
+  if(ENABLE_FFI)
+    add_subdirectory(ffi-cmake)
+    # main.cc is not required
+    add_library(cffi-lua
+      cffi-lua/src/util.cc
+      cffi-lua/src/ffilib.cc
+      cffi-lua/src/parser.cc
+      cffi-lua/src/ast.cc
+      cffi-lua/src/lib.cc
+      cffi-lua/src/ffi.cc
+      ffi-cmake/cffi.cpp
+    )
+    set_property(TARGET cffi-lua PROPERTY POSITION_INDEPENDENT_CODE ON)
+    target_compile_definitions(cffi-lua PUBLIC FFI_LITTLE_ENDIAN FFI_STATIC_BUILD)
+    if (WIN32)
+      target_compile_definitions(cffi-lua PUBLIC FFI_WINDOWS_ABI)
+    endif()
+    target_include_directories(cffi-lua PUBLIC cffi-lua/src ffi-cmake/include/ libffi/include 
+      ${CMAKE_CURRENT_BINARY_DIR}/ffi-cmake/include/)
+    target_link_libraries(cffi-lua lua lualib lauxlib ffi_static)
+  endif()
 
 endif()
 
