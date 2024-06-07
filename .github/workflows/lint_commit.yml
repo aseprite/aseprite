@@ -65,7 +65,7 @@ jobs:
             }
       - name: Comment on PR
         if: ${{ failure() && !github.event.pull_request.draft }}
-        uses: unsplash/comment-on-pr@a9bf050e744c8282dee4bb0dbcf063186d8316c4
+        uses: IdanHo/comment-on-pr@63ea2bf352997c66e524b8b5be7a79163fb3a88a
         env:
           GITHUB_TOKEN: ${{ secrets.LINT_COMMIT_TOKEN }}
         with:
