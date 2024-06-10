@@ -52,10 +52,6 @@ jobs:
     - uses: aseprite/get-ninja@main
     - uses: ilammy/msvc-dev-cmd@v1
       if: runner.os == 'Windows'
-    - name: Workaround for windows-2022 and cmake 3.25.0
-      if: runner.os == 'Windows'
-      shell: bash
-      run: rm -rf C:/Strawberry/
     - name: Generating Makefiles
       shell: bash
       run: |
