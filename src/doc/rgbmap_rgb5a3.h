@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2020-2022 Igara Studio S.A.
+// Copyright (c) 2020-2024 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -11,6 +11,7 @@
 
 #include "base/debug.h"
 #include "base/disable_copying.h"
+#include "base/ints.h"
 #include "doc/object.h"
 #include "doc/rgbmap.h"
 
@@ -23,7 +24,7 @@ namespace doc {
   // It acts like a cache for Palette:findBestfit() calls.
   class RgbMapRGB5A3 : public RgbMap {
     // Bit activated on m_map entries that aren't yet calculated.
-    const int INVALID = 256;
+    const uint16_t INVALID = 256;
 
   public:
     RgbMapRGB5A3();
@@ -31,13 +32,13 @@ namespace doc {
     // RgbMap impl
     void regenerateMap(const Palette* palette, int maskIndex) override;
     int mapColor(const color_t rgba) const override {
-      const int r = rgba_getr(rgba);
-      const int g = rgba_getg(rgba);
-      const int b = rgba_getb(rgba);
-      const int a = rgba_geta(rgba);
+      const uint8_t r = rgba_getr(rgba);
+      const uint8_t g = rgba_getg(rgba);
+      const uint8_t b = rgba_getb(rgba);
+      const uint8_t a = rgba_geta(rgba);
       // bits -> bbbbbgggggrrrrraaa
-      const int i = (a>>5) | ((b>>3) << 3) | ((g>>3) << 8) | ((r>>3) << 13);
-      const int v = m_map[i];
+      const uint32_t i = (a>>5) | ((b>>3) << 3) | ((g>>3) << 8) | ((r>>3) << 13);
+      const uint16_t v = m_map[i];
       return (v & INVALID) ? generateEntry(i, r, g, b, a): v;
     }
 
