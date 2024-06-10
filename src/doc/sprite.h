@@ -219,6 +219,7 @@ namespace doc {
     LayerList allVisibleReferenceLayers() const;
     LayerList allBrowsableLayers() const;
     LayerList allTilemaps() const;
+    std::string visibleLayerHierarchyAsString() const;
 
     CelsRange cels() const;
     CelsRange cels(frame_t frame) const;

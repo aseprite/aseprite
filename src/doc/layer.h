@@ -215,6 +215,7 @@ namespace doc {
     void allVisibleReferenceLayers(LayerList& list) const;
     void allBrowsableLayers(LayerList& list) const;
     void allTilemaps(LayerList& list) const;
+    std::string visibleLayerHierarchyAsString(const std::string& indent) const;
 
     void getCels(CelList& cels) const override;
     void displaceFrames(frame_t fromThis, frame_t delta) override;

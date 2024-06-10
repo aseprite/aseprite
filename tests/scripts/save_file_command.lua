@@ -133,8 +133,8 @@ for _,cm in ipairs{ ColorMode.RGB,
 	app.sprite = spr
 	app.command.SaveFileCopyAs{ filename=fn, slice="small_slice", scale=scale }
 	local c = app.open(fn)
-	assert(c.width == slice.bounds.width*scale)
-	assert(c.height == slice.bounds.height*scale)
+	assert(c.width == math.floor(slice.bounds.width*scale))
+	assert(c.height == math.floor(slice.bounds.height*scale))
 
 	local testImg = Image(spr.cels[1].image, spr.slices[1].bounds)
 	fix_images(testImg, scale, fileExt, c, cm, c1)
