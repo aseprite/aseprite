@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -16,6 +16,7 @@
 #include "app/context.h"
 #include "app/doc.h"
 #include "app/file/file.h"
+#include "app/modules/palettes.h"
 #include "app/script/blend_mode.h"
 #include "app/script/docobj.h"
 #include "app/script/engine.h"
@@ -29,6 +30,7 @@
 #include "doc/algorithm/flip_image.h"
 #include "doc/algorithm/flip_type.h"
 #include "doc/algorithm/shrink_bounds.h"
+#include "doc/blend_image.h"
 #include "doc/cel.h"
 #include "doc/image.h"
 #include "doc/image_ref.h"
@@ -312,13 +314,18 @@ int Image_drawImage(lua_State* L)
   const Image* src = sprite->image(L);
 
   if (auto cel = obj->cel(L)) {
-    gfx::Rect bounds(0, 0, src->size().w, src->size().h);
-    buf.reset(new doc::ImageBuffer);
-    ImageRef tmp_src(
-      doc::crop_image(dst,
-                      gfx::Rect(pos.x, pos.y, src->size().w, src->size().h),
-                      0, buf));
-    doc::blend_image(tmp_src.get(), src, 0, 0, opacity, blendMode);
+    gfx::Rect bounds(src->size());
+
+    // Create the ImageBuffer only when it doesn't exist so we can
+    // cache the allocated buffer.
+    if (!buf)
+      buf = std::make_shared<doc::ImageBuffer>();
+
+    ImageRef tmp_src(doc::crop_image(dst, gfx::Rect(pos, src->size()), 0, buf));
+    doc::blend_image(tmp_src.get(), src,
+                     gfx::Clip(src->size()),
+                     cel->sprite()->palette(0),
+                     opacity, blendMode);
     // TODO Use something similar to doc::algorithm::shrink_bounds2()
     //      but we need something that does the render and compares
     //      the minimal modified area.
@@ -332,7 +339,8 @@ int Image_drawImage(lua_State* L)
   // the source image without undo information.
   else {
     doc::blend_image(dst, src,
-                     pos.x, pos.y,
+                     gfx::Clip(pos, src->bounds()),
+                     get_current_palette(),
                      opacity, blendMode);
   }
   return 0;

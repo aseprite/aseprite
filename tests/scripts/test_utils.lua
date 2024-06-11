@@ -20,7 +20,22 @@ local function dump_img(image)
   for v=0,h-1 do
     local lineStr = '  '
     for u=0,w-1 do
-      lineStr = lineStr .. image:getPixel(u, v) .. ','
+      local pix = image:getPixel(u, v)
+      local pixStr
+      if image.colorMode == ColorMode.RGB then
+        pixStr = string.format('rgba(%d,%d,%d,%d)',
+                               app.pixelColor.rgbaR(pix),
+                               app.pixelColor.rgbaG(pix),
+                               app.pixelColor.rgbaB(pix),
+                               app.pixelColor.rgbaA(pix))
+      elseif image.colorMode == ColorMode.GRAY then
+        pixStr = string.format('gray(%d,%d)',
+                               app.pixelColor.grayaV(pix),
+                               app.pixelColor.grayaA(pix))
+      else
+        pixStr = tostring(pix)
+      end
+      lineStr = lineStr .. pixStr .. ','
     end
     print(lineStr)
   end
