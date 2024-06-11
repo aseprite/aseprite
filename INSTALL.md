@@ -205,6 +205,7 @@ steps as above but when we call `cmake`, we have some differences:
       -DSKIA_DIR=$HOME/deps/skia \
       -DSKIA_LIBRARY_DIR=$HOME/deps/skia/out/Release-arm64 \
       -DSKIA_LIBRARY=$HOME/deps/skia/out/Release-arm64/libskia.a \
+      -DWEBP_LIBRARIES=$HOME/deps/skia/out/Release-arm64/libwebp.a \
       -DPNG_ARM_NEON:STRING=on \
       -G Ninja \
       ..
