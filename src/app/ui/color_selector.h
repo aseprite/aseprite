@@ -88,7 +88,12 @@ namespace app {
 
     void paintColorIndicator(ui::Graphics* g,
                              const gfx::Point& pos,
-                             const bool white);
+                             bool white,
+                             int alpha=255);
+    void paintColorIndicatorChain(ui::Graphics* g,
+        const std::vector<gfx::Point>& positions,
+        const std::vector<bool>& white,
+        int current);
 
     // Returns the 255 if m_color is the mask color, or the
     // m_color.getAlpha() if it's really a color.

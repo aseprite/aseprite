@@ -577,16 +577,49 @@ int ColorSelector::onNeedsSurfaceRepaint(const app::Color& newColor)
 
 void ColorSelector::paintColorIndicator(ui::Graphics* g,
                                         const gfx::Point& pos,
-                                        const bool white)
+                                        const bool white,
+                                        const int alpha)
 {
-  auto theme = SkinTheme::get(this);
+  auto *theme = SkinTheme::get(this);
   os::Surface* icon = theme->parts.colorWheelIndicator()->bitmap(0);
 
   g->drawColoredRgbaSurface(
     icon,
-    white ? gfx::rgba(255, 255, 255): gfx::rgba(0, 0, 0),
+    white ? gfx::rgba(255, 255, 255, alpha): gfx::rgba(0, 0, 0, alpha),
     pos.x-icon->width()/2,
     pos.y-icon->height()/2);
+}
+
+void ColorSelector::paintColorIndicatorChain(ui::Graphics* g,
+    const std::vector<gfx::Point>& positions,
+    const std::vector<bool>& white,
+    const int current)
+{
+  auto theme = SkinTheme::get(this);
+  os::Surface* icon = theme->parts.colorWheelIndicator()->bitmap(0);
+
+  for (int i=0; i<positions.size(); i++)
+  {
+    int const alpha = i == current ? 255 : 50;
+    auto const color =
+      white.at(i) ? gfx::rgba(255, 255, 255, alpha): gfx::rgba(0, 0, 0, alpha);
+
+    g->drawColoredRgbaSurface(
+        icon,
+        color,
+        positions.at(i).x-icon->width()/2,
+        positions.at(i).y-icon->height()/2);
+    if (i < positions.size()-1) {
+      gfx::Color line_color;
+      if (white.at(i) && white.at(i+1))
+        line_color = gfx::rgba(255,255,255,50);
+      else if (!white.at(i) && !white.at(i+1))
+        line_color = gfx::rgba(0,0,0,50);
+      else
+        line_color = gfx::rgba(127,127,127,100);
+      g->drawLine(line_color, positions.at(i), positions.at(i+1));
+    }
+  }
 }
 
 int ColorSelector::getCurrentAlphaForNewColor() const
