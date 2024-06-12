@@ -72,46 +72,6 @@ void copy_image(Image* dst, const Image* src, int x, int y)
   dst->copy(src, gfx::Clip(x, y, 0, 0, src->width(), src->height()));
 }
 
-template<typename ImageTraits>
-void blend_image_templ(Image* dst,
-                       const Image* src,
-                       const int x, const int y,
-                       const int opacity,
-                       BlendFunc& blender)
-{
-  gfx::Clip area = gfx::Clip(x, y, 0, 0, src->width(), src->height());
-  if (!area.clip(dst->width(), dst->height(), src->width(), src->height()))
-    return;
-  LockImageBits<ImageTraits> dstBits(dst);
-  const LockImageBits<ImageTraits> srcBits(src);
-  auto dstIt = dstBits.begin_area(area.dstBounds());
-  auto srcIt = srcBits.begin_area(area.srcBounds());
-  auto dstEnd = dstBits.end_area(area.dstBounds());
-  for (; dstIt < dstEnd; ++dstIt, ++srcIt)
-    *dstIt = blender(*dstIt, *srcIt, opacity);
-}
-
-void blend_image(Image* dst, const Image* src, const int x, const int y,
-                 const int opacity,
-                 const doc::BlendMode blendMode)
-{
-  ASSERT(dst->pixelFormat() == src->pixelFormat());
-  BlendFunc blender;
-  switch (src->pixelFormat()) {
-    case IMAGE_RGB:
-      blender = get_rgba_blender(blendMode, true);
-      return blend_image_templ<RgbTraits>(dst, src, x, y, opacity, blender);
-    case IMAGE_GRAYSCALE:
-      blender = get_graya_blender(blendMode, true);
-      return blend_image_templ<GrayscaleTraits>(dst, src, x, y, opacity, blender);
-    case IMAGE_INDEXED:
-      blender = get_indexed_blender(blendMode, true);
-      return blend_image_templ<IndexedTraits>(dst, src, x, y, opacity, blender);
-    case IMAGE_TILEMAP:
-      return copy_image(dst, src, x, y);
-  }
-}
-
 void copy_image(Image* dst, const Image* src, const gfx::Region& rgn)
 {
   for (const gfx::Rect& rc : rgn)

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022  Igara Studio S.A.
+// Copyright (C) 2022-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -12,9 +12,11 @@
 #include "app/modules/palettes.h"
 
 #include "app/app.h"
+#include "app/context.h"
 #include "app/extensions.h"
 #include "app/file/palette_file.h"
 #include "app/resource_finder.h"
+#include "app/site.h"
 #include "base/fs.h"
 #include "doc/image.h"
 #include "doc/palette.h"
@@ -125,6 +127,15 @@ void load_default_palette()
 //      function and use the active Site palette.
 Palette* get_current_palette()
 {
+#if !ENABLE_UI
+  if (auto* app = App::instance()) {
+    if (auto* ctx = app->context()) {
+      Site site = ctx->activeSite();
+      if (site.sprite())
+        return site.palette();
+    }
+  }
+#endif
   return ase_current_palette;
 }
 

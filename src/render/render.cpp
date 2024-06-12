@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -35,119 +35,6 @@ namespace {
 // Scaled composite
 
 template<class DstTraits, class SrcTraits>
-class BlenderHelper {
-  BlendFunc m_blendFunc;
-  color_t m_mask_color;
-public:
-  BlenderHelper(const Image* src, const Palette* pal, BlendMode blendMode, const bool newBlend)
-  {
-    m_blendFunc = SrcTraits::get_blender(blendMode, newBlend);
-    m_mask_color = src->maskColor();
-  }
-  inline typename DstTraits::pixel_t
-  operator()(const typename DstTraits::pixel_t& dst,
-             const typename SrcTraits::pixel_t& src,
-             const int opacity)
-  {
-    if (src != m_mask_color)
-      return (*m_blendFunc)(dst, src, opacity);
-    else
-      return dst;
-  }
-};
-
-template<>
-class BlenderHelper<RgbTraits, GrayscaleTraits> {
-  BlendFunc m_blendFunc;
-  color_t m_mask_color;
-public:
-  BlenderHelper(const Image* src, const Palette* pal, BlendMode blendMode, const bool newBlend)
-  {
-    m_blendFunc = RgbTraits::get_blender(blendMode, newBlend);
-    m_mask_color = src->maskColor();
-  }
-  inline RgbTraits::pixel_t
-  operator()(const RgbTraits::pixel_t& dst,
-             const GrayscaleTraits::pixel_t& src,
-             const int opacity)
-  {
-    if (src != m_mask_color) {
-      int v = graya_getv(src);
-      return (*m_blendFunc)(dst, rgba(v, v, v, graya_geta(src)), opacity);
-    }
-    else
-      return dst;
-  }
-};
-
-template<>
-class BlenderHelper<RgbTraits, IndexedTraits> {
-  const Palette* m_pal;
-  BlendMode m_blendMode;
-  BlendFunc m_blendFunc;
-  color_t m_mask_color;
-public:
-  BlenderHelper(const Image* src, const Palette* pal, BlendMode blendMode, const bool newBlend)
-  {
-    m_blendMode = blendMode;
-    m_blendFunc = RgbTraits::get_blender(blendMode, newBlend);
-    m_mask_color = src->maskColor();
-    m_pal = pal;
-  }
-  inline RgbTraits::pixel_t
-  operator()(const RgbTraits::pixel_t& dst,
-             const IndexedTraits::pixel_t& src,
-             const int opacity)
-  {
-    if (m_blendMode == BlendMode::SRC) {
-      return m_pal->getEntry(src);
-    }
-    else {
-      if (src != m_mask_color) {
-        return (*m_blendFunc)(dst, m_pal->getEntry(src), opacity);
-      }
-      else
-        return dst;
-    }
-  }
-};
-
-template<>
-class BlenderHelper<IndexedTraits, IndexedTraits> {
-  BlendMode m_blendMode;
-  color_t m_maskColor;
-  int m_paletteSize;
-public:
-  BlenderHelper(const Image* src, const Palette* pal, BlendMode blendMode, const bool newBlend)
-  {
-    m_blendMode = blendMode;
-    m_maskColor = src->maskColor();
-    m_paletteSize = pal->size();
-  }
-  inline IndexedTraits::pixel_t
-  operator()(const IndexedTraits::pixel_t& dst,
-             const IndexedTraits::pixel_t& src,
-             const int opacity)
-  {
-    if (m_blendMode == BlendMode::SRC) {
-      return src;
-    }
-    else if (m_blendMode == BlendMode::DST_OVER) {
-      if (dst != m_maskColor)
-        return dst;
-      else
-        return src;
-    }
-    else {
-      if (src != m_maskColor && src < m_paletteSize)
-        return src;
-      else
-        return dst;
-    }
-  }
-};
-
-template<class DstTraits, class SrcTraits>
 void composite_image_without_scale(
   Image* dst, const Image* src, const Palette* pal,
   const gfx::ClipF& areaF,
@@ -163,7 +50,7 @@ void composite_image_without_scale(
   ASSERT(DstTraits::pixel_format == dst->pixelFormat());
   ASSERT(SrcTraits::pixel_format == src->pixelFormat());
 
-  BlenderHelper<DstTraits, SrcTraits> blender(src, pal, blendMode, newBlend);
+  BlenderHelper<DstTraits, SrcTraits> blender(dst, src, pal, blendMode, newBlend);
 
   gfx::Clip area(areaF);
   if (!area.clip(dst->width(), dst->height(),
@@ -226,7 +113,7 @@ void composite_image_scale_up(
                  int(sy*double(src->height()))))
     return;
 
-  BlenderHelper<DstTraits, SrcTraits> blender(src, pal, blendMode, newBlend);
+  BlenderHelper<DstTraits, SrcTraits> blender(dst, src, pal, blendMode, newBlend);
   int px_x, px_y;
   int px_w = int(sx);
   int px_h = int(sy);
@@ -379,7 +266,7 @@ void composite_image_scale_down(
                  int(sy*double(src->height()))))
     return;
 
-  BlenderHelper<DstTraits, SrcTraits> blender(src, pal, blendMode, newBlend);
+  BlenderHelper<DstTraits, SrcTraits> blender(dst, src, pal, blendMode, newBlend);
   int step_w = int(1.0 / sx);
   int step_h = int(1.0 / sy);
   if (step_w < 1 || step_h < 1)
@@ -447,7 +334,7 @@ void composite_image_general(
                  sx*src->width(), sy*src->height()))
     return;
 
-  BlenderHelper<DstTraits, SrcTraits> blender(src, pal, blendMode, newBlend);
+  BlenderHelper<DstTraits, SrcTraits> blender(dst, src, pal, blendMode, newBlend);
 
   gfx::Rect dstBounds(
     area.dstBounds().x, area.dstBounds().y,
@@ -522,7 +409,7 @@ void composite_image_general_with_tile_flags(
                  sx*src->width(), sy*src->height()))
     return;
 
-  BlenderHelper<DstTraits, SrcTraits> blender(src, pal, blendMode, newBlend);
+  BlenderHelper<DstTraits, SrcTraits> blender(dst, src, pal, blendMode, newBlend);
 
   gfx::Rect dstBounds(
     area.dstBounds().x, area.dstBounds().y,
