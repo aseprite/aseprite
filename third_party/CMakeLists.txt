@@ -62,17 +62,6 @@ if(REQUIRE_CURL AND NOT USE_SHARED_CURL)
   set(BUILD_RELEASE_DEBUG_DIRS ON BOOL)
   set(BUILD_CURL_EXE OFF CACHE BOOL "Set to ON to build curl executable.")
 
-  # SSL/TLS support (use native libraries only)
-  set(CMAKE_USE_OPENSSL OFF CACHE BOOL "Use OpenSSL code. Experimental")
-  set(CMAKE_USE_LIBSSH2 OFF CACHE BOOL "Use libSSH2")
-  if(WIN32)
-    set(CMAKE_USE_SCHANNEL ON CACHE BOOL "enable Windows native SSL/TLS")
-  elseif(APPLE)
-    set(CMAKE_USE_SECTRANSP ON CACHE BOOL "enable Apple OS native SSL/TLS")
-  else()
-    # TODO Linux?
-  endif()
-
   add_subdirectory(curl)
 endif()
 
