@@ -314,6 +314,8 @@ namespace app {
     bool selectSliceBox(const gfx::Rect& box);
     void selectAllSlices();
     bool hasSelectedSlices() const { return !m_selectedSlices.empty(); }
+    void slicesTransforms(bool value) { m_slicesTransforms = value; }
+    bool slicesTransforms() const { return m_slicesTransforms; }
 
     // Called by DocView's InputChainElement::onCancel() impl when Esc
     // key is pressed to cancel the active selection.
@@ -490,6 +492,9 @@ namespace app {
 
     // For slices
     doc::SelectedObjects m_selectedSlices;
+    // When true, modifications to slices positions/sizes will transform the
+    // pixels inside their boundaries.
+    bool m_slicesTransforms = false;
 
     // Active sprite editor with the keyboard focus.
     static Editor* m_activeEditor;

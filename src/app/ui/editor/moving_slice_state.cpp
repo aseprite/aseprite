@@ -18,6 +18,7 @@
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
 #include "doc/slice.h"
+#include "gfx/point.h"
 #include "ui/message.h"
 
 #include <algorithm>
@@ -30,10 +31,12 @@ using namespace ui;
 MovingSliceState::MovingSliceState(Editor* editor,
                                    MouseMessage* msg,
                                    const EditorHit& hit,
-                                   const doc::SelectedObjects& selectedSlices)
+                                   const doc::SelectedObjects& selectedSlices,
+                                   PixelsMovementPtr pixelsMovement)
   : m_frame(editor->frame())
   , m_hit(hit)
   , m_items(std::max<std::size_t>(1, selectedSlices.size()))
+  , m_pixelsMovement(pixelsMovement)
 {
   m_mouseStart = editor->screenToEditor(msg->position());
 
@@ -48,11 +51,31 @@ MovingSliceState::MovingSliceState(Editor* editor,
     }
   }
 
+  if (m_pixelsMovement) {
+    const gfx::Rect totalBounds = selectedSlicesBounds();
+    if (m_hit.border() == (CENTER | MIDDLE)) {
+      m_pixelsMovement->catchImage(gfx::PointF(totalBounds.origin()),
+                                  HandleType::MovePixelsHandle);
+    }
+    m_pixelsMovement->cutMask();
+  }
+
   editor->captureMouse();
+}
+
+EditorState::LeaveAction MovingSliceState::onLeaveState(Editor *editor, EditorState *newState)
+{
+  editor->document()->resetTransformation();
+  return StandbyState::onLeaveState(editor, newState);
 }
 
 bool MovingSliceState::onMouseUp(Editor* editor, MouseMessage* msg)
 {
+  if (m_pixelsMovement) {
+    m_pixelsMovement->dropImage();
+    m_pixelsMovement.reset();
+  }
+
   {
     ContextWriter writer(UIContext::instance(), 1000);
     Tx tx(writer, "Slice Movement", ModifyDocument);
@@ -67,6 +90,7 @@ bool MovingSliceState::onMouseUp(Editor* editor, MouseMessage* msg)
 
   editor->backToPreviousState();
   editor->releaseMouse();
+  editor->invalidate();
   return true;
 }
 
@@ -91,6 +115,12 @@ bool MovingSliceState::onMouseMove(Editor* editor, MouseMessage* msg)
     if (m_hit.border() == (CENTER | MIDDLE)) {
       rc.x += delta.x;
       rc.y += delta.y;
+
+      if (m_pixelsMovement) {
+        m_pixelsMovement->moveImage(gfx::PointF(totalBounds.origin()+delta),
+                                    PixelsMovement::MoveModifier::NormalMovement);
+        m_pixelsMovement->dropImageTemporarily();
+      }
     }
     // Move/resize 9-slices center
     else if (m_hit.type() == EditorHit::SliceCenter) {
