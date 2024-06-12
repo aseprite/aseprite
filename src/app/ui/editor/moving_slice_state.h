@@ -24,9 +24,9 @@ namespace app {
     MovingSliceState(Editor* editor,
                      ui::MouseMessage* msg,
                      const EditorHit& hit,
-                     const doc::SelectedObjects& selectedSlices,
-                     PixelsMovementPtr pixelsMovement);
+                     const doc::SelectedObjects& selectedSlices);
 
+    void onEnterState(Editor* editor) override;
     LeaveAction onLeaveState(Editor *editor, EditorState *newState) override;
     bool onMouseUp(Editor* editor, ui::MouseMessage* msg) override;
     bool onMouseMove(Editor* editor, ui::MouseMessage* msg) override;
@@ -49,7 +49,7 @@ namespace app {
     gfx::Point m_mouseStart;
     std::vector<Item> m_items;
     // Helper member to move/translate the pixels under the slices.
-    PixelsMovementPtr m_pixelsMovement;
+    PixelsMovementPtr m_pixelsMovement = nullptr;
   };
 
 } // namespace app

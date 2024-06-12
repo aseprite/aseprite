@@ -17,7 +17,9 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
+#include "app/util/new_image_from_mask.h"
 #include "doc/slice.h"
+#include "doc/mask.h"
 #include "gfx/point.h"
 #include "ui/message.h"
 
@@ -32,12 +34,10 @@ using namespace ui;
 MovingSliceState::MovingSliceState(Editor* editor,
                                    MouseMessage* msg,
                                    const EditorHit& hit,
-                                   const doc::SelectedObjects& selectedSlices,
-                                   PixelsMovementPtr pixelsMovement)
+                                   const doc::SelectedObjects& selectedSlices)
   : m_frame(editor->frame())
   , m_hit(hit)
   , m_items(std::max<std::size_t>(1, selectedSlices.size()))
-  , m_pixelsMovement(std::move(pixelsMovement))
 {
   m_mouseStart = editor->screenToEditor(msg->position());
 
@@ -52,7 +52,52 @@ MovingSliceState::MovingSliceState(Editor* editor,
     }
   }
 
-  if (m_pixelsMovement) {
+  editor->captureMouse();
+}
+
+void MovingSliceState::onEnterState(Editor* editor)
+{
+  if (editor->slicesTransforms() && !m_items.empty()) {
+    auto site = Site();
+    editor->getSite(&site);
+    ImageRef tmpImage;
+
+    Mask newMask;
+    for (const auto& item : m_items) {
+      newMask.add(item.newKey.bounds());
+    }
+
+    if (site.layer() &&
+        site.layer()->isTilemap() &&
+        site.tilemapMode() == TilemapMode::Tiles) {
+      tmpImage.reset(new_tilemap_from_mask(site, &newMask));
+    }
+    else {
+      tmpImage.reset(new_image_from_mask(site, &newMask,
+                                            Preferences::instance().experimental.newBlend()));
+    }
+
+    ASSERT(tmpImage);
+    if (!tmpImage) {
+      editor->releaseMouse();
+      // We've received a bug report with this case, we're not sure
+      // yet how to reproduce it. Probably new_tilemap_from_mask() can
+      // return nullptr (e.g. when site.cel() is nullptr?)
+      editor->backToPreviousState();
+      return;
+    }
+
+    // Clear brush preview, as the extra cel will be replaced with the
+    // transformed image.
+    editor->brushPreview().hide();
+
+    m_pixelsMovement = PixelsMovementPtr(
+                      new PixelsMovement(UIContext::instance(),
+                        site,
+                        tmpImage.get(),
+                        &newMask,
+                        "Transformation"));
+
     const gfx::Rect totalBounds = selectedSlicesBounds();
     if (m_hit.border() == (CENTER | MIDDLE)) {
       m_pixelsMovement->catchImage(gfx::PointF(totalBounds.origin()),
@@ -60,8 +105,6 @@ MovingSliceState::MovingSliceState(Editor* editor,
     }
     m_pixelsMovement->cutMask();
   }
-
-  editor->captureMouse();
 }
 
 EditorState::LeaveAction MovingSliceState::onLeaveState(Editor *editor, EditorState *newState)

@@ -246,50 +246,8 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
             editor->getSite(&site);
           }
 
-          PixelsMovementPtr pixelsMovement = nullptr;
-          if (editor->slicesTransforms() && !site.selectedSlices().empty()) {
-            site = Site();
-            editor->getSite(&site);
-            ImageRef tmpImage;
-
-            auto& slices = site.selectedSlices();
-            Mask newMask;
-            for (const auto& s : slices.iterateAs<Slice>()) {
-              newMask.add(s->getByFrame(site.frame())->bounds());
-            }
-
-            if (site.layer() &&
-                site.layer()->isTilemap() &&
-                site.tilemapMode() == TilemapMode::Tiles) {
-              tmpImage.reset(new_tilemap_from_mask(site, &newMask));
-            }
-            else {
-              tmpImage.reset(new_image_from_mask(site, &newMask,
-                                                    Preferences::instance().experimental.newBlend()));
-            }
-
-            ASSERT(tmpImage);
-            if (!tmpImage) {
-              // We've received a bug report with this case, we're not sure
-              // yet how to reproduce it. Probably new_tilemap_from_mask() can
-              // return nullptr (e.g. when site.cel() is nullptr?)
-              return true;
-            }
-
-            // Clear brush preview, as the extra cel will be replaced with the
-            // transformed image.
-            editor->brushPreview().hide();
-
-            pixelsMovement = PixelsMovementPtr(
-                              new PixelsMovement(UIContext::instance(),
-                                site,
-                                tmpImage.get(),
-                                &newMask,
-                                "Transformation"));
-          }
-
           MovingSliceState* newState = new MovingSliceState(
-            editor, msg, hit, site.selectedSlices(), pixelsMovement);
+            editor, msg, hit, site.selectedSlices());
           editor->setState(EditorStatePtr(newState));
         }
         else {
