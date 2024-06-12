@@ -455,14 +455,9 @@ RgbMap* Sprite::rgbMap(const frame_t frame,
     }
     m_rgbMap->fitCriteria(fitCriteria);
   }
-  int maskIndex;
-  if (forLayer == RgbMapFor::OpaqueLayer)
-    maskIndex = -1;
-  else {
-    maskIndex = palette(frame)->findMaskColor();
-    if (maskIndex == -1)
-      maskIndex = 0;
-  }
+  int maskIndex = palette(frame)->findMaskColor();
+  maskIndex = (maskIndex == -1 ? (forLayer == RgbMapFor::OpaqueLayer ? -1: 0):
+                                 maskIndex);
   m_rgbMap->regenerateMap(palette(frame), maskIndex, fitCriteria);
   return m_rgbMap.get();
 }
