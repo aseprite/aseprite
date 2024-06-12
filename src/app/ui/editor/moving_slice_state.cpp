@@ -23,6 +23,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <utility>
 
 namespace app {
 
@@ -36,7 +37,7 @@ MovingSliceState::MovingSliceState(Editor* editor,
   : m_frame(editor->frame())
   , m_hit(hit)
   , m_items(std::max<std::size_t>(1, selectedSlices.size()))
-  , m_pixelsMovement(pixelsMovement)
+  , m_pixelsMovement(std::move(pixelsMovement))
 {
   m_mouseStart = editor->screenToEditor(msg->position());
 
