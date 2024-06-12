@@ -65,26 +65,23 @@ private:
 
 } // anonymous namespace
 
-doc::ImageRef render_text(
-  const text::FontMgrRef& fontMgr,
-  const FontInfo& fontInfo,
-  const std::string& text,
-  gfx::Color color)
+text::FontRef get_font_from_info(
+  const FontInfo& fontInfo)
 {
-  doc::ImageRef image;
-
   auto* theme = skin::SkinTheme::instance();
   ASSERT(theme);
   if (!theme)
     return nullptr;
 
-  text::FontRef font;
+  const text::FontMgrRef fontMgr = theme->fontMgr();
+  if (!fontMgr)
+    return nullptr;
 
+  text::FontRef font;
   if (fontInfo.type() == FontInfo::Type::System) {
     // Just in case the typeface is not present in the FontInfo
     auto typeface = fontInfo.findTypeface(fontMgr);
 
-    const text::FontMgrRef fontMgr = theme->fontMgr();
     font = fontMgr->makeFont(typeface);
     if (!fontInfo.useDefaultSize())
       font->setSize(fontInfo.size());
@@ -98,50 +95,98 @@ doc::ImageRef render_text(
     }
   }
 
+  if (font)
+    font->setAntialias(fontInfo.antialias());
+
+  return font;
+}
+
+text::TextBlobRef create_text_blob(
+  const FontInfo& fontInfo,
+  const std::string& text)
+{
+  const text::FontRef font = get_font_from_info(fontInfo);
   if (!font)
     return nullptr;
 
-  font->setAntialias(fontInfo.antialias());
+  auto* theme = skin::SkinTheme::instance();
+  const text::FontMgrRef fontMgr = theme->fontMgr();
+
+  return text::TextBlob::MakeWithShaper(fontMgr, font, text);
+}
+
+doc::ImageRef render_text_blob(
+  const text::TextBlobRef& blob,
+  gfx::Color color)
+{
+  ASSERT(blob != nullptr);
+
+  os::Paint paint;
+  // TODO offer Stroke, StrokeAndFill, and Fill styles
+  paint.style(os::Paint::Fill);
+  paint.color(color);
+
+  gfx::RectF bounds(0, 0, 1, 1);
+  blob->visitRuns([&bounds](text::TextBlob::RunInfo& run){
+    for (int i=0; i<run.glyphCount; ++i) {
+      bounds |= run.getGlyphBounds(i);
+      bounds |= gfx::RectF(0, 0, 1, run.font->metrics(nullptr));
+    }
+  });
+  if (bounds.w < 1) bounds.w = 1;
+  if (bounds.h < 1) bounds.h = 1;
+
+  doc::ImageRef image(
+    doc::Image::create(doc::IMAGE_RGB, bounds.w, bounds.h));
+
+#ifdef LAF_SKIA
+  sk_sp<SkSurface> skSurface = wrap_docimage_in_sksurface(image.get());
+  os::SurfaceRef surface = base::make_ref<os::SkiaSurface>(skSurface);
+  text::draw_text(surface.get(), blob,
+                  gfx::PointF(0, 0), &paint);
+#endif // LAF_SKIA
+
+  return image;
+}
+
+doc::ImageRef render_text(
+  const FontInfo& fontInfo,
+  const std::string& text,
+  gfx::Color color)
+{
+  const text::FontRef font = get_font_from_info(fontInfo);
+  if (!font)
+    return nullptr;
+
+  auto* theme = skin::SkinTheme::instance();
+  const text::FontMgrRef fontMgr = theme->fontMgr();
 
   os::Paint paint;
   paint.style(os::Paint::StrokeAndFill);
   paint.color(color);
 
-  text::TextBlobRef blob;
-  gfx::RectF bounds;
+  // We have to measure all text runs which might use different
+  // fonts (e.g. if the given font is not enough to shape other code
+  // points/languages).
+  MeasureHandler handler;
+  text::TextBlobRef blob =
+    text::TextBlob::MakeWithShaper(fontMgr, font, text, &handler);
+  if (!blob)
+    return nullptr;
 
-  if (fontInfo.type() == FontInfo::Type::System) {
-    // For native fonts we have to measure all text runs which might
-    // use different fonts (e.g. if the given font is not enough to
-    // shape other code points/languages).
-    MeasureHandler handler;
-    blob = text::TextBlob::MakeWithShaper(fontMgr, font, text, &handler);
-    bounds = handler.bounds();
-  }
-  else {
-    font->measureText(text, &bounds, &paint);
-    bounds.w += 1 + std::abs(bounds.x);
-
-    text::FontMetrics metrics;
-    bounds.h = font->metrics(&metrics);
-  }
+  gfx::RectF bounds = handler.bounds();
   if (bounds.w < 1) bounds.w = 1;
   if (bounds.h < 1) bounds.h = 1;
 
-  image.reset(doc::Image::create(doc::IMAGE_RGB, bounds.w, bounds.h));
+  doc::ImageRef image(
+    doc::Image::create(doc::IMAGE_RGB, bounds.w, bounds.h));
 
 #ifdef LAF_SKIA
+  // Wrap the doc::Image into a os::Surface to render the text
   sk_sp<SkSurface> skSurface = wrap_docimage_in_sksurface(image.get());
   os::SurfaceRef surface = base::make_ref<os::SkiaSurface>(skSurface);
-  if (fontInfo.type() == FontInfo::Type::System) {
-    text::draw_text(surface.get(), blob,
-                    gfx::PointF(0, 0), &paint);
-  }
-  else {
-    text::draw_text(
-      surface.get(), fontMgr, font, text,
-      color, gfx::ColorNone, 0, 0, nullptr);
-  }
+  text::draw_text(surface.get(), blob,
+                  gfx::PointF(0, 0), &paint);
 #endif // LAF_SKIA
 
   return image;

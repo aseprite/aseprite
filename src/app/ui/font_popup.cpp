@@ -125,10 +125,9 @@ private:
     const auto* theme = app::skin::SkinTheme::get(this);
 
     try {
-      const text::FontMgrRef fontMgr = theme->fontMgr();
       const gfx::Color color = theme->colors.text();
       doc::ImageRef image =
-        render_text(fontMgr, m_fontInfo, text(), color);
+        render_text(m_fontInfo, text(), color);
       if (!image)
         return;
 
@@ -330,12 +329,12 @@ void FontPopup::showPopup(Display* display,
   m_listBox.selectChild(nullptr);
 
   ui::fit_bounds(display, this,
-                 gfx::Rect(buttonBounds.x, buttonBounds.y2(), 32, 32),
+                 gfx::Rect(buttonBounds.x, buttonBounds.y2(),
+                           buttonBounds.w*2, buttonBounds.h),
                  [](const gfx::Rect& workarea,
                     gfx::Rect& bounds,
                     std::function<gfx::Rect(Widget*)> getWidgetBounds) {
-                   bounds.w = workarea.w / 2;
-                   bounds.h = workarea.h / 2;
+                   bounds.h = workarea.y2() - bounds.y;
                  });
 
   openWindow();

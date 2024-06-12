@@ -31,6 +31,7 @@ namespace app {
     };
 
     FontEntry();
+    ~FontEntry();
 
     FontInfo info() { return m_info; }
     void setInfo(const FontInfo& info, From from = From::User);

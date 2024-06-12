@@ -403,9 +403,11 @@ if(ENABLE_UI)
     ui/editor/play_state.cpp
     ui/editor/scrolling_state.cpp
     ui/editor/select_box_state.cpp
+    ui/editor/select_text_box_state.cpp
     ui/editor/standby_state.cpp
     ui/editor/state_with_wheel_behavior.cpp
     ui/editor/transform_handles.cpp
+    ui/editor/writing_text_state.cpp
     ui/editor/zooming_state.cpp
     ui/export_file_window.cpp
     ui/expr_entry.cpp
