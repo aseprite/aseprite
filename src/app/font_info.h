@@ -61,6 +61,9 @@ namespace app {
 
     text::TypefaceRef findTypeface(const text::FontMgrRef& fontMgr) const;
 
+    static FontInfo getFromPreferences();
+    void updatePreferences();
+
     bool operator==(const FontInfo& other) const {
       return (m_type == other.m_type &&
               m_name == other.m_name &&

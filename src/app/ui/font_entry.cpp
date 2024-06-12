@@ -16,6 +16,7 @@
 #include "ui/display.h"
 #include "ui/manager.h"
 #include "ui/message.h"
+#include "ui/scale.h"
 
 #include <cstdlib>
 
@@ -155,6 +156,8 @@ FontEntry::FontEntry()
   addChild(&m_style);
   addChild(&m_antialias);
 
+  m_face.setMinSize(gfx::Size(128*guiscale(), 0));
+
   m_face.FontChange.connect([this](const FontInfo& newTypeName) {
     setInfo(FontInfo(newTypeName,
                      m_info.size(),
@@ -210,6 +213,12 @@ FontEntry::FontEntry()
                      m_antialias.isSelected()),
             From::Antialias);
   });
+}
+
+// Defined here as FontPopup type is not fully defined in the header
+// file (and we have a std::unique_ptr<FontPopup> in FontEntry::FontFace).
+FontEntry::~FontEntry()
+{
 }
 
 void FontEntry::setInfo(const FontInfo& info,

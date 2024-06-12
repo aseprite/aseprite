@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -54,7 +54,7 @@ namespace ui {
     void updateView(const bool restoreScrollPos = true);
 
     Viewport* viewport();
-    gfx::Rect viewportBounds();
+    gfx::Rect viewportBounds() const;
 
     // For viewable widgets
     static View* getView(const Widget* viewableWidget);

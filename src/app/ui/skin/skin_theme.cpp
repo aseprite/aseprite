@@ -1141,17 +1141,21 @@ void SkinTheme::paintEntry(PaintEvent& ev)
   gfx::Rect bounds = widget->clientBounds();
 
   // Outside borders
-  g->fillRect(BGCOLOR, bounds);
+  const gfx::Color bg = BGCOLOR;
+  if (!is_transparent(bg))
+    g->fillRect(bg, bounds);
 
   bool isMiniLook = false;
   auto skinPropery = std::static_pointer_cast<SkinProperty>(widget->getProperty(SkinProperty::Name));
   if (skinPropery)
     isMiniLook = (skinPropery->getLook() == MiniLook);
 
-  drawRect(g, bounds,
+  drawRect(
+    g, bounds,
     (widget->hasFocus() ?
      (isMiniLook ? parts.sunkenMiniFocused().get(): parts.sunkenFocused().get()):
-     (isMiniLook ? parts.sunkenMiniNormal().get() : parts.sunkenNormal().get())));
+     (isMiniLook ? parts.sunkenMiniNormal().get() : parts.sunkenNormal().get())),
+    !is_transparent(bg));         // Paint center if the BG is not transparent
 
   drawEntryText(g, widget);
 }

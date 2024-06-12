@@ -414,6 +414,7 @@
         <part id="tool_filled_ellipse" x="192" y="80" w="16" h="16" />
         <part id="tool_contour" x="144" y="96" w="16" h="16" />
         <part id="tool_polygon" x="160" y="96" w="16" h="16" />
+        <part id="tool_text" x="144" y="112" w="16" h="16" />
         <part id="tool_blur" x="160" y="112" w="16" h="16" />
         <part id="tool_jumble" x="176" y="112" w="16" h="16" />
         <part id="tool_configuration" x="144" y="128" w="16" h="16" />

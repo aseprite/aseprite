@@ -46,6 +46,7 @@ namespace ui {
 
     void setCaretPos(int pos);
     void setCaretToEnd();
+    bool isCaretVisible() const { return !m_hidden && m_state; }
 
     void selectText(int from, int to);
     void selectAllText();

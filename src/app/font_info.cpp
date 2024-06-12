@@ -9,6 +9,7 @@
 #endif
 
 #include "app/font_info.h"
+#include "app/pref/preferences.h"
 #include "base/fs.h"
 #include "base/split_string.h"
 #include "fmt/format.h"
@@ -74,6 +75,39 @@ text::TypefaceRef FontInfo::findTypeface(const text::FontMgrRef& fontMgr) const
     return set->matchStyle(m_style);
 
   return nullptr;
+}
+
+// static
+FontInfo FontInfo::getFromPreferences()
+{
+  Preferences& pref = Preferences::instance();
+  FontInfo fontInfo;
+
+  // Old configuration
+  if (!pref.textTool.fontFace().empty()) {
+    fontInfo = FontInfo(FontInfo::Type::File,
+                        pref.textTool.fontFace(),
+                        pref.textTool.fontSize(),
+                        text::FontStyle(),
+                        pref.textTool.antialias());
+  }
+  // New configuration
+  if (!pref.textTool.fontInfo().empty()) {
+    fontInfo = base::convert_to<FontInfo>(pref.textTool.fontInfo());
+  }
+
+  return fontInfo;
+}
+
+void FontInfo::updatePreferences()
+{
+  Preferences& pref = Preferences::instance();
+  pref.textTool.fontInfo(base::convert_to<std::string>(*this));
+  if (!pref.textTool.fontFace().empty()) {
+    pref.textTool.fontFace.clearValue();
+    pref.textTool.fontSize.clearValue();
+    pref.textTool.antialias.clearValue();
+  }
 }
 
 } // namespace app

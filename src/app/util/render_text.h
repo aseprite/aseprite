@@ -12,6 +12,7 @@
 #include "doc/image_ref.h"
 #include "gfx/color.h"
 #include "text/font_mgr.h"
+#include "text/text_blob.h"
 
 #include <string>
 
@@ -20,8 +21,18 @@ namespace app {
   class Color;
   class FontInfo;
 
+  text::FontRef get_font_from_info(
+    const FontInfo& fontInfo);
+
+  text::TextBlobRef create_text_blob(
+    const FontInfo& fontInfo,
+    const std::string& text);
+
+  doc::ImageRef render_text_blob(
+    const text::TextBlobRef& blob,
+    gfx::Color color);
+
   doc::ImageRef render_text(
-    const text::FontMgrRef& fontMgr,
     const FontInfo& fontInfo,
     const std::string& text,
     gfx::Color color);

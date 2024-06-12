@@ -83,6 +83,11 @@ namespace app {
     // Called when the editor gets the focus.
     virtual void onEditorGotFocus(Editor* editor) { }
 
+    // Called when the editor is resized. E.g. If a EditorState adds a
+    // temporary widget inside the editor, this method can layout that
+    // widget.
+    virtual void onEditorResize(Editor* editor) { }
+
     // Called when the user presses a mouse button over the editor.
     virtual bool onMouseDown(Editor* editor, ui::MouseMessage* msg) { return false; }
 

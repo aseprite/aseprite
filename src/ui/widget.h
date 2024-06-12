@@ -139,6 +139,7 @@ namespace ui {
     // ===============================================================
 
     text::Font* font() const;
+    void setFont(const text::FontRef& font);
 
     // Gets the background color of the widget.
     gfx::Color bgColor() const {

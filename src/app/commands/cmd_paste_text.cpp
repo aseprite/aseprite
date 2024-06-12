@@ -16,7 +16,6 @@
 #include "app/pref/preferences.h"
 #include "app/ui/drop_down_button.h"
 #include "app/ui/editor/editor.h"
-#include "app/ui/skin/skin_theme.h"
 #include "app/ui/timeline/timeline.h"
 #include "app/util/render_text.h"
 #include "base/fs.h"
@@ -75,21 +74,7 @@ void PasteTextCommand::onExecute(Context* ctx)
     return;
 
   Preferences& pref = Preferences::instance();
-  FontInfo fontInfo;
-
-  // Old configuration
-  if (!pref.textTool.fontFace().empty()) {
-    fontInfo = FontInfo(FontInfo::Type::File,
-                        pref.textTool.fontFace(),
-                        pref.textTool.fontSize(),
-                        text::FontStyle(),
-                        pref.textTool.antialias());
-  }
-  // New configuration
-  if (!pref.textTool.fontInfo().empty()) {
-    fontInfo = base::convert_to<FontInfo>(pref.textTool.fontInfo());
-  }
-
+  FontInfo fontInfo = FontInfo::getFromPreferences();
   PasteTextWindow window(fontInfo, pref.colorBar.fgColor());
 
   window.userText()->setText(last_text_used);
@@ -101,20 +86,14 @@ void PasteTextCommand::onExecute(Context* ctx)
   last_text_used = window.userText()->text();
 
   fontInfo = window.fontInfo();
-  pref.textTool.fontInfo(base::convert_to<std::string>(fontInfo));
-  if (!pref.textTool.fontFace().empty()) {
-    pref.textTool.fontFace.clearValue();
-    pref.textTool.fontSize.clearValue();
-    pref.textTool.antialias.clearValue();
-  }
+  fontInfo.updatePreferences();
 
   try {
-    auto* theme = skin::SkinTheme::instance();
     std::string text = window.userText()->text();
     app::Color color = window.fontColor()->getColor();
 
     doc::ImageRef image = render_text(
-      theme->fontMgr(), fontInfo, text,
+      fontInfo, text,
       gfx::rgba(color.getRed(),
                 color.getGreen(),
                 color.getBlue(),

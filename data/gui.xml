@@ -66,7 +66,6 @@
       <key command="Outline" shortcut="Shift+O" />
       <key command="ColorCurve" shortcut="Ctrl+M" />
       <key command="ColorCurve" shortcut="F10" />
-      <key command="PasteText" shortcut="T" />
       <key command="Options" mac="Cmd+," />
       <key command="Options" shortcut="Ctrl+K" mac="Cmd+K" />
       <key command="KeyboardShortcuts" shortcut="Ctrl+Alt+Shift+K" mac="Cmd+Alt+Shift+K" />
@@ -611,6 +610,8 @@
 
       <key tool="blur" shortcut="R" />
       <key tool="jumble" shortcut="R" />
+
+      <key tool="text" shortcut="T" />
     </tools>
 
     <!-- Editor Quicktools: these are modifiers to select quickly a
@@ -1504,6 +1505,16 @@
             intertwine="as_lines"
             tracepolicy="overlap"
             default_brush_size="16" />
+    </group>
+
+    <group id="text">
+      <tool id="text"
+            text="@.text"
+            ink="text"
+            controller="two_points"
+            pointshape="pixel"
+            intertwine="as_rectangles"
+            traceepolicy="last" />
     </group>
 
   </tools>

@@ -2237,6 +2237,9 @@ void Editor::onResize(ui::ResizeEvent& ev)
 {
   Widget::onResize(ev);
   m_padding = calcExtraPadding(m_proj);
+
+  if (m_state)
+    m_state->onEditorResize(this);
 }
 
 void Editor::onPaint(ui::PaintEvent& ev)

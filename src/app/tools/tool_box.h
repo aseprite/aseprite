@@ -56,6 +56,7 @@ namespace app {
       extern const char* MoveSlice;
       extern const char* Blur;
       extern const char* Jumble;
+      extern const char* Text;
     };
 
     namespace WellKnownControllers {

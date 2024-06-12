@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -193,7 +193,7 @@ Viewport* View::viewport()
   return &m_viewport;
 }
 
-Rect View::viewportBounds()
+Rect View::viewportBounds() const
 {
   return m_viewport.bounds() - m_viewport.border();
 }
