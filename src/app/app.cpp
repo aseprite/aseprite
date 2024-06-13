@@ -446,6 +446,15 @@ namespace {
     CloseMainWindow(std::unique_ptr<MainWindow>& win) : m_win(win) { }
     ~CloseMainWindow() { m_win.reset(nullptr); }
   };
+  // Each 10 seconds we save the modified preferences
+  struct SavePreferencesPeriodically {
+    ui::Timer m_timer;
+    SavePreferencesPeriodically() : m_timer(10000) {
+      m_timer.Tick.connect([]{ Preferences::instance().save(); });
+    }
+    ~SavePreferencesPeriodically() { }
+    void start() { m_timer.start(); }
+  };
 #endif
 
   struct CloseAllDocs {
@@ -483,6 +492,7 @@ void App::run()
 {
 #ifdef ENABLE_UI
   CloseMainWindow closeMainWindow(m_mainWindow);
+  SavePreferencesPeriodically savePrefTimer;
 #endif
   CloseAllDocs closeAllDocsAtExit(context());
 
@@ -569,6 +579,8 @@ void App::run()
 
     // Run the GUI main message loop
     try {
+      savePrefTimer.start();
+
       manager->run();
       set_app_state(AppState::kClosing);
     }
