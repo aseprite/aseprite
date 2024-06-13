@@ -30,7 +30,7 @@ ClearCel::ClearCel(Cel* cel)
     Image* image = cel->image();
     ASSERT(image);
     if (image)
-      m_seq.add(new cmd::ClearImage(image,
+      m_seq.add(new cmd::ClearImage(cel,
           doc->bgColor(cel->layer())));
   }
   else {
