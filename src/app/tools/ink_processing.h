@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -143,6 +143,13 @@ public:
       switch (loop->sprite()->pixelFormat()) {
         case IMAGE_RGB: m_color |= rgba_a_mask; break;
         case IMAGE_GRAYSCALE: m_color |= graya_a_mask; break;
+        case IMAGE_INDEXED: {
+          Palette* pal = loop->sprite()->palette(0);
+          m_color = (rgba_geta(pal->getEntry(m_color)) < 255 ?
+                      pal->findBestfit(0, 0, 0, 255, loop->sprite()->transparentColor()):
+                      m_color);
+          break;
+        }
       }
     }
   }
@@ -570,6 +577,10 @@ public:
   ReplaceInkProcessing(ToolLoop* loop) {
     m_color1 = loop->getPrimaryColor();
     m_color2 = loop->getSecondaryColor();
+    switch (loop->sprite()->pixelFormat()) {
+      case IMAGE_RGB: m_color2 |= rgba_a_mask; break;
+      case IMAGE_GRAYSCALE: m_color2 |= graya_a_mask; break;
+    }
     m_opacity = loop->getOpacity();
   }
 
@@ -616,6 +627,12 @@ public:
     m_rgbmap = loop->getRgbMap();
     m_color1 = loop->getPrimaryColor();
     m_color2 = loop->getSecondaryColor();
+    if (loop->getLayer()->isBackground()) {
+      Palette* pal = loop->sprite()->palette(0);
+      m_color2 = (rgba_geta(pal->getEntry(m_color2)) < 255 ?
+                   pal->findBestfit(0, 0, 0, 255, loop->sprite()->transparentColor()):
+                   m_color2);
+    }
     m_opacity = loop->getOpacity();
     if (m_opacity < 255)
       m_color2 = m_palette->getEntry(m_color2);
