@@ -396,19 +396,20 @@ int App::initialize(const AppOptions& options)
     m_mainWindow->openWindow();
 
 #if LAF_LINUX // TODO check why this is required and we cannot call
-              //      updateAllDisplaysWithNewScale() on Linux/X11
+              //      updateAllDisplays() on Linux/X11
     // Redraw the whole screen.
     manager->invalidate();
 #else
     // To know the initial manager size we call to
-    // Manager::updateAllDisplaysWithNewScale(...) so we receive a
+    // Manager::updateAllDisplays(...) so we receive a
     // Manager::onNewDisplayConfiguration() (which will update the
     // bounds of the manager for first time).  This is required so if
     // the OpenFileCommand (called when we're processing the CLI with
     // OpenBatchOfFiles) shows a dialog to open a sequence of files,
     // the dialog is centered correctly to the manager bounds.
     const int scale = Preferences::instance().general.screenScale();
-    manager->updateAllDisplaysWithNewScale(scale);
+    const bool gpu = Preferences::instance().general.gpuAcceleration();
+    manager->updateAllDisplays(scale, gpu);
 #endif
   }
 #endif  // ENABLE_UI

@@ -127,8 +127,6 @@ static bool create_main_window(bool gpuAccel,
   // executed.
   int scale = Preferences::instance().general.screenScale();
 
-  os::instance()->setGpuAcceleration(gpuAccel);
-
   try {
     if (!spec.frame().isEmpty() ||
         !spec.contentRect().isEmpty()) {
@@ -163,6 +161,8 @@ static bool create_main_window(bool gpuAccel,
     // saved when the program is closed).
     if (scale == 0)
       Preferences::instance().general.screenScale(main_window->scale());
+
+    main_window->setGpuAcceleration(gpuAccel);
 
     if (main_window->isMinimized())
       main_window->maximize();
@@ -655,7 +655,7 @@ bool CustomizedGuiManager::onProcessDevModeKeyDown(KeyMessage* msg)
         ui::set_theme(ui::get_theme(), uiScale);
       }
       if (screenScale != window->scale()) {
-        updateAllDisplaysWithNewScale(screenScale);
+        updateAllDisplays(screenScale, window->gpuAcceleration());
       }
     }
     catch (const std::exception& ex) {

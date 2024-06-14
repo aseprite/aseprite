@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -46,7 +46,9 @@ namespace ui {
     // Refreshes all real displays with the UI content.
     void flipAllDisplays();
 
-    void updateAllDisplaysWithNewScale(int scale);
+    // Updates the scale and GPU acceleration flag of all native
+    // windows.
+    void updateAllDisplays(int scale, bool gpu);
 
     // Adds the given "msg" message to the queue of messages to be
     // dispached. "msg" cannot be used after this function, it'll be
