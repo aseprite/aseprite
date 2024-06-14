@@ -868,13 +868,13 @@ public:
     ui::set_mouse_cursor_scale(m_pref.cursor.cursorScale());
 
     bool reset_screen = false;
-    int newScreenScale = base::convert_to<int>(screenScale()->getValue());
+    const int newScreenScale = base::convert_to<int>(screenScale()->getValue());
     if (newScreenScale != m_pref.general.screenScale()) {
       m_pref.general.screenScale(newScreenScale);
       reset_screen = true;
     }
 
-    int newUIScale = base::convert_to<int>(uiScale()->getValue());
+    const int newUIScale = base::convert_to<int>(uiScale()->getValue());
     if (newUIScale != m_pref.general.uiScale()) {
       m_pref.general.uiScale(newUIScale);
       ui::set_theme(ui::get_theme(),
@@ -882,7 +882,7 @@ public:
       reset_screen = true;
     }
 
-    bool newGpuAccel = gpuAcceleration()->isSelected();
+    const bool newGpuAccel = gpuAcceleration()->isSelected();
     if (newGpuAccel != m_pref.general.gpuAcceleration()) {
       m_pref.general.gpuAcceleration(newGpuAccel);
       reset_screen = true;
@@ -1018,8 +1018,8 @@ private:
 
   void updateScreenScaling() {
     ui::Manager* manager = ui::Manager::getDefault();
-    m_system->setGpuAcceleration(m_pref.general.gpuAcceleration());
-    manager->updateAllDisplaysWithNewScale(m_pref.general.screenScale());
+    manager->updateAllDisplays(m_pref.general.screenScale(),
+                               m_pref.general.gpuAcceleration());
   }
 
   void onApply() {

@@ -311,10 +311,11 @@ void Manager::flipAllDisplays()
   }
 }
 
-void Manager::updateAllDisplaysWithNewScale(int scale)
+void Manager::updateAllDisplays(int scale, bool gpu)
 {
   os::Window* nativeWindow = m_display.nativeWindow();
   nativeWindow->setScale(scale);
+  nativeWindow->setGpuAcceleration(gpu);
 
   if (get_multiple_displays()) {
     for (auto child : children()) {
@@ -322,6 +323,7 @@ void Manager::updateAllDisplaysWithNewScale(int scale)
       if (window->ownDisplay()) {
         Display* display = static_cast<Window*>(child)->display();
         display->nativeWindow()->setScale(scale);
+        display->nativeWindow()->setGpuAcceleration(gpu);
         onNewDisplayConfiguration(display);
       }
     }
@@ -1390,6 +1392,7 @@ void Manager::_openWindow(Window* window, bool center)
     if (get_multiple_displays()
         && window->shouldCreateNativeWindow()) {
       const int scale = parentDisplay->nativeWindow()->scale();
+      const int gpu = parentDisplay->nativeWindow()->gpuAcceleration();
 
       os::WindowSpec spec;
       gfx::Rect frame;
@@ -1436,6 +1439,9 @@ void Manager::_openWindow(Window* window, bool center)
 
       // Set native title bar text
       newNativeWindow->setTitle(window->text());
+
+      // Same GPU acceleration flag that the parent display
+      newNativeWindow->setGpuAcceleration(gpu);
 
       // Activate only non-floating windows
       if (!spec.floating())

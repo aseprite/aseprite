@@ -28,14 +28,6 @@ else()
   add_definitions(-Wno-sign-compare)
 endif()
 
-if(ENABLE_NEWS)
-  add_definitions(-DENABLE_NEWS)
-endif()
-
-if(ENABLE_UPDATER)
-  add_definitions(-DENABLE_UPDATER)
-endif()
-
 if(WIN32)
   # Needed to include icons in win32 .rc file
   include_directories(..)
@@ -46,45 +38,6 @@ endif()
 
 if(REQUIRE_CURL AND NOT USE_SHARED_CURL AND CURL_STATICLIB)
   add_definitions(-DCURL_STATICLIB)
-endif()
-
-######################################################################
-# Special versions (full/trial, devmode, UI/CLI, etc.)
-
-if(NOT ENABLE_TRIAL_MODE)
-  add_definitions(-DENABLE_SAVE)
-else()
-  add_definitions(-DENABLE_TRIAL_MODE)
-endif()
-
-if(ENABLE_DRM)
-  add_definitions(-DENABLE_DRM)
-  add_definitions(-DENABLE_SAVE)
-endif()
-
-if(ENABLE_DEVMODE)
-  add_definitions(-DENABLE_DEVMODE)
-endif()
-
-if(ENABLE_UI)
-  add_definitions(-DENABLE_UI)
-endif()
-
-if(ENABLE_UI AND (NOT ENABLE_TRIAL_MODE OR ENABLE_DRM))
-  set(ENABLE_DATA_RECOVERY on)
-  add_definitions(-DENABLE_DATA_RECOVERY)
-else()
-  set(ENABLE_DATA_RECOVERY off)
-endif()
-
-if(ENABLE_SCRIPTING)
-  # Needed for "app" and "main"
-  add_definitions(-DENABLE_SCRIPTING)
-endif()
-
-if(ENABLE_WEBSOCKET)
-  # Needed for "app" and "main"
-  add_definitions(-DENABLE_WEBSOCKET)
 endif()
 
 ######################################################################

@@ -87,14 +87,6 @@ add_custom_command(
   DEPENDS ${GEN_DEP} ${widget_files} ${string_files} "${SOURCE_DATA_DIR}/gui.xml")
 list(APPEND generated_files ${output_fn})
 
-if(ENABLE_WEBP)
-  add_definitions(-DENABLE_WEBP)
-endif()
-
-if(ENABLE_PSD)
-  add_definitions(-DENABLE_PSD)
-endif()
-
 # libarchive definitions
 add_definitions(-DLIBARCHIVE_STATIC)
 
@@ -113,7 +105,21 @@ else()
   target_sources(app-lib PRIVATE font_path_unix.cpp)
 endif()
 
+# Trial-version vs Full version (enable save command)
+if(ENABLE_TRIAL_MODE)
+  target_compile_definitions(app-lib PUBLIC -DENABLE_TRIAL_MODE)
+else()
+  target_compile_definitions(app-lib PUBLIC -DENABLE_SAVE)
+endif()
+
+# Data recovery
+if(ENABLE_UI AND (NOT ENABLE_TRIAL_MODE OR ENABLE_DRM))
+  set(ENABLE_DATA_RECOVERY on)
+else()
+  set(ENABLE_DATA_RECOVERY off)
+endif()
 if(ENABLE_DATA_RECOVERY)
+  target_compile_definitions(app-lib PUBLIC -DENABLE_DATA_RECOVERY)
   target_sources(app-lib PRIVATE
     crash/backup_observer.cpp
     crash/data_recovery.cpp
@@ -123,6 +129,7 @@ if(ENABLE_DATA_RECOVERY)
     ui/data_recovery_view.cpp)
 endif()
 
+# File formats
 target_sources(app-lib PRIVATE
   file/ase_format.cpp
   file/bmp_format.cpp
@@ -137,15 +144,32 @@ target_sources(app-lib PRIVATE
   file/svg_format.cpp
   file/tga_format.cpp)
 if(ENABLE_WEBP)
+  target_compile_definitions(app-lib PUBLIC -DENABLE_WEBP)
   target_sources(app-lib PRIVATE
     file/webp_format.cpp)
 endif()
 if(ENABLE_PSD)
+  target_link_libraries(app-lib psd)
+  target_compile_definitions(app-lib PUBLIC -DENABLE_PSD)
   target_sources(app-lib PRIVATE
     file/psd_format.cpp)
 endif()
 
+# Extras
+if(ENABLE_DEVMODE)
+  target_compile_definitions(app-lib PUBLIC -DENABLE_DEVMODE)
+endif()
+
+# Enable "Check for updates" info
+if(ENABLE_UPDATER)
+  target_compile_definitions(app-lib PUBLIC -DENABLE_UPDATER)
+endif()
+
+# Scripting
 if(ENABLE_SCRIPTING)
+  target_link_libraries(app-lib lua lauxlib lualib)
+  target_compile_definitions(app-lib PUBLIC -DENABLE_SCRIPTING)
+
   if(ENABLE_UI)
     target_sources(app-lib PRIVATE
       commands/cmd_developer_console.cpp
@@ -153,10 +177,14 @@ if(ENABLE_SCRIPTING)
       commands/debugger.cpp
       ui/devconsole_view.cpp)
   endif()
+
   if(ENABLE_WEBSOCKET)
+    target_link_libraries(app-lib ixwebsocket)
+    target_compile_definitions(app-lib PUBLIC -DENABLE_WEBSOCKET)
     target_sources(app-lib PRIVATE
       script/websocket_class.cpp)
   endif()
+
   target_sources(app-lib PRIVATE
     commands/cmd_run_script.cpp
     script/app_command_object.cpp
@@ -220,7 +248,9 @@ if(ENABLE_SCRIPTING)
     shell.cpp)
 endif()
 
+# UI-only files
 if(ENABLE_UI)
+  target_compile_definitions(app-lib PUBLIC -DENABLE_UI)
   target_sources(app-lib PRIVATE
     app_brushes.cpp
     app_menus.cpp
@@ -431,23 +461,23 @@ if(ENABLE_UI)
     ui_context.cpp
     widget_loader.cpp)
   if(ENABLE_NEWS)
+    target_compile_definitions(app-lib PUBLIC -DENABLE_NEWS)
     target_sources(app-lib PRIVATE
       res/http_loader.cpp
       ui/news_listbox.cpp)
   endif()
   if(ENABLE_DRM)
+    target_link_libraries(app-lib drm-lib)
+    target_compile_definitions(app-lib PUBLIC
+      -DENABLE_DRM
+      -DENABLE_SAVE)
     target_sources(app-lib PRIVATE
       ui/enter_license.cpp
       ui/aseprite_update.cpp)
   endif()
 endif()
 
-if(ENABLE_SENTRY)
-  target_sources(app-lib PRIVATE sentry_wrapper.cpp)
-else()
-  target_sources(app-lib PRIVATE send_crash.cpp)
-endif()
-
+# Main app sources
 target_sources(app-lib PRIVATE
   active_site_handler.cpp
   app.cpp
@@ -735,14 +765,6 @@ target_link_libraries(app-lib
   tinyexpr
   qoi)
 
-if(ENABLE_PSD)
-  target_link_libraries(app-lib psd)
-endif()
-
-if(ENABLE_DRM)
-  target_link_libraries(app-lib drm-lib)
-endif()
-
 # Directory where generated files by "gen" utility will stay.
 target_include_directories(app-lib PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
@@ -750,14 +772,7 @@ if(REQUIRE_CURL)
   target_link_libraries(app-lib net-lib)
 endif()
 
-if(ENABLE_SCRIPTING)
-  target_link_libraries(app-lib lua lauxlib lualib)
-
-  if(ENABLE_WEBSOCKET)
-    target_link_libraries(app-lib ixwebsocket)
-  endif()
-endif()
-
+# Enable loading Steam API
 if(ENABLE_STEAM)
   # We need the ENABLE_STEAM flag in main module too so AppOptions are
   # equal in both modules, app-lib and main (that's why this flag is
@@ -766,6 +781,7 @@ if(ENABLE_STEAM)
   target_link_libraries(app-lib steam-lib)
 endif()
 
+# Report crashes using Sentry
 if(ENABLE_SENTRY)
   target_compile_definitions(app-lib PUBLIC
     -DENABLE_SENTRY
@@ -774,4 +790,7 @@ if(ENABLE_SENTRY)
     -DSENTRY_ENV="${SENTRY_ENV}")
   add_subdirectory(${SENTRY_DIR} sentry)
   target_link_libraries(app-lib sentry)
+  target_sources(app-lib PRIVATE sentry_wrapper.cpp)
+else()
+  target_sources(app-lib PRIVATE send_crash.cpp)
 endif()
