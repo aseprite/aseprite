@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -10,7 +11,9 @@
 
 #include "app/app.h"
 #include "app/commands/command.h"
+#include "app/context.h"
 #include "app/ui/input_chain.h"
+#include "app/util/clipboard.h"
 
 namespace app {
 
@@ -30,12 +33,17 @@ PasteCommand::PasteCommand()
 
 bool PasteCommand::onEnabled(Context* ctx)
 {
-  return App::instance()->inputChain().canPaste(ctx);
+  return ctx->isUIAvailable() ?
+    App::instance()->inputChain().canPaste(ctx) :
+    ctx->clipboard()->isImageAvailable();
 }
 
 void PasteCommand::onExecute(Context* ctx)
 {
-  App::instance()->inputChain().paste(ctx);
+  if (ctx->isUIAvailable())
+    App::instance()->inputChain().paste(ctx);
+  else if (ctx->clipboard())
+    ctx->clipboard()->paste(ctx, false);
 }
 
 Command* CommandFactory::createPasteCommand()
