@@ -845,6 +845,13 @@ void Window::moveWindow(const gfx::Rect& rect, bool use_blit)
 
   // In second place, we have to setup the window invalid region...
 
+  // If the GPU acceleration is enabled on this window we avoid
+  // copying regions of pixels as it's super slow to read GPU
+  // surfaces.
+  if (display()->nativeWindow()->gpuAcceleration()) {
+    use_blit = false;
+  }
+
   // If "use_blit" isn't activated, we have to redraw the whole window
   // (sending kPaintMessage messages) in the new drawable region
   if (!use_blit) {
