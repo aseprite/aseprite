@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2020  Igara Studio S.A.
+// Copyright (c) 2020-2024  Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This program is distributed under the terms of
@@ -19,6 +19,10 @@
 #include "doc/rgbmap.h"
 #include "os/surface.h"
 #include "os/surface_format.h"
+
+#if LAF_SKIA
+  #include "os/skia/skia_surface.h"
+#endif
 
 #include <algorithm>
 #include <stdexcept>
@@ -205,6 +209,12 @@ void convert_image_to_surface(
       ASSERT(false);
       throw std::runtime_error("conversion not supported");
   }
+
+#if LAF_SKIA
+  // Increment SkBitmap generation ID so it's re-uploaded to the GPU
+  // as a texture if it's needed.
+  static_cast<os::SkiaSurface*>(surface)->bitmap().notifyPixelsChanged();
+#endif
 }
 
 } // namespace app
