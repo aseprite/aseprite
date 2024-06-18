@@ -285,9 +285,10 @@ int App::initialize(const AppOptions& options)
 
   auto& pref = preferences();
 
+  os::TabletOptions tabletOptions;
+
 #if LAF_WINDOWS
 
-  os::TabletOptions tabletOptions;
   if (options.disableWintab() ||
       !pref.experimental.loadWintabDriver() ||
       pref.tablet.api() == "pointer") {
@@ -300,7 +301,6 @@ int App::initialize(const AppOptions& options)
     tabletOptions.api = os::TabletAPI::Wintab;
   }
   tabletOptions.setCursorFix = pref.tablet.setCursorFix();
-  system->setTabletOptions(tabletOptions);
 
 #elif LAF_MACOS
 
@@ -309,14 +309,11 @@ int App::initialize(const AppOptions& options)
 
 #elif LAF_LINUX
 
-  {
-    const std::string& stylusId = pref.general.x11StylusId();
-    if (!stylusId.empty())
-      os::x11_set_user_defined_string_to_detect_stylus(stylusId);
-  }
+  tabletOptions.detectStylusPattern = pref.general.x11StylusId();
 
 #endif
 
+  system->setTabletOptions(tabletOptions);
   system->setAppName(get_app_name());
   system->setAppMode(m_isGui ? os::AppMode::GUI:
                                os::AppMode::CLI);
