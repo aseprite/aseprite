@@ -848,7 +848,12 @@ void Window::moveWindow(const gfx::Rect& rect, bool use_blit)
   // If the GPU acceleration is enabled on this window we avoid
   // copying regions of pixels as it's super slow to read GPU
   // surfaces.
-  if (display()->nativeWindow()->gpuAcceleration()) {
+  if (display()->nativeWindow()->gpuAcceleration()
+#if LAF_LINUX
+      // On X11 it's better to avoid copying screen areas
+      || true
+#endif
+      ) {
     use_blit = false;
   }
 
