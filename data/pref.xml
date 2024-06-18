@@ -230,6 +230,7 @@
     </section>
     <section id="tablet" text="Tablet">
       <option id="api" type="std::string" />
+      <option id="set_cursor_fix" type="bool" default="true" />
     </section>
     <section id="experimental" text="Experimental">
       <option id="multiple_windows" type="bool" default="false" />

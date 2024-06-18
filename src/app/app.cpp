@@ -283,27 +283,34 @@ int App::initialize(const AppOptions& options)
   m_isShell = options.startShell();
   m_coreModules = std::make_unique<CoreModules>();
 
+  auto& pref = preferences();
+
 #if LAF_WINDOWS
 
+  os::TabletOptions tabletOptions;
   if (options.disableWintab() ||
-      !preferences().experimental.loadWintabDriver() ||
-      preferences().tablet.api() == "pointer") {
-    system->setTabletAPI(os::TabletAPI::WindowsPointerInput);
+      !pref.experimental.loadWintabDriver() ||
+      pref.tablet.api() == "pointer") {
+    tabletOptions.api = os::TabletAPI::WindowsPointerInput;
   }
-  else if (preferences().tablet.api() == "wintab_packets")
-    system->setTabletAPI(os::TabletAPI::WintabPackets);
-  else // preferences().tablet.api() == "wintab"
-    system->setTabletAPI(os::TabletAPI::Wintab);
+  else if (pref.tablet.api() == "wintab_packets") {
+    tabletOptions.api = os::TabletAPI::WintabPackets;
+  }
+  else { // pref.tablet.api() == "wintab"
+    tabletOptions.api = os::TabletAPI::Wintab;
+  }
+  tabletOptions.setCursorFix = pref.tablet.setCursorFix();
+  system->setTabletOptions(tabletOptions);
 
 #elif LAF_MACOS
 
-  if (!preferences().general.osxAsyncView())
+  if (!pref.general.osxAsyncView())
     os::osx_set_async_view(false);
 
 #elif LAF_LINUX
 
   {
-    const std::string& stylusId = preferences().general.x11StylusId();
+    const std::string& stylusId = pref.general.x11StylusId();
     if (!stylusId.empty())
       os::x11_set_user_defined_string_to_detect_stylus(stylusId);
   }
@@ -331,7 +338,7 @@ int App::initialize(const AppOptions& options)
       break;
   }
 
-  initialize_color_spaces(preferences());
+  initialize_color_spaces(pref);
 
 #ifdef ENABLE_DRM
   LOG("APP: Initializing DRM...\n");
@@ -344,14 +351,14 @@ int App::initialize(const AppOptions& options)
 #endif
 
   // Load modules
-  m_modules = std::make_unique<Modules>(createLogInDesktop, preferences());
+  m_modules = std::make_unique<Modules>(createLogInDesktop, pref);
   m_legacy = std::make_unique<LegacyModules>(isGui() ? REQUIRE_INTERFACE: 0);
 #ifdef ENABLE_UI
   m_brushes = std::make_unique<AppBrushes>();
 #endif
 
   // Data recovery is enabled only in GUI mode
-  if (isGui() && preferences().general.dataRecovery())
+  if (isGui() && pref.general.dataRecovery())
     m_modules->createDataRecovery(context());
 
   if (isPortable())
@@ -371,8 +378,8 @@ int App::initialize(const AppOptions& options)
     m_uiSystem->setClipboardDelegate(&m_modules->m_clipboard);
 
     // Setup the GUI cursor and redraw screen
-    ui::set_use_native_cursors(preferences().cursor.useNativeCursor());
-    ui::set_mouse_cursor_scale(preferences().cursor.cursorScale());
+    ui::set_use_native_cursors(pref.cursor.useNativeCursor());
+    ui::set_mouse_cursor_scale(pref.cursor.cursorScale());
     ui::set_mouse_cursor(kArrowCursor);
 
     auto manager = ui::Manager::getDefault();
@@ -385,7 +392,7 @@ int App::initialize(const AppOptions& options)
       m_mod->modMainWindow(m_mainWindow.get());
 
     // Data recovery is enabled only in GUI mode
-    if (preferences().general.dataRecovery())
+    if (pref.general.dataRecovery())
       m_modules->searchDataRecoverySessions();
 
     // Default status of the main window.
