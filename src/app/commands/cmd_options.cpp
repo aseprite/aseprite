@@ -431,7 +431,7 @@ public:
 
 #ifdef LAF_WINDOWS // Show Tablet section on Windows
     {
-      const os::TabletAPI tabletAPI = os::instance()->tabletAPI();
+      const os::TabletAPI tabletAPI = os::instance()->tabletOptions().api;
       if (tabletAPI == os::TabletAPI::Wintab)
         tabletApiWintabSystem()->setSelected(true);
       else if (tabletAPI == os::TabletAPI::WintabPackets)
