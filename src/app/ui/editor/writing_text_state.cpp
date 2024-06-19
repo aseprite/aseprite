@@ -35,6 +35,12 @@
 #include "ui/message.h"
 #include "ui/paint_event.h"
 
+#ifdef LAF_SKIA
+  #include "app/util/shader_helpers.h"
+  #include "os/skia/skia_helpers.h"
+  #include "os/skia/skia_surface.h"
+#endif
+
 namespace app {
 
 using namespace ui;
@@ -82,7 +88,13 @@ public:
     m_doc->generateMaskBoundaries();
   }
 
-  ExtraCelRef extraCel() const { return m_extraCel; }
+  // Returns the extra cel with the text rendered (but without the
+  // selected text highlighted).
+  ExtraCelRef extraCel() {
+    renderExtraCelBase();
+    renderExtraCelText(false);
+    return m_extraCel;
+  }
 
 private:
   bool onProcessMessage(Message* msg) override {
@@ -112,36 +124,48 @@ private:
   }
 
   void onPaint(PaintEvent& ev) override {
-    Entry::onPaint(ev);
+    Graphics* g = ev.graphics();
+
+    // Don't paint the base Entry borders
+    //Entry::onPaint(ev);
+
     if (!hasText())
       return;
 
+    // Paint border
+    {
+      ui::Paint paint;
+      paint.style(ui::Paint::Stroke);
+      set_checkered_paint_mode(paint, 0,
+                               gfx::rgba(0, 0, 0, 255),
+                               gfx::rgba(255, 255, 255, 255));
+      g->drawRect(clientBounds(), paint);
+    }
+
     try {
-      text::TextBlobRef blob = textBlob();
-      if (!blob) {
+      if (!textBlob()) {
         m_doc->setExtraCel(nullptr);
         m_editor->invalidate();
         return;
       }
 
-      const auto textColor =
-        color_utils::color_for_image(
-          Preferences::instance().colorBar.fgColor(),
-          IMAGE_RGB);
+      // Render extra cel with text + selected text
+      renderExtraCelBase();
+      renderExtraCelText(true);
+      m_doc->setExtraCel(m_extraCel);
 
-      doc::ImageRef image = render_text_blob(blob, textColor);
-      if (image) {
-        renderExtraCelBase();
+      // Paint caret
+      if (isCaretVisible()) {
+        int scroll, caret;
+        getEntryThemeInfo(&scroll, &caret, nullptr, nullptr);
 
-        doc::blend_image(
-          m_extraCel->image(), image.get(),
-          gfx::Clip(image->bounds().size()),
-          m_doc->sprite()->palette(m_editor->frame()),
-          255, doc::BlendMode::NORMAL);
-
-        m_doc->setExtraCel(m_extraCel);
-        m_editor->invalidate();
+        gfx::RectF caretBounds = getCharBoxBounds(caret);
+        caretBounds *= gfx::SizeF(scale());
+        caretBounds.w = 1;
+        g->fillRect(gfx::rgba(0, 0, 0), caretBounds);
       }
+
+      m_editor->invalidate();
     }
     catch (const std::exception& e) {
       StatusBar::instance()->showTip(500, std::string(e.what()));
@@ -157,6 +181,50 @@ private:
       m_editor->frame(),
       gfx::Clip(0, 0, m_extraCel->cel()->bounds()),
       doc::BlendMode::SRC);
+  }
+
+  void renderExtraCelText(const bool withSelection) {
+    const auto textColor =
+      color_utils::color_for_image(
+        Preferences::instance().colorBar.fgColor(),
+        IMAGE_RGB);
+
+    text::TextBlobRef blob = textBlob();
+    if (!blob)
+      return;
+
+    doc::ImageRef image = render_text_blob(blob, textColor);
+    if (!image)
+      return;
+
+    // Invert selected range in the image
+    if (withSelection) {
+      Range range;
+      getEntryThemeInfo(nullptr, nullptr, nullptr, &range);
+      if (!range.isEmpty()) {
+        gfx::RectF selectedBounds =
+          getCharBoxBounds(range.from) |
+          getCharBoxBounds(range.to-1);
+
+        if (!selectedBounds.isEmpty()) {
+#ifdef LAF_SKIA
+          sk_sp<SkSurface> skSurface = wrap_docimage_in_sksurface(image.get());
+          os::SurfaceRef surface = base::make_ref<os::SkiaSurface>(skSurface);
+
+          os::Paint paint;
+          paint.blendMode(os::BlendMode::Xor);
+          paint.color(textColor);
+          surface->drawRect(selectedBounds, paint);
+#endif // LAF_SKIA
+        }
+      }
+    }
+
+    doc::blend_image(
+      m_extraCel->image(), image.get(),
+      gfx::Clip(image->bounds().size()),
+      m_doc->sprite()->palette(m_editor->frame()),
+      255, doc::BlendMode::NORMAL);
   }
 
   Editor* m_editor;
@@ -178,7 +246,7 @@ WritingTextState::WritingTextState(Editor* editor,
     App::instance()->contextBar()->FontChange.connect(
       &WritingTextState::onFontChange, this);
 
-  m_entry->setBounds(calcEntryBounds());
+  onEditorResize(editor);
 }
 
 WritingTextState::~WritingTextState()
@@ -232,8 +300,11 @@ bool WritingTextState::onKeyUp(Editor*, KeyMessage* msg)
   return true;
 }
 
-void WritingTextState::onEditorResize(Editor*)
+void WritingTextState::onEditorResize(Editor* editor)
 {
+  const gfx::PointF scale(editor->projection().scaleX(),
+                          editor->projection().scaleY());
+  m_entry->setScale(scale);
   m_entry->setBounds(calcEntryBounds());
 }
 
