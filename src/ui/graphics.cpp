@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -327,15 +327,6 @@ void Graphics::drawSurfaceNine(os::Surface* surface,
   os::SurfaceLock lockSrc(surface);
   os::SurfaceLock lockDst(m_surface.get());
   m_surface->drawSurfaceNine(surface, src, center, displacedDst, drawCenter, paint);
-}
-
-void Graphics::blit(os::Surface* srcSurface, int srcx, int srcy, int dstx, int dsty, int w, int h)
-{
-  dirty(gfx::Rect(m_dx+dstx, m_dy+dsty, w, h));
-
-  os::SurfaceLock lockSrc(srcSurface);
-  os::SurfaceLock lockDst(m_surface.get());
-  srcSurface->blitTo(m_surface.get(), srcx, srcy, m_dx+dstx, m_dy+dsty, w, h);
 }
 
 void Graphics::setFont(const os::FontRef& font)

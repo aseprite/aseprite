@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -95,8 +95,6 @@ namespace ui {
                          const gfx::Rect& dst,
                          const bool drawCenter,
                          const Paint* paint = nullptr);
-
-    void blit(os::Surface* src, int srcx, int srcy, int dstx, int dsty, int w, int h);
 
     // ======================================================================
     // FONT & TEXT
