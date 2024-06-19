@@ -63,6 +63,9 @@ namespace ui {
     void getEntryThemeInfo(int* scroll, int* caret, int* state, Range* range) const;
     gfx::Rect getEntryTextBounds() const;
 
+    gfx::PointF scale() const { return m_scale; }
+    void setScale(const gfx::PointF& scale) { m_scale = scale; }
+
     static gfx::Size sizeHintWithText(Entry* entry,
                                       const std::string& text);
 
@@ -70,6 +73,8 @@ namespace ui {
     obs::signal<void()> Change;
 
   protected:
+    gfx::Rect getCharBoxBounds(int charBoxIndex);
+
     // Events
     bool onProcessMessage(Message* msg) override;
     void onSizeHint(SizeHintEvent& ev) override;
@@ -137,6 +142,11 @@ namespace ui {
     bool m_translate_dead_keys : 1;
     Range m_selecting_words;
     std::unique_ptr<std::string> m_suffix;
+
+    // Scale (1.0 by default) applied to each axis. Can be used in
+    // case you are going to display/paint the text scaled and want to
+    // convert the mouse position correctly.
+    gfx::PointF m_scale;
   };
 
 } // namespace ui

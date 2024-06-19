@@ -25,6 +25,7 @@
 
 #ifdef LAF_SKIA
   #include "app/util/shader_helpers.h"
+  #include "os/skia/skia_helpers.h"
   #include "os/skia/skia_surface.h"
 #endif
 
