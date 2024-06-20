@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -70,7 +70,7 @@ void RunScriptCommand::onExecute(Context* context)
     int ret = OptionalAlert::show(
       Preferences::instance().scripts.showRunScriptAlert,
       1, // Yes is the default option when the alert dialog is disabled
-      fmt::format(Strings::alerts_run_script(), m_filename));
+      Strings::alerts_run_script(m_filename));
     if (ret != 1)
       return;
   }
@@ -89,11 +89,11 @@ void RunScriptCommand::onExecute(Context* context)
 std::string RunScriptCommand::onGetFriendlyName() const
 {
   if (m_filename.empty())
-    return getBaseFriendlyName();
-  else
-    return fmt::format("{0}: {1}",
-                       getBaseFriendlyName(),
-                       base::get_file_name(m_filename));
+    return Strings::commands_RunScript();
+
+  return fmt::format("{0}: {1}",
+                     Strings::commands_RunScript(),
+                     base::get_file_name(m_filename));
 }
 
 Command* CommandFactory::createRunScriptCommand()

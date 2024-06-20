@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2022  Igara Studio S.A.
+// Copyright (C) 2020-2024  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -22,7 +22,6 @@
 #include "doc/cel.h"
 #include "doc/cels_range.h"
 #include "doc/sprite.h"
-#include "fmt/format.h"
 
 #include <string>
 
@@ -109,9 +108,8 @@ void CelOpacityCommand::onExecute(Context* context)
 
 std::string CelOpacityCommand::onGetFriendlyName() const
 {
-  return fmt::format(getBaseFriendlyName(),
-                     m_opacity,
-                     int(100.0 * m_opacity / 255.0));
+  return Strings::commands_CelOpacity(m_opacity,
+                                      int(100.0 * m_opacity / 255.0));
 }
 
 Command* CommandFactory::createCelOpacityCommand()

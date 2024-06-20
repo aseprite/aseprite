@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -26,7 +26,6 @@
 #include "base/convert_to.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
-#include "fmt/format.h"
 #include "ui/view.h"
 
 namespace app {
@@ -124,8 +123,8 @@ std::string MoveMaskCommand::onGetFriendlyName() const
     case Boundaries: content = Strings::commands_MoveMask_Boundaries(); break;
     case Content: content = Strings::commands_MoveMask_Content(); break;
   }
-  return fmt::format(getBaseFriendlyName(),
-                     content, m_moveThing.getFriendlyString());
+  return Strings::commands_MoveMask(content,
+                                    m_moveThing.getFriendlyString());
 }
 
 Command* CommandFactory::createMoveMaskCommand()

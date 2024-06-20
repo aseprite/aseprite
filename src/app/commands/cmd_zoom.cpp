@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021-2022  Igara Studio S.A.
+// Copyright (C) 2021-2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -16,7 +16,6 @@
 #include "app/pref/preferences.h"
 #include "app/ui/editor/editor.h"
 #include "base/convert_to.h"
-#include "fmt/format.h"
 #include "render/zoom.h"
 #include "ui/manager.h"
 #include "ui/system.h"
@@ -130,8 +129,7 @@ std::string ZoomCommand::onGetFriendlyName() const
       text = Strings::commands_Zoom_Out();
       break;
     case Action::Set:
-      text = fmt::format(Strings::commands_Zoom_Set(),
-                         int(100.0*m_zoom.scale()));
+      text = Strings::commands_Zoom_Set(int(100.0*m_zoom.scale()));
       break;
   }
 

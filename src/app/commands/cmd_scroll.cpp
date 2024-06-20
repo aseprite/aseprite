@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2022  Igara Studio S.A.
+// Copyright (C) 2020-2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -17,7 +17,6 @@
 #include "app/i18n/strings.h"
 #include "app/ui/editor/editor.h"
 #include "base/convert_to.h"
-#include "fmt/format.h"
 #include "ui/view.h"
 
 namespace app {
@@ -64,8 +63,7 @@ void ScrollCommand::onExecute(Context* context)
 
 std::string ScrollCommand::onGetFriendlyName() const
 {
-  return fmt::format(getBaseFriendlyName(),
-                     m_moveThing.getFriendlyString());
+  return Strings::commands_Scroll(m_moveThing.getFriendlyString());
 }
 
 Command* CommandFactory::createScrollCommand()

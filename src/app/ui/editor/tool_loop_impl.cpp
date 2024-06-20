@@ -869,9 +869,7 @@ tools::ToolLoop* create_tool_loop(
       if (toolPref.floodfill.referTo() ==
           app::gen::FillReferTo::ACTIVE_LAYER) {
         StatusBar::instance()->showTip(
-          1000,
-          fmt::format(Strings::statusbar_tips_layer_x_is_hidden(),
-                      layer->name()));
+          1000, Strings::statusbar_tips_layer_x_is_hidden(layer->name()));
         return nullptr;
       }
     }
@@ -883,8 +881,7 @@ tools::ToolLoop* create_tool_loop(
     else if (layer->isReference()) {
       StatusBar::instance()->showTip(
         1000,
-        fmt::format(Strings::statusbar_tips_unmodifiable_reference_layer(),
-                    layer->name()));
+        Strings::statusbar_tips_unmodifiable_reference_layer(layer->name()));
       return nullptr;
     }
   }

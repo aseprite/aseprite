@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -17,7 +18,6 @@
 #include "app/modules/palettes.h"
 #include "app/ui/color_bar.h"
 #include "doc/palette.h"
-#include "fmt/format.h"
 
 namespace app {
 
@@ -120,7 +120,7 @@ std::string ChangeColorCommand::onGetFriendlyName() const
       break;
   }
 
-  return fmt::format(getBaseFriendlyName(), action);
+  return Strings::commands_ChangeColor(action);
 }
 
 Command* CommandFactory::createChangeColorCommand()

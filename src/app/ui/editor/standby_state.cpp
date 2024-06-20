@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -187,13 +187,11 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
       }
       else if (!layer->isVisibleHierarchy()) {
         StatusBar::instance()->showTip(
-          1000,
-          fmt::format(Strings::statusbar_tips_layer_x_is_hidden(),
-                      layer->name()));
+          1000, Strings::statusbar_tips_layer_x_is_hidden(layer->name()));
       }
       else if (!layer->isMovable() || !layer->isEditableHierarchy()) {
         StatusBar::instance()->showTip(
-          1000, fmt::format(Strings::statusbar_tips_layer_locked(), layer->name()));
+          1000, Strings::statusbar_tips_layer_locked(layer->name()));
       }
       else {
         MovingCelCollect collect(editor, layer);
@@ -698,7 +696,7 @@ bool StandbyState::checkStartDrawingStraightLine(Editor* editor,
     if (drawingState) {
       // Disable stabilizer so that it does not affect the line preview
       drawingState->disableMouseStabilizer();
-      
+
       drawingState->sendMovementToToolLoop(
         tools::Pointer(
           pointer ? pointer->point(): editor->screenToEditor(editor->mousePosInDisplay()),
@@ -760,9 +758,7 @@ void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleT
   Layer* layer = editor->layer();
   if (layer && layer->isReference()) {
     StatusBar::instance()->showTip(
-      1000,
-      fmt::format(Strings::statusbar_tips_non_transformable_reference_layer(),
-                        layer->name()));
+      1000, Strings::statusbar_tips_non_transformable_reference_layer(layer->name()));
     return;
   }
 

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -704,8 +704,7 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
       // show the alert dialog.
       if (fatal) {
         ui::Alert::show(
-          fmt::format(
-            Strings::alerts_file_format_doesnt_support_error(),
+          Strings::alerts_file_format_doesnt_support_error(
             format->name(),
             warnings));
         ret = 1;
@@ -714,8 +713,7 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
         ret = OptionalAlert::show(
           Preferences::instance().saveFile.showFileFormatDoesntSupportAlert,
           1, // Yes is the default option when the alert dialog is disabled
-          fmt::format(
-            Strings::alerts_file_format_doesnt_support_warning(),
+          Strings::alerts_file_format_doesnt_support_warning(
             format->name(),
             warnings));
       }
@@ -785,8 +783,7 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
         OptionalAlert::show(
           Preferences::instance().saveFile.showExportAnimationInSequenceAlert,
           1,
-          fmt::format(
-            Strings::alerts_export_animation_in_sequence(),
+          Strings::alerts_export_animation_in_sequence(
             int(fop->m_seq.filename_list.size()),
             base::get_file_name(fop->m_seq.filename_list[0]),
             base::get_file_name(fop->m_seq.filename_list[1]))) != 1) {

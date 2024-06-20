@@ -303,8 +303,7 @@ void HomeView::onUpToDate()
 void HomeView::onNewUpdate(const std::string& url, const std::string& version)
 {
   checkUpdate()->setText(
-    fmt::format(Strings::home_view_new_version_available(),
-                get_app_name(), version));
+    Strings::home_view_new_version_available(get_app_name(), version));
 #ifdef ENABLE_DRM
   DRM_INVALID {
     checkUpdate()->setUrl(url);

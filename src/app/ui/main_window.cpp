@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -217,15 +217,6 @@ MainWindow::~MainWindow()
 
 void MainWindow::onLanguageChange()
 {
-  auto commands = Commands::instance();
-  std::vector<std::string> commandIDs;
-  commands->getAllIds(commandIDs);
-
-  for (const auto& commandID : commandIDs) {
-    Command* command = commands->byId(commandID.c_str());
-    command->generateFriendlyName();
-  }
-
   m_menuBar->reload();
   layout();
   invalidate();

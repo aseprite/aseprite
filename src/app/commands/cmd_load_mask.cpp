@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -20,7 +20,6 @@
 #include "app/util/msk_file.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
-#include "fmt/format.h"
 #include "ui/alert.h"
 
 namespace app {
@@ -70,7 +69,7 @@ void LoadMaskCommand::onExecute(Context* context)
 
   std::unique_ptr<Mask> mask(load_msk_file(m_filename.c_str()));
   if (!mask) {
-    ui::Alert::show(fmt::format(Strings::alerts_error_loading_file(), m_filename));
+    ui::Alert::show(Strings::alerts_error_loading_file(m_filename));
     return;
   }
 

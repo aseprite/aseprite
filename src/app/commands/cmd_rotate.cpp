@@ -32,7 +32,6 @@
 #include "doc/image.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
-#include "fmt/format.h"
 #include "ui/ui.h"
 
 namespace app {
@@ -261,8 +260,8 @@ std::string RotateCommand::onGetFriendlyName() const
     content = Strings::commands_Rotate_Selection();
   else
     content = Strings::commands_Rotate_Sprite();
-  return fmt::format(getBaseFriendlyName(),
-                     content, base::convert_to<std::string>(m_angle));
+  return Strings::commands_Rotate(content,
+                                  base::convert_to<std::string>(m_angle));
 }
 
 Command* CommandFactory::createRotateCommand()

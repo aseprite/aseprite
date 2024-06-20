@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -31,7 +31,6 @@
 #include "base/scoped_value.h"
 #include "base/split_string.h"
 #include "base/string.h"
-#include "fmt/format.h"
 #include "ui/alert.h"
 #include "ui/fit_bounds.h"
 #include "ui/graphics.h"
@@ -239,9 +238,7 @@ private:
     ui::Accelerator accel = m_key->accels()[index];
 
     if (ui::Alert::show(
-          fmt::format(
-            Strings::alerts_delete_shortcut(),
-            accel.toString())) != 1)
+          Strings::alerts_delete_shortcut(accel.toString())) != 1)
       return;
 
     m_key->disableAccel(accel, KeySource::UserDefined);

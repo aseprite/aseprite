@@ -35,7 +35,6 @@
 #include "doc/sprite.h"
 #include "doc/tilesets.h"
 #include "doc/user_data.h"
-#include "fmt/format.h"
 #include "os/color_space.h"
 #include "os/system.h"
 #include "ui/ui.h"
@@ -100,7 +99,7 @@ private:
      auto sprite = tileset->sprite();
      auto tilesetClone = Tileset::MakeCopyCopyingImages(tileset);
 
-     Tx tx(sprite, fmt::format(Strings::commands_TilesetDuplicate()));
+     Tx tx(sprite, Strings::commands_TilesetDuplicate());
      tx(new cmd::AddTileset(sprite, tilesetClone));
      tx.commit();
 
@@ -119,12 +118,12 @@ private:
     }
     if (!tilemapsNames.empty()) {
       tilemapsNames = tilemapsNames.substr(0, tilemapsNames.size()-2);
-      ui::Alert::show(fmt::format(Strings::alerts_cannot_delete_used_tileset(), tilemapsNames));
+      ui::Alert::show(Strings::alerts_cannot_delete_used_tileset(tilemapsNames));
       return;
     }
 
     auto sprite = tileset->sprite();
-    Tx tx(sprite, fmt::format(Strings::commands_TilesetDelete()));
+    Tx tx(sprite, Strings::commands_TilesetDelete());
     tx(new cmd::RemoveTileset(sprite, tsi));
     tx.commit();
 
@@ -276,8 +275,8 @@ void SpritePropertiesCommand::onExecute(Context* context)
         imgtype_text = Strings::sprite_properties_grayscale();
         break;
       case IMAGE_INDEXED:
-        imgtype_text = fmt::format(Strings::sprite_properties_indexed_color(),
-                                   sprite->palette(0)->size());
+        imgtype_text = Strings::sprite_properties_indexed_color(
+          sprite->palette(0)->size());
         break;
       default:
         ASSERT(false);

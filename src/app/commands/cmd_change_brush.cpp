@@ -27,7 +27,6 @@
 #include "doc/image_ref.h"
 #include "doc/primitives.h"
 #include "doc/tile.h"
-#include "fmt/format.h"
 
 #include <algorithm>
 #include <string>
@@ -328,10 +327,10 @@ std::string ChangeBrushCommand::onGetFriendlyName() const
     case FlipD: change = Strings::commands_ChangeBrush_FlipD(); break;
     case Rotate90CW: change = Strings::commands_ChangeBrush_Rotate90CW(); break;
     case CustomBrush:
-      change = fmt::format(Strings::commands_ChangeBrush_CustomBrush(), m_slot);
+      change = Strings::commands_ChangeBrush_CustomBrush(m_slot);
       break;
   }
-  return fmt::format(getBaseFriendlyName(), change);
+  return Strings::commands_ChangeBrush(change);
 }
 
 Command* CommandFactory::createChangeBrushCommand()

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -30,7 +30,6 @@
 #include "app/ui/workspace.h"
 #include "app/ui_context.h"
 #include "base/fs.h"
-#include "fmt/format.h"
 #include "ui/alert.h"
 #include "ui/button.h"
 #include "ui/entry.h"
@@ -346,9 +345,7 @@ void DataRecoveryView::fillListWith(const bool crashes)
 
     std::string title = session->name();
     if (session->version() != get_app_version())
-      title =
-        fmt::format(Strings::recover_files_incompatible(),
-                    title, session->version());
+      title = Strings::recover_files_incompatible(title, session->version());
 
     auto sep = new SeparatorInView(title, HORIZONTAL);
     sep->InitTheme.connect(
@@ -492,8 +489,7 @@ void DataRecoveryView::onDelete()
     return;
 
   // Delete one backup
-  if (Alert::show(
-        fmt::format(Strings::alerts_delete_selected_backups(),
+  if (Alert::show(Strings::alerts_delete_selected_backups(
                     int(items.size()))) != 1)
     return;                     // Cancel
 
@@ -531,11 +527,11 @@ void DataRecoveryView::onChangeSelection()
   m_openButton.setEnabled(count > 0);
   if (count < 2) {
     m_openButton.mainButton()->setText(
-      fmt::format(Strings::recover_files_recover_sprite(), count));
+      Strings::recover_files_recover_sprite());
   }
   else {
     m_openButton.mainButton()->setText(
-      fmt::format(Strings::recover_files_recover_n_sprites(), count));
+      Strings::recover_files_recover_n_sprites(count));
   }
 }
 

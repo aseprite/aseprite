@@ -56,8 +56,7 @@ bool layer_is_locked(Editor* editor)
 #ifdef ENABLE_UI
     if (statusBar) {
       statusBar->showTip(
-        1000, fmt::format(Strings::statusbar_tips_layer_x_is_hidden(),
-                          layer->name()));
+        1000, Strings::statusbar_tips_layer_x_is_hidden(layer->name()));
     }
 #endif
     return true;
@@ -67,7 +66,7 @@ bool layer_is_locked(Editor* editor)
 #ifdef ENABLE_UI
     if (statusBar) {
       statusBar->showTip(
-        1000, fmt::format(Strings::statusbar_tips_layer_locked(), layer->name()));
+        1000, Strings::statusbar_tips_layer_locked(layer->name()));
     }
 #endif
     return true;

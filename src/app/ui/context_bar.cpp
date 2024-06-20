@@ -1436,30 +1436,24 @@ protected:
 class ContextBar::EyedropperField : public HBox {
 public:
   EyedropperField() {
-    const auto combined = Strings::context_bar_eyedropper_combined();
-    m_channel.addItem(fmt::format(
-                        combined,
+    m_channel.addItem(Strings::context_bar_eyedropper_combined(
                         Strings::context_bar_eyedropper_color(),
                         Strings::context_bar_eyedropper_alpha()));
     m_channel.addItem(Strings::context_bar_eyedropper_color());
     m_channel.addItem(Strings::context_bar_eyedropper_alpha());
-    m_channel.addItem(fmt::format(
-                        combined,
+    m_channel.addItem(Strings::context_bar_eyedropper_combined(
                         Strings::context_bar_eyedropper_rgb(),
                         Strings::context_bar_eyedropper_alpha()));
     m_channel.addItem(Strings::context_bar_eyedropper_rgb());
-    m_channel.addItem(fmt::format(
-                        combined,
+    m_channel.addItem(Strings::context_bar_eyedropper_combined(
                         Strings::context_bar_eyedropper_hsv(),
                         Strings::context_bar_eyedropper_alpha()));
     m_channel.addItem(Strings::context_bar_eyedropper_hsv());
-    m_channel.addItem(fmt::format(
-                        combined,
+    m_channel.addItem(Strings::context_bar_eyedropper_combined(
                         Strings::context_bar_eyedropper_hsl(),
                         Strings::context_bar_eyedropper_alpha()));
     m_channel.addItem(Strings::context_bar_eyedropper_hsl());
-    m_channel.addItem(fmt::format(
-                        combined,
+    m_channel.addItem(Strings::context_bar_eyedropper_combined(
                         Strings::context_bar_eyedropper_gray(),
                         Strings::context_bar_eyedropper_alpha()));
     m_channel.addItem(Strings::context_bar_eyedropper_gray());

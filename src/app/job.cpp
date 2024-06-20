@@ -15,7 +15,6 @@
 #include "app/console.h"
 #include "app/context.h"
 #include "app/i18n/strings.h"
-#include "fmt/format.h"
 #include "ui/alert.h"
 #include "ui/widget.h"
 #include "ui/window.h"
@@ -41,8 +40,7 @@ Job::Job(const std::string& jobName,
   m_canceled_flag = false;
 
   if (showProgress && App::instance()->isGui()) {
-    m_alert_window = ui::Alert::create(
-      fmt::format(Strings::alerts_job_working(), jobName));
+    m_alert_window = ui::Alert::create(Strings::alerts_job_working(jobName));
     m_alert_window->addProgress();
 
     m_timer = std::make_unique<ui::Timer>(kMonitoringPeriod, m_alert_window.get());

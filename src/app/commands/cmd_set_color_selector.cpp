@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2024  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -13,7 +14,6 @@
 #include "app/commands/params.h"
 #include "app/i18n/strings.h"
 #include "app/ui/color_bar.h"
-#include "fmt/format.h"
 
 namespace app {
 
@@ -90,7 +90,7 @@ std::string SetColorSelectorCommand::onGetFriendlyName() const
       type = Strings::commands_SetColorSelector_NormalMapWheel();
       break;
   }
-  return fmt::format(getBaseFriendlyName() + ": {0}", type);
+  return fmt::format("{0}: {1}", Command::onGetFriendlyName(), type);
 }
 
 Command* CommandFactory::createSetColorSelectorCommand()

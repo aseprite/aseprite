@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -29,13 +30,12 @@ namespace app {
     virtual ~Command();
 
     const std::string& id() const { return m_id; }
-    std::string friendlyName() const;
+    std::string friendlyName() const { return onGetFriendlyName(); }
 
     bool needsParams() const;
     void loadParams(const Params& params);
     bool isEnabled(Context* context);
     bool isChecked(Context* context);
-    void generateFriendlyName();
 
   protected:
     virtual bool onNeedsParams() const;
@@ -45,16 +45,11 @@ namespace app {
     virtual void onExecute(Context* context);
     virtual std::string onGetFriendlyName() const;
 
-    const std::string& getBaseFriendlyName() const {
-      return m_friendlyName;
-    }
-
   private:
     friend class Context;
     void execute(Context* context);
 
     std::string m_id;
-    std::string m_friendlyName;
     CommandFlags m_flags;
   };
 

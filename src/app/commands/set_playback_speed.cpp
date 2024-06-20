@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2023  Igara Studio S.A.
+// Copyright (c) 2023-2024  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -9,9 +9,9 @@
 #endif
 
 #include "app/commands/new_params.h"
-#include "app/ui_context.h"
+#include "app/i18n/strings.h"
 #include "app/ui/editor/editor.h"
-#include "fmt/format.h"
+#include "app/ui_context.h"
 
 namespace app {
 
@@ -55,7 +55,7 @@ void SetPlaybackSpeedCommand::onExecute(Context* ctx)
 
 std::string SetPlaybackSpeedCommand::onGetFriendlyName() const
 {
-  return fmt::format(getBaseFriendlyName(), params().multiplier());
+  return Strings::commands_SetPlaybackSpeed(params().multiplier());
 }
 
 Command* CommandFactory::createSetPlaybackSpeedCommand()

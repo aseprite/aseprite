@@ -888,9 +888,7 @@ public:
     m_pref.save();
 
     if (!warnings.empty()) {
-      ui::Alert::show(
-        fmt::format(Strings::alerts_restart_by_preferences(),
-                    warnings));
+      ui::Alert::show(Strings::alerts_restart_by_preferences(warnings));
     }
 
     // Probably it's safe to switch this flag in runtime
@@ -929,8 +927,7 @@ public:
     }
 
     // Install?
-    if (ui::Alert::show(
-          fmt::format(Strings::alerts_install_extension(), filename)) != 1)
+    if (ui::Alert::show(Strings::alerts_install_extension(filename)) != 1)
       return false;
 
     installExtension(filename);
@@ -1495,8 +1492,7 @@ private:
           // Ask if the user want to adjust the Screen/UI Scaling
           const int result =
             ui::Alert::show(
-              fmt::format(
-                Strings::alerts_update_screen_ui_scaling_with_theme_values(),
+              Strings::alerts_update_screen_ui_scaling_with_theme_values(
                 themeName,
                 100 * m_pref.general.screenScale(),
                 100 * (newScreenScale > 0 ? newScreenScale: m_pref.general.screenScale()),
@@ -1587,8 +1583,7 @@ private:
 
         // Uninstall?
         if (ui::Alert::show(
-              fmt::format(
-                Strings::alerts_update_extension(),
+              Strings::alerts_update_extension(
                 ext->name(),
                 (isDowngrade ? Strings::alerts_update_extension_downgrade():
                                Strings::alerts_update_extension_upgrade()),
@@ -1664,8 +1659,7 @@ private:
       return;
 
     if (ui::Alert::show(
-          fmt::format(
-            Strings::alerts_uninstall_extension_warning(),
+          Strings::alerts_uninstall_extension_warning(
             item->text())) != 1)
       return;
 

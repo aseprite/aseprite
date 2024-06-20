@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -518,8 +518,7 @@ void ToolBar::openTipWindow(int group_index, Tool* tool)
     KeyPtr key = KeyboardShortcuts::instance()->tool(tool);
     if (key && !key->accels().empty()) {
       tooltip += "\n\n";
-      tooltip += fmt::format(Strings::tools_shortcut(),
-                             key->accels().front().toString());
+      tooltip += Strings::tools_shortcut(key->accels().front().toString());
     }
   }
   else if (group_index == PreviewVisibilityIndex) {

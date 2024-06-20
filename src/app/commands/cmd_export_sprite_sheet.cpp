@@ -48,7 +48,7 @@
 #include "export_sprite_sheet.xml.h"
 
 #include <limits>
-#include <sstream>
+#include <string>
 
 namespace app {
 
@@ -93,20 +93,19 @@ bool ask_overwrite(const bool askFilename, const std::string& filename,
       (askDataname &&
        !dataname.empty() &&
        base::is_file(dataname))) {
-    std::stringstream text;
+    std::string text;
 
     if (base::is_file(filename))
-      text << "<<" << base::get_file_name(filename).c_str();
+      text += "<<" + base::get_file_name(filename);
 
     if (base::is_file(dataname))
-      text << "<<" << base::get_file_name(dataname).c_str();
+      text += "<<" + base::get_file_name(dataname);
 
     const int ret =
       OptionalAlert::show(
         Preferences::instance().spriteSheet.showOverwriteFilesAlert,
         1, // Yes is the default option when the alert dialog is disabled
-        fmt::format(Strings::alerts_overwrite_files_on_export_sprite_sheet(),
-                    text.str()));
+        Strings::alerts_overwrite_files_on_export_sprite_sheet(text));
     if (ret != 1)
       return false;
   }

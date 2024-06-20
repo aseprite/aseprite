@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -20,7 +20,6 @@
 #include "app/pref/preferences.h"
 #include "app/tx.h"
 #include "doc/palette.h"
-#include "fmt/format.h"
 
 #ifdef ENABLE_SCRIPTING
 #include "app/script/luacpp.h"
@@ -148,7 +147,7 @@ std::string AddColorCommand::onGetFriendlyName() const
     case AddColorSource::Bg: source = Strings::commands_AddColor_Background(); break;
     case AddColorSource::Color: source = Strings::commands_AddColor_Specific(); break;
   }
-  return fmt::format(getBaseFriendlyName(), source);
+  return Strings::commands_AddColor(source);
 }
 
 Command* CommandFactory::createAddColorCommand()

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2021  Igara Studio S.A.
+// Copyright (C) 2020-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -24,7 +24,6 @@
 #include "doc/layer_tilemap.h"
 #include "doc/sprite.h"
 #include "doc/tilesets.h"
-#include "fmt/format.h"
 #include "ui/alert.h"
 #include "ui/widget.h"
 
@@ -90,7 +89,7 @@ static bool continue_deleting_unused_tilesets(
 
   std::string message;
   if (tsiToDelete.size() >= 1)
-    message = fmt::format(Strings::alerts_deleting_tilemaps_will_delete_tilesets(), layerNames);
+    message = Strings::alerts_deleting_tilemaps_will_delete_tilesets(layerNames);
 
   return tsiToDelete.empty() ||
          app::OptionalAlert::show(
@@ -205,12 +204,14 @@ void RemoveLayerCommand::onExecute(Context* context)
     update_screen_for_document(document);
 
     StatusBar::instance()->invalidate();
-    if (!layerName.empty())
+    if (!layerName.empty()) {
       StatusBar::instance()->showTip(
-        1000, fmt::format(Strings::remove_layer_x_removed(), layerName));
-    else
-      StatusBar::instance()->showTip(1000,
-                                     Strings::remove_layer_layers_removed());
+        1000, Strings::remove_layer_x_removed(layerName));
+    }
+    else {
+      StatusBar::instance()->showTip(
+        1000, Strings::remove_layer_layers_removed());
+    }
   }
 #endif
 }
