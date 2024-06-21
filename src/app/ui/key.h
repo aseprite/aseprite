@@ -68,6 +68,7 @@ namespace app {
     AngleSnapFromLastPoint    = 0x00010000,
     RotateShape               = 0x00020000,
     FineControl               = 0x00040000,
+    Spread                    = 0x00080000,
   };
 
   enum class WheelAction {

@@ -671,6 +671,7 @@
       <!-- Modifiers for two-or-more-points tools -->
       <key action="MoveOrigin" shortcut="Space" />
       <key action="RotateShape" shortcut="Alt" />
+      <key action="Spread" />
 
       <!-- Without default shortcuts -->
       <key action="LeftMouseButton" />
