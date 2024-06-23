@@ -234,6 +234,7 @@ You need to use clang and libc++ to compile Aseprite:
       -DSKIA_DIR=$HOME/deps/skia \
       -DSKIA_LIBRARY_DIR=$HOME/deps/skia/out/Release-x64 \
       -DSKIA_LIBRARY=$HOME/deps/skia/out/Release-x64/libskia.a \
+      -DWEBP_LIBRARIES=$HOME/deps/skia/out/Release-x64/libwebp.a \
       -G Ninja \
       ..
     ninja aseprite
