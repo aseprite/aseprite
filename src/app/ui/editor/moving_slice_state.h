@@ -13,6 +13,8 @@
 #include "app/ui/editor/standby_state.h"
 #include "app/ui/editor/pixels_movement.h"
 #include "doc/frame.h"
+#include "doc/image_ref.h"
+#include "doc/mask.h"
 #include "doc/selected_objects.h"
 #include "doc/slice.h"
 
@@ -27,7 +29,6 @@ namespace app {
                      const doc::SelectedObjects& selectedSlices);
 
     void onEnterState(Editor* editor) override;
-    LeaveAction onLeaveState(Editor *editor, EditorState *newState) override;
     bool onMouseUp(Editor* editor, ui::MouseMessage* msg) override;
     bool onMouseMove(Editor* editor, ui::MouseMessage* msg) override;
     bool onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos) override;
@@ -39,17 +40,25 @@ namespace app {
       doc::Slice* slice;
       doc::SliceKey oldKey;
       doc::SliceKey newKey;
+      // Image containing the part of the sprite under the slice bounds that
+      // will be transformed when Slice Transform is enabled
+      ImageRef img = nullptr;
+      std::shared_ptr<Mask> mask = nullptr;
     };
 
     Item getItemForSlice(doc::Slice* slice);
     gfx::Rect selectedSlicesBounds() const;
 
+    void drawExtraCel(Editor* editor);
+    void drawImage(const Item& item, doc::Image* dst, const gfx::PointF& pt);
+
     doc::frame_t m_frame;
     EditorHit m_hit;
     gfx::Point m_mouseStart;
     std::vector<Item> m_items;
-    // Helper member to move/translate the pixels under the slices.
-    PixelsMovementPtr m_pixelsMovement = nullptr;
+    Site m_site;
+    ExtraCelRef m_extraCel = nullptr;
+    //Mask m_mask;
   };
 
 } // namespace app

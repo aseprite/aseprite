@@ -9,19 +9,21 @@
 #include "config.h"
 #endif
 
-#include "app/ui/editor/moving_slice_state.h"
-
 #include "app/cmd/set_slice_key.h"
 #include "app/context_access.h"
 #include "app/tx.h"
 #include "app/ui/editor/editor.h"
+#include "app/ui/editor/moving_slice_state.h"
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
 #include "app/util/new_image_from_mask.h"
+#include "doc/blend_internals.h"
 #include "doc/slice.h"
 #include "doc/mask.h"
+#include "doc/algorithm/rotate.h"
 #include "gfx/point.h"
 #include "ui/message.h"
+#include "render/render.h"
 
 #include <algorithm>
 #include <cmath>
@@ -52,74 +54,44 @@ MovingSliceState::MovingSliceState(Editor* editor,
     }
   }
 
+  editor->getSite(&m_site);
+
   editor->captureMouse();
 }
 
 void MovingSliceState::onEnterState(Editor* editor)
 {
   if (editor->slicesTransforms() && !m_items.empty()) {
-    auto site = Site();
-    editor->getSite(&site);
-    ImageRef tmpImage;
+    for (auto& item : m_items) {
+      item.mask->add(item.newKey.bounds());
 
-    Mask newMask;
-    for (const auto& item : m_items) {
-      newMask.add(item.newKey.bounds());
-    }
+      if (m_site.layer() &&
+          m_site.layer()->isTilemap() &&
+          m_site.tilemapMode() == TilemapMode::Tiles) {
+        item.img.reset(new_tilemap_from_mask(m_site, item.mask.get()));
+      }
+      else {
+        item.img.reset(new_image_from_mask(m_site, item.mask.get(),
+                                           Preferences::instance().experimental.newBlend()));
+      }
 
-    if (site.layer() &&
-        site.layer()->isTilemap() &&
-        site.tilemapMode() == TilemapMode::Tiles) {
-      tmpImage.reset(new_tilemap_from_mask(site, &newMask));
-    }
-    else {
-      tmpImage.reset(new_image_from_mask(site, &newMask,
-                                            Preferences::instance().experimental.newBlend()));
-    }
-
-    ASSERT(tmpImage);
-    if (!tmpImage) {
-      editor->releaseMouse();
-      // We've received a bug report with this case, we're not sure
-      // yet how to reproduce it. Probably new_tilemap_from_mask() can
-      // return nullptr (e.g. when site.cel() is nullptr?)
-      editor->backToPreviousState();
-      return;
+      ASSERT(item.img);
+      if (!item.img) {
+        // We've received a bug report with this case, we're not sure
+        // yet how to reproduce it. Probably new_tilemap_from_mask() can
+        // return nullptr (e.g. when site.cel() is nullptr?)
+        continue;
+      }
     }
 
     // Clear brush preview, as the extra cel will be replaced with the
     // transformed image.
     editor->brushPreview().hide();
-
-    m_pixelsMovement = PixelsMovementPtr(
-                      new PixelsMovement(UIContext::instance(),
-                        site,
-                        tmpImage.get(),
-                        &newMask,
-                        "Transformation"));
-
-    const gfx::Rect totalBounds = selectedSlicesBounds();
-    if (m_hit.border() == (CENTER | MIDDLE)) {
-      m_pixelsMovement->catchImage(gfx::PointF(totalBounds.origin()),
-                                  HandleType::MovePixelsHandle);
-    }
-    m_pixelsMovement->cutMask();
   }
-}
-
-EditorState::LeaveAction MovingSliceState::onLeaveState(Editor *editor, EditorState *newState)
-{
-  editor->document()->resetTransformation();
-  return StandbyState::onLeaveState(editor, newState);
 }
 
 bool MovingSliceState::onMouseUp(Editor* editor, MouseMessage* msg)
 {
-  if (m_pixelsMovement) {
-    m_pixelsMovement->dropImage();
-    m_pixelsMovement.reset();
-  }
-
   {
     ContextWriter writer(UIContext::instance(), 1000);
     Tx tx(writer, "Slice Movement", ModifyDocument);
@@ -136,6 +108,112 @@ bool MovingSliceState::onMouseUp(Editor* editor, MouseMessage* msg)
   editor->releaseMouse();
   editor->invalidate();
   return true;
+}
+
+void MovingSliceState::drawExtraCel(Editor* editor)
+{
+  int t, opacity = (m_site.layer()->isImage() ?
+                    static_cast<LayerImage*>(m_site.layer())->opacity(): 255);
+  Cel* cel = m_site.cel();
+  if (cel) opacity = MUL_UN8(opacity, cel->opacity(), t);
+
+  if (!m_extraCel)
+    m_extraCel.reset(new ExtraCel);
+
+  gfx::Rect bounds;
+  for (auto& item : m_items)
+    bounds |= item.newKey.bounds();
+
+
+  if (!bounds.isEmpty()) {
+    gfx::Size extraCelSize;
+    if (m_site.tilemapMode() == TilemapMode::Tiles) {
+      // Transforming tiles
+      extraCelSize = m_site.grid().canvasToTile(bounds).size();
+    }
+    else {
+      // Transforming pixels
+      extraCelSize = bounds.size();
+    }
+
+    m_extraCel->create(
+      m_site.tilemapMode(),
+      m_site.document()->sprite(),
+      bounds,
+      extraCelSize,
+      m_site.frame(),
+      opacity);
+    m_extraCel->setType(render::ExtraType::PATCH);
+    m_extraCel->setBlendMode(m_site.layer()->isImage() ?
+                             static_cast<LayerImage*>(m_site.layer())->blendMode():
+                             doc::BlendMode::NORMAL);
+  }
+
+  m_site.document()->setExtraCel(m_extraCel);
+
+  if (m_extraCel->image()) {
+    Image* dst = m_extraCel->image();
+    if (m_site.tilemapMode() == TilemapMode::Tiles) {
+      dst->setMaskColor(doc::notile);
+      dst->clear(dst->maskColor());
+  /*
+   TODO: Fix this when the TilemapMode::Pixels mode works
+      if (m_site.cel()) {
+        doc::Grid grid = m_site.grid();
+        dst->copy(m_site.cel()->image(),
+                  gfx::Clip(0, 0, grid.canvasToTile(bounds)));
+        //dst->copy(item.img.get(),
+        //          gfx::Clip(0, 0, grid.canvasToTile(bounds)));
+      }
+  */
+    }
+    else {
+      dst->setMaskColor(m_site.sprite()->transparentColor());
+      dst->clear(dst->maskColor());
+
+      render::Render render;
+      render.renderLayer(
+        dst, m_site.layer(), m_site.frame(),
+        gfx::Clip(0, 0, bounds),
+        doc::BlendMode::SRC);
+
+    }
+
+    for (auto& item : m_items) {
+      // Draw the transformed pixels in the extra-cel which is the chunk
+      // of pixels that the user is moving.
+      drawImage(item, dst, gfx::PointF(bounds.origin()));
+    }
+  }
+}
+
+
+void MovingSliceState::drawImage(const Item& item, doc::Image* dst, const gfx::PointF& pt)
+{
+  ASSERT(dst);
+
+  if (!item.img.get()) return;
+
+  gfx::Rect bounds = item.newKey.bounds();
+
+  if (m_site.tilemapMode() == TilemapMode::Tiles) {
+
+ /* TODO: Finish this when TilemapMode::Pixels works
+    drawTransformedTilemap(
+      transformation,
+      dst, m_originalImage.get(),
+      m_initialMask.get());
+    */
+  }
+  else {
+    doc::algorithm::parallelogram(
+      dst, item.img.get(), item.mask->bitmap(),
+      bounds.x-pt.x         , bounds.y-pt.y,
+      bounds.x+bounds.w-pt.x, bounds.y-pt.y,
+      bounds.x+bounds.w-pt.x, bounds.y+bounds.h-pt.y,
+      bounds.x-pt.x         , bounds.y+bounds.h-pt.y
+    );
+  }
 }
 
 bool MovingSliceState::onMouseMove(Editor* editor, MouseMessage* msg)
@@ -159,12 +237,6 @@ bool MovingSliceState::onMouseMove(Editor* editor, MouseMessage* msg)
     if (m_hit.border() == (CENTER | MIDDLE)) {
       rc.x += delta.x;
       rc.y += delta.y;
-
-      if (m_pixelsMovement) {
-        m_pixelsMovement->moveImage(gfx::PointF(totalBounds.origin()+delta),
-                                    PixelsMovement::MoveModifier::NormalMovement);
-        m_pixelsMovement->dropImageTemporarily();
-      }
     }
     // Move/resize 9-slices center
     else if (m_hit.type() == EditorHit::SliceCenter) {
@@ -236,6 +308,9 @@ bool MovingSliceState::onMouseMove(Editor* editor, MouseMessage* msg)
     item.slice->insert(m_frame, key);
   }
 
+  if (editor->slicesTransforms())
+    drawExtraCel(editor);
+
   // Redraw the editor.
   editor->invalidate();
 
@@ -278,6 +353,7 @@ MovingSliceState::Item MovingSliceState::getItemForSlice(doc::Slice* slice)
 {
   Item item;
   item.slice = slice;
+  item.mask = std::make_shared<Mask>();
 
   auto keyPtr = slice->getByFrame(m_frame);
   ASSERT(keyPtr);
