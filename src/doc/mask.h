@@ -119,6 +119,8 @@ namespace doc {
     Mask& operator=(const Mask& mask);
   };
 
+  typedef std::shared_ptr<Mask> MaskRef;
+
 } // namespace doc
 
 #endif
