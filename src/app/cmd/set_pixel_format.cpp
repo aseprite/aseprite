@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -73,7 +73,8 @@ SetPixelFormat::SetPixelFormat(Sprite* sprite,
                                const render::Dithering& dithering,
                                const doc::RgbMapAlgorithm mapAlgorithm,
                                doc::rgba_to_graya_func toGray,
-                               render::TaskDelegate* delegate)
+                               render::TaskDelegate* delegate,
+                               const FitCriteria fitCriteria)
   : WithSprite(sprite)
   , m_oldFormat(sprite->pixelFormat())
   , m_newFormat(newFormat)
@@ -108,7 +109,8 @@ SetPixelFormat::SetPixelFormat(Sprite* sprite,
                  cel->layer()->isBackground(),
                  mapAlgorithm,
                  toGray,
-                 &superDel);
+                 &superDel,
+                 fitCriteria);
 
     superDel.nextImage();
   }
@@ -208,7 +210,8 @@ void SetPixelFormat::convertImage(doc::Sprite* sprite,
                                   const bool isBackground,
                                   const doc::RgbMapAlgorithm mapAlgorithm,
                                   doc::rgba_to_graya_func toGray,
-                                  render::TaskDelegate* delegate)
+                                  render::TaskDelegate* delegate,
+                                  const doc::FitCriteria fitCriteria)
 {
   ASSERT(oldImage);
   ASSERT(oldImage->pixelFormat() != IMAGE_TILEMAP);
@@ -218,7 +221,10 @@ void SetPixelFormat::convertImage(doc::Sprite* sprite,
   RgbMap* rgbmap;
   int newMaskIndex = (isBackground ? -1 : 0);
   if (m_newFormat == IMAGE_INDEXED) {
-    rgbmap = sprite->rgbMap(frame, sprite->rgbMapForSprite(), mapAlgorithm);
+    rgbmap = sprite->rgbMap(frame,
+                            sprite->rgbMapForSprite(),
+                            mapAlgorithm,
+                            fitCriteria);
     if (m_oldFormat == IMAGE_INDEXED)
       newMaskIndex = sprite->transparentColor();
     else

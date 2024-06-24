@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2020-2022 Igara Studio S.A.
+// Copyright (c) 2020-2024 Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -12,6 +12,7 @@
 #include "doc/image_impl.h"
 #include "doc/palette.h"
 #include "doc/rgbmap.h"
+#include "doc/rgbmap_base.h"
 
 #include <array>
 #include <memory>
@@ -26,6 +27,8 @@
 namespace doc {
 
 class OctreeNode;
+class OctreeMap;
+
 using OctreeNodes = std::vector<OctreeNode*>;
 
 class OctreeNode {
@@ -93,7 +96,9 @@ public:
   void addColor(color_t c, int level, OctreeNode* parent,
                 int paletteIndex = 0, int levelDeep = 7);
 
-  int mapColor(int  r, int g, int b, int a, int mask_index, const Palette* palette, int level) const;
+  int mapColor(int  r, int g, int b, int a, int mask_index,
+               const Palette* palette, int level,
+               const OctreeMap* octree) const;
 
   void collectLeafNodes(OctreeNodes& leavesVector, int& paletteIndex);
 
@@ -117,7 +122,8 @@ private:
   OctreeNode* m_parent = nullptr;
 };
 
-class OctreeMap : public RgbMap {
+class OctreeMap : public RgbMap
+                , public RgbMapBase {
 public:
   void addColor(color_t color, int levelDeep = 7) {
     m_root.addColor(color, 0, &m_root, 0, levelDeep);
@@ -135,9 +141,22 @@ public:
                      const int levelDeep = 7);
 
   // RgbMap impl
-  void regenerateMap(const Palette* palette, const int maskIndex) override;
+  void regenerateMap(const Palette* palette,
+                     const int maskIndex,
+                     const FitCriteria fitCriteria) override;
+  void regenerateMap(const Palette* palette,
+                     const int maskIndex) override
+  {
+    regenerateMap(palette, maskIndex, m_fitCriteria);
+  };
+  
   int mapColor(color_t rgba) const override;
   int maskIndex() const override { return m_maskIndex; }
+  int modifications() const override { return m_modifications; };
+  FitCriteria fitCriteria() const override { return m_fitCriteria; }
+  void fitCriteria(const FitCriteria fitCriteria) override { m_fitCriteria == fitCriteria; }
+  RgbMapAlgorithm rgbamapAlgorithm() const override { return RgbMapAlgorithm::OCTREE; }
+
   int mapColor(const int r, const int g,
                const int b, const int a) const
   {
@@ -148,14 +167,9 @@ public:
     return mapColor(rgba(r, g, b, a));
   }
 
-  int moodifications() const { return m_modifications; };
-
 private:
   OctreeNode m_root;
   OctreeNodes m_leavesVector;
-  const Palette* m_palette = nullptr;
-  int m_modifications = 0;
-  int m_maskIndex = 0;
   color_t m_maskColor = 0;
 };
 
