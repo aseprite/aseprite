@@ -1,5 +1,5 @@
 // Aseprite Document IO Library
-// Copyright (c) 2018-2023 Igara Studio S.A.
+// Copyright (c) 2018-2024 Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -600,12 +600,14 @@ doc::Layer* AsepriteDecoder::readLayerChunk(AsepriteHeader* header,
   }
 
   if (layer) {
-    if (layer->isImage() &&
+    const bool composeGroups = (header->flags & ASE_FILE_FLAG_COMPOSITE_GROUPS);
+
+    if ((layer->isImage() || (layer->isGroup() && composeGroups)) &&
         // Only transparent layers can have blend mode and opacity
         !(flags & int(doc::LayerFlags::Background))) {
-      static_cast<doc::LayerImage*>(layer)->setBlendMode((doc::BlendMode)blendmode);
+      layer->setBlendMode((doc::BlendMode)blendmode);
       if (header->flags & ASE_FILE_FLAG_LAYER_WITH_OPACITY)
-        static_cast<doc::LayerImage*>(layer)->setOpacity(opacity);
+        layer->setOpacity(opacity);
     }
 
     // flags

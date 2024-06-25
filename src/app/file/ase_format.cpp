@@ -145,7 +145,8 @@ public:
 } // anonymous namespace
 
 static void ase_file_prepare_header(FILE* f, dio::AsepriteHeader* header, const Sprite* sprite,
-                                    const frame_t firstFrame, const frame_t totalFrames);
+                                    frame_t firstFrame, frame_t totalFrames,
+                                    bool composeGroups);
 static void ase_file_write_header(FILE* f, dio::AsepriteHeader* header);
 static void ase_file_write_header_filesize(FILE* f, dio::AsepriteHeader* header);
 
@@ -153,6 +154,7 @@ static void ase_file_prepare_frame_header(FILE* f, dio::AsepriteFrameHeader* fra
 static void ase_file_write_frame_header(FILE* f, dio::AsepriteFrameHeader* frame_header);
 
 static void ase_file_write_layers(FILE* f, FileOp* fop,
+                                  const dio::AsepriteHeader* header,
                                   dio::AsepriteFrameHeader* frame_header,
                                   const dio::AsepriteExternalFiles& ext_files,
                                   const Layer* layer, int child_level);
@@ -171,7 +173,10 @@ static void ase_file_write_close_chunk(FILE* f, dio::AsepriteChunk* chunk);
 
 static void ase_file_write_color2_chunk(FILE* f, dio::AsepriteFrameHeader* frame_header, const Palette* pal);
 static void ase_file_write_palette_chunk(FILE* f, dio::AsepriteFrameHeader* frame_header, const Palette* pal, int from, int to);
-static void ase_file_write_layer_chunk(FILE* f, dio::AsepriteFrameHeader* frame_header, const Layer* layer, int child_level);
+static void ase_file_write_layer_chunk(FILE* f, const dio::AsepriteHeader* header,
+                                       dio::AsepriteFrameHeader* frame_header,
+                                       const Layer* layer,
+                                       int child_level);
 static void ase_file_write_cel_chunk(FILE* f, dio::AsepriteFrameHeader* frame_header,
                                      const Cel* cel,
                                      const LayerImage* layer,
@@ -350,7 +355,8 @@ bool AseFormat::onSave(FileOp* fop)
   dio::AsepriteHeader header;
   ase_file_prepare_header(f, &header, sprite,
                           fop->roi().fromFrame(),
-                          fop->roi().frames());
+                          fop->roi().frames(),
+                          fop->config().composeGroups);
   ase_file_write_header(f, &header);
 
   bool require_new_palette_chunk = false;
@@ -427,7 +433,7 @@ bool AseFormat::onSave(FileOp* fop)
       // before layers so older version don't get confused by the new
       // user data chunks for tags.
       for (Layer* child : sprite->root()->layers())
-        ase_file_write_layers(f, fop, &frame_header, ext_files, child, 0);
+        ase_file_write_layers(f, fop, &header, &frame_header, ext_files, child, 0);
 
       // Write slice chunks
       ase_file_write_slice_chunks(f, fop, &frame_header,
@@ -468,8 +474,11 @@ bool AseFormat::onSave(FileOp* fop)
 
 #endif  // ENABLE_SAVE
 
-static void ase_file_prepare_header(FILE* f, dio::AsepriteHeader* header, const Sprite* sprite,
-                                    const frame_t firstFrame, const frame_t totalFrames)
+static void ase_file_prepare_header(FILE* f, dio::AsepriteHeader* header,
+                                    const Sprite* sprite,
+                                    const frame_t firstFrame,
+                                    const frame_t totalFrames,
+                                    const bool composeGroups)
 {
   header->pos = ftell(f);
 
@@ -481,7 +490,8 @@ static void ase_file_prepare_header(FILE* f, dio::AsepriteHeader* header, const 
   header->depth = (sprite->pixelFormat() == IMAGE_RGB ? 32:
                    sprite->pixelFormat() == IMAGE_GRAYSCALE ? 16:
                    sprite->pixelFormat() == IMAGE_INDEXED ? 8: 0);
-  header->flags = ASE_FILE_FLAG_LAYER_WITH_OPACITY;
+  header->flags = (ASE_FILE_FLAG_LAYER_WITH_OPACITY |
+                   (composeGroups ? ASE_FILE_FLAG_COMPOSITE_GROUPS: 0));
   header->speed = sprite->frameDuration(firstFrame);
   header->next = 0;
   header->frit = 0;
@@ -569,17 +579,18 @@ static void ase_file_write_frame_header(FILE* f, dio::AsepriteFrameHeader* frame
 }
 
 static void ase_file_write_layers(FILE* f, FileOp* fop,
+                                  const dio::AsepriteHeader* header,
                                   dio::AsepriteFrameHeader* frame_header,
                                   const dio::AsepriteExternalFiles& ext_files,
                                   const Layer* layer, int child_index)
 {
-  ase_file_write_layer_chunk(f, frame_header, layer, child_index);
+  ase_file_write_layer_chunk(f, header, frame_header, layer, child_index);
   if (!layer->userData().isEmpty())
     ase_file_write_user_data_chunk(f, fop, frame_header, ext_files, &layer->userData());
 
   if (layer->isGroup()) {
     for (const Layer* child : static_cast<const LayerGroup*>(layer)->layers())
-      ase_file_write_layers(f, fop, frame_header, ext_files, child, child_index+1);
+      ase_file_write_layers(f, fop, header, frame_header, ext_files, child, child_index+1);
   }
 }
 
@@ -709,7 +720,11 @@ static void ase_file_write_palette_chunk(FILE* f, dio::AsepriteFrameHeader* fram
   }
 }
 
-static void ase_file_write_layer_chunk(FILE* f, dio::AsepriteFrameHeader* frame_header, const Layer* layer, int child_level)
+static void ase_file_write_layer_chunk(FILE* f,
+                                       const dio::AsepriteHeader* header,
+                                       dio::AsepriteFrameHeader* frame_header,
+                                       const Layer* layer,
+                                       const int child_level)
 {
   ChunkWriter chunk(f, frame_header, ASE_FILE_CHUNK_LAYER);
 
@@ -718,13 +733,21 @@ static void ase_file_write_layer_chunk(FILE* f, dio::AsepriteFrameHeader* frame_
         static_cast<int>(doc::LayerFlags::PersistentFlagsMask), f);
 
   // Layer type
+  bool saveBlendInfo = false;
   int layerType = ASE_FILE_LAYER_IMAGE;
   if (layer->isImage()) {
+    saveBlendInfo = true;
     if (layer->isTilemap())
       layerType = ASE_FILE_LAYER_TILEMAP;
   }
   else if (layer->isGroup()) {
     layerType = ASE_FILE_LAYER_GROUP;
+
+    // If the "composite groups" flag is not specified, group layers
+    // don't contain blend mode + opacity.
+    if ((header->flags & ASE_FILE_FLAG_COMPOSITE_GROUPS) == ASE_FILE_FLAG_COMPOSITE_GROUPS) {
+      saveBlendInfo = true;
+    }
   }
   fputw(layerType, f);
 
@@ -734,8 +757,8 @@ static void ase_file_write_layer_chunk(FILE* f, dio::AsepriteFrameHeader* frame_
   // Default width & height, and blend mode
   fputw(0, f);
   fputw(0, f);
-  fputw(layer->isImage() ? (int)static_cast<const LayerImage*>(layer)->blendMode(): 0, f);
-  fputc(layer->isImage() ? (int)static_cast<const LayerImage*>(layer)->opacity(): 0, f);
+  fputw(saveBlendInfo ? int(layer->blendMode()): 0, f);
+  fputc(saveBlendInfo ? int(layer->opacity()): 0, f);
 
   // Padding
   ase_file_write_padding(f, 3);

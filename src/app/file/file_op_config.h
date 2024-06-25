@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -41,6 +41,11 @@ namespace app {
     // make the save operation faster (as we can re-use the already
     // compressed data that was loaded as-is).
     bool cacheCompressedTilesets = true;
+
+    // True if layer groups are composed in a separate image first,
+    // and then composed with the rest of the sprite. In this case
+    // blend mode and opacity fields are valid for groups too.
+    bool composeGroups = false;
 
     void fillFromPreferences();
   };
