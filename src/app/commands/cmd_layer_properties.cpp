@@ -446,7 +446,8 @@ private:
         mode()->setEnabled(!m_layer->isBackground());
         opacity()->setValue(m_layer->opacity());
         opacity()->setEnabled(!m_layer->isBackground());
-      } else {
+      }
+      else {
         mode()->setEnabled(false);
         opacity()->setEnabled(false);
       }
