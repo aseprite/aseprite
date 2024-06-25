@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2023  Igara Studio S.A.
+// Copyright (c) 2023-2024  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -139,22 +139,23 @@ TEST(RenderPlan, ZIndexBugWithEmptyCels)
 
 TEST(RenderPlan, DontAddChildrenOnComposeGroupFlag)
 {
-  #undef EXPECT_PLAN
-  #define EXPECT_PLAN(a, b, c, d)                                                              \
-  {                                                                                            \
-    RenderPlan plan(true), subplan(true);                                                      \
-    plan.addLayer(spr->root(), 0);                                                             \
-    const auto& items = plan.items();                                                          \
-    EXPECT_EQ(spr->root(), items[0].layer) << HELPER_LOG_LAYER(items[0].layer, spr->root());   \
-    EXPECT_EQ(items.size(), 1);                                                                \
-    const auto& subItems = subplan.items();                                                    \
-    for (const Layer* child : static_cast<const LayerGroup*>(spr->root())->layers())           \
-      if (child->isVisible()) subplan.addLayer(child, 0);                                      \
-    EXPECT_EQ(subItems.size(), 4);                                                             \
-    EXPECT_EQ(a, subItems[0].layer) << HELPER_LOG_LAYER(subItems[0].layer, a);                 \
-    EXPECT_EQ(b, subItems[1].layer) << HELPER_LOG_LAYER(subItems[1].layer, b);                 \
-    EXPECT_EQ(c, subItems[2].layer) << HELPER_LOG_LAYER(subItems[2].layer, c);                 \
-    EXPECT_EQ(d, subItems[3].layer) << HELPER_LOG_LAYER(subItems[2].layer, d);                 \
+#undef EXPECT_PLAN
+#define EXPECT_PLAN(a, b, c, d)                                         \
+  {                                                                     \
+    RenderPlan plan(true), subplan(true);                               \
+    plan.addLayer(spr->root(), 0);                                      \
+    const auto& items = plan.items();                                   \
+    EXPECT_EQ(spr->root(), items[0].layer) << HELPER_LOG_LAYER(items[0].layer, spr->root()); \
+    EXPECT_EQ(items.size(), 1);                                         \
+    for (const Layer* child : spr->root()->layers())                    \
+      if (child->isVisible())                                           \
+        subplan.addLayer(child, 0);                                     \
+    const auto& subItems = subplan.items();                             \
+    EXPECT_EQ(subItems.size(), 4);                                      \
+    EXPECT_EQ(a, subItems[0].layer) << HELPER_LOG_LAYER(subItems[0].layer, a); \
+    EXPECT_EQ(b, subItems[1].layer) << HELPER_LOG_LAYER(subItems[1].layer, b); \
+    EXPECT_EQ(c, subItems[2].layer) << HELPER_LOG_LAYER(subItems[2].layer, c); \
+    EXPECT_EQ(d, subItems[3].layer) << HELPER_LOG_LAYER(subItems[2].layer, d); \
   }
 
   auto doc = std::make_shared<Document>();
