@@ -698,7 +698,7 @@ bool StandbyState::checkStartDrawingStraightLine(Editor* editor,
     if (drawingState) {
       // Disable stabilizer so that it does not affect the line preview
       drawingState->disableMouseStabilizer();
-      
+
       drawingState->sendMovementToToolLoop(
         tools::Pointer(
           pointer ? pointer->point(): editor->screenToEditor(editor->mousePosInDisplay()),

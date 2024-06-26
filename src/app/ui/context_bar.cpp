@@ -1655,6 +1655,7 @@ public:
     : m_doc(nullptr)
     , m_sel(2)
     , m_combobox(this)
+    , m_transform(Strings::context_bar_slice_transform())
     , m_action(2)
   {
     auto* theme = SkinTheme::get(this);
@@ -1670,6 +1671,14 @@ public:
     m_combobox.setExpansive(true);
     m_combobox.setMinSize(gfx::Size(256*guiscale(), 0));
 
+    if (auto* editor = Editor::activeEditor())
+      m_transform.setSelected(editor->slicesTransforms());
+    m_transform.Click.connect(
+      [this]() {
+        if (auto* editor = Editor::activeEditor())
+          editor->slicesTransforms(m_transform.isSelected());
+      });
+
     m_action.addItem(theme->parts.iconUserData(), theme->styles.buttonsetItemIconMono());
     m_action.addItem(theme->parts.iconClose(), theme->styles.buttonsetItemIconMono());
     m_action.ItemChange.connect(
@@ -1679,6 +1688,7 @@ public:
 
     addChild(&m_sel);
     addChild(&m_combobox);
+    addChild(&m_transform);
     addChild(&m_action);
 
     m_combobox.setVisible(false);
@@ -1690,6 +1700,8 @@ public:
       m_sel.at(0), Strings::context_bar_select_slices(), BOTTOM);
     tooltipManager->addTooltipFor(
       m_sel.at(1), Strings::context_bar_deselect_slices(), BOTTOM);
+    tooltipManager->addTooltipFor(
+      &m_transform, Strings::context_bar_slice_transform_tip(), BOTTOM);
     tooltipManager->addTooltipFor(
       m_action.at(0), Strings::context_bar_slice_props(), BOTTOM);
     tooltipManager->addTooltipFor(
@@ -1736,6 +1748,12 @@ public:
   }
 
 private:
+  void onInitTheme(InitThemeEvent& ev) override {
+    HBox::onInitTheme(ev);
+    auto* theme = SkinTheme::get(this);
+    m_transform.setStyle(theme->styles.miniCheckBox());
+  }
+
   void onVisible(bool visible) override {
     HBox::onVisible(visible);
     m_combobox.closeListBox();
@@ -1780,6 +1798,7 @@ private:
                            visible != m_action.isVisible());
 
     m_combobox.setVisible(visible);
+    m_transform.setVisible(visible);
     m_action.setVisible(visible);
 
     if (relayout)
@@ -1849,6 +1868,7 @@ private:
   Doc* m_doc;
   ButtonSet m_sel;
   Combo m_combobox;
+  CheckBox m_transform;
   ButtonSet m_action;
   bool m_changeFromEntry;
   std::string m_filter;
