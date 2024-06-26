@@ -84,10 +84,17 @@ void fill_area_combobox(const doc::Sprite* sprite, ui::ComboBox* area, const std
   if (defArea == kSelectedCanvas)
     area->setSelectedItemIndex(i);
 
-  for (auto slice : sprite->slices()) {
+  std::vector<doc::Slice*> sliceList;
+  for (auto* slice : sprite->slices()) {
     if (slice->name().empty())
       continue;
 
+    sliceList.push_back(slice);
+  }
+  std::sort(sliceList.begin(),
+            sliceList.end(),
+            [](doc::Slice* a, doc::Slice* b) { return a->name() < b->name(); });
+  for (auto* slice : sliceList) {
     i = area->addItem(new SliceListItem(slice));
     if (defArea == slice->name())
       area->setSelectedItemIndex(i);
