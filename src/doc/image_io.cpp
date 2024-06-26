@@ -102,7 +102,7 @@ bool write_image(std::ostream& os, const Image* image, CancelIO* cancel)
   return true;
 }
 
-Image* read_image(std::istream& is, bool setId)
+Image* read_image(std::istream& is, const bool setId)
 {
   ObjectId id = read32(is);
   int pixelFormat = read8(is);          // Pixel format

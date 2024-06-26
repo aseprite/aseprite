@@ -39,7 +39,7 @@ void write_tag(std::ostream& os, const Tag* tag)
 
 Tag* read_tag(std::istream& is,
               const bool setId,
-              const int docFormatVer)
+              const SerialFormat serial)
 {
   ObjectId id = read32(is);
   frame_t from = read32(is);
@@ -47,7 +47,7 @@ Tag* read_tag(std::istream& is,
 
   // If we are reading a session from v1.2.x, there is a color field
   color_t color;
-  if (docFormatVer < DOC_FORMAT_VERSION_1)
+  if (serial < SerialFormat::Ver1)
     color = read32(is);
 
   AniDir aniDir = (AniDir)read8(is);
@@ -56,15 +56,15 @@ Tag* read_tag(std::istream& is,
 
   // If we are reading the new v1.3.x version, there is a user data with the color + text
   int repeat = 0;
-  if (docFormatVer >= DOC_FORMAT_VERSION_1) {
-    userData = read_user_data(is, docFormatVer);
+  if (serial >= SerialFormat::Ver1) {
+    userData = read_user_data(is, serial);
     repeat = read32(is);
   }
 
   auto tag = std::make_unique<Tag>(from, to);
   tag->setAniDir(aniDir);
   tag->setName(name);
-  if (docFormatVer < DOC_FORMAT_VERSION_1)
+  if (serial < SerialFormat::Ver1)
     tag->setColor(color);
   else {
     tag->setUserData(userData);

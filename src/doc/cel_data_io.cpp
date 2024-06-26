@@ -27,7 +27,8 @@ namespace doc {
 using namespace base::serialization;
 using namespace base::serialization::little_endian;
 
-void write_celdata(std::ostream& os, const CelData* celdata)
+void write_celdata(std::ostream& os,
+                   const CelData* celdata)
 {
   write32(os, celdata->id());
   write32(os, celdata->bounds().x);
@@ -50,7 +51,10 @@ void write_celdata(std::ostream& os, const CelData* celdata)
   }
 }
 
-CelData* read_celdata(std::istream& is, SubObjectsIO* subObjects, const bool setId, const int docFormatVer)
+CelData* read_celdata(std::istream& is,
+                      SubObjectsIO* subObjects,
+                      const bool setId,
+                      const SerialFormat serial)
 {
   ObjectId id = read32(is);
   int x = read32(is);
@@ -59,7 +63,7 @@ CelData* read_celdata(std::istream& is, SubObjectsIO* subObjects, const bool set
   int h = read32(is);
   int opacity = read8(is);
   ObjectId imageId = read32(is);
-  UserData userData = read_user_data(is, docFormatVer);
+  const UserData userData = read_user_data(is, serial);
   gfx::RectF boundsF;
 
   // Extra fields

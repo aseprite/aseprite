@@ -15,7 +15,7 @@ namespace doc {
   class Grid;
 
   bool write_grid(std::ostream& os, const Grid& grid);
-  Grid read_grid(std::istream& is, bool setId = true);
+  Grid read_grid(std::istream& is);
 
 } // namespace doc
 

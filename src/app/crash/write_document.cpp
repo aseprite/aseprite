@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -11,7 +11,6 @@
 
 #include "app/crash/write_document.h"
 
-#include "app/crash/doc_format.h"
 #include "app/crash/internals.h"
 #include "app/crash/log.h"
 #include "app/doc.h"
@@ -31,6 +30,7 @@
 #include "doc/layer_tilemap.h"
 #include "doc/palette.h"
 #include "doc/palette_io.h"
+#include "doc/serial_format.h"
 #include "doc/slice.h"
 #include "doc/slice_io.h"
 #include "doc/sprite.h"
@@ -152,7 +152,7 @@ private:
   bool writeDocumentFile(std::ofstream& s, Doc* doc) {
     write32(s, doc->sprite()->id());
     write_string(s, doc->filename());
-    write16(s, DOC_FORMAT_VERSION_LAST);
+    write16(s, uint16_t(doc::SerialFormat::LastVer));
     return true;
   }
 

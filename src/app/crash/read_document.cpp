@@ -12,7 +12,6 @@
 #include "app/crash/read_document.h"
 
 #include "app/console.h"
-#include "app/crash/doc_format.h"
 #include "app/crash/internals.h"
 #include "app/crash/log.h"
 #include "app/doc.h"
@@ -32,6 +31,7 @@
 #include "doc/layer_tilemap.h"
 #include "doc/palette.h"
 #include "doc/palette_io.h"
+#include "doc/serial_format.h"
 #include "doc/slice.h"
 #include "doc/slice_io.h"
 #include "doc/sprite.h"
@@ -70,7 +70,7 @@ class Reader : public SubObjectsIO {
 public:
   Reader(const std::string& dir,
          base::task_token* t)
-    : m_docFormatVer(DOC_FORMAT_VERSION_0)
+    : m_serial(SerialFormat::Ver0)
     , m_sprite(nullptr)
     , m_dir(dir)
     , m_docId(0)
@@ -198,10 +198,11 @@ private:
   Doc* readDocument(std::ifstream& s) {
     ObjectId sprId = read32(s);
     std::string filename = read_string(s);
-    m_docFormatVer = read16(s);
-    if (s.eof()) m_docFormatVer = DOC_FORMAT_VERSION_0;
+    m_serial = SerialFormat(read16(s));
+    if (s.eof())
+      m_serial = SerialFormat::Ver0;
 
-    RECO_TRACE("RECO: internal format version=%d\n", m_docFormatVer);
+    RECO_TRACE("RECO: internal format version=%d\n", int(m_serial));
 
     // Load DocumentInfo only
     if (m_loadInfo) {
@@ -268,7 +269,7 @@ private:
     }
 
     // IDs of all tilesets
-    if (m_docFormatVer >= DOC_FORMAT_VERSION_1) {
+    if (m_serial >= SerialFormat::Ver1) {
       int ntilesets = read32(s);
       if (ntilesets > 0 && ntilesets < 0xffffff) {
         for (int i=0; i<ntilesets; ++i) {
@@ -399,7 +400,7 @@ private:
 
     // Read Sprite User Data
     if (!s.eof()) {
-      UserData userData = read_user_data(s, m_docFormatVer);
+      UserData userData = read_user_data(s, m_serial);
       if (!userData.isEmpty())
         spr->setUserData(userData);
     }
@@ -497,7 +498,7 @@ private:
     }
 
     if (lay) {
-      UserData userData = read_user_data(s, m_docFormatVer);
+      UserData userData = read_user_data(s, m_serial);
       lay->setUserData(userData);
       return lay.release();
     }
@@ -510,7 +511,7 @@ private:
   }
 
   CelData* readCelData(std::ifstream& s) {
-    return read_celdata(s, this, false, m_docFormatVer);
+    return read_celdata(s, this, false, m_serial);
   }
 
   Image* readImage(std::ifstream& s) {
@@ -523,18 +524,18 @@ private:
 
   Tileset* readTileset(std::ifstream& s) {
     uint32_t tilesetVer;
-    Tileset* tileset = read_tileset(s, m_sprite, false, &tilesetVer, m_docFormatVer);
+    Tileset* tileset = read_tileset(s, m_sprite, false, &tilesetVer, m_serial);
     if (tileset && tilesetVer < TILESET_VER1)
       m_updateOldTilemapWithTileset.insert(tileset->id());
     return tileset;
   }
 
   Tag* readTag(std::ifstream& s) {
-    return read_tag(s, false, m_docFormatVer);
+    return read_tag(s, false, m_serial);
   }
 
   Slice* readSlice(std::ifstream& s) {
-    return read_slice(s, false, m_docFormatVer);
+    return read_slice(s, false, m_serial);
   }
 
   // Fix issues that the restoration process could produce.
@@ -586,7 +587,7 @@ private:
       return false;
   }
 
-  int m_docFormatVer;
+  SerialFormat m_serial;
   Sprite* m_sprite;    // Used to pass the sprite in LayerImage() ctor
   std::string m_dir;
   ObjectVersion m_docId;

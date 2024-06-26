@@ -57,13 +57,13 @@ bool write_tileset(std::ostream& os,
 
 Tileset* read_tileset(std::istream& is,
                       Sprite* sprite,
-                      bool setId,
+                      const bool setId,
                       uint32_t* tilesetVer,
-                      const int docFormatVer)
+                      const SerialFormat serial)
 {
-  ObjectId id = read32(is);
-  tileset_index ntiles = read32(is);
-  Grid grid = read_grid(is, setId);
+  const ObjectId id = read32(is);
+  const tileset_index ntiles = read32(is);
+  const Grid grid = read_grid(is);
   auto tileset = new Tileset(sprite, grid, ntiles);
   if (setId)
     tileset->setId(id);
@@ -74,21 +74,21 @@ Tileset* read_tileset(std::istream& is,
   }
 
   // Read extra version byte after tiles
-  uint32_t ver = read8(is);
+  const uint32_t ver = read8(is);
   if (tilesetVer)
     *tilesetVer = ver;
   if (ver >= TILESET_VER1) {
     tileset->setBaseIndex(1);
 
     if (ver >= TILESET_VER2) {
-      UserData userData = read_user_data(is, docFormatVer);
+      const UserData userData = read_user_data(is, serial);
       tileset->setUserData(userData);
 
       if (ver >= TILESET_VER3) {
         tileset->setName(read_string(is));
 
         for (tileset_index ti=0; ti<ntiles; ++ti) {
-          tileset->setTileData(ti, read_user_data(is, docFormatVer));
+          tileset->setTileData(ti, read_user_data(is, serial));
         }
       }
     }
