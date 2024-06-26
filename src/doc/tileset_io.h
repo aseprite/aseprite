@@ -13,18 +13,26 @@
 
 #include <iosfwd>
 
-// Extra BYTE with special flags to check the tileset version.  This
-// field didn't exist in Aseprite v1.3-alpha3 (so read8() fails = 0)
-#define TILESET_VER1     1
-
-// Tileset has UserData now
-#define TILESET_VER2     2
-
-// Tileset name (was missing originally) + each tileset's tile has
-// UserData now
-#define TILESET_VER3     3
-
 namespace doc {
+
+  // Tileset serialization format. This field didn't exist in Aseprite
+  // v1.3-alpha3 (so read8() fails = 0)
+  enum class TilesetSerialFormat : uint8_t {
+    // Without version field.
+    Ver0 = 0,
+
+    // Extra BYTE with special flags to check the tileset version.
+    Ver1 = 1,
+
+    // Tileset has UserData now.
+    Ver2 = 2,
+
+    // Tileset name (was missing originally) + each tileset's tile has
+    // UserData now.
+    Ver3 = 3,
+
+    LastVer = Ver3
+  };
 
   class CancelIO;
   class Sprite;
@@ -37,7 +45,7 @@ namespace doc {
   Tileset* read_tileset(std::istream& is,
                         Sprite* sprite,
                         bool setId = true,
-                        uint32_t* tilesetVer = nullptr,
+                        TilesetSerialFormat* tilesetSerial = nullptr,
                         SerialFormat serial = SerialFormat::LastVer);
 
 } // namespace doc

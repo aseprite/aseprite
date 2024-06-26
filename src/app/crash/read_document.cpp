@@ -523,9 +523,9 @@ private:
   }
 
   Tileset* readTileset(std::ifstream& s) {
-    uint32_t tilesetVer;
+    TilesetSerialFormat tilesetVer = TilesetSerialFormat::Ver0;
     Tileset* tileset = read_tileset(s, m_sprite, false, &tilesetVer, m_serial);
-    if (tileset && tilesetVer < TILESET_VER1)
+    if (tileset && tilesetVer < TilesetSerialFormat::Ver1)
       m_updateOldTilemapWithTileset.insert(tileset->id());
     return tileset;
   }
