@@ -102,21 +102,24 @@ set(DATA_OUTPUT_DIR ${CMAKE_BINARY_DIR}/bin/data)
 ######################################################################
 # Clone "strings" repo with translations into bin/data/strings.git
 
-include(FetchContent)
-
-find_package(Git)
-if(GIT_FOUND)
-  FetchContent_Declare(
-    clone_strings
-    GIT_REPOSITORY    https://github.com/aseprite/strings.git
-    GIT_TAG           origin/main
-    SOURCE_DIR        ${DATA_OUTPUT_DIR}/strings.git
-    CONFIGURE_COMMAND ""
-    BUILD_COMMAND     ""
-    INSTALL_COMMAND   ""
-    TEST_COMMAND      "")
-  FetchContent_MakeAvailable(clone_strings)
-  add_custom_target(clone_strings DEPENDS clone_strings)
+if(ENABLE_I18N_STRINGS_REPO)
+  include(FetchContent)
+  find_package(Git)
+  if(GIT_FOUND)
+    FetchContent_Declare(
+      clone_strings
+      GIT_REPOSITORY    https://github.com/aseprite/strings.git
+      GIT_TAG           origin/main
+      SOURCE_DIR        ${DATA_OUTPUT_DIR}/strings.git
+      CONFIGURE_COMMAND ""
+      BUILD_COMMAND     ""
+      INSTALL_COMMAND   ""
+      TEST_COMMAND      "")
+    FetchContent_MakeAvailable(clone_strings)
+    add_custom_target(clone_strings DEPENDS clone_strings)
+  else()
+    add_custom_target(clone_strings)
+  endif()
 else()
   add_custom_target(clone_strings)
 endif()
@@ -134,7 +137,7 @@ foreach(fn ${src_data_files})
   list(APPEND out_data_files ${DATA_OUTPUT_DIR}/${fn})
 endforeach()
 
-if(GIT_FOUND)
+if(ENABLE_I18N_STRINGS_REPO AND GIT_FOUND)
   # Copy original en.ini to strings.git/en.ini to keep it updated. We
   # have to manually sync the "en.ini" file in the "strings" repo from
   # the "aseprite" repo.
