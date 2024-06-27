@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -52,6 +52,7 @@ namespace app {
   class BrushSlot;
   class ColorBar;
   class DitheringSelector;
+  class FontInfo;
   class GradientTypeSelector;
   class SamplingSelector;
   class Transformation;
@@ -89,6 +90,9 @@ namespace app {
 
     void setInkType(tools::InkType type);
 
+    // For text tool
+    FontInfo fontInfo() const;
+
     // For gradients
     render::DitheringMatrix ditheringMatrix();
     render::DitheringAlgorithmBase* ditheringAlgorithm();
@@ -99,6 +103,7 @@ namespace app {
 
     // Signals
     obs::signal<void()> BrushChange;
+    obs::signal<void()> FontChange;
 
   protected:
     void onInitTheme(ui::InitThemeEvent& ev) override;
@@ -163,6 +168,7 @@ namespace app {
     class AutoSelectLayerField;
     class SymmetryField;
     class SliceFields;
+    class FontSelector;
 
     ZoomButtons* m_zoomButtons;
     SamplingSelector* m_samplingSelector;
@@ -201,6 +207,7 @@ namespace app {
     ui::Label* m_selectBoxHelp;
     SymmetryField* m_symmetry;
     SliceFields* m_sliceFields;
+    FontSelector* m_fontSelector = nullptr;
     obs::scoped_connection m_symmModeConn;
     obs::scoped_connection m_fgColorConn;
     obs::scoped_connection m_bgColorConn;

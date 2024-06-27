@@ -529,5 +529,17 @@ public:
 };
 
 
+class TextInk : public BaseInk {
+public:
+  Ink* clone() override { return new TextInk(*this); }
+
+  bool isText() const override { return true; }
+
+  void prepareInk(ToolLoop* loop) override {
+    setProc(get_ink_proc<XorInkProcessing>(loop));
+  }
+};
+
+
 } // namespace tools
 } // namespace app

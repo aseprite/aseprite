@@ -51,7 +51,7 @@ To compile Aseprite you will need:
 
 * The latest version of [CMake](https://cmake.org) (3.16 or greater)
 * [Ninja](https://ninja-build.org) build system
-* And a compiled version of the `aseprite-m102` branch of
+* And a compiled version of the `aseprite-m124` branch of
   the [Skia library](https://github.com/aseprite/skia#readme).
   There are [pre-built packages available](https://github.com/aseprite/skia/releases).
   You can get some extra information in
@@ -190,7 +190,7 @@ but it could be different in your Mac.
 ### Apple Silicon
 
 If you running macOS on an ARM64/AArch64/Apple Silicon Mac (e.g. M1),
-you can compile a native ARM64 version of Aseprite following similar 
+you can compile a native ARM64 version of Aseprite following similar
 steps as above but when we call `cmake`, we have some differences:
 
     cd aseprite

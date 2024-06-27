@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2017  David Capello
+// Copyright (C) 2017-2024  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -23,7 +23,7 @@ namespace app {
                          m_parts, " ");
     }
 
-    bool operator()(const std::string& item) {
+    bool operator()(const std::string& item) const {
       std::string lowerItem = base::string_to_lower(item);
       std::size_t matches = 0;
 

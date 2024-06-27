@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -42,7 +42,7 @@ namespace app {
       OneOrMore, // One click selects one button, ctrl+click multiple selections
     };
 
-    ButtonSet(int columns);
+    ButtonSet(int columns, bool same_width_columns = false);
 
     Item* addItem(const std::string& text, ui::Style* style);
     Item* addItem(const std::string& text, int hspan = 1, int vspan = 1, ui::Style* style = nullptr);

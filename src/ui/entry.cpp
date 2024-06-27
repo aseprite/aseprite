@@ -52,6 +52,7 @@ Entry::Entry(const int maxsize, const char* format, ...)
   , m_recent_focused(false)
   , m_lock_selection(false)
   , m_translate_dead_keys(true)
+  , m_scale(1.0f, 1.0f)
 {
   enableFlags(CTRL_RIGHT_CLICK);
 
@@ -233,6 +234,16 @@ void Entry::getEntryThemeInfo(int* scroll, int* caret, int* state, Range* range)
 gfx::Rect Entry::getEntryTextBounds() const
 {
   return onGetEntryTextBounds();
+}
+
+gfx::Rect Entry::getCharBoxBounds(const int charBoxIndex)
+{
+  int i = 0;
+  int x = 0;
+  for (; i<charBoxIndex; ++i) {
+    x += m_boxes[i].width;
+  }
+  return gfx::Rect(x, 0, m_boxes[i].width, textHeight());
 }
 
 bool Entry::onProcessMessage(Message* msg)
@@ -551,9 +562,9 @@ gfx::Rect Entry::onGetEntryTextBounds() const
   return bounds;
 }
 
-int Entry::getCaretFromMouse(MouseMessage* mousemsg)
+int Entry::getCaretFromMouse(MouseMessage* mouseMsg)
 {
-  int mouseX = mousemsg->position().x;
+  const int mouseX = mouseMsg->position().x;
   if (mouseX < bounds().x+border().left()) {
     // Scroll to the left
     return std::max(0, m_scroll-1);
@@ -569,7 +580,8 @@ int Entry::getCaretFromMouse(MouseMessage* mousemsg)
       indexBox = j+1;
     }
 
-    int x = bounds().x + border().left() + segmentWidth + m_boxes[indexBox].width / 2;
+    const int x = bounds().x + border().left()
+      + (segmentWidth + m_boxes[indexBox].width / 2) * m_scale.x;
 
     if (mouseX > bounds().x2() - border().right()) {
       if (x >= bounds().x2() - border().right()) {

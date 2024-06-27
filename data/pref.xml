@@ -349,6 +349,7 @@
       <option id="font_face" type="std::string" />
       <option id="font_size" type="int" default="12" />
       <option id="antialias" type="bool" default="false" />
+      <option id="font_info" type="std::string" />
     </section>
     <section id="symmetry_mode">
       <option id="enabled" type="bool" default="false" />
