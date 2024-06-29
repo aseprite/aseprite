@@ -71,6 +71,8 @@ might work).
 
 ## Linux dependencies
 
+> Note that `apt-get` will not install the [required Skia library](https://github.com/aseprite/aseprite/blob/main/INSTALL.md#dependencies) on the `asesprite-m102` branch, you will need to install this dependency separately.
+
 You will need the following dependencies on Ubuntu/Debian:
 
     sudo apt-get install -y g++ clang libc++-dev libc++abi-dev cmake ninja-build libx11-dev libxcursor-dev libxi-dev libgl1-mesa-dev libfontconfig1-dev
