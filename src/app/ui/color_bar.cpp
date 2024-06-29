@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -74,6 +74,7 @@
 #include "ui/menu.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"
+#include "ui/resize_event.h"
 #include "ui/separator.h"
 #include "ui/splitter.h"
 #include "ui/system.h"
@@ -145,8 +146,8 @@ void ColorBar::ScrollableView::onInitTheme(InitThemeEvent& ev)
 
 ColorBar* ColorBar::m_instance = NULL;
 
-ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
-  : Box(align)
+ColorBar::ColorBar(TooltipManager* tooltipManager)
+  : Box(VERTICAL)
   , m_editPal(1)
   , m_buttons(int(PalButton::MAX))
   , m_tilesButton(1)
@@ -312,7 +313,7 @@ ColorBar::ColorBar(int align, TooltipManager* tooltipManager)
     [this, fgBox, bgBox]{
       auto theme = SkinTheme::get(this);
 
-      setBorder(gfx::Border(2*guiscale(), 0, 0, 0));
+      setBorder(gfx::Border(0));
       setChildSpacing(2*guiscale());
 
       m_fgColor.resetSizeHint();
@@ -659,6 +660,18 @@ void ColorBar::onSizeHint(ui::SizeHintEvent& ev)
   m_tilesHelpers.setSizeHint(sz);
 
   Box::onSizeHint(ev);
+}
+
+void ColorBar::onResize(ui::ResizeEvent& ev)
+{
+  // Docked at left side
+  // TODO improve this how this is calculated
+  if (ev.bounds().x == 0)
+    setBorder(gfx::Border(2*guiscale(), 0, 0, 0));
+  else
+    setBorder(gfx::Border(0, 0, 2*guiscale(), 0));
+
+  Box::onResize(ev);
 }
 
 void ColorBar::onActiveSiteChange(const Site& site)

@@ -358,6 +358,7 @@ if(ENABLE_UI)
     commands/tileset_mode.cpp
     commands/toggle_other_layers_opacity.cpp
     commands/toggle_play_option.cpp
+    commands/toggle_workspace_layout.cpp
     file_selector.cpp
     modules/gfx.cpp
     modules/gui.cpp
@@ -381,6 +382,7 @@ if(ENABLE_UI)
     ui/context_bar.cpp
     ui/dithering_selector.cpp
     ui/doc_view.cpp
+    ui/dock.cpp
     ui/drop_down_button.cpp
     ui/dynamics_popup.cpp
     ui/editor/brush_preview.cpp
@@ -420,6 +422,9 @@ if(ENABLE_UI)
     ui/incompat_file_window.cpp
     ui/input_chain.cpp
     ui/keyboard_shortcuts.cpp
+    ui/layout.cpp
+    ui/layouts.cpp
+    ui/layout_selector.cpp
     ui/main_menu_bar.cpp
     ui/main_window.cpp
     ui/notifications.cpp
