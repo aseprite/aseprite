@@ -482,9 +482,6 @@ protected:
   bool onChecked(Context* context) override;
   void onExecute(Context* context) override;
   std::string onGetFriendlyName() const override;
-  const bool isSkipListing(const Params& params) const override {
-    return m_format == IMAGE_INDEXED && params.size() > 1;
-  }
 
 private:
   bool m_showDlg;

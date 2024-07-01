@@ -138,7 +138,7 @@ namespace app {
                                      const KeyboardShortcuts& globalKeys) const;
     bool isPressed() const;
     bool isLooselyPressed() const;
-    bool isSkipListing() const;
+    bool isListed() const;
 
     bool hasAccel(const ui::Accelerator& accel) const;
     bool hasUserDefinedAccels() const;

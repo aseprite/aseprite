@@ -494,9 +494,9 @@ bool Key::isLooselyPressed() const
   return false;
 }
 
-bool Key::isSkipListing() const
+bool Key::isListed() const
 {
-  return type() == KeyType::Command && command()->isSkipListing(params());
+  return type() != KeyType::Command || !command()->isListed(params(), keycontext());
 }
 
 bool Key::hasAccel(const ui::Accelerator& accel) const

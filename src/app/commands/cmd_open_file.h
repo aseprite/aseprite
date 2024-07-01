@@ -33,9 +33,7 @@ namespace app {
   protected:
     void onLoadParams(const Params& params) override;
     void onExecute(Context* context) override;
-    const bool isSkipListing(const Params& params) const override {
-      return !params.empty();
-    }
+    std::string onGetFriendlyName() const override;
 
   private:
     std::string m_filename;

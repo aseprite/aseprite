@@ -37,10 +37,7 @@ protected:
   void onLoadParams(const Params& params) override;
   bool onEnabled(Context* context) override;
   void onExecute(Context* context) override;
-  const bool isSkipListing(const Params& params) const override {
-    return !params.empty() &&
-      strcmp(params.begin()->second.c_str(), "all") == 0;
-  }
+  std::string onGetFriendlyName() const override;
 
 private:
   enum Target {
@@ -141,6 +138,17 @@ void FramePropertiesCommand::onExecute(Context* context)
 
     tx.commit();
   }
+}
+
+std::string FramePropertiesCommand::onGetFriendlyName() const
+{
+  switch (m_target) {
+    case CURRENT_RANGE:
+      return Strings::commands_FrameProperties_Current() ;
+    case ALL_FRAMES:
+      return Strings::commands_FrameProperties_All();
+  }
+  return Command::onGetFriendlyName();
 }
 
 Command* CommandFactory::createFramePropertiesCommand()

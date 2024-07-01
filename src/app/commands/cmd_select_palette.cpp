@@ -45,8 +45,9 @@ protected:
   void onLoadParams(const Params& params) override;
   void onExecute(Context* context) override;
   std::string onGetFriendlyName() const override;
-  const bool isSkipListing(const Params& params) const override {
-    return params.empty();
+  bool isListed(const Params& params, const KeyContext& context) const override
+  {
+    return !params.empty();
   }
 
 private:

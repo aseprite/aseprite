@@ -607,7 +607,7 @@ private:
           key->type() == KeyType::Quicktool ||
           key->type() == KeyType::WheelAction ||
           key->type() == KeyType::DragAction ||
-          key->isSkipListing()) {
+          key->isListed()) {
         continue;
       }
 

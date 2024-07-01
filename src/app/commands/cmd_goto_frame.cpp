@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -87,6 +87,9 @@ protected:
 
     return (frame > 0 ? frame-1: last);
   }
+  bool isListed(const Params& params, const KeyContext& context) const override {
+    return context == KeyContext::Normal;
+  }
 };
 
 class GotoNextFrameCommand : public GotoCommand {
@@ -100,9 +103,8 @@ protected:
 
     return (frame < last ? frame+1: 0);
   }
-
-  const bool isSkipListing(const Params& params) const override {
-    return params.empty();
+  bool isListed(const Params& params, const KeyContext& context) const override {
+    return context == KeyContext::Normal;
   }
 };
 

@@ -20,11 +20,14 @@ namespace app {
 class LaunchCommand : public Command {
 public:
   LaunchCommand();
-  const bool isSkipListing(const Params& params) const override { return true; }
 
 protected:
   void onLoadParams(const Params& params) override;
   void onExecute(Context* context) override;
+  std::string onGetFriendlyName() const override;
+  bool isListed(const Params& params, const KeyContext& context) const override {
+    return params.get("path") != "";
+  }
 
 private:
   enum Type { Url };
@@ -58,6 +61,11 @@ void LaunchCommand::onExecute(Context* context)
       break;
 
   }
+}
+
+std::string LaunchCommand::onGetFriendlyName() const
+{
+  return Command::onGetFriendlyName() + ": " + m_path;
 }
 
 Command* CommandFactory::createLaunchCommand()

@@ -24,7 +24,9 @@ protected:
   void onLoadParams(const Params& params) override;
   bool onChecked(Context* context) override;
   void onExecute(Context* context) override;
-  const bool isSkipListing(const Params& params) const override {
+  std::string onGetFriendlyName() const override;
+  bool isListed(const Params& params, const KeyContext& context) const override
+  {
     return !params.empty();
   }
 
@@ -52,6 +54,11 @@ bool SetPaletteEntrySizeCommand::onChecked(Context* context)
 void SetPaletteEntrySizeCommand::onExecute(Context* context)
 {
   ColorBar::instance()->getPaletteView()->setBoxSize(m_size);
+}
+
+std::string SetPaletteEntrySizeCommand::onGetFriendlyName() const
+{
+  return Command::onGetFriendlyName() + " " + std::to_string(m_size);
 }
 
 Command* CommandFactory::createSetPaletteEntrySizeCommand()

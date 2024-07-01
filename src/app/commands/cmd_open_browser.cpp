@@ -24,7 +24,10 @@ public:
 protected:
   void onLoadParams(const Params& params) override;
   void onExecute(Context* context) override;
-  const bool isSkipListing(const Params& params) const override { return true; }
+  std::string onGetFriendlyName() const override;
+  bool isListed(const Params& params, const KeyContext& context) const override {
+    return !params.empty();
+  }
 
 private:
   std::string m_filename;
@@ -43,6 +46,11 @@ void OpenBrowserCommand::onLoadParams(const Params& params)
 void OpenBrowserCommand::onExecute(Context* context)
 {
   App::instance()->mainWindow()->showBrowser(m_filename);
+}
+
+std::string OpenBrowserCommand::onGetFriendlyName() const
+{
+  return Command::onGetFriendlyName() + ": " + m_filename;
 }
 
 Command* CommandFactory::createOpenBrowserCommand()
