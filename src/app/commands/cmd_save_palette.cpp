@@ -34,6 +34,7 @@ public:
 protected:
   void onLoadParams(const Params& params) override;
   void onExecute(Context* context) override;
+  std::string onGetFriendlyName() const override;
 
 private:
   std::string m_preset;
@@ -99,6 +100,15 @@ void SavePaletteCommand::onExecute(Context* ctx)
   if (m_saveAsPreset) {
       App::instance()->PalettePresetsChange();
   }
+}
+
+std::string SavePaletteCommand::onGetFriendlyName() const
+{
+  if (m_preset == "default")
+    return Strings::commands_SavePaletteAsDefault();
+  else if (m_saveAsPreset)
+    return Strings::commands_SavePaletteAsPreset();
+  return Command::onGetFriendlyName();
 }
 
 Command* CommandFactory::createSavePaletteCommand()

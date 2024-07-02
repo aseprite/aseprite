@@ -494,6 +494,11 @@ bool Key::isLooselyPressed() const
   return false;
 }
 
+bool Key::isListed() const
+{
+  return type() != KeyType::Command || !command()->isListed(params(), keycontext());
+}
+
 bool Key::hasAccel(const ui::Accelerator& accel) const
 {
   return accels().has(accel);
