@@ -100,12 +100,12 @@ do -- ExportSpriteSheet
     0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,
   })
 
-  local s = Sprite{ fromFile="sprites/groups4.aseprite" }
+  local s = Sprite{ fromFile="sprites/groups3abc.aseprite" }
   local c = app.pixelColor.rgba(75, 105, 47)
   app.command.ExportSpriteSheet {
     type=SpriteSheetType.ROWS,
     textureFilename="_test_export_spritesheet4.png",
-    layer="G1/G2/G3/b",
+    layer="b/b",
     trim=true,
   }
   local i = Image{ fromFile="_test_export_spritesheet4.png" }

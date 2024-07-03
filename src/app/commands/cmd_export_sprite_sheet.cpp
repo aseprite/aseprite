@@ -153,17 +153,15 @@ void destroy_doc(Context* ctx, Doc* doc)
   }
 }
 
-void insertLayersToSelectedLayers(Layer* layer, SelectedLayers* selectedLayers)
+void insert_layers_to_selected_layers(Layer* layer, SelectedLayers& selectedLayers)
 {
   if (layer->isGroup()) {
-    auto childs = static_cast<const LayerGroup*>(layer)->layers();
-    if (childs.size() == 0)
-      return;
-    for (auto child : childs)
-      insertLayersToSelectedLayers(child, selectedLayers);
+    auto children = static_cast<LayerGroup*>(layer)->layers();
+    for (auto child : children)
+      insert_layers_to_selected_layers(child, selectedLayers);
   }
   else
-    selectedLayers->insert(const_cast<Layer*>(layer));
+    selectedLayers.insert(layer);
 }
 
 Doc* generate_sprite_sheet_from_params(
@@ -222,12 +220,16 @@ Doc* generate_sprite_sheet_from_params(
 
   SelectedLayers selLayers;
   if (layerName != kSelectedLayers) {
+    // TODO add a getLayerByName
+    int i = sprite->allLayersCount();
     for (Layer* layer : sprite->allLayers()) {
-      if (get_layer_path(layer) == layerName ) {
+      i--;
+      if (get_layer_path(layer) == layerName &&
+          (layerIndex == -1 || layerIndex == i)) {
         if (layer->isGroup())
-          insertLayersToSelectedLayers(layer, &selLayers);
+          insert_layers_to_selected_layers(layer, selLayers);
         else
-          selLayers.insert(const_cast<Layer*>(layer));
+          selLayers.insert(layer);
         break;
       }
     }
