@@ -10,9 +10,8 @@
 #endif
 
 #include "doc/mask.h"
-
-#include "base/memory.h"
 #include "doc/image_impl.h"
+#include "gfx/point.h"
 
 #include <cstdlib>
 #include <cstring>
@@ -126,6 +125,67 @@ void Mask::copyFrom(const Mask* sourceMask)
     // frozen, so add() doesn't created the bitmap)
     if (m_bitmap)
       copy_image(m_bitmap.get(), sourceMask->m_bitmap.get());
+  }
+}
+
+void Mask::fromImage(const Image* image, const gfx::Point& maskOrigin)
+{
+  if (image) {
+    replace(image->bounds().setOrigin(maskOrigin));
+    freeze();
+    {
+      LockImageBits<BitmapTraits> maskBits(bitmap());
+      auto maskIt = maskBits.begin();
+      auto maskEnd = maskBits.end();
+
+      switch (image->pixelFormat()) {
+
+        case IMAGE_RGB: {
+          LockImageBits<RgbTraits> rgbBits(image);
+          auto rgbIt = rgbBits.begin();
+#if _DEBUG
+          auto rgbEnd = rgbBits.end();
+#endif
+          for (; maskIt != maskEnd; ++maskIt, ++rgbIt) {
+            ASSERT(rgbIt != rgbEnd);
+            color_t c = *rgbIt;
+            *maskIt = (rgba_geta(c) >= 128); // TODO configurable threshold
+          }
+          break;
+        }
+
+        case IMAGE_GRAYSCALE: {
+          LockImageBits<GrayscaleTraits> grayBits(image);
+          auto grayIt = grayBits.begin();
+#if _DEBUG
+          auto grayEnd = grayBits.end();
+#endif
+          for (; maskIt != maskEnd; ++maskIt, ++grayIt) {
+            ASSERT(grayIt != grayEnd);
+            color_t c = *grayIt;
+            *maskIt = (graya_geta(c) >= 128); // TODO configurable threshold
+          }
+          break;
+        }
+
+        case IMAGE_INDEXED: {
+          const doc::color_t maskColor = image->maskColor();
+          LockImageBits<IndexedTraits> idxBits(image);
+          auto idxIt = idxBits.begin();
+#if _DEBUG
+          auto idxEnd = idxBits.end();
+#endif
+          for (; maskIt != maskEnd; ++maskIt, ++idxIt) {
+            ASSERT(idxIt != idxEnd);
+            color_t c = *idxIt;
+            *maskIt = (c != maskColor);
+          }
+          break;
+        }
+
+      }
+    }
+    unfreeze();
   }
 }
 

@@ -76,6 +76,7 @@ namespace doc {
 
     // Copies the data from the given mask.
     void copyFrom(const Mask* sourceMask);
+    void fromImage(const Image* image, const gfx::Point& maskOrigin);
 
     // Replace the whole mask with the given region.
     void replace(const gfx::Rect& bounds);
