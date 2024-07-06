@@ -1,5 +1,5 @@
 name: build
-on: [issue_comment, pull_request, workflow_dispatch]
+on: [push, workflow_dispatch]
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -7,7 +7,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-latest, macos-latest, ubuntu-latest]
-        build_type: [RelWithDebInfo, Debug]
+        build_type: [MinSizeRel, Release, Debug, RelWithDebInfo]
         ui: [gui, cli]
         scripting: [lua, noscripts]
         exclude:
@@ -115,7 +115,7 @@ jobs:
     - name: Uploading artifacts
       uses: actions/upload-artifact@v4.3.4
       with:
-        name: aseprite-${{runner.os}}-${{matrix.ui}}-${{matrix.scripting}}
+        name: aseprite-${{runner.os}}-${{matrix.build_type}}-${{matrix.ui}}-${{matrix.scripting}}
         path: |
             ./build/bin/aseprite
             ./build/bin/data/
