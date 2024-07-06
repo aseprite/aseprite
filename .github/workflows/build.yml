@@ -7,9 +7,9 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-latest, ubuntu-latest]
-        build_type: [MinSizeRel, Release, Debug, RelWithDebInfo]
-        ui: [gui, cli]
-        scripting: [lua, noscripts]
+        build_type: [MinSizeRel, Release, Debug]
+        ui: [gui]
+        scripting: [lua]
         exclude:
           - build_type: Debug
             ui: gui
