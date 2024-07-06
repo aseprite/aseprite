@@ -115,5 +115,5 @@ jobs:
     - name: Uploading artifacts
       uses: actions/upload-artifact@v4.3.4
       with:
-        # name: aseprite-{{runner.os}}
-        path: build
+        name: aseprite-${{runner.os}}-${{matrix.ui}}
+        path: ./build/
