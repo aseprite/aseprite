@@ -1,5 +1,5 @@
 name: build
-on: [push, pull_request, workflow_dispatch]
+on: [issue_comment, pull_request, workflow_dispatch]
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -115,7 +115,8 @@ jobs:
     - name: Uploading artifacts
       uses: actions/upload-artifact@v4.3.4
       with:
-        name: aseprite-${{runner.os}}-${{matrix.ui}}
+        name: aseprite-${{runner.os}}-${{matrix.ui}}-${{matrix.scripting}}
         path: |
             ./build/bin/aseprite
-            ./build/data/
+            ./build/bin/data/
+        compression-level: 9
