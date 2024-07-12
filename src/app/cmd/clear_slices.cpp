@@ -11,6 +11,8 @@
 #include "app/cmd/clear_slices.h"
 
 #include "app/doc.h"
+#include "app/site.h"
+#include "app/util/cel_ops.h"
 #include "doc/algorithm/fill_selection.h"
 #include "doc/cel.h"
 #include "doc/grid.h"
@@ -23,7 +25,12 @@ namespace cmd {
 
 using namespace doc;
 
-ClearSlices::ClearSlices(const LayerList& layers, frame_t frame, const std::vector<SliceKey>& slicesKeys)
+ClearSlices::ClearSlices(const Site& site,
+                         const LayerList& layers,
+                         frame_t frame,
+                         const std::vector<SliceKey>& slicesKeys)
+                         : m_tilemapMode(site.tilemapMode())
+                         , m_tilesetMode(site.tilesetMode())
 {
   //Doc* doc = static_cast<Doc*>(cel->document());
 
@@ -94,14 +101,45 @@ void ClearSlices::clear()
     if (!sc.copy)
       continue;
 
-    Grid grid = sc.cel->grid();
-    doc::algorithm::fill_selection(
-      sc.cel->image(),
-      sc.cel->bounds(),
-      &m_mask,
-      sc.bgcolor,
-      (sc.cel->image()->isTilemap() ? &grid: nullptr));
 
+    if (sc.cel->layer()->isTilemap() && m_tilemapMode == TilemapMode::Pixels) {
+
+      Doc* doc = static_cast<Doc*>(sc.cel->document());
+      /*
+      // Simple case (there is no visible selection, so we remove the
+      // whole cel)
+      if (!doc->isMaskVisible()) {
+        cmds->executeAndAdd(new cmd::ClearCel(cel));
+        return;
+      }
+      */
+      color_t bgcolor = doc->bgColor(sc.cel->layer());
+
+      modify_tilemap_cel_region(
+        &m_seq, sc.cel, nullptr,
+        gfx::Region(m_mask.bounds()),
+        m_tilesetMode,
+        [this, bgcolor](const doc::ImageRef& origTile,
+                        const gfx::Rect& tileBoundsInCanvas) -> doc::ImageRef {
+          doc::ImageRef modified(doc::Image::createCopy(origTile.get()));
+          doc::algorithm::fill_selection(
+            modified.get(),
+            tileBoundsInCanvas,
+            &m_mask,
+            bgcolor,
+            nullptr);
+          return modified;
+        });
+    }
+    else {
+      Grid grid = sc.cel->grid();
+      doc::algorithm::fill_selection(
+        sc.cel->image(),
+        sc.cel->bounds(),
+        &m_mask,
+        sc.bgcolor,
+        (sc.cel->image()->isTilemap() ? &grid: nullptr));
+    }
   }
 }
 

@@ -577,7 +577,6 @@ target_sources(app-lib PRIVATE
   cmd/set_user_data_properties.cpp
   cmd/set_user_data_property.cpp
   cmd/shift_masked_cel.cpp
-  cmd/stamp_in_cel.cpp
   cmd/trim_cel.cpp
   cmd/unlink_cel.cpp
   cmd/with_cel.cpp

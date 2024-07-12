@@ -10,6 +10,8 @@
 
 #include "app/cmd.h"
 #include "app/cmd_sequence.h"
+#include "app/tilemap_mode.h"
+#include "app/tileset_mode.h"
 #include "doc/cel.h"
 #include "doc/image_ref.h"
 #include "doc/layer_list.h"
@@ -19,12 +21,20 @@
 #include <vector>
 
 namespace app {
+
+  class Site;
+
 namespace cmd {
   using namespace doc;
 
+  // Clears the enclosed content of the passed slices for each layer in the
+  // layers list for the specified frame.
   class ClearSlices : public Cmd {
   public:
-    ClearSlices(const LayerList& layers, frame_t frame, const std::vector<SliceKey>& slicesKeys);
+    ClearSlices(const Site& site,
+                const LayerList& layers,
+                frame_t frame,
+                const std::vector<SliceKey>& slicesKeys);
 
   protected:
     void onExecute() override;
@@ -57,6 +67,8 @@ namespace cmd {
     CmdSequence m_seq;
     // Slices content for each selected layer's cel
     std::vector<SlicesContent> m_slicesContents;
+    TilemapMode m_tilemapMode;
+    TilesetMode m_tilesetMode;
   };
 
 } // namespace cmd

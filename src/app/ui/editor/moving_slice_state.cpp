@@ -9,17 +9,18 @@
 #include "config.h"
 #endif
 
-#include "app/cmd/stamp_in_cel.h"
 #include "app/cmd_sequence.h"
 #include "app/cmd_transaction.h"
 #include "app/cmd/set_slice_key.h"
 #include "app/cmd/clear_slices.h"
+#include "app/doc_range.h"
 #include "app/context_access.h"
 #include "app/tx.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/moving_slice_state.h"
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
+#include "app/util/expand_cel_canvas.h"
 #include "app/util/new_image_from_mask.h"
 #include "doc/algorithm/rotate.h"
 #include "doc/blend_internals.h"
@@ -27,6 +28,7 @@
 #include "doc/image_ref.h"
 #include "doc/mask.h"
 #include "doc/primitives.h"
+#include "doc/selected_layers.h"
 #include "doc/slice.h"
 #include "doc/algorithm/fill_selection.h"
 #include "gfx/point.h"
@@ -72,8 +74,17 @@ MovingSliceState::MovingSliceState(Editor* editor,
 
   editor->getSite(&m_site);
 
-  m_selectedLayers = m_site.range().selectedLayers().toAllLayersList();
-  if (m_selectedLayers.empty()) {
+  DocRange range = m_site.range();
+  SelectedLayers selectedLayers = range.selectedLayers();
+  // Do not take into account invisible layers.
+  for (auto it = selectedLayers.begin(); it != selectedLayers.end(); ++it) {
+    if (!(*it)->isVisible()) {
+      range.eraseAndAdjust(*it);
+    }
+  }
+
+  m_selectedLayers = range.selectedLayers().toAllLayersList();
+  if (m_selectedLayers.empty() && m_site.layer()->isVisible()) {
     m_selectedLayers.push_back(m_site.layer());
   }
 
@@ -103,6 +114,8 @@ void MovingSliceState::onEnterState(Editor* editor)
             m_frame,
             item.masks[i].get(),
             Preferences::instance().experimental.newBlend()));
+          // TODO: See if part of the code in fromImage can be replaced
+          // refactored to use mask_image (in cel_ops.h)?
           item.masks[i]->fromImage(item.imgs[i].get(), item.masks[i]->origin());
         }
 
@@ -140,7 +153,7 @@ void MovingSliceState::onEnterState(Editor* editor)
     clearSlices();
 
     if (editor->slicesTransforms()) {
-      drawExtraCel(editor);
+      drawSliceContents();
 
       // Redraw the editor.
       editor->invalidate();
@@ -157,7 +170,6 @@ EditorState::LeaveAction MovingSliceState::onLeaveState(Editor *editor, EditorSt
 
 bool MovingSliceState::onMouseUp(Editor* editor, MouseMessage* msg)
 {
-
   {
     ContextWriter writer(UIContext::instance(), 1000);
     CmdTransaction* cmds = m_tx;
@@ -169,14 +181,10 @@ bool MovingSliceState::onMouseUp(Editor* editor, MouseMessage* msg)
       if (editor->slicesTransforms()) {
           for (int i=0; i<m_selectedLayers.size(); ++i) {
             auto* layer = m_selectedLayers[i];
-            auto* cel = layer->cel(m_frame);
-            cmds->addAndExecute(writer.context(),
-                                new cmd::StampInCel(
-                                  cel,
-                                  item.imgs[i],
-                                  item.masks[i],
-                                  item.newKey.bounds()
-                                  ));
+            m_site.layer(layer);
+            m_site.frame(m_frame);
+            drawSliceContentsByLayer(i);
+            stampExtraCelImage();
           }
       }
     }
@@ -190,7 +198,74 @@ bool MovingSliceState::onMouseUp(Editor* editor, MouseMessage* msg)
   return true;
 }
 
-void MovingSliceState::drawExtraCel(Editor* editor)
+void MovingSliceState::stampExtraCelImage()
+{
+  const Image* image = m_extraCel->image();
+  if (!image)
+    return;
+
+  const Cel* cel = m_extraCel->cel();
+
+  ExpandCelCanvas expand(
+    m_site, m_site.layer(),
+    TiledMode::NONE, m_tx,
+    ExpandCelCanvas::None);
+
+
+  gfx::Point dstPt;
+  gfx::Size canvasImageSize = image->size();
+  if (m_site.tilemapMode() == TilemapMode::Tiles) {
+    doc::Grid grid = m_site.grid();
+    dstPt = grid.canvasToTile(cel->position());
+    canvasImageSize = grid.tileToCanvas(gfx::Rect(dstPt, canvasImageSize)).size();
+  }
+  else {
+    dstPt =  cel->position() - expand.getCel()->position();
+  }
+
+  expand.validateDestCanvas(
+    gfx::Region(gfx::Rect(cel->position(), canvasImageSize)));
+
+  expand.getDestCanvas()->copy(image, gfx::Clip(dstPt, image->bounds()));
+
+  expand.commit();
+}
+
+void MovingSliceState::drawSliceContents()
+{
+  gfx::Rect bounds;
+  for (auto& item : m_items)
+    bounds |= item.newKey.bounds();
+
+  drawExtraCel(bounds, [this](const gfx::Rect& bounds, Image* dst){
+    for (auto& item : m_items) {
+      // Draw the transformed pixels in the extra-cel which is the chunk
+      // of pixels that the user is moving.
+      drawImage(dst,
+                item.mergedImg.get(),
+                item.mergedMask.get(),
+                gfx::Rect(item.newKey.bounds()).offset(-bounds.origin()));
+    }
+  });
+}
+
+void MovingSliceState::drawSliceContentsByLayer(int layerIdx)
+{
+  gfx::Rect bounds;
+  for (auto& item : m_items)
+    bounds |= item.newKey.bounds();
+
+  drawExtraCel(bounds, [this, layerIdx](const gfx::Rect& bounds, Image* dst){
+    for (auto& item : m_items) {
+      drawImage(dst,
+                item.imgs[layerIdx].get(),
+                item.masks[layerIdx].get(),
+                gfx::Rect(item.newKey.bounds()).offset(-bounds.origin()));
+    }
+  });
+}
+
+void MovingSliceState::drawExtraCel(const gfx::Rect& bounds, DrawExtraCelContentFunc drawContent)
 {
   int t, opacity = (m_site.layer()->isImage() ?
                     static_cast<LayerImage*>(m_site.layer())->opacity(): 255);
@@ -199,11 +274,6 @@ void MovingSliceState::drawExtraCel(Editor* editor)
 
   if (!m_extraCel)
     m_extraCel.reset(new ExtraCel);
-
-  gfx::Rect bounds;
-  for (auto& item : m_items)
-    bounds |= item.newKey.bounds();
-
 
   if (!bounds.isEmpty()) {
     gfx::Size extraCelSize;
@@ -228,6 +298,8 @@ void MovingSliceState::drawExtraCel(Editor* editor)
                              static_cast<LayerImage*>(m_site.layer())->blendMode():
                              doc::BlendMode::NORMAL);
   }
+  else
+    m_extraCel.reset();
 
   m_site.document()->setExtraCel(m_extraCel);
 
@@ -236,16 +308,16 @@ void MovingSliceState::drawExtraCel(Editor* editor)
     if (m_site.tilemapMode() == TilemapMode::Tiles) {
       dst->setMaskColor(doc::notile);
       dst->clear(dst->maskColor());
-  /*
-   TODO: Fix this when the TilemapMode::Pixels mode works
-      if (m_site.cel()) {
-        doc::Grid grid = m_site.grid();
-        dst->copy(m_site.cel()->image(),
-                  gfx::Clip(0, 0, grid.canvasToTile(bounds)));
-        //dst->copy(item.img.get(),
-        //          gfx::Clip(0, 0, grid.canvasToTile(bounds)));
-      }
-  */
+      /*
+      TODO: Fix this when the TilemapMode::Pixels mode works
+          if (m_site.cel()) {
+            doc::Grid grid = m_site.grid();
+            dst->copy(m_site.cel()->image(),
+                      gfx::Clip(0, 0, grid.canvasToTile(bounds)));
+            //dst->copy(item.img.get(),
+            //          gfx::Clip(0, 0, grid.canvasToTile(bounds)));
+          }
+      */
     }
     else {
       dst->setMaskColor(m_site.sprite()->transparentColor());
@@ -259,22 +331,18 @@ void MovingSliceState::drawExtraCel(Editor* editor)
 
     }
 
-    for (auto& item : m_items) {
-      // Draw the transformed pixels in the extra-cel which is the chunk
-      // of pixels that the user is moving.
-      drawImage(item, dst, gfx::PointF(bounds.origin()));
-    }
+    drawContent(bounds, dst);
   }
 }
 
-
-void MovingSliceState::drawImage(const Item& item, doc::Image* dst, const gfx::PointF& pt)
+void MovingSliceState::drawImage(doc::Image* dst,
+                                 const doc::Image* src,
+                                 const doc::Mask* mask,
+                                 const gfx::Rect& bounds)
 {
   ASSERT(dst);
 
-  if (!item.mergedImg.get()) return;
-
-  gfx::Rect bounds = item.newKey.bounds();
+  if (!src) return;
 
   if (m_site.tilemapMode() == TilemapMode::Tiles) {
 
@@ -287,11 +355,11 @@ void MovingSliceState::drawImage(const Item& item, doc::Image* dst, const gfx::P
   }
   else {
     doc::algorithm::parallelogram(
-      dst, item.mergedImg.get(), item.mergedMask->bitmap(),
-      bounds.x-pt.x         , bounds.y-pt.y,
-      bounds.x+bounds.w-pt.x, bounds.y-pt.y,
-      bounds.x+bounds.w-pt.x, bounds.y+bounds.h-pt.y,
-      bounds.x-pt.x         , bounds.y+bounds.h-pt.y
+      dst, src, mask->bitmap(),
+      bounds.x         , bounds.y,
+      bounds.x+bounds.w, bounds.y,
+      bounds.x+bounds.w, bounds.y+bounds.h,
+      bounds.x         , bounds.y+bounds.h
     );
   }
 }
@@ -389,7 +457,7 @@ bool MovingSliceState::onMouseMove(Editor* editor, MouseMessage* msg)
   }
 
   if (editor->slicesTransforms())
-    drawExtraCel(editor);
+    drawSliceContents();
 
   // Redraw the editor.
   editor->invalidate();
@@ -434,7 +502,7 @@ MovingSliceState::Item MovingSliceState::getItemForSlice(doc::Slice* slice)
   Item item;
   item.slice = slice;
 
-  auto keyPtr = slice->getByFrame(m_frame);
+  const auto* keyPtr = slice->getByFrame(m_frame);
   ASSERT(keyPtr);
   if (keyPtr)
     item.oldKey = item.newKey = *keyPtr;
@@ -460,45 +528,8 @@ void MovingSliceState::clearSlices()
       slicesKeys.push_back(item.newKey);
     }
 
-    // TODO: Add tilemap and tileset case.
-    auto tilemapMode = m_site.tilemapMode();
-    auto tilesetMode = m_site.tilesetMode();
-
     CmdTransaction* cmds = m_tx;
-    //if (cel->layer()->isTilemap() && tilemapMode == TilemapMode::Pixels) {
-      /*
-      Doc* doc = static_cast<Doc*>(cel->document());
-
-      // Simple case (there is no visible selection, so we remove the
-      // whole cel)
-      if (!doc->isMaskVisible()) {
-        cmds->executeAndAdd(new cmd::ClearCel(cel));
-        return;
-      }
-
-      color_t bgcolor = doc->bgColor(cel->layer());
-      doc::Mask* mask = doc->mask();
-
-      modify_tilemap_cel_region(
-        cmds, cel, nullptr,
-        gfx::Region(doc->mask()->bounds()),
-        tilesetMode,
-        [bgcolor, mask](const doc::ImageRef& origTile,
-                        const gfx::Rect& tileBoundsInCanvas) -> doc::ImageRef {
-          doc::ImageRef modified(doc::Image::createCopy(origTile.get()));
-          doc::algorithm::fill_selection(
-            modified.get(),
-            tileBoundsInCanvas,
-            mask,
-            bgcolor,
-            nullptr);
-          return modified;
-        });
-        */
-    //}
-    //else {
-      cmds->executeAndAdd(new cmd::ClearSlices(m_selectedLayers, m_frame, slicesKeys));
-    //}
+    cmds->executeAndAdd(new cmd::ClearSlices(m_site, m_selectedLayers, m_frame, slicesKeys));
   }
 }
 

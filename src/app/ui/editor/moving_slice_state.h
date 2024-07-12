@@ -38,6 +38,8 @@ namespace app {
     bool requireBrushPreview() override { return false; }
 
   private:
+    using DrawExtraCelContentFunc = std::function<void(const gfx::Rect& bounds, Image* dst)>;
+
     struct Item {
       doc::Slice* slice;
       doc::SliceKey oldKey;
@@ -65,8 +67,14 @@ namespace app {
     Item getItemForSlice(doc::Slice* slice);
     gfx::Rect selectedSlicesBounds() const;
 
-    void drawExtraCel(Editor* editor);
-    void drawImage(const Item& item, doc::Image* dst, const gfx::PointF& pt);
+    void drawSliceContents();
+    void drawSliceContentsByLayer(int layerIdx);
+    void drawExtraCel(const gfx::Rect& bounds, DrawExtraCelContentFunc drawContent);
+    void drawImage(doc::Image* dst,
+                   const doc::Image* src,
+                   const doc::Mask* mask,
+                   const gfx::Rect& bounds);
+    void stampExtraCelImage();
 
     void clearSlices();
 
