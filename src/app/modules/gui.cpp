@@ -406,7 +406,7 @@ void load_window_pos(Window* window, const char* section, const bool limitMinSiz
   if (get_multiple_displays()) {
     Rect frame = get_config_rect(section, "WindowFrame", gfx::Rect());
     if (!frame.isEmpty()) {
-      limit_with_workarea(parentDisplay, frame);
+      limit_least(frame);
       window->loadNativeFrame(frame);
     }
   }

@@ -20,21 +20,20 @@
 #include "ui/window.h"
 
 #include <algorithm>
+#include <climits>
 
 namespace ui {
 
-#if 0 // TODO unused function, referenced in a comment in this file
-static gfx::Region get_workarea_region()
+// if the number of monitors changes during runtime this could break
+static const std::vector<gfx::Rect> get_all_workareas()
 {
-  // Returns the union of the workarea of all available screens
-  gfx::Region wa;
+  std::vector<gfx::Rect> workareas;
   os::ScreenList screens;
   os::System::instance()->listScreens(screens);
   for (const auto& screen : screens)
-    wa |= gfx::Region(screen->workarea());
-  return wa;
+    workareas.push_back(screen->workarea());
+  return workareas;
 }
-#endif
 
 int fit_bounds(Display* display, int arrowAlign, const gfx::Rect& target, gfx::Rect& bounds)
 {
@@ -120,7 +119,7 @@ void fit_bounds(const Display* parentDisplay,
   if (get_multiple_displays() && window->shouldCreateNativeWindow()) {
     const os::Window* nativeWindow = const_cast<ui::Display*>(parentDisplay)->nativeWindow();
     // Limit to the current screen workarea (instead of using all the
-    // available workarea between all monitors, get_workarea_region())
+    // available workarea between all monitors)
     const gfx::Rect workarea = nativeWindow->screen()->workarea();
     const int scale = nativeWindow->scale();
 
@@ -158,38 +157,63 @@ void fit_bounds(const Display* parentDisplay,
   }
 }
 
-// Limit window position using the union of all workareas
-//
-// TODO at least the title bar should be visible so we can
-//      resize it, because workareas can form an irregular shape
-//      (not rectangular) the calculation is a little more
-//      complex
-void limit_with_workarea(Display* parentDisplay, gfx::Rect& frame)
+void limit_with_workarea(const gfx::Rect& workareaBounds, gfx::Rect& frame)
 {
-  if (!get_multiple_displays())
-    return;
-
-  ASSERT(parentDisplay);
-
-  gfx::Rect waBounds = parentDisplay->nativeWindow()->screen()->workarea();
-  if (frame.x < waBounds.x)
-    frame.x = waBounds.x;
-  if (frame.y < waBounds.y)
-    frame.y = waBounds.y;
-  if (frame.x2() > waBounds.x2()) {
-    frame.x -= frame.x2() - waBounds.x2();
-    if (frame.x < waBounds.x) {
-      frame.x = waBounds.x;
-      frame.w = waBounds.w;
+  if (frame.x < workareaBounds.x)
+    frame.x = workareaBounds.x;
+  if (frame.y < workareaBounds.y)
+    frame.y = workareaBounds.y;
+  if (frame.x2() > workareaBounds.x2()) {
+    frame.x -= frame.x2() - workareaBounds.x2();
+    if (frame.x < workareaBounds.x) {
+      frame.x = workareaBounds.x;
+      frame.w = workareaBounds.w;
     }
   }
-  if (frame.y2() > waBounds.y2()) {
-    frame.y -= frame.y2() - waBounds.y2();
-    if (frame.y < waBounds.y) {
-      frame.y = waBounds.y;
-      frame.h = waBounds.h;
+  if (frame.y2() > workareaBounds.y2()) {
+    frame.y -= frame.y2() - workareaBounds.y2();
+    if (frame.y < workareaBounds.y) {
+      frame.y = workareaBounds.y;
+      frame.h = workareaBounds.h;
     }
   }
+}
+
+// since sqrt(a) < sqrt(b) for all a < b, we only have to square to compare
+inline int distance_squared(const gfx::Rect& r1, const gfx::Rect& r2)
+{
+  int dx = r1.x - r2.x;
+  int dy = r1.y - r2.y;
+  return dx * dx + dy * dy;
+}
+
+void limit_least(gfx::Rect& frame)
+{
+  int min_distance = INT_MAX;
+  gfx::Rect candidate(frame); // it shouldn't be possible for there to be no workareas but set
+                              // candidate to a valid Rect anyways
+
+  for (const auto& workarea : get_all_workareas()) {
+    // simulate clamping
+    gfx::Rect clone(frame);
+    limit_with_workarea(workarea, clone);
+
+    // find the least clamped clone
+    int distance = distance_squared(clone, frame);
+    if (distance < min_distance) {
+      min_distance = distance;
+
+      candidate.x = clone.x;
+      candidate.y = clone.y;
+      candidate.w = clone.w;
+      candidate.h = clone.h;
+    }
+  }
+
+  frame.x = candidate.x;
+  frame.y = candidate.y;
+  frame.w = candidate.w;
+  frame.h = candidate.h;
 }
 
 } // namespace ui
