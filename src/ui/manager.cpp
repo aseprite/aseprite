@@ -1409,7 +1409,7 @@ void Manager::_openWindow(Window* window, bool center)
         changeFrame = false;
       }
 
-      limit_with_workarea(parentDisplay, frame);
+      limit_least(frame);
 
       spec.position(os::WindowSpec::Position::Frame);
       spec.frame(frame);
