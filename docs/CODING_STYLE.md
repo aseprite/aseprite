@@ -156,5 +156,11 @@ targetting macOS 10.9, some notes are added about this:
 * You can use `<atomic>`, `<thread>`, `<mutex>`, and `<condition_variable>`
 * Prefer `using T = ...;` instead of `typedef ... T`
 * Use `[[fallthrough]]` if needed
+* Use `= {}` only to specify a default argument value of an
+  user-defined type in a function declaration, e.g.
+  `void func(const std::string& s = {}) { ... }`.
+  In other cases (e.g. a member variable of an user-defined type)
+  it's not required or we prefer to use the explicit value
+  for built-in types (`int m_var = 0;`).
 * We use gcc 9.2 or clang 9.0 on Linux, so check the features available in
   https://en.cppreference.com/w/cpp/compiler_support
