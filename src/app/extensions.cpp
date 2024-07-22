@@ -51,7 +51,8 @@
 
 namespace app {
 
-const char* Extensions::kAsepriteDefaultThemeName = "aseprite-theme";
+const char* Extension::kAsepriteDefaultThemeExtensionName = "aseprite-theme";
+const char* Extension::kAsepriteDefaultThemeId = "default";
 
 namespace {
 
@@ -284,7 +285,7 @@ void Extension::addTheme(const std::string& id,
                          const std::string& path,
                          const std::string& variant)
 {
-  if (id == "default" && !isDefaultTheme())
+  if (id == kAsepriteDefaultThemeId && !isDefaultTheme())
     return;
   m_themes[id] = ThemeInfo(path, variant);
   updateCategory(Category::Themes);
@@ -522,7 +523,7 @@ bool Extension::isCurrentTheme() const
 
 bool Extension::isDefaultTheme() const
 {
-  return name() == Extensions::kAsepriteDefaultThemeName;
+  return (name() == kAsepriteDefaultThemeExtensionName);
 }
 
 void Extension::updateCategory(const Category newCategory)
@@ -1008,8 +1009,14 @@ ExtensionInfo Extensions::getCompressedExtensionInfo(const std::string& zipFn)
     if (err.empty()) {
       if (json["contributes"].is_object()) {
         auto themes = json["contributes"]["themes"];
-        if (themes.is_array() && themes[0].is_object())
-          info.themeId = themes[0]["id"].string_value();
+        if (themes.is_array()) {
+          for (int i = 0; i < themes.array_items().size(); i++) {
+            if (themes[i]["id"].string_value() == Extension::kAsepriteDefaultThemeId) {
+              info.defaultTheme = true;
+              break;
+            }
+          }
+        }
       }
       info.name = json["name"].string_value();
       info.version = json["version"].string_value();

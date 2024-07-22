@@ -932,9 +932,8 @@ public:
       App::instance()->extensions().getCompressedExtensionInfo(filename);
     // Check if the filename corresponds to aseprite-default theme
     if (base::string_to_lower(info.name) ==
-        Extensions::kAsepriteDefaultThemeName) {
-      ui::Alert::show(
-        fmt::format(Strings::alerts_cannot_install_default_extension()));
+        Extension::kAsepriteDefaultThemeExtensionName) {
+      ui::Alert::show(Strings::alerts_cannot_install_default_extension());
       return false;
     }
 
@@ -1587,9 +1586,8 @@ private:
       // package.json file.
       ExtensionInfo info = exts.getCompressedExtensionInfo(filename);
 
-      if (info.themeId == "default") {
-        ui::Alert::show(
-          fmt::format(Strings::alerts_cannot_open_theme()));
+      if (info.defaultTheme) {
+        ui::Alert::show(Strings::alerts_cannot_install_default_extension());
         return;
       }
       // Check if the extension already exist

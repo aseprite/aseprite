@@ -30,11 +30,11 @@ namespace app {
   class Extensions;
 
   struct ExtensionInfo {
-    std::string themeId;
     std::string name;
     std::string version;
     std::string dstPath;
     std::string commonPath;
+    bool defaultTheme = false;
   };
 
   enum DeletePluginPref { kNo, kYes };
@@ -42,6 +42,8 @@ namespace app {
   class Extension {
     friend class Extensions;
   public:
+    static const char* kAsepriteDefaultThemeExtensionName;
+    static const char* kAsepriteDefaultThemeId;
 
     enum class Category {
       None,
@@ -198,7 +200,6 @@ namespace app {
   public:
     typedef std::vector<Extension*> List;
     typedef List::iterator iterator;
-    static const char* kAsepriteDefaultThemeName;
 
     Extensions();
     ~Extensions();
