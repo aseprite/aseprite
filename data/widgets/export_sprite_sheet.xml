@@ -1,8 +1,8 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2019-2022  Igara Studio S.A. -->
+<!-- Copyright (C) 2019-2024  Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2018  David Capello -->
 <gui>
-  <window id="export_sprite_sheet" text="@.title">
+  <window id="export_sprite_sheet" text="@.title" help="sprite-sheet#export">
   <vbox expansive="true">
 
     <!-- Tabs -->

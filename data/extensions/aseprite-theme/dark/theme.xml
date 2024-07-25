@@ -171,6 +171,7 @@
         <part id="window_play_icon" x="21" y="11" w="5" h="6" />
         <part id="window_stop_icon" x="26" y="11" w="5" h="6" />
         <part id="window_center_icon" x="31" y="11" w="5" h="6" />
+        <part id="window_help_icon" x="36" y="11" w="5" h="6" />
         <part id="slider_full" x="0" y="144" w1="5" w2="6" w3="5" h1="5" h2="5" h3="6" />
         <part id="slider_empty" x="16" y="144" w1="5" w2="6" w3="5" h1="5" h2="5" h3="6" />
         <part id="slider_full_focused" x="0" y="160" w1="5" w2="6" w3="5" h1="5" h2="5" h3="6" />
@@ -497,6 +498,12 @@
             <icon part="window_stop_icon" color="button_normal_text" />
             <icon part="window_stop_icon" color="button_hot_text" state="mouse" />
             <icon part="window_stop_icon" color="button_selected_text" state="selected" />
+        </style>
+        <style id="window_help_button" extends="window_button" margin-top="3" margin-right="2">
+            <newlayer />
+            <icon part="window_help_icon" color="button_normal_text" />
+            <icon part="window_help_icon" color="button_hot_text" state="mouse" />
+            <icon part="window_help_icon" color="button_selected_text" state="selected" />
         </style>
         <style id="popup_window">
             <background color="window_face" />

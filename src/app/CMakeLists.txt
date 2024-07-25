@@ -422,6 +422,7 @@ if(ENABLE_UI)
     ui/keyboard_shortcuts.cpp
     ui/main_menu_bar.cpp
     ui/main_window.cpp
+    ui/mini_help_button.cpp
     ui/notifications.cpp
     ui/optional_alert.cpp
     ui/palette_popup.cpp

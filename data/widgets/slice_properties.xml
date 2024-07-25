@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2019-2021  Igara Studio S.A. -->
+<!-- Copyright (C) 2019-2024  Igara Studio S.A. -->
 <!-- Copyright (C) 2017-2018  David Capello -->
 <gui>
-<window id="slice_properties" text="@.title">
+<window id="slice_properties" text="@.title" help="slices#slice-properties">
   <vbox>
     <grid id="properties_grid" columns="3">
       <label id="label1" text="@.name" />

@@ -1,8 +1,8 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2019 by Igara Studio S.A. -->
+<!-- Copyright (C) 2019-2024 by Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2018 by David Capello -->
 <gui>
-  <window id="import_sprite_sheet" text="@.title">
+  <window id="import_sprite_sheet" text="@.title" help="sprite-sheet#import">
     <vbox>
       <grid columns="4">
         <button id="select_file" text="@select_file.text" cell_hspan="4" />
