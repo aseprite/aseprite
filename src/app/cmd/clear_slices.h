@@ -53,6 +53,7 @@ namespace cmd {
       Cel* cel = nullptr;
       // Image having a copy of the content of each selected slice.
       ImageRef copy = nullptr;
+      Mask mask;
       gfx::Point cropPos;
       color_t bgcolor;
       size_t memSize() const {
@@ -63,7 +64,6 @@ namespace cmd {
     void clear();
     void restore();
 
-    Mask m_mask;
     CmdSequence m_seq;
     // Slices content for each selected layer's cel
     std::vector<SlicesContent> m_slicesContents;

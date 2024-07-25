@@ -32,47 +32,45 @@ ClearSlices::ClearSlices(const Site& site,
                          : m_tilemapMode(site.tilemapMode())
                          , m_tilesetMode(site.tilesetMode())
 {
-  //Doc* doc = static_cast<Doc*>(cel->document());
-
   if (layers.empty())
     return;
 
   Doc* doc = static_cast<Doc*>((*layers.begin())->sprite()->document());
 
-  for (const auto& sk : slicesKeys) {
-    m_mask.add(sk.bounds());
-  }
-  const gfx::Rect maskBounds = m_mask.bounds();
-
-//  gfx::Rect maskBounds;
-//  if (image->pixelFormat() == IMAGE_TILEMAP) {
-//    auto grid = cel->grid();
-//    imageBounds = gfx::Rect(grid.canvasToTile(cel->position()),
-//                            cel->image()->size());
-//    maskBounds = grid.canvasToTile(mask->bounds());
-//    m_bgcolor = doc::notile; // TODO configurable empty tile
-//  }
-//  else {
   for (auto* layer : layers) {
+    SlicesContent sc;
+    for (const auto& sk : slicesKeys) {
+      sc.mask.add(sk.bounds());
+    }
+    gfx::Rect maskBounds = sc.mask.bounds();
+
     Cel* cel = layer->cel(frame);
-    const gfx::Rect imageBounds = cel->bounds();
+    Image* image = cel->image();
+    assert(image);
+    if (!image)
+      continue;
+
+    gfx::Rect imageBounds = cel->bounds();
+
+    color_t bgcolor = doc->bgColor(layer);
+    if (image->pixelFormat() == IMAGE_TILEMAP) {
+      auto grid = cel->grid();
+      imageBounds = gfx::Rect(grid.canvasToTile(cel->position()),
+                              cel->image()->size());
+      maskBounds = grid.canvasToTile(maskBounds);
+      bgcolor = doc::notile; // TODO configurable empty tile
+    }
+
     gfx::Rect cropBounds = (imageBounds & maskBounds);
     if (cropBounds.isEmpty())
       continue;
 
     cropBounds.offset(-imageBounds.origin());
 
-    Image* image = cel->image();
-    assert(image);
-    if (!image)
-      continue;
-
-    SlicesContent sc;
     sc.cel = cel;
     sc.cropPos = cropBounds.origin();
-    sc.bgcolor = doc->bgColor(layer);
+    sc.bgcolor = bgcolor;
     sc.copy.reset(crop_image(image, cropBounds, sc.bgcolor));
-
     m_slicesContents.push_back(sc);
   }
 }
@@ -105,27 +103,19 @@ void ClearSlices::clear()
     if (sc.cel->layer()->isTilemap() && m_tilemapMode == TilemapMode::Pixels) {
 
       Doc* doc = static_cast<Doc*>(sc.cel->document());
-      /*
-      // Simple case (there is no visible selection, so we remove the
-      // whole cel)
-      if (!doc->isMaskVisible()) {
-        cmds->executeAndAdd(new cmd::ClearCel(cel));
-        return;
-      }
-      */
       color_t bgcolor = doc->bgColor(sc.cel->layer());
 
       modify_tilemap_cel_region(
         &m_seq, sc.cel, nullptr,
-        gfx::Region(m_mask.bounds()),
+        gfx::Region(sc.mask.bounds()),
         m_tilesetMode,
-        [this, bgcolor](const doc::ImageRef& origTile,
+        [sc, bgcolor](const doc::ImageRef& origTile,
                         const gfx::Rect& tileBoundsInCanvas) -> doc::ImageRef {
           doc::ImageRef modified(doc::Image::createCopy(origTile.get()));
           doc::algorithm::fill_selection(
             modified.get(),
             tileBoundsInCanvas,
-            &m_mask,
+            &sc.mask,
             bgcolor,
             nullptr);
           return modified;
@@ -136,7 +126,7 @@ void ClearSlices::clear()
       doc::algorithm::fill_selection(
         sc.cel->image(),
         sc.cel->bounds(),
-        &m_mask,
+        &sc.mask,
         sc.bgcolor,
         (sc.cel->image()->isTilemap() ? &grid: nullptr));
     }

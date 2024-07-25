@@ -30,7 +30,6 @@ namespace app {
                      const doc::SelectedObjects& selectedSlices);
 
     void onEnterState(Editor* editor) override;
-    LeaveAction onLeaveState(Editor *editor, EditorState *newState) override;
     bool onMouseUp(Editor* editor, ui::MouseMessage* msg) override;
     bool onMouseMove(Editor* editor, ui::MouseMessage* msg) override;
     bool onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos) override;

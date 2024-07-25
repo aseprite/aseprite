@@ -314,6 +314,25 @@ public:
   }
 };
 
+class TilemapDelegate : public GenericDelegate<TilemapTraits> {
+public:
+  TilemapDelegate(color_t mask_color) :
+    m_mask_color(mask_color) {
+  }
+
+  void putPixel(const Image* spr, int spr_x, int spr_y) {
+    ASSERT(m_it != m_end);
+
+    color_t c = get_pixel_fast<TilemapTraits>(spr, spr_x, spr_y);
+    if (c != m_mask_color)
+      *m_it = c;
+  }
+
+private:
+  color_t m_mask_color;
+};
+
+
 /* _parallelogram_map:
  *  Worker routine for drawing rotated and/or scaled and/or flipped sprites:
  *  It actually maps the sprite to any parallelogram-shaped area of the
@@ -771,6 +790,12 @@ static void ase_parallelogram_map_standard(
     case IMAGE_BITMAP: {
       BitmapDelegate delegate;
       ase_parallelogram_map<BitmapTraits, BitmapDelegate>(bmp, sprite, mask, xs, ys, false, delegate);
+      break;
+    }
+
+    case IMAGE_TILEMAP: {
+      TilemapDelegate delegate(sprite->maskColor());
+      ase_parallelogram_map<TilemapTraits, TilemapDelegate>(bmp, sprite, mask, xs, ys, false, delegate);
       break;
     }
   }

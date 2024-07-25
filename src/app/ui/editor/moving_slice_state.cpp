@@ -54,7 +54,6 @@ MovingSliceState::MovingSliceState(Editor* editor,
   : m_frame(editor->frame())
   , m_hit(hit)
   , m_items(std::max<std::size_t>(1, selectedSlices.size()))
-  //, m_reader(UIContext::instance())
   , m_tx(Tx::DontLockDoc, UIContext::instance(),
          UIContext::instance()->activeDocument(),
          (editor->slicesTransforms() ? "Slices Transformation" : "Slice Movement"))
@@ -95,6 +94,12 @@ void MovingSliceState::onEnterState(Editor* editor)
 {
   if (editor->slicesTransforms() && !m_items.empty()) {
     for (auto& item : m_items) {
+      // Align slice origin to tiles origin under Tiles mode.
+      if (m_site.tilemapMode() == TilemapMode::Tiles) {
+        auto origin = m_site.grid().tileToCanvas(m_site.grid().canvasToTile(item.newKey.bounds().origin()));
+        auto bounds = gfx::Rect(origin, item.newKey.bounds().size());
+        item.newKey.setBounds(bounds);
+      }
       item.imgs.reserve(m_selectedLayers.size());
       item.masks.reserve(m_selectedLayers.size());
       int i = 0;
@@ -106,7 +111,7 @@ void MovingSliceState::onEnterState(Editor* editor)
         if (layer &&
             layer->isTilemap() &&
             m_site.tilemapMode() == TilemapMode::Tiles) {
-          //item.img.reset(new_tilemap_from_mask(m_site, item.mask.get()));
+          item.imgs[i].reset(new_tilemap_from_mask(m_site, item.masks[i].get()));
         }
         else {
           item.imgs[i].reset(new_image_from_mask(
@@ -152,20 +157,11 @@ void MovingSliceState::onEnterState(Editor* editor)
 
     clearSlices();
 
-    if (editor->slicesTransforms()) {
-      drawSliceContents();
+    drawSliceContents();
 
-      // Redraw the editor.
-      editor->invalidate();
-    }
+    // Redraw the editor.
+    editor->invalidate();
   }
-}
-
-EditorState::LeaveAction MovingSliceState::onLeaveState(Editor *editor, EditorState *newState)
-{
-  //editor->document()->resetTransformation();
-
-  return StandbyState::onLeaveState(editor, newState);
 }
 
 bool MovingSliceState::onMouseUp(Editor* editor, MouseMessage* msg)
@@ -210,7 +206,6 @@ void MovingSliceState::stampExtraCelImage()
     m_site, m_site.layer(),
     TiledMode::NONE, m_tx,
     ExpandCelCanvas::None);
-
 
   gfx::Point dstPt;
   gfx::Size canvasImageSize = image->size();
@@ -308,16 +303,12 @@ void MovingSliceState::drawExtraCel(const gfx::Rect& bounds, DrawExtraCelContent
     if (m_site.tilemapMode() == TilemapMode::Tiles) {
       dst->setMaskColor(doc::notile);
       dst->clear(dst->maskColor());
-      /*
-      TODO: Fix this when the TilemapMode::Pixels mode works
-          if (m_site.cel()) {
-            doc::Grid grid = m_site.grid();
-            dst->copy(m_site.cel()->image(),
-                      gfx::Clip(0, 0, grid.canvasToTile(bounds)));
-            //dst->copy(item.img.get(),
-            //          gfx::Clip(0, 0, grid.canvasToTile(bounds)));
-          }
-      */
+
+      if (m_site.cel()) {
+        doc::Grid grid = m_site.grid();
+        dst->copy(m_site.cel()->image(),
+                  gfx::Clip(0, 0, grid.canvasToTile(bounds)));
+      }
     }
     else {
       dst->setMaskColor(m_site.sprite()->transparentColor());
@@ -345,13 +336,14 @@ void MovingSliceState::drawImage(doc::Image* dst,
   if (!src) return;
 
   if (m_site.tilemapMode() == TilemapMode::Tiles) {
-
- /* TODO: Finish this when TilemapMode::Pixels works
-    drawTransformedTilemap(
-      transformation,
-      dst, m_originalImage.get(),
-      m_initialMask.get());
-    */
+    gfx::Rect tilesBounds = m_site.grid().canvasToTile(bounds);
+    doc::algorithm::parallelogram(
+      dst, src, nullptr,
+      tilesBounds.x         , tilesBounds.y,
+      tilesBounds.x+tilesBounds.w, tilesBounds.y,
+      tilesBounds.x+tilesBounds.w, tilesBounds.y+tilesBounds.h,
+      tilesBounds.x         , tilesBounds.y+tilesBounds.h
+    );
   }
   else {
     doc::algorithm::parallelogram(
@@ -369,6 +361,11 @@ bool MovingSliceState::onMouseMove(Editor* editor, MouseMessage* msg)
   gfx::Point newCursorPos = editor->screenToEditor(msg->position());
   gfx::Point delta = newCursorPos - m_mouseStart;
   gfx::Rect totalBounds = selectedSlicesBounds();
+
+  // Move by tile size under Tiles mode.
+  if (editor->slicesTransforms() && m_site.tilemapMode() == TilemapMode::Tiles) {
+    delta = m_site.grid().tileToCanvas(m_site.grid().canvasToTile(delta));
+  }
 
   ASSERT(totalBounds.w > 0);
   ASSERT(totalBounds.h > 0);
@@ -445,6 +442,11 @@ bool MovingSliceState::onMouseMove(Editor* editor, MouseMessage* msg)
         if (rc.h < 1)
           rc.h = 1;
       }
+    }
+
+    // Align slice origin to tiles origin under Tiles mode.
+    if (editor->slicesTransforms() && m_site.tilemapMode() == TilemapMode::Tiles) {
+      rc.setOrigin(m_site.grid().tileToCanvas(m_site.grid().canvasToTile(rc.origin())));
     }
 
     if (m_hit.type() == EditorHit::SliceCenter)
