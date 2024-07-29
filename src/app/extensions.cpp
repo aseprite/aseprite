@@ -1009,11 +1009,15 @@ ExtensionInfo Extensions::getCompressedExtensionInfo(const std::string& zipFn)
     if (err.empty()) {
       if (json["contributes"].is_object()) {
         auto themes = json["contributes"]["themes"];
-        if (themes.is_array()) {
-          for (int i = 0; i < themes.array_items().size(); i++) {
-            if (themes[i]["id"].string_value() == Extension::kAsepriteDefaultThemeId) {
-              info.defaultTheme = true;
-              break;
+        if (json["name"].string_value() == Extension::kAsepriteDefaultThemeExtensionName)
+          info.defaultTheme = true;
+        else {
+          if (themes.is_array()) {
+            for (int i = 0; i < themes.array_items().size(); i++) {
+              if (themes[i]["id"].string_value() == Extension::kAsepriteDefaultThemeId) {
+                info.defaultTheme = true;
+                break;
+              }
             }
           }
         }
