@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2023  Igara Studio S.A.
+// Copyright (C) 2020-2024  Igara Studio S.A.
 // Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -51,12 +51,14 @@
 
 namespace app {
 
+const char* Extension::kAsepriteDefaultThemeExtensionName = "aseprite-theme";
+const char* Extension::kAsepriteDefaultThemeId = "default";
+
 namespace {
 
 const char* kPackageJson = "package.json";
 const char* kInfoJson = "__info.json";
 const char* kPrefLua = "__pref.lua";
-const char* kAsepriteDefaultThemeExtensionName = "aseprite-theme";
 
 class ReadArchive {
 public:
@@ -283,6 +285,8 @@ void Extension::addTheme(const std::string& id,
                          const std::string& path,
                          const std::string& variant)
 {
+  if (id == kAsepriteDefaultThemeId && !isDefaultTheme())
+    return;
   m_themes[id] = ThemeInfo(path, variant);
   updateCategory(Category::Themes);
 }
@@ -1003,6 +1007,21 @@ ExtensionInfo Extensions::getCompressedExtensionInfo(const std::string& zipFn)
     std::string err;
     auto json = json11::Json::parse(out.str(), err);
     if (err.empty()) {
+      if (json["contributes"].is_object()) {
+        auto themes = json["contributes"]["themes"];
+        if (json["name"].string_value() == Extension::kAsepriteDefaultThemeExtensionName)
+          info.defaultTheme = true;
+        else {
+          if (themes.is_array()) {
+            for (int i = 0; i < themes.array_items().size(); i++) {
+              if (themes[i]["id"].string_value() == Extension::kAsepriteDefaultThemeId) {
+                info.defaultTheme = true;
+                break;
+              }
+            }
+          }
+        }
+      }
       info.name = json["name"].string_value();
       info.version = json["version"].string_value();
       info.dstPath = base::join_path(m_userExtensionsPath, info.name);
