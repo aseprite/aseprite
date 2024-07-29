@@ -61,6 +61,7 @@ add_library(doc-lib
   primitives.cpp
   remap.cpp
   render_plan.cpp
+  rgbmap_base.cpp
   rgbmap_rgb5a3.cpp
   selected_frames.cpp
   selected_layers.cpp
