@@ -290,7 +290,7 @@ bool Clipboard::copyFromDocument(const Site& site, bool merged)
     (mask ? new Mask(*mask): nullptr),
     (pal ? new Palette(*pal): nullptr),
     nullptr,
-    true,                       // set native clipboard
+    App::instance()->isGui() ? true : false, // set native clipboard
     site.layer() && !site.layer()->isBackground());
 
   return true;
@@ -364,6 +364,21 @@ void Clipboard::cut(ContextWriter& writer)
     {
       Tx tx(writer, "Cut");
       Site site = writer.context()->activeSite();
+      if (!App::instance()->isGui()) {
+        if (const Doc* doc = static_cast<const Doc*>(site.document())) {
+          if (doc->sprite()) {
+            const Mask* mask = doc->mask();
+            const Palette* pal = doc->sprite()->palette(site.frame());
+            doc::Image* image(new_image_from_mask(site, true));
+            setData(image,
+                    (mask ? new Mask(*mask): nullptr),
+                    (pal ? new Palette(*pal): nullptr),
+                    nullptr,
+                    false,
+                    site.layer() && !site.layer()->isBackground());
+          }
+        }
+      }
       CelList cels;
       if (site.range().enabled()) {
         cels = get_unique_cels_to_edit_pixels(site.sprite(), site.range());
@@ -379,6 +394,8 @@ void Clipboard::cut(ContextWriter& writer)
       tx.commit();
     }
     writer.document()->generateMaskBoundaries();
+    if (!App::instance()->isGui())
+      return;
 #ifdef ENABLE_UI
     update_screen_for_document(writer.document());
 #endif
@@ -487,7 +504,9 @@ void Clipboard::paste(Context* ctx,
 
     case ClipboardFormat::Image: {
       // Get the image from the native clipboard.
-      if (!getImage(nullptr))
+      if (App::instance()->isGui() && !getImage(nullptr))
+        return;
+      else if (!isImageAvailable())
         return;
 
       ASSERT(m_data->image);
@@ -803,6 +822,13 @@ ImageRef Clipboard::getImage(Palette* palette)
   if (m_data->palette && palette)
     m_data->palette->copyColorsTo(palette);
   return m_data->image;
+}
+
+bool Clipboard::isImageAvailable() const
+{
+  return m_data->image &&
+    m_data->image->width() > 0 &&
+    m_data->image->height() > 0;
 }
 
 bool Clipboard::getImageSize(gfx::Size& size)

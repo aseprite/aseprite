@@ -79,6 +79,9 @@ namespace app {
 
     doc::ImageRef getImage(doc::Palette* palette);
 
+    // Used to identify data available when the UI is not available
+    bool isImageAvailable() const;
+
     // Returns true and fills the specified "size"" with the image's
     // size in the clipboard, or return false in case that the clipboard
     // doesn't contain an image at all.
