@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2023  Igara Studio S.A.
+// Copyright (C) 2020-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -56,6 +56,9 @@ public:
 protected:
   bool onEnabled(Context* context) override;
   void onExecute(Context* context) override;
+  bool isListed(const Params& params, const KeyContext& context) const override {
+    return context == KeyContext::Normal;
+  }
 };
 
 class LayerPropertiesWindow;

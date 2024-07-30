@@ -272,6 +272,21 @@ void OpenFileCommand::onExecute(Context* context)
   }
 }
 
+std::string OpenFileCommand::onGetFriendlyName() const
+{
+  // TO DO: would be better to show the last part of the path
+  // via text size hint instead of a fixed number of chars.
+  auto uiScale = Preferences::instance().general.uiScale();
+  auto scScale = Preferences::instance().general.screenScale();
+  int pos(68.0 / double(uiScale) / double(scScale));
+  return Command::onGetFriendlyName().append(
+    (m_filename.empty() ?
+      "" :
+      (": " + (m_filename.size() >= pos ?
+                 m_filename.substr(m_filename.size() - pos, pos) :
+                 m_filename))));
+}
+
 Command* CommandFactory::createOpenFileCommand()
 {
   return new OpenFileCommand;

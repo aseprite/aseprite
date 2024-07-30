@@ -606,7 +606,8 @@ private:
       if (key->type() == KeyType::Tool ||
           key->type() == KeyType::Quicktool ||
           key->type() == KeyType::WheelAction ||
-          key->type() == KeyType::DragAction) {
+          key->type() == KeyType::DragAction ||
+          key->isListed()) {
         continue;
       }
 

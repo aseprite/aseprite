@@ -10,6 +10,7 @@
 #pragma once
 
 #include "app/commands/command.h"
+#include "app/commands/params.h"
 #include "app/pref/preferences.h"
 #include "base/paths.h"
 
@@ -32,6 +33,7 @@ namespace app {
   protected:
     void onLoadParams(const Params& params) override;
     void onExecute(Context* context) override;
+    std::string onGetFriendlyName() const override;
 
   private:
     std::string m_filename;
