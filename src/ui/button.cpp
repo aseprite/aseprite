@@ -56,6 +56,11 @@ void ButtonBase::onClick()
   Click();
 }
 
+void ButtonBase::onRightClick()
+{
+  RightClick();
+}
+
 bool ButtonBase::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
@@ -205,10 +210,17 @@ bool ButtonBase::onProcessMessage(Message* msg)
         releaseMouse();
 
         if (hasMouse()) {
+          MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
+
           switch (m_behaviorType) {
 
             case kButtonWidget:
-              generateButtonSelectSignal();
+              {
+                if (mouseMsg->right())
+                  onRightClick();
+                else
+                  generateButtonSelectSignal();
+              }
               break;
 
             case kCheckWidget:

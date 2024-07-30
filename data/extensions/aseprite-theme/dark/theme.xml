@@ -694,8 +694,9 @@
             <background color="check_hot_face" state="selected" />
             <icon part="pal_options" />
         </style>
-        <style id="new_frame_button" extends="mini_button" />
-        <style id="color_button" extends="mini_button" font="mini" padding-bottom="1" />
+        <style id="new_frame_button" extends="mini_button" padding-bottom="1">
+            <icon part="icon_add" />
+        </style>
         <style id="splitter">
             <background color="face" />
         </style>

@@ -10,6 +10,7 @@
 #endif
 
 #include "app/app.h"
+#include "app/app_menus.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/context_access.h"
@@ -700,7 +701,9 @@ StatusBar::StatusBar(TooltipManager* tooltipManager)
     m_frameLabel = new Label(Strings::statusbar_tips_frame());
     m_currentFrame = new GotoFrameEntry();
     m_newFrame = new Button("+");
-    m_newFrame->Click.connect([this]{ newFrame(); });
+    m_newFrame->Click.connect(&StatusBar::newFrame, this);
+    m_newFrame->RightClick.connect(&StatusBar::showNewFramePopupMenu, this);
+
     m_zoomEntry = new ZoomEntry;
     m_zoomEntry->ZoomChange.connect(&StatusBar::onChangeZoom, this);
 
@@ -922,7 +925,7 @@ void StatusBar::onInitTheme(ui::InitThemeEvent& ev)
          textHeight()+8*guiscale()));
 
   m_newFrame->setStyle(theme->styles.newFrameButton());
-  m_commandsBox->setBorder(gfx::Border(2, 1, 2, 2)*guiscale());
+  m_commandsBox->setBorder(gfx::Border(2, 2, 2, 2)*guiscale());
 
   if (m_snapToGridWindow) {
     m_snapToGridWindow->initTheme();
@@ -994,6 +997,11 @@ void StatusBar::newFrame()
 {
   Command* cmd = Commands::instance()->byId(CommandId::NewFrame());
   UIContext::instance()->executeCommandFromMenuOrShortcut(cmd);
+}
+
+void StatusBar::showNewFramePopupMenu()
+{
+  AppMenus::instance()->getNewFrameMenu()->showPopup(mousePosInDisplay(), display());
 }
 
 void StatusBar::onChangeZoom(const render::Zoom& zoom)

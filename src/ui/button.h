@@ -34,6 +34,7 @@ namespace ui {
     WidgetType behaviorType() const;
     // Signals
     obs::signal<void()> Click;
+    obs::signal<void()> RightClick;
 
   protected:
     // Events
@@ -41,6 +42,7 @@ namespace ui {
 
     // New events
     virtual void onClick();
+    virtual void onRightClick();
     virtual void onStartDrag();
     virtual void onSelectWhenDragging();
 
