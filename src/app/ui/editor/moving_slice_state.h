@@ -12,6 +12,7 @@
 #include "app/ui/editor/editor_hit.h"
 #include "app/ui/editor/standby_state.h"
 #include "app/ui/editor/pixels_movement.h"
+#include "app/util/new_image_from_mask.h"
 #include "doc/frame.h"
 #include "doc/image_ref.h"
 #include "doc/mask.h"
@@ -37,38 +38,167 @@ namespace app {
     bool requireBrushPreview() override { return false; }
 
   private:
-    using DrawExtraCelContentFunc = std::function<void(const gfx::Rect& bounds, Image* dst)>;
+    struct Item;
+    using ItemContentPartFunc = std::function<
+                                 void(const doc::Image* src,
+                                      const doc::Mask* mask,
+                                      const gfx::Rect& bounds)>;
+
+    class ItemContent {
+    public:
+      ItemContent(const Item *item) : m_item(item) {}
+      virtual ~ItemContent() {};
+      virtual void forEachPart(ItemContentPartFunc fn) = 0;
+      virtual void copy(const Image* src) = 0;
+
+    protected:
+      const Item* m_item = nullptr;
+    };
+
+    using ItemContentRef = std::shared_ptr<ItemContent>;
+
+    class SingleSlice : public ItemContent {
+    public:
+      SingleSlice(const Item *item,
+                  const ImageRef& image) : SingleSlice(item, image, item->oldKey.bounds().origin()) {
+      }
+
+      SingleSlice(const Item *item,
+                  const ImageRef& image,
+                  const gfx::Point& origin) : ItemContent(item)
+                                       , m_img(image) {
+        m_mask = std::make_shared<Mask>();
+        m_mask->freeze();
+        m_mask->fromImage(m_img.get(), origin);
+      }
+
+      ~SingleSlice() {
+        m_mask->unfreeze();
+      }
+
+      void forEachPart(ItemContentPartFunc fn) override {
+        fn(m_img.get(), m_mask.get(), m_item->newKey.bounds());
+      }
+
+      void copy(const Image* src) override {
+        doc::Mask srcMask;
+        srcMask.freeze();
+        srcMask.add(m_item->oldKey.bounds());
+        // TODO: See if part of the code in fromImage can be replaced or
+        // refactored to use mask_image (in cel_ops.h)?
+        srcMask.fromImage(src, srcMask.origin());
+        copy_masked_zones(m_img.get(), src, &srcMask, srcMask.bounds().x, srcMask.bounds().y);
+
+        m_mask->add(srcMask);
+        srcMask.unfreeze();
+      }
+
+      const Image* image() { return m_img.get(); }
+      Mask* mask() { return m_mask.get(); }
+
+    private:
+      // Images containing the parts of each selected layer of the sprite under
+      // the slice bounds that will be transformed when Slice Transform is
+      // enabled
+      ImageRef m_img;
+      // Masks for each of the images in imgs vector
+      MaskRef m_mask;
+    };
+
+    class NineSlice : public ItemContent {
+    public:
+      NineSlice(const Item *item,
+                const ImageRef& image) : ItemContent(item) {
+
+        if (!m_item->oldKey.hasCenter()) return;
+
+        const gfx::Rect totalBounds(m_item->oldKey.bounds().size());
+        gfx::Rect bounds[9];
+        totalBounds.nineSlice(m_item->oldKey.center(), bounds);
+        for (int i=0; i<9; ++i) {
+          if (!bounds[i].isEmpty()) {
+            ImageRef img;
+            img.reset(Image::create(image->pixelFormat(), bounds[i].w, bounds[i].h));
+            img->copy(image.get(), gfx::Clip(0, 0, bounds[i]));
+            m_part[i] = std::make_unique<SingleSlice>(m_item, img, bounds[i].origin());
+          }
+        }
+      }
+
+      ~NineSlice() {}
+
+      void forEachPart(ItemContentPartFunc fn) override {
+        gfx::Rect bounds[9];
+        m_item->newKey.bounds().nineSlice(m_item->newKey.center(), bounds);
+        for (int i=0; i<9; ++i) {
+          if (m_part[i])
+            fn(m_part[i]->image(), m_part[i]->mask(),  bounds[i]);
+        }
+      }
+
+      void copy(const Image* src) override {
+        if (!m_item->oldKey.hasCenter()) return;
+
+        const gfx::Rect totalBounds(m_item->oldKey.bounds().size());
+        gfx::Rect bounds[9];
+        totalBounds.nineSlice(m_item->oldKey.center(), bounds);
+        for (int i=0; i<9; ++i) {
+          if (!bounds[i].isEmpty()) {
+            ImageRef img;
+            img.reset(Image::create(src->pixelFormat(), bounds[i].w, bounds[i].h));
+            img->copy(src, gfx::Clip(0, 0, bounds[i]));
+            m_part[i]->copy(img.get());
+          }
+        }
+      }
+
+    private:
+      std::unique_ptr<SingleSlice> m_part[9] = {nullptr, nullptr, nullptr,
+                                                nullptr, nullptr, nullptr,
+                                                nullptr, nullptr, nullptr};
+    };
+
 
     struct Item {
       doc::Slice* slice;
       doc::SliceKey oldKey;
       doc::SliceKey newKey;
-      // Images containing the parts of each selected layer of the sprite under
+      // Vector of each selected layer's part of the sprite under
       // the slice bounds that will be transformed when Slice Transform is
       // enabled
-      std::vector<ImageRef> imgs;
-      // Masks for each of the images in imgs vector
-      std::vector<MaskRef> masks;
+      std::vector<ItemContentRef> content;
+      ItemContentRef mergedContent;
 
-      // Image containing the result of merging all the images in the imgs
-      // vector
-      ImageRef mergedImg = nullptr;
-      MaskRef mergedMask = nullptr;
+      void pushContent(const ImageRef& image) {
+        if (content.empty()) {
+          const gfx::Rect& srcBounds = image->bounds();
+          ImageRef mergedImage;
+          mergedImage.reset(Image::create(image->pixelFormat(), srcBounds.w, srcBounds.h));
+          mergedImage->clear(image->maskColor());
+          mergedContent = (this->oldKey.hasCenter() ? (ItemContentRef)std::make_shared<NineSlice>(this, mergedImage)
+                                                    : std::make_shared<SingleSlice>(this, mergedImage));
+        }
 
-      ~Item() {
-        if (!masks.empty() && mergedMask != masks[0])
-          mergedMask->unfreeze();
-        for (auto& m : masks)
-          m->unfreeze();
+        mergedContent->copy(image.get());
+
+        ItemContentRef ssc = (this->oldKey.hasCenter() ? (ItemContentRef)std::make_shared<NineSlice>(this, image)
+                                                       : std::make_shared<SingleSlice>(this, image));
+        content.push_back(ssc);
       }
     };
+
+    // Initializes the content of the Items. So each item will contain the
+    // part of the cel's layers within the corresponding slice.
+    void initializeItemsContent();
 
     Item getItemForSlice(doc::Slice* slice);
     gfx::Rect selectedSlicesBounds() const;
 
-    void drawSliceContents();
-    void drawSliceContentsByLayer(int layerIdx);
-    void drawExtraCel(const gfx::Rect& bounds, DrawExtraCelContentFunc drawContent);
+    void drawExtraCel(int layerIdx = -1);
+    void drawItem(doc::Image* dst,
+                  const Item& item,
+                  const gfx::Point& itemsBoundsOrigin,
+                  int layerIdx);
     void drawImage(doc::Image* dst,
                    const doc::Image* src,
                    const doc::Mask* mask,

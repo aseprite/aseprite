@@ -21,7 +21,6 @@
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
 #include "app/util/expand_cel_canvas.h"
-#include "app/util/new_image_from_mask.h"
 #include "doc/algorithm/rotate.h"
 #include "doc/blend_internals.h"
 #include "doc/color.h"
@@ -90,66 +89,44 @@ MovingSliceState::MovingSliceState(Editor* editor,
   editor->captureMouse();
 }
 
+void MovingSliceState::initializeItemsContent() {
+  for (auto& item : m_items) {
+    // Align slice origin to tiles origin under Tiles mode.
+    if (m_site.tilemapMode() == TilemapMode::Tiles) {
+      auto origin = m_site.grid().tileToCanvas(m_site.grid().canvasToTile(item.newKey.bounds().origin()));
+      auto bounds = gfx::Rect(origin, item.newKey.bounds().size());
+      item.newKey.setBounds(bounds);
+    }
+    // Reserve one ItemContent slot for each selected layer.
+    item.content.reserve(m_selectedLayers.size());
+
+    for (const auto* layer : m_selectedLayers) {
+      Mask mask;
+      ImageRef image = ImageRef();
+
+      mask.add(item.newKey.bounds());
+      if (layer &&
+          layer->isTilemap() &&
+          m_site.tilemapMode() == TilemapMode::Tiles) {
+        image.reset(new_tilemap_from_mask(m_site, &mask));
+      }
+      else {
+        image.reset(new_image_from_mask(
+          *layer,
+          m_frame,
+          &mask,
+          Preferences::instance().experimental.newBlend()));
+      }
+
+      item.pushContent(image);
+    }
+  }
+}
+
 void MovingSliceState::onEnterState(Editor* editor)
 {
   if (editor->slicesTransforms() && !m_items.empty()) {
-    for (auto& item : m_items) {
-      // Align slice origin to tiles origin under Tiles mode.
-      if (m_site.tilemapMode() == TilemapMode::Tiles) {
-        auto origin = m_site.grid().tileToCanvas(m_site.grid().canvasToTile(item.newKey.bounds().origin()));
-        auto bounds = gfx::Rect(origin, item.newKey.bounds().size());
-        item.newKey.setBounds(bounds);
-      }
-      item.imgs.reserve(m_selectedLayers.size());
-      item.masks.reserve(m_selectedLayers.size());
-      int i = 0;
-      for (const auto* layer : m_selectedLayers) {
-        item.masks.push_back(std::make_shared<Mask>());
-        item.imgs.push_back(ImageRef());
-        item.masks[i]->add(item.newKey.bounds());
-        item.masks[i]->freeze();
-        if (layer &&
-            layer->isTilemap() &&
-            m_site.tilemapMode() == TilemapMode::Tiles) {
-          item.imgs[i].reset(new_tilemap_from_mask(m_site, item.masks[i].get()));
-        }
-        else {
-          item.imgs[i].reset(new_image_from_mask(
-            *layer,
-            m_frame,
-            item.masks[i].get(),
-            Preferences::instance().experimental.newBlend()));
-          // TODO: See if part of the code in fromImage can be replaced
-          // refactored to use mask_image (in cel_ops.h)?
-          item.masks[i]->fromImage(item.imgs[i].get(), item.masks[i]->origin());
-        }
-
-        // If there is just one layer selected, we can use the same image as the
-        // mergedImg.
-        if (m_selectedLayers.size() == 1) {
-          item.mergedImg = item.imgs[0];
-          item.mergedMask = item.masks[0];
-        }
-        else {
-          if (i == 0) {
-            const gfx::Rect& srcBounds = item.imgs[i]->bounds();
-            item.mergedImg.reset(Image::create(layer->sprite()->pixelFormat(), srcBounds.w, srcBounds.h));
-            item.mergedImg->clear(layer->sprite()->transparentColor());
-            item.mergedMask = std::make_shared<Mask>(*item.masks[i].get());
-            item.mergedMask->freeze();
-          }
-          else {
-            item.mergedMask->add(*item.masks[i].get());
-          }
-          copy_masked_zones(item.mergedImg.get(),
-                            item.imgs[i].get(),
-                            item.masks[i].get(),
-                            item.masks[i]->bounds().x,
-                            item.masks[i]->bounds().y);
-        }
-        i++;
-      }
-    }
+    initializeItemsContent();
 
     // Clear brush preview, as the extra cel will be replaced with the
     // transformed image.
@@ -157,7 +134,7 @@ void MovingSliceState::onEnterState(Editor* editor)
 
     clearSlices();
 
-    drawSliceContents();
+    drawExtraCel();
 
     // Redraw the editor.
     editor->invalidate();
@@ -179,9 +156,10 @@ bool MovingSliceState::onMouseUp(Editor* editor, MouseMessage* msg)
             auto* layer = m_selectedLayers[i];
             m_site.layer(layer);
             m_site.frame(m_frame);
-            drawSliceContentsByLayer(i);
+            drawExtraCel(i);
             stampExtraCelImage();
           }
+          m_site.document()->setExtraCel(ExtraCelRef(nullptr));
       }
     }
 
@@ -226,41 +204,7 @@ void MovingSliceState::stampExtraCelImage()
   expand.commit();
 }
 
-void MovingSliceState::drawSliceContents()
-{
-  gfx::Rect bounds;
-  for (auto& item : m_items)
-    bounds |= item.newKey.bounds();
-
-  drawExtraCel(bounds, [this](const gfx::Rect& bounds, Image* dst){
-    for (auto& item : m_items) {
-      // Draw the transformed pixels in the extra-cel which is the chunk
-      // of pixels that the user is moving.
-      drawImage(dst,
-                item.mergedImg.get(),
-                item.mergedMask.get(),
-                gfx::Rect(item.newKey.bounds()).offset(-bounds.origin()));
-    }
-  });
-}
-
-void MovingSliceState::drawSliceContentsByLayer(int layerIdx)
-{
-  gfx::Rect bounds;
-  for (auto& item : m_items)
-    bounds |= item.newKey.bounds();
-
-  drawExtraCel(bounds, [this, layerIdx](const gfx::Rect& bounds, Image* dst){
-    for (auto& item : m_items) {
-      drawImage(dst,
-                item.imgs[layerIdx].get(),
-                item.masks[layerIdx].get(),
-                gfx::Rect(item.newKey.bounds()).offset(-bounds.origin()));
-    }
-  });
-}
-
-void MovingSliceState::drawExtraCel(const gfx::Rect& bounds, DrawExtraCelContentFunc drawContent)
+void MovingSliceState::drawExtraCel(int layerIdx)
 {
   int t, opacity = (m_site.layer()->isImage() ?
                     static_cast<LayerImage*>(m_site.layer())->opacity(): 255);
@@ -269,6 +213,10 @@ void MovingSliceState::drawExtraCel(const gfx::Rect& bounds, DrawExtraCelContent
 
   if (!m_extraCel)
     m_extraCel.reset(new ExtraCel);
+
+  gfx::Rect bounds;
+  for (auto& item : m_items)
+    bounds |= item.newKey.bounds();
 
   if (!bounds.isEmpty()) {
     gfx::Size extraCelSize;
@@ -319,11 +267,29 @@ void MovingSliceState::drawExtraCel(const gfx::Rect& bounds, DrawExtraCelContent
         dst, m_site.layer(), m_site.frame(),
         gfx::Clip(0, 0, bounds),
         doc::BlendMode::SRC);
-
     }
 
-    drawContent(bounds, dst);
+    for (auto& item : m_items) {
+      // Draw the transformed pixels in the extra-cel which is the chunk
+      // of pixels that the user is moving.
+      drawItem(dst, item, bounds.origin(), layerIdx);
+    }
   }
+}
+
+void MovingSliceState::drawItem(doc::Image* dst,
+                                const Item& item,
+                                const gfx::Point& itemsBoundsOrigin,
+                                int layerIdx)
+{
+  const ItemContentRef content = (layerIdx >= 0 ? item.content[layerIdx]
+                                                : item.mergedContent);
+
+  content->forEachPart(
+    [this, dst, itemsBoundsOrigin]
+    (const doc::Image* src, const doc::Mask* mask, const gfx::Rect& bounds) {
+      drawImage(dst, src, mask, gfx::Rect(bounds).offset(-itemsBoundsOrigin));
+    });
 }
 
 void MovingSliceState::drawImage(doc::Image* dst,
@@ -347,7 +313,7 @@ void MovingSliceState::drawImage(doc::Image* dst,
   }
   else {
     doc::algorithm::parallelogram(
-      dst, src, mask->bitmap(),
+      dst, src, (mask ? mask->bitmap() : nullptr),
       bounds.x         , bounds.y,
       bounds.x+bounds.w, bounds.y,
       bounds.x+bounds.w, bounds.y+bounds.h,
@@ -459,7 +425,7 @@ bool MovingSliceState::onMouseMove(Editor* editor, MouseMessage* msg)
   }
 
   if (editor->slicesTransforms())
-    drawSliceContents();
+    drawExtraCel();
 
   // Redraw the editor.
   editor->invalidate();

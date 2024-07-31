@@ -127,13 +127,16 @@ doc::Image* new_image_from_mask(const Layer& layer,
     src = dst.get();
   }
   else {
-    src = cel->image();
-    x = cel->x();
-    y = cel->y();
+    if (cel) {
+      src = cel->image();
+      x = cel->x();
+      y = cel->y();
+    }
   }
 
-  // Copy the masked zones
-  copy_masked_zones(dst.get(), src, srcMask, x, y);
+  if (src)
+    // Copy the masked zones
+    copy_masked_zones(dst.get(), src, srcMask, x, y);
 
   return dst.release();
 }
