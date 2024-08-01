@@ -10,6 +10,7 @@
 
 #include "app/cmd.h"
 #include "app/cmd_sequence.h"
+#include "app/cmd/with_cel.h"
 #include "app/tilemap_mode.h"
 #include "app/tileset_mode.h"
 #include "doc/cel.h"
@@ -49,8 +50,8 @@ namespace cmd {
     }
 
   private:
-    struct SlicesContent {
-      Cel* cel = nullptr;
+    struct SlicesContent : public WithCel {
+      SlicesContent(Cel* cel) : WithCel(cel) {}
       // Image having a copy of the content of each selected slice.
       ImageRef copy = nullptr;
       Mask mask;

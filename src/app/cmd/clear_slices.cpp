@@ -38,13 +38,13 @@ ClearSlices::ClearSlices(const Site& site,
   Doc* doc = static_cast<Doc*>((*layers.begin())->sprite()->document());
 
   for (auto* layer : layers) {
-    SlicesContent sc;
+    Cel* cel = layer->cel(frame);
+    SlicesContent sc(cel);
     for (const auto& sk : slicesKeys) {
       sc.mask.add(sk.bounds());
     }
     gfx::Rect maskBounds = sc.mask.bounds();
 
-    Cel* cel = layer->cel(frame);
     Image* image = cel->image();
     assert(image);
     if (!image)
@@ -67,7 +67,6 @@ ClearSlices::ClearSlices(const Site& site,
 
     cropBounds.offset(-imageBounds.origin());
 
-    sc.cel = cel;
     sc.cropPos = cropBounds.origin();
     sc.bgcolor = bgcolor;
     sc.copy.reset(crop_image(image, cropBounds, sc.bgcolor));
@@ -100,13 +99,13 @@ void ClearSlices::clear()
       continue;
 
 
-    if (sc.cel->layer()->isTilemap() && m_tilemapMode == TilemapMode::Pixels) {
+    if (sc.cel()->layer()->isTilemap() && m_tilemapMode == TilemapMode::Pixels) {
 
-      Doc* doc = static_cast<Doc*>(sc.cel->document());
-      color_t bgcolor = doc->bgColor(sc.cel->layer());
+      Doc* doc = static_cast<Doc*>(sc.cel()->document());
+      color_t bgcolor = doc->bgColor(sc.cel()->layer());
 
       modify_tilemap_cel_region(
-        &m_seq, sc.cel, nullptr,
+        &m_seq, sc.cel(), nullptr,
         gfx::Region(sc.mask.bounds()),
         m_tilesetMode,
         [sc, bgcolor](const doc::ImageRef& origTile,
@@ -122,13 +121,13 @@ void ClearSlices::clear()
         });
     }
     else {
-      Grid grid = sc.cel->grid();
+      Grid grid = sc.cel()->grid();
       doc::algorithm::fill_selection(
-        sc.cel->image(),
-        sc.cel->bounds(),
+        sc.cel()->image(),
+        sc.cel()->bounds(),
         &sc.mask,
         sc.bgcolor,
-        (sc.cel->image()->isTilemap() ? &grid: nullptr));
+        (sc.cel()->image()->isTilemap() ? &grid: nullptr));
     }
   }
 }
@@ -139,7 +138,7 @@ void ClearSlices::restore()
     if (!sc.copy)
       continue;
 
-    copy_image(sc.cel->image(),
+    copy_image(sc.cel()->image(),
               sc.copy.get(),
               sc.cropPos.x,
               sc.cropPos.y);
