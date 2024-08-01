@@ -9,11 +9,8 @@
 #include "config.h"
 #endif
 
-#include "app/cmd_sequence.h"
-#include "app/cmd_transaction.h"
 #include "app/cmd/set_slice_key.h"
 #include "app/cmd/clear_slices.h"
-#include "app/doc_range.h"
 #include "app/context_access.h"
 #include "app/tx.h"
 #include "app/ui/editor/editor.h"
@@ -23,23 +20,12 @@
 #include "app/util/expand_cel_canvas.h"
 #include "doc/algorithm/rotate.h"
 #include "doc/blend_internals.h"
-#include "doc/color.h"
-#include "doc/image_ref.h"
-#include "doc/mask.h"
-#include "doc/primitives.h"
-#include "doc/selected_layers.h"
 #include "doc/slice.h"
-#include "doc/algorithm/fill_selection.h"
-#include "gfx/point.h"
-#include "gfx/rect.h"
-#include "gfx/region_skia.h"
 #include "ui/message.h"
 #include "render/render.h"
 
 #include <algorithm>
 #include <cmath>
-#include <memory>
-#include <utility>
 #include <vector>
 
 namespace app {
