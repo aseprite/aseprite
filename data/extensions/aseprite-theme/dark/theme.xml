@@ -698,6 +698,7 @@
         <style id="new_frame_button" extends="mini_button" padding-bottom="1">
             <icon part="icon_add" />
         </style>
+        <style id="color_button" extends="mini_button" font="mini" padding-bottom="1" />
         <style id="splitter">
             <background color="face" />
         </style>
