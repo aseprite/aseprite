@@ -695,12 +695,16 @@ StatusBar::StatusBar(TooltipManager* tooltipManager)
 
   // Construct the commands box
   {
+    auto theme = SkinTheme::get(this);
     Box* box1 = new Box(HORIZONTAL);
     Box* box4 = new Box(HORIZONTAL);
 
     m_frameLabel = new Label(Strings::statusbar_tips_frame());
     m_currentFrame = new GotoFrameEntry();
-    m_newFrame = new Button("+");
+    m_newFrame = new Button("");
+    if (!theme->parts.iconAdd())
+      m_newFrame->setText("+"); // Fallback for themes without the icon.
+
     m_newFrame->Click.connect(&StatusBar::newFrame, this);
     m_newFrame->RightClick.connect(&StatusBar::showNewFramePopupMenu, this);
 
