@@ -165,10 +165,17 @@ namespace app {
       doc::SliceKey newKey;
       // Vector of each selected layer's part of the sprite under
       // the slice bounds that will be transformed when Slice Transform is
-      // enabled
+      // enabled. Contains one ItemContentRef by layer.
       std::vector<ItemContentRef> content;
+      // Part of the sprite of each selected layer's merged into one image per
+      // slice. This is used to give feedback to the users when they are
+      // transforming the selected slices.
       ItemContentRef mergedContent;
 
+      // Adds image to the content vector. The image should correspond to some
+      // part of a single layer cel's image.
+      // Internally this method builds a merged version of the images to speed
+      // up the drawing when the user updates this Item's slice in real time.
       void pushContent(const ImageRef& image) {
         if (content.empty()) {
           const gfx::Rect& srcBounds = image->bounds();
