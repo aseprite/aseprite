@@ -58,18 +58,20 @@ MovingSliceState::MovingSliceState(Editor* editor,
 
   editor->getSite(&m_site);
 
-  DocRange range = m_site.range();
-  SelectedLayers selectedLayers = range.selectedLayers();
-  // Do not take into account invisible layers.
-  for (auto it = selectedLayers.begin(); it != selectedLayers.end(); ++it) {
-    if (!(*it)->isVisible()) {
-      range.eraseAndAdjust(*it);
+  if (editor->slicesTransforms() && !m_items.empty()) {
+    DocRange range = m_site.range();
+    SelectedLayers selectedLayers = range.selectedLayers();
+    // Do not take into account invisible layers.
+    for (auto it = selectedLayers.begin(); it != selectedLayers.end(); ++it) {
+      if (!(*it)->isVisible()) {
+        range.eraseAndAdjust(*it);
+      }
     }
-  }
 
-  m_selectedLayers = range.selectedLayers().toAllLayersList();
-  if (m_selectedLayers.empty() && m_site.layer()->isVisible()) {
-    m_selectedLayers.push_back(m_site.layer());
+    m_selectedLayers = range.selectedLayers().toAllLayersList();
+    if (m_selectedLayers.empty() && m_site.layer()->isVisible()) {
+      m_selectedLayers.push_back(m_site.layer());
+    }
   }
 
   editor->captureMouse();
