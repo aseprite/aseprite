@@ -39,6 +39,9 @@ ClearSlices::ClearSlices(const Site& site,
 
   for (auto* layer : layers) {
     Cel* cel = layer->cel(frame);
+    if (!cel)
+      continue;
+
     SlicesContent sc(cel);
     for (const auto& sk : slicesKeys) {
       sc.mask.add(sk.bounds());
