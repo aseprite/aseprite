@@ -37,63 +37,7 @@ void select_layer_boundaries(Layer* layer,
   const Cel* cel = layer->cel(frame);
   if (cel) {
     const Image* image = cel->image();
-    if (image) {
-      newMask.replace(cel->bounds());
-      newMask.freeze();
-      {
-        LockImageBits<BitmapTraits> maskBits(newMask.bitmap());
-        auto maskIt = maskBits.begin();
-        auto maskEnd = maskBits.end();
-
-        switch (image->pixelFormat()) {
-
-          case IMAGE_RGB: {
-            LockImageBits<RgbTraits> rgbBits(image);
-            auto rgbIt = rgbBits.begin();
-#if _DEBUG
-            auto rgbEnd = rgbBits.end();
-#endif
-            for (; maskIt != maskEnd; ++maskIt, ++rgbIt) {
-              ASSERT(rgbIt != rgbEnd);
-              color_t c = *rgbIt;
-              *maskIt = (rgba_geta(c) >= 128); // TODO configurable threshold
-            }
-            break;
-          }
-
-          case IMAGE_GRAYSCALE: {
-            LockImageBits<GrayscaleTraits> grayBits(image);
-            auto grayIt = grayBits.begin();
-#if _DEBUG
-            auto grayEnd = grayBits.end();
-#endif
-            for (; maskIt != maskEnd; ++maskIt, ++grayIt) {
-              ASSERT(grayIt != grayEnd);
-              color_t c = *grayIt;
-              *maskIt = (graya_geta(c) >= 128); // TODO configurable threshold
-            }
-            break;
-          }
-
-          case IMAGE_INDEXED: {
-            const doc::color_t maskColor = image->maskColor();
-            LockImageBits<IndexedTraits> idxBits(image);
-            auto idxIt = idxBits.begin();
-#if _DEBUG
-            auto idxEnd = idxBits.end();
-#endif
-            for (; maskIt != maskEnd; ++maskIt, ++idxIt) {
-              ASSERT(idxIt != idxEnd);
-              color_t c = *idxIt;
-              *maskIt = (c != maskColor);
-            }
-            break;
-          }
-
-        }
-      }
-      newMask.unfreeze();
-    }
+    newMask.fromImage(image, cel->bounds().origin());
   }
 
   try {
