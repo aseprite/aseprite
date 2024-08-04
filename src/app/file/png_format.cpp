@@ -220,6 +220,36 @@ bool PngFormat::onLoad(FileOp* fop)
   png_get_IHDR(png, info, &width, &height, &bit_depth, &color_type,
                &interlace_type, NULL, NULL);
 
+  /* Read any text metadata into our PngOptions */
+  int num_text;
+  png_textp text;
+  if (png_get_text(png, info, &text, &num_text) != 0) {
+    for (int i = 0; i < num_text; i++) {
+      auto src = text[i];
+      PngOptions::TextEntry entry;
+      entry.compression = src.compression;
+      entry.text_length = src.text_length;
+      entry.itxt_length = src.itxt_length;
+
+      if (src.key == nullptr) {
+        fop->setError("png_text doesn't contain a key\n");
+        return false;
+      } else {
+        entry.key = base::buffer(src.key, src.key + strlen(src.key) + 1);
+      }
+
+      if (src.text != nullptr) {
+        entry.text = std::unique_ptr<base::buffer>(new base::buffer(src.text, src.text + strlen(src.text) + 1));
+      }
+      if (src.lang != nullptr) {
+        entry.lang = std::unique_ptr<base::buffer>(new base::buffer(src.lang, src.lang + strlen(src.lang) + 1));
+      }
+      if (src.lang_key != nullptr) {
+        entry.lang_key = std::unique_ptr<base::buffer>(new base::buffer(src.lang_key, src.lang_key + strlen(src.lang_key) + 1));
+      }
+      opts->addTextEntry(std::move(entry));
+    }
+  }
 
   /* Set up the data transformations you want.  Note that these are all
    * optional.  Only call them if you want/need them.  Many of the
@@ -584,30 +614,53 @@ bool PngFormat::onSave(FileOp* fop)
   png_set_IHDR(png, info, width, height, 8, color_type,
                PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 
-  // User chunks
   auto opts = fop->formatOptionsOfDocument<PngOptions>();
-  if (opts && !opts->isEmpty()) {
-    int num_unknowns = opts->size();
-    ASSERT(num_unknowns > 0);
-    std::vector<png_unknown_chunk> unknowns(num_unknowns);
-    int i = 0;
-    for (const auto& chunk : opts->chunks()) {
-      png_unknown_chunk& unknown = unknowns[i];
-      for (int i=0; i<5; ++i) {
-        unknown.name[i] =
-          (i < int(chunk.name.size()) ? chunk.name[i]: 0);
+  if (opts) {
+    // Text
+    auto& text = opts->text();
+    if (!text.empty()) {
+      int num_entries = text.size();
+      ASSERT(num_text > 0);
+      std::vector<png_text> entries(num_entries);
+      int i = 0;
+      for (const auto& entry : text) {
+        png_text& dst = entries[i];
+        dst.compression = entry.compression;
+        dst.text_length = entry.text_length;
+        dst.itxt_length = entry.itxt_length;
+        dst.key = (png_charp)&entry.key[0];
+        dst.text = entry.text ? (png_charp)entry.text->data() : nullptr;
+        dst.lang = entry.lang ? (png_charp)entry.lang->data() : nullptr;
+        dst.lang_key = entry.lang_key ? (png_charp)entry.lang_key->data() : nullptr;
       }
-      PNG_TRACE("PNG: Write unknown chunk '%c%c%c%c'\n",
-                unknown.name[0],
-                unknown.name[1],
-                unknown.name[2],
-                unknown.name[3]);
-      unknown.data = (png_byte*)&chunk.data[0];
-      unknown.size = chunk.data.size();
-      unknown.location = chunk.location;
-      ++i;
+      png_set_text(png, info, &entries[0], num_entries);
     }
-    png_set_unknown_chunks(png, info, &unknowns[0], num_unknowns);
+
+    // User chunks
+    auto& chunks = opts->chunks();
+    if (!chunks.empty()) {
+      int num_unknowns = chunks.size();
+      ASSERT(num_unknowns > 0);
+      std::vector<png_unknown_chunk> unknowns(num_unknowns);
+      int i = 0;
+      for (const auto& chunk : chunks) {
+        png_unknown_chunk& unknown = unknowns[i];
+        for (int i=0; i<5; ++i) {
+          unknown.name[i] =
+            (i < int(chunk.name.size()) ? chunk.name[i]: 0);
+        }
+        PNG_TRACE("PNG: Write unknown chunk '%c%c%c%c'\n",
+                  unknown.name[0],
+                  unknown.name[1],
+                  unknown.name[2],
+                  unknown.name[3]);
+        unknown.data = (png_byte*)&chunk.data[0];
+        unknown.size = chunk.data.size();
+        unknown.location = chunk.location;
+        ++i;
+      }
+      png_set_unknown_chunks(png, info, &unknowns[0], num_unknowns);
+    }
   }
 
   if (fop->preserveColorProfile() && spec.colorSpace()) {
