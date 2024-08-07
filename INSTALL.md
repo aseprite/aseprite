@@ -85,7 +85,7 @@ On Fedora:
 
 On Arch:
 
-    sudo pacman -S gcc clang libc++ cmake ninja libx11 libxcursor mesa-libgl fontconfig
+    sudo pacman -S gcc clang libc++ cmake ninja libx11 libxcursor mesa-libgl fontconfig libwebp
 
 On SUSE:
 
