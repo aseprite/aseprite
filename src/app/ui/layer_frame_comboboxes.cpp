@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -13,17 +13,19 @@
 
 #include "app/doc.h"
 #include "app/i18n/strings.h"
+#include "app/match_words.h"
 #include "app/restore_visible_layers.h"
 #include "app/site.h"
+#include "base/fs.h"
 #include "doc/anidir.h"
 #include "doc/frames_sequence.h"
 #include "doc/layer.h"
+#include "doc/playback.h"
 #include "doc/selected_frames.h"
 #include "doc/selected_layers.h"
 #include "doc/slice.h"
 #include "doc/sprite.h"
 #include "doc/tag.h"
-#include "doc/playback.h"
 #include "ui/combobox.h"
 
 namespace app {
@@ -84,17 +86,11 @@ void fill_area_combobox(const doc::Sprite* sprite, ui::ComboBox* area, const std
   if (defArea == kSelectedCanvas)
     area->setSelectedItemIndex(i);
 
-  std::vector<doc::Slice*> sliceList;
-  for (auto* slice : sprite->slices()) {
+  for (auto* slice : sort_slices_by_name(sprite->slices(),
+                                         MatchWords())) {
     if (slice->name().empty())
       continue;
 
-    sliceList.push_back(slice);
-  }
-  std::sort(sliceList.begin(),
-            sliceList.end(),
-            [](doc::Slice* a, doc::Slice* b) { return a->name() < b->name(); });
-  for (auto* slice : sliceList) {
     i = area->addItem(new SliceListItem(slice));
     if (defArea == slice->name())
       area->setSelectedItemIndex(i);
@@ -318,6 +314,22 @@ doc::Tag* calculate_selected_frames(const Site& site,
     selFrames.insert(0, site.sprite()->lastFrame());
 
   return tag;
+}
+
+std::vector<doc::Slice*> sort_slices_by_name(const doc::Slices& slices,
+                                             const MatchWords& match)
+{
+  std::vector<doc::Slice*> result;
+  for (auto* slice : slices) {
+    if (match(slice->name()))
+      result.push_back(slice);
+  }
+  std::sort(result.begin(),
+            result.end(),
+            [](const doc::Slice* a, const doc::Slice* b) {
+              return (base::compare_filenames(a->name(), b->name()) < 0);
+            });
+  return result;
 }
 
 } // namespace app

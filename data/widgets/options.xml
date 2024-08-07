@@ -2,7 +2,7 @@
 <!-- Copyright (C) 2018-2024  Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2018  David Capello -->
 <gui>
-  <window id="options" text="@.title">
+  <window id="options" text="@.title" help="preferences">
   <vbox>
     <hbox expansive="true">
       <view maxsize="true">

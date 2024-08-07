@@ -21,6 +21,7 @@
 #include "doc/sprite.h"
 
 #include <algorithm>
+#include <cmath>
 #include <memory>
 
 namespace app {
@@ -33,8 +34,8 @@ doc::Image* resize_image(
   const RgbMap* rgbmap)
 {
   doc::ImageSpec spec = image->spec();
-  spec.setWidth(std::max(1, int(scale.w*image->width())));
-  spec.setHeight(std::max(1, int(scale.h*image->height())));
+  spec.setWidth(std::max(1, int(std::round(scale.w*image->width()))));
+  spec.setHeight(std::max(1, int(std::round(scale.h*image->height()))));
   std::unique_ptr<doc::Image> newImage(
     doc::Image::create(spec));
   newImage->setMaskColor(image->maskColor());

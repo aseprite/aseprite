@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -13,6 +13,7 @@
 #include "ui/listitem.h"
 
 #include <string>
+#include <vector>
 
 namespace doc {
   class Layer;
@@ -20,6 +21,7 @@ namespace doc {
   class FramesSequence;
   class SelectedLayers;
   class Slice;
+  class Slices;
   class Sprite;
   class Tag;
 }
@@ -29,6 +31,7 @@ namespace ui {
 }
 
 namespace app {
+  class MatchWords;
   class RestoreVisibleLayers;
   class Site;
 
@@ -84,6 +87,9 @@ namespace app {
   doc::Tag* calculate_selected_frames(const Site& site,
                                       const std::string& framesValue,
                                       doc::SelectedFrames& selFrames);
+
+  std::vector<doc::Slice*> sort_slices_by_name(const doc::Slices& slices,
+                                               const MatchWords& match);
 
 } // namespace app
 

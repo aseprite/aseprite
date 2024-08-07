@@ -1,7 +1,8 @@
 <!-- Aseprite -->
+<!-- Copyright (C) 2024 by Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2018 by David Capello -->
 <gui>
-<window id="sprite_size" text="@.title">
+<window id="sprite_size" text="@.title" help="resize">
   <box vertical="true">
     <box vertical="true">
       <separator text="@.pixels" left="true" horizontal="true" />

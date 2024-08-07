@@ -1,8 +1,8 @@
 <!-- Aseprite -->
-<!-- Copyright (c) 2020  Igara Studio S.A. -->
+<!-- Copyright (c) 2020-2024  Igara Studio S.A. -->
 <!-- Copyright (c) 2001-2018  David Capello -->
 <gui>
-  <window id="new_sprite" text="@.title">
+  <window id="new_sprite" text="@.title" help="new-sprite">
     <box vertical="true">
 
       <separator text="@.size" left="true" horizontal="true" />

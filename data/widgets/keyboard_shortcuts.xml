@@ -1,8 +1,8 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2018-2022  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-2024  Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2016  David Capello -->
 <gui>
-  <window id="keyboard_shortcuts" text="@keyboard_shortcuts.title">
+  <window id="keyboard_shortcuts" text="@keyboard_shortcuts.title" help="keyboard-shortcuts">
     <vbox>
       <splitter horizontal="true" expansive="true" noborders="true" childspacing="2"
                 by="pixel" position="80" id="section_splitter">
