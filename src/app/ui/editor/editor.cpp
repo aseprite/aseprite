@@ -1734,6 +1734,8 @@ void Editor::updateToolLoopModifiersIndicators(const bool firstFromMouseDown)
             modifiers |= int(tools::ToolLoopModifiers::kFromCenter);
           if (int(action & KeyAction::RotateShape))
             modifiers |= int(tools::ToolLoopModifiers::kRotateShape);
+          if (int(action & KeyAction::Spread))
+            modifiers |= int(tools::ToolLoopModifiers::kSpread);
         }
       }
 

@@ -75,6 +75,7 @@ namespace {
         { "SquareAspect"        , I18N_KEY(square_aspect)              , app::KeyAction::SquareAspect, app::KeyContext::ShapeTool },
         { "DrawFromCenter"      , I18N_KEY(draw_from_center)           , app::KeyAction::DrawFromCenter, app::KeyContext::ShapeTool },
         { "RotateShape"         , I18N_KEY(rotate_shape)               , app::KeyAction::RotateShape, app::KeyContext::ShapeTool },
+        { "Spread"              , I18N_KEY(spread)                     , app::KeyAction::Spread, app::KeyContext::ShapeTool },
         { "LeftMouseButton"     , I18N_KEY(trigger_left_mouse_button)  , app::KeyAction::LeftMouseButton, app::KeyContext::Any },
         { "RightMouseButton"    , I18N_KEY(trigger_right_mouse_button) , app::KeyAction::RightMouseButton, app::KeyContext::Any }
       };
@@ -356,6 +357,7 @@ Key::Key(const KeyAction action,
     case KeyAction::SquareAspect:
     case KeyAction::DrawFromCenter:
     case KeyAction::RotateShape:
+    case KeyAction::Spread:
       m_keycontext = KeyContext::ShapeTool;
       break;
     case KeyAction::LeftMouseButton:
