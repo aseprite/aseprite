@@ -1,5 +1,22 @@
 # Code Style Guidelines
 
+Some general rules to write code: Try to follow the same style/format
+of the file that you are editing (naming, indentation, etc.) or the
+style of the module (some [submodules](https://github.com/aseprite/aseprite/blob/main/.gitmodules),
+created by us, or by third-parties, have their own style).
+
+There is a [.clang-format](https://github.com/aseprite/aseprite/blob/main/.clang-format)
+file available but we are not using it at the moment, probably we
+should start using some
+[clang-format-diff.py](https://clang.llvm.org/docs/ClangFormat.html#script-for-patch-reformatting)
+for patches, but this wasn't yet adopted in the development process.
+
+There is a [.clang-tidy](https://github.com/aseprite/aseprite/blob/main/.clang-tidy)
+file used [in the GitHub actions](https://github.com/aseprite/aseprite/blob/main/.github/workflows/clang_tidy.yml)
+executed on each PR. These rules are adopted progressively on patches
+because are only executed in the diff, and if some rule is violated a
+comment by [aseprite-bot](https://github.com/aseprite-bot) is made.
+
 ## Basics
 
 Basic statements:
@@ -120,7 +137,7 @@ public:
   Special();
 
 protected:
-  void onEvent2() override {
+  void onEvent2() override {  // No need to repeat virtual in overridden methods
     ...
   }
 };
@@ -128,7 +145,12 @@ protected:
 
 ## Const
 
+We use the const-west notation:
+
 * [NL.26: Use conventional const notation](https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#nl26-use-conventional-const-notation)
+
+There is a problem with `clang-tidy` that will make comments using
+East const notation: [#4361](https://github.com/aseprite/aseprite/issues/4361)
 
 ## C++17
 
@@ -136,13 +158,14 @@ We are using C++17 standard. Some things cannot be used because we're
 targetting macOS 10.9, some notes are added about this:
 
 * Use `nullptr` instead of `NULL` macro
-* Use `auto` for complex types, iterators, or when the variable type
-  is obvious (e.g. `auto s = new Sprite;`)
+* Use `auto`/`auto*` for complex types/pointers, iterators, or when
+  the variable type is obvious (e.g. `auto* s = new Sprite;`)
 * Use range-based for loops (`for (const auto& item : values) { ... }`)
 * Use template alias (`template<typename T> alias = orig<T>;`)
 * Use generic lambda functions
-* Use `std::shared_ptr`, `std::unique_ptr`, or `base::Ref`
-* Use `std::clamp`
+* Use `std::shared_ptr`, `std::unique_ptr`, or `base::Ref`, but
+  generally we'd prefer value semantics instead of smart pointers
+* Use `std::min`/`std::max`/`std::clamp`
 * Use `std::optional` but taking care of some limitations from macOS 10.9:
   * Use `std::optional::has_value()` instead of `std::optional::operator bool()` ([example](https://github.com/aseprite/laf/commit/81622fcbb9e4a0edc14a02250c387bd6fa878708))
   * Use `std::optional::operator*()` instead of `std::optional::value()` ([example](https://github.com/aseprite/aseprite/commit/4471dab289cdd45762155ce0b16472e95a7f8642))
