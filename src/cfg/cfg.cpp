@@ -65,26 +65,32 @@ public:
   }
 
   void setValue(const char* section, const char* name, const char* value) {
+    m_dirty = true;
     m_ini.SetValue(section, name, value);
   }
 
   void setBoolValue(const char* section, const char* name, bool value) {
+    m_dirty = true;
     m_ini.SetBoolValue(section, name, value);
   }
 
   void setIntValue(const char* section, const char* name, int value) {
+    m_dirty = true;
     m_ini.SetLongValue(section, name, value);
   }
 
   void setDoubleValue(const char* section, const char* name, double value) {
+    m_dirty = true;
     m_ini.SetDoubleValue(section, name, value);
   }
 
   void deleteValue(const char* section, const char* name) {
+    m_dirty = true;
     m_ini.Delete(section, name, true);
   }
 
   void deleteSection(const char* section) {
+    m_dirty = true;
     m_ini.Delete(section, nullptr, true);
   }
 
@@ -101,10 +107,15 @@ public:
         return false;
       }
     }
+
+    m_dirty = false;
     return true;
   }
 
   void save() {
+    if (!m_dirty)
+      return;
+
     base::FileHandle file(base::open_file(m_filename, "wb"));
     if (file) {
       SI_Error err = m_ini.SaveFile(file.get());
@@ -112,12 +123,16 @@ public:
         LOG(ERROR, "CFG: Error %d saving configuration into %s\n",
             (int)err, m_filename.c_str());
       }
+      else {
+        m_dirty = false;
+      }
     }
   }
 
 private:
   std::string m_filename;
   CSimpleIniA m_ini;
+  bool m_dirty = false;
 };
 
 CfgFile::CfgFile()
