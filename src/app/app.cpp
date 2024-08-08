@@ -894,7 +894,27 @@ int app_get_color_to_clear_layer(Layer* layer)
       color = ColorBar::instance()->getBgColor();
     else
 #endif
-      color = app::Color::fromRgb(0, 0, 0); // TODO get background color color from doc::Settings
+    {
+      auto c = Preferences::instance().colorBar.bgColor();
+      if (layer->sprite()->pixelFormat() == IMAGE_INDEXED) {
+        if (c.getType() == Color::IndexType)
+          color = c;
+        else {
+          Palette* pal = layer->sprite()->palette(0);
+          color_t c = pal->getEntry(layer->sprite()->transparentColor());
+          c = (rgba_geta(c) < 255 ?
+                    pal->findBestfit(rgba_getr(c),
+                                     rgba_getg(c),
+                                     rgba_getb(c),
+                                     255,
+                                     -1) :
+                    c);
+          color = app::Color::fromIndex(c);
+        }
+      }
+      else
+        color = app::Color::fromRgb(0, 0, 0);
+    }
   }
   else // All transparent layers are cleared with the mask color
     color = app::Color::fromMask();
