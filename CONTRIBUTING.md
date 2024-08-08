@@ -2,7 +2,7 @@
 
 We have a [code of conduct](CODE_OF_CONDUCT.md) that we all must
 follow. Be polite to everyone. If you are not in your best day, take a
-deep breath and try again. Smile :smile:
+deep breath and try again.
 
 # New Issues
 
