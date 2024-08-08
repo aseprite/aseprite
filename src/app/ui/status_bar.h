@@ -89,6 +89,7 @@ namespace app {
   private:
     void onCelOpacitySliderChange();
     void newFrame();
+    void showNewFramePopupMenu();
     void onChangeZoom(const render::Zoom& zoom);
     void updateSnapToGridWindowPosition();
     void showIndicators();
