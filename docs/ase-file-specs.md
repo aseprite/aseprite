@@ -509,7 +509,7 @@ The data of this chunk is as follows:
                 of the the External Files Chunk.
       DWORD     Tileset ID in the external file
     + If flag 2 is set
-      DWORD     Compressed data length
+      DWORD     Data length of the compressed Tileset image
       PIXEL[]   Compressed Tileset image (see NOTE.3):
                   (Tile Width) x (Tile Height x Number of Tiles)
 
