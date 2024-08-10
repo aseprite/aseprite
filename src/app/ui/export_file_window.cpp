@@ -256,9 +256,10 @@ void ExportFileWindow::updateAdjustResizeButton()
 
   if (adjustResize()->isVisible() != newState) {
     adjustResize()->setVisible(newState);
-    if (newState)
-      adjustResize()->setText(fmt::format(Strings::export_file_adjust_resize(),
-                                          100 * m_preferredResize));
+    if (newState) {
+      adjustResize()->setText(
+        Strings::export_file_adjust_resize(100 * m_preferredResize));
+    }
     adjustResize()->parent()->layout();
   }
 }
@@ -286,7 +287,7 @@ void ExportFileWindow::onOK()
     }
     else {
       ui::Alert::show(
-        fmt::format(Strings::alerts_unknown_output_file_format_error(), ext));
+        Strings::alerts_unknown_output_file_format_error(ext));
       return;
     }
   }

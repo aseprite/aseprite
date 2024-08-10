@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021  Igara Studio SA
+// Copyright (C) 2021-2024  Igara Studio SA
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -229,7 +229,7 @@ std::string SelectPaletteColorsCommand::onGetFriendlyName() const
     case UsedTiles:    return Strings::commands_SelectPaletteColors_UsedTiles();
     case UnusedTiles:  return Strings::commands_SelectPaletteColors_UnusedTiles();
   }
-  return getBaseFriendlyName();
+  return Strings::commands_SelectPaletteColors();
 }
 
 Command* CommandFactory::createSelectPaletteColorsCommand()

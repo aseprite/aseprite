@@ -28,7 +28,6 @@
 #include "base/fs.h"
 #include "base/paths.h"
 #include "base/string.h"
-#include "fmt/format.h"
 #include "ui/ui.h"
 
 #include "new_folder_window.xml.h"
@@ -638,9 +637,8 @@ again:
         const char* invalid_chars = ": * ? \" < > |";
 
         ui::Alert::show(
-            fmt::format(
-                Strings::alerts_invalid_chars_in_filename(),
-                invalid_chars));
+          Strings::alerts_invalid_chars_in_filename(
+            invalid_chars));
 
         // show the window again
         setVisible(true);
@@ -659,9 +657,7 @@ again:
 
     if (m_type == FileSelectorType::Save && base::is_file(buf)) {
       int ret = Alert::show(
-        fmt::format(
-          Strings::alerts_overwrite_existent_file(),
-          base::get_file_name(buf)));
+        Strings::alerts_overwrite_existent_file(base::get_file_name(buf)));
       if (ret == 2) {
         setVisible(true);
         goto again;

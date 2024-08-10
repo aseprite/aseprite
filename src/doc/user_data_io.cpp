@@ -259,7 +259,8 @@ static UserData::PropertiesMaps read_properties_maps(std::istream& is)
   return propertiesMaps;
 }
 
-UserData read_user_data(std::istream& is, const int docFormatVer)
+UserData read_user_data(std::istream& is,
+                        const SerialFormat serial)
 {
   UserData userData;
   userData.setText(read_string(is));
@@ -273,7 +274,7 @@ UserData read_user_data(std::istream& is, const int docFormatVer)
     // When recovering a session from an old Aseprite version, we need
     // to skip reading the parts that it doesn't contains. Otherwise
     // it is very likely to fail.
-    if (docFormatVer >= DOC_FORMAT_VERSION_2) {
+    if (serial >= SerialFormat::Ver2) {
       userData.propertiesMaps() = read_properties_maps(is);
     }
   }

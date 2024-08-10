@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -16,7 +16,6 @@
 #include "app/i18n/strings.h"
 #include "app/tools/ink_type.h"
 #include "app/ui/context_bar.h"
-#include "fmt/format.h"
 
 namespace app {
 
@@ -72,7 +71,7 @@ std::string SetInkTypeCommand::onGetFriendlyName() const
       ink = Strings::inks_shading();
       break;
   }
-  return fmt::format(getBaseFriendlyName(), ink);
+  return Strings::commands_SetInkType(ink);
 }
 
 Command* CommandFactory::createSetInkTypeCommand()

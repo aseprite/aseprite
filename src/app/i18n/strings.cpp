@@ -17,6 +17,7 @@
 #include "app/resource_finder.h"
 #include "app/xml_document.h"
 #include "app/xml_exception.h"
+#include "base/debug.h"
 #include "base/fs.h"
 #include "cfg/cfg.h"
 
@@ -116,10 +117,49 @@ void Strings::setCurrentLanguage(const std::string& langId)
   LanguageChange();
 }
 
+void Strings::logError(const char* id, const char* error) const
+{
+  LOG(ERROR, "I18N: Error in \"%s.ini\" file, string id \"%s\" is \"%s\", threw \"%s\" error\n",
+      currentLanguage().c_str(), id, translate(id).c_str(), error);
+}
+
+// static
+std::string Strings::VFormat(const char* id, const fmt::format_args& vargs)
+{
+  Strings* s = Strings::instance();
+
+  // First we try to translate the ID string with the current
+  // translation. If it fails (e.g. a fmt::format_error) it can be
+  // because an ill-formed string for the fmt library.
+  //
+  // In that case then we try to use the regular English string from
+  // the en.ini (which can fail too if the user modified the en.ini
+  // file by hand).
+  try {
+    return fmt::vformat(s->translate(id), vargs);
+  }
+  catch (const std::runtime_error& e) {
+    s->logError(id, e.what());
+    // Continue with default translation (English)...
+  }
+
+  try {
+    return fmt::vformat(s->defaultString(id), vargs);
+  }
+  catch (const std::runtime_error& e) {
+    // This is unexpected, invalid en.ini file
+    ASSERT(false);
+    s->logError(id, e.what());
+    return id;
+  }
+}
+
 void Strings::loadLanguage(const std::string& langId)
 {
   m_strings.clear();
   loadStringsFromDataDir(kDefLanguage);
+  m_default = m_strings;
+
   if (langId != kDefLanguage) {
     loadStringsFromDataDir(langId);
     loadStringsFromExtension(langId);
@@ -201,8 +241,15 @@ const std::string& Strings::translate(const char* id) const
   auto it = m_strings.find(id);
   if (it != m_strings.end())
     return it->second;
-  else
-    return m_strings[id] = id;
+  return m_strings[id] = id;
+}
+
+const std::string& Strings::defaultString(const char* id) const
+{
+  auto it = m_default.find(id);
+  if (it != m_default.end())
+    return it->second;
+  return m_default[id] = id;
 }
 
 } // namespace app

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -274,8 +274,7 @@ void NewLayerCommand::onExecute(Context* context)
   Layer* layer = nullptr;
   {
     ContextWriter writer(reader);
-    Tx tx(writer,
-          fmt::format(Strings::commands_NewLayer(), layerPrefix()));
+    Tx tx(writer, Strings::commands_NewLayer(layerPrefix()));
     DocApi api = document->getApi(tx);
     bool afterBackground = false;
 
@@ -513,17 +512,17 @@ std::string NewLayerCommand::onGetFriendlyName() const
 {
   std::string text;
   if (m_place == Place::BeforeActiveLayer)
-    text = fmt::format(Strings::commands_NewLayer_BeforeActiveLayer(), layerPrefix());
+    text = Strings::commands_NewLayer_BeforeActiveLayer(layerPrefix());
   else
-    text = fmt::format(Strings::commands_NewLayer(), layerPrefix());
+    text = Strings::commands_NewLayer(layerPrefix());
   if (params().fromClipboard())
-    text = fmt::format(Strings::commands_NewLayer_FromClipboard(), text);
+    text = Strings::commands_NewLayer_FromClipboard(text);
   if (params().viaCopy())
-    text = fmt::format(Strings::commands_NewLayer_ViaCopy(), text);
+    text = Strings::commands_NewLayer_ViaCopy(text);
   if (params().viaCut())
-    text = fmt::format(Strings::commands_NewLayer_ViaCut(), text);
+    text = Strings::commands_NewLayer_ViaCut(text);
   if (params().ask())
-    text = fmt::format(Strings::commands_NewLayer_WithDialog(), text);
+    text = Strings::commands_NewLayer_WithDialog(text);
   return text;
 }
 

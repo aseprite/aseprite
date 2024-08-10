@@ -1,8 +1,8 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2018-2020  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-2024  Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2016  David Capello -->
 <gui>
-<window id="sprite_properties" text="@.title">
+<window id="sprite_properties" text="@.title" help="sprite-properties">
   <vbox>
     <grid id="properties_grid" columns="3">
       <label text="@.filename" />

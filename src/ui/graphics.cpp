@@ -330,15 +330,6 @@ void Graphics::drawSurfaceNine(os::Surface* surface,
   m_surface->drawSurfaceNine(surface, src, center, displacedDst, drawCenter, paint);
 }
 
-void Graphics::blit(os::Surface* srcSurface, int srcx, int srcy, int dstx, int dsty, int w, int h)
-{
-  dirty(gfx::Rect(m_dx+dstx, m_dy+dsty, w, h));
-
-  os::SurfaceLock lockSrc(srcSurface);
-  os::SurfaceLock lockDst(m_surface.get());
-  srcSurface->blitTo(m_surface.get(), srcx, srcy, m_dx+dstx, m_dy+dsty, w, h);
-}
-
 void Graphics::setFont(const text::FontRef& font)
 {
   m_font = font;

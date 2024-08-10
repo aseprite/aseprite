@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -285,9 +285,9 @@ void NewFileCommand::onExecute(Context* ctx)
 std::string NewFileCommand::onGetFriendlyName() const
 {
   if (params().fromClipboard())
-    return fmt::format(Strings::commands_NewFile_FromClipboard());
+    return Strings::commands_NewFile_FromClipboard();
   else
-    return fmt::format(Strings::commands_NewFile());
+    return Strings::commands_NewFile();
 }
 
 Command* CommandFactory::createNewFileCommand()

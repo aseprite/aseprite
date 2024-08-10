@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021-2023  Igara Studio S.A.
+// Copyright (C) 2021-2024  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -303,7 +303,7 @@ std::string ConvertLayerCommand::onGetFriendlyName() const
     case ConvertLayerParam::Background: return Strings::commands_ConvertLayer_Background(); break;
     case ConvertLayerParam::Layer:      return Strings::commands_ConvertLayer_Layer(); break;
     case ConvertLayerParam::Tilemap:    return Strings::commands_ConvertLayer_Tilemap(); break;
-    default: return getBaseFriendlyName();
+    default: return Strings::commands_ConvertLayer();
   }
 }
 

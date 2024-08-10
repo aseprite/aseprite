@@ -317,8 +317,7 @@ bool DocView::onCloseView(Workspace* workspace, bool quitting)
     while (m_document->isModified()) {
       // ask what want to do the user with the changes in the sprite
       int ret = Alert::show(
-        fmt::format(
-          Strings::alerts_save_sprite_changes(),
+        Strings::alerts_save_sprite_changes(
           m_document->name(),
           (quitting ? Strings::alerts_save_sprite_changes_quitting():
                       Strings::alerts_save_sprite_changes_closing())));

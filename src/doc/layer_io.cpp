@@ -110,7 +110,9 @@ void write_layer(std::ostream& os, const Layer* layer)
   write_user_data(os, layer->userData());
 }
 
-Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects, const int docFormatVer)
+Layer* read_layer(std::istream& is,
+                  SubObjectsFromSprite* subObjects,
+                  const SerialFormat serial)
 {
   ObjectId id = read32(is);
   std::string name = read_string(is);
@@ -147,7 +149,7 @@ Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects, const int 
       // Read celdatas
       int celdatas = read16(is);
       for (int c=0; c<celdatas; ++c) {
-        CelDataRef celdata(read_celdata(is, subObjects, true, docFormatVer));
+        CelDataRef celdata(read_celdata(is, subObjects, true, serial));
         subObjects->addCelDataRef(celdata);
       }
 
@@ -176,7 +178,7 @@ Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects, const int 
       // Number of sub-layers
       int layers = read16(is);
       for (int c=0; c<layers; c++) {
-        Layer* child = read_layer(is, subObjects);
+        Layer* child = read_layer(is, subObjects, serial);
         if (child)
           static_cast<LayerGroup*>(layer.get())->addLayer(child);
         else
@@ -190,7 +192,7 @@ Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects, const int 
 
   }
 
-  UserData userData = read_user_data(is, docFormatVer);
+  const UserData userData = read_user_data(is, serial);
 
   if (layer) {
     layer->setName(name);

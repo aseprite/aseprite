@@ -217,15 +217,6 @@ MainWindow::~MainWindow()
 
 void MainWindow::onLanguageChange()
 {
-  auto commands = Commands::instance();
-  std::vector<std::string> commandIDs;
-  commands->getAllIds(commandIDs);
-
-  for (const auto& commandID : commandIDs) {
-    Command* command = commands->byId(commandID.c_str());
-    command->generateFriendlyName();
-  }
-
   m_menuBar->reload();
   layout();
   invalidate();

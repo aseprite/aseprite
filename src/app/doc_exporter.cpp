@@ -1570,6 +1570,9 @@ void DocExporter::createDataFile(const Samples& samples,
               os << ", ";
 
             os << "{ \"frame\": " << cel->frame();
+            if (cel->opacity() != 255) {
+              os << ", \"opacity\": " << cel->opacity();
+            }
             if (cel->zIndex() != 0) {
               os << ", \"zIndex\": " << cel->zIndex();
             }

@@ -1089,6 +1089,19 @@
       </menu>
     </menu>
 
+    <menu id="new_frame_popup_menu">
+      <item command="NewFrame" text="@main_menu.frame_duplicate_linked_cels">
+        <param name="content" value="cellinked" />
+      </item>
+      <item command="NewFrame" text="@main_menu.frame_duplicate_cels">
+        <param name="content" value="celcopies" />
+      </item>
+      <item command="NewFrame" text="@main_menu.frame_new_empty_frame">
+        <param name="content" value="empty" />
+      </item>
+      <item command="NewFrame" text="@main_menu.frame_new_frame" />
+    </menu>
+      
     <menu id="tab_popup_menu">
       <item command="CloseFile" text="@.close" group="tab_close" />
     </menu>

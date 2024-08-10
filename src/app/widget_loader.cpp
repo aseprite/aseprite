@@ -23,6 +23,7 @@
 #include "app/ui/drop_down_button.h"
 #include "app/ui/expr_entry.h"
 #include "app/ui/icon_button.h"
+#include "app/ui/mini_help_button.h"
 #include "app/ui/search_entry.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/widget_not_found.h"
@@ -434,12 +435,20 @@ Widget* WidgetLoader::convertXmlElementToWidget(const XMLElement* elem, Widget* 
     if (!widget) {
       bool desktop = bool_attr(elem, "desktop", false);
 
-      if (desktop)
+      if (desktop) {
         widget = new Window(Window::DesktopWindow);
-      else if (elem->Attribute("text"))
+      }
+      else if (elem->Attribute("text")) {
         widget = new Window(Window::WithTitleBar, m_xmlTranslator(elem, "text"));
-      else
+      }
+      else {
         widget = new Window(Window::WithoutTitleBar);
+      }
+    }
+
+    if (const char* help = elem->Attribute("help")) {
+      auto* helpButton = new MiniHelpButton(help);
+      widget->addChild(helpButton);
     }
   }
   else if (elem_name == "colorpicker") {

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -19,7 +19,6 @@
 #include "app/tx.h"
 #include "app/ui/editor/editor.h"
 #include "doc/mask.h"
-#include "fmt/format.h"
 #include "ui/system.h"
 
 namespace app {
@@ -124,7 +123,7 @@ std::string SelectTileCommand::onGetFriendlyName() const
       text = Strings::commands_SelectTile_Intersect();
       break;
     default:
-      text = getBaseFriendlyName();
+      text = Strings::commands_SelectTile();
       break;
   }
   return text;

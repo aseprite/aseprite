@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -23,7 +23,6 @@
 #include "doc/brush_type.h"
 #include "doc/mask.h"
 #include "filters/neighboring_pixels.h"
-#include "fmt/format.h"
 
 #include "modify_selection.xml.h"
 
@@ -151,11 +150,9 @@ std::string ModifySelectionCommand::onGetFriendlyName() const
 {
   std::string quantity;
   if (m_quantity > 0)
-    quantity = fmt::format(Strings::commands_ModifySelection_Quantity(), m_quantity);
+    quantity = Strings::commands_ModifySelection_Quantity(m_quantity);
 
-  return fmt::format(getBaseFriendlyName(),
-                     getActionName(),
-                     quantity);
+  return Strings::commands_ModifySelection(getActionName(), quantity);
 }
 
 std::string ModifySelectionCommand::getActionName() const

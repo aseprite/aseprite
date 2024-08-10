@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -22,7 +22,6 @@
 #include "doc/selected_objects.h"
 #include "doc/slice.h"
 #include "doc/sprite.h"
-#include "fmt/format.h"
 #include "ui/alert.h"
 #include "ui/widget.h"
 
@@ -121,14 +120,14 @@ void RemoveSliceCommand::onExecute(Context* context)
   }
 
   StatusBar::instance()->invalidate();
-  if (!sliceName.empty())
+  if (!sliceName.empty()) {
     StatusBar::instance()->showTip(
-      1000, fmt::format(Strings::remove_slice_x_removed(), sliceName));
-  else
+      1000, Strings::remove_slice_x_removed(sliceName));
+  }
+  else {
     StatusBar::instance()->showTip(
-      1000,
-      fmt::format(Strings::remove_slice_n_slices_removed(),
-                  slicesToDelete.size()));
+      1000, Strings::remove_slice_n_slices_removed(slicesToDelete.size()));
+  }
 }
 
 Command* CommandFactory::createRemoveSliceCommand()

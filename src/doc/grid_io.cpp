@@ -43,7 +43,7 @@ bool write_grid(std::ostream& os, const Grid& grid)
     return true;
 }
 
-Grid read_grid(std::istream& is, bool setId)
+Grid read_grid(std::istream& is)
 {
   gfx::Size tileSize;
   gfx::Point origin;

@@ -1,8 +1,8 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2022 by Igara Studio S.A. -->
+<!-- Copyright (C) 2022-2024 by Igara Studio S.A. -->
 <!-- Copyright (C) 2016-2018 by David Capello -->
 <gui>
-  <window id="export_file" text="@.title">
+  <window id="export_file" text="@.title" help="exporting">
     <grid columns="3">
       <label text="@.output_file" />
       <entry id="output_filename" cell_align="horizontal" maxsize="1024" maxwidth="256" />

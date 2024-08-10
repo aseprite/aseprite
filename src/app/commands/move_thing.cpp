@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This program is distributed under the terms of
@@ -16,7 +16,6 @@
 #include "app/ui/doc_view.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui_context.h"
-#include "fmt/format.h"
 
 #include <algorithm>
 
@@ -66,8 +65,7 @@ std::string MoveThing::getFriendlyString() const
     case Down:  dir = Strings::commands_Move_Down(); break;
   }
 
-  return fmt::format(Strings::commands_Move_Thing(),
-                     quantity, dim, dir);
+  return Strings::commands_Move_Thing(quantity, dim, dir);
 }
 
 gfx::Point MoveThing::getDelta(Context* context) const

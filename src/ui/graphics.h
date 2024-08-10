@@ -99,8 +99,6 @@ namespace ui {
                          const bool drawCenter,
                          const Paint* paint = nullptr);
 
-    void blit(os::Surface* src, int srcx, int srcy, int dstx, int dsty, int w, int h);
-
     // ======================================================================
     // FONT & TEXT
     // ======================================================================

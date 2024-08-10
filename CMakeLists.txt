@@ -59,6 +59,7 @@ option(ENABLE_DRM          "Compile the DRM-enabled version (e.g. for automatic 
 option(ENABLE_STEAM        "Compile with Steam library" off)
 option(ENABLE_DEVMODE      "Compile vesion for developers" off)
 option(ENABLE_UI           "Compile UI (turn off to compile CLI-only version)" on)
+option(ENABLE_I18N_STRINGS "Clone i18n strings repo (https://github.com/aseprite/strings) to bin/data/strings.git" off)
 option(FULLSCREEN_PLATFORM "Enable fullscreen by default" off)
 option(ENABLE_CLANG_TIDY   "Enable static analysis" off)
 option(ENABLE_CCACHE       "Use CCache to improve recompilation speed (optional)" on)

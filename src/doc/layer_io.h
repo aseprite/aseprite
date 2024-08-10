@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2024 Igara Studio S.A.
 // Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -8,8 +9,8 @@
 #define DOC_LAYER_IO_H_INCLUDED
 #pragma once
 
-#include "app/crash/doc_format.h"
 #include "base/exception.h"
+#include "doc/serial_format.h"
 
 #include <iosfwd>
 
@@ -23,8 +24,11 @@ namespace doc {
     InvalidLayerType(const char* msg) throw() : base::Exception(msg) { }
   };
 
-  void write_layer(std::ostream& os, const Layer* layer);
-  Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects, const int docFormatVer = DOC_FORMAT_VERSION_LAST);
+  void write_layer(std::ostream& os,
+                   const Layer* layer);
+  Layer* read_layer(std::istream& is,
+                    SubObjectsFromSprite* subObjects,
+                    SerialFormat serial = SerialFormat::LastVer);
 
 } // namespace doc
 

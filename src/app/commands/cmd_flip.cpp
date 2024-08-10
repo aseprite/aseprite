@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -39,7 +39,6 @@
 #include "doc/layer.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
-#include "fmt/format.h"
 #include "gfx/size.h"
 
 
@@ -256,7 +255,7 @@ std::string FlipCommand::onGetFriendlyName() const
   else
     orientation = Strings::commands_Flip_Vertically();
 
-  return fmt::format(getBaseFriendlyName(), content, orientation);
+  return Strings::commands_Flip(content, orientation);
 }
 
 Command* CommandFactory::createFlipCommand()

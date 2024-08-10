@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2023  Igara Studio S.A.
+// Copyright (C) 2023-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -19,7 +19,6 @@
 #include "app/modules/palettes.h"
 #include "base/fs.h"
 #include "doc/palette.h"
-#include "fmt/format.h"
 #include "ui/alert.h"
 
 namespace app {
@@ -81,7 +80,7 @@ void LoadPaletteCommand::onExecute(Context* context)
   std::unique_ptr<doc::Palette> palette(load_palette(filename.c_str()));
   if (!palette) {
     if (context->isUIAvailable())
-      ui::Alert::show(fmt::format(Strings::alerts_error_loading_file(), filename));
+      ui::Alert::show(Strings::alerts_error_loading_file(filename));
     return;
   }
 

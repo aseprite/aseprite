@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021  Igara Studio S.A.
+// Copyright (C) 2021-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -21,7 +21,6 @@
 #include "app/modules/palettes.h"
 #include "base/fs.h"
 #include "doc/palette.h"
-#include "fmt/format.h"
 #include "ui/alert.h"
 
 namespace app {
@@ -78,8 +77,8 @@ void SavePaletteCommand::onExecute(Context* ctx)
     if (!base::has_file_extension(filename, exts)) {
       if (ctx->isUIAvailable()) {
         ui::Alert::show(
-          fmt::format(Strings::alerts_file_format_doesnt_support_palette(),
-                      base::get_file_extension(filename)));
+          Strings::alerts_file_format_doesnt_support_palette(
+            base::get_file_extension(filename)));
       }
       return;
     }
@@ -90,7 +89,7 @@ void SavePaletteCommand::onExecute(Context* ctx)
     colorSpace = activeDoc->sprite()->colorSpace();
 
   if (!save_palette(filename.c_str(), palette, 16, colorSpace)) // TODO 16 should be configurable
-    ui::Alert::show(fmt::format(Strings::alerts_error_saving_file(), filename));
+    ui::Alert::show(Strings::alerts_error_saving_file(filename));
 
   if (m_preset == get_default_palette_preset_name()) {
     set_default_palette(palette);

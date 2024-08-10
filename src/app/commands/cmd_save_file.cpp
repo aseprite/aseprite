@@ -41,7 +41,6 @@
 #include "doc/mask.h"
 #include "doc/sprite.h"
 #include "doc/tag.h"
-#include "fmt/format.h"
 #include "ui/ui.h"
 #include "undo/undo_state.h"
 
@@ -269,8 +268,7 @@ void SaveFileBaseCommand::saveDocumentInBackground(
 #ifdef ENABLE_UI
     if (context->isUIAvailable() && params().ui()) {
       StatusBar::instance()->setStatusText(
-        2000, fmt::format(Strings::save_file_saved(),
-                          base::get_file_name(filename)));
+        2000, Strings::save_file_saved(base::get_file_name(filename)));
     }
 #endif
   }
@@ -428,8 +426,7 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
       int ret = OptionalAlert::show(
         Preferences::instance().exportFile.showOverwriteFilesAlert,
         1, // Yes is the default option when the alert dialog is disabled
-        fmt::format(Strings::alerts_overwrite_files_on_export(),
-                    outputFilename));
+        Strings::alerts_overwrite_files_on_export(outputFilename));
       if (ret != 1)
         goto again;
     }

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2023  Igara Studio S.A.
+// Copyright (C) 2023-2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -15,7 +15,6 @@
 #include "app/ui/color_bar.h"
 #include "base/replace_string.h"
 #include "base/trim_string.h"
-#include "fmt/format.h"
 
 namespace app {
 
@@ -107,7 +106,7 @@ std::string PaletteEditorCommand::onGetFriendlyName() const
       popup = Strings::commands_PaletteEditor_FgPopup();
   }
 
-  std::string result = fmt::format(getBaseFriendlyName(), edit, plus, popup);
+  std::string result = Strings::commands_PaletteEditor(edit, plus, popup);
   // TODO create a new function to remove duplicate whitespaces
   base::replace_string(result, "  ", " ");
   base::replace_string(result, "  ", " ");

@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2024  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This program is distributed under the terms of
@@ -18,12 +19,12 @@ namespace app {
 
   class MatchWords {
   public:
-    MatchWords(const std::string& search) {
+    MatchWords(const std::string& search = {}) {
       base::split_string(base::string_to_lower(search),
                          m_parts, " ");
     }
 
-    bool operator()(const std::string& item) {
+    bool operator()(const std::string& item) const {
       std::string lowerItem = base::string_to_lower(item);
       std::size_t matches = 0;
 

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -29,7 +29,6 @@
 #include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
-#include "fmt/format.h"
 #include "ui/ui.h"
 
 #include <stdexcept>
@@ -181,8 +180,7 @@ void NewFrameCommand::onExecute(Context* context)
     update_screen_for_document(document);
 
     StatusBar::instance()->showTip(
-      1000, fmt::format(
-        Strings::commands_NewFrame_tooltip(),
+      1000, Strings::commands_NewFrame_tooltip(
         (int)context->activeSite().frame()+1,
         (int)sprite->totalFrames()));
 

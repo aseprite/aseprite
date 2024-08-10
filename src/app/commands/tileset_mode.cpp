@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2024  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -13,7 +13,6 @@
 #include "app/commands/params.h"
 #include "app/i18n/strings.h"
 #include "app/ui/color_bar.h"
-#include "fmt/format.h"
 
 namespace app {
 
@@ -52,7 +51,7 @@ protected:
       case TilesetMode::Auto:   mode = Strings::commands_TilesetMode_Auto();   break;
       case TilesetMode::Stack:  mode = Strings::commands_TilesetMode_Stack();  break;
     }
-    return fmt::format(getBaseFriendlyName(), mode);
+    return Strings::commands_TilesetMode(mode);
   }
 
 private:

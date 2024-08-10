@@ -755,8 +755,11 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
   }
 
   if (rendered && rendered->nativeHandle()) {
+    os::Paint p;
     if (newEngine) {
       os::Sampling sampling;
+      p.srcEdges(os::Paint::SrcEdges::Fast); // Enable mipmaps if possible
+
       if (m_proj.scaleX() < 1.0) {
         switch (pref.editor.downsampling()) {
           case gen::Downsampling::NEAREST:
@@ -776,7 +779,6 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
         }
       }
 
-      os::Paint p;
       if (renderProperties.requiresRgbaBackbuffer)
         p.blendMode(os::BlendMode::SrcOver);
       else
@@ -789,7 +791,11 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
                      &p);
     }
     else {
-      g->blit(rendered.get(), 0, 0, dest.x, dest.y, dest.w, dest.h);
+      g->drawSurface(rendered.get(),
+                     gfx::Rect(0, 0, dest.w, dest.h),
+                     gfx::Rect(dest.x, dest.y, dest.w, dest.h),
+                     os::Sampling(os::Sampling::Filter::Nearest),
+                     &p);
     }
   }
 
