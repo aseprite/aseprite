@@ -149,7 +149,7 @@ void Mask::fromImage(const Image* image, const gfx::Point& maskOrigin)
           for (; maskIt != maskEnd; ++maskIt, ++rgbIt) {
             ASSERT(rgbIt != rgbEnd);
             color_t c = *rgbIt;
-            *maskIt = (rgba_geta(c) >= 128); // TODO configurable threshold
+            *maskIt = (rgba_geta(c) > 0);
           }
           break;
         }
@@ -163,7 +163,7 @@ void Mask::fromImage(const Image* image, const gfx::Point& maskOrigin)
           for (; maskIt != maskEnd; ++maskIt, ++grayIt) {
             ASSERT(grayIt != grayEnd);
             color_t c = *grayIt;
-            *maskIt = (graya_geta(c) >= 128); // TODO configurable threshold
+            *maskIt = (graya_geta(c) > 0);
           }
           break;
         }
