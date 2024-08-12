@@ -9,12 +9,13 @@
 #include "config.h"
 #endif
 
+#include "app/ui/editor/moving_slice_state.h"
+
 #include "app/cmd/set_slice_key.h"
 #include "app/cmd/clear_slices.h"
 #include "app/context_access.h"
 #include "app/tx.h"
 #include "app/ui/editor/editor.h"
-#include "app/ui/editor/moving_slice_state.h"
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
 #include "app/util/expand_cel_canvas.h"

@@ -112,7 +112,7 @@ void ClearSlices::clear()
         gfx::Region(sc.mask.bounds()),
         m_tilesetMode,
         [sc, bgcolor](const doc::ImageRef& origTile,
-                        const gfx::Rect& tileBoundsInCanvas) -> doc::ImageRef {
+                      const gfx::Rect& tileBoundsInCanvas) -> doc::ImageRef {
           doc::ImageRef modified(doc::Image::createCopy(origTile.get()));
           doc::algorithm::fill_selection(
             modified.get(),
@@ -142,9 +142,9 @@ void ClearSlices::restore()
       continue;
 
     copy_image(sc.cel()->image(),
-              sc.copy.get(),
-              sc.cropPos.x,
-              sc.cropPos.y);
+               sc.copy.get(),
+               sc.cropPos.x,
+               sc.cropPos.y);
   }
 }
 
