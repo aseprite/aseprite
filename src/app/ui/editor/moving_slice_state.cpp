@@ -58,6 +58,12 @@ MovingSliceState::MovingSliceState(Editor* editor,
   }
 
   editor->getSite(&m_site);
+  // Prevent using different tilemap and tileset modes when the last selected
+  // layer is not a tilemap.
+  if (!m_site.layer()->isTilemap()) {
+    m_site.tilemapMode(TilemapMode::Pixels);
+    m_site.tilesetMode(TilesetMode::Auto);
+  }
 
   if (editor->slicesTransforms() && !m_items.empty()) {
     DocRange range = m_site.range();
