@@ -19,6 +19,7 @@
 #include "doc/selected_layers.h"
 #include "doc/selected_objects.h"
 #include "doc/slice.h"
+#include "gfx/border.h"
 
 namespace app {
   class Editor;
@@ -191,6 +192,21 @@ namespace app {
         ItemContentRef ssc = (this->oldKey.hasCenter() ? (ItemContentRef)std::make_shared<NineSlice>(this, image)
                                                        : std::make_shared<SingleSlice>(this, image));
         content.push_back(ssc);
+      }
+
+      bool isNineSlice() const { return oldKey.hasCenter(); }
+
+      // If this item manages a 9-slice key, returns the border surrounding the
+      // center rectangle of the SliceKey. Otherwise returns an empty border.
+      gfx::Border border() const {
+        gfx::Border border;
+        if (isNineSlice()) {
+          border = gfx::Border(oldKey.center().x,
+                               oldKey.center().y,
+                               oldKey.bounds().w-oldKey.center().x2(),
+                               oldKey.bounds().h-oldKey.center().y2());
+        }
+        return border;
       }
     };
 

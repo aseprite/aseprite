@@ -12,6 +12,7 @@
 #include "doc/frame.h"
 #include "doc/keyframes.h"
 #include "doc/with_user_data.h"
+#include "gfx/border.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 
@@ -41,6 +42,12 @@ namespace doc {
     void setBounds(const gfx::Rect& bounds) { m_bounds = bounds; }
     void setCenter(const gfx::Rect& center) { m_center = center; }
     void setPivot(const gfx::Point& pivot) { m_pivot = pivot; }
+    void setBorder(const gfx::Border& border) {
+      m_center.x = border.left();
+      m_center.y = border.top();
+      m_center.w = m_bounds.w - border.width();
+      m_center.h = m_bounds.h - border.height();
+    }
 
   private:
     gfx::Rect m_bounds;

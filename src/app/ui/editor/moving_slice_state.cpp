@@ -412,8 +412,12 @@ bool MovingSliceState::onMouseMove(Editor* editor, MouseMessage* msg)
 
     if (m_hit.type() == EditorHit::SliceCenter)
       key.setCenter(rc);
-    else
+    else {
       key.setBounds(rc);
+      if (item.isNineSlice()) {
+        key.setBorder(item.border());
+      }
+    }
 
     // Update the slice key
     item.slice->insert(m_frame, key);
