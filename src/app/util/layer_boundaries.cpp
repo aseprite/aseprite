@@ -37,7 +37,7 @@ void select_layer_boundaries(Layer* layer,
   const Cel* cel = layer->cel(frame);
   if (cel) {
     const Image* image = cel->image();
-    newMask.fromImage(image, cel->bounds().origin());
+    newMask.fromImage(image, cel->bounds().origin(), 128); // TODO configurable alpha threshold
   }
 
   try {
