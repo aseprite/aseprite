@@ -120,14 +120,6 @@ void ToolLoopManager::pressButton(const Pointer& pointer)
     return;
   }
 
-  if (m_toolLoop->getController()->isOnePoint() &&
-     m_toolLoop->getInk()->isSelection() &&
-     !m_toolLoop->getSrcImage()->bounds().contains(pointer.point())) {
-    // Reset the mask if we're clicking out of bounds when we're using a one-point selection tool (magic wand)
-    m_toolLoop->setMask(nullptr);
-    return;
-  }
-
   m_stabilizerCenter = pointer.point();
 
   Stroke::Pt spritePoint = getSpriteStrokePt(pointer);
@@ -159,6 +151,12 @@ bool ToolLoopManager::releaseButton(const Pointer& pointer)
 
   if (isCanceled())
     return false;
+
+  if (m_toolLoop->getController()->isOnePoint() &&
+      m_toolLoop->getInk()->isSelection() &&
+      !m_toolLoop->getSrcImage()->bounds().contains(pointer.point())) {
+    return false;
+  }
 
   Stroke::Pt spritePoint = getSpriteStrokePt(pointer);
   bool res = m_toolLoop->getController()->releaseButton(m_stroke, spritePoint);
