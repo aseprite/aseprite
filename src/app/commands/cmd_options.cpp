@@ -320,6 +320,18 @@ public:
     }
     cursorColorType()->Change.connect([this]{ onCursorColorType(); });
 
+    // Grid
+    gridW()->Leave.connect([this] {
+      // Prevent entering a width lesser than 1
+      if (gridW()->textInt() <= 0)
+        gridW()->setText("1");
+    });
+    gridH()->Leave.connect([this] {
+      // Prevent entering a height lesser than 1
+      if (gridH()->textInt() <= 0)
+        gridH()->setText("1");
+    });
+
     // Brush preview
     brushPreview()->setSelectedItemIndex(
       (int)m_pref.cursor.brushPreview());
