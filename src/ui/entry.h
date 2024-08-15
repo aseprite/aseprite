@@ -66,6 +66,7 @@ namespace ui {
 
     // Signals
     obs::signal<void()> Change;
+    obs::signal<void()> Leave;
 
   protected:
     // Events
