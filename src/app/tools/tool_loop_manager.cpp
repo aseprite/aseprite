@@ -152,6 +152,12 @@ bool ToolLoopManager::releaseButton(const Pointer& pointer)
   if (isCanceled())
     return false;
 
+  if (m_toolLoop->getController()->isOnePoint() &&
+      m_toolLoop->getInk()->isSelection() &&
+      !m_toolLoop->getSrcImage()->bounds().contains(pointer.point())) {
+    return false;
+  }
+
   Stroke::Pt spritePoint = getSpriteStrokePt(pointer);
   bool res = m_toolLoop->getController()->releaseButton(m_stroke, spritePoint);
 
