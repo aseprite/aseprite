@@ -49,6 +49,11 @@ gfx::Rect Sprite::DefaultGridBounds()
 void Sprite::SetDefaultGridBounds(const gfx::Rect& defGridBounds)
 {
   g_defaultGridBounds = defGridBounds;
+  // Prevent setting an empty grid bounds
+  if (g_defaultGridBounds.w <= 0)
+    g_defaultGridBounds.w = 1;
+  if (g_defaultGridBounds.h <= 0)
+    g_defaultGridBounds.h = 1;
 }
 
 // static
