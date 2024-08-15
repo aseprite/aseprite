@@ -35,6 +35,8 @@ bool ExprEntry::onProcessMessage(ui::Message* msg)
       onFormatExprFocusLeave(buf);
       if (text() != buf)
         setText(buf);
+
+      Leave();
       break;
     }
   }

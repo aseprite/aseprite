@@ -268,7 +268,6 @@ bool Entry::onProcessMessage(Message* msg)
       break;
 
     case kFocusLeaveMessage:
-      Leave();
       invalidate();
 
       stopTimer();
