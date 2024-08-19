@@ -18,7 +18,6 @@
 
 #include "include/core/SkSurface.h"
 #if SK_ENABLE_SKSL
-  #include "include/effects/SkRuntimeEffect.h"
   #include "src/core/SkRuntimeEffectPriv.h"
 #endif
 
