@@ -1264,6 +1264,9 @@ private:
 
 void SkinTheme::drawEntryText(ui::Graphics* g, ui::Entry* widget)
 {
+  if (widget->text().empty())
+    return;
+
   // Draw the text
   gfx::Rect bounds = widget->getEntryTextBounds();
 

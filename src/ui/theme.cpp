@@ -436,6 +436,9 @@ void Theme::paintLayer(Graphics* g,
       break;
 
     case Style::Layer::Type::kText:
+      if (text.empty())
+        break;
+
       if (layer.color() != gfx::ColorNone) {
         text::FontRef oldFont = base::AddRef(g->font());
         if (style->font())
@@ -949,7 +952,7 @@ void Theme::drawTextBox(Graphics* g, const Widget* widget,
     len = font->textLength(beg);
 
     // Render the text
-    if (g) {
+    if (g && len > 0) {
       int xout;
 
       if (widget->align() & CENTER)
