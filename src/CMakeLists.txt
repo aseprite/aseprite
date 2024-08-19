@@ -102,7 +102,7 @@ set(DATA_OUTPUT_DIR ${CMAKE_BINARY_DIR}/bin/data)
 ######################################################################
 # Clone "strings" repo with translations into bin/data/strings.git
 
-if(ENABLE_I18N_STRINGS_REPO)
+if(ENABLE_I18N_STRINGS)
   include(FetchContent)
   find_package(Git)
   if(GIT_FOUND)
@@ -137,7 +137,7 @@ foreach(fn ${src_data_files})
   list(APPEND out_data_files ${DATA_OUTPUT_DIR}/${fn})
 endforeach()
 
-if(ENABLE_I18N_STRINGS_REPO AND GIT_FOUND)
+if(ENABLE_I18N_STRINGS AND GIT_FOUND)
   # Copy original en.ini to strings.git/en.ini to keep it updated. We
   # have to manually sync the "en.ini" file in the "strings" repo from
   # the "aseprite" repo.
