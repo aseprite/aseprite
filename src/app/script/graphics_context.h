@@ -32,7 +32,16 @@ private:
 
 public:
   GraphicsContext(const os::SurfaceRef& surface, int uiscale) : m_surface(surface), m_uiscale(uiscale) { }
-  GraphicsContext(GraphicsContext&& gc) {
+  GraphicsContext(const GraphicsContext& gc) {
+    m_surface = gc.m_surface;
+    m_font = gc.m_font;
+    m_paint = gc.m_paint;
+    m_palette = gc.m_palette;
+    m_path = gc.m_path;
+    m_saved = gc.m_saved;
+    m_uiscale = gc.m_uiscale;
+  }
+  GraphicsContext(GraphicsContext&& gc) noexcept {
     std::swap(m_surface, gc.m_surface);
     std::swap(m_paint, gc.m_paint);
     std::swap(m_font, gc.m_font);
