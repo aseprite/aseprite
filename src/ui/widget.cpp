@@ -920,7 +920,7 @@ void Widget::getDrawableRegion(gfx::Region& region, DrawableRegionFlags flags)
 
 text::TextBlobRef Widget::textBlob() const
 {
-  if (!m_blob) {
+  if (!m_blob && !m_text.empty()) {
     m_blob = text::TextBlob::MakeWithShaper(
       theme()->fontMgr(),
       AddRef(font()),

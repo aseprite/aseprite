@@ -478,10 +478,11 @@ void Theme::paintLayer(Graphics* g,
 
           pt += layer.offset();
 
-          g->drawUIText(text,
-                        layer.color(),
-                        bgColor,
-                        pt, style->mnemonics() ? mnemonic : 0);
+          if (!text.empty())
+            g->drawUIText(text,
+                          layer.color(),
+                          bgColor,
+                          pt, style->mnemonics() ? mnemonic : 0);
         }
 
         if (style->font())
@@ -592,16 +593,18 @@ void Theme::measureLayer(const Widget* widget,
     case Style::Layer::Type::kText:
       if (layer.color() != gfx::ColorNone) {
         gfx::Size textSize;
-        if (style->font() &&
-            style->font() != widget->font()) {
-          text::Font* font = style->font();
-          textSize = gfx::Size(Graphics::measureUITextLength(widget->text(), font),
-                               font->height());
-        }
-        else {
-          // We can use Widget::textSize() because we're going to use
-          // the widget font and, probably, the cached TextBlob.
-          textSize = widget->textSize();
+        if (widget->text().size() > 0) {
+          if (style->font() && style->font() != widget->font()) {
+            text::Font* font = style->font();
+            textSize =
+              gfx::Size(Graphics::measureUITextLength(widget->text(), font),
+                        font->height());
+          }
+          else {
+            // We can use Widget::textSize() because we're going to use
+            // the widget font and, probably, the cached TextBlob.
+            textSize = widget->textSize();
+          }
         }
 
         textHint.offset(layer.offset());
@@ -949,7 +952,7 @@ void Theme::drawTextBox(Graphics* g, const Widget* widget,
     len = font->textLength(beg);
 
     // Render the text
-    if (g) {
+    if (g && len > 0) {
       int xout;
 
       if (widget->align() & CENTER)
