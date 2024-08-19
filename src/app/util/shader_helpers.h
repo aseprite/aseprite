@@ -12,6 +12,7 @@
 
 #include "app/color.h"
 #include "gfx/color.h"
+#include "os/surface.h"
 
 #include "include/core/SkCanvas.h"
 #include "include/core/SkImage.h"
@@ -94,6 +95,7 @@ SkImageInfo get_skimageinfo_for_docimage(const doc::Image* img);
 sk_sp<SkImage> make_skimage_for_docimage(const doc::Image* img);
 std::unique_ptr<SkCanvas> make_skcanvas_for_docimage(const doc::Image* img);
 sk_sp<SkSurface> wrap_docimage_in_sksurface(const doc::Image* img);
+os::SurfaceRef wrap_docimage_in_surface(const doc::Image* img);
 
 } // namespace app
 

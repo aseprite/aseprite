@@ -16,6 +16,8 @@
 
 #if LAF_SKIA
 
+#include "os/skia/skia_surface.h"
+
 #include "include/core/SkSurface.h"
 #if SK_ENABLE_SKSL
   #include "src/core/SkRuntimeEffectPriv.h"
@@ -108,6 +110,11 @@ sk_sp<SkSurface> wrap_docimage_in_sksurface(const doc::Image* img)
     get_skimageinfo_for_docimage(img),
     (void*)img->getPixelAddress(0, 0),
     img->rowBytes());
+}
+
+os::SurfaceRef wrap_docimage_in_surface(const doc::Image* img)
+{
+  return os::SurfaceRef(new os::SkiaSurface(wrap_docimage_in_sksurface(img)));
 }
 
 } // namespace app
