@@ -563,7 +563,7 @@ gfx::Size Graphics::doUIStringAlgorithm(const std::string& str, gfx::Color fg, g
       else
         xout = pt.x;
 
-      if (line.size() > 0)
+      if (!line.empty())
         drawText(line, fg, bg, gfx::Point(xout, pt.y));
 
       if (!gfx::is_transparent(bg))

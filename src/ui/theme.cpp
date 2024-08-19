@@ -593,7 +593,7 @@ void Theme::measureLayer(const Widget* widget,
     case Style::Layer::Type::kText:
       if (layer.color() != gfx::ColorNone) {
         gfx::Size textSize;
-        if (widget->text().size() > 0) {
+        if (!widget->text().empty()) {
           if (style->font() && style->font() != widget->font()) {
             text::Font* font = style->font();
             textSize =
