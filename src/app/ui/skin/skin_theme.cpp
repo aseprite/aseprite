@@ -1288,7 +1288,8 @@ void SkinTheme::drawEntryText(ui::Graphics* g, ui::Entry* widget)
 
   // Draw suffix if there is enough space
   if (!widget->getSuffix().empty()) {
-    Rect sufBounds(bounds.x, bounds.y,
+    Rect sufBounds(bounds.x + widget->font()->textLength(" "),
+                   bounds.y,
                    bounds.x2()-widget->childSpacing()*guiscale()-bounds.x,
                    widget->textHeight());
     IntersectClip clip(g, sufBounds & widget->clientChildrenBounds());

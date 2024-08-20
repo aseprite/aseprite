@@ -79,15 +79,15 @@ std::string parse_html(const std::string& str)
 
         std::string tag = str.substr(j, i - j);
         if (tag == "li") {
-          if (!paraOpen)
+          if (!paraOpen && result.back() != '\n')
             result.push_back('\n');
           result.push_back((char)0xc2);
           result.push_back((char)0xb7); // middle dot
           result.push_back(' ');
           paraOpen = false;
         }
-        else if (tag == "p" || tag == "ul") {
-          if (!paraOpen)
+        else if (tag == "p" || tag == "ul" || tag[0] == 'h') {
+          if (!paraOpen && result.back() != '\n')
             result.push_back('\n');
           paraOpen = true;
         }
@@ -123,7 +123,14 @@ std::string parse_html(const std::string& str)
       paraOpen = false;
     }
     else {
-      result.push_back(str[i++]);
+      auto character = str[i++];
+      if (character == '\n') {
+        // Rely only on paragraphs for newlines, otherwise we render them as just spaces because sometimes they show up in the middle of sentences.
+        result.push_back(' ');
+      }
+      else {
+        result.push_back(character);
+      }
       paraOpen = false;
     }
   }
@@ -150,8 +157,10 @@ protected:
     setTextQuiet(m_title);
     gfx::Size sz = theme->calcSizeHint(this, style);
 
-    if (!m_desc.empty())
-      sz.h *= 5;
+    if (!m_desc.empty()) {
+      // Title + number of total lines
+      sz.h *= 1 + std::count(m_desc.begin(), m_desc.end(), '\n');
+    }
 
     ev.setSizeHint(gfx::Size(0, sz.h));
   }

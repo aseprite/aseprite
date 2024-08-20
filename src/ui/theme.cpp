@@ -186,7 +186,6 @@ void Theme::setDecorativeWidgetBounds(Widget* widget)
       widget->setBounds(buttonBounds);
       break;
     }
-
   }
 }
 
@@ -336,16 +335,17 @@ void Theme::paintLayer(Graphics* g,
     return;
 
   switch (layer.type()) {
-
     case Style::Layer::Type::kBackground:
     case Style::Layer::Type::kBackgroundBorder:
-      if (layer.spriteSheet() &&
-          !layer.spriteBounds().isEmpty()) {
+      if (layer.spriteSheet() && !layer.spriteBounds().isEmpty()) {
         if (!layer.slicesBounds().isEmpty()) {
-          Theme::drawSlices(g, layer.spriteSheet(), rc,
+          Theme::drawSlices(g,
+                            layer.spriteSheet(),
+                            rc,
                             layer.spriteBounds(),
                             layer.slicesBounds(),
-                            layer.color(), true);
+                            layer.color(),
+                            true);
 
           if (layer.type() == Style::Layer::Type::kBackgroundBorder) {
             rc.x += layer.slicesBounds().x;
@@ -358,17 +358,17 @@ void Theme::paintLayer(Graphics* g,
         else {
           IntersectClip clip(g, rc);
           if (clip) {
-            auto draw = getDrawSurfaceFunction(
-              g, layer.spriteSheet(), layer.color());
+            auto draw =
+              getDrawSurfaceFunction(g, layer.spriteSheet(), layer.color());
 
             switch (layer.align()) {
-
               // Horizontal line
               case MIDDLE:
-                for (int x=rc.x; x<rc.x2(); x+=layer.spriteBounds().w) {
+                for (int x = rc.x; x < rc.x2(); x += layer.spriteBounds().w) {
                   draw(layer.spriteBounds().x,
                        layer.spriteBounds().y,
-                       x, rc.y+rc.h/2-layer.spriteBounds().h/2,
+                       x,
+                       rc.y + rc.h / 2 - layer.spriteBounds().h / 2,
                        layer.spriteBounds().w,
                        layer.spriteBounds().h);
                 }
@@ -376,10 +376,11 @@ void Theme::paintLayer(Graphics* g,
 
               // Vertical line
               case CENTER:
-                for (int y=rc.y; y<rc.y2(); y+=layer.spriteBounds().h) {
+                for (int y = rc.y; y < rc.y2(); y += layer.spriteBounds().h) {
                   draw(layer.spriteBounds().x,
                        layer.spriteBounds().y,
-                       rc.x+rc.w/2-layer.spriteBounds().w/2, y,
+                       rc.x + rc.w / 2 - layer.spriteBounds().w / 2,
+                       y,
                        layer.spriteBounds().w,
                        layer.spriteBounds().h);
                 }
@@ -389,19 +390,20 @@ void Theme::paintLayer(Graphics* g,
               case CENTER | MIDDLE:
                 draw(layer.spriteBounds().x,
                      layer.spriteBounds().y,
-                     rc.x+rc.w/2-layer.spriteBounds().w/2,
-                     rc.y+rc.h/2-layer.spriteBounds().h/2,
+                     rc.x + rc.w / 2 - layer.spriteBounds().w / 2,
+                     rc.y + rc.h / 2 - layer.spriteBounds().h / 2,
                      layer.spriteBounds().w,
                      layer.spriteBounds().h);
                 break;
 
               // Pattern
               case 0:
-                for (int y=rc.y; y<rc.y2(); y+=layer.spriteBounds().h) {
-                  for (int x=rc.x; x<rc.x2(); x+=layer.spriteBounds().w)
+                for (int y = rc.y; y < rc.y2(); y += layer.spriteBounds().h) {
+                  for (int x = rc.x; x < rc.x2(); x += layer.spriteBounds().w)
                     draw(layer.spriteBounds().x,
                          layer.spriteBounds().y,
-                         x, y,
+                         x,
+                         y,
                          layer.spriteBounds().w,
                          layer.spriteBounds().h);
                 }
@@ -417,13 +419,15 @@ void Theme::paintLayer(Graphics* g,
       break;
 
     case Style::Layer::Type::kBorder:
-      if (layer.spriteSheet() &&
-          !layer.spriteBounds().isEmpty() &&
+      if (layer.spriteSheet() && !layer.spriteBounds().isEmpty() &&
           !layer.slicesBounds().isEmpty()) {
-        Theme::drawSlices(g, layer.spriteSheet(), rc,
+        Theme::drawSlices(g,
+                          layer.spriteSheet(),
+                          rc,
                           layer.spriteBounds(),
                           layer.slicesBounds(),
-                          layer.color(), false);
+                          layer.color(),
+                          false);
 
         rc.x += layer.slicesBounds().x;
         rc.y += layer.slicesBounds().y;
@@ -435,60 +439,59 @@ void Theme::paintLayer(Graphics* g,
       }
       break;
 
-    case Style::Layer::Type::kText:
-      if (layer.color() != gfx::ColorNone) {
-        text::FontRef oldFont = base::AddRef(g->font());
-        if (style->font())
-          g->setFont(AddRef(style->font()));
+    case Style::Layer::Type::kText: {
+      if (text.empty())
+        break;
 
+      if (layer.color() != gfx::ColorNone) {
         if (layer.align() & WORDWRAP) {
           gfx::Rect textBounds = rc;
           textBounds.offset(layer.offset());
 
-          g->drawAlignedUIText(text,
-                               layer.color(),
-                               bgColor,
-                               textBounds, layer.align());
+          g->drawAlignedUIText(
+            text, layer.color(), bgColor, textBounds, layer.align());
         }
         else {
           gfx::Size textSize = g->measureUIText(text);
           gfx::Point pt;
           gfx::Border undef = Style::UndefinedBorder();
           gfx::Border padding = style->padding();
-          if (padding.left() == undef.left()) padding.left(0);
-          if (padding.right() == undef.right()) padding.right(0);
-          if (padding.top() == undef.top()) padding.top(0);
-          if (padding.bottom() == undef.bottom()) padding.bottom(0);
+          if (padding.left() == undef.left())
+            padding.left(0);
+          if (padding.right() == undef.right())
+            padding.right(0);
+          if (padding.top() == undef.top())
+            padding.top(0);
+          if (padding.bottom() == undef.bottom())
+            padding.bottom(0);
 
           if (layer.align() & LEFT)
-            pt.x = rc.x+padding.left();
+            pt.x = rc.x + padding.left();
           else if (layer.align() & RIGHT)
-            pt.x = rc.x+rc.w-textSize.w-padding.right();
+            pt.x = rc.x + rc.w - textSize.w - padding.right();
           else {
-            pt.x = CALC_FOR_CENTER(rc.x+padding.left(), rc.w-padding.width(), textSize.w);
+            pt.x = CALC_FOR_CENTER(rc.x + padding.left(), rc.w - padding.width(), textSize.w);
           }
 
           if (layer.align() & TOP)
-            pt.y = rc.y+padding.top();
+            pt.y = rc.y + padding.top();
           else if (layer.align() & BOTTOM)
-            pt.y = rc.y+rc.h-textSize.h-padding.bottom();
+            pt.y = rc.y + rc.h - textSize.h - padding.bottom();
           else {
-            pt.y = CALC_FOR_CENTER(rc.y+padding.top(), rc.h-padding.height(), textSize.h);
+            pt.y = CALC_FOR_CENTER(rc.y + padding.top(), rc.h - padding.height(), textSize.h);
           }
 
           pt += layer.offset();
 
-          if (!text.empty())
-            g->drawUIText(text,
-                          layer.color(),
-                          bgColor,
-                          pt, style->mnemonics() ? mnemonic : 0);
+          g->drawUIText(text,
+                        layer.color(),
+                        bgColor,
+                        pt,
+                        style->mnemonics() ? mnemonic : 0);
         }
-
-        if (style->font())
-          g->setFont(oldFont);
       }
       break;
+    }
 
     case Style::Layer::Type::kIcon: {
       os::Surface* icon = providedIcon ? providedIcon : layer.icon();
