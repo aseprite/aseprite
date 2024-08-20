@@ -23,6 +23,8 @@
 #include "os/surface.h"
 #include "os/system.h"
 #include "os/window.h"
+#include "text/typeface.h"
+#include "text/font_style.h"
 #include "text/draw_text.h"
 #include "text/font.h"
 #include "text/font_metrics.h"
@@ -393,15 +395,29 @@ public:
   void postDrawChar(const gfx::Rect& charBounds) override {
     if (!gfx::is_transparent(m_underscoreColor)) {
       text::FontMetrics metrics;
-      float height = m_font->metrics(&metrics);
+      m_font->metrics(&metrics);
+
+      float thickness = metrics.underlineThickness;
+      if (thickness <= 0) {
+        // Compensate for fonts that don't have underline thickness available.
+        thickness = 1.0;
+      }
+
+      auto typeface = m_font->typeface();
+      if (typeface.get()) {
+        // Give the underline some extra thickness based the font weight, if it's above Normal.
+        const int weight_value = (int) typeface.get()->fontStyle().weight() / 100;
+        const int weight_normal = (int) text::FontStyle::Weight::Normal / 100;
+        if (weight_value > weight_normal) {
+          thickness *= weight_value - weight_normal;
+        }
+      }
 
       gfx::RectF underscoreBounds(
         charBounds.x,
-        charBounds.y+(-metrics.ascent
-                      +metrics.underlinePosition
-                      -metrics.underlineThickness/2.0f),
+        charBounds.y + charBounds.h + metrics.underlinePosition,
         charBounds.w,
-        metrics.underlineThickness*guiscale());
+        thickness);
 
       os::Paint paint;
       paint.color(m_underscoreColor);
