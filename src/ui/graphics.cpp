@@ -403,19 +403,27 @@ public:
         thickness = 1.0;
       }
 
-      auto typeface = m_font->typeface();
-      if (typeface.get()) {
-        // Give the underline some extra thickness based the font weight, if it's above Normal.
-        const int weight_value = (int) typeface.get()->fontStyle().weight() / 100;
-        const int weight_normal = (int) text::FontStyle::Weight::Normal / 100;
-        if (weight_value > weight_normal) {
-          thickness *= weight_value - weight_normal;
+      float underscoreY;
+      if (m_font->type() == text::FontType::Native) {
+        auto typeface = m_font->typeface();
+        if (typeface.get()) {
+          // Give the underline some extra thickness based the font weight, if it's above Normal.
+          const int weight_value =
+            (int)typeface.get()->fontStyle().weight() / 100;
+          const int weight_normal = (int)text::FontStyle::Weight::Normal / 100;
+          if (weight_value > weight_normal) {
+            thickness *= weight_value - weight_normal;
+          }
         }
+        underscoreY = charBounds.y + charBounds.h + metrics.underlinePosition;
+      }
+      else {
+        underscoreY = charBounds.y + (-metrics.ascent + metrics.underlinePosition - metrics.underlineThickness / 2.0f);
       }
 
       gfx::RectF underscoreBounds(
         charBounds.x,
-        charBounds.y + charBounds.h + metrics.underlinePosition,
+        underscoreY,
         charBounds.w,
         thickness);
 
