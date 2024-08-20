@@ -272,6 +272,11 @@ void NewFileCommand::onExecute(Context* ctx)
     else
       layer->setName(fmt::format("{} {}", Strings::commands_NewLayer_Layer(), 1));
   }
+  if (sprite->pixelFormat() == IMAGE_INDEXED) {
+    sprite->rgbMap(0, Sprite::RgbMapFor(!layer->isBackground()),
+                   Preferences::instance().quantization.rgbmapAlgorithm(),
+                   Preferences::instance().quantization.fitCriteria());
+  }
 
   // Show the sprite to the user
   std::unique_ptr<Doc> doc(new Doc(sprite.get()));
