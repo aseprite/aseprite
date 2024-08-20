@@ -39,7 +39,7 @@ namespace cmd {
                    const doc::RgbMapAlgorithm mapAlgorithm,
                    doc::rgba_to_graya_func toGray,
                    render::TaskDelegate* delegate,
-                   const doc::FitCriteria fitCriteria = doc::FitCriteria::DEFAULT);
+                   const doc::FitCriteria fitCriteria);
 
   protected:
     void onExecute() override;

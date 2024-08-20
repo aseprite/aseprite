@@ -130,7 +130,8 @@ SetPixelFormat::SetPixelFormat(Sprite* sprite,
                        false, // TODO is background? it depends of the layer where this tileset is used
                        mapAlgorithm,
                        toGray,
-                       &superDel);
+                       &superDel,
+                       fitCriteria);
         }
         superDel.nextImage();
       }

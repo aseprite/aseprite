@@ -668,9 +668,10 @@ void ChangePixelFormatCommand::onExecute(Context* context)
     window.saveOptions();
   }
   else {
-    // TO DO: in a first approach a simple conversion to indexed color mode
-    // it's just via the old fit criteria (Euclidean color distance).
-    m_fitCriteria = FitCriteria::DEFAULT;
+    if (m_format == IMAGE_INDEXED) {
+      m_rgbmap = Preferences::instance().quantization.rgbmapAlgorithm();
+      m_fitCriteria = Preferences::instance().quantization.fitCriteria();
+    }
   }
 
   // No conversion needed

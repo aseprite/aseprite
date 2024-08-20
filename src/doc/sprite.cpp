@@ -36,7 +36,6 @@
 
 namespace doc {
 
-static RgbMapAlgorithm g_rgbMapAlgorithm = RgbMapAlgorithm::DEFAULT;
 static gfx::Rect g_defaultGridBounds(0, 0, 16, 16);
 
 // static
@@ -54,18 +53,6 @@ void Sprite::SetDefaultGridBounds(const gfx::Rect& defGridBounds)
     g_defaultGridBounds.w = 1;
   if (g_defaultGridBounds.h <= 0)
     g_defaultGridBounds.h = 1;
-}
-
-// static
-RgbMapAlgorithm Sprite::DefaultRgbMapAlgorithm()
-{
-  return g_rgbMapAlgorithm;
-}
-
-// static
-void Sprite::SetDefaultRgbMapAlgorithm(const RgbMapAlgorithm mapAlgo)
-{
-  g_rgbMapAlgorithm = mapAlgo;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -441,7 +428,7 @@ RgbMap* Sprite::rgbMap(const frame_t frame,
                        const RgbMapFor forLayer) const
 {
   FitCriteria fc = FitCriteria::DEFAULT;
-  RgbMapAlgorithm algo = g_rgbMapAlgorithm;
+  RgbMapAlgorithm algo = RgbMapAlgorithm::DEFAULT;
   if (m_rgbMap) {
     fc = m_rgbMap->fitCriteria();
     algo = m_rgbMap->rgbmapAlgorithm();

@@ -290,6 +290,13 @@ bool AseFormat::onLoad(FileOp* fop)
     return false;
 
   Sprite* sprite = delegate.sprite();
+
+  // Assign RgbMap
+  if (sprite->pixelFormat() == IMAGE_INDEXED)
+    sprite->rgbMap(0, Sprite::RgbMapFor(sprite->isOpaque()),
+                   fop->config().rgbMapAlgorithm,
+                   fop->config().fitCriteria);
+
   fop->createDocument(sprite);
 
   if (sprite->colorSpace() != nullptr &&
