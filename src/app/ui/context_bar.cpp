@@ -1260,9 +1260,9 @@ public:
     bool found = false;
     auto ditheringMatrices = App::instance()
       ->extensions().ditheringMatrices();
-    for (const auto& it : ditheringMatrices) {
-      if (it.name() == dynaPref.matrixName()) {
-        m_dynamics.ditheringMatrix = it.matrix();
+    for (const auto* it : ditheringMatrices) {
+      if (it->name() == dynaPref.matrixName()) {
+        m_dynamics.ditheringMatrix = it->matrix();
         found = true;
         break;
       }

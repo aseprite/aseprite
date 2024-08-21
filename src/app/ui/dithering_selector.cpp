@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This program is distributed under the terms of
@@ -217,25 +217,25 @@ void DitheringSelector::regenerate(int selectedItemIndex)
       addItem(new DitherItem(render::DitheringAlgorithm::None,
                              render::DitheringMatrix(),
                              Strings::dithering_selector_no_dithering()));
-      for (const auto& it : ditheringMatrices) {
+      for (const auto* it : ditheringMatrices) {
         try {
           addItem(new DitherItem(
             render::DitheringAlgorithm::Ordered,
-            it.matrix(),
-            Strings::dithering_selector_ordered_dithering() + it.name()));
+            it->matrix(),
+            Strings::dithering_selector_ordered_dithering() + it->name()));
         }
         catch (const std::exception& e) {
           LOG(ERROR, "%s\n", e.what());
           Console::showException(e);
         }
       }
-      for (const auto& it : ditheringMatrices) {
+      for (const auto* it : ditheringMatrices) {
         try {
           addItem(
             new DitherItem(
               render::DitheringAlgorithm::Old,
-              it.matrix(),
-              Strings::dithering_selector_old_dithering() + it.name()));
+              it->matrix(),
+              Strings::dithering_selector_old_dithering() + it->name()));
         }
         catch (const std::exception& e) {
           LOG(ERROR, "%s\n", e.what());
@@ -251,9 +251,9 @@ void DitheringSelector::regenerate(int selectedItemIndex)
     case SelectMatrix:
       addItem(new DitherItem(render::DitheringMatrix(),
                              Strings::dithering_selector_no_dithering()));
-      for (auto& it : ditheringMatrices) {
+      for (const auto* it : ditheringMatrices) {
         try {
-          addItem(new DitherItem(it.matrix(), it.name()));
+          addItem(new DitherItem(it->matrix(), it->name()));
         }
         catch (const std::exception& e) {
           LOG(ERROR, "%s\n", e.what());
