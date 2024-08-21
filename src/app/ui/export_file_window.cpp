@@ -199,6 +199,12 @@ void ExportFileWindow::setOutputFilename(const std::string& pathAndFilename)
   else {
     m_outputPath = base::get_file_path(m_doc->filename());
     m_outputFilename = base::get_relative_path(pathAndFilename, base::get_file_path(m_doc->filename()));
+
+    // Cannot find a relative path (e.g. we selected other drive)
+    if (m_outputFilename == pathAndFilename) {
+      m_outputPath = base::get_file_path(pathAndFilename);
+      m_outputFilename = base::get_file_name(pathAndFilename);
+    }
   }
 
   updateOutputFilenameEntry();
