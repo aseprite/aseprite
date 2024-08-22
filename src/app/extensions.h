@@ -222,7 +222,13 @@ namespace app {
     std::string palettePath(const std::string& palId);
     ExtensionItems palettes() const;
     const render::DitheringMatrix* ditheringMatrix(const std::string& matrixId);
-    std::vector<Extension::DitheringMatrixInfo> ditheringMatrices();
+
+    // The returned collection can be used temporarily while
+    // extensions are not installed/uninstalled. Each element is
+    // pointing to the real matrix info owned by extensions, this is
+    // needed to cache the matrix because it is lazy loaded from an
+    // image file. These pointers cannot be deleted.
+    std::vector<Extension::DitheringMatrixInfo*> ditheringMatrices();
 
     obs::signal<void(Extension*)> NewExtension;
     obs::signal<void(Extension*)> KeysChange;

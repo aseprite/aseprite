@@ -936,15 +936,15 @@ const render::DitheringMatrix* Extensions::ditheringMatrix(const std::string& ma
   return nullptr;
 }
 
-std::vector<Extension::DitheringMatrixInfo> Extensions::ditheringMatrices()
+std::vector<Extension::DitheringMatrixInfo*> Extensions::ditheringMatrices()
 {
-  std::vector<Extension::DitheringMatrixInfo> result;
+  std::vector<Extension::DitheringMatrixInfo*> result;
   for (auto ext : m_extensions) {
     if (!ext->isEnabled())      // Ignore disabled themes
       continue;
 
-    for (auto it : ext->m_ditheringMatrices)
-      result.push_back(it.second);
+    for (auto& it : ext->m_ditheringMatrices)
+      result.push_back(&it.second);
   }
   return result;
 }
