@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -365,6 +365,14 @@ void UIContext::onGetActiveSite(Site* site) const
           doc::PalettePicks picks;
           colorBar->getPaletteView()->getSelectedEntries(picks);
           site->selectedColors(picks);
+        }
+        else if (colorBar &&
+                 colorBar->getTilesView()->getSelectedEntriesCount() > 0) {
+          site->focus(Site::InColorBar);
+
+          doc::PalettePicks picks;
+          colorBar->getTilesView()->getSelectedEntries(picks);
+          site->selectedTiles(picks);
         }
         else {
           site->focus(Site::InEditor);
