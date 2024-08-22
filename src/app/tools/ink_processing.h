@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -570,6 +570,12 @@ public:
   ReplaceInkProcessing(ToolLoop* loop) {
     m_color1 = loop->getPrimaryColor();
     m_color2 = loop->getSecondaryColor();
+    if (loop->getLayer()->isBackground()) {
+      switch (loop->sprite()->pixelFormat()) {
+        case IMAGE_RGB: m_color2 |= rgba_a_mask; break;
+        case IMAGE_GRAYSCALE: m_color2 |= graya_a_mask; break;
+      }
+    }
     m_opacity = loop->getOpacity();
   }
 
