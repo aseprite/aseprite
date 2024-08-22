@@ -162,6 +162,8 @@ bool DraggingValueState::onUpdateStatusBar(Editor* editor)
 
 void DraggingValueState::onBeforeCommandExecution(CommandExecutionEvent& ev)
 {
+  if (m_editor->hasCapture())
+    m_editor->releaseMouse();
   m_editor->backToPreviousState();
 }
 
