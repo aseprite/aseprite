@@ -61,7 +61,7 @@ void GraphicsContext::drawImage(const doc::Image* img, int x, int y)
     return;
   }
 
-   drawImage(img, img->bounds(), gfx::Rect(x, y, img->size().w, img->size().h));
+  drawImage(img, img->bounds(), gfx::Rect(x, y, img->size().w, img->size().h));
 }
 
 void GraphicsContext::drawImage(const doc::Image* img,
