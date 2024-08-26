@@ -73,7 +73,7 @@ namespace ui {
     obs::signal<void()> Change;
 
   protected:
-    gfx::Rect getCharBoxBounds(int charBoxIndex);
+    gfx::Rect getCharBoxBounds(int i);
 
     // Events
     bool onProcessMessage(Message* msg) override;
@@ -121,10 +121,11 @@ namespace ui {
     class CalcBoxesTextDelegate;
 
     struct CharBox {
-      int codepoint;
-      int from, to;
-      int width;
-      CharBox() { codepoint = from = to = width = 0; }
+      int codepoint = 0;
+      int from = 0;
+      int to = 0;
+      float x = 0.0f;
+      float width = 0.0f;
     };
 
     using CharBoxes = std::vector<CharBox>;
