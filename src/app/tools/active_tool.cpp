@@ -237,6 +237,15 @@ void ActiveToolManager::setSelectedTool(Tool* tool)
 bool ActiveToolManager::isToolAffectedByRightClickMode(Tool* tool)
 {
   bool shadingMode = (Preferences::instance().tool(tool).ink() == InkType::SHADING);
+
+  if (shadingMode) {
+
+    ColorBar* colorbar = ColorBar::instance();
+    if (colorbar->getPaletteView()->getLastSelectionSize() < 2)
+      shadingMode = false;
+
+  }
+
   return
     ((tool->getInk(0)->isPaint() && !shadingMode) ||
      (tool->getInk(0)->isEffect())) &&
