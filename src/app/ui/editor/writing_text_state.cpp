@@ -400,6 +400,10 @@ void WritingTextState::onFontChange()
     m_entry->setFont(font);
     m_entry->invalidate();
     m_editor->invalidate();
+
+    // This is useful to show changes to the anti-alias option
+    // immediately.
+    auto dummy = m_entry->extraCel();
   }
 }
 
