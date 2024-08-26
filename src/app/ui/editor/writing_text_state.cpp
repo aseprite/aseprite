@@ -34,6 +34,7 @@
 #include "ui/entry.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"
+#include "ui/system.h"
 
 #ifdef LAF_SKIA
   #include "app/util/shader_helpers.h"
@@ -56,6 +57,8 @@ public:
     , m_extraCel(new ExtraCel) {
     // We have to draw the editor as background of this ui::Entry.
     setTransparent(true);
+
+    setPersistSelection(true);
 
     // TODO move this opacity() to Site class
     int t, opacity = (site.layer()->isImage() ?
@@ -300,6 +303,15 @@ bool WritingTextState::onKeyUp(Editor*, KeyMessage* msg)
   return true;
 }
 
+void WritingTextState::onEditorGotFocus(Editor* editor)
+{
+  // Focus the entry when we focus the editor, it happens when we
+  // change the font settings, so we keep the focus in the entry
+  // field.
+  if (m_entry)
+    m_entry->requestFocus();
+}
+
 void WritingTextState::onEditorResize(Editor* editor)
 {
   const gfx::PointF scale(editor->projection().scaleX(),
@@ -404,6 +416,11 @@ void WritingTextState::onFontChange()
     // This is useful to show changes to the anti-alias option
     // immediately.
     auto dummy = m_entry->extraCel();
+
+    ui::execute_from_ui_thread([this]{
+      if (m_entry)
+        m_entry->requestFocus();
+    });
   }
 }
 

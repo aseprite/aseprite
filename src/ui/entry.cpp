@@ -51,6 +51,7 @@ Entry::Entry(const int maxsize, const char* format, ...)
   , m_readonly(false)
   , m_recent_focused(false)
   , m_lock_selection(false)
+  , m_persist_selection(false)
   , m_translate_dead_keys(true)
   , m_scale(1.0f, 1.0f)
 {
@@ -273,7 +274,8 @@ bool Entry::onProcessMessage(Message* msg)
         m_lock_selection = false;
       }
       else {
-        selectAllText();
+        if (!m_persist_selection)
+          selectAllText();
         m_recent_focused = true;
       }
 
@@ -287,7 +289,7 @@ bool Entry::onProcessMessage(Message* msg)
 
       stopTimer();
 
-      if (!m_lock_selection)
+      if (!m_lock_selection && !m_persist_selection)
         deselectText();
 
       m_recent_focused = false;

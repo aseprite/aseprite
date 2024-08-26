@@ -24,6 +24,7 @@ namespace app {
     LeaveAction onLeaveState(Editor* editor, EditorState* newState) override;
     void onEnterState(Editor* editor) override;
     void onBeforePopState(Editor* editor) override;
+    void onEditorGotFocus(Editor* editor) override;
     void onEditorResize(Editor* editor) override;
     bool onMouseDown(Editor* editor, ui::MouseMessage* msg) override;
     bool onMouseUp(Editor* editor, ui::MouseMessage* msg) override;

@@ -54,6 +54,10 @@ namespace ui {
     std::string selectedText() const;
     Range selectedRange() const;
 
+    // Set to true if you want to persists the selection when the
+    // keyboard focus is lost/re-enters.
+    void setPersistSelection(bool state) { m_persist_selection = state; }
+
     void setSuffix(const std::string& suffix);
     std::string getSuffix();
 
@@ -141,6 +145,7 @@ namespace ui {
     bool m_readonly : 1;
     bool m_recent_focused : 1;
     bool m_lock_selection : 1;
+    bool m_persist_selection : 1;
     bool m_translate_dead_keys : 1;
     Range m_selecting_words;
     std::unique_ptr<std::string> m_suffix;
