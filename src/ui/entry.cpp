@@ -541,6 +541,12 @@ void Entry::onPaint(PaintEvent& ev)
   theme()->paintEntry(ev);
 }
 
+void Entry::onSetFont()
+{
+  Widget::onSetFont();
+  recalcCharBoxes(text());
+}
+
 void Entry::onSetText()
 {
   Widget::onSetText();

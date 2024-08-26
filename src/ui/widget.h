@@ -437,6 +437,7 @@ namespace ui {
     virtual void onVisible(bool visible);
     virtual void onEnable(bool enabled);
     virtual void onSelect(bool selected);
+    virtual void onSetFont();
     virtual void onSetText();
     virtual void onSetBgColor();
     virtual int onGetTextInt() const;

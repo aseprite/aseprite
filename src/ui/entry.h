@@ -79,6 +79,7 @@ namespace ui {
     bool onProcessMessage(Message* msg) override;
     void onSizeHint(SizeHintEvent& ev) override;
     void onPaint(PaintEvent& ev) override;
+    void onSetFont() override;
     void onSetText() override;
 
     // New Events
