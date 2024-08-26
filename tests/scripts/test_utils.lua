@@ -288,3 +288,13 @@ function assert_slices_eq(expectedSlices, slices)
     end
   end
 end
+
+-- Prints a message indicating that the current test was skipped along with
+-- a level 2 debug traceback.
+function skipped(reason)
+  local msg = "Test skipped"
+  if reason then
+    msg = msg .. ": " .. reason
+  end
+  print(debug.traceback(msg, 2))
+end
