@@ -757,7 +757,7 @@ int Image_get_context(lua_State* L)
 
   if (!obj->context) {
     auto surface = wrap_docimage_in_surface(obj->image(L));
-    obj->context = std::make_unique<GraphicsContext>(surface, ui::guiscale());
+    obj->context = std::make_unique<GraphicsContext>(surface, ui::guiscale(), obj->image(L)->pixelFormat());
   }
 
   push_obj(L, *obj->context);

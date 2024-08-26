@@ -9,6 +9,7 @@
 #pragma once
 
 #include "doc/palette.h"
+#include "doc/pixel_format.h"
 #include "gfx/path.h"
 #include "os/paint.h"
 #include "os/surface.h"
@@ -31,7 +32,10 @@ private:
   };
 
 public:
-  GraphicsContext(const os::SurfaceRef& surface, int uiscale) : m_surface(surface), m_uiscale(uiscale) { }
+  GraphicsContext(const os::SurfaceRef& surface,
+                  int uiscale,
+                  doc::PixelFormat formatHint = doc::PixelFormat::IMAGE_RGB)
+    : m_surface(surface), m_uiscale(uiscale), m_formatHint(formatHint) { }
   GraphicsContext(const GraphicsContext& gc) {
     m_surface = gc.m_surface;
     m_font = gc.m_font;
@@ -39,6 +43,7 @@ public:
     m_palette = gc.m_palette;
     m_path = gc.m_path;
     m_saved = gc.m_saved;
+    m_formatHint = gc.m_formatHint;
     m_uiscale = gc.m_uiscale;
   }
   GraphicsContext(GraphicsContext&& gc) noexcept {
@@ -46,6 +51,7 @@ public:
     std::swap(m_paint, gc.m_paint);
     std::swap(m_font, gc.m_font);
     std::swap(m_path, gc.m_path);
+    m_formatHint = gc.m_formatHint;
     m_uiscale = gc.m_uiscale;
   }
 
@@ -77,7 +83,7 @@ public:
   void antialias(bool value) { m_paint.antialias(value); }
 
   gfx::Color color() const { return m_paint.color(); }
-  void color(gfx::Color color) { m_paint.color(color); }
+  void color(gfx::Color color);
 
   float strokeWidth() const { return m_paint.strokeWidth(); }
   void strokeWidth(float value) { m_paint.strokeWidth(value); }
@@ -142,6 +148,10 @@ public:
     return m_uiscale;
   }
 
+  doc::PixelFormat formatHint() const {
+    return m_formatHint;
+  }
+
 private:
   os::SurfaceRef m_surface = nullptr;
   // Keeps the UI Scale currently in use when canvas autoScaling is enabled.
@@ -151,6 +161,8 @@ private:
   gfx::Path m_path;
   std::stack<State> m_saved;
   doc::Palette* m_palette = nullptr;
+  // Pixel format hint about the underlying pixels wrapped by m_surface.
+  doc::PixelFormat m_formatHint = doc::PixelFormat::IMAGE_RGB;
 };
 
 } // namespace script
