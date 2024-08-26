@@ -25,7 +25,7 @@ namespace app {
     gfx::Color blackandwhite(gfx::Color color);
     gfx::Color blackandwhite_neg(gfx::Color color);
 
-    app::Color color_from_ui(const gfx::Color color);
+    app::Color color_from_ui(const gfx::Color color, doc::PixelFormat format = doc::PixelFormat::IMAGE_RGB);
     gfx::Color color_for_ui(const app::Color& color);
     doc::color_t color_for_image(const app::Color& color, doc::PixelFormat format);
     doc::color_t color_for_image_without_alpha(const app::Color& color, doc::PixelFormat format);
