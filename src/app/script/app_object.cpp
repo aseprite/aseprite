@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -352,19 +352,36 @@ int App_useTool(lua_State* L)
     params.inkType = get_value_from_lua<tools::InkType>(L, -1);
   lua_pop(L, 1);
 
+  // Are we going to modify pixels or tiles?
+  type = lua_getfield(L, 1, "tilemapMode");
+  if (type != LUA_TNIL) {
+    site.tilemapMode(TilemapMode(lua_tointeger(L, -1)));
+  }
+  lua_pop(L, 1);
+
   // Color
   type = lua_getfield(L, 1, "color");
   if (type != LUA_TNIL)
     params.fg = convert_args_into_color(L, -1);
   else {
     // Default color is the active fgColor
-    params.fg = Preferences::instance().colorBar.fgColor();
+    if (site.tilemapMode() == TilemapMode::Tiles)
+      params.fg = Color::fromIndex(Preferences::instance().colorBar.fgTile());
+    else
+      params.fg = Preferences::instance().colorBar.fgColor();
   }
   lua_pop(L, 1);
 
   type = lua_getfield(L, 1, "bgColor");
   if (type != LUA_TNIL)
     params.bg = convert_args_into_color(L, -1);
+  else if (params.fg.getType() ==
+           Preferences::instance().colorBar.bgColor().getType()) {
+    if (site.tilemapMode() == TilemapMode::Tiles)
+      params.bg = Color::fromIndex(Preferences::instance().colorBar.bgTile());
+    else
+      params.bg = Preferences::instance().colorBar.bgColor();
+  }
   else
     params.bg = params.fg;
   lua_pop(L, 1);
@@ -446,13 +463,6 @@ int App_useTool(lua_State* L)
         break;
     }
   }
-
-  // Are we going to modify pixels or tiles?
-  type = lua_getfield(L, 1, "tilemapMode");
-  if (type != LUA_TNIL) {
-    site.tilemapMode(TilemapMode(lua_tointeger(L, -1)));
-  }
-  lua_pop(L, 1);
 
   // How the tileset must be modified depending on this tool usage
   type = lua_getfield(L, 1, "tilesetMode");
@@ -643,6 +653,30 @@ int App_get_bgColor(lua_State* L)
 int App_set_bgColor(lua_State* L)
 {
   Preferences::instance().colorBar.bgColor(convert_args_into_color(L, 2));
+  return 0;
+}
+
+int App_get_fgTile(lua_State* L)
+{
+  lua_pushinteger(L, Preferences::instance().colorBar.fgTile());
+  return 1;
+}
+
+int App_set_fgTile(lua_State* L)
+{
+  Preferences::instance().colorBar.fgTile(lua_tointeger(L, 2));
+  return 0;
+}
+
+int App_get_bgTile(lua_State* L)
+{
+  lua_pushinteger(L, Preferences::instance().colorBar.bgTile());
+  return 1;
+}
+
+int App_set_bgTile(lua_State* L)
+{
+  Preferences::instance().colorBar.bgTile(lua_tointeger(L, 2));
   return 0;
 }
 
@@ -837,6 +871,8 @@ const Property App_properties[] = {
   { "sprites",        App_get_sprites,        nullptr },
   { "fgColor",        App_get_fgColor,        App_set_fgColor },
   { "bgColor",        App_get_bgColor,        App_set_bgColor },
+  { "fgTile",         App_get_fgTile,        App_set_fgTile },
+  { "bgTile",         App_get_bgTile,        App_set_bgTile },
   { "version",        App_get_version,        nullptr },
   { "apiVersion",     App_get_apiVersion,     nullptr },
   { "site",           App_get_site,           nullptr },
