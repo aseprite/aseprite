@@ -43,6 +43,7 @@
 #include "app/ui/dynamics_popup.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/expr_entry.h"
+#include "app/ui/font_entry.h"
 #include "app/ui/icon_button.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/layer_frame_comboboxes.h"
@@ -1837,6 +1838,22 @@ private:
   std::string m_filter;
 };
 
+class ContextBar::FontSelector : public FontEntry {
+public:
+  FontSelector(ContextBar* contextBar) {
+    // Load the font from the preferences
+    setInfo(FontInfo::getFromPreferences());
+
+    FontChange.connect([contextBar](){
+      contextBar->FontChange();
+    });
+  }
+
+  ~FontSelector() {
+    info().updatePreferences();
+  }
+};
+
 ContextBar::ContextBar(TooltipManager* tooltipManager,
                        ColorBar* colorBar)
 {
@@ -1891,6 +1908,7 @@ ContextBar::ContextBar(TooltipManager* tooltipManager,
   m_symmetry->setVisible(pref.symmetryMode.enabled());
 
   addChild(m_sliceFields = new SliceFields);
+  addChild(m_fontSelector = new FontSelector(this));
 
   setupTooltips(tooltipManager);
 
@@ -2183,6 +2201,11 @@ void ContextBar::updateForTool(tools::Tool* tool)
     (tool->getInk(0)->isSlice() ||
      tool->getInk(1)->isSlice());
 
+  // True if the current tool is text tool.
+  const bool isText = tool &&
+    (tool->getInk(0)->isText() ||
+     tool->getInk(1)->isText());
+
   // True if the current tool is floodfill
   const bool isFloodfill = tool &&
     (tool->getPointShape(0)->isFloodFill() ||
@@ -2266,6 +2289,8 @@ void ContextBar::updateForTool(tools::Tool* tool)
   m_sliceFields->setVisible(isSlice);
   if (isSlice)
     updateSliceFields(UIContext::instance()->activeSite());
+
+  m_fontSelector->setVisible(isText);
 
   // Update ink shades with the current selected palette entries
   if (updateShade)
@@ -2552,6 +2577,11 @@ void ContextBar::reverseShadeColors()
 void ContextBar::setInkType(tools::InkType type)
 {
   m_inkType->setInkType(type);
+}
+
+FontInfo ContextBar::fontInfo() const
+{
+  return m_fontSelector->info();
 }
 
 render::DitheringMatrix ContextBar::ditheringMatrix()

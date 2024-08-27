@@ -174,6 +174,15 @@ text::Font* Widget::font() const
   return m_font.get();
 }
 
+void Widget::setFont(const text::FontRef& font)
+{
+  if (m_font != font) {
+    m_font = font;
+    m_blob.reset();
+    onSetFont();
+  }
+}
+
 void Widget::setBgColor(gfx::Color color)
 {
   assert_ui_thread();
@@ -1753,6 +1762,11 @@ void Widget::onEnable(bool enabled)
 void Widget::onSelect(bool selected)
 {
   // Do nothing
+}
+
+void Widget::onSetFont()
+{
+  invalidate();
 }
 
 void Widget::onSetText()

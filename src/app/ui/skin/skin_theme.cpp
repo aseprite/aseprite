@@ -1141,17 +1141,21 @@ void SkinTheme::paintEntry(PaintEvent& ev)
   gfx::Rect bounds = widget->clientBounds();
 
   // Outside borders
-  g->fillRect(BGCOLOR, bounds);
+  const gfx::Color bg = BGCOLOR;
+  if (!is_transparent(bg))
+    g->fillRect(bg, bounds);
 
   bool isMiniLook = false;
   auto skinPropery = std::static_pointer_cast<SkinProperty>(widget->getProperty(SkinProperty::Name));
   if (skinPropery)
     isMiniLook = (skinPropery->getLook() == MiniLook);
 
-  drawRect(g, bounds,
+  drawRect(
+    g, bounds,
     (widget->hasFocus() ?
      (isMiniLook ? parts.sunkenMiniFocused().get(): parts.sunkenFocused().get()):
-     (isMiniLook ? parts.sunkenMiniNormal().get() : parts.sunkenNormal().get())));
+     (isMiniLook ? parts.sunkenMiniNormal().get() : parts.sunkenNormal().get())),
+    !is_transparent(bg));         // Paint center if the BG is not transparent
 
   drawEntryText(g, widget);
 }
@@ -1676,6 +1680,15 @@ void SkinTheme::drawEntryCaret(ui::Graphics* g, Entry* widget, int x, int y)
 
   for (int u=x; u<x+caretSize.w; ++u)
     g->drawVLine(color, u, y+textHeight/2-caretSize.h/2, caretSize.h);
+}
+
+text::FontRef SkinTheme::getFontByName(const std::string& name,
+                                       const int size)
+{
+  auto it = m_fonts.find(name);
+  if (it == m_fonts.end())
+    return nullptr;
+  return it->second->getFont(m_fontMgr, size);
 }
 
 SkinPartPtr SkinTheme::getToolPart(const char* toolId) const

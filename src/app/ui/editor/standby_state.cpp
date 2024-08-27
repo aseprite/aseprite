@@ -41,6 +41,7 @@
 #include "app/ui/editor/pivot_helpers.h"
 #include "app/ui/editor/pixels_movement.h"
 #include "app/ui/editor/scrolling_state.h"
+#include "app/ui/editor/select_text_box_state.h"
 #include "app/ui/editor/tool_loop_impl.h"
 #include "app/ui/editor/transform_handles.h"
 #include "app/ui/editor/vec2.h"
@@ -229,6 +230,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
     return true;
   }
 
+  // Handle Slice tool
   if (clickedInk->isSlice()) {
     EditorHit hit = editor->calcHit(msg->position());
     switch (hit.type()) {
@@ -265,6 +267,13 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
         }
         return true;
     }
+  }
+
+  // Handle Text tool
+  if (clickedInk->isText()) {
+    EditorStatePtr newState(new SelectTextBoxState(editor, msg));
+    editor->setState(newState);
+    return true;
   }
 
   // Only if the selected tool or quick tool is selection, we give the
@@ -484,6 +493,10 @@ bool StandbyState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
           }
           return true;
       }
+    }
+    else if (ink->isText()) {
+      editor->showMouseCursor(kCrosshairCursor);
+      return true;
     }
   }
 

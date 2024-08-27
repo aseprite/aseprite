@@ -403,9 +403,11 @@ if(ENABLE_UI)
     ui/editor/play_state.cpp
     ui/editor/scrolling_state.cpp
     ui/editor/select_box_state.cpp
+    ui/editor/select_text_box_state.cpp
     ui/editor/standby_state.cpp
     ui/editor/state_with_wheel_behavior.cpp
     ui/editor/transform_handles.cpp
+    ui/editor/writing_text_state.cpp
     ui/editor/zooming_state.cpp
     ui/export_file_window.cpp
     ui/expr_entry.cpp
@@ -413,6 +415,7 @@ if(ENABLE_UI)
     ui/file_list_view.cpp
     ui/file_selector.cpp
     ui/filename_field.cpp
+    ui/font_entry.cpp
     ui/font_popup.cpp
     ui/hex_color_entry.cpp
     ui/home_view.cpp
@@ -661,6 +664,7 @@ target_sources(app-lib PRIVATE
   file_system.cpp
   filename_formatter.cpp
   flatten.cpp
+  font_info.cpp
   font_path.cpp
   gui_xml.cpp
   i18n/strings.cpp
@@ -710,7 +714,6 @@ target_sources(app-lib PRIVATE
   util/conversion_to_surface.cpp
   util/expand_cel_canvas.cpp
   util/filetoks.cpp
-  util/freetype_utils.cpp
   util/layer_boundaries.cpp
   util/layer_utils.cpp
   util/msk_file.cpp
@@ -720,6 +723,7 @@ target_sources(app-lib PRIVATE
   util/pixel_ratio.cpp
   util/range_utils.cpp
   util/readable_time.cpp
+  util/render_text.cpp
   util/resize_image.cpp
   util/shader_helpers.cpp
   util/tile_flags_utils.cpp
@@ -744,7 +748,6 @@ target_link_libraries(app-lib
   tga-lib
   laf-gfx
   render-lib
-  laf-ft
   laf-os
   laf-text
   ui-lib

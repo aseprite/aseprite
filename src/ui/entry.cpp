@@ -51,7 +51,9 @@ Entry::Entry(const int maxsize, const char* format, ...)
   , m_readonly(false)
   , m_recent_focused(false)
   , m_lock_selection(false)
+  , m_persist_selection(false)
   , m_translate_dead_keys(true)
+  , m_scale(1.0f, 1.0f)
 {
   enableFlags(CTRL_RIGHT_CLICK);
 
@@ -116,7 +118,7 @@ int Entry::lastCaretPos() const
   return int(m_boxes.size()-1);
 }
 
-void Entry::setCaretPos(int pos)
+void Entry::setCaretPos(const int pos)
 {
   gfx::Size caretSize = theme()->getEntryCaretSize(this);
   int textlen = lastCaretPos();
@@ -124,17 +126,22 @@ void Entry::setCaretPos(int pos)
   m_scroll = std::clamp(m_scroll, 0, textlen);
 
   // Backward scroll
-  if (m_caret < m_scroll)
+  if (m_caret < m_scroll) {
     m_scroll = m_caret;
+  }
   // Forward scroll
   else if (m_caret > m_scroll) {
-    int xLimit = bounds().x2() - border().right();
-    while (m_caret > m_scroll) {
-      int segmentWidth = 0;
-      for (int j=m_scroll; j<m_caret; ++j)
-        segmentWidth += m_boxes[j].width;
+    const int xLimit = bounds().x2() - border().right();
 
-      int x = bounds().x + border().left() + segmentWidth + caretSize.w;
+    while (m_caret > m_scroll) {
+      const float visibleTextWidth =
+        m_boxes[m_caret].x -
+        m_boxes[m_scroll].x;
+
+      const int x =
+        bounds().x + border().left() +
+        visibleTextWidth*m_scale.x + caretSize.w;
+
       if (x < xLimit)
         break;
       else
@@ -235,6 +242,15 @@ gfx::Rect Entry::getEntryTextBounds() const
   return onGetEntryTextBounds();
 }
 
+gfx::Rect Entry::getCharBoxBounds(const int i)
+{
+  ASSERT(i >= 0 && i < int(m_boxes.size()));
+  if (i >= 0 && i < int(m_boxes.size()))
+    return gfx::Rect(m_boxes[i].x, 0, m_boxes[i].width, textHeight());
+  else
+    return gfx::Rect();
+}
+
 bool Entry::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
@@ -258,7 +274,8 @@ bool Entry::onProcessMessage(Message* msg)
         m_lock_selection = false;
       }
       else {
-        selectAllText();
+        if (!m_persist_selection)
+          selectAllText();
         m_recent_focused = true;
       }
 
@@ -272,7 +289,7 @@ bool Entry::onProcessMessage(Message* msg)
 
       stopTimer();
 
-      if (!m_lock_selection)
+      if (!m_lock_selection && !m_persist_selection)
         deselectText();
 
       m_recent_focused = false;
@@ -526,6 +543,12 @@ void Entry::onPaint(PaintEvent& ev)
   theme()->paintEntry(ev);
 }
 
+void Entry::onSetFont()
+{
+  Widget::onSetFont();
+  recalcCharBoxes(text());
+}
+
 void Entry::onSetText()
 {
   Widget::onSetText();
@@ -551,30 +574,33 @@ gfx::Rect Entry::onGetEntryTextBounds() const
   return bounds;
 }
 
-int Entry::getCaretFromMouse(MouseMessage* mousemsg)
+int Entry::getCaretFromMouse(MouseMessage* mouseMsg)
 {
-  int mouseX = mousemsg->position().x;
+  const int mouseX = mouseMsg->position().x;
+
   if (mouseX < bounds().x+border().left()) {
     // Scroll to the left
     return std::max(0, m_scroll-1);
   }
 
   int lastPos = lastCaretPos();
-  int i = std::min(m_scroll, lastPos);
+  int scroll = m_scroll;
+  int i = std::min(scroll, lastPos);
+  int scrollX = m_boxes[scroll].x;
   for (; i<lastPos; ++i) {
-    int segmentWidth = 0;
-    int indexBox = 0;
-    for (int j=m_scroll; j<i; ++j) {
-      segmentWidth += m_boxes[j].width;
-      indexBox = j+1;
-    }
+    const int x = bounds().x + border().left() + m_boxes[i].x*m_scale.x - scrollX;
 
-    int x = bounds().x + border().left() + segmentWidth + m_boxes[indexBox].width / 2;
+    if (mouseX >= x && mouseX < x+m_boxes[i].width)
+      break;
 
     if (mouseX > bounds().x2() - border().right()) {
       if (x >= bounds().x2() - border().right()) {
         // Scroll to the right
-        break;
+        i = std::min(++scroll, lastPos);
+        if (i == lastPos)
+          break;
+
+        scrollX = m_boxes[scroll].x;
       }
     }
     else if (x > mouseX)
@@ -909,6 +935,7 @@ public:
   }
 
   bool preDrawChar(const gfx::Rect& charBounds) override {
+    m_box.x = charBounds.x;
     m_box.width = charBounds.w;
     return true;
   }
@@ -927,10 +954,11 @@ void Entry::recalcCharBoxes(const std::string& text)
 {
   int lastTextIndex = int(text.size());
   CalcBoxesTextDelegate delegate(lastTextIndex);
-  text::draw_text(nullptr,
-                  theme()->fontMgr(),
-                  base::AddRef(font()), text,
-                  gfx::ColorNone, gfx::ColorNone, 0, 0, &delegate);
+  float lastX =
+    text::draw_text(nullptr,
+                    theme()->fontMgr(),
+                    base::AddRef(font()), text,
+                    gfx::ColorNone, gfx::ColorNone, 0, 0, &delegate).w;
   m_boxes = delegate.boxes();
 
   if (!m_boxes.empty()) {
@@ -941,6 +969,8 @@ void Entry::recalcCharBoxes(const std::string& text)
   CharBox box;
   box.codepoint = 0;
   box.from = box.to = lastTextIndex;
+  box.x = lastX;
+  box.width = theme()->getEntryCaretSize(this).w;
   m_boxes.push_back(box);
 }
 

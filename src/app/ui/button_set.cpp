@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -190,8 +190,9 @@ void ButtonSet::Item::onRightClick()
   buttonSet()->onRightClick(this);
 }
 
-ButtonSet::ButtonSet(int columns)
-  : Grid(columns, false)
+ButtonSet::ButtonSet(const int columns,
+                     const bool same_width_columns)
+  : Grid(columns, same_width_columns)
   , m_offerCapture(true)
   , m_triggerOnMouseUp(false)
   , m_multiMode(MultiMode::One)

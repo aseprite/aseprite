@@ -46,12 +46,17 @@ namespace ui {
 
     void setCaretPos(int pos);
     void setCaretToEnd();
+    bool isCaretVisible() const { return !m_hidden && m_state; }
 
     void selectText(int from, int to);
     void selectAllText();
     void deselectText();
     std::string selectedText() const;
     Range selectedRange() const;
+
+    // Set to true if you want to persists the selection when the
+    // keyboard focus is lost/re-enters.
+    void setPersistSelection(bool state) { m_persist_selection = state; }
 
     void setSuffix(const std::string& suffix);
     std::string getSuffix();
@@ -62,6 +67,9 @@ namespace ui {
     void getEntryThemeInfo(int* scroll, int* caret, int* state, Range* range) const;
     gfx::Rect getEntryTextBounds() const;
 
+    gfx::PointF scale() const { return m_scale; }
+    void setScale(const gfx::PointF& scale) { m_scale = scale; }
+
     static gfx::Size sizeHintWithText(Entry* entry,
                                       const std::string& text);
 
@@ -69,10 +77,13 @@ namespace ui {
     obs::signal<void()> Change;
 
   protected:
+    gfx::Rect getCharBoxBounds(int i);
+
     // Events
     bool onProcessMessage(Message* msg) override;
     void onSizeHint(SizeHintEvent& ev) override;
     void onPaint(PaintEvent& ev) override;
+    void onSetFont() override;
     void onSetText() override;
 
     // New Events
@@ -115,10 +126,11 @@ namespace ui {
     class CalcBoxesTextDelegate;
 
     struct CharBox {
-      int codepoint;
-      int from, to;
-      int width;
-      CharBox() { codepoint = from = to = width = 0; }
+      int codepoint = 0;
+      int from = 0;
+      int to = 0;
+      float x = 0.0f;
+      float width = 0.0f;
     };
 
     using CharBoxes = std::vector<CharBox>;
@@ -133,9 +145,15 @@ namespace ui {
     bool m_readonly : 1;
     bool m_recent_focused : 1;
     bool m_lock_selection : 1;
+    bool m_persist_selection : 1;
     bool m_translate_dead_keys : 1;
     Range m_selecting_words;
     std::unique_ptr<std::string> m_suffix;
+
+    // Scale (1.0 by default) applied to each axis. Can be used in
+    // case you are going to display/paint the text scaled and want to
+    // convert the mouse position correctly.
+    gfx::PointF m_scale;
   };
 
 } // namespace ui

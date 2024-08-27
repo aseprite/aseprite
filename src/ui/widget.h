@@ -139,6 +139,7 @@ namespace ui {
     // ===============================================================
 
     text::Font* font() const;
+    void setFont(const text::FontRef& font);
 
     // Gets the background color of the widget.
     gfx::Color bgColor() const {
@@ -436,6 +437,7 @@ namespace ui {
     virtual void onVisible(bool visible);
     virtual void onEnable(bool enabled);
     virtual void onSelect(bool selected);
+    virtual void onSetFont();
     virtual void onSetText();
     virtual void onSetBgColor();
     virtual int onGetTextInt() const;
