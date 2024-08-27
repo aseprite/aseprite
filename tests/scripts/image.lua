@@ -553,13 +553,16 @@ do
     gc.color = Color{ index=2 }
     local c = gc.color.index
     gc.strokeWidth = 1
+    -- Setting blendMlode to BlendMode.SRC will make GraphicsContext's painting
+    -- behave correclty for indexed images.
+    gc.blendMode = BlendMode.SRC
     gc:rect(Rectangle{0,0,1,1})
     gc:stroke()
 
-    expect_img(img, { c, c, 0,
-                      c, c, 0,
-                      0, 0, 0,
-                      0, 0, 0 })
+    expect_img(img, { c, c, 1,
+                      c, c, 1,
+                      1, 1, 1,
+                      1, 1, 1 })
   end
 
 
