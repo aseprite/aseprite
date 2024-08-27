@@ -644,6 +644,30 @@ int App_set_bgColor(lua_State* L)
   return 0;
 }
 
+int App_get_fgTile(lua_State* L)
+{
+  lua_pushinteger(L, Preferences::instance().colorBar.fgTile());
+  return 1;
+}
+
+int App_set_fgTile(lua_State* L)
+{
+  Preferences::instance().colorBar.fgTile(lua_tointeger(L, 2));
+  return 0;
+}
+
+int App_get_bgTile(lua_State* L)
+{
+  lua_pushinteger(L, Preferences::instance().colorBar.bgTile());
+  return 1;
+}
+
+int App_set_bgTile(lua_State* L)
+{
+  Preferences::instance().colorBar.bgTile(lua_tointeger(L, 2));
+  return 0;
+}
+
 int App_get_site(lua_State* L)
 {
   app::Context* ctx = App::instance()->context();
@@ -828,6 +852,8 @@ const Property App_properties[] = {
   { "sprites",        App_get_sprites,        nullptr },
   { "fgColor",        App_get_fgColor,        App_set_fgColor },
   { "bgColor",        App_get_bgColor,        App_set_bgColor },
+  { "fgTile",         App_get_fgTile,         App_set_fgTile },
+  { "bgTile",         App_get_bgTile,         App_set_bgTile },
   { "version",        App_get_version,        nullptr },
   { "apiVersion",     App_get_apiVersion,     nullptr },
   { "site",           App_get_site,           nullptr },
