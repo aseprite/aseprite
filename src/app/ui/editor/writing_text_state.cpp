@@ -99,6 +99,12 @@ public:
     return m_extraCel;
   }
 
+  void setExtraCelBounds(const gfx::Rect& bounds) {
+    m_extraCel->cel()->setBounds(bounds);
+    renderExtraCelBase();
+    renderExtraCelText(true);
+  }
+
 private:
   bool onProcessMessage(Message* msg) override {
     switch (msg->type()) {
@@ -237,7 +243,8 @@ private:
 
 WritingTextState::WritingTextState(Editor* editor,
                                    const gfx::Rect& bounds)
-  : m_editor(editor)
+  : m_delayedMouseMove(this, editor, 5)
+  , m_editor(editor)
   , m_bounds(bounds)
   , m_entry(new TextEditor(editor, editor->getSite(), bounds))
 {
@@ -258,8 +265,22 @@ WritingTextState::~WritingTextState()
 
 bool WritingTextState::onMouseDown(Editor* editor, MouseMessage* msg)
 {
+  m_delayedMouseMove.onMouseDown(msg);
+  m_hit = calcHit(editor, msg->position());
+
   if (msg->left()) {
+    if (m_hit == Hit::Edges) {
+      m_mouseMoveReceived = false;
+      m_movingBounds = true;
+      m_cursorStart = editor->screenToEditorF(msg->position());
+      m_boundsOrigin = m_bounds.origin();
+
+      editor->captureMouse();
+      return true;
+    }
+
     drop();
+    return true;
   }
   else if (msg->right()) {
     cancel();
@@ -271,16 +292,53 @@ bool WritingTextState::onMouseDown(Editor* editor, MouseMessage* msg)
 
 bool WritingTextState::onMouseUp(Editor* editor, MouseMessage* msg)
 {
+  m_delayedMouseMove.onMouseUp(msg);
+
   const bool result = StandbyState::onMouseUp(editor, msg);
-  if (msg->middle()) {
-    if (m_entry)
-      m_entry->requestFocus();
+  if (m_movingBounds) {
+    m_movingBounds = false;
+
+    // Drop if the user just clicked (so other text box is created)
+    if (!m_mouseMoveReceived)
+      drop();
   }
+
   return result;
 }
 
-bool WritingTextState::onSetCursor(Editor* editor, const gfx::Point&)
+bool WritingTextState::onMouseMove(Editor* editor, ui::MouseMessage* msg)
 {
+  m_delayedMouseMove.onMouseMove(msg);
+
+  // Use StandbyState implementation
+  return StandbyState::onMouseMove(editor, msg);
+}
+
+void WritingTextState::onCommitMouseMove(Editor* editor,
+                                         const gfx::PointF& spritePos)
+{
+  if (!m_movingBounds)
+    return;
+
+  gfx::Point delta(spritePos - m_cursorStart);
+  if (delta.x == 0 && delta.y == 0)
+    return;
+
+  m_mouseMoveReceived = true;
+
+  m_bounds.setOrigin(gfx::Point(delta + m_boundsOrigin));
+  m_entry->setExtraCelBounds(m_bounds);
+  m_entry->setBounds(calcEntryBounds());
+}
+
+bool WritingTextState::onSetCursor(Editor* editor,
+                                   const gfx::Point& mouseScreenPos)
+{
+  if (calcHit(editor, mouseScreenPos) == Hit::Edges) {
+    editor->showMouseCursor(kMoveCursor);
+    return true;
+  }
+
   editor->showMouseCursor(kArrowCursor);
   return true;
 }
@@ -436,6 +494,18 @@ void WritingTextState::drop()
 {
   m_editor->backToPreviousState();
   m_editor->invalidate();
+}
+
+WritingTextState::Hit WritingTextState::calcHit(Editor* editor,
+                                                const gfx::Point& mouseScreenPos)
+{
+  auto edges = editor->editorToScreen(m_bounds);
+  if (!edges.contains(mouseScreenPos) &&
+      edges.enlarge(32*guiscale()).contains(mouseScreenPos)) {
+    return Hit::Edges;
+  }
+
+  return Hit::Normal;
 }
 
 } // namespace app
