@@ -116,6 +116,24 @@ text::TextBlobRef create_text_blob(
   return text::TextBlob::MakeWithShaper(fontMgr, font, text);
 }
 
+gfx::Size get_text_blob_required_size(
+  const text::TextBlobRef& blob)
+{
+  ASSERT(blob != nullptr);
+
+  gfx::RectF bounds(0, 0, 1, 1);
+  blob->visitRuns([&bounds](text::TextBlob::RunInfo& run) {
+    for (int i=0; i<run.glyphCount; ++i) {
+      bounds |= run.getGlyphBounds(i);
+      bounds |= gfx::RectF(0, 0, 1, run.font->metrics(nullptr));
+    }
+  });
+  if (bounds.w < 1) bounds.w = 1;
+  if (bounds.h < 1) bounds.h = 1;
+  return gfx::Size(std::ceil(bounds.w),
+                   std::ceil(bounds.h));
+}
+
 doc::ImageRef render_text_blob(
   const text::TextBlobRef& blob,
   gfx::Color color)
@@ -127,18 +145,10 @@ doc::ImageRef render_text_blob(
   paint.style(os::Paint::Fill);
   paint.color(color);
 
-  gfx::RectF bounds(0, 0, 1, 1);
-  blob->visitRuns([&bounds](text::TextBlob::RunInfo& run){
-    for (int i=0; i<run.glyphCount; ++i) {
-      bounds |= run.getGlyphBounds(i);
-      bounds |= gfx::RectF(0, 0, 1, run.font->metrics(nullptr));
-    }
-  });
-  if (bounds.w < 1) bounds.w = 1;
-  if (bounds.h < 1) bounds.h = 1;
+  gfx::Size blobSize = get_text_blob_required_size(blob);
 
   doc::ImageRef image(
-    doc::Image::create(doc::IMAGE_RGB, bounds.w, bounds.h));
+    doc::Image::create(doc::IMAGE_RGB, blobSize.w, blobSize.h));
 
 #ifdef LAF_SKIA
   sk_sp<SkSurface> skSurface = wrap_docimage_in_sksurface(image.get());

@@ -60,25 +60,7 @@ public:
 
     setPersistSelection(true);
 
-    // TODO move this opacity() to Site class
-    int t, opacity = (site.layer()->isImage() ?
-                      static_cast<LayerImage*>(site.layer())->opacity(): 255);
-    Cel* cel = site.cel();
-    if (cel) opacity = MUL_UN8(opacity, cel->opacity(), t);
-
-    m_extraCel->create(
-      site.tilemapMode(),
-      site.sprite(),
-      bounds,
-      bounds.size(),
-      site.frame(),
-      255);
-
-    m_extraCel->setType(render::ExtraType::PATCH);
-    m_extraCel->setBlendMode(site.layer()->isImage() ?
-                             static_cast<LayerImage*>(site.layer())->blendMode():
-                             doc::BlendMode::NORMAL);
-
+    createExtraCel(site, bounds);
     renderExtraCelBase();
 
     FontInfo fontInfo = App::instance()->contextBar()->fontInfo();
@@ -100,12 +82,36 @@ public:
   }
 
   void setExtraCelBounds(const gfx::Rect& bounds) {
-    m_extraCel->cel()->setBounds(bounds);
+    if (bounds.w != m_extraCel->image()->width() ||
+        bounds.h != m_extraCel->image()->height()) {
+      createExtraCel(m_editor->getSite(), bounds);
+    }
+    else {
+      m_extraCel->cel()->setBounds(bounds);
+    }
     renderExtraCelBase();
     renderExtraCelText(true);
   }
 
+  obs::signal<void(const gfx::Size&)> NewRequiredBounds;
+
 private:
+  void createExtraCel(const Site& site,
+                      const gfx::Rect& bounds) {
+    m_extraCel->create(
+      site.tilemapMode(),
+      site.sprite(),
+      bounds,
+      bounds.size(),
+      site.frame(),
+      255);
+
+    m_extraCel->setType(render::ExtraType::PATCH);
+    m_extraCel->setBlendMode(site.layer()->isImage() ?
+                             static_cast<LayerImage*>(site.layer())->blendMode():
+                             doc::BlendMode::NORMAL);
+  }
+
   bool onProcessMessage(Message* msg) override {
     switch (msg->type()) {
       case kMouseDownMessage:
@@ -130,6 +136,26 @@ private:
   void onInitTheme(InitThemeEvent& ev) override {
     Entry::onInitTheme(ev);
     setBgColor(gfx::ColorNone);
+  }
+
+  void onSetText() override {
+    Entry::onSetText();
+    onNewTextBlob();
+  }
+
+  void onSetFont() override {
+    Entry::onSetFont();
+    onNewTextBlob();
+  }
+
+  void onNewTextBlob() {
+    text::TextBlobRef blob = textBlob();
+    if (!blob)
+      return;
+
+    // Notify that we could make the text editor bigger to show this
+    // text blob.
+    NewRequiredBounds(get_text_blob_required_size(blob));
   }
 
   void onPaint(PaintEvent& ev) override {
@@ -255,6 +281,16 @@ WritingTextState::WritingTextState(Editor* editor,
   m_fontChangeConn =
     App::instance()->contextBar()->FontChange.connect(
       &WritingTextState::onFontChange, this);
+
+  m_entry->NewRequiredBounds.connect([this](const gfx::Size& blobSize) {
+    if (m_bounds.w < blobSize.w ||
+        m_bounds.h < blobSize.h) {
+      m_bounds.w = std::max(m_bounds.w, blobSize.w);
+      m_bounds.h = std::max(m_bounds.h, blobSize.h);
+      m_entry->setExtraCelBounds(m_bounds);
+      m_entry->setBounds(calcEntryBounds());
+    }
+  });
 
   onEditorResize(editor);
 }

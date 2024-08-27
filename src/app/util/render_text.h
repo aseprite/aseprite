@@ -28,6 +28,11 @@ namespace app {
     const FontInfo& fontInfo,
     const std::string& text);
 
+  // Returns the exact bounds that are required to draw this TextBlob,
+  // i.e. the image size that will be required in render_text_blob().
+  gfx::Size get_text_blob_required_size(
+    const text::TextBlobRef& blob);
+
   doc::ImageRef render_text_blob(
     const text::TextBlobRef& blob,
     gfx::Color color);
