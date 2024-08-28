@@ -93,8 +93,6 @@ namespace app {
     int getColumns() const { return m_columns; }
     void setColumns(int columns);
 
-    int getLastSelectionSize() const { return m_lastSelectionSize; }
-
     void deselect();
     void selectColor(int index);
     void selectExactMatchColor(const app::Color& color);
@@ -198,7 +196,6 @@ namespace app {
     int m_currentEntry;
     int m_rangeAnchor;
     doc::PalettePicks m_selectedEntries;
-    int m_lastSelectionSize = 0;
     bool m_isUpdatingColumns;
     obs::scoped_connection m_palConn;
     obs::scoped_connection m_csConn;

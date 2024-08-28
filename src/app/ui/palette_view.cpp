@@ -427,9 +427,6 @@ void PaletteView::selectColor(int index)
     update_scroll(m_currentEntry);
     invalidate();
   }
-  else {
-    m_lastSelectionSize = m_selectedEntries.picks();
-  }
 }
 
 void PaletteView::selectExactMatchColor(const app::Color& color)
