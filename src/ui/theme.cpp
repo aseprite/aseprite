@@ -454,7 +454,7 @@ void Theme::paintLayer(Graphics* g,
                                textBounds, layer.align());
         }
         else {
-          gfx::Size textSize = g->measureUIText(text);
+          gfx::Size textSize = g->measureText(text);
           gfx::Point pt;
           gfx::Border undef = Style::UndefinedBorder();
           gfx::Border padding = style->padding();
@@ -594,12 +594,12 @@ void Theme::measureLayer(const Widget* widget,
 
     case Style::Layer::Type::kText:
       if (layer.color() != gfx::ColorNone) {
+        text::Font* styleFont = style->font();
         gfx::Size textSize;
-        if (style->font() &&
-            style->font() != widget->font()) {
-          text::Font* font = style->font();
-          textSize = gfx::Size(Graphics::measureUITextLength(widget->text(), font),
-                               font->height());
+        if (styleFont &&
+            styleFont != widget->font()) {
+          textSize = gfx::Size(styleFont->textLength(widget->text()),
+                               styleFont->height());
         }
         else {
           // We can use Widget::textSize() because we're going to use

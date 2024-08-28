@@ -283,8 +283,8 @@ private:
     if (m_key && m_key->keycontext() != KeyContext::Any) {
       int w =
         m_headerItem->contextXPos() +
-        Graphics::measureUITextLength(
-          convertKeyContextToUserFriendlyString(m_key->keycontext()), font());
+        font()->textLength(
+          convertKeyContextToUserFriendlyString(m_key->keycontext()));
       size.w = std::max(size.w, w);
     }
 
@@ -384,9 +384,9 @@ private:
         auto theme = SkinTheme::get(this);
 
         for (int i=0; i<maxi; ++i, y += dh) {
-          int w = Graphics::measureUITextLength(
-            (accels && i < (int)accels->size() ? getAccelText((*accels)[i]).c_str(): ""),
-            font());
+          int w = font()->textLength(
+            (accels && i < (int)accels->size() ? getAccelText((*accels)[i]):
+                                                 std::string()));
           gfx::Rect itemBounds(bounds.x + m_headerItem->keyXPos(), y, w, dh);
           itemBounds = itemBounds.enlarge(
             gfx::Border(
@@ -422,8 +422,7 @@ private:
                 gfx::Rect(
                   itemBounds.x + itemBounds.w + 2*guiscale(),
                   itemBounds.y,
-                  Graphics::measureUITextLength(
-                    label, font()) + 4*guiscale(),
+                  font()->textLength(label) + 4*guiscale(),
                   itemBounds.h));
               m_deleteButton->setText(label);
 
@@ -439,7 +438,7 @@ private:
             m_addButton->setStyle(theme->styles.miniButton());
             addChild(m_addButton.get());
 
-            itemBounds.w = 8*guiscale() + Graphics::measureUITextLength("Add", font());
+            itemBounds.w = 8*guiscale() + font()->textLength("Add");
             itemBounds.x -= itemBounds.w + 2*guiscale();
 
             m_addButton->setBgColor(gfx::ColorNone);

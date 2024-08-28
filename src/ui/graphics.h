@@ -115,9 +115,7 @@ namespace ui {
     void drawUIText(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Point& pt, const int mnemonic);
     void drawAlignedUIText(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Rect& rc, const int align);
 
-    gfx::Size measureUIText(const std::string& str);
-    static int measureUITextLength(const std::string& str,
-                                   text::Font* font);
+    gfx::Size measureText(const std::string& str);
     gfx::Size fitString(const std::string& str, int maxWidth, int align);
 
     // Can be used in case that you've accessed/changed the

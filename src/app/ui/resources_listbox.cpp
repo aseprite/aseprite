@@ -68,7 +68,7 @@ void ResourceListItem::onPaint(PaintEvent& ev)
   g->drawText(text(), fgcolor, gfx::ColorNone,
               gfx::Point(
                 bounds.x + 2*guiscale(),
-                bounds.y + bounds.h/2 - g->measureUIText(text()).h/2));
+                bounds.y + bounds.h/2 - g->font()->height()/2));
 }
 
 void ResourceListItem::onSizeHint(SizeHintEvent& ev)

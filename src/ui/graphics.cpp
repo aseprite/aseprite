@@ -446,21 +446,10 @@ void Graphics::drawAlignedUIText(const std::string& str, gfx::Color fg, gfx::Col
   doUIStringAlgorithm(str, fg, bg, rc, align, true);
 }
 
-gfx::Size Graphics::measureUIText(const std::string& str)
+gfx::Size Graphics::measureText(const std::string& str)
 {
-  return gfx::Size(
-    Graphics::measureUITextLength(str, m_font.get()),
-    m_font->height());
-}
-
-// static
-int Graphics::measureUITextLength(const std::string& str,
-                                  text::Font* font)
-{
-  if (str.empty())
-    return 0;
-
-  return font->textLength(str);
+  return gfx::Size(m_font->textLength(str),
+                   m_font->height());
 }
 
 gfx::Size Graphics::fitString(const std::string& str, int maxWidth, int align)

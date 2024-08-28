@@ -122,8 +122,8 @@ void AppMenuItem::onSizeHint(SizeHintEvent& ev)
       + border().height();
 
     if (m_key && !m_key->accels().empty()) {
-      size.w += Graphics::measureUITextLength(
-        m_key->accels().front().toString().c_str(), font());
+      size.w += font()->textLength(
+        m_key->accels().front().toString());
     }
   }
 

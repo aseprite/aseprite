@@ -224,7 +224,7 @@ protected:
         // Draw the line number
         {
           auto lineNumText = base::convert_to<std::string>(i+1);
-          int lw = Graphics::measureUITextLength(lineNumText, f);
+          int lw = f->textLength(lineNumText);
           g->drawText(
             lineNumText.c_str(),
             fg, linesBg,
@@ -249,7 +249,7 @@ protected:
         for (const uint8_t* line : m_fileContent->lines) {
           ASSERT(line);
           tmp.assign((const char*)line);
-          m_maxLineWidth = std::max(m_maxLineWidth, Graphics::measureUITextLength(tmp, f));
+          m_maxLineWidth = std::max(m_maxLineWidth, f->textLength(tmp));
         }
       }
 
@@ -264,7 +264,7 @@ private:
     auto f = font();
     int nlines = (m_fileContent ? m_fileContent->lines.size(): 0);
     return
-      Graphics::measureUITextLength(base::convert_to<std::string>(nlines), f)
+      f->textLength(base::convert_to<std::string>(nlines))
       + 4*guiscale();           // TODO configurable from the theme?
   }
 

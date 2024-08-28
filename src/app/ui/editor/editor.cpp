@@ -1230,14 +1230,14 @@ void Editor::drawTileNumbers(ui::Graphics* g, const Cel* cel)
           text = fmt::format("{}", ti + ti_offset);
 
           gfx::Point pt2(pt);
-          pt2.x -= g->measureUIText(text).w/2;
+          pt2.x -= g->font()->textLength(text)/2;
           g->drawText(text, fgColor, color, pt2);
 
           if (tf && tileSize.h > 2*th) {
             text.clear();
             build_tile_flags_string(tf, text);
 
-            const gfx::Size tsize = g->measureUIText(text);
+            const gfx::Size tsize = g->measureText(text);
             pt.x -= tsize.w/2;
             pt.y += tsize.h;
             g->drawText(text, fgColor, color, pt);
@@ -1359,7 +1359,7 @@ void Editor::drawCelHGuide(ui::Graphics* g,
   }
 
   auto text = fmt::format("{}px", ABS(sprX2 - sprX1));
-  const int textW = Graphics::measureUITextLength(text, font());
+  const int textW = font()->textLength(text);
   g->drawText(text,
               color_utils::blackandwhite_neg(color), color,
               gfx::Point((scrX1+scrX2)/2-textW/2, scrY-textHeight()));
@@ -2296,7 +2296,7 @@ void Editor::onPaint(ui::PaintEvent& ev)
           vp.origin() - bounds().origin());
 
         m_perfInfoBounds.setOrigin(vp.origin());
-        m_perfInfoBounds.setSize(g->measureUIText(buf));
+        m_perfInfoBounds.setSize(g->measureText(buf));
       }
 #endif // ENABLE_DEVMODE
 
