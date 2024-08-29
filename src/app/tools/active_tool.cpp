@@ -9,9 +9,9 @@
 #include "config.h"
 #endif
 
-#include "app/app.h"
 #include "app/tools/active_tool.h"
 
+#include "app/app.h"
 #include "app/color.h"
 #include "app/pref/preferences.h"
 #include "app/tools/active_tool_observer.h"
