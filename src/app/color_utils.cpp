@@ -37,22 +37,12 @@ gfx::Color color_utils::blackandwhite_neg(gfx::Color color)
     return gfx::rgba(0, 0, 0);
 }
 
-app::Color color_utils::color_from_ui(const gfx::Color color, PixelFormat format)
+app::Color color_utils::color_from_ui(const gfx::Color color)
 {
-  switch (format) {
-    case IMAGE_GRAYSCALE:
-      return app::Color::fromGray(gfx::getr(color), gfx::geta(color));
-    case IMAGE_INDEXED: {
-      const int i = gfx::geta(color);
-      return app::Color::fromIndex(i);
-    }
-    case IMAGE_RGB:
-    default:
-      return app::Color::fromRgb(gfx::getr(color),
-                                 gfx::getg(color),
-                                 gfx::getb(color),
-                                 gfx::geta(color));
-  }
+  return app::Color::fromRgb(gfx::getr(color),
+                             gfx::getg(color),
+                             gfx::getb(color),
+                             gfx::geta(color));
 }
 
 gfx::Color color_utils::color_for_ui(const app::Color& color)

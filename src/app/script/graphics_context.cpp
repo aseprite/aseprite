@@ -460,7 +460,23 @@ int GraphicsContext_set_antialias(lua_State* L)
 int GraphicsContext_get_color(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
-  push_obj(L, color_utils::color_from_ui(gc->color(), gc->formatHint()));
+
+  const gfx::Color gcColor = gc->color();
+  app::Color color;
+  switch (gc->formatHint()) {
+    case IMAGE_GRAYSCALE:
+      color = app::Color::fromGray(gfx::getr(gcColor), gfx::geta(gcColor));
+      break;
+    case IMAGE_INDEXED: {
+      const int i = gfx::geta(gcColor);
+      color = app::Color::fromIndex(i);
+      break;
+    }
+    case IMAGE_RGB:
+    default:
+      color = color_utils::color_from_ui(gcColor);
+  }
+  push_obj(L, color);
   return 1;
 }
 
