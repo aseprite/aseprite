@@ -11,6 +11,7 @@
 
 #include "app/tools/active_tool.h"
 
+#include "app/app.h"
 #include "app/color.h"
 #include "app/pref/preferences.h"
 #include "app/tools/active_tool_observer.h"
@@ -18,6 +19,7 @@
 #include "app/tools/pointer.h"
 #include "app/tools/tool_box.h"
 #include "app/ui/color_bar.h"
+#include "app/ui/context_bar.h"
 
 namespace app {
 namespace tools {
@@ -236,7 +238,14 @@ void ActiveToolManager::setSelectedTool(Tool* tool)
 // static
 bool ActiveToolManager::isToolAffectedByRightClickMode(Tool* tool)
 {
+
+#if ENABLE_UI
+  bool shadingMode = ((Preferences::instance().tool(tool).ink() == InkType::SHADING) &&
+                      (App::instance()->contextBar()->getShade().size() >= 2));
+#else
   bool shadingMode = (Preferences::instance().tool(tool).ink() == InkType::SHADING);
+#endif
+
   return
     ((tool->getInk(0)->isPaint() && !shadingMode) ||
      (tool->getInk(0)->isEffect())) &&
