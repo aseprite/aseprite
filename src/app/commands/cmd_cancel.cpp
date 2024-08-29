@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -47,6 +48,8 @@ void CancelCommand::onLoadParams(const Params& params)
   std::string type = params.get("type");
   if (type == "noop") m_type = NoOp;
   else if (type == "all") m_type = All;
+  // TODO: add specific types for selection/ranges during scripting.
+  else m_type = All;
 }
 
 void CancelCommand::onExecute(Context* context)
