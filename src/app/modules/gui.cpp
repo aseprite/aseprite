@@ -28,7 +28,6 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/main_menu_bar.h"
-#include "app/ui/main_menu_bar.h"
 #include "app/ui/main_window.h"
 #include "app/ui/skin/skin_property.h"
 #include "app/ui/skin/skin_theme.h"
