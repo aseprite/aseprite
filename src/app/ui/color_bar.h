@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -92,6 +92,9 @@ namespace app {
 
     TilemapMode tilemapMode() const;
     void setTilemapMode(TilemapMode mode);
+    void lockTilemapMode() { m_tilesButton.setEnabled(false); };
+    void unlockTilemapMode() { m_tilesButton.setEnabled(true); };
+    bool isTilemapModeLocked() const { return !m_tilesButton.isEnabled(); };
 
     TilesetMode tilesetMode() const;
     void setTilesetMode(TilesetMode mode);
