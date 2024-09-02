@@ -393,7 +393,6 @@ void AppMenus::reload()
     ResourceFinder rf;
     rf.includeUserDir("scripts");
     std::string scriptsDir = rf.getFirstOrCreateDefault();
-    scriptsDir = base::get_file_path(scriptsDir);
     if (base::is_directory(scriptsDir)) {
       loadScriptsSubmenu(scriptsMenu->getSubmenu(), scriptsDir, true);
     }
