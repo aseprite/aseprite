@@ -62,10 +62,8 @@ jobs:
         fi
 
         if [[ "${{ matrix.ui }}" == "gui" ]] ; then
-          export enable_ui=on
           export laf_backend=skia
         else
-          export enable_ui=off
           export laf_backend=none
         fi
 
@@ -85,7 +83,6 @@ jobs:
           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
           -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 \
           -DENABLE_TESTS=ON \
-          -DENABLE_UI=$enable_ui \
           -DENABLE_SCRIPTING=$enable_scripting \
           -DENABLE_CCACHE=$enable_ccache \
           -DLAF_BACKEND=$laf_backend \
