@@ -77,10 +77,7 @@ void CropSpriteCommand::onExecute(Context* context)
     tx.commit();
   }
 
-#ifdef ENABLE_UI
-  if (context->isUIAvailable())
-    update_screen_for_document(document);
-#endif
+  update_screen_for_document(document);
 }
 
 class AutocropSpriteCommand : public Command {
@@ -124,10 +121,7 @@ void AutocropSpriteCommand::onExecute(Context* context)
     tx.commit();
   }
 
-#ifdef ENABLE_UI
-  if (context->isUIAvailable())
-    update_screen_for_document(document);
-#endif
+  update_screen_for_document(document);
 }
 
 std::string AutocropSpriteCommand::onGetFriendlyName() const

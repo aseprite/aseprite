@@ -67,8 +67,6 @@ static struct {
   { "package", "loadlib", secure_package_loadlib },
 };
 
-#ifdef ENABLE_UI
-
 // Map from .lua file name -> sha1
 std::unordered_map<std::string, std::string> g_keys;
 
@@ -99,8 +97,6 @@ std::string get_script_filename(lua_State* L)
   lua_pop(L, 2);
   return script;
 }
-
-#endif // ENABLE_UI
 
 int unsupported(lua_State* L)
 {
@@ -242,7 +238,6 @@ bool ask_access(lua_State* L,
                 const FileAccessMode mode,
                 const ResourceType resourceType)
 {
-#ifdef ENABLE_UI
   // Ask for permission to open the file
   if (App::instance()->context()->isUIAvailable()) {
     std::string script = get_script_filename(L);
@@ -334,7 +329,6 @@ bool ask_access(lua_State* L,
     if (!allow)
       return false;
   }
-#endif
   return true;
 }
 

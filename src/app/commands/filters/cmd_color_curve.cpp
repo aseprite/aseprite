@@ -33,8 +33,6 @@ struct ColorCurveParams : public NewParams {
   Param<filters::ColorCurve> curve { this, filters::ColorCurve(), "curve" };
 };
 
-#ifdef ENABLE_UI
-
 class ColorCurveWindow : public FilterWindow {
 public:
   ColorCurveWindow(ColorCurveFilter& filter, FilterManagerImpl& filterMgr)
@@ -72,8 +70,6 @@ private:
   ColorCurveEditor m_editor;
 };
 
-#endif  // ENABLE_UI
-
 class ColorCurveCommand : public CommandWithNewParams<ColorCurveParams> {
 public:
   ColorCurveCommand();
@@ -99,7 +95,6 @@ void ColorCurveCommand::onExecute(Context* context)
   const bool ui = (params().ui() && context->isUIAvailable());
   ColorCurveFilter filter;
 
-#ifdef ENABLE_UI
   // Default curve
   if (ui) {
     static std::unique_ptr<ColorCurve> the_curve;
@@ -110,7 +105,6 @@ void ColorCurveCommand::onExecute(Context* context)
     }
     filter.setCurve(*the_curve.get());
   }
-#endif
 
   FilterManagerImpl filterMgr(context, &filter);
 
@@ -129,16 +123,13 @@ void ColorCurveCommand::onExecute(Context* context)
     filter.setCurve(curve);
   }
 
-#ifdef ENABLE_UI
   if (ui) {
     ColorCurveWindow window(filter, filterMgr);
     if (window.doModal()) {
       // TODO save the curve?
     }
   }
-  else
-#endif // ENABLE_UI
-  {
+  else {
     start_filter_worker(&filterMgr);
   }
 }

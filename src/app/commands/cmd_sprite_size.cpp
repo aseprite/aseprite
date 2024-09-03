@@ -253,8 +253,6 @@ protected:
 
 };
 
-#ifdef ENABLE_UI
-
 class SpriteSizeWindow : public app::gen::SpriteSize {
 public:
   SpriteSizeWindow(Context* ctx, const SpriteSizeParams& params) : m_ctx(ctx) {
@@ -350,7 +348,6 @@ private:
 
   Context* m_ctx;
 };
-#endif // ENABLE_UI
 
 class SpriteSizeCommand : public CommandWithNewParams<SpriteSizeParams> {
 public:
@@ -437,7 +434,6 @@ void SpriteSizeCommand::onExecute(Context* context)
   int new_height = params.height();
   ResizeMethod resize_method = params.method();
 
-#ifdef ENABLE_UI
   if (ui) {
     SpriteSizeWindow window(context, params);
     window.remapWindow();
@@ -458,7 +454,6 @@ void SpriteSizeCommand::onExecute(Context* context)
     set_config_int("SpriteSize", "Method", resize_method);
     set_config_bool("SpriteSize", "LockRatio", window.lockRatio()->isSelected());
   }
-#endif // ENABLE_UI
 
   new_width = std::clamp(new_width, 1, DOC_SPRITE_MAX_WIDTH);
   new_height = std::clamp(new_height, 1, DOC_SPRITE_MAX_HEIGHT);
@@ -469,9 +464,7 @@ void SpriteSizeCommand::onExecute(Context* context)
     job.waitJob();
   }
 
-#ifdef ENABLE_UI
   update_screen_for_document(doc);
-#endif
 }
 
 Command* CommandFactory::createSpriteSizeCommand()

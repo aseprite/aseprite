@@ -416,7 +416,6 @@ void ImportSpriteSheetCommand::onExecute(Context* context)
   Doc* document;
   auto& params = this->params();
 
-#ifdef ENABLE_UI
   if (context->isUIAvailable() && params.ui()) {
     // TODO use params as input values for the ImportSpriteSheetWindow
 
@@ -438,9 +437,9 @@ void ImportSpriteSheetCommand::onExecute(Context* context)
     docPref->importSpriteSheet.paddingBounds(params.padding());
     docPref->importSpriteSheet.paddingEnabled(window.paddingEnabledValue());
   }
-  else // We import the sprite sheet from the active document if there is no UI
-#endif
-  {
+  // We import the sprite sheet from the active document if there is
+  // no UI.
+  else {
     document = context->activeDocument();
     if (!document)
       return;
@@ -558,10 +557,7 @@ void ImportSpriteSheetCommand::onExecute(Context* context)
     throw;
   }
 
-#ifdef ENABLE_UI
-  if (context->isUIAvailable())
-    update_screen_for_document(document);
-#endif
+  update_screen_for_document(document);
 }
 
 Command* CommandFactory::createImportSpriteSheetCommand()

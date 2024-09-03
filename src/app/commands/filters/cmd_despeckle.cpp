@@ -46,8 +46,6 @@ struct DespeckleParams : public NewParams {
   Param<filters::TiledMode> tiledMode { this, filters::TiledMode::NONE, "tiledMode" };
 };
 
-#ifdef ENABLE_UI
-
 static const char* ConfigSection = "Despeckle";
 
 class DespeckleWindow : public FilterWindow {
@@ -100,8 +98,6 @@ private:
   ExprEntry* m_heightEntry;
 };
 
-#endif  // ENABLE_UI
-
 class DespeckleCommand : public CommandWithNewParams<DespeckleParams> {
 public:
   DespeckleCommand();
@@ -124,9 +120,7 @@ bool DespeckleCommand::onEnabled(Context* context)
 
 void DespeckleCommand::onExecute(Context* context)
 {
-#ifdef ENABLE_UI
   const bool ui = (params().ui() && context->isUIAvailable());
-#endif
 
   MedianFilter filter;
   filter.setSize(3, 3);         // Default size
@@ -137,7 +131,6 @@ void DespeckleCommand::onExecute(Context* context)
                       TARGET_BLUE_CHANNEL |
                       TARGET_GRAY_CHANNEL);
 
-#ifdef ENABLE_UI
   if (ui) {
     DocumentPreferences& docPref = Preferences::instance()
       .document(context->activeDocument());
@@ -145,14 +138,12 @@ void DespeckleCommand::onExecute(Context* context)
     filter.setSize(get_config_int(ConfigSection, "Width", 3),
                    get_config_int(ConfigSection, "Height", 3));
   }
-#endif
 
   if (params().width.isSet()) filter.setSize(params().width(), filter.getHeight());
   if (params().height.isSet()) filter.setSize(filter.getWidth(), params().height());
   if (params().channels.isSet()) filterMgr.setTarget(params().channels());
   if (params().tiledMode.isSet()) filter.setTiledMode(params().tiledMode());
 
-#ifdef ENABLE_UI
   if (ui) {
     DespeckleWindow window(filter, filterMgr);
     if (window.doModal()) {
@@ -160,9 +151,7 @@ void DespeckleCommand::onExecute(Context* context)
       set_config_int(ConfigSection, "Height", filter.getHeight());
     }
   }
-  else
-#endif // ENABLE_UI
-  {
+  else {
     start_filter_worker(&filterMgr);
   }
 }

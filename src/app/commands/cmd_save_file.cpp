@@ -136,7 +136,6 @@ std::string SaveFileBaseCommand::saveAsDialog(
     base::paths exts = get_writable_extensions();
     filename = initialFilename;
 
-#ifdef ENABLE_UI
     if (context->isUIAvailable()) {
     again:;
       base::paths newfilename;
@@ -156,7 +155,6 @@ std::string SaveFileBaseCommand::saveAsDialog(
         goto again;
       }
     }
-#endif // ENABLE_UI
   }
 
   if (filename.empty())
@@ -200,7 +198,6 @@ void SaveFileBaseCommand::saveDocumentInBackground(
   const ResizeOnTheFly resizeOnTheFly,
   const gfx::PointF& scale)
 {
-#ifdef ENABLE_UI
   // If the document is read only, we cannot save it directly (we have
   // to use File > Save As)
   if (document->isReadOnly() &&
@@ -209,7 +206,6 @@ void SaveFileBaseCommand::saveDocumentInBackground(
     window.show();
     return;
   }
-#endif // ENABLE_UI
 
   gfx::Rect bounds;
   if (params().bounds.isSet()) {
@@ -265,12 +261,10 @@ void SaveFileBaseCommand::saveDocumentInBackground(
       document->incrementVersion();
     }
 
-#ifdef ENABLE_UI
     if (context->isUIAvailable() && params().ui()) {
       StatusBar::instance()->setStatusText(
         2000, Strings::save_file_saved(base::get_file_name(filename)));
     }
-#endif
   }
 }
 
@@ -371,7 +365,6 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
   bool isPlaySubtags = params().playSubtags();
   bool isForTwitter = false;
 
-#if ENABLE_UI
   if (params().ui() && context->isUIAvailable()) {
     ExportFileWindow win(doc);
     bool askOverwrite = true;
@@ -447,7 +440,6 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
     isForTwitter = win.isForTwitter();
     isPlaySubtags = win.isPlaySubtags();
   }
-#endif
 
   gfx::PointF scaleXY(scale, scale);
 

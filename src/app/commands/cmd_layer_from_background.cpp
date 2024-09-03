@@ -55,10 +55,7 @@ void LayerFromBackgroundCommand::onExecute(Context* context)
     tx(new cmd::LayerFromBackground(writer.layer()));
     tx.commit();
   }
-#ifdef ENABLE_UI
-  if (context->isUIAvailable())
-    update_screen_for_document(document);
-#endif
+  update_screen_for_document(document);
 }
 
 Command* CommandFactory::createLayerFromBackgroundCommand()

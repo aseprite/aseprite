@@ -51,12 +51,10 @@ bool FillCommand::onEnabled(Context* ctx)
                       ContextFlags::ActiveLayerIsImage)) {
     return true;
   }
-#if ENABLE_UI
-  auto editor = Editor::activeEditor();
+  auto* editor = Editor::activeEditor();
   if (editor && editor->isMovingPixels()) {
     return true;
   }
-#endif
   return false;
 }
 

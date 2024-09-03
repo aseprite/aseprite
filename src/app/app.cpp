@@ -120,14 +120,8 @@ private:
 
 class App::CoreModules {
 public:
-#ifdef ENABLE_UI
-  typedef app::UIContext ContextT;
-#else
-  typedef app::Context ContextT;
-#endif
-
   ConfigModule m_configModule;
-  ContextT m_context;
+  app::UIContext m_context;
 };
 
 class App::LoadLanguage {
@@ -148,11 +142,9 @@ public:
   tools::ToolBox m_toolbox;
   tools::ActiveToolManager m_activeToolManager;
   Commands m_commands;
-#ifdef ENABLE_UI
   RecentFiles m_recent_files;
   InputChain m_inputChain;
   Clipboard m_clipboard;
-#endif
 #ifdef ENABLE_DATA_RECOVERY
   // This is a raw pointer because we want to delete it explicitly.
   // (e.g. if an exception occurs, the ~Modules() doesn't have to
@@ -165,9 +157,7 @@ public:
     : m_loggerModule(createLogInDesktop)
     , m_loadLanguage(pref, m_extensions)
     , m_activeToolManager(&m_toolbox)
-#ifdef ENABLE_UI
     , m_recent_files(pref.general.recentItems())
-#endif
 #ifdef ENABLE_DATA_RECOVERY
     , m_recovery(nullptr)
 #endif
@@ -250,9 +240,7 @@ App::App(AppMod* mod)
   , m_legacy(nullptr)
   , m_isGui(false)
   , m_isShell(false)
-#ifdef ENABLE_UI
   , m_backupIndicator(nullptr)
-#endif
 #ifdef ENABLE_SCRIPTING
   , m_engine(new script::Engine)
 #endif
@@ -265,19 +253,15 @@ int App::initialize(const AppOptions& options)
 {
   os::System* system = os::instance();
 
-#ifdef ENABLE_UI
   m_isGui = options.startUI() && !options.previewCLI();
 
   // Notify the scripting engine that we're going to enter to GUI
   // mode, this is useful so we can mark the stdin file handle as
   // closed so no script can hang the program if it tries to read from
   // stdin when the GUI is running.
-  #ifdef ENABLE_SCRIPTING
-    if (m_isGui)
-      m_engine->notifyRunningGui();
-  #endif
-#else
-  m_isGui = false;
+#ifdef ENABLE_SCRIPTING
+  if (m_isGui)
+    m_engine->notifyRunningGui();
 #endif
 
   m_isShell = options.startShell();
@@ -350,9 +334,7 @@ int App::initialize(const AppOptions& options)
   // Load modules
   m_modules = std::make_unique<Modules>(createLogInDesktop, pref);
   m_legacy = std::make_unique<LegacyModules>(isGui() ? REQUIRE_INTERFACE: 0);
-#ifdef ENABLE_UI
   m_brushes = std::make_unique<AppBrushes>();
-#endif
 
   // Data recovery is enabled only in GUI mode
   if (isGui() && pref.general.dataRecovery())
@@ -365,7 +347,6 @@ int App::initialize(const AppOptions& options)
   // palette from an old format palette to the new one, etc.
   load_default_palette();
 
-#ifdef ENABLE_UI
   // Initialize GUI interface
   if (isGui()) {
     LOG("APP: GUI mode\n");
@@ -416,7 +397,6 @@ int App::initialize(const AppOptions& options)
     manager->updateAllDisplays(scale, gpu);
 #endif
   }
-#endif  // ENABLE_UI
 
 #ifdef ENABLE_SCRIPTING
   // Call the init() function from all plugins
@@ -445,25 +425,30 @@ int App::initialize(const AppOptions& options)
 
 namespace {
 
-#ifdef ENABLE_UI
   struct CloseMainWindow {
     std::unique_ptr<MainWindow>& m_win;
     CloseMainWindow(std::unique_ptr<MainWindow>& win) : m_win(win) { }
     ~CloseMainWindow() { m_win.reset(nullptr); }
   };
-#endif
 
-  struct CloseAllDocs {
+  // Deletes all docs.
+  struct DeleteAllDocs {
     Context* m_ctx;
-    CloseAllDocs(Context* ctx) : m_ctx(ctx) { }
-    ~CloseAllDocs() {
+    DeleteAllDocs(Context* ctx) : m_ctx(ctx) { }
+    ~DeleteAllDocs() {
       std::vector<Doc*> docs;
-#ifdef ENABLE_UI
+
+      // Add all documents that were closed in the past, these docs
+      // are not part of any context and they are just temporarily in
+      // memory just in case the user wants to recover them.
       for (Doc* doc : static_cast<UIContext*>(m_ctx)->getAndRemoveAllClosedDocs())
         docs.push_back(doc);
-#endif
+
+      // Add documents that are currently opened/in tabs/in the
+      // context.
       for (Doc* doc : m_ctx->documents())
         docs.push_back(doc);
+
       for (Doc* doc : docs) {
         // First we close the document. In this way we receive recent
         // notifications related to the document as a app::Doc. If
@@ -486,12 +471,9 @@ namespace {
 
 void App::run()
 {
-#ifdef ENABLE_UI
   CloseMainWindow closeMainWindow(m_mainWindow);
-#endif
-  CloseAllDocs closeAllDocsAtExit(context());
+  DeleteAllDocs deleteAllDocsAtExit(context());
 
-#ifdef ENABLE_UI
   // Run the GUI
   if (isGui()) {
     auto manager = ui::Manager::getDefault();
@@ -582,7 +564,6 @@ void App::run()
       throw;
     }
   }
-#endif  // ENABLE_UI
 
 #ifdef ENABLE_SCRIPTING
   // Start shell to execute scripts.
@@ -605,7 +586,6 @@ void App::run()
 
 void App::close()
 {
-#ifdef ENABLE_UI
   if (isGui()) {
     ExitGui();
 
@@ -616,7 +596,6 @@ void App::close()
     // exceptions, and we are not in a destructor).
     m_modules->deleteDataRecovery();
   }
-#endif
 }
 
 // Finishes the Aseprite application.
@@ -645,7 +624,6 @@ App::~App()
     // Fire App Exit signal.
     App::instance()->Exit();
 
-#ifdef ENABLE_UI
     // Finalize modules, configuration and core.
     Editor::destroyEditorSharedInternals();
 
@@ -653,7 +631,6 @@ App::~App()
 
     // Save brushes
     m_brushes.reset();
-#endif
 
     m_legacy.reset();
     m_modules.reset();
@@ -667,11 +644,9 @@ App::~App()
 
     m_coreModules.reset();
 
-#ifdef ENABLE_UI
     // Destroy the loaded gui.xml data.
     KeyboardShortcuts::destroyInstance();
     GuiXml::destroyInstance();
-#endif
   }
   catch (const std::exception& e) {
     LOG(ERROR, "APP: Error: %s\n", e.what());
@@ -723,12 +698,8 @@ tools::ActiveToolManager* App::activeToolManager() const
 
 RecentFiles* App::recentFiles() const
 {
-#ifdef ENABLE_UI
-  ASSERT(m_modules != NULL);
+  ASSERT(m_modules != nullptr);
   return &m_modules->m_recent_files;
-#else
-  return nullptr;
-#endif
 }
 
 Workspace* App::workspace() const
@@ -767,7 +738,6 @@ crash::DataRecovery* App::dataRecovery() const
   return m_modules->recovery();
 }
 
-#ifdef ENABLE_UI
 void App::showNotification(INotificationDelegate* del)
 {
   if (m_mainWindow)
@@ -837,14 +807,14 @@ InputChain& App::inputChain()
 {
   return m_modules->m_inputChain;
 }
-#endif
 
 // Updates palette and redraw the screen.
 void app_refresh_screen()
 {
-#ifdef ENABLE_UI
   Context* ctx = UIContext::instance();
-  ASSERT(ctx != NULL);
+  ASSERT(ctx != nullptr);
+  if (!ctx)
+    return;
 
   Site site = ctx->activeSite();
   if (Palette* pal = site.palette())
@@ -853,8 +823,8 @@ void app_refresh_screen()
     set_current_palette(nullptr, false);
 
   // Invalidate the whole screen.
-  ui::Manager::getDefault()->invalidate();
-#endif // ENABLE_UI
+  if (auto* man = ui::Manager::getDefault())
+    man->invalidate();
 }
 
 // TODO remove app_rebuild_documents_tabs() and replace it by
@@ -862,12 +832,10 @@ void app_refresh_screen()
 // document is modified).
 void app_rebuild_documents_tabs()
 {
-#ifdef ENABLE_UI
-  if (App::instance()->isGui()) {
-    App::instance()->workspace()->updateTabs();
-    App::instance()->updateDisplayTitleBar();
+  if (auto* app = App::instance(); app->isGui()) {
+    app->workspace()->updateTabs();
+    app->updateDisplayTitleBar();
   }
-#endif // ENABLE_UI
 }
 
 PixelFormat app_get_current_pixel_format()
@@ -883,21 +851,20 @@ PixelFormat app_get_current_pixel_format()
 
 int app_get_color_to_clear_layer(Layer* layer)
 {
-  ASSERT(layer != NULL);
+  ASSERT(layer != nullptr);
 
   app::Color color;
 
   // The `Background' is erased with the `Background Color'
   if (layer->isBackground()) {
-#ifdef ENABLE_UI
-    if (ColorBar::instance())
-      color = ColorBar::instance()->getBgColor();
+    if (auto* colorBar = ColorBar::instance())
+      color = colorBar->getBgColor();
     else
-#endif
       color = app::Color::fromRgb(0, 0, 0); // TODO get background color color from doc::Settings
   }
-  else // All transparent layers are cleared with the mask color
+  else { // All transparent layers are cleared with the mask color
     color = app::Color::fromMask();
+  }
 
   return color_utils::color_for_layer(color, layer);
 }

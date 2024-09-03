@@ -1637,7 +1637,6 @@ bool GifFormat::onSave(FileOp* fop)
 FormatOptionsPtr GifFormat::onAskUserForFormatOptions(FileOp* fop)
 {
   auto opts = fop->formatOptionsOfDocument<GifOptions>();
-#ifdef ENABLE_UI
   if (fop->context() && fop->context()->isUIAvailable()) {
     try {
       auto& pref = Preferences::instance();
@@ -1688,7 +1687,6 @@ FormatOptionsPtr GifFormat::onAskUserForFormatOptions(FileOp* fop)
       return std::shared_ptr<GifOptions>(nullptr);
     }
   }
-#endif // ENABLE_UI
   return opts;
 }
 

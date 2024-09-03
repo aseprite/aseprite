@@ -46,8 +46,6 @@ struct HueSaturationParams : public NewParams {
   Param<double> alpha { this, 0.0, "alpha" };
 };
 
-#ifdef ENABLE_UI
-
 static const char* ConfigSection = "HueSaturation";
 
 class HueSaturationWindow : public FilterWindow {
@@ -139,8 +137,6 @@ private:
   ColorSliders m_sliders;
 };
 
-#endif  // ENABLE_UI
-
 class HueSaturationCommand : public CommandWithNewParams<HueSaturationParams> {
 public:
   HueSaturationCommand();
@@ -163,9 +159,7 @@ bool HueSaturationCommand::onEnabled(Context* ctx)
 
 void HueSaturationCommand::onExecute(Context* ctx)
 {
-#ifdef ENABLE_UI
   const bool ui = (params().ui() && ctx->isUIAvailable());
-#endif
 
   HueSaturationFilter filter;
   FilterManagerImpl filterMgr(ctx, &filter);
@@ -184,14 +178,11 @@ void HueSaturationCommand::onExecute(Context* ctx)
   if (params().channels.isSet()) channels = params().channels();
   filterMgr.setTarget(channels);
 
-#ifdef ENABLE_UI
   if (ui) {
     HueSaturationWindow window(filter, filterMgr);
     window.doModal();
   }
-  else
-#endif // ENABLE_UI
-  {
+  else {
     start_filter_worker(&filterMgr);
   }
 }

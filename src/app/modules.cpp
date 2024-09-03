@@ -32,9 +32,7 @@ static Module module[] =
   // first ones.
 
   DEF_MODULE(palette,           0),
-#ifdef ENABLE_UI
   DEF_MODULE(gui,               REQUIRE_INTERFACE),
-#endif
 };
 
 static int modules = sizeof(module) / sizeof(Module);

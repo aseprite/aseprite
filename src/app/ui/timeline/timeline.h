@@ -482,7 +482,6 @@ namespace app {
     } m_resizeTagData;
   };
 
-#ifdef ENABLE_UI
   class LockTimelineRange {
   public:
     LockTimelineRange(Timeline* timeline)
@@ -497,12 +496,6 @@ namespace app {
   private:
     Timeline* m_timeline;
   };
-#else  // !ENABLE_UI
-  class LockTimelineRange {
-  public:
-    LockTimelineRange(Timeline* timeline) { }
-  };
-#endif
 
 } // namespace app
 

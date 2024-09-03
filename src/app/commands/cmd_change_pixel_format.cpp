@@ -166,8 +166,6 @@ private:
   std::thread m_thread;
 };
 
-#ifdef ENABLE_UI
-
 class ConversionItem : public ListItem {
 public:
   ConversionItem(const doc::PixelFormat pixelFormat)
@@ -468,8 +466,6 @@ private:
   bool m_imageJustCreated;
 };
 
-#endif // ENABLE_UI
-
 } // anonymous namespace
 
 class ChangePixelFormatCommand : public Command {
@@ -628,7 +624,6 @@ void ChangePixelFormatCommand::onExecute(Context* context)
 {
   bool flatten = false;
 
-#ifdef ENABLE_UI
   if (context->isUIAvailable() && m_showDlg) {
     ColorModeWindow window(Editor::activeEditor());
 
@@ -650,7 +645,6 @@ void ChangePixelFormatCommand::onExecute(Context* context)
 
     window.saveOptions();
   }
-#endif // ENABLE_UI
 
   // No conversion needed
   Doc* doc = context->activeDocument();

@@ -9,8 +9,6 @@
 
 #define TAB_CONTENT_ID(tabid)  (tabid + "_content")
 
-#ifdef ENABLE_UI
-
 using namespace ui;
 
 namespace app {
@@ -191,5 +189,3 @@ void Tab::onClick()
 
 } // namespace script
 } // namespace app
-
-#endif // ENABLE_UI

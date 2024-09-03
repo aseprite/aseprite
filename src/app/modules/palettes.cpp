@@ -122,20 +122,8 @@ void load_default_palette()
   set_current_palette(nullptr, true);
 }
 
-// TODO This palette isn't synced with the current sprite palette when
-//      ENABLE_UI=0 and we are running scripts, we should remove this
-//      function and use the active Site palette.
 Palette* get_current_palette()
 {
-#if !ENABLE_UI
-  if (auto* app = App::instance()) {
-    if (auto* ctx = app->context()) {
-      Site site = ctx->activeSite();
-      if (site.sprite())
-        return site.palette();
-    }
-  }
-#endif
   return ase_current_palette;
 }
 

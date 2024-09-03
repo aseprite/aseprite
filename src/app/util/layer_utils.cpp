@@ -48,27 +48,21 @@ bool layer_is_locked(Editor* editor)
   if (!layer)
     return false;
 
-#ifdef ENABLE_UI
-  auto statusBar = StatusBar::instance();
-#endif
+  auto* statusBar = StatusBar::instance();
 
   if (!layer->isVisibleHierarchy()) {
-#ifdef ENABLE_UI
     if (statusBar) {
       statusBar->showTip(
         1000, Strings::statusbar_tips_layer_x_is_hidden(layer->name()));
     }
-#endif
     return true;
   }
 
   if (!layer->isEditableHierarchy()) {
-#ifdef ENABLE_UI
     if (statusBar) {
       statusBar->showTip(
         1000, Strings::statusbar_tips_layer_locked(layer->name()));
     }
-#endif
     return true;
   }
 

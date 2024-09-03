@@ -65,7 +65,6 @@ void RunScriptCommand::onLoadParams(const Params& params)
 
 void RunScriptCommand::onExecute(Context* context)
 {
-#if ENABLE_UI
   if (context->isUIAvailable()) {
     int ret = OptionalAlert::show(
       Preferences::instance().scripts.showRunScriptAlert,
@@ -74,16 +73,13 @@ void RunScriptCommand::onExecute(Context* context)
     if (ret != 1)
       return;
   }
-#endif // ENABLE_UI
 
   App::instance()
     ->scriptEngine()
     ->evalUserFile(m_filename, m_params);
 
-#if ENABLE_UI
   if (context->isUIAvailable())
     ui::Manager::getDefault()->invalidate();
-#endif
 }
 
 std::string RunScriptCommand::onGetFriendlyName() const

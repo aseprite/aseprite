@@ -95,10 +95,6 @@ add_definitions(-DLIBARCHIVE_STATIC)
 
 add_library(app-lib ${generated_files})
 
-# ENABLE_UI is always defined because there are still #ifdef/endif
-# using it, but we should remove it.
-target_compile_definitions(app-lib PUBLIC -DENABLE_UI)
-
 # These specific-platform files should be in an external library
 # (e.g. "base" or "os").
 if(WIN32)

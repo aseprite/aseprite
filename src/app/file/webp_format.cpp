@@ -372,7 +372,6 @@ bool WebPFormat::onSave(FileOp* fop)
 FormatOptionsPtr WebPFormat::onAskUserForFormatOptions(FileOp* fop)
 {
   auto opts = fop->formatOptionsOfDocument<WebPOptions>();
-#ifdef ENABLE_UI
   if (fop->context() && fop->context()->isUIAvailable()) {
     try {
       auto& pref = Preferences::instance();
@@ -457,7 +456,6 @@ FormatOptionsPtr WebPFormat::onAskUserForFormatOptions(FileOp* fop)
       return std::shared_ptr<WebPOptions>(nullptr);
     }
   }
-#endif // ENABLE_UI
   return opts;
 }
 

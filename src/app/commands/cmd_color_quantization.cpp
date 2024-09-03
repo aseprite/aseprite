@@ -41,8 +41,6 @@ struct ColorQuantizationParams : public NewParams {
   Param<RgbMapAlgorithm> algorithm { this, RgbMapAlgorithm::DEFAULT, "algorithm" };
 };
 
-#if ENABLE_UI
-
 class PaletteFromSpriteWindow : public app::gen::PaletteFromSprite {
 public:
   PaletteFromSpriteWindow() {
@@ -67,8 +65,6 @@ public:
 private:
   RgbMapAlgorithmSelector m_algoSelector;
 };
-
-#endif
 
 class ColorQuantizationCommand : public CommandWithNewParams<ColorQuantizationParams> {
 public:
@@ -103,7 +99,6 @@ void ColorQuantizationCommand::onExecute(Context* ctx)
   Site site = ctx->activeSite();
   PalettePicks entries = site.selectedColors();
 
-#ifdef ENABLE_UI
   if (ui) {
     PaletteFromSpriteWindow window;
     {
@@ -160,9 +155,7 @@ void ColorQuantizationCommand::onExecute(Context* ctx)
       }
     }
   }
-  else
-#endif // ENABLE_UI
-  {
+  else {
     createPal = (!params().useRange());
   }
 

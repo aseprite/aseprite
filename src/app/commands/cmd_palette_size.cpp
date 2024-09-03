@@ -60,7 +60,6 @@ void PaletteSizeCommand::onExecute(Context* context)
   Palette palette(*reader.palette());
   int ncolors = (m_size != 0 ? m_size: palette.size());
 
-#ifdef ENABLE_UI
   if (m_size == 0 && context->isUIAvailable()) {
     app::gen::PaletteSize window;
     window.colors()->setTextf("%d", ncolors);
@@ -70,7 +69,6 @@ void PaletteSizeCommand::onExecute(Context* context)
 
     ncolors = window.colors()->textInt();
   }
-#endif
 
   if (ncolors == palette.size())
     return;

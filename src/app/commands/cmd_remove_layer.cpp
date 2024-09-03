@@ -38,11 +38,9 @@ static bool deleting_all_layers(Context* ctx, Sprite* sprite, int topLevelLayers
 {
   const bool deletingAll = (topLevelLayersToDelete == sprite->root()->layersCount());
 
-#ifdef ENABLE_UI
   if (ctx->isUIAvailable() && deletingAll) {
     ui::Alert::show(Strings::alerts_cannot_delete_all_layers());
   }
-#endif
 
   return deletingAll;
 }
@@ -77,7 +75,6 @@ static bool continue_deleting_unused_tilesets(
     }
   }
 
-#ifdef ENABLE_UI
   // Just continue if UI is not available.
   if (!ctx->isUIAvailable())
     return true;
@@ -94,9 +91,6 @@ static bool continue_deleting_unused_tilesets(
   return tsiToDelete.empty() ||
          app::OptionalAlert::show(
           Preferences::instance().tilemap.showDeleteUnusedTilesetAlert, 1, message) == 1;
-#else
-  return true;
-#endif
 }
 
 class RemoveLayerCommand : public Command {
@@ -199,7 +193,6 @@ void RemoveLayerCommand::onExecute(Context* context)
     tx.commit();
   }
 
-#ifdef ENABLE_UI
   if (context->isUIAvailable()) {
     update_screen_for_document(document);
 
@@ -213,7 +206,6 @@ void RemoveLayerCommand::onExecute(Context* context)
         1000, Strings::remove_layer_layers_removed());
     }
   }
-#endif
 }
 
 Command* CommandFactory::createRemoveLayerCommand()

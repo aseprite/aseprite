@@ -48,8 +48,6 @@ struct CanvasSizeParams : public NewParams {
   Param<bool> trimOutside { this, false, "trimOutside" };
 };
 
-#ifdef ENABLE_UI
-
 // Window used to show canvas parameters.
 class CanvasSizeWindow : public app::gen::CanvasSize
                        , public SelectBoxDelegate
@@ -285,8 +283,6 @@ private:
   EditorStatePtr m_selectBoxState;
 };
 
-#endif // ENABLE_UI
-
 class CanvasSizeCommand : public CommandWithNewParams<CanvasSizeParams> {
 public:
   CanvasSizeCommand();
@@ -309,9 +305,7 @@ bool CanvasSizeCommand::onEnabled(Context* context)
 
 void CanvasSizeCommand::onExecute(Context* context)
 {
-#ifdef ENABLE_UI
   const bool ui = (params().ui() && context->isUIAvailable());
-#endif
   const ContextReader reader(context);
   const Sprite* sprite(reader.sprite());
   auto& params = this->params();
@@ -326,7 +320,6 @@ void CanvasSizeCommand::onExecute(Context* context)
                   params.right(), params.bottom()));
   }
 
-#ifdef ENABLE_UI
   if (ui) {
     if (!params.trimOutside.isSet()) {
       params.trimOutside(Preferences::instance().canvasSize.trimOutside());
@@ -376,7 +369,6 @@ void CanvasSizeCommand::onExecute(Context* context)
                     params.right(), params.bottom()));
     }
   }
-#endif
 
   if (bounds.w < 1) bounds.w = 1;
   if (bounds.h < 1) bounds.h = 1;
@@ -390,10 +382,7 @@ void CanvasSizeCommand::onExecute(Context* context)
     api.cropSprite(sprite, bounds, params.trimOutside());
     tx.commit();
 
-#ifdef ENABLE_UI
-    if (context->isUIAvailable())
-      update_screen_for_document(doc);
-#endif
+    update_screen_for_document(doc);
   }
 }
 

@@ -60,7 +60,6 @@ struct ThemeDimension {
 
 struct ThemeColor { };
 
-#ifdef ENABLE_UI
 void push_border_as_table(lua_State* L, const gfx::Border& border)
 {
   lua_newtable(L);
@@ -73,23 +72,17 @@ void push_border_as_table(lua_State* L, const gfx::Border& border)
   }
   lua_setfield(L, -2, "border");
 }
-#endif
 
 int ThemeDimension_index(lua_State* L)
 {
-  [[maybe_unused]]
   auto themeDimension = get_obj<ThemeDimension>(L, 1);
 
   const char* id = lua_tostring(L, 2);
   if (!id)
     return luaL_error(L, "id in app.theme.dimension.id must be a string");
 
-#ifdef ENABLE_UI
   const int value = themeDimension->getById(id);
   lua_pushinteger(L, value);
-#else
-  lua_pushinteger(L, 0);
-#endif
   return 1;
 }
 
@@ -99,31 +92,27 @@ int ThemeColor_index(lua_State* L)
   if (!id)
     return luaL_error(L, "id in app.theme.color.id must be a string");
 
-#ifdef ENABLE_UI
-  const gfx::Color uiColor = skin::SkinTheme::instance()->getColorById(id);
-  push_obj<app::Color>(L, color_utils::color_from_ui(uiColor));
-#else
-  push_obj<app::Color>(L, app::Color::fromMask());
-#endif
+  if (auto* theme = skin::SkinTheme::instance()) {
+    const gfx::Color uiColor = theme->getColorById(id);
+    push_obj<app::Color>(L, color_utils::color_from_ui(uiColor));
+  }
+  else {
+    push_obj<app::Color>(L, app::Color::fromMask());
+  }
   return 1;
 }
 
 int Theme_styleMetrics(lua_State* L)
 {
-  [[maybe_unused]]
   auto theme = get_obj<Theme>(L, 1);
 
   const char* id = lua_tostring(L, 2);
   if (!id)
     return 0;
 
-#ifdef ENABLE_UI
   gfx::Border border = theme->styleMetrics(id);
   push_border_as_table(L, border);
   return 1;
-#else  // ENABLE_UI
-  return 0;
-#endif
 }
 
 int Theme_get_dimension(lua_State* L)

@@ -128,11 +128,9 @@ bool NewLayerCommand::onEnabled(Context* ctx)
                        ContextFlags::HasActiveSprite))
     return false;
 
-#ifdef ENABLE_UI
   if (params().fromClipboard() &&
       ctx->clipboard()->format() != ClipboardFormat::Image)
     return false;
-#endif
 
   if ((params().viaCut() ||
        params().viaCopy()) &&
@@ -160,12 +158,10 @@ void NewLayerCommand::onExecute(Context* context)
   Sprite* sprite(reader.sprite());
   std::string name;
 
-#if ENABLE_UI
   // Show the tooltip feedback only if we are not inside a transaction
   // (e.g. we can be already in a transaction if we are running in a
   // Lua script app.transaction()).
   const bool showTooltip = (document->transaction() == nullptr);
-#endif
 
   Doc* pasteDoc = nullptr;
   Scoped destroyPasteDoc(
@@ -220,7 +216,6 @@ void NewLayerCommand::onExecute(Context* context)
   tilesetInfo.baseIndex = 1;
   tilesetInfo.matchFlags = 0;   // TODO default flags?
 
-#ifdef ENABLE_UI
   // If params specify to ask the user about the name...
   if (params().ask() && context->isUIAvailable()) {
     auto& pref = Preferences::instance();
@@ -254,7 +249,6 @@ void NewLayerCommand::onExecute(Context* context)
       tilesetSelector->saveAdvancedPreferences();
     }
   }
-#endif
 
   LayerGroup* parent = sprite->root();
   Layer* activeLayer = reader.layer();
@@ -423,7 +417,6 @@ void NewLayerCommand::onExecute(Context* context)
         }
       }
     }
-#ifdef ENABLE_UI
     // Paste new layer from clipboard
     else if (params().fromClipboard() && layer->isImage()) {
       context->clipboard()->paste(context, false);
@@ -435,7 +428,6 @@ void NewLayerCommand::onExecute(Context* context)
         }
       }
     }
-#endif // ENABLE_UI
     // Paste new layer from selection
     else if ((params().viaCut() || params().viaCopy())
              && document->isMaskVisible()) {
@@ -494,7 +486,6 @@ void NewLayerCommand::onExecute(Context* context)
     tx.commit();
   }
 
-#ifdef ENABLE_UI
   if (context->isUIAvailable() && showTooltip) {
     update_screen_for_document(document);
 
@@ -505,7 +496,6 @@ void NewLayerCommand::onExecute(Context* context)
 
     App::instance()->mainWindow()->popTimeline();
   }
-#endif
 }
 
 std::string NewLayerCommand::onGetFriendlyName() const

@@ -11,13 +11,10 @@
 
 #include "app/cmd_transaction.h"
 
+#include "app/app.h"
 #include "app/context.h"
 #include "app/site.h"
-
-#ifdef ENABLE_UI
-#include "app/app.h"
 #include "app/ui/timeline/timeline.h"
-#endif
 
 namespace app {
 
@@ -45,10 +42,8 @@ CmdTransaction* CmdTransaction::moveToEmptyCopy()
 
 void CmdTransaction::setNewDocRange(const DocRange& range)
 {
-#ifdef ENABLE_UI
   if (m_ranges)
     range.write(m_ranges->m_after);
-#endif
 }
 
 void CmdTransaction::updateSpritePositionAfter()
@@ -87,12 +82,10 @@ void CmdTransaction::onExecute()
 {
   // Save the current site and doc range
   m_spritePositionBefore = calcSpritePosition();
-#ifdef ENABLE_UI
   if (isDocRangeEnabled()) {
     m_ranges.reset(new Ranges);
     calcDocRange().write(m_ranges->m_before);
   }
-#endif
 
   // Execute the sequence of "cmds"
   CmdSequence::onExecute();
@@ -131,28 +124,23 @@ SpritePosition CmdTransaction::calcSpritePosition() const
 
 bool CmdTransaction::isDocRangeEnabled() const
 {
-#ifdef ENABLE_UI
   if (App::instance()) {
     Timeline* timeline = App::instance()->timeline();
     if (timeline && timeline->range().enabled())
       return true;
   }
-#endif
   return false;
 }
 
 DocRange CmdTransaction::calcDocRange() const
 {
-#ifdef ENABLE_UI
   // TODO We cannot use Context::activeSite() because it losts
   //      important information about the DocRange() (type and
   //      flags).
-  if (App::instance()) {
-    Timeline* timeline = App::instance()->timeline();
-    if (timeline)
+  if (App* app = App::instance()) {
+    if (Timeline* timeline = app->timeline())
       return timeline->range();
   }
-#endif
   return DocRange();
 }
 

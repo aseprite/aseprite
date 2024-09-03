@@ -81,11 +81,10 @@ Ink* ActiveToolManager::activeInk() const
   if (ink->isPaint() && !ink->isEffect()) {
     const tools::InkType inkType = Preferences::instance().tool(tool).ink();
     app::Color color;
-#ifdef ENABLE_UI
-    ColorBar* colorbar = ColorBar::instance();
-    color = (m_rightClick ? colorbar->getBgColor():
-                            colorbar->getFgColor());
-#endif
+    if (ColorBar* colorbar = ColorBar::instance()) {
+      color = (m_rightClick ? colorbar->getBgColor():
+                              colorbar->getFgColor());
+    }
     ink = adjustToolInkDependingOnSelectedInkType(ink, inkType, color);
   }
 
@@ -238,13 +237,15 @@ void ActiveToolManager::setSelectedTool(Tool* tool)
 // static
 bool ActiveToolManager::isToolAffectedByRightClickMode(Tool* tool)
 {
-
-#if ENABLE_UI
-  bool shadingMode = ((Preferences::instance().tool(tool).ink() == InkType::SHADING) &&
-                      (App::instance()->contextBar()->getShade().size() >= 2));
-#else
   bool shadingMode = (Preferences::instance().tool(tool).ink() == InkType::SHADING);
-#endif
+  if (shadingMode) {
+    if (auto* contextBar = App::instance()->contextBar()) {
+      // Shading ink is only enabled if we have a shade of two or more
+      // colors selected, in other case we disable it so a right-click
+      // can be used for its configured action.
+      shadingMode = (contextBar->getShade().size() >= 2);
+    }
+  }
 
   return
     ((tool->getInk(0)->isPaint() && !shadingMode) ||

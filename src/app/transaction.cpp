@@ -95,9 +95,7 @@ void Transaction::commit()
   TX_TRACE("TX: Commit <%s>\n", m_cmds->label().c_str());
 
   m_cmds->updateSpritePositionAfter();
-#ifdef ENABLE_UI
   const SpritePosition sprPos = m_cmds->spritePositionAfterExecute();
-#endif
 
   m_undo->add(m_cmds);
   m_cmds = nullptr;
@@ -108,7 +106,6 @@ void Transaction::commit()
     m_doc->generateMaskBoundaries();
   }
 
-#ifdef ENABLE_UI
   if (int(m_changes) & int(Changes::kColorChange)) {
     ASSERT(m_doc);
     ASSERT(m_doc->sprite());
@@ -123,7 +120,6 @@ void Transaction::commit()
     if (m_ctx->isUIAvailable())
       ui::Manager::getDefault()->invalidate();
   }
-#endif
 }
 
 void Transaction::rollbackAndStartAgain()

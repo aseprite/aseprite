@@ -18,11 +18,7 @@ namespace app {
 
 #if !ENABLE_SENTRY
 
-  class SendCrash
-#ifdef ENABLE_UI
-    : public INotificationDelegate
-#endif
-  {
+  class SendCrash : public INotificationDelegate {
   public:
     static std::string DefaultMemoryDumpFilename();
 
@@ -30,7 +26,6 @@ namespace app {
 
     void search();
 
-#ifdef ENABLE_UI
   public:                       // INotificationDelegate impl
     virtual std::string notificationText() override;
     virtual void notificationClick() override;
@@ -38,7 +33,6 @@ namespace app {
   private:
     void onClickFilename();
     void onClickDevFilename();
-#endif // ENABLE_UI
 
   private:
     Task m_task;

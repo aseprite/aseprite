@@ -334,7 +334,6 @@ FormatOptionsPtr TgaFormat::onAskUserForFormatOptions(FileOp* fop)
 {
   const bool origOpts = fop->hasFormatOptionsOfDocument();
   auto opts = fop->formatOptionsOfDocument<TgaOptions>();
-#ifdef ENABLE_UI
   if (fop->context() && fop->context()->isUIAvailable()) {
     try {
       auto& pref = Preferences::instance();
@@ -398,7 +397,6 @@ FormatOptionsPtr TgaFormat::onAskUserForFormatOptions(FileOp* fop)
       return std::shared_ptr<TgaOptions>(nullptr);
     }
   }
-#endif // ENABLE_UI
   return opts;
 }
 

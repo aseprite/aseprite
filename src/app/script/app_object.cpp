@@ -200,7 +200,6 @@ int App_redo(lua_State* L)
 
 int App_alert(lua_State* L)
 {
-#ifdef ENABLE_UI
   app::Context* ctx = App::instance()->context();
   if (!ctx || !ctx->isUIAvailable())
     return 0;                   // No UI to show the alert
@@ -261,17 +260,14 @@ int App_alert(lua_State* L)
     lua_pushinteger(L, alert->show());
     return 1;
   }
-#endif
   return 0;
 }
 
 int App_refresh(lua_State* L)
 {
-#ifdef ENABLE_UI
   app::Context* ctx = App::instance()->context();
   if (ctx && ctx->isUIAvailable())
     app_refresh_screen();
-#endif
   return 0;
 }
 
@@ -382,14 +378,12 @@ int App_useTool(lua_State* L)
     params.brush = get_brush_from_arg(L, -1);
   else {
     // Default brush is the active brush in the context bar
-#ifdef ENABLE_UI
     if (App::instance()->isGui() &&
         App::instance()->contextBar()) {
       params.brush = App::instance()
         ->contextBar()->activeBrush(params.tool,
                                     params.ink);
     }
-#endif
   }
   lua_pop(L, 1);
   if (!params.brush) {
@@ -526,13 +520,11 @@ int App_get_uiScale(lua_State* L)
 
 int App_get_editor(lua_State* L)
 {
-#ifdef ENABLE_UI
   auto ctx = UIContext::instance();
   if (Editor* editor = ctx->activeEditor()) {
     push_editor(L, editor);
     return 1;
   }
-#endif
   return 0;
 }
 
@@ -598,13 +590,10 @@ int App_get_tag(lua_State* L)
   app::Context* ctx = App::instance()->context();
   Site site = ctx->activeSite();
   if (site.sprite()) {
-#ifdef ENABLE_UI
     if (App::instance()->timeline()) {
       tag = App::instance()->timeline()->getTagByFrame(site.frame(), false);
     }
-    else
-#endif
-    {
+    else {
       tag = get_animation_tag(site.sprite(), site.frame());
     }
   }
@@ -692,14 +681,12 @@ int App_get_tool(lua_State* L)
 
 int App_get_brush(lua_State* L)
 {
-#if ENABLE_UI
   App* app = App::instance();
   if (app->isGui()) {
     doc::BrushRef brush = app->contextBar()->activeBrush();
     push_brush(L, brush);
     return 1;
   }
-#endif
   push_brush(L, doc::BrushRef(new doc::Brush()));
   return 1;
 }
@@ -716,14 +703,11 @@ int App_get_defaultPalette(lua_State* L)
 
 int App_get_window(lua_State* L)
 {
-#if ENABLE_UI
   App* app = App::instance();
   if (app && app->mainWindow()) {
     push_ptr(L, (ui::Window*)app->mainWindow());
   }
-  else
-#endif
-  {
+  else {
     lua_pushnil(L);
   }
   return 1;
@@ -784,13 +768,11 @@ int App_set_tool(lua_State* L)
 
 int App_set_brush(lua_State* L)
 {
-#if ENABLE_UI
   if (auto brush = get_brush_from_arg(L, 2)) {
     App* app = App::instance();
     if (app->isGui())
       app->contextBar()->setActiveBrush(brush);
   }
-#endif
   return 0;
 }
 
