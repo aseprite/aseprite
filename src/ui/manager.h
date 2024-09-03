@@ -10,6 +10,7 @@
 #pragma once
 
 #include "gfx/region.h"
+#include "os/dnd.h"
 #include "ui/display.h"
 #include "ui/keys.h"
 #include "ui/message_type.h"
@@ -28,7 +29,8 @@ namespace ui {
   class Timer;
   class Window;
 
-  class Manager : public Widget {
+  class Manager : public Widget
+                , public os::DragTarget {
   public:
     static Manager* getDefault() { return m_defaultManager; }
     static bool widgetAssociatedToManager(Widget* widget);
@@ -161,6 +163,11 @@ namespace ui {
     int pumpQueue();
     bool sendMessageToWidget(Message* msg, Widget* widget);
 
+    void dragEnter(os::DragEvent& ev) override;
+    void dragLeave(os::DragEvent& ev) override;
+    void drag(os::DragEvent& ev) override;
+    void drop(os::DragEvent& ev) override;
+
     static Widget* findLowestCommonAncestor(Widget* a, Widget* b);
     static bool someParentIsFocusStop(Widget* widget);
     static Widget* findMagneticWidget(Widget* widget);
@@ -189,6 +196,9 @@ namespace ui {
 
     // Last pressed mouse button.
     MouseButton m_mouseButton;
+
+    // Widget over which the drag is being hovered in a drag & drop operation.
+    Widget* m_dragOverWidget = nullptr;
   };
 
 } // namespace ui
