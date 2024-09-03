@@ -348,24 +348,37 @@ int App_useTool(lua_State* L)
     params.inkType = get_value_from_lua<tools::InkType>(L, -1);
   lua_pop(L, 1);
 
+  // Are we going to modify pixels or tiles?
+  type = lua_getfield(L, 1, "tilemapMode");
+  if (type != LUA_TNIL) {
+    site.tilemapMode(TilemapMode(lua_tointeger(L, -1)));
+  }
+  lua_pop(L, 1);
+
+  // How the tileset must be modified depending on this tool usage
+  type = lua_getfield(L, 1, "tilesetMode");
+  if (type != LUA_TNIL) {
+    site.tilesetMode(TilesetMode(lua_tointeger(L, -1)));
+  }
+  lua_pop(L, 1);
+
   // Color
   type = lua_getfield(L, 1, "color");
   if (type != LUA_TNIL)
     params.fg = convert_args_into_color(L, -1);
-  else {
-    // Default color is the active fgColor
+  else if (site.tilemapMode() == TilemapMode::Tiles)
+    params.fg = Color::fromTile(Preferences::instance().colorBar.fgTile());
+  else // Default color is the active fgColor
     params.fg = Preferences::instance().colorBar.fgColor();
-  }
   lua_pop(L, 1);
 
   type = lua_getfield(L, 1, "bgColor");
   if (type != LUA_TNIL)
     params.bg = convert_args_into_color(L, -1);
-  else if (params.fg.getType() ==
-           Preferences::instance().colorBar.bgColor().getType())
-    params.bg = Preferences::instance().colorBar.bgColor();
+  else if (site.tilemapMode() == TilemapMode::Tiles)
+    params.bg = Color::fromTile(Preferences::instance().colorBar.bgTile());
   else
-    params.bg = params.fg;
+    params.bg = Preferences::instance().colorBar.bgColor();
   lua_pop(L, 1);
 
   // Adjust ink depending on "inkType" and "color"
@@ -443,20 +456,6 @@ int App_useTool(lua_State* L)
         break;
     }
   }
-
-  // Are we going to modify pixels or tiles?
-  type = lua_getfield(L, 1, "tilemapMode");
-  if (type != LUA_TNIL) {
-    site.tilemapMode(TilemapMode(lua_tointeger(L, -1)));
-  }
-  lua_pop(L, 1);
-
-  // How the tileset must be modified depending on this tool usage
-  type = lua_getfield(L, 1, "tilesetMode");
-  if (type != LUA_TNIL) {
-    site.tilesetMode(TilesetMode(lua_tointeger(L, -1)));
-  }
-  lua_pop(L, 1);
 
   // Do the tool loop
   type = lua_getfield(L, 1, "points");
