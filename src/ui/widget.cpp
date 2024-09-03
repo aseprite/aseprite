@@ -22,6 +22,7 @@
 #include "text/font.h"
 #include "text/font_mgr.h"
 #include "ui/app_state.h"
+#include "ui/drag_event.h"
 #include "ui/init_theme_event.h"
 #include "ui/intern.h"
 #include "ui/layout_io.h"
@@ -1798,6 +1799,38 @@ text::TextBlobRef Widget::onMakeTextBlob() const
 text::ShaperFeatures Widget::onGetTextShaperFeatures() const
 {
   return text::ShaperFeatures();
+}
+
+void Widget::onDragEnter(DragEvent& e)
+{
+#ifdef _DEBUG
+  LOG(VERBOSE, "UI: [id=%s, type=%d]: onDragEnter(), position: (%d, %d)\n",
+      id().c_str(), type(), e.position().x, e.position().y);
+#endif
+}
+
+void Widget::onDragLeave(DragEvent& e)
+{
+#ifdef _DEBUG
+  LOG(VERBOSE, "UI: [id=%s, type=%d]: onDragLeave(), position: (%d, %d)\n",
+      id().c_str(), type(), e.position().x, e.position().y);
+#endif
+}
+
+void Widget::onDrag(DragEvent& e)
+{
+#ifdef _DEBUG
+  LOG(VERBOSE, "UI: [id=%s, type=%d]: onDrag(), position: (%d, %d)\n",
+      id().c_str(), type(), e.position().x, e.position().y);
+#endif
+}
+
+void Widget::onDrop(DragEvent& e)
+{
+#ifdef _DEBUG
+  LOG(VERBOSE, "UI: [id=%s, type=%d]: onDrop(), position: (%d, %d)\n",
+      id().c_str(), type(), e.position().x, e.position().y);
+#endif
 }
 
 void Widget::offsetWidgets(int dx, int dy)

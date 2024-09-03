@@ -21,6 +21,7 @@
 #include "ui/cursor.h"
 #include "ui/cursor_type.h"
 #include "ui/display.h"
+#include "ui/drag_event.h"
 #include "ui/entry.h"
 #include "ui/event.h"
 #include "ui/fit_bounds.h"
