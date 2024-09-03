@@ -22,13 +22,14 @@
 
     <check text="@.flatten" id="flatten" />
 
-    <check id="advanced_check" text="@general.advanced_options" cell_hspan="2" />
-    <vbox id="advanced" cell_hspan="2">
-      <label text="@rgbmap_algorithm_selector.label" cell_hspan="1" />
-      <hbox id="rgbmap_algorithm_placeholder" cell_hspan="1" />
-      <label text="@best_fit_criteria_selector.label" cell_hspan="1" />
-      <hbox id="best_fit_criteria_placeholder" cell_hspan="1" />
-    </vbox>
+    <check id="advanced_check" text="@general.advanced_options" />
+    <grid id="advanced" columns="2">
+      <label text="@rgbmap_algorithm_selector.label" />
+      <hbox id="rgbmap_algorithm_placeholder" cell_align="horizontal" />
+
+      <label text="@best_fit_criteria_selector.label" />
+      <hbox id="best_fit_criteria_placeholder" cell_align="horizontal" />
+    </grid>
 
     <separator horizontal="true" />
     <hbox>
