@@ -39,11 +39,9 @@ os::ColorSpaceRef get_screen_color_space()
 
 os::ColorSpaceRef get_current_color_space()
 {
-#ifdef ENABLE_UI
-  if (auto editor = Editor::activeEditor())
+  if (auto* editor = Editor::activeEditor())
     return editor->document()->osColorSpace();
   else
-#endif
     return get_screen_color_space();
 }
 

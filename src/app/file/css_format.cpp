@@ -254,8 +254,8 @@ FormatOptionsPtr CssFormat::onAskUserForFormatOptions(FileOp* fop)
 {
   auto opts = fop->formatOptionsOfDocument<CssOptions>();
 
-#ifdef ENABLE_UI
-  if (fop->context() && fop->context()->isUIAvailable()) {
+  if (fop->context() &&
+      fop->context()->isUIAvailable()) {
     try {
       auto &pref = Preferences::instance();
 
@@ -296,7 +296,6 @@ FormatOptionsPtr CssFormat::onAskUserForFormatOptions(FileOp* fop)
     }
   }
 
-#endif
   return opts;
 }
 

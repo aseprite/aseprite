@@ -146,7 +146,6 @@ void ConvertLayerCommand::onExecute(Context* ctx)
   Grid grid0 = site.grid();
   grid0.origin(gfx::Point(0, 0));
 
-#if ENABLE_UI
   if (params().to() == ConvertLayerParam::Tilemap &&
       ctx->isUIAvailable() &&
       params().ui() &&
@@ -175,7 +174,6 @@ void ConvertLayerCommand::onExecute(Context* ctx)
     baseIndex = tilesetInfo.baseIndex;
     matchFlags = tilesetInfo.matchFlags;
   }
-#endif
 
   ContextWriter writer(ctx);
   Doc* document(writer.document());
@@ -261,10 +259,7 @@ void ConvertLayerCommand::onExecute(Context* ctx)
     tx.commit();
   }
 
-#ifdef ENABLE_UI
-  if (ctx->isUIAvailable())
-    update_screen_for_document(document);
-#endif
+  update_screen_for_document(document);
 }
 
 void ConvertLayerCommand::copyCels(Tx& tx,

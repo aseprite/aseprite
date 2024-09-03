@@ -16,7 +16,7 @@ endif()
 if(MSVC)
   # As Skia is compiled with /GL flag (whole program optimization),
   # the linker prefer a /LTCG parameter to improve link times.
-  if(LAF_OS_BACKEND STREQUAL "skia")
+  if(LAF_BACKEND STREQUAL "skia")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /LTCG")
   endif()
 
@@ -183,7 +183,7 @@ if(ENABLE_ASEPRITE_EXE)
   add_executable(${main_target}
     main/main.cpp
     ${main_resources})
-  if(ENABLE_UI)
+  if(LAF_BACKEND STREQUAL "skia")
     if(WIN32)
       set_target_properties(${main_target} PROPERTIES WIN32_EXECUTABLE true)
     endif()
@@ -192,9 +192,9 @@ if(ENABLE_ASEPRITE_EXE)
   target_link_libraries(${main_target} app-lib)
   add_dependencies(${main_target} copy_data)
 
-  if(LAF_OS_BACKEND_LINK_FLAGS)
+  if(LAF_BACKEND_LINK_FLAGS)
     set_target_properties(${main_target} PROPERTIES LINK_FLAGS
-      ${LAF_OS_BACKEND_LINK_FLAGS})
+      ${LAF_BACKEND_LINK_FLAGS})
   endif()
 
   install(TARGETS ${main_target}

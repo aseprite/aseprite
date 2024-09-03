@@ -528,7 +528,6 @@ void JpegFormat::saveColorSpace(FileOp* fop, jpeg_compress_struct* cinfo,
 FormatOptionsPtr JpegFormat::onAskUserForFormatOptions(FileOp* fop)
 {
   auto opts = fop->formatOptionsOfDocument<JpegOptions>();
-#ifdef ENABLE_UI
   if (fop->context() && fop->context()->isUIAvailable()) {
     try {
       auto& pref = Preferences::instance();
@@ -557,7 +556,6 @@ FormatOptionsPtr JpegFormat::onAskUserForFormatOptions(FileOp* fop)
       return std::shared_ptr<JpegOptions>(0);
     }
   }
-#endif // ENABLE_UI
   return opts;
 }
 

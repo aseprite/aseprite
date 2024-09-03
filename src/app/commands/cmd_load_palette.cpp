@@ -61,7 +61,6 @@ void LoadPaletteCommand::onExecute(Context* context)
   else if (!m_filename.empty()) {
     filename = m_filename;
   }
-#ifdef ENABLE_UI
   else if (context->isUIAvailable()) {
     base::paths exts = get_readable_palette_extensions();
     base::paths filenames;
@@ -71,7 +70,6 @@ void LoadPaletteCommand::onExecute(Context* context)
       filename = filenames.front();
     }
   }
-#endif // ENABLE_UI
 
   // Do nothing
   if (filename.empty())

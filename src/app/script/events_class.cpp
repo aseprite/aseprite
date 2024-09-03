@@ -571,8 +571,6 @@ void push_sprite_events(lua_State* L, Sprite* sprite)
   push_ptr<Events>(L, spriteEvents);
 }
 
-#ifdef ENABLE_UI
-
 void push_window_events(lua_State* L, ui::Window* window)
 {
   if (!g_windowEvents) {
@@ -584,8 +582,6 @@ void push_window_events(lua_State* L, ui::Window* window)
   }
   push_ptr<Events>(L, g_windowEvents.get());
 }
-
-#endif // ENABLE_UI
 
 } // namespace script
 } // namespace app

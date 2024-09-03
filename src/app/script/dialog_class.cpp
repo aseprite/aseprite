@@ -50,8 +50,6 @@
 #include <string>
 #include <vector>
 
-#ifdef ENABLE_UI
-
 #define TRACE_DIALOG(...) // TRACEARGS(__VA_ARGS__)
 
 namespace app {
@@ -1909,5 +1907,3 @@ void close_all_dialogs()
 
 } // namespace script
 } // namespace app
-
-#endif  // ENABLE_UI

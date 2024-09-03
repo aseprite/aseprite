@@ -26,8 +26,6 @@
 
 #include <algorithm>
 
-#ifdef ENABLE_UI
-
 namespace app {
 namespace script {
 
@@ -554,5 +552,3 @@ void register_graphics_context_class(lua_State* L)
 
 } // namespace script
 } // namespace app
-
-#endif // ENABLE_UI

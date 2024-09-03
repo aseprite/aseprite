@@ -54,8 +54,6 @@ namespace app {
   //////////////////////////////////////////////////////////////////////
   // For UI
 
-#ifdef ENABLE_UI
-
   tools::ToolLoop* create_tool_loop(
     Editor* editor,
     Context* context,
@@ -68,8 +66,6 @@ namespace app {
     const doc::BrushRef& brush,
     doc::Image* image,
     const gfx::Point& celOrigin);
-
-#endif // ENABLE_UI
 
   //////////////////////////////////////////////////////////////////////
   // For scripting

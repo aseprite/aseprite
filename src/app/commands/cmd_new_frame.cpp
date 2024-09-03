@@ -93,12 +93,10 @@ void NewFrameCommand::onExecute(Context* context)
   Doc* document(writer.document());
   Sprite* sprite(writer.sprite());
 
-#if ENABLE_UI
   // Show the tooltip feedback only if we are not inside a transaction
   // (e.g. we can be already in a transaction if we are running in a
   // Lua script app.transaction()).
   const bool showTooltip = (document->transaction() == nullptr);
-#endif
 
   {
     Tx tx(writer, friendlyName());
@@ -127,11 +125,9 @@ void NewFrameCommand::onExecute(Context* context)
         if (site->inTimeline() &&
             !site->selectedLayers().empty() &&
             !site->selectedFrames().empty()) {
-#if ENABLE_UI
           auto timeline = App::instance()->timeline();
           timeline->prepareToMoveRange();
           DocRange range = timeline->range();
-#endif
 
           SelectedLayers selLayers;
           if (site->inFrames())
@@ -156,10 +152,8 @@ void NewFrameCommand::onExecute(Context* context)
             }
           }
 
-#ifdef ENABLE_UI                // TODO the range should be part of the Site
           range.displace(0, frameRange);
           timeline->moveRange(range);
-#endif
         }
         else if (auto layer = static_cast<LayerImage*>(writer.layer())) {
           api.copyCel(
@@ -175,7 +169,6 @@ void NewFrameCommand::onExecute(Context* context)
     tx.commit();
   }
 
-#ifdef ENABLE_UI
   if (context->isUIAvailable() && showTooltip) {
     update_screen_for_document(document);
 
@@ -186,7 +179,6 @@ void NewFrameCommand::onExecute(Context* context)
 
     App::instance()->mainWindow()->popTimeline();
   }
-#endif
 }
 
 std::string NewFrameCommand::onGetFriendlyName() const

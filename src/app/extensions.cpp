@@ -743,10 +743,8 @@ void Extension::exitScripts()
         auto cmd = cmds->byId(item.id.c_str());
         ASSERT(cmd);
         if (cmd) {
-#ifdef ENABLE_UI
           // TODO use a signal
           AppMenus::instance()->removeMenuItemFromGroup(cmd);
-#endif // ENABLE_UI
 
           cmds->remove(cmd);
 
@@ -756,8 +754,6 @@ void Extension::exitScripts()
         }
         break;
       }
-
-#ifdef ENABLE_UI
 
       case PluginItem::MenuSeparator:
         ASSERT(item.widget);
@@ -775,8 +771,6 @@ void Extension::exitScripts()
         // TODO use a signal
         AppMenus::instance()->removeMenuGroup(item.id);
         break;
-
-#endif // ENABLE_UI
 
     }
   }

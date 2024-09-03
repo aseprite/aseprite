@@ -163,10 +163,7 @@ void MergeDownLayerCommand::onExecute(Context* context)
 
   tx.commit();
 
-#ifdef ENABLE_UI
-  if (context->isUIAvailable())
-    update_screen_for_document(document);
-#endif
+  update_screen_for_document(document);
 }
 
 Command* CommandFactory::createMergeDownLayerCommand()

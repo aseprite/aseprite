@@ -68,8 +68,6 @@ namespace app {
 
 using namespace ui;
 
-#ifdef ENABLE_UI
-
 static void fill_toolloop_params_from_tool_preferences(ToolLoopParams& params)
 {
   ToolPreferences& toolPref =
@@ -81,8 +79,6 @@ static void fill_toolloop_params_from_tool_preferences(ToolLoopParams& params)
   params.contiguous = toolPref.contiguous();
   params.freehandAlgorithm = toolPref.freehandAlgorithm();
 }
-
-#endif // ENABLE_UI
 
 //////////////////////////////////////////////////////////////////////
 // Common properties between drawing/preview ToolLoop impl
@@ -162,9 +158,7 @@ public:
     , m_isSelectingTiles(false)
     , m_grid(grid)
     , m_gridBounds(grid.origin(), grid.tileSize())
-#ifdef ENABLE_UI
     , m_mainTilePos(editor ? -editor->mainTilePosition(): gfx::Point(0, 0))
-#endif
     , m_button(params.button)
     , m_ink(params.ink->clone())
     , m_controller(params.controller)
@@ -236,13 +230,12 @@ public:
         site.tilemapMode(TilemapMode::Pixels);
     }
 
-#ifdef ENABLE_UI // TODO add dynamics support when UI is not enabled
     if (m_controller->isFreehand() &&
         !m_pointShape->isFloodFill() &&
+        // TODO add dynamics support when UI is not enabled
         App::instance()->contextBar()) {
       m_dynamics = App::instance()->contextBar()->getDynamics();
     }
-#endif
 
     if (m_tracePolicy == tools::TracePolicy::Accumulate) {
       tools::ToolBox* toolbox = App::instance()->toolBox();
@@ -287,18 +280,15 @@ public:
       m_opacity = 255;
     }
 
-#ifdef ENABLE_UI // TODO add support when UI is not enabled
     if (params.inkType == tools::InkType::SHADING) {
+      // TODO add shading support when UI is not enabled
       m_shade = App::instance()->contextBar()->getShade();
       m_shadingRemap.reset(
         App::instance()->contextBar()->createShadeRemap(
           m_button == tools::ToolLoop::Left));
     }
-#endif
 
-#ifdef ENABLE_UI
     updateAllVisibleRegion();
-#endif
   }
 
   ~ToolLoopBase() {
@@ -391,33 +381,27 @@ public:
   doc::Remap* getShadingRemap() override { return m_shadingRemap.get(); }
 
   void limitDirtyAreaToViewport(gfx::Region& rgn) override {
-#ifdef ENABLE_UI
     rgn &= m_allVisibleRgn;
-#endif // ENABLE_UI
   }
 
   void updateDirtyArea(const gfx::Region& dirtyArea) override {
     if (!m_editor)
       return;
 
-#ifdef ENABLE_UI
     // This is necessary here so the "on sprite crosshair" is hidden,
     // we update screen pixels with the new sprite, and then we show
     // the crosshair saving the updated pixels. It fixes problems with
     // filled shape tools when we release the button, or paint-bucket
     // when we press the button.
     HideBrushPreview hide(m_editor->brushPreview());
-#endif
 
     m_document->notifySpritePixelsModified(
       m_sprite, dirtyArea, m_frame);
   }
 
   void updateStatusBar(const char* text) override {
-#ifdef ENABLE_UI
     if (auto statusBar = StatusBar::instance())
       statusBar->setStatusText(0, text);
-#endif
   }
 
   gfx::Point statusBarPositionOffset() override {
@@ -425,27 +409,18 @@ public:
   }
 
   render::DitheringMatrix getDitheringMatrix() override {
-#ifdef ENABLE_UI // TODO add support when UI is not enabled
+    // TODO add support when UI is not enabled
     return App::instance()->contextBar()->ditheringMatrix();
-#else
-    return render::DitheringMatrix();
-#endif
   }
 
   render::DitheringAlgorithmBase* getDitheringAlgorithm() override {
-#ifdef ENABLE_UI // TODO add support when UI is not enabled
+    // TODO add support when UI is not enabled
     return App::instance()->contextBar()->ditheringAlgorithm();
-#else
-    return nullptr;
-#endif
   }
 
   render::GradientType getGradientType() override {
-#ifdef ENABLE_UI // TODO add support when UI is not enabled
+    // TODO add support when UI is not enabled
     return App::instance()->contextBar()->gradientType();
-#else
-    return render::GradientType::Linear;
-#endif
   }
 
   tools::DynamicsOptions getDynamics() override {
@@ -458,7 +433,6 @@ public:
     return m_tiledModeHelper;
   }
 
-#ifdef ENABLE_UI
 protected:
   void updateAllVisibleRegion() {
     m_allVisibleRgn.clear();
@@ -473,7 +447,6 @@ protected:
       }
     }
   }
-#endif // ENABLE_UI
 
 };
 
@@ -611,17 +584,13 @@ public:
                                                     m_mask->bounds().y-m_celOrigin.y):
                                          gfx::Point(0, 0));
 
-#ifdef ENABLE_UI
     if (m_editor)
       m_editor->add_observer(this);
-#endif
   }
 
   ~ToolLoopImpl() {
-#ifdef ENABLE_UI
     if (m_editor)
       m_editor->remove_observer(this);
-#endif
 
     // getSrcImage() is a virtual member function but ToolLoopImpl is
     // marked as final to avoid not calling a derived version from
@@ -683,12 +652,8 @@ public:
       rollback();
     }
 
-#ifdef ENABLE_UI
     if (redraw)
       update_screen_for_document(m_document);
-#else
-    (void)redraw;               // To avoid warning about unused variable
-#endif
   }
 
   void rollback() override {
@@ -700,9 +665,7 @@ public:
     catch (const LockedDocException& ex) {
       Console::showException(ex);
     }
-#ifdef ENABLE_UI
     update_screen_for_document(m_document);
-#endif
   }
 
   const Cel* getCel() override { return m_expandCelCanvas->getCel(); }
@@ -742,7 +705,7 @@ public:
   int getSpraySpeed() override { return m_spraySpeed; }
 
   void onSliceRect(const gfx::Rect& bounds) override {
-#ifdef ENABLE_UI // TODO add support for slice tool from batch scripts without UI?
+    // TODO add support for slice tool from batch scripts without UI?
     if (m_editor && getMouseButton() == ToolLoop::Left) {
       // Try to select slices, but if it returns false, it means that
       // there are no slices in the box to be selected, so we show a
@@ -766,7 +729,6 @@ public:
         return;
       }
     }
-#endif
 
     // Cancel the operation (do not create a new transaction for this
     // no-op, e.g. just change the set of selected slices).
@@ -775,7 +737,6 @@ public:
 
 private:
 
-#ifdef ENABLE_UI
   // EditorObserver impl
   void onScrollChanged(Editor* editor) override { updateAllVisibleRegion(); }
   void onZoomChanged(Editor* editor) override { updateAllVisibleRegion(); }
@@ -790,14 +751,11 @@ private:
 
     return fmt::format("{} {}", prefix, max+1);
   }
-#endif  // ENABLE_UI
 
 };
 
 //////////////////////////////////////////////////////////////////////
 // For user UI painting
-
-#ifdef ENABLE_UI
 
 // TODO add inks for tilemaps
 static void adjust_ink_for_tilemaps(const Site& site,
@@ -943,8 +901,6 @@ tools::ToolLoop* create_tool_loop(
   }
 }
 
-#endif // ENABLE_UI
-
 //////////////////////////////////////////////////////////////////////
 // For scripting
 
@@ -982,8 +938,6 @@ tools::ToolLoop* create_tool_loop_for_script(
 
 //////////////////////////////////////////////////////////////////////
 // For UI preview
-
-#ifdef ENABLE_UI
 
 class PreviewToolLoopImpl final : public ToolLoopBase {
   Image* m_image;
@@ -1111,8 +1065,6 @@ tools::ToolLoop* create_tool_loop_preview(
     return nullptr;
   }
 }
-
-#endif // ENABLE_UI
 
 //////////////////////////////////////////////////////////////////////
 

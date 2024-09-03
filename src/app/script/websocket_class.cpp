@@ -194,12 +194,10 @@ int WebSocket_connect(lua_State* L)
   ws->start();
 
   if (g_connections.empty()) {
-#ifdef ENABLE_UI
     if (App::instance()->isGui()) {
       g_timer = std::make_unique<ui::Timer>(33, ui::Manager::getDefault());
       g_timer->start();
     }
-#endif
   }
   g_connections.insert(ws);
 

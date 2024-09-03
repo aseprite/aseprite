@@ -51,7 +51,6 @@ void ContextFlags::update(Context* context)
       document->unlock(res);
     }
 
-#ifdef ENABLE_UI
     // TODO this is a hack, try to find a better design to handle this
     // "moving pixels" state.
     auto editor = Editor::activeEditor();
@@ -66,7 +65,6 @@ void ContextFlags::update(Context* context)
 
       updateFlagsFromSite(editor->getSite());
     }
-#endif // ENABLE_UI
   }
 }
 

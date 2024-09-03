@@ -15,8 +15,6 @@
 #include "ui/size_hint_event.h"
 #include "ui/system.h"
 
-#ifdef ENABLE_UI
-
 namespace app {
 namespace script {
 
@@ -220,5 +218,3 @@ void Canvas::onPaint(ui::PaintEvent& ev)
 
 } // namespace script
 } // namespace app
-
-#endif // ENABLE_UI

@@ -62,12 +62,7 @@ Preferences& Context::preferences() const
 
 Clipboard* Context::clipboard() const
 {
-#ifdef ENABLE_UI
   return Clipboard::instance();
-#else
-  // TODO support clipboard when !ENABLE_UI
-  throw std::runtime_error("Clipboard not supported");
-#endif
 }
 
 void Context::sendDocumentToTop(Doc* document)

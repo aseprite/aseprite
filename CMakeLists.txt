@@ -58,7 +58,6 @@ option(ENABLE_TRIAL_MODE   "Compile the trial version" off)
 option(ENABLE_DRM          "Compile the DRM-enabled version (e.g. for automatic updates)" off)
 option(ENABLE_STEAM        "Compile with Steam library" off)
 option(ENABLE_DEVMODE      "Compile vesion for developers" off)
-option(ENABLE_UI           "Compile UI (turn off to compile CLI-only version)" on)
 option(ENABLE_I18N_STRINGS "Clone i18n strings repo (https://github.com/aseprite/strings) to bin/data/strings.git" off)
 option(FULLSCREEN_PLATFORM "Enable fullscreen by default" off)
 option(ENABLE_CLANG_TIDY   "Enable static analysis" off)
@@ -97,12 +96,9 @@ if(REQUIRE_CURL AND NOT USE_SHARED_CURL)
   endif()
 endif()
 
-if(NOT LAF_OS_BACKEND)
-  if(NOT ENABLE_UI)
-    set(LAF_OS_BACKEND "none") # Without UI, we use the none backend
-  else()
-    set(LAF_OS_BACKEND "skia")
-  endif()
+# By default we'll try to use Skia back-end
+if(NOT LAF_BACKEND)
+  set(LAF_BACKEND "skia")
 endif()
 
 if(ENABLE_DRM AND NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/drm/CMakeLists.txt)

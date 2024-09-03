@@ -182,12 +182,10 @@ void register_cel_class(lua_State* L);
 void register_cels_class(lua_State* L);
 void register_color_class(lua_State* L);
 void register_color_space_class(lua_State* L);
-#ifdef ENABLE_UI
 void register_dialog_class(lua_State* L);
 void register_editor_class(lua_State* L);
 void register_graphics_context_class(lua_State* L);
 void register_window_class(lua_State* L);
-#endif
 void register_events_class(lua_State* L);
 void register_frame_class(lua_State* L);
 void register_frames_class(lua_State* L);
@@ -484,12 +482,10 @@ Engine::Engine()
   register_cels_class(L);
   register_color_class(L);
   register_color_space_class(L);
-#ifdef ENABLE_UI
   register_dialog_class(L);
   register_editor_class(L);
   register_graphics_context_class(L);
   register_window_class(L);
-#endif
   register_events_class(L);
   register_frame_class(L);
   register_frames_class(L);
@@ -539,9 +535,7 @@ Engine::~Engine()
 
 void Engine::destroy()
 {
-#ifdef ENABLE_UI
   close_all_dialogs();
-#endif
   lua_close(L);
   L = nullptr;
 }

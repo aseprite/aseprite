@@ -126,8 +126,6 @@ void FilterManagerImpl::begin()
   updateBounds(m_mask);
 }
 
-#ifdef ENABLE_UI
-
 void FilterManagerImpl::beginForPreview()
 {
   Doc* document = m_site.document();
@@ -165,8 +163,6 @@ void FilterManagerImpl::beginForPreview()
     return;
   }
 }
-
-#endif // ENABLE_UI
 
 void FilterManagerImpl::end()
 {
@@ -372,8 +368,6 @@ void FilterManagerImpl::commitTransaction()
   m_writer.reset();
 }
 
-#ifdef ENABLE_UI
-
 void FilterManagerImpl::flush()
 {
   int h = m_row - m_nextRowToFlush;
@@ -423,8 +417,6 @@ void FilterManagerImpl::disablePreview()
     redrawColorPalette();
   }
 }
-
-#endif  // ENABLE_UI
 
 const void* FilterManagerImpl::getSourceAddress()
 {
@@ -537,15 +529,11 @@ void FilterManagerImpl::applyToPaletteIfNeeded()
   m_filter->applyToPalette(this);
 }
 
-#ifdef ENABLE_UI
-
 void FilterManagerImpl::redrawColorPalette()
 {
   set_current_palette(getNewPalette(), false);
   ColorBar::instance()->invalidate();
 }
-
-#endif // ENABLE_UI
 
 bool FilterManagerImpl::isMaskActive() const
 {

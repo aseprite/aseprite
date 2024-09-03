@@ -19,14 +19,11 @@
 #include "app/pref/preferences.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/status_bar.h"
+#include "app/ui/timeline/timeline.h"
 #include "base/thread.h"
 #include "doc/sprite.h"
 #include "ui/manager.h"
 #include "ui/system.h"
-
-#ifdef ENABLE_UI
-#include "app/ui/timeline/timeline.h"
-#endif
 
 namespace app {
 
@@ -67,7 +64,6 @@ void UndoCommand::onExecute(Context* context)
   Doc* document(writer.document());
   DocUndo* undo = document->undoHistory();
 
-#ifdef ENABLE_UI
   auto editor = Editor::activeEditor();
   Sprite* sprite = document->sprite();
   SpritePosition spritePosition;
@@ -120,7 +116,6 @@ void UndoCommand::onExecute(Context* context)
     else
       statusbar->setStatusText(0, msg);
   }
-#endif // ENABLE_UI
 
   // Effectively undo/redo.
   if (m_type == Undo)
@@ -128,7 +123,6 @@ void UndoCommand::onExecute(Context* context)
   else
     undo->redo();
 
-#ifdef ENABLE_UI
   // After redo/undo, we retry to change the current SpritePosition
   // (because new frames/layers could be added, positions that we
   // weren't able to reach before the undo).
@@ -157,14 +151,11 @@ void UndoCommand::onExecute(Context* context)
         timeline->setRange(docRange);
     }
   }
-#endif  // ENABLE_UI
 
   document->generateMaskBoundaries();
   document->setExtraCel(ExtraCelRef(nullptr));
 
-#ifdef ENABLE_UI
   update_screen_for_document(document);
-#endif
   set_current_palette(writer.palette(), false);
 }
 

@@ -170,7 +170,6 @@ bool SvgFormat::onSave(FileOp* fop)
 FormatOptionsPtr SvgFormat::onAskUserForFormatOptions(FileOp* fop)
 {
   auto opts = fop->formatOptionsOfDocument<SvgOptions>();
-#ifdef ENABLE_UI
   if (fop->context() && fop->context()->isUIAvailable()) {
     try {
       auto& pref = Preferences::instance();
@@ -199,7 +198,6 @@ FormatOptionsPtr SvgFormat::onAskUserForFormatOptions(FileOp* fop)
       return std::shared_ptr<SvgOptions>(nullptr);
     }
   }
-#endif
   return opts;
 }
 

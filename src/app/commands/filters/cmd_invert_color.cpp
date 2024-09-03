@@ -36,8 +36,6 @@ struct InvertColorParams : public NewParams {
   Param<filters::Target> channels { this, 0, "channels" };
 };
 
-#ifdef ENABLE_UI
-
 static const char* ConfigSection = "InvertColor";
 
 class InvertColorWindow : public FilterWindow {
@@ -48,8 +46,6 @@ public:
                    WithoutTiledCheckBox) {
   }
 };
-
-#endif  // ENABLE_UI
 
 class InvertColorCommand : public CommandWithNewParams<InvertColorParams> {
 public:
@@ -73,9 +69,7 @@ bool InvertColorCommand::onEnabled(Context* context)
 
 void InvertColorCommand::onExecute(Context* context)
 {
-#ifdef ENABLE_UI
   const bool ui = (params().ui() && context->isUIAvailable());
-#endif
 
   InvertColorFilter filter;
   FilterManagerImpl filterMgr(context, &filter);
@@ -86,14 +80,11 @@ void InvertColorCommand::onExecute(Context* context)
 
   if (params().channels.isSet()) filterMgr.setTarget(params().channels());
 
-#ifdef ENABLE_UI
   if (ui) {
     InvertColorWindow window(filterMgr);
     window.doModal();
   }
-  else
-#endif // ENABLE_UI
-  {
+  else {
     start_filter_worker(&filterMgr);
   }
 }

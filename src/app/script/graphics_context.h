@@ -8,8 +8,6 @@
 #define APP_SCRIPT_GRAPHICS_CONTEXT_H_INCLUDED
 #pragma once
 
-#ifdef ENABLE_UI
-
 #include "doc/palette.h"
 #include "gfx/path.h"
 #include "os/paint.h"
@@ -148,7 +146,5 @@ private:
 
 } // namespace script
 } // namespace app
-
-#endif
 
 #endif

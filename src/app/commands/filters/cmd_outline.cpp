@@ -76,8 +76,6 @@ private:
   app::Color m_bgColor;
 };
 
-#ifdef ENABLE_UI
-
 static const char* ConfigSection = "Outline";
 
 class OutlineWindow : public FilterWindow {
@@ -187,8 +185,6 @@ private:
   gen::Outline m_panel;
 };
 
-#endif  // ENABLE_UI
-
 class OutlineCommand : public CommandWithNewParams<OutlineParams> {
 public:
   OutlineCommand();
@@ -211,9 +207,7 @@ bool OutlineCommand::onEnabled(Context* context)
 
 void OutlineCommand::onExecute(Context* context)
 {
-#ifdef ENABLE_UI
   const bool ui = (params().ui() && context->isUIAvailable());
-#endif
 
   Site site = context->activeSite();
 
@@ -227,7 +221,6 @@ void OutlineCommand::onExecute(Context* context)
     filter.bgColor(app::Color::fromMask());
   }
 
-#ifdef ENABLE_UI
   if (ui) {
     filter.place((OutlineFilter::Place)get_config_int(ConfigSection, "Place", int(OutlineFilter::Place::Outside)));
     filter.matrix((OutlineFilter::Matrix)get_config_int(ConfigSection, "Matrix", int(OutlineFilter::Matrix::Circle)));
@@ -237,7 +230,6 @@ void OutlineCommand::onExecute(Context* context)
       .document(site.document());
     filter.tiledMode(docPref.tiled.mode());
   }
-#endif // ENABLE_UI
 
   if (params().place.isSet()) filter.place(params().place());
   if (params().matrix.isSet()) filter.matrix(params().matrix());
@@ -257,7 +249,6 @@ void OutlineCommand::onExecute(Context* context)
 
   if (params().channels.isSet()) filterMgr.setTarget(params().channels());
 
-#ifdef ENABLE_UI
   if (ui) {
     OutlineWindow window(filter, filterMgr);
     if (window.doModal()) {
@@ -265,9 +256,7 @@ void OutlineCommand::onExecute(Context* context)
       set_config_int(ConfigSection, "Matrix", int(filter.matrix()));
     }
   }
-  else
-#endif // ENABLE_UI
-  {
+  else {
     start_filter_worker(&filterMgr);
   }
 }

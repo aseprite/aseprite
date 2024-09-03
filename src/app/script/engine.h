@@ -185,9 +185,7 @@ namespace app {
   void push_tilesets(lua_State* L, doc::Tilesets* tilesets);
   void push_tool(lua_State* L, app::tools::Tool* tool);
   void push_version(lua_State* L, const base::Version& ver);
-#ifdef ENABLE_UI
   void push_window_events(lua_State* L, ui::Window* window);
-#endif
 
   gfx::Point convert_args_into_point(lua_State* L, int index);
   gfx::Rect convert_args_into_rect(lua_State* L, int index);
@@ -214,10 +212,8 @@ namespace app {
   int load_sprite_from_file(lua_State* L, const char* filename,
                             const LoadSpriteFromFileParam param);
 
-#ifdef ENABLE_UI
   // close all opened Dialogs before closing the UI
   void close_all_dialogs();
-#endif
 
 } // namespace script
 } // namespace app

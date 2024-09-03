@@ -110,10 +110,8 @@ void deleteCommandIfExistent(Extension* ext, const std::string& id)
 
 void deleteMenuGroupIfExistent(Extension* ext, const std::string& id)
 {
-#ifdef ENABLE_UI
-  if (auto appMenus = AppMenus::instance())
+  if (auto* appMenus = AppMenus::instance())
     appMenus->removeMenuGroup(id);
-#endif
 
   ext->removeMenuGroup(id);
 }
@@ -172,7 +170,6 @@ int Plugin_newCommand(lua_State* L)
       Commands::instance()->add(cmd);
       plugin->ext->addCommand(id);
 
-#ifdef ENABLE_UI
       // Add a new menu option if the "group" is defined
       if (!group.empty() &&
           App::instance()->isGui()) { // On CLI menus do not make sense
@@ -181,7 +178,6 @@ int Plugin_newCommand(lua_State* L)
           appMenus->addMenuItemIntoGroup(group, std::move(menuItem));
         }
       }
-#endif // ENABLE_UI
     }
     else {
       lua_pop(L, 1);
@@ -247,7 +243,6 @@ int Plugin_newMenuGroup(lua_State* L)
 
     plugin->ext->addMenuGroup(id);
 
-#ifdef ENABLE_UI
     // Add a new menu option if the "group" is defined
     if (!group.empty() &&
         App::instance()->isGui()) {  // On CLI menus do not make sense
@@ -258,7 +253,6 @@ int Plugin_newMenuGroup(lua_State* L)
         appMenus->addMenuItemIntoGroup(group, std::move(menuItem));
       }
     }
-#endif // ENABLE_UI
   }
   return 0;
 }
@@ -288,7 +282,7 @@ int Plugin_deleteMenuGroup(lua_State* L)
 
 int Plugin_newMenuSeparator(lua_State* L)
 {
-  auto plugin = get_obj<Plugin>(L, 1);
+  auto* plugin = get_obj<Plugin>(L, 1);
   if (lua_istable(L, 2)) {
     std::string group;
 
@@ -298,7 +292,6 @@ int Plugin_newMenuSeparator(lua_State* L)
     }
     lua_pop(L, 1);
 
-#ifdef ENABLE_UI
     // Add a new separator if the "group" is defined
     if (!group.empty() &&
         App::instance()->isGui()) {  // On CLI menus do not make sense
@@ -308,7 +301,6 @@ int Plugin_newMenuSeparator(lua_State* L)
         appMenus->addMenuItemIntoGroup(group, std::move(menuItem));
       }
     }
-#endif // ENABLE_UI
   }
   return 0;
 }

@@ -17,8 +17,6 @@
 #include "app/ui/editor/select_box_state.h"
 #include "ui/display.h"
 
-#ifdef ENABLE_UI
-
 namespace app {
 namespace script {
 
@@ -348,5 +346,3 @@ void push_editor(lua_State* L, Editor* editor)
 
 } // namespace script
 } // namespace app
-
-#endif  // ENABLE_UI

@@ -68,10 +68,8 @@ void FlattenLayersCommand::onExecute(Context* context)
           range.selectLayer(layer);
     }
     else {
-#ifdef ENABLE_UI
       if (context->isUIAvailable())
         range = App::instance()->timeline()->range();
-#endif
 
       // If the range is not selected or we have only one image layer
       // selected, we'll flatten all layers.
@@ -89,9 +87,7 @@ void FlattenLayersCommand::onExecute(Context* context)
     tx.commit();
   }
 
-#ifdef ENABLE_UI
   update_screen_for_document(writer.document());
-#endif
 }
 
 std::string FlattenLayersCommand::onGetFriendlyName() const

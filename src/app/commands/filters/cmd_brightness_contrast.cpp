@@ -40,8 +40,6 @@ struct BrightnessContrastParams : public NewParams {
   Param<double> contrast { this, 0.0, "contrast" };
 };
 
-#ifdef ENABLE_UI
-
 static const char* ConfigSection = "BrightnessContrast";
 
 class BrightnessContrastWindow : public FilterWindow {
@@ -81,8 +79,6 @@ private:
   BrightnessContrastFilter& m_filter;
 };
 
-#endif  // ENABLE_UI
-
 class BrightnessContrastCommand : public CommandWithNewParams<BrightnessContrastParams> {
 public:
   BrightnessContrastCommand();
@@ -105,9 +101,7 @@ bool BrightnessContrastCommand::onEnabled(Context* context)
 
 void BrightnessContrastCommand::onExecute(Context* context)
 {
-#ifdef ENABLE_UI
   const bool ui = (params().ui() && context->isUIAvailable());
-#endif
 
   BrightnessContrastFilter filter;
   FilterManagerImpl filterMgr(context, &filter);
@@ -121,14 +115,11 @@ void BrightnessContrastCommand::onExecute(Context* context)
   if (params().brightness.isSet()) filter.setBrightness(params().brightness() / 100.0);
   if (params().contrast.isSet()) filter.setContrast(params().contrast() / 100.0);
 
-#ifdef ENABLE_UI
   if (ui) {
     BrightnessContrastWindow window(filter, filterMgr);
     window.doModal();
   }
-  else
-#endif // ENABLE_UI
-  {
+  else {
     start_filter_worker(&filterMgr);
   }
 }
