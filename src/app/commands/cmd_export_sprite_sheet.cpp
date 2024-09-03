@@ -32,6 +32,7 @@
 #include "app/ui/optional_alert.h"
 #include "app/ui/status_bar.h"
 #include "app/ui/timeline/timeline.h"
+#include "app/util/layer_utils.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
 #include "base/string.h"
@@ -148,6 +149,17 @@ void destroy_doc(Context* ctx, Doc* doc)
   }
 }
 
+void insert_layers_to_selected_layers(Layer* layer, SelectedLayers& selectedLayers)
+{
+  if (layer->isGroup()) {
+    auto children = static_cast<LayerGroup*>(layer)->layers();
+    for (auto child : children)
+      insert_layers_to_selected_layers(child, selectedLayers);
+  }
+  else
+    selectedLayers.insert(layer);
+}
+
 Doc* generate_sprite_sheet_from_params(
   DocExporter& exporter,
   Context* ctx,
@@ -206,11 +218,14 @@ Doc* generate_sprite_sheet_from_params(
   if (layerName != kSelectedLayers) {
     // TODO add a getLayerByName
     int i = sprite->allLayersCount();
-    for (const Layer* layer : sprite->allLayers()) {
+    for (Layer* layer : sprite->allLayers()) {
       i--;
-      if (layer->name() == layerName && (layerIndex == -1 ||
-                                         layerIndex == i)) {
-        selLayers.insert(const_cast<Layer*>(layer));
+      if (get_layer_path(layer) == layerName &&
+          (layerIndex == -1 || layerIndex == i)) {
+        if (layer->isGroup())
+          insert_layers_to_selected_layers(layer, selLayers);
+        else
+          selLayers.insert(layer);
         break;
       }
     }
