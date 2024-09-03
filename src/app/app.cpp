@@ -859,37 +859,8 @@ int app_get_color_to_clear_layer(Layer* layer)
   if (layer->isBackground()) {
     if (auto* colorBar = ColorBar::instance())
       color = colorBar->getBgColor();
-    else {
-      auto c = Preferences::instance().colorBar.bgColor();
-      if (layer->sprite()->pixelFormat() == IMAGE_INDEXED) {
-        if (c.getType() == Color::IndexType) {
-          color =
-            (c.getIndex() < layer->sprite()->palette(0)->size() ?
-              c :
-              app::Color::fromIndex(0));
-        }
-        else {
-          Palette* pal = layer->sprite()->palette(0);
-          color_t bg;
-          if (c.getType() == Color::RgbType) {
-            bg = rgba(c.getRed(), c.getGreen(), c.getBlue(), 255);
-            bg = pal->findBestfit(rgba_getr(bg),
-                                  rgba_getg(bg),
-                                  rgba_getb(bg), 255, -1);
-          }
-          else {
-            ASSERT(c.getType() == Color::GrayType);
-            bg = graya(c.getGray(), 255);
-            bg = pal->findBestfit(graya_getv(bg),
-                                  graya_getv(bg),
-                                  graya_getv(bg), 255, -1);
-          }
-          color = app::Color::fromIndex(bg);
-        }
-      }
-      else
-        color = app::Color::fromRgb(0, 0, 0);
-    }
+    else
+      color = Preferences::instance().colorBar.bgColor();
   }
   else { // All transparent layers are cleared with the mask color
     color = app::Color::fromMask();
