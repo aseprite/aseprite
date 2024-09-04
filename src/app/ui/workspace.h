@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022  Igara Studio S.A.
+// Copyright (C) 2022-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -71,7 +71,8 @@ namespace app {
     bool onCanClear(Context* ctx) override;
     bool onCut(Context* ctx) override;
     bool onCopy(Context* ctx) override;
-    bool onPaste(Context* ctx) override;
+    bool onPaste(Context* ctx,
+                 const gfx::Point* position) override;
     bool onClear(Context* ctx) override;
     void onCancel(Context* ctx) override;
 

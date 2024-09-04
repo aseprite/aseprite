@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -87,10 +88,11 @@ void InputChain::copy(Context* ctx)
   }
 }
 
-void InputChain::paste(Context* ctx)
+void InputChain::paste(Context* ctx,
+                       const gfx::Point* position)
 {
   for (auto e : m_elements) {
-    if (e->onCanPaste(ctx) && e->onPaste(ctx))
+    if (e->onCanPaste(ctx) && e->onPaste(ctx, position))
       break;
   }
 }

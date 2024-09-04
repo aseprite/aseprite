@@ -84,13 +84,14 @@ bool ScriptInputChain::onCopy(Context* ctx)
   return false;
 }
 
-bool ScriptInputChain::onPaste(Context* ctx)
+bool ScriptInputChain::onPaste(Context* ctx,
+                               const gfx::Point* position)
 {
   Clipboard* clipboard = ctx->clipboard();
   if (!clipboard)
     return false;
   if (clipboard->format() == ClipboardFormat::Image) {
-    clipboard->paste(ctx, false);
+    clipboard->paste(ctx, false, position);
     return true;
   }
   return false;
