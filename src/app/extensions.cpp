@@ -794,7 +794,7 @@ Extensions::Extensions()
   // Create and get the user extensions directory
   {
     ResourceFinder rf2;
-    rf2.includeUserDir("extensions/.");
+    rf2.includeUserDir("extensions");
     m_userExtensionsPath = rf2.getFirstOrCreateDefault();
     m_userExtensionsPath = base::normalize_path(m_userExtensionsPath);
     if (!m_userExtensionsPath.empty() &&
@@ -811,33 +811,34 @@ Extensions::Extensions()
   // Load extensions from data/ directory on all possible locations
   // (installed folder and user folder)
   while (rf.next()) {
-    auto extensionsDir = rf.filename();
+    const auto& extensionsDir = rf.filename();
 
-    if (base::is_directory(extensionsDir)) {
-      for (auto fn : base::list_files(extensionsDir)) {
-        const auto dir = base::join_path(extensionsDir, fn);
-        if (!base::is_directory(dir))
-          continue;
+    if (!base::is_directory(extensionsDir))
+      continue;
 
-        const bool isBuiltinExtension =
-          (m_userExtensionsPath != base::get_file_path(dir));
+    for (auto& fn : base::list_files(extensionsDir)) {
+      const auto dir = base::join_path(extensionsDir, fn);
+      if (!base::is_directory(dir))
+        continue;
 
-        auto fullFn = base::join_path(dir, kPackageJson);
-        fullFn = base::normalize_path(fullFn);
+      const bool isBuiltinExtension =
+        (m_userExtensionsPath != base::get_file_path(dir));
 
-        LOG("EXT: Loading extension '%s'...\n", fullFn.c_str());
-        if (!base::is_file(fullFn)) {
-          LOG("EXT: File '%s' not found\n", fullFn.c_str());
-          continue;
-        }
+      auto fullFn = base::join_path(dir, kPackageJson);
+      fullFn = base::normalize_path(fullFn);
 
-        try {
-          loadExtension(dir, fullFn, isBuiltinExtension);
-        }
-        catch (const std::exception& ex) {
-          LOG("EXT: Error loading JSON file: %s\n",
-              ex.what());
-        }
+      LOG("EXT: Loading extension '%s'...\n", fullFn.c_str());
+      if (!base::is_file(fullFn)) {
+        LOG("EXT: File '%s' not found\n", fullFn.c_str());
+        continue;
+      }
+
+      try {
+        loadExtension(dir, fullFn, isBuiltinExtension);
+      }
+      catch (const std::exception& ex) {
+        LOG("EXT: Error loading JSON file: %s\n",
+            ex.what());
       }
     }
   }
