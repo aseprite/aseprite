@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -31,6 +31,8 @@
 #ifdef ENABLE_SCRIPTING
   #include "app/app.h"
   #include "app/script/engine.h"
+  #include "app/script/script_input_chain.h"
+  #include "app/ui/input_chain.h"
 #endif
 
 #include <iostream>
@@ -143,6 +145,10 @@ void DefaultCliDelegate::exportFiles(Context* ctx, DocExporter& exporter)
 int DefaultCliDelegate::execScript(const std::string& filename,
                                    const Params& params)
 {
+  ScriptInputChain scriptInputChain;
+  if (!App::instance()->isGui()) {
+    App::instance()->inputChain().prioritize(&scriptInputChain, nullptr);
+  }
   auto engine = App::instance()->scriptEngine();
   if (!engine->evalUserFile(filename, params))
     throw base::Exception("Error executing script %s", filename.c_str());
