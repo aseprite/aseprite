@@ -9,6 +9,8 @@
 #define APP_INPUT_CHAIN_ELEMENT_H_INCLUDED
 #pragma once
 
+#include "gfx/point.h"
+
 namespace ui {
   class Message;
 }
@@ -34,7 +36,8 @@ namespace app {
     // which catch any exception that is thrown.
     virtual bool onCut(Context* ctx) = 0;
     virtual bool onCopy(Context* ctx) = 0;
-    virtual bool onPaste(Context* ctx) = 0;
+    virtual bool onPaste(Context* ctx,
+                         const gfx::Point* position) = 0;
     virtual bool onClear(Context* ctx) = 0;
     virtual void onCancel(Context* ctx) = 0;
   };

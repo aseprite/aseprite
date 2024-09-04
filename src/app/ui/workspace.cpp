@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -381,12 +381,13 @@ bool Workspace::onCopy(Context* ctx)
     return false;
 }
 
-bool Workspace::onPaste(Context* ctx)
+bool Workspace::onPaste(Context* ctx,
+                        const gfx::Point* position)
 {
   WorkspaceView* view = activeView();
   InputChainElement* activeElement = (view ? view->onGetInputChainElement(): nullptr);
   if (activeElement)
-    return activeElement->onPaste(ctx);
+    return activeElement->onPaste(ctx, position);
   else
     return false;
 }

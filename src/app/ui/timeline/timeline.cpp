@@ -4398,7 +4398,8 @@ bool Timeline::onCopy(Context* ctx)
   return false;
 }
 
-bool Timeline::onPaste(Context* ctx)
+bool Timeline::onPaste(Context* ctx,
+                       const gfx::Point* position)
 {
   auto clipboard = ctx->clipboard();
   if (clipboard->format() == ClipboardFormat::DocRange) {

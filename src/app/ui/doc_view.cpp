@@ -589,12 +589,13 @@ bool DocView::onCopy(Context* ctx)
     return false;
 }
 
-bool DocView::onPaste(Context* ctx)
+bool DocView::onPaste(Context* ctx,
+                      const gfx::Point* position)
 {
   auto clipboard = ctx->clipboard();
   if (clipboard->format() == ClipboardFormat::Image ||
       clipboard->format() == ClipboardFormat::Tilemap) {
-    clipboard->paste(ctx, true);
+    clipboard->paste(ctx, true, position);
     return true;
   }
   else
