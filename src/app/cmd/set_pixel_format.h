@@ -46,7 +46,7 @@ namespace cmd {
     void onUndo() override;
     void onRedo() override;
     size_t onMemSize() const override {
-      return sizeof(*this) + m_seq.memSize();
+      return sizeof(*this) + m_pre.memSize() + m_post.memSize();
     }
 
   private:
@@ -63,7 +63,8 @@ namespace cmd {
 
     doc::PixelFormat m_oldFormat;
     doc::PixelFormat m_newFormat;
-    CmdSequence m_seq;
+    CmdSequence m_pre;
+    CmdSequence m_post;
   };
 
 } // namespace cmd

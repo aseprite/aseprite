@@ -15,6 +15,7 @@
 #include "app/cmd/replace_image.h"
 #include "app/cmd/set_cel_opacity.h"
 #include "app/cmd/set_palette.h"
+#include "app/cmd/set_transparent_color.h"
 #include "app/doc.h"
 #include "app/doc_event.h"
 #include "doc/cel.h"
@@ -139,12 +140,18 @@ SetPixelFormat::SetPixelFormat(Sprite* sprite,
   }
 
   // Set all cels opacity to 100% if we are converting to indexed.
-  // TODO remove this
   if (newFormat == IMAGE_INDEXED) {
+    // TODO remove this (?)
     for (Cel* cel : sprite->uniqueCels()) {
       if (cel->opacity() < 255)
-        m_seq.add(new cmd::SetCelOpacity(cel, 255));
+        m_pre.add(new cmd::SetCelOpacity(cel, 255));
     }
+
+    int newMaskIndex = sprite->palette(0)->findMaskColor();
+    if (newMaskIndex < 0)
+      newMaskIndex = 0;
+    if (newMaskIndex != sprite->transparentColor())
+      m_post.add(new cmd::SetTransparentColor(sprite, newMaskIndex));
   }
 
   // When we are converting to grayscale color mode, we've to destroy
@@ -155,30 +162,33 @@ SetPixelFormat::SetPixelFormat(Sprite* sprite,
     PalettesList palettes = sprite->getPalettes();
     for (Palette* pal : palettes)
       if (pal->frame() != 0)
-        m_seq.add(new cmd::RemovePalette(sprite, pal));
+        m_pre.add(new cmd::RemovePalette(sprite, pal));
 
     std::unique_ptr<Palette> graypal(Palette::createGrayscale());
     if (*graypal != *sprite->palette(0))
-      m_seq.add(new cmd::SetPalette(sprite, 0, graypal.get()));
+      m_pre.add(new cmd::SetPalette(sprite, 0, graypal.get()));
   }
 }
 
 void SetPixelFormat::onExecute()
 {
-  m_seq.execute(context());
+  m_pre.execute(context());
   setFormat(m_newFormat);
+  m_post.execute(context());
 }
 
 void SetPixelFormat::onUndo()
 {
-  m_seq.undo();
+  m_post.undo();
   setFormat(m_oldFormat);
+  m_pre.undo();
 }
 
 void SetPixelFormat::onRedo()
 {
-  m_seq.redo();
+  m_pre.redo();
   setFormat(m_newFormat);
+  m_post.redo();
 }
 
 void SetPixelFormat::setFormat(PixelFormat format)
@@ -186,12 +196,6 @@ void SetPixelFormat::setFormat(PixelFormat format)
   Sprite* sprite = this->sprite();
 
   sprite->setPixelFormat(format);
-  if (format == IMAGE_INDEXED) {
-    int maskIndex = sprite->palette(0)->findMaskColor();
-    sprite->setTransparentColor(maskIndex == -1 ? 0 : maskIndex);
-  }
-  else
-    sprite->setTransparentColor(0);
   sprite->incrementVersion();
 
   // Regenerate extras
@@ -245,7 +249,7 @@ void SetPixelFormat::convertImage(doc::Sprite* sprite,
      toGray,
      delegate));
 
-  m_seq.add(new cmd::ReplaceImage(sprite, oldImage, newImage));
+  m_pre.add(new cmd::ReplaceImage(sprite, oldImage, newImage));
 }
 
 } // namespace cmd
