@@ -63,7 +63,7 @@ void CancelCommand::onExecute(Context* context)
     case All:
       // TODO should the ContextBar be a InputChainElement to intercept onCancel()?
       // Discard brush
-      {
+      if (context->isUIAvailable()) {
         Command* discardBrush = Commands::instance()->byId(
           CommandId::DiscardBrush());
         context->executeCommand(discardBrush);
