@@ -827,7 +827,8 @@ Extensions::Extensions()
       if (!base::is_directory(dir))
         continue;
 
-      const bool isBuiltinExtension = m_userExtensionsPath != base::get_file_path(dir);
+      const bool isBuiltinExtension =
+        (m_userExtensionsPath != base::get_file_path(dir));
 
       auto fullFn = base::join_path(dir, kPackageJson);
       fullFn = base::normalize_path(fullFn);
