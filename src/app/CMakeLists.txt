@@ -220,6 +220,7 @@ if(ENABLE_SCRIPTING)
     script/range_class.cpp
     script/rectangle_class.cpp
     script/require.cpp
+    script/script_input_chain.cpp
     script/security.cpp
     script/selection_class.cpp
     script/site_class.cpp

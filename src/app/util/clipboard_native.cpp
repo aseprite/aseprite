@@ -53,7 +53,9 @@ namespace {
   };
 
   void* native_window_handle() {
-    return os::instance()->defaultWindow()->nativeHandle();
+    if (os::instance()->defaultWindow())
+      return os::instance()->defaultWindow()->nativeHandle();
+    return nullptr;
   }
 
   void custom_error_handler(clip::ErrorCode code) {
