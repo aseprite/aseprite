@@ -75,7 +75,8 @@ namespace app {
     void copyPalette(const doc::Palette* palette,
                      const doc::PalettePicks& picks);
     void paste(Context* ctx,
-               const bool interactive);
+               const bool interactive,
+               const gfx::Point* position = nullptr);
 
     doc::ImageRef getImage(doc::Palette* palette);
 

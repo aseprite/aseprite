@@ -230,7 +230,8 @@ bool HomeView::onCopy(Context* ctx)
   return false;
 }
 
-bool HomeView::onPaste(Context* ctx)
+bool HomeView::onPaste(Context* ctx,
+                       const gfx::Point* position)
 {
   auto clipboard = ctx->clipboard();
   if (clipboard->format() == ClipboardFormat::Image) {

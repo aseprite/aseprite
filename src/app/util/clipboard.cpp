@@ -34,6 +34,8 @@
 #include "app/util/new_image_from_mask.h"
 #include "app/util/range_utils.h"
 #include "clip/clip.h"
+#include "doc/algorithm/shrink_bounds.h"
+#include "doc/blend_image.h"
 #include "doc/doc.h"
 #include "render/dithering.h"
 #include "render/ordered_dither.h"
@@ -425,7 +427,7 @@ void Clipboard::copyImage(const Image* image,
     (mask ? new Mask(*mask): nullptr),
     (pal ? new Palette(*pal): nullptr),
     nullptr,
-    true, false);
+    App::instance()->isGui(), false);
 }
 
 void Clipboard::copyTilemap(const Image* image,
@@ -463,7 +465,8 @@ void Clipboard::copyPalette(const Palette* palette,
 }
 
 void Clipboard::paste(Context* ctx,
-                      const bool interactive)
+                      const bool interactive,
+                      const gfx::Point* position)
 {
   const Site site = ctx->activeSite();
   Doc* dstDoc = site.document();
@@ -518,38 +521,94 @@ void Clipboard::paste(Context* ctx,
 
         // Change to MovingPixelsState
         editor->pasteImage(src_image.get(),
-                           m_data->mask.get());
+                           m_data->mask.get(),
+                           position);
       }
       else {
-        // Non-interactive version (just copy the image to the cel)
+        // CLI version:
+        // Paste the image according the position param.
+        // If there are no parameters, we assume the origin
+        // of the pasted image mask is the position.
+        // If there is no mask, x=0, y=0 is taken as position.
+        // TODO Support 'paste' command between images
+        // that do not match their pixel format.
         Layer* dstLayer = site.layer();
         ASSERT(dstLayer);
-        if (!dstLayer || !dstLayer->isImage())
+        if (!dstLayer ||
+            !dstLayer->isImage() ||
+            (src_image->pixelFormat() != dstSpr->pixelFormat()))
           return;
+
+        ImageRef result;
+        // resultBounds starts with the same bounds as source image,
+        // but it'll be merged with the active cel bounds (if any).
+        gfx::Rect resultBounds =
+          gfx::Rect(position ? *position
+                             : (m_data->mask ? m_data->mask->origin()
+                                             : gfx::Point()),
+                    src_image->size());
+        const bool isAnImageOnDstCel =
+          ctx->activeSite().cel() && ctx->activeSite().cel()->image();
+        ASSERT(!ctx->activeSite().cel() || ctx->activeSite().cel()->image());
+        if (isAnImageOnDstCel) {
+          Cel* cel = ctx->activeSite().cel();
+          resultBounds = cel->bounds().createUnion(resultBounds);
+          // Create a new image (result) as a blend of the active cel image +
+          // the source image (clipboard image).
+          result.reset(Image::create(dstSpr->pixelFormat(), resultBounds.w, resultBounds.h));
+          doc::blend_image(result.get(), cel->image(),
+                           gfx::Clip(cel->bounds().origin() - resultBounds.origin(),
+                                     cel->image()->bounds()),
+                           site.palette(),
+                           255, BlendMode::NORMAL);
+          doc::blend_image(result.get(), src_image.get(),
+                           gfx::Clip(*position - resultBounds.origin(),
+                                     src_image->bounds()),
+                           site.palette(),
+                           255, BlendMode::NORMAL);
+        }
 
         ContextWriter writer(ctx);
         Tx tx(writer, "Paste Image");
         DocApi api = dstDoc->getApi(tx);
-        Cel* dstCel = api.addCel(
-          static_cast<LayerImage*>(dstLayer), site.frame(),
-          ImageRef(Image::createCopy(src_image.get())));
+        Cel* dstCel;
+        if (isAnImageOnDstCel)
+          api.clearCel(ctx->activeSite().cel());
+        else
+          result.reset(Image::createCopy(src_image.get()));
 
-        // Adjust bounds
+        // Calculate the active image + pasted image bounds
+        const gfx::Rect startBounds(gfx::Point(), result->size());
+        const gfx::Point startOrigin(resultBounds.origin());
+        doc::algorithm::shrink_bounds(result.get(),
+                                      result->maskColor(),
+                                      dstLayer,
+                                      startBounds,
+                                      resultBounds);
+        // Cropped image according the shrink bounds
+        result.reset(crop_image(result.get(),
+                                resultBounds,
+                                result->maskColor()));
+        resultBounds.x = startOrigin.x + resultBounds.x;
+        resultBounds.y = startOrigin.y + resultBounds.y;
+
+        // Set image on the new Cel
+        dstCel = api.addCel(static_cast<LayerImage*>(dstLayer),
+                            site.frame(),
+                            result);
+        // Set cel bounds
         if (dstCel) {
-          if (m_data->mask) {
-            if (dstLayer->isReference()) {
-              dstCel->setBounds(dstSpr->bounds());
-
-              Mask emptyMask;
-              tx(new cmd::SetMask(dstDoc, &emptyMask));
-            }
-            else {
-              dstCel->setBounds(m_data->mask->bounds());
-              tx(new cmd::SetMask(dstDoc, m_data->mask.get()));
-            }
+          const Mask emptyMask;
+          if (dstLayer->isReference()) {
+            dstCel->setBounds(dstSpr->bounds());
+            tx(new cmd::SetMask(dstDoc, &emptyMask));
+          }
+          else {
+            dstCel->setBounds(resultBounds);
+            tx(new cmd::SetMask(dstDoc, m_data->mask ? m_data->mask.get()
+                                                     : &emptyMask));
           }
         }
-
         tx.commit();
       }
       break;
@@ -562,7 +621,8 @@ void Clipboard::paste(Context* ctx,
 
         // Change to MovingTilemapState
         editor->pasteImage(m_data->tilemap.get(),
-                           m_data->mask.get());
+                           m_data->mask.get(),
+                           position);
       }
       else {
         // TODO non-interactive version (for scripts)

@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -10,6 +11,7 @@
 
 #include "app/app.h"
 #include "app/commands/command.h"
+#include "app/commands/params.h"
 #include "app/ui/input_chain.h"
 
 namespace app {
@@ -19,13 +21,26 @@ public:
   PasteCommand();
 
 protected:
+  void onLoadParams(const Params& params) override;
   bool onEnabled(Context* ctx) override;
   void onExecute(Context* ctx) override;
+private:
+  std::shared_ptr<gfx::Point> m_position;
 };
 
 PasteCommand::PasteCommand()
   : Command(CommandId::Paste(), CmdUIOnlyFlag)
 {
+}
+
+void PasteCommand::onLoadParams(const Params& params)
+{
+  m_position.reset();
+  if (params.has_param("x") || params.has_param("y")) {
+    m_position.reset(new gfx::Point);
+    m_position->x = params.get_as<int>("x");
+    m_position->y = params.get_as<int>("y");
+  }
 }
 
 bool PasteCommand::onEnabled(Context* ctx)
@@ -35,7 +50,7 @@ bool PasteCommand::onEnabled(Context* ctx)
 
 void PasteCommand::onExecute(Context* ctx)
 {
-  App::instance()->inputChain().paste(ctx);
+  App::instance()->inputChain().paste(ctx, m_position.get());
 }
 
 Command* CommandFactory::createPasteCommand()
