@@ -1593,10 +1593,10 @@ private:
 
       resetToViewCenter.Click.connect(
         [doc, &docPref]{
-          auto editor = Editor::activeEditor();
+          auto* editor = Editor::activeEditor();
           const gfx::Rect& bounds = editor->getViewportBounds();
-          float xViewPosition = bounds.x + bounds.w/2;
-          float yViewPosition = bounds.y + bounds.h/2;
+          int xViewPosition = bounds.x + bounds.w/2;
+          int yViewPosition = bounds.y + bounds.h/2;
           docPref.symmetry.xAxis(xViewPosition);
           docPref.symmetry.yAxis(yViewPosition);
           // Redraw symmetry rules
