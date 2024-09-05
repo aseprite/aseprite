@@ -1575,14 +1575,28 @@ private:
       item->setSelected(false);
 
       Menu menu;
-      MenuItem
-        reset(Strings::symmetry_reset_position());
-      menu.addChild(&reset);
+      MenuItem resetToCenter(Strings::symmetry_reset_position_to_center());
+      MenuItem resetToViewCenter(Strings::symmetry_reset_position_to_view_center());
 
-      reset.Click.connect(
+      menu.addChild(&resetToCenter);
+      menu.addChild(&resetToViewCenter);
+
+      resetToCenter.Click.connect(
         [doc, &docPref]{
           docPref.symmetry.xAxis(doc->sprite()->width()/2.0);
           docPref.symmetry.yAxis(doc->sprite()->height()/2.0);
+          // Redraw symmetry rules
+          doc->notifyGeneralUpdate();
+        });
+
+      resetToViewCenter.Click.connect(
+        [doc, &docPref]{
+          auto* editor = Editor::activeEditor();
+          const gfx::Rect& bounds = editor->getViewportBounds();
+          double xViewPosition = bounds.x + bounds.w/2.0;
+          double yViewPosition = bounds.y + bounds.h/2.0;
+          docPref.symmetry.xAxis(xViewPosition);
+          docPref.symmetry.yAxis(yViewPosition);
           // Redraw symmetry rules
           doc->notifyGeneralUpdate();
         });
