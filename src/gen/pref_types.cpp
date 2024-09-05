@@ -28,7 +28,7 @@ static void print_pref_class_def(XMLElement* elem, const std::string& className,
     << "\n"
     << indent << "class " << className << " : public Section {\n"
     << indent << "public:\n"
-    << indent << "  " << className << "(const std::string& name);\n";
+    << indent << "  explicit " << className << "(const std::string& name);\n";
 
   if (elem->Attribute("canforce"))
     std::cout << indent << "  void forceSection();\n";
@@ -37,11 +37,15 @@ static void print_pref_class_def(XMLElement* elem, const std::string& className,
 
   std::cout
     << indent << "  void load();\n"
-    << indent << "  void save();\n"
+    << indent << "  void save() override;\n"
     << indent << "  Section* section(const char* id) override;\n"
     << indent << "  OptionBase* option(const char* id) override;\n";
 
   XMLElement* child = (elem->FirstChild() ? elem->FirstChild()->ToElement(): nullptr);
+
+  bool hasOptions = false;
+  bool hasSections = false;
+
   while (child) {
     if (child->Value()) {
       std::string name = child->Value();
@@ -51,6 +55,7 @@ static void print_pref_class_def(XMLElement* elem, const std::string& className,
         if (!child->Attribute("type")) throw std::runtime_error("missing 'type' attr in <option>");
         if (!childId) throw std::runtime_error("missing 'id' attr in <option>");
         std::string memberName = convert_xmlid_to_cppid(childId, false);
+        hasOptions = true;
         std::cout
           << indent << "  Option<" << child->Attribute("type") << "> " << memberName << ";\n";
       }
@@ -59,12 +64,19 @@ static void print_pref_class_def(XMLElement* elem, const std::string& className,
         std::string childClassName = convert_xmlid_to_cppid(childId, true);
         std::string memberName = convert_xmlid_to_cppid(childId, false);
         print_pref_class_def(child, childClassName, childId, indentSpaces+2);
+        hasSections = true;
         std::cout
           << indent << "  " << childClassName << " " << memberName << ";\n";
       }
     }
     child = child->NextSiblingElement();
   }
+
+  if (hasOptions)
+    std::cout << indent << "  std::vector<OptionBase*> optionList() const override;\n";
+
+  if (hasSections)
+    std::cout << indent << "  std::vector<Section*> sectionList() const override;\n";
 
   std::cout
     << indent << "};\n";
@@ -81,6 +93,9 @@ static void print_pref_class_impl(XMLElement* elem, const std::string& prefix, c
   else
     std::cout << "  : Section(name)\n";
 
+  std::string options;
+  std::string sections;
+
   XMLElement* child = (elem->FirstChild() ? elem->FirstChild()->ToElement(): nullptr);
   while (child) {
     if (child->Value()) {
@@ -96,11 +111,13 @@ static void print_pref_class_impl(XMLElement* elem, const std::string& prefix, c
         if (child->Attribute("default"))
           std::cout << ", " << child->Attribute("default");
         std::cout << ")\n";
+        options += "    (OptionBase*)&" + memberName + ",\n";
       }
       else if (name == "section") {
         if (!childId) throw std::runtime_error("missing 'id' attr in <option>");
         std::string memberName = convert_xmlid_to_cppid(childId, false);
         std::cout << "  , " << memberName << "(name)\n";
+        sections += "    (Section*)&" + memberName + ",\n";
       }
     }
     child = child->NextSiblingElement();
@@ -283,6 +300,25 @@ static void print_pref_class_impl(XMLElement* elem, const std::string& prefix, c
       }
     }
     child = child->NextSiblingElement();
+  }
+
+  // Option/Section list
+  if (!options.empty()) {
+    options.erase(options.end() - 2);
+    std::cout << "\nstd::vector<OptionBase*> " << prefix << className
+              << "::optionList() const\n"
+              << "{\n"
+              << "  return std::vector{\n" << options << "  };\n"
+              << "}\n";
+  }
+
+  if (!sections.empty()) {
+    sections.erase(sections.end() - 2);
+    std::cout << "\nstd::vector<Section*> " << prefix << className
+              << "::sectionList() const\n"
+              << "{\n"
+              << "  return std::vector{\n" << sections << "  };\n"
+              << "}\n";
   }
 }
 

@@ -22,12 +22,15 @@ namespace app {
 
   class Section {
   public:
-    Section(const std::string& name) : m_name(name) { }
-    virtual ~Section() { }
+    explicit Section(const std::string& name) : m_name(name) { }
+    virtual ~Section() = default;
     const char* name() const { return m_name.c_str(); }
 
     virtual Section* section(const char* id) = 0;
     virtual OptionBase* option(const char* id) = 0;
+    virtual std::vector<OptionBase*> optionList() const { return {}; }
+    virtual std::vector<Section*> sectionList() const { return {}; }
+    virtual void save() = 0;
 
     obs::signal<void()> BeforeChange;
     obs::signal<void()> AfterChange;
@@ -42,9 +45,10 @@ namespace app {
       : m_section(section)
       , m_id(id) {
     }
-    virtual ~OptionBase() { }
+    virtual ~OptionBase() = default;
     const char* section() const { return m_section->name(); }
     const char* id() const { return m_id; }
+    virtual void resetToDefault() = 0;
 
 #ifdef ENABLE_SCRIPTING
     virtual void pushLua(lua_State* L) = 0;
@@ -125,6 +129,10 @@ namespace app {
     void clearValue() {
       m_value = m_default;
       m_dirty = false;
+    }
+
+    void resetToDefault() override {
+      setValue(m_default);
     }
 
 #ifdef ENABLE_SCRIPTING

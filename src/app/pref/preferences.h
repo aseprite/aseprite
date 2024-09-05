@@ -58,7 +58,7 @@ namespace app {
     Preferences();
     ~Preferences();
 
-    void save();
+    void save() override;
 
     // Returns true if the given option was set by the user or false
     // if it contains the default value.
