@@ -1595,8 +1595,8 @@ private:
         [doc, &docPref]{
           auto* editor = Editor::activeEditor();
           const gfx::Rect& bounds = editor->getViewportBounds();
-          int xViewPosition = bounds.x + bounds.w/2;
-          int yViewPosition = bounds.y + bounds.h/2;
+          double xViewPosition = bounds.x + bounds.w/2.0;
+          double yViewPosition = bounds.y + bounds.h/2.0;
           docPref.symmetry.xAxis(xViewPosition);
           docPref.symmetry.yAxis(yViewPosition);
           // Redraw symmetry rules
