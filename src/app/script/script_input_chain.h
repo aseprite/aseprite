@@ -4,11 +4,13 @@
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
-#ifdef ENABLE_SCRIPTING
-
 #ifndef APP_SCRIPT_SCRIPT_INPUT_CHAIN_H_INCLUDED
 #define APP_SCRIPT_SCRIPT_INPUT_CHAIN_H_INCLUDED
 #pragma once
+
+#ifndef ENABLE_SCRIPTING
+  #error ENABLE_SCRIPTING must be defined
+#endif
 
 #include "app/ui/input_chain_element.h"
 
@@ -34,5 +36,5 @@ namespace app {
   };
 
 } // namespace app
-#endif
+
 #endif
