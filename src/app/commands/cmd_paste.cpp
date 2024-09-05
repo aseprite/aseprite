@@ -14,6 +14,8 @@
 #include "app/commands/params.h"
 #include "app/ui/input_chain.h"
 
+#include <memory>
+
 namespace app {
 
 class PasteCommand : public Command {
@@ -25,7 +27,7 @@ protected:
   bool onEnabled(Context* ctx) override;
   void onExecute(Context* ctx) override;
 private:
-  std::shared_ptr<gfx::Point> m_position;
+  std::unique_ptr<gfx::Point> m_position;
 };
 
 PasteCommand::PasteCommand()
