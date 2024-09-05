@@ -23,6 +23,8 @@
           <listitem text="@.section_theme" value="section_theme" />
           <listitem text="@.section_extensions" value="section_extensions" />
           <listitem text="@.section_experimental" value="section_experimental" />
+          <separator horizontal="true" style="separator_in_view" />
+          <listitem text="@general.reset" value="section_reset" />
         </listbox>
       </view>
 
@@ -605,6 +607,19 @@
                  pref="tileset.cache_compressed_tilesets" />
         </vbox>
 
+        <!-- Reset -->
+        <vbox id="section_reset">
+          <separator text="@.reset_title" horizontal="true" />
+          <check id="default_reset" text="@.reset_default" />
+          <check id="tools_reset" text="@.reset_tools" />
+          <check id="installed_reset" text="@.reset_installed" />
+          <check id="recent_reset" text="@.reset_recents" />
+          <check id="perfile_reset" text="@.reset_perfile" tooltip="@.reset_perfile_tooltip" />
+	  <hbox>
+	    <hbox expansive="true" />
+            <button id="reset_selected_button" text="@.reset" minwidth="60" />
+	  </hbox>
+        </vbox>
       </panel>
     </hbox>
     <separator horizontal="true" />

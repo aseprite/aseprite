@@ -59,8 +59,8 @@ namespace app {
       ~SkinTheme();
 
       const std::string& path() { return m_path; }
-      int preferredScreenScaling() { return m_preferredScreenScaling; }
-      int preferredUIScaling() { return m_preferredUIScaling; }
+      int preferredScreenScaling() const { return m_preferredScreenScaling; }
+      int preferredUIScaling() const { return m_preferredUIScaling; }
 
       os::Font* getDefaultFont() const override { return m_defaultFont.get(); }
       os::Font* getWidgetFont(const ui::Widget* widget) const override;
