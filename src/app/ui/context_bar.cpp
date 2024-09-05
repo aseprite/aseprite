@@ -1576,15 +1576,31 @@ private:
 
       Menu menu;
       MenuItem
-        reset(Strings::symmetry_reset_position());
-      menu.addChild(&reset);
+        resetToCenter(Strings::symmetry_reset_position_to_center());
+      MenuItem
+        resetToViewCenter(Strings::symmetry_reset_position_to_view_center());
+      
+      menu.addChild(&resetToCenter);
+      menu.addChild(&resetToViewCenter);
 
-      reset.Click.connect(
+      resetToCenter.Click.connect(
         [doc, &docPref]{
           docPref.symmetry.xAxis(doc->sprite()->width()/2.0);
           docPref.symmetry.yAxis(doc->sprite()->height()/2.0);
           // Redraw symmetry rules
           doc->notifyGeneralUpdate();
+        });
+
+      resetToViewCenter.Click.connect(
+        [doc, &docPref]{
+          auto editor = Editor::activeEditor();
+          const gfx::Rect& bounds = editor->getViewportBounds();
+          float xViewPosition = bounds.x + bounds.w/2;
+          float yViewPosition = bounds.y + bounds.h/2;
+          docPref.symmetry.xAxis(xViewPosition);
+          docPref.symmetry.yAxis(yViewPosition);
+          // Redraw symmetry rules
+          doc->notifyGeneralUpdate();    
         });
 
       menu.showPopup(gfx::Point(bounds.x, bounds.y2()),
