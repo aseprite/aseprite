@@ -8,12 +8,13 @@
 #include "config.h"
 #endif
 
+#include "app/script/script_input_chain.h"
+
 #include "app/app.h"
 #include "app/cmd/deselect_mask.h"
 #include "app/cmd/remap_colors.h"
 #include "app/commands/commands.h"
 #include "app/context_access.h"
-#include "app/script/script_input_chain.h"
 #include "app/site.h"
 #include "app/tx.h"
 #include "app/util/clipboard.h"
