@@ -54,6 +54,8 @@
 #include "fmt/format.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
+#include "os/event.h"
+#include "os/event_queue.h"
 #include "os/surface.h"
 #include "os/system.h"
 #include "text/font.h"
@@ -257,7 +259,7 @@ Timeline::Timeline(TooltipManager* tooltipManager)
   , m_fromTimeline(false)
   , m_aniControls(tooltipManager)
 {
-  enableFlags(CTRL_RIGHT_CLICK);
+  enableFlags(CTRL_RIGHT_CLICK | ALLOW_DROP);
 
   m_ctxConn1 = m_context->BeforeCommandExecution.connect(
     &Timeline::onBeforeCommandExecution, this);
@@ -3538,7 +3540,7 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
     else
       hit.part = PART_NOTHING;
 
-    if (!hasCapture()) {
+    if (!hasCapture() && msg) {
       gfx::Rect outline = getPartBounds(Hit(PART_RANGE_OUTLINE));
       if (outline.contains(mousePos)) {
         auto mouseMsg = dynamic_cast<MouseMessage*>(msg);
@@ -4458,6 +4460,60 @@ void Timeline::onCancel(Context* ctx)
 
   clearClipboardRange();
   invalidate();
+}
+
+void Timeline::onDragEnter(ui::DragEvent& e)
+{
+  m_state = STATE_MOVING_RANGE;
+}
+
+void Timeline::onDragLeave(ui::DragEvent& e)
+{
+  m_state = STATE_STANDBY;
+  m_range.clearRange();
+  invalidate();
+  flushRedraw();
+  os::Event ev;
+  os::System::instance()->eventQueue()->queueEvent(ev);
+}
+
+void Timeline::onDrag(ui::DragEvent& e)
+{
+  Widget::onDrag(e);
+  setHot(hitTest(nullptr, e.position()));
+  switch (m_hot.part) {
+    case PART_ROW:
+    case PART_ROW_EYE_ICON:
+    case PART_ROW_CONTINUOUS_ICON:
+    case PART_ROW_PADLOCK_ICON:
+    case PART_ROW_TEXT: {
+      m_range.startRange(nullptr, m_frame, Range::kLayers);
+      break;
+    }
+    case PART_CEL:
+    case PART_HEADER_FRAME:
+      m_range.startRange(nullptr, m_frame, Range::kFrames);
+      break;
+  }
+
+  updateDropRange(e.position());
+
+  flushRedraw();
+  os::Event ev;
+  os::System::instance()->eventQueue()->queueEvent(ev);
+}
+
+void Timeline::onDrop(ui::DragEvent& e)
+{
+  Widget::onDrop(e);
+
+  e.handled(true);
+  m_state = STATE_STANDBY;
+  m_range.clearRange();
+  invalidate();
+  flushRedraw();
+  os::Event ev;
+  os::System::instance()->eventQueue()->queueEvent(ev);
 }
 
 int Timeline::tagFramesDuration(const Tag* tag) const

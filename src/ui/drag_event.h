@@ -8,7 +8,9 @@
 #define UI_DRAG_EVENT_H_INCLUDED
 #pragma once
 
+#include "base/paths.h"
 #include "os/dnd.h"
+#include "os/surface.h"
 #include "ui/event.h"
 #include "ui/widget.h"
 
@@ -36,6 +38,22 @@ namespace ui {
     void supportsOperation(os::DropOperation operation) { m_ev.dropResult(operation); }
 
     const gfx::Point& position() const { return m_position; }
+
+    bool hasPaths() const {
+      return m_ev.dataProvider()->contains(os::DragDataItemType::Paths);
+    }
+
+    bool hasImage() const {
+      return m_ev.dataProvider()->contains(os::DragDataItemType::Image);
+    }
+
+    base::paths getPaths() const {
+      return m_ev.dataProvider()->getPaths();
+    }
+
+    os::SurfaceRef getImage() const {
+      return m_ev.dataProvider()->getImage();
+    }
 
   private:
     bool m_handled = false;
