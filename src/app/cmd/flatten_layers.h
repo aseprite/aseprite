@@ -20,16 +20,24 @@ namespace cmd {
   class FlattenLayers : public CmdSequence
                       , public WithSprite {
   public:
+
+    enum Options {
+      NewBlendMethod  = 0x01,
+      Inplace         = 0x02,
+      MergeDown       = 0x04,
+      ExtendCanvas    = 0x08,
+    };
+
     FlattenLayers(doc::Sprite* sprite,
                   const doc::SelectedLayers& layers,
-                  const bool newBlendMethod);
+                  const int options);
 
   protected:
     void onExecute() override;
 
   private:
     doc::ObjectIds m_layerIds;
-    bool m_newBlendMethod;
+    int m_options;
   };
 
 } // namespace cmd
