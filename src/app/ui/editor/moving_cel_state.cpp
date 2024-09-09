@@ -417,20 +417,21 @@ gfx::RectF MovingCelState::calcFullBounds() const
 
 void MovingCelState::snapBoundsToGrid(gfx::RectF& celBounds) const
 {
+  const gfx::RectF& gridBounds = m_editor->getSite().gridBounds();
   if (m_scaled) {
     gfx::PointF gridOffset(
       snap_to_grid(
-        m_editor->getSite().gridBounds(),
+        gridBounds,
         gfx::Point(celBounds.w, celBounds.h),
         PreferSnapTo::ClosestGridVertex));
 
-    celBounds.w = gridOffset.x;
-    celBounds.h = gridOffset.y;
+    celBounds.w = std::max(gridBounds.w, gridOffset.x);
+    celBounds.h = std::max(gridBounds.h, gridOffset.y);
   }
   else if (m_moved) {
     gfx::PointF gridOffset(
       snap_to_grid(
-        m_editor->getSite().gridBounds(),
+        gridBounds,
         gfx::Point(celBounds.origin()),
         PreferSnapTo::ClosestGridVertex));
 
