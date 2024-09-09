@@ -59,6 +59,7 @@ namespace app {
     gfx::Point intCelOffset() const;
     gfx::RectF calcFullBounds() const;
     bool restoreCelStartPosition() const;
+    void snapBoundsToGrid(gfx::RectF& celBounds) const;
     // ContextObserver
     void onBeforeCommandExecution(CommandExecutionEvent& ev);
 
@@ -79,6 +80,7 @@ namespace app {
     bool m_hasReference = false;
     bool m_moved = false;
     bool m_scaled = false;
+    bool m_multiLayer = false;
     HandleType m_handle;
     Editor* m_editor;
 

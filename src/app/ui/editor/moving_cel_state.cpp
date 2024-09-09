@@ -17,6 +17,7 @@
 #include "app/context_access.h"
 #include "app/doc_api.h"
 #include "app/doc_range.h"
+#include "app/snap_to_grid.h"
 #include "app/tx.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_customization_delegate.h"
@@ -104,10 +105,21 @@ MovingCelState::MovingCelState(Editor* editor,
       m_celMainSize = gfx::SizeF(m_cel->bounds().size());
   }
 
+  // Assume all cels are on the same layer
+  m_multiLayer = false;
+  Layer* prevLayer = m_celList.back()->layer();
+
   // Record start positions of all cels in selected range
   for (Cel* cel : m_celList) {
     Layer* layer = cel->layer();
     ASSERT(layer);
+
+    // If this inequality is ever true, then we have
+    // multiple layers selected
+    if (layer != prevLayer)
+      m_multiLayer = true;
+
+    prevLayer = layer;
 
     if (layer && layer->isMovable() && !layer->isBackground()) {
       if (layer->isReference()) {
@@ -158,6 +170,8 @@ bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
       gfx::Point intOffset = intCelOffset();
 
       // And now we move the cel (or all selected range) to the new position.
+      bool snapToGrid = (Preferences::instance().selection.snapToGrid() &&
+                         editor->docPref().grid.snap());
       for (Cel* cel : m_celList) {
         // Change reference layer with subpixel precision
         if (cel->layer()->isReference()) {
@@ -168,12 +182,22 @@ bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
             celBounds.w *= m_celScale.w;
             celBounds.h *= m_celScale.h;
           }
+          // Do not snap individual cel origins or scale when
+          // multiple layers are selected
+          if (snapToGrid && !m_multiLayer)
+            snapBoundsToGrid(celBounds);
+
           tx(new cmd::SetCelBoundsF(cel, celBounds));
         }
         else {
+          gfx::RectF celBounds = cel->boundsF();
+          celBounds.x += intOffset.x;
+          celBounds.y += intOffset.y;
+          if (snapToGrid && !m_multiLayer)
+            snapBoundsToGrid(celBounds);
+
           api.setCelPosition(writer.sprite(), cel,
-                             cel->x() + intOffset.x,
-                             cel->y() + intOffset.y);
+                             celBounds.x, celBounds.y);
         }
       }
 
@@ -227,10 +251,22 @@ bool MovingCelState::onMouseMove(Editor* editor, MouseMessage* msg)
 void MovingCelState::onCommitMouseMove(Editor* editor,
                                        const gfx::PointF& newCursorPos)
 {
+
+  bool snapToGrid = (Preferences::instance().selection.snapToGrid() &&
+                     editor->docPref().grid.snap());
+
   switch (m_handle) {
 
     case MovePixelsHandle:
       m_celOffset = newCursorPos - m_cursorStart;
+      // Snap the delta itself to the grid, so that the cels
+      // are moved or scaled in fixed steps
+      if (snapToGrid)
+        m_celOffset = snap_to_grid(
+          editor->getSite().gridBounds(),
+          gfx::Point(m_celOffset),
+          PreferSnapTo::ClosestGridVertex);
+
       if (int(editor->getCustomizationDelegate()
               ->getPressedKeyAction(KeyContext::TranslatingSelection) & KeyAction::LockAxis)) {
         if (ABS(m_celOffset.x) < ABS(m_celOffset.y)) {
@@ -246,6 +282,12 @@ void MovingCelState::onCommitMouseMove(Editor* editor,
 
     case ScaleSEHandle: {
       gfx::PointF delta(newCursorPos - m_cursorStart);
+      if (snapToGrid)
+        delta = snap_to_grid(
+          editor->getSite().gridBounds(),
+          gfx::Point(delta),
+          PreferSnapTo::ClosestGridVertex);
+
       m_celScale.w = 1.0 + (delta.x / m_celMainSize.w);
       m_celScale.h = 1.0 + (delta.y / m_celMainSize.h);
       if (m_celScale.w < 1.0/m_celMainSize.w) m_celScale.w = 1.0/m_celMainSize.w;
@@ -275,11 +317,17 @@ void MovingCelState::onCommitMouseMove(Editor* editor,
         celBounds.w *= m_celScale.w;
         celBounds.h *= m_celScale.h;
       }
+      if (snapToGrid && !m_multiLayer)
+        snapBoundsToGrid(celBounds);
+
       cel->setBoundsF(celBounds);
     }
     else {
       celBounds.x += intOffset.x;
       celBounds.y += intOffset.y;
+      if (snapToGrid && !m_multiLayer)
+        snapBoundsToGrid(celBounds);
+
       cel->setBounds(gfx::Rect(celBounds));
     }
   }
@@ -365,6 +413,29 @@ gfx::RectF MovingCelState::calcFullBounds() const
       bounds |= gfx::RectF(cel->bounds()).floor();
   }
   return bounds;
+}
+
+void MovingCelState::snapBoundsToGrid(gfx::RectF& celBounds) const
+{
+  if (m_scaled) {
+    gfx::PointF gridOffset(
+      snap_to_grid(
+        m_editor->getSite().gridBounds(),
+        gfx::Point(celBounds.w, celBounds.h),
+        PreferSnapTo::ClosestGridVertex));
+
+    celBounds.w = gridOffset.x;
+    celBounds.h = gridOffset.y;
+  }
+  else if (m_moved) {
+    gfx::PointF gridOffset(
+      snap_to_grid(
+        m_editor->getSite().gridBounds(),
+        gfx::Point(celBounds.origin()),
+        PreferSnapTo::ClosestGridVertex));
+
+    celBounds.setOrigin(gridOffset);
+  }
 }
 
 bool MovingCelState::restoreCelStartPosition() const
