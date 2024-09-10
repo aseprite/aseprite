@@ -13,6 +13,7 @@
 
 #include "app/app.h"
 #include "app/app_menus.h"
+#include "app/cmd/drop_on_timeline.h"
 #include "app/cmd/set_tag_range.h"
 #include "app/cmd_transaction.h"
 #include "app/color_utils.h"
@@ -4471,6 +4472,7 @@ void Timeline::onDragLeave(ui::DragEvent& e)
 {
   m_state = STATE_STANDBY;
   m_range.clearRange();
+  m_dropRange.clearRange();
   invalidate();
   flushRedraw();
   os::Event ev;
@@ -4487,12 +4489,15 @@ void Timeline::onDrag(ui::DragEvent& e)
     case PART_ROW_CONTINUOUS_ICON:
     case PART_ROW_PADLOCK_ICON:
     case PART_ROW_TEXT: {
-      m_range.startRange(nullptr, m_frame, Range::kLayers);
+      m_range.startRange(nullptr, -1, Range::kLayers);
       break;
     }
     case PART_CEL:
     case PART_HEADER_FRAME:
-      m_range.startRange(nullptr, m_frame, Range::kFrames);
+      m_range.startRange(nullptr, -1, Range::kFrames);
+      break;
+    default:
+      m_range.clearRange();
       break;
   }
 
@@ -4507,9 +4512,43 @@ void Timeline::onDrop(ui::DragEvent& e)
 {
   Widget::onDrop(e);
 
+  // Determine at which frame and layer the content was dropped on.
+  frame_t frame = m_frame;
+  layer_t layerIndex = getLayerIndex(m_layer);
+  switch(m_dropRange.type()) {
+    case Range::kFrames:
+      frame = m_dropRange.firstFrame();
+      if (m_dropTarget.hhit == DropTarget::After)
+        frame++;
+      break;
+    case Range::kLayers:
+      layerIndex = getLayerIndex(*m_dropRange.selectedLayers().begin());
+      if (m_dropTarget.vhit == DropTarget::Top)
+          layerIndex++;
+      break;
+  }
+
+#if _DEBUG
+  LOG(LogLevel::VERBOSE, "Dropped at frame: %d, and layerIndex: %d\n", frame, layerIndex);
+#endif
+
+  if (e.hasPaths()) {
+    base::paths paths = e.getPaths();
+    execute_from_ui_thread([=]{
+      Tx tx(m_document);
+      tx(new cmd::DropAtTimeline(m_document, frame, layerIndex, paths));
+      tx.commit();
+      regenerateRows();
+      showCurrentCel();
+      clearClipboardRange();
+      m_document->notifyGeneralUpdate();
+    });
+  }
+
   e.handled(true);
   m_state = STATE_STANDBY;
   m_range.clearRange();
+  m_dropRange.clearRange();
   invalidate();
   flushRedraw();
   os::Event ev;
