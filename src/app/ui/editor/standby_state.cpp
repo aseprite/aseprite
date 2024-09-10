@@ -601,6 +601,17 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
         gfx::Point pt = grid.canvasToTile(gfx::Point(spritePos));
         buf += fmt::format(" :grid: {} {}", pt.x, pt.y);
 
+        // Show the grid cell index
+        int columns = int(std::floor(
+          sprite->bounds().w/grid.tileSize().w));
+        int rows = int(std::floor(
+          sprite->bounds().h/grid.tileSize().h));
+        int column = pt.x%columns;
+        int row = pt.y%rows;
+        if (row < 0) row = row + rows;
+        if (column < 0) column = column + columns;
+        buf += fmt::format(" :arrow_down: {}", column+row*columns);
+
         // Show the tile index of this specific tile
         if (site.layer() &&
             site.layer()->isTilemap() &&
