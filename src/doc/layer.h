@@ -58,6 +58,9 @@ namespace doc {
   public:
     virtual ~Layer();
 
+    static Layer* MakeCopy(doc::Layer* layer);
+    static Layer* MakeCopyWithSprite(doc::Layer* layer, doc::Sprite* sprite);
+
     virtual int getMemSize() const override;
 
     const std::string& name() const { return m_name; }
@@ -144,7 +147,7 @@ namespace doc {
 
     BlendMode m_blendmode;
     int m_opacity;
-  
+
     // Disable assigment
     Layer& operator=(const Layer& other);
   };
@@ -183,7 +186,7 @@ namespace doc {
 
   private:
     void destroyAllCels();
-  
+
     CelList m_cels;   // List of all cels inside this layer used by frames.
   };
 

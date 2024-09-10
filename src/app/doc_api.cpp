@@ -697,27 +697,15 @@ void DocApi::restackLayerBefore(Layer* layer, LayerGroup* parent, Layer* beforeT
 Layer* DocApi::duplicateLayerAfter(Layer* sourceLayer, LayerGroup* parent, Layer* afterLayer)
 {
   ASSERT(parent);
-  std::unique_ptr<Layer> newLayerPtr;
+  Layer* newLayerPtr = Layer::MakeCopy(sourceLayer);
 
-  if (sourceLayer->isTilemap()) {
-    newLayerPtr.reset(new LayerTilemap(sourceLayer->sprite(),
-                                       static_cast<LayerTilemap*>(sourceLayer)->tilesetIndex()));
-  }
-  else if (sourceLayer->isImage())
-    newLayerPtr.reset(new LayerImage(sourceLayer->sprite()));
-  else if (sourceLayer->isGroup())
-    newLayerPtr.reset(new LayerGroup(sourceLayer->sprite()));
-  else
-    throw std::runtime_error("Invalid layer type");
-
-  m_document->copyLayerContent(sourceLayer, m_document, newLayerPtr.get());
+  m_document->copyLayerContent(sourceLayer, m_document, newLayerPtr);
 
   newLayerPtr->setName(newLayerPtr->name() + " Copy");
 
-  addLayer(parent, newLayerPtr.get(), afterLayer);
+  addLayer(parent, newLayerPtr, afterLayer);
 
-  // Release the pointer as it is owned by the sprite now.
-  return newLayerPtr.release();
+  return newLayerPtr;
 }
 
 Layer* DocApi::duplicateLayerBefore(Layer* sourceLayer, LayerGroup* parent, Layer* beforeLayer)
