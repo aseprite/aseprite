@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2020 Igara Studio S.A.
+// Copyright (c) 2020-2024 Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -76,6 +76,7 @@ namespace doc {
 
     // Copies the data from the given mask.
     void copyFrom(const Mask* sourceMask);
+    void fromImage(const Image* image, const gfx::Point& maskOrigin, uint8_t alphaThreshold = 0);
 
     // Replace the whole mask with the given region.
     void replace(const gfx::Rect& bounds);
@@ -117,6 +118,8 @@ namespace doc {
 
     Mask& operator=(const Mask& mask);
   };
+
+  typedef std::shared_ptr<Mask> MaskRef;
 
 } // namespace doc
 

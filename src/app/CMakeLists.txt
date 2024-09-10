@@ -272,6 +272,7 @@ target_sources(app-lib PRIVATE
   cmd/clear_image.cpp
   cmd/clear_mask.cpp
   cmd/clear_rect.cpp
+  cmd/clear_slices.cpp
   cmd/configure_background.cpp
   cmd/convert_color_profile.cpp
   cmd/copy_cel.cpp
