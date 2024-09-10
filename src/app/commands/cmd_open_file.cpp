@@ -19,12 +19,12 @@
 #include "app/file/file.h"
 #include "app/file_selector.h"
 #include "app/i18n/strings.h"
-#include "app/job.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
 #include "app/recent_files.h"
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
+#include "app/util/open_file_job.h"
 #include "base/fs.h"
 #include "base/thread.h"
 #include "doc/sprite.h"
@@ -33,46 +33,6 @@
 #include <cstdio>
 
 namespace app {
-
-class OpenFileJob : public Job, public IFileOpProgress {
-public:
-  OpenFileJob(FileOp* fop, const bool showProgress)
-    : Job(Strings::open_file_loading(), showProgress)
-    , m_fop(fop)
-  {
-  }
-
-  void showProgressWindow() {
-    startJob();
-
-    if (isCanceled())
-      m_fop->stop();
-
-    waitJob();
-  }
-
-private:
-  // Thread to do the hard work: load the file from the disk.
-  virtual void onJob() override {
-    try {
-      m_fop->operate(this);
-    }
-    catch (const std::exception& e) {
-      m_fop->setError("Error loading file:\n%s", e.what());
-    }
-
-    if (m_fop->isStop() && m_fop->document())
-      delete m_fop->releaseDocument();
-
-    m_fop->done();
-  }
-
-  virtual void ackFileOpProgress(double progress) override {
-    jobProgress(progress);
-  }
-
-  FileOp* m_fop;
-};
 
 OpenFileCommand::OpenFileCommand()
   : Command(CommandId::OpenFile(), CmdRecordableFlag)
