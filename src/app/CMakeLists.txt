@@ -282,6 +282,7 @@ target_sources(app-lib PRIVATE
   cmd/copy_region.cpp
   cmd/crop_cel.cpp
   cmd/deselect_mask.cpp
+  cmd/drop_on_timeline.cpp
   cmd/flatten_layers.cpp
   cmd/flip_image.cpp
   cmd/flip_mask.cpp
