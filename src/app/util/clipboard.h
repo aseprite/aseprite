@@ -108,7 +108,8 @@ namespace app {
     bool setNativeBitmap(const doc::Image* image,
                          const doc::Mask* mask,
                          const doc::Palette* palette,
-                         const doc::Tileset* tileset = nullptr);
+                         const doc::Tileset* tileset,
+                         const doc::color_t indexMaskColor);
     bool getNativeBitmap(doc::Image** image,
                          doc::Mask** mask,
                          doc::Palette** palette,

@@ -250,8 +250,11 @@ bool Sprite::supportAlpha() const
 void Sprite::setTransparentColor(color_t color)
 {
 #if _DEBUG
-  if (colorMode() != ColorMode::INDEXED) {
-    ASSERT(color == 0);
+  if (colorMode() == ColorMode::INDEXED) {
+    ASSERT(color != -1);       // Setting mask = -1 is a logic error
+  }
+  else {
+    ASSERT(color == 0);        // Always 0 for non-indexed color modes
   }
 #endif // _DEBUG
 

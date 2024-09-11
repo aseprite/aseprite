@@ -139,19 +139,37 @@ SetPixelFormat::SetPixelFormat(Sprite* sprite,
     }
   }
 
-  // Set all cels opacity to 100% if we are converting to indexed.
+  // By default, when converting to RGB or grayscale, the mask color
+  // is always 0.
+  int newMaskIndex = 0;
   if (newFormat == IMAGE_INDEXED) {
+    // Set all cels opacity to 100% if we are converting to indexed.
     // TODO remove this (?)
     for (Cel* cel : sprite->uniqueCels()) {
       if (cel->opacity() < 255)
         m_pre.add(new cmd::SetCelOpacity(cel, 255));
     }
 
-    int newMaskIndex = sprite->palette(0)->findMaskColor();
+    // When converting to indexed mode the mask color depends if the
+    // palette includes a fully transparent entry.
+    newMaskIndex = sprite->palette(0)->findMaskColor();
     if (newMaskIndex < 0)
       newMaskIndex = 0;
+
+    // We change the transparent color after (m_post) changing the
+    // color mode (when we are already in indexed mode).
     if (newMaskIndex != sprite->transparentColor())
       m_post.add(new cmd::SetTransparentColor(sprite, newMaskIndex));
+  }
+  else if (m_oldFormat == IMAGE_INDEXED) {
+    // We change the transparent color before (m_pre) changing the
+    // color mode (when we are still in indexed mode).
+    if (newMaskIndex != sprite->transparentColor())
+      m_pre.add(new cmd::SetTransparentColor(sprite, newMaskIndex));
+  }
+  else {
+    // RGB <-> Grayscale
+    ASSERT(sprite->transparentColor() == 0);
   }
 
   // When we are converting to grayscale color mode, we've to destroy

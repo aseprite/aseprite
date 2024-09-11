@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2018-2020 Igara Studio S.A.
+// Copyright (C) 2018-2024 Igara Studio S.A.
 // Copyright (c) 2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -54,8 +54,18 @@ namespace doc {
     void setColorMode(const ColorMode colorMode) { m_colorMode = colorMode; }
     void setWidth(const int width) { m_size.w = width; }
     void setHeight(const int height) { m_size.h = height; }
-    void setMaskColor(const color_t color) { m_maskColor = color; }
-    void setColorSpace(const gfx::ColorSpaceRef& cs) { m_colorSpace = cs; }
+
+    void setMaskColor(const color_t color) {
+#if 0 // Sometimes, mask color = -1 is temporarily used to paint an
+      // opaque indexed image in PixelsMovement.
+      ASSERT(color != -1);
+#endif
+      m_maskColor = color;
+    }
+
+    void setColorSpace(const gfx::ColorSpaceRef& cs) {
+      m_colorSpace = cs;
+    }
 
     void setSize(const int width,
                  const int height) {

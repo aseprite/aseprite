@@ -142,18 +142,21 @@ Palette* create_palette_from_sprite(
 Image* convert_pixel_format(
   const Image* image,
   Image* new_image,
-  PixelFormat pixelFormat,
+  const PixelFormat pixelFormat,
   const Dithering& dithering,
   const RgbMap* rgbmap,
   const Palette* palette,
-  bool is_background,
-  color_t new_mask_color,
+  const bool is_background,
+  const color_t new_mask_color,
   rgba_to_graya_func toGray,
   TaskDelegate* delegate)
 {
   if (!new_image)
     new_image = Image::create(pixelFormat, image->width(), image->height());
-  new_image->setMaskColor(new_mask_color);
+
+  // Don't set the image mask color to -1
+  const color_t new_mask_color0 = (new_mask_color == -1 ? 0 : new_mask_color);
+  new_image->setMaskColor(new_mask_color0);
 
   // RGB -> Indexed with ordered dithering
   if (image->pixelFormat() == IMAGE_RGB &&
@@ -236,7 +239,7 @@ Image* convert_pixel_format(
             a = rgba_geta(c);
 
             if (a == 0)
-              *dst_it = (new_mask_color == -1? 0 : new_mask_color);
+              *dst_it = new_mask_color0;
             else if (rgbmap)
               *dst_it = rgbmap->mapColor(c);
             else
@@ -293,7 +296,7 @@ Image* convert_pixel_format(
             c = graya_getv(c);
 
             if (a == 0)
-              *dst_it = (new_mask_color == -1? 0 : new_mask_color);
+              *dst_it = new_mask_color0;
             else if (rgbmap)
               *dst_it = rgbmap->mapColor(c, c, c, a);
             else
@@ -372,7 +375,7 @@ Image* convert_pixel_format(
             c = *src_it;
 
             if (!is_background && c == image->maskColor())
-              *dst_it = new_mask_color;
+              *dst_it = new_mask_color0;
             else {
               c = palette->getEntry(c);
               r = rgba_getr(c);

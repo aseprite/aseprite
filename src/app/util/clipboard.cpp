@@ -230,21 +230,13 @@ void Clipboard::setData(Image* image,
     // Copy tilemap to the native clipboard
     if (isTilemap) {
       ASSERT(tileset);
-      setNativeBitmap(image, mask, palette, tileset);
+      setNativeBitmap(image, mask, palette, tileset, -1);
     }
     // Copy non-tilemap images to the native clipboard
     else {
-      color_t oldMask = 0;
-      if (image) {
-        oldMask = image->maskColor();
-        if (!image_source_is_transparent)
-          image->setMaskColor(-1);
-      }
-
-      setNativeBitmap(image, mask, palette);
-
-      if (image && !image_source_is_transparent)
-        image->setMaskColor(oldMask);
+      setNativeBitmap(
+        image, mask, palette, nullptr,
+        image_source_is_transparent ? image->maskColor(): -1);
     }
   }
 }

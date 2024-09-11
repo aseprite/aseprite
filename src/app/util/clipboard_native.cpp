@@ -95,7 +95,8 @@ bool Clipboard::hasNativeBitmap() const
 bool Clipboard::setNativeBitmap(const doc::Image* image,
                                 const doc::Mask* mask,
                                 const doc::Palette* palette,
-                                const doc::Tileset* tileset)
+                                const doc::Tileset* tileset,
+                                const doc::color_t indexMaskColor)
 {
   clip::lock l(native_window_handle());
   if (!l.locked())
@@ -180,7 +181,7 @@ bool Clipboard::setNativeBitmap(const doc::Image* image,
           doc::color_t c = palette->getEntry(*it);
 
           // Use alpha=0 for mask color
-          if (*it == image->maskColor())
+          if (*it == indexMaskColor)
             c &= doc::rgba_rgb_mask;
 
           *(dst++) = c;
