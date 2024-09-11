@@ -1575,11 +1575,9 @@ private:
       item->setSelected(false);
 
       Menu menu;
-      MenuItem
-        resetToCenter(Strings::symmetry_reset_position_to_center());
-      MenuItem
-        resetToViewCenter(Strings::symmetry_reset_position_to_view_center());
-      
+      MenuItem resetToCenter(Strings::symmetry_reset_position_to_center());
+      MenuItem resetToViewCenter(Strings::symmetry_reset_position_to_view_center());
+
       menu.addChild(&resetToCenter);
       menu.addChild(&resetToViewCenter);
 
@@ -1600,7 +1598,7 @@ private:
           docPref.symmetry.xAxis(xViewPosition);
           docPref.symmetry.yAxis(yViewPosition);
           // Redraw symmetry rules
-          doc->notifyGeneralUpdate();    
+          doc->notifyGeneralUpdate();
         });
 
       menu.showPopup(gfx::Point(bounds.x, bounds.y2()),

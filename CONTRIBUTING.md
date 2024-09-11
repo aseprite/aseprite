@@ -106,6 +106,28 @@ We have some rules for the changes and commits that are contributed:
 You can also take a look at the [src/README.md](https://github.com/aseprite/aseprite/tree/main/src/#aseprite-source-code)
 guide which contains some information about how the code is structured.
 
+## Pull Request (PR) Assignee
+
+In case you are a developer or contributor with write or triage access
+to the repository:
+
+1. The PR assignee is the one that is working on the PR right now.
+2. After a PR is sent, you (can) assign the PR to some other developer
+   that will act as a reviewer.
+   * Or if there is no assignee and the PR is not a draft, some
+     developer will take it for review sooner or later.
+3. That developer will review the PR (or reassign the PR).
+4. When the review process is done, the reviewer will merge the PR or
+   reassign the PR to you if it needs some changes.
+5. When you have applied the requested changes, you can reassign the
+   PR to the last reviewer.
+6. If a PR is labeled with some "needs *something*" label, it means
+   that the PR will not merged as it is, and *something* is required
+   to continue.
+
+With this workflow you can find the PRs assigned to you to
+review/continue working in: https://github.com/pulls/assigned
+
 # Community
 
 You can use the [Development category](https://community.aseprite.org/c/development)
