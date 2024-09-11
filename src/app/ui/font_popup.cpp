@@ -159,10 +159,8 @@ FontPopup::FontPopup()
   // directories (fontDirs)
   base::paths files;
   for (const auto& fontDir : fontDirs) {
-    for (const auto& file : base::list_files(fontDir)) {
-      std::string fullpath = base::join_path(fontDir, file);
-      if (base::is_file(fullpath))
-        files.push_back(fullpath);
+    for (const auto& file : base::list_files(fontDir, base::ItemType::Files)) {
+      files.push_back(base::join_path(fontDir, file));
     }
   }
 

@@ -45,7 +45,7 @@ void PalettesLoaderDelegate::getResourcesPaths(std::map<std::string, std::string
     if (base::is_directory(rf.filename())) {
       path = rf.filename();
       path = base::fix_path_separators(path);
-      for (const auto& fn : base::list_files(path)) {
+      for (const auto& fn : base::list_files(path, base::ItemType::Files)) {
         // Ignore the default palette that is inside the palettes/ dir
         // in the user home dir.
         if (fn == "default.ase" ||
@@ -53,8 +53,7 @@ void PalettesLoaderDelegate::getResourcesPaths(std::map<std::string, std::string
           continue;
 
         std::string fullFn = base::join_path(path, fn);
-        if (base::is_file(fullFn))
-          idAndPath[base::get_file_title(fn)] = fullFn;
+        idAndPath[base::get_file_title(fn)] = fullFn;
       }
     }
   }

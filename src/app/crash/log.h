@@ -10,7 +10,10 @@
 
 #include "base/debug.h"
 
-// TODO should we log some events in release?
-#define RECO_TRACE(...) // TRACE(__VA_ARGS__)
+#ifdef _DEBUG
+  #define RECO_TRACE(...) TRACE(__VA_ARGS__)
+#else
+  #define RECO_TRACE(...)
+#endif
 
 #endif

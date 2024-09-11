@@ -143,29 +143,27 @@ void DataRecovery::searchForSessions()
 
   // Existent sessions
   RECO_TRACE("RECO: Listing sessions from '%s'\n", m_sessionsDir.c_str());
-  for (auto& itemname : base::list_files(m_sessionsDir)) {
-    std::string itempath = base::join_path(m_sessionsDir, itemname);
-    if (base::is_directory(itempath)) {
-      RECO_TRACE("RECO: Session '%s'\n", itempath.c_str());
+  for (const auto& itemname : base::list_files(m_sessionsDir, base::ItemType::Directories)) {
+    const auto& itempath = base::join_path(m_sessionsDir, itemname);
+    RECO_TRACE("RECO: Session '%s' ", itempath.c_str());
 
-      SessionPtr session(new Session(&m_config, itempath));
-      if (!session->isRunning()) {
-        if ((session->isEmpty()) ||
-            (!session->isCrashedSession() && session->isOldSession())) {
-          RECO_TRACE("RECO: - to be deleted (%s)\n",
-                     session->isEmpty() ? "is empty":
-                     (session->isOldSession() ? "is old":
-                                                "unknown reason"));
-          session->removeFromDisk();
-        }
-        else {
-          RECO_TRACE("RECO:  - to be loaded\n");
-          sessions.push_back(session);
-        }
+    SessionPtr session(new Session(&m_config, itempath));
+    if (!session->isRunning()) {
+      if ((session->isEmpty()) ||
+          (!session->isCrashedSession() && session->isOldSession())) {
+        RECO_TRACE("to be deleted (%s)\n",
+                    session->isEmpty() ? "is empty":
+                    (session->isOldSession() ? "is old":
+                                              "unknown reason"));
+        session->removeFromDisk();
       }
-      else
-        RECO_TRACE("is running\n");
+      else {
+        RECO_TRACE("to be loaded\n");
+        sessions.push_back(session);
+      }
     }
+    else
+      RECO_TRACE("is running\n");
   }
 
   // Sort sessions from the most recent one to the oldest one
