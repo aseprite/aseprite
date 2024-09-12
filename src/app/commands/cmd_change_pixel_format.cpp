@@ -693,10 +693,13 @@ void ChangePixelFormatCommand::onExecute(Context* context)
     if (flatten) {
       Tx tx(Tx::LockDoc, context, doc);
       const bool newBlend = Preferences::instance().experimental.newBlend();
+      cmd::FlattenLayers::Options options;
+      options.newBlendMethod = newBlend;
+
       SelectedLayers selLayers;
       for (auto layer : sprite->root()->layers())
         selLayers.insert(layer);
-      tx(new cmd::FlattenLayers(sprite, selLayers, newBlend));
+      tx(new cmd::FlattenLayers(sprite, selLayers, options));
     }
 
     job.startJobWithCallback(

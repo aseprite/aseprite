@@ -79,15 +79,15 @@ void MergeDownLayerCommand::onExecute(Context* context)
   DocRange range;
   range.selectLayer(writer.layer());
   range.selectLayer(dst_layer);
+
   const bool newBlend = Preferences::instance().experimental.newBlend();
+  cmd::FlattenLayers::Options options;
+  options.newBlendMethod = newBlend;
+  options.inplace = true;
+  options.mergeDown = true;
+  options.dynamicCanvas = true;
 
-  tx(new cmd::FlattenLayers(sprite,
-    range.selectedLayers(),
-    int(newBlend) |
-    cmd::FlattenLayers::Options::Inplace |
-    cmd::FlattenLayers::Options::MergeDown |
-    cmd::FlattenLayers::Options::ExtendCanvas));
-
+  tx(new cmd::FlattenLayers(sprite, range.selectedLayers(), options));
   tx.commit();
 
   update_screen_for_document(document);

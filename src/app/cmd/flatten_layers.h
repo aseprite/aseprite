@@ -21,23 +21,30 @@ namespace cmd {
                       , public WithSprite {
   public:
 
-    enum Options {
-      NewBlendMethod  = 0x01,
-      Inplace         = 0x02,
-      MergeDown       = 0x04,
-      ExtendCanvas    = 0x08,
+    struct Options {
+      bool newBlendMethod: 1;
+      bool inplace: 1;
+      bool mergeDown: 1;
+      bool dynamicCanvas: 1;
+
+      Options():
+        newBlendMethod(false),
+        inplace(false),
+        mergeDown(false),
+        dynamicCanvas(false) {
+      }
     };
 
     FlattenLayers(doc::Sprite* sprite,
                   const doc::SelectedLayers& layers,
-                  const int options);
+                  const Options options);
 
   protected:
     void onExecute() override;
 
   private:
     doc::ObjectIds m_layerIds;
-    int m_options;
+    Options m_options;
   };
 
 } // namespace cmd

@@ -18,7 +18,6 @@
 #include "app/cmd/remove_layer.h"
 #include "app/cmd/remove_cel.h"
 #include "app/cmd/replace_image.h"
-#include "app/cmd/set_layer_flags.h"
 #include "app/cmd/set_layer_name.h"
 #include "app/cmd/set_layer_opacity.h"
 #include "app/cmd/set_layer_blend_mode.h"
@@ -40,7 +39,7 @@ namespace cmd {
 
 FlattenLayers::FlattenLayers(doc::Sprite* sprite,
                              const doc::SelectedLayers& layers0,
-                             const int options)
+                             const Options options)
   : WithSprite(sprite)
 {
   m_options = options;
@@ -54,7 +53,6 @@ FlattenLayers::FlattenLayers(doc::Sprite* sprite,
 
 void FlattenLayers::onExecute()
 {
-
   Sprite* sprite = this->sprite();
   auto doc = static_cast<Doc*>(sprite->document());
 
@@ -73,48 +71,23 @@ void FlattenLayers::onExecute()
   if (list.empty())
     return;                     // Do nothing
 
-  // Extend the drawable area beyond the sprite bounds
+  // Set the drawable area to a union of all cel bounds
   // when this option is enabled
   ImageSpec spec = sprite->spec();
-  int area_x = 0;
-  int area_y = 0;
-  if ((m_options & Options::ExtendCanvas) != 0) {
-    // Get initial dimentions of draw area
-    int mX = spec.width();
-    int mY = spec.height();
-
-    // Check those bounds against every frame of every layer that
-    // will be merged
+  gfx::Rect area;
+  if (m_options.dynamicCanvas) {
     for (frame_t frame(0); frame<sprite->totalFrames(); ++frame) {
       for (Layer* layer : layers) {
         Cel* cel = layer->cel(frame);
-        if (!cel)
-          continue;
-
-        // Is this cel outside of the current dimentions?
-        const gfx::Rect bounds = cel->bounds();
-        const int x = (bounds.x < 0 ? bounds.w+spec.width()+abs(bounds.x):
-                                      bounds.w+bounds.x);
-        const int y = (bounds.y < 0 ? bounds.h+spec.height()+abs(bounds.y):
-                                      bounds.h+bounds.y);
-
-        if (x > mX)
-          mX = x;
-
-        if (y > mY)
-          mY = y;
+        if (cel)
+          area |= cel->bounds();
       }
     }
-
-    // Update size of draw area
-    if (mX != spec.width()) {
-      spec.setWidth(mX*2);
-      area_x = mX/2;
-    }
-    if (mY != spec.height()) {
-      spec.setHeight(mY*2);
-      area_y = mY/2;
-    }
+    spec.setSize(area.size());
+  }
+  // Otherwise use the sprite's bounds
+  else {
+    area.setSize(spec.size());
   }
 
   // Create a temporary image.
@@ -131,7 +104,7 @@ void FlattenLayers::onExecute()
   }
   // Get bottom layer when merging layers in-place, but only if
   // we are not flattening into the background layer
-  else if ((m_options & Options::Inplace) != 0) {
+  else if (m_options.inplace) {
     flatLayer = static_cast<LayerImage*>(list.front());
     bgcolor = sprite->transparentColor();
   }
@@ -145,7 +118,7 @@ void FlattenLayers::onExecute()
   }
 
   render::Render render;
-  render.setNewBlend((m_options & Options::NewBlendMethod) != 0);
+  render.setNewBlend(m_options.newBlendMethod);
   render.setBgOptions(render::BgOptions::MakeNone());
 
   {
@@ -154,17 +127,14 @@ void FlattenLayers::onExecute()
     RestoreVisibleLayers restore;
     restore.showSelectedLayers(sprite, layers);
 
-    // Map canvas to extended draw area
-    const gfx::ClipF area(
-      0, 0,
-      -area_x, -area_y,
-      spec.width(), spec.height());
+    // Map draw area to image coords
+    const gfx::ClipF area_to_image(0, 0, area);
 
     // Copy all frames to the background.
     for (frame_t frame(0); frame<sprite->totalFrames(); ++frame) {
       // Clear the image and render this frame.
       clear_image(image.get(), bgcolor);
-      render.renderSprite(image.get(), sprite, frame, area);
+      render.renderSprite(image.get(), sprite, frame, area_to_image);
 
       // Get exact bounds for rendered frame
       gfx::Rect bounds = image->bounds();
@@ -200,7 +170,7 @@ void FlattenLayers::onExecute()
         if (!newFlatLayer) {
           executeAndAdd(new cmd::SetCelOpacity(cel, 255));
           executeAndAdd(new cmd::SetCelPosition(cel,
-            area.src.x+bounds.x, area.src.y+bounds.y));
+            area.x+bounds.x, area.y+bounds.y));
         }
 
         // Modify destination cel
@@ -209,7 +179,7 @@ void FlattenLayers::onExecute()
       // Add new cel on null
       else {
         cel = new Cel(frame, new_image);
-        cel->setPosition(area.src.x+bounds.x, area.src.y+bounds.y);
+        cel->setPosition(area.x+bounds.x, area.y+bounds.y);
 
         // No need to undo adding this cel when flattening onto
         // a new layer, as the layer itself would be destroyed,
@@ -225,7 +195,7 @@ void FlattenLayers::onExecute()
   }
 
   // Notify observers when merging down
-  if ((m_options & Options::MergeDown) != 0)
+  if (m_options.mergeDown)
     doc->notifyLayerMergedDown(list.back(), flatLayer);
 
   // Add new flatten layer
@@ -239,8 +209,6 @@ void FlattenLayers::onExecute()
     executeAndAdd(new cmd::SetLayerOpacity(flatLayer, 255));
     executeAndAdd(new cmd::SetLayerBlendMode(
       flatLayer, doc::BlendMode::NORMAL));
-    executeAndAdd(new cmd::SetLayerFlags(
-      flatLayer, doc::LayerFlags::Visible));
   }
 
   // Delete flattened layers.
