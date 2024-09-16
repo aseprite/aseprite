@@ -4182,8 +4182,11 @@ void Timeline::updateDropRange(const gfx::Point& pt)
     case Range::kLayers:
       m_dropRange.clearRange();
       if (!m_rows.empty()) {
-        m_dropRange.startRange(m_rows[m_hot.layer].layer(), m_hot.frame, m_range.type());
-        m_dropRange.endRange(m_rows[m_hot.layer].layer(), m_hot.frame);
+        auto* layer = (m_hot.layer >= 0 && m_hot.layer < m_rows.size()
+                       ? m_rows[m_hot.layer].layer()
+                       : nullptr);
+        m_dropRange.startRange(layer, m_hot.frame, m_range.type());
+        m_dropRange.endRange(layer, m_hot.frame);
       }
       break;
   }
