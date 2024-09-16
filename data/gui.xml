@@ -478,9 +478,6 @@
       <key command="NewSpriteFromSelection" shortcut="Ctrl+Alt+N" mac="Cmd+Alt+N" />
 
       <!-- Commands not associated to menu items and without shortcuts by default -->
-      <key command="ExportSpriteSheet">
-        <param name="source" value="tileset" />
-      </key>
       <key command="NewLayer">
         <param name="tilemap" value="true" />
       </key>
@@ -1099,7 +1096,7 @@
       </item>
       <item command="NewFrame" text="@main_menu.frame_new_frame" />
     </menu>
-      
+
     <menu id="tab_popup_menu">
       <item command="CloseFile" text="@.close" group="tab_close" />
     </menu>
