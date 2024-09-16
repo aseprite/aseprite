@@ -29,6 +29,36 @@
 namespace app {
 namespace script {
 
+void GraphicsContext::color(gfx::Color color)
+{
+  switch (m_formatHint) {
+    case doc::PixelFormat::IMAGE_GRAYSCALE:
+      // Underlying SkSurface's color type is kR8G8_unorm_SkColorType, then we
+      // must transform the color to set R to the gray level and G to the
+      // alpha level.
+      color = gfx::rgba(gfx::getr(color), gfx::geta(color), 0);
+      break;
+    case doc::PixelFormat::IMAGE_INDEXED: {
+      // Underlying SkSurface's color type is kAlpha_8_SkColorType, then we
+      // must transform the color to set Alpha to the corresponding index.
+      int i = get_current_palette()->findExactMatch(gfx::getr(color),
+                                                    gfx::getg(color),
+                                                    gfx::getb(color),
+                                                    gfx::geta(color), -1);
+      if (i == -1) {
+        i = get_current_palette()->findBestfit(gfx::getr(color),
+                                              gfx::getg(color),
+                                              gfx::getb(color),
+                                              gfx::geta(color), -1);
+      }
+
+      color = gfx::rgba(0, 0, 0, i);
+      break;
+    }
+  }
+  m_paint.color(color);
+}
+
 void GraphicsContext::fillText(const std::string& text, int x, int y)
 {
   if (auto theme = skin::SkinTheme::instance()) {
@@ -59,7 +89,7 @@ void GraphicsContext::drawImage(const doc::Image* img, int x, int y)
     return;
   }
 
-   drawImage(img, img->bounds(), gfx::Rect(x, y, img->size().w, img->size().h));
+  drawImage(img, img->bounds(), gfx::Rect(x, y, img->size().w, img->size().h));
 }
 
 void GraphicsContext::drawImage(const doc::Image* img,
@@ -429,7 +459,23 @@ int GraphicsContext_set_antialias(lua_State* L)
 int GraphicsContext_get_color(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
-  push_obj(L, color_utils::color_from_ui(gc->color()));
+
+  const gfx::Color gcColor = gc->color();
+  app::Color color;
+  switch (gc->formatHint()) {
+    case IMAGE_GRAYSCALE:
+      color = app::Color::fromGray(gfx::getr(gcColor), gfx::geta(gcColor));
+      break;
+    case IMAGE_INDEXED: {
+      const int i = gfx::geta(gcColor);
+      color = app::Color::fromIndex(i);
+      break;
+    }
+    case IMAGE_RGB:
+    default:
+      color = color_utils::color_from_ui(gcColor);
+  }
+  push_obj(L, color);
   return 1;
 }
 
