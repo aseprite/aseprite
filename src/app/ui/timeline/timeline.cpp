@@ -4513,11 +4513,13 @@ void Timeline::onDrag(ui::DragEvent& e)
 
 void Timeline::onDrop(ui::DragEvent& e)
 {
+  using LayerInsertion = cmd::DropOnTimeline::LayerInsertion;
   Widget::onDrop(e);
 
   // Determine at which frame and layer the content was dropped on.
   frame_t frame = m_frame;
   layer_t layerIndex = getLayerIndex(m_layer);
+  LayerInsertion insert = LayerInsertion::Before;
   switch(m_dropRange.type()) {
     case Range::kFrames:
       frame = m_dropRange.firstFrame();
@@ -4525,9 +4527,17 @@ void Timeline::onDrop(ui::DragEvent& e)
         frame++;
       break;
     case Range::kLayers:
-      layerIndex = getLayerIndex(*m_dropRange.selectedLayers().begin());
+      if (m_dropTarget.vhit != DropTarget::VeryBottom) {
+        auto* selectedLayer = *m_dropRange.selectedLayers().begin();
+        layerIndex = getLayerIndex(selectedLayer);
+      }
+
       if (m_dropTarget.vhit == DropTarget::Top)
-          layerIndex++;
+        insert = LayerInsertion::After;
+      else if (m_dropTarget.vhit == DropTarget::Bottom ||
+               m_dropTarget.vhit == DropTarget::FirstChild ||
+               m_dropTarget.vhit == DropTarget::VeryBottom)
+        insert = LayerInsertion::Before;
       break;
   }
 
@@ -4539,11 +4549,8 @@ void Timeline::onDrop(ui::DragEvent& e)
     base::paths paths = e.getPaths();
     execute_from_ui_thread([=]{
       Tx tx(m_document);
-      tx(new cmd::DropAtTimeline(m_document, frame, layerIndex, paths));
+      tx(new cmd::DropOnTimeline(m_document, frame, layerIndex, insert, paths));
       tx.commit();
-      regenerateRows();
-      showCurrentCel();
-      clearClipboardRange();
       m_document->notifyGeneralUpdate();
     });
   }
