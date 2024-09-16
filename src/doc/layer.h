@@ -206,6 +206,7 @@ namespace doc {
     void addLayer(Layer* layer);
     void removeLayer(Layer* layer);
     void insertLayer(Layer* layer, Layer* after);
+    void insertLayerBefore(Layer* layer, Layer* before);
     void stackLayer(Layer* layer, Layer* after);
 
     Layer* firstLayer() const { return (m_layers.empty() ? nullptr: m_layers.front()); }

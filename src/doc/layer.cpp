@@ -623,6 +623,17 @@ void LayerGroup::insertLayer(Layer* layer, Layer* after)
   layer->setParent(this);
 }
 
+void LayerGroup::insertLayerBefore(Layer* layer, Layer* before)
+{
+  auto before_it = m_layers.end();
+  if (before) {
+    before_it = std::find(m_layers.begin(), m_layers.end(), before);
+  }
+  m_layers.insert(before_it, layer);
+
+  layer->setParent(this);
+}
+
 void LayerGroup::stackLayer(Layer* layer, Layer* after)
 {
   ASSERT(layer != after);
