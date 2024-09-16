@@ -1575,7 +1575,7 @@ private:
       item->setSelected(false);
 
       Menu menu;
-      MenuItem resetToCenter(Strings::symmetry_reset_position_to_center());
+      MenuItem resetToCenter(Strings::symmetry_reset_position());
       MenuItem resetToViewCenter(Strings::symmetry_reset_position_to_view_center());
 
       menu.addChild(&resetToCenter);
