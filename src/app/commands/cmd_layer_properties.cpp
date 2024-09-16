@@ -56,9 +56,6 @@ public:
 protected:
   bool onEnabled(Context* context) override;
   void onExecute(Context* context) override;
-  bool isListed(const Params& params, const KeyContext& context) const override {
-    return context == KeyContext::Normal;
-  }
 };
 
 class LayerPropertiesWindow;

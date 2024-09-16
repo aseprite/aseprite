@@ -34,9 +34,6 @@ protected:
   void onLoadParams(const Params& params) override;
   bool onEnabled(Context* context) override;
   void onExecute(Context* context) override;
-  bool isListed(const Params& params, const KeyContext& context) const override {
-    return context == KeyContext::FramesSelection;
-  }
 
   Action m_action;
   doc::frame_t m_begin, m_end;

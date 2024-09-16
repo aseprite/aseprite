@@ -87,9 +87,6 @@ protected:
 
     return (frame > 0 ? frame-1: last);
   }
-  bool isListed(const Params& params, const KeyContext& context) const override {
-    return context == KeyContext::Normal;
-  }
 };
 
 class GotoNextFrameCommand : public GotoCommand {
@@ -102,9 +99,6 @@ protected:
     frame_t last = editor->sprite()->lastFrame();
 
     return (frame < last ? frame+1: 0);
-  }
-  bool isListed(const Params& params, const KeyContext& context) const override {
-    return context == KeyContext::Normal;
   }
 };
 
