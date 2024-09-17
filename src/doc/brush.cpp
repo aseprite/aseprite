@@ -13,6 +13,7 @@
 
 #include "base/pi.h"
 #include "doc/algo.h"
+#include "doc/algorithm/flip_image.h"
 #include "doc/algorithm/polygon.h"
 #include "doc/blend_internals.h"
 #include "doc/image.h"
@@ -112,6 +113,7 @@ void Brush::setImage(const Image* image,
   m_backupImage.reset();
   m_mainColor.reset();
   m_bgColor.reset();
+  resetSymmetries();
 
   resetBounds();
 }
@@ -286,6 +288,7 @@ void Brush::setImageColor(const ImageColor imageColor,
         (m_bgColor ? true: false), (m_bgColor ? *m_bgColor: 0));
       break;
   }
+  resetSymmetries();
 }
 
 void Brush::resetImageColors()
@@ -294,6 +297,7 @@ void Brush::resetImageColors()
     m_image.reset(Image::createCopy(m_backupImage.get()));
     m_mainColor.reset();
     m_bgColor.reset();
+    resetSymmetries();
   }
 }
 
@@ -312,11 +316,94 @@ void Brush::clean()
   m_image.reset();
   m_maskBitmap.reset();
   m_backupImage.reset();
+  resetSymmetries();
 }
 
 static void algo_hline(int x1, int y, int x2, void *data)
 {
   draw_hline(reinterpret_cast<Image*>(data), x1, y, x2, BitmapTraits::max_value);
+}
+
+void Brush::resetSymmetries()
+{
+  if (type() != doc::kImageBrushType)
+    return;
+  if (m_symmetryImages.size() == 0) {
+    TRACEARGS("resetSymmetries : se creo otro set de m_symmetry\n");
+    for (int i=0; i<4; i++) {
+      m_symmetryImages.push_back(ImageRef());
+      m_symmetryMasks.push_back(ImageRef());
+    }
+  }
+  else {
+    TRACEARGS("resetSymmetries : m_symmetry reset()\n");
+    for (int i=0; i<4; i++) {
+      m_symmetryImages[i].reset();
+      m_symmetryMasks[i].reset();
+    }
+  }
+}
+
+Image* Brush::getSymmetryImage(const SymmetryIndex index)
+{
+  if (index <= 0 || index > 3)
+    return m_image.get();
+
+  if (!m_symmetryImages[index]) {
+    switch (index) {
+      case SymmetryIndex::FLIPPED_X:
+      case SymmetryIndex::FLIPPED_Y: {
+        const doc::algorithm::FlipType flip =
+          (index == SymmetryIndex::FLIPPED_X ? doc::algorithm::FlipType::FlipHorizontal:
+                                               doc::algorithm::FlipType::FlipVertical);
+        if (m_image) {
+          std::unique_ptr<Image> tempImage(Image::createCopy(m_image.get()));
+
+          doc::algorithm::flip_image(tempImage.get(), tempImage->bounds(), flip);
+          m_symmetryImages[index].reset(Image::createCopy(tempImage.get()));
+        }
+        if (m_maskBitmap && !m_symmetryMasks[index]) {
+          std::unique_ptr<Image> tempImage(Image::createCopy(m_maskBitmap.get()));
+          doc::algorithm::flip_image(tempImage.get(), tempImage->bounds(), flip);
+          m_symmetryMasks[index].reset(Image::createCopy(tempImage.get()));
+        }
+        break;
+      }
+      case SymmetryIndex::FLIPPED_XY: {
+        if (m_image) {
+          std::unique_ptr<Image> tempImage(Image::createCopy(m_image.get()));
+          doc::algorithm::flip_image(tempImage.get(),
+                                     tempImage->bounds(),
+                                     doc::algorithm::FlipType::FlipVertical);
+          doc::algorithm::flip_image(tempImage.get(),
+                                     tempImage->bounds(),
+                                     doc::algorithm::FlipType::FlipHorizontal);
+          m_symmetryImages[index].reset(Image::createCopy(tempImage.get()));
+        }
+        if (m_maskBitmap && !m_symmetryMasks[index]) {
+          std::unique_ptr<Image> tempImage(Image::createCopy(m_maskBitmap.get()));
+          doc::algorithm::flip_image(tempImage.get(),
+                                     tempImage->bounds(),
+                                     doc::algorithm::FlipType::FlipVertical);
+          doc::algorithm::flip_image(tempImage.get(),
+                                     tempImage->bounds(),
+                                     doc::algorithm::FlipType::FlipHorizontal);
+          m_symmetryMasks[index].reset(Image::createCopy(tempImage.get()));
+        }
+        break;
+      }
+    }
+  }
+  return m_symmetryImages[index].get();
+}
+
+Image* Brush::getSymmetryMask(const SymmetryIndex index)
+{
+  if (index <= 0 || index > 3)
+    return m_maskBitmap.get();
+
+  getSymmetryImage(index); // Update Image and Mask symmetry buffers
+  return m_symmetryMasks[index].get();
 }
 
 // Regenerates the brush bitmap and its rectangle's region.
