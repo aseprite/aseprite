@@ -4485,6 +4485,7 @@ void Timeline::onDragLeave(ui::DragEvent& e)
 void Timeline::onDrag(ui::DragEvent& e)
 {
   Widget::onDrag(e);
+  m_range.clearRange();
   setHot(hitTest(nullptr, e.position()));
   switch (m_hot.part) {
     case PART_ROW:
@@ -4496,16 +4497,17 @@ void Timeline::onDrag(ui::DragEvent& e)
       break;
     }
     case PART_CEL:
+      m_range.startRange(m_rows[m_hot.layer].layer(), m_hot.frame, Range::kCels);
+      m_range.endRange(m_rows[m_hot.layer].layer(), m_hot.frame);
+      m_clk = m_hot;
+      invalidate();
+      break;
     case PART_HEADER_FRAME:
       m_range.startRange(nullptr, -1, Range::kFrames);
-      break;
-    default:
-      m_range.clearRange();
       break;
   }
 
   updateDropRange(e.position());
-
   flushRedraw();
   os::Event ev;
   os::System::instance()->eventQueue()->queueEvent(ev);
@@ -4521,6 +4523,12 @@ void Timeline::onDrop(ui::DragEvent& e)
   layer_t layerIndex = getLayerIndex(m_layer);
   LayerInsertion insert = LayerInsertion::Before;
   switch(m_dropRange.type()) {
+    case Range::kCels:
+      frame = m_hot.frame;
+      layerIndex = m_hot.layer;
+      insert = (m_dropTarget.vhit == DropTarget::Top ? LayerInsertion::After
+                                                      : LayerInsertion::Before);
+      break;
     case Range::kFrames:
       frame = m_dropRange.firstFrame();
       if (m_dropTarget.hhit == DropTarget::After)
@@ -4531,13 +4539,8 @@ void Timeline::onDrop(ui::DragEvent& e)
         auto* selectedLayer = *m_dropRange.selectedLayers().begin();
         layerIndex = getLayerIndex(selectedLayer);
       }
-
-      if (m_dropTarget.vhit == DropTarget::Top)
-        insert = LayerInsertion::After;
-      else if (m_dropTarget.vhit == DropTarget::Bottom ||
-               m_dropTarget.vhit == DropTarget::FirstChild ||
-               m_dropTarget.vhit == DropTarget::VeryBottom)
-        insert = LayerInsertion::Before;
+      insert = (m_dropTarget.vhit == DropTarget::Top ? LayerInsertion::After
+                                                      : LayerInsertion::Before);
       break;
   }
 
