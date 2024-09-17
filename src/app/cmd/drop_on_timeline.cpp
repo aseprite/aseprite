@@ -24,6 +24,8 @@
 #include "doc/layer_list.h"
 #include "render/dithering.h"
 
+#include <algorithm>
+
 namespace app {
 namespace cmd {
 
@@ -79,11 +81,15 @@ void DropOnTimeline::onExecute()
 
   int flags =
     FILE_LOAD_DATA_FILE |
-    FILE_LOAD_CREATE_PALETTE;
+    FILE_LOAD_CREATE_PALETTE | FILE_LOAD_SEQUENCE_YES;
 
-  for(const auto& path : m_paths) {
+  while(!m_paths.empty()) {
     std::unique_ptr<FileOp> fop(
-      FileOp::createLoadDocumentOperation(context, path, flags));
+      FileOp::createLoadDocumentOperation(context, m_paths.front(), flags));
+
+    // Remove paths that will be loaded by the current file operation.
+    for (const auto& filename : fop->filenames())
+      m_paths.erase(std::find(m_paths.begin(), m_paths.end(), filename));
 
     // Do nothing (the user cancelled or something like that)
     if (!fop)
