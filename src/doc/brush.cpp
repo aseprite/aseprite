@@ -326,17 +326,13 @@ static void algo_hline(int x1, int y, int x2, void *data)
 
 void Brush::resetSymmetries()
 {
-  if (type() != doc::kImageBrushType)
-    return;
   if (m_symmetryImages.size() == 0) {
-    TRACEARGS("resetSymmetries : se creo otro set de m_symmetry\n");
     for (int i=0; i<4; i++) {
       m_symmetryImages.push_back(ImageRef());
       m_symmetryMasks.push_back(ImageRef());
     }
   }
   else {
-    TRACEARGS("resetSymmetries : m_symmetry reset()\n");
     for (int i=0; i<4; i++) {
       m_symmetryImages[i].reset();
       m_symmetryMasks[i].reset();
@@ -348,6 +344,9 @@ Image* Brush::getSymmetryImage(const SymmetryIndex index)
 {
   if (index <= 0 || index > 3)
     return m_image.get();
+
+  if (m_symmetryImages.size() == 0)
+    resetSymmetries();
 
   if (!m_symmetryImages[index]) {
     switch (index) {
