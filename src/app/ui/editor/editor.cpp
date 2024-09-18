@@ -960,20 +960,23 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
       double x = m_docPref.symmetry.xAxis();
       gfx::Color color = color_utils::color_for_ui(m_docPref.grid.color());
       // Bottom point intersection:
-      gfx::Point bottomLeft(spriteRect.x + int(m_proj.applyX<double>(x)) - (spriteRect.h - int(m_proj.applyY<double>(y))), spriteRect.y2());
-      if (bottomLeft.x < spriteRect.x) {
+      gfx::Point bottomLeft(enclosingRect.x + m_proj.applyY(mainTilePosition().x) + int(m_proj.applyX<double>(x))
+                            - (enclosingRect.h - m_proj.applyY(mainTilePosition().y) - int(m_proj.applyY<double>(y))),
+                            enclosingRect.y2());
+      if (bottomLeft.x < enclosingRect.x) {
         // Left intersection
-        bottomLeft.x = spriteRect.x;
-        bottomLeft.y = spriteRect.y + int(m_proj.applyY<double>(y)) + int(m_proj.applyX<double>(x));
+        bottomLeft.y = enclosingRect.y2() - enclosingRect.x + bottomLeft.x;
+        bottomLeft.x = enclosingRect.x;
       }
       // Top intersection
-      gfx::Point topRight(spriteRect.x + int(m_proj.applyX<double>(x)) + int(m_proj.applyY<double>(y)), spriteRect.y);
-      if (spriteRect.x2() < topRight.x) {
+      gfx::Point topRight(enclosingRect.x + m_proj.applyY(mainTilePosition().x) + int(m_proj.applyX<double>(x))
+                          + m_proj.applyY(mainTilePosition().y) + int(m_proj.applyY<double>(y)),
+                          enclosingRect.y);
+      if (enclosingRect.x2() < topRight.x) {
         // Right intersection
-        topRight.y = spriteRect.y + (topRight.x - spriteRect.x2());
-        topRight.x = spriteRect.x2();
+        topRight.y = enclosingRect.y + topRight.x - enclosingRect.x2();
+        topRight.x = enclosingRect.x2();
       }
-
       g->drawLine(color, bottomLeft, topRight);
     }
     if (mode & int(app::gen::SymmetryMode::LEFT_DIAG)) {
@@ -981,20 +984,23 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
       double x = m_docPref.symmetry.xAxis();
       gfx::Color color = color_utils::color_for_ui(m_docPref.grid.color());
       // Bottom point intersection:
-      gfx::Point bottomRight(spriteRect.x + int(m_proj.applyX<double>(x)) + (spriteRect.h - int(m_proj.applyY<double>(y))), spriteRect.y2());
-      if (spriteRect.x2() < bottomRight.x) {
+      gfx::Point bottomRight(enclosingRect.x + m_proj.applyY(mainTilePosition().x) + int(m_proj.applyX<double>(x))
+                             + (enclosingRect.h - m_proj.applyY(mainTilePosition().y) - int(m_proj.applyX<double>(y))),
+                             enclosingRect.y2());
+      if (enclosingRect.x2() < bottomRight.x) {
         // Left intersection
-        bottomRight.y -= (bottomRight.x - spriteRect.x2());
-        bottomRight.x = spriteRect.x2();
+        bottomRight.y = enclosingRect.y2() - bottomRight.x + enclosingRect.x2();
+        bottomRight.x = enclosingRect.x2();
       }
       // Top intersection
-      gfx::Point topLeft(spriteRect.x + int(m_proj.applyX<double>(x)) - int(m_proj.applyY<double>(y)), spriteRect.y);
-      if (topLeft.x < spriteRect.x) {
+      gfx::Point topLeft(enclosingRect.x + m_proj.applyY(mainTilePosition().x) + int(m_proj.applyX<double>(x))
+                         - m_proj.applyY(mainTilePosition().y) - int(m_proj.applyY<double>(y)),
+                         enclosingRect.y);
+      if (topLeft.x < enclosingRect.x) {
         // Right intersection
-        topLeft.y = spriteRect.y + (spriteRect.x - topLeft.x);
-        topLeft.x = spriteRect.x;
+        topLeft.y = enclosingRect.y + enclosingRect.x - topLeft.x;
+        topLeft.x = enclosingRect.x;
       }
-
       g->drawLine(color, topLeft, bottomRight);
     }
   }
